@@ -145,6 +145,7 @@
   ;;
   ;;    NORMAL:   The interpreter is running code normally, or has no code
   ;;              to run.  The default.
+  ;;    STOPPED:  The kernel has been stopped.
   ;;    PAUSED:   The interpreter should pause the current card until it is
   ;;              told to wake back up.
   ;;    JUMPING:  The interpreter should execute a jump.
@@ -187,11 +188,13 @@
     (set! *%kernel-timeout-thunk* thunk))
   
   (define (%kernel-check-timeout)
-    (when (and *%kernel-timeout*
-               (>= (current-milliseconds) *%kernel-timeout*))
-      (let ((thunk *%kernel-timeout-thunk*))
+    (if (eq? *%kernel-state* 'STOPPED)
         (%kernel-clear-timeout)
-        (thunk))))
+        (when (and *%kernel-timeout*
+                   (>= (current-milliseconds) *%kernel-timeout*))
+          (let ((thunk *%kernel-timeout-thunk*))
+            (%kernel-clear-timeout)
+            (thunk)))))
 
   (define (%kernel-safe-to-run-deferred-thunks?)
     ;; Would now be a good time to run deferred thunks?  Wait until
@@ -211,6 +214,10 @@
     #f)
     
   (define (%kernel-check-deferred)
+    ;; If the interpreter has stopped, cancel any deferred thunks.
+    (when (eq? *%kernel-state* 'STOPPED)
+        (set! *%kernel-deferred-thunk-queue* '()))   
+
     ;; Run any deferred thunks.
     (unless (or (null? *%kernel-deferred-thunk-queue*)
                 (not (%kernel-safe-to-run-deferred-thunks?)))
@@ -231,8 +238,9 @@
       ;; were running the first batch.
       (%kernel-check-deferred)))
 
-  (define (%kernel-clear-state)
-    (set! *%kernel-state* 'NORMAL)
+  (define (%kernel-maybe-clear-state)
+    (unless (%kernel-stopped?)
+      (set! *%kernel-state* 'NORMAL))
     (set! *%kernel-jump-card* #f))
   
   (define (%kernel-run-as-callback thunk error-handler)
@@ -261,6 +269,9 @@
     (case *%kernel-state*
       [[NORMAL]
        #f]
+      [[STOPPED]
+       (when *%kernel-exit-to-top-func*
+             (*%kernel-exit-to-top-func* #f))]
       [[PAUSED]
        (%call-5l-prim 'schemeidle)
        (%kernel-check-state)]
@@ -269,7 +280,7 @@
            (begin
              (%call-5l-prim 'schemeidle)
              (%kernel-check-state))
-           (%kernel-clear-state))]
+           (%kernel-maybe-clear-state))]
       [[JUMPING]
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
@@ -488,8 +499,7 @@
                   (idle)
                   (cond
                    [jump-card
-                    (%kernel-run-card (%kernel-find-card jump-card))
-                    (set! jump-card #f)]
+                    (%kernel-run-card (%kernel-find-card jump-card))]
                    [#t
                     ;; Highly optimized do-nothing loop. :-)  This
                     ;; is a GC optimization designed to prevent the
@@ -502,15 +512,26 @@
                       (unless (eq? *%kernel-state* 'JUMPING)
                         (idle)
                         (idle-loop)))])))
+              (set! jump-card #f)
               (when (eq? *%kernel-state* 'JUMPING)
                 (set! jump-card *%kernel-jump-card*))
-              (%kernel-clear-state)
+              (%kernel-maybe-clear-state)
               (loop)))))
-      (%kernel-clear-state)
+      (%kernel-maybe-clear-state)
       (%kernel-clear-timeout)))
 
   (define (%kernel-kill-interpreter)
     (%kernel-set-state 'INTERPRETER-KILLED))
+
+  (define (%kernel-stop)
+    (%kernel-set-state 'STOPPED))
+
+  (define (%kernel-go)
+    (when (%kernel-stopped?)
+      (%kernel-set-state 'NORMAL)))
+
+  (define (%kernel-stopped?)
+    (eq? *%kernel-state* 'STOPPED))
   
   (define (%kernel-pause)
     (%kernel-die-if-callback '%kernel-pause)
@@ -519,7 +540,7 @@
   (define (%kernel-wake-up)
     (%kernel-die-if-callback '%kernel-wake-up)
     (when (%kernel-paused?)
-      (%kernel-clear-state)))
+      (%kernel-maybe-clear-state)))
 
   (define (%kernel-paused?)
     (eq? *%kernel-state* 'PAUSED))
@@ -541,7 +562,7 @@
   (define (%kernel-kill-nap)
     (%kernel-die-if-callback '%kernel-kill-nap)
     (when (%kernel-napping?)
-      (%kernel-clear-state)))
+      (%kernel-maybe-clear-state)))
 
   (define (%kernel-kill-current-card)
     (%kernel-set-state 'CARD-KILLED))
