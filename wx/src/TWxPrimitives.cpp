@@ -185,7 +185,7 @@ DEFINE_5L_PRIMITIVE(Loadpic)
 
 	// Convert our image to a bitmap.
 	wxImage image;
-	image.LoadFile((".\\Graphics\\" + picname + ".png").c_str());
+	image.LoadFile(("./Graphics/" + picname + ".png").c_str());
 	wxBitmap bitmap(image);
 
 	// Draw the bitmap.

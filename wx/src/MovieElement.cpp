@@ -24,5 +24,5 @@ bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 	if (inFrame == LAST_FRAME)
 		return mMovieWindow->IsDone();
 	else
-		return (mMovieWindow->GetFrame() >= inFrame);
+		return mMovieWindow->IsDone() || (mMovieWindow->GetFrame() >= inFrame);
 }

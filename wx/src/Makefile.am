@@ -48,7 +48,13 @@ wx5L_SOURCES = \
 
 
 wx5L_LDFLAGS = \
-	-L../../libs/wxWindows/lib
+	-L../../libs/wxWindows/lib \
+	`../../libs/wxWindows/wx-config --ldflags` \
+	-pthread
+
+# From 	`../../libs/wxWindows/wx-config --libs`, which automake won't let
+# us call directly (and which we need to edit for now).
+WXLIBS = -lwx_gtk-2.3 -L/usr/X11R6/lib -lgtk -lgdk -lgmodule -lgthread -lglib -lpthread -ldl -lXi -lXext -lX11 -lm -lpng -ljpeg -ltiff -lz -ldl -lm 
 
 wx5L_LDADD = \
 	../../Common/libfivel.a \
@@ -57,6 +63,6 @@ wx5L_LDADD = \
 	../../libs/plt/lib/libmzgc.a \
 	../../libs/plt/lib/mzdyn.o \
 	@FREETYPE_LDADD@ \
-	-lwx_gtk-2.3 \
+	$(WXLIBS) \
 	-ldl
 #	-lefence
