@@ -744,7 +744,7 @@ void StageFrame::OnJumpCard(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiStopMovies(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(mStage->IsMoviePlaying() ||
+	inEvent.Enable(mStage->IsMediaPlaying() ||
 				   (TInterpreter::HaveInstance() &&
 					TInterpreter::GetInstance()->Napping()));
 }
@@ -753,7 +753,7 @@ void StageFrame::OnStopMovies(wxCommandEvent &inEvent)
 {
 	if (TInterpreter::HaveInstance() && TInterpreter::GetInstance()->Napping())
 		TInterpreter::GetInstance()->KillNap();
-	mStage->DeleteMovieElements();
+	mStage->EndMediaElements();
 }
 
 void StageFrame::OnSashDrag(wxSashEvent &inEvent)

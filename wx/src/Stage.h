@@ -513,12 +513,12 @@ public:
 	//////////
 	// Return true if a movie is playing.
 	//
-	bool IsMoviePlaying();
+	bool IsMediaPlaying();
 
 	//////////
-	// Delete all movie (audio & video) elements which are playing.
+	// End all media (audio & video) elements which are playing.
 	//
-	void DeleteMovieElements();
+	void EndMediaElements();
 
 	//////////
 	// "Grab" the mouse on behalf of the specified element.  This means

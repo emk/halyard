@@ -20,7 +20,7 @@
   ;;  otherwise specified.
 
   (provide run-card jump
-           delete-element-info
+           delete-element-internal
            dispatch-event-to-current-card
            current-card)
 
@@ -724,7 +724,7 @@
     ;; But for now, this will allow the engine to limp along.
     (equal? (symbol->string sym1) (symbol->string sym2)))
 
-  (define (delete-element-info name)
+  (define (delete-element-internal elem)
     ;; We're called from C++ after the engine's version of the specified
     ;; element has been deleted.  Our job is to bring our data structures
     ;; back in sync.
@@ -736,15 +736,17 @@
             (let recurse [[children (group-children card)]]
               (cond
                [(null? children) '()]
-               [(eq-with-gensym-hack? name (node-full-name (car children)))
+               [(eq? elem (car children))
                 ;; Delete this node, and exclude it from the new child list.
                 (if (element-temporary? (car children))
                     (begin
                       (exit-node (car children))
                       (unregister-node (car children)))
                     (debug-caution
-                     (cat "Can't fully delete non-temporary element " name
+                     (cat "Can't fully delete non-temporary element "
+                          (node-full-name elem)
                           " in this version of the engine")))
+                (engine-delete-element *engine* elem)
                 (recurse (cdr children))]
                [else
                 ;; Keep this node.
@@ -818,7 +820,7 @@
     ;; We work with a copy of (GROUP-CHILDREN OLD-CARD) the original
     ;; will be modified as we run.
     (foreach [child (group-children old-card)]
-      (engine-delete-element *engine* child))
+      (delete-element-internal child))
     ;; Exit old-card.
     (exit-node old-card)
     ;; Exit as many enclosing card groups as necessary.

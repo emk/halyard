@@ -12,7 +12,13 @@ class IMediaElement
 public:
     IMediaElement() {} 
 	virtual ~IMediaElement() {}
-	
+
+	//////////
+	// Cease playback, and make sure all future calls to
+	// HasReachedFrame() return true.
+	//
+	virtual void EndPlayback() = 0;
+
     //////////
     // Pause the media stream.
     //

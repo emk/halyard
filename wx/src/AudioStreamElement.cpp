@@ -23,6 +23,11 @@ AudioStreamElement::~AudioStreamElement()
     delete mStream;
 }
 
+void AudioStreamElement::EndPlayback()
+{
+	mStream->Stop();
+}
+
 void AudioStreamElement::Pause()
 {
     mStream->Stop();

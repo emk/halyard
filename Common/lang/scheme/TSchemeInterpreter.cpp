@@ -482,13 +482,6 @@ bool TSchemeInterpreter::IsValidCard(const char *inCardName)
 	return SCHEME_FALSEP(o) ? false : true;
 }
 
-void TSchemeInterpreter::ElementDeleted(const char *inElementName)
-{
-	Scheme_Object *args[1];
-	args[0] = scheme_intern_symbol(inElementName);
-	(void) CallScheme("%kernel-element-deleted", 1, args);
-}
-
 bool TSchemeInterpreter::Eval(const std::string &inExpression,
 							  std::string &outResultText)
 {

@@ -155,15 +155,6 @@ public:
 	virtual bool IsValidCard(const char *inCardName) = 0;
 
 	//////////
-	// Notify the interpreter that the specified element has been deleted.
-	// This allows the interpreter to get data structures back in sync
-	// with the GUI.
-	//
-	// [in] inElementName - The name of the element deleted.
-	//
-	virtual void ElementDeleted(const char *inElementName) = 0;
-
-	//////////
 	// Evaluate an expression, returning any errors which occur.
 	//
 	// [in] inExpression - The expression to evaluate.

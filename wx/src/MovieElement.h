@@ -15,6 +15,7 @@
 class MovieElement : public Widget, public IMediaElement
 {
     MovieWindow *mMovieWindow;
+	bool mEndPlaybackWasCalled;
 
 public:
     MovieElement(Stage *inStage, const wxString &inName,
@@ -27,8 +28,9 @@ public:
 
 	// Note: these methods may not be happy if the underlying movie code 
 	// does not like to be paused.
-	void Pause();
-	void Resume();
+	virtual void EndPlayback();
+	virtual void Pause();
+	virtual void Resume();
 };
 
 #endif // MovieElement_H

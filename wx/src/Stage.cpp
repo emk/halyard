@@ -184,7 +184,6 @@ void Stage::NotifyExitCard()
 {
     if (mTextCtrl->IsShown())
         mTextCtrl->Hide();
-	DeleteElements();
 }
 
 void Stage::NotifyScriptReload()
@@ -194,6 +193,7 @@ void Stage::NotifyScriptReload()
 	mImageCache->NotifyScriptReload();
 	mFrame->GetProgramTree()->NotifyScriptReload();
     NotifyExitCard();
+	DeleteElements();
 	gStyleSheetManager.RemoveAll();
 
 	// For now, treat Quake 2 as a special case.
@@ -772,10 +772,6 @@ void Stage::DestroyElement(Element *inElement)
 	// TODO - Implemented delayed destruction so element callbacks can
 	// destroy the element they're attached to.
 	delete inElement;
-
-	// Notify Scheme that the element is dead.
-	if (TInterpreter::HaveInstance())
-		TInterpreter::GetInstance()->ElementDeleted(name.mb_str());
 }
 
 bool Stage::DeleteElementByName(const wxString &inName)
@@ -803,37 +799,26 @@ void Stage::DeleteElements()
 	NotifyElementsChanged();
 }
 
-bool Stage::IsMoviePlaying()
+bool Stage::IsMediaPlaying()
 {
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); ++i)
-		if (dynamic_cast<MovieElement*>(*i))
+		if (dynamic_cast<IMediaElement*>(*i))
 			return true;
 	return false;
 }
 
-static bool is_not_movie_element(Element *inElem)
+void Stage::EndMediaElements()
 {
-	return dynamic_cast<MovieElement*>(inElem) == NULL;
-}
-
-void Stage::DeleteMovieElements()
-{
-	// Selectively deleting pointers from an STL sequence is a bit of a
-	// black art--it's hard to call erase(...) while iterating, and
-	// remove_if(...)  won't free the pointers correctly.  One solution
-	// is to call std::partition or std::stable_partition to sort the
-	// elements into those we wish to keep, and those we wish to delete,
-	// then to handle all the deletions in a bunch.
-	ElementCollection::iterator first =
-		std::stable_partition(mElements.begin(), mElements.end(),
-							  &is_not_movie_element);
-	for (ElementCollection::iterator i = first; i != mElements.end(); ++i)
-	{
-		gDebugLog.Log("Stopping movie: %s", (*i)->GetName().mb_str());
-		DestroyElement(*i);
+	ElementCollection::iterator i = mElements.begin();
+	for (; i != mElements.end(); ++i) {
+		IMediaElement *elem = dynamic_cast<IMediaElement*>(*i);
+		if (elem) {
+			gDebugLog.Log("Manually ending media: %s",
+						  (*i)->GetName().mb_str());
+			elem->EndPlayback();
+		}
 	}
-	mElements.erase(first, mElements.end());
 }
 
 void Stage::MouseGrab(Element *inElement)

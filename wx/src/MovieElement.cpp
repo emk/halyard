@@ -9,7 +9,8 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
 						   const wxString &inLocation,
 						   long inWindowStyle,
 						   MovieWindowStyle inMovieWindowStyle)
-    : Widget(inStage, inName), mMovieWindow(NULL)
+    : Widget(inStage, inName), mMovieWindow(NULL),
+	  mEndPlaybackWasCalled(false)
 {
     mMovieWindow = new MovieWindowNative(inStage, -1, inBounds.GetPosition(),
 										 inBounds.GetSize(), inWindowStyle,
@@ -28,10 +29,18 @@ bool MovieElement::HasVisibleRepresentation()
 
 bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 {
-	if (inFrame == LAST_FRAME)
+	if (mEndPlaybackWasCalled)
+		return true;
+	else if (inFrame == LAST_FRAME)
 		return mMovieWindow->IsDone();
 	else
 		return mMovieWindow->IsDone() || (mMovieWindow->GetFrame() >= inFrame);
+}
+
+void MovieElement::EndPlayback()
+{
+	mMovieWindow->Pause();
+	mEndPlaybackWasCalled = true;
 }
 
 void MovieElement::Pause()

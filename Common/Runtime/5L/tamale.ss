@@ -85,11 +85,14 @@
       (point (car lst) (cadr lst))))
 
   (define (delete-element elem-or-name)
-    (delete-elements (list (elem-or-name-hack elem-or-name))))
+    ;; TODO - Get rid of elem-or-name-hack, and rename
+    ;; delete-element-internal to delete-element.
+    (delete-element-internal (find-node (elem-or-name-hack elem-or-name))))
   
-  (define (delete-elements &opt (elems-or-names '()))
-    (apply call-5l-prim 'deleteelements
-           (map elem-or-name-hack elems-or-names)))
+  (define (delete-elements
+           &opt (elems-or-names (group-children (current-card))))
+    (foreach [elem elems-or-names]
+      (delete-element elem)))
 
   (define (grab-mouse elem)
     (assert (instance-of? elem <element>))

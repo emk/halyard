@@ -259,10 +259,6 @@
   (define (%kernel-valid-card? card-name)
     (card-exists? card-name))
 
-  (define (%kernel-element-deleted element-name)
-    (with-errors-blocked (non-fatal-error)
-      (delete-element-info element-name)))
-
   (define (%kernel-eval expression)
     (let [[ok? #t] [result "#<did not return from jump>"]]
 
@@ -550,9 +546,8 @@
     ;; A little placeholder to make deletion work the same way in Tamale
     ;; and in Common test.
     ;; TODO - Remove when cleaning up element deletion.
-    (if (have-5l-prim? 'deleteelements)
-        (call-5l-prim 'deleteelements (node-full-name elem))
-        (delete-element-info (node-full-name elem))))
+    (when (have-5l-prim? 'deleteelements)
+      (call-5l-prim 'deleteelements (node-full-name elem))))
 
   (set-engine! (make <real-engine>))
 

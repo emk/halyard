@@ -124,7 +124,6 @@ public:
 	virtual std::string CurCardName(void);
 	virtual std::string PrevCardName(void);
 	virtual bool IsValidCard(const char *inCardName);
-	virtual void ElementDeleted(const char *inElementName);
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
 };
