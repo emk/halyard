@@ -204,10 +204,12 @@ DEFINE_5L_PRIMITIVE(EditBox) {
 	std::string name, text;
 	TRect bounds;
     bool multiline;
+    uint32 text_sz;
 
-	inArgs >> SymbolName(name) >> bounds >> text >> multiline;
+	inArgs >> SymbolName(name) >> bounds >> text >> text_sz >> multiline;
 
-    long style = wxBORDER;
+    // text_sz is not used right now, because wxTE_RICH has some problems.
+    long style = wxSIMPLE_BORDER /*| wxTE_RICH*/;
     if (multiline)
         style |= wxTE_MULTILINE;
 

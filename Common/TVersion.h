@@ -17,15 +17,30 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		8
+#define VERSION_REV_BIG		10
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.8 (Development)"
+#define VERSION_STRING		"Tamale 0.0.10 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.51  2003/12/19 19:25:17  emk
+ 0.0.10 - 19 Dec 2003 - emk
+
+ Lots of work to eliminate all Scheme memory allocation ("consing") while
+ idling.  This should fix video performance problems.
+
+   * Added a cache of Scheme "buckets" (variable storage locations) so
+     we don't have to allocate memory every time C++ needs to find something
+     in the Scheme runtime.
+   * Tweaked the idle interface so we don't need to call 'apply'.
+
+ Other changes:
+
+   * Put in some stubs for allowing different font-sizes in edit boxes.
+
  Revision 1.50  2003/11/17 16:38:15  emk
  0.0.8 - 17 Nov 2003 - emk, brian
 

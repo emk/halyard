@@ -127,6 +127,7 @@ Scheme_Env *TSchemeInterpreter::sScriptEnv = NULL;
 TSchemePtr<Scheme_Object> TSchemeInterpreter::sLoaderModule = NULL;
 TSchemePtr<Scheme_Object> TSchemeInterpreter::sKernelModule = NULL;
 TInterpreter::SystemIdleProc TSchemeInterpreter::sSystemIdleProc = NULL;
+TSchemeInterpreter::BucketMap TSchemeInterpreter::sBucketMap;
 
 TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 {
@@ -158,6 +159,7 @@ TSchemeInterpreter::~TSchemeInterpreter()
 {
 	// We don't actually shut down the Scheme interpreter.  But we'll
 	// reinitialize it later if we need to.
+    sBucketMap.clear();
 }
 
 void TSchemeInterpreter::InitializeModuleNames()
@@ -169,6 +171,32 @@ void TSchemeInterpreter::InitializeModuleNames()
 		scheme_make_pair(scheme_intern_symbol("lib"),
 						 scheme_make_pair(scheme_make_string("kernel.ss"),
 										  tail));
+}
+
+Scheme_Bucket *
+TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
+                               Scheme_Object *inModule,
+                               const char *inFuncName)
+{
+    // We keep a local map of known buckets.  We have to do this because we
+    // don't want to allocate any memory on the Scheme heap during idle
+    // calls (to avoid the risk of GC while playing movies), and
+    // scheme_module_bucket relies on the module loader, which sometimes
+    // allocates Scheme memory.
+    BucketKey key(inEnv, inModule, inFuncName);
+    BucketMap::iterator found = sBucketMap.find(key);
+    if (found != sBucketMap.end())
+        return found->second;
+    else {
+        Scheme_Object *sym = scheme_intern_symbol(inFuncName);
+		Scheme_Bucket *bucket = scheme_module_bucket(inModule, sym, -1,
+													 inEnv);
+        if (bucket == NULL)
+            throw TException(__FILE__, __LINE__,
+                             "Scheme module bucket not found");
+        sBucketMap.insert(BucketMap::value_type(key, bucket));
+        return bucket;
+    }
 }
 
 Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
@@ -313,7 +341,7 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 }
 
 Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
-												Scheme_Object *inModuleName,
+												Scheme_Object *inModule,
 												const char *inFuncName,
 												int inArgc,
 												Scheme_Object **inArgv)
@@ -340,9 +368,7 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 		// Call the function.  Note that scheme_module_bucket will look
 		// up names in the module's *internal* namespace, not its official
 		// export namespace.
-		Scheme_Object *sym = scheme_intern_symbol(inFuncName);
-		Scheme_Bucket *bucket = scheme_module_bucket(inModuleName, sym, -1,
-													 inEnv);
+        Scheme_Bucket *bucket = FindBucket(inEnv, inModule, inFuncName);
 		ASSERT(bucket != NULL);
 		Scheme_Object *f = static_cast<Scheme_Object*>(bucket->val);
 		if (f)

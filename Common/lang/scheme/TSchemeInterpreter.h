@@ -40,9 +40,12 @@ public:
 	TSchemePtr(const TSchemePtr &inSchemePtr) : mPtr(NULL)
 		{ Set(inSchemePtr.mPtr); }
 	operator Type*() { return mPtr; }
+	operator const Type*() const { return mPtr; }
 	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
 	TSchemePtr<Type> &operator=(const TSchemePtr &inPtr)
 		{ Set(inSchemePtr.mPtr); return *this; }
+    bool operator<(const TSchemePtr<Type> &inRight) const
+        { return mPtr < inRight.mPtr; }
 };
 
 
@@ -84,14 +87,39 @@ class TSchemeInterpreter : public TInterpreter
 	static TSchemePtr<Scheme_Object> sLoaderModule;
 	static TSchemePtr<Scheme_Object> sKernelModule;
 
+    struct BucketKey {
+        TSchemePtr<Scheme_Env> env;
+        TSchemePtr<Scheme_Object> module;
+        std::string name;
+
+        BucketKey(TSchemePtr<Scheme_Env> inEnv,
+                  TSchemePtr<Scheme_Object> inModule,
+                  std::string inName)
+            : env(inEnv), module(inModule), name(inName) {}
+        
+        bool operator<(const BucketKey &inRight) const {
+            return ((env < inRight.env)
+                    || (env == inRight.env
+                        && (module < inRight.module ||
+                            (module == inRight.module
+                             && name < inRight.name))));
+        }
+    };
+    typedef std::map<BucketKey, TSchemePtr<Scheme_Bucket> > BucketMap;
+    static BucketMap sBucketMap;
+
 	static SystemIdleProc sSystemIdleProc;
 
 	static void InitializeModuleNames();
 
+    static Scheme_Bucket *FindBucket(Scheme_Env *inEnv,
+                                     Scheme_Object *inModule,
+                                     const char *inFuncName);
+
 	static Scheme_Object *Call5LPrim(int inArgc, Scheme_Object **inArgv);
 
 	static Scheme_Object *CallSchemeEx(Scheme_Env *inEnv,
-									   Scheme_Object *inModuleName,
+									   Scheme_Object *inModule,
 									   const char *inFuncName,
 									   int inArgc, Scheme_Object **inArgv);
 
