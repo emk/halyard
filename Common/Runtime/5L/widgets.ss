@@ -2,7 +2,7 @@
   (require (lib "tamale.ss" "5L"))
   (require (lib "shapes.ss" "5L"))
   (provide %simple-toggle% %fancy-toggle% %toggle-base% %rect-drawing%
-           %text-box%
+           %text-box% %slider%
            <graphic> make-graphic graphic? draw-graphic
            <picture> make-picture picture? picture-path picture-rect
                      picture-offset
@@ -185,6 +185,8 @@
   (define $color-paper (color #xE4 #xDD #xD2))
   (define $color-offwhite (color #xF0 #xF0 #xF0))
   (define $color-highlight (color #xFF #xD8 #x45))
+  (define $color-slider (color #x88 #x88 #x88))
+  (define $color-slider-prelight (color #x00 #x00 #xAA))
   (define-stylesheet $my-base-style
     :family "Nimbus Roman No9 L"
     :size 12
@@ -222,11 +224,14 @@
        [color :default (color #xFF #xFF #xFF)]] 
       (:template %zone% :shape (rect 0 0 0 0))
     
-    (define my-bounds (point->text-rectangle at text))
-
+    (define my-text text)
+    (define (my-bounds) (point->text-rectangle at my-text))
+    
+    (on update-text (new-text)
+      (set! my-text new-text))
     (on draw (style)
-      (draw-box my-bounds color)
-      (draw-text $my-login-button-style (inset-rect my-bounds 5) text))
+      (draw-box (my-bounds) color)
+      (draw-text $my-login-button-style (inset-rect (my-bounds) 5) text))
     
     (send self draw 'normal))
 
@@ -243,9 +248,68 @@
 ;;     (on mouse-down (event)
 ;;       (action)))
 
-;;   (define-element-template %drag-value%
-;;       [
+  (define (clamp value min-val max-val)
+    (max min-val (min max-val value)))
 
+  (define-element-template %slider%
+      [rectangle min-value max-value 
+       [update-function :default #f]
+       init-value]
+      (:template %zone% :shape rectangle)
+    
+    (define value init-value)
+    (define grabbed-by-me? #f)
+    
+    (define left-x (rect-left rectangle))
+    (define right-x (rect-right rectangle))
+    (define scale (/ (- max-value min-value) (- right-x left-x)))
+    (define (x->value x)
+      (+ min-value (* scale (- x left-x))))
+    (define (value->x val)
+      (+ left-x (/ (- val min-value) scale)))
+    (define (curr-fill-rect)
+      (rect (rect-left rectangle) (rect-top rectangle)
+            (value->x value) (rect-bottom rectangle)))
+    (define (curr-empty-rect)
+      (rect (value->x value) (rect-top rectangle)
+            (rect-right rectangle) (rect-bottom rectangle)))
+    (define (set-value-from-point! pt)
+      (set! value (clamp (x->value (point-x pt)) min-value max-value)))
+    
+    (on draw (style)
+      (draw-box (curr-fill-rect)
+                (case style
+                  ((prelight active) $color-slider-prelight)
+                  (else $color-slider))) 
+      (draw-box (curr-empty-rect) $color-white)
+      (draw-box-outline rectangle $color-black 1))
+    
+    (send self draw 'normal)
+
+    (on mouse-down (event)
+      (grab-mouse self)
+      (set! grabbed-by-me? #t)
+      (set-value-from-point! (event-position event))
+      (send self draw 'active))
+    (on mouse-up (event)
+      (when (mouse-grabbed?)
+        (set-value-from-point! (event-position event))
+        (ungrab-mouse self)
+        (set! grabbed-by-me? #f)
+        (send self draw (if (point-in-rect? (event-position event) 
+                                            rectangle)
+                            'prelight
+                            'normal))))
+    (on mouse-enter (event)
+      (send self draw 'prelight))
+    (on mouse-leave (event)
+      (unless grabbed-by-me? 
+        (send self draw 'normal)))
+    (on idle (event)
+      (when (and grabbed-by-me? (mouse-grabbed?))
+        (set-value-from-point! (mouse-position))
+        (send self draw 'active))))
+    
   (define (points->rect p1 p2)
     (rect (min (point-x p1) (point-x p2))
           (min (point-y p1) (point-y p2))
@@ -273,12 +337,12 @@
     
     (on get-end-and-draw (my-color)
       (let ((pos (mouse-position)))
-        (set! end-point (point (min (max (rect-left my-bounds) 
-                                         (point-x pos))
-                                    (rect-right my-bounds))
-                               (min (max (rect-top my-bounds)
-                                         (point-y pos))
-                                    (rect-bottom my-bounds)))))
+        (set! end-point (point (clamp (point-x pos) 
+                                      (rect-left my-bounds)
+                                      (rect-right my-bounds))
+                               (clamp (point-y pos)
+                                      (rect-top my-bounds)
+                                      (rect-bottom my-bounds)))))
       (restore-graphics :bounds my-bounds)
       (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
       (draw-box-outline (points->rect start-point end-point) 
