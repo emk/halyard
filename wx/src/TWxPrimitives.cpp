@@ -52,6 +52,7 @@
 #include "CommonWxConv.h"
 #include "BrowserElementWx.h"
 #include "BrowserElementIE.h"
+#include "ActiveXElement.h"
 #include "TStateDB.h"
 
 USING_NAMESPACE_FIVEL
@@ -66,6 +67,9 @@ using FileSystem::Path;
 //  kludgy and should be replaced later on as the editing GUI improves.
 
 void FIVEL_NS RegisterWxPrimitives() {
+	REGISTER_5L_PRIMITIVE(ActiveX);
+	REGISTER_5L_PRIMITIVE(ActiveXPropGet);
+	REGISTER_5L_PRIMITIVE(ActiveXPropSet);
 	REGISTER_5L_PRIMITIVE(AudioStreamGeiger);
 	REGISTER_5L_PRIMITIVE(AudioStreamGeigerSetCps);
 	REGISTER_5L_PRIMITIVE(AudioStreamSine);
@@ -156,6 +160,32 @@ static DrawingArea *GetCurrentDrawingArea() {
 //=========================================================================
 //  Implementation of wxWindows Primitives
 //=========================================================================
+
+DEFINE_5L_PRIMITIVE(ActiveX) {
+	std::string name, control_name;
+	TRect bounds;
+    TCallbackPtr dispatcher;
+
+	inArgs >> SymbolName(name) >> dispatcher >> bounds >> control_name;
+
+    new ActiveXElement(wxGetApp().GetStage(), name.c_str(),
+                       TToWxRect(bounds), dispatcher, control_name.c_str());
+}
+
+DEFINE_5L_PRIMITIVE(ActiveXPropGet) {
+    std::string name, prop;
+    inArgs >> SymbolName(name) >> prop;
+    FIND_ELEMENT(ActiveXElement, element, name.c_str());
+    ::SetPrimitiveResult(WxToTValue(element->Prop(prop.c_str())));
+}
+
+DEFINE_5L_PRIMITIVE(ActiveXPropSet) {
+    std::string name, prop;
+    TValue value;
+    inArgs >> SymbolName(name) >> prop >> value;
+    FIND_ELEMENT(ActiveXElement, element, name.c_str());
+    element->SetProp(prop.c_str(), TToWxValue(value));
+}
 
 DEFINE_5L_PRIMITIVE(AudioStreamGeiger) {
 	std::string name, path;

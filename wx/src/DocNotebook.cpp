@@ -126,12 +126,23 @@ void DocNotebook::AddDocument(DocNotebookTab *doc) {
     mBar->AddDocument(doc);
 }
 
+/// Temporary function which will exist until refactoring is done.
+void DocNotebook::AddDocumentInternal(DocNotebookTab *doc) {
+    mDocs.push_back(doc);
+}
+
+/// Temporary function which will exist until refactoring is done.
+void DocNotebook::RemoveDocumentInternal(size_t i) {
+    mDocs.erase(mDocs.begin()+i);
+}
+
 size_t DocNotebook::GetDocumentCount() const {
-    return mBar->GetDocumentCount();
+    return mDocs.size();
 }
 
 DocNotebookTab *DocNotebook::GetDocument(size_t index) {
-    return mBar->GetDocument(index);
+    wxASSERT(0 <= index && index < mDocs.size());
+    return mDocs[index];
 }
 
 void DocNotebook::SelectDocument(size_t index) {
@@ -338,37 +349,28 @@ DocNotebookBar::DocNotebookBar(DocNotebook *parent, wxWindowID id)
 void DocNotebookBar::AddDocument(DocNotebookTab *doc) {
     doc->GetDocumentWindow()->Hide();
     wxASSERT(doc->GetDocumentWindow()->GetParent() == GetParent());
-    mTabs.push_back(doc);
-    SetCurrentTab(mTabs.size()-1);
+    mNotebook->AddDocumentInternal(doc);
+    SetCurrentTab(mNotebook->GetDocumentCount()-1);
     Refresh();
 }
 
-size_t DocNotebookBar::GetDocumentCount() const {
-    return mTabs.size();
-}
-
-DocNotebookTab *DocNotebookBar::GetDocument(size_t index) {
-    wxASSERT(0 <= index && index < mTabs.size());
-    return mTabs[index];
-}
-
 void DocNotebookBar::SelectDocument(size_t index) {
-    wxASSERT(0 <= index && index < mTabs.size());
+    wxASSERT(0 <= index && index < mNotebook->GetDocumentCount());
     SetCurrentTab(index);
 }
 
 void DocNotebookBar::SelectDocument(const DocNotebookTab *doc) {
-    for (size_t i = 0; i < mTabs.size(); i++)
-        if (mTabs[i] == doc)
+    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++)
+        if (mNotebook->GetDocument(i) == doc)
             SelectDocument(i);
 }
 
 /// Return the currently displayed tab, or NULL if none.
 DocNotebookTab *DocNotebookBar::GetCurrentDocument() {
-    if (mTabs.size() == 0)
+    if (mNotebook->GetDocumentCount() == 0)
         return NULL;
     else
-        return mTabs[mCurrentTab];
+        return mNotebook->GetDocument(mCurrentTab);
 }
 
 void DocNotebookBar::ReportChanges() {
@@ -462,7 +464,7 @@ void DocNotebookBar::OnPaint(wxPaintEvent &event) {
 
     // Draw our tabs.
     wxCoord space_used = mScrollAmount;
-    for (size_t i = 0; i < mTabs.size(); i++) {
+    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
         // Choose our basic drawing parameters.
         if (i == mCurrentTab) {
             dc.SetFont(GetGuiFont(true));
@@ -475,7 +477,7 @@ void DocNotebookBar::OnPaint(wxPaintEvent &event) {
         }
 
         // We want a title like "foo.cpp*".
-        wxString title = mTabs[i]->GetDocumentTitleAndDirtyFlag();
+        wxString title = mNotebook->GetDocument(i)->GetDocumentTitleAndDirtyFlag();
 
         // Calculate the width of our tab.
         wxCoord text_width;
@@ -515,7 +517,7 @@ void DocNotebookBar::OnPaint(wxPaintEvent &event) {
         ++space_used;
         
         // Update the rightmost extent of this tab (for hit testing).
-        mTabs[i]->SetTabRightEdge(space_used);
+        mNotebook->GetDocument(i)->SetTabRightEdge(space_used);
     }
 
     // Turn off clipping.
@@ -548,8 +550,8 @@ void DocNotebookBar::OnLeftDown(wxMouseEvent &event) {
 
     // See if the click is in a tab.
     if (click.x < GetTabLimit()) {
-        for (size_t i = 0; i < mTabs.size(); i++) {
-            if (click.x < mTabs[i]->GetTabRightEdge()) {
+        for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
+            if (click.x < mNotebook->GetDocument(i)->GetTabRightEdge()) {
                 DocNotebookBar::SetCurrentTab(i);
                 return;
             }
@@ -647,10 +649,10 @@ void DocNotebookBar::DoButtonReleased(ButtonId buttonId) {
 bool DocNotebookBar::MaybeSaveAll(bool canVeto, const wxString &title,
                                   const wxString &prompt)
 {
-    for (size_t i = 0; i < mTabs.size(); i++) {
-        if (mTabs[i]->GetDocumentDirty()) {
+    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
+        if (mNotebook->GetDocument(i)->GetDocumentDirty()) {
             SelectDocument(i);
-            if (!mTabs[i]->MaybeSave(canVeto, title, prompt) && canVeto)
+            if (!mNotebook->GetDocument(i)->MaybeSave(canVeto, title, prompt) && canVeto)
                 return false;
         }
     }
@@ -658,20 +660,20 @@ bool DocNotebookBar::MaybeSaveAll(bool canVeto, const wxString &title,
 }
 
 bool DocNotebookBar::MaybeCloseTab() {
-    DocNotebookTab *tab = mTabs[mCurrentTab];
+    DocNotebookTab *tab = mNotebook->GetDocument(mCurrentTab);
 
     // Verify the closing of this tab.
     if (tab->GetDocumentDirty())
         if (!tab->MaybeSave(true, "Close File", "Save \"%s\" before closing?"))
             return false;
 
-    mTabs.erase(mTabs.begin()+mCurrentTab);
-    if (mTabs.size() == 0)
+    mNotebook->RemoveDocumentInternal(mCurrentTab);
+    if (mNotebook->GetDocumentCount() == 0)
         // Handle deletion of last tab.
         LastTabDeleted();
-    else if (mCurrentTab >= mTabs.size())
+    else if (mCurrentTab >= mNotebook->GetDocumentCount())
         // Choose a new valid tab number.
-        SetCurrentTab(mTabs.size()-1);
+        SetCurrentTab(mNotebook->GetDocumentCount()-1);
     else
         // Keep the tab number, but update the display.
         SetCurrentTab(mCurrentTab);
@@ -692,7 +694,7 @@ void DocNotebookBar::SetCurrentTab(size_t tabId) {
     // Always update this, even if tabId == mCurrentTab--we might be
     // renumbering tabs because of a deletion.
     mCurrentTab = tabId;
-    mNotebook->SetCurrentDoc(mTabs[tabId]->GetDocumentWindow());
+    mNotebook->SetCurrentDoc(mNotebook->GetDocument(tabId)->GetDocumentWindow());
     Refresh();
 }
 
@@ -731,7 +733,7 @@ void DocNotebookBar::EnableButton(ButtonId buttonId, bool enable,
 }
 
 bool DocNotebookBar::SafeToRunCommandsForButton(ButtonId buttonId) {
-    return (mTabs.size() > 0 && mButtonStates[buttonId] != STATE_DISABLED);
+    return (mNotebook->GetDocumentCount() > 0 && mButtonStates[buttonId] != STATE_DISABLED);
 }
 
 void DocNotebookBar::DrawButton(wxDC &dc, ButtonId buttonId) {
@@ -814,7 +816,7 @@ wxCoord DocNotebookBar::GetTabLimit() {
 
 void DocNotebookBar::ScrollTabs(wxCoord pixels) {
     wxCoord tab_length =
-        -mScrollAmount + mTabs[mTabs.size()-1]->GetTabRightEdge();
+        -mScrollAmount + mNotebook->GetDocument(mNotebook->GetDocumentCount()-1)->GetTabRightEdge();
     wxCoord min_scroll = GetTabLimit() - tab_length;
     mScrollAmount += pixels;
     if (mScrollAmount < min_scroll)

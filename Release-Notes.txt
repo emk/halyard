@@ -1,5 +1,15 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.33 - 27 Aug 2004 - emk, madhura
+
+This engine has not been extensively tested; it's just a quick build to
+try out some ActiveX stuff.  See the test script for example code.
+
+  * Quake 2 path-walking enhancements.
+  * Support for embedding ActiveX controls.
+  * Began refactoring of DocNotebook in editor, in preparation for window
+    splitting support.
+
 0.0.32 - 4 Aug 2004 - emk
 
   * Correct indentation of most special forms.

@@ -138,6 +138,9 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
+				RelativePath="..\..\src\ActiveXElement.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\AnimatedOverlay.cpp">
 			</File>
 			<File
@@ -336,6 +339,9 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
+			<File
+				RelativePath="..\..\src\ActiveXElement.h">
+			</File>
 			<File
 				RelativePath="..\..\src\AnimatedOverlay.h">
 			</File>

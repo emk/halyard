@@ -20,6 +20,19 @@
 //
 // @END_LICENSE
 
+// New design:
+//   DocNotebook
+//     - Document list
+//     wxSplitterWindow
+//       vbox
+//         DocNotebookBar
+//           - Current tab number
+//         wxWindow displaying document
+//       vbox
+//         DocNotebookBar
+//           - Current tab number
+//         wxWindow displaying document
+
 #ifndef DocNotebook_H
 #define DocNotebook_H
 
@@ -40,6 +53,8 @@ class DocNotebook : public wxWindow {
     wxString mOriginalFrameTitle;
     int mUntitledDocumentCount;
     EventDelegator mDelegator;
+
+    std::vector<DocNotebookTab*> mDocs;
     DocNotebookBar *mBar;
     wxSizer *mSizer;
     wxWindow *mCurrentDoc;
@@ -53,6 +68,10 @@ public:
     void SetFrameToTitle(wxFrame *frame);
 
     void AddDocument(DocNotebookTab *doc);
+
+    void AddDocumentInternal(DocNotebookTab *doc);
+    void RemoveDocumentInternal(size_t i);
+
     size_t GetDocumentCount() const;
     DocNotebookTab *GetDocument(size_t index);
     void SelectDocument(size_t index);
@@ -180,7 +199,6 @@ private:
     };
 
     DocNotebook *mNotebook;
-    std::vector<DocNotebookTab*> mTabs;
     size_t mCurrentTab;
     wxCoord mScrollAmount;
     ButtonState mButtonStates[BUTTON_COUNT];

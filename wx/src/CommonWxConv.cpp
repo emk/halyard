@@ -69,4 +69,44 @@ wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor)
     return wxColour(inColor.red, inColor.green, inColor.blue);
 }
 
+/// Convert a TValue into a wxWidgets wxVariant.
+wxVariant TToWxValue(const TValue &value) {
+    switch (value.GetType()) {
+        case TValue::TYPE_STRING:
+            return wxVariant(std::string(value).c_str());
+            
+        case TValue::TYPE_BOOLEAN:
+            return wxVariant(bool(value));
+            
+        case TValue::TYPE_LONG:
+            return wxVariant(long(value));
 
+        case TValue::TYPE_NULL:
+        case TValue::TYPE_SYMBOL:
+        case TValue::TYPE_ULONG:
+        case TValue::TYPE_DOUBLE:
+        case TValue::TYPE_POINT:
+        case TValue::TYPE_RECT:
+        case TValue::TYPE_COLOR:
+        case TValue::TYPE_LIST:
+        case TValue::TYPE_POLYGON:
+        case TValue::TYPE_CALLBACK:
+        case TValue::TYPE_PERCENT:
+        default:
+            THROW("Can't convert TValue to wxVariant");
+    }
+}
+
+/// Convert a wxWidgets wxVariant into a TValue.
+TValue WxToTValue(const wxVariant &value) {
+    wxString type(value.GetType());
+    if (type == "string") {
+        return TValue(value.GetString());
+    } else if (type == "bool") {
+        return TValue(value.GetBool());        
+    } else if (type == "long") {
+        return TValue(value.GetLong());
+    } else {
+        THROW("Can't convert wxVariant to TValue");
+    }
+}

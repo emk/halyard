@@ -20,16 +20,29 @@
 //
 // @END_LICENSE
 
-#include <wx/variant.h>
-#include "TRect.h"
-#include "TPoint.h"
+#ifndef ActiveXElement_H
+#define ActiveXElement_H
 
-wxRect TToWxRect(const FIVEL_NS TRect &inRect);
-FIVEL_NS TRect WxToTRect(const wxRect &inRect);
-wxPoint TToWxPoint(const FIVEL_NS TPoint &inPoint);
-FIVEL_NS TPoint WxToTPoint(const wxPoint &inPoint);
-wxPoint GetPos(const FIVEL_NS TRect &inRect);
-wxSize GetSize(const FIVEL_NS TRect &inRect);
-wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor);
-wxVariant TToWxValue(const FIVEL_NS TValue &value);
-FIVEL_NS TValue WxToTValue(const wxVariant &value);
+#include <wx/variant.h>
+#include "Widget.h"
+
+class EventDispatcher;
+class wxActiveX;
+
+//////////
+/// A ActiveXElement displays an ActiveX control on the stage.
+///
+class ActiveXElement : public Widget {
+    wxActiveX *mControl;
+
+public:
+    ActiveXElement(Stage *inStage, const wxString &inName,
+                   const wxRect &inBounds,
+                   FIVEL_NS TCallbackPtr inDispatch,
+                   const wxString &inControlName);
+
+    wxVariant Prop(const wxString &name);
+    void SetProp(const wxString &name, const wxVariant &value);
+};
+
+#endif // ActiveXElement_H

@@ -22,15 +22,26 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		32
+#define VERSION_REV_BIG		33
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.32 (Development)"
+#define VERSION_STRING		"Tamale 0.0.33 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.74  2004/08/27 21:01:28  emk
+ 0.0.33 - 27 Aug 2004 - emk, madhura
+
+ This engine has not been extensively tested; it's just a quick build to
+ try out some ActiveX stuff.  See the test script for example code.
+
+   * Quake 2 path-walking enhancements.
+   * Support for embedding ActiveX controls.
+   * Began refactoring of DocNotebook in editor, in preparation for window
+     splitting support.
+
  Revision 1.73  2004/08/04 17:03:40  emk
  0.0.32 - 4 Aug 2004 - emk
 
