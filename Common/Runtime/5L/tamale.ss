@@ -116,7 +116,7 @@
 
   (define (set-element-cursor! elem cursor)
     ;; Don't make me public.
-    (call-5l-prim 'SetElemCursor (node-full-name elem) cursor))
+    (call-5l-prim 'SetZoneCursor (node-full-name elem) cursor))
 
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
     (let [[path (make-path "Graphics" (cat "cursors/" filename))]]
