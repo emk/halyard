@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Added ANIMATE function.
+
 0.0.39 - 21 Sep 2004 - emk
 
   * Quake 2 no longer places the cursor outside the window when running
