@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/msw" /I "../../../libs/quake2/wx" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /Ob2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/msw" /I "../../../libs/quake2/wx" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -358,6 +358,48 @@ SOURCE=..\..\src\tb_xy.bmp
 # Begin Source File
 
 SOURCE=..\..\src\wx5L.rc
+# End Source File
+# End Group
+# Begin Group "Assembly Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\src\opt\mmx\fade_asm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\opt\mmx\fade_asm.h
+# End Source File
+# End Group
+# Begin Group "Optimized Source Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\src\StageOpt.cpp
+
+!IF  "$(CFG)" == "wx5L - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
+
+# PROP Ignore_Default_Tool 1
+# Begin Custom Build
+OutDir=.\Debug
+InputPath=..\..\src\StageOpt.cpp
+InputName=StageOpt
+
+"$(OutDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	rem  Use C++ command line, adding: 
+	rem    /Zi /O2 /Ob2 $(InputPath) 
+	rem  ...and removing: 
+	rem    /Zl /Od /GZ 
+	cl /nologo /MTd /W3 /Gm /GR /GX /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/mswd" /I "../../../libs/quake2/wx" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /D "__WXWINDOWS__" /D "REF_HARD_LINKED" /Fo"Debug/" /Fd"Debug/" /FD /c /Zi /O2 /Ob2 $(InputPath) 
+	
+# End Custom Build
+
+!ENDIF 
+
 # End Source File
 # End Group
 # End Target

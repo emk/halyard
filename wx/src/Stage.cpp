@@ -507,9 +507,9 @@ void StageFrame::OnReloadScript(wxCommandEvent &inEvent)
 void StageFrame::OnAbout(wxCommandEvent &inEvent)
 {
     wxMessageDialog about(this,
-                          "wx5L Prototype\n"
+                          "Tamale Prototype\n"
                           "Copyright 2002 The Trustees of Dartmouth College",
-                          "About wx5L", wxOK);
+                          "About Tamale", wxOK);
     about.ShowModal();
 }
 
@@ -757,6 +757,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
       mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight()),
+      mOffscreenFadePixmap(inStageSize.GetWidth(), inStageSize.GetHeight()),
 	  mTextCtrl(NULL), mCurrentElement(NULL), mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
@@ -1166,83 +1167,6 @@ void Stage::OutlineBox(const wxRect &inBounds, const wxColour &inColor,
 	InvalidateRect(inBounds);
 }
 
-void Stage::DrawPixMap(GraphicsTools::Point inPoint,
-					   GraphicsTools::PixMap &inPixMap)
-{
-	// Mark the rectangle as dirty.
-	InvalidateRect(wxRect(inPoint.x, inPoint.y,
-						  inPixMap.width, inPixMap.height));
-
-	using GraphicsTools::AlphaBlendChannel;
-	using GraphicsTools::Color;
-	using GraphicsTools::Distance;
-	using GraphicsTools::Point;
-	
-	// Clip our pixmap boundaries to fit within our screen.
-	int stage_width = mStageSize.GetWidth();
-	int stage_height = mStageSize.GetHeight();
-	Point begin = inPoint;
-	begin.x = Max(0, Min(stage_width, begin.x));
-	begin.y = Max(0, Min(stage_height, begin.y));
-	begin = begin - inPoint;
-	Point end = inPoint + Point(inPixMap.width, inPixMap.height);
-	end.x = Max(0, Min(stage_width, end.x));
-	end.y = Max(0, Min(stage_height, end.y));
-	end = end - inPoint;
-	
-	// Do some sanity checks on our clipping boundaries.
-	ASSERT(begin.x == end.x || // No drawing
-		   (0 <= begin.x && begin.x < end.x && end.x <= inPixMap.width));
-	ASSERT(begin.y == end.y || // No drawing
-		   (0 <= begin.y && begin.y < end.y && end.y <= inPixMap.height));
-		
-	// Figure out where in memory to begin drawing the first row.
-	wxRawBitmapPixelRef24 dst_base_addr = mOffscreenPixmap.GetData24();
-	wxRawBitmapStride24 dst_row_size = mOffscreenPixmap.GetStride24();
-	wxRawBitmapPixelRef24 dst_row_start = dst_base_addr;
-	WX_RAW24_OFFSET(dst_row_start, dst_row_size,
-					inPoint.x + begin.x, inPoint.y + begin.y);
-	WX_RAW24_DECLARE_LIMITS(dst_limits, mOffscreenPixmap);
-	
-	// Figure out where in memory to get the data for the first row.
-	Color *src_base_addr = inPixMap.pixels;
-	Distance src_row_size = inPixMap.pitch;
-	Color *src_row_start = src_base_addr + begin.y * src_row_size + begin.x;
-
-	// Do the actual drawing.
-	for (int y = begin.y; y < end.y; y++)
-	{
-		wxRawBitmapPixelRef24 dst_cursor = dst_row_start;
-		Color *src_cursor = src_row_start;
-		for (int x = begin.x; x < end.x; x++)
-		{
-			// Make sure we're in bounds.
-			WX_RAW24_ASSERT_WITHIN_LIMITS(dst_limits, dst_cursor);
-			ASSERT(src_cursor >= src_base_addr);
-			ASSERT(src_cursor <
-				   src_base_addr + (inPixMap.height * src_row_size));
-			
-			// Draw a single pixel.
-			GraphicsTools::Color new_color = *src_cursor;
-			WX_RAW24_RED(dst_cursor) =
-				AlphaBlendChannel(WX_RAW24_RED(dst_cursor),
-								  new_color.red, new_color.alpha);
-			WX_RAW24_GREEN(dst_cursor) =
-				AlphaBlendChannel(WX_RAW24_GREEN(dst_cursor),
-								  new_color.green, new_color.alpha);
-			WX_RAW24_BLUE(dst_cursor) =
-				AlphaBlendChannel(WX_RAW24_BLUE(dst_cursor),
-								  new_color.blue, new_color.alpha);
-
-			WX_RAW24_OFFSET_X(dst_cursor, 1);
-			src_cursor++;
-		}
-
-		WX_RAW24_OFFSET_Y(dst_row_start, dst_row_size, 1);
-		src_row_start += src_row_size;
-	}
-}
-
 void Stage::DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
                        bool inTransparent)
 {
@@ -1335,6 +1259,22 @@ void Stage::EndWait()
 	mWaitElement = NULL;
 	mWaitFrame = 0;
 	InterpreterWakeUp();
+}
+
+void Stage::Fade()
+{
+	wxStopWatch watch;
+	for (int i = 256; i >= 0; i -= 16)
+		ShowFadeStep(i);
+	gDebugLog.Log("Fade: 16 frames in %ld milliseconds", watch.Time());
+}
+
+void Stage::Unfade()
+{
+	wxStopWatch watch;
+	for (int i = 0; i <= 256; i += 16)
+		ShowFadeStep(i);
+	gDebugLog.Log("Unfade: 16 frames in %ld milliseconds", watch.Time());
 }
 
 void Stage::AddElement(Element *inElement)

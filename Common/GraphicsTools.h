@@ -29,7 +29,7 @@ namespace GraphicsTools {
 	// 0 to 255 as floating point numbers between 0.0 and 1.0 inclusive.
 	// It might be wise to compute this function using a table lookup.
 	//
-	static Channel MultiplyChannels(Channel inLeft, Channel inRight)
+	static __inline Channel MultiplyChannels(Channel inLeft, Channel inRight)
 	{
 		return (((unsigned int) inLeft) * ((unsigned int) inRight)) / 255;
 	}
@@ -65,7 +65,7 @@ namespace GraphicsTools {
 			  Channel inBlue, Channel inAlpha = 0)
 			: red(inRed), green(inGreen), blue(inBlue), alpha(inAlpha) {}
 
-		static Color ApplyAlpha(Color inColor, Channel inAlpha)
+		static __inline Color ApplyAlpha(Color inColor, Channel inAlpha)
 		{
 			// Mark Noel says we should actually use some kind of log scale here.
 			return Color(inColor.red, inColor.green, inColor.blue,
@@ -88,9 +88,9 @@ namespace GraphicsTools {
 	// alpha value to control the mixing.  An alpha 255 uses only the
 	// background color, and an alpha of 0 uses only the foreground color.
 	//
-	inline Channel AlphaBlendChannel(Channel inBackground,
-									 Channel inForeground,
-									 Channel inAlpha)
+	static __inline Channel AlphaBlendChannel(Channel inBackground,
+											  Channel inForeground,
+											  Channel inAlpha)
 	{
 		return (MultiplyChannels(inBackground, inAlpha) +
 				MultiplyChannels(inForeground, 255 - inAlpha));
@@ -176,6 +176,17 @@ namespace GraphicsTools {
 		{
 			return sizeof(PixelMap<Pixel>) + sizeof(Pixel) * height * pitch;
 		}
+
+		//////////
+		// Assume that this PixelMap will be drawn at inDrawAt on a
+		// screen of size (inScreenWidth, inScreenHeight).  Return
+		// the portion of this PixelMap which will actually be drawn.
+		// outTopLeft is inclusive; outBottomRight is exclusive.
+		//
+		void ClipDrawOperation(Point inDrawAt,
+							   Distance inScreenWidth,
+							   Distance inScreenHeight,
+							   Point &outTopLeft, Point &outBottomRight);
 	};
 
 	//////////
@@ -217,6 +228,17 @@ namespace GraphicsTools {
 	public:
 		Image() {}
 		virtual ~Image() {}
+
+		// This might be a useful optimization, but we haven't implemented
+		// it yet.  Feel free to remove the stubs if they linger.
+#if 0
+		//////////
+		// Draw a greymap at the specified point, using the specified
+		// color.
+		//
+		virtual void DrawGreyMap(Point inPoint, GreyMap &inGreyMap,
+								 Color inColor) = 0;
+#endif // 0
 
 		//////////
 		// Draw a pixmap at the specified point.

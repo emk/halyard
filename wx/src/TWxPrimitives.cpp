@@ -41,6 +41,7 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(EditBox);
 	REGISTER_5L_PRIMITIVE(ElementExists);
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
+	REGISTER_5L_PRIMITIVE(Fade);
 	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
@@ -54,6 +55,7 @@ void FIVEL_NS RegisterWxPrimitives()
     REGISTER_5L_PRIMITIVE(Screen);
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
+	REGISTER_5L_PRIMITIVE(Unfade);
     REGISTER_5L_PRIMITIVE(Wait);
     REGISTER_5L_PRIMITIVE(Zone);
 }
@@ -197,6 +199,11 @@ DEFINE_5L_PRIMITIVE(ElementSetShown)
 	FIND_ELEMENT(Widget, element, name.c_str());
 	element->Show(show);
 	// TODO - Override MovieElement::Show for unshowable movies.
+}
+
+DEFINE_5L_PRIMITIVE(Fade)
+{
+	wxGetApp().GetStage()->Fade();
 }
 
 DEFINE_5L_PRIMITIVE(HTML)
@@ -394,6 +401,7 @@ DEFINE_5L_PRIMITIVE(TextAA)
 
     inArgs >> SymbolName(style) >> bounds >> text;
     gOrigin.AdjustRect(&bounds);
+
 	gStyleSheetManager.Draw(style, text,
 							GraphicsTools::Point(bounds.Left(),
 												 bounds.Top()),
@@ -414,6 +422,11 @@ DEFINE_5L_PRIMITIVE(Timeout)
 
     inArgs >> secs >> SymbolName(cardName);
     TInterpreter::GetInstance()->Timeout(cardName.c_str(), secs);
+}
+
+DEFINE_5L_PRIMITIVE(Unfade)
+{
+	wxGetApp().GetStage()->Unfade();
 }
 
 DEFINE_5L_PRIMITIVE(Wait)

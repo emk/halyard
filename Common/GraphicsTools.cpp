@@ -31,6 +31,33 @@ void PixelMap<Pixel>::Clear(Pixel inColor)
 		*cursor = inColor;
 }
 
+template <class Pixel>
+void PixelMap<Pixel>::ClipDrawOperation(Point inDrawAt,
+										Distance inScreenWidth,
+										Distance inScreenHeight,
+										Point &outTopLeft,
+										Point &outBottomRight)
+{
+	// Perform the clipping operation.
+	Point begin = inDrawAt;
+	begin.x = Max(0, Min(inScreenWidth, begin.x));
+	begin.y = Max(0, Min(inScreenHeight, begin.y));
+	begin = begin - inDrawAt;
+	Point end = inDrawAt + Point(width, height);
+	end.x = Max(0, Min(inScreenWidth, end.x));
+	end.y = Max(0, Min(inScreenHeight, end.y));
+	end = end - inDrawAt;
+	
+	// Do some sanity checks on our clipping boundaries.
+	ASSERT(begin.x == end.x || // No drawing
+		   (0 <= begin.x && begin.x < end.x && end.x <= width));
+	ASSERT(begin.y == end.y || // No drawing
+		   (0 <= begin.y && begin.y < end.y && end.y <= height));	
+
+	outTopLeft = begin;
+	outBottomRight = end;
+}
+
 
 //=========================================================================
 // GreyMap Methods

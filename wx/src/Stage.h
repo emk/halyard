@@ -246,10 +246,14 @@ class Stage : public wxWindow, public GraphicsTools::Image
     std::string mLastCard;
 
     //////////
-    // The StageFrame associated with the stage.  We need to poke at it
-    // occassionally to implement various features.
+    // A bitmap for storing the graphics to display on the stage.
     //
     wxRawBitmap mOffscreenPixmap;
+
+    //////////
+    // A bitmap for use during various fade effects.
+    //
+    wxRawBitmap mOffscreenFadePixmap;
 
 	//////////
 	// This object does all of our event-dispatching for us.
@@ -318,6 +322,13 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	// End an active Wait().
 	//
 	void EndWait();
+
+	//////////
+	// Draw a faded version of the mOffscreenPixmap.  The inIntensity
+	// parameter should be a number between 0 (fully faded) and
+	// 256 (fully visible).
+	//
+	void ShowFadeStep(int inIntensity);
 
 	//////////
 	// Put the interpreter to sleep.
@@ -523,6 +534,18 @@ public:
 	void OutlineBox(const wxRect &inBounds, const wxColour &inColor,
 					int inWidth);
 
+	// This might be a useful optimization, but we haven't implemented
+	// it yet.  Feel free to remove the stubs if they linger.
+#if 0
+	//////////
+	// Draw a GreyMap to the screen, colorizing it with inColor and
+	// using the grey values as alpha.
+	//
+	void DrawGreyMap(GraphicsTools::Point inPoint,
+					 GraphicsTools::GreyMap &inGreyMap,
+					 GraphicsTools::Color inColor);
+#endif // 0
+
 	//////////
 	// Draw a portable PixMap to the screen, blending alpha
 	// values appropriately.
@@ -575,6 +598,16 @@ public:
 	//                named element doesn't exist or isn't a movie.
 	//
 	bool Wait(const wxString &inElementName, MovieFrame inUntilFrame);
+
+	//////////
+	// Fade the stage to black.
+	//
+	void Fade();
+
+	//////////
+	// Unfade the stage from black.
+	//
+	void Unfade();
 
 	//////////
 	// Add a Element to this Stage.  This should only be called
