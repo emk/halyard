@@ -1,10 +1,9 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
+#include "TamaleHeaders.h"
+
 #include <stdlib.h>
 
-#include "TCommon.h"
-#include "TLogger.h"
 #include "GeigerAudioStream.h"
 #include "VorbisFile.h"
 

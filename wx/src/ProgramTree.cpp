@@ -1,19 +1,13 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
+#include "TamaleHeaders.h"
 #include <wx/treectrl.h>
 #include <wx/laywin.h>
 #include <wx/imaglist.h>
 #include <wx/dnd.h>
 
-#include "TCommon.h"
 #include "TInterpreter.h"
-#include "TLogger.h"
 #include "TVectorDiff.h"
-
-#include <map>
-#include <string>
-#include <memory>
 
 #include "AppGlobals.h"
 #include "FiveLApp.h"

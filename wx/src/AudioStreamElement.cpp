@@ -1,9 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
+#include "TamaleHeaders.h"
 
-#include "TCommon.h"
-#include "TException.h"
 #include "AudioStreamElement.h"
 #include "AudioStream.h"
 

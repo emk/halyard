@@ -3,9 +3,6 @@
 #if !defined (ImageCache_H)
 #define ImageCache_H
 
-#include <string>
-#include <map>
-
 class ImageCache
 {
 	struct CachedImage {

@@ -3,9 +3,6 @@
 #ifndef MediaElement_H
 #define MediaElement_H
 
-#include "Element.h"
-#include "MovieWindow.h"
-
 //////////
 // An abstract interface for elements which play media streams.  This
 // is used as a mixin class.

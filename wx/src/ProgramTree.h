@@ -3,8 +3,6 @@
 #ifndef ProgramTree_H
 #define ProgramTree_H
 
-#include <map>
-
 class StageFrame;
 class Document;
 class ProgramTreeCtrl;

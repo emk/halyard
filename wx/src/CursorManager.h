@@ -3,9 +3,6 @@
 #if !defined (CursorManager_H)
 #define CursorManager_H
 
-#include <string>
-#include <map>
-
 class CursorManager
 {
     typedef std::map<std::string,wxCursor> CursorMap;

@@ -1,6 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
+#include "TamaleHeaders.h"
 #include <wx/image.h>
 #include <wx/fs_inet.h>
 #include <wx/xrc/xmlres.h>

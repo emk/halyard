@@ -1,13 +1,9 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-#include <vector>
-
-#include "TCommon.h"
+#include "TamaleHeaders.h"
 #include "Zone.h"
 #include "EventDispatcher.h"
 #include "CommonWxConv.h"
-#include "TLogger.h"
 #include "TPoint.h"
 
 USING_NAMESPACE_FIVEL

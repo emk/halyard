@@ -1,7 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-#include <vector>
+#include "TamaleHeaders.h"
 
 #include "AppGlobals.h"
 #include "LocationBox.h"

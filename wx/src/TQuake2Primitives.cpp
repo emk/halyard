@@ -1,8 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 // Needed for RegisterQuake2Primitives.
-#include <wx/wx.h>
-#include "TCommon.h"
+#include "TamaleHeaders.h"
 #include "TPrimitives.h"
 #include "TQuake2Primitives.h"
 

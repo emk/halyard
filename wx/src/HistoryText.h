@@ -3,8 +3,6 @@
 #ifndef HistoryText_H
 #define HistoryText_H
 
-#include <vector>
-
 //////////
 // A HistoryText control is a wxTextCtrl. It implements a command history 
 // along the lines of Bash. Each time you hit "RETURN", what you're 

@@ -5,9 +5,6 @@
 
 #include <wx/display.h>
 
-#include <deque>
-#include <vector>
-
 #include "GraphicsTools.h"
 #include "AppGlobals.h"
 #include "ModelView.h"
@@ -209,6 +206,7 @@ private:
     void UpdateUiSaveProgram(wxUpdateUIEvent &inEvent);
     void OnSaveProgram(wxCommandEvent &inEvent);
     void OnReloadScript(wxCommandEvent &inEvent);
+    void OnRunTests(wxCommandEvent &inEvent);
     void OnAbout(wxCommandEvent &inEvent);
     void OnShowLog(wxCommandEvent &inEvent);
     void OnShowListener(wxCommandEvent &inEvent);

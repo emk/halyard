@@ -1,8 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-
-#include "TCommon.h"
+#include "TamaleHeaders.h"
 #include "HistoryText.h"
 
 USING_NAMESPACE_FIVEL

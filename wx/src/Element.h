@@ -3,12 +3,6 @@
 #ifndef Element_H
 #define Element_H
 
-#include <map>
-#include <string>
-#include <wx/wx.h>
-
-#include "TInterpreter.h"
-
 class Stage;
 class EventDispatcher;
 
@@ -26,11 +20,6 @@ class EventDispatcher;
 //
 class Element
 {
-	//////////
-	// A list of event handlers supported by this element.
-	//
-	typedef std::map<std::string,FIVEL_NS TCallback*> EventHandlerMap;
-
 	//////////
 	// The stage on which this element appears.
 	//

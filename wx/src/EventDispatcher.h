@@ -3,8 +3,6 @@
 #ifndef EventDispatcher_H
 #define EventDispatcher_H
 
-#include <boost/utility.hpp>
-
 class TCallback;
 
 //////////

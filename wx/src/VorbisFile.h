@@ -3,10 +3,7 @@
 #ifndef VorbisFile_H
 #define VorbisFile_H
 
-#include "TCommon.h"
 #include "ivorbisfile.h"
-
-#include <vector>
 
 enum {
 	// The decoder documentation claims this is a good size.

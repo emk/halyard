@@ -7,9 +7,10 @@
 
 #if CONFIG_HAVE_QUAKE2
 
-#include <map>
 #include "Widget.h"
 #include "wxquake2.h"
+
+class TCallback;
 
 //////////
 // Our local "value-added" subclass of wxQuake2Window.  This class

@@ -1,8 +1,5 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-
-#include "TCommon.h"
 #include "TRect.h"
 #include "TPoint.h"
 #include "GraphicsTools.h"

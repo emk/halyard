@@ -1,10 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-
-#include "TCommon.h"
-#include "TException.h"
-
+#include "TamaleHeaders.h"
 #include "VorbisFile.h"
 
 // libvorbis supposedly wants these.

@@ -1,10 +1,8 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
+#include "TamaleHeaders.h"
 #include <wx/rawbmp.h>
 
-#include "TCommon.h"
-#include "TLogger.h"
 #include "Stage.h"
 
 void Stage::DrawPixMap(GraphicsTools::Point inPoint,

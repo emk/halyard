@@ -5,9 +5,6 @@
 
 #include "AudioStream.h"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
-
 class VorbisFile;
 
 class VorbisAudioStream : public AudioStream

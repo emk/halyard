@@ -1,11 +1,12 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-#include "TCommon.h"
+#include "TamaleHeaders.h"
+
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Quake2Engine.h"
 #include "FileSystem.h"
+#include "TPrimitives.h"
 
 using FileSystem::GetBaseDirectory;
 

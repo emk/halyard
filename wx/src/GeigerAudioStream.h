@@ -5,9 +5,6 @@
 
 #include "AudioStream.h"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
-
 //////////
 // An audio stream which synthesizes the noise of a chirping Geiger counter.
 // Note that the technically correct term for "chirp" is "count", but "count"

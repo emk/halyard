@@ -1,9 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-
-#include "TCommon.h"
-#include "TLogger.h"
+#include "TamaleHeaders.h"
 #include "Log5L.h"
 
 USING_NAMESPACE_FIVEL

@@ -1,10 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-#include <wx/xrc/xmlres.h>
-
-#include "TCommon.h"
-
+#include "TamaleHeaders.h"
 #include "XrcDlg.h"
 
 BEGIN_EVENT_TABLE(XrcDlg, wxDialog)

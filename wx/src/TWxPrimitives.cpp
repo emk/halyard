@@ -1,11 +1,10 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 // Needed for RegisterWxPrimitives.
-#include <wx/wx.h>
+#include "TamaleHeaders.h"
 #include <wx/image.h>
 #include <wx/html/htmlwin.h> // TODO - Temporary?
 
-#include "TCommon.h"
 #include "TPrimitives.h"
 #include "TWxPrimitives.h"
 

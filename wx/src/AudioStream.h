@@ -3,7 +3,6 @@
 #ifndef AudioStream_H
 #define AudioStream_H
 
-#include <list>
 #include <portaudio.h>
 
 

@@ -1,6 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
+#include "TamaleHeaders.h"
+
 #include <wx/treectrl.h>
 #include <wx/laywin.h>
 #include <wx/config.h>
@@ -8,15 +9,11 @@
 #include <wx/clipbrd.h>
 #include <wx/image.h>
 
-#include "TCommon.h"
 #include "TInterpreter.h"
-#include "TLogger.h"
 #include "TVariable.h"
 #include "TStyleSheet.h"
 #include "doc/Document.h"
 #include "doc/TamaleProgram.h"
-
-#include <algorithm>
 
 #include "AppConfig.h"
 #include "AppGlobals.h"
@@ -28,6 +25,8 @@
 #include "MovieElement.h"
 #include "Listener.h"
 #include "Timecoder.h"
+#include "TestHarness.h"
+#include "FancyStatusBar.h"
 #include "LocationBox.h"
 #include "EventDispatcher.h"
 #include "ImageCache.h"
@@ -136,6 +135,7 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_UPDATE_UI(FIVEL_SAVE_PROGRAM, StageFrame::UpdateUiSaveProgram)
     EVT_MENU(FIVEL_SAVE_PROGRAM, StageFrame::OnSaveProgram)
     EVT_MENU(FIVEL_RELOAD_SCRIPT, StageFrame::OnReloadScript)
+    EVT_MENU(FIVEL_RUN_TESTS, StageFrame::OnRunTests)
 
     EVT_MENU(FIVEL_ABOUT, StageFrame::OnAbout)
     EVT_MENU(FIVEL_SHOW_LOG, StageFrame::OnShowLog)
@@ -211,7 +211,10 @@ StageFrame::StageFrame(wxSize inSize)
                       "Save the current Tamale program.");
     mFileMenu->AppendSeparator();
     mFileMenu->Append(FIVEL_RELOAD_SCRIPT, "&Reload Script\tCtrl+R",
-                      "Reload the currently executing 5L script.");
+                      "Reload the currently executing Tamale script.");
+    mFileMenu->AppendSeparator();
+    mFileMenu->Append(FIVEL_RUN_TESTS, "Run &Tests\tCtrl+T",
+                      "Run test cases for Tamale and/or current script.");
     mFileMenu->AppendSeparator();
     mFileMenu->Append(FIVEL_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
 
@@ -292,9 +295,8 @@ StageFrame::StageFrame(wxSize inSize)
                      wxNullBitmap, "Display Borders");
     tb->Realize();
         
-    // Add a status bar with 1 field.  We could pass a 0 as the second
-	// parameter to disable the resize thumb at the lower right.
-    CreateStatusBar(1);
+    // Add a status bar.
+	SetStatusBar(new FancyStatusBar(this));
 
     // Resize the "client area" of the window (the part that's left over
     // after menus, status bars, etc.) to hold the stage and the program
@@ -612,6 +614,11 @@ void StageFrame::OnReloadScript(wxCommandEvent &inEvent)
     }
             
     SetStatusText("Script reloaded.");
+}
+
+void StageFrame::OnRunTests(wxCommandEvent &inEvent)
+{
+	TestHarness::StartTests();
 }
 
 void StageFrame::OnAbout(wxCommandEvent &inEvent)

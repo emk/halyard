@@ -3,11 +3,6 @@
 #ifndef Transition_H
 #define Transition_H
 
-#include "TCommon.h"
-
-#include <string>
-#include <map>
-
 class Transition;
 
 //////////

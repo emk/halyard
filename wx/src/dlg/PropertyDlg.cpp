@@ -1,11 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <algorithm>
-#include <boost/checked_delete.hpp>
+#include "TamaleHeaders.h"
 
-#include <wx/wx.h>
-
-#include "TCommon.h"
 #include "TTemplateUtils.h"
 #include "PropertyDlg.h"
 #include "Model.h"

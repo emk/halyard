@@ -1,11 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
-#include <wx/xrc/xmlres.h>
-
-#include "TCommon.h"
-#include "TException.h"
-
+#include "TamaleHeaders.h"
 #include "../FiveLApp.h"
 #include "../Stage.h"
 #include "StartupDlg.h"

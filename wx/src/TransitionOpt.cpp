@@ -1,10 +1,9 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <wx/wx.h>
+#include "TamaleHeaders.h"
 #include <wx/rawbmp.h>
 
 #include "Transition.h"
-#include "TLogger.h"
 
 
 //=========================================================================

@@ -1,5 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
+#include "TamaleHeaders.h"
+
 #include "CommonWxConv.h"
 #include "FiveLApp.h"
 #include "Stage.h"
