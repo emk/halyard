@@ -11,6 +11,17 @@
 #ifndef AppConfig_H
 #define AppConfig_H
 
+//////////
+// Set this option to 1 to enable Quake 2 support.  You'll
+// also need to place a specially-patched version of Quake 2
+// in the libs/ directory, and add winmm.lib and wxquake2lib.lib
+// to the application's libraries.
+//
+// To disable Quake 2 support, set this option to 0, and remove
+// the libraries listed above.
+//
+#define CONFIG_OPTION_QUAKE2             1
+
 #ifdef __WXMSW__
 #	define CONFIG_HAVE_QUICKTIME         1
 #	define CONFIG_LOCATION_BOX_IS_COMBO  1
@@ -21,6 +32,12 @@
 #	define CONFIG_LOCATION_BOX_IS_COMBO  0
 #	define CONFIG_USE_XPMS               1
 #	define CONFIG_ENABLE_FULL_SCREEN     0
+#endif // !defined __WXMSW__
+
+#ifdef __WXMSW__
+#	define CONFIG_HAVE_QUAKE2            CONFIG_OPTION_QUAKE2
+#else // !defined __WXMSW__
+#	define CONFIG_HAVE_QUAKE2	         0
 #endif // !defined __WXMSW__
 
 #endif // AppConfig_H

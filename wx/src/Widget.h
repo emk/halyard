@@ -62,6 +62,11 @@ public:
 	virtual wxRect GetRect();
 
 	//////////
+	// Show or hide the widget.
+	//
+	virtual void Show(bool inShow);
+
+	//////////
 	// Return true if the stage object is shown on the screen.
 	//
 	virtual bool IsShown();

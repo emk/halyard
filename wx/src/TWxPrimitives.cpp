@@ -11,6 +11,7 @@
 
 // Needed to implement the primitives.
 #include "TCommonPrimitives.h"
+#include "AppConfig.h"
 #include "TStyleSheet.h"
 #include "FiveLApp.h"
 #include "Stage.h"
@@ -18,6 +19,7 @@
 #include "MovieElement.h"
 #include "Widget.h"
 #include "FileSystem.h"
+#include "Quake2Engine.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -34,6 +36,8 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Box);
     REGISTER_5L_PRIMITIVE(DeleteElements);
 	REGISTER_5L_PRIMITIVE(EditBox);
+	REGISTER_5L_PRIMITIVE(ElementExists);
+	REGISTER_5L_PRIMITIVE(ElementSetShown);
 	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
@@ -47,12 +51,26 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Wait);
     REGISTER_5L_PRIMITIVE(Zone);
+
+#if CONFIG_HAVE_QUAKE2
+	REGISTER_5L_PRIMITIVE(Quake2);
+	REGISTER_5L_PRIMITIVE(Quake2Command);
+#endif // CONFIG_HAVE_QUAKE2
 }
 
 
 //=========================================================================
 //  Utility Functions
 //=========================================================================
+
+#define FIND_ELEMENT(TYPE, VAR, NAME) \
+    Element *VAR##_temp = wxGetApp().GetStage()->FindElement(NAME); \
+    if (VAR##_temp == NULL) \
+        ::SetPrimitiveError("noelement", "The element does not exist."); \
+    TYPE *VAR = dynamic_cast<TYPE *>(VAR##_temp); \
+    if (VAR == NULL) \
+        ::SetPrimitiveError("wrongelementtype", \
+                            "The element is not of type " #TYPE)
 
 static wxRect ConvRect(const TRect &inRect)
 {
@@ -129,6 +147,34 @@ DEFINE_5L_PRIMITIVE(EditBox)
 					   GetPos(bounds), GetSize(bounds),
 					   wxBORDER | wxTE_MULTILINE);
 	new Widget(wxGetApp().GetStage(), name.c_str(), edit);
+}
+
+DEFINE_5L_PRIMITIVE(ElementExists)
+{
+	std::string name;
+	inArgs >> SymbolName(name);
+	if (wxGetApp().GetStage()->FindElement(name.c_str()))
+		::SetPrimitiveResult(true);
+	else
+		::SetPrimitiveResult(false);
+}
+
+DEFINE_5L_PRIMITIVE(ElementIsShown)
+{
+	std::string name;
+	inArgs >> SymbolName(name);
+	FIND_ELEMENT(Widget, element, name.c_str());
+	::SetPrimitiveResult(element->IsShown());
+}
+
+DEFINE_5L_PRIMITIVE(ElementSetShown)
+{
+	std::string name;
+	bool show;
+	inArgs >> SymbolName(name) >> show;
+	FIND_ELEMENT(Widget, element, name.c_str());
+	element->Show(show);
+	// TODO - Override MovieElement::Show for unshowable movies.
 }
 
 DEFINE_5L_PRIMITIVE(HTML)
@@ -251,18 +297,6 @@ DEFINE_5L_PRIMITIVE(Movie)
 					 path.c_str(), 0, style);
 }
 
-/*---------------------------------------------------------------------
-    (SETWINDOWTITLE TITLE)
-
-    Set the application window title
- ---------------------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(SetWindowTitle)
-{
-    std::string title;
-    inArgs >> title;
-    wxGetApp().GetStageFrame()->SetTitle(title.c_str());
-}
-
 /*---------------------------------------------------------------
     (SCREEN COLOR)
 
@@ -273,6 +307,18 @@ DEFINE_5L_PRIMITIVE(Screen)
     Color color;
     inArgs >> color; 
 	wxGetApp().GetStage()->ClearStage(ConvColor(color));
+}
+
+/*---------------------------------------------------------------------
+    (SETWINDOWTITLE TITLE)
+
+    Set the application window title
+ ---------------------------------------------------------------------*/
+DEFINE_5L_PRIMITIVE(SetWindowTitle)
+{
+    std::string title;
+    inArgs >> title;
+    wxGetApp().GetStageFrame()->SetTitle(title.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(TextAA)
@@ -325,3 +371,27 @@ DEFINE_5L_PRIMITIVE(Zone)
 	inArgs >> name >> bounds >> action;
 	new Zone(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds), action);
 }
+
+
+//=========================================================================
+//  Implementation of Quake 2 Primitives
+//=========================================================================
+
+#if CONFIG_HAVE_QUAKE2
+
+DEFINE_5L_PRIMITIVE(Quake2)
+{	
+	std::string name;
+	inArgs >> SymbolName(name);	
+	new Quake2Element(wxGetApp().GetStage(), name.c_str());
+}
+
+DEFINE_5L_PRIMITIVE(Quake2Command)
+{
+	std::string name, cmd;
+	inArgs >> SymbolName(name) >> cmd;	
+	FIND_ELEMENT(Quake2Element, element, name.c_str());
+	element->ExecCommand(cmd.c_str());
+}
+
+#endif // CONFIG_HAVE_QUAKE2

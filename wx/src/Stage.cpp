@@ -25,6 +25,57 @@ USING_NAMESPACE_FIVEL
 
 
 //=========================================================================
+//  StageBackground
+//=========================================================================
+//  This class implements the wxWindow *behind* the stage.  It has few
+//  duties other than (1) being black and (2) keeping the stage centered.
+
+class StageBackground : public wxWindow
+{
+	DECLARE_EVENT_TABLE();
+
+	bool mHaveStage;
+
+	void OnSize(wxSizeEvent& event);
+
+public:
+	StageBackground(StageFrame *inStageFrame);
+	void CenterStage(Stage *inStage);
+};
+
+BEGIN_EVENT_TABLE(StageBackground, wxWindow)
+    EVT_SIZE(StageBackground::OnSize)
+END_EVENT_TABLE()
+
+StageBackground::StageBackground(StageFrame *inStageFrame)
+	: wxWindow(inStageFrame, -1, wxDefaultPosition, wxDefaultSize),
+	  mHaveStage(false)
+{
+    SetBackgroundColour(STAGE_BACKGROUND_COLOR);
+}
+
+void StageBackground::OnSize(wxSizeEvent& event)
+{
+    if (GetAutoLayout())
+        Layout();
+}
+
+void StageBackground::CenterStage(Stage *inStage)
+{
+	ASSERT(!mHaveStage);
+	mHaveStage = true;
+
+	// Align our stage within the StageBackground using a pair of
+    // sizers.  I arrived at these parameters using trial and error.
+    wxBoxSizer *v_sizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *h_sizer = new wxBoxSizer(wxHORIZONTAL);
+    v_sizer->Add(h_sizer, 1 /* stretch */, wxALIGN_CENTER, 0);
+    h_sizer->Add(inStage, 0 /* no stretch */, wxALIGN_CENTER, 0);
+    SetSizer(v_sizer);
+}
+
+
+//=========================================================================
 //  StageFrame Methods
 //=========================================================================
 
@@ -70,20 +121,11 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
 
     // Create a background panel to surround our stage with.  This keeps
     // life simple.
-    wxPanel *background = new wxPanel(this);
-    background->SetBackgroundColour(STAGE_BACKGROUND_COLOR);
+    StageBackground *background = new StageBackground(this);
 
-    // Create a stage object to scribble on.  Use a sizer to center it
-    // on the background.
+    // Create a stage object to scribble on, and center it.
     mStage = new Stage(background, this, inSize);
-
-    // Align our stage within the background panel using a pair of
-    // sizers.  I arrived at these parameters using trial and error.
-    wxBoxSizer *v_sizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *h_sizer = new wxBoxSizer(wxHORIZONTAL);
-    v_sizer->Add(h_sizer, 1 /* stretch */, wxALIGN_CENTER, 0);
-    h_sizer->Add(mStage, 0 /* no stretch */, wxALIGN_CENTER, 0);
-    background->SetSizer(v_sizer);
+	background->CenterStage(mStage);
 
     // Set up our File menu.
     mFileMenu = new wxMenu();
@@ -569,6 +611,9 @@ void Stage::OnLeftDown(wxMouseEvent &inEvent)
 	Element *obj = FindLightWeightElement(inEvent.GetPosition());
 	if (obj)
 		obj->Click();
+	//else
+		// TODO - For debugging Quake 2 integration.
+	    //SetFocus();
 }
 
 void Stage::InvalidateStage()
@@ -797,6 +842,16 @@ void Stage::AddElement(Element *inElement)
 	// Add the new Element to our list.
 	mElements.push_back(inElement);
 	NotifyElementsChanged();
+}
+
+Element *Stage::FindElement(const wxString &inElementName)
+{
+	ElementCollection::iterator i =
+		FindElementByName(mElements, inElementName);
+	if (i == mElements.end())
+		return NULL;
+	else
+		return *i;
 }
 
 Element *Stage::FindLightWeightElement(const wxPoint &inPoint)

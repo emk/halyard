@@ -224,11 +224,6 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	//
 	void DestroyElement(Element *inElement);
 
-    //////////
-    // Let the stage know that the list of active elements has changed.
-    //
-    void NotifyElementsChanged();
-	
 	//////////
 	// Figure out which element we're inside, and figure out what cursor
 	// we should be displaying now.
@@ -267,6 +262,11 @@ public:
     //
     void NotifyScriptReload();
 
+    //////////
+    // Let the stage know that the list of active elements has changed.
+    //
+    void NotifyElementsChanged();
+	
     //////////
     // Do our idle-time processing.
     //
@@ -402,6 +402,14 @@ public:
 	// by the Element class.
 	//
 	void AddElement(Element *inElement);
+
+	//////////
+	// Find an element by name.
+	//
+	// [in] inElementName - The name to search for.
+	// [out] return - A pointer to the element, or NULL.
+	//
+	Element *FindElement(const wxString &inElementName);
 
 	//////////
 	// Find the lightweight Element containing the specified point, if

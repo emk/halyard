@@ -39,6 +39,21 @@ wxRect Widget::GetRect()
 	return mWindow->GetRect();
 }
 
+void Widget::Show(bool inShow)
+{
+	// If we're not changing anything, quit now.
+	if (inShow == IsShown())
+		return;
+
+	// Update the window's visibility, and notify the stage of
+	// the change.
+	if (inShow)
+		mWindow->Show();
+	else
+		mWindow->Hide();
+	GetStage()->NotifyElementsChanged();
+}
+
 bool Widget::IsShown()
 {
 	ASSERT(mWindow != NULL);

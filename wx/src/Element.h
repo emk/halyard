@@ -49,6 +49,11 @@ public:
 	virtual ~Element() {}
 	
 	//////////
+	// Return the stage on which the element appears.
+	//
+	Stage *GetStage() { return mStage; }
+
+	//////////
 	// Return the name of the element.  Should be unique on any
 	// given card.
 	//

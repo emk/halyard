@@ -1,5 +1,15 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+Primitive support for running Quake 2 from within wx5L.
+
+  * Added primitives to show/hide widgets, and perform some other
+    basic operations.
+  * Replaced background wxPanel with wxWindow to 
+  * Added Quake2Element class.  This will be turned into a
+    Quake2Engine class (Elements don't really have the right behavior).
+
 3.5.11 - 19 Nov 2002 - emk
 
 Regular 5L:
