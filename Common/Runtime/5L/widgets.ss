@@ -109,7 +109,7 @@
   ;;; TODO - add external model
   ;;; TODO - add view superclass
   (define-element-template %toggle-base% 
-      [on-states off-states] (:template %zone%)    
+      [on-states off-states] (%zone%)    
     (define on? #f)
 
     (on draw (state)
@@ -126,7 +126,7 @@
       (send self set-value (not on?) state)))
 
   (define-element-template %simple-toggle%
-      [sound] (:template %toggle-base%)
+      [sound] (%toggle-base%)
 
     (on mouse-down (event)
       (send self toggle 'normal)
@@ -136,7 +136,7 @@
     (send self draw 'normal))
 
   (define-element-template %fancy-toggle%
-      [sound] (:template %toggle-base%)
+      [sound] (%toggle-base%)
 
     (define (draw/refresh state)
       (send self draw state)
@@ -210,7 +210,7 @@
   (define-element-template %text-box% 
       [at text 
        [color :default (color #xFF #xFF #xFF)]] 
-      (:template %zone% :shape (rect 0 0 0 0))
+      (%zone% :shape (rect 0 0 0 0))
     
     (define my-text text)
     (define (my-bounds) (point->text-rectangle at my-text))
@@ -229,7 +229,7 @@
 
 ;;   (define-element-template %boring-button%
 ;;       [at text action]
-;;       (:template %zone% :shape (point->boring-button-rectangle at text))
+;;       (%zone% :shape (point->boring-button-rectangle at text))
 ;;     (define bounds (prop self bounds))
 ;;     (draw-box bounds $color-white)
 ;;     (draw-text $login-button-style (inset-rect bounds 5) text)
@@ -251,7 +251,7 @@
       [rectangle min-value max-value 
        [getter :type <function>]
        [setter :type <function>]]
-      (:template %zone% :shape rectangle)
+      (%zone% :shape rectangle)
     
     (define grabbed-by-me? #f)
     
@@ -318,7 +318,7 @@
   (define-element-template %rect-drawing%
       [[border :default 2]
        [rect-width :default 2]] 
-      (:template %zone% :cursor 'cross)
+      (%zone% :cursor 'cross)
     
     (define active-color (color #x00 #xFF #x00))
     (define drawn-color (color #xFF #x00 #x00))

@@ -21,7 +21,8 @@
 
   (provide run-card jump
            delete-element-internal
-           dispatch-event-to-current-card
+           dispatch-event-to-current-group-member
+           current-group-member
            current-card)
 
 
@@ -44,9 +45,11 @@
   (defclass <engine> ()
     (root-node
      :initializer (lambda () (make <card-group>
-                               :name '|/| :parent #f :active? #t)))
+                               :name '|/| :parent #f :active? #t
+                               :running? #t)))
     (node-table :initializer make-hash-table)
-    (current-card :initvalue #f)
+    (default-element-parent :initvalue #f)
+    (current-group-member :initvalue #f)
     (last-card :initvalue #f))
 
   (define *engine* #f)
@@ -60,9 +63,24 @@
   (define (node-table)
     (engine-node-table *engine*))
 
-  (define (current-card)
-    (engine-current-card *engine*))
+  (define (current-group-member)
+    (let [[result (engine-current-group-member *engine*)]]
+      (unless result
+        (error "Can't get current group member during script startup"))
+      result))
 
+  (define (engine-current-card engine)
+    (let [[result (engine-current-group-member *engine*)]]
+      (if (instance-of? result <card>)
+          result
+          #f)))
+  
+  (define (current-card)
+    (let [[result (engine-current-card *engine*)]]
+      (unless result
+        (error "Can't get current card when no card is active"))
+      result))
+  
   (defgeneric (set-engine-event-handled?! (eng <engine>) (handled? <boolean>)))
   (defgeneric (set-engine-event-vetoed?! (eng <engine>) (vetoed? <boolean>)))
   (defgeneric (engine-jump-to-card (engine <engine>) (target <card>)))
@@ -126,6 +144,11 @@
 
   (define (register-event-handler node name handler)
     (debug-log (cat "Registering handler: " name " in " (node-full-name node)))
+
+    ;; Complain if this node is theoretically inactive.
+    (unless (node-running? node)
+      (error (cat "Cannot add handler '" name "' to inactive node "
+                  (node-full-name node))))
 
     ;; Keep track of whether we're handling expensive events.  We call
     ;; ENABLE-EXPENSIVE-EVENTS here, which is sufficient for <card> and
@@ -279,18 +302,18 @@
       (void))
     (define (send-idle node)
       (send/nonrecursive* no-handler node 'idle event))
-    (let loop [[node (current-card)]]
+    (let loop [[node (current-group-member)]]
       (when node
         (send-idle node)
-        (loop (node-parent node))))
-    (foreach [child (group-children (current-card))]
-      (send-idle child)))  
+        (foreach [elem (node-elements node)]
+          (send-idle elem))
+        (loop (node-parent node)))))
 
-  (define (dispatch-event-to-current-card name . args)
-    (when (current-card)
+  (define (dispatch-event-to-current-group-member name . args)
+    (when (engine-current-group-member *engine*)
       (if (eq? name 'idle)
           (dispatch-idle-event-to-active-nodes)
-          (dispatch-event-to-node (current-card) name args))))
+          (dispatch-event-to-node (current-group-member) name args))))
 
   (define (make-node-event-dispatcher node)
     (lambda (name . args)
@@ -494,9 +517,9 @@
             (bindings->hash-table (list . bindings)))))]))
 
   (define-syntax define-template
-    (syntax-rules (:template)
+    (syntax-rules ()
       [(define-template group name prop-decls
-                              (:template extended . bindings)
+                              (extended . bindings)
          . body)
        (define name (make <template>
                       :group      group
@@ -506,7 +529,7 @@
                       :prop-decls (expand-prop-decls . prop-decls)
                       :init-fn    (expand-init-fn prop-decls . body)))]
       [(define-template group name prop-decls bindings . body)
-       (define-template group name prop-decls (:template #f . bindings)
+       (define-template group name prop-decls (#f . bindings)
          . body)]))
 
   (define-syntax define-template-definer
@@ -521,14 +544,17 @@
   ;;  Nodes
   ;;-----------------------------------------------------------------------
   ;;  A program is (among other things) a tree of nodes.  The root node
-  ;;  contains <card>s and <card-groups>.  <card>s contain <element>s.
+  ;;  contains <card>s and <card-groups>.  <card-group>s contain <card>s
+  ;; and other <card-group>s.  Any node may contain <element>s.
 
-  (provide <node> node? node-name node-full-name node-parent find-node
-           @* @ elem-or-name-hack)
+  (provide <node> node? node-name node-full-name node-parent
+           node-elements find-node @* @ elem-or-name-hack)
 
   (defclass <node> (<template>)
     name
     parent
+    (running? :type <boolean> :initvalue #f)
+    (elements :type <list> :initvalue '())
     (has-expensive-handlers? :type <boolean> :initvalue #f)
     (handlers :type <hash-table> :initializer (lambda () (make-hash-table)))
     (values   :type <hash-table> :initializer (lambda () (make-hash-table)))
@@ -537,7 +563,9 @@
   (defmethod (initialize (node <node>) initargs)
     (call-next-method)
     (when (node-parent node)
-      (group-add-child! (node-parent node) node)))
+      (if (element? node)
+          (node-add-element! (node-parent node) node)
+          (group-add-member! (node-parent node) node))))
 
   (define (node-full-name node)
     ;; Join together local names with "/" characters.
@@ -546,6 +574,14 @@
         (string->symbol (cat (node-full-name (node-parent node))
                              "/" (node-name node)))
         (node-name node))))
+
+  (define (node-add-element! node elem)
+    (set! (node-elements node)
+          (append (node-elements node) (list elem))))
+
+  (defgeneric (node-children (node <node>)))
+  (defmethod (node-children (node <node>))
+    (node-elements node))
 
   (define (clear-node-state! node)
     (set! (node-has-expensive-handlers? node) #f)
@@ -585,9 +621,11 @@
                [found (find-node candidate)]]
           (or found (find-node-relative (node-parent base) name)))))
 
-  (define (@* name)
-    (or (find-node-relative (current-card) name)
-        (error (cat "Can't find relative path: @" name))))
+  (define (@* name &key (if-not-found
+                         (lambda ()
+                           (error (cat "Can't find relative path: @" name)))))
+    (or (find-node-relative (current-group-member) name)
+        (if-not-found)))
 
   (define-syntax @
     ;; Syntactic sugar for find-node-relative.
@@ -628,8 +666,8 @@
                       (string->symbol (cadddr matches))))]))))
 
   (define-syntax define-node
-    (syntax-rules (:template)
-      [(define-node name group node-class (:template extended bindings ...)
+    (syntax-rules ()
+      [(define-node name group node-class (extended bindings ...)
          body ...)
        (begin
          (define name
@@ -643,10 +681,10 @@
                :name       local-name)))
          (register-node name))]
       [(define-node name group node-class (bindings ...) body ...)
-       (define-node name group node-class (:template #f bindings ...)
+       (define-node name group node-class (#f bindings ...)
          body ...)]
       [(define-node name group node-class)
-       (define-node name group node-class (:template #f))]))
+       (define-node name group node-class (#f))]))
 
   (define-syntax define-node-definer
     (syntax-rules ()
@@ -657,21 +695,12 @@
             (define-node name group node-class . rest)]))]))
 
   ;;-----------------------------------------------------------------------
-  ;;  Groups
+  ;;  Group Member
   ;;-----------------------------------------------------------------------
-  ;;  A group contains other nodes.
+  ;;  A <group-member> may be stored in a <card-group>.
 
-  (provide <group> group? group-children)
+  (defclass <group-member> (<node>))
 
-  (defclass <group> (<node>)
-    (children :type <list> :initvalue '()))
-
-  (defgeneric (group-add-child! (group <group>) (child <node>)))
-
-  (defmethod (group-add-child! (group <group>) (child <node>))
-    (set! (group-children group)
-          (append (group-children group) (list child))))
-    
   ;;-----------------------------------------------------------------------
   ;;  Jumpable
   ;;-----------------------------------------------------------------------
@@ -690,26 +719,30 @@
   ;;  By default, groups of cards are not assumed to be in any particular
   ;;  linear order, at least for purposes of program navigation.
 
-  (provide define-group-template group)
+  (provide define-group-template group group-members)
 
   (define (card-or-card-group? node)
     (or (card? node) (card-group? node)))
 
-  (defclass <card-group> (<group>)
+  (defclass <card-group> (<group-member>)
+    (members :accessor group-members :type <list> :initvalue '())
     (active? :type <boolean> :initvalue #f))
 
-  (defgeneric (card-group-find-next (group <card-group>) (child <jumpable>)))
-  (defgeneric (card-group-find-prev (group <card-group>) (child <jumpable>)))
+  (define (group-add-member! group member)
+    (set! (group-members group)
+          (append (group-members group) (list member))))
 
-  (defmethod (card-group-find-next (group <card-group>) (child <jumpable>))
+  (defmethod (node-children (group <card-group>))
+    (append (group-members group) (call-next-method)))
+
+  (defgeneric (card-group-find-next (group <card-group>) (member <jumpable>)))
+  (defgeneric (card-group-find-prev (group <card-group>) (member <jumpable>)))
+
+  (defmethod (card-group-find-next (group <card-group>) (member <jumpable>))
     #f)
 
-  (defmethod (card-group-find-prev (group <card-group>) (child <jumpable>))
+  (defmethod (card-group-find-prev (group <card-group>) (member <jumpable>))
     #f)
-
-  (defmethod (group-add-child! (group <card-group>) (child <node>))
-    (assert (card-or-card-group? child))
-    (call-next-method))
 
   (define-template-definer define-group-template <card-group>)
   (define-node-definer group <card-group> <card-group>)
@@ -724,29 +757,29 @@
   (defclass <card-sequence> (<jumpable> <card-group>))
 
   (defmethod (jump (target <card-sequence>))
-    (if (null? (group-children target))
+    (if (null? (group-members target))
         (error (cat "Can't jump to sequence " (node-full-name target)
                     " because it contains no cards."))
-        (jump (car (group-children target)))))
+        (jump (car (group-members target)))))
 
-  (defmethod (card-group-find-next (group <card-sequence>) (child <jumpable>))
-    ;; Find the node *after* child.
-    (let [[remainder (memq child (group-children group))]]
+  (defmethod (card-group-find-next (group <card-sequence>) (member <jumpable>))
+    ;; Find the node *after* member.
+    (let [[remainder (memq member (group-members group))]]
       (assert (not (null? remainder)))
       (if (null? (cdr remainder))
           (card-group-find-next (node-parent group) group)
           (cadr remainder))))
 
-  (defmethod (card-group-find-prev (group <card-sequence>) (child <jumpable>))
-    ;; Find the node *before* child.
-    (let search [[children (group-children group)]
+  (defmethod (card-group-find-prev (group <card-sequence>) (member <jumpable>))
+    ;; Find the node *before* member.
+    (let search [[members (group-members group)]
                  [candidate-func 
                   (lambda ()
                     (card-group-find-prev (node-parent group) group))]]
-      (assert (not (null? children)))
-      (if (eq? (car children) child)
+      (assert (not (null? members)))
+      (if (eq? (car members) member)
           (candidate-func)
-          (search (cdr children) (lambda () (car children))))))
+          (search (cdr members) (lambda () (car members))))))
 
   (define-node-definer sequence <card-group> <card-sequence>)
 
@@ -758,7 +791,7 @@
   (provide <card> card? card-next card-prev jump-next jump-prev
            define-card-template card)
 
-  (defclass <card>          (<jumpable> <group>))
+  (defclass <card>          (<jumpable> <group-member>))
 
   (defmethod (jump (target <card>))
     (engine-jump-to-card *engine* target))
@@ -790,7 +823,9 @@
   ;; Elements
   ;;-----------------------------------------------------------------------
 
-  (provide <element> element? define-element-template element create)
+  (provide <element> element? define-element-template element
+           default-element-parent call-with-default-element-parent
+           with-default-element-parent create)
 
   (defclass <element>       (<node>)
     (temporary? :type <boolean> :initvalue #f))
@@ -798,7 +833,25 @@
   (define-template-definer define-element-template <element>)
   (define-node-definer element <element> <element>)
   
-  (define (create template &key (name (gensym)) &rest-keys bindings)
+  (define (default-element-parent)
+    (or (engine-default-element-parent *engine*)
+        (current-card)))
+
+  (define (call-with-default-element-parent node thunk)
+    (let [[old (engine-default-element-parent *engine*)]]
+      (dynamic-wind
+          (lambda () (set! (engine-default-element-parent *engine*) node))
+          thunk
+          (lambda () (set! (engine-default-element-parent *engine*) old)))))
+
+  (define-syntax with-default-element-parent
+    (syntax-rules ()
+      [(with-default-element-parent node . body)
+       (call-with-default-element-parent node (lambda () . body))]))
+
+  (define (create template
+                  &key (name (gensym)) (parent (default-element-parent))
+                  &rest-keys bindings)
     ;; Temporarily create an <element> node belonging to the current card,
     ;; using 'template' as our template.  This node will be deleted when we
     ;; leave the card.
@@ -808,13 +861,17 @@
     ;; now, I think.
     (define (bindings-eval-fn self)
       (bindings->hash-table bindings))
-    (assert (current-card))
+    (unless parent
+      (error "Can't create element without a parent node"))
+    (unless (node-running? parent)
+      (error (cat "Cannot CREATE child on inactive node "
+                  (node-full-name parent))))
     (assert (eq? (template-group template) '<element>))
     (let [[e (make <element>
                :group      '<element>
                :extends    template
                :bindings-eval-fn bindings-eval-fn
-               :parent     (current-card)
+               :parent     parent
                :name       name
                :temporary? #t)]]
       (register-node e)
@@ -836,26 +893,26 @@
     ;; TODO - We're called repeatedly as nodes get deleted, resulting
     ;; in an O(n^2) time to delete n nodes.  Not good, but we can live with
     ;; it for the moment.
-    (let [[card (current-card)]]
-      (set! (group-children card)
-            (let recurse [[children (group-children card)]]
+    (let [[parent (node-parent elem)]]
+      (set! (node-elements parent)
+            (let recurse [[elements (node-elements parent)]]
               (cond
-               [(null? children) '()]
-               [(eq? elem (car children))
-                ;; Delete this node, and exclude it from the new child list.
-                (if (element-temporary? (car children))
+               [(null? elements) '()]
+               [(eq? elem (car elements))
+                ;; Delete this node, and exclude it from the new element list.
+                (if (element-temporary? (car elements))
                     (begin
-                      (exit-node (car children))
-                      (unregister-node (car children)))
+                      (exit-node (car elements))
+                      (unregister-node (car elements)))
                     (debug-caution
                      (cat "Can't fully delete non-temporary element "
                           (node-full-name elem)
                           " in this version of the engine")))
                 (engine-delete-element *engine* elem)
-                (recurse (cdr children))]
+                (recurse (cdr elements))]
                [else
                 ;; Keep this node.
-                (cons (car children) (recurse (cdr children)))])))))
+                (cons (car elements) (recurse (cdr elements)))])))))
   
 
   ;;=======================================================================
@@ -869,13 +926,34 @@
   (defgeneric (enter-node (node <node>)))
 
   (defmethod (exit-node (node <node>))
+    ;; Exit all our child elements.
+    ;; TRICKY - We call into the engine to do element deletion safely.
+    ;; We work with a copy of (NODE-ELEMENTS NODE) the original
+    ;; will be modified as we run.
+    (foreach [elem (node-elements node)]
+      (delete-element-internal elem))
     ;; Run any exit handler.
     (run-on-exit-handler node)
+    ;; Mark this node as no longer running, so nobody tries to call ON
+    ;; or CREATE on it.
+    (assert (node-running? node))
+    (set! (node-running? node) #f)
     ;; Clear our handler list.
     (clear-node-state! node))
 
   (defmethod (enter-node (node <node>))
     ;; TODO - Make sure all our template properties are bound.
+    ;; Mark this node as running so we can add event handlers and CREATE
+    ;; children.
+    (assert (not (node-running? node)))
+    (set! (node-running? node) #t)
+    ;; Enter all our child elements.  Notice we do this first, so
+    ;; all the elements are available by the time we run the node body.
+    ;; Unfortunately, this means that "new element" events generated
+    ;; during element initialization can't be caught by the node.
+    ;; Weird, but this is what the users voted for.
+    (foreach [elem (node-elements node)]
+      (enter-node elem))
     ;; Initialize our templates one at a time.
     (let recurse [[template node]]
       (when template
@@ -890,6 +968,16 @@
     ;; send messages to subtemplates.)
     (send/nonrecursive* (lambda () #f) node 'setup-finished))
 
+  (defmethod (exit-node (group <group-member>))
+    (call-next-method)
+    ;; Reset our current group member.
+    (set! (engine-current-group-member *engine*) (node-parent group)))
+
+  (defmethod (enter-node (group <group-member>))
+    ;; Set our current group member.
+    (set! (engine-current-group-member *engine*) group)
+    (call-next-method))
+
   (defmethod (exit-node (group <card-group>))
     (set! (card-group-active? group) #f)
     (call-next-method))
@@ -898,14 +986,30 @@
     (call-next-method)
     (set! (card-group-active? group) #t))
 
-  (define (find-active-parent new-card)
-    ;; Walk back up the node hierarchy from new-card until we find the
-    ;; nearest active parent.  The root node is always active, so this
-    ;; recursive call terminates.
-    (let recurse [[group (node-parent new-card)]]
-      (if (card-group-active? group)
-          group
-          (recurse (node-parent group)))))
+  (defmethod (exit-node (card <card>))
+    (engine-notify-exit-card *engine* card)
+    (set! (engine-last-card *engine*) card)
+    (call-next-method))
+
+  (defmethod (enter-node (card <card>))
+    (engine-notify-enter-card *engine* card)
+    (call-next-method)
+    (engine-notify-card-body-finished *engine* card))
+
+  (define (find-active-parent node)
+    ;; Walk back up the node hierarchy from node until we find the
+    ;; nearest active parent group.  The root node is always active, so
+    ;; this recursive call terminates.
+    (if (and (card-group? node) (card-group-active? node))
+        node
+        (find-active-parent (node-parent node))))
+
+  (define (find-group card-or-group)
+    ;; Walk back up our node hierarchy looking for the first group
+    ;; we find.
+    (if (card-group? card-or-group)
+        card-or-group
+        (find-group (node-parent card-or-group))))
 
   (define (exit-card-group-recursively group stop-before)
     ;; Recursively exit nested card groups starting with 'group', but
@@ -919,75 +1023,59 @@
   (define (enter-card-group-recursively group)
     ;; Recursively enter nested card groups until we have a chain of
     ;; active groups from the root to 'group'.
-    (let recurse  [[group group]]
+    (let recurse [[group group]]
       (unless (card-group-active? group)
         (assert (node-parent group))
         (recurse (node-parent group))
         (enter-node group))))
   
-  (define (exit-card old-card new-card)
-    ;; Exit all our child elements.
-    ;; TRICKY - We call into the engine to do element deletion safely.
-    ;; We work with a copy of (GROUP-CHILDREN OLD-CARD) the original
-    ;; will be modified as we run.
-    (foreach [child (group-children old-card)]
-      (delete-element-internal child))
-    ;; Exit old-card.
-    (exit-node old-card)
-    ;; Exit as many enclosing card groups as necessary.
-    (exit-card-group-recursively (node-parent old-card)
-                                 (find-active-parent new-card)))
-
-  (define (enter-card new-card)
-    ;; Clear our handler list.  We also do this in exit-node; this
-    ;; invocation is basically defensive, in case something went
-    ;; wrong during the node exiting process.
-    (clear-node-state! new-card)
-    ;; Enter as many enclosing card groups as necessary.
-    (enter-card-group-recursively (node-parent new-card))
-    ;; Enter all our child elements.  Notice we do this first, so
-    ;; all the elements are available by the time we run the card body.
-    ;; Unfortunately, this means that "new element" events generated
-    ;; during element initialization can't be caught by the card.
-    ;; Weird, but this is what the users voted for.
-    (foreach [child (group-children new-card)]
-      (enter-node child))
-    ;; Enter new-card.
-    (enter-node new-card))
-
+  (define (node-or-elements-have-expensive-handlers? node)
+    ;; See if NODE or any of its elements have expensive handlers.
+    (or (node-has-expensive-handlers? node)
+        (let recurse [[elements (node-elements node)]]
+          (if (null? elements)
+              #f
+              (or (node-or-elements-have-expensive-handlers? (car elements))
+                  (recurse (cdr elements)))))))
+  
   (define (maybe-enable-expensive-events-for-card card)
     ;; REGISTER-EVENT-HANDLER attempts to turn on expensive events whenever
     ;; a matching handler is installed.  But we need to reset the
     ;; expensive event state when changing cards.  This means we need
     ;; to pay close attention to any nodes which live longer than a card.
+    ;;
+    ;; TODO - We could think of much better ways of handling this, I think.
     (let [[enable? #f]]
       (let recurse [[node card]]
         (when node
-          (if (node-has-expensive-handlers? node)
+          (if (node-or-elements-have-expensive-handlers? node)
               (set! enable? #t)
               (recurse (node-parent node)))))
       (engine-enable-expensive-events *engine* enable?)))
 
-  (define (run-card card)
-    ;; Finish exiting our previous card.
-    (when (current-card)
-      (engine-notify-exit-card *engine* (current-card))
-      (exit-card (current-card) card))
-
-    ;; Update our global variables.
-    (set! (engine-last-card *engine*) (engine-current-card *engine*))
-    (set! (engine-current-card *engine*) card)
-
+  (define (run-card new-card)
+    ;; Finish exiting whatever we're in.
+    (let [[old-node (engine-current-group-member *engine*)]]
+      (when old-node
+        ;; If old-node is a card, exit it.
+        (when (instance-of? old-node <card>)
+          (exit-node old-node))
+        ;; Exit as many enclosing card groups as necessary, stopping with
+        ;; the nearest group which contains NEW-CARD.
+        (exit-card-group-recursively (find-group old-node)
+                                     (find-active-parent new-card))))
+    
     ;; Update our expensive event state.
-    (maybe-enable-expensive-events-for-card card)
+    (maybe-enable-expensive-events-for-card new-card)
     
     ;; Actually run the card.
-    (debug-log (cat "Begin card: <" (node-full-name card) ">"))
+    (debug-log (cat "Begin card: <" (node-full-name new-card) ">"))
     (with-errors-blocked (non-fatal-error)
-      (engine-notify-enter-card *engine* card)
-      (enter-card card)
-      (engine-notify-card-body-finished *engine* card)))
-
+      ;; Enter any enclosing card groups which we haven't entered yet.
+      (enter-card-group-recursively (node-parent new-card))
+      ;; Enter our card.
+      (enter-node new-card)))
+    
   (define (run-on-exit-handler node)
     ;; This is pretty simple--just send an EXIT message.  But we need to
     ;; trap any JUMP calls and quit immediately, because actually allowing

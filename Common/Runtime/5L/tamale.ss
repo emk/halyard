@@ -87,7 +87,7 @@
        [alpha? :type <boolean> :default #f :label "Overlay transparent?"]
        [%nocreate? :type <boolean> :default #f
                    :label "Set to true if subclass creates in engine"]]
-      (:template %element%)
+      (%element%)
     (on prop-change (name value prev veto)
       (case name
         [[cursor] (set-element-cursor! self value)]
@@ -132,16 +132,16 @@
       [[at :type <point> :label "Location"]
        [state :type <string> :label "State DB Key Path"]
        [graphics :type <list> :label "Graphics to display"]]
-      (:template %zone%
-                 :shape (animated-graphic-shape at graphics)
-                 :overlay? #t
-                 :alpha? #t
-                 :%nocreate? #t)
+      (%zone%
+       :shape (animated-graphic-shape at graphics)
+       :overlay? #t
+       :alpha? #t
+       :%nocreate? #t)
     (call-5l-prim 'OverlayAnimated (node-full-name self) (prop self shape)
                   (make-node-event-dispatcher self) (prop self cursor)
                   state (map (fn (p) (make-path "Graphics" p)) graphics)))
 
-  (define-element-template %simple-zone% [action] (:template %zone%)
+  (define-element-template %simple-zone% [action] (%zone%)
     (on prop-change (name value prev veto)
       (case name
         [[action] (void)]
@@ -189,7 +189,7 @@
     (delete-element-internal (find-node (elem-or-name-hack elem-or-name))))
   
   (define (delete-elements
-           &opt (elems-or-names (group-children (current-card))))
+           &opt (elems-or-names (node-elements (current-card))))
     (foreach [elem elems-or-names]
       (delete-element elem)))
 
@@ -270,7 +270,7 @@
       [[location :type <string> :label "Location" :default "about:blank"]
        [fallback? :type <boolean> :label "Use primitive fallback web browser?"
                   :default #f]]
-      (:template %element%)
+      (%element%)
 
     (on load-page (page)
       (let [[path (make-path "HTML" page)]]
@@ -322,7 +322,7 @@
       [[text :type <string> :label "Initial text"]
        [font-size :type <integer> :label "Font size"]
        [multiline? :type <boolean> :label "Allow multiple lines?"]]
-      (:template %element%)
+      (%element%)
     (call-5l-prim 'editbox (node-full-name self) (prop self rect) text
                   font-size multiline?))
 
@@ -332,7 +332,7 @@
 
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
-      (:template %element%)
+      (%element%)
     (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                   (build-path (current-directory) "Media" location)))
 
@@ -345,7 +345,7 @@
 
   (define-element-template %geiger-synth%
       [chirp loops]
-      (:template %element%)
+      (%element%)
     (apply call-5l-prim 'GeigerSynth (node-full-name self)
            (build-path (current-directory) "Media" chirp) (* 512 1024)
            (map (fn (item)
@@ -362,7 +362,7 @@
 
   (define-element-template %sine-wave-element%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
-      (:template %element%)
+      (%element%)
     (call-5l-prim 'AudioStreamSine (node-full-name self) frequency))
 
   (define (sine-wave name frequency)
@@ -372,7 +372,7 @@
       [[location :type <string>  :label "Location"]
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
-      (:template %element%)
+      (%element%)
     (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                   (build-path (current-directory) "Media" location)
                   (* 1024 buffer) loop?))
@@ -398,7 +398,7 @@
        [audio-only?  :type <boolean> :label "Audio only"        :default #f]
        [loop?        :type <boolean> :label "Loop movie"        :default #f]
        [interaction? :type <boolean> :label "Allow interaction" :default #f]]
-      (:template %element%)
+      (%element%)
     (let [[path (media-path location)]]
       (check-file path)
       (call-5l-prim 'movie (node-full-name self) (prop self rect)
@@ -502,20 +502,23 @@
          (loop (+ count 1)))
         (else path)))))
 
-  (define (element-exists? name)
-    (memq name (map node-name (group-children (current-card)))))
+  (define (element-exists? name &key (parent (default-element-parent)))
+    (and (memq name (map node-name (node-elements parent)))
+         #t))
 
-  (define (delete-element-if-exists name)
-    (when (element-exists? name)
-      (delete-element (@* name))))
-
+  (define (delete-element-if-exists name
+                                    &key (parent (default-element-parent)))
+    (when (element-exists? name :parent parent)
+      (delete-element (find-node (string->symbol (cat (node-full-name parent)
+                                                      "/" name))))))
+  
   (define (set-state-db-datum! key val)
     (call-5l-prim 'StateDbSet key val))
 
   (define-element-template %basic-button%
       [[action :type <function> :label "Click action"]
        [enabled? :type <boolean> :label "Enabled?" :default #t]]
-      (:template %zone%)
+      (%zone%)
 
     (define mouse-in-button? #f)
     (define (do-draw refresh?)

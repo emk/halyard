@@ -531,13 +531,13 @@
     (%kernel-clear-timeout)
     (call-5l-prim 'resetorigin)
     (when (have-5l-prim? 'notifyentercard)
-      (call-5l-prim 'notifyentercard))
+      (call-5l-prim 'notifyentercard (node-full-name card)))
     (call-hook-functions *enter-card-hook* card))
 
   (defmethod (engine-notify-exit-card (engine <real-engine>) (card <card>))
     (call-hook-functions *exit-card-hook* card)
     (when (have-5l-prim? 'notifyexitcard)
-      (call-5l-prim 'notifyexitcard)))
+      (call-5l-prim 'notifyexitcard (node-full-name card))))
 
   (defmethod (engine-notify-card-body-finished (eng <real-engine>)
                                                (card <card>))
@@ -562,7 +562,8 @@
   ;; Set up our event handling machinery.
   (enable-expensive-events #f)
   (when (have-5l-prim? 'RegisterEventDispatcher)
-    (call-5l-prim 'RegisterEventDispatcher dispatch-event-to-current-card))
+    (call-5l-prim 'RegisterEventDispatcher
+                  dispatch-event-to-current-group-member))
 
 
   ;;=======================================================================
