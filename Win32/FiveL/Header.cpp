@@ -23,11 +23,9 @@
 #include "Header.h"
 #include "Globals.h"
 #include "TEncoding.h"
+#include "TCommonPrimitives.h"
 
 HeaderManager gHeaderManager;
-
-static const char *INCR_Y_NAME = "_incr_y";
-static const char *INCR_X_NAME = "_incr_x";
 
 //  Let TIndex ancestor construct based on these values.
 //
@@ -239,8 +237,7 @@ void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
 	}
 
 end:
-    gVariableManager.SetLong(INCR_Y_NAME, loc.Y()); 
-	gVariableManager.SetLong(INCR_X_NAME, incr_x);
+	::UpdateSpecialVariablesForText(TPoint(incr_x, loc.Y()));
     
     // make sure the dirty rect extends down to cover characters below the
     // text line - use g as an example (should really see if there are chars
@@ -714,6 +711,11 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.8  2002/06/24 15:27:29  emk
+ 3.3.9 - Highly experimental engine which makes _INCR_X,
+ _INCR_Y, _Graphic_X and _Graphic_Y relative to the current
+ origin.   This will break macros in existing code!
+
  Revision 1.7  2002/06/20 16:32:54  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:
