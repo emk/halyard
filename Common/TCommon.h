@@ -84,7 +84,7 @@ extern void FiveLCheckAssertion(int inTest, const char *inDescription,
 
 #ifdef DEBUG
 #	define ASSERT(test) \
-		FiveLCheckAssertion((test), #test, __FILE__, __LINE__);
+		FiveLCheckAssertion((int) (test), #test, __FILE__, __LINE__);
 #else // DEBUG
 #	define ASSERT(test) 0
 #endif // DEBUG
@@ -164,6 +164,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5.2.3  2002/05/15 09:07:56  emk
+ Cast ASSERT test values to (int) to avoid MSVC++ errors.
+
  Revision 1.5.2.2  2002/05/15 08:13:15  emk
  3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
 
