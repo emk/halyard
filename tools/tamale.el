@@ -207,9 +207,11 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'syntax-case 'scheme-indent-function 2)
 (put 'match-let 'scheme-indent-function 1)
 (put 'with-syntax 'scheme-indent-function 1)
-(put 'define-goal 'scheme-indent-function 2)
+(put 'define-goal 'scheme-indent-function 3)
 (put 'define-goal* 'scheme-indent-function 4)
 (put 'with-errors-blocked 'scheme-indent-function 1)
+(put 'define-goal-condition 'scheme-indent-function 1)
+(put 'define-goal-condition 'scheme-indent-function 2)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
