@@ -32,6 +32,8 @@
 class AdjustScreenDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
+
+    wxButton *mYesButton;
 	
 public:
 	AdjustScreenDlg(wxWindow *inParent);

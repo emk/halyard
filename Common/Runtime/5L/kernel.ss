@@ -76,7 +76,7 @@
       result))
   
   (define (have-5l-prim? name)
-    (call-5l-prim 'haveprimitive name))
+    (%call-5l-prim 'haveprimitive name))
 
   (define (value->boolean val)
     ;; XXX - Coerce a Scheme value to an explicit boolean value.  This
@@ -416,7 +416,8 @@
     ;; resulted in a number of subtle bugs, and should probably be
     ;; redesigned.
     (unless *%kernel-running-callback?*
-      (%call-5l-prim 'WakeUpIfNecessary)))
+      (when (have-5l-prim? 'WakeUpIfNecessary)
+        (%call-5l-prim 'WakeUpIfNecessary))))
 
   (define (%kernel-safe-to-run-deferred-thunks?)
     ;; Would now be a good time to run deferred thunks?  Wait until

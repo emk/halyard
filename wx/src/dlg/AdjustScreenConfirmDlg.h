@@ -36,6 +36,7 @@ class AdjustScreenConfirmDlg : public XrcDlg
     enum { EXPIRE_SECONDS = 15 };
 
     wxStaticText *mRevertMsg;
+    wxButton *mNoButton;
     long mExpireTime;
 
     void OnIdle(wxIdleEvent &inEvent);

@@ -36,6 +36,10 @@ AdjustScreenConfirmDlg::AdjustScreenConfirmDlg(wxWindow *inParent)
       mExpireTime(::wxGetLocalTime() + EXPIRE_SECONDS)
 {
     Bind(mRevertMsg, XRCID("DLG_REVERT_MSG"));
+
+    // Set up the default button.
+    Bind(mNoButton, wxID_NO);
+    mNoButton->SetFocus();
 }
 
 void AdjustScreenConfirmDlg::OnIdle(wxIdleEvent &inEvent) {
