@@ -199,13 +199,8 @@ void InputManager::KeyDown(char inKey)
 
 void InputManager::SetupDC(void)
 {
-	HPALETTE	hPal;
-
 	m_DC = ::GetDC(hwndApp);
 	m_OldFont = (HFONT) ::SelectObject(m_DC, m_Font->GetFontHandle());
-	hPal = gView->GetPalette()->GetPalHandle();
-	m_OldPal = ::SelectPalette(m_DC, hPal, false);
-	::RealizePalette(m_DC);						
 	m_BackBrush = ::CreateSolidBrush(m_BackColor);
 	::SetTextColor(m_DC, m_ForeColor);
 	::SetBkColor(m_DC, m_BackColor);
@@ -215,7 +210,6 @@ void InputManager::ResetDC(void)
 {
 	::SelectObject(m_DC, m_OldFont);
 	::DeleteObject(m_BackBrush);
-	::SelectPalette(m_DC, m_OldPal, false);
 	::ReleaseDC(hwndApp, m_DC); 
 }
 
@@ -296,6 +290,21 @@ bool InputManager::IsLegalInputChar(char inKey)
 
 /*
  $Log$
+ Revision 1.6  2002/10/09 18:38:42  emk
+ 3.5.7 - 9 Oct 2002 - emk
+
+ Engines built from this code will require script changes.
+
+   * Scheme: Changed 'for-each-item' to 'foreach', and added 'for'.
+   * Added extract-docs.pl, which generates HTML manuals.
+   * Added many new test cases for the new 5L language.
+   * Fixed minor bugs in CryptStream*.*, as discovered by valgrind.
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+   * Removed Windows cursor-clipping code because it was occassionally
+     immobilizing the cursor completely.
+
  Revision 1.5  2002/10/08 21:42:25  emk
  Palette removal, part 1:
 

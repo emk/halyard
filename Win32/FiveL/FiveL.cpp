@@ -531,7 +531,8 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 		gScreenRect.SetBottom(cursorPos.y);
 		
 		// now gScreenRect has the screen coordinates of our virtual screen
-		gCursorManager.ClipCursor(&gScreenRect);
+		// We used to clip our cursor, but sometimes the cursor-clipping
+		// code clipped the cursor at 0,0.
 	}
     
     hwndApp = hWnd; 
@@ -687,10 +688,6 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     				gView->Draw();		// blast the screen on and reset the palette	
 				}
 
-				// go back to restricting cursor movement
-				if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)	
-					gCursorManager.ClipCursor(&gScreenRect);
-    			
     			// make sure we have a cursor
     			gCursorManager.ChangeCursor(NO_CURSOR);
     			gCursorManager.CheckCursor();
@@ -709,10 +706,6 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					gPaletteManager.Deactivate(hDC);
 				}
  
-				// stop restricting cursor movement
-				if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
-					gCursorManager.ClipCursor(NULL);
-
 				// set the cursor to something normal
 				gCursorManager.ChangeCursor(ARROW_CURSOR); 
 
@@ -1179,8 +1172,6 @@ void PutInBackground(void)
 
 		ShowWindow(hwndApp, SW_MINIMIZE);
 		ShowWindow(hBackgroundWnd, SW_HIDE);
-
-		gCursorManager.UnClipCursor();	// remove cursor restraints
 	}
 
 	gInBackground = true;
@@ -1197,8 +1188,6 @@ void PutInForeground(void)
 	{
 		ShowWindow(hBackgroundWnd, SW_SHOW);
 		ShowWindow(hwndApp, SW_MAXIMIZE);
-		
-		gCursorManager.ReClipCursor();
 		
 		SetWindowPos(hwndApp, /*HWND_TOP*/ HWND_TOPMOST, 
 					 gWinRect.left, gWinRect.top,
@@ -1246,6 +1235,21 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.17  2002/10/09 18:38:42  emk
+ 3.5.7 - 9 Oct 2002 - emk
+
+ Engines built from this code will require script changes.
+
+   * Scheme: Changed 'for-each-item' to 'foreach', and added 'for'.
+   * Added extract-docs.pl, which generates HTML manuals.
+   * Added many new test cases for the new 5L language.
+   * Fixed minor bugs in CryptStream*.*, as discovered by valgrind.
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+   * Removed Windows cursor-clipping code because it was occassionally
+     immobilizing the cursor completely.
+
  Revision 1.16  2002/08/22 00:12:22  emk
  3.5.4 - 21 Aug 2002 - emk
 

@@ -2,6 +2,8 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 3.5.7 - 9 Oct 2002 - emk
 
+Engines built from this code will require script changes.
+
   * Scheme: Changed 'for-each-item' to 'foreach', and added 'for'.
   * Added extract-docs.pl, which generates HTML manuals.
   * Added many new test cases for the new 5L language.

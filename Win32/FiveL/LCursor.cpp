@@ -40,7 +40,6 @@ LCursorManager::LCursorManager()
 	mLeftTurnCursor = NULL;
 	mRightTurnCursor = NULL;
 	mDefaultCursor = ARROW_CURSOR;
-	cursorRect = NULL;
 }
 
 LCursorManager::~LCursorManager()
@@ -61,8 +60,6 @@ LCursorManager::~LCursorManager()
 		::DestroyCursor(mLeftTurnCursor);
 	if (mRightTurnCursor != NULL)
 		::DestroyCursor(mRightTurnCursor);
-
-	::ClipCursor(NULL);
 }
 
 void LCursorManager::Init(HINSTANCE inInstance)
@@ -78,45 +75,6 @@ void LCursorManager::Init(HINSTANCE inInstance)
 	mRightTurnCursor = ::LoadCursor(inInstance, MAKEINTRESOURCE(IDC_TURN_RIGHT_CURSOR));
 
 	mDefaultCursor = ARROW_CURSOR;
-}
-
-void LCursorManager::ClipCursor(TRect *inClipRect)
-{
-	RECT theRect;
-
-	if (inClipRect != NULL)
-	{
-		cursorRect = new TRect(*inClipRect);
-		theRect = inClipRect->GetRECT();
-		::ClipCursor(&theRect);
-	}
-	else
-		::ClipCursor(NULL);
-}
-
-// Removes cursor constraints
-void LCursorManager::UnClipCursor()
-{
-	RECT theRect;
-
-	if (cursorRect == NULL) 
-	{
-		::GetClipCursor(&theRect);
-		cursorRect = new TRect();
-		cursorRect->Set(theRect);
-		
-	}
-	::ClipCursor(NULL);	
-
-}
-
-// Restore cursor clipping rect after a call to UnClipCursor
-void LCursorManager::ReClipCursor()
-{
-	RECT theRect;
-
-	theRect = cursorRect->GetRECT();
-	::ClipCursor(&theRect);	
 }
 
 //
@@ -293,6 +251,21 @@ void LCursorManager::CheckCursor(void)
 
 /*
  $Log$
+ Revision 1.5  2002/10/09 18:38:42  emk
+ 3.5.7 - 9 Oct 2002 - emk
+
+ Engines built from this code will require script changes.
+
+   * Scheme: Changed 'for-each-item' to 'foreach', and added 'for'.
+   * Added extract-docs.pl, which generates HTML manuals.
+   * Added many new test cases for the new 5L language.
+   * Fixed minor bugs in CryptStream*.*, as discovered by valgrind.
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+   * Removed Windows cursor-clipping code because it was occassionally
+     immobilizing the cursor completely.
+
  Revision 1.4  2002/10/03 19:26:28  emk
  Rebuilt Windows engine with MzScheme 202 and cursor fix from 3.4.2.
 
