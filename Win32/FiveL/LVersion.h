@@ -17,16 +17,19 @@
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
 #define REV_BIG			00
-#define REV_SMALL		07
+#define REV_SMALL		08
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0.7"
+#define VERSION_STRING	"5L for Win32 3.2.0.8"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.9  2002/07/16 16:16:57  emk
+ 3.2.0.8 - Backported (log ...) command.
+
  Revision 1.3.2.8  2002/07/03 13:37:06  emk
  3.2.0.7, Wednesday, July 3, 2002, 2:53 PM
 

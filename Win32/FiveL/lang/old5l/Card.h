@@ -332,6 +332,11 @@ class Card : public Index
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
+		void    DoLog();
+        
+		//////////
+		// Refer to 5L Scriptor's Guide for details on this 5L command.
+		//
 		void    DoLookup();
         
 		//////////
@@ -767,6 +772,9 @@ class CardManager : public IndexManager
 
 /*
  $Log$
+ Revision 1.1.2.2  2002/07/16 16:16:57  emk
+ 3.2.0.8 - Backported (log ...) command.
+
  Revision 1.1.2.1  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:

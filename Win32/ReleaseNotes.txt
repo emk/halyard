@@ -1,5 +1,10 @@
 FiveL for Win32 Release Notes
 
+3.2.0.8, Wednesday, July 15, 2002, 2:53 PM
+
+	Backported the (log ...) command so Douglas has some hope
+	of debugging Windows problems.
+
 3.2.0.7, Wednesday, July 3, 2002, 2:53 PM
 
     Bug #980 revisted, again: The LTouchZone class supported

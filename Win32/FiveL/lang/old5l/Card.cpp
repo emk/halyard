@@ -180,6 +180,7 @@ void Card::DoCommand(void)
     else if (opword == (char *)"loadpal") DoLoadpal();
     else if (opword == (char *)"loadpic" || opword == (char *)"loadpick") DoLoadpic();
 	else if (opword == (char *)"lock") DoLock();
+	else if (opword == (char *)"log") DoLog();
     else if (opword == (char *)"lookup") DoLookup();
     else if (opword == (char *)"micro") DoMicro();
     else if (opword == (char *)"nap") DoNap();
@@ -1351,6 +1352,30 @@ void Card::DoLock()
     }
     
     gView->Lock(doClear);
+}
+
+/*--------------------------------------------------------
+    (LOG <LOGFILE> <MSG>)
+
+	LOGFILE Either "5L", "Debug" or "MissingMedia".
+	MSG     The string to log.
+
+    Write a message to one of 5L's log files.
+----------------------------------------------------------*/
+void Card::DoLog()
+{
+	TString log_name, msg;
+	m_Script >> log_name >> msg;
+	log_name.MakeLower();
+
+	if (log_name == "5l")
+		gLog.Log("%s", msg.GetString());
+	else if (log_name == "debug")
+		gDebugLog.Log("%s", msg.GetString());
+	else if (log_name == "missingmedia")
+		gMissingMediaLog.Log("%s", msg.GetString());
+	else
+		gDebugLog.Caution("No such log file: %s", log_name.GetString());
 }
 
 /*------------------------------------------------------------------
@@ -2629,6 +2654,9 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.1.2.5  2002/07/16 16:16:57  emk
+ 3.2.0.8 - Backported (log ...) command.
+
  Revision 1.1.2.4  2002/07/03 13:37:06  emk
  3.2.0.7, Wednesday, July 3, 2002, 2:53 PM
 
