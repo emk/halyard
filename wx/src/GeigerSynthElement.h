@@ -31,9 +31,9 @@ class GeigerAudioStream;
 class VorbisAudioStream;
 
 //////////
-// A GeigerSynthElement manages a number of separate audio streams to
-// acheive a complete Geiger-counter-like effect.
-//
+/// A GeigerSynthElement manages a number of separate audio streams to
+/// acheive a complete Geiger-counter-like effect.
+///
 class GeigerSynthElement : public InvisibleElement, public IMediaElement,
                            public TStateListener
 {

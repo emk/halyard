@@ -26,11 +26,11 @@
 #include "ToolWindow.h"
 
 //////////
-// A Listener allows you type in commands, and see their results in a
-// history window.  It's the traditional LISP term for any sort of
-// interactive command line for a running application.  In other systems,
-// it's also known as an "interactor" or "message box".
-//
+/// A Listener allows you type in commands, and see their results in a
+/// history window.  It's the traditional LISP term for any sort of
+/// interactive command line for a running application.  In other systems,
+/// it's also known as an "interactor" or "message box".
+///
 class Listener : public ToolWindow
 {
 	wxTextCtrl *mHistory;

@@ -25,9 +25,9 @@
 
 
 //////////
-// This is a wxWindows log target which knows how to write messages to
-// the traditional 5L logging subsystem.
-//
+/// This is a wxWindows log target which knows how to write messages to
+/// the traditional 5L logging subsystem.
+///
 class Log5L : public wxLog
 {
 public:

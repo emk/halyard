@@ -26,14 +26,14 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// Copy characters from a source (specified using input
-// iterators) into a new string.
-//
-// This function exists only to work around the lack of an
-//   template <class InputIter>
-//   basic_string(InputIter begin, InputIter end)
-// constructor in MSVC++.
-//
+/// Copy characters from a source (specified using input
+/// iterators) into a new string.
+///
+/// This function exists only to work around the lack of an
+///   template <class InputIter>
+///   basic_string(InputIter begin, InputIter end)
+/// constructor in MSVC++.
+///
 template <class OutCharT, class InputIter>
 inline std::basic_string<OutCharT>
 ConstructString(InputIter begin, InputIter end)

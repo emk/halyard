@@ -29,72 +29,72 @@ class Stage;
 class FiveLApp : public wxApp
 {
 	//////////
-	// Do we have our own, custom event loop?  Or should we use wxWindows'
-	// event loop?
-	//
+	/// Do we have our own, custom event loop?  Or should we use wxWindows'
+	/// event loop?
+	///
     bool mHaveOwnEventLoop;
 
 	//////////
-	// Our StageFrame.
-	//
+	/// Our StageFrame.
+	///
 	StageFrame *mStageFrame;
 
 	//////////
-	// This procedure is called periodically by the script interpreter
-	// to give time to the GUI.
-	//
+	/// This procedure is called periodically by the script interpreter
+	/// to give time to the GUI.
+	///
     static void IdleProc(bool inBlock);
 
 public:
     FiveLApp();
 
 	//////////
-	// We perform normal application initialization in OnInit. 
-	//
+	/// We perform normal application initialization in OnInit. 
+	///
     virtual bool OnInit();
 
 	//////////
-	// We perform normal application cleanup in OnExit.
-	//
+	/// We perform normal application cleanup in OnExit.
+	///
     virtual int OnExit();
 
 	//////////
-    // We attempt to replace the standard main loop with one that
-	// calls TInterpreterManager::Run.
-	//
+    /// We attempt to replace the standard main loop with one that
+	/// calls TInterpreterManager::Run.
+	///
     virtual int MainLoop();
 
 	//////////
-	// Because we've chosen to provide our own main loop, we need to
-	// override the standard "request application shutdown" function.
-	//
+	/// Because we've chosen to provide our own main loop, we need to
+	/// override the standard "request application shutdown" function.
+	///
     virtual void ExitMainLoop();
 
 	//////////
-	// Remove the stage frame from this application.  This should only
-	// be called by the StageFrame.
-	//
+	/// Remove the stage frame from this application.  This should only
+	/// be called by the StageFrame.
+	///
 	void DetachStageFrame() { mStageFrame = NULL; }
 	
 	//////////
-	// Get the StageFrame for this application.
-	//
+	/// Get the StageFrame for this application.
+	///
 	StageFrame *GetStageFrame() { ASSERT(mStageFrame); return mStageFrame; }
 	
 	//////////
-	// Get the Stage for this application.
-	//
+	/// Get the Stage for this application.
+	///
 	Stage *GetStage();
 
     //////////
-    // Return true if and only if this application has a stage.
-    //
+    /// Return true if and only if this application has a stage.
+    ///
     bool HaveStage() { return mStageFrame != NULL; } 
 };
 
 //////////
-// Declare a 'FiveLApp &wxGetApp()' method.
-//
+/// Declare a 'FiveLApp &wxGetApp()' method.
+///
 DECLARE_APP(FiveLApp)
 
 #endif // FiveLApp_H

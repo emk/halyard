@@ -21,11 +21,11 @@
 // @END_LICENSE
 
 //////////////////////////////////////////////////////////////////////////////
-// \file TEncoding.h
-//
-// Conversion from specially-formatted 7-bit strings to native 8-bit
-// strings.
-//
+/// \file TEncoding.h
+///
+/// Conversion from specially-formatted 7-bit strings to native 8-bit
+/// strings.
+///
 
 #ifndef TEncoding_h
 #define TEncoding_h
@@ -33,8 +33,8 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// An opaque struct type for storing entity to character mappings.
-//
+/// An opaque struct type for storing entity to character mappings.
+///
 template <class CharT>
 struct EntityMapping;
 
@@ -63,98 +63,98 @@ public:
 	typedef std::basic_string<CharT> string_type;
 
 	//////////
-	// A callback function that logs errors in strings passed to various
-	// TEncoding methods.  A logging function may ignore errors, write them
-	// to a log file, or throw an exception.  However, a logging function
-	// should be thread-safe and re-entrant.
-	//
-	// [in] inBadString - the string with an error
-	// [in] inBadPos - the 0-based character position of the error
-	// [in] inErrMsg - a message explaining what is wrong
+	/// A callback function that logs errors in strings passed to various
+	/// TEncoding methods.  A logging function may ignore errors, write them
+	/// to a log file, or throw an exception.  However, a logging function
+	/// should be thread-safe and re-entrant.
+	///
+	/// \param inBadString  the string with an error
+	/// \param inBadPos  the 0-based character position of the error
+	/// \param inErrMsg  a message explaining what is wrong
 	typedef void (*ErrorLoggingFunc) (const string_type &inBadString,
 									  size_t inBadPos,
 									  const char *inErrMsg);
 
 private:
 	//////////
-	// The name of the encoding we're using.
-	// 
+	/// The name of the encoding we're using.
+	/// 
 	std::string mEncodingName;
 
 	//////////
-	// Our error logging callback.
-	//
+	/// Our error logging callback.
+	///
 	ErrorLoggingFunc mErrorLoggingFunc;
 	
 	//////////
-	// The entity mappings for this encoding.
-	//
+	/// The entity mappings for this encoding.
+	///
 	const EntityMapping<CharT> *mEntityMapping;
 
 public:
 	//////////
-	// Constructor.  Valid encoding names are currently:
-	//
-	//    ISO-8859-1: ISO Latin 1 (Unix & web sites)
-	//    windows-1252: Windows Latin 1 (U.S. versions of Windows)
-	//      http://www.microsoft.com/globaldev/reference/sbcs/1252.htm
-	//    macintosh: Standard Apple character set
-	//  
-	// These encoding names are selected from the IANA MIME character
-	// set names at <http://www.iana.org/assignments/character-sets>.
-	//
-	// [in] inEncodingName - An encoding name.
-	//
+	/// Constructor.  Valid encoding names are currently:
+	///
+	///    ISO-8859-1: ISO Latin 1 (Unix & web sites)
+	///    windows-1252: Windows Latin 1 (U.S. versions of Windows)
+	///      http://www.microsoft.com/globaldev/reference/sbcs/1252.htm
+	///    macintosh: Standard Apple character set
+	///  
+	/// These encoding names are selected from the IANA MIME character
+	/// set names at <http://www.iana.org/assignments/character-sets>.
+	///
+	/// \param inEncodingName  An encoding name.
+	///
 	TEncoding (const std::string &inEncodingName,
 			   ErrorLoggingFunc inErrorLoggingFunc);
 
 	//////////
-	// Fetch the name of the encoding supported by this class.
-	//
+	/// Fetch the name of the encoding supported by this class.
+	///
 	const std::string GetEncodingName () const
 		{ return mEncodingName; }
 
 	//////////
-	// Transform double hyphens into m-dash entities (a dash the
-	// width of the capital letter 'M'), and '...' sequences into
-	// horizontal ellipsis entities.
-	//
-	// [in] inString - The string to transform.
-	// [out] return - The transformed string.
-	//
+	/// Transform double hyphens into m-dash entities (a dash the
+	/// width of the capital letter 'M'), and '...' sequences into
+	/// horizontal ellipsis entities.
+	///
+	/// \param inString  The string to transform.
+	/// \return  The transformed string.
+	///
 	string_type FixSpecials (const string_type& inString) const;
 
 	//////////
-	// Transform \' and \" characters into appropriate left and right
-	// quote entities.
-	//
-	// [in] inString - The string to transform.
-	// [out] return - The transformed string.
-	//
+	/// Transform \' and \" characters into appropriate left and right
+	/// quote entities.
+	///
+	/// \param inString  The string to transform.
+	/// \return  The transformed string.
+	///
 	string_type FixQuotes (const string_type& inString) const;
 
 	//////////
-	// Transform ISO entities (&quot;, &mdash;, etc.) into appropriate
-	// characters in the current encoding.  Not all entities are
-	// supported.
-	//
-	// For now, 8-bit data is passed unchanged for backwards compatibility.
-   	//
-	// [in] inString - The string to transform.
-	// [out] return - The transformed string.
-	//
+	/// Transform ISO entities (&quot;, &mdash;, etc.) into appropriate
+	/// characters in the current encoding.  Not all entities are
+	/// supported.
+	///
+	/// For now, 8-bit data is passed unchanged for backwards compatibility.
+   	///
+	/// \param inString  The string to transform.
+	/// \return  The transformed string.
+	///
 	string_type EncodeEntities (const string_type& inString) const;
 
 	//////////
-	// Transform string into a native 8-bit string.  This applies all
-	// the transformations supported by this object in an appropriate
-	// sequence.
-	//
-	// For now, 8-bit data is passed unchanged for backwards compatibility.
-   	//
-	// [in] inString - A specially formatted 7-bit string.
-	// [out] return - An 8-bit string.
-	//
+	/// Transform string into a native 8-bit string.  This applies all
+	/// the transformations supported by this object in an appropriate
+	/// sequence.
+	///
+	/// For now, 8-bit data is passed unchanged for backwards compatibility.
+   	///
+	/// \param inString  A specially formatted 7-bit string.
+	/// \return  An 8-bit string.
+	///
 	string_type TransformString (const string_type& inString) const;
 };
 

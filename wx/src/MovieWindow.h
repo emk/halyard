@@ -36,22 +36,22 @@ enum /* MovieWindowStyle */ {
 };
 
 //////////
-// A wxWindow subclass for displaying and managing a movie.  By itself, this
-// class does nothing but display a blank widget; you generally want to use
-// an appropriate subclass to actually show a movie.
-//
+/// A wxWindow subclass for displaying and managing a movie.  By itself, this
+/// class does nothing but display a blank widget; you generally want to use
+/// an appropriate subclass to actually show a movie.
+///
 class MovieWindow : public wxWindow
 {
     MovieWindowStyle mMovieWindowStyle;
 
 public:
     //////////
-    // Create a new MovieWindow.  The parameters of this function are
-    // identical to those of the wxWindow constructor, except for 
-    // 'inWindowStyle', which corresponds to 'style', and
-    // 'inMovieWindowStyle', which handles options specific to this
-    // class.
-    //
+    /// Create a new MovieWindow.  The parameters of this function are
+    /// identical to those of the wxWindow constructor, except for 
+    /// 'inWindowStyle', which corresponds to 'style', and
+    /// 'inMovieWindowStyle', which handles options specific to this
+    /// class.
+    ///
     MovieWindow(wxWindow *inParent, wxWindowID inID = -1,
 				const wxPoint &inPos = wxDefaultPosition,
 				const wxSize &inSize = wxDefaultSize,
@@ -60,55 +60,55 @@ public:
 				const wxString &inName = wxPanelNameStr);
 
     //////////
-    // Clean up the resources held by the MovieWindow.  Use Destroy()
-    // instead of calling this function directly.
-    //
+    /// Clean up the resources held by the MovieWindow.  Use Destroy()
+    /// instead of calling this function directly.
+    ///
     virtual ~MovieWindow();
 
 	//////////
-	// Get the style of this movie window.
-	//
+	/// Get the style of this movie window.
+	///
 	MovieWindowStyle GetMovieWindowStyle() { return mMovieWindowStyle; }
 
     //////////
-    // Ask this widget to create and manage the specified movie.
-    //
+    /// Ask this widget to create and manage the specified movie.
+    ///
     virtual void SetMovie(const wxString &inName);
 
     //////////
-    // Get the current frame of the movie (where there are 30 frames
-	// per second).  Returns 0 if there is no movie or the movie hasn't
-	// started.  This number *can* decrease, especially if the user
-	// is playing with the movie controller.
-    //
+    /// Get the current frame of the movie (where there are 30 frames
+	/// per second).  Returns 0 if there is no movie or the movie hasn't
+	/// started.  This number *can* decrease, especially if the user
+	/// is playing with the movie controller.
+    ///
     virtual MovieFrame GetFrame();
     
     //////////
-    // Returns true if the movie is looping.
-    //
+    /// Returns true if the movie is looping.
+    ///
     virtual bool IsLooping() { return false; }
 
     //////////
-    // Is the movie finished?  This function is fairly smart about broken
-	// movies, looping movies, etc.
-    //
+    /// Is the movie finished?  This function is fairly smart about broken
+	/// movies, looping movies, etc.
+    ///
     virtual bool IsDone();
 
 	//////////
-	// Pause the movie.
-	// Note: these methods may not be happy if the underlying movie code 
-	// does not like to be paused.
-	//
+	/// Pause the movie.
+	/// Note: these methods may not be happy if the underlying movie code 
+	/// does not like to be paused.
+	///
 	virtual void Pause();
 
 	//////////
-	// Resume the movie
-	//
+	/// Resume the movie
+	///
 	virtual void Resume();
 
     //////////
-    // Set the movie's volume.
-    //
+    /// Set the movie's volume.
+    ///
 	virtual void SetVolume(const std::string &inChannel, double inVolume);
 };
 

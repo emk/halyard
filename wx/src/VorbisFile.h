@@ -63,36 +63,36 @@ class VorbisFile
 
 public:
 	//////////
-	// Open an Ogg Vorbis audio file for reading.  You must specify
-	// the data format you wish to receive; this class has limited
-	// conversion capabilities.
-	//
-	// [in] inFileName - The name of the file to open
-	// [in] inWantedFrequency - The frequency of the data we want to read
-	// [in] inWantedChannels - The number of channels we want to read
-	//
+	/// Open an Ogg Vorbis audio file for reading.  You must specify
+	/// the data format you wish to receive; this class has limited
+	/// conversion capabilities.
+	///
+	/// \param inFileName  The name of the file to open
+	/// \param inWantedFrequency  The frequency of the data we want to read
+	/// \param inWantedChannels  The number of channels we want to read
+	///
 	VorbisFile(const char *inFileName, int inWantedFrequency,
 			   int inWantedChannels);
 	~VorbisFile();
 
 	//////////
-	// Read the specified amount of data into a buffer, using the
-	// specified format.
-	//
-	// [out] outData - The buffer to fill
-	// [in] inMaxSize - The maximum size of the buffer
-	// [out] outSizeUsed - The amount of data actually read
-	// [out] result - true if the read succeeded, false if we've reached
-	//                the end of the file
-	//
+	/// Read the specified amount of data into a buffer, using the
+	/// specified format.
+	///
+	/// \param outData  (out) The buffer to fill
+	/// \param inMaxSize  The maximum size of the buffer
+	/// \param outSizeUsed  (out) The amount of data actually read
+	/// \param result  (out) true if the read succeeded, false if we've reached
+	///                the end of the file
+	///
 	bool Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed);
 
 	//////////
-	// Read all remaining data from the file and return it in an
-	// appropriately-sized vector.
-	//
-	// [out] return - The buffer.  The caller must delete this.
-	//
+	/// Read all remaining data from the file and return it in an
+	/// appropriately-sized vector.
+	///
+	/// \return  The buffer.  The caller must delete this.
+	///
 	std::vector<int16> *ReadAll();
 };
 

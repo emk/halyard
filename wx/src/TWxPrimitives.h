@@ -28,9 +28,9 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// Register all of the Common primitives with the gPrimitiveManager
-// object, so our scripts have some useful commands available.
-//
+/// Register all of the Common primitives with the gPrimitiveManager
+/// object, so our scripts have some useful commands available.
+///
 extern void RegisterWxPrimitives();
 
 END_NAMESPACE_FIVEL

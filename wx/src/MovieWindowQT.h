@@ -26,24 +26,24 @@
 class TQTMovie;
 
 //////////
-// A wxWindow subclass which can display and manage a QuickTime movie.
-// TODO - Still frightfully incomplete, but enough to get by with.
-//
+/// A wxWindow subclass which can display and manage a QuickTime movie.
+/// TODO - Still frightfully incomplete, but enough to get by with.
+///
 class MovieWindowQT : public MovieWindow
 {
     WXHWND mHWND;
     TQTMovie *mMovie;
 
 	//////////
-	// Delete any movie attached to this object.
-	//
+	/// Delete any movie attached to this object.
+	///
     void CleanUpMovie();
 
 public:
     //////////
-    // Create a new MovieWindowQT.  The parameters of this function are
-    // identical to those of the MovieWindow constructor.
-    //
+    /// Create a new MovieWindowQT.  The parameters of this function are
+    /// identical to those of the MovieWindow constructor.
+    ///
     MovieWindowQT(wxWindow *inParent, wxWindowID inID = -1,
 				  const wxPoint &inPos = wxDefaultPosition,
 				  const wxSize &inSize = wxDefaultSize,
@@ -52,63 +52,63 @@ public:
 				  const wxString &inName = wxPanelNameStr);
 
     //////////
-    // Clean up the resources held by the MovieWindow.  Use Destroy()
-    // instead of calling this function directly.
-    //
+    /// Clean up the resources held by the MovieWindow.  Use Destroy()
+    /// instead of calling this function directly.
+    ///
     virtual ~MovieWindowQT();
 
     //////////
-    // Ask this widget to create and manage the specified movie.
-    //
+    /// Ask this widget to create and manage the specified movie.
+    ///
     virtual void SetMovie(const wxString &inName);
 
     //////////
-    // Get the current frame of the movie (where there are 30 frames
-	// per second).  Returns 0 if there is no movie or the movie hasn't
-	// started.  This number *can* decrease, especially if the user
-	// is playing with the movie controller.
-    //
+    /// Get the current frame of the movie (where there are 30 frames
+	/// per second).  Returns 0 if there is no movie or the movie hasn't
+	/// started.  This number *can* decrease, especially if the user
+	/// is playing with the movie controller.
+    ///
     virtual MovieFrame GetFrame();
 
     //////////
-    // Returns true if the movie is looping.
-    //
+    /// Returns true if the movie is looping.
+    ///
     virtual bool IsLooping();
 
     //////////
-    // Is the movie finished?  This function is fairly smart about broken
-	// movies, looping movies, etc.
-    //
+    /// Is the movie finished?  This function is fairly smart about broken
+	/// movies, looping movies, etc.
+    ///
     virtual bool IsDone();
 
 	//////////
-	// Pause the movie
-	// Note: these methods may not be happy if the underlying movie code 
-	// does not like to be paused.
-	//
+	/// Pause the movie
+	/// Note: these methods may not be happy if the underlying movie code 
+	/// does not like to be paused.
+	///
 	virtual void Pause();
 
 	//////////
-	// Resume the movie
-	//
+	/// Resume the movie
+	///
 	virtual void Resume();
 
     //////////
-    // Set the movie's volume.
-    //
+    /// Set the movie's volume.
+    ///
 	virtual void SetVolume(const std::string &inChannel, double inVolume);
 
 	void OnEraseBackground(wxEraseEvent &inEvent);
 
 	//////////
-	// Some Sorenson codecs need to receive this paint message, or they
-	// won't display video at all.  So just smile and nod, and do what
-	// they want.
-	//
-	// TODO - I haven't tested whether this is still necessary under
-	// wxWindows, but it was in older applications using this QuickTime
-	// interface.)
-	//
+	/// Some Sorenson codecs need to receive this paint message, or they
+	/// won't display video at all.  So just smile and nod, and do what
+	/// they want.
+	///
+	/// TODO - I haven't tested whether this is still necessary under
+	/// wxWindows, but it was in older applications using this QuickTime
+	/// interface.)
+	///
 	void OnPaint(wxPaintEvent &inEvent);
 
 	void OnIdle(wxIdleEvent &inEvent);

@@ -28,10 +28,10 @@
 #include "MovieWindow.h"
 
 //////////
-// A Widget subclass which implements some MovieWindow-specific features.
-//
-// TODO - Make a typedef for Frame counts.
-//
+/// A Widget subclass which implements some MovieWindow-specific features.
+///
+/// TODO - Make a typedef for Frame counts.
+///
 class MovieElement : public Widget, public IMediaElement
 {
     MovieWindow *mMovieWindow;

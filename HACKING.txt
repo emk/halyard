@@ -119,6 +119,17 @@ Building Macintosh 5L
 
   Fix these instructions as needed.
 
+Source Documentation
+--------------------
+
+Tamale is documented using doxygen, an excellent, open source documentation
+generator for C++.  You can get beautiful documentation for the entire
+codebase--with diagrams--by installing and running doxygen.  See
+doc/README.txt for details.
+
+You can also configure doxygen to generate annotated, cross-referenced
+source code and call graphs.
+
 What Lives Where
 ----------------
 

@@ -29,22 +29,22 @@ typedef shared_ptr<Element> ElementPtr;
 class DrawingArea;
 
 //////////
-// This is an ad-hoc utility class for keeping track of which DrawingArea
-// we're supposed to be using.  It's tightly-coupled to Stage, but split
-// into a separate file to keep Stage as small as possible.
-//
+/// This is an ad-hoc utility class for keeping track of which DrawingArea
+/// we're supposed to be using.  It's tightly-coupled to Stage, but split
+/// into a separate file to keep Stage as small as possible.
+///
 class DrawingContextStack {
     typedef std::vector<ElementPtr> ElementStack;
 
 	//////////
-	// The stage we're associated with.  This provides our default
-	// DrawingArea when we have nothing else.
-	//
+	/// The stage we're associated with.  This provides our default
+	/// DrawingArea when we have nothing else.
+	///
 	Stage *mStage;
 
     //////////
-    // A stack of currently-active drawing contexts.
-    //
+    /// A stack of currently-active drawing contexts.
+    ///
     ElementStack mDrawingContextStack;
 
 public:

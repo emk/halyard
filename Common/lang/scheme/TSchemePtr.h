@@ -28,12 +28,12 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// A smart-pointer class which can point to a Scheme object and prevent
-// it from being garbage-collected.  You must use this class to point to
-// a Scheme_Object stored anywhere except the stack (which the Scheme GC
-// automatically scans for us).  So global and heap objects *must* use
-// this class to refer to anything in the Scheme heap.
-//
+/// A smart-pointer class which can point to a Scheme object and prevent
+/// it from being garbage-collected.  You must use this class to point to
+/// a Scheme_Object stored anywhere except the stack (which the Scheme GC
+/// automatically scans for us).  So global and heap objects *must* use
+/// this class to refer to anything in the Scheme heap.
+///
 template <class Type>
 class TSchemePtr
 {

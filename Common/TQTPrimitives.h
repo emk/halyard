@@ -33,8 +33,8 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// Register a bunch of QuickTime-related commands with the gPrimitiveManager.
-//
+/// Register a bunch of QuickTime-related commands with the gPrimitiveManager.
+///
 extern void RegisterQuickTimePrimitives();
 
 END_NAMESPACE_FIVEL

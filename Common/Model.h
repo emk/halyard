@@ -27,8 +27,8 @@
 
 
 //////////
-// A lightweight, persistent object database with XML serialization.
-//
+/// A lightweight, persistent object database with XML serialization.
+///
 namespace model {
 
 	// Forward declarations.
@@ -57,8 +57,8 @@ namespace model {
 	};
 
 	//////////
-	// The type of the data.
-	//
+	/// The type of the data.
+	///
 	enum Type {
 		StringType,
 		IntegerType,
@@ -68,8 +68,8 @@ namespace model {
 	};
 	
 	//////////
-	// Class information about subclasses of Object. 
-	//
+	/// Class information about subclasses of Object. 
+	///
 	class Class {
 	public:
 		typedef Object *(*CreatorFunction)();
@@ -92,8 +92,8 @@ namespace model {
 	};
 
 	//////////
-	// The abstract superclass of all data in the Model.
-	//
+	/// The abstract superclass of all data in the Model.
+	///
 	class Datum {
 		DISABLE_COPY_AND_ASSIGN(Datum);
 		Type mType;
@@ -107,23 +107,23 @@ namespace model {
 		virtual ~Datum() {}
 
 		//////////
-		// Immediately after a Datum is created, it should be registered
-		// with a Model object.  You can do this by inserting the Datum
-		// into a container, which will call RegisterWithModel.  The
-		// inParent argument will be NULL for the top-most item in
-		// the container.
-		//
+		/// Immediately after a Datum is created, it should be registered
+		/// with a Model object.  You can do this by inserting the Datum
+		/// into a container, which will call RegisterWithModel.  The
+		/// inParent argument will be NULL for the top-most item in
+		/// the container.
+		///
 		virtual void RegisterWithModel(Model *inModel,
 									   MutableDatum *inParent) {}
 
 		//////////
-		// Fill in any children of the datum using the specified XML node.
-		//
+		/// Fill in any children of the datum using the specified XML node.
+		///
 		virtual void Fill(xml_node inNode) {}
 
 		//////////
-		// Write a Datum to the specified XML node.
-		//
+		/// Write a Datum to the specified XML node.
+		///
 		virtual void Write(xml_node inContainer) = 0;
 
 	protected:
@@ -132,20 +132,20 @@ namespace model {
 		friend class List;
 
 		//////////
-		// Called when this datum is deleted, either by regular container
-		// operations or Undo/Redo.
-		//
+		/// Called when this datum is deleted, either by regular container
+		/// operations or Undo/Redo.
+		///
 		virtual void NotifyDeleted() {}
 
 		//////////
-		// Called when this datum is undeleted by Undo/Redo.
-		//
+		/// Called when this datum is undeleted by Undo/Redo.
+		///
 		virtual void NotifyUndeleted() {}
 	};
 
 	//////////
-	// Verify that inDatum is of type T.  If it isn't, throw an error.
-	//
+	/// Verify that inDatum is of type T.  If it isn't, throw an error.
+	///
 	template <typename T>
 	T *cast(Datum *inDatum)
 	{	
@@ -157,11 +157,11 @@ namespace model {
 	}
 
 	//////////
-	// A ValueDatum is a simple, immutable datum which holds a basic
-	// C++ data type.  You can't change the value in a value datum--you
-	// can only replace it within its container.  This simplifies the
-	// Undo/Redo logic.
-	//
+	/// A ValueDatum is a simple, immutable datum which holds a basic
+	/// C++ data type.  You can't change the value in a value datum--you
+	/// can only replace it within its container.  This simplifies the
+	/// Undo/Redo logic.
+	///
 	template <typename T>
 	class ValueDatum : public Datum {
 	public:
@@ -203,8 +203,8 @@ namespace model {
 	DEFINE_VALUE_DATUM_CLASS(String,StringType,std::string);
 
 	//////////
-	// A MutableDatum can be changed and must therefore support Undo.
-	// 
+	/// A MutableDatum can be changed and must therefore support Undo.
+	/// 
 	class MutableDatum : public Datum {
 		friend class Change;
 
@@ -215,40 +215,40 @@ namespace model {
 		MutableDatum(Type inType);
 
 		//////////
-		// Called by Change to let the datum know a change has occurred.
-		//
+		/// Called by Change to let the datum know a change has occurred.
+		///
 		virtual void NotifyChanged();
 
 		//////////
-		// To change this datum, instantiate an appropriate Change
-		// object, and pass it to this method.
-		//
+		/// To change this datum, instantiate an appropriate Change
+		/// object, and pass it to this method.
+		///
 		void ApplyChange(Change *inChange);
 
 		//////////
-		// Register a child object with our model.
-		//
-		// NOTE - This should really be a method on ContainDatum, but
-		// that class is a template class.
-		//
+		/// Register a child object with our model.
+		///
+		/// NOTE - This should really be a method on ContainDatum, but
+		/// that class is a template class.
+		///
 		void RegisterChildWithModel(Datum *inDatum);
 
 	public:
 		//////////
-		// Mutable objects actually need to know about their Model and
-		// parent, and communicate with them on a regular basis.
-		// Therefore, we actually pay attention to this method.
-		//
+		/// Mutable objects actually need to know about their Model and
+		/// parent, and communicate with them on a regular basis.
+		/// Therefore, we actually pay attention to this method.
+		///
 		virtual void RegisterWithModel(Model *inModel, MutableDatum *inParent);
 
 		Model *GetModel() { ASSERT(mModel); return mModel; }
 	};		
 
 	//////////
-	// The parent class of all Datum objects which contain other Datum
-	// objects.  This class is heavily templated to support different
-	// key and value types.
-	//
+	/// The parent class of all Datum objects which contain other Datum
+	/// objects.  This class is heavily templated to support different
+	/// key and value types.
+	///
 	template <typename T>
 	class CollectionDatum : public MutableDatum {
 		friend class Change;
@@ -281,46 +281,46 @@ namespace model {
 			: MutableDatum(inType) {}
 
 		//////////
-		// Return the datum associated with the specified key.
-		// MSVC 6 - Not pure virtual to work around template bug.
-		//
+		/// Return the datum associated with the specified key.
+		/// MSVC 6 - Not pure virtual to work around template bug.
+		///
 		virtual Datum *DoGet(ConstKeyType &inKey)
 			{ ASSERT(false); return NULL; }
 
 		//////////
-		// Search the collection for the specified key.  If the key
-		// exists, return a pointer to the associated Datum.  If the
-		// key does not exist, return NULL.
-		//
-		// This is part of the low-level editing API called by various
-		// subclasses of Change.
-		// MSVC 6 - Not pure virtual to work around template bug.
-		//
+		/// Search the collection for the specified key.  If the key
+		/// exists, return a pointer to the associated Datum.  If the
+		/// key does not exist, return NULL.
+		///
+		/// This is part of the low-level editing API called by various
+		/// subclasses of Change.
+		/// MSVC 6 - Not pure virtual to work around template bug.
+		///
 		virtual Datum *DoFind(ConstKeyType &inKey) { return NULL; }
 
 		//////////
-		// Remove the specified key/datum pair from the collection.  The
-		// key/datum *must* exist--if not, trigger an assertion.  Do not
-		// delete the Datum; it will become the responsibility of the
-		// caller.
-		//
-		// This is part of the low-level editing API called by various
-		// subclasses of Change.
-		// MSVC 6 - Not pure virtual to work around template bug.
-		//
+		/// Remove the specified key/datum pair from the collection.  The
+		/// key/datum *must* exist--if not, trigger an assertion.  Do not
+		/// delete the Datum; it will become the responsibility of the
+		/// caller.
+		///
+		/// This is part of the low-level editing API called by various
+		/// subclasses of Change.
+		/// MSVC 6 - Not pure virtual to work around template bug.
+		///
 		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum) {}
 
 		//////////
-		// Insert the specified datum into the collection with the
-		// specified key.  This operation never destroys any existing
-		// values--for map-type classes, any existing key has been
-		// removed with DoRemoveKnown; for list-type classes, existing
-		// values should be moved forward.
-		//
-		// This is part of the low-level editing API called by various
-		// subclasses of Change.
-		// MSVC 6 - Not pure virtual to work around template bug.
-		//
+		/// Insert the specified datum into the collection with the
+		/// specified key.  This operation never destroys any existing
+		/// values--for map-type classes, any existing key has been
+		/// removed with DoRemoveKnown; for list-type classes, existing
+		/// values should be moved forward.
+		///
+		/// This is part of the low-level editing API called by various
+		/// subclasses of Change.
+		/// MSVC 6 - Not pure virtual to work around template bug.
+		///
 		virtual void DoInsert(ConstKeyType &inKey, Datum *inDatum) {}
 
 	private:
@@ -329,9 +329,9 @@ namespace model {
 	};
 
 	//////////
-	// A basic hash-table-style datum.  This is an abstract class used
-	// to implement Map and Object.
-	//
+	/// A basic hash-table-style datum.  This is an abstract class used
+	/// to implement Map and Object.
+	///
 	class HashDatum : public CollectionDatum<std::string> {
 		Private::DatumMap mMap;
 
@@ -351,8 +351,8 @@ namespace model {
 	};
 
 	//////////
-	// A hash table.
-	//
+	/// A hash table.
+	///
 	class Map : public HashDatum {
 	public:
 		Map() : HashDatum(MapType) {}
@@ -362,8 +362,8 @@ namespace model {
 	};
 
 	//////////
-	// An object.
-	//
+	/// An object.
+	///
 	class Object : public HashDatum {
 		const Class *mClass;
 		std::vector<View*> mViews;
@@ -382,13 +382,13 @@ namespace model {
 		const Class *GetClass() { return mClass; }
 
 		//////////
-		// After creating a new object and adding it to its
-		// parent container, you should immediately call
-		// Initialize.
-		//
-		// XXX - This is a wart designed to work around the fact
-		// that calling Set(...) in a constructor is broken.
-		//
+		/// After creating a new object and adding it to its
+		/// parent container, you should immediately call
+		/// Initialize.
+		///
+		/// XXX - This is a wart designed to work around the fact
+		/// that calling Set(...) in a constructor is broken.
+		///
 		virtual void Initialize();
 
 		virtual void Write(xml_node inContainer);
@@ -399,9 +399,9 @@ namespace model {
 	};
 
 	//////////
-	// A simle list class, which supports inserting items (anywhere),
-	// deleting items (from anywhere), and setting items.
-	//
+	/// A simle list class, which supports inserting items (anywhere),
+	/// deleting items (from anywhere), and setting items.
+	///
 	class List : public CollectionDatum<size_t> {
 		friend class Change;
 
@@ -443,22 +443,22 @@ namespace model {
 
 #if 0
 	//////////
-	// Move an item within a collection or between collections.
-	//
+	/// Move an item within a collection or between collections.
+	///
 	template <typename C1, typename C2>
 	extern void Move(C1 *inDest, typename C1::ConstKeyType &inDestKey,
 					 C2 *inSrc, typename C2::ConstKeyType &inSrcKey);
 #endif // 0
 
 	//////////
-	// We support different data model formats.  Each format has three
-	// properties:
-	//
-	//   name: The name of this format.
-	//   version: The version of this format.
-	//   compatible back to: The earliest version of this format with
-	//     which the current version maintains backwards compatibility.
-	//
+	/// We support different data model formats.  Each format has three
+	/// properties:
+	///
+	///   name: The name of this format.
+	///   version: The version of this format.
+	///   compatible back to: The earliest version of this format with
+	///     which the current version maintains backwards compatibility.
+	///
 	class ModelFormat {
 	public:
 		typedef unsigned long Version;
@@ -480,9 +480,9 @@ namespace model {
 	};
 
 	//////////
-	// The Model itself.  This class manages a single persistent
-	// object tree.
-	//
+	/// The Model itself.  This class manages a single persistent
+	/// object tree.
+	///
 	class Model {
 	public:
 		typedef unsigned long Version;

@@ -26,8 +26,8 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// A class representing a closed polygon.
-//
+/// A class representing a closed polygon.
+///
 class TPolygon
 {
 	std::vector<TPoint> mVertices;
@@ -35,51 +35,51 @@ class TPolygon
 
 public:
 	//////////
-	// Create a new polygon.
-	//
-	// [in] inVertices - The vertices of the polygon.
-	// 
+	/// Create a new polygon.
+	///
+	/// \param inVertices  The vertices of the polygon.
+	/// 
 	TPolygon(const std::vector<TPoint> &inVertices);
 	TPolygon() : mVertices(), mBounds() {}
 
 	//////////
-	// Determine if a point is in the polygon.
-	// 
-	// [in] inPt - The point to check.
-	// 
+	/// Determine if a point is in the polygon.
+	/// 
+	/// \param inPt  The point to check.
+	/// 
 	bool Contains(TPoint &inPt);
 	
 	//////////
-	// Offset the polygon.
-	// 
-	// [in] inPt - Point to be used as the offset.
-	// 
+	/// Offset the polygon.
+	/// 
+	/// \param inPt  Point to be used as the offset.
+	/// 
 	void Offset(const TPoint &inPt);
 
 	//////////
-	// Get a rectangle which completely contains the polygon.
-	// 
+	/// Get a rectangle which completely contains the polygon.
+	/// 
 	const TRect Bounds() const { return mBounds; }
 	
 	//////////
-	// Get the number of points in the polygon.
-	//
+	/// Get the number of points in the polygon.
+	///
 	size_t GetPointCount() { return mVertices.size(); }
 
 	//////////
-	// Get the specified point.
-	//
+	/// Get the specified point.
+	///
 	TPoint GetPoint(size_t inIndex)
 	    { ASSERT(inIndex < mVertices.size()); return mVertices[inIndex]; }
 
 	//////////
-	// Get the points which define the polygon.
-	// 
+	/// Get the points which define the polygon.
+	/// 
 	const std::vector<TPoint> &Vertices() const { return mVertices; }
 
 	//////////
-	// Test if two polygons are equal.
-	// 
+	/// Test if two polygons are equal.
+	/// 
 	bool operator==(const TPolygon &inPoly) const;
 };
 

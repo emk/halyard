@@ -29,10 +29,10 @@ class MovieWindow;
 
 
 //////////
-// A Timecoder allows to scrub back and forth in a video clip, and shows
-// you the timecodes associated with specific points in the movie.  It's
-// commonly used when synchronizing audio and video.
-//
+/// A Timecoder allows to scrub back and forth in a video clip, and shows
+/// you the timecodes associated with specific points in the movie.  It's
+/// commonly used when synchronizing audio and video.
+///
 class Timecoder : public ToolWindow
 {
 	MovieWindow *mMovieWindow;

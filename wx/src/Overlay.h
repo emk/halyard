@@ -28,8 +28,8 @@
 
 
 //////////
-// A overlay is the simplest form of lightweight element.
-//
+/// A overlay is the simplest form of lightweight element.
+///
 class Overlay : public LightweightElement
 {
 	DrawingArea mDrawingArea;

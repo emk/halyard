@@ -35,109 +35,109 @@ class TPoint
 { 
     public:
 		//////////
-		// Constructor.
-		//
-		// [in_optional] inX - set the X-coordinate (default 0)
-		// [in_optional] inY - set the y-coordinate (default 0)
-		//
+		/// Constructor.
+		///
+		/// [in_optional] inX - set the X-coordinate (default 0)
+		/// [in_optional] inY - set the y-coordinate (default 0)
+		///
 		TPoint(int32 inX = 0, int32 inY = 0);
 
 		//////////
-		// Copy Constructor.
-		//
-		// [in] inPt - a TPoint to copy from
-		//
+		/// Copy Constructor.
+		///
+		/// \param inPt  a TPoint to copy from
+		///
 		TPoint(const TPoint &inPt);
 
 		//////////
-		// Set values for the point.
-		//
-		// [in] inX - set the X-coordinate
-		// [in] inY - set the y-coordinate
-		//
+		/// Set values for the point.
+		///
+		/// \param inX  set the X-coordinate
+		/// \param inY  set the y-coordinate
+		///
 		void			Set(int32 inX, int32 inY);
 
 		//////////
-		// Set values for the point using another TPoint.
-		//
-		// [in] inPt - TPoint to copy values from
-		//
+		/// Set values for the point using another TPoint.
+		///
+		/// \param inPt  TPoint to copy values from
+		///
 		void			Set(const TPoint &inPt);
 
 		//////////
-		// Offset the point using another TPoint.
-		//
-		// [in] inPt - TPoint used to offset values for this point
-		//
+		/// Offset the point using another TPoint.
+		///
+		/// \param inPt  TPoint used to offset values for this point
+		///
 		void			Offset(TPoint &inPt);
 
 		//////////
-		// Set the X-coordinate.
-		//
-		// [in] inX - the X-coordinate
-		//
+		/// Set the X-coordinate.
+		///
+		/// \param inX  the X-coordinate
+		///
 		inline void		SetX(int32 inX) { m_X = inX; }
 		
 		//////////
-		// Set the Y-coordinate.
-		//
-		// [in] inY - the Y-coordinate
-		//
+		/// Set the Y-coordinate.
+		///
+		/// \param inY  the Y-coordinate
+		///
 		inline void		SetY(int32 inY) { m_Y = inY; }
 
 		//////////
-		// Offset the X-coordinate.
-		//
-		// [in] inXOffset - offset for the X-coordinate
-		//
+		/// Offset the X-coordinate.
+		///
+		/// \param inXOffset  offset for the X-coordinate
+		///
 		inline void		OffsetX(int32 inXOffset) { m_X += inXOffset; }
 		
 		//////////
-		// Offset the Y-coordinate.
-		//
-		// [in] inYOffset - offset for the Y-coordinate
-		//
+		/// Offset the Y-coordinate.
+		///
+		/// \param inYOffset  offset for the Y-coordinate
+		///
 		inline void		OffsetY(int32 inYOffset) { m_Y += inYOffset; }
 		
 		//////////
-		// Get the X-coordinate
-		//
-		// [out] return - the X-coordinate
-		//
+		/// Get the X-coordinate
+		///
+		/// \return  the X-coordinate
+		///
 		inline int32	X(void) const { return (m_X); }
 		
 		//////////
-		// Get the Y-coordinate
-		//
-		// [out] return - the Y-coordinate
-		//
+		/// Get the Y-coordinate
+		///
+		/// \return  the Y-coordinate
+		///
 		inline int32	Y(void) const { return (m_Y); }
 
 		//////////
-		// Set values for this point using another TPoint.  Same as Set().
-		//
-		// [in] inPt - TPoint to copy values from (r-value)
-		// [out] return - l-value with coordinates set to r-value
-		//
+		/// Set values for this point using another TPoint.  Same as Set().
+		///
+		/// \param inPt  TPoint to copy values from (r-value)
+		/// \return  l-value with coordinates set to r-value
+		///
 		TPoint			&operator=(const TPoint &inPt);
 		
 		//////////
-		// Equality check.
-		//
-		// [in] inPt - a TPoint to check against for equality
-		// [out] return - true if the two points are equal, false otherwise
-		//
+		/// Equality check.
+		///
+		/// \param inPt  a TPoint to check against for equality
+		/// \return  true if the two points are equal, false otherwise
+		///
 		bool			operator==(const TPoint &inPt) const;
 
 	protected:
         //////////
-		// X-Coordinate
-		//
+		/// X-Coordinate
+		///
 		int32		m_X;
 		
 		//////////
-		// Y-Coordinate
-		//
+		/// Y-Coordinate
+		///
 		int32		m_Y;
 };
 

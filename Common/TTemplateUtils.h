@@ -26,48 +26,48 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// Perform a case-insensitive comparison of two strings.
-//
+/// Perform a case-insensitive comparison of two strings.
+///
 extern bool StringIComp(const std::string &inStr1, const std::string &inStr2);
 
 //////////
-// Trim spaces in string.
-//
+/// Trim spaces in string.
+///
 extern void StringLTrim(std::string &ioStr);
 
 //////////
-// Return true if inStr1 starts with inStr2. Do a case sensitive 
-// comparison by default.
-//
+/// Return true if inStr1 starts with inStr2. Do a case sensitive 
+/// comparison by default.
+///
 extern bool StringStartsWith(const std::string &inStr1, 
 							 const std::string &inStr2);
 
 //////////
-// Convert an STL string to lowercase.
-//
-// [in] inString - the string to convert
-// [out] return - the input string, as lowercase
-//
+/// Convert an STL string to lowercase.
+///
+/// \param inString  the string to convert
+/// \return  the input string, as lowercase
+///
 extern std::string MakeStringLowercase(std::string inString);
 
 //////////
-// Convert nested quotes within an STL string into 
-// escape-character quotes.
-//
-// [in] inString - the string to convert
-// [out] return - the input string, with escaped quotes
-//
+/// Convert nested quotes within an STL string into 
+/// escape-character quotes.
+///
+/// \param inString  the string to convert
+/// \return  the input string, with escaped quotes
+///
 extern std::string MakeQuotedString(const std::string &inString); 
 
 //////////
-// This functor can be used to delete all the pointers in a container
-// as follows:
-//
-//   for_each(container.begin, container.end(), DeletePointer())
-//
-// This code is adapted from Meyer's "Effective STL", and modified
-// to use the appropriate boost deletion operators.
-//
+/// This functor can be used to delete all the pointers in a container
+/// as follows:
+///
+///   for_each(container.begin, container.end(), DeletePointer())
+///
+/// This code is adapted from Meyer's "Effective STL", and modified
+/// to use the appropriate boost deletion operators.
+///
 struct DeletePointer {
 	template <typename T>
 	void operator() (T* ptr) const
@@ -77,9 +77,9 @@ struct DeletePointer {
 };
 
 //////////
-// The same as DeletePointer, but for use with containers of pointers
-// TO ARRAYS.
-//
+/// The same as DeletePointer, but for use with containers of pointers
+/// TO ARRAYS.
+///
 struct DeleteArray {
 	template <typename T>
 	void operator() (T* ptr) const
@@ -89,14 +89,14 @@ struct DeleteArray {
 };
 
 //////////
-// You can use this class to save and restore a value in an exception-safe
-// fashion.  To use:
-//
-//   int i = 0;
-//   StValueRestorer<int> restore_i(i);
-//
-// When restore_i goes out of scope, i will be reset to its original value.
-//
+/// You can use this class to save and restore a value in an exception-safe
+/// fashion.  To use:
+///
+///   int i = 0;
+///   StValueRestorer<int> restore_i(i);
+///
+/// When restore_i goes out of scope, i will be reset to its original value.
+///
 template<class Type>
 class StValueRestorer
 {

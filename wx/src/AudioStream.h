@@ -27,9 +27,9 @@
 
 
 //////////
-// AudioStreams are used for continuous, real-time playback of custom
-// audio.
-//
+/// AudioStreams are used for continuous, real-time playback of custom
+/// audio.
+///
 class AudioStream
 {
 public:
@@ -62,89 +62,89 @@ private:
 
 public:
 	//////////
-	// Create a new AudioStream.  You must call Start() afterwards if
-	// you want to play any audio.
-	//
+	/// Create a new AudioStream.  You must call Start() afterwards if
+	/// you want to play any audio.
+	///
 	AudioStream(Format inFormat);
 
 	//////////
-	// Destroy an AudioStream.  The stream must be stopped before
-	// destroying it.
-	//
+	/// Destroy an AudioStream.  The stream must be stopped before
+	/// destroying it.
+	///
 	virtual ~AudioStream();
 
 	//////////
-	// How many audio channels does this stream have?
-	//
+	/// How many audio channels does this stream have?
+	///
 	int GetChannelCount() { return MAX_CHANNELS; }
 
 	//////////
-	// Set the volume of all channels.
-	//
+	/// Set the volume of all channels.
+	///
 	void SetVolume(float inVolume);
 
 	//////////
-	// Set the volume of the specified channel.
-	//
+	/// Set the volume of the specified channel.
+	///
 	void SetChannelVolume(int inChannel, float inVolume);
 
 	//////////
-	// Set the volume of the specified channel.
-	//
+	/// Set the volume of the specified channel.
+	///
 	void SetChannelVolume(const std::string &inChannel, float inVolume);
 
 	//////////
-	// Is the stream currently running?
-	//
+	/// Is the stream currently running?
+	///
 	bool IsRunning() { return mIsRunning; }
 
     //////////
-    // Returns true if the audio stream is looping (or some other form
-    // of infinitely long, repetitive stream).
-    //
+    /// Returns true if the audio stream is looping (or some other form
+    /// of infinitely long, repetitive stream).
+    ///
     virtual bool IsLooping() = 0;
 
 	//////////
-	// Start the stream running.  It's OK to call this if the stream
-	// is already running.
-	//
-	// This must be separate from the constructor because it indirectly
-	// relies upon a virtual function.
-	//
+	/// Start the stream running.  It's OK to call this if the stream
+	/// is already running.
+	///
+	/// This must be separate from the constructor because it indirectly
+	/// relies upon a virtual function.
+	///
 	void Start();
 
 	//////////
-	// Stop the stream.  It's OK to call this if the stream is already
-	// stopped.
-	//
-	// This must be separate from the destructor because it indirectly
-	// relies upon a virtual function.
-	//
+	/// Stop the stream.  It's OK to call this if the stream is already
+	/// stopped.
+	///
+	/// This must be separate from the destructor because it indirectly
+	/// relies upon a virtual function.
+	///
 	void Stop();
 
 protected:
 	//////////
-	// Our callback function.  This code runs in a separate thread (or
-	// perhaps at interrupt level), and isn't allowed to do much of
-	// anything besides filling the buffer.
-	//
-	// [out] outBuffer - 2*inFrames values in the specified
-	//	                 format, representing left and right channels (I'm
-	//                   not sure which is which, actually).
-	// [in] inFrames   - The number of left/right pairs of samples
-	//                   to generate.
-	// [in] inTime     - The number of frames already played through
-	//                   this channel.
-	// [out] return    - Should we stop this stream now?
-	//
+	/// Our callback function.  This code runs in a separate thread (or
+	/// perhaps at interrupt level), and isn't allowed to do much of
+	/// anything besides filling the buffer.
+	///
+	/// \param outBuffer  (out) 2*inFrames values in the specified
+	///	                 format, representing left and right channels (I'm
+	///                   not sure which is which, actually).
+	/// \param inFrames  The number of left/right pairs of samples
+	///                   to generate.
+	/// \param inTime  The number of frames already played through
+	///                   this channel.
+	/// \return  Should we stop this stream now?
+	///
 	virtual bool FillBuffer(void *outBuffer, unsigned long inFrames,
 							PaTimestamp inTime) = 0;
 
 	//////////
-	// Give some non-interrupt processing time to the stream.  This
-	// gets called automatically.  Don't spend *too* long in this method;
-	// there may be other media streams playing, and they need time, too.
-	//
+	/// Give some non-interrupt processing time to the stream.  This
+	/// gets called automatically.  Don't spend *too* long in this method;
+	/// there may be other media streams playing, and they need time, too.
+	///
 	virtual void Idle() {}
 
 private: // static stuff
@@ -161,20 +161,20 @@ private: // static stuff
 
 public: // static stuff
     //////////
-    // Initialize the audio synthesis subsystem.
-    //
+    /// Initialize the audio synthesis subsystem.
+    ///
     static void InitializeStreams();
 
     //////////
-    // Shut down the audio synthesis subsystem.
-    //
+    /// Shut down the audio synthesis subsystem.
+    ///
     static void ShutDownStreams();
 };
 
 
 //////////
-// Sine wave synthesizer.  This is a simple demo class.
-// 
+/// Sine wave synthesizer.  This is a simple demo class.
+/// 
 class SineAudioStream : public AudioStream
 {
 	int mFrequency;
@@ -192,8 +192,8 @@ protected:
 };
 
 //////////
-// Convert a 16-signed integer PCM sample into float-point format.
-//
+/// Convert a 16-signed integer PCM sample into float-point format.
+///
 inline float int16_pcm_to_float(int16 sample)
 {
 	return sample / 32768.0f;

@@ -69,55 +69,55 @@ enum PrefValue {
 };
 
 //////////
-// This class parses the 5L.prefs file and keeps track of various
-// developer preferences.
-//
+/// This class parses the 5L.prefs file and keeps track of various
+/// developer preferences.
+///
 class TDeveloperPrefs
 {
 public:
 	TDeveloperPrefs();
 
 	//////////
-	// Use default user preferences.
-	//
+	/// Use default user preferences.
+	///
 	void UseDefaultPrefs();
 	
 	//////////
-	// Parse the specified user preferences file.
-	//
-	// [in] inPrefsFile - The path to the preferences file.
-	//
+	/// Parse the specified user preferences file.
+	///
+	/// \param inPrefsFile  The path to the preferences file.
+	///
 	void ParsePrefs(const FileSystem::Path &inPrefsFile);
 	
 	//////////
-	// Parse default user preferences file.
-	//
+	/// Parse default user preferences file.
+	///
 	void ParsePrefs()
 		{ ParsePrefs(FileSystem::Path(DEVELOPER_PREFS_FILE)); }
 
 	//////////
-	// Get a user preference.
-	// 
-	// [in] thePref - the preference to get
-	// [out] return - the value of this preference
-	//
+	/// Get a user preference.
+	/// 
+	/// \param thePref  the preference to get
+	/// \return  the value of this preference
+	///
 	PrefValue GetPref(PrefName thePref)
 		{ return userPrefs[thePref]; }
 
 private:
 	//////////
-	// User preferences.
-	//
+	/// User preferences.
+	///
 	PrefValue userPrefs[PREFS_SIZE];
 	
 	//////////
-	// Parses a single line in the user preferences file.
-	//
-	// [in] line - a line from the input file
-	// [in/out] key - the key parsed from this line
-	// [in/out] value - the value parsed from this line
-	// [out] return - true a key and value were parsed, false otherwise
-	//
+	/// Parses a single line in the user preferences file.
+	///
+	/// \param line  a line from the input file
+	/// \param key  (in/out) the key parsed from this line
+	/// \param value  (in/out) the value parsed from this line
+	/// \return  true a key and value were parsed, false otherwise
+	///
 	bool GetPrefsKeyValue(char *line, std::string &key, std::string &value); 
 };
 

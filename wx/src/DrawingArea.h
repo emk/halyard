@@ -38,23 +38,23 @@ class DrawingArea : public GraphicsTools::Image {
     void InitializeQuake2Overlay();
 
 	//////////
-	// Invalidate the specified rectangle.
-	//
-	// [in] inRect - The rectangle to invalidate.
-	// [in] inInflate - The number of pixels by which we should inflate
-	// 		         the rectangle.
-    // [in] inHasPixmapChanged - If false, the contents of this rect haven't
-    //               changed, just the stage's alpha-compositing for this
-    //               region.  If we're relying on game engine for real-time
-    //               compositing, it doesn't need to reconvert the data in
-    //               this rectangle.
-	//	
+	/// Invalidate the specified rectangle.
+	///
+	/// \param inRect  The rectangle to invalidate.
+	/// \param inInflate  The number of pixels by which we should inflate
+	/// 		         the rectangle.
+    /// \param inHasPixmapChanged  If false, the contents of this rect haven't
+    ///               changed, just the stage's alpha-compositing for this
+    ///               region.  If we're relying on game engine for real-time
+    ///               compositing, it doesn't need to reconvert the data in
+    ///               this rectangle.
+	///	
 	void InvalidateRect(const wxRect &inRect, int inInflate = 0,
                         bool inHasPixmapChanged = true);
 
     //////////
-    // Invalidate everything associated with this drawing area.
-    //
+    /// Invalidate everything associated with this drawing area.
+    ///
     void InvalidateDrawingArea(bool inHasPixmapChanged = true);
 
 public:
@@ -67,88 +67,88 @@ public:
 	bool HasAlpha() { return mPixmap.HasAlpha(); }
 
     //////////
-    // Show or hide this drawing area.
-    //
+    /// Show or hide this drawing area.
+    ///
     void Show(bool inShow);
 
     //////////
-    // Relocate this drawing area to the specified location.
-    //
+    /// Relocate this drawing area to the specified location.
+    ///
     void MoveTo(const wxPoint &inPoint);
 
     //////////
-    // Clear the drawing area to the default color.
-    //
+    /// Clear the drawing area to the default color.
+    ///
     void Clear();
 
     //////////
-    // Clear the drawing area to the specified color.
-    //
+    /// Clear the drawing area to the specified color.
+    ///
     void Clear(const GraphicsTools::Color &inColor);
 
 	//////////
-	// Draw a line in the specified color.
-	//
+	/// Draw a line in the specified color.
+	///
 	void DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 				  const wxColour &inColor, int inWidth);
 
 	//////////
-	// Fill in the specified box with the specified color.
-	//
+	/// Fill in the specified box with the specified color.
+	///
 	void FillBox(const wxRect &inBounds, 
 				 const GraphicsTools::Color &inColor);
 
 	//////////
-	// Fill in the specified box with the specified color.
-	//
+	/// Fill in the specified box with the specified color.
+	///
 	void OutlineBox(const wxRect &inBounds, const wxColour &inColor,
 					int inWidth);
 
 	//////////
-	// Draw a portable PixMap to the screen, blending alpha
-	// values appropriately.
-	//
-	// [in] inPoint - The location at which to draw the pixmap.
-	// [in] inPixMap - The pixmap to draw.
-	//
+	/// Draw a portable PixMap to the screen, blending alpha
+	/// values appropriately.
+	///
+	/// \param inPoint  The location at which to draw the pixmap.
+	/// \param inPixMap  The pixmap to draw.
+	///
 	void DrawPixMap(GraphicsTools::Point inPoint,
 					GraphicsTools::PixMap &inPixMap);
 
     //////////
-    // Draw a bitmap on the stage at the specified location.
-	//
-	// [in] inBitmap - The bitmap to draw.
-	// [in] inX - The X coordinate to draw it at.
-	// [in] inY - The Y coordinate to draw it at.
-	// [in_optional] inTransparent - Should we honor transparency information
-	//                               in the bitmap?
-    //
+    /// Draw a bitmap on the stage at the specified location.
+	///
+	/// \param inBitmap  The bitmap to draw.
+	/// \param inX  The X coordinate to draw it at.
+	/// \param inY  The Y coordinate to draw it at.
+	/// [in_optional] inTransparent - Should we honor transparency information
+	///                               in the bitmap?
+    ///
     void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
 					bool inTransparent = true);
 
 	//////////
-	// Blit the contents of the specified DC to our offscreen buffer.
-	// If the blit fails, fill the offscreen buffer with black.
-	// (This is currently used for synchronizing our display with
-	// whatever Quake 2 left on the screen.)
-	// 
-	// [in] inDC - a DC the same size as the stage
-	//
+	/// Blit the contents of the specified DC to our offscreen buffer.
+	/// If the blit fails, fill the offscreen buffer with black.
+	/// (This is currently used for synchronizing our display with
+	/// whatever Quake 2 left on the screen.)
+	/// 
+	/// \param inDC  a DC the same size as the stage
+	///
 	void DrawDCContents(wxDC &inDC);
 
 	//////////
-	// Get the color at the specified location (specified in DrawingArea
-	// co-ordinates).
-	//
+	/// Get the color at the specified location (specified in DrawingArea
+	/// co-ordinates).
+	///
 	GraphicsTools::Color GetPixel(wxCoord inX, wxCoord inY);
 
 	//////////
-	// Composite our data into the specified DC.
-	//
-	// [in] inDC - The compositing DC.
-	// [in] inClipRect - The rectangle (in terms of inDC co-ordinates)
-	//                   which we're updating.
-	//
+	/// Composite our data into the specified DC.
+	///
+	/// \param inDC  The compositing DC.
+	/// \param inClipRect  The rectangle (in terms of inDC co-ordinates)
+	///                   which we're updating.
+	///
 	void CompositeInto(wxDC &inDC, const wxRect &inClipRect);
 };
 

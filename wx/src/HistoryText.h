@@ -24,11 +24,11 @@
 #define HistoryText_H
 
 //////////
-// A HistoryText control is a wxTextCtrl. It implements a command history 
-// along the lines of Bash. Each time you hit "RETURN", what you're 
-// currently typing is added to the history, which can be navigated using 
-// the arrow keys or CTRL-P and CTRL-N.
-//
+/// A HistoryText control is a wxTextCtrl. It implements a command history 
+/// along the lines of Bash. Each time you hit "RETURN", what you're 
+/// currently typing is added to the history, which can be navigated using 
+/// the arrow keys or CTRL-P and CTRL-N.
+///
 class HistoryTextCtrl : public wxTextCtrl
 {
 	std::vector<wxString> mHistoryItems;

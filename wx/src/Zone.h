@@ -28,8 +28,8 @@
 
 
 //////////
-// A zone is the simplest form of lightweight element.
-//
+/// A zone is the simplest form of lightweight element.
+///
 class Zone : public LightweightElement
 {
 	TPolygon mPolygon;

@@ -30,8 +30,8 @@ struct _xmlNode;
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// A lightweight pointer/iterator for referring to libxml2 XML nodes.
-//
+/// A lightweight pointer/iterator for referring to libxml2 XML nodes.
+///
 class xml_node {
 public:
 	// We declare local versions of libxml2 types here, so users of this

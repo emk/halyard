@@ -26,11 +26,11 @@
 #include "AudioStream.h"
 
 //////////
-// An audio stream which synthesizes the noise of a chirping Geiger counter.
-// Note that the technically correct term for "chirp" is "count", but "count"
-// is too confusing to use in an API, where it already has a conventional
-// meaning.
-//
+/// An audio stream which synthesizes the noise of a chirping Geiger counter.
+/// Note that the technically correct term for "chirp" is "count", but "count"
+/// is too confusing to use in an API, where it already has a conventional
+/// meaning.
+///
 class GeigerAudioStream : public AudioStream
 {
     enum { MAX_CHIRP_CURSORS = 10 };

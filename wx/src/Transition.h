@@ -26,10 +26,10 @@
 class Transition;
 
 //////////
-// A set of display-related resources which are needed to perform a
-// transition.  We stick these in a class so we don't need to pass
-// them around as separate parameters everywhere.
-//
+/// A set of display-related resources which are needed to perform a
+/// transition.  We stick these in a class so we don't need to pass
+/// them around as separate parameters everywhere.
+///
 class TransitionResources
 {
 	wxDC &mOutputDC;
@@ -39,14 +39,14 @@ class TransitionResources
 
 public:
 	//////////
-	// Create a new set of TransitionResources.
-	//
-	// [in] inOutputDC - The DC to which we should draw our output.
-	// [in] inBeforeBmp - What the screen looks like before our
-	//        transition.
-	// [in] inAfterBmp - What the screen looks like after our transition.
-	// [in] inScratchBmp - A bitmap which we can use for building
-	//        intermediate stages, if we wish.
+	/// Create a new set of TransitionResources.
+	///
+	/// \param inOutputDC  The DC to which we should draw our output.
+	/// \param inBeforeBmp  What the screen looks like before our
+	///        transition.
+	/// \param inAfterBmp  What the screen looks like after our transition.
+	/// \param inScratchBmp  A bitmap which we can use for building
+	///        intermediate stages, if we wish.
 	TransitionResources(wxDC &inOutputDC, wxBitmap &inBeforeBmp,
 						wxBitmap &inAfterBmp, wxBitmap &inScratchBmp)
 		: mOutputDC(inOutputDC), mBeforeBmp(inBeforeBmp),
@@ -59,8 +59,8 @@ public:
 };
 
 //////////
-// This class holds all known transitions, and performs them upon request.
-//
+/// This class holds all known transitions, and performs them upon request.
+///
 class TransitionManager
 {
 	typedef std::map<std::string,Transition*> TransitionMap;
@@ -68,8 +68,8 @@ class TransitionManager
 	TransitionMap mTransitions;
 
 	//////////
-	// Register a transition with the transition manager.
-	//
+	/// Register a transition with the transition manager.
+	///
 	void RegisterTransition(const std::string &inName,
 							Transition *inTransition);
 
@@ -78,16 +78,16 @@ public:
 	~TransitionManager();
 
 	//////////
-	// Draw the intermediate steps of the specified transition.  Do
-	// not display the first or last step; assume these are handled for
-	// us by our caller.
-	//
-	// [in] inName - The transition to use.
-	// [in] inMilliseconds - The amount of time the transition should
-	//        ideally take.  The transition may take slightly more or
-	//        less time.
-	// [in] inResources - Resources to use for the transition.
-	//
+	/// Draw the intermediate steps of the specified transition.  Do
+	/// not display the first or last step; assume these are handled for
+	/// us by our caller.
+	///
+	/// \param inName  The transition to use.
+	/// \param inMilliseconds  The amount of time the transition should
+	///        ideally take.  The transition may take slightly more or
+	///        less time.
+	/// \param inResources  Resources to use for the transition.
+	///
 	void RunTransition(const std::string &inName, int inMilliseconds,
 					   TransitionResources &inResources);
 };

@@ -26,41 +26,41 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// Compute the "largest common subsequence" (LCS) of two vectors.  The LCS
-// of two vectors v_1 and v_2 is defined as the largest vector which can
-// obtained by deleting individual items from v_1 and v_2 ("A Fast
-// Algorithm for Computing Longest Common Subsequences of Small Alphabet
-// Size", Francis&Poon).  This the heart of most primitive 'diff' operations.
-// An example in Scheme:
-//
-// (define v1 '(a b c d e f))
-// (define v2 '(a b f c d e))
-// (lcs v1 v2) => '(a b c d e)
-//
-// An extremely inefficient recursive implementation in Scheme:
-//
-// (define (lcs s1 s2)
-//   (cond
-//     [(or (null? s1) (null? s2))
-//      '()]
-//     [(eq? (car s1) (car s2)) 
-//      ;; This element matches in both lists, so assume it's OK and compute
-//      ;; the LCS of the element tails.
-//      (cons (car s1) (lcs (cdr s1) (cdr s2)))]
-//     [else
-//      ;; Try deleting the first element of each list, compute the LCS
-//      ;; recursively for the results, and see which gives us the
-//      ;; largest LCS.
-//      (let [[lcs1 (lcs (cdr s1) s2)]
-//            [lcs2 (lcs s1 (cdr s2))]]
-//        (if (>= (length lcs1) (length lcs2))
-//            lcs1
-//            lcs2))]))
-//
-// Apparently D.S. Hirschberg figured out how to solve this problem using
-// dynamic programming in the 1970s.  I can't find his paper online, so
-// I've decided to puzzle out an algorithm from the hints in later papers.
-//
+/// Compute the "largest common subsequence" (LCS) of two vectors.  The LCS
+/// of two vectors v_1 and v_2 is defined as the largest vector which can
+/// obtained by deleting individual items from v_1 and v_2 ("A Fast
+/// Algorithm for Computing Longest Common Subsequences of Small Alphabet
+/// Size", Francis&Poon).  This the heart of most primitive 'diff' operations.
+/// An example in Scheme:
+///
+/// (define v1 '(a b c d e f))
+/// (define v2 '(a b f c d e))
+/// (lcs v1 v2) => '(a b c d e)
+///
+/// An extremely inefficient recursive implementation in Scheme:
+///
+/// (define (lcs s1 s2)
+///   (cond
+///     [(or (null? s1) (null? s2))
+///      '()]
+///     [(eq? (car s1) (car s2)) 
+///      ;; This element matches in both lists, so assume it's OK and compute
+///      ;; the LCS of the element tails.
+///      (cons (car s1) (lcs (cdr s1) (cdr s2)))]
+///     [else
+///      ;; Try deleting the first element of each list, compute the LCS
+///      ;; recursively for the results, and see which gives us the
+///      ;; largest LCS.
+///      (let [[lcs1 (lcs (cdr s1) s2)]
+///            [lcs2 (lcs s1 (cdr s2))]]
+///        (if (>= (length lcs1) (length lcs2))
+///            lcs1
+///            lcs2))]))
+///
+/// Apparently D.S. Hirschberg figured out how to solve this problem using
+/// dynamic programming in the 1970s.  I can't find his paper online, so
+/// I've decided to puzzle out an algorithm from the hints in later papers.
+///
 template <typename T> inline
 void LargestCommonSubsequence(const std::vector<T> &v1,
                               const std::vector<T> &v2,

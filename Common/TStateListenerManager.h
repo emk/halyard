@@ -28,11 +28,11 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
-// A TStateListenerManager keeps track of lots of little free-floating
-// TStateListener objects.  These should theoretically be associated with
-// C++ Node objects, but we don't have a Node class corresponding to
-// the interpreter's <node> class.
-//
+/// A TStateListenerManager keeps track of lots of little free-floating
+/// TStateListener objects.  These should theoretically be associated with
+/// C++ Node objects, but we don't have a Node class corresponding to
+/// the interpreter's <node> class.
+///
 class TStateListenerManager  {
     class CallbackListener : public TStateListener {
         static uint32 sNextSerialNumber;
@@ -53,24 +53,24 @@ class TStateListenerManager  {
 	
 public:
     //////////
-    // Unregister all TStateListeners in the manager.
-    //
+    /// Unregister all TStateListeners in the manager.
+    ///
     void NotifyScriptReload();
 
     //////////
-    // Register inListener under inName.  You may use inName for more
-    // than one listener; all listeners will be stored.
-    //
+    /// Register inListener under inName.  You may use inName for more
+    /// than one listener; all listeners will be stored.
+    ///
     void RegisterListener(const std::string &inName, TCallbackPtr inListener);
 
     //////////
-    // Unregister all listeners matching inName.
-    //
+    /// Unregister all listeners matching inName.
+    ///
     void UnregisterListeners(const std::string &inName);
 
     //////////
-    // Find the listener with the specified name and serial number.
-    //
+    /// Find the listener with the specified name and serial number.
+    ///
     shared_ptr<TStateListener> FindListener(const std::string &inName,
                                             uint32 inSerialNumber);
 };

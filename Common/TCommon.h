@@ -36,17 +36,17 @@
 ///@{
 
 //////////
-// We have our own, portable assertion-checking routine because
-// we want to log assertion failures (because the users *never*
-// write them down).
-//
-// This routine is defined in TLogger.cpp.
-// 
-// [in] inTest - If this value is zero, trigger the assertion.
-// [in] inDescription - Text describing the assertion.
-// [in] inFile - The file in which the assertion appears.
-// [in] inLine - The line number of the assertion.
-//
+/// We have our own, portable assertion-checking routine because
+/// we want to log assertion failures (because the users *never*
+/// write them down).
+///
+/// This routine is defined in TLogger.cpp.
+/// 
+/// \param inTest  If this value is zero, trigger the assertion.
+/// \param inDescription  Text describing the assertion.
+/// \param inFile  The file in which the assertion appears.
+/// \param inLine  The line number of the assertion.
+///
 extern void FiveLCheckAssertion(int inTest, const char *inDescription,
 								const char *inFile, int inLine);
 

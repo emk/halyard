@@ -6,6 +6,8 @@ CVS - emk
   * Removed the remaining half-dozen CVS log comments, except for the
     one in TVersion.h.
   * Manually reformatted a few comments to the doxygen comment style.
+  * Automatically reformatted zillions of standard-format comments to
+    the doxygen style.
 
 0.0.24 - 10 March 2004 - emk
 
