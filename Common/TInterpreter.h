@@ -1,9 +1,10 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #if !defined (_TInterpreter_h_)
 #define _TInterpreter_h_
 
 #include "TCommon.h"
+#include <string>
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -157,6 +158,13 @@ public:
 	// Execute the callback.
 	//
 	virtual void Run() = 0;
+
+	//////////
+	// Return a form of the callback suitable for printing.  This might not
+	// be very informative, but at least it gives you something for the
+	// debug log.
+	//
+	virtual std::string PrintableRepresentation() { return "#<callback>"; }
 };
 
 END_NAMESPACE_FIVEL

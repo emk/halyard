@@ -16,15 +16,29 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		12
+#define VERSION_REV_BIG		13
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.12 (Development)"
+#define VERSION_STRING	"5L 3.3.13 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.20  2002/07/15 15:56:32  zeb
+ 3.3.13 - 15 July 2002 - zeb, emk
+   * Language change: (IF cond true_cmd false_cmd) now takes arbitrary
+     expressions for 'cond'.  The following new primitives have
+     been added: AND, OR, NOT, contains, =, <>, <, >, <=, >=.
+   * Added a new (LOG filename msg) command, which allows the programmer
+     to write to "5L", "debug" and "MissingMedia" logs.
+   * Major logging improvements: All primitives are now automatically
+     logged in a standard format (bug #1003).
+   * Adjusting of coordinates using origin is now logged.
+   * Callbacks are now logged in a much more useful fashion.
+   * Old arithmetic primitives now return a value (add, sub, div).
+   * Added MakeQuotedString to TTemplateUtils and wrote a matching test suite.
+
  Revision 1.19  2002/07/10 15:21:33  brian
  3.3.12 - Improved debug.log for text and textaa commands (bug #979).
 

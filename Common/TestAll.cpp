@@ -12,6 +12,7 @@
 // avoid creating extra header files just for one function.  These will
 // most likely be replaced with static constructor tricks as I continue to
 // C++-ify the testing API.
+extern void test_TTemplateUtils(void);
 extern void test_TString (void);
 extern void test_TStream (void);
 extern void test_TBTree (void);
@@ -28,6 +29,7 @@ int main (int argc, char **argv)
 	{
 		FIVEL_NS InitializeCommonCode();
 
+		test_TTemplateUtils();
 		test_TString();
 		test_TStream();
 		test_TBTree();
@@ -40,7 +42,7 @@ int main (int argc, char **argv)
 	}
 	catch (std::exception &error)
 	{
-		std::cerr << std::endl << error.what() << std::endl;
+		std::cerr << std::endl << "Exception: " << error.what() << std::endl;
 		return 1;
 	}
 	catch (...)

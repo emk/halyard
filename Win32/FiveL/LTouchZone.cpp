@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4;-*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -130,6 +130,10 @@ void LTouchZone::DoCallback()
         	itsPict->Hilite(itsPictLoc, true); 
     }
 
+	gDebugLog.Log("Click in (rect %d %d %d %d), running callback: %s",
+				  itsBounds.Left(), itsBounds.Top(),
+				  itsBounds.Right(), itsBounds.Bottom(),
+				  itsCallback->PrintableRepresentation().c_str());
 	itsCallback->Run();	// run the callback
     gView->Draw();		// the callback executed might have changed something
 }
@@ -243,6 +247,20 @@ LTouchZone *LTouchZoneManager::GetTouchZone(WPARAM wParam)
 
 /*
  $Log$
+ Revision 1.7  2002/07/15 15:56:44  zeb
+ 3.3.13 - 15 July 2002 - zeb, emk
+   * Language change: (IF cond true_cmd false_cmd) now takes arbitrary
+     expressions for 'cond'.  The following new primitives have
+     been added: AND, OR, NOT, contains, =, <>, <, >, <=, >=.
+   * Added a new (LOG filename msg) command, which allows the programmer
+     to write to "5L", "debug" and "MissingMedia" logs.
+   * Major logging improvements: All primitives are now automatically
+     logged in a standard format (bug #1003).
+   * Adjusting of coordinates using origin is now logged.
+   * Callbacks are now logged in a much more useful fashion.
+   * Old arithmetic primitives now return a value (add, sub, div).
+   * Added MakeQuotedString to TTemplateUtils and wrote a matching test suite.
+
  Revision 1.6  2002/07/08 16:43:56  emk
  3.3.11 - Bugfixes from 3.2.0.5 through 3.2.0.7.
 

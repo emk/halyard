@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 /**************************************
 
     TStream.cpp
@@ -101,7 +101,7 @@ TStream::TStream(const TString &other) : TString(other)
     reset();
 }
 
-TStream::TStream(const TStream &other) : TString(other)
+TStream::TStream(const TStream &other) : TString(other), TArgumentList(other)
 {
     pos = other.pos;
 }
@@ -268,9 +268,7 @@ void TStream::scanopen(void)
 //
 void TStream::discard(void)
 {
-    TString     junk;
-
-    *this >> junk;
+	(void) GetStringArg();
 }
 
 //
@@ -551,17 +549,13 @@ std::string TStream::GetStringArg()
 //
 int32 TStream::GetInt32Arg()
 {
-    TString foo;
-
-    *this >> foo;
+    TString foo = GetStringArg().c_str();
     return (int32) foo;
 }
 
 uint32 TStream::GetUInt32Arg()
 {
-	TString foo;
-	
-	*this >> foo;
+    TString foo = GetStringArg().c_str();
 	return (uint32) foo;
 }
 
@@ -569,9 +563,7 @@ uint32 TStream::GetUInt32Arg()
 //
 double TStream::GetDoubleArg()
 {
-    TString foo;
-
-    *this >> foo;
+    TString foo = GetStringArg().c_str();
 	return (double) foo;
 }
 
@@ -588,19 +580,23 @@ TRect TStream::GetRectArg()
 {
 	TRect	r;
     char	ch;
-    TString	temp;
     int32	left, top, right, bottom;
 
     skipwhite();
     ch = curchar();
     if ((ch == '&') or (ch == '$'))  
     {
-        *this >> temp;
+        TString temp = GetStringArg().c_str();
         TStream tempstream(temp);
         tempstream >> left >> top >> right >> bottom;
     }
-    else  
-        *this >> left >> top >> right >> bottom;
+    else
+	{
+		left = GetInt32Arg();
+		top = GetInt32Arg();
+		right = GetInt32Arg();
+		bottom = GetInt32Arg();
+	}
   
   	r.Set(top, left, bottom, right);
 	return r;
@@ -624,12 +620,15 @@ TPoint TStream::GetPointArg()
     ch = curchar();
     if ((ch == '&') or (ch == '$'))  
     {
-        *this >> temp;
+        TString temp = GetStringArg().c_str();
         TStream tempstream(temp);
         tempstream >> x >> y;
     }
-    else  
-        *this >> x >> y;
+    else
+	{
+        x = GetInt32Arg();
+		y = GetInt32Arg();
+	}
     
     pt.Set(x, y);
 	return pt;
@@ -637,9 +636,8 @@ TPoint TStream::GetPointArg()
 
 GraphicsTools::Color TStream::GetColorArg()
 {
-	TString input;
-	*this >> input;
-	const char *temp = input.GetString();
+	std::string input = GetStringArg();
+    const char *temp = input.c_str();
 
 	// Make sure the value is of the form '0xRRGGBBAA', where RR, etc.,
 	// are hexadecimal digits.
@@ -670,8 +668,7 @@ GraphicsTools::Color TStream::GetColorArg()
 TCallback *TStream::GetCallbackArg()
 {
 	// Get our code, and put back the parens removed by the parser.
-	TString code;
-	*this >> code;
+	TString code = GetStringArg().c_str();
 	code = TString("(") + code + TString(")");
 
 	// Create and return a callback object.
@@ -681,8 +678,7 @@ TCallback *TStream::GetCallbackArg()
 TArgumentList *TStream::GetListArg()
 {
 	// Extract our next string, and build a new parser for it.
-	TString list;
-	*this >> list;
+	TString list = GetStringArg().c_str();
 	return new TStream(list);
 }
 

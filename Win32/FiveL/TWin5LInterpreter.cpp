@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4;-*-
 
 #include "stdafx.h"
 
@@ -156,8 +156,12 @@ TWin5LCallback::TWin5LCallback(const TString &inCommand)
 
 void TWin5LCallback::Run()
 {
-	gDebugLog.Log("Callback run: command <%s>", mCommand.GetString());
     gCardManager.OneCommand(mCommand);
+}
+
+std::string TWin5LCallback::PrintableRepresentation()
+{
+	return mCommand;
 }
 
 TCallback *TWin5LCallback::MakeCallback(const TString &inCmd)

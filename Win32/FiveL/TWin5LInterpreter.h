@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4;-*-
 
 #if !defined (_TWin5LInterpreter_h_)
 #define _TWin5LInterpreter_h_
@@ -61,6 +61,11 @@ public:
 	// Run the appropriate commands.
 	//
 	virtual void Run();
+	
+	//////////
+	// Return the code string associated with this callback.
+	//
+	virtual std::string PrintableRepresentation();
 	
 	//////////
 	// Create a TCallback object from a 5L command string.

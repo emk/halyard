@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (C) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -40,6 +40,16 @@ class TVariable : public TBNode
 		// Destructor.
 		//
 		virtual ~TVariable() {}
+
+		//////////
+		// Make a variable null.
+		//
+		void MakeNull() { mValue = ""; }
+
+		//////////
+		// Is a variable null?
+		//
+		bool IsNull() { return mValue == "" ? true : false; }
 
 		//////////
 		// Get the value of this variable as a character string.
@@ -154,6 +164,16 @@ class TVariableManager : public TBTree
 	    //
 		void RegisterSpecialVariable(const std::string &inName,
 									 SpecialVariableFunction inFunction);
+
+		//////////
+		// Make a variable null.
+		//
+		void MakeNull(const char *inName);
+
+		//////////
+		// Is a variable null?
+		//
+		bool IsNull(const char *inName);
 
 		//////////
 		// Get the value of the specified variable as a character string.
@@ -274,6 +294,20 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3  2002/07/15 15:56:32  zeb
+ 3.3.13 - 15 July 2002 - zeb, emk
+   * Language change: (IF cond true_cmd false_cmd) now takes arbitrary
+     expressions for 'cond'.  The following new primitives have
+     been added: AND, OR, NOT, contains, =, <>, <, >, <=, >=.
+   * Added a new (LOG filename msg) command, which allows the programmer
+     to write to "5L", "debug" and "MissingMedia" logs.
+   * Major logging improvements: All primitives are now automatically
+     logged in a standard format (bug #1003).
+   * Adjusting of coordinates using origin is now logged.
+   * Callbacks are now logged in a much more useful fashion.
+   * Old arithmetic primitives now return a value (add, sub, div).
+   * Added MakeQuotedString to TTemplateUtils and wrote a matching test suite.
+
  Revision 1.2  2002/05/15 11:05:18  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #ifndef TPrimitives_H
 #define TPrimitives_H
@@ -57,6 +57,19 @@ BEGIN_NAMESPACE_FIVEL
 //
 class TArgumentList
 {
+private:
+	//////////
+	// Keeps track of function name and evaluated parameters for Debug.log
+	//
+	std::string mDebugString;
+
+	//////////
+	// Log the value of a parameter for future retrieval by EndLog.
+	// Note that this function will get called anyway, even if nobody
+	// calls BeginLog or EndLog.
+	//
+	void LogParameter(const std::string &inParameterValue);
+
 protected:
 	//////////
 	// Return the next argument as a string.
@@ -126,6 +139,7 @@ public:
 	friend TArgumentList &operator>>(TArgumentList &args, std::string &out);
 	friend TArgumentList &operator>>(TArgumentList &args, int16 &out);
 	friend TArgumentList &operator>>(TArgumentList &args, int32 &out);
+	friend TArgumentList &operator>>(TArgumentList &args, bool &out);
 	friend TArgumentList &operator>>(TArgumentList &args, uint32 &out);
 	friend TArgumentList &operator>>(TArgumentList &args, double &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TRect &out);
@@ -136,6 +150,24 @@ public:
 	friend TArgumentList &operator>>(TArgumentList &args, TArgumentList* &out);
 
 	// TODO - Handle the ValueOrPercent manipulator here.
+
+	//////////
+	// Ask the TArgumentList list to start logging all the parameters
+	// extracted from it.  You can retrieve this log data from EndLog.
+	//
+	// [in] inFunctionName - The name of the functions to which this
+	//                       TArgumentList corresponds.
+	//
+	void BeginLog(const std::string &inFunctionName);
+
+	//////////
+	// Stop logging parameters extracted from this TArgumentList, and
+	// return them (together with the function name), as though they
+	// were a Scheme function call.
+	// 
+	// [out] return - The complete entry for Debug.log
+	//
+	std::string EndLog();
 };
 
 //////////
@@ -269,6 +301,17 @@ inline void SetPrimitiveResult(double inValue)
 {
 	gVariableManager.SetDouble("_result", inValue);
 }
+
+//////////
+// Set the return value of the current primitive.
+//
+// [in] inValue - The boolean value to return.
+//
+inline void SetPrimitiveResult(bool inValue)
+{
+	gVariableManager.SetLong("_result", inValue ? 1 : 0);
+}
+
 
 END_NAMESPACE_FIVEL
 

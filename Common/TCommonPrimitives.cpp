@@ -1,10 +1,14 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 // Needed for RegisterCommonPrimitives.
 #include "TCommon.h"
 #include "TPrimitives.h"
 #include "TCommonPrimitives.h"
 #include "TVariable.h"
+#include "TLogger.h"
+
+// Needed to implement the primitives.
+#include <string>
 
 USING_NAMESPACE_FIVEL
 
@@ -18,7 +22,7 @@ Origin FIVEL_NS gOrigin;
 
 void FIVEL_NS RegisterCommonPrimitives()
 {
-	// No Common primitives yet.
+	REGISTER_5L_PRIMITIVE(Log);
 }
 
 
@@ -49,12 +53,27 @@ void FIVEL_NS UpdateSpecialVariablesForText(const TPoint &bottomLeft)
 
 void Origin::AdjustRect(TRect *r)
 {
+	TRect orig = *r;
 	r->Offset(mOrigin);
+
+	// We log this here because it's too annoying to integrate directly
+	// into TArgumentList.
+	if (!(orig == *r))
+		gDebugLog.Log("Adjusting: (rect %d %d %d %d) to (rect %d %d %d %d)",
+					  orig.Left(), orig.Top(), orig.Right(), orig.Bottom(),
+					  r->Left(), r->Top(), r->Right(), r->Bottom());
 }
 
 void Origin::AdjustPoint(TPoint *pt)
 {
+	TPoint orig = *pt;
 	pt->Offset(mOrigin);
+
+	// We log this here because it's too annoying to integrate directly
+	// into TArgumentList.
+	if (!(orig == *pt))
+		gDebugLog.Log("Adjusting: (pt %d %d) to (pt %d %d)",
+					  orig.X(), orig.Y(), pt->X(), pt->Y());
 }
 
 void Origin::UnadjustPoint(TPoint *pt)
@@ -92,4 +111,26 @@ void Origin::OffsetOrigin(TPoint &delta)
 //=========================================================================
 //  Implementation of Common Primitives
 //=========================================================================
-//  No Common primitives yet.
+
+//-------------------------------------------------------------------------
+// (LOG STRING STRING)
+//-------------------------------------------------------------------------
+// Logs the second argument to the file specified by the first.
+// Available logs: debug, 5L, MissingMedia.
+
+DEFINE_5L_PRIMITIVE(Log)
+{
+	std::string log_name, msg;
+	inArgs >> log_name >> msg;
+	log_name = ::MakeStringLowercase(log_name);
+
+	if (log_name == "5l")
+		gLog.Log("%s", msg.c_str());
+	else if (log_name == "debug")
+		gDebugLog.Log("%s", msg.c_str());
+	else if (log_name == "missingmedia")
+		gMissingMediaLog.Log("%s", msg.c_str());
+	else
+		gDebugLog.Caution("No such log file: %s", log_name.c_str());
+}
+

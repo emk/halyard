@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 // Needed for Register5LPrimitives.
 #include "TCommon.h"
@@ -41,6 +41,7 @@ void FIVEL_NS Register5LPrimitives()
 	REGISTER_5L_PRIMITIVE(strlen);
 	REGISTER_5L_PRIMITIVE(substr);
 	REGISTER_5L_PRIMITIVE(FindSubStr);
+	REGISTER_5L_PRIMITIVE(contains);
 
 	// List operations.
 	REGISTER_5L_PRIMITIVE(Length);
@@ -49,6 +50,19 @@ void FIVEL_NS Register5LPrimitives()
 	// Associative list operations.
 	REGISTER_5L_PRIMITIVE(HasKey);
 	REGISTER_5L_PRIMITIVE(GetVal);
+
+	// Logical operators.
+	REGISTER_5L_PRIMITIVE(And);
+	REGISTER_5L_PRIMITIVE(Or);
+	REGISTER_5L_PRIMITIVE(Not);
+
+	// Comparison operators.
+	REGISTER_5L_PRIMITIVE_WITH_NAME("=", Equals);
+	REGISTER_5L_PRIMITIVE_WITH_NAME("<>", NotEquals);
+	REGISTER_5L_PRIMITIVE_WITH_NAME("<", LessThan);
+	REGISTER_5L_PRIMITIVE_WITH_NAME(">", GreaterThan);
+	REGISTER_5L_PRIMITIVE_WITH_NAME("<=", LessThanOrEqualTo);
+	REGISTER_5L_PRIMITIVE_WITH_NAME(">=", GreaterThanOrEqualTo);
 }
 
 
@@ -281,6 +295,21 @@ DEFINE_5L_PRIMITIVE(FindSubStr)
 }
 
 
+//-------------------------------------------------------------------------
+// (contains STRING STRING)
+//-------------------------------------------------------------------------
+// Returns true if and only if the first string contains the second.
+
+DEFINE_5L_PRIMITIVE(contains)
+{
+	std::string str, substr;
+	inArgs >> str >> substr;
+
+	std::string::size_type pos = str.find(substr);
+	::SetPrimitiveResult((int32) (pos == std::string::npos ? 0 : 1));
+}
+
+
 //=========================================================================
 // List Operations
 //=========================================================================
@@ -406,4 +435,145 @@ DEFINE_5L_PRIMITIVE(GetVal)
 	}
 
 	throw TException(__FILE__, __LINE__, "HasKey: No such key");
+}
+
+
+//=========================================================================
+// Logical Operators
+//=========================================================================
+
+//-------------------------------------------------------------------------
+// (And BOOL...)
+//-------------------------------------------------------------------------
+// Returns the logical AND of the arguments.
+
+DEFINE_5L_PRIMITIVE(And)
+{
+	bool result = true;
+	while (inArgs.HasMoreArguments())
+	{
+		bool arg;
+		inArgs >> arg;
+		result = result && arg;
+	}
+	::SetPrimitiveResult(result);
+}
+
+
+//-------------------------------------------------------------------------
+// (Or BOOL...)
+//-------------------------------------------------------------------------
+// Returns the logical OR of the arguments.
+
+DEFINE_5L_PRIMITIVE(Or)
+{
+	bool result = false;
+	while (inArgs.HasMoreArguments())
+	{
+		bool arg;
+		inArgs >> arg;
+		result = result || arg;
+	}
+	::SetPrimitiveResult(result);
+}
+
+
+//-------------------------------------------------------------------------
+// (Not BOOL...)
+//-------------------------------------------------------------------------
+// Returns the logical negation of the argument.
+
+DEFINE_5L_PRIMITIVE(Not)
+{
+	bool arg;
+	inArgs >> arg;
+	::SetPrimitiveResult(arg ? false : true);
+}
+
+
+//=========================================================================
+// Comparison Operators
+//=========================================================================
+
+//-------------------------------------------------------------------------
+// (== STRING STRING)
+//-------------------------------------------------------------------------
+// Compares two values (handles both strings and integers).
+
+DEFINE_5L_PRIMITIVE(Equals)
+{
+	TString str1, str2;
+	inArgs >> str1 >> str2;
+	int result = str1.TypeCompare(str2);
+	::SetPrimitiveResult(result == 0 ? true : false);
+}
+
+
+//-------------------------------------------------------------------------
+// (!= STRING STRING)
+//-------------------------------------------------------------------------
+// Compares two values (handles both strings and integers).
+
+DEFINE_5L_PRIMITIVE(NotEquals)
+{
+	TString str1, str2;
+	inArgs >> str1 >> str2;
+	int result = str1.TypeCompare(str2);
+	::SetPrimitiveResult(result != 0 ? true : false);
+}
+
+
+//-------------------------------------------------------------------------
+// (< STRING STRING)
+//-------------------------------------------------------------------------
+// Compares two values (handles both strings and integers).
+
+DEFINE_5L_PRIMITIVE(LessThan)
+{
+	TString str1, str2;
+	inArgs >> str1 >> str2;
+	int result = str1.TypeCompare(str2);
+	::SetPrimitiveResult(result < 0 ? true : false);
+}
+
+
+//-------------------------------------------------------------------------
+// (> STRING STRING)
+//-------------------------------------------------------------------------
+// Compares two values (handles both strings and integers).
+
+DEFINE_5L_PRIMITIVE(GreaterThan)
+{
+	TString str1, str2;
+	inArgs >> str1 >> str2;
+	int result = str1.TypeCompare(str2);
+	::SetPrimitiveResult(result > 0 ? true : false);
+}
+
+
+//-------------------------------------------------------------------------
+// (<= STRING STRING)
+//-------------------------------------------------------------------------
+// Compares two values (handles both strings and integers).
+
+DEFINE_5L_PRIMITIVE(LessThanOrEqualTo)
+{
+	TString str1, str2;
+	inArgs >> str1 >> str2;
+	int result = str1.TypeCompare(str2);
+	::SetPrimitiveResult(result <= 0 ? true : false);
+}
+
+
+//-------------------------------------------------------------------------
+// (>= STRING STRING)
+//-------------------------------------------------------------------------
+// Compares two values (handles both strings and integers).
+
+DEFINE_5L_PRIMITIVE(GreaterThanOrEqualTo)
+{
+	TString str1, str2;
+	inArgs >> str1 >> str2;
+	int result = str1.TypeCompare(str2);
+	::SetPrimitiveResult(result >= 0 ? true : false);
 }

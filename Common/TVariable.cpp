@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -160,6 +160,18 @@ int TVariableManager::IsSpecial(const char *name)
     return false;
 }
 
+void TVariableManager::MakeNull(const char *inName)
+{
+    TVariable *var = FindVariable(inName, true);
+	var->MakeNull();
+}
+
+bool TVariableManager::IsNull(const char *inName)
+{
+    TVariable *var = FindVariable(inName, true);
+	return var->IsNull();
+}
+
 // Return value of "name" as a string.
 const char *TVariableManager::GetString(const char *name)
 {
@@ -290,6 +302,20 @@ void TVariableManager::SetLocal(TVariable *newlocal)
 
 /*
  $Log$
+ Revision 1.5  2002/07/15 15:56:32  zeb
+ 3.3.13 - 15 July 2002 - zeb, emk
+   * Language change: (IF cond true_cmd false_cmd) now takes arbitrary
+     expressions for 'cond'.  The following new primitives have
+     been added: AND, OR, NOT, contains, =, <>, <, >, <=, >=.
+   * Added a new (LOG filename msg) command, which allows the programmer
+     to write to "5L", "debug" and "MissingMedia" logs.
+   * Major logging improvements: All primitives are now automatically
+     logged in a standard format (bug #1003).
+   * Adjusting of coordinates using origin is now logged.
+   * Callbacks are now logged in a much more useful fashion.
+   * Old arithmetic primitives now return a value (add, sub, div).
+   * Added MakeQuotedString to TTemplateUtils and wrote a matching test suite.
+
  Revision 1.4  2002/05/29 09:38:53  emk
  Fixes for various "crash on exit" bugs in 5L.
 

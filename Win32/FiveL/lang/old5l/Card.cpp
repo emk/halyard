@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -184,111 +184,6 @@ enum EvalMode
     Or
 };
 
-/***********************************************************************
- * Function: Card::Evaluate
- *
- *  Parameter conditional (blah AND blah OR etc..)
- * Return:
- *
- * Comments:
- *  Evaluate the given conditional and determine whether or not
- *  it is true.
- ***********************************************************************/
-int Card::Evaluate(TStream& conditional)
-{
-    int         globalRes, localRes, result;
-    EvalMode    mode = FirstTime;
-	TString		cond;
-    TString     op;
-    TString     modeStr;
-    TString     str1, str2;
-
-    globalRes = localRes = false;
-
-	cond = (const char *) conditional;
-
-    while (conditional.more()) 
-    {
-        conditional >> str1 >> op >> str2;
-
-        //  Returns <0, 0, or >0.
-        //
-		op.MakeLower();
-		if (op.Equal("contains"))
-        {
-			if (str1.Contains(str2, false))
-				localRes = true;
-			else
-				localRes = false;        
-        }
-		else
-		{        
-	        result = str1.TypeCompare(str2);
-	
-	        if (op == (char *)"=") 
-	        	localRes = (result == 0);
-	        else if (op == (char *)"<>") 
-	        	localRes = (result != 0);
-	        else if (op == (char *)">") 
-	        	localRes = (result > 0);
-	        else if (op == (char *)">=") 
-	        	localRes = (result >= 0);
-	        else if (op == (char *)"<") 
-	        	localRes = (result < 0);
-	        else if (op == (char *)"<=") 
-	        	localRes = (result <= 0);
-	        else
-			{
-				gLog.Log("Error: bad If statement <%s>", (const char *) cond);
-	            gLog.Log("Error: IF: unknown operator %s.", (const char *) op);
-			}
-        }
-        
-        switch (mode) 
-        {
-            case FirstTime:
-                globalRes = localRes;
-                break;
-            case And:
-                globalRes = globalRes && localRes;
-                break;
-            case Or:
-                globalRes = globalRes || localRes;
-                break;
-        }
-
-        if (conditional.more()) 
-        {
-            conditional >> modeStr;
-            modeStr.MakeLower();
-            if (modeStr == (char *)"and") 
-            {
-                if (mode == Or) 
-				{
-					gLog.Log("Error: bad If statement <%s>", (const char *) cond);
-                	gLog.Log("Error: IF: can't mix ANDs and ORs.");
-				}
-                mode = And;
-            } 
-            else if (modeStr == (char *)"or") 
-            {
-                if (mode == And)
-				{
-					gLog.Log("Error: bad If statement <%s>", (const char *) cond);
-                	gLog.Log("Error: IF: can't mix ANDs and ORs.");
-				}
-                mode = Or;
-            } 
-            else
-			{
-				gLog.Log("Error: bad If statement <%s>", (const char *) cond);
-                gLog.Log("Error: IF: expected AND or OR here, not %s.", (const char *) modeStr);
-			}
-        }
-    }
-    return globalRes;
-}
-
 /*-------------------------------------------------------------------
     (MACRONAME <VAR>...)
 
@@ -360,16 +255,18 @@ void Card::DoMacro(TString &name)
 -------------------------------------------------------------------*/
 void Card::DoIf()
 {
-    TStream     conditional;
+	bool condition;
+	m_Script >> condition;
 
-    m_Script >> conditional;
-    conditional.reset();
-
-    if (Evaluate(conditional))
+    if (condition)
+	{
+		gDebugLog.Log("*** if: running true command");
         DoCommand();
+	}
     else 
     {
         //  Skip true_CMD.
+		gDebugLog.Log("*** if: running false command");
         m_Script >> open >> close;
         if (m_Script.more()) 
         	DoCommand();
@@ -708,6 +605,20 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.9  2002/07/15 15:56:44  zeb
+ 3.3.13 - 15 July 2002 - zeb, emk
+   * Language change: (IF cond true_cmd false_cmd) now takes arbitrary
+     expressions for 'cond'.  The following new primitives have
+     been added: AND, OR, NOT, contains, =, <>, <, >, <=, >=.
+   * Added a new (LOG filename msg) command, which allows the programmer
+     to write to "5L", "debug" and "MissingMedia" logs.
+   * Major logging improvements: All primitives are now automatically
+     logged in a standard format (bug #1003).
+   * Adjusting of coordinates using origin is now logged.
+   * Callbacks are now logged in a much more useful fashion.
+   * Old arithmetic primitives now return a value (add, sub, div).
+   * Added MakeQuotedString to TTemplateUtils and wrote a matching test suite.
+
  Revision 1.8  2002/06/21 15:42:09  emk
  3.3.8 - 5L language improvements, including nested expressions,
  return values and new primitives.

@@ -136,6 +136,7 @@ DEFINE_5L_PRIMITIVE(Add)
 		sum += (double) str_amount;
 
 		gVariableManager.SetDouble(vname, sum);
+		::SetPrimitiveResult(sum);
 	}
 	else
 	{
@@ -144,6 +145,7 @@ DEFINE_5L_PRIMITIVE(Add)
 		sum = gVariableManager.GetLong(vname);
 		sum += (int32) str_amount;
 		gVariableManager.SetLong(vname, sum);
+		::SetPrimitiveResult(sum);
 	}
 } 
 
@@ -376,8 +378,6 @@ DEFINE_5L_PRIMITIVE(Browse)
 
 	inArgs >> theUrl;
 
-	gDebugLog.Log("browse: url <%s>", theUrl.GetString());
-
 	if (gBrowserTool.GoToUrl(theUrl))
 		PutInBackground();
 }
@@ -470,9 +470,6 @@ DEFINE_5L_PRIMITIVE(CheckDisc)
 
 	inArgs >> vol_name >> wrong_disc >> no_disc;
 
-	gDebugLog.Log("checkdisc: <%s>, if wrong disc <%s>, if no disc <%s>", 
-		vol_name.GetString(), wrong_disc.GetString(), no_disc.GetString());
-	
 	if ((not do_jump) and (gConfigManager.PlayMedia()))
 	{ 
 		if (not CDInDrive())
@@ -531,8 +528,6 @@ DEFINE_5L_PRIMITIVE(CheckUrl)
 		gVariableManager.SetString(var_name, "0");
 	}
 
-	gDebugLog.Log("checkurl: <%s> <%s>", url.GetString(), var_name.GetString());
-
 	LHttpError error;
 	error = gHttpTool.CheckURL(url, var_name);
 
@@ -567,9 +562,6 @@ DEFINE_5L_PRIMITIVE(CheckVol)
 
 	if (inArgs.HasMoreArguments())
 		inArgs >> no_volume;
-
-	gDebugLog.Log("checkvol: <%s>, put path into <%s>, if volume not found <%s>",
-		vol_name.GetString(), real_path_var.GetString(), no_volume.GetString());
 
 	gVariableManager.SetLong(real_path_var, 0);
 
@@ -677,6 +669,7 @@ DEFINE_5L_PRIMITIVE(Div)
 	Dividend = gVariableManager.GetLong(vname);
     Dividend = (long)(Dividend / Divisor);
     gVariableManager.SetLong(vname, Dividend);
+	::SetPrimitiveResult(Dividend);
 }
 
 /*--------------------------------------------------------
@@ -709,8 +702,6 @@ DEFINE_5L_PRIMITIVE(Fade)
     	inArgs >> fadeTime;
 
     direction.MakeLower();
-
-	gDebugLog.Log("fade: %s, %ld", direction.GetString(), fadeTime);
 
     if (direction == (char *) "in")
     	fadeIn = true;   
@@ -827,8 +818,6 @@ DEFINE_5L_PRIMITIVE(Jump)
 
     inArgs >> jumpcard;
     
-	gDebugLog.Log("jump: <%s>", jumpcard.GetString());
-
     TInterpreter::GetInstance()->JumpToCardByName(jumpcard);
     
     gView->Draw();
@@ -912,8 +901,6 @@ DEFINE_5L_PRIMITIVE(Loadpal)
     inArgs >> palname;
     palname.MakeLower();
     
-	gDebugLog.Log("loadpal: <%s>", palname.GetString());
-
 	while (inArgs.HasMoreArguments())
 	{
 		inArgs >> flag;
@@ -983,9 +970,6 @@ DEFINE_5L_PRIMITIVE(Loadpic)
     
     gOrigin.AdjustPoint(&loc);
 
-	gDebugLog.Log("loadpic: <%s>, X <%d>, Y <%d>", 
-		picname.GetString(), loc.X(), loc.Y());
-	
     while (inArgs.HasMoreArguments()) 
     {
 		inArgs >> flag;
@@ -1108,7 +1092,6 @@ DEFINE_5L_PRIMITIVE(Lookup)
     }
 
 	Path path = FileSystem::GetDataFilePath(filename.GetString());
-	gDebugLog.Log("lookup: look for <%s>, num fields <%d>", searchString.GetString(), numFields);
 
     gFileManager.Lookup(path.ToNativePathString().c_str(), searchString, numFields);
 }
@@ -1135,8 +1118,6 @@ DEFINE_5L_PRIMITIVE(Nap)
 
     inArgs >> tenths;
 
-	gDebugLog.Log("nap: for <%ld>", tenths);
-    
     gCursorManager.CheckCursor();
     gView->Draw();
     TInterpreter::GetInstance()->Nap(tenths);
@@ -1170,8 +1151,6 @@ DEFINE_5L_PRIMITIVE(Open)
         gLog.Log("Error: Unknown open file kind: %s.", (const char *) kind);
 		return;
 	}
-
-	gDebugLog.Log("open: filename <%s>, mode <%s>", filename.GetString(), kind.GetString());
 
 	Path path = GetDataFilePath(filename.GetString());
     gVariableManager.SetString("_ERROR", "0");
@@ -1241,8 +1220,6 @@ DEFINE_5L_PRIMITIVE(Pause)
 
     inArgs >> tenths;
 
-	gDebugLog.Log("pause: time <%ld>", tenths);
-
     gVideoManager.Pause(tenths);
     gAudioManager.Pause(tenths);
     
@@ -1284,9 +1261,6 @@ DEFINE_5L_PRIMITIVE(PlayQTFile)
         have_pal = true;
     }   
 	
-	gDebugLog.Log("playqtfile: file <%s>, offset <%ld>, pal <%s>", 
-		QTfile.GetString(), theOffset, PalFile.GetString());
-
 	if (inArgs.HasMoreArguments())
 	{
 		inArgs >> movieOrigin;
@@ -1353,8 +1327,6 @@ DEFINE_5L_PRIMITIVE(PlayQTLoop)
     inArgs >> QTfile;
     if (inArgs.HasMoreArguments())
         inArgs >> theFadeTime;
-
-	gDebugLog.Log("playqtloop: file <%s>, time <%d>", QTfile.GetString(), theFadeTime);
 
 	if (QTfile.Contains(".a2", false))
     	audio_file = true;
@@ -1458,9 +1430,6 @@ DEFINE_5L_PRIMITIVE(PreloadQTFile)
 //		nap_time += start_time;
 //	}
 
-	gDebugLog.Log("preload: file <%s>, tenths <%d>, %s", 
-		QTfile.GetString(), tenths, (doSync ? "sync" : "async"));
-
 	if (not QTfile.Equal("0"))
 	{
 		if (audio_file)
@@ -1537,13 +1506,11 @@ DEFINE_5L_PRIMITIVE(Read)
         else 
         	delim = delimstr(0);
 
-		gDebugLog.Log("read: into <%s>, until <%s>", vname.GetString(), delimstr.GetString());
         gFileManager.ReadUntil(path.ToNativePathString().c_str(), res, delim);
         
     } 
 	else
 	{
-		gDebugLog.Log("read: into <%s>", res.GetString());
 		gFileManager.Read(path.ToNativePathString().c_str(), res);
 	}
 
@@ -1562,7 +1529,6 @@ DEFINE_5L_PRIMITIVE(ReDoScript)
 	TString		theCard;
 	inArgs >> theCard;
 
-	gDebugLog.Log("redoscript: <%s>", theCard.GetString());
 	TInterpreter::GetInstance()->DoReDoScript(theCard);
 }
 
@@ -1624,8 +1590,6 @@ DEFINE_5L_PRIMITIVE(Rewrite)
     }
 
 	Path path = GetDataFilePath(filename.GetString());
-
-	gDebugLog.Log("rewrite: <%s>, num fields <%d>", searchString.GetString(), numFields);
 
     gFileManager.Rewrite(path.ToNativePathString().c_str(), searchString, numFields);
 }
@@ -1700,14 +1664,10 @@ DEFINE_5L_PRIMITIVE(Set)
     	date_value = (uint32) value;
     		
     	gVariableManager.SetDate(vname, date_value, date_type); 
-    	
-		gDebugLog.Log("set date: <%s> to <%s>", 
-			vname.GetString(), gVariableManager.GetString(vname.GetString()));
     } 	
     else 
     {
     	gVariableManager.SetString(vname, value); 
-		gDebugLog.Log("Set: <%s> to <%s>", vname.GetString(), value.GetString());
 	}
 }
 
@@ -1759,6 +1719,7 @@ DEFINE_5L_PRIMITIVE(Sub)
 		sum -= (double) str_amount;
 
 		gVariableManager.SetDouble(vname, sum);
+		::SetPrimitiveResult(sum);
 	}
 	else
 	{
@@ -1767,6 +1728,7 @@ DEFINE_5L_PRIMITIVE(Sub)
 		sum = gVariableManager.GetLong(vname);
 		sum -= (int32) str_amount;
 		gVariableManager.SetLong(vname, sum);
+		::SetPrimitiveResult(sum);
 	}
 }
 
@@ -1787,10 +1749,6 @@ DEFINE_5L_PRIMITIVE(Text)
     
     gOrigin.AdjustRect(&bounds);
 
-	gDebugLog.Log("Text: string <%s>, header <%s>, location (%d, %d, %d, %d)", 
-		text.GetString(), header.GetString(), 
-		bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom());
-
     gHeaderManager.DoText(header, bounds, text, 0, 0);
 }
 
@@ -1810,8 +1768,6 @@ DEFINE_5L_PRIMITIVE(TextAA)
     inArgs >> style >> bounds >> text;
 
     gOrigin.AdjustRect(&bounds);
-	gDebugLog.Log("textaa: style <%s>, text <%s>",
-				  style.c_str(), text.c_str());
 
 	try
 	{
@@ -1980,8 +1936,6 @@ DEFINE_5L_PRIMITIVE(Wait)
     if (inArgs.HasMoreArguments()) 
     	inArgs >> frame;
 
-	gDebugLog.Log("wait: <%ld>", frame);
-    
     if (gVideoManager.Playing())
     	gVideoManager.Wait(frame);
     else if (gAudioManager.PlayNoLoop())
@@ -2004,8 +1958,6 @@ DEFINE_5L_PRIMITIVE(Write)
     inArgs >> filename >> data;
 
 	Path path = GetDataFilePath(filename.GetString());
-
-	gDebugLog.Log("write: <%s>", data.GetString());
 
     gFileManager.Write(path.ToNativePathString().c_str(), data);
 }

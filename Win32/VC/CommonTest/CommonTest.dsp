@@ -122,6 +122,10 @@ SOURCE=..\..\..\Common\TStyleSheetTests.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TTemplateUtilsTests.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TypographyTests.cpp
 # End Source File
 # End Group
