@@ -21,7 +21,8 @@
 /     Looping
       Geiger counters
 /       Random synth of low to medium count rates
-        Fix clipping artifacts
+/       Fix clipping artifacts - not clipping, actually truncation
+/       Loops of high count rates
         Hook into Tamale for Geigers
         Hook into Quake for Geigers
       Hook into Quake for ambients

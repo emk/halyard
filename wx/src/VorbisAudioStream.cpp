@@ -17,7 +17,6 @@ VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 									 bool inShouldLoop)
 	: AudioStream(INT16_PCM_STREAM),
 	  mFileName(inFileName), mShouldLoop(inShouldLoop),
-	  mFile(new VorbisFile(inFileName, SAMPLES_PER_SECOND, CHANNELS)),
 	  // Pad the buffer with an extra frame which we'll never use.
 	  // See IsBufferFull() for details.
 	  mBufferSize(inBufferSize+CHANNELS),
@@ -28,22 +27,46 @@ VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 
 	mDataBegin = 0;
 	mDataEnd = 0;
-	mDone = false;
+	mUnderrunCount = 0;
+
+	InitializeFile();
 
 	// Fill our buffer.
 	Idle();
 }
 
+VorbisAudioStream::~VorbisAudioStream()
+{
+	gDebugLog.Log("Stopped Vorbis stream, %d samples underrun",
+				  mUnderrunCount);
+}
+
+void VorbisAudioStream::InitializeFile()
+{
+	mDoneWithFile = false;
+	VorbisFile *file =
+		new VorbisFile(mFileName.c_str(), SAMPLES_PER_SECOND, CHANNELS);
+	mFile = boost::shared_ptr<VorbisFile>(file);
+}
+
 void VorbisAudioStream::RestartFileIfLoopingAndDone()
 {
-	if (mDone && mShouldLoop)
-	{
-		mDone = false;
-		mFile =
-			boost::shared_ptr<VorbisFile>(new VorbisFile(mFileName.c_str(),
-														 SAMPLES_PER_SECOND,
-														 CHANNELS));
-	}
+	if (mDoneWithFile && mShouldLoop)
+		InitializeFile();
+}
+
+size_t VorbisAudioStream::ReadIntoBlock(int16 *inSpace, size_t inLength)
+{
+	size_t written;
+	if (!mFile->Read(inSpace, inLength, &written))
+		mDoneWithFile = true;
+	ASSERT(!mDoneWithFile || written == 0);
+	return written;
+}
+
+bool VorbisAudioStream::DoneReadingData()
+{
+	return mDoneWithFile && !mShouldLoop;
 }
 
 bool VorbisAudioStream::IsBufferFull()
@@ -114,30 +137,21 @@ void VorbisAudioStream::Idle()
 {
 	// Add as much data to the buffer as we can.
 	RestartFileIfLoopingAndDone();
-	while (!mDone && !IsBufferFull())
+	while (!DoneReadingData() && !IsBufferFull())
 	{
 		// Figure out how much free space we need to fill.
 		int16 *space1, *space2;
-		size_t length1, length2, written, total_written;
+		size_t length1, length2;
 		GetFreeBlocks(&space1, &length1, &space2, &length2);
 
 		// Fill as much space as we can.
-		total_written = 0;
+		size_t total_written = 0;
 		if (space1)
-		{
-			if (!mFile->Read(space1, length1, &written))
-				mDone = true;
-			else
-				total_written += written;
-		}
+			total_written += ReadIntoBlock(space1, length1);
 		if (space2)
-		{
-			if (!mFile->Read(space2, length2, &written))
-				mDone = true;
-			else
-				total_written += written;
-		}
+			total_written += ReadIntoBlock(space2, length2);
 		MarkAsWritten(total_written);
+
 		RestartFileIfLoopingAndDone();
 	}
 }
@@ -154,7 +168,7 @@ bool VorbisAudioStream::FillBuffer(void *outBuffer, unsigned long inFrames,
 	size_t end = mDataEnd;
 
 	// We don't have any data, and we're not getting more.  Quit.
-	if (begin == end && mDone)
+	if (begin == end && DoneReadingData())
 		return true;
 
 	// Write our data to the output buffer, and pad with zeros if
@@ -176,6 +190,7 @@ bool VorbisAudioStream::FillBuffer(void *outBuffer, unsigned long inFrames,
 			// may get more later if mDone is false.)
 			*buffer++ = 0;
 			*buffer++ = 0;
+			mUnderrunCount++;
 		}
 	}
 	mDataBegin = begin;

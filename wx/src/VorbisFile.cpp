@@ -115,7 +115,7 @@ void VorbisFile::GetSamplesFromBuffer(int16 *outOutputBuffer,
 		int out_idx = 0, in_idx = 0;
 		while (out_idx < inOutputSampleCount)
 		{
-			int16 sample = mBuffer[in_idx++];
+			int16 sample = mBufferBegin[in_idx++];
 			outOutputBuffer[out_idx++] = sample;
 			outOutputBuffer[out_idx++] = sample;
 		}

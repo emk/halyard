@@ -19,17 +19,23 @@ class VorbisAudioStream : public AudioStream
 	size_t mBufferSize;
 	volatile size_t mDataBegin;
 	volatile size_t mDataEnd;
-	volatile bool mDone;
+	volatile bool mDoneWithFile;
+	size_t mUnderrunCount;
 
 	enum {
 		CHANNELS = 2
 	};
+
+	void InitializeFile();
 
 	//////////
 	// If we're supposed to be looping, and we're out of data, re-open
 	// our file and read it from the beginning.
 	//
 	void RestartFileIfLoopingAndDone();
+
+	size_t ReadIntoBlock(int16 *inSpace, size_t inLength);
+	bool DoneReadingData();
 
 	//////////
 	// Return true if the circular buffer is full.
@@ -55,6 +61,7 @@ class VorbisAudioStream : public AudioStream
 public:
 	VorbisAudioStream(const char *inFileName, size_t inBufferSize,
 					  bool inShouldLoop);
+	~VorbisAudioStream();
 
 	virtual void Idle();
 	

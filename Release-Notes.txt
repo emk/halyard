@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * All known audio artifacts in Geiger synth and looping Vorbis
+    playback have now been fixed.
+
 0.0.6 - 4 June 2003 - emk, brian
 
 Audio work by emk:
