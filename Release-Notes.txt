@@ -3,6 +3,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 CVS - emk
 
   * Added ANIMATE function.
+  * Modified Tamale to use standard open file dialogs (bug #1713).
 
 0.0.39 - 21 Sep 2004 - emk
 

@@ -416,7 +416,7 @@ void StageFrame::FindBestFullScreenVideoMode()
 	wxArrayVideoModes modes = display.GetModes();
 	mFullScreenVideoMode = wxDefaultVideoMode;
 	wxSize min_size = mStage->GetStageSize();
-	for (int i = 0; i < modes.GetCount(); i++)
+	for (size_t i = 0; i < modes.GetCount(); i++)
 	{
 		wxVideoMode &mode = modes[i];
 		gDebugLog.Log("Found mode: %dx%d, %d bit, %d Hz",
@@ -526,8 +526,11 @@ void StageFrame::NewDocument()
 void StageFrame::OpenDocument()
 {
 	wxASSERT(mDocument == NULL);
-	wxDirDialog dlg(this, "Open a Tamale program folder:");
+	wxFileDialog dlg(this, "Open a Tamale program folder:",
+                     "", "", "Tamale program (data.tam)|data.tam",
+                     wxOPEN|wxHIDE_READONLY);
 
+    // Set the dialog's default path to last file opened, if any.
 	wxConfigBase *config = wxConfigBase::Get();
 	wxString recent;
 	if (config->Read("/Recent/DocPath", &recent))
@@ -535,9 +538,15 @@ void StageFrame::OpenDocument()
 
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		wxString file = dlg.GetPath();
-		mDocument = new Document(file.mb_str(), Document::OPEN);
-		config->Write("/Recent/DocPath", file);
+        // We call GetDirectory instead of GetPath because we don't actually
+        // care about the file itself--it's just a known file within a valid
+        // Tamale program directory.
+		wxString dir = dlg.GetDirectory();
+		mDocument = new Document(dir.mb_str(), Document::OPEN);
+
+        // We want the full path here--not just the directory--to save
+        // typing the next time the user opens this document.
+		config->Write("/Recent/DocPath", dlg.GetPath());
 
 		SetObject(mDocument->GetTamaleProgram());
 		mProgramTree->RegisterDocument(mDocument);
