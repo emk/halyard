@@ -96,6 +96,14 @@ void QTGraphic::Create(TString &inPath)
 		return;
 	}
 
+	// Turn off color correction.  This tends to produce ugly
+	// results, such as graphics which get corrected differently
+	// from the background which they should match (bug #986).
+	long flags = kGraphicsImporterDontDoGammaCorrection;
+	if (::GraphicsImportSetFlags(m_gi, flags) != noErr)
+		gDebugLog.Log("Could not disable gamma correction for <%s>",
+					  m_path.GetString());
+
 	// should we get the info now or wait till somebody asks for it??
 	ComponentResult cr;
 	
@@ -374,6 +382,9 @@ void QTGraphic::Draw(GWorldPtr inGWorld, TPoint &inPt, TRect &inRect)
 
 /*
  $Log$
+ Revision 1.7  2002/07/08 17:09:09  emk
+ 3.3.11 - Ported Mac QuickTime 6 gamma bugfix forward from 3.2.0.x.
+
  Revision 1.6  2002/05/03 12:24:26  hamon
  Changed debug log message to read could not find graphic instead of could not get FSSpec.
 

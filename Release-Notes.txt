@@ -1,7 +1,12 @@
+When possible, please include bug numbers as seen below.
+
 3.3.11 - 7 July 2002 - emk
+
+Ported forward 3.2.0.x fixes (bug #1008).
 
   * Ported Win32 QuickTime 6/VP3 bugfix forward from 3.2.0.x.
   * Ported Win32 QuickTime 6 gamma bugfix forward from 3.2.0.x.
+  * Ported Mac QuickTime 6 gamma bugfix forward from 3.2.0.x.
   * Ported Win32 line drawing bugfix forward from 3.2.0.x.
   * Fixed Win32 (touch ...) command to highlight touchzones more like the
     Macintosh.  (It now redraws the unhighlighted graphic at the end of the
