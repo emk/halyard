@@ -1,5 +1,17 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Added QUICKTIME-COMPONENT-VERSION primitive.
+  * Removed the kInitializeQTMLUseGDIFlag from QuickTime startup. This
+    will once again allow us to use hardware acceleration, with possible
+    negative consequences. Keep an eye out for QuickTime bugs on weird
+    machines for the next month or two.
+  * We now detect if QuickTime isn't installed and give an appropriate
+    error (bug #1846).
+  * We handle top-level exceptions much more gracefully and informatively
+    than before (bug #1846).
+
 0.0.42 - 06 Dec 2004 - emk
 
   * EVENT-STALE? no longer gets confused if your system has been

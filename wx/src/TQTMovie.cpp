@@ -69,8 +69,15 @@ void TQTMovie::InitializeMovies()
     // use it, QuickTime interacts horribly with the Boehm GC, causing
     // the performance of both to plummet.  So let's hope our VP3 codec
     // is up to date.
-	CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
-	//CHECK_MAC_ERROR(::InitializeQTML(0));
+    //
+    // UPDATE: The Boehm problem has theoretically been fixed by forcing
+    // Boehm to only scan explicitly-marked roots for Scheme_Object *
+    // values instead of scanning all global data for all loaded DLLs.
+    // So we're going back to allowing hardware acceleration of QuickTime
+    // for now, pending future complaints.
+    //
+	//CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
+	CHECK_MAC_ERROR(::InitializeQTML(0));
 
 	// As Chuck discovered, QuickTime likes to draw movies to 
 	// inappropriate places on the screen, and to engage in other bits

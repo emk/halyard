@@ -608,7 +608,7 @@ void StageFrame::OnNewProgram(wxCommandEvent &inEvent)
 {
 	BEGIN_EXCEPTION_TRAPPER()
 		NewDocument();
-	END_EXCEPTION_TRAPPER()
+	END_EXCEPTION_TRAPPER(TException::ReportException)
 }
 
 void StageFrame::UpdateUiOpenProgram(wxUpdateUIEvent &inEvent)
@@ -620,7 +620,7 @@ void StageFrame::OnOpenProgram(wxCommandEvent &inEvent)
 {
 	BEGIN_EXCEPTION_TRAPPER()
 		OpenDocument();
-	END_EXCEPTION_TRAPPER()
+	END_EXCEPTION_TRAPPER(TException::ReportException)
 }
 
 void StageFrame::UpdateUiSaveProgram(wxUpdateUIEvent &inEvent)

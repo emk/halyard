@@ -138,16 +138,26 @@ public:
 	/// Win32 protection violations, this function is fatal.
 	///
 	static void ReportException();
+
+    //////////
+    /// Report an exception, and always trigger a fatal error.
+    ///
+    static void ReportFatalException(std::exception &e);
+
+    //////////
+    /// Report an unknown exception, and always trigger a fatal error.
+    ///
+    static void ReportFatalException();
 };
 
 #define BEGIN_EXCEPTION_TRAPPER() \
 	try {
 
-#define END_EXCEPTION_TRAPPER() \
+#define END_EXCEPTION_TRAPPER(REPORT_FUNC) \
 	} catch (std::exception &e) { \
-		TException::ReportException(e); \
+		REPORT_FUNC(e); \
     } catch (...) { \
-		TException::ReportException(); \
+		REPORT_FUNC(); \
 	}
 
 #define CATCH_ALL_EXCEPTIONS_AND_RETURN(FUNC,DEFAULT) \

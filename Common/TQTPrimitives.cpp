@@ -31,7 +31,7 @@
 // file with #include "stdafx.h", which won't work on the Mac.
 
 // Needed for RegisterQuickTimePrimitives.
-#include "TCommon.h"
+#include "CommonHeaders.h"
 #include "TPrimitives.h"
 #include "TQTPrimitives.h"
 
@@ -45,8 +45,7 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 //  RegisterQTPrimitives
 //=========================================================================
-//  Install our portable primitive functions.  These are only required by
-//  our old 5L interpreter, not by more reasonable languages.
+//  Install our QuickTime primitives.
 
 void FIVEL_NS RegisterQuickTimePrimitives()
 {

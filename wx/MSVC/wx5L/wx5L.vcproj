@@ -253,21 +253,6 @@
 				RelativePath="..\..\src\Quake2Engine.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\resources.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\..\src\ScriptEditor.cpp">
 			</File>
 			<File
@@ -280,28 +265,40 @@
 				RelativePath="..\..\src\dlg\StartupDlg.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\tamale.rc">
-			</File>
-			<File
-				RelativePath="..\..\src\tamale.xrc">
+				RelativePath="..\..\src\TQTMovie.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="cd &quot;$(InputDir)&quot;
-..\..\libs\wxWidgets\contrib\utils\wxrc\vc_mswd\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;
-"
-						Outputs="$(InputDir)resources.cpp"/>
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="cd $(InputDir)
-..\..\libs\wxWidgets\contrib\utils\wxrc\Release\wxrc.exe /c /o resources.cpp $(InputName).xrc
-"
-						Outputs="$(InputDir)resources.cpp"/>
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TQTPrimitives.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\TQuake2Primitives.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\TWxPrimitives.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\TamaleHeaders.cpp">
@@ -328,7 +325,22 @@
 				RelativePath="..\..\src\ToolWindow.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\TQTMovie.cpp">
+				RelativePath="..\..\src\VorbisAudioStream.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\VorbisFile.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\Widget.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\dlg\XrcDlg.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\Zone.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\resources.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
@@ -343,25 +355,28 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\TQuake2Primitives.cpp">
+				RelativePath="..\..\src\tamale.rc">
 			</File>
 			<File
-				RelativePath="..\..\src\TWxPrimitives.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\VorbisAudioStream.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\VorbisFile.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\Widget.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\dlg\XrcDlg.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\Zone.cpp">
+				RelativePath="..\..\src\tamale.xrc">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="cd &quot;$(InputDir)&quot;
+..\..\libs\wxWidgets\contrib\utils\wxrc\vc_mswd\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;
+"
+						Outputs="$(InputDir)resources.cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="cd $(InputDir)
+..\..\libs\wxWidgets\contrib\utils\wxrc\Release\wxrc.exe /c /o resources.cpp $(InputName).xrc
+"
+						Outputs="$(InputDir)resources.cpp"/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -482,12 +497,6 @@
 				RelativePath="..\..\src\Quake2Engine.h">
 			</File>
 			<File
-				RelativePath="..\..\src\resource.h">
-			</File>
-			<File
-				RelativePath="..\..\src\resource1.h">
-			</File>
-			<File
 				RelativePath="..\..\src\ScriptEditor.h">
 			</File>
 			<File
@@ -498,6 +507,18 @@
 			</File>
 			<File
 				RelativePath="..\..\src\dlg\StartupDlg.h">
+			</File>
+			<File
+				RelativePath="..\..\src\TQTMovie.h">
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TQTPrimitives.h">
+			</File>
+			<File
+				RelativePath="..\..\src\TQuake2Primitives.h">
+			</File>
+			<File
+				RelativePath="..\..\src\TWxPrimitives.h">
 			</File>
 			<File
 				RelativePath="..\..\src\TamaleHeaders.h">
@@ -512,16 +533,7 @@
 				RelativePath="..\..\src\ToolWindow.h">
 			</File>
 			<File
-				RelativePath="..\..\src\TQTMovie.h">
-			</File>
-			<File
-				RelativePath="..\..\src\TQuake2Primitives.h">
-			</File>
-			<File
 				RelativePath="..\..\src\Transition.h">
-			</File>
-			<File
-				RelativePath="..\..\src\TWxPrimitives.h">
 			</File>
 			<File
 				RelativePath="..\..\src\VorbisAudioStream.h">
@@ -537,6 +549,12 @@
 			</File>
 			<File
 				RelativePath="..\..\src\Zone.h">
+			</File>
+			<File
+				RelativePath="..\..\src\resource.h">
+			</File>
+			<File
+				RelativePath="..\..\src\resource1.h">
 			</File>
 		</Filter>
 		<Filter

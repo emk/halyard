@@ -32,6 +32,7 @@
 #include "AppConfig.h"
 #if CONFIG_HAVE_QUICKTIME
 #	include "TQTMovie.h"
+#   include "TQTPrimitives.h"
 #endif // CONFIG_HAVE_QUICKTIME
 #include "AppGlobals.h"
 #include "FiveLApp.h"
@@ -53,7 +54,7 @@ USING_NAMESPACE_FIVEL
 IMPLEMENT_APP(FiveLApp)
 
 FiveLApp::FiveLApp()
-    : mHaveOwnEventLoop(false), mStageFrame(NULL)
+    : mHaveOwnEventLoop(false), mLogsAreInitialized(false), mStageFrame(NULL)
 {
     // Do nothing here but set up instance variables.  Real work should
     // happen in FiveLApp::OnInit, below.
@@ -106,71 +107,123 @@ void FiveLApp::IdleProc(bool inBlock)
 	}
 }
 
-bool FiveLApp::OnInit()
-{
-	// Name our application.
-	SetAppName("Tamale");
+void FiveLApp::ErrorDialog(const char* inTitle, const char *inMessage) {
+    wxMessageDialog dlg(NULL, inMessage, inTitle, wxOK|wxICON_ERROR);
+    dlg.ShowModal();
+}
 
+void FiveLApp::ReportFatalException(std::exception &e) {
+    if (mLogsAreInitialized) {
+        TException::ReportFatalException(e);
+    } else {
+        ErrorDialog("Unexpected Error", e.what());
+        exit(1);
+    }
+}
+
+void FiveLApp::ReportFatalException() {
+    if (mLogsAreInitialized) {
+        TException::ReportFatalException();
+    } else {
+        ErrorDialog("Unexpected Error", "An unknown error occurred.");
+        exit(1);
+    }
+}
+
+void FiveLApp::OnUnhandledException() {
+    ReportFatalException();
+}
+
+bool FiveLApp::OnInit() {
+    // All code in this routine should be protected by an
+    // exception-trapping block of some sort, because wxWidgets has weak
+    // internal exception handling and doesn't tend to report exception
+    // strings properly.
+    //
+    // Partway down this routine, we'll set mLogsAreInitialized to true,
+    // allowing a more advanced error reporting system to take over.
+    BEGIN_EXCEPTION_TRAPPER();
+
+    // Name our application.
+    SetAppName("Tamale");
+    
     // Get the 5L runtime going.
     ::InitializeCommonCode();
+    mLogsAreInitialized = true;
     ::RegisterWxPrimitives();
 #if CONFIG_HAVE_QUAKE2
-	::RegisterQuake2Primitives();
+    ::RegisterQuake2Primitives();
 #endif // CONFIG_HAVE_QUAKE2
-
+    
     // Send copies of all wxWindows logging messages to our traditional 5L
     // logs.  This gives us a single copy of everything.
     // TODO - How do we clean up these resources?
     wxLog::SetActiveTarget(new wxLogGui());
     new wxLogChain(new Log5L());
-
+    
     // Configure some useful trace masks for debugging the application.
     // Comment these out to disable a particular kind of tracing.
     //wxLog::AddTraceMask(TRACE_STAGE_DRAWING);
     //wxLog::AddTraceMask(wxTRACE_Messages);
     //wxLog::SetTraceMask(wxTraceMessages);
-
+    
 #if CONFIG_HAVE_QUICKTIME
     // Start up QuickTime.
-    TQTMovie::InitializeMovies();
+    try {
+        TQTMovie::InitializeMovies();
+    } catch (std::exception &) {
+        // We don't call gLog.FatalError here, because this isn't
+        // really an error, it's a configuration problem, and we don't
+        // really want crash reports about it.
+        ErrorDialog("QuickTime Unavailable",
+                    "Could not set up QuickTime. Please "
+                    "make sure QuickTime is properly installed.");
+        return false;
+    }
+    RegisterQuickTimePrimitives();
 #endif // CONFIG_HAVE_QUICKTIME
-
-	// Start up our audio synthesis layer.
-	AudioStream::InitializeStreams();
-
+    
+    // Start up our audio synthesis layer.
+    AudioStream::InitializeStreams();
+    
     // Initialize some optional wxWindows features.
     ::wxInitAllImageHandlers();
     wxFileSystem::AddHandler(new wxInternetFSHandler);
-
-	// Load our resources (they're linked into our application).
-	// TODO - Only initialize the handlers we need; this will greatly
-	// reduce application size.
-	wxXmlResource::Get()->InitAllHandlers();
-	InitXmlResource();
-
+    
+    // Load our resources (they're linked into our application).
+    // TODO - Only initialize the handlers we need; this will greatly
+    // reduce application size.
+    wxXmlResource::Get()->InitAllHandlers();
+    InitXmlResource();
+    
     // Create and display our stage frame.
     //mStageFrame = new StageFrame(wxSize(640, 480));
     mStageFrame = new StageFrame(wxSize(800, 600));
     mStageFrame->Show();
-	// Enable this to go to full-screen mode *almost* immediately.
-	// TODO - You'll see the standard window for a small fraction of a
-	// second.  Fixing this will require tweaking wxWindows.
-	//mStageFrame->ShowFullScreen(TRUE);
+    // Enable this to go to full-screen mode *almost* immediately.
+    // TODO - You'll see the standard window for a small fraction of a
+    // second.  Fixing this will require tweaking wxWindows.
+    //mStageFrame->ShowFullScreen(TRUE);
     SetTopWindow(mStageFrame);
 
-    return TRUE;
+    END_EXCEPTION_TRAPPER(ReportFatalException);
+    
+    return true;
 }
 
-int FiveLApp::OnExit()
-{
+int FiveLApp::OnExit() {
+    BEGIN_EXCEPTION_TRAPPER();
+
 	// Shut down our audio synthesis layer.
 	AudioStream::ShutDownStreams();
-
+    
     // Shut down QuickTime.  wxWindows guarantees to have destroyed
     // all windows and frames by this point.
 #if CONFIG_HAVE_QUICKTIME
     TQTMovie::ShutDownMovies();
 #endif // CONFIG_HAVE_QUICKTIME
+    
+    END_EXCEPTION_TRAPPER(ReportFatalException);
 
     // XXX - Undocumented return value, trying 0 for now.
     return 0;

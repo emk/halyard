@@ -68,7 +68,7 @@ void StartupDlg::OnOK(wxCommandEvent &inEvent)
 			wxGetApp().GetStageFrame()->NewDocument();
 		else if (mRadioOpen->GetValue())
 			wxGetApp().GetStageFrame()->OpenDocument();
-	END_EXCEPTION_TRAPPER()
+	END_EXCEPTION_TRAPPER(TException::ReportException)
 	
 	EndModal(wxID_OK);
 }

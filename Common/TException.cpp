@@ -66,12 +66,18 @@ const char* TException::what () const throw ()
 	return mWhatCache.c_str();
 }
 
-void TException::ReportException(std::exception &e)
-{
+void TException::ReportException(std::exception &e) {
 	gLog.Error("Error: %s", e.what());
 }
 
-void TException::ReportException()
-{
+void TException::ReportException() {
+	ReportFatalException();
+}
+
+void TException::ReportFatalException(std::exception &e) {
+	gLog.FatalError("Error: %s", e.what());
+}
+
+void TException::ReportFatalException() {
 	gLog.FatalError("An unexpected internal error occurred, quitting now.");
 }

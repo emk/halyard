@@ -159,7 +159,7 @@ void Quake2Engine::HandleBinMsg(unsigned char *buffer, size_t size)
                 THROW("Malformed 'state' message");
             gStateDB.Set("/quake2/" + std::string(args[0]), args[1]);
         }    
-    } END_EXCEPTION_TRAPPER();
+    } END_EXCEPTION_TRAPPER(TException::ReportException);
 }
 
 void Quake2Engine::Initialize(const std::string &inGame,
