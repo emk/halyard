@@ -453,7 +453,7 @@ void LFileBundle::Import(const char *filename)
 	f.close();
 
 	// Make sure an endline occurs at the end of the file data
-	if (str(str.Length()-1) != '\n')
+	if (str.Length() == 0 || str(str.Length()-1) != '\n')
 		str += '\n';
 
 	char *sFilename = new char[strlen(filename)];
