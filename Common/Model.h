@@ -1,7 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#if !defined (DataStore_H)
-#define DataStore_H
+#if !defined (Model_H)
+#define Model_H
 
 #include <memory>
 #include <map>
@@ -15,11 +15,11 @@
 //////////
 // A lightweight, persistent object database with XML serialization.
 //
-namespace DataStore {
+namespace model {
 
 	// Forward declarations.
 	class Datum;
-	class Store;
+	class Model;
 
 	// Internal support code.
 	namespace Private {
@@ -50,14 +50,14 @@ namespace DataStore {
 	};
 	
 	//////////
-	// A Change represents a mutation of something within the Store.  A
-	// Change may be applied, or reverted.  Changes to a given Store occur
+	// A Change represents a mutation of something within the Model.  A
+	// Change may be applied, or reverted.  Changes to a given Model occur
 	// in a sequence, and must be applied or reverted in that sequence.
 	//
 	// Because of this careful sequencing, a Change is allowed to hold onto
 	// pointers and other resources.  All Change objects are destroyed
-	// before the corresponding DataStore object is destroyed.  This means
-	// that half their resources will be owned by the DataStore, and half
+	// before the corresponding Model object is destroyed.  This means
+	// that half their resources will be owned by the Model, and half
 	// by the Change object, depending on whether the change has been
 	// applied or reverted.
 	//
@@ -111,7 +111,7 @@ namespace DataStore {
 	};
 
 	//////////
-	// The abstract superclass of all data in the DataStore.
+	// The abstract superclass of all data in the Model.
 	//
 	class Datum {
 		DISABLE_COPY_AND_ASSIGN(Datum);
@@ -127,10 +127,10 @@ namespace DataStore {
 
 		//////////
 		// Immediately after a Datum is created, it should be registered
-		// with a Store object.  You can do this by inserting the Datum
-		// into a container, which will call RegisterWithStore.
+		// with a Model object.  You can do this by inserting the Datum
+		// into a container, which will call RegisterWithModel.
 		//
-		virtual void RegisterWithStore(Store *inStore) {}
+		virtual void RegisterWithModel(Model *inModel) {}
 
 		//////////
 		// Fill in any children of the datum using the specified XML node.
@@ -152,7 +152,7 @@ namespace DataStore {
 		T *datum = dynamic_cast<T*>(inDatum);
 		if (!datum)
 			throw TException(__FILE__, __LINE__,
-							 "Wrong data type in DataStore::TypeCheck");
+							 "Wrong data type in model::TypeCheck");
 		return datum;
 	}
 
@@ -186,8 +186,8 @@ namespace DataStore {
 			virtual void Write(xml_node inParent); \
 		}
 	
-	DEFINE_VALUE_DATUM_CLASS(IntegerDatum,IntegerType,long);
-	DEFINE_VALUE_DATUM_CLASS(StringDatum,StringType,std::string);
+	DEFINE_VALUE_DATUM_CLASS(Integer,IntegerType,long);
+	DEFINE_VALUE_DATUM_CLASS(String,StringType,std::string);
 
 
 #	undef DEF_VALUE_DATUM
@@ -196,10 +196,10 @@ namespace DataStore {
 	// A MutableDatum can be changed and must therefore support Undo.
 	// 
 	class MutableDatum : public Datum {
-		Store *mStore;
+		Model *mModel;
 
 	protected:
-		MutableDatum(Type inType) : Datum(inType), mStore(NULL) { }
+		MutableDatum(Type inType) : Datum(inType), mModel(NULL) { }
 
 		//////////
 		// To change this datum, instantiate an appropriate Change
@@ -208,22 +208,22 @@ namespace DataStore {
 		void ApplyChange(Change *inChange);
 
 		//////////
-		// Register a child object with our store.
+		// Register a child object with our model.
 		//
 		// NOTE - This should really be a method on ContainDatum, but
 		// that class is a template class.
 		//
-		void RegisterChildObjectWithStore(Datum *inDatum);
+		void RegisterChildObjectWithModel(Datum *inDatum);
 
 	public:
 		//////////
-		// Mutable objects actually need to know about their Store,
+		// Mutable objects actually need to know about their Model,
 		// and communicate with it on a regular basis.  Therefore, we
 		// actually pay attention to this method.
 		//
-		virtual void RegisterWithStore(Store *inStore);
+		virtual void RegisterWithModel(Model *inModel);
 
-		Store *GetStore() { ASSERT(mStore); return mStore; }
+		Model *GetModel() { ASSERT(mModel); return mModel; }
 	};		
 
 	//////////
@@ -308,11 +308,11 @@ namespace DataStore {
 	//////////
 	// A basic hash-table-style datum.
 	//
-	class MapDatum : public CollectionDatum<std::string> {
+	class Map : public CollectionDatum<std::string> {
 		Private::DatumMap mMap;
 
 	public:
-		MapDatum() : CollectionDatum<std::string>(MapType) {}
+		Map() : CollectionDatum<std::string>(MapType) {}
 
 		virtual void Write(xml_node inParent);
 		void Fill(xml_node inNode);
@@ -328,14 +328,14 @@ namespace DataStore {
 	// A simle list class, which supports inserting items (anywhere),
 	// deleting items (from anywhere), and setting items.
 	//
-	class ListDatum : public CollectionDatum<size_t> {
+	class List : public CollectionDatum<size_t> {
 		Private::DatumVector mVector;
 
 		class InsertChange;
 		void PerformInsert(ConstKeyType &inKey, Datum *inValue);
 		
 	public:
-		ListDatum() : CollectionDatum<size_t>(ListType) {}
+		List() : CollectionDatum<size_t>(ListType) {}
 
 		virtual void Write(xml_node inParent);
 		void Fill(xml_node inNode);
@@ -365,20 +365,20 @@ namespace DataStore {
 #endif // 0
 
 	//////////
-	// The DataStore itself.  This class manages a single persistent
+	// The Model itself.  This class manages a single persistent
 	// object tree.
 	//
-	class Store {
+	class Model {
 		typedef std::list<Change*> ChangeList;
 
-		std::auto_ptr<MapDatum> mRoot;
+		std::auto_ptr<Map> mRoot;
 
 		ChangeList mChanges;
 		ChangeList::iterator mChangePosition;
 
 	public:
-		Store();
-		~Store();
+		Model();
+		~Model();
 		
 		bool CanUndo();
 		void Undo();
@@ -388,13 +388,13 @@ namespace DataStore {
 		void Redo();
 		void ClearRedoList();
 		
-		MapDatum *GetRoot() { ASSERT(mRoot.get()); return mRoot.get(); }
-		const MapDatum *GetRoot() const
+		Map *GetRoot() { ASSERT(mRoot.get()); return mRoot.get(); }
+		const Map *GetRoot() const
 			{ ASSERT(mRoot.get()); return mRoot.get(); }
 
 		void Write(const std::string &inFile);
 
-		static Store *Read(const std::string &inFile);
+		static Model *Read(const std::string &inFile);
 		
 	private:
 		friend class MutableDatum;
@@ -405,4 +405,4 @@ namespace DataStore {
 	
 };
 
-#endif // DataStore_H
+#endif // Model_H

@@ -4,11 +4,11 @@
 #include <libxml/parser.h>
 
 #include "TCommon.h"
-#include "DataStore.h"
+#include "Model.h"
 
 USING_NAMESPACE_FIVEL
-using namespace DataStore;
-using namespace DataStore::Private;
+using namespace model;
+using namespace model::Private;
 
 
 //=========================================================================
@@ -79,13 +79,13 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 {
 	std::string name  = inNode.name();
 	if (name == "int")
-		return new IntegerDatum(boost::lexical_cast<long>(inNode.text()));
+		return new Integer(boost::lexical_cast<long>(inNode.text()));
 	else if (name == "str")
-		return new StringDatum(inNode.text());
+		return new String(inNode.text());
 	else if (name == "map")
-		return new MapDatum();
+		return new Map();
 	else if (name == "list")
-		return new ListDatum();
+		return new List();
 	else
 		THROW("Unsupported XML element type");
 }
@@ -95,12 +95,12 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 //  ValueDatum Implementation
 //=========================================================================
 
-void IntegerDatum::Write(xml_node inParent)
+void Integer::Write(xml_node inParent)
 {
 	inParent.new_child("int", boost::lexical_cast<std::string>(mValue));
 }
 
-void StringDatum::Write(xml_node inParent)
+void String::Write(xml_node inParent)
 {
 	inParent.new_child("str", mValue);
 }
@@ -112,23 +112,23 @@ void StringDatum::Write(xml_node inParent)
 
 void MutableDatum::ApplyChange(Change *inChange)
 {
-	ASSERT(mStore != NULL);
+	ASSERT(mModel != NULL);
 	ASSERT(inChange != NULL);
-	mStore->ApplyChange(inChange);
+	mModel->ApplyChange(inChange);
 }
 
-void MutableDatum::RegisterChildObjectWithStore(Datum *inDatum)
+void MutableDatum::RegisterChildObjectWithModel(Datum *inDatum)
 {
-	ASSERT(mStore != NULL);
+	ASSERT(mModel != NULL);
 	ASSERT(inDatum != NULL);
-	inDatum->RegisterWithStore(mStore);
+	inDatum->RegisterWithModel(mModel);
 }
 
-void MutableDatum::RegisterWithStore(Store *inStore)
+void MutableDatum::RegisterWithModel(Model *inModel)
 {
-	ASSERT(mStore == NULL);
-	ASSERT(inStore != NULL);
-	mStore = inStore;
+	ASSERT(mModel == NULL);
+	ASSERT(inModel != NULL);
+	mModel = inModel;
 }
 
 
@@ -136,7 +136,7 @@ void MutableDatum::RegisterWithStore(Store *inStore)
 //  CollectionDatum Methods
 //=========================================================================
 //  Supported types of changes
-//    MapDatum container
+//    Map container
 //      Set
 //        mContainer
 //        mKey
@@ -152,7 +152,7 @@ void MutableDatum::RegisterWithStore(Store *inStore)
 //        find(key) -> datum-or-null
 //        remove-known-datum(key, datum)
 //        insert(key, datum)
-//    ListDatum container
+//    List container
 //      Set
 //        mContainer
 //        mKey
@@ -256,7 +256,7 @@ void CollectionDatum<KeyType>::SetChange::DoFreeRevertResources()
 template <typename KeyType>
 void CollectionDatum<KeyType>::PerformSet(ConstKeyType &inKey, Datum *inValue)
 {
-	RegisterChildObjectWithStore(inValue);
+	RegisterChildObjectWithModel(inValue);
 	ApplyChange(new SetChange(this, inKey, inValue));
 }
 
@@ -336,10 +336,10 @@ template class CollectionDatum<size_t>;
 
 
 //=========================================================================
-//  MapDatum Methods
+//  Map Methods
 //=========================================================================
 
-void MapDatum::Write(xml_node inParent)
+void Map::Write(xml_node inParent)
 {
 	xml_node node = inParent.new_child("map");
 	DatumMap::iterator i = mMap.begin();
@@ -351,7 +351,7 @@ void MapDatum::Write(xml_node inParent)
 	}
 }
 
-void MapDatum::Fill(xml_node inNode)
+void Map::Fill(xml_node inNode)
 {
 	xml_node::iterator i = inNode.begin();
 	for (; i != inNode.end(); ++i)
@@ -366,14 +366,14 @@ void MapDatum::Fill(xml_node inNode)
 	}
 }
 
-Datum *MapDatum::DoGet(ConstKeyType &inKey)
+Datum *Map::DoGet(ConstKeyType &inKey)
 {
 	DatumMap::iterator found = mMap.find(inKey);
-	CHECK(found != mMap.end(), "MapDatum::Get: Can't find key");
+	CHECK(found != mMap.end(), "Map::Get: Can't find key");
 	return found->second;
 }
 
-Datum *MapDatum::DoFind(ConstKeyType &inKey)
+Datum *Map::DoFind(ConstKeyType &inKey)
 {
 	DatumMap::iterator found = mMap.find(inKey);
 	if (found == mMap.end())
@@ -381,7 +381,7 @@ Datum *MapDatum::DoFind(ConstKeyType &inKey)
 	return found->second;
 }
 
-void MapDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
+void Map::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
 {
 	DatumMap::iterator found = mMap.find(inKey);
 	ASSERT(found != mMap.end());
@@ -389,23 +389,23 @@ void MapDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
 	mMap.erase(found);
 }
 
-void MapDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
+void Map::DoInsert(ConstKeyType &inKey, Datum *inDatum)
 {
 	mMap.insert(DatumMap::value_type(inKey, inDatum));
 }
 
 
 //=========================================================================
-//  ListDatum::InsertChange
+//  List::InsertChange
 //=========================================================================
 
-class ListDatum::InsertChange : public Change {
-	ListDatum *mCollection;
+class List::InsertChange : public Change {
+	List *mCollection;
 	Datum *mNewDatum;
 	ConstKeyType mKey;
 
 public:
-	InsertChange(ListDatum *inCollection,
+	InsertChange(List *inCollection,
 				 ConstKeyType &inKey,
 				 Datum *inValue);
 
@@ -416,45 +416,45 @@ protected:
 	virtual void DoFreeRevertResources();
 };
 
-ListDatum::InsertChange::InsertChange(ListDatum *inCollection,
-									  ConstKeyType &inKey,
-									  Datum *inValue)
+List::InsertChange::InsertChange(List *inCollection,
+								 ConstKeyType &inKey,
+								 Datum *inValue)
 	: mCollection(inCollection), mNewDatum(inValue), mKey(inKey)
 {
 }
 
-void ListDatum::InsertChange::DoApply()
+void List::InsertChange::DoApply()
 {
 	mCollection->DoInsert(mKey, mNewDatum);
 }
 
-void ListDatum::InsertChange::DoRevert()
+void List::InsertChange::DoRevert()
 {
 	mCollection->DoRemoveKnown(mKey, mNewDatum);
 }
 
-void ListDatum::InsertChange::DoFreeApplyResources()
+void List::InsertChange::DoFreeApplyResources()
 {
 	delete mNewDatum;
 	mNewDatum = NULL;	
 }
 
-void ListDatum::InsertChange::DoFreeRevertResources()
+void List::InsertChange::DoFreeRevertResources()
 {
 }
 
-void ListDatum::PerformInsert(ConstKeyType &inKey, Datum *inValue)
+void List::PerformInsert(ConstKeyType &inKey, Datum *inValue)
 {
-	RegisterChildObjectWithStore(inValue);
+	RegisterChildObjectWithModel(inValue);
 	ApplyChange(new InsertChange(this, inKey, inValue));
 }
 
 
 //=========================================================================
-//  ListDatum Methods
+//  List Methods
 //=========================================================================
 
-void ListDatum::Write(xml_node inParent)
+void List::Write(xml_node inParent)
 {
 	xml_node node = inParent.new_child("list");
 	DatumVector::iterator i = mVector.begin();
@@ -462,7 +462,7 @@ void ListDatum::Write(xml_node inParent)
 		(*i)->Write(node);
 }
 
-void ListDatum::Fill(xml_node inNode)
+void List::Fill(xml_node inNode)
 {
 	xml_node::iterator i = inNode.begin();
 	for (; i != inNode.end(); ++i)
@@ -474,13 +474,13 @@ void ListDatum::Fill(xml_node inNode)
 	}
 }
 
-Datum *ListDatum::DoGet(ConstKeyType &inKey)
+Datum *List::DoGet(ConstKeyType &inKey)
 {
-	CHECK(inKey < mVector.size(), "No such key in ListDatum::DoGet");
+	CHECK(inKey < mVector.size(), "No such key in List::DoGet");
 	return mVector[inKey];
 }
 
-Datum *ListDatum::DoFind(ConstKeyType &inKey)
+Datum *List::DoFind(ConstKeyType &inKey)
 {
 	if (inKey < mVector.size())
 		return mVector[inKey];
@@ -488,7 +488,7 @@ Datum *ListDatum::DoFind(ConstKeyType &inKey)
 		return NULL;
 }
 
-void ListDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
+void List::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
 {
 	// This runs in O(N) time, which isn't great.
 	ASSERT(inKey < mVector.size());
@@ -497,7 +497,7 @@ void ListDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
 	mVector.erase(mVector.begin() + inKey);
 }
 
-void ListDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
+void List::DoInsert(ConstKeyType &inKey, Datum *inDatum)
 {
 	// This runs in O(N) time, which isn't great.
 	ASSERT(inKey <= mVector.size());
@@ -588,10 +588,10 @@ void MoveChange<DestKeyType,SrcKeyType>::DoFreeRevertResources()
 }
 
 template <typename C1, typename C2>
-void DataStore::Move(C1 *inDest, typename C1::ConstKeyType &inDestKey,
+void model::Move(C1 *inDest, typename C1::ConstKeyType &inDestKey,
 					 C2 *inSrc, typename C2::ConstKeyType &inSrcKey)
 {
-	inDest->GetStore()->
+	inDest->GetModel()->
       ApplyChange(new MoveChange<typename C1::KeyType,
 				                 typename C2::KeyType>(inDest, inDestKey,
 													   inSrc, inSrcKey));
@@ -602,44 +602,44 @@ template MoveChange<std::string,size_t>;
 template MoveChange<size_t,std::string>;
 template MoveChange<std::string,std::string>;
 
-template void DataStore::Move(ListDatum*, ListDatum::ConstKeyType&,
-							  ListDatum*, ListDatum::ConstKeyType&);
+template void model::Move(List*, List::ConstKeyType&,
+						  List*, List::ConstKeyType&);
 
-template void DataStore::Move(MapDatum*, MapDatum::ConstKeyType&,
-							  MapDatum*, MapDatum::ConstKeyType&);
+template void model::Move(Map*, Map::ConstKeyType&,
+						  Map*, Map::ConstKeyType&);
 #endif // 0
 
 
 //=========================================================================
-//  Store Methods
+//  Model Methods
 //=========================================================================
 
-Store::Store()
+Model::Model()
 	: mRoot(NULL)
 {
 	mChangePosition = mChanges.begin();
-	mRoot = new MapDatum();
-	mRoot->RegisterWithStore(this);
+	mRoot = new Map();
+	mRoot->RegisterWithModel(this);
 }
 
-Store::~Store()
+Model::~Model()
 {
 	ClearRedoList();
 	ClearUndoList();
 }
 
-bool Store::CanUndo()
+bool Model::CanUndo()
 {
 	return mChangePosition != mChanges.begin();
 }
 
-void Store::Undo()
+void Model::Undo()
 {
 	ASSERT(CanUndo());
 	(*--mChangePosition)->Revert();
 }
 
-void Store::ClearUndoList()
+void Model::ClearUndoList()
 {
 	ChangeList::iterator i = mChanges.begin();
 	for (; i != mChangePosition; i = mChanges.erase(i))
@@ -650,18 +650,18 @@ void Store::ClearUndoList()
 	ASSERT(!CanUndo());
 }
 
-bool Store::CanRedo()
+bool Model::CanRedo()
 {
 	return mChangePosition != mChanges.end();
 }
 
-void Store::Redo()
+void Model::Redo()
 {
 	ASSERT(CanRedo());
 	(*mChangePosition++)->Apply();
 }
 
-void Store::ClearRedoList()
+void Model::ClearRedoList()
 {
 	// If there's no redo list, give up now.
 	if (!CanRedo())
@@ -683,7 +683,7 @@ void Store::ClearRedoList()
 	ASSERT(!CanRedo());	
 }
 
-void Store::ApplyChange(Change *inChange)
+void Model::ApplyChange(Change *inChange)
 {
 	ClearRedoList();
 	inChange->Apply();
@@ -691,7 +691,7 @@ void Store::ApplyChange(Change *inChange)
 	mChangePosition++;
 }
 
-void Store::Write(const std::string &inFile)
+void Model::Write(const std::string &inFile)
 {
 	// Create a tree.
 	xmlDocPtr doc = xmlNewDoc(xml_node::to_utf8("1.0"));
@@ -710,10 +710,10 @@ void Store::Write(const std::string &inFile)
 	CHECK(result != -1, "Failed to save XML file");
 }
 
-Store *Store::Read(const std::string &inFile)
+Model *Model::Read(const std::string &inFile)
 {
-	// Create a new data store.
-	std::auto_ptr<Store> store(new Store());
+	// Create a new data model.
+	std::auto_ptr<Model> model(new Model());
 
 	// Open the XML file.
 	xmlDocPtr doc = xmlParseFile(inFile.c_str());
@@ -726,7 +726,7 @@ Store *Store::Read(const std::string &inFile)
 		CHECK(root, "No document root in XML file");
 		xml_node map_node = xml_node(root).only_child();
 		XML_CHECK_NAME(map_node, "map");
-		store->GetRoot()->Fill(map_node);
+		model->GetRoot()->Fill(map_node);
 	}
 	catch (...)
 	{
@@ -735,6 +735,6 @@ Store *Store::Read(const std::string &inFile)
 	}
 
 	xmlFreeDoc(doc);
-	store->ClearUndoList();
-	return store.release();
+	model->ClearUndoList();
+	return model.release();
 }

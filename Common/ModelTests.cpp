@@ -2,211 +2,211 @@
 
 #include "ImlUnit.h"
 #include "TCommon.h"
-#include "DataStore.h"
+#include "Model.h"
 
-using namespace DataStore;
+using namespace model;
 
-extern void test_DataStore (void);
+extern void test_Model (void);
 
 
 //=========================================================================
-//	DataStore Tests
+//	Model Tests
 //=========================================================================
 
-void test_DataStore (void)
+void test_Model (void)
 {
-	Store store;
-	TEST(store.CanUndo() == false);
-	TEST(store.CanRedo() == false);
+	Model model;
+	TEST(model.CanUndo() == false);
+	TEST(model.CanRedo() == false);
 
-	MapDatum *root = store.GetRoot();
+	Map *root = model.GetRoot();
 	TEST(root);
 
 	// Test the basic value types.
-	root->SetValue<IntegerDatum>("test int", 10);
-	TEST(root->GetValue<IntegerDatum>("test int") == 10);
-	root->SetValue<StringDatum>("test string", "foo");
-	TEST(root->GetValue<StringDatum>("test string") == "foo");
+	root->SetValue<Integer>("test int", 10);
+	TEST(root->GetValue<Integer>("test int") == 10);
+	root->SetValue<String>("test string", "foo");
+	TEST(root->GetValue<String>("test string") == "foo");
 
 	// Test the error-checking code.
-	TEST_EXCEPTION(root->GetValue<IntegerDatum>("nosuch"), TException);
+	TEST_EXCEPTION(root->GetValue<Integer>("nosuch"), TException);
 
 	// Make sure that Undo is enabled.
-	TEST(store.CanUndo() == true);
-	TEST(store.CanRedo() == false);
+	TEST(model.CanUndo() == true);
+	TEST(model.CanRedo() == false);
 
 	// Test Undo by removing the "test string" key. 
-	store.Undo();
-	TEST(root->GetValue<IntegerDatum>("test int") == 10);
-	TEST_EXCEPTION(root->GetValue<StringDatum>("test string"), TException);
+	model.Undo();
+	TEST(root->GetValue<Integer>("test int") == 10);
+	TEST_EXCEPTION(root->GetValue<String>("test string"), TException);
 
 	// Make sure that *both* Undo and Redo are enabled.
-	TEST(store.CanUndo() == true);
-	TEST(store.CanRedo() == true);
+	TEST(model.CanUndo() == true);
+	TEST(model.CanRedo() == true);
 
 	// Test Undo by removing the "test int" key. 
-	store.Undo();
-	TEST_EXCEPTION(root->GetValue<IntegerDatum>("test int"), TException);
-	TEST_EXCEPTION(root->GetValue<StringDatum>("test string"), TException);
+	model.Undo();
+	TEST_EXCEPTION(root->GetValue<Integer>("test int"), TException);
+	TEST_EXCEPTION(root->GetValue<String>("test string"), TException);
 
 	// Make sure that only Redo is enabled.
-	TEST(store.CanUndo() == false);
-	TEST(store.CanRedo() == true);
+	TEST(model.CanUndo() == false);
+	TEST(model.CanRedo() == true);
 
 	// Test Redo.
-	store.Redo();
-	TEST(root->GetValue<IntegerDatum>("test int") == 10);
-	TEST_EXCEPTION(root->GetValue<StringDatum>("test string"), TException);
-	TEST(store.CanUndo() == true);
-	TEST(store.CanRedo() == true);
-	store.Redo();
-	TEST(root->GetValue<IntegerDatum>("test int") == 10);
-	TEST(root->GetValue<StringDatum>("test string") == "foo");
-	TEST(store.CanUndo() == true);
-	TEST(store.CanRedo() == false);
+	model.Redo();
+	TEST(root->GetValue<Integer>("test int") == 10);
+	TEST_EXCEPTION(root->GetValue<String>("test string"), TException);
+	TEST(model.CanUndo() == true);
+	TEST(model.CanRedo() == true);
+	model.Redo();
+	TEST(root->GetValue<Integer>("test int") == 10);
+	TEST(root->GetValue<String>("test string") == "foo");
+	TEST(model.CanUndo() == true);
+	TEST(model.CanRedo() == false);
 	
 	// Test overwriting of Redo data.
-	store.Undo();
-	TEST_EXCEPTION(root->GetValue<StringDatum>("test string"), TException);
-	root->SetValue<StringDatum>("test string", "bar");
-	TEST(store.CanUndo() == true);
-	TEST(store.CanRedo() == false);
-	TEST(root->GetValue<StringDatum>("test string") == "bar");
+	model.Undo();
+	TEST_EXCEPTION(root->GetValue<String>("test string"), TException);
+	root->SetValue<String>("test string", "bar");
+	TEST(model.CanUndo() == true);
+	TEST(model.CanRedo() == false);
+	TEST(root->GetValue<String>("test string") == "bar");
 	
 	// Test clearing of Undo data.
-	store.Undo();
-	TEST(store.CanUndo() == true);
-	TEST(store.CanRedo() == true);
-	store.ClearUndoList();
-	TEST(store.CanUndo() == false);
-	TEST(store.CanRedo() == true);
-	store.Redo();
-	TEST(store.CanUndo() == true);
-	TEST(store.CanRedo() == false);
-	TEST(root->GetValue<StringDatum>("test string") == "bar");
+	model.Undo();
+	TEST(model.CanUndo() == true);
+	TEST(model.CanRedo() == true);
+	model.ClearUndoList();
+	TEST(model.CanUndo() == false);
+	TEST(model.CanRedo() == true);
+	model.Redo();
+	TEST(model.CanUndo() == true);
+	TEST(model.CanRedo() == false);
+	TEST(root->GetValue<String>("test string") == "bar");
 
 	//---------------------------------------------------------------------
 	// OK, we pretty much believe that Undo/Redo are correct.  Now
 	// we need to test ALL the subclasses of Change.
 
 	// Insert a new map datum to work with.
-	root->Set<MapDatum>("map", new MapDatum());
-	MapDatum *map = root->Get<MapDatum>("map");
+	root->Set<Map>("map", new Map());
+	Map *map = root->Get<Map>("map");
 
-	// Test CollectionDatum::SetChange on MapDatum.
-	map->SetValue<StringDatum>("SetChange", "new key");
-	TEST(map->GetValue<StringDatum>("SetChange") == "new key");
-	store.Undo();
-	TEST_EXCEPTION(map->GetValue<StringDatum>("SetChange"), TException);
-	store.Redo();
-	TEST(map->GetValue<StringDatum>("SetChange") == "new key");
-	map->SetValue<StringDatum>("SetChange", "change value");
-	TEST(map->GetValue<StringDatum>("SetChange") == "change value");
-	store.Undo();
-	TEST(map->GetValue<StringDatum>("SetChange") == "new key");
-	store.Redo();
-	TEST(map->GetValue<StringDatum>("SetChange") == "change value");
+	// Test CollectionDatum::SetChange on Map.
+	map->SetValue<String>("SetChange", "new key");
+	TEST(map->GetValue<String>("SetChange") == "new key");
+	model.Undo();
+	TEST_EXCEPTION(map->GetValue<String>("SetChange"), TException);
+	model.Redo();
+	TEST(map->GetValue<String>("SetChange") == "new key");
+	map->SetValue<String>("SetChange", "change value");
+	TEST(map->GetValue<String>("SetChange") == "change value");
+	model.Undo();
+	TEST(map->GetValue<String>("SetChange") == "new key");
+	model.Redo();
+	TEST(map->GetValue<String>("SetChange") == "change value");
 
-	// Test CollectionDatum::DeleteChange on MapDatum.
+	// Test CollectionDatum::DeleteChange on Map.
 	TEST_EXCEPTION(map->Delete("nosuch"), TException);
-	map->SetValue<StringDatum>("DeleteChange", "foo");
-	TEST(map->GetValue<StringDatum>("DeleteChange") == "foo");
+	map->SetValue<String>("DeleteChange", "foo");
+	TEST(map->GetValue<String>("DeleteChange") == "foo");
 	map->Delete("DeleteChange");
 	TEST_EXCEPTION(map->Delete("DeleteChange"), TException);
-	store.Undo();
-	TEST(map->GetValue<StringDatum>("DeleteChange") == "foo");
-	store.Redo();
+	model.Undo();
+	TEST(map->GetValue<String>("DeleteChange") == "foo");
+	model.Redo();
 	TEST_EXCEPTION(map->Delete("DeleteChange"), TException);
 
-	// Create a new ListDatum.
-	root->Set<ListDatum>("list", new ListDatum());
-	ListDatum *list = root->Get<ListDatum>("list");
+	// Create a new List.
+	root->Set<List>("list", new List());
+	List *list = root->Get<List>("list");
 
 	// Insert two elements.
-	list->InsertValue<StringDatum>(0, "item 0");
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	list->InsertValue<StringDatum>(1, "item 1");
-	TEST(list->GetValue<StringDatum>(1) == "item 1");
+	list->InsertValue<String>(0, "item 0");
+	TEST(list->GetValue<String>(0) == "item 0");
+	list->InsertValue<String>(1, "item 1");
+	TEST(list->GetValue<String>(1) == "item 1");
 
-	// Test MapDatum::SetChange and ListDatum::InsertChange on ListDatum.
-	store.Undo();
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	TEST_EXCEPTION(list->GetValue<StringDatum>(1), TException);
-	store.Redo();
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	TEST(list->GetValue<StringDatum>(1) == "item 1");
-	list->InsertValue<StringDatum>(1, "item 0.5");
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	TEST(list->GetValue<StringDatum>(1) == "item 0.5");
-	TEST(list->GetValue<StringDatum>(2) == "item 1");
-	store.Undo();
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	TEST(list->GetValue<StringDatum>(1) == "item 1");
-	store.Redo();
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	TEST(list->GetValue<StringDatum>(1) == "item 0.5");
-	TEST(list->GetValue<StringDatum>(2) == "item 1");
-	list->SetValue<StringDatum>(1, "item 1/2");
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	TEST(list->GetValue<StringDatum>(1) == "item 1/2");
-	TEST(list->GetValue<StringDatum>(2) == "item 1");
-	store.Undo();
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	TEST(list->GetValue<StringDatum>(1) == "item 0.5");
-	TEST(list->GetValue<StringDatum>(2) == "item 1");
-	store.Undo();
-	TEST(list->GetValue<StringDatum>(0) == "item 0");
-	TEST(list->GetValue<StringDatum>(1) == "item 1");
+	// Test Map::SetChange and List::InsertChange on List.
+	model.Undo();
+	TEST(list->GetValue<String>(0) == "item 0");
+	TEST_EXCEPTION(list->GetValue<String>(1), TException);
+	model.Redo();
+	TEST(list->GetValue<String>(0) == "item 0");
+	TEST(list->GetValue<String>(1) == "item 1");
+	list->InsertValue<String>(1, "item 0.5");
+	TEST(list->GetValue<String>(0) == "item 0");
+	TEST(list->GetValue<String>(1) == "item 0.5");
+	TEST(list->GetValue<String>(2) == "item 1");
+	model.Undo();
+	TEST(list->GetValue<String>(0) == "item 0");
+	TEST(list->GetValue<String>(1) == "item 1");
+	model.Redo();
+	TEST(list->GetValue<String>(0) == "item 0");
+	TEST(list->GetValue<String>(1) == "item 0.5");
+	TEST(list->GetValue<String>(2) == "item 1");
+	list->SetValue<String>(1, "item 1/2");
+	TEST(list->GetValue<String>(0) == "item 0");
+	TEST(list->GetValue<String>(1) == "item 1/2");
+	TEST(list->GetValue<String>(2) == "item 1");
+	model.Undo();
+	TEST(list->GetValue<String>(0) == "item 0");
+	TEST(list->GetValue<String>(1) == "item 0.5");
+	TEST(list->GetValue<String>(2) == "item 1");
+	model.Undo();
+	TEST(list->GetValue<String>(0) == "item 0");
+	TEST(list->GetValue<String>(1) == "item 1");
 
 	//---------------------------------------------------------------------
 	// Move is an especially tricky case.
 
 #if 0
 	// Create some collections to move between.
-	root->Set<MapDatum>("move map 1", new MapDatum());	
-	root->Set<MapDatum>("move map 2", new MapDatum());
-	root->Set<ListDatum>("move list 1", new ListDatum());	
-	root->Set<ListDatum>("move list 2", new ListDatum());
-	MapDatum *mmap1 = root->Get<MapDatum>("move map 1");
-	MapDatum *mmap2 = root->Get<MapDatum>("move map 2");
-	//ListDatum *mlist1 = root->Get<ListDatum>("move list 1");
-	//ListDatum *mlist2 = root->Get<ListDatum>("move list 2");
+	root->Set<Map>("move map 1", new Map());	
+	root->Set<Map>("move map 2", new Map());
+	root->Set<List>("move list 1", new List());	
+	root->Set<List>("move list 2", new List());
+	Map *mmap1 = root->Get<Map>("move map 1");
+	Map *mmap2 = root->Get<Map>("move map 2");
+	//List *mlist1 = root->Get<List>("move list 1");
+	//List *mlist2 = root->Get<List>("move list 2");
 	
 	// Add some elements.
-	mmap1->SetValue<StringDatum>("foo", "foo value");
+	mmap1->SetValue<String>("foo", "foo value");
 
 	// Test various sorts of moves.
-	TEST(mmap1->GetValue<StringDatum>("foo") == "foo value");
-	TEST_EXCEPTION(mmap2->GetValue<StringDatum>("new foo"), TException);
+	TEST(mmap1->GetValue<String>("foo") == "foo value");
+	TEST_EXCEPTION(mmap2->GetValue<String>("new foo"), TException);
 	Move(mmap2, "new foo", mmap1, "foo");
-	TEST_EXCEPTION(mmap1->GetValue<StringDatum>("foo"), TException);
-	TEST(mmap2->GetValue<StringDatum>("new foo") == "foo value");
-	store.Undo();
-	TEST(mmap1->GetValue<StringDatum>("foo") == "foo value");
-	TEST_EXCEPTION(mmap2->GetValue<StringDatum>("new foo"), TException);
-	store.Redo();
-	TEST_EXCEPTION(mmap1->GetValue<StringDatum>("foo"), TException);
-	TEST(mmap2->GetValue<StringDatum>("new foo") == "foo value");
+	TEST_EXCEPTION(mmap1->GetValue<String>("foo"), TException);
+	TEST(mmap2->GetValue<String>("new foo") == "foo value");
+	model.Undo();
+	TEST(mmap1->GetValue<String>("foo") == "foo value");
+	TEST_EXCEPTION(mmap2->GetValue<String>("new foo"), TException);
+	model.Redo();
+	TEST_EXCEPTION(mmap1->GetValue<String>("foo"), TException);
+	TEST(mmap2->GetValue<String>("new foo") == "foo value");
 #endif // 0
 
 	/*
 	{
-		Transaction t(store);
-		root->SetValue<IntegerDatum>("test int", 20);
-		TEST(root->GetValue<IntegerDatum>("test int") == 20);
+		Transaction t(model);
+		root->SetValue<Integer>("test int", 20);
+		TEST(root->GetValue<Integer>("test int") == 20);
 	}
 	*/
 
 	//---------------------------------------------------------------------
 	// Test Serialization
 
-	store.Write("store.xml");
+	model.Write("model.xml");
 
-	std::auto_ptr<Store> store2(Store::Read("store.xml"));
-	TEST(store2->CanUndo() == false);
-	TEST(store2->CanRedo() == false);
+	std::auto_ptr<Model> model2(Model::Read("model.xml"));
+	TEST(model2->CanUndo() == false);
+	TEST(model2->CanRedo() == false);
 
-	store2->Write("store2.xml");
-	//TEST(root->GetValue<IntegerDatum>("test int") == 10);
-	//TEST(root->GetValue<StringDatum>("test string") == "foo");
+	model2->Write("model2.xml");
+	//TEST(root->GetValue<Integer>("test int") == 10);
+	//TEST(root->GetValue<String>("test string") == "foo");
 }
