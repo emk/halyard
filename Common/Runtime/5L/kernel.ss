@@ -15,6 +15,9 @@
   ;; Get format-result-values.
   (require (lib "trace.ss" "5L"))
 
+  ;; Require our macro-related helpers.
+  (require-for-syntax (lib "capture.ss" "5L"))
+
 
   ;;=======================================================================
   ;;  Built-in Types
@@ -634,6 +637,121 @@
   ;;=======================================================================
 
   ;;-----------------------------------------------------------------------
+  ;;  Events
+  ;;-----------------------------------------------------------------------
+
+  (provide on send
+           <event> event?
+           <idle-event> idle-event?
+           <char-event> char-event? event-character event-modifiers)
+
+  (define-syntax (expand-on stx)
+    (syntax-case stx ()
+      [(expand-on node name args . body)
+       ;; Create a capture variable NEXT-HANDLER which will be visible in
+       ;; BODY.  It's exceptionally evil to capture using BODY's context
+       ;; instead of EXPAND-ON's context, but that's what we want.
+       (with-syntax [[next-handler
+                      (make-capture-var/ellipsis #'body 'call-next-handler)]]
+         (quasisyntax/loc
+          stx
+          (register-event-handler node 'name
+                                  (lambda (call-next-handler . args)
+                                    . body))))]))
+
+  (define-syntax on
+    ;; This gets lexically overridden by expand-init-thunk to refer
+    ;; to nodes other than $root-node.
+    (syntax-rules ()
+      [(on . rest)
+       (expand-on $root-node . rest)]))
+
+  (define (register-event-handler node name handler)
+    (debug-log (cat "Registering handler: " name " in " (node-full-name node)))
+
+    ;; Keep track of whether we're handling expensive events.  We call
+    ;; ENABLE-EXPENSIVE-EVENTS here, which is sufficient for <card> and
+    ;; <element> nodes.  But since <card-group>s and <card-sequence>s stay
+    ;; alive longer than a single card, we need to set
+    ;; NODE-HAS-EXPENSIVE-HANDLERS?, which is used by
+    ;; MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD (on behalf of RUN-CARD) to do
+    ;; the rest of our bookkeeping.
+    (when (expensive-event? name)
+      (set! (node-has-expensive-handlers? node) #t)
+      (enable-expensive-events #t))
+
+    ;; Update our handler table.
+    (let* [[table (node-handlers node)]
+           [old-handler (hash-table-get table name (lambda () #f))]]
+      (if old-handler
+          (hash-table-put! table name
+                           ;; This is tricky--we need to replace the old
+                           ;; handler with our new one.  To do this, we
+                           ;; create a glue function to Do The Right Thing
+                           ;; with the NEXT-HANDLER argument.
+                           ;;
+                           ;; TODO - We don't catch duplicate handlers
+                           ;; within a single node or template (or at the
+                           ;; top level).  This would be a Good Thing<tm>
+                           ;; to do correctly.
+                           (lambda (call-next-handler . args)
+                             (apply handler
+                                    (lambda ()
+                                      (apply old-handler
+                                             call-next-handler args))
+                                    args)))
+          (hash-table-put! table name handler))))
+
+  (define (send node name . args)
+    ;; Pass a message to the specified node, and return the result.
+    (let recurse [[node node]]
+      (if (not node)
+          #f
+          (let* [[handler (hash-table-get (node-handlers node) name
+                                          (lambda () #f))]
+                 [call-next-handler (lambda () (recurse (node-parent node)))]]
+            (if handler
+                (apply handler call-next-handler args)
+                (call-next-handler))))))
+
+  (defclass <event> ())
+  (defclass <idle-event> (<event>))
+
+  (defclass <char-event> (<event>)
+    (character :accessor event-character)
+    (modifiers :accessor event-modifiers)
+    )
+
+  (define (dispatch-event name . args)
+    (let [[target (current-card)]
+          [event (case name
+                   [[idle] (make <idle-event>)]
+                   [[char] (make <char-event>
+                             :character (car args)
+                             :modifiers (cadr args))]
+                   [else
+                    (non-fatal-error (cat "Unsupported event type: " name))])]]
+      (when target
+        (send target name event))))
+
+  (define (expensive-event? name)
+    ;; Some events are sent almost constantly, and cause us to allocate
+    ;; memory too quickly.  This causes a performance loss.  To avoid
+    ;; this performance loss, we only enable the sending of these events
+    ;; if we believe there is a handler to receive them.
+    (case name
+      [[idle mouse-moved] #t]
+      [else #f]))
+
+  (define (enable-expensive-events enable?)
+    (call-5l-prim 'EnableExpensiveEvents enable?))
+  
+  ;; Set up our event handling machinery.
+  (enable-expensive-events #f)
+  (call-5l-prim 'RegisterEventDispatcher dispatch-event)
+  
+
+  ;;-----------------------------------------------------------------------
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
@@ -674,6 +792,9 @@
   (define (param template name)
     ;; A very rudimentary binding finder--this will probably be completely
     ;; rewritten as we add test cases.
+    ;;
+    ;; This function controls how we search for parameter bindings.  If
+    ;; you want to change search behavior, here's the place to do it.
     (let loop [[template template]]
       (if template
         (let [[binding (hash-table-get (template-bindings template)
@@ -725,20 +846,14 @@
          ;; Create a capture variable NAME which will be visible in BODY.
          ;; It's exceptionally evil to capture using BODY's context instead
          ;; of EXPAND-INIT-THUNK's context, but that's what we want.
-         ;;
-         ;; XXX - There's a gross hack here--we have to use the context of
-         ;; (car (syntax-e #'body)) instead of just #'body, because PLT203
-         ;; loses all syntax information on pattern variables of the form
-         ;; '. body' and 'body ...'.  Aiyeee!  (If #'body isn't a syntax
-         ;; pair, it doesn't really matter what context we pick.)
-         (define (make-capture-var name)
-           (datum->syntax-object (if (pair? (syntax-e #'body))
-                                     (car (syntax-e #'body))
-                                     #'body)
-                                 name #f #f))
+         (define (capture-var name)
+           (make-capture-var/ellipsis #'body name))
 
          ;; Bind each template parameter NAME to a call to (param self
          ;; 'name), so it's convenient to access from with the init-thunk.
+         ;; We don't need to use capture variables for this, because
+         ;; the programmer supplied the names--which means they're already
+         ;; in the right context.
          (define (make-param-bindings self-stx parameters-stx)
            (with-syntax [[self self-stx]]
              (datum->syntax-object
@@ -749,18 +864,21 @@
                         (syntax/loc param-stx [name (param self 'name)])]
                        [name
                         (syntax/loc param-stx [name (param self 'name)])]))
-                   (syntax->list parameters-stx))
-              #f #f)))
+                   (syntax->list parameters-stx)))))
 
          ;; We introduce a number of "capture" variables in BODY.  These
          ;; will be bound automagically within BODY without further
          ;; declaration.  See the PLT203 mzscheme manual for details.
-         (with-syntax [[self (make-capture-var 'self)]]
+         (with-syntax [[self (capture-var 'self)]
+                       [on   (capture-var 'on)]]
            (quasisyntax/loc
             stx
             (lambda (self)
-              (let #,(make-param-bindings #'self #'parameters)
-                (begin/var . body))))))]))
+              (let-syntax [[on (syntax-rules ()
+                                 [(_ . rest)
+                                  (expand-on self . rest)])]]
+                (let #,(make-param-bindings #'self #'parameters)
+                  (begin/var . body)))))))]))
     
   (define-syntax define-template
     (syntax-rules (:extends)
@@ -796,6 +914,7 @@
   (defclass <node> (<template>)
     name
     parent
+    (has-expensive-handlers? :type <boolean> :initvalue #f)
     (handlers :type <hash-table> :initvalue (make-hash-table))
     )
 
@@ -811,6 +930,10 @@
         (string->symbol (cat (node-full-name (node-parent node))
                              "/" (node-name node)))
         (node-name node))))
+
+  (define (clear-node-handlers node)
+    (set! (node-has-expensive-handlers? node) #f)
+    (set! (node-handlers node) (make-hash-table)))
 
   (define *node-table* (make-hash-table))
 
@@ -1072,6 +1195,7 @@
       (enter-node e)
       e))
 
+
   ;;=======================================================================
   ;;  Changing Cards
   ;;=======================================================================
@@ -1084,7 +1208,7 @@
 
   (defmethod (exit-node (node <node>))
     ;; Clear our handler list.
-    (set! (node-handlers node) (make-hash-table)))
+    (clear-node-handlers node))
 
   (defmethod (enter-node (node <node>))
     ;; TODO - Make sure all our template parameters are bound.
@@ -1175,7 +1299,7 @@
     ;; Clear our handler list.  We also do this in exit-node; this
     ;; invocation is basically defensive, in case something went
     ;; wrong during the node exiting process.
-    (set! (node-handlers new-card) (make-hash-table))
+    (clear-node-handlers new-card)
     ;; Enter as many enclosing card groups as necessary.
     (enter-card-group-recursively (node-parent new-card))
     ;; Enter all our child elements.  Notice we do this first, so
@@ -1189,6 +1313,19 @@
         (loop (cdr children))))
     ;; Enter new-card.
     (enter-node new-card))
+
+  (define (maybe-enable-expensive-events-for-card card)
+    ;; REGISTER-EVENT-HANDLER attempts to turn on expensive events whenever
+    ;; a matching handler is installed.  But we need to reset the
+    ;; expensive event state when changing cards.  This means we need
+    ;; to pay close attention to any nodes which live longer than a card.
+    (let [[enable? #f]]
+      (let recurse [[node card]]
+        (when node
+          (if (node-has-expensive-handlers? node)
+              (set! enable? #t)
+              (recurse (node-parent node)))))
+      (enable-expensive-events enable?)))
 
   (define (run-card card)
     (%kernel-clear-timeout)
@@ -1204,6 +1341,9 @@
     (set! *%kernel-previous-card* *%kernel-current-card*)
     (set! *%kernel-current-card* card)
 
+    ;; Update our expensive event state.
+    (maybe-enable-expensive-events-for-card card)
+    
     ;; Actually run the card.
     (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
     (with-errors-blocked (non-fatal-error)
