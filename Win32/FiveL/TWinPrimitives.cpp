@@ -1461,14 +1461,14 @@ DEFINE_5L_PRIMITIVE(Read)
 //
 DEFINE_5L_PRIMITIVE(ReDoScript)
 {
+	TString		theCard;
+	inArgs >> theCard;
+
 	// make sure redoscript functionality is enabled
 	if (gDeveloperPrefs.GetPref(REDOSCRIPT) == REDOSCRIPT_OFF)
 		return;
 	
-	TString		theCard;
-	inArgs >> theCard;
-
-	TInterpreter::GetInstance()->DoReDoScript(theCard);
+	ReDoScript(theCard);
 }
 
 /*---------------------------------------------------------------

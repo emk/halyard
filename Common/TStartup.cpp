@@ -4,7 +4,7 @@
 #include "TDeveloperPrefs.h"
 #include "TLogger.h"
 #include "TCommonPrimitives.h"
-#include "T5LPrimitives.h"
+#include "lang/scheme/TSchemeInterpreter.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -19,7 +19,16 @@ void FIVEL_NS InitializeCommonCode()
     
     // Register our portable interpreter primitives.
     RegisterCommonPrimitives();
+}
 
-	// Register our 5L-only portable interpreter primitives.
-	Register5LPrimitives();
+TInterpreterManager *FIVEL_NS
+MaybeGetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
+{
+	// If we can't find ./Scripts/start.ss, assume this is a legacy script.
+	if (!FileSystem::GetScriptsDirectory().DoesExist() ||
+		!FileSystem::GetScriptFilePath("start.ss").DoesExist())
+		return NULL;
+
+	// Create and return a new Scheme interpreter manager.
+	return new TSchemeInterpreterManager(inIdleProc);
 }

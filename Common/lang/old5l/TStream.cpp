@@ -556,6 +556,11 @@ uint32 TStream::GetUInt32Arg()
 	return (uint32) foo;
 }
 
+bool TStream::GetBoolArg()
+{
+	return GetInt32Arg() ? true : false;
+}
+
 //  TString class handles string to double conversions.
 //
 double TStream::GetDoubleArg()
@@ -692,16 +697,6 @@ bool TStream::inEscape(int32 position)
 	while ((position > 0) && (m_String[--position] == SLASH))
 		slashes++;
 	
-#ifdef DEBUG
-	if ((position == 0) && (m_String[0] == SLASH))
-		gDebugLog.Log("WARNING! Reached beginning of stream and first "
-					  "character is a slash");
-	// We have no idea whether we are handling this case correctly so going
-	// to print a warning when we have this case.  (Your guess is as good
-	// as ours!)  It worked as we wished in our test suite, but we don't
-	// know whether the tested cases are the only cases.
-#endif
-		
 	if ((slashes % 2) == 0)
 		return false;
 	else

@@ -83,7 +83,9 @@ TRect				gScreenRect;	// our virtual screen rect (in screen coordinates)
 int					gHorizRes;
 int					gVertRes;
 
-TWin5LInterpreter   *gWin5LInterpreter;
+TWin5LInterpreter   *gWin5LInterpreter = NULL;
+TInterpreterManager *gInterpreterManager = NULL;
+bool				gHaveLegacyInterpreterManager = false;
 View				*gView = NULL;
 LTouchZoneManager	gTouchZoneManager;     
 SysInfo				gSysInfo; 
@@ -115,6 +117,7 @@ SingleInstance g_SingleInstanceObj(TEXT("{03C53E8D-4B46-428c-B812-DBAC5F1A6378}"
 // Foward declarations of functions included in this code module:
 int					RealWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 								LPSTR lpCmdLine, int nCmdShow);
+void				WindowsIdleProc();
 bool				InitInstance(HINSTANCE, int);
 void				DeInitInstance(void);
 bool				InitApplication(HINSTANCE hInstance);
@@ -143,8 +146,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	throw ()
 {
 	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealWinMain(hInstance, hPrevInstance,
-												lpCmdLine, nCmdShow));
-	return false;
+												lpCmdLine, nCmdShow),
+									0);
 }
 
 int RealWinMain(HINSTANCE hInstance,
@@ -153,7 +156,6 @@ int RealWinMain(HINSTANCE hInstance,
 				int       nCmdShow)
 {
 	HWND    	hwndPrev;
-	MSG			msg;
 
 	if (hPrevInstance)           /* Other instances of app running? */
     {
@@ -217,19 +219,6 @@ int RealWinMain(HINSTANCE hInstance,
 
 	gView->BlackScreen();
 
-	// Initialize the interpreter.
-	try
-	{
-		RegisterWindowsPrimitives();
-		RegisterQuickTimePrimitives();
-		gWin5LInterpreter = new TWin5LInterpreter(gConfigManager.CurScript());
-	}
-	catch (...)
-	{
-		DeInitInstance();		
-    	return (false);
-	}
-
 	// initialize the URL checker
 	gHttpTool.Init();
 
@@ -239,25 +228,58 @@ int RealWinMain(HINSTANCE hInstance,
 	gDebugLog.Log("Bit Depth: %d", gView->BitDepth());
 	gDebugLog.Log("Resolution: %d x %d", gHorizRes, gVertRes);
 
-	// jump to the start card
-	TInterpreter::GetInstance()->JumpToCardByName("start"); 
-            
 	// start our idle loop timer
 	StartTimer();
 	
 	::SetFocus(hwndApp);
 
-	// Main message loop:
-	while (::GetMessage(&msg, NULL, 0, 0)) 
+	// Install some primitives.
+	RegisterWindowsPrimitives();
+	RegisterQuickTimePrimitives();
+
+	// Create our interpreter and give it control of the application.
+	gInterpreterManager = MaybeGetSchemeInterpreterManager(&WindowsIdleProc);
+	if (!gInterpreterManager)
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		gHaveLegacyInterpreterManager = true;
+		gInterpreterManager = new TWin5LInterpreterManager(&WindowsIdleProc);
 	}
+		
+	gInterpreterManager->Run();
+	delete gInterpreterManager;
+	gInterpreterManager = NULL;
 
 	// Clean everything up.
 	ShutDown(true);
 
-	return (msg.wParam);
+	return 0;
+}
+
+//
+// WindowsIdleProc - Called by the interpreter to give time to the GUI.
+//
+void WindowsIdleProc()
+{
+	ASSERT(gInterpreterManager);
+
+	// Loop until GetMessage returns false (and we're done) or we
+	// process an idle event.  This preserves as much of the old 5L
+	// event-handling structure as possible.
+	MSG msg;
+	do
+	{
+		if (::GetMessage(&msg, NULL, 0, 0)) 
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
+			// This apparently means that Windows wants us to quit.
+			gInterpreterManager->RequestQuitApplication();
+			return;
+		}
+	} while (!(msg.message == WM_TIMER && msg.wParam == FIVEL_TIMER));
 }
 
 //
@@ -412,19 +434,21 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 	{ 
 		if ((gHorizRes > 650) and (gVertRes > 500))
 		{
-			win_style = WS_CAPTION;
-			::AdjustWindowRect(&Rectgl, WS_CAPTION, true); 	// find window size based on desired client area (Rectgl)
+			// We have enough space to display a floating window.
+			win_style = WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX;
+			// find window size based on desired client area (Rectgl)
+			::AdjustWindowRect(&Rectgl, win_style, true);
 		}
 		else
 		{
 			win_style = WS_POPUP;
-			::AdjustWindowRect(&Rectgl, WS_POPUP, false);
+			::AdjustWindowRect(&Rectgl, win_style, false);
 		}
 	}
 	else
 	{
 		win_style = WS_POPUP;
-		::AdjustWindowRect(&Rectgl, WS_POPUP, false);
+		::AdjustWindowRect(&Rectgl, win_style, false);
 	}
  
 	gWinRect.top = (gVertRes / 2) - (V_SCREEN / 2);
@@ -574,8 +598,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	throw ()
 {
 	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealWndProc(hWnd, message,
-												wParam, lParam));
-	return 0;
+												wParam, lParam),
+									0);
 }
 
 LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -603,7 +627,9 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			::SetFocus(hWnd);
             break;
 
-		case WM_CLOSE:				
+		case WM_CLOSE:
+			// XXX - Stopgap.  We may not have an interpreter manager.
+			TInterpreterManager::GetInstance()->RequestQuitApplication();
 			break;
 
 		case WM_COMMAND:
@@ -717,7 +743,6 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if (gInFront)
 				{
-					TInterpreter::GetInstance()->Idle();
 					gVideoManager.Idle();
 					gAudioManager.Idle();
 				}
@@ -913,8 +938,8 @@ LRESULT CALLBACK ChildWndProc (HWND hwnd, UINT message, UINT wParam, LPARAM lPar
 	throw ()
 {
 	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealChildWndProc(hwnd, message,
-													 wParam, lParam));
-	return 0;
+													 wParam, lParam),
+									0);
 }
 
 LRESULT RealChildWndProc (HWND hwnd, UINT message, UINT wParam, LPARAM lParam)
@@ -1013,8 +1038,8 @@ void ShutDown(bool Toss /* = true */)
 LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	throw ()
 {
-	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealAbout(hDlg, message, wParam, lParam));
-	return 0;
+	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealAbout(hDlg, message, wParam, lParam),
+									0);
 }
 
 LRESULT RealAbout(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -1093,80 +1118,17 @@ void ReDoScript(TString &inCardName)
 
 	gTouchZoneManager.RemoveAll();
 
-	try
-	{
-		TInterpreter::GetInstance()->ReloadScript(inCardName);
-	}
-	catch (...)
-	{
-		ShutDown(false);
-	}
+	// XXX - Does this potentially destroy an object in our call chain?
+	if (!gHaveLegacyInterpreterManager)
+		gCommandKeyManager.RemoveAll();
+
+	gInterpreterManager->RequestReloadScript(inCardName);
 }
 
 //
-//	SwitchScripts - Switch to an entirely different script file.
-//                  This function really isn't necessary for recent
-//                  5L programs, and should probably go away.
-//
-void SwitchScripts(int32 inScript)
-{ 
-	TString		curPalName;
-	LPalette	*curPal = NULL;
-	bool		reloadPal = FALSE;
-	
-	if ((inScript > 0) and (gConfigManager.SwitchScripts(inScript)))
-	{ 	
-		// save the current palette
-		curPal = gPaletteManager.GetCurrentPalette();
-		if (curPal != NULL)
-		{
-			curPalName = curPal->GetName();
-			reloadPal = true;
-			curPal = NULL;
-		}
-
-		gCursorManager.ChangeCursor(NO_CURSOR);
-
-		// Delete everything, including our interpreter.
-		CleanUp();
-		
-		gDebugLog.Log("SwitchScript: start script <%s>",
-					  gConfigManager.CurScript());
-
-		SetGlobals();
-
-		// Get the current palette back into the resource tree.
-		if (reloadPal)
-        	curPal = gPaletteManager.GetPalette(curPalName);
-        
-        if (curPal == NULL)
-        	gVariableManager.SetString("_graphpal", "NULL");
-        else 
-        {
-			gPaletteManager.SetPalette(curPal, true);
-			gDebugLog.Log("_graphpal kept as <%s> for new script", curPalName.GetString());
-        }
-
-		// now try to start the new script
-		try
-		{
-			gWin5LInterpreter =
-				new TWin5LInterpreter(gConfigManager.CurScript());
-			TInterpreter::GetInstance()->JumpToCardByName("start"); 
-		}
-		catch (...)
-		{
-    		ShutDown(true);
-		}
-	}
-	else
-		ShutDown(true);
-}
-
-//
-//	SetGlobals - Set the "global" variables that the engine maintains. These should
-//		not be confused with "special" variables that the variable manager intercepts
-//		and maintains.
+//	SetGlobals - Set the "global" variables that the engine
+//	maintains. These should not be confused with "special" variables that
+//	the variable manager intercepts and maintains.
 //
 void SetGlobals(void)
 {
@@ -1218,12 +1180,18 @@ void SetGlobals(void)
 //
 void PutInBackground(void)
 {
-	SetWindowPos(hwndApp, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
+	{
+		// XXX - Causes off-center QuickTime playback when backgrounded
+		// window is restored.
+		SetWindowPos(hwndApp, HWND_BOTTOM, 0, 0, 0, 0,
+					 SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
 
-	ShowWindow(hwndApp, SW_MINIMIZE);
-	ShowWindow(hBackgroundWnd, SW_HIDE);
+		ShowWindow(hwndApp, SW_MINIMIZE);
+		ShowWindow(hBackgroundWnd, SW_HIDE);
 
-	gCursorManager.UnClipCursor();	// remove cursor restraints
+		gCursorManager.UnClipCursor();	// remove cursor restraints
+	}
 
 	gInBackground = true;
 
@@ -1235,16 +1203,20 @@ void PutInBackground(void)
 //
 void PutInForeground(void)
 {
-	ShowWindow(hBackgroundWnd, SW_SHOW);
-	ShowWindow(hwndApp, SW_MAXIMIZE);
-
-	gCursorManager.ReClipCursor();
-
-	SetWindowPos(hwndApp, /*HWND_TOP*/ HWND_TOPMOST, 
-		gWinRect.left, gWinRect.top, gWinRect.right, gWinRect.bottom, 0);
-//	SetWindowPos(hBackgroundWnd, hwndApp, 
-//		gBackgroundWinRect.left, gBackgroundWinRect.top, 
-//		gBackgroundWinRect.right, gBackgroundWinRect.bottom, 0);
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
+	{
+		ShowWindow(hBackgroundWnd, SW_SHOW);
+		ShowWindow(hwndApp, SW_MAXIMIZE);
+		
+		gCursorManager.ReClipCursor();
+		
+		SetWindowPos(hwndApp, /*HWND_TOP*/ HWND_TOPMOST, 
+					 gWinRect.left, gWinRect.top,
+					 gWinRect.right, gWinRect.bottom, 0);
+		//	SetWindowPos(hBackgroundWnd, hwndApp, 
+		//		gBackgroundWinRect.left, gBackgroundWinRect.top, 
+		//		gBackgroundWinRect.right, gBackgroundWinRect.bottom, 0);
+	}
 
 	gInBackground = false;
 
@@ -1258,12 +1230,12 @@ static TString ReadSpecialVariable_system()
 
 static TString ReadSpecialVariable_curcard()
 {
-	return TInterpreter::GetInstance()->CurCardName();
+	return TInterpreter::GetInstance()->CurCardName().c_str();
 }
 
 static TString ReadSpecialVariable_prevcard()
 {
-	return TInterpreter::GetInstance()->PrevCardName();
+	return TInterpreter::GetInstance()->PrevCardName().c_str();
 }
 
 static TString ReadSpecialVariable_eof()
@@ -1284,6 +1256,25 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.14  2002/08/16 15:32:21  emk
+ Merged basic Win32 Scheme support from the FiveL_3_5_scheme branch.  This
+ breaks the Macintosh build, but Brian will be working to fix that.  There
+ isn't any support for calling TEXT or TEXTAA from Scheme yet, and
+ redoscript is still flaky because of some low-level issues with
+ reinitializing the Scheme interpreter.
+
+ Revision 1.13.4.2  2002/08/16 15:02:54  emk
+   * Preliminary Windows integration.
+   * Fixed nasty "Minimize when backgrounded" behavior when running in
+     windowed mode (this was driving me crazy while debugging).
+
+ Revision 1.13.4.1  2002/07/31 21:18:53  emk
+ Overhaul of the Windows event handling system.
+
+   * emk: The interpreter now calls the idle loop, instead of vice versa.
+   * emk: Redoscript is now handled by a TInterpreterManager object.
+   * emk: It's no longer possible to switch between scripts.
+
  Revision 1.13  2002/07/26 20:00:27  zeb
  3.3.21 - 26 July 2002 - zeb
 

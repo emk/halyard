@@ -23,6 +23,7 @@ Origin FIVEL_NS gOrigin;
 
 void FIVEL_NS RegisterCommonPrimitives()
 {
+	REGISTER_5L_PRIMITIVE(HavePrimitive);
 	REGISTER_5L_PRIMITIVE(Log);
 	REGISTER_5L_PRIMITIVE(Origin);
 	REGISTER_5L_PRIMITIVE(ResetOrigin);
@@ -117,27 +118,65 @@ void Origin::OffsetOrigin(TPoint &delta)
 //  Implementation of Common Primitives
 //=========================================================================
 
+
 //-------------------------------------------------------------------------
-// (Log STRING STRING)
+// (HavePrimitive name:STRING)
+//-------------------------------------------------------------------------
+// Check to see whether the specified 5L primitive exists.  Helpful in
+// writing code which runs under different versions of the engine.
+
+DEFINE_5L_PRIMITIVE(HavePrimitive)
+{
+	std::string name;
+	inArgs >> name;
+	::SetPrimitiveResult(gPrimitiveManager.DoesPrimitiveExist(name));
+}
+
+
+//-------------------------------------------------------------------------
+// (Log file:STRING msg:STRING [level:STRING = "log"])
 //-------------------------------------------------------------------------
 // Logs the second argument to the file specified by the first.
-// Available logs: debug, 5L, MissingMedia.
+// Available logs: debug, 5L, MissingMedia.  Available log levels:
+// fatalerror, error, caution, log.
 
 DEFINE_5L_PRIMITIVE(Log)
 {
-	std::string log_name, msg;
+	std::string log_name, msg, level;
+	level = "log";
 	inArgs >> log_name >> msg;
+	if (inArgs.HasMoreArguments())
+		inArgs >> level;
 	log_name = ::MakeStringLowercase(log_name);
+	level = ::MakeStringLowercase(level);
 
+	// Figure out which log file to use.
+	TLogger *log = &gLog;
 	if (log_name == "5l")
-		gLog.Log("%s", msg.c_str());
+		log = &gLog;
 	else if (log_name == "debug")
-		gDebugLog.Log("%s", msg.c_str());
+		log = &gDebugLog;
 	else if (log_name == "missingmedia")
-		gMissingMediaLog.Log("%s", msg.c_str());
+		log = &gMissingMediaLog;
 	else
-		gDebugLog.Caution("No such log file: %s", log_name.c_str());
+		gLog.Caution("No such log file: %s", log_name.c_str());
+
+	// Report the problem using the appropriate log level.
+	if (level == "log")
+		log->Log("%s", msg.c_str());
+	else if (level == "caution")
+		log->Caution("%s", msg.c_str());
+	else if (level == "error")
+		log->Error("%s", msg.c_str());
+	else if (level == "fatalerror")
+		log->FatalError("%s", msg.c_str());
+	else
+	{
+		gLog.Error("Unknown logging level: %s", level.c_str());
+		gLog.FatalError("%s", msg.c_str());
+	}
 }
+
 
 //-------------------------------------------------------------------------
 // (ORIGIN DX DY)
@@ -159,6 +198,7 @@ DEFINE_5L_PRIMITIVE(Origin)
     gDebugLog.Log("Origin set to <X Y> %d %d", origin.X(), origin.Y());
 }
 
+
 //-------------------------------------------------------------------------
 // (ResetOrigin [DX DY])
 //-------------------------------------------------------------------------
@@ -173,6 +213,7 @@ DEFINE_5L_PRIMITIVE(ResetOrigin)
 
 	gOrigin.SetOrigin(newOrigin);
 }
+
 
 //-------------------------------------------------------------------------
 // (Set VARIABLE NEWVALUE [Flag])
@@ -223,6 +264,7 @@ DEFINE_5L_PRIMITIVE(Set)
 	}
 }
 
+
 //-------------------------------------------------------------------------
 // (Get VARIABLE)
 //-------------------------------------------------------------------------
@@ -231,10 +273,8 @@ DEFINE_5L_PRIMITIVE(Set)
 DEFINE_5L_PRIMITIVE(Get)
 {
 	TString vname;
-	
 	inArgs >> vname;
-   
-	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
+   	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
 }
 
     	

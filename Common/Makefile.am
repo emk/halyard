@@ -1,6 +1,9 @@
 AUTOMAKE_OPTIONS = foreign
 
-CXXFLAGS = @CXXFLAGS@ -Wall -Werror -I libs/crypto
+CXXFLAGS = @CXXFLAGS@ -Wall -Werror \
+	-I libs/crypto \
+	-I libs/boost \
+	-I libs/plt/include
 
 SUBDIRS = libs . fonttools
 
@@ -72,7 +75,9 @@ libfivel_a_SOURCES = \
 	TStartup.cpp \
 	TStartup.h \
 	TDeveloperPrefs.cpp \
-	TDeveloperPrefs.h
+	TDeveloperPrefs.h \
+	lang/scheme/TSchemeInterpreter.cpp \
+	lang/scheme/TSchemeInterpreter.h
 
 TestAll_SOURCES = \
 	TTemplateUtilsTests.cpp \
@@ -85,10 +90,15 @@ TestAll_SOURCES = \
 	TStyleSheetTests.cpp \
 	CryptStreamTests.cpp \
 	TIndexTests.cpp \
+	lang/scheme/TSchemeInterpreterTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
 	libfivel.a \
 	libimlunit.a \
 	libs/crypto/libfivel_crypto.a \
-	@FREETYPE_LDADD@
+	libs/plt/lib/libmzscheme.a \
+	libs/plt/lib/libmzgc.a \
+	libs/plt/lib/mzdyn.o \
+	@FREETYPE_LDADD@ \
+	-ldl
 #	-lefence

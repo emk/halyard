@@ -196,14 +196,6 @@ class CardManager : public TIndexManager
 		//
 		void			Idle(void);
         
-		//////////
-		// Exit the current script.
-		//
-		// [in] inScript - Jump to another script on exit if >0 
-		//					(specified in config file) 
-		//
-		void			DoExit(int32 inScript);
-        				
         //////////
 		// Create an index for a new Card and insert it into the card list. 
 		//
@@ -292,13 +284,6 @@ class CardManager : public TIndexManager
 		Card			*GetCard(const char *inName) { return ((Card *) Find(inName)); }
  
 		//////////
-		// Reload the current script (compiled into DEBUG builds only). 
-		//
-		// [in] inCardName - name of the Card to jump to after reload.
-		//
-		void			DoReDoScript(TString &inCardName);
-
-		//////////
 		// Jump to a card given its name.
 		//
 		// [in] inName - name of the Card to jump to.
@@ -335,26 +320,6 @@ class CardManager : public TIndexManager
 		//
 		bool			m_Paused;
         
-		//////////
-		// Exit this script now?
-		//
-		bool			m_ExitNow;
-        
-		//////////
-		// ID of script to jump to on exit, 0 to exit completely.
-		//
-		int32			m_ExitScript;
-
-		//////////
-		// If true, re-parse the current script.
-		//
-		bool			m_ReDoScript;
-		
-		//////////
-		// Name of the card to jump to after re-parsing the script.
-		//
-		TString			m_ReDoCardName;
-		
         //////////
 		// Time which the timeout timer times out.
 		//
@@ -402,6 +367,20 @@ extern CardManager gCardManager;
 
 /*
  $Log$
+ Revision 1.5  2002/08/16 15:32:21  emk
+ Merged basic Win32 Scheme support from the FiveL_3_5_scheme branch.  This
+ breaks the Macintosh build, but Brian will be working to fix that.  There
+ isn't any support for calling TEXT or TEXTAA from Scheme yet, and
+ redoscript is still flaky because of some low-level issues with
+ reinitializing the Scheme interpreter.
+
+ Revision 1.4.4.1  2002/07/31 21:18:53  emk
+ Overhaul of the Windows event handling system.
+
+   * emk: The interpreter now calls the idle loop, instead of vice versa.
+   * emk: Redoscript is now handled by a TInterpreterManager object.
+   * emk: It's no longer possible to switch between scripts.
+
  Revision 1.4  2002/06/20 16:32:54  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

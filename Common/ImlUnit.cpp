@@ -6,11 +6,12 @@ int total_tests = 0;
 int total_failures = 0;
 
 // This is a good place to set a breakpoint.
-void test_failure (char *file, int line, char *label, char *statement) 
+void test_failure (const char *file, int line,
+		   const char *label, const char *statement) 
 {
 	total_failures++;
 	std::cout << std::endl << file << ":" << line << ": test failure: "
-		      << label << " (" << statement << ")" << std::endl;
+		      << label << " " << statement << std::endl;
  
 	// We exit automatically, because these tests are supposed to run
 	// at 100% all the time.  No test failures should ever be checked

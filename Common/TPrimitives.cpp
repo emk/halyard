@@ -70,7 +70,7 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, int32 &out)
 
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, bool &out)
 {
-    out = args.GetInt32Arg() ? true : false;
+    out = args.GetBoolArg();
 	args.LogParameter(out ? "#t" : "#f");
 	return args;
 }
@@ -107,7 +107,7 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TRect &out)
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TPoint &out)
 {
     out = args.GetPointArg();
-	args.LogParameter(std::string("(pt ") +
+	args.LogParameter(std::string("(point ") +
 					  TString::IntToString(out.X()).GetString() +
 					  std::string(" ") +
 					  TString::IntToString(out.Y()).GetString() +
@@ -119,7 +119,7 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args,
 								   GraphicsTools::Color &out)
 {
     out = args.GetColorArg();
-	args.LogParameter(std::string("(rbga ") +
+	args.LogParameter(std::string("(color ") +
 					  TString::IntToString(out.red).GetString() +
 					  std::string(" ") +
 					  TString::IntToString(out.green).GetString() +

@@ -88,6 +88,11 @@ protected:
 	virtual uint32 GetUInt32Arg() = 0;
 
 	//////////
+	// Return the next argument as a boolean value.
+	//
+	virtual bool GetBoolArg() = 0;
+
+	//////////
 	// Return the next argument as a double.
 	//
 	virtual double GetDoubleArg() = 0;

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4;-*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include "stdafx.h"
 
@@ -8,10 +8,12 @@
 #include "TStyleSheet.h"
 #include "TParser.h"
 #include "Header.h"
+#include "T5LPrimitives.h"
 
 #include "Globals.h"
 #include "Card.h"
 #include "Macro.h"
+#include "Config.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -21,6 +23,7 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 
 TWin5LInterpreter::TWin5LInterpreter(const TString &inStartScript)
+	: mKilled(false)
 {
 	// Install our callback creator.
 	TStream::SetCallbackMaker(&TWin5LCallback::MakeCallback);
@@ -55,9 +58,21 @@ void TWin5LInterpreter::CleanupIndexes()
 	gIndexFileManager.RemoveAll();
 }
 
-void TWin5LInterpreter::Idle()
+void TWin5LInterpreter::Run(SystemIdleProc inIdleProc)
 {
-	gCardManager.Idle();
+	while (!mKilled)
+	{
+		(*inIdleProc)();
+		gCardManager.Idle();
+	}
+}
+
+void TWin5LInterpreter::KillInterpreter()
+{
+	mKilled = true;
+	// XXX - The interpreter will keep running until it reaches the end of
+	// the current card.  This is nasty, but it's actually the old
+	// behavior.
 }
 
 void TWin5LInterpreter::Pause()
@@ -101,46 +116,19 @@ void TWin5LInterpreter::KillNap()
 	gCardManager.KillNap();
 }
 
-void TWin5LInterpreter::DoReDoScript(const char *inCardName)
-{
-	gCardManager.DoReDoScript(TString(inCardName));
-}
-
 void TWin5LInterpreter::JumpToCardByName(const char *inName)
 {
 	gCardManager.JumpToCardByName(inName);
 }
 
-const char *TWin5LInterpreter::CurCardName()
+std::string TWin5LInterpreter::CurCardName()
 {
 	return gCardManager.CurCardName();
 }
 
-const char *TWin5LInterpreter::PrevCardName()
+std::string TWin5LInterpreter::PrevCardName()
 {
 	return gCardManager.PrevCardName();
-}
-
-void TWin5LInterpreter::ReloadScript(const char *inGotoCardName)
-{
-	CleanupIndexes();
-	
-	// NOTE - if we implement loadscript then we will have to open up
-	//	all files here that were open before
-
-	// now try to open up the same script file
-	if (gIndexFileManager.NewIndex(gConfigManager.CurScript()))
-	{
-		// (We don't need to rebuild our key bindings any more because
-		// they now remain valid across a reload.)
-
-		JumpToCardByName(inGotoCardName);
-	}
-	else
-	{
-		throw TException(__FILE__, __LINE__,
-						 "Error reading script for redoscript");	
-	}
 }
 
 
@@ -167,4 +155,22 @@ std::string TWin5LCallback::PrintableRepresentation()
 TCallback *TWin5LCallback::MakeCallback(const TString &inCmd)
 {
 	return new TWin5LCallback(inCmd);
+}
+
+
+//=========================================================================
+// TWin5LInterpreterManager Methods
+//=========================================================================
+
+TWin5LInterpreterManager::TWin5LInterpreterManager(
+	TInterpreter::SystemIdleProc inIdleProc)
+	: TInterpreterManager(inIdleProc)
+{
+	// Register our 5L-only portable interpreter primitives.
+	Register5LPrimitives();
+}
+
+TInterpreter *TWin5LInterpreterManager::MakeInterpreter()
+{
+	return new TWin5LInterpreter(gConfigManager.CurScript());
 }

@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GR /GX /O2 /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\crypto" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GR /GX /O2 /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\plt\include" /I "..\..\..\Common\libs\crypto" /I "..\..\..\Common\libs\boost" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common\freetype2\include" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\..\Common\libs\crypto" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\plt\include" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\..\Common\libs\crypto" /I "..\..\..\Common\libs\boost" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -94,10 +94,6 @@ SOURCE=..\..\..\Common\FileSystem.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\GraphicsTools.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Common\ImlUnit.cpp
 # End Source File
 # Begin Source File
 
@@ -169,6 +165,10 @@ SOURCE=..\..\..\Common\TRect.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\lang\scheme\TSchemeInterpreter.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TStartup.cpp
 # End Source File
 # Begin Source File
@@ -214,10 +214,6 @@ SOURCE=..\..\..\Common\FileSystem.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\GraphicsTools.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Common\ImlUnit.h
 # End Source File
 # Begin Source File
 
@@ -294,6 +290,10 @@ SOURCE=..\..\..\Common\TPrimitives.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TRect.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\lang\scheme\TSchemeInterpreter.h
 # End Source File
 # Begin Source File
 

@@ -191,6 +191,11 @@ protected:
 	uint32 GetUInt32Arg();
 	
 	//////////
+	// TString class handles string to bool conversions.
+	//
+	bool GetBoolArg();
+
+	//////////
 	// TString class handles string to double conversions.
 	//
 	double GetDoubleArg();
@@ -329,6 +334,17 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5  2002/08/16 15:32:18  emk
+ Merged basic Win32 Scheme support from the FiveL_3_5_scheme branch.  This
+ breaks the Macintosh build, but Brian will be working to fix that.  There
+ isn't any support for calling TEXT or TEXTAA from Scheme yet, and
+ redoscript is still flaky because of some low-level issues with
+ reinitializing the Scheme interpreter.
+
+ Revision 1.4.4.1  2002/07/29 22:40:56  emk
+ Initial support for writing 5L scripts in Scheme.  A lot more work
+ remains, particularly in the platform front ends...
+
  Revision 1.4  2002/06/21 15:41:58  emk
  3.3.8 - 5L language improvements, including nested expressions,
  return values and new primitives.
