@@ -40,6 +40,7 @@ LCursorManager::LCursorManager()
 	mLeftTurnCursor = NULL;
 	mRightTurnCursor = NULL;
 	mDefaultCursor = ARROW_CURSOR;
+	mForceShow = false;
 }
 
 LCursorManager::~LCursorManager()
@@ -253,6 +254,12 @@ void LCursorManager::CheckCursor(void)
 
 /*
  $Log$
+ Revision 1.3.10.3  2003/02/24 22:41:35  emk
+ Experimental 3.4.x builds with support for freetype 2.1.4rc1's much
+ better text handling.  The version numbers haven't been properly updated.
+
+ Douglas, if these work, e-mail me and I'll make real builds.
+
  Revision 1.3.10.2  2002/10/11 18:03:30  emk
  3.4.3 - 11 Oct 2002 - emk
 
