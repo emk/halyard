@@ -18,6 +18,7 @@
            %html-element% %edit-box-element% %movie-element% 
            html edit-box vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
+           geiger-synth set-geiger-synth-counts-per-second!
            sine-wave movie 
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
@@ -188,6 +189,18 @@
   (define (set-geiger-audio-counts-per-second! elem-or-name counts)
     (call-5l-prim 'AudioStreamGeigerSetCps (elem-or-name-hack elem-or-name)
                   counts))
+
+  (define-element-template %geiger-synth%
+      [chirp loops]
+      (:template %element%)
+    (apply call-5l-prim 'GeigerSynth (node-full-name self)
+           chirp loops))
+
+  (define (geiger-synth name chirp . loops)
+    (create %geiger-synth% :name name :chirp chirp :loops loops))
+
+  (define (set-geiger-synth-counts-per-second! elem-or-name counts)
+    (call-5l-prim 'GeigerSynthSetCps (elem-or-name-hack elem-or-name) counts))
 
   (define-element-template %sine-wave-element%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
