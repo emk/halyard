@@ -65,7 +65,29 @@ class TStyleSheetManager : public TIndexManager {
 public:
 	virtual void MakeNewIndex(TIndexFile *inFile, const char *inName,
 							  int32 inStart, int32 inEnd);
+
+	//////////
+	// Draw text onto the specified image, using the specified
+	// style sheet.
+	//
+	// [in] inStyleSheet - The name of the style sheet to use.
+	// [in] inText - The text to draw, with standard 5L formatting.
+	// [in] inPosition - The upper-left corner of the text box.
+	// [in] inLineLength - The maximum number of pixels available for
+	//                     a line.  This is (I hope) a hard limit,
+	//                     and no pixels should ever be drawn beyond it.
+	// [in] inImage -      The image into which we should draw.
+	//                     This must not be deallocated until the
+	//                     TextRendering engine is destroyed.
+	//
+	void Draw(const std::string &inStyleSheet,
+			  const std::string& inText,
+			  GraphicsTools::Point inPosition,
+			  GraphicsTools::Distance inLineLength,
+			  GraphicsTools::Image *inImage);
 };
+
+extern TStyleSheetManager gStyleSheetManager;
 
 END_NAMESPACE_FIVEL
 

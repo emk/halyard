@@ -15,6 +15,8 @@ using Typography::TextRenderingEngine;
 static const char *INCR_Y_NAME = "_incr_y";
 static const char *INCR_X_NAME = "_incr_x";
 
+TStyleSheetManager FIVEL_NS gStyleSheetManager;
+
 
 //=========================================================================
 //  TStyleSheet Methods
@@ -160,3 +162,21 @@ void TStyleSheetManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 {
 	Add(new TStyleSheet(inFile, inName, inStart, inEnd));
 }
+
+void TStyleSheetManager::Draw(const std::string &inStyleSheet,
+							  const std::string& inText,
+							  GraphicsTools::Point inPosition,
+							  GraphicsTools::Distance inLineLength,
+							  GraphicsTools::Image *inImage)
+{
+	TBNode *node = Find(inStyleSheet.c_str());
+	if (!node)
+	{
+		gDebugLog.Caution("Tried to draw text using non-existant style "
+						  "sheet <%s>", inStyleSheet.c_str());
+		return;
+	}
+	TStyleSheet *style_sheet = dynamic_cast<TStyleSheet*>(node);
+	style_sheet->Draw(inText, inPosition, inLineLength, inImage);
+}
+
