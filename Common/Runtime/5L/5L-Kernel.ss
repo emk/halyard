@@ -478,7 +478,18 @@
 		   [jump-card
 		    (%kernel-run-card (%kernel-find-card jump-card))
 		    (set! jump-card #f)]
-		   [#t])))
+		   [#t
+		    ;; Highly optimized do-nothing loop. :-)  This
+		    ;; is a GC optimization designed to prevent the
+		    ;; interpreter from allocating memory like a crazed
+		    ;; maniac while the user's doing nothing.  If we
+		    ;; removed this block, we'd have to perform a lot
+		    ;; of LABEL and FLUID-LET statements, which are
+		    ;; extremely expensive in quantities of 1,000.
+		    (let idle-loop ()
+		      (unless (eq? *%kernel-state* 'JUMPING)
+			(idle)
+                        (idle-loop)))])))
 	      (when (eq? *%kernel-state* 'JUMPING)
 	        (set! jump-card *%kernel-jump-card*))
 	      (%kernel-clear-state)
