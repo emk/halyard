@@ -58,5 +58,4 @@ TestAll_LDADD = \
 	libfivel.a \
 	libimlunit.a \
 	@FREETYPE_LDADD@
-
 #	-lefence

@@ -122,101 +122,144 @@ static void test_Typography_StyleInformation (void)
 //	LineSegment Tests
 //=========================================================================
 
+typedef std::pair<StyleInformation*,StyledTextSpan> InfoAndSpan;
+
+static InfoAndSpan make_span(const std::wstring &inString)
+{
+	int len = inString.length();
+	const wchar_t *str = inString.c_str();
+	StyleInformation *styleInfo =
+		new StyleInformation(Style("Nimbus Roman No9 L", 12));
+	styleInfo->EndStyleAt(len);
+	return InfoAndSpan(styleInfo,
+					   StyledTextSpan(StyledCharIterator(str,
+														 styleInfo->begin()),
+									  StyledCharIterator(str + len,
+														 styleInfo->end())));
+}
+
+static LineSegment make_test_seg(const StyledTextSpan &inBaseSpan,
+								 int inBegin, int inEnd,
+								 bool inIsLineBreak = false,
+								 bool inDiscardAtEndOfLine = false,
+								 bool inNeedsHyphenAtEndOfLine = false)
+{
+	StyledCharIterator begin = inBaseSpan.begin;
+	for (int i = 0; i < inBegin; i++)
+		++begin;
+	StyledCharIterator end = inBaseSpan.begin;
+	for (int i = 0; i < inEnd; i++)
+		++end;
+	return LineSegment(StyledTextSpan(begin, end), inIsLineBreak,
+					   inDiscardAtEndOfLine, inNeedsHyphenAtEndOfLine);
+}
+
+#define TEST_SEGMENT(seg,span,from,to,b1,b2,b3) \
+    TEST(seg == make_test_seg(span, from, to, b1, b2, b3))
+
 static void test_Typography_LineSegment (void) 
 {
 	// Simple words & whitespace.
-	const wchar_t *text1 = L"abc def  ghi";
-	LineSegmentIterator iter1(text1, text1 + wcslen(text1));
+	std::wstring text1 = L"abc def  ghi";
+	InfoAndSpan infospan1 = make_span(text1);
+	StyledTextSpan span1 = infospan1.second;
+	LineSegmentIterator iter1(span1);
 	LineSegment seg1;
 	TEST(iter1.NextElement(&seg1));
-	TEST(seg1 == LineSegment(text1, text1 + 3));
+	TEST_SEGMENT(seg1, span1, 0, 3, false, false, false);
 	TEST(iter1.NextElement(&seg1));
-	TEST(seg1 == LineSegment(text1 + 3, text1 + 4, false, true));
+	TEST_SEGMENT(seg1, span1, 3, 4, false, true,  false);
 	TEST(iter1.NextElement(&seg1));
-	TEST(seg1 == LineSegment(text1 + 4, text1 + 7));
+	TEST_SEGMENT(seg1, span1, 4, 7, false, false, false);
 	TEST(iter1.NextElement(&seg1));
-	TEST(seg1 == LineSegment(text1 + 7, text1 + 9, false, true));
+	TEST_SEGMENT(seg1, span1, 7, 9, false, true,  false);
 	TEST(iter1.NextElement(&seg1));
-	TEST(seg1 == LineSegment(text1 + 9, text1 + 12));
+	TEST_SEGMENT(seg1, span1, 9, 12, false, false,  false);
 	TEST(!iter1.NextElement(&seg1));
+	delete infospan1.first;
 
 	// Basic hyphenation.
-	const wchar_t *text2 = L"abc-def- ghi---";
-	LineSegmentIterator iter2(text2, text2 + wcslen(text2));
+	std::wstring text2 = L"abc-def- ghi---";
+	InfoAndSpan infospan2 = make_span(text2);
+	StyledTextSpan span2 = infospan2.second;
+	LineSegmentIterator iter2(span2);
 	LineSegment seg2;
 	TEST(iter2.NextElement(&seg2));
-	TEST(seg2 == LineSegment(text2, text2 + 4));
+	TEST_SEGMENT(seg2, span2, 0, 4, false, false, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST(seg2 == LineSegment(text2 + 4, text2 + 8));
+	TEST_SEGMENT(seg2, span2, 4, 8, false, false, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST(seg2 == LineSegment(text2 + 8, text2 + 9, false, true));
+	TEST_SEGMENT(seg2, span2, 8, 9, false, true, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST(seg2 == LineSegment(text2 + 9, text2 + 13));
+	TEST_SEGMENT(seg2, span2, 9, 13, false, false, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST(seg2 == LineSegment(text2 + 13, text2 + 14));
+	TEST_SEGMENT(seg2, span2, 13, 14, false, false, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST(seg2 == LineSegment(text2 + 14, text2 + 15));
+	TEST_SEGMENT(seg2, span2, 14, 15, false, false, false);
 	TEST(!iter2.NextElement(&seg2));
+	delete infospan2.first;
 
 	// Explicit newlines.
-	const wchar_t *text3 = L" abc\ndef \n\n ghi";
-	LineSegmentIterator iter3(text3, text3 + wcslen(text3));
+	std::wstring text3 = L" abc\ndef \n\n ghi";
+	InfoAndSpan infospan3 = make_span(text3);
+	StyledTextSpan span3 = infospan3.second;
+	LineSegmentIterator iter3(span3);
 	LineSegment seg3;
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3, text3 + 1, false, true));
+	TEST_SEGMENT(seg3, span3, 0, 1, false, true, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3 + 1, text3 + 4));
+	TEST_SEGMENT(seg3, span3, 1, 4, false, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3 + 4, text3 + 5, true));
+	TEST_SEGMENT(seg3, span3, 4, 5, true, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3 + 5, text3 + 8));
+	TEST_SEGMENT(seg3, span3, 5, 8, false, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3 + 8, text3 + 9, false, true));
+	TEST_SEGMENT(seg3, span3, 8, 9, false, true, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3 + 9, text3 + 10, true));
+	TEST_SEGMENT(seg3, span3, 9, 10, true, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3 + 10, text3 + 11, true));
+	TEST_SEGMENT(seg3, span3, 10, 11, true, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3 + 11, text3 + 12, false, true));
+	TEST_SEGMENT(seg3, span3, 11, 12, false, true, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST(seg3 == LineSegment(text3 + 12, text3 + 15));
+	TEST_SEGMENT(seg3, span3, 12, 15, false, false, false);
 	TEST(!iter3.NextElement(&seg3));
+	delete infospan3.first;
 
 	// Soft hyphens.
-	const wchar_t *raw_text4 = L"abcXdefX ghi\nXjklXXX\n X ";
-	size_t text4_len = wcslen(raw_text4) + 1;
-	wchar_t *text4 = (wchar_t*) malloc(sizeof(wchar_t) * text4_len);
-	TEST(text4);
-	for (size_t i = 0; i < text4_len; i++)
+	std::wstring text4 = L"abcXdefX ghi\nXjklXXX\n X ";
+	for (size_t i = 0; i < text4.length(); i++)
 	{
 		// Convert 'X' to a soft hyphen.
-		if (raw_text4[i] == 'X')
+		if (text4[i] == 'X')
 			text4[i] = kSoftHyphen;
 		else
-			text4[i] = raw_text4[i];
+			text4[i] = text4[i];
 	}
-	LineSegmentIterator iter4(text4, text4 + wcslen(text4));
+	InfoAndSpan infospan4 = make_span(text4);
+	StyledTextSpan span4 = infospan4.second;
+	LineSegmentIterator iter4(span4);
 	LineSegment seg4;
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4, text4 + 3, false, false, true));
+	TEST_SEGMENT(seg4, span4, 0, 3, false, false, true);
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4 + 4, text4 + 7, false, false, true));
+	TEST_SEGMENT(seg4, span4, 4, 7, false, false, true);
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4 + 8, text4 + 9, false, true));
+	TEST_SEGMENT(seg4, span4, 8, 9, false, true, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4 + 9, text4 + 12));
+	TEST_SEGMENT(seg4, span4, 9, 12, false, false, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4 + 12, text4 + 13, true));
+	TEST_SEGMENT(seg4, span4, 12, 13, true, false, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4 + 14, text4 + 17, false, false, true));
+	TEST_SEGMENT(seg4, span4, 14, 17, false, false, true);
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4 + 20, text4 + 21, true));
+	TEST_SEGMENT(seg4, span4, 20, 21, true, false, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4 + 21, text4 + 22, false, true));
+	TEST_SEGMENT(seg4, span4, 21, 22, false, true, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST(seg4 == LineSegment(text4 + 23, text4 + 24, false, true));
+	TEST_SEGMENT(seg4, span4, 23, 24, false, true, false);
 	TEST(!iter4.NextElement(&seg4));
-	free(text4);
+	delete infospan4.first;
 
 	// TODO - Non-breaking space.
 	// TODO - mdash, ndash.
@@ -238,11 +281,10 @@ private:
 	std::basic_string<wchar_t> mRenderedText;
 
 public:
-	TestTextRenderingEngine(const wchar_t *inTextBegin,
-							const wchar_t *inTextEnd,
+	TestTextRenderingEngine(const StyledTextSpan &inSpan,
 							Distance inLineLength,
 							Justification inJustification)
-		: GenericTextRenderingEngine(inTextBegin, inTextEnd, inLineLength,
+		: GenericTextRenderingEngine(inSpan, inLineLength,
 									 inJustification) {}
 	
 	void Test(const wchar_t *result);
@@ -259,7 +301,7 @@ protected:
 
 // Since nobody seems to print wchar_t strings correctly,
 // convert them to ASCII.
-static std::string to_ascii (const std::basic_string<wchar_t> &input)
+static std::string to_ascii (const std::wstring &input)
 {
 	std::string result;
 	for (std::basic_string<wchar_t>::const_iterator i = input.begin();
@@ -292,9 +334,14 @@ Distance TestTextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 												 bool inAtEndOfLine)
 {
 	TEST(inSegment != NULL);
-	Distance result = inSegment->end - inSegment->begin;
+
+	Distance result = 0;
+	for (StyledCharIterator iter = inSegment->span.begin;
+		 iter != inSegment->span.end; ++iter)
+		++result;
+	
 	if (inAtEndOfLine && inSegment->needsHyphenAtEndOfLine)
-		result++;
+		++result;
 	return result;
 }
 
@@ -306,12 +353,14 @@ void TestTextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 	TEST(ioRemaining->discardAtEndOfLine == false);
 	TEST(outExtracted != NULL);
 
-	outExtracted->SetLineSegment(ioRemaining->begin,
-								 ioRemaining->begin + (GetLineLength() - 1),
+	StyledCharIterator new_end = ioRemaining->span.begin;
+	for (int i = 0; i < GetLineLength() - 1; ++i)
+		++new_end;
+	outExtracted->SetLineSegment(StyledTextSpan(ioRemaining->span.begin,
+												new_end),
 								 false, false, true);
-	TEST(outExtracted->end < ioRemaining->end);
-	ioRemaining->begin = outExtracted->end;
-	
+	TEST(outExtracted->span.end != ioRemaining->span.end);
+	ioRemaining->span.begin = outExtracted->span.end;	
 }
 
 void TestTextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
@@ -326,8 +375,9 @@ void TestTextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		 iter < inLine->end(); iter++)
 	{
 		LineSegment seg = *iter;
-		for (const wchar_t *c = seg.begin; c < seg.end; c++)
-			mRenderedText += *c;
+		for (StyledCharIterator iter = seg.span.begin;
+			 iter != seg.span.end; ++iter)
+			mRenderedText += (*iter).value;
 	}
 	
 	// Add a trailing hyphen (if the final segment wants one).
@@ -342,14 +392,21 @@ void rendering_test(const wchar_t *in, Distance width,
 {
 	// Insert various special characters which we can't reliably
 	// escape with some C compilers.
-	std::basic_string<wchar_t> s = in;
-	for (std::basic_string<wchar_t>::iterator i = s.begin(); i < s.end(); i++)
+	std::wstring s = in;
+	for (std::wstring::iterator i = s.begin(); i < s.end(); i++)
 		if (*i == 'X')
 			*i = kSoftHyphen;
 
-	const wchar_t *s_begin = s.c_str();
-	const wchar_t *s_end = s_begin + wcslen(s_begin);
-	TestTextRenderingEngine e(s_begin, s_end, width, justification);
+	// Build a dummy StyleInformation object.
+	Style style("Nimbus Roman No9 L", 12);
+	StyleInformation styleInfo(style);
+	styleInfo.EndStyleAt(s.length());
+
+	// Set up the rest of our parameters and call the engine.
+	StyledCharIterator s_begin(s.c_str(), styleInfo.begin());
+	StyledCharIterator s_end(s.c_str() + s.length(), styleInfo.end());
+	TestTextRenderingEngine e(StyledTextSpan(s_begin, s_end),
+							  width, justification);
 	e.Test(out);
 }
 

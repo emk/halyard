@@ -118,8 +118,8 @@ namespace Typography {
 	//
 	class Error : public FIVEL_NS TException {
 	public:
-		Error(int inErrorCode);
-		Error(const std::string &inErrorMessage)
+		explicit Error(int inErrorCode);
+		explicit Error(const std::string &inErrorMessage)
 			: TException(inErrorMessage) {}
 		
 		virtual const char *GetClassName() const
@@ -265,7 +265,7 @@ namespace Typography {
 		//
 		// [in] inBaseStyle - The style to use for the first character.
 		//
-		StyleInformation(const Style &inBaseStyle);
+		explicit StyleInformation(const Style &inBaseStyle);
 
 		//////////
 		// Change the Style at the specified offset in the string.
@@ -308,8 +308,15 @@ namespace Typography {
 			void LoadNextStyleRun();
 
 		public:
+			//////////
+			// Construct an empty iterator.  Don't use this for anything
+			// until you assign a real iterator to it.
+			//
+			const_iterator();
+
 			const_iterator &operator++()
 			{
+				ASSERT(mStyleInfo != NULL);
 				ASSERT(mCurrentPosition < mStyleInfo->mEnd);
 				++mCurrentPosition;
 				if (mCurrentPosition == mEndOfRun)
@@ -317,20 +324,25 @@ namespace Typography {
 				return *this;
 			}
 
+			const_iterator &operator--();
+
 		    bool operator==(const const_iterator &inRight) const
 			{
+				ASSERT(mStyleInfo != NULL);
 				ASSERT(mStyleInfo == inRight.mStyleInfo);
 				return mCurrentPosition == inRight.mCurrentPosition;
 			}
 
 			bool operator!=(const const_iterator &inRight) const
 			{
+				ASSERT(mStyleInfo != NULL);
 				ASSERT(mStyleInfo == inRight.mStyleInfo);
 				return mCurrentPosition != inRight.mCurrentPosition;
 			}
 
 			const Style &operator*() const
 			{
+				ASSERT(mStyleInfo != NULL);
 				ASSERT(mCurrentPosition < mStyleInfo->mEnd);
 				return mCurrentStyle->style;
 			}
@@ -365,7 +377,7 @@ namespace Typography {
 		int mSize;
 		
 	public:
-		AbstractFace(int inSize) : mSize(inSize) { }
+		explicit AbstractFace(int inSize) : mSize(inSize) { }
 		virtual ~AbstractFace() { }
 
 		int GetSize() const { return mSize; }
@@ -461,7 +473,7 @@ namespace Typography {
 		std::deque<Face> mFaceStack;
 
 	public:
-		FaceStack(const Face &inPrimaryFace);
+		explicit FaceStack(const Face &inPrimaryFace);
 		virtual ~FaceStack();
 
 		//////////
@@ -489,6 +501,78 @@ namespace Typography {
 								GlyphIndex *outGlyphIndex);
 	};
 
+
+	//////////
+	// A representation of a styled character.  The 'style' member
+	// is really a reference to a style stored elsewhere (for performance).
+	//
+	struct StyledChar {
+		const wchar_t value;
+		const Style &style;
+
+		StyledChar(wchar_t inValue, const Style &inStyle)
+			: value(inValue), style(inStyle) {}
+	};
+
+	//////////
+	// An iterator over a chunk of styled text.
+	//
+	// This is a wrapper around the iterators for characters and styles.
+	// By creating a combined interface, we make our code look a lot
+	// nicer.
+	//
+	class StyledCharIterator {
+		friend class StyledTextSpan;
+
+		const wchar_t *mTextIter;
+	    StyleInformation::const_iterator mStyleIter;
+
+	public:
+		StyledCharIterator(const wchar_t *inTextIter,
+						   const StyleInformation::const_iterator &inStyleIter)
+			: mTextIter(inTextIter), mStyleIter(inStyleIter) {}
+
+		StyledCharIterator() : mTextIter(NULL) {}
+		
+		StyledCharIterator &operator++()
+		    { ++mTextIter; ++mStyleIter; return *this; }
+		StyledCharIterator &operator--()
+		    { --mTextIter; --mStyleIter; return *this; }
+		bool operator==(const StyledCharIterator &inRight) const
+		    { return mTextIter == inRight.mTextIter; }
+		bool operator!=(const StyledCharIterator &inRight) const
+		    { return mTextIter != inRight.mTextIter; }
+		const StyledChar operator*() const
+		    { return StyledChar(*mTextIter, *mStyleIter); }
+	};
+
+	//////////
+	// A chunk of styled text.  This object contains no actual
+	// data; it merely points to data stored elsewhere.  It's a bit
+	// of a strange abstraction--but it was the natural result of
+	// refactoring.
+	//
+	// Make sure you don't deallocate the underlying string or
+	// style information while this object exists.
+	// 
+	struct StyledTextSpan {
+
+		//////////
+		// A pointer to the first character in the span.
+		//
+		StyledCharIterator begin;
+
+		//////////
+		// A pointer one character *beyond* the last character in
+		// the span, as per STL iterator conventions.
+		//
+		StyledCharIterator end;
+
+		StyledTextSpan(const StyledCharIterator &inBegin,
+					   const StyledCharIterator &inEnd);
+		StyledTextSpan() {}
+	};
+
 	//////////
 	// A segment of a line of characters, suitable for drawing as a group.
 	//
@@ -508,17 +592,14 @@ namespace Typography {
 	struct LineSegment {
 
 		//////////
-		// A pointer to the first character in the line segment.
-		const wchar_t *begin;
-
-		//////////
-		// A pointer one character *beyond* the last character in
-		// the line segment, as per STL iterator conventions.
-		const wchar_t *end;
+		// The text span included in this segment.
+		//
+		StyledTextSpan span;
 
 		//////////
 		// Is the current segment a newline character?  If so, the
 		// segment contains no displayable data.
+		//
 		bool isLineBreak;
 
 		//////////
@@ -526,41 +607,38 @@ namespace Typography {
 		// This is typically true for whitespace.
 		// TODO - This is used as a 'isHorizontalWhitespace' flag,
 		// so we should probably rename it.
+		//
 		bool discardAtEndOfLine;
 
 		//////////
 		// If this segment is the last on a line, do we need to draw a
 		// hyphen?  Typically true for segments preceding a soft hyphen,
 		// or segments which were automatically broken by the library.
+		//
 		bool needsHyphenAtEndOfLine;
 
 		// Used by various algorithms to temporarily store data.
 		// XXX - Clean up.
 		Distance userDistanceData;
 
-		void SetLineSegment(const wchar_t *inBegin, const wchar_t *inEnd,
+		void SetLineSegment(const StyledTextSpan &inSpan,
 							bool inIsLineBreak = false,
 							bool inDiscardAtEndOfLine = false,
 							bool inNeedsHyphenAtEndOfLine = false)
 		{
-			begin				   = inBegin;
-			end					   = inEnd;
+			span				   = inSpan;
 			isLineBreak			   = inIsLineBreak;
 			discardAtEndOfLine	   = inDiscardAtEndOfLine;
 			needsHyphenAtEndOfLine = inNeedsHyphenAtEndOfLine;
 			userDistanceData	   = 0;
 		}
 
-		LineSegment(const wchar_t *inBegin, const wchar_t *inEnd,
-					bool inIsLineBreak = false,
-					bool inDiscardAtEndOfLine = false,
-					bool inNeedsHyphenAtEndOfLine = false)
-		{
-			SetLineSegment(inBegin, inEnd, inIsLineBreak,
-						   inDiscardAtEndOfLine, inNeedsHyphenAtEndOfLine);
-		}		
+		explicit LineSegment(const StyledTextSpan &inSpan,
+							 bool inIsLineBreak = false,
+							 bool inDiscardAtEndOfLine = false,
+							 bool inNeedsHyphenAtEndOfLine = false);
 
-		LineSegment() { }
+		LineSegment() {}
 	};
 
 	extern bool operator==(const LineSegment &left, const LineSegment &right);
@@ -570,23 +648,23 @@ namespace Typography {
 	// according to typical typographic rules.  It does not modify the
 	// underlying text.
 	class LineSegmentIterator {
-		const wchar_t *mSegmentBegin;
-		const wchar_t *mTextEnd;
+		StyledCharIterator mSegmentBegin;
+		StyledCharIterator mTextEnd;
 
 	public:
 		//////////
 		// Create a new iterator.
 		//
-		// [in] inTextBegin - A pointer to the start of the text.
-		// [in] inTextEnd - A pointer one past the end of the text.
-		LineSegmentIterator(const wchar_t *inTextBegin,
-							const wchar_t *inTextEnd);
+		// [in] inSpan - The text to break into segments.
+		//
+		explicit LineSegmentIterator(const StyledTextSpan &inSpan);
 
 		//////////
 		// Return the next segment of the line, if any.
 		//
 		// [out] outSegment - The segment we found, or unchanged.
 		// [out] return - True iff we found another segment.
+		//
 		bool NextElement(LineSegment *outSegment);
 	};
 
@@ -615,13 +693,11 @@ namespace Typography {
 		//////////
 		// Create a new GenericTextRenderingEngine.
 		// 
-		// [in] inTextBegin - A pointer to the start of the text.
-		// [in] inTextEnd - A pointer one past the end of the text.
+		// [in] inSpan - The text to draw.
 		// [in] inLineLength - Maximum allowable line length.
 		// [in] inJustification - Justification for the line.
 		//
-		GenericTextRenderingEngine(const wchar_t *inTextBegin,
-								   const wchar_t *inTextEnd,
+		GenericTextRenderingEngine(const StyledTextSpan &inSpan,
 								   Distance inLineLength,
 								   Justification inJustification);
 
@@ -700,30 +776,26 @@ namespace Typography {
 	// 
 	class TextRenderingEngine : public GenericTextRenderingEngine {
 		Image *mImage;
-		Style mStyle;
 		Point mLineStart;
 
 	public:
 		//////////
 		// Create a new text rendering engine.
 		//
-		// [in] inTextBegin -  A pointer to the beginning of the text.
-		// [in] inTextEnd -    A pointer one past the end of the text.
-		// [in] inFace -       The face in which to display text.
+		// [in] inSpan -       The styled text to draw.
 		// [in] inPosition -   The x,y position of the lower-left corner
 		//                     of the first character (actually, this
 		//                     is technically the "origin" of the first
 		//                     character in FreeType 2 terminology).
 		// [in] inLineLength - The maximum number of pixels available for
-		//                     a line.  This is (I hope) a hard limit.
+		//                     a line.  This is (I hope) a hard limit,
+		//                     and no pixels should ever be drawn beyond it.
 		// [in] inJustification - The desired justification.
 		// [in] inImage -      The image into which we should draw.
 		//                     This must not be deallocated until the
 		//                     TextRendering engine is destroyed.
 		//
-		TextRenderingEngine(const wchar_t *inTextBegin,
-							const wchar_t *inTextEnd,
-							const Style &inStyle,
+		TextRenderingEngine(const StyledTextSpan &inSpan,
 							Point inPosition,
 							Distance inLineLength,
 							Justification inJustification,
@@ -805,7 +877,7 @@ namespace Typography {
 			// directory (this is so we don't have to portably serialize
 			// FileSystem::Path objects to the cache, which would by icky).
 			//
-			AvailableFace(const std::string &inFileName);
+			explicit AvailableFace(const std::string &inFileName);
 			
 			int         GetSize() const { return mSize; }
 			std::string GetFamilyName() const { return mFamilyName; }
@@ -886,7 +958,8 @@ namespace Typography {
 			FaceSizeGroup mBoldItalicFaces;
 			
 		public:
-			Family(const std::string &inFamilyName) : mFamilyName(inFamilyName) {}
+			explicit Family(const std::string &inFamilyName)
+				: mFamilyName(inFamilyName) {}
 			
 			void AddAvailableFace(const AvailableFace &inFace);
 			Face GetFace(FaceStyle inStyle, int inSize);

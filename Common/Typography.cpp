@@ -270,17 +270,26 @@ const_iterator::const_iterator(const StyleInformation *inStyleInfo, bool isEnd)
 		UpdateEndOfRun();
 	}
 }
-			
+	
+StyleInformation::const_iterator::const_iterator()
+	: mStyleInfo(NULL), mCurrentPosition(0), mEndOfRun(0)
+{
+}
+
 void StyleInformation::const_iterator::UpdateEndOfRun()
 {
-	ASSERT(mCurrentStyle != mStyleInfo->mStyleRuns.end());
 	if (mCurrentStyle == mStyleInfo->mStyleRuns.end())
+	{
 		mEndOfRun = mStyleInfo->mEnd;
+	}
 	else
 	{
 		StyleRunList::const_iterator next = mCurrentStyle;
-		next++;
-		mEndOfRun = next->offset;
+		++next;
+		if (next == mStyleInfo->mStyleRuns.end())
+			mEndOfRun = mStyleInfo->mEnd;
+		else
+			mEndOfRun = next->offset;
 	}
 }
 
@@ -289,6 +298,18 @@ void StyleInformation::const_iterator::LoadNextStyleRun()
 	ASSERT(mCurrentStyle != mStyleInfo->mStyleRuns.end());
 	++mCurrentStyle;
 	UpdateEndOfRun();
+}
+
+StyleInformation::const_iterator &
+StyleInformation::const_iterator::operator--()
+{
+	ASSERT(mCurrentPosition > 0);
+	--mCurrentPosition;
+	if (mCurrentPosition < mCurrentStyle->offset)
+	{
+		--mCurrentStyle;
+		UpdateEndOfRun();
+	}
 }
 
 
@@ -493,31 +514,49 @@ void FaceStack::SearchForCharacter(CharCode inCharCode,
 	*outGlyphIndex = 0;
 }
 
+//=========================================================================
+//	Typography::StyledTextSpan Methods
+//=========================================================================
+
+StyledTextSpan::StyledTextSpan(const StyledCharIterator &inBegin,
+							   const StyledCharIterator &inEnd)
+	: begin(inBegin), end(inEnd)
+{
+	// MSVC's STL implementation uses NULL, NULL to denote the
+	// begin and end iterators of the empty string.  We allow this.
+	ASSERT((begin.mTextIter != NULL && end.mTextIter != NULL) ||
+		   (begin.mTextIter == NULL && end.mTextIter == NULL));
+}
+
 
 //=========================================================================
 //	Typography::LineSegment(Iterator) Methods
 //=========================================================================
 
+LineSegment::LineSegment(const StyledTextSpan &inSpan,
+						 bool inIsLineBreak = false,
+						 bool inDiscardAtEndOfLine = false,
+						 bool inNeedsHyphenAtEndOfLine = false)
+	: span(inSpan), isLineBreak(inIsLineBreak),
+	  discardAtEndOfLine(inDiscardAtEndOfLine),
+	  needsHyphenAtEndOfLine(inNeedsHyphenAtEndOfLine),
+	  userDistanceData(0)
+{
+}
+
 bool Typography::operator==(const LineSegment &left, const LineSegment &right)
 {
-	return (left.begin == right.begin &&
-			left.end == right.end &&
+	return (left.span.begin == right.span.begin &&
+			left.span.end == right.span.end &&
 			left.isLineBreak == right.isLineBreak &&
 			left.discardAtEndOfLine == right.discardAtEndOfLine &&
 			left.needsHyphenAtEndOfLine == right.needsHyphenAtEndOfLine);
 }
 
-LineSegmentIterator::LineSegmentIterator(const wchar_t *inTextBegin,
-										 const wchar_t *inTextEnd)
+LineSegmentIterator::LineSegmentIterator(const StyledTextSpan &inSpan)
+	: mSegmentBegin(inSpan.begin), mTextEnd(inSpan.end)
 {
-	// MSVC's STL implementation uses NULL, NULL to denote the begin and
-	// end iterators of the empty string.  We allow this.
-	ASSERT((inTextBegin != NULL && inTextEnd != NULL) ||
-		   (inTextBegin == NULL && inTextEnd == NULL));
-
-	// Initialize our iterator.
-	mSegmentBegin = inTextBegin;
-	mTextEnd = inTextEnd;
+	// We've initialized our iterator.
 }
 
 bool LineSegmentIterator::NextElement(LineSegment *outSegment)
@@ -527,34 +566,38 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 	// Skip past any leading soft hyphens.	(They're merely invisible
 	// segment-breaking hints, and therefore meaningless at the
 	// beginning of a segment.)
-	while (mSegmentBegin < mTextEnd && *mSegmentBegin == kSoftHyphen)
-		mSegmentBegin++;
+	while (mSegmentBegin != mTextEnd && (*mSegmentBegin).value == kSoftHyphen)
+		++mSegmentBegin;
 
 	// If we don't have any more text, give up now.
-	if (mSegmentBegin >= mTextEnd)
+	if (mSegmentBegin == mTextEnd)
 		return false;
 
 	// Figure out what kind of segment to process next.
-	const wchar_t *cursor = mSegmentBegin;
-	if (*cursor == '\n')
+	StyledCharIterator cursor = mSegmentBegin;
+	if ((*cursor).value == '\n')
 	{
 		// NEWLINE SEGMENT
 		// Include just the newline in the segment.
-		cursor++;
+		++cursor;
 
 		// Describe our segment & update our state.
-		outSegment->SetLineSegment(mSegmentBegin, cursor, true);
+		outSegment->SetLineSegment(StyledTextSpan(mSegmentBegin, cursor),
+								   true);
 		mSegmentBegin = cursor; 
 	}
-	else if (iswspace(*cursor))
+	else if (iswspace((*cursor).value))
 	{
 		// WHITESPACE SEGMENT
 		// Scan forward until we find the end of the whitespace.
-		while (cursor < mTextEnd && iswspace(*cursor) && *cursor != '\n')
-			cursor++;
+		while (cursor != mTextEnd &&
+			   iswspace((*cursor).value) &&
+			   (*cursor).value != '\n')
+			++cursor;
 
 		// Describe our segment & update our state.
-		outSegment->SetLineSegment(mSegmentBegin, cursor, false, true);
+		outSegment->SetLineSegment(StyledTextSpan(mSegmentBegin, cursor),
+								   false, true);
 		mSegmentBegin = cursor; 
 	}
 	else
@@ -562,22 +605,22 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 		// TEXT SEGMENT
 		// Scan forward until we find the end of the current word or
 		// a line-break character (e.g., '-').	Soft hyphens are tricky.
-		while (cursor < mTextEnd && !iswspace(*cursor) &&
-			   *cursor != '-' && *cursor != kSoftHyphen)
-			cursor++;
+		while (cursor != mTextEnd && !iswspace((*cursor).value) &&
+			   (*cursor).value != '-' && (*cursor).value != kSoftHyphen)
+			++cursor;
 
 		// Adjust our stopping point and set up some flags (as needed).
 		bool needHyphenAtEndOfLine = false;
-		if (cursor < mTextEnd)
+		if (cursor != mTextEnd)
 		{
-			needHyphenAtEndOfLine = (*cursor == kSoftHyphen);
-			if (*cursor == '-')
-				cursor++;
+			needHyphenAtEndOfLine = ((*cursor).value == kSoftHyphen);
+			if ((*cursor).value == '-')
+				++cursor;
 		}
 		
 		// Describe our segment & update our state.
-		outSegment->SetLineSegment(mSegmentBegin, cursor, false, false,
-								   needHyphenAtEndOfLine);
+		outSegment->SetLineSegment(StyledTextSpan(mSegmentBegin, cursor),
+								   false, false, needHyphenAtEndOfLine);
 		mSegmentBegin = cursor;
 	}
 
@@ -601,12 +644,11 @@ static C* back_or_null(std::deque<C> &d)
 }
 
 GenericTextRenderingEngine::
-GenericTextRenderingEngine(const wchar_t *inTextBegin,
-						   const wchar_t *inTextEnd,
+GenericTextRenderingEngine(const StyledTextSpan &inSpan,
 						   Distance inLineLength,
 						   Justification inJustification)
-	: mIterator(inTextBegin, inTextEnd),
-	  mLineLength(inLineLength), mJustification(inJustification)
+	: mIterator(inSpan), mLineLength(inLineLength),
+	  mJustification(inJustification)
 {
 	// We can't call RenderText from the constructor because C++ hasn't
 	// bothered to initialize our vtables yet.
@@ -696,10 +738,8 @@ void GenericTextRenderingEngine::RenderText()
 		// Add the segment to our current line (and cache how long the
 		// line would be if we broke it right here).
 		seg.userDistanceData = space_used + needed;
-		current_line.push_back(seg);
-	
-		// Update our state.
 		space_used += MeasureSegment(back_or_null(current_line), &seg, false);
+		current_line.push_back(seg);
 	}
 	RenderAndResetLine(&current_line);
 }
@@ -709,16 +749,13 @@ void GenericTextRenderingEngine::RenderText()
 //	Typography::TextRenderingEngine Methods
 //=========================================================================
 
-TextRenderingEngine::TextRenderingEngine(const wchar_t *inTextBegin,
-										 const wchar_t *inTextEnd,
-										 const Style &inStyle,
+TextRenderingEngine::TextRenderingEngine(const StyledTextSpan &inSpan,
 										 Point inPosition,
 										 Distance inLineLength,
 										 Justification inJustification,
 										 Image *inImage)
-	: GenericTextRenderingEngine(inTextBegin, inTextEnd,
-								 inLineLength, inJustification),
-	  mStyle(inStyle), mLineStart(inPosition), mImage(inImage)
+	: GenericTextRenderingEngine(inSpan, inLineLength, inJustification),
+	  mLineStart(inPosition), mImage(inImage)
 {
 	ASSERT(inPosition.x >= 0 && inPosition.y >= 0);
 	ASSERT(inImage != NULL);
@@ -781,33 +818,43 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 	// Attempt to get the last glyph of the previous segment for
 	// kerning purposes.  Default to 0, which is the built-in code for
 	// "no glyph".
-	GlyphIndex previous_char = kNoSuchCharacter;
+	CharCode previous_char = kNoSuchCharacter;
+	AbstractFace *previous_face = NULL;
 	if (inPrevious)
 	{
-		ASSERT(inPrevious->begin < inPrevious->end);
-		previous_char = *(inPrevious->end - 1);
+		ASSERT(inPrevious->span.begin != inPrevious->span.end);
+		StyledCharIterator previous = inPrevious->span.end;
+		previous_char = (*--previous).value;
+		previous_face = (*previous).style.GetFace();
 	}
 
 	// Measure the segment.
 	// TODO - Merge with code below?
 	Distance total = 0;
-	AbstractFace *face = mStyle.GetFace();
-	for (const wchar_t *cp = inSegment->begin; cp < inSegment->end; cp++)
+	StyledCharIterator cp = inSegment->span.begin;
+	for (; cp != inSegment->span.end; ++cp)
 	{
-		CharCode current_char = *cp;
+		CharCode current_char = (*cp).value;
+		AbstractFace *current_face = (*cp).style.GetFace();
 
 		// Do our kerning.
-		Vector delta = face->GetKerning(previous_char, current_char);
-		total += delta.x >> 6; // Don't need round_266 (already fitted).
-		ASSERT(delta.y == 0);
+		// XXX - operator== here is wrong.
+		if (previous_face == current_face)
+		{
+			Vector delta =
+				current_face->GetKerning(previous_char, current_char);
+			total += delta.x >> 6; // Don't need round_266 (already fitted).
+			ASSERT(delta.y == 0);
+		}
 
 		// Load and measure our glyph.
-		Glyph glyph = face->GetGlyph(current_char);
+		Glyph glyph = current_face->GetGlyph(current_char);
 		total += round_266(glyph->advance.x);
 		ASSERT(glyph->advance.y == 0);
 
-		// Update our previous char.
+		// Update our previous char & face.
 		previous_char = current_char;
+		previous_face = current_face;
 	}
 
 	// If necessary, add a trailing hyphen.
@@ -815,6 +862,7 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 	if (inAtEndOfLine && inSegment->needsHyphenAtEndOfLine)
 	{
 		CharCode current_char = '-';
+		AbstractFace *face = (*--cp).style.GetFace();
 		
 		// Do our kerning.
 		Vector delta = face->GetKerning(previous_char, current_char);
@@ -841,34 +889,49 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 									 Distance inHorizontalOffset)
 {
+	// XXX - Extremely primitive and incorrect line-height system.
+	// This is wrong in *so* *many* different ways.
+	int line_height = 0;
+
 	// Figure out where to start drawing text.
 	Point cursor = mLineStart;
 	cursor.x += inHorizontalOffset;
 
 	// Draw each character.
-	AbstractFace *face = mStyle.GetFace();
 	GlyphIndex previous_char = kNoSuchCharacter;
+	AbstractFace *previous_face = NULL;
+	StyledCharIterator cp;
 	for (std::deque<LineSegment>::iterator iter = inLine->begin();
 		 iter < inLine->end(); iter++)
 	{
 		// TODO - Factor out common code with MeasureSegment?
 		LineSegment seg = *iter;
-		for (const wchar_t *cp = seg.begin; cp < seg.end; cp++)
+		for (cp = seg.span.begin; cp != seg.span.end; ++cp)
 		{
-			GlyphIndex current_char = *cp;
+			GlyphIndex current_char = (*cp).value;
+			AbstractFace *current_face = (*cp).style.GetFace();
 			
+			// Update our line-height.
+			int current_height = current_face->GetLineHeight();
+			if (current_height > line_height)
+				line_height = current_height;
+
 			// Do our kerning.
-			Vector delta = face->GetKerning(previous_char, current_char);
-			cursor.x += delta.x >> 6; // Don't need round_266 (already fitted).
-			ASSERT(cursor.x >= 0);
-			ASSERT(delta.y == 0);
+			if (current_face == previous_face)
+			{
+				Vector delta =
+					current_face->GetKerning(previous_char, current_char);
+				cursor.x += delta.x >> 6; // Don't need round_266
+				ASSERT(cursor.x >= 0);
+				ASSERT(delta.y == 0);
+			}
 
 			// Load and draw our glyph.
-			Glyph glyph = face->GetGlyph(current_char);
+			Glyph glyph = current_face->GetGlyph(current_char);
 			Point loc = cursor;
 			loc.x += glyph->bitmap_left;
 			loc.y -= glyph->bitmap_top;
-			DrawBitmap(loc, &glyph->bitmap, mStyle.GetColor());
+			DrawBitmap(loc, &glyph->bitmap, (*cp).style.GetColor());
 
 			// Advance our cursor.
 			cursor.x += round_266(glyph->advance.x);
@@ -877,6 +940,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 
 			// Update our previous char.
 			previous_char = current_char;
+			previous_face = current_face;
 		}
 	}
 
@@ -885,6 +949,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	if (!inLine->empty() && inLine->back().needsHyphenAtEndOfLine)
 	{
 		GlyphIndex current_char = '-';
+		AbstractFace *face = (*--cp).style.GetFace();
 			
 		// Do our kerning.
 		Vector delta = face->GetKerning(previous_char, current_char);
@@ -897,7 +962,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		Point loc = cursor;
 		loc.x += glyph->bitmap_left;
 		loc.y -= glyph->bitmap_top;
-		DrawBitmap(loc, &glyph->bitmap, mStyle.GetColor());
+		DrawBitmap(loc, &glyph->bitmap, (*cp).style.GetColor());
 
 		// Advance our cursor.
 		cursor.x += round_266(glyph->advance.x);
@@ -906,7 +971,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	}
 	
 	// Update our line start for the next line.
-	mLineStart.y += face->GetLineHeight();
+	mLineStart.y += line_height;
 }
 
 

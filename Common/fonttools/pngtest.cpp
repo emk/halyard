@@ -32,9 +32,15 @@ FamilyDatabase *gFonts;
 void show(const wchar_t *inText, const Style &inStyle,
 	  Point inPos, Distance inLength, Justification inJustification)
 {
+    // Build our style run.
+    size_t len = wcslen(inText);
+    StyleInformation styleInfo(inStyle);
+    styleInfo.EndStyleAt(len);
+
     // Draw our text.
-    TextRenderingEngine engine(inText, inText + wcslen(inText), inStyle,
-			       inPos, inLength, inJustification, gImage);
+    StyledTextSpan span(StyledCharIterator(inText, styleInfo.begin()),
+			StyledCharIterator(inText + len, styleInfo.end()));
+    TextRenderingEngine engine(span, inPos, inLength, inJustification, gImage);
     engine.RenderText();
 }
 
