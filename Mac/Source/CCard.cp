@@ -1826,12 +1826,10 @@ void CCard::DoMacro(TString &name)
     //
     gVariableManager.SetLocal(oldlocal);
     if (vnum > 0) 
-		local->RemoveAll(local);
+		local->RemoveAll();
 		
 	// restore old origin
 	SetOrigin(saveOrigin);
-		
-    delete local;
 }
 
 /*-------------------------------------------------------------------

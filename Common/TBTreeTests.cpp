@@ -1,5 +1,7 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include <string.h>
+
 #include "TBTree.h"
 #include "ImlUnit.h"
 
