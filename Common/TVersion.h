@@ -22,15 +22,28 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		25
+#define VERSION_REV_BIG		26
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.25 (Development)"
+#define VERSION_STRING		"Tamale 0.0.26 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.68  2004/04/23 14:47:18  emk
+ 0.0.25 - 23 April 2004 - emk
+
+   * Updated boost C++ library to version 1.31.0.
+   * Updated all copyright blocks for an open source release.
+   * Removed the remaining half-dozen CVS log comments, except for the
+     one in TVersion.h.
+   * Manually reformatted a few comments to the doxygen comment style.
+   * Automatically reformatted zillions of standard-format comments to
+     the doxygen style.
+   * Added at least one sentence of documentation for all public classes in
+     the main program, no matter how simple or obscure.
+
  Revision 1.67  2004/04/05 18:34:46  emk
    * Updated all copyright blocks for an open source release.
    * Removed the remaining half-dozen CVS log comments, except for the

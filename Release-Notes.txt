@@ -1,7 +1,8 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.25 - 23 April 2004 - emk
 
+  * Updated boost C++ library to version 1.31.0.
   * Updated all copyright blocks for an open source release.
   * Removed the remaining half-dozen CVS log comments, except for the
     one in TVersion.h.
