@@ -24,16 +24,11 @@
 #include "Config.h"
 #include "LUtil.h"
 #include "Globals.h"
-#include "LRegistry.h"				// header file for class LRegistry
 
 #define OPT_INSTALL_DIR		1
 #define OPT_SCRIPT_FILE		2
 #define OPT_MOVIE_DIR		3 
 #define OPT_CONFIG_FILE		4
-#define OPT_FIND_DIR		5		// for -D argument, detect and find the directory specified
-
-// Location of IML programs in the system registry
-#define REGISTRY_IML_LOCATION "SOFTWARE\\Dartmouth IML\\"
 
 // local globals
 static char	*usage_str = "Illegal command line <%s>\n\nUsage: 5L.exe [-m movie_dir] [-d install_dir] [-s script_file] [-c config_file] [-x]";
@@ -84,8 +79,6 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 	int			theOption;
 	bool		getArg = false;
 	bool		done = false;
-	LRegistry	Reg;
-	TString		keyString;
 	char		errString[100];		// used to print error message
     
     // make sure our path variables are empty
@@ -129,11 +122,6 @@ bool ConfigManager::Init(LPSTR inCmdLine)
     					theOption = OPT_INSTALL_DIR;
     					getArg = true;
     					break;
-					case 'D':
-						// -D: to detect and find the directory specified
-						theOption = OPT_FIND_DIR;
-						getArg = true;
-						break;
     				case 's':
 						// -s: script file name
     				    theOption = OPT_SCRIPT_FILE;
@@ -164,18 +152,10 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 	    			argCnt = 0;
 
 	    			// read in the argument	
-					// the argument which contains a space will be quoted by "
-					//   e.g.  -D "HIV Prevention Counseling"
-
 	    			while ((not isspace (*strPtr)) and (*strPtr != '\0'))
 					{
-						// in -D option, we should replace underscore with space " "
-						if (theOption == OPT_FIND_DIR && *strPtr == '_')
-							argBuf[argCnt++] = ' ';
-						else
-    						argBuf[argCnt++] = *strPtr;
-
-						strPtr++;
+						
+    					argBuf[argCnt++] = *strPtr++;
 					}
 
 	    			argBuf[argCnt] = '\0'; 
@@ -188,28 +168,6 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 	    				case OPT_INSTALL_DIR:
 	    					m_InstallDir = (const char *) argBuf;
 	    					break;
-						case OPT_FIND_DIR:
-							// read the installation directory from registry
-							Reg.SetRootKey(HKEY_LOCAL_MACHINE);
-							keyString = REGISTRY_IML_LOCATION;
-							keyString += argBuf;
-							if (Reg.SetKey(keyString, FALSE))
-							{
-								// Get the install dir from the registry key
-								if (Reg.ReadString("", m_InstallDir) == false)
-								{
-									//gLog.Error("Error: Reading key for -D option in system registry");
-									AlertMsg("Error reading system registry key for -D option", true);
-									return false;
-								}
-							}
-							else
-							{
-								//gLog.Error("Error: Opening key for -D option in sytem registry");
-								AlertMsg("Error opening sytem registry key for -D option", true);
-								return false;
-							}
-							break;
 	    				case OPT_SCRIPT_FILE: 
 	    					m_CurScript = (const char *) argBuf;
 	    					break;
@@ -683,6 +641,10 @@ TString ConfigManager::GetAudioPath(TString &inName)
  
 /*
  $Log$
+ Revision 1.4  2002/02/05 14:55:41  tvw
+ Backed out changes for -D command-line option.
+ The DLS client was fixed, eliminating the need for this option.
+
  Revision 1.3  2002/01/24 19:22:41  tvw
  Fixed bug (#531) in -D command-line option causing
  system registry read error.

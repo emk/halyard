@@ -1,5 +1,10 @@
 FiveL for Win32 Release Notes
 
+3.1.2, Unreleased
+
+	Backed out changes for -D command-line option.
+	The DLS client was fixed and this option will not be needed.
+
 3.1.1, Thursday, January 24, 2002, 2:02 PM
 
 	Fixed bug (#531) in -D command-line option causing
