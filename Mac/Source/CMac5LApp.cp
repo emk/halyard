@@ -442,12 +442,17 @@ void CMac5LApp::StartUp(void)
 	}
 	else
 	{
-		gLog.Caution("Mac5L does not have a configuration file <Mac5L.config>");
+		//gLog.Caution("Mac5L does not have a configuration file <Mac5L.config>");
 		stayRunning = false;
 	}
 
 	if (not stayRunning)
+	{
+		gLog.Error("Mac5L was unable to open a script.  Please make sure Mac5L "
+				   "is in a directory with a \"Mac5L.config\" file and other "
+				   "program data files.");
 		DoQuit();
+	}
 }
 
 //
@@ -786,6 +791,10 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.22  2002/06/20 21:02:26  emk
+3.3.7 - Debug log updates, and error message if 5L is run without
+Mac5L.config or other support files.
+
 Revision 1.21  2002/06/20 16:32:57  emk
 Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
 branch contained the following enhancements:

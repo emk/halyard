@@ -364,8 +364,10 @@ int16 CCard::Evaluate(TStream& conditional)
 
     globalRes = localRes = false;
 
+	int clause = 0;
     while (conditional.more()) 
 	{
+		clause++;
         conditional >> str1 >> op >> str2;
 		origStr1 = str1;
 		origStr2 = str2;
@@ -413,7 +415,8 @@ int16 CCard::Evaluate(TStream& conditional)
 	        }
 		}
 
-		gDebugLog.Log("if clause: (%s %s %s) -> %s",
+		gDebugLog.Log("if clause %d: (%s %s %s) -> %s",
+					  clause,
 					  origStr1.GetString(),
 					  origOp.GetString(),
 					  origStr2.GetString(),
@@ -465,8 +468,9 @@ int16 CCard::Evaluate(TStream& conditional)
         }
     }
 
-end:    
-	gDebugLog.Log("if: -> %s", globalRes ? "true" : "false");
+end:
+	if (clause > 1)
+		gDebugLog.Log("if: -> %s", globalRes ? "true" : "false");
     return (globalRes);
 }
 

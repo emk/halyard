@@ -16,15 +16,19 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
-#define VERSION_REV_BIG		06
+#define VERSION_REV_BIG		07
 #define VERSION_REV_SMALL	00
 
-#define VERSION_STRING	"5L 3.3.6 (Development)"
+#define VERSION_STRING	"5L 3.3.7 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.14  2002/06/20 21:01:48  emk
+ 3.3.7 - Debug log updates, and error message if 5L is run without
+ Mac5L.config or other support files.
+
  Revision 1.13  2002/06/20 19:49:57  emk
  3.3.6 - Fixed problems with BUTTPCX (and other?) highlighting.
 
