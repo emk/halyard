@@ -1421,8 +1421,8 @@
     ;; and in Common test.
     ;; TODO - Remove when cleaning up element deletion.
     (if (have-5l-prim? 'deleteelements)
-        (call-5l-prim 'deleteelements (node-name elem))
-        (delete-element-info (node-name elem))))
+        (call-5l-prim 'deleteelements (node-full-name elem))
+        (delete-element-info (node-full-name elem))))
 
   (define (exit-card old-card new-card)
     ;; Exit all our child elements.
