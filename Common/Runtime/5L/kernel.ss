@@ -437,8 +437,8 @@
   (define (%kernel-clear-state)
     ;; This is the version that we want to call from most places to get the
     ;; current state set back to normal.
-    (assert (not (or (eq? *%kernel-state* 'STOPPING) 
-                     (eq? *%kernel-state* 'STOPPED))))
+    (%assert (not (or (eq? *%kernel-state* 'STOPPING) 
+                      (eq? *%kernel-state* 'STOPPED))))
     (set! *%kernel-state* 'NORMAL)
     (set! *%kernel-jump-card* #f))
 

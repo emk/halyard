@@ -637,9 +637,9 @@
     ;; This is only used to delete temporary <element> nodes, simulating
     ;; end-of-card rollback.
     (let [[name (node-full-name node)]]
-      (assert (and (instance-of? node <element>)
+      (%assert (and (instance-of? node <element>)
                    (element-temporary? node)))
-      (assert (eq? (hash-table-get (node-table) name (lambda () #f)) node))
+      (%assert (eq? (hash-table-get (node-table) name (lambda () #f)) node))
       (hash-table-remove! (node-table) name)))
 
   (define (find-node name)
@@ -808,7 +808,7 @@
   (defmethod (card-group-find-next (group <card-sequence>) (member <jumpable>))
     ;; Find the node *after* member.
     (let [[remainder (memq member (group-members group))]]
-      (assert (not (null? remainder)))
+      (%assert (not (null? remainder)))
       (if (null? (cdr remainder))
           (card-group-find-next (node-parent group) group)
           (cadr remainder))))
@@ -819,7 +819,7 @@
                  [candidate-func 
                   (lambda ()
                     (card-group-find-prev (node-parent group) group))]]
-      (assert (not (null? members)))
+      (%assert (not (null? members)))
       (if (eq? (car members) member)
           (candidate-func)
           (search (cdr members) (lambda () (car members))))))
@@ -980,7 +980,7 @@
     (run-on-exit-handler node)
     ;; Mark this node as no longer running, so nobody tries to call ON
     ;; or CREATE on it.
-    (assert (node-running? node))
+    (%assert (node-running? node))
     (set! (node-running? node) #f)
     ;; Clear our handler list.
     (clear-node-state! node))
@@ -989,7 +989,7 @@
     ;; TODO - Make sure all our template properties are bound.
     ;; Mark this node as running so we can add event handlers and CREATE
     ;; children.
-    (assert (not (node-running? node)))
+    (%assert (not (node-running? node)))
     (set! (node-running? node) #t)
     ;; Enter all our child elements.  Notice we do this first, so
     ;; all the elements are available by the time we run the node body.
@@ -1062,7 +1062,7 @@
     ;; ending before 'stop-before'.
     (let recurse [[group group]]
       (unless (eq? group stop-before)
-        (assert (node-parent group))
+        (%assert (node-parent group))
         (exit-node group)
         (recurse (node-parent group)))))
 
@@ -1071,7 +1071,7 @@
     ;; active groups from the root to 'group'.
     (let recurse [[group group]]
       (unless (card-group-active? group)
-        (assert (node-parent group))
+        (%assert (node-parent group))
         (recurse (node-parent group))
         (enter-node group))))
   

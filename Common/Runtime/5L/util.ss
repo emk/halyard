@@ -39,16 +39,31 @@
   ;;  Assertions
   ;;=======================================================================
 
-  (provide assert)
+  (provide %assert assert)
 
-  (define (%kernel-assert label value)
+  (define (%kernel-assert fatal? label value)
     (when (not value)
-      (fatal-error (cat "Assertion failure: " label))))
+      (let [[message (cat "Assertion failure: " label)]]
+        (if fatal?
+            (fatal-error message)
+            (error message)))))
   
+  ;;; This is an ASSERT for engine developers: It crashes the engine
+  ;;; probably e-mails a bug report.  Don't use this to check for
+  ;;; regular user errors; use it to check for things which should
+  ;;; never happen no matter how broken the user's script is.
+  (define-syntax %assert
+    (syntax-rules ()
+      [(%assert cond)
+       (%kernel-assert #t 'cond cond)]))
+  (define-syntax-indent %assert function)
+
+  ;;; This is an ASSERT for scriptors: It doesn't crash the engine, and
+  ;;; it lets them fix their problem.
   (define-syntax assert
     (syntax-rules ()
       [(assert cond)
-       (%kernel-assert 'cond cond)]))
+       (%kernel-assert #f 'cond cond)]))
   (define-syntax-indent assert function)
 
 
