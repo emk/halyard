@@ -16,15 +16,24 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		13
+#define VERSION_REV_BIG		14
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.13 (Development)"
+#define VERSION_STRING	"5L 3.3.14 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.21  2002/07/15 18:11:31  brian
+ 3.3.14 - 15 July 2002 - brian, emk
+
+   * Fixed GWorld flashing (bug #930).
+   * Windows 3.3.13 fixes ported to the Macintosh.
+
+ (emk, checking in from Brian's account after finishing some
+ bug-stomping for him)
+
  Revision 1.20  2002/07/15 15:56:32  zeb
  3.3.13 - 15 July 2002 - zeb, emk
    * Language change: (IF cond true_cmd false_cmd) now takes arbitrary

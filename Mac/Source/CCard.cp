@@ -336,143 +336,6 @@ void CCard::OneCommand(const TString &theCommand)
 
 ************************/
 
-enum EvalMode 
-{
-    FirstTime,
-    And,
-    Or
-};
-
-/***********************************************************************
- * Function: CCard::Evaluate
- *
- *  Parameter conditional (blah AND blah OR etc..)
- * Return:
- *
- * Comments:
- *  Evaluate the given conditional and determine whether or not
- *  it is true.
- ***********************************************************************/
-int16 CCard::Evaluate(TStream& conditional)
-{
-    int16		globalRes, localRes, result;
-    EvalMode	mode = FirstTime;
-    TString     op;
-    TString     modeStr;
-    TString     str1, str2;
-	TString		origStr1, origStr2, origOp;
-
-    globalRes = localRes = false;
-
-	int clause = 0;
-    while (conditional.more()) 
-	{
-		clause++;
-        conditional >> str1 >> op >> str2;
-		origStr1 = str1;
-		origStr2 = str2;
-		origOp = op;
-
-		// See if op is contains first.
-		if (op.Equal("contains", false))
-		//if (op == (char *)"contains")
-		{
-			//char *res = nil;
-			
-			if (str1.Contains(str2, false))
-				localRes = true;
-			else
-				localRes = false;
-				
-			//res = strstr(str1.GetString(), str2.GetString());
-			//if (res != nil)
-			//	localRes = true;
-			//else
-			//	localRes = false;
-		}
-		else
-		{
-	        //  Returns <0, 0, or >0.
-	        //
-	        result = str1.TypeCompare(str2);
-
-	        if (op == (char *)"=") 
-				localRes = (result == 0);
-	        else if (op == (char *)"<>") 
-				localRes = (result != 0);
-	        else if (op == (char *)">") 
-				localRes = (result > 0);
-	        else if (op == (char *)">=") 
-				localRes = (result >= 0);
-	        else if (op == (char *)"<") 
-				localRes = (result < 0);
-	        else if (op == (char *)"<=") 
-				localRes = (result <= 0);
-	        else
-	        {
-	            gLog.Error("IF: unknown operator %s.", (const char *) op);
-	            return (globalRes);
-	        }
-		}
-
-		gDebugLog.Log("if clause %d: (%s %s %s) -> %s",
-					  clause,
-					  origStr1.GetString(),
-					  origOp.GetString(),
-					  origStr2.GetString(),
-					  localRes ? "true" : "false");
-
-        switch (mode) 
-		{
-            case FirstTime:
-                globalRes = localRes;
-                break;
-            case And:
-                globalRes = globalRes && localRes;
-                break;
-            case Or:
-                globalRes = globalRes || localRes;
-                break;
-        }
-
-        if (conditional.more()) 
-		{
-            conditional >> modeStr;
-            modeStr.MakeLower();
-            
-			if (modeStr == (char *) "and") 
-			{
-                if (mode == Or) 
-					gLog.Caution("IF: can't mix ANDs and ORs.");
-                mode = And;
-                
-                // one false makes a whole bunch of ANDed things false
-                if (not globalRes)
-                	goto end;
-            } 
-			else if (modeStr == (char *) "or") 
-			{
-                if (mode == And) 
-					gLog.Caution("IF: can't mix ANDs and ORs.");
-                mode = Or;
-                
-                // one true makes a whole bunch of ORed things true
-                if (globalRes)
-                	goto end;	
-            } 
-			else
-			{
-                gLog.Caution("IF: expected AND or OR here, not %s.", (const char *) modeStr);
-                mode = And;
-            }
-        }
-    }
-
-end:
-	if (clause > 1)
-		gDebugLog.Log("if: -> %s", globalRes ? "true" : "false");
-    return (globalRes);
-}
 
 /*************************
 
@@ -490,19 +353,18 @@ end:
 -------------------------------------------------------------------*/
 void CCard::DoIf()
 {
-    TStream     conditional;
-	
-    m_Script >> conditional;
+	bool condition;
+	m_Script >> condition;
 
-    conditional.reset();
-
-    if (Evaluate(conditional)) 
-    {
+    if (condition)
+	{
+		gDebugLog.Log("*** if: running true command");
         DoCommand();
-    } 
+	}
     else 
     {
-        //  Skip TRUE_CMD.
+        //  Skip true_CMD.
+		gDebugLog.Log("*** if: running false command");
         m_Script >> open >> close;
         if (m_Script.more()) 
         	DoCommand();

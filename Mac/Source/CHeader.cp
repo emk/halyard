@@ -70,7 +70,10 @@ void CHeader::ParseScript(void)
     //  ...SHADOW SHADCOLOR OFFSET) - the offset is ignored for now, it is used on Windows
     //									to help with text alignment
     if (m_Script.more())
-        m_Script >> mShadow >> mShadowColor >> offset;
+        m_Script >> mShadow >> mShadowColor;
+        
+    if (m_Script.more())
+    	m_Script >> offset;
         
     m_Script >> close;
      

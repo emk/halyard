@@ -422,24 +422,44 @@ void CPlayerView::ColorCard(int16 color)
 //
 void CPlayerView::DoNewPalette(CTabHandle inCTab)
 {
-	GWorldPtr		theMacGWorld;
 	Rect			theFrame;
-
+	
 	CalcLocalFrameRect(theFrame);
+	theFrame.right -= theFrame.left;
+	theFrame.left = 0;
+	theFrame.bottom -= theFrame.top;
+	theFrame.top = 0;
 
 	(*inCTab)->ctFlags |= 0x4000;			// so will work with offscreen world
 		
 	// update the gworld with info about the new color table
-	theMacGWorld = mGWorld->GetMacGWorld();
-	::UpdateGWorld(&theMacGWorld, 32, &theFrame, inCTab, nil, 0);
-	mGWorld->SetMacGWorld(theMacGWorld);
+	UpdateGWorldPalette(mGWorld, inCTab, theFrame);
 	
 	// update the blippo buffer too!!
-	GWorldPtr	theBlippoWorld = mBlippoWorld->GetMacGWorld();
-	::UpdateGWorld(&theBlippoWorld, 32, &theFrame, inCTab, nil, 0);
-	mBlippoWorld->SetMacGWorld(theBlippoWorld);
+	UpdateGWorldPalette(mBlippoWorld, inCTab, theFrame);
 }
 
+//
+// UpdateGWorldPalette - This updates the actual GWorlds for DoNewPalette 
+//
+void CPlayerView::UpdateGWorldPalette(CGWorld *inGWorld, CTabHandle inCTab, Rect inFrame)
+{
+	GWorldPtr 	theMacGWorld = inGWorld->GetMacGWorld();
+	GWorldFlags result =
+		::UpdateGWorld(&theMacGWorld, 32, &inFrame, inCTab, nil, 0);
+	inGWorld->SetMacGWorld(theMacGWorld);
+
+	// If QuickDraw threw out our GWorld and got us a new one, then we need
+	// to erase it to black.
+	if (result & reallocPix)
+	{
+		StCGWorldDrawingContext theContext(mGWorld);
+		::RGBForeColor(&Color_Black);
+		::PenMode(patCopy);
+		::PaintRect(&inFrame);
+	}
+}
+		
 //
 //	AdjustMouseSelf - CodeWarrior calls this when it thinks the mouse might need to be
 //                    updated.  We let our built-in cursor manager handle the details.
@@ -854,8 +874,9 @@ bool CPlayerView::DoKeyBind(const char inKey)
 			if (gMovieManager.Playing())
 				gMovieManager.Kill();
 			
-			gDebugLog.Log("keybind hit: key <%c>, running callback",
-						  found->first);
+			gDebugLog.Log("Key '%c' hit, running callback: %s",
+						  found->first,
+						  found->second->PrintableRepresentation().c_str());
 			found->second->Run();
 			return (true);
 		}

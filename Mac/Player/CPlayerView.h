@@ -123,6 +123,8 @@ class  CPlayerView
 		void 			DoXFade(const int8 inTime);
 		bool			OverTZone(void);
 		
+		void			UpdateGWorldPalette(CGWorld *inGWorld, CTabHandle inCTab, Rect theFrame);
+		
 		bool			mActive;
 		bool			mIsLocked;
 		bool			mHasBlip;

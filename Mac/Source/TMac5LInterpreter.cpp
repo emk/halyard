@@ -141,9 +141,13 @@ TMac5LCallback::TMac5LCallback(const TString &inCommand)
 	// Nothing else to do.
 }
 
+std::string TMac5LCallback::PrintableRepresentation()
+{
+	return mCommand;
+}
+
 void TMac5LCallback::Run()
 {
-	gDebugLog.Log("Callback run: command <%s>", mCommand.GetString());
     gCardManager.DoOneCommand(mCommand);
 }
 

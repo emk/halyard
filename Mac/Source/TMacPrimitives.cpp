@@ -155,8 +155,7 @@ DEFINE_5L_PRIMITIVE(Add)
     //gVariableManager.SetDouble(vname, sum);
     gVariableManager.SetLong(theVarName, theResValue);
 
-	gDebugLog.Log("add: %s <%ld> + <%ld> = <%ld>", 
-		(const char *) theVarName, theOrigValue, theAmount, theResValue);
+	::SetPrimitiveResult(theResValue);
 }
 
 //
@@ -195,7 +194,6 @@ DEFINE_5L_PRIMITIVE(Audio)
 		gMovieManager.PlayLoop(audio_file.GetString(), fade_time);
 	else
 		gMovieManager.Play(audio_file.GetString(), offset, true, NULL);
-	gDebugLog.Log("Audio: %s  ", audio_file.GetString()); 
 }	
 
 //
@@ -328,9 +326,6 @@ DEFINE_5L_PRIMITIVE(Background)
     gOrigin.AdjustRect(&loc);
     macLoc = loc.GetRect();
 
-	gDebugLog.Log("background: <%s>, <L T R B> %d %d %d %d", 
-		picname.GetString(), macLoc.left, macLoc.top, macLoc.right, macLoc.bottom);
-
     gPlayerView->SetBackPic(picname, macLoc);
 }
 
@@ -354,8 +349,6 @@ DEFINE_5L_PRIMITIVE(Background)
         duration *= 100;
     }
 
-	gDebugLog.Log("beep: freq <%d>, duration <%d>", freq, duration);
-    
  	// cbo_fix - we can do better than this
 	SysBeep(30);
 }
@@ -368,8 +361,6 @@ DEFINE_5L_PRIMITIVE(Background)
 -----------------------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Blippo)
 {
-	gDebugLog.Log("blippo: ");
-
 	gPlayerView->Blippo();
 }
 
@@ -414,13 +405,6 @@ DEFINE_5L_PRIMITIVE(Box)
     fill.MakeLower();
     if (fill == (char *) "fill")
     	theFill = true;
-
-	if (theFill)
-		gDebugLog.Log("filled box: <L T R B> %d %d %d %d, color <%d>, thickness: <%d>", 
-			bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom(), color, lineThickness);
-	else
-		gDebugLog.Log("outline box: <L T R B> %d %d %d %d, color <%d>, thickness: <%d>", 
-			bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom(), color, lineThickness);
     
     boxPtr = new CPlayerBox(macBounds, theFill, lineThickness, color);
 	if (boxPtr != nil)
@@ -445,7 +429,7 @@ DEFINE_5L_PRIMITIVE(Browse)
   	
     if (PP::UInternetConfig::PP_ICAvailable())	
     {
-    		gDebugLog.Log("Launching default web browser");
+    	gDebugLog.Log("Launching default web browser");
     
     	// Theoretically our suspend event should show the menu bar without problems. 
     	// However, this doesn't work. Internet explorer's menu bar will be screwed up 
@@ -457,7 +441,7 @@ DEFINE_5L_PRIMITIVE(Browse)
     }
     else
     {
-    		gDebugLog.Log("Problems with accessing InternetConfig during browse command.");
+    	gDebugLog.Log("Problems with accessing InternetConfig during browse command.");
 	}
 }
 
@@ -545,9 +529,6 @@ DEFINE_5L_PRIMITIVE(CheckVol)
 	if (inArgs.HasMoreArguments())
 		inArgs >> no_volume;
 		
-	gDebugLog.Log("checkvol: <%s>, put path into <%s>",
-		vol_name.GetString(), real_path_var.GetString());
-
 	gVariableManager.SetLong(real_path_var.GetString(), 0);
 	
 	if (gModMan->VolMounted(vol_name))
@@ -580,8 +561,6 @@ DEFINE_5L_PRIMITIVE(Close)
 
     inArgs >> filename;
 
-	gDebugLog.Log("close: file <%s>", filename.GetString());
-
     gFileManager.Close(filename);
 }
 
@@ -598,14 +577,10 @@ DEFINE_5L_PRIMITIVE(Close)
     if (inArgs.HasMoreArguments())  
     {
         inArgs >> left >> top;
-
-		gDebugLog.Log("ctouch: at left <%d>, top <%d>", left, top);   
-
         gPlayerView->CTouch(left, top);
     }
     else 
     {
-		gDebugLog.Log("ctouch: all");
     	gPlayerView->CTouch();
     }
 
@@ -632,8 +607,6 @@ DEFINE_5L_PRIMITIVE(Cursor)
 		{
 			theCursor = tmpCursor;
 			forceShow = true;
-			
-			gDebugLog.Log("Changing cursor to %s", cursorStr.GetString());
 		}
 		else
 		{
@@ -685,9 +658,7 @@ DEFINE_5L_PRIMITIVE(Div)
 		theResValue = (int32) (theOrigValue / theAmount);
    
     gVariableManager.SetLong(theVarName, theResValue);
-    
-	gDebugLog.Log("div: %s <%ld> by <%f> = <%ld>", 
-		(const char *) theVarName, theOrigValue, theAmount, theResValue);
+    ::SetPrimitiveResult(theResValue);
 }
 
 //
@@ -698,8 +669,6 @@ DEFINE_5L_PRIMITIVE(EjectDisc)
 #if CALL_NOT_IN_CARBON
 	gModMan->EjectCD();
 #endif // CALL_NOT_IN_CARBON
-
-	gDebugLog.Log("Ejecting disk");
 }
 
 /*---------------------------------------------------------------
@@ -715,8 +684,6 @@ DEFINE_5L_PRIMITIVE(Fade)
     inArgs >> direction;
     if (inArgs.HasMoreArguments()) 
     	inArgs >> steps;
-
-	gDebugLog.Log("fade: %s, steps <%d>", direction.GetString(), steps);
 
 	// cbo_hack - try making the fades a bit faster
 //	if (steps >= 10)
@@ -763,7 +730,6 @@ DEFINE_5L_PRIMITIVE(Highlight)
 DEFINE_5L_PRIMITIVE(Hidemouse)
 {
 	gCursorManager.HideCursor();
-	gDebugLog.Log("Hiding cursor");
 }
 
 /*---------------------------------------------------------------------
@@ -822,8 +788,6 @@ DEFINE_5L_PRIMITIVE(Jump)
 
     inArgs >> jumpCard;
 
-	gDebugLog.Log("jump: to <%s>", (const char *) jumpCard);
-    
 	gPlayerView->ProcessEvents(false);	// stop processing keys and touch zones
 	
     TInterpreter::GetInstance()->JumpToCardByName(jumpCard);
@@ -871,8 +835,6 @@ DEFINE_5L_PRIMITIVE(Keybind)
     	theChar = 0x1B;					// the Escape key
     else
     	theChar = keyEquiv(0);
-
-	gDebugLog.Log("keybind: key <%c>", keyEquiv(0));
 
 	gPlayerView->AddKeyBinding(theChar, theCallback);
 }
@@ -952,8 +914,6 @@ DEFINE_5L_PRIMITIVE(Loadpal)
 	inArgs >> palname;
 
 	palname.MakeLower();
-
-	gDebugLog.Log("loadpal: <%s>", palname.GetString());
 
 	while (inArgs.HasMoreArguments())
 	{
@@ -1113,8 +1073,6 @@ DEFINE_5L_PRIMITIVE(Lock)
     else 
 		doClear = false;
 
-	gDebugLog.Log("lock: Clear: (0=false) <%d>", doClear);
-		
 	gPlayerView->Lock(doClear);
 }
 
@@ -1151,8 +1109,6 @@ DEFINE_5L_PRIMITIVE(Lookup)
         searchString += param;
     }
 
-	gDebugLog.Log("lookup: file <%s>, search <%s>", filename.GetString(), searchString.GetString());
-    
     gFileManager.Lookup(filename, searchString, numFields);
 }
 
@@ -1192,7 +1148,6 @@ DEFINE_5L_PRIMITIVE(Nap)
 	
 	TInterpreter::GetInstance()->Nap(tenths);
 
-	gDebugLog.Log("nap: %d", tenths);
 	//gDebugLog.Log("Refreshing Card (DoNap)");
 	
 	// cbo_test - took this out to prevent flashing
@@ -1232,8 +1187,6 @@ DEFINE_5L_PRIMITIVE(Open)
     slashPtr = strstr(filename.GetString(), "\\");
     if (slashPtr != NULL)
     	*slashPtr = ':';
-
-	gDebugLog.Log("open with %s: file <%s>", kind.GetString(),filename.GetString());
 
     gFileManager.Open(filename, fKind);
 }
@@ -1287,13 +1240,6 @@ DEFINE_5L_PRIMITIVE(Oval)
     if (fill == (char *) "fill")
     	theFill = true;
     	
-    if (theFill)
-		gDebugLog.Log("filled oval: <L T R B> %d %d %d %d, color <%d>, thickness: <%d>", 
-			bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom(), color, lineThickness);
-	else
-		gDebugLog.Log("outline oval:<L T R B> %d %d %d %d, color <%d>, thickness: <%d>", 
-			bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom(), color, lineThickness);
-    
     ovalPtr = new CPlayerOval(macBounds, theFill, lineThickness, color);
 	if (ovalPtr != nil)
 		delete ovalPtr;
@@ -1307,9 +1253,6 @@ DEFINE_5L_PRIMITIVE(Pause)
 
     inArgs >> tenths;
     
-    gDebugLog.Log("pause: %d", tenths);
-
-
     gVideoManager->pause(tenths);
 #endif
 }
@@ -1412,8 +1355,6 @@ DEFINE_5L_PRIMITIVE(PlayQTFile)
 		thePalStr = thePal.GetString();
 	}
 	
-	gDebugLog.Log("playqtfile: <%s>, %s", theQTFile, theFlags.GetString());
-				
 	gMovieManager.Play(theQTFile.GetString(), theOffset, 
 		audioOnly, thePalStr);
 }
@@ -1441,7 +1382,6 @@ DEFINE_5L_PRIMITIVE(PlayQTLoop)
 		gLog.Caution("playqtloop can only be used with audio files!");
 	else
 	{
-		gDebugLog.Log("playqtloop: <%s> <%ld>", theQTFile.GetString(), theFadeTime);
 		gMovieManager.PlayLoop(theQTFile.GetString(), theFadeTime);
 	}
 }	
@@ -1462,8 +1402,6 @@ DEFINE_5L_PRIMITIVE(PlayQTRect)
 	
 	gOrigin.AdjustPoint(&thePT);
 		
-	gDebugLog.Log("playqtrect: X <%d>, Y <%d>", thePT.X(), thePT.Y());
-
 	gMovieManager.SetOrigin(thePT);
 }
 	
@@ -1493,9 +1431,6 @@ DEFINE_5L_PRIMITIVE(PreloadQTFile)
     if (strstr(theQTFile.GetString(), ".a2"))
     	audioOnly = true;
 
-	gDebugLog.Log("preload: <%s>, tenths <%d>, %s", 
-		theQTFile.GetString(), tenths, (doSync ? "sync" : "async"));
-	
 	if (tenths > 0)
 	{
 		TInterpreter::GetInstance()->Nap(tenths);
@@ -1577,8 +1512,6 @@ DEFINE_5L_PRIMITIVE(Read)
     else 
     	gFileManager.Read(filename, res);
 
-	gDebugLog.Log("read: var <%s>, value <%s>", vname.GetString(), res.GetString());
-    	
     gVariableManager.SetString(vname.GetString(), res.GetString());
 }
 
@@ -1592,7 +1525,6 @@ DEFINE_5L_PRIMITIVE(ReDoScript)
 	
 	inArgs >> theCard;
 	
-	gDebugLog.Log("redoscript: <%s>", (const char *) theCard);
 	TInterpreter::GetInstance()->DoReDoScript(theCard);	
 }
 #endif
@@ -1615,7 +1547,6 @@ DEFINE_5L_PRIMITIVE(ResetOrigin)
 	if (inArgs.HasMoreArguments())
 		inArgs >> newOrigin;
 	
-	gDebugLog.Log("ResetOrigin to 0 0");	
 	gOrigin.SetOrigin(newOrigin);
 }
 
@@ -1627,8 +1558,6 @@ DEFINE_5L_PRIMITIVE(ResetOrigin)
 -----------------------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Resume)
 {
-	gDebugLog.Log("resume");
-
 	gPlayerView->DoResume(false);
 }
 
@@ -1664,8 +1593,6 @@ DEFINE_5L_PRIMITIVE(Rewrite)
         searchString += param;
     }
 
-	gDebugLog.Log("rewrite: file <%s>, look for <%s>", filename.GetString(), searchString.GetString());
-
     gFileManager.Rewrite(filename, searchString, numFields);
 }
 
@@ -1699,7 +1626,6 @@ DEFINE_5L_PRIMITIVE(QTPause)
 	
 	if (gMovieManager.Playing())
 	{
-		gDebugLog.Log("pause: %ld milliseconds", tenths);
 		gPlayerView->DoPause(false);
 		
 		TInterpreter::GetInstance()->Nap(tenths);
@@ -1726,8 +1652,6 @@ DEFINE_5L_PRIMITIVE(Screen)
     int16 color;
 
     inArgs >> color;
-
-	gDebugLog.Log("screen: <%d>", color);
 
     gPlayerView->ColorCard(color);
 }
@@ -1794,13 +1718,9 @@ DEFINE_5L_PRIMITIVE(Set)
 		date = (uint32) value;
 		
     	gVariableManager.SetDate(vname.GetString(), date, date_type);
-
-		gDebugLog.Log("set date: <%s> to <%s>", (const char *) vname, gVariableManager.GetString(vname.GetString()));  	
     }
     else
     {
-		gDebugLog.Log("set: <%s> to <%s>", (const char *) vname, (const char *) value);
-
     	gVariableManager.SetString(vname.GetString(), value.GetString());
     }
 }
@@ -1822,8 +1742,6 @@ DEFINE_5L_PRIMITIVE(Showmouse)
 ------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Still)
 {
-	gDebugLog.Log("still");
-
 	gPlayerView->DoPause(false);
 }
 
@@ -1837,9 +1755,9 @@ DEFINE_5L_PRIMITIVE(Still)
 DEFINE_5L_PRIMITIVE(Sub)
 {
 	TString 	theVarName;
-	uint32		theAmount;
-	uint32		theOrigValue;
-	uint32		theResValue;
+	int32		theAmount;
+	int32		theOrigValue;
+	int32		theResValue;
 
     inArgs >> theVarName >> theAmount;
 
@@ -1848,9 +1766,7 @@ DEFINE_5L_PRIMITIVE(Sub)
     theResValue = theOrigValue - theAmount;
 
     gVariableManager.SetLong(theVarName, theResValue);
-
-	gDebugLog.Log("sub: %s <%ld> - <%ld> = <%ld>", 
-		(const char *) theVarName, theOrigValue, theAmount, theResValue);
+	::SetPrimitiveResult(theResValue);
 }
 
 /*--------------------------------------------------------------
@@ -1871,10 +1787,6 @@ DEFINE_5L_PRIMITIVE(Text)
 
     gOrigin.AdjustRect(&bounds);
 
-	gDebugLog.Log("text: header <%s>, L T R B <%d %d %d %d>, text <%s>",
-				  header.GetString(), bounds.Left(), bounds.Top(), bounds.Right(),
-				  bounds.Bottom(), text.GetString());
-				      
     textPtr = new CPlayerText(header.GetString(), bounds, text.GetString(), 0, 0);
 	if (textPtr != nil)
 		delete textPtr;
@@ -1896,9 +1808,6 @@ DEFINE_5L_PRIMITIVE(TextAA)
     inArgs >> style >> bounds >> text;
 
     gOrigin.AdjustRect(&bounds);
-	gDebugLog.Log("textaa: style <%s>, L T R B <%d %d %d %d>, text <%s>",
-				  style.c_str(), bounds.Left(), bounds.Top(), bounds.Right(),
-				  bounds.Bottom(), text.c_str());
 
 	try
 	{
@@ -1932,9 +1841,6 @@ DEFINE_5L_PRIMITIVE(Timeout)
 
     inArgs >> secs >> cardName;
 
-	gDebugLog.Log("timeout: delay <%ld>s, jump to <%s>",
-				  secs, (const char *) cardName);
-	
 	TInterpreter::GetInstance()->Timeout(cardName, secs);
 }
 
@@ -1960,8 +1866,6 @@ DEFINE_5L_PRIMITIVE(Touch)
     CursorType	tmpCursor;
 
     inArgs >> bounds >> callback;
-
-	gDebugLog.Log("touch: <L T R B> %d %d %d %d", bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom());
 
     gOrigin.AdjustRect(&bounds);
 
@@ -2023,8 +1927,6 @@ DEFINE_5L_PRIMITIVE(Unblippo)
         	inArgs >> delay;
     }
 
-	gDebugLog.Log("unblippo: Effect: <%d>  Delay: <%ld>", theEffect, delay);
-
 	if (gPlayerView->BlippoAvailable())
 		gPlayerView->UnBlippo(theEffect, delay);
 	else
@@ -2054,8 +1956,6 @@ DEFINE_5L_PRIMITIVE(Unlock)
         if (inArgs.HasMoreArguments())
         	inArgs >> delay;
     }
-
-	gDebugLog.Log("unlock: Effect: <%d>  Delay: <%ld>", theEffect, delay);
 
 	gPlayerView->UnLock(theEffect, delay);
 }
@@ -2151,8 +2051,6 @@ DEFINE_5L_PRIMITIVE(Write)
     TString     filename, data;
 
     inArgs >> filename >> data;
-
-	gDebugLog.Log("write: file <%s>, data <%s>", filename.GetString(), data.GetString());
 
     gFileManager.Write(filename, data);
 }

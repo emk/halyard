@@ -63,6 +63,11 @@ public:
 	virtual void Run();
 	
 	//////////
+	// Return the code string associated with this callback.
+	//
+	virtual std::string PrintableRepresentation();
+	
+	//////////
 	// Create a TCallback object from a 5L command string.
 	// 
 	// [in] inCmd - A command string of the form "(foo ...)".

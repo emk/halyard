@@ -73,8 +73,6 @@ class CCard : public TIndex
         void    OneCommand(const TString &theCmd);
 
     protected:
-        int16   Evaluate(TStream& conditional);
-		
         void    DoIf();
         void    DoBody();
         void    DoExit();

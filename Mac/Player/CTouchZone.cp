@@ -261,9 +261,10 @@ CTouchZone::HotSpotResult(
 	//if (clickSound != NULL)
 	//	SndPlay(nil, (SndListResource **) clickSound, false);
 
-	gDebugLog.Log("hit touchzone: <L T R B> %d %d %d %d, running callback",
+	gDebugLog.Log("Click in (rect %d %d %d %d), running callback: %s",
 				  mBounds.Left(), mBounds.Top(),
-				  mBounds.Right(), mBounds.Bottom());
+				  mBounds.Right(), mBounds.Bottom(),
+				  mCallback->PrintableRepresentation().c_str());
 
 	// cbo - suspend event processing while we are executing this callback
 	gPlayerView->ProcessEvents(false);

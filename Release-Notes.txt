@@ -1,5 +1,10 @@
 When possible, please include bug numbers as seen below.
 
+3.3.14 - 15 July 2002 - brian, emk
+
+  * Fixed GWorld flashing (bug #930).
+  * Windows 3.3.13 fixes ported to the Macintosh.
+
 3.3.13 - 15 July 2002 - zeb, emk
 
   * Language change: (IF cond true_cmd false_cmd) now takes arbitrary
