@@ -400,6 +400,24 @@
               (%kernel-clear-timeout)
               (thunk))))))
 
+  (define (%kernel-wake-up-if-necessary)
+    ;; We may need to finish waking up from any WAIT calls which were
+    ;; aborted in a callback (typically by the destruction of the
+    ;; media object).
+    ;;
+    ;; Once upon a time, we did this during calls to Stage::OnIdle and
+    ;; Stage::NotifyEnterCard. But that was much too late, and left us with
+    ;; many opportunities (mostly involving JUMP and DEFERRED-CALLBACK) to
+    ;; not wake up in time. I believe this is the correct place to wake up.
+    ;;
+    ;; We still need to do this even if (%KERNEL-PAUSED?) is false, because
+    ;; the Stage maintains internal pause-related flags which need to be
+    ;; cleared separately. In general, the pause system is pretty ugly, has
+    ;; resulted in a number of subtle bugs, and should probably be
+    ;; redesigned.
+    (unless *%kernel-running-callback?*
+      (%call-5l-prim 'WakeUpIfNecessary)))
+
   (define (%kernel-safe-to-run-deferred-thunks?)
     ;; Would now be a good time to run deferred thunks?  Wait until
     ;; nothing exciting is happening.  See call-at-safe-time.
@@ -500,7 +518,15 @@
     ;; Since this is called after idle, it needs to be *extremely*
     ;; careful about allocating memory.  See %kernel-run for more
     ;; discussion about consing in the idle loop (hint: it's bad).
-    (%kernel-check-deferred) ; Should be the first thing we do.
+    (%kernel-wake-up-if-necessary)  ; Should be the first thing we do.
+    (%kernel-check-deferred)        ; Should be the second thing we do.
+    ;; XXX - I'm no longer convinced that we should call
+    ;; %KERNEL-CHECK-DEFERRED before dealing with the value of
+    ;; *%KERNEL-STATE* (below), because it sometimes allows jumps to get
+    ;; lost, and other bits of weirdness.  But I'm not willing to redesign
+    ;; this very tricky and important routine without a lot of thought,
+    ;; particularly during a relatively stable period of engine
+    ;; development.  Feel free to revisit this later.
     (unless *%kernel-running-callback?*
       (%kernel-check-timeout))
     (case *%kernel-state*

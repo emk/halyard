@@ -83,7 +83,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
-	  mTextCtrl(NULL), mShouldWakeUpOnIdle(false),
+	  mTextCtrl(NULL), mNeedToWakeUp(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mIsBeingDestroyed(false)
 {
@@ -260,11 +260,6 @@ void Stage::NotifyEnterCard(const wxString &inName)
     // If the script is waiting on a media element, end the wait now.
     if (mWaitElement)
         EndWait();
-
-    // We need to call this here in case the interpreter was asleep when it
-    // jumped--the mShouldWakeUpOnIdle variable will be set, but the wakeup
-    // won't have been preformed.
-    InterpreterWakeUpIfNecessary();
 }
 
 void Stage::NotifyExitCard()
@@ -391,11 +386,12 @@ void Stage::InterpreterWakeUp()
 	// TODO - Keep track of who we're sleeping for.
     ASSERT(TInterpreter::HaveInstance());
     TInterpreter::GetInstance()->WakeUp();
+    gDebugLog.Log("wait: Finished waking up");
 }
 
 void Stage::InterpreterWakeUpIfNecessary() {
-    if (mShouldWakeUpOnIdle) {
-        mShouldWakeUpOnIdle = false;
+    if (mNeedToWakeUp) {
+        mNeedToWakeUp = false;
         if (TInterpreter::HaveInstance())
             InterpreterWakeUp();
     }
@@ -435,9 +431,12 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 	if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
 		EndWait();
 
-    // We need to do all wakeups here, because InterpreterWakeUp can't
-    // be called from a callback.
-    InterpreterWakeUpIfNecessary();
+    // We used to call InterpreterWakeUpIfNecessary here (and also in
+    // Stage::NotifyCardEntered), because it was illegal to call
+    // InterpreterWakeUp from a callback. But we now have a supposedly
+    // better system, involving interpreter calls to WakeUpIfNecessary.  So
+    // we don't do call InterpreterWakeUpIfNecessary here, because even
+    // though it was perfectly safe and legal, it wasn't sufficient.
 
 	// Send an idle event to the Scheme engine occasionally.
 	if (ShouldSendEvents() &&
@@ -810,7 +809,7 @@ wxString Stage::FinishModalTextInput()
 bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 {
 	ASSERT(!mWaitElement);
-    ASSERT(!mShouldWakeUpOnIdle);
+    ASSERT(!mNeedToWakeUp);
 
 	// Look for our element.
 	ElementCollection::iterator i =
@@ -854,7 +853,7 @@ void Stage::EndWait()
 	ASSERT(mWaitElement.get());
 	mWaitElement = IMediaElementPtr();
 	mWaitFrame = 0;
-    mShouldWakeUpOnIdle = true;
+    mNeedToWakeUp = true;
 }
 
 void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)

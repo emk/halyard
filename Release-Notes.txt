@@ -17,6 +17,10 @@ CVS - emk
   * We no longer register elements with the stage before they're fully
     created. This fixes the bug where throwing an exception in an element
     constructor would crash the engine (bug #1836).
+  * The engine now preforms delayed wake-ups of the interpreter (after the
+    end of a WAIT) more robustly, which should fix some ugly assertion
+    failures (bug #1845). I'm convinced this portion of the code will need
+    a redesign, and have added some comments to that effect.
 
 0.0.42 - 06 Dec 2004 - emk
 

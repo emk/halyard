@@ -162,7 +162,7 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     //////////
     /// Are we currently waiting for a movie to reach a specified time?
     ///
-    bool mShouldWakeUpOnIdle;
+    bool mNeedToWakeUp;
 
 	//////////
 	/// The movie we're waiting on, or NULL if we're not waiting on anything.
@@ -246,11 +246,6 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	/// Wake the interpreter up.
 	///
 	void InterpreterWakeUp();
-
-    //////////
-    /// Wake the interpreter up if mShouldWakeUpOnIdle is true.
-    ///
-    void InterpreterWakeUpIfNecessary();
 
 	//////////
 	/// Find an element by name, and return an iterator.
@@ -400,6 +395,11 @@ public:
     /// Let the stage know that the list of active elements has changed.
     ///
     void NotifyElementsChanged();
+
+    //////////
+    /// Wake the interpreter up if mNeedToWakeUp is true.
+    ///
+    void InterpreterWakeUpIfNecessary();
 
 	//////////
 	/// Redirect all further drawing calls to the specified element until

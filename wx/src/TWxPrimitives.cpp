@@ -130,6 +130,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Wait);
+    REGISTER_5L_PRIMITIVE(WakeUpIfNecessary);
     REGISTER_5L_PRIMITIVE(WantsCursorGet);
     REGISTER_5L_PRIMITIVE(WantsCursorSet);
     REGISTER_5L_PRIMITIVE(Zone);
@@ -837,6 +838,20 @@ DEFINE_5L_PRIMITIVE(Wait) {
 		inArgs >> frame;
     CHECK_SUSPEND_OK("WAIT");
 	wxGetApp().GetStage()->Wait(name.c_str(), frame);
+}
+
+DEFINE_5L_PRIMITIVE(WakeUpIfNecessary) {
+    // We get called way too often to actually be interesting, so don't log
+    // this primitive.
+	::SkipPrimitiveLogging(); 
+
+    // We need to check if we still have a link to the stage.
+    // StageFrame::OnClose may sever that link when we're doing event
+    // processing in a call to FiveLApp::IdleProc, and when the engine
+    // returns to Scheme, we'll be the next function called before
+    // kernel.ss notices that the interpreter has been killed.
+    if (wxGetApp().HaveStage())
+        wxGetApp().GetStage()->InterpreterWakeUpIfNecessary();
 }
 
 DEFINE_5L_PRIMITIVE(WantsCursorGet) {
