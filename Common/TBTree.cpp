@@ -17,6 +17,8 @@
 #include "THeader.h"
 #include "TBTree.h"
 
+USING_NAMESPACE_FIVEL
+
 //
 //	TBNode
 //
@@ -311,6 +313,13 @@ void TBTree::RemoveAll(void)
 
 /*
  $Log$
+ Revision 1.3  2002/03/04 15:15:55  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.2  2002/02/27 16:38:21  emk
  Cross-platform code merge!
 

@@ -17,6 +17,8 @@
 #include "THeader.h"
 #include "TURL.h"
 
+USING_NAMESPACE_FIVEL
+
 TURL::TURL() : TString()
 {
 }
@@ -178,6 +180,13 @@ bool TURL::CheckSyntax()
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 15:16:16  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

@@ -17,6 +17,8 @@
 #include "THeader.h"
 #include "TPoint.h"
 
+USING_NAMESPACE_FIVEL
+
 TPoint::TPoint(int32 inX /* = 0 */, int32 inY /* = 0 */) 
 { 
 	m_X = inX; 
@@ -29,7 +31,7 @@ TPoint::TPoint(TPoint &inPt)
 	m_Y = inPt.Y(); 
 }
 
-TPoint &TPoint::operator=(TPoint &inPt)
+TPoint &TPoint::operator=(const TPoint &inPt)
 {
 	Set(inPt);
 
@@ -55,7 +57,7 @@ void TPoint::Set(int32 inX, int32 inY)
 	m_Y = inY; 
 }
 
-void TPoint::Set(TPoint &inPt) 
+void TPoint::Set (const TPoint &inPt) 
 { 
 	m_X = inPt.X();
 	m_Y = inPt.Y(); 
@@ -105,6 +107,13 @@ void TPoint::Set(POINT &inPt)
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 15:16:05  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

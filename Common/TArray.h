@@ -15,6 +15,8 @@
 #include "TCommon.h"
 #include "TObject.h"
 
+BEGIN_NAMESPACE_FIVEL
+
 /*-----------------------------------------------------------------
 
 CLASS
@@ -26,6 +28,7 @@ AUTHOR
     Chuck Officer<br>
 
 -----------------------------------------------------------------*/
+
 class TArray : public TObject 
 {
 public:
@@ -179,10 +182,19 @@ inline TObject*	TArray::Item(int32 inIndex)
 	return ((ValidIndex(inIndex)) ? m_List[inIndex] : NULL); 
 }
 
+END_NAMESPACE_FIVEL
+
 #endif // _TArray_h_
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 15:15:54  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

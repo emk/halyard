@@ -22,6 +22,8 @@
 #include "TCommon.h"
 #include "TObject.h"
 
+BEGIN_NAMESPACE_FIVEL
+
 //////////
 // Description of String contents
 //
@@ -71,7 +73,6 @@ AUTHOR
 	Sean Sharp<br>
 
 ------------------------------------------------------------------*/
-
 class TString : public TObject 
 {
 	public:
@@ -514,27 +515,8 @@ class TString : public TObject
 		// [in] inStr2 - second string
 		// [out] return - a new TString which is the concatenation of the two strings
 		//
-		friend TString operator + (const TString &inStr1, const char *inStr2);
-		
-		//////////
-		// Concatenate two strings.
-		//
-		// [in] inStr1 - first string
-		// [in] inStr2 - second string
-		// [out] return - a new TString which is the concatenation of the two strings
-		//
 		friend TString operator + (const TString &inStr1, const TString &inStr2);
 		
-		//////////
-		// Concatenate a string and a character.
-		//
-		// [in] inStr1 - a string
-		// [in] inCh - a character
-		// [out] return - a new TString which is the concatenation of the string and
-		//				  the character
-		//
-		friend TString operator + (const TString &inStr1, char inCh);
-
 		// **** stream input/output methods ****
         
 		//////////
@@ -626,10 +608,19 @@ class TString : public TObject
 		static TString UIntToString(uint32 inNum);
 };
 
+END_NAMESPACE_FIVEL
+
 #endif // _TString_h_
 
 /*
  $Log$
+ Revision 1.3  2002/03/04 15:16:14  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.2  2002/02/27 16:38:21  emk
  Cross-platform code merge!
 

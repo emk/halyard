@@ -21,6 +21,8 @@
 #include "TObject.h"
 #include "TPoint.h"
 
+BEGIN_NAMESPACE_FIVEL
+
 /*-----------------------------------------------------------------
 
 CLASS
@@ -67,7 +69,7 @@ class TRect : public TObject
 		//
 		// [in] inRect - TRect to copy coordinates from
 		//
-		void		Set(TRect &inRect);
+		void		Set(const TRect &inRect);
 		
 		//////////
 		// Offset the rectangle using the given TPoint.
@@ -137,35 +139,35 @@ class TRect : public TObject
 		//
 		// [out] return - the top coordinate
 		//
-		inline int32	Top(void) { return (m_Top); }
+		inline int32	Top(void) const { return (m_Top); }
 		
 		//////////
 		// Get the left coordinate.
 		//
 		// [out] return - the left coordinate
 		//
-		inline int32	Left(void) { return (m_Left); }
+		inline int32	Left(void) const { return (m_Left); }
 		
 		//////////
 		// Get the bottom coordinate.
 		//
 		// [out] return - the bottom coordinate
 		//
-		inline int32	Bottom(void) { return (m_Bottom); }
+		inline int32	Bottom(void) const { return (m_Bottom); }
 		
 		//////////
 		// Get the right coordinate.
 		//
 		// [out] return - the right coordinate
 		//
-		inline int32	Right(void) { return (m_Right); }
+		inline int32	Right(void) const { return (m_Right); }
 
 		//////////
 		// Get the top-left corner of the rectangle.
 		//
 		// [out] return - the top-left corner
 		//
-		TPoint          TopLeft(void);
+		TPoint          TopLeft(void) const;
 
 		//////////
 		// Get the width of the rectangle.
@@ -187,7 +189,7 @@ class TRect : public TObject
 		// [in] inPt - TRect to copy values from (r-value)
 		// [out] return - l-value with coordinates set to r-value
 		//
-		TRect		&operator=(TRect &inRect);
+		TRect		&operator=(const TRect &inRect);
 		
 		//////////
 		// Equality check.
@@ -213,7 +215,7 @@ class TRect : public TObject
 		//
 		// [out] return - a Quicktime Rect structure for the rectangle
 		//
-		Rect		GetRect(void);
+		Rect		GetRect(void) const;
 		
 		//////////
 		// Set the rectangle using the values from a Quicktime Rect structure.<br>
@@ -263,10 +265,19 @@ class TRect : public TObject
 		int32	m_Right;
 };
 
+END_NAMESPACE_FIVEL
+
 #endif // _TRect_h_
 
 /*
  $Log$
+ Revision 1.3  2002/03/04 15:16:13  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.2  2002/02/27 16:38:21  emk
  Cross-platform code merge!
 

@@ -20,6 +20,8 @@
 #include "TCommon.h"
 #include "TObject.h"
 
+BEGIN_NAMESPACE_FIVEL
+
 /*-----------------------------------------------------------------
 
 CLASS
@@ -62,7 +64,7 @@ class TPoint : public TObject
 		//
 		// [in] inPt - TPoint to copy values from
 		//
-		void			Set(TPoint &inPt);
+		void			Set(const TPoint &inPt);
 
 		//////////
 		// Offset the point using another TPoint.
@@ -104,14 +106,14 @@ class TPoint : public TObject
 		//
 		// [out] return - the X-coordinate
 		//
-		inline int32	X(void) { return (m_X); }
+		inline int32	X(void) const { return (m_X); }
 		
 		//////////
 		// Get the Y-coordinate
 		//
 		// [out] return - the Y-coordinate
 		//
-		inline int32	Y(void) { return (m_Y); }
+		inline int32	Y(void) const { return (m_Y); }
 
 		//////////
 		// Set values for this point using another TPoint.  Same as Set().
@@ -119,7 +121,7 @@ class TPoint : public TObject
 		// [in] inPt - TPoint to copy values from (r-value)
 		// [out] return - l-value with coordinates set to r-value
 		//
-		TPoint			&operator=(TPoint &inPt);
+		TPoint			&operator=(const TPoint &inPt);
 		
 		//////////
 		// Equality check.
@@ -176,10 +178,20 @@ class TPoint : public TObject
 		//
 		int32		m_Y;
 };
+
+END_NAMESPACE_FIVEL
+
 #endif // _TPoint_h_
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 15:16:10  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

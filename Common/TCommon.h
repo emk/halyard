@@ -55,23 +55,12 @@ TCOMMON MACRO DEFINITIONS
 	#define Min(x, y)   ((x) < (y) ? (x) : (y))<br>
 	#define Absolute(x) (((x) > 0)? (x): ((x) * -1))<br>
 
-	#if defined (__QTML__)<br>
-	#define _5L_QUICKTIME_<br>
-	#endif<br>
-
-	#if defined (WIN32)<br>
-	#define _5L_WIN32_<br>
-
-	#if defined (_DEBUG)<br>
-	#define DEBUG<br>
-	#endif<br>
-
-	#define ASSERT(x) _ASSERTE(x)<br>
-
 AUTHOR
     Chuck Officer<br>
 
 -----------------------------------------------------------------*/
+
+#include "TPlatform.h"
 
 #define not		!
 #define and		&&
@@ -105,6 +94,8 @@ AUTHOR
 #define Min(x, y)   ((x) < (y) ? (x) : (y))
 #define Absolute(x) (((x) > 0)? (x): ((x) * -1))
 
+BEGIN_NAMESPACE_FIVEL
+
 //////////
 enum TriState
 {
@@ -121,78 +112,20 @@ enum Alignment
     AlignRight
 };
 
-
-//=========================================================================
-//  QuickTime Configuration
-//=========================================================================
-
-#if defined (__QTML__)
-#define _5L_QUICKTIME_
-#endif
-
-
-//=========================================================================
-//  Win32 Configuration
-//=========================================================================
-
-#if defined (WIN32)
-#define _5L_WIN32_
-
-#if defined (_DEBUG)
-#define DEBUG
-#endif
-
-#define ASSERT(x) _ASSERTE(x)
-
-// For now, the Windows engine uses some non-standard string functions
-// instead of using our own, equivalent code.
-#define HAVE__STRLWR 1
-#define HAVE__STRUPR 1
-#define HAVE__STRICMP 1
-
-
-//=========================================================================
-//  Macintosh Configuration
-//=========================================================================
-
-#elif defined (macintosh)
-
-#define NEWLINE_CHAR	'\r'
-#define RETURN_CHAR		'\n'
-
-#ifdef Debug_Throw
-#define DEBUG
-
-#define ASSERT(x) \
-	if (!(x)) \
-		gLog.Error("Assertion failed in file %s, line %d", __FILE__, __LINE__);
-
-// backwards compatible defines
-//#define DEBUG_5L
-//#define DEBUG_5L_SCRIPT
-
-#else
-
-#define ASSERT(x)
-
-#endif	// Debug_Throw
-
-
-//=========================================================================
-//  Other Platform Configuration
-//=========================================================================
-
-#else
-
-#define ASSERT(expr) assert(expr)
-
-#endif
-
+END_NAMESPACE_FIVEL
 
 #endif // _TCommon_h_
 
+
 /*
  $Log$
+ Revision 1.3  2002/03/04 15:15:57  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.2  2002/02/27 16:38:21  emk
  Cross-platform code merge!
 

@@ -17,6 +17,8 @@
 #include "THeader.h"
 #include "TRect.h"
 
+USING_NAMESPACE_FIVEL
+
 TRect::TRect(int32 inTop /* = 0 */, int32 inLeft /* = 0 */, 
 			 int32 inBottom /* = 0 */, int32 inRight /* = 0 */)
 { 
@@ -42,7 +44,7 @@ void TRect::Set(int32 inTop, int32 inLeft, int32 inBottom, int32 inRight)
 	m_Right = inRight; 
 }
 
-void TRect::Set(TRect &inRect)
+void TRect::Set(const TRect &inRect)
 {
 	m_Top = inRect.Top();
 	m_Left = inRect.Left();
@@ -50,13 +52,13 @@ void TRect::Set(TRect &inRect)
 	m_Right = inRect.Right();
 }
 
-TPoint TRect::TopLeft(void)
+TPoint TRect::TopLeft(void) const
 {
 	TPoint retPt(m_Left, m_Top);
 	return retPt;
 }
 
-TRect &TRect::operator=(TRect &inRect)
+TRect &TRect::operator=(const TRect &inRect)
 {
 	Set(inRect);
 
@@ -99,7 +101,7 @@ void TRect::Offset(TPoint &inPt)
 }
 
 #if defined (_5L_QUICKTIME_)
-Rect TRect::GetRect(void)
+Rect TRect::GetRect(void) const
 {
 	Rect	retRect;
 	
@@ -142,6 +144,13 @@ void TRect::Set(RECT &inRect)
 #endif
 /*
  $Log$
+ Revision 1.3  2002/03/04 15:16:11  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.2  2002/02/27 16:38:21  emk
  Cross-platform code merge!
 

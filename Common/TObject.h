@@ -17,6 +17,7 @@
 #if !defined (_TObject_h_)
 #define _TObject_h_
 
+BEGIN_NAMESPACE_FIVEL
 
 /*-----------------------------------------------------------------
 
@@ -42,10 +43,19 @@ class TObject
 //
 typedef TObject *TObjectPtr;
 
+END_NAMESPACE_FIVEL
+
 #endif // _TObject_h_
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 15:16:03  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 
