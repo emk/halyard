@@ -104,8 +104,11 @@ Tamale is a language for card-based interactive multimedia programming."
 	     '("fn" "callback" "deferred-callback" "while" "when" "unless"
 	       "with-saved-text-position"
 	       "with-saved-graphic-position" "with-offset-origin"
-	       "require" "set!" "and" "or" "module" "param") t)
+	       "require" "set!" "and" "or" "module" "on") t)
 	"\\>") 1)
+
+      ;; Magic variables.
+      (cons "\\<\\(self\\)\\>" 1)
 
       ;; Non-standard definitions.  Make sure these get processed *after*
       ;; the rules we inherit from scheme-mode.  (This is loosely adapted
@@ -151,6 +154,7 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'sequence 'scheme-indent-function 2)
 (put 'card 'scheme-indent-function 2)
 (put 'element 'scheme-indent-function 2)
+(put 'on 'scheme-indent-function 2)
 (put 'define-group-template 'scheme-indent-function 3)
 (put 'define-card-template 'scheme-indent-function 3)
 (put 'define-element-template 'scheme-indent-function 3)
