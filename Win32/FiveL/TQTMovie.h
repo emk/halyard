@@ -10,7 +10,16 @@
 
 #include <Movies.h>
 
-// TODO - Port this code to our modern code base.
+// TODO - 
+//   Don't show movie until ready to play
+// / Center movie in screen
+// / Hide controller bar
+// / Disable all interaction
+//   Audio-only movies
+//   Port to 3.2.0.x
+//   Port to 3.3.x
+
+
 //BEGIN_NAMESPACE_FIVEL
 
 //////////
@@ -84,6 +93,12 @@ private:
     //
     MovieController mMovieController;
 
+	//////////
+	// The preferred playback rate of the movie.  We need to pass
+	// this to a variety of QuickTime functions.
+	// 
+	Fixed mRate;
+
 public:
 	TQTMovie(const std::string &inMoviePath);
 	virtual ~TQTMovie();
@@ -91,6 +106,34 @@ public:
 	bool HandleMovieEvent(HWND hWnd, UINT message, WPARAM wParam,
 						  LPARAM lParam);
 	void Redraw(HWND hWnd);
+
+	bool IsPaused();
+	void Pause();
+	void Resume();
+
+private:
+	//////////
+	// Release all resources held by this object.  (This call may
+	// safely be made on half-constructed objects.)
+	//
+	void ReleaseResources();
+
+	//////////
+	// We use this function to process movie controller events.  This allows
+	// us to (1) receive events from the controller and (2) intercept
+	// the controller's own events.
+	//
+	// [in] inController - The controller for this event.
+	// [in] inAction - The event code.
+	// [in] inParams - The event parameters.
+	// [in] inRefCon - User data.
+	//
+	static Boolean ActionFilterProc(MovieController inController,
+									short inAction, void *inParams,
+									long inRefCon);
+
+protected:
+	virtual bool ActionFilter(short inAction, void* inParams);
 };
 
 //END_NAMESPACE_FIVEL

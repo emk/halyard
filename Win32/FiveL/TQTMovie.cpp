@@ -82,7 +82,7 @@ TQTMovie::TQTMovie(const std::string &inMoviePath)
 	// We pass these flags to all the various NewMovieFrom... functions.
 	// newMovieAsyncOK tells QuickTime to immediately return an
 	// empty movie, and to load our data in the background.
-	short load_flags = newMovieActive | newMovieAsyncOK;
+	short load_flags = newMovieActive /*| newMovieAsyncOK */;
 	
     try
     {
@@ -119,21 +119,49 @@ TQTMovie::TQTMovie(const std::string &inMoviePath)
 			CHECK_MAC_ERROR(::NewMovieFromFile(&mMovie, refnum, &res_id, NULL,
 											   load_flags, NULL));
 		}
-		
+
+		// Set some movie options.
+		//::SetMoviePlayHints(mMovie, hintsScrubMode, hintsScrubMode);
+
+		// Get some useful information from our movie.
+		Fixed mRate = ::GetMoviePreferredRate(mMovie);
+
+		// Get our movie ready to play.  Theoretically, the Movie
+		// Controller should handle this for us, but if we don't
+		// make these calls manually, it seems that the controller
+		// ignores mcActionPlay and mcActionPrerollAndPlay.
+		CHECK_MAC_ERROR(::PrePrerollMovie(mMovie, 0, mRate, NULL, NULL));
+		CHECK_MAC_ERROR(::PrerollMovie(mMovie, 0, mRate));
+
 		// Attach a movie controller to our movie.
 		// TODO - Set the port.
-		Rect bounds = {0, 0, 640, 480};
+		Rect bounds = {120, 160, 640, 480};
+		long controller_flags = mcTopLeftMovie | mcNotVisible;
 		mMovieController = ::NewMovieController(mMovie, &bounds,
-												mcTopLeftMovie);
+												controller_flags);
 		CHECK_MAC_ERROR(::GetMoviesError());
-    }
+
+		// Mark the controller's rectangle as valid to avoid a
+		// double repainting.
+		//Rect movie_bounds;
+		//::GetMovieBox(mMovie, &movie_bounds);
+		//::ValidRect(&movie_bounds);
+
+		// Install our action filter.
+		long refcon = reinterpret_cast<long>(this);
+		CHECK_MAC_ERROR(::MCSetActionFilterWithRefCon(mMovieController,
+													  &ActionFilterProc,
+													  refcon));
+
+		// Start the movie.
+		CHECK_MAC_ERROR(::MCDoAction(mMovieController,
+									 mcActionPlay,
+									 reinterpret_cast<void*>(mRate)));
+	}
     catch (...)
     {
 		// We failed, so clean up everything.
-		if (mMovie)
-			::DisposeMovie(mMovie);
-		if (mMovieController)
-			::DisposeMovieController(mMovieController);
+		ReleaseResources();
 		if (url_handle)
 			::DisposeHandle(url_handle);
 		if (have_refnum)
@@ -150,11 +178,7 @@ TQTMovie::TQTMovie(const std::string &inMoviePath)
 
 TQTMovie::~TQTMovie()
 {
-	ASSERT(mMovieController);
-	ASSERT(mMovie);
-
-	::DisposeMovieController(mMovieController);
-	::DisposeMovie(mMovie);
+	ReleaseResources();
 }
 
 bool TQTMovie::HandleMovieEvent(HWND hWnd, UINT message, WPARAM wParam,
@@ -188,4 +212,62 @@ void TQTMovie::Redraw(HWND hWnd)
 	WindowPtr mac_window =
 		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
 	::MCDraw(mMovieController, mac_window);
+}
+
+bool TQTMovie::IsPaused()
+{
+	long flags;
+	CHECK_MAC_ERROR(::MCGetControllerInfo(mMovieController, &flags));
+	return flags & mcInfoIsPlaying ? false : true;
+}
+
+void TQTMovie::Pause()
+{
+	ASSERT(!IsPaused());
+	::StopMovie(mMovie);
+	CHECK_MAC_ERROR(::GetMoviesError());
+	CHECK_MAC_ERROR(::MCMovieChanged(mMovieController, mMovie));
+}
+
+void TQTMovie::Resume()
+{
+	ASSERT(IsPaused());
+	::StartMovie(mMovie);
+	CHECK_MAC_ERROR(::GetMoviesError());
+	CHECK_MAC_ERROR(::MCMovieChanged(mMovieController, mMovie));
+}
+
+void TQTMovie::ReleaseResources()
+{
+	if (mMovieController)
+		::DisposeMovieController(mMovieController);
+	if (mMovie)
+		::DisposeMovie(mMovie);
+}
+
+Boolean TQTMovie::ActionFilterProc(MovieController inController,
+								   short inAction, void *inParams,
+								   long inRefCon)
+{
+	TQTMovie *movie = reinterpret_cast<TQTMovie*>(inRefCon);
+	return movie->ActionFilter(inAction, inParams) ? true : false;
+}
+
+bool TQTMovie::ActionFilter(short inAction, void* inParams)
+{
+	switch (inAction)
+	{
+		case mcActionMovieEdited:
+		case mcActionControllerSizeChanged:
+			// We'll eventually want to do stuff here.
+			return false;
+
+		case mcActionMovieClick:
+			// Devour mouse clicks using the trick recommended by
+			// Inside Macintosh.
+			EventRecord* evt = reinterpret_cast<EventRecord*>(inParams);
+			evt->what = nullEvent;
+			return false;
+	}
+	return false;
 }
