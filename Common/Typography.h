@@ -1,12 +1,21 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#ifndef Typography_H
+#define Typography_H
+
+#include <iostream>
+#include <string>
 #include <deque>
+#include <list>
+#include <map>
 
 #include "ft2build.h"
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
 #include <wchar.h>
+
+#include "FileSystem.h"
 
 // TODO - Handle copy constructors, assignment operators
 
@@ -90,15 +99,6 @@ namespace Typography {
 	};
 
 	//////////
-	// Per-character style flags.
-	enum Style {
-		kBold = 1,
-		kItalic = 2,
-		kUnderlined = 4,
-		kShadowed = 8
-	};
-
-	//////////
 	// A point.  See Distance for a description.
 	struct Point {
 		Distance x;
@@ -108,22 +108,13 @@ namespace Typography {
 	};
 
 	//////////
-	// An RGB color.
-	struct Color {
-		Channel red;
-		Channel green;
-		Channel blue;
-
-		Color(Channel inRed, Channel inGreen, Channel inBlue)
-			: red(inRed), green(inGreen), blue(inBlue) {}
-	};
-
-	//////////
-	// A character with color and style information.
-	struct StyledCharacter {
-		CharCode c;
-   		Color    color;
-		Style    style;
+	// A style.  Currently, the only values provided are the ones
+	// supported by the face database.
+	enum FaceStyle {
+		kRegularFaceStyle = 0,
+		kBoldFaceStyle = 1,
+		kItalicFaceStyle = 2,
+		kBoldItalicFaceStyle = kBoldFaceStyle | kItalicFaceStyle
 	};
 
 	//////////
@@ -141,13 +132,17 @@ namespace Typography {
 
 		Error(ErrorCode inErrorCode) : mErrorCode(inErrorCode) {}
 		
-		ErrorCode GetErrorCode() { return mErrorCode; }
+		ErrorCode GetErrorCode() const { return mErrorCode; }
 
 		//////////
 		// Check the result of a FreeType function and throw an error
 		// if necessary.
 		static void CheckResult(ErrorCode inResultCode)
 			{ if (inResultCode) throw Error(inResultCode); }
+
+		//////////
+		// Describe an error as usefully as possible.
+		friend std::ostream &operator<<(std::ostream &out, const Error &error);
 	};
 
 	//////////
@@ -155,6 +150,7 @@ namespace Typography {
 	class Library {
 	private:
 		FT_Library mLibrary;
+		static Library *sLibrary;
 		
 	public:
 		Library();
@@ -162,6 +158,8 @@ namespace Typography {
 
 		operator FT_Library() { return mLibrary; }
 		operator FT_Library*() { return &mLibrary; }
+
+		static Library *GetLibrary();
 	};
 	
 	//////////
@@ -229,14 +227,18 @@ namespace Typography {
 		bool mHasKerning;
 
 	public:
-		Face(Library &inLibrary,
-			 const char *inFontFile, const char *inMetricsFile,
+		Face(const char *inFontFile, const char *inMetricsFile,
 			 int inSize);
 		Face(const Face &inFace);
 		virtual ~Face();
 		
 		operator FT_Face() { return mFaceRep->mFace; }
 		operator FT_Face*() { return &mFaceRep->mFace; }
+
+		std::string GetFamilyName () const
+		    { return std::string(mFaceRep->mFace->family_name); }
+		std::string GetStyleName () const
+		    { return std::string(mFaceRep->mFace->style_name); }
 
 		GlyphIndex GetGlyphIndex(CharCode inCharCode);
 		Glyph GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex);
@@ -552,4 +554,194 @@ namespace Typography {
 		virtual void RenderLine(std::deque<LineSegment> *inLine,
 			                    Distance inHorizontalOffset);
     };
+
+	//////////
+	// A FamilyDatabase knows how to load fonts from disk, given
+	// a family name, a FaceStyle and a size in points.
+	// For example: ("Times", kBoldItalicFaceStyle, 12).
+	//
+	// A FamilyDatabase will create and use an on-disk font cache to avoid
+	// opening zillions of font files at application startup.
+	//
+	// <h2>FamilyDatabase Internals</h2>
+	//
+	// There are four levels of organization within a family database.
+	// From lowest to highest, these are:
+	//
+	//   * AvailableFace - Stores information about a single font file.
+	//   * FaceSizeGroup - Stores information about all the font files
+	//     with the same family name and FaceStyle.
+	//   * Family - Stores information about all the fonts files with
+	//     the same family name.
+	//   * FamilyDatabase - Stores information about all available fonts.
+	//
+	// AvailableFaces move downward from FamilyDatabase objects to
+	// FaceSizeGroup objects using a series of AddAvailableFace methods.
+	// Face objects move upward from FaceSizeGroup objects to
+	// FamilyDatabase objects using a series of GetFace methods.
+	//
+	class FamilyDatabase {
+	private:
+		//////////
+		// We represent scalable faces by a size of kAnySize.
+		//
+		enum { kAnySize = 0 };
+		
+		//////////
+		// An AvailableFace stores information about a single face on disk.
+		// This is the lowest level of data storage in the FamilyDatabase.
+		//
+		class AvailableFace {
+			std::string mFileName;
+			
+			int         mSize;
+			std::string mFamilyName;
+			std::string mStyleName;
+			bool        mIsBold;
+			bool        mIsItalic;
+			
+		public:
+			//////////
+			// Create a new AvailableFace, loading various information from
+			// disk.  You must specify 'inFileName' relative to the 'Font'
+			// directory (this is so we don't have to portably serialize
+			// FileSystem::Path objects to the cache, which would by icky).
+			//
+			AvailableFace(const string &inFileName);
+			
+			int    GetSize() const { return mSize; }
+			string GetFamilyName() const { return mFamilyName; }
+			string GetStyleName() const { return mStyleName; }
+			bool   IsBold() const { return mIsBold; }
+			bool   IsItalic() const { return mIsItalic; }
+			bool   IsScalable() const { return GetSize() == kAnySize; }
+			
+			//////////
+			// Load this face as a 'Face' object, using the specified
+			// size.  If the font is not available in this size, the
+			// behavior of this function is undefined.
+			//
+			Face   OpenFace(int inSize) const;
+			
+			//////////
+			// Write some face cache header information to an ostream.
+			//
+			static void WriteSerializationHeader(std::ostream &out);
+
+			//////////
+			// Read the face cache header information from an ostream,
+			// and validate it.
+			//
+			static void ReadSerializationHeader(std::istream &in);
+		
+			//////////
+			// Construct an AvailableFace object using cache data from
+			// a stream, and advance to the start of the next face object.
+			//
+			AvailableFace(std::istream &in);
+
+			//////////
+			// Serialize an AvailableFace object to a stream as cache data.
+			//
+			void        Serialize(std::ostream &out) const;
+		};
+		
+		//////////
+		// A FaceSizeGroup stores all the AvailableFace objects for a
+		// given (family name, face style) pair.  It is the second-lowest
+		// level of organization in a FamilyDatabase, after AvailableFace.
+		//
+		// It may contain a single scalable face (say, "Nimbus Mono",
+		// kRegularFaceStyle), a set of bitmap fonts in various sizes (all
+		// the italic "Times" faces), or some combination of the above.
+		//
+		// A FaceSizeGroup keeps a cache of all Face objects it opens
+		// on behalf of the user.
+		//
+		class FaceSizeGroup {
+			std::map<int,AvailableFace> mAvailableFaces;
+			std::map<int,Face> mFaces;
+			
+		public:
+			FaceSizeGroup() {}
+			
+			void AddAvailableFace(const AvailableFace &inFace);
+			Face GetFace(int inSize);
+			
+			void Serialize(std::ostream &out) const;
+		};
+		
+		//////////
+		// A Family stores all the various sizes and styles for a given
+		// font family (e.g., "Times", "Nimbus Mono").  It's the
+		// third-lowest level of organization in a FamilyDatabase.
+		//
+		// If bold or italic faces are missing, a Family object will
+		// try to find an appropriate substitute in a different style.
+		// 
+		class Family {
+			string        mFamilyName;
+			
+			FaceSizeGroup mRegularFaces;
+			FaceSizeGroup mBoldFaces;
+			FaceSizeGroup mItalicFaces;
+			FaceSizeGroup mBoldItalicFaces;
+			
+		public:
+			Family(const string &inFamilyName) : mFamilyName(inFamilyName) {}
+			
+			void AddAvailableFace(const AvailableFace &inFace);
+			Face GetFace(FaceStyle inStyle, int inSize);
+			
+			void Serialize(std::ostream &out) const;
+		};
+		
+	private:
+		std::map<string,Family> mFamilyMap;
+		
+		//////////
+		// Does the file pointed to by 'inPath' look like a font file?
+		//
+		static bool IsFontFile(const FileSystem::Path &inPath);
+		
+		//////////
+		// Store an AvailableFace object in an appropriate place
+		// in the database.
+		//
+		void AddAvailableFace(const AvailableFace &inFace);
+
+	public:
+		FamilyDatabase() {}
+		
+		//////////
+		// Load all the fonts in the application's Font directory.
+		//
+		void ReadFromFontDirectory();
+
+		//////////
+		// Read in available font information from a font cache.
+		//
+		void ReadFromCache(std::istream &in);
+
+		//////////
+		// Write the entire database to a font cache.
+		//
+		void WriteToCache(std::ostream &out) const;
+		
+		//////////
+		// Look up a face.
+		//
+		// [in] inFamilyName - The family (e.g., "Nimbus Mono").
+		// [in] inStyle -      The style.  May be kRegularFaceStyle,
+		//                     kBoldFaceStyle, kItalicFaceStyle,
+		//                     or kBoldItalicFaceStyle.  Other styles
+		//                     are generated by the drawing routines.
+		// [in] inSize -       A font size, in points.
+		// [out] return -      An appropriate Face object.
+		//
+		Face GetFace(const string &inFamilyName,
+					 FaceStyle inStyle, int inSize);
+	};
 }
+
+#endif // Typography_H

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <strstream>
 
 #include <string.h>
 #include <stdlib.h>
@@ -324,11 +325,119 @@ static void test_Typography_GenericTextRenderingEngine (void)
 
 
 //=========================================================================
+//	GenericTextRenderingEngine Tests
+//=========================================================================
+
+static string get_string(std::ostrstream &stream)
+{
+	// Go through the foolish new rigamarole for extracting a string.
+	// We must unfreeze the stream before we exit this function, or
+	// we'll leak memory.
+	stream.freeze(1);
+	try
+	{
+		string str(stream.str(), stream.pcount());
+		stream.freeze(0);
+		return str;
+	}
+	catch (...)
+	{
+		stream.freeze(0);
+		throw;
+	}
+}
+
+static void test_Typography_FamilyDatabase (void)
+{
+	// Delete the cache file.
+	try
+	{
+		FileSystem::GetFontFilePath("cache.dat").DeleteFile();
+	}
+	catch (...)
+	{
+		// TODO - Ignore errors.
+		throw;
+	}
+
+	// Create a database directly.
+	FamilyDatabase db1;
+	db1.ReadFromFontDirectory();
+
+	// Create a second database using the cache.
+	FamilyDatabase db2;
+	db2.ReadFromFontDirectory();
+	
+	// Try looking up some fonts.  (These tests rely on some knowledge
+	// about the available fonts, and will need to be updated if the fonts
+	// in the Font directory change.)
+	Face f1 = db1.GetFace("Times", kRegularFaceStyle, 12);
+	TEST(f1.GetFamilyName() == "Times");
+	TEST(f1.GetStyleName() == "Regular");
+	TEST(f1.GetSize() == 12);
+	Face f2 = db1.GetFace("Times", kBoldItalicFaceStyle, 18);
+	TEST(f2.GetFamilyName() == "Times");
+	TEST(f2.GetStyleName() == "Bold Italic");
+	TEST(f2.GetSize() == 18);
+
+	// For now, we don't allow scaling of bitmapped fonts.
+	TEST_EXCEPTION(db1.GetFace("Times", kBoldItalicFaceStyle, 17), Error);
+
+	// A scalable font.
+	Face f3 = db1.GetFace("Nimbus Roman No9 L", kRegularFaceStyle, 12);
+	TEST(f3.GetFamilyName() == "Nimbus Roman No9 L");
+	TEST(f3.GetStyleName() == "Regular");
+	TEST(f3.GetSize() == 12);
+	Face f4 = db1.GetFace("Nimbus Roman No9 L", kRegularFaceStyle, 15);
+	TEST(f4.GetFamilyName() == "Nimbus Roman No9 L");
+	TEST(f4.GetStyleName() == "Regular");
+	TEST(f4.GetSize() == 15);
+
+	// Style substitution.
+	Face f5 = db1.GetFace("Standard Symbols L", kRegularFaceStyle, 12);
+	TEST(f5.GetFamilyName() == "Standard Symbols L");
+	TEST(f5.GetStyleName() == "Regular");
+	TEST(f5.GetSize() == 12);
+	Face f6 = db1.GetFace("Standard Symbols L", kBoldFaceStyle, 12);
+	TEST(f6.GetStyleName() == "Regular");
+	Face f7 = db1.GetFace("Standard Symbols L", kItalicFaceStyle, 12);
+	TEST(f7.GetStyleName() == "Regular");
+	Face f8 = db1.GetFace("Standard Symbols L", kBoldItalicFaceStyle, 12);
+	TEST(f8.GetStyleName() == "Regular");
+
+	// Test serialization and deserialization.
+	ostrstream outstream;
+	db1.WriteToCache(outstream);
+	string outstring = get_string(outstream);
+	istrstream instream(outstring.c_str());
+	FamilyDatabase db3;
+	db3.ReadFromCache(instream);
+	ostrstream outstream2;
+	db3.WriteToCache(outstream2);
+	TEST(outstring == get_string(outstream2));
+}
+
+
+//=========================================================================
 //	Test Driver
 //=========================================================================
 
 void test_Typography (void)
 {
-	test_Typography_LineSegment();
-	test_Typography_GenericTextRenderingEngine();
+	try
+	{
+		test_Typography_LineSegment();
+		test_Typography_GenericTextRenderingEngine();
+		test_Typography_FamilyDatabase();
+	}
+	catch (FileSystem::Error &e)
+	{
+		std::cerr << endl << e << endl;
+		throw;
+	}
+	catch (Error &e)
+	{
+		std::cerr << endl << e << endl;
+		throw;
+	}
 }
