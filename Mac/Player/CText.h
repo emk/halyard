@@ -56,7 +56,9 @@ class CText
 		void				DrawStyleText(Boolean shadow);	
 		void				LoopThroughStyles(SInt16 lineHeight, SInt16 lineBase, SInt16 justification, Boolean shadow);
 		void 				DoJustification(SInt16 justification, Ptr inText, SInt32 blackSpace, SInt16 lineBase);
-		void				SetupStyle(SInt32 sIdx);
+		void				SetupStyle(SInt32 sIdx, Boolean shadow);
+		SInt32			    SetLineBreak(Ptr inText, SInt32 styleIdx, SInt32 styleBytes, SInt32 textLeft, Boolean shadow);
+
 };
 
 /*	sTextStyle
