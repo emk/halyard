@@ -58,7 +58,7 @@ Header::Header(TArgumentList &inArgs)
     else
         itsAlign = AlignLeft;
 
-    //  ...SHADOW SHADCOLOR)
+    //  ...SHADOW SHADCOLOR
     if (inArgs.HasMoreArguments()) 
     {
         inArgs >> itsShadow >> itsShadowColor;
@@ -711,6 +711,9 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.11  2002/10/03 18:05:40  emk
+ Comment fix.
+
  Revision 1.10  2002/08/22 00:12:22  emk
  3.5.4 - 21 Aug 2002 - emk
 
