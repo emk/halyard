@@ -226,7 +226,7 @@
              (lambda () (set! (graphic-position) saved))))]))  
 
   ;;; @type RECT The screen rectangle, in global co-ordinates.
-  (define $screen-rect (rect 0 0 640 480))
+  (define $screen-rect (rect 0 0 800 600))
 
   
   ;;;======================================================================
