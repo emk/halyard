@@ -248,16 +248,21 @@
 ;;=========================================================================
 
 (define *last-card* #f)
+(define *last-group* #f)
 
-(group g1)
+(group g1 ()
+  (set! *last-group* g1))
 
 (card g1/start ()
+  (test (eq? *last-group* g1))
   (set! *last-card* g1/start)
   (jump (@ s1)))
 
-(sequence g1/s1)
+(sequence g1/s1 ()
+  (set! *last-group* g1/s1))
 
 (card g1/s1/c1 ()
+  (test (eq? *last-group* g1/s1))
   (test (eq? *last-card* g1/start))
   (test (not (card-prev)))
   (test (eq? 'g1/s1/c2 (card-name (card-next))))
@@ -272,9 +277,11 @@
   (set! *last-card* g1/s1/c2)
   (jump (card-next)))
 
-(sequence g1/s1/s2)
+(sequence g1/s1/s2 ()
+  (set! *last-group* g1/s1/s2))
 
 (card g1/s1/s2/c1 ()
+  (test (eq? *last-group* g1/s1/s2))
   (test (eq? *last-card* g1/s1/c2))
   (test (eq? 'g1/s1/c2 (card-name (card-prev))))
   (set! *last-card* g1/s1/s2/c1)
@@ -294,11 +301,52 @@
   (test (eq? *last-card* g1/s1/s2/c2))
   (test (not (card-next)))
   (set! *last-card* g1/s1/c4)
-  (jump swindle-tests))
+  (jump g1/done))
 
 (card g1/done ()
   (test (eq? *last-card* g1/s1/c4))
-  (jump swindle-tests))
+  (jump template-tests-1))
+
+
+;;=========================================================================
+;;  Templates and Other Goodies
+;;=========================================================================
+
+(define *ttvar1* #f)
+(define *ttvar2* #f)
+
+(define-card-template %card-template-1% ()
+    [[param-a :type <string>  :label "Param A"]
+     [param-b :type <integer> :label "Param B"]]
+  (test (not *ttvar1*))
+  (test (not *ttvar2*))
+  (set! *ttvar1* #t))
+
+(define-card-template %card-template-2% (:extends %card-template-1%
+                                         :param-b 10)
+    [[param-c :type <string>  :label "Param C"]
+     [param-d :type <integer> :label "Param D" :default 20]]
+  (test *ttvar1*)
+  (test (not *ttvar2*))
+  (set! *ttvar2* #t))
+
+(card template-tests-1 (:extends %card-template-2%
+                        :param-a "foo"
+                        :param-c "bar")
+  (test *ttvar1*)
+  (test *ttvar2*)
+  (set! *ttvar1* #f)
+  (set! *ttvar2* #f)
+  (jump template-tests-2))
+
+(card template-tests-2 (:extends %card-template-2%
+                        :param-a "baz"
+                        :param-b 30
+                        :param-c "moby"
+                        :param-d 40)
+  (test *ttvar1*)
+  (test *ttvar2*)
+  (jump syntax-tests))
 
 
 ;;=========================================================================

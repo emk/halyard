@@ -645,7 +645,7 @@
     (name      :type <symbol>)
     (type      :type <class>       :initvalue <object>)
     (label     :type <string>      :initvalue "")
-    (default   :type <object>      :initvalue $no-default))
+    (default                       :initvalue $no-default))
 
   (defclass <template> ()
     (group      :type <symbol>     :initvalue 'none)
@@ -676,6 +676,14 @@
           (recursive (cddr b))]))
       result))
   
+  (define-syntax expand-parameters
+    (syntax-rules ()
+      [(expand-parameters)
+       '()]
+      [(expand-parameters (name keywords ...) rest ...)
+       (cons (make <template-parameter> :name 'name keywords ...)
+             (expand-parameters rest ...))]))
+
   (define-syntax define-template
     (syntax-rules (:extends)
       [(define-template name group (:extends extended bindings ...)
