@@ -107,7 +107,7 @@
   ;;-----------------------------------------------------------------------
 
   (provide on send send*
-           <event> event?
+           <event> event? event-stale?
            <vetoable-event> veto-event! event-vetoed?
            <idle-event> idle-event?
            <update-ui-event> update-ui-event? event-command
@@ -224,7 +224,8 @@
        (send* node 'name :arguments (list . args))]))
   (define-syntax-indent send 2)
 
-  (defclass <event> ())
+  (defclass <event> ()
+    (stale? :accessor event-stale? :initvalue #f))
 
   (defclass <vetoable-event> (<event>)
     (vetoed? :accessor event-vetoed? :initvalue #f))
@@ -275,14 +276,17 @@
                    [[char]
                     (make <char-event>
                       :character (string-ref (car args) 0)
-                      :modifiers (cadr args))]
+                      :modifiers (cadr args)
+                      :stale? (caddr args))]
                    [[mouse-down]
                     (make <mouse-event>
                       :position (point (car args) (cadr args))
-                      :double-click? (caddr args))]
+                      :double-click? (caddr args)
+                      :stale? (cadddr args))]
                    [[mouse-up mouse-enter mouse-leave mouse-moved]
                     (make <mouse-event>
-                      :position (point (car args) (cadr args)))]
+                      :position (point (car args) (cadr args))
+                      :stale? (cadr args))]
                    [[browser-navigate]
                     (make <browser-navigate-event> :url (car args))]
                    [[browser-page-changed]
