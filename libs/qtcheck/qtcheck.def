@@ -1,0 +1,5 @@
+EXPORTS
+  QuickTimeCheckSetup
+  QuickTimeVersion
+  QuickTimeComponentVersion
+  QuickTimeCheckCleanup

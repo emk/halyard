@@ -3,6 +3,9 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 CVS - emk
 
   * More refactoring of DocNotebook in preparation for window splitting.
+  * Added qtcheck project.  This is a DLL for use with InnoSetup; it
+    allows installers to access the current QuickTime version, and the
+    version of any QuickTime components.
 
 0.0.33 - 27 Aug 2004 - emk, madhura
 
