@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4;-*-
 
 #ifndef TWinPrimitives_H
 #define TWinPrimitives_H

@@ -42,47 +42,16 @@ void AlertMsg(const char *msg, bool isError);
 //
 int32	VolIsMounted(char *inCDPath, TString &inVolName);
 
-//
-// Date and time stuff
-//
-
-#define DT_LONGDATE		1
-#define DT_DATE			2
-#define DT_TIME			3
-#define DT_YEAR			4
-#define DT_MONTH		5
-#define DT_LONGMONTH	6
-#define DT_DAY			7
-#define DT_LONGDAY		8
-
-//////////
-// Date format enumeration
-//
-enum DateFormat { df_DATE, df_LONGDATE, df_TIME, df_SECONDS };
-
-//////////
-// Get the current date or time.
-//
-// [in/out] inStr - string to store the date/time
-// [in] format - DateFormat desired 
-//
-void GetDate(TString &inStr, const DateFormat format);
-
-//////////
-// Set inStr based on the passed in time and date type.
-//
-// [in/out] inStr - string to store the date/time
-// [in] inSecs - current time in seconds elapsed since midnight (00:00:00), January 1, 1970
-// [in] inDateType - desired date/time format for inStr<br>
-//				one of (DT_LONGDATE, DT_DATE, DT_TIME, DT_YEAR,
-//				DT_MONTH, DT_LONGMONTH, DT_DAY, DT_LONGDAY)  
-//
-void SetDate(TString &inStr, int32 inSecs, int32 inDateType);
-
 #endif // _LUtil_h_
 
 /*
  $Log$
+ Revision 1.4  2002/07/29 22:02:46  zeb
+   * zeb: Moved some primitives from TMacPrimitives.cpp and TWinPrimitives.cpp
+     to TCommonPrimitives.cpp and T5LPrimitives.cpp.
+   * zeb: Added a GET primitive.
+   * zeb: Cleaned date stuff out of LUtil.{h,cpp}.
+
  Revision 1.3  2002/01/24 19:22:41  tvw
  Fixed bug (#531) in -D command-line option causing
  system registry read error.

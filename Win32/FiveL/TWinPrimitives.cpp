@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include "stdafx.h"
 
@@ -36,7 +36,6 @@ USING_NAMESPACE_FIVEL
 
 void FIVEL_NS RegisterWindowsPrimitives()
 {
-	REGISTER_5L_PRIMITIVE(Add);
 	REGISTER_5L_PRIMITIVE(Audio);
 	REGISTER_5L_PRIMITIVE(AudioKill);
 	REGISTER_5L_PRIMITIVE(AudioVolume);
@@ -55,7 +54,6 @@ void FIVEL_NS RegisterWindowsPrimitives()
 	REGISTER_5L_PRIMITIVE(Close);
 	REGISTER_5L_PRIMITIVE(CTouch);
 	REGISTER_5L_PRIMITIVE(Cursor);
-	REGISTER_5L_PRIMITIVE(Div);
 	REGISTER_5L_PRIMITIVE(EjectDisc);
 	REGISTER_5L_PRIMITIVE(Fade);
 	//REGISTER_5L_PRIMITIVE(FadeLock); - Disabled
@@ -89,17 +87,14 @@ void FIVEL_NS RegisterWindowsPrimitives()
 	REGISTER_5L_PRIMITIVE(Read);
 	REGISTER_5L_PRIMITIVE(ReDoScript);
 	REGISTER_5L_PRIMITIVE(Resume);
-	REGISTER_5L_PRIMITIVE(ResetOrigin);
 	REGISTER_5L_PRIMITIVE(Rewrite);
 	//REGISTER_5L_PRIMITIVE(Rnode); - Disabled
 	//REGISTER_5L_PRIMITIVE_WITH_NAME("rvar", Rnode); - Disabled
 	REGISTER_5L_PRIMITIVE(Screen);
 	//REGISTER_5L_PRIMITIVE(Search);
-	REGISTER_5L_PRIMITIVE(Set);
 	REGISTER_5L_PRIMITIVE(SetWindowTitle);
 	REGISTER_5L_PRIMITIVE(Showmouse);
 	REGISTER_5L_PRIMITIVE(Still);
-	REGISTER_5L_PRIMITIVE(Sub);
 	REGISTER_5L_PRIMITIVE(Text);
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
@@ -118,24 +113,6 @@ void FIVEL_NS RegisterWindowsPrimitives()
 //=========================================================================
 //  Implementation of Windows Primitives
 //=========================================================================
-
-/*----------------------------------------------
-    (ADD VARIABLE AMOUNT)
-
-    Adds the given amount to the given variable.
-------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Add)
-{
-    TString vname;
-	int32 amount;
-
-    inArgs >> vname >> amount;
-
-	int32 sum = gVariableManager.GetLong(vname);
-	sum += amount;
-	gVariableManager.SetLong(vname, sum);
-	::SetPrimitiveResult(sum);
-} 
 
 //
 //	DoAudio - Play an audio clip.
@@ -616,61 +593,42 @@ DEFINE_5L_PRIMITIVE(CTouch)
     gCursorManager.CheckCursor();
 }
 
- //
- //	DoCursor - Change the cursor, if no cursorName provided, changes to the
- //		default cursor
- //
- // (cursor [cursorName])
- //
-DEFINE_5L_PRIMITIVE(Cursor)
- {
-	 CursorType		theCursor = ARROW_CURSOR;
-	 CursorType		tmpCursor;
-	 TString		cursorStr;
-	 bool			forceShow = false;
-
-	 if (inArgs.HasMoreArguments())
-	 {
-		 inArgs >> cursorStr;
-
-		 tmpCursor = gCursorManager.FindCursor(cursorStr);
-		 if (tmpCursor != UNKNOWN_CURSOR)
-		 {
-			 theCursor = tmpCursor;
-			 forceShow = true;
-		 }
-		 else
-			 gLog.Caution("Unknown cursor type: <%s>", cursorStr.GetString());
-	 }
-
-	 gCursorManager.ChangeCursor(theCursor);
-	 gCursorManager.ForceShow(forceShow);
- }
-
 /*--------------------------------------------------------
-        (DIV X Y)
+        (Cursor [cursorName])
 
-        X <- X/Y,  X will be truncated to int.
+		Change the cursor, if no cursorName provided, changes to the default 
+		cursor.
  ---------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Div)
+DEFINE_5L_PRIMITIVE(Cursor)
 {
-    double  Divisor;
-    long    Dividend;
-    TString vname;
-
-    inArgs >> vname >> Divisor;
-
-    if (Divisor == 0.0) 
-    	gLog.Log("Error: Division by zero: %s / %f.",(const char *) vname, Divisor);
-
-	Dividend = gVariableManager.GetLong(vname);
-    Dividend = (long)(Dividend / Divisor);
-    gVariableManager.SetLong(vname, Dividend);
-	::SetPrimitiveResult(Dividend);
+	CursorType	theCursor = ARROW_CURSOR;
+	CursorType	tmpCursor;
+	TString		cursorStr;
+	bool		forceShow = false;
+	
+	if (inArgs.HasMoreArguments())
+	{
+		inArgs >> cursorStr;
+		
+		tmpCursor = gCursorManager.FindCursor(cursorStr);
+		if (tmpCursor != UNKNOWN_CURSOR)
+		{
+			theCursor = tmpCursor;
+			forceShow = true;
+		}
+		else
+		{
+			gLog.Caution("Unknown cursor type: %s", cursorStr.GetString());
+			gDebugLog.Log("Unknown cursor type: %s", cursorStr.GetString());
+		}
+	}
+	
+	gCursorManager.ChangeCursor(theCursor);
+	gCursorManager.ForceShow(forceShow);
 }
 
 /*--------------------------------------------------------
-        (EJECTDISC)
+        (Ejectdisc)
 
         Eject a CD from the CDROM drive.
  ---------------------------------------------------------*/
@@ -1175,22 +1133,6 @@ DEFINE_5L_PRIMITIVE(Open)
     	gFileManager.Open(path.ToNativePathString().c_str(), fKind);
 }
 
-/*------------------------------------------------------------
-    (ORIGIN DX DY)
-
-    Move the local coordinates for this particular card (or
-    macro) by the delta values given. This change is an offset
-    from whatever the current coordinates are. There is no
-    way to set the absolute coordinates for a macro or card!
---------------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Origin)
-{
-    TPoint   delta;
-
-    inArgs >> delta;
-    gOrigin.OffsetOrigin(delta);
-}
-
 /*----------------------------------------------------------------
     (CIRCLE x y Radius COLOR)
 
@@ -1529,19 +1471,6 @@ DEFINE_5L_PRIMITIVE(ReDoScript)
 	TInterpreter::GetInstance()->DoReDoScript(theCard);
 }
 
-//
-//	ResetOrigin - Reset the origin to 0,0 or set it to something new.
-//
-DEFINE_5L_PRIMITIVE(ResetOrigin)
-{
-	TPoint		newOrigin(0, 0);
-
-	if (inArgs.HasMoreArguments())
-		inArgs >> newOrigin;
-
-	gOrigin.SetOrigin(newOrigin);
-}
-
 /*---------------------------------------------------------------
     (RESUME)
 
@@ -1619,55 +1548,6 @@ DEFINE_5L_PRIMITIVE(Screen)
 //
 //}
 
-/*---------------------------------------
-    (SET VARIABLE NEWVALUE [flag])
-
-    Sets the variable to the given value.
------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Set)
-{
-    TString     vname;
-    TString		value;
-    TString		flag; 
-    uint32		date_value;
-    int32		date_type;
-
-    inArgs >> vname >> value;
-    
-    if (inArgs.HasMoreArguments())
-    {
-    	inArgs >> flag;
-    	flag.MakeLower();
-    	
-    	if (flag.Equal("longdate"))
-    		date_type = DT_LONGDATE;
-    	else if (flag.Equal("date"))
-    		date_type = DT_DATE;
-    	else if (flag.Equal("time"))
-    		date_type = DT_TIME;
-    	else if (flag.Equal("year"))
-    		date_type = DT_YEAR;
-    	else if (flag.Equal("month"))
-    		date_type = DT_MONTH;
-    	else if (flag.Equal("longmonth"))
-    		date_type = DT_LONGMONTH;
-    	else if (flag.Equal("day"))
-    		date_type = DT_DAY;
-    	else if (flag.Equal("longday"))
-    		date_type = DT_LONGDAY;
-    	else
-    		gDebugLog.Log("bad flag to set command <%s>", flag.GetString());
-    	
-    	date_value = (uint32) value;
-    		
-    	gVariableManager.SetDate(vname, date_value, date_type); 
-    } 	
-    else 
-    {
-    	gVariableManager.SetString(vname, value); 
-	}
-}
-
 /*---------------------------------------------------------------------
     (SETWINDOWTITLE TITLE)
 
@@ -1694,24 +1574,6 @@ DEFINE_5L_PRIMITIVE(Still)
 {
 	gVideoManager.Pause(0);
 	gAudioManager.Pause(0);
-}
-
-/*----------------------------------------------
-    (SUB VARIABLE AMOUNT)
-
-    Subtract the given amount from the variable.
-------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Sub)
-{
-    TString vname;
-	int32 amount;
-
-    inArgs >> vname >> amount;
-
-	int32 sum = gVariableManager.GetLong(vname);
-	sum -= amount;
-	gVariableManager.SetLong(vname, sum);
-	::SetPrimitiveResult(sum);
 }
 
 /*--------------------------------------------------------------

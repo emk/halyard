@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4;-*-
 
 // Needed for RegisterMacPrimitives.
 #include "TCommon.h"
@@ -50,7 +50,6 @@ USING_NAMESPACE_FIVEL
 
 void FIVEL_NS RegisterMacPrimitives()
 {
-    REGISTER_5L_PRIMITIVE(Add);
     // new audio commands
     REGISTER_5L_PRIMITIVE(Audio);
     REGISTER_5L_PRIMITIVE(AudioKill);
@@ -68,11 +67,10 @@ void FIVEL_NS RegisterMacPrimitives()
     REGISTER_5L_PRIMITIVE(CheckVol);
     REGISTER_5L_PRIMITIVE(Close);
     REGISTER_5L_PRIMITIVE(CTouch);
-    REGISTER_5L_PRIMITIVE(Cursor);
+	REGISTER_5L_PRIMITIVE(Cursor);
 #ifdef DEBUG
 	REGISTER_5L_PRIMITIVE(Debug);
 #endif
-    REGISTER_5L_PRIMITIVE(Div);
     REGISTER_5L_PRIMITIVE(EjectDisc);
     REGISTER_5L_PRIMITIVE(Fade);
     REGISTER_5L_PRIMITIVE(Highlight);
@@ -90,8 +88,7 @@ void FIVEL_NS RegisterMacPrimitives()
     REGISTER_5L_PRIMITIVE(Micro);
     REGISTER_5L_PRIMITIVE(Nap);
     REGISTER_5L_PRIMITIVE(Open);
-    REGISTER_5L_PRIMITIVE(Origin);
-    REGISTER_5L_PRIMITIVE_WITH_NAME("circle", Oval);
+	REGISTER_5L_PRIMITIVE_WITH_NAME("circle", Oval);
 	REGISTER_5L_PRIMITIVE(Oval);
 	//REGISTER_5L_PRIMITIVE_WITH_NAME("pause", QTPause);
 	REGISTER_5L_PRIMITIVE(Play);
@@ -106,16 +103,13 @@ void FIVEL_NS RegisterMacPrimitives()
 	REGISTER_5L_PRIMITIVE(ReDoScript);
 #endif
 	//REGISTER_5L_PRIMITIVE(Refresh);
-	REGISTER_5L_PRIMITIVE(ResetOrigin);
-    REGISTER_5L_PRIMITIVE(Resume);
+	REGISTER_5L_PRIMITIVE(Resume);
     REGISTER_5L_PRIMITIVE(Rewrite);
     REGISTER_5L_PRIMITIVE(Screen);
     REGISTER_5L_PRIMITIVE(Search);
-    REGISTER_5L_PRIMITIVE(Set);
     REGISTER_5L_PRIMITIVE(Showmouse);
     REGISTER_5L_PRIMITIVE(Still);
-    REGISTER_5L_PRIMITIVE(Sub);
-    REGISTER_5L_PRIMITIVE(Text);
+	REGISTER_5L_PRIMITIVE(Text);
     REGISTER_5L_PRIMITIVE(TextAA);
     REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Touch);
@@ -130,33 +124,6 @@ void FIVEL_NS RegisterMacPrimitives()
 //=========================================================================
 //  Implementation of Macintosh Primitives
 //=========================================================================
-
-/*----------------------------------------------
-    (ADD VARIABLE AMOUNT)
-
-    Adds the given amount to the given variable.
-    
-    cbo - This originally was written to use floats.
-------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Add)
-{
-	TString		theVarName;
-	int32		theAmount;
-	int32		theOrigValue;
-	int32		theResValue;
-
-    inArgs >> theVarName >> theAmount;
-    
-	// cbo_fix - we don't have fcvt like Windows does
-   // sum = gVariableManager.GetDouble(vname);
-	theOrigValue = gVariableManager.GetLong(theVarName);
-    theResValue = theOrigValue + theAmount;
-
-    //gVariableManager.SetDouble(vname, sum);
-    gVariableManager.SetLong(theVarName, theResValue);
-
-	::SetPrimitiveResult(theResValue);
-}
 
 //
 //	DoAudio - 
@@ -601,9 +568,13 @@ DEFINE_5L_PRIMITIVE(Close)
 	gPlayerView->AdjustMyCursor();   	
 }
 
-//
-//	DoCursor - Change the cursor.
-//
+
+/*--------------------------------------------------------
+        (Cursor [cursorName])
+
+		Change the cursor, if no cursorName provided, changes to the default 
+		cursor.
+ ---------------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Cursor)
 {
 	CursorType	theCursor = ARROW_CURSOR;
@@ -632,6 +603,7 @@ DEFINE_5L_PRIMITIVE(Cursor)
 	gCursorManager.ForceShow(forceShow);
 }
 
+
 //
 //	DoDebug - Drop into the debugger
 //
@@ -642,37 +614,6 @@ DEFINE_5L_PRIMITIVE(Debug)
 	BreakToSourceDebugger_();
 }
 #endif
-
-/*--------------------------------------------------------
-        (DIV X Y)
-
-        X <- X/Y,  X will be truncated to int16.
- ---------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Div)
-{
-    TString		theVarName;
-    double		theAmount;
-    int32		theOrigValue;
-    int32		theResValue;
-
-    inArgs >> theVarName >> theAmount;
-
-
-	theOrigValue = gVariableManager.GetLong(theVarName);
-
-    if (theAmount == 0.0)
-    {
-		gLog.Caution("Division by zero: %s <%ld> / <%f>", 
-			(const char *) theVarName, theOrigValue, theAmount);
-			
-		theResValue = 0;
-    }
-    else
-		theResValue = (int32) (theOrigValue / theAmount);
-   
-    gVariableManager.SetLong(theVarName, theResValue);
-    ::SetPrimitiveResult(theResValue);
-}
 
 //
 //	(ejectdisc) - Eject whatever CD is in the drive.
@@ -1204,26 +1145,6 @@ DEFINE_5L_PRIMITIVE(Open)
     gFileManager.Open(filename, fKind);
 }
 
-/*------------------------------------------------------------
-    (ORIGIN DX DY)
-
-    Move the local coordinates for this particular card (or
-    macro) by the delta values given. This change is an offset
-    from whatever the current coordinates are. There is no
-    way to set the absolute coordinates for a macro or card!
---------------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Origin)
-{
-    TPoint   delta;
-
-    inArgs >> delta;
-
-    gOrigin.OffsetOrigin(delta);
-    
-	TPoint origin = gOrigin.GetOrigin();
-    gDebugLog.Log("Origin set to <X Y> %d %d", origin.X(), origin.Y());
-}
-
 /*----------------------------------------------------------------
     (OVAL LEFT TOP RIGHT BOTTOM FILL COLOR <THICKNESS>)
 
@@ -1550,19 +1471,6 @@ DEFINE_5L_PRIMITIVE(Refresh)
 	//gPlayerView->Refresh();
 }
 
-//
-//	DoResetOrigin - Reset the origin or set it to something new.
-//
-DEFINE_5L_PRIMITIVE(ResetOrigin)
-{
-	TPoint		newOrigin(0, 0);
-	
-	if (inArgs.HasMoreArguments())
-		inArgs >> newOrigin;
-	
-	gOrigin.SetOrigin(newOrigin);
-}
-
 /*---------------------------------------------------------------
     (RESUME)
 
@@ -1688,57 +1596,6 @@ DEFINE_5L_PRIMITIVE(Search)
 #endif
 }
 
-/*---------------------------------------
-    (SET VARIABLE NEWVALUE)
-
-    Sets the variable to the given value.
------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Set)
-{
-    TString     	vname;
-    TString			value;
-    TString			flag;
-    uint32			date;
-    int32			date_type;
-	
-    inArgs >> vname >> value;
-    
-    if (inArgs.HasMoreArguments())
-    {
-    	inArgs >> flag;
-    	
-    	flag.MakeLower();
-    	
-    	if (flag == (char *) "longdate")
-    		date_type = DT_LONGDATE;
-    	else if (flag == (char *) "date")
-    		date_type = DT_DATE;
-    	else if (flag == (char *) "time")
-    		date_type = DT_TIME;
-    	else if (flag == (char *) "year")
-    		date_type = DT_YEAR;
-    	else if (flag == (char *) "month")
-    		date_type = DT_MONTH;
-    	else if (flag == (char *) "longmonth")
-    		date_type = DT_LONGMONTH;
-    	else if (flag == (char *) "day")
-    		date_type = DT_DAY;
-    	else if (flag == (char *) "longday")
-    		date_type = DT_LONGDAY;
-    	else
-    		gLog.Caution("Bad flag to set command <%s>", flag.GetString());
-
-		date = (uint32) value;
-		
-    	gVariableManager.SetDate(vname.GetString(), date, date_type);
-    }
-    else
-    {
-    	gVariableManager.SetString(vname.GetString(), value.GetString());
-    }
-}
-
-
 /*---------------------------------------------------------------------
     (SHOWMOUSE)
     Shows the mouse (shouldn't be needed, maybe only in conjunction w/ hide~)
@@ -1756,30 +1613,6 @@ DEFINE_5L_PRIMITIVE(Showmouse)
 DEFINE_5L_PRIMITIVE(Still)
 {
 	gPlayerView->DoPause(false);
-}
-
-/*----------------------------------------------
-    (SUB VARIABLE AMOUNT)
-
-    Subtract the given amount from the variable.
-    
-    cbo - This originally was written to use floats.
-------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Sub)
-{
-	TString 	theVarName;
-	int32		theAmount;
-	int32		theOrigValue;
-	int32		theResValue;
-
-    inArgs >> theVarName >> theAmount;
-
-
-    theOrigValue = gVariableManager.GetLong(theVarName.GetString());
-    theResValue = theOrigValue - theAmount;
-
-    gVariableManager.SetLong(theVarName, theResValue);
-	::SetPrimitiveResult(theResValue);
 }
 
 /*--------------------------------------------------------------

@@ -1,8 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, zeb
 
-  * Imported Boost library (from http://www.boost.org/) into CVS.
+  * emk: Imported Boost library (from http://www.boost.org/) into CVS.
+  * zeb: Moved some primitives from TMacPrimitives.cpp and TWinPrimitives.cpp
+    to TCommonPrimitives.cpp and T5LPrimitives.cpp.
+  * zeb: Added a GET primitive.
+  * zeb: Cleaned date stuff out of LUtil.{h,cpp}.
 
 3.4.0 - 26 July 2002 - emk
 
