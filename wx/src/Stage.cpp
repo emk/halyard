@@ -1210,8 +1210,7 @@ void Stage::PaintStage(wxDC &inDC)
 	// If necessary, draw the borders.
 	if (mIsDisplayingBorders)
 	{
-		if (mTextCtrl->IsShown())
-			DrawElementRectangle(inDC, mTextCtrl->GetRect());
+		DrawTextBorder(inDC);
 
 		ElementCollection::iterator i = mElements.begin();
 		for (; i != mElements.end(); i++)
@@ -1231,15 +1230,18 @@ void Stage::DrawElementBorder(wxDC &inDC, Element *inElement)
 	inElement->DrawElementBorder(inDC);
 }
 
-void Stage::DrawElementRectangle(wxDC &inDC, const wxRect &inRect)
+void Stage::DrawTextBorder(wxDC &inDC)
 {
-	inDC.SetPen(*wxRED_PEN);
-	inDC.SetBrush(*wxTRANSPARENT_BRUSH);
-
-	// Draw the border *outside* our rectangle.
-	wxRect r = inRect;
-	r.Inflate(1);
-	inDC.DrawRectangle(r.x, r.y, r.width, r.height);
+	if (mTextCtrl->IsShown())
+	{
+		inDC.SetPen(*wxRED_PEN);
+		inDC.SetBrush(*wxTRANSPARENT_BRUSH);
+		
+		// Draw the border *outside* our rectangle.
+		wxRect r = mTextCtrl->GetRect();
+		r.Inflate(1);
+		inDC.DrawRectangle(r.x, r.y, r.width, r.height);
+	}
 }
 
 
@@ -1313,25 +1315,25 @@ void Stage::OnRightDown(wxMouseEvent &inEvent)
 		// position for next time.
 		wxPoint pos = inEvent.GetPosition();
 		wxString str;
-		if (inEvent.ShiftDown() && mCopiedPosns.size() == 1)
+		if (inEvent.ShiftDown() && mCopiedPoints.size() == 1)
 			str.Printf("(rect %d %d %d %d)", 
-					   (mCopiedPosns.end()-1)->x, 
-					   (mCopiedPosns.end()-1)->y,
+					   (mCopiedPoints.end()-1)->x, 
+					   (mCopiedPoints.end()-1)->y,
 					   pos.x, pos.y);
-		else if (inEvent.ShiftDown() && mCopiedPosns.size() > 1)
+		else if (inEvent.ShiftDown() && mCopiedPoints.size() > 1)
 		{
 			str.Printf("(polygon ");
 			std::vector<wxPoint>::iterator i;
-			for (i = mCopiedPosns.begin(); i != mCopiedPosns.end(); ++i)
+			for (i = mCopiedPoints.begin(); i != mCopiedPoints.end(); ++i)
 				str += wxString::Format("(point %d %d) ", i->x, i->y);
 			str += wxString::Format("(point %d %d))", pos.x, pos.y);
 		}
 		else
 		{
 			str.Printf("(point %d %d)", pos.x, pos.y);
-			mCopiedPosns.clear();
+			mCopiedPoints.clear();
 		}
-		mCopiedPosns.push_back(pos);
+		mCopiedPoints.push_back(pos);
 
 		// Copy our string to the clipboard.  This code snippet comes from
 		// the wxWindows manual.

@@ -374,7 +374,7 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	//////////
 	// The last stage position copied with a right-click.
 	//
-	std::vector<wxPoint> mCopiedPosns;
+	std::vector<wxPoint> mCopiedPoints;
 
 	//////////
 	// Invalidate the entire stage.
@@ -402,9 +402,9 @@ class Stage : public wxWindow, public GraphicsTools::Image
     void DrawElementBorder(wxDC &inDC, Element *inElement);
 
 	//////////
-	// Draw a border for the specified rectangle.
+	// Draw a border for the text input control, if it exists.
 	// 
-	void Stage::DrawElementRectangle(wxDC &inDC, const wxRect &inRect);
+	void Stage::DrawTextBorder(wxDC &inDC);
 
 	//////////
 	// End an active Wait().

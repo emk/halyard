@@ -23,24 +23,11 @@ class TPolygon : public TObject
 
 public:
 	//////////
-	// An iterator for traversing the edges of the polygon.
-	// XXX - not yet implemented! Should be implemented!
-	//
-// 	class edge_iterator
-// 	{
-// 		int mPosition;
-// 		TPolygon mPolygon;
-
-// 	public:
-// 		edge_iterator(TPolygon inPoly) : mPosition(0), mPolygon(inPoly) {}
-// 		TPolygon &operator*()
-
-	//////////
 	// Create a new polygon.
 	//
 	// [in] inVertices - The vertices of the polygon.
 	// 
-	TPolygon(std::vector<TPoint> &inVertices);
+	TPolygon(const std::vector<TPoint> &inVertices);
 	TPolygon() : mVertices(), mBounds() {}
 
 	//////////
@@ -63,9 +50,20 @@ public:
 	const TRect Bounds() const { return mBounds; }
 	
 	//////////
+	// Get the number of points in the polygon.
+	//
+	size_t GetPointCount() { return mVertices.size(); }
+
+	//////////
+	// Get the specified point.
+	//
+	TPoint GetPoint(size_t inIndex)
+	    { ASSERT(inIndex < mVertices.size()); return mVertices[inIndex]; }
+
+	//////////
 	// Get the points which define the polygon.
 	// 
-	const std::vector<TPoint> Vertices() const { return mVertices; }
+	const std::vector<TPoint> &Vertices() const { return mVertices; }
 
 	//////////
 	// Test if two polygons are equal.

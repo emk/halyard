@@ -8,7 +8,7 @@
 USING_NAMESPACE_FIVEL
 using namespace std;
 
-TPolygon::TPolygon(std::vector<TPoint> &inVertices)
+TPolygon::TPolygon(const std::vector<TPoint> &inVertices)
   : mVertices(inVertices)
 {
   int top = 0, 
@@ -108,14 +108,6 @@ bool TPolygon::Contains(TPoint &inPt)
 	  {
 		  rightVal = (float) begin.Y();
 	  }
-
-	  // Quick and dirty test to see if we are on the boundary of
-	  // the polygon (which might not be included otherwise).
-// 	  if ((begin.X() <= inPt.X() && fabsf(leftVal - inPt.Y()) < 0.5)
-// 		  || (begin.X() == inPt.X() && begin.X() == end.X()))
-// 	  {
-// 		  return true;
-// 	  }
 
 	  // If the segment is horizontal, it doesn't affect our count
 	  if (begin.Y() == end.Y())

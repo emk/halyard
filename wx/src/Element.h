@@ -62,12 +62,6 @@ public:
 	wxString GetName() { return mName; }
 
 	//////////
-	// Return the bounding box of the element.  Used for drawing
-	// borders around the element.
-	//
-	virtual wxRect GetRect() = 0;
-
-	//////////
 	// Return true if the element can be shown.
 	//
 	virtual bool HasVisibleRepresentation() { return true; }
@@ -104,7 +98,7 @@ public:
 	/////////
 	// Draw the element to the specified DC
 	//
-	virtual void DrawElementBorder(wxDC &inDC);
+	virtual void DrawElementBorder(wxDC &inDC) {}
 };
 
 #endif // Element_H

@@ -20,10 +20,3 @@ Element::Element(Stage *inStage, const wxString &inName)
 	mStage->AddElement(this);
 }
 
-void Element::DrawElementBorder(wxDC &inDC)
-{
-	// Draw the border *outside* our rectangle.
-	wxRect r = this->GetRect();
-	r.Inflate(1);
-	inDC.DrawRectangle(r.x, r.y, r.width, r.height);
-}

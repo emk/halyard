@@ -27,12 +27,6 @@ Zone::~Zone()
     delete mDispatcher;
 }
 
-wxRect Zone::GetRect()
-{ 
-	return TToWxRect(mPolygon.Bounds()); 
-}
-
-
 bool Zone::IsPointInElement(const wxPoint &inPoint)
 {
     return mPolygon.Contains(WxToTPoint(inPoint));
@@ -44,7 +38,7 @@ void Zone::DrawElementBorder(wxDC &inDC)
 	std::vector<TPoint>::iterator i;
 	TPoint begin, end;
 
-	// XXX - this should be implemented by an iterator over the edges!
+	// TODO - this should be implemented by an iterator over the edges!
 	// Implement that iterator!
 	for (i = pts.begin(); i != pts.end(); ++i)
 	{

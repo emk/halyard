@@ -32,7 +32,6 @@ public:
 
 	virtual bool IsLightWeight() { return true; }
 
-	virtual wxRect GetRect();
 	virtual bool IsPointInElement(const wxPoint &inPoint);
 
 	virtual EventDispatcher *GetEventDispatcher() { return mDispatcher; }

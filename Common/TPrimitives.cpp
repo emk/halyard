@@ -107,7 +107,17 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TRect &out)
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TPolygon &out)
 {
     out = args.GetPolygonArg();
-	// XXX - args.LogParameter(...)
+	std::string logmsg = "(poly";
+	for (int i = 0; i < out.GetPointCount(); i++)
+	{
+		TPoint p = out.GetPoint(i);
+		logmsg += (std::string(" ") +
+				   TString::IntToString(p.X()).GetString() +
+				   std::string(",") +
+				   TString::IntToString(p.Y()).GetString());
+	}
+	logmsg += ")";
+	args.LogParameter(logmsg);
     return args;
 }
 

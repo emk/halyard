@@ -70,6 +70,11 @@ public:
 	// Return true if the stage object is shown on the screen.
 	//
 	virtual bool IsShown();
+
+	//////////
+	// Draw an outline around the widget.
+	//
+	virtual void DrawElementBorder(wxDC &inDC);
 };
 
 #endif // Widget_H
