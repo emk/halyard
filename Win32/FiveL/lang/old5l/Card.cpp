@@ -144,7 +144,7 @@ void Card::DoCommand(void)
 	// Find the closing paren for our command.
 	// XXX - If an error occurs, we may not always find this close
 	// parentheses.  This could make the interpreter puke pretty badly.
-	// But this works often enough that 
+	// But this works often enough that it's worth trying.
 	m_Script >> close;
 }
 
@@ -334,9 +334,12 @@ void Card::DoMacro(TString &name)
     oldlocal = gVariableManager.GetLocal();
     gVariableManager.SetLocal(local);
 
-    //  Set the macro's coords to this one's and run the macro.
+    //  Run the macro using our co-ordinate system, but make
+	//  sure the macro can't change our co-ordinate system.
     //
+	TPoint oldorigin = gOrigin.GetOrigin();
     theMacro->Execute();
+	gOrigin.SetOrigin(oldorigin);
 
     //  Restore old local tree and delete ours.
     //
@@ -698,6 +701,10 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.6.2.7  2002/06/12 19:42:46  emk
+ 3.3.4.6 - Fixed bug where the origin didn't get restored after each macro
+ call.  (This bug was introduced in 3.3.4.5.)
+
  Revision 1.6.2.6  2002/06/12 19:03:03  emk
  3.3.4.5 - Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
  and broke the remaining dependencies between these primitive commands and

@@ -17,14 +17,18 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		04
-#define VERSION_REV_SMALL	05
+#define VERSION_REV_SMALL	06
 
-#define VERSION_STRING	"5L 3.3.4.5 (Development: Language Refactoring)"
+#define VERSION_STRING	"5L 3.3.4.6 (Development: Language Refactoring)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.11.2.5  2002/06/12 19:42:36  emk
+ 3.3.4.6 - Fixed bug where the origin didn't get restored after each macro
+ call.  (This bug was introduced in 3.3.4.5.)
+
  Revision 1.11.2.4  2002/06/12 19:02:51  emk
  3.3.4.5 - Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
  and broke the remaining dependencies between these primitive commands and

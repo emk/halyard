@@ -39,6 +39,13 @@ public:
 	void AdjustPoint(TPoint *pt);
 
 	//////////
+	// Gets the card's local coordinate system.
+	//
+	// [out] return - the current origin
+	//
+	TPoint GetOrigin();
+
+	//////////
 	// Sets the card's local coordinate system.
 	//
 	// [in] loc - set the origin to this location

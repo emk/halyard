@@ -126,6 +126,11 @@ void Origin::AdjustPoint(TPoint *pt)
 	pt->Offset(mOrigin);
 }
 
+TPoint Origin::GetOrigin()
+{
+	return mOrigin;
+}
+
 void Origin::SetOrigin(TPoint &loc)
 {
     mOrigin = loc;
