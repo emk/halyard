@@ -9,7 +9,7 @@
 
   (provide draw-picture measure-picture
            set-image-cache-size! modal-input with-dc
-           dc-rect color-at %element%
+           dc-rect color-at %element% %invisible-element%
            %zone% zone %animated-graphic% register-cursor mouse-position
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
            element-shown? set-element-shown?!
