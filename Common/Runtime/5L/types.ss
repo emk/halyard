@@ -18,6 +18,7 @@
            <color> (rename make-color-opt-alpha color) color?
            color-red set-color-red! color-green set-color-green!
            color-blue set-color-blue! color-alpha set-color-alpha!
+           color->hex-string
 
            <percent> (rename make-percent percent) percent? percent-value
            
@@ -68,6 +69,18 @@
     (make-color r g b a))
 
   (make-equals?-compare-class+slots <color>)
+
+  (define (channel->hex-string value)
+    (let recurse [[str (format "~x" value)]]
+      (if (< (string-length str) 2)
+          (recurse (string-append "0" str))
+          str)))
+
+  (define (color->hex-string c)
+    (string-append (channel->hex-string (color-red c))
+                   (channel->hex-string (color-green c))
+                   (channel->hex-string (color-blue c))
+                   (channel->hex-string (color-alpha c))))
 
   (defclass <percent> () 
     value

@@ -236,7 +236,8 @@
   (define $screen-rect (rect 0 0 800 600))
 
   ;;; Holds a list of all registered stylesheets
-  (define *stylesheet-list* (list ))
+  (define *stylesheet-list* (list))
+
 
   ;;;======================================================================
   ;;;  Mathematical Primitives
@@ -392,48 +393,22 @@
   ;;;======================================================================
   ;;;  5L text drawing uses stylesheets.
   
-  (provide stylesheet? stylesheet-name stylesheet-family
+  (provide (rename register-style stylesheet)
+           stylesheet? stylesheet-name stylesheet-long-name stylesheet-family
            stylesheet-size stylesheet-flags
            stylesheet-justification stylesheet-color
            stylesheet-highlight-color stylesheet-height-adjustment
            stylesheet-shadow-offset stylesheet-shadow-color
            stylesheet-highlight-shadow-color
-           stylesheet-is-input-style? ; Deprecated.
            define-stylesheet measure-text draw-text)
 
   (define-struct stylesheet
-    (name family size flags justification
+    (name long-name family size flags justification
      color highlight-color height-adjustment
      shadow-offset shadow-color
-     highlight-shadow-color
-     windows-adjustment
-     is-input-style?
-     input-background-color)
+     highlight-shadow-color)
     (make-inspector))
   
-  ;; Helper: Given a stylesheet, register a corresponding header for
-  ;; legacy support.
-  (define (register-header sheet)
-    ;; XXX - Colors are hard-coded until the engine is modified to
-    ;; stop using palette values everywhere.
-    (if (have-5l-prim? 'header)
-        (call-5l-prim 'header
-                      (stylesheet-name sheet)
-                      ;; Generate a fake header fontname.
-                      (cat (if (member? 'bold (stylesheet-flags sheet)) "b" "")
-                           "ser"
-                           (number->string (stylesheet-size sheet)))
-                      (stylesheet-justification sheet)
-                      (stylesheet-color sheet)
-                      (if (stylesheet-is-input-style? sheet)
-                          (stylesheet-input-background-color sheet)
-                          (stylesheet-highlight-color sheet))
-                      (stylesheet-shadow-offset sheet)
-                      (stylesheet-shadow-color sheet)
-                      (stylesheet-windows-adjustment sheet)
-                      (stylesheet-highlight-shadow-color sheet)
-                      )))
-
   ;; Helper: Convert a list of flags to a defstyle flag value.
   (define (flags->defstyle-flags flags)
     (cond
@@ -448,7 +423,7 @@
   ;; Helper: Given a stylesheet, register a corresponding defstyle.
   (define (register-defstyle sheet)
     (call-5l-prim 'defstyle
-                  (stylesheet-name sheet)
+                  (stylesheet-long-name sheet)
                   (stylesheet-family sheet)
                   (stylesheet-size sheet)
                   (flags->defstyle-flags (stylesheet-flags sheet))
@@ -459,12 +434,43 @@
                   (stylesheet-shadow-offset sheet)
                   (stylesheet-shadow-color sheet)
                   (stylesheet-highlight-shadow-color sheet))
-    (set! *stylesheet-list* (cons sheet *stylesheet-list*))
-    )
+    ;; XXX - Ugly hack for stylesheet display utilities in VTRA program.
+    ;; (We don't want to display anonymous stylesheets, though.)
+    (when (stylesheet-name sheet)
+      (set! *stylesheet-list* (cons sheet *stylesheet-list*))))
+
+  ;; Internal hash table containing the STYLESHEET-LONG-NAME of all
+  ;; registered stylesheets.
+  (define *registered-styles* (make-hash-table))
+
+  ;; Helper: If we haven't already registered an equivalent style sheet,
+  ;; register this one.
+  (define (maybe-register-defstyle sheet)
+    (define name (stylesheet-long-name sheet))
+    (unless (hash-table-get *registered-styles* name (lambda () #f))
+      (hash-table-put! *registered-styles* name #t)
+      (register-defstyle sheet)))
+
+  ;; Helper: Creates nice, long, X11-inspired style names so we never
+  ;; register any duplicates.
+  (define (style->long-name name family size flags justification
+                            text-color highlight-color height-adjustment
+                            shadow-offset shadow-color
+                            highlight-shadow-color)
+    (define c color->hex-string)
+    (define (v-or-p value)
+      (if (percent? value)
+          (cat (percent-value value) "%")
+          value))
+    (symcat family "-" size "-" (flags->defstyle-flags flags) "-"
+            justification "-" (c text-color) "-"
+            (c highlight-color) "-" (v-or-p height-adjustment) "-"
+            shadow-offset "-" (c shadow-color) "-"
+            (c highlight-shadow-color)))
 
   ;; An internal helper function which does all the heavy lifting.
-  (define (register-style name
-                          &key
+  (define (register-style &key
+                          [name #f]
                           [base #f]
                           [family (if base (stylesheet-family base) "Times")]
                           [size (if base (stylesheet-size base) 12)]
@@ -490,26 +496,16 @@
                           [highlight-shadow-color
                            (if base
                                (stylesheet-highlight-shadow-color base)
-                               shadow-color)]
-                          ;; Deprecated parameter for header support.
-                          [windows-adjustment
-                           (if base (stylesheet-windows-adjustment base) 0)]
-                          ;; Deprecated parameters for input support.
-                          [is-input-style?
-                           (if base (stylesheet-is-input-style? base) #f)]
-                          [input-background-color
-                           (if base
-                               (stylesheet-input-background-color base)
-                               (color #x00 #x00 #x00))])
-    (let [[sheet (make-stylesheet name family size flags justification
-                                  text-color highlight-color height-adjustment
-                                  shadow-offset shadow-color
-                                  highlight-shadow-color
-                                  windows-adjustment
-                                  is-input-style?
-                                  input-background-color)]]
-      (register-defstyle sheet)
-      (register-header sheet)
+                               shadow-color)])
+    (let* [[long-name (style->long-name name family size flags justification
+                                        text-color highlight-color
+                                        height-adjustment shadow-offset
+                                        shadow-color highlight-shadow-color)]
+           [sheet (make-stylesheet name long-name family size flags
+                                   justification text-color highlight-color
+                                   height-adjustment shadow-offset shadow-color
+                                   highlight-shadow-color)]]
+      (maybe-register-defstyle sheet)
       sheet))
 
   ;;; Define a new stylesheet for drawing text.
@@ -540,7 +536,7 @@
   (define-syntax define-stylesheet
     (syntax-rules ()
       [(define-stylesheet name args ...)
-       (define name (register-style 'name args ...))]))
+       (define name (register-style :name 'name args ...))]))
   (define-syntax-indent define-stylesheet 1)
 
   ;;; Draw a string of text.
@@ -553,7 +549,7 @@
   ;;; @legacy text textaa
   (define (draw-text style r text)
     ;; XXX - textaa uses an idiosyncratic formating language.
-    (call-5l-prim 'textaa (stylesheet-name style) r text))
+    (call-5l-prim 'textaa (stylesheet-long-name style) r text))
   
   ;;; Measure a string of text.
   ;;;
@@ -568,7 +564,7 @@
                         &key (max-width (rect-width $screen-rect)))
     ;;; XXX - We can't measure anything but left-aligned text accurately.
     (with-saved-text-position
-      (call-5l-prim 'measuretextaa (stylesheet-name style) msg max-width)
+      (call-5l-prim 'measuretextaa (stylesheet-long-name style) msg max-width)
       (rect 0 0
             (engine-var '_text_width)
             (engine-var '_text_height))))

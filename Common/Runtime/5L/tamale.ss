@@ -35,7 +35,7 @@
            current-card-name fade unfade opacity save-graphics restore-graphics
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
-           %basic-button% symcat
+           %basic-button%
            quicktime-component-version
            mark-unprocessed-events-as-stale!
            number->integer interpolate-int make-object-mover animate
@@ -704,9 +704,6 @@
       (when (and mouse-in-button? was-grabbed?)
         ((prop self action))))
     )
-
-  (define (symcat . args)
-    (string->symbol (apply cat args)))
 
   ;;; Get the version of a QuickTime component, given the four-letter,
   ;;; case-sensitive type and subtype strings. Returns 0 if the component

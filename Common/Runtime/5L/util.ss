@@ -71,7 +71,7 @@
   ;;  Utility Functions
   ;;=======================================================================
 
-  (provide foreach member? value->string cat keyword-name
+  (provide foreach member? value->string cat symcat keyword-name
            hash-table-has-key?
            label with-errors-blocked with-values)
 
@@ -111,6 +111,9 @@
     (if (not (null? values))
         (string-append (value->string (car values)) (apply cat (cdr values)))
         ""))
+
+  (define (symcat . args)
+    (string->symbol (apply cat args)))
 
   (define (keyword-name value)
     (assert (keyword? value))
