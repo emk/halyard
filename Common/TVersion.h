@@ -22,15 +22,37 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		27
+#define VERSION_REV_BIG		28
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.27 (Development)"
+#define VERSION_STRING		"Tamale 0.0.28 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.70  2004/05/21 14:09:52  emk
+ 0.0.28 - 21 May 2004 - emk
+
+ Re-enabled OpenGL drivers and implemented reticle support.  (Overlays do
+ not work yet.)  You now need the wxref_soft.dll and wxref_gl.dll files to
+ run Quake 2.
+
+ To turn on GL, run "(set! (quake2-driver) 'gl)" before initializing Quake 2
+ for the first time.  There are ways to switch video mode on the fly, but
+ they're not entirely reliable.
+
+   * Added a Vid_GetWindowPtr function to refimport_t for passing HWNDs
+     and other data types through to the graphics driver.
+   * Disabled second initialization of graphics drivers when running
+     under wxWindows.
+   * Added code to save r_projection_matrix during scene setup.
+   * Implemented R_ProjectPoint duplicating GL vertex transform logic in
+     software.
+   * Modified ref_soft to get HWND from Vid_GetWindowPtr.
+   * Modified Quake to prepend "wx" to DLL names when under wxWindows.
+   * Added support for passing through driver name during Quake 2 init.
+
  Revision 1.69  2004/05/07 23:47:21  emk
  0.0.27 - 23 April 2004 - emk
 

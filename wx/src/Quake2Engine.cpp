@@ -46,11 +46,12 @@ END_EVENT_TABLE()
 // another window is displayed over it?
 // TODO - Definitely broken in the presence of Reload Script.
 
-Quake2Engine::Quake2Engine(Stage *inStage, const std::string &inGame)
+Quake2Engine::Quake2Engine(Stage *inStage, const std::string &inGame,
+                           const std::string &inDriver)
     : wxQuake2Window(inStage, -1, wxDefaultPosition,
 					 wxQuake2Window::MODE_800_600,
 					 GetBaseDirectory().ToNativePathString().c_str(),
-					 inGame.c_str())
+					 inGame.c_str(), inDriver.c_str())
 {
 	ASSERT(!sHasBeenCreated && !sInstance);
 	sInstance = this;
@@ -160,9 +161,10 @@ void Quake2Engine::HandleBinMsg(unsigned char *buffer, size_t size)
     } END_EXCEPTION_TRAPPER();
 }
 
-void Quake2Engine::Initialize(const std::string &inGame)
+void Quake2Engine::Initialize(const std::string &inGame,
+                              const std::string &inDriver)
 {
-	new Quake2Engine(wxGetApp().GetStage(), inGame);
+	new Quake2Engine(wxGetApp().GetStage(), inGame, inDriver);
 }
 
 #endif CONFIG_HAVE_QUAKE2

@@ -73,11 +73,17 @@ void FIVEL_NS RegisterQuake2Primitives()
 
 DEFINE_5L_PRIMITIVE(Quake2Init)
 {	
-	std::string game;
+	std::string game, driver;
+
+    // Default driver.
+    driver = "soft";
 
 	inArgs >> game;
+    if (inArgs.HasMoreArguments())
+        inArgs >> SymbolName(driver);
+
 	if (!Quake2Engine::IsInitialized())
-		Quake2Engine::Initialize(game);
+		Quake2Engine::Initialize(game, driver);
 }
 
 DEFINE_5L_PRIMITIVE(Quake2Command)
