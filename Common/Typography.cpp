@@ -483,8 +483,8 @@ void Face::UpdateGlyphCacheSize(const Glyph *inGlyph)
 	while (sGlyphCacheSize >
 		   (sGlyphCacheSizeAtLastWarning + kGlyphCacheSizeWarningIncrement))
 	{
-		gDebugLog.Log("Typography: glyph cache is now %dK.",
-					  sGlyphCacheSize / 1024);
+		FIVEL_NS gDebugLog.Log("Typography: glyph cache is now %dK.",
+							   sGlyphCacheSize / 1024);
 		sGlyphCacheSizeAtLastWarning += kGlyphCacheSizeWarningIncrement;
 	}
 }

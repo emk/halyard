@@ -6,6 +6,7 @@
 #include "TCommon.h"
 
 #include <assert.h>
+#include <stddef.h>
 
 //////////
 // Portable graphics primitives.  Over time, it might be good to refactor
