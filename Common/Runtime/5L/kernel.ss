@@ -145,6 +145,10 @@
   ;;
   ;;    NORMAL:   The interpreter is running code normally, or has no code
   ;;              to run.  The default.
+  ;;    STOPPING: The kernel is about to stop.  We use a two-phase stop
+  ;;              system--STOPPING indicates we should escape to the
+  ;;              top-level loop, and STOPPED indicates that we should
+  ;;              efficiently busy-wait at the top-level.
   ;;    STOPPED:  The kernel has been stopped.
   ;;    PAUSED:   The interpreter should pause the current card until it is
   ;;              told to wake back up.
@@ -188,7 +192,7 @@
     (set! *%kernel-timeout-thunk* thunk))
   
   (define (%kernel-check-timeout)
-    (if (eq? *%kernel-state* 'STOPPED)
+    (if (%kernel-stopped?)
         (%kernel-clear-timeout)
         (when (and *%kernel-timeout*
                    (>= (current-milliseconds) *%kernel-timeout*))
@@ -215,8 +219,8 @@
     
   (define (%kernel-check-deferred)
     ;; If the interpreter has stopped, cancel any deferred thunks.
-    (when (eq? *%kernel-state* 'STOPPED)
-        (set! *%kernel-deferred-thunk-queue* '()))   
+    (when (%kernel-stopped?)
+      (set! *%kernel-deferred-thunk-queue* '()))   
 
     ;; Run any deferred thunks.
     (unless (or (null? *%kernel-deferred-thunk-queue*)
@@ -239,8 +243,13 @@
       (%kernel-check-deferred)))
 
   (define (%kernel-maybe-clear-state)
-    (unless (%kernel-stopped?)
-      (set! *%kernel-state* 'NORMAL))
+    (case *%kernel-state*
+      [[STOPPING]
+       (set! *%kernel-state* 'STOPPED)]
+      [[STOPPED]
+       #f]
+      [else
+       (set! *%kernel-state* 'NORMAL)])
     (set! *%kernel-jump-card* #f))
   
   (define (%kernel-run-as-callback thunk error-handler)
@@ -267,9 +276,9 @@
     (unless *%kernel-running-callback?*
       (%kernel-check-timeout))
     (case *%kernel-state*
-      [[NORMAL]
+      [[NORMAL STOPPED]
        #f]
-      [[STOPPED]
+      [[STOPPING]
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
       [[PAUSED]
@@ -524,14 +533,15 @@
     (%kernel-set-state 'INTERPRETER-KILLED))
 
   (define (%kernel-stop)
-    (%kernel-set-state 'STOPPED))
+    (%kernel-set-state 'STOPPING))
 
   (define (%kernel-go)
     (when (%kernel-stopped?)
       (%kernel-set-state 'NORMAL)))
 
   (define (%kernel-stopped?)
-    (eq? *%kernel-state* 'STOPPED))
+    (or (eq? *%kernel-state* 'STOPPING)
+        (eq? *%kernel-state* 'STOPPED)))
   
   (define (%kernel-pause)
     (%kernel-die-if-callback '%kernel-pause)
@@ -607,8 +617,12 @@
       ;; Return the result.
       (cons ok? result)))
 
-  (define (%kernel-run-callback thunk)
+  (define (%kernel-run-callback function args)
     (%kernel-die-if-callback '%kernel-run-callback)
-    (%kernel-run-as-callback thunk non-fatal-error))
+    (%kernel-run-as-callback (lambda () (apply function args))
+                             non-fatal-error))
+
+  (define (%kernel-reverse! l)
+    (reverse! l))
 
   ) ; end module

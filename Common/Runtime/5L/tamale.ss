@@ -13,8 +13,10 @@
            move-rect-center-to center-text html edit-box movie
            wait tc draw-box inset-rect timeout)
 
-  (define (load-picture name p)
-    (call-5l-prim 'loadpic name p))
+  (define (load-picture name p &key (subrect :rect #f))
+    (if subrect
+        (call-5l-prim 'loadsubpic name p subrect)
+        (call-5l-prim 'loadpic name p)))
 
   (define (modal-input r size forecolor backcolor)
     (call-5l-prim 'input r size forecolor backcolor)
