@@ -59,8 +59,8 @@
   ;;; ignore it, or if we should add a way of blitting saved regions
   ;;; to arbitrary places on screen. Actually, need to figure out if 
   ;;; we have too many redundant offsets, also.
-  (defmethod (draw-graphic (pict <saved-region>) offset)
-    (restore-graphics :bounds (saved-region-rect pict)))
+  ;;(defmethod (draw-graphic (pict <saved-region>) offset)
+  ;;  (restore-graphics :bounds (saved-region-rect pict)))
 
   (defmethod (draw-graphic (graphic <rect-graphic>) offset)
     (draw-box-outline (offset-rect (rect-graphic-rect graphic) offset)

@@ -150,7 +150,7 @@
   (provide *text-x* *text-y* *graphic-x* *graphic-y*
            text-position set-text-position! with-saved-text-position
            graphic-position set-graphic-position! with-saved-graphic-position
-           $screen-rect)
+           $screen-rect *stylesheet-list*)
 
   ;;; The maximum horizontal position of the last text drawn.
   (define-engine-variable *text-x*    _INCR_X     0)
@@ -219,7 +219,9 @@
   ;;; @type RECT The screen rectangle, in global co-ordinates.
   (define $screen-rect (rect 0 0 800 600))
 
-  
+  ;;; Holds a list of all registered stylesheets
+  (define *stylesheet-list* (list ))
+
   ;;;======================================================================
   ;;;  Mathematical Primitives
   ;;;======================================================================
@@ -439,7 +441,9 @@
                   (stylesheet-height-adjustment sheet)
                   (stylesheet-shadow-offset sheet)
                   (stylesheet-shadow-color sheet)
-                  (stylesheet-highlight-shadow-color sheet)))
+                  (stylesheet-highlight-shadow-color sheet))
+    (set! *stylesheet-list* (cons sheet *stylesheet-list*))
+    )
 
   ;; An internal helper function which does all the heavy lifting.
   (define (register-style name
