@@ -6,6 +6,12 @@ with our programs.  In general, these came from various allegedly DFSG- and
 OSI- compliant font packages found on a typical Debian GNU/Linux system.
 Descriptions and copyright information follow.
 
+Marker Fonts
+------------
+
+These are inexpensive shareware fonts from Pat Snyder, who we can't find,
+and who we need to find before we ship this fonts.
+
 
 tim???.pcf
 ----------
