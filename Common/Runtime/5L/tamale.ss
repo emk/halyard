@@ -83,7 +83,7 @@
            [lst (map string->number (regexp-split " " str))]]
       (point (car lst) (cadr lst))))
 
-  (define (delete-element elem-or-name name)
+  (define (delete-element elem-or-name)
     (delete-elements (list (elem-or-name-hack elem-or-name))))
   
   (define (delete-elements &opt (elems-or-names '()))

@@ -1016,8 +1016,8 @@
   ;;  A program is (among other things) a tree of nodes.  The root node
   ;;  contains <card>s and <card-groups>.  <card>s contain <element>s.
 
-  (provide <node> node? node-name node-full-name node-parent find-node @
-           elem-or-name-hack)
+  (provide <node> node? node-name node-full-name node-parent find-node
+           @-by-name @ elem-or-name-hack)
 
   (defclass <node> (<template>)
     name
@@ -1078,16 +1078,17 @@
                [found (find-node candidate)]]
           (or found (find-node-relative (node-parent base) name)))))
 
-  (define (@-helper name)
+  (define (@-by-name name)
     (if (current-card)
-        (find-node-relative (current-card) name)
-        (error (cat "Can't write (@ " name ") outside of a card"))))    
+        (or (find-node-relative (current-card) name)
+            (error (cat "Can't find node " name)))
+        (error (cat "Can't call (@-helper " name ") outside of a card"))))
 
   (define-syntax @
     ;; Syntactic sugar for find-node-relative.
     (syntax-rules ()
       [(@ name)
-       (@-helper 'name)]))
+       (@-by-name 'name)]))
 
   (define (elem-or-name-hack elem-or-name)
     ;; Backwards compatibility glue for code which refers to elements
@@ -1099,7 +1100,7 @@
                         (begin
                           (debug-caution (cat "Change '" elem-or-name
                                               " to (@ " elem-or-name ")"))
-                          (find-node-relative (current-card) elem-or-name)))))
+                          (@-by-name elem-or-name)))))
 
   (define (analyze-node-name name)
     ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
