@@ -93,6 +93,10 @@ SOURCE=..\..\..\Common\TBTree.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TEncoding.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\THeader.cpp
 # End Source File
 # Begin Source File
@@ -134,6 +138,10 @@ SOURCE=..\..\..\Common\TBTree.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TCommon.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TEncoding.h
 # End Source File
 # Begin Source File
 
