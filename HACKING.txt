@@ -31,17 +31,16 @@ Checking 5L Out of CVS
   CVS server: imlcvs.dartmouth.edu
   CVS root:   /usr/local/cvsroot
 
-  Check out the modules "5L", "5Ltest" and "5Ltest_scheme".  These
-  correspond to the full paths "iml/FiveL/Release",
-  "iml/iml_programs/5Ltest" and "iml/iml_programs/5Ltest_scheme" (you'll
-  need to know these to use CVSweb).  Make sure your CVS client uses the
-  native end-of-line convetion; this can be a problem under MacOS X and
-  some versions of Cygwin/W2K.  Also make sure that CVS clients
+  Check out the modules "5L", "5Ltest_wx".  These correspond to the
+  full paths "iml/FiveL/Release", "iml/iml_programs/5Ltest_wx" (you'll
+  need to know these to use CVSweb).  Make sure your CVS client uses
+  the native end-of-line convetion; this can be a problem under MacOS
+  X and some versions of Cygwin/W2K.  Also make sure that CVS clients
   don't check out files out ready-only; this will tend to break the
   engine.
 
   In the instructions that follow, we'll assume your copy of the 5L source
-  tree is in $5L_DIR and your copy of 5Ltest is in $5LTEST_DIR.
+  tree is in $5L_DIR and your copy of 5Ltest_wx is in $5LTEST_DIR.
 
 Building Win32 5L
 -----------------
@@ -58,32 +57,35 @@ Building Win32 5L
   follow directories to the following categories:
 
     Include files:
-      C:\SRC\QT501SDK\SDK\CINCLUDES
-      C:\SRC\QT501SDK\SDK\COMPONENTINCLUDES      
+	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\CIncludes
+	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\ComponentIncludes
     Libraries:
-      C:\SRC\QT501SDK\SDK\LIBRARIES
+	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Libraries
     Executable files:
-      C:\SRC\QT501SDK\SDK\TOOLS
+	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Tools
 
-  You should probably build wxWindows at this point, so that the libraries
-  are there when you're building 5L later.  Open
-  $5L_DIR/libs/wxWindows/src/wxWindows.dsw, and build the "Win32 Release"
-  and "Win32 Debug" targets.  Once you've built these libraries, add the
-  WXWIN environment variable, pointing to $5L_DIR/libs/wxWindows.
+  You should probably build wxWindows at this point, so that the
+  libraries are there when you're building 5L later.  Open
+  $5L_DIR/libs/wxWindows/src/wxWindows.dsw, and build the "Win32
+  Release" and "Win32 Debug" targets.  Once you've built these
+  libraries, add the WXWIN environment variable, pointing to
+  $5L_DIR/libs/wxWindows. You will need to restart MSVC for this
+  environment variable to be read.
 
   Open up $5L_DIR\FiveL.dsw.  Click on "FileView", right-click on
   "FiveL files", and select "Settings" > "Settings for: Win32 Debug" >
   "Debug" > "General".  Set "Working Directory" to $5LTEST_DIR (the actual
   path, not the variable name!).  Select "Settings for: Win32 Release" and
   set "Working Directory" to the same value.  Now you'll automatically run
-  5Ltest when you ask Visual Studio to launch your program.  You can do the
-  same thing with 5Ltest_scheme to test the Scheme interpreter.
+  5Ltest when you ask Visual Studio to launch your program. 
 
   Using a similar process, set the working directories for both versions
   of "CommonTest" to $5L_DIR/Common.  The test suites won't run without
   this step.
 
-  You may also need to look at $5L_DIR/libs/quake2/README-WX.txt.
+  You may also need to look at $5L_DIR/libs/quake2/README-WX.txt. It
+  will explain how to set up MSVC with the assembler support to build
+  Quake.
 
   Select "Build" > "Set Active Configuration" > "wx5L - Win32 Debug" >
   "OK".  Now click on the "Build" icon in your toolbar (it looks like two
