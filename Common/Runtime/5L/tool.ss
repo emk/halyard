@@ -7,7 +7,9 @@
 ;;  tricky modules during 'on-execute'.  We need to do things that
 ;;  hard way because we don't like the defaults.
 ;;
-;;  You can find similar code for the standalone engine in 5L-Loader.ss.
+;;  You can find similar code for the standalone engine in 5L-Loader.ss,
+;;  which is run by TSchemeInterpreter.cpp in the engine.  Generally,
+;;  if these two loader subsystems get out of sync, things will break.
 
 (module tool mzscheme
   (require (lib "unitsig.ss")
@@ -95,7 +97,11 @@
 					      "fake-engine.ss"))
 	       (load/use-compiled (build-path (collection-path "5L")
 					      "kernel.ss"))))
-	    (super-on-execute settings run-in-user-thread))
+	    (super-on-execute settings run-in-user-thread)
+	    (run-in-user-thread
+	     (lambda ()
+	       (current-directory (find-base-directory)))))
+
 	  (super-instantiate ())))
 
       ;; Given a class implementing drscheme:language:module-based-language<%>,
@@ -137,5 +143,29 @@
 	    (get-position "5L Multimedia Programming Language"))
 	   (one-line-summary
 	    "For use with the standalone 5L application")))
+	)))
 
-	))))
+  (define (find-base-directory)
+    ;; Walk up the directory tree, looking for the most likely base
+    ;; directory for this file, and return it.  This helps make the
+    ;; DrScheme environment more like the engine environment.
+    (let [[roots (filesystem-root-list)]]
+      (define (recurse p)
+	(cond
+	 [(directory-exists? (build-path p "Runtime"))
+	  ;; We found our base directory.
+	  p]
+	 [(member p roots)
+	  ;; We don't appear to be inside a base directory, so
+	  ;; we leave DrScheme's default alone.  This is
+	  ;; a nice, safe default assumption.
+	  (current-directory)]
+	 [else
+	  (let [[parent (simplify-path (build-path p 'up))]]
+	    (if (equal? parent p)
+		(current-directory) ; Hmmm.  Why didn't we go up?
+		(recurse parent)))]))
+      (recurse (simplify-path (path->complete-path (current-directory)))))) 
+
+  )
+

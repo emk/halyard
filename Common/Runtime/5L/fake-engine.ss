@@ -59,7 +59,8 @@
       [[haveprimitive]
        (case (car args)
          [[haveprimitive variableinitialized get settyped log setwindowtitle
-	   defstyle header keybind loadpal]
+	   defstyle header keybind loadpal registereventdispatcher
+	   setimagecachesize registercursor]
           #t]
          [else
           #f])]
@@ -71,7 +72,8 @@
       [[log] (apply prim-log args)]
       
       ;; The do-nothing primitives.
-      [[setwindowtitle defstyle header keybind loadpal]
+      [[setwindowtitle defstyle header keybind loadpal registereventdispatcher
+	setimagecachesize registercursor]
        (void)]
 
       ;; 
