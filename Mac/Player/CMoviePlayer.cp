@@ -112,10 +112,8 @@ void CMoviePlayer::WakeCard(int32 inFrame)
 		else
 			mWaitTime = (inFrame - mWaitOffset) * mScale / 30;
 	}	
-#ifdef DEBUG
 	//else
 	//	gDebugLog.Log("wait called but no movie playing");
-#endif
 }
 
 
@@ -399,11 +397,8 @@ bool CMoviePlayer::DoPreroll(const char *inMovieName, bool inAudioOnly, bool inP
 				err = ::PrerollMovie(mMovie, 0, mRate);
 				if (err != noErr)
 				{
-#ifdef DEBUG
 					gDebugLog.Log("PrerollMovie: returned <%d>", err);
-#else
 					gLog.Caution("Cound not Preroll Movie <%s>", inMovieName);
-#endif
 					playIt = false;
 				}
 				
@@ -575,9 +570,7 @@ void CMoviePlayer::PlayLoop(const char *inMovieName, int32 inFadeTime)
 			int32		i;
 			int16		theVol = 0x0000;
 
-#ifdef DEBUG
 	//		gDebugLog.Log("fade in to the looping audio");
-#endif
 			
 			gVariableManager.SetString("_lpstat", "1");
 			gVariableManager.SetString("_lpactive", "1");
@@ -626,9 +619,7 @@ void CMoviePlayer::Pause(void)
 		gVariableManager.SetString("_lpstat", "0");
 		gVariableManager.SetString("_lpactive", "0");
 
-#ifdef DEBUG
 	//	gDebugLog.Log("REALLY pausing the movie");
-#endif
 
 		if (mLooping)
 			FadeLoop();
@@ -695,9 +686,7 @@ void CMoviePlayer::FadeLoop(void)
 	
 	if ((mMovie != NULL) and (mLooping))
 	{
-#ifdef DEBUG
 	//	gDebugLog.Log("fade out of the looping audio");
-#endif
 
 		theVolume = 0x0100;							// full volume
 		fadeVol = theVolume;

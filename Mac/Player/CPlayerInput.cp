@@ -200,9 +200,7 @@ Boolean CPlayerInput::HandleKeyPress(
 					// Set the appropriate var
 					gVariableManager.SetString((const char *) mVarToSet, p2cstr(theString));
 
-#ifdef DEBUG
 					gDebugLog.Log("input: variable <%s>, value <%s>", (const char *) mVarToSet, theString);
-#endif
 					
 					// Create a new text field to take its place
 					CalcLocalFrameRect(macBounds);

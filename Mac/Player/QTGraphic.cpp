@@ -78,10 +78,8 @@ void QTGraphic::Create(TString &inPath)
 
 	if (not theConfig->FillSpec(&fsSpec, m_path))
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Could not get FSSpec for path <%s>",
 			m_path.GetString());
-#endif
 		gLog.Log("Error: Missing graphic: <%s>", m_path.GetString()); // Douglas wants 5L log to show this error 
 
 		gMissingMediaLog.Log("%s", m_path.GetString());
@@ -91,10 +89,8 @@ void QTGraphic::Create(TString &inPath)
 	err = ::GetGraphicsImporterForFile(&fsSpec, &m_gi);
 	if(err != noErr)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Could not get GraphicsImporter for graphic <%s>, error = <%ld>",
 			m_path.GetString(), err);
-#endif
 
 		gMissingMediaLog.Log("%s, error %d", m_path.GetString(), err);
 		return;
@@ -114,10 +110,8 @@ void QTGraphic::Create(TString &inPath)
 	cr = ::GraphicsImportGetImageDescription(m_gi, &m_idh);
 	if (cr != noErr)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Could not get image description for graphic <%s>, error = <%ld>",
 			m_path.GetString(), cr);
-#endif
 		m_idh = NULL;
 	}
 }
@@ -133,11 +127,9 @@ CTabHandle QTGraphic::GetColorTable(void)
 		err = GetImageDescriptionCTable(m_idh, &cTab);
 		if (err != noErr)
 		{
-#ifdef DEBUG
 			gDebugLog.Log("Could not get color table out of graphic <%s>, error = <%d>",
 				m_path.GetString(), err);
 			
-#endif
 			cTab = NULL;
 		}
 
@@ -145,7 +137,6 @@ CTabHandle QTGraphic::GetColorTable(void)
 		{
 			::CTabChanged(cTab);	// to bump the color table seed
 
-//#ifdef DEBUG
 //			for (int i = 0; i < 256; i++)
 //			{
 //				gDebugLog.Log("Create: %d -> R <%d>, G <%d>, B <%d>",
@@ -153,7 +144,6 @@ CTabHandle QTGraphic::GetColorTable(void)
 //					   (**cTab).ctTable[i].rgb.green, 
 //					   (**cTab).ctTable[i].rgb.blue);
 //			}
-//#endif
 		}
 	}
 
@@ -202,13 +192,11 @@ bool QTGraphic::SetQTGWorld(GWorldPtr inGWorld)
 
 		if (cr == noErr)
 			retValue = true;
-#ifdef DEBUG
 		else
 		{
 			gDebugLog.Log("Could not set GWorld of graphic <%s>, error = <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
 	}
 	return (retValue);
 }
@@ -230,13 +218,11 @@ bool QTGraphic::SetTransparent(void)
 
 		if (cr == noErr)
 			retValue = true;
-#ifdef DEBUG
 		else
 		{
 			gDebugLog.Log("Could not set transparent drawing mode for graphic <%s>, error = <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
 	}
 	return (retValue);
 }
@@ -253,13 +239,11 @@ bool QTGraphic::SetDestRect(TRect &inRect)
 
 		if (cr == noErr)
 			retValue = true;
-#ifdef DEBUG
 		else
 		{
 			gDebugLog.Log("Could not set destination rectangle for graphic <%s>, error = <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
 	}
 	return (retValue);
 }
@@ -310,13 +294,12 @@ void QTGraphic::Draw(GWorldPtr inGWorld, TPoint &inPt, bool inTrans /* = false *
 
 		cr = ::GraphicsImportDraw(m_gi);
 
-#ifdef DEBUG
 		if (cr != noErr)
 		{
 			gDebugLog.Log("Error drawing graphic <%s>, error <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
+
 		if (inGWorld != NULL)
 			SetGWorld(origPort, origDev);
 	}
@@ -362,32 +345,28 @@ void QTGraphic::Draw(GWorldPtr inGWorld, TPoint &inPt, TRect &inRect)
 
 				cr = ::GraphicsImportSetClip(m_gi, rgn);
 
-#ifdef DEBUG
 				if (cr != noErr)
 				{
 					gDebugLog.Log("Error drawing graphic <%s>, error = <%ld>",
 						m_path.GetString(), cr);
 				}
-#endif
 
 				::DisposeRgn(rgn);
 			}
-#ifdef DEBUG
 			else
 				gDebugLog.Log("Could not get region handle to clip graphic <%s>",
 					m_path.GetString());
-#endif
+
 		}
 
 		cr = ::GraphicsImportDraw(m_gi);
 
-#ifdef DEBUG
 		if (cr != noErr)
 		{
 			gDebugLog.Log("Error drawing graphic <%s>, error <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
+
 		::SetGWorld(origPort, origDev);
 		::GraphicsImportSetClip(m_gi, NULL);
 	}
@@ -395,6 +374,13 @@ void QTGraphic::Draw(GWorldPtr inGWorld, TPoint &inPt, TRect &inRect)
 
 /*
  $Log$
+ Revision 1.5  2002/04/25 09:21:04  hamon
+ Deleted #ifdef DEBUG lines when they surround gDebugLog.Log messages.
+
+ Thanks to Eric's changes, determination of whether to actually log them is done within the variable manager and so #ifdef DEBUG lines no longer required.
+
+ Changes by Elizabeth Hamon.
+
  Revision 1.4  2002/03/04 15:42:49  hamon
  Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
 

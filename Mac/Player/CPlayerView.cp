@@ -235,24 +235,18 @@ void CPlayerView::DoPause(bool inFromKey)
 		if (gMovieManager.Playing())
 		{
 			gMovieManager.Pause();
-#ifdef DEBUG
 		//	gDebugLog.Log("pausing the movie");
-#endif			
 			mPauseFromKey = inFromKey;
 			mMoviePaused = true;
 			
 			if (inFromKey)
 				ProcessTZones(false);	// turn off touch zone processing
 		}
-#ifdef DEBUG
 		//else
 		//	gDebugLog.Log("nothing to pause");
-#endif
 	}
-#ifdef DEBUG
 	//else
 	//	gDebugLog.Log("movie is already paused");
-#endif
 }
 
 void CPlayerView::DoResume(bool /* inFromKey */)
@@ -824,10 +818,8 @@ bool CPlayerView::DoKeyBind(const char inKey)
 				if (gMovieManager.Playing())
 					gMovieManager.Kill();
 
-#ifdef DEBUG
 				gDebugLog.Log("keybind hit: key <%c>, jump to <%s>", 
 					inKey, (const char *) *(theBind.mCardName));
-#endif				
 				gCardManager.JumpToCardByName((const char *) *(theBind.mCardName), false);
 				return (true);
 			}
