@@ -4,12 +4,12 @@
 #define TValue_H
 
 #include <typeinfo>
-#include "TInterpreter.h"
 
 BEGIN_NAMESPACE_FIVEL
 
 // Forward declarations.
 class TValue;
+class TCallback;
 
 
 //=========================================================================
@@ -69,6 +69,15 @@ public:
 extern bool operator==(const TPercent &inP1, const TPercent &inP2);
 extern bool operator!=(const TPercent &inP1, const TPercent &inP2);
 extern std::ostream &operator<<(std::ostream &out, const TPercent &inPercent);
+
+
+//=========================================================================
+//  TCallbackPtr
+//=========================================================================
+
+typedef boost::shared_ptr<TCallback> TCallbackPtr;
+extern std::ostream &operator<<(std::ostream &out,
+								const TCallbackPtr &inCallback);
 
 
 //=========================================================================

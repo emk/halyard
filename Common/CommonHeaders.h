@@ -32,6 +32,8 @@
 #include "TPoint.h"
 #include "TRect.h"
 #include "TPolygon.h"
+#include "GraphicsTools.h"
+#include "TValue.h"
 #include "TVariable.h"
 #include "TTemplateUtils.h"
 #include "TLogger.h"

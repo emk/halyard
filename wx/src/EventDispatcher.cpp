@@ -80,11 +80,10 @@ bool EventDispatcher::DoEventUpdateUI(const wxString &inCommandName) {
 	if (!EventSetup())
 		return false;
 
-	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("update-ui");
-	args->AddSymbolArg(inCommandName.mb_str());
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+	args.push_back(TSymbol("update-ui"));
+	args.push_back(TSymbol(inCommandName.mb_str()));
+	mDispatcher->Run(args);
 	return EventCleanup();    
 }
 
@@ -94,13 +93,12 @@ bool EventDispatcher::DoEventLeftDown(wxMouseEvent &inEvent,
 	if (!EventSetup())
 		return false;
 
-	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("mouse-down");
-	args->AddInt32Arg(inEvent.GetPosition().x);
-	args->AddInt32Arg(inEvent.GetPosition().y);
-	args->AddBoolArg(inIsDoubleClick);
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+	args.push_back(TSymbol("mouse-down"));
+	args.push_back(inEvent.GetPosition().x);
+	args.push_back(inEvent.GetPosition().y);
+	args.push_back(inIsDoubleClick);
+    mDispatcher->Run(args);
 	return EventCleanup();
 }
 
@@ -110,12 +108,11 @@ bool EventDispatcher::DoSimpleMouseEvent(const char *inType,
 	if (!EventSetup())
 		return false;
 
-	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg(inType);
-	args->AddInt32Arg(inPosition.x);
-	args->AddInt32Arg(inPosition.y);
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+	args.push_back(TSymbol(inType));
+	args.push_back(inPosition.x);
+	args.push_back(inPosition.y);
+	mDispatcher->Run(args);
 	return EventCleanup();
 }
 
@@ -139,25 +136,25 @@ bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
     if (!EventSetup())
 		return false;
 
-    // Turn our character into a string.
+	// Turn our character into a string.
     char str[2];
     str[0] = inEvent.GetKeyCode();
     str[1] = '\0';
 
-    // Build an argument list and call our dispatcher.
-	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("char");
-    args->AddStringArg(str);
-    args->BeginListArg();
-    if (inEvent.ControlDown())
-        args->AddSymbolArg("control");
-    if (inEvent.AltDown())
-        args->AddSymbolArg("alt");
-    if (inEvent.ShiftDown())
-        args->AddSymbolArg("shift");
-    args->EndListArg();
-    mDispatcher->Run(args.get());
+	TValueList args, modifiers;
+    args.push_back(TSymbol("char"));
+    args.push_back(str);
 
+    if (inEvent.ControlDown())
+        modifiers.push_back(TSymbol("control"));
+    if (inEvent.AltDown())
+        modifiers.push_back(TSymbol("alt"));
+    if (inEvent.ShiftDown())
+        modifiers.push_back(TSymbol("shift"));
+
+	args.push_back(modifiers);
+
+    mDispatcher->Run(args);
 	return EventCleanup();
 }
 
@@ -169,10 +166,9 @@ bool EventDispatcher::DoEventIdle(wxIdleEvent &inEvent)
     if (!EventSetup())
 		return false;
 
-	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("idle");
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+    args.push_back(TSymbol("idle"));
+    mDispatcher->Run(args);
 	return EventCleanup();
 }
 
@@ -190,11 +186,10 @@ bool EventDispatcher::DoEventBrowserNavigate(const wxString &inUrl,
     if (!EventSetup())
 		return false;
 
-    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("browser-navigate");
-    args->AddStringArg(inUrl.mb_str());
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+    args.push_back(TSymbol("browser-navigate"));
+    args.push_back(inUrl.mb_str());
+    mDispatcher->Run(args);
     CheckForVeto(outWasVetoed);
 	return EventCleanup();
 }
@@ -203,11 +198,10 @@ bool EventDispatcher::DoEventBrowserPageChanged(const wxString &inUrl) {
     if (!EventSetup())
 		return false;
 
-    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("browser-page-changed");
-    args->AddStringArg(inUrl.mb_str());
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+    args.push_back(TSymbol("browser-page-changed"));
+    args.push_back(inUrl.mb_str());
+    mDispatcher->Run(args);
 	return EventCleanup();
 }
 
@@ -215,11 +209,10 @@ bool EventDispatcher::DoEventBrowserTitleChanged(const wxString &inTitle) {
     if (!EventSetup())
 		return false;
 
-    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("browser-title-changed");
-    args->AddStringArg(inTitle.mb_str());
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+    args.push_back(TSymbol("browser-title-changed"));
+    args.push_back(inTitle.mb_str());
+    mDispatcher->Run(args);
 	return EventCleanup();
 }
 
@@ -227,11 +220,10 @@ bool EventDispatcher::DoEventStatusTextChanged(const wxString &inText) {
     if (!EventSetup())
 		return false;
 
-    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("status-text-changed");
-    args->AddStringArg(inText.mb_str());
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+    args.push_back(TSymbol("status-text-changed"));
+    args.push_back(inText.mb_str());
+    mDispatcher->Run(args);
 	return EventCleanup();
 }
 
@@ -241,11 +233,10 @@ bool EventDispatcher::DoEventProgressChanged(bool inIsActive,
     if (!EventSetup())
 		return false;
 
-    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
-    args->AddSymbolArg("progress-changed");
-    args->AddBoolArg(inIsActive);
-    args->AddDoubleArg(inPortionCompleted);
-    mDispatcher->Run(args.get());
-
+	TValueList args;
+    args.push_back(TSymbol("progress-changed"));
+    args.push_back(inIsActive);
+    args.push_back(inPortionCompleted);
+    mDispatcher->Run(args);
 	return EventCleanup();
 }

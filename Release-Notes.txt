@@ -18,6 +18,9 @@ CVS - emk, kwasi, djin
   * Exported %kernel-equals from the kernel so C++ can test for equality
     of two Scheme values.
   * Added TInterpreter::MakeSchemePolygon and MakeSchemePercent.
+  * Deleted TCallbackArgumentList and TSchemeCallbackArgumentList, and
+    replaced them with much simpler TValueList code.
+  * Re-arranged headers a bit, and added new files to CommonHeaders.h.
 
 0.0.14 - 13 Jan 2004 - emk
 

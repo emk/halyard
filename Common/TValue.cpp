@@ -3,6 +3,7 @@
 #include "CommonHeaders.h"
 #include "TValue.h"
 #include "TestCase.h"
+#include "TInterpreter.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -38,6 +39,18 @@ std::ostream &FIVEL_NS operator<<(std::ostream &out, const TPercent &inPercent)
 {
     out << inPercent.GetValue() << "%";
     return out;
+}
+
+
+//=========================================================================
+//  TCallbackPtr Methods
+//=========================================================================
+
+std::ostream &FIVEL_NS operator<<(std::ostream &out,
+								  const TCallbackPtr &inCallback)
+{
+	out << inCallback->PrintableRepresentation();
+	return out;
 }
 
 
