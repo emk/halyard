@@ -7,6 +7,10 @@
   (require (lib "begin-var.ss" "5L"))
   (provide begin/var)
   
+  ;; Get hooks, and re-export them.
+  (require (lib "hook.ss" "5L"))
+  (provide (all-from (lib "hook.ss" "5L")))
+
 
   ;;=======================================================================
   ;;  Built-in Types
@@ -105,6 +109,27 @@
       [(with-errors-blocked (report-func) body ...)
        (call-with-errors-blocked report-func
                                  (lambda () (begin/var body ...)))]))
+
+
+  ;;=======================================================================
+  ;;  Standard Hooks
+  ;;=======================================================================
+  
+  (provide *enter-card-hook* *exit-card-hook*
+	   *card-body-finished-hook* *before-draw-hook*)
+
+  ;; Called before running each card.
+  (define *enter-card-hook* (make-hook 'enter-card))
+
+  ;; Called immediately before moving to a new card.
+  (define *exit-card-hook* (make-hook 'exit-card))
+
+  ;; Called after running the body of a each card, if the body exits
+  ;; normally (not by jumping, etc.).
+  (define *card-body-finished-hook* (make-hook 'card-body-finished))
+
+  ;; Called before *most* screen redraws.
+  (define *before-draw-hook* (make-hook 'before-draw))
 
 
   ;;=======================================================================
@@ -265,10 +290,10 @@
 	   caution debug-caution non-fatal-error fatal-error
 	   engine-var set-engine-var! throw exit-script jump refresh)
 
-  (define (call-5l-prim . args)
+  (define (call-5l-prim type . args)
     (let ((result (apply %call-5l-prim args)))
       (%kernel-check-state)
-      result))
+      (coerce-from-5l-type type result)))
   
   (define (have-5l-prim? name)
     ;; TODO - Build a general mechanism for extracting return values
@@ -277,7 +302,7 @@
 
   (define (idle)
     (%kernel-die-if-callback 'idle)
-    (call-5l-prim 'schemeidle))
+    (call-5l-prim 'VOID 'schemeidle))
   
   (define (5l-log msg)
     (%call-5l-prim 'log '5L msg 'log))
@@ -297,20 +322,38 @@
   (define (fatal-error msg)
     (%call-5l-prim 'log '5L msg 'fatalerror))
   
-  (define (engine-var name type)
-    (let [[val (call-5l-prim 'get name)]]
-      (case type
-	[[INTEGER] (string->number val)]
-	[[STRING] val]
+  (define (coerce-from-5l-type type val)
+    (case type
+      [[VOID] #f]
+      [[INTEGER] (string->number val)]
+      [[STRING] val]
+      [[BOOL]
+       (cond
+	[(equal? val "0") #f]
+	[(equal? val "1") #t]
 	[else
-	 (throw (cat "Unknown engine variable type " type " for " val))])))
+	 (throw (cat "Cannot coerce " val " to boolean value"))])]
+      [else
+       (throw (cat "Unknown engine variable type " type " for " val))]))
+
+  (define (coerce-to-5l-type type val)
+    (case type
+      [[INTEGER]
+       (assert (and (integer? val) (exact? val)))
+       (number->string val)]
+      [[STRING]
+       (assert (string? val))
+       val]
+      [[BOOL]
+       (if val #t #f)]
+      [else
+       (throw (cat "Unknown engine variable type " type " for " val))]))
+
+  (define (engine-var name type)
+    (call-5l-prim type 'get name))
   
   (define (set-engine-var! name type value)
-    ;; Useless performance hack.
-    ;; TODO - Check whether value matches type?
-    (if (string? value)
-	(call-5l-prim 'set name value)
-	(call-5l-prim 'set name (value->string value))))
+    (call-5l-prim 'VOID 'set name (coerce-to-5l-type type value)))
   
   (define (throw msg)
     ;; TODO - More elaborate error support.
@@ -318,11 +361,11 @@
     (error msg))
   
   (define (exit-script)
-    (call-5l-prim 'schemeexit))
+    (call-5l-prim 'VOID 'schemeexit))
   
   (define (jump card)
     (if (have-5l-prim? 'jump)
-	(call-5l-prim 'jump (card-name card))
+	(call-5l-prim 'VOID 'jump (card-name card))
 	(begin
 	  ;; If we don't have a JUMP primitive, fake it by hand.
 	  (set! *%kernel-jump-card* (%kernel-find-card card))
@@ -330,8 +373,9 @@
 	  (%kernel-check-state))))
 
   (define (refresh)
+    (call-hook-functions *before-draw-hook*)
     (if (have-5l-prim? 'unlock)
-	(call-5l-prim 'unlock)))
+	(call-5l-prim 'VOID 'unlock)))
 
 
   ;;=======================================================================
@@ -361,12 +405,22 @@
   
   (define (%kernel-run-card card)
     (%kernel-clear-timeout)
+
+    ;; Finish exiting our previous card.
+    (when *%kernel-current-card*
+      (call-hook-functions *exit-card-hook* *%kernel-current-card*))
+
+    ;; Update our global variables.
     (set! *%kernel-previous-card* *%kernel-current-card*)
     (set! *%kernel-current-card* card)
+
+    ;; Actually run the card.
     (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
+    (call-hook-functions *enter-card-hook* *%kernel-current-card*)
     (with-errors-blocked (non-fatal-error)
-      (call-5l-prim 'resetorigin)
+      (call-5l-prim 'VOID 'resetorigin)
       ((%kernel-card-thunk card))
+      (call-hook-functions *card-body-finished-hook* card)
       (refresh)))
 
   (define (%kernel-find-card card-or-name)

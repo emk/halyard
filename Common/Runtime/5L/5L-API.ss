@@ -18,7 +18,7 @@
   ;;;======================================================================
 
   (provide fn callback deferred-callback while for foreach
-	   define-engine-variable)
+	   define-engine-variable define-persistent-variable)
 
   ;;; Create an anonymous function object (which can be passed as a
   ;;; callback to many routines).  This is just an alias for Scheme's
@@ -104,20 +104,48 @@
 
   ;;; Bind a Scheme variable name to a 5L engine variable.
   ;;;
-  ;;; @syntax (define-engine-variable name 5L-name type)
+  ;;; @syntax (define-engine-variable name 5L-name type &opt init-val)
   ;;; @param NAME name The Scheme name to use.
   ;;; @param NAME 5L-name The corresponding name in the 5L engine.
   ;;; @param NAME type The type of the variable.
+  ;;; @opt EXPRESSION init-val The initial value of the variable.
   ;;; @xref engine-var set-engine-var!
   (define-syntax define-engine-variable
     (syntax-rules ()
+      [(define-engine-variable name 5l-name type init-val)
+       (begin
+	 (define-symbol-macro name (engine-var '5l-name 'type))
+	 (maybe-initialize-engine-variable '5l-name 'type init-val))]
       [(define-engine-variable name 5l-name type)
        (define-symbol-macro name (engine-var '5l-name 'type))]))
+
+  (define (maybe-initialize-engine-variable 5l-name type init-val)
+    ;; A private helper for define-engine-variable.  We only initialize
+    ;; a variable if it doesn't already exist, so it can keep its value
+    ;; across script reloads.
+    (unless (call-5l-prim 'BOOL 'VariableExists 5l-name)
+      (set! (engine-var 5l-name type) init-val)))
+
+  ;;; Define a global variable which keeps its value across script
+  ;;; reloads.  Note that two persistent variables with the same name,
+  ;;; but in different modules, are essentially the same variable.
+  ;;; Do not rely on this fact--it may change.
+  ;;;
+  ;;; @syntax (define-persistent-variable name type init-val)
+  ;;; @param NAME name The name of the variable.
+  ;;; @param NAME type The type of the variable.
+  ;;; @param EXPRESSION init-val The initial value of the variable.
+  (define-syntax define-persistent-variable
+    (syntax-rules ()
+      [(define-persistent-variable name type init-val)
+       (define-engine-variable name name type init-val)]))
 
   ;;; @define SYNTAX with-tracing
   ;;;
   ;;; Trace execution of a code body by dumping information to the
-  ;;; debug log.  This is very handy.
+  ;;; debug log.  This is very handy.  For now, this can't be used to
+  ;;; wrap an global function definition--it must be used within the
+  ;;; body of the global function.
   ;;;
   ;;; @syntax (with-tracing body ...)
   ;;; @param BODY body The code to trace.
@@ -291,7 +319,7 @@
   (define (set-origin! p)
     (let* [[old (origin)]
 	   [delta (point-difference p old)]]
-      (call-5l-prim 'resetorigin p)
+      (call-5l-prim 'VOID 'resetorigin p)
       (set! (text-position) (point-offset (text-position) delta))
       (set! (graphic-position) (point-offset (graphic-position) delta))))
   
@@ -354,7 +382,7 @@
     ;; XXX - Colors are hard-coded until the engine is modified to
     ;; stop using palette values everywhere.
     (if (have-5l-prim? 'header)
-	(call-5l-prim 'header
+	(call-5l-prim 'VOID 'header
 		      (stylesheet-name sheet)
 		      ;; Generate a fake header fontname.
 		      (cat (if (member? 'bold (stylesheet-flags sheet)) "b" "")
@@ -384,7 +412,7 @@
 
   ;; Helper: Given a stylesheet, register a corresponding defstyle.
   (define (register-defstyle sheet)
-    (call-5l-prim 'defstyle
+    (call-5l-prim 'VOID 'defstyle
 		  (stylesheet-name sheet)
 		  (stylesheet-family sheet)
 		  (stylesheet-size sheet)
@@ -487,7 +515,7 @@
   ;;; @legacy text textaa
   (define (draw-text style r text)
     ;; XXX - textaa uses an idiosyncratic formating language.
-    (call-5l-prim 'textaa (stylesheet-name style) r text))
+    (call-5l-prim 'VOID 'textaa (stylesheet-name style) r text))
   
   ;;; Measure a string of text.
   ;;;
@@ -500,8 +528,11 @@
   ;;; @xref draw-text
   (define (measure-text style msg
 			&key (max-width (rect-width $screen-rect)))
+    ;;; XXX - We can't measure anything but left-aligned text accurately.
     (with-saved-text-position
-     (draw-text style (rect 10000 10000 (+ 10000 max-width) 15000) msg)
-     (rect 0 0 (- *text-x* 10000) (- *text-y* 10000))))
+      (call-5l-prim 'VOID 'measuretextaa (stylesheet-name style) msg max-width)
+      (rect 0 0
+	    (engine-var '_text_width 'INTEGER)
+	    (engine-var '_text_height 'INTEGER))))
 
   ) ; end module
