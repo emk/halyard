@@ -110,7 +110,15 @@ SOURCE=..\..\src\CursorManager.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\DirtyList.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\DrawingArea.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\DrawingContextStack.cpp
 # End Source File
 # Begin Source File
 
@@ -146,6 +154,10 @@ SOURCE=..\..\src\ImageCache.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\LightweightElement.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Listener.cpp
 # End Source File
 # Begin Source File
@@ -167,6 +179,10 @@ SOURCE=..\..\src\MovieWindow.cpp
 # Begin Source File
 
 SOURCE=..\..\src\MovieWindowQT.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\Overlay.cpp
 # End Source File
 # Begin Source File
 
@@ -273,7 +289,19 @@ SOURCE=..\..\src\CursorManager.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\DirtyList.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\DrawingArea.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\DrawingAreaOpt.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\DrawingContextStack.h
 # End Source File
 # Begin Source File
 
@@ -305,6 +333,10 @@ SOURCE=..\..\src\ImageCache.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\LightweightElement.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Listener.h
 # End Source File
 # Begin Source File
@@ -330,6 +362,10 @@ SOURCE=..\..\src\MovieWindow.h
 # Begin Source File
 
 SOURCE=..\..\src\MovieWindowQT.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\Overlay.h
 # End Source File
 # Begin Source File
 
@@ -464,7 +500,7 @@ SOURCE=..\..\src\tamale.xrc
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\Documents and Settings\emk\src\5L\wx\src
+InputDir=\src\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 

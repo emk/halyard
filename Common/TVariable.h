@@ -14,6 +14,7 @@
 #define TVariable_H
 
 #include "TBTree.h"
+#include "GraphicsTools.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -36,13 +37,16 @@ class TVariable : public TBNode
 	    //
 		enum Type {
 			TYPE_UNINITIALIZED = 0,
-			TYPE_NULL,   // No value.
-			TYPE_STRING, // Regular string.
-			TYPE_SYMBOL, // A symbol, as in Scheme.
-			TYPE_LONG,   // A 32-bit signed integer.
-			TYPE_ULONG,  // A 32-bit unsigned integer.
-			TYPE_DOUBLE, // A floating point number.
-			TYPE_BOOLEAN // A boolean value.
+			TYPE_NULL,    // No value.
+			TYPE_STRING,  // Regular string.
+			TYPE_SYMBOL,  // A symbol, as in Scheme.
+			TYPE_LONG,    // A 32-bit signed integer.
+			TYPE_ULONG,   // A 32-bit unsigned integer.
+			TYPE_DOUBLE,  // A floating point number.
+			TYPE_BOOLEAN, // A boolean value.
+			TYPE_POINT,   // A point.
+			TYPE_RECT,    // A rectangle, right-bottom exclusive.
+			TYPE_COLOR    // An RGB color.
 		};
 
 		//////////
@@ -116,6 +120,21 @@ class TVariable : public TBNode
 		bool	GetBoolean(void) { return (mValue == "0" ? false : true); }
 		
 		//////////
+		// Get the value of this variable as a point.
+		//
+		TPoint	GetPoint();
+
+		//////////
+		// Get the value of this variable as a rect.
+		//
+		TRect	GetRect();
+
+		//////////
+		// Get the value of this variable as a color.
+		//
+		GraphicsTools::Color GetColor();
+
+		//////////
 		// Set the value of this variable.
 		//
 		// [in] inValue - new value
@@ -171,6 +190,21 @@ class TVariable : public TBNode
 		void	SetBoolean(const bool inValue)
 			{ mType = TYPE_BOOLEAN; mValue = (inValue ? "1" : "0"); }
 		
+		//////////
+		// Set the value of this variable.
+		//
+		void	SetPoint(const TPoint &inValue);
+
+		//////////
+		// Set the value of this variable.
+		//
+		void	SetRect(const TRect &inValue);
+
+		//////////
+		// Set the value of this variable.
+		//
+		void	SetColor(const GraphicsTools::Color &inValue);
+
 		//////////
 		// Fill this variable with a date string.
 		//
@@ -300,6 +334,30 @@ class TVariableManager : public TBTree
 		bool		GetBoolean(const char *inName);
 		
 		//////////
+		// Get the value of the specified variable as a point.
+		//
+		// [in] inName - name of the variable
+		// [out] return - the value of the variable
+		//
+		TPoint		GetPoint(const char *inName);
+
+		//////////
+		// Get the value of the specified variable as a rect.
+		//
+		// [in] inName - name of the variable
+		// [out] return - the value of the variable
+		//
+		TRect		GetRect(const char *inName);
+
+		//////////
+		// Get the value of the specified variable as a color.
+		//
+		// [in] inName - name of the variable
+		// [out] return - the value of the variable
+		//
+		GraphicsTools::Color GetColor(const char *inName);
+
+		//////////
 		// Find a variable by name.  If not found, create a new one
 		// (unless we're told not to).
 		//
@@ -358,6 +416,31 @@ class TVariableManager : public TBTree
 		// [in] inValue - the value
 		//
 		void		SetBoolean(const char *inName, const bool inValue);
+
+		//////////
+		// Set the value of the specified variable
+		//
+		// [in] inName - name of the variable
+		// [in] inValue - the value
+		//
+		void		SetPoint(const char *inName, const TPoint &inPoint);
+        
+		//////////
+		// Set the value of the specified variable
+		//
+		// [in] inName - name of the variable
+		// [in] inValue - the value
+		//
+		void		SetRect(const char *inName, const TRect &inPoint);
+        
+		//////////
+		// Set the value of the specified variable
+		//
+		// [in] inName - name of the variable
+		// [in] inValue - the value
+		//
+		void		SetColor(const char *inName,
+							 const GraphicsTools::Color &inPoint);
         
 		//////////
 		// Set the value of the specified variable with a date string.
@@ -430,6 +513,68 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.7  2003/12/31 00:33:01  emk
+ 0.0.11 - 30 Dec 2003 - emk
+
+ TRANSPARENT OVERLAYS!  Added support for alpha-composited layers.  This
+ engine will require script updates:
+
+   * SET-ZONE-CURSOR! has been renamed to SET-ELEMENT-CURSOR!.
+   * RECT objects now (more) consistently exclude their right and bottom
+     edges.  This may cause off-by-one errors in existing drawing code.
+   * COLOR now represents opaque alpha values as 255 and transparent values
+     as 0.  This is the opposite of the previous behavior.
+
+ Changes to Scheme Runtime:
+
+   * Added :OVERLAY? and :ALPHA? to ZONE.  These allow you to create a
+     rectangular zone with an associated drawing context (and optionally an
+     alpha channel).  If :OVERLAY? is true, the zone must be rectangular.
+   * Added (WITH-DRAWING-CONTEXT ZONE BODY...), which allows you to change
+     the current drawing context.  Do not call IDLE within this form.
+   * Added (DRAWING-CONTEXT-REXT), which returns the bounding rectangle
+     for the current drawing context.
+   * Added (COLOR-AT POINT), which returns the color at POINT in the
+     current drawing context.
+   * Fixed output routines to know about POINT, RECT and COLOR objects.
+   * Support for storing POINT, RECT and COLOR objects in engine variables,
+     including DEFINE/P.
+   * Support for comparing POINT, RECT and COLOR objects with EQUALS?.
+
+ Changes to Tamale:
+
+   * Added an Overlay class.  This is basically a square zone with its
+     own (possibly transparent) DrawingArea and special hit-testing logic.
+   * Switched from 0 opaque to 255 opaque, for performance and consistency
+     with windows.
+   * Support for TPoint, TRect, GraphicsTools::Color in engine variables.
+   * TRect <-> wxRect conversion functions now reliably exclude right and
+     bottom edges.
+   * Added CompositeInto functions to Element and DrawingArea, for use with
+     alpha-compositing.
+   * DrawingAreas may now have alpha-channels.
+   * Added alpha-channel support to DrawingArea::Clear.
+   * Modified optimized versions of FillBox and DrawPixMap to use a
+     templated transfer function, and added a transfer function for using
+     them with DrawingAreas with alpha channels.
+   * Fixed many bugs with arguments to DrawingArea::InvalidateRect.
+   * Added support for retrieving pixel values.
+   * Added support for pushing and poping drawing contexts.
+   * Implemented a much-more-sophisticated list of dirty regions for use
+     with the compositing.
+   * Idling not allowed when a drawing context is pushed.
+   * Replaced our single offscreen buffer with a compositing pixmap and
+     and a background pixmap.
+   * Invalidate an element's location when deleting it.
+
+ Changes to wxWindows:
+
+   * Exported AlphaBlend from the MSW wxDC class, so we can do alpha blends
+     between arbitrary DCs.
+   * Removed wxBitmap::UngetRawData pre-multiplication code--there wasn't
+     any matching code in wxBitmap::GetRawData, and many raw algorithms
+     are much more efficient on pre-multiplied data.
+
  Revision 1.6  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

@@ -128,6 +128,10 @@ class TSchemeInterpreter : public TInterpreter
 
 	static Scheme_Object *CallSchemeSimple(const char *inFuncName);
 
+	static Scheme_Object *MakeSchemePoint(const TPoint &inPoint);
+	static Scheme_Object *MakeSchemeRect(const TRect &inRect);
+	static Scheme_Object *MakeSchemeColor(const GraphicsTools::Color &inColor);
+
 public:
 	TSchemeInterpreter(Scheme_Env *inGlobalEnv);
 	virtual ~TSchemeInterpreter();

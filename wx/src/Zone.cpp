@@ -2,7 +2,6 @@
 
 #include "TamaleHeaders.h"
 #include "Zone.h"
-#include "EventDispatcher.h"
 #include "CommonWxConv.h"
 #include "TPoint.h"
 
@@ -10,17 +9,9 @@ USING_NAMESPACE_FIVEL
 
 Zone::Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
 		   FIVEL_NS TCallback *inDispatch, wxCursor &inCursor)
-    : Element(inStage, inName), mPolygon(inPoly), mCursor(inCursor)
+    : LightweightElement(inStage, inName, inDispatch, inCursor),
+	  mPolygon(inPoly)
 {
-    ASSERT(inDispatch);
-	mDispatcher = new EventDispatcher();
-	mDispatcher->SetDispatcher(inDispatch);
-}
-
-Zone::~Zone()
-{
-	// XXX - The callback in this dispatcher may still be active!
-    delete mDispatcher;
 }
 
 bool Zone::IsPointInElement(const wxPoint &inPoint)

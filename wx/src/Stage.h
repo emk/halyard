@@ -4,6 +4,8 @@
 #define Stage_H
 
 #include "AppGlobals.h"
+#include "DirtyList.h"
+#include "DrawingContextStack.h"
 
 class StageFrame;
 class Element;
@@ -38,9 +40,26 @@ class Stage : public wxWindow
     std::string mLastCard;
 
     //////////
-    // A drawing area for storing the graphics to display on the stage.
+    // Before drawing graphics to the stage, we need to composite several
+    // layers into a single image.  We use this buffer for that purpose.
     //
-	std::auto_ptr<DrawingArea> mOffscreenDrawingArea;
+	wxBitmap mCompositingPixmap;
+
+	//////////
+	// Rectangles marked as dirty.  We need to composite these.
+	//
+	DirtyList mRectsToComposite;
+
+    //////////
+    // This drawing area contains the background graphics for the stage.
+	// Other layers are composited with this layer.
+    //
+	std::auto_ptr<DrawingArea> mBackgroundDrawingArea;
+
+	//////////
+	// The current stack of drawing contexts.
+	//
+	std::auto_ptr<DrawingContextStack> mDrawingContextStack;
 
     //////////
     // A bitmap for use during various fade effects.
@@ -136,12 +155,17 @@ class Stage : public wxWindow
 	std::vector<wxPoint> mCopiedPoints;
 
 	//////////
-	// Get the primary pixmap associated with this stage.
+	// Get the compositing pixmap associated with this stage.
+	//
+	wxBitmap &GetCompositingPixmap();
+
+	//////////
+	// Get the background pixmap associated with this stage.
 	//
 	// TODO - Remove this method eventually and send all requests
-	// directly to mOffscreenDrawingArea.
+	// directly to mBackgroundDrawingArea.
 	//
-	wxBitmap &GetOffscreenPixmap();
+	wxBitmap &GetBackgroundPixmap();
 
 	//////////
 	// Validate the entire stage--i.e., mark it as having been redrawn.
@@ -230,6 +254,11 @@ public:
 	wxSize GetStageSize() const { return mStageSize; }
 
 	//////////
+	// Should the script be allowed to idle right now?
+	//
+	bool IsIdleAllowed() const;
+
+	//////////
 	// Return true if and only if the script is fully initialized.
 	// Will briefly return false after the script is reloaded.
 	//
@@ -303,6 +332,20 @@ public:
     // Let the stage know that the list of active elements has changed.
     //
     void NotifyElementsChanged();
+
+	//////////
+	// Redirect all further drawing calls to the specified element until
+	// further notice.
+	//
+	void PushDrawingContext(Element *inElement)
+		{ mDrawingContextStack->PushDrawingContext(inElement); }
+
+	//////////
+	// Pop the top element off the current drawing stack, and make sure
+	// it matches the specified element.
+	//
+	void PopDrawingContext(Element *inElement)
+		{ mDrawingContextStack->PopDrawingContext(inElement); }
 	
     //////////
     // Do our idle-time processing.
@@ -397,9 +440,15 @@ public:
 	void InvalidateRect(const wxRect &inRect);
 
 	//////////
-	// Get the drawing area for this stage.
+	// Get the currently selected drawing area for this stage.
 	//
-	DrawingArea *GetDrawingArea() { return mOffscreenDrawingArea.get(); }
+	DrawingArea *GetCurrentDrawingArea();
+
+	//////////
+	// Get the background drawing area for this stage.
+	//
+	DrawingArea *GetBackgroundDrawingArea()
+		{ return mBackgroundDrawingArea.get(); }
 
 	//////////
 	// Save a portion of the current offscreen buffer to our save

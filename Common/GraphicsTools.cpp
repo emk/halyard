@@ -84,9 +84,9 @@ void GreyMap::TransferToPixMap(Color inColor, PixMap *outPixMap) const
 		for (int x = this->width; x > 0; x--)
 		{
 			// We always do alpha-blending.  To optimize this routine
-			// further, check for inColor.alpha == 0, and handle it with a
-			// separate top-level loop.
-			*color_cursor = Color::ApplyAlpha(inColor, 255 - *grey_cursor);
+			// further, check for inColor.IsCompletelyOpaque(), and handle
+			// it with a separate top-level loop.
+			*color_cursor = Color::ApplyAlpha(inColor, *grey_cursor);
 			grey_cursor++;
 			color_cursor++;
 		}

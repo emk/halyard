@@ -383,12 +383,27 @@ inline void SetPrimitiveResult(bool inValue)
 //
 inline void SetPrimitiveResult(const TPoint &inValue)
 {
-	// This is a short term hack until gVariableManager
-	// supports TPoint values natively.
-	TString point = (TString::IntToString(inValue.X()) +
-					 TString(" ") +
-					 TString::IntToString(inValue.Y()));
-	gVariableManager.SetString("_result", point.GetString());
+	gVariableManager.SetPoint("_result", inValue);
+}
+
+//////////
+// Set the return value of the current primitive.
+//
+// [in] inValue - The TRect to return.
+//
+inline void SetPrimitiveResult(const TRect &inValue)
+{
+	gVariableManager.SetRect("_result", inValue);
+}
+
+//////////
+// Set the return value of the current primitive.
+//
+// [in] inValue - The color to return.
+//
+inline void SetPrimitiveResult(const GraphicsTools::Color &inValue)
+{
+	gVariableManager.SetColor("_result", inValue);
 }
 
 //////////

@@ -22,6 +22,7 @@
 #	include "TQuake2Primitives.h"
 #endif // CONFIG_HAVE_QUAKE2
 #include "AudioStream.h"
+#include "Stage.h"
 
 // Provided by auto-generated resources.cpp file.
 extern void InitXmlResource();
@@ -39,6 +40,9 @@ FiveLApp::FiveLApp()
 
 void FiveLApp::IdleProc(bool inBlock)
 {
+	if (!wxGetApp().GetStage()->IsIdleAllowed())
+		THROW("Tried to call (idle) at an unsafe time");
+
 	// Constraints:
 	//   1) Cannot leave until all pending events are dispatched,
 	//      or else GUI responsiveness will drop dramatically.
@@ -101,9 +105,9 @@ bool FiveLApp::OnInit()
 
     // Configure some useful trace masks for debugging the application.
     // Comment these out to disable a particular kind of tracing.
-    //wxLog::AddTraceMask(TRACE_STAGE_DRAWING);
-    //wxLog::AddTraceMask(wxTRACE_Messages);
-    //wxLog::SetTraceMask(wxTraceMessages);
+    wxLog::AddTraceMask(TRACE_STAGE_DRAWING);
+    wxLog::AddTraceMask(wxTRACE_Messages);
+    wxLog::SetTraceMask(wxTraceMessages);
 
 #if CONFIG_HAVE_QUICKTIME
     // Start up QuickTime.

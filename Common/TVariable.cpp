@@ -44,6 +44,51 @@ TVariable::TVariable(const char *inName, const char *inValue) : TBNode(inName)
 	}
 }
 
+TPoint TVariable::GetPoint() {
+	std::istringstream in(mValue.GetString());
+	int32 x, y;
+	in >> x >> y;
+	return TPoint(x, y);
+}
+
+TRect TVariable::GetRect() {
+	std::istringstream in(mValue.GetString());
+	int32 left, top, right, bottom;
+	in >> left >> top >> right >> bottom;
+	// Incredibly rude argument order!
+	return TRect(top, left, bottom, right);
+}
+
+GraphicsTools::Color TVariable::GetColor() {
+	std::istringstream in(mValue.GetString());
+	int32 red, green, blue, alpha;
+	in >> red >> green >> blue >> alpha;
+	return GraphicsTools::Color(red, green, blue, alpha);
+}
+
+void TVariable::SetPoint(const TPoint &inValue) {
+	std::ostringstream out;
+	out << inValue.X() << " " << inValue.Y();
+	mType = TYPE_POINT;
+	mValue = out.str().c_str();
+}
+
+void TVariable::SetRect(const TRect &inValue) {
+	std::ostringstream out;
+	out << inValue.Left() << " " << inValue.Top() << " "
+		<< inValue.Right() << " " << inValue.Bottom();
+	mType = TYPE_RECT;
+	mValue = out.str().c_str();
+}
+
+void TVariable::SetColor(const GraphicsTools::Color &inValue) {
+	std::ostringstream out;
+	out << (int32) inValue.red << " " << (int32) inValue.green << " "
+		<< (int32) inValue.blue << " " << (int32) inValue.alpha;
+	mType = TYPE_COLOR;
+	mValue = out.str().c_str();
+}
+
 void TVariable::SetDate(uint32 inDate, int32 inDateType)
 {
 	TString theDate;
@@ -224,6 +269,27 @@ bool TVariableManager::GetBoolean(const char *name)
     return var->GetBoolean();
 }
 
+// Return value of "name" as a point.
+TPoint TVariableManager::GetPoint(const char *name)
+{
+    TVariable *var = FindVariable(name, true);
+    return var->GetPoint();
+}
+
+// Return value of "name" as a rect.
+TRect TVariableManager::GetRect(const char *name)
+{
+    TVariable *var = FindVariable(name, true);
+    return var->GetRect();
+}
+
+// Return value of "name" as a color.
+GraphicsTools::Color TVariableManager::GetColor(const char *name)
+{
+    TVariable *var = FindVariable(name, true);
+    return var->GetColor();
+}
+
 
 // Function: TVariableManager::FindVariable
 //
@@ -326,6 +392,28 @@ void TVariableManager::SetBoolean(const char *name, bool data)
 } 
 
 // Set 'name' to 'data'.
+void TVariableManager::SetPoint(const char *name, const TPoint &data)
+{
+    TVariable *var = FindVariable(name, false);
+    var->SetPoint(data);
+} 
+
+// Set 'name' to 'data'.
+void TVariableManager::SetRect(const char *name, const TRect &data)
+{
+    TVariable *var = FindVariable(name, false);
+    var->SetRect(data);
+} 
+
+// Set 'name' to 'data'.
+void TVariableManager::SetColor(const char *name,
+								const GraphicsTools::Color &data)
+{
+    TVariable *var = FindVariable(name, false);
+    var->SetColor(data);
+} 
+
+// Set 'name' to 'data'.
 void TVariableManager::SetDate(const char *name, uint32 date, int32 date_type)
 {
 	TVariable *var = FindVariable(name, false);
@@ -365,6 +453,68 @@ void TVariableManager::SetLocal(TVariable *newlocal)
 
 /*
  $Log$
+ Revision 1.9  2003/12/31 00:33:01  emk
+ 0.0.11 - 30 Dec 2003 - emk
+
+ TRANSPARENT OVERLAYS!  Added support for alpha-composited layers.  This
+ engine will require script updates:
+
+   * SET-ZONE-CURSOR! has been renamed to SET-ELEMENT-CURSOR!.
+   * RECT objects now (more) consistently exclude their right and bottom
+     edges.  This may cause off-by-one errors in existing drawing code.
+   * COLOR now represents opaque alpha values as 255 and transparent values
+     as 0.  This is the opposite of the previous behavior.
+
+ Changes to Scheme Runtime:
+
+   * Added :OVERLAY? and :ALPHA? to ZONE.  These allow you to create a
+     rectangular zone with an associated drawing context (and optionally an
+     alpha channel).  If :OVERLAY? is true, the zone must be rectangular.
+   * Added (WITH-DRAWING-CONTEXT ZONE BODY...), which allows you to change
+     the current drawing context.  Do not call IDLE within this form.
+   * Added (DRAWING-CONTEXT-REXT), which returns the bounding rectangle
+     for the current drawing context.
+   * Added (COLOR-AT POINT), which returns the color at POINT in the
+     current drawing context.
+   * Fixed output routines to know about POINT, RECT and COLOR objects.
+   * Support for storing POINT, RECT and COLOR objects in engine variables,
+     including DEFINE/P.
+   * Support for comparing POINT, RECT and COLOR objects with EQUALS?.
+
+ Changes to Tamale:
+
+   * Added an Overlay class.  This is basically a square zone with its
+     own (possibly transparent) DrawingArea and special hit-testing logic.
+   * Switched from 0 opaque to 255 opaque, for performance and consistency
+     with windows.
+   * Support for TPoint, TRect, GraphicsTools::Color in engine variables.
+   * TRect <-> wxRect conversion functions now reliably exclude right and
+     bottom edges.
+   * Added CompositeInto functions to Element and DrawingArea, for use with
+     alpha-compositing.
+   * DrawingAreas may now have alpha-channels.
+   * Added alpha-channel support to DrawingArea::Clear.
+   * Modified optimized versions of FillBox and DrawPixMap to use a
+     templated transfer function, and added a transfer function for using
+     them with DrawingAreas with alpha channels.
+   * Fixed many bugs with arguments to DrawingArea::InvalidateRect.
+   * Added support for retrieving pixel values.
+   * Added support for pushing and poping drawing contexts.
+   * Implemented a much-more-sophisticated list of dirty regions for use
+     with the compositing.
+   * Idling not allowed when a drawing context is pushed.
+   * Replaced our single offscreen buffer with a compositing pixmap and
+     and a background pixmap.
+   * Invalidate an element's location when deleting it.
+
+ Changes to wxWindows:
+
+   * Exported AlphaBlend from the MSW wxDC class, so we can do alpha blends
+     between arbitrary DCs.
+   * Removed wxBitmap::UngetRawData pre-multiplication code--there wasn't
+     any matching code in wxBitmap::GetRawData, and many raw algorithms
+     are much more efficient on pre-multiplied data.
+
  Revision 1.8  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

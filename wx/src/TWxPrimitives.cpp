@@ -16,6 +16,7 @@
 #include "Stage.h"
 #include "DrawingArea.h"
 #include "Zone.h"
+#include "Overlay.h"
 #include "MediaElement.h"
 #include "MovieElement.h"
 #include "Widget.h"
@@ -46,6 +47,10 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(AudioStreamGeigerSetCps);
 	REGISTER_5L_PRIMITIVE(AudioStreamSine);
 	REGISTER_5L_PRIMITIVE(AudioStreamVorbis);
+	REGISTER_5L_PRIMITIVE(ColorAt);
+	REGISTER_5L_PRIMITIVE(DcPop);
+	REGISTER_5L_PRIMITIVE(DcPush);
+	REGISTER_5L_PRIMITIVE(DcRect);
     REGISTER_5L_PRIMITIVE(DeleteElements);
 	REGISTER_5L_PRIMITIVE(DrawBoxFill);
 	REGISTER_5L_PRIMITIVE(DrawBoxOutline);
@@ -71,6 +76,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
+	REGISTER_5L_PRIMITIVE(Overlay);
 	REGISTER_5L_PRIMITIVE(Refresh);
 	REGISTER_5L_PRIMITIVE(SaveGraphics);
 	REGISTER_5L_PRIMITIVE(RestoreGraphics);
@@ -105,8 +111,8 @@ void FIVEL_NS RegisterWxPrimitives() {
 		return; \
 	}
 
-static DrawingArea *GetDrawingArea() {
-	return wxGetApp().GetStage()->GetDrawingArea();
+static DrawingArea *GetCurrentDrawingArea() {
+	return wxGetApp().GetStage()->GetCurrentDrawingArea();
 }
  
 
@@ -153,6 +159,31 @@ DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
 												 should_loop));
 }
 
+DEFINE_5L_PRIMITIVE(ColorAt) {
+	TPoint at;
+	inArgs >> at;
+	::SetPrimitiveResult(GetCurrentDrawingArea()->GetPixel(at.X(), at.Y()));
+}
+
+DEFINE_5L_PRIMITIVE(DcPop) {
+	std::string name;	
+	inArgs >> SymbolName(name);
+	FIND_ELEMENT(Element, elem, name.c_str());
+	wxGetApp().GetStage()->PopDrawingContext(elem);
+}
+
+DEFINE_5L_PRIMITIVE(DcPush) {
+	std::string name;	
+	inArgs >> SymbolName(name);
+	FIND_ELEMENT(Element, elem, name.c_str());
+	wxGetApp().GetStage()->PushDrawingContext(elem);
+}
+
+DEFINE_5L_PRIMITIVE(DcRect) {
+	wxRect bounds = GetCurrentDrawingArea()->GetBounds();
+	::SetPrimitiveResult(WxToTRect(wxRect(0, 0, bounds.width, bounds.height)));
+}
+
 DEFINE_5L_PRIMITIVE(DeleteElements) {
 	if (!inArgs.HasMoreArguments()) {
 		wxGetApp().GetStage()->DeleteElements();
@@ -174,7 +205,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxFill) {
 	Color color;
 
 	inArgs >> bounds >> color;
-	GetDrawingArea()->FillBox(TToWxRect(bounds), color);
+	GetCurrentDrawingArea()->FillBox(TToWxRect(bounds), color);
 }
 
 DEFINE_5L_PRIMITIVE(DrawBoxOutline) {
@@ -183,9 +214,9 @@ DEFINE_5L_PRIMITIVE(DrawBoxOutline) {
 	int32 width;
 
 	inArgs >> bounds >> color >> width;
-	GetDrawingArea()->OutlineBox(TToWxRect(bounds), 
-									  GraphicsToolsToWxColor(color),
-									  width);
+	GetCurrentDrawingArea()->OutlineBox(TToWxRect(bounds), 
+										GraphicsToolsToWxColor(color),
+										width);
 
 }
 
@@ -195,8 +226,8 @@ DEFINE_5L_PRIMITIVE(DrawLine) {
 	int32 width;
 
 	inArgs >> from >> to >> color >> width;
-	GetDrawingArea()->DrawLine(TToWxPoint(from), TToWxPoint(to),
-									GraphicsToolsToWxColor(color), width);
+	GetCurrentDrawingArea()->DrawLine(TToWxPoint(from), TToWxPoint(to),
+									  GraphicsToolsToWxColor(color), width);
 
 }
 
@@ -340,7 +371,7 @@ static void load_picture(const std::string &inName, TPoint inLoc,
 	}
 
 	// Draw our bitmap.
-	GetDrawingArea()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y());
+	GetCurrentDrawingArea()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y());
 
 	// Update our special variables.
 	// XXX - TRect constructor uses height/width order!  Ayiee!
@@ -419,8 +450,8 @@ DEFINE_5L_PRIMITIVE(MediaSetVolume) {
 DEFINE_5L_PRIMITIVE(MouseGrab) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(Zone, zone, name.c_str());
-	wxGetApp().GetStage()->MouseGrab(zone);
+	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+	wxGetApp().GetStage()->MouseGrab(elem);
 }
 
 DEFINE_5L_PRIMITIVE(MouseIsGrabbed) {
@@ -436,8 +467,8 @@ DEFINE_5L_PRIMITIVE(MousePosition) {
 DEFINE_5L_PRIMITIVE(MouseUngrab) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(Zone, zone, name.c_str());
-	wxGetApp().GetStage()->MouseUngrab(zone);
+	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+	wxGetApp().GetStage()->MouseUngrab(elem);
 }
 
 DEFINE_5L_PRIMITIVE(Movie) {
@@ -491,6 +522,19 @@ DEFINE_5L_PRIMITIVE(Refresh) {
 	wxGetApp().GetStage()->RefreshStage(transition, milliseconds);
 }
 
+DEFINE_5L_PRIMITIVE(Overlay) {
+	std::string name, cursor;
+	TRect bounds;
+	TCallback *dispatcher;
+	bool is_trans;
+	
+	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor >> is_trans;
+	new Overlay(wxGetApp().GetStage(), name.c_str(), TToWxRect(bounds),
+				dispatcher,
+				wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor),
+				is_trans);
+}
+
 DEFINE_5L_PRIMITIVE(SaveGraphics) {
 	TRect bounds;
 	inArgs >> bounds;
@@ -538,7 +582,7 @@ DEFINE_5L_PRIMITIVE(RegisterEventDispatcher) {
 DEFINE_5L_PRIMITIVE(Screen) {
     Color color;
     inArgs >> color; 
-	GetDrawingArea()->Clear(GraphicsToolsToWxColor(color));
+	GetCurrentDrawingArea()->Clear(color);
 }
 
 DEFINE_5L_PRIMITIVE(SetImageCacheSize) {
@@ -551,9 +595,9 @@ DEFINE_5L_PRIMITIVE(SetZoneCursor) {
 	std::string name, cursor;
 	inArgs >> SymbolName(name) >> SymbolName(cursor);
 
-	FIND_ELEMENT(Zone, zone, name.c_str());
+	FIND_ELEMENT(LightweightElement, elem, name.c_str());
 	CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
-	zone->SetCursor(manager->FindCursor(cursor));
+	elem->SetCursor(manager->FindCursor(cursor));
 }
 
 DEFINE_5L_PRIMITIVE(TextAA) {
@@ -567,7 +611,7 @@ DEFINE_5L_PRIMITIVE(TextAA) {
 							GraphicsTools::Point(bounds.Left(),
 												 bounds.Top()),
 							bounds.Right() - bounds.Left(),
-							GetDrawingArea());
+							GetCurrentDrawingArea());
 }
 
 /*-----------------------------------------------------------

@@ -225,6 +225,9 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 	uint32 result_ulong;
 	double result_double;
 	bool result_bool;
+	TPoint result_point;
+	TRect result_rect;
+	GraphicsTools::Color result_color;
 
 	// WARNING - Don't signal any Scheme errors from inside this try block.
 	// (I don't know whether it's portable to call scheme_longjmp from
@@ -283,6 +286,18 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 					result_bool = result->GetBoolean();
 					break;
 
+				case TVariable::TYPE_POINT:
+					result_point = result->GetPoint();
+					break;
+
+				case TVariable::TYPE_RECT:
+					result_rect = result->GetRect();
+					break;
+
+				case TVariable::TYPE_COLOR:
+					result_color = result->GetColor();
+					break;
+
 				case TVariable::TYPE_NULL:
 				case TVariable::TYPE_UNINITIALIZED:
 				default:
@@ -331,6 +346,15 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 
 		case TVariable::TYPE_BOOLEAN:
 			return result_bool ? scheme_true : scheme_false;
+
+		case TVariable::TYPE_POINT:
+			return MakeSchemePoint(result_point);
+
+		case TVariable::TYPE_RECT:
+			return MakeSchemeRect(result_rect);
+
+		case TVariable::TYPE_COLOR:
+			return MakeSchemeColor(result_color);
 
 		default:
 			scheme_signal_error("%s: _result has unsupported type", prim_name);
@@ -397,6 +421,32 @@ Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName)
 	// Call a function with no arguments.
 	Scheme_Object *junk = scheme_false;
 	return CallScheme(inFuncName, 0, &junk);
+}
+
+Scheme_Object *TSchemeInterpreter::MakeSchemePoint(const TPoint &inPoint) {
+	Scheme_Object *args[2];
+	args[0] = scheme_make_integer_value(inPoint.X());
+	args[1] = scheme_make_integer_value(inPoint.Y());
+	return CallScheme("point", 2, args);
+}
+
+Scheme_Object *TSchemeInterpreter::MakeSchemeRect(const TRect &inRect) {
+	Scheme_Object *args[4];
+	args[0] = scheme_make_integer_value(inRect.Left());
+	args[1] = scheme_make_integer_value(inRect.Top());
+	args[2] = scheme_make_integer_value(inRect.Right());
+	args[3] = scheme_make_integer_value(inRect.Bottom());
+	return CallScheme("rect", 4, args);
+}
+
+Scheme_Object *
+TSchemeInterpreter::MakeSchemeColor(const GraphicsTools::Color &inColor) {
+	Scheme_Object *args[4];
+	args[0] = scheme_make_integer_value(inColor.red);
+	args[1] = scheme_make_integer_value(inColor.green);
+	args[2] = scheme_make_integer_value(inColor.blue);
+	args[3] = scheme_make_integer_value(inColor.alpha);
+	return CallScheme("color", 4, args);
 }
 
 void TSchemeInterpreter::Run(SystemIdleProc inIdleProc)

@@ -29,16 +29,22 @@
   (defclass <point> ()
     x y)
 
+  (make-equals?-compare-class+slots <point>)
+
   (defclass <shape> ())
 
   (defclass <rect> (<shape>)
     left top right bottom)
+
+  (make-equals?-compare-class+slots <rect>)
 
   (defclass <color> ()
     red green blue alpha)
 
   (define (make-color-opt-alpha r g b &opt (a 255))
     (make-color r g b a))
+
+  (make-equals?-compare-class+slots <color>)
 
   (defclass <percent> () 
     value)

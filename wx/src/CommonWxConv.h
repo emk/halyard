@@ -5,6 +5,7 @@
 #include "GraphicsTools.h"
 
 wxRect TToWxRect(const TRect &inRect);
+TRect WxToTRect(const wxRect &inRect);
 wxPoint TToWxPoint(const TPoint &inPoint);
 TPoint WxToTPoint(const wxPoint &inPoint);
 wxPoint GetPos(const TRect &inRect);

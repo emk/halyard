@@ -325,6 +325,24 @@ DEFINE_5L_PRIMITIVE(SetTyped)
 		inArgs >> val;
 		gVariableManager.SetBoolean(vname.c_str(), val);
 	}
+	else if (vtype == "point")
+	{
+		TPoint val;
+		inArgs >> val;
+		gVariableManager.SetPoint(vname.c_str(), val);
+	}
+	else if (vtype == "rect")
+	{
+		TRect val;
+		inArgs >> val;
+		gVariableManager.SetRect(vname.c_str(), val);
+	}
+	else if (vtype == "color")
+	{
+		GraphicsTools::Color val;
+		inArgs >> val;
+		gVariableManager.SetColor(vname.c_str(), val);
+	}
 	else
 	{
 		::SetPrimitiveError("badtype", vtype.c_str());

@@ -48,7 +48,7 @@ bool Quake2Engine::Show(bool show)
 		// Attempt to save our displayed graphics back into our Stage's
 		// offscreen buffer.
 		wxClientDC client_dc(this);
-		wxGetApp().GetStage()->GetDrawingArea()->DrawDCContents(client_dc);
+		wxGetApp().GetStage()->GetBackgroundDrawingArea()->DrawDCContents(client_dc);
 	}
 
 	// Pass the request along to our parent.

@@ -5,6 +5,7 @@
 
 class Stage;
 class EventDispatcher;
+class DrawingArea;
 
 
 //////////
@@ -88,6 +89,25 @@ public:
 	// Draw the element to the specified DC
 	//
 	virtual void DrawElementBorder(wxDC &inDC) {}
+
+	//////////
+	// Return the DrawingArea associated with this element, if any.
+	//
+	virtual DrawingArea *GetDrawingArea() { return NULL; }
+
+	//////////
+	// Composite our data into the specified DC.
+	//
+	// [in] inDC - The compositing DC.
+	// [in] inClipRect - The rectangle (in terms of inDC co-ordinates)
+	//                   which we're updating.
+	//
+	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect) {}
+
+	//////////
+	// Invalidate the current location of this element.
+	//
+	virtual void InvalidateCurrentLocation() {}
 };
 
 #endif // Element_H

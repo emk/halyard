@@ -9,28 +9,37 @@ class Stage;
 
 class DrawingArea : public GraphicsTools::Image {
     Stage *mStage;
+	wxRect mBounds;
     wxBitmap mPixmap;
 
-    //////////
-    // Invalidate the entire stage.
-    //
-    void InvalidateStage();
+	void InitializePixmap(bool inHasAlpha);
 
 	//////////
 	// Invalidate the specified rectangle.
+	//
+	// [in] inRect - The rectangle to invalidate.
+	// [in] inInflate - The number of pixels by which we should inflate
+	// 		            the rectangle.
 	//	
-	void InvalidateRect(const wxRect &inRect);
+	void InvalidateRect(const wxRect &inRect, int inInflate = 0);
 
 public:
-    DrawingArea(Stage *inStage, int inWidth, int inHeight, int inDepth)
-		: mStage(inStage), mPixmap(inWidth, inHeight, inDepth) { }
+    DrawingArea(Stage *inStage, int inWidth, int inHeight, bool inHasAlpha);
+	DrawingArea(Stage *inStage, const wxRect &inBounds, bool inHasAlpha);
 
     wxBitmap &GetPixmap() { return mPixmap; }
+	wxRect GetBounds() { return mBounds; }
+	bool HasAlpha() { return mPixmap.HasAlpha(); }
+
+    //////////
+    // Clear the drawing area to the default color.
+    //
+    void Clear();
 
     //////////
     // Clear the drawing area to the specified color.
     //
-    void Clear(const wxColor &inColor);
+    void Clear(const GraphicsTools::Color &inColor);
 
 	//////////
 	// Draw a line in the specified color.
@@ -43,14 +52,6 @@ public:
 	//
 	void FillBox(const wxRect &inBounds, 
 				 const GraphicsTools::Color &inColor);
-
-	//////////
-	// An optimized version of fill box for the case when the color
-	// has a non-opaque alpha channel. Needs to be a separate function
-	// so it can be in a separate, optimized file.
-	//
-	void FillBoxAlpha(const wxRect &inBounds,
-					  const GraphicsTools::Color &inColor);
 
 	//////////
 	// Fill in the specified box with the specified color.
@@ -89,6 +90,21 @@ public:
 	// [in] inDC - a DC the same size as the stage
 	//
 	void DrawDCContents(wxDC &inDC);
+
+	//////////
+	// Get the color at the specified location (specified in DrawingArea
+	// co-ordinates).
+	//
+	GraphicsTools::Color GetPixel(wxCoord inX, wxCoord inY);
+
+	//////////
+	// Composite our data into the specified DC.
+	//
+	// [in] inDC - The compositing DC.
+	// [in] inClipRect - The rectangle (in terms of inDC co-ordinates)
+	//                   which we're updating.
+	//
+	void CompositeInto(wxDC &inDC, const wxRect &inClipRect);
 };
 
 #endif // DrawingArea_H

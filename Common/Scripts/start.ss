@@ -79,9 +79,10 @@
 
 (card test-variables ()
   (foreach [val (list (void) "str" 'sym -2147483648 2147483647 4294967295
-                      -1 0 1 -1.0 0.0 1.0 #f #t)]
+                      -1 0 1 -1.0 0.0 1.0 #f #t (point 10 20)
+                      (rect 11 21 31 41) (color 12 22 32 42))]
     (set! *vartest* val)
-    (test (equal? *vartest* val)))
+    (test (equals? *vartest* val)))
   (jump test-callbacks))
 
 (define *before-callback-flag* #f)

@@ -57,6 +57,8 @@ END_EVENT_TABLE()
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
+	  mCompositingPixmap(inStageSize.GetWidth(),
+						 inStageSize.GetHeight(), 24),
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
@@ -65,15 +67,16 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
 {
-	
-	mOffscreenDrawingArea =
+	mBackgroundDrawingArea = 
 		std::auto_ptr<DrawingArea>(new DrawingArea(this,
 												   inStageSize.GetWidth(),
 												   inStageSize.GetHeight(),
-												   24));
-
+												   false));
+	mDrawingContextStack =
+		std::auto_ptr<DrawingContextStack>(new DrawingContextStack(this));
+	
     SetBackgroundColour(STAGE_COLOR);
-    GetDrawingArea()->Clear(*wxBLACK);
+    GetBackgroundDrawingArea()->Clear();
     
 	mLastIdleEvent = ::wxGetLocalTimeMillis();
 	mEventDispatcher = new EventDispatcher();
@@ -99,8 +102,36 @@ Stage::~Stage()
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
 
-wxBitmap &Stage::GetOffscreenPixmap() {
-	return mOffscreenDrawingArea->GetPixmap();
+wxBitmap &Stage::GetCompositingPixmap() {
+	// Make sure our compositing is up to date.
+	if (!mRectsToComposite.empty()) {
+		wxMemoryDC dc;
+		dc.SelectObject(mCompositingPixmap);
+		DirtyList::iterator dirty_i = mRectsToComposite.begin();
+		wxLogTrace(TRACE_STAGE_DRAWING, "Begin compositing.");
+		for (; dirty_i != mRectsToComposite.end(); ++dirty_i) {
+			GetBackgroundDrawingArea()->CompositeInto(dc, *dirty_i);
+			ElementCollection::iterator elem_i = mElements.begin();
+			for (; elem_i != mElements.end(); ++elem_i)
+				(*elem_i)->CompositeInto(dc, *dirty_i);
+		}
+		wxLogTrace(TRACE_STAGE_DRAWING, "End compositing.");
+		mRectsToComposite.clear();
+	}
+	return mCompositingPixmap;
+}
+
+wxBitmap &Stage::GetBackgroundPixmap() {
+	return mBackgroundDrawingArea->GetPixmap();
+}
+
+DrawingArea *Stage::GetCurrentDrawingArea() {
+	return mDrawingContextStack->GetCurrentDrawingArea();
+}
+
+bool Stage::IsIdleAllowed() const {
+	// Don't allow idling when we've got drawing contexts pushed.
+	return mDrawingContextStack->IsEmpty();
 }
 
 bool Stage::IsScriptInitialized()
@@ -122,7 +153,7 @@ void Stage::SetEditMode(bool inWantEditMode)
 		// this will mean auditing the engine code to only call
 		// CurCardName, etc., only when there is a current card.
 		NotifyExitCard();
-		GetDrawingArea()->Clear(*wxBLACK);
+		GetBackgroundDrawingArea()->Clear();
 	}
 	else
 	{
@@ -335,7 +366,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         // PORTING - May not work on non-Windows platforms, according to
         // the wxWindows documentation.
         wxMemoryDC offscreen_dc;
-        offscreen_dc.SelectObject(GetOffscreenPixmap());
+        offscreen_dc.SelectObject(GetCompositingPixmap());
         wxColour color;
         offscreen_dc.GetPixel(x, y, &color);
 
@@ -379,7 +410,7 @@ void Stage::PaintStage(wxDC &inDC)
 {
     // Blit our offscreen pixmap to the screen.
     // TODO - Could we optimize drawing by only blitting dirty regions?
-	inDC.DrawBitmap(GetOffscreenPixmap(), 0, 0, false);
+	inDC.DrawBitmap(GetCompositingPixmap(), 0, 0, false);
 
     // If necessary, draw the grid.
     if (mIsDisplayingGrid)
@@ -469,7 +500,7 @@ void Stage::OnTextEnter(wxCommandEvent &inEvent)
     
     // Set up a drawing context.
     wxMemoryDC dc;
-    dc.SelectObject(GetOffscreenPixmap());
+    dc.SelectObject(GetBackgroundPixmap());
     
     // Prepare to draw the text.
     dc.SetTextForeground(mTextCtrl->GetForegroundColour());
@@ -562,15 +593,15 @@ void Stage::InvalidateStage()
 void Stage::InvalidateRect(const wxRect &inRect)
 {
 	wxLogTrace(TRACE_STAGE_DRAWING, "Invalidating: %d %d %d %d",
-			   inRect.x, inRect.y,
-			   inRect.x + inRect.width, inRect.y + inRect.height);
+			   inRect.x, inRect.y, inRect.GetRight(), inRect.GetBottom());
+	mRectsToComposite.MergeRect(inRect);
     Refresh(FALSE, &inRect);
 }
 
 void Stage::SaveGraphics(const wxRect &inBounds)
 {
 	wxMemoryDC srcDC, dstDC;
-	srcDC.SelectObject(GetOffscreenPixmap());
+	srcDC.SelectObject(GetBackgroundPixmap());
 	dstDC.SelectObject(mSavePixmap);
 	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
 			   &srcDC, inBounds.x, inBounds.y);
@@ -580,7 +611,7 @@ void Stage::RestoreGraphics(const wxRect &inBounds)
 {
 	wxMemoryDC srcDC, dstDC;
 	srcDC.SelectObject(mSavePixmap);
-	dstDC.SelectObject(GetOffscreenPixmap());
+	dstDC.SelectObject(GetBackgroundPixmap());
 	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
 			   &srcDC, inBounds.x, inBounds.y);
 	InvalidateRect(inBounds);
@@ -588,7 +619,7 @@ void Stage::RestoreGraphics(const wxRect &inBounds)
 
 void Stage::Screenshot(const wxString &inFilename)
 {
-	wxImage image = GetOffscreenPixmap().ConvertToImage();
+	wxImage image = GetCompositingPixmap().ConvertToImage();
 	image.SaveFile(inFilename, wxBITMAP_TYPE_PNG);
 }
 
@@ -696,7 +727,7 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 		// Run transiton, if we can.
 		if (have_before)
 		{
-			TransitionResources r(client_dc, before, GetOffscreenPixmap(),
+			TransitionResources r(client_dc, before, GetCompositingPixmap(),
 								  mOffscreenFadePixmap);
 			mTransitionManager->RunTransition(inTransition, inMilliseconds, r);
 		}
@@ -759,6 +790,14 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint)
 void Stage::DestroyElement(Element *inElement)
 {
 	wxString name = inElement->GetName();
+
+	// Force an update of the element's location.
+	inElement->InvalidateCurrentLocation();
+
+	// Make sure this element isn't on our drawing context stack.
+	if (mDrawingContextStack->ContainsElement(inElement))
+		gLog.FatalError("Tried to delete an element with an active drawing "
+						"context");
 
 	// Clean up any dangling references to this object.
 	if (inElement == mGrabbedElement)

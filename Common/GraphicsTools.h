@@ -58,17 +58,35 @@ namespace GraphicsTools {
 		Channel blue;
 		Channel alpha;
 
+	public:
 		Color() {}
 		Color(Channel inRed, Channel inGreen,
-			  Channel inBlue, Channel inAlpha = 0)
+			  Channel inBlue, Channel inAlpha = 255)
 			: red(inRed), green(inGreen), blue(inBlue), alpha(inAlpha) {}
 
-		static __inline Color ApplyAlpha(Color inColor, Channel inAlpha)
-		{
-			// Mark Noel says we should actually use some kind of log scale here.
+		__inline bool IsCompletelyOpaque() const
+			{ return alpha == 255; }
+		__inline bool IsCompletelyTransparent() const
+			{ return alpha == 0; }
+
+		//////////
+		// Apply an alpha value to a color (which may have an alpha value
+		// already).
+		//
+		static __inline Color ApplyAlpha(Color inColor, Channel inAlpha) {
+			// Mark Noel thinks we might need to use some kind of log scale
+			// here, but we seem to be fine without it.
 			return Color(inColor.red, inColor.green, inColor.blue,
-						 255 - MultiplyChannels(255 - inColor.alpha,
-												255 - inAlpha));
+						 MultiplyChannels(inColor.alpha, inAlpha));
+		}
+
+		//////////
+		// Combine two alpha channels.  This is done when compositing
+		// two semi-transparent pixels.
+		//
+		static __inline Channel
+		CombineAlphaChannels(Channel inA1, Channel inA2) {
+			return 255 - MultiplyChannels(255 - inA1, 255 - inA2);
 		}
 
 		friend bool operator==(Color inLeft, Color inRight)
@@ -84,14 +102,14 @@ namespace GraphicsTools {
 	//////////
 	// Blend the foreground color into the background color, using the
 	// alpha value to control the mixing.  An alpha 255 uses only the
-	// background color, and an alpha of 0 uses only the foreground color.
+	// foreground color, and an alpha of 0 uses only the background color.
 	//
 	static __inline Channel AlphaBlendChannel(Channel inBackground,
 											  Channel inForeground,
 											  Channel inAlpha)
 	{
-		return (MultiplyChannels(inBackground, inAlpha) +
-				MultiplyChannels(inForeground, 255 - inAlpha));
+		return (MultiplyChannels(inBackground, 255 - inAlpha) +
+				MultiplyChannels(inForeground, inAlpha));
 	}
 
 	//////////
