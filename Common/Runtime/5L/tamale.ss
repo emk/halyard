@@ -30,7 +30,7 @@
            media-is-installed? media-cd-is-available? search-for-media-cd
            set-media-base-url! movie 
            movie-pause movie-resume set-media-volume!
-           wait rel-wait tc 
+           wait tc 
            nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade opacity save-graphics restore-graphics
            ensure-dir-exists screenshot element-exists? 
@@ -570,27 +570,12 @@
     (call-5l-prim 'MediaSetVolume (elem-or-name-hack elem-or-name)
                   channel volume))
 
-  ;; keeps track of the last frame at which we did a wait; for (rel-wait ...)
-  (define last-wait-frame 0)
-
   (define (wait elem-or-name &key frame)
     (when (or (not (symbol? elem-or-name)) (element-exists? elem-or-name))
       (if frame
-          (begin
-            (set! last-wait-frame frame)
-            (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame))
+          (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame)
           (call-5l-prim 'wait (elem-or-name-hack elem-or-name)))))
   
-  ;; -- This func performs a wait relative to the last 'wait' or 'rel-wait'.
-  ;; (e.g.  If we do a (wait @audio :frame (tc 4 12))
-  ;;  then (rel-wait @audio :frame (tc 1 13)), the second wait will end at
-  ;;  the frame (tc 5 25)).
-  ;; -- The frame of the last wait is stored in last-wait-frame, which is 
-  ;; initialized to [frame 0] when tamale.ss is loaded.
-  ;;
-  (define (rel-wait elem-or-name &key (frame 0)) 
-    (wait elem-or-name :frame (+ frame last-wait-frame)))
-           
   ;; what is 'tc' short for?
   (define (tc arg1 &opt arg2 arg3)
     (cond
