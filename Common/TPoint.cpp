@@ -1,19 +1,24 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
-//////////////////////////////////////////////////////////////////////////////
+// @BEGIN_LICENSE
 //
-//   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
-//        Interactive Media Lab, Dartmouth Medical School
+// Tamale - Multimedia authoring and playback system
+// Copyright 1993-2004 Trustees of Dartmouth College
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-//			$Author$
-//          $Date$
-//          $Revision$
-//
-//////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// TPoint.cpp : 
-//
+// @END_LICENSE
 
 #include "CommonHeaders.h"
 #include "TPoint.h"
@@ -69,82 +74,3 @@ void TPoint::Offset(TPoint &inPt)
 	m_X += inPt.X();
 	m_Y += inPt.Y();
 }
-
-/*
- $Log$
- Revision 1.6  2004/02/09 19:53:28  emk
- 0.0.16 - kwasi, djin, emk
-
-   * Cleaned up a whole bunch of legacy code that can be much simpler now
-     that we have TValue.
-   * Removed TObject, TArray and TBTree because they have overstayed their
-     welcome by about a decade.
-   * Cleaned up settyped.
-   * Added output operator for TValue containing TNull().
-   * Added input operator for extracting from a TArgumentList into
-     a TValue.
-   * Fixed TRect argument order (finally!).
-   * Deleted TString and TURL.
-   * Added TStateDB class.
-   * Added preliminary support for running Quake 2 in the background.
-   * Added support for showing and hiding elements in both Tamale and Quake 2.
-   * Deleted tons of old code which wasn't doing anything any more.
-
- Revision 1.5  2003/06/13 10:57:30  emk
- Further use of precompiled headers; pruning of various inappropriate
- includes.
-
- Revision 1.4  2003/06/04 15:24:11  brian
- Added support for polygons and polygonal zones.
-
- Revision 1.3  2002/06/20 16:32:53  emk
- Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
- branch contained the following enhancements:
-
-   * Most of the communication between the interpreter and the
-     engine now goes through the interfaces defined in
-     TInterpreter.h and TPrimitive.h.  Among other things, this
-     refactoring makes will make it easier to (1) change the interpreter
-     from 5L to Scheme and (2) add portable primitives that work
-     the same on both platforms.
-   * A new system for handling callbacks.
-
- I also slipped in the following, unrelated enhancements:
-
-   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
-     there is a new, not-yet-ready-for-prime-time Carbonized build.
-   * Bug fixes from the "Fix for 3.4" list.
-
- Revision 1.2.10.1  2002/06/19 22:50:55  emk
- 3.3.4.11 - Refactored Mac code to move primitives from CCard.{h,cpp} to
- TMacPrimitives.{h,cpp}, and break most of the remaining dependencies on
- the 5L interpreter.
-
- Language changes: LOADPICK, RVAR and RNODE are gone.  I've also disabled
- the Mac PAUSE command until Douglas tells me how it should work.
-
- Testing: Please beat *very* hard on this build, and pay special attention
- to WAIT, NAP, TIMEOUT, and similar commands.
-
- Next up: I plan to merge this branch into HEAD tomorrow.
-
- Revision 1.2  2002/03/04 15:16:05  hamon
- Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-Moved OS specific configuration to TPlatform.h
-Changes by Elizabeth and Eric, okayed by Eric.
-
- Revision 1.1  2001/09/24 15:11:00  tvw
- FiveL v3.00 Build 10
-
- First commit of /iml/FiveL/Release branch.
-
- There are now seperate branches for development and release
- codebases.
-
- Development - /iml/FiveL/Dev
- Release - /iml/FiveL/Release
-
- Revision 1.1  2000/04/06 17:06:10  chuck
- Initial check-in
-
-*/

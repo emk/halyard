@@ -1,19 +1,24 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4 -*-
-//////////////////////////////////////////////////////////////////////////////
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// @BEGIN_LICENSE
 //
-//   (c) Copyright 1999, 2000 Trustees of Dartmouth College, All rights reserved.
-//        Interactive Media Lab, Dartmouth Medical School
+// Tamale - Multimedia authoring and playback system
+// Copyright 1993-2004 Trustees of Dartmouth College
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-//			$Author$
-//          $Date$
-//          $Revision$
-//
-//////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// TLogger.h : 
-//
+// @END_LICENSE
 
 #if !defined (_TLogger_h_)
 #define _TLogger_h_
@@ -29,29 +34,13 @@ BEGIN_NAMESPACE_FIVEL
 
 #define LOG_BUFFER_SIZE	10240
 
-/*-----------------------------------------------------------------
-
-CLASS
-    TLogger
-
-	A class for logging output to a file.
-
-MACRO DEFINITIONS
-	#define LOG_NONE<br>
-	#define LOG_ALL<br>
-	#define LOG_BUFFER_SIZE<br>
-
-	#define FATAL_HEADER<br>
-	#define ERROR_HEADER<br>
-	#define CAUTION_HEADER<br>
-
-	#define FormatMsg(Format)<br>
-
-AUTHOR
-	Chuck Officer<br>
-	Sean Sharp
-
------------------------------------------------------------------*/
+//////////
+/// A class for logging output to a file.
+///
+/// \author Chuck Officer
+/// \author Sean Sharp
+/// \author ...and others
+///
 class TLogger
 {
 public:
@@ -285,125 +274,3 @@ extern TLogger gMissingMediaLog;
 END_NAMESPACE_FIVEL
 
 #endif // _TLogger_h_
-
-/*
- $Log$
- Revision 1.7  2004/02/05 22:11:15  kwasi
-   * Fixed TRect argument order (finally!).
-   * Deleted TString and TURL.
-
- Revision 1.6  2004/02/02 22:07:55  djin
-   * Cleaned up a whole bunch of legacy code that can be much simpler now
-     that we have TValue.
-   * Removed TObject, TArray and TBTree because they have overstayed their
-     welcome by about a decade.
-
- Revision 1.5  2003/06/13 10:57:30  emk
- Further use of precompiled headers; pruning of various inappropriate
- includes.
-
- Revision 1.4  2002/07/26 20:00:15  zeb
- 3.3.21 - 26 July 2002 - zeb
-
-   * Added FileSystem::ExistenceCheck, which we use to check for the
-     existence of various files during the startup process (bug #937).
-
- Revision 1.3  2002/05/15 11:05:17  emk
- 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
- Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
- is available, and several subsystems have been refactored.  For more
- detailed descriptions, see the CVS branch.
-
- The merged Mac code hasn't been built yet; I'll take care of that next.
-
- Revision 1.2.4.2  2002/05/15 08:13:15  emk
- 3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
-
- Made tweaks to support the migration of Mac (buttpcx ...) to the new anti-aliased typography library.
-
- The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect *both* FiveL's to do something childish immediately after fatal errors and assertion failures.
-
- Revision 1.2.4.1  2002/04/19 11:20:13  emk
- Start of the heavy typography merging work.  I'm doing this on a branch
- so I don't cause problems for any of the other developers.
-
- Alpha-blend text colors.
-
- Merged Mac and Windows versions of several files into the Common directory.
- Not all of these work on Mac and/or Windows yet, but they're getting there.
- Primary sources for the merged code are:
-
-   Win/FiveL/LVersion.h -> Common/TVersion.h
-   Win/FiveL/LStream.h -> Common/TStream.h
-   Mac/Source/CStream.cp -> Common/TStream.cpp
-   Mac/Source/CStreamTests.cp -> Common/TStreamTests.cpp
-
- TStream changes:
-
-   * The TStream code now uses a callback to variable values.  This will
-     probably go away once Variable and CVariable get merged.
-   * Input operators for std::string and GraphicTools::Color.
-
- Isolated Windows-specific code in TLogger.*, in preparation for a big merge.
-
-   * Added a portable function to set up logging.
-   * Fixed the logging code to use the portable FileSystem library.
-   * Made FatalError actually quit the application.
-
- Turned off the FiveL namespace on FIVEL_PLATFORM_OTHER, so we can debug
- with GDB, which has a few minor but painful namespace issues.
-
- TString changes:
-
-   * Made sure we can convert from std::string to a TString.
-   * Added some more assertions.
-   * Fixed bug in various operator= methods which would allow the string's
-     internal data pointer to be NULL.
-   * Changed operator[] and operator() arguments to be 'int' instead of
-     'int32' to avoid nasty compiler warnings.
-
- Typography::Style changes:
-
-   * Added a "ShadowOffset" field that specifies the offset of the
-     drop shadow.
-   * Added an operator== for testing.
-   * Added a ToggleFaceStyle method for toggling specified face style bits.
-
- Typography::StyledText changes:
-
-   * Added a method to append a single character.
-
- Other Typography changes:
-
-   * Made FaceStyle an int, not an enum, so we can do bit math with it.
-   * Added assertions to made sure you can't extract a StyledText iterator
-     until you've called EndConstruction.
-
- Revision 1.2  2002/02/19 12:35:11  tvw
- Bugs #494 and #495 are addressed in this update.
-
- (1) 5L.prefs configuration file introduced
- (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
-     running in different modes.
- (3) Dozens of compile-time switches were removed in favor of
-     having a single executable and parameters in the 5L.prefs file.
- (4) CryptStream was updated to support encrypting/decrypting any file.
- (5) Clear file streaming is no longer supported by CryptStream
-
- For more details, refer to ReleaseNotes.txt
-
- Revision 1.1  2001/09/24 15:11:00  tvw
- FiveL v3.00 Build 10
-
- First commit of /iml/FiveL/Release branch.
-
- There are now seperate branches for development and release
- codebases.
-
- Development - /iml/FiveL/Dev
- Release - /iml/FiveL/Release
-
- Revision 1.1  2000/04/06 17:06:10  chuck
- Initial check-in
-
-*/

@@ -1,19 +1,24 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
-//////////////////////////////////////////////////////////////////////////////
+// @BEGIN_LICENSE
 //
-//   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
-//        Interactive Media Lab, Dartmouth Medical School
+// Tamale - Multimedia authoring and playback system
+// Copyright 1993-2004 Trustees of Dartmouth College
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-//			$Author$
-//          $Date$
-//          $Revision$
-//
-//////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// TVersion.h : Version strings.
-//
+// @END_LICENSE
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
@@ -26,6 +31,12 @@
 
 /*
  $Log$
+ Revision 1.67  2004/04/05 18:34:46  emk
+   * Updated all copyright blocks for an open source release.
+   * Removed the remaining half-dozen CVS log comments, except for the
+     one in TVersion.h.
+   * Manually reformatted a few comments to the doxygen comment style.
+
  Revision 1.66  2004/03/11 20:33:41  emk
  0.0.25 - 11 March 2004 - emk
 

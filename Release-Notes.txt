@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Updated all copyright blocks for an open source release.
+  * Removed the remaining half-dozen CVS log comments, except for the
+    one in TVersion.h.
+  * Manually reformatted a few comments to the doxygen comment style.
+
 0.0.24 - 10 March 2004 - emk
 
   * Added STATE-DB-DEBUG function.

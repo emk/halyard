@@ -1,75 +1,39 @@
-// -*- Mode: C++; tab-width: 4; -*-
-//////////////////////////////////////////////////////////////////////////////
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// @BEGIN_LICENSE
 //
-//   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
-//        Interactive Media Lab, Dartmouth Medical School
+// Tamale - Multimedia authoring and playback system
+// Copyright 1993-2004 Trustees of Dartmouth College
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-//			$Author$
-//          $Date$
-//          $Revision$
-//
-//////////////////////////////////////////////////////////////////////////////
+// @END_LICENSE
 
 #if !defined (_TCommon_h_)
 #define _TCommon_h_
 
-
-/*-----------------------------------------------------------------
-
-LIBRARY
-    Common
-
-OVERVIEW
-	The Common library contains a set of utility classes that are
-	used throughout the FiveL codebase.
-
-TCOMMON MACRO DEFINITIONS
-	#define ASSERT<br>
-
-	#define not		!<br>
-	#define and		&&<br>
-	#define or		||<br> 
-
-	#ifndef NULL<br>
-	#ifdef __cplusplus<br>
-	#define NULL 0<br>
-	#else<br>
-	#define NULL ((void *) 0)<br>
-	#endif<br>
-	#endif<br>
-
-	#define int8	char<br>
-	#define int16	short<br>
-	#define int32	long<br>
-
-	#define uint8	unsigned char<br>
-	#define uint16	unsigned short<br>
-	#define uint32	unsigned long<br>
-
-	#define MAX_INT8  ((int8)  0x007F)<br>
-	#define MAX_INT16 ((int16) 0x7FFF)<br>
-	#define MAX_INT32 ((int32) 0x7FFFFFFF)<br>
-
-	#define MAX_UINT8 ((uint8) 0x00FF)<br>
-	#define MAX_UINT16 ((uint16) 0xFFFF)<br>
-	#define MAX_UINT32 ((uint32) 0xFFFFFFFF)<br>
-
-	#define Max(x, y)   ((x) > (y) ? (x) : (y))<br>
-	#define Min(x, y)   ((x) < (y) ? (x) : (y))<br>
-	#define Absolute(x) (((x) > 0)? (x): ((x) * -1))<br>
-
-	#define DISABLE_COPY_AND_ASSIGN_TMPL(BARETYPE,TYPE)
-	#define DISABLE_COPY_AND_ASSIGN(TYPE)
-
-	#define TESTABLE_PRIVATE   private
-	#define TESTABLE_PROTECTED protected
-
-AUTHOR
-    Chuck Officer<br>
-
------------------------------------------------------------------*/
-
 #include "TPlatform.h"
+
+///////////////////////////////////////////////////////////////////////////
+/// \defgroup macros TCommon Macro Definitions
+///
+/// These are a group of widely-used macro definitions.  Most of these
+/// have been around nearly forever
+///
+/// \author Chuck Officer
+/// \author ...and others
+///@{
 
 //////////
 // We have our own, portable assertion-checking routine because
@@ -182,142 +146,6 @@ enum Alignment
 
 END_NAMESPACE_FIVEL
 
+///@}
+
 #endif // _TCommon_h_
-
-
-/*
- $Log$
- Revision 1.9  2002/07/24 21:37:18  emk
-   * Linux build fixes so I can run memprof and Electric Fence.
-   * Fixed a bug in TStream::GetStringArg when called on an empty stream.
-     This is probably why we were seeing weird results when CHeader called
-     TStream::more() too many times.
-
- Revision 1.8  2002/06/20 16:32:53  emk
- Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
- branch contained the following enhancements:
-
-   * Most of the communication between the interpreter and the
-     engine now goes through the interfaces defined in
-     TInterpreter.h and TPrimitive.h.  Among other things, this
-     refactoring makes will make it easier to (1) change the interpreter
-     from 5L to Scheme and (2) add portable primitives that work
-     the same on both platforms.
-   * A new system for handling callbacks.
-
- I also slipped in the following, unrelated enhancements:
-
-   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
-     there is a new, not-yet-ready-for-prime-time Carbonized build.
-   * Bug fixes from the "Fix for 3.4" list.
-
- Revision 1.7.4.2  2002/06/10 17:52:48  emk
- 3.3.4.3 - Added a TArgumentList class in TPrimitives.  This class provides
- an abstract interface to argument list parsing, and replaces parts of
- TStream.  This will allow us to begin breaking dependencies between
- the primitives and the nasty parsing gunk in TStream.
-
- Revision 1.7.4.1  2002/06/05 20:42:28  emk
- 3.3.4.2 - Broke Win5L dependencies on TIndex file by moving various pieces
- of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter
- through a well-defined API.  Changes:
-
-   * Removed many direct and indirect #includes of TIndex.h.
-   * Added a TInterpreter method ReloadScript, which can be called by the
-     higher-level ReDoScript command.
-   * Checked in some files which should have been included in the 3.3.4.1
-     checkin--these files contain the initial refactorings of Card and Macro
-     callsites to go through the TInterpreter interface.
-
- Up next: Refactor various Do* methods out of Card and into a procedural
- database.
-
- Revision 1.7  2002/05/29 09:28:09  emk
- Warning fix for ASSERT on Linux.
-
- Revision 1.6  2002/05/15 11:05:17  emk
- 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
- Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
- is available, and several subsystems have been refactored.  For more
- detailed descriptions, see the CVS branch.
-
- The merged Mac code hasn't been built yet; I'll take care of that next.
-
- Revision 1.5.2.3  2002/05/15 09:07:56  emk
- Cast ASSERT test values to (int) to avoid MSVC++ errors.
-
- Revision 1.5.2.2  2002/05/15 08:13:15  emk
- 3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
-
- Made tweaks to support the migration of Mac (buttpcx ...) to the new anti-aliased typography library.
-
- The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect *both* FiveL's to do something childish immediately after fatal errors and assertion failures.
-
- Revision 1.5.2.1  2002/04/22 08:17:57  emk
- Updated Common code to build on Macintosh and pass all unit tests.
-
- Revision 1.5  2002/04/01 19:24:20  emk
- Preliminary style sheet code!
-
-   - All text drawing routines now take Typography::Style arguments instead
-     of AbstractFace* values.
-
-   - Typography::Style provides fairly sophisticated (character) style
-     sheets--you can copy style sheets, base one style sheet off another,
-     and use style sheets to look up faces.  The style-sheet class uses
-     an internal STL-style 'rep' object for reference-counting and copy-on-
-     write behavior, so these objects are *extremely* light weight.
-
-   - Text colors now work correctly.
-
-   - TextRenderingEngine can still only handle one style at a time.  This
-     is next on my TODO list.
-
- The test suites all pass, and pngtest produces output identical to what we
- had before.
-
- Revision 1.4  2002/03/08 13:33:41  emk
- Support for testing private and protected class interfaces.
-
- Revision 1.3  2002/03/04 15:15:57  hamon
- Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-Moved OS specific configuration to TPlatform.h
-Changes by Elizabeth and Eric, okayed by Eric.
-
- Revision 1.2  2002/02/27 16:38:21  emk
- Cross-platform code merge!
-
- * Merged back in support for the Macintosh platform.  This is an ongoing
-   process, and we'll need to do more work.
-
- * Separated out platform specific configuration with big block comments.
-
- * Merged in a few changes from KBTree which appeared to fix bugs.
-
- * Merged in IntToString, UIntToString, DoubleToString changes from the
-   Macintosh engine, and improved the error handling.  NOTE: doubles now
-   print using "%f" (the way the Mac engine always did it).  This means
-   that "tstr = 0.0" will set 'tstr' to "0.000000", not "0" (as it
-   did in the Win32 engine).
-
- This code might not build on Windows.  As soon as I hear from ssharp
- that he's updated the project files, I'll test it myself.
-
- Revision 1.1  2001/09/24 15:11:00  tvw
- FiveL v3.00 Build 10
-
- First commit of /iml/FiveL/Release branch.
-
- There are now seperate branches for development and release
- codebases.
-
- Development - /iml/FiveL/Dev
- Release - /iml/FiveL/Release
-
- Revision 1.1  2000/04/06 17:06:10  chuck
- Initial check-in
-
- Revision 1.2  1999/09/24 19:57:18  chuck
- Initial revision
-
-*/

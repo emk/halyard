@@ -1,19 +1,30 @@
-// -*- Mode: C++; tab-width: 4; -*-
-//////////////////////////////////////////////////////////////////////////////
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// @BEGIN_LICENSE
 //
-//   (c) Copyright 2002, Trustees of Dartmouth College, All rights reserved.
-//        Interactive Media Lab, Dartmouth Medical School
+// Tamale - Multimedia authoring and playback system
+// Copyright 1993-2004 Trustees of Dartmouth College
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-//			$Author$
-//          $Date$
-//          $Revision$
-//
-//////////////////////////////////////////////////////////////////////////////
+// @END_LICENSE
 
 //////////////////////////////////////////////////////////////////////////////
+// \file TEncoding.h
 //
-// TEncoding.h : Conversion from specially-formatted 7-bit strings to
-//               native 8-bit strings.
+// Conversion from specially-formatted 7-bit strings to native 8-bit
+// strings.
 //
 
 #ifndef TEncoding_h
@@ -27,32 +38,23 @@ BEGIN_NAMESPACE_FIVEL
 template <class CharT>
 struct EntityMapping;
 
-
-/*-----------------------------------------------------------------
-
-CLASS
-    TEncoding
-
-    Turn HTML-escaped characters into native 8- or 16-bit characters,
-	and handle a few other special escape sequences (--, smart
-	quotes).  This rather ad hoc encoding was chosen at the
-	request of content authors--they don't want to use HTML
-	entities for certain very common characters.
-
-	This class is, unfortunately, a mess.  It has to support
-	both 7- to 8-bit conversion and 7- to 16-bit conversion.  This
-	allows it to support both new-style "(textaa ...)" calls and
-	old-style "(text ...)" calls.
-
-    It's also tied up in the generally broken mess of 5L escape
-	sequences.  Once I'm allowed to deprecate the old-style text
-	drawing routines (Header.* on Win32, and CText.* on the Mac),
-	this code will get much better.
-
-AUTHOR
-    Eric Kidd
-
-------------------------------------------------------------------*/
+//////////
+/// Turn HTML-escaped characters into native 8- or 16-bit characters,
+/// and handle a few other special escape sequences (--, smart
+/// quotes).  This rather ad hoc encoding was chosen at the
+/// request of content authors--they don't want to use HTML
+/// entities for certain very common characters.
+///
+/// This class is, unfortunately, a mess.  It has to support
+/// both 7- to 8-bit conversion and 7- to 16-bit conversion.  This
+/// allows it to support both new-style "(textaa ...)" calls and
+/// old-style "(text ...)" calls.
+///
+/// It's also tied up in the generally broken mess of 5L escape
+/// sequences.  Once I'm allowed to deprecate the old-style text
+/// drawing routines (Header.* on Win32, and CText.* on the Mac),
+/// this code will get much better.
+///
 template <class CharT>
 class TEncoding
 {
