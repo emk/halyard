@@ -22,15 +22,26 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		38
+#define VERSION_REV_BIG		39
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.38 (Development)"
+#define VERSION_STRING		"Tamale 0.0.39 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.80  2004/09/21 11:47:58  emk
+ 0.0.39 - 21 Sep 2004 - emk
+
+   * Quake 2 no longer places the cursor outside the window when running
+     on the left-hand monitor of a two-monitor system.  However, under
+     certain complicated circumstances (that shouldn't come up for users
+     running in full screen mode) it is now possible to make the Quake 2
+     player spin continuously (bug #1739, mostly fixed).
+   * Fixed assertion failure during transitions where the dirty rectangle
+     didn't fit on the screen (bug #1753).  This was a dumb error.
+
  Revision 1.79  2004/09/20 13:22:57  emk
  0.0.38 - 20 Sep 2004 - emk
 

@@ -878,12 +878,13 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 		// Run transiton, if we can.
 		if (have_before)
 		{
+            // Calculate a single dirty rectangle for the transition.
+            wxRect dirty = mRectsToRefresh.GetBounds();
+            dirty.Intersect(wxRect(wxPoint(0, 0), mStageSize));
+
+            // Run the transition itself.
 			TransitionResources r(client_dc, before, GetCompositingPixmap(),
-								  mOffscreenFadePixmap,
-                                  /// TODO - If this is too expensive, we
-                                  /// could pass in mRectsToRefresh direcly
-                                  /// and calculate it on demand.
-                                  mRectsToRefresh.GetBounds());
+								  mOffscreenFadePixmap, dirty);
 			mTransitionManager->RunTransition(inTransition, inMilliseconds, r);
 		}
 	}

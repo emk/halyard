@@ -1,5 +1,15 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.39 - 21 Sep 2004 - emk
+
+  * Quake 2 no longer places the cursor outside the window when running
+    on the left-hand monitor of a two-monitor system.  However, under
+    certain complicated circumstances (that shouldn't come up for users
+    running in full screen mode) it is now possible to make the Quake 2
+    player spin continuously (bug #1739, mostly fixed).
+  * Fixed assertion failure during transitions where the dirty rectangle
+    didn't fit on the screen (bug #1753).  This was a dumb error.
+
 0.0.38 - 20 Sep 2004 - emk
 
   * Fixed bug: Engine no longer tries to wake up interpreter if interpreter
