@@ -177,8 +177,8 @@ void TestTextRenderingEngine::Test (const wchar_t *result)
 	{
 		// Many debuggers can't print whcar_t* and/or string<wchar_t>
 		// data correctly, so display some more data about the test failure.
-		cout << "\n--- Result:\n" << to_ascii(mRenderedText)
-			 << "--- Expected:\n" << to_ascii(result) << "---";
+		cout << "\n--- Result:\n" << to_ascii(mRenderedText).c_str()
+			 << "--- Expected:\n" << to_ascii(result).c_str() << "---";
 	}
 	TEST(mRenderedText == result);
 }

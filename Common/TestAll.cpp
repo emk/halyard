@@ -15,10 +15,7 @@ int main (int argc, char **argv)
 {
 	test_TString();
 	test_TEncoding();
-
-#ifdef TEST_TYPOGRAPHY
 	test_Typography();
-#endif
 
 	return tests_finished();
 }

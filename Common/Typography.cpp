@@ -73,7 +73,8 @@ Face::Face(Library &inLibrary, char *inFontFile, char *inMetricsFile,
 	Error::CheckResult(FT_Set_Char_Size(mFace, inSize*64, inSize*64, 72, 72));
 
 	// Set various font properties that we'll need later.
-	mHasKerning = FT_HAS_KERNING(mFace);
+	// (Manual conversion to true, false to avoid MSVC++ warning.
+	mHasKerning = (FT_HAS_KERNING(mFace) ? true : false);
 }
 
 Face::~Face()
@@ -178,7 +179,7 @@ void FaceStack::SearchForCharacter(CharCode inCharCode,
 								   GlyphIndex *outGlyphIndex)
 {
 	// Search for the first font which has a glyph for our char code.
-	for (deque<Face*>::iterator iter = mFaceStack.begin();
+	for (std::deque<Face*>::iterator iter = mFaceStack.begin();
 		 iter < mFaceStack.end(); iter++)
 	{
 		*outFace = *iter;
@@ -210,8 +211,10 @@ bool Typography::operator==(const LineSegment &left, const LineSegment &right)
 LineSegmentIterator::LineSegmentIterator(const wchar_t *inTextBegin,
 										 const wchar_t *inTextEnd)
 {
-	ASSERT(inTextBegin != NULL);
-	ASSERT(inTextEnd != NULL);
+	// MSVC's STL implementation uses NULL, NULL to denote the begin and
+	// end iterators of the empty string.  We allow this.
+	ASSERT((inTextBegin != NULL && inTextEnd != NULL) ||
+		   (inTextBegin == NULL && inTextEnd == NULL));
 
 	// Initialize our iterator.
 	mSegmentBegin = inTextBegin;

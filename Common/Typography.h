@@ -2,7 +2,7 @@
 
 #include <deque>
 
-#include <ft2build.h>
+#include "ft2build.h"
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
@@ -137,7 +137,7 @@ namespace Typography {
 		//////////
 		// A generic, temporary error code representing a non-FreeType
 		// error.  TODO - We need to provide more detail.
-		static const ErrorCode kOtherError = -1;
+		enum { kOtherError = -1 };
 
 		Error(ErrorCode inErrorCode) : mErrorCode(inErrorCode) {}
 		
@@ -252,7 +252,7 @@ namespace Typography {
 	//
 	class FaceStack : public AbstractFace {
 		// TODO - Figure out a good memory management scheme.
-		deque<Face*> mFaceStack;
+		std::deque<Face*> mFaceStack;
 
 	public:
 		FaceStack(Face *inPrimaryFace);
