@@ -299,8 +299,8 @@ CMac5LApp::CMac5LApp()
 	
 		screenBounds.top += ::GetMBarHeight() + 50;
 		screenBounds.left = 50;
-		screenBounds.right = screenBounds.left + 640;
-		screenBounds.bottom = screenBounds.top + 480;
+		screenBounds.right = screenBounds.left + gScreenWidth;
+		screenBounds.bottom = screenBounds.top + gScreenHeight;
 	}
 #endif
 	
@@ -308,7 +308,7 @@ CMac5LApp::CMac5LApp()
 	mDisplayWindow->DoSetBounds(screenBounds);
 	
 	// Ensure all our sub-views are 640x480
-	gPlayerView->ResizeFrameTo(640, 480, FALSE);
+	gPlayerView->ResizeFrameTo(gScreenWidth, gScreenHeight, FALSE);
 	gPlayerView->CenterInView();
 	
 	AddAttachment(gPlayerView);								// to get events
@@ -720,6 +720,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.26  2002/10/28 17:13:35  emk
+Removed some 640x480 constants from the code.
+
 Revision 1.25  2002/10/03 19:53:14  emk
 3.5.6 - 3 Oct 2002 - emk
 
