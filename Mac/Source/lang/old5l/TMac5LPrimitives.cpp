@@ -1,7 +1,5 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include "stdafx.h"
-
 // Needed for RegisterMacintoshPrimitives.
 #include "TCommon.h"
 #include "TPrimitives.h"

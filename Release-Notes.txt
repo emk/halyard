@@ -4,7 +4,7 @@ CVS - emk
 
   * New wxWindows front-end now officially added to the build tree.
     This is still massively incomplete, but it's on its way.
-  * Lots of compilation flag tweaks, to get all the various projects
+  * Lots of compilation flag tweaks, to get all the various Win32 projects
     on the same page re: threads, RTTI, exceptions, etc.
   * CryptTool removed as first step in preparing for open souce release.
     This will simplify our legal issues a bit.
@@ -18,7 +18,7 @@ CVS - emk
     - Common/libs -> libs
     - Common/freetype2 -> libs/freetype2
     - Rename Common/Runtime/5L/*.ss to have lowercase names
-    - Linux build fixes
+    - Linux, Mac build fixes
 
 3.5.8 - 15 Oct 2002 - emk
 

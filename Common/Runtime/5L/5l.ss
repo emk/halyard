@@ -5,7 +5,7 @@
 ;;  special syntax.
 
 (module 5L (lib "lispish.ss" "5L")
-  (require (lib "5L-API.ss" "5L"))
+  (require (lib "api.ss" "5L"))
   (require (lib "interpolate.ss" "5L"))
 
   ;; We want to export most of lispish, but override a few definitions
@@ -17,7 +17,7 @@
 			    lambda define let
 			    ))
 
-  (provide (all-from (lib "5L-API.ss" "5L")))
+  (provide (all-from (lib "api.ss" "5L")))
   (provide (rename interpolating-#%datum #%datum))
 
 
