@@ -268,6 +268,21 @@ public:
 		} \
 	}
 
+template <typename Functor, class Type1, class Type2>
+void CheckFuncHelper(const char *inErrorFile, int inErrorLine,
+					 const char *inCompName,
+					 const char *inExpr1, const char *inExpr2,
+					 Functor inComp,
+					 const Type1 &inVal1, const Type2 &inVal2) {
+	if (!inComp(inVal1, inVal2)) {
+		std::ostringstream out;
+		out << "expected " << inCompName << "(" << inExpr1 << ", " << inExpr2
+			<< "), got: " << inVal1 << ", " << inVal2;
+		throw TestFailed(inErrorFile, inErrorLine, out.str());
+	}
+}
+
+
 //////////
 // Fail if !(expr1 == expr2).  Both expressions must return a type
 // supporting operator<<.

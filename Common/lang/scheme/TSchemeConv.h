@@ -7,7 +7,7 @@
 
 BEGIN_NAMESPACE_FIVEL
 
-
+extern Scheme_Object *TValueToScheme(TValue inVal);
 
 END_NAMESPACE_FIVEL
 

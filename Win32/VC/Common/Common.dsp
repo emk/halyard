@@ -207,10 +207,6 @@ SOURCE=..\..\..\Common\lang\scheme\TSchemeConv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\lang\scheme\TSchemeConv.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\Common\lang\scheme\TSchemeInterpreter.cpp
 # End Source File
 # Begin Source File
@@ -364,6 +360,10 @@ SOURCE=..\..\..\Common\TRect.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\lang\scheme\TSchemeCallback.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\lang\scheme\TSchemeConv.h
 # End Source File
 # Begin Source File
 

@@ -10,6 +10,14 @@ CVS - emk, kwasi, djin
     to TestCase.h and used them in TestAll.cpp.
   * Documented TValue and moved as much code as possible into TValue.cpp.
   * Reorganized TSchemeInterpreter and began work on conversion functions.
+  * TValueToScheme can now convert almost all TValue types.
+  * Patched swindle's EQUALS? function to compare lists recursively with
+    EQUALS? instead of EQUAL?.
+  * Added a CheckFuncHelper to TestCase.h for programmers who need to
+    define custom versions of CHECK_EQ, etc.
+  * Exported %kernel-equals from the kernel so C++ can test for equality
+    of two Scheme values.
+  * Added TInterpreter::MakeSchemePolygon and MakeSchemePercent.
 
 0.0.14 - 13 Jan 2004 - emk
 

@@ -9,6 +9,8 @@
 #include "TSchemePtr.h"
 #include "TSchemeCallback.h"
 
+class TPercent;
+
 BEGIN_NAMESPACE_FIVEL
 
 
@@ -81,25 +83,28 @@ class TSchemeInterpreter : public TInterpreter
 
 	static Scheme_Object *Call5LPrim(int inArgc, Scheme_Object **inArgv);
 
+public:
+	TSchemeInterpreter(Scheme_Env *inGlobalEnv);
+	virtual ~TSchemeInterpreter();
+
+	void DoIdle(bool block) {
+		ASSERT(sSystemIdleProc);
+		(*sSystemIdleProc)(block);
+	}
+
 	static Scheme_Object *CallSchemeEx(Scheme_Env *inEnv,
 									   Scheme_Object *inModule,
 									   const char *inFuncName,
 									   int inArgc, Scheme_Object **inArgv);
-
 	static Scheme_Object *CallScheme(const char *inFuncName,
 									 int inArgc, Scheme_Object **inArgv);
-
 	static Scheme_Object *CallSchemeSimple(const char *inFuncName);
 
 	static Scheme_Object *MakeSchemePoint(const TPoint &inPoint);
 	static Scheme_Object *MakeSchemeRect(const TRect &inRect);
 	static Scheme_Object *MakeSchemeColor(const GraphicsTools::Color &inColor);
-
-public:
-	TSchemeInterpreter(Scheme_Env *inGlobalEnv);
-	virtual ~TSchemeInterpreter();
-
-	void DoIdle(bool block) { ASSERT(sSystemIdleProc); (*sSystemIdleProc)(block); }
+	static Scheme_Object *MakeSchemePolygon(const TPolygon &inPoly);
+	static Scheme_Object *MakeSchemePercent(const TPercent &inPercent);
 
 	// For documentation of these virtual methods, see TInterpreter.h.
 	virtual void Run(SystemIdleProc inIdleProc);

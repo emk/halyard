@@ -295,9 +295,10 @@
     (%kernel-run-as-callback (lambda () (apply function args))
                              non-fatal-error))
 
-  (define (%kernel-reverse! l)
-    (reverse! l))
-
+  ;; We need to export this from the kernel so CallScheme can find it.
+  (define %kernel-reverse! reverse!)
+  (define %kernel-equals? equals?)
+  
 
   ;;=======================================================================
   ;;  Internal State

@@ -49,8 +49,12 @@
   (defclass <percent> () 
     value)
 
+  (make-equals?-compare-class+slots <percent>)
+
   (defclass <polygon> (<shape>)
     vertices)
+
+  (make-equals?-compare-class+slots <polygon>)
 
   (define (polygon &rest args)
     (make-polygon args))

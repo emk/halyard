@@ -1,4 +1,7 @@
 
+  Patches
+    Send equals? fix to author of Swindle
+
   TValue Cleanup
 /   operator== should compare
 /   operator== on uninitialized values should throw exception
@@ -12,6 +15,7 @@
     Redesign TArgumentList (for primitives)
     Redesign TCallbackArgumentList
     Test TValue extensively with real TCallbacks
+    Test TValueToScheme extensively with real TCallbacks
 
   Cleanup
     Make sure GUI does REFERENCE_TEST_CASE_FILE
