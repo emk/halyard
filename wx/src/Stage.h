@@ -81,6 +81,7 @@ class StageFrame : public wxFrame, public model::View
     wxMenu *mFileMenu;
     wxMenu *mCardMenu;
     wxMenu *mViewMenu;
+    wxMenu *mInsertMenu;
     wxMenu *mWindowMenu;
     wxMenu *mHelpMenu;
 
@@ -188,6 +189,8 @@ private:
     void OnDisplayBorders(wxCommandEvent &inEvent);
     void UpdateUiProperties(wxUpdateUIEvent &inEvent);
     void OnProperties(wxCommandEvent &inEvent);
+    void UpdateUiInsertBackground(wxUpdateUIEvent &inEvent);
+    void OnInsertBackground(wxCommandEvent &inEvent);
     void UpdateUiJumpCard(wxUpdateUIEvent &inEvent);
     void OnJumpCard(wxCommandEvent &inEvent);
 

@@ -132,6 +132,8 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_DISPLAY_BORDERS, StageFrame::OnDisplayBorders)
     EVT_UPDATE_UI(FIVEL_PROPERTIES, StageFrame::UpdateUiProperties)
     EVT_MENU(FIVEL_PROPERTIES, StageFrame::OnProperties)
+    EVT_UPDATE_UI(FIVEL_INSERT_BACKGROUND, StageFrame::UpdateUiInsertBackground)
+    EVT_MENU(FIVEL_INSERT_BACKGROUND, StageFrame::OnInsertBackground)
     EVT_UPDATE_UI(FIVEL_JUMP_CARD, StageFrame::UpdateUiJumpCard)
     EVT_MENU(FIVEL_JUMP_CARD, StageFrame::OnJumpCard)
     EVT_SASH_DRAGGED(FIVEL_PROGRAM_TREE, StageFrame::OnSashDrag)
@@ -216,6 +218,12 @@ StageFrame::StageFrame(wxSize inSize)
 					  "&Properties...\tAlt+Enter",
 					  "Edit the properties of the selected object.");
 
+	// Set up our Insert menu.
+    mInsertMenu = new wxMenu();
+	mInsertMenu->Append(FIVEL_INSERT_BACKGROUND,
+						"&Background",
+						"Insert a new card background to use as a template.");
+
     // Set up our Window menu.
     mWindowMenu = new wxMenu();
     mWindowMenu->Append(FIVEL_SHOW_LISTENER, "Show &Listener\tCtrl+L",
@@ -235,6 +243,7 @@ StageFrame::StageFrame(wxSize inSize)
     mMenuBar->Append(mFileMenu, "&File");
     mMenuBar->Append(mCardMenu, "&Card");
     mMenuBar->Append(mViewMenu, "&View");
+    mMenuBar->Append(mInsertMenu, "&Insert");
     mMenuBar->Append(mWindowMenu, "&Window");
     mMenuBar->Append(mHelpMenu, "&Help");
     SetMenuBar(mMenuBar);
@@ -572,6 +581,16 @@ void StageFrame::OnProperties(wxCommandEvent &inEvent)
 {
 	ProgramPropDlg prop_dlg(this, mDocument->GetTamaleProgram());
 	prop_dlg.ShowModal();
+}
+
+void StageFrame::UpdateUiInsertBackground(wxUpdateUIEvent &inEvent)
+{
+	inEvent.Enable(mDocument != NULL);
+}
+
+void StageFrame::OnInsertBackground(wxCommandEvent &inEvent)
+{
+	mDocument->GetTamaleProgram()->InsertBackground();
 }
 
 void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)

@@ -7,6 +7,7 @@
 
 #include "TCommon.h"
 #include "TInterpreter.h"
+#include "TVectorDiff.h"
 
 #include <map>
 #include <string>
@@ -17,6 +18,7 @@
 #include "ProgramTree.h"
 #include "Model.h"
 #include "doc/Document.h"
+#include "doc/TamaleProgram.h"
 #include "dlg/ProgramPropDlg.h"
 
 //=========================================================================
@@ -116,6 +118,125 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 		if (interp->IsValidCard(mCardName.mb_str()))
 			interp->JumpToCardByName(mCardName.mb_str());
 	}
+}
+
+
+//=========================================================================
+//  BackgroundItemData
+//=========================================================================
+
+class BackgroundItemData : public ViewItemData
+{
+public:
+	BackgroundItemData(ProgramTreeCtrl *inTreeCtrl)
+		: ViewItemData(inTreeCtrl) {}
+
+	virtual void ObjectChanged();
+	virtual void ObjectDeleted();
+};
+
+void BackgroundItemData::ObjectChanged()
+{
+	wxASSERT(GetId());
+	// XXX - Object creation protocol is totally broken, so we need to
+	// make sure Initialize() has been called on our object.
+	// TODO - Rename HaveKey to HasKey.
+	if (GetObject()->HaveKey("name"))
+	{
+		wxString name(GetObject()->GetString("name").c_str());
+		GetTree()->SetItemText(GetId(), name);
+	}
+}
+
+void BackgroundItemData::ObjectDeleted()
+{
+}
+
+
+//=========================================================================
+//  BackgroundListItemData
+//=========================================================================
+
+class BackgroundListItemData : public ViewItemData
+{
+	model::Object *GetItemObject(wxTreeItemId id);
+
+public:
+	BackgroundListItemData(ProgramTreeCtrl *inTreeCtrl)
+		: ViewItemData(inTreeCtrl) {}
+
+	virtual void ObjectChanged();
+	virtual void ObjectDeleted();
+};
+
+model::Object *BackgroundListItemData::GetItemObject(wxTreeItemId id)
+{
+	BackgroundItemData *data =
+		dynamic_cast<BackgroundItemData*>(GetTree()->GetItemData(id));
+	wxASSERT(data);
+	return data->GetObject();
+}
+
+void BackgroundListItemData::ObjectChanged()
+{
+	// Get our list of backgrounds.
+	model::List *backgrounds =
+		model::cast<TamaleProgram>(GetObject())->GetBackgrounds();
+
+	// This is messy--we need to update the tree's list of backgrounds to
+	// match the list in our model without changing the contents of the
+	// wxTreeCtrl more than absolutely necessary.  We use a Largest
+	// Common Subsequence algorithm to implement a primitive "diff"
+	// between the two lists.
+	typedef std::vector<model::Object*> ObjectVector;
+	ObjectVector view_items, model_items, lcs;
+
+	// Extract the Objects from the Views in our tree.
+	ProgramTreeCtrl *tree = GetTree();
+	wxTreeItemId id = GetId();
+	long cookie;
+	for (id = tree->GetFirstChild(GetId(), cookie); id;
+		 id = tree->GetNextChild(GetId(), cookie))
+		view_items.push_back(GetItemObject(id));
+
+	// Extract the Objects from our Model.
+	size_t model_count = backgrounds->GetSize();
+	for (int i = 0; i < model_count; i++)
+		model_items.push_back(model::cast<model::Object>(backgrounds->Get(i)));
+
+	// Calculate our Largest Common Subsequence.  This is essentially
+	// the list of "unchanged" elements.
+	LargestCommonSubsequence<model::Object*>(view_items, model_items, lcs);
+
+	// Delete any objects which have disappeared from our tree.
+	ObjectVector::iterator lcs_iter = lcs.begin();
+	for (id = tree->GetFirstChild(GetId(), cookie); id;
+		 id = tree->GetNextChild(GetId(), cookie))
+		if (lcs_iter != lcs.end() && GetItemObject(id) == *lcs_iter)
+			++lcs_iter;
+		else
+			tree->Delete(id);
+
+	// Insert any objects which have been added to our tree.
+	lcs_iter = lcs.begin();
+	ObjectVector::iterator model_iter = model_items.begin();
+	for (size_t view_index = 0;
+		 model_iter != model_items.end();
+		 ++model_iter, ++view_index)
+	{
+		if (lcs_iter != lcs.end() && *model_iter == *lcs_iter)
+			++lcs_iter;
+		else
+		{
+			ViewItemData *data = new BackgroundItemData(tree);
+			tree->InsertItem(GetId(), view_index, "", -1, -1, data);
+			data->SetObject(*model_iter);
+		}
+	}
+}
+
+void BackgroundListItemData::ObjectDeleted()
+{
 }
 
 
@@ -286,6 +407,9 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 	mBackgroundsID = mTree->AppendItem(mRootID, "Backgrounds");
 	mTree->SetIcon(mBackgroundsID, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
 				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
+	ViewItemData *bg_data = new BackgroundListItemData(mTree);
+	mTree->SetItemData(mBackgroundsID, bg_data);
+	bg_data->SetObject(inDocument->GetRoot());
 }
 
 void ProgramTree::RegisterCard(const wxString &inName)
@@ -312,7 +436,6 @@ void ProgramTree::NotifyScriptReload()
 {
 	mCardMap.clear();
 	mTree->CollapseAndReset(mCardsID);
-	mTree->CollapseAndReset(mBackgroundsID);
 }
 
 void ProgramTree::NotifyEnterCard()
