@@ -1084,13 +1084,14 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 	FIVEL_NS gDebugLog.Caution("Breaking line in middle of word");
 	
 	// Back up one character at a time until we fit.
-	// This code runs in O(N^2) time (for small values of N).
+	// This code runs in O(N^2) time (with small values of N).
 	LineSegment seg = *ioRemaining;
+	seg.needsHyphenAtEndOfLine = true; // We'll have to hyphenate.
 	do
 	{
+		--seg.end;
 		if (seg.begin == seg.end)
 			throw Error("Trying to break line in the middle of a character");
-		--seg.end;
 	} while (MeasureSegment(NULL, &seg, true) > GetLineLength());
 	ASSERT(seg.end != ioRemaining->end);
 	
