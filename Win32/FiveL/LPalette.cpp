@@ -87,10 +87,9 @@ LPalette::LPalette(const char *name) : LResource(name)
 	//	If we aren't using 8-bit, we can use native BMPs as they are
 	//		probably faster and are certainly simpler.
 	//
-
-	//m_FullPath = gConfigManager.GetGraphicsPath(name);
-	m_FullPath = gConfigManager.PalettesPath();
-	m_FullPath += m_PalName;
+	FileSystem::Path path =
+		FileSystem::GetPalettesDirectory().AddComponent(m_PalName.GetString());
+	m_FullPath = path.ToNativePathString().c_str();
 
 	m_NativeBMP = false;
 	if (not m_PalName.Contains("."))
@@ -466,6 +465,28 @@ void LPaletteManager::ResetPalette(void)
 
 /*
  $Log$
+ Revision 1.3  2002/06/20 16:32:55  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.2.8.1  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -204,6 +205,21 @@ class LFontManager : public LResourceManager
 		// [out] return - pointer to the default font
 		//
 		LFont		*GetDefaultFont(void);
+
+		//////////
+		// Delete everything but the default font from our tree.  Call
+		// this instead of RemoveAll if you want to unload all fonts.
+		// XXX - This is a wart, but it fixes a bug in a mostly obsolete
+		// class, so I decided to not refactor the TBTree subclasses to
+		// make this well-integrated.
+		// 
+		void RemoveAllButDefaultFont();
+
+	private:
+		//////////
+		// Add the default font object to our tree.
+		//
+		void AddDefaultFont();
 };
 
 // DEPRECATED 
@@ -214,6 +230,28 @@ class LFontManager : public LResourceManager
 
 /*
  $Log$
+ Revision 1.2  2002/06/20 16:32:55  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.1.10.1  2002/06/11 18:03:59  emk
+ Fixed a bug where 5L deleted the default font when switching scripts,
+ causing INPUT to crash when passed a non-existant header name.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

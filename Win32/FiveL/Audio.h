@@ -22,8 +22,7 @@
 #include "TArray.h"
 #include "TString.h" 
 #include "LQuickTime.h"
-#include "Card.h"
-
+#include "TInterpreter.h"
 
 /*-----------------------------------------------------------------
 
@@ -421,6 +420,33 @@ class AudioManager : public TObject
 
 /*
  $Log$
+ Revision 1.2  2002/06/20 16:32:54  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.1.10.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

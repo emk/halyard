@@ -6,10 +6,9 @@
 #include "TLogger.h"
 #include "TEncoding.h"
 #include "TUtilities.h"
+#include "TTemplateUtils.h"
 
-#include <algorithm>
 #include <string>
-#include <ctype.h>
 
 USING_NAMESPACE_FIVEL
 
@@ -36,16 +35,28 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
 		gLog.FatalError("I/O error reading script for %s", inName);
 	TStream stream(GetScript());
 
-    // (defstyle STYLENAME FONTNAME SIZE JUSTIFICATION COLOR HIGHCOLOR...
-    std::string justification;
+    // (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR...
+    std::string flags, justification;
     uint32 size;
-    stream >> open >> discard >> mStyleName >> mFontName >> size
+    stream >> open >> discard >> mStyleName >> mFontName >> size >> flags
 		   >> justification >> mColor >> mHighlightColor;
     mSize = size;
 
+	// Parse our flags value.
+	mFaceStyle = Typography::kRegularFaceStyle;
+	if (flags == "r")
+		mFaceStyle = Typography::kRegularFaceStyle;
+	else if (flags == "b")
+		mFaceStyle = Typography::kBoldFaceStyle;
+	else if (flags == "i")
+		mFaceStyle = Typography::kItalicFaceStyle;
+	else if (flags == "bi")
+		mFaceStyle = Typography::kBoldItalicFaceStyle;
+	else
+		gLog.Error("Invalid face style '%s'", flags.c_str());
+
     // Parse our justification value.
-    std::transform(justification.begin(), justification.end(),
-				   justification.begin(), tolower);
+	justification = MakeStringLowercase(justification);
     if (justification == "center")
 		mJustification = Typography::kCenterJustification;
     else if (justification == "right")
@@ -93,6 +104,7 @@ Typography::Style TStyleSheet::GetBaseStyle()
 	backups.push_back("Standard Symbols L");
 	backups.push_back("Dingbats");
 	base_style.SetBackupFamilies(backups);
+	base_style.SetFaceStyle(mFaceStyle);
     base_style.SetColor(mColor);
     base_style.SetShadowColor(mShadowColor);
     base_style.SetLeading(mLeading);
@@ -166,7 +178,8 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 			
 			case '\\': // Escape sequence
 				if (++cp == encoded.end())
-					throw TException("Incomplete escape sequence in \"" +
+					throw TException(__FILE__, __LINE__,
+									 "Incomplete escape sequence in \"" +
 									 inText + "\"");
 				switch (*cp)
 				{

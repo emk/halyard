@@ -1,12 +1,11 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
 #include "TCommon.h"
+#include "TTemplateUtils.h"
 
-#include <algorithm>
 #include <fstream>
 
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -37,7 +36,8 @@ using namespace FileSystem;
 //  Error Methods
 //=========================================================================
 
-Error::Error(int inErrorCode)
+Error::Error(const char *inErrorFile, int inErrorLine, int inErrorCode)
+	: TException(inErrorFile, inErrorLine)
 {
 	// THREAD - Use strerror because strerror_r appears broken on some
 	// platforms (include Linux?).
@@ -57,7 +57,7 @@ static void ResetErrno()
 
 // Call this function *after* making a system call which sets errno.
 // This will reset errno, and if errno is set, will throw an error.
-static void CheckErrno()
+static void CheckErrno(const char *inFile, int inLine)
 {
 	// Surprisingly, this function is threadsafe on most platforms.
 	// 'errno' isn't really a variable; it's a magic pre-processor
@@ -66,9 +66,39 @@ static void CheckErrno()
 	{
 		int temp = (errno);
 		errno = 0;
-		throw Error(temp);
+		throw Error(inFile, inLine, temp);
 	}
 }
+
+#define CHECK_ERRNO() CheckErrno(__FILE__, __LINE__)
+
+
+//=========================================================================
+//  MacOS Support Methods
+//=========================================================================
+//  This code is used by a variety of different MacOS-specific methods
+//  below.
+
+#if FIVEL_PLATFORM_MACINTOSH
+
+#include <TextUtils.h>
+#include <Files.h>
+#include <Script.h>
+#include <Resources.h>
+
+// This function taken from the MacUtils.cpp file in the old
+// Mac engine and modified lightly.
+static OSErr PathToFSSpec(const char *inPath, FSSpec *inSpec)
+{
+	// Coerce our string to the right type.
+	Str255		thePath;
+	::CopyCStringToPascal(inPath, thePath);
+	
+	// Convert it to a file spec.
+	return ::FSMakeFSSpec(0, 0, thePath, inSpec);
+}
+
+#endif // FIVEL_PLATFORM_MACINTOSH
 
 
 //=========================================================================
@@ -135,7 +165,7 @@ std::string Path::GetExtension() const
 	if (dotpos == std::string::npos)
 		return std::string("");
 	std::string extension = mPath.substr(dotpos + 1);
-	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	extension = FIVEL_NS MakeStringLowercase(extension);
 	return extension;
 }
 
@@ -152,29 +182,13 @@ Path Path::ReplaceExtension(std::string inNewExtension) const
 	return newPath;
 }
 
-#if FIVEL_PLATFORM_MACINTOSH
-
-//////////
-// The Metrowerks Standard Library (MSL) contains a weird stat() function.
-// When called on a non-existant file, 'stat' returns an error code of -1,
-// but fails to set ENOENT.  We attempt to patch around this.
-//
-static int mac_stat(const char *inFileName, struct stat *outInfo)
-{
-	int result = stat(inFileName, outInfo);
-	if (result < 0 && errno == 0)
-		errno = ENOENT;
-	return result;
-}
-
-#define stat(x,y) mac_stat(x,y)
-
-#endif // FIVEL_PLATFORM_*
+#if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
 
 bool Path::DoesExist() const
 {
 	struct stat info;
 
+	ResetErrno();
 	int result = stat(ToNativePathString().c_str(), &info);
 	if (result >= 0)
 	{
@@ -187,7 +201,7 @@ bool Path::DoesExist() const
 	}
 	else
 	{
-		throw Error(errno);
+		throw Error(__FILE__, __LINE__, errno);
 	}
 
 	ASSERT(false);
@@ -199,7 +213,7 @@ bool Path::IsRegularFile() const
 	struct stat info;
 	ResetErrno();
 	stat(ToNativePathString().c_str(), &info);
-	CheckErrno();
+	CHECK_ERRNO();
 	return S_ISREG(info.st_mode) ? true : false;
 }
 
@@ -208,9 +222,70 @@ bool Path::IsDirectory() const
 	struct stat info;
 	ResetErrno();
 	stat(ToNativePathString().c_str(), &info);
-	CheckErrno();
+	CHECK_ERRNO();
 	return S_ISDIR(info.st_mode) ? true : false;
 }
+
+#elif FIVEL_PLATFORM_MACINTOSH
+
+bool Path::DoesExist() const
+{
+	// The MSL stat() function is unreliable at best, and totally broken
+	// in MacOS X's MacOS 9 emulator, so we have to do this the hard way.
+	FSSpec spec;
+	OSErr err = ::PathToFSSpec(ToNativePathString().c_str(), &spec);
+	if (err == noErr)
+		return true;
+	else if (err == fnfErr)
+		return false;
+	
+	throw Error(__FILE__, __LINE__,
+				"Error while checking whether a file exists");
+}
+
+static mode_t MacGetMode(const char *inFileName)
+{
+	// The MSL stat() function is unreliable at best, and totally broken
+	// in MacOS X's MacOS 9 emulator, so we have to do this the hard way.
+	FSSpec spec;
+	if (::PathToFSSpec(inFileName, &spec) != noErr)
+		throw Error(__FILE__, __LINE__, "Error making FSSpec");
+	
+	// Make some nasty File Manager calls to get our info.
+	HFileInfo pb;
+	pb.ioVRefNum = spec.vRefNum;
+	pb.ioDirID = spec.parID;
+	pb.ioNamePtr = spec.name;
+	pb.ioFDirIndex = 0;
+	OSErr err = ::PBGetCatInfoSync((CInfoPBPtr) &pb);
+	if (err != noErr)
+		throw Error(__FILE__, __LINE__, "Error calling PBGetCatInfoSync");
+		
+	// Translate our info a Unix mode_t value.  I got these flag values
+	// from the MSL source code.
+	if (pb.ioFlAttrib & 0x10)
+		return S_IFDIR;
+	else if (pb.ioFlFndrInfo.fdFlags & 0x8000)
+		return S_IFLNK;
+	else
+		return S_IFREG;
+}
+
+bool Path::IsRegularFile() const
+{
+	mode_t mode = ::MacGetMode(ToNativePathString().c_str());
+	return S_ISREG(mode) ? true : false;
+}
+
+bool Path::IsDirectory() const
+{
+	mode_t mode = ::MacGetMode(ToNativePathString().c_str());
+	return S_ISDIR(mode) ? true : false;
+}
+
+#else 
+#	error "Unknown platform."
+#endif // FIVEL_PLATFORM_*
 
 #if FIVEL_PLATFORM_WIN32
 
@@ -225,7 +300,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
 	HANDLE hFind = ::FindFirstFile((ToNativePathString() + "\\*").c_str(),
 								   &find_data);
 	if (hFind == INVALID_HANDLE_VALUE)
-		throw Error("Can't open directory"); // TODO - GetLastError()
+		throw Error(__FILE__, __LINE__, "Can't open directory"); // TODO - GetLastError()
 
 	// Make sure we close our WIN32_FIND_DATA correctly.
 	try
@@ -240,7 +315,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
 
 		// Check for any errors reading the directory.
 		if (::GetLastError() != ERROR_NO_MORE_FILES)
-			throw Error("Error reading directory"); // TODO - GetLastError()
+			throw Error(__FILE__, __LINE__, "Error reading directory"); // TODO - GetLastError()
 	}
 	catch (...)
 	{
@@ -248,7 +323,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
 		throw;
 	}
 	if (!::FindClose(hFind))
-		throw Error("Can't close directory"); // TODO - GetLastError()
+		throw Error(__FILE__, __LINE__, "Can't close directory"); // TODO - GetLastError()
 
 	return entries;
 }
@@ -259,7 +334,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
 {
 	ResetErrno();
 	DIR *dir = opendir(ToNativePathString().c_str());
-	CheckErrno();
+	CHECK_ERRNO();
 
 	std::list<std::string> entries;	
 	for (struct dirent *entry = readdir(dir);
@@ -271,10 +346,10 @@ std::list<std::string> Path::GetDirectoryEntries() const
 		if (name != "." && name != "..")
 			entries.push_back(name);
 	}
-	CheckErrno();
+	CHECK_ERRNO();
 
 	closedir(dir);
-	CheckErrno();
+	CHECK_ERRNO();
 
 	return entries;
 }
@@ -287,7 +362,7 @@ void Path::RemoveFile() const
 {
 	ResetErrno();
 	remove(ToNativePathString().c_str());
-	CheckErrno();
+	CHECK_ERRNO();
 }
 
 #if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
@@ -351,7 +426,7 @@ void Path::RenameFile(const Path &inNewName) const
 	ResetErrno();
 	rename(ToNativePathString().c_str(),
 		   inNewName.ToNativePathString().c_str());
-	CheckErrno();	
+	CHECK_ERRNO();	
 }
 
 void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
@@ -373,11 +448,6 @@ void Path::CreateWithMimeType(const std::string &inMimeType)
 
 #elif FIVEL_PLATFORM_MACINTOSH
 
-#include <TextUtils.h>
-#include <Files.h>
-#include <Script.h>
-#include <Resources.h>
-
 #define TEXT_PLAIN_TYPE ('TEXT')
 #ifdef DEBUG
 	// Developers want text files to open in a real editor...
@@ -387,23 +457,6 @@ void Path::CreateWithMimeType(const std::string &inMimeType)
 #	define TEXT_PLAIN_CREATOR ('ttxt')
 #endif // DEBUG
 
-// This function taken from the MacUtils.cpp file in the old
-// Mac engine.
-static bool PathToFSSpec(const char *inPath, FSSpec *inSpec)
-{
-	Str255		thePath;
-	OSErr		err;
-	bool		retValue = true;	// cbo - why is it not returning noErr?
-	
-	strcpy((char *) thePath, inPath);
-	c2pstr((char *) thePath);
-	
-	if ((err = ::FSMakeFSSpec(0, 0, thePath, inSpec)) == noErr)
-		retValue = true;
-		
-	return (retValue);
-}
-
 void Path::CreateWithMimeType(const std::string &inMimeType)
 {
 	// We could be really classy and call Internet Config to map the MIME
@@ -411,7 +464,7 @@ void Path::CreateWithMimeType(const std::string &inMimeType)
 	if (inMimeType == "text/plain")
 	{
 		FSSpec spec;
-		if (PathToFSSpec(ToNativePathString().c_str(), &spec))
+		if (::PathToFSSpec(ToNativePathString().c_str(), &spec) == fnfErr)
 		{
 			::FSpCreateResFile(&spec, TEXT_PLAIN_CREATOR,
 							   TEXT_PLAIN_TYPE, smRoman);

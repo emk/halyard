@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -19,10 +20,9 @@
 #include "resource.h"
 #include "Debug.h"
 
+#include "TStartup.h"
+#include "TDeveloperPrefs.h"
 #include "LUtil.h"
-#include "TIndex.h"
-#include "Header.h"
-#include "Macro.h"
 #include "Graphics.h"
 #include "TVariable.h"
 #include "Video.h"
@@ -43,8 +43,8 @@
 #include "LHttp.h"
 #include "LBrowser.h"
 #include "SingleInstance.h"
-#include "TParser.h"
-#include "TStyleSheet.h"
+#include "TWin5LInterpreter.h"
+#include "TWinPrimitives.h"
 
 #if defined USE_BUNDLE
 	#include "LFileBundle.h"
@@ -82,10 +82,8 @@ TRect				gScreenRect;	// our virtual screen rect (in screen coordinates)
 int					gHorizRes;
 int					gVertRes;
 
+TWin5LInterpreter   *gWin5LInterpreter;
 View				*gView = NULL;
-CardManager         gCardManager;
-MacroManager        gMacroManager;
-HeaderManager       gHeaderManager;
 LTouchZoneManager	gTouchZoneManager;     
 SysInfo				gSysInfo; 
 LCursorManager		gCursorManager; 
@@ -159,6 +157,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	LoadString(hInstance, IDC_FIVEL, szWindowClass, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_FIVEL_CHILD, szChildClass, MAX_LOADSTRING);
 
+	// Initialize the Common library.
+	InitializeCommonCode();
+
 	// Process the command line, configuration file, and user prefs.
 	if (not gConfigManager.Init(lpCmdLine))
 		return (false);
@@ -170,16 +171,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// Make system checks.
 	if (not CheckSystem())
 		return (false);	
-
-	// Initialize our standard log files.
-	bool want_debug_log = (gConfigManager.GetUserPref(DEBUG_LOG) == DEBUG_LOG_ON);
-	TLogger::OpenStandardLogs(want_debug_log);
-
-	// Register our top-level forms.
-	TParser::RegisterIndexManager("card", &gCardManager);
-	TParser::RegisterIndexManager("macrodef", &gMacroManager);
-	TParser::RegisterIndexManager("header", &gHeaderManager);
-	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
 
 	// Register our platform-specific special variables.
 	gVariableManager.RegisterSpecialVariable("_system",
@@ -209,13 +200,17 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	gView->BlackScreen();
 
-	// read in the script 
-	if (not gIndexFileManager.NewIndex(gConfigManager.CurScript()))
+	// Initialize the interpreter.
+	try
 	{
- 		DeInitInstance();
- 		
+		RegisterWindowsPrimitives();
+		gWin5LInterpreter = new TWin5LInterpreter(gConfigManager.CurScript());
+	}
+	catch (...)
+	{
+		DeInitInstance();		
     	return (false);
-    }
+	}
 
 	// initialize the URL checker
 	gHttpTool.Init();
@@ -227,7 +222,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	gDebugLog.Log("Resolution: %d x %d", gHorizRes, gVertRes);
 
 	// jump to the start card
-	gCardManager.JumpToCardByName("start"); 
+	TInterpreter::GetInstance()->JumpToCardByName("start"); 
             
 	// start our idle loop timer
 	StartTimer();
@@ -268,7 +263,7 @@ bool InitApplication(HINSTANCE hInstance)
 	wcex.hbrBackground	= NULL;
 	wcex.lpszClassName	= szWindowClass;
 
-	if (gConfigManager.GetUserPref(MODE) == MODE_WINDOW)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_WINDOW)
 	{
 		wcex.hIcon			= LoadIcon(hInstance, (LPCTSTR)IDI_FIVEL);
 		wcex.lpszMenuName	= (LPCSTR)IDC_FIVEL;
@@ -320,7 +315,7 @@ bool InitApplication(HINSTANCE hInstance)
 bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     // first make sure we are the only instance running
-	if (gConfigManager.GetUserPref(MULTIPLE_INSTANCES) == MULTIPLE_INSTANCES_NO)
+	if (gDeveloperPrefs.GetPref(MULTIPLE_INSTANCES) == MULTIPLE_INSTANCES_NO)
 	{
 		if (g_SingleInstanceObj.IsAnotherInstanceRunning())
 			return FALSE;
@@ -383,7 +378,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 	::EnterMovies();				// Initialize QuickTime
 		
 	// Create and show app window:    
-	if (gConfigManager.GetUserPref(MODE) == MODE_WINDOW)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_WINDOW)
 	{ 
 		if ((gHorizRes > 650) and (gVertRes > 500))
 		{
@@ -434,7 +429,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return (false);
 	}
 
-	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
 		SetWindowPos(hWnd, /*HWND_TOP*/ HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
 	else
 		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
@@ -442,7 +437,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
     gCursorManager.ChangeCursor(NO_CURSOR);
 
 	// black full-screen background. Doesn't look good with blueramp.
-	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
 	{
 		AdjustWindowRect(&cRectgl, WS_POPUP, false); // find window size based on desired client area (Rectgl)
 
@@ -471,7 +466,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
     ::ShowWindow(hWnd, SW_SHOW);
     ::UpdateWindow(hWnd);
 
-	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
 	{	
 		// set our cursor position to be the center of our virtual screen
 		cursorPos.x = gHorizRes/2;
@@ -638,7 +633,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 
 				// go back to restricting cursor movement
-				if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)	
+				if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)	
 					gCursorManager.ClipCursor(&gScreenRect);
     			
     			// make sure we have a cursor
@@ -660,7 +655,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
  
 				// stop restricting cursor movement
-				if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+				if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
 					gCursorManager.ClipCursor(NULL);
 
 				// set the cursor to something normal
@@ -678,7 +673,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if (gInFront)
 				{
-					gCardManager.Idle();
+					TInterpreter::GetInstance()->Idle();
 					gVideoManager.Idle();
 					gAudioManager.Idle();
 				}
@@ -701,10 +696,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// on our initial login screens.)
 				gInputManager.KeyDown(VK_RETURN);
 			}
-            else if (not gCardManager.Napping())
+            else if (not TInterpreter::GetInstance()->Napping())
             {  
                 if (theZone = gTouchZoneManager.GetTouchZone(cursorPos))  
-					theZone->DoCommand();
+					theZone->DoCallback();
             }
             break;   
         
@@ -713,10 +708,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         	if ((char) wParam == '.')
         	{
 				gDebugLog.Log("Hit Alt-period");
-	        	if (gCardManager.Napping())
+	        	if (TInterpreter::GetInstance()->Napping())
 				{
 					gDebugLog.Log("Escape from Nap");
-					gCardManager.KillNap();
+					TInterpreter::GetInstance()->KillNap();
 				}
 				if (gVideoManager.Playing())
 				{
@@ -742,12 +737,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     if (gAudioManager.Playing())
                     	gAudioManager.Kill(0, false); 
                     	
-                    gCardManager.JumpToCard(theKey->GetCard());
+                    theKey->GetCallback()->Run();
             	}
             	// q - quit
             	else if ((char) wParam == 'q')	
                 { 
-                	gCardManager.Pause();		// no more command execution
+                	TInterpreter::GetInstance()->Pause();		// no more command execution
                 	
 		            ::PostQuitMessage(0);
                 }
@@ -793,14 +788,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     if (gAudioManager.Playing())
                     	gAudioManager.Kill(0, false); 
                     	
-                    gCardManager.JumpToCard(theKey->GetCard());
+                    theKey->GetCallback()->Run();
                 }
                 else 	// do normal escape key actions
                 {
-        			if (gCardManager.Napping())
+        			if (TInterpreter::GetInstance()->Napping())
 					{
 						gDebugLog.Log("Escape from Nap");
-						gCardManager.KillNap();
+						TInterpreter::GetInstance()->KillNap();
 					}
 					if (gVideoManager.Playing())
 					{
@@ -824,7 +819,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	        	theZone = gTouchZoneManager.GetTouchZone(wParam);
 	                  
 	            if (theZone != NULL)
-					theZone->DoCommand(); 
+					theZone->DoCallback(); 
 			}
             break;
 
@@ -854,7 +849,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
    // cbo_test - try to improve performance
 	if (gInFront)
 	{
-		//gCardManager.Idle();
+		//TInterpreter::GetInstance()->Idle();
 		gVideoManager.Idle();
 		gAudioManager.Idle();
 	}
@@ -911,7 +906,7 @@ LRESULT CALLBACK ChildWndProc (HWND hwnd, UINT message, UINT wParam, LPARAM lPar
 //
 //	CleanUp - Clean everything up.
 //
-void CleanUp(void)
+void CleanUp()
 {
 	gDebugLog.Log("CleanUp: tossing everything"); 
 	DumpStats();
@@ -921,19 +916,17 @@ void CleanUp(void)
 			
 	//if (gAudioManager.Playing())
 		gAudioManager.Kill(0, true);
-			
-	gCardManager.Pause();		
-	gCardManager.RemoveAll();
-	gMacroManager.RemoveAll();
-	gHeaderManager.RemoveAll();
-	gStyleSheetManager.RemoveAll();
+
+	// Shut down our interpreter.
+	delete gWin5LInterpreter;
+
+	// Clean up our other resources.
 	gVariableManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
 	gCommandKeyManager.RemoveAll();	
 	gPictureManager.RemoveAll();
 	gPaletteManager.RemoveAll();
-	gFontManager.RemoveAll();
-	gIndexFileManager.RemoveAll();
+	gFontManager.RemoveAllButDefaultFont();
 	
 	DumpStats();
 }
@@ -1030,31 +1023,22 @@ void ReDoScript(TString &inCardName)
 	if (gAudioManager.Playing())
 		gAudioManager.Kill();
 
-	gCardManager.Pause();
-	gCardManager.RemoveAll();
-	gMacroManager.RemoveAll();
-	gHeaderManager.RemoveAll();
-	gStyleSheetManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
-	gIndexFileManager.RemoveAll();
 
-	// NOTE - if we implement loadscript then we will have to open up
-	//	all files here that were open before
-
-	// now try to open up the same script file
-	if (gIndexFileManager.NewIndex(gConfigManager.CurScript()))
+	try
 	{
-		// Fix Key bindings
-		gCommandKeyManager.RebuildKeyBindings();
-
-		gCardManager.JumpToCardByName(inCardName.GetString());
+		TInterpreter::GetInstance()->ReloadScript(inCardName);
 	}
-	else
+	catch (...)
+	{
 		ShutDown(false);
+	}
 }
 
 //
-//	SwitchScripts - 
+//	SwitchScripts - Switch to an entirely different script file.
+//                  This function really isn't necessary for recent
+//                  5L programs, and should probably go away.
 //
 void SwitchScripts(int32 inScript)
 { 
@@ -1074,10 +1058,12 @@ void SwitchScripts(int32 inScript)
 		}
 
 		gCursorManager.ChangeCursor(NO_CURSOR);
-		
+
+		// Delete everything, including our interpreter.
 		CleanUp();
 		
-		gDebugLog.Log("SwitchScript: start script <%s>", gConfigManager.CurScript());
+		gDebugLog.Log("SwitchScript: start script <%s>",
+					  gConfigManager.CurScript());
 
 		SetGlobals();
 
@@ -1094,10 +1080,16 @@ void SwitchScripts(int32 inScript)
         }
 
 		// now try to start the new script
-		if (gIndexFileManager.NewIndex(gConfigManager.CurScript()))
-			gCardManager.JumpToCardByName("start"); 
-		else
+		try
+		{
+			gWin5LInterpreter =
+				new TWin5LInterpreter(gConfigManager.CurScript());
+			TInterpreter::GetInstance()->JumpToCardByName("start"); 
+		}
+		catch (...)
+		{
     		ShutDown(true);
+		}
 	}
 	else
 		ShutDown(true);
@@ -1198,12 +1190,12 @@ static TString ReadSpecialVariable_system()
 
 static TString ReadSpecialVariable_curcard()
 {
-	return gCardManager.CurCardName();
+	return TInterpreter::GetInstance()->CurCardName();
 }
 
 static TString ReadSpecialVariable_prevcard()
 {
-	return gCardManager.PrevCardName();
+	return TInterpreter::GetInstance()->PrevCardName();
 }
 
 static TString ReadSpecialVariable_eof()
@@ -1224,6 +1216,88 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.7  2002/06/20 16:32:54  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.6.6.6  2002/06/12 19:03:03  emk
+ 3.3.4.5 - Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
+ and broke the remaining dependencies between these primitive commands and
+ the current 5L interpreter.  The TInterpreter and TPrimitives interfaces
+ are now quite mature.
+
+ *** Please beat very, very hard on this build.  I don't anticipate
+ further changes to the Windows engine for a while. ***
+
+ REMOVED COMMANDS: kill (use still), loadpick (use loadpic)
+ NEEDS TESTING: origin w/macros, other uses of origin.  5L now
+   sets the origin to 0,0 whenever it begins a new card, which
+   should produce behavior identical to the old system, unless
+   I've overlooked something.
+ NEEDS TESTING: make sure all the commands are available, and
+   have the right names.  I've checked this a dozen times
+   by eye, but I might have overlooked something.
+
+ The only remaining dependencies between the interpreter and the rest of 5L
+ are in the Header and TStyleSheet classes.  I'm postponing this last bit
+ of cleanup until after 3.4.  Up next: Repeat the 3.3.4.{1-5} changes for
+ the Macintosh.
+
+ Revision 1.6.6.5  2002/06/11 18:03:59  emk
+ Fixed a bug where 5L deleted the default font when switching scripts,
+ causing INPUT to crash when passed a non-existant header name.
+
+ Revision 1.6.6.4  2002/06/05 20:42:38  emk
+ 3.3.4.2 - Broke Win5L dependencies on TIndex file by moving various pieces
+ of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter
+ through a well-defined API.  Changes:
+
+   * Removed many direct and indirect #includes of TIndex.h.
+   * Added a TInterpreter method ReloadScript, which can be called by the
+     higher-level ReDoScript command.
+   * Checked in some files which should have been included in the 3.3.4.1
+     checkin--these files contain the initial refactorings of Card and Macro
+     callsites to go through the TInterpreter interface.
+
+ Up next: Refactor various Do* methods out of Card and into a procedural
+ database.
+
+ Revision 1.6.6.3  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
+ Revision 1.6.6.2  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
+ Revision 1.6.6.1  2002/06/05 07:05:30  emk
+ Began isolating the 5L-language-specific code in Win5L:
+
+   * Created a TInterpreter class, which will eventually become the
+     interface to all language-related features.
+   * Moved ssharp's developer preference support out of Config.{h,cpp}
+     (which are tighly tied to the language) and into TDeveloperPrefs.{h,cpp},
+     where they will be isolated and easy to port to other platforms.
+
  Revision 1.6  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

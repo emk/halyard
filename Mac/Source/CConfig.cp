@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 //		(c) Copyright 1999, Trustees of Dartmouth College. All rights reserved
@@ -17,6 +18,7 @@
 //
 
 #include "THeader.h"
+#include "MacCarbonGlue.h"
 
 #include <string.h>
 
@@ -184,10 +186,15 @@ void CConfig::DefineConfiguration(void)
 	theConfiguration.machineType = (short)response;
 
 	theConfiguration.hasROM128K = theConfiguration.machineType >= gestaltMac512KE;
+	
+#if TARGET_API_MAC_CARBON
+	theConfiguration.hasHFS = TRUE;
+#else
 	if (theConfiguration.hasROM128K)
 		theConfiguration.hasHFS = TRUE;
 	else
 		theConfiguration.hasHFS = LMGetFSFCBLen() > 0;
+#endif
 
 	err = Gestalt(gestaltSystemVersion, &response);
 	theConfiguration.systemVersion = (short)response;
@@ -321,6 +328,7 @@ Boolean CConfig::MAGestaltAttribute(OSType itsAttr, short itsBit)
 	
 } // MAGestaltAttribute 
 
+#if !TARGET_API_MAC_CARBON
 //----------------------------------------------------------------------------------------
 // NumToolboxTraps: InitGraf is always implemented (trap 0xA86E). If the trap table is
 // big enough, trap 0xAA6E will always point to either Unimplemented or some other trap,
@@ -365,8 +373,114 @@ TrapType CConfig::GetTrapType(short theTrap)
 		return ToolTrap;
 } // GetTrapType 
 
+#endif // !TARGET_MAC_API_CARBON
+
 /*
 $Log$
+Revision 1.9  2002/06/20 16:32:57  emk
+Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+branch contained the following enhancements:
+
+  * Most of the communication between the interpreter and the
+    engine now goes through the interfaces defined in
+    TInterpreter.h and TPrimitive.h.  Among other things, this
+    refactoring makes will make it easier to (1) change the interpreter
+    from 5L to Scheme and (2) add portable primitives that work
+    the same on both platforms.
+  * A new system for handling callbacks.
+
+I also slipped in the following, unrelated enhancements:
+
+  * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+    there is a new, not-yet-ready-for-prime-time Carbonized build.
+  * Bug fixes from the "Fix for 3.4" list.
+
+Revision 1.8.6.2  2002/06/18 21:57:02  emk
+3.3.4.8 - Added (BODY ...) command on Mac, fixed arguments of BUTTPCX, TOUCH,
+and KEYBIND to match Win32 engine, and refactored Mac engine to more-or-less
+respect the TInterpreter interface.
+
+Things to test: REDOSCRIPT, redo-REDOSCRIPT (feed REDOSCRIPT a bogus script,
+try to fix it, then run REDOSCRIPT again), TOUCH, BUTTPCX, ORIGIN.
+
+Some low-level details:
+
+  - Added a KillCurrentCard method to the TInterpreter interface.  This
+    works a lot like Pause, but it cannot be resumed.
+  - Added a rough-cut TMac5LInterpreter class (with some methods stubbed
+    out, because they are not needed on the Mac--we should look at
+    this API in detail and formalize it sometime after 3.4).
+  - Modified CTouchZone to take TCallback objects.
+  - Modified CPlayerView's keybinding support to take TCallback objects
+    (and to use a std::map instead of a PowerPlant list class).
+  - Began to separate special forms (IF, BODY, EXIT, RETURN) from other
+    commands.
+  - Moved ReadSpecialVariable_* methods out of CCard and into CMac5LApp.
+  - Made sure CMac5LApp::mReDoReDo got initialized to false.
+  - Merged OpenScript and OpenScriptAgain into one function.
+
+Revision 1.8.6.1  2002/06/15 01:06:55  emk
+3.3.4.7 - Carbonization of Mac build, support for running non-Carbonized build
+in MacOS X's OS 9 emulator, and basic support for 5L.prefs on the Mac.  The
+Carbon build isn't yet ready for prime time--see BugHunt for details--but it
+is good enough to use for engine development.
+
+* Language changes
+
+  - CHECKDISC is gone; use CHECKVOL instead.
+  - EJECT is disabled in the Carbon build, because Carbon has no way to
+    identify CD drives reliably.  EJECT still works in the regular build.
+  - Gamma fades are ignored in the Carbon build.
+  - KEYBINDs must now be accessed with the Command key only--not Option.
+
+* Things to test
+
+Please be hugely brutal to 5L; this is a big update.
+
+  - 8-bit systems, palettes, ORIGIN, EJECT on the non-Carbon build.
+
+* Internal changes
+
+  - TException class (and all subclasses) now take a __FILE__ and __LINE__
+    parameter.  This is ugly, but it allows me to debug 5L exceptions even
+    without a working debugger (under the OS 9 emulator, for example).
+  - FileSystem::Path::(DoesExist|IsRegularFile|IsDirectory) now rely on
+    native MacOS File Manager calls instead of the broken MSL stat()
+    function (which fails in the OS 9 emulator).
+  - The ImlUnit test harness flushes its output more often.
+  - Many data structure accessors (and such functions as c2pstr) have been
+    replaced by their Carbon equivalents.
+  - We now use PowerPlant accessors to get at the QuickDraw globals.
+  - We now use PowerPlant calls in place of ValidRect and InvalRect.
+  - Some very nasty code which set the palettes of our offscreen GWorlds
+    has been removed (offscreen GWorlds have CLUTs, not palettes!).
+    The various drawing commands now use gPaletteManager to map indexes
+    to RGBColor values, and RGBForeColor to set the color--no more calls
+    to ::PmForeColor on offscreen GWorlds, thank you!
+  - The CMenuUtil code (which used low-memory system globals to hide
+    and show the menu bar) has been removed entirely and replaced by
+    calls to HideMenuBar and ShowMenuBar (which are present in 8.5 and
+    Carbon).  This is much simpler, nicer, more portable and safer.
+  - A bunch of code which had been disabled with #ifdefs has been
+    removed entirely.  This mostly related to palettes and an obsolete
+    version of the fade code which used GWorlds.
+  - Code which used ROM-based KCHR resources to map option keys back to
+    their unmodified key caps has been removed.  This means KEYBINDs
+    can only be accessed using the Command key.
+  - We assume Carbon systems always support the HFS file system (duh).
+  - We use PowerPlant glue to access either StandardFile or Navigation
+    Services, under OS 8/9 and Carbon, respectively.
+  - Some old subroutines in CModuleManager appeared to have been
+    snarfed from More Files, an old Mac utility library.  These have
+    been moved into MoreFiles.{h,cpp}.
+
+* Known Carbon Problems
+
+Fades, ejecting CD-ROMs and playing QuickTime movies are all broken in
+the Carbon build.  Douglas has found a problem with ORIGIN.  It looks
+like we should continue to ship the OS 9 build for use with MacOS X,
+at least for next few months.
+
 Revision 1.8  2002/05/15 11:05:27  emk
 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
 Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -120,6 +121,25 @@ void LPicture::LoadDIB(void)
 		gDebugLog.Log("Load BMP file <%s>", m_FullPath.GetString());
 }
 
+void LPicture::UpdateHeightAndWidth()
+{
+	if (IsUnloaded())
+		_Load();
+
+	if (m_NativeBmp)
+	{   
+		ASSERT(m_Dib != NULL);
+		m_Width = m_Dib->Width();
+		m_Height = m_Dib->Height();
+	}
+	else
+	{
+		ASSERT(m_Qtg != NULL);
+		m_Width = m_Qtg->Width();
+		m_Height = m_Qtg->Height();
+	}	
+}
+
 //
 //  _Purge - Clear the picture from memory.
 //
@@ -204,26 +224,10 @@ void LPicture::Draw(TPoint &inPt, bool inMatte /* = false */)
 	if (IsUnloaded())
 		_Load();
 
-	if (m_NativeBmp)
-	{   
-		if (m_Dib != NULL)
-		{
-    		m_Width = m_Dib->Width();
-    		m_Height = m_Dib->Height();
-    		
-    		gView->CopyDIB(m_Dib, &drawPt, 255, trans);
-		}
-	}
-	else
-	{
-		if (m_Qtg != NULL)
-		{
-			m_Width = m_Qtg->Width();
-			m_Height = m_Qtg->Height();
-
-			gView->DrawQTGraphic(m_Qtg, &drawPt, trans);
-		}
-	}
+	if (m_NativeBmp && m_Dib != NULL)
+		gView->CopyDIB(m_Dib, &drawPt, 255, trans);
+	else if (m_Qtg != NULL)
+		gView->DrawQTGraphic(m_Qtg, &drawPt, trans);
 
 //	end_time = ::timeGetTime();
 //	gDebugLog.Log("Draw took <%ld> milliseconds", end_time - start_time);
@@ -250,21 +254,10 @@ void LPicture::Draw(TRect &inRect)
 	if (IsUnloaded())
 		_Load();
 
-	if (m_NativeBmp)
-	{ 		
-		if (m_Dib != NULL)
-		{ 
-			m_Width = m_Dib->Width();
-			m_Height = m_Dib->Height();
-			
-			gView->CopyDIB(m_Dib, &drawRect);
-		}
-	}
-	else
-	{
-		if (m_Qtg != NULL)
-			gView->DrawQTGraphic(m_Qtg, &drawRect);
-	}
+	if (m_NativeBmp && m_Dib != NULL)
+		gView->CopyDIB(m_Dib, &drawRect);
+	else if (m_Qtg != NULL)
+		gView->DrawQTGraphic(m_Qtg, &drawRect);
 
 //	end_time = ::timeGetTime();
 //	gDebugLog.Log("Draw took <%ld> milliseconds", end_time - start_time);
@@ -290,13 +283,8 @@ void LPicture::Hilite(TPoint &inPt, bool inMatte /* = true */)
 //
 TRect LPicture::GetBounds()  
 {
-	TRect	bounds;
-
-	bounds.Set(m_Origin.Y(), m_Origin.X(), 
-		m_Height + m_Origin.Y(),
-		m_Width + m_Origin.X());
-
-	return (bounds);
+	UpdateHeightAndWidth();
+	return TRect(0, 0, m_Height, m_Width);
 }
 
 //
@@ -362,6 +350,29 @@ LPicture *LPictureManager::GetPicture(TString &inName)
 
 /*
  $Log$
+ Revision 1.3  2002/06/20 16:32:55  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.2.8.1  2002/06/19 15:47:31  emk
+ 3.3.4.9 - Fixed _Origin_X, _Origin_Y bugs, and added a default style
+ parameter to the DEFSTYLE command.  See TVersion.h log message for more
+ detailed documentation.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

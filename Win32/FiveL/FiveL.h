@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -89,6 +90,28 @@ void	PutInForeground(void);
 
 /*
  $Log$
+ Revision 1.5  2002/06/20 16:32:54  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.4.6.1  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
  Revision 1.4  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

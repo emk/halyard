@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -12,41 +13,10 @@
 #if !defined (_Config_h_)
 #define _Config_h_
 
-#define DLS_USER_PROFILE "user.profile"
-#define USER_PREFS_FILE "5L.prefs"
-
-// Size and Indices for user preferences 
-#define PREFS_SIZE	5
-
-#define DB_TYPE				0
-#define DB_WRITES			1
-#define MODE				2
-#define MULTIPLE_INSTANCES	3
-#define DEBUG_LOG			4
-#define REDOSCRIPT			5
-
-// Options for the above user preferences (first option is default)
-#define DB_TYPE_ENCRYPTED		0
-#define DB_TYPE_CLEAR			1
-
-#define DB_WRITES_EXIT			0
-#define DB_WRITES_CLOSE			1
-#define DB_WRITES_WRITE			2
-
-#define MODE_FULLSCREEN			0
-#define MODE_WINDOW				1
-
-#define MULTIPLE_INSTANCES_NO	0
-#define MULTIPLE_INSTANCES_YES	1
-
-#define DEBUG_LOG_OFF			0
-#define DEBUG_LOG_ON			1
-
-#define REDOSCRIPT_OFF			0
-#define REDOSCRIPT_ON			1
-
 #include "TCommon.h"
 #include "TString.h"
+
+#define DLS_USER_PROFILE "user.profile"
 
 /*-----------------------------------------------------------------
 
@@ -110,27 +80,6 @@ class ConfigManager : public TObject
 		// Empty Destructor.
 		//
 		~ConfigManager();
-			
-		//////////
-		// Use default user preferences.
-		//
-		void		UseDefaultPrefs();
-		
-		//////////
-		// Parse user preferences file
-		//
-		// [in] absoluteFilename - filename including directory info
-		//
-		void		ParsePrefs(TString absoluteFilename);
-
-		//////////
-		// Get a user preference.
-		// 
-		// [in] thePref - the preference to get (defined by constants in header file)
-		// [out] return - the value of this preference (defined by constants in header file)
-		//
-		int			GetUserPref(int thePref)
-				{ return userPrefs[thePref]; }
 
 		//////////
 		// Process the command line args and read the config file.
@@ -142,6 +91,8 @@ class ConfigManager : public TObject
 
 		//////////
 		// Switch scripts (all scripts should be specified in the config file).
+		// This is only valid for the default, legacy interpreter; newer
+		// interpreter modules ignore it.
 		//
 		// [in] inScriptNum - script number to switch to
 		// [out] return - true on success, false otherwise
@@ -157,7 +108,9 @@ class ConfigManager : public TObject
 				{ return (m_PlayMedia); }
 		
 		//////////
-		// Get current script name.
+		// Get current script name.  This is only valid for the
+		// default, legacy interpreter; newer interpreter modules
+		// ignore it.
 		//
 		// [out] return - name of the current script
 		//
@@ -171,39 +124,7 @@ class ConfigManager : public TObject
 		//
 		const char	*CurMediaPath(void)
 				{ return ((const char *) m_CurMediaDir); }
-		
-		//////////
-		// Get install path.
-		//
-		// [out] return - the path where 5L is installed
-		//
-		const char	*InstallPath(void)
-				{ return ((const char *) m_InstallDir); }
-		
-		//////////
-		// Get palette path.
-		//
-		// [out] return - path where palettes are located
-		//
-		const char	*PalettesPath(void)
-				{ return ((const char *) m_PalettesDir); }
-		
-		//////////
-		// Get data path
-		//
-		// [out] return - path where all 5L data files are stored
-		//
-		const char	*DataPath(void)
-				{ return ((const char *) m_DataDir); }
-		
-		//////////
-		// Get script path.
-		//
-		// [out] return - path where scripts are located
-		//
-		const char	*ScriptsPath(void)
-				{ return ((const char *) m_ScriptsDir); }
-		
+	
 		//////////
 		// Get media drive.
 		//
@@ -299,21 +220,6 @@ class ConfigManager : public TObject
 		TString		m_GraphicsDir;
 		
 		//////////
-		// Palettes directory.
-		//
-		TString		m_PalettesDir;
-		
-		//////////
-		// Data directory.
-		//
-		TString		m_DataDir;
-		
-		//////////
-		// Scripts directory.
-		//
-		TString		m_ScriptsDir;
-		
-		//////////
 		// Local media directory.
 		//
 		TString		m_LocalMediaDir;
@@ -339,27 +245,43 @@ class ConfigManager : public TObject
 		// Config array.
 		//
 		Config		*m_Configs;
-
-		//////////
-		// User preferences.
-		//
-		int			userPrefs[PREFS_SIZE];
-
-		//////////
-		// Parses a single line in the user preferences file.
-		//
-		// [in] line - a line from the input file
-		// [in/out] key - the key parsed from this line
-		// [in/out] value - the value parsed from this line
-		// [out] return - true a key and value were parsed, false otherwise
-		//
-		bool		GetPrefsKeyValue(char *line, TString &key, TString &value); 
 };
 
 #endif // _Config_h_
 
 /*
  $Log$
+ Revision 1.5  2002/06/20 16:32:54  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.4.8.2  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
+ Revision 1.4.8.1  2002/06/05 07:05:30  emk
+ Began isolating the 5L-language-specific code in Win5L:
+
+   * Created a TInterpreter class, which will eventually become the
+     interface to all language-related features.
+   * Moved ssharp's developer preference support out of Config.{h,cpp}
+     (which are tighly tied to the language) and into TDeveloperPrefs.{h,cpp},
+     where they will be isolated and easy to port to other platforms.
+
  Revision 1.4  2002/03/05 10:25:41  tvw
  Added new option to 5L.prefs to optionally allow multiple
  instances of 5L to run.

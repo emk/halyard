@@ -1,10 +1,13 @@
 //
-//	CMacroManager.h
+//	CMacroManager.cp
 //
 
 #include "CMacroManager.h"
 
 USING_NAMESPACE_FIVEL
+
+CMacroManager FIVEL_NS gMacroManager;
+
 /***********************************************************************
  * Function: CMacroManager::GetScript
  *

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -97,42 +98,6 @@ class Card : public TIndex
 		virtual void    OneCommand(TString &theCmd);
         
 		//////////
-		// Adjust the global rect to local coordinates based on origin.
-		//
-		// [in] r - new rect
-		//
-		virtual void    AdjustRect(TRect *r);
-        
-		//////////
-		// Adjust the global point to local coordinates based on origin
-		//
-		// [in] pt - new point
-		//
-		virtual void    AdjustPoint(TPoint *pt);
-
-        //////////
-		// Sets the card's local coordinate system.
-		//
-		// [in] loc - set the origin to this location
-		//
-		virtual void    SetOrigin(TPoint &loc);
-		
-		//////////
-		// Sets the card's local coordinate system.
-		//
-		// [in] inX - X-coordinate
-		// [in] inY - Y-coordinate
-		//
-		virtual void	SetOrigin(int16 inX, int16 inY);
-        
-		//////////
-		// Offsets the card's local coordinate system by the amount given.
-		//
-		// [in] delta - amount to offset the origin
-		//
-		virtual void    OffsetOrigin(TPoint &delta);
-
-		//////////
 		// Get the index of this Card
 		//
 		// [out] return - the index of this Card
@@ -155,185 +120,6 @@ class Card : public TIndex
 		//
         int     Evaluate(TStream& conditional);
 
-        //////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoAdd();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoAudio();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoAudioKill(void);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoAudioVolume(void);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoAudioWait(void);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoBackground();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoBeep();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoBlippo();
-        
-		//void    DoBlueramp();
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoBox();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoBrowse();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void  	DoButtpcx();
-      	
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoCheckDisc();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoCheckUrl();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoCheckVol();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoClose();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoCTouch();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoCursor();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoDiv();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoEjectDisc();
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoExit();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoFade();
-        
-		//void    DoFadeLock();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoGlobalFiles();		//SS
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoHighlight();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoHidemouse();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoIf();
-
-        //////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoInput();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoJump();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoKey();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoKeybind();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoKill();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoLine();
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoLoadpal();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoLoadpic();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoLock();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoLookup();
-        
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
@@ -342,182 +128,22 @@ class Card : public TIndex
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-        void    DoMicro();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoNap();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoOpen();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoOrigin();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoOval();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPause();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoPlay();
+		void    DoIf();
 
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-		void	DoPlayQTFile();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPlayQTLoop();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoQuitQTLoop();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPlayQTRect();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPreloadQTFile();
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoPrint();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoRead();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoReDoScript();
-
-        //////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoResume();
+		void    DoBody();
 		
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
 		void	DoReturn();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoResetOrigin();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoRewrite();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoRnode();
 
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-        void    DoScreen();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoSearch();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoSet();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoSetWindowTitle();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoShowmouse();
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoStill();	        
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoSub();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoText();
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoTextAA();
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoTimeout();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoTouch();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoUnblippo();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoUnlock();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoVideo();
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoWait();
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoWrite();
+		void	DoExit();
 
 	private:
         //////////
@@ -665,7 +291,6 @@ class CardManager : public TIndexManager
 		//
 		Card			*GetCard(const char *inName) { return ((Card *) Find(inName)); }
  
-
 		//////////
 		// Reload the current script (compiled into DEBUG builds only). 
 		//
@@ -768,10 +393,113 @@ class CardManager : public TIndexManager
 		//TDictionary<int, 20>	m_CommandMap;
 };
 
+//////////
+// Global Card Manager
+//
+extern CardManager gCardManager;
+
 #endif // _Card_h_
 
 /*
  $Log$
+ Revision 1.4  2002/06/20 16:32:54  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.3.6.3  2002/06/12 19:03:03  emk
+ 3.3.4.5 - Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
+ and broke the remaining dependencies between these primitive commands and
+ the current 5L interpreter.  The TInterpreter and TPrimitives interfaces
+ are now quite mature.
+
+ *** Please beat very, very hard on this build.  I don't anticipate
+ further changes to the Windows engine for a while. ***
+
+ REMOVED COMMANDS: kill (use still), loadpick (use loadpic)
+ NEEDS TESTING: origin w/macros, other uses of origin.  5L now
+   sets the origin to 0,0 whenever it begins a new card, which
+   should produce behavior identical to the old system, unless
+   I've overlooked something.
+ NEEDS TESTING: make sure all the commands are available, and
+   have the right names.  I've checked this a dozen times
+   by eye, but I might have overlooked something.
+
+ The only remaining dependencies between the interpreter and the rest of 5L
+ are in the Header and TStyleSheet classes.  I'm postponing this last bit
+ of cleanup until after 3.4.  Up next: Repeat the 3.3.4.{1-5} changes for
+ the Macintosh.
+
+ Revision 1.3.6.2  2002/06/11 18:15:43  emk
+ 3.3.4.4 - Partial separation of primitives from interpreter, and
+ various 5L language enhancements related to callbacks.
+
+   - Finished fleshing out TArgumentList, added support for callbacks.
+   - Made all built-in primitives access their arguments through the
+     TArgument interface.
+   - Implemented a BODY command.
+   - Changed how the TOUCH, BUTTPCX and KEYBIND commands parse their
+     callback arguments.  See below for details; you'll have to change
+     some code.  This was necessary to move callback parsing into
+     TStream's implementation of the TArgumentList interface.
+
+ 5L Language Changes
+ -------------------
+
+   * (KEYBIND ...) now takes an arbitrary command instead of a card name.
+     As with TOUCH and BUTTPCX, variables are evaluated when the
+     keybind is installed, not when it is invoked.  Examples:
+
+       (keybind f (jump foo))
+       (keybind a (add x 10))
+
+   * You can now run a series of zero or more commands using (BODY cmd...).
+     This should work with IF, TOUCH, BUTTPCX and KEYBIND.  Example:
+
+       (body
+         (set x 10)
+         (set y 20))
+
+     Commands such as WAIT, JUMP, NAP, etc., will not do what you expect
+     unless they're the last statement in a BODY.  This is caused by the
+     low-level design of the interpreter, and is non-trivial to fix.
+
+     RETURN is also not BODY-friendly.
+
+     When you pass a body to IF, TOUCH, BUTTPCX or KEYBIND, all the
+     variables in the body will be evaluated *before* any code is run!
+
+   * The arguments to BUTTPCX and TOUCH have been rationalized after
+     consultation with Douglas.  The commands now work as follows:
+
+       (TOUCH rect cmd [cursor [picture [point]]])
+       (BUTTPCX picture point header label cmd [cursor])
+
+     Note that the second callback has disappeared from both TOUCH and
+     BUTTPCX; use BODY instead.
+
+ Revision 1.3.6.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.3  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

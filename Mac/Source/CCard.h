@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //
 //	CCard.h - The card class. Cards receive processing time (they
 //				are LPeriodicals) when they are active and execute
@@ -34,14 +35,12 @@ BEGIN_NAMESPACE_FIVEL
 class CCard : public TIndex
 {
     private:
-
-        TPoint  mOrigin;
         bool	mPaused;
 		bool	mActive;
 		bool	mDoingOne;
 		bool	mResumeMovie;
 		bool	mStopped;
-		
+	
 		// cbo 
 		int32	mIndex;
 		
@@ -60,114 +59,27 @@ class CCard : public TIndex
         void	Start(void);
         void	Stop(void);
 		
+		void	Nap(int32 inTenths);
 		void	WakeUp(void);
 		bool	Napping(void) { return ((mNapTimer != NULL) and (mPaused)); }
+		void	Timeout(int32 inSeconds, const char *inCardName);
+        void	Pause(void) { mPaused = true; }
         bool	Paused(void) { return (mPaused); }
   
   		int32	Index(void) { return (mIndex); }      
         void	SetIndex(int32 index) { mIndex = index; }
         
         void    DoCommand();
-        void    OneCommand(TString &theCmd);
-        void    AdjustRect(TRect *r);
-        void    AdjustPoint(TPoint *pt);
-
-        void    SetOrigin(TPoint &loc);
-        void	SetOrigin(int32 inX, int32 inY);
-        void    OffsetOrigin(TPoint &delta);
+        void    OneCommand(const TString &theCmd);
 
     protected:
-
         int16   Evaluate(TStream& conditional);
 		
-		// utility methods
-		void    UpdateSpecialVariablesForGraphic(TRect bounds);
-
-        void    DoAdd();
-        // new audio commands
-        void	DoAudio(void);
-        void 	DoAudioKill(void);
-        void	DoAudioPlay(void);
-        void	DoAudioVolume(void);
-        void	DoAudioWait(void);
-        // end of new audio commands
-		void	DoBackground();
-        void    DoBeep();
-        void    DoBlippo();
-        void    DoBlueramp();
-        void    DoBox();
-        void    DoBrowse();
-        void  	DoButtpcx();
-		void    DoCheckDisc();
-		void	DoCheckVol();
-        void    DoClose();
-        void    DoCTouch(); 
-        void	DoCursor();
-#ifdef DEBUG
-        void	DoDebug();	// cbo_fix
-#endif
-        void    DoDiv();
-        void	DoEjectDisc();
-        void    DoExit();
-        void    DoFade();
-        void    DoHighlight();
-        void  	DoHidemouse();
         void    DoIf();
-        void    DoInitldp();
-
-        void    DoInput();
-        void    DoJump();
-        void    DoKey();
-        void    DoKeybind();
-        void	DoKill();
-        void    DoLine();
-
-        void    DoLoadpal();
-        void    DoLoadpic();
-        void    DoLock();
-        void    DoLookup();
-        void    DoMacro(TString &name);
-
-        void    DoMicro();
-        void    DoNap();
-        void    DoOpen();
-        void    DoOrigin();
-        void    DoOval();
-		void	DoPause();
-        void    DoPlay();
-		void	DoPlayQTFile();
-		void	DoPlayQTLoop();
-		void	DoPlayQTRect();
-		void	DoPreloadQTFile();
-        void    DoPrint();
-        void	DoQTPause();
-        void    DoRead();
-#ifdef DEBUG
-		void	DoReDoScript();
-#endif
-		void	DoRefresh();
-		void	DoResetOrigin();		
-        void    DoResume();
+        void    DoBody();
+        void    DoExit();
         void	DoReturn();
-        void    DoRewrite();
-        void    DoRnode();
-
-        void    DoScreen();
-        void    DoSearch();
-        void    DoSet();
-        void    DoShowmouse();
-		void	DoStill();
-        void    DoSub();
-        void    DoText();
-        void	DoTextAA();
-        void    DoTimeout();
-        void    DoTouch();
-        void    DoUnblippo();
-        void    DoUnlock();
-        void    DoVideo();
-        void    DoWait();
-        void    DoWrite();
-
+		void	DoMacro(TString &name);
 };
 
 class CCardManager : public TIndexManager 
@@ -202,7 +114,7 @@ class CCardManager : public TIndexManager
         CCard			*GetCurCard(void);		// need??
         CCard			*GetCard(const char *cardName) { return ((CCard *) Find(cardName)); }
 		
-		void			DoOneCommand(TString &theCommand);
+		void			DoOneCommand(const TString &theCommand);
 		
 		void			CurCardSpendTime(void);
 		void			CurCardKill(void);
@@ -211,22 +123,12 @@ class CCardManager : public TIndexManager
 		bool			CurCardPaused(void);
 		void			DoExit(int16 inSide);
 #ifdef DEBUG
-		void			DoReDoScript(TString &cardName);
+		void			DoReDoScript(const TString &cardName);
 #endif
 		
         void			JumpToCardByName(const char *newCardName, bool comeBack);
         void			JumpToCard(CCard *newCard, bool comeBack);
 		bool			Jumping(void) { return (mHaveJump); }
-		
-		//////////
-		// A SpecialVariableFunction to get the _curcard variable.
-		//
-		static TString	ReadSpecialVariable_curcard();
-		
-		//////////
-		// A SpecialVariableFunction to get the _prevcard variable.
-		//
-		static TString	ReadSpecialVariable_prevcard();
 };
 
 extern CCardManager gCardManager;

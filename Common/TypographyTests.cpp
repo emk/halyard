@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "ImlUnit.h"
+#include "TCommon.h"
 #include "Typography.h"
 
 using namespace Typography;

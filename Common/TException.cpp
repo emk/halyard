@@ -34,11 +34,12 @@ static std::string get_string(std::ostrstream &stream)
 const char* TException::what () const throw ()
 {
 	std::ostrstream s;
-	s << GetClassName() << ": " << GetErrorMessage();
+	s << GetClassName() << ": " << GetErrorMessage() << " (";
 	if (GetErrorCode() != kNoErrorCode)
 	{
-		s << " (" << GetErrorCode() << ")";
+		s << "error " << GetErrorCode() << " ";
 	}
+	s << "at " << mErrorFile << ":" << mErrorLine << ")";
 	const_cast<TException*>(this)->mWhatCache = get_string(s);
 	return mWhatCache.c_str();
 }

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /* =================================================================================
 	CTouchZone.cp	
    ================================================================================= */
@@ -17,7 +18,6 @@
 #include "CMoviePlayer.h"
 #include "CTouchZone.h"
 #include "CPlayerInput.h"
-#include "CCard.h"
 #include "CPicture.h"
 
 USING_NAMESPACE_FIVEL
@@ -36,17 +36,16 @@ extern CursHandle	gHandCursor;
 
 CTouchZone::CTouchZone(
 	TRect 			&inBounds, 	// Button rect
-	TString 		&cmd, 		// Command text
+	TCallback 		*cmd, 		// Command callback
 	CPicture		*inPict,	// Default picture
 	TPoint 			&loc, 		// Pic offset??
-	const CursorType cursor,	// cursor (= HAND_CURSOR)
-	const TString	&secCmd)	// optional second command (= NULL)
+	const CursorType cursor)	// cursor (= HAND_CURSOR)
 {
 	mNormalTouch = true;
 
 	StartIdling();
 	
-	SetupZone(inBounds, cmd, inPict, loc, secCmd, cursor);
+	SetupZone(inBounds, cmd, inPict, loc, cursor);
 	LButton::FinishCreate();
 }
 
@@ -60,31 +59,29 @@ CTouchZone::CTouchZone(
 
 CTouchZone::CTouchZone(
 	TRect 			&inBounds, 
-	TString 		&cmd, 
+	TCallback		*cmd, 
 	CPicture		*inPict,
 	TPoint	 		&loc, 
 	const char 		*text, 
 	const CursorType cursor,		// = HAND_CURSOR
-	const char 		*stylesheet, 	// = NULL
-	const TString 	&secCmd)		// = NULL
-	: mStyleSheet(stylesheet), mBounds(inBounds), mText(text)
+	const char 		*stylesheet)	// = NULL
+	: mStyleSheet(stylesheet), mTextBounds(inBounds), mText(text)
 {
 	mNormalTouch = false;
 	
 	StartIdling();
 	
-	SetupZone(inBounds, cmd, inPict, loc, secCmd, cursor);
+	SetupZone(inBounds, cmd, inPict, loc, cursor);
 	LButton::FinishCreate();
 }
 
 void CTouchZone::SetupZone(	TRect 			&inBounds, 	// Button rect
-							TString			&cmd, 		// Command text
+							TCallback		*cmd, 		// Command text
 							CPicture		*inPict,	// Default picture
-//							char			*pict, 		// Default pic name
 							TPoint 			&loc, 		// Pic offset??
-							const TString	&secCmd,	// optional second command
 							const CursorType cursor)	// cursor
 {
+	mBounds = inBounds;
 	Rect	macBounds = inBounds.GetRect();
 	//Point	macLoc = loc.GetPoint();
 	
@@ -93,16 +90,12 @@ void CTouchZone::SetupZone(	TRect 			&inBounds, 	// Button rect
 	PutInside(gPlayerView, false);
 	PlaceInSuperFrameAt(macBounds.left, macBounds.top, false);
 
-	gDebugLog.Log("SetupZone: <L T R B> %d %d %d %d",
-		macBounds.left, macBounds.top, macBounds.right, macBounds.bottom);
-
 	// Skanky hack to set pane ID
 	PP::LArray &paneList = gPlayerView->GetSubPanes();
 	SetPaneID((paneList.GetCount()) + 2000);
 
 	// Set private data members
-    mCommand = cmd;
-    mSecondCommand = secCmd;
+    mCallback = cmd;
     mCursor = cursor;
 
 	// Set picture location (if specified)
@@ -129,6 +122,8 @@ CTouchZone::~CTouchZone()
 	
 	if (mPicture != nil)
 		mPicture->Purge();		// done with this picture
+
+	delete mCallback;
 }
 
 /* ---------------------------------------------------------------------------------
@@ -157,7 +152,7 @@ CTouchZone::FinishCreateSelf()
     	dl -= fontHeight;
     	dl /= 2;
 
-		mBounds.Offset(TPoint(0, dl));
+		mTextBounds.Offset(TPoint(0, dl));
 	
 		// Get the offscreen gworld from the card view, and draw into it.
 		CGWorld *theGWorld = gPlayerView->GetGWorld();
@@ -171,7 +166,7 @@ CTouchZone::FinishCreateSelf()
 			mPicture->Draw(mPictLoc, macGWorld, true);
 		}
 	
-		gStyleSheetManager.DoText(mStyleSheet, mBounds, mText, gPlayerView);
+		gStyleSheetManager.DoText(mStyleSheet, mTextBounds, mText, gPlayerView);
 	
 		theGWorld->EndDrawing();
 	}
@@ -216,20 +211,20 @@ CTouchZone::HotSpotAction(
 			// given for "normal" touch zones highlighting has a non-highlight
 			// version
 			if (not inCurrInside)
-				mPicture->Draw(mPictLoc, (CGrafPort *) gPlayerView->GetMacPort(), true);
+				mPicture->Draw(mPictLoc, (CGrafPtr) gPlayerView->GetMacPort(), true);
 			else
 			{
 				CPicture *hilitePict = NULL;
 				
 				hilitePict = mPicture->GetHilitePicture();
 				if (hilitePict != NULL)
-					hilitePict->Draw(mPictLoc, (CGrafPort *) gPlayerView->GetMacPort(), true);
+					hilitePict->Draw(mPictLoc, (CGrafPtr) gPlayerView->GetMacPort(), true);
 			}
 		}
 		
 		// If we have a style sheet, then we're a buttpcx and should draw some text.
 		if (mStyleSheet != "")
-			gStyleSheetManager.DoText(mStyleSheet, mBounds, mText, gPlayerView);
+			gStyleSheetManager.DoText(mStyleSheet, mTextBounds, mText, gPlayerView);
 	}
 }
 
@@ -255,20 +250,17 @@ CTouchZone::HotSpotResult(
 	//if (clickSound != NULL)
 	//	SndPlay(nil, (SndListResource **) clickSound, false);
 
-	if (not mSecondCommand.IsEmpty())
-		gDebugLog.Log("hit touchzone: commands <%s> then <%s>", mSecondCommand.GetString(), mCommand.GetString());
-	else
-		gDebugLog.Log("hit touchzone: command <%s>", mCommand.GetString());
+	gDebugLog.Log("hit touchzone: <L T R B> %d %d %d %d, running callback",
+				  mBounds.Left(), mBounds.Top(),
+				  mBounds.Right(), mBounds.Bottom());
 
-	// cbo - suspend event processing while we are executing these commands
+	// cbo - suspend event processing while we are executing this callback
 	gPlayerView->ProcessEvents(false);
 	
-    if (not mSecondCommand.IsEmpty())
-    	gCardManager.DoOneCommand(mSecondCommand);
+	mCallback->Run();
     
-    gCardManager.DoOneCommand(mCommand);
-    
-    gPlayerView->Draw(nil);			// the command might have changed something in the offscreen buffer
+	// the callback might have changed something in the offscreen buffer
+    gPlayerView->Draw(nil);			
    		
 	if (not HaveInputUp())
 		gPlayerView->ProcessEvents(true);

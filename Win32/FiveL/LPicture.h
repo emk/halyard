@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -131,6 +132,13 @@ class LPicture : public LResource
 		void			LoadQTGraphic(void);
 
 		//////////
+		// Make sure m_Height and m_Width are up to date.  (This was
+		// refactored out of the code; ideally, we'd set these variables
+		// up correctly *once* instead of updating them repeatedly.)
+		//
+		void			UpdateHeightAndWidth();
+
+		//////////
 		// Full path to this picture.
 		//
 		TString			m_FullPath;
@@ -217,6 +225,29 @@ public:
 
 /*
  $Log$
+ Revision 1.2  2002/06/20 16:32:55  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.1.10.1  2002/06/19 15:47:31  emk
+ 3.3.4.9 - Fixed _Origin_X, _Origin_Y bugs, and added a default style
+ parameter to the DEFSTYLE command.  See TVersion.h log message for more
+ detailed documentation.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -109,7 +109,15 @@ SOURCE=..\..\..\Common\TBTree.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TCommonPrimitives.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TDateUtil.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TDeveloperPrefs.cpp
 # End Source File
 # Begin Source File
 
@@ -129,6 +137,10 @@ SOURCE=..\..\..\Common\TIndex.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TInterpreter.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TLogger.cpp
 # End Source File
 # Begin Source File
@@ -145,7 +157,15 @@ SOURCE=..\..\..\Common\TPoint.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TPrimitives.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TRect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TStartup.cpp
 # End Source File
 # Begin Source File
 
@@ -158,6 +178,10 @@ SOURCE=..\..\..\Common\TString.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\TStyleSheet.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TTemplateUtils.cpp
 # End Source File
 # Begin Source File
 
@@ -205,7 +229,15 @@ SOURCE=..\..\..\Common\TCommon.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TCommonPrimitives.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TDateUtil.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TDeveloperPrefs.h
 # End Source File
 # Begin Source File
 
@@ -222,6 +254,10 @@ SOURCE=..\..\..\Common\THeader.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TIndex.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TInterpreter.h
 # End Source File
 # Begin Source File
 
@@ -245,7 +281,15 @@ SOURCE=..\..\..\Common\TPoint.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TPrimitives.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TRect.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TStartup.h
 # End Source File
 # Begin Source File
 
@@ -258,6 +302,10 @@ SOURCE=..\..\..\Common\TString.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TStyleSheet.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TTemplateUtils.h
 # End Source File
 # Begin Source File
 

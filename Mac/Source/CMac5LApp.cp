@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 //		(c) Copyright 1999, Trustees of Dartmouth College. All rights reserved
@@ -20,6 +21,7 @@
 
 #include "THeader.h"
 
+#include <UStandardDialogs.h>
 #include <Palettes.h>
 
 #include <iostream.h>
@@ -35,18 +37,14 @@
 #include "CBackWindow.h"
 
 #include "gamma.h"
-#include "CMenuUtil.h"
 
-#include "CCard.h"
-#include "CMacroManager.h"
-#include "CHeader.h"
-#include "TStyleSheet.h"
 #include "TVariable.h"
 #include "CFiles.h"
-#include "TIndex.h"
 #include "CCursor.h"
-#include "TParser.h"
+#include "TStartup.h"
 #include "TVersion.h"
+#include "TMac5LInterpreter.h"
+#include "TMacPrimitives.h"
 
 //
 // constants
@@ -70,15 +68,11 @@ bool				gPrintDebug = false;		// normally off
 #endif
 bool				gDoShiftScript = false;		// by default, start from beginning
 
-CMenuUtil			gMenuUtil;
-
 BEGIN_NAMESPACE_FIVEL
 
-CFileList			gFileManager;
-CCardManager		gCardManager;
-CMacroManager		gMacroManager;
-CHeaderManager		gHeaderManager;
+TMac5LInterpreter	*gMac5LInterpreter = NULL;
 
+CFileList			gFileManager;
 CCursorManager		gCursorManager;
 CPaletteManager		gPaletteManager;
 CPictureManager		gPictureManager;
@@ -118,7 +112,11 @@ int FiveL::FiveLmain()
 									//   blocks to allocate
 	
 									// Initialize standard Toolbox managers
+#if TARGET_API_MAC_CARBON
+	UQDGlobals::InitializeToolbox();
+#else
 	UQDGlobals::InitializeToolbox(&qd);
+#endif
 	TLogger::MarkToolboxAsInitialized();
 	
 	new LGrowZone(20000);			// Install a GrowZone function to catch
@@ -168,6 +166,16 @@ void CMac5LApp::EmergencyUnfade()
 	DoGFade(true, 5, false);
 }
 
+FiveL::TString CMac5LApp::ReadSpecialVariable_curcard()
+{
+	return TInterpreter::GetInstance()->CurCardName();
+}
+
+FiveL::TString CMac5LApp::ReadSpecialVariable_prevcard()
+{
+	return TInterpreter::GetInstance()->PrevCardName();
+}
+
 // ---------------------------------------------------------------------------
 //		¥ CMac5LApp
 // ---------------------------------------------------------------------------
@@ -179,11 +187,14 @@ CMac5LApp::CMac5LApp()
 	KeyMap 		keys;
 	Rect		screenBounds;
 	bool		centerOnScreen;
-	
+
 	// If the Shift key is down when starting up, do the shift script.
 	::GetKeys(keys);
 	if ((keys[1] & 1) != 0)
 		gDoShiftScript = true;
+
+	// Set up miscellaenous member variables.
+	mReDoReDo = false;
 
 	// Setup the Gamma tools
 	SetupGammaTools();
@@ -208,26 +219,19 @@ CMac5LApp::CMac5LApp()
 	// Initialize the modules.
 	gModMan = new CModuleManager;
 
-	// Open our log files.
-#ifdef DEBUG
-	TLogger::OpenStandardLogs(true);
-#else
-	TLogger::OpenStandardLogs(false);
-#endif
-
-	// Register our top-level forms.
-	TParser::RegisterIndexManager("card", &gCardManager);
-	TParser::RegisterIndexManager("macrodef", &gMacroManager);
-	TParser::RegisterIndexManager("header", &gHeaderManager);
-	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
+	// Initialize our portable Common library.
+	InitializeCommonCode();
+	
+	// Install our Macintosh-specific primitive functions.
+	RegisterMacPrimitives();
 
 	// Register our platform-specific special variables.
 	gVariableManager.RegisterSpecialVariable("_system",
 		&ReadSpecialVariable_system);
 	gVariableManager.RegisterSpecialVariable("_curcard",
-		&CCardManager::ReadSpecialVariable_curcard);
+		&ReadSpecialVariable_curcard);
 	gVariableManager.RegisterSpecialVariable("_prevcard",
-		&CCardManager::ReadSpecialVariable_prevcard);
+		&ReadSpecialVariable_prevcard);
 	gVariableManager.RegisterSpecialVariable("_eof",		
 		&CFileList::ReadSpecialVariable_eof);
 
@@ -243,23 +247,11 @@ CMac5LApp::CMac5LApp()
 #endif
 	
 	// Set our global window pointer.
-	gWindow = (WindowPtr) mDisplayWindow->GetMacPort();
+	gWindow = ::GetWindowFromPort(mDisplayWindow->GetMacPort());
 		
 	// Make this a subcommander of the main window.
 	gPlayerView = (CPlayerView *) mDisplayWindow->FindPaneByID(210);
 				
-	// cbo_fix - if we really need this, figure out a new way to do it
-	// Set the window's default palette
-	//CTabHandle	theCTabHand;
-	//theCTabHand = ::GetCTable(128);
-	
-	//if (theCTabHand != nil)
-	//{
-	//	DoNewPalette(theCTabHand);
-	//	gPlayerView->DoNewPalette(theCTabHand);
-	//	CheckPalette();
-	//}
-	// cbo_fix - this should be the equivalent of the above stuff
 	gPaletteManager.Init();
 		
 	gCursorManager.Init();
@@ -282,7 +274,7 @@ CMac5LApp::CMac5LApp()
 	{
 		centerOnScreen = false;
 	
-		screenBounds.top += ::LMGetMBarHeight() + 50;
+		screenBounds.top += ::GetMBarHeight() + 50;
 		screenBounds.left = 50;
 		screenBounds.right = screenBounds.left + 640;
 		screenBounds.bottom = screenBounds.top + 480;
@@ -304,7 +296,9 @@ CMac5LApp::CMac5LApp()
 //		SetResAttrs(clickSound, resLocked);
 	
 	if (gHideMenuBar)
-		gMenuUtil.HideMenuBar();
+		::HideMenuBar();
+	else
+		::ShowMenuBar();
 
 	mDisplayWindow->Show();
 
@@ -461,14 +455,14 @@ void CMac5LApp::StartUp(void)
 //
 void CMac5LApp::CleanUp(void)
 {
-	gHeaderManager.RemoveAll();			// toss all headers
-	gStyleSheetManager.RemoveAll();		// toss all style sheets
-	gMacroManager.RemoveAll();			// toss all macros
-	gCardManager.RemoveAll();			// toss all cards
+	if (gMac5LInterpreter)
+	{
+		delete gMac5LInterpreter;			// toss our interpreter
+		gMac5LInterpreter = NULL;
+	}
 	gVariableManager.RemoveAll();		// toss all variables
 	gPaletteManager.RemoveAll();		// toss all palettes
 	gPictureManager.RemoveAll();		// toss all pictures
-	gIndexFileManager.RemoveAll();		// toss all the script files	
 }
 
 //
@@ -478,7 +472,7 @@ void CMac5LApp::CleanUp(void)
 void CMac5LApp::EventResume(const EventRecord& inMacEvent)
 {
 	if (gHideMenuBar)
-		gMenuUtil.HideMenuBar();
+		::HideMenuBar();
 	LApplication::EventResume(inMacEvent);	
 }
 
@@ -489,7 +483,7 @@ void CMac5LApp::EventResume(const EventRecord& inMacEvent)
 void CMac5LApp::EventSuspend(const EventRecord& inMacEvent)		
 {
  
-	gMenuUtil.ShowMenuBar();
+	::ShowMenuBar();
 	LApplication::EventSuspend(inMacEvent);
 }
 
@@ -503,8 +497,8 @@ Boolean CMac5LApp::AttemptQuitSelf(SInt32 /* inSaveOption */)
 	
 	mScriptRunning = false;
 	
-	DoGFade(true, 0, false);			// make sure we aren't faded out
-	gMenuUtil.ShowMenuBar();	// make sure we have the menu
+	DoGFade(true, 0, false);	// make sure we aren't faded out
+	::ShowMenuBar();			// make sure we have the menu
 	::ShowCursor();				// make sure the cursor is still there
 		
 	// cbo_debug
@@ -519,20 +513,12 @@ Boolean CMac5LApp::AttemptQuitSelf(SInt32 /* inSaveOption */)
 //
 bool CMac5LApp::GetScriptFile(FSSpec *scriptSpec)
 {
-	StandardFileReply	sfReply;
-	SFTypeList			sfTypes;
-	
-	sfTypes[0] = 'TEXT';
-	sfTypes[1] = 0;
-	
-	StandardGetFile(NULL, 1, sfTypes, &sfReply);
-	
-	if (sfReply.sfGood)
-	{
-		*scriptSpec = sfReply.sfFile;
-		return (TRUE);
-	}
-	return (FALSE); 
+	// XXX - This *should* be the way to call this under Carbon and/or
+	// the regular MacOS, but it hasn't been tested.
+	if (PP_StandardDialogs::AskOpenOneFile('TEXT', *scriptSpec))
+		return TRUE;
+	else
+		return FALSE;
 }
 
 //
@@ -547,122 +533,36 @@ void CMac5LApp::QuitScript(void)
 //	OpenScript - Open the given script file, open and read the index
 //					file and start the script running.
 //
-bool  CMac5LApp::OpenScript(const TString &inScriptName)
+bool CMac5LApp::OpenScript(const char *inScriptName,
+						   const char *inCardName)
 {
-	bool	retValue = false;
-		
+	ASSERT(!gMac5LInterpreter);
+
 	// set mSleepTime again, just to be sure
 	mSleepTime = 0;
 
-	if (gIndexFileManager.NewIndex(inScriptName))	
+	try
 	{
+		// Create a new interpreter object, and start it running.
+		gMac5LInterpreter = new TMac5LInterpreter(inScriptName);
 		mScriptRunning = true;
-		
+		gVariableManager.SetString("_lpstat", "0");
+		gVariableManager.SetString("_lpactive", "0");
+		gVariableManager.SetString("_movieplaying", "0");
 		gPlayerView->Activate();
-		gCardManager.JumpToCardByName("Start", FALSE);
-
-		retValue = true;
+		TInterpreter::GetInstance()->JumpToCardByName(inCardName);
 	}
-	
-	return (retValue);
-}
-
-#ifdef OLD_PALETTE_STUFF
-void CMac5LApp::NewColorTable(CPalette *inPal, bool inGraphics)
-{
-	CPalette		*theOldPal;
-	CTabHandle		theCTab;
-			
-	if (inGraphics)
+	catch (...)
 	{
-		// if we are trying to set the palette to what it already is
-		// don't do anything
-		if (inPal == mGraphicsPal)
-			return;
-			
-		theOldPal = mGraphicsPal;
-		mGraphicsPal = inPal;
-	}	
-	else
-	{
-		theOldPal = mMoviePal;
-		mMoviePal = inPal;
-	}
-	
-	theCTab = inPal->GetCTab();
-	
-	DoNewPalette(theCTab);
-	
-	if (inGraphics)
-		gPlayerView->DoNewPalette(theCTab);
-	else
-		CheckPalette();			// do it now - we are going to show a movie
-	
-	if (theOldPal != nil)
-		theOldPal->Purge();		// clear it from memory (unless it is locked)
-}
-		
-void CMac5LApp::DoNewPalette(CTabHandle inCTab)
-{
-	PaletteHandle	thePalHand;
-	PaletteHandle	theOldPalHand;
-
-	// now make the new palette
-	//thePalHand = ::NewPalette(256, inCTab,  pmTolerant + pmExplicit, 0);
-	thePalHand = ::NewPalette((**inCTab).ctSize+1, inCTab, pmTolerant + pmExplicit, 0);
-	
-	theOldPalHand = ::GetPalette(gWindow);
-	
-	::NSetPalette(gWindow, thePalHand, pmNoUpdates);	// was pmAllUpdates
-	
-	mHaveNewPal = true;
-	mCurPal = thePalHand;
-	
-	if (theOldPalHand != nil)
-		::DisposePalette(theOldPalHand);
-}
-
-void CMac5LApp::CheckPalette(void)
-{		
-	if (mHaveNewPal)
-	{
-		mHaveNewPal = false;
-		::ActivatePalette(gWindow);
-	}
-}
-	
-//
-//	RestorePalette
-//
-void CMac5LApp::RestorePalette(void)
-{
-	CTabHandle		theCTab;
-	
-	if (mGraphicsPal != NULL)
-	{
-		//gDebugLog.Log("restoring graphics palette to <%s>", mGraphicsPal->key.GetString());
-
-		theCTab = mGraphicsPal->GetCTab();
-
-		if (theCTab == NULL)
+		if (gMac5LInterpreter)
 		{
-			//gDebugLog.Log("trying to restore palette, got dodo");
-			mGraphicsPal->Load();		// reload the palette
-			theCTab = mGraphicsPal->GetCTab();
-			
-			if (theCTab == NULL)
-			{
-			//	gDebugLog.Log("still trying to restore, couldn't get graphics palette");
-				return;
-			}
+			delete gMac5LInterpreter;
+			gMac5LInterpreter = NULL;
 		}
-
-		DoNewPalette(theCTab);
-
-		CheckPalette();				// will always be faded out for this
+		return false;
 	}
+	return true;
 }
-#endif // OLD_PALETTE_STUFF
 
 #ifdef DEBUG
 
@@ -675,7 +575,7 @@ void CMac5LApp::ReDoScript(const char *curCard)
 
 	mScriptRunning = false;
 
-	gCardManager.CurCardKill();
+	TInterpreter::GetInstance()->KillCurrentCard();
 	
 	if (gMovieManager.Playing())
 		gMovieManager.Kill();
@@ -683,17 +583,16 @@ void CMac5LApp::ReDoScript(const char *curCard)
 	gPlayerView->KillTZones();
 
 	gDebugLog.Log("Killing everything for redoscript");
-			
-	//
-	// don't kill the variable tree as we want the variables to have their current values
-	//
-	gHeaderManager.RemoveAll();
-	gStyleSheetManager.RemoveAll();
-	gMacroManager.RemoveAll();
-	gCardManager.RemoveAll();
-	gIndexFileManager.RemoveAll();
-		
-	thing = OpenScriptAgain(gModMan->GetCurScript(), curCard);
+	
+	// Blow away our interpreter (but not our variables, which we want to
+	// retain their values across a redoscript).
+	if (gMac5LInterpreter)
+	{
+		delete gMac5LInterpreter;
+		gMac5LInterpreter = NULL;
+	}
+	
+	thing = OpenScript(gModMan->GetCurScript(), curCard);
 
 	if (not thing)
 	{
@@ -754,8 +653,8 @@ void CMac5LApp::FindCommandStatus(CommandT inCommand,
 		return;
 	}
 	
-	return (LApplication::FindCommandStatus(inCommand, outEnabled, 
-		outUsesMark, outMark, outName));
+	LApplication::FindCommandStatus(inCommand, outEnabled, 
+									outUsesMark, outMark, outName);
 }
 
 //
@@ -770,7 +669,7 @@ void CMac5LApp::ReDoReDoScript(void)
 		mReDoReDo = false;
 		gPlayerView->Activate();
 		
-		thing = OpenScriptAgain(gModMan->GetCurScript(), mReDoCard.GetString());
+		thing = OpenScript(gModMan->GetCurScript(), mReDoCard.GetString());
 		
 		if (not thing)
 		{
@@ -790,44 +689,6 @@ void CMac5LApp::ReDoReDoScript(void)
 			DoQuit();
 		}
 	}
-}
-
-//
-//	OpenScriptAgain
-//
-bool CMac5LApp::OpenScriptAgain(const TString &inScriptName, const char *jumpCard)
-{
-	bool	retValue = false;
-		
-	// set mSleepTime again, just to be sure
-	mSleepTime = 0;
-
-	gDebugLog.Log("reinit everything for redoscript");
-
-	if (gIndexFileManager.NewIndex(inScriptName))		
-	{
-		mScriptRunning = true;
-		
-		gVariableManager.SetString("_lpstat", "0");
-		gVariableManager.SetString("_lpactive", "0");
-		gVariableManager.SetString("_movieplaying", "0");
-		
-		gPlayerView->Activate();
-		gCardManager.JumpToCardByName(jumpCard, FALSE);
-
-		retValue = true;
-	}
-	else
-	{
-		// error in the script, toss all cards headers and macros
-		gHeaderManager.RemoveAll();
-		gStyleSheetManager.RemoveAll();
-		gMacroManager.RemoveAll();
-		gCardManager.RemoveAll();
-		gIndexFileManager.RemoveAll();
-	}
-	
-	return (retValue);
 }
 
 #endif
@@ -925,6 +786,126 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.21  2002/06/20 16:32:57  emk
+Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+branch contained the following enhancements:
+
+  * Most of the communication between the interpreter and the
+    engine now goes through the interfaces defined in
+    TInterpreter.h and TPrimitive.h.  Among other things, this
+    refactoring makes will make it easier to (1) change the interpreter
+    from 5L to Scheme and (2) add portable primitives that work
+    the same on both platforms.
+  * A new system for handling callbacks.
+
+I also slipped in the following, unrelated enhancements:
+
+  * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+    there is a new, not-yet-ready-for-prime-time Carbonized build.
+  * Bug fixes from the "Fix for 3.4" list.
+
+Revision 1.20.6.4  2002/06/19 22:51:32  emk
+3.3.4.11 - Refactored Mac code to move primitives from CCard.{h,cpp} to
+TMacPrimitives.{h,cpp}, and break most of the remaining dependencies on
+the 5L interpreter.
+
+Language changes: LOADPICK, RVAR and RNODE are gone.  I've also disabled
+the Mac PAUSE command until Douglas tells me how it should work.
+
+Testing: Please beat *very* hard on this build, and pay special attention
+to WAIT, NAP, TIMEOUT, and similar commands.
+
+Next up: I plan to merge this branch into HEAD tomorrow.
+
+Revision 1.20.6.3  2002/06/18 21:57:02  emk
+3.3.4.8 - Added (BODY ...) command on Mac, fixed arguments of BUTTPCX, TOUCH,
+and KEYBIND to match Win32 engine, and refactored Mac engine to more-or-less
+respect the TInterpreter interface.
+
+Things to test: REDOSCRIPT, redo-REDOSCRIPT (feed REDOSCRIPT a bogus script,
+try to fix it, then run REDOSCRIPT again), TOUCH, BUTTPCX, ORIGIN.
+
+Some low-level details:
+
+  - Added a KillCurrentCard method to the TInterpreter interface.  This
+    works a lot like Pause, but it cannot be resumed.
+  - Added a rough-cut TMac5LInterpreter class (with some methods stubbed
+    out, because they are not needed on the Mac--we should look at
+    this API in detail and formalize it sometime after 3.4).
+  - Modified CTouchZone to take TCallback objects.
+  - Modified CPlayerView's keybinding support to take TCallback objects
+    (and to use a std::map instead of a PowerPlant list class).
+  - Began to separate special forms (IF, BODY, EXIT, RETURN) from other
+    commands.
+  - Moved ReadSpecialVariable_* methods out of CCard and into CMac5LApp.
+  - Made sure CMac5LApp::mReDoReDo got initialized to false.
+  - Merged OpenScript and OpenScriptAgain into one function.
+
+Revision 1.20.6.2  2002/06/15 01:06:55  emk
+3.3.4.7 - Carbonization of Mac build, support for running non-Carbonized build
+in MacOS X's OS 9 emulator, and basic support for 5L.prefs on the Mac.  The
+Carbon build isn't yet ready for prime time--see BugHunt for details--but it
+is good enough to use for engine development.
+
+* Language changes
+
+  - CHECKDISC is gone; use CHECKVOL instead.
+  - EJECT is disabled in the Carbon build, because Carbon has no way to
+    identify CD drives reliably.  EJECT still works in the regular build.
+  - Gamma fades are ignored in the Carbon build.
+  - KEYBINDs must now be accessed with the Command key only--not Option.
+
+* Things to test
+
+Please be hugely brutal to 5L; this is a big update.
+
+  - 8-bit systems, palettes, ORIGIN, EJECT on the non-Carbon build.
+
+* Internal changes
+
+  - TException class (and all subclasses) now take a __FILE__ and __LINE__
+    parameter.  This is ugly, but it allows me to debug 5L exceptions even
+    without a working debugger (under the OS 9 emulator, for example).
+  - FileSystem::Path::(DoesExist|IsRegularFile|IsDirectory) now rely on
+    native MacOS File Manager calls instead of the broken MSL stat()
+    function (which fails in the OS 9 emulator).
+  - The ImlUnit test harness flushes its output more often.
+  - Many data structure accessors (and such functions as c2pstr) have been
+    replaced by their Carbon equivalents.
+  - We now use PowerPlant accessors to get at the QuickDraw globals.
+  - We now use PowerPlant calls in place of ValidRect and InvalRect.
+  - Some very nasty code which set the palettes of our offscreen GWorlds
+    has been removed (offscreen GWorlds have CLUTs, not palettes!).
+    The various drawing commands now use gPaletteManager to map indexes
+    to RGBColor values, and RGBForeColor to set the color--no more calls
+    to ::PmForeColor on offscreen GWorlds, thank you!
+  - The CMenuUtil code (which used low-memory system globals to hide
+    and show the menu bar) has been removed entirely and replaced by
+    calls to HideMenuBar and ShowMenuBar (which are present in 8.5 and
+    Carbon).  This is much simpler, nicer, more portable and safer.
+  - A bunch of code which had been disabled with #ifdefs has been
+    removed entirely.  This mostly related to palettes and an obsolete
+    version of the fade code which used GWorlds.
+  - Code which used ROM-based KCHR resources to map option keys back to
+    their unmodified key caps has been removed.  This means KEYBINDs
+    can only be accessed using the Command key.
+  - We assume Carbon systems always support the HFS file system (duh).
+  - We use PowerPlant glue to access either StandardFile or Navigation
+    Services, under OS 8/9 and Carbon, respectively.
+  - Some old subroutines in CModuleManager appeared to have been
+    snarfed from More Files, an old Mac utility library.  These have
+    been moved into MoreFiles.{h,cpp}.
+
+* Known Carbon Problems
+
+Fades, ejecting CD-ROMs and playing QuickTime movies are all broken in
+the Carbon build.  Douglas has found a problem with ORIGIN.  It looks
+like we should continue to ship the OS 9 build for use with MacOS X,
+at least for next few months.
+
+Revision 1.20.6.1  2002/06/13 14:11:40  emk
+Basic fixes to make updated Common library build on the Macintosh.
+
 Revision 1.20  2002/05/15 11:05:27  emk
 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
 Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

@@ -14,6 +14,8 @@
 
 USING_NAMESPACE_FIVEL
 
+CHeaderManager FIVEL_NS gHeaderManager;
+
 //
 //  Let Index ancestor construct based on these values.
 //

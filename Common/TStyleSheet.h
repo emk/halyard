@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "TCommon.h"
 #include "TStream.h"
 #include "TIndex.h"
 
@@ -16,11 +17,12 @@ BEGIN_NAMESPACE_FIVEL
 
 class TStyleSheet : public TIndex {
 private:
-	// (defstyle STYLENAME FONTNAME SIZE JUSTIFICATION COLOR HIGHCOLOR
+	// (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR
 	//           [LEADING [SHADOWOFFSET SHADOWCOLOR [SHADOWHIGHCOLOR]]])
 	std::string          mStyleName;
 	std::string          mFontName;
 	int                  mSize;
+	Typography::FaceStyle mFaceStyle;
 	Typography::Justification mJustification;
 	GraphicsTools::Color mColor;
 	GraphicsTools::Color mHighlightColor;

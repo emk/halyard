@@ -28,7 +28,7 @@ TRect::TRect(int32 inTop /* = 0 */, int32 inLeft /* = 0 */,
 	m_Right = inRight;
 }
 
-TRect::TRect(TRect &inRect)
+TRect::TRect(const TRect &inRect)
 {
 	m_Top = inRect.m_Top;
 	m_Left = inRect.m_Left;
@@ -144,6 +144,37 @@ void TRect::Set(RECT &inRect)
 #endif
 /*
  $Log$
+ Revision 1.5  2002/06/20 16:32:53  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.4.6.1  2002/06/19 22:50:55  emk
+ 3.3.4.11 - Refactored Mac code to move primitives from CCard.{h,cpp} to
+ TMacPrimitives.{h,cpp}, and break most of the remaining dependencies on
+ the 5L interpreter.
+
+ Language changes: LOADPICK, RVAR and RNODE are gone.  I've also disabled
+ the Mac PAUSE command until Douglas tells me how it should work.
+
+ Testing: Please beat *very* hard on this build, and pay special attention
+ to WAIT, NAP, TIMEOUT, and similar commands.
+
+ Next up: I plan to merge this branch into HEAD tomorrow.
+
  Revision 1.4  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

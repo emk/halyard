@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //
 // CPlayerView.cp
 //
@@ -10,14 +11,11 @@
 
 #include "CMac5LApp.h"
 #include "CConfig.h"
-#include "CCard.h"
 #include "CPlayerView.h"
 #include "CPlayerInput.h"
 #include "CMoviePlayer.h"
 #include "CPicture.h"
-#include "CMenuUtil.h"
 #include "TVariable.h"
-#include "CMenuUtil.h"
 #include "CPalette.h"
 #include "gamma.h"
 //#include "CGWorld.h"
@@ -64,23 +62,11 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 	mGWorld = mBlippoWorld = nil;
 	mGWorld = new CGWorld(frame, 32);
 	mBlippoWorld = new CGWorld(frame, 32);
-#ifdef DEBUG_5L_LATER
-	mFadeWorld = new GCWorld(frame, 32);
-#endif
 
-	// Get the window's palette
-	PaletteHandle thePalette = ::GetNewPalette(128);
-	
 	// Set the offscreen palette. Don't bother setting the blippo's palette
 	// until we actually do it, as it will likely have changed.	
 	GWorldPtr theMacGWorld = mGWorld->GetMacGWorld();
-	::SetPalette((GrafPort *) theMacGWorld, thePalette, true);
 	
-#ifdef DEBUG_5L_LATER
-	theMacGWorld = mFadeWorld->GetMacGWorld();
-	::SetPalette((GrafPort *) theMacGWorld, thePalette, true);
-#endif
-
 	// make sure our primary drawing offscreen world is filled with black
 	mGWorld->BeginDrawing();
 	::RGBForeColor(&Color_Black);
@@ -98,9 +84,6 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 	mPauseFromKey = false;
 	mMoviePaused = false;
 
-	// Init the list of style elements
-	mKeyBinds = new LArray(sizeof(sCardKey));
-
 	FinishCreate();
 }
 
@@ -109,11 +92,21 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 //
 CPlayerView::~CPlayerView()
 {
+	DeleteAllKeyBinds();
+
 	if (mGWorld != nil)
 		delete mGWorld;
 		
 	if (mBlippoWorld != nil)
 		delete mBlippoWorld;
+}
+
+void CPlayerView::DeleteAllKeyBinds()
+{
+	std::map<char,TCallback*>::iterator iter = mKeyBinds.begin();
+	for (; iter != mKeyBinds.end(); ++iter)
+		delete iter->second;
+	mKeyBinds.clear();
 }
 
 // 
@@ -182,8 +175,8 @@ void CPlayerView::SpendTime(const EventRecord &inMacEvent)
 {
 	if (mActive)
 	{
-		gCardManager.CurCardSpendTime();
-		
+		if (TInterpreter::HaveInstance())
+			TInterpreter::GetInstance()->Idle();
 		gMovieManager.SpendTime(inMacEvent);
 	}
 	
@@ -346,7 +339,7 @@ void  CPlayerView::DrawSelf(void)
 		::RGBForeColor(&Color_Black);
 		::PenMode(patCopy);
 		::PaintRect(&theFrame);
-		::ValidRect(&theFrame);					// cbo_fix - this is necessary to keep from seeing the 
+		ValidPortRect(&theFrame);		// cbo_fix - this is necessary to keep from seeing the 
 		// black background when a movie starts up - is there another way to do this?
 	}
 	else
@@ -415,7 +408,8 @@ void CPlayerView::ColorCard(int16 color)
 
 	mGWorld->BeginDrawing();
 	CalcLocalFrameRect(theFrame);
-	::PmForeColor(mBackColor);
+	RGBColor rgbcolor = gPaletteManager.GetColor(mBackColor);
+	::RGBForeColor(&rgbcolor);	
 	::PenMode(patCopy);
 	::PaintRect(&theFrame);
 	mGWorld->EndDrawing();
@@ -423,26 +417,20 @@ void CPlayerView::ColorCard(int16 color)
 
 
 //
-//	DoNewPalette
+//	DoNewPalette - This isn't actually all that useful if our offscreen
+//				   GWorld is 32 bits deep.
 //
 void CPlayerView::DoNewPalette(CTabHandle inCTab)
 {
-	PaletteHandle	thePalHand;
-	PaletteHandle	theOldPalHand;
 	GWorldPtr		theMacGWorld;
 	Rect			theFrame;
-
-	theMacGWorld = mGWorld->GetMacGWorld();
-	theOldPalHand = ::GetPalette((GrafPort *) theMacGWorld);
 
 	CalcLocalFrameRect(theFrame);
 
 	(*inCTab)->ctFlags |= 0x4000;			// so will work with offscreen world
-	
-	// now make the new palette
-	thePalHand = ::NewPalette(256, inCTab,  pmCourteous, 0);
-	
+		
 	// update the gworld with info about the new color table
+	theMacGWorld = mGWorld->GetMacGWorld();
 	::UpdateGWorld(&theMacGWorld, 32, &theFrame, inCTab, nil, 0);
 	mGWorld->SetMacGWorld(theMacGWorld);
 	
@@ -450,34 +438,6 @@ void CPlayerView::DoNewPalette(CTabHandle inCTab)
 	GWorldPtr	theBlippoWorld = mBlippoWorld->GetMacGWorld();
 	::UpdateGWorld(&theBlippoWorld, 32, &theFrame, inCTab, nil, 0);
 	mBlippoWorld->SetMacGWorld(theBlippoWorld);
-	
-	::NSetPalette((GrafPort *) theMacGWorld, thePalHand, pmAllUpdates);
-	::ActivatePalette((GrafPort *) theMacGWorld);
-	
-	if (theOldPalHand != nil)
-		::DisposePalette(theOldPalHand);
-	
-#ifdef DEBUG_5L_LATER
-	// do it for our fade world
-	theMacGWorld = mFadeWorld->GetMacGWorld();
-	theOldPalHand = ::GetPalette((GrafPort *) theMacGWorld);
-	
-	thePalHand = ::NewPalette(256, inCTab, pmCourteous, 0);
-	::UpdateGWorld(&theMacGWorld, 32, &theFrame, inCTab, nil, 0);
-	mFadeWorld->SetMacGWorld(theMacGWorld);
-	
-	::NSetPalette((GrafPort *) theMacGWorld, thePalHand, pmAllUpdates);
-	
-	if (theOldPalHand != nil)
-		::DisposePalette(theOldPalHand);
-		
-	mFadeWorld->BeginDrawing();
-	//::PmForeColor(0);
-	::RGBForeColor(&Color_Black);
-	::PenPat(patCopy);
-	::PaintRect(&theFrame);
-	mFadeWorld->EndDrawing();
-#endif
 }
 
 //
@@ -521,7 +481,8 @@ void CPlayerView::ShowTZones(void)
 		
 		theButt->CalcLocalFrameRect(frameRect);
 		
-		::PmForeColor(253);		
+		RGBColor color = gPaletteManager.GetColor(253);
+		::RGBForeColor(&color);	
 		::FrameRect(&frameRect);
 	}
 
@@ -593,15 +554,14 @@ void CPlayerView::KillScript(void)
 	mPauseFromKey = false;
 	mMoviePaused = false;
 
-	gCardManager.CurCardKill();
+	TInterpreter::GetInstance()->KillCurrentCard();
 	
 	if (gMovieManager.Playing())
 		gMovieManager.Kill();
 	
 	DeleteAllSubPanes();
 	
-	delete mKeyBinds;							// kill keybinds
-	mKeyBinds = new LArray(sizeof(sCardKey));	// allocate a new list
+	DeleteAllKeyBinds();
 	
 	// cbo - if we do this, we won't be able to show load screens Deactivate();
 	//Refresh();				// to make the screen draw in black
@@ -612,10 +572,6 @@ void CPlayerView::KillScript(void)
 //
 void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 {
-	Handle			kchr_rsrc;								/* handle to KCHR resource */
-	uint32			key_trans_state;						/* value set by KeyTrans() */
-	uint8			key;									/* ASCII value of key pressed */
-	int16			key_code;								/* argument to pass to KeyTrans() */
 	EventRecord 	*theEvent;
 	char			theChar;
 	Boolean			keyHandled = false;
@@ -630,30 +586,12 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 			DoResume(true);
 			keyHandled = true;
 		}
-		else if ((theEvent->modifiers & cmdKey) or (theEvent->modifiers & optionKey))
+		else if (theEvent->modifiers & cmdKey)
 		{
-			// If the Option key is down, we have to get the real key pressed.
-			if ((theEvent->modifiers & optionKey) != 0)
-			{
-				key_code = (((theEvent->message & keyCodeMask) >> 8) & 0xFF);	/* pick up virtual key code. see IM I-250 */
-				kchr_rsrc = ::RGetResource('KCHR', 0);							/* get KCHR resource from ROM */
-			
-				if (kchr_rsrc != NULL)
-				{
-					::HLock(kchr_rsrc);
-					key_trans_state = 0;										/* see Inside Mac V-195 */
-					key = (uint8) (::KeyTranslate((Ptr) *kchr_rsrc, key_code, &key_trans_state) & 0xFF); /* IM says to use low 8 bits of hi-word (i.e., ASCII 1), but it really needs to be ASCII 2 */
-					::HUnlock(kchr_rsrc);
-					::ReleaseResource(kchr_rsrc);								/* release 'KCHR' resource */
-					
-					theChar = key;
-				}
-				else
-					theChar = 0;
-			}
-			else
-				theChar = (theEvent->message & charCodeMask);
-			
+			// We used to support holding down the option key to activate a
+			// command, but that is (1) non-standard UI on the Mac and (2)
+			// requires mucking around in ROM maps that aren't present in Carbon.
+			theChar = (theEvent->message & charCodeMask);
 			theChar = tolower(theChar);
 			
 			// first process Cmd (or Option) . (period) - this will kill naps, audio and video
@@ -662,11 +600,11 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 				if (gMovieManager.Playing())
 					gMovieManager.Kill();
 					
-				if (gCardManager.CurCardNapping())
-					gCardManager.CurCardWakeUp();
+				if (TInterpreter::GetInstance()->Napping())
+					TInterpreter::GetInstance()->WakeUp();
 #ifdef DEBUG
-				else if ((gModMan->NoVolume()) and (gCardManager.CurCardPaused()))
-					gCardManager.CurCardWakeUp();
+				else if ((gModMan->NoVolume()) and (TInterpreter::GetInstance()->Paused()))
+					TInterpreter::GetInstance()->WakeUp();
 #endif
 								
 				keyHandled = true;			// we always swallow this one
@@ -693,8 +631,8 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 					case 'f':							// f -> fast forward the movie or wake up from nap
 						if (gMovieManager.Playing())
 							gMovieManager.Kill();
-						else if (gCardManager.CurCardNapping())
-							gCardManager.CurCardWakeUp();
+						else if (TInterpreter::GetInstance()->Napping())
+							TInterpreter::GetInstance()->WakeUp();
 							
 						keyHandled = true;
 						break;
@@ -743,11 +681,11 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 					if (gMovieManager.Playing())
 						gMovieManager.Kill();
 					
-					if (gCardManager.CurCardNapping())
-						gCardManager.CurCardWakeUp();
+					if (TInterpreter::GetInstance()->Napping())
+						TInterpreter::GetInstance()->WakeUp();
 #ifdef DEBUG
-					else if ((gModMan->NoVolume()) and (gCardManager.CurCardPaused()))
-						gCardManager.CurCardWakeUp();
+					else if ((gModMan->NoVolume()) and (TInterpreter::GetInstance()->Paused()))
+						TInterpreter::GetInstance()->WakeUp();
 #endif
 				}
 								
@@ -826,7 +764,8 @@ void CPlayerView::DrawPixMap(GraphicsTools::Point inPoint,
 	ASSERT(mac_pixmap->packType == 0);          // Unpacked
 	ASSERT(mac_pixmap->pixelType == 16); 		// RGBDirect color
 	ASSERT(mac_pixmap->pixelSize == 32);        // 32 bits/pixel
-	ASSERT(mac_pixmap->cmpCount == 3);          // 3 channels/pixel
+	ASSERT(mac_pixmap->cmpCount == 3 ||			// 3 or 4 channels/pixel
+		   mac_pixmap->cmpCount == 4);
 	ASSERT(mac_pixmap->cmpSize == 8);           // 8 bits/channel
 	
 	// Clip our pixmap boundaries to fit within our GWorld.
@@ -904,30 +843,26 @@ void CPlayerView::DrawPixMap(GraphicsTools::Point inPoint,
 //
 bool CPlayerView::DoKeyBind(const char inKey)
 {
-	LArrayIterator iterator(*mKeyBinds, LArrayIterator::from_Start);
-	sCardKey	theBind;
-	
-	while (iterator.Next(&theBind))
-	{
-		if (theBind.mTheChar == inKey)
-		{
-			if (ProcessingKeys())
-			{
-				// We want to kill movies (both audio and video) when
-				// keybinding.
-				if (gMovieManager.Playing())
-					gMovieManager.Kill();
+	std::map<char,TCallback*>::iterator found = mKeyBinds.find(inKey);
 
-				gDebugLog.Log("keybind hit: key <%c>, jump to <%s>", 
-					inKey, (const char *) *(theBind.mCardName));
-				gCardManager.JumpToCardByName((const char *) *(theBind.mCardName), false);
-				return (true);
-			}
-			else
-			{
-				// ::SysBeep(30);
-				return (false);
-			}
+	if (found != mKeyBinds.end())
+	{
+		if (ProcessingKeys())
+		{
+			// We want to kill movies (both audio and video) when
+			// keybinding.
+			if (gMovieManager.Playing())
+				gMovieManager.Kill();
+			
+			gDebugLog.Log("keybind hit: key <%c>, running callback",
+						  found->first);
+			found->second->Run();
+			return (true);
+		}
+		else
+		{
+			// ::SysBeep(30);
+			return (false);
 		}
 	}
 	
@@ -938,39 +873,19 @@ bool CPlayerView::DoKeyBind(const char inKey)
 // Add a key action to the list of posible keys. If the card name is nil,
 // then remove the key from the list.
 //
-void CPlayerView::AddKeyBinding(const char inKey, CCard *inCardToJumpTo)
+void CPlayerView::AddKeyBinding(const char inKey, TCallback *inCallback)
 {
-	int32		bindIdx = 1;
-	sCardKey	theBind;
-	char		realInKey;
-	bool		foundIt = false;
-	
-	realInKey = inKey;
-	
-	// Look for key. 
-	while  ((not foundIt) and mKeyBinds->FetchItemAt(bindIdx++, &theBind))
-		foundIt = (theBind.mTheChar == realInKey);
+	// Look for an existing keybind for this key, and delete it.
+	std::map<char,TCallback*>::iterator found = mKeyBinds.find(inKey);
+	if (found != mKeyBinds.end())
+	{
+		delete found->second;
+		mKeyBinds.erase(found);
+	}
 
-	if (foundIt)
-		bindIdx--;	// if we found it we have already incremented past it
-		
-	theBind.mTheChar 		= realInKey;
-	theBind.mCardName  		= new FiveL::TString;
-	*(theBind.mCardName)	= inCardToJumpTo->Name();
-	//theBind.mCard 		= inCardToJumpTo;
-	
-	if (inCardToJumpTo == NULL)	// If no card, delete the key
-	{
-		if (foundIt)
-			mKeyBinds->RemoveItemsAt(1, bindIdx);
-		// else couldn't find it, so WGAFF?
-	}
-	else if (foundIt)	// We want to replace the key action
-	{
-		mKeyBinds->AssignItemsAt(1, bindIdx, &theBind);
-	}
-	else				// OK, just a new key. How boring.
-		mKeyBinds->InsertItemsAt(1, LArray::index_Last, &theBind);
+	// If we have a new keybind, insert it.
+	if (inCallback)
+		mKeyBinds.insert(std::pair<char,TCallback*>(inKey, inCallback));
 }
 
 
@@ -990,15 +905,6 @@ void CPlayerView::Blippo(void)
 
 	// Get the blippo gworld from the card view, and draw into it.
 	GWorldPtr theMacGWorld = mBlippoWorld->GetMacGWorld();
-	
-	// cbo - now set the color table in DoNewPalette
-	// Update the blippo world with the latest device info
-	//theCTab = gTheApp->GetCTab();
-	//if (theCTab != nil)
-	//{
-	//	int32 myGWorldFlags = ::UpdateGWorld(&theMacGWorld, 32, &theFrame, theCTab, nil, 0);
-	//	mBlippoWorld->SetMacGWorld(theMacGWorld);
-	//}
 	
 	// Copy what we have in our current gworld into the blippo world
 	mGWorld->CopyImage((GrafPtr)theMacGWorld, theFrame);
@@ -1234,12 +1140,14 @@ void CPlayerView::DoSlide(const FXType inEffect, const int8 inTime)
 		theTick = ::TickCount();		
 
 		// Copy the screen part to the blippo buffer.
-		::CopyBits(&(screenPort)->portBits, &(destPort)->portBits,
-					&screenRect, &destRect1, srcCopy, nil);
+		::CopyBits(::GetPortBitMapForCopyBits((CGrafPtr) screenPort),
+				   ::GetPortBitMapForCopyBits((CGrafPtr) destPort),
+				   &screenRect, &destRect1, srcCopy, nil);
 					
 		// Copy the lock buffer part to the blippo buffer.	
-		::CopyBits(&(lockPort)->portBits, &(destPort)->portBits,
-					&lockRect, &destRect2, srcCopy, nil);
+		::CopyBits(::GetPortBitMapForCopyBits((CGrafPtr) lockPort),
+				   ::GetPortBitMapForCopyBits((CGrafPtr) destPort),
+				   &lockRect, &destRect2, srcCopy, nil);
 					
 		// Now blast the blippo world to the screen.
 		mBlippoWorld->CopyImage(GetMacPort(), frameRect);
@@ -1550,79 +1458,6 @@ void CPlayerView::DoXFade(const int8 inTime)
 	
 	::OpColor(&kRGB_Black);
 }
-
-#ifdef DEBUG_5L_LATER
-//
-//	DoFade
-//
-void CPlayerView::DoFade(const int8 inTime, const bool inFadeIn)
-{
-	int16		grayStep;	// Amount to increment RGB each iteration
-	Rect		viewRect;	// Final destination rect
-	RGBColor	grayColor;	// Color to use for 'blend' mode - shade of gray
-	
-	StColorPenState savePenState;
-
-	// Sets fore & background color for CopyBits.
-	StColorPenState::Normalize();
-	
-	// If we are fading in we want to get a copy of 
-
-	CalcLocalFrameRect(viewRect);
-
-	// Loop how many times? (ticks)
-	// inTime is tenths of a second, and 1 tick = 1/60 sec.
-	int16 iterations = inTime;
-	
-	// Now figure out how much to increment the blend, based on the above.
-	grayStep = (0xFFFF - 0x0F00)/iterations;
-	
-	// Get the real gworld from the card view, and draw into it.
-	GWorldPtr theMacGWorld = mGWorld->GetMacGWorld();
-
-	// Get the initial tick count for timing
-	int32	theTick = ::TickCount();
-	
-	// Set the beginning blend weight. This will be multiplied by
-	// speed before being used the first time.
-	
-	grayColor.blue = grayColor.green = grayColor.red = 0x0F00;
-	
-	// Get the tick for timing
-	theTick = ::TickCount();
-
-	// Loop and copy the source image to the destination
-	// blending more and more of the source image in by using
-	// a lighter and lighter "blend weight" (set by the OpColor
-	// function).
-
-	for (int16 i = 0; (i < iterations) and (grayColor.blue < 0xFFFF); ++i)
-	{
-		// Set the new blend weight.
-		::OpColor(&grayColor);
-		
-		// Do the blend. Double-buffer it so it looks faster.
-		mFadeWorld->CopyImage((GrafPtr) theMacGWorld, viewRect, blend);
-		Draw(nil);
-		
-		// Lighten the blend weight color.
-		grayColor.blue += grayStep;
-		grayColor.red = grayColor.green = grayColor.blue;
-	}
-	
-	// Copy the image directly into the destination to make
-	// sure the move is complete. (via the offscreen gworld
-	// so that it is also current).
-	
-	mFadeWorld->CopyImage((GrafPtr) theMacGWorld, viewRect);
-	Draw(nil);
-	
-	// Reset the blend weight to black.
-	// This is the "normal" weight.
-	
-	::OpColor(&kRGB_Black);
-}
-#endif
 
 //
 // Translate the string 'inText' to the appropriate effect.

@@ -9,6 +9,8 @@ config.status
 configure
 TestAll
 TestAll_d
+TestAll_Carbon
+TestAll_Carbon_d
 TestAll?Data
 *.log
 libfivel

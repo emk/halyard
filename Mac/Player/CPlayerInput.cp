@@ -3,6 +3,7 @@
    ================================================================================= */
 
 #include "THeader.h"
+#include "MacCarbonGlue.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -11,7 +12,6 @@
 
 #include "TLogger.h"
 
-#include "CCard.h"
 #include "CMac5LApp.h"
 #include "CPlayerView.h"
 #include "CPlayerInput.h"
@@ -210,14 +210,14 @@ Boolean CPlayerInput::HandleKeyPress(
 					bounds.Set(macBounds);
 					
 	   				new CPlayerText(mStyle, bounds, (char *)theString, 0, 0);
-	   				::InvalRect(&macBounds);
+	   				InvalPortRect(&macBounds);
 					
 					// Nuke the TE field
 					delete theInputThing;
 					theInputThing = nil;
 					
 					// And finally wake up the card (that was paused in 'DoInput')
-					gCardManager.CurCardWakeUp();
+					TInterpreter::GetInstance()->WakeUp();
 					gPlayerView->ProcessEvents(true);
 				}
 				else

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 // ===========================================================================
 //	CMac5LApp.h					©1994 Metrowerks Inc. All rights reserved.
 // ===========================================================================
@@ -27,10 +28,11 @@ class	CMac5LApp : public PP::LApplication
 		// For example ":Scripts:sample.scr" would be represented as "sample".  Return
 		// true if no errors occur.
 		//
-		bool				OpenScript(const TString &inScriptName);	
+		bool				OpenScript(const char *inScriptName,
+									   const char *inCardName);
+
 #ifdef DEBUG
 		void				ReDoScript(const char *curCard);
-		bool				OpenScriptAgain(const TString &inScriptName, const char *jumpCard);
 		void				ReDoReDoScript(void);
 
 		Boolean				ObeyCommand(PP::CommandT inCommand, void *ioParam);
@@ -44,19 +46,7 @@ class	CMac5LApp : public PP::LApplication
 		void				CheckMemory(void);
 		void				MaxMemory(void);
 		void				DumpMemory(void);
-		
-
-//		void				SetPalette(PaletteHandle inPalHand, bool inActivateNow);
-		
-//		void				NewColorTable(CPalette *inPal, bool inGraphics);
-		
-//		void				DoNewPalette(CTabHandle inCTab);
-//		void				RestorePalette(void);
-//		CTabHandle			GetCTab(void) { return (mGraphicsPal->GetCTab()); }
-//		void				CheckPalette(void);
-//		bool				HaveNewPal(void)
-//					{ return (mHaveNewPal); }
-		
+				
 		Boolean				AttemptQuitSelf(SInt32 inSaveOption);
 		virtual void		HandleAppleEvent(
 								const AppleEvent	&inAppleEvent,
@@ -68,12 +58,21 @@ class	CMac5LApp : public PP::LApplication
 		
 		virtual void		EventResume		(const EventRecord& inMacEvent);
 		virtual void		EventSuspend	(const EventRecord& inMacEvent);							
-	
 		//////////
 		// A SpecialVariableFunction to get the _system variable.
 		//
 		static TString		ReadSpecialVariable_system() { return "MacOS"; }
 	
+		//////////
+		// A SpecialVariableFunction to get the _curcard variable.
+		//
+		static TString	ReadSpecialVariable_curcard();
+		
+		//////////
+		// A SpecialVariableFunction to get the _prevcard variable.
+		//
+		static TString	ReadSpecialVariable_prevcard();
+
 	protected:
 		CBackWindow			*mDisplayWindow;
 		

@@ -6,7 +6,7 @@
 #include "ImlUnit.h"
 
 // We need to call some module initialization functions.
-#include "TLogger.h"
+#include "TStartup.h"
 
 // XXX - For now, we'll declare the per-file test entry points here, to
 // avoid creating extra header files just for one function.  These will
@@ -26,7 +26,7 @@ int main (int argc, char **argv)
 {
 	try
 	{
-		FIVEL_NS TLogger::OpenStandardLogs(true);
+		FIVEL_NS InitializeCommonCode();
 
 		test_TString();
 		test_TStream();

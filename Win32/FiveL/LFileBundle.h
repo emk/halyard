@@ -1,6 +1,8 @@
 #if !defined (_LFileBundle_h_)
 #define _LFileBundle_h_
 
+#include <string>
+
 //#include "FiveL.h"		// need HCK
 #include "TString.h"
 #include "TBTree.h"
@@ -11,8 +13,6 @@
 #define STRING_MIN_RESIZE 128
 #define READ_BUF_SIZE 512
 #define IN_FILENAME "5L.db"			// Filename of the Bundle file
-#define INIT_DATA_DIR ""
-//#define INIT_DATA_DIR "\\init"
 
 /*-----------------------------------------------------------------
 
@@ -169,7 +169,7 @@ class LFileBundle : public TObject
 		//////////
 		// Absolute filename (incl path info) for the bundle.
 		//
-		char		*bundleFilename;
+		std::string	bundleFilename;
 		
 		//////////
 		// Used for the file stream when acting in clear mode.

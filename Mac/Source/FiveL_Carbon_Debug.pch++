@@ -1,0 +1,19 @@
+#pragma precompile_target "FiveLDebugHeaderCarbon++"
+
+// Configure Carbon.
+#define FIVEL_PLATFORM_MACINTOSH_CARBON 1
+#include "MacCarbonGlue.h"
+
+#define PP_Target_Classic		(!PP_Target_Carbon)
+#define TARGET_API_MAC_CARBON	PP_Target_Carbon
+#define TARGET_API_MAC_OS8		PP_Target_Classic
+
+// Set our PowerPlant options.
+#define PP_Uses_PowerPlant_Namespace	1		// Wrap all system defs in a namespace
+
+#pragma once on
+#include "PP_DebugHeaders.cp"
+
+// Create a shorter alias for the PowerPlant namespace, so we don't have to type
+// as much.
+namespace PP = PowerPlant;

@@ -15,7 +15,6 @@
 #include "CPlayerView.h"
 #include "CMoviePlayer.h"
 #include "TVariable.h"
-#include "CCard.h"
 #include "CModule.h"
 #include "gamma.h"
 
@@ -81,7 +80,7 @@ void CMoviePlayer::SpendTime(const EventRecord & /* inMacEvent */)
 				{
 					if (movieTime >= mWaitTime)
 					{
-						gCardManager.CurCardWakeUp();
+						TInterpreter::GetInstance()->WakeUp();
 						mWakeCard = false;
 						mWaitTime = 0;
 					}
@@ -158,7 +157,7 @@ void CMoviePlayer::Kill(void)
 			
 	if (mWakeCard)
 	{
-		gCardManager.CurCardWakeUp();
+		TInterpreter::GetInstance()->WakeUp();
 		mWakeCard = false;
 	}
 
@@ -187,7 +186,7 @@ void CMoviePlayer::Kill(void)
 			::RGBForeColor(&rgbBlack);
 			::PenMode(patCopy);
 			::PaintRect(&theFrame);
-			::ValidRect(&theFrame);			// so don't get update
+			gPlayerView->ValidPortRect(&theFrame);	// so don't get update
 		}
 		else
 			gPlayerView->Draw(nil);			// get the offscreen buffer back on the screen

@@ -21,9 +21,10 @@ namespace FileSystem {
 	//
 	class Error : public FIVEL_NS TException {
 	public:
-		Error(int inErrorCode);
-		Error(const std::string &inErrorMessage)
-			: TException(inErrorMessage) {}
+		Error(const char *inErrorFile, int inErrorLine, int inErrorCode);
+		Error(const char *inErrorFile, int inErrorLine,
+			  const std::string &inErrorMessage)
+			: TException(inErrorFile, inErrorLine, inErrorMessage) {}
 		
 		virtual const char *GetClassName() const
 		    { return "FileSystem::Error"; }
@@ -177,6 +178,19 @@ namespace FileSystem {
 	//
 	inline Path GetDataDirectory()
 	    { return GetBaseDirectory().AddComponent("Data"); }
+
+	//////////
+	// Given a file name, return a path pointing to a file with
+	// that name in the font directory.
+	//
+	inline Path GetDataFilePath(std::string inDataFileName)
+	    { return GetDataDirectory().AddComponent(inDataFileName); }
+
+	//////////
+	// Get the directory 5L uses to store palette information.
+	//
+	inline Path GetPalettesDirectory()
+	    { return GetBaseDirectory().AddComponent("Palettes"); }
 
 	// TODO - Factor out more platform-specific config to use
 	// the directories listed above.

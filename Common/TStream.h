@@ -19,6 +19,7 @@
 #include "TRect.h"
 #include "TPoint.h"
 #include "GraphicsTools.h"
+#include "TPrimitives.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -35,7 +36,7 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class TStream : public TString 
+class TStream : public TString, public TArgumentList
 {
 public:
 	//////////
@@ -91,7 +92,7 @@ public:
 	//
 	// [out] return - char at previous position
 	//
-		char 		prevchar() { return pos ? m_String[pos - 1] : 0; }
+	char 		prevchar() { return pos ? m_String[pos - 1] : 0; }
 	
 	//////////
 	// Have we reached the end of the stream?
@@ -109,6 +110,13 @@ public:
 	//				  the end of the string yet.
 	//
 	int     more();
+
+	//////////
+	// Is there more data for this field?  (We inherit this method
+	// from TArgumentList.)
+	//
+	bool    HasMoreArguments()
+		{ return more() ? true : false; }
         
 	//////////
 	// Reset the stream get pointer to 0. Check now to see if first
@@ -160,74 +168,58 @@ public:
 	void    discard();
 	
 	//////////
-	// Basic extraction operator. Most others just use this and then
-	// convert the type.
-	//
-	// [out] dest - destination string to store extraction results 
-	//
-	TStream&    operator>>(TString &dest);
-
-	//////////
-	// Read in an standard C++ string.
-	//
-	// [out] outString - destination string to store extraction results 
-	//
-	TStream&    operator>>(std::string &outString);
-	
-	//////////
 	// This allows manipulator functions to work.
 	//
 	TStream&    operator>>(TStream& (*_f)(TStream &));
-        
+
+protected:        
 	//////////
-	// TString class handles string to int conversions.
+	// Read in an standard C++ string.  This is the basic extraction
+	// operator. Most others just call this indirectly and then
+	// convert the type.
 	//
-	// [out] dest - an integer to store the extraction
-	//
-	TStream&    operator>>(int16 &dest);
+	std::string GetStringArg();
 	
 	//////////
 	// TString class handles string to int conversions.
 	//
-	// [out] dest - an integer to store the extraction
-	//
-	TStream&    operator>>(int32 &dest);
+	int32 GetInt32Arg();
 
 	//////////
 	// TString class handles string to int conversions.
 	//
-	// [out] dest - an unsigned integer to store the extraction
-	//
-	TStream&    operator>>(uint32 &dest);
+	uint32 GetUInt32Arg();
 	
 	//////////
 	// TString class handles string to double conversions.
 	//
-	// [out] dest - an integer to store the extraction
-	//
-	TStream&    operator>>(double &dest);
+	double GetDoubleArg();
 	
 	//////////
 	// Assumes there are 4 numbers to grab from the input stream.
 	//
-	// [out] r - TRect to store the 4 numbers
-	//
-	TStream&    operator>>(TRect &r);
+	TRect GetRectArg();
 	
 	//////////
 	// Assumes there are 2 numbers to grab from the input stream.
 	//
-	// [out] pt - TPoint to store the 2 numbers
-	//
-	TStream&    operator>>(TPoint &pt);
+	TPoint GetPointArg();
 
 	//////////
 	// Read in an RGBA hexadecimal color in the format '#xRRGGBBAA'.
 	//
-	// [out] outColor - The specified color.
-	//
-	TStream&    operator>>(GraphicsTools::Color &outColor);
+	GraphicsTools::Color GetColorArg();
 	
+	//////////
+	// Read in a callback function.  Note that any variables will
+	// be expanded when the callback function is parsed, not
+	// when it is called.
+	//
+	// [out] return - A newly allocated TCallback* object.  The
+	//                caller must delete this when finished.
+	//
+	TCallback *GetCallbackArg();
+
 protected:
 	//////////
 	// Current positon.
@@ -258,6 +250,27 @@ public:
 	// using a '\'.
 	// 
     bool            inEscape(void);
+
+private:
+	typedef TCallback *(*CallbackMakerFunc)(const TString &);
+
+	static CallbackMakerFunc s_CallbackMaker;
+
+	static TCallback *MakeCallback(const TString &inCmd)
+		{ ASSERT(s_CallbackMaker != NULL); return (*s_CallbackMaker)(inCmd); }
+
+public:
+	//////////
+	// Register a factory function that creates TCallback objects
+	// from 5L command strings.  We implement this as a callback to
+	// break any dependencies between TStream and the platform-specific
+	// 5L interpreters.
+	//
+	// The TCallback returned from 'inMaker' will eventually be
+	// destroyed using 'delete'.  So allocate it on the heap.
+	//
+	static void SetCallbackMaker(CallbackMakerFunc inMaker)
+		{ s_CallbackMaker = inMaker; }
 };
 
 //////////
@@ -308,6 +321,78 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3  2002/06/20 16:32:53  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.2.6.2  2002/06/11 18:15:31  emk
+ 3.3.4.4 - Partial separation of primitives from interpreter, and
+ various 5L language enhancements related to callbacks.
+
+   - Finished fleshing out TArgumentList, added support for callbacks.
+   - Made all built-in primitives access their arguments through the
+     TArgument interface.
+   - Implemented a BODY command.
+   - Changed how the TOUCH, BUTTPCX and KEYBIND commands parse their
+     callback arguments.  See below for details; you'll have to change
+     some code.  This was necessary to move callback parsing into
+     TStream's implementation of the TArgumentList interface.
+
+ 5L Language Changes
+ -------------------
+
+   * (KEYBIND ...) now takes an arbitrary command instead of a card name.
+     As with TOUCH and BUTTPCX, variables are evaluated when the
+     keybind is installed, not when it is invoked.  Examples:
+
+       (keybind f (jump foo))
+       (keybind a (add x 10))
+
+   * You can now run a series of zero or more commands using (BODY cmd...).
+     This should work with IF, TOUCH, BUTTPCX and KEYBIND.  Example:
+
+       (body
+         (set x 10)
+         (set y 20))
+
+     Commands such as WAIT, JUMP, NAP, etc., will not do what you expect
+     unless they're the last statement in a BODY.  This is caused by the
+     low-level design of the interpreter, and is non-trivial to fix.
+
+     RETURN is also not BODY-friendly.
+
+     When you pass a body to IF, TOUCH, BUTTPCX or KEYBIND, all the
+     variables in the body will be evaluated *before* any code is run!
+
+   * The arguments to BUTTPCX and TOUCH have been rationalized after
+     consultation with Douglas.  The commands now work as follows:
+
+       (TOUCH rect cmd [cursor [picture [point]]])
+       (BUTTPCX picture point header label cmd [cursor])
+
+     Note that the second callback has disappeared from both TOUCH and
+     BUTTPCX; use BODY instead.
+
+ Revision 1.2.6.1  2002/06/10 17:52:48  emk
+ 3.3.4.3 - Added a TArgumentList class in TPrimitives.  This class provides
+ an abstract interface to argument list parsing, and replaces parts of
+ TStream.  This will allow us to begin breaking dependencies between
+ the primitives and the nasty parsing gunk in TStream.
+
  Revision 1.2  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

@@ -1,5 +1,6 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "TCommon.h"
 #include "TStream.h"
 #include "ImlUnit.h"
 #include "TVariable.h"

@@ -17,6 +17,8 @@
 #if !defined (_Graphics_h_)
 #define _Graphics_h_
 
+#include "TRect.h"
+
 /*-----------------------------------------------------------------
 
 LIBRARY
@@ -85,6 +87,39 @@ void    Beep(int freq = 1500, int duration = 80);
 
 /*
  $Log$
+ Revision 1.2  2002/06/20 16:32:54  emk
+ Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
+ branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.1.10.1  2002/06/05 20:42:38  emk
+ 3.3.4.2 - Broke Win5L dependencies on TIndex file by moving various pieces
+ of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter
+ through a well-defined API.  Changes:
+
+   * Removed many direct and indirect #includes of TIndex.h.
+   * Added a TInterpreter method ReloadScript, which can be called by the
+     higher-level ReDoScript command.
+   * Checked in some files which should have been included in the 3.3.4.1
+     checkin--these files contain the initial refactorings of Card and Macro
+     callsites to go through the TInterpreter interface.
+
+ Up next: Refactor various Do* methods out of Card and into a procedural
+ database.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 
