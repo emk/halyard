@@ -21,6 +21,7 @@
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
            %activex% activex-prop set-activex-prop!
+           %flash-card%
            %browser% %edit-box-element% %movie-element%
            browser edit-box %vorbis-audio% vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
@@ -324,6 +325,16 @@
   (define (set-activex-prop! elem prop value)
     (call-5l-prim 'ActiveXPropSet (node-full-name elem) prop value))
 
+  (define-card-template %flash-card%
+      [[location :type <string> :label "Location"]]
+      ()
+    (create %activex%
+            :name 'flash
+            :rect $screen-rect
+            :activex-id "ShockwaveFlash.ShockwaveFlash")
+    (set! (activex-prop @flash "movie")
+      (build-path (current-directory) "Flash" location)))
+  
   (define-element-template %browser%
       [[location :type <string> :label "Location" :default "about:blank"]
        [fallback? :type <boolean> :label "Use primitive fallback web browser?"
