@@ -17,15 +17,33 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		4
+#define VERSION_REV_BIG		5
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.4 (Development)"
+#define VERSION_STRING		"Tamale 0.0.5 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.47  2003/05/30 18:41:01  emk
+ 0.0.5 - 30 May 2003 - emk
+
+ A very primitive audio layer, with Vorbis support.  I'm making a release so
+ the media folks have something to play with.
+
+   * Integrated portaudio audio output library.
+   * Integrated libivorbisdec (a.k.a. "Tremor") integerized Ogg Vorbis
+     audio decoder.
+   * Added new VorbisFile class for loading Ogg Vorbis streams (incomplete).
+   * Added new AudioStream class for streaming audio output.
+   * Added VorbisAudioStream and SineAudioStream classes.
+   * Refactoed IMediaElement interface out of MovieElement.
+   * Added AudioStreamElement class.
+   * New functions: VORBIS-AUDIO and SINE-WAVE.  These are mostly for
+     testing at this point.
+   * We no longer drop Vorbis samples during playback (I hope!).
+
  Revision 1.46  2003/05/28 16:02:46  emk
  0.0.4 - 28 May 2003 - emk, brian
 

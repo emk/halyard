@@ -1,6 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.5 - 30 May 2003 - emk
+
+A very primitive audio layer, with Vorbis support.  I'm making a release so
+the media folks have something to play with.
 
   * Integrated portaudio audio output library.
   * Integrated libivorbisdec (a.k.a. "Tremor") integerized Ogg Vorbis

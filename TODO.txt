@@ -13,8 +13,10 @@
       Handle mono and 44.1/2^N Vorbis streams
       Volume control?
       Refactor buffering class out of VorbisAudioStream
+      Don't run timer unless there's an active stream
       Fix endianess in libivorbisdec?
       Fix stutter when switching from sine to vorbis clip (portaudio bug?)
+      Try to get complete code coverage testing Vorbis playback path
 
     Useful features
       Looping
