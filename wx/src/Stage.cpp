@@ -162,7 +162,7 @@ void Stage::MaybeShowSplashScreen() {
 
     // If we have a screenshot.png file, draw it onto the stage.
     FileSystem::Path path =
-        FileSystem::GetBaseDirectory().AddComponent("screenshot.png");
+        FileSystem::GetBaseDirectory().AddComponent("splash.png");
     if (path.DoesExist() && path.IsRegularFile()) {
         std::string native_path = path.ToNativePathString();
         wxBitmap bitmap = GetImageCache()->GetBitmap(native_path.c_str());
