@@ -65,8 +65,7 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 		bool			IsLocked(void)	{ return(mIsLocked); }
 
 		void			DoNewPalette(CTabHandle inCTabHand);
-		
-		void			AdjustCursor(Point inPortPt, const EventRecord &inMacEvent);
+
 		void			AdjustMyCursor(void);
 #ifdef DEBUG
 		void			ShowTZones(void);
@@ -87,10 +86,10 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 		void			DoResume(bool inFromKey);
 		void			DoResetPause(void);
 		void			ShowMouse(bool inShowIt);
-		
-		void			MouseEnter(Point inPortPt, const EventRecord &/* inMacEvent */);
-		void			MouseLeave(Point inPortPt, const EventRecord &/* inMacEvent */);
-		void			MouseWithin(Point inPortPt, const EventRecord &/* inMacEvent */);
+
+		void            AdjustMouseSelf(Point               inPortPt,
+										const EventRecord&  /* inMacEvent */,
+										RgnHandle           /* outMouseRgn */);
 		
 	protected:
 			

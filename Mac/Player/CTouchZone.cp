@@ -274,38 +274,17 @@ CTouchZone::HotSpotResult(
 	gDoingTZone = false;
 }
 
-//
-//	MouseEnter - The mouse has entered our touch zone.
-//
-void
-CTouchZone::MouseEnter(Point inPortPt, const EventRecord& /* inMacEvent */)
-{
-	Point	localPoint = inPortPt;
-	
-	PortToLocalPoint(localPoint);	
-	gCursorManager.CheckCursor(localPoint);
-}
 
 //
-//	MouseLeave - The mouse just left our touch zone. 
+//	AdjustMouseSelf - CodeWarrior calls this when it thinks the mouse might need to be
+//                    updated.  We let our built-in cursor manager handle the details.
 //
 void
-CTouchZone::MouseLeave()
+CTouchZone::AdjustMouseSelf(Point inPortPt,
+					        const EventRecord&  /* inMacEvent */,
+					        RgnHandle           /* outMouseRgn */)
 {
-	gCursorManager.CheckCursor();
-}
-
-//
-//	MouseWithin - If the mouse is within our touch zone, change the cursor to
-//			the hand (if we have it).
-//
-void
-CTouchZone::MouseWithin(Point inPortPt, const EventRecord& /* inMacEvent */)
-{	
-	Point	localPoint = inPortPt;
-	
+	Point	localPoint = inPortPt;	
 	PortToLocalPoint(localPoint);
 	gCursorManager.CheckCursor(localPoint);
-	
-	//gCursorManager.ChangeCursor(mCursor, true);
 }

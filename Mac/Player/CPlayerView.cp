@@ -486,46 +486,19 @@ void CPlayerView::DoNewPalette(CTabHandle inCTab)
 }
 
 //
-//	AdjustCursor - we don't change the cursor for any of our panes (yet).
+//	AdjustMouseSelf - CodeWarrior calls this when it thinks the mouse might need to be
+//                    updated.  We let our built-in cursor manager handle the details.
 //
 void
-CPlayerView::AdjustCursor(
-	Point				inPortPt,
-	const EventRecord	&/* inMacEvent */)
+CPlayerView::AdjustMouseSelf(Point inPortPt,
+					         const EventRecord&  /* inMacEvent */,
+					         RgnHandle           /* outMouseRgn */)
 {
-	Point	localPoint = inPortPt;
-	
+	Point	localPoint = inPortPt;	
 	PortToLocalPoint(localPoint);
 	gCursorManager.CheckCursor(localPoint);
 }
-
-void 
-CPlayerView::MouseEnter(Point inPortPt, const EventRecord &/* inMacEvent */)
-{
-	Point	localPoint = inPortPt;
-	
-	PortToLocalPoint(localPoint);
-	gCursorManager.SetCursorPos(localPoint);
-}
-
-void 
-CPlayerView::MouseLeave(Point inPortPt, const EventRecord &/* inMacEvent */)
-{
-	Point	localPoint = inPortPt;
-	
-	PortToLocalPoint(localPoint);
-	gCursorManager.SetCursorPos(localPoint);
-}
-
-void
-CPlayerView::MouseWithin(Point inPortPt, const EventRecord &/* inMacEvent */)
-{
-	Point	localPoint = inPortPt;
-	
-	PortToLocalPoint(localPoint);
-	gCursorManager.SetCursorPos(localPoint);
-}
-
+				         
 //
 //	AdjustMyCursor
 //

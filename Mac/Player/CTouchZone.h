@@ -43,9 +43,10 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		virtual 	~CTouchZone();
 		
 		// Mouse tracking functions.
-		void		MouseEnter(Point inPortPt, const EventRecord& inMacEvent);
-		void		MouseLeave();
-		void		MouseWithin(Point inPortPt, const EventRecord& inMacEvent);
+		void        AdjustMouseSelf(Point               inPortPt,
+									const EventRecord&  /* inMacEvent */,
+									RgnHandle           /* outMouseRgn */);
+		
 		bool		IsButtPcx(void) { return (not mNormalTouch);}
 		virtual void	HotSpotResult(SInt16	inHotSpot);
 		virtual void	HotSpotAction(SInt16, Boolean, Boolean);
