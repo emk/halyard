@@ -466,11 +466,12 @@
   (define (media-cd-is-available?)
     (and *cd-media-directory* #t))
 
-  (define (search-for-media-cd)
+  (define (search-for-media-cd pathname)
     (label return
       (foreach [drive (filesystem-root-list)]
         (define candidate (build-path drive "Media"))
-        (when (directory-exists? candidate)
+        (define file (make-path-from-abstract candidate pathname))
+        (when (file-exists? file)
           (set! *cd-media-directory* candidate)
           (return)))))
 
