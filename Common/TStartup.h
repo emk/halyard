@@ -25,19 +25,17 @@
 
 #include "TInterpreter.h"
 
-// On the Macintosh, we need to manually set the stack base so the
-// Boehm GC doesn't get confused (it doesn't know how to detect it
-// correctly).
-#ifdef FIVEL_PLATFORM_MACINTOSH
-#   include <scheme.h>
-#   define FIVEL_SET_STACK_BASE() \
-	    do { \
-            int dummy; \
-	        scheme_set_stack_base(&dummy, 0); \
-        }  while (0)
-#else // !FIVEL_PLATFORM_MACINTOSH
-#   define FIVEL_SET_STACK_BASE() ((void) 0)
-#endif // !FIVEL_PLATFORM_MACINTOSH
+// We pass a second argument of 1 to scheme_set_stack_base to avoid
+// scanning random DLL memory segments for Scheme pointers.  This is
+// especially necessary because we often link against QuickTime, which maps
+// huge areas of graphics card memory into our address space, causing Boehm
+// to run very... very... very... slowly.
+#include <scheme.h>
+#define FIVEL_SET_STACK_BASE() \
+    do { \
+        int dummy; \
+        scheme_set_stack_base(&dummy, 1); \
+    }  while (0)
 
 BEGIN_NAMESPACE_FIVEL
 

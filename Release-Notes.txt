@@ -7,6 +7,9 @@ CVS - emk
     will once again allow us to use hardware acceleration, with possible
     negative consequences. Keep an eye out for QuickTime bugs on weird
     machines for the next month or two.
+  * Made sure we call scheme_set_stack_base with a second argument of
+    1 to prevent the Boehm GC from scanning video card memory mapped into
+    our address space by QuickTime (which is hideously slow).
   * We now detect if QuickTime isn't installed and give an appropriate
     error (bug #1846).
   * We handle top-level exceptions much more gracefully and informatively
