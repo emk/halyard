@@ -2,7 +2,19 @@
 AC_INIT([TArray.cpp])
 AM_INIT_AUTOMAKE(libfivel-common, 0.0)
 
-#AC_CONFIG_HEADER([config.h])
+# Turn on debugging.
+CFLAGS="$CFLAGS -g"
+CXXFLAGS="$CXXFLAGS -g"
+
+# Set up some compiler options for Unix.
+AC_DEFINE(TEST_TYPOGRAPHY)
+AC_DEFINE(HAVE_EYE_OF_GNOME)
+
+# Figure out how to link against FreeType 2.
+CFLAGS="$CFLAGS `freetype-config --cflags`"
+CXXFLAGS="$CXXFLAGS `freetype-config --cflags`"
+FREETYPE_LDADD="`freetype-config --libs`"
+AC_SUBST(FREETYPE_LDADD)
 
 # Checks for programs.
 AC_PROG_RANLIB
@@ -21,4 +33,4 @@ AC_C_INLINE
 AC_CHECK_FUNCS([strstr])
 
 # Output our results.
-AC_OUTPUT([Makefile])
+AC_OUTPUT([Makefile fonttools/Makefile])

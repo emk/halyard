@@ -1,3 +1,5 @@
+// -*- Mode: C++; tab-width: 4; -*-
+
 #include "ImlUnit.h"
 #include <iostream.h>
 
@@ -7,11 +9,16 @@
 // C++-ify the testing API.
 extern void test_TString (void);
 extern void test_TEncoding (void);
+extern void test_Typography (void);
 
 int main (int argc, char **argv)
 {
 	test_TString();
 	test_TEncoding();
+
+#ifdef TEST_TYPOGRAPHY
+	test_Typography();
+#endif
 
 	return tests_finished();
 }

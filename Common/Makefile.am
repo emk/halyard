@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
+SUBDIRS = . fonttools
+
 noinst_LIBRARIES = libimlunit.a libfivel.a
 
 noinst_PROGRAMS = TestAll
@@ -29,7 +31,9 @@ libfivel_a_SOURCES = \
 	TURL.cpp \
 	TURL.h \
 	TEncoding.cpp \
-	TEncoding.h
+	TEncoding.h \
+	Typography.cpp \
+	Typography.h
 
 # These only compile on Windows.  But nobody else uses them, so it
 # doesn't matter for now.
@@ -39,9 +43,11 @@ libfivel_a_SOURCES = \
 TestAll_SOURCES = \
 	TStringTests.cpp \
 	TEncodingTests.cpp \
+	TypographyTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
 	libfivel.a \
-	libimlunit.a
+	libimlunit.a \
+	@FREETYPE_LDADD@
 
 #	-lefence
