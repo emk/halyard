@@ -169,14 +169,12 @@ void CPlayerView::Deactivate(void)
 }
 
 //
-//	SpendTime - Processing time, pass it along to the current card.
+//	SpendTime - Processing time
 //
 void CPlayerView::SpendTime(const EventRecord &inMacEvent)
 {
 	if (mActive)
 	{
-		if (TInterpreter::HaveInstance())
-			TInterpreter::GetInstance()->Idle();
 		gMovieManager.SpendTime(inMacEvent);
 	}
 	
@@ -574,7 +572,8 @@ void CPlayerView::KillScript(void)
 	mPauseFromKey = false;
 	mMoviePaused = false;
 
-	TInterpreter::GetInstance()->KillCurrentCard();
+	if (TInterpreter::HaveInstance())
+		TInterpreter::GetInstance()->KillCurrentCard();
 	
 	if (gMovieManager.Playing())
 		gMovieManager.Kill();
@@ -620,10 +619,13 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 				if (gMovieManager.Playing())
 					gMovieManager.Kill();
 					
-				if (TInterpreter::GetInstance()->Napping())
+				if (TInterpreter::HaveInstance() &&
+					TInterpreter::GetInstance()->Napping())
 					TInterpreter::GetInstance()->WakeUp();
 #ifdef DEBUG
-				else if ((gModMan->NoVolume()) and (TInterpreter::GetInstance()->Paused()))
+				else if (gModMan->NoVolume() &&
+						 TInterpreter::HaveInstance() &&
+						 TInterpreter::GetInstance()->Paused())
 					TInterpreter::GetInstance()->WakeUp();
 #endif
 								
@@ -644,14 +646,15 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 						keyHandled = true;
 						break;
 					case 'q':							// q -> quit
-						gTheApp->DoExit(0);
+						gTheApp->DoQuit();
 						
 						keyHandled = true;
 						break;
 					case 'f':							// f -> fast forward the movie or wake up from nap
 						if (gMovieManager.Playing())
 							gMovieManager.Kill();
-						else if (TInterpreter::GetInstance()->Napping())
+						else if (TInterpreter::HaveInstance() &&
+								 TInterpreter::GetInstance()->Napping())
 							TInterpreter::GetInstance()->WakeUp();
 							
 						keyHandled = true;
@@ -701,10 +704,13 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 					if (gMovieManager.Playing())
 						gMovieManager.Kill();
 					
-					if (TInterpreter::GetInstance()->Napping())
+					if (TInterpreter::HaveInstance() &&
+						TInterpreter::GetInstance()->Napping())
 						TInterpreter::GetInstance()->WakeUp();
 #ifdef DEBUG
-					else if ((gModMan->NoVolume()) and (TInterpreter::GetInstance()->Paused()))
+					else if (gModMan->NoVolume() &&
+							 TInterpreter::HaveInstance() &&
+							 TInterpreter::GetInstance()->Paused())
 						TInterpreter::GetInstance()->WakeUp();
 #endif
 				}

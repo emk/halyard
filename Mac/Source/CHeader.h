@@ -57,7 +57,7 @@ class CHeaderManager : public TIndexManager
 {
 	public:
 	
-		virtual void 	MakeNewIndex(TIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
+		virtual void 	ProcessTopLevelForm(TIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
 };
 
 extern CHeaderManager gHeaderManager;

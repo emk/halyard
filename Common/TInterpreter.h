@@ -280,6 +280,11 @@ public:
 	void RequestRetryLoadScript();
 
 	//////////
+	// Do we have a single, global instance of this class?
+	//
+	static bool HaveInstance() { return (sInstance != NULL); }
+
+	//////////
 	// Get the global interpreter manager.
 	//
 	static TInterpreterManager *GetInstance()

@@ -24,16 +24,12 @@ class	CMac5LApp : public PP::LApplication
 		void				StartUp(void);
 
 		//////////
-		// Open a script file.  Scripts are represented without a directory or extension.
-		// For example ":Scripts:sample.scr" would be represented as "sample".  Return
-		// true if no errors occur.
+		// Set up the interpreter and start it running.
 		//
-		bool				OpenScript(const char *inScriptName,
-									   const char *inCardName);
+		void				InitializeInterpreter();
 
 #ifdef DEBUG
 		void				ReDoScript(const char *curCard);
-		void				ReDoReDoScript(void);
 
 		Boolean				ObeyCommand(PP::CommandT inCommand, void *ioParam);
 		void				FindCommandStatus(
@@ -75,6 +71,10 @@ class	CMac5LApp : public PP::LApplication
 
 	protected:
 		CBackWindow			*mDisplayWindow;
+
+		void                PrepareToRun();
+		void                ProcessEvents();
+		static void			MacIdleProc();
 		
 		void				CleanUp(void);
 		void				SetGlobals(void);
@@ -91,8 +91,6 @@ class	CMac5LApp : public PP::LApplication
 //		CPalette			*mGraphicsPal;
 //		CPalette			*mMoviePal;
 //		PaletteHandle		mCurPal;
-		TString				mReDoCard;		// card to jump to when redo redoscript
-		bool				mReDoReDo;		// waiting for a redo redoscript?
 	
 		bool				GetScriptFile(FSSpec *scriptSpec);
 		

@@ -14,7 +14,6 @@
 #include "CConfig.h"
 #include "CPicture.h"
 #include "CResource.h"
-#include "CPictDataFile.h"
 #include "CPlayerView.h"
 #include "TVariable.h"
 #include "CModule.h"

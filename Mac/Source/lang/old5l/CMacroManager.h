@@ -16,8 +16,8 @@ class CMacroManager : public TIndexManager
 	public:
 
 		virtual const char	*GetScript(const char *macroname);
-		virtual void	MakeNewIndex(TIndexFile *inFile, const char *inName  = NULL,
-								int32 inStart = 0, int32 inEnd = 0);
+		virtual void	ProcessTopLevelForm(TIndexFile *inFile, const char *inName  = NULL,
+								            int32 inStart = 0, int32 inEnd = 0);
 };
 
 extern CMacroManager gMacroManager;

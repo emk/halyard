@@ -30,7 +30,6 @@
 
 #include "CConfig.h"
 #include "CMac5LApp.h"
-#include "CModule.h"
 
 #include "CPlayerView.h"
 #include "CMoviePlayer.h"
@@ -39,13 +38,15 @@
 #include "gamma.h"
 
 #include "TVariable.h"
-#include "CFiles.h"
+#include "lang/old5l/CFiles.h"
 #include "CCursor.h"
 #include "TStartup.h"
 #include "TVersion.h"
-#include "TMac5LInterpreter.h"
+#include "lang/old5l/TMac5LInterpreter.h"
+#include "TStyleSheet.h"
 #include "TMacPrimitives.h"
 #include "TQTPrimitives.h"
+#include "CModule.h"
 
 //
 // constants
@@ -72,8 +73,8 @@ PP::LGrowZone		*gGrowZone = NULL;
 
 BEGIN_NAMESPACE_FIVEL
 
-TMac5LInterpreter	*gMac5LInterpreter = NULL;
-
+TInterpreterManager *gInterpreterManager;
+bool				gHaveLegacyInterpreterManager = false;
 CFileList			gFileManager;
 CCursorManager		gCursorManager;
 CPaletteManager		gPaletteManager;
@@ -98,6 +99,8 @@ using namespace PowerPlant;
 
 int FiveL::FiveLmain()
 {
+	FIVEL_SET_STACK_BASE();
+
 	try
 	{
 		// Set Debugging options
@@ -147,8 +150,12 @@ int FiveL::FiveLmain()
 			
 			//gTheApp->CheckMemory();
 			
-			gTheApp->Run();				//   class and run it
-			
+			gTheApp->InitializeInterpreter();
+			ASSERT(TInterpreterManager::HaveInstance());
+			TInterpreterManager::GetInstance()->Run();
+			delete gInterpreterManager;
+			gInterpreterManager = NULL;
+
 			//gTheApp->MaxMemory();
 		}
 		
@@ -187,6 +194,12 @@ FiveL::TString CMac5LApp::ReadSpecialVariable_prevcard()
 	return TInterpreter::GetInstance()->PrevCardName();
 }
 
+void CMac5LApp::MacIdleProc()
+{
+	gTheApp->ProcessEvents();
+}
+
+
 // ---------------------------------------------------------------------------
 //		¥ CMac5LApp
 // ---------------------------------------------------------------------------
@@ -203,9 +216,6 @@ CMac5LApp::CMac5LApp()
 	::GetKeys(keys);
 	if ((keys[1] & 1) != 0)
 		gDoShiftScript = true;
-
-	// Set up miscellaenous member variables.
-	mReDoReDo = false;
 
 	// Setup the Gamma tools
 	SetupGammaTools();
@@ -330,6 +340,9 @@ CMac5LApp::CMac5LApp()
 	// Fade back in (once the window has drawn itself).
 	if (gFullScreen and gHideMenuBar)
 		mDisplayWindow->FadeAfterDraw();
+
+	// Run our local re-implementation of the first half of LApplication::Run.
+	PrepareToRun();
 }
 
 
@@ -378,93 +391,12 @@ void CMac5LApp::DoAEOpenDoc(
 }
 
 //
-//	DoExit - Do the exit processing. If passed 0, quit the application.
-//		Otherwise, asssume it is the module number to jump to.
-//
-void CMac5LApp::DoExit(int16 inSide)
-{
-	FiveL::TString theCurPal;
-	Rect		theRect = {0, 0, 480, 640};
-	int32		theCheckDisc;				// want to keep this value
-	bool		goodModule = false;
-	bool		reloadPal = false;
-
-	if (mScriptRunning)
-	{
-		gPlayerView->KillScript();
-
-		mScriptRunning = false;
-		
-		// save the value of _NoCheckDisc and _graphpal
-		theCheckDisc = gVariableManager.GetLong("_NoCheckDisc");
-		if (gPaletteManager.GetCurrentPalette() != NULL)
-		{
-			theCurPal = gVariableManager.GetString("_GraphPal");
-			reloadPal = true;
-		}
-		
-		CleanUp();
-				
-		// reset our "global" variables
-		SetGlobals();
-		
-		// reload the current palette - it is already set so we don't
-		// 	have to do anything else
-		if (reloadPal)
-		{
-			gVariableManager.SetString("_GraphPal", theCurPal.GetString());
-		}
-		else
-			gVariableManager.SetString("_GraphPal", "NULL");	
-	}
-
-	if ((inSide > 0) and (gModMan->HaveModules()))
-		goodModule = gModMan->LoadModule(inSide);
-	
-	DoGFade(true, 0, false);				// make sure we aren't faded out
-	
-	if (not goodModule)
-	{
-		// if we are quitting - draw black
-		gPlayerView->ColorCard(0);
-		gPlayerView->Draw(nil);
-		
-		DoQuit();
-	}
-}	
-
-//
-//	StartUp - We have started without a file to open. If there is a 
-//			config file (we read it while initializing gModMan) jump
-//			to the first module. Otherwise, ask the user for a script.
+//	StartUp - We have started without a file to open.
 //
 void CMac5LApp::StartUp(void)
 {
-	bool	stayRunning = true;
-	
-	if (gModMan->HaveModules())
-	{
-		// We have a config file, start the first module.
-		// If shift key was down start with -1 (shift script).
-		
-		if (gDoShiftScript)
-			stayRunning = gModMan->LoadModule(-2);
-		else
-			stayRunning = gModMan->LoadModule(-1);
-	}
-	else
-	{
-		//gLog.Caution("Mac5L does not have a configuration file <Mac5L.config>");
-		stayRunning = false;
-	}
-
-	if (not stayRunning)
-	{
-		gLog.Error("Mac5L was unable to open a script.  Please make sure Mac5L "
-				   "is in a directory with a \"Mac5L.config\" file and other "
-				   "program data files.");
-		DoQuit();
-	}
+	// Ignore the Apple Event--startup is now handled by the
+	// TInterpreterManager.
 }
 
 //
@@ -472,11 +404,10 @@ void CMac5LApp::StartUp(void)
 //
 void CMac5LApp::CleanUp(void)
 {
-	if (gMac5LInterpreter)
-	{
-		delete gMac5LInterpreter;			// toss our interpreter
-		gMac5LInterpreter = NULL;
-	}
+	// XXX - We used to kill the interpreter here, but that's now
+	// the job of the TInterpreterManager.  Should we ask it to
+	// do something on our behalf, or is this routine just
+	// useless cruft in the brave new world of interpreter managers?
 	gVariableManager.RemoveAll();		// toss all variables
 	gPaletteManager.RemoveAll();		// toss all palettes
 	gPictureManager.RemoveAll();		// toss all pictures
@@ -509,7 +440,6 @@ Boolean CMac5LApp::AttemptQuitSelf(SInt32 /* inSaveOption */)
 	if (mScriptRunning)
 	{
 		gPlayerView->KillScript();
-		CleanUp();
 	}
 	
 	mScriptRunning = false;
@@ -547,38 +477,81 @@ void CMac5LApp::QuitScript(void)
 }
 
 //
-//	OpenScript - Open the given script file, open and read the index
-//					file and start the script running.
+//  This code is adapted from PowerPlant's LApplication::Run method, and
+//  may need to be updated if that function changes.  This snippet should
+//  be short enough to fall under fair use exemptions to copyright law.
 //
-bool CMac5LApp::OpenScript(const char *inScriptName,
-						   const char *inCardName)
+void CMac5LApp::PrepareToRun()
 {
-	ASSERT(!gMac5LInterpreter);
+	MakeMenuBar();
+	MakeModelDirector();
+	Initialize();
+
+	ForceTargetSwitch(this);
+	UCursor::Normalize();
+	UpdateMenus();
+	mState = programState_ProcessingEvents;
+}
+
+void CMac5LApp::ProcessEvents()
+{
+	EventRecord ignored;
+    bool is_null_event;
+
+	// Continue to process events as long as (1) PowerPlant wants us
+	// to process them and (2) there are non-null events available
+	// to process.  It's important to drain this queue if we want the
+	// application to be responsive.
+	if (mState == programState_ProcessingEvents)
+	{
+		do
+		{
+			is_null_event = !::EventAvail(everyEvent, &ignored);
+			ProcessNextEvent();
+		} while (mState == programState_ProcessingEvents && !is_null_event);
+	}
+
+	// If LApplication thinks we're no longer processing events,
+	// tell our TInterpreterManager to shut things down.
+	if (mState != programState_ProcessingEvents)
+		TInterpreterManager::GetInstance()->RequestQuitApplication();
+}
+
+//
+//	InitializeInterpreter - Find an interpreter to run and get it
+//      set up correctly.
+//
+void CMac5LApp::InitializeInterpreter()
+{
+	ASSERT(!TInterpreterManager::HaveInstance());
 
 	// set mSleepTime again, just to be sure
 	mSleepTime = 0;
 
 	try
 	{
-		// Create a new interpreter object, and start it running.
-		gMac5LInterpreter = new TMac5LInterpreter(inScriptName);
+		// Create our interpreter manager and get it ready to run.
+		gInterpreterManager = MaybeGetSchemeInterpreterManager(&MacIdleProc);
+		if (!gInterpreterManager)
+		{
+			gHaveLegacyInterpreterManager = true;
+			gInterpreterManager = new TMac5LInterpreterManager(&MacIdleProc);
+		}
 		mScriptRunning = true;
 		gVariableManager.SetString("_lpstat", "0");
 		gVariableManager.SetString("_lpactive", "0");
 		gVariableManager.SetString("_movieplaying", "0");
 		gPlayerView->Activate();
-		TInterpreter::GetInstance()->JumpToCardByName(inCardName);
 	}
 	catch (...)
 	{
-		if (gMac5LInterpreter)
+		if (gInterpreterManager)
 		{
-			delete gMac5LInterpreter;
-			gMac5LInterpreter = NULL;
+			delete gInterpreterManager;
+			gInterpreterManager = NULL;
 		}
-		return false;
+		throw;
 	}
-	return true;
 }
 
 #ifdef DEBUG
@@ -588,8 +561,6 @@ bool CMac5LApp::OpenScript(const char *inScriptName,
 //
 void CMac5LApp::ReDoScript(const char *curCard)
 {
-	bool			thing;
-
 	mScriptRunning = false;
 
 	TInterpreter::GetInstance()->KillCurrentCard();
@@ -601,37 +572,13 @@ void CMac5LApp::ReDoScript(const char *curCard)
 
 	gDebugLog.Log("Killing everything for redoscript");
 	
-	// Blow away our interpreter (but not our variables, which we want to
-	// retain their values across a redoscript).
-	if (gMac5LInterpreter)
-	{
-		delete gMac5LInterpreter;
-		gMac5LInterpreter = NULL;
-	}
-	
-	thing = OpenScript(gModMan->GetCurScript(), curCard);
+	gStyleSheetManager.RemoveAll();
 
-	if (not thing)
-	{
-		if (::CautionAlert(2003, nil) == 1)
-		{
-			// hang around
-			gPlayerView->Deactivate();
-			
-			// keep the card name around
-			mReDoCard = curCard;
-			mReDoReDo = true;
-			
-			thing = true;
-		}
-	}
-	
-	if (not thing)
-	{
-		gLog.Caution("Couldn't restart <%s>", curCard);
-		CleanUp();
-		DoQuit();
-	}
+	// XXX - Does this potentially destroy an object in our call chain?
+	if (!gHaveLegacyInterpreterManager)
+		gPlayerView->DeleteAllKeyBinds();
+
+	TInterpreterManager::GetInstance()->RequestReloadScript(curCard);
 }
 
 //
@@ -641,9 +588,10 @@ Boolean CMac5LApp::ObeyCommand(CommandT inCommand, void *ioParam)
 {
 	if (inCommand == cmd_Revert)
 	{
-		if (mReDoReDo)
+		if (TInterpreterManager::HaveInstance() &&
+			TInterpreterManager::GetInstance()->FailedToLoad())
 		{
-			ReDoReDoScript();
+			gInterpreterManager->RequestRetryLoadScript();
 			return (true);
 		}
 	}
@@ -662,7 +610,8 @@ void CMac5LApp::FindCommandStatus(CommandT inCommand,
 	{
 		outUsesMark = false;
 		
-		if (mReDoReDo)
+		if (TInterpreterManager::HaveInstance() &&
+			TInterpreterManager::GetInstance()->FailedToLoad())
 			outEnabled = true;
 		else
 			outEnabled = false;
@@ -672,40 +621,6 @@ void CMac5LApp::FindCommandStatus(CommandT inCommand,
 	
 	LApplication::FindCommandStatus(inCommand, outEnabled, 
 									outUsesMark, outMark, outName);
-}
-
-//
-//	ReDoReDoScript - 
-//
-void CMac5LApp::ReDoReDoScript(void)
-{
-	bool	thing = false;
-	
-	if (mReDoReDo)
-	{
-		mReDoReDo = false;
-		gPlayerView->Activate();
-		
-		thing = OpenScript(gModMan->GetCurScript(), mReDoCard.GetString());
-		
-		if (not thing)
-		{
-			if (::CautionAlert(2003, nil) == 1)
-			{
-				// do it again
-				gPlayerView->Deactivate();
-				mReDoReDo = true;
-				thing = true;
-			}
-		}
-		
-		if (not thing)
-		{
-			gLog.Caution("Couldn't restart <%s>", mReDoCard.GetString());
-			CleanUp();
-			DoQuit();
-		}
-	}
 }
 
 #endif
@@ -803,6 +718,64 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.24  2002/10/03 02:47:00  emk
+3.5.5 - 1 Oct 2002 - emk
+
+Preliminary MzScheme support for Macintosh engine.  DO NOT BUILD THE
+NON-CARBON POWERPC BUILD!  WHEN RUN UNDER OS X'S OS 9 EMULATOR, IT WILL
+CORRUPT YOUR OS 9 SYSTEM FILE.
+
+For legal reasons, this Macintosh engine SHOULD NOT BE DISTRIBUTED outside
+of IML until we do our open source release.  It's statically-linked against
+the LGPL'd MzSchemeLib, which would require us to jump through some
+annoying hoops if we wanted to ship proprietary binaries.
+
+User-visible changes:
+
+  * This engine supports both legacy 5L and Scheme.
+  * No PowerPC build.
+  * No more start scripts.  Move everything into your main script.
+  * No more switching between scripts.
+  * CD ejection and fades are gone, thanks to the fact this build is
+    Carbon-only.
+
+Engine changes:
+
+  * Created CodeWarrior project for MzSchemeLib, to avoid the pay-per-view
+    cage match between MPW StdCLib and Metrowerks Standard Library over
+    who's going to link with what.
+  * Fixed MzScheme's call to PBGetCatInfo to work under Carbon.
+  * Added code to explicitly set Boehm GC stack base on the Macintosh.
+    Boehm can't figure this out without help, and will crash on startup.
+  * Namespace fixes to make things compile on the Mac.
+  * Made a mess of the MzSchemeLib MPW build infrastructure trying to get
+    things to work.  I'm checking in my hacked-up version because (1) it
+    marginally works and (2) we might need it again someday.
+  * Removed a number of unused files with licensing problems, and sorted
+    the rest of the problematic files into categories.
+  * Changed event-handling model to give the TInterpreterManager object control,
+    instead of the traditional PowerPlant::LApplication::Run method.  This
+    requires us to roll our own version of Run and do some tricky event
+    handling in CMac5LApp::MacIdleProc.  But it also means the Mac engine
+    now supports arbitrary interpreters.  This change has lots of
+    consequences, most of them complicated--and it may affect stability.
+  * CPlayerView is now more careful about checking whether a TInterpreter
+    object actually exists before calling methods on it.
+  * Renamed MakeNewIndex methods to ProcessTopLevelForm.
+  * Moved all old5l-related files into Mac/Source/lang/old5l.
+  * Moved interpreter-managing code into TMac5LInterpreter.{h,cpp}.
+  * Moved file-related primitives into TMac5LPrimitives.cpp.
+  * Shift-scripts are gone.
+  * Ripped out support for switching scripts.
+  * Reimplemented script reloading, exiting, etc., using the
+    TInterpreterManager interface.
+  * Lots of changes to the Macintosh project files.
+  * Updated Windows interpreter to newest MzScheme release.
+  * Fixed the Linux build.
+
+Headers (and therefore text input) are only available to the old 5L
+language.  This will change soon.
+
 Revision 1.23  2002/07/24 01:17:32  emk
 3.3.18 - 23 July 2002 - emk
 

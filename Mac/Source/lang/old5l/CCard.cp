@@ -555,13 +555,14 @@ void CCard::DoExit(TStream &inArgs)
 {
 	int16	theSide = 0;
 	
-	if (inArgs.more())
-		inArgs >> theSide;
+    if (inArgs.more())
+		gLog.Error("Switching scripts is no longer supported.");
 
 	gDebugLog.Log("exit: %d", theSide);
 		
-	gCardManager.DoExit(theSide);
+	TInterpreterManager::GetInstance()->RequestQuitApplication();
 }
+
 
 //
 //	(return) - stop execution of this card or macro
@@ -589,12 +590,7 @@ void CCard::DoReturn(TStream &inArgs)
 CCardManager::CCardManager() : TIndexManager()
 {
     mCurrentCard = NULL;
-    mExitNow = false;
     mHaveJump = false;
-    mExitSide = 0;
-#ifdef DEBUG
-	mReDoScript = false;
-#endif
 }
 
 
@@ -747,21 +743,6 @@ void CCardManager::CurCardSpendTime(void)
 	if (mCurrentCard != NULL)
 	{	
 		mCurrentCard->SpendTime();
-		
-		if (mExitNow)
-		{
-			mExitNow = false;
-			
-			gTheApp->DoExit(mExitSide);
-		}
-#ifdef DEBUG
-		if (mReDoScript)
-		{
-			mReDoScript = false;
-			
-			gTheApp->ReDoScript(mReDoCard);
-		}
-#endif
 	}
 }
 
@@ -775,28 +756,7 @@ void CCardManager::CurCardKill(void)
 		
 	mCurrentCard = NULL;
 	mPrevCard = "";
-	mExitNow = false;
 }
-
-//
-//	DoExit
-//
-void CCardManager::DoExit(int16 inSide)
-{
-	mExitNow = true;
-	mExitSide = inSide;
-	
-	if (mCurrentCard != nil)
-		mCurrentCard->Stop();		// no more executing commands
-}
-
-#ifdef DEBUG
-void CCardManager::DoReDoScript(const TString &cardName)
-{
-	mReDoScript = true;
-	mReDoCard = cardName;
-}
-#endif
 
 // 
 //	CurCardWakeUp
@@ -831,7 +791,7 @@ bool CCardManager::CurCardPaused(void)
 }
 
 /***********************************************************************
- * Function: CCardManager::MakeNewIndex
+ * Function: CCardManager::ProcessTopLevelForm
  *
  *  Parameter name
  *  Parameter start
@@ -841,8 +801,8 @@ bool CCardManager::CurCardPaused(void)
  * Comments:
  *    Adds node "name" to CCardManager..
  ***********************************************************************/
-void CCardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
-								int32 inStart, int32 inEnd)
+void CCardManager::ProcessTopLevelForm(TIndexFile *inFile, const char *inName,
+								       int32 inStart, int32 inEnd)
 {
     CCard    	*newCard;
     int32		index;

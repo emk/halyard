@@ -26,7 +26,7 @@ const char *CMacroManager::GetScript(const char *macroname)
 }
 
 /***********************************************************************
- * Function: CMacroManager::MakeNewIndex
+ * Function: CMacroManager::ProcessTopLevelForm
  *
  *  Parameter name
  *  Parameter start
@@ -36,7 +36,7 @@ const char *CMacroManager::GetScript(const char *macroname)
  * Comments:
  *  Creates new macro entry into the macro tree
  ***********************************************************************/
-void CMacroManager::MakeNewIndex(TIndexFile *inFile, const char *inName, 
+void CMacroManager::ProcessTopLevelForm(TIndexFile *inFile, const char *inName, 
 	int32 inStart, int32 inEnd)
 {
     TIndex   *newMacro = NULL;

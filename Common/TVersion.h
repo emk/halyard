@@ -17,15 +17,73 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		4
+#define VERSION_REV_BIG		5
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.4 (Development)"
+#define VERSION_STRING		"5L 3.5.5 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.36  2002/10/03 02:46:29  emk
+ 3.5.5 - 1 Oct 2002 - emk
+
+ Preliminary MzScheme support for Macintosh engine.  DO NOT BUILD THE
+ NON-CARBON POWERPC BUILD!  WHEN RUN UNDER OS X'S OS 9 EMULATOR, IT WILL
+ CORRUPT YOUR OS 9 SYSTEM FILE.
+
+ For legal reasons, this Macintosh engine SHOULD NOT BE DISTRIBUTED outside
+ of IML until we do our open source release.  It's statically-linked against
+ the LGPL'd MzSchemeLib, which would require us to jump through some
+ annoying hoops if we wanted to ship proprietary binaries.
+
+ User-visible changes:
+
+   * This engine supports both legacy 5L and Scheme.
+   * No PowerPC build.
+   * No more start scripts.  Move everything into your main script.
+   * No more switching between scripts.
+   * CD ejection and fades are gone, thanks to the fact this build is
+     Carbon-only.
+
+ Engine changes:
+
+   * Created CodeWarrior project for MzSchemeLib, to avoid the pay-per-view
+     cage match between MPW StdCLib and Metrowerks Standard Library over
+     who's going to link with what.
+   * Fixed MzScheme's call to PBGetCatInfo to work under Carbon.
+   * Added code to explicitly set Boehm GC stack base on the Macintosh.
+     Boehm can't figure this out without help, and will crash on startup.
+   * Namespace fixes to make things compile on the Mac.
+   * Made a mess of the MzSchemeLib MPW build infrastructure trying to get
+     things to work.  I'm checking in my hacked-up version because (1) it
+     marginally works and (2) we might need it again someday.
+   * Removed a number of unused files with licensing problems, and sorted
+     the rest of the problematic files into categories.
+   * Changed event-handling model to give the TInterpreterManager object control,
+     instead of the traditional PowerPlant::LApplication::Run method.  This
+     requires us to roll our own version of Run and do some tricky event
+     handling in CMac5LApp::MacIdleProc.  But it also means the Mac engine
+     now supports arbitrary interpreters.  This change has lots of
+     consequences, most of them complicated--and it may affect stability.
+   * CPlayerView is now more careful about checking whether a TInterpreter
+     object actually exists before calling methods on it.
+   * Renamed MakeNewIndex methods to ProcessTopLevelForm.
+   * Moved all old5l-related files into Mac/Source/lang/old5l.
+   * Moved interpreter-managing code into TMac5LInterpreter.{h,cpp}.
+   * Moved file-related primitives into TMac5LPrimitives.cpp.
+   * Shift-scripts are gone.
+   * Ripped out support for switching scripts.
+   * Reimplemented script reloading, exiting, etc., using the
+     TInterpreterManager interface.
+   * Lots of changes to the Macintosh project files.
+   * Updated Windows interpreter to newest MzScheme release.
+   * Fixed the Linux build.
+
+ Headers (and therefore text input) are only available to the old 5L
+ language.  This will change soon.
+
  Revision 1.35  2002/08/22 00:12:05  emk
  3.5.4 - 21 Aug 2002 - emk
 

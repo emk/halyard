@@ -104,6 +104,8 @@ class  CPlayerView
 		void            AdjustMouseSelf(Point               inPortPt,
 										const EventRecord&  /* inMacEvent */,
 										RgnHandle           /* outMouseRgn */);
+
+		void			DeleteAllKeyBinds();
 		
 	protected:
 			
@@ -113,7 +115,6 @@ class  CPlayerView
 		void			ExecuteSelf(PP::MessageT /* inMessage */, void *ioParam);
 		
 	private:
-		void			DeleteAllKeyBinds();
 		bool 			DoKeyBind(const char inKey);
 
 		void 			DoEffect(const FXType inEffect, const int8 inTime);

@@ -3,12 +3,16 @@
 #include "TLogger.h"
 #include "TException.h"
 #include "TMac5LInterpreter.h"
+#include "lang/old5l/TParser.h"
 #include "TStyleSheet.h"
 #include "TParser.h"
 #include "CHeader.h"
+#include "lang/old5l/T5LPrimitives.h"
+#include "TMac5LPrimitives.h"
 
 #include "CCard.h"
 #include "CMacroManager.h"
+#include "CModule.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -18,16 +22,8 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 
 TMac5LInterpreter::TMac5LInterpreter(const TString &inStartScript)
+	: mKilled(false)
 {
-	// Install our callback creator.
-	TStream::SetCallbackMaker(&TMac5LCallback::MakeCallback);
-
-	// Register our top-level forms.
-	TParser::RegisterIndexManager("card", &gCardManager);
-	TParser::RegisterIndexManager("macrodef", &gMacroManager);
-	TParser::RegisterIndexManager("header", &gHeaderManager);
-	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
-
 	// Read the startup script.
 	if (!gIndexFileManager.NewIndex(inStartScript))
 	{
@@ -51,9 +47,21 @@ void TMac5LInterpreter::CleanupIndexes()
 	gIndexFileManager.RemoveAll();
 }
 
-void TMac5LInterpreter::Idle()
+void TMac5LInterpreter::Run(SystemIdleProc inIdleProc)
 {
-	gCardManager.CurCardSpendTime();
+	while (!mKilled)
+	{
+		(*inIdleProc)();
+		gCardManager.CurCardSpendTime();
+	}
+}
+
+void TMac5LInterpreter::KillInterpreter()
+{
+	mKilled = true;
+	// XXX - The interpreter will keep running until it reaches the end of
+	// the current card.  This is nasty, but it's actually the old
+	// behavior.
 }
 
 void TMac5LInterpreter::Pause()
@@ -103,31 +111,19 @@ void TMac5LInterpreter::KillCurrentCard()
 	gCardManager.CurCardKill();
 }
 
-void TMac5LInterpreter::DoReDoScript(const char *inCardName)
-{
-#ifdef DEBUG
-	gCardManager.DoReDoScript(TString(inCardName));
-#endif
-}
-
 void TMac5LInterpreter::JumpToCardByName(const char *inName)
 {
 	gCardManager.JumpToCardByName(inName, false);
 }
 
-const char *TMac5LInterpreter::CurCardName()
+std::string TMac5LInterpreter::CurCardName()
 {
 	return gCardManager.CurCardName();
 }
 
-const char *TMac5LInterpreter::PrevCardName()
+std::string TMac5LInterpreter::PrevCardName()
 {
 	return gCardManager.PrevCardName();
-}
-
-void TMac5LInterpreter::ReloadScript(const char *inGotoCardName)
-{
-	// XXX - Implement.
 }
 
 
@@ -161,4 +157,42 @@ void TMac5LCallback::Run()
 TCallback *TMac5LCallback::MakeCallback(const TString &inCmd)
 {
 	return new TMac5LCallback(inCmd);
+}
+
+
+//=========================================================================
+// TWin5LInterpreterManager Methods
+//=========================================================================
+
+TMac5LInterpreterManager::TMac5LInterpreterManager(
+	TInterpreter::SystemIdleProc inIdleProc)
+	: TInterpreterManager(inIdleProc),
+	  mDefStyleProcessor("defstyle")
+	  //, mHeaderProcessor("header")
+{
+	// Register our 5L-only interpreter primitives.
+	Register5LPrimitives();
+	RegisterMacintosh5LPrimitives();
+
+	// Install our callback creator.
+	TStream::SetCallbackMaker(&TMac5LCallback::MakeCallback);
+
+	// Register our top-level forms.
+	TParser::RegisterTlfProcessor("card", &gCardManager);
+	TParser::RegisterTlfProcessor("macrodef", &gMacroManager);
+	TParser::RegisterTlfProcessor("header", &gHeaderManager);
+	//TParser::RegisterTlfProcessor("header", &mHeaderProcessor);
+	TParser::RegisterTlfProcessor("defstyle", &mDefStyleProcessor);
+}
+
+TInterpreter *TMac5LInterpreterManager::MakeInterpreter()
+{
+	// Set the default module.
+	if (!(gModMan->HaveModules() && gModMan->LoadModule(-1)))
+		gLog.FatalError("Mac5L was unable to open a script.  Please make sure "
+						"Mac5L is in a directory with a \"Mac5L.config\" file "
+						"and other program data files.");
+
+	// Create a new interpreter.
+	return new TMac5LInterpreter(gModMan->GetCurScript());
 }

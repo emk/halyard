@@ -89,24 +89,18 @@ class CCard : public TIndex
 class CCardManager : public TIndexManager 
 {
     private:
-    	bool			mExitNow;
     	bool			mHaveJump;
-    	int16			mExitSide;
         CCard    		*mCurrentCard;
         CCard			*mJumpCard;
         TString			mPrevCard;
         
         TArray			mCardList;	// cbo - list of cards in order
-#ifdef DEBUG
-		bool			mReDoScript;
-		TString			mReDoCard;
-#endif
 
     public:
         				CCardManager();
 
-		virtual void	MakeNewIndex(TIndexFile *inFile, const char *inName,
-									int32 inStart, int32 inEnd);
+		virtual void	ProcessTopLevelForm(TIndexFile *inFile, const char *inName,
+											int32 inStart, int32 inEnd);
         
         virtual void	RemoveAll();	// cbo - 
        
@@ -126,10 +120,6 @@ class CCardManager : public TIndexManager
 		void			CurCardWakeUp(void);
 		bool			CurCardNapping(void);
 		bool			CurCardPaused(void);
-		void			DoExit(int16 inSide);
-#ifdef DEBUG
-		void			DoReDoScript(const TString &cardName);
-#endif
 		
         void			JumpToCardByName(const char *newCardName, bool comeBack);
         void			JumpToCard(CCard *newCard, bool comeBack);

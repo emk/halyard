@@ -6,6 +6,12 @@
 #include "ImlUnit.h"
 #include "TSchemeInterpreter.h"
 
+// XXX - Hack to make REGISTER_5L_PRIMITIVE work correctly.  It needs to be
+// called from a function in the FiveL:: namespace, which is silly.
+BEGIN_NAMESPACE_FIVEL
+extern void RegisterSchemeTestPrimitives();
+END_NAMESPACE_FIVEL
+
 USING_NAMESPACE_FIVEL
 
 // Make sure we have single-token names for all our types.
@@ -94,7 +100,7 @@ DEFINE_TYPE_TEST_PRIMITIVES(TPoint, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(TRect, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
-void test_TSchemeInterpreter (void)
+void FIVEL_NS RegisterSchemeTestPrimitives()
 {
 	REGISTER_5L_PRIMITIVE(TestPause);
 	REGISTER_5L_PRIMITIVE(TestCallback);
@@ -132,6 +138,11 @@ void test_TSchemeInterpreter (void)
 
 	Color_test_values[0] = Color(1, 2, 3, 4);
 	REGISTER_TYPE_TEST_PRIMITIVES(Color);
+}
+
+void test_TSchemeInterpreter (void)
+{
+	RegisterSchemeTestPrimitives();
 	
 	// Boot the interpreter.
 	TSchemeInterpreterManager scheme(&TestIdleFunc);

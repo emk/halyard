@@ -158,7 +158,7 @@ void CHeader::GetFont(const char *inName)
 *****************************/
 
 /***********************************************************************
- * Function: CHeaderManager::MakeNewIndex
+ * Function: CHeaderManager::ProcessTopLevelForm
  *
  *  Parameter name
  *  Parameter start         (see Index class)
@@ -168,7 +168,7 @@ void CHeader::GetFont(const char *inName)
  * Comments:
  *  Create a new CHeader Index
  ***********************************************************************/
-void CHeaderManager::MakeNewIndex(TIndexFile *inFile, const char *inName, 
+void CHeaderManager::ProcessTopLevelForm(TIndexFile *inFile, const char *inName, 
 		int32 inStart, int32 inEnd)
 {
     CHeader  *newHeader;

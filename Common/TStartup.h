@@ -6,6 +6,20 @@
 #include "TCommon.h"
 #include "TInterpreter.h"
 
+// On the Macintosh, we need to manually set the stack base so the
+// Boehm GC doesn't get confused (it doesn't know how to detect it
+// correctly).
+#ifdef FIVEL_PLATFORM_MACINTOSH
+#   include <scheme.h>
+#   define FIVEL_SET_STACK_BASE() \
+	    do { \
+            int dummy; \
+	        scheme_set_stack_base(&dummy, 0); \
+        }  while (0)
+#else // !FIVEL_PLATFORM_MACINTOSH
+#   define FIVEL_SET_STACK_BASE() ((void) 0)
+#endif // !FIVEL_PLATFORM_MACINTOSH
+
 BEGIN_NAMESPACE_FIVEL
 
 //////////
