@@ -400,7 +400,9 @@
     (let ((name (%kernel-card-name card)))
       (if (hash-table-get *%kernel-card-table* name (lambda () #f))
           (non-fatal-error (cat "Duplicate card: " name))
-          (hash-table-put! *%kernel-card-table* name card))))
+          (begin
+            (call-5l-prim 'RegisterCard name)
+            (hash-table-put! *%kernel-card-table* name card)))))
 
   (define (card-exists? card-name)
     (if (hash-table-get *%kernel-card-table* (string->symbol card-name)
