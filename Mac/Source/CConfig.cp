@@ -193,7 +193,24 @@ void CConfig::DefineConfiguration(void)
 	theConfiguration.systemVersion = (short)response;
 
 	theConfiguration.hasQuickTime = (Gestalt(gestaltQuickTime, &response) == noErr);
-	theConfiguration.quicktimeVersion = (short) response;
+	if (!theConfiguration.hasQuickTime)
+		gVariableManager.SetLong("_QuickTimeVersion", -1);
+	else
+	{
+		// QuickTime Version is stored in the upper 16 bits of the long response in hexadecimal form. 
+		// First we shift to those bits. This may not match the Windows convention for reporting the
+		// version number. This version reports 5.0.2 as 50002. 
+		// TODO: Check this against the Windows engine for consistency. 
+		long quickTimeV = ((unsigned long) response >> 16); 					
+		long major = ((quickTimeV & 0xFF00) >> 8); 
+		short minor = ((quickTimeV & 0x00F0) >> 4);
+		short revision = (quickTimeV & 0x000F);	
+		long fullVersion = (major * 10000) + (minor * 100) + revision;
+		gVariableManager.SetLong("_QuickTimeVersionMajor", major);
+		gVariableManager.SetLong("_QuickTimeVersionMinor", minor);
+		gVariableManager.SetLong("_QuickTimeVersionRevision", revision);
+		gVariableManager.SetLong("_QuickTimeVersion", fullVersion);
+	}
 	
 } // DefineConfiguration 
 
@@ -366,6 +383,15 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.7  2002/03/11 17:50:10  hamon
+ Added logging of _QuickTimeVersion.
+_QuickTimeVersionMajor returns major number, _QuickTimeVersionMinor returns minor number,_QuickTimeVersionRevision returns revision number,
+  and _QuickTimeVersion returns version number. Version 5.0.2 will be returned as 50002 and 12.14.10 would be returned as 121410 (if this version ever exists). 
+
+This numbering system DOES NOT match the Windows. Consistency between the two (likely involving a change in the Windows, since it seems likely to be broken) would be good.
+
+Changes by Elizabeth, okayed by Eric.
+
 Revision 1.6  2002/03/04 15:41:34  hamon
 Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
 
