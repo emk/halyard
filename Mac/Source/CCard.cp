@@ -42,6 +42,7 @@
 
 #include <UInternetConfig.h>
 
+
 /**************
 
     GLOBALS
@@ -570,6 +571,24 @@ end:
 
 /*************************
 
+    5L UTILITY METHODS
+
+*************************/
+/*----------------------------------------------------------------
+  	Log _Graphic_X and _Graphic_Y for variable manager
+  	Requires KRect bounds to already be offset from origin.
+  	_Graphic_X and _Graphic_Y hold bottom & right pixel coordinates 
+  	of latest drawn graphic that called this.
+------------------------------------------------------------------*/
+void CCard::UpdateSpecialVariablesForGraphic(KRect bounds)
+{
+	Rect sides = bounds.GetRect();
+	gVariableManager.SetLong("_Graphic_X", (short) sides.right);
+	gVariableManager.SetLong("_Graphic_Y", (short) sides.bottom);
+}
+
+/*************************
+
     5L COMMAND METHODS
 
 *************************/
@@ -964,7 +983,7 @@ void CCard::DoButtpcx()
 			bounds.Offset(buttLoc);
 		}
 	}
-		
+	
 	if (not theHeaderName.IsEmpty())
 		theHeadName = theHeaderName.GetString();
 
@@ -973,7 +992,9 @@ void CCard::DoButtpcx()
 			(const char *) picname, buttLoc.X(), buttLoc.Y(), (const char *) theHeadName, 
 			(const char *) Text, (const char *) cmdText, (const char *) scmdText);
 #endif
-		
+	
+	UpdateSpecialVariablesForGraphic(bounds);
+
 	if (thePicture != NULL)
 		new CTouchZone(bounds, theCommand, thePicture, buttLoc, (const char *) Text, cursor, 
 				(const char *) theHeadName, scmdText);
@@ -1340,6 +1361,7 @@ void CCard::DoIf()
     CStream     conditional;
 
     m_Script >> conditional;
+    
     conditional.reset();
 
     if (Evaluate(conditional)) 
@@ -1614,7 +1636,7 @@ void CCard::DoLoadpic()
 	gDebugLog.Log("loadpic: <%s>, X <%d>, Y <%d>", picname.GetString(), loc.X(), loc.Y());
 #endif
 		
-    while (m_Script.more()) 
+   while (m_Script.more()) 
     {
         m_Script >> flag;
         flag.MakeLower();
@@ -1634,6 +1656,12 @@ void CCard::DoLoadpic()
     }
 
 	thePicture = gPictureManager.GetPicture(picname);
+	
+	// GetBounds returns rect with (0,0,width, height)
+	// We need to offset this before calling UpdateGraphicsForSpecialVariables.
+	KRect bounds = thePicture->GetBounds();	
+	bounds.Offset(loc);
+	UpdateSpecialVariablesForGraphic(bounds);
 
 	if (thePicture != nil)
 	{
