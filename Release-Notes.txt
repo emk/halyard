@@ -8,6 +8,7 @@ CVS - emk, kwasi, djin
   * Added TestCase.h to CommonHeaders.h.
   * Added macros REGISTER_TEST_CASE_FILE and REFERENCE_TEST_CASE_FILE
     to TestCase.h and used them in TestAll.cpp.
+  * Documented TValue and moved as much code as possible into TValue.cpp.
 
 0.0.14 - 13 Jan 2004 - emk
 
