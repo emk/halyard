@@ -68,11 +68,11 @@
     (define pts (polygon-vertices poly))
     (if (null? pts)
         (rect 0 0 0 0)
-        (let loop ((left (point-x (car pts)))
-                   (top (point-y (car pts)))
-                   (right (point-x (car pts)))
-                   (bottom (point-y (car pts)))
-                   (pts (cdr pts)))
+        (let loop [[left (point-x (car pts))]
+                   [top (point-y (car pts))]
+                   [right (point-x (car pts))]
+                   [bottom (point-y (car pts))]
+                   [pts (cdr pts)]]
           (if (null? pts)
               (rect left top right bottom)
               (loop (min left (point-x (car pts)))
@@ -82,6 +82,8 @@
                     (cdr pts))))))
 
   (define (zone name poly action &key (cursor 'hand))
+    ;; XXX - We hackishly provide both :rect and :poly from
+    ;; this function because the template system sucks.
     (if (rect? poly)
         (create %simple-zone% 
                 :name name 
