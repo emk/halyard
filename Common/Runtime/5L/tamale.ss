@@ -34,6 +34,7 @@
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
            %basic-button% symcat
+           number->integer interpolate-int make-object-mover animate
            state-db-debug state-db-seconds state-db-milliseconds)
 
   (define (url? path)
@@ -702,6 +703,46 @@
     (string->symbol (apply cat args)))
   
   ;;-----------------------------------------------------------------------
+  ;;  Animation
+  ;;-----------------------------------------------------------------------
+
+  ;;; Convert any number to an integer.  Typically needed for use with
+  ;;; ANIMATE.
+  (define (number->integer n)
+    (inexact->exact (round n)))
+
+  ;;; Return a value FRACTION percent of the distance between VAL1 and
+  ;;; VAL2, rounded to an integer.
+  (define (interpolate-int fraction val1 val2)
+    (number->integer (+ val1 (* fraction (- val2 val1)))))
+  
+  ;;; This function creates a simple DRAW-FUNC for use with ANIMATE.  The
+  ;;; resulting function moves OBJs from the point FROM to the point TO
+  ;;; over the duration of the animation.
+  (define (make-object-mover obj to)
+    (define from (prop obj at))
+    (fn (fraction)
+      (set! (prop obj at)
+            (point (interpolate-int fraction (point-x from) (point-x to))
+                   (interpolate-int fraction (point-y from) (point-y to))))))
+
+  ;;; Call DRAW-FUNC with numbers from 0.0 to 1.0 over the course
+  ;;; MILLISECONDS.
+  (define (animate milliseconds draw-func &key ease-out? ease-in?)
+    (define start-time (current-milliseconds))
+    (define end-time (+ start-time milliseconds))
+    (draw-func 0.0)
+    (let loop []
+      (let [[current-time (current-milliseconds)]]
+        (when (< current-time end-time)
+          (let [[elapsed-time (- current-time start-time)]]
+            (draw-func (/ (* 1.0 elapsed-time) milliseconds))
+            (idle)
+            (loop)))))
+    (draw-func 1.0))
+  
+  
+  ;;-----------------------------------------------------------------------
   ;;  State DB Debugging Support
   ;;-----------------------------------------------------------------------
   ;;  Here's a nasty little hack for reading the state database from
@@ -728,11 +769,11 @@
   ;;  State DB Time Support
   ;;-----------------------------------------------------------------------
   ;;  The state-db's /system/clock/seconds and /system/clock/milliseconds
-  ;;  values do not use the same units as 
+  ;;  values do not use the same units as CURRENT-MILLISECONDS.
   ;;
   ;;  XXX - THESE SHOULD NOT USE STATE-DB-DEBUG!!! It's extremely slow.
   ;;  Ask one of the C++ programmers to add primitives which fetch
-  ;;  these values,
+  ;;  these values.
   
   (define (state-db-seconds)
     (state-db-debug '/system/clock/seconds))
