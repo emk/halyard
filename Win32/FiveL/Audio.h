@@ -45,9 +45,8 @@ class Audio : public TObject
 		// Constructor
 		//
 		// [in] inName - name of the audio clip
-		// [in_optional] inOffset - offset to start playing of clip (default 0)
 		//
-		Audio(TString &inName, int32 inOffset = 0);
+		Audio(TString &inName);
 		
 		//////////
 		// Destructor
@@ -81,11 +80,11 @@ class Audio : public TObject
 		bool		Playing(void) { return ((m_Active) and (m_QT.Playing())); }
 		
 		//////////
-		// Has the clip been prerolled?
+		// Has the clip been preloaded?
 		//
-		// [out] return - true if the clip has been prerolled (see Preroll), false otherwise
+		// [out] return - true if the clip has been preloaded (see Preload), false otherwise
 		//
-		bool		Prerolled(void) { return ((m_Active) and (m_QT.Prerolled())); }
+		bool		Preloaded(void) { return ((m_Active) and (m_QT.Preloaded())); }
 		
 		//////////
 		// Is the clip paused?
@@ -106,19 +105,17 @@ class Audio : public TObject
 		//
 		// [in] inVolume - volume used to play the clip
 		// [in] inFadeTime - fade time (0 if no fade desired)
-		// [in] inOffset - offset at which to start playing of the clip
 		// [in] inLoop - if true, the clip will loop
 		//
-		bool		Play(int32 inVolume, int32 inFadeTime, int32 inOffset, bool inLoop);
+		bool		Play(int32 inVolume, int32 inFadeTime, bool inLoop);
 		
 		//////////
 		// Preload the audio clip so it is ready to play.
 		//
-		// [in] inTenths - make sure preload takes at least this much time (in 1/10 sec)
-		// [in] inSync - if true, pause the gCardManager and do the entire preroll now
-		// [out] return - true if successfully prerolled, false otherwise
+		// [in] inSync - if true, pause the gCardManager and do the entire preload now
+		// [out] return - true if successfully preloaded, false otherwise
 		//
-		bool		Preroll(int32 inTenths, bool inSync);
+		bool		Preload(bool inSync);
 		
 		//////////
 		// Kill the audio clip. 
@@ -186,11 +183,6 @@ class Audio : public TObject
 		int32		m_FadeTime;
 		
 		//////////
-		// Number for conversion of clip time to frame
-		//
-		int32		m_Offset;
-		
-		//////////
 		// Current volume.
 		//
 		int32		m_Volume; 
@@ -236,7 +228,7 @@ class Audio : public TObject
 CLASS
     AudioManager
 
-	Manages a list of audio clips, many of which may be prerolled
+	Manages a list of audio clips, many of which may be preloaded
 	at a given time.
 
 AUTHOR
@@ -267,23 +259,20 @@ class AudioManager : public TObject
 		// Create and play an audio clip.
 		//
 		// [in] inName - name of the audio clip 
-		// [in] inOffset - offset to start playback 
 		// [in] inVolume - volume used to play the clip
 		// [in] inFadeTime - fade time in 1/10 seconds (0 if no fade desired)
 		// [in] inLoop - if true, the clip will loop
 		// [in] inKill - if true, all other clips with be killed
 		//
-		void		Play(TString &inName, int32 inOffset, int32 inVolume, 
+		void		Play(TString &inName, int32 inVolume, 
 						int32 inFadeTime, bool inLoop, bool inKill);
 		//////////
 		// Preload an audio clip so it is ready to play.
 		//
 		// [in] inName - name of the audio clip
-		// [in] inTenths - make sure preload takes at least this much time, 
-		//				   nap if needed (in 1/10 seconds)
-		// [in] inSync - if true, pauses the gCardManager and do the entire preroll now
+		// [in] inSync - if true, pauses the gCardManager and do the entire preload now
 		//
-		void		Preroll(TString &inName, int32 inTenths, bool inSync);
+		void		Preload(TString &inName, bool inSync);
 		
 		//////////
 		// Kill all playing clips.
@@ -420,6 +409,13 @@ class AudioManager : public TObject
 
 /*
  $Log$
+ Revision 1.2.2.1  2003/10/06 20:16:28  emk
+ 3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
+ (Various parts of the new layer include forward ports from
+ FiveL_3_2_0_5_TQTMovie and back ports from Tamale.)  This engine is
+ completely untested and almost certainly has bugs and incomplete error
+ handling.
+
  Revision 1.2  2002/06/20 16:32:54  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

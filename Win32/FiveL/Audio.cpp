@@ -30,13 +30,12 @@
 //
 //	Audio
 //
-Audio::Audio(TString &inName, int32 inOffset /* = 0 */)
+Audio::Audio(TString &inName)
 {
 	m_Active = false;
 	m_Looping = false;
 	m_Kill = false;
 	m_FadeTime = 0;
-	m_Offset = inOffset;
 	m_Volume = 0;
 	m_TargetVol = 0;
 	m_Step = 0;
@@ -117,20 +116,18 @@ void Audio::Wait(int32 inWaitFrame)
 //
 //	Play - Play the audio clip.
 //
-bool Audio::Play(int32 inVolume, int32 inFadeTime, int32 inOffset, bool inLoop)
+bool Audio::Play(int32 inVolume, int32 inFadeTime, bool inLoop)
 {
 	TString		moviePath;
 	LQTError	retValue;
 
 	m_Kill = false;
 	
-	m_Offset = inOffset;
-
 	gVariableManager.SetString("_ERROR", "0");
 
 	moviePath = gConfigManager.GetAudioPath(m_Name);
 	
-	retValue = m_QT.PlayAudio(moviePath, inVolume, inOffset, inLoop);
+	retValue = m_QT.PlayAudio(moviePath, inVolume, inLoop);
  
 	if (retValue != LQT_NoError)
 	{
@@ -152,9 +149,9 @@ bool Audio::Play(int32 inVolume, int32 inFadeTime, int32 inOffset, bool inLoop)
 }
 
 //
-//	Preroll - 
+//	Preload - 
 //
-bool Audio::Preroll(int32 inTenths, bool inSync)
+bool Audio::Preload(bool inSync)
 {
 	TString		moviePath;
 	LQTError	retValue;
@@ -164,7 +161,7 @@ bool Audio::Preroll(int32 inTenths, bool inSync)
 	gVariableManager.SetString("_ERROR", "0");
 	moviePath = gConfigManager.GetAudioPath(m_Name);
 
-	retValue = m_QT.PrerollAudio(moviePath, inTenths, inSync);
+	retValue = m_QT.PreloadAudio(moviePath, inSync);
 
 	if (retValue != LQT_NoError)
 	{
@@ -384,7 +381,7 @@ void AudioManager::Idle(void)
 //
 //	Play - Create and play an audio clip.
 //
-void AudioManager::Play(TString &inName, int32 inOffset,
+void AudioManager::Play(TString &inName,
 			int32 inVolume, int32 inFadeTime, bool inLoop, bool inKill)
 {
 	Audio		*theClip;
@@ -392,8 +389,8 @@ void AudioManager::Play(TString &inName, int32 inOffset,
 	bool		newClip = false;
 
 	// Debugging Info
-	gDebugLog.Log("AudioManager: Play <%s>, offset <%ld>, volume <%ld>, fade time <%ld>",
-		inName.GetString(), inOffset, inVolume, inFadeTime);
+	gDebugLog.Log("AudioManager: Play <%s>, volume <%ld>, fade time <%ld>",
+		inName.GetString(), inVolume, inFadeTime);
 	if (inLoop)
 		gDebugLog.Log("   make it loop");
 	if (inKill)
@@ -423,13 +420,13 @@ void AudioManager::Play(TString &inName, int32 inOffset,
 		}
 	}
 
-	// look for the clip first, we may have prerolled it
+	// look for the clip first, we may have preloaded it
 	theClip = Find(inName);
 
 	if (theClip == NULL)
 	{
 		newClip = true;
-		theClip = new Audio(inName, inOffset);
+		theClip = new Audio(inName);
 	}
 	
 	if (theClip == NULL)
@@ -450,7 +447,7 @@ void AudioManager::Play(TString &inName, int32 inOffset,
 		m_Looping = true;
 	}
 
-    if (theClip->Play(theVolume, inFadeTime, inOffset, inLoop))
+    if (theClip->Play(theVolume, inFadeTime, inLoop))
 	{
 		m_Playing = true;
 		gVariableManager.SetString("_lpactive", "1"); 
@@ -625,18 +622,18 @@ void AudioManager::Wait(int32 inWaitFrame)
 }
 
 //
-//	Preroll - 
+//	Preload - 
 //
-void AudioManager::Preroll(TString &inName, int32 inTenths, bool inSync)
+void AudioManager::Preload(TString &inName, bool inSync)
 {
 	Audio		*theClip = NULL;
 	bool		newClip = false;
 
-	gDebugLog.Log("AudioManager: Preroll <%s>", inName.GetString());
+	gDebugLog.Log("AudioManager: Preload <%s>", inName.GetString());
 
 	if (not gConfigManager.PlayMedia())
 	{
-		gDebugLog.Log("AudioManager: Preroll: <%s>, not playing media, nothing to do", 
+		gDebugLog.Log("AudioManager: Preload: <%s>, not playing media, nothing to do", 
 			inName.GetString());
 		return;
 	}
@@ -646,19 +643,19 @@ void AudioManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 	{
 		if (theClip->Playing())
 		{
-			gDebugLog.Log("AudioManager: Preroll <%s>, but it is already playing",
+			gDebugLog.Log("AudioManager: Preload <%s>, but it is already playing",
 				inName.GetString());
 
-			// error, can't preroll a playing clip
-			gLog.Log("Trying to preroll <%s> but it is already playing", 
+			// error, can't preload a playing clip
+			gLog.Log("Trying to preload <%s> but it is already playing", 
 				inName.GetString());
 
 			return;
 		}
-		else if (theClip->Prerolled())
+		else if (theClip->Preloaded())
 		{
-			// nothing to do, already prerolled
-			gDebugLog.Log("AudioManager: Preroll <%s>, already prerolled",
+			// nothing to do, already preloaded
+			gDebugLog.Log("AudioManager: Preload <%s>, already preloaded",
 				inName.GetString());
 			return;
 		}
@@ -677,17 +674,17 @@ void AudioManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 		}
 	}
 
-	if (theClip->Preroll(inTenths, inSync))
+	if (theClip->Preload(inSync))
 	{
 		if (newClip)
 			m_List.Add(theClip);
 	}
 	else
 	{
-		gLog.Log("Could not preroll audio clip <%s>", 
+		gLog.Log("Could not preload audio clip <%s>", 
 			inName.GetString());
 
-		gDebugLog.Log("AudioManager: could not preroll audio clip <%s>",
+		gDebugLog.Log("AudioManager: could not preload audio clip <%s>",
 			inName.GetString());
 
 		delete theClip;
@@ -796,6 +793,13 @@ bool AudioManager::HandleEvent(HWND /*inWind*/, UINT /*inMessage*/,
 
 /*
  $Log$
+ Revision 1.5.2.1  2003/10/06 20:16:28  emk
+ 3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
+ (Various parts of the new layer include forward ports from
+ FiveL_3_2_0_5_TQTMovie and back ports from Tamale.)  This engine is
+ completely untested and almost certainly has bugs and incomplete error
+ handling.
+
  Revision 1.5  2002/07/24 17:41:14  emk
  3.3.19 - 24 July 2002 - emk
 

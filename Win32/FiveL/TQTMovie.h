@@ -99,7 +99,8 @@ private:
 public:
 	static void InitializeMovies();
 	static void ShutDownMovies();
-	static void PrepareWindowForMovies(HWND inWindow);
+	static void RegisterWindowForMovies(HWND inWindow);
+	static void UnregisterWindowForMovies(HWND inWindow);
 	static CGrafPtr GetPortFromHWND(HWND inWindow);
 
 	typedef unsigned long PlaybackOptions;
@@ -218,6 +219,8 @@ public:
 	//
 	void Start(PlaybackOptions inOptions, Point inPosition);
 
+	void BlockUntilReadyOrBroken();
+	
 	//////////
 	// Did a problem occur either loading or playing this movie?  If
 	// this function returns true, the object is essentially scrap.
@@ -259,15 +262,25 @@ public:
 	//
 	void Unpause();
 
+	TimeValue GetMovieTime();
+	void SetMovieVolume(short inVolume);
+	TimeScale GetTimeScale();
+	TimeValue GetDuration();
+	void ThrowIfBroken();
+
 	//////////
-	// Call MCDoAction with the specified command and parameter.
+	// Fill out a Win32 MSG object based on the parameters to this
+	// function and the per-thread message state.
 	//
-	// [in] inAction - The action to perform.  There's about a zillion
-	//                 of these, and they're not all centrally
-	//                 documented.
-	// [in] inParam -  The parameter value to use.
+	void FillOutMSG(HWND inHWND, UINT inMessage, WPARAM inWParam,
+					LPARAM inLParam, MSG *outMessage);
+
+	//////////
+	// Fill out a QuickTime event object based on the parameters to this
+	// function and the per-thread message state.
 	//
-	void DoAction(mcAction inAction, void *inParam);
+	void FillOutEvent(HWND inHWND, UINT inMessage, WPARAM inWParam,
+					  LPARAM inLParam, EventRecord *outEvent);
 
 	//////////
 	// Allow the TQTMovie object first crack at processing window
@@ -293,6 +306,22 @@ public:
 	//
 	void Redraw(HWND hWnd) throw ();
 
+	//////////
+	// Notify the movie of window activation and deactivation.
+	//
+	void Activate(HWND hWnd, bool inIsActivating) throw ();
+
+	//////////
+	// Notify the movie of a mouse click.
+	//
+	void Click(HWND hWnd, Point inWhere, long inWhen, long inModifiers)
+		throw ();
+
+	//////////
+	// Notify the movie of a key press.
+	//
+	void Key(HWND hWnd, SInt8 inKey, long inModifiers)
+		throw ();
 
 protected:
 	virtual bool ActionFilter(short inAction, void* inParams);
@@ -301,6 +330,16 @@ private:
 	void ProcessAsyncLoad();
 	void AsyncLoadComplete();
 	
+	//////////
+	// Call MCDoAction with the specified command and parameter.
+	//
+	// [in] inAction - The action to perform.  There's about a zillion
+	//                 of these, and they're not all centrally
+	//                 documented.
+	// [in] inParam -  The parameter value to use.
+	//
+	void DoAction(mcAction inAction, void *inParam);
+
 	//////////
 	// Release all resources held by this object.  (This call may
 	// safely be made on half-constructed objects.)

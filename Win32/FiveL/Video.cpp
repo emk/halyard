@@ -110,7 +110,7 @@ void Video::Wait(int32 inWaitFrame)
 //
 //	Play - Play the given QuickTime file.
 //
-bool Video::Play(int32 inOffset, int32 inVolume /* = 100 */)
+bool Video::Play(int32 inVolume /* = 100 */)
 {
 	TString		moviePath;
 	TRect		movieRect;
@@ -135,7 +135,7 @@ bool Video::Play(int32 inOffset, int32 inVolume /* = 100 */)
 	 
 	// keep this stuff
    	    
-	retValue = m_QT.PlayVideo(moviePath, movieRect, inOffset, theVolume);
+	retValue = m_QT.PlayVideo(moviePath, movieRect, theVolume);
 
 	if (retValue == LQT_NoError)
 	{
@@ -171,9 +171,9 @@ bool Video::Play(int32 inOffset, int32 inVolume /* = 100 */)
 }
 
 //
-//	Preroll - Preroll the movie. Only allow this if we are not currently playing a movie.
+//	Preload - Preload the movie. Only allow this if we are not currently playing a movie.
 //
-bool Video::Preroll(int32 inTenths, bool inSync)
+bool Video::Preload(bool inSync)
 {
 	TString		moviePath;
 	LQTError	retValue;
@@ -181,9 +181,9 @@ bool Video::Preroll(int32 inTenths, bool inSync)
 	if (Playing())
 	{
 		// print out an error
-		gDebugLog.Log("Video: Preroll <%s>, but already playing <%s>",
+		gDebugLog.Log("Video: Preload <%s>, but already playing <%s>",
 			m_Name.GetString(), m_Name.GetString());
-		gLog.Log("Trying to preroll <%s> but already playing <%s>",
+		gLog.Log("Trying to preload <%s> but already playing <%s>",
 			m_Name.GetString(), m_Name.GetString());
 
 		return (false);
@@ -194,7 +194,7 @@ bool Video::Preroll(int32 inTenths, bool inSync)
 	// see if we have a video CD
 	if (not gConfigManager.PlayMedia())
 	{
-		gDebugLog.Log("VideoManger:Preroll: <%s>, not playing media, nothing to do", 
+		gDebugLog.Log("VideoManger:Preload: <%s>, not playing media, nothing to do", 
 			m_Name.GetString());
 		
 		return (false);
@@ -202,7 +202,7 @@ bool Video::Preroll(int32 inTenths, bool inSync)
 
 	moviePath = gConfigManager.GetVideoPath(m_Name);
 
-	retValue = m_QT.PrerollVideo(moviePath, inTenths, inSync);
+	retValue = m_QT.PreloadVideo(moviePath, inSync);
 
 	if (retValue != LQT_NoError)
 	{
@@ -213,8 +213,8 @@ bool Video::Preroll(int32 inTenths, bool inSync)
 			gVariableManager.SetString("_FileNotFound", moviePath.GetString());
 		}
 
-		gLog.Log("Video: could not preroll movie <%s>", moviePath.GetString());
-		gDebugLog.Log("Video: could not preroll movie <%s>", moviePath.GetString());
+		gLog.Log("Video: could not preload movie <%s>", moviePath.GetString());
+		gDebugLog.Log("Video: could not preload movie <%s>", moviePath.GetString());
 		return (false);
 	}
 
@@ -368,7 +368,7 @@ void VideoManager::Idle(void)
 		return;
 	}
 
-	// no playing clip, see if we have any clips prerolling
+	// no playing clip, see if we have any clips preloading
 	//	that need time
 	for (int32 i = m_Clips.NumItems() - 1; i >= 0; i--)
 	{
@@ -383,15 +383,15 @@ void VideoManager::Idle(void)
 //
 //	Play
 //
-void VideoManager::Play(TString &inName, int32 inOffset, int32 inVolume /* = 100 */)
+void VideoManager::Play(TString &inName, int32 inVolume /* = 100 */)
 {
 	Video	*theClip;
 
 	if (Playing())
 		Kill();		// only one clip playing at a time
 
-	gDebugLog.Log("VideoManager: Play <%s>, offset <%ld>, volume <%ld>",
-		inName.GetString(), inOffset, inVolume);
+	gDebugLog.Log("VideoManager: Play <%s>, volume <%ld>",
+		inName.GetString(), inVolume);
 
 	// see if we have a video CD
 	if (not gConfigManager.PlayMedia())
@@ -436,7 +436,7 @@ void VideoManager::Play(TString &inName, int32 inOffset, int32 inVolume /* = 100
 			m_Origin.X(), m_Origin.Y());
 	}
 
-	if (theClip->Play(inOffset, inVolume))
+	if (theClip->Play(inVolume))
 	{
 		m_PlayingClip = theClip;
 
@@ -460,17 +460,17 @@ void VideoManager::Play(TString &inName, int32 inOffset, int32 inVolume /* = 100
 		delete theClip;
 }
 
-void VideoManager::Preroll(TString &inName, int32 inTenths, bool inSync)
+void VideoManager::Preload(TString &inName, bool inSync)
 {
 	Video	*theClip = NULL;
 	bool	newClip = false;
 
-	gDebugLog.Log("VideoManager: Preroll <%s>", inName.GetString());
+	gDebugLog.Log("VideoManager: Preload <%s>", inName.GetString());
 
 	// see if we have a video CD
 	if (not gConfigManager.PlayMedia())
 	{
-		gDebugLog.Log("VideoManger:Preroll: <%s>, not playing media, nothing to do", 
+		gDebugLog.Log("VideoManger:Preload: <%s>, not playing media, nothing to do", 
 			inName.GetString());
 		return;
 	}
@@ -478,11 +478,11 @@ void VideoManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 	theClip = Find(inName);
 	if (theClip != NULL)
 	{
-		// must already be prerolling
-		if (theClip->Prerolled())
+		// must already be preloading
+		if (theClip->Preloaded())
 		{
 			// nothing to do 
-			gDebugLog.Log("VideoManager: Preroll <%s>, already prerolled",
+			gDebugLog.Log("VideoManager: Preload <%s>, already preloaded",
 				inName.GetString());
 			return;
 		}
@@ -501,17 +501,17 @@ void VideoManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 		}
 	}
 	
-	if (theClip->Preroll(inTenths, inSync))
+	if (theClip->Preload(inSync))
 	{
 		if (newClip)
 			m_Clips.Add(theClip);
 	}
 	else
 	{
-		gLog.Log("Could not preroll video clip <%s>",
+		gLog.Log("Could not preload video clip <%s>",
 			inName.GetString());
 
-		gDebugLog.Log("VideoManager: could not preroll clip <%s>",
+		gDebugLog.Log("VideoManager: could not preload clip <%s>",
 			inName.GetString());
 		delete theClip;
 	}
@@ -698,6 +698,13 @@ bool VideoManager::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.5.2.1  2003/10/06 20:16:29  emk
+ 3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
+ (Various parts of the new layer include forward ports from
+ FiveL_3_2_0_5_TQTMovie and back ports from Tamale.)  This engine is
+ completely untested and almost certainly has bugs and incomplete error
+ handling.
+
  Revision 1.5  2002/07/24 17:41:14  emk
  3.3.19 - 24 July 2002 - emk
 

@@ -17,15 +17,22 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		4
+#define VERSION_REV_BIG		5
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.4"
+#define VERSION_STRING		"5L 3.4.5 (UNSTABLE!)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.5  2003/10/06 20:16:30  emk
+ 3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
+ (Various parts of the new layer include forward ports from
+ FiveL_3_2_0_5_TQTMovie and back ports from Tamale.)  This engine is
+ completely untested and almost certainly has bugs and incomplete error
+ handling.
+
  Revision 1.30.2.4  2003/02/24 22:47:11  emk
  3.4.4 - Properly updated engines, with version numbers.
 

@@ -122,11 +122,6 @@ extern InputManager			gInputManager;
 extern CGrafPtr				gGrafPtr;
 
 //////////
-// Quicktime graphics world pointer.
-//
-extern GWorldPtr			gDummyGWorldPtr;
-
-//////////
 // Virtual screen used for FiveL
 //
 extern TRect				gScreenRect;
@@ -165,6 +160,13 @@ extern int V_SCREEN;
 
 /*
  $Log$
+ Revision 1.5.2.1  2003/10/06 20:16:29  emk
+ 3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
+ (Various parts of the new layer include forward ports from
+ FiveL_3_2_0_5_TQTMovie and back ports from Tamale.)  This engine is
+ completely untested and almost certainly has bugs and incomplete error
+ handling.
+
  Revision 1.5  2002/07/26 20:00:27  zeb
  3.3.21 - 26 July 2002 - zeb
 

@@ -215,6 +215,10 @@ SOURCE=..\..\FiveL\SysInfo.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\FiveL\TQTMovie.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TQTPrimitives.cpp
 
 !IF  "$(CFG)" == "FiveL - Win32 Release"
@@ -373,6 +377,10 @@ SOURCE=..\..\FiveL\StdAfx.h
 # Begin Source File
 
 SOURCE=..\..\FiveL\SysInfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\TQTMovie.h
 # End Source File
 # Begin Source File
 

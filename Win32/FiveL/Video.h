@@ -62,21 +62,18 @@ class Video : public TObject
 		//////////
 		// Play the video clip.
 		//
-		// [in] inOffset - start playback at this offset in the movie
 		// [in_optional] inVolume - desired volume level (default 100)
 		// [out] return - true if playback was successfully started, false otherwise
 		//
-		bool			Play(int32 inOffset, int32 inVolume = 100);
+		bool			Play(int32 inVolume = 100);
 		
 		//////////
 		// Preload the video clip
 		//
-		// [in] inTenths - make sure preload takes at least this much time, 
-		//				   nap if needed (in 1/10 seconds)
-		// [in] inSync - if true, pauses the gCardManager and do the entire preroll now
-		// [out] return - true if the clip was successfully prerolled, false otherwise
+		// [in] inSync - if true, pauses the gCardManager and do the entire preload now
+		// [out] return - true if the clip was successfully preloaded, false otherwise
 		//
-		bool			Preroll(int32 inTenths, bool inSync);
+		bool			Preload(bool inSync);
 
 		//////////
 		// Set an alarm to go off at the given frame of the currently playing movie.
@@ -129,11 +126,11 @@ class Video : public TObject
 		bool			Playing(void) { return(m_QT.Playing()); }
 
 		//////////
-		// Is this movie prerolled?
+		// Is this movie preloaded?
 		//
-		// [out] return - true if the current movie is prerolled, false otherwise
+		// [out] return - true if the current movie is preloaded, false otherwise
 		//
-		bool			Prerolled(void)	{ return (m_QT.Prerolled()); }
+		bool			Preloaded(void)	{ return (m_QT.Preloaded()); }
 
 		//////////
 		// Is the movie playing fullscreen?
@@ -232,20 +229,17 @@ class VideoManager : public TObject
 		// Play the specified video clip.
 		//
 		// [in] inName - name of the video clip
-		// [in] inOffset - start playback at this offset
 		// [in_optional] inVolume - desired volume level (default 100)
 		//
-		void			Play(TString &inName, int32 inOffset, int32 inVolume = 100);
+		void			Play(TString &inName, int32 inVolume = 100);
 		
 		//////////
 		// Preload a video clip
 		//
 		// [in] inName - name of the video clip
-		// [in] inTenths - make sure preload takes at least this much time, 
-		//				   nap if needed (in 1/10 seconds)
-		// [in] inSync - if true, pauses the gCardManager and do the entire preroll now
+		// [in] inSync - if true, pauses the gCardManager and do the entire preload now
 		//
-		void			Preroll(TString &inName, int32 inTenths, bool inSync);
+		void			Preload(TString &inName, bool inSync);
 
 		//////////
 		// Set an alarm to go off at the given frame of the currently playing movie.
@@ -255,7 +249,7 @@ class VideoManager : public TObject
 		void			Wait(int32 inWaitFrame);
 		
 		//////////
-		// Kill the current playing clip and any clips that are prerolled.
+		// Kill the current playing clip and any clips that are preloaded.
 		//
 		void			Kill(void);
 		
@@ -364,6 +358,13 @@ class VideoManager : public TObject
 
 /*
  $Log$
+ Revision 1.2.2.1  2003/10/06 20:16:29  emk
+ 3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
+ (Various parts of the new layer include forward ports from
+ FiveL_3_2_0_5_TQTMovie and back ports from Tamale.)  This engine is
+ completely untested and almost certainly has bugs and incomplete error
+ handling.
+
  Revision 1.2  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

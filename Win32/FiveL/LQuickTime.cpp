@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -11,63 +12,78 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// LQuickTime.cpp : 
+// LQuickTime.cpp : A generic QuickTime movie.  This class used to make
+//                  QuickTime calls directly, but it was gutted and modified
+//                  to be a fairly thin wrapper over TQTMovie, a much
+//                  simpler and more modern playback system.  These days,
+//                  LQuickTime is mostly a compatibility layer.
 //
+
+//=========================================================================
+// Missing-in-Action Bugfixes
+//=========================================================================
+// While replacing Chuck's old QuickTime code with calls to TQTMovie, I
+// removed a number of old bugfixes which were no longer directly
+// applicable to TQTMovie.  Presumably, some portion of these fixes are
+// obsolete, and some portion are still necessary.  If you're having
+// QuickTime problems, read through this list carefully, and consider
+// adding one or more of these fixes to TQTMovie.
+//
+// BEFORE PRELOADING:
+//   - The old code set the bounds of a newly opened movie to -1,-1,-1,-1,
+//     theoretically to "prevent flashing".  This workaround should be
+//     completely obsoleted by TQTMovie's offscreen GWorld.
+//
+// DURING PRELOADING:
+//   - If we called Idle 100,000 times during a preload--without the
+//     preload completing--we assumed the movie was broken.  Chuck
+//     thought this was a QuickTime bug.
+//
+// STARTING PLAYBACK:
+//   - minBuffer: Removed code which called GetMaxLoadedTimeInMovie to make
+//     sure a user-specified amount of data was streamed before starting.
+//     This used the variables _QuickTimeAudioPreload and
+//     _QuickTimeVideoPreload to determine how much to buffer, in frames
+//     (where there are typically 30 frames per second).
+//   - Some commented-out code set minBuffer=2000 for video, 500 for audio.
+//   - If GetMaxLoadedTimeInMovie didn't exceed the minBuffer value
+//     in 10,000 calls to MovieTask, then the code assumed the
+//     movie wasn't going to arrive.
+//   - minCycles: Removed code which called MoviesTask a specified number of
+//     times (in a loop) before starting.  This used the variables
+//     _QuickTimeVideoCycles and _QuickTimeAudioCycles for streamed video.
+//     This code theoretically prevented "burping" at startup.
+//   - Some commented-out code set minCycles=50 for video, 20 for audio.
+//   - For local video, we always cycled 50 times.
+//
+// DURING PLAYBACK:
+//   - Pause movie shortly before stalling to stream more data.
+//     I assume the controller does this for us.
+//     
 
 #include "stdafx.h"
 
 #include "ToolUtils.h"
 
-#include "FixMath.h"
 #include "LQuickTime.h"
 #include "Globals.h"
 #include "Devices.h"
-
-#define MOVIE_TASK_TIMES_LOCAL 50
-#define MOVIE_TASK_TIMES_VIDEO_STREAM	50
-#define MOVIE_TASK_TIMES_AUDIO_STREAM	20
-#define MINIMUM_AUDIO_LOAD_TIME 500
-#define MINIMUM_VIDEO_LOAD_TIME	2000
-
-static const char *PREPREROLLEVENTNAME = "PrePreRollEvent";
-//HANDLE	PrePreRollEvent;
-pascal void	PrePrerollCompleteProc (Movie theMovie, OSErr thePrerollErr, void *theRefcon);
 
 //
 //	LQuickTime - the construct-from-stream constructor
 //
 LQuickTime::LQuickTime(void)
 {
-	mInMovie = false;
-	mPrerolled = false;
-	mPrerollCount = 0;
-	mPaused = true;
+	mMovie = NULL;
+	mPath = "";
+	mPreloaded = false;
 	mAudioOnly = false;
 	mHaveOrigin = false;
-	mHavePal = false;
 	mLooping = false;
 	mStreamed = false;
-	mPlaying = false;
-	mLoadStep = LQT_NOT_LOADED;
-	mPreloadEvent = NULL;
-
 	mSync = false;
-	mNapTime = 0;
-
-	//mPrerollStateTime = 0;
-
 	mWaiting = false;
 	mWaitTime = 0;
-	mWaitOffset = 0;
-	mCurrentVolume = 0x0000;
-	mPrerollError = LQT_NoError;
-	
-	mMovie = NULL;
-	mMovieController = NULL;
-
-	mRate = fixed1;
-	mEndTime = 0;
-	mScale = 0;	
 }
 
 //
@@ -75,6 +91,8 @@ LQuickTime::LQuickTime(void)
 //
 LQuickTime::~LQuickTime()
 {
+	if (mMovie)
+		delete mMovie;
 }
 
 //
@@ -82,57 +100,40 @@ LQuickTime::~LQuickTime()
 //
 void LQuickTime::Idle(void)
 {
-	TimeValue	movieTime = 0;
-	
-	if (mInMovie)
+	if (mMovie)
 	{
-		if (mLoadStep == LQT_LOAD_ERROR)
+		try
 		{
-			// log the error
-			gDebugLog.Log("QuickTime: error loading movie <%s>", mPath.GetString());
-			gLog.Log("ERROR: Could not load movie <%s>", mPath.GetString());
-
-			Kill();
-			return;
-		}
-
-		if (mLoadStep < LQT_LOADED)
-		{
-			DoLoadStep(false);
-
-			if (mPrerolled)
-				mPrerollCount++;
-
-			return;
-		}
-
-		::MoviesTask(mMovie, 0);
-
-		if (mPrerolled)
-			mPrerollCount++;
-	
-		if (not mPaused)
-		{
-			if (not mLooping)
+			mMovie->Idle();
+			
+			if (mMovie->IsBroken())
 			{
-				if (AtEnd(movieTime))
+				gMissingMediaLog.Log("Broken movie: %s", mPath.GetString());
+				gDebugLog.Log("Broken movie: %s", mPath.GetString());
+				Kill();
+			}
+			else if (mMovie->IsDone())
+			{
+				gDebugLog.Log("Movie done: %s", mPath.GetString());
+				Kill();
+			}
+			else if (mMovie->IsStarted() && mWaiting)
+			{
+				TimeValue time = mMovie->GetMovieTime();
+				if (mWaiting && time > mWaitTime)
 				{
-					Kill();				// clean everything up
-					gDebugLog.Log("Reach the end of the movie (%d)", movieTime);
-				}
-				else
-				{
-					// if we aren't at the end, see if we have passed the wait time
-					if (mWaiting and (mWaitTime > 0))
-					{
-						if (movieTime >= mWaitTime)
-						{
-							mWaiting = false;
-							mWaitTime = 0;
-						}
-					}
+					gDebugLog.Log("Hit waitpoint: %d > %d",
+								  (int32) time, (int32) mWaitTime);
+					mWaiting = false;
+					mWaitTime = 0;
 				}
 			}
+		}
+		catch (...)
+		{			
+			gDebugLog.Log("Unexpected exception for movie: %s",
+						  mPath.GetString());
+			Kill();
 		}
 	}
 }
@@ -142,13 +143,9 @@ void LQuickTime::Idle(void)
 //
 void LQuickTime::SetVolume(int32 inVolume)
 {
-	if (mInMovie)
-	{
-		mCurrentVolume = inVolume;
-		::SetMovieVolume(mMovie, (int16)inVolume);
-	}
+	if (mMovie)
+		mMovie->SetMovieVolume((short) inVolume);
 }
-
 
 //
 //	SetWaitPoint - Set a wait point at this frame. We have to be playing a 
@@ -156,25 +153,36 @@ void LQuickTime::SetVolume(int32 inVolume)
 //
 void LQuickTime::SetWaitPoint(int32 inFrame)
 {
-	if (mInMovie)
+	if (mMovie)
 	{
 		mWaiting = true;
 		
-		if (inFrame <= 0)	// 0 is the end, negative means back from the end
-			mWaitTime = mEndTime + (int32) (((float) inFrame * mScale) / (float) 30);
-		else
-			mWaitTime = (inFrame - mWaitOffset) * mScale / 30;
-	}	
-}
+		// Assume all movies are 30 frames / second.  We do the math
+		// as floating point here because (1) the old code did and (2)
+		// it might theoretically prevent an overflow for insanely
+		// long movies, and I'm trying to be ultra-cautious while
+		// gutting this code.
+		TimeScale scale = mMovie->GetTimeScale();
+		mWaitTime = (TimeValue) ((((double) inFrame) * scale) / 30.0);
 
+		// 0 is the end, negative means back from the end.  We test
+		// against the original inFrame, not mWaitTime, which might
+		// have changed from positive to zero above.
+		if (inFrame <= 0)
+		{
+			TimeValue end = mMovie->GetDuration();
+			mWaitTime += end;
+		}
+	}
+}
 
 //
 //	DrawSelf - draw the pane's frame and contents
 //
 void LQuickTime::DrawSelf(void)
 {
-	if ((mInMovie) and (mPlaying) and (not mAudioOnly))
-		::UpdateMovie(mMovie);
+	if (mMovie)
+		mMovie->Redraw(hwndApp);
 }
 
 //
@@ -183,9 +191,8 @@ void LQuickTime::DrawSelf(void)
 TRect LQuickTime::GetBounds(void)
 {
 	TRect	movieRect;
-
 	movieRect.Set(mBounds);
-	return (movieRect);
+	return movieRect;
 }
 
 //
@@ -227,56 +234,22 @@ void LQuickTime::Kill(void)
 //
 void LQuickTime::Cleanup(void)
 {
-	// before anything else, see if we need to stop the movie
-	if (not mPaused)
-		Pause();
-
-	mPrerolled = false;
-	mPrerollCount = 0;
-	mInMovie = false;
-	
+	mPath = "";
+	mPreloaded = false;
 	mAudioOnly = false;
-	mHavePal = false;
 	mLooping = false;
 	mStreamed = false;
-	mPlaying = false;
-	mLoadStep = LQT_NOT_LOADED;
-	if (mPreloadEvent != NULL)
-	{
-		CloseHandle(mPreloadEvent);
-		mPreloadEvent = NULL;
-	}
-
 	mWaiting = false;
 	mWaitTime = 0;
-	mWaitOffset = 0;
 
 //	if (mSync)
 //		TInterpreter::GetInstance()->WakeUp();
 
 	mSync = false;
-	mNapTime = 0;
-
-	//mPrerollStateTime = 0;
-
-	mCurrentVolume = 0;
-	mPrerollError = LQT_NoError;
-
-	mPath = "";
-
-	mEndTime = 0;
-	mScale = 0;
-
-	// release the movie controller, if any
-	if (mMovieController != NULL)
-	{
-		::DisposeMovieController(mMovieController);
-		mMovieController = NULL;
-	}
-
+		
 	if (mMovie != NULL)
 	{
-		::DisposeMovie(mMovie);
+		delete mMovie;
 		mMovie = NULL;
 	}
 }
@@ -286,177 +259,55 @@ void LQuickTime::Cleanup(void)
 //
 bool LQuickTime::Load(TString &inMoviePath, bool inAudioOnly, bool inFinish)
 {
-	OSErr		err = noErr;
-	int16		actualResID = DoTheRightThing;
-	int16		theRefNum;
-	uint8		wasChanged;
-	bool		retValue = true;
-
-	mLoadStep = LQT_LOAD_STARTED;
-
-	if ((inMoviePath.Contains("http:", false))
-		or (inMoviePath.Contains("rtsp:", false)))
+	try
 	{
-		Handle		myHandle = NULL;
-		//TimeValue	startTime;
-		Size		mySize = 0;
-				
-		// get the size of the URL, plus the terminating null byte
-		mySize = (Size) strlen(inMoviePath.GetString()) + 1;
-		
-		// allocate a new handle
-		myHandle = NewHandleClear(mySize);
-
-		// copy the URL into the handle
-		BlockMove(inMoviePath.GetString(), *myHandle, mySize);
-
-		// playing a URL
-		short	movieFlags;
-
-		// only call async if we aren't waiting for an answer
-		if (not inFinish)
-			movieFlags = (newMovieActive) | (newMovieAsyncOK);
-		else
-			movieFlags = newMovieActive;
-
-		err = ::NewMovieFromDataRef(&mMovie, movieFlags, NULL, 
-			myHandle, URLDataHandlerSubType);
-
-		// toss the handle
-		DisposeHandle(myHandle);
-
-		if (err != noErr)
-		{
-			retValue = false;
-			goto done;
-		}
-
-		mLoadStep = LQT_BEFORE_PRELOAD;		// wait till we can call prepreload
-		mStreamed = true;	
-	}
-	else
-	{
-		// playing a file
-		err = NativePathNameToFSSpec((char *) inMoviePath.GetString(), &mSpec, 0);
-		if (err != noErr)
-		{
-			retValue = false;
-			goto done;
-		}
-		
-		err = ::OpenMovieFile(&mSpec, &theRefNum, fsRdPerm);
-
-		if (err != noErr)
-		{
-			retValue = false;
-			goto done;
-		}
-		
-		err = ::NewMovieFromFile(&mMovie, theRefNum, &actualResID, NULL, 0, &wasChanged);
-
-		if (err != noErr)
-			retValue = false;
-					
-		err = ::CloseMovieFile(theRefNum);
-
-		if (not retValue)
-			goto done;
-
-		mLoadStep = LQT_LOADED;		// all done
-	}
-
-	if (retValue)
-	{
-		// see if we have enough of the movie to make some movie calls
-		if (mLoadStep > LQT_BEFORE_PRELOAD)
-			mRate = ::GetMoviePreferredRate(mMovie);
-
-		// set the movie gworld to keep it from drawing to the screen
-		if (not inAudioOnly)
-		{
-			// center the movie on the virtual screen
-			::GetMovieBox(mMovie, &mBounds);
-			::MacOffsetRect(&mBounds, -mBounds.left, -mBounds.top);
-	
-			if (not mHaveOrigin)
-			{
-				// center the movie in the view
-				short		dh, dv;
-
-				dh = VSCREEN_WIDTH - mBounds.right;
-				dv = VSCREEN_HEIGHT - mBounds.bottom;
-				::MacOffsetRect(&mBounds, dh/2, dv/2);
-			}
-			else
-			{
-				// use the stored origin
-				::MacOffsetRect(&mBounds, mOrigin.h, mOrigin.v);
-			}
-
-			::SetMovieBox(mMovie, &mBounds);
-
-			//
-			// Modified by Yijin on Mar 28, 2002.
-			//
-			// This was originally changed by Chuck Officer on Oct 23, 2000.
-			//  Chuck uses gDummyGWorldPtr in MovieGWorld to avoid the
-			//  BLACK WINDOW in upper-left corner, which, actually is
-			//  caused by the first few frames being written to the upper-
-			//  left corner of the virtual screen. However, I found that
-			//  if we would like to display movie controller, we have to 
-			//  use gGrafPtr as the movie's display coordinate system.
-			//  The black window bug has been solved by the above lines of
-			//  code which place the movie right in center of the screen.
-			//
-			::SetMovieGWorld(mMovie, gGrafPtr, NULL);
-		}
-
-		mInMovie = true;			// we have a movie
+		mMovie = new TQTMovie(gGrafPtr, inMoviePath.GetString());
+		mPath = inMoviePath;
 		mAudioOnly = inAudioOnly;
-		mPaused = true;				// and it isn't playing yet
+
+		if (inFinish)
+			mMovie->BlockUntilReadyOrBroken();
+
+		mMovie->ThrowIfBroken();
+	}
+	catch (...)
+	{
+		return false;
 	}
 
-done:
-//	if ((not retValue) and (err != noErr))
-//	{
-//		gMissingMediaLog.Log("%s, error %d", inMoviePath.GetString(), err);
-//	}
-
-	return (retValue);
+	return true;
 }
 
-LQTError LQuickTime::DoPreroll(TString &inMoviePath, bool inAudioOnly, bool inFinish /* = false */)
+LQTError LQuickTime::DoPreload(TString &inMoviePath, bool inAudioOnly,
+							   bool inFinish /* = false */)
 {
 	LQTError	retValue = LQT_NoError;
 
 	mPath = inMoviePath;
-	mPrerolled = true;
+	mPreloaded = true;
 
-	//mPrerollStateTime = ::timeGetTime();
+	//mPreloadStateTime = ::timeGetTime();
 
 	if (Load(inMoviePath, inAudioOnly, inFinish))
 	{
 		if (inFinish)
 		{
-			// do everything now, we must need to run it
-			if (mLoadStep != LQT_LOADED)
+			ASSERT(mMovie && (mMovie->IsReady() || mMovie->IsBroken()));
+			if (mMovie->IsBroken())
 			{
-				DoLoadStep(true);
+				// error - couldn't finish the load
+				gDebugLog.Log("QuickTime: error loading movie <%s>",
+							  inMoviePath.GetString());
+				gLog.Log("ERROR: could not load movie <%s>",
+						 inMoviePath.GetString());
 
-				if (mLoadStep != LQT_LOADED)
+				if (mSync)
 				{
-					// error - couldn't finish the load
-					gDebugLog.Log("QuickTime: error loading movie <%s>", inMoviePath.GetString());
-					gLog.Log("ERROR: could not load movie <%s>", inMoviePath.GetString());
-
-					if (mSync)
-					{
-						mSync = false;
-						TInterpreter::GetInstance()->WakeUp();
-					}
-
-					return (LQT_PreloadError);
+					mSync = false;
+					TInterpreter::GetInstance()->WakeUp();
 				}
+
+				return LQT_PreloadError;
 			}
 		}
 	}
@@ -466,35 +317,36 @@ LQTError LQuickTime::DoPreroll(TString &inMoviePath, bool inAudioOnly, bool inFi
 	return (retValue);
 }	
 
-LQTError LQuickTime::PrerollVideo(TString &inMoviePath, int32 inTenths, bool inSync)
+LQTError LQuickTime::PreloadVideo(TString &inMoviePath, bool inSync)
 {
-	return (Preroll(inMoviePath, false, inTenths, inSync));
+	return (Preload(inMoviePath, false, inSync));
 }
 
-LQTError LQuickTime::PrerollAudio(TString &inMoviePath, int32 inTenths, bool inSync)
+LQTError LQuickTime::PreloadAudio(TString &inMoviePath, bool inSync)
 {
-	return (Preroll(inMoviePath, true, inTenths, inSync));
+	return (Preload(inMoviePath, true, inSync));
 }
 
-LQTError LQuickTime::PlayVideo(TString &inMoviePath, TRect &inRect, int32 inOffset, int32 inVolume)
+LQTError LQuickTime::PlayVideo(TString &inMoviePath, TRect &inRect, int32 inVolume)
 {
-	return (Play(inMoviePath, inRect, inOffset, inVolume, false));
+	return (Play(inMoviePath, inRect, inVolume, false));
 }
 		
-LQTError LQuickTime::PlayAudio(TString &inMoviePath, int32 inVolume, int32 inOffset, bool inLoop)
+LQTError LQuickTime::PlayAudio(TString &inMoviePath, int32 inVolume, bool inLoop)
 {
 	TRect	dummyRect;
  
 	if (inLoop)
 		return (PlayLoop(inMoviePath, inVolume));
 	else
-		return (Play(inMoviePath, dummyRect, inOffset, inVolume, true));
+		return (Play(inMoviePath, dummyRect, inVolume, true));
 }
 
 //
-//	Preroll
+//	Preload
 //
-LQTError LQuickTime::Preroll(TString &inMoviePath, bool inAudioOnly, int32 inTenths, bool inSync)
+LQTError LQuickTime::Preload(TString &inMoviePath, bool inAudioOnly,
+							 bool inSync)
 {
 	if (Playing())
 	{
@@ -511,244 +363,87 @@ LQTError LQuickTime::Preroll(TString &inMoviePath, bool inAudioOnly, int32 inTen
 		TInterpreter::GetInstance()->Pause();
 	}
 
-	if (inTenths > 0)
-	{
-		// keep track of the start time
-		int32 startTime = ::timeGetTime();
-
-		mNapTime = (inTenths * 100) + startTime;
-	}
-
-	gDebugLog.Log("QuickTime: Preroll <%s>, nap <%d>, %s",
-		inMoviePath.GetString(), inTenths, (inSync ? "sync" : "async"));
+	gDebugLog.Log("QuickTime: Preload <%s>, %s",
+		inMoviePath.GetString(), (inSync ? "sync" : "async"));
 	
-	return (DoPreroll(inMoviePath, inAudioOnly, false));
+	return (DoPreload(inMoviePath, inAudioOnly, false));
 }
 
 //
 //	Play
 //
-LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect, int32 inWaitOffset, 
+LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect, 
 						  int32 inVolume, bool inAudioOnly)
 {
-	TimeValue	theStart, theDuration;
 	bool		playIt = false;
 	LQTError	retValue = LQT_NoFile;
 
 	gDebugLog.Log("QuickTime: Play <%s>", inMoviePath.GetString());
 
-	if (mPrerolled)
+	if (mPreloaded)
 	{
-		// see if the same movie is prerolled, if not start over
+		// see if the same movie is preloaded, if not start over
 		if (not inMoviePath.Equal(mPath, false))
 		{
 			Cleanup();
-			mPrerolled = false;		// need to preroll this one
+			mPreloaded = false;		// need to preload this one
 		}
-
-		// see if we have some more preloading to do
-		if (mLoadStep < LQT_LOADED)
+		else
 		{
-			DoLoadStep(true);		// finish the rest of the preloading here
-
-			if (mLoadStep != LQT_LOADED)	// had an error
+			ASSERT(mMovie);
+			mMovie->BlockUntilReadyOrBroken();
+		
+			if (mMovie->IsBroken())
 			{
-				gDebugLog.Log("QuickTime: error loading movie <%s>", mPath.GetString());
-				gLog.Log("ERROR: Could not load movie <%s>", mPath.GetString());
-
+				gDebugLog.Log("QuickTime: error loading movie <%s>",
+							  mPath.GetString());
+				gLog.Log("ERROR: Could not load movie <%s>",
+						 mPath.GetString());
 				Kill();
-				return (LQT_PreloadError);
+				return LQT_PreloadError;
 			}
 		}
 	}
 	else
 		Cleanup();
 
-	if (not mPrerolled)
+	if (not mPreloaded)
 	{
-		gDebugLog.Log("QuickTime: not prerolled, preroll now");
-		retValue = DoPreroll(inMoviePath, inAudioOnly, true);
+		gDebugLog.Log("QuickTime: not preloaded, preload now");
+		retValue = DoPreload(inMoviePath, inAudioOnly, true);
 	}
 	else
 		retValue = LQT_NoError;
 	
 	if (retValue == LQT_NoError)
-	{					
-		mWaitOffset = inWaitOffset;			// what video disk frame does the start of this movie correspond to?						
-		mLooping = false;
+	{
+		ASSERT(mMovie);
 
-		if (not mAudioOnly)
+		// Set up our default playback options.
+		TQTMovie::PlaybackOptions options = TQTMovie::kDefaultOptions;
+		Point loc;
+
+		if (mHaveOrigin)
 		{
-			//::GetMovieBox(mMovie, &mBounds);
-			::MacOffsetRect(&mBounds, -mBounds.left, -mBounds.top);
-	
-			if (not mHaveOrigin)
-			{
-				// center the movie in the view
-				short		dh, dv;
-
-				dh = VSCREEN_WIDTH - mBounds.right;
-				dv = VSCREEN_HEIGHT - mBounds.bottom;
-				::MacOffsetRect(&mBounds, dh/2, dv/2);
-			}
-			else
-			{
-				// use the stored origin
-				::MacOffsetRect(&mBounds, mOrigin.h, mOrigin.v);
-			}
-
-			::SetMovieBox(mMovie, &mBounds);
-		}
-		
-		if (mStreamed)
-		{
-			TimeValue	bufferTime = 0;
-			OSErr		err;
-		//	int32		numTimes;
-
-			err = ::GetMaxLoadedTimeInMovie(mMovie, &bufferTime);
-
-			int32	minBufferTime;
-
-			if (mAudioOnly)
-			{
-				minBufferTime = gVariableManager.GetLong("_QuickTimeAudioPreload");
-//				if (minBufferTime == 0)
-//					minBufferTime = MINIMUM_AUDIO_LOAD_TIME;
-//				else if (minBufferTime == -1)
-//					minBufferTime = 0;
-			}
-			else
-			{
-				minBufferTime = gVariableManager.GetLong("_QuickTimeVideoPreload");
-//				if (minBufferTime == 0)
-//					minBufferTime = MINIMUM_VIDEO_LOAD_TIME;
-//				else if (minBufferTime == -1)
-//					minBufferTime = 0;
-			}
-
-			int32 minCycles;
-
-			if (mAudioOnly)
-			{
-				minCycles = gVariableManager.GetLong("_QuickTimeAudioCycles");
-//				if (minCycles == 0)
-//					minCycles = MOVIE_TASK_TIMES_AUDIO_STREAM;
-//				else if (minCycles == -1)
-//					minCycles = 0;
-			}
-			else
-			{
-				minCycles = gVariableManager.GetLong("_QuickTimeVideoCycles");
-//				if (minCycles == 0)
-//					minCycles = MOVIE_TASK_TIMES_VIDEO_STREAM;
-//				else if (minCycles == -1)
-//					minCycles = 0;
-			}
-
-/*
-			int32	startLoopTime = ::timeGetTime();
-			int32	tmpTimer = (startLoopTime - mPrerollStateTime) / 100;
-			mPrerollStateTime = 0;
-
-			gDebugLog.Log("QuickTime: going to play, current loaded time <%d>, target load time <%d>, tenths preload time <%d>, cycles <%d>",
-				bufferTime, minBufferTime, tmpTimer, minCycles);
-*/
-
-			if (bufferTime < minBufferTime)
-			{
-				int32 i = 0;
-				while (bufferTime < minBufferTime)
-				{
-					// buffer some more
-					::MoviesTask(mMovie, 0);
-					i++;
-
-					if ((i % 1000) == 0)
-						::Sleep(1);
-
-					err = ::GetMaxLoadedTimeInMovie(mMovie, &bufferTime);
-					if (err != noErr)
-					{
-						bufferTime = minBufferTime;	// bug out of loop
-						gDebugLog.Log("QuickTime: GetMaxLoadedTimeInMovie returned <%d>",
-							err);
-					}
-
-					// check for endless looping
-					if (i >= 10000)
-					{
-						gDebugLog.Log("QuickTime: endless loop waiting for movie to buffer");
-						bufferTime = minBufferTime;
-					}
-				}
-/*
-				tmpTimer = (::timeGetTime() - startLoopTime) / 100;
-				gDebugLog.Log("QuickTime: looped <%d> times, took <%d> tenths", i, tmpTimer);
-*/
-			}
-
-
-			// now cycle that number of times
-			for (int32 i = 0; i < minCycles; i++)
-			{
-				::MoviesTask(mMovie, 0);
-
-				if ((i % 100) == 0)
-					::Sleep(1);
-			}
+			// Put our movie at the specified location.
+			loc = mOrigin;
 		}
 		else
 		{
-			// cycle a bit to prevent burps on startup
-			for (int32 i = 0; i < MOVIE_TASK_TIMES_LOCAL; i++)
-			{
-				::MoviesTask(mMovie, 0);
-
-				if ((i % 100) == 0)
-					::Sleep(10);
-			}
+			// Center it.
+			options |= TQTMovie::kCenterMovie;
+			loc.h = VSCREEN_WIDTH / 2;
+			loc.v = VSCREEN_HEIGHT / 2;
 		}
 
-		// attach a movie controller if the user likes to
-		TString	showMovieController = gVariableManager.GetString("_bShowMC");
-		if (showMovieController.Equal("1"))
-		{
-			mMovieController = NewMovieController(mMovie, &mBounds, mcTopLeftMovie);
+		if (inAudioOnly)
+			options |= TQTMovie::kAudioOnly;
 
-			if (mMovieController == NULL)
-			{
-				gLog.Log("MovieController(hyjin): failed to attach the movie controller!");
-				goto bail;
-			}
-
-			// play the movie while it is still being prerolled
-			MCDoAction(mMovieController, mcActionPrerollAndPlay, (void *)GetMoviePreferredRate(mMovie));
-		}
-
-bail:
+		// Start playback.
+		mLooping = false;
 		SetVolume(inVolume);
-
-		// get the end time for the movie
-		mEndTime = ::GetMovieDuration(mMovie);
-			
-		// get the time scale for the movie
-		mScale = ::GetMovieTimeScale(mMovie);
-	
-		// set the start and duration of the clip
-		theStart = 0;
-		theDuration = mEndTime - theStart;
-		
-		::GoToBeginningOfMovie(mMovie);	
-
-		// set the movie's gworld
-		::SetMovieGWorld (mMovie, gGrafPtr, nil);
-
-		// preroll after GWorld is set
-		::PrerollMovie(mMovie, 0, mRate);
-
-		mPlaying = true;
-		Resume();							// start playing
+		mMovie->BlockUntilReadyOrBroken();
+		mMovie->StartWhenReady(options, loc);
 	}
 
 	return (retValue);
@@ -756,32 +451,34 @@ bail:
 
 //
 //	PlayLoop - Play a movie by looping it.
+//  To the best of my knowledge, this code has never finished.
 //
 LQTError LQuickTime::PlayLoop(TString &inMoviePath, int32 inVolume)
 {
-	TimeBase	theBase;					// time base for our movie
-	bool		doThePreroll = false;		// for now as we only do audio
+	bool		doThePreload = false;		// for now as we only do audio
 	bool		playIt = false;				// assume the worst
 	LQTError	retValue = LQT_NoFile;
 	
 	Cleanup();								// don't worry about mHaveOrigin as this must be audio
 
-	if (not mPrerolled)
-		retValue = DoPreroll(inMoviePath, true, true);
+	if (not mPreloaded)
+		retValue = DoPreload(inMoviePath, true, true);
 	else
 		retValue = LQT_NoError;
 	
 	if (retValue == LQT_NoError)
-	{		
-		theBase = ::GetMovieTimeBase(mMovie);	// get our time base
-		::SetTimeBaseFlags(theBase, loopTimeBase);
-		::SetMovieMasterTimeBase(mMovie, theBase, nil);
+	{
+		ASSERT(mMovie);
+
+		TQTMovie::PlaybackOptions options =
+			TQTMovie::kLoopMovie | TQTMovie::kAudioOnly;
+		Point loc;
+		loc.h = 0;
+		loc.v = 0;
 		
 		mLooping = true;
-				
 		SetVolume(inVolume);
-
-		Resume();						// start the movie playing
+		mMovie->StartWhenReady(options, loc);
 	}
 
 	return (retValue);
@@ -792,12 +489,8 @@ LQTError LQuickTime::PlayLoop(TString &inMoviePath, int32 inVolume)
 //
 void LQuickTime::Pause(void)
 {
-	if (mMovie != NULL)
-	{
-		::StopMovie(mMovie);
-			
-		mPaused = true;
-	}
+	if (mMovie != NULL && mMovie->IsStarted())
+		mMovie->Pause();
 }
 
 //
@@ -805,278 +498,8 @@ void LQuickTime::Pause(void)
 //
 void LQuickTime::Resume(void)
 {
-	if (mMovie == NULL)
-		gDebugLog.Log("LQuickTime::Resume: we found mMoive is NIL, should check it!");
-
-	if (mMovie && mInMovie && mPaused)
-	{
-		::StartMovie(mMovie);
-		mPaused = false;
-		
-		::MoviesTask(mMovie, 0);			// prime the pump
-	}
-}
-
-//
-//	AtEnd - Return true if the movie is at the end. Also return the time the movie
-//			is currently at.
-//
-bool LQuickTime::AtEnd(TimeValue &inMovieTime)
-{
-	TimeValue	theTime = 0;
-	bool		theRetValue = true;
-	
-	if (mMovie != NULL)
-	{
-		theTime = ::GetMovieTime(mMovie, nil);
-		
-		// I don't know the reason but IsMovieDone seems to work in a wrong way
-		//  when user click on the "unbuffered" area on the movie controller.
-		//  In order to correctly tell whether the movie has been done, I use
-		//  the total duration of the movie (mEndTime) to do this.
-//		if (not ::IsMovieDone(mMovie))
-		if (theTime < mEndTime)
-			theRetValue = false;
-	}
-	
-	inMovieTime = theTime;
-	
-	return (theRetValue);
-}
-
-pascal void PrePrerollCompleteProc (Movie theMovie, OSErr thePrerollErr, void *theRefcon)
-{
-	LQuickTime	*thisPtr = (LQuickTime *) theRefcon;
-
-	if (thisPtr != NULL)
-		thisPtr->SetPreloadEvent();
-}
-
-void LQuickTime::SetPreloadEvent(void)
-{
-	::SetEvent(mPreloadEvent);
-}
-	
-
-//	
-//	DoLoadStep - Perform a load step. If inFinish is true, stay here until
-//		all the load steps are complete. 
-//
-void LQuickTime::DoLoadStep(bool inFinish /* = false */)
-{
-	if (mLoadStep == LQT_BEFORE_PRELOAD)
-	{
-		// waiting to see when we can start the preload
-		::MoviesTask(mMovie, 0);
-
-		// make sure we aren't just cycling here (I think this is a QuickTime bug)
-		if (mPrerollCount > 100000)
-		{
-			gDebugLog.Log("QuickTime: preloading infinite loop?");
-
-			// has to be an error
-			if (mSync)
-			{
-				mSync = false;
-				TInterpreter::GetInstance()->WakeUp();
-			}
-
-			mPrerollError = LQT_NoFile;
-			mLoadStep = LQT_LOAD_ERROR;
-			return;
-		}
-
-		bool	done = false;
-		
-		long	movieLoadState;
-		while (not done)
-		{
-			::MoviesTask(mMovie, 0);
-
-			if (not inFinish)
-				done = true;		// stop after one loop
-
-			movieLoadState = ::GetMovieLoadState(mMovie);
-
-			if (movieLoadState == kMovieLoadStateError)
-			{
-				// can't load the movie
-				mPrerollError = LQT_NoFile;
-				mLoadStep = LQT_LOAD_ERROR;
-
-				if (mSync)
-				{
-					mSync = false;
-					TInterpreter::GetInstance()->WakeUp();
-				}
-
-				return;
-			}
-
-			if ((movieLoadState == kMovieLoadStatePlayable)
-				or (movieLoadState == kMovieLoadStateComplete))
-			{
-				TimeValue	startTime;
-				OSErr		err;
-				
-				// save the bounding rect for the movie and set
-				// it off the screen to prevent flashing
-				::GetMovieBox(mMovie, &mBounds);
-
-				Rect	fakeBounds = {-1, -1, -1, -1};
-				::SetMovieBox(mMovie, &fakeBounds);
-
-				// see if we can preroll it
-				mRate = ::GetMoviePreferredRate(mMovie);
-				startTime = ::GetMovieTime(mMovie, NULL);
-
-				// create the event we will wait on
-				if (mPreloadEvent != NULL)
-					CloseHandle(mPreloadEvent);
-
-				mPreloadEvent = NULL;
-				mPreloadEvent = ::CreateEvent(NULL, false, false, PREPREROLLEVENTNAME);
-				if (mPreloadEvent == NULL)
-					return;
-
-				err = ::PrePrerollMovie(mMovie, startTime, mRate, PrePrerollCompleteProc, (void *) (this));
-
-				// cbo_fix - check for ioInProgress
-				if ((err != noErr) and (err != ioInProgress))
-				{
-					mLoadStep = LQT_LOAD_ERROR;
-
-					if (mSync)
-					{
-						mSync = false;
-						TInterpreter::GetInstance()->WakeUp();
-					}
-
-					return;
-				}
-
-				// change to the step that checks for PrePrerollMovie to finish
-				mLoadStep = LQT_AFTER_PRELOAD;
-
-				done = true;
-			}
-			// else - if we have to finish then we will loop and do it again
-			//	if we don't have to finish then we want to leave the load state
-			//	alone so we will do it again
-		}
-	}
-
-	if (mLoadStep == LQT_AFTER_PRELOAD)
-	{
-		// waiting for the preload event
-		DWORD	waitValue;
-		DWORD	timeOut = 10;
-		bool	waitForEvent = false;
-
-		// If inFinish is true, wait here until the event is signaled.
-		if (inFinish)
-			waitForEvent = true;
-
-		do
-		{
-			::MoviesTask(mMovie, 0);
-
-			waitValue = ::WaitForSingleObject(mPreloadEvent, timeOut);
-
-			if (waitValue == WAIT_OBJECT_0)
-			{
-				// The event has been signaled, we're done.
-				::CloseHandle(mPreloadEvent);
-				mPreloadEvent = NULL;
-
-				mLoadStep = LQT_READY_TO_LOAD;
-				waitForEvent = false;
-			}
-
-			if (waitForEvent)
-			{
-				long	movieLoadState;
-
-				movieLoadState = ::GetMovieLoadState(mMovie);
-
-				if (movieLoadState == kMovieLoadStateError)
-				{
-					mPrerollError = LQT_NoFile;
-					mLoadStep = LQT_LOAD_ERROR;
-
-					::CloseHandle(mPreloadEvent);
-					mPreloadEvent = false;
-
-					waitForEvent = false;
-				}
-			}
-		} 
-		while (waitForEvent);
-	}
-
-	if (mLoadStep == LQT_READY_TO_LOAD)
-	{
-		// now call the real preroll command
-
-		// cbo_fix - try doing this after GWorld and Box are set correctly
-		//::PrerollMovie(mMovie, 0, mRate);
-
-		mLoadStep = LQT_MORE_LOAD_STREAM;
-	}
-
-	if (mLoadStep == LQT_MORE_LOAD_STREAM)
-	{
-		// this should really be a variable number of tries
-		//	depending on the codec and other variables such as
-		//	bandwidth
-		::MoviesTask(mMovie, 0);
-
-		// cbo_fix - there must be a better way to do this!!
-//		if (mStreamed and inFinish)
-//		{
-//			for (int32 i = 0; i < MOVIE_TASK_TIMES; i++)
-//			{
-//				::MoviesTask(mMovie, 0);
-//				mPrerollCount++;
-//			}
-//		}
-
-		// done with preloading
-		DWORD	endTime = ::timeGetTime();
-
-		// see if we have to end a nap or anything like that
-		if (mSync)
-		{
-			// wake up the card manager
-			mSync = false;
-			gDebugLog.Log("QuickTime: DoLoadStep, done loading, resume card execution");
-			TInterpreter::GetInstance()->WakeUp();
-		}
-
-		// see if we need to set a nap now
-		if (mNapTime > 0)
-		{
-			int32	timeNow = ::timeGetTime();
-			
-			if (mNapTime > timeNow)
-			{
-				// still haven't reached the nap time
-				// have to wait some more
-				int32 tenths = (mNapTime - timeNow) / 100;
-
-				if (tenths >= 1)
-				{
-					gDebugLog.Log("QuickTime: DoLoadStep, done loading, napping for <%d> tenths",
-						tenths);
-					gCursorManager.CheckCursor();
-					gView->Draw();
-					TInterpreter::GetInstance()->Nap(tenths);
-				}
-			}
-		}
-
-		mLoadStep = LQT_LOADED;
-	}
+	if (mMovie != NULL && mMovie->IsStarted())
+		mMovie->Unpause();
 }
 
 //
@@ -1085,96 +508,31 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 bool LQuickTime::HandleEvent(HWND inWind, UINT inMessage, 
 							  WPARAM inWParam, LPARAM inLParam)
 {
-	ComponentResult	theResult = FALSE;
-	bool			retValue = false;
-
-	if (mPlaying)
-	{
-		// convert the Windows event to a QTML event
-		MSG				theMsg;
-		EventRecord		macEvent;
-		LONG			thePoints = GetMessagePos();
-
-		theMsg.hwnd		= inWind;
-		theMsg.message	= inMessage;
-		theMsg.wParam	= inWParam;
-		theMsg.lParam	= inLParam;
-		theMsg.time		= GetMessageTime();
-		theMsg.pt.x		= LOWORD(thePoints);
-		theMsg.pt.y		= HIWORD(thePoints);
-
-		// tranlate a windows event to a mac event
-		WinEventToMacEvent(&theMsg, &macEvent);
-
-		// handle all movie controller events
-		if (mMovieController)
-			theResult = ::MCIsPlayerEvent(mMovieController, (const EventRecord *) &macEvent);
-
-		if (theResult)
-			retValue = true;
-	}
-
-	// serve all the movies exactly once, we should do this often
 	if (mMovie)
-		::MoviesTask(mMovie, 0);
-
-	return (retValue);
+		return mMovie->HandleMovieEvent(inWind, inMessage, inWParam, inLParam);
+	else
+		return false;
 }
 
 /*
  $Log$
- Revision 1.5  2002/06/20 16:32:55  emk
- Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
- branch contained the following enhancements:
+ Revision 1.5.2.1  2003/10/06 20:16:29  emk
+ 3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
+ (Various parts of the new layer include forward ports from
+ FiveL_3_2_0_5_TQTMovie and back ports from Tamale.)  This engine is
+ completely untested and almost certainly has bugs and incomplete error
+ handling.
 
-   * Most of the communication between the interpreter and the
-     engine now goes through the interfaces defined in
-     TInterpreter.h and TPrimitive.h.  Among other things, this
-     refactoring makes will make it easier to (1) change the interpreter
-     from 5L to Scheme and (2) add portable primitives that work
-     the same on both platforms.
-   * A new system for handling callbacks.
+ Revision 1.1.2.1.2.1  2002/07/03 09:27:58  emk
+ 3.2.0.5+TQTMovie - Experimental support for displaying movies through TQTMovie.
+ This is incomplete, but we'll want to port it to 3.5 or so.
 
- I also slipped in the following, unrelated enhancements:
+ Revision 1.1.2.1  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
 
-   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
-     there is a new, not-yet-ready-for-prime-time Carbonized build.
-   * Bug fixes from the "Fix for 3.4" list.
-
- Revision 1.4.6.1  2002/06/06 05:47:30  emk
- 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
- abstract interface.
-
-   * Strictly limited the files which include Card.h and Macro.h.
-   * Added TWin5LInterpreter class.
-   * Made as much code as possible use the TInterpreter interface.
-   * Fixed a few miscellaneous build warnings.
-
- Revision 1.4  2002/05/15 11:05:33  emk
- 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
- Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
- is available, and several subsystems have been refactored.  For more
- detailed descriptions, see the CVS branch.
-
- The merged Mac code hasn't been built yet; I'll take care of that next.
-
- Revision 1.3.2.1  2002/05/15 09:23:56  emk
- 3.3.2.8 - Last typography branch checkin before merge.
-
- * Fixed (wait ...) bug which caused all (wait ...) commands to wait
- until the end of the movie.
-
- * (buttpcx ...) now uses anti-aliased text.
-
- * Miscellaneous other tweaks and fixes--just getting things into shape
- for the merge.
-
- Revision 1.3  2002/04/19 10:21:52  hyjin
- Added support for a movie controller in 5L applications, and deleted some buggy pre-roll code that appeared to be causing crashes.  We're not a hundred percent sure all the crashing problems are fixed, but things seem to be working very well.  Please test this extensively!
-
- Set global variable _bShowMC to see the movie controller (case insensitive).
-
- Changes by Yijin, reviewed by Eric Kidd.
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
 
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.

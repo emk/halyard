@@ -179,7 +179,7 @@ DEFINE_5L_PRIMITIVE(Audio)
 			do_loop = true;
 	}
 	
-	gAudioManager.Play(audio_file, the_offset, the_volume,
+	gAudioManager.Play(audio_file, /*the_offset,*/ the_volume,
 			the_fade_time, do_loop, do_kill);
 }
 
@@ -1304,9 +1304,9 @@ DEFINE_5L_PRIMITIVE(PlayQTFile)
 	}
     
     if (not audio_only)
-    	gVideoManager.Play(QTfile, theOffset);
+    	gVideoManager.Play(QTfile/*, theOffset*/);
     else
-    	gAudioManager.Play(QTfile, theOffset, 100, 0, false, true);
+    	gAudioManager.Play(QTfile, /*theOffset,*/ 100, 0, false, true);
 }
 
 /*-----------------------------------------------------------
@@ -1333,7 +1333,7 @@ DEFINE_5L_PRIMITIVE(PlayQTLoop)
     	return;
     }
     
-    gAudioManager.Play(QTfile, 0, 100, theFadeTime, true, true); 
+    gAudioManager.Play(QTfile, 100, theFadeTime, true, true); 
 }
 
 /*-----------------------------------------------------------
@@ -1431,12 +1431,12 @@ DEFINE_5L_PRIMITIVE(PreloadQTFile)
 	{
 		if (audio_file)
 		{
-			gAudioManager.Preroll(QTfile, tenths, doSync);
+			gAudioManager.Preload(QTfile, /*tenths,*/ doSync);
 			gVariableManager.SetString("_PreloadedVideo", QTfile.GetString());
 		}
 		else
 		{
-			gVideoManager.Preroll(QTfile, tenths, doSync);
+			gVideoManager.Preload(QTfile, /*tenths,*/ doSync);
 			gVariableManager.SetString("_PreloadedAudio", QTfile.GetString());
 		}
 	}

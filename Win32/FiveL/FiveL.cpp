@@ -43,6 +43,7 @@
 #include "LHttp.h"
 #include "LBrowser.h"
 #include "SingleInstance.h"
+#include "TQTMovie.h"
 #include "TWin5LInterpreter.h"
 #include "TWinPrimitives.h"
 #include "TQTPrimitives.h"
@@ -105,7 +106,6 @@ LFontManager		gFontManager;
 LCommandKeyManager	gCommandKeyManager;
 InputManager		gInputManager;
 CGrafPtr			gGrafPtr = NULL;
-GWorldPtr			gDummyGWorldPtr = NULL;
 LHttp				gHttpTool;
 LBrowser			gBrowserTool;
 
@@ -368,8 +368,11 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 	//      as we had seen flashes on startup of certain movies on certain
 	//		platforms (Dell laptops and Win98).  But that flag forces use
 	//      of GDI, which breaks VP 3.2.1.3 under the QT6 public preview.
-	//
-	if (::InitializeQTML(0) != noErr)
+ 	try
+ 	{
+ 		TQTMovie::InitializeMovies();
+ 	}
+ 	catch (...)
 	{
 		// QuickTime is not installed
 		gLog.Error("QuickTime is not installed. Please install QuickTime before running this program.");
@@ -393,8 +396,6 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 		gVariableManager.SetString("_QuickTimeVersion", theBuffer);
 	}
-
-	::EnterMovies();				// Initialize QuickTime
 
 	// Try to find out whether QuickTime is using DirectDraw.  This is
 	// unscientific, and not based on any documentation, but it seems
@@ -526,12 +527,9 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	gPaletteManager.Init();
 
-	gGrafPtr = (CGrafPtr) ::CreatePortAssociation (hwndApp, NULL, NULL); // Register window with QTML
-	
-	// set up a dummy GWorld that we can use when prerolling movies
-	Rect dummyRect = {0, 0, 1, 1};
-	OSErr err = ::NewGWorld(&gDummyGWorldPtr, 8, &dummyRect, NULL, NULL, 0);
-	
+	TQTMovie::RegisterWindowForMovies(hwndApp);
+	gGrafPtr = TQTMovie::GetPortFromHWND(hwndApp);
+
 	// Initialize the view  
 	if (not gView->Init())
 		return (false);
@@ -552,16 +550,8 @@ void DeInitInstance(void)
 	if (gView != NULL)
 		delete gView;
 
-	::DestroyPortAssociation (gGrafPtr);      // Unregister window with QTML
-
-	if (gDummyGWorldPtr != NULL)
-	{
-		::DisposeGWorld(gDummyGWorldPtr);
-		gDummyGWorldPtr = NULL;
-	}
-
-	::ExitMovies();                               // Terminate QuickTime
-	::TerminateQTML();                            // Terminate QTML
+ 	TQTMovie::UnregisterWindowForMovies(hwndApp);
+ 	TQTMovie::ShutDownMovies();
 }
 
 //
@@ -1269,6 +1259,13 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.13.2.2  2003/10/06 20:16:28  emk
+ 3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
+ (Various parts of the new layer include forward ports from
+ FiveL_3_2_0_5_TQTMovie and back ports from Tamale.)  This engine is
+ completely untested and almost certainly has bugs and incomplete error
+ handling.
+
  Revision 1.13.2.1  2002/10/11 18:03:30  emk
  3.4.3 - 11 Oct 2002 - emk
 
