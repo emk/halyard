@@ -6,8 +6,10 @@
 #include <map>
 #include <string>
 
+#include "TInterpreter.h"
+
 class Stage;
-class TCallback;
+
 
 //////////
 // A Element is something which appears on a stage--typically either
@@ -25,7 +27,7 @@ class Element
 	//////////
 	// A list of event handlers supported by this element.
 	//
-	typedef std::map<std::string,TCallback*> EventHandlerMap;
+	typedef std::map<std::string,FIVEL_NS TCallback*> EventHandlerMap;
 
 	//////////
 	// The stage on which this element appears.

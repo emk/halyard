@@ -2,11 +2,13 @@
 
 #include <wx/wx.h>
 
+#include "TCommon.h"
 #include "Zone.h"
-#include "TInterpreter.h"
+
+USING_NAMESPACE_FIVEL
 
 Zone::Zone(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-		   TCallback *inAction)
+		   FIVEL_NS TCallback *inAction)
     : Element(inStage, inName), mBounds(inBounds), mAction(inAction)
 {
     ASSERT(mAction);

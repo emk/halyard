@@ -9,6 +9,8 @@
 #include "Stage.h"
 #include "Listener.h"
 
+USING_NAMESPACE_FIVEL
+
 BEGIN_EVENT_TABLE(Listener, ToolWindow)
     EVT_ACTIVATE(Listener::OnActivate)
     EVT_UPDATE_UI(FIVEL_LISTENER_TEXT_ENTRY, Listener::UpdateUiInput)

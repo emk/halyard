@@ -36,7 +36,9 @@ Checking 5L Out of CVS
   "iml/iml_programs/5Ltest" and "iml/iml_programs/5Ltest_scheme" (you'll
   need to know these to use CVSweb).  Make sure your CVS client uses the
   native end-of-line convetion; this can be a problem under MacOS X and
-  some versions of Cygwin/W2K.
+  some versions of Cygwin/W2K.  Also make sure that CVS clients
+  don't check out files out ready-only; this will tend to break the
+  engine.
 
   In the instructions that follow, we'll assume your copy of the 5L source
   tree is in $5L_DIR and your copy of 5Ltest is in $5LTEST_DIR.

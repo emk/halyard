@@ -6,6 +6,8 @@
 #include "TLogger.h"
 #include "Log5L.h"
 
+USING_NAMESPACE_FIVEL
+
 Log5L::Log5L()
 {
 	gDebugLog.Log("WX INITIALIZING: Sending wx log messages to 5L logs.");

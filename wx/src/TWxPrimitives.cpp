@@ -17,9 +17,11 @@
 #include "Zone.h"
 #include "MovieElement.h"
 #include "Widget.h"
+#include "FileSystem.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
+using FileSystem::Path;
 
 
 //=========================================================================
@@ -183,9 +185,12 @@ DEFINE_5L_PRIMITIVE(Loadpic)
 		return;
 	}
 
+	// Build a path to our image.
+	Path p = FileSystem::GetBaseDirectory().AddComponent("Graphics").AddComponent(picname).ReplaceExtension("png");
+
 	// Convert our image to a bitmap.
 	wxImage image;
-	image.LoadFile(("./Graphics/" + picname + ".png").c_str());
+	image.LoadFile(p.ToNativePathString().c_str());
 	wxBitmap bitmap(image);
 
 	// Draw the bitmap.

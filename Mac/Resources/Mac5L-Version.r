@@ -10,7 +10,7 @@
 
 /* The actual version number, as a string.  This should be followed by
 ** "(Development)", in parentheses, if this is a development series release. */
-#define VERSION_STR    "3.5.10 (Development)"
+#define VERSION_STR    "3.5.11 (Development)"
 
 resource 'vers' (1) {
 	MAJOR,

@@ -3,10 +3,10 @@
 #ifndef Zone_H
 #define Zone_H
 
+#include "TInterpreter.h"
+
 #include "Stage.h"
 #include "Element.h"
-
-class TCallback;
 
 //////////
 // A zone is basically a "virtual widget" on our stage.  It doesn't
@@ -16,11 +16,11 @@ class TCallback;
 class Zone : public Element
 {
 	wxRect mBounds;
-	TCallback *mAction;
+	FIVEL_NS TCallback *mAction;
 	
 public:
 	Zone(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-		 TCallback *inAction);
+		 FIVEL_NS TCallback *inAction);
 	~Zone();
 
 	virtual bool IsLightWeight() { return true; }

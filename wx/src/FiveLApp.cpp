@@ -89,16 +89,16 @@ int FiveLApp::OnExit()
 
 int FiveLApp::MainLoop()
 {
+	// WARNING - No Scheme function may ever be called above this
+    // point on the stack!
+    FIVEL_SET_STACK_BASE();
+        
     // Try to create a SchemeInterpreterManager.
     TInterpreterManager *manager =
         ::MaybeGetSchemeInterpreterManager(&FiveLApp::IdleProc);
 
     if (manager)
     {
-        // WARNING - No Scheme function may ever be called above this
-        // point on the stack!
-        FIVEL_SET_STACK_BASE();
-
         // Run our own event loop.
         SetExitOnFrameDelete(FALSE);
         mHaveOwnEventLoop = true;

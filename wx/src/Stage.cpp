@@ -21,6 +21,8 @@
 #include "Timecoder.h"
 #include "LocationBox.h"
 
+USING_NAMESPACE_FIVEL
+
 
 //=========================================================================
 //  StageFrame Methods

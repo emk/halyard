@@ -6,6 +6,8 @@
 #include "LocationBox.h"
 #include "TInterpreter.h"
 
+USING_NAMESPACE_FIVEL
+
 
 //=========================================================================
 //  LocationBox Methods

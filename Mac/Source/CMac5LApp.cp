@@ -560,14 +560,10 @@ void CMac5LApp::InitializeInterpreter()
 #ifdef DEBUG
 
 //
-//	ReDoScript - Read in the current script from disc and start again.
+// Dump any resources used by the current script.
 //
-void CMac5LApp::ReDoScript(const char *curCard)
+void CMac5LApp::ReleaseScriptResources()
 {
-	mScriptRunning = false;
-
-	TInterpreter::GetInstance()->KillCurrentCard();
-	
 	if (gMovieManager.Playing())
 		gMovieManager.Kill();
 		
@@ -581,7 +577,16 @@ void CMac5LApp::ReDoScript(const char *curCard)
 	// XXX - Does this potentially destroy an object in our call chain?
 	if (!gHaveLegacyInterpreterManager)
 		gPlayerView->DeleteAllKeyBinds();
+}
 
+//
+//	ReDoScript - Read in the current script from disc and start again.
+//
+void CMac5LApp::ReDoScript(const char *curCard)
+{
+	mScriptRunning = false;
+	TInterpreter::GetInstance()->KillCurrentCard();
+	ReleaseScriptResources();
 	TInterpreterManager::GetInstance()->RequestReloadScript(curCard);
 }
 
@@ -595,6 +600,8 @@ Boolean CMac5LApp::ObeyCommand(CommandT inCommand, void *ioParam)
 		if (TInterpreterManager::HaveInstance() &&
 			TInterpreterManager::GetInstance()->FailedToLoad())
 		{
+			// Release any resources left over from a failed load.
+			ReleaseScriptResources();
 			gInterpreterManager->RequestRetryLoadScript();
 			return (true);
 		}
@@ -722,6 +729,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.28  2002/11/19 18:34:37  emk
+3.5.11 - Wrote code to release script resources before retrying a failed script load.
+
 Revision 1.27  2002/10/30 21:12:56  emk
 Updated Mac build, and converted all *.rsrc files to *.r files.
 

@@ -1,6 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+3.5.11 - 19 Nov 2002 - emk
+
+Regular 5L:
+
+  * Wrote code to release script resources before retrying a failed
+    script load.
+
+wx5L:
 
   * Added wx/src/AppConfig.h, which can be used to enable and disable
     various GUI features on a per-platform basis.

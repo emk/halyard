@@ -29,6 +29,7 @@ class	CMac5LApp : public PP::LApplication
 		void				InitializeInterpreter();
 
 #ifdef DEBUG
+		void				ReleaseScriptResources();
 		void				ReDoScript(const char *curCard);
 
 		Boolean				ObeyCommand(PP::CommandT inCommand, void *ioParam);
