@@ -17,15 +17,23 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		16
+#define VERSION_REV_BIG		17
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.16 (Development)"
+#define VERSION_STRING		"Tamale 0.0.17 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.58  2004/02/12 15:34:57  emk
+ 0.0.17 - kwasi, djin, emk
+
+   * Added APIs for accessing TStateDB from Scheme.
+   * Implemented %animated-graphic% with corresponding AnimatedOverlay class.
+   * Added support for (ON EXIT () ...) handlers.
+   * Updated Quake 2 game interface.
+
  Revision 1.57  2004/02/09 19:53:28  emk
  0.0.16 - kwasi, djin, emk
 
