@@ -26,7 +26,6 @@
       Activate reticules (acts as trigger)
       Looking at reticulates (acts as trigger)
       Looking at entities (acts as trigger)
-    What do we want to do about teaching commands?  Triggers?  Console hacks?
     Trigger Quake 2 targets from Scheme
     Reimplement meters in Scheme
       Allow elements to be attached to sequences
