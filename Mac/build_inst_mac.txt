@@ -1,0 +1,42 @@
+Build Instructions for Mac5L
+
+Prerequisites:
+- CodeWarrior Pro 5.3
+- The latest Universal headers from Apple 
+	These are needed for a more recent interface to QuickTime than the 
+	interfaces that ship with Metrowerks.
+- CVS 
+	I use MacCVS (http://www.cyclic.com/). The interface isn't perfect but
+	it seems to work pretty well.
+	
+	
+1. Check out the latest source code from CVS.
+	A. The CVSROOT that I use is:
+		:pserver:chuck@imlcvs.dartmouth.edu:/usr/local/cvsroot
+		You will need your own account on imlcvs (see Benton or Mark).
+	B. Check out the "iml" project.
+		I check it out to the "Work" drive.
+2. Open Mac5L.mcp.
+	This is the Codewarrior project file for the engine. You will find it
+		in "iml:FiveL:Dev:Mac:FiveL:Mac5L.mcp"
+3. Build it.
+	A. Release version: Select the "PPC Release" target.
+	B. Debug version: Select the "PPC Debug" target.
+	C. To do a clean build first remove all objects by selecting:
+		Project:Remove Object Code... 
+	D. Build it by selecting:
+		Project:Make
+4. Debug it.
+	A. Build the debug version.
+	B. The Mac5L.config file in Output:PPC_Debug is the one the engine
+		will read to find the project to debug. What I do is keep several
+		version of this file for the different projects I want to debug
+		and only name one Mac5L.config. The others I put some prefix on
+		so that I can use them later.
+	C. Set breakpoints in the code and start the debugger:
+		Project:Enable Debugger (if it has been disabled)
+		Project:Run
+		
+		
+	
+		

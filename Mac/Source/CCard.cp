@@ -288,6 +288,7 @@ void CCard::DoCommand(void)
     else if (opword == (char *)"open") DoOpen();
     else if (opword == (char *)"origin") DoOrigin();
     else if (opword == (char *)"circle") DoOval();
+    else if (opword == (char *)"oval") DoOval();
     else if (opword == (char *)"pause") DoQTPause();
     else if (opword == (char *)"play") DoPlay();
     else if (opword == (char *)"playqtfile") DoPlayQTFile();
