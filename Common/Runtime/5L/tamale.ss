@@ -456,11 +456,22 @@
     (set! *media-base-url* url))
 
   (define (media-path location)
-    ;; Find the remote version of a movie.
-    ;; This will need quite a bit of rethinking.
-    (if *media-base-url*
-        (cat *media-base-url* "/" location)
-        (make-path "Media" location)))
+    (cond
+     ;; Pass explicit URLs straight through.
+     [(url? location)
+      location]
+     ;; Otherwise, first check our media directory for the file.
+     [(file-exists? (make-path "Media" location))
+      (make-path "Media" location)]
+     ;; Then check the CD, if we have one.
+     ;; TODO - Implement.
+     ;; If all else fails, and we've been told about a server, assume our
+     ;; media is there.
+     [*media-base-url*
+      (cat *media-base-url* "/" location)]
+     ;; OK, we give up.
+     [#t
+      (error (cat "Cannot find file " location))]))
 
   (define-element-template %movie-element%
       [[location     :type <string>  :label "Location"]
