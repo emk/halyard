@@ -25,18 +25,18 @@
   ;;  errors.
 
   (provide (rename point <point>) (rename make-point point) point?
-	   point-x set-point-x! point-y set-point-y!
+           point-x set-point-x! point-y set-point-y!
 
-	   (rename rect <rect>) (rename make-rect rect) rect?
-	   rect-left set-rect-left! rect-top set-rect-top!
-	   rect-right set-rect-right! rect-bottom set-rect-bottom!
+           (rename rect <rect>) (rename make-rect rect) rect?
+           rect-left set-rect-left! rect-top set-rect-top!
+           rect-right set-rect-right! rect-bottom set-rect-bottom!
 
-	   (rename color <color>) (rename make-color-opt-alpha color) color?
-	   color-red set-color-red! color-green set-color-green!
-	   color-blue set-color-blue! color-alpha set-color-alpha!
+           (rename color <color>) (rename make-color-opt-alpha color) color?
+           color-red set-color-red! color-green set-color-green!
+           color-blue set-color-blue! color-alpha set-color-alpha!
 
-	   (rename percent <percent>) (rename make-percent percent)
-	   percent? percent-value)
+           (rename percent <percent>) (rename make-percent percent)
+           percent? percent-value)
   
   (define-struct point (x y) (make-inspector))
 
@@ -74,22 +74,22 @@
   
   (define (member? item list)
     (if (null? list)
-	#f
-	(if (equal? item (car list))
-	    #t
-	    (member? item (cdr list)))))
+        #f
+        (if (equal? item (car list))
+            #t
+            (member? item (cdr list)))))
   
   (define (value->string value)
     (if (string? value)
-	value
-	(let ((str-port (open-output-string)))
-	  (write value str-port)
-	  (get-output-string str-port))))
+        value
+        (let ((str-port (open-output-string)))
+          (write value str-port)
+          (get-output-string str-port))))
   
   (define (cat . values)
     (if (not (null? values))
-	(string-append (value->string (car values)) (apply cat (cdr values)))
-	""))
+        (string-append (value->string (car values)) (apply cat (cdr values)))
+        ""))
 
   (define-syntax label
     (syntax-rules ()
@@ -99,14 +99,14 @@
 
   (define (call-with-errors-blocked report-func thunk)
     (let* ((result (with-handlers ([void (lambda (exn) (cons #f exn))])
-		     (cons #t (thunk))))
-	   (good? (car result))
-	   (exn-or-value (cdr result)))
+                     (cons #t (thunk))))
+           (good? (car result))
+           (exn-or-value (cdr result)))
       (if good?
-	  exn-or-value
-	  (begin
-	    (report-func (exn-message exn-or-value))
-	    #f))))
+          exn-or-value
+          (begin
+            (report-func (exn-message exn-or-value))
+            #f))))
 
   (define-syntax with-errors-blocked
     (syntax-rules ()
@@ -120,7 +120,7 @@
   ;;=======================================================================
   
   (provide *enter-card-hook* *exit-card-hook*
-	   *card-body-finished-hook* *before-draw-hook*)
+           *card-body-finished-hook* *before-draw-hook*)
 
   ;; Called before running each card.
   (define *enter-card-hook* (make-hook 'enter-card))
@@ -174,7 +174,7 @@
   
   (define (%kernel-die-if-callback name)
     (if *%kernel-running-callback?*
-	(throw (cat "Cannot call " name " from within callback."))))
+        (throw (cat "Cannot call " name " from within callback."))))
 
   (define (%kernel-clear-timeout)
     (set! *%kernel-timeout* #f)
@@ -188,44 +188,44 @@
   
   (define (%kernel-check-timeout)
     (when (and *%kernel-timeout*
-	       (>= (current-milliseconds) *%kernel-timeout*))
+               (>= (current-milliseconds) *%kernel-timeout*))
       (let ((thunk *%kernel-timeout-thunk*))
-	(%kernel-clear-timeout)
-	(thunk))))
+        (%kernel-clear-timeout)
+        (thunk))))
 
   (define (%kernel-safe-to-run-deferred-thunks?)
     ;; Would now be a good time to run deferred thunks?  Wait until
     ;; nothing exciting is happening.
     (and (not *%kernel-running-callback?*)
-	 (not *%kernel-running-deferred-thunks?*)
-	 (member? *%kernel-state* '(NORMAL PAUSED NAPPING))))
+         (not *%kernel-running-deferred-thunks?*)
+         (member? *%kernel-state* '(NORMAL PAUSED NAPPING))))
 
   (define (call-at-safe-time thunk)
     ;; Make sure we run 'thunk' at the earliest safe time, but not
     ;; in a callback.  This can be used to defer calls to video, input,
     ;; and other functions which can't be called from a callback.
     (if (%kernel-safe-to-run-deferred-thunks?)
-	(thunk)
-	(set! *%kernel-deferred-thunk-queue*
-	      (cons thunk *%kernel-deferred-thunk-queue*)))
+        (thunk)
+        (set! *%kernel-deferred-thunk-queue*
+              (cons thunk *%kernel-deferred-thunk-queue*)))
     #f)
     
   (define (%kernel-check-deferred)
     ;; Run any deferred thunks.
     (unless (or (null? *%kernel-deferred-thunk-queue*)
-		(not (%kernel-safe-to-run-deferred-thunks?)))
+                (not (%kernel-safe-to-run-deferred-thunks?)))
 
       ;; Make a copy of the old queue and clear the global variable
       ;; (which may be updated behind our backs.
       (let [[items (reverse *%kernel-deferred-thunk-queue*)]]
-	(set! *%kernel-deferred-thunk-queue* '())
+        (set! *%kernel-deferred-thunk-queue* '())
 
-	;; Run every thunk in the queue, in order.
-	(fluid-let [[*%kernel-running-deferred-thunks?* #t]]
-	  (let loop [[items items]]
-	    (unless (null? items)
-	      ((car items))
-	      (loop (cdr items))))))
+        ;; Run every thunk in the queue, in order.
+        (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
+          (let loop [[items items]]
+            (unless (null? items)
+              ((car items))
+              (loop (cdr items))))))
 
       ;; Check to see if any new items appeared in the queue while we
       ;; were running the first batch.
@@ -238,18 +238,18 @@
   (define (%kernel-run-as-callback thunk error-handler)
     (assert (not *%kernel-running-callback?*))
     (if (eq? *%kernel-state* 'INTERPRETER-KILLED)
-	(5l-log "Skipping callback because interpreter is being shut down")
-	(let [[saved-kernel-state *%kernel-state*]]
-	  (set! *%kernel-state* 'NORMAL)
-	  (label exit-callback
-	    ;; TODO - Can we have better error handling?
+        (5l-log "Skipping callback because interpreter is being shut down")
+        (let [[saved-kernel-state *%kernel-state*]]
+          (set! *%kernel-state* 'NORMAL)
+          (label exit-callback
+            ;; TODO - Can we have better error handling?
             (with-errors-blocked (error-handler)
-	      (fluid-let [[*%kernel-exit-to-top-func* exit-callback]
-			  [*%kernel-exit-interpreter-func* exit-callback]
-			  [*%kernel-running-callback?* #t]]
-		(thunk))))
-	  (if (eq? *%kernel-state* 'NORMAL)
-	      (set! *%kernel-state* saved-kernel-state)))))
+              (fluid-let [[*%kernel-exit-to-top-func* exit-callback]
+                          [*%kernel-exit-interpreter-func* exit-callback]
+                          [*%kernel-running-callback?* #t]]
+                (thunk))))
+          (if (eq? *%kernel-state* 'NORMAL)
+              (set! *%kernel-state* saved-kernel-state)))))
 
   (define (%kernel-set-state state)
     (set! *%kernel-state* state))
@@ -266,16 +266,16 @@
        (%kernel-check-state)]
       [[NAPPING]
        (if (< (current-milliseconds) *%kernel-nap-time*)
-	   (begin
-	     (%call-5l-prim 'schemeidle)
-	     (%kernel-check-state))
-	   (%kernel-clear-state))]
+           (begin
+             (%call-5l-prim 'schemeidle)
+             (%kernel-check-state))
+           (%kernel-clear-state))]
       [[JUMPING]
        (when *%kernel-exit-to-top-func*
-	     (*%kernel-exit-to-top-func* #f))]
+             (*%kernel-exit-to-top-func* #f))]
       [[CARD-KILLED]
        (when *%kernel-exit-to-top-func*
-	     (*%kernel-exit-to-top-func* #f))]
+             (*%kernel-exit-to-top-func* #f))]
       [[INTERPRETER-KILLED]
        (*%kernel-exit-interpreter-func* #f)]
       [else
@@ -291,8 +291,8 @@
   ;;  in the 5L-API module.
   
   (provide call-5l-prim have-5l-prim? idle 5l-log debug-log
-	   caution debug-caution non-fatal-error fatal-error
-	   engine-var set-engine-var! engine-var-exists?
+           caution debug-caution non-fatal-error fatal-error
+           engine-var set-engine-var! engine-var-exists?
            throw exit-script jump refresh)
 
   (define *32-bit-signed-min* -2147483648)
@@ -335,25 +335,25 @@
   
   (define (set-engine-var! name value)
     (let [[namesym (if (string? name) (string->symbol name) name)]
-	  [type
-	   (cond
-	    [(void? value) 'NULL]
-	    [(string? value) 'STRING]
-	    [(symbol? value) 'SYMBOL]
-	    [(and (integer? value) (exact? value))
-	     (cond
-	      [(<= *32-bit-signed-min* value *32-bit-signed-max*) 'LONG]
-	      [(<= *32-bit-unsigned-min* value *32-bit-unsigned-max*) 'ULONG]
-	      [else (throw (cat "Cannot store " value " in " name
-				" because it does fall between "
-				*32-bit-signed-min* " and "
-				*32-bit-unsigned-max* "."))])]
-	    [(number? value) 'DOUBLE]
-	    [(or (eq? value #t) (eq? value #f)) 'BOOLEAN]
-	    [else (throw (cat "Cannot store " value " in " name "."))])]]
+          [type
+           (cond
+            [(void? value) 'NULL]
+            [(string? value) 'STRING]
+            [(symbol? value) 'SYMBOL]
+            [(and (integer? value) (exact? value))
+             (cond
+              [(<= *32-bit-signed-min* value *32-bit-signed-max*) 'LONG]
+              [(<= *32-bit-unsigned-min* value *32-bit-unsigned-max*) 'ULONG]
+              [else (throw (cat "Cannot store " value " in " name
+                                " because it does fall between "
+                                *32-bit-signed-min* " and "
+                                *32-bit-unsigned-max* "."))])]
+            [(number? value) 'DOUBLE]
+            [(or (eq? value #t) (eq? value #f)) 'BOOLEAN]
+            [else (throw (cat "Cannot store " value " in " name "."))])]]
       (if (eq? type 'NULL)
-	  (call-5l-prim 'settyped namesym type)
-	  (call-5l-prim 'settyped namesym type value))))
+          (call-5l-prim 'settyped namesym type)
+          (call-5l-prim 'settyped namesym type value))))
 
   (define (engine-var-exists? name)
     ;; XXX - This test is backward because VariableInitialized is
@@ -370,17 +370,17 @@
   
   (define (jump card)
     (if (have-5l-prim? 'jump)
-	(call-5l-prim 'jump (card-name card))
-	(begin
-	  ;; If we don't have a JUMP primitive, fake it by hand.
-	  (set! *%kernel-jump-card* (%kernel-find-card card))
-	  (%kernel-set-state 'JUMPING)
-	  (%kernel-check-state))))
+        (call-5l-prim 'jump (card-name card))
+        (begin
+          ;; If we don't have a JUMP primitive, fake it by hand.
+          (set! *%kernel-jump-card* (%kernel-find-card card))
+          (%kernel-set-state 'JUMPING)
+          (%kernel-check-state))))
 
   (define (refresh)
     (call-hook-functions *before-draw-hook*)
     (if (have-5l-prim? 'unlock)
-	(call-5l-prim 'unlock)))
+        (call-5l-prim 'unlock)))
 
 
   ;;=======================================================================
@@ -399,14 +399,14 @@
   (define (%kernel-register-card card)
     (let ((name (%kernel-card-name card)))
       (if (hash-table-get *%kernel-card-table* name (lambda () #f))
-	  (non-fatal-error (cat "Duplicate card: " name))
-	  (hash-table-put! *%kernel-card-table* name card))))
+          (non-fatal-error (cat "Duplicate card: " name))
+          (hash-table-put! *%kernel-card-table* name card))))
 
   (define (card-exists? card-name)
     (if (hash-table-get *%kernel-card-table* (string->symbol card-name)
-			(lambda () #f))
-	#t
-	#f))
+                        (lambda () #f))
+        #t
+        #f))
   
   (define (%kernel-run-card card)
     (%kernel-clear-timeout)
@@ -415,7 +415,7 @@
     (when *%kernel-current-card*
       (call-hook-functions *exit-card-hook* *%kernel-current-card*)
       (when (have-5l-prim? 'notifyexitcard)
-	(call-5l-prim 'notifyexitcard)))
+        (call-5l-prim 'notifyexitcard)))
 
     ;; Update our global variables.
     (set! *%kernel-previous-card* *%kernel-current-card*)
@@ -438,9 +438,9 @@
       card-or-name]
      [(symbol? card-or-name)
       (let ((card (hash-table-get *%kernel-card-table*
-				  card-or-name
-				  (lambda () #f))))
-	(or card (throw (cat "Unknown card: " card-or-name))))]
+                                  card-or-name
+                                  (lambda () #f))))
+        (or card (throw (cat "Unknown card: " card-or-name))))]
      [(string? card-or-name)
       (%kernel-find-card (string->symbol card-or-name))]
      [#t
@@ -461,9 +461,9 @@
     (syntax-rules ()
       [(card name body ...)
        (begin
-	 (define name (make-%kernel-card 'name
+         (define name (make-%kernel-card 'name
                                          (lambda () (begin/var body ...))))
-	 (%kernel-register-card name))]))
+         (%kernel-register-card name))]))
 
 
   ;;=======================================================================
@@ -478,31 +478,31 @@
     (with-errors-blocked (fatal-error)
       (label exit-interpreter
         (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
-	  (let ((jump-card #f))
-	    (let loop ()
-	      (label exit-to-top
-	        (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
-		  (idle)
-		  (cond
-		   [jump-card
-		    (%kernel-run-card (%kernel-find-card jump-card))
-		    (set! jump-card #f)]
-		   [#t
-		    ;; Highly optimized do-nothing loop. :-)  This
-		    ;; is a GC optimization designed to prevent the
-		    ;; interpreter from allocating memory like a crazed
-		    ;; maniac while the user's doing nothing.  If we
-		    ;; removed this block, we'd have to perform a lot
-		    ;; of LABEL and FLUID-LET statements, which are
-		    ;; extremely expensive in quantities of 1,000.
-		    (let idle-loop ()
-		      (unless (eq? *%kernel-state* 'JUMPING)
-			(idle)
+          (let ((jump-card #f))
+            (let loop ()
+              (label exit-to-top
+                (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
+                  (idle)
+                  (cond
+                   [jump-card
+                    (%kernel-run-card (%kernel-find-card jump-card))
+                    (set! jump-card #f)]
+                   [#t
+                    ;; Highly optimized do-nothing loop. :-)  This
+                    ;; is a GC optimization designed to prevent the
+                    ;; interpreter from allocating memory like a crazed
+                    ;; maniac while the user's doing nothing.  If we
+                    ;; removed this block, we'd have to perform a lot
+                    ;; of LABEL and FLUID-LET statements, which are
+                    ;; extremely expensive in quantities of 1,000.
+                    (let idle-loop ()
+                      (unless (eq? *%kernel-state* 'JUMPING)
+                        (idle)
                         (idle-loop)))])))
-	      (when (eq? *%kernel-state* 'JUMPING)
-	        (set! jump-card *%kernel-jump-card*))
-	      (%kernel-clear-state)
-	      (loop)))))
+              (when (eq? *%kernel-state* 'JUMPING)
+                (set! jump-card *%kernel-jump-card*))
+              (%kernel-clear-state)
+              (loop)))))
       (%kernel-clear-state)
       (%kernel-clear-timeout)))
 
@@ -524,12 +524,12 @@
   (define (%kernel-timeout card-name seconds)
     (%kernel-die-if-callback '%kernel-timeout)
     (%kernel-set-timeout (+ (current-milliseconds) (* seconds 1000))
-			 (lambda () (jump card-name))))
+                         (lambda () (jump card-name))))
 
   (define (%kernel-nap tenths-of-seconds)
     (%kernel-die-if-callback '%kernel-nap)
     (set! *%kernel-nap-time* (+ (current-milliseconds)
-				(* tenths-of-seconds 100)))
+                                (* tenths-of-seconds 100)))
     (%kernel-set-state 'NAPPING))
 
   (define (%kernel-napping?)
@@ -549,13 +549,13 @@
 
   (define (%kernel-current-card-name)
     (if *%kernel-current-card*
-	(value->string (%kernel-card-name *%kernel-current-card*))
-	""))
+        (value->string (%kernel-card-name *%kernel-current-card*))
+        ""))
 
   (define (%kernel-previous-card-name)
     (if *%kernel-previous-card*
-	(value->string (%kernel-card-name *%kernel-previous-card*))
-	""))
+        (value->string (%kernel-card-name *%kernel-previous-card*))
+        ""))
 
   (define (%kernel-valid-card? card-name)
     (card-exists? card-name))
@@ -571,14 +571,14 @@
       (%kernel-run-as-callback
        ;; Our callback.
        (lambda ()
-	 (call-with-values
-	  (lambda () (eval (read (open-input-string expression))))
-	  (lambda r (set! result (apply format-result-values r)))))
+         (call-with-values
+          (lambda () (eval (read (open-input-string expression))))
+          (lambda r (set! result (apply format-result-values r)))))
 
        ;; Our error handler.
        (lambda (error-msg)
-	 (set! ok? #f)
-	 (set! result error-msg)))
+         (set! ok? #f)
+         (set! result error-msg)))
       
       ;; Return the result.
       (cons ok? result)))

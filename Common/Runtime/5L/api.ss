@@ -18,7 +18,7 @@
   ;;;======================================================================
 
   (provide fn callback deferred-callback while for foreach
-	   define-engine-variable define/p)
+           define-engine-variable define/p)
 
   ;;; Create an anonymous function object (which can be passed as a
   ;;; callback to many routines).  This is just an alias for Scheme's
@@ -67,10 +67,10 @@
     (syntax-rules ()
       [(while cond body ...)
        (when cond
-	 (let loop []
-	   (begin/var body ...)
-	   (when cond
-	     (loop))))]))
+         (let loop []
+           (begin/var body ...)
+           (when cond
+             (loop))))]))
 
   ;;; Run a body of code until a condition is met, updating a loop variable
   ;;; as specified.  This works in a fashion similar to C's 'for' loop.
@@ -87,9 +87,9 @@
     (syntax-rules ()
       [(for [name init-value cond next-value] body ...)
        (let loop [[name init-value]]
-	 (begin/var body ...)
-	 (if cond
-	     (loop next-value)))]))
+         (begin/var body ...)
+         (if cond
+             (loop next-value)))]))
 
   ;;; Run a body once for each item in a list.
   ;;;
@@ -113,8 +113,8 @@
     (syntax-rules ()
       [(define-engine-variable name 5l-name init-val)
        (begin
-	 (define-symbol-macro name (engine-var '5l-name ))
-	 (maybe-initialize-engine-variable '5l-name init-val))]
+         (define-symbol-macro name (engine-var '5l-name ))
+         (maybe-initialize-engine-variable '5l-name init-val))]
       [(define-engine-variable name 5l-name)
        (define-symbol-macro name (engine-var '5l-name))]))
 
@@ -157,9 +157,9 @@
   ;;;  @xref define-engine-variable
 
   (provide *text-x* *text-y* *graphic-x* *graphic-y*
-	   text-position set-text-position! with-saved-text-position
-	   graphic-position set-graphic-position! with-saved-graphic-position
-	   $screen-rect)
+           text-position set-text-position! with-saved-text-position
+           graphic-position set-graphic-position! with-saved-graphic-position
+           $screen-rect)
 
   ;;; The maximum horizontal position of the last text drawn.
   (define-engine-variable *text-x*    _INCR_X)
@@ -206,10 +206,10 @@
     (syntax-rules ()
       [(with-saved-text-position body ...)
        (let [[saved #f]]
-	 (dynamic-wind
-	     (lambda () (set! saved (text-position)))
-	     (lambda () (begin/var body ...))
-	     (lambda () (set! (text-position) saved))))]))
+         (dynamic-wind
+             (lambda () (set! saved (text-position)))
+             (lambda () (begin/var body ...))
+             (lambda () (set! (text-position) saved))))]))
 
   ;;; Save (graphic-position) while executing a body, and restore it
   ;;; afterwards.
@@ -220,10 +220,10 @@
     (syntax-rules ()
       [(with-saved-graphic-position body ...)
        (let [[saved #f]]
-	 (dynamic-wind
-	     (lambda () (set! saved (graphic-position)))
-	     (lambda () (begin/var body ...))
-	     (lambda () (set! (graphic-position) saved))))]))  
+         (dynamic-wind
+             (lambda () (set! saved (graphic-position)))
+             (lambda () (begin/var body ...))
+             (lambda () (set! (graphic-position) saved))))]))  
 
   ;;; @type RECT The screen rectangle, in global co-ordinates.
   (define $screen-rect (rect 0 0 640 480))
@@ -234,8 +234,8 @@
   ;;;======================================================================
 
   (provide point-offset point-difference rect-offset
-	   rect-width rect-height rect-left-top rect-left-bottom
-	   rect-right-top rect-right-bottom)
+           rect-width rect-height rect-left-top rect-left-bottom
+           rect-right-top rect-right-bottom)
 
   ;;; Move a point by the specified amount.
   ;;;
@@ -244,7 +244,7 @@
   ;;; @return POINT The moved point.
   (define (point-offset p by)
     (point (+ (point-x p) (point-x by))
-	   (+ (point-y p) (point-y by))))
+           (+ (point-y p) (point-y by))))
 
   ;;; Subtract p2 from p1.
   ;;;
@@ -253,7 +253,7 @@
   ;;; @return POINT The result of the subtraction.
   (define (point-difference p1 p2)
     (point (- (point-x p1) (point-x p2))
-	   (- (point-y p1) (point-y p2))))
+           (- (point-y p1) (point-y p2))))
 
   ;;; Move a rectangle by the specified amount.
   ;;;
@@ -262,9 +262,9 @@
   ;;; @return POINT The moved rectangle.
   (define (rect-offset r by)
     (rect (+ (rect-left r) (point-x by))
-	  (+ (rect-top r) (point-y by))
-	  (+ (rect-right r) (point-x by))
-	  (+ (rect-bottom r) (point-y by))))
+          (+ (rect-top r) (point-y by))
+          (+ (rect-right r) (point-x by))
+          (+ (rect-bottom r) (point-y by))))
 
   ;;; @return INTEGER The width of the rectangle.
   (define (rect-width r)
@@ -305,7 +305,7 @@
   ;;; @legacy _originx _originy
   (define (origin)
     (point (engine-var '_originx)
-	   (engine-var '_originy)))
+           (engine-var '_originy)))
 
   ;;; Set the current origin to the specified absolute global co-ordinates,
   ;;; and update all the engine's position-related variables appropriately.
@@ -316,7 +316,7 @@
   ;;; @legacy ResetOrigin
   (define (set-origin! p)
     (let* [[old (origin)]
-	   [delta (point-difference p old)]]
+           [delta (point-difference p old)]]
       (call-5l-prim 'resetorigin p)
       (set! (text-position) (point-offset (text-position) delta))
       (set! (graphic-position) (point-offset (graphic-position) delta))))
@@ -343,11 +343,11 @@
     (syntax-rules ()
       [(with-offset-origin by body ...)
        (let [[old (origin)]
-	     [new (point-offset old by)]]
-	 (dynamic-wind
-	     (lambda () (set! (origin) new))
-	     (lambda () (begin/var body ...))
-	     (lambda () (set! (origin) old))))]))
+             [new (point-offset old by)]]
+         (dynamic-wind
+             (lambda () (set! (origin) new))
+             (lambda () (begin/var body ...))
+             (lambda () (set! (origin) old))))]))
 
 
   ;;;======================================================================
@@ -356,13 +356,13 @@
   ;;;  5L text drawing uses stylesheets.
   
   (provide stylesheet? stylesheet-name stylesheet-family
-	   stylesheet-size stylesheet-flags
-	   stylesheet-justification stylesheet-color
-	   stylesheet-highlight-color stylesheet-height-adjustment
-	   stylesheet-shadow-offset stylesheet-shadow-color
-	   stylesheet-highlight-shadow-color
-	   stylesheet-is-input-style? ; Deprecated.
-	   define-stylesheet measure-text draw-text)
+           stylesheet-size stylesheet-flags
+           stylesheet-justification stylesheet-color
+           stylesheet-highlight-color stylesheet-height-adjustment
+           stylesheet-shadow-offset stylesheet-shadow-color
+           stylesheet-highlight-shadow-color
+           stylesheet-is-input-style? ; Deprecated.
+           define-stylesheet measure-text draw-text)
 
   (define-struct stylesheet
     (name family size flags justification
@@ -380,22 +380,22 @@
     ;; XXX - Colors are hard-coded until the engine is modified to
     ;; stop using palette values everywhere.
     (if (have-5l-prim? 'header)
-	(call-5l-prim 'header
-		      (stylesheet-name sheet)
-		      ;; Generate a fake header fontname.
-		      (cat (if (member? 'bold (stylesheet-flags sheet)) "b" "")
-			   "ser"
-			   (number->string (stylesheet-size sheet)))
-		      (stylesheet-justification sheet)
-		      (stylesheet-color sheet)
-		      (if (stylesheet-is-input-style? sheet)
-			  (stylesheet-input-background-color sheet)
-			  (stylesheet-highlight-color sheet))
-		      (stylesheet-shadow-offset sheet)
-		      (stylesheet-shadow-color sheet)
-		      (stylesheet-windows-adjustment sheet)
-		      (stylesheet-highlight-shadow-color sheet)
-		      )))
+        (call-5l-prim 'header
+                      (stylesheet-name sheet)
+                      ;; Generate a fake header fontname.
+                      (cat (if (member? 'bold (stylesheet-flags sheet)) "b" "")
+                           "ser"
+                           (number->string (stylesheet-size sheet)))
+                      (stylesheet-justification sheet)
+                      (stylesheet-color sheet)
+                      (if (stylesheet-is-input-style? sheet)
+                          (stylesheet-input-background-color sheet)
+                          (stylesheet-highlight-color sheet))
+                      (stylesheet-shadow-offset sheet)
+                      (stylesheet-shadow-color sheet)
+                      (stylesheet-windows-adjustment sheet)
+                      (stylesheet-highlight-shadow-color sheet)
+                      )))
 
   ;; Helper: Convert a list of flags to a defstyle flag value.
   (define (flags->defstyle-flags flags)
@@ -411,64 +411,64 @@
   ;; Helper: Given a stylesheet, register a corresponding defstyle.
   (define (register-defstyle sheet)
     (call-5l-prim 'defstyle
-		  (stylesheet-name sheet)
-		  (stylesheet-family sheet)
-		  (stylesheet-size sheet)
-		  (flags->defstyle-flags (stylesheet-flags sheet))
-		  (stylesheet-justification sheet)
-		  (stylesheet-color sheet)
-		  (stylesheet-highlight-color sheet)
-		  (stylesheet-height-adjustment sheet)
-		  (stylesheet-shadow-offset sheet)
-		  (stylesheet-shadow-color sheet)
-		  (stylesheet-highlight-shadow-color sheet)))
+                  (stylesheet-name sheet)
+                  (stylesheet-family sheet)
+                  (stylesheet-size sheet)
+                  (flags->defstyle-flags (stylesheet-flags sheet))
+                  (stylesheet-justification sheet)
+                  (stylesheet-color sheet)
+                  (stylesheet-highlight-color sheet)
+                  (stylesheet-height-adjustment sheet)
+                  (stylesheet-shadow-offset sheet)
+                  (stylesheet-shadow-color sheet)
+                  (stylesheet-highlight-shadow-color sheet)))
 
   ;; An internal helper function which does all the heavy lifting.
   (define (register-style name
-			  &key
-			  [base #f]
-			  [family (if base (stylesheet-family base) "Times")]
-			  [size (if base (stylesheet-size base) 12)]
-			  [flags (if base (stylesheet-flags base) '())]
-			  [justification
-			   (if base (stylesheet-justification base) 'left)]
-			  [text-color :color
-			   (if base
-			       (stylesheet-color base)
-			       (color #xFF #xFF #xFF))]
-			  [highlight-color
-			   (if base
-			       (stylesheet-highlight-color base)
-			       (color #xFF #xFF #xFF))]
-			  [height-adjustment
-			   (if base (stylesheet-height-adjustment base) 0)]
-			  [shadow-offset
-			   (if base (stylesheet-shadow-offset base) 0)]
-			  [shadow-color
-			   (if base
-			       (stylesheet-shadow-color base)
-			       (color #x00 #x00 #x00))]
-			  [highlight-shadow-color
-			   (if base
-			       (stylesheet-highlight-shadow-color base)
-			       shadow-color)]
-			  ;; Deprecated parameter for header support.
-			  [windows-adjustment
-			   (if base (stylesheet-windows-adjustment base) 0)]
-			  ;; Deprecated parameters for input support.
+                          &key
+                          [base #f]
+                          [family (if base (stylesheet-family base) "Times")]
+                          [size (if base (stylesheet-size base) 12)]
+                          [flags (if base (stylesheet-flags base) '())]
+                          [justification
+                           (if base (stylesheet-justification base) 'left)]
+                          [text-color :color
+                           (if base
+                               (stylesheet-color base)
+                               (color #xFF #xFF #xFF))]
+                          [highlight-color
+                           (if base
+                               (stylesheet-highlight-color base)
+                               (color #xFF #xFF #xFF))]
+                          [height-adjustment
+                           (if base (stylesheet-height-adjustment base) 0)]
+                          [shadow-offset
+                           (if base (stylesheet-shadow-offset base) 0)]
+                          [shadow-color
+                           (if base
+                               (stylesheet-shadow-color base)
+                               (color #x00 #x00 #x00))]
+                          [highlight-shadow-color
+                           (if base
+                               (stylesheet-highlight-shadow-color base)
+                               shadow-color)]
+                          ;; Deprecated parameter for header support.
+                          [windows-adjustment
+                           (if base (stylesheet-windows-adjustment base) 0)]
+                          ;; Deprecated parameters for input support.
                           [is-input-style?
-			   (if base (stylesheet-is-input-style? base) #f)]
-			  [input-background-color
-			   (if base
-			       (stylesheet-input-background-color base)
-			       (color #x00 #x00 #x00))])
+                           (if base (stylesheet-is-input-style? base) #f)]
+                          [input-background-color
+                           (if base
+                               (stylesheet-input-background-color base)
+                               (color #x00 #x00 #x00))])
     (let [[sheet (make-stylesheet name family size flags justification
-				  text-color highlight-color height-adjustment
-				  shadow-offset shadow-color
-				  highlight-shadow-color
-				  windows-adjustment
-				  is-input-style?
-				  input-background-color)]]
+                                  text-color highlight-color height-adjustment
+                                  shadow-offset shadow-color
+                                  highlight-shadow-color
+                                  windows-adjustment
+                                  is-input-style?
+                                  input-background-color)]]
       (register-defstyle sheet)
       (register-header sheet)
       sheet))
@@ -525,12 +525,12 @@
   ;;;   an origin at 0,0.
   ;;; @xref draw-text
   (define (measure-text style msg
-			&key (max-width (rect-width $screen-rect)))
+                        &key (max-width (rect-width $screen-rect)))
     ;;; XXX - We can't measure anything but left-aligned text accurately.
     (with-saved-text-position
       (call-5l-prim 'measuretextaa (stylesheet-name style) msg max-width)
       (rect 0 0
-	    (engine-var '_text_width)
-	    (engine-var '_text_height))))
+            (engine-var '_text_width)
+            (engine-var '_text_height))))
 
   ) ; end module
