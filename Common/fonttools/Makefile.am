@@ -1,4 +1,4 @@
-CXXFLAGS=-I../ -I../libs/crypto @CXXFLAGS@ -Wall -Werror
+CXXFLAGS=-I../ -I../libs/crypto -I../libs/boost @CXXFLAGS@ -Wall -Werror
 
 noinst_PROGRAMS = pngtest listfonts fontspeed
 

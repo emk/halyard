@@ -9,7 +9,7 @@
 (define-syntax test
   (syntax-rules ()
     [(_ sexpr)
-     (%call-5l-prim 'test (value->string 'sexpr) sexpr)]))
+     (call-5l-prim 'test (value->string 'sexpr) sexpr)]))
 
 
 ;;=========================================================================
@@ -34,8 +34,8 @@
     (string->symbol (string-append prefix (symbol->string sym))))
   (let loop ((i 0) (values values))
     (unless (null? values)
-      (%call-5l-prim (prefix-symbol "set_wanted_" type) i)
-      (%call-5l-prim (prefix-symbol "test_check_" type) (car values))
+      (call-5l-prim (prefix-symbol "set_wanted_" type) i)
+      (call-5l-prim (prefix-symbol "test_check_" type) (car values))
       (loop (+ i 1) (cdr values)))))
 
 (test-arg-type 'string '("" "hello"))

@@ -15,9 +15,21 @@ static const char *CALL_5L_PRIM = "%call-5l-prim";
 //	Scheme Primitives
 //=========================================================================
 
-DEFINE_5L_PRIMITIVE(ExitScheme)
+DEFINE_5L_PRIMITIVE(SchemeExit)
 {
-	TSchemeInterpreter::SetDone();
+	// Ask the interpreter manager to shut us down.
+	TInterpreterManager::GetInstance()->RequestQuitApplication();
+}
+
+DEFINE_5L_PRIMITIVE(SchemeIdle)
+{
+	// Recover our Scheme interpreter.
+	TSchemeInterpreter *scheme_interp =
+		dynamic_cast<TSchemeInterpreter*>(TSchemeInterpreter::GetInstance());
+	ASSERT(scheme_interp);
+
+	// Call our stored idle procedure.
+	scheme_interp->DoIdle();
 }
 
 
@@ -26,15 +38,10 @@ DEFINE_5L_PRIMITIVE(ExitScheme)
 //=========================================================================
 
 Scheme_Env *TSchemeInterpreter::sGlobalEnv = NULL;
-
-bool TSchemeInterpreter::sDone = false;
+TInterpreter::SystemIdleProc TSchemeInterpreter::sSystemIdleProc = NULL;
 
 TSchemeInterpreter::TSchemeInterpreter()
 {
-	// Install our primitives.
-	if (!gPrimitiveManager.DoesPrimitiveExist("exitscheme"))
-		REGISTER_5L_PRIMITIVE(ExitScheme);
-
 	// Initialize the Scheme interpreter.
 	sGlobalEnv = scheme_basic_env();
 
@@ -179,9 +186,15 @@ Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName)
 	return CallScheme(inFuncName, 0, &junk);
 }
 
-void TSchemeInterpreter::Idle(void)
+void TSchemeInterpreter::Run(SystemIdleProc inIdleProc)
 {
-	(void) CallSchemeSimple("%kernel-idle");
+	sSystemIdleProc = inIdleProc;
+	(void) CallSchemeSimple("%kernel-run");
+}
+
+void TSchemeInterpreter::KillInterpreter(void)
+{
+	(void) CallSchemeSimple("%kernel-kill-interpreter");
 }
 
 void TSchemeInterpreter::Pause(void)
@@ -231,13 +244,6 @@ void TSchemeInterpreter::KillCurrentCard(void)
     (void) CallSchemeSimple("%kernel-kill-current-card");
 }
 
-void TSchemeInterpreter::DoReDoScript(const char *inCardName)
-{
-	Scheme_Object *args[1];
-	args[0] = scheme_make_string(inCardName);
-	(void) CallScheme("%kernel-do-redo-script", 1, args);
-}
-
 void TSchemeInterpreter::JumpToCardByName(const char *inName)
 {
 	Scheme_Object *args[1];
@@ -261,11 +267,6 @@ std::string TSchemeInterpreter::PrevCardName(void)
 	return SCHEME_STR_VAL(o);
 }
 
-void TSchemeInterpreter::ReloadScript(const char *inGotoCardName)
-{
-	UNIMPLEMENTED;
-}
-
 
 //=========================================================================
 //	TSchemeCallback Methods
@@ -282,6 +283,25 @@ TSchemeCallback::~TSchemeCallback()
 void TSchemeCallback::Run()
 {
     UNIMPLEMENTED;
+}
+
+
+//=========================================================================
+//	TSchemeInterpreterManager Methods
+//=========================================================================
+
+TSchemeInterpreterManager::TSchemeInterpreterManager(
+	TInterpreter::SystemIdleProc inIdleProc)
+	: TInterpreterManager(inIdleProc)
+{
+	// Install our primitives.
+	REGISTER_5L_PRIMITIVE(SchemeExit);
+	REGISTER_5L_PRIMITIVE(SchemeIdle);
+}
+
+TInterpreter *TSchemeInterpreterManager::MakeInterpreter()
+{
+	return new TSchemeInterpreter();
 }
 
 

@@ -40,6 +40,11 @@ DEFINE_TYPE_TEST_PRIMITIVES(TPoint, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(TRect, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
+static void TestIdleFunc()
+{
+	gLog.Log("Called TestIdleFunc");
+}
+
 void test_TSchemeInterpreter (void)
 {
 	string_test_values[0] = "";
@@ -75,14 +80,8 @@ void test_TSchemeInterpreter (void)
 	REGISTER_TYPE_TEST_PRIMITIVES(Color);
 	
 	// Boot the interpreter.
-	TSchemeInterpreter interp/*("test.ss")*/;
-
-	// Jump to the start card.
-	interp.JumpToCardByName("start");
-   
-	// Run the idle loop until we're done.
-	while (!interp.IsDone())
-		interp.Idle();
+	TSchemeInterpreterManager scheme(&TestIdleFunc);
+	scheme.Run();
 
 	// Make sure we visited all the right cards.
 	TEST(gVariableManager.GetString("seen-start") == std::string("1"));

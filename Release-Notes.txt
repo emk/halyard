@@ -12,6 +12,7 @@ CVS - emk, zeb
   * emk: The interpreter now calls the idle loop, instead of vice versa.
   * emk: Redoscript is now handled by a TInterpreterManager object.
   * emk: It's no longer possible to switch between scripts.
+  * emk: Updated TSchemeInterpreter to use new event loop system.
 
 3.4.0 - 26 July 2002 - emk
 

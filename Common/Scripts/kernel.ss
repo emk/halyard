@@ -97,32 +97,40 @@
 ;;  5L API
 ;;=========================================================================
 
+(define (call-5l-prim . args)
+  (let ((result (apply %call-5l-prim args)))
+    (%kernel-check-flags)
+    result))
+
+(define (idle)
+  (call-5l-prim 'schemeidle))
+
 (define (log msg)
-  (%call-5l-prim 'log '5L msg 'log))
+  (call-5l-prim 'log '5L msg 'log))
 
 (define (debug-log msg)
-  (%call-5l-prim 'log 'Debug msg 'log))
+  (call-5l-prim 'log 'Debug msg 'log))
 
 (define (caution msg)
-  (%call-5l-prim 'log '5L msg 'caution))
+  (call-5l-prim 'log '5L msg 'caution))
 
 (define (debug-caution msg)
-  (%call-5l-prim 'log 'Debug msg 'caution))
+  (call-5l-prim 'log 'Debug msg 'caution))
 
 (define (non-fatal-error msg)
-  (%call-5l-prim 'log '5L msg 'error))
+  (call-5l-prim 'log '5L msg 'error))
 
 (define (fatal-error msg)
-  (%call-5l-prim 'log '5L msg 'fatalerror))
+  (call-5l-prim 'log '5L msg 'fatalerror))
 
 (define (engine-var name)
-  (%call-5l-prim 'get name))
+  (call-5l-prim 'get name))
 
 (define (set-engine-var! name value)
   ;; Useless performance hack.
   (if (string? value)
-      (%call-5l-prim 'set name value)
-      (%call-5l-prim 'set name (value->string value))))
+      (call-5l-prim 'set name value)
+      (call-5l-prim 'set name (value->string value))))
 
 (define (err msg)
   ;; TODO - More elaborate error support.
@@ -130,21 +138,28 @@
   (error msg))
 
 (define (exit-script)
-  (%call-5l-prim 'exitscheme))
+  (call-5l-prim 'schemeexit))
 
 (define (jump card)
-  (assert *%kernel-exit-to-idle*)
+  (assert *%kernel-exit-to-top-level-func*)
   (set! *%kernel-jump-card* (%kernel-find-card card))
   (debug-log (cat "Jumping to: " *%kernel-jump-card*))
-  (*%kernel-exit-to-idle*))
+  (*%kernel-exit-to-top-level-func*))
 
 
 ;;=========================================================================
 ;;  Cards
 ;;=========================================================================
 
-(define *%kernel-exit-to-idle* #f)
+(define *%kernel-exit-interpreter-func* #f)
+(define *%kernel-exit-to-top-level-func* #f)
+(define *%kernel-exit-interpreter?* #f)
 (define *%kernel-jump-card* #f)
+
+(define (%kernel-check-flags)
+  (when (and *%kernel-exit-interpreter?*
+	     *%kernel-exit-interpreter-func*)
+    (*%kernel-exit-interpreter-func*)))
 
 (define-struct %kernel-card (name thunk))
 
@@ -158,7 +173,8 @@
 
 (define (%kernel-run-card card)
   (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
-  ((%kernel-card-thunk card)))
+  (with-errors-blocked (non-fatal-error)
+    ((%kernel-card-thunk card))))
 
 (define (%kernel-find-card card-or-name)
   (cond
@@ -186,22 +202,31 @@
 ;;  Kernel Entry Points
 ;;=========================================================================
 ;;  The '%kernel-' methods are called directly by the 5L engine.  They
-;;  should *never* raise errors, because they're called directly from C++
-;;  code that isn't prepared to cope with Scheme errors.
+;;  shouldn't raise errors, because they're called directly from C++
+;;  code that doesn't want to catch them (and will, in fact, quit
+;;  the program).
 
-(define (%kernel-idle)
-  (with-errors-blocked (non-fatal-error)
-    (debug-log "idle")
-    (label exit
-      (set! *%kernel-exit-to-idle* exit)
-      (cond
-        [*%kernel-jump-card*
-	 (let ((jump-card *%kernel-jump-card*))
-	   (set! *%kernel-jump-card* #f)
-	   (%kernel-run-card (%kernel-find-card jump-card)))]
-        [#t
-	 (debug-log "Doing nothing in idle loop")]))
-    (set! *%kernel-exit-to-idle* #f)))
+(define (%kernel-run)
+  (with-errors-blocked (fatal-error)
+    (label exit-interpreter
+      (set! *%kernel-exit-interpreter-func* exit-interpreter)
+      (let loop ()
+	(idle)
+	(label exit-to-top-level
+          (set! *%kernel-exit-to-top-level-func* exit-to-top-level)
+	  (cond
+	   [*%kernel-jump-card*
+	    (let ((jump-card *%kernel-jump-card*))
+	      (set! *%kernel-jump-card* #f)
+	      (%kernel-run-card (%kernel-find-card jump-card)))]
+	   [#t
+	    (debug-log "Doing nothing in idle loop")]))
+	(set! *%kernel-exit-to-top-level-func* #f)
+	(loop)))
+    (set! *%kernel-exit-interpreter-func* #f)))
+
+(define (%kernel-kill-interpreter)
+  (set! *%kernel-exit-interpreter?* #t))
 
 (define (%kernel-pause)
   #f)
@@ -225,9 +250,6 @@
   #f)
 	
 (define (%kernel-kill-current-card)
-  #f)
-
-(define (%kernel-do-redo-script card-name)
   #f)
 
 (define (%kernel-jump-to-card-by-name card-name)

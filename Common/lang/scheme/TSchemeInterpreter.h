@@ -58,8 +58,8 @@ class TSchemeInterpreter : public TInterpreter
 
 	static Scheme_Env *sGlobalEnv;
 
-	static bool sDone;
-	
+	static SystemIdleProc sSystemIdleProc;
+
 	static Scheme_Object *Call5LPrim(void *inData, int inArgc,
 									 Scheme_Object **inArgv);
 
@@ -72,11 +72,11 @@ public:
 	TSchemeInterpreter();
 	virtual ~TSchemeInterpreter();
 
-	static void SetDone() { sDone = true; }
-	static bool IsDone() { return sDone; }
+	void DoIdle() { ASSERT(sSystemIdleProc); (*sSystemIdleProc)(); }
 
 	// For documentation of these virtual methods, see TInterpreter.h.
-	virtual void Idle(void);
+	virtual void Run(SystemIdleProc inIdleProc);
+	virtual void KillInterpreter();
 	virtual void Pause(void);
 	virtual void WakeUp(void);
 	virtual bool Paused(void);
@@ -85,11 +85,9 @@ public:
 	virtual bool Napping(void);
 	virtual void KillNap(void);
 	virtual void KillCurrentCard(void);
-	virtual void DoReDoScript(const char *inCardName);
 	virtual void JumpToCardByName(const char *inName);
 	virtual std::string CurCardName(void);
 	virtual std::string PrevCardName(void);
-	virtual void ReloadScript(const char *inGotoCardName);
 };
 
 
@@ -105,6 +103,21 @@ public:
 	// For documentation of these virtual methods, see TInterpreter.h.
 	virtual void Run();
 	virtual std::string PrintableRepresentation() { return "#<thunk>"; }
+};
+
+
+//////////
+// A TInterpreterManager for our Scheme interpreter.  This handles
+// reloading scripts and other fun stuff that involves creating
+// and destroying interpreters.
+//
+class TSchemeInterpreterManager : public TInterpreterManager
+{
+public:
+	TSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
+
+protected:
+	virtual TInterpreter *MakeInterpreter();
 };
 
 
@@ -144,6 +157,10 @@ protected:
 };
 
 
+//////////
+// A list of Scheme_Object values stored as an argc,argv pair.  This is
+// the format which mzscheme uses to pass function arguments on the stack.
+//
 class TSchemeArgvList : public TSchemeArgumentList
 {
 	//////////

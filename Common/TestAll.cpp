@@ -25,7 +25,7 @@ extern void test_Typography (void);
 extern void test_CryptStream (void);
 extern void test_TIndex (void);
 extern void test_TStyleSheet (void);
-//extern void test_TSchemeInterpreter (void);
+extern void test_TSchemeInterpreter (void);
 
 DEFINE_5L_PRIMITIVE(test)
 {
@@ -52,7 +52,7 @@ int main (int argc, char **argv)
 		test_CryptStream();
 		test_TIndex();
 		test_TStyleSheet();
-		//test_TSchemeInterpreter();
+		test_TSchemeInterpreter();
 	}
 	catch (std::exception &error)
 	{
