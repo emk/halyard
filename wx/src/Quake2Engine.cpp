@@ -13,7 +13,8 @@
 // TODO - Definitely broken in the presence of Reload Script.
 
 Quake2Engine::Quake2Engine(Stage *inStage)
-    : wxQuake2Window(inStage)
+    : wxQuake2Window(inStage, -1, wxDefaultPosition,
+					 wxQuake2Window::MODE_640_480, "tamale")
 {
 	ASSERT(!sHasBeenCreated && !sInstance);
 	sInstance = this;

@@ -7,8 +7,10 @@ Primitive support for running Quake 2 from within wx5L.
   * Added primitives to show/hide widgets, and perform some other
     basic operations.
   * Replaced background wxPanel with wxWindow to 
-  * Added Quake2Element class.  This will be turned into a
-    Quake2Engine class (Elements don't really have the right behavior).
+  * Added Quake2Engine class.
+  * Added support for Reload Script when Quake is running.
+  * Added many primtives for interacting with Quake.
+  * Added support for attaching Scheme callbacks to Quake commands.
 
 3.5.11 - 19 Nov 2002 - emk
 
