@@ -64,6 +64,7 @@ REFERENCE_TEST_CASE_FILE(TValue);
 REFERENCE_TEST_CASE_FILE(TSchemeConv);
 REFERENCE_TEST_CASE_FILE(TVariableManager);
 REFERENCE_TEST_CASE_FILE(TStateDB);
+REFERENCE_TEST_CASE_FILE(ScriptEditorDB);
 
 DEFINE_5L_PRIMITIVE(test) {
 	std::string info;
@@ -135,6 +136,14 @@ static void run_testcase_tests() {
 //  Main Entry Point
 //=========================================================================
 
+/// This is needed on Windows NT, 2000, etc., when running under Visual
+/// Studio.
+void prompt_done() {
+    std::cerr << "Press enter to continue.";
+    char c;
+    std::cin >> std::noskipws >> c;
+}
+
 int main(int argc, char **argv) {
 	FIVEL_SET_STACK_BASE();
 
@@ -146,12 +155,15 @@ int main(int argc, char **argv) {
 		run_testcase_tests();
 	} catch (std::exception &error) {
 		std::cerr << std::endl << "Exception: " << error.what() << std::endl;
+        prompt_done();
 		return 1;
 	} catch (...) {
 		std::cerr << std::endl << "An unknown exception occurred!"
 				  << std::endl;
+        prompt_done();
 		return 1;
 	}
 
+    prompt_done();
 	return 0;
 }

@@ -161,7 +161,7 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, int16 &out)
     if (temp < MIN_INT16 || MAX_INT16 < temp)
 		throw TException(__FILE__, __LINE__,
 						 "Can't represent value as 16-bit integer");
-    out = temp;
+    out = static_cast<short>(temp);
 	args.LogTValueParameter(out);
     return args;
 }

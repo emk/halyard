@@ -40,7 +40,11 @@ namespace sqlite3 {
 	}
 
 	connection::~connection() {
-		this->close();
+        try {
+            this->close();
+        } catch (exception &e) {
+            // XXX - Log this error.
+        }
 	}
 
 	void connection::open(const char *db) {

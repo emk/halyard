@@ -280,7 +280,7 @@ TEncoding<CharT>::FixSpecials (const string_type& inString) const
     uint32 input_length = inString.length();
     for (uint32 i = 0; i < input_length; i++)
     {
-		char current = inString[i];
+		CharT current = inString[i];
 		if (current == '-' && i+1 < input_length && inString[i+1] == '-')
 		{
 			result += convert_string<CharT>("&mdash;");
@@ -315,7 +315,7 @@ TEncoding<CharT>::FixQuotes (const string_type& inString) const
     uint32 input_length = inString.length();
     for (uint32 i = 0; i < input_length; i++)
     {
-		char current = inString[i];
+		CharT current = inString[i];
 		if (current == '\'')
 		{
 			if (want_left)
@@ -356,7 +356,7 @@ TEncoding<CharT>::EncodeEntities (const string_type& inString) const
     uint32 input_length = inString.length();
     for (uint32 i = 0; i < input_length; i++)
     {
-		char current = inString[i];
+		CharT current = inString[i];
 		if (current == '&')
 		{
 			// Scan forward until we find the end of the entity name.

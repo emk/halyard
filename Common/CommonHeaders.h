@@ -39,6 +39,7 @@
 #include <sstream>
 
 // Commonly-used Boost headers.
+#define BOOST_ALL_NO_LIB 1
 #include <boost/config.hpp> // Get working std::max under MSVC.
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>

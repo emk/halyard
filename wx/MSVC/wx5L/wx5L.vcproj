@@ -335,6 +335,27 @@
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\src\tamale.xrc">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="cd &quot;$(InputDir)&quot;
+..\..\libs\wxWidgets\contrib\utils\wxrc\vc_mswd\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;
+"
+						Outputs="$(InputDir)resources.cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="cd $(InputDir)
+..\..\libs\wxWindows\contrib\utils\wxrc\Debug\wxrc.exe /c /o resources.cpp $(InputName).xrc
+"
+						Outputs="$(InputDir)resources.cpp"/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -564,27 +585,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\tab_right_full.bmp">
-			</File>
-			<File
-				RelativePath="..\..\src\tamale.xrc">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="cd &quot;$(InputDir)&quot;
-..\..\libs\wxWidgets\contrib\utils\wxrc\vc_mswd\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;
-"
-						Outputs="$(InputDir)resources.cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="cd $(InputDir)
-..\..\libs\wxWindows\contrib\utils\wxrc\Debug\wxrc.exe /c /o resources.cpp $(InputName).xrc
-"
-						Outputs="$(InputDir)resources.cpp"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\src\tb_borders.bmp">

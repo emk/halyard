@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\CrashRpt\crashrpt\include"
+				AdditionalIncludeDirectories="..\..\..\Common,..\..\..\libs\libxml2\include,..\..\..\libs\freetype2\include,..\..\..\libs\plt\include,..\..\..\libs\crypto,..\..\..\libs\boost,..\..\..\libs\sqlite,..\..\..\libs\sqlite3-plus\sqlite3-plus,..\..\..\libs\CrashRpt\crashrpt\include"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -68,7 +68,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\include;..\..\..\libs\crypto;..\..\..\libs\boost"
+				AdditionalIncludeDirectories="..\..\..\Common,..\..\..\libs\libxml2\include,..\..\..\libs\freetype2\include,..\..\..\libs\plt\include,..\..\..\libs\crypto,..\..\..\libs\boost,..\..\..\libs\sqlite,..\..\..\libs\sqlite3-plus\sqlite3-plus,..\..\..\libs\CrashRpt\crashrpt\include"
 				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -139,6 +139,15 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\ModelView.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\Common\ScriptEditorDB.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\Common\TCommonPrimitives.cpp">
@@ -355,6 +364,83 @@
 						BasicRuntimeChecks="0"
 						UsePrecompiledHeader="0"
 						DebugInformationFormat="3"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="sqlite3-plus Files"
+			Filter="">
+			<File
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_connection.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_internal.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_internal.h">
+			</File>
+			<File
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_plus.h">
+			</File>
+			<File
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_reader.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="boost Files"
+			Filter="">
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\convenience.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\exception.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\operations_posix_windows.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\path_posix_windows.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 			</File>
 		</Filter>

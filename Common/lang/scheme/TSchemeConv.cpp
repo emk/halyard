@@ -185,7 +185,8 @@ static TValue SchemeToTRect(Scheme_Object *inVal) {
 						SchemeGetInt32Member("rect-bottom", inVal)));
 }
 
-static TValue SchemeToColor(Scheme_Object *inVal) {	
+static TValue SchemeToColor(Scheme_Object *inVal) {
+	using GraphicsTools::Channel;
 	return TValue(Color(SchemeGetInt32Member("color-red", inVal),
 						SchemeGetInt32Member("color-green", inVal),
 						SchemeGetInt32Member("color-blue", inVal),
