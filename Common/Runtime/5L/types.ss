@@ -24,7 +24,13 @@
            <polygon> polygon polygon? 
            polygon-vertices set-polygon-vertices!
 
-           <shape> shape?)
+           <shape> shape?
+
+           <realtime-state-db-listener> realtime-state-db-listener?
+           realtime-state-db-listener-getter-name
+           realtime-state-db-listener-bindings
+           realtime-state-db-listener-code
+           )
   
   (defclass <point> ()
     x y)
@@ -59,4 +65,7 @@
   (define (polygon &rest args)
     (make-polygon args))
 
+  (defclass <realtime-state-db-listener> ()
+    getter-name bindings code)
+  
   )

@@ -597,12 +597,20 @@
   ;;;   subset of Scheme supported here, consult the engine source code
   ;;;   or experiment.
   (define-syntax (state-db-fn/rt stx)
+    (define (expand-binding binding-stx)
+      (unless (symbol? (syntax-object->datum binding-stx))
+        (error "state-db-fn/rt binding must be symbol"))
+      (quasisyntax/loc binding-stx (list '#,binding-stx #,binding-stx)))
+    (define (expand-bindings bindings-stx)
+      (map expand-binding (syntax->list bindings-stx)))
     (syntax-case stx ()
-      [(state-db-fn/rt (state-db) bound . body)
+      [(state-db-fn/rt (state-db) bindings . body)
        (quasisyntax/loc
         stx
-        ;; TODO - Implement this function for real.
-        (state-db-fn (state-db) . body))]))
+        (make <realtime-state-db-listener>
+          :getter-name 'state-db
+          :bindings (list #,@(expand-bindings #'bindings))
+          :code 'body))]))
 
   ;;; Combines the features of REGISTER-STATE-DB-FN! and STATE-DB-FN.
   ;;;
@@ -626,8 +634,8 @@
   ;;; @syntax (DEFINE-STATE-DB-LISTENER (name state-db) [binding ...] body ...)
   (define-syntax define-state-db-listener/rt
     (syntax-rules ()
-      [(define-state-db-listener/rt (name state-db) bound . body)
+      [(define-state-db-listener/rt (name state-db) bindings . body)
        (define-state-db-listener name
-         (state-db-fn/rt (state-db) bound . body))]))
+         (state-db-fn/rt (state-db) bindings . body))]))
 
   ) ; end module
