@@ -18,11 +18,11 @@ FiveL for Win32 Release Notes
 	(3) Updated VC++ project files to reflect movement of Common library 
 	(up one level).
 
-    	(4) Added support for smart quotes, m-dashes, ellipses and HTML entities.
+	(4) Added support for smart quotes, m-dashes, ellipses and HTML entities.
 	Everywhere that '\&' appears in a script, it needs to be replaced with
 	'\&amp;'.
 
-    	(5) Ongoing work on native typography using FreeType 2.
+	(5) Ongoing work on native typography using FreeType 2.
 
 	(6) Complete overhaul of the Crypt library.  It now supports streaming 
 	reads and writes.  Many function names were changed.  The encryption 
