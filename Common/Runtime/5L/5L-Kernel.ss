@@ -165,7 +165,7 @@
 	  (set! *%kernel-state* 'NORMAL)
 	  (label exit-callback
 	    ;; TODO - Can we have better error handling?
-            (with-errors-blocked (fatal-error)
+            (with-errors-blocked (non-fatal-error)
 	      (fluid-let [[*%kernel-exit-to-top-func* exit-callback]
 			  [*%kernel-exit-interpreter-func* exit-callback]
 			  [*%kernel-running-callback?* #t]]
@@ -309,6 +309,7 @@
     (set! *%kernel-current-card* card)
     (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
     (with-errors-blocked (non-fatal-error)
+      (call-5l-prim 'resetorigin)
       ((%kernel-card-thunk card))
       (refresh)))
 
