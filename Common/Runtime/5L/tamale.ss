@@ -6,7 +6,7 @@
 
 (module tamale (lib "5l.ss" "5L")
 
-  (require (lib "string.ss" "mzlib"))
+  ;(require (lib "string.ss" "mzlib"))
 
   (provide load-picture set-image-cache-size! modal-input
            zone set-zone-cursor! register-cursor mouse-position

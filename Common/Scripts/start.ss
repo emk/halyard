@@ -252,6 +252,131 @@
   (test (eq? ((fn (x) (* x x)) 3) 9))
   (test (eq? ((callback 1)) 1))
 
+  (jump swindle-tests))
+
+
+;;=========================================================================
+;;  Swindle
+;;=========================================================================
+
+(defclass <swindle-test> (<object>)
+  simple-slot
+  (typed-slot :type <integer>)
+  (init-value-slot :initvalue 10)
+  (init-func-slot :initializer (fn () 100)))
+
+(defmethod generic-test-method (arg1 arg2)
+  'unspecific)
+
+(defmethod generic-test-method ((arg1 <integer>) arg2)
+  'arg1-int)
+
+(defmethod generic-test-method (arg1 (arg2 <string>))
+  'arg2-string)
+
+(defmethod generic-test-method ((arg1 <integer>) (arg2 <string>))
+  'int-and-string)
+
+(defmethod generic-test-method ((arg1 = 1) arg2)
+  'arg1-singleton)
+
+(defmethod generic-test-method ((arg1 = 1) (arg2 <string>))
+  'singleton-string)
+
+(defclass <swindle-test-subclass> (<swindle-test>)
+  subclass-slot)
+
+(defclass <swindle-test-other-subclass> (<swindle-test>)
+  other-subclass-slot)
+
+(defclass <swindle-test-single-subclass> (<swindle-test-subclass>)
+  single-subclass-slot)
+
+(defclass <swindle-test-multiple-subclass> (<swindle-test-subclass>
+                                            <swindle-test-other-subclass>)
+  multiple-subclass-slot)
+
+(defmethod inheritance-test-method ((arg1 <swindle-test>) 
+                                    (arg2 <swindle-test>))
+  'unspecific)
+
+(defmethod inheritance-test-method ((arg1 <swindle-test-subclass>)
+                                    (arg2 <swindle-test>))
+  'arg1-sub)
+
+(defmethod inheritance-test-method ((arg1 <swindle-test>)
+                                    (arg2 <swindle-test-other-subclass>))
+  'arg2-other-sub)
+
+(defmethod inheritance-test-method ((arg1 <swindle-test-subclass>)
+                                    (arg2 <swindle-test-other-subclass>))
+  'both-sub-other)
+
+(defmethod inheritance-test-method ((arg1 <swindle-test-single-subclass>)
+                                    (arg2 <swindle-test-other-subclass>))
+  'arg1-single)
+
+(defmethod inheritance-test-method ((arg1 <swindle-test-multiple-subclass>)
+                                    (arg2 <swindle-test-multiple-subclass>))
+  'both-multiple)
+
+(card swindle-tests
+  (define test-obj-1 (make <swindle-test> 
+                       :simple-slot 'foo
+                       :typed-slot 10))
+  (define test-obj-2 (make <swindle-test>
+                       :simple-slot "bar"
+                       :typed-slot 15
+                       :init-value-slot 100
+                       :init-func-slot 10))
+  (test (class? <swindle-test>))
+  (test (instance-of? test-obj-1 <swindle-test>))
+  (test (instance-of? test-obj-2 <swindle-test>))
+  (test (not (instance-of? test-obj-1 <integer>)))
+  (test (eq? (swindle-test-simple-slot test-obj-1) 'foo))
+  (test (eq? (swindle-test-typed-slot test-obj-1) 10))
+  (test (eq? (swindle-test-init-value-slot test-obj-1) 10))
+  (test (eq? (swindle-test-init-func-slot test-obj-1) 100))
+  (test (instance-of? (swindle-test-simple-slot test-obj-2) <string>))
+  (test (equal? (swindle-test-simple-slot test-obj-2) "bar"))
+  (test (eq? (swindle-test-init-value-slot test-obj-2) 100))
+  (test (eq? (swindle-test-init-func-slot test-obj-2) 10))
+
+  (test (eq? (generic-test-method test-obj-1 test-obj-2)
+             'unspecific))
+  (test (eq? (generic-test-method 10 test-obj-2)
+             'arg1-int))
+  (test (eq? (generic-test-method test-obj-1 "foo")
+             'arg2-string))
+  (test (eq? (generic-test-method 42 "baz")
+             'int-and-string))
+  (test (eq? (generic-test-method 1 test-obj-2)
+             'arg1-singleton))
+  (test (eq? (generic-test-method 1 "foo")
+             'singleton-string))
+
+  (define sub (make <swindle-test-subclass>))
+  (define other-sub (make <swindle-test-other-subclass>))
+  (define single (make <swindle-test-single-subclass>))
+  (define multiple (make <swindle-test-multiple-subclass>))
+  
+  (test (eq? (inheritance-test-method test-obj-1 test-obj-2)
+             'unspecific))
+  (test (eq? (inheritance-test-method sub test-obj-2)
+             'arg1-sub))
+  (test (eq? (inheritance-test-method test-obj-1 other-sub)
+             'arg2-other-sub))
+  (test (eq? (inheritance-test-method sub other-sub)
+             'both-sub-other))
+  (test (eq? (inheritance-test-method single other-sub)
+             'arg1-single))
+  (test (eq? (inheritance-test-method multiple multiple)
+             'both-multiple))
+  (test (eq? (inheritance-test-method multiple other-sub)
+             'both-sub-other))
+  (test (eq? (inheritance-test-method single multiple)
+             'arg1-single))
+
   (jump done))
 
 (card done

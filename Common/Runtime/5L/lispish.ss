@@ -38,34 +38,47 @@
 ;;
 ;;  Eric Kidd <eric.kidd@pobox.com>
 
-(module lispish mzscheme
+(module lispish (lib "swindle.ss" "swindle")
   
   ;; Import DEFINE-SYNTAX-SET from mzlib, but nothing else.  (I can't
   ;; find any way to do this except by using RENAME.)
-  (require (rename (lib "etc.ss" "mzlib")
-                   define-syntax-set
-                   define-syntax-set))
+  ;;(require (rename (lib "etc.ss" "mzlib")
+  ;;                 define-syntax-set
+  ;;                 define-syntax-set))
   
   ;; Export the normal mzscheme language, minus a few specific features
   ;; we override below.
-  (provide (all-from-except mzscheme
-                            #%module-begin #%top lambda define
-                            set!))
+  ;;(provide (all-from-except mzscheme
+  ;;                          #%module-begin #%top lambda define
+  ;;                          set!))
+  (provide (all-from-except (lib "swindle.ss" "swindle") while defclass))
 
   ;; For each mzscheme symbol we exclude above, we need to define and
   ;; export our own version.  But we can't define any of these symbols
   ;; under their normal names, because we import mzscheme above.
   ;; Instead, we define each symbol under a local name (begining with
   ;; "lispish-", and rename it on export.
-  (provide (rename lispish-#%module-begin #%module-begin))
-  (provide (rename lispish-#%top #%top))
-  (provide (rename lispish-lambda lambda))
-  (provide (rename lispish-define define))
-  (provide (rename lispish-set! set!))
+  ;(provide (rename lispish-#%module-begin #%module-begin))
+  ;(provide (rename lispish-#%top #%top))
+  ;(provide (rename lispish-lambda lambda))
+  ;(provide (rename lispish-define define))
+  ;(provide (rename lispish-set! set!))
   
   ;; Here are some additional LISP-like features we provide.
   (provide define-symbol-macro let-symbol-macro)
   
+  ;; Set up Swindle to have a reasonable behavior for defclass. We're
+  ;; trying to be as much like Dylan as possible, except also defining
+  ;; classname?  as a predicate to test for objects of type
+  ;; <classname>. We tried doing this the way Eli suggests, but it
+  ;; breaks in all sorts of exciting ways. 
+
+  (provide (rename lispish-defclass defclass))
+  (define-syntax lispish-defclass
+    (syntax-rules ()
+      ((_ args ...) (defclass args ... 
+                      :auto #t
+                      :printer #t))))
 
   ;;----------------------------------------------------------------------
   ;; Redefining the Language Used To Write Macro Transformers
