@@ -4,7 +4,12 @@ CVS - kwasi, djin, emk
 
   * Added code to detect infinite cycles in TStateDB changes.
   * Added tamale-tags.sh script for Emacs users.
-  * Added new quake console trigger commad to activate targets.
+  * Added new Quake 2 console trigger command to activate targets.
+  * Provide a whole new API for state db listeners: STATE-DB-FN,
+    STATE-DB-FN/RT, REGISTER-STATE-DB-LISTENER!,
+    DEFINE-STATE-DB-LISTENER, and DEFINE-STATE-DB-LISTENER/RT.
+  * Fixed a bug (I hope) which caused Quake commands to have extra
+    text appended to the end of the command string.
 
 0.0.18 - 15 February 2004 - emk
 

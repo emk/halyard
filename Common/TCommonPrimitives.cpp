@@ -4,7 +4,10 @@
 #include "CommonHeaders.h"
 #include "TPrimitives.h"
 #include "TCommonPrimitives.h"
+
 #include "TStyleSheet.h"
+#include "TStateDB.h"
+#include "TStateListenerManager.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -27,6 +30,10 @@ void FIVEL_NS RegisterCommonPrimitives()
 	REGISTER_5L_PRIMITIVE(VariableInitialized);
 	REGISTER_5L_PRIMITIVE(DefStyle);
 	REGISTER_5L_PRIMITIVE(MeasureTextAA);
+    REGISTER_5L_PRIMITIVE(StateDbSet);
+    REGISTER_5L_PRIMITIVE(StateDbGet);
+    REGISTER_5L_PRIMITIVE(StateDbRegisterListener);
+    REGISTER_5L_PRIMITIVE(StateDbUnregisterListeners);
 }
 
 
@@ -297,4 +304,33 @@ DEFINE_5L_PRIMITIVE(MeasureTextAA)
 	gStyleSheetManager.Draw(style, text,
 							GraphicsTools::Point(0, 0),
 							max_width, NULL);
+}
+
+DEFINE_5L_PRIMITIVE(StateDbSet) {
+	std::string key;
+	TValue val;
+	inArgs >> SymbolName(key) >> val;
+	gStateDB.Set(key, val);
+}
+
+DEFINE_5L_PRIMITIVE(StateDbGet) {
+	std::string listener_name, key;
+    int32 serial_number;
+	inArgs >> SymbolName(listener_name) >> serial_number >> SymbolName(key);
+    boost::shared_ptr<TStateListener> listener =
+        gStateListenerManager.FindListener(listener_name, serial_number);
+    ::SetPrimitiveResult(gStateDB.Get(listener.get(), key));
+}
+
+DEFINE_5L_PRIMITIVE(StateDbRegisterListener) {
+    std::string name;
+    TCallbackPtr listener;
+    inArgs >> SymbolName(name) >> listener;
+    gStateListenerManager.RegisterListener(name, listener);
+}
+
+DEFINE_5L_PRIMITIVE(StateDbUnregisterListeners) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    gStateListenerManager.UnregisterListeners(name);
 }

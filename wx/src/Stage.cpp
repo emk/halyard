@@ -23,6 +23,7 @@
 #include "EventDispatcher.h"
 #include "ImageCache.h"
 #include "CursorManager.h"
+#include "TStateListenerManager.h"
 #include "Transition.h"
 #include "DrawingArea.h"
 
@@ -87,6 +88,9 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
         new wxTextCtrl(this, FIVEL_TEXT_ENTRY, "", wxDefaultPosition,
                        wxDefaultSize, wxNO_BORDER | wxTE_PROCESS_ENTER);
     mTextCtrl->Hide();
+
+    // Initialize the clock.
+    UpdateClock();
 
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage created.");
 }
@@ -219,6 +223,7 @@ void Stage::NotifyExitCard()
 void Stage::NotifyScriptReload()
 {
 	mLastCard = "";
+    gStateListenerManager.NotifyScriptReload();
 	mEventDispatcher->NotifyScriptReload();
 	mImageCache->NotifyScriptReload();
 	mFrame->GetProgramTree()->NotifyScriptReload();
@@ -299,6 +304,14 @@ void Stage::UpdateCurrentElementAndCursor()
 	UpdateCurrentElementAndCursor(ScreenToClient(::wxGetMousePosition()));
 }
 
+void Stage::UpdateClock() {
+    // Set our two clock variables.  Note that this may cause script code
+    // to run in response to the updates.
+    gStateDB.Set("/system/clock/seconds", ::wxGetLocalTime());
+    gStateDB.Set("/system/clock/milliseconds",
+				 ::wxGetLocalTimeMillis().GetLo());
+}
+
 void Stage::InterpreterSleep()
 {
     // Put our interpreter to sleep.
@@ -339,6 +352,9 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 		::wxGetLocalTimeMillis() > mLastIdleEvent + IDLE_INTERVAL)
 	{
 		mLastIdleEvent = ::wxGetLocalTimeMillis();
+
+        // Now's an excellent time to update the clock information.
+        UpdateClock();
 
 		// We only pass the idle event to just the card, and not any
 		// of the elements.  Idle event processing is handled differently

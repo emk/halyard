@@ -236,6 +236,11 @@ class Stage : public wxWindow
 	void UpdateCurrentElementAndCursor(wxPoint &inPosition);
 	void UpdateCurrentElementAndCursor();
 
+    //////////
+    // Update the TStateDB system clock.
+    //
+    void UpdateClock();
+
 public:
     //////////
     // Create a new stage.  Should only be called by StageFrame.

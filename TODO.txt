@@ -47,6 +47,10 @@ X                                    (lambda (get) (whatever (get '/foo))))
 /       Check Q2 performance problems (breakpoint on GC_malloc)
       Extend Quake 2 net protocol to allow reporting of state vars
       Real-time Scheme-like language for updating meter dials, etc.
+/       Lightweight TStateListeners associated with elements
+/         Delete all listeners when reloading script
+/         Delete listeners associated with node when exiting
+        Replace old state-db reading interface
       Strip Quake 2 meter implementation to bare essentials
       Re-implement meter logic in Scheme and C++
     Implement other meters
