@@ -17,7 +17,8 @@
   ;;;  Useful Syntax
   ;;;======================================================================
 
-  (provide fn callback while for foreach define-engine-variable)
+  (provide fn callback deferred-callback while for foreach
+	   define-engine-variable)
 
   ;;; Create an anonymous function object (which can be passed as a
   ;;; callback to many routines).  This is just an alias for Scheme's
@@ -40,6 +41,21 @@
       [(callback code ...)
        (lambda () (begin/var code ...))]))
 
+  ;;; Create an anonymous function object with no parameters.  When
+  ;;; invoked, this function object may run immediately, or it may run at
+  ;;; a later time.  You should use deferred callbacks for code
+  ;;; which needs to be run in response to a mouse event or key press, and
+  ;;; which needs to play video, request user input or sleep.
+  ;;;
+  ;;; The callback will always return false.
+  ;;;
+  ;;; @syntax (callback body ...)
+  ;;; @param BODY body The body of the function.
+  (define-syntax deferred-callback
+    (syntax-rules ()
+      [(deferred-callback code ...)
+       (callback (call-at-safe-time (callback code ...)))]))
+
   ;;; Run a body of code until a condition is met.
   ;;;
   ;;; @syntax (while condition body ...)
@@ -59,7 +75,7 @@
   ;;; Run a body of code until a condition is met, updating a loop variable
   ;;; as specified.  This works in a fashion similar to C's 'for' loop.
   ;;;
-  ;;; @syntax (for [[name init-value] cond next-value] body ...)
+  ;;; @syntax (for [name init-value cond next-value] body ...)
   ;;; @param NAME name The name of the loop variable.
   ;;; @param EXPRESSION init-value The initial value of 'name' before starting
   ;;;   the loop.
@@ -69,10 +85,11 @@
   ;;;   'name' for the next trip through the loop.
   (define-syntax for
     (syntax-rules ()
-      [(for [[name init-value] cond next-value] body ...)
+      [(for [name init-value cond next-value] body ...)
        (let loop [[name init-value]]
 	 (begin/var body ...)
-	 (loop next-value))]))
+	 (if cond
+	     (loop next-value)))]))
 
   ;;; Run a body once for each item in a list.
   ;;;
@@ -318,6 +335,7 @@
 	   stylesheet-highlight-color stylesheet-height-adjustment
 	   stylesheet-shadow-offset stylesheet-shadow-color
 	   stylesheet-highlight-shadow-color
+	   stylesheet-is-input-style? ; Deprecated.
 	   define-stylesheet measure-text draw-text)
 
   (define-struct stylesheet
@@ -325,7 +343,9 @@
      color highlight-color height-adjustment
      shadow-offset shadow-color
      highlight-shadow-color
-     windows-adjustment)
+     windows-adjustment
+     is-input-style?
+     input-background-color)
     (make-inspector))
   
   ;; Helper: Given a stylesheet, register a corresponding header for
@@ -342,7 +362,9 @@
 			   (number->string (stylesheet-size sheet)))
 		      (stylesheet-justification sheet)
 		      (stylesheet-color sheet)
-		      (stylesheet-highlight-color sheet)
+		      (if (stylesheet-is-input-style? sheet)
+			  (stylesheet-input-background-color sheet)
+			  (stylesheet-highlight-color sheet))
 		      (stylesheet-shadow-offset sheet)
 		      (stylesheet-shadow-color sheet)
 		      (stylesheet-windows-adjustment sheet)
@@ -406,12 +428,21 @@
 			       shadow-color)]
 			  ;; Deprecated parameter for header support.
 			  [windows-adjustment
-			   (if base (stylesheet-windows-adjustment base) 0)])
+			   (if base (stylesheet-windows-adjustment base) 0)]
+			  ;; Deprecated parameters for input support.
+                          [is-input-style?
+			   (if base (stylesheet-is-input-style? base) #f)]
+			  [input-background-color
+			   (if base
+			       (stylesheet-input-background-color base)
+			       (color #x00 #x00 #x00))])
     (let [[sheet (make-stylesheet name family size flags justification
 				  text-color highlight-color height-adjustment
 				  shadow-offset shadow-color
 				  highlight-shadow-color
-				  windows-adjustment)]]
+				  windows-adjustment
+				  is-input-style?
+				  input-background-color)]]
       (register-defstyle sheet)
       (register-header sheet)
       sheet))

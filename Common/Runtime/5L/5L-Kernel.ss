@@ -68,7 +68,7 @@
     (if (null? list)
 	#f
 	(if (equal? item (car list))
-	    #f
+	    #t
 	    (member? item (cdr list)))))
   
   (define (value->string value)
@@ -127,6 +127,8 @@
   ;;
   ;;  Callbacks are slightly special, however--see the code for details.
   
+  (provide call-at-safe-time)
+
   (define *%kernel-running-callback?* #f)
   (define *%kernel-state* 'NORMAL)
   
@@ -134,6 +136,9 @@
   (define *%kernel-timeout* #f)
   (define *%kernel-timeout-thunk* #f)
   (define *%kernel-nap-time* #f)
+
+  (define *%kernel-running-deferred-thunks?* #f)
+  (define *%kernel-deferred-thunk-queue* '())
   
   (define *%kernel-exit-interpreter-func* #f)
   (define *%kernel-exit-to-top-func* #f)
@@ -159,6 +164,44 @@
 	(%kernel-clear-timeout)
 	(thunk))))
 
+  (define (%kernel-safe-to-run-deferred-thunks?)
+    ;; Would now be a good time to run deferred thunks?  Wait until
+    ;; nothing exciting is happening.
+    (and (not *%kernel-running-callback?*)
+	 (not *%kernel-running-deferred-thunks?*)
+	 (member? *%kernel-state* '(NORMAL PAUSED NAPPING))))
+
+  (define (call-at-safe-time thunk)
+    ;; Make sure we run 'thunk' at the earliest safe time, but not
+    ;; in a callback.  This can be used to defer calls to video, input,
+    ;; and other functions which can't be called from a callback.
+    (if (%kernel-safe-to-run-deferred-thunks?)
+	(thunk)
+	(set! *%kernel-deferred-thunk-queue*
+	      (cons thunk *%kernel-deferred-thunk-queue*)))
+    #f)
+    
+  (define (%kernel-check-deferred)
+    ;; Run any deferred thunks.
+    (unless (or (null? *%kernel-deferred-thunk-queue*)
+		(not (%kernel-safe-to-run-deferred-thunks?)))
+
+      ;; Make a copy of the old queue and clear the global variable
+      ;; (which may be updated behind our backs.
+      (let [[items (reverse *%kernel-deferred-thunk-queue*)]]
+	(set! *%kernel-deferred-thunk-queue* '())
+
+	;; Run every thunk in the queue, in order.
+	(fluid-let [[*%kernel-running-deferred-thunks?* #t]]
+	  (let loop [[items items]]
+	    (unless (null? items)
+	      ((car items))
+	      (loop (cdr items))))))
+
+      ;; Check to see if any new items appeared in the queue while we
+      ;; were running the first batch.
+      (%kernel-check-deferred)))
+
   (define (%kernel-clear-state)
     (set! *%kernel-state* 'NORMAL)
     (set! *%kernel-jump-card* #f))
@@ -183,11 +226,12 @@
     (set! *%kernel-state* state))
 
   (define (%kernel-check-state)
+    (%kernel-check-deferred) ; Should be the first thing we do.
     (unless *%kernel-running-callback?*
       (%kernel-check-timeout))
     (case *%kernel-state*
       [[NORMAL]
-       #t]
+       #f]
       [[PAUSED]
        (%call-5l-prim 'schemeidle)
        (%kernel-check-state)]
@@ -294,7 +338,7 @@
   ;;  Cards
   ;;=======================================================================
 
-  (provide card-name card)
+  (provide card-exists? card-name card)
 
   (define *%kernel-current-card* #f)
   (define *%kernel-previous-card* #f)
@@ -308,6 +352,12 @@
       (if (hash-table-get *%kernel-card-table* name (lambda () #f))
 	  (non-fatal-error (cat "Duplicate card: " name))
 	  (hash-table-put! *%kernel-card-table* name card))))
+
+  (define (card-exists? card-name)
+    (if (hash-table-get *%kernel-card-table* (string->symbol card-name)
+			(lambda () #f))
+	#t
+	#f))
   
   (define (%kernel-run-card card)
     (%kernel-clear-timeout)
@@ -374,8 +424,7 @@
 		   [jump-card
 		    (%kernel-run-card (%kernel-find-card jump-card))
 		    (set! jump-card #f)]
-		   [#t
-		    (debug-log "Doing nothing in idle loop")])))
+		   [#t])))
 	      (when (eq? *%kernel-state* 'JUMPING)
 	        (set! jump-card *%kernel-jump-card*))
 	      (%kernel-clear-state)
