@@ -21,6 +21,7 @@
 // @END_LICENSE
 
 #include "CommonHeaders.h"
+#include <typeinfo>
 #include "TestCase.h"
 #include "TStateDB.h"
 

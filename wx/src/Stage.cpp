@@ -176,12 +176,21 @@ void Stage::SetEditMode(bool inWantEditMode)
 		// TODO - NotifyExitCard() should be triggered from kernel.ss, but
 		// this will mean auditing the engine code to only call
 		// CurCardName, etc., only when there is a current card.
+        //
+        // In general, the whole edit-mode system is a pretty ugly kludge,
+        // and much more of it should be handled from the interpreter.
 		NotifyExitCard();
+        // Delete any non-card elements.
+        DeleteElements();
+        // Delete any non-card, non-element listeners.
+        gStateListenerManager.NotifyInterpreterStopped();
 		GetBackgroundDrawingArea()->Clear();
 	}
 	else
 	{
 		wxASSERT(mLastCard != "");
+        // TODO - We don't recreate group- or sequence-level elements
+        // properly here.
 		TInterpreter::GetInstance()->Go(mLastCard.c_str());
 	}
 }

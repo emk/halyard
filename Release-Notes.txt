@@ -21,6 +21,10 @@ CVS - emk
     end of a WAIT) more robustly, which should fix some ugly assertion
     failures (bug #1845). I'm convinced this portion of the code will need
     a redesign, and have added some comments to that effect.
+  * The engine no longer crashes if you press control-space in a
+    simulation (bug #1838).  When the engine goes into edit mode, it
+    now deletes all elements and any StateDB listeners registered by the
+    script.
 
 0.0.42 - 06 Dec 2004 - emk
 

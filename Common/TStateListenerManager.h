@@ -59,6 +59,12 @@ public:
     void NotifyReloadScriptStarting();
 
     //////////
+    /// When we go into edit mode, unregister all TStateListeners in the
+    /// manager.
+    ///
+    void NotifyInterpreterStopped();
+
+    //////////
     /// Register inListener under inName.  You may use inName for more
     /// than one listener; all listeners will be stored.
     ///

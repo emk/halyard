@@ -48,6 +48,10 @@ void TStateListenerManager::NotifyReloadScriptStarting() {
     mListeners.clear();
 }
 
+void TStateListenerManager::NotifyInterpreterStopped() {
+    mListeners.clear();
+}
+
 void TStateListenerManager::RegisterListener(const std::string &inName,
                                              TCallbackPtr inListener)
 {

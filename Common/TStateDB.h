@@ -23,9 +23,6 @@
 #ifndef TStateDB_H
 #define TStateDB_H
 
-#include <typeinfo>
-#include <algorithm>
-
 BEGIN_NAMESPACE_FIVEL
 
 class TStateDB;
