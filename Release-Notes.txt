@@ -1,5 +1,30 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+Engine:
+
+  * The Windows engine now reloads scripts in the same fashion as the
+    Mac engine--if a load fails, you get a chance to retry it.
+  * Log files get flushed after every line.
+  * The LOG and SCHEMEIDLE primitives are no longer logged, to reduce
+    clutter in Debug.log.
+  * Tons of bugfixes in places where the Windows engine assumed it
+    had a TInterpreter object, but didn't (i.e., lots of "sInstance"
+    assertions are gone).
+
+Runtime:
+
+  * Support for deferring code until the engine is in a safe place to
+    run it.  This means that you can call VIDEO, INPUT, etc., from
+    within a callback.
+  * The syntax of 'for' loops has been simplified.
+  * Explicit support for using stylesheets with the INPUT command.
+  * Added 'card-exists?' predicate.
+  * Fixed bug in 'member?'.
+  * Added support for using (var ...) declarations within 'lambda', 'define'
+    and 'let'.
+
 3.5.7 - 9 Oct 2002 - emk
 
 Engines built from this code will require script changes.

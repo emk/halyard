@@ -238,7 +238,7 @@ void TLogger::LogBuffer(const char *Header)
 		if (Header != NULL)
 			m_Log << Header;
 
-		m_Log << m_LogBuffer << std::endl;
+		m_Log << m_LogBuffer << std::endl << std::flush;
 	}
 }
 
@@ -373,6 +373,16 @@ void FiveLCheckAssertion(int inTest, const char *inDescription,
 
 /*
  $Log$
+ Revision 1.8  2002/10/10 00:03:19  emk
+   * The Windows engine now reloads scripts in the same fashion as the
+     Mac engine--if a load fails, you get a chance to retry it.
+   * Log files get flushed after every line.
+   * The LOG and SCHEMEIDLE primitives are no longer logged, to reduce
+     clutter in Debug.log.
+   * Tons of bugfixes in places where the Windows engine assumed it
+     had a TInterpreter object, but didn't (i.e., lots of "sInstance"
+     assertions are gone).
+
  Revision 1.7  2002/07/25 16:39:09  emk
  Fixed a buffer-overflow bug in TLogger when logging large messages.
 

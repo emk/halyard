@@ -360,6 +360,7 @@ inline void SetPrimitiveResult(const TPoint &inValue)
 
 #define FIVEL_ERROR_CODE_VAR ("_errorcode")
 #define FIVEL_ERROR_MSG_VAR  ("_errormsg")
+#define FIVEL_SKIP_LOGGING_VAR ("_skip_logging")
 
 //////////
 // Set the global error value.  Interpreter modules which support
@@ -373,6 +374,17 @@ inline void SetPrimitiveError(const char *inErrorName,
 	gVariableManager.SetString(FIVEL_ERROR_CODE_VAR, inErrorName);
 	gVariableManager.SetString(FIVEL_ERROR_MSG_VAR, inErrorMessage);
 	gDebugLog.Log("PRIMITIVE ERROR: %s: %s", inErrorName, inErrorMessage);
+}
+
+//////////
+// Tell the primitive manager not to log the primitive call currently
+// in progress.
+//
+inline void SkipPrimitiveLogging()
+{
+	// We don't use an engine variable for any particular reason here--
+	// a global would work fine as well.
+	gVariableManager.SetLong(FIVEL_SKIP_LOGGING_VAR, 1);
 }
 
 END_NAMESPACE_FIVEL

@@ -144,6 +144,9 @@ DEFINE_5L_PRIMITIVE(HavePrimitive)
 
 DEFINE_5L_PRIMITIVE(Log)
 {
+	// Logging this primitive call would be redundant and ugly.
+	::SkipPrimitiveLogging();
+
 	std::string log_name, msg, level;
 	level = "log";
 	inArgs >> log_name >> msg;

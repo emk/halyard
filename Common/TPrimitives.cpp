@@ -231,18 +231,22 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 	// Ask the TArgumentList to log all the parameters it returns.
 	inArgs.BeginLog(inName);
 
-	// Clear the result value.
+	// Clear the result value and logging flag.
 	gVariableManager.MakeNull("_result");
+	gVariableManager.MakeNull(FIVEL_SKIP_LOGGING_VAR);
     
     // Call it.
     (*primitive)(inArgs);
 
 	// Extract the logged arguments and write them to the debug log.
 	std::string call_info = inArgs.EndLog();
-	if (gVariableManager.IsNull("_result"))
-		gDebugLog.Log(">>> %s", call_info.c_str());
-	else
-		gDebugLog.Log(">>> %s -> %s",
-					  call_info.c_str(),
-					  gVariableManager.GetString("_result"));
+	if (gVariableManager.IsNull(FIVEL_SKIP_LOGGING_VAR))
+	{
+		if (gVariableManager.IsNull("_result"))
+			gDebugLog.Log(">>> %s", call_info.c_str());
+		else
+			gDebugLog.Log(">>> %s -> %s",
+						  call_info.c_str(),
+						  gVariableManager.GetString("_result"));
+	}
 }

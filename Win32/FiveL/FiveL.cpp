@@ -615,6 +615,7 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case WM_CLOSE:
 			// XXX - Stopgap.  We may not have an interpreter manager.
+			ASSERT(TInterpreterManager::HaveInstance());
 			TInterpreterManager::GetInstance()->RequestQuitApplication();
 			break;
 
@@ -743,7 +744,8 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// on our initial login screens.)
 				gInputManager.KeyDown(VK_RETURN);
 			}
-            else if (not TInterpreter::GetInstance()->Napping())
+            else if (TInterpreter::HaveInstance() &&
+					 !TInterpreter::GetInstance()->Napping())
             {  
                 if (theZone = gTouchZoneManager.GetTouchZone(cursorPos))  
 					theZone->DoCallback();
@@ -755,7 +757,8 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         	if ((char) wParam == '.')
         	{
 				gDebugLog.Log("Hit Alt-period");
-	        	if (TInterpreter::GetInstance()->Napping())
+	        	if (TInterpreter::HaveInstance() &&
+					TInterpreter::GetInstance()->Napping())
 				{
 					gDebugLog.Log("Escape from Nap");
 					TInterpreter::GetInstance()->KillNap();
@@ -771,6 +774,14 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					gAudioManager.Kill(0, false);
 				}
             }
+			else if ((char) wParam == 'r' &&
+					 TInterpreterManager::HaveInstance() &&
+					 TInterpreterManager::GetInstance()->FailedToLoad())
+			{
+				// If the interpreter is broken, but we're still running,
+				// then provide support for retrying the failed load.
+				TInterpreterManager::GetInstance()->RequestRetryLoadScript();
+			}
             else if (__iscsym((char) wParam))  
             {
             	// first see if this is a keybind then go on and
@@ -793,7 +804,9 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             	// q - quit
             	else if ((char) wParam == 'q')	
                 { 
-                	TInterpreter::GetInstance()->Pause();		// no more command execution
+					// no more command execution.
+					if (TInterpreter::HaveInstance())
+						TInterpreter::GetInstance()->Pause();
                 	
 		            ::PostQuitMessage(0);
                 }
@@ -843,7 +856,8 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
                 else 	// do normal escape key actions
                 {
-        			if (TInterpreter::GetInstance()->Napping())
+        			if (TInterpreter::HaveInstance() &&
+						TInterpreter::GetInstance()->Napping())
 					{
 						gDebugLog.Log("Escape from Nap");
 						TInterpreter::GetInstance()->KillNap();
@@ -976,13 +990,6 @@ void CleanUp()
 			
 	//if (gAudioManager.Playing())
 		gAudioManager.Kill(0, true);
-
-	// Shut down our interpreter.
-	if (gWin5LInterpreter)
-	{
-		delete gWin5LInterpreter;
-		gWin5LInterpreter = NULL;
-	}
 
 	gStyleSheetManager.RemoveAll();
 	gHeaderManager.RemoveAll();
@@ -1235,6 +1242,16 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.18  2002/10/10 00:03:20  emk
+   * The Windows engine now reloads scripts in the same fashion as the
+     Mac engine--if a load fails, you get a chance to retry it.
+   * Log files get flushed after every line.
+   * The LOG and SCHEMEIDLE primitives are no longer logged, to reduce
+     clutter in Debug.log.
+   * Tons of bugfixes in places where the Windows engine assumed it
+     had a TInterpreter object, but didn't (i.e., lots of "sInstance"
+     assertions are gone).
+
  Revision 1.17  2002/10/09 18:38:42  emk
  3.5.7 - 9 Oct 2002 - emk
 

@@ -23,6 +23,9 @@ DEFINE_5L_PRIMITIVE(SchemeExit)
 
 DEFINE_5L_PRIMITIVE(SchemeIdle)
 {
+	// Logging this primitive would only clutter the debug log.
+	::SkipPrimitiveLogging();
+
 	// Recover our Scheme interpreter.
 	TSchemeInterpreter *scheme_interp =
 		dynamic_cast<TSchemeInterpreter*>(TSchemeInterpreter::GetInstance());
