@@ -10,6 +10,7 @@
 #include "TString.h"
 #include "TPoint.h"
 #include "TRect.h"
+#include "TVariable.h"
 #include "GraphicsTools.h"
 #include "TInterpreter.h"
 #include "TTemplateUtils.h"
@@ -104,7 +105,16 @@ protected:
 	//
 	virtual TCallback *GetCallbackArg() = 0;
 
+	//////////
+	// Return the next argument as a list.  This object
+	// is allocated on the heap, and must be destroyed by the
+	// caller (typically the primitive function) using delete.
+	//
+	virtual TArgumentList *GetListArg() = 0;
+
 public:
+	virtual ~TArgumentList() {}
+	
 	//////////
 	// Are there any more arguments left?
 	//
@@ -123,6 +133,7 @@ public:
 	friend TArgumentList &operator>>(TArgumentList &args,
 									 GraphicsTools::Color &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TCallback* &out);
+	friend TArgumentList &operator>>(TArgumentList &args, TArgumentList* &out);
 
 	// TODO - Handle the ValueOrPercent manipulator here.
 };
@@ -228,6 +239,36 @@ extern TPrimitiveManager gPrimitiveManager;
 	extern void DoPrim_ ## NAME(TArgumentList &inArgs); \
 	END_NAMESPACE_FIVEL \
 	void FIVEL_NS DoPrim_ ## NAME(TArgumentList &inArgs)
+
+//////////
+// Set the return value of the current primitive.
+//
+// [in] inValue - The string to return.
+//
+inline void SetPrimitiveResult(const char *inValue)
+{
+	gVariableManager.SetString("_result", inValue);
+}
+
+//////////
+// Set the return value of the current primitive.
+//
+// [in] inValue - The integer to return.
+//
+inline void SetPrimitiveResult(int32 inValue)
+{
+	gVariableManager.SetLong("_result", inValue);
+}
+
+//////////
+// Set the return value of the current primitive.
+//
+// [in] inValue - The floating point value to return.
+//
+inline void SetPrimitiveResult(double inValue)
+{
+	gVariableManager.SetDouble("_result", inValue);
+}
 
 END_NAMESPACE_FIVEL
 

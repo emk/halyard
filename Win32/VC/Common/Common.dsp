@@ -101,6 +101,10 @@ SOURCE=..\..\..\Common\ImlUnit.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\T5LPrimitives.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TArray.cpp
 # End Source File
 # Begin Source File
@@ -214,6 +218,10 @@ SOURCE=..\..\..\Common\GraphicsTools.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\ImlUnit.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\T5LPrimitives.h
 # End Source File
 # Begin Source File
 

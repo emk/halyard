@@ -403,6 +403,12 @@ void Card::DoBody()
 //
 void Card::DoReturn()
 {
+	if (m_Script.more())
+	{
+		TString returnval;
+		m_Script >> returnval;
+		::SetPrimitiveResult(returnval.GetString());
+	}
 	Return();
 }
 
@@ -702,6 +708,43 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.8  2002/06/21 15:42:09  emk
+ 3.3.8 - 5L language improvements, including nested expressions,
+ return values and new primitives.
+
+   * Expressions can now be nested: '(set x $(+ 2 $(* 3 5)))' will
+     set 'x' to 17.  Nested expressions should be indented as follows:
+
+       (set x $(+ $really_big_variable_1
+                  $really_big_variable_2))
+
+     ...that is, arguments should _stack in a column_.  I will be
+     extremely anal about this if I'm reading your code.
+
+   * '(return ...)' now takes an optional argument, which will be
+     returned from the macro.  So you can define your own functions, too.
+
+   * New primitives: +, -, *, /, truncate, float+, float-, float*,
+     float/, strlen, substr, findsubstr, length, nth, haskey, getval.
+
+ A note on Lisp naming conventions--when you create a new "data structure"
+ type, you should generally name functions as follows:
+
+   # Define a type 'pt' with members 'x' and 'y' using lists.
+   (macrodef pt (return ($1 $2)))
+   (macrodef pt-x (return $(nth 0 $1)))
+   (macrodef pt-y (return $(nth 1 $1)))
+
+   # Alternative implementation of a type 'pt2' using associative lists.
+   # (You couldn't pass 'pt2' to a built-in command, but it's a nice small
+   # example.)
+   (macrodef pt2 (return (x $1 y $2)))      # (pt2 10 20) => (x 10 y 20)
+   (macrodef pt2-x (return $(getval $1 x))) # (pt2-x ...) => 10
+   (macrodef pt2-y (return $(getval $1 y))) # (pt2-y ...) => 20
+
+ The function 'pt' is called the "constructor", and the functions 'pt-x' and
+ 'pt-y' are called "accessors".
+
  Revision 1.7  2002/06/20 16:32:54  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

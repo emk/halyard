@@ -80,6 +80,12 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TCallback* &out)
     return args;
 }
 
+TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TArgumentList* &out)
+{
+	out = args.GetListArg();
+	return args;
+}
+
 
 //=========================================================================
 // TPrimitiveManager Methods
@@ -126,6 +132,9 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 		throw TException(__FILE__, __LINE__,
 						 "Tried to call non-existant primitive");
     PrimitiveFunc primitive = static_cast<PrimitiveFunc>(found->second);
+
+	// Clear the result value.
+	gVariableManager.SetString("_result", "");
     
     // Call it.
     (*primitive)(inArgs);

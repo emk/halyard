@@ -199,6 +199,27 @@ void TStream::scanword(void)
     {
         switch (ch) 
         {
+			case '$':
+				if (inEscape())
+					ch = nextchar();
+				else
+				{
+					ch = nextchar();
+					if (ch == P_OPEN)
+					{
+						// emk - A small, gross hack that makes 5L much more
+						// powerful.  We allow words of the form:
+						// "foo$(+ 2 2)bar", where "(+ ...)" is an arbitrary
+						// 5L command.  This is pretty fragile and yucky,
+						// but it allows us to substitute command results
+						// into strings.
+						scanopen();
+						scanclose();
+						ch = curchar();
+					}
+				}
+				break;
+
             case P_OPEN:
             case P_CLOSE:
                 if (not inEscape())
@@ -332,31 +353,92 @@ TString TStream::copystr(uint32 startPos, uint32 numChars)
         //
         if ((s[curpos] == '$') and ((curpos == 0) or (not inEscape(curpos)))) 
         {
-            //  Copy up until the $ sign.
-            //
-            result += original.Mid(base, curpos - base);
-            base = curpos + 1;
-            
-            //  Find out how long the name is. Name ends with
-            //  whitespace or another $. If we end on a $, set
-            //  varadjust to 1. This means we won't include the
-            //  final $ in the string we copy to the variable name.
-            //
-            while (curpos < origlen) 
-            {
-                ch = s[++curpos];
-                if ((ch == '$') and (not inEscape(curpos)))
-                    break;
-            }
+			//  Copy up until the $ sign.
+			//
+			result += original.Mid(base, curpos - base);
+			base = curpos + 1;
 
-            //  Append the variable contents to the result string.
-            //
-            vname = original.Mid(base, curpos - base);
-			result += gVariableManager.GetString(vname);
-            
-            //  Bump up the base.
-            //
-            base = ++curpos;
+			if (curpos + 1 < origlen && s[curpos + 1] == P_OPEN)
+			{
+				// COMMAND OUTPUT SUBSTITUTION
+				//
+				// This is a horrible kludge--see scanword for an
+				// explanation--but it allows us to write "foo$(+ 2 2)bar"
+				// and get the string "foo4bar".
+
+				++curpos; // Skip over '$'.
+
+				// Find the end of the command, using a little local copy
+				// of scanclose (we're not allowed to call curchar or
+				// nextchar, so we can't use the real scanclose).
+				int cmd_begin = curpos;
+				int nesting_levels = 0;
+				for (bool done = false; !done; )
+				{
+					ASSERT(curpos < origlen);
+					switch (s[curpos++])
+					{
+						case SLASH:
+							// Skip the next character, too.
+							++curpos;
+							break;
+
+						case P_OPEN:
+							++nesting_levels;
+							break;
+
+						case P_CLOSE:
+							--nesting_levels;
+							if (nesting_levels == 0)
+								done = true;
+							break;
+
+						default:
+							break;
+					}
+				}
+				int cmd_end = curpos;
+				
+				// Extract the text of our command.
+				TString cmd_text =
+					original.Mid(cmd_begin, cmd_end - cmd_begin);
+
+				// Build and run a callback.
+				TCallback *callback = MakeCallback(cmd_text);
+				callback->Run();
+				delete callback;
+
+				// Insert the output of the command into our string.
+				result += gVariableManager.GetString("_result");
+
+				// Bump up the base.
+				base = curpos;
+			}
+			else
+			{
+				//  REGULAR VARIABLE SUBSTITUTION
+				//				
+				//  Find out how long the name is. Name ends with
+				//  whitespace or another $. If we end on a $, set
+				//  varadjust to 1. This means we won't include the
+				//  final $ in the string we copy to the variable name.
+				//
+				while (curpos < origlen) 
+				{
+					ch = s[++curpos];
+					if ((ch == '$') and (not inEscape(curpos)))
+						break;
+				}
+				
+				//  Append the variable contents to the result string.
+				//
+				vname = original.Mid(base, curpos - base);
+				result += gVariableManager.GetString(vname);
+				
+				//  Bump up the base.
+				//
+				base = ++curpos;
+			}
         } 
         else 
         {
@@ -594,6 +676,14 @@ TCallback *TStream::GetCallbackArg()
 
 	// Create and return a callback object.
 	return MakeCallback(code);
+}
+
+TArgumentList *TStream::GetListArg()
+{
+	// Extract our next string, and build a new parser for it.
+	TString list;
+	*this >> list;
+	return new TStream(list);
 }
 
 //  Tests to see if a character is escaped, given position of character

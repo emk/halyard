@@ -553,8 +553,14 @@ void CCard::DoExit()
 //
 void CCard::DoReturn()
 {
-	gDebugLog.Log("return");
+	if (m_Script.more())
+	{
+		TString returnval;
+		m_Script >> returnval;
+		::SetPrimitiveResult(returnval.GetString());
+	}
 
+	gDebugLog.Log("return");
 	mStopped = true;
 }
 
