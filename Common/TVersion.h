@@ -17,14 +17,33 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		02
-#define VERSION_REV_SMALL	05
+#define VERSION_REV_SMALL	06
 
-#define VERSION_STRING	"5L 3.3.2.5 (Development, FiveL_3_2_2_emk_typography_merge)"
+#define VERSION_STRING	"5L 3.3.2.6 (Development, FiveL_3_2_2_emk_typography_merge)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.9.2.7  2002/05/01 03:27:02  emk
+ 3.3.2.6 - First Windows engine with (textaa ...) command.
+
+ - Implemented a primitive, slow Image::DrawPixMap command that uses
+ ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+ enough, it's about as fast as the somewhat optimized Mac routines.
+ Anyone got a good GDI book?
+
+ - Fixed several assertion failures.
+
+ Known problems:
+
+ - Occasional assertion failure on exit.  The reference-counting on
+ TIndexFile claims it's getting dereferenced too many times.  This is
+ an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+ - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+ caused by overlong lines.
+
  Revision 1.9.2.6  2002/04/30 07:57:24  emk
  3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
  exists.  The (defstyle ...) command should work, but (textaa ...) isn't

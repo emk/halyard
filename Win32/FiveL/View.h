@@ -25,6 +25,7 @@
 #include "Dib.h"
 #include "LPalette.h"
 #include "QTGraphic.h"
+#include "GraphicsTools.h"
 
 #define VSCREEN_WIDTH  		640
 #define VSCREEN_HEIGHT		480
@@ -67,7 +68,7 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class View : public TObject
+class View : public TObject, public GraphicsTools::Image
 {
     public:
     	//////////
@@ -187,7 +188,17 @@ class View : public TObject
 		// [in] inRect - Win32 RECT specifying screen location of the graphic
 		//
 		void		DrawQTGraphic(QTGraphic *inQtg, RECT *inRect);
- 		
+
+		//////////
+		// Draw a portable PixMap to the screen, blending alpha
+		// values appropriately.
+		//
+		// [in] inPoint - The location at which to draw the pixmap.
+		// [in] inPixMap - The pixmap to draw.
+		//
+		void		DrawPixMap(GraphicsTools::Point inPoint,
+							   GraphicsTools::PixMap &inPixMap);
+		
     	//////////
 		// Fade the screen in or out.
 		//
@@ -436,6 +447,25 @@ class View : public TObject
 
 /*
  $Log$
+ Revision 1.2.2.1  2002/05/01 03:27:07  emk
+ 3.3.2.6 - First Windows engine with (textaa ...) command.
+
+ - Implemented a primitive, slow Image::DrawPixMap command that uses
+ ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+ enough, it's about as fast as the somewhat optimized Mac routines.
+ Anyone got a good GDI book?
+
+ - Fixed several assertion failures.
+
+ Known problems:
+
+ - Occasional assertion failure on exit.  The reference-counting on
+ TIndexFile claims it's getting dereferenced too many times.  This is
+ an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+ - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+ caused by overlong lines.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

@@ -2643,7 +2643,7 @@ void CCard::DoText()
 }
 
 /*--------------------------------------------------------------
-    (TEXTNEW STYLESHEET LEFT TOP RIGHT BOTTOM TEXTSTRING)
+    (TEXTAA STYLESHEET LEFT TOP RIGHT BOTTOM TEXTSTRING)
 
     Display the given textstring, using the given header style,
     within the given rect. Note that the bottom of the rectangle

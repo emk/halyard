@@ -926,6 +926,7 @@ void CleanUp(void)
 	gCardManager.RemoveAll();
 	gMacroManager.RemoveAll();
 	gHeaderManager.RemoveAll();
+	gStyleSheetManager.RemoveAll();
 	gVariableManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
 	gCommandKeyManager.RemoveAll();	
@@ -1033,6 +1034,7 @@ void ReDoScript(TString &inCardName)
 	gCardManager.RemoveAll();
 	gMacroManager.RemoveAll();
 	gHeaderManager.RemoveAll();
+	gStyleSheetManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
 	gIndexFileManager.RemoveAll();
 
@@ -1222,6 +1224,25 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.5.2.2  2002/05/01 03:27:07  emk
+ 3.3.2.6 - First Windows engine with (textaa ...) command.
+
+ - Implemented a primitive, slow Image::DrawPixMap command that uses
+ ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+ enough, it's about as fast as the somewhat optimized Mac routines.
+ Anyone got a good GDI book?
+
+ - Fixed several assertion failures.
+
+ Known problems:
+
+ - Occasional assertion failure on exit.  The reference-counting on
+ TIndexFile claims it's getting dereferenced too many times.  This is
+ an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+ - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+ caused by overlong lines.
+
  Revision 1.5.2.1  2002/04/30 07:57:31  emk
  3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
  exists.  The (defstyle ...) command should work, but (textaa ...) isn't

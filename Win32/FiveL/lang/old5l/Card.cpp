@@ -31,6 +31,7 @@
 #include "Config.h"
 #include "Graphics.h"
 #include "LHttp.h"
+#include "TStyleSheet.h"
 
 //  Card - Constructor. Cards have a default origin of (0, 0)
 //
@@ -209,6 +210,7 @@ void Card::DoCommand(void)
     else if (opword == (char *)"still") DoStill();
     else if (opword == (char *)"sub") DoSub();
     else if (opword == (char *)"text") DoText();
+    else if (opword == (char *)"textaa") DoTextAA();
     else if (opword == (char *)"timeout") DoTimeout();
     else if (opword == (char *)"touch") DoTouch();
     else if (opword == (char *)"unblippo") DoUnblippo();
@@ -2166,6 +2168,43 @@ void Card::DoText()
     gHeaderManager.DoText(header, bounds, text, 0, 0);
 }
 
+/*--------------------------------------------------------------
+    (TEXTAA STYLESHEET LEFT TOP RIGHT BOTTOM TEXTSTRING)
+
+    Display the given textstring, using the given stylesheet,
+    within the given rect. Note that the bottom of the rectangle
+    is elastic... it will actually be as much or as little as
+    necessary to display all the text.
+----------------------------------------------------------------*/
+void Card::DoTextAA()
+{
+	TRect		bounds;
+	std::string style, text;
+
+    m_Script >> style >> bounds >> text;
+
+    AdjustRect(&bounds);
+	gDebugLog.Log("textaa: style <%s>, text <%s>",
+				  style.c_str(), text.c_str());
+
+	try
+	{
+		gStyleSheetManager.Draw(style, text,
+								GraphicsTools::Point(bounds.Left(),
+													 bounds.Top()),
+								bounds.Right() - bounds.Left(),
+								gView);
+	}
+	catch (std::exception &error)
+	{
+		gDebugLog.Error("ERROR: %s", error.what());
+	}
+	catch (...)
+	{
+		gDebugLog.Error("ERROR: Unknown exception");
+	}
+}
+
 /*-----------------------------------------------------------
     (TIMEOUT DELAY CARD)
 
@@ -2658,6 +2697,25 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.4.2.2  2002/05/01 03:27:07  emk
+ 3.3.2.6 - First Windows engine with (textaa ...) command.
+
+ - Implemented a primitive, slow Image::DrawPixMap command that uses
+ ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+ enough, it's about as fast as the somewhat optimized Mac routines.
+ Anyone got a good GDI book?
+
+ - Fixed several assertion failures.
+
+ Known problems:
+
+ - Occasional assertion failure on exit.  The reference-counting on
+ TIndexFile claims it's getting dereferenced too many times.  This is
+ an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+ - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+ caused by overlong lines.
+
  Revision 1.4.2.1  2002/04/30 07:57:30  emk
  3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
  exists.  The (defstyle ...) command should work, but (textaa ...) isn't

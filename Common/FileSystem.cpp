@@ -28,6 +28,7 @@
 #endif
 
 #include "FileSystem.h"
+#include "TLogger.h"
 
 using namespace FileSystem;
 
@@ -49,7 +50,8 @@ Error::Error(int inErrorCode)
 // about it.
 static void ResetErrno()
 {
-	ASSERT(errno == 0); // TODO - Log a warning instead of failing.
+	if (errno != 0)
+		gDebugLog.Caution("Unexpected errno = %d", errno);
 	errno = 0;
 }
 

@@ -980,7 +980,6 @@ TextRenderingEngine::TextRenderingEngine(const StyledText &inText,
 	  mImage(inImage), mIsFirstLine(true),
 	  mLineStart(inPosition), mBounds(inPosition)
 {
-	ASSERT(inPosition.x >= 0 && inPosition.y >= 0);
 	ASSERT(inImage != NULL);
 }
 
@@ -1024,7 +1023,6 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 
 	// Advance our cursor.
 	ioPosition->x += round_266(glyph->GetAdvance().x);
-	ASSERT(ioPosition->x >= 0);
 	ASSERT(glyph->GetAdvance().y == 0);
 
 	// Update our previous char.
