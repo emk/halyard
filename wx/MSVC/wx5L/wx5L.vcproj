@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../Common,../../../libs/freetype2/include,../../../libs/boost,../../../libs/wxWindows/include,../../../libs/wxWindows/contrib/include,../../../libs/wxWindows/lib/mswd,../../../libs/quake2/wx,../../../libs/wxIE,../../../libs/portaudio/pa_common,../../../libs/libivorbisdec"
+				AdditionalIncludeDirectories="../../../Common;../../../libs/freetype2/include;../../../libs/boost;&quot;$(WXWIN)/include&quot;;&quot;$(WXWIN)/contrib/include&quot;;&quot;$(WXWIN)/lib/mswd&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec"
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,WINVER=0x400,_MT,wxUSE_GUI=1,__WXDEBUG__,WXDEBUG=1,__WXWINDOWS__,REF_HARD_LINKED,IML_Q2_EXTENSIONS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
@@ -508,8 +508,8 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="cd $(InputDir)
-..\..\libs\wxWindows\contrib\utils\wxrc\Debug\wxrc.exe /c /o resources.cpp $(InputName).xrc
+						CommandLine="cd &quot;$(InputDir)&quot;
+..\..\libs\wxWidgets\contrib\utils\wxrc\vc_mswd\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;
 "
 						Outputs="$(InputDir)resources.cpp"/>
 				</FileConfiguration>
@@ -544,7 +544,7 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="..\..\..\libs\wxWindows\include;..\..\src;$(NoInherit)"/>
+						AdditionalIncludeDirectories="..\..\..\libs\wxWidgets\include;..\..\src;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">

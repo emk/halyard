@@ -24,6 +24,7 @@
 #include <wx/image.h>
 #include <wx/fs_inet.h>
 #include <wx/xrc/xmlres.h>
+#include <wx/evtloop.h>
 
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
@@ -175,11 +176,39 @@ int FiveLApp::OnExit()
     return 0;
 }
 
+namespace {
+    // HACK - Do the song and dance required to get a custom event loop running
+    // with the latest build of wxWidgets.  This is a gross hack, and requires
+    // patching wxWidgets itself.  Hopefully a better interface will be
+    // included in a future version.
+    class StEventLoopSetup {
+        wxEventLoop **m_evtloop_var;
+        
+    public:
+        StEventLoopSetup(wxEventLoop **evtloop_var)
+            : m_evtloop_var(evtloop_var)
+        {
+            *m_evtloop_var = new wxEventLoop;
+            (*m_evtloop_var)->StartRunning(); // Call our patch.
+        }
+
+        ~StEventLoopSetup() {
+            (*m_evtloop_var)->StopRunning(); // Call our patch.
+            delete *m_evtloop_var;
+            *m_evtloop_var = NULL;
+        }
+    };
+};
+
 int FiveLApp::MainLoop()
 {
 	// WARNING - No Scheme function may ever be called above this
     // point on the stack!
     FIVEL_SET_STACK_BASE();
+
+    // Create a wxEventLoop object to process events.  This became
+    // necessary in wxWindows 2.5.x or so.
+    StEventLoopSetup setup(&m_mainLoop);
         
     // Create a SchemeInterpreterManager.
     TInterpreterManager *manager =

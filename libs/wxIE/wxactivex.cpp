@@ -783,9 +783,9 @@ bool VariantToMSWVariant(const wxVariant& vx, VARIANTARG& va)
 
     case VT_BSTR:
 		if (byRef)
-			*va.pbstrVal = SysAllocString(vx.GetString().wc_str(wxMBConv()));
+			*va.pbstrVal = SysAllocString(vx.GetString().wc_str(wxConvLibc));
 		else
-			va.bstrVal = SysAllocString(vx.GetString().wc_str(wxMBConv()));
+			va.bstrVal = SysAllocString(vx.GetString().wc_str(wxConvLibc));
         return true;
 
 	case VT_UNKNOWN: // should do a custom wxVariantData for this
@@ -1634,7 +1634,7 @@ void wxActiveX::OnSize(wxSizeEvent& event)
 
 void wxActiveX::OnPaint(wxPaintEvent& event)
 {
-	wxLogTrace(wxT("repainting activex win"));
+	wxLogDebug(wxT("repainting activex win"));
 	wxPaintDC dc(this);
 	dc.BeginDrawing();
 	int w, h;
@@ -1669,12 +1669,12 @@ void wxActiveX::OnMouse(wxMouseEvent& event)
 {
 	if (m_oleObjectHWND == NULL) 
     { 
-        wxLogTrace(wxT("no oleInPlaceObject")); 
+        wxLogDebug(wxT("no oleInPlaceObject")); 
         event.Skip(); 
         return; 
     }
 
-	wxLogTrace(wxT("mouse event"));
+	wxLogDebug(wxT("mouse event"));
 	UINT msg = 0;
 	WPARAM wParam = 0;
 	LPARAM lParam = 0;
@@ -1717,18 +1717,18 @@ void wxActiveX::OnMouse(wxMouseEvent& event)
 	wxString log;
 	if (msg == 0) 
     { 
-        wxLogTrace(wxT("no message"));
+        wxLogDebug(wxT("no message"));
         event.Skip(); return; 
     };
 
 	if (!::SendMessage(m_oleObjectHWND, msg, wParam, lParam)) 
     { 
-        wxLogTrace(wxT("msg not delivered"));
+        wxLogDebug(wxT("msg not delivered"));
         event.Skip(); 
         return; 
     };
 
-	wxLogTrace(wxT("msg sent"));
+	wxLogDebug(wxT("msg sent"));
 }
 
 long wxActiveX::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)

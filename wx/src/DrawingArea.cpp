@@ -322,14 +322,8 @@ void DrawingArea::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
 		wxMemoryDC dc;
 		dc.SelectObject(GetPixmap());
 		wxPoint src_loc(clip.x - mBounds.x, clip.y - mBounds.y);
-		if (GetPixmap().HasAlpha()) {
-			if (!inDC.AlphaBlend(clip.x, clip.y, clip.width, clip.height,
-								 &dc, src_loc.x, src_loc.y))
-				gLog.Error("Cannot alpha-composite offscreen layers.");
-		} else {
-			if (!inDC.Blit(clip.x, clip.y, clip.width, clip.height,
-						   &dc, src_loc.x, src_loc.y))
-				gLog.Error("Cannot composite offscreen layers.");
-		}
+		if (!inDC.Blit(clip.x, clip.y, clip.width, clip.height,
+					   &dc, src_loc.x, src_loc.y))
+			gLog.Error("Cannot composite offscreen layers.");
 	}
 }
