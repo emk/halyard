@@ -140,8 +140,9 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 											   load_flags, NULL));
 		}
 
-		// Hide our movie safely out of the way until we attach our
-		// controller to it.  I learned this trick from Chuck's code.
+		// Hide our movie safely out of the way until we preroll it. 
+		// This prevents certain codecs from drawing random cruft on
+		// screen.  I learned this trick from Chuck's code.
 		CGrafPtr safe_port = reinterpret_cast<CGrafPtr>(sDummyGWorld);
 		::SetMovieGWorld(mMovie, safe_port, NULL);
 		CHECK_MAC_ERROR(::GetMoviesError());
@@ -229,61 +230,6 @@ void TQTMovie::AsyncLoadComplete()
 	// and/or VP3 network streaming.  I'm too lazy to test it for now.
 	//::SetMoviePlayHints(mMovie, hintsScrubMode, hintsScrubMode);
 	
-	// Get some useful information from our movie.
-	Fixed mRate = ::GetMoviePreferredRate(mMovie);
-	
-	// Begin the pre-prerolling process.  For network-streamed movies,
-	// this opens up server connections and fun stuff like that.
-	// TODO - WHYMANUAL
-	// NEXT: When done, QuickTime will call the PrePrerollCompleteCallback,
-	// which will (in turn) call our PrePrerollComplete method.  This
-	// may happen immediately (or so I think), or later, when we're
-	// in our Idle method.
-	UpdateMovieState(MOVIE_PREPREROLLING);
-	CHECK_MAC_ERROR(::PrePrerollMovie(mMovie, 0, mRate,
-									  PrePrerollCompleteCallback, this));
-}
-
-void TQTMovie::PrePrerollComplete(OSErr inError)
-{
-	ASSERT(mState == MOVIE_PREPREROLLING);
-
-	// Check whether the pre-prerolling failed.  (If we throw an
-	// exception from here, PrePrerollCompleteCallback will catch it
-	// and mark the movie as broken.)
-	CHECK_MAC_ERROR(inError);
-
-	// The movie should be done flashing (and drawing in awkward places),
-	// so attach it to the correct port.
-	::SetMovieGWorld(mMovie, mPort, NULL);
-
-	// Preroll our movie.  This causes QuickTime to open all our
-	// components and get our data buffers ready for playback.
-	// TODO - WHYMANUAL
-	CHECK_MAC_ERROR(::PrerollMovie(mMovie, 0, mRate));
-	
-	// Attach a movie controller to our movie.
-	Rect bounds = {120, 160, 640, 480};
-	long controller_flags = mcTopLeftMovie /* | mcNotVisible */;
-	mMovieController = ::NewMovieController(mMovie, &bounds, controller_flags);
-	CHECK_MAC_ERROR(::GetMoviesError());
-
-	RgnHandle empty_region = ::NewRgn();
-	::MCSetClip(mMovieController, empty_region, NULL);
-	//::DisposeRgn(empty_region);
-	
-	// Mark the controller's rectangle as valid to avoid a
-	// double repainting.
-	//Rect movie_bounds;
-	//::GetMovieBox(mMovie, &movie_bounds);
-	//::ValidRect(&movie_bounds);
-	
-	// Install our action filter.
-	long refcon = reinterpret_cast<long>(this);
-	CHECK_MAC_ERROR(::MCSetActionFilterWithRefCon(mMovieController,
-												  &ActionFilterCallback,
-												  refcon));
-
 	// Mark ourselves as ready to go.
 	UpdateMovieState(MOVIE_READY);
 	if (mShouldStartWhenReady == true)
@@ -298,7 +244,8 @@ void TQTMovie::StartWhenReady()
 	{
 		// We can't just busy-loop on Idle until mState == MOVIE_READY,
 		// because it deadlocks the application.  I'm guessing that
-		// not all of our callbacks get run 
+		// not all of our callbacks get run unless we go back to the
+		// Windows event loop.
 		mShouldStartWhenReady = true;
 	}
 }
@@ -307,16 +254,36 @@ void TQTMovie::Start()
 {
 	ASSERT(mState == MOVIE_READY);
 
-	// Clear the movie controller's clipping region so we can see it
-	// again.
-	//::MCSetClip(mMovieController, NULL, NULL);
+	// The movie should be done flashing (and drawing in awkward places),
+	// so attach it to the correct port.
+	::SetMovieGWorld(mMovie, mPort, NULL);
+	CHECK_MAC_ERROR(::GetMoviesError());
+		
+	// Attach a movie controller to our movie.
+	Rect bounds = {120, 160, 640, 480};
+	long controller_flags = mcTopLeftMovie | mcNotVisible;
+	mMovieController = ::NewMovieController(mMovie, &bounds, controller_flags);
+	CHECK_MAC_ERROR(::GetMoviesError());
+	
+	// Install our action filter.
+	long refcon = reinterpret_cast<long>(this);
+	CHECK_MAC_ERROR(::MCSetActionFilterWithRefCon(mMovieController,
+												  &ActionFilterCallback,
+												  refcon));
 
+	// Figure out our preferred playback rate.  We used to store this
+	// in a member variable, but it's *much* safer to ask for it just
+	// before you use it.
+	Fixed rate = ::GetMoviePreferredRate(mMovie);
+	
 	// Start the movie.  I tried doing this with mcActionPrerollAndPlay,
 	// mcActionPlay and mcActionAutoPlay (whatever that is), and the
 	// movie wouldn't play reliably.  Now I just call Resume, which
 	// does some semi-naughty things, but *everything works*.
 	UpdateMovieState(MOVIE_STARTED);
-	Resume();	
+	CHECK_MAC_ERROR(::MCDoAction(mMovieController,
+								 mcActionPrerollAndPlay,
+								 reinterpret_cast<void*>(rate)));
 }
 
 
@@ -376,6 +343,31 @@ void TQTMovie::Redraw(HWND hWnd)
 	::MCDraw(mMovieController, mac_window);
 }
 
+bool TQTMovie::IsDone()
+{
+	if (mState == MOVIE_BROKEN)
+		return true;
+	else if (mState < MOVIE_STARTED)
+		return false;
+	else
+	{
+		// Get the current time in the movie.  As Yijin discovered, we
+		// can't use ::IsMovieDone on streaming movies--it doesn't know how
+		// to recognize the existance of anything beyond what's already
+		// been loaded.
+		TimeValue current_time = ::GetMovieTime(mMovie, NULL);
+
+		// Get the movie's duration.
+		// Unknown/indefinite duration is supposedly represented as
+		// a duration of 0x7FFFFFF (yes, there really are *six* Fs in that
+		// number).  This can occur for (1) partially loaded movies and
+		// (2) live streaming broadcasts without a duration.
+		TimeValue duration = ::GetMovieDuration(mMovie);
+
+		return duration <= current_time;
+	}
+}
+
 bool TQTMovie::IsPaused()
 {
 	ASSERT(mState == MOVIE_STARTED);
@@ -415,12 +407,8 @@ void TQTMovie::UpdateMovieState(MovieState inNewState)
 			ASSERT(mState == MOVIE_UNINITIALIZED);
 			break;
 
-		case MOVIE_PREPREROLLING:
-			ASSERT(mState == MOVIE_INCOMPLETE);
-			break;
-
 		case MOVIE_READY:
-			ASSERT(mState == MOVIE_PREPREROLLING);
+			ASSERT(mState == MOVIE_INCOMPLETE);
 			break;
 
 		case MOVIE_STARTED:
@@ -480,27 +468,6 @@ bool TQTMovie::ActionFilter(short inAction, void* inParams)
 //  All these routines are called by the Toolbox, so they're not allowed
 //  to throw any exceptions.  In general, they catch the offending
 //  exception, and mark the movie as broken.
-
-void TQTMovie::PrePrerollCompleteCallback(Movie inMovie,
-										  OSErr inError,
-										  void *inRefCon)
-	throw ()
-{
-	TQTMovie *movie = reinterpret_cast<TQTMovie*>(inRefCon);
-	if (!movie->IsBroken())
-	{
-		try
-		{
-			// Run the appropriate method on our object.
-			movie->PrePrerollComplete(inError);
-		}
-		catch (...)
-		{
-			// If something throws an exception, scrap our movie.
-			movie->UpdateMovieState(MOVIE_BROKEN);
-		}
-	}
-}
 
 Boolean TQTMovie::ActionFilterCallback(MovieController inController,
 									   short inAction, void *inParams,

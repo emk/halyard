@@ -117,7 +117,6 @@ private:
 		// This sequence is guaranteed to be in this order.
 		MOVIE_UNINITIALIZED,  // We're in the constructor
 		MOVIE_INCOMPLETE,     // We're waiting for newMovieAsyncOK
-		MOVIE_PREPREROLLING,  // We're waiting for pre-prerolling to complete
 		MOVIE_READY,          // Our movie is fully loaded, with a controller
 		MOVIE_STARTED         // Our movie has been started
 	};
@@ -151,18 +150,20 @@ private:
     MovieController mMovieController;
 
 	//////////
-	// The preferred playback rate of the movie.  We need to pass
-	// this to a variety of QuickTime functions.
-	// 
-	Fixed mRate;
-
-	//////////
 	// Should we start this movie immediately once it's ready to
 	// play?
 	//
 	bool mShouldStartWhenReady;
 
 public:
+	enum {
+		kCenterMovie = 1,
+		kAudioOnly = 2,
+		kEnableMovieController = 4,
+		kEnableInteraction = 8,
+		kShowEveryFrame = 16
+	};
+
 	TQTMovie(CGrafPtr inPort, const std::string &inMoviePath);
 	virtual ~TQTMovie() throw ();
 
@@ -173,6 +174,7 @@ public:
 
 	bool IsBroken() throw () { return mState == MOVIE_BROKEN; }
 	bool IsStarted() throw () { return mState == MOVIE_STARTED; }
+	bool IsDone();
 
 	void StartWhenReady();
 	void Start();
@@ -186,7 +188,6 @@ protected:
 private:
 	void ProcessAsyncLoad();
 	void AsyncLoadComplete();
-	void PrePrerollComplete(OSErr inError);
 	
 	//////////
 	// Release all resources held by this object.  (This call may
@@ -198,18 +199,6 @@ private:
 	// Advance to the next state in our state machine.
 	//
 	void UpdateMovieState(MovieState inNewState);
-
-	//////////
-	// We pass this function to QuickTime when we call PrePrerollMovie,
-	// and QuickTime calls it when everything is ready.
-	//
-	// [in] inMovie - The movie being preprerolled.
-	// [in] inError - noErr, or an error value if preprerolling failed.
-	// [in] inRefCon - User data (a 'this' pointer, in our case).
-	// 
-	static void PrePrerollCompleteCallback(Movie inMovie,
-										   OSErr inError,
-										   void *inRefCon) throw ();
 
 	//////////
 	// We use this function to process movie controller events.  This allows
