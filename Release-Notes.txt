@@ -6,9 +6,9 @@ CVS - emk
   * Allowed GROUP and SEQUENCE to have initialization code:
     (GROUP name () body ...).
   * Can define templates for card groups, cards and elements.
-    Use (PARAM name) to access template parameters from within code.
   * Can create temporary elements using CREATE.  These get deleted
     when exiting the card.
+  * Can access template parameters directly, or by using PARAM.
 
 0.0.3 - 9 May 2003 - emk, brian
 
