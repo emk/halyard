@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT([TArray.cpp])
-AM_INIT_AUTOMAKE(libfivel-common, 0.0)
+AC_INIT([Common/TArray.cpp])
+AM_INIT_AUTOMAKE(fivel, 0.0)
 
 # Turn on debugging.
 CFLAGS="$CFLAGS -g"
@@ -79,4 +79,4 @@ AC_CHECK_FUNCS([strstr])
 AC_CONFIG_SUBDIRS(libs/plt/src)
 
 # Output our results.
-AC_OUTPUT([Makefile fonttools/Makefile libs/Makefile libs/crypto/Makefile])
+AC_OUTPUT([Makefile libs/Makefile libs/crypto/Makefile Common/Makefile Common/fonttools/Makefile])

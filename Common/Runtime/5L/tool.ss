@@ -92,9 +92,9 @@
 	       ;; 5L-Kernel, respectively.  This is for compatibility
 	       ;; with the standalone engine.
 	       (load/use-compiled (build-path (collection-path "5L")
-					      "5L-Fake-Engine.ss"))
+					      "fake-engine.ss"))
 	       (load/use-compiled (build-path (collection-path "5L")
-					      "5L-Kernel.ss"))))
+					      "kernel.ss"))))
 	    (super-on-execute settings run-in-user-thread))
 	  (super-instantiate ())))
 
@@ -131,7 +131,7 @@
 	;; Install our 5L language.
 	(register-language
 	 (instantiate (wrap-language 5L-language%) ()
-           (module '(lib "5L.ss" "5L"))
+           (module '(lib "5l.ss" "5L"))
 	   (language-numbers (get-numbers 1))
 	   (language-position
 	    (get-position "5L Multimedia Programming Language"))

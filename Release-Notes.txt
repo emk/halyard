@@ -14,6 +14,11 @@ CVS - emk
     instructions on converting them back and forth.  This will allow us
     to play a bit more nicely with CVS, and eliminate all but a few
     files with resource forks from our CVS repository.
+  * Source tree re-organization:
+    - Common/libs -> libs
+    - Common/freetype2 -> libs/freetype2
+    - Rename Common/Runtime/5L/*.ss to have lowercase names
+    - Linux build fixes
 
 3.5.8 - 15 Oct 2002 - emk
 

@@ -1,0 +1,36 @@
+
+  Source-tree re-organization
+    Move 5L/Common/libs to 5L/libs so it's easier to avoid during 'cvs update'
+    Rename Common/Runtime/5L files to have lowercase names
+    Move configure.ac to top level
+    Move BuildAll.mcp to top level
+    Move FiveL.dsw to top level
+    Remove cryptographic code to avoid problems with export law
+    Remove Macintosh code with license problems
+
+  wxWindows Port
+    Get wxWindows engine running under Carbon
+    Start moving Windows primitives into the wxWindows front-end
+    Get QuickTime working on the MacOS
+    Improve movie-controller event-handling
+    Improve full-screen mode on Windows (and Mac?)
+    Implement high-speed wxBitmap access
+    Test extensively with legacy programs
+    Text extensively on different systems
+
+  Scheme
+    Figure out who's creating that "Runtime Error at 0x........" dialog
+    Continue to flesh-out 5L APIs
+
+  Stabilization
+    Decide whether to stablize wxWindows or the current front-ends
+    Pick a version number: either 3.6 or 4.0
+    Work with Douglas to prioritize bugs for stabilization
+    Two rounds of testing?
+
+  Big Stuff
+    Section 508
+    Quake II
+    Field-customizability
+    SCORM and/or mainstream LMS software
+    Content security

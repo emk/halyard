@@ -6,7 +6,7 @@
 ;;  which we can throw away and recreate in a pristine condition whenever
 ;;  a developer asks us to reload the currently running script.
 ;;
-;;  You can find similar code for the DrScheme IDE in 5L-tool.ss.
+;;  You can find similar code for the DrScheme IDE in tool.ss.
 
 (module 5L-Loader mzscheme
 
@@ -83,10 +83,10 @@
 	;; module name (so the engine can easily grovel around inside it)
 	;; but not imported into our namespace (which is the job of the
 	;; 5L language module).
-	(set! filename "5L-Kernel.ss")
+	(set! filename "kernel.ss")
 	(load/use-compiled (build-path (current-directory)
 				       "Runtime" "5L"
-				       "5L-Kernel.ss"))
+				       "kernel.ss"))
       
         ;; Provide a reasonable default language for writing scripts.  We
         ;; need to set up both the transformer environment (which is used
@@ -94,8 +94,8 @@
         ;; (which is used by normal program code).
         (set! filename "lispish.ss")
 	(namespace-transformer-require '(lib "lispish.ss" "5L"))
-	(set! filename "5L.ss")
-	(namespace-require '(lib "5L.ss" "5L"))
+	(set! filename "5l.ss")
+	(namespace-require '(lib "5l.ss" "5L"))
       
 	;; Load the user's actual script into our new namespace.
 	(set! filename (build-path (current-directory) "Scripts" "start.ss"))

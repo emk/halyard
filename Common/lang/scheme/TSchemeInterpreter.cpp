@@ -67,7 +67,7 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	// Install our system loader.
 	FileSystem::Path fivel_collection =
 		FileSystem::GetRuntimeDirectory().AddComponent("5L");
-	LoadFile(fivel_collection.AddComponent("5L-Loader.ss"));
+	LoadFile(fivel_collection.AddComponent("loader.ss"));
 }
 
 void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)

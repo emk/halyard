@@ -12,12 +12,12 @@
   (define name "5L")
 
   ;; Define a tool which installs our language.
-  (define tools (list "5L-tool.ss"))
+  (define tools (list "tool.ss"))
   (define tool-icons (list '("5L.gif" "5L")))
   (define tool-names (list "5L Multimedia Programming Language"))
 
   ;; Register our language.
-  ;(define drscheme-language-modules (list '("5L.ss" "5L")))
+  ;(define drscheme-language-modules (list '("5l.ss" "5L")))
   ;(define drscheme-language-positions
   ;  (list '("5L Multimedia Programming Language")))
   ;(define drscheme-language-one-line-summaries

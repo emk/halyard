@@ -1,4 +1,4 @@
-CXXFLAGS=-I../ -I../libs/crypto -I../libs/boost @CXXFLAGS@ -Wall -Werror
+CXXFLAGS=-I../ -I../../libs/crypto -I../../libs/boost @CXXFLAGS@ -Wall -Werror
 
 noinst_PROGRAMS = pngtest listfonts fontspeed
 
@@ -18,10 +18,10 @@ fontspeed_SOURCES = \
 	fontspeed.cpp
 
 fontspeed_LDADD = @FREETYPE_LDADD@ -lgd ../libfivel.a \
-	../libs/crypto/libfivel_crypto.a \
-	../libs/plt/lib/libmzscheme.a \
-	../libs/plt/lib/libmzgc.a \
-	../libs/plt/lib/mzdyn.o \
+	../../libs/crypto/libfivel_crypto.a \
+	../../libs/plt/lib/libmzscheme.a \
+	../../libs/plt/lib/libmzgc.a \
+	../../libs/plt/lib/mzdyn.o \
 	-ldl
 #	-lefence
 

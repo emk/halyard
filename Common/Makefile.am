@@ -1,11 +1,9 @@
-AUTOMAKE_OPTIONS = foreign
-
 CXXFLAGS = @CXXFLAGS@ -Wall -Werror \
-	-I libs/crypto \
-	-I libs/boost \
-	-I libs/plt/include
+	-I ../libs/crypto \
+	-I ../libs/boost \
+	-I ../libs/plt/include
 
-SUBDIRS = libs . fonttools
+SUBDIRS = . fonttools
 
 noinst_LIBRARIES = libimlunit.a libfivel.a
 
@@ -95,25 +93,10 @@ TestAll_SOURCES = \
 TestAll_LDADD = \
 	libfivel.a \
 	libimlunit.a \
-	libs/crypto/libfivel_crypto.a \
-	libs/plt/lib/libmzscheme.a \
-	libs/plt/lib/libmzgc.a \
-	libs/plt/lib/mzdyn.o \
+	../libs/crypto/libfivel_crypto.a \
+	../libs/plt/lib/libmzscheme.a \
+	../libs/plt/lib/libmzgc.a \
+	../libs/plt/lib/mzdyn.o \
 	@FREETYPE_LDADD@ \
 	-ldl
 #	-lefence
-
-#==========================================================================
-#  MzScheme Compilation
-#==========================================================================
-#  MzScheme has a non-standard build procedure, so we need to do this stuff
-#  manually.
-
-all-plt:
-	(cd libs/plt/src; $(MAKE) all)
-	(cd libs/plt/src; $(MAKE) install)
-
-clean-plt:
-	(cd libs/plt/src; $(MAKE) clean)
-	(cd libs/plt/bin; rm -f *)
-	(cd libs/plt/lib; rm -f *)
