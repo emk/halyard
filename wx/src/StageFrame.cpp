@@ -331,15 +331,6 @@ StageFrame::StageFrame(wxSize inSize)
 
 	// Calculate this once at startup.
 	FindBestFullScreenVideoMode();
-
-    // We need to call the manually, because if we're in runtime mode, the
-    // menu bar will never be shown, and no wxUpdateUiEvent will ever be
-    // sent, leaving all our menu items enabled.
-    //
-    // TODO - We probably need to do this before every accelerator lookup,
-    // or at least we would, if the available menu items ever changed in
-    // Runtime mode.
-    UpdateWindowUI(wxUPDATE_UI_RECURSE);
 }
 
 #if !wxUSE_DISPLAY
@@ -610,6 +601,23 @@ void StageFrame::ObjectDeleted()
 {
 	SetTitle(wxGetApp().GetAppName());
 }
+
+#ifdef FIVEL_PLATFORM_WIN32
+
+bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
+    // HACK - We need to forcibly update our UI here, because Windows won't
+    // update our accelerators properly if the menu bar has never been
+    // shown.
+    //
+    // It might be more efficient for us to do this at idle time, actually,
+    // but I'm not sure if the UI data might get slightly stale and cause
+    // assertion failures.
+    if (TInterpreterManager::IsInRuntimeMode())
+        UpdateWindowUI();
+    return wxFrame::MSWTranslateMessage(pMsg);
+}
+
+#endif // FIVEL_PLATFORM_WIN32
 
 bool StageFrame::AreDevToolsAvailable() {
     return (!TInterpreterManager::IsInRuntimeMode()

@@ -29,6 +29,7 @@
 
 #include "TLogger.h"
 #include "TVersion.h"
+#include "TInterpreter.h"
 #include "CrashReporter.h"
 
 USING_NAMESPACE_FIVEL
@@ -153,6 +154,8 @@ void TLogger::Error(const char *Format, ...)
 	FormatMsg(Format);
 	LogBuffer(ERROR_HEADER);
 	AlertBuffer(true);
+    if (TInterpreterManager::IsInRuntimeMode())
+        CrashNow();
 }
 
 void TLogger::Caution(const char *Format, ...)
@@ -177,6 +180,10 @@ void TLogger::FatalError(const char *Format, ...)
 	AlertBuffer(true);
     if (m_LogOpen)
         LogBuffer(FATAL_HEADER);
+    CrashNow();
+}
+
+void TLogger::CrashNow() {
     CrashReporter::GetInstance()->CrashNow(m_LogBuffer);
     // We shouldn't get here, but just in case.
 	abort();

@@ -34,6 +34,9 @@ CVS - emk
     if 5L.prefs is missing (bug #1726).  As noted in the bug, a number of
     other issues remain, and we'll have to deal with them before declaring
     the runtime mode perfect.
+  * Added code to update menu accelerators more reliably while in runtime
+    mode (bug #1726).  This may cause performance problems.
+  * All script errors are fatal in runtime mode (bug #1730).
 
 0.0.42 - 06 Dec 2004 - emk
 

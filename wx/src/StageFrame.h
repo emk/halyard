@@ -222,6 +222,17 @@ public:
 	///
 	void ObjectDeleted();
 
+#ifdef FIVEL_PLATFORM_WIN32
+
+    //////////
+    /// Sadly, we need to override this function because Windows doesn't
+    /// seem to correctly update our accelerator keys if we've launched
+    /// straight into full-screen mode without ever showing a menu bar.
+    ///
+    bool MSWTranslateMessage(WXMSG* pMsg);
+
+#endif // FIVEL_PLATFORM_WIN32
+
 private:
     bool AreDevToolsAvailable();
 

@@ -207,6 +207,11 @@ private:
 	///
 	void		AlertBuffer(bool isError = false);
 
+    //////////
+    /// Crash the engine with a fatal error.
+    ///
+    void        CrashNow();
+
 	//////////
 	/// Should a log message with a given mask be logged?
 	///
