@@ -287,6 +287,22 @@ SOURCE=..\..\src\ic_5L.ico
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\ic_card.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ic_document.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ic_folder_closed.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ic_folder_open.ico
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\ic_listener.ico
 # End Source File
 # Begin Source File

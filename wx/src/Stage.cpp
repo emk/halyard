@@ -15,9 +15,6 @@
 #include "doc/Document.h"
 #include "doc/TamaleProgram.h"
 
-// XXX - Huh?  Who included by TStyleSheet.h (on Win32) is defining DrawText?
-#undef DrawText
-
 #include "AppConfig.h"
 #include "AppGlobals.h"
 #include "AppGraphics.h"
@@ -142,8 +139,8 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_CLOSE(StageFrame::OnClose)
 END_EVENT_TABLE()
 
-StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
-    : wxFrame((wxFrame*) NULL, -1, inTitle,
+StageFrame::StageFrame(wxSize inSize)
+    : wxFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
               LoadFramePosition(), wxDefaultSize,
 			  wxDEFAULT_FRAME_STYLE),
 	  mDocument(NULL),
@@ -259,9 +256,9 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
                      wxNullBitmap, "Display Borders");
     tb->Realize();
         
-    // Add a status bar with 1 field.  The 0 disables the resize thumb
-    // at the lower right.
-    CreateStatusBar(1, 0);
+    // Add a status bar with 1 field.  We could pass a 0 as the second
+	// parameter to disable the resize thumb at the lower right.
+    CreateStatusBar(1);
 
     // Resize the "client area" of the window (the part that's left over
     // after menus, status bars, etc.) to hold the stage and the program
@@ -380,6 +377,7 @@ void StageFrame::NewDocument()
 		ProgramPropDlg prop_dlg(this, mDocument->GetTamaleProgram());
 		prop_dlg.ShowModal();
 
+		SetObject(mDocument->GetTamaleProgram());
 		mProgramTree->RegisterDocument(mDocument);
 		mStage->Show();
 	}
@@ -400,9 +398,23 @@ void StageFrame::OpenDocument()
 		wxString file = dlg.GetPath();
 		mDocument = new Document(file.mb_str(), Document::OPEN);
 		config->Write("/Recent/DocPath", file);
+
+		SetObject(mDocument->GetTamaleProgram());
 		mProgramTree->RegisterDocument(mDocument);
 		mStage->Show();
 	}
+}
+
+void StageFrame::ObjectChanged()
+{
+	SetTitle(wxString(GetObject()->GetString("name").c_str()) +
+			 " - " + wxGetApp().GetAppName() + " - [" +
+			 wxString(mDocument->GetSavePath().c_str()) + "]");
+}
+
+void StageFrame::ObjectDeleted()
+{
+	SetTitle(wxGetApp().GetAppName());
 }
 
 void StageFrame::OnExit(wxCommandEvent &inEvent)
@@ -707,11 +719,6 @@ Stage::~Stage()
 void Stage::RegisterCard(const wxString &inName)
 {
 	mFrame->GetProgramTree()->RegisterCard(inName);
-}
-
-void Stage::SetProgramName(const wxString &inName)
-{
-	mFrame->SetTitle(inName);
 }
 
 void Stage::NotifyEnterCard()

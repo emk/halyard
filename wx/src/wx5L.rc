@@ -68,6 +68,10 @@ TB_BORDERS              BITMAP  DISCARDABLE     "tb_borders.bmp"
 ic_5L                   ICON    DISCARDABLE     "ic_5L.ico"
 ic_listener             ICON    DISCARDABLE     "ic_listener.ico"
 ic_timecoder            ICON    DISCARDABLE     "ic_timecoder.ico"
+ic_card                 ICON    DISCARDABLE     "ic_card.ico"
+ic_folder_closed        ICON    DISCARDABLE     "ic_folder_closed.ico"
+ic_folder_open          ICON    DISCARDABLE     "ic_folder_open.ico"
+ic_document             ICON    DISCARDABLE     "ic_document.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

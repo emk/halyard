@@ -3,19 +3,21 @@
 #include <wx/wx.h>
 #include <wx/treectrl.h>
 #include <wx/laywin.h>
+#include <wx/imaglist.h>
 
 #include "TCommon.h"
 #include "TInterpreter.h"
 
 #include <map>
 #include <string>
+#include <memory>
 
 #include "AppGlobals.h"
 #include "Stage.h"
 #include "ProgramTree.h"
 #include "Model.h"
 #include "doc/Document.h"
-
+#include "dlg/ProgramPropDlg.h"
 
 //=========================================================================
 //  ProgramTreeCtrl
@@ -28,8 +30,24 @@ class ProgramTreeCtrl : public wxTreeCtrl
 public:
 	ProgramTreeCtrl(wxWindow *inParent, int id);
 
+	//////////
+	// Any of these icons may be used by nodes in the ProgramTree.
+	//
+	enum {
+		ICON_CARD,
+		ICON_DOCUMENT,
+		ICON_FOLDER_CLOSED,
+		ICON_FOLDER_OPEN
+	};
+
+public:
+	void SetIcon(wxTreeItemId id, int closed_icon, int open_icon);
+
 private:
+	void BuildIconList();
+
 	void OnLeftDClick(wxMouseEvent& event);
+	void OnRightDown(wxMouseEvent& event);
 };	
 
 
@@ -49,6 +67,7 @@ public:
 	ProgramTreeCtrl *GetTree() { return mTreeCtrl; }
 
 	virtual void OnLeftDClick(wxMouseEvent& event) {}
+	virtual void OnRightDown(wxMouseEvent& event) {}
 };
 
 ProgramTreeItemData::ProgramTreeItemData(ProgramTreeCtrl *inTreeCtrl)
@@ -101,6 +120,42 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 
 
 //=========================================================================
+//  TamaleProgramMenu
+//=========================================================================
+
+class TamaleProgramMenu : public wxMenu
+{
+	DECLARE_EVENT_TABLE();
+
+	wxWindow *mParent;
+	model::Object *mObject;
+
+    void OnProperties(wxCommandEvent &inEvent);	
+
+public:
+	TamaleProgramMenu(wxWindow *inParent, model::Object *inObject);
+};
+
+BEGIN_EVENT_TABLE(TamaleProgramMenu, wxMenu)
+    EVT_MENU(FIVEL_PROPERTIES, TamaleProgramMenu::OnProperties)
+END_EVENT_TABLE()
+
+TamaleProgramMenu::TamaleProgramMenu(wxWindow *inParent, model::Object *inObject)
+{
+	mParent = inParent;
+	mObject = inObject;
+	Append(FIVEL_PROPERTIES, "Properties...",
+		   "Edit the properties for this program.");
+}
+
+void TamaleProgramMenu::OnProperties(wxCommandEvent &inEvent)
+{
+	ProgramPropDlg prop_dlg(mParent, mObject);
+	prop_dlg.ShowModal();
+}
+
+
+//=========================================================================
 //  TamaleProgramItemData
 //=========================================================================
 
@@ -110,9 +165,17 @@ public:
 	TamaleProgramItemData(ProgramTreeCtrl *inTreeCtrl)
 		: ViewItemData(inTreeCtrl) {}
 
+	virtual void OnRightDown(wxMouseEvent& event);
+
 	virtual void ObjectChanged();
 	virtual void ObjectDeleted();
 };
+
+void TamaleProgramItemData::OnRightDown(wxMouseEvent& event)
+{
+	TamaleProgramMenu popup(GetTree(), GetObject());
+	GetTree()->PopupMenu(&popup, event.GetPosition());
+}
 
 void TamaleProgramItemData::ObjectChanged()
 {
@@ -132,11 +195,33 @@ void TamaleProgramItemData::ObjectDeleted()
 
 BEGIN_EVENT_TABLE(ProgramTreeCtrl, wxTreeCtrl)
     EVT_LEFT_DCLICK(ProgramTreeCtrl::OnLeftDClick)
+    EVT_RIGHT_DOWN(ProgramTreeCtrl::OnRightDown)
 END_EVENT_TABLE()
 
 ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent, int id)
 	: wxTreeCtrl(inParent, id)
 {
+	BuildIconList();
+}
+
+void ProgramTreeCtrl::SetIcon(wxTreeItemId id, int closed_icon, int open_icon)
+{
+	SetItemImage(id, closed_icon, wxTreeItemIcon_Normal);
+	SetItemImage(id, closed_icon, wxTreeItemIcon_Selected);
+	SetItemImage(id, open_icon, wxTreeItemIcon_Expanded);
+	SetItemImage(id, open_icon, wxTreeItemIcon_SelectedExpanded);
+}
+
+void ProgramTreeCtrl::BuildIconList()
+{
+	// This should match the enumeration of icons in our class
+	// declaration.
+	wxImageList *images = new wxImageList(16, 16, TRUE);
+	images->Add(wxICON(ic_card));
+	images->Add(wxICON(ic_document));
+	images->Add(wxICON(ic_folder_closed));
+	images->Add(wxICON(ic_folder_open));
+	AssignImageList(images);
 }
 
 void ProgramTreeCtrl::OnLeftDClick(wxMouseEvent& event)
@@ -148,6 +233,18 @@ void ProgramTreeCtrl::OnLeftDClick(wxMouseEvent& event)
 			dynamic_cast<ProgramTreeItemData*>(GetItemData(id));
 		if (data)
 			data->OnLeftDClick(event);
+	}
+}
+
+void ProgramTreeCtrl::OnRightDown(wxMouseEvent& event)
+{
+    wxTreeItemId id = HitTest(event.GetPosition());
+    if (id)
+	{
+		ProgramTreeItemData *data =
+			dynamic_cast<ProgramTreeItemData*>(GetItemData(id));
+		if (data)
+			data->OnRightDown(event);
 	}
 }
 
@@ -176,13 +273,19 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 {
 	// Set up our root node.
 	mRootID = mTree->AddRoot("Program");
+	mTree->SetIcon(mRootID, ProgramTreeCtrl::ICON_DOCUMENT,
+				   ProgramTreeCtrl::ICON_DOCUMENT);
 	TamaleProgramItemData *item_data = new TamaleProgramItemData(mTree);
 	mTree->SetItemData(mRootID, item_data);
 	item_data->SetObject(inDocument->GetRoot());
 
 	// Set up some other nodes.
 	mCardsID = mTree->AppendItem(mRootID, "Cards");
+	mTree->SetIcon(mCardsID, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
+				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
 	mBackgroundsID = mTree->AppendItem(mRootID, "Backgrounds");
+	mTree->SetIcon(mBackgroundsID, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
+				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
 }
 
 void ProgramTree::RegisterCard(const wxString &inName)
@@ -193,6 +296,8 @@ void ProgramTree::RegisterCard(const wxString &inName)
 	// Insert the card into our tree.
 	wxTreeItemId id = mTree->AppendItem(mCardsID, inName);
 	mTree->SetItemData(id, new CardItemData(mTree, inName));
+	mTree->SetIcon(id, ProgramTreeCtrl::ICON_CARD,
+				   ProgramTreeCtrl::ICON_CARD);
 
 	// Record the card in our map.
 	mCardMap.insert(ItemMap::value_type(inName.mb_str(), id));
@@ -206,7 +311,6 @@ void ProgramTree::SetDefaultWidth(int inWidth)
 void ProgramTree::NotifyScriptReload()
 {
 	mCardMap.clear();
-	mTree->SetItemText(mRootID, "Program");
 	mTree->CollapseAndReset(mCardsID);
 	mTree->CollapseAndReset(mBackgroundsID);
 }

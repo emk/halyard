@@ -46,7 +46,6 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
 	REGISTER_5L_PRIMITIVE(RegisterCard);
     REGISTER_5L_PRIMITIVE(Screen);
-    REGISTER_5L_PRIMITIVE(SetWindowTitle);
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Wait);
@@ -309,18 +308,6 @@ DEFINE_5L_PRIMITIVE(Screen)
     Color color;
     inArgs >> color; 
 	wxGetApp().GetStage()->ClearStage(ConvColor(color));
-}
-
-/*---------------------------------------------------------------------
-    (SETWINDOWTITLE TITLE)
-
-    Set the application window title
- ---------------------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(SetWindowTitle)
-{
-    std::string title;
-    inArgs >> title;
-    wxGetApp().GetStage()->SetProgramName(title.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(TextAA)

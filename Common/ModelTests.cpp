@@ -3,6 +3,7 @@
 #include "ImlUnit.h"
 #include "TCommon.h"
 #include "Model.h"
+#include "ModelView.h"
 
 using namespace model;
 

@@ -12,6 +12,10 @@
 #include "GraphicsTools.h"
 #include "Typography.h"
 
+// XXX - Huh?  Who included by Typography.h (on Win32) is defining DrawText
+// and other crufy Win32 preprocessor stuff?
+#undef DrawText
+#undef GetObject
 
 BEGIN_NAMESPACE_FIVEL
 

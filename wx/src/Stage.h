@@ -9,6 +9,7 @@
 
 #include "GraphicsTools.h"
 #include "AppGlobals.h"
+#include "ModelView.h"
 
 class FIVEL_NS Document;
 class Stage;
@@ -35,7 +36,7 @@ enum ToolWindowID {
 //////////
 // Our main window--the "frame" around our stage.
 //
-class StageFrame : public wxFrame
+class StageFrame : public wxFrame, public model::View
 {
 	//////////
 	// Our associated document object.
@@ -109,10 +110,9 @@ public:
     //////////
     // Create and display a new stage frame.
     //
-    // [in] inTitle - The window title.
     // [in] inStageSize - The size of our stage.
     //
-    StageFrame(const wxChar *inTitle, wxSize inStageSize);
+    StageFrame(wxSize inStageSize);
 
     //////////
     // Get the stage attached to this frame.
@@ -151,6 +151,18 @@ public:
 	// Create a new document in the current frame.
 	//
 	void OpenDocument();
+
+	//////////
+	// We listen to the Document object so we can update the frame
+	// title.
+	//
+	void ObjectChanged();
+
+	//////////
+	// We listen to the Document object so we can update the frame
+	// title.
+	//
+	void ObjectDeleted();
 
 private:
 	// Lots of menu and toolbar event handlers.
@@ -343,11 +355,6 @@ public:
     // Register a newly-loaded card with the stage frame.
     //
     void RegisterCard(const wxString &inName);
-
-	//////////
-	// Set the name of the program we're running.
-	//
-	void SetProgramName(const wxString &inName);
 
     //////////
     // Notify the stage that the interpreter has moved to a new card.
