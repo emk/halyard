@@ -14,9 +14,14 @@
 // TString.cpp : 
 //
 
+#include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 #include "THeader.h"
 #include "TString.h"
-#include <stdio.h>
+
+USING_NAMESPACE_FIVEL
 
 #ifdef WIN32
 #define snprintf _snprintf
@@ -920,7 +925,7 @@ char TString::operator () (uint32 inPos) const
 //
 //	operator + - Concatenate strings.
 //
-TString operator + (const TString &inStr1, const TString &inStr2)
+TString FIVEL_NS operator + (const TString &inStr1, const TString &inStr2)
 {
     TString tmpStr;
     int     tmpLen = inStr1.m_Length + inStr2.m_Length;
@@ -937,7 +942,7 @@ enum
 {
     vSTART,
     vNEGATIVE,
-    vDECIMAL,
+    vDECIMAL
 };
 
 //
@@ -1138,13 +1143,13 @@ TString TString::UIntToString(uint32 inNum)
 //
 // stream I/O functions
 //
-ostream & operator << (ostream &inStream, const TString &inStr)
+ostream & FIVEL_NS operator << (ostream &inStream, const TString &inStr)
 {
 	inStream << inStr.m_String;
 	return (inStream);
 }
 
-istream & operator >> (istream &inStream, TString &inStr)
+istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 {
 //	char				endline;
 
@@ -1162,6 +1167,13 @@ istream & operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.5  2002/03/04 15:30:20  hamon
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
+
+Moved OS specific configuration to new file TPlatform.h
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.4  2002/02/28 11:05:05  tvw
  A few small changes needed to build FiveL Win32 with new Common library.
 
