@@ -12,6 +12,41 @@ using GraphicsTools::Color;
 
 extern void test_TSchemeInterpreter (void);
 
+static bool gTestingPause = false;
+static int gPauseCount = 0;
+
+// The idle function called periodically by our Scheme interpreter.
+static void TestIdleFunc()
+{
+	if (gTestingPause && --gPauseCount <= 0)
+	{
+		gTestingPause = false;
+		gPauseCount = 0;
+
+		TEST(TInterpreter::GetInstance()->Paused());
+		TInterpreter::GetInstance()->WakeUp();
+		TEST(!TInterpreter::GetInstance()->Paused());
+	}
+}
+
+DEFINE_5L_PRIMITIVE(TestPause)
+{
+	gTestingPause = true;
+	gPauseCount = 10;
+
+	TEST(!TInterpreter::GetInstance()->Paused());
+	TInterpreter::GetInstance()->Pause();
+	TEST(TInterpreter::GetInstance()->Paused());
+}
+
+DEFINE_5L_PRIMITIVE(TestCallback)
+{
+	TCallback *callback;
+	inArgs >> callback;
+	callback->Run();
+	delete callback;
+}
+
 #define DEFINE_TYPE_TEST_PRIMITIVES(TYPE, COUNT) \
 	static TYPE TYPE##_test_values[COUNT]; \
     static uint32 TYPE##_index = 0; \
@@ -40,13 +75,11 @@ DEFINE_TYPE_TEST_PRIMITIVES(TPoint, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(TRect, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
-static void TestIdleFunc()
-{
-	gLog.Log("Called TestIdleFunc");
-}
-
 void test_TSchemeInterpreter (void)
 {
+	REGISTER_5L_PRIMITIVE(TestPause);
+	REGISTER_5L_PRIMITIVE(TestCallback);
+
 	string_test_values[0] = "";
 	string_test_values[1] = "hello";
 	REGISTER_TYPE_TEST_PRIMITIVES(string);

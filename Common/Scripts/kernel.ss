@@ -8,7 +8,7 @@
 (define-struct point (x y))
 
 (define (point x y)
-  (make-point x y)) 
+  (make-point x y))
 
 (define-struct rect (left top right bottom))
 
@@ -94,34 +94,111 @@
 
 
 ;;=========================================================================
+;;  Internal State
+;;=========================================================================
+;;  When the interpreter returns from a primitive call (including a
+;;  primitive call to run the idle loop), it can be in one of a number of
+;;  states:
+;;
+;;    NORMAL:   The interpreter is running code normally, or has no code to
+;;              run.  The default.
+;;    PAUSED:   The interpreter should pause the current card until it is
+;;              told to wake back up.
+;;    JUMPING:  The interpreter should execute a jump.
+;;    NAPPING:  The interpreter should pause the current card for the
+;;              specified number of milliseconds.
+;;    CARD-KILLED: The interpreter should stop executing the current card,
+;;              and return to the top-level loop.
+;;    INTERPRETER-KILLED: The interpreter should exit.
+
+(define *%kernel-state* 'NORMAL)
+
+(define *%kernel-jump-card* #f)
+(define *%kernel-timeout* #f)
+(define *%kernel-timeout-thunk* #f)
+(define *%kernel-nap-time* #f)
+
+(define *%kernel-exit-interpreter-func* #f)
+(define *%kernel-exit-to-top-func* #f)
+
+(define (%kernel-clear-timeout)
+  (set! *%kernel-timeout* #f)
+  (set! *%kernel-timeout-thunk* #f))
+
+(define (%kernel-set-timeout time thunk)
+  (when *%kernel-timeout*
+    (debug-caution "Installing new timeout over previously active one."))
+  (set! *%kernel-timeout* time)
+  (set! *%kernel-timeout-thunk* thunk))
+
+(define (%kernel-check-timeout)
+  (when (and *%kernel-timeout*
+	     (>= (current-milliseconds *%kernel-timeout*)))
+    (*%kernel-timeout-thunk*)
+    (%kernel-clear-timeout)))
+
+(define (%kernel-clear-state)
+  (set! *%kernel-state* 'NORMAL)
+  (set! *%kernel-jump-card* #f))
+
+(define (%kernel-set-state state)
+  (set! *%kernel-state* state))
+
+(define (%kernel-check-state)
+  (%kernel-check-timeout)
+  (case *%kernel-state*
+    [[NORMAL]
+     #t]
+    [[PAUSED]
+     (%call-5l-prim 'schemeidle)
+     (%kernel-check-state)]
+    [[NAPPING]
+     (if (< (current-milliseconds) *%kernel-nap-time*)
+	 (begin
+	   (%call-5l-prim 'schemeidle)
+	   (%kernel-check-state))
+	 (%kernel-clear-state))]
+    [[JUMPING]
+     (when *%kernel-exit-to-top-func*
+       (*%kernel-exit-to-top-func* #f))]
+    [[CARD-KILLED]
+     (when *%kernel-exit-to-top-func*
+       (*%kernel-exit-to-top-func* #f))]
+    [[INTERPRETER-KILLED]
+     (*%kernel-exit-interpreter-func* #f)]
+    [else
+     (fatal-error "Unknown interpreter state")]))
+
+
+;;=========================================================================
 ;;  5L API
 ;;=========================================================================
 
 (define (call-5l-prim . args)
   (let ((result (apply %call-5l-prim args)))
-    (%kernel-check-flags)
+    (%kernel-check-state)
     result))
 
 (define (idle)
   (call-5l-prim 'schemeidle))
 
 (define (log msg)
-  (call-5l-prim 'log '5L msg 'log))
+  (%call-5l-prim 'log '5L msg 'log))
 
 (define (debug-log msg)
-  (call-5l-prim 'log 'Debug msg 'log))
+  (%call-5l-prim 'log 'Debug msg 'log))
 
 (define (caution msg)
-  (call-5l-prim 'log '5L msg 'caution))
+  (%call-5l-prim 'log '5L msg 'caution))
 
 (define (debug-caution msg)
-  (call-5l-prim 'log 'Debug msg 'caution))
+  (%call-5l-prim 'log 'Debug msg 'caution))
 
 (define (non-fatal-error msg)
-  (call-5l-prim 'log '5L msg 'error))
+  (%call-5l-prim 'log '5L msg 'error))
 
 (define (fatal-error msg)
-  (call-5l-prim 'log '5L msg 'fatalerror))
+  (%call-5l-prim 'log '5L msg 'fatalerror))
 
 (define (engine-var name)
   (call-5l-prim 'get name))
@@ -141,25 +218,17 @@
   (call-5l-prim 'schemeexit))
 
 (define (jump card)
-  (assert *%kernel-exit-to-top-level-func*)
   (set! *%kernel-jump-card* (%kernel-find-card card))
-  (debug-log (cat "Jumping to: " *%kernel-jump-card*))
-  (*%kernel-exit-to-top-level-func*))
+  (%kernel-set-state 'JUMPING)
+  (%kernel-check-state))
 
 
 ;;=========================================================================
 ;;  Cards
 ;;=========================================================================
 
-(define *%kernel-exit-interpreter-func* #f)
-(define *%kernel-exit-to-top-level-func* #f)
-(define *%kernel-exit-interpreter?* #f)
-(define *%kernel-jump-card* #f)
-
-(define (%kernel-check-flags)
-  (when (and *%kernel-exit-interpreter?*
-	     *%kernel-exit-interpreter-func*)
-    (*%kernel-exit-interpreter-func*)))
+(define *%kernel-current-card* #f)
+(define *%kernel-previous-card* #f)
 
 (define-struct %kernel-card (name thunk))
 
@@ -167,11 +236,14 @@
 
 (define (%kernel-register-card card)
   (let ((name (%kernel-card-name card)))
-    (when (hash-table-get *%kernel-card-table* name (lambda () #f))
-      (err (cat "Duplicate card: " name)))
-    (hash-table-put! *%kernel-card-table* name card)))
+    (if (hash-table-get *%kernel-card-table* name (lambda () #f))
+	(non-fatal-error (cat "Duplicate card: " name))
+	(hash-table-put! *%kernel-card-table* name card))))
 
 (define (%kernel-run-card card)
+  (%kernel-clear-timeout)
+  (set! *%kernel-previous-card* *%kernel-current-card*)
+  (set! *%kernel-current-card* card)
   (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
   (with-errors-blocked (non-fatal-error)
     ((%kernel-card-thunk card))))
@@ -209,56 +281,74 @@
 (define (%kernel-run)
   (with-errors-blocked (fatal-error)
     (label exit-interpreter
-      (set! *%kernel-exit-interpreter-func* exit-interpreter)
-      (let loop ()
-	(idle)
-	(label exit-to-top-level
-          (set! *%kernel-exit-to-top-level-func* exit-to-top-level)
-	  (cond
-	   [*%kernel-jump-card*
-	    (let ((jump-card *%kernel-jump-card*))
-	      (set! *%kernel-jump-card* #f)
-	      (%kernel-run-card (%kernel-find-card jump-card)))]
-	   [#t
-	    (debug-log "Doing nothing in idle loop")]))
-	(set! *%kernel-exit-to-top-level-func* #f)
-	(loop)))
-    (set! *%kernel-exit-interpreter-func* #f)))
+      (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
+	(let ((jump-card #f))
+	  (let loop ()
+	    (label exit-to-top
+	      (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
+	        (idle)
+		(cond
+		 [jump-card
+		  (%kernel-run-card (%kernel-find-card jump-card))
+		  (set! jump-card #f)]
+		 [#t
+		  (debug-log "Doing nothing in idle loop")])))
+	    (when (eq? *%kernel-state* 'JUMPING)
+	      (set! jump-card *%kernel-jump-card*))
+	    (%kernel-clear-state)
+	    (loop)))))
+    (%kernel-clear-state)
+    (%kernel-clear-timeout)))
 
 (define (%kernel-kill-interpreter)
-  (set! *%kernel-exit-interpreter?* #t))
+  (%kernel-set-state 'INTERPRETER-KILLED))
 
 (define (%kernel-pause)
-  #f)
+  (%kernel-set-state 'PAUSED))
 
 (define (%kernel-wake-up)
-  #f)
+  (when (%kernel-paused?)
+    (%kernel-clear-state)))
 
 (define (%kernel-paused?)
-  #f)
+  (eq? *%kernel-state* 'PAUSED))
 
 (define (%kernel-timeout card-name seconds)
-  #f)
+  (%kernel-set-timeout (+ (current-milliseconds) (* seconds 1000))
+		       (lambda () (jump card-name))))
 
 (define (%kernel-nap tenths-of-seconds)
-  #f)
+  (%kernel-set-state 'NAPPING))
 
 (define (%kernel-napping?)
-  #f)
+  (eq? *%kernel-state* 'NAPPING))
 
 (define (%kernel-kill-nap)
-  #f)
-	
+  (when (%kernel-napping?)
+    (%kernel-clear-state)))
+
 (define (%kernel-kill-current-card)
-  #f)
+  (%kernel-set-state 'CARD-KILLED))
 
 (define (%kernel-jump-to-card-by-name card-name)
-  (with-errors-blocked (fatal-error)
-    (debug-log (cat "jump-to-card-by-name: " card-name))
-    (set! *%kernel-jump-card* card-name)))
+  (set! *%kernel-jump-card* card-name)
+  (%kernel-set-state 'JUMPING))
 
 (define (%kernel-current-card-name)
-  "")
+  (if *%kernel-current-card*
+      (%kernel-card-name *%kernel-current-card*)
+      ""))
 
 (define (%kernel-previous-card-name)
-  "")
+  (if *%kernel-previous-card*
+      (%kernel-card-name *%kernel-previous-card*)
+      ""))
+
+(define (%kernel-run-callback thunk)
+  (with-errors-blocked (fatal-error)
+    (label exit-to-top
+      (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
+	;; Run our callback, but don't reset any of our state flags
+	;; afterwards--we want to save those for the next time we run
+	;; %kernel-check-state.
+	(thunk)))))

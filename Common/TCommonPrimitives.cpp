@@ -23,6 +23,7 @@ Origin FIVEL_NS gOrigin;
 
 void FIVEL_NS RegisterCommonPrimitives()
 {
+	REGISTER_5L_PRIMITIVE(HavePrimitive);
 	REGISTER_5L_PRIMITIVE(Log);
 	REGISTER_5L_PRIMITIVE(Origin);
 	REGISTER_5L_PRIMITIVE(ResetOrigin);
@@ -116,6 +117,20 @@ void Origin::OffsetOrigin(TPoint &delta)
 //=========================================================================
 //  Implementation of Common Primitives
 //=========================================================================
+
+
+//-------------------------------------------------------------------------
+// (HavePrimitive name:STRING)
+//-------------------------------------------------------------------------
+// Check to see whether the specified 5L primitive exists.  Helpful in
+// writing code which runs under different versions of the engine.
+
+DEFINE_5L_PRIMITIVE(HavePrimitive)
+{
+	std::string name;
+	inArgs >> name;
+	::SetPrimitiveResult(gPrimitiveManager.DoesPrimitiveExist(name));
+}
 
 
 //-------------------------------------------------------------------------

@@ -272,17 +272,11 @@ std::string TSchemeInterpreter::PrevCardName(void)
 //	TSchemeCallback Methods
 //=========================================================================
 
-TSchemeCallback::TSchemeCallback()
-{
-}
-
-TSchemeCallback::~TSchemeCallback()
-{
-}
-
 void TSchemeCallback::Run()
 {
-    UNIMPLEMENTED;
+	Scheme_Object *args[1];
+	args[0] = mCallback;	
+	TSchemeInterpreter::CallScheme("%kernel-run-callback", 1, args);
 }
 
 
@@ -426,8 +420,10 @@ GraphicsTools::Color TSchemeArgumentList::GetColorArg()
 
 TCallback *TSchemeArgumentList::GetCallbackArg()
 {
-    UNIMPLEMENTED;
-	return new TSchemeCallback();
+	Scheme_Object *arg = GetNextArg();
+	if (!SCHEME_PROCP(arg))
+		TypeCheckFail();
+	return new TSchemeCallback(arg);
 }
 
 TArgumentList *TSchemeArgumentList::GetListArg()

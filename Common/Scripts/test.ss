@@ -69,4 +69,34 @@
 
 (card test-2
   (mark-card-as-seen "test-2")
+  (jump test-callbacks))
+
+(define *before-callback-flag* #f)
+(define *after-callback-flag* #f)
+
+(card test-callbacks
+  ;; Test a simple callback.
+  (let ((callback-ran? #f))
+    (call-5l-prim 'testcallback (lambda () (set! callback-ran? #t)))
+    (test callback-ran?))
+
+  ;; Test a jumping callback.
+  (set! *before-callback-flag* #f)
+  (set! *after-callback-flag* #f)
+  (call-5l-prim 'testcallback
+		(lambda ()
+		  (set! *before-callback-flag* #t)
+		  (jump test-callbacks-2)
+		  (set! *after-callback-flag* #t))))
+
+(card test-callbacks-2
+  (test (eq? *before-callback-flag* #t))
+  (test (eq? *after-callback-flag* #f))
+  (jump test-pause))
+
+(card test-pause
+  (call-5l-prim 'testpause)
+  (jump done))
+
+(card done
   (exit-script))

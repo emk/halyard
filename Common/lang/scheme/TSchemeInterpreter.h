@@ -96,9 +96,15 @@ public:
 //
 class TSchemeCallback : public TCallback
 {
+	//////////
+	// Our callback object.  Note that we need to use a TSchemePtr to
+	// prevent mCallback from being garbage-collected, because we're
+	// a heap-based object.
+	//
+	TSchemePtr<Scheme_Object> mCallback;
+
 public:
-	TSchemeCallback();
-	virtual ~TSchemeCallback();
+	TSchemeCallback(Scheme_Object *inCallback) : mCallback(inCallback) {}
 
 	// For documentation of these virtual methods, see TInterpreter.h.
 	virtual void Run();
