@@ -148,17 +148,17 @@ namespace DataStore {
 		typedef T KeyType;
 		typedef const T ConstKeyType;
 
-		virtual void Set(ConstKeyType &inKey, Datum *inValue) = 0;
-		virtual Datum *Get(ConstKeyType &inKey) = 0;
+		virtual void DoSet(ConstKeyType &inKey, Datum *inValue) = 0;
+		virtual Datum *DoGet(ConstKeyType &inKey) = 0;
 
 		template <typename D>
 		void Set(ConstKeyType &inKey, D *inValue)
-		{ Set(inKey, static_cast<Datum*>(inValue)); }
+		{ DoSet(inKey, static_cast<Datum*>(inValue)); }
 			
 		template <typename D>
 		D *Get(ConstKeyType &inKey)
 		{
-			D *datum = dynamic_cast<D*>(Get(inKey));
+			D *datum = dynamic_cast<D*>(DoGet(inKey));
 			if (!datum)
 				throw TException(__FILE__, __LINE__,
 								 "Wrong type in CollectionDatum::Get");
@@ -189,8 +189,8 @@ namespace DataStore {
 	public:
 		MapDatum() : CollectionDatum<std::string>(MapType) {}
 
-		void Set(ConstKeyType &inKey, Datum *inValue);
-		Datum *Get(ConstKeyType &inKey);
+		void DoSet(ConstKeyType &inKey, Datum *inValue);
+		Datum *DoGet(ConstKeyType &inKey);
 	};
 
 	//////////
@@ -257,6 +257,7 @@ namespace DataStore {
 		std::auto_ptr<MapDatum> mRoot;
 
 		ChangeList mChanges;
+		ChangeList::iterator mChangePosition;
 
 	public:
 		Store();
@@ -264,8 +265,11 @@ namespace DataStore {
 		
 		bool CanUndo();
 		void Undo();
+		void ClearUndoList();
 
-		bool CanRedo() { return false; }
+		bool CanRedo();
+		void Redo();
+		void ClearRedoList();
 		
 		MapDatum *GetRoot() { ASSERT(mRoot.get()); return mRoot.get(); }
 		const MapDatum *GetRoot() const

@@ -164,13 +164,13 @@ void MapDatum::SetChange::DoFreeRevertResources()
 	}
 }
 
-void MapDatum::Set(ConstKeyType &inKey, Datum *inValue)
+void MapDatum::DoSet(ConstKeyType &inKey, Datum *inValue)
 {
 	RegisterChildObjectWithStore(inValue);
 	ApplyChange(new MapDatum::SetChange(this, inKey, inValue));
 }
 
-Datum *MapDatum::Get(ConstKeyType &inKey)
+Datum *MapDatum::DoGet(ConstKeyType &inKey)
 {
 	DatumMap::iterator found = mMap.find(inKey);
 	if (found == mMap.end())
@@ -186,37 +186,76 @@ Datum *MapDatum::Get(ConstKeyType &inKey)
 Store::Store()
 	: mRoot(NULL)
 {
+	mChangePosition = mChanges.begin();
 	mRoot = new MapDatum();
 	mRoot->RegisterWithStore(this);
 }
 
 Store::~Store()
 {
-	ChangeList::iterator i = mChanges.begin();
-	for (; i != mChanges.end(); ++i)
-	{
-		(*i)->FreeResources();
-		delete *i;
-	}
+	ClearRedoList();
+	ClearUndoList();
 }
 
 bool Store::CanUndo()
 {
-	return !mChanges.empty();
+	return mChangePosition != mChanges.begin();
 }
 
 void Store::Undo()
 {
 	ASSERT(CanUndo());
-	Change *change = mChanges.back();
-	change->Revert();
-	change->FreeResources();
-	delete change;
-	mChanges.pop_back();
+	(*--mChangePosition)->Revert();
+}
+
+void Store::ClearUndoList()
+{
+	ChangeList::iterator i = mChanges.begin();
+	for (; i != mChangePosition; i = mChanges.erase(i))
+	{
+		(*i)->FreeResources();
+		delete *i;
+	}
+	ASSERT(!CanUndo());
+}
+
+bool Store::CanRedo()
+{
+	return mChangePosition != mChanges.end();
+}
+
+void Store::Redo()
+{
+	ASSERT(CanRedo());
+	(*mChangePosition++)->Apply();
+}
+
+void Store::ClearRedoList()
+{
+	// If there's no redo list, give up now.
+	if (!CanRedo())
+		return;
+
+	// Walk the redo list backwards, destroying the Change objects
+	// pointed to by each list element.
+	ChangeList::iterator i = mChanges.end();
+	do
+	{
+		--i;
+		(*i)->FreeResources();
+		delete *i;
+		*i = NULL;
+	} while (i != mChangePosition);
+
+	// Free the actual list elements.
+	mChangePosition = mChanges.erase(mChangePosition, mChanges.end());
+	ASSERT(!CanRedo());	
 }
 
 void Store::ApplyChange(Change *inChange)
 {
+	ClearRedoList();
 	inChange->Apply();
-	mChanges.push_back(inChange);
+	mChangePosition = mChanges.insert(mChangePosition, inChange);
+	mChangePosition++;
 }
