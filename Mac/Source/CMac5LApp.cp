@@ -515,6 +515,28 @@ void CMac5LApp::CleanUp(void)
 	gIndexFileManager.RemoveAll();		// toss all the script files	
 }
 
+//
+//	EventResume - We are overriding LEventDispatcher's EventResume function.
+//	We want to HideMenuBar and then call LEventDispatcher's function.
+//
+void CMac5LApp::EventResume(const EventRecord& inMacEvent)
+{
+	if (gHideMenuBar)
+		gMenuUtil.HideMenuBar();
+	LApplication::EventResume(inMacEvent);	
+}
+
+//
+//	EventSuspend - We are overriding LEventDispatcher's EventSuspend function.
+//	We want to ShowMenuBar and then call LEventDispatcher's function.
+//
+void CMac5LApp::EventSuspend(const EventRecord& inMacEvent)		
+{
+ 
+	gMenuUtil.ShowMenuBar();
+	LApplication::EventSuspend(inMacEvent);
+}
+
 Boolean CMac5LApp::AttemptQuitSelf(SInt32 /* inSaveOption */)
 {
 	if (mScriptRunning)
@@ -964,6 +986,17 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.13  2002/02/26 12:42:19  hamon
+Made changes in order to show and hide the menu bar correctly when launching  the internet browser and returning to the program.
+
+We overrode EventResume and EventSuspend functions of LEventDispatcher in CMac5LApp to do this and then call the inherited version.
+
+We also deleted an unnecessary call to HideMenuBar found in CPlayerView.
+
+We added ShowMenuBar to the DoBrowse command in CCard.cp. We cannot rely on EventSuspend to do this correctly - see comment in code.
+
+Changes by Elizabeth Hamon, okayed by Eric.
+
 Revision 1.12  2002/02/04 20:04:28  hamon
 Updated Macintosh engine to compile under CodeWarrior 7.0 (Professional) and tested it lightly.  This will give us a base for future development and testing.
 

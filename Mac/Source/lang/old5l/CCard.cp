@@ -42,6 +42,9 @@
 
 #include <UInternetConfig.h>
 
+//test
+#include "CMenuUtil.h"
+//end test
 
 /**************
 
@@ -898,8 +901,15 @@ void CCard::DoBox()
 		delete boxPtr;
 }
 
+
+/*---------------------------------------------------------------
+   DoBrowse launches a browser and goes to the given URL.
+   It opens the default browser according to the settings in 
+   InternetConfig.
+-----------------------------------------------------------------*/
 void CCard::DoBrowse()
 {
+	
 	KString theURL;
 	
 	m_Script >> theURL;
@@ -912,8 +922,14 @@ void CCard::DoBrowse()
     	#ifdef DEBUG
     		gDebugLog.Log("PP_IC Available");
     	#endif	
-        
+    
+    	// Theoretically our suspend event should show the menu bar without problems. 
+    	// However, this doesn't work. Internet explorer's menu bar will be screwed up 
+    	// if Internet Explorer was not previously running. 
+    	// Therefore we need to show the menu bar here, before we call PP_ICLaunchURL. 
+    	gMenuUtil.ShowMenuBar();
         UInternetConfig::PP_ICLaunchURL("\p", (char *) theURL.GetString(), endSel, &startSel, &endSel);
+    	
     }
     else
     {

@@ -57,7 +57,10 @@ class	CMac5LApp : public LApplication
 								SInt32				inAENumber);
 		
 		void				DoExit(int16 inSide);
-									
+		
+		virtual void		EventResume		(const EventRecord& inMacEvent);
+		virtual void		EventSuspend	(const EventRecord& inMacEvent);							
+	
 	protected:
 		CBackWindow			*mDisplayWindow;
 		

@@ -144,9 +144,6 @@ void CPlayerView::Activate(void)
 	{
 		LView::Activate();
 
-		if (gHideMenuBar)
-			gMenuUtil.HideMenuBar();
-					
 		mActive = true;
 		mPauseFromKey = false;
 		mMoviePaused = false;
