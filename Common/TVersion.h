@@ -28,9 +28,16 @@
 #define VERSION_STRING		"Tamale 0.0.43 (Development)"
 #define SHORT_NAME			"Tamale"
 
+#define TAMALE_COPYRIGHT_NAME \
+	"Tamale multimedia engine"
+#define TAMALE_COPYRIGHT_NOTICE \
+	"Copyright 1993-2004 Trustees of Dartmouth College. All rights reserved."
 
 /*
  $Log$
+ Revision 1.84  2004/12/13 16:56:05  emk
+ Added splash screen with graphic and copyright notice (bug #1725).
+
  Revision 1.83  2004/12/13 12:45:39  emk
  0.0.43 - 13 Dec 2004 - emk
 

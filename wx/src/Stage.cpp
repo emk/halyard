@@ -29,6 +29,9 @@
 
 #include "TInterpreter.h"
 #include "TStyleSheet.h"
+#include "TVersion.h"
+#include "doc/Document.h"
+#include "doc/TamaleProgram.h"
 
 #include "AppConfig.h"
 #include "AppGlobals.h"
@@ -151,6 +154,44 @@ wxBitmap &Stage::GetBackgroundPixmap() {
 
 DrawingArea *Stage::GetCurrentDrawingArea() {
 	return mDrawingContextStack->GetCurrentDrawingArea();
+}
+
+void Stage::MaybeShowSplashScreen() {
+    // TODO - We assume the bitmap is 800x450 pixels, and we lay out
+    // this screen using hard-coded co-ordinates.
+
+    // If we have a screenshot.png file, draw it onto the stage.
+    FileSystem::Path path =
+        FileSystem::GetBaseDirectory().AddComponent("screenshot.png");
+    if (path.DoesExist() && path.IsRegularFile()) {
+        std::string native_path = path.ToNativePathString();
+        wxBitmap bitmap = GetImageCache()->GetBitmap(native_path.c_str());
+
+        mBackgroundDrawingArea->DrawBitmap(bitmap, 0, 60);
+    }
+
+    // Get our copyright strings.
+    TamaleProgram *prog = mFrame->GetDocument()->GetTamaleProgram();
+    std::string script_copyright =
+        prog->GetName() + ", " + prog->GetCopyright();
+    std::string tamale_copyright =
+        std::string(TAMALE_COPYRIGHT_NAME) + ", " + TAMALE_COPYRIGHT_NOTICE;
+
+    // Now, set up a drawing context for our text.  We use wxWidgets to
+    // draw the text because our font system won't have any text styles
+    // loaded yet.
+    wxMemoryDC dc;
+    dc.SelectObject(GetBackgroundPixmap());
+    
+    // Prepare to draw the text.
+    dc.SetTextForeground(*wxWHITE);
+    dc.SetTextBackground(*wxBLACK);
+    dc.SetFont(*wxNORMAL_FONT);
+        
+    // Draw the text.
+    dc.DrawText(script_copyright.c_str(), 5, 515);
+    dc.DrawText(tamale_copyright.c_str(), 5, 530);
+    InvalidateRect(wxRect(0, 500, 800, 100));
 }
 
 bool Stage::IsIdleAllowed() const {

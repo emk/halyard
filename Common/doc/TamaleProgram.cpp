@@ -60,3 +60,13 @@ void TamaleProgram::InsertBackground()
 	List *backgrounds = cast<List>(Get("backgrounds"));
 	backgrounds->Append(new Background())->Initialize();
 }
+
+/// This script name is displayed on the splash screen.
+std::string TamaleProgram::GetName() {
+    return GetString("name");
+}
+
+/// This copyright notice is displayed on the splash screen.
+std::string TamaleProgram::GetCopyright() {
+    return GetString("copyright");
+}

@@ -36,6 +36,9 @@ public:
 	model::List *GetBackgrounds();
 
 	void InsertBackground();
+
+    std::string GetName();
+    std::string GetCopyright();
 };
 
 END_NAMESPACE_FIVEL

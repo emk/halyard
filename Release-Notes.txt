@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Added splash screen with graphic and copyright notice (bug #1725).
+
 0.0.43 - 13 Dec 2004 - emk
 
   * Added QUICKTIME-COMPONENT-VERSION primitive.

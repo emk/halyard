@@ -587,6 +587,7 @@ void StageFrame::OpenDocument(const wxString &inDirPath) {
     mDocument = new Document(inDirPath.mb_str(), Document::OPEN);
     SetObject(mDocument->GetTamaleProgram());
     mProgramTree->RegisterDocument(mDocument);
+    mStage->MaybeShowSplashScreen();
     mStage->Show();
 }
 

@@ -173,6 +173,11 @@ public:
     Stage *GetStage() { return mStage; }
 
     //////////
+    /// Get the document associated with this stage frame.
+    ///
+    FIVEL_NS Document *GetDocument() { return mDocument; }
+
+    //////////
     /// Get the location box attached to this frame.
     ///
     LocationBox *GetLocationBox() { return mLocationBox; }

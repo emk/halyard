@@ -311,6 +311,13 @@ public:
 	///
 	wxSize GetStageSize() const { return mStageSize; }
 
+    //////////
+    /// If we can, show a splash screen for the loading program.  This is
+    /// called shortly before showing the stage, and well before loading
+    /// the actual script.
+    ///
+    void MaybeShowSplashScreen();
+
 	//////////
 	/// Should the script be allowed to idle right now?
 	///
