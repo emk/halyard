@@ -5,19 +5,19 @@
 
 USING_NAMESPACE_FIVEL
 
-BEGIN_EVENT_TABLE(HistoryText, wxTextCtrl)
-	EVT_KEY_DOWN(HistoryText::OnKeyDown)
-	EVT_TEXT_ENTER(wxID_ANY, HistoryText::OnTextEnter)
+BEGIN_EVENT_TABLE(HistoryTextCtrl, wxTextCtrl)
+	EVT_KEY_DOWN(HistoryTextCtrl::OnKeyDown)
+	EVT_TEXT_ENTER(wxID_ANY, HistoryTextCtrl::OnTextEnter)
 END_EVENT_TABLE()
 
-HistoryText::HistoryText(wxWindow* parent, 
-						 wxWindowID id, 
-						 const wxString& value, 
-						 const wxPoint& pos, 
-						 const wxSize& size, 
-						 long style, 
-						 const wxValidator& validator, 
-						 const wxString& name)
+HistoryTextCtrl::HistoryTextCtrl(wxWindow* parent, 
+								 wxWindowID id, 
+								 const wxString& value, 
+								 const wxPoint& pos, 
+								 const wxSize& size, 
+								 long style, 
+								 const wxValidator& validator, 
+								 const wxString& name)
 
 	: wxTextCtrl(parent, id, value, pos, size, style, validator, name) 
 {
@@ -28,7 +28,7 @@ HistoryText::HistoryText(wxWindow* parent,
 }
 
 // Handle the keystrokes used to navigate through the history
-void HistoryText::OnKeyDown(wxKeyEvent &inEvent)
+void HistoryTextCtrl::OnKeyDown(wxKeyEvent &inEvent)
 {
 	int code = inEvent.GetKeyCode();
 	if (code == WXK_UP)
@@ -40,7 +40,7 @@ void HistoryText::OnKeyDown(wxKeyEvent &inEvent)
 }
 
 // Handle entering a value
-void HistoryText::OnTextEnter(wxCommandEvent &inEvent)
+void HistoryTextCtrl::OnTextEnter(wxCommandEvent &inEvent)
 {
     if (inEvent.GetString() == "")
 		inEvent.Skip();
@@ -60,18 +60,18 @@ void HistoryText::OnTextEnter(wxCommandEvent &inEvent)
 	
 
 // History manipulation functions.
-void HistoryText::SaveCurrHist()
+void HistoryTextCtrl::SaveCurrHist()
 {
 	mHistoryItems[mHistoryCurrent] = GetValue();
 }
 
-void HistoryText::DisplayCurrHist()
+void HistoryTextCtrl::DisplayCurrHist()
 {
 	SetValue(mHistoryItems[mHistoryCurrent]);
 	SetInsertionPointEnd();
 }
 
-void HistoryText::HistPrev() 
+void HistoryTextCtrl::HistPrev() 
 {
 	if (mHistoryCurrent > 0)
 	{	
@@ -89,7 +89,7 @@ void HistoryText::HistPrev()
 	}
 }
 
-void HistoryText::HistNext() 
+void HistoryTextCtrl::HistNext() 
 {
 	if (mHistoryCurrent < mHistoryItems.size() - 1)
 	{	

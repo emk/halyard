@@ -24,9 +24,9 @@ Listener::Listener(StageFrame *inStageFrame)
 							  wxDefaultSize,
 							  wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
 	// Use a history text control, so we can have a command history
-    mInput = new HistoryText(this, FIVEL_LISTENER_TEXT_ENTRY, "",
-							 wxDefaultPosition, wxDefaultSize,
-							 wxTE_PROCESS_ENTER);
+    mInput = new HistoryTextCtrl(this, FIVEL_LISTENER_TEXT_ENTRY, "",
+								 wxDefaultPosition, wxDefaultSize,
+								 wxTE_PROCESS_ENTER);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(mHistory, 1 /* stretch */, wxGROW, 0);

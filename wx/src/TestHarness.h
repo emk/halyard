@@ -5,9 +5,13 @@
 
 class TestHarness
 {
+	static TestHarness *sInstance;
+
 public:
-	static void StartTests();
-	static void Idle();
+	static TestHarness *GetInstance();
+
+	void RunTests();
+
 };
 
 #endif // TestHarness_H

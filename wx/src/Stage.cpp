@@ -618,7 +618,7 @@ void StageFrame::OnReloadScript(wxCommandEvent &inEvent)
 
 void StageFrame::OnRunTests(wxCommandEvent &inEvent)
 {
-	TestHarness::StartTests();
+	TestHarness::GetInstance()->RunTests();
 }
 
 void StageFrame::OnAbout(wxCommandEvent &inEvent)
