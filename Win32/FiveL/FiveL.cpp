@@ -43,6 +43,7 @@
 #include "LHttp.h"
 #include "LBrowser.h"
 #include "SingleInstance.h"
+#include "TQTMovie.h"
 
 #if defined USE_BUNDLE
 	#include "LFileBundle.h"
@@ -108,7 +109,6 @@ LFontManager		gFontManager;
 LCommandKeyManager	gCommandKeyManager;
 InputManager		gInputManager;
 CGrafPtr			gGrafPtr = NULL;
-GWorldPtr			gDummyGWorldPtr = NULL;
 IndexFileManager	gIndexFileManager;
 LHttp				gHttpTool;
 LBrowser			gBrowserTool;
@@ -343,11 +343,12 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
     cRectgl.right = gHorizRes;
     cRectgl.bottom = gVertRes;
 
-	// Initialize QuickTime - use the kInitializeQTMLUseGDIFlag as we 
-	//		have seen flashes on startup of certain movies on certain
-	//		platforms (Dell laptops and Win98)
-	//
-	if (::InitializeQTML(kInitializeQTMLUseGDIFlag) != noErr)
+	// Initialize QuickTime.
+	try
+	{
+		TQTMovie::InitializeMovies();
+	}
+	catch (...)
 	{
 		// QuickTime is not installed
 		gLog.Error("QuickTime is not installed. Please install QuickTime before running this program.");
@@ -372,8 +373,6 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 		gVariableManager.SetString("_QuickTimeVersion", theBuffer);
 	}
 
-	::EnterMovies();				// Initialize QuickTime
-		
 	// Create and show app window:    
 	if (gConfigManager.GetUserPref(MODE) == MODE_WINDOW)
 	{ 
@@ -496,12 +495,9 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	gPaletteManager.Init();
 
-	gGrafPtr = (CGrafPtr) ::CreatePortAssociation (hwndApp, NULL, NULL); // Register window with QTML
-	
-	// set up a dummy GWorld that we can use when prerolling movies
-	Rect dummyRect = {0, 0, 1, 1};
-	OSErr err = ::NewGWorld(&gDummyGWorldPtr, 8, &dummyRect, NULL, NULL, 0);
-	
+	TQTMovie::RegisterWindowForMovies(hwndApp);
+	gGrafPtr = TQTMovie::GetPortFromHWND(hwndApp);
+
 	// Initialize the view  
 	if (not gView->Init())
 		return (false);
@@ -522,10 +518,8 @@ void DeInitInstance(void)
 	if (gView != NULL)
 		delete gView;
 
-	::DestroyPortAssociation (gGrafPtr);      // Unregister window with QTML
-
-	::ExitMovies();                               // Terminate QuickTime
-	::TerminateQTML();                            // Terminate QTML
+	TQTMovie::UnregisterWindowForMovies(hwndApp);
+	TQTMovie::ShutDownMovies();
 }
 
 //
@@ -1184,6 +1178,10 @@ void PutInForeground(void)
 
 /*
  $Log$
+ Revision 1.2.2.3.2.1  2002/07/03 09:27:58  emk
+ 3.2.0.5+TQTMovie - Experimental support for displaying movies through TQTMovie.
+ This is incomplete, but we'll want to port it to 3.5 or so.
+
  Revision 1.2.2.3  2002/04/09 13:53:45  emk
  Mouse-click during text entry now works the same as typing RETURN.
 

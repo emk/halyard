@@ -99,7 +99,8 @@ private:
 public:
 	static void InitializeMovies();
 	static void ShutDownMovies();
-	static void PrepareWindowForMovies(HWND inWindow);
+	static void RegisterWindowForMovies(HWND inWindow);
+	static void UnregisterWindowForMovies(HWND inWindow);
 	static CGrafPtr GetPortFromHWND(HWND inWindow);
 
 	typedef unsigned long PlaybackOptions;
@@ -218,6 +219,8 @@ public:
 	//
 	void Start(PlaybackOptions inOptions, Point inPosition);
 
+	void BlockUntilReadyOrBroken();
+	
 	//////////
 	// Did a problem occur either loading or playing this movie?  If
 	// this function returns true, the object is essentially scrap.
@@ -259,15 +262,11 @@ public:
 	//
 	void Unpause();
 
-	//////////
-	// Call MCDoAction with the specified command and parameter.
-	//
-	// [in] inAction - The action to perform.  There's about a zillion
-	//                 of these, and they're not all centrally
-	//                 documented.
-	// [in] inParam -  The parameter value to use.
-	//
-	void DoAction(mcAction inAction, void *inParam);
+	TimeValue GetMovieTime();
+	void SetMovieVolume(short inVolume);
+	TimeScale GetTimeScale();
+	TimeValue GetDuration();
+	void ThrowIfBroken();
 
 	//////////
 	// Allow the TQTMovie object first crack at processing window
@@ -301,6 +300,16 @@ private:
 	void ProcessAsyncLoad();
 	void AsyncLoadComplete();
 	
+	//////////
+	// Call MCDoAction with the specified command and parameter.
+	//
+	// [in] inAction - The action to perform.  There's about a zillion
+	//                 of these, and they're not all centrally
+	//                 documented.
+	// [in] inParam -  The parameter value to use.
+	//
+	void DoAction(mcAction inAction, void *inParam);
+
 	//////////
 	// Release all resources held by this object.  (This call may
 	// safely be made on half-constructed objects.)

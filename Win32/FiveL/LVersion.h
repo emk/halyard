@@ -21,12 +21,16 @@
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0.5"
+#define VERSION_STRING	"5L for Win32 3.2.0.5 (TQTMovie)"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.6.2.1  2002/07/03 09:27:58  emk
+ 3.2.0.5+TQTMovie - Experimental support for displaying movies through TQTMovie.
+ This is incomplete, but we'll want to port it to 3.5 or so.
+
  Revision 1.3.2.6  2002/07/02 13:56:04  zeb
  3.2.0.5 - Changed touchzone highlighting to work like the Mac (bug #980).
  When you click on the touchzone, it draws the highlighted

@@ -1,5 +1,7 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "stdafx.h"
+
 #include <QTML.h>
 #include "TQTMovie.h"
 
@@ -40,13 +42,20 @@ void TQTMovie::InitializeMovies()
 
 	// Start up the portions of the Macintosh Toolbox included with
 	// QuickTime for Windows.
-	::InitializeQTML(0);
+	//
+	// Old comment from Win32/FiveL/FiveL.cpp: Use the
+	// kInitializeQTMLUseGDIFlag as we have seen flashes on startup of
+	// certain movies on certain platforms (Dell laptops and Win98).
+	//
+	// This flag breaks VP3.2 with QT6.
+	//CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
+	CHECK_MAC_ERROR(::InitializeQTML(0));
 
 	// As Chuck discovered, QuickTime likes to draw movies to 
 	// inappropriate places on the screen, and to engage in other bits
 	// of graphic weirdness during the startup process.
 	Rect rect = {0, 0, 1, 1};
-	OSErr err = ::NewGWorld(&sDummyGWorld, 8, &rect, NULL, NULL, 0);
+	CHECK_MAC_ERROR(::NewGWorld(&sDummyGWorld, 8, &rect, NULL, NULL, 0));
 	
 	// Initialize QuickTime.
 	::EnterMovies();
@@ -59,13 +68,14 @@ void TQTMovie::ShutDownMovies()
 	if (sIsQuickTimeInitialized)
 	{
 		::ExitMovies();
-		::DisposeGWorld(sDummyGWorld);
+		if (sDummyGWorld)
+			::DisposeGWorld(sDummyGWorld);
 		::TerminateQTML();
 		sIsQuickTimeInitialized = false;
 	}
 }
 
-void TQTMovie::PrepareWindowForMovies(HWND inWindow)
+void TQTMovie::RegisterWindowForMovies(HWND inWindow)
 {
 	ASSERT(sIsQuickTimeInitialized);
 
@@ -74,6 +84,16 @@ void TQTMovie::PrepareWindowForMovies(HWND inWindow)
 	// so we'll be able to do our movie processing.
 	// TODO - Can an error happen here?
 	::CreatePortAssociation(inWindow, NULL, 0);
+}
+
+void TQTMovie::UnregisterWindowForMovies(HWND inWindow)
+{
+	ASSERT(sIsQuickTimeInitialized);
+
+	// Dispose of the Macintosh drawing context associated with inWindow.
+	CGrafPtr port = GetPortFromHWND(inWindow);
+	if (port)
+		::DestroyPortAssociation(port);
 }
 
 CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
@@ -318,6 +338,13 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
 }
 
+void TQTMovie::BlockUntilReadyOrBroken()
+{
+	while (MOVIE_INCOMPLETE <= mState && mState < MOVIE_READY)
+		Idle();
+	ASSERT(mState == MOVIE_READY || mState == MOVIE_BROKEN);
+}
+
 
 //=========================================================================
 // Regular TQTMovie Methods
@@ -386,10 +413,43 @@ void TQTMovie::Unpause()
 	}
 }
 
-void TQTMovie::DoAction(mcAction inAction, void *inParam)
+TimeValue TQTMovie::GetMovieTime()
 {
-	ASSERT(mMovieController);
-	CHECK_MAC_ERROR(::MCDoAction(mMovieController, inAction, inParam));
+	ASSERT(mState == MOVIE_STARTED);
+	TimeValue current_time = ::GetMovieTime(mMovie, NULL);
+	CHECK_MAC_ERROR(::GetMoviesError());
+	return current_time;
+}
+
+void TQTMovie::SetMovieVolume(short inVolume)
+{
+	if (mMovieController)
+		DoAction(mcActionSetVolume, reinterpret_cast<void*>(inVolume));
+	else
+		/* XXX - Implement */;
+}
+
+TimeScale TQTMovie::GetTimeScale()
+{
+	ASSERT(mState == MOVIE_STARTED);
+	TimeScale scale = ::GetMovieTimeScale(mMovie);
+	CHECK_MAC_ERROR(::GetMoviesError());
+	return scale;
+}
+
+TimeValue TQTMovie::GetDuration()
+{
+	ASSERT(mState == MOVIE_STARTED);
+	TimeValue duration = ::GetMovieDuration(mMovie);
+	CHECK_MAC_ERROR(::GetMoviesError());
+	return duration;	
+}
+
+void TQTMovie::ThrowIfBroken()
+{
+	if (IsBroken())
+		// XXX - Find a better error to throw.
+		throw TMacError(__FILE__, __LINE__, noErr);
 }
 
 bool TQTMovie::HandleMovieEvent(HWND hWnd, UINT message,
@@ -439,13 +499,10 @@ void TQTMovie::Redraw(HWND hWnd)
 	::MCDraw(mMovieController, mac_window);
 }
 
-void TQTMovie::UpdateMovieState(MovieState inNewState)
+void TQTMovie::DoAction(mcAction inAction, void *inParam)
 {
-	// Sanity-check our new state.
-	ASSERT(inNewState == MOVIE_BROKEN || (inNewState - 1 == mState));
-
-	// Actually update our state.
-	mState = inNewState;
+	ASSERT(mMovieController);
+	CHECK_MAC_ERROR(::MCDoAction(mMovieController, inAction, inParam));
 }
 
 void TQTMovie::ReleaseResources() throw ()
@@ -454,6 +511,15 @@ void TQTMovie::ReleaseResources() throw ()
 		::DisposeMovieController(mMovieController);
 	if (mMovie)
 		::DisposeMovie(mMovie);
+}
+
+void TQTMovie::UpdateMovieState(MovieState inNewState)
+{
+	// Sanity-check our new state.
+	ASSERT(inNewState == MOVIE_BROKEN || (inNewState - 1 == mState));
+
+	// Actually update our state.
+	mState = inNewState;
 }
 
 bool TQTMovie::ActionFilter(short inAction, void* inParams)

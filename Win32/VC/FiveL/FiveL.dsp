@@ -227,6 +227,10 @@ SOURCE=..\..\FiveL\SysInfo.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\FiveL\TQTMovie.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\FiveL\Variable.cpp
 # End Source File
 # Begin Source File
@@ -384,6 +388,10 @@ SOURCE=..\..\FiveL\StdAfx.h
 # Begin Source File
 
 SOURCE=..\..\FiveL\SysInfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\TQTMovie.h
 # End Source File
 # Begin Source File
 

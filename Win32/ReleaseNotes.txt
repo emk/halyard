@@ -1,5 +1,10 @@
 FiveL for Win32 Release Notes
 
+CVS
+
+    Experimental support for displaying movies through TQTMovie.
+	This is incomplete, but we'll want to port it to 3.5 or so.
+
 3.2.0.5, Tuesday, July 2, 2002, 3:48 PM
 
     Changed touchzone highlighting to work like the	Mac (bug #980).

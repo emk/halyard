@@ -420,7 +420,7 @@ void Card::DoAudio(void)
 			do_loop = true;
 	}
 	
-	gAudioManager.Play(audio_file, the_offset, the_volume,
+	gAudioManager.Play(audio_file, /*the_offset,*/ the_volume,
 			the_fade_time, do_loop, do_kill);
 }
 
@@ -1678,9 +1678,9 @@ void Card::DoPlayQTFile()
 	}
     
     if (not audio_only)
-    	gVideoManager.Play(QTfile, theOffset);
+    	gVideoManager.Play(QTfile/*, theOffset*/);
     else
-    	gAudioManager.Play(QTfile, theOffset, 100, 0, false, true);
+    	gAudioManager.Play(QTfile, /*theOffset,*/ 100, 0, false, true);
 }
 
 /*-----------------------------------------------------------
@@ -1709,7 +1709,7 @@ void Card::DoPlayQTLoop()
     	return;
     }
     
-    gAudioManager.Play(QTfile, 0, 100, theFadeTime, true, true); 
+    gAudioManager.Play(QTfile, 100, theFadeTime, true, true); 
 }
 
 /*-----------------------------------------------------------
@@ -1810,12 +1810,12 @@ void Card::DoPreloadQTFile()
 	{
 		if (audio_file)
 		{
-			gAudioManager.Preroll(QTfile, tenths, doSync);
+			gAudioManager.Preload(QTfile, /*tenths,*/ doSync);
 			gVariableManager.SetString("_PreloadedVideo", QTfile.GetString());
 		}
 		else
 		{
-			gVideoManager.Preroll(QTfile, tenths, doSync);
+			gVideoManager.Preload(QTfile, /*tenths,*/ doSync);
 			gVariableManager.SetString("_PreloadedAudio", QTfile.GetString());
 		}
 	}
@@ -2630,6 +2630,10 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.1.2.2.2.1  2002/07/03 09:27:58  emk
+ 3.2.0.5+TQTMovie - Experimental support for displaying movies through TQTMovie.
+ This is incomplete, but we'll want to port it to 3.5 or so.
+
  Revision 1.1.2.2  2002/07/02 13:56:04  zeb
  3.2.0.5 - Changed touchzone highlighting to work like the Mac (bug #980).
  When you click on the touchzone, it draws the highlighted
