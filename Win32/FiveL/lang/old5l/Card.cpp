@@ -2230,7 +2230,6 @@ void Card::DoTouch()
 		{
 			m_Script >> picname;
 			thePicture = gPictureManager.GetPicture(picname);
-			picname += "H";
 			if (m_Script.more()) 
 			{
 				m_Script >> loc;
@@ -2630,6 +2629,13 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.1.2.4  2002/07/03 13:37:06  emk
+ 3.2.0.7, Wednesday, July 3, 2002, 2:53 PM
+
+     Bug #980 revisted, again: The LTouchZone class supported
+     touchzones with a second command OR a picture.  This has
+     been fixed--you can now use both.
+
  Revision 1.1.2.3  2002/07/03 11:44:39  emk
  3.2.0.6 - All known, fixable 3.2.0.x Windows bugs should be fixed.  Please
  test this engine carefully, especially line drawing (including diagonal)

@@ -1,5 +1,11 @@
 FiveL for Win32 Release Notes
 
+3.2.0.7, Wednesday, July 3, 2002, 2:53 PM
+
+    Bug #980 revisted, again: The LTouchZone class supported
+	touchzones with a second command OR a picture.  This has
+	been fixed--you can now use both.
+
 3.2.0.6, Wednesday, July 3, 2002, 1:28 PM
 
 	Bug #958 workaround: Since VP 3.2.1.3 doesn't support GDI

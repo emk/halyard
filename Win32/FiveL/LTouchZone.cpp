@@ -104,9 +104,14 @@ LTouchZone::LTouchZone(TRect &r, TString &cmd, CursorType inCursor,
 {
     itsBounds = r;
     itsCommand = cmd;
-    itsPict = NULL;
+    itsPict = pict;
     secondCommand = secCmd;
 	cursor = inCursor;
+
+    if ((loc.X() == 0) and (loc.Y() == 0) and (pict != NULL))
+		itsPictLoc = pict->GetOrigin();
+    else
+        itsPictLoc = loc;
 }
 
 
@@ -307,6 +312,13 @@ LTouchZone *LTouchZoneManager::GetTouchZone(WPARAM wParam)
 
 /*
  $Log$
+ Revision 1.2.2.3  2002/07/03 13:37:06  emk
+ 3.2.0.7, Wednesday, July 3, 2002, 2:53 PM
+
+     Bug #980 revisted, again: The LTouchZone class supported
+     touchzones with a second command OR a picture.  This has
+     been fixed--you can now use both.
+
  Revision 1.2.2.2  2002/07/02 13:56:04  zeb
  3.2.0.5 - Changed touchzone highlighting to work like the Mac (bug #980).
  When you click on the touchzone, it draws the highlighted

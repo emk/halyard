@@ -17,16 +17,23 @@
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
 #define REV_BIG			00
-#define REV_SMALL		06
+#define REV_SMALL		07
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0.6"
+#define VERSION_STRING	"5L for Win32 3.2.0.7"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.8  2002/07/03 13:37:06  emk
+ 3.2.0.7, Wednesday, July 3, 2002, 2:53 PM
+
+     Bug #980 revisted, again: The LTouchZone class supported
+     touchzones with a second command OR a picture.  This has
+     been fixed--you can now use both.
+
  Revision 1.3.2.7  2002/07/03 11:44:39  emk
  3.2.0.6 - All known, fixable 3.2.0.x Windows bugs should be fixed.  Please
  test this engine carefully, especially line drawing (including diagonal)
