@@ -59,6 +59,7 @@ AUTHOR
 #define HAVE__STRLWR 1
 #define HAVE__STRUPR 1
 #define HAVE__STRICMP 1
+#define HAVE__VSNPRINTF 1
 
 /* Turn off warnings about identifiers being truncated in debug information. */
 /* Without this, working with STL templates will drive us nuts. */

@@ -39,10 +39,15 @@ bool TLogger::s_ToolboxIsInitialized = false;
 #define ERROR_HEADER	"Error: "
 #define CAUTION_HEADER	"Caution: "
 
+#ifdef HAVE__VSNPRINTF
+#	define vsnprintf _vsnprintf
+#endif
+
 #define FormatMsg(Format)	\
 	va_list	argPtr;			\
 	va_start(argPtr, (Format));		\
-	vsprintf(m_LogBuffer, (Format), argPtr);	\
+	vsnprintf(m_LogBuffer, LOG_BUFFER_SIZE, (Format), argPtr);	\
+	m_LogBuffer[LOG_BUFFER_SIZE-1] = 0; \
 	va_end(argPtr)
 
 // Standard logs.
@@ -368,6 +373,9 @@ void FiveLCheckAssertion(int inTest, const char *inDescription,
 
 /*
  $Log$
+ Revision 1.7  2002/07/25 16:39:09  emk
+ Fixed a buffer-overflow bug in TLogger when logging large messages.
+
  Revision 1.6  2002/06/20 16:32:53  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:
