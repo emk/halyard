@@ -22,7 +22,7 @@
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics
-           screenshot)
+           screenshot element-exists? delete-element-if-exists)
 
   (define (make-path subdir path)
     (apply build-path (current-directory) subdir (regexp-split "/" path)))
@@ -311,4 +311,13 @@
         ((or (file-exists? path) (directory-exists? path))
          (loop (+ count 1)))
         (else path)))))
+
+  (define (element-exists? name)
+    (memq name (map node-name (group-children (current-card)))))
+
+  (define (delete-element-if-exists name)
+    (when (element-exists? name)
+      (delete-element (@-by-name name))))
+
+
   )

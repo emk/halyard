@@ -104,13 +104,9 @@
 
   ;; TODO - need to find the right place for these to live. 
 
-  (define (element-exists? name)
-    (memq name (map node-name (group-children (current-card)))))
-
   (define (play-audio path &key (loop? #f) (name 'audio))
     (when path
-      (when (element-exists? name)
-        (delete-element (@-by-name name)))
+      (delete-element-if-exists name)
       (vorbis-audio name path :loop? loop?)))
 
 
@@ -371,13 +367,38 @@
       (when (and (mouse-grabbed?) grabbed-by-me?)
         (send self get-end-and-draw active-color event))))
 
+  (defclass <size> ()
+    width
+    height)
 
+  (defclass <selector-info> ()
+    value
+    loc
+    size
+    template)
 
-  ;;   (define-element-template %selector%
-  ;;       [choices sound] ()
+;;   (define-element-template %selector%
+;;       [at choices [spacing :default 10]] 
+;;       (:template %zone%
+;;        :shape (rect 0 0 0 0))
+;;     (define choice-info (make-hash-table))
+    
+;;     (let loop ((choices choices) (x (point-x at)))
+;;       (unless (null? choices)
+;;         (let ((choice (car choices)))
+;;           (set! (selector-info-loc choice)
+;;                 (point x (- (point-y at) 
+;;                             (size-height 
+;;                              (selector-info-size choice)))))
+;;           (hash-table-put! choice-info 
+;;                            (selector-info-value choice)
+;;                            choice)
+;;           (loop (cdr choices) (+ x spacing 
+;;                                  (size-width 
+;;                                   (selector-info-size choice)))))))
+    
+;;     (define state (selector-info-value (car choices)))
 
-  ;;     (define choice-elements 
-  ;;       (map (fn (x) (create (cdr x))) choices))
-  
-  ;;     (define selected (car choice-elements))
+    
+    
   )
