@@ -24,10 +24,7 @@
 #include <stdio.h>  
 #include <sys\types.h> 
 #include <sys\stat.h>
-
-#ifdef DEBUG
 #include <time.h>
-#endif
 
 #include "Index.h"
 #include "Globals.h"
@@ -160,9 +157,10 @@ bool IndexFileManager::NewIndex(const char *inName)
 	else
 	{
 		Add(newIndex);
-#ifdef DEBUG
-		newIndex->Close();
-#endif
+		
+		// Close only if redoscript is enabled (not sure why we keep it open otherwise??)
+		if (gConfigManager.GetUserPref(REDOSCRIPT) == REDOSCRIPT_ON)
+			newIndex->Close();
 	}
 
 	return (retValue);
@@ -323,12 +321,10 @@ bool IndexFile::Init()
 	//	index information.
 	{
 		Parser		theParser;
-#ifdef DEBUG
 		DWORD		startTime;
 		DWORD		endTime;
 
 		startTime = ::timeGetTime();
-#endif
 
 		if (not theParser.Parse(this))
 		{
@@ -336,12 +332,10 @@ bool IndexFile::Init()
 			return (false);
 		}
 
-#ifdef DEBUG
 		endTime = ::timeGetTime();
 
 		gDebugLog.Log("It took <%ld> milli-seconds to parse the script file",
 			endTime - startTime);
-#endif
 	}
 #else
 
@@ -404,6 +398,19 @@ bool IndexFile::Init()
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

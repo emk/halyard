@@ -337,16 +337,10 @@ LHttpError LHttp::ReceiveReply(TString &inVarName)
 						break;
 				}
 
-#ifdef DEBUG
 				gDebugLog.Log("LHttp:ReceiveReply -> reply code <%d>", resultCode);
-#endif
-			}
-			
+			}	
 		}
-
-#ifdef DEBUG
 		gDebugLog.Log("LHttp::ReceiveReply -> got <%s>", recStr.GetString());
-#endif
 	}
 
 	return (LHTTP_OK);
@@ -359,6 +353,19 @@ void LHttp::CloseSocket()
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

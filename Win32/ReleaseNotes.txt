@@ -1,12 +1,47 @@
 FiveL for Win32 Release Notes
 
+3.2.1, Tuesday, February 19, 2002, 12:15 PM
+
+	Bugs #494 and #495 are addressed in this update.
+
+	(1) Introduced the 5L.prefs configuration file.  This is a 
+	configuration file designed for developers and should not be
+	distributed to end-users.
+
+	Initial parameters/values that may be specified in 5L.prefs
+	are listed below (defaults in bold):
+
+	db_type = (ENCRYPTED, clear)
+	db_writes = (write, close, EXIT)
+	mode = (window, FULLSCREEN)
+	redoscript = (on, OFF)
+	debug_log = (on, OFF)
+
+	Defaults are used whenever a parameter is not specified or in the
+	absence of the 5L.prefs file.
+
+	(2) The 5L.prefs file eliminates the need for having two FiveL 
+	executables which were known as 5L_d.exe and FiveL.exe.  From this
+	point forward, FiveL.exe will be the sole executable.
+
+	--- Engine Developer Notes ---
+
+	(3) Dozens of compile-time switches were removed in favor of
+	having a single executable and parameters in the 5L.prefs file.
+
+	(4) CryptStream was updated to support encrypting/decrypting any file.
+	
+	(5) Compile-time switches that disabled encryption in the debug executable
+	were removed and clear file streaming is no longer supported by CryptStream.
+	LFileBundle was updated accordingly to do clear file streaming on its own.
+
 3.2.0, Thursday, February 07, 2002, 3:21 PM
 
 	Stable build based on v3.1.1
 
 3.1.2, Unreleased
 
-	Backed out changes for -D command-line option.
+	Backed out changes for -D command-line option (#531).
 	The DLS client was fixed and this option will not be needed.
 
 3.1.1, Thursday, January 24, 2002, 2:02 PM

@@ -115,11 +115,9 @@ void LPicture::LoadDIB(void)
 
 	m_Dib = new Dib(hDib);
 	if (m_Dib == NULL)
-		free(hDib);	
-#ifdef DEBUG
+		free(hDib);
 	else
 		gDebugLog.Log("Load BMP file <%s>", m_FullPath.GetString());
-#endif
 }
 
 //
@@ -194,13 +192,11 @@ void LPicture::Draw(TPoint &inPt, bool inMatte /* = false */)
     
 	drawPt = inPt.GetPOINT();
  
-//#ifdef _DEBUG
 //	gDebugLog.Log("Draw a Picture <%s>", m_Key.GetString());
 //	DWORD	start_time;
 //	DWORD	end_time;
 //	
 //	start_time = ::timeGetTime();
-//#endif
 
     if (inMatte)
     	trans = true;
@@ -229,11 +225,8 @@ void LPicture::Draw(TPoint &inPt, bool inMatte /* = false */)
 		}
 	}
 
-//#ifdef _DEBUG
 //	end_time = ::timeGetTime();
-//	
 //	gDebugLog.Log("Draw took <%ld> milliseconds", end_time - start_time);
-//#endif
 }
 
 //
@@ -248,13 +241,11 @@ void LPicture::Draw(TRect &inRect)
 
 	drawRect = inRect.GetRECT();
 
-//#ifdef _DEBUG
 //	gDebugLog.Log("Draw a Picture <%s>", key.GetString());
 //	DWORD	start_time;
 //	DWORD	end_time;
 //	
 //	start_time = ::timeGetTime();
-//#endif
 
 	if (IsUnloaded())
 		_Load();
@@ -275,11 +266,8 @@ void LPicture::Draw(TRect &inRect)
 			gView->DrawQTGraphic(m_Qtg, &drawRect);
 	}
 
-//#ifdef _DEBUG
 //	end_time = ::timeGetTime();
-//	
 //	gDebugLog.Log("Draw took <%ld> milliseconds", end_time - start_time);
-//#endif
 }
 
 //
@@ -374,6 +362,19 @@ LPicture *LPictureManager::GetPicture(TString &inName)
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

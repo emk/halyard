@@ -217,10 +217,8 @@ void Audio::FadeVolume(int32 inFadeTime, int32 inTargetVol)
 	int32	steps;
 	int32	msecs;
 
-#ifdef _DEBUG
 	gDebugLog.Log("AudioManager: FadeVolume time <%ld>, target vol <%ld>", inFadeTime, inTargetVol);
 	gDebugLog.Log("   current volume is <%ld>", m_Volume);
-#endif
 
 	msecs = inFadeTime * 100L;			// milliseconds the fade should take   
 		
@@ -242,10 +240,8 @@ void Audio::FadeVolume(int32 inFadeTime, int32 inTargetVol)
 	m_TargetVol = inTargetVol;			// final volume
 	m_VolTime = ::timeGetTime();		// start the timer going now
 	
-#ifdef _DEBUG
 	gDebugLog.Log("AudioManager: FadeVolume volstep <%ld>, targetvol <%ld>, steps <%ld>",
 		m_Step, m_TargetVol, steps);
-#endif
 }
 
 //
@@ -344,9 +340,8 @@ void AudioManager::Idle(void)
 			{
 				if (theClip == m_WaitClip)
 				{
-#ifdef _DEBUG
 					gDebugLog.Log("AudioManager: Idle - normal end of wait clip, wake card");
-#endif
+
 					// this is the clip we are waiting on
 					gCardManager.WakeUp();
 					
@@ -367,9 +362,7 @@ void AudioManager::Idle(void)
 	{
 		if (m_WaitClip->AtWaitPoint())
 		{
-#ifdef DEBUG
 			gDebugLog.Log("AudioManager: Idle - at wait frame, wake card");
-#endif
 			gCardManager.WakeUp();
 			
 			m_WaitClip = NULL;
@@ -398,24 +391,21 @@ void AudioManager::Play(TString &inName, int32 inOffset,
 	int32		theVolume = VolumeXForm(inVolume);
 	bool		newClip = false;
 
-#ifdef _DEBUG
+	// Debugging Info
 	gDebugLog.Log("AudioManager: Play <%s>, offset <%ld>, volume <%ld>, fade time <%ld>",
 		inName.GetString(), inOffset, inVolume, inFadeTime);
 	if (inLoop)
 		gDebugLog.Log("   make it loop");
 	if (inKill)
 		gDebugLog.Log("   kill other clips");
-#endif
 	
 	if (inKill, false)
 		Kill(inFadeTime);
 		
 	if (not gConfigManager.PlayMedia())
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("AudioManager: Play: <%s>, not playing media, nothing to do", 
 			inName.GetString());
-#endif
 		return;
 	}
     
@@ -427,9 +417,7 @@ void AudioManager::Play(TString &inName, int32 inOffset,
 			// see if it is the same clip
 			if (m_Loop->SameClip(inName.GetString()))
 			{
-#ifdef _DEBUG
 				gDebugLog.Log("AudioManager: looping the same clip that is looping, nothing to do");
-#endif
 				return;			// nothing to do
 			}
 		}
@@ -447,10 +435,8 @@ void AudioManager::Play(TString &inName, int32 inOffset,
 	if (theClip == NULL)
 	{
 		gLog.Log("Memory error in AudioManager: could not allocate memory for movie");
-#ifdef DEBUG
 		gDebugLog.Log("AudioManager: could not allocate clip for <%s>",
 			inName.GetString());
-#endif
 		return;
 	}
 	
@@ -478,10 +464,8 @@ void AudioManager::Play(TString &inName, int32 inOffset,
 		gLog.Log("AudioManager: could not play audio clip <%s>", 
 			inName.GetString());		
 
-#ifdef DEBUG
 		gDebugLog.Log("AudioManager: could not play audio clip <%s>", 
 			inName.GetString());
-#endif
 
 		// kill the clip
 		if (m_Loop == theClip)
@@ -502,11 +486,9 @@ void AudioManager::Kill(int32 inFadeTime, bool inLoops)
 	Audio		*theClip;
 	int32		i;
 
-#ifdef DEBUG
 	gDebugLog.Log("AudioManager: Kill all playing clips, fade time <%ld>", inFadeTime);
 	if (inLoops)
 		gDebugLog.Log("   kill loops too!");
-#endif
 
 	// cbo_fix - just kill everything, look at loops later
 	for (i = 0; i < m_List.NumItems(); i++)
@@ -514,9 +496,7 @@ void AudioManager::Kill(int32 inFadeTime, bool inLoops)
 		theClip = (Audio *) m_List.Item(i);
 		if (theClip != NULL)
 		{
-#ifdef DEBUG
 			gDebugLog.Log("AudioManager: Kill clip <%s>", theClip->Name());
-#endif
 			theClip->Kill(0);
 			delete theClip;
 		}
@@ -526,7 +506,7 @@ void AudioManager::Kill(int32 inFadeTime, bool inLoops)
 	m_Playing = false;
 	m_Looping = false;
 
-#ifdef SKIP_THIS_SHIT
+/*
 	// go from top of list down so that we can delete things as we go
 //	for (i = m_List.NumItems() - 1; i >= 0; i--)
 	for (i = 0; i < m_List.NumItems(); i++)
@@ -540,9 +520,7 @@ void AudioManager::Kill(int32 inFadeTime, bool inLoops)
 			// cbo_fix - no looping audio for now
 			//if ((inLoops) or (not m_Looping) or (m_Loop != theClip))
 			{
-#ifdef DEBUG
 				gDebugLog.Log("AudioManager: Kill clip <%s>", theClip->Name());
-#endif
 				theClip->Kill(0);
 
 				// cbo_fix - if we don't remove this here the next clip
@@ -552,13 +530,11 @@ void AudioManager::Kill(int32 inFadeTime, bool inLoops)
 			}
 		}
 	}
-#endif
+*/
 	
 	if (m_WaitClip != NULL)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("AudioManager: Kill - wake card");
-#endif
 		gCardManager.WakeUp();
 		
 		m_WaitClip = NULL;
@@ -581,9 +557,7 @@ void AudioManager::Volume(int32 inVolLevel, int32 inFadeTime)
 	int32		theVolume = VolumeXForm(inVolLevel);
 	int32		i;
 
-#ifdef _DEBUG
 	gDebugLog.Log("AudioManager: set volume of clips to <%ld>, fade time <%ld>", inVolLevel, inFadeTime);
-#endif
 	
 	for (i = 0; i < m_List.NumItems(); i++)
 	{
@@ -610,9 +584,7 @@ void AudioManager::Wait(int32 inWaitFrame)
 	// nothing to do if there aren't any clips
 	if (not m_Playing)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("AudioManager: wait - nothing to wait for");
-#endif
 		return;
 	}
 		
@@ -643,12 +615,9 @@ void AudioManager::Wait(int32 inWaitFrame)
 	// see if we have a clip to wait for
 	if (m_WaitClip != NULL)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("AudioManager: Wait for frame <%ld>", inWaitFrame);
-#endif
 
 		m_WaitClip->Wait(inWaitFrame);
-		
 		gCardManager.Pause();
 	}
 }
@@ -661,16 +630,12 @@ void AudioManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 	Audio		*theClip = NULL;
 	bool		newClip = false;
 
-#ifdef DEBUG
 	gDebugLog.Log("AudioManager: Preroll <%s>", inName.GetString());
-#endif
 
 	if (not gConfigManager.PlayMedia())
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("AudioManager: Preroll: <%s>, not playing media, nothing to do", 
 			inName.GetString());
-#endif
 		return;
 	}
 
@@ -679,10 +644,9 @@ void AudioManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 	{
 		if (theClip->Playing())
 		{
-#ifdef DEBUG
 			gDebugLog.Log("AudioManager: Preroll <%s>, but it is already playing",
 				inName.GetString());
-#endif
+
 			// error, can't preroll a playing clip
 			gLog.Log("Trying to preroll <%s> but it is already playing", 
 				inName.GetString());
@@ -692,10 +656,8 @@ void AudioManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 		else if (theClip->Prerolled())
 		{
 			// nothing to do, already prerolled
-#ifdef DEBUG
 			gDebugLog.Log("AudioManager: Preroll <%s>, already prerolled",
 				inName.GetString());
-#endif
 			return;
 		}
 	}
@@ -707,10 +669,8 @@ void AudioManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 		if (theClip == NULL)
 		{
 			gLog.Log("Memory error in AudioManager: could not allocate memory for movie");
-#ifdef DEBUG
 			gDebugLog.Log("AudioManager: could not allocate clip for <%s>",
 				inName.GetString());
-#endif
 			return;
 		}
 	}
@@ -725,10 +685,9 @@ void AudioManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 		gLog.Log("Could not preroll audio clip <%s>", 
 			inName.GetString());
 
-#ifdef DEBUG
 		gDebugLog.Log("AudioManager: could not preroll audio clip <%s>",
 			inName.GetString());
-#endif
+
 		delete theClip;
 	}
 }
@@ -741,9 +700,7 @@ void AudioManager::Pause(int32 inTenths)
 	Audio	*theClip;
 	int32	i;
 
-#ifdef _DEBUG
 	gDebugLog.Log("AudioManager: Pause all clips");
-#endif
 	
 	if ((m_Playing) and (not m_Paused))
 	{
@@ -773,9 +730,7 @@ void AudioManager::Resume(void)
 	Audio	*theClip;
 	int32	i;
 
-#ifdef _DEBUG
 	gDebugLog.Log("AudioManager; Resume all clips");
-#endif
 	
 	if (m_Playing and m_Paused)
 	{
@@ -839,6 +794,19 @@ bool AudioManager::HandleEvent(HWND /*inWind*/, UINT /*inMessage*/,
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

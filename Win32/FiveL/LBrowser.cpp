@@ -95,9 +95,7 @@ void LBrowser::Init()
 
 	m_HaveBrowserPath = true;
 
-#ifdef DEBUG
 	gDebugLog.Log("Default browser path <%s>", m_BrowserPath.GetString());
-#endif
 	
 done:		
 	if (regKey != NULL)
@@ -117,9 +115,7 @@ bool LBrowser::GoToUrl(TString &inURL)
 	commandLine += " ";
 	commandLine += inURL;
 
-#ifdef DEBUG
 	gDebugLog.Log("Browser: command line -> <%s>", commandLine.GetString());
-#endif
 
 	// launch it
 	STARTUPINFO				startInfo;
@@ -144,9 +140,8 @@ bool LBrowser::GoToUrl(TString &inURL)
 		);
 		
 		gLog.Log("Browser: ERROR %s", lpMsgBuf);
-#ifdef DEBUG
 		gDebugLog.Log("Browser: ERROR <%s>", lpMsgBuf);
-#endif
+
 		// Free the buffer.
 		LocalFree( lpMsgBuf );
 
@@ -187,6 +182,19 @@ bool LBrowser::GetString(HKEY inKey, TString &outValueStr)
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

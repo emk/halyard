@@ -75,10 +75,8 @@ void QTGraphic::Create(TString &inPath)
 	err = ::NativePathNameToFSSpec((char *) m_path.GetString(), &fsSpec, 0);
 	if (err != noErr)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Could not get FSSpec for path <%s>",
 			m_path.GetString());
-#endif
 
 		gMissingMediaLog.Log("%s, error %d", m_path.GetString(), err);
 		return;
@@ -87,10 +85,8 @@ void QTGraphic::Create(TString &inPath)
 	err = ::GetGraphicsImporterForFile(&fsSpec, &m_gi);
 	if(err != noErr)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Could not get GraphicsImporter for graphic <%s>, error = <%ld>",
 			m_path.GetString(), err);
-#endif
 
 		gMissingMediaLog.Log("%s, error %d", m_path.GetString(), err);
 		return;
@@ -102,10 +98,8 @@ void QTGraphic::Create(TString &inPath)
 	cr = ::GraphicsImportGetImageDescription(m_gi, &m_idh);
 	if (cr != noErr)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Could not get image description for graphic <%s>, error = <%ld>",
 			m_path.GetString(), cr);
-#endif
 		m_idh = NULL;
 	}
 }
@@ -121,11 +115,9 @@ CTabHandle QTGraphic::GetColorTable(void)
 		err = GetImageDescriptionCTable(m_idh, &cTab);
 		if (err != noErr)
 		{
-#ifdef DEBUG
 			gDebugLog.Log("Could not get color table out of graphic <%s>, error = <%d>",
 				m_path.GetString(), err);
-			
-#endif
+
 			cTab = NULL;
 		}
 
@@ -133,7 +125,6 @@ CTabHandle QTGraphic::GetColorTable(void)
 		{
 			::CTabChanged(cTab);	// to bump the color table seed
 
-//#ifdef DEBUG
 //			for (int i = 0; i < 256; i++)
 //			{
 //				gDebugLog.Log("Create: %d -> R <%d>, G <%d>, B <%d>",
@@ -141,7 +132,6 @@ CTabHandle QTGraphic::GetColorTable(void)
 //					(**cTab).ctTable[i].rgb.green, 
 //					(**cTab).ctTable[i].rgb.blue);
 //			}
-//#endif
 		}
 	}
 
@@ -230,13 +220,11 @@ bool QTGraphic::SetQTGWorld(GWorldPtr inGWorld)
 
 		if (cr == noErr)
 			retValue = true;
-#ifdef DEBUG
 		else
 		{
 			gDebugLog.Log("Could not set GWorld of graphic <%s>, error = <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
 	}
 	return (retValue);
 }
@@ -258,13 +246,11 @@ bool QTGraphic::SetTransparent(void)
 
 		if (cr == noErr)
 			retValue = true;
-#ifdef DEBUG
 		else
 		{
 			gDebugLog.Log("Could not set transparent drawing mode for graphic <%s>, error = <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
 	}
 	return (retValue);
 }
@@ -280,13 +266,11 @@ bool QTGraphic::SetDestRect(Rect *inRect)
 
 		if (cr == noErr)
 			retValue = true;
-#ifdef DEBUG
 		else
 		{
 			gDebugLog.Log("Could not set destination rectangle for graphic <%s>, error = <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
 	}
 	return (retValue);
 }
@@ -340,13 +324,11 @@ void QTGraphic::Draw(GWorldPtr inGWorld, POINT *inPt, bool inTrans /* = false */
 
 		cr = ::GraphicsImportDraw(m_gi);
 
-#ifdef DEBUG
 		if (cr != noErr)
 		{
 			gDebugLog.Log("Error drawing graphic <%s>, error <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
 		SetGWorld(origPort, origDev);
 	}
 }
@@ -388,32 +370,26 @@ void QTGraphic::Draw(GWorldPtr inGWorld, RECT *inRect)
 
 				cr = ::GraphicsImportSetClip(m_gi, rgn);
 
-#ifdef DEBUG
 				if (cr != noErr)
 				{
 					gDebugLog.Log("Error drawing graphic <%s>, error = <%ld>",
 						m_path.GetString(), cr);
 				}
-#endif
 
 				::DisposeRgn(rgn);
 			}
-#ifdef DEBUG
 			else
 				gDebugLog.Log("Could not get region handle to clip graphic <%s>",
 					m_path.GetString());
-#endif
 		}
 
 		cr = ::GraphicsImportDraw(m_gi);
 
-#ifdef DEBUG
 		if (cr != noErr)
 		{
 			gDebugLog.Log("Error drawing graphic <%s>, error <%ld>",
 				m_path.GetString(), cr);
 		}
-#endif
 		::SetGWorld(origPort, origDev);
 		::GraphicsImportSetClip(m_gi, NULL);
 	}
@@ -421,6 +397,19 @@ void QTGraphic::Draw(GWorldPtr inGWorld, RECT *inRect)
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

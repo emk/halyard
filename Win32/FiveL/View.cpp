@@ -192,25 +192,19 @@ void View::DirtyRect(RECT *inRect, bool inWholeScreen /* = false */)
 	 
 	if ((m_dirty) and (m_num_rects == 0))
 	{
-//#ifdef _DEBUG
 //		gDebugLog.Log("DirtyRect: already doing whole screen");
-//#endif
 		return;
 	}
 		
 	if ((inWholeScreen) or (inRect == NULL))
 	{
 		m_num_rects = 0;
-//#ifdef _DEBUG
 //		gDebugLog.Log("DirtyRect: NULL -> whole screen");
-//#endif
 	}
 	else if (m_num_rects + 1 >= MAX_RECTS)
 	{
 		m_num_rects = 0;				// do the whole screen
-//#ifdef _DEBUG
 //		gDebugLog.Log("DirtyRect: too many rects -> whole screen");
-//#endif
 	}
 	else
 	{
@@ -223,10 +217,8 @@ void View::DirtyRect(RECT *inRect, bool inWholeScreen /* = false */)
 			{ 
 				::UnionRect(&(m_rects[i]), inRect, &(m_rects[i]));
 				doneRect = true; 
-//#ifdef _DEBUG
 //				gDebugLog.Log("DirtyRect: intersection, result: T <%d>, L <%d>, B <%d>. R <%d>",
 //					m_rects[i].top, m_rects[i].left, m_rects[i].bottom, m_rects[i].right);
-//#endif 
 			}
 		}
 		
@@ -234,10 +226,8 @@ void View::DirtyRect(RECT *inRect, bool inWholeScreen /* = false */)
 		{		
 			m_rects[m_num_rects] = *inRect;	// save the rectangle
 			m_num_rects++;
-//#ifdef _DEBUG
 //			gDebugLog.Log("DirtyRect: T <%d>, L <%d>, B <%d>. R <%d>",
 //				inRect->top, inRect->left, inRect->bottom, inRect->right);
-//#endif
 		}
 	} 
 	
@@ -267,9 +257,7 @@ void View::SetPalette(LPalette *inPal)
 	hPal = inPal->GetPalHandle();
 	if (hPal == NULL)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("View::SetPalette: no HPALLETE to set");
-#endif
 		return;
 	}
 
@@ -279,18 +267,14 @@ void View::SetPalette(LPalette *inPal)
 	ctab = inPal->GetCTabHandle();
 	if (ctab == NULL)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("View::SetPalette: no CTabHandle to set");
-#endif
 		return;
 	}
 
 	Rect	scrRect;
 	scrRect = gScreenRect.GetRect();
 
-#ifdef DEBUG
 	gDebugLog.Log("View::SetPalette: setting GWorld color table");
-#endif
 	::UpdateGWorld(&m_gworld, m_dib_bit_depth, &scrRect, ctab, NULL, clipPix);
 
 	m_new_pal = true;
@@ -491,9 +475,7 @@ void View::ClearScreen(int inColor)
 	theBrush = ::CreateSolidBrush(theColor);
 	if (theBrush == NULL)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("ClearScreen: couldn't create brush for <%d>", inColor);
-#endif
 		return;
 	}
 	
@@ -504,9 +486,7 @@ void View::ClearScreen(int inColor)
 	theRect.right = VSCREEN_WIDTH;
 	theRect.bottom = VSCREEN_HEIGHT;
 
-#ifdef _DEBUG
 	gDebugLog.Log("ClearScreen: to <%d>", inColor);
-#endif
 	
 	::FillRect(m_dc, &theRect, theBrush);
 	::DeleteObject(theBrush);		 
@@ -521,9 +501,7 @@ void View::BlackScreen(void)
 	HDC		hDC;
 	HGDIOBJ	oldBrush;
 
-#ifdef _DEBUG
 	gDebugLog.Log("View::BlackScreen");
-#endif
 
 	hDC = ::GetDC(hwndApp);
 	oldBrush = ::SelectObject(hDC, ::GetStockObject(BLACK_BRUSH));
@@ -811,8 +789,8 @@ HPSTR View::GetPixelAddress(bool inScreen, long inX, long inY)
 	return (pixel_add);
 }
 
-/*
-#ifdef OUTDATED_STUFF
+/* OUTDATED_STUFF
+
 //
 //	CopyDIBBits  - Copy the DIB bits to the offscreen buffer.
 //
@@ -859,7 +837,6 @@ void View::TransCopyDIBBits(HPSTR inDstPtr, HPSTR inSrcPtr, long inWidth, long i
 		inHeight--;
 	}
 }
-#endif
 */
 
 //
@@ -871,16 +848,12 @@ void View::BlippoCopy(bool toBlippo)
 {
 	if (not toBlippo)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Blippo");
-#endif
 		BitBlt(m_dc, 0, 0, VSCREEN_WIDTH, VSCREEN_HEIGHT, m_blippo_dc, 0, 0, SRCCOPY);
 	}
 	else
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Unblippo");
-#endif
 		BitBlt(m_blippo_dc, 0, 0, VSCREEN_WIDTH, VSCREEN_HEIGHT, m_dc, 0, 0, SRCCOPY);
 	}
 }
@@ -918,39 +891,29 @@ void View::Fade(bool inFadeIn, long inTime, bool inMovieTime)
 
 	if (m_pal == NULL)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Fade: <%s> but no palette to use", (inFadeIn? "IN": "OUT"));
-#endif
 		return; 					// can't fade without a palette
 	}
 			
 	hPal = m_pal->GetPalHandle();
 	if (hPal == NULL)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Fade: <%s> but no palette to use", (inFadeIn? "IN": "OUT"));
-#endif
 		return; 					// can't fade without a palette
 	}
 
 	if (inFadeIn and (not m_faded))
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Fade: <IN> but already in!");
-#endif
 		return;						// already faded in, can't fade in again
     }
     else if ((not inFadeIn) and (m_faded))
     {
-#ifdef _DEBUG
 		gDebugLog.Log("Fade: <OUT> but already out!");
-#endif
     	return;						// already faded out, can't fade out again
 	}
 	
-#ifdef _DEBUG
 	gDebugLog.Log("Fade: <%s>, <%ld>", (inFadeIn? "IN": "OUT"), inTime);
-#endif
 
 	if (inFadeIn)
 	{
@@ -1291,9 +1254,7 @@ void View::DoWipe(Effect inEffect, long inTime)
 		
 	effect_step = ((float) (inTime * 100)) / (float) num_iterations;
 
-#ifdef DEBUG
 	gDebugLog.Log("Wipe: each step should take <%d> msecs", effect_step);
-#endif
 
 	pixels_per_loop = (pixels_to_move / num_iterations) + 1;
 	
@@ -1464,15 +1425,26 @@ Effect View::StringToEffect(TString &effectString)
     	return pushDOWN;
     else 
     {
-#ifdef _DEBUG
         gDebugLog.Log("Error: Unknown effect: %s.", (const char *) effectString); 
-#endif
         return transNONE;
     }
 }
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -52,13 +52,6 @@
 
 #define MAX_LOADSTRING 100
 
-// TAKE_OVER_SCREEN - define it if you want to take over the screen.
-//		The only reason we wouldn't do this is for the debug version.
-//
-#ifndef _DEBUG
-#define TAKE_OVER_SCREEN
-#endif
-
 // Resolution
 int H_SCREEN = 640;
 int V_SCREEN = 480;
@@ -96,9 +89,7 @@ LTouchZoneManager	gTouchZoneManager;
 SysInfo				gSysInfo; 
 TLogger				gLog;
 TLogger				gMissingMediaLog;
-#ifdef DEBUG
 TLogger				gDebugLog;
-#endif   
 LCursorManager		gCursorManager; 
 VideoManager		gVideoManager;
 AudioManager		gAudioManager;
@@ -135,9 +126,7 @@ LRESULT CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 void				StartTimer(void);
 void				StopTimer(void);
 bool				CheckSystem(void);
-#ifdef DEBUG
 void				DumpStats(void);
-#endif
 
 
 int APIENTRY WinMain(HINSTANCE hInstance,
@@ -167,16 +156,16 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	LoadString(hInstance, IDC_FIVEL, szWindowClass, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_FIVEL_CHILD, szChildClass, MAX_LOADSTRING);
 
+	// Process the command line, configuration file, and user prefs.
+	if (not gConfigManager.Init(lpCmdLine))
+		return (false);
+
 	// Initialize the application.
 	if (not InitApplication(hInstance))
 		return (false);
 
 	// Make system checks.
 	if (not CheckSystem())
-		return (false);
-
-	// Process the command line and configuration file.
-	if (not gConfigManager.Init(lpCmdLine))
 		return (false);	
 
 	// Initialize the global log file.
@@ -186,11 +175,13 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// Initialize the missing media file.
 	gMissingMediaLog.Init(gConfigManager.InstallPath(), "MissingMedia", false, true);
 
-#ifdef DEBUG
-	// Initialize the debug log.
-	gDebugLog.Init(gConfigManager.InstallPath(), "Debug");
-	gDebugLog.Log("%s", VERSION_STRING);
-#endif
+	if (gConfigManager.GetUserPref(DEBUG_LOG) == DEBUG_LOG_ON)
+	{
+		// Initialize the debug log.
+		gDebugLog.Init(gConfigManager.InstallPath(), "Debug");
+		gDebugLog.Log("%s", VERSION_STRING);
+	}
+
 
 #if defined USE_BUNDLE
 	if (not gFileManager.Init())
@@ -199,8 +190,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	// Initialise the cursor manager.
 	gCursorManager.Init(hInstance);
-
-
 
 	gView = new View;
     if (gView == NULL)
@@ -226,10 +215,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// initialize the browser launcher
 	gBrowserTool.Init();
  
-#ifdef DEBUG
 	gDebugLog.Log("Bit Depth: %d", gView->BitDepth());
 	gDebugLog.Log("Resolution: %d x %d", gHorizRes, gVertRes);
-#endif
 
 	// jump to the start card
 	gCardManager.JumpToCardByName("start"); 
@@ -268,24 +255,23 @@ bool InitApplication(HINSTANCE hInstance)
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
-#ifdef DEBUG
-	wcex.hIcon			= LoadIcon(hInstance, (LPCTSTR)IDI_FIVEL);
-#else
-	wcex.hIcon			= NULL;
-#endif
+
 	wcex.hCursor		= NULL;
 	wcex.hbrBackground	= NULL;
-#ifdef DEBUG
-	wcex.lpszMenuName	= (LPCSTR)IDC_FIVEL;
-#else
-	wcex.lpszMenuName	= NULL;
-#endif
 	wcex.lpszClassName	= szWindowClass;
-#ifdef DEBUG
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
-#else
-	wcex.hIconSm		= NULL;
-#endif
+
+	if (gConfigManager.GetUserPref(MODE) == MODE_WINDOW)
+	{
+		wcex.hIcon			= LoadIcon(hInstance, (LPCTSTR)IDI_FIVEL);
+		wcex.lpszMenuName	= (LPCSTR)IDC_FIVEL;
+		wcex.hIconSm		= LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
+	}
+	else	// fullscreen mode
+	{
+		wcex.hIcon			= NULL;
+		wcex.lpszMenuName	= NULL;
+		wcex.hIconSm		= NULL;
+	}
 
 	if (::RegisterClassEx(&wcex) == 0)
 	{
@@ -330,9 +316,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return FALSE;
 	
 	HWND        hWnd;
-#ifdef TAKE_OVER_SCREEN
     POINT		cursorPos;
-#endif
     RECT        Rectgl, cRectgl; 
     DWORD		win_style; 
     int			h_start;
@@ -387,23 +371,25 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	::EnterMovies();				// Initialize QuickTime
 		
-	//Create and show app window:    
-
-#ifdef DEBUG 
-	if ((gHorizRes > 650) and (gVertRes > 500))
-	{
-		win_style = WS_CAPTION;
-		::AdjustWindowRect(&Rectgl, WS_CAPTION, true); 	// find window size based on desired client area (Rectgl)
+	// Create and show app window:    
+	if (gConfigManager.GetUserPref(MODE) == MODE_WINDOW)
+	{ 
+		if ((gHorizRes > 650) and (gVertRes > 500))
+		{
+			win_style = WS_CAPTION;
+			::AdjustWindowRect(&Rectgl, WS_CAPTION, true); 	// find window size based on desired client area (Rectgl)
+		}
+		else
+		{
+			win_style = WS_POPUP;
+			::AdjustWindowRect(&Rectgl, WS_POPUP, false);
+		}
 	}
 	else
 	{
 		win_style = WS_POPUP;
 		::AdjustWindowRect(&Rectgl, WS_POPUP, false);
 	}
-#else
-	win_style = WS_POPUP;
-	::AdjustWindowRect(&Rectgl, WS_POPUP, false);
-#endif	
  
 	gWinRect.top = (gVertRes / 2) - (V_SCREEN / 2);
 	gWinRect.left = (gHorizRes / 2) - (H_SCREEN / 2);
@@ -437,71 +423,71 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return (false);
 	}
 
-#ifdef TAKE_OVER_SCREEN
-	SetWindowPos(hWnd, /*HWND_TOP*/ HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
-#else
-	SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
-#endif
+	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+		SetWindowPos(hWnd, /*HWND_TOP*/ HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
+	else
+		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
 	    
     gCursorManager.ChangeCursor(NO_CURSOR);
 
-// black full-screen background. Doesn't look good with blueramp.
-#ifdef TAKE_OVER_SCREEN
-    AdjustWindowRect(&cRectgl, WS_POPUP, false); // find window size based on desired client area (Rectgl)
+	// black full-screen background. Doesn't look good with blueramp.
+	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+	{
+		AdjustWindowRect(&cRectgl, WS_POPUP, false); // find window size based on desired client area (Rectgl)
 
-    gBackgroundWinRect.top = 0;
-	gBackgroundWinRect.left = 0;
-	gBackgroundWinRect.bottom = cRectgl.right - cRectgl.left;
-	gBackgroundWinRect.right = cRectgl.bottom - cRectgl.top;
+		gBackgroundWinRect.top = 0;
+		gBackgroundWinRect.left = 0;
+		gBackgroundWinRect.bottom = cRectgl.right - cRectgl.left;
+		gBackgroundWinRect.right = cRectgl.bottom - cRectgl.top;
 
-	hBackgroundWnd = CreateWindow(
-        szChildClass,
-        szTitle,
-        WS_POPUP | WS_DISABLED,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        cRectgl.right - cRectgl.left,
-        cRectgl.bottom - cRectgl.top,
-        NULL,
-        NULL,
-        hInstance,
-        NULL);
-    SetWindowPos(hBackgroundWnd, hWnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE); 
-	ShowWindow(hBackgroundWnd, SW_SHOW);
-    UpdateWindow(hBackgroundWnd);
-#endif
+		hBackgroundWnd = CreateWindow(
+			szChildClass,
+			szTitle,
+			WS_POPUP | WS_DISABLED,
+			CW_USEDEFAULT,
+			CW_USEDEFAULT,
+			cRectgl.right - cRectgl.left,
+			cRectgl.bottom - cRectgl.top,
+			NULL,
+			NULL,
+			hInstance,
+			NULL);
+		SetWindowPos(hBackgroundWnd, hWnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE); 
+		ShowWindow(hBackgroundWnd, SW_SHOW);
+		UpdateWindow(hBackgroundWnd);
+	}
 
     ::ShowWindow(hWnd, SW_SHOW);
     ::UpdateWindow(hWnd);
 
-#ifdef TAKE_OVER_SCREEN	
-	// set our cursor position to be the center of our virtual screen
-	cursorPos.x = gHorizRes/2;
-	cursorPos.y = gHorizRes/2;
-	SetCursorPos(cursorPos.x, cursorPos.y);
-	
-	// now restrict cursor movement to our virtual screen
-	RECT		scrRect;
+	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+	{	
+		// set our cursor position to be the center of our virtual screen
+		cursorPos.x = gHorizRes/2;
+		cursorPos.y = gHorizRes/2;
+		SetCursorPos(cursorPos.x, cursorPos.y);
+		
+		// now restrict cursor movement to our virtual screen
+		RECT		scrRect;
 
-	::GetClientRect(hWnd, &scrRect);
-	gScreenRect.Set(scrRect);
-	
-	cursorPos.x = gScreenRect.Left();
-	cursorPos.y = gScreenRect.Top();
-	::ClientToScreen(hWnd, &cursorPos);
-	gScreenRect.SetLeft(cursorPos.x);
-	gScreenRect.SetTop(cursorPos.y);
-	
-	cursorPos.x = gScreenRect.Right();
-	cursorPos.y = gScreenRect.Bottom();
-	::ClientToScreen(hWnd, &cursorPos);
-	gScreenRect.SetRight(cursorPos.x);
-	gScreenRect.SetBottom(cursorPos.y);
-	
-	// now gScreenRect has the screen coordinates of our virtual screen
-	gCursorManager.ClipCursor(&gScreenRect);
-
-#endif
+		::GetClientRect(hWnd, &scrRect);
+		gScreenRect.Set(scrRect);
+		
+		cursorPos.x = gScreenRect.Left();
+		cursorPos.y = gScreenRect.Top();
+		::ClientToScreen(hWnd, &cursorPos);
+		gScreenRect.SetLeft(cursorPos.x);
+		gScreenRect.SetTop(cursorPos.y);
+		
+		cursorPos.x = gScreenRect.Right();
+		cursorPos.y = gScreenRect.Bottom();
+		::ClientToScreen(hWnd, &cursorPos);
+		gScreenRect.SetRight(cursorPos.x);
+		gScreenRect.SetBottom(cursorPos.y);
+		
+		// now gScreenRect has the screen coordinates of our virtual screen
+		gCursorManager.ClipCursor(&gScreenRect);
+	}
     
     hwndApp = hWnd; 
 
@@ -640,10 +626,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     				gView->Draw();		// blast the screen on and reset the palette	
 				}
 
-#ifdef TAKE_OVER_SCREEN
 				// go back to restricting cursor movement
-				gCursorManager.ClipCursor(&gScreenRect);
-#endif
+				if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)	
+					gCursorManager.ClipCursor(&gScreenRect);
     			
     			// make sure we have a cursor
     			gCursorManager.ChangeCursor(NO_CURSOR);
@@ -662,11 +647,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					gPaletteManager.Deactivate(hDC);
 				}
-
-#ifdef TAKE_OVER_SCREEN 
+ 
 				// stop restricting cursor movement
-				gCursorManager.ClipCursor(NULL);
-#endif				
+				if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+					gCursorManager.ClipCursor(NULL);
+
 				// set the cursor to something normal
 				gCursorManager.ChangeCursor(ARROW_CURSOR); 
 
@@ -708,28 +693,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         	// alt-key processing
         	if ((char) wParam == '.')
         	{
-#ifdef _DEBUG
 				gDebugLog.Log("Hit Alt-period");
-#endif
 	        	if (gCardManager.Napping())
 				{
-#ifdef _DEBUG
 					gDebugLog.Log("Escape from Nap");
-#endif
 					gCardManager.KillNap();
 				}
 				if (gVideoManager.Playing())
 				{
-#ifdef _DEBUG
 					gDebugLog.Log("Fast forward through video");
-#endif
 					gVideoManager.Kill();
 				}
 				if (gAudioManager.Playing())
 				{
-#ifdef _DEBUG
 					gDebugLog.Log("Fast forward through audio");
-#endif
 					gAudioManager.Kill(0, false);
 				}
             }
@@ -758,9 +735,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 // f - fast forward through video and audio
                 else if ((char) wParam == 'f')
                 {
-#ifdef _DEBUG
 					gDebugLog.Log("Fast forward through video and audio");
-#endif 
 					if (gVideoManager.Playing())                  
 						gVideoManager.Kill();
 						
@@ -790,9 +765,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         	// the escape key is our general quit what you are doing key
         	if (wParam == VK_ESCAPE)
         	{
-#ifdef _DEBUG
 				gDebugLog.Log("Escape key");
-#endif
 				if ((theKey = gCommandKeyManager.GetCommandKey((char) 0x1B)) != NULL)
         		{
                    if (gVideoManager.Playing())
@@ -807,23 +780,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
         			if (gCardManager.Napping())
 					{
-#ifdef _DEBUG
 						gDebugLog.Log("Escape from Nap");
-#endif
 						gCardManager.KillNap();
 					}
 					if (gVideoManager.Playing())
 					{
-#ifdef _DEBUG
 						gDebugLog.Log("Fast forward through video");
-#endif
 						gVideoManager.Kill();
 					}
 					if (gAudioManager.Playing())
 					{
-#ifdef _DEBUG
 						gDebugLog.Log("Fast forward through audio");
-#endif
 						gAudioManager.Kill(0, false);
 					}
 				}
@@ -927,10 +894,8 @@ LRESULT CALLBACK ChildWndProc (HWND hwnd, UINT message, UINT wParam, LPARAM lPar
 //
 void CleanUp(void)
 {
-#ifdef DEBUG
 	gDebugLog.Log("CleanUp: tossing everything"); 
 	DumpStats();
-#endif
 
 	//if (gVideoManager.Playing())
 		gVideoManager.Kill();
@@ -950,9 +915,7 @@ void CleanUp(void)
 	gFontManager.RemoveAll();
 	gIndexFileManager.RemoveAll();
 	
-#ifdef DEBUG
 	DumpStats();
-#endif
 }
 
 //
@@ -960,9 +923,7 @@ void CleanUp(void)
 //
 void ShutDown(bool Toss /* = true */)
 {    
-#ifdef _DEBUG
 	gDebugLog.Log("ShutDown");
-#endif
 
 	if (Toss)
 		CleanUp(); 
@@ -1030,7 +991,6 @@ void StopTimer(void)
 	gTimer = 0;
 } 
 
-#ifdef DEBUG
 void DumpStats(void)
 {
 	MEMORYSTATUS	memStat;
@@ -1041,9 +1001,7 @@ void DumpStats(void)
 	gDebugLog.Log("Free physical memory <%ld>", memStat.dwAvailPhys);
 	gDebugLog.Log("Free virtual memory <%ld>", memStat.dwAvailVirtual);
 }
-#endif
 
-#ifdef DEBUG
 void ReDoScript(TString &inCardName)
 {
 	if (gVideoManager.Playing())
@@ -1073,7 +1031,6 @@ void ReDoScript(TString &inCardName)
 	else
 		ShutDown(false);
 }
-#endif
 
 //
 //	SwitchScripts - 
@@ -1099,9 +1056,7 @@ void SwitchScripts(int32 inScript)
 		
 		CleanUp();
 		
-#ifdef _DEBUG
 		gDebugLog.Log("SwitchScript: start script <%s>", gConfigManager.CurScript());
-#endif
 
 		SetGlobals();
 
@@ -1114,10 +1069,7 @@ void SwitchScripts(int32 inScript)
         else 
         {
 			gPaletteManager.SetPalette(curPal, true);
-
-#ifdef _DEBUG
 			gDebugLog.Log("_graphpal kept as <%s> for new script", curPalName.GetString());
-#endif
         }
 
 		// now try to start the new script
@@ -1168,12 +1120,6 @@ void SetGlobals(void)
 		gVariableManager.SetString("_DLSFirstName", DLSuser.Mid(0, index));
 		gVariableManager.SetString("_DLSLastName", DLSuser.Mid(index+1));
 	}
-
-#ifdef _DEBUG	
-	gVariableManager.SetString("_debug", "1");
-#else
-	gVariableManager.SetString("_debug", "0");	
-#endif
 
 	// set the engine build variables
 	gVariableManager.SetString("_enginebuildstr", VERSION_STRING);
@@ -1227,6 +1173,19 @@ void PutInForeground(void)
 
 /*
  $Log$
+ Revision 1.3  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.2  2002/01/23 20:39:20  tvw
  A group of changes to support a new stable build.
 

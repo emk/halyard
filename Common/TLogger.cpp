@@ -99,7 +99,7 @@ void TLogger::Init(const char *Name, bool OpenFile /* = true */)
 
 void TLogger::Log(int32 Mask, const char *Format, ...)
 {
-	if (not CheckLog())
+	if (!m_LogOpen)
 		return;
 
 	if (not ShouldLog(Mask))
@@ -111,7 +111,7 @@ void TLogger::Log(int32 Mask, const char *Format, ...)
 
 void TLogger::Log(const char *Format, ...)
 {
-	if (not CheckLog())
+	if (!m_LogOpen)
 		return;
 
 	FormatMsg(Format);
@@ -120,7 +120,7 @@ void TLogger::Log(const char *Format, ...)
 
 void TLogger::Error(const char *Format, ...)
 {
-	if (not CheckLog())
+	if (!m_LogOpen)
 		return;
 
 	FormatMsg(Format);
@@ -130,7 +130,7 @@ void TLogger::Error(const char *Format, ...)
 
 void TLogger::Caution(const char *Format, ...)
 {
-	if (not CheckLog())
+	if (!m_LogOpen)
 		return;
 
 	FormatMsg(Format);
@@ -141,7 +141,7 @@ void TLogger::Caution(const char *Format, ...)
 
 void TLogger::FatalError(const char *Format, ...)
 {
-	if (not CheckLog())
+	if (!m_LogOpen)
 		return;
 
 	FormatMsg(Format);
@@ -155,6 +155,7 @@ void TLogger::FatalError(const char *Format, ...)
 //		we haven't failed at opening it once then try to open
 //		it again.
 //
+/*
 bool TLogger::CheckLog()
 {
 	if (m_LogOpen)
@@ -185,6 +186,7 @@ bool TLogger::CheckLog()
 
 	return (m_LogOpen);
 }
+*/
 
 //
 //	LogBuffer - 
@@ -232,6 +234,19 @@ void TLogger::TimeStamp(void)
 
 /*
  $Log$
+ Revision 1.3  2002/02/19 12:35:11  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.2  2002/01/23 20:39:19  tvw
  A group of changes to support a new stable build.
 

@@ -53,9 +53,8 @@ LQuickTime::LQuickTime(void)
 
 	mSync = false;
 	mNapTime = 0;
-#ifdef DEBUG
-	mPrerollStateTime = 0;
-#endif
+
+	//mPrerollStateTime = 0;
 
 	mWaiting = false;
 	mWaitTime = 0;
@@ -89,9 +88,7 @@ void LQuickTime::Idle(void)
 		if (mLoadStep == LQT_LOAD_ERROR)
 		{
 			// log the error
-#ifdef DEBUG
 			gDebugLog.Log("QuickTime: error loading movie <%s>", mPath.GetString());
-#endif
 			gLog.Log("ERROR: Could not load movie <%s>", mPath.GetString());
 
 			Kill();
@@ -151,9 +148,7 @@ void LQuickTime::Idle(void)
 									::MoviesTask(mMovie, 0);
 
 								Resume();
-	#ifdef DEBUG
 								gDebugLog.Log("QuickTime: Pause to buffer more of movie");
-	#endif
 							}
 						}
 					}
@@ -283,9 +278,7 @@ void LQuickTime::Cleanup(void)
 	mSync = false;
 	mNapTime = 0;
 
-#ifdef DEBUG
-	mPrerollStateTime = 0;
-#endif
+	//mPrerollStateTime = 0;
 
 	mCurrentVolume = 0;
 	mPrerollError = LQT_NoError;
@@ -439,9 +432,7 @@ LQTError LQuickTime::DoPreroll(TString &inMoviePath, bool inAudioOnly, bool inFi
 	mPath = inMoviePath;
 	mPrerolled = true;
 
-#ifdef DEBUG
-	mPrerollStateTime = ::timeGetTime();
-#endif
+	//mPrerollStateTime = ::timeGetTime();
 
 	if (Load(inMoviePath, inAudioOnly, inFinish))
 	{
@@ -455,9 +446,7 @@ LQTError LQuickTime::DoPreroll(TString &inMoviePath, bool inAudioOnly, bool inFi
 				if (mLoadStep != LQT_LOADED)
 				{
 					// error - couldn't finish the load
-#ifdef DEBUG
 					gDebugLog.Log("QuickTime: error loading movie <%s>", inMoviePath.GetString());
-#endif
 					gLog.Log("ERROR: could not load movie <%s>", inMoviePath.GetString());
 
 					if (mSync)
@@ -530,10 +519,8 @@ LQTError LQuickTime::Preroll(TString &inMoviePath, bool inAudioOnly, int32 inTen
 		mNapTime = (inTenths * 100) + startTime;
 	}
 
-#ifdef DEBUG
 	gDebugLog.Log("QuickTime: Preroll <%s>, nap <%d>, %s",
 		inMoviePath.GetString(), inTenths, (inSync ? "sync" : "async"));
-#endif
 	
 	return (DoPreroll(inMoviePath, inAudioOnly, false));
 }
@@ -548,9 +535,7 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect, int32 inWaitOffse
 	bool		playIt = false;
 	LQTError	retValue = LQT_NoFile;
 
-#ifdef DEBUG
 	gDebugLog.Log("QuickTime: Play <%s>", inMoviePath.GetString());
-#endif
 
 	if (mPrerolled)
 	{
@@ -568,9 +553,7 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect, int32 inWaitOffse
 
 			if (mLoadStep != LQT_LOADED)	// had an error
 			{
-#ifdef DEBUG
 				gDebugLog.Log("QuickTime: error loading movie <%s>", mPath.GetString());
-#endif
 				gLog.Log("ERROR: Could not load movie <%s>", mPath.GetString());
 
 				Kill();
@@ -583,10 +566,7 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect, int32 inWaitOffse
 
 	if (not mPrerolled)
 	{
-#ifdef DEBUG
 		gDebugLog.Log("QuickTime: not prerolled, preroll now");
-#endif
-
 		retValue = DoPreroll(inMoviePath, inAudioOnly, true);
 	}
 	else
@@ -666,14 +646,14 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect, int32 inWaitOffse
 //					minCycles = 0;
 			}
 
-#ifdef DEBUG
+/*
 			int32	startLoopTime = ::timeGetTime();
 			int32	tmpTimer = (startLoopTime - mPrerollStateTime) / 100;
 			mPrerollStateTime = 0;
 
 			gDebugLog.Log("QuickTime: going to play, current loaded time <%d>, target load time <%d>, tenths preload time <%d>, cycles <%d>",
 				bufferTime, minBufferTime, tmpTimer, minCycles);
-#endif
+*/
 
 			if (bufferTime < minBufferTime)
 			{
@@ -691,25 +671,21 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect, int32 inWaitOffse
 					if (err != noErr)
 					{
 						bufferTime = minBufferTime;	// bug out of loop
-#ifdef DEBUG
 						gDebugLog.Log("QuickTime: GetMaxLoadedTimeInMovie returned <%d>",
 							err);
-#endif
 					}
 
 					// check for endless looping
 					if (i >= 10000)
 					{
-#ifdef DEBUG
 						gDebugLog.Log("QuickTime: endless loop waiting for movie to buffer");
-#endif
 						bufferTime = minBufferTime;
 					}
 				}
-#ifdef DEBUG
+/*
 				tmpTimer = (::timeGetTime() - startLoopTime) / 100;
 				gDebugLog.Log("QuickTime: looped <%d> times, took <%d> tenths", i, tmpTimer);
-#endif
+*/
 			}
 
 
@@ -871,9 +847,8 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 		// make sure we aren't just cycling here (I think this is a QuickTime bug)
 		if (mPrerollCount > 100000)
 		{
-#ifdef DEBUG
 			gDebugLog.Log("QuickTime: preloading infinite loop?");
-#endif
+
 			// has to be an error
 			if (mSync)
 			{
@@ -1049,9 +1024,7 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 		{
 			// wake up the card manager
 			mSync = false;
-#ifdef DEBUG
 			gDebugLog.Log("QuickTime: DoLoadStep, done loading, resume card execution");
-#endif
 			gCardManager.WakeUp();
 		}
 
@@ -1068,10 +1041,8 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 
 				if (tenths >= 1)
 				{
-#ifdef DEBUG
 					gDebugLog.Log("QuickTime: DoLoadStep, done loading, napping for <%d> tenths",
 						tenths);
-#endif
 					gCursorManager.CheckCursor();
 					gView->Draw();
 					gCardManager.Nap(tenths);
@@ -1094,6 +1065,19 @@ bool LQuickTime::HandleEvent(HWND /*inWind*/, UINT /*inMessage*/,
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

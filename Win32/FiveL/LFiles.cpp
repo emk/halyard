@@ -108,9 +108,7 @@ void LFile::Read(TString &str)
     if (itsFile->eof())
     {
         str = ""; 
-#ifdef _DEBUG_FILES
 		gDebugLog.Log("read: at EOF, got bupkus");
-#endif
 	}
     else 
     {
@@ -121,9 +119,7 @@ void LFile::Read(TString &str)
 			return;
 		}
 
-#ifdef _DEBUG_FILES
 		gDebugLog.Log("read: got <%s>", str.GetString());
-#endif
     }
 }
 
@@ -166,10 +162,8 @@ void LFile::ReadUntilCore(TString &str, unsigned char delim)
     str = "";
     done = itsFile->eof();
 
-#ifdef _DEBUG_FILES
 	if (done)
 		gDebugLog.Log("readuntil: at EOF");
-#endif
 	//
     //  Read in BUFFER_SIZE sized chunks at a time.
     //
@@ -192,9 +186,7 @@ void LFile::ReadUntilCore(TString &str, unsigned char delim)
         if (itsFile->eof()) 
         	done = true;
     }
-#ifdef _DEBUG_FILES
 	gDebugLog.Log("readuntil: returned <%s>", str.GetString());
-#endif
 }
 
 /***********************************************************************
@@ -287,15 +279,11 @@ void LFile::Lookup(TString &searchString, int numFields)
         //
         if (searchString.Equal(comparison, false))  
         {
-#ifdef _DEBUG_FILES
 			gDebugLog.Log("lookup: found it in <%s>", comparison.GetString());
-#endif
             done = true;
         }
-#ifdef _DEBUG_FILES
 		else
 			gDebugLog.Log("lookup: didn't find in <%s>", comparison.GetString());
-#endif
 
         if (itsFile->eof())
             done = true;
@@ -305,9 +293,7 @@ void LFile::Lookup(TString &searchString, int numFields)
         if (!done)
         {
             ReadUntilCore(theField, '\n');
-#ifdef _DEBUG_FILES
 			gDebugLog.Log("lookup: skip over <%s> to end of line", theField.GetString());
-#endif
 		}
     }
 }
@@ -366,14 +352,10 @@ void LFile::Rewrite(TString &searchString, int numFields)
         else if (theLine.StartsWith(searchString, false) == false)
         {
             *tempFile << theLine << endl;
-#ifdef _DEBUG_FILES
 			gDebugLog.Log("rewrite: writing <%s>", theLine.GetString());
-#endif
 		}
-#ifdef _DEBUG_FILES
 		else
 			gDebugLog.Log("rewrite: saving <%s>", theLine.GetString());
-#endif
 
         if (itsFile->eof())
             done = true;
@@ -382,9 +364,7 @@ void LFile::Rewrite(TString &searchString, int numFields)
     //  Add the desired record information.
     *tempFile << searchString; 
     
-#ifdef _DEBUG_FILES
 	gDebugLog.Log("rewrite: now write <%s>", searchString.GetString());
-#endif
 
     //  Close both files.
     delete tempFile;
@@ -611,6 +591,19 @@ bool LFileList::CurFileAtEOF(void)
 
 /*
  $Log$
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -3,13 +3,13 @@
 
 #include "TString.h"
 #include "TBTree.h"
+#include "Config.h"
 #include "LFiles.h"
 #include "CryptStream.h"
 
 #define STRING_MIN_RESIZE 128
 #define READ_BUF_SIZE 512
 #define IN_FILENAME "5L.db"			// Filename of the Bundle file
-#define TMP_FILENAME "tmp5L.db"
 #define INIT_DATA_DIR ""
 //#define INIT_DATA_DIR "\\init"
 
@@ -77,7 +77,7 @@ class LFileBundle : public TObject
 		//
 		bool Init();
 		
-		
+
 		/************ Methods we need to support from LFileList ***********/
 
 		//////////
@@ -177,14 +177,35 @@ class LFileBundle : public TObject
 
 	private:
 		//////////
-		// Encyption/Decryption stream.
+		// Are we using encryption for the bundle?
 		//
-		CryptStream *cs;
+		bool		isEncrypted;
+
+		//////////
+		// Absolute filename (incl path info) for the bundle.
+		//
+		char		*bundleFilename;
+		
+		//////////
+		// Used for the file stream when acting in clear mode.
+		//
+		ifstream	*clearFileStream;
+
+		//////////
+		// Encyption/Decryption stream used when acting in encrypted mode.
+		//
+		CryptStream *cryptStream;
 		
 		//////////
 		// Cache for all 5L files.
 		//
 		TString cache;
+
+		//////////
+		// How should the cache be written back to disk?
+		// (see DB_WRITES_XXX contants in Config.h)
+		//
+		int cacheWriteFreq;
 		
 		//////////
 		// Is the cache dirty (have any files been modified)?
@@ -269,7 +290,7 @@ class LFileBundle : public TObject
 		// [in] filename - filename with path
 		// [in/out] sFilename - filename with path removed and case lowered
 		//
-		void	FixFilename(const char *filename, char *sFilename);
+		void	ShortenFilename(const char *filename, char *sFilename);
 		
 		//////////
 		// Read from the bundle until delim is found.  Toss the delimiter.
@@ -334,8 +355,7 @@ class LFileBundle : public TObject
 		int		BundleEOF();
 		
 		//////////
-		// Write the cache back to disk using the encryption stream.<br>
-		// Assumes lastmod times and MD5 hashes have already been updated.
+		// Write the cache back to disk using the encryption stream.
 		//
 		void	WriteCache();
 		
@@ -374,20 +394,51 @@ class LFileBundle : public TObject
 		TString ComputeMD5(const TString &str);	
 		
 		//////////
-		// Update the MD5 hash for the file with tag located at fTagIndex. <br>
-		// Modifies cache with the updated MD5 for this file.
+		// Deprectated.  Use UpdateFileHeader instead.
 		//
+		//void	UpdateMD5(const char *filename, int fTagIndex);
+
+		//////////
+		// Update the header info for the file with tag located at fTagIndex. <br>
+		// Modifies cache with the updated MD5, timestamp, etc for this file.
 		//
 		// [in] filename - name of the file
 		// [in] fTagIndex - index into cache where this file is located
 		//
-		void	UpdateMD5(const char *filename, int fTagIndex);
+		void	UpdateFileHeader(const char *filename, int fTagIndex);
 		
 		//////////
 		// Import all files located in INIT_DATA_DIR into the bundle. <br>
 		// Assumes all imported files are global.
 		//
 		void	ImportFiles();
+
+		/******* Routines to handle file operations on bundle *******
+		 ******* (which may be clear or encrypted)			  *******/
+		
+		//////////
+		// Convert the bundle.
+		//
+		// [in] dir - conversion direction (0 = clear -> encrypted, 1 = encrypted -> clear) 
+		//
+		void ConvertBundle(int dir);
+
+		//////////
+		// Open the bundle and read its contents into cache.
+		//
+		// [out] return - true if successful, false otherwise
+		//
+		bool OpenAndReadBundle();
+
+		//////////
+		// Close the bundle.
+		//
+		void CloseBundle();
+
+		//////////
+		// Rewrite the bundle to disk using contents stored in cache.
+		//
+		void RewriteBundle();
 
 };
 

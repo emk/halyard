@@ -64,6 +64,99 @@ ConfigManager::~ConfigManager()
 {
 }
 
+// Use defaults for user preferences
+void ConfigManager::UseDefaultPrefs()
+{
+	for (int i=0; i<PREFS_SIZE; i++)
+		userPrefs[i] = 0;
+}
+
+// Parses user preferences file
+void ConfigManager::ParsePrefs(TString absoluteFilename)
+{
+	ifstream	prefsFile;			// user preferences
+	bool		errFlag = false;	// error flag
+	char		errString[256];		// used to print error message
+
+	// Open the file
+	prefsFile.open(absoluteFilename, ios::in | ios::nocreate);
+	if (prefsFile.fail())
+	{
+		gDebugLog.Log("Could not open user preferences file \"%s\", using defaults.", absoluteFilename.GetString());
+		gVariableManager.SetString("_debug", "0");
+		UseDefaultPrefs();
+		return;	
+	}
+	
+	// _debug is set in the presence of 5L.prefs
+	gVariableManager.SetString("_debug", "1");
+	
+	// Parse the file
+	while (!prefsFile.eof()) 
+	{
+		TString key, 
+				value;
+		char	lineBuf[128];
+
+		prefsFile.getline(lineBuf, 128, '\n');
+		if (GetPrefsKeyValue(lineBuf, key, value))
+		{
+			if (key.Equal("db_type", false)) 
+			{
+				if (value.Equal("encrypted", false))
+					userPrefs[DB_TYPE] = DB_TYPE_ENCRYPTED;
+				else if (value.Equal("clear", false))
+					userPrefs[DB_TYPE] = DB_TYPE_CLEAR;
+				else
+					errFlag = true;	
+			}
+			else if (key.Equal("db_writes", false)) 
+			{
+				if (value.Equal("exit", false))
+					userPrefs[DB_WRITES] = DB_WRITES_EXIT;
+				else if (value.Equal("close", false))
+					userPrefs[DB_WRITES] = DB_WRITES_CLOSE;
+				else if (value.Equal("write", false))
+					userPrefs[DB_WRITES] = DB_WRITES_WRITE;			
+			}
+			else if (key.Equal("mode", false)) 
+			{
+				if (value.Equal("fullscreen", false))
+					userPrefs[MODE] = MODE_FULLSCREEN;
+				else if (value.Equal("window", false))
+					userPrefs[MODE] = MODE_WINDOW;
+			}
+			else if (key.Equal("redoscript", false))
+			{
+				if (value.Equal("off", false))
+					userPrefs[REDOSCRIPT] = REDOSCRIPT_OFF;
+				else if (value.Equal("on", false))
+					userPrefs[REDOSCRIPT] = REDOSCRIPT_ON;
+			}
+			else if (key.Equal("debug_log", false))
+			{
+				if (value.Equal("off", false))
+					userPrefs[DEBUG_LOG] = DEBUG_LOG_OFF;
+				else if (value.Equal("on", false))
+					userPrefs[DEBUG_LOG] = DEBUG_LOG_ON;
+			}
+			else
+			{
+				errFlag = true;
+				sprintf(errString, "Unknown option in user preferences file \"%s\", reverting to defaults", key);
+			}
+		}
+	}
+	prefsFile.close();
+
+	if (errFlag)
+	{
+		AlertMsg(errString, false);
+		UseDefaultPrefs();
+		return;
+	}
+}
+
 //
 //	Init - Process the command line and read the config file.
 //
@@ -79,7 +172,7 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 	int			theOption;
 	bool		getArg = false;
 	bool		done = false;
-	char		errString[100];		// used to print error message
+	char		errString[256];		// used to print error message
     
     // make sure our path variables are empty
     m_InstallDir = ""; 
@@ -312,26 +405,35 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 
 	// Pull user information for user.profile if it exists
 	TString userProfileName = m_InstallDir;
-	userProfileName += "user.profile";
-	userProfile.open(userProfileName, ios::in);
-	while (!userProfile.eof()) {
-		TString sLine;
-		char lineBuf[128];
+	userProfileName += DLS_USER_PROFILE;
+	userProfile.open(userProfileName, ios::in | ios::nocreate);
+	
+	if (!userProfile.fail())
+	{
+		while (!userProfile.eof()) {
+			TString sLine;
+			char lineBuf[128];
 
-		userProfile.getline(lineBuf, 128, '\n');
-		sLine = lineBuf;
-		if (sLine.StartsWith("name=", false)) {
-			int index = sLine.Find('"');
-			m_DLSUser = sLine.Mid(index+1);
-			m_DLSUser.RChop();	// chop trailing quote
-			break;
+			userProfile.getline(lineBuf, 128, '\n');
+			sLine = lineBuf;
+			if (sLine.StartsWith("name=", false)) {
+				int index = sLine.Find('"');
+				m_DLSUser = sLine.Mid(index+1);
+				m_DLSUser.RChop();	// chop trailing quote
+				break;
+			}
 		}
+		userProfile.close();
 	}
-	userProfile.close();
+
+	// Parse the user preferences file
+	TString prefsFilename = m_InstallDir;
+	prefsFilename += USER_PREFS_FILE;
+	ParsePrefs(prefsFilename);
 
     // now try to read the config file to get information about
     // other scripts in the title
-    theConfigFile.open(m_ConfigFile.GetString(), ios::in);
+    theConfigFile.open(m_ConfigFile.GetString(), ios::in | ios::nocreate);
 
 	if (theConfigFile.is_open())
 	{	
@@ -638,9 +740,59 @@ TString ConfigManager::GetAudioPath(TString &inName)
 //
 //	return (have_CD);
 //}
+
+//////////////////////////////////////////////////////////////////////////
+///////////////////////////// Private ////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+bool	ConfigManager::GetPrefsKeyValue(char *line, TString &key, TString &value)
+{	
+	int pos1, pos2;
+
+	TString sLine = line;
+	sLine.LTrim();
+
+	key = "";
+	value = "";
+
+	// First check for comment chars
+	if (sLine.StartsWith("#") || sLine.StartsWith(";") || sLine.StartsWith("//"))
+		return false;
+
+	// Parse the key
+	if ((pos1 = sLine.Find(' ')) < 0)
+		return false;
+	key = sLine.Mid(0, pos1);
+
+	// Parse the value
+	pos2 = sLine.Find('"', pos1);					// set pos2 to 1st quote
+	pos1 = sLine.Find('"', pos2 + 1);				// set pos1 to 2nd quote
+	if (pos2 < 0 || pos1 < 0)
+		return false;
+	value = sLine.Mid(pos2 + 1, pos1 - pos2 - 1);  
+
+	// Make sure a key and value are not empty 
+	if (key.IsEmpty() || value.IsEmpty())
+		return false;
+	
+	return true;
+}
  
 /*
  $Log$
+ Revision 1.5  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.4  2002/02/05 14:55:41  tvw
  Backed out changes for -D command-line option.
  The DLS client was fixed, eliminating the need for this option.
