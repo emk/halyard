@@ -148,20 +148,55 @@ void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
 }
 
 void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
-						   const wxColour &inColor, int inWidth)
+						   const GraphicsTools::Color &inColor, int inWidth)
 {
-	wxMemoryDC dc;
-	dc.SelectObject(GetPixmap());
-	wxPen pen(inColor, inWidth, wxSOLID);
-	dc.SetPen(pen);
-	dc.DrawLine(inFrom.x, inFrom.y, inTo.x, inTo.y);
+    // We special-case straight line drawing, and always use hand-rolled
+    // primitives, because nobody's drawing API is really consistent about
+    // where straight lines should go, and we'd like to make some reasonable
+    // guarantees.
+    bool is_straight = false;
+    wxRect bounds;
+    if (inFrom.x == inTo.x) {
+        is_straight = true;
+        bounds = wxRect(wxPoint(inFrom.x, inFrom.y),
+                        wxPoint(inTo.x + inWidth - 1, inTo.y - 1));
+    } else if (inFrom.y == inTo.y) {
+        is_straight = true;
+        bounds = wxRect(wxPoint(inFrom.x, inFrom.y),
+                        wxPoint(inTo.x - 1, inTo.y + inWidth - 1));
+    }
 
-	// This is slightly annoying.
-	InvalidateRect(wxRect(wxPoint(std::min(inFrom.x, inTo.x),
-								  std::min(inFrom.y, inTo.y)),
-						  wxPoint(std::max(inFrom.x, inTo.x),
-								  std::max(inFrom.y, inTo.y))),
-				   inWidth);
+    // Do the actual drawing.
+    if (mPixmap.HasAlpha()) {
+        if (is_straight) {       
+            wxAlphaPixelData data(mPixmap);
+            FillBoxOpt(data, bounds, inColor);
+        } else {
+            gLog.Error("Can't draw diagonal lines on transparent overlay");
+        }
+    } else {
+        if (is_straight) {
+            wxNativePixelData data(mPixmap);
+            FillBoxOpt(data, bounds, inColor);
+        } else if (inColor.IsCompletelyOpaque()) {
+            wxColor color = GraphicsToolsToWxColor(inColor);
+            wxMemoryDC dc;
+            dc.SelectObject(GetPixmap());
+            wxPen pen(color, inWidth, wxSOLID);
+            dc.SetPen(pen);
+            dc.DrawLine(inFrom.x, inFrom.y, inTo.x, inTo.y);
+        } else {
+            gLog.Error("Can't draw diagonal transparent lines");
+        }
+    }
+
+    // This is slightly annoying, but should handle the maximum bounds of
+    // Windows GDI lines.
+    InvalidateRect(wxRect(wxPoint(std::min(inFrom.x, inTo.x),
+                                  std::min(inFrom.y, inTo.y)),
+                          wxPoint(std::max(inFrom.x, inTo.x),
+                                  std::max(inFrom.y, inTo.y))),
+                   inWidth);
 }
 
 void DrawingArea::FillBox(const wxRect &inBounds,
@@ -186,17 +221,18 @@ void DrawingArea::FillBox(const wxRect &inBounds,
 	InvalidateRect(inBounds);
 }
 
-void DrawingArea::OutlineBox(const wxRect &inBounds, const wxColour &inColor,
+void DrawingArea::OutlineBox(const wxRect &inBounds,
+                             const GraphicsTools::Color &inColor,
 							 int inWidth)
 {
-	wxMemoryDC dc;
-	dc.SelectObject(GetPixmap());
-	wxPen pen(inColor, inWidth, wxSOLID);
-	dc.SetPen(pen);
-	dc.SetBrush(*wxTRANSPARENT_BRUSH);
-	dc.DrawRectangle(inBounds.x, inBounds.y,
-					 inBounds.width, inBounds.height);
-	InvalidateRect(inBounds, inWidth);
+    // Do this using box drawing primitives for reliable placement and
+    // alpha channel support.
+    FillBox(wxRect(inBounds.x, inBounds.y, inBounds.width, inWidth), inColor);
+    FillBox(wxRect(inBounds.x, inBounds.y, inWidth, inBounds.height), inColor);
+    FillBox(wxRect(inBounds.x, inBounds.y + inBounds.height - inWidth,
+                   inBounds.width, inWidth), inColor);
+    FillBox(wxRect(inBounds.x + inBounds.width - inWidth, inBounds.y,
+                   inWidth, inBounds.height), inColor);
 }
 
 void DrawingArea::DrawPixMap(GraphicsTools::Point inPoint,

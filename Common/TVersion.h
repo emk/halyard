@@ -22,15 +22,29 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		28
+#define VERSION_REV_BIG		29
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.28 (Development)"
+#define VERSION_STRING		"Tamale 0.0.29 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.71  2004/06/08 15:58:37  emk
+ 0.0.29 - emk, brian
+
+   * Moved most of overlay support into quake2/client, except for
+     actual drawing/conversion code.
+   * Added a broken stub implementation of GL overlays.  This might
+     actually work on some hardware, but seems to have driver issues
+     on my laptop.
+   * Added alpha channel support for horizontal lines, vertical lines
+     and outlined boxes.  These should also now be drawn in identical
+     locations regardless of graphics card and OS version.
+   * Added clear-prefs!, clear-user-prefs!, and clear-global-prefs!, to
+     support automatically clearing an entire preference file.
+
  Revision 1.70  2004/05/21 14:09:52  emk
  0.0.28 - 21 May 2004 - emk
 

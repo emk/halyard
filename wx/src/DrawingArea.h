@@ -90,7 +90,7 @@ public:
 	/// Draw a line in the specified color.
 	///
 	void DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
-				  const wxColour &inColor, int inWidth);
+				  const GraphicsTools::Color &inColor, int inWidth);
 
 	//////////
 	/// Fill in the specified box with the specified color.
@@ -101,7 +101,8 @@ public:
 	//////////
 	/// Fill in the specified box with the specified color.
 	///
-	void OutlineBox(const wxRect &inBounds, const wxColour &inColor,
+	void OutlineBox(const wxRect &inBounds,
+                    const GraphicsTools::Color &inColor,
 					int inWidth);
 
 	//////////

@@ -330,9 +330,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxOutline) {
 	int32 width;
 
 	inArgs >> bounds >> color >> width;
-	GetCurrentDrawingArea()->OutlineBox(TToWxRect(bounds), 
-										GraphicsToolsToWxColor(color),
-										width);
+	GetCurrentDrawingArea()->OutlineBox(TToWxRect(bounds), color, width);
 
 }
 
@@ -343,7 +341,7 @@ DEFINE_5L_PRIMITIVE(DrawLine) {
 
 	inArgs >> from >> to >> color >> width;
 	GetCurrentDrawingArea()->DrawLine(TToWxPoint(from), TToWxPoint(to),
-									  GraphicsToolsToWxColor(color), width);
+									  color, width);
 
 }
 
