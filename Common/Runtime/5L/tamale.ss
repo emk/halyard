@@ -177,8 +177,9 @@
       (action)))
 
   (define (zone name shape action
-                &key (cursor 'hand) (overlay? #f) (alpha? #f))
-    (create %simple-zone% 
+                &key (cursor 'hand) (overlay? #f) (alpha? #f) (at (point 0 0)))
+    (create %simple-zone%
+            :at at
             :name name 
             :shape shape
             :cursor cursor 
