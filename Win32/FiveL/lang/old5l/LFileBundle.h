@@ -23,11 +23,13 @@
 //
 const unsigned char HCK[] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };
 
+/*
 extern "C" {
 	#include "md5.h"
 	void	md5_buffer(const char *buffer, const unsigned int buf_len, void *signature);
 	void	md5_sig_to_string(void *signature, char *str, const int str_len);
 }
+*/
 
 /*-----------------------------------------------------------------
 

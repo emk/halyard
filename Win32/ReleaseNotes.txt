@@ -1,5 +1,9 @@
 FiveL for Win32 Release Notes
 
+3.2.0.4, Tuesday, April 16, 2002, 12:28 PM
+
+	Replaced MD5 library with one we're actually allowed to ship.
+
 3.2.0.3, Tuesday, April 10, 2002, 3:08 PM
 
     Added code to work around a usability problem in the Genetics

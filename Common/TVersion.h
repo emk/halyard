@@ -17,16 +17,22 @@
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
 #define REV_BIG			00
-#define REV_SMALL		03
+#define REV_SMALL		04
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0.3"
+#define VERSION_STRING	"5L for Win32 3.2.0.4"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.5  2002/04/16 00:15:17  emk
+ 3.2.0.4 - Replaced MD5 library with one we're legally allowed to ship.
+
+ DO NOT SHIP ANY ENGINES OLDER THAN 3.2.0.4 TO *ANYBODY* OUTSIDE IML WITHOUT
+ TALKING TO ERIC KIDD AND MARK NOEL.
+
  Revision 1.3.2.4  2002/04/09 13:53:45  emk
  Mouse-click during text entry now works the same as typing RETURN.
 
