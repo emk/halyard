@@ -376,11 +376,19 @@ TString TStream::copystr(uint32 startPos, uint32 numChars)
 
 ***************************/
 
+//  This little guy allows manipulator functions to work.
+//
+TStream& TStream::operator>>(TStream& (*_f)(TStream &))
+{
+    return (_f (*this));
+}
+
 //  Basic extraction operator. Most others just use this
 //  and then convert the type.
 //
-TStream& TStream::operator>>(TString &dest)
+std::string TStream::GetStringArg()
 {
+	TString		dest;
     TString 	temp;
     int32     	startPos;
     int32     	dangling_opens = 0;
@@ -400,6 +408,7 @@ TStream& TStream::operator>>(TString &dest)
     //  entire contents of this set of parentheses. Otherwise go
     //  until we hit whitespace.
     //
+
     if ((ch == P_OPEN) and (not inEscape())) 
     {
         startPos = ++pos;
@@ -450,68 +459,35 @@ TStream& TStream::operator>>(TString &dest)
         dest = copystr(startPos, pos - startPos);
     }
     
-    return (*this);
-}
-
-TStream& TStream::operator>>(std::string &outString)
-{
-	TString temp;
-	*this >> temp;
-	outString = std::string(temp.GetString());
-	return *this;
-}
-
-//  This little guy allows manipulator functions to work.
-//
-TStream& TStream::operator>>(TStream& (*_f)(TStream &))
-{
-    return (_f (*this));
+    return std::string(dest.GetString());
 }
 
 //  TString class handles string to int conversions.
 //
-TStream& TStream::operator>>(int16 &dest)
+int32 TStream::GetInt32Arg()
 {
     TString foo;
 
     *this >> foo;
-    dest = (int16) foo;
-
-    return (*this);
+    return (int32) foo;
 }
 
-//  TString class handles string to int conversions.
-//
-TStream& TStream::operator>>(int32 &dest)
-{
-    TString foo;
-
-    *this >> foo;
-    dest = (int32) foo;
-
-    return (*this);
-}
-
-TStream& TStream::operator>>(uint32 &dest)
+uint32 TStream::GetUInt32Arg()
 {
 	TString foo;
 	
 	*this >> foo;
-	dest = (uint32) foo;
-	
-	return (*this);
+	return (uint32) foo;
 }
 
-//  TString class handles string to int conversions.
+//  TString class handles string to double conversions.
 //
-TStream& TStream::operator>>(double &dest)
+double TStream::GetDoubleArg()
 {
     TString foo;
 
     *this >> foo;
-    dest = (double) foo;
-
-    return (*this);
+	return (double) foo;
 }
 
 //  Assumes there are 4 numbers to grab.
@@ -523,8 +499,9 @@ TStream& TStream::operator>>(double &dest)
 //  indexing of 4 digit coords.  Note had to use a second symbol other than
 //  '$' because of the way 5L handles strings beginning and ending in '$' 
 
-TStream& TStream::operator>>(TRect &r)
+TRect TStream::GetRectArg()
 {
+	TRect	r;
     char	ch;
     TString	temp;
     int32	left, top, right, bottom;
@@ -541,11 +518,8 @@ TStream& TStream::operator>>(TRect &r)
         *this >> left >> top >> right >> bottom;
   
   	r.Set(top, left, bottom, right);
-  	  
-    return (*this);
+	return r;
 }
-
-
 
 
 //  Assumes there are 2 numbers to grab.
@@ -554,8 +528,9 @@ TStream& TStream::operator>>(TRect &r)
 //  The if and the else statement were added to check for '$'.  See
 //  previous operator for description of extra code
 
-TStream& TStream::operator>>(TPoint &pt)
+TPoint TStream::GetPointArg()
 {
+	TPoint	pt;
     char	ch;
     TString	temp;
     int32	x, y;
@@ -572,11 +547,10 @@ TStream& TStream::operator>>(TPoint &pt)
         *this >> x >> y;
     
     pt.Set(x, y);
-    
-    return (*this);
+	return pt;
 }
 
-TStream& TStream::operator>>(GraphicsTools::Color &outColor)
+GraphicsTools::Color TStream::GetColorArg()
 {
 	TString input;
 	*this >> input;
@@ -602,11 +576,10 @@ TStream& TStream::operator>>(GraphicsTools::Color &outColor)
 	unsigned int hex;
 	int successful_conversions = sscanf(temp + 2, "%x", &hex);
 	ASSERT(successful_conversions == 1);
-	outColor = GraphicsTools::Color(hex >> 24,
-									(hex >> 16) & 0xFF,
-									(hex >> 8) & 0xFF,
-									hex & 0xFF);
-	return *this;
+	return GraphicsTools::Color(hex >> 24,
+								(hex >> 16) & 0xFF,
+								(hex >> 8) & 0xFF,
+								hex & 0xFF);
 }
 
 //  Tests to see if a character is escaped, given position of character

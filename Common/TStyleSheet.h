@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "TCommon.h"
 #include "TStream.h"
 #include "TIndex.h"
 

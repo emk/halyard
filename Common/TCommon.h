@@ -121,9 +121,15 @@ extern void FiveLCheckAssertion(int inTest, const char *inDescription,
 #define uint16	unsigned short
 #define uint32	unsigned long
 
+// The MIN_INTn values must be written as "-MAX - 1" because some
+// compilers can't handle the smallest possible 32-bit integer as
+// a literal value in the source code.
 #define MAX_INT8  ((int8)  0x007F)
+#define MIN_INT8  (-(MAX_INT8) - 1)
 #define MAX_INT16 ((int16) 0x7FFF)
+#define MIN_INT16 (-(MAX_INT16) - 1)
 #define MAX_INT32 ((int32) 0x7FFFFFFF)
+#define MIN_INT32 (-(MAX_INT32) - 1)
 
 #define MAX_UINT8 ((uint8) 0x00FF)
 #define MAX_UINT16 ((uint16) 0xFFFF)
@@ -181,6 +187,12 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.7.4.2  2002/06/10 17:52:48  emk
+ 3.3.4.3 - Added a TArgumentList class in TPrimitives.  This class provides
+ an abstract interface to argument list parsing, and replaces parts of
+ TStream.  This will allow us to begin breaking dependencies between
+ the primitives and the nasty parsing gunk in TStream.
+
  Revision 1.7.4.1  2002/06/05 20:42:28  emk
  3.3.4.2 - Broke Win5L dependencies on TIndex file by moving various pieces
  of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter

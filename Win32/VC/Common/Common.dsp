@@ -153,6 +153,10 @@ SOURCE=..\..\..\Common\TPoint.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TPrimitives.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TRect.cpp
 # End Source File
 # Begin Source File
@@ -262,6 +266,10 @@ SOURCE=..\..\..\Common\TPlatform.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TPoint.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TPrimitives.h
 # End Source File
 # Begin Source File
 
