@@ -122,11 +122,8 @@ CTouchZone::~CTouchZone()
 {
 	StopIdling();
 	
-	// cbo_mem
-	// cbo - only do this if the resource tree isn't going to manage memory
-	// for us
-	//if (mPicture != nil)
-	//	mPicture->Purge();		// done with this picture
+	if (mPicture != nil)
+		mPicture->Purge();		// done with this picture
 }
 
 /* ---------------------------------------------------------------------------------

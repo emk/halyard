@@ -34,10 +34,7 @@ CPlayerPict::CPlayerPict(CPicture		*inPict,
 	inPict->DrawPic(topLeft(inBounds), BITMAP(macGWorld), inMatte);
 	theGWorld->EndDrawing();
 
-	// cbo_mem
-	// cbo - only do this if we don't want the resource tree to 
-	//		manage memory for us
-	//inPict->Purge();				// free memory for the picture
+	inPict->Purge();				// free memory for the picture
 }
 
 // ---------------------------------------------------------------------------------

@@ -67,10 +67,8 @@ CPlayerBox::DrawSelf()
 	// If 'mFill' is TRUE, we want to fill the box. Otherwise, just frame it.
 	if (mFill)
 	{
-		::RGBForeColor(&Color_Black);
 		::PenMode(patCopy);
 		::PaintRect(&mBounds);
-		//::FillRect( &mBounds, &qd.black );
 	}
 	else
 		::FrameRect( &mBounds );

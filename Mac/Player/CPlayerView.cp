@@ -392,10 +392,7 @@ void  CPlayerView::SetBackPic(char *picName, Rect inRect)
 		
 		mGWorld->EndDrawing();
 		
-		// cbo_mem
-		// cbo - only do this if the resource tree isn't going to manage memory
-		// for us
-		//mBackPic->Purge();				// free up memory for the picture
+		mBackPic->Purge();				// free up memory for the picture
 	}
 }
 

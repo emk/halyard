@@ -35,7 +35,6 @@ class CPicture : public CResource
 		PicHandle		mHiPicture;				// handle to hilite picture
 		CString			mPicName;				// name of the picture
 		bool			mMatte;					// draw picture matted
-		bool			mHaveGoodSize;			// true if we have calculated a good size
 		
 		// We use the following Bitmaps for drawing matted pictures. LoadMatte creates the
 		// bitmap of the picture, along with a mask bitmap whose bit is set for each non-white

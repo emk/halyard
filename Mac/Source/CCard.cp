@@ -2436,8 +2436,6 @@ void CCard::DoText()
     textPtr = new CPlayerText(header.GetString(), macBounds, text.GetString(), 0, 0);
 	if (textPtr != nil)
 		delete textPtr;
-		
-	// cbo_fix 
 }
 
 /*-----------------------------------------------------------
@@ -2518,6 +2516,7 @@ void CCard::DoTouch()
 	    	if (script.more()) 
 			{
 				script >> loc;
+				AdjustPoint(&loc);
 				loc.MakeMacPt(&macLoc);
 			}
 			else 
@@ -2546,6 +2545,8 @@ void CCard::DoTouch()
 			if (script.more()) 
 			{
 				script >> loc;
+				
+				AdjustPoint(&loc);
 				loc.MakeMacPt(&macLoc);
 			}
 			else 

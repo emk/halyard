@@ -241,8 +241,8 @@ void CFile::Lookup(CString &searchString, int32 numFields)
         //
         for (count = 0; count < numFields; count++) 
         {
-        	Read(theField);				// will skip whitespace
-           // ReadUntil(theField, '\t');
+        	//Read(theField);				// will skip whitespace
+           	ReadUntil(theField, '\t');
             if (count > 0)
                 comparison += '\t';
             comparison += theField;

@@ -1,5 +1,54 @@
 FiveL for Macintosh Release Notes
 
+2.00, Build 18, Wednesday, December 15, 1999 2:01:00 PM
+
+¥ Took out all debug messages from the Release version.
+
+¥ Resolved the cache scheme. Now we don't cache anything, ever. We will have
+to see if this causes performance problems on our lower end machines.
+
+2.00, Build 17, Wednesday, December 15, 1999 12:16:06 PM
+
+DO NOT USE THIS ENGINE OUTSIDE OF THE LAB!
+
+¥ Changed resource allocation so that all pictures and palettes are
+purged from memory immediately after use. This makes the changes outlined
+below for the Resource Manager obsolete but this is just a test to see if
+performance is adequate. If it isn't, we can re-institute the cache
+outlined below
+
+¥ Added memory dumping commands to all video commands to try and nail the
+memory problems. This engine should NOT be used for production as the log
+it generates can get huge!
+
+¥ Changed Resource manager (which handles all PICTs and Palettes) so that
+it keeps track of the amount of memory it has used to cache resources. When
+that number gets higher than 1 MB it will purge resources from the cache
+until it is down to using only 750 KB of memory.
+
+2.00, Build 16, Tuesday, November 30, 1999 4:21:22 PM
+
+¥ Changed the lookup command so that it will not strip out spaces when
+looking for fields. Previously, it would always strip spaces. 
+
+2.00, Build 15, Friday, November 19, 1999 3:30:39 PM
+
+¥ The memory requirements of the engine have been reduced to:
+	Miniumum: 8000 K
+	Preferred: 9000 K
+	
+	These numbers seem to work fine. If you notice a problem with memory, keep
+	the log (or debug log) as it has some memory statistics that will be
+	of interest to me.
+	
+¥ The touch command was not adjusting the point given for a graphic with
+respect to the origin.
+
+2.00, Build 14, Tuesday, November 16, 1999 9:46:42 AM
+
+¥ Fixed the box command. It was always filling the box in with black and 
+ignoring the passed in color.
+
 2.00, Build 13, Friday, November 12, 1999 4:21:23 PM
 
 ¥ Made the "contains" operator case insensitive.

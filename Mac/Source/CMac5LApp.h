@@ -21,6 +21,9 @@ class	CMac5LApp : public LApplication
 		void				ReDoScript(char *curCard);
 		bool				OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard);
 #endif
+		void				CheckMemory(void);
+		void				MaxMemory(void);
+		void				DumpMemory(void);
 
 //		void				SetPalette(PaletteHandle inPalHand, bool inActivateNow);
 		

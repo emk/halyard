@@ -70,7 +70,7 @@ bool				gPrintDebug = true;
 #else
 bool				gFullScreen = true;			// use the full screen
 bool				gHideMenuBar = true;		// to hide menu bar
-bool				gPrintDebug = true;			// cbo_fix - normally off
+bool				gPrintDebug = false;		// normally off
 #endif
 bool				gDoShiftScript = false;		// by default, start from beginning
 
@@ -139,7 +139,12 @@ int main()
 	if (theConfig->CheckConfig())	// if we don't have a good config, don't run
 	{
 		gTheApp = new CMac5LApp;	// create instance of application
+
+		//gTheApp->CheckMemory();
+
 		gTheApp->Run();				//   class and run it
+		
+		//gTheApp->MaxMemory();
 	}
 	
 	if (gTheApp != NULL)
@@ -453,7 +458,7 @@ void CMac5LApp::DoExit(int16 inSide)
 		gCardManager.ZapTree();				// toss all cards
 		gVariableManager.ZapTree();			// toss all variables
 		
-		KillResTree();						// toss all resources (pictures)
+		gResManager.Kill();					// toss all resources (pictures)
 
 		mGraphicsPal = NULL;
 		mMoviePal = NULL;
@@ -668,11 +673,8 @@ void CMac5LApp::NewColorTable(CPalette *inPal, bool inGraphics)
 	else
 		CheckPalette();			// do it now - we are going to show a movie
 	
-	// cbo_mem
-	// cbo - only purge if we don't want the resource tree to manage memory	
-	// for us
-	//if (theOldPal != nil)
-	//	theOldPal->Purge();		// clear it from memory (unless it is locked)
+	if (theOldPal != nil)
+		theOldPal->Purge();		// clear it from memory (unless it is locked)
 }
 		
 		
@@ -830,10 +832,73 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard)
 	
 	return (retValue);
 }
+
 #endif
+
+static long		numTimesChecked = 0;
+static long		maxFreeMem = 0;
+static long		maxTempFreeMem = 0;
+static long		minFreeMem = 0;
+static long		minTempFreeMem = 0;
+
+void CMac5LApp::CheckMemory(void)
+{
+	long			mem;
+	long			memUsed;
+
+	numTimesChecked++;			
+	mem = ::FreeMem();
+	if (mem > maxFreeMem)
+		maxFreeMem = mem;
+	memUsed = maxFreeMem - mem;
+	if (minFreeMem == 0)
+		minFreeMem = mem;
+	else if (mem < minFreeMem)
+		minFreeMem = mem;
+	//prinfo("FreeMem used: %d", memUsed);
+	
+	mem = ::TempFreeMem();
+	if (mem > maxTempFreeMem)
+		maxTempFreeMem = mem;
+	memUsed = maxTempFreeMem - mem;
+	if (minTempFreeMem == 0)
+		minTempFreeMem = mem;
+	else if (mem < minTempFreeMem)
+		minTempFreeMem = mem;
+	//prinfo("TempFreeMem used: %d", memUsed);
+}
+
+void CMac5LApp::DumpMemory(void)
+{
+	CheckMemory();
+	
+	long		mem = 0;
+	
+	mem = ::FreeMem();
+	prinfo("FreeMem: %d", mem);
+	mem = 0;
+	mem = ::TempFreeMem();
+	prinfo("TempFreeMem: %d", mem);
+	mem = gResManager.CacheSize();
+	prinfo("Resource cache: %d", mem);
+}
+
+void CMac5LApp::MaxMemory(void)
+{
+	prinfo("Memory statistics: number of times checked: %d", numTimesChecked);
+	prinfo("Lowest number returned from FreeMem: %d", minFreeMem);
+	prinfo("Highest number returned from FreeMem: %d", maxFreeMem);
+	prinfo("Difference: %d", maxFreeMem - minFreeMem);
+	prinfo("Lowest number returned from TempFreeMem: %d", minTempFreeMem);
+	prinfo("Highest number returned from TempFreeMem: %d", maxTempFreeMem);
+	prinfo("Difference: %d", maxTempFreeMem - minTempFreeMem);
+}
 
 /* 
 $Log$
+Revision 1.8  1999/12/16 17:30:56  chuck
+no message
+
 Revision 1.7  1999/11/16 13:45:31  chuck
 no message
 

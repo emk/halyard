@@ -29,42 +29,18 @@
 //
 CPicture::CPicture(const char *inName, const char *inBaseName, bool inMatte) : CResource(inName)
 {
-// cbo_mem
-	FSSpec		theFSSpec;
-	CInfoPBRec	thePictPB;
-	OSErr		theErr;
-
 	mPicture = mHiPicture = nil;
 	mWidth = mHeight = mHiWidth = mHiHeight = 0;
 	mPicBits =  nil;
 	mPicWorld = nil;
 	mHiPicBits = nil;
 	mHiPicWorld = nil;
-	mHaveGoodSize = false;
 	mMatte = inMatte;
-	size = 0;		// in case we don't find it
-
-// cbo_mem
-//#ifdef DONT_DO_MEMORY_PROBS	
-	// set the size of the picture to be the length of the file
-	// this won't be exact but is better than nothing
-	//
-	theConfig->FillGraphicsSpec(&theFSSpec, inName);
-
-	thePictPB.hFileInfo.ioFDirIndex = 0;
-	thePictPB.hFileInfo.ioNamePtr = (unsigned char *) theFSSpec.name;
-	thePictPB.hFileInfo.ioVRefNum = theFSSpec.vRefNum;
-	thePictPB.hFileInfo.ioDirID = theFSSpec.parID;
-	
-	theErr = ::PBGetCatInfoSync(&thePictPB);
-	
-	if (theErr == noErr)
-		size = thePictPB.hFileInfo.ioFlLgLen;		// the right field to use?
 		
 	// remember the base name (without the .pic extension)
 	mPicName = inBaseName;
 	
-	Load();
+	Load(true);
 }
 
 //
@@ -96,6 +72,8 @@ Rect CPicture::GetPictureRect(void)
 // 
 void CPicture::_Load()
 { 
+	int32	tmpSize;
+	
 	if (state == kResUnloaded)
 	{
 		mPicture = mHiPicture = nil;
@@ -124,41 +102,34 @@ void CPicture::_Load()
 			mHiHeight = (*mHiPicture)->picFrame.bottom - (*mHiPicture)->picFrame.top;
 		}
 
-// cbo_mem
-//#ifdef DONT_DO_MEMORY_PROBS
-		if (not mHaveGoodSize)
+		// reset the size to be what it really is now
+		tmpSize = 0;
+		if (mPicture != nil)
+			tmpSize += ::GetHandleSize((Handle) mPicture);
+		if (mHiPicture != nil)
+			tmpSize += ::GetHandleSize((Handle) mHiPicture);
+		if (mPicWorld != nil)
 		{
-			// reset the size to be what it really is now
-			size = 0;
-			if (mPicture != nil)
-				size += ::GetHandleSize((Handle) mPicture);
-			if (mHiPicture != nil)
-				size += ::GetHandleSize((Handle) mHiPicture);
-			if (mPicWorld != nil)
-			{
-				Rect	picFrame = (*mPicture)->picFrame;
-				int32	height = picFrame.bottom - picFrame.top;
-				int32	width = picFrame.right - picFrame.left;
-				
-				// approximate the size of the GWorld
-				size += (height * width * theConfig->GetBitDepth());
-			}
-			if (mHiPicWorld != nil)
-			{
-				Rect	picFrame = (*mHiPicture)->picFrame;
-				int32	height = picFrame.bottom - picFrame.top;
-				int32	width = picFrame.right - picFrame.left;
-				
-				// approximate the size of the GWorld
-				size += (height * width * theConfig->GetBitDepth());
-			}
+			Rect	picFrame = (*mPicture)->picFrame;
+			int32	height = picFrame.bottom - picFrame.top;
+			int32	width = picFrame.right - picFrame.left;
+			
+			// approximate the size of the GWorld
+			tmpSize += (height * width * theConfig->GetBitDepth());
+		}
+		if (mHiPicWorld != nil)
+		{
+			Rect	picFrame = (*mHiPicture)->picFrame;
+			int32	height = picFrame.bottom - picFrame.top;
+			int32	width = picFrame.right - picFrame.left;
+			
+			// approximate the size of the GWorld
+			tmpSize += (height * width * theConfig->GetBitDepth());
+		}
 #ifdef DEBUG_5L
-		//	prinfo("Loaded picture: real size <%ld>", size);
+		//prinfo("Loaded picture: <%s>, size <%ld>", key.GetString(), tmpSize);
 #endif
-			mHaveGoodSize = true;
-				
-		}		
-//#endif			
+		SetSize(tmpSize);		
 	}
 }
 
@@ -168,10 +139,6 @@ void CPicture::_Load()
 void CPicture::_Purge()
 {
     Assert_(state > kResUnloaded);
-
-#ifdef DEBUG_5L
-	//prinfo("Purging picture <%s>", key.GetString());
-#endif
     
     if (mPicture != nil)
     {
@@ -199,9 +166,12 @@ void CPicture::_Purge()
 	
 	mPicBits = nil;
 	mHiPicBits = nil;
-	
-	// - why do this? then the size won't be accurate!!!	
-   // size = 0;
+
+#ifdef DEBUG_5L
+	//prinfo("Purged picture <%s>, freeing <%d> bytes", key.GetString(), GetSize());
+#endif
+
+	SetSize(0);	
 }
 
 //
@@ -493,7 +463,7 @@ CPicture *GetPicture(const char *name, bool matte)
 	thePictName = name;
 	thePictName += ".pic";
 	
-    thePict = (CPicture *) GetResource(thePictName.GetString());
+    thePict = (CPicture *) gResManager.GetResource(thePictName.GetString());
     
 	if (thePict == NULL) 
     {
@@ -503,7 +473,7 @@ CPicture *GetPicture(const char *name, bool matte)
 
         thePict = new CPicture(thePictName.GetString(), theBaseName.GetString(), matte);
 
-        gResManager.AddNode(thePict);
+        gResManager.AddResource(thePict);
     }
     else
     {

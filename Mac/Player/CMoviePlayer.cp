@@ -223,6 +223,10 @@ void CMoviePlayer::Cleanup(void)
 		
 	if (mMovie != NULL)
 	{
+		// cbo_fix - take this out later
+		//prinfo("CMoviePlayer::Cleanup");
+		//gTheApp->DumpMemory();
+		
 		::DisposeMovie(mMovie);
 		mMovie = NULL;
 	}
@@ -231,7 +235,6 @@ void CMoviePlayer::Cleanup(void)
 //
 //	Load
 //
-//bool CMoviePlayer::Load(FSSpec *theSpec, bool inAudioOnly)
 bool CMoviePlayer::Load(const char *inMovieName, bool inAudioOnly)
 {
 	Rect		theBounds;
@@ -337,6 +340,7 @@ bool CMoviePlayer::Load(const char *inMovieName, bool inAudioOnly)
 
 bool CMoviePlayer::DoPreroll(const char *inMovieName, bool inAudioOnly, bool inPreroll)
 {
+	OSErr	err;
 	bool	playIt = false;
 
 #ifdef DEBUG_5L
@@ -344,17 +348,37 @@ bool CMoviePlayer::DoPreroll(const char *inMovieName, bool inAudioOnly, bool inP
 		return (false);
 #endif
 	
-	//theConfig->FillMovieSpec(&mSpec, inMovieName);
 	playIt = true;
 	
 	if (playIt)
 	{
 		if (Load(inMovieName, inAudioOnly))
-		//if (Load(&mSpec, inAudioOnly))
 		{
 			if (inPreroll)
 			{
-				::PrerollMovie(mMovie, 0, mRate);
+#ifdef USE_QUICKTIME4
+				err = ::PrePrerollMovie(mMovie, 0, mRate, NULL, NULL);
+				if (err != noErr)
+				{
+#ifdef DEBUG_5L
+					prinfo("PrePrerollMovie: returned <%d>", err);
+#else
+					prcaution("Could not PrePreroll Movie <%s>", inMovieName);
+#endif	
+					playIt = false;			
+				}
+#endif
+				err = ::PrerollMovie(mMovie, 0, mRate);
+				if (err != noErr)
+				{
+#ifdef DEBUG_5L
+					prinfo("PrerollMovie: returned <%d>", err);
+#else
+					prcaution("Cound not Preroll Movie <%s>", inMovieName);
+#endif
+					playIt = false;
+				}
+				
 				mPrerolled = true;
 			}
 		}
@@ -392,6 +416,10 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 
 	Cleanup();
 
+// cbo_fix - take this out later
+	//prinfo("CMoviePlayer::Play");
+	//gTheApp->DumpMemory();	
+		
 	if (not inAudioOnly)
 		doThePreroll = true;
 	else
@@ -413,8 +441,9 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 			thePalette = GetPalette(inPalStr);
 			
 			if (thePalette != nil)
-				thePalette->SetPalette(false);			
-			//UpdatePalette(inPalStr, false);
+			{
+				thePalette->SetPalette(false);	
+			}		
 		}
 	}
 	else
@@ -446,7 +475,11 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 		mLooping = false;
 		
 		gPlayerView->DoResetPause();		// tell player view
-				
+
+		// cbo_fix - take this out later
+		//prinfo("CMoviePlayer:: just before Resume");
+		//gTheApp->DumpMemory();			
+
 		Resume();							// start playing
 		
 		gVariableManager.SetString("_movieplaying", "1");

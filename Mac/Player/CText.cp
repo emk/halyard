@@ -292,7 +292,6 @@ CText::SetupText()
 					case 'w':				// windows-only newline, ignore
 						ch = 0;
 						index++;
-						styleLen++;
 						break;
 						
 					default:

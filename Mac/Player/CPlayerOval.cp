@@ -63,7 +63,11 @@ CPlayerOval::DrawSelf()
 	
 	// If 'mFill' is TRUE, we want to fill the box. Otherwise, just frame it.
 	if (mFill)
-		::FillOval( &mBounds, &qd.black );
+	{
+		::PenMode(patCopy);
+		::PaintRect(&mBounds);
+		//::FillOval( &mBounds, &qd.black );
+	}
 	else
 		::FrameOval( &mBounds );
 }

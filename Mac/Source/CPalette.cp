@@ -15,10 +15,8 @@
 #define DEFAULT_PAL_SIZE	2048
 
 CPalette::CPalette(const char *name) : CResource(name)
-{
-	size = DEFAULT_PAL_SIZE;
-	
-	Load();
+{	
+	Load(true);
 }
 
 CPalette::~CPalette()
@@ -63,8 +61,9 @@ void CPalette::_Load()
 			m_ctab = ::GetCTable(128);
 
 #ifdef DEBUG_5L
-		//	prinfo("loaded color table from file");
+			//prinfo("Loaded palette: <%s>, size <%ld>", key.GetString(), DEFAULT_PAL_SIZE);
 #endif
+			SetSize(DEFAULT_PAL_SIZE);
 						
 			theFile->CloseResourceFork();
 			delete theFile;
@@ -92,6 +91,10 @@ void CPalette::_Purge()
 	{
 		::DisposeCTable(m_ctab);
 		m_ctab = nil;
+		SetSize(0);
+#ifdef DEBUG_5L
+		//prinfo("Purged palette <%s>, freeing %d bytes", key.GetString(), DEFAULT_PAL_SIZE);
+#endif
 	}
 }
 
@@ -118,7 +121,6 @@ void CPalette::SetPalette(bool inGraphics)
 			return;
 		}
 	}
-		//return;
 		
 	// For graphics palettes, save the name.
 	if (inGraphics)
@@ -158,14 +160,14 @@ CPalette *GetPalette(const char *name)
 	thePalName = name;
 	thePalName += ".clut";
 		
-	thePal = (CPalette *) GetResource(thePalName.GetString());
+	thePal = (CPalette *) gResManager.GetResource(thePalName.GetString());
 	
 	if (thePal == NULL)
 	{
 		// create a new palette
 		thePal = new CPalette(thePalName.GetString());
 		
-		gResManager.AddNode(thePal);
+		gResManager.AddResource(thePal);
 	}
 	else
 		thePal->Load();					// make sure it is in memory
