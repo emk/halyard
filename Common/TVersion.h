@@ -17,14 +17,18 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		04
-#define VERSION_REV_SMALL	11
+#define VERSION_REV_SMALL	12
 
-#define VERSION_STRING	"5L 3.3.4.11 (Development: Language Refactoring)"
+#define VERSION_STRING	"5L 3.3.4.12 (Development: Language Refactoring)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.11.2.11  2002/06/20 15:58:44  emk
+ 3.3.4.12 - Last build of the 'FiveL_3_3_4_refactor_lang_1' branch
+ before merging.
+
  Revision 1.11.2.10  2002/06/19 22:50:55  emk
  3.3.4.11 - Refactored Mac code to move primitives from CCard.{h,cpp} to
  TMacPrimitives.{h,cpp}, and break most of the remaining dependencies on
