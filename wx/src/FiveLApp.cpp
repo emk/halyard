@@ -77,6 +77,10 @@ bool FiveLApp::OnInit()
     // Create and display our stage frame.
     mStageFrame = new StageFrame("wx5L", wxSize(640, 480));
     mStageFrame->Show();
+	// Enable this to go to full-screen mode *almost* immediately.
+	// TODO - You'll see the standard window for a small fraction of a
+	// second.  Fixing this will require tweaking wxWindows.
+	//mStageFrame->ShowFullScreen(TRUE);
     SetTopWindow(mStageFrame);
     return TRUE;
 }

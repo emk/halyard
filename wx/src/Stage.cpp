@@ -1,6 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include <wx/wx.h>
+#include <wx/dcraw.h>
 
 #include "TCommon.h"
 #include "TInterpreter.h"
@@ -375,7 +376,7 @@ END_EVENT_TABLE()
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize),
-      mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), -1),
+      mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight()),
 	  mTextCtrl(NULL), mCurrentElement(NULL), mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
@@ -510,7 +511,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         // Get the color at that screen location.
         // XXX - May not work on non-Windows platforms, according to
         // the wxWindows documentation.
-        wxMemoryDC offscreen_dc;
+        wxRawBitmapDC offscreen_dc;
         offscreen_dc.SelectObject(mOffscreenPixmap);
         wxColour color;
         offscreen_dc.GetPixel(x, y, &color);
@@ -539,13 +540,11 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
 
     // Set up our drawing contexts.
     wxPaintDC screen_dc(this);
-    wxMemoryDC offscreen_dc;
-    offscreen_dc.SelectObject(mOffscreenPixmap);
     
     // Blit our offscreen pixmap to the screen.
     // TODO - Could we optimize drawing by only blitting dirty regions?
-    screen_dc.Blit(0, 0, mStageSize.GetWidth(), mStageSize.GetHeight(),
-                   &offscreen_dc, 0, 0);
+	mOffscreenPixmap.BlitTo(&screen_dc, 0, 0,
+							mStageSize.GetWidth(), mStageSize.GetHeight(), 0, 0);
 
     // If necessary, draw the grid.
     if (mIsDisplayingGrid)
@@ -602,7 +601,7 @@ void Stage::OnTextEnter(wxCommandEvent &inEvent)
     wxString text = FinishModalTextInput();
     
     // Set up a drawing context.
-    wxMemoryDC dc;
+    wxRawBitmapDC dc;
     dc.SelectObject(mOffscreenPixmap);
     
     // Prepare to draw the text.
@@ -649,7 +648,7 @@ wxColour Stage::GetColor(const GraphicsTools::Color &inColor)
 
 void Stage::ClearStage(const wxColor &inColor)
 {
-    wxMemoryDC dc;
+    wxRawBitmapDC dc;
     dc.SelectObject(mOffscreenPixmap);
     wxBrush brush(inColor, wxSOLID);
     dc.SetBackground(brush);
@@ -659,7 +658,7 @@ void Stage::ClearStage(const wxColor &inColor)
 
 void Stage::FillBox(const wxRect &inBounds, const wxColour &inColor)
 {
-    wxMemoryDC dc;
+    wxRawBitmapDC dc;
     dc.SelectObject(mOffscreenPixmap);
     wxBrush brush(inColor, wxSOLID);
     dc.SetBrush(brush);
@@ -675,26 +674,21 @@ void Stage::DrawPixMap(GraphicsTools::Point inPoint,
 	InvalidateRect(wxRect(inPoint.x, inPoint.y,
 						  inPixMap.width, inPixMap.height));
 
-	// XXX - We draw our data in a slow, kludgy fashion.
-	// This code is stolen from the Mac engine and
-	// quickly hacked into a drawing routine.  It needs
-	// to be replaced with something faster and cleaner.
-
 	using GraphicsTools::AlphaBlendChannel;
 	using GraphicsTools::Color;
 	using GraphicsTools::Distance;
 	using GraphicsTools::Point;
 	
 	// Clip our pixmap boundaries to fit within our screen.
-	int gworld_width = mStageSize.GetWidth();
-	int gworld_height = mStageSize.GetHeight();
+	int stage_width = mStageSize.GetWidth();
+	int stage_height = mStageSize.GetHeight();
 	Point begin = inPoint;
-	begin.x = Max(0, Min(gworld_width, begin.x));
-	begin.y = Max(0, Min(gworld_height, begin.y));
+	begin.x = Max(0, Min(stage_width, begin.x));
+	begin.y = Max(0, Min(stage_height, begin.y));
 	begin = begin - inPoint;
 	Point end = inPoint + Point(inPixMap.width, inPixMap.height);
-	end.x = Max(0, Min(gworld_width, end.x));
-	end.y = Max(0, Min(gworld_height, end.y));
+	end.x = Max(0, Min(stage_width, end.x));
+	end.y = Max(0, Min(stage_height, end.y));
 	end = end - inPoint;
 	
 	// Do some sanity checks on our clipping boundaries.
@@ -703,57 +697,57 @@ void Stage::DrawPixMap(GraphicsTools::Point inPoint,
 	ASSERT(begin.y == end.y || // No drawing
 		   (0 <= begin.y && begin.y < end.y && end.y <= inPixMap.height));
 		
+	// Figure out where in memory to begin drawing the first row.
+	wxRawBitmapPixelRef24 dst_base_addr = mOffscreenPixmap.GetData24();
+	wxRawBitmapStride24 dst_row_size = mOffscreenPixmap.GetStride24();
+	wxRawBitmapPixelRef24 dst_row_start = dst_base_addr;
+	WX_RAW24_OFFSET(dst_row_start, dst_row_size,
+					inPoint.x + begin.x, inPoint.y + begin.y);
+	WX_RAW24_DECLARE_LIMITS(dst_limits, mOffscreenPixmap);
+	
 	// Figure out where in memory to get the data for the first row.
-	Color *portable_base_addr = inPixMap.pixels;
-	Distance portable_row_size = inPixMap.pitch;
-	Color *portable_row_start =
-		portable_base_addr + begin.y * portable_row_size + begin.x;
+	Color *src_base_addr = inPixMap.pixels;
+	Distance src_row_size = inPixMap.pitch;
+	Color *src_row_start = src_base_addr + begin.y * src_row_size + begin.x;
 
 	// Do the actual drawing.
-	// TODO - PERFORMANCE - This blitter is mind-numbingly slow.  We need
-	// to somehow get access the the wxBitmap offscreen bits, which
-	// will probably require some gross hacking of the wxWindows source.
-	wxMemoryDC dc;
-    dc.SelectObject(mOffscreenPixmap);
-	wxPen pen(*wxBLACK, 1, wxSOLID);
 	for (int y = begin.y; y < end.y; y++)
 	{
-		Color *portable_cursor = portable_row_start;
+		wxRawBitmapPixelRef24 dst_cursor = dst_row_start;
+		Color *src_cursor = src_row_start;
 		for (int x = begin.x; x < end.x; x++)
 		{
 			// Make sure we're in bounds.
-			ASSERT(portable_cursor >= portable_base_addr);
-			ASSERT(portable_cursor <
-				   portable_base_addr + (inPixMap.height *
-										 portable_row_size));
+			WX_RAW24_ASSERT_WITHIN_LIMITS(dst_limits, dst_cursor);
+			ASSERT(src_cursor >= src_base_addr);
+			ASSERT(src_cursor <
+				   src_base_addr + (inPixMap.height * src_row_size));
 			
-			// Draw a single pixel, very slowly.
-			GraphicsTools::Color new_color = *portable_cursor;
-			wxColour color;
-			dc.GetPixel(inPoint.x + x, inPoint.y + y, &color);
-			unsigned char red = color.Red();
-			unsigned char green = color.Green();
-			unsigned char blue = color.Blue();
-			red = AlphaBlendChannel(red, new_color.red, new_color.alpha);
-			green = AlphaBlendChannel(green, new_color.green,
-									  new_color.alpha);
-			blue = AlphaBlendChannel(blue, new_color.blue,
-									 new_color.alpha);
+			// Draw a single pixel.
+			GraphicsTools::Color new_color = *src_cursor;
+			WX_RAW24_RED(dst_cursor) =
+				AlphaBlendChannel(WX_RAW24_RED(dst_cursor),
+								  new_color.red, new_color.alpha);
+			WX_RAW24_GREEN(dst_cursor) =
+				AlphaBlendChannel(WX_RAW24_GREEN(dst_cursor),
+								  new_color.green, new_color.alpha);
+			WX_RAW24_BLUE(dst_cursor) =
+				AlphaBlendChannel(WX_RAW24_BLUE(dst_cursor),
+								  new_color.blue, new_color.alpha);
 
-			// XXX - Probably the world's worst blit routine.
-			pen.SetColour(red, green, blue);
-			dc.SetPen(pen);
-			dc.DrawPoint(inPoint.x + x, inPoint.y + y);
-			portable_cursor++;
+			WX_RAW24_OFFSET_X(dst_cursor, 1);
+			src_cursor++;
 		}
-		portable_row_start += portable_row_size;
+
+		WX_RAW24_OFFSET_Y(dst_row_start, dst_row_size, 1);
+		src_row_start += src_row_size;
 	}
 }
 
 void Stage::DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
                        bool inTransparent)
 {
-    wxMemoryDC dc;
+    wxRawBitmapDC dc;
     dc.SelectObject(mOffscreenPixmap);
     dc.DrawBitmap(inBitmap, inX, inY, inTransparent);
     InvalidateRect(wxRect(inX, inY,

@@ -5,8 +5,11 @@
 
 #include <deque>
 
+#include <wx/rawbtmp.h>
+
 #include "GraphicsTools.h"
 #include "AppGlobals.h"
+
 
 class Stage;
 class Element;
@@ -137,7 +140,7 @@ class Stage : public wxWindow, public GraphicsTools::Image
     // The StageFrame associated with the stage.  We need to poke at it
     // occassionally to implement various features.
     //
-    wxBitmap mOffscreenPixmap;
+    wxRawBitmap mOffscreenPixmap;
 
 	//////////
 	// Our text-entry control.  Will not be visible unless the user

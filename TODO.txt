@@ -7,14 +7,17 @@ Short Term
 /     Move DC-creation code into wxRawBitmapDC
 /     Handle SelectObject properly
 /     Write code to test drawing functions
-/   Minor cleanups
+    Minor cleanups
 /     Fix misspelling of "licence"->"license" in header block
 /     Change copyright dates to include 2003
 /     Add WXDLLEXPORT in front of forward class declarations
+      Rename 'Stride' to 'Pitch'?
     Integrate into engine
-      Integrate into Win32 engine
+/     Integrate into Win32 engine
       Integrate into Linux engine?
-   
+
+    New PNG loader
+    
 Long Term
 ---------
 
