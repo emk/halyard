@@ -22,6 +22,9 @@ BEGIN_NAMESPACE_FIVEL
 
 TWin5LInterpreter::TWin5LInterpreter(const TString &inStartScript)
 {
+	// Install our callback creator.
+	TStream::SetCallbackMaker(&TWin5LCallback::MakeCallback);
+
 	// Register our top-level forms.
 	TParser::RegisterIndexManager("card", &gCardManager);
 	TParser::RegisterIndexManager("macrodef", &gMacroManager);
@@ -121,45 +124,22 @@ void TWin5LInterpreter::ReloadScript(const char *inGotoCardName)
 
 
 //=========================================================================
-// TWin5LCardCallback Methods
+// TWin5LCallback Methods
 //=========================================================================
 
-void TWin5LCardCallback::Run()
-{
-	gCardManager.JumpToCardByName(mCardName);
-}
-
-
-//=========================================================================
-// TWin5LTouchZoneCallback Methods
-//=========================================================================
-
-TWin5LTouchZoneCallback::TWin5LTouchZoneCallback(const TString &inCommand)
-	: mHaveSetCommand(false),
-	  mRegularCommand(inCommand)
+TWin5LCallback::TWin5LCallback(const TString &inCommand)
+	: mCommand(inCommand)
 {
 	// Nothing else to do.
 }
 
-TWin5LTouchZoneCallback::TWin5LTouchZoneCallback(const TString &inSetCommand,
-												 const TString &inCommand)
-	: mHaveSetCommand(true),
-	  mSetCommand(inSetCommand),
-	  mRegularCommand(inCommand)
+void TWin5LCallback::Run()
 {
-	// Nothing else to do.	
+	gDebugLog.Log("Callback run: command <%s>", mCommand.GetString());
+    gCardManager.OneCommand(mCommand);
 }
 
-void TWin5LTouchZoneCallback::Run()
+TCallback *TWin5LCallback::MakeCallback(const TString &inCmd)
 {
-	if (mHaveSetCommand)
-    {
-		gDebugLog.Log("TouchZone hit: set command <%s>",
-					  mSetCommand.GetString());
-    	gCardManager.OneCommand(mSetCommand);
-    }
-    
-	gDebugLog.Log("TouchZone hit: regular command <%s>",
-				  mRegularCommand.GetString());
-    gCardManager.OneCommand(mRegularCommand);
+	return new TWin5LCallback(inCmd);
 }

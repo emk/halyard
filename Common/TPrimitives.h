@@ -99,16 +99,13 @@ protected:
 	// is allocated on the heap, and must be destroyed by the
 	// caller (typically the primitive function) using delete.
 	//
-	virtual TCallback *GetCallbackArg() { /* XXX - Implement */ return NULL; }
+	virtual TCallback *GetCallbackArg() = 0;
 
 public:
 	//////////
 	// Are there any more arguments left?
 	//
 	virtual bool HasMoreArguments() = 0;
-
-	// TODO - We'll need several functions to query the type of
-	// the next argument.
 
 	// These functions provide handy wrapper functions
 	// for the protected Get* functions above.

@@ -46,6 +46,9 @@ const char P_CLOSE = ')';
 const char SLASH = '\\';
 const char COMMENT = '#';       //Changed MAR 31
 
+// Initialize our static variable.
+TStream::CallbackMakerFunc TStream::s_CallbackMaker = NULL;
+
 
 /************************
 
@@ -580,6 +583,17 @@ GraphicsTools::Color TStream::GetColorArg()
 								(hex >> 16) & 0xFF,
 								(hex >> 8) & 0xFF,
 								hex & 0xFF);
+}
+
+TCallback *TStream::GetCallbackArg()
+{
+	// Get our code, and put back the parens removed by the parser.
+	TString code;
+	*this >> code;
+	code = TString("(") + code + TString(")");
+
+	// Create and return a callback object.
+	return MakeCallback(code);
 }
 
 //  Tests to see if a character is escaped, given position of character
