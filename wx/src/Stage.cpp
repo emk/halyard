@@ -25,6 +25,7 @@
 #include "ImageCache.h"
 #include "CursorManager.h"
 #include "Transition.h"
+#include "DrawingArea.h"
 
 #if CONFIG_HAVE_QUAKE2
 #	include "Quake2Engine.h"
@@ -72,7 +73,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 												   24));
 
     SetBackgroundColour(STAGE_COLOR);
-    ClearStage(*wxBLACK);
+    GetDrawingArea()->Clear(*wxBLACK);
     
 	mLastIdleEvent = ::wxGetLocalTimeMillis();
 	mEventDispatcher = new EventDispatcher();
@@ -98,6 +99,10 @@ Stage::~Stage()
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
 
+wxBitmap &Stage::GetOffscreenPixmap() {
+	return mOffscreenDrawingArea->GetPixmap();
+}
+
 bool Stage::IsScriptInitialized()
 {
 	// Assume that the script is properly initialized as soon as it has
@@ -117,7 +122,7 @@ void Stage::SetEditMode(bool inWantEditMode)
 		// this will mean auditing the engine code to only call
 		// CurCardName, etc., only when there is a current card.
 		NotifyExitCard();
-		ClearStage(*wxBLACK);
+		GetDrawingArea()->Clear(*wxBLACK);
 	}
 	else
 	{
@@ -560,59 +565,6 @@ void Stage::InvalidateRect(const wxRect &inRect)
 			   inRect.x, inRect.y,
 			   inRect.x + inRect.width, inRect.y + inRect.height);
     Refresh(FALSE, &inRect);
-}
-
-wxColour Stage::GetColor(const GraphicsTools::Color &inColor)
-{
-    if (inColor.alpha)
-        gDebugLog.Caution("Removing alpha channel from color");
-    return wxColour(inColor.red, inColor.green, inColor.blue);
-}
-
-void Stage::ClearStage(const wxColor &inColor)
-{
-    mOffscreenDrawingArea->Clear(inColor);
-}
-
-void Stage::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
-					 const wxColour &inColor, int inWidth)
-{
-	mOffscreenDrawingArea->DrawLine(inFrom, inTo, inColor, inWidth);
-}
-
-void Stage::FillBox(const wxRect &inBounds, 
-					const GraphicsTools::Color &inColor)
-{
-	mOffscreenDrawingArea->FillBox(inBounds, inColor);
-}
-
-void Stage::OutlineBox(const wxRect &inBounds, const wxColour &inColor,
-					   int inWidth)
-{
-	mOffscreenDrawingArea->OutlineBox(inBounds, inColor, inWidth);
-}
-
-void Stage::DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
-                       bool inTransparent)
-{
-	mOffscreenDrawingArea->DrawBitmap(inBitmap, inX, inY, inTransparent);
-}
-
-void Stage::DrawPixMap(GraphicsTools::Point inPoint,
-					   GraphicsTools::PixMap &inPixMap)
-{
-	mOffscreenDrawingArea->DrawPixMap(inPoint, inPixMap);
-}
-
-void Stage::FillBoxAlpha(const wxRect &inBounds, 
-						 const GraphicsTools::Color &inColor)
-{
-	mOffscreenDrawingArea->FillBoxAlpha(inBounds, inColor);
-}
-
-void Stage::DrawDCContents(wxDC &inDC)
-{
-	mOffscreenDrawingArea->DrawDCContents(inDC);
 }
 
 void Stage::SaveGraphics(const wxRect &inBounds)

@@ -3,6 +3,7 @@
 #include "TamaleHeaders.h"
 #include "DrawingArea.h"
 #include "Stage.h"
+#include "CommonWxConv.h"
 
 void DrawingArea::InvalidateStage() {
     mStage->InvalidateStage();
@@ -37,7 +38,7 @@ void DrawingArea::FillBox(const wxRect &inBounds,
 {
 	if (inColor.alpha == 0x00)
 	{
-		wxColor color = mStage->GetColor(inColor);
+		wxColor color = GraphicsToolsToWxColor(inColor);
 		wxMemoryDC dc;
 		dc.SelectObject(GetPixmap());
 		wxBrush brush(color, wxSOLID);

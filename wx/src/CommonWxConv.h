@@ -9,5 +9,5 @@ wxPoint TToWxPoint(const TPoint &inPoint);
 TPoint WxToTPoint(const wxPoint &inPoint);
 wxPoint GetPos(const TRect &inRect);
 wxSize GetSize(const TRect &inRect);
-wxColour GraphicsToolsToWxColor(GraphicsTools::Color inColor);
+wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor);
 

@@ -23,7 +23,7 @@ class DrawingArea : public GraphicsTools::Image {
 
 public:
     DrawingArea(Stage *inStage, int inWidth, int inHeight, int inDepth)
-	: mStage(inStage), mPixmap(inWidth, inHeight, inDepth) { }
+		: mStage(inStage), mPixmap(inWidth, inHeight, inDepth) { }
 
     wxBitmap &GetPixmap() { return mPixmap; }
 

@@ -7,6 +7,7 @@
 #include "Quake2Engine.h"
 #include "FileSystem.h"
 #include "TPrimitives.h"
+#include "DrawingArea.h"
 
 using FileSystem::GetBaseDirectory;
 
@@ -47,7 +48,7 @@ bool Quake2Engine::Show(bool show)
 		// Attempt to save our displayed graphics back into our Stage's
 		// offscreen buffer.
 		wxClientDC client_dc(this);
-		wxGetApp().GetStage()->DrawDCContents(client_dc);
+		wxGetApp().GetStage()->GetDrawingArea()->DrawDCContents(client_dc);
 	}
 
 	// Pass the request along to our parent.

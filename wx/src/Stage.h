@@ -4,7 +4,6 @@
 #define Stage_H
 
 #include "AppGlobals.h"
-#include "DrawingArea.h"
 
 class StageFrame;
 class Element;
@@ -13,8 +12,9 @@ class EventDispatcher;
 class ImageCache;
 class CursorManager;
 class TransitionManager;
+class DrawingArea;
 
-class Stage : public wxWindow, public GraphicsTools::Image
+class Stage : public wxWindow
 {
 	//////////
 	// A list of Elements.
@@ -141,8 +141,7 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	// TODO - Remove this method eventually and send all requests
 	// directly to mOffscreenDrawingArea.
 	//
-	wxBitmap &GetOffscreenPixmap()
-		{ return mOffscreenDrawingArea->GetPixmap(); }
+	wxBitmap &GetOffscreenPixmap();
 
 	//////////
 	// Validate the entire stage--i.e., mark it as having been redrawn.
@@ -388,11 +387,6 @@ public:
 		{ InvalidateStage(); mIsDisplayingBorders = !mIsDisplayingBorders; }
 
 	//////////
-	// Handy conversion operator to transform 5L colors into wxWindows colors.
-	//
-	wxColor GetColor(const GraphicsTools::Color &inColor);
-
-	//////////
 	// Invalidate the entire stage.
 	//
 	void InvalidateStage();
@@ -402,70 +396,10 @@ public:
 	//
 	void InvalidateRect(const wxRect &inRect);
 
-	// XXX - Remove drawing methods ASAP.
-
-    //////////
-    // Clear the stage to the specified color.
-    //
-    void ClearStage(const wxColor &inColor);
-
 	//////////
-	// Draw a line in the specified color.
+	// Get the drawing area for this stage.
 	//
-	void DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
-				  const wxColour &inColor, int inWidth);
-
-	//////////
-	// Fill in the specified box with the specified color.
-	//
-	void FillBox(const wxRect &inBounds, 
-				 const GraphicsTools::Color &inColor);
-
-	//////////
-	// An optimized version of fill box for the case when the color
-	// has a non-opaque alpha channel. Needs to be a separate function
-	// so it can be in a separate, optimized file.
-	//
-	void FillBoxAlpha(const wxRect &inBounds,
-					  const GraphicsTools::Color &inColor);
-
-	//////////
-	// Fill in the specified box with the specified color.
-	//
-	void OutlineBox(const wxRect &inBounds, const wxColour &inColor,
-					int inWidth);
-
-	//////////
-	// Draw a portable PixMap to the screen, blending alpha
-	// values appropriately.
-	//
-	// [in] inPoint - The location at which to draw the pixmap.
-	// [in] inPixMap - The pixmap to draw.
-	//
-	void		DrawPixMap(GraphicsTools::Point inPoint,
-						   GraphicsTools::PixMap &inPixMap);
-
-    //////////
-    // Draw a bitmap on the stage at the specified location.
-	//
-	// [in] inBitmap - The bitmap to draw.
-	// [in] inX - The X coordinate to draw it at.
-	// [in] inY - The Y coordinate to draw it at.
-	// [in_optional] inTransparent - Should we honor transparency information
-	//                               in the bitmap?
-    //
-    void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
-					bool inTransparent = true);
-
-	//////////
-	// Blit the contents of the specified DC to our offscreen buffer.
-	// If the blit fails, fill the offscreen buffer with black.
-	// (This is currently used for synchronizing our display with
-	// whatever Quake 2 left on the screen.)
-	// 
-	// [in] inDC - a DC the same size as the stage
-	//
-	void DrawDCContents(wxDC &inDC);
+	DrawingArea *GetDrawingArea() { return mOffscreenDrawingArea.get(); }
 
 	//////////
 	// Save a portion of the current offscreen buffer to our save

@@ -33,10 +33,11 @@ wxSize GetSize(const TRect &inRect)
 				  1 + inRect.Bottom() - inRect.Top());
 }
 
-wxColour GraphicsToolsToWxColor(GraphicsTools::Color inColor)
+wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor)
 {
-	// Translate a color using the official translator function.
-	return wxGetApp().GetStage()->GetColor(inColor);
+    if (inColor.alpha)
+        gDebugLog.Caution("Removing alpha channel from color");
+    return wxColour(inColor.red, inColor.green, inColor.blue);
 }
 
 

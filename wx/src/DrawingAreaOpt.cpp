@@ -3,7 +3,7 @@
 #include "TamaleHeaders.h"
 #include <wx/rawbmp.h>
 
-#include "Stage.h"
+#include "DrawingArea.h"
 
 void DrawingArea::DrawPixMap(GraphicsTools::Point inPoint,
 							 GraphicsTools::PixMap &inPixMap)

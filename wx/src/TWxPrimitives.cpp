@@ -14,6 +14,7 @@
 #include "TStyleSheet.h"
 #include "FiveLApp.h"
 #include "Stage.h"
+#include "DrawingArea.h"
 #include "Zone.h"
 #include "MediaElement.h"
 #include "MovieElement.h"
@@ -101,6 +102,10 @@ void FIVEL_NS RegisterWxPrimitives()
 			                "The element is not of type " #TYPE); \
 		return; \
 	}
+
+static DrawingArea *GetDrawingArea() {
+	return wxGetApp().GetStage()->GetDrawingArea();
+}
  
 
 //=========================================================================
@@ -175,7 +180,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxFill)
 	Color color;
 
 	inArgs >> bounds >> color;
-	wxGetApp().GetStage()->FillBox(TToWxRect(bounds), color);
+	GetDrawingArea()->FillBox(TToWxRect(bounds), color);
 }
 
 DEFINE_5L_PRIMITIVE(DrawBoxOutline)
@@ -185,7 +190,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxOutline)
 	int32 width;
 
 	inArgs >> bounds >> color >> width;
-	wxGetApp().GetStage()->OutlineBox(TToWxRect(bounds), 
+	GetDrawingArea()->OutlineBox(TToWxRect(bounds), 
 									  GraphicsToolsToWxColor(color),
 									  width);
 
@@ -198,7 +203,7 @@ DEFINE_5L_PRIMITIVE(DrawLine)
 	int32 width;
 
 	inArgs >> from >> to >> color >> width;
-	wxGetApp().GetStage()->DrawLine(TToWxPoint(from), TToWxPoint(to),
+	GetDrawingArea()->DrawLine(TToWxPoint(from), TToWxPoint(to),
 									GraphicsToolsToWxColor(color), width);
 
 }
@@ -319,7 +324,7 @@ static void load_picture(const std::string &inName, TPoint inLoc,
 	}
 
 	// Draw our bitmap.
-	wxGetApp().GetStage()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y());
+	GetDrawingArea()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y());
 
 	// Update our special variables.
 	// XXX - TRect constructor uses height/width order!  Ayiee!
@@ -539,7 +544,7 @@ DEFINE_5L_PRIMITIVE(Screen)
 {
     Color color;
     inArgs >> color; 
-	wxGetApp().GetStage()->ClearStage(GraphicsToolsToWxColor(color));
+	GetDrawingArea()->Clear(GraphicsToolsToWxColor(color));
 }
 
 DEFINE_5L_PRIMITIVE(SetImageCacheSize)
@@ -571,7 +576,7 @@ DEFINE_5L_PRIMITIVE(TextAA)
 							GraphicsTools::Point(bounds.Left(),
 												 bounds.Top()),
 							bounds.Right() - bounds.Left(),
-							wxGetApp().GetStage());
+							GetDrawingArea());
 }
 
 /*-----------------------------------------------------------
