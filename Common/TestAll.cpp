@@ -138,14 +138,20 @@ static void run_testcase_tests() {
 
 /// This is needed on Windows NT, 2000, etc., when running under Visual
 /// Studio.
-void prompt_done() {
-    std::cerr << "Press enter to continue.";
-    char c;
-    std::cin >> std::noskipws >> c;
+void prompt_done(bool should_wait) {
+	if (should_wait) {
+		std::cerr << "Press enter to continue.";
+		char c;
+		std::cin >> std::noskipws >> c;
+	}
 }
 
 int main(int argc, char **argv) {
 	FIVEL_SET_STACK_BASE();
+
+	bool should_wait = false;
+	if (argc == 2 && std::string(argv[1]) == "--wait")
+		should_wait = true;
 
 	try {
 		FIVEL_NS InitializeCommonCode();
@@ -155,15 +161,15 @@ int main(int argc, char **argv) {
 		run_testcase_tests();
 	} catch (std::exception &error) {
 		std::cerr << std::endl << "Exception: " << error.what() << std::endl;
-        prompt_done();
+        prompt_done(should_wait);
 		return 1;
 	} catch (...) {
 		std::cerr << std::endl << "An unknown exception occurred!"
 				  << std::endl;
-        prompt_done();
+        prompt_done(should_wait);
 		return 1;
 	}
 
-    prompt_done();
+    prompt_done(should_wait);
 	return 0;
 }
