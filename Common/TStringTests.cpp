@@ -45,72 +45,26 @@ void test_TString (void)
 	TEST(TString("barrel", 4) == "barr");
 
 	// Test comparison operators.
-	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
-		if (p->order == 0) {
-			TEST(TString(p->str1) == TString(p->str2));
-			TEST(TString(p->str1) == p->str2);
-			TEST(p->str1 == TString(p->str2));
-		} else {
-			TEST(!(TString(p->str1) == TString(p->str2)));
-			TEST(!(TString(p->str1) == p->str2));
-			TEST(!(p->str1 == TString(p->str2)));
-		}
-	}
-	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
-		if (p->order != 0) {
-			TEST(TString(p->str1) != TString(p->str2));
-			TEST(TString(p->str1) != p->str2);
-			TEST(p->str1 != TString(p->str2));
-		} else {
-			TEST(!(TString(p->str1) != TString(p->str2)));
-			TEST(!(TString(p->str1) != p->str2));
-			TEST(!(p->str1 != TString(p->str2)));
-		}
-	}
-	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
-		if (p->order < 0) {
-			TEST(TString(p->str1) < TString(p->str2));
-			TEST(TString(p->str1) < p->str2);
-			TEST(p->str1 < TString(p->str2));
-		} else {
-			TEST(!(TString(p->str1) < TString(p->str2)));
-			TEST(!(TString(p->str1) < p->str2));
-			TEST(!(p->str1 < TString(p->str2)));
-		}
-	}
-	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
-		if (p->order > 0) {
-			TEST(TString(p->str1) > TString(p->str2));
-			TEST(TString(p->str1) > p->str2);
-			TEST(p->str1 > TString(p->str2));
-		} else {
-			TEST(!(TString(p->str1) > TString(p->str2)));
-			TEST(!(TString(p->str1) > p->str2));
-			TEST(!(p->str1 > TString(p->str2)));
-		}
-	}
-	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
-		if (p->order <= 0) {
-			TEST(TString(p->str1) <= TString(p->str2));
-			TEST(TString(p->str1) <= p->str2);
-			TEST(p->str1 <= TString(p->str2));
-		} else {
-			TEST(!(TString(p->str1) <= TString(p->str2)));
-			TEST(!(TString(p->str1) <= p->str2));
-			TEST(!(p->str1 <= TString(p->str2)));
-		}
-	}
-	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
-		if (p->order >= 0) {
-			TEST(TString(p->str1) >= TString(p->str2));
-			TEST(TString(p->str1) >= p->str2);
-			TEST(p->str1 >= TString(p->str2));
-		} else {
-			TEST(!(TString(p->str1) >= TString(p->str2)));
-			TEST(!(TString(p->str1) >= p->str2));
-			TEST(!(p->str1 >= TString(p->str2)));
-		}
-	}
+#define TEST_CMP_OPERATOR(OP) \
+	do { \
+		for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) { \
+			if (p->order OP 0) { \
+				TEST(TString(p->str1) OP TString(p->str2)); \
+				TEST(TString(p->str1) OP p->str2); \
+				TEST(p->str1 OP TString(p->str2)); \
+			} else { \
+				TEST(!(TString(p->str1) OP TString(p->str2))); \
+				TEST(!(TString(p->str1) OP p->str2)); \
+				TEST(!(p->str1 OP TString(p->str2))); \
+			} \
+		} \
+	} while (0)  
+	TEST_CMP_OPERATOR(==);
+	TEST_CMP_OPERATOR(!=);
+	TEST_CMP_OPERATOR(<);
+	TEST_CMP_OPERATOR(>);
+	TEST_CMP_OPERATOR(<=);
+	TEST_CMP_OPERATOR(>=);
 
 	// Test conversions from integers to strings.
 	// The large values below are the maximum and minimum values

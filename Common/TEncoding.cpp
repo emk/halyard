@@ -41,7 +41,7 @@ USING_NAMESPACE_FIVEL
 
 static const int kMaxEncodedCharLength = 10;
 
-struct FiveL::EntityMapping {
+struct FIVEL_NS EntityMapping {
     char *name;
     char encoded[kMaxEncodedCharLength];
 };
@@ -52,6 +52,11 @@ struct FiveL::EntityMapping {
     {"apos", "'"}, \
     {"hyphen", "-"}, \
     {"period", "."}
+
+// This macro wraps a single-byte string constant in all the grik required
+// by each of the compilers we support.  The silly '(char)' is there to
+// turn off some MSVC++ warnings.
+#define BYTE_1(byte) {(char) (byte), (char) 0x00}
 
 static EntityMapping IsoLatin1EntityMapping[] = {
     STANDARD_ASCII_ENTITIES,
@@ -65,18 +70,18 @@ static EntityMapping IsoLatin1EntityMapping[] = {
     {"hellip", "..."},
 
     // Common Script Entities
-    {"copy",   {0xA9, 0x00}},
-    {"reg",    {0xAE, 0x00}},
+    {"copy",   BYTE_1(0xA9)},
+    {"reg",    BYTE_1(0xAE)},
     {"trade",  "<TM>"},
     {"bull",   "*"},
-    {"sect",   {0xA7, 0x00}},
+    {"sect",   BYTE_1(0xA7)},
     {"ndash",  "-"},
     {"dagger", "<t>"},
-    {"micro",  {0xB5, 0x00}},
-    {"para",   {0xB6, 0x00}},
-    {"eacute", {0xE9, 0x00}},
-    {"Ccedil", {0xC7, 0x00}},
-    {"ccedil", {0xE7, 0x00}},
+    {"micro",  BYTE_1(0xB5)},
+    {"para",   BYTE_1(0xB6)},
+    {"eacute", BYTE_1(0xE9)},
+    {"Ccedil", BYTE_1(0xC7)},
+    {"ccedil", BYTE_1(0xE7)},
     
     {NULL}
 };
@@ -85,26 +90,26 @@ static EntityMapping Windows1252EntityMapping[] = {
     STANDARD_ASCII_ENTITIES,
 
     // Internally-Referenced Entities
-    {"mdash",  {0x97, 0x00}},
-    {"lsquo",  {0x91, 0x00}},
-    {"rsquo",  {0x92, 0x00}},
-    {"ldquo",  {0x93, 0x00}},
-    {"rdquo",  {0x94, 0x00}},
-    {"hellip", {0x85, 0x00}},
+    {"mdash",  BYTE_1(0x97)},
+    {"lsquo",  BYTE_1(0x91)},
+    {"rsquo",  BYTE_1(0x92)},
+    {"ldquo",  BYTE_1(0x93)},
+    {"rdquo",  BYTE_1(0x94)},
+    {"hellip", BYTE_1(0x85)},
 
     // Common Script Entities
-    {"copy",   {0xA9, 0x00}},
-    {"reg",    {0xAE, 0x00}},
-    {"trade",  {0x99, 0x00}},
-    {"bull",   {0x95, 0x00}},
-    {"sect",   {0xA7, 0x00}},
-    {"ndash",  {0x96, 0x00}},
-    {"dagger", {0x86, 0x00}},
-    {"micro",  {0xB5, 0x00}},
-    {"para",   {0xB6, 0x00}},
-    {"eacute", {0xE9, 0x00}},
-    {"Ccedil", {0xC7, 0x00}},
-    {"ccedil", {0xE7, 0x00}},
+    {"copy",   BYTE_1(0xA9)},
+    {"reg",    BYTE_1(0xAE)},
+    {"trade",  BYTE_1(0x99)},
+    {"bull",   BYTE_1(0x95)},
+    {"sect",   BYTE_1(0xA7)},
+    {"ndash",  BYTE_1(0x96)},
+    {"dagger", BYTE_1(0x86)},
+    {"micro",  BYTE_1(0xB5)},
+    {"para",   BYTE_1(0xB6)},
+    {"eacute", BYTE_1(0xE9)},
+    {"Ccedil", BYTE_1(0xC7)},
+    {"ccedil", BYTE_1(0xE7)},
 
     {NULL}
 };
@@ -113,26 +118,26 @@ static EntityMapping MacintoshEntityMapping[] = {
     STANDARD_ASCII_ENTITIES,
 
     // Internally-Referenced Entities
-    {"mdash",  {0xD1, 0x00}},
-    {"lsquo",  {0xD4, 0x00}},
-    {"rsquo",  {0xD5, 0x00}},
-    {"ldquo",  {0xD2, 0x00}},
-    {"rdquo",  {0xD3, 0x00}},
-    {"hellip", {0xC9, 0x00}},
+    {"mdash",  BYTE_1(0xD1)},
+    {"lsquo",  BYTE_1(0xD4)},
+    {"rsquo",  BYTE_1(0xD5)},
+    {"ldquo",  BYTE_1(0xD2)},
+    {"rdquo",  BYTE_1(0xD3)},
+    {"hellip", BYTE_1(0xC9)},
 
     // Common Script Entities
-    {"copy",   {0xA9, 0x00}},
-    {"reg",    {0xA8, 0x00}},
-    {"trade",  {0xAA, 0x00}},
-    {"bull",   {0xA5, 0x00}},
-    {"sect",   {0xA4, 0x00}},
-    {"ndash",  {0xD0, 0x00}},
-    {"dagger", {0xA0, 0x00}},
-    {"micro",  {0xB5, 0x00}},
-    {"para",   {0xA6, 0x00}},
-    {"eacute", {0x8E, 0x00}},
-    {"Ccedil", {0x82, 0x00}},
-    {"ccedil", {0x8D, 0x00}},
+    {"copy",   BYTE_1(0xA9)},
+    {"reg",    BYTE_1(0xA8)},
+    {"trade",  BYTE_1(0xAA)},
+    {"bull",   BYTE_1(0xA5)},
+    {"sect",   BYTE_1(0xA4)},
+    {"ndash",  BYTE_1(0xD0)},
+    {"dagger", BYTE_1(0xA0)},
+    {"micro",  BYTE_1(0xB5)},
+    {"para",   BYTE_1(0xA6)},
+    {"eacute", BYTE_1(0x8E)},
+    {"Ccedil", BYTE_1(0x82)},
+    {"ccedil", BYTE_1(0x8D)},
 
     {NULL}
 };
@@ -175,8 +180,8 @@ TString TEncoding::FixSpecials (const TString& inString) const
     TString result;
 
     // Iterate through the string.
-    int input_length = inString.Length();
-    for (int i = 0; i < input_length; i++)
+    uint32 input_length = inString.Length();
+    for (uint32 i = 0; i < input_length; i++)
     {
 		char current = inString[i];
 		if (current == '-' && i+1 < input_length && inString[i+1] == '-')
@@ -208,8 +213,8 @@ TString TEncoding::FixQuotes (const TString& inString) const
     bool want_left = true;
 	
     // Iterate through the string.
-    int input_length = inString.Length();
-    for (int i = 0; i < input_length; i++)
+    uint32 input_length = inString.Length();
+    for (uint32 i = 0; i < input_length; i++)
     {
 		char current = inString[i];
 		if (current == '\'')
@@ -247,8 +252,8 @@ TString TEncoding::EncodeEntities (const TString& inString) const
     TString result;
 
     // Iterate through the string.
-    int input_length = inString.Length();
-    for (int i = 0; i < input_length; i++)
+    uint32 input_length = inString.Length();
+    for (uint32 i = 0; i < input_length; i++)
     {
 		char current = inString[i];
 		if (current == '&')

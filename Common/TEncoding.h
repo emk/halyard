@@ -57,7 +57,7 @@ public:
 	// [in] inBadPos - the 0-based character position of the error
 	// [in] inErrMsg - a message explaining what is wrong
 	typedef void (*ErrorLoggingFunc) (const char *inBadString,
-									  int inBadPos,
+									  size_t inBadPos,
 									  const char *inErrMsg);
 
 private:

@@ -8,6 +8,7 @@
 
 USING_NAMESPACE_FIVEL
 
+
 //=========================================================================
 //  Test Data
 //=========================================================================
@@ -26,6 +27,11 @@ typedef struct {
     char output[kEncodingCount][kMaxEncodedCharLength];
 } EncodingTest;
 
+// This macro wraps a single-byte string constant in all the grik required
+// by each of the compilers we support.  The silly '(char)' is there to
+// turn off some MSVC++ warnings.
+#define BYTE_1(byte) {(char) (byte), (char) 0x00}
+
 static EncodingTest encoding_tests[] = {
 
     // ASCII Entities
@@ -36,26 +42,26 @@ static EncodingTest encoding_tests[] = {
     {"&period;", {".", ".", "."}},
 
     // Internally-Referenced Entities
-    {"&mdash;",  {"--",         {0x97, 0x00}, {0xD1, 0x00}}},
-    {"&lsquo;",  {"`",          {0x91, 0x00}, {0xD4, 0x00}}},
-    {"&rsquo;",  {"'",          {0x92, 0x00}, {0xD5, 0x00}}},
-    {"&ldquo;",  {"\"",         {0x93, 0x00}, {0xD2, 0x00}}},
-    {"&rdquo;",  {"\"",         {0x94, 0x00}, {0xD3, 0x00}}},
-    {"&hellip;", {"...",        {0x85, 0x00}, {0xC9, 0x00}}}, // TODO - "..."
+    {"&mdash;",  {"--",         BYTE_1(0x97), BYTE_1(0xD1)}},
+    {"&lsquo;",  {"`",          BYTE_1(0x91), BYTE_1(0xD4)}},
+    {"&rsquo;",  {"'",          BYTE_1(0x92), BYTE_1(0xD5)}},
+    {"&ldquo;",  {"\"",         BYTE_1(0x93), BYTE_1(0xD2)}},
+    {"&rdquo;",  {"\"",         BYTE_1(0x94), BYTE_1(0xD3)}},
+    {"&hellip;", {"...",        BYTE_1(0x85), BYTE_1(0xC9)}},
 
     // Common Script Entities
-    {"&copy;",   {{0xA9, 0x00}, {0xA9, 0x00}, {0xA9, 0x00}}},
-    {"&reg;",    {{0xAE, 0x00}, {0xAE, 0x00}, {0xA8, 0x00}}},
-    {"&trade;",  {"<TM>",       {0x99, 0x00}, {0xAA, 0x00}}},
-    {"&bull;",   {"*",          {0x95, 0x00}, {0xA5, 0x00}}},
-    {"&sect;",   {{0xA7, 0x00}, {0xA7, 0x00}, {0xA4, 0x00}}},
-    {"&ndash;",  {"-",          {0x96, 0x00}, {0xD0, 0x00}}},
-    {"&dagger;", {"<t>",        {0x86, 0x00}, {0xA0, 0x00}}},
-    {"&micro;",  {{0xB5, 0x00}, {0xB5, 0x00}, {0xB5, 0x00}}},
-    {"&para;",   {{0xB6, 0x00}, {0xB6, 0x00}, {0xA6, 0x00}}},
-    {"&eacute;", {{0xE9, 0x00}, {0xE9, 0x00}, {0x8E, 0x00}}},
-    {"&Ccedil;", {{0xC7, 0x00}, {0xC7, 0x00}, {0x82, 0x00}}},
-    {"&ccedil;", {{0xE7, 0x00}, {0xE7, 0x00}, {0x8D, 0x00}}},
+    {"&copy;",   {BYTE_1(0xA9), BYTE_1(0xA9), BYTE_1(0xA9)}},
+    {"&reg;",    {BYTE_1(0xAE), BYTE_1(0xAE), BYTE_1(0xA8)}},
+    {"&trade;",  {"<TM>",       BYTE_1(0x99), BYTE_1(0xAA)}},
+    {"&bull;",   {"*",          BYTE_1(0x95), BYTE_1(0xA5)}},
+    {"&sect;",   {BYTE_1(0xA7), BYTE_1(0xA7), BYTE_1(0xA4)}},
+    {"&ndash;",  {"-",          BYTE_1(0x96), BYTE_1(0xD0)}},
+    {"&dagger;", {"<t>",        BYTE_1(0x86), BYTE_1(0xA0)}},
+    {"&micro;",  {BYTE_1(0xB5), BYTE_1(0xB5), BYTE_1(0xB5)}},
+    {"&para;",   {BYTE_1(0xB6), BYTE_1(0xB6), BYTE_1(0xA6)}},
+    {"&eacute;", {BYTE_1(0xE9), BYTE_1(0xE9), BYTE_1(0x8E)}},
+    {"&Ccedil;", {BYTE_1(0xC7), BYTE_1(0xC7), BYTE_1(0x82)}},
+    {"&ccedil;", {BYTE_1(0xE7), BYTE_1(0xE7), BYTE_1(0x8D)}},
 
     // (We'd like to support 'delta', but windows-1252 doesn't have it.)
 
@@ -69,7 +75,7 @@ static EncodingTest encoding_tests[] = {
 
 // We install this error reporting function when we don't expect errors.
 static void DontWantErrors (const char *inBadString,
-							int inBadPos,
+							size_t inBadPos,
 							const char *inErrMsg)
 {
     // We only run this code if an unexpected error occurs while
@@ -96,7 +102,7 @@ static void TestErrorOccurred (int inAtPos)
 
 // We install this error reporting function when we don't expect errors.
 static void DoWantErrors (const char *inBadString,
-						  int inBadPos,
+						  size_t inBadPos,
 						  const char *inErrMsg)
 {
     TEST(inBadString != NULL);
