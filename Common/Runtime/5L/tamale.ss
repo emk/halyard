@@ -21,7 +21,8 @@
            sine-wave movie 
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
-           current-card-name fade unfade save-graphics restore-graphics)
+           current-card-name fade unfade save-graphics restore-graphics
+           screenshot)
 
   (define (make-path subdir path)
     (apply build-path (current-directory) subdir (regexp-split "/" path)))
@@ -289,4 +290,25 @@
   (define (restore-graphics &key (bounds $screen-rect))
     (call-5l-prim 'restoregraphics bounds))
 
+  (define (three-char-print n)
+    (cond 
+     ((> n 999) "000")
+     ((> n 99) (format "~a" n))
+     ((> n 9) (format "0~a" n))
+     ((> n -1) (format "00~a" n))
+     (else "000")))
+
+  (define (screenshot)
+    (define dir (build-path (current-directory) "Screenshots"))
+    (when (not (directory-exists? dir))
+      (make-directory dir))
+    (call-5l-prim 
+     'screenshot 
+     (let loop ((count 0))
+       (define path (build-path dir (cat (three-char-print count) ".png")))
+       (cond
+        ((= count 1000) path)
+        ((or (file-exists? path) (directory-exists? path))
+         (loop (+ count 1)))
+        (else path)))))
   )

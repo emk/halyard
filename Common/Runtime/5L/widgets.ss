@@ -2,6 +2,7 @@
   (require (lib "tamale.ss" "5L"))
   (require (lib "shapes.ss" "5L"))
   (provide %simple-toggle% %fancy-toggle% %toggle-base% %rect-drawing%
+           %text-box%
            <graphic> make-graphic graphic? draw-graphic
            <picture> make-picture picture? picture-path picture-rect
                      picture-offset
@@ -11,7 +12,8 @@
                           rect-graphic-rect rect-graphic-color 
                           rect-graphic-width
            <null-graphic> make-null-graphic null-graphic?
-           <widget-states> make-widget-states widget-states?)
+           <widget-states> make-widget-states widget-states?
+           element-exists?)
 
 
   ;;; =====================================================================
@@ -95,13 +97,20 @@
       ((insensitibe) (draw-if-defined (widget-states-insensitive states)))
       ((selected) (draw-if-defined (widget-states-selected states)))))
 
+
   ;;; =====================================================================
   ;;; Audio
   ;;; =====================================================================
 
+  ;; TODO - need to find the right place for these to live. 
+
+  (define (element-exists? name)
+    (memq name (map node-name (group-children (current-card)))))
+
   (define (play-audio path &key (loop? #f) (name 'audio))
     (when path
-      (delete-element name)
+      (when (element-exists? name)
+        (delete-element (@-by-name name)))
       (vorbis-audio name path :loop? loop?)))
 
 
@@ -166,15 +175,65 @@
       (when (mouse-grabbed?)
         (ungrab-mouse self)
         (when in?
-          (send self toggle (up-state))
+          (send self toggle 'prelight)
           (refresh)
           (play-audio sound)))))
 
-;;   (define (point->boring-button-rectangle at text)
-;;     (define bounds (move-rect-center-to (measure-text $login-button-style text)
-;;                                         at))
-;;     (inset-rect bounds -5))
-  
+;; TODO - move these elsewhere
+  (define $color-black (color #x00 #x00 #x00))
+  (define $color-white (color #xFF #xFF #xFF))
+  (define $color-paper (color #xE4 #xDD #xD2))
+  (define $color-offwhite (color #xF0 #xF0 #xF0))
+  (define $color-highlight (color #xFF #xD8 #x45))
+  (define-stylesheet $my-base-style
+    :family "Nimbus Roman No9 L"
+    :size 12
+    :flags '()
+    :justification 'left
+    :shadow-offset 0
+    :color $color-white
+    :shadow-color $color-black
+    :highlight-color $color-highlight
+    :highlight-shadow-color $color-black
+    :height-adjustment (percent -20))
+  (define-stylesheet $my-login-style
+    :base $my-base-style
+    :size 16
+    :flags '()
+    :justification 'center
+    :color $color-black
+    :highlight-color (color #xFF #xFF #xCC))
+  (define-stylesheet $my-login-button-style
+    :base $my-login-style
+    :flags '()
+    :justification 'left
+    :size 18)
+
+  (define (point->text-rectangle 
+           at text &key (padding -5) (style $my-login-button-style))
+    (define bounds (move-rect-center-to 
+                     (measure-text style
+                                  text)
+                     at))
+    (inset-rect bounds padding))
+
+  (define-element-template %text-box% 
+      [at text 
+       [color :default (color #xFF #xFF #xFF)]] 
+      (:template %zone% :shape (rect 0 0 0 0))
+    
+    (define my-bounds (point->text-rectangle at text))
+
+    (on draw (style)
+      (draw-box my-bounds color)
+      (draw-text $my-login-button-style (inset-rect my-bounds 5) text))
+    
+    (send self draw 'normal))
+
+;; (define-element-template %horizontal-layout%
+;;     [at children] ()
+;;   (
+
 ;;   (define-element-template %boring-button%
 ;;       [at text action]
 ;;       (:template %zone% :shape (point->boring-button-rectangle at text))
@@ -184,55 +243,70 @@
 ;;     (on mouse-down (event)
 ;;       (action)))
 
-(define (points->rect p1 p2)
-  (rect (min (point-x p1) (point-x p2))
-        (min (point-y p1) (point-y p2))
-        (max (point-x p1) (point-x p2))
-        (max (point-y p1) (point-y p2))))
+;;   (define-element-template %drag-value%
+;;       [
 
-(define-element-template %rect-drawing%
-    [[border :default 2]
-     [rect-width :default 2]] 
-    (:template %zone%)
+  (define (points->rect p1 p2)
+    (rect (min (point-x p1) (point-x p2))
+          (min (point-y p1) (point-y p2))
+          (max (point-x p1) (point-x p2))
+          (max (point-y p1) (point-y p2))))
   
-  (define active-color (color #x00 #xFF #x00))
-  (define drawn-color (color #xFF #x00 #x00))
-  (define my-bounds (bounds (prop self shape)))
-  (define start-point (point 0 0))
-  (define end-point (point 0 0))
-  (save-graphics my-bounds)
-
-  (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
-
-  (on get-end-and-draw (my-color)
-    (let ((pos (mouse-position)))
-      (set! end-point (point (min (max (rect-left my-bounds) 
-                                       (point-x pos))
-                                  (rect-right my-bounds))
-                             (min (max (rect-top my-bounds)
-                                       (point-y pos))
-                                  (rect-bottom my-bounds)))))
-    (restore-graphics my-bounds)
-    (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
-    (draw-box-outline (points->rect start-point end-point) 
-                      my-color rect-width))
-
-  (on mouse-down (event)
-    (grab-mouse self)
-    (set! start-point (event-position event)))
-  (on mouse-up (event)
-    (when (mouse-grabbed?)
-      (ungrab-mouse self)
-      (send self get-end-and-draw drawn-color)))
-  (on idle (event)
-    (when (mouse-grabbed?)
-      (send self get-end-and-draw active-color))))
-
-;;   (define-element-template %selector%
-;;       [choices sound] ()
-
-;;     (define choice-elements 
-;;       (map (fn (x) (create (cdr x))) choices))
+  ;; Note - you shouldn't ever create two of these on the same screen,
+  ;; or use them on screens where it needs to save the background,
+  ;; because there is only one save buffer, so each one will clobber
+  ;; it. 
+  (define-element-template %rect-drawing%
+      [[border :default 2]
+       [rect-width :default 2]] 
+      (:template %zone% :cursor 'cross)
     
-;;     (define selected (car choice-elements))
-)
+    (define active-color (color #x00 #xFF #x00))
+    (define drawn-color (color #xFF #x00 #x00))
+    (define my-bounds (bounds (prop self shape)))
+    (define start-point (point 0 0))
+    (define end-point (point 0 0))
+    (define grabbed-by-me? #f)
+    (save-graphics :bounds my-bounds)
+    
+    (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
+    
+    (on get-end-and-draw (my-color)
+      (let ((pos (mouse-position)))
+        (set! end-point (point (min (max (rect-left my-bounds) 
+                                         (point-x pos))
+                                    (rect-right my-bounds))
+                               (min (max (rect-top my-bounds)
+                                         (point-y pos))
+                                    (rect-bottom my-bounds)))))
+      (restore-graphics :bounds my-bounds)
+      (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
+      (draw-box-outline (points->rect start-point end-point) 
+                        my-color rect-width))
+    
+    (on cleanup ()
+      (restore-graphics :bounds my-bounds))
+    
+    (on mouse-down (event)
+      (grab-mouse self)
+      (set! grabbed-by-me? #t)
+      (set! start-point (event-position event)))
+    (on mouse-up (event)
+      (when (mouse-grabbed?)
+        (ungrab-mouse self)
+        (set! grabbed-by-me? #f)
+        (send self get-end-and-draw drawn-color)))
+    (on idle (event)
+      (when (and (mouse-grabbed?) grabbed-by-me?)
+        (send self get-end-and-draw active-color))))
+
+
+
+  ;;   (define-element-template %selector%
+  ;;       [choices sound] ()
+
+  ;;     (define choice-elements 
+  ;;       (map (fn (x) (create (cdr x))) choices))
+  
+  ;;     (define selected (car choice-elements))
+  )
