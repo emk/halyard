@@ -181,7 +181,7 @@
     (create %simple-zone%
             :name name 
             :shape shape
-            :cursor cursor 
+            :cursor cursor
             :action action
             :overlay? overlay?
             :alpha? alpha?))

@@ -1,8 +1,9 @@
 (module widgets (lib "5L.ss" "5L")
   (require (lib "tamale.ss" "5L"))
   (require (lib "shapes.ss" "5L"))
-  (provide %simple-toggle% %fancy-toggle% %toggle-base% %rect-drawing%
-           %text-box% %slider% getter setter
+  (provide %simple-toggle% %fancy-toggle% %toggle-base%;; %rect-drawing%
+           %text-box% %slider% getter setter %box-overlay% %alpha-box-overlay%
+           %outline-box%
            <graphic> make-graphic graphic? draw-graphic
            <picture> make-picture picture? picture-path picture-rect
                      picture-offset
@@ -310,67 +311,77 @@
           (min (point-y p1) (point-y p2))
           (max (point-x p1) (point-x p2))
           (max (point-y p1) (point-y p2))))
-  
+
+  ;; Deprecated for its use of save and restore graphics.
+  ;; See outline-box as the substitute.
+  ;; Screenshot card template altered to use outline-box.
+
   ;; Note - you shouldn't ever create two of these on the same screen,
   ;; or use them on screens where it needs to save the background,
   ;; because there is only one save buffer, so each one will clobber
   ;; it. 
-  (define-element-template %rect-drawing%
-      [[border :default 2]
-       [rect-width :default 2]] 
-      (%zone% :cursor 'cross)
+
+  ;;(define-element-template %rect-drawing%
+  ;;   [[border :default 2]
+  ;;     [rect-width :default 2]] 
+  ;;    (%zone% :cursor 'cross)
     
-    (define active-color (color #x00 #xFF #x00))
-    (define drawn-color (color #xFF #x00 #x00))
-    (define my-bounds (bounds (prop self shape)))
-    (define start-point (point 0 0))
-    (define end-point (point 0 0))
-    (define grabbed-by-me? #f)
-    (save-graphics :bounds my-bounds)
+  ;;  (define active-color (color #x00 #xFF #x00))
+  ;;  (define drawn-color (color #xFF #x00 #x00))
+  ;;  (define my-bounds (bounds (prop self shape)))
+  ;;  (define start-point (point 0 0))
+  ;;  (define end-point (point 0 0))
+  ;;  (define grabbed-by-me? #f)
+  ;;  (save-graphics :bounds my-bounds)
     
-    (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
+  ;;  (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
     
-    (on get-end-and-draw (my-color event)
-      (let ((pos (event-position event)))
-        (set! end-point (point (clamp (point-x pos) 
-                                      (rect-left my-bounds)
-                                      (rect-right my-bounds))
-                               (clamp (point-y pos)
-                                      (rect-top my-bounds)
-                                      (rect-bottom my-bounds)))))
-      (restore-graphics :bounds my-bounds)
-      (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
-      (draw-box-outline (points->rect start-point end-point) 
-                        my-color rect-width))
+  ;;  (on get-end-and-draw (my-color event)
+  ;;    (let ((pos (event-position event)))
+  ;;      (set! end-point (point (clamp (point-x pos) 
+  ;;                                    (rect-left my-bounds)
+  ;;                                    (rect-right my-bounds))
+  ;;                             (clamp (point-y pos)
+  ;;                                   (rect-top my-bounds)
+  ;;                                    (rect-bottom my-bounds)))))
+  ;;    (restore-graphics :bounds my-bounds)
+  ;;    (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
+  ;;    (draw-box-outline (points->rect start-point end-point) 
+  ;;                      my-color rect-width))
     
-    (on cleanup ()
-      (restore-graphics :bounds my-bounds))
+  ;;  (on cleanup ()
+   ;;   (restore-graphics :bounds my-bounds))
     
-    (on mouse-down (event)
-      (grab-mouse self)
-      (set! grabbed-by-me? #t)
-      (set! start-point (event-position event)))
-    (on mouse-up (event)
-      (when (mouse-grabbed?)
-        (ungrab-mouse self)
-        (set! grabbed-by-me? #f)
-        (send self get-end-and-draw drawn-color event)))
-    (on mouse-moved (event)
-      (when (and (mouse-grabbed?) grabbed-by-me?)
-        (send self get-end-and-draw active-color event))))
+  ;;  (on mouse-down (event)
+   ;;   (grab-mouse self)
+   ;;   (set! grabbed-by-me? #t)
+   ;;   (set! start-point (event-position event)))
+  ;;  (on mouse-up (event)
+    ;;  (when (mouse-grabbed?)
+    ;;    (ungrab-mouse self)
+    ;;    (set! grabbed-by-me? #f)
+    ;;    (send self get-end-and-draw drawn-color event)))
+   ;; (on mouse-moved (event)
+    ;;  (when (and (mouse-grabbed?) grabbed-by-me?)
+     ;;   (send self get-end-and-draw active-color event))))
   
   
-  ;;;These are overlay functions combining defining and creation.
-  ;;;box-overlay: name of the box, the four numbers representing end points, and the color
-  ;;;text-overlay: name of the box, the four numbers representing end points, color, and text
-  ;;;full-screen-overlay: thunk, creates a transparent, full-screen overlay
-  (define (create-box-overlay name x1 y1 x2 y2 color)
-    (define-element-template name []
-                             (%zone% :overlay? #t :alpha? #t)
-        (with-dc self
-                 (draw-box (dc-rect) color))
-        )
-    (create name :shape (rect x1 y1 x2 y2))
+  ;;;These are overlay templates for boxes, outlines, and lines
+    (define-element-template %box-overlay% [stylesheet]
+                             (%zone% :overlay? #t :alpha? #f :cursor 'arrow)
+      (with-dc self
+        (draw-box (dc-rect) stylesheet))
+      )
+
+    (define-element-template %alpha-box-overlay% [stylesheet]
+                             (%zone% :overlay? #t :alpha? #t :cursor 'arrow)
+      (with-dc self
+        (draw-box (dc-rect) stylesheet))
+      )
+    (define-element-template %outline-box% [stylesheet thickness]
+                            (%zone% :overlay? #t :alpha? #t :cursor 'arrow)
+      (with-dc self
+        (draw-box-outline (dc-rect) stylesheet thickness))
     )
-             
-  )  
+    
+)
