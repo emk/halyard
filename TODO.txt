@@ -13,24 +13,26 @@
 
   March Demo
     Reticule/look support
-      Figure out what the player is looking at
-?       Figure out where to hook in look check code--probably post-movement
-        Send a simple text message to the client
-        Send an explicit "look" message to the client
-      Displaying reticules (hack video support)
-      Activate reticules (acts as trigger)
-      Looking at reticulates (acts as trigger)
+/     Figure out what the player is looking at
+/       Figure out where to hook in look check code--probably post-movement
+/       Send a simple text message to the client
       Looking at entities (acts as trigger)
+        Read new fields into edict
+        Keep track of what player is currently looking at
+        Activate target when using looks at something new with look_target
+      Looking at reticulates (acts as trigger)
+      Activate reticules (acts as trigger)
+      Displaying reticules (hack video support)
     Reimplement meters in Scheme
 /     Extend Quake 2 net protocol to allow reporting of state vars
 /     Real-time Scheme-like language for updating meter dials, etc.
-      Strip Quake 2 meter implementation to bare essentials
-      Re-implement meter logic in Scheme and C++
-      Change error-handling system for binmsg?
+/     Strip Quake 2 meter implementation to bare essentials
+,     Re-implement meter logic in Scheme and C++
     Implement other meters
       CDV 715
 
   Postponed after demo
+    Change error-handling system for binmsg?
     Fix audio problems when in background
       Premature restart of loops
       Stuttering during disk access

@@ -4,6 +4,7 @@ CVS - emk
 
   * Made sure all Quake 2-related state db entries got cleared at Quake 2
     startup.
+  * Added preliminary look target support.
 
 0.0.21 - 27 February 2004 - emk
 
