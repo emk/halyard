@@ -343,14 +343,16 @@ void  CPlayerView::DrawSelf(void)
 
 	if (not mActive)
 		return;
-			
-	if (gMovieManager.FullScreenPlay())
+	
+	if (false)
+	// cbo_fix - try this for now		
+	//if (gMovieManager.FullScreenPlay())
 	{
 		::RGBForeColor(&Color_Black);
 		::PenMode(patCopy);
 		::PaintRect(&theFrame);
 		::ValidRect(&theFrame);					// cbo_fix - this is necessary to keep from seeing the 
-		//	black background when a movie starts up - is there another way to do this?
+		// black background when a movie starts up - is there another way to do this?
 	}
 	else
 	{
@@ -361,6 +363,10 @@ void  CPlayerView::DrawSelf(void)
 			mGWorld->CopyImage(GetMacPort(), theFrame);
 		}
 	}
+	
+	// make sure the movie draws correctly
+	if (gMovieManager.MoviePlaying())
+		gMovieManager.DrawSelf();
 }
 
 //

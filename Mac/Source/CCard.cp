@@ -93,6 +93,7 @@ void CCard::Start(void)
 
 	mPaused = false;
 	mResumeMovie = false;
+	mStopped = false;
 	
 	SetScript();					// load in the m_Script from the file
 	m_Script.reset();					// reset the m_Script
@@ -197,6 +198,7 @@ void CCard::Execute(void)
 			while ((mActive) 
 				and (m_Script.more()) 
 				and (not mPaused)
+				and (not mStopped)				// return command stops execution
 				and (not gCardManager.Jumping()))
 					DoCommand();
 					
@@ -291,7 +293,7 @@ void CCard::DoCommand(void)
     else if (opword == (char *)"playqtfile") DoPlayQTFile();
     else if (opword == (char *)"playqtloop") DoPlayQTLoop();
     else if (opword == (char *)"playqtrect") DoPlayQTRect();
-    //else if (opword == (char *)"preload") DoPreloadQTFile();
+    else if (opword == (char *)"preload") DoPreloadQTFile();
     else if (opword == (char *)"print") DoPrint();
    // else if (opword == (char *)"qtpause") DoQTPause();
     else if (opword == (char *)"read") DoRead();
@@ -301,6 +303,7 @@ void CCard::DoCommand(void)
 //	else if (opword == (char *)"refresh") DoRefresh();
 	else if (opword == (char *)"resetorigin") DoResetOrigin();
     else if (opword == (char *)"resume") DoResume();
+    else if (opword.Equal("return")) DoReturn();
     else if (opword == (char *)"rewrite") DoRewrite();
     else if (opword == (char *)"rnode" || opword == (char *)"rvar") DoRnode(); 
     else if (opword == (char *)"screen") DoScreen();
@@ -1036,6 +1039,7 @@ void CCard::DoCheckDisc()
 
 //
 //	DoCheckVol - Check if the volume is mounted and return the path to it.
+//		(checkvol vol_name var_to_get_path [card_to_jump_if_no_volume])
 //
 void CCard::DoCheckVol()
 {
@@ -1762,12 +1766,18 @@ void CCard::DoMacro(KString &name)
 	
 	// Save the origin so we can reset it when the macro is done.
 	KPoint		saveOrigin(mOrigin);
-		
+
+	mStopped = false;
+			
 	while ((mActive) 							// used to only check for m_Script.more()
 		and (m_Script.more()) 
+		and (not mStopped)						// stop on return
 		and (not gCardManager.Jumping()))		// don't check mPaused here because we could be waiting for audio
-			DoCommand();
-    	
+	{
+		DoCommand();
+	}
+    mStopped = false;
+    
     m_Script = saveScript;			// restore the original m_Script
    		
     //
@@ -2100,24 +2110,54 @@ void CCard::DoPlayQTRect()
 	gMovieManager.SetOrigin(thePT);
 }
 	
-#ifdef DONT_USE
 void CCard::DoPreloadQTFile()
 {
 	KString 	theQTFile;
+	KString		syncFlag;
+	int32		tenths = 0;
 	bool		audioOnly = false;
+	bool		doSync = false;
 
     m_Script >> theQTFile;
+    
+    if (m_Script.more())
+    	m_Script >> tenths;
+    	
+    if (m_Script.more())
+    {
+    	m_Script >> syncFlag;
+    	
+    	if (syncFlag.Equal("sync", false))
+    		doSync = true;
+#ifdef DEBUG
+		else
+			gDebugLog.Log("perload: bad flag <%s>, looking for sync", syncFlag.GetString());
+#endif
+	}
     
     if (strstr(theQTFile.GetString(), ".a2"))
     	audioOnly = true;
 
 #ifdef DEBUG
-	gDebugLog.Log("preload: <%s>, audio", (const char *) theQTFile, audioOnly);
+	gDebugLog.Log("preload: <%s>, tenths <%d>, %s", 
+		theQTFile.GetString(), tenths, (doSync ? "sync" : "async"));
 #endif
-    	
-	gMovieManager.Preroll(theQTFile.GetString(), audioOnly);    
+	
+	if ((tenths > 0) and (mNapTimer == NULL)) 
+	{
+		mPaused = true;
+		mNapTimer = new CTimer(tenths, NULL);
+
+		// cbo_test - took this out to prevent flashing
+		gPlayerView->AdjustMyCursor();
+		
+		gPlayerView->Draw(nil);
+		gPlayerView->ProcessEvents(true);
+	}
+    
+    // don't actually preroll	
+	//gMovieManager.Preroll(theQTFile.GetString(), audioOnly, doSync);    
 }
-#endif
 
 /*-----------------------------------------------------------------
     (PRINT JUSTIFICATION TEXT)
@@ -2242,6 +2282,18 @@ void CCard::DoResume()
 #endif
 
 	gPlayerView->DoResume(false);
+}
+
+//
+//	(return) - stop execution of this card or macro
+//
+void CCard::DoReturn()
+{
+#ifdef DEBUG
+	gDebugLog.Log("return");
+#endif
+
+	mStopped = true;
 }
 
 /*----------------------------------------------------------------------

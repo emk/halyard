@@ -123,7 +123,8 @@ void CMoviePlayer::WakeCard(int32 inFrame)
 //
 void CMoviePlayer::DrawSelf(void)
 {
-	if ((mInMovie) and (not mAudioOnly))
+// cbo - try not doing this when paused to see if this causes the flashes at the start
+	if ((mInMovie) and (not mAudioOnly) and (not mPaused))
 		::UpdateMovie(mMovie);
 }
 
@@ -154,7 +155,7 @@ void CMoviePlayer::Kill(void)
 	if (not Playing())
 		return;
 		
-	gPlayerView->DoResetPause();				// let player view know the movie is dead
+	gPlayerView->DoResetPause();			// let player view know the movie is dead
 			
 	if (mWakeCard)
 	{
@@ -166,14 +167,14 @@ void CMoviePlayer::Kill(void)
 	gVariableManager.SetString("_lpactive", "0");
 	gVariableManager.SetString("_movieplaying", "0");
 	
-	Pause();			// stop the movie, if these is one playing
+	Pause();								// stop the movie, if there is one playing
 
 	if (not audioPlaying)
 	{
 		// we do the fade out and back in so that we can restore the palette
 		//	without having the screen flash in some weird colors
 		if (fullScreen)
-			DoGFade(false, 0, false);				// fade the screen out immediately
+			DoGFade(false, 0, false);		// fade the screen out immediately
 
 		gPlayerView->CalcLocalFrameRect(theFrame);
 		
@@ -181,7 +182,7 @@ void CMoviePlayer::Kill(void)
 			gPaletteManager.ResetPalette();
 		
 		gPlayerView->AdjustMyCursor();		// see if we want the cursor back
-		
+	
 		if (fullScreen)						// insurance against palette weirdness
 		{
 			::RGBForeColor(&rgbBlack);
@@ -342,6 +343,7 @@ bool CMoviePlayer::Load(const char *inMovieName, bool inAudioOnly)
 				::OffsetRect(&theBounds, mOrigin.X(), mOrigin.Y());
 			}
 			
+			mBounds = theBounds;
 			::SetMovieBox(mMovie, &theBounds);
 		}
 		
@@ -447,6 +449,17 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 	// always preroll	
 	doThePreroll = true;
 
+	// cbo - Do this up here to detect clips that we can't find so we don't fade
+	//	in and out.
+	if (not mPrerolled)
+		playIt = DoPreroll(inMovieName, inAudioOnly, doThePreroll);
+	else
+		playIt = true;						// better be the same movie as the one we prerolled
+
+	// cbo - nothing else to do if we didn't find the clip
+	if (not playIt)
+		return;
+		
 	if (not inAudioOnly)
 	{
 		gPlayerView->ProcessEvents(true);	// make sure keybinding is on
@@ -470,10 +483,10 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 	else
 		gPlayerView->ProcessEvents(true);
 			
-	if (not mPrerolled)
-		playIt = DoPreroll(inMovieName, inAudioOnly, doThePreroll);
-	else
-		playIt = true;						// better be the same movie as the one we prerolled
+	//if (not mPrerolled)
+	//	playIt = DoPreroll(inMovieName, inAudioOnly, doThePreroll);
+	//else
+	//	playIt = true;						// better be the same movie as the one we prerolled
 	
 	if (playIt)
 	{		
@@ -498,6 +511,11 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 		gPlayerView->DoResetPause();		// tell player view
 
 		Resume();							// start playing
+		
+		// cbo - is this the problem? I think this was causing a flash on video startup.
+		// Of course, I have no idea why I was doing it in the first place.
+		// invalidate the movie's rectangle
+		//InvalRect(&mBounds);
 		
 		gVariableManager.SetString("_movieplaying", "1");
 	}

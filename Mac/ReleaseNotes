@@ -1,5 +1,52 @@
 FiveL for Macintosh Release Notes
 
+2.01, Build 4, June 14, 2000, 2:10 PM
+
+¥ Changed the behavior of redoscript when it encounters script errors. Now
+	it will prompt the user to ask if they want to quit or not. If they 
+	don't want to quit they will be left in the program but nothing will
+	be running. The only thing they can do is hit Cmd-R (File->Redoscript).
+	This will try to open the previous script and jump to the card that
+	was originally passed to redoscript. This way you can leave the engine
+	running and fix the problem and try it again.
+	
+¥ checkvol will now cycle through ALL mounted volumes looking for the
+	volume you specify. It will no longer just ask the system if the 
+	volume is mounted as this doesn't always work.
+
+2.01, Build 3, June 13 2000, 3:08 PM
+
+¥ Fixed bugs:
+	¥ engine was crashing when calling redoscript on a script with errors
+	¥ could not call redoscript if were still on start script
+	¥ I think I got the flash when a clip starts, let me know if you see
+		it again.
+
+2.01, Build 2, May 23 2000, 12:01 PM
+
+¥ Fixed a bug that would cause the engine to crash if a graphic was not
+	found.
+	
+¥ Added a location variable for graphics:
+	_BaseGraphicsLocation - if this variable is set it will be used as 
+		a path to use in locating graphics.
+		NOTE: This path should have a ':' on the end, the engine will
+		not put it there for you.
+		
+¥ Palettes will ONLY be retrieved out of .clut files. Even if a different
+	extension is used for a graphic, only the .clut file will be used for 
+	the palette.
+	e.g. (loadpic login.png 0 0 pal)
+	login.png will be used for the graphic, login.clut will be used for
+		the palette
+		
+¥ Implemented the return command. It will return from a macro or
+	stop execution of a card.
+	
+¥ Added the skeleton of the preload command which will
+	accept a nap parameter.
+	(preload clip_name nap)
+	
 2.01, Build 1, Thursday May, 3, 2000, 11:50 AM
 
 ¥ The _ERROR variable will be set to -2 when a media element

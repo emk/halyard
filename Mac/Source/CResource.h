@@ -38,11 +38,11 @@ class CResource : public KBNode
         virtual void    	Purge(void);
         virtual void		Lock(bool inLock);
         
-        virtual inline bool	IsLoaded(void)
+        virtual bool	IsLoaded(void)
         	{ if (m_State != kResUnloaded) return (true); else return (false); }
-        virtual inline bool	IsUnloaded(void)
+        virtual bool	IsUnloaded(void)
         	{ if (m_State == kResUnloaded) return (true); else return (false); }
-     	virtual inline bool	IsLocked(void)
+     	virtual bool	IsLocked(void)
      		{ if (m_State == kResLocked) return (true); else return (false); }
      		   	
         //  Subclasses must override.

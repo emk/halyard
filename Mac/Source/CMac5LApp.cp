@@ -704,6 +704,8 @@ void CMac5LApp::ReDoScript(const char *curCard)
 	bool	thing;
 
 	mScriptRunning = false;
+
+	scriptString = gModMan->GetCurScript();	
 	
 	gCardManager.CurCardKill();
 	
@@ -712,9 +714,7 @@ void CMac5LApp::ReDoScript(const char *curCard)
 		
 	gPlayerView->KillTZones();
 
-#ifdef DEBUG
 	gDebugLog.Log("Killing everything for redoscript");
-#endif
 			
 	//
 	// don't kill the variable tree as we want the variables to have their current values
@@ -724,18 +724,112 @@ void CMac5LApp::ReDoScript(const char *curCard)
 	gCardManager.RemoveAll();
 	gIndexFileManager.RemoveAll();
 		
-	scriptString = gModMan->GetCurScript();
 	theConfig->FillScriptSpec(&scriptSpec, scriptString.GetString());
 	
 	thing = OpenScriptAgain(&scriptSpec, curCard);
+
+	if (not thing)
+	{
+		if (::CautionAlert(2003, nil) == 1)
+		{
+			// hang around
+			gPlayerView->Deactivate();
+			
+			// keep the card name around
+			mReDoCard = curCard;
+			mReDoReDo = true;
+			
+			thing = true;
+		}
+	}
 	
 	if (not thing)
 	{
 		gLog.Caution("Couldn't restart <%s>", curCard);
+		CleanUp();
 		DoQuit();
 	}
 }
+
+//
+//	ObeyCommand - 
+//
+Boolean CMac5LApp::ObeyCommand(CommandT inCommand, void *ioParam)
+{
+	if (inCommand == cmd_Revert)
+	{
+		if (mReDoReDo)
+		{
+			ReDoReDoScript();
+			return (true);
+		}
+	}
 	
+	return (LApplication::ObeyCommand(inCommand, ioParam));
+}
+
+//
+//	FindCommandStatus -
+//
+void CMac5LApp::FindCommandStatus(CommandT inCommand,
+	Boolean& outEnabled, Boolean& outUsesMark,
+	UInt16& outMark, Str255 outName)
+{
+	if (inCommand == cmd_Revert)
+	{
+		outUsesMark = false;
+		
+		if (mReDoReDo)
+			outEnabled = true;
+		else
+			outEnabled = false;
+			
+		return;
+	}
+	
+	return (LApplication::FindCommandStatus(inCommand, outEnabled, 
+		outUsesMark, outMark, outName));
+}
+
+//
+//	ReDoReDoScript - 
+//
+void CMac5LApp::ReDoReDoScript(void)
+{
+	FSSpec	scriptSpec;
+	KString	scriptString;
+	bool	thing = false;
+	
+	if (mReDoReDo)
+	{
+		mReDoReDo = false;
+		gPlayerView->Activate();
+		
+		scriptString = gModMan->GetCurScript();	
+		theConfig->FillScriptSpec(&scriptSpec, scriptString.GetString());
+	
+		thing = OpenScriptAgain(&scriptSpec, mReDoCard.GetString());
+		
+		if (not thing)
+		{
+			if (::CautionAlert(2003, nil) == 1)
+			{
+				// do it again
+				gPlayerView->Deactivate();
+				mReDoReDo = true;
+				thing = true;
+			}
+		}
+		
+		if (not thing)
+		{
+			gLog.Caution("Couldn't restart <%s>", mReDoCard.GetString());
+			CleanUp();
+			DoQuit();
+		}
+	}
+}
+
 //
 //	OpenScriptAgain
 //
@@ -762,6 +856,14 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard)
 		gCardManager.JumpToCardByName(jumpCard, FALSE);
 
 		retValue = true;
+	}
+	else
+	{
+		// error in the script, toss all cards headers and macros
+		gHeaderManager.RemoveAll();
+		gMacroManager.RemoveAll();
+		gCardManager.RemoveAll();
+		gIndexFileManager.RemoveAll();
 	}
 	
 	return (retValue);
@@ -862,6 +964,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.11  2000/06/15 13:03:07  chuck
+2.01 b4
+
 Revision 1.10  2000/05/11 12:56:10  chuck
 v 2.01 b1
 

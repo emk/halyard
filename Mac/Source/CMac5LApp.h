@@ -23,10 +23,20 @@ class	CMac5LApp : public LApplication
 #ifdef DEBUG
 		void				ReDoScript(const char *curCard);
 		bool				OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard);
+		void				ReDoReDoScript(void);
+
+		Boolean				ObeyCommand(CommandT inCommand, void *ioParam);
+		void				FindCommandStatus(
+								CommandT 			inCommand,
+								Boolean&			outEnabled,
+								Boolean&			outUsesMark,
+								UInt16&				outMark,
+								Str255				outName);
 #endif
 		void				CheckMemory(void);
 		void				MaxMemory(void);
 		void				DumpMemory(void);
+		
 
 //		void				SetPalette(PaletteHandle inPalHand, bool inActivateNow);
 		
@@ -66,6 +76,8 @@ class	CMac5LApp : public LApplication
 //		CPalette			*mGraphicsPal;
 //		CPalette			*mMoviePal;
 //		PaletteHandle		mCurPal;
+		KString				mReDoCard;		// card to jump to when redo redoscript
+		bool				mReDoReDo;		// waiting for a redo redoscript?
 	
 		bool				GetScriptFile(FSSpec *scriptSpec);
 };

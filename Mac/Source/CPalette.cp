@@ -263,11 +263,24 @@ void CPaletteManager::Init(void)
 CPalette *CPaletteManager::GetPalette(KString &inName)
 {
 	CPalette	*thePal = NULL;
-	
-	thePal = (CPalette *) GetResource(inName);
+	KString		newName;
+
+	// make sure only the .clut extension is used
+	if (inName.Contains("."))
+	{
+		int32	charPos = inName.Find(".");
+		
+		newName = inName.Mid(0, charPos);
+	}
+	else
+		newName = inName;
+		
+	newName += ".clut";
+			
+	thePal = (CPalette *) GetResource(newName);
 	if (thePal == NULL)
 	{
-		thePal = new CPalette(inName);
+		thePal = new CPalette(newName);
 		if (thePal != NULL)
 			AddResource(thePal);
 	}
@@ -340,6 +353,17 @@ RGBColor CPaletteManager::GetColor(int32 inIndex)
 		retColor = curPal->GetColor(inIndex);
 		
 	return (retColor);
+}
+
+//
+//	RemoveAll - 
+//
+void CPaletteManager::RemoveAll(void)
+{
+	CResourceManager::RemoveAll();
+	
+	m_GraphicsPal = NULL;
+	m_VideoPal = NULL;
 }
 
 //

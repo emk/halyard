@@ -38,6 +38,7 @@ class CCard : public CIndex
 		bool	mActive;
 		bool	mDoingOne;
 		bool	mResumeMovie;
+		bool	mStopped;
 		
 		// cbo 
 		int32	mIndex;
@@ -132,7 +133,7 @@ class CCard : public CIndex
 		void	DoPlayQTFile();
 		void	DoPlayQTLoop();
 		void	DoPlayQTRect();
-		//void	DoPreloadQTFile();
+		void	DoPreloadQTFile();
         void    DoPrint();
         void	DoQTPause();
         void    DoRead();
@@ -142,6 +143,7 @@ class CCard : public CIndex
 		void	DoRefresh();
 		void	DoResetOrigin();		
         void    DoResume();
+        void	DoReturn();
         void    DoRewrite();
         void    DoRnode();
 

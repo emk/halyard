@@ -49,6 +49,7 @@ class CPaletteManager : public CResourceManager
 		CPalette	*GetCurrentPalette(void) { return (m_GraphicsPal); }
 		void		SetPalette(CPalette *inPal, bool inGraphPal);
 		RGBColor	GetColor(int32 inIndex);
+		void		RemoveAll(void);
 		
 		void		ResetPalette(void);
 		void		CheckPalette(void);

@@ -43,6 +43,7 @@ void QTGraphic::Init(void)
 	m_idh = NULL;
 	m_transparent = false;
 	m_path = "";
+	m_size = 0;
 }
 
 void QTGraphic::Toss(void)
@@ -61,6 +62,7 @@ void QTGraphic::Toss(void)
 
 	m_transparent = false;
 	m_path = "";
+	m_size = 0;
 }
 
 void QTGraphic::Create(KString &inPath)
@@ -390,6 +392,9 @@ void QTGraphic::Draw(GWorldPtr inGWorld, KPoint &inPt, KRect &inRect)
 
 /*
  $Log$
+ Revision 1.2  2000/06/15 13:03:07  chuck
+ 2.01 b4
+
  Revision 1.1  2000/05/11 13:00:22  chuck
  v 2.01 b1
 

@@ -9,7 +9,7 @@
 #include <LPane.h>
 #include <LCommander.h>
 
-class  CMoviePlayer
+class  CMoviePlayer : public KObject
 {
 	public:
       					CMoviePlayer();
@@ -49,6 +49,7 @@ class  CMoviePlayer
 		bool			mLooping;
 		
 		KPoint			mOrigin;
+		Rect			mBounds;
 		
 		TimeValue		mWaitTime;
 		int32			mWaitOffset;
