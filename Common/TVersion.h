@@ -16,15 +16,21 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		14
+#define VERSION_REV_BIG		15
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.14 (Development)"
+#define VERSION_STRING	"5L 3.3.15 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.22  2002/07/17 16:06:48  brian
+ 3.3.15 - 17 July 2002 - brian
+
+   * Fixed excessive error messages for missing button graphics (#1039).
+   * This bug might still occur on Windows; it needs to be looked into.
+
  Revision 1.21  2002/07/15 18:11:31  brian
  3.3.14 - 15 July 2002 - brian, emk
 

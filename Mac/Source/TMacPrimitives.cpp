@@ -486,11 +486,18 @@ DEFINE_5L_PRIMITIVE(Buttpcx)
 	{
 		thePicture = gPictureManager.GetPicture(picname);
 		
+		if (!thePicture->HaveGraphic() || !thePicture->HaveInfo()) 
+		{
+			gLog.Caution("Missing graphic for button: %s", picname.GetString());
+			return;
+		}
+		
 		if (thePicture != NULL)
 		{
 			bounds = thePicture->GetBounds();
 			bounds.Offset(buttLoc);
-		}
+		} 
+		
 	}
 	
 	if (not theHeaderName.IsEmpty())

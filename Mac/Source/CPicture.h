@@ -36,6 +36,9 @@ class CPicture : public CResource
 		void			SetSize(uint32 inNewSize);
 		void			UpdatePriority();
 		
+		bool HaveGraphic() { return m_Qtg->HaveGraphic(); }
+		bool HaveInfo() { return m_Qtg->HaveInfo(); }
+		
 	protected:
 		TString			m_FullPath;
 		TString			m_Name;
