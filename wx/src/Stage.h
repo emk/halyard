@@ -5,8 +5,6 @@
 
 #include <deque>
 
-#include <wx/rawbtmp.h>
-
 #include "GraphicsTools.h"
 #include "AppGlobals.h"
 #include "ModelView.h"
@@ -250,12 +248,12 @@ class Stage : public wxWindow, public GraphicsTools::Image
     //////////
     // A bitmap for storing the graphics to display on the stage.
     //
-    wxRawBitmap mOffscreenPixmap;
+    wxBitmap mOffscreenPixmap;
 
     //////////
     // A bitmap for use during various fade effects.
     //
-    wxRawBitmap mOffscreenFadePixmap;
+    wxBitmap mOffscreenFadePixmap;
 
 	//////////
 	// We try to rate-limit our idle events to prevent performance

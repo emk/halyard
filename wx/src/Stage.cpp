@@ -1,7 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include <wx/wx.h>
-#include <wx/dcraw.h>
 #include <wx/treectrl.h>
 #include <wx/laywin.h>
 #include <wx/config.h>
@@ -761,8 +760,8 @@ END_EVENT_TABLE()
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
-      mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight()),
-      mOffscreenFadePixmap(inStageSize.GetWidth(), inStageSize.GetHeight()),
+      mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
+      mOffscreenFadePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
 	  mTextCtrl(NULL), mCurrentElement(NULL), mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
@@ -988,7 +987,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         // Get the color at that screen location.
         // PORTING - May not work on non-Windows platforms, according to
         // the wxWindows documentation.
-        wxRawBitmapDC offscreen_dc;
+        wxMemoryDC offscreen_dc;
         offscreen_dc.SelectObject(mOffscreenPixmap);
         wxColour color;
         offscreen_dc.GetPixel(x, y, &color);
@@ -1025,8 +1024,7 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
     
     // Blit our offscreen pixmap to the screen.
     // TODO - Could we optimize drawing by only blitting dirty regions?
-	mOffscreenPixmap.BlitTo(&screen_dc, 0, 0,
-							mStageSize.GetWidth(), mStageSize.GetHeight(), 0, 0);
+	screen_dc.DrawBitmap(mOffscreenPixmap, 0, 0, false);
 
     // If necessary, draw the grid.
     if (mIsDisplayingGrid)
@@ -1109,7 +1107,7 @@ void Stage::OnTextEnter(wxCommandEvent &inEvent)
     wxString text = FinishModalTextInput();
     
     // Set up a drawing context.
-    wxRawBitmapDC dc;
+    wxMemoryDC dc;
     dc.SelectObject(mOffscreenPixmap);
     
     // Prepare to draw the text.
@@ -1156,7 +1154,7 @@ wxColour Stage::GetColor(const GraphicsTools::Color &inColor)
 
 void Stage::ClearStage(const wxColor &inColor)
 {
-    wxRawBitmapDC dc;
+    wxMemoryDC dc;
     dc.SelectObject(mOffscreenPixmap);
     wxBrush brush(inColor, wxSOLID);
     dc.SetBackground(brush);
@@ -1167,7 +1165,7 @@ void Stage::ClearStage(const wxColor &inColor)
 void Stage::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 					 const wxColour &inColor, int inWidth)
 {
-    wxRawBitmapDC dc;
+    wxMemoryDC dc;
     dc.SelectObject(mOffscreenPixmap);
 	wxPen pen(inColor, inWidth, wxSOLID);
 	dc.SetPen(pen);
@@ -1177,7 +1175,7 @@ void Stage::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 
 void Stage::FillBox(const wxRect &inBounds, const wxColour &inColor)
 {
-    wxRawBitmapDC dc;
+    wxMemoryDC dc;
     dc.SelectObject(mOffscreenPixmap);
     wxBrush brush(inColor, wxSOLID);
     dc.SetBrush(brush);
@@ -1189,7 +1187,7 @@ void Stage::FillBox(const wxRect &inBounds, const wxColour &inColor)
 void Stage::OutlineBox(const wxRect &inBounds, const wxColour &inColor,
 					   int inWidth)
 {
-    wxRawBitmapDC dc;
+    wxMemoryDC dc;
     dc.SelectObject(mOffscreenPixmap);
 	wxPen pen(inColor, inWidth, wxSOLID);
 	dc.SetPen(pen);
@@ -1201,7 +1199,7 @@ void Stage::OutlineBox(const wxRect &inBounds, const wxColour &inColor,
 void Stage::DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
                        bool inTransparent)
 {
-    wxRawBitmapDC dc;
+    wxMemoryDC dc;
     dc.SelectObject(mOffscreenPixmap);
     dc.DrawBitmap(inBitmap, inX, inY, inTransparent);
     InvalidateRect(wxRect(inX, inY,

@@ -1,5 +1,9 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
+// No longer compiles, and doesn't offer much performance advantage,
+// but still cool.
+#if 0
+
 #include <wx/wx.h>
 #include <wx/rawbtmp.h>
 
@@ -59,3 +63,5 @@ check:  cmp ebx, ecx
         jc body
     }
 }
+
+#endif
