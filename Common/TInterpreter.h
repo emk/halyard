@@ -81,6 +81,11 @@ public:
 	virtual void KillNap(void) = 0;
 
 	//////////
+	// Permanently stop execution of the current card's script.
+	//
+	virtual void KillCurrentCard(void) = 0;
+
+	//////////
 	// Tell the CardManager to reload the current script
 	// at the next call to Idle().
 	//
@@ -121,7 +126,12 @@ public:
 	virtual void ReloadScript(const char *inGotoCardName) = 0;
         
 	//////////
-	// Return the single, global instance of this object.
+	// Do we have a single, global instance of this class?
+	//
+	static bool HaveInstance() { return (sInstance != NULL); }
+
+	//////////
+	// Return the single, global instance of this class.
 	//
 	static TInterpreter *GetInstance() { ASSERT(sInstance); return sInstance; }
 

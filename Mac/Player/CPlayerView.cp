@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //
 // CPlayerView.cp
 //
@@ -10,7 +11,6 @@
 
 #include "CMac5LApp.h"
 #include "CConfig.h"
-#include "CCard.h"
 #include "CPlayerView.h"
 #include "CPlayerInput.h"
 #include "CMoviePlayer.h"
@@ -84,9 +84,6 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 	mPauseFromKey = false;
 	mMoviePaused = false;
 
-	// Init the list of style elements
-	mKeyBinds = new LArray(sizeof(sCardKey));
-
 	FinishCreate();
 }
 
@@ -95,11 +92,21 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 //
 CPlayerView::~CPlayerView()
 {
+	DeleteAllKeyBinds();
+
 	if (mGWorld != nil)
 		delete mGWorld;
 		
 	if (mBlippoWorld != nil)
 		delete mBlippoWorld;
+}
+
+void CPlayerView::DeleteAllKeyBinds()
+{
+	std::map<char,TCallback*>::iterator iter = mKeyBinds.begin();
+	for (; iter != mKeyBinds.end(); ++iter)
+		delete iter->second;
+	mKeyBinds.clear();
 }
 
 // 
@@ -168,8 +175,8 @@ void CPlayerView::SpendTime(const EventRecord &inMacEvent)
 {
 	if (mActive)
 	{
-		gCardManager.CurCardSpendTime();
-		
+		if (TInterpreter::HaveInstance())
+			TInterpreter::GetInstance()->Idle();
 		gMovieManager.SpendTime(inMacEvent);
 	}
 	
@@ -547,15 +554,14 @@ void CPlayerView::KillScript(void)
 	mPauseFromKey = false;
 	mMoviePaused = false;
 
-	gCardManager.CurCardKill();
+	TInterpreter::GetInstance()->KillCurrentCard();
 	
 	if (gMovieManager.Playing())
 		gMovieManager.Kill();
 	
 	DeleteAllSubPanes();
 	
-	delete mKeyBinds;							// kill keybinds
-	mKeyBinds = new LArray(sizeof(sCardKey));	// allocate a new list
+	DeleteAllKeyBinds();
 	
 	// cbo - if we do this, we won't be able to show load screens Deactivate();
 	//Refresh();				// to make the screen draw in black
@@ -594,11 +600,11 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 				if (gMovieManager.Playing())
 					gMovieManager.Kill();
 					
-				if (gCardManager.CurCardNapping())
-					gCardManager.CurCardWakeUp();
+				if (TInterpreter::GetInstance()->Napping())
+					TInterpreter::GetInstance()->WakeUp();
 #ifdef DEBUG
-				else if ((gModMan->NoVolume()) and (gCardManager.CurCardPaused()))
-					gCardManager.CurCardWakeUp();
+				else if ((gModMan->NoVolume()) and (TInterpreter::GetInstance()->Paused()))
+					TInterpreter::GetInstance()->WakeUp();
 #endif
 								
 				keyHandled = true;			// we always swallow this one
@@ -625,8 +631,8 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 					case 'f':							// f -> fast forward the movie or wake up from nap
 						if (gMovieManager.Playing())
 							gMovieManager.Kill();
-						else if (gCardManager.CurCardNapping())
-							gCardManager.CurCardWakeUp();
+						else if (TInterpreter::GetInstance()->Napping())
+							TInterpreter::GetInstance()->WakeUp();
 							
 						keyHandled = true;
 						break;
@@ -675,11 +681,11 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 					if (gMovieManager.Playing())
 						gMovieManager.Kill();
 					
-					if (gCardManager.CurCardNapping())
-						gCardManager.CurCardWakeUp();
+					if (TInterpreter::GetInstance()->Napping())
+						TInterpreter::GetInstance()->WakeUp();
 #ifdef DEBUG
-					else if ((gModMan->NoVolume()) and (gCardManager.CurCardPaused()))
-						gCardManager.CurCardWakeUp();
+					else if ((gModMan->NoVolume()) and (TInterpreter::GetInstance()->Paused()))
+						TInterpreter::GetInstance()->WakeUp();
 #endif
 				}
 								
@@ -837,30 +843,26 @@ void CPlayerView::DrawPixMap(GraphicsTools::Point inPoint,
 //
 bool CPlayerView::DoKeyBind(const char inKey)
 {
-	LArrayIterator iterator(*mKeyBinds, LArrayIterator::from_Start);
-	sCardKey	theBind;
-	
-	while (iterator.Next(&theBind))
-	{
-		if (theBind.mTheChar == inKey)
-		{
-			if (ProcessingKeys())
-			{
-				// We want to kill movies (both audio and video) when
-				// keybinding.
-				if (gMovieManager.Playing())
-					gMovieManager.Kill();
+	std::map<char,TCallback*>::iterator found = mKeyBinds.find(inKey);
 
-				gDebugLog.Log("keybind hit: key <%c>, jump to <%s>", 
-					inKey, (const char *) *(theBind.mCardName));
-				gCardManager.JumpToCardByName((const char *) *(theBind.mCardName), false);
-				return (true);
-			}
-			else
-			{
-				// ::SysBeep(30);
-				return (false);
-			}
+	if (found != mKeyBinds.end())
+	{
+		if (ProcessingKeys())
+		{
+			// We want to kill movies (both audio and video) when
+			// keybinding.
+			if (gMovieManager.Playing())
+				gMovieManager.Kill();
+			
+			gDebugLog.Log("keybind hit: key <%c>, running callback",
+						  found->first);
+			found->second->Run();
+			return (true);
+		}
+		else
+		{
+			// ::SysBeep(30);
+			return (false);
 		}
 	}
 	
@@ -871,39 +873,19 @@ bool CPlayerView::DoKeyBind(const char inKey)
 // Add a key action to the list of posible keys. If the card name is nil,
 // then remove the key from the list.
 //
-void CPlayerView::AddKeyBinding(const char inKey, CCard *inCardToJumpTo)
+void CPlayerView::AddKeyBinding(const char inKey, TCallback *inCallback)
 {
-	int32		bindIdx = 1;
-	sCardKey	theBind;
-	char		realInKey;
-	bool		foundIt = false;
-	
-	realInKey = inKey;
-	
-	// Look for key. 
-	while  ((not foundIt) and mKeyBinds->FetchItemAt(bindIdx++, &theBind))
-		foundIt = (theBind.mTheChar == realInKey);
+	// Look for an existing keybind for this key, and delete it.
+	std::map<char,TCallback*>::iterator found = mKeyBinds.find(inKey);
+	if (found != mKeyBinds.end())
+	{
+		delete found->second;
+		mKeyBinds.erase(found);
+	}
 
-	if (foundIt)
-		bindIdx--;	// if we found it we have already incremented past it
-		
-	theBind.mTheChar 		= realInKey;
-	theBind.mCardName  		= new FiveL::TString;
-	*(theBind.mCardName)	= inCardToJumpTo->Name();
-	//theBind.mCard 		= inCardToJumpTo;
-	
-	if (inCardToJumpTo == NULL)	// If no card, delete the key
-	{
-		if (foundIt)
-			mKeyBinds->RemoveItemsAt(1, bindIdx);
-		// else couldn't find it, so WGAFF?
-	}
-	else if (foundIt)	// We want to replace the key action
-	{
-		mKeyBinds->AssignItemsAt(1, bindIdx, &theBind);
-	}
-	else				// OK, just a new key. How boring.
-		mKeyBinds->InsertItemsAt(1, LArray::index_Last, &theBind);
+	// If we have a new keybind, insert it.
+	if (inCallback)
+		mKeyBinds.insert(std::pair<char,TCallback*>(inKey, inCallback));
 }
 
 

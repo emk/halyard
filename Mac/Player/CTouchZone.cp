@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /* =================================================================================
 	CTouchZone.cp	
    ================================================================================= */
@@ -17,7 +18,6 @@
 #include "CMoviePlayer.h"
 #include "CTouchZone.h"
 #include "CPlayerInput.h"
-#include "CCard.h"
 #include "CPicture.h"
 
 USING_NAMESPACE_FIVEL
@@ -36,17 +36,16 @@ extern CursHandle	gHandCursor;
 
 CTouchZone::CTouchZone(
 	TRect 			&inBounds, 	// Button rect
-	TString 		&cmd, 		// Command text
+	TCallback 		*cmd, 		// Command callback
 	CPicture		*inPict,	// Default picture
 	TPoint 			&loc, 		// Pic offset??
-	const CursorType cursor,	// cursor (= HAND_CURSOR)
-	const TString	&secCmd)	// optional second command (= NULL)
+	const CursorType cursor)	// cursor (= HAND_CURSOR)
 {
 	mNormalTouch = true;
 
 	StartIdling();
 	
-	SetupZone(inBounds, cmd, inPict, loc, secCmd, cursor);
+	SetupZone(inBounds, cmd, inPict, loc, cursor);
 	LButton::FinishCreate();
 }
 
@@ -60,29 +59,26 @@ CTouchZone::CTouchZone(
 
 CTouchZone::CTouchZone(
 	TRect 			&inBounds, 
-	TString 		&cmd, 
+	TCallback		*cmd, 
 	CPicture		*inPict,
 	TPoint	 		&loc, 
 	const char 		*text, 
 	const CursorType cursor,		// = HAND_CURSOR
-	const char 		*stylesheet, 	// = NULL
-	const TString 	&secCmd)		// = NULL
+	const char 		*stylesheet)	// = NULL
 	: mStyleSheet(stylesheet), mBounds(inBounds), mText(text)
 {
 	mNormalTouch = false;
 	
 	StartIdling();
 	
-	SetupZone(inBounds, cmd, inPict, loc, secCmd, cursor);
+	SetupZone(inBounds, cmd, inPict, loc, cursor);
 	LButton::FinishCreate();
 }
 
 void CTouchZone::SetupZone(	TRect 			&inBounds, 	// Button rect
-							TString			&cmd, 		// Command text
+							TCallback		*cmd, 		// Command text
 							CPicture		*inPict,	// Default picture
-//							char			*pict, 		// Default pic name
 							TPoint 			&loc, 		// Pic offset??
-							const TString	&secCmd,	// optional second command
 							const CursorType cursor)	// cursor
 {
 	Rect	macBounds = inBounds.GetRect();
@@ -101,8 +97,7 @@ void CTouchZone::SetupZone(	TRect 			&inBounds, 	// Button rect
 	SetPaneID((paneList.GetCount()) + 2000);
 
 	// Set private data members
-    mCommand = cmd;
-    mSecondCommand = secCmd;
+    mCallback = cmd;
     mCursor = cursor;
 
 	// Set picture location (if specified)
@@ -129,6 +124,8 @@ CTouchZone::~CTouchZone()
 	
 	if (mPicture != nil)
 		mPicture->Purge();		// done with this picture
+
+	delete mCallback;
 }
 
 /* ---------------------------------------------------------------------------------
@@ -255,20 +252,15 @@ CTouchZone::HotSpotResult(
 	//if (clickSound != NULL)
 	//	SndPlay(nil, (SndListResource **) clickSound, false);
 
-	if (not mSecondCommand.IsEmpty())
-		gDebugLog.Log("hit touchzone: commands <%s> then <%s>", mSecondCommand.GetString(), mCommand.GetString());
-	else
-		gDebugLog.Log("hit touchzone: command <%s>", mCommand.GetString());
+	gDebugLog.Log("hit touchzone: running callback");
 
-	// cbo - suspend event processing while we are executing these commands
+	// cbo - suspend event processing while we are executing this callback
 	gPlayerView->ProcessEvents(false);
 	
-    if (not mSecondCommand.IsEmpty())
-    	gCardManager.DoOneCommand(mSecondCommand);
+	mCallback->Run();
     
-    gCardManager.DoOneCommand(mCommand);
-    
-    gPlayerView->Draw(nil);			// the command might have changed something in the offscreen buffer
+	// the callback might have changed something in the offscreen buffer
+    gPlayerView->Draw(nil);			
    		
 	if (not HaveInputUp())
 		gPlayerView->ProcessEvents(true);

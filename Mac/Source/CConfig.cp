@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 //		(c) Copyright 1999, Trustees of Dartmouth College. All rights reserved
@@ -376,6 +377,30 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.8.6.2  2002/06/18 21:57:02  emk
+3.3.4.8 - Added (BODY ...) command on Mac, fixed arguments of BUTTPCX, TOUCH,
+and KEYBIND to match Win32 engine, and refactored Mac engine to more-or-less
+respect the TInterpreter interface.
+
+Things to test: REDOSCRIPT, redo-REDOSCRIPT (feed REDOSCRIPT a bogus script,
+try to fix it, then run REDOSCRIPT again), TOUCH, BUTTPCX, ORIGIN.
+
+Some low-level details:
+
+  - Added a KillCurrentCard method to the TInterpreter interface.  This
+    works a lot like Pause, but it cannot be resumed.
+  - Added a rough-cut TMac5LInterpreter class (with some methods stubbed
+    out, because they are not needed on the Mac--we should look at
+    this API in detail and formalize it sometime after 3.4).
+  - Modified CTouchZone to take TCallback objects.
+  - Modified CPlayerView's keybinding support to take TCallback objects
+    (and to use a std::map instead of a PowerPlant list class).
+  - Began to separate special forms (IF, BODY, EXIT, RETURN) from other
+    commands.
+  - Moved ReadSpecialVariable_* methods out of CCard and into CMac5LApp.
+  - Made sure CMac5LApp::mReDoReDo got initialized to false.
+  - Merged OpenScript and OpenScriptAgain into one function.
+
 Revision 1.8.6.1  2002/06/15 01:06:55  emk
 3.3.4.7 - Carbonization of Mac build, support for running non-Carbonized build
 in MacOS X's OS 9 emulator, and basic support for 5L.prefs on the Mac.  The

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /* =================================================================================
 	CTouchZone.h	
 	
@@ -19,6 +20,7 @@
 #include "TStyleSheet.h"
 
 #include "TString.h"
+#include "TInterpreter.h"
 #include "CPicture.h"
 #include "CCursor.h"
 
@@ -31,13 +33,14 @@ class CTouchZone : public PP::LButton, public PP::LCommander, public PP::LMouseT
 		enum { class_ID = 'PlTz' };	// Class ID - needs to be unique & not all lower-case
 	
 		// Standard constructor
-		CTouchZone(TRect &r, TString &cmd, CPicture *inPict, TPoint &loc, 
-					const CursorType = HAND_CURSOR, const TString &SecondCmd = "");
+		CTouchZone(TRect &r, TCallback *cmd, CPicture *inPict, TPoint &loc, 
+				   const CursorType = HAND_CURSOR);
 	
 		// This constructor is used for the 'Buttpcx' command
-		CTouchZone(TRect &r, TString &cmd, CPicture *inPict, TPoint &loc, const char *text,
-					const CursorType = HAND_CURSOR,
-					const char *stylesheet = nil, const TString &secCmd = "");
+		CTouchZone(TRect &r, TCallback *cmd, CPicture *inPict,
+				   TPoint &loc, const char *text,
+				   const CursorType = HAND_CURSOR,
+				   const char *stylesheet = nil);
 					
 		// Destructor
 		virtual 	~CTouchZone();
@@ -54,8 +57,7 @@ class CTouchZone : public PP::LButton, public PP::LCommander, public PP::LMouseT
 		CursorType	GetCursor(void) { return (mCursor); }
 		
 	private:
-		TString     mCommand;
-		TString     mSecondCommand;  //for second command support.
+		TCallback	*mCallback;
 		TPoint       mPictLoc;
 		CPicture	*mPicture;		// pict & hilite pict that we use in the touchzone
 		bool		mNormalTouch;	// to distinguish touchzones from buttpcx's
@@ -67,8 +69,9 @@ class CTouchZone : public PP::LButton, public PP::LCommander, public PP::LMouseT
 		TString		mText;
 		
 	protected:
-		void		SetupZone(TRect &r, TString &cmd, CPicture *inPict, TPoint &loc, 
-							const TString &SecondCmd = "", const CursorType cursor = HAND_CURSOR);
+		void		SetupZone(TRect &r, TCallback *cmd, CPicture *inPict,
+							  TPoint &loc,
+							  const CursorType cursor = HAND_CURSOR);
 			
 		virtual Boolean PointIsInFrame(SInt32 inHoriz, SInt32	inVert) const
 		{

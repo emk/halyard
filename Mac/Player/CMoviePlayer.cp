@@ -15,7 +15,6 @@
 #include "CPlayerView.h"
 #include "CMoviePlayer.h"
 #include "TVariable.h"
-#include "CCard.h"
 #include "CModule.h"
 #include "gamma.h"
 
@@ -81,7 +80,7 @@ void CMoviePlayer::SpendTime(const EventRecord & /* inMacEvent */)
 				{
 					if (movieTime >= mWaitTime)
 					{
-						gCardManager.CurCardWakeUp();
+						TInterpreter::GetInstance()->WakeUp();
 						mWakeCard = false;
 						mWaitTime = 0;
 					}
@@ -158,7 +157,7 @@ void CMoviePlayer::Kill(void)
 			
 	if (mWakeCard)
 	{
-		gCardManager.CurCardWakeUp();
+		TInterpreter::GetInstance()->WakeUp();
 		mWakeCard = false;
 	}
 

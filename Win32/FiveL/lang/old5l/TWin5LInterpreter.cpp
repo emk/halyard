@@ -13,7 +13,7 @@
 #include "Card.h"
 #include "Macro.h"
 
-BEGIN_NAMESPACE_FIVEL
+USING_NAMESPACE_FIVEL
 
 
 //=========================================================================
@@ -33,7 +33,10 @@ TWin5LInterpreter::TWin5LInterpreter(const TString &inStartScript)
 
 	// Read the startup script.
 	if (!gIndexFileManager.NewIndex(inStartScript))
+	{
+		CleanupIndexes();
 		throw TException("Error reading startup script");
+	}
 }
 
 TWin5LInterpreter::~TWin5LInterpreter()

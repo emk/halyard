@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //
 // CPlayerView.h
 //
@@ -6,8 +7,10 @@
 
 #include "THeader.h"
 
+#include <map>
+
+#include "TInterpreter.h"
 #include "CPicture.h"
-#include "CCard.h"
 #include "CGWorld.h"
 #include "GraphicsTools.h"
 
@@ -63,7 +66,7 @@ class  CPlayerView
 		void			DrawPixMap(GraphicsTools::Point inPoint,
 								   GraphicsTools::PixMap &inPixmap);
 		
-		void 			AddKeyBinding(const char inKeyChar, CCard *inCardToJumpTo);
+		void 			AddKeyBinding(const char inKeyChar, TCallback *inCallback);
 
 		void			Blippo(void);
 		void			UnBlippo(const FXType inEffect = kFXNone, const int8 inTime = 0);
@@ -110,6 +113,7 @@ class  CPlayerView
 		void			ExecuteSelf(PP::MessageT /* inMessage */, void *ioParam);
 		
 	private:
+		void			DeleteAllKeyBinds();
 		bool 			DoKeyBind(const char inKey);
 
 		void 			DoEffect(const FXType inEffect, const int8 inTime);
@@ -127,20 +131,10 @@ class  CPlayerView
 		
 		int16			mBackColor;
 		CPicture		*mBackPic;
-		PP::LArray		*mKeyBinds;
+		std::map<char,TCallback*> mKeyBinds;
 		Point			mCursorPos;
 		bool			mPauseFromKey;
 		bool			mMoviePaused;
-};
-
-// sCardKey
-// mKeyBinds list element which contains the control caracter and the name of
-// the card to jump to when 'alt-<char>' is pressed.
-
-struct sCardKey {
-	char		mTheChar;
-	TString		*mCardName;
-//	CCard		*mCard;
 };
 
 // Get the effect from a string

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 //		(c) Copyright 1999, Trustees of Dartmouth College. All rights reserved
@@ -37,17 +38,12 @@
 
 #include "gamma.h"
 
-#include "CCard.h"
-#include "CMacroManager.h"
-#include "CHeader.h"
-#include "TStyleSheet.h"
 #include "TVariable.h"
 #include "CFiles.h"
-#include "TIndex.h"
 #include "CCursor.h"
-#include "TParser.h"
 #include "TStartup.h"
 #include "TVersion.h"
+#include "TMac5LInterpreter.h"
 
 //
 // constants
@@ -73,11 +69,9 @@ bool				gDoShiftScript = false;		// by default, start from beginning
 
 BEGIN_NAMESPACE_FIVEL
 
-CFileList			gFileManager;
-CCardManager		gCardManager;
-CMacroManager		gMacroManager;
-CHeaderManager		gHeaderManager;
+TMac5LInterpreter	*gMac5LInterpreter = NULL;
 
+CFileList			gFileManager;
 CCursorManager		gCursorManager;
 CPaletteManager		gPaletteManager;
 CPictureManager		gPictureManager;
@@ -171,6 +165,16 @@ void CMac5LApp::EmergencyUnfade()
 	DoGFade(true, 5, false);
 }
 
+FiveL::TString CMac5LApp::ReadSpecialVariable_curcard()
+{
+	return TInterpreter::GetInstance()->CurCardName();
+}
+
+FiveL::TString CMac5LApp::ReadSpecialVariable_prevcard()
+{
+	return TInterpreter::GetInstance()->PrevCardName();
+}
+
 // ---------------------------------------------------------------------------
 //		¥ CMac5LApp
 // ---------------------------------------------------------------------------
@@ -182,11 +186,14 @@ CMac5LApp::CMac5LApp()
 	KeyMap 		keys;
 	Rect		screenBounds;
 	bool		centerOnScreen;
-	
+
 	// If the Shift key is down when starting up, do the shift script.
 	::GetKeys(keys);
 	if ((keys[1] & 1) != 0)
 		gDoShiftScript = true;
+
+	// Set up miscellaenous member variables.
+	mReDoReDo = false;
 
 	// Setup the Gamma tools
 	SetupGammaTools();
@@ -214,19 +221,13 @@ CMac5LApp::CMac5LApp()
 	// Initialize our portable Common library.
 	InitializeCommonCode();
 
-	// Register our top-level forms.
-	TParser::RegisterIndexManager("card", &gCardManager);
-	TParser::RegisterIndexManager("macrodef", &gMacroManager);
-	TParser::RegisterIndexManager("header", &gHeaderManager);
-	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
-
 	// Register our platform-specific special variables.
 	gVariableManager.RegisterSpecialVariable("_system",
 		&ReadSpecialVariable_system);
 	gVariableManager.RegisterSpecialVariable("_curcard",
-		&CCardManager::ReadSpecialVariable_curcard);
+		&ReadSpecialVariable_curcard);
 	gVariableManager.RegisterSpecialVariable("_prevcard",
-		&CCardManager::ReadSpecialVariable_prevcard);
+		&ReadSpecialVariable_prevcard);
 	gVariableManager.RegisterSpecialVariable("_eof",		
 		&CFileList::ReadSpecialVariable_eof);
 
@@ -450,14 +451,14 @@ void CMac5LApp::StartUp(void)
 //
 void CMac5LApp::CleanUp(void)
 {
-	gHeaderManager.RemoveAll();			// toss all headers
-	gStyleSheetManager.RemoveAll();		// toss all style sheets
-	gMacroManager.RemoveAll();			// toss all macros
-	gCardManager.RemoveAll();			// toss all cards
+	if (gMac5LInterpreter)
+	{
+		delete gMac5LInterpreter;			// toss our interpreter
+		gMac5LInterpreter = NULL;
+	}
 	gVariableManager.RemoveAll();		// toss all variables
 	gPaletteManager.RemoveAll();		// toss all palettes
 	gPictureManager.RemoveAll();		// toss all pictures
-	gIndexFileManager.RemoveAll();		// toss all the script files	
 }
 
 //
@@ -528,24 +529,35 @@ void CMac5LApp::QuitScript(void)
 //	OpenScript - Open the given script file, open and read the index
 //					file and start the script running.
 //
-bool  CMac5LApp::OpenScript(const TString &inScriptName)
+bool CMac5LApp::OpenScript(const char *inScriptName,
+						   const char *inCardName)
 {
-	bool	retValue = false;
-		
+	ASSERT(!gMac5LInterpreter);
+
 	// set mSleepTime again, just to be sure
 	mSleepTime = 0;
 
-	if (gIndexFileManager.NewIndex(inScriptName))	
+	try
 	{
+		// Create a new interpreter object, and start it running.
+		gMac5LInterpreter = new TMac5LInterpreter(inScriptName);
 		mScriptRunning = true;
-		
+		gVariableManager.SetString("_lpstat", "0");
+		gVariableManager.SetString("_lpactive", "0");
+		gVariableManager.SetString("_movieplaying", "0");
 		gPlayerView->Activate();
-		gCardManager.JumpToCardByName("Start", FALSE);
-
-		retValue = true;
+		TInterpreter::GetInstance()->JumpToCardByName(inCardName);
 	}
-	
-	return (retValue);
+	catch (...)
+	{
+		if (gMac5LInterpreter)
+		{
+			delete gMac5LInterpreter;
+			gMac5LInterpreter = NULL;
+		}
+		return false;
+	}
+	return true;
 }
 
 #ifdef DEBUG
@@ -559,7 +571,7 @@ void CMac5LApp::ReDoScript(const char *curCard)
 
 	mScriptRunning = false;
 
-	gCardManager.CurCardKill();
+	TInterpreter::GetInstance()->KillCurrentCard();
 	
 	if (gMovieManager.Playing())
 		gMovieManager.Kill();
@@ -567,17 +579,16 @@ void CMac5LApp::ReDoScript(const char *curCard)
 	gPlayerView->KillTZones();
 
 	gDebugLog.Log("Killing everything for redoscript");
-			
-	//
-	// don't kill the variable tree as we want the variables to have their current values
-	//
-	gHeaderManager.RemoveAll();
-	gStyleSheetManager.RemoveAll();
-	gMacroManager.RemoveAll();
-	gCardManager.RemoveAll();
-	gIndexFileManager.RemoveAll();
-		
-	thing = OpenScriptAgain(gModMan->GetCurScript(), curCard);
+	
+	// Blow away our interpreter (but not our variables, which we want to
+	// retain their values across a redoscript).
+	if (gMac5LInterpreter)
+	{
+		delete gMac5LInterpreter;
+		gMac5LInterpreter = NULL;
+	}
+	
+	thing = OpenScript(gModMan->GetCurScript(), curCard);
 
 	if (not thing)
 	{
@@ -638,8 +649,8 @@ void CMac5LApp::FindCommandStatus(CommandT inCommand,
 		return;
 	}
 	
-	return (LApplication::FindCommandStatus(inCommand, outEnabled, 
-		outUsesMark, outMark, outName));
+	LApplication::FindCommandStatus(inCommand, outEnabled, 
+									outUsesMark, outMark, outName);
 }
 
 //
@@ -654,7 +665,7 @@ void CMac5LApp::ReDoReDoScript(void)
 		mReDoReDo = false;
 		gPlayerView->Activate();
 		
-		thing = OpenScriptAgain(gModMan->GetCurScript(), mReDoCard.GetString());
+		thing = OpenScript(gModMan->GetCurScript(), mReDoCard.GetString());
 		
 		if (not thing)
 		{
@@ -674,44 +685,6 @@ void CMac5LApp::ReDoReDoScript(void)
 			DoQuit();
 		}
 	}
-}
-
-//
-//	OpenScriptAgain
-//
-bool CMac5LApp::OpenScriptAgain(const TString &inScriptName, const char *jumpCard)
-{
-	bool	retValue = false;
-		
-	// set mSleepTime again, just to be sure
-	mSleepTime = 0;
-
-	gDebugLog.Log("reinit everything for redoscript");
-
-	if (gIndexFileManager.NewIndex(inScriptName))		
-	{
-		mScriptRunning = true;
-		
-		gVariableManager.SetString("_lpstat", "0");
-		gVariableManager.SetString("_lpactive", "0");
-		gVariableManager.SetString("_movieplaying", "0");
-		
-		gPlayerView->Activate();
-		gCardManager.JumpToCardByName(jumpCard, FALSE);
-
-		retValue = true;
-	}
-	else
-	{
-		// error in the script, toss all cards headers and macros
-		gHeaderManager.RemoveAll();
-		gStyleSheetManager.RemoveAll();
-		gMacroManager.RemoveAll();
-		gCardManager.RemoveAll();
-		gIndexFileManager.RemoveAll();
-	}
-	
-	return (retValue);
 }
 
 #endif
@@ -809,6 +782,30 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.20.6.3  2002/06/18 21:57:02  emk
+3.3.4.8 - Added (BODY ...) command on Mac, fixed arguments of BUTTPCX, TOUCH,
+and KEYBIND to match Win32 engine, and refactored Mac engine to more-or-less
+respect the TInterpreter interface.
+
+Things to test: REDOSCRIPT, redo-REDOSCRIPT (feed REDOSCRIPT a bogus script,
+try to fix it, then run REDOSCRIPT again), TOUCH, BUTTPCX, ORIGIN.
+
+Some low-level details:
+
+  - Added a KillCurrentCard method to the TInterpreter interface.  This
+    works a lot like Pause, but it cannot be resumed.
+  - Added a rough-cut TMac5LInterpreter class (with some methods stubbed
+    out, because they are not needed on the Mac--we should look at
+    this API in detail and formalize it sometime after 3.4).
+  - Modified CTouchZone to take TCallback objects.
+  - Modified CPlayerView's keybinding support to take TCallback objects
+    (and to use a std::map instead of a PowerPlant list class).
+  - Began to separate special forms (IF, BODY, EXIT, RETURN) from other
+    commands.
+  - Moved ReadSpecialVariable_* methods out of CCard and into CMac5LApp.
+  - Made sure CMac5LApp::mReDoReDo got initialized to false.
+  - Merged OpenScript and OpenScriptAgain into one function.
+
 Revision 1.20.6.2  2002/06/15 01:06:55  emk
 3.3.4.7 - Carbonization of Mac build, support for running non-Carbonized build
 in MacOS X's OS 9 emulator, and basic support for 5L.prefs on the Mac.  The

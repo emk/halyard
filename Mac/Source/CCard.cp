@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /**********************************************
 
     CCard class. This is the class that knows
@@ -38,6 +39,8 @@
 #include "GraphicsTools.h"
 #include "TStyleSheet.h"
 #include "TException.h"
+#include "TMac5LInterpreter.h"
+#include "TPrimitives.h"
 
 #include "gamma.h"
 
@@ -53,6 +56,8 @@ USING_NAMESPACE_FIVEL
     GLOBALS
 
 **************/
+
+CCardManager FIVEL_NS gCardManager;
 
 static Boolean gNeedsRefresh = false;
 
@@ -243,7 +248,11 @@ void CCard::DoCommand(void)
     m_Script >> open >> opword;
     opword.MakeLower();
 	
-    if (opword == (char *)"add") DoAdd();
+    if (opword == (char *)"if") DoIf();
+    else if (opword == (char *)"body") DoBody();
+    else if (opword.Equal("return")) DoReturn();
+    else if (opword == (char *)"exit") DoExit();
+    else if (opword == (char *)"add") DoAdd();
     // new audio commands
     else if (opword.Equal("audio")) DoAudio();
     else if (opword == (char *)"audiokill") DoAudioKill();
@@ -266,11 +275,9 @@ void CCard::DoCommand(void)
 #endif
     else if (opword == (char *)"div") DoDiv();
     else if (opword == (char *)"ejectdisc") DoEjectDisc();
-    else if (opword == (char *)"exit") DoExit();
     else if (opword == (char *)"fade") DoFade();
     else if (opword == (char *)"highlight") DoHighlight();
     else if (opword == (char *)"hidemouse") DoHidemouse();
-    else if (opword == (char *)"if") DoIf();
     else if (opword == (char *)"input") DoInput();
     else if (opword == (char *)"jump") DoJump();
     else if (opword == (char *)"key") DoKey();
@@ -302,7 +309,6 @@ void CCard::DoCommand(void)
 //	else if (opword == (char *)"refresh") DoRefresh();
 	else if (opword == (char *)"resetorigin") DoResetOrigin();
     else if (opword == (char *)"resume") DoResume();
-    else if (opword.Equal("return")) DoReturn();
     else if (opword == (char *)"rewrite") DoRewrite();
     else if (opword == (char *)"rnode" || opword == (char *)"rvar") DoRnode(); 
     else if (opword == (char *)"screen") DoScreen();
@@ -340,19 +346,23 @@ void CCard::DoCommand(void)
  *  theCommand should look like "(jump aCard)", ie both parens need to
  *  be there.
  ***********************************************************************/
-void CCard::OneCommand(TString &theCommand)
+void CCard::OneCommand(const TString &theCommand)
 {
     TStream     saveScript(m_Script);
 
-	saveScript = m_Script;
-	mDoingOne = true;
-	
-    m_Script = theCommand;
-    DoCommand();
-    
-    m_Script = saveScript;
-
-    mDoingOne = false;
+	try
+	{
+		mDoingOne = true;
+		m_Script = theCommand;
+		DoCommand();
+	}
+	catch (...)
+	{
+		m_Script = saveScript;
+		mDoingOne = false;
+	}
+	m_Script = saveScript;
+	mDoingOne = false;
 }
 
 /***********************************************************************
@@ -577,6 +587,85 @@ void CCard::UpdateSpecialVariablesForGraphic(TRect bounds)
 	Rect sides = bounds.GetRect();
 	gVariableManager.SetLong("_Graphic_X", (short) sides.right);
 	gVariableManager.SetLong("_Graphic_Y", (short) sides.bottom);
+}
+
+/*-----------------------------------------------------------------
+    (IF (CONDITIONAL) (TRUE_CMD) <(FALSE_CMD)>)
+
+    Evaluate the conditional expression and execute the appropriate
+    command based on the value of the expression. Only numbers may
+    be compared. It's important that the conditional statement be
+    enclosed in parentheses and that the operator (>, <, =) be
+    separated from the operands by a space.
+-------------------------------------------------------------------*/
+void CCard::DoIf()
+{
+    TStream     conditional;
+	
+    m_Script >> conditional;
+
+    conditional.reset();
+
+    if (Evaluate(conditional)) 
+    {
+        DoCommand();
+    } 
+    else 
+    {
+        //  Skip TRUE_CMD.
+        m_Script >> open >> close;
+        if (m_Script.more()) 
+        	DoCommand();
+    }
+}
+
+/*-----------------------------------------------------------------
+    (BODY cmd...)
+
+    Evaluate zero or more commands in sequence.  The BODY command
+    can be used to pass a list of commands as an argument to the
+    IF, BUTTPCX and TOUCH commands.
+-------------------------------------------------------------------*/
+void CCard::DoBody()
+{
+	while (m_Script.more())
+	{
+		// Extract our command and put back the parentheses removed
+		// by the parser.  This a kludge.
+		TString cmd;
+		m_Script >> cmd;
+		cmd = TString("(") + cmd + TString(")");
+
+		// Execute the command.
+		OneCommand(cmd);
+	}
+}
+
+/*-------------------
+    (EXIT)
+
+    Exit the program.
+---------------------*/
+void CCard::DoExit()
+{
+	int16	theSide = 0;
+	
+	if (m_Script.more())
+		m_Script >> theSide;
+
+	gDebugLog.Log("exit: %d", theSide);
+		
+	gCardManager.DoExit(theSide);
+}
+
+//
+//	(return) - stop execution of this card or macro
+//
+void CCard::DoReturn()
+{
+	gDebugLog.Log("return");
+
+	mStopped = true;
 }
 
 /*************************
@@ -931,15 +1020,15 @@ void CCard::DoButtpcx()
     TPoint      buttLoc;
 	const char		*theHeadName = nil;
     CPicture    *thePicture = nil;
-    TString     theHeaderName, picname, theCommand, cmdText, Text, scmdText;
-    TString     secondCommand;
+    TString     theHeaderName, picname, Text;
+	TCallback	*callback;
     TString		cursorType;
     CursorType	cursor = HAND_CURSOR;
     CursorType	tmpCursor = UNKNOWN_CURSOR;
 
-    m_Script >> picname >> buttLoc >> theHeaderName >> Text >> cmdText;
+    m_Script >> picname >> buttLoc >> theHeaderName >> Text >> callback;
 
-	if (m_Script.more() and (m_Script.curchar() != '('))
+	if (m_Script.more())
 	{
 		m_Script >> cursorType;
 		
@@ -950,21 +1039,8 @@ void CCard::DoButtpcx()
 	    	gLog.Caution("Unknown cursor type: %s", cursorType.GetString());
 	}
 	
-   	scmdText = "";
-    if (m_Script.more())  
-	{
-        m_Script >> secondCommand;      // OPTIONAL: (command <params +>)...
-        scmdText= "(";
-        scmdText += secondCommand;
-        scmdText += ")";
-    }
-	
     AdjustPoint(&buttLoc);
 	
-    theCommand = "(";       // due to parser's stripping of parens.
-    theCommand += cmdText;
-    theCommand += ")";
-
 	if (not picname.IsEmpty())
 	{
 		thePicture = gPictureManager.GetPicture(picname);
@@ -979,15 +1055,15 @@ void CCard::DoButtpcx()
 	if (not theHeaderName.IsEmpty())
 		theHeadName = theHeaderName.GetString();
 
-	gDebugLog.Log("buttpcx: <%s>, X<%d>, Y<%d>, header <%s>, text <%s>, cmd <%s>, cmd2 <%s>",
+	gDebugLog.Log("buttpcx: <%s>, X<%d>, Y<%d>, header <%s>, text <%s>",
 			(const char *) picname, buttLoc.X(), buttLoc.Y(), (const char *) theHeadName, 
-			(const char *) Text, (const char *) cmdText, (const char *) scmdText);
+			(const char *) Text);
 	
 	UpdateSpecialVariablesForGraphic(bounds);
 
 	if (thePicture != NULL)
-		new CTouchZone(bounds, theCommand, thePicture, buttLoc, (const char *) Text, cursor, 
-				(const char *) theHeadName, scmdText);
+		new CTouchZone(bounds, callback, thePicture, buttLoc, (const char *) Text, cursor, 
+				(const char *) theHeadName);
 	else
 		gDebugLog.Log("no picture <%s>, no touch zone", (const char *) picname);
 
@@ -1168,23 +1244,6 @@ void CCard::DoEjectDisc()
 	gDebugLog.Log("Ejecting disk");
 }
 
-/*-------------------
-    (EXIT)
-
-    Exit the program.
----------------------*/
-void CCard::DoExit()
-{
-	int16	theSide = 0;
-	
-	if (m_Script.more())
-		m_Script >> theSide;
-
-	gDebugLog.Log("exit: %d", theSide);
-		
-	gCardManager.DoExit(theSide);
-}
-
 /*---------------------------------------------------------------
     (FADE DIR <STEPS>)
 
@@ -1247,35 +1306,6 @@ void CCard::DoHidemouse()
 {
 	gCursorManager.HideCursor();
 	gDebugLog.Log("Hiding cursor");
-}
-/*-----------------------------------------------------------------
-    (IF (CONDITIONAL) (TRUE_CMD) <(FALSE_CMD)>)
-
-    Evaluate the conditional expression and execute the appropriate
-    command based on the value of the expression. Only numbers may
-    be compared. It's important that the conditional statement be
-    enclosed in parentheses and that the operator (>, <, =) be
-    separated from the operands by a space.
--------------------------------------------------------------------*/
-void CCard::DoIf()
-{
-    TStream     conditional;
-	
-    m_Script >> conditional;
-
-    conditional.reset();
-
-    if (Evaluate(conditional)) 
-    {
-        DoCommand();
-    } 
-    else 
-    {
-        //  Skip TRUE_CMD.
-        m_Script >> open >> close;
-        if (m_Script.more()) 
-        	DoCommand();
-    }
 }
 
 /*---------------------------------------------------------------------
@@ -1370,14 +1400,13 @@ void CCard::DoKey()
 void CCard::DoKeybind()
 {
     TString 	keyEquiv; 
-    TString		linkCard;
-	CCard		*theCard;
 	char		theChar;
+	TCallback	*theCallback = NULL;
 	
     m_Script >> keyEquiv;
 
     if (m_Script.more())
-        m_Script >> linkCard;
+        m_Script >> theCallback;
         
     keyEquiv.MakeLower();
     if (keyEquiv == (const char *) "esc")
@@ -1385,14 +1414,9 @@ void CCard::DoKeybind()
     else
     	theChar = keyEquiv(0);
 
-	gDebugLog.Log("keybind: key <%c>: Jump to card <%s>", keyEquiv(0), linkCard.GetString());
+	gDebugLog.Log("keybind: key <%c>", keyEquiv(0));
 
-	theCard = (CCard *) gCardManager.Find(linkCard.GetString());
-	
-	if (theCard != NULL)
-    	gPlayerView->AddKeyBinding(theChar, theCard);
-	else
-		gDebugLog.Caution("ERROR: Trying to keybind to non-existant card <%s>!", linkCard.GetString());
+	gPlayerView->AddKeyBinding(theChar, theCallback);
 }
 
 //
@@ -2244,16 +2268,6 @@ void CCard::DoResume()
 	gPlayerView->DoResume(false);
 }
 
-//
-//	(return) - stop execution of this card or macro
-//
-void CCard::DoReturn()
-{
-	gDebugLog.Log("return");
-
-	mStopped = true;
-}
-
 /*----------------------------------------------------------------------
     (REWRITE FILENAME FIELD1 <FIELD2> ... <FIELDN>)
 
@@ -2574,82 +2588,52 @@ void CCard::DoTimeout()
 ----------------------------------------------------------------*/
 void CCard::DoTouch()
 {
-    char        ch_sep;
     TRect       bounds;
     TPoint		loc;
     CPicture	*thePicture = NULL;
-    TString     theCommand, SecondCommand;
-    TString     cmdText, scmdText;
+	TCallback	*callback;
     TString     picname;
     TString		cursorType;
     CursorType	cursor = HAND_CURSOR;
     CursorType	tmpCursor;
 
-    m_Script >> bounds >> cmdText;
+    m_Script >> bounds >> callback;
 
 	gDebugLog.Log("touch: <L T R B> %d %d %d %d", bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom());
 
-    theCommand = "(";
-    theCommand += cmdText;
-    theCommand += ")";
-
     AdjustRect(&bounds);
 
-	if (m_Script.more() and (m_Script.curchar() != '('))
+	// Get our cursor, if any.
+	if (m_Script.more())
 	{
 		m_Script >> cursorType;
 
 		tmpCursor = gCursorManager.FindCursor(cursorType);
 		if (tmpCursor != UNKNOWN_CURSOR)
 			cursor = tmpCursor;
-		else
-	    {
-	    	// unknown cursor, assume it must be a picture name, we know it can't be
-	    	//	the second command as it didn't start with an open paren
-	    	picname = cursorType;
-	    	if (m_Script.more()) 
-			{
-				m_Script >> loc;
-				AdjustPoint(&loc);
-			}
-			else 
-				loc = bounds.TopLeft();
-		}
 	}
-			    
-    if (m_Script.more()) 
-    {
-        ch_sep = m_Script.curchar();
 
-        if (ch_sep == '(')  
-        {
-            m_Script >> SecondCommand;
-            scmdText = "(";
-            scmdText += SecondCommand;
-            scmdText += ")";
-        }
-        
-		if (m_Script.more())
+	// Get our picture-related arguments.
+	if (m_Script.more())
+	{
+		// Get the name of the picture
+		m_Script >> picname;
+		
+		// Get it's offset (if specified), otherwise just use the topLeft
+		// of the bounds
+		if (m_Script.more()) 
 		{
-			// Get the name of the picture
-			m_Script >> picname;
-	
-			// Get it's offset (if specified), otherwise just use the topLeft of the bounds
-			if (m_Script.more()) 
-			{
-				m_Script >> loc;
-				
-				AdjustPoint(&loc);
-			}
-			else 
-				loc = bounds.TopLeft();
+			m_Script >> loc;	
+			AdjustPoint(&loc);
 		}
-    }
+		else 
+			loc = bounds.TopLeft();
+	}
     
     if (not picname.IsEmpty())
     	thePicture = gPictureManager.GetPicture(picname);
     
-    new CTouchZone(bounds, theCommand, thePicture, loc, cursor, scmdText);
+    new CTouchZone(bounds, callback, thePicture, loc, cursor);
     
    // gPlayerView->AdjustMyCursor();
 }
@@ -2914,7 +2898,7 @@ CCard *CCardManager::GetCurCard(void)
 //
 //	DoOneCommand
 //
-void CCardManager::DoOneCommand(TString &theCommand)
+void CCardManager::DoOneCommand(const TString &theCommand)
 {
 	ASSERT(mCurrentCard != NULL);
 	
@@ -3018,7 +3002,7 @@ void CCardManager::DoExit(int16 inSide)
 }
 
 #ifdef DEBUG
-void CCardManager::DoReDoScript(TString &cardName)
+void CCardManager::DoReDoScript(const TString &cardName)
 {
 	mReDoScript = true;
 	mReDoCard = cardName;
@@ -3127,15 +3111,5 @@ void CCardManager::JumpToCard(CCard *newCard, bool /* comeBack */)
 		mJumpCard = newCard;
 		mHaveJump = true;
 	}
-}
-
-TString CCardManager::ReadSpecialVariable_curcard()
-{
-	return gCardManager.CurCardName();
-}
-
-TString CCardManager::ReadSpecialVariable_prevcard()
-{
-	return gCardManager.PrevCardName();
 }
 

@@ -1,3 +1,5 @@
+// -*- Mode: C++; tab-width: 4; -*-
+
 #pragma once
 
 #include "Configuration.h"
