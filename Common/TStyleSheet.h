@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #ifndef TStyleSheet_H
 #define TStyleSheet_H
@@ -29,6 +29,12 @@ private:
 	GraphicsTools::Color mShadowColor;
 	GraphicsTools::Color mHighlightShadowColor;
 
+	//////////
+	// Get a Typography::Style object corresponding to unhighlighted
+	// text.
+	//
+	Typography::Style GetBaseStyle();
+
 public:
 	//////////
 	// Create a new style sheet from a TIndexFile and a pair
@@ -36,7 +42,7 @@ public:
 	//
 	TStyleSheet(TIndexFile *inFile, const char *inName,
 				int32 inStart, int32 inEnd);
-		
+	
 	//////////
 	// Convert a 5L-format string into a StyledText object, using the
 	// data stored in this style.  This is a pretty nasty formatting
@@ -61,6 +67,11 @@ public:
 			  GraphicsTools::Point inPosition,
 			  GraphicsTools::Distance inLineLength,
 			  GraphicsTools::Image *inImage);
+
+	//////////
+	// Get the height of a single line of text drawn in this style.
+	//
+	int GetLineHeight();
 };
 
 class TStyleSheetManager : public TIndexManager {   
@@ -87,6 +98,20 @@ public:
 			  GraphicsTools::Point inPosition,
 			  GraphicsTools::Distance inLineLength,
 			  GraphicsTools::Image *inImage);
+
+	//////////
+	// Compatibility function.  This call works like the above,
+	// but takes arguments in the same order as the old Win32
+	// Header class.  It makes the code prettier.
+	//
+	void DoText(const char *inStyleSheet, TRect inRect,
+				const char *inText, GraphicsTools::Image *inImage);
+
+	//////////
+	// Compatibility function.  Get the height of the first line of
+	// the text.
+	//
+	int GetLineHeight(const char *inStyleSheet);
 };
 
 extern TStyleSheetManager gStyleSheetManager;

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include "TCommon.h"
 #include "TStyleSheet.h"
@@ -14,6 +14,7 @@
 USING_NAMESPACE_FIVEL
 
 using GraphicsTools::Color;
+using GraphicsTools::Point;
 using Typography::StyledText;
 using Typography::TextRenderingEngine;
 
@@ -84,27 +85,10 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
     FlushScript();
 }
 
-static void LogEncodingErrors (const std::wstring &inBadStr, size_t inBadPos,
-							   const char *inErrMsg)
+Typography::Style TStyleSheet::GetBaseStyle()
 {
-	std::string bad_string =
-		ConstructString<char,std::wstring::const_iterator>(inBadStr.begin(),
-														   inBadStr.end());
-	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
-				 inErrMsg, inBadPos, bad_string.c_str());
-}
-	
-Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
-{
-	// Convert 7-bit to 8-bit code.
-	// See the notes about TEncoding; it desperately needs refactoring.
-	TEncoding<wchar_t> encoding("UTF-16", &LogEncodingErrors);
-	std::wstring expanded =
-		ConstructString<wchar_t,std::string::const_iterator>(inText.begin(),
-															 inText.end());
-	std::wstring encoded = encoding.TransformString(expanded);
-
-    // Create our base style for non-highlighted text.
+	// Build a Typography::Style object based on our style sheet.
+	// We'll use this as our "base style" when drawing.
     Typography::Style base_style(mFontName, mSize);
 	std::list<std::string> backups;
 	backups.push_back("Standard Symbols L");
@@ -118,9 +102,32 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 		base_style.SetFaceStyle(Typography::kShadowFaceStyle);
 		base_style.SetShadowOffset(mShadowOffset);
     }
-	
+	return base_style;
+}
+
+static void LogEncodingErrors (const std::wstring &inBadStr, size_t inBadPos,
+							   const char *inErrMsg)
+{
+	std::string bad_string =
+		ConstructString<char,std::wstring::const_iterator>(inBadStr.begin(),
+														   inBadStr.end());
+	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
+				 inErrMsg, inBadPos, bad_string.c_str());
+}
+
+Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
+{
+	// Convert 7-bit to 8-bit code.
+	// See the notes about TEncoding; it desperately needs refactoring.
+	TEncoding<wchar_t> encoding("UTF-16", &LogEncodingErrors);
+	std::wstring expanded =
+		ConstructString<wchar_t,std::string::const_iterator>(inText.begin(),
+															 inText.end());
+	std::wstring encoded = encoding.TransformString(expanded);
+
     // Create a styled text object.
-    Typography::Style style(base_style);
+	Typography::Style base_style = GetBaseStyle();
+    Typography::Style style = base_style;
     StyledText text(style);
 	
     // Process each character.
@@ -228,6 +235,12 @@ void TStyleSheet::Draw(const std::string& inText,
 	gVariableManager.SetLong(INCR_X_NAME, engine.GetRightBound());
 }
 
+int TStyleSheet::GetLineHeight()
+{
+	// Return the height of the first line.
+	return GetBaseStyle().GetLineHeight(true);
+}
+
 
 //=========================================================================
 //  TStyleSheetManager Methods
@@ -256,3 +269,20 @@ void TStyleSheetManager::Draw(const std::string &inStyleSheet,
 	style_sheet->Draw(inText, inPosition, inLineLength, inImage);
 }
 
+void TStyleSheetManager::DoText(const char *inStyleSheet, TRect inRect,
+								const char *inText,
+								GraphicsTools::Image *inImage)
+{
+	Draw(inStyleSheet, inText, Point(inRect.Left(), inRect.Top()),
+		 inRect.Right() - inRect.Left(), inImage);
+}
+
+int TStyleSheetManager::GetLineHeight(const char *inStyleSheet)
+{
+	TBNode *node = Find(inStyleSheet);
+	if (!node)
+		gLog.FatalError("Tried to measure height of non-existant style "
+						"sheet <%s>", inStyleSheet);
+	TStyleSheet *style_sheet = dynamic_cast<TStyleSheet*>(node);
+	return style_sheet->GetLineHeight();
+}
