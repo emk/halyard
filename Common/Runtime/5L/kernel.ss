@@ -639,7 +639,9 @@
   (define (%kernel-extract-definitions relative-file-path)
     ;;; TODO - This should be a fatal error once we finish debugging
     ;;; the definition extractor.
-    (with-errors-blocked (non-fatal-error)
+    (define (ignore-error msg)
+      #f)
+    (with-errors-blocked (ignore-error)
       (define path (apply build-path (current-directory)
                           (regexp-split "/" relative-file-path)))
       (%assert *extract-definitions-fn*)

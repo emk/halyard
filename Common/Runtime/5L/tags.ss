@@ -8,7 +8,7 @@
   (define (maybe-insert-def name type)
     (let [[sym (syntax-object->datum name)]]
       (when (symbol? sym)
-        (insert-def sym 'function (syntax-line name)))))
+        (insert-def sym type (syntax-line name)))))
 
   (define (form-name stx)
     (syntax-case stx ()
