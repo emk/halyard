@@ -43,8 +43,6 @@ Element::Element(Stage *inStage, const wxString &inName,
         mEventDispatcher = EventDispatcherPtr(new EventDispatcher());
         mEventDispatcher->SetDispatcher(inDispatcher);
     }
-
-	mStage->AddElement(ElementPtr(this));
 }
 
 void Element::OperationNotSupported(const char *inOperationName) {

@@ -158,6 +158,15 @@ static DrawingArea *GetCurrentDrawingArea() {
 	return wxGetApp().GetStage()->GetCurrentDrawingArea();
 }
 
+// This method registers an element with the stage. We can't do registration
+// in Element::Element because it's dangerous to create smart-pointers to
+// objects which are not yet fully created.
+template <typename E>
+static E *R(E *elem) {
+    wxGetApp().GetStage()->AddElement(ElementPtr(elem));
+    return elem;
+}
+
 #define CHECK_SUSPEND_OK(PRIMNAME) \
     do { \
         if (!TInterpreter::GetInstance()->CanSuspend()) { \
@@ -180,8 +189,8 @@ DEFINE_5L_PRIMITIVE(ActiveX) {
 
 	inArgs >> SymbolName(name) >> dispatcher >> bounds >> control_name;
 
-    new ActiveXElement(wxGetApp().GetStage(), name.c_str(),
-                       TToWxRect(bounds), dispatcher, control_name.c_str());
+    R(new ActiveXElement(wxGetApp().GetStage(), name.c_str(),
+                         TToWxRect(bounds), dispatcher, control_name.c_str()));
 }
 
 DEFINE_5L_PRIMITIVE(ActiveXPropGet) {
@@ -202,8 +211,8 @@ DEFINE_5L_PRIMITIVE(ActiveXPropSet) {
 DEFINE_5L_PRIMITIVE(AudioStreamGeiger) {
 	std::string name, path;
 	inArgs >> SymbolName(name) >> path;
-	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-						   new GeigerAudioStream(path.c_str()));
+	R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+                             new GeigerAudioStream(path.c_str())));
 }
 
 DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps) {
@@ -224,8 +233,8 @@ DEFINE_5L_PRIMITIVE(AudioStreamSine) {
 	std::string name;
 	uint32 frequency;
 	inArgs >> name >> frequency;
-	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-						   new SineAudioStream(frequency));
+	R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+                             new SineAudioStream(frequency)));
 }
 
 DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
@@ -233,9 +242,9 @@ DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
 	uint32 buffer_size;
 	bool should_loop;
 	inArgs >> name >> path >> buffer_size >> should_loop;
-	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-						   new VorbisAudioStream(path.c_str(), buffer_size,
-												 should_loop));
+	R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+                             new VorbisAudioStream(path.c_str(), buffer_size,
+                                                   should_loop)));
 }
 
 DEFINE_5L_PRIMITIVE(Browser) {
@@ -247,11 +256,11 @@ DEFINE_5L_PRIMITIVE(Browser) {
 	inArgs >> SymbolName(name) >> dispatcher >> bounds >> want_builtin;
 
     if (want_builtin)
-        new BrowserElementWx(wxGetApp().GetStage(), name.c_str(),
-                             TToWxRect(bounds), dispatcher);
+        R(new BrowserElementWx(wxGetApp().GetStage(), name.c_str(),
+                               TToWxRect(bounds), dispatcher));
     else
-        new BrowserElementIE(wxGetApp().GetStage(), name.c_str(),
-                             TToWxRect(bounds), dispatcher);
+        R(new BrowserElementIE(wxGetApp().GetStage(), name.c_str(),
+                               TToWxRect(bounds), dispatcher));
 }
 
 DEFINE_5L_PRIMITIVE(BrowserCanBack) {
@@ -403,7 +412,7 @@ DEFINE_5L_PRIMITIVE(EditBox) {
 	wxTextCtrl *edit =
 		new wxTextCtrl(wxGetApp().GetStage(), -1, text.c_str(),
 					   GetPos(bounds), GetSize(bounds), style);
-	new Widget(wxGetApp().GetStage(), name.c_str(), edit);
+	R(new Widget(wxGetApp().GetStage(), name.c_str(), edit));
 }
 
 DEFINE_5L_PRIMITIVE(ElementExists) {
@@ -445,8 +454,8 @@ DEFINE_5L_PRIMITIVE(GeigerSynth) {
 	inArgs >> name >> SymbolName(state_path) >> chirp_location >> buffer_size;
 
     GeigerSynthElement *element =
-        new GeigerSynthElement(wxGetApp().GetStage(), name.c_str(),
-                               state_path, chirp_location.c_str(), 1000);
+        R(new GeigerSynthElement(wxGetApp().GetStage(), name.c_str(),
+                                 state_path, chirp_location.c_str(), 1000));
 
 	while (inArgs.HasMoreArguments()) {
 		inArgs >> loop_cps >> loop_location;
@@ -655,8 +664,8 @@ DEFINE_5L_PRIMITIVE(Movie) {
 	if (interaction)
 		style |= MOVIE_INTERACTION;
 
-	new MovieElement(wxGetApp().GetStage(), name.c_str(), dispatcher,
-                     TToWxRect(bounds), path.c_str(), 0, style);
+	R(new MovieElement(wxGetApp().GetStage(), name.c_str(), dispatcher,
+                       TToWxRect(bounds), path.c_str(), 0, style));
 }
 
 // Note: these primitives may not be happy if the underlying movie code 
@@ -704,10 +713,10 @@ DEFINE_5L_PRIMITIVE(Overlay) {
 	
 	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor >> is_trans
            >> are_trans_areas_clickable;
-	new Overlay(wxGetApp().GetStage(), name.c_str(), TToWxRect(bounds),
-				dispatcher,
-				wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor),
-				is_trans, are_trans_areas_clickable);
+    Stage *stage = wxGetApp().GetStage();
+	R(new Overlay(stage, name.c_str(), TToWxRect(bounds), dispatcher,
+                  stage->GetCursorManager()->FindCursor(cursor),
+                  is_trans, are_trans_areas_clickable));
 }
 
 DEFINE_5L_PRIMITIVE(OverlayAnimated) {
@@ -719,11 +728,10 @@ DEFINE_5L_PRIMITIVE(OverlayAnimated) {
 	
 	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor
            >> is_trans >> SymbolName(state_path) >> graphics;
-	new AnimatedOverlay(
-		wxGetApp().GetStage(), name.c_str(), 
-		TToWxRect(bounds), dispatcher, 
-		wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor),
-        is_trans, state_path, TValueList(graphics));
+    Stage *stage = wxGetApp().GetStage();
+	R(new AnimatedOverlay(stage, name.c_str(), TToWxRect(bounds), dispatcher, 
+                          stage->GetCursorManager()->FindCursor(cursor),
+                          is_trans, state_path, TValueList(graphics)));
 }
 
 DEFINE_5L_PRIMITIVE(SaveGraphics) {
@@ -853,6 +861,6 @@ DEFINE_5L_PRIMITIVE(Zone) {
 	TCallbackPtr dispatcher;
 	
 	inArgs >> SymbolName(name) >> poly >> dispatcher >> cursor;
-	new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher,
-			 wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor));
+	R(new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher,
+               wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor)));
 }

@@ -14,6 +14,9 @@ CVS - emk
     error (bug #1846).
   * We handle top-level exceptions much more gracefully and informatively
     than before (bug #1846).
+  * We no longer register elements with the stage before they're fully
+    created. This fixes the bug where throwing an exception in an element
+    constructor would crash the engine (bug #1836).
 
 0.0.42 - 06 Dec 2004 - emk
 

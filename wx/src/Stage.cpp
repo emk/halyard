@@ -964,10 +964,11 @@ void Stage::DestroyElement(ElementPtr inElement)
 	if (as_media && as_media == mWaitElement)
 		EndWait();
 
-	// Destroy the object.
+	// We don't have to destroy the object explicity, because the
+	// ElementPtr smart-pointer class will take care of that for us.
+    //
 	// TODO - Implemented delayed destruction so element callbacks can
 	// destroy the element they're attached to.
-	// delete inElement;
 }
 
 bool Stage::DeleteElementByName(const wxString &inName)
