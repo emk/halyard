@@ -60,44 +60,94 @@ bool VorbisFile::ReadChunk()
 	}
 }
 
+void VorbisFile::TryToRefillBufferIfEmpty()
+{
+	if (mBufferBegin == mBufferEnd && !mDoneReading)
+		mDoneReading = !ReadChunk();
+}
+
+bool VorbisFile::MoreDataIsAvailable()
+{
+	TryToRefillBufferIfEmpty();
+	return (mBufferBegin < mBufferEnd) || !mDoneReading;
+}
+
+void VorbisFile::CheckBufferFrequency()
+{
+	// We only support 44.1 audio for now.
+	if (mWantedFrequency != mBufferFrequency)
+		THROW("Vorbis file has wrong frequency");
+}
+
+int VorbisFile::CheckBufferChannelCountAndGetStretchFactor()
+{
+	if (mWantedChannels == mBufferChannels)
+		// If we have the right number of channels, we can use the data as is.
+		return 1;
+	else if (mWantedChannels == 2 && mBufferChannels == 1)
+		// If we have a mono file, and we want stero data, we can stretch it.
+		return 2;
+	else
+		THROW("Vorbis file has wrong number of channels");
+}
+
+size_t VorbisFile::GetBufferedSampleCount()
+{
+	return mBufferEnd - mBufferBegin;
+}
+
+void VorbisFile::GetSamplesFromBuffer(int16 *outOutputBuffer,
+									  size_t inOutputSampleCount,
+									  int inStretchFactor)
+{
+	// Copy the data, and update our pointers.
+	if (inStretchFactor == 1)
+	{
+		// The formats match exactly.  We can do a fast copy.
+		memcpy(outOutputBuffer, mBufferBegin,
+			   inOutputSampleCount * sizeof(int16));
+	}
+	else
+	{
+		// Duplicate each sample for the left and right channel.
+		ASSERT(inStretchFactor == 2);
+		ASSERT(inOutputSampleCount % inStretchFactor == 0);
+		int out_idx = 0, in_idx = 0;
+		while (out_idx < inOutputSampleCount)
+		{
+			int16 sample = mBuffer[in_idx++];
+			outOutputBuffer[out_idx++] = sample;
+			outOutputBuffer[out_idx++] = sample;
+		}
+	}
+	ASSERT(inOutputSampleCount % inStretchFactor == 0);
+	mBufferBegin += inOutputSampleCount / inStretchFactor;
+}
+
 bool VorbisFile::Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed)
 {
 	int16 *remaining_space_ptr  = outData;
-	size_t remaining_space_size = inMaxSize;
 
 	*outSizeUsed = 0;
-	while (!mDoneReading && *outSizeUsed < inMaxSize)
+	while (*outSizeUsed < inMaxSize && MoreDataIsAvailable())
 	{
-		// Refill our read buffer, if needed.
-		if (mBufferBegin == mBufferEnd)
-		{
-			mDoneReading = !ReadChunk();
-			if (mDoneReading)
-				break;
-		}
+		CheckBufferFrequency();
+		int stretch = CheckBufferChannelCountAndGetStretchFactor();
 
-		// Check to see whether our buffer format is OK.
-		if (mWantedFrequency != mBufferFrequency)
-			THROW("Vorbis file has wrong frequency");
-		if (mWantedChannels != mBufferChannels)
-			THROW("Vorbis file has wrong number of channels");
-		
-		// Figure out how much data we can use right now.
-		int available_data_size = mBufferEnd - mBufferBegin;
-		int copy_size = Min(available_data_size, remaining_space_size);
+		// Figure out how much data we can use right now.  These numbers
+		// are calculated in terms of our output format, not our input
+		// format.
+		int available_sample_count = GetBufferedSampleCount() * stretch;
+		int copy_sample_count = Min(available_sample_count,
+									inMaxSize - *outSizeUsed);
 
-		// Copy the data, and update our pointers.
-		memcpy(remaining_space_ptr, mBufferBegin, copy_size * sizeof(int16));
-		*outSizeUsed += copy_size;
-		mBufferBegin += copy_size;
-
-		// Locally update these values for another trip around the loop.
-		remaining_space_ptr += copy_size;
-		remaining_space_size -= copy_size;
+		GetSamplesFromBuffer(remaining_space_ptr, copy_sample_count, stretch);
+		*outSizeUsed += copy_sample_count;
+		remaining_space_ptr += copy_sample_count;
 	}
 
 	// Tell the caller whether or not we succeeded.
-	if (mDoneReading && *outSizeUsed == 0)
+	if (*outSizeUsed == 0 && !MoreDataIsAvailable())
 		return false;
 	else
 		return true;

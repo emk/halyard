@@ -10,7 +10,9 @@
     Infrastructure
 /     Allow AudioStreams to accept int16 *or* floats
 /     Stop discarding extra Vorbis data when it doesn't fit in buffer
-      Handle mono and 44.1/2^N Vorbis streams
+/     Handle mono
+      Replace test clips with custom clips
+      Are we clipping a few samples at the end?
       Volume control?
       Refactor buffering class out of VorbisAudioStream
       Don't run timer unless there's an active stream
@@ -33,6 +35,7 @@
       Allow Vorbis file loading with wxStream?
       Hook into Tamale for foley - lower priority
       Allow AudioStreams to be mono or stereo?
+      Handle 44.1/2^N Vorbis streams?
     
   Send events to zones
 /   Mouse left down

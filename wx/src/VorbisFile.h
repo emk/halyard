@@ -33,6 +33,15 @@ class VorbisFile
 	// variables accordingly.
 	bool ReadChunk();
 
+	void TryToRefillBufferIfEmpty();
+	bool MoreDataIsAvailable();
+	void CheckBufferFrequency();
+	int CheckBufferChannelCountAndGetStretchFactor();
+	size_t GetBufferedSampleCount();
+	void GetSamplesFromBuffer(int16 *outOutputBuffer,
+							  size_t inOutputSampleCount,
+							  int inStretchFactor);
+
 public:
 	//////////
 	// Open an Ogg Vorbis audio file for reading.  You must specify
