@@ -637,6 +637,8 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
+  (provide param)
+
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
   (define $no-default (list 'no 'default))
@@ -669,7 +671,7 @@
         (car params)]
        [else (loop (cdr params))])))
 
-  (define (find-binding template name)
+  (define (param template name)
     ;; A very rudimentary binding finder--this will probably be completely
     ;; rewritten as we add test cases.
     (let loop [[template template]]
@@ -710,11 +712,14 @@
        '()]
       [(expand-parameters (name keywords ...) rest ...)
        (cons (make <template-parameter> :name 'name keywords ...)
+             (expand-parameters rest ...))]
+      [(expand-parameters name rest ...)
+       (cons (make <template-parameter> :name 'name)
              (expand-parameters rest ...))]))
 
   (define-syntax (expand-init-thunk stx)
     (syntax-case stx ()
-      [(expand-init-thunk . body)
+      [(expand-init-thunk parameters . body)
        (begin
 
          ;; Create a capture variable NAME which will be visible in BODY.
@@ -723,48 +728,62 @@
          ;;
          ;; XXX - There's a gross hack here--we have to use the context of
          ;; (car (syntax-e #'body)) instead of just #'body, because PLT203
-         ;; looses all syntax information on pattern variables of the form
+         ;; loses all syntax information on pattern variables of the form
          ;; '. body' and 'body ...'.  Aiyeee!  (If #'body isn't a syntax
          ;; pair, it doesn't really matter what context we pick.)
          (define (make-capture-var name)
            (datum->syntax-object (if (pair? (syntax-e #'body))
                                      (car (syntax-e #'body))
                                      #'body)
-                                 name))
+                                 name #f #f))
+
+         ;; Bind each template parameter NAME to a call to (param self
+         ;; 'name), so it's convenient to access from with the init-thunk.
+         (define (make-param-bindings self-stx parameters-stx)
+           (with-syntax [[self self-stx]]
+             (datum->syntax-object
+              stx
+              (map (lambda (param-stx)
+                     (syntax-case param-stx ()
+                       [(name . rest)
+                        (syntax/loc param-stx [name (param self 'name)])]
+                       [name
+                        (syntax/loc param-stx [name (param self 'name)])]))
+                   (syntax->list parameters-stx))
+              #f #f)))
 
          ;; We introduce a number of "capture" variables in BODY.  These
          ;; will be bound automagically within BODY without further
          ;; declaration.  See the PLT203 mzscheme manual for details.
-         (with-syntax [[param (make-capture-var 'param)]]
-           (syntax/loc
+         (with-syntax [[self (make-capture-var 'self)]]
+           (quasisyntax/loc
             stx
-            (lambda (node)
-              (let-syntax [[param
-                            (syntax-rules ()
-                              [(_ name)
-                               (find-binding node 'name)])]]
+            (lambda (self)
+              (let #,(make-param-bindings #'self #'parameters)
                 (begin/var . body))))))]))
     
   (define-syntax define-template
     (syntax-rules (:extends)
-      [(define-template name group (:extends extended . bindings)
-         parameters . body)
+      [(define-template group name parameters
+                              (:extends extended . bindings)
+         . body)
        (define name (make <template>
                       :group      group
                       :extends    extended
                       :bindings   (bindings->hash-table (list . bindings))
                       :parameters (expand-parameters . parameters)
-                      :init-thunk (expand-init-thunk . body)))]
-      [(define-template name group bindings . rest)
-       (define-template name group (:extends #f . bindings) . rest)]))
+                      :init-thunk (expand-init-thunk parameters . body)))]
+      [(define-template group name parameters bindings . body)
+       (define-template group name parameters (:extends #f . bindings)
+         . body)]))
 
   (define-syntax define-template-definer
     (syntax-rules ()
       [(define-template-definer definer-name group)
        (define-syntax definer-name
          (syntax-rules ()
-           [(definer-name name . rest)
-            (define-template name 'group . rest)]))]))
+           [(definer-name . rest)
+            (define-template 'group . rest)]))]))
 
   ;;-----------------------------------------------------------------------
   ;;  Nodes
@@ -858,8 +877,8 @@
                       (string->symbol (cadddr matches))))]))))
 
   (define-syntax define-node
-    (syntax-rules (:extends)
-      [(define-node name group node-class (:extends extended bindings ...)
+    (syntax-rules (:template)
+      [(define-node name group node-class (:template extended bindings ...)
          body ...)
        (begin
          (define name
@@ -868,14 +887,15 @@
                :group      'group
                :extends    extended
                :bindings   (bindings->hash-table (list bindings ...))
-               :init-thunk (expand-init-thunk body ...)
+               :init-thunk (expand-init-thunk () body ...)
                :parent     parent
                :name       local-name)))
          (register-node name))]
       [(define-node name group node-class (bindings ...) body ...)
-       (define-node name group node-class (:extends #f bindings ...) body ...)]
+       (define-node name group node-class (:template #f bindings ...)
+         body ...)]
       [(define-node name group node-class)
-       (define-node name group node-class (:extends #f))]))
+       (define-node name group node-class (:template #f))]))
 
   (define-syntax define-node-definer
     (syntax-rules ()
