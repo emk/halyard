@@ -352,6 +352,28 @@ std::string TSchemeInterpreter::PrevCardName(void)
 	return SCHEME_STR_VAL(o);
 }
 
+bool TSchemeInterpreter::IsValidCard(const char *inCardName)
+{
+	Scheme_Object *args[1];
+	args[0] = scheme_make_string(inCardName);
+	Scheme_Object *o = CallScheme("%kernel-valid-card?", 1, args);
+	return SCHEME_FALSEP(o) ? false : true;
+}
+
+bool TSchemeInterpreter::Eval(const std::string &inExpression,
+							  std::string &outResultText)
+{
+	Scheme_Object *args[1];
+	args[0] = scheme_make_string(inExpression.c_str());
+	Scheme_Object *o = CallScheme("%kernel-eval", 1, args);
+	if (!SCHEME_PAIRP(o) ||
+		!SCHEME_BOOLP(SCHEME_CAR(o)) ||
+		!SCHEME_STRINGP(SCHEME_CDR(o)))
+		gLog.FatalError("Unexpected result from %kernel-eval");
+	outResultText = SCHEME_STR_VAL(SCHEME_CDR(o));
+	return SCHEME_FALSEP(SCHEME_CAR(o)) ? false : true;
+}
+
 
 //=========================================================================
 //	TSchemeCallback Methods
@@ -513,4 +535,3 @@ TArgumentList *TSchemeArgumentList::GetListArg()
     UNIMPLEMENTED;
 	return NULL; //new TSchemeArgumentList();
 }
-

@@ -133,9 +133,29 @@ public:
 	virtual std::string PrevCardName(void) = 0;
 	
 	//////////
+	// Determine whether a card with the given name exists.
+	//
+	// [in] inCardName - The name of the card.
+	// [out] return - true if and only if the card exists.
+	//
+	virtual bool IsValidCard(const char *inCardName) = 0;
+
+	//////////
+	// Evaluate an expression, returning any errors which occur.
+	//
+	// [in] inExpression - The expression to evaluate.
+	// [out] outResultText - The result of the expression, as a string,
+	//                       or an error message.
+	// [out] return - true if an expression was returned, false if an
+	//                error was returned.
+	//
+	virtual bool Eval(const std::string &inExpression,
+					  std::string &outResultText) = 0;
+	
+	//////////
 	// Do we have a single, global instance of this class?
 	//
-	static bool HaveInstance() { return (sInstance != NULL); }
+	static bool HaveInstance() { return sInstance != NULL; }
 
 	//////////
 	// Return the single, global instance of this class.
