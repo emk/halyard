@@ -6,11 +6,6 @@
 ;;  to pass ImlUnit the "source code" of each test case as well as the
 ;;  actual result.
 
-(define (value->string value)
-  (let ((str-port (open-output-string)))
-    (write value str-port)
-    (get-output-string str-port)))
-
 (define-syntax test
   (syntax-rules ()
     [(_ sexpr)
@@ -22,6 +17,12 @@
 ;;=========================================================================
 
 (test #t)
+
+(set-engine-var! 'foo "bar")
+(test (equal? (engine-var 'foo) "bar"))
+
+(debug-log "Completed simple tests")
+(log "Completed simple tests")
 
 
 ;;=========================================================================
@@ -47,3 +48,25 @@
 (test-arg-type 'TPoint (list (point 1 2)))
 (test-arg-type 'TRect (list (rect 1 2 3 4)))
 (test-arg-type 'Color (list (color 1 2 3 4)))
+
+
+;;=========================================================================
+;;  Language Test Cases
+;;=========================================================================
+
+(define (mark-card-as-seen card-name)
+  (debug-log (cat "Marking " card-name))
+  (let ((var-name (string->symbol (cat "seen-" card-name))))
+    (set-engine-var! var-name "1")))
+
+(card start
+  (mark-card-as-seen "start")
+  (jump test-1))
+
+(card test-1
+  (mark-card-as-seen "test-1")
+  (jump test-2))
+
+(card test-2
+  (mark-card-as-seen "test-2")
+  (exit-script))

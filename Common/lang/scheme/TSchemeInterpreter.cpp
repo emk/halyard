@@ -12,13 +12,29 @@ static const char *CALL_5L_PRIM = "%call-5l-prim";
 
 
 //=========================================================================
+//	Scheme Primitives
+//=========================================================================
+
+DEFINE_5L_PRIMITIVE(ExitScheme)
+{
+	TSchemeInterpreter::SetDone();
+}
+
+
+//=========================================================================
 //	TSchemeInterpreter Methods
 //=========================================================================
 
 Scheme_Env *TSchemeInterpreter::sGlobalEnv = NULL;
 
+bool TSchemeInterpreter::sDone = false;
+
 TSchemeInterpreter::TSchemeInterpreter()
 {
+	// Install our primitives.
+	if (!gPrimitiveManager.DoesPrimitiveExist("exitscheme"))
+		REGISTER_5L_PRIMITIVE(ExitScheme);
+
 	// Initialize the Scheme interpreter.
 	sGlobalEnv = scheme_basic_env();
 
@@ -114,12 +130,12 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(void *inData, int inArgc,
 	if (have_error)
 		scheme_signal_error("%s: %s: %s", prim_name,
 							error.c_str(), errormsg.c_str());
-	else if (have_result) 
+	else if (have_result)
 		// TODO - Support more data types as soon as TVariableManager does.
 		return scheme_make_sized_string(const_cast<char*>(result.c_str()),
 										result.length(), true);
 
-	return scheme_void;
+	return scheme_false;
 }
 
 Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,

@@ -57,6 +57,8 @@ class TSchemeInterpreter : public TInterpreter
 	friend class TSchemeArgumentList;
 
 	static Scheme_Env *sGlobalEnv;
+
+	static bool sDone;
 	
 	static Scheme_Object *Call5LPrim(void *inData, int inArgc,
 									 Scheme_Object **inArgv);
@@ -69,6 +71,9 @@ class TSchemeInterpreter : public TInterpreter
 public:
 	TSchemeInterpreter();
 	virtual ~TSchemeInterpreter();
+
+	static void SetDone() { sDone = true; }
+	static bool IsDone() { return sDone; }
 
 	// For documentation of these virtual methods, see TInterpreter.h.
 	virtual void Idle(void);

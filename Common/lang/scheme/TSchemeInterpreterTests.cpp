@@ -74,5 +74,18 @@ void test_TSchemeInterpreter (void)
 	Color_test_values[0] = Color(1, 2, 3, 4);
 	REGISTER_TYPE_TEST_PRIMITIVES(Color);
 	
-    boost::scoped_ptr<TInterpreter> interp(new TSchemeInterpreter());
+	// Boot the interpreter.
+	TSchemeInterpreter interp/*("test.ss")*/;
+
+	// Jump to the start card.
+	interp.JumpToCardByName("start");
+   
+	// Run the idle loop until we're done.
+	while (!interp.IsDone())
+		interp.Idle();
+
+	// Make sure we visited all the right cards.
+	TEST(gVariableManager.GetString("seen-start") == std::string("1"));
+	TEST(gVariableManager.GetString("seen-test-1") == std::string("1"));
+	TEST(gVariableManager.GetString("seen-test-2") == std::string("1"));
 }
