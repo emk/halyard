@@ -15,6 +15,7 @@ CVS - kwasi, djin, emk
   * Removed old STATE-DB-CHANGED event-handling code.  Use the new
     listener system instead; it's happy.
   * Wrote serialization code for binmsg protocol.
+  * Wrote deserialization code for binmsg protocol.
   * Added countdown template in scheme
 
 0.0.18 - 15 February 2004 - emk

@@ -38,7 +38,11 @@ X                                    (lambda (get) (whatever (get '/foo))))
     Reimplement meters in Scheme
       Extend Quake 2 net protocol to allow reporting of state vars
 /       Write serializer
-        Write deserializer
+/       Write deserializer
+        Hook into server & stock gamex86.dll
+        Hook into client
+        Write test code in 5Ltest_wx
+        Port changes to VTR AI module
 /     Real-time Scheme-like language for updating meter dials, etc.
       Strip Quake 2 meter implementation to bare essentials
       Re-implement meter logic in Scheme and C++
