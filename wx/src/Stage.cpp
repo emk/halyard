@@ -30,6 +30,7 @@
 #include "EventDispatcher.h"
 #include "ImageCache.h"
 #include "CursorManager.h"
+#include "Transition.h"
 #include "dlg/ProgramPropDlg.h"
 
 #if CONFIG_HAVE_QUAKE2
@@ -773,6 +774,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	mEventDispatcher = new EventDispatcher();
 	mImageCache = new ImageCache();
 	mCursorManager = new CursorManager();
+	mTransitionManager = new TransitionManager();
 
     mTextCtrl =
         new wxTextCtrl(this, FIVEL_TEXT_ENTRY, "", wxDefaultPosition,
@@ -788,6 +790,7 @@ Stage::~Stage()
 	delete mImageCache;
 	delete mCursorManager;
 	delete mEventDispatcher;
+	delete mTransitionManager;
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
 
@@ -1337,14 +1340,33 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 	// If we're supposed to run a transiton, do so now.
 	if (inTransition != "none" && inMilliseconds > 0)
 	{
-		// TODO - Run transiton.
+		// Attempt to get a copy of whatever is on the screen.
+		wxClientDC client_dc(this);
+		wxBitmap before(mStageSize.GetWidth(), mStageSize.GetHeight(), 24);
+		bool have_before;
+		{
+			wxMemoryDC before_dc;
+			before_dc.SelectObject(before);
+			have_before =
+				before_dc.Blit(0, 0,
+							   mStageSize.GetWidth(), mStageSize.GetHeight(),
+							   &client_dc, 0, 0);
+		}
+
+		// Run transiton, if we can.
+		if (have_before)
+		{
+			TransitionResources r(client_dc, before, mOffscreenPixmap,
+								  mOffscreenFadePixmap);
+			mTransitionManager->RunTransition(inTransition, inMilliseconds, r);
+		}
 	}
 
 	// Draw our offscreen buffer to the screen, and mark that portion of
 	// the screen as updated.
 	{
-		wxClientDC dc(this);
-		PaintStage(dc);
+		wxClientDC client_dc(this);
+		PaintStage(client_dc);
 	}
 	ValidateStage();
 }

@@ -295,6 +295,10 @@ SOURCE=..\..\src\TQuake2Primitives.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\Transition.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\TWxPrimitives.h
 # End Source File
 # Begin Source File
@@ -416,6 +420,32 @@ SOURCE=..\..\src\StageOpt.cpp
 OutDir=.\Debug
 InputPath=..\..\src\StageOpt.cpp
 InputName=StageOpt
+
+"$(OutDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	rem  Use C++ command line, adding: 
+	rem    /Zi /O2 /Ob2 $(InputPath) 
+	rem  ...and removing: 
+	rem    /Zl /Od /GZ 
+	cl /nologo /MTd /W3 /Gm /GR /GX /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/mswd" /I "../../../libs/quake2/wx" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /D "__WXWINDOWS__" /D "REF_HARD_LINKED" /D "IML_Q2_EXTENSIONS" /Fo"Debug/" /Fd"Debug/" /FD /c /Zi /O2 /Ob2 $(InputPath) 
+	
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\TransitionOpt.cpp
+
+!IF  "$(CFG)" == "wx5L - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
+
+# PROP Ignore_Default_Tool 1
+# Begin Custom Build
+OutDir=.\Debug
+InputPath=..\..\src\TransitionOpt.cpp
+InputName=TransitionOpt
 
 "$(OutDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	rem  Use C++ command line, adding: 
