@@ -15,8 +15,8 @@
 //
 
 #define VERSION_MAJOR_NUM	3
-#define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		22
+#define VERSION_MINOR_NUM	4
+#define VERSION_REV_BIG		0
 #define VERSION_REV_SMALL	0
 
 #define VERSION_STRING	"5L 3.4.0"
@@ -25,6 +25,9 @@
 
 /*
  $Log$
+ Revision 1.30  2002/07/26 20:10:22  emk
+ (Updating the *rest* of the version numbers.  Ooops.)
+
  Revision 1.29  2002/07/26 20:07:39  emk
  3.4.0 - 26 July 2002 - emk
 
