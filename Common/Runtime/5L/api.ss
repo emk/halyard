@@ -37,7 +37,7 @@
   (define-syntax fn
     (syntax-rules ()
       [(fn arglist code ...)
-       (lambda arglist code ...)]))
+       (lambda arglist (begin/var code ...))]))
 
   ;;; Create an anonymous function object with no parameters.
   ;;;
@@ -46,7 +46,7 @@
   (define-syntax callback
     (syntax-rules ()
       [(callback code ...)
-       (lambda () code ...)]))
+       (lambda () (begin/var code ...))]))
 
   ;;; Run a body of code until a condition is met.
   ;;;
@@ -60,7 +60,7 @@
       [(while cond body ...)
        (when cond
 	 (let loop []
-	   body ...
+	   (begin/var body ...)
 	   (when cond
 	     (loop))))]))
 
@@ -73,7 +73,7 @@
   (define-syntax for-each-item
     (syntax-rules ()
       [(for-each-item [name lst] body ...)
-       (for-each (lambda (name) body ...) lst)]))
+       (for-each (lambda (name) (begin/var body ...)) lst)]))
 
   ;;; Bind a Scheme variable name to a 5L engine variable.
   ;;;
@@ -147,7 +147,7 @@
        (let [[saved #f]]
 	 (dynamic-wind
 	     (lambda () (set! saved (text-position)))
-	     (lambda () body ...)
+	     (lambda () (begin/var body ...))
 	     (lambda () (set! (text-position) saved))))]))
 
   ;;; Save (graphic-position) while executing a body, and restore it
@@ -161,7 +161,7 @@
        (let [[saved #f]]
 	 (dynamic-wind
 	     (lambda () (set! saved (graphic-position)))
-	     (lambda () body ...)
+	     (lambda () (begin/var body ...))
 	     (lambda () (set! (graphic-position) saved))))]))  
 
   ;;; @type RECT The screen rectangle, in global co-ordinates.
@@ -285,7 +285,7 @@
 	     [new (point-offset old by)]]
 	 (dynamic-wind
 	     (lambda () (set! (origin) new))
-	     (lambda () body ...)
+	     (lambda () (begin/var body ...))
 	     (lambda () (set! (origin) old))))]))
 
 

@@ -4,6 +4,8 @@
 ;;  Handy code by Brian Campbell, with some later hacking by Eric Kidd.
 
 (module trace mzscheme
+  (require (lib "begin-var.ss" "5L"))
+  
   (provide with-tracing
            set-trace-output-printer!)
   
@@ -105,6 +107,6 @@
                       (syntax-rules []
                         [(_ name . values)
                          (#%app trace-call 'name name . values)])]]
-          body ...))]))
+          (begin/var body ...)))]))
 
   ) ; end module

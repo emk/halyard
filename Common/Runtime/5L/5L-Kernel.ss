@@ -3,6 +3,10 @@
   ;; Import %call-5l-prim from the engine.
   (require #%fivel-engine)
 
+  ;; Get begin/var.
+  (require (lib "begin-var.ss" "5L"))
+  (provide begin/var)
+  
 
   ;;=======================================================================
   ;;  Built-in Types
@@ -82,7 +86,8 @@
   (define-syntax label
     (syntax-rules ()
       [(label name body ...)
-       (call-with-current-continuation (lambda (name) body ...))]))
+       (call-with-current-continuation (lambda (name)
+                                         (begin/var body ...)))]))
 
   (define (call-with-errors-blocked report-func thunk)
     (let* ((result (with-handlers ([void (lambda (exn) (cons #f exn))])
@@ -98,7 +103,8 @@
   (define-syntax with-errors-blocked
     (syntax-rules ()
       [(with-errors-blocked (report-func) body ...)
-       (call-with-errors-blocked report-func (lambda () body ...))]))
+       (call-with-errors-blocked report-func
+                                 (lambda () (begin/var body ...)))]))
 
 
   ;;=======================================================================
@@ -342,7 +348,8 @@
     (syntax-rules ()
       [(card name body ...)
        (begin
-	 (define name (make-%kernel-card 'name (lambda () body ...)))
+	 (define name (make-%kernel-card 'name
+                                         (lambda () (begin/var body ...))))
 	 (%kernel-register-card name))]))
 
 

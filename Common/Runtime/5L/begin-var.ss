@@ -31,6 +31,8 @@
            (free-identifier=? (car expanded) $var-identifier)))) 
   |#
   
+  (provide begin/var)
+  
   (define-syntax (begin/var stx) 
     (syntax-case stx (var)
       [(_)
