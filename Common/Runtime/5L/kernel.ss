@@ -609,12 +609,12 @@
           (%kernel-set-state 'JUMPING)
           (%kernel-check-state))))
 
-  (define (refresh)
+  (define (refresh &key (transition 'none) (time 100))
     ;; Refresh the screen by blitting dirty areas of our offscreen buffer
     ;; to the display.
     (call-hook-functions *before-draw-hook*)
-    (if (have-5l-prim? 'unlock)
-        (call-5l-prim 'unlock)))
+    (if (have-5l-prim? 'refresh)
+        (call-5l-prim 'refresh transition time)))
 
 
   ;;=======================================================================
