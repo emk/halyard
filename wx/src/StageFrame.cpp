@@ -25,6 +25,7 @@
 #include <wx/laywin.h>
 #include <wx/config.h>
 
+#include "TVersion.h"
 #include "TInterpreter.h"
 #include "doc/Document.h"
 #include "doc/TamaleProgram.h"
@@ -683,7 +684,7 @@ void StageFrame::OnRunTests(wxCommandEvent &inEvent)
 void StageFrame::OnAbout(wxCommandEvent &inEvent)
 {
     wxMessageDialog about(this,
-                          "Tamale\n"
+                          VERSION_STRING "\n"
                           "Copyright 1993-2004 The Trustees of Dartmouth College.  All rights reserved.",
                           "About Tamale", wxOK);
     about.ShowModal();

@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Added version to About... dialog (bug #1785).
+
 0.0.40 - 08 Nov 2005 - emk
 
   * Added ANIMATE function.
