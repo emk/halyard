@@ -147,18 +147,17 @@ void AudioStream::Stop()
 
 class AudioStreamTimer : public wxTimer
 {
+public:
 	enum {
 		TIMER_INTERVAL = 500 // in milliseconds
 	};
 
-public:
 	AudioStreamTimer();
 	virtual void Notify();
 };
 
 AudioStreamTimer::AudioStreamTimer()
 {
-	Start(TIMER_INTERVAL);
 }
 
 void AudioStreamTimer::Notify()
@@ -192,11 +191,15 @@ void AudioStream::ShutDownStreams()
 void AudioStream::RegisterStream(AudioStream *inStream)
 {
 	sStreams.push_front(inStream);
+	if (!sTimer->IsRunning())
+		sTimer->Start(AudioStreamTimer::TIMER_INTERVAL);
 }
 
 void AudioStream::UnregisterStream(AudioStream *inStream)
 {
 	sStreams.remove(inStream);
+	if (sStreams.empty())
+		sTimer->Stop();
 }
 
 void AudioStream::IdleAllStreams()

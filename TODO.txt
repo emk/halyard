@@ -11,14 +11,14 @@
 /     Allow AudioStreams to accept int16 *or* floats
 /     Stop discarding extra Vorbis data when it doesn't fit in buffer
 /     Handle mono
-      Replace test clips with custom clips
+/     Replace test clips with custom clips
 /     Volume control
-      Don't run timer unless there's an active stream
-      Fix endianess in libivorbisdec?
+/     Don't run timer unless there's an active stream
+/     Fix endianess in libivorbisdec?
       Fix stutter when switching from sine to vorbis clip (portaudio bug?)
 
     Useful features
-      Looping
+/     Looping
       Geiger synth
       Hook into Tamale for Geigers
       Hook into Quake for Geigers

@@ -13,15 +13,17 @@
 //=========================================================================
 
 VorbisAudioStream::VorbisAudioStream(const char *inFileName,
-									 size_t inBufferSize)
+									 size_t inBufferSize,
+									 bool inShouldLoop)
 	: AudioStream(INT16_PCM_STREAM),
+	  mFileName(inFileName), mShouldLoop(inShouldLoop),
 	  mFile(new VorbisFile(inFileName, SAMPLES_PER_SECOND, CHANNELS)),
 	  // Pad the buffer with an extra frame which we'll never use.
 	  // See IsBufferFull() for details.
 	  mBufferSize(inBufferSize+CHANNELS),
 	  mBuffer(new int16[inBufferSize+CHANNELS])
 {
-	// Buffer size must multiple of number of channels.
+	// Buffer size must be a multiple of the number of channels.
 	ASSERT(mBufferSize % CHANNELS == 0);
 
 	mDataBegin = 0;
@@ -30,6 +32,18 @@ VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 
 	// Fill our buffer.
 	Idle();
+}
+
+void VorbisAudioStream::RestartFileIfLoopingAndDone()
+{
+	if (mDone && mShouldLoop)
+	{
+		mDone = false;
+		mFile =
+			boost::shared_ptr<VorbisFile>(new VorbisFile(mFileName.c_str(),
+														 SAMPLES_PER_SECOND,
+														 CHANNELS));
+	}
 }
 
 bool VorbisAudioStream::IsBufferFull()
@@ -99,6 +113,7 @@ void VorbisAudioStream::MarkAsWritten(size_t inSize)
 void VorbisAudioStream::Idle()
 {
 	// Add as much data to the buffer as we can.
+	RestartFileIfLoopingAndDone();
 	while (!mDone && !IsBufferFull())
 	{
 		// Figure out how much free space we need to fill.
@@ -123,6 +138,7 @@ void VorbisAudioStream::Idle()
 				total_written += written;
 		}
 		MarkAsWritten(total_written);
+		RestartFileIfLoopingAndDone();
 	}
 }
 

@@ -5,15 +5,17 @@
 
 #include "AudioStream.h"
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/scoped_array.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 
 class VorbisFile;
 
 class VorbisAudioStream : public AudioStream
 {
-	boost::scoped_ptr<VorbisFile> mFile;
-	boost::scoped_array<int16> mBuffer;
+	std::string mFileName;
+	bool mShouldLoop;
+	boost::shared_ptr<VorbisFile> mFile;
+	boost::shared_array<int16> mBuffer;
 	size_t mBufferSize;
 	volatile size_t mDataBegin;
 	volatile size_t mDataEnd;
@@ -22,6 +24,12 @@ class VorbisAudioStream : public AudioStream
 	enum {
 		CHANNELS = 2
 	};
+
+	//////////
+	// If we're supposed to be looping, and we're out of data, re-open
+	// our file and read it from the beginning.
+	//
+	void RestartFileIfLoopingAndDone();
 
 	//////////
 	// Return true if the circular buffer is full.
@@ -45,7 +53,8 @@ class VorbisAudioStream : public AudioStream
 	void MarkAsWritten(size_t inSize);
 
 public:
-	VorbisAudioStream(const char *inFileName, size_t inBufferSize);
+	VorbisAudioStream(const char *inFileName, size_t inBufferSize,
+					  bool inShouldLoop);
 
 	virtual void Idle();
 	

@@ -141,9 +141,11 @@ DEFINE_5L_PRIMITIVE(AudioStreamVorbis)
 {
 	std::string name, path;
 	uint32 buffer_size;
-	inArgs >> name >> path >> buffer_size;
+	bool should_loop;
+	inArgs >> name >> path >> buffer_size >> should_loop;
 	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-						   new VorbisAudioStream(path.c_str(), buffer_size));
+						   new VorbisAudioStream(path.c_str(), buffer_size,
+												 should_loop));
 }
 
 DEFINE_5L_PRIMITIVE(DeleteElements)
