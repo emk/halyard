@@ -14,6 +14,7 @@ We have a new wxWidgets version:
   * Started using FiveL namespace on Windows.
   * Added support for Scheme-style indentation.
   * Partial implementation of a tabbed-document control.
+  * Basic edit menu works (required event delegation).
 
 ...and some other stuff:
 

@@ -20,36 +20,21 @@
 //
 // @END_LICENSE
 
-#ifndef ScriptEditor_H
-#define ScriptEditor_H
+#ifndef EventDelegator_H
+#define EventDelegator_H
 
-#include "TInterpreter.h"
-#include "EventDelegator.h"
-
-class ScriptTextCtrl;
-
-class ScriptEditor : public wxFrame {
-    static ScriptEditor *sFrame;
-    static void MaybeCreateFrame();
-
-    ScriptTextCtrl *mEditor;
-    EventDelegator mDelegator;
+/// Delegates menu-selection events from one wxEvtHandler object to another.
+/// This allows wxFrame objects to forward events to various child wxWindow
+/// objects that actually know how to process them, similar to the old
+/// "bureaucrat" system in Metrowerks PowerPlant.
+class EventDelegator {
+    wxEvent *mCurrentEvent;
+    wxEvtHandler *mDelegate;
 
 public:
-    static void EditScripts();
-
-    ScriptEditor();
-    ~ScriptEditor();
-
-    virtual bool ProcessEvent(wxEvent& event);
-
-private:
-    void DoNewScript();
-    void DoOpenScript();
-
-    void DisableUiItem(wxUpdateUIEvent &event);
-
-    DECLARE_EVENT_TABLE();
+    EventDelegator();
+    void SetDelegate(wxEvtHandler *delegate);
+    bool DelegateEvent(wxEvent& event, bool *outResult);
 };
 
-#endif // ScriptEditor_H
+#endif // EventDelegator_H

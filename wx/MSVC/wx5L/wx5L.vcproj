@@ -177,6 +177,9 @@
 				RelativePath="..\..\src\Element.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\EventDelegator.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\EventDispatcher.cpp">
 			</File>
 			<File
@@ -365,6 +368,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\Element.h">
+			</File>
+			<File
+				RelativePath="..\..\src\EventDelegator.h">
 			</File>
 			<File
 				RelativePath="..\..\src\EventDispatcher.h">

@@ -61,6 +61,19 @@ public:
     void OnUpdateTextUI(wxStyledTextEvent &event);
     void OnKeyDown(wxKeyEvent &event);
 
+    void OnUndo(wxCommandEvent &event);
+    void OnUpdateUiUndo(wxUpdateUIEvent &event);
+    void OnRedo(wxCommandEvent &event);
+    void OnUpdateUiRedo(wxUpdateUIEvent &event);
+    void OnCut(wxCommandEvent &event);
+    void OnUpdateUiCutCopyClear(wxUpdateUIEvent &event);
+    void OnCopy(wxCommandEvent &event);
+    void OnPaste(wxCommandEvent &event);
+    void OnUpdateUiPaste(wxUpdateUIEvent &event);
+    void OnClear(wxCommandEvent &event);
+    void OnSelectAll(wxCommandEvent &event);
+    void OnUpdateUiAlwaysOn(wxUpdateUIEvent &event);
+
     void AutoCompleteIdentifier();
     void IndentSelection();
     void IndentLine(int inLine);
@@ -80,6 +93,22 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
     EVT_STC_CHARADDED(-1, ScriptTextCtrl::OnCharAdded)
     EVT_STC_UPDATEUI(-1, ScriptTextCtrl::OnUpdateTextUI)
     EVT_KEY_DOWN(ScriptTextCtrl::OnKeyDown)
+
+    // Edit menu.
+    EVT_MENU(wxID_UNDO, ScriptTextCtrl::OnUndo)
+    EVT_UPDATE_UI(wxID_UNDO, ScriptTextCtrl::OnUpdateUiUndo)
+    EVT_MENU(wxID_REDO, ScriptTextCtrl::OnRedo)
+    EVT_UPDATE_UI(wxID_REDO, ScriptTextCtrl::OnUpdateUiRedo)
+    EVT_MENU(wxID_CUT, ScriptTextCtrl::OnCut)
+    EVT_UPDATE_UI(wxID_CUT, ScriptTextCtrl::OnUpdateUiCutCopyClear)
+    EVT_MENU(wxID_COPY, ScriptTextCtrl::OnCopy)
+    EVT_UPDATE_UI(wxID_COPY, ScriptTextCtrl::OnUpdateUiCutCopyClear)
+    EVT_MENU(wxID_PASTE, ScriptTextCtrl::OnPaste)
+    EVT_UPDATE_UI(wxID_PASTE, ScriptTextCtrl::OnUpdateUiPaste)
+    EVT_MENU(wxID_CLEAR, ScriptTextCtrl::OnClear)
+    EVT_UPDATE_UI(wxID_CLEAR, ScriptTextCtrl::OnUpdateUiCutCopyClear)
+    EVT_MENU(wxID_SELECTALL, ScriptTextCtrl::OnSelectAll)
+    EVT_UPDATE_UI(wxID_SELECTALL, ScriptTextCtrl::OnUpdateUiAlwaysOn)
 END_EVENT_TABLE()
 
 ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent)
@@ -289,6 +318,56 @@ void ScriptTextCtrl::OnKeyDown(wxKeyEvent &event) {
     } else {
         event.Skip();
     }
+}
+
+void ScriptTextCtrl::OnUndo(wxCommandEvent &event) {
+    Undo();
+}
+
+void ScriptTextCtrl::OnUpdateUiUndo(wxUpdateUIEvent &event) {
+    event.Enable(CanUndo());
+}
+
+void ScriptTextCtrl::OnRedo(wxCommandEvent &event) {
+    Redo();
+}
+
+void ScriptTextCtrl::OnUpdateUiRedo(wxUpdateUIEvent &event) {
+    event.Enable(CanRedo());
+}
+
+void ScriptTextCtrl::OnCut(wxCommandEvent &event) {
+    Cut();
+}
+
+void ScriptTextCtrl::OnUpdateUiCutCopyClear(wxUpdateUIEvent &event) {
+    int begin, end;
+    GetSelection(&begin, &end);
+    event.Enable(begin != end);
+}
+
+void ScriptTextCtrl::OnCopy(wxCommandEvent &event) {
+    Copy();
+}
+
+void ScriptTextCtrl::OnPaste(wxCommandEvent &event) {
+    Paste();
+}
+
+void ScriptTextCtrl::OnUpdateUiPaste(wxUpdateUIEvent &event) {
+    event.Enable(CanPaste());
+}
+
+void ScriptTextCtrl::OnClear(wxCommandEvent &event) {
+    Clear();
+}
+
+void ScriptTextCtrl::OnSelectAll(wxCommandEvent &event) {
+    SelectAll();
+}
+
+void ScriptTextCtrl::OnUpdateUiAlwaysOn(wxUpdateUIEvent &event) {
+    event.Enable(true);
 }
 
 void ScriptTextCtrl::AutoCompleteIdentifier() {
@@ -993,6 +1072,16 @@ void NotebookBar::ScrollTabs(wxCoord pixels) {
 
 ScriptEditor *ScriptEditor::sFrame = NULL;
 
+BEGIN_EVENT_TABLE(ScriptEditor, wxFrame)
+    EVT_UPDATE_UI(wxID_UNDO, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_REDO, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_CUT, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_COPY, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_PASTE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_CLEAR, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_SELECTALL, ScriptEditor::DisableUiItem)
+END_EVENT_TABLE()
+
 void ScriptEditor::MaybeCreateFrame() {
     if (!sFrame)
         new ScriptEditor;
@@ -1019,16 +1108,40 @@ ScriptEditor::ScriptEditor()
     // Add a status bar to our frame.
     CreateStatusBar();
 
-    // Set up our menus.
+    // Set up our File menu.
     wxMenu *file_menu = new wxMenu();
+
+    // Set up our Edit menu.
     wxMenu *edit_menu = new wxMenu();
+    edit_menu->Append(wxID_UNDO, "&Undo\tCtrl+Z",
+                      "Reverses the previous action.");
+    edit_menu->Append(wxID_REDO, "&Redo\tCtrl+Y",
+                      "Reverses the last undo.");
+    edit_menu->AppendSeparator();
+    edit_menu->Append(wxID_CUT, "Cu&t\tCtrl+X",
+                      "Delete the selection and put it onto the clipboard.");
+    edit_menu->Append(wxID_COPY, "&Copy\tCtrl+C",
+                      "Delete the selection and put it onto the clipboard.");
+    edit_menu->Append(wxID_PASTE, "&Paste\tCtrl+V",
+                      "Delete the selection and put it onto the clipboard.");
+    edit_menu->Append(wxID_CLEAR, "&Delete",
+                      "Delete the selection and put it onto the clipboard.");
+    edit_menu->AppendSeparator();
+    edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A",
+                      "Delete the selection and put it onto the clipboard.");
+
+    // Set up our Search menu.
     wxMenu *search_menu = new wxMenu();
+
+    // Set up our Window menu.
+    wxMenu *window_menu = new wxMenu();
 
     // Set up our menu bar.
     wxMenuBar *menu_bar = new wxMenuBar();
     menu_bar->Append(file_menu, "&File");
     menu_bar->Append(edit_menu, "&Edit");
     menu_bar->Append(search_menu, "&Search");
+    menu_bar->Append(window_menu, "&Window");
     SetMenuBar(menu_bar);
 
     // Create a notebook bar (does nothing for now).
@@ -1036,6 +1149,7 @@ ScriptEditor::ScriptEditor()
 
     // Create a single editor control for now--we'll make this fancy later.
     mEditor = new ScriptTextCtrl(this);
+    mDelegator.SetDelegate(mEditor);
 
     // Create a sizer to handle window layout.
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
@@ -1053,6 +1167,14 @@ ScriptEditor::~ScriptEditor() {
     sFrame = NULL;
 }
 
+bool ScriptEditor::ProcessEvent(wxEvent& event) {
+    bool result;
+    if (mDelegator.DelegateEvent(event, &result))
+        return result;
+    else
+        return wxFrame::ProcessEvent(event);
+}
+
 void ScriptEditor::DoNewScript() {
     
 }
@@ -1060,3 +1182,8 @@ void ScriptEditor::DoNewScript() {
 void ScriptEditor::DoOpenScript() {
     
 }
+
+void ScriptEditor::DisableUiItem(wxUpdateUIEvent &event) {
+    event.Enable(false);
+}
+

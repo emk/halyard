@@ -215,7 +215,7 @@ StageFrame::StageFrame(wxSize inSize)
     mFileMenu->Append(FIVEL_SAVE_PROGRAM, "&Save Program\tCtrl+S",
                       "Save the current Tamale program.");
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(FIVEL_EDIT_SCRIPTS, "&Edit Scripts...\tCtrl+E",
+    mFileMenu->Append(FIVEL_EDIT_SCRIPTS, "&Edit Scripts\tCtrl+E",
                       "Edit the Tamale script files for this program.");
     mFileMenu->Append(FIVEL_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
                       "Reload the currently executing Tamale scripts.");
