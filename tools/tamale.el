@@ -79,7 +79,7 @@ Tamale is a language for card-based interactive multimedia programming."
 ;;; adapted from scheme.ss.
 
 (defconst tamale-imenu-generic-expression
-  '((nil "^(\\(test-\\)?card\\s-+\\(\\sw+\\)" 2)
+  '((nil "^\\s-*(\\(test-\\)?card\\s-+\\(\\sw+\\)" 2)
     ("Structures" "^\\s-*(define-struct\\s-+\\(\\sw+\\)" 1)
     ("Stylesheets" "^\\s-*(define-stylesheet\\s-+\\(\\sw+\\)" 1)
     ("Variables" "^\\s-*(define\\s-+\\(\\sw+\\)" 1)
