@@ -382,6 +382,16 @@ inline void SetPrimitiveResult(int32 inValue)
 //////////
 // Set the return value of the current primitive.
 //
+// [in] inValue - The integer to return.
+//
+inline void SetPrimitiveResult(uint32 inValue)
+{
+	gVariableManager.SetULong("_result", inValue);
+}
+
+//////////
+// Set the return value of the current primitive.
+//
 // [in] inValue - The floating point value to return.
 //
 inline void SetPrimitiveResult(double inValue)
