@@ -149,6 +149,10 @@ SOURCE=..\..\..\Common\TObject.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TPlatform.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TPoint.h
 # End Source File
 # Begin Source File

@@ -17,6 +17,8 @@
 #if !defined (_TObject_h_)
 #define _TObject_h_
 
+#include "TPlatform.h"
+
 BEGIN_NAMESPACE_FIVEL
 
 /*-----------------------------------------------------------------
@@ -49,6 +51,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3  2002/03/05 09:44:06  tvw
+ Added a #include to TObject.h needed to compile under Win32.
+ Also added TPlatform.h to the Common project.
+
  Revision 1.2  2002/03/04 15:16:03  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 
