@@ -112,12 +112,14 @@ private:
 	// advances from one state to another as the movie opens.
 	//
 	enum MovieState {
+		MOVIE_BROKEN,         // Something went wrong; this object is dead
+
+		// This sequence is guaranteed to be in this order.
 		MOVIE_UNINITIALIZED,  // We're in the constructor
 		MOVIE_INCOMPLETE,     // We're waiting for newMovieAsyncOK
 		MOVIE_PREPREROLLING,  // We're waiting for pre-prerolling to complete
 		MOVIE_READY,          // Our movie is fully loaded, with a controller
-		MOVIE_STARTED,        // Our movie has been started
-		MOVIE_BROKEN          // Something went wrong; this object is dead
+		MOVIE_STARTED         // Our movie has been started
 	};
 
 	//////////
@@ -154,6 +156,12 @@ private:
 	// 
 	Fixed mRate;
 
+	//////////
+	// Should we start this movie immediately once it's ready to
+	// play?
+	//
+	bool mShouldStartWhenReady;
+
 public:
 	TQTMovie(CGrafPtr inPort, const std::string &inMoviePath);
 	virtual ~TQTMovie() throw ();
@@ -164,7 +172,10 @@ public:
 	void Redraw(HWND hWnd) throw ();
 
 	bool IsBroken() throw () { return mState == MOVIE_BROKEN; }
+	bool IsStarted() throw () { return mState == MOVIE_STARTED; }
 
+	void StartWhenReady();
+	void Start();
 	bool IsPaused();
 	void Pause();
 	void Resume();

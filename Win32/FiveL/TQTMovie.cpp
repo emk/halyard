@@ -90,7 +90,7 @@ CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
 
 TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     : mPort(inPort), mState(MOVIE_UNINITIALIZED),
-	  mMovie(NULL), mMovieController(NULL)
+	  mMovie(NULL), mMovieController(NULL), mShouldStartWhenReady(false)
 {
 	ASSERT(sIsQuickTimeInitialized);
 
@@ -142,9 +142,8 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 
 		// Hide our movie safely out of the way until we attach our
 		// controller to it.  I learned this trick from Chuck's code.
-		::SetMovieGWorld(mMovie,
-						 reinterpret_cast<CGrafPtr>(sDummyGWorld),
-						 NULL);
+		CGrafPtr safe_port = reinterpret_cast<CGrafPtr>(sDummyGWorld);
+		::SetMovieGWorld(mMovie, safe_port, NULL);
 		CHECK_MAC_ERROR(::GetMoviesError());
 
 		// Wait for our "newMovieAsync" open to complete.  (Actually, it
@@ -265,10 +264,13 @@ void TQTMovie::PrePrerollComplete(OSErr inError)
 	
 	// Attach a movie controller to our movie.
 	Rect bounds = {120, 160, 640, 480};
-	long controller_flags = mcTopLeftMovie | mcNotVisible;
-	mMovieController = ::NewMovieController(mMovie, &bounds,
-											controller_flags);
+	long controller_flags = mcTopLeftMovie /* | mcNotVisible */;
+	mMovieController = ::NewMovieController(mMovie, &bounds, controller_flags);
 	CHECK_MAC_ERROR(::GetMoviesError());
+
+	RgnHandle empty_region = ::NewRgn();
+	::MCSetClip(mMovieController, empty_region, NULL);
+	//::DisposeRgn(empty_region);
 	
 	// Mark the controller's rectangle as valid to avoid a
 	// double repainting.
@@ -282,14 +284,39 @@ void TQTMovie::PrePrerollComplete(OSErr inError)
 												  &ActionFilterCallback,
 												  refcon));
 
+	// Mark ourselves as ready to go.
 	UpdateMovieState(MOVIE_READY);
-	
+	if (mShouldStartWhenReady == true)
+		Start();
+}
+
+void TQTMovie::StartWhenReady()
+{
+	if (mState == MOVIE_READY)
+		Start();
+	else
+	{
+		// We can't just busy-loop on Idle until mState == MOVIE_READY,
+		// because it deadlocks the application.  I'm guessing that
+		// not all of our callbacks get run 
+		mShouldStartWhenReady = true;
+	}
+}
+
+void TQTMovie::Start()
+{
+	ASSERT(mState == MOVIE_READY);
+
+	// Clear the movie controller's clipping region so we can see it
+	// again.
+	//::MCSetClip(mMovieController, NULL, NULL);
+
 	// Start the movie.  I tried doing this with mcActionPrerollAndPlay,
 	// mcActionPlay and mcActionAutoPlay (whatever that is), and the
 	// movie wouldn't play reliably.  Now I just call Resume, which
 	// does some semi-naughty things, but *everything works*.
 	UpdateMovieState(MOVIE_STARTED);
-	Resume();
+	Resume();	
 }
 
 
