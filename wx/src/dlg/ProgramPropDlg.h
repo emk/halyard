@@ -28,8 +28,8 @@
 namespace model { class Object; }
 
 //////////
-/// This is the dialog which pops up at startup time and asks you whether
-/// you want to open an existing program or create a new one.
+/// This is the dialog which allows you to edit the name and other properties
+/// of a Tamale program.
 ///
 class ProgramPropDlg : public PropertyDlg
 {
