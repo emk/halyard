@@ -1,3 +1,15 @@
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+//		(c) Copyright 1999, Trustees of Dartmouth College. All rights reserved
+//			Interactive Media Lab, Dartmouth Medical School
+//
+//			$Author$
+//			$Date$
+//			$Revision$
+//
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+
 /****************************************
 
 	CObject
@@ -24,3 +36,10 @@ CObject::CObject()
 CObject::~CObject()
 {
 }
+
+/*
+$Log$
+Revision 1.2  1999/10/07 12:59:22  chuck
+Initial Revision
+
+*/
