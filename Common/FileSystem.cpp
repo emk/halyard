@@ -363,7 +363,7 @@ inTemporaryFile.RenameFile(*this);
 
 #if FIVEL_PLATFORM_WINDOWS || FIVEL_PLATFORM_OTHER
 
-void FileSystem::CreateWithMimeType(const std::string &inMimeType)
+void Path::CreateWithMimeType(const std::string &inMimeType)
 {
 	std::ofstream file(ToNativePathString().c_str());
 	file.close();

@@ -22,8 +22,8 @@ PngImage::~PngImage()
     gdImageDestroy(m_image);
 }
 
-void PngImage::DrawPixmap(GraphicsTools::Point inPoint,
-			  GraphicsTools::Pixmap &inPixmap)
+void PngImage::DrawPixMap(GraphicsTools::Point inPoint,
+			  GraphicsTools::PixMap &inPixmap)
 {
     for (int y = 0; y < inPixmap.height; y++)
     {

@@ -1,6 +1,6 @@
-CXXFLAGS=-I../ @CXXFLAGS@ -Wall -Werror
+CXXFLAGS=-I../ -I../libs/crypto @CXXFLAGS@ -Wall -Werror
 
-noinst_PROGRAMS = pngtest listfonts
+noinst_PROGRAMS = pngtest listfonts fontspeed
 
 pngtest_SOURCES = \
 	pngtest.cpp \
@@ -13,4 +13,10 @@ listfonts_SOURCES = \
 	listfonts.cpp
 
 listfonts_LDADD = @FREETYPE_LDADD@ -lgd ../libfivel.a
+
+fontspeed_SOURCES = \
+	fontspeed.cpp
+
+fontspeed_LDADD = @FREETYPE_LDADD@ -lgd ../libfivel.a \
+	../libs/crypto/libfivel_crypto.a
 

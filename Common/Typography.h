@@ -30,6 +30,8 @@ namespace Typography {
 	using GraphicsTools::Point;
 	using GraphicsTools::Image;
 	using GraphicsTools::Color;
+	using GraphicsTools::PixMap;
+	using GraphicsTools::GreyMap;
 
 	//////////
 	// A FreeType 2 vector, used for kerning.
@@ -44,11 +46,6 @@ namespace Typography {
 	// A FreeType 2 glyph index.  A (face,character code) pair map
 	// to a glyph index in FreeType 2.
 	typedef FT_UInt GlyphIndex;
-
-	//////////
-	// A FreeType 2 glyph object.  This usually contains a bitmap and
-	// a whole bunch of measurements.
-	typedef FT_GlyphSlot Glyph;
 
 	//////////
 	// Names for a few special Unicode characters.
@@ -156,6 +153,26 @@ namespace Typography {
 		operator FT_Library*() { return &mLibrary; }
 
 		static Library *GetLibrary();
+	};
+
+	//////////
+	// An individual, rendered glyph.  This is basically a copy of
+	// all the information we need from a FT_GlyphSlot, wrapped
+	// behind a nice interface so we can cache it.
+	//
+	class Glyph {
+		FT_Vector mAdvance;
+		FT_Glyph_Metrics mMetrics;
+		Point mGreyMapOffset;
+		GreyMap mGreyMap;
+
+	public:
+		Glyph(FT_GlyphSlot inGlyph);
+
+		FT_Vector GetAdvance() const { return mAdvance; }
+		const FT_Glyph_Metrics *GetMetrics() const { return &mMetrics; }
+		Point GetGreyMapOffset() const { return mGreyMapOffset; }
+		const GreyMap *GetGreyMap() const { return &mGreyMap; }
 	};
 
 	class AbstractFace;
@@ -507,10 +524,7 @@ namespace Typography {
 		// for the specified character code, the face will return
 		// a substitution character.
 		//
-		// For now, the glyph is always rendered to a pixmap.  This
-		// may or may not change.
-		//
-		virtual Glyph GetGlyph(CharCode inCharCode) = 0;
+		virtual Glyph *GetGlyph(CharCode inCharCode) = 0;
 
 		//////////
 		// Return a best guess for the maximum height of capital letters
@@ -577,10 +591,11 @@ namespace Typography {
 		// simply *can't* copy the underlying FreeType data.
 		struct FaceRep {
 			FT_Face mFace;
+			std::map<GlyphIndex,Glyph*> mGlyphCache;
 			int mRefcount;
 
-			FaceRep(FT_Face inFace) : mFace(inFace), mRefcount(1) {}
-			~FaceRep() { Error::CheckResult(FT_Done_Face(mFace)); }
+			FaceRep(FT_Face inFace);
+			~FaceRep();
 		};
 
 		FaceRep *mFaceRep;
@@ -601,9 +616,9 @@ namespace Typography {
 		    { return std::string(mFaceRep->mFace->style_name); }
 
 		GlyphIndex GetGlyphIndex(CharCode inCharCode);
-		Glyph GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex);
+		Glyph *GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex);
 
-		Glyph GetGlyph(CharCode inCharCode);
+		Glyph *GetGlyph(CharCode inCharCode);
 
 		//////////
 		// Kern two character codes.  If either character code
@@ -660,7 +675,7 @@ namespace Typography {
 		//
 		void AddSecondaryFace(const Face &inFace);
 
-		virtual Glyph GetGlyph(CharCode inCharCode);
+		virtual Glyph *GetGlyph(CharCode inCharCode);
 		virtual Distance GetAscender();
 		virtual Distance GetDescender();
 		virtual Distance GetLineHeight();
@@ -935,12 +950,15 @@ namespace Typography {
 
 	private:
 		//////////
-		// Draw a FreeType 2 bitmap to our image.
+		// Draw a GreyMap to our image.
 		//
-		// [in] inBitmap -   The bitmap to draw (in FreeType 2 format).
 		// [in] inPosition - The location at which to draw the bitmap.
+		// [in] inBitmap -   The GreyMap to draw.
+		// [in] inColor -    The color to draw in.
 		//
-		void DrawBitmap(Point inPosition, FT_Bitmap *inBitmap, Color inColor);
+		void DrawGreyMap(Point inPosition,
+						 const GreyMap *inGreyMap,
+						 Color inColor);
 		
 		//////////
 		// Process a single character.

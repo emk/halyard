@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999,2000 Trustees of Dartmouth College, All rights reserved.
@@ -313,6 +314,21 @@ void TBTree::RemoveAll(void)
 
 /*
  $Log$
+ Revision 1.3.4.1  2002/04/29 06:19:11  emk
+ Some over-the-weekend performance tuning.
+
+ - Added fonttools/fontspeed.cpp, which mimics 5L drawing patterns, but with
+ an empty DrawPixMap routine.
+
+ - Added a pre-rendered glyph cache to the Typography module.
+
+ - Added new features to GraphicsTools to support the glyph cache.
+
+ - visual-test.png has apparently changed, but I can't see any difference.
+ It's probably slight changes in anti-aliased pixel intensity.
+
+ - Miscellaneous other cleanups and tweaks.
+
  Revision 1.3  2002/03/04 15:15:55  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 

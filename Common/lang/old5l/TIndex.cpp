@@ -204,8 +204,9 @@ void TIndexFile::AddReference()
 // Decrement reference count for this index file
 void TIndexFile::RemoveReference()
 {
-	m_ReferenceCount--;
+	ASSERT(m_ReferenceCount > 0);
 
+	m_ReferenceCount--;
 	if (m_ReferenceCount <= 0)
 	{
 		// remove ourselves from the index file tree
@@ -464,6 +465,21 @@ bool TIndexFile::Init()
 
 /*
  $Log$
+ Revision 1.3.2.4  2002/04/29 06:19:11  emk
+ Some over-the-weekend performance tuning.
+
+ - Added fonttools/fontspeed.cpp, which mimics 5L drawing patterns, but with
+ an empty DrawPixMap routine.
+
+ - Added a pre-rendered glyph cache to the Typography module.
+
+ - Added new features to GraphicsTools to support the glyph cache.
+
+ - visual-test.png has apparently changed, but I can't see any difference.
+ It's probably slight changes in anti-aliased pixel intensity.
+
+ - Miscellaneous other cleanups and tweaks.
+
  Revision 1.3.2.3  2002/04/24 04:32:32  emk
  After much thought, I've finally decided that TIndexFileManager shouldn't close individual files, even if redoscript is turned on.  If this breaks the Windows engine, I'll port the Macintosh redoscript code to Windows.
 
