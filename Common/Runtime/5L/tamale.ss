@@ -16,7 +16,7 @@
            move-rect-center-to point-in-rect? center-text 
            %html-element% %edit-box-element% %movie-element% 
            html edit-box vorbis-audio sine-wave movie 
-           movie-pause movie-resume
+           movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics)
 
@@ -212,6 +212,9 @@
   (define (movie-resume name)
     (call-5l-prim 'movieresume name))
   
+  (define (set-media-volume! name channel volume)
+    (call-5l-prim 'MediaSetVolume name channel volume))
+
   (define (wait name &key frame)
     (if frame
         (call-5l-prim 'wait name frame)

@@ -87,9 +87,9 @@
     (syntax-rules ()
       [(for [name init-value cond next-value] body ...)
        (let loop [[name init-value]]
-         (begin/var body ...)
-         (if cond
-             (loop next-value)))]))
+         (when cond
+           (begin/var body ...)
+           (loop next-value)))]))
 
   ;;; Run a body once for each item in a list.
   ;;;
