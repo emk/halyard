@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.4 - 28 May 2003 - emk, brian
 
   * Changed CARD syntax to (CARD name () body ...).
   * Allowed GROUP and SEQUENCE to have initialization code:
@@ -16,6 +16,8 @@ CVS - emk
   * New functions: MOUSE-GRAB, MOUSE-UNGRAB, MOUSE-GRABBED?.
   * ZONE, MOVIE, HTML and EDIT-BOX now use element templates
     internally.
+  * Third-party code with vague or unknown licenses should
+    be pulled from the tree.
 
 0.0.3 - 9 May 2003 - emk, brian
 

@@ -444,3 +444,44 @@ changes to each of the non-DLL targets:
   * Set appropriate build and output directories.
   * Replaced the _USRDLL proprocessor define with _LIB.
   * Set a runtime library which matched my project.
+
+
+Unix Command Line Magic for Doing CVS Merges
+----------------------------------------
+
+Handy CVS hacking notes.  WARNING: DON'T RUN ANY OF THESE COMMANDS UNTIL
+YOU UNDERSTAND *EXACTLY* WHAT THEY DO.  IN DETAIL.  AND WHY THEY DO IT.
+
+Remove all CVS directories from a tree:
+
+  find . \( -name CVS -type d \) -exec rm -r {} \; -prune
+
+Replace all files containing conflicts with fresh copies from a current
+directory: 
+
+  cvs -n update > conflicts.txt
+  for F in `cat conflicts.txt | grep 'C' | sed 's/^. //'`; do mv ../wxWindows/$
+F $F; done
+
+In the following snippet, wxWindows-HEAD is an exported version of HEAD,
+and wxWindows is the latest version of wxWindows, minus CVS directories.
+We're computing a list of "interesting" differences (hence -x and -I).
+We're trying to revert HEAD to match the vendor branch.
+
+$ diff -ur --unidirectional-new-file -x .cvsignore -I "\\\$\\(Revision\\|Id\\|H
+eader\\|Date\\):" -I "^ * " wxWindows-HEAD/ wxWindows > wx-revert-to-vendor.dif
+f
+
+Remove any files which should be removed from HEAD:
+
+$ grep "^Only in" /cygdrive/c/src/wx-revert-to-vendor.diff | sed "s/^Only in wx
+Windows-HEAD\\/\\(: \\)*//" | sed "s/: /\\//" | xargs cvs remove -f -R
+
+Try to overwrite binary files which differed from their vendor versions.
+This didn't actually seem to do anything--the files all appeared to be
+unchanged, and CVS claimed it couldn't create some of them.  I'm not going
+to worry about it.
+
+$ for F in `grep "^Binary files" /cygdrive/c/src/wx-revert-to-vendor.diff | sed
+ 's|^[^/]*/||' | sed 's| and .*||'`; do mv /cygdrive/c/src/wxWindows/$F $F; don
+e

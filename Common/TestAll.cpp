@@ -25,14 +25,11 @@ USING_NAMESPACE_FIVEL
 // C++-ify the testing API.
 extern void test_TTemplateUtils(void);
 extern void test_TString (void);
-extern void test_TStream (void);
 extern void test_TBTree (void);
 extern void test_TEncoding (void);
 extern void test_FileSystem (void);
 extern void test_Model(void);
 extern void test_Typography (void);
-extern void test_CryptStream (void);
-extern void test_TIndex (void);
 extern void test_TStyleSheet (void);
 extern void test_TSchemeInterpreter (void);
 extern void test_TVectorDiff (void);
@@ -60,14 +57,11 @@ int main (int argc, char **argv)
 		RegisterTestPrimitives();
 		test_TTemplateUtils();
 		test_TString();
-		test_TStream();
 		test_TBTree();
 		test_TEncoding();
 		test_FileSystem();
 		test_Model();
 		test_Typography();
-		test_CryptStream();
-		test_TIndex();
 		test_TStyleSheet();
 		test_TSchemeInterpreter();
 		test_TVectorDiff();

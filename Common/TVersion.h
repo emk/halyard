@@ -17,15 +17,35 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		3
+#define VERSION_REV_BIG		4
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.3 (Development)"
+#define VERSION_STRING		"Tamale 0.0.4 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.46  2003/05/28 16:02:46  emk
+ 0.0.4 - 28 May 2003 - emk, brian
+
+   * Changed CARD syntax to (CARD name () body ...).
+   * Allowed GROUP and SEQUENCE to have initialization code:
+     (GROUP name () body ...).
+   * Can define templates for card groups, cards and elements.
+   * Can create temporary elements using CREATE.  These get deleted
+     when exiting the card.
+   * Can access template parameters directly, or by using PARAM.
+   * DRAW-BOX now honors alpha value of color argument.
+   * Event handling system moved into kernel.ss and redesigned.
+   * Callbacks are now re-entrant.
+   * New events: MOUSE-DOWN, MOUSE-UP, MOUSE-ENTER, MOUSE-LEAVE.
+   * New functions: MOUSE-GRAB, MOUSE-UNGRAB, MOUSE-GRABBED?.
+   * ZONE, MOVIE, HTML and EDIT-BOX now use element templates
+     internally.
+   * Third-party code with vague or unknown licenses should
+     be pulled from the tree.
+
  Revision 1.45  2003/05/09 17:05:31  emk
    * Very naive implementation of screen resizing--this has no sanity
      checks, no warnings, and probably dies a miserable death if

@@ -26,93 +26,6 @@ Here is a summary of licenses used in the 5L distribution:
      official copies of these licenses can be found elsewhere in the
      distribution.
 
-*===== DibLib License
-
-(C) Copyright 1994 Microsoft Corp.  All rights reserved.
-
-You have a royalty-free right to use, modify, reproduce and distribute the
-Sample Files (and/or any modified version) in any way you find useful,
-provided that you agree that Microsoft has no warranty obligations or
-liability for any Sample Application Files which are modified.
-
-*===== CGWorld License
-
-[NOTE: Unknown author, unknown licensing terms, and it doesn't match the
-coding style of any of our in-house developers.  We'll probably need to
-rewrite this.]
-
-*===== gamma.{h,cpp} License
-
-Written:	12/17/92, Matt Slot, fprefect@engin.umich.edu
-Updated:	11/09/93, MJS
-
-Oh yeah, this stuff is free to anyone interested in it.
-
-[NOTE: We use this to do gamma fades, and it's too low-level to rewrite
-easily.  I don't like this license; it's fairly vague.  The author appears
-to be at http://janus.ambrosiasw.com/~fprefect/ these days.  We should
-probably replace this with Drew Thaler's ColorGamma library, which Matt
-Slot says supercedes his work, and which is in the public domain.]
-
-*===== LTask, LTimerTask, UDeleteTaskQueue License
-
-Copyright 1995, Eric Forget. All rights reserved.
-
-Before using this code you should read the "License Agreement" document and
-agree with it.
-
-[NOTE: We have no copy of the "License Agreement".  There is an Eric Forget
-who appears to know something about Mac programming at
-http://www3.sympatico.ca/eric.forget/, eric.forget@sympatico.ca and
-eforget@Clemex.com who might be the original developer.  This code should
-be relatively easy to rewrite if necessary.]
-
-*===== MoreFiles License
-
-[NOTE: The code in our source *appears* to come from MoreFiles, but lacks a
-license.  The current version of MoreFiles can be found at
-http://developer.apple.com/samplecode/Sample_Code/Files/MoreFiles.htm.  The
-following license is for the current version.  We should the version in our
-tree with the current version to be safe.]
-
-Disclaimer: IMPORTANT: This Apple software is supplied to you by Apple
-Computer, Inc.  ("Apple") in consideration of your agreement to the
-following terms, and your use, installation, modification or redistribution
-of this Apple software constitutes acceptance of these terms.  If you do
-not agree with these terms, please do not use, install, modify or
-redistribute this Apple software.
-
-In consideration of your agreement to abide by the following terms, and
-subject to these terms, Apple grants you a personal, non-exclusive license,
-under Apple's copyrights in this original Apple software (the "Apple
-Software"), to use, reproduce, modify and redistribute the Apple Software,
-with or without modifications, in source and/or binary forms; provided that
-if you redistribute the Apple Software in its entirety and without
-modifications, you must retain this notice and the following text and
-disclaimers in all such redistributions of the Apple Software.  Neither the
-name, trademarks, service marks or logos of Apple Computer, Inc. may be
-used to endorse or promote products derived from the Apple Software without
-specific prior written permission from Apple.  Except as expressly stated
-in this notice, no other rights or licenses, express or implied, are
-granted by Apple herein, including but not limited to any patent rights
-that may be infringed by your derivative works or by other works in which
-the Apple Software may be incorporated.
-
-The Apple Software is provided by Apple on an "AS IS" basis.  APPLE MAKES
-NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE IMPLIED
-WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE, REGARDING THE APPLE SOFTWARE OR ITS USE AND OPERATION
-ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
-
-IN NO EVENT SHALL APPLE BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) ARISING IN ANY WAY OUT OF THE USE, REPRODUCTION, MODIFICATION
-AND/OR DISTRIBUTION OF THE APPLE SOFTWARE, HOWEVER CAUSED AND WHETHER UNDER
-THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY OR
-OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGE.
-
 *===== Aladdin MD5 License
 
   Copyright (C) 1999, 2002 Aladdin Enterprises.  All rights reserved.
@@ -135,21 +48,6 @@ DAMAGE.
 
   L. Peter Deutsch
   ghost@aladdin.com
-
-*===== The Blowfish License
-
-[NOTE: This code is export-controlled by the US government, and should be
-removed from our source tree.]
-
-blowfish.c : Source code for the Blowfish block cipher
-
-Part of the Python Cryptography Toolkit, version 1.0.0
-
-Copyright (C) 1995, A.M. Kuchling
-
-Distribute and use freely; there are no restrictions on further
-dissemination and usage except those imposed by the laws of your 
-country of residence.
 
 *===== Boost License Requirements
 
@@ -335,3 +233,8 @@ Legal Terms
     David Turner      <david.turner@freetype.org>
     Robert Wilhelm    <robert.wilhelm@freetype.org>
     Werner Lemberg    <werner.lemberg@freetype.org>
+
+*===== Other Licenses
+
+Many other directories under libs/ have their own licenses.  Consult the
+appropriate directory for details.

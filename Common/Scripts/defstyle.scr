@@ -1,3 +1,5 @@
+# This file is no longer used in the test suite.
+
 (defstyle S1
 	(Times) 12 r right 0xFFFFFF00 0x00FF0000 -1
 	2 0x00000080 0x00FF0080)

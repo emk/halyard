@@ -1,5 +1,18 @@
-Short Term
-----------
+
+  Send events to zones
+/   Mouse left down
+/   Mouse left up
+/   Mouse left double-click
+/   Mouse enter
+/   Mouse leave
+    Idle
+/   Mouse grabs
+  Only send idle events to zones that will try to handle them? No.
+/ Use element templates for everything that creates elements
+  Allow deletion of CREATE'd elements
+
+Older Stuff
+-----------
 
   Object store
     Implement data types
