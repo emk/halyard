@@ -281,6 +281,21 @@
       ;; Return the result.
       (cons ok? result)))
 
+  ;;; Fetch all identifiers in the top-level namespace.  We will probably
+  ;;; want to add support for querying specific modules (MODULE->NAMESPACE
+  ;;; will help).
+  (define (%kernel-get-identifiers)
+    (define (sym->type sym)
+      (with-handlers [[exn:variable? (lambda (exn) 'variable)] ;; unbound var
+                      [exn:syntax? (lambda (exn) 'syntax)]]    ;; a macro
+        (let [[val (namespace-variable-value sym)]]
+          (cond
+           [(function? val) 'function]
+           [#t 'variable]))))
+    (define (sym->sym+type sym)
+      (cons sym (sym->type sym)))
+    (map sym->sym+type (namespace-mapped-symbols)))
+  
   (define (%kernel-run-callback function args)
     (%kernel-run-as-callback (lambda () (apply function args))
                              non-fatal-error))
