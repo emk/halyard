@@ -25,6 +25,12 @@
 #define WRONG_VOLUME	3
 
 //////////
+// [in] errormsg - alert message
+// [in] isError - if true, use error icon
+//
+void AlertMsg(char *msg, bool isError);
+
+//////////
 // Check to see if a volume is mounted in the CD drive
 //
 // [in] inCDPath - path to the CD drive
@@ -77,6 +83,21 @@ void SetDate(TString &inStr, int32 inSecs, int32 inDateType);
 
 /*
  $Log$
+ Revision 1.2  2002/01/23 20:39:20  tvw
+ A group of changes to support a new stable build.
+
+ (1) Only a single instance of the FiveL executable may run.
+
+ (2) New command-line option "-D" used to lookup the installation directory in the system registry.
+     Note: Underscores will be parsed as spaces(" ").
+     Ex: FiveL -D HIV_Prevention_Counseling
+
+ (3) Slow down the flash on buttpcx so it can be seen on
+     fast machines.  A 200 mS pause was added.
+
+ (4) Several bugfixes to prevent possible crashes when error
+     conditions occur.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -24,11 +24,16 @@
 #include "Config.h"
 #include "LUtil.h"
 #include "Globals.h"
+#include "LRegistry.h"				// header file for class LRegistry
 
 #define OPT_INSTALL_DIR		1
 #define OPT_SCRIPT_FILE		2
 #define OPT_MOVIE_DIR		3 
 #define OPT_CONFIG_FILE		4
+#define OPT_FIND_DIR		5		// for -D argument, detect and find the directory specified
+
+// Location of IML programs in the system registry
+#define REGISTRY_IML_LOCATION "SOFTWARE\\Dartmouth IML\\"
 
 // local globals
 static char	*usage_str = "Illegal command line <%s>\n\nUsage: 5L.exe [-m movie_dir] [-d install_dir] [-s script_file] [-c config_file] [-x]";
@@ -79,6 +84,9 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 	int			theOption;
 	bool		getArg = false;
 	bool		done = false;
+	LRegistry	Reg;
+	TString		keyString;
+	char		errString[100];		// used to print error message
     
     // make sure our path variables are empty
     m_InstallDir = ""; 
@@ -117,10 +125,17 @@ bool ConfigManager::Init(LPSTR inCmdLine)
     					getArg = true;
     					break;
     				case 'd':
+						// -d: installation directory
     					theOption = OPT_INSTALL_DIR;
     					getArg = true;
     					break;
+					case 'D':
+						// -D: to detect and find the directory specified
+						theOption = OPT_FIND_DIR;
+						getArg = true;
+						break;
     				case 's':
+						// -s: script file name
     				    theOption = OPT_SCRIPT_FILE;
     				    getArg = true;
     				    break;
@@ -133,7 +148,9 @@ bool ConfigManager::Init(LPSTR inCmdLine)
     					getArg = false;
     					break;  
     				default:
-    					gLog.Error(usage_str, inCmdLine); 
+    					sprintf(errString, "Unknown command-line option \"%s\"", inCmdLine);
+						AlertMsg(errString, true);
+						//gLog.Error(usage_str, inCmdLine); 
     					return (false);
     					break;
     			}
@@ -145,13 +162,25 @@ bool ConfigManager::Init(LPSTR inCmdLine)
     			if (getArg)
     			{
 	    			argCnt = 0;
+
 	    			// read in the argument	
+					// the argument which contains a space will be quoted by "
+					//   e.g.  -D "HIV Prevention Counseling"
+
 	    			while ((not isspace (*strPtr)) and (*strPtr != '\0'))
-	    				argBuf[argCnt++] = *strPtr++;
+					{
+						// in -D option, we should replace underscore with space " "
+						if (theOption == OPT_FIND_DIR && *strPtr == '_')
+							argBuf[argCnt++] = ' ';
+						else
+    						argBuf[argCnt++] = *strPtr;
+
+						strPtr++;
+					}
 
 	    			argBuf[argCnt] = '\0'; 
 	    			
-	    			switch (theOption)
+					switch (theOption)
 	    			{
 	    				case OPT_CONFIG_FILE:
 	    					m_ConfigFile = (const char *) argBuf;
@@ -159,6 +188,27 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 	    				case OPT_INSTALL_DIR:
 	    					m_InstallDir = (const char *) argBuf;
 	    					break;
+						case OPT_FIND_DIR:
+							// read the installation directory from registry
+							Reg.SetRootKey(HKEY_LOCAL_MACHINE);
+							keyString = REGISTRY_IML_LOCATION;
+							keyString += argBuf;
+							if (Reg.SetKey(keyString, FALSE))
+							{
+								if (Reg.ReadString("", m_InstallDir))
+								{
+									//gLog.Error("Error: Reading key for -D option in system registry");
+									AlertMsg("Error reading system registry key for -D option", true);
+									return false;
+								}
+							}
+							else
+							{
+								//gLog.Error("Error: Opening key for -D option in sytem registry");
+								AlertMsg("Error opening sytem registry key for -D option", true);
+								return false;
+							}
+							break;
 	    				case OPT_SCRIPT_FILE: 
 	    					m_CurScript = (const char *) argBuf;
 	    					break;
@@ -184,12 +234,12 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 		//strPtr = _getcwd(argBuf, MAX_PATH);
 		if (dirLen == 0)
 		{
-			gLog.Error("Error: Couldn't get current working directory");
+			//gLog.Error("Error: Couldn't get current working directory");
+			AlertMsg("Couldn't get current working directory", true);
 			return (false);
 		}
 		
 		m_InstallDir = (const char *) argBuf;
-
 	}
 
 	// make sure the install dir is a path
@@ -632,6 +682,21 @@ TString ConfigManager::GetAudioPath(TString &inName)
  
 /*
  $Log$
+ Revision 1.2  2002/01/23 20:39:20  tvw
+ A group of changes to support a new stable build.
+
+ (1) Only a single instance of the FiveL executable may run.
+
+ (2) New command-line option "-D" used to lookup the installation directory in the system registry.
+     Note: Underscores will be parsed as spaces(" ").
+     Ex: FiveL -D HIV_Prevention_Counseling
+
+ (3) Slow down the flash on buttpcx so it can be seen on
+     fast machines.  A 200 mS pause was added.
+
+ (4) Several bugfixes to prevent possible crashes when error
+     conditions occur.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

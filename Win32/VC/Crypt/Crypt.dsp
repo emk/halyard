@@ -1,24 +1,24 @@
-# Microsoft Developer Studio Project File - Name="Common" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="Crypt" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=Common - Win32 Debug
+CFG=Crypt - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "Common.mak".
+!MESSAGE NMAKE /f "Crypt.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "Common.mak" CFG="Common - Win32 Debug"
+!MESSAGE NMAKE /f "Crypt.mak" CFG="Crypt - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "Common - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "Common - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "Crypt - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "Crypt - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -28,7 +28,7 @@ CFG=Common - Win32 Debug
 CPP=cl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "Common - Win32 Release"
+!IF  "$(CFG)" == "Crypt - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"THeader.h" /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "..\..\Common" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -49,9 +49,9 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\Bin\Common.lib"
+# ADD LIB32 /nologo
 
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+!ELSEIF  "$(CFG)" == "Crypt - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Yu"THeader.h" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\..\Common" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -72,53 +72,32 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\BinD\Common.lib"
+# ADD LIB32 /nologo
 
 !ENDIF 
 
 # Begin Target
 
-# Name "Common - Win32 Release"
-# Name "Common - Win32 Debug"
+# Name "Crypt - Win32 Release"
+# Name "Crypt - Win32 Debug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\TArray.cpp
+SOURCE=..\..\Crypt\_blowfish.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\TBTree.cpp
+SOURCE=..\..\Crypt\CryptStream.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\THeader.cpp
-# ADD CPP /Yc"THeader.h"
+SOURCE=..\..\Crypt\md5.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\TLogger.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TObject.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TPoint.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TRect.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TString.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TURL.cpp
+SOURCE=..\..\Crypt\md5_t.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -126,59 +105,19 @@ SOURCE=.\TURL.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\TArray.h
+SOURCE=..\..\Crypt\blowfish.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TBTree.h
+SOURCE=..\..\Crypt\CryptStream.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TCommon.h
+SOURCE=..\..\Crypt\md5.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TDictionary.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TDList.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\THeader.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TList.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TLogger.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TObject.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TPoint.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TRandom.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TRect.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TString.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TURL.h
+SOURCE=..\..\Crypt\md5_loc.h
 # End Source File
 # End Group
 # End Target

@@ -22,6 +22,9 @@ LFileBundle::LFileBundle()
 
 LFileBundle::~LFileBundle()
 {
+	if (cs == NULL)
+		return;
+	
 	// Write-back the cache
 	WriteCache();
 

@@ -42,6 +42,7 @@
 #include "Gestalt.h"
 #include "LHttp.h"
 #include "LBrowser.h"
+#include "SingleInstance.h"
 
 #if defined USE_BUNDLE
 	#include "LFileBundle.h"
@@ -121,6 +122,9 @@ IndexFileManager	gIndexFileManager;
 LHttp				gHttpTool;
 LBrowser			gBrowserTool;
 
+// The one and only CLimitSingleInstance object
+SingleInstance g_SingleInstanceObj(TEXT("{03C53E8D-4B46-428c-B812-DBAC5F1A6378}"));
+
 // Foward declarations of functions included in this code module:
 bool				InitInstance(HINSTANCE, int);
 void				DeInitInstance(void);
@@ -134,6 +138,7 @@ bool				CheckSystem(void);
 #ifdef DEBUG
 void				DumpStats(void);
 #endif
+
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -254,6 +259,7 @@ bool InitApplication(HINSTANCE hInstance)
 {
 	WNDCLASSEX		wcex;
 	DWORD			errNum;
+	char			errString[100];
 
 	wcex.cbSize = sizeof(WNDCLASSEX); 
 
@@ -284,7 +290,9 @@ bool InitApplication(HINSTANCE hInstance)
 	if (::RegisterClassEx(&wcex) == 0)
 	{
 		errNum = ::GetLastError();
-		gLog.Error("Could not register class, error returned <%d>", errNum);
+		//gLog.Error("Could not register class, error returned <%d>", errNum);
+		sprintf(errString, "InitApplication error, cannot register class.  ErrorID = %d", errNum);
+		AlertMsg(errString, true);
 		return (false);
 	}
 
@@ -303,7 +311,9 @@ bool InitApplication(HINSTANCE hInstance)
 	if (::RegisterClassEx(&wcex) == 0)
 	{
 		errNum = ::GetLastError();
-		gLog.Error("Could not register child class, error returned <%d>", errNum);
+		//gLog.Error("Could not register child class, error returned <%d>", errNum);
+		sprintf(errString, "Could not register child class.  ErrorID = %d", errNum);
+		AlertMsg(errString, true);
 		return (false);
 	}
 
@@ -315,7 +325,11 @@ bool InitApplication(HINSTANCE hInstance)
 //
 bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-    HWND        hWnd;
+    // first make sure we are the only instance running
+    if (g_SingleInstanceObj.IsAnotherInstanceRunning())
+		return FALSE;
+	
+	HWND        hWnd;
 #ifdef TAKE_OVER_SCREEN
     POINT		cursorPos;
 #endif
@@ -990,7 +1004,8 @@ bool CheckSystem(void)
 
 	if (not gSysInfo.IsWin32())
 	{
-		gLog.Error("This application requires at least Win95.");
+		//gLog.Error("This application requires at least Win95.");
+		AlertMsg("This application requires at least Win95", true);
 		return (false);
 	}
 
@@ -1212,6 +1227,21 @@ void PutInForeground(void)
 
 /*
  $Log$
+ Revision 1.2  2002/01/23 20:39:20  tvw
+ A group of changes to support a new stable build.
+
+ (1) Only a single instance of the FiveL executable may run.
+
+ (2) New command-line option "-D" used to lookup the installation directory in the system registry.
+     Note: Underscores will be parsed as spaces(" ").
+     Ex: FiveL -D HIV_Prevention_Counseling
+
+ (3) Slow down the flash on buttpcx so it can be seen on
+     fast machines.  A 200 mS pause was added.
+
+ (4) Several bugfixes to prevent possible crashes when error
+     conditions occur.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"THeader.h" /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\Bin\Common.lib"
+# ADD LIB32 /nologo
 
 !ELSEIF  "$(CFG)" == "Common - Win32 Debug"
 
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Yu"THeader.h" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -72,7 +72,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\BinD\Common.lib"
+# ADD LIB32 /nologo
 
 !ENDIF 
 
@@ -85,40 +85,120 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\TArray.cpp
+SOURCE=..\..\Common\TArray.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu"THeader.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\TBTree.cpp
+SOURCE=..\..\Common\TBTree.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu"THeader.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\THeader.cpp
-# ADD CPP /Yc"THeader.h"
+SOURCE=..\..\Common\THeader.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yc
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\TLogger.cpp
+SOURCE=..\..\Common\TLogger.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu"THeader.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\TObject.cpp
+SOURCE=..\..\Common\TObject.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu"THeader.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\TPoint.cpp
+SOURCE=..\..\Common\TPoint.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu"THeader.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\TRect.cpp
+SOURCE=..\..\Common\TRect.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu"THeader.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\TString.cpp
+SOURCE=..\..\Common\TString.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu"THeader.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\TURL.cpp
+SOURCE=..\..\Common\TURL.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu"THeader.h"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -126,59 +206,43 @@ SOURCE=.\TURL.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\TArray.h
+SOURCE=..\..\Common\TArray.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TBTree.h
+SOURCE=..\..\Common\TBTree.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TCommon.h
+SOURCE=..\..\Common\TCommon.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TDictionary.h
+SOURCE=..\..\Common\THeader.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TDList.h
+SOURCE=..\..\Common\TLogger.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\THeader.h
+SOURCE=..\..\Common\TObject.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TList.h
+SOURCE=..\..\Common\TPoint.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TLogger.h
+SOURCE=..\..\Common\TRect.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TObject.h
+SOURCE=..\..\Common\TString.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TPoint.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TRandom.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TRect.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TString.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TURL.h
+SOURCE=..\..\Common\TURL.h
 # End Source File
 # End Group
 # End Target

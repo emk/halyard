@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "Common"=..\Common\Common.dsp - Package Owner=<4>
+Project: "Common"=.\Common\Common.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "DibLib"=..\DibLib\DibLib.dsp - Package Owner=<4>
+Project: "Crypt"=.\Crypt\Crypt.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -23,23 +23,41 @@ Package=<5>
 
 Package=<4>
 {{{
-}}}
-
-###############################################################################
-
-Project: "FiveL"=.\FiveL.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name DibLib
-    End Project Dependency
     Begin Project Dependency
     Project_Dep_Name Common
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DibLib"=.\DibLib\DibLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "FiveL"=.\FiveL\FiveL.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name Common
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Crypt
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DibLib
     End Project Dependency
 }}}
 

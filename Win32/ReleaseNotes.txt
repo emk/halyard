@@ -1,5 +1,20 @@
 FiveL for Win32 Release Notes
 
+3.1.0, Wednesday, January 23, 2002, 1:54 PM
+
+	Only a single instance of the FiveL executable may run.
+
+	New command-line option "-D" used to lookup installation
+	directory in the system registry.
+	Note: Underscores will be parsed as spaces(" ").
+	Ex: FiveL -D HIV_Prevention_Counseling
+
+	Slow down the flash on buttpcx so it can be seen on
+	fast machines.  A 200 mS pause was added.
+
+	Several bugfixes to prevent possible crashes when error 
+	conditions occur.
+
 3.00, Build 10, Tuesday, Sept 12, 2001, 10:12 AM
 		
 	Fixed bug in updating the timestamp in the global 

@@ -25,7 +25,8 @@ FIVEL MACRO DEFINITIONS
 
 AUTHOR
     Chuck Officer<br>
-	Sean Sharp
+	Sean Sharp<br>
+	Yijin He
 
 -----------------------------------------------------------------*/
 
@@ -90,6 +91,21 @@ void	PutInForeground(void);
 
 /*
  $Log$
+ Revision 1.2  2002/01/23 20:39:20  tvw
+ A group of changes to support a new stable build.
+
+ (1) Only a single instance of the FiveL executable may run.
+
+ (2) New command-line option "-D" used to lookup the installation directory in the system registry.
+     Note: Underscores will be parsed as spaces(" ").
+     Ex: FiveL -D HIV_Prevention_Counseling
+
+ (3) Slow down the flash on buttpcx so it can be seen on
+     fast machines.  A 200 mS pause was added.
+
+ (4) Several bugfixes to prevent possible crashes when error
+     conditions occur.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

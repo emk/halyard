@@ -25,6 +25,9 @@
 #define NOT_ACTIV 7
 #define BUTT_TXT_MAX    256
 
+// Pause in milliseconds after button is highlighted
+#define HILITE_PAUSE 200
+
 //
 //  Initialize the touch zone. If no location point is given, use
 //  the picture's.
@@ -161,7 +164,9 @@ void LTouchZone::DoCommand()
 	        
 	        gView->Draw();		// blast the hilited stuff to the screen
 	
-	        //nap(300,0);             //And redraw+text.
+			// brief pause needed to see hilited button (esp on fast machines)
+			::Sleep(HILITE_PAUSE);
+
 	        itsPict->Draw(itsPictLoc, true);
 	        temp = itsText;
 	        gHeaderManager.DoText(headerText, itsBounds, (const char *) temp,0,0);
@@ -295,6 +300,21 @@ LTouchZone *LTouchZoneManager::GetTouchZone(WPARAM wParam)
 
 /*
  $Log$
+ Revision 1.2  2002/01/23 20:39:20  tvw
+ A group of changes to support a new stable build.
+
+ (1) Only a single instance of the FiveL executable may run.
+
+ (2) New command-line option "-D" used to lookup the installation directory in the system registry.
+     Note: Underscores will be parsed as spaces(" ").
+     Ex: FiveL -D HIV_Prevention_Counseling
+
+ (3) Slow down the flash on buttpcx so it can be seen on
+     fast machines.  A 200 mS pause was added.
+
+ (4) Several bugfixes to prevent possible crashes when error
+     conditions occur.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

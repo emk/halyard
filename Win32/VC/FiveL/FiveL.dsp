@@ -38,13 +38,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Bin"
+# PROP Output_Dir "..\..\Bin"
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "..\Common" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\DibLib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# SUBTRACT CPP /Fr
+# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "..\..\Common" /I "..\..\Crypt" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\DibLib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -54,8 +53,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 diblib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib qtmlclient.lib msimg32.lib ws2_32.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libcmt.lib" /out:"..\Bin/5L.exe" /libpath:"..\Bin" /libpath:"\dev\Quicktime\QT501SDK\SDK\Libraries"
-# SUBTRACT LINK32 /nodefaultlib
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib qtmlclient.lib msimg32.lib ws2_32.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libcmt.lib" /libpath:"Release" /libpath:"..\Bin" /libpath:"\dev\Quicktime\QT501SDK\SDK\Libraries"
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "FiveL - Win32 Debug"
 
@@ -66,12 +65,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\BinD"
+# PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\Common" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\DibLib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\..\Common" /I "..\..\Crypt" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\DibLib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -81,8 +80,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 diblibd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib qtmlclient.lib msimg32.lib ws2_32.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmt.lib" /out:"..\BinD/5L_d.exe" /pdbtype:sept /libpath:"..\BinD" /libpath:"\dev\Quicktime\QT501SDK\SDK\Libraries"
-# SUBTRACT LINK32 /nodefaultlib
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib qtmlclient.lib msimg32.lib ws2_32.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmt.lib" /out:"..\..\BinD\5L_d.exe" /pdbtype:sept /libpath:"Debug" /libpath:"..\BinD" /libpath:"\dev\Quicktime\QT501SDK\SDK\Libraries"
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 
@@ -95,136 +94,148 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\Audio.cpp
+SOURCE=..\..\FiveL\Audio.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Card.cpp
+SOURCE=..\..\FiveL\Card.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Config.cpp
+SOURCE=..\..\FiveL\Config.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Dib.cpp
+SOURCE=..\..\FiveL\Dib.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\FiveL.cpp
+SOURCE=..\..\FiveL\FiveL.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\FiveL.rc
+SOURCE=..\..\FiveL\FiveL.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\Graphics.cpp
+SOURCE=..\..\FiveL\Graphics.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Header.cpp
+SOURCE=..\..\FiveL\Header.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Index.cpp
+SOURCE=..\..\FiveL\Index.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Input.cpp
+SOURCE=..\..\FiveL\Input.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LBrowser.cpp
+SOURCE=..\..\FiveL\LBrowser.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LCommandKey.cpp
+SOURCE=..\..\FiveL\LCommandKey.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LCursor.cpp
+SOURCE=..\..\FiveL\LCursor.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LDiskUtils.cpp
+SOURCE=..\..\FiveL\LDiskUtils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LFiles.cpp
+SOURCE=..\..\FiveL\LFileBundle.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LFont.cpp
+SOURCE=..\..\FiveL\LFiles.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LHttp.cpp
+SOURCE=..\..\FiveL\LFont.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LPalette.cpp
+SOURCE=..\..\FiveL\LHttp.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LPicture.cpp
+SOURCE=..\..\FiveL\LPalette.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LQuickTime.cpp
+SOURCE=..\..\FiveL\LPicture.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LQuickTime2.cpp
+SOURCE=..\..\FiveL\LQuickTime.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LResource.cpp
+SOURCE=..\..\FiveL\LRegistry.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LStream.cpp
+SOURCE=..\..\FiveL\LResource.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LTouchZone.cpp
+SOURCE=..\..\FiveL\LStream.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\LUtil.cpp
+SOURCE=..\..\FiveL\LTouchZone.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Macro.cpp
+SOURCE=..\..\FiveL\LUtil.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Parser.cpp
+SOURCE=..\..\FiveL\Macro.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\QTGraphic.cpp
+SOURCE=..\..\FiveL\Parser.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.cpp
-# ADD CPP /Yc"stdafx.h"
+SOURCE=..\..\FiveL\QTGraphic.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SysInfo.cpp
+SOURCE=..\..\FiveL\StdAfx.cpp
+
+!IF  "$(CFG)" == "FiveL - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "FiveL - Win32 Debug"
+
+# ADD CPP /Yc
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\Variable.cpp
+SOURCE=..\..\FiveL\SysInfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Video.cpp
+SOURCE=..\..\FiveL\Variable.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\View.cpp
+SOURCE=..\..\FiveL\Video.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\View.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -232,147 +243,159 @@ SOURCE=.\View.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\Audio.h
+SOURCE=..\..\FiveL\Audio.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Card.h
+SOURCE=..\..\FiveL\Card.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Config.h
+SOURCE=..\..\FiveL\Config.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Debug.h
+SOURCE=..\..\FiveL\Debug.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Dib.h
+SOURCE=..\..\FiveL\Dib.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\FiveL.h
+SOURCE=..\..\FiveL\FiveL.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Globals.h
+SOURCE=..\..\FiveL\Globals.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Graphics.h
+SOURCE=..\..\FiveL\Graphics.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Header.h
+SOURCE=..\..\FiveL\Header.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Index.h
+SOURCE=..\..\FiveL\Index.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Input.h
+SOURCE=..\..\FiveL\Input.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LBrowser.h
+SOURCE=..\..\FiveL\LBrowser.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LCommandKey.h
+SOURCE=..\..\FiveL\LCommandKey.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LCursor.h
+SOURCE=..\..\FiveL\LCommon.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LDiskUtils.h
+SOURCE=..\..\FiveL\LCursor.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LFiles.h
+SOURCE=..\..\FiveL\LDiskUtils.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LFont.h
+SOURCE=..\..\FiveL\LFileBundle.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LHttp.h
+SOURCE=..\..\FiveL\LFiles.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LPalette.h
+SOURCE=..\..\FiveL\LFont.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LPicture.h
+SOURCE=..\..\FiveL\LHttp.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LQuickTime.h
+SOURCE=..\..\FiveL\LPalette.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LQuickTime2.h
+SOURCE=..\..\FiveL\LPicture.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LResource.h
+SOURCE=..\..\FiveL\LQuickTime.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LStream.h
+SOURCE=..\..\FiveL\LRegistry.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LTouchZone.h
+SOURCE=..\..\FiveL\LResource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LUtil.h
+SOURCE=..\..\FiveL\LStream.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LVersion.h
+SOURCE=..\..\FiveL\LTouchZone.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Macro.h
+SOURCE=..\..\FiveL\LUtil.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Parser.h
+SOURCE=..\..\FiveL\LVersion.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\QTGraphic.h
+SOURCE=..\..\FiveL\Macro.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.h
+SOURCE=..\..\FiveL\Parser.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.h
+SOURCE=..\..\FiveL\QTGraphic.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SysInfo.h
+SOURCE=..\..\FiveL\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Variable.h
+SOURCE=..\..\FiveL\SingleInstance.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Video.h
+SOURCE=..\..\FiveL\StdAfx.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\View.h
+SOURCE=..\..\FiveL\SysInfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\Variable.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\Video.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\View.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -380,52 +403,40 @@ SOURCE=.\View.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\backup_c.cur
+SOURCE=..\..\FiveL\backup_c.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\cursor1.cur
+SOURCE=..\..\FiveL\cursor2.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\cursor2.cur
+SOURCE=..\..\FiveL\FiveL.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\down_cur.cur
+SOURCE=..\..\FiveL\hand.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\FiveL.ico
+SOURCE=..\..\FiveL\left_cur.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\hand.cur
+SOURCE=..\..\FiveL\Magnify.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\left_cur.cur
+SOURCE=..\..\FiveL\right_cu.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\Magnify.cur
+SOURCE=..\..\FiveL\small.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\right_cu.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\small.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\up_curso.cur
+SOURCE=..\..\FiveL\up_curso.cur
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\ReadMe.txt
-# End Source File
 # End Target
 # End Project
