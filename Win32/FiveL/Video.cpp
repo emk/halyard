@@ -97,9 +97,7 @@ void Video::Wait(int32 inWaitFrame)
 {
 	if (not Playing())
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Wait: nothing to wait for");
-#endif
 		return;
 	}
 	
@@ -151,10 +149,7 @@ bool Video::Play(int32 inOffset, int32 inVolume /* = 100 */)
 		gVariableManager.SetString("_FileNotFound", moviePath.GetString());
 
 		gLog.Log("Video: could not play movie <%s>", moviePath.GetString());
-
-#ifdef DEBUG
 		gDebugLog.Log("Video: could not play movie <%s>", moviePath.GetString());
-#endif
 
 		gCursorManager.CheckCursor();
 
@@ -184,10 +179,8 @@ bool Video::Preroll(int32 inTenths, bool inSync)
 	if (Playing())
 	{
 		// print out an error
-#ifdef DEBUG
 		gDebugLog.Log("Video: Preroll <%s>, but already playing <%s>",
 			m_Name.GetString(), m_Name.GetString());
-#endif
 		gLog.Log("Trying to preroll <%s> but already playing <%s>",
 			m_Name.GetString(), m_Name.GetString());
 
@@ -199,10 +192,8 @@ bool Video::Preroll(int32 inTenths, bool inSync)
 	// see if we have a video CD
 	if (not gConfigManager.PlayMedia())
 	{
-#ifdef DEBUG
 		gDebugLog.Log("VideoManger:Preroll: <%s>, not playing media, nothing to do", 
 			m_Name.GetString());
-#endif
 		
 		return (false);
 	}
@@ -221,10 +212,7 @@ bool Video::Preroll(int32 inTenths, bool inSync)
 		}
 
 		gLog.Log("Video: could not preroll movie <%s>", moviePath.GetString());
-
-#ifdef DEBUG
 		gDebugLog.Log("Video: could not preroll movie <%s>", moviePath.GetString());
-#endif
 		return (false);
 	}
 
@@ -400,18 +388,15 @@ void VideoManager::Play(TString &inName, int32 inOffset, int32 inVolume /* = 100
 	if (Playing())
 		Kill();		// only one clip playing at a time
 
-#ifdef _DEBUG
 	gDebugLog.Log("VideoManager: Play <%s>, offset <%ld>, volume <%ld>",
 		inName.GetString(), inOffset, inVolume);
-#endif
 
 	// see if we have a video CD
 	if (not gConfigManager.PlayMedia())
 	{
-#ifdef DEBUG
 		gDebugLog.Log("VideoManger:Play: <%s>, not playing media, nothing to do", 
 			inName.GetString());
-#endif
+
 		if (gView->Faded())
 		{
 			// fade back in
@@ -435,10 +420,8 @@ void VideoManager::Play(TString &inName, int32 inOffset, int32 inVolume /* = 100
 	if (theClip == NULL)
 	{
 		gLog.Log("Memory error in VideoManager: could not allocate memory for video clip");
-#ifdef DEBUG
 		gDebugLog.Log("VideoManager: could not allocate clip for <%s>",
 			inName.GetString());
-#endif
 		return;
 	}
 
@@ -447,10 +430,8 @@ void VideoManager::Play(TString &inName, int32 inOffset, int32 inVolume /* = 100
 		theClip->SetOrigin(m_Origin);
 		m_HaveOrigin = false;
 
-#ifdef DEBUG
 		gDebugLog.Log("VideoManager: setting origin to X <%d>, Y <%d>",
 			m_Origin.X(), m_Origin.Y());
-#endif
 	}
 
 	if (theClip->Play(inOffset, inVolume))
@@ -482,18 +463,13 @@ void VideoManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 	Video	*theClip = NULL;
 	bool	newClip = false;
 
-#ifdef DEBUG
 	gDebugLog.Log("VideoManager: Preroll <%s>", inName.GetString());
-#endif
 
 	// see if we have a video CD
 	if (not gConfigManager.PlayMedia())
 	{
-#ifdef DEBUG
 		gDebugLog.Log("VideoManger:Preroll: <%s>, not playing media, nothing to do", 
 			inName.GetString());
-#endif
-		
 		return;
 	}
 
@@ -504,10 +480,8 @@ void VideoManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 		if (theClip->Prerolled())
 		{
 			// nothing to do 
-#ifdef DEBUG
 			gDebugLog.Log("VideoManager: Preroll <%s>, already prerolled",
 				inName.GetString());
-#endif
 			return;
 		}
 	}
@@ -519,10 +493,8 @@ void VideoManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 		if (theClip == NULL)
 		{
 			gLog.Log("Memory error in VideoManager: could not allocate memory for movie");
-#ifdef DEBUG
 			gDebugLog.Log("VideoManager: could not allocate clip for <%s>",
 				inName.GetString());
-#endif
 			return;
 		}
 	}
@@ -537,10 +509,8 @@ void VideoManager::Preroll(TString &inName, int32 inTenths, bool inSync)
 		gLog.Log("Could not preroll video clip <%s>",
 			inName.GetString());
 
-#ifdef DEBUG
 		gDebugLog.Log("VideoManager: could not preroll clip <%s>",
 			inName.GetString());
-#endif
 		delete theClip;
 	}
 }
@@ -584,10 +554,8 @@ void VideoManager::Kill(void)
 		theClip = (Video *) m_Clips.Item(i);
 		if (theClip != NULL)
 		{
-#ifdef DEBUG
 			gDebugLog.Log("VideoManager: Kill clip <%s>",
 				theClip->Name());
-#endif
 			theClip->Kill();
 			delete theClip;
 		}
@@ -728,6 +696,26 @@ bool VideoManager::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.1.2.1  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
+
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
+
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

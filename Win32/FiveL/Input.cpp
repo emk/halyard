@@ -97,10 +97,8 @@ void InputManager::Start(TString &inVariable, TString &inStyle,
 	m_Bounds = inBounds;
     m_Bounds.SetBottom(inBounds.Top() + (int16) charHeight);
 
- #ifdef DEBUG
  	gDebugLog.Log("inputRect: T <%d>, L <%d>, B <%d>, R <%d>", 
  		m_Bounds.Top(), m_Bounds.Left(), m_Bounds.Bottom(), m_Bounds.Right());
- #endif
     
     m_Variable = inVariable;
 
@@ -297,6 +295,26 @@ bool InputManager::IsLegalInputChar(char inKey)
 
 /*
  $Log$
+ Revision 1.1.2.1  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
+
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
+
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

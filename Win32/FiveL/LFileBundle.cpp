@@ -1,5 +1,5 @@
 //
-//	LFileBundle: Combined File (single filesystem file manages all files for the client) 
+//	LFileBundle: Acts as a file database for 5L files. 
 //
 //	Author ssharp
 //
@@ -22,14 +22,11 @@ LFileBundle::LFileBundle()
 
 LFileBundle::~LFileBundle()
 {
-	if (cs == NULL)
-		return;
+	CloseBundle();
 	
-	// Write-back the cache
-	WriteCache();
+	delete bundleFilename;
+	delete clearFileStream;
 
-	cs->close();
-	//cs->~CryptStream();
 	//delete cs;	// Causes memory errors ??
 }
 
@@ -40,39 +37,46 @@ LFileBundle::~LFileBundle()
 //
 bool LFileBundle::Init()
 {
-	//TString csFilename;
+	/*
+	// Test CryptStream cryptFile()
+ 	CryptStream *test;
+ 	test = new CryptStream(gConfigManager.InstallPath(), "5L.tmp", (unsigned char *)HCK, sizeof(HCK));
+ 	test->cryptFile(1);
+ 	test->close();
+	*/
 
+	isEncrypted = (gConfigManager.GetUserPref(DB_TYPE) == DB_TYPE_ENCRYPTED);
+	
+	// Construct bundleFilename
+	const char *dataDir = gConfigManager.DataPath();
+	bundleFilename = new char[strlen(dataDir) + strlen(IN_FILENAME) + 1];
+	strcpy(bundleFilename, dataDir);
+	strcat(bundleFilename, IN_FILENAME);
+	
 	filePos = '-';
 	currentFileIsGlobal = true;	// Assume true for imports
 	currentUser = gConfigManager.DLSUser();
 
-	cs = new CryptStream(gConfigManager.DataPath(), IN_FILENAME, (unsigned char *)HCK, sizeof(HCK));
-	
 	cache.SetMinResize(STRING_MIN_RESIZE);
+	cacheWriteFreq = gConfigManager.GetUserPref(DB_WRITES);
 
-    if (cs->isEmpty()) 
+    // Open and Read the Bundle into cache
+	if (!OpenAndReadBundle())
+	{
+		gLog.Error("Fatal Error trying to read %s", IN_FILENAME);
+		return false;
+	}
+	
+	if (cache.IsEmpty()) 
 	{
         gLog.Log("Creating File %s.", IN_FILENAME);
 		BundleNew();
 		InitIndices();		// Set Read and User and File Tag Indices
 		ImportFiles();
 	}
-	else {
-		// Read bundle into cache and verify
-		cs->fileToString(cache);
+	else 
+	{
 		dirtyCache = false;
-
-		if (cache.Find("<Program") < 0)
-		{
-			gLog.Error("Error opening %s, verification failed.", IN_FILENAME);
-			return false;
-		}
-
-		if (cs->bad()) 
-		{
-			gLog.Log("Error: Read error on file %s.", currentFilename.GetString());
-			return true;
-		}
 		InitIndices();		// Set Read and User and File Tag Indices
 	}	
 
@@ -196,7 +200,8 @@ void LFileBundle::Write(const char *filename, TString &data)
 
 	// If write didn't include and endline, write one so the file tag 
 	// gets written on it's own line
-	if (hangingEOL == 0 && buf(buf.Length()-1) != '\n') {
+	if (hangingEOL == 0 && buf(buf.Length()-1) != '\n') 
+	{
 		buf += '\n';
 		hangingEOL = 2;
 	}
@@ -209,12 +214,12 @@ void LFileBundle::Write(const char *filename, TString &data)
 
 	dirtyCache = true;
 	dirtyFile = true;
-	readIndex = tmpIndex;	// restore readIndex
 
-//#ifdef _DEBUG
-//	WriteCache();
-//#endif
-	
+	// Write cache to disk if needed
+	if (cacheWriteFreq == DB_WRITES_WRITE)
+		WriteCache();
+		
+	readIndex = tmpIndex;	// restore readIndex
 }
 
 // Positions the filepointer immediately after the searchString, 
@@ -228,13 +233,13 @@ void LFileBundle::Lookup(const char *filename, TString &searchString, int numFie
 
 	ResetFileReadIndex();
 	
-	while (!done) {
+	while (!done) 
+	{
 		tmpIndex = readIndex;
 		BundleReadUntil(line, '\n');
-		if (line.StartsWith(searchString)) {
-#ifdef _DEBUG2
-			gDebugLog.Log("Lookup: found <%s>", searchString);
-#endif
+		if (line.StartsWith(searchString)) 
+		{
+			gDebugLog.Log("Lookup: found \"%s\"", searchString.GetString());
             done = true;
         }
 
@@ -245,9 +250,7 @@ void LFileBundle::Lookup(const char *filename, TString &searchString, int numFie
 	if (line.StartsWith("</File>"))
 	{
 		filePos = '+';
-#ifdef _DEBUG
-		gDebugLog.Log("Lookup: NOT found <%s>", searchString);
-#endif
+		gDebugLog.Log("Lookup: NOT found \"%s\"", searchString.GetString());
 	}
 	else
 	{	
@@ -323,12 +326,16 @@ void LFileBundle::Rewrite(const char *filename, TString &searchString, int numFi
 
 	cache = tmpCache;
 	
-	// Position read index imed. after fields rewritten
-	readIndex -= 10 + dLen;
-
 	dirtyCache = true;
 	dirtyFile = true;
-	hangingEOL = 2;	// An extra \n was used before </File> tag
+	hangingEOL = 2;		// An extra \n was used before </File> tag
+
+	// Write cache to disk if needed
+	if (cacheWriteFreq == DB_WRITES_WRITE)
+		WriteCache();
+
+	// Position read index imed. after fields rewritten
+	readIndex -= 10 + dLen;
 }
 
 // Open a file
@@ -336,7 +343,7 @@ void LFileBundle::Rewrite(const char *filename, TString &searchString, int numFi
 void LFileBundle::Open(const char *filename, FileKind fKind)
 {
 	char *sFilename = new char[strlen(filename)];
-	FixFilename(filename, sFilename);	// remove the directory info from filename
+	ShortenFilename(filename, sFilename);	// remove the directory info from filename
 
 	// Check for a duplicate open or a missing close
 	if (currentFilename.Equal(sFilename)) {
@@ -366,50 +373,31 @@ void LFileBundle::Open(const char *filename, FileKind fKind)
 	if (ResetFileReadIndex() < 0)
 	{
 		gVariableManager.SetString("_ERROR", "-1");
-#ifdef _DEBUG
 		gDebugLog.Log("Setting _ERROR to -1");
-#endif
 		currentFilename = "";	
 	}
 }
 
 // Close a file
-//
+// (note: filename is in long foramt)
 void LFileBundle::Close(const char *filename)
 {
-	TString timestamp;
-	TString md5;
-
 	char *sFilename = new char[strlen(filename)];
-	FixFilename(filename, sFilename);	// remove the directory info from filename
+	ShortenFilename(filename, sFilename);	// remove the directory info from filename
 	
 	if (currentFilename.Compare(sFilename) != 0)	// currentFilename != filename
 	{
 		delete [] sFilename;
 		return;
 	}
+
 	// Update lastmod times and MD5 hashes
-	if (dirtyFile) {
-		timestamp = GetTimestamp();
-		
-		// <UserDB> Tag
-		cache.Set(userDBTagIndex + 17, timestamp.Length(), timestamp);
+	if (dirtyFile)
+		UpdateFileHeader(sFilename, fileTagIndex);
 
-		// <User> Tag
-		if (currentFileIsGlobal)
-			cache.Set(globalUserTagIndex + 23 + 8, timestamp.Length(), timestamp); // _GLOBAL_ = 8
-		else
-			cache.Set(userTagIndex + 23 + currentUser.Length(), timestamp.Length(), timestamp);
-		
-		// <File> Tag
-		UpdateMD5(sFilename, fileTagIndex);
-
-		// Recalc global file index if needed
-		if (!currentFileIsGlobal)
-			InitGlobalUserTag();
-
-		dirtyFile = false;
-	}
+	// Write cache to disk if needed
+	if (cacheWriteFreq == DB_WRITES_CLOSE)
+		WriteCache();
 
 	// Reset file vars
 	currentFilename = "";
@@ -446,12 +434,14 @@ void LFileBundle::Import(const char *filename)
 	gLog.Log("Importing %s.", filename);
 	
 	f.open(filename, ios::in);
-	if (f.fail()) {
+	if (f.fail()) 
+	{
 		gLog.Log("Failed to open %s.", filename);
 		return;
 	}
 	
-	while (!f.eof()) {
+	while (!f.eof()) 
+	{
 		f.read(inBuf, READ_BUF_SIZE);
 		inBuf[f.gcount()] = '\0';
 		str += inBuf;
@@ -463,7 +453,7 @@ void LFileBundle::Import(const char *filename)
 		str += '\n';
 
 	char *sFilename = new char[strlen(filename)];
-	FixFilename(filename, sFilename);	// remove the directory info from filename
+	ShortenFilename(filename, sFilename);	// remove the directory info from filename
 
 	BundleCreateFile(sFilename, str);
 	dirtyCache = true;
@@ -501,14 +491,15 @@ void LFileBundle::AddGlobalFiles(TString &fileList)
 
 // Chop the directories of the filename and make it lower-case
 // E.g. "c:\foo\bar\Test.dat" becomes "test.dat"
-void LFileBundle::FixFilename(const char *filename, char *sFilename)
+void LFileBundle::ShortenFilename(const char *filename, char *sFilename)
 {
 	int i, len, slash = 0;
 
 	len = strlen(filename); 
 	for (i=len-1; i>=0; i--)
 	{
-		if (filename[i] == '\\') {
+		if (filename[i] == '\\') 
+		{
 			slash = i;
 			break;
 		}
@@ -535,9 +526,7 @@ void LFileBundle::BundleReadUntil(TString &buf, unsigned char delim)
 
 	if (BundleEOF()) 
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("BundleReadUntil: at EOF");
-#endif
 		return;
 	}
 
@@ -551,9 +540,7 @@ void LFileBundle::BundleReadUntil(TString &buf, unsigned char delim)
 		readIndex = cache.Length();
 	}
 
-#ifdef _DEBUG2
-	gDebugLog.Log("BundleReadUntil: returned <%s>", buf.GetString());
-#endif
+	//gDebugLog.Log("BundleReadUntil: returned \"%s\"", buf.GetString());
 } 
 
 // Just to make code a little cleaner when not interested in string read 
@@ -578,10 +565,9 @@ int LFileBundle::BundleSearch(const char *searchString, int position)
 	while (true) {
 		tmpIndex = readIndex;
 		BundleReadUntil(buf, '\n');
-		if (buf.StartsWith(searchString)) {
-#ifdef _DEBUG2
-			gDebugLog.Log("BundleSearch: found <%s>", searchString);
-#endif
+		if (buf.StartsWith(searchString)) 
+		{
+			//gDebugLog.Log("BundleSearch: found \"%s\"", searchString);
             break;
         }
 
@@ -679,7 +665,7 @@ int LFileBundle::BundleCreateFile(const char *filename, const TString &contents)
 		buf = cache.Mid(0, tmpIndex);
 		buf += contents;					// initial contents
 		cache = buf + cache.Mid(fIndex);
-		UpdateMD5(filename, fTagIndex);
+		UpdateFileHeader(filename, fTagIndex);
 
 		readIndex = tmpIndex;
 		return fTagIndex;
@@ -708,19 +694,15 @@ int LFileBundle::BundleCreateFile(const char *filename, const TString &contents)
 }
 
 // Write the cache back to disk using an encrypted stream
-// Assumes lastmod times and MD5 hashes have already been updated
 void LFileBundle::WriteCache()
 {
 	if (!dirtyCache)
 		return;
 
-	cs->rewriteFile(cache.GetString(), cache.Length());
+	if (dirtyFile)
+		UpdateFileHeader(currentFilename.GetString(), fileTagIndex);
 
-	if (cs->writeFail())
-	{
-		gLog.Log("Write error on file %s.", IN_FILENAME);
-		return;
-	}
+	RewriteBundle();
 
 	dirtyCache = false;
 }
@@ -731,12 +713,14 @@ int LFileBundle::ResetFileReadIndex()
 {
 	TString searchString;
 
-	if (fileTagIndex > 0) {
+	if (fileTagIndex > 0) 
+	{
 		readIndex = fileTagIndex;
 		BundleReadUntil('\n');
 	}
 	// We need to search for the file tag index
-	else {
+	else 
+	{
 		readIndex = currentFileIsGlobal ? globalUserTagIndex : userTagIndex;
 		searchString = "<File name=\"";
 		searchString += currentFilename;
@@ -744,17 +728,15 @@ int LFileBundle::ResetFileReadIndex()
 		// Do not need to read until end of line, BundleSearch reads a line at a time
 	}
 
-	if (fileTagIndex > 0) {
+	if (fileTagIndex > 0) 
+	{
 		filePos = '=';
-#ifdef _DEBUG2
 		gDebugLog.Log("ResetFileIndex: %s", currentFilename.GetString());
-#endif
 	}
-	else {						// file not found
+	else 
+	{						// file not found
 		filePos = '+';
-#ifdef _DEBUG
 		gDebugLog.Log("ResetFileIndex Failed: %s", currentFilename.GetString());
-#endif
 		return -1;
 	}
 	return fileTagIndex;
@@ -791,12 +773,17 @@ void LFileBundle::InitIndices()
 void LFileBundle::InitGlobalUserTag()
 {
 	TString searchString;
+	int		saveReadIndex;
 
+	saveReadIndex = readIndex;
 	readIndex = 0;
+
 	searchString = "<User name=\"";
 	searchString += "_GLOBAL_";
 	globalUserTagIndex = BundleSearch(searchString);
 	ASSERT(globalUserTagIndex > 0);
+
+	readIndex = saveReadIndex;
 }
 
 // Have we reached the end of the bundle?
@@ -838,6 +825,7 @@ TString LFileBundle::ComputeMD5(const TString &str)
 }
 
 // Update the MD5 hash for the the file with tag located at fTagIndex
+/*
 void LFileBundle::UpdateMD5(const char *filename, int fTagIndex)
 {
 	int index; 
@@ -848,6 +836,42 @@ void LFileBundle::UpdateMD5(const char *filename, int fTagIndex)
 	len = cache.Find("</File>", index) - index;
 	md5 = ComputeMD5(cache.Mid(index, len));
 	cache.Set(fTagIndex + 19 + strlen(filename), md5.Length(), md5);
+}
+*/
+
+void LFileBundle::UpdateFileHeader(const char *filename, int fTagIndex)
+{
+	int		index; 
+	int		len; 
+	TString timestamp;
+	TString md5;
+
+	timestamp = GetTimestamp();
+	
+	// <UserDB> Tag
+	cache.Set(userDBTagIndex + 17, timestamp.Length(), timestamp);
+
+	// <User> Tag
+	if (fTagIndex > globalUserTagIndex)
+		cache.Set(globalUserTagIndex + 23 + 8, timestamp.Length(), timestamp); // _GLOBAL_ = 8
+	else
+		cache.Set(userTagIndex + 23 + currentUser.Length(), timestamp.Length(), timestamp);
+	
+	// <File> Tag
+	//
+	// update MD5
+	index = fTagIndex + 21 + strlen(filename) + MD5_SIZE*2;
+	len = cache.Find("</File>", index) - index;
+	md5 = ComputeMD5(cache.Mid(index, len));
+	cache.Set(fTagIndex + 19 + strlen(filename), md5.Length(), md5);
+
+	// Recalc global user index if needed
+	if (fTagIndex < globalUserTagIndex)
+		InitGlobalUserTag();
+
+	// Reset dirty file if we are dealing with the current file
+	if (currentFilename.Equal(filename))
+		dirtyFile = false;
 }
 
 // Import all files located in INIT_DATA_DIR into the bundle
@@ -898,4 +922,172 @@ void LFileBundle::ImportFiles()
 		}
 	}
 	FindClose(hFind);
+}
+
+// 0 = clear -> encrypted,  1 = encrypted -> clear 
+void LFileBundle::ConvertBundle(int dir)
+{
+	if (dir == 0)
+	{
+		gLog.Log("ConvertBundle: Trying to convert %s, clear -> encrypted", IN_FILENAME);
+
+		if (cryptStream != NULL)
+			cryptStream->cryptFile(0);
+	}
+	else if (dir == 1)
+	{
+		gLog.Log("ConvertBundle: Trying to convert %s, encrypted -> clear", IN_FILENAME);
+
+		if (cryptStream == NULL)
+			cryptStream = new CryptStream(gConfigManager.DataPath(), IN_FILENAME, (unsigned char *)HCK, sizeof(HCK));
+
+		cryptStream->cryptFile(1);
+		cryptStream->close();
+
+		delete cryptStream;
+	}
+}
+
+// Open the Bundle and read the contents in cache
+bool LFileBundle::OpenAndReadBundle()
+{
+	if (!isEncrypted)
+	{
+		uchar inBuf[READ_BUF_SIZE+1];
+		int readCount;
+
+		clearFileStream = new ifstream(bundleFilename, ios::in);
+		cache = "";
+
+		// Is the file empty?
+		if (clearFileStream->peek() == EOF)
+			return true;
+
+		// Read in the data
+		while (!clearFileStream->eof()) 
+		{
+			clearFileStream->read(inBuf, READ_BUF_SIZE);
+			readCount = clearFileStream->gcount();
+			inBuf[readCount] = '\0';
+			cache += (char *)inBuf;
+			if (clearFileStream->bad())
+				return false;
+		}
+
+		// Verification
+		if (cache.Find("<Program") < 0)
+		{
+			// Try conversion
+			clearFileStream->close();
+			ConvertBundle(1);
+
+			// Re-open, read and re-verify
+			clearFileStream->open(bundleFilename, ios::in);
+			cache = "";
+			while (!clearFileStream->eof()) 
+			{
+				clearFileStream->read(inBuf, READ_BUF_SIZE);
+				readCount = clearFileStream->gcount();
+				inBuf[readCount] = '\0';
+				cache += (char *)inBuf;
+				if (clearFileStream->bad())
+					return false;
+			}
+
+			if (cache.Find("<Program") < 0)
+				return false;
+		}
+	}
+	else
+	{
+		cryptStream = new CryptStream(gConfigManager.DataPath(), IN_FILENAME, (unsigned char *)HCK, sizeof(HCK));
+		cache = "";
+
+		// Is the file empty?
+		if (cryptStream->isEmpty())
+			return true;
+
+		// Read in the data
+		cryptStream->fileToString(cache);
+		if (cryptStream->bad())
+			return false;
+
+		// Verification
+		if (cache.Find("<Program") < 0)
+		{
+			// Try conversion
+			ConvertBundle(0);
+
+			// Read in and re-verify
+			cryptStream->fileToString(cache);
+			if (cryptStream->bad())
+				return false;
+
+			if (cache.Find("<Program") < 0)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+void LFileBundle::CloseBundle()
+{
+	if (!isEncrypted)
+	{
+		clearFileStream->close();
+	}
+	else
+		cryptStream->close();
+
+	// Write-back the cache
+	WriteCache();	
+}
+
+// Rewrite the bundle to disk using contents stored in cache.
+void LFileBundle::RewriteBundle()
+{
+	//TString tmpFilename = bundleFilename;
+	//tmpFilename += ".tmp";
+
+	if (!isEncrypted)
+	{
+		ofstream out;
+		
+		clearFileStream->close();
+
+		out.open(bundleFilename, ios::out | ios::binary);	// overwrite the old file
+		out << cache;
+
+		//out.open(tmpFilename, ios::out);
+		//out << cache;
+
+		if (out.fail())
+		{
+			gLog.Log("Write error on file \"%s\".", IN_FILENAME);
+			return;
+		}
+		out.close();
+		
+		/*
+		// Delete Original
+		::DeleteFile(bundleFilename);
+
+		// Rename temp file
+		::MoveFile(tmpFilename, bundleFilename);
+		*/
+
+		// Reopen
+		clearFileStream->open(bundleFilename, ios::in);
+	}
+	else
+	{
+		cryptStream->rewriteFile(cache.GetString(), cache.Length());
+
+		if (cryptStream->writeFail())
+		{
+			gLog.Log("Write error on file \"%s\".", IN_FILENAME);
+			return;
+		}
+	}
 }

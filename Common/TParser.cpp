@@ -116,7 +116,6 @@ bool Parser::Parse(IndexFile *inFile)
 	
 	if (haveErr)
 	{
-#ifdef _DEBUG
 	    gDebugLog.Error("Error on line <%ld>", curLine);
 		if (lastGoodType != ILLEGAL_TYPE)
 		{
@@ -133,7 +132,6 @@ bool Parser::Parse(IndexFile *inFile)
 					break;
 			}
 		}
-#endif
 		retValue = false;
 	}
 	else
@@ -159,10 +157,7 @@ int32 Parser::findStart(void)
 			done = true;
 		else if ((not isspace(ch)) and (not inComment) and (not atEOF)) 
 		{
-#ifdef _DEBUG
 			gDebugLog.Log("Error: expecting open paren, got <%c>", ch);
-
-#endif
 			done = true;
 			haveErr = true;
 		}  
@@ -201,11 +196,9 @@ int32 Parser::findClose(void)
 
 				if (haveErr)
 				{
-#ifdef _DEBUG
 					gDebugLog.Log("Error: looking for command name, got <%s>", 
 						theType.GetString());
 					gDebugLog.Log("This usually means there are too few parens.");
-#endif
 					done = true;
 				}
 			}
@@ -221,9 +214,7 @@ int32 Parser::findClose(void)
 
 	if (not done)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Error: unexpected end-of-file while looking for closing paren");
-#endif
 		haveErr = true;
 	}
 
@@ -248,17 +239,13 @@ int32 Parser::findType(void)
 
 	if (iType == ILLEGAL_TYPE)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Error: expecting <header>, <macrodef> or <card>, got <%s>", theType.GetString());
-#endif
 		haveErr = true;
 	}
 
 	if (atEOF)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Error: unexpected end-of-file");
-#endif
 		haveErr = true;
 	}
 
@@ -272,17 +259,13 @@ bool Parser::findName(TString &inString)
 {	
 	if (not getString(inString))
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Error: expecting string, got nothing");
-#endif
 		haveErr = true;
 	}
 
 	if (atEOF)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Error: unexpected end-of-file while looking for name");
-#endif
 		haveErr = true;
 	}
 
@@ -435,6 +418,26 @@ void Parser::getBuffer(void)
 
 /*
  $Log$
+ Revision 1.1.2.1  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
+
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
+
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

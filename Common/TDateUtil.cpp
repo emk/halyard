@@ -295,8 +295,6 @@ static void GetDay(char *inStr, int inDay)
 int32 VolIsMounted(char *inCDPath, TString &inVolName)
 {
 	int32	retValue = NO_VOLUME;
-
-#ifdef WIN32
 	char	theBuf[255];
 	DWORD	theBufLen = 255;
 	DWORD	theMaxLen;
@@ -316,7 +314,10 @@ int32 VolIsMounted(char *inCDPath, TString &inVolName)
 	else
 		retValue = NO_VOLUME;
 
-#else
+	return(retValue);
+
+/*  WIN16
+
 	struct _find_t 	fileinfo; 
 	DWORD			now_time;
 	DWORD			start_time;
@@ -328,9 +329,8 @@ int32 VolIsMounted(char *inCDPath, TString &inVolName)
 	{
 		if (inVolName.Compare(fileinfo.name, false))
 		{ 
-#ifdef _DEBUG
 			gDebugLog.Log("CheckDisc: failed first try, disc inserted is <%s>", fileinfo.name);
-#endif
+
 			// wait a bit and try again - why is this necessary???
 			start_time = ::GetTickCount();
 			now_time = start_time;
@@ -345,9 +345,7 @@ int32 VolIsMounted(char *inCDPath, TString &inVolName)
 			{	
 				if (inVolName.Compare(fileinfo.name, false))
 				{
-#ifdef _DEBUG
 					gDebugLog.Log("CheckDisc: failed 2nd try, disc inserted is <%s>", fileinfo.name);
-#endif
 					retValue = WRONG_VOLUME;
 				}
 				else
@@ -355,9 +353,7 @@ int32 VolIsMounted(char *inCDPath, TString &inVolName)
 			}
 			else
 			{
-#ifdef _DEBUG
 				gDebugLog.Log("CheckDisc: 2nd _dos_findfirst failed, returned <%d>", result);
-#endif
 				retValue = NO_VOLUME;
 			}
 		}
@@ -366,18 +362,35 @@ int32 VolIsMounted(char *inCDPath, TString &inVolName)
 	}
 	else
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("CheckDisc: first _dos_findfirst failed, returned <%d>", result);
-#endif
 		retValue = NO_VOLUME;
 	}
-#endif
-
 	return(retValue);
+*/
 }
 
 /*
  $Log$
+ Revision 1.3.2.1  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
+
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
+
+ Revision 1.4  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.3  2002/01/24 19:22:41  tvw
  Fixed bug (#531) in -D command-line option causing
  system registry read error.

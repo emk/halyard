@@ -12,6 +12,35 @@
 #if !defined (_Config_h_)
 #define _Config_h_
 
+#define DLS_USER_PROFILE "user.profile"
+#define USER_PREFS_FILE "5L.prefs"
+
+// Size and Indices for user preferences 
+#define PREFS_SIZE	5
+
+#define DB_TYPE		0
+#define DB_WRITES	1
+#define MODE		2
+#define DEBUG_LOG	3
+#define REDOSCRIPT	4
+
+// Options for the above user preferences (first option is default)
+#define DB_TYPE_ENCRYPTED	0
+#define DB_TYPE_CLEAR		1
+
+#define DB_WRITES_EXIT		0
+#define DB_WRITES_CLOSE		1
+#define DB_WRITES_WRITE		2
+
+#define MODE_FULLSCREEN		0
+#define MODE_WINDOW			1
+
+#define DEBUG_LOG_OFF		0
+#define DEBUG_LOG_ON		1
+
+#define REDOSCRIPT_OFF		0
+#define REDOSCRIPT_ON		1
+
 #include "TCommon.h"
 #include "TString.h"
 
@@ -78,6 +107,27 @@ class ConfigManager : public TObject
 		//
 		~ConfigManager();
 			
+		//////////
+		// Use default user preferences.
+		//
+		void		UseDefaultPrefs();
+		
+		//////////
+		// Parse user preferences file
+		//
+		// [in] absoluteFilename - filename including directory info
+		//
+		void		ParsePrefs(TString absoluteFilename);
+
+		//////////
+		// Get a user preference.
+		// 
+		// [in] thePref - the preference to get (defined by constants in header file)
+		// [out] return - the value of this preference (defined by constants in header file)
+		//
+		int			GetUserPref(int thePref)
+				{ return userPrefs[thePref]; }
+
 		//////////
 		// Process the command line args and read the config file.
 		//
@@ -285,12 +335,47 @@ class ConfigManager : public TObject
 		// Config array.
 		//
 		Config		*m_Configs;
+
+		//////////
+		// User preferences.
+		//
+		int			userPrefs[PREFS_SIZE];
+
+		//////////
+		// Parses a single line in the user preferences file.
+		//
+		// [in] line - a line from the input file
+		// [in/out] key - the key parsed from this line
+		// [in/out] value - the value parsed from this line
+		// [out] return - true a key and value were parsed, false otherwise
+		//
+		bool		GetPrefsKeyValue(char *line, TString &key, TString &value); 
 };
 
 #endif // _Config_h_
 
 /*
  $Log$
+ Revision 1.2.2.1  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
+
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
+
+ Revision 1.3  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.2  2002/01/23 20:39:20  tvw
  A group of changes to support a new stable build.
 

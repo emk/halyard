@@ -143,22 +143,18 @@ void EjectCD(void)
 	mciOpenParms.lpstrDeviceType = "cdaudio";
 	if (retValue = mciSendCommand(NULL, MCI_OPEN, MCI_OPEN_TYPE, (DWORD)(LPVOID) &mciOpenParms))
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Couldn't open CD device, <%ld>", retValue);
 	//	if (mciGetErrorString(retValue, errorBuff, 256))
 	//		gDebugLog.Log("Error string <%s>", errorBuff);
-#endif
 		return;
 	}
 
 	// eject
 	if (retValue = mciSendCommand(mciOpenParms.wDeviceID, MCI_SET, MCI_SET_DOOR_OPEN, NULL))
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("Command to open CD door failed, <ld>", retValue);
 //		if (mciGetErrorString(retValue, errorBuff, 256))
 //			gDebugLog.Log("Error string <%s>", errorBuff);
-#endif
 		return;
 	}
 
@@ -185,11 +181,9 @@ bool CDInDrive(void)
 		
 		if (mciStatus = ::mciSendCommand(mciOpenParms.wDeviceID, MCI_STATUS, MCI_STATUS_ITEM, (DWORD)(LPVOID) &mciStatusParms))
 		{
-#ifdef _DEBUG
 			gDebugLog.Log("CDInDrive: couldn't get status of CD device, <%ld>", retValue);
 				//	if (mciGetErrorString(retValue, errorBuff, 256))
 				//		gDebugLog.Log("Error string <%s>", errorBuff);
-#endif
 			// assume no disc in drive
 			retValue = false;
 
@@ -201,9 +195,7 @@ bool CDInDrive(void)
 			if (not mciStatusParms.dwReturn)
 			{
 				// no CD in the drive, nothing to check
-#ifdef _DEBUG
 				gDebugLog.Log("CDInDrive: no CD in the drive, jumping");
-#endif
 				retValue = false;
 
 //				do_jump = true; 
@@ -225,10 +217,7 @@ bool CDInDrive(void)
 	else
 	{
 		// error
-#ifdef _DEBUG
-
-		gDebugLog.Log("CDInDrive: couldn't open CD device, <%ld>", retValue);				
-#endif
+		gDebugLog.Log("CDInDrive: couldn't open CD device, <%ld>", retValue);
 		retValue = false;
 
 	//	do_jump = true;
@@ -240,6 +229,26 @@ bool CDInDrive(void)
 
 /*
  $Log$
+ Revision 1.1.2.1  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
+
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
+
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -45,10 +45,7 @@ Card::Card(IndexFile *inFile, const char *name, long p1, long p2)
 //
 void Card::Start(void)
 {
-#ifdef DEBUG
-	//gDebugLog.Log("Start card <%s>", "Foo");
 	gDebugLog.Log("Start card <%s>", Name());
-#endif
 
 	gNeedsRefresh = true;
 	
@@ -57,9 +54,7 @@ void Card::Start(void)
 	SetOrigin(0, 0);	// reset the origin
 	m_stopped = false;
 
-#ifdef _DEBUG
 	gDebugLog.Log("<%s>", m_Script.GetString());
-#endif
 
 	// toss (card name
 	m_Script >> open >> discard >> discard;
@@ -200,9 +195,7 @@ void Card::DoCommand(void)
 	else if (opword == (char *)"preload") DoPreloadQTFile();   
     else if (opword == (char *)"print") DoPrint();
     else if (opword == (char *)"read") DoRead();
-#ifdef _DEBUG
 	else if (opword == (char *)"redoscript") DoReDoScript();
-#endif
 	else if (opword == (char *)"resetorigin") DoResetOrigin();
     else if (opword == (char *)"resume") DoResume();
 	else if (opword.Equal("return")) DoReturn();
@@ -614,9 +607,7 @@ void Card::DoBrowse()
 
 	m_Script >> theUrl;
 
-#ifdef _DEBUG
 	gDebugLog.Log("browse: url <%s>", theUrl.GetString());
-#endif
 
 	if (gBrowserTool.GoToUrl(theUrl))
 		PutInBackground();
@@ -672,18 +663,14 @@ void Card::DoButtpcx()
     picname += "H";
     hiPicture = gPictureManager.GetPicture(picname);
 
-#ifdef DEBUG
 	gDebugLog.Log("Draw picture at X <%d>, Y <%d>", 
 		buttLoc.X(), buttLoc.Y());
-#endif
 
     thePicture->Draw(buttLoc, true);
 	bounds = thePicture->GetBounds();
 
-#ifdef DEBUG
 	gDebugLog.Log("Picture bounds: T <%d> L <%d>, B <%d>, R <%d>",
 		bounds.Top(), bounds.Left(), bounds.Bottom(), bounds.Right());
-#endif
 
 	bounds1 = bounds;
     dl = bounds1.Bottom() - bounds1.Top();      //...and text...
@@ -694,10 +681,8 @@ void Card::DoButtpcx()
 	bounds1.OffsetTop(dl);
 	bounds1.OffsetBottom(dl);
 
-#ifdef DEBUG
 	gDebugLog.Log("Draw text at T <%d> L <%d>, B <%d>, R <%d>",
 		bounds1.Top(), bounds1.Left(), bounds1.Bottom(), bounds1.Right());
-#endif
 
     gHeaderManager.DoText(HeaderName, bounds1, (const char *) Text, 7,0);
  
@@ -732,10 +717,8 @@ void Card::DoCheckDisc()
 
 	m_Script >> vol_name >> wrong_disc >> no_disc;
 
-#ifdef _DEBUG
 	gDebugLog.Log("checkdisc: <%s>, if wrong disc <%s>, if no disc <%s>", 
 		vol_name.GetString(), wrong_disc.GetString(), no_disc.GetString());
-#endif  
 	
 	if ((not do_jump) and (gConfigManager.PlayMedia()))
 	{ 
@@ -769,10 +752,7 @@ void Card::DoCheckDisc()
 	
 	if (do_jump)
 	{ 
-#ifdef _DEBUG
 	    gDebugLog.Log("CheckDisc: failed, jumping to <%s>", (const char *) jump_card);
-#endif
-
 	    gCardManager.JumpToCardByName((const char *) jump_card);
     	gView->Draw();
     }
@@ -798,9 +778,7 @@ void Card::DoCheckUrl()
 		gVariableManager.SetString(var_name, "0");
 	}
 
-#ifdef DEBUG
 	gDebugLog.Log("checkurl: <%s> <%s>", url.GetString(), var_name.GetString());
-#endif
 
 	LHttpError error;
 	error = gHttpTool.CheckURL(url, var_name);
@@ -837,10 +815,8 @@ void Card::DoCheckVol()
 	if (m_Script.more())
 		m_Script >> no_volume;
 
-#ifdef DEBUG
 	gDebugLog.Log("checkvol: <%s>, put path into <%s>, if volume not found <%s>",
 		vol_name.GetString(), real_path_var.GetString(), no_volume.GetString());
-#endif
 
 	gVariableManager.SetLong(real_path_var, 0);
 
@@ -853,10 +829,9 @@ void Card::DoCheckVol()
 	else if (not no_volume.IsEmpty())
 	{
 		// didn't find it, jump to no_volume card
-#ifdef DEBUG
 		gDebugLog.Log("checkvol: failed, jumping to <%s>",
 			no_volume.GetString());
-#endif
+
 		gCardManager.JumpToCardByName(no_volume.GetString());
 		gView->Draw();
 	}
@@ -1001,9 +976,7 @@ void Card::DoFade()
 
     direction.MakeLower();
 
-#ifdef _DEBUG
 	gDebugLog.Log("fade: %s, %ld", direction.GetString(), fadeTime);
-#endif
 
     if (direction == (char *) "in")
     	fadeIn = true;   
@@ -1147,9 +1120,7 @@ void Card::DoJump()
 
     m_Script >> jumpcard;
     
-#ifdef _DEBUG
 	gDebugLog.Log("jump: <%s>", jumpcard.GetString());
-#endif
 
     gCardManager.JumpToCardByName(jumpcard);
     
@@ -1234,9 +1205,7 @@ void Card::DoLoadpal()
     m_Script >> palname;
     palname.MakeLower();
     
-#ifdef DEBUG
 	gDebugLog.Log("loadpal: <%s>", palname.GetString());
-#endif
 
 	while (m_Script.more())
 	{
@@ -1257,12 +1226,9 @@ void Card::DoLoadpal()
  
  	if (thePal == NULL)
  	{
-#ifdef DEBUG
 		gDebugLog.Log("Couldn't find palette <%s>", palname.GetString());
-#else
 		gLog.Log("Can't find graphic <%s>, please reinstall.", palname.GetString());
 		return;
-#endif
 	}
 	else
 	{
@@ -1310,10 +1276,8 @@ void Card::DoLoadpic()
     
     AdjustPoint(&loc);
 
-#ifdef _DEBUG
 	gDebugLog.Log("loadpic: <%s>, X <%d>, Y <%d>", 
 		picname.GetString(), loc.X(), loc.Y());
-#endif
 	
     while (m_Script.more()) 
     {
@@ -1330,22 +1294,17 @@ void Card::DoLoadpic()
         	lock = true;
         else if (flag.Equal("unlock"))
         	unlock = true;
-#ifdef DEBUG
         else
         	gDebugLog.Log("Bad flag to loadpic command <%s>", flag.GetString());
-#endif
 	} 
 
 	thePicture = gPictureManager.GetPicture(picname);
 
 	if (thePicture == NULL)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("loadpic: can't find <%s>.", picname.GetString());
-#else
 		gLog.Log("Error: Can't find graphic <%s>. Please reinstall.", (char *) picname.GetString());
 		return;
-#endif
 	}
 
     if (thePicture != NULL)
@@ -1431,9 +1390,7 @@ void Card::DoLookup()
     tempname = gConfigManager.DataPath();
 	tempname += filename;
 
-#ifdef _DEBUG
 	gDebugLog.Log("lookup: look for <%s>, num fields <%d>", searchString.GetString(), numFields);
-#endif
 
     gFileManager.Lookup(tempname, searchString, numFields);
 }
@@ -1520,9 +1477,7 @@ void Card::DoNap()
 
     m_Script >> tenths;
 
-#ifdef _DEBUG
 	gDebugLog.Log("nap: for <%ld>", tenths);
-#endif
     
     gCursorManager.CheckCursor();
     gView->Draw();
@@ -1559,10 +1514,8 @@ void Card::DoOpen()
 		return;
 	}
 
-#ifdef _DEBUG
 	gDebugLog.Log("open: filename <%s>, mode <%s>", filename.GetString(), kind.GetString());
-#endif
-    
+
     tempname = gConfigManager.DataPath();
 	tempname += filename;
 
@@ -1579,9 +1532,7 @@ void Card::DoOpen()
         if (!theFile.is_open())
     	{
         	gVariableManager.SetString("_ERROR", "-1");
-#ifdef DEBUG
 			gDebugLog.Log("open: file doesn't exist, setting _ERROR to -1");
-#endif
 			open_file = false;
         }
         else
@@ -1635,9 +1586,7 @@ void Card::DoPause()
 
     m_Script >> tenths;
 
-#ifdef _DEBUG
 	gDebugLog.Log("pause: time <%ld>", tenths);
-#endif
 
     gVideoManager.Pause(tenths);
     gAudioManager.Pause(tenths);
@@ -1679,11 +1628,9 @@ void Card::DoPlayQTFile()
         m_Script >> PalFile; 
         have_pal = true;
     }   
-
-#ifdef _DEBUG	
+	
 	gDebugLog.Log("playqtfile: file <%s>, offset <%ld>, pal <%s>", 
 		QTfile.GetString(), theOffset, PalFile.GetString());
-#endif
 
 	if (m_Script .more())
 	{
@@ -1691,10 +1638,8 @@ void Card::DoPlayQTFile()
 
 		if ((movieOrigin.X() >= 0) and (movieOrigin.Y() >= 0))
 		{
-#ifdef DEBUG
 			gDebugLog.Log("playqtfile: set origin to T <%d>, L <%d>",
 				movieOrigin.Y(), movieOrigin.X());
-#endif
 
 			gVideoManager.SetOrigin(movieOrigin);
 		}
@@ -1705,9 +1650,7 @@ void Card::DoPlayQTFile()
     
     if ((not audio_only) and (not gVideoManager.HaveOrigin()))
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("playing full screen movie, fade out");
-#endif
 		if (gView->BitDepth() > 8)
 			gView->BlackScreen();
 		else
@@ -1756,17 +1699,13 @@ void Card::DoPlayQTLoop()
     if (m_Script.more())
         m_Script >> theFadeTime;
 
-#ifdef _DEBUG
 	gDebugLog.Log("playqtloop: file <%s>, time <%d>", QTfile.GetString(), theFadeTime);
-#endif
 
 	if (QTfile.Contains(".a2", false))
     	audio_file = true;
     else
     {
-#ifdef _DEBUG
 		gDebugLog.Log("playqtloop: not an audio file <%s>", QTfile.GetString());
-#endif
     	return;
     }
     
@@ -1847,10 +1786,8 @@ void Card::DoPreloadQTFile()
 
 		if (syncFlag.Equal("sync", false))
 			doSync = true;
-#ifdef DEBUG
 		else
 			gDebugLog.Log("preload: bad flag <%s>, looking for sync", syncFlag.GetString());
-#endif
 	}
    
 	if (QTfile.Contains(".a2", false))
@@ -1866,10 +1803,8 @@ void Card::DoPreloadQTFile()
 //		nap_time += start_time;
 //	}
 
-#ifdef DEBUG
 	gDebugLog.Log("preload: file <%s>, tenths <%d>, %s", 
 		QTfile.GetString(), tenths, (doSync ? "sync" : "async"));
-#endif
 
 	if (not QTfile.Equal("0"))
 	{
@@ -1887,9 +1822,7 @@ void Card::DoPreloadQTFile()
 
 //	end_time = ::timeGetTime();
 //
-//#ifdef DEBUG
 //	gDebugLog.Log("preload: the preload took <%d> milliseconds", end_time - start_time);
-//#endif
 //
 //	if (tenths > 0)
 //	{
@@ -1899,9 +1832,7 @@ void Card::DoPreloadQTFile()
 //			// have to wait some more
 //			tenths = (nap_time - end_time) / 100;
 //
-//#ifdef DEBUG
 //			gDebugLog.Log("preload: going to nap for <%d> tenths", tenths);
-//#endif
 //
 //			gCursorManager.CheckCursor();
 //			gView->Draw();
@@ -1949,37 +1880,34 @@ void Card::DoRead()
         else 
         	delim = delimstr(0);
 
-#ifdef _DEBUG
 		gDebugLog.Log("read: into <%s>, until <%s>", vname.GetString(), delimstr.GetString());
-#endif
         gFileManager.ReadUntil(tempname, res, delim);
         
     } 
 	else
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("read: into <%s>", res.GetString());
-#endif 
 		gFileManager.Read(tempname, res);
 	}
 
     gVariableManager.SetString(vname, res);
 }
 
-#ifdef _DEBUG
 //
 //	ReDoScript 
 //
 void Card::DoReDoScript()
 {
+	// make sure redoscript functionality is enabled
+	if (gConfigManager.GetUserPref(REDOSCRIPT) == REDOSCRIPT_OFF)
+		return;
+	
 	TString		theCard;
-
 	m_Script >> theCard;
 
 	gDebugLog.Log("redoscript: <%s>", theCard.GetString());
 	gCardManager.DoReDoScript(theCard);
 }
-#endif
 
 //
 //	ResetOrigin - Reset the origin to 0,0 or set it to something new.
@@ -2016,9 +1944,7 @@ void Card::DoReturn()
 
 void Card::Return()
 {
-#ifdef DEBUG
 	gDebugLog.Log("return: in card <%s>, stop processing", Key());
-#endif
 	m_stopped = true;
 }
 
@@ -2058,9 +1984,7 @@ void Card::DoRewrite()
     tempname = gConfigManager.DataPath();
 	tempname += filename;
 
-#ifdef _DEBUG
 	gDebugLog.Log("rewrite: <%s>, num fields <%d>", searchString.GetString(), numFields);
-#endif
 
     gFileManager.Rewrite(tempname, searchString, numFields);
 }
@@ -2129,26 +2053,20 @@ void Card::DoSet()
     		date_type = DT_DAY;
     	else if (flag.Equal("longday"))
     		date_type = DT_LONGDAY;
-#ifdef DEBUG
     	else
     		gDebugLog.Log("bad flag to set command <%s>", flag.GetString());
-#endif
     	
     	date_value = (uint32) value;
     		
     	gVariableManager.SetDate(vname, date_value, date_type); 
     	
-#ifdef _DEBUG
 		gDebugLog.Log("set date: <%s> to <%s>", 
 			vname.GetString(), gVariableManager.GetString(vname.GetString()));
-#endif
     } 	
     else 
     {
     	gVariableManager.SetString(vname, value); 
-#ifdef _DEBUG
 		gDebugLog.Log("Set: <%s> to <%s>", vname.GetString(), value.GetString());
-#endif
 	}
 }
 
@@ -2215,11 +2133,9 @@ void Card::DoText()
     
     AdjustRect(&bounds);
 
-#ifdef DEBUG
 	gDebugLog.Log("Text: string <%s>, header <%s>, location (%d, %d, %d, %d)", 
 		text.GetString(), header.GetString(), 
 		bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom());
-#endif
 
     gHeaderManager.DoText(header, bounds, text, 0, 0);
 }
@@ -2410,9 +2326,7 @@ void Card::DoWait()
     if (m_Script.more()) 
     	m_Script >> frame;
 
-#ifdef _DEBUG
 	gDebugLog.Log("wait: <%ld>", frame);
-#endif
     
     if (gVideoManager.Playing())
     	gVideoManager.Wait(frame);
@@ -2438,9 +2352,7 @@ void Card::DoWrite()
     tempname = gConfigManager.DataPath();
 	tempname += filename;
 
-#ifdef _DEBUG
 	gDebugLog.Log("write: <%s>", data.GetString());
-#endif
 
     gFileManager.Write(tempname, data);
 }
@@ -2463,9 +2375,7 @@ CardManager::CardManager() : IndexManager()
     m_TimeoutCard = NULL;
     m_ExitNow = false;
     m_ExitScript = 0;
-#ifdef _DEBUG
 	m_ReDoScript = false;
-#endif
 }
 
 void CardManager::RemoveAll(void)
@@ -2480,9 +2390,7 @@ void CardManager::RemoveAll(void)
     m_TimeoutCard = NULL;
     m_ExitNow = false;
     m_ExitScript = 0;
-#ifdef _DEBUG
 	m_ReDoScript = false;
-#endif
 
  	m_CardList.RemoveAll();   
 	IndexManager::RemoveAll();
@@ -2503,9 +2411,7 @@ void CardManager::Idle(void)
 		// see if it is time to wakeup
 		if (m_NapTime < ::timeGetTime())
 		{ 
-#ifdef _DEBUG
 			gDebugLog.Log("CardManager: wake up from nap");
-#endif
 			m_NapTime = 0;
 			m_Napping = false;
 		}
@@ -2593,14 +2499,12 @@ void CardManager::Idle(void)
 		SwitchScripts(m_ExitScript);
 	}
 
-#ifdef _DEBUG
 	// see if we need to do redoscript
 	if (m_ReDoScript)
 	{
 		m_ReDoScript = false;
 		ReDoScript(m_ReDoCardName);
 	}
-#endif
 }
 
 void CardManager::DoExit(int32 inScript)
@@ -2617,17 +2521,13 @@ void CardManager::OneCommand(TString &inCmd)
 
 void CardManager::WakeUp(void)
 {
-#ifdef _DEBUG
 	gDebugLog.Log("CardManager: WakeUp");
-#endif
 	m_Paused = false;
 }
 
 void CardManager::Pause(void)
 {
-#ifdef _DEBUG
 	gDebugLog.Log("CardManager: Pause");
-#endif
 	m_Paused = true;
 }
 
@@ -2649,9 +2549,7 @@ void CardManager::Nap(int32 inTime)
 {
 	if (inTime > 0)
 	{
-#ifdef _DEBUG
 		gDebugLog.Log("CardManager: Nap for <%ld> tenths", inTime);
-#endif
 		m_Napping = true;
 		m_NapTime = inTime * 100L; 
 		m_NapTime += ::timeGetTime();
@@ -2660,9 +2558,7 @@ void CardManager::Nap(int32 inTime)
 
 void CardManager::KillNap(void)
 {
-#ifdef _DEBUG
 	gDebugLog.Log("CardManager: Kill the nap");
-#endif
 
 	m_Napping = false;
 	m_NapTime = 0;
@@ -2687,10 +2583,8 @@ void CardManager::JumpToCardByName(const char *inName)
 	theCard = GetCard(inName);
 	if (theCard != NULL)
 		JumpToCard(theCard);
-#ifdef _DEBUG
 	else
 		gLog.Log("Trying to jump to <%s>, couldn't find it", inName);
-#endif
 }
 
 void CardManager::JumpToCard(Card *inCard)
@@ -2706,19 +2600,15 @@ void CardManager::JumpToCard(Card *inCard)
 		
 		m_Paused = false;		// when jump always wake up manager
 	}
-#ifdef _DEBUG
 	else
 		gDebugLog.Log("Trying to jump to a null card");
-#endif
 }
 
-#ifdef _DEBUG
 void CardManager::DoReDoScript(TString &inCardName)
 {
 	m_ReDoScript = true;
 	m_ReDoCardName = inCardName;
 }
-#endif
 
 void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName, 
 							   int32 inStart, int32 inEnd)
@@ -2728,12 +2618,10 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
     newCard = new Card(inFile, inName, inStart, inEnd);
 
-#ifdef _DEBUG
-	// when debugging, read the script into memory so that 
-	//	the file can be changed without invalidating the index
-	//	information
-	newCard->SetScript();
-#endif
+	//  when redoscript functionality is enabled, read the script into memory so that 
+	//	the file can be changed without invalidating the index information
+	if (gConfigManager.GetUserPref(REDOSCRIPT) == REDOSCRIPT_ON)
+		newCard->SetScript();
 
     Add(newCard); 
     
@@ -2744,6 +2632,26 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.1.2.1  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
+
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
+
+ Revision 1.2  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

@@ -117,8 +117,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,2,0,1
- PRODUCTVERSION 3,2,0,1
+ FILEVERSION 3,2,0,2
+ PRODUCTVERSION 3,2,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x9L
@@ -133,17 +133,17 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "5L for Win32 3.2.0.1\0"
+            VALUE "Comments", "5L for Win32 3.2.0.2\0"
             VALUE "CompanyName", "Dartmouth College, Interactive Media Lab\0"
             VALUE "FileDescription", "5L for Win32\0"
-            VALUE "FileVersion", "3, 2, 0, 1\0"
+            VALUE "FileVersion", "3, 2, 0, 2\0"
             VALUE "InternalName", "5L\0"
-            VALUE "LegalCopyright", "Copyright © 1999,2000\0"
+            VALUE "LegalCopyright", "Copyright © 1999-2002\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "5L.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Interactive Media Lab 5L\0"
-            VALUE "ProductVersion", "3, 2, 0, 1\0"
+            VALUE "ProductVersion", "3, 2, 0, 2\0"
             VALUE "SpecialBuild", "\0"
         END
     END

@@ -17,16 +17,45 @@
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
 #define REV_BIG			00
-#define REV_SMALL		01
+#define REV_SMALL		02
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0.1"
+#define VERSION_STRING	"5L for Win32 3.2.0.2"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.3  2002/03/13 15:06:56  emk
+ Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
+ because we want these in the stable engine.  Highlights:
+
+   1) FiveL.prefs file support.
+   2) Removal of -D command line flag.
+
+
+ SOME MERGED BITS:
+
+ Revision 1.5  2002/02/19 12:35:12  tvw
+ Bugs #494 and #495 are addressed in this update.
+
+ (1) 5L.prefs configuration file introduced
+ (2) 5L_d.exe will no longer be part of CVS codebase, 5L.prefs allows for
+     running in different modes.
+ (3) Dozens of compile-time switches were removed in favor of
+     having a single executable and parameters in the 5L.prefs file.
+ (4) CryptStream was updated to support encrypting/decrypting any file.
+ (5) Clear file streaming is no longer supported by CryptStream
+
+ For more details, refer to ReleaseNotes.txt
+
+ Revision 1.4  2002/02/19 11:41:38  tvw
+ Merged from branch FiveL_3_1_1_Stabilization
+
+ Revision 1.3.2.1  2002/02/19 10:20:23  tvw
+ Stable build v3.2.0 (based on v3.1.1)
+
  Revision 1.3.2.2  2002/02/26 14:29:30  tvw
  Bugs #497 and #613
 
