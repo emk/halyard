@@ -56,8 +56,11 @@ Building Win32 5L
   Next, download and install the QuickTime 6 SDK.  This can be found at
   developer.apple.com (under Tools > QuickTime > QuickTime 6 SDK).  Unzip
   it in C:\sdk (or anywhere else you like, but then you'll have to adapt the
-  instructions below).  Select Tools > Options > Projects > VC++
-  Directories, and add the follow directories to the following categories:
+  instructions below). Make sure QuickTime is installed as well. 
+
+  Open up $5L_DIR\FiveL.sln. Select Tools > Options > Projects > VC++
+  Directories, and add the follow directories to the following
+  categories:
 
     Include files:
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\CIncludes
@@ -67,12 +70,12 @@ Building Win32 5L
     Executable files:
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Tools
 
-  Open up $5L_DIR\FiveL.dsw.  Click on "FileView", right-click on
-  "FiveL files", and select "Settings" > "Settings for: Win32 Debug" >
-  "Debug" > "General".  Set "Working Directory" to $5LTEST_DIR (the actual
-  path, not the variable name!).  Select "Settings for: Win32 Release" and
-  set "Working Directory" to the same value.  Now you'll automatically run
-  5Ltest when you ask Visual Studio to launch your program. 
+  Click on "Solution Explorer", right-click on "wx5L", and
+  select "Properties" > "Configuration: Debug" > "Debugging"  >
+  "Action".  Set "Working Directory" to $5LTEST_DIR (the actual path,
+  not the variable name!).  Select "Configuration: Release" and
+  set "Working Directory" to the same value.  Now you'll automatically
+  run 5Ltest when you ask Visual Studio to launch your program.
 
   Using a similar process, set the working directories for both versions
   of "CommonTest" to $5L_DIR/Common.  The test suites won't run without
@@ -82,18 +85,23 @@ Building Win32 5L
   will explain how to set up MSVC with the assembler support to build
   Quake.
 
-  Select "Build" > "Set Active Configuration" > "wx5L - Win32 Debug" >
-  "OK".  Now click on the "Build" icon in your toolbar (it looks like two
-  arrows pointing down at a hard drive).  If the build is successful, click
-  on the "Execute Program" icon (it looks like an exclamation point).  You
-  should now run 5Ltest successfully.  If not, you'll probably need help.
+  Make sure "Debug" is selected in the "Solution Configurations" popup
+  on your toolbar. In the "Solution Explorer", right click on "wx5L"
+  and select "Set as StartUp Project". You should now be able to build
+  and run 5L by clicking on the "Start" icon (it looks like a play
+  button or right facing triangle). If you want to build a component
+  without running it, you can select "Build <component>" from the
+  build menu, or add the build button to your toolbar by right
+  clicking on the toolbar and selecting "Build". 
 
-  To build the release version, choose "Build" > "Set Active Configuration"
-  > "FiveL - Win32 Release" > "OK", and follow the same steps.
+  To build the release version, select "Release" from the "Solution
+  Configurations" popup on your toolbar and follow the same steps as
+  above.
 
-  To run the test suites, set the active configuration to "CommonTest -
-  Win32 Debug" and "CommonTest - Win32 Release".  You'll need to run these
-  before each check-in.
+  To run the test suites, right click on "CommonTest" and select "Set
+  as StartUp Project". Make sure the appropriate configuration is
+  selected, debug or release. You'll need to run each of them before
+  each check in.
 
 Building Macintosh 5L
 ---------------------
