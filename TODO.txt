@@ -1,20 +1,43 @@
 
-  VTRA fixes
-    (@ ...) -> @...
-    @-by-name -> @*
-    prop-by-name -> prop*
-    send-by-name -> send*    
-    with-drawing-context -> with-dc
-    drawing-context-rect -> dc-rect
-    load-picture -> draw-picture
+  TValue Cleanup
+/   operator== should compare
+/   operator== on uninitialized values should throw exception
+/   operator== on dissimilar types should return false
+/   Support all types
+/   Implement some sort of get() method
+/   Make sure we can store minimum and maximum int32 and uint32 values
+    Move many functions from TValue.h to TValue.cpp
+    Remove 'inline' from conversion operators
+    Test TValue extensively with real TCallbacks
+    Overhaul TVariable
+    Redesign TArgumentList (for primitives)
+    Redesign TCallbackArgumentList
+
+  Cleanup
+    Make sure GUI does REFERENCE_TEST_CASE_FILE
+    Replace all old-style test cases with new-style test cases
+    Remove TestCase.h inclusions from random cpp files
+    Comment new macros in TestCase.h
 
   Node/event model
     (on cleanup ...)
+    Is (on setup-finished () ...) called at the right time?
     Is UPDATE-UI the right event name?  We don't have wxWindows semantics.
     Allow elements to be attached to sequences
     Enable and disable zones in engine (for cursor purposes only?)
     PROP-CHANGE API needs work
     Do we want to systematize DRAW-BUTTON method for all zones?
+    Areas in need of major refactoring
+      Can we combine node-handlers and node-values?
+      Deletion of elements is a mess.  Fix.
+      NODE-HAS-EXPENSIVE-HANDLERS? is currently a bit tricky
+      Can we combine @ and node-values?
+      Look for other syntactic patterns
+    Open questions
+      Hierarchial property value searching -- is it what we want?
+    Add EVENT-KEYS method to wrap EVENT-CHARACTER and EVENT-MODIFIERS
+    Respond gracefully to errors in idle handlers
+    ON should highlight method name in emacs
 
   Audio layer
     Bugs
@@ -35,31 +58,8 @@
 ,     Try to get complete code coverage testing Vorbis playback path
 
   Make TException stop reporting line numbers
-  Add EVENT-KEYS method to wrap EVENT-CHARACTER and EVENT-MODIFIERS
-  Respond gracefully to errors in idle handlers
-  ON should highlight method name in emacs
 
   Rename 'foo::ptr' in TestCase to better represent smart-pointer nature?
-  
-
-/ Event Handling
-/   Nice features
-/     Returning values from event handlers?
-/     Send idle events to everything
-
-    Areas in need of major refactoring
-      Can we combine node-handlers and node-values?
-      Deletion of elements is a mess.  Fix.
-      NODE-HAS-EXPENSIVE-HANDLERS? is currently a bit tricky
-      Can we combine @ and node-values?
-/     Use FOREACH in kernel
-      Look for other syntactic patterns
-    Open questions
-      Hierarchial property value searching -- is it what we want?
-      SET-PROP! -- Is it what we want?  Probably good to avoid for now.
-
-
-
 
 Older Stuff
 -----------
@@ -102,7 +102,6 @@ Long Term
   wxWindows Port
     Improve movie-controller event-handling
     Improve full-screen mode on Windows (and Mac?)
-    Implement high-speed wxBitmap access
     Text extensively on different systems
 
   Stabilization

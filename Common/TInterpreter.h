@@ -246,6 +246,16 @@ public:
 	virtual std::string PrintableRepresentation() { return "#<callback>"; }
 };
 
+typedef boost::shared_ptr<TCallback> TCallbackPtr;
+
+inline std::ostream &operator<<(std::ostream &out,
+                                const TCallbackPtr &inCallback)
+{
+    out << inCallback->PrintableRepresentation();
+	return out;
+}
+
+
 //////////
 // This class is in charge of creating, running and destroying interpreters
 // as required by the application.  It handles such features as redoscript,

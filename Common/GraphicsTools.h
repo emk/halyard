@@ -96,6 +96,12 @@ namespace GraphicsTools {
 					inLeft.blue == inRight.blue &&
 					inLeft.alpha == inRight.alpha);
 		}
+
+        friend std::ostream &operator<<(std::ostream &out, const Color &c) {
+            out << "(color " << int(c.red) << " " << int(c.green) << " "
+                << int(c.blue) << " " << int(c.alpha) << ")";
+            return out;
+        }
 	};
 
 

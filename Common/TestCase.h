@@ -319,4 +319,14 @@ DEFINE_CHECK_OP_HELPER(CheckNotEqualHelper, !=)
     END_UNREGISTERED_TEST_CASE(NAME); \
 	REGISTER_TEST_CASE(NAME)
 
+//////////
+//
+//
+#define REGISTER_TEST_CASE_FILE(NAME) \
+	char test_registration_ ## NAME = '\0'
+
+#define REFERENCE_TEST_CASE_FILE(NAME) \
+	extern char test_registration_ ## NAME; \
+	static char *test_reference_ ## NAME = &test_registration_ ## NAME
+
 #endif // TestCase_H

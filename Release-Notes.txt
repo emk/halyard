@@ -1,5 +1,14 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk, kwasi, djin
+
+  * Implemented TValue class, with full test cases.
+  * Added a TCallbackPtr typedef (using a shared pointer) and an
+    output operator.
+  * Added TestCase.h to CommonHeaders.h.
+  * Added macros REGISTER_TEST_CASE_FILE and REFERENCE_TEST_CASE_FILE
+    to TestCase.h and used them in TestAll.cpp.
+
 0.0.14 - 13 Jan 2004 - emk
 
 Vastly improved web browser integration, including the ability to embed

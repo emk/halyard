@@ -4,6 +4,8 @@
 
 #include "TestCase.h"
 
+REGISTER_TEST_CASE_FILE(TestCase);
+
 // Static variables definitions.
 TestRegistry *TestRegistry::sGlobalRegistry = NULL;
 
