@@ -33,10 +33,15 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 
 bool EventDispatcher::sEnableExpensiveEvents = false;
+bool EventDispatcher::sMaxStaleTimeInitialized = false;
+wxLongLong EventDispatcher::sMaxStaleTime = 0;
 
-EventDispatcher::EventDispatcher()
-    : mMaxStaleTime(PlatformGetTickCount())
-{
+EventDispatcher::EventDispatcher() {
+    // One-time initialization of sMaxStaleTime.
+    if (!sMaxStaleTimeInitialized) {
+        sMaxStaleTimeInitialized = true;
+        UpdateMaxStaleTime();
+    }
 }
  
 EventDispatcher::~EventDispatcher()
@@ -48,7 +53,11 @@ bool EventDispatcher::IsEventStale(const wxEvent &event) {
     // modified to apply to all event types. But we don't have wxEvent
     // objects for all our events yet, so there's no easy way to make this
     // consistent. Oh, well.
-    return PlatformGetEventTimestamp(event) <= mMaxStaleTime;
+    return PlatformGetEventTimestamp(event) <= sMaxStaleTime;
+}
+
+void EventDispatcher::UpdateMaxStaleTime() {
+    sMaxStaleTime = PlatformGetTickCount();    
 }
 
 void EventDispatcher::SetDispatcher(TCallbackPtr inCallback)
@@ -89,7 +98,7 @@ bool EventDispatcher::EventCleanup()
 {
     // Any as-yet-unprocessed events which occurred before this time are
     // considered "stale", and may be ignored if the script so desires.
-    mMaxStaleTime = PlatformGetTickCount();
+    UpdateMaxStaleTime();
 
     // Check our "pass" flag.
     return !bool(gVariableManager.Get("_pass"));

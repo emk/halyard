@@ -2,8 +2,12 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
-Miscellaneous error fixing for changes in 0.0.43 and 0.0.44:
-
+  * Added the function MARK-UNPROCESSED-EVENTS-AS-STALE! for manually
+    marking all queued events as stale.  This is helpful if the user
+    is repeated clicking on something or pressing a key waiting for
+    a slow task to happen.  This function doesn't need to be called
+    from event handlers, which always mark all unprocessed events
+    as stale.
   * Check to make sure the engine has the primitive WakeUpIfNecessary
     before calling it.  (This is what I get for not running the full
     test suites.)

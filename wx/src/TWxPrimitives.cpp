@@ -101,6 +101,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
+    REGISTER_5L_PRIMITIVE(MarkUnprocessedEventsAsStale);
     REGISTER_5L_PRIMITIVE(MeasurePic);
 	REGISTER_5L_PRIMITIVE(MediaSetVolume);
 	REGISTER_5L_PRIMITIVE(MouseGrab);
@@ -562,6 +563,10 @@ DEFINE_5L_PRIMITIVE(Loadsubpic) {
 
 	inArgs >> picname >> loc >> subrect;
 	draw_picture(picname, loc, &subrect);
+}
+
+DEFINE_5L_PRIMITIVE(MarkUnprocessedEventsAsStale) {
+    EventDispatcher::UpdateMaxStaleTime();
 }
 
 DEFINE_5L_PRIMITIVE(MeasurePic) {

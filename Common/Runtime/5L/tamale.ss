@@ -36,6 +36,7 @@
            delete-element-if-exists
            %basic-button% symcat
            quicktime-component-version
+           mark-unprocessed-events-as-stale!
            number->integer interpolate-int make-object-mover animate
            state-db-debug state-db-seconds state-db-milliseconds)
 
@@ -710,6 +711,9 @@
   ;;; is not installed.
   (define (quicktime-component-version type subtype)
     (call-5l-prim 'QTComponentVersion type subtype))
+
+  (define (mark-unprocessed-events-as-stale!)
+    (call-5l-prim 'MarkUnprocessedEventsAsStale))
 
   
   ;;-----------------------------------------------------------------------

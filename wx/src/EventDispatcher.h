@@ -30,9 +30,11 @@
 ///
 class EventDispatcher : boost::noncopyable, public FIVEL_NS TReloadNotified
 {
-    FIVEL_NS TCallbackPtr mDispatcher;
-    wxLongLong mMaxStaleTime;
+    static bool sMaxStaleTimeInitialized;
+    static wxLongLong sMaxStaleTime;
 	static bool sEnableExpensiveEvents;
+
+    FIVEL_NS TCallbackPtr mDispatcher;
 
 	bool EventSetup();
 	bool EventCleanup();
@@ -45,6 +47,12 @@ class EventDispatcher : boost::noncopyable, public FIVEL_NS TReloadNotified
 public:
 	EventDispatcher();
 	~EventDispatcher();
+
+    //////////
+    /// Mark all events which were generated before this moment--but which
+    /// have not yet been processed--as "stale".
+    ///
+    static void UpdateMaxStaleTime();
 
 	//////////
 	/// Set the event-dispatching callback.
@@ -136,10 +144,10 @@ public:
     /// Dispatch a MediaFinished event.
     ///
     bool DoEventMediaFinished();
-
+    
 private:
-    wxLongLong PlatformGetEventTimestamp(const wxEvent &event);
-    wxLongLong PlatformGetTickCount();
+    static wxLongLong PlatformGetEventTimestamp(const wxEvent &event);
+    static wxLongLong PlatformGetTickCount();
 };
 
 typedef shared_ptr<EventDispatcher> EventDispatcherPtr;
