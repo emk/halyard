@@ -39,7 +39,10 @@
            color-blue set-color-blue! color-alpha set-color-alpha!
 
            (rename percent <percent>) (rename make-percent percent)
-           percent? percent-value)
+           percent? percent-value
+           
+           (rename polygon <polygon>) (rename make-polygon-var polygon)
+           polygon? polygon-vertices)
   
   (define-struct point (x y) (make-inspector))
 
@@ -51,7 +54,11 @@
     (make-color r g b a))
 
   (define-struct percent (value) (make-inspector))
-  
+
+  (define-struct polygon (vertices) (make-inspector))
+
+  (define (make-polygon-var &rest args)
+    (make-polygon args))
 
   ;;=======================================================================
   ;;  Assertions

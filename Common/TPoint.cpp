@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -41,7 +42,7 @@ TPoint &TPoint::operator=(const TPoint &inPt)
 // 
 // equality operator
 //
-bool TPoint::operator==(TPoint &inPt)
+bool TPoint::operator==(const TPoint &inPt) const
 {
 	if ((inPt.X() == m_X) and
 		(inPt.Y() == m_Y))
@@ -107,6 +108,9 @@ void TPoint::Set(POINT &inPt)
 
 /*
  $Log$
+ Revision 1.4  2003/06/04 15:24:11  brian
+ Added support for polygons and polygonal zones.
+
  Revision 1.3  2002/06/20 16:32:53  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

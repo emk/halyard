@@ -26,7 +26,7 @@
 #include "AudioStream.h"
 #include "VorbisAudioStream.h"
 #include "AudioStreamElement.h"
-
+#include "CommonWxConv.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -95,35 +95,6 @@ void FIVEL_NS RegisterWxPrimitives()
         ::SetPrimitiveError("wrongelementtype", \
                             "The element is not of type " #TYPE)
 
-static wxRect ConvRect(const TRect &inRect)
-{
-	return wxRect(wxPoint(inRect.Left(), inRect.Top()),
-				  wxPoint(inRect.Right() - 1, inRect.Bottom() - 1));
-}
-
-static wxPoint ConvPoint(const TPoint &inPoint)
-{
-	return wxPoint(inPoint.X(), inPoint.Y());
-}
-
-static wxPoint GetPos(const TRect &inRect)
-{
-	return wxPoint(inRect.Left(), inRect.Top());
-}
-
-static wxSize GetSize(const TRect &inRect)
-{
-	return wxSize(1 + inRect.Right() - inRect.Left(),
-				  1 + inRect.Bottom() - inRect.Top());
-}
-
-static wxColour ConvColor(GraphicsTools::Color inColor)
-{
-	// Translate a color using the official translator function.
-	return wxGetApp().GetStage()->GetColor(inColor);
-}
-
-
 //=========================================================================
 //  Implementation of wxWindows Primitives
 //=========================================================================
@@ -173,7 +144,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxFill)
 	Color color;
 
 	inArgs >> bounds >> color;
-	wxGetApp().GetStage()->FillBox(ConvRect(bounds), color);
+	wxGetApp().GetStage()->FillBox(TToWxRect(bounds), color);
 }
 
 DEFINE_5L_PRIMITIVE(DrawBoxOutline)
@@ -183,7 +154,8 @@ DEFINE_5L_PRIMITIVE(DrawBoxOutline)
 	int32 width;
 
 	inArgs >> bounds >> color >> width;
-	wxGetApp().GetStage()->OutlineBox(ConvRect(bounds), ConvColor(color),
+	wxGetApp().GetStage()->OutlineBox(TToWxRect(bounds), 
+									  GraphicsToolsToWxColor(color),
 									  width);
 
 }
@@ -195,8 +167,8 @@ DEFINE_5L_PRIMITIVE(DrawLine)
 	int32 width;
 
 	inArgs >> from >> to >> color >> width;
-	wxGetApp().GetStage()->DrawLine(ConvPoint(from), ConvPoint(to),
-									ConvColor(color), width);
+	wxGetApp().GetStage()->DrawLine(TToWxPoint(from), TToWxPoint(to),
+									GraphicsToolsToWxColor(color), width);
 
 }
 
@@ -272,9 +244,9 @@ DEFINE_5L_PRIMITIVE(Input)
 	Color fore, back;
 
 	inArgs >> bounds >> size >> fore >> back;
-	wxGetApp().GetStage()->ModalTextInput(ConvRect(bounds), size,
-										  ConvColor(fore),
-										  ConvColor(back));
+	wxGetApp().GetStage()->ModalTextInput(TToWxRect(bounds), size,
+										  GraphicsToolsToWxColor(fore),
+										  GraphicsToolsToWxColor(back));
 }
 
 /*---------------------------------------------------------------------
@@ -447,7 +419,7 @@ DEFINE_5L_PRIMITIVE(Movie)
 	if (interaction)
 		style |= MOVIE_INTERACTION;
 
-	new MovieElement(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds),
+	new MovieElement(wxGetApp().GetStage(), name.c_str(), TToWxRect(bounds),
 					 path.c_str(), 0, style);
 }
 
@@ -487,14 +459,14 @@ DEFINE_5L_PRIMITIVE(SaveGraphics)
 {
 	TRect bounds;
 	inArgs >> bounds;
-	wxGetApp().GetStage()->SaveGraphics(ConvRect(bounds));
+	wxGetApp().GetStage()->SaveGraphics(TToWxRect(bounds));
 }
 
 DEFINE_5L_PRIMITIVE(RestoreGraphics)
 {
 	TRect bounds;
 	inArgs >> bounds;
-	wxGetApp().GetStage()->RestoreGraphics(ConvRect(bounds));
+	wxGetApp().GetStage()->RestoreGraphics(TToWxRect(bounds));
 }
 
 DEFINE_5L_PRIMITIVE(RegisterCard)
@@ -530,7 +502,7 @@ DEFINE_5L_PRIMITIVE(Screen)
 {
     Color color;
     inArgs >> color; 
-	wxGetApp().GetStage()->ClearStage(ConvColor(color));
+	wxGetApp().GetStage()->ClearStage(GraphicsToolsToWxColor(color));
 }
 
 DEFINE_5L_PRIMITIVE(SetImageCacheSize)
@@ -595,10 +567,10 @@ DEFINE_5L_PRIMITIVE(Wait)
 DEFINE_5L_PRIMITIVE(Zone)
 {
 	std::string name, cursor;
-	TRect bounds;
+	TPolygon poly;
 	TCallback *dispatcher;
 	
-	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor;
-	new Zone(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds), dispatcher,
+	inArgs >> SymbolName(name) >> poly >> dispatcher >> cursor;
+	new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher,
 			 wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor));
 }

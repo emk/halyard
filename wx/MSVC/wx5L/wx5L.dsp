@@ -103,6 +103,10 @@ SOURCE=..\..\src\AudioStreamElement.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\CommonWxConv.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\CursorManager.cpp
 # End Source File
 # Begin Source File
@@ -228,6 +232,10 @@ SOURCE=..\..\src\AudioStream.h
 # Begin Source File
 
 SOURCE=..\..\src\AudioStreamElement.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\CommonWxConv.h
 # End Source File
 # Begin Source File
 
@@ -402,7 +410,7 @@ SOURCE=..\..\src\tamale.xrc
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\src\5L\wx\src
+InputDir=\cygwin\home\brian\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 

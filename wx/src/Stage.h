@@ -396,9 +396,14 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	void PaintStage(wxDC &inDC);
 
     //////////
-    // Draw a border for the specified rectangle.
+    // Draw a border for the specified element.
     //
-    void DrawElementBorder(wxDC &inDC, const wxRect &inElementRect);
+    void DrawElementBorder(wxDC &inDC, Element *inElement);
+
+	//////////
+	// Draw a border for the specified rectangle.
+	// 
+	void Stage::DrawElementRectangle(wxDC &inDC, const wxRect &inRect);
 
 	//////////
 	// End an active Wait().

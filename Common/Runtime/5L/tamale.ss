@@ -42,17 +42,57 @@
       [[rect :default #f :label "Rectangle"]] ())
 
   (define-element-template %zone%
-      [[cursor :type <symbol> :default 'hand :label "Cursor"]]
+      [[cursor :type <symbol> :default 'hand :label "Cursor"]
+       [polygon :default #f :label "Polygon"]]
       (:template %element%)
-    (call-5l-prim 'zone (node-name self) (param self 'rect)
-                  (make-node-event-dispatcher self) cursor))
+    (if polygon
+        (call-5l-prim 'zone (node-name self) polygon
+                      (make-node-event-dispatcher self) cursor)
+        (call-5l-prim 'zone (node-name self) (rect->polygon 
+                                              (param self 'rect))
+                      (make-node-event-dispatcher self) cursor)))
 
   (define-element-template %simple-zone% [action] (:template %zone%)
     (on mouse-down (event)
       (action)))
 
-  (define (zone name r action &key (cursor 'hand))
-    (create %simple-zone% :name name :rect r :cursor cursor :action action))
+  (define (rect->polygon r)
+    (polygon (point (rect-left r) (rect-top r)) 
+             (point (rect-right r) (rect-top r))
+             (point (rect-right r) (rect-bottom r))
+             (point (rect-left r) (rect-bottom r))))
+
+  (define (polygon-bounds poly)
+    (define pts (polygon-vertices poly))
+    (if (null? pts)
+        (rect 0 0 0 0)
+        (let loop ((left (point-x (car pts)))
+                   (top (point-y (car pts)))
+                   (right (point-x (car pts)))
+                   (bottom (point-y (car pts)))
+                   (pts (cdr pts)))
+          (if (null? pts)
+              (rect left top right bottom)
+              (loop (min left (point-x (car pts)))
+                    (min top (point-y (car pts)))
+                    (max right (point-x (car pts)))
+                    (max bottom (point-y (car pts)))
+                    (cdr pts))))))
+
+  (define (zone name poly action &key (cursor 'hand))
+    (if (rect? poly)
+        (create %simple-zone% 
+                :name name 
+                :rect poly
+                :polygon (rect->polygon poly)
+                :cursor cursor 
+                :action action)
+        (create %simple-zone% 
+                :name name 
+                :rect (polygon-bounds poly)
+                :polygon poly
+                :cursor cursor 
+                :action action)))
   
   (define (set-zone-cursor! name cursor)
     (call-5l-prim 'SetZoneCursor name cursor))

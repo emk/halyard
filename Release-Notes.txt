@@ -1,9 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, brian
 
   * Mono Vorbis audio supported.
   * Per-channel volume supported.
+  * Added support for polygons (POLYGON point ...)
+  * Added support for polygonal zones (ZONE name poly callback) [rects
+    still work: (ZONE name rect callback) will convert the rect to a
+    polygon]
 
 0.0.5 - 30 May 2003 - emk
 

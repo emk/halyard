@@ -125,6 +125,7 @@ DEFINE_TYPE_TEST_PRIMITIVES(bool, 2)
 DEFINE_TYPE_TEST_PRIMITIVES(double, 3)
 DEFINE_TYPE_TEST_PRIMITIVES(TPoint, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(TRect, 1)
+DEFINE_TYPE_TEST_PRIMITIVES(TPolygon, 2)
 DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
 void FIVEL_NS RegisterSchemeTestPrimitives()
@@ -164,6 +165,14 @@ void FIVEL_NS RegisterSchemeTestPrimitives()
 
 	TRect_test_values[0] = TRect(2, 1, 4, 3);
 	REGISTER_TYPE_TEST_PRIMITIVES(TRect);
+
+	std::vector<TPoint> pts;
+	pts.push_back(TPoint(0, 0));
+	pts.push_back(TPoint(2, 0));
+	pts.push_back(TPoint(1, 2));
+	TPolygon_test_values[0] = TPolygon();
+	TPolygon_test_values[1] = TPolygon(pts);
+	REGISTER_TYPE_TEST_PRIMITIVES(TPolygon);
 
 	Color_test_values[0] = Color(1, 2, 3, 4);
 	REGISTER_TYPE_TEST_PRIMITIVES(Color);

@@ -1211,25 +1211,37 @@ void Stage::PaintStage(wxDC &inDC)
 	if (mIsDisplayingBorders)
 	{
 		if (mTextCtrl->IsShown())
-			DrawElementBorder(inDC, mTextCtrl->GetRect());
+			DrawElementRectangle(inDC, mTextCtrl->GetRect());
 
 		ElementCollection::iterator i = mElements.begin();
 		for (; i != mElements.end(); i++)
 			if ((*i)->IsShown())
-				DrawElementBorder(inDC, (*i)->GetRect());
+				DrawElementBorder(inDC, *i);
 	}
 }
 
-void Stage::DrawElementBorder(wxDC &inDC, const wxRect &inElementRect)
+// XXX - these should be refactored, but it's just two lines they have 
+// in common. I'm not sure if it's worth it. Feel free to do so if you
+// want.
+void Stage::DrawElementBorder(wxDC &inDC, Element *inElement)
+{
+	inDC.SetPen(*wxRED_PEN);
+	inDC.SetBrush(*wxTRANSPARENT_BRUSH);
+
+	inElement->DrawElementBorder(inDC);
+}
+
+void Stage::DrawElementRectangle(wxDC &inDC, const wxRect &inRect)
 {
 	inDC.SetPen(*wxRED_PEN);
 	inDC.SetBrush(*wxTRANSPARENT_BRUSH);
 
 	// Draw the border *outside* our rectangle.
-	wxRect r = inElementRect;
+	wxRect r = inRect;
 	r.Inflate(1);
 	inDC.DrawRectangle(r.x, r.y, r.width, r.height);
 }
+
 
 void Stage::OnChar(wxKeyEvent &inEvent)
 {

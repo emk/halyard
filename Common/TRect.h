@@ -201,7 +201,7 @@ class TRect : public TObject
 		// [in] inRect - another rectangle to compare against
 		// [out] return - true if they are equal, false otherwise
 		//
-		bool		operator==(TRect &inRect);
+		bool		operator==(const TRect &inRect) const;
 
 		//////////
 		// Check whether a TPoint is contained within the rectangle.
@@ -275,6 +275,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.6  2003/06/04 15:24:12  brian
+ Added support for polygons and polygonal zones.
+
  Revision 1.5  2002/06/20 16:32:53  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

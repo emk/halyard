@@ -10,6 +10,7 @@
 #include "TString.h"
 #include "TPoint.h"
 #include "TRect.h"
+#include "TPolygon.h"
 #include "TVariable.h"
 #include "GraphicsTools.h"
 #include "TInterpreter.h"
@@ -125,6 +126,11 @@ protected:
 	virtual TRect GetRectArg() = 0;
 
 	//////////
+	// Return the next argument as a polygon.
+	//
+	virtual TPolygon GetPolygonArg() = 0;
+
+	//////////
 	// Return the next argument as a color.
 	//
 	virtual GraphicsTools::Color GetColorArg() = 0;
@@ -167,6 +173,7 @@ public:
 	friend TArgumentList &operator>>(TArgumentList &args, uint32 &out);
 	friend TArgumentList &operator>>(TArgumentList &args, double &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TRect &out);
+	friend TArgumentList &operator>>(TArgumentList &args, TPolygon &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TPoint &out);
 	friend TArgumentList &operator>>(TArgumentList &args,
 									 GraphicsTools::Color &out);

@@ -49,6 +49,9 @@
 (test-arg-type 'double '(-1 0 1))
 (test-arg-type 'TPoint (list (point 1 2)))
 (test-arg-type 'TRect (list (rect 1 2 3 4)))
+(test-arg-type 'TPolygon (list (polygon) 
+                               (polygon (point 0 0) (point 2 0) 
+                                        (point 1 2))))
 (test-arg-type 'Color (list (color 1 2 3 4)))
 
 

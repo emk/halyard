@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <wx/wx.h>
 
 #include "TInterpreter.h"
 
@@ -99,6 +100,11 @@ public:
 	// Get an appropriate cursor for this object.
 	//
 	virtual wxCursor GetCursor() { return wxCursor(wxCURSOR_HAND); }
+
+	/////////
+	// Draw the element to the specified DC
+	//
+	virtual void DrawElementBorder(wxDC &inDC);
 };
 
 #endif // Element_H

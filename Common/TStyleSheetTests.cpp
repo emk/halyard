@@ -48,6 +48,7 @@ protected:
 	DECLARE_GET_ARG(GetDoubleArg, double);
 	virtual TPoint GetPointArg() { ASSERT(false); return TPoint(0, 0); }
 	virtual TRect GetRectArg() { ASSERT(false); return TRect(0, 0, 0, 0); }
+	virtual TPolygon GetPolygonArg() { ASSERT(false); return TPolygon(); }
 	virtual GraphicsTools::Color GetColorArg()
 	{
 		mData >> std::hex;

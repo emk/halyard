@@ -706,6 +706,31 @@ TRect TSchemeArgumentList::GetRectArg()
 				 GetInt32Member("rect-right", arg));
 }
 
+TPolygon TSchemeArgumentList::GetPolygonArg()
+{
+	Scheme_Object *arg = GetNextArg();
+	TypeCheckStruct("polygon?", arg);
+	std::vector<TPoint> pts;
+	Scheme_Object *scheme_pts = 
+		TSchemeInterpreter::CallScheme("polygon-vertices", 1, &arg);
+	if (!(SCHEME_PAIRP(scheme_pts) || SCHEME_NULLP(scheme_pts)))
+		TypeCheckFail();
+	Scheme_Object *current;
+
+	while (!SCHEME_NULLP(scheme_pts))
+	{
+		current = SCHEME_CAR(scheme_pts);
+		TypeCheckStruct("point?", current);
+		pts.push_back(TPoint(GetInt32Member("point-x", current),
+							 GetInt32Member("point-y", current)));
+		scheme_pts = SCHEME_CDR(scheme_pts);
+		if (!(SCHEME_PAIRP(scheme_pts) || SCHEME_NULLP(scheme_pts)))
+			TypeCheckFail();
+	}
+
+	return TPolygon(pts);
+}
+
 GraphicsTools::Color TSchemeArgumentList::GetColorArg()
 {
 	Scheme_Object *arg = GetNextArg();

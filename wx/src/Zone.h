@@ -5,9 +5,9 @@
 
 #include "TInterpreter.h"
 #include "Element.h"
+#include "TPolygon.h"
 
 class Stage;
-
 
 //////////
 // A zone is basically a "virtual widget" on our stage.  It doesn't
@@ -21,24 +21,26 @@ class Stage;
 //
 class Zone : public Element
 {
-	wxRect mBounds;
+	TPolygon mPolygon;
 	EventDispatcher *mDispatcher;
 	wxCursor mCursor;
 	
 public:
-	Zone(Stage *inStage, const wxString &inName, const wxRect &inBounds,
+	Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
 		 FIVEL_NS TCallback *inDispatch, wxCursor &inCursor);
 	~Zone();
 
 	virtual bool IsLightWeight() { return true; }
 
-	virtual wxRect GetRect() { return mBounds; }
+	virtual wxRect GetRect();
 	virtual bool IsPointInElement(const wxPoint &inPoint);
 
 	virtual EventDispatcher *GetEventDispatcher() { return mDispatcher; }
 
 	virtual wxCursor GetCursor() { return mCursor; }
 	virtual void SetCursor(wxCursor &inCursor) { mCursor = inCursor; }
+
+	virtual void DrawElementBorder(wxDC &inDC);
 };
 
 #endif // Zone_H

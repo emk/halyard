@@ -104,6 +104,13 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TRect &out)
     return args;
 }
 
+TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TPolygon &out)
+{
+    out = args.GetPolygonArg();
+	// XXX - args.LogParameter(...)
+    return args;
+}
+
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TPoint &out)
 {
     out = args.GetPointArg();

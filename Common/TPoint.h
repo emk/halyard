@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -137,7 +138,7 @@ class TPoint : public TObject
 		// [in] inPt - a TPoint to check against for equality
 		// [out] return - true if the two points are equal, false otherwise
 		//
-		bool			operator==(TPoint &inPt);
+		bool			operator==(const TPoint &inPt) const;
 
 #if defined (_5L_QUICKTIME_)
 		//////////
@@ -193,6 +194,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5  2003/06/04 15:24:11  brian
+ Added support for polygons and polygonal zones.
+
  Revision 1.4  2002/06/20 16:32:53  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

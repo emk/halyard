@@ -220,6 +220,7 @@ protected:
 	virtual double GetDoubleArg();
 	virtual TPoint GetPointArg();
 	virtual TRect GetRectArg();
+	virtual TPolygon GetPolygonArg();
 	virtual GraphicsTools::Color GetColorArg();
 	virtual void GetValueOrPercentArg(bool &outIsPercent,
 									  int32 &outValue);

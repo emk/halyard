@@ -68,7 +68,7 @@ TRect &TRect::operator=(const TRect &inRect)
 // 
 // equality operator
 //
-bool TRect::operator==(TRect &inRect)
+bool TRect::operator==(const TRect &inRect) const
 {
 	if ((inRect.Top() == m_Top) and
 		(inRect.Left() == m_Left) and
@@ -144,6 +144,9 @@ void TRect::Set(RECT &inRect)
 #endif
 /*
  $Log$
+ Revision 1.6  2003/06/04 15:24:12  brian
+ Added support for polygons and polygonal zones.
+
  Revision 1.5  2002/06/20 16:32:53  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:
