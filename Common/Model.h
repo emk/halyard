@@ -19,6 +19,7 @@ namespace model {
 
 	// Forward declarations.
 	class Datum;
+	class MutableDatum;
 	class Object;
 	class View;
 	class Change;
@@ -94,9 +95,12 @@ namespace model {
 		//////////
 		// Immediately after a Datum is created, it should be registered
 		// with a Model object.  You can do this by inserting the Datum
-		// into a container, which will call RegisterWithModel.
+		// into a container, which will call RegisterWithModel.  The
+		// inParent argument will be NULL for the top-most item in
+		// the container.
 		//
-		virtual void RegisterWithModel(Model *inModel) {}
+		virtual void RegisterWithModel(Model *inModel,
+									   MutableDatum *inParent) {}
 
 		//////////
 		// Fill in any children of the datum using the specified XML node.
@@ -107,6 +111,22 @@ namespace model {
 		// Write a Datum to the specified XML node.
 		//
 		virtual void Write(xml_node inContainer) = 0;
+
+	protected:
+		friend class Change;
+		friend class HashDatum;
+		friend class ListDatum;
+
+		//////////
+		// Called when this datum is deleted, either by regular container
+		// operations or Undo/Redo.
+		//
+		virtual void NotifyDeleted() {}
+
+		//////////
+		// Called when this datum is undeleted by Undo/Redo.
+		//
+		virtual void NotifyUndeleted() {}
 	};
 
 	//////////
@@ -172,10 +192,18 @@ namespace model {
 	// A MutableDatum can be changed and must therefore support Undo.
 	// 
 	class MutableDatum : public Datum {
+		friend class Change;
+
 		Model *mModel;
+		MutableDatum *mParent;
 
 	protected:
-		MutableDatum(Type inType) : Datum(inType), mModel(NULL) { }
+		MutableDatum(Type inType);
+
+		//////////
+		// Called by Change to let the datum know a change has occurred.
+		//
+		virtual void NotifyChanged();
 
 		//////////
 		// To change this datum, instantiate an appropriate Change
@@ -193,11 +221,11 @@ namespace model {
 
 	public:
 		//////////
-		// Mutable objects actually need to know about their Model,
-		// and communicate with it on a regular basis.  Therefore, we
-		// actually pay attention to this method.
+		// Mutable objects actually need to know about their Model and
+		// parent, and communicate with them on a regular basis.
+		// Therefore, we actually pay attention to this method.
 		//
-		virtual void RegisterWithModel(Model *inModel);
+		virtual void RegisterWithModel(Model *inModel, MutableDatum *inParent);
 
 		Model *GetModel() { ASSERT(mModel); return mModel; }
 	};		
@@ -215,6 +243,8 @@ namespace model {
 		// TODO - Use type traits to get an efficient reference type.
 		typedef T KeyType;
 		typedef const T ConstKeyType;
+
+		bool HaveKey(ConstKeyType &inKey) { return DoFind(inKey) != NULL; }
 
 		template <typename D>
 		D *Set(ConstKeyType &inKey, D *inValue)
@@ -240,7 +270,8 @@ namespace model {
 		// Return the datum associated with the specified key.
 		// MSVC 6 - Not pure virtual to work around template bug.
 		//
-		virtual Datum *DoGet(ConstKeyType &inKey) { return NULL; }
+		virtual Datum *DoGet(ConstKeyType &inKey)
+			{ ASSERT(false); return NULL; }
 
 		//////////
 		// Search the collection for the specified key.  If the key
@@ -296,6 +327,9 @@ namespace model {
 		Private::DatumMap::iterator begin() { return mMap.begin(); }
 		Private::DatumMap::iterator end() { return mMap.end(); }
 
+		virtual void NotifyDeleted();
+		virtual void NotifyUndeleted();
+
 		virtual Datum *DoGet(ConstKeyType &inKey);
 		virtual Datum *DoFind(ConstKeyType &inKey);
 		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum);
@@ -323,6 +357,10 @@ namespace model {
 	protected:
 		Object(const Class *inClass)
 			: HashDatum(ObjectType), mClass(inClass) {}
+
+		virtual void NotifyChanged();
+		virtual void NotifyDeleted();
+		virtual void NotifyUndeleted();
 
 	public:
 		~Object();
@@ -371,6 +409,9 @@ namespace model {
 		DEFINE_VALUE_SET(Insert, String)
 
 	protected:
+		virtual void NotifyDeleted();
+		virtual void NotifyUndeleted();
+
 		virtual Datum *DoGet(ConstKeyType &inKey);
 		virtual Datum *DoFind(ConstKeyType &inKey);
 		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum);
@@ -389,23 +430,59 @@ namespace model {
 	//////////
 	// The 'view' class of the model/view/control triad.  This View
 	// associates itself with an Object in the model.  Every time
-	// that Object changes, the View receives an ObjectChanged
-	// message.
+	// that Object changes the View receives an ObjectChanged
+	// message.  When the Object is deleted, the view receives
+	// an ObjectDeleted message.
 	//
 	class View {
 		DISABLE_COPY_AND_ASSIGN(View);
 
 		Object *mObject;
+		bool mObjectIsLive;
 
 	public:
 		View();
 		virtual ~View();
 
-		void SetObject(Object *mObject);
-		void GetObject();
+		//////////
+		// Returns true if and only if there is an object attached and
+		// that object is not currently deleted.
+		//
+		bool ObjectIsLive() { return mObjectIsLive; }
 
+		//////////
+		// Call this method to permanently attach an Object to this View.
+		//
+		void SetObject(Object *inObject);
+
+		//////////
+		// Get the object associated with this view.  This function can only
+		// be called when ObjectIsLive is true.
+		//
+		Object *GetObject();
+
+		//////////
+		// This method will be called immediately after the Object is
+		// first attached, every time the object changes, and when the
+		// object is "undeleted" by an Undo or Redo.  ObjectIsLive
+		// will always be true.
+		//
 		virtual void ObjectChanged() = 0;
+
+		//////////
+		// This method will be called when the object is deleted.
+		// ObjectIsLive will always be false.
+		//
+		virtual void ObjectDeleted() = 0;
+
+	private:
+		friend class Object;
+
+		void CallObjectChanged();
+		void CallObjectDeleted();
+		void ClearObject();
 	};
+
 
 	//////////
 	// We support different data model formats.  Each format has three
@@ -511,7 +588,7 @@ namespace model {
 // linker to discard static variables with non-trivial destructors
 // if nothing refers to them.  Yes, this is massively stupid.
 #define BEGIN_MODEL_CLASSES() \
-    static model::Class *model_classes[] = {
+    model::Class *gModelClasses[] = {
 
 #define REGISTER_MODEL_CLASS(NAME) \
     &NAME::class_info,

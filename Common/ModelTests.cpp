@@ -32,10 +32,67 @@ BEGIN_MODEL_CLASSES()
 	REGISTER_MODEL_CLASS(Card)
 END_MODEL_CLASSES()
 
+
+//=========================================================================
+//	Sample View Class
+//=========================================================================
+
 class CardView : public View {
+	int mChangeCount;
+	int mDeleteCount;
+	bool mCurrentlyDeleted;
+	std::string mCardName;
+	bool mHaveListItem;
+	std::string mListItem;
+
 public:
-	void ObjectChanged() {}
+	CardView();
+
+	virtual void ObjectDeleted();
+	virtual void ObjectChanged();
+
+	void CheckCounts(int inChanges, int inDeletes);
+
+	bool IsCurrentlyDeleted() { return mCurrentlyDeleted; }
+	std::string GetName() { return mCardName; }
+	bool HaveListItem() { return mHaveListItem; }
+	std::string GetListItem() { return mListItem; }
 };
+
+CardView::CardView()
+{
+	mChangeCount = 0;
+	mDeleteCount = 0;
+}
+
+void CardView::CheckCounts(int inChanges, int inDeletes)
+{
+	TEST(mChangeCount == inChanges);
+	TEST(mDeleteCount == inDeletes);
+}
+
+void CardView::ObjectDeleted()
+{
+	mDeleteCount++;
+	mCurrentlyDeleted = true;
+}
+
+void CardView::ObjectChanged()
+{
+	mChangeCount++;
+	mCurrentlyDeleted = false;
+	mCardName = GetObject()->GetString("name");
+	mHaveListItem = false;
+	if (GetObject()->HaveKey("list"))
+	{
+		List *list = cast<List>(GetObject()->Get("list"));
+		if (list->HaveKey(0))
+		{
+			mHaveListItem = true;
+			mListItem = list->GetString(0);
+		}
+	}
+}
 
 
 //=========================================================================
@@ -233,11 +290,84 @@ void test_Model (void)
 	Card *card = root->Set("sampleCard", new Card());
 	TEST(cast<Card>(root->Get("sampleCard")) == card);
 	card->SetString("name", "CardName");
+	TEST(card->GetString("name") == "CardName");
 
 	//---------------------------------------------------------------------
 	// Test Views
 
+	{
+		// Test direct changes to Object.
+		CardView view1;
+		view1.SetObject(card);
+		TEST(view1.GetName() == "CardName");
+		TEST(view1.GetObject() == card);
+		card->SetString("name", "CardName2");
+		TEST(view1.GetName() == "CardName2");
+		model.Undo();
+		TEST(view1.GetName() == "CardName");
+		model.Redo();
+		TEST(view1.GetName() == "CardName2");
+	}
+
+	{
+		// Test changes to non-Objects contained within our Object.
+		// These changes should propagate up to the appropriate object.
+		CardView view2;
+		view2.SetObject(card);
+		TEST(view2.GetName() == "CardName2");
+		TEST(view2.HaveListItem() == false);
+		List *small_list = card->Set("list", new List());
+		TEST(view2.HaveListItem() == false);
+		small_list->InsertString(0, "foo");
+		TEST(view2.HaveListItem() == true);
+		TEST(view2.GetListItem() == "foo");
+		model.Undo();
+		TEST(view2.HaveListItem() == false);
+		model.Redo();
+		TEST(view2.HaveListItem() == true);
+		TEST(view2.GetListItem() == "foo");		
+	}
 	
+	{
+		// Test ObjectDeleted notifications.
+		CardView view3;
+		view3.SetObject(card);
+		Card *subcard = card->Set("subcard", new Card());
+		subcard->SetString("name", "subcard");
+		CardView subview;
+		subview.SetObject(subcard);
+		Card *subsubcard = subcard->Set("subsubcard", new Card());
+		subsubcard->SetString("name", "subsubcard");
+		CardView subsubview;
+		subsubview.SetObject(subsubcard);
+		view3.CheckCounts(2, 0);
+		subview.CheckCounts(2, 0);
+		subsubview.CheckCounts(1, 0);
+		TEST(view3.ObjectIsLive() && !view3.IsCurrentlyDeleted());
+		TEST(subview.ObjectIsLive() && !subview.IsCurrentlyDeleted());
+		TEST(subsubview.ObjectIsLive() && !subsubview.IsCurrentlyDeleted());
+		card->Delete("subcard");
+		view3.CheckCounts(3, 0);
+		subview.CheckCounts(2, 1);
+		subsubview.CheckCounts(1, 1);
+		TEST(view3.ObjectIsLive() && !view3.IsCurrentlyDeleted());
+		TEST(!subview.ObjectIsLive() && subview.IsCurrentlyDeleted());
+		TEST(!subsubview.ObjectIsLive() && subsubview.IsCurrentlyDeleted());
+		model.Undo();
+		view3.CheckCounts(4, 0);
+		subview.CheckCounts(3, 1);
+		subsubview.CheckCounts(2, 1);
+		TEST(view3.ObjectIsLive() && !view3.IsCurrentlyDeleted());
+		TEST(subview.ObjectIsLive() && !subview.IsCurrentlyDeleted());
+		TEST(subsubview.ObjectIsLive() && !subsubview.IsCurrentlyDeleted());
+		subcard->Delete("subsubcard");
+		view3.CheckCounts(4, 0);
+		subview.CheckCounts(4, 1);
+		subsubview.CheckCounts(2, 2);
+		TEST(view3.ObjectIsLive() && !view3.IsCurrentlyDeleted());
+		TEST(subview.ObjectIsLive() && !subview.IsCurrentlyDeleted());
+		TEST(!subsubview.ObjectIsLive() && subsubview.IsCurrentlyDeleted());
+	}
 
 	//---------------------------------------------------------------------
 	// Test Serialization

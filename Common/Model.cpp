@@ -1,5 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
+#include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -115,6 +116,22 @@ void String::Write(xml_node inContainer)
 //  MutableDatum Methods
 //=========================================================================
 
+MutableDatum::MutableDatum(Type inType)
+	: Datum(inType), mModel(NULL), mParent(NULL)
+{
+}
+
+void MutableDatum::NotifyChanged()
+{
+	// We propagate change notifications up to our parent.  The change
+	// notifications will propagate until they reach an Object, which will
+	// notify any Views attached to it.  The top-most node in the tree is
+	// an Object--which overrides this method--so mParent should always be
+	// non-NULL here.
+	ASSERT(mParent);
+	mParent->NotifyChanged();
+}
+
 void MutableDatum::ApplyChange(Change *inChange)
 {
 	ASSERT(mModel != NULL);
@@ -126,14 +143,16 @@ void MutableDatum::RegisterChildWithModel(Datum *inDatum)
 {
 	ASSERT(mModel != NULL);
 	ASSERT(inDatum != NULL);
-	inDatum->RegisterWithModel(mModel);
+	inDatum->RegisterWithModel(mModel, this);
 }
 
-void MutableDatum::RegisterWithModel(Model *inModel)
+void MutableDatum::RegisterWithModel(Model *inModel, MutableDatum *inParent)
 {
 	ASSERT(mModel == NULL);
+	ASSERT(mParent == NULL);
 	ASSERT(inModel != NULL);
 	mModel = inModel;
+	mParent = inParent;
 }
 
 
@@ -217,6 +236,20 @@ template class model::CollectionDatum<size_t>;
 //  HashDatum Methods
 //=========================================================================
 
+void HashDatum::NotifyDeleted()
+{
+	DatumMap::iterator i = mMap.begin();
+	for (; i != mMap.end(); ++i)
+		i->second->NotifyDeleted();
+}
+
+void HashDatum::NotifyUndeleted()
+{
+	DatumMap::iterator i = mMap.begin();
+	for (; i != mMap.end(); ++i)
+		i->second->NotifyUndeleted();	
+}
+
 Datum *HashDatum::DoGet(ConstKeyType &inKey)
 {
 	DatumMap::iterator found = mMap.find(inKey);
@@ -283,6 +316,30 @@ void Map::Fill(xml_node inNode)
 
 Object::~Object()
 {
+	std::for_each(mViews.begin(), mViews.end(),
+				  std::mem_fun(&View::ClearObject));
+}
+
+void Object::NotifyChanged()
+{
+	std::for_each(mViews.begin(), mViews.end(),
+				  std::mem_fun(&View::CallObjectChanged));
+}
+
+void Object::NotifyDeleted()
+{
+	HashDatum::NotifyDeleted();
+	std::for_each(mViews.begin(), mViews.end(),
+				  std::mem_fun(&View::CallObjectDeleted));	
+}
+
+void Object::NotifyUndeleted()
+{
+	// We're careful to translate NotifyUndeleted in ObjectChanged only for
+	// members of the class Object, so we don't propogate NotifyChanged
+	// messages back up the tree.
+	HashDatum::NotifyUndeleted();
+	NotifyChanged();
 }
 
 void Object::Initialize()
@@ -312,6 +369,20 @@ void Object::Fill(xml_node inNode)
 		Set(key, value);
 		value->Fill(node);
 	}
+}
+
+void Object::RegisterView(View *inView)
+{
+	if (std::count(mViews.begin(), mViews.end(), inView) == 0)
+		mViews.push_back(inView);
+}
+
+void Object::UnregisterView(View *inView)
+{
+	std::vector<View*>::iterator found =
+		std::find(mViews.begin(), mViews.end(), inView);
+	ASSERT(found != mViews.end());
+	mViews.erase(found);
 }
 
 
@@ -347,6 +418,18 @@ void List::Fill(xml_node inNode)
 		Insert(mVector.size(), value);
 		value->Fill(node);
 	}
+}
+
+void List::NotifyDeleted()
+{
+	std::for_each(mVector.begin(), mVector.end(),
+				  std::mem_fun(&Datum::NotifyDeleted));
+}
+
+void List::NotifyUndeleted()
+{
+	std::for_each(mVector.begin(), mVector.end(),
+				  std::mem_fun(&Datum::NotifyUndeleted));
 }
 
 Datum *List::DoGet(ConstKeyType &inKey)
@@ -484,6 +567,57 @@ template void model::Move(Map*, Map::ConstKeyType&,
 						  Map*, Map::ConstKeyType&);
 #endif // 0
 
+//=========================================================================
+//  View Methods
+//=========================================================================
+
+View::View()
+	: mObject(NULL), mObjectIsLive(false)
+{
+}
+
+View::~View()
+{
+	if (mObject)
+		mObject->UnregisterView(this);
+}
+
+void View::SetObject(Object *inObject)
+{
+	ASSERT(inObject);
+	ASSERT(!mObject);
+	mObject = inObject;
+	mObject->RegisterView(this);
+	CallObjectChanged();
+}
+
+Object *View::GetObject()
+{
+	ASSERT(mObject && ObjectIsLive());
+	return mObject;
+}
+
+void View::CallObjectChanged()
+{
+	mObjectIsLive = true;
+	ObjectChanged();
+}
+
+void View::CallObjectDeleted()
+{
+	mObjectIsLive = false;
+	ObjectDeleted();
+}
+
+void View::ClearObject()
+{
+	// We are called by the destructor of Object, and we should set any
+	// out-of-date pointers to NULL.
+	ASSERT(mObject);
+	mObject = NULL;
+	CallObjectDeleted();
+}
+
 
 //=========================================================================
 //  Model Methods
@@ -494,7 +628,7 @@ void Model::Initialize()
 	mChangePosition = mChanges.begin();
 	Class *c = Class::FindByName(mFormat.GetName());
 	mRoot = std::auto_ptr<Object>(c->CreateInstance());
-	mRoot->RegisterWithModel(this);
+	mRoot->RegisterWithModel(this, NULL);
 }
 
 Model::Model(const ModelFormat &inFormat)
@@ -509,7 +643,7 @@ Model::Model(const ModelFormat &inFormat)
 Model::Model(const ModelFormat &inCurrentFormat,
 			 ModelFormat::Version inEarliestFormat,
 			 const std::string &inPath)
-	: mFormat(inCurrentFormat), mRoot(NULL), mSavePath(inPath), mIsDirty(false)
+	: mFormat(inCurrentFormat), mRoot(NULL), mIsDirty(false), mSavePath(inPath)
 {
 	typedef ModelFormat::Version Version;
 

@@ -18,6 +18,8 @@ libimlunit_a_SOURCES = \
 libfivel_a_SOURCES = \
 	Model.cpp \
 	Model.h \
+	ModelChange.cpp \
+	ModelChange.h \
 	TArray.cpp \
 	TArray.h \
 	TBTree.cpp \

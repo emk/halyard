@@ -41,6 +41,30 @@ namespace model {
 		void ConstructorFailing() { mIsFreed = true; }
 
 		//////////
+		// Wrapper around MutableDatum::NotifyChanged which can be called
+		// from subclasses of Change.  The allows us to keep the low-level
+		// interface 'protected:'.
+		//
+		void NotifyChanged(MutableDatum *inDatum)
+			{ inDatum->NotifyChanged(); }
+
+		//////////
+		// Wrapper around Datum::NotifyDeleted which can be called
+		// from subclasses of Change.  The allows us to keep the low-level
+		// interface 'protected:'.
+		//
+		void NotifyDeleted(Datum *inDatum)
+			{ inDatum->NotifyDeleted(); }
+
+		//////////
+		// Wrapper around Datum::NotifyUndeleted which can be called
+		// from subclasses of Change.  The allows us to keep the low-level
+		// interface 'protected:'.
+		//
+		void NotifyUndeleted(Datum *inDatum)
+			{ inDatum->NotifyUndeleted(); }
+
+		//////////
 		// Wrapper around CollectionDatum::DoFind which can be called
 		// from subclasses of Change.  The allows us to keep the
 		// low-level collection 'protected:' without relying on

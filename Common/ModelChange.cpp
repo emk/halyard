@@ -70,6 +70,10 @@ void SetChange<KeyType>::DoApply()
 	if (mOldDatum)
 		RemoveKnown(mCollection, mKey, mOldDatum);
 	Insert(mCollection, mKey, mNewDatum);
+	NotifyChanged(mCollection);
+	if (mOldDatum)
+		NotifyDeleted(mOldDatum);
+	NotifyUndeleted(mNewDatum);
 }
 
 template <typename KeyType>
@@ -78,6 +82,10 @@ void SetChange<KeyType>::DoRevert()
 	RemoveKnown(mCollection, mKey, mNewDatum);
 	if (mOldDatum)
 		Insert(mCollection, mKey, mOldDatum);
+	NotifyChanged(mCollection);
+	NotifyDeleted(mNewDatum);
+	if (mOldDatum)
+		NotifyUndeleted(mOldDatum);
 }
 
 template <typename KeyType>
@@ -122,12 +130,16 @@ template <typename KeyType>
 void DeleteChange<KeyType>::DoApply()
 {
 	RemoveKnown(mCollection, mKey, mOldDatum);
+	NotifyChanged(mCollection);
+	NotifyDeleted(mOldDatum);
 }
 
 template <typename KeyType>
 void DeleteChange<KeyType>::DoRevert()
 {
 	Insert(mCollection, mKey, mOldDatum);
+	NotifyChanged(mCollection);
+	NotifyUndeleted(mOldDatum);
 }
 
 template <typename KeyType>
@@ -160,11 +172,15 @@ InsertChange::InsertChange(List *inCollection,
 void InsertChange::DoApply()
 {
 	Insert(mCollection, mKey, mNewDatum);
+	NotifyChanged(mCollection);
+	NotifyUndeleted(mNewDatum);
 }
 
 void InsertChange::DoRevert()
 {
 	RemoveKnown(mCollection, mKey, mNewDatum);
+	NotifyChanged(mCollection);
+	NotifyDeleted(mNewDatum);
 }
 
 void InsertChange::DoFreeApplyResources()
