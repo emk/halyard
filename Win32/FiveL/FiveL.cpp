@@ -343,11 +343,12 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
     cRectgl.right = gHorizRes;
     cRectgl.bottom = gVertRes;
 
-	// Initialize QuickTime - use the kInitializeQTMLUseGDIFlag as we 
-	//		have seen flashes on startup of certain movies on certain
-	//		platforms (Dell laptops and Win98)
+	// Initialize QuickTime - We used to use the kInitializeQTMLUseGDIFlag
+	//      as we had seen flashes on startup of certain movies on certain
+	//		platforms (Dell laptops and Win98).  But that flag forces use
+	//      of GDI, which breaks VP 3.2.1.3 under the QT6 public preview.
 	//
-	if (::InitializeQTML(kInitializeQTMLUseGDIFlag) != noErr)
+	if (::InitializeQTML(0) != noErr)
 	{
 		// QuickTime is not installed
 		gLog.Error("QuickTime is not installed. Please install QuickTime before running this program.");
@@ -373,7 +374,18 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 	}
 
 	::EnterMovies();				// Initialize QuickTime
-		
+
+	// Try to find out whether QuickTime is using DirectDraw.  This is
+	// unscientific, and not based on any documentation, but it seems
+	// to work.  We need to know this so we can warn the user that
+	// QT 6 and VP 3.2.1.3 don't play nicely together if QuickTime
+	// is using GDI (which is the most common alternative to DirectDraw).
+	void *lpDDObject = NULL;
+	if (::QTGetDDObject(&lpDDObject) == noErr && lpDDObject != NULL)
+		gVariableManager.SetLong("_QuickTimeHasDDObject", 1);
+	else
+		gVariableManager.SetLong("_QuickTimeHasDDObject", 0);
+
 	// Create and show app window:    
 	if (gConfigManager.GetUserPref(MODE) == MODE_WINDOW)
 	{ 
@@ -1184,6 +1196,29 @@ void PutInForeground(void)
 
 /*
  $Log$
+ Revision 1.2.2.4  2002/07/03 11:44:39  emk
+ 3.2.0.6 - All known, fixable 3.2.0.x Windows bugs should be fixed.  Please
+ test this engine carefully, especially line drawing (including diagonal)
+ and (touch ...) callbacks.
+
+     Bug #958 workaround: Since VP 3.2.1.3 doesn't support GDI
+     under the QT 6 Public Preview, 5L no longer forces QuickTime
+     to use GDI.  See the bug report for details.  5L scripts
+     can tell whether QuickTime is using DirectDraw (the most
+     common alternative to GDI) by checking the variable
+     _QuickTimeHasDDObject.
+
+     Bug #980 revisted: Our fix to touchzone handling yesterday broke
+     support for the second touchzone command.  This has been fixed.
+
+     Bug #986 fixed: QuickTime no longer performs gamma correction
+     when importing images, so we no longer see nasty color mismatches.
+
+     Bug #822 fixed: When drawing lines with thickness > 1, we now
+     decompose the lines into single-pixel lines to work around a bug
+     in certain Win98 and WinME systems which caused lines to begin
+     one pixel too soon.
+
  Revision 1.2.2.3  2002/04/09 13:53:45  emk
  Mouse-click during text entry now works the same as typing RETURN.
 

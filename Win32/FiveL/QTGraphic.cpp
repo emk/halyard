@@ -92,6 +92,14 @@ void QTGraphic::Create(TString &inPath)
 		return;
 	}
 
+	// Turn off color correction.  This tends to produce ugly
+	// results, such as graphics which get corrected differently
+	// from the background which they should match (bug #986).
+	long flags = kGraphicsImporterDontDoGammaCorrection;
+	if (::GraphicsImportSetFlags(m_gi, flags) != noErr)
+	    gDebugLog.Log("Could not disable gamma correction for <%s>",
+			  m_path.GetString());
+
 	// should we get the info now or wait till somebody asks for it??
 	ComponentResult cr;
 
@@ -397,6 +405,29 @@ void QTGraphic::Draw(GWorldPtr inGWorld, RECT *inRect)
 
 /*
  $Log$
+ Revision 1.1.2.2  2002/07/03 11:44:39  emk
+ 3.2.0.6 - All known, fixable 3.2.0.x Windows bugs should be fixed.  Please
+ test this engine carefully, especially line drawing (including diagonal)
+ and (touch ...) callbacks.
+
+     Bug #958 workaround: Since VP 3.2.1.3 doesn't support GDI
+     under the QT 6 Public Preview, 5L no longer forces QuickTime
+     to use GDI.  See the bug report for details.  5L scripts
+     can tell whether QuickTime is using DirectDraw (the most
+     common alternative to GDI) by checking the variable
+     _QuickTimeHasDDObject.
+
+     Bug #980 revisted: Our fix to touchzone handling yesterday broke
+     support for the second touchzone command.  This has been fixed.
+
+     Bug #986 fixed: QuickTime no longer performs gamma correction
+     when importing images, so we no longer see nasty color mismatches.
+
+     Bug #822 fixed: When drawing lines with thickness > 1, we now
+     decompose the lines into single-pixel lines to work around a bug
+     in certain Win98 and WinME systems which caused lines to begin
+     one pixel too soon.
+
  Revision 1.1.2.1  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -46,64 +47,68 @@ void DrawLine(int ax, int ay, int bx, int by, int color, int thickness)
     int			offset = 0;
     
 	hdc = gView->GetDC();
-    
     theColor = gView->GetColor(color);
-    hPen = ::CreatePen(PS_SOLID, thickness, theColor);
-    hPenOld = (HPEN) ::SelectObject(hdc,hPen);
 
     // tell gView what rectangle we drew in
 	dirty_rect.Set(ay, ax, by, bx);
-    
-    // perform adjustments on horizontal and vertical lines
-    // 1. make them one pixel longer to match what the Mac does
-    // 2. for thicknesses > 1, Windows will center the line on the upper
-    //		left point, which isn't what we want, we want it to really be
-    //		the upper left so move the coordinates by half the thickness
-    //
-	
-	if (thickness > 1)
-    	offset = thickness / 2;
-    	
-    if (ax == bx)
+        	
+	// We special-case the drawing of horizontal and vertical lines
+	// because we want them to precisely match the Macintosh (we use them
+	// in some fairly complicated line drawings, and it looks bad
+	// if the lines get drawn in strange places).  We make two adjustments:
+	//   1. We make all our line longer (by the thickness of the line)
+	//      to match the Mac's behavior.
+	//   2. We decompose each line into single-thickness lines.  This
+	//      serves two purposes:
+	//      a. It keeps Windows from centering the line on the upper-left
+	//         co-ordinate, and instead uses that co-ordinate as the
+	//         upper-left co-ordinate of a multi-pixel-wide line.
+	//      b. It fixes bug #822, where certain Win98 and WinME systems
+	//         started drawing wide lines (thickness > 1) one pixel too soon.
+    if (ax == bx || ay == by)
     {
-		//if (thickness == 1)
-    	//	by++;			// make the line one pixel longer
-    	//else
-    	//	ay++;			// make it start one pixel down
-		by++;
-    	
-		dirty_rect.OffsetRight(thickness);
-		dirty_rect.OffsetBottom(2);
+		hPen = ::CreatePen(PS_SOLID, 1, theColor);
+		hPenOld = (HPEN) ::SelectObject(hdc,hPen);
 
-    	ax += offset;		// plus, don't center on upper left
-    	bx += offset;
-    }
-    else if (ay == by)
-    {
-    	//if (thickness == 1)
-    	//	bx++;			// make the line one pixel longer 
-    	//else
-    	//	ax++;			// make it start one pixel to the right 
-		bx++;
- 
-		dirty_rect.OffsetBottom(thickness);
-		dirty_rect.OffsetRight(2);
+		if (ax == bx)
+		{
+			by += thickness; // make the line one pixel longer
     	
-    	ay += offset;		// plus, don't center on upper left
-    	by += offset;
-    }
-    
+			dirty_rect.OffsetRight(thickness);
+			dirty_rect.OffsetBottom(2);
+
+			for (int i = 0; i < thickness; i++)
+			{
+				::MoveToEx(hdc, ax + i, ay, NULL);
+				::LineTo(hdc, bx + i, by);
+			}
+		}
+		else if (ay == by)
+		{
+			bx += thickness; // make the line one pixel longer
+ 
+			dirty_rect.OffsetBottom(thickness);
+			dirty_rect.OffsetRight(2);
+    	
+			for (int i = 0; i < thickness; i++)
+			{
+				::MoveToEx(hdc, ax, ay + i, NULL);
+				::LineTo(hdc, bx, by + i);
+			}
+		}
+	}
+    else // Diagonal line
+	{
+		// We probably fail to set up our dirty_rect in a perfectly
+		// accurate fashion here.  This code isn't used much.
+		hPen = ::CreatePen(PS_SOLID, thickness, theColor);
+		hPenOld = (HPEN) ::SelectObject(hdc,hPen);
+		::MoveToEx(hdc, ax, ay, NULL);
+		::LineTo(hdc, bx, by);      
+	}
+	
     gView->DirtyRect(&dirty_rect);
- 
-	::MoveToEx(hdc, ax, ay, NULL);
-	
-	/* WIN16
-    ::MoveTo(hdc, ax, ay);
-	*/
-
-    ::LineTo(hdc, bx, by);      
-    ::SelectObject(hdc,hPenOld);
-    	
+    ::SelectObject(hdc,hPenOld);    	
     ::DeleteObject(hPen);
 }
 
@@ -209,6 +214,29 @@ void Beep(int freq, int duration)
     
 /*
  $Log$
+ Revision 1.1.2.2  2002/07/03 11:44:39  emk
+ 3.2.0.6 - All known, fixable 3.2.0.x Windows bugs should be fixed.  Please
+ test this engine carefully, especially line drawing (including diagonal)
+ and (touch ...) callbacks.
+
+     Bug #958 workaround: Since VP 3.2.1.3 doesn't support GDI
+     under the QT 6 Public Preview, 5L no longer forces QuickTime
+     to use GDI.  See the bug report for details.  5L scripts
+     can tell whether QuickTime is using DirectDraw (the most
+     common alternative to GDI) by checking the variable
+     _QuickTimeHasDDObject.
+
+     Bug #980 revisted: Our fix to touchzone handling yesterday broke
+     support for the second touchzone command.  This has been fixed.
+
+     Bug #986 fixed: QuickTime no longer performs gamma correction
+     when importing images, so we no longer see nasty color mismatches.
+
+     Bug #822 fixed: When drawing lines with thickness > 1, we now
+     decompose the lines into single-pixel lines to work around a bug
+     in certain Win98 and WinME systems which caused lines to begin
+     one pixel too soon.
+
  Revision 1.1.2.1  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:
