@@ -2,6 +2,7 @@
 
 #include "ImlUnit.h"
 #include "TStyleSheet.h"
+#include "TParser.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -20,12 +21,19 @@ static void test_style(const StyledText &inText, int inBegin, int inEnd,
 
 void test_TStyleSheet(void)
 {
+    // Install support for top-level forms of type "defstyle".
+    TStyleSheetManager style_manager;
+    TParser::RegisterIndexManager("defstyle", &style_manager);
+
+    // Parse our index file and get our style sheet.
+    gIndexFileManager.NewIndex("defstyle");
+	TBNode *node = style_manager.Find("S1");
+	TEST(node != NULL);
+
     // Set up a style.
-    TStream stream1("(defstyle S1 (Times) 12 right 0xFFFFFF00 0x00FF0000 -1\n"
-					"  2 0x00000080 0x00FF0080)");
-    TStyleSheet style1(stream1);
-    StyledText text1 = style1.MakeStyledText(" foo |bar| ^baz^ @wub@ || "
-											 "|foo@bar@|");
+    TStyleSheet *style1 = dynamic_cast<TStyleSheet*>(node);
+    StyledText text1 = style1->MakeStyledText(" foo |bar| ^baz^ @wub@ || "
+											  "|foo@bar@|");
     TEST(*text1.GetText() == L"foo bar baz wub  foobar");
 
     // Build something to compare it against.

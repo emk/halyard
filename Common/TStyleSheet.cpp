@@ -2,6 +2,7 @@
 
 #include "TStyleSheet.h"
 #include "TVariable.h"
+#include "TLogger.h"
 
 #include <ctype.h>
 
@@ -19,13 +20,20 @@ static const char *INCR_X_NAME = "_incr_x";
 //  TStyleSheet Methods
 //=========================================================================
 
-TStyleSheet::TStyleSheet(TStream &inStream)
+TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
+						 int32 inStart, int32 inEnd)
+	: TIndex(inFile, inName, inStart, inEnd)
 {
+	// Read in our script.
+	if (!SetScript())
+		gLog.FatalError("I/O error reading script for %s", inName);
+	TStream stream(GetScript());
+
     // (defstyle STYLENAME FONTNAME SIZE JUSTIFICATION COLOR HIGHCOLOR...
     std::string justification;
     uint32 size;
-    inStream >> open >> discard >> mStyleName >> mFontName >> size
-			 >> justification >> mColor >> mHighlightColor;
+    stream >> open >> discard >> mStyleName >> mFontName >> size
+		   >> justification >> mColor >> mHighlightColor;
     mSize = size;
 
     // Parse our justification value.
@@ -45,19 +53,22 @@ TStyleSheet::TStyleSheet(TStream &inStream)
     mHighlightShadowColor = mHighlightColor;
 	
     // ...LEADING... [ []]])
-    if (inStream.more())
-		inStream >> mLeading;
+    if (stream.more())
+		stream >> mLeading;
 	
     // ...SHADOWOFFSET SHADOWCOLOR...
-    if (inStream.more())
-		inStream >> mShadowOffset >> mShadowColor;
+    if (stream.more())
+		stream >> mShadowOffset >> mShadowColor;
 	
     // ...SHADOWHIGHCOLOR...
-    if (inStream.more())
-		inStream >> mHighlightShadowColor;
+    if (stream.more())
+		stream >> mHighlightShadowColor;
 
     // ...)
-    inStream >> close;
+    stream >> close;
+    
+    // Release our script data.
+    FlushScript();
 }
 
 Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
@@ -137,4 +148,15 @@ void TStyleSheet::Draw(const std::string& inText,
 	engine.RenderText();
     gVariableManager.SetLong(INCR_Y_NAME, engine.GetBottomBound()); 
 	gVariableManager.SetLong(INCR_X_NAME, engine.GetRightBound());
+}
+
+
+//=========================================================================
+//  TStyleSheetManager Methods
+//=========================================================================
+
+void TStyleSheetManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
+							  		  int32 inStart, int32 inEnd)
+{
+	Add(new TStyleSheet(inFile, inName, inStart, inEnd));
 }

@@ -4,14 +4,17 @@
 #define TStyleSheet_H
 
 #include <string>
-#include <map>
+
+#include "TStream.h"
+#include "TIndex.h"
+
 #include "GraphicsTools.h"
 #include "Typography.h"
-#include "TStream.h"
+
 
 BEGIN_NAMESPACE_FIVEL
 
-class TStyleSheet {
+class TStyleSheet : public TIndex {
 private:
 	// (defstyle STYLENAME FONTNAME SIZE JUSTIFICATION COLOR HIGHCOLOR
 	//           [LEADING [SHADOWOFFSET SHADOWCOLOR [SHADOWHIGHCOLOR]]])
@@ -28,10 +31,12 @@ private:
 
 public:
 	//////////
-	// Create a new style sheet from a code stream.
+	// Create a new style sheet from a TIndexFile and a pair
+	// of offsets.
 	//
-	TStyleSheet(TStream &inStream);
-	
+	TStyleSheet(TIndexFile *inFile, const char *inName,
+				int32 inStart, int32 inEnd);
+		
 	//////////
 	// Convert a 5L-format string into a StyledText object, using the
 	// data stored in this style.
@@ -56,14 +61,11 @@ public:
 			  GraphicsTools::Image *inImage);
 };
 
-/*
-class TStyleSheetManager {
-	map<std::string,TStyleSheet> mStyleSheets;
-    
+class TStyleSheetManager : public TIndexManager {   
 public:
-	
+	virtual void MakeNewIndex(TIndexFile *inFile, const char *inName,
+							  int32 inStart, int32 inEnd);
 };
-*/
 
 END_NAMESPACE_FIVEL
 
