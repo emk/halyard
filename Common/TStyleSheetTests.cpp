@@ -1,8 +1,9 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
 #include "ImlUnit.h"
+#include "TCommon.h"
 #include "TStyleSheet.h"
-#include "TParser.h"
+#include "lang/old5l/TParser.h"
 
 USING_NAMESPACE_FIVEL
 

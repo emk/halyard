@@ -87,7 +87,7 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\..\Common\CryptStreamTests.cpp
+SOURCE=..\..\..\Common\lang\old5l\CryptStreamTests.cpp
 # End Source File
 # Begin Source File
 
@@ -107,7 +107,7 @@ SOURCE=..\..\..\Common\TestAll.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TIndexTests.cpp
+SOURCE=..\..\..\Common\lang\old5l\TIndexTests.cpp
 # End Source File
 # Begin Source File
 
@@ -115,7 +115,7 @@ SOURCE=..\..\..\Common\lang\scheme\TSchemeInterpreterTests.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TStreamTests.cpp
+SOURCE=..\..\..\Common\lang\old5l\TStreamTests.cpp
 # End Source File
 # Begin Source File
 

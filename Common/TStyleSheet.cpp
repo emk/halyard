@@ -33,6 +33,7 @@ TStyleSheet::TStyleSheet(TArgumentList &inArgs)
     inArgs >> mStyleName >> mFontName >> size >> flags
 		   >> justification >> mColor >> mHighlightColor;
     mSize = size;
+	mStyleName = MakeStringLowercase(mStyleName);
 
 	// Parse our flags value.
 	mFaceStyle = Typography::kRegularFaceStyle;
@@ -246,13 +247,13 @@ int TStyleSheet::GetLineHeight()
 
 TStyleSheet *TStyleSheetManager::Find(const std::string &inName)
 {
+	std::string name = MakeStringLowercase(inName);
 	std::map<std::string,TStyleSheet*>::iterator found =
-		mStyleSheetMap.find(inName);
+		mStyleSheetMap.find(name);
 	if (found != mStyleSheetMap.end())
 		return found->second;
 	else
 		return NULL;
-
 }
 
 void TStyleSheetManager::AddStyleSheet(TArgumentList &inArgs)

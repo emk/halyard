@@ -4,6 +4,7 @@
 #define TStyleSheet_H
 
 #include <string>
+#include <map>
 
 #include "TCommon.h"
 #include "TPrimitives.h"
@@ -77,8 +78,8 @@ public:
 	int GetLineHeight();
 };
 
-class TStyleSheetManager {
-private:
+class TStyleSheetManager
+{
 	std::map<std::string,TStyleSheet*> mStyleSheetMap;
 
 public:

@@ -5,10 +5,10 @@
 #include "TLogger.h"
 #include "TException.h"
 #include "TWin5LInterpreter.h"
-#include "TStyleSheet.h"
-#include "TParser.h"
+#include "lang/old5l/TParser.h"
 #include "Header.h"
-#include "T5LPrimitives.h"
+#include "lang/old5l/T5LPrimitives.h"
+#include "TWin5LPrimitives.h"
 
 #include "Globals.h"
 #include "Card.h"
@@ -16,6 +16,12 @@
 #include "Config.h"
 
 USING_NAMESPACE_FIVEL
+
+#if defined USE_BUNDLE
+	LFileBundle			FIVEL_NS gFileManager;
+#else
+	LFileList           FIVEL_NS gFileManager;
+#endif
 
 
 //=========================================================================
@@ -44,7 +50,6 @@ void TWin5LInterpreter::CleanupIndexes()
 	gCardManager.Pause();		
 	gCardManager.RemoveAll();
 	gMacroManager.RemoveAll();
-	gHeaderManager.RemoveAll();
 	gIndexFileManager.RemoveAll();
 }
 
@@ -155,10 +160,19 @@ TCallback *TWin5LCallback::MakeCallback(const TString &inCmd)
 TWin5LInterpreterManager::TWin5LInterpreterManager(
 	TInterpreter::SystemIdleProc inIdleProc)
 	: TInterpreterManager(inIdleProc),
-	  mDefStyleProcessor("defstyle")
+	  mDefStyleProcessor("defstyle"),
+	  mHeaderProcessor("header")
 {
-	// Register our 5L-only portable interpreter primitives.
+	// Initialize the file I/O system.
+#if defined USE_BUNDLE
+	if (not gFileManager.Init())
+		throw TException(__FILE__, __LINE__,
+						 "Could not initialize file manager");
+#endif
+
+	// Register our 5L-only interpreter primitives.
 	Register5LPrimitives();
+	RegisterWindows5LPrimitives();
 
 	// Install our callback creator.
 	TStream::SetCallbackMaker(&TWin5LCallback::MakeCallback);
@@ -166,7 +180,7 @@ TWin5LInterpreterManager::TWin5LInterpreterManager(
 	// Register our top-level forms.
 	TParser::RegisterTlfProcessor("card", &gCardManager);
 	TParser::RegisterTlfProcessor("macrodef", &gMacroManager);
-	TParser::RegisterTlfProcessor("header", &gHeaderManager);
+	TParser::RegisterTlfProcessor("header", &mHeaderProcessor);
 	TParser::RegisterTlfProcessor("defstyle", &mDefStyleProcessor);
 }
 

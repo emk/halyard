@@ -59,7 +59,7 @@ void InputManager::Start(TString &inVariable, TString &inStyle,
 	m_Style = inStyle;			// save for text command later
  
 	// before setting up the DC, get the font and color information
-    theHeader = (Header *) gHeaderManager.Find(inStyle);
+    theHeader = gHeaderManager.Find(inStyle.GetString());
     if (theHeader != NULL)
     {
 		int		foreColor, backColor; 
@@ -296,6 +296,19 @@ bool InputManager::IsLegalInputChar(char inKey)
 
 /*
  $Log$
+ Revision 1.4  2002/08/22 00:12:22  emk
+ 3.5.4 - 21 Aug 2002 - emk
+
+ Engine:
+
+   * Moved many source files from Common to Common/lang/old5L, and from
+     Win32/FiveL to Win32/FiveL/lang/old5l, including the index system, the
+     parser and stream classes, the crypto classes and the file I/O classes.
+   * Broke the dependencies between Header and TIndex, in a fashion similar
+     to what I did for TStyleSheet in 3.5.1.  This means we can call
+     INPUT from Scheme, which more-or-less completes the Scheme primitives.
+   * Made sure that header and stylesheet names were case insensitive.
+
  Revision 1.3  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

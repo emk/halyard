@@ -17,15 +17,28 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		3
+#define VERSION_REV_BIG		4
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.3 (Development)"
+#define VERSION_STRING		"5L 3.5.4 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.35  2002/08/22 00:12:05  emk
+ 3.5.4 - 21 Aug 2002 - emk
+
+ Engine:
+
+   * Moved many source files from Common to Common/lang/old5L, and from
+     Win32/FiveL to Win32/FiveL/lang/old5l, including the index system, the
+     parser and stream classes, the crypto classes and the file I/O classes.
+   * Broke the dependencies between Header and TIndex, in a fashion similar
+     to what I did for TStyleSheet in 3.5.1.  This means we can call
+     INPUT from Scheme, which more-or-less completes the Scheme primitives.
+   * Made sure that header and stylesheet names were case insensitive.
+
  Revision 1.34  2002/08/19 22:31:48  emk
  3.5.3 - 18 Aug 2002 - emk
 

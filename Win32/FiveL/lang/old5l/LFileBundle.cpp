@@ -23,13 +23,16 @@
 
 LFileBundle::LFileBundle()
 {
-	
+	mIsInitialized = false;
 }
 
 LFileBundle::~LFileBundle()
 {
-	CloseBundle();
-	delete clearFileStream;
+	if (mIsInitialized)
+	{
+		CloseBundle();
+		delete clearFileStream;
+	}
 
 	//delete cs;	// Causes memory errors ??
 }
@@ -89,6 +92,7 @@ bool LFileBundle::Init()
 		InitIndices();		// Set Read and User and File Tag Indices
 	}	
 
+	mIsInitialized = true;
 	return true;
 }
 

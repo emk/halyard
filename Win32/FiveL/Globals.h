@@ -27,12 +27,6 @@
 #include "Audio.h"
 #include "LCursor.h"
 
-#if defined USE_BUNDLE 
-	#include "LFileBundle.h"
-#else
-	#include "LFiles.h"
-#endif
-
 #include "Config.h"
 #include "SysInfo.h"
 #include "LPicture.h"
@@ -68,18 +62,6 @@ extern AudioManager			gAudioManager;
 // Global Cursor Manager
 //
 extern LCursorManager		gCursorManager;
-
-//////////
-// Global File Manager
-//
-#if defined USE_BUNDLE
-	extern LFileBundle			gFileManager;
-//////////
-// Global File Manager
-//
-#else
-	extern LFileList			gFileManager;
-#endif
 
 //////////
 // Global Config Manager
@@ -165,6 +147,19 @@ extern int V_SCREEN;
 
 /*
  $Log$
+ Revision 1.6  2002/08/22 00:12:22  emk
+ 3.5.4 - 21 Aug 2002 - emk
+
+ Engine:
+
+   * Moved many source files from Common to Common/lang/old5L, and from
+     Win32/FiveL to Win32/FiveL/lang/old5l, including the index system, the
+     parser and stream classes, the crypto classes and the file I/O classes.
+   * Broke the dependencies between Header and TIndex, in a fashion similar
+     to what I did for TStyleSheet in 3.5.1.  This means we can call
+     INPUT from Scheme, which more-or-less completes the Scheme primitives.
+   * Made sure that header and stylesheet names were case insensitive.
+
  Revision 1.5  2002/07/26 20:00:27  zeb
  3.3.21 - 26 July 2002 - zeb
 

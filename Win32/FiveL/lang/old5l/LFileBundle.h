@@ -9,7 +9,7 @@
 #include "TBTree.h"
 #include "Config.h"
 #include "LFiles.h"
-#include "CryptStream.h"
+#include "lang/old5l/CryptStream.h"
 
 #define STRING_MIN_RESIZE 128
 #define READ_BUF_SIZE 512
@@ -162,6 +162,11 @@ class LFileBundle : public TObject
 		void	AddGlobalFiles(TString &fileList);
 
 	private:
+		//////////
+		// Has the bundle been initialized?
+		//
+		bool		mIsInitialized;
+
 		//////////
 		// Are we using encryption for the bundle?
 		//

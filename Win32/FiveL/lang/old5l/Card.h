@@ -18,7 +18,7 @@
 #include "TRect.h"
 #include "TPoint.h"
 //#include "TDictionary.h"
-#include "TIndex.h"
+#include "lang/old5l/TIndex.h"
 
 // globals
 static bool	gNeedsRefresh;
@@ -396,6 +396,19 @@ extern CardManager gCardManager;
 
 /*
  $Log$
+ Revision 1.8  2002/08/22 00:12:23  emk
+ 3.5.4 - 21 Aug 2002 - emk
+
+ Engine:
+
+   * Moved many source files from Common to Common/lang/old5L, and from
+     Win32/FiveL to Win32/FiveL/lang/old5l, including the index system, the
+     parser and stream classes, the crypto classes and the file I/O classes.
+   * Broke the dependencies between Header and TIndex, in a fashion similar
+     to what I did for TStyleSheet in 3.5.1.  This means we can call
+     INPUT from Scheme, which more-or-less completes the Scheme primitives.
+   * Made sure that header and stylesheet names were case insensitive.
+
  Revision 1.7  2002/08/17 01:42:12  emk
  3.5.1 - 16 Aug 2002 - emk
 

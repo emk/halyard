@@ -1,5 +1,30 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.5.4 - 21 Aug 2002 - emk
+
+Engine:
+
+  * Moved many source files from Common to Common/lang/old5L, and from
+    Win32/FiveL to Win32/FiveL/lang/old5l, including the index system, the
+    parser and stream classes, the crypto classes and the file I/O classes.
+  * Broke the dependencies between Header and TIndex, in a fashion similar
+    to what I did for TStyleSheet in 3.5.1.  This means we can call
+    INPUT from Scheme, which more-or-less completes the Scheme primitives.
+  * Made sure that header and stylesheet names were case insensitive.
+
+Runtime:
+
+  * Implemented a DrScheme IDE plugin with fairly good support for the
+    5L language.  We may need to tweak this slightly later on.
+  * Fixed the 5L-Loader and 5L-tool to initialize namespaces in the same way.
+  * Implemented and documented lots of nice, high-level wrappers around
+    the most error-prone of the low-level primitives.
+  * Implemented DEFINE-STYLESHEET, which allows an author to declare
+    headers and stylesheets at the same time, and to base them off earlier
+    stylesheets.
+  * Merged in Brian's WITH-TRACING macro.
+  * Merged in Brian's support for variable interpolation.
+
 3.5.3 - 18 Aug 2002 - emk
 
 Changes to support the rapidly-growing test suites.

@@ -6,7 +6,13 @@
 #include "TCommon.h"
 #include "TInterpreter.h"
 #include "TString.h"
-#include "TIndex.h"
+#include "lang/old5l/TIndex.h"
+
+#if defined USE_BUNDLE 
+	#include "LFileBundle.h"
+#else
+	#include "LFiles.h"
+#endif
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -87,6 +93,7 @@ public:
 class TWin5LInterpreterManager : public TInterpreterManager
 {
 	TPrimitiveTlfProcessor mDefStyleProcessor;
+	TPrimitiveTlfProcessor mHeaderProcessor;
 
 public:
 	//////////
@@ -99,6 +106,15 @@ protected:
 	// See our parent class for documentation of these methods.
 	virtual TInterpreter *MakeInterpreter();
 };
+
+//////////
+// Global File Manager
+//
+#if defined USE_BUNDLE
+	extern LFileBundle			gFileManager;
+#else
+	extern LFileList			gFileManager;
+#endif
 
 END_NAMESPACE_FIVEL
 

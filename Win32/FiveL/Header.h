@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -17,9 +18,12 @@
 #if !defined (_Header_h_)
 #define _Header_h_
 
+#include <string>
+#include <map>
+
 #include "TCommon.h"
-#include "TIndex.h"
 #include "LFont.h"
+#include "TPrimitives.h"
 
 //Sets up screen text buffer.
 //void TEXTLOC_init();
@@ -36,19 +40,25 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class Header : public TIndex 
+class Header 
 {
+		std::string mName;
+
 	public:
 		//////////
 		// Constructor.
 		//
-		// [in] inFile - TIndexFile which has the header indexed
-		// [in_optional] name - name of this Header (default NULL)
-		// [in_optional] p1 - starting index (default 0)
-		// [in_optional] p2 - ending index (default 0)
+		// [in] The list of arguments passed to the header.
 		//
-        Header(TIndexFile *inFile, const char *name = NULL, long p1 = 0, long p2 = 0);
+		Header(TArgumentList &inArgs);
         
+        //////////
+		// Get the header name.
+		//
+		// [out] return - the name for this header
+		//
+		std::string	GetName() { return mName; }
+
         //////////
 		// Get the header font.
 		//
@@ -69,13 +79,6 @@ class Header : public TIndex
 		// [out] return - the highlight color for this header
 		//
 		int			GetHiColor(void) {return(itsHighlightColor);}
-        
-		//////////
-		// Once we get the header data read into memory, parse it and fill the 
-		// header fields. Then we can ditch the original data. Colors are
-        // checked to match InfoWindows standards (EGA + MIC restrictions...)
-		//
-		virtual void ParseScript(void);
         
 		//////////
 		// Prepare header for text printing
@@ -193,11 +196,31 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class HeaderManager : public TIndexManager 
+class HeaderManager 
 {
+		std::map<std::string,Header*> mHeaderMap;
+
     public:
+		virtual ~HeaderManager() { RemoveAll(); }
+
+		//////////
+		// Return the specified header, or NULL.
+		//
+		Header *Find(const std::string &inName);
+
+		//////////
+		// Create a new header using the supplied parameters.
+		//
+		void AddHeader(TArgumentList &inArgs);
+
+		//////////
+		// Remove all the headers from this object.
+		//
+		void RemoveAll();
+
         //////////
-		// Set the font characteristics of the header in preparation for drawing.
+		// Set the font characteristics of the header in preparation for
+		// drawing.
 		//
 		// [in] headername - name of the header
 		//
@@ -214,18 +237,6 @@ class HeaderManager : public TIndexManager
 		//
 		virtual void	DoText(const char *header, TRect &bounds, const char *text,
 							   int color, int shadow);
-        
-		//////////
-		// Create a new Header Index
-		//
-		// [in] inFile - TIndexFile which has the header indexed
-		// [in] name - name of the Header
-		// [in] start - starting index
-		// [in] end - ending index
-		//
-		virtual void	ProcessTopLevelForm(TIndexFile *inFile,
-											const char *name, long start,
-											long end);
         
 		//////////
 		// Get the height of the font in the specified header.
@@ -245,6 +256,19 @@ extern HeaderManager gHeaderManager;
 
 /*
  $Log$
+ Revision 1.8  2002/08/22 00:12:22  emk
+ 3.5.4 - 21 Aug 2002 - emk
+
+ Engine:
+
+   * Moved many source files from Common to Common/lang/old5L, and from
+     Win32/FiveL to Win32/FiveL/lang/old5l, including the index system, the
+     parser and stream classes, the crypto classes and the file I/O classes.
+   * Broke the dependencies between Header and TIndex, in a fashion similar
+     to what I did for TStyleSheet in 3.5.1.  This means we can call
+     INPUT from Scheme, which more-or-less completes the Scheme primitives.
+   * Made sure that header and stylesheet names were case insensitive.
+
  Revision 1.7  2002/08/17 01:42:12  emk
  3.5.1 - 16 Aug 2002 - emk
 

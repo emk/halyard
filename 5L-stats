@@ -11,7 +11,13 @@ use warnings;
 
 my @categories = qw(Common Mac Win32);
 
-my @exclude = qw(Common/freetype2 Common/libs Win32/DibLib);
+my @exclude = qw(Common/freetype2
+		 Common/libs
+		 Common/Runtime/mzlib
+		 Common/Runtime/net
+		 Common/Runtime/xml
+		 Common/Runtime/syntax
+		 Win32/DibLib);
 
 my @extensions = qw(.h .hpp .c .cpp .cp .ss);
 
@@ -23,6 +29,7 @@ my @extensions = qw(.h .hpp .c .cpp .cp .ss);
 my $total_lines = 0;
 my $comment_lines = 0;
 my $category_lines;
+my $category_deprecated_lines;
 my %lines_by_extension;
 my %exclude_table;
 
@@ -53,6 +60,8 @@ sub count_file ($) {
 
     $total_lines += $file_lines;
     $category_lines += $file_lines;
+    $category_deprecated_lines += $file_lines
+	if ($filename =~ m{/old5l/});
     $lines_by_extension{get_extension($filename)} += $file_lines;
 
     close(FILE) or die "Can't close $filename: $!, stopping";
@@ -113,8 +122,9 @@ for my $extension (@extensions) {
 for my $category (@categories) {
     print "$category: ";
     $category_lines = 0;
+    $category_deprecated_lines = 0;
     count_directory($category);
-    print "$category_lines\n";
+    print "$category_lines ($category_deprecated_lines of that in old 5L)\n";
 }
 
 # Display the per-extension counts.

@@ -85,7 +85,7 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\..\Common\CryptStream.cpp
+SOURCE=..\..\..\Common\lang\old5l\CryptStream.cpp
 # End Source File
 # Begin Source File
 
@@ -97,7 +97,7 @@ SOURCE=..\..\..\Common\GraphicsTools.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\T5LPrimitives.cpp
+SOURCE=..\..\..\Common\lang\old5l\T5LPrimitives.cpp
 # End Source File
 # Begin Source File
 
@@ -133,7 +133,7 @@ SOURCE=..\..\..\Common\THeader.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TIndex.cpp
+SOURCE=..\..\..\Common\lang\old5l\TIndex.cpp
 # End Source File
 # Begin Source File
 
@@ -149,7 +149,7 @@ SOURCE=..\..\..\Common\TObject.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TParser.cpp
+SOURCE=..\..\..\Common\lang\old5l\TParser.cpp
 # End Source File
 # Begin Source File
 
@@ -173,7 +173,7 @@ SOURCE=..\..\..\Common\TStartup.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TStream.cpp
+SOURCE=..\..\..\Common\lang\old5l\TStream.cpp
 # End Source File
 # Begin Source File
 
@@ -205,7 +205,7 @@ SOURCE=..\..\..\Common\Typography.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\..\..\Common\CryptStream.h
+SOURCE=..\..\..\Common\lang\old5l\CryptStream.h
 # End Source File
 # Begin Source File
 
@@ -217,7 +217,7 @@ SOURCE=..\..\..\Common\GraphicsTools.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\T5LPrimitives.h
+SOURCE=..\..\..\Common\lang\old5l\T5LPrimitives.h
 # End Source File
 # Begin Source File
 
@@ -257,7 +257,7 @@ SOURCE=..\..\..\Common\THeader.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TIndex.h
+SOURCE=..\..\..\Common\lang\old5l\TIndex.h
 # End Source File
 # Begin Source File
 
@@ -273,7 +273,7 @@ SOURCE=..\..\..\Common\TObject.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TParser.h
+SOURCE=..\..\..\Common\lang\old5l\TParser.h
 # End Source File
 # Begin Source File
 
@@ -301,7 +301,7 @@ SOURCE=..\..\..\Common\TStartup.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TStream.h
+SOURCE=..\..\..\Common\lang\old5l\TStream.h
 # End Source File
 # Begin Source File
 

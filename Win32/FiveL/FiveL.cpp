@@ -43,16 +43,11 @@
 #include "LHttp.h"
 #include "LBrowser.h"
 #include "SingleInstance.h"
+#include "Header.h"
 #include "TStyleSheet.h"
-#include "TWin5LInterpreter.h"
+#include "lang/old5l/TWin5LInterpreter.h"
 #include "TWinPrimitives.h"
 #include "TQTPrimitives.h"
-
-#if defined USE_BUNDLE
-	#include "LFileBundle.h"
-#else
-	#include "LFiles.h"
-#endif
 
 #define MAX_LOADSTRING 100
 
@@ -94,12 +89,6 @@ LCursorManager		gCursorManager;
 VideoManager		gVideoManager;
 AudioManager		gAudioManager;
 AudioManager		gBgAudioManager;
-
-#if defined USE_BUNDLE
-	LFileBundle			gFileManager;
-#else
-	LFileList           gFileManager;
-#endif
 
 ConfigManager		gConfigManager;
 LPictureManager		gPictureManager;
@@ -201,11 +190,6 @@ int RealWinMain(HINSTANCE hInstance,
 		&ReadSpecialVariable_prevcard);
 	gVariableManager.RegisterSpecialVariable("_eof",		
 		&ReadSpecialVariable_eof);
-
-#if defined USE_BUNDLE
-	if (not gFileManager.Init())
-		return(false);
-#endif
 
 	// Initialise the cursor manager.
 	gCursorManager.Init(hInstance);
@@ -1007,6 +991,9 @@ void CleanUp()
 		gWin5LInterpreter = NULL;
 	}
 
+	gStyleSheetManager.RemoveAll();
+	gHeaderManager.RemoveAll();
+
 	// Clean up our other resources.
 	gVariableManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
@@ -1119,6 +1106,7 @@ void ReDoScript(TString &inCardName)
 
 	gTouchZoneManager.RemoveAll();
 	gStyleSheetManager.RemoveAll();
+	gHeaderManager.RemoveAll();
 
 	// XXX - Does this potentially destroy an object in our call chain?
 	if (!gHaveLegacyInterpreterManager)
@@ -1258,6 +1246,19 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.16  2002/08/22 00:12:22  emk
+ 3.5.4 - 21 Aug 2002 - emk
+
+ Engine:
+
+   * Moved many source files from Common to Common/lang/old5L, and from
+     Win32/FiveL to Win32/FiveL/lang/old5l, including the index system, the
+     parser and stream classes, the crypto classes and the file I/O classes.
+   * Broke the dependencies between Header and TIndex, in a fashion similar
+     to what I did for TStyleSheet in 3.5.1.  This means we can call
+     INPUT from Scheme, which more-or-less completes the Scheme primitives.
+   * Made sure that header and stylesheet names were case insensitive.
+
  Revision 1.15  2002/08/19 17:27:46  emk
  3.5.2 - 18 Aug 2002 - emk
 

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -27,41 +28,27 @@
 
 HeaderManager gHeaderManager;
 
-//  Let TIndex ancestor construct based on these values.
+//  Build the header.  Colors are allegedly checked to match InfoWindows
+//  standards (EGA + MIC restrictions...), whatever that means.
 //
-Header::Header(TIndexFile *inFile, const char *name, long start, long end) :
-    TIndex(inFile, name, start, end)
+Header::Header(TArgumentList &inArgs)
 {
     itsAlign = AlignLeft;
     itsColor = itsHighlightColor = itsShadowColor = itsShadHighColor = 0;
     itsShadow = 0;
     itsOffset = 0;
-}
 
-/***********************************************************************
- * Function: Header::ParseScript
- *
- *  Parameter (null)
- * Return:
- *
- * Comments:
- *      Once we get the header data read into memory, parse it and fill
- *  the header fields. Then we can ditch the original data. Colors are
- * checked to match InfoWindows standards (EGA + MIC restrictions...)
- ***********************************************************************/
-void Header::ParseScript()
-{
     TString     align, fontname;
 
-    // (HEADER HNAME FONTNAME...
+    // HNAME FONTNAME...
     //
-    m_Script >> open >> discard >> discard >> fontname;
-    
-    fontname.MakeLower();
+    inArgs >> mName >> fontname;
+	mName = MakeStringLowercase(mName);
+	fontname.MakeLower();
     
     itsFont = gFontManager.GetFont(fontname); //creates a resource if dne, and loads font
     //  ...ALIGNMENT COLOR HIGHCOLOR...
-    m_Script >> align >> itsColor >> itsHighlightColor; 
+    inArgs >> align >> itsColor >> itsHighlightColor; 
 
     align.MakeLower();
 	if (align.Equal("center"))
@@ -72,24 +59,21 @@ void Header::ParseScript()
         itsAlign = AlignLeft;
 
     //  ...SHADOW SHADCOLOR)
-    if (m_Script.more()) 
+    if (inArgs.HasMoreArguments()) 
     {
-        m_Script >> itsShadow >> itsShadowColor;
+        inArgs >> itsShadow >> itsShadowColor;
     }
     
     //@@@9-19-96 to handle font differences bet. Win. & Mac.
-    if (m_Script.more()) 
+    if (inArgs.HasMoreArguments()) 
     {
-        m_Script >> itsOffset;
+        inArgs >> itsOffset;
     }
     
-    if (m_Script.more()) 
+    if (inArgs.HasMoreArguments()) 
     {
-        m_Script >> itsShadHighColor;
+        inArgs >> itsShadHighColor;
     }
-    
-    m_Script >> close;
-    FlushScript();
 }
 
 /***********************************************************************
@@ -609,29 +593,44 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 
 *****************************/
 
-/***********************************************************************
- * Function: HeaderManager::ProcessTopLevelForm
- *
- *  Parameter name
- *  Parameter start         (see TIndex class)
- *  Parameter end
- * Return:
- *
- * Comments:
- *  Create a new Header TIndex
- ***********************************************************************/
-void HeaderManager::ProcessTopLevelForm(TIndexFile *inFile, const char *name,
-					long start, long end)
+Header *HeaderManager::Find(const std::string &inName)
 {
-    Header  *newHeader;
-    
-    newHeader = new Header(inFile, name, start, end);
-    if (newHeader->SetScript())
-	{
-		newHeader->ParseScript();
+	std::string name = MakeStringLowercase(inName);
+    std::map<std::string,Header*>::iterator found =
+		mHeaderMap.find(name);
+    if (found != mHeaderMap.end())
+		return found->second;
+    else
+		return NULL;
+}
 
-		Add(newHeader);
+void HeaderManager::AddHeader(TArgumentList &inArgs)
+{
+	// Create the header and get the name.
+	std::auto_ptr<Header> header =
+		std::auto_ptr<Header>(new Header(inArgs));
+	std::string name = header->GetName();
+
+	// Check for an exiting header with the same name.
+	if (Find(name))
+	{
+		gLog.Error("Can't redefine style header <%s>.", name.c_str());
+		return;
 	}
+
+	// Insert the new header in our map.
+	mHeaderMap.insert(std::pair<std::string,Header*>(name,
+													 header.release()));
+}
+
+void HeaderManager::RemoveAll()
+{
+	// Delete the individual headers and empty the map.
+	std::map<std::string,Header*>::iterator iter =
+		mHeaderMap.begin();
+	for (; iter != mHeaderMap.end(); ++iter)
+		delete iter->second;
+	mHeaderMap.clear();
 }
 
 /***********************************************************************
@@ -648,7 +647,7 @@ void HeaderManager::DoHeader(const char *headername)
 {
     Header  *hdr;
 
-    hdr = (Header *)Find(headername);
+    hdr = Find(headername);
     
     if (hdr == NULL)
     {
@@ -674,7 +673,7 @@ void HeaderManager::DoText(const char *header, TRect &bounds, const char *text, 
 {
     Header  *hdr;
     
-    hdr = (Header *)Find(header);
+    hdr = Find(header);
     
     if (hdr == NULL)
     {
@@ -698,7 +697,7 @@ int HeaderManager::Height(const char* header)
 {
     Header  *hdr;
 
-    hdr = (Header *)Find(header);
+    hdr = Find(header);
     
     if (hdr == NULL)
     {
@@ -712,6 +711,19 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.10  2002/08/22 00:12:22  emk
+ 3.5.4 - 21 Aug 2002 - emk
+
+ Engine:
+
+   * Moved many source files from Common to Common/lang/old5L, and from
+     Win32/FiveL to Win32/FiveL/lang/old5l, including the index system, the
+     parser and stream classes, the crypto classes and the file I/O classes.
+   * Broke the dependencies between Header and TIndex, in a fashion similar
+     to what I did for TStyleSheet in 3.5.1.  This means we can call
+     INPUT from Scheme, which more-or-less completes the Scheme primitives.
+   * Made sure that header and stylesheet names were case insensitive.
+
  Revision 1.9  2002/08/17 01:42:12  emk
  3.5.1 - 16 Aug 2002 - emk
 

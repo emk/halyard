@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /W3 /GR /GX /O2 /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\boost" /I "..\..\..\Common\libs\crypto" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\DibLib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /W3 /GR /GX /O2 /I "..\..\..\Win32\FiveL" /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\boost" /I "..\..\..\Common\libs\crypto" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\DibLib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\boost" /I "..\..\..\Common\libs\crypto" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\DibLib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Win32\FiveL" /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\boost" /I "..\..\..\Common\libs\crypto" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\DibLib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -98,7 +98,7 @@ SOURCE=..\..\FiveL\Audio.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\Card.cpp
+SOURCE=..\..\FiveL\lang\old5l\Card.cpp
 # End Source File
 # Begin Source File
 
@@ -146,11 +146,11 @@ SOURCE=..\..\FiveL\LDiskUtils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\LFileBundle.cpp
+SOURCE=..\..\FiveL\lang\old5l\LFileBundle.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\LFiles.cpp
+SOURCE=..\..\FiveL\lang\old5l\LFiles.cpp
 # End Source File
 # Begin Source File
 
@@ -190,7 +190,7 @@ SOURCE=..\..\FiveL\LUtil.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\Macro.cpp
+SOURCE=..\..\FiveL\lang\old5l\Macro.cpp
 # End Source File
 # Begin Source File
 
@@ -228,7 +228,11 @@ SOURCE=..\..\..\Common\TQTPrimitives.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\TWin5LInterpreter.cpp
+SOURCE=..\..\FiveL\lang\old5l\TWin5LInterpreter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\lang\old5l\TWin5LPrimitives.cpp
 # End Source File
 # Begin Source File
 
@@ -252,7 +256,7 @@ SOURCE=..\..\FiveL\Audio.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\Card.h
+SOURCE=..\..\FiveL\lang\old5l\Card.h
 # End Source File
 # Begin Source File
 
@@ -308,11 +312,11 @@ SOURCE=..\..\FiveL\LDiskUtils.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\LFileBundle.h
+SOURCE=..\..\FiveL\lang\old5l\LFileBundle.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\LFiles.h
+SOURCE=..\..\FiveL\lang\old5l\LFiles.h
 # End Source File
 # Begin Source File
 
@@ -352,7 +356,7 @@ SOURCE=..\..\FiveL\LUtil.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\Macro.h
+SOURCE=..\..\FiveL\lang\old5l\Macro.h
 # End Source File
 # Begin Source File
 
@@ -380,7 +384,11 @@ SOURCE=..\..\..\Common\TQTPrimitives.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\FiveL\TWin5LInterpreter.h
+SOURCE=..\..\FiveL\lang\old5l\TWin5LInterpreter.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\lang\old5l\TWin5LPrimitives.h
 # End Source File
 # Begin Source File
 
