@@ -359,7 +359,9 @@ DEFINE_5L_PRIMITIVE(VariableInitialized)
 	inArgs >> SymbolName(vname);
 
 	TVariable::Type type = gVariableManager.GetType(vname.c_str());
-	::SetPrimitiveResult(type == TVariable::TYPE_UNINITIALIZED ? true : false);
+	::SetPrimitiveResult(type == TVariable::TYPE_UNINITIALIZED ? false : true);
+	//if the variable is uninitialized we return FALSE, not true.
+	//the function is VariableInitialized, not VariableUninitialized
 }
 
 
