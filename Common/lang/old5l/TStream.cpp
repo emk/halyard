@@ -649,7 +649,7 @@ bool TStream::inEscape(void)
 // details, or a good iostream tutorial for more information on
 // how manipulator objects work.
 #define PERCENT_COMMAND_PREFIX ("pcent ")
-TStream &FIVEL_NS operator>>(TStream &inStream, ValueOrPercent &inVoP)
+TStream &FIVEL_NS operator>>(TStream &inStream, const ValueOrPercent &inVoP)
 {
 	// Read in our argument.
 	std::string argument;

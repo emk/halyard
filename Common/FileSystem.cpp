@@ -51,7 +51,7 @@ Error::Error(int inErrorCode)
 static void ResetErrno()
 {
 	if (errno != 0)
-		gDebugLog.Caution("Unexpected errno = %d", errno);
+		FIVEL_NS gDebugLog.Caution("Unexpected errno = %d", errno);
 	errno = 0;
 }
 

@@ -299,7 +299,7 @@ public:
 	ValueOrPercent(int32 baseValue, int32 *outputValue)
 		: mBaseValue(baseValue), mOutputValue(outputValue) {}
 
-	friend TStream &operator>>(TStream &, ValueOrPercent &);
+	friend TStream &operator>>(TStream &, const ValueOrPercent &);
 };
 
 END_NAMESPACE_FIVEL
@@ -308,6 +308,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.1.4.4  2002/05/02 05:49:04  emk
+ Small MacOS compilation fixes.
+
  Revision 1.1.4.3  2002/05/01 11:34:02  emk
  Added support for passing a "(pcent ...)" argument to "defstyle" to
  specify leading as a percentage of the base font size (and cleaned up

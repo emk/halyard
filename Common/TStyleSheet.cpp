@@ -14,7 +14,6 @@
 USING_NAMESPACE_FIVEL
 
 using GraphicsTools::Color;
-using GraphicsTools::Point;
 using Typography::StyledText;
 using Typography::TextRenderingEngine;
 
@@ -273,7 +272,8 @@ void TStyleSheetManager::DoText(const char *inStyleSheet, TRect inRect,
 								const char *inText,
 								GraphicsTools::Image *inImage)
 {
-	Draw(inStyleSheet, inText, Point(inRect.Left(), inRect.Top()),
+	Draw(inStyleSheet, inText, GraphicsTools::Point(inRect.Left(),
+													inRect.Top()),
 		 inRect.Right() - inRect.Left(), inImage);
 }
 

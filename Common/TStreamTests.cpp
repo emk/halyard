@@ -153,6 +153,10 @@ void test_TStream (void)
 	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == "a");
 	
 	// Test input of percentages.
+	// It's fairly important that these round the same way on
+	// every platform (0.5 rounds away from 0), because these
+	// affect leading calculations, which are supposed to be
+	// the same everywhere.
 	s1 = "3 4 (pcent 10) (pcent 20) (pcent 15) (pcent -15)";
 	int32 result;
 	s1 >> ValueOrPercent(10, &result);
