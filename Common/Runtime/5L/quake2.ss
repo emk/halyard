@@ -99,6 +99,8 @@
 
     ;; Initialize /quake2 state-db variables to plausible values.
     (set! (state-db '/quake2/weapon) "none")
+    (set! (state-db '/quake2/rad/meter-flux) '())
+    (set! (state-db '/quake2/rad/body-dose) '(0.0 0.0 0.0 0.0 0.0))
 
     ;; Define any universally useful console commands.
     (define-quake2-command (jump card-name)
