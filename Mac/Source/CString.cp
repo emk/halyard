@@ -355,6 +355,45 @@ int CString::Equal(const char *other, bool caseSens)
     return (Compare(other, caseSens) == 0);
 }
 
+//
+//	Contains
+//
+bool CString::Contains(const CString &other, bool caseSens)
+{
+	return (Contains(other.ptext, caseSens));
+}
+
+//
+//	Contains
+//
+bool CString::Contains(const char *other, bool caseSens)
+{
+	char	*strPtr = NULL;
+	bool	retVal = false;
+	
+	if (empty())
+		return (false);
+		
+	if (not caseSens)
+	{
+		CString		temp(ptext);
+		CString		otherTemp(other);
+		
+		temp.makelower();
+		otherTemp.makelower();
+		
+		strPtr = strstr(temp.ptext, otherTemp.ptext);
+	}
+	else
+		strPtr = strstr(ptext, other);
+		
+	if (strPtr != NULL)
+		retVal = true;
+		
+	return (retVal);
+}
+		
+
 //  Return the result of a comparison. If you need to know
 //  whether something is >, < or ==, this is faster because
 //  you only have to compare strings once.

@@ -8,6 +8,7 @@
 #include "CCard.h"
 #include "CFiles.h"
 #include "util.h"
+#include "Math64.h"
 
 //  Initialize the variable.
 //
@@ -252,8 +253,8 @@ CVariable *CVariableManager::FindVariable(const char *inName, bool inReading)
     	//	prcaution("Getting Variable <%s> before it has been set", inName);
 
 #ifdef DEBUG_5L
-		if (inReading)
-			prinfo("Getting Variable <%s> before it has been set", inName);
+		//if (inReading)
+		//	prinfo("Getting Variable <%s> before it has been set", inName);
 #endif
     	
     	theVar = new CVariable(inName);
@@ -342,7 +343,6 @@ bool CVariableManager::IsSpecial(const char *name)
 	CString			str;
 	static Str255	dateStr;
 	UInt32			timeSecs;
-	int32			curTime;
 	bool			retValue = false;
 	
 	vname.makelower();
@@ -388,9 +388,20 @@ bool CVariableManager::IsSpecial(const char *name)
 	{
 		dateStr[0] = 0;
 		::GetDateTime(&timeSecs);
-		curTime = (int32) timeSecs;
 		
-		special->SetULong(curTime);		
+		// cbo_fix - this has overflowed and we don't care about the absolute value
+		//	anyway so we will subtract a very big number
+		{
+			UInt64	wide;
+			
+			wide = U64SetU(timeSecs);
+			
+			wide -= 2147483600;
+
+			timeSecs = U32SetU(wide);
+		}
+		
+		special->SetULong(timeSecs);		
 		retValue = true;
 	}
 	else if (vname == (char *) "_system")
@@ -408,28 +419,6 @@ bool CVariableManager::IsSpecial(const char *name)
 		special->SetString(gCardManager.PrevCardName());
 		retValue = true;
 	}
-#ifdef BEFORE_AFTER_SPECIAL
-	else if (vname == (char *) "_beforecard")
-	{
-		char			*value;
-		
-		value = gCardManager.BeforeCardName();
-		if (value == NULL)
-			value = "";		// empty string
-		special->SetString(value);
-		retValue = true;
-	}
-	else if (vname == (char *) "_aftercard")
-	{
-		char			*value;
-		
-		value = gCardManager.AfterCardName();
-		if (value == NULL)
-			value = "";		// empty string
-		special->SetString(value);
-		retValue = true;
-	}
-#endif
 	else if (vname == (char *) "_eof")
 	{
 		if (gFileManager.CurFileOpen())
@@ -442,7 +431,7 @@ bool CVariableManager::IsSpecial(const char *name)
 		else
 		{
 #ifdef DEBUG_5L
-			prcaution("Trying to read _EOF and no file open!");
+			//prcaution("Trying to read _EOF and no file open!");
 #endif
 			special->SetLong(0);
 		}

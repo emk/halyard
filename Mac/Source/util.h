@@ -34,6 +34,7 @@ void 	strlower(char *str);
 int16 	strnicmp(const char *str1, const char *str2, int32 count);
 int16 	stricmp(const char *str1, const char *str2);
 
+void prdebug(char *cs,...);
 void prinfo(char *cs,...);
 void prmem(void);
 void pronecommand(char *inStr, uint32 inPos);

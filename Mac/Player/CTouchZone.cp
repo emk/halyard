@@ -273,9 +273,12 @@ CTouchZone::HotSpotResult(
 //	MouseEnter - The mouse has entered our touch zone.
 //
 void
-CTouchZone::MouseEnter(Point /* inPortPtr */, const EventRecord& /* inMacEvent */)
+CTouchZone::MouseEnter(Point inPortPt, const EventRecord& /* inMacEvent */)
 {
-	gCursorManager.CheckCursor;
+	Point	localPoint = inPortPt;
+	
+	PortToLocalPoint(localPoint);	
+	gCursorManager.CheckCursor(localPoint);
 }
 
 //
@@ -292,7 +295,12 @@ CTouchZone::MouseLeave()
 //			the hand (if we have it).
 //
 void
-CTouchZone::MouseWithin(Point /* inPortPt */, const EventRecord& /* inMacEvent */)
-{
-	gCursorManager.ChangeCursor(mCursor);
+CTouchZone::MouseWithin(Point inPortPt, const EventRecord& /* inMacEvent */)
+{	
+	Point	localPoint = inPortPt;
+	
+	PortToLocalPoint(localPoint);
+	gCursorManager.CheckCursor(localPoint);
+	
+	//gCursorManager.ChangeCursor(mCursor, true);
 }

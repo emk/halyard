@@ -236,7 +236,7 @@ void CPlayerView::DoPause(bool inFromKey)
 		{
 			gMovieManager.Pause();
 #ifdef DEBUG_5L
-			prinfo("pausing the movie");
+		//	prinfo("pausing the movie");
 #endif			
 			mPauseFromKey = inFromKey;
 			mMoviePaused = true;
@@ -245,13 +245,13 @@ void CPlayerView::DoPause(bool inFromKey)
 				ProcessTZones(false);	// turn off touch zone processing
 		}
 #ifdef DEBUG_5L
-		else
-			prinfo("nothing to pause");
+		//else
+		//	prinfo("nothing to pause");
 #endif
 	}
 #ifdef DEBUG_5L
-	else
-		prinfo("movie is already paused");
+	//else
+	//	prinfo("movie is already paused");
 #endif
 }
 
@@ -340,17 +340,17 @@ void  CPlayerView::DrawSelf(void)
 	StColorPenState::Normalize();
 
 	CalcLocalFrameRect(theFrame);
-	
-	if (gMovieManager.MoviePlaying() or (not mActive))
+
+	if (not mActive)
+		return;
+			
+	if (gMovieManager.FullScreenPlay())
 	{
-		if (gMovieManager.FullScreenPlay())
-		{
-			::RGBForeColor(&Color_Black);
-			::PenMode(patCopy);
-			::PaintRect(&theFrame);
-			::ValidRect(&theFrame);					// cbo_fix - this is necessary to keep from seeing the 
-			//	black background when a movie starts up - is there another way to do this?
-		}
+		::RGBForeColor(&Color_Black);
+		::PenMode(patCopy);
+		::PaintRect(&theFrame);
+		::ValidRect(&theFrame);					// cbo_fix - this is necessary to keep from seeing the 
+		//	black background when a movie starts up - is there another way to do this?
 	}
 	else
 	{
@@ -486,26 +486,37 @@ CPlayerView::AdjustCursor(
 	Point				inPortPt,
 	const EventRecord	&/* inMacEvent */)
 {
-	gCursorManager.SetCursorPos(inPortPt);
-	AdjustMyCursor();
+	Point	localPoint = inPortPt;
+	
+	PortToLocalPoint(localPoint);
+	gCursorManager.CheckCursor(localPoint);
 }
 
 void 
 CPlayerView::MouseEnter(Point inPortPt, const EventRecord &/* inMacEvent */)
 {
-	gCursorManager.SetCursorPos(inPortPt);
+	Point	localPoint = inPortPt;
+	
+	PortToLocalPoint(localPoint);
+	gCursorManager.SetCursorPos(localPoint);
 }
 
 void 
 CPlayerView::MouseLeave(Point inPortPt, const EventRecord &/* inMacEvent */)
 {
-	gCursorManager.SetCursorPos(inPortPt);
+	Point	localPoint = inPortPt;
+	
+	PortToLocalPoint(localPoint);
+	gCursorManager.SetCursorPos(localPoint);
 }
 
 void
 CPlayerView::MouseWithin(Point inPortPt, const EventRecord &/* inMacEvent */)
 {
-	gCursorManager.SetCursorPos(inPortPt);
+	Point	localPoint = inPortPt;
+	
+	PortToLocalPoint(localPoint);
+	gCursorManager.SetCursorPos(localPoint);
 }
 
 //
@@ -737,13 +748,11 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 							gInFront = true;
 							::BringToFront(gWindow);
 						}
-					break;
+						break;
+					case '+':
+						DoGFade(true, 0);
+						break;
 #endif
-					// don't need to do this anymore
-					//default:
-						// Go throgh the list of script-specified chars
-					//	DoKeyBind(theChar);
-					//	break;
 				}
 			}
 			else

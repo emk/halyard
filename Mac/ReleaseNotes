@@ -1,5 +1,106 @@
 FiveL for Macintosh Release Notes
 
+2.00, Build 13, Friday, November 12, 1999 4:21:23 PM
+
+¥ Made the "contains" operator case insensitive.
+
+2.00, Build 12, Friday, November 12, 1999 3:02:46 PM
+
+¥ Ignore the character sequence \w, which is the windows-only newline.
+
+¥ Changed the behavior of _INCR_X so that it will have the greatest X
+	value of a multi-line text statement, not the last one.
+
+2.00, Build 11, Friday, November 12, 1999 12:13:49 PM
+
+¥ The debug engine will fade the screen in when Command-+ is pressed. This should
+help if you get stuck.
+
+¥ The debug engine will no longer quit when it encounters an error. If this
+causes crashes, let me know.
+
+¥ New origin variables and command.
+	There are two new variables that track the origin of a card or macro.
+		_OriginX - is the X part
+		_OriginY - is the Y part
+	These are logically read-only variables. If you write to them, you will
+	change their value but will not change the actual origin of the card or
+	macro.
+	There is also a new command, ResetOrigin. This can be used to set the
+	origin back to (0, 0) by not using a parameter: (resetorigin)
+	It can also be used to set the origin of the current card or macro by
+	passing in a point: (resetorigin 10 10)
+
+2.00, Build 10, Tuesday, Tuesday, November 9, 1999 12:30:34 PM
+
+¥ Fixed input command so that the highlight color of the header is respected
+for the background color. If that color is not specified, black is used.
+
+¥ Added new variables:
+	_BitDepth - set to the bit depth of the screen
+	_ResX - the resolution of the screen in the X direction
+	_ResY - the resolution of the screen in the Y direction
+
+¥ Added a new variable, _INCR_X, which will track the horizontal edge of the 
+bounding rectangle of a text command, just as _INCR_Y does in the vertical 
+direction. Not sure how well this works.
+	
+¥ Trimmed many debug messages.
+
+2.00, Build 9, Thursday, November 4, 1999 10:47:06 AM
+
+¥ Changed link options to "weak link" two libraries on PPC:
+	- WindowsLib
+	- ControlsLib
+	This should enable us to install on PPC systems prior to MacOS 8.5.
+
+2.00, Build 8, Wednesday, November 3, 1999 9:50:36 AM
+
+¥ Put fades back in to the debug version.
+
+¥ Made sure that the offscreen buffer was being correctly blasted to the 
+screen when using PlayQTRect.
+
+2.00, Build 7, Friday, October 29, 1999 9:29:03 AM
+
+¥ When writing to a file, escape characters (other than n and t) were being
+changed into a space character rather then being left alone.
+
+¥ A debugging flag was left on in the debug build of 2.00b6 (and maybe earlier). 
+This would cause type 12 errors when exceptions were thrown in the engine (a
+common occurance when encountering an error). The flag has been reset to its
+correct value.
+
+¥ Changed the cursor behavior so that the explicit cursor command will make
+the cursor stay visible even when there are no touchzones present. A cursor
+command without a parameter (e.g. (cursor)) will reset the cursor back to 
+the default arrow and will no longer force it to be visible when touchzones
+aren't present.
+
+2.00, Build 6, Wednesday, October 27, 1999 3:33:18 PM
+
+¥ Implemented a new command: cursor. It takes one parameter, the name of a
+cursor to display. If no parameter is given then the arrow cursor will be 
+used. The valid constants are the same as for the buttpcx and touch commands:
+	up, down, right, left, backup, hand, arrow, cross, watch
+syntax: (cursor [constant])
+
+¥ The $_seconds variable has been returning values larger than (2^31) - 1 which
+overflows 32-bit integers making it impossible to use for math. As a short-term
+fix for the Mac (Windows shouldn't have this problem) a very large number is
+being subtracted from the value of $_seconds that is returned from the system.
+The resulting number is still very large but doesn't come close to overflowing 
+a 32-bit integer. As nobody knew that this number was the number of seconds 
+from midnight January 1, 1904, nobody should care.
+
+2.00, Build 5, Wednesday, October 27, 1999 9:13:56 AM
+
+¥ Changed cursor support to be backward compatible with existing scripts. In both
+the touch and buttpcx commands, if a valid cursor is not found then it the
+text is assumed to be the second command and the default hand cursor will be used.
+This way we don't have to go back and insert cursor constants in all of those
+commands that were using the second command.
+
 2.00, Build 4, Friday, October 22, 1999 4:53:43 PM
 
 ¥ New cursor support in touchzones. Now touchzones can have an optional cursor

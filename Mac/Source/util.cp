@@ -26,6 +26,7 @@
 
 // globals
 extern bool			gPrintToFile;
+extern bool			gPrintDebug;
 
 #ifdef DEBUG_5L
 //#define FILE_CREATOR	'R*ch'
@@ -77,8 +78,11 @@ void prerror(char *cs,...)
     (void) ::StopAlert(2001, nil);
 	
 	va_end(arg_ptr);
-	
+
+// cbo_fix - no more quit when in debug mode?
+#ifndef DEBUG_5L
 	gTheApp->DoQuit();
+#endif
 }
 
 //
@@ -130,6 +134,47 @@ void prinfo(char *cs,...)
 	va_list		arg_ptr;
 
 	if (gPrintToFile)
+	{	
+		va_start(arg_ptr, cs);
+		
+		if (prinfo_buf == NULL)
+			prinfo_buf = ::NewPtr(PRINFO_BUF_SIZE);
+			
+		if (prinfo_buf == NULL)
+			return;
+		
+		vsprintf(prinfo_buf, cs, arg_ptr);
+		
+		if (gDebugFile != nil)
+		{
+			Int32	strLen;
+			char	endLine[2];
+
+			endLine[0] = NEWLINE_CHAR;
+			endLine[1] = '\0';
+						
+			strcat(prinfo_buf, endLine);
+			strLen = strlen(prinfo_buf);
+			
+			gDebugFile->Write(prinfo_buf, strLen);
+			
+			// don't flush
+			// gDebugFile->Flush();
+		}
+		
+		va_end(arg_ptr);
+	}
+}
+
+//
+//	prdebug - Print out an info string. It can be printed to a SIOUX window or to a file
+//			depending on the settings of the gPrint and gPrintToFile globals.
+//
+void prdebug(char *cs,...)
+{
+	va_list		arg_ptr;
+
+	if (gPrintToFile and gPrintDebug)
 	{	
 		va_start(arg_ptr, cs);
 		

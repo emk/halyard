@@ -75,7 +75,7 @@ CCard::CCard(const char *name, int32 p1, int32 p2) : CIndex(name, p1, p2)
 	mTimeoutTimer = NULL;
 	mNapTimer = NULL;
 	
-    mOrigin.Set(0, 0);
+	SetOrigin(0, 0);
 }
 
 CCard::~CCard()
@@ -97,7 +97,7 @@ void CCard::Start(void)
 	
 	SetScript();					// load in the script from the file
 	script.reset();					// reset the script
-	mOrigin.Set(0, 0);				
+	SetOrigin(0, 0);			
 	mActive = true;
 
 #ifdef DEBUG_5L
@@ -155,7 +155,7 @@ void CCard::Execute(void)
 		if (mTimeoutTimer->HitTimer())
 		{
 #ifdef DEBUG_5L
-			prinfo("Hit timeout timer, jumping to card");
+			//prinfo("Hit timeout timer, jumping to card");
 #endif
 			jumpCard = (CCard *) mTimeoutTimer->GetUserData();
 			if (jumpCard != NULL)
@@ -171,7 +171,7 @@ void CCard::Execute(void)
 		if (mNapTimer->HitTimer())
 		{
 #ifdef DEBUG_5L
-			prinfo("hit the end of the nap, resuming");
+			//prinfo("hit the end of the nap, resuming");
 #endif
 			mPaused = false;
 			
@@ -259,6 +259,7 @@ void CCard::DoCommand(void)
     else if (opword == (char *)"checkdisc") DoCheckDisc();
     else if (opword == (char *)"close") DoClose();
     else if (opword == (char *)"ctouch") DoCTouch();
+    else if (opword == (char *)"cursor") DoCursor();
 #ifdef DEBUG_5L
 	else if (opword == (char *)"debug") DoDebug();
 #endif
@@ -297,6 +298,7 @@ void CCard::DoCommand(void)
 	else if (opword == (char *)"redoscript") DoReDoScript();
 #endif
 //	else if (opword == (char *)"refresh") DoRefresh();
+	else if (opword == (char *)"resetorigin") DoResetOrigin();
     else if (opword == (char *)"resume") DoResume();
     else if (opword == (char *)"rewrite") DoRewrite();
     else if (opword == (char *)"rnode" || opword == (char *)"rvar") DoRnode(); 
@@ -392,6 +394,13 @@ void CCard::AdjustPoint(CPoint *pt)
 void CCard::SetOrigin(CPoint &loc)
 {
     mOrigin = loc;
+    gVariableManager.SetLong("_originx", mOrigin.x);
+    gVariableManager.SetLong("_originy", mOrigin.y);
+}
+void CCard::SetOrigin(int32 inX, int32 inY)
+{
+	CPoint	newOrigin(inX, inY);
+	SetOrigin(newOrigin);
 }
 
 /***********************************************************************
@@ -405,8 +414,12 @@ void CCard::SetOrigin(CPoint &loc)
  ***********************************************************************/
 void CCard::OffsetOrigin(CPoint &delta)
 {
-    mOrigin.x += delta.x;
-    mOrigin.y += delta.y;
+	CPoint newOrigin(mOrigin);
+	
+	newOrigin.x += delta.x;
+	newOrigin.y += delta.y;
+	
+	SetOrigin(newOrigin);
 }
 
 
@@ -440,23 +453,36 @@ int16 CCard::Evaluate(CStream& conditional)
     CString     op;
     CString     modeStr;
     CString     str1, str2;
+#ifdef DEBUG_5L
+	CString		origStr1, origStr2, origOp;
+#endif
 
     globalRes = localRes = false;
 
     while (conditional.more()) 
 	{
         conditional >> str1 >> op >> str2;
-
+#ifdef DEBUG_5L
+		origStr1 = str1;
+		origStr2 = str2;
+		origOp = op;
+#endif
 		// See if op is contains first.
-		if (op == (char *)"contains")
+		if (op.Equal("contains", false))
+		//if (op == (char *)"contains")
 		{
-			char *res = nil;
+			//char *res = nil;
 			
-			res = strstr(str1.GetString(), str2.GetString());
-			if (res != nil)
+			if (str1.Contains(str2, false))
 				localRes = true;
 			else
 				localRes = false;
+				
+			//res = strstr(str1.GetString(), str2.GetString());
+			//if (res != nil)
+			//	localRes = true;
+			//else
+			//	localRes = false;
 		}
 		else
 		{
@@ -509,7 +535,7 @@ int16 CCard::Evaluate(CStream& conditional)
                 
                 // one false makes a whole bunch of ANDed things false
                 if (not globalRes)
-                	return (globalRes);
+                	goto end;
             } 
 			else if (modeStr == (char *) "or") 
 			{
@@ -519,7 +545,7 @@ int16 CCard::Evaluate(CStream& conditional)
                 
                 // one true makes a whole bunch of ORed things true
                 if (globalRes)
-                	return(globalRes);
+                	goto end;	
             } 
 			else
 			{
@@ -528,7 +554,16 @@ int16 CCard::Evaluate(CStream& conditional)
             }
         }
     }
-    return globalRes;
+
+end:    
+#ifdef DEBUG_5L
+	if (globalRes)
+		prinfo("if (%s %s %s) -> true", origStr1.GetString(), origOp.GetString(), origStr2.GetString());
+	else
+		prinfo("if (%s %s %s) -> false", origStr1.GetString(), origOp.GetString(), origStr2.GetString());
+#endif
+		
+    return (globalRes);
 }
 
 /*************************
@@ -552,7 +587,6 @@ void CCard::DoAdd()
 	int32		theResValue;
 
     script >> theVarName >> theAmount;
-
     
 	// cbo_fix - we don't have fcvt like Windows does
    // sum = gVariableManager.GetDouble(vname);
@@ -596,7 +630,6 @@ void CCard::DoAudioKill(void)
 			do_kill_loops = true;
 		else
 			prcaution("Bad flag to audiokill command <%s>", loop_flag.GetString());
-
 	}
 }
 
@@ -700,8 +733,8 @@ void CCard::DoBackground()
 	loc.MakeMacRect(&macLoc);
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("background: <%s>, L<%d>, T<%d>, R<%d>, B<%d>", 
-		(char *) picname, macLoc.left, macLoc.top, macLoc.right, macLoc.bottom);
+	//prinfo("background: <%s>, L<%d>, T<%d>, R<%d>, B<%d>", 
+	//	(char *) picname, macLoc.left, macLoc.top, macLoc.right, macLoc.bottom);
 #endif
 
     gPlayerView->SetBackPic((char *) picname, macLoc);
@@ -728,7 +761,7 @@ void CCard::DoBackground()
     }
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("beep: freq <%d>, duration <%d>", freq, duration);
+	//prinfo("beep: freq <%d>, duration <%d>", freq, duration);
 #endif
     
  	// cbo_fix - we can do better than this
@@ -744,7 +777,7 @@ void CCard::DoBackground()
 void CCard::DoBlippo()
 {
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("blippo: ");
+	//prinfo("blippo: ");
 #endif
 
 	gPlayerView->Blippo();
@@ -786,7 +819,7 @@ void CCard::DoBox()
     	script >> lineThickness;
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("box: L <%d>, T <%d>, R <%d>, B <%d>", bounds.left, bounds.top, bounds.right, bounds.bottom);
+	//prinfo("box: L <%d>, T <%d>, R <%d>, B <%d>", bounds.left, bounds.top, bounds.right, bounds.bottom);
 #endif
 
     AdjustRect(&bounds);
@@ -820,13 +853,20 @@ void CCard::DoButtpcx()
     CString     secondCommand;
     CString		cursorType;
     CursorType	cursor = HAND_CURSOR;
+    CursorType	tmpCursor = UNKNOWN_CURSOR;
 
     script >> picname >> buttLoc >> theHeaderName >> Text >> cmdText;
 
-	if (script.more())
-		script >>	cursorType;
+	if (script.more() and (script.curchar() != '('))
+	{
+		script >> cursorType;
 		
-	cursor = gCursorManager.FindCursor(cursorType);
+		tmpCursor = gCursorManager.FindCursor(cursorType);
+		if (tmpCursor != UNKNOWN_CURSOR)
+	    	cursor = tmpCursor;
+	    else
+	    	prcaution("Unknown cursor type: %s", cursorType.GetString());
+	}
 	
    	scmdText = "";
     if (script.more())  
@@ -980,7 +1020,7 @@ void CCard::DoClose()
         script >> left >> top;
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("ctouch: at left <%d>, top <%d>", left, top);
+	//prinfo("ctouch: at left <%d>, top <%d>", left, top);
 #endif   
 
         gPlayerView->CTouch(left, top);
@@ -988,13 +1028,41 @@ void CCard::DoClose()
     else 
     {
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("ctouch: all");
+	//prinfo("ctouch: all");
 #endif   
     	gPlayerView->CTouch();
     }
 
 	// cbo_test - put this back in because we took it out in wait and nap
 	gPlayerView->AdjustMyCursor();   	
+}
+
+//
+//	DoCursor - Change the cursor.
+//
+void CCard::DoCursor()
+{
+	CursorType	theCursor = ARROW_CURSOR;
+	CursorType	tmpCursor;
+	CString		cursorStr;
+	bool		forceShow = false;
+	
+	if (script.more())
+	{
+		script >> cursorStr;
+		
+		tmpCursor = gCursorManager.FindCursor(cursorStr);
+		if (tmpCursor != UNKNOWN_CURSOR)
+		{
+			theCursor = tmpCursor;
+			forceShow = true;
+		}
+		else
+			prcaution("Unknown cursor type: %s", cursorStr.GetString());
+	}
+	
+	gCursorManager.ChangeCursor(theCursor);
+	gCursorManager.ForceShow(forceShow);
 }
 
 //
@@ -1085,7 +1153,7 @@ void CCard::DoFade()
     	script >> steps;
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("fade: %s, steps <%d>", direction.GetString(), steps);
+	//prinfo("fade: %s, steps <%d>", direction.GetString(), steps);
 #endif
 
 	// cbo_hack - try making the fades a bit faster
@@ -1132,7 +1200,7 @@ void CCard::DoHighlight()
  ---------------------------------------------------------------*/
 void CCard::DoHidemouse()
 {
-	gPlayerView->ShowMouse(false);
+	gCursorManager.HideCursor();
 }
 /*-----------------------------------------------------------------
     (IF (CONDITIONAL) (TRUE_CMD) <(FALSE_CMD)>)
@@ -1150,22 +1218,12 @@ void CCard::DoIf()
     script >> conditional;
     conditional.reset();
 
-#ifdef DEBUG_5L_SCRIPT
-	prinfo("if: <%s>", (char *) conditional);
-#endif
-
     if (Evaluate(conditional)) 
     {
-#ifdef DEBUG_5L_SCRIPT
-		prinfo("if -> true");
-#endif
         DoCommand();
     } 
     else 
     {
-#ifdef DEBUG_5L_SCRIPT
-		prinfo("if -> false");
-#endif
         //  Skip TRUE_CMD.
         script >> open >> close;
         if (script.more()) 
@@ -1210,9 +1268,9 @@ void CCard::DoInput()
    	bounds.MakeMacRect(&macBounds);
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("input: into <%s>, style <%s>, mask <%s>, L <%d>, T <%d>, R <%d>, B <%d>, require <%s>",
-			(char *) theVarName, (char *) style, (char *) mask, bounds.left, bounds.top, bounds.right, bounds.bottom,
-			(char *) required);
+	//prinfo("input: into <%s>, style <%s>, mask <%s>, L <%d>, T <%d>, R <%d>, B <%d>, require <%s>",
+	//		(char *) theVarName, (char *) style, (char *) mask, bounds.left, bounds.top, bounds.right, bounds.bottom,
+	//		(char *) required);
 #endif
    	
 	mPaused = true;
@@ -1288,7 +1346,7 @@ void CCard::DoKeybind()
     	theChar = keyEquiv.getch(0);
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("keybind: key <%c>: Jump to card <%s>", keyEquiv.getch(0), linkCard.GetString());
+	//prinfo("keybind: key <%c>: Jump to card <%s>", keyEquiv.getch(0), linkCard.GetString());
 #endif
 
 	theCard = (CCard *) gCardManager.FindNode(linkCard.GetString(), true);
@@ -1297,7 +1355,7 @@ void CCard::DoKeybind()
     	gPlayerView->AddKeyBinding(theChar, theCard);
 #ifdef DEBUG_5L_SCRIPT
 	else
-		prcaution("Trying to keybind to non-existant card <%s>!", (char *) linkCard);
+		prcaution("ERROR: Trying to keybind to non-existant card <%s>!", (char *) linkCard);
 #endif
 }
 
@@ -1310,12 +1368,12 @@ void CCard::DoKill()
 	{
 		gMovieManager.Kill();
 #ifdef DEBUG_5L_SCRIPT
-		prinfo("kill: the movie be dead");
+		//prinfo("kill: the movie be dead");
 #endif
 	}
 #ifdef DEBUG_5L_SCRIPT
-	else
-		prinfo("kill: nothing to kill");
+	//else
+		//prinfo("kill: nothing to kill");
 #endif
 	
 }
@@ -1374,7 +1432,7 @@ void CCard::DoLoadpal()
 	palname.makelower();
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("loadpal: <%s>", palname.GetString());
+	//prinfo("loadpal: <%s>", palname.GetString());
 #endif
 
 	while (script.more())
@@ -1513,7 +1571,7 @@ void CCard::DoLock()
 		doClear = false;
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("lock: Clear: <%d>", doClear);
+	//prinfo("lock: Clear: <%d>", doClear);
 #endif
 		
 	gPlayerView->Lock(doClear);
@@ -1687,8 +1745,8 @@ void CCard::DoNap()
 		mNapTimer = new CTimer(tenths, NULL);
 
 #ifdef DEBUG_5L_SCRIPT
-		prinfo("nap: %d", tenths);
-		prinfo("Refreshing Card (DoNap)");
+		//prinfo("nap: %d", tenths);
+		//prinfo("Refreshing Card (DoNap)");
 #endif
 
 		// cbo_test - took this out to prevent flashing
@@ -1775,7 +1833,7 @@ void CCard::DoOval()
     script >> bounds >> fill >> color;
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("oval: L <%d>, T <%d>, R <%d>, B <%d>", bounds.left, bounds.top, bounds.right, bounds.bottom);
+	//prinfo("oval: L <%d>, T <%d>, R <%d>, B <%d>", bounds.left, bounds.top, bounds.right, bounds.bottom);
 #endif
 
     AdjustRect(&bounds);
@@ -1884,7 +1942,7 @@ void CCard::DoPlayQTFile()
 		{
 			script >> theStartOffset;
 #ifdef DEBUG_5L_SCRIPT
-			prinfo("Got an offset of <%ld>", theStartOffset);
+			//prinfo("Got an offset of <%ld>", theStartOffset);
 #endif
 		}
 	}
@@ -1893,8 +1951,7 @@ void CCard::DoPlayQTFile()
 		if (script.more())
 			script >> thePal;
 	}	
-    
-		
+    		
 	if (not thePal.empty())
 	{
 		thePal.makelower();
@@ -1913,7 +1970,7 @@ void CCard::DoPlayQTFile()
 			(char *) theQTFile, theOffset, (char *) thePal);
 	}
 #endif
-		
+				
 	gMovieManager.Play(theQTFile.GetString(), theOffset, 
 		audioOnly, thePalStr, theStartOffset);
 }
@@ -1943,7 +2000,7 @@ void CCard::DoPlayQTLoop()
 	{
 		
 #ifdef DEBUG_5L_SCRIPT
-		prinfo("playqtloop: <%s> <%ld>", (char *) theQTFile, theFadeTime);
+//		prinfo("playqtloop: <%s> <%ld>", (char *) theQTFile, theFadeTime);
 #endif
 		gMovieManager.PlayLoop(theQTFile.GetString(), theFadeTime);
 	}
@@ -2086,6 +2143,19 @@ void CCard::DoRefresh(void)
 
 }
 
+//
+//	DoResetOrigin - Reset the origin or set it to something new.
+//
+void CCard::DoResetOrigin(void)
+{
+	CPoint		newOrigin(0, 0);
+	
+	if (script.more())
+		script >> newOrigin;
+		
+	SetOrigin(newOrigin);
+}
+
 /*---------------------------------------------------------------
     (RESUME)
 
@@ -2095,7 +2165,7 @@ void CCard::DoRefresh(void)
 void CCard::DoResume()
 {
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("resume");
+	//prinfo("resume");
 #endif
 
 	gPlayerView->DoResume(false);
@@ -2171,7 +2241,7 @@ void CCard::DoQTPause()
 	if (gMovieManager.Playing())
 	{
 #ifdef DEBUG_5L_SCRIPT
-		prinfo("pause: %ld milliseconds", tenths);
+		//prinfo("pause: %ld milliseconds", tenths);
 #endif
 		gPlayerView->DoPause(false);
 		
@@ -2186,8 +2256,8 @@ void CCard::DoQTPause()
 		gPlayerView->ProcessEvents(true);
 	}
 #ifdef DEBUG_5L_SCRIPT
-	else
-		prinfo("pause: nothing playing");
+	//else
+	//	prinfo("pause: nothing playing");
 #endif
 	
 }	
@@ -2204,7 +2274,7 @@ void CCard::DoScreen()
     script >> color;
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("screen: <%d>", color);
+	//prinfo("screen: <%d>", color);
 #endif
 
     gPlayerView->ColorCard(color);
@@ -2294,7 +2364,7 @@ void CCard::DoSet()
  ---------------------------------------------------------------------*/
 void CCard::DoShowmouse()
 {
-	gPlayerView->ShowMouse(true);
+	gCursorManager.ShowCursor();
 }
 
 /*----------------------------------------------
@@ -2305,7 +2375,7 @@ void CCard::DoShowmouse()
 void CCard::DoStill()
 {
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("still");
+	//prinfo("still");
 #endif
 
 	gPlayerView->DoPause(false);
@@ -2320,10 +2390,10 @@ void CCard::DoStill()
 ------------------------------------------------*/
 void CCard::DoSub()
 {
-	CString theVarName;
-	int32		theAmount;
-	int32		theOrigValue;
-	int32		theResValue;
+	CString 	theVarName;
+	uint32		theAmount;
+	uint32		theOrigValue;
+	uint32		theResValue;
 
     script >> theVarName >> theAmount;
 
@@ -2361,12 +2431,13 @@ void CCard::DoText()
 
 #ifdef DEBUG_5L_SCRIPT
 	prinfo("text: header <%s>, text <%s>", header.GetString(), text.GetString());
-	prinfo("text in rect: L <%d>, T <%d>, R <%d>, B <%d>", bounds.left, bounds.top, bounds.right, bounds.bottom);
 #endif
     
     textPtr = new CPlayerText(header.GetString(), macBounds, text.GetString(), 0, 0);
 	if (textPtr != nil)
 		delete textPtr;
+		
+	// cbo_fix 
 }
 
 /*-----------------------------------------------------------
@@ -2417,6 +2488,7 @@ void CCard::DoTouch()
     CString     picname;
     CString		cursorType;
     CursorType	cursor = HAND_CURSOR;
+    CursorType	tmpCursor;
 
     script >> bounds >> cmdText;
 
@@ -2431,10 +2503,27 @@ void CCard::DoTouch()
     AdjustRect(&bounds);
     bounds.MakeMacRect(&macBounds);
 
-	if (script.more())
+	if (script.more() and (script.curchar() != '('))
+	{
 		script >> cursorType;
 
-	cursor = gCursorManager.FindCursor(cursorType);
+		tmpCursor = gCursorManager.FindCursor(cursorType);
+		if (tmpCursor != UNKNOWN_CURSOR)
+			cursor = tmpCursor;
+		else
+	    {
+	    	// unknown cursor, assume it must be a picture name, we know it can't be
+	    	//	the second command as it didn't start with an open paren
+	    	picname = cursorType;
+	    	if (script.more()) 
+			{
+				script >> loc;
+				loc.MakeMacPt(&macLoc);
+			}
+			else 
+				macLoc = topLeft(macBounds);
+		}
+	}
 			    
     if (script.more()) 
     {
@@ -2578,7 +2667,7 @@ void CCard::DoWait()
 		script >> frame;
 
 #ifdef DEBUG_5L_SCRIPT
-	prinfo("wait: %ld", frame);
+	//prinfo("wait: %ld", frame);
 #endif
 
 	// have to check if we are playing something first to be sure

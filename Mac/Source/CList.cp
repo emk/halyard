@@ -147,7 +147,7 @@ void CList::FreeMemory(int32 inMem)
 	if (freeMem > askForMem)
 	{
 #ifdef DEBUG_5L
-		prinfo("Loading a resource, have <%ld> free, only need <%ld>", freeMem, inMem);
+		//prinfo("Loading a resource, have <%ld> free, only need <%ld>", freeMem, inMem);
 #endif
 		return;
 	}
@@ -155,14 +155,14 @@ void CList::FreeMemory(int32 inMem)
 	{
 		freeMem = ::CompactMem(askForMem);
 #ifdef DEBUG_5L
-		prinfo("After CompactMem(), <%ld> contiguous bytes free", freeMem);
+		//prinfo("After CompactMem(), <%ld> contiguous bytes free", freeMem);
 #endif
 	}
 		
 	while ((not done) and (freeMem < askForMem))
 	{
 #ifdef DEBUG_5L
-		prinfo("Purging resources looking for <%ld> bytes, have <%ld> free", inMem, freeMem);
+		//prinfo("Purging resources looking for <%ld> bytes, have <%ld> free", inMem, freeMem);
 #endif
 
 		if (not ValidIndex(theIndex))

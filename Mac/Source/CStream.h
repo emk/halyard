@@ -52,6 +52,7 @@ class CStream : public CString
         virtual CStream&    operator>>(CStream& (*_f)(CStream &));
         virtual CStream&    operator>>(int16 &dest);
         virtual CStream&    operator>>(int32 &dest);
+        virtual CStream&	operator>>(uint32 &dest);
         virtual CStream&    operator>>(double &dest);
         virtual CStream&    operator>>(CRect &r);
         virtual CStream&    operator>>(CPoint &pt);

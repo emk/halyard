@@ -291,7 +291,7 @@ void CStream::scanclose(void)
 CString CStream::copystr(uint32 startPos, uint32 numChars)
 {
     CString 	original, result, vname;
-    int32     	base, curpos, origlen, DEREF=0;
+    int32     	base, curpos, origlen, DEREF = 0;
     char    	ch;
     char		*s;
 
@@ -310,8 +310,9 @@ CString CStream::copystr(uint32 startPos, uint32 numChars)
     {
         if (*s == '&')  
         {
-            DEREF=1;
-            curpos++; base++;
+            DEREF = 1;
+            curpos++; 
+            base++;
         }   
     }
     
@@ -319,7 +320,7 @@ CString CStream::copystr(uint32 startPos, uint32 numChars)
     {
         //  Do we have the start of a variable name?
         //
-        if (s[curpos] == '$' && (curpos == 0 || s[curpos - 1] != SLASH)) 
+        if ((s[curpos] == '$') and ((curpos == 0) or (s[curpos - 1] != SLASH))) 
         {
             //  Copy up until the $ sign.
             //
@@ -334,7 +335,7 @@ CString CStream::copystr(uint32 startPos, uint32 numChars)
             while (curpos < origlen) 
             {
                 ch = s[++curpos];
-                if (ch == '$' && s[curpos - 1] != SLASH)
+                if ((ch == '$') and (s[curpos - 1] != SLASH))
                     break;
             }
 
@@ -387,11 +388,12 @@ CStream& CStream::operator>>(CString &dest)
     
     ch = curchar();
     startPos = pos;
+    
     //  If the first character is an open paren then return the
     //  entire contents of this set of parentheses. Otherwise go
     //  until we hit whitespace.
     //
-    if (ch == P_OPEN and prevchar() != SLASH) 
+    if ((ch == P_OPEN) and (prevchar() != SLASH)) 
     {
         startPos = ++pos;
         //skipwhite();
@@ -434,7 +436,8 @@ CStream& CStream::operator>>(CString &dest)
 
         }
 
-    } else 
+    } 
+    else 
     {
         scanword();
         dest = copystr(startPos, pos - startPos);
@@ -474,6 +477,16 @@ CStream& CStream::operator>>(int32 &dest)
     return (*this);
 }
 
+CStream& CStream::operator>>(uint32 &dest)
+{
+	CString foo;
+	
+	*this >> foo;
+	dest = (uint32) foo;
+	
+	return (*this);
+}
+
 //  CString class handles string to int conversions.
 //
 CStream& CStream::operator>>(double &dest)
@@ -493,7 +506,7 @@ CStream& CStream::operator>>(double &dest)
 //  The program now checks for a variable appended to the first variable
 //  name i.e. $Dingo%Dog --> $Dingo10 --> 50 50 200 120.  This allows
 //  indexing of 4 digit coords.  Note had to use a second symbol other than
-//  '$' because of the way 5L handles strings beggining and ending in '$' 
+//  '$' because of the way 5L handles strings beginning and ending in '$' 
 
 CStream& CStream::operator>>(CRect &r)
 {
@@ -502,10 +515,9 @@ CStream& CStream::operator>>(CRect &r)
 
     skipwhite();
     ch = curchar();
-    if(ch == '&' || ch == '$')  
+    if ((ch == '&') or (ch == '$'))  
     {
         *this >> temp;
-        //DebugFile("Temp is: %s.\n",(char *)temp);
         CStream tempstream(temp);
         tempstream >> r.left >> r.top >> r.right >> r.bottom;
     }
@@ -531,10 +543,9 @@ CStream& CStream::operator>>(CPoint &pt)
 
     skipwhite();
     ch = curchar();
-    if(ch == '&' or ch == '$')  
+    if ((ch == '&') or (ch == '$'))  
     {
         *this >> temp;
-        //DebugFile("Temp is: %s.\n",(char *)temp);
         CStream tempstream(temp);
         tempstream >> pt.x >> pt.y;
     }

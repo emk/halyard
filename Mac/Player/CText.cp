@@ -245,7 +245,7 @@ CText::SetupText()
             	
             	switch (ch)
             	{
-            		case 'm':		// cbo_debug - Douglas feature, on Mac have an m mean newline
+            		case 'm':		// mac-only newline
             		case 'n':
 						ch = NEWLINE_CHAR;
 	            		index++;
@@ -287,6 +287,12 @@ CText::SetupText()
 						
 						index++;			// look at the next char
 					
+						break;
+						
+					case 'w':				// windows-only newline, ignore
+						ch = 0;
+						index++;
+						styleLen++;
 						break;
 						
 					default:
@@ -437,7 +443,9 @@ CText::DrawStyleText(Boolean shadow)
 	FontInfo	fontInfo;
 	sTextStyle	theStyle;
 	StyledLineBreakCode	lineBreak;
-	Int16		realLineBase;
+	Int16		text_width;
+	Int16		incr_y;
+	Int16		incr_x;
 	Int16		loopCount;
 	Int16		textStyle;
 	
@@ -474,8 +482,10 @@ CText::DrawStyleText(Boolean shadow)
 	if ((mFont == kFontIDHelvetica) and (mSize == 18))
 		lineBase += 2;
 	
-	// cbo - Start the _INCR_Y out at the bottom of the current line.
-	realLineBase = mDrawRect.top + lineHeight;
+	// Start _incr_y out at the bottom of the current line.
+	incr_y = mDrawRect.top + lineHeight;
+	// Start _incr_x out at the left of the current line.
+	incr_x = mDrawRect.left;
 
 	// Set the justification
 	Int16	justification = mJust;
@@ -485,22 +495,16 @@ CText::DrawStyleText(Boolean shadow)
 	if (justification == teFlushDefault)
 		justification = ::GetSysDirection();
 
-	// cbo_debug - get and set the characteristics of the first style
+	// Get and set the characteristics of the first style
 	if (mStyleOffsets->FetchItemAt(styleIdx+1, &theStyle))
 	{
 		if (theStyle.mLen != 0)
 		{
-#ifdef DEBUG_5L
-			prinfo("setting the first style");
-#endif
 			textStyle = 0;
 			if (theStyle.mUnderline)
 				textStyle |= underline;
 			if ((mBold) or (theStyle.mBold))	// have two ways of making bold
 			{
-#ifdef DEBUG_5L
-				prinfo("it is bold!!");
-#endif
 				textStyle |= bold;
 			}		
 			
@@ -519,10 +523,10 @@ CText::DrawStyleText(Boolean shadow)
 		lineBytes = 1;
 		wrapWidth = drawWidth;
 		
-		// If we have gone past the first line (which was initialized above) increment _INCR_Y by
+		// If we have gone past the first line (which was initialized above) increment _incr_y by
 		//	the line height.
 		if (loopCount > 1)
-			realLineBase += lineHeight;
+			incr_y += lineHeight;
 					
 		/* 	Figure out where the text breaks. Returns the 'extra' chars in 'wrapWidth',
 			and the number of chars to display in 'lineBytes'. */
@@ -541,6 +545,7 @@ CText::DrawStyleText(Boolean shadow)
 			case teForceLeft:
 			case teJustLeft:
 				::MoveTo(mDrawRect.left, lineBase);
+				
 				break;
 
 			case teJustRight:
@@ -558,6 +563,7 @@ CText::DrawStyleText(Boolean shadow)
 		// minimum of that number or the number of chars left in this style.
 		
 		/* Loop until we have no more styles or we hit the end of the line */
+		text_width = mDrawRect.left;
 		
 		while ((mStyleOffsets->FetchItemAt(styleIdx, &theStyle))
 				&& (lineBytes > 0))
@@ -596,35 +602,37 @@ CText::DrawStyleText(Boolean shadow)
 					textStyle |= bold;
 					
 				::TextFace(textStyle);
+               
+ 				text_width += ::TextWidth(inText, 0, drawBytes);	// increment the right edge of the text
 				
 				::DrawText(inText, 0, drawBytes);
 				
-				inText   += drawBytes;	// Incement string ptr to start of next line
-				textLeft -= drawBytes;	// Decrement number of chars remaining in string
-				lineBytes -= drawBytes; // and number of chars left on this line
+				inText   += drawBytes;				// Incement string ptr to start of next line
+				textLeft -= drawBytes;				// Decrement number of chars remaining in string
+				lineBytes -= drawBytes; 			// and number of chars left on this line
 			}
 			else
 			{
 				if (inText != (char *) mText)		// if we haven't output any characters, don't do anything
 				{
 					lineBase += lineHeight;			// Bump the baseline
-					realLineBase += lineHeight;		// this guy too
+					incr_y += lineHeight;			// bump incr_y
 				}
 			}
-
 		}
 		
-		lineBase += lineHeight;	// Bump the baseline
+		lineBase += lineHeight;						// Bump the baseline
+		incr_x = max(incr_x, text_width);			// bump _INCR_X, if necessary
 	}
 	
 	if (loopCount >= 256)
 		prerror("Too many loops in DrawText");
-
-//#ifdef DEBUG_5L
-//	prinfo("setting _INCR_Y to: <%d>", lineBase - lineHeight);
-//#endif
 	
-	gVariableManager.SetLong("_INCR_Y", (int32) (realLineBase));
+	gVariableManager.SetLong("_incr_y", (int32) incr_y);
+	gVariableManager.SetLong("_incr_x", (int32) incr_x);
+#ifdef DEBUG_5L
+	prinfo("text rect: L <%d>, T <%d>, R <%d>, B <%d>", mDrawRect.left, mDrawRect.top, incr_x, incr_y);
+#endif
 }
 
 /* ---------------------------------------------------------------------------

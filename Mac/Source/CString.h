@@ -43,6 +43,8 @@ class CString : public CObject
 		int		TypeCompare(CString &other, bool caseSens = FALSE);
 		int		StartsWith(const CString &other, bool caseSens = TRUE);
 		int		StartsWith(const char *other, bool caseSens = TRUE);
+		bool	Contains(const CString &other, bool caseSens = TRUE);
+		bool	Contains(const char *other, bool caseSens = TRUE);
 
 		void	makelower() { strlower(ptext); }
 		bool	empty() { return (len == 0); }

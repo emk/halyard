@@ -183,20 +183,17 @@ void CFile::Write(CString &data)
     {
     	if ((ch = *ptr++) != '\0')
     	{
-    		if (ch == '\\')					// backslashed char?
+    		if (ch == '\\')						// backslashed char?
     		{
     			if ((ch = *ptr++) != '\0')	
     			{
     				if (ch == 't')
-    					ch = '\t';			// tab
+    					ch = '\t';				// tab
     				else if (ch == 'n')
-    					ch = NEWLINE_CHAR;
-    					//ch = '\n';			// newline
-    				else
-    					ch = ' ';			// make it a space??
+    					ch = NEWLINE_CHAR;		// newline
     			}
     			else
-    				done = TRUE;
+    				done = TRUE;				// null character
     		}
     		
     		if (not done)
@@ -261,8 +258,8 @@ void CFile::Lookup(CString &searchString, int32 numFields)
 #endif
         }
 #ifdef DEBUG_5L
-		else
-			prinfo("lookup: didn't find <%s> in <%s>", (char *) searchString, (char *) comparison);
+//		else
+//			prinfo("lookup: didn't find <%s> in <%s>", (char *) searchString, (char *) comparison);
 #endif
         
         if (itsFile->AtEOF())

@@ -32,7 +32,7 @@ class  CMoviePlayer
 		bool			Paused(void) { return (mInMovie and mPaused); }
 		bool			FullScreenPlay(void) { return ((MoviePlaying()) and (not mHaveOrigin)); }
 		bool			AudioLooping(void) { return ((AudioPlaying()) and (mLooping)); }
-		
+		bool			HaveOrigin(void) { return (mHaveOrigin); }		
 		void			WakeCard(int32 inFrame);
 		void			DrawSelf(void);
 		

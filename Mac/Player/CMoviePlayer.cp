@@ -108,8 +108,8 @@ void CMoviePlayer::WakeCard(int32 inFrame)
 			mWaitTime = (inFrame - mWaitOffset) * mScale / 30;
 	}	
 #ifdef DEBUG_5L
-	else
-		prinfo("wait called but no movie playing");
+	//else
+	//	prinfo("wait called but no movie playing");
 #endif
 }
 
@@ -144,13 +144,13 @@ void CMoviePlayer::Kill(void)
 {
 	RGBColor	rgbBlack = {0, 0, 0};
 	Rect		theFrame;
-	bool		noRedraw = mAudioOnly;			// only redraw if we played video
-	bool		doFades = (not mHaveOrigin);	// do fades if we were centered
+	bool		audioPlaying = mAudioOnly;
+	bool		fullScreen = (not mHaveOrigin);
 
 	if (not Playing())
 		return;
 		
-	gPlayerView->DoResetPause();					// let player view know the movie is dead
+	gPlayerView->DoResetPause();				// let player view know the movie is dead
 			
 	if (mWakeCard)
 	{
@@ -162,15 +162,13 @@ void CMoviePlayer::Kill(void)
 	gVariableManager.SetString("_lpactive", "0");
 	gVariableManager.SetString("_movieplaying", "0");
 	
-	mHaveOrigin = false;						// no more origin for the movie
-	
 	Pause();			// stop the movie, if these is one playing
 
-	if (not noRedraw)
+	if (not audioPlaying)
 	{
 		// we do the fade out and back in so that we can restore the palette
 		//	without having the screen flash in some weird colors
-		if (doFades)
+		if (fullScreen)
 			DoGFade(false, 0, false);				// fade the screen out immediately
 
 		gPlayerView->CalcLocalFrameRect(theFrame);
@@ -180,21 +178,24 @@ void CMoviePlayer::Kill(void)
 		
 		gPlayerView->AdjustMyCursor();		// see if we want the cursor back
 		
-		if (doFades)						// insurance against palette weirdness
+		if (fullScreen)						// insurance against palette weirdness
 		{
 			::RGBForeColor(&rgbBlack);
 			::PenMode(patCopy);
 			::PaintRect(&theFrame);
-			::ValidRect(&theFrame);				// so don't get update
+			::ValidRect(&theFrame);			// so don't get update
 		}
+		else
+			gPlayerView->Draw(nil);			// get the offscreen buffer back on the screen
 		
 		gPlayerView->ProcessTZones(true);	// turn touch zone processing back on 
 	}
-	
+
+	mHaveOrigin = false;					// no more origin for the movie	
 	Cleanup();								// clean everything up
-	
-	if ((not noRedraw) and (doFades))
-		DoGFade(true, 0, false);					// fade the screen back in immediately
+		
+	if ((not audioPlaying) and (fullScreen))
+		DoGFade(true, 0, false);			// fade the screen back in immediately
 }
 
 //
@@ -431,16 +432,12 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 			
 		mWaitOffset = inWaitOffset;			// what video disk frame does the start of this movie correspond to?
 		
-		if (not inAudioOnly) 				// going to show a movie
+		if ((not inAudioOnly) and (not mHaveOrigin))	// check for audio or not full screen
 		{
-			if (not mHaveOrigin)			// if it isn't full screen, don't do anything
-			{
-				gPlayerView->ColorCard(0);	// wipe out everything in offscreen -> why do we do this??
-				
-				gPlayerView->DrawSelf();	// put up the black background
-			}
+			gPlayerView->ColorCard(0);		// wipe out everything in offscreen -> why do we do this??
+			gPlayerView->Draw(nil);			// put up the black background
 		}
-		else								// when audio only, make sure the screen is up to date
+		else								// when audio only or not full screen, make sure the screen is up to date
 			gPlayerView->Draw(nil);			// blast the gworld to the screen
 		
 		if ((not inAudioOnly) and (not mHaveOrigin))	// if we are centering, fade back in
@@ -510,7 +507,7 @@ void CMoviePlayer::PlayLoop(const char *inMovieName, int32 inFadeTime)
 			int16		theVol = 0x0000;
 
 #ifdef DEBUG_5L
-			prinfo("fade in to the looping audio");
+	//		prinfo("fade in to the looping audio");
 #endif
 			
 			gVariableManager.SetString("_lpstat", "1");
@@ -561,7 +558,7 @@ void CMoviePlayer::Pause(void)
 		gVariableManager.SetString("_lpactive", "0");
 
 #ifdef DEBUG_5L
-		prinfo("REALLY pausing the movie");
+	//	prinfo("REALLY pausing the movie");
 #endif
 
 		if (mLooping)
@@ -606,8 +603,8 @@ bool CMoviePlayer::AtEnd(TimeValue &inMovieTime)
 		theRetValue = ::IsMovieDone(mMovie);
 	}
 #ifdef DEBUG_5L
-	else
-		prerror("in AtEnd() - no movie");
+	//else
+	//	prerror("in AtEnd() - no movie");
 #endif
 	
 	inMovieTime = theTime;
@@ -630,7 +627,7 @@ void CMoviePlayer::FadeLoop(void)
 	if ((mMovie != NULL) and (mLooping))
 	{
 #ifdef DEBUG_5L
-		prinfo("fade out of the looping audio");
+	//	prinfo("fade out of the looping audio");
 #endif
 
 		theVolume = 0x0100;							// full volume

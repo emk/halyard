@@ -80,7 +80,7 @@ void CResource::Load()
     if (state == kResUnloaded) 
     {
 #ifdef DEBUG_5L
-		prinfo("loading resource <%s>, size <%ld>", key.GetString(), size);
+	//	prinfo("loading resource <%s>, size <%ld>", key.GetString(), size);
 #endif
 
 		// cbo_mem - don't do this if not trying to manage memory in resource

@@ -56,6 +56,7 @@
 // constants
 //
 const ResIDT		WIND_Mac5L		= 200;
+const ResIDT		WIND_Mac5L_d	= 202;
 
 //
 // globals
@@ -65,9 +66,11 @@ bool				gPrintToFile = true;		// to print info string
 #ifdef DEBUG_5L
 bool				gFullScreen = false;		
 bool				gHideMenuBar = false;		// to hide menu bar
+bool				gPrintDebug = true;
 #else
 bool				gFullScreen = true;			// use the full screen
 bool				gHideMenuBar = true;		// to hide menu bar
+bool				gPrintDebug = true;			// cbo_fix - normally off
 #endif
 bool				gDoShiftScript = false;		// by default, start from beginning
 
@@ -97,10 +100,10 @@ int main()
 {
 									// Set Debugging options
 #ifdef DEBUG_5L
-	//SetDebugThrow_(debugAction_Nothing);
-	//SetDebugSignal_(debugAction_Nothing);
-	SetDebugThrow_(debugAction_SourceDebugger);
-	SetDebugSignal_(debugAction_SourceDebugger);
+	SetDebugThrow_(debugAction_Nothing);
+	SetDebugSignal_(debugAction_Nothing);
+	//SetDebugThrow_(debugAction_SourceDebugger);
+	//SetDebugSignal_(debugAction_SourceDebugger);
 #else
 	SetDebugThrow_(debugAction_Nothing);
 	SetDebugSignal_(debugAction_Nothing);
@@ -201,7 +204,11 @@ CMac5LApp::CMac5LApp()
 		DoGFade(false, 5, false);
 	
 	// Create and show our window
+#ifndef DEBUG_5L
 	mDisplayWindow = CBackWindow::CreateWindow(WIND_Mac5L, this);
+#else
+	mDisplayWindow = CBackWindow::CreateWindow(WIND_Mac5L_d, this);
+#endif
 	
 	// Set our global window pointer.
 	gWindow = (WindowPtr) mDisplayWindow->GetMacPort();
@@ -232,6 +239,8 @@ CMac5LApp::CMac5LApp()
 	mSleepTime = 0;
 	
 	screenBounds = theConfig->GetScreenRect();
+	mScreenRect = screenBounds;
+	mBitDepth = theConfig->GetBitDepth();
 
 	centerOnScreen = true;			// by default
 
@@ -294,6 +303,9 @@ CMac5LApp::CMac5LApp()
 	gVariableManager.SetString("_lpstat", "0");
 	gVariableManager.SetString("_lpactive", "0");
 	gVariableManager.SetString("_movieplaying", "0");
+	gVariableManager.SetLong("_resx", mScreenRect.right);
+	gVariableManager.SetLong("_resy", mScreenRect.bottom);
+	gVariableManager.SetLong("_bitdepth", mBitDepth);
 	
 #ifdef DEBUG_5L
 	gVariableManager.SetString("_debug", "1");
@@ -464,6 +476,9 @@ void CMac5LApp::DoExit(int16 inSide)
 		gVariableManager.SetString("_lpstat", "0");
 		gVariableManager.SetString("_lpactive", "0");
 		gVariableManager.SetString("_movieplaying", "0");
+		gVariableManager.SetLong("_resx", mScreenRect.right);
+		gVariableManager.SetLong("_resy", mScreenRect.bottom);
+		gVariableManager.SetLong("_bitdepth", mBitDepth);
 #ifdef DEBUG_5L
 		gVariableManager.SetString("_debug", "1");
 #else
@@ -699,7 +714,7 @@ void CMac5LApp::RestorePalette(void)
 	if (mGraphicsPal != NULL)
 	{
 #ifdef DEBUG_5L
-		prinfo("restoring graphics palette to <%s>", mGraphicsPal->key.GetString());
+		//prinfo("restoring graphics palette to <%s>", mGraphicsPal->key.GetString());
 #endif
 
 		theCTab = mGraphicsPal->GetCTab();
@@ -707,7 +722,7 @@ void CMac5LApp::RestorePalette(void)
 		if (theCTab == NULL)
 		{
 #ifdef DEBUG_5L
-			prinfo("trying to restore palette, got dodo");
+			//prinfo("trying to restore palette, got dodo");
 #endif
 			mGraphicsPal->Load();		// reload the palette
 			theCTab = mGraphicsPal->GetCTab();
@@ -715,7 +730,7 @@ void CMac5LApp::RestorePalette(void)
 			if (theCTab == NULL)
 			{
 #ifdef DEBUG_5L
-				prinfo("still trying to restore, couldn't get graphics palette");
+			//	prinfo("still trying to restore, couldn't get graphics palette");
 #endif
 				return;
 			}
@@ -819,6 +834,9 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard)
 
 /* 
 $Log$
+Revision 1.7  1999/11/16 13:45:31  chuck
+no message
+
 Revision 1.6  1999/10/22 20:42:27  chuck
 New cursor management
 

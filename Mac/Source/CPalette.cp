@@ -63,7 +63,7 @@ void CPalette::_Load()
 			m_ctab = ::GetCTable(128);
 
 #ifdef DEBUG_5L
-			prinfo("loaded color table from file");
+		//	prinfo("loaded color table from file");
 #endif
 						
 			theFile->CloseResourceFork();
@@ -106,14 +106,14 @@ void CPalette::SetPalette(bool inGraphics)
 	if (m_ctab == nil)
 	{
 #ifdef DEBUG_5L
-		prinfo("Trying to set palette <%s>, not in memory", (char *) key);
+		//prinfo("Trying to set palette <%s>, not in memory", (char *) key);
 #endif
 		Load();
 		
 		if (m_ctab == nil)
 		{
 #ifdef DEBUG_5L
-			prinfo("Still not in memory!!!");
+			//prinfo("Still not in memory!!!");
 #endif
 			return;
 		}
@@ -131,7 +131,7 @@ void CPalette::SetPalette(bool inGraphics)
 			
 		gVariableManager.SetString("_graphpal", str);
 #ifdef DEBUG_5L
-		prinfo("Setting _graphpal to <%s>", str);
+	//	prinfo("Setting _graphpal to <%s>", str);
 #endif
 	}
 	

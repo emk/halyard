@@ -32,10 +32,12 @@ public:
 	virtual	Boolean		FocusDraw(LPane * /* inSubPane */);
 	
 private:
-	CString				mVarToSet;	// Name of var to receive the text
-	CString				mStyle;		// Style to display in when we're done
-	CString				mMask;		// Input format mask
-	bool				mRequired;	// TRUE if some entry is required.
+	CString				mVarToSet;		// Name of var to receive the text
+	CString				mStyle;			// Style to display in when we're done
+	CString				mMask;			// Input format mask
+	RGBColor			mBackColor;		// our background color
+	bool				mRequired;		// TRUE if some entry is required.
+	bool				mHaveBackColor;	// true if was have a background color
 	
 	virtual void		FinishCreateSelf();
 	virtual Boolean		HandleKeyPress(const EventRecord	&inKeyEvent);

@@ -49,6 +49,8 @@ class	CMac5LApp : public LApplication
 								long 				inAENumber);
 		
 	private:
+		Rect				mScreenRect;
+		int					mBitDepth;
 		bool				mScriptRunning;
 		bool				mHaveNewPal;
 		CPalette			*mGraphicsPal;

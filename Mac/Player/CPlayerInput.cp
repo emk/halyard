@@ -26,10 +26,6 @@
 static CPlayerInput *theInputThing = nil;
 extern WindowPtr gWindow;
 
-/* Globals used to communicate the background color to UTextTraits.*/
-Boolean		gHaveBackColor = false;
-RGBColor	grgbBackColor = {0, 0, 0};		// default to black	
-
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerInput
 		
@@ -58,7 +54,7 @@ CPlayerInput::CPlayerInput(
 	LArray &paneList = gPlayerView->GetSubPanes();
 	SetPaneID((paneList.GetCount()) + 2000);
 
-	gHaveBackColor = false;			// assume we won't get it
+	mHaveBackColor = false;			// assume we won't get it
 	
 	// Fill in the Text Traits resource and write it back out.
 	if (not inStyle.empty())
@@ -92,8 +88,8 @@ CPlayerInput::CPlayerInput(
 				if (thePal == NULL)
 					thePal = ::GetPalette(gWindow);
 					
-				::GetEntryColor(thePal, theHeader->GetHighlightColor(), &grgbBackColor);
-				gHaveBackColor = true;
+				::GetEntryColor(thePal, theHeader->GetHighlightColor(), &mBackColor);
+				mHaveBackColor = true;
 			}
 		}
 	}
@@ -203,7 +199,7 @@ Boolean CPlayerInput::HandleKeyPress(
 					gVariableManager.SetString((char *) mVarToSet, p2cstr(theString));
 
 #ifdef DEBUG_5L
-					prinfo("Got input into <%s>, value <%s>", (char *) mVarToSet, theString);
+					prinfo("input: variable <%s>, value <%s>", (char *) mVarToSet, theString);
 #endif
 					
 					// Create a new text field to take its place
@@ -331,9 +327,12 @@ Boolean
 CPlayerInput::FocusDraw(LPane*	/* inSubPane */)
 {
 	Boolean	focused = LEditField::FocusDraw();
-	
-	// now set the background color to black
-	::RGBBackColor(&Color_Black);	
+
+	if (mHaveBackColor)
+		::RGBBackColor(&mBackColor);
+	else
+		// now set the background color to black
+		::RGBBackColor(&Color_Black);	
 	
 	return (focused);
 }	

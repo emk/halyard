@@ -153,7 +153,7 @@ void CPicture::_Load()
 				size += (height * width * theConfig->GetBitDepth());
 			}
 #ifdef DEBUG_5L
-			prinfo("Loaded picture: real size <%ld>", size);
+		//	prinfo("Loaded picture: real size <%ld>", size);
 #endif
 			mHaveGoodSize = true;
 				
@@ -170,7 +170,7 @@ void CPicture::_Purge()
     Assert_(state > kResUnloaded);
 
 #ifdef DEBUG_5L
-	prinfo("Purging picture <%s>", key.GetString());
+	//prinfo("Purging picture <%s>", key.GetString());
 #endif
     
     if (mPicture != nil)
@@ -498,7 +498,7 @@ CPicture *GetPicture(const char *name, bool matte)
 	if (thePict == NULL) 
     {
 #ifdef DEBUG_5L
-		prinfo("GetPicture: <%s> picture not in tree, loading", name);
+	//	prinfo("GetPicture: <%s> picture not in tree, loading", name);
 #endif
 
         thePict = new CPicture(thePictName.GetString(), theBaseName.GetString(), matte);
@@ -510,7 +510,7 @@ CPicture *GetPicture(const char *name, bool matte)
     	if (thePict->GetState() == kResUnloaded)
     	{
 #ifdef DEBUG_5L
-			prinfo("GetPicture: <%s> in tree but not in memory, loading", name);
+		//	prinfo("GetPicture: <%s> in tree but not in memory, loading", name);
 #endif
 			thePict->Load();
 		}
@@ -518,7 +518,7 @@ CPicture *GetPicture(const char *name, bool matte)
 		{
 			
 #ifdef DEBUG_5L
-			prinfo("GetPicture: <%s> picture already in tree and in memory", name);
+			//prinfo("GetPicture: <%s> picture already in tree and in memory", name);
 #endif
 			thePict->Used();		// touch it!
 		}

@@ -67,6 +67,7 @@ class CCard : public CIndex
         void    AdjustPoint(CPoint *pt);
 
         void    SetOrigin(CPoint &loc);
+        void	SetOrigin(int32 inX, int32 inY);
         void    OffsetOrigin(CPoint &delta);
 
     protected:
@@ -90,6 +91,7 @@ class CCard : public CIndex
 		void    DoCheckDisc();
         void    DoClose();
         void    DoCTouch(); 
+        void	DoCursor();
 #ifdef DEBUG_5L
         void	DoDebug();	// cbo_fix
 #endif
@@ -133,7 +135,7 @@ class CCard : public CIndex
 		void	DoReDoScript();
 #endif
 		void	DoRefresh();
-		
+		void	DoResetOrigin();		
         void    DoResume();
         void    DoRewrite();
         void    DoRnode();
