@@ -18,8 +18,10 @@
 
 (test #t)
 
-(set-engine-var! 'foo "bar")
-(test (equal? (engine-var 'foo) "bar"))
+(define-engine-variable foo foo STRING)
+
+(set! foo "bar")
+(test (equal? foo "bar"))
 
 (debug-log "Completed simple tests")
 (5l-log "Completed simple tests")
@@ -56,7 +58,7 @@
 
 (define (mark-card-as-seen card-name)
   (debug-log (cat "Marking " card-name))
-  (set-engine-var! (cat "seen-" card-name) "1"))
+  (set! (engine-var (cat "seen-" card-name) 'STRING) "1"))
 
 (card start
   (mark-card-as-seen "start")

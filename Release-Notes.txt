@@ -1,5 +1,28 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.5.3 - 18 Aug 2002 - emk
+
+Changes to support the rapidly-growing test suites.
+
+Engine:
+
+  * Renamed _error variable to _errorcode to avoid conflicting with the
+    _error variable used by the 'video' command (which we'll probably
+    need to clean up sometime, but that's life).  This will affect
+    scripts which call the BROWSE command, but not much else.
+
+Runtime:
+
+  * Implemented DEFINE-ENGINE-VARIABLE, which provides transparent
+    binding between Scheme and 5L variables.
+  * Added *TEXT-X*, *TEXT-Y*, *GRAPHIC-X* and *GRAPHIC-Y* variables,
+    which are bound to _INCR_X, INCR_Y, _Graphic_X and _Graphic_Y.
+  * Added WHILE and FOR-EACH-ITEM loops.
+  * Added HAVE-5L-PRIM? and REFRESH functions.
+  * Modified JUMP function to use JUMP primitive when available, so video
+    gets killed when jumping between cards.
+  * Refresh the screen at the end of each card.
+
 3.5.2 - 18 Aug 2002 - emk
 
   * Modified the TSchemeInterpreter class to make intelligent use of

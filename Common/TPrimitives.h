@@ -358,6 +358,9 @@ inline void SetPrimitiveResult(const TPoint &inValue)
 	gVariableManager.SetString("_result", point.GetString());
 }
 
+#define FIVEL_ERROR_CODE_VAR ("_errorcode")
+#define FIVEL_ERROR_MSG_VAR  ("_errormsg")
+
 //////////
 // Set the global error value.  Interpreter modules which support
 // exceptions will probably want to check this and throw an exception.
@@ -367,8 +370,8 @@ inline void SetPrimitiveResult(const TPoint &inValue)
 inline void SetPrimitiveError(const char *inErrorName,
 							  const char *inErrorMessage)
 {
-	gVariableManager.SetString("_error", inErrorName);
-	gVariableManager.SetString("_errormsg", inErrorMessage);
+	gVariableManager.SetString(FIVEL_ERROR_CODE_VAR, inErrorName);
+	gVariableManager.SetString(FIVEL_ERROR_MSG_VAR, inErrorMessage);
 	gDebugLog.Log("PRIMITIVE ERROR: %s: %s", inErrorName, inErrorMessage);
 }
 

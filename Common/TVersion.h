@@ -17,15 +17,39 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		2
+#define VERSION_REV_BIG		3
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.2 (Development)"
+#define VERSION_STRING		"5L 3.5.3 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.34  2002/08/19 22:31:48  emk
+ 3.5.3 - 18 Aug 2002 - emk
+
+ Changes to support the rapidly-growing test suites.
+
+ Engine:
+
+   * Renamed _error variable to _errorcode to avoid conflicting with the
+     _error variable used by the 'video' command (which we'll probably
+     need to clean up sometime, but that's life).  This will affect
+     scripts which call the BROWSE command, but not much else.
+
+ Runtime:
+
+   * Implemented DEFINE-ENGINE-VARIABLE, which provides transparent
+     binding between Scheme and 5L variables.
+   * Added *TEXT-X*, *TEXT-Y*, *GRAPHIC-X* and *GRAPHIC-Y* variables,
+     which are bound to _INCR_X, INCR_Y, _Graphic_X and _Graphic_Y.
+   * Added WHILE and FOR-EACH-ITEM loops.
+   * Added HAVE-5L-PRIM? and REFRESH functions.
+   * Modified JUMP function to use JUMP primitive when available, so video
+     gets killed when jumping between cards.
+   * Refresh the screen at the end of each card.
+
  Revision 1.33  2002/08/19 17:27:28  emk
  3.5.2 - 18 Aug 2002 - emk
 

@@ -159,8 +159,8 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 	try
 	{
 		// Clear our error-handling variables.
-		gVariableManager.SetString("_error", "");
-		gVariableManager.SetString("_errormsg", "");
+		gVariableManager.SetString(FIVEL_ERROR_CODE_VAR, "");
+		gVariableManager.SetString(FIVEL_ERROR_MSG_VAR, "");
 
 		// Marshal our argument list and call the primitive.
 		TSchemeArgvList arg_list(inArgc - 1, inArgv + 1);
@@ -178,11 +178,11 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 			have_result = true;
 			result = gVariableManager.GetString("_result");
 		}
-		else if (!gVariableManager.IsNull("_error"))
+		else if (!gVariableManager.IsNull(FIVEL_ERROR_CODE_VAR))
 		{
 			have_error = true;
-			error = gVariableManager.GetString("_error");
-			errormsg = gVariableManager.GetString("_errormsg");
+			error = gVariableManager.GetString(FIVEL_ERROR_CODE_VAR);
+			errormsg = gVariableManager.GetString(FIVEL_ERROR_MSG_VAR);
 		}
 	}
 	catch (std::exception &e)
