@@ -242,9 +242,10 @@
                   channel volume))
 
   (define (wait elem-or-name &key frame)
-    (if frame
-        (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame)
-        (call-5l-prim 'wait (elem-or-name-hack elem-or-name))))
+    (when (or (not (symbol? elem-or-name)) (element-exists? elem-or-name))
+      (if frame
+          (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame)
+          (call-5l-prim 'wait (elem-or-name-hack elem-or-name)))))
   
   (define (tc arg1 &opt arg2 arg3)
     (cond
