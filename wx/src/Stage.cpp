@@ -1332,15 +1332,24 @@ void Stage::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 	InvalidateRect(wxRect(inFrom, inTo));
 }
 
-void Stage::FillBox(const wxRect &inBounds, const wxColour &inColor)
+void Stage::FillBox(const wxRect &inBounds, 
+					const GraphicsTools::Color &inColor)
 {
-    wxMemoryDC dc;
-    dc.SelectObject(mOffscreenPixmap);
-    wxBrush brush(inColor, wxSOLID);
-    dc.SetBrush(brush);
-    dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.DrawRectangle(inBounds.x, inBounds.y, inBounds.width, inBounds.height);
-	InvalidateRect(inBounds);
+	if (inColor.alpha == 0x00)
+	{
+		wxColor color = GetColor(inColor);
+		wxMemoryDC dc;
+		dc.SelectObject(mOffscreenPixmap);
+		wxBrush brush(color, wxSOLID);
+		dc.SetBrush(brush);
+		dc.SetPen(*wxTRANSPARENT_PEN);
+		dc.DrawRectangle(inBounds.x, inBounds.y, inBounds.width, inBounds.height);
+		InvalidateRect(inBounds);
+	} 
+	else
+	{
+		FillBoxAlpha(inBounds, inColor);
+	}
 }
 
 void Stage::OutlineBox(const wxRect &inBounds, const wxColour &inColor,

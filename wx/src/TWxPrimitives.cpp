@@ -142,7 +142,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxFill)
 	Color color;
 
 	inArgs >> bounds >> color;
-	wxGetApp().GetStage()->FillBox(ConvRect(bounds), ConvColor(color));
+	wxGetApp().GetStage()->FillBox(ConvRect(bounds), color);
 }
 
 DEFINE_5L_PRIMITIVE(DrawBoxOutline)

@@ -69,3 +69,53 @@ void Stage::DrawPixMap(GraphicsTools::Point inPoint,
 		src_row_start += src_row_size;
 	}
 }
+
+void Stage::FillBoxAlpha(const wxRect &inBounds, 
+						 const GraphicsTools::Color &inColor)
+{
+	using GraphicsTools::AlphaBlendChannel;
+	using GraphicsTools::Color;
+	using GraphicsTools::Distance;
+	using GraphicsTools::Point;
+
+	// Mark the rectangle as dirty.
+	InvalidateRect(inBounds);
+
+	// Clip the rectangle to fit within the screen 
+	Point begin, end;
+	begin.x = Max(0, Min(mStageSize.GetWidth(), inBounds.x));
+	begin.y = Max(0, Min(mStageSize.GetHeight(), inBounds.y));
+	end.x = Max(0, Min(mStageSize.GetWidth(), 
+					   inBounds.x + inBounds.width));
+	end.y = Max(0, Min(mStageSize.GetHeight(),
+					   inBounds.y + inBounds.height));
+
+	// Get iterator for directly accessing memory.
+	wxNativePixelData data(mOffscreenPixmap);
+	if ( !data )
+		gLog.FatalError("Error: Can't access raw pixels for bitmap");
+	wxNativePixelData::Iterator row_start(data);
+	row_start.Offset(data, inBounds.x, inBounds.y);
+	
+	// Draw it
+	for (int y = begin.y; y < end.y; y++)
+	{
+		wxNativePixelData::Iterator cursor = row_start;
+		for (int x = begin.x; x < end.x; x++)
+		{
+			cursor.Red() =
+				AlphaBlendChannel(cursor.Red(),
+								  inColor.red, inColor.alpha);
+			cursor.Green() = 
+				AlphaBlendChannel(cursor.Green(),
+								  inColor.green, inColor.alpha);
+			cursor.Blue() =
+				AlphaBlendChannel(cursor.Blue(),
+								  inColor.blue, inColor.alpha);
+
+			cursor++;
+		}
+		
+		row_start.OffsetY(data, 1);
+	}
+}

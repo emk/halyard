@@ -616,7 +616,16 @@ public:
 	//////////
 	// Fill in the specified box with the specified color.
 	//
-	void FillBox(const wxRect &inBounds, const wxColour &inColor);
+	void FillBox(const wxRect &inBounds, 
+				 const GraphicsTools::Color &inColor);
+
+	//////////
+	// An optimized version of fill box for the case when the color
+	// has a non-opaque alpha channel. Needs to be a separate function
+	// so it can be in a separate, optimized file.
+	//
+	void FillBoxAlpha(const wxRect &inBounds,
+					  const GraphicsTools::Color &inColor);
 
 	//////////
 	// Fill in the specified box with the specified color.
