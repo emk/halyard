@@ -1,11 +1,12 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
+#include "TCommon.h"
+
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
-#include "TCommon.h"
 #include "Model.h"
 #include "ModelChange.h"
 
@@ -316,21 +317,24 @@ void Map::Fill(xml_node inNode)
 
 Object::~Object()
 {
-	std::for_each(mViews.begin(), mViews.end(),
-				  std::mem_fun(&View::ClearObject));
+	std::vector<View*>::iterator i = mViews.begin();
+	for (; i != mViews.end(); ++i)
+		(*i)->ClearObject();
 }
 
 void Object::NotifyChanged()
 {
-	std::for_each(mViews.begin(), mViews.end(),
-				  std::mem_fun(&View::CallObjectChanged));
+	std::vector<View*>::iterator i = mViews.begin();
+	for (; i != mViews.end(); ++i)
+		(*i)->CallObjectChanged();
 }
 
 void Object::NotifyDeleted()
 {
 	HashDatum::NotifyDeleted();
-	std::for_each(mViews.begin(), mViews.end(),
-				  std::mem_fun(&View::CallObjectDeleted));	
+	std::vector<View*>::iterator i = mViews.begin();
+	for (; i != mViews.end(); ++i)
+		(*i)->CallObjectDeleted();	
 }
 
 void Object::NotifyUndeleted()
@@ -422,14 +426,16 @@ void List::Fill(xml_node inNode)
 
 void List::NotifyDeleted()
 {
-	std::for_each(mVector.begin(), mVector.end(),
-				  std::mem_fun(&Datum::NotifyDeleted));
+	DatumVector::iterator i = mVector.begin();
+	for (; i != mVector.end(); ++i)
+		(*i)->NotifyDeleted();
 }
 
 void List::NotifyUndeleted()
 {
-	std::for_each(mVector.begin(), mVector.end(),
-				  std::mem_fun(&Datum::NotifyUndeleted));
+	DatumVector::iterator i = mVector.begin();
+	for (; i != mVector.end(); ++i)
+		(*i)->NotifyUndeleted();
 }
 
 Datum *List::DoGet(ConstKeyType &inKey)

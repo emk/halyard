@@ -115,7 +115,7 @@ namespace model {
 	protected:
 		friend class Change;
 		friend class HashDatum;
-		friend class ListDatum;
+		friend class List;
 
 		//////////
 		// Called when this datum is deleted, either by regular container
