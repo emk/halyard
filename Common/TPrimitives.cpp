@@ -157,8 +157,8 @@ void TPrimitiveManager::RegisterPrimitive(const std::string &inName,
     ASSERT(inFunc != NULL);
 
     // Erase any existing primitive with this name.
-    std::map<std::string,void*>::iterator existing =
-	mPrimitiveMap.find(inName);
+    std::map<std::string,PrimitiveFunc>::iterator existing =
+		mPrimitiveMap.find(inName);
     if (existing != mPrimitiveMap.end())
     {
 		gDebugLog.Log("Replacing primitive <%s>", inName.c_str());
@@ -166,14 +166,15 @@ void TPrimitiveManager::RegisterPrimitive(const std::string &inName,
     }
     
     // Insert the new entry.
-    mPrimitiveMap.insert(std::pair<std::string,void*>(inName, inFunc));
+    mPrimitiveMap.insert(std::pair<std::string,PrimitiveFunc>(inName, inFunc));
 }
 
 bool TPrimitiveManager::DoesPrimitiveExist(const std::string &inName)
 {
     ASSERT(inName != "");
 
-    std::map<std::string,void*>::iterator found = mPrimitiveMap.find(inName);
+    std::map<std::string,PrimitiveFunc>::iterator found =
+		mPrimitiveMap.find(inName);
     if (found != mPrimitiveMap.end())
 		return true;
     else
@@ -186,11 +187,12 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
     ASSERT(inName != "");
     
     // Find the primitive.
-    std::map<std::string,void*>::iterator found = mPrimitiveMap.find(inName);
+    std::map<std::string,PrimitiveFunc>::iterator found =
+		mPrimitiveMap.find(inName);
     if (found == mPrimitiveMap.end())
 		throw TException(__FILE__, __LINE__,
 						 "Tried to call non-existant primitive");
-    PrimitiveFunc primitive = static_cast<PrimitiveFunc>(found->second);
+    PrimitiveFunc primitive = found->second;
 
 	// Ask the TArgumentList to log all the parameters it returns.
 	inArgs.BeginLog(inName);

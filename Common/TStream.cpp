@@ -479,10 +479,7 @@ std::string TStream::GetStringArg()
 	
     skipwhite();
     if (eof()) 
-    {
-        dest = "";
-        return *this;
-    }
+		return "";
     
     ch = curchar();
     startPos = pos;

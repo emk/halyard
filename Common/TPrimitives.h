@@ -178,14 +178,6 @@ public:
 //
 class TPrimitiveManager
 {
-	//////////
-	// The big table of all our primitive functions.  We store
-	// the function pointers as void* to avoid instantiating 
-	// extra template code.  With a good C++ compiler and STL
-	// library, this wouldn't be necessary.
-	//
-	std::map<std::string,void*> mPrimitiveMap;
-
 public:
 	//////////
 	// A PrimitiveFunc implements a single primitive.
@@ -193,7 +185,14 @@ public:
 	// [in] inArgs - The arguments to the primitive.
 	//
 	typedef void (*PrimitiveFunc)(TArgumentList &inArgs);
-	
+
+private:
+	//////////
+	// The big table of all our primitive functions.
+	//
+	std::map<std::string,PrimitiveFunc> mPrimitiveMap;
+
+public:
 	//////////
 	// Register a primitive with the primitive manager.
 	//

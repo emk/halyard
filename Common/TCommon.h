@@ -147,7 +147,7 @@ extern void FiveLCheckAssertion(int inTest, const char *inDescription,
 // your constructor frees resources).
 #define DISABLE_COPY_AND_ASSIGN_TMPL(BARETYPE,TYPE) \
 	BARETYPE(const TYPE &); \
-	operator=(const TYPE &)
+	TYPE operator=(const TYPE &) // ANSI C++ & GCC 3.0 require return type.
 
 #define DISABLE_COPY_AND_ASSIGN(TYPE) \
 	DISABLE_COPY_AND_ASSIGN_TMPL(TYPE,TYPE)
@@ -187,6 +187,12 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.9  2002/07/24 21:37:18  emk
+   * Linux build fixes so I can run memprof and Electric Fence.
+   * Fixed a bug in TStream::GetStringArg when called on an empty stream.
+     This is probably why we were seeing weird results when CHeader called
+     TStream::more() too many times.
+
  Revision 1.8  2002/06/20 16:32:53  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

@@ -58,9 +58,24 @@ libfivel_a_SOURCES = \
 	GraphicsTools.cpp \
 	GraphicsTools.h \
 	CryptStream.cpp \
-	CryptStream.h
+	CryptStream.h \
+	TInterpreter.cpp \
+	TInterpreter.h \
+	TPrimitives.cpp \
+	TPrimitives.h \
+	TCommonPrimitives.cpp \
+	TCommonPrimitives.h \
+	T5LPrimitives.cpp \
+	T5LPrimitives.h \
+	TTemplateUtils.cpp \
+	TTemplateUtils.h \
+	TStartup.cpp \
+	TStartup.h \
+	TDeveloperPrefs.cpp \
+	TDeveloperPrefs.h
 
 TestAll_SOURCES = \
+	TTemplateUtilsTests.cpp \
 	TStringTests.cpp \
 	TStreamTests.cpp \
 	TBTreeTests.cpp \

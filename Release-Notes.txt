@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Linux build fixes so I can run memprof and Electric Fence.
+  * Fixed a bug in TStream::GetStringArg when called on an empty stream.
+    This is probably why we were seeing weird results when CHeader called
+    TStream::more() too many times.
+
 3.3.19 - 24 July 2002 - emk
 
   * Cleaned up Win32 5L.log (bug #1057).

@@ -19,4 +19,5 @@ fontspeed_SOURCES = \
 
 fontspeed_LDADD = @FREETYPE_LDADD@ -lgd ../libfivel.a \
 	../libs/crypto/libfivel_crypto.a
+#	-lefence
 
