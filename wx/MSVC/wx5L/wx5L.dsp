@@ -43,17 +43,19 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /Ob1 /I "../../../Common" /I "../../../Common/freetype2/include" /I "../../../Common/libs/boost" /I "../../../Common/libs/wxWindows/include" /I "../../../Common/libs/wxWindows/lib/msw" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
-# ADD RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /i "..\..\..\Common\libs\wxWindows\include" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib wsock32.lib qtmlclient.lib ../../../Common/libs/wxWindows/lib\zlib.lib ../../../Common/libs/wxWindows/lib\regex.lib ../../../Common\libs/wxWindows/lib\png.lib ../../../Common/libs/wxWindows/lib\jpeg.lib ../../../Common/libs/wxWindows/lib\tiff.lib ../../../Common/libs/wxWindows/lib\wxmsw.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none /incremental:yes /map
 
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
@@ -69,7 +71,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "../../../Common" /I "../../../Common/freetype2/include" /I "../../../Common/libs/boost" /I "../../../Common/libs/wxWindows/include" /I "../../../Common/libs/wxWindows/lib/mswd" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "../../../Common" /I "../../../Common/freetype2/include" /I "../../../Common/libs/boost" /I "../../../Common/libs/wxWindows/include" /I "../../../Common/libs/wxWindows/lib/mswd" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /FD /GZ /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -105,6 +108,10 @@ SOURCE=..\..\src\Listener.cpp
 # Begin Source File
 
 SOURCE=..\..\src\Log5L.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\MovieElement.cpp
 # End Source File
 # Begin Source File
 
@@ -157,6 +164,10 @@ SOURCE=..\..\src\Listener.h
 # Begin Source File
 
 SOURCE=..\..\src\Log5L.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\MovieElement.h
 # End Source File
 # Begin Source File
 

@@ -2,6 +2,7 @@
 
 #include <wx/wx.h>
 
+#include "TCommon.h"
 #include "TInterpreter.h"
 #include "TLogger.h"
 #include "TVariable.h"
@@ -32,6 +33,7 @@ public:
 	
 	void NotifyEnterCard();
 
+	void RegisterCard(const wxString &inCardName);
 	void TryJump(const wxString &inCardName);
 
 	void UpdateUiLocationBox(wxUpdateUIEvent &inEvent);
@@ -64,7 +66,16 @@ LocationBox::LocationBox(wxToolBar *inParent)
 void LocationBox::NotifyEnterCard()
 {
 	ASSERT(TInterpreter::HaveInstance());
-	SetValue(TInterpreter::GetInstance()->CurCardName().c_str());
+	std::string card = TInterpreter::GetInstance()->CurCardName();
+	SetValue(card.c_str());
+	RegisterCard(card.c_str());
+}
+
+void LocationBox::RegisterCard(const wxString &inCardName)
+{
+	// Update our drop-down list of cards.
+	if (FindString(inCardName) == -1)
+		Append(inCardName);	
 }
 
 void LocationBox::TryJump(const wxString &inCardName)
@@ -74,11 +85,8 @@ void LocationBox::TryJump(const wxString &inCardName)
 		TInterpreter *interp = TInterpreter::GetInstance();
 		if (interp->IsValidCard(inCardName))
 		{
-			// Update our drop-down list of cards.
-			if (FindString(inCardName) == -1)
-				Append(inCardName);
-
-			// Jump to the specified card.
+			// Add the specified card to our list and jump to it.
+			RegisterCard(inCardName);
 			interp->JumpToCardByName(inCardName);
 		}
 		else
@@ -248,12 +256,12 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     SetClientSize(inSize);
 }
 
-void StageFrame::OnExit()
+void StageFrame::OnExit(wxCommandEvent &inEvent)
 {
     Close(TRUE);
 }
 
-void StageFrame::OnReloadScript()
+void StageFrame::OnReloadScript(wxCommandEvent &inEvent)
 {
     if (TInterpreterManager::HaveInstance())
     {
@@ -281,7 +289,7 @@ void StageFrame::OnReloadScript()
     SetStatusText("Script reloaded.");
 }
 
-void StageFrame::OnAbout()
+void StageFrame::OnAbout(wxCommandEvent &inEvent)
 {
     wxMessageDialog about(this,
                           "wx5L Prototype\n"
@@ -290,12 +298,12 @@ void StageFrame::OnAbout()
     about.ShowModal();
 }
 
-void StageFrame::OnShowLog()
+void StageFrame::OnShowLog(wxCommandEvent &inEvent)
 {
     mLogWindow->Show(TRUE);
 }
 
-void StageFrame::OnShowListener()
+void StageFrame::OnShowListener(wxCommandEvent &inEvent)
 {
 	if (!mToolWindows[TOOL_LISTENER])
 		mToolWindows[TOOL_LISTENER] = new Listener(this);
@@ -304,7 +312,7 @@ void StageFrame::OnShowListener()
 	mToolWindows[TOOL_LISTENER]->Raise();
 }
 
-void StageFrame::OnShowTimecoder()
+void StageFrame::OnShowTimecoder(wxCommandEvent &inEvent)
 {
 	if (!mToolWindows[TOOL_TIMECODER])
 		mToolWindows[TOOL_TIMECODER] = new Timecoder(this);
@@ -318,7 +326,7 @@ void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent)
     inEvent.Check(IsFullScreen());
 }
 
-void StageFrame::OnFullScreen()
+void StageFrame::OnFullScreen(wxCommandEvent &inEvent)
 {
     if (IsFullScreen())
         ShowFullScreen(FALSE);
@@ -335,7 +343,7 @@ void StageFrame::UpdateUiDisplayXy(wxUpdateUIEvent &inEvent)
     inEvent.Check(mStage->IsDisplayingXy());
 }
 
-void StageFrame::OnDisplayXy()
+void StageFrame::OnDisplayXy(wxCommandEvent &inEvent)
 {
     mStage->ToggleDisplayXy();
 }
@@ -345,7 +353,7 @@ void StageFrame::UpdateUiDisplayGrid(wxUpdateUIEvent &inEvent)
     inEvent.Check(mStage->IsDisplayingGrid());
 }
 
-void StageFrame::OnDisplayGrid()
+void StageFrame::OnDisplayGrid(wxCommandEvent &inEvent)
 {
     mStage->ToggleDisplayGrid();
 }
@@ -355,7 +363,7 @@ void StageFrame::UpdateUiDisplayBorders(wxUpdateUIEvent &inEvent)
     inEvent.Check(mStage->IsDisplayingBorders());
 }
 
-void StageFrame::OnDisplayBorders()
+void StageFrame::OnDisplayBorders(wxCommandEvent &inEvent)
 {
     mStage->ToggleDisplayBorders();
 }
@@ -365,7 +373,7 @@ void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
     inEvent.Enable(TInterpreter::HaveInstance());
 }
 
-void StageFrame::OnJumpCard()
+void StageFrame::OnJumpCard(wxCommandEvent &inEvent)
 {
     if (TInterpreter::HaveInstance())
     {
@@ -415,7 +423,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize),
       mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), -1),
-	  mTextCtrl(NULL), mLastElement(NULL), mWaitElement(NULL),
+	  mTextCtrl(NULL), mCurrentElement(NULL), mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
 
@@ -464,9 +472,30 @@ void Stage::NotifyElementsChanged()
 	// TODO - Is IsShown a good way to tell whether a window is still good?
 	if (IsShown())
 	{
-		// Update our element borders (if necessary).
+		// Update our element borders (if necessary) and fix our cursor.
 		if (mIsDisplayingBorders)
 			InvalidateStage();
+		UpdateCurrentElementAndCursor();
+	}
+}
+
+void Stage::UpdateCurrentElementAndCursor()
+{
+	// Find which element we're in.
+	wxPoint pos = ScreenToClient(::wxGetMousePosition());
+	Element *obj = FindLightWeightElement(pos);
+	if (obj == NULL || obj != mCurrentElement)
+	{
+		if (mIsDisplayingXy)
+			SetCursor(*wxCROSS_CURSOR);
+		else
+		{
+			if (obj)
+				SetCursor(wxCursor(wxCURSOR_HAND));
+			else
+				SetCursor(wxNullCursor);
+		}
+		mCurrentElement = obj;
 	}
 }
 
@@ -509,23 +538,9 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 void Stage::OnMouseMove(wxMouseEvent &inEvent)
 {
 	// Do any mouse-moved processing for our Elements.
-	Element *obj = FindLightWeightElement(inEvent.GetPosition());
-	if (obj == NULL || obj != mLastElement)
-	{
-		if (!mIsDisplayingXy)
-		{
-			if (obj)
-				SetCursor(wxCursor(wxCURSOR_HAND));
-			else
-				SetCursor(wxNullCursor);
-		}
-		mLastElement = obj;
-	}
-
+	UpdateCurrentElementAndCursor();
     if (mIsDisplayingXy)
     {
-		SetCursor(*wxCROSS_CURSOR);
-
         wxClientDC dc(this);
 
         // Get our current screen location.
@@ -883,8 +898,7 @@ Element *Stage::FindLightWeightElement(const wxPoint &inPoint)
 	Element *result = NULL;
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); i++)
-		if ((*i)->IsLightWeight() &&
-			(*i)->IsPointInElement(inPoint))
+		if ((*i)->IsLightWeight() && (*i)->IsPointInElement(inPoint))
 			result = *i;
 	return result;
 }
@@ -892,8 +906,8 @@ Element *Stage::FindLightWeightElement(const wxPoint &inPoint)
 void Stage::DestroyElement(Element *inElement)
 {
 	// Clean up any dangling references to this object.
-	if (inElement == mLastElement)
-		mLastElement = NULL;
+	if (inElement == mCurrentElement)
+		mCurrentElement = NULL;
 	if (inElement == mWaitElement)
 		EndWait();
 
@@ -909,9 +923,10 @@ bool Stage::DeleteElementByName(const wxString &inName)
 	ElementCollection::iterator i = FindElementByName(mElements, inName);
 	if (i != mElements.end())
 	{
-
-		DestroyElement(*i);
+		// Completely remove from the collection first, then destroy.
+		Element *elem = *i;
 		mElements.erase(i);
+		DestroyElement(elem);
 		found = true;
 	}
 	NotifyElementsChanged();
@@ -920,7 +935,6 @@ bool Stage::DeleteElementByName(const wxString &inName)
 
 void Stage::DeleteElements()
 {
-	mLastElement = NULL;
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); i++)
 		DestroyElement(*i);

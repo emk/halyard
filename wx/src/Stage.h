@@ -87,23 +87,23 @@ public:
 	//
 	void DetachToolWindow(ToolWindowID inTool) { mToolWindows[inTool] = NULL; }
 
-    void OnExit();
-    void OnReloadScript();
-    void OnAbout();
+    void OnExit(wxCommandEvent &inEvent);
+    void OnReloadScript(wxCommandEvent &inEvent);
+    void OnAbout(wxCommandEvent &inEvent);
 
-    void OnShowLog();
-    void OnShowListener();
-    void OnShowTimecoder();
+    void OnShowLog(wxCommandEvent &inEvent);
+    void OnShowListener(wxCommandEvent &inEvent);
+    void OnShowTimecoder(wxCommandEvent &inEvent);
     void UpdateUiFullScreen(wxUpdateUIEvent &inEvent);
-    void OnFullScreen();
+    void OnFullScreen(wxCommandEvent &inEvent);
     void UpdateUiDisplayXy(wxUpdateUIEvent &inEvent);
-    void OnDisplayXy();
+    void OnDisplayXy(wxCommandEvent &inEvent);
     void UpdateUiDisplayGrid(wxUpdateUIEvent &inEvent);
-    void OnDisplayGrid();
+    void OnDisplayGrid(wxCommandEvent &inEvent);
     void UpdateUiDisplayBorders(wxUpdateUIEvent &inEvent);
-    void OnDisplayBorders();
+    void OnDisplayBorders(wxCommandEvent &inEvent);
     void UpdateUiJumpCard(wxUpdateUIEvent &inEvent);
-    void OnJumpCard();
+    void OnJumpCard(wxCommandEvent &inEvent);
 
     //////////
     // We provide an OnClose event handler so we can notify the application
@@ -155,7 +155,7 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	// Invariant: This variable is always NULL, or points to a valid 
 	// lightweight element.  Be careful when deleting element!
 	//
-	Element* mLastElement;
+	Element* mCurrentElement;
 
 	//////////
 	// The movie we're waiting on, or NULL if we're not waiting on anything.
@@ -228,6 +228,12 @@ class Stage : public wxWindow, public GraphicsTools::Image
     // Let the stage know that the list of active elements has changed.
     //
     void NotifyElementsChanged();
+	
+	//////////
+	// Figure out which element we're inside, and figure out what cursor
+	// we should be displaying now.
+	//
+	void UpdateCurrentElementAndCursor();
 
 public:
     //////////
