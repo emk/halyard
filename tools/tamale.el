@@ -29,7 +29,15 @@
 ;;;             "Mode for editing Tamale source code" t)
 ;;;
 ;;; Next, set up your auto-mode-alist to map the right file extensions
-;;; to tamale-mode.  You're set!
+;;; to tamale-mode:
+;;;
+;;;     ;; associate "*.ss" files with the Tamale-mode bindings.
+;;;     (setq auto-mode-alist
+;;;	      (append '(("\\.ss\\'" . tamale-mode))
+;;;		      auto-mode-alist))
+;;;
+;;;
+;;; You're set!
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
