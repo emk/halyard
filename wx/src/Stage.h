@@ -10,7 +10,17 @@
 class Stage;
 class StageObject;
 class LocationBox;
-class Listener;
+class ToolWindow;
+class TQTMovie;
+
+enum ToolWindowID {
+	TOOL_LISTENER,
+	TOOL_TIMECODER,
+
+	// This needs to be last in the list.  It's the total number of tool
+	// windows tracked by the StageFrame.
+	TOOL_COUNT
+};
 
 
 //////////
@@ -27,7 +37,7 @@ class StageFrame : public wxFrame
     //////////
     // An interactive listener window.
     //
-    Listener *mListenerWindow;
+    ToolWindow *mToolWindows[TOOL_COUNT];
 
     //////////
     // Our most important child--the actual "stage" itself on which our
@@ -68,10 +78,11 @@ public:
     LocationBox *GetLocationBox() { return mLocationBox; }
 
 	//////////
-	// Notify the StageFrame that the listener window is being
-	// destroyed.  This should only be called by the Listener.
+	// Notify the StageFrame that the specified tool window is being
+	// destroyed.  This should only be called by the tool window
+	// itself.
 	//
-	void DetachListenerWindow() { mListenerWindow = NULL; }
+	void DetachToolWindow(ToolWindowID inTool) { mToolWindows[inTool] = NULL; }
 
     void OnExit();
     void OnReloadScript();
@@ -79,6 +90,7 @@ public:
 
     void OnShowLog();
     void OnShowListener();
+    void OnShowTimecoder();
     void UpdateUiFullScreen(wxUpdateUIEvent &inEvent);
     void OnFullScreen();
     void UpdateUiDisplayXy(wxUpdateUIEvent &inEvent);
@@ -208,6 +220,11 @@ public:
     // Notify the stage that the script is being reloaded.
     //
     void NotifyScriptReload();
+
+    //////////
+    // Do our idle-time processing.
+    //
+    void OnIdle(wxIdleEvent &inEvent);
 
     //////////
     // Trap mouse movement events so we can do various useful things.

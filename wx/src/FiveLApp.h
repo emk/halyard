@@ -7,6 +7,11 @@ class StageFrame;
 class Stage;
 
 //////////
+// We use this trace mask to debug flicker and other stage drawing problems.
+//
+#define TRACE_STAGE_DRAWING "STAGE DRAWING"
+
+//////////
 // Enumerations for menu items, toolbar buttons, and other command-
 // generating widgets.
 //
@@ -18,6 +23,7 @@ enum {
 
     FIVEL_SHOW_LOG = 300,
 	FIVEL_SHOW_LISTENER,
+	FIVEL_SHOW_TIMECODER,
     FIVEL_FULL_SCREEN,
     FIVEL_DISPLAY_XY,
 	FIVEL_DISPLAY_GRID,
@@ -54,6 +60,11 @@ public:
 	// We perform normal application initialization in OnInit. 
 	//
     virtual bool OnInit();
+
+	//////////
+	// We perform normal application cleanup in OnExit.
+	//
+    virtual int OnExit();
 
 	//////////
     // We attempt to replace the standard main loop with one that

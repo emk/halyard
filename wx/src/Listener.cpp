@@ -1,7 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include <wx/wx.h>
-#include <wx/sashwin.h>
 
 #include "TCommon.h"
 #include "TInterpreter.h"
@@ -9,15 +8,14 @@
 #include "Stage.h"
 #include "Listener.h"
 
-BEGIN_EVENT_TABLE(Listener, wxFrame)
+BEGIN_EVENT_TABLE(Listener, ToolWindow)
     EVT_ACTIVATE(Listener::OnActivate)
     EVT_UPDATE_UI(FIVEL_LISTENER_TEXT_ENTRY, Listener::UpdateUiInput)
     EVT_TEXT_ENTER(FIVEL_LISTENER_TEXT_ENTRY, Listener::OnTextEnter)
-    EVT_CLOSE(Listener::OnClose)
 END_EVENT_TABLE()
 
 Listener::Listener(StageFrame *inStageFrame)
-    : wxFrame(inStageFrame, -1, "Listener"), mStageFrame(inStageFrame)
+    : ToolWindow(inStageFrame, TOOL_LISTENER, "Listener")
 {
     mHistory = new wxTextCtrl(this, -1, "", wxDefaultPosition,
 							  wxDefaultSize,
@@ -98,24 +96,5 @@ void Listener::OnTextEnter(wxCommandEvent &inEvent)
 		
 		// Clear our input field.
 		mInput->SetValue("");
-    }
-}
-
-void Listener::OnClose(wxCloseEvent &inEvent)
-{
-    if (inEvent.CanVeto())
-    {
-		// Since we're allowed to ignore this close event, simply cancel
-		// the close event and hide the window.  This preserves the
-		// window's contents longer than they'd otherwise last.
-		inEvent.Veto();
-		Hide();
-    }
-    else
-    {
-		// Let the stage know we're closing, and schedule the window for
-		// deletion.
-		mStageFrame->DetachListenerWindow();
-		Destroy();
     }
 }

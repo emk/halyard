@@ -3,7 +3,7 @@
 #ifndef Listener_H
 #define Listener_H
 
-class StageFrame;
+#include "ToolWindow.h"
 
 //////////
 // A Listener allows you type in commands, and see their results in a
@@ -11,10 +11,8 @@ class StageFrame;
 // interactive command line for a running application.  In other systems,
 // it's also known as an "interactor" or "message box".
 //
-class Listener : public wxFrame
+class Listener : public ToolWindow
 {
-	StageFrame *mStageFrame;
-
 	wxTextCtrl *mHistory;
 	wxTextCtrl *mInput;
 
@@ -27,7 +25,6 @@ public:
 	void OnActivate(wxActivateEvent &inEvent);
 	void UpdateUiInput(wxUpdateUIEvent &inEvent);
 	void OnTextEnter(wxCommandEvent &inEvent);
-	void OnClose(wxCloseEvent &inEvent);
 	
     DECLARE_EVENT_TABLE();
 };

@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib ../../../Common/libs/wxWindows/lib\zlibd.lib ../../../Common/libs/wxWindows/lib\regexd.lib ../../../Common\libs/wxWindows/lib\pngd.lib ../../../Common/libs/wxWindows/lib\jpegd.lib ../../../Common/libs/wxWindows/lib\tiffd.lib ../../../Common/libs/wxWindows/lib\wxmswd.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib qtmlclient.lib ../../../Common/libs/wxWindows/lib\zlibd.lib ../../../Common/libs/wxWindows/lib\regexd.lib ../../../Common\libs/wxWindows/lib\pngd.lib ../../../Common/libs/wxWindows/lib\jpegd.lib ../../../Common/libs/wxWindows/lib\tiffd.lib ../../../Common/libs/wxWindows/lib\wxmswd.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
 !ENDIF 
 
@@ -96,11 +96,39 @@ SOURCE=..\..\src\FiveLApp.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\Listener.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\Log5L.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\MovieWindow.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Stage.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\Timecoder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ToolWindow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\TQTMovie.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\TWxPrimitives.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\Widget.cpp
 # End Source File
 # Begin Source File
 
@@ -116,11 +144,39 @@ SOURCE=..\..\src\FiveLApp.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\Listener.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\Log5L.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\MovieWindow.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Stage.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\Timecoder.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ToolWindow.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\TQTMovie.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\TWxPrimitives.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\Widget.h
 # End Source File
 # Begin Source File
 

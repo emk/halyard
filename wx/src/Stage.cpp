@@ -13,6 +13,7 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Listener.h"
+#include "Timecoder.h"
 
 
 //=========================================================================
@@ -118,6 +119,7 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_ABOUT, StageFrame::OnAbout)
     EVT_MENU(FIVEL_SHOW_LOG, StageFrame::OnShowLog)
     EVT_MENU(FIVEL_SHOW_LISTENER, StageFrame::OnShowListener)
+    EVT_MENU(FIVEL_SHOW_TIMECODER, StageFrame::OnShowTimecoder)
     EVT_UPDATE_UI(FIVEL_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
     EVT_MENU(FIVEL_FULL_SCREEN, StageFrame::OnFullScreen)
     EVT_UPDATE_UI(FIVEL_DISPLAY_XY, StageFrame::UpdateUiDisplayXy)
@@ -139,8 +141,9 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     // Set up useful logging.
     mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
 
-	// We create our listener window on demand.
-	mListenerWindow = NULL;
+	// We create our tool windows on demand.
+	for (int i = 0; i < TOOL_COUNT; i++)
+		mToolWindows[i] = NULL;
 
     // Make our background black.  This should theoretically be handled
     // by 'background->SetBackgroundColour' below, but Windows takes a
@@ -194,6 +197,8 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     mWindowMenu = new wxMenu();
     mWindowMenu->Append(FIVEL_SHOW_LISTENER, "Show &Listener\tCtrl+L",
                         "Show interactive script listener.");
+    mWindowMenu->Append(FIVEL_SHOW_TIMECODER, "Show &Timecoder\tCtrl+T",
+                        "Show the movie timecoding utility.");
     mWindowMenu->Append(FIVEL_SHOW_LOG, "Show &Debug Log",
                         "Show application debug log window.");
 
@@ -286,11 +291,20 @@ void StageFrame::OnShowLog()
 
 void StageFrame::OnShowListener()
 {
-	if (!mListenerWindow)
-		mListenerWindow = new Listener(this);
-	if (!mListenerWindow->IsShown())
-		mListenerWindow->Show();
-	mListenerWindow->Raise();
+	if (!mToolWindows[TOOL_LISTENER])
+		mToolWindows[TOOL_LISTENER] = new Listener(this);
+	if (!mToolWindows[TOOL_LISTENER]->IsShown())
+		mToolWindows[TOOL_LISTENER]->Show();
+	mToolWindows[TOOL_LISTENER]->Raise();
+}
+
+void StageFrame::OnShowTimecoder()
+{
+	if (!mToolWindows[TOOL_TIMECODER])
+		mToolWindows[TOOL_TIMECODER] = new Timecoder(this);
+	if (!mToolWindows[TOOL_TIMECODER]->IsShown())
+		mToolWindows[TOOL_TIMECODER]->Show();
+	mToolWindows[TOOL_TIMECODER]->Raise();	
 }
 
 void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent)
@@ -384,6 +398,7 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
 //=========================================================================
 
 BEGIN_EVENT_TABLE(Stage, wxWindow)
+	EVT_IDLE(Stage::OnIdle)
     EVT_MOTION(Stage::OnMouseMove)
     EVT_ERASE_BACKGROUND(Stage::OnEraseBackground)
     EVT_PAINT(Stage::OnPaint)
@@ -407,11 +422,14 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
         new wxTextCtrl(this, FIVEL_TEXT_ENTRY, "", wxDefaultPosition,
                        wxDefaultSize, wxNO_BORDER | wxTE_PROCESS_ENTER);
     mTextCtrl->Hide();
+
+	wxLogTrace(TRACE_STAGE_DRAWING, "Stage created.");
 }
 
 Stage::~Stage()
 {
 	DeleteStageObjects();
+	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
 
 void Stage::NotifyEnterCard()
@@ -434,6 +452,8 @@ void Stage::NotifyScriptReload()
 
 void Stage::NotifyObjectsChanged()
 {
+	wxLogTrace(TRACE_STAGE_DRAWING, "Objects on stage have changed.");
+
 	// Don't do anything unless there's a good chance this object still
 	// exists in some sort of valid state.
 	// TODO - Is IsShown a good way to tell whether a window is still good?
@@ -443,6 +463,11 @@ void Stage::NotifyObjectsChanged()
 		if (mIsDisplayingBorders)
 			InvalidateStage();
 	}
+}
+
+void Stage::OnIdle(wxIdleEvent &inEvent)
+{
+	// Do nothing, for now.
 }
 
 void Stage::OnMouseMove(wxMouseEvent &inEvent)
@@ -491,6 +516,8 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
 
 void Stage::OnEraseBackground(wxEraseEvent &inEvent)
 {
+	wxLogTrace(TRACE_STAGE_DRAWING, "Ignoring request to erase stage.");
+
     // Ignore this event to prevent flicker--we don't need to erase,
     // because we redraw everything from the offscreen buffer.  We may need
     // to override more of these events elsewhere.
@@ -498,6 +525,8 @@ void Stage::OnEraseBackground(wxEraseEvent &inEvent)
 
 void Stage::OnPaint(wxPaintEvent &inEvent)
 {
+	wxLogTrace(TRACE_STAGE_DRAWING, "Painting stage.");
+
     // Set up our drawing contexts.
     wxPaintDC screen_dc(this);
     wxMemoryDC offscreen_dc;
@@ -591,6 +620,9 @@ void Stage::InvalidateStage()
 
 void Stage::InvalidateRect(const wxRect &inRect)
 {
+	wxLogTrace(TRACE_STAGE_DRAWING, "Invalidating: %d %d %d %d",
+			   inRect.x, inRect.y,
+			   inRect.x + inRect.width, inRect.y + inRect.height);
     Refresh(FALSE, &inRect);
 }
 

@@ -15,6 +15,7 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Zone.h"
+#include "MovieWindow.h"
 #include "Widget.h"
 
 USING_NAMESPACE_FIVEL
@@ -33,6 +34,7 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
+	REGISTER_5L_PRIMITIVE(Movie);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
     REGISTER_5L_PRIMITIVE(Screen);
@@ -50,6 +52,11 @@ static wxRect ConvRect(const TRect &inRect)
 {
 	return wxRect(wxPoint(inRect.Left(), inRect.Top()),
 				  wxPoint(inRect.Right(), inRect.Bottom()));
+}
+
+static wxPoint ConvPoint(const TPoint &inPoint)
+{
+	return wxPoint(inPoint.X(), inPoint.Y());
 }
 
 static wxPoint GetPos(const TRect &inRect)
@@ -185,6 +192,21 @@ DEFINE_5L_PRIMITIVE(NotifyEnterCard)
 DEFINE_5L_PRIMITIVE(NotifyExitCard)
 {
 	wxGetApp().GetStage()->NotifyExitCard();
+}
+
+DEFINE_5L_PRIMITIVE(Movie)
+{
+	std::string name, path;
+	TPoint pos;
+
+	inArgs >> name >> pos >> path;
+
+	MovieWindow *movie =
+		new MovieWindow(wxGetApp().GetStage(), -1, ConvPoint(pos),
+						wxSize(320, 256));
+	movie->Show();
+	movie->SetMovie(path.c_str());
+	new Widget(wxGetApp().GetStage(), name.c_str(), movie);
 }
 
 /*---------------------------------------------------------------------
