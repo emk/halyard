@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "..\..\..\Common\freetype2\include" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GR /GX /O2 /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\crypto" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\..\..\Common\freetype2\include" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common\freetype2\include" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\..\Common\libs\crypto" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -83,6 +83,10 @@ LIB32=link.exe -lib
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=..\..\..\Common\CryptStream.cpp
+# End Source File
 # Begin Source File
 
 SOURCE=..\..\..\Common\FileSystem.cpp
@@ -105,6 +109,10 @@ SOURCE=..\..\..\Common\TBTree.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TDateUtil.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TEncoding.cpp
 # End Source File
 # Begin Source File
@@ -117,11 +125,19 @@ SOURCE=..\..\..\Common\THeader.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TIndex.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TLogger.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\Common\TObject.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TParser.cpp
 # End Source File
 # Begin Source File
 
@@ -133,11 +149,23 @@ SOURCE=..\..\..\Common\TRect.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TStream.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TString.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TStyleSheet.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TURL.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TVariable.cpp
 # End Source File
 # Begin Source File
 
@@ -147,6 +175,10 @@ SOURCE=..\..\..\Common\Typography.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\..\..\Common\CryptStream.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\..\..\Common\FileSystem.h
@@ -173,6 +205,10 @@ SOURCE=..\..\..\Common\TCommon.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TDateUtil.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TEncoding.h
 # End Source File
 # Begin Source File
@@ -185,11 +221,19 @@ SOURCE=..\..\..\Common\THeader.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TIndex.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TLogger.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\Common\TObject.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TParser.h
 # End Source File
 # Begin Source File
 
@@ -205,11 +249,31 @@ SOURCE=..\..\..\Common\TRect.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TStream.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TString.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TStyleSheet.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TURL.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TUtilities.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TVariable.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TVersion.h
 # End Source File
 # Begin Source File
 

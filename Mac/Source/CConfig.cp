@@ -26,13 +26,13 @@
 #include <iostream.h>
 #endif
 
-#include "KLogger.h"
+#include "TLogger.h"
 #include "TString.h"
 
 #include "CMac5LApp.h"
 #include "CConfig.h"
 #include "CModule.h"
-#include "CVariable.h"
+#include "TVariable.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -235,22 +235,6 @@ bool CConfig::FillDataSpec(FSSpec *theSpec, const char *inName)
 	return (retValue);
 }
 
-bool CConfig::FillScriptSpec(FSSpec *theSpec, const char *inName)
-{
-	TString		fileName;
-	bool		retValue = false;
-	
-	if ((theSpec != NULL) and (inName != NULL))
-	{
-		fileName = gModMan->GetScriptPath();
-		fileName += inName;
-				
-		retValue = FillSpec(theSpec, fileName);
-	}
-	
-	return (retValue);
-}
-
 bool CConfig::FillDebugSpec(FSSpec *theSpec, const char *inName)
 {
 	TString		fileName;
@@ -383,13 +367,39 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.8  2002/05/15 11:05:27  emk
+3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+is available, and several subsystems have been refactored.  For more
+detailed descriptions, see the CVS branch.
+
+The merged Mac code hasn't been built yet; I'll take care of that next.
+
+Revision 1.7.4.2  2002/04/23 11:36:07  emk
+More merge-related fixes.
+
+1) Removed all code which treats scripts as FSSpecs, and replaced it with code that treats scripts as filenames, minus the path and extension.  This mirrors how TFileIndex wants to work.  A side effect: Dragging scripts to the engine will no longer work (if it ever did).
+
+2) Use TVersion to get the version number.
+
+3) KLogger -> TLogger changes.
+
+Revision 1.7.4.1  2002/04/22 13:20:08  emk
+Major Mac cleanups:
+
+- We use subprojects to recursively build 5L and its support libraries.  This means no more opening up four different projects, etc., just to do a build.
+
+- Search & replaced class names for merged classes.  This doesn't quite work or build yet, but I'm working on a branch, so that's OK.
+
+- Other Mac build fixes.
+
+Tomorrow: Get things running again, make a test binary, and continue merging.
+
 Revision 1.7  2002/03/11 17:50:10  hamon
  Added logging of _QuickTimeVersion.
 _QuickTimeVersionMajor returns major number, _QuickTimeVersionMinor returns minor number,_QuickTimeVersionRevision returns revision number,
   and _QuickTimeVersion returns version number. Version 5.0.2 will be returned as 50002 and 12.14.10 would be returned as 121410 (if this version ever exists). 
-
 This numbering system DOES NOT match the Windows. Consistency between the two (likely involving a change in the Windows, since it seems likely to be broken) would be good.
-
 Changes by Elizabeth, okayed by Eric.
 
 Revision 1.6  2002/03/04 15:41:34  hamon

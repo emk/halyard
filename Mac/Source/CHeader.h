@@ -11,11 +11,11 @@
 
 #include "THeader.h"
 
-#include "CIndex.h"
+#include "TIndex.h"
 
 BEGIN_NAMESPACE_FIVEL
 
-class CHeader : public CIndex 
+class CHeader : public TIndex 
 {
     protected:
 
@@ -34,7 +34,7 @@ class CHeader : public CIndex
 		
     public:
 
-        				CHeader(CIndexFile *inFile, const char *inName = NULL, 
+        				CHeader(TIndexFile *inFile, const char *inName = NULL, 
         						int32 inStart = 0, int32 inEnd = 0);
 						~CHeader();
 						
@@ -53,11 +53,11 @@ class CHeader : public CIndex
 		void			GetFont(const char *inName);
 };
 
-class CHeaderManager : public CIndexManager 
+class CHeaderManager : public TIndexManager 
 {
 	public:
 	
-		virtual void 	MakeNewIndex(CIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
+		virtual void 	MakeNewIndex(TIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
 };
 
 extern CHeaderManager gHeaderManager;

@@ -1,8 +1,8 @@
 AUTOMAKE_OPTIONS = foreign
 
-CXX_FLAGS = @CXX_FLAGS@ -Wall -Werror
+CXXFLAGS = @CXXFLAGS@ -Wall -Werror -I libs/crypto
 
-SUBDIRS = . fonttools
+SUBDIRS = libs . fonttools
 
 noinst_LIBRARIES = libimlunit.a libfivel.a
 
@@ -20,20 +20,34 @@ libfivel_a_SOURCES = \
 	TBTree.cpp \
 	TBTree.h \
 	TCommon.h \
+	TDateUtil.cpp \
+	TDateUtil.h \
 	TException.cpp \
 	TException.h \
 	THeader.cpp \
 	THeader.h \
+	TIndex.cpp \
+	TIndex.h \
+	TLogger.cpp \
+	TLogger.h \
 	TObject.cpp \
 	TObject.h \
+	TParser.cpp \
+	TParser.h \
 	TPoint.cpp \
 	TPoint.h \
 	TRect.cpp \
 	TRect.h \
 	TString.cpp \
 	TString.h \
+	TStream.cpp \
+	TStream.h \
+	TStyleSheet.cpp \
+	TStyleSheet.h \
 	TURL.cpp \
 	TURL.h \
+	TVariable.cpp \
+	TVariable.h \
 	TEncoding.cpp \
 	TEncoding.h \
 	Typography.cpp \
@@ -41,21 +55,23 @@ libfivel_a_SOURCES = \
 	FileSystem.cpp \
 	FileSystem.h \
 	GraphicsTools.cpp \
-	GraphicsTools.h
-
-# These only compile on Windows.  But nobody else uses them, so it
-# doesn't matter for now.
-#	TLogger.cpp \
-#	TLogger.h \
+	GraphicsTools.h \
+	CryptStream.cpp \
+	CryptStream.h
 
 TestAll_SOURCES = \
 	TStringTests.cpp \
+	TStreamTests.cpp \
 	TEncodingTests.cpp \
 	FileSystemTests.cpp \
 	TypographyTests.cpp \
+	TStyleSheetTests.cpp \
+	CryptStreamTests.cpp \
+	TIndexTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
 	libfivel.a \
 	libimlunit.a \
+	libs/crypto/libfivel_crypto.a \
 	@FREETYPE_LDADD@
 #	-lefence

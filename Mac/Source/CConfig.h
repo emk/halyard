@@ -19,7 +19,6 @@ class	CConfig
 			bool			FillCLUTSpec(FSSpec *theSpec, const char *inName);
 			bool			FillDataSpec(FSSpec *theSpec, const char *inName);
 			bool			FillDebugSpec(FSSpec *theSpec, const char *inName);
-			bool			FillScriptSpec(FSSpec *theSpec, const char *inName);
 			bool			FillSpec(FSSpec *theSpec, TString &inName);
 						
 			Rect			GetScreenRect(void);

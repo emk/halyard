@@ -7,13 +7,13 @@
 
 #include <string.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 #include "TString.h"
 
 #include "CMac5LApp.h"
 #include "CFiles.h"
 #include "CConfig.h"
-#include "CVariable.h"
+#include "TVariable.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -583,6 +583,22 @@ bool CFileList::CurFileAtEOF(void)
 		return (CurrentFile->AtEOF());
 	else
 		return (true);
+}
+
+TString CFileList::ReadSpecialVariable_eof()
+{ 
+	if (gFileManager.CurFileOpen())
+	{
+		if (gFileManager.CurFileAtEOF())
+			return "1";
+		else
+			return "0";
+	}
+	else
+	{
+		gDebugLog.Log("Trying to read _EOF and no file open!");
+		return "0";
+	}
 }
 
 //

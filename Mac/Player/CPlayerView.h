@@ -9,6 +9,7 @@
 #include "CPicture.h"
 #include "CCard.h"
 #include "CGWorld.h"
+#include "GraphicsTools.h"
 
 #include <LMouseTracker.h>
 
@@ -30,7 +31,9 @@ enum FXType
 	kFXPushDown
 };
 
-class  CPlayerView : public PP::LView, public PP::LAttachment, public PP::LMouseTracker
+class  CPlayerView
+	: public PP::LView, public PP::LAttachment, public PP::LMouseTracker,
+	  public GraphicsTools::Image
 {
 	public:
 		enum { class_ID = FOUR_CHAR_CODE('PlVw') };
@@ -53,6 +56,12 @@ class  CPlayerView : public PP::LView, public PP::LAttachment, public PP::LMouse
 		void			DrawSelf(void);	
 		void			ValidFrame(void);
 		//void			Refresh(void);
+
+		//////////
+		// Draw a portable pixmap at the specified point.
+		//
+		void			DrawPixMap(GraphicsTools::Point inPoint,
+								   GraphicsTools::PixMap &inPixmap);
 		
 		void 			AddKeyBinding(const char inKeyChar, CCard *inCardToJumpTo);
 

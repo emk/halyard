@@ -7,14 +7,14 @@
 #include <string.h>
 #include "Movies.h"
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CMac5LApp.h"
 #include "CConfig.h"
 #include "CPalette.h"
 #include "CPlayerView.h"
 #include "CMoviePlayer.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CCard.h"
 #include "CModule.h"
 #include "gamma.h"

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999,2000 Trustees of Dartmouth College, All rights reserved.
@@ -313,6 +314,29 @@ void TBTree::RemoveAll(void)
 
 /*
  $Log$
+ Revision 1.4  2002/05/15 11:05:17  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.3.4.1  2002/04/29 06:19:11  emk
+ Some over-the-weekend performance tuning.
+
+ - Added fonttools/fontspeed.cpp, which mimics 5L drawing patterns, but with
+ an empty DrawPixMap routine.
+
+ - Added a pre-rendered glyph cache to the Typography module.
+
+ - Added new features to GraphicsTools to support the glyph cache.
+
+ - visual-test.png has apparently changed, but I can't see any difference.
+ It's probably slight changes in anti-aliased pixel intensity.
+
+ - Miscellaneous other cleanups and tweaks.
+
  Revision 1.3  2002/03/04 15:15:55  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 

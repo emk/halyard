@@ -14,8 +14,8 @@ public:
     PngImage(int width, int height);
     ~PngImage();
 
-    virtual void DrawPixmap(GraphicsTools::Point inPoint,
-			    GraphicsTools::Pixmap &inPixmap);
+    virtual void DrawPixMap(GraphicsTools::Point inPoint,
+			    GraphicsTools::PixMap &inPixmap);
 
     void save(const char *filename);
 };

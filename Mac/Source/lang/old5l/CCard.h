@@ -24,14 +24,14 @@
 
 #include "THeader.h"
 
-#include "CIndex.h"
+#include "TIndex.h"
 #include "TRect.h"
 #include "CTimer.h"
 #include "TArray.h"
 
 BEGIN_NAMESPACE_FIVEL
 
-class CCard : public CIndex
+class CCard : public TIndex
 {
     private:
 
@@ -49,7 +49,7 @@ class CCard : public CIndex
 		CTimer	*mNapTimer;
 		
     public:
-    			CCard(CIndexFile *inFile, const char *inName = NULL,
+    			CCard(TIndexFile *inFile, const char *inName = NULL,
     					int32 inStart = 0, int32 inEnd = 0);
         		//CCard(const char *name = 0, int32 p1 = 0, int32 p2 = 0);
 				~CCard();
@@ -78,7 +78,7 @@ class CCard : public CIndex
 
     protected:
 
-        int16   Evaluate(CStream& conditional);
+        int16   Evaluate(TStream& conditional);
 		
 		// utility methods
 		void    UpdateSpecialVariablesForGraphic(TRect bounds);
@@ -159,6 +159,7 @@ class CCard : public CIndex
 		void	DoStill();
         void    DoSub();
         void    DoText();
+        void	DoTextAA();
         void    DoTimeout();
         void    DoTouch();
         void    DoUnblippo();
@@ -169,7 +170,7 @@ class CCard : public CIndex
 
 };
 
-class CCardManager : public CIndexManager 
+class CCardManager : public TIndexManager 
 {
     private:
     	bool			mExitNow;
@@ -188,7 +189,7 @@ class CCardManager : public CIndexManager
     public:
         				CCardManager();
 
-		virtual void	MakeNewIndex(CIndexFile *inFile, const char *inName,
+		virtual void	MakeNewIndex(TIndexFile *inFile, const char *inName,
 									int32 inStart, int32 inEnd);
         
         virtual void	RemoveAll();	// cbo - 
@@ -216,6 +217,16 @@ class CCardManager : public CIndexManager
         void			JumpToCardByName(const char *newCardName, bool comeBack);
         void			JumpToCard(CCard *newCard, bool comeBack);
 		bool			Jumping(void) { return (mHaveJump); }
+		
+		//////////
+		// A SpecialVariableFunction to get the _curcard variable.
+		//
+		static TString	ReadSpecialVariable_curcard();
+		
+		//////////
+		// A SpecialVariableFunction to get the _prevcard variable.
+		//
+		static TString	ReadSpecialVariable_prevcard();
 };
 
 extern CCardManager gCardManager;

@@ -163,6 +163,15 @@ int main (int argc, char **argv) {
 	    justStyle.SetLeading(justStyle.GetLeading() - 2);
 	}
 
+	Distance junk_start;
+	show(L"Little tiny letters in the background.  "
+	     "Little tiny letters in the background.",
+	     Style(baseStyle).SetSize(8),
+	     Point(370, start), 100, kCenterJustification, &junk_start);
+	show(L"AA",
+	     Style(baseStyle).SetSize(50).SetColor(Color(255, 0, 0, 0x32)),
+	     Point(370, start), 100, kCenterJustification, &junk_start);
+
         image.save("visual-test.png");
 #ifdef HAVE_EYE_OF_GNOME
 	system("eog visual-test.png");

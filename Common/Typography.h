@@ -30,6 +30,8 @@ namespace Typography {
 	using GraphicsTools::Point;
 	using GraphicsTools::Image;
 	using GraphicsTools::Color;
+	using GraphicsTools::PixMap;
+	using GraphicsTools::GreyMap;
 
 	//////////
 	// A FreeType 2 vector, used for kerning.
@@ -44,11 +46,6 @@ namespace Typography {
 	// A FreeType 2 glyph index.  A (face,character code) pair map
 	// to a glyph index in FreeType 2.
 	typedef FT_UInt GlyphIndex;
-
-	//////////
-	// A FreeType 2 glyph object.  This usually contains a bitmap and
-	// a whole bunch of measurements.
-	typedef FT_GlyphSlot Glyph;
 
 	//////////
 	// Names for a few special Unicode characters.
@@ -99,7 +96,7 @@ namespace Typography {
 	// A face style.  This is combined with a face, colors, and other
 	// information to make a full-fledged Style.
 	//
-	enum FaceStyle {
+	enum /* FaceStyle */ {
 		// These styles are directly supported by the FamilyDatabase.
 		kRegularFaceStyle = 0,
 		kBoldFaceStyle = 1,
@@ -111,6 +108,12 @@ namespace Typography {
 		kUnderlineFaceStyle = 4,
 		kShadowFaceStyle = 8
 	};
+
+	//////////
+	// 'FaceStyle' is an integer, not an enumeration, so we can do
+	// bitwise operations on FaceStyles under picky C++ compilers.
+	//
+	typedef int FaceStyle;
 
 	//////////
 	// A Typography-related exception.  Any of the functions in the
@@ -152,6 +155,26 @@ namespace Typography {
 		static Library *GetLibrary();
 	};
 
+	//////////
+	// An individual, rendered glyph.  This is basically a copy of
+	// all the information we need from a FT_GlyphSlot, wrapped
+	// behind a nice interface so we can cache it.
+	//
+	class Glyph {
+		FT_Vector mAdvance;
+		FT_Glyph_Metrics mMetrics;
+		Point mGreyMapOffset;
+		GreyMap mGreyMap;
+
+	public:
+		Glyph(FT_GlyphSlot inGlyph);
+
+		FT_Vector GetAdvance() const { return mAdvance; }
+		const FT_Glyph_Metrics *GetMetrics() const { return &mMetrics; }
+		Point GetGreyMapOffset() const { return mGreyMapOffset; }
+		const GreyMap *GetGreyMap() const { return &mGreyMap; }
+	};
+
 	class AbstractFace;
 	class FaceStack;
 	
@@ -165,11 +188,13 @@ namespace Typography {
 		struct StyleRep {
 			int         mRefCount;
 
+			// If you any fields here, be sure to update operator==.
 			std::string mFamily;
 			std::list<std::string> mBackupFamilies;
 			FaceStyle   mFaceStyle;
 			int         mSize;
 			Distance    mLeading;
+			Distance    mShadowOffset;
 			Color       mColor;
 			Color       mShadowColor;
 			
@@ -198,6 +223,8 @@ namespace Typography {
 
 		Style &operator=(const Style &inStyle);
 
+		bool operator==(const Style &inStyle) const;
+
 		//////////
 		// Get the font family.  e.g., "Times", "Nimbus Roman No9 L".
 		//
@@ -218,6 +245,11 @@ namespace Typography {
 		Style &SetFaceStyle(FaceStyle inFaceStyle);
 
 		//////////
+		// Toggle the values of the specified face flags.
+		//
+		Style &ToggleFaceStyle(FaceStyle inToggleFlags);
+
+		//////////
 		// Get the size of the font, in points.
 		//
 		int GetSize() const { return mRep->mSize; }
@@ -228,6 +260,12 @@ namespace Typography {
 		//
 		Distance GetLeading() const { return mRep->mLeading; }
 		Style &SetLeading(Distance inLeading);
+
+		//////////
+		// Get the offset used to draw shadows.
+		//
+		Distance GetShadowOffset () const { return mRep->mShadowOffset; }
+		Style &SetShadowOffset(Distance inOffset);
 
 		//////////
 		// Get the color used to draw text.
@@ -259,7 +297,7 @@ namespace Typography {
 		std::wstring mText;
 		std::map<size_t,Style> mStyleRuns;
 		bool mIsBuilt;
-		int mEnd;
+		size_t mEnd;
 
 	public:
 		//////////
@@ -273,6 +311,11 @@ namespace Typography {
 		// Add text to the end of the styled text object.
 		// 
 		void AppendText(const std::wstring &inText);
+
+		//////////
+		// Add text to the end of the styled text object.
+		// 
+		void AppendText(wchar_t inText);
 
 		//////////
 		// Change the Style at the current offset in the string.
@@ -348,7 +391,7 @@ namespace Typography {
 			friend class StyledText;
 
 			const StyledText *mStyledText;
-			int mCurrentPosition;
+			size_t mCurrentPosition;
 			value_type mCurrentValue;
 
 			const_iterator(const StyledText *inStyledText, size_t inPos)
@@ -444,14 +487,14 @@ namespace Typography {
 	    // Return an iterator pointing to the first element.
 		//
 		const_iterator begin() const
-            { return const_iterator(this, 0); }
+            { ASSERT(mIsBuilt); return const_iterator(this, 0); }
 
 		//////////
 	    // Return an iterator pointing one past the last element.
 		// Do not dereference this.
 		//
 		const_iterator end() const
-            { return const_iterator(this, mText.length()); }
+            { ASSERT(mIsBuilt); return const_iterator(this, mText.length()); }
 	};
 
 	class Face;
@@ -481,10 +524,7 @@ namespace Typography {
 		// for the specified character code, the face will return
 		// a substitution character.
 		//
-		// For now, the glyph is always rendered to a pixmap.  This
-		// may or may not change.
-		//
-		virtual Glyph GetGlyph(CharCode inCharCode) = 0;
+		virtual Glyph *GetGlyph(CharCode inCharCode) = 0;
 
 		//////////
 		// Return a best guess for the maximum height of capital letters
@@ -551,10 +591,11 @@ namespace Typography {
 		// simply *can't* copy the underlying FreeType data.
 		struct FaceRep {
 			FT_Face mFace;
+			std::map<GlyphIndex,Glyph*> mGlyphCache;
 			int mRefcount;
 
-			FaceRep(FT_Face inFace) : mFace(inFace), mRefcount(1) {}
-			~FaceRep() { Error::CheckResult(FT_Done_Face(mFace)); }
+			FaceRep(FT_Face inFace);
+			~FaceRep();
 		};
 
 		FaceRep *mFaceRep;
@@ -575,9 +616,9 @@ namespace Typography {
 		    { return std::string(mFaceRep->mFace->style_name); }
 
 		GlyphIndex GetGlyphIndex(CharCode inCharCode);
-		Glyph GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex);
+		Glyph *GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex);
 
-		Glyph GetGlyph(CharCode inCharCode);
+		Glyph *GetGlyph(CharCode inCharCode);
 
 		//////////
 		// Kern two character codes.  If either character code
@@ -634,7 +675,7 @@ namespace Typography {
 		//
 		void AddSecondaryFace(const Face &inFace);
 
-		virtual Glyph GetGlyph(CharCode inCharCode);
+		virtual Glyph *GetGlyph(CharCode inCharCode);
 		virtual Distance GetAscender();
 		virtual Distance GetDescender();
 		virtual Distance GetLineHeight();
@@ -878,10 +919,7 @@ namespace Typography {
 		// Create a new text rendering engine.
 		//
 		// [in] inText -       The styled text to draw.
-		// [in] inPosition -   The x,y position of the lower-left corner
-		//                     of the first character (actually, this
-		//                     is technically the "origin" of the first
-		//                     character in FreeType 2 terminology).
+		// [in] inPosition -   The upper-left corner of the text box.
 		// [in] inLineLength - The maximum number of pixels available for
 		//                     a line.  This is (I hope) a hard limit,
 		//                     and no pixels should ever be drawn beyond it.
@@ -912,12 +950,15 @@ namespace Typography {
 
 	private:
 		//////////
-		// Draw a FreeType 2 bitmap to our image.
+		// Draw a GreyMap to our image.
 		//
-		// [in] inBitmap -   The bitmap to draw (in FreeType 2 format).
 		// [in] inPosition - The location at which to draw the bitmap.
+		// [in] inBitmap -   The GreyMap to draw.
+		// [in] inColor -    The color to draw in.
 		//
-		void DrawBitmap(Point inPosition, FT_Bitmap *inBitmap, Color inColor);
+		void DrawGreyMap(Point inPosition,
+						 const GreyMap *inGreyMap,
+						 Color inColor);
 		
 		//////////
 		// Process a single character.

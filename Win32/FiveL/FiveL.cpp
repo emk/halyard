@@ -20,11 +20,11 @@
 #include "Debug.h"
 
 #include "LUtil.h"
-#include "Index.h"
+#include "TIndex.h"
 #include "Header.h"
 #include "Macro.h"
 #include "Graphics.h"
-#include "Variable.h"
+#include "TVariable.h"
 #include "Video.h"
 #include "View.h"
 #include "Audio.h"
@@ -43,6 +43,8 @@
 #include "LHttp.h"
 #include "LBrowser.h"
 #include "SingleInstance.h"
+#include "TParser.h"
+#include "TStyleSheet.h"
 
 #if defined USE_BUNDLE
 	#include "LFileBundle.h"
@@ -84,12 +86,8 @@ View				*gView = NULL;
 CardManager         gCardManager;
 MacroManager        gMacroManager;
 HeaderManager       gHeaderManager;
-VariableManager     gVariableManager;
 LTouchZoneManager	gTouchZoneManager;     
 SysInfo				gSysInfo; 
-TLogger				gLog;
-TLogger				gMissingMediaLog;
-TLogger				gDebugLog;
 LCursorManager		gCursorManager; 
 VideoManager		gVideoManager;
 AudioManager		gAudioManager;
@@ -109,7 +107,6 @@ LCommandKeyManager	gCommandKeyManager;
 InputManager		gInputManager;
 CGrafPtr			gGrafPtr = NULL;
 GWorldPtr			gDummyGWorldPtr = NULL;
-IndexFileManager	gIndexFileManager;
 LHttp				gHttpTool;
 LBrowser			gBrowserTool;
 
@@ -128,6 +125,12 @@ void				StopTimer(void);
 bool				CheckSystem(void);
 void				DumpStats(void);
 
+// SpecialVariableFunctions for getting platform-specific special
+// variables.
+static TString ReadSpecialVariable_system();
+static TString ReadSpecialVariable_curcard();
+static TString ReadSpecialVariable_prevcard();
+static TString ReadSpecialVariable_eof();
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -168,20 +171,25 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if (not CheckSystem())
 		return (false);	
 
-	// Initialize the global log file.
-	gLog.Init(gConfigManager.InstallPath(), SHORT_NAME, true, true);
-	gLog.Log("%s", VERSION_STRING);
+	// Initialize our standard log files.
+	bool want_debug_log = (gConfigManager.GetUserPref(DEBUG_LOG) == DEBUG_LOG_ON);
+	TLogger::OpenStandardLogs(want_debug_log);
 
-	// Initialize the missing media file.
-	gMissingMediaLog.Init(gConfigManager.InstallPath(), "MissingMedia", false, true);
+	// Register our top-level forms.
+	TParser::RegisterIndexManager("card", &gCardManager);
+	TParser::RegisterIndexManager("macrodef", &gMacroManager);
+	TParser::RegisterIndexManager("header", &gHeaderManager);
+	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
 
-	if (gConfigManager.GetUserPref(DEBUG_LOG) == DEBUG_LOG_ON)
-	{
-		// Initialize the debug log.
-		gDebugLog.Init(gConfigManager.InstallPath(), "Debug");
-		gDebugLog.Log("%s", VERSION_STRING);
-	}
-
+	// Register our platform-specific special variables.
+	gVariableManager.RegisterSpecialVariable("_system",
+		&ReadSpecialVariable_system);
+	gVariableManager.RegisterSpecialVariable("_curcard",
+		&ReadSpecialVariable_curcard);
+	gVariableManager.RegisterSpecialVariable("_prevcard",
+		&ReadSpecialVariable_prevcard);
+	gVariableManager.RegisterSpecialVariable("_eof",		
+		&ReadSpecialVariable_eof);
 
 #if defined USE_BUNDLE
 	if (not gFileManager.Init())
@@ -918,6 +926,7 @@ void CleanUp(void)
 	gCardManager.RemoveAll();
 	gMacroManager.RemoveAll();
 	gHeaderManager.RemoveAll();
+	gStyleSheetManager.RemoveAll();
 	gVariableManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
 	gCommandKeyManager.RemoveAll();	
@@ -1025,6 +1034,7 @@ void ReDoScript(TString &inCardName)
 	gCardManager.RemoveAll();
 	gMacroManager.RemoveAll();
 	gHeaderManager.RemoveAll();
+	gStyleSheetManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
 	gIndexFileManager.RemoveAll();
 
@@ -1137,9 +1147,9 @@ void SetGlobals(void)
 
 	int32		buildNum;
 
-	buildNum = 10000 * MAJOR_NUM;
-	buildNum += (100 * MINOR_NUM);
-	buildNum += BUILD_NUM;
+	buildNum = 10000 * VERSION_MAJOR_NUM;
+	buildNum += (100 * VERSION_MINOR_NUM);
+	buildNum += VERSION_REV_BIG;
 	gVariableManager.SetLong("_enginebuild", buildNum);
 }	
 
@@ -1181,9 +1191,74 @@ void PutInForeground(void)
 	gLog.Log("PutInForeground");
 }
 
+static TString ReadSpecialVariable_system()
+{
+	return gSysInfo.ShortString();
+}
+
+static TString ReadSpecialVariable_curcard()
+{
+	return gCardManager.CurCardName();
+}
+
+static TString ReadSpecialVariable_prevcard()
+{
+	return gCardManager.PrevCardName();
+}
+
+static TString ReadSpecialVariable_eof()
+{
+	if (gFileManager.CurFileOpen())
+	{
+		if (gFileManager.CurFileAtEOF())
+        		return "1";
+        	else
+        		return "0";
+	}
+	else
+	{
+		gDebugLog.Log("Trying to read _EOF and no file open!");
+		return "0";
+	}
+}
 
 /*
  $Log$
+ Revision 1.6  2002/05/15 11:05:33  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.5.2.2  2002/05/01 03:27:07  emk
+ 3.3.2.6 - First Windows engine with (textaa ...) command.
+
+ - Implemented a primitive, slow Image::DrawPixMap command that uses
+ ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+ enough, it's about as fast as the somewhat optimized Mac routines.
+ Anyone got a good GDI book?
+
+ - Fixed several assertion failures.
+
+ Known problems:
+
+ - Occasional assertion failure on exit.  The reference-counting on
+ TIndexFile claims it's getting dereferenced too many times.  This is
+ an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+ - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+ caused by overlong lines.
+
+ Revision 1.5.2.1  2002/04/30 07:57:31  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.5  2002/04/09 14:07:43  emk
  Merged code from 3.2.0.3 to handle mouse-downs during text input by treating
  them as though the user pressed RETURN.  This should keep our users from

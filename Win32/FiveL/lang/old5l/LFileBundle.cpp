@@ -950,8 +950,8 @@ void LFileBundle::ConvertBundle(int dir)
 		gLog.Log("ConvertBundle: Trying to convert %s, encrypted -> clear", IN_FILENAME);
 
 		if (cryptStream == NULL)
-			cryptStream = new CryptStream(gConfigManager.DataPath(), IN_FILENAME,
-						                  PAYLOAD_5LDB, (unsigned char *)HCK, sizeof(HCK));
+			cryptStream = new CryptStream(FileSystem::GetDataDirectory(), IN_FILENAME,
+						                  PAYLOAD_5LDB, HCK, HCK_SIZE);
 
 		cryptStream->cryptFile(1);
 		delete cryptStream;
@@ -1010,8 +1010,8 @@ bool LFileBundle::OpenAndReadBundle()
 	}
 	else
 	{
-		cryptStream = new CryptStream(gConfigManager.DataPath(), IN_FILENAME, 
-									  PAYLOAD_5LDB, (unsigned char *)HCK, sizeof(HCK));
+		cryptStream = new CryptStream(FileSystem::GetDataDirectory(), IN_FILENAME, 
+									  PAYLOAD_5LDB, HCK, HCK_SIZE);
 		cache = "";
 
 		// Is the file empty?

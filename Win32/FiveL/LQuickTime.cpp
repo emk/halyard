@@ -120,6 +120,18 @@ void LQuickTime::Idle(void)
 					Kill();				// clean everything up
 					gDebugLog.Log("Reach the end of the movie (%d)", movieTime);
 				}
+				else
+				{
+					// if we aren't at the end, see if we have passed the wait time
+					if (mWaiting and (mWaitTime > 0))
+					{
+						if (movieTime >= mWaitTime)
+						{
+							mWaiting = false;
+							mWaitTime = 0;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1111,6 +1123,25 @@ bool LQuickTime::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.4  2002/05/15 11:05:33  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.3.2.1  2002/05/15 09:23:56  emk
+ 3.3.2.8 - Last typography branch checkin before merge.
+
+ * Fixed (wait ...) bug which caused all (wait ...) commands to wait
+ until the end of the movie.
+
+ * (buttpcx ...) now uses anti-aliased text.
+
+ * Miscellaneous other tweaks and fixes--just getting things into shape
+ for the merge.
+
  Revision 1.3  2002/04/19 10:21:52  hyjin
  Added support for a movie controller in 5L applications, and deleted some buggy pre-roll code that appeared to be causing crashes.  We're not a hundred percent sure all the crashing problems are fixed, but things seem to be working very well.  Please test this extensively!
 

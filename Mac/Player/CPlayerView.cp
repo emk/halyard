@@ -6,7 +6,7 @@
 
 #include <ctype.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CMac5LApp.h"
 #include "CConfig.h"
@@ -16,13 +16,14 @@
 #include "CMoviePlayer.h"
 #include "CPicture.h"
 #include "CMenuUtil.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CMenuUtil.h"
 #include "CPalette.h"
 #include "gamma.h"
 //#include "CGWorld.h"
 //#include <UGworld.h>
 #include <OSUtils.h>
+#include <QuickDraw.h>
 
 #ifdef DEBUG
 #include "CModule.h"
@@ -61,10 +62,10 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 	
 	// Allocate the offscreen gworlds
 	mGWorld = mBlippoWorld = nil;
-	mGWorld = new CGWorld(frame);
-	mBlippoWorld = new CGWorld(frame);
+	mGWorld = new CGWorld(frame, 32);
+	mBlippoWorld = new CGWorld(frame, 32);
 #ifdef DEBUG_5L_LATER
-	mFadeWorld = new GCWorld(frame);
+	mFadeWorld = new GCWorld(frame, 32);
 #endif
 
 	// Get the window's palette
@@ -442,12 +443,12 @@ void CPlayerView::DoNewPalette(CTabHandle inCTab)
 	thePalHand = ::NewPalette(256, inCTab,  pmCourteous, 0);
 	
 	// update the gworld with info about the new color table
-	::UpdateGWorld(&theMacGWorld, 0, &theFrame, inCTab, nil, 0);
+	::UpdateGWorld(&theMacGWorld, 32, &theFrame, inCTab, nil, 0);
 	mGWorld->SetMacGWorld(theMacGWorld);
 	
 	// update the blippo buffer too!!
 	GWorldPtr	theBlippoWorld = mBlippoWorld->GetMacGWorld();
-	::UpdateGWorld(&theBlippoWorld, 0, &theFrame, inCTab, nil, 0);
+	::UpdateGWorld(&theBlippoWorld, 32, &theFrame, inCTab, nil, 0);
 	mBlippoWorld->SetMacGWorld(theBlippoWorld);
 	
 	::NSetPalette((GrafPort *) theMacGWorld, thePalHand, pmAllUpdates);
@@ -462,7 +463,7 @@ void CPlayerView::DoNewPalette(CTabHandle inCTab)
 	theOldPalHand = ::GetPalette((GrafPort *) theMacGWorld);
 	
 	thePalHand = ::NewPalette(256, inCTab, pmCourteous, 0);
-	::UpdateGWorld(&theMacGWorld, 0, &theFrame, inCTab, nil, 0);
+	::UpdateGWorld(&theMacGWorld, 32, &theFrame, inCTab, nil, 0);
 	mFadeWorld->SetMacGWorld(theMacGWorld);
 	
 	::NSetPalette((GrafPort *) theMacGWorld, thePalHand, pmAllUpdates);
@@ -798,6 +799,105 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 		mExecuteHost = true;
 }
 
+void CPlayerView::DrawPixMap(GraphicsTools::Point inPoint,
+							 GraphicsTools::PixMap &inPixmap)
+{
+	// We need to draw a portable RGBA pixmap onto a Macintosh RGB
+	// Offscreen GWorld.  This is fairly exciting in a variety of
+	// alarming ways.
+	//
+	// See the ancient "Drawing in GWorlds for Speed and Versatility"
+	// article from _develop 10_, and the documentation for the PixMap
+	// data structure in _Inside Macintosh: Imaging With QuickDraw_.
+	
+	using GraphicsTools::AlphaBlendChannel;
+	using GraphicsTools::Color;
+	using GraphicsTools::Distance;
+	using GraphicsTools::Point;
+	
+	// Begin drawing to offscreen GWorld.
+	CGWorld *theGWorld = gPlayerView->GetGWorld();
+	theGWorld->BeginDrawing();
+	
+	// Extract our pixmap (and make sure it's the right kind of pixmap).
+	PixMapHandle mac_pixmap_handle = theGWorld->GetPortPixMap();
+	PixMapPtr mac_pixmap = *mac_pixmap_handle;
+	ASSERT(mac_pixmap->rowBytes & 0x8000);		// A PixMap, not a BitMap
+	ASSERT(mac_pixmap->packType == 0);          // Unpacked
+	ASSERT(mac_pixmap->pixelType == 16); 		// RGBDirect color
+	ASSERT(mac_pixmap->pixelSize == 32);        // 32 bits/pixel
+	ASSERT(mac_pixmap->cmpCount == 3);          // 3 channels/pixel
+	ASSERT(mac_pixmap->cmpSize == 8);           // 8 bits/channel
+	
+	// Clip our pixmap boundaries to fit within our GWorld.
+	int gworld_width = mac_pixmap->bounds.right - mac_pixmap->bounds.left;
+	int gworld_height = mac_pixmap->bounds.bottom - mac_pixmap->bounds.top;
+	Point begin = inPoint;
+	begin.x = Max(0, Min(gworld_width, begin.x));
+	begin.y = Max(0, Min(gworld_height, begin.y));
+	begin = begin - inPoint;
+	Point end = inPoint + Point(inPixmap.width, inPixmap.height);
+	end.x = Max(0, Min(gworld_width, end.x));
+	end.y = Max(0, Min(gworld_height, end.y));
+	end = end - inPoint;
+	
+	// Do some sanity checks on our clipping boundaries.
+	ASSERT(begin.x == end.x || // No drawing
+		   (0 <= begin.x && begin.x < end.x && end.x <= inPixmap.width));
+	ASSERT(begin.y == end.y || // No drawing
+		   (0 <= begin.y && begin.y < end.y && end.y <= inPixmap.height));
+	
+	// Figure out where in memory to begin drawing the first row.
+	unsigned char *mac_base_addr =
+		(unsigned char*) GetPixBaseAddr(mac_pixmap_handle);
+	int mac_row_size = mac_pixmap->rowBytes & 0x3FFF; // Remove flag bits
+	unsigned char *mac_row_start =
+		(mac_base_addr +
+		 (inPoint.y + begin.y) * mac_row_size +
+		 (inPoint.x + begin.x) * 4);
+	
+	// Figure out where in memory to get the data for the first row.
+	Color *portable_base_addr = inPixmap.pixels;
+	Distance portable_row_size = inPixmap.pitch;
+	Color *portable_row_start =
+		portable_base_addr + begin.y * portable_row_size + begin.x;
+	
+	// Draw each row of the pixmap.
+	for (int y = begin.y; y < end.y; y++)
+	{
+		unsigned char *mac_cursor = mac_row_start;
+		Color *portable_cursor = portable_row_start;
+		for (int x = begin.x; x < end.x; x++)
+		{
+			// Make sure we're in bounds.
+			ASSERT(mac_cursor >= mac_base_addr);
+			ASSERT(mac_cursor < mac_base_addr + gworld_height * mac_row_size);
+			ASSERT(portable_cursor >= portable_base_addr);
+			ASSERT(portable_cursor <
+				   portable_base_addr + inPixmap.height * portable_row_size);
+		
+			// Draw a single pixel.
+			GraphicsTools::Color new_color = *portable_cursor;
+			mac_cursor[1] = AlphaBlendChannel(mac_cursor[1],
+											  new_color.red,
+											  new_color.alpha);
+			mac_cursor[2] = AlphaBlendChannel(mac_cursor[2],
+											  new_color.green,
+											  new_color.alpha);
+			mac_cursor[3] = AlphaBlendChannel(mac_cursor[3],
+											  new_color.blue,
+											  new_color.alpha);
+			mac_cursor += 4;
+			portable_cursor++;
+		}
+		mac_row_start += mac_row_size;
+		portable_row_start += portable_row_size;
+	}
+
+	// End drawing to offscreen GWorld.
+	theGWorld->EndDrawing();
+}
+
 //
 // Perform the binding operation referenced by inKey. Returns true if we
 // fomd the ke in the list, false otherwise.
@@ -896,7 +996,7 @@ void CPlayerView::Blippo(void)
 	//theCTab = gTheApp->GetCTab();
 	//if (theCTab != nil)
 	//{
-	//	int32 myGWorldFlags = ::UpdateGWorld(&theMacGWorld, 0, &theFrame, theCTab, nil, 0);
+	//	int32 myGWorldFlags = ::UpdateGWorld(&theMacGWorld, 32, &theFrame, theCTab, nil, 0);
 	//	mBlippoWorld->SetMacGWorld(theMacGWorld);
 	//}
 	

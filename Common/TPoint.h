@@ -17,6 +17,14 @@
 #if !defined (_TPoint_h_)
 #define _TPoint_h_
 
+#ifdef _5L_QUICKTIME_
+#include <MacTypes.h>
+#endif // _5L_QUICKTIME_
+
+#if FIVEL_PLATFORM_WIN32
+#include "Windows.h"
+#endif // FIVEL_PLATFORM_*
+
 #include "TCommon.h"
 #include "TObject.h"
 
@@ -148,7 +156,7 @@ class TPoint : public TObject
 		//
 		void			Set(Point &inPt);
 #endif
-#if defined (_5L_WIN32_)
+#if FIVEL_PLATFORM_WIN32
 		
 		//////////
 		// Get a Win32 POINT structure for the point.<br>
@@ -165,7 +173,7 @@ class TPoint : public TObject
 		// [in] inPt - a Win32 POINT structure
 		//
 		void			Set(POINT &inPt);
-#endif
+#endif // FIVEL_PLATFORM_*
 
 	protected:
         //////////
@@ -185,11 +193,28 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3  2002/05/15 11:05:17  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.2.4.2  2002/04/30 07:57:24  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
+ Revision 1.2.4.1  2002/04/22 08:17:58  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.2  2002/03/04 15:16:10  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-
 Moved OS specific configuration to TPlatform.h
-
 Changes by Elizabeth and Eric, okayed by Eric.
 
  Revision 1.1  2001/09/24 15:11:00  tvw

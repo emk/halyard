@@ -3,6 +3,7 @@
 #include "TCommon.h"
 
 #include <algorithm>
+#include <fstream>
 
 #include <stdio.h>
 #include <ctype.h>
@@ -27,6 +28,7 @@
 #endif
 
 #include "FileSystem.h"
+#include "TLogger.h"
 
 using namespace FileSystem;
 
@@ -48,7 +50,8 @@ Error::Error(int inErrorCode)
 // about it.
 static void ResetErrno()
 {
-	ASSERT(errno == 0); // TODO - Log a warning instead of failing.
+	if (errno != 0)
+		FIVEL_NS gDebugLog.Caution("Unexpected errno = %d", errno);
 	errno = 0;
 }
 
@@ -216,10 +219,11 @@ std::list<std::string> Path::GetDirectoryEntries() const
 	// Allocate some storage.
 	std::list<std::string> entries;	
 
-	// Create a Windows file search object.
-	// We should never get an empty directory because of the "." and ".." entries.
+	// Create a Windows file search object.  We should never get an empty
+	// directory because of the "." and ".." entries.
 	WIN32_FIND_DATA find_data;
-	HANDLE hFind = ::FindFirstFile((ToNativePathString() + "\\*").c_str(), &find_data);
+	HANDLE hFind = ::FindFirstFile((ToNativePathString() + "\\*").c_str(),
+								   &find_data);
 	if (hFind == INVALID_HANDLE_VALUE)
 		throw Error("Can't open directory"); // TODO - GetLastError()
 
@@ -339,6 +343,90 @@ std::string Path::ToNativePathString () const
 {
 	return mPath;
 }
+
+void Path::RenameFile(const Path &inNewName) const
+{
+	ASSERT(!inNewName.DoesExist());
+
+	ResetErrno();
+	rename(ToNativePathString().c_str(),
+		   inNewName.ToNativePathString().c_str());
+	CheckErrno();	
+}
+
+void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
+{
+	ASSERT(inTemporaryFile.DoesExist());
+
+	if (DoesExist())
+		RemoveFile();
+inTemporaryFile.RenameFile(*this);
+}
+
+#if FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER
+
+void Path::CreateWithMimeType(const std::string &inMimeType)
+{
+	std::ofstream file(ToNativePathString().c_str());
+	file.close();
+}
+
+#elif FIVEL_PLATFORM_MACINTOSH
+
+#include <TextUtils.h>
+#include <Files.h>
+#include <Script.h>
+#include <Resources.h>
+
+#define TEXT_PLAIN_TYPE ('TEXT')
+#ifdef DEBUG
+	// Developers want text files to open in a real editor...
+#	define TEXT_PLAIN_CREATOR ('R*ch')
+#else
+	// ...but users may have nothing better than TeachText.
+#	define TEXT_PLAIN_CREATOR ('ttxt')
+#endif // DEBUG
+
+// This function taken from the MacUtils.cpp file in the old
+// Mac engine.
+static bool PathToFSSpec(const char *inPath, FSSpec *inSpec)
+{
+	Str255		thePath;
+	OSErr		err;
+	bool		retValue = true;	// cbo - why is it not returning noErr?
+	
+	strcpy((char *) thePath, inPath);
+	c2pstr((char *) thePath);
+	
+	if ((err = ::FSMakeFSSpec(0, 0, thePath, inSpec)) == noErr)
+		retValue = true;
+		
+	return (retValue);
+}
+
+void Path::CreateWithMimeType(const std::string &inMimeType)
+{
+	// We could be really classy and call Internet Config to map the MIME
+	// type to a creator/type pair.  But this will work for now.
+	if (inMimeType == "text/plain")
+	{
+		FSSpec spec;
+		if (PathToFSSpec(ToNativePathString().c_str(), &spec))
+		{
+			::FSpCreateResFile(&spec, TEXT_PLAIN_CREATOR,
+							   TEXT_PLAIN_TYPE, smRoman);
+			if (ResError() == noErr)
+				return;
+		}
+	}
+	
+	std::ofstream file(ToNativePathString().c_str());
+	file.close();
+}
+
+#else
+#	error "Unknown FiveL platform."
+#endif // FILEL_PLATFORM_*
 
 bool FileSystem::operator==(const Path& inLeft, const Path& inRight)
 {

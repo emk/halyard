@@ -756,6 +756,80 @@ void View::DrawQTGraphic(QTGraphic *inQtg, RECT *inRect)
 }
 
 //
+// DrawPixMap - Implementation of GraphicsTools::DrawPixMap.
+//
+void View::DrawPixMap(GraphicsTools::Point inPoint,
+					  GraphicsTools::PixMap &inPixMap)
+{
+	// Mark the rectangle as dirty.
+	TRect bounds(inPoint.y, inPoint.x,
+				 inPoint.y + inPixMap.height,
+				 inPoint.x + inPixMap.width);
+	DirtyRect(&bounds);
+
+	// XXX - We draw our data in a slow, kludgy fashion.
+	// This code is stolen from the Mac engine and
+	// quickly hacked into a drawing routine.  It needs
+	// to be replaced with something faster and cleaner.
+
+	using GraphicsTools::AlphaBlendChannel;
+	using GraphicsTools::Color;
+	using GraphicsTools::Distance;
+	using GraphicsTools::Point;
+	
+	// Clip our pixmap boundaries to fit within our screen.
+	int gworld_width = VSCREEN_WIDTH;
+	int gworld_height = VSCREEN_HEIGHT;
+	Point begin = inPoint;
+	begin.x = Max(0, Min(gworld_width, begin.x));
+	begin.y = Max(0, Min(gworld_height, begin.y));
+	begin = begin - inPoint;
+	Point end = inPoint + Point(inPixMap.width, inPixMap.height);
+	end.x = Max(0, Min(gworld_width, end.x));
+	end.y = Max(0, Min(gworld_height, end.y));
+	end = end - inPoint;
+	
+	// Do some sanity checks on our clipping boundaries.
+	ASSERT(begin.x == end.x || // No drawing
+		   (0 <= begin.x && begin.x < end.x && end.x <= inPixMap.width));
+	ASSERT(begin.y == end.y || // No drawing
+		   (0 <= begin.y && begin.y < end.y && end.y <= inPixMap.height));
+		
+	// Figure out where in memory to get the data for the first row.
+	Color *portable_base_addr = inPixMap.pixels;
+	Distance portable_row_size = inPixMap.pitch;
+	Color *portable_row_start =
+		portable_base_addr + begin.y * portable_row_size + begin.x;
+	
+	// Draw each row of the pixmap.
+	for (int y = begin.y; y < end.y; y++)
+	{
+		Color *portable_cursor = portable_row_start;
+		for (int x = begin.x; x < end.x; x++)
+		{
+			// Make sure we're in bounds.
+			ASSERT(portable_cursor >= portable_base_addr);
+			ASSERT(portable_cursor <
+				   portable_base_addr + inPixMap.height * portable_row_size);
+		
+			// Draw a single pixel, very slowly.
+			GraphicsTools::Color new_color = *portable_cursor;
+			COLORREF color = ::GetPixel(m_dc, inPoint.x + x, inPoint.y + y);
+			BYTE red = GetRValue(color);
+			BYTE green = GetGValue(color);
+			BYTE blue = GetBValue(color);
+			red = AlphaBlendChannel(red, new_color.red, new_color.alpha);
+			green = AlphaBlendChannel(green, new_color.green, new_color.alpha);
+			blue = AlphaBlendChannel(blue, new_color.blue, new_color.alpha);
+			::SetPixel(m_dc, inPoint.x + x, inPoint.y + y, RGB(red, green, blue));
+			portable_cursor++;
+		}
+		portable_row_start += portable_row_size;
+	}
+	errno = 0;
+}
+
+//
 //	GetPixelAddress - Return the address of the desired pixel
 //		in the bitmap. The inScreen boolean is used to indicate
 //		which buffer you want. If inScreen is true then use m_screen
@@ -1432,6 +1506,44 @@ Effect View::StringToEffect(TString &effectString)
 
 /*
  $Log$
+ Revision 1.3  2002/05/15 11:05:33  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.2.2.2  2002/05/15 09:23:56  emk
+ 3.3.2.8 - Last typography branch checkin before merge.
+
+ * Fixed (wait ...) bug which caused all (wait ...) commands to wait
+ until the end of the movie.
+
+ * (buttpcx ...) now uses anti-aliased text.
+
+ * Miscellaneous other tweaks and fixes--just getting things into shape
+ for the merge.
+
+ Revision 1.2.2.1  2002/05/01 03:27:07  emk
+ 3.3.2.6 - First Windows engine with (textaa ...) command.
+
+ - Implemented a primitive, slow Image::DrawPixMap command that uses
+ ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+ enough, it's about as fast as the somewhat optimized Mac routines.
+ Anyone got a good GDI book?
+
+ - Fixed several assertion failures.
+
+ Known problems:
+
+ - Occasional assertion failure on exit.  The reference-counting on
+ TIndexFile claims it's getting dereferenced too many times.  This is
+ an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+ - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+ caused by overlong lines.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

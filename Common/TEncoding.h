@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 2002, Trustees of Dartmouth College, All rights reserved.
@@ -18,14 +19,14 @@
 #ifndef TEncoding_h
 #define TEncoding_h
 
-#include "TObject.h"
-#include "TString.h"
+#include <string>
 
 BEGIN_NAMESPACE_FIVEL
 
 //////////
 // An opaque struct type for storing entity to character mappings.
 //
+template <class CharT>
 struct EntityMapping;
 
 
@@ -34,19 +35,33 @@ struct EntityMapping;
 CLASS
     TEncoding
 
-    Turn HTML-escaped characters into native 8-bit characters,
+    Turn HTML-escaped characters into native 8- or 16-bit characters,
 	and handle a few other special escape sequences (--, smart
 	quotes).  This rather ad hoc encoding was chosen at the
 	request of content authors--they don't want to use HTML
 	entities for certain very common characters.
 
+	This class is, unfortunately, a mess.  It has to support
+	both 7- to 8-bit conversion and 7- to 16-bit conversion.  This
+	allows it to support both new-style "(textaa ...)" calls and
+	old-style "(text ...)" calls.
+
+    It's also tied up in the generally broken mess of 5L escape
+	sequences.  Once I'm allowed to deprecate the old-style text
+	drawing routines (Header.* on Win32, and CText.* on the Mac),
+	this code will get much better.
+
 AUTHOR
     Eric Kidd
 
 ------------------------------------------------------------------*/
-class TEncoding : public TObject
+template <class CharT>
+class TEncoding
 {
 public:
+	typedef CharT char_type;
+	typedef std::basic_string<CharT> string_type;
+
 	//////////
 	// A callback function that logs errors in strings passed to various
 	// TEncoding methods.  A logging function may ignore errors, write them
@@ -56,7 +71,7 @@ public:
 	// [in] inBadString - the string with an error
 	// [in] inBadPos - the 0-based character position of the error
 	// [in] inErrMsg - a message explaining what is wrong
-	typedef void (*ErrorLoggingFunc) (const char *inBadString,
+	typedef void (*ErrorLoggingFunc) (const string_type &inBadString,
 									  size_t inBadPos,
 									  const char *inErrMsg);
 
@@ -64,7 +79,7 @@ private:
 	//////////
 	// The name of the encoding we're using.
 	// 
-	TString mEncodingName;
+	std::string mEncodingName;
 
 	//////////
 	// Our error logging callback.
@@ -74,7 +89,7 @@ private:
 	//////////
 	// The entity mappings for this encoding.
 	//
-	EntityMapping *mEntityMapping;
+	const EntityMapping<CharT> *mEntityMapping;
 
 public:
 	//////////
@@ -90,13 +105,13 @@ public:
 	//
 	// [in] inEncodingName - An encoding name.
 	//
-	TEncoding (const TString& inEncodingName,
+	TEncoding (const std::string &inEncodingName,
 			   ErrorLoggingFunc inErrorLoggingFunc);
 
 	//////////
 	// Fetch the name of the encoding supported by this class.
 	//
-	const TString GetEncodingName () const
+	const std::string GetEncodingName () const
 		{ return mEncodingName; }
 
 	//////////
@@ -107,7 +122,7 @@ public:
 	// [in] inString - The string to transform.
 	// [out] return - The transformed string.
 	//
-	TString FixSpecials (const TString& inString) const;
+	string_type FixSpecials (const string_type& inString) const;
 
 	//////////
 	// Transform \' and \" characters into appropriate left and right
@@ -116,7 +131,7 @@ public:
 	// [in] inString - The string to transform.
 	// [out] return - The transformed string.
 	//
-	TString FixQuotes (const TString& inString) const;
+	string_type FixQuotes (const string_type& inString) const;
 
 	//////////
 	// Transform ISO entities (&quot;, &mdash;, etc.) into appropriate
@@ -128,7 +143,7 @@ public:
 	// [in] inString - The string to transform.
 	// [out] return - The transformed string.
 	//
-	TString EncodeEntities (const TString& inString) const;
+	string_type EncodeEntities (const string_type& inString) const;
 
 	//////////
 	// Transform string into a native 8-bit string.  This applies all
@@ -140,7 +155,7 @@ public:
 	// [in] inString - A specially formatted 7-bit string.
 	// [out] return - An 8-bit string.
 	//
-	TString TransformString (const TString& inString) const;
+	string_type TransformString (const string_type& inString) const;
 };
 
 END_NAMESPACE_FIVEL

@@ -16,9 +16,9 @@ USING_NAMESPACE_FIVEL
  ***********************************************************************/
 const char *CMacroManager::GetScript(const char *macroname)
 {
-    CIndex   *mac;
+    TIndex   *mac;
 
-    mac = (CIndex *) Find(macroname);
+    mac = (TIndex *) Find(macroname);
     return (mac->GetScript());
 }
 
@@ -33,12 +33,12 @@ const char *CMacroManager::GetScript(const char *macroname)
  * Comments:
  *  Creates new macro entry into the macro tree
  ***********************************************************************/
-void CMacroManager::MakeNewIndex(CIndexFile *inFile, const char *inName, 
+void CMacroManager::MakeNewIndex(TIndexFile *inFile, const char *inName, 
 	int32 inStart, int32 inEnd)
 {
-    CIndex   *newMacro = NULL;
+    TIndex   *newMacro = NULL;
 
-    newMacro = new CIndex(inFile, inName, inStart, inEnd);
+    newMacro = new TIndex(inFile, inName, inStart, inEnd);
     
     if (newMacro->SetScript())
     	Add(newMacro);

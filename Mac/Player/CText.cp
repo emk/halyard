@@ -15,14 +15,14 @@
 
 #include "THeader.h"
 
-#include "KLogger.h"
+#include "TLogger.h"
 #include "TRect.h"
 
 #include "CMac5LApp.h"
 #include "CHeader.h"
 #include "CPlayerView.h"
 #include "CText.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "TCommon.h"
 #include "TEncoding.h"
 
@@ -51,10 +51,11 @@ CText::CText(void)
 // Helper function.
 // TODO - Refactor back into TEncoding (somehow) once logging code is merged between
 // Macintosh and Windows engines.
-static void LogEncodingErrors (const char *inBadString, size_t inBadPos, const char *inErrMsg)
+static void LogEncodingErrors (const std::string &inBadString, size_t inBadPos,
+							   const char *inErrMsg)
 {
 	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
-		inErrMsg, inBadPos, inBadString);
+		inErrMsg, inBadPos, inBadString.c_str());
 }
 	
 CText::CText(
@@ -80,7 +81,7 @@ CText::CText(
 	}	
 
 	// Totally experimental entity code.
-	TEncoding encoding("macintosh", &LogEncodingErrors);
+	TEncoding<char> encoding("macintosh", &LogEncodingErrors);
 	TString encodedStr = encoding.TransformString(inText);
 
 	// Copy the incoming string

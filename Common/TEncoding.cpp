@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -11,15 +12,18 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// TString.cpp : 
+// TEncoding.cpp : 
 //
 
 #include <ctype.h>
 #include <string.h>
+#include <algorithm>
 
 #include "THeader.h"
 #include "TCommon.h"
 #include "TEncoding.h"
+#include "TLogger.h"
+#include "TUtilities.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -41,25 +45,37 @@ USING_NAMESPACE_FIVEL
 
 static const int kMaxEncodedCharLength = 10;
 
+template <class CharT>
 struct FIVEL_NS EntityMapping {
-    char *name;
-    char encoded[kMaxEncodedCharLength];
+    CharT *name;
+    CharT encoded[kMaxEncodedCharLength];
 };
 
-#define STANDARD_ASCII_ENTITIES \
-    {"quot", "\""}, \
-    {"amp", "&"}, \
-    {"apos", "'"}, \
-    {"hyphen", "-"}, \
-    {"period", "."}
-
-// This macro wraps a single-byte string constant in all the grik required
+// These macros wrap a single-byte string constant in all the grik required
 // by each of the compilers we support.  The silly '(char)' is there to
 // turn off some MSVC++ warnings.
-#define BYTE_1(byte) {(char) (byte), (char) 0x00}
+#define CHAR_1(byte) {(char) (byte), (char) 0x00}
+#define WCHAR_1(byte) {(wchar_t) (byte), (wchar_t) 0x00}
 
-static EntityMapping IsoLatin1EntityMapping[] = {
-    STANDARD_ASCII_ENTITIES,
+// Entities which appear in each of our 7-bit mappings.
+// See the definition immediately below!
+#define STANDARD_ASCII_CHAR_ENTITIES \
+    {"quot",    CHAR_1('\"')}, \
+    {"amp",     CHAR_1('&')}, \
+    {"apos",    CHAR_1('\'')}, \
+    {"hyphen",  CHAR_1('-')}, \
+    {"period",  CHAR_1('.')}
+
+// The same as the above, but for Unicode.
+#define STANDARD_ASCII_WCHAR_ENTITIES \
+    {L"quot",   WCHAR_1('\"')}, \
+    {L"amp",    WCHAR_1('&')}, \
+    {L"apos",   WCHAR_1('\'')}, \
+    {L"hyphen", WCHAR_1('-')}, \
+    {L"period", WCHAR_1('.')}
+
+static EntityMapping<char> IsoLatin1EntityMapping[] = {
+    STANDARD_ASCII_CHAR_ENTITIES,
     
     // Internally-Referenced Entities
     {"mdash",  "--"},
@@ -70,102 +86,171 @@ static EntityMapping IsoLatin1EntityMapping[] = {
     {"hellip", "..."},
 
     // Common Script Entities
-    {"copy",   BYTE_1(0xA9)},
-    {"reg",    BYTE_1(0xAE)},
+    {"copy",   CHAR_1(0xA9)},
+    {"reg",    CHAR_1(0xAE)},
     {"trade",  "<TM>"},
     {"bull",   "*"},
-    {"sect",   BYTE_1(0xA7)},
+    {"sect",   CHAR_1(0xA7)},
     {"ndash",  "-"},
     {"dagger", "<t>"},
-    {"micro",  BYTE_1(0xB5)},
-    {"para",   BYTE_1(0xB6)},
-    {"eacute", BYTE_1(0xE9)},
-    {"Ccedil", BYTE_1(0xC7)},
-    {"ccedil", BYTE_1(0xE7)},
+    {"micro",  CHAR_1(0xB5)},
+    {"para",   CHAR_1(0xB6)},
+    {"eacute", CHAR_1(0xE9)},
+    {"Ccedil", CHAR_1(0xC7)},
+    {"ccedil", CHAR_1(0xE7)},
     
     {NULL}
 };
 
-static EntityMapping Windows1252EntityMapping[] = {
-    STANDARD_ASCII_ENTITIES,
+static EntityMapping<char> Windows1252EntityMapping[] = {
+    STANDARD_ASCII_CHAR_ENTITIES,
 
     // Internally-Referenced Entities
-    {"mdash",  BYTE_1(0x97)},
-    {"lsquo",  BYTE_1(0x91)},
-    {"rsquo",  BYTE_1(0x92)},
-    {"ldquo",  BYTE_1(0x93)},
-    {"rdquo",  BYTE_1(0x94)},
-    {"hellip", BYTE_1(0x85)},
+    {"mdash",  CHAR_1(0x97)},
+    {"lsquo",  CHAR_1(0x91)},
+    {"rsquo",  CHAR_1(0x92)},
+    {"ldquo",  CHAR_1(0x93)},
+    {"rdquo",  CHAR_1(0x94)},
+    {"hellip", CHAR_1(0x85)},
 
     // Common Script Entities
-    {"copy",   BYTE_1(0xA9)},
-    {"reg",    BYTE_1(0xAE)},
-    {"trade",  BYTE_1(0x99)},
-    {"bull",   BYTE_1(0x95)},
-    {"sect",   BYTE_1(0xA7)},
-    {"ndash",  BYTE_1(0x96)},
-    {"dagger", BYTE_1(0x86)},
-    {"micro",  BYTE_1(0xB5)},
-    {"para",   BYTE_1(0xB6)},
-    {"eacute", BYTE_1(0xE9)},
-    {"Ccedil", BYTE_1(0xC7)},
-    {"ccedil", BYTE_1(0xE7)},
+    {"copy",   CHAR_1(0xA9)},
+    {"reg",    CHAR_1(0xAE)},
+    {"trade",  CHAR_1(0x99)},
+    {"bull",   CHAR_1(0x95)},
+    {"sect",   CHAR_1(0xA7)},
+    {"ndash",  CHAR_1(0x96)},
+    {"dagger", CHAR_1(0x86)},
+    {"micro",  CHAR_1(0xB5)},
+    {"para",   CHAR_1(0xB6)},
+    {"eacute", CHAR_1(0xE9)},
+    {"Ccedil", CHAR_1(0xC7)},
+    {"ccedil", CHAR_1(0xE7)},
 
     {NULL}
 };
 
-static EntityMapping MacintoshEntityMapping[] = {
-    STANDARD_ASCII_ENTITIES,
+static EntityMapping<char> MacintoshEntityMapping[] = {
+    STANDARD_ASCII_CHAR_ENTITIES,
 
     // Internally-Referenced Entities
-    {"mdash",  BYTE_1(0xD1)},
-    {"lsquo",  BYTE_1(0xD4)},
-    {"rsquo",  BYTE_1(0xD5)},
-    {"ldquo",  BYTE_1(0xD2)},
-    {"rdquo",  BYTE_1(0xD3)},
-    {"hellip", BYTE_1(0xC9)},
+    {"mdash",  CHAR_1(0xD1)},
+    {"lsquo",  CHAR_1(0xD4)},
+    {"rsquo",  CHAR_1(0xD5)},
+    {"ldquo",  CHAR_1(0xD2)},
+    {"rdquo",  CHAR_1(0xD3)},
+    {"hellip", CHAR_1(0xC9)},
 
     // Common Script Entities
-    {"copy",   BYTE_1(0xA9)},
-    {"reg",    BYTE_1(0xA8)},
-    {"trade",  BYTE_1(0xAA)},
-    {"bull",   BYTE_1(0xA5)},
-    {"sect",   BYTE_1(0xA4)},
-    {"ndash",  BYTE_1(0xD0)},
-    {"dagger", BYTE_1(0xA0)},
-    {"micro",  BYTE_1(0xB5)},
-    {"para",   BYTE_1(0xA6)},
-    {"eacute", BYTE_1(0x8E)},
-    {"Ccedil", BYTE_1(0x82)},
-    {"ccedil", BYTE_1(0x8D)},
+    {"copy",   CHAR_1(0xA9)},
+    {"reg",    CHAR_1(0xA8)},
+    {"trade",  CHAR_1(0xAA)},
+    {"bull",   CHAR_1(0xA5)},
+    {"sect",   CHAR_1(0xA4)},
+    {"ndash",  CHAR_1(0xD0)},
+    {"dagger", CHAR_1(0xA0)},
+    {"micro",  CHAR_1(0xB5)},
+    {"para",   CHAR_1(0xA6)},
+    {"eacute", CHAR_1(0x8E)},
+    {"Ccedil", CHAR_1(0x82)},
+    {"ccedil", CHAR_1(0x8D)},
 
     {NULL}
 };
+
+static EntityMapping<wchar_t> UnicodeEntityMapping[] = {
+    STANDARD_ASCII_WCHAR_ENTITIES,
+
+    // Internally-Referenced Entities
+    {L"mdash",  WCHAR_1(0x2014)},
+    {L"lsquo",  WCHAR_1(0x2018)},
+    {L"rsquo",  WCHAR_1(0x2019)},
+    {L"ldquo",  WCHAR_1(0x201C)},
+    {L"rdquo",  WCHAR_1(0x201D)},
+    {L"hellip", WCHAR_1(0x2026)},
+
+    // Common Script Entities
+    {L"copy",   WCHAR_1(0x00A9)},
+    {L"reg",    WCHAR_1(0x00AE)},
+    {L"trade",  WCHAR_1(0x2122)},
+    {L"bull",   WCHAR_1(0x2022)},
+    {L"sect",   WCHAR_1(0x00A7)},
+    {L"ndash",  WCHAR_1(0x2013)},
+    {L"dagger", WCHAR_1(0x2020)},
+    {L"micro",  WCHAR_1(0x2021)},
+    {L"para",   WCHAR_1(0x00B6)},
+    {L"eacute", WCHAR_1(0x00E9)},
+    {L"Ccedil", WCHAR_1(0x00C7)},
+    {L"ccedil", WCHAR_1(0x00E7)},
+
+	// Unicode-only entities.
+	{L"Delta",  WCHAR_1(0x2206)}, // Unicode INCREMENT character.
+	{L"delta",  WCHAR_1(0x03B4)}, // Lowercase greek delta.
+
+    {NULL}
+};
+
+
+//=========================================================================
+//  Template Support Functions
+//=========================================================================
+//  These are basically cruft--they're only here to allow us to support
+//  both 'char' and 'wchar_t' during the 'text' -> 'textaa' migration.
+//  Once the 'text' command goes away, we can simplify this class
+//  ruthlessly.
+
+// Create an empty template function, and specialize it for char
+// and wchar_t.  The 'tag' argument is unused, but is required for
+// some C++ compilers to select the right version of the template.
+// Pass it in as '(char) 0' or '(wchar_t) 0'.
+template <class CharT>
+static const EntityMapping<CharT> *
+find_mapping(const std::string& inEncoding, CharT tag);
+
+template <>
+static const EntityMapping<char> *
+find_mapping(const std::string& inEncoding, char tag)
+{
+	if (inEncoding == "ISO-8859-1")
+		return &IsoLatin1EntityMapping[0];
+	else if (inEncoding == "windows-1252")
+		return &Windows1252EntityMapping[0];
+    else if (inEncoding == "macintosh")
+		return &MacintoshEntityMapping[0];
+	else
+		return NULL;
+}
+
+template <>
+static const EntityMapping<wchar_t> *
+find_mapping(const std::string& inEncoding, wchar_t tag)
+{
+	if (inEncoding == "UTF-16")
+		return &UnicodeEntityMapping[0];
+	else
+		return NULL;
+}
+
+template <class CharT>
+static std::basic_string<CharT> convert_string(const char *inString)
+{
+	return ConstructString<CharT,const char*>(inString,
+											  inString+strlen(inString));
+}
 
 
 //=========================================================================
 //  Constructor
 //=========================================================================
 
-TEncoding::TEncoding (const TString& inEncodingName,
-					  ErrorLoggingFunc inErrorLoggingFunc)
+template<class CharT>
+TEncoding<CharT>::TEncoding (const std::string& inEncodingName,
+							 ErrorLoggingFunc inErrorLoggingFunc)
 	: mEncodingName(inEncodingName), mErrorLoggingFunc(inErrorLoggingFunc)
 {
-	if (mEncodingName == "ISO-8859-1")
-		mEntityMapping = &IsoLatin1EntityMapping[0];
-	else if (mEncodingName == "windows-1252")
-		mEntityMapping = &Windows1252EntityMapping[0];
-    else if (mEncodingName == "macintosh")
-		mEntityMapping = &MacintoshEntityMapping[0];
-	else
-	{
-		// XXX - We should never get here, so just go ahead and trigger
-		// an assertion failure while debugging.  We should really look
-		// into issuing some kind of fatal runtime error using the
-		// logging subsystem.
-		mEntityMapping = NULL;
-		ASSERT(false);
-	}
+	mEntityMapping = find_mapping<CharT>(inEncodingName, (CharT) 0);
+	if (mEntityMapping == NULL)
+		gLog.FatalError("Unknown character set %s", inEncodingName.c_str());
 }
 
 
@@ -175,24 +260,26 @@ TEncoding::TEncoding (const TString& inEncodingName,
 //  Convert various "magic" character sequences that commonly appear in
 //  ASCII text into ISO entities.
 
-TString TEncoding::FixSpecials (const TString& inString) const
+template<class CharT>
+typename TEncoding<CharT>::string_type
+TEncoding<CharT>::FixSpecials (const string_type& inString) const
 {
-    TString result;
+    string_type result;
 
     // Iterate through the string.
-    uint32 input_length = inString.Length();
+    uint32 input_length = inString.length();
     for (uint32 i = 0; i < input_length; i++)
     {
 		char current = inString[i];
 		if (current == '-' && i+1 < input_length && inString[i+1] == '-')
 		{
-			result += "&mdash;";
+			result += convert_string<CharT>("&mdash;");
 			i++;
 		}
 		else if (current == '.' && i+2 < input_length &&
 				 inString[i+1] == '.' && inString[i+2] == '.')
 		{
-			result += "&hellip;";
+			result += convert_string<CharT>("&hellip;");
 			i += 2;
 		}
 		else
@@ -203,9 +290,11 @@ TString TEncoding::FixSpecials (const TString& inString) const
     return result;
 }
 
-TString TEncoding::FixQuotes (const TString& inString) const
+template<class CharT>
+typename TEncoding<CharT>::string_type
+TEncoding<CharT>::FixQuotes (const string_type& inString) const
 {
-    TString result;
+    string_type result;
 	
     // 'want_left' indicates that the next character, if a quote,
     // should be a left quote.
@@ -213,24 +302,24 @@ TString TEncoding::FixQuotes (const TString& inString) const
     bool want_left = true;
 	
     // Iterate through the string.
-    uint32 input_length = inString.Length();
+    uint32 input_length = inString.length();
     for (uint32 i = 0; i < input_length; i++)
     {
 		char current = inString[i];
 		if (current == '\'')
 		{
 			if (want_left)
-				result += "&lsquo;";
+				result += convert_string<CharT>("&lsquo;");
 			else
-				result += "&rsquo;";
+				result += convert_string<CharT>("&rsquo;");
 			// Leave want_left unchanged.
 		}
 		else if (current == '\"')
 		{
 			if (want_left)
-				result += "&ldquo;";
+				result += convert_string<CharT>("&ldquo;");
 			else
-				result += "&rdquo;";
+				result += convert_string<CharT>("&rdquo;");
 			// Leave want_left unchanged.	    
 		}
 		else if (isspace(current))
@@ -247,12 +336,14 @@ TString TEncoding::FixQuotes (const TString& inString) const
     return result;
 }
 
-TString TEncoding::EncodeEntities (const TString& inString) const
+template<class CharT>
+typename TEncoding<CharT>::string_type
+TEncoding<CharT>::EncodeEntities (const string_type& inString) const
 {
-    TString result;
+    string_type result;
 
     // Iterate through the string.
-    uint32 input_length = inString.Length();
+    uint32 input_length = inString.length();
     for (uint32 i = 0; i < input_length; i++)
     {
 		char current = inString[i];
@@ -266,21 +357,21 @@ TString TEncoding::EncodeEntities (const TString& inString) const
 			
 			// Extract the entity name.
 			int name_len = i - start;
-			TString name(&((const char*) inString)[start], name_len);
+			string_type name = inString.substr(start, name_len);
 			
 			// Handle unterminated entities.
 			if (inString[i] != ';')
 			{
 				(*mErrorLoggingFunc)(inString, start - 1,
 									 "Entity needs a trailing semicolon");
-				result += "&";
+				result += '&';
 				result += name;
 				return result;
 			}
 			
 			// Look up the entity name.
 			bool found_mapping = false;
-			for (EntityMapping *entity_mapping = mEntityMapping;
+			for (const EntityMapping<CharT> *entity_mapping = mEntityMapping;
 				 entity_mapping->name != NULL; entity_mapping++)
 			{
 				if (entity_mapping->name == name)
@@ -294,7 +385,8 @@ TString TEncoding::EncodeEntities (const TString& inString) const
 			{
 				(*mErrorLoggingFunc)(inString, start - 1,
 									 "Unknown entity name");
-				result += TString("&") + name + TString(";");
+				result += (convert_string<CharT>("&") + name +
+						   convert_string<CharT>(";"));
 			}
 		}
 		else
@@ -305,7 +397,19 @@ TString TEncoding::EncodeEntities (const TString& inString) const
     return result;
 }
 
-TString TEncoding::TransformString (const TString& inString) const
+template<class CharT>
+typename TEncoding<CharT>::string_type
+TEncoding<CharT>::TransformString (const string_type& inString) const
 {
 	return EncodeEntities(FixQuotes(FixSpecials(inString)));
 }
+
+
+//=========================================================================
+//  Template Instantiations
+//=========================================================================
+//  We need to instantiate our templates manually.
+
+template class TEncoding<char>;
+template class TEncoding<wchar_t>;
+

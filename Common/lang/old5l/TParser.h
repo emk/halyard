@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -9,54 +10,86 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#if !defined (_Parser_h_)
-#define _Parser_h_
+//////////////////////////////////////////////////////////////////////////////
+// Parser.h : Front end for the IndexGen application. It takes a script
+//            file and parses it to find the start of commands.
+//
+// This code is used to split the file into separate top-level forms, which
+// are headers, cards, and macrodefs. It doesn't actually parse the code
+// for use by the engine. Instead, the engine creates TStreams from each
+// top-level form and uses TStream to do the actual parsing.
+//
+// This means that a lot of paren balancing code and escape processing is
+// duplicated between TStream and TParser in some form or another, and if
+// the two files disagree, the results might be weird.  Quite frankly, this
+// is not the cleanest design.
+
+#if !defined (_TParser_h_)
+#define _TParser_h_
+
+#include <string>
+#include <map>
 
 #include "TCommon.h"
 #include "TString.h"
-#include "Index.h"
-#include "LUtil.h"
+#include "TIndex.h"
 
-#define BUFFER_SIZE		512
-#define ILLEGAL_TYPE	0
-#define CARD_TYPE		1
-#define HEADER_TYPE		2
-#define MACRO_TYPE		3
+BEGIN_NAMESPACE_FIVEL
+
+#define PARSER_BUFFER_SIZE 512
+#define ILLEGAL_TYPE ("")
 
 /*-----------------------------------------------------------------
 
 CLASS
-    Parser
+    TParser
 
 	Parser for 5L scripting language.  Parses out Card, Macro, and 
-	Header constructs from an IndexFile.
+	Header constructs from an TIndexFile.
 
 AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class Parser : public TObject
+class TParser : public TObject
 {
+	private:
+		//////////
+	    // A mapping from top-level-form names ("card", "macrodef")
+		// to the appropriate TIndexManager.
+	    //
+	    static std::map<std::string,TIndexManager*> sManagerMap;
 
 	public:
 		//////////
+		// Register an index manager to process a new kind of top-level-form
+		// (e.g., "card", "macrodef", etc.).
+	    //
+	    // [in] inTypeName - The lower-case name ("card", etc.).
+		// [in] inManager - The index manager to handle tlf's with this name.
+	    //
+		static void RegisterIndexManager(const std::string &inTypeName,
+										 TIndexManager *inManager);
+
+		//////////
 		// Constructor.
 		//
-		Parser();
+		TParser();
 		
 		//////////
 		// Destructor.
 		//
-		~Parser();
+		~TParser();
 	
 		//////////
-		// Parse the given IndexFile, consisting of Card, Macro, and Header
+		// Parse the given TIndexFile, consisting of Card, Macro, and Header
 		// constructs.
 		//
 		// [in] inFile - index file to parse
-		// [out] return - false if there was an error parsing the index file, otherwise true
+		// [out] return - false if there was an error parsing the index file,
+        //                otherwise true
 		//
-		bool			Parse(IndexFile *inFile);
+		bool			Parse(TIndexFile *inFile);
 
 	protected:
 		//////////
@@ -77,7 +110,7 @@ class Parser : public TObject
 		//////////
 		// Input buffer.
 		//
-		unsigned char	inBuffer[BUFFER_SIZE];
+		unsigned char	inBuffer[PARSER_BUFFER_SIZE];
 		
 		//////////
 		// Has the last buffer been read in?
@@ -108,6 +141,16 @@ class Parser : public TObject
 		// Are we currently parsing inside an escape sequence?
 		//
 		bool			inEscape;
+
+		//////////
+		// Should the next character be escaped?
+		//
+		bool			escapeNext;
+		
+		//////////
+		// Was the last character a carriage return?
+		//
+		bool			mLastCharWasCR;
 		
 		//////////
 		// Current line in the input file.
@@ -115,10 +158,10 @@ class Parser : public TObject
 		int32			curLine;
 
 		//////////
-		// Last type of identifier successfully parsed.<br>
-		// (CARD_TYPE, MACRO_TYPE, HEADER_TYPE, ILLEGAL_TYPE)
+		// Last type of identifier successfully parsed
+		// ("card", "macrodef", etc.).
 		//
-		int32			lastGoodType;
+		TString			lastGoodType;
 		
 		//////////
 		// Name of the lastGoodType. 
@@ -126,9 +169,9 @@ class Parser : public TObject
 		TString			lastGoodThing;
 		
 		//////////
-		// IndexFile for the script that we are parsing.
+		// TIndexFile for the script that we are parsing.
 		//
-		IndexFile		*scriptFile;
+		TIndexFile		*scriptFile;
 				
 		//////////
 		// Find the start of the next command.
@@ -150,7 +193,7 @@ class Parser : public TObject
 		// [out] return - the type of this object, one of:<br> 
 		//				  (CARD_TYPE, MACRO_TYPE, HEADER_TYPE, ILLEGAL_TYPE)
 		//
-		int32			findType(void);
+		TString			findType(void);
 		
 		//////////
 		// Get the next identifier out of the input file.
@@ -161,8 +204,9 @@ class Parser : public TObject
 		bool			findName(TString &inString);
 		
 		//////////
-		// Get the next string out of the input file. Allocate memory to just fit
-		// the string and return it. Skip white space before the string.
+		// Get the next string out of the input file. Allocate memory to
+		// just fit the string and return it. Skip white space before the
+		// string.
 		//
 		// [in/out] inString - filled with name of next string found
 		// [out] return - true on success, false otherwise
@@ -200,10 +244,129 @@ class Parser : public TObject
 		
 };
 
-#endif // _Parser_h_
+END_NAMESPACE_FIVEL
+
+#endif // _TParser_h_
 
 /*
  $Log$
+ Revision 1.2  2002/05/15 11:05:17  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.1.4.2  2002/04/22 08:17:58  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
+ Revision 1.1.4.1  2002/04/22 05:22:33  emk
+ A weekend's worth of merging, in preparation for the Typography switchover.
+
+ MOVED
+ -----
+
+ * Win32/Crypt/md5.c -> Common/libs/crypto/md5.c
+ * Win32/Crypt/md5.h -> Common/libs/crypto/md5.h
+ * Win32/Crypt/md5main.c -> Common/libs/crypto/md5main.c
+ * Win32/Crypt/_blowfish.c -> Common/libs/crypto/blowfish.c
+ * Win32/Crypt/blowfish.h -> Common/libs/crypto/blowfish.h
+
+ Third-party cryptography files moved to the new Common/libs/crypto
+ directory.  In general, third-party code should go under Common/libs, so we
+ can find it all in one place for updates and license checks.
+ Common/freetype2 will probably move there soon for the sake of consistency.
+
+ MERGED
+ ------
+
+ * Win32/Crypt/CryptStream.cpp -> Common/CryptStream.cpp
+ * Win32/Crypt/CryptStream.h -> Common/CryptStream.h
+ * Win32/TestSuite/TestCryptStream.cpp -> Common/CryptStreamTests.cpp
+
+ Modified to use the portable Path abstraction.  Included our standard key
+ once in this file, instead of having it in many different headers
+ throughout the program. Coerced uchar* to char* in several places required
+ by the fstream API (and some other coercions).
+
+ * Win32/FiveL/Parser.cpp -> Common/TParser.cpp
+ * Win32/FiveL/Parser.h -> Common/TParser.h
+
+ Merged in Elizabeth's improved escape-handling code.  Factored out all code
+ which specifically referred to "card", "header" or "macrodef" forms, and
+ added a generic API for registering abitrary top-level forms.
+
+ * Win32/FiveL/Index.cpp -> Common/TIndex.cpp
+ * Win32/FiveL/Index.h -> Common/TIndex.h
+ * NEW: Common/TIndexTests.cpp
+ * NEW: Common/Scripts/test.scr
+
+ Merged TIndex::GetScript from the Macintosh.  Temporarily stopped closing
+ the TIndexFile in the presence of REDOSCRIPT.  Merged some Macintosh code
+ for building indices from FSSpecs; this probably doesn't work.  Changed the
+ Open and Init methods to use the portable Path library (the APIs might be
+ slightly suboptimal).
+
+ * Win32/FiveL/LUtil.cpp -> Common/TDateUtil.cpp
+ * Win32/FiveL/LUtil.h -> Common/TDateUtil.h
+
+ Extracted date-related code from LUtil.*.  Changed wsprintf calls to
+ sprintf.
+
+ * Win32/FiveL/Variable.cpp -> Common/TVariable.cpp
+ * Win32/FiveL/Variable.h -> Common/TVariable.h
+
+ Disabled certain special variables that caused awkward dependencies, and
+ replaced them with an interface for registering arbitrary special
+ variables.
+
+ MODIFIED
+ --------
+
+ * Common/FileSystem.cpp
+ * Common/FileSystem.h
+
+ Added a RenameFile function, and a GetScriptsDirectory function.  Also
+ added a ReplaceWithTemporaryFile function, which overwrites an existing
+ file with a temporary file (someday, we can implement this as an atomic
+ operation on most operating systems).
+
+ * Common/GraphicsTools.h
+
+ Added a no-arguments constuctor for Point.
+
+ * Common/TString.cpp
+ * Common/TString.h
+
+ Lots of "signed/unsigned comparison" and other warning fixes.
+
+ * Common/TStyleSheet.cpp
+ * Common/TStyleSheet.h
+
+ Added full-fledged INCR_X, INCR_Y support!
+
+ * Common/Typography.cpp
+ * Common/Typography.h
+
+ Made sure that kerning+advance can never move the drawing cursor backwards.
+ Fixed warnings.
+
+ * Common/fonttools/pngtest.cpp
+
+ Added a test of transparent text (just for fun).
+
+ KNOWN ISSUES
+ ------------
+
+ * Logging code needs to have Mac-specific features merged back in.
+
+ * TIndexFile doesn't close the underlying file properly in the presence of
+ REDOSCRIPT.  What's going on here?
+
+ * TParser--and maybe TStream--need to have cross-platform end-of-line
+ handling.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

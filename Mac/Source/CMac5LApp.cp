@@ -24,7 +24,7 @@
 
 #include <iostream.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CConfig.h"
 #include "CMac5LApp.h"
@@ -40,17 +40,13 @@
 #include "CCard.h"
 #include "CMacroManager.h"
 #include "CHeader.h"
-#include "CVariable.h"
+#include "TStyleSheet.h"
+#include "TVariable.h"
 #include "CFiles.h"
-#include "CIndex.h"
+#include "TIndex.h"
 #include "CCursor.h"
-
-
-// build stuff
-#define VERSION_STRING	"5L for MacOS 3.3.1 (Development)"
-#define VERSION_MAJOR_NUM	3
-#define VERSION_MINOR_NUM	3
-#define VERSION_BUILD_NUM	1
+#include "TParser.h"
+#include "TVersion.h"
 
 //
 // constants
@@ -83,21 +79,13 @@ CCardManager		gCardManager;
 CMacroManager		gMacroManager;
 CHeaderManager		gHeaderManager;
 
-CVariableManager	gVariableManager;
 CCursorManager		gCursorManager;
-CIndexFileManager	gIndexFileManager;
 CPaletteManager		gPaletteManager;
 CPictureManager		gPictureManager;
 
 CPlayerView			*gPlayerView;
 CMoviePlayer		gMovieManager;
 WindowPtr			gWindow;
-
-KLogger				gLog;
-KLogger				gMissingMediaLog;
-#ifdef DEBUG
-KLogger				gDebugLog;
-#endif
 
 CMac5LApp			*gTheApp;
 
@@ -131,6 +119,7 @@ int FiveL::FiveLmain()
 	
 									// Initialize standard Toolbox managers
 	UQDGlobals::InitializeToolbox(&qd);
+	TLogger::MarkToolboxAsInitialized();
 	
 	new LGrowZone(20000);			// Install a GrowZone function to catch
 									//    low memory situations.
@@ -174,6 +163,11 @@ int FiveL::FiveLmain()
 //		¥ CMac5LApp Class
 // ===========================================================================
 
+void CMac5LApp::EmergencyUnfade()
+{
+	DoGFade(true, 5, false);
+}
+
 // ---------------------------------------------------------------------------
 //		¥ CMac5LApp
 // ---------------------------------------------------------------------------
@@ -193,7 +187,7 @@ CMac5LApp::CMac5LApp()
 
 	// Setup the Gamma tools
 	SetupGammaTools();
-		
+	
 	// Register classes for objects created from 'PPob' resources
 	// For PowerPlant classes, you can copy the necessary RegisterClass
 	// calls from PPobClasses.cp
@@ -214,18 +208,28 @@ CMac5LApp::CMac5LApp()
 	// Initialize the modules.
 	gModMan = new CModuleManager;
 
-	FiveL::TString	homeDir = gModMan->GetMasterPath();
-	
-	// Open the log file and append to it.
-	gLog.Init(homeDir.GetString(), "5L", true, true);
-	
-	// Initialize the MissingMedia log file but don't open it.
-	gMissingMediaLog.Init(homeDir.GetString(), "MissingMedia", false, true);
-	
+	// Open our log files.
 #ifdef DEBUG
-	gDebugLog.Init(homeDir.GetString(), "Debug");
-	gDebugLog.TimeStamp();
+	TLogger::OpenStandardLogs(true);
+#else
+	TLogger::OpenStandardLogs(false);
 #endif
+
+	// Register our top-level forms.
+	TParser::RegisterIndexManager("card", &gCardManager);
+	TParser::RegisterIndexManager("macrodef", &gMacroManager);
+	TParser::RegisterIndexManager("header", &gHeaderManager);
+	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
+
+	// Register our platform-specific special variables.
+	gVariableManager.RegisterSpecialVariable("_system",
+		&ReadSpecialVariable_system);
+	gVariableManager.RegisterSpecialVariable("_curcard",
+		&CCardManager::ReadSpecialVariable_curcard);
+	gVariableManager.RegisterSpecialVariable("_prevcard",
+		&CCardManager::ReadSpecialVariable_prevcard);
+	gVariableManager.RegisterSpecialVariable("_eof",		
+		&CFileList::ReadSpecialVariable_eof);
 
 	// Fade the screen out.
 	if (gFullScreen and gHideMenuBar)
@@ -257,11 +261,11 @@ CMac5LApp::CMac5LApp()
 	//}
 	// cbo_fix - this should be the equivalent of the above stuff
 	gPaletteManager.Init();
-	
+		
 	gCursorManager.Init();
 	gCursorManager.ChangeCursor(ARROW_CURSOR);
 	gCursorManager.ShowCursor();
-		
+
 	// Set our sleep time.
 	mSleepTime = 0;
 	
@@ -309,6 +313,13 @@ CMac5LApp::CMac5LApp()
 		 	
 	// set up initial values for "global" variables
 	SetGlobals();
+
+	// Register a function to unfade the screen before displaying
+	// engine errors.
+	// XXX - We should do this much sooner, but DoGFade has some
+	// nasty dependencies on gView when unfading.  This coupling
+	// should be broken.
+	TLogger::RegisterErrorPrepFunction(&CMac5LApp::EmergencyUnfade);
 	
 	// Fade back in (once the window has drawn itself).
 	if (gFullScreen and gHideMenuBar)
@@ -357,61 +368,7 @@ void CMac5LApp::DoAEOpenDoc(
 	AppleEvent&			/* outAEReply */,
 	long				/* inAENumber */)
 {
-	AEDescList	docList;
-	OSErr		err = AEGetParamDesc(&inAppleEvent, keyDirectObject,
-							typeWildCard, &docList);
-	if (err != noErr) 
-		Throw_(err);
-	
-	SInt32	numDocs;
-	err = AECountItems(&docList, &numDocs);
-	if (err != noErr) 
-		Throw_(err);
-	
-	// Loop through all items in the list
-	// Extract descriptor for the document
-	// Coerce descriptor data into a FSSpec
-	// Tell Program object to open document
-		
-	for (SInt32 i = 1; i <= numDocs; i++) 
-	{
-		AEKeyword	theKey;
-		DescType	theType;
-		FSSpec		theFileSpec;
-		Size		theSize;
-		int32		theModule;
-		
-		err = AEGetNthPtr(&docList, i, typeFSS, &theKey, &theType,
-							(Ptr) &theFileSpec, sizeof(FSSpec), &theSize);
-		if (err != noErr) 
-			Throw_(err);
-		
-		// If we are already running a script, ignore everything.
-		if (not mScriptRunning)
-		{
-			if (gModMan->HaveModules())
-			{
-				// what do we do here? they have a config file but we have
-				// dragged a file on the icon??
-				
-				// see if this file corresponds to one of our modules
-				theModule = gModMan->FindScript(&theFileSpec);
-				if (theModule != -1)
-				{
-					gModMan->LoadModule(theModule);
-				}
-				else
-				{
-					gModMan->ResetPaths(&theFileSpec);
-					OpenScript(&theFileSpec);
-				}
-			}
-			else
-				OpenScript(&theFileSpec);
-		}
-	}
-	
-	AEDisposeDesc(&docList);
+	// Ignore the OpenDoc event--we no longer open drag & dropped scripts.
 }
 
 //
@@ -477,9 +434,6 @@ void CMac5LApp::DoExit(int16 inSide)
 //
 void CMac5LApp::StartUp(void)
 {
-#ifdef DEBUG
-	FSSpec	scrSpec;
-#endif
 	bool	stayRunning = true;
 	
 	if (gModMan->HaveModules())
@@ -492,19 +446,11 @@ void CMac5LApp::StartUp(void)
 		else
 			stayRunning = gModMan->LoadModule(-1);
 	}
-#ifdef DEBUG
-	// We can ask for a script. Only for debugging??
-	else if (GetScriptFile(&scrSpec))
-		stayRunning = OpenScript(&scrSpec);
-	else
-		stayRunning = false;
-#else
 	else
 	{
 		gLog.Caution("Mac5L does not have a configuration file <Mac5L.config>");
 		stayRunning = false;
 	}
-#endif
 
 	if (not stayRunning)
 		DoQuit();
@@ -516,6 +462,7 @@ void CMac5LApp::StartUp(void)
 void CMac5LApp::CleanUp(void)
 {
 	gHeaderManager.RemoveAll();			// toss all headers
+	gStyleSheetManager.RemoveAll();		// toss all style sheets
 	gMacroManager.RemoveAll();			// toss all macros
 	gCardManager.RemoveAll();			// toss all cards
 	gVariableManager.RemoveAll();		// toss all variables
@@ -600,14 +547,14 @@ void CMac5LApp::QuitScript(void)
 //	OpenScript - Open the given script file, open and read the index
 //					file and start the script running.
 //
-bool  CMac5LApp::OpenScript(FSSpec *scriptSpec)
+bool  CMac5LApp::OpenScript(const TString &inScriptName)
 {
 	bool	retValue = false;
 		
 	// set mSleepTime again, just to be sure
 	mSleepTime = 0;
 
-	if (gIndexFileManager.NewIndex(scriptSpec))	
+	if (gIndexFileManager.NewIndex(inScriptName))	
 	{
 		mScriptRunning = true;
 		
@@ -724,14 +671,10 @@ void CMac5LApp::RestorePalette(void)
 //
 void CMac5LApp::ReDoScript(const char *curCard)
 {
-	FSSpec			scriptSpec;
-	FiveL::TString	scriptString;
 	bool			thing;
 
 	mScriptRunning = false;
 
-	scriptString = gModMan->GetCurScript();	
-	
 	gCardManager.CurCardKill();
 	
 	if (gMovieManager.Playing())
@@ -745,13 +688,12 @@ void CMac5LApp::ReDoScript(const char *curCard)
 	// don't kill the variable tree as we want the variables to have their current values
 	//
 	gHeaderManager.RemoveAll();
+	gStyleSheetManager.RemoveAll();
 	gMacroManager.RemoveAll();
 	gCardManager.RemoveAll();
 	gIndexFileManager.RemoveAll();
 		
-	theConfig->FillScriptSpec(&scriptSpec, scriptString.GetString());
-	
-	thing = OpenScriptAgain(&scriptSpec, curCard);
+	thing = OpenScriptAgain(gModMan->GetCurScript(), curCard);
 
 	if (not thing)
 	{
@@ -821,8 +763,6 @@ void CMac5LApp::FindCommandStatus(CommandT inCommand,
 //
 void CMac5LApp::ReDoReDoScript(void)
 {
-	FSSpec	scriptSpec;
-	FiveL::TString	scriptString;
 	bool	thing = false;
 	
 	if (mReDoReDo)
@@ -830,10 +770,7 @@ void CMac5LApp::ReDoReDoScript(void)
 		mReDoReDo = false;
 		gPlayerView->Activate();
 		
-		scriptString = gModMan->GetCurScript();	
-		theConfig->FillScriptSpec(&scriptSpec, scriptString.GetString());
-	
-		thing = OpenScriptAgain(&scriptSpec, mReDoCard.GetString());
+		thing = OpenScriptAgain(gModMan->GetCurScript(), mReDoCard.GetString());
 		
 		if (not thing)
 		{
@@ -858,7 +795,7 @@ void CMac5LApp::ReDoReDoScript(void)
 //
 //	OpenScriptAgain
 //
-bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard)
+bool CMac5LApp::OpenScriptAgain(const TString &inScriptName, const char *jumpCard)
 {
 	bool	retValue = false;
 		
@@ -867,7 +804,7 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard)
 
 	gDebugLog.Log("reinit everything for redoscript");
 
-	if (gIndexFileManager.NewIndex(scriptSpec))		
+	if (gIndexFileManager.NewIndex(inScriptName))		
 	{
 		mScriptRunning = true;
 		
@@ -884,6 +821,7 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard)
 	{
 		// error in the script, toss all cards headers and macros
 		gHeaderManager.RemoveAll();
+		gStyleSheetManager.RemoveAll();
 		gMacroManager.RemoveAll();
 		gCardManager.RemoveAll();
 		gIndexFileManager.RemoveAll();
@@ -981,16 +919,58 @@ void CMac5LApp::SetGlobals(void)
 	
 	buildNum = 10000 * VERSION_MAJOR_NUM;
 	buildNum += (100 * VERSION_MINOR_NUM);
-	buildNum += VERSION_BUILD_NUM;
+	buildNum += VERSION_REV_BIG;
 	gVariableManager.SetLong("_enginebuild", buildNum);
 }
 
 /* 
 $Log$
+Revision 1.20  2002/05/15 11:05:27  emk
+3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+is available, and several subsystems have been refactored.  For more
+detailed descriptions, see the CVS branch.
+
+The merged Mac code hasn't been built yet; I'll take care of that next.
+
+
 Revision 1.19  2002/05/03 10:37:01  hamon
 Deleted #ifdef DEBUG lines surrounding gDebugLog.Log messages
 
 Changes by Elizabeth.
+
+Revision 1.18.2.5  2002/05/15 09:09:57  emk
+Added code to unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+Migrated the Mac (buttpcx ...) to the new anti-aliased typography library.
+
+The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect FiveL to do something childish immediately after fatal errors and assertion failures.
+
+Revision 1.18.2.4  2002/04/25 11:34:25  emk
+Added a (defstyle ...) top-level form, and a (textaa ...) command for drawing anti-aliased text.
+
+Revision 1.18.2.3  2002/04/24 04:34:53  emk
+Added static member functions to CCard, FFiles, CMac5LApp to implement various 5L special variables that depend on unmerged and/or non-portable code.
+
+Revision 1.18.2.2  2002/04/23 11:36:07  emk
+More merge-related fixes.
+
+1) Removed all code which treats scripts as FSSpecs, and replaced it with code that treats scripts as filenames, minus the path and extension.  This mirrors how TFileIndex wants to work.  A side effect: Dragging scripts to the engine will no longer work (if it ever did).
+
+2) Use TVersion to get the version number.
+
+3) KLogger -> TLogger changes.
+
+Revision 1.18.2.1  2002/04/22 13:20:08  emk
+Major Mac cleanups:
+
+- We use subprojects to recursively build 5L and its support libraries.  This means no more opening up four different projects, etc., just to do a build.
+
+- Search & replaced class names for merged classes.  This doesn't quite work or build yet, but I'm working on a branch, so that's OK.
+
+- Other Mac build fixes.
+
+Tomorrow: Get things running again, make a test binary, and continue merging.
 
 Revision 1.18  2002/04/19 09:46:30  emk
 Changes to make the Macintosh version build again for the 3.3.1 release, and to allow Elizabeth to work on the Macintosh without any trouble.

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -11,32 +12,39 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Index.cpp : Routines for reading script indices from disk and loading
+// TIndex.cpp : Routines for reading script indices from disk and loading
 //    headers, macros and cards into memory. Some files may be
 //    encrypted; these are decrypted once they are read into
 //    memory.
 //
 
-#include "stdafx.h"
+#include "TCommon.h"
 
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>  
-#include <sys\types.h> 
-#include <sys\stat.h>
+#include <stdio.h>
+#if !FIVEL_PLATFORM_MACINTOSH
+#	include <sys/types.h>
+#endif
+#include <sys/stat.h>
 #include <time.h>
 
-#include "Index.h"
-#include "Globals.h"
+#include "TIndex.h"
+#include "TLogger.h"
 
 // define IGNORE_IDX_FILE to parse script files on the fly
 #define IGNORE_IDX_FILE
 #ifdef IGNORE_IDX_FILE
-#include "Parser.h"
+#include "TParser.h"
 #endif
 
+USING_NAMESPACE_FIVEL
 
-Index::Index(IndexFile *inFile, const char *inName, int32 inStart, int32 inEnd) : TBNode(inName)
+TIndexFileManager FIVEL_NS gIndexFileManager;
+
+TIndex::TIndex(TIndexFile *inFile, const char *inName,
+			   int32 inStart, int32 inEnd)
+	: TBNode(inName)
 {
 	m_File = inFile;
 	if (m_File != NULL)
@@ -46,7 +54,7 @@ Index::Index(IndexFile *inFile, const char *inName, int32 inStart, int32 inEnd) 
     m_End = inEnd;
 }
 
-Index::~Index()
+TIndex::~TIndex()
 {
 	if (m_File != NULL)
 		m_File->RemoveReference();
@@ -55,7 +63,7 @@ Index::~Index()
 //
 //	SetScript - Read in the text for this index from the file.
 //
-bool Index::SetScript()
+bool TIndex::SetScript()
 {
     int32	length;
 	int		count;
@@ -76,7 +84,7 @@ bool Index::SetScript()
 
     if (count < length)
 	{
-        gLog.Log("I/O error reading data for index %s.", Key());
+        gLog.Error("I/O error reading data for index %s.", Key());
 		return (false);
 	}
 
@@ -92,50 +100,58 @@ bool Index::SetScript()
 //
 //	FlushScript - Toss the contents of the script.
 //
-void Index::FlushScript()
+void TIndex::FlushScript()
 {
     m_Script.Empty();
 }
 
 //
-//	IndexManager methods
+//	GetScript - 
+//
+const char *TIndex::GetScript()
+{
+    return (m_Script.GetString());
+}
+
+//
+//	TIndexManager methods
 //
 
 //
-//	IndexManager - Constructor
+//	TIndexManager - Constructor
 //
-IndexManager::IndexManager() : TBTree()
+TIndexManager::TIndexManager() : TBTree()
 {
 }
 
-IndexManager::~IndexManager()
+TIndexManager::~TIndexManager()
 {
 	if (m_Root != NULL) 
 		RemoveAll();
 }
 
 //
-//	IndexFileManager methods
+//	TIndexFileManager methods
 //
 
-IndexFileManager::IndexFileManager() : TBTree()
+TIndexFileManager::TIndexFileManager() : TBTree()
 {
 }
 
-IndexFileManager::~IndexFileManager()
+TIndexFileManager::~TIndexFileManager()
 {
 }
 
 //
 //	NewIndex - Create a new index for the file specified by inName
 //
-bool IndexFileManager::NewIndex(const char *inName)
+bool TIndexFileManager::NewIndex(const char *inName)
 {
-	IndexFile	*newIndex = NULL;
+	TIndexFile	*newIndex = NULL;
 	bool		retValue = false;
 
 	// make sure we don't already have this node
-	newIndex = (IndexFile *) Find(inName);
+	newIndex = (TIndexFile *) Find(inName);
 	if (newIndex != NULL)
 	{
 		gLog.Error("Trying to open script <%s> but it is already open.",
@@ -143,7 +159,7 @@ bool IndexFileManager::NewIndex(const char *inName)
 		return (false);
 	}
 
-	newIndex = new IndexFile(inName);
+	newIndex = new TIndexFile(inName);
 	if (newIndex == NULL)
 	{
 		gLog.Error("Could not allocate memory for script <%s>",
@@ -158,39 +174,39 @@ bool IndexFileManager::NewIndex(const char *inName)
 	{
 		Add(newIndex);
 		
-		// Close only if redoscript is enabled (not sure why we keep it open otherwise??)
-		if (gConfigManager.GetUserPref(REDOSCRIPT) == REDOSCRIPT_ON)
-			newIndex->Close();
+		// We used to call newIndex->Close() here when redoscript
+		// was enabled, but it isn't necessary on the Mac.
 	}
 
 	return (retValue);
 }
 
 //
-//	IndexFile methods
+//	TIndexFile methods
 //
-IndexFile::IndexFile(const char *inName) : TBNode(inName)
+TIndexFile::TIndexFile(const char *inName) : TBNode(inName)
 {
 	m_ReferenceCount = 0;
 	m_AtEnd = false;
 }
 
-IndexFile::~IndexFile()
+TIndexFile::~TIndexFile()
 {
 	Close();
 }
 
 // Increment reference count for this index file
-void IndexFile::AddReference()
+void TIndexFile::AddReference()
 {
 	m_ReferenceCount++;
 }
 
 // Decrement reference count for this index file
-void IndexFile::RemoveReference()
+void TIndexFile::RemoveReference()
 {
-	m_ReferenceCount--;
+	ASSERT(m_ReferenceCount > 0);
 
+	m_ReferenceCount--;
 	if (m_ReferenceCount <= 0)
 	{
 		// remove ourselves from the index file tree
@@ -199,31 +215,13 @@ void IndexFile::RemoveReference()
 }
 
 // Open the file stream associated with this index file
-// inPath is the full path including filename
-bool IndexFile::Open(const char *inPath)
+bool TIndexFile::Open(const FileSystem::Path &inDirectory,
+					  const char *inFile)
 {
-	int		len = strlen(inPath);
-	char	*path = new char[len+1];
-	char	*filename = new char[len+1];
-	char	*ptr;
-
-	ptr = strrchr(inPath, '\\');
-	
-	if (ptr != NULL)
-	{
-		strncpy(path, inPath, ptr - inPath);
-		path[ptr - inPath] = '\0';
-		strcpy(filename, ptr + 1);
-	}
-	else	// assume no path, just filename
-		strcpy(filename, inPath);
-		
 	// determine whether the script is encrypted
-	cryptStream = new CryptStream(path, filename, PAYLOAD_SCRIPT, HCK, sizeof(HCK));
+	cryptStream = new CryptStream(inDirectory, inFile, PAYLOAD_SCRIPT,
+								  HCK, HCK_SIZE);
 	isEncrypted = cryptStream->in_verify();
-	
-	delete [] path;
-	delete [] filename;
 	
 	if(!isEncrypted)
 	{
@@ -231,7 +229,9 @@ bool IndexFile::Open(const char *inPath)
 		delete cryptStream;
 		cryptStream = NULL;
 
-		m_File.open(inPath, ios::in | ios::binary);
+		std::string file =
+			inDirectory.AddComponent(inFile).ToNativePathString();
+		m_File.open(file.c_str(), ios::in | ios::binary);
 		
 	}
 
@@ -242,7 +242,7 @@ bool IndexFile::Open(const char *inPath)
 }
 
 // Returns true if the associated file stream is open
-bool IndexFile::IsOpen()
+bool TIndexFile::IsOpen()
 {
 	if (!isEncrypted)
 	{
@@ -259,7 +259,7 @@ bool IndexFile::IsOpen()
 }
 
 // Seek to the given position in the associated file stream
-void IndexFile::Seek(int32 inPos)
+void TIndexFile::Seek(int32 inPos)
 {
 	if (!isEncrypted)
 		m_File.seekg(inPos);
@@ -268,7 +268,7 @@ void IndexFile::Seek(int32 inPos)
 }
 
 // Returns the current position in the associated file stream
-int32 IndexFile::GetPos()
+int32 TIndexFile::GetPos()
 {
 	if (!isEncrypted)
 		return m_File.tellg();
@@ -278,13 +278,13 @@ int32 IndexFile::GetPos()
 
 // Returns true if the EOF has been reached in the associated file 
 // stream, returns false otherwise
-bool IndexFile::AtEnd()
+bool TIndexFile::AtEnd()
 {
 	return (m_AtEnd);
 }
 
 // Read from the associated file stream
-int32 IndexFile::Read(char *inBuffer, int32 inLength)
+int32 TIndexFile::Read(char *inBuffer, int32 inLength)
 {
 	int32	bytesRead = -1;
 
@@ -318,7 +318,7 @@ int32 IndexFile::Read(char *inBuffer, int32 inLength)
 }
 
 // Close the associated file stream
-void IndexFile::Close()
+void TIndexFile::Close()
 {
 	if (isEncrypted)
 	{
@@ -337,21 +337,17 @@ void IndexFile::Close()
 //		index file, read all the info, initialize headers, cards
 //		and macros.
 //
-bool IndexFile::Init()
+bool TIndexFile::Init()
 {
-	ifstream	   theIndexFile;
+	ifstream		theIndexFile;
     TString     	indexName;
 	TString			scriptName; //root name without extensions
     TString     	theName;
   
-	indexName = gConfigManager.ScriptsPath();
-	scriptName = gConfigManager.ScriptsPath();
-	
-	indexName += Key();
-	scriptName += Key();
-   
-    indexName += ".IDX";
-    scriptName += ".SCR";
+	FileSystem::Path basename =
+		FileSystem::GetScriptsDirectory().AddComponent(Key());
+	indexName = basename.ReplaceExtension("idx").ToNativePathString();
+	scriptName = basename.ReplaceExtension("scr").ToNativePathString();
 
 #ifndef IGNORE_IDX_FILE
     struct _stat	theIndexBuf;
@@ -381,7 +377,8 @@ bool IndexFile::Init()
 #endif
 
     // Open the script file.
-	if (not Open(scriptName))
+	if (not Open(FileSystem::GetScriptsDirectory(),
+				 (TString(Key()) + TString(".scr")).GetString()))
 	{
         gLog.Error("Couldn't open script file <%s>.", scriptName.GetString());
 		return (false);
@@ -391,11 +388,11 @@ bool IndexFile::Init()
 	// Instantiate a parser to check out the script file and initialize all the 
 	//	index information.
 	{
-		Parser		theParser;
-		DWORD		startTime;
-		DWORD		endTime;
+		TParser		theParser;
 
-		startTime = ::timeGetTime();
+		//DWORD		startTime;
+		//DWORD		endTime;
+		//startTime = ::timeGetTime();
 
 		if (not theParser.Parse(this))
 		{
@@ -403,10 +400,9 @@ bool IndexFile::Init()
 			return (false);
 		}
 
-		endTime = ::timeGetTime();
-
-		gDebugLog.Log("It took <%ld> milli-seconds to parse the script file",
-			endTime - startTime);
+		//endTime = ::timeGetTime();
+		//gDebugLog.Log("It took <%ld> milli-seconds to parse the script file",
+		//	endTime - startTime);
 	}
 #else
 
@@ -469,6 +465,149 @@ bool IndexFile::Init()
 
 /*
  $Log$
+ Revision 1.4  2002/05/15 11:05:17  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.3.2.5  2002/04/30 07:57:24  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
+ Revision 1.3.2.4  2002/04/29 06:19:11  emk
+ Some over-the-weekend performance tuning.
+
+ - Added fonttools/fontspeed.cpp, which mimics 5L drawing patterns, but with
+ an empty DrawPixMap routine.
+
+ - Added a pre-rendered glyph cache to the Typography module.
+
+ - Added new features to GraphicsTools to support the glyph cache.
+
+ - visual-test.png has apparently changed, but I can't see any difference.
+ It's probably slight changes in anti-aliased pixel intensity.
+
+ - Miscellaneous other cleanups and tweaks.
+
+ Revision 1.3.2.3  2002/04/24 04:32:32  emk
+ After much thought, I've finally decided that TIndexFileManager shouldn't close individual files, even if redoscript is turned on.  If this breaks the Windows engine, I'll port the Macintosh redoscript code to Windows.
+
+ Revision 1.3.2.2  2002/04/22 08:17:57  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
+ Revision 1.3.2.1  2002/04/22 05:22:33  emk
+ A weekend's worth of merging, in preparation for the Typography switchover.
+
+ MOVED
+ -----
+
+ * Win32/Crypt/md5.c -> Common/libs/crypto/md5.c
+ * Win32/Crypt/md5.h -> Common/libs/crypto/md5.h
+ * Win32/Crypt/md5main.c -> Common/libs/crypto/md5main.c
+ * Win32/Crypt/_blowfish.c -> Common/libs/crypto/blowfish.c
+ * Win32/Crypt/blowfish.h -> Common/libs/crypto/blowfish.h
+
+ Third-party cryptography files moved to the new Common/libs/crypto
+ directory.  In general, third-party code should go under Common/libs, so we
+ can find it all in one place for updates and license checks.
+ Common/freetype2 will probably move there soon for the sake of consistency.
+
+ MERGED
+ ------
+
+ * Win32/Crypt/CryptStream.cpp -> Common/CryptStream.cpp
+ * Win32/Crypt/CryptStream.h -> Common/CryptStream.h
+ * Win32/TestSuite/TestCryptStream.cpp -> Common/CryptStreamTests.cpp
+
+ Modified to use the portable Path abstraction.  Included our standard key
+ once in this file, instead of having it in many different headers
+ throughout the program. Coerced uchar* to char* in several places required
+ by the fstream API (and some other coercions).
+
+ * Win32/FiveL/Parser.cpp -> Common/TParser.cpp
+ * Win32/FiveL/Parser.h -> Common/TParser.h
+
+ Merged in Elizabeth's improved escape-handling code.  Factored out all code
+ which specifically referred to "card", "header" or "macrodef" forms, and
+ added a generic API for registering abitrary top-level forms.
+
+ * Win32/FiveL/Index.cpp -> Common/TIndex.cpp
+ * Win32/FiveL/Index.h -> Common/TIndex.h
+ * NEW: Common/TIndexTests.cpp
+ * NEW: Common/Scripts/test.scr
+
+ Merged TIndex::GetScript from the Macintosh.  Temporarily stopped closing
+ the TIndexFile in the presence of REDOSCRIPT.  Merged some Macintosh code
+ for building indices from FSSpecs; this probably doesn't work.  Changed the
+ Open and Init methods to use the portable Path library (the APIs might be
+ slightly suboptimal).
+
+ * Win32/FiveL/LUtil.cpp -> Common/TDateUtil.cpp
+ * Win32/FiveL/LUtil.h -> Common/TDateUtil.h
+
+ Extracted date-related code from LUtil.*.  Changed wsprintf calls to
+ sprintf.
+
+ * Win32/FiveL/Variable.cpp -> Common/TVariable.cpp
+ * Win32/FiveL/Variable.h -> Common/TVariable.h
+
+ Disabled certain special variables that caused awkward dependencies, and
+ replaced them with an interface for registering arbitrary special
+ variables.
+
+ MODIFIED
+ --------
+
+ * Common/FileSystem.cpp
+ * Common/FileSystem.h
+
+ Added a RenameFile function, and a GetScriptsDirectory function.  Also
+ added a ReplaceWithTemporaryFile function, which overwrites an existing
+ file with a temporary file (someday, we can implement this as an atomic
+ operation on most operating systems).
+
+ * Common/GraphicsTools.h
+
+ Added a no-arguments constuctor for Point.
+
+ * Common/TString.cpp
+ * Common/TString.h
+
+ Lots of "signed/unsigned comparison" and other warning fixes.
+
+ * Common/TStyleSheet.cpp
+ * Common/TStyleSheet.h
+
+ Added full-fledged INCR_X, INCR_Y support!
+
+ * Common/Typography.cpp
+ * Common/Typography.h
+
+ Made sure that kerning+advance can never move the drawing cursor backwards.
+ Fixed warnings.
+
+ * Common/fonttools/pngtest.cpp
+
+ Added a test of transparent text (just for fun).
+
+ KNOWN ISSUES
+ ------------
+
+ * Logging code needs to have Mac-specific features merged back in.
+
+ * TIndexFile doesn't close the underlying file properly in the presence of
+ REDOSCRIPT.  What's going on here?
+
+ * TParser--and maybe TStream--need to have cross-platform end-of-line
+ handling.
+
  Revision 1.3  2002/03/26 17:03:49  tvw
  Crypt library rewrite, support for encrypted 5L scripts, command-line tool
  for encrypting/decrypting 5L scripts, 5LDB, potentially other 5L files.
@@ -482,7 +621,7 @@ bool IndexFile::Init()
  (2) Added CryptTool, a command-line utility to encrypt/decrypt scripts,
  5LDB, etc.  Run with no options for help.
 
- (3) Modified IndexFile to automatically detect encrypted scripts and
+ (3) Modified TIndexFile to automatically detect encrypted scripts and
  use a CryptStream for I/O if detected.
 
  (4) Added TestSuite project to house FiveL unit testing.  Added some unit

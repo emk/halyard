@@ -4,13 +4,13 @@
 
 #include "THeader.h"
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CMac5LApp.h"
 #include "CConfig.h"
 #include "CResource.h"
 #include "CPalette.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CModule.h"
 #include "CPlayerView.h"
 

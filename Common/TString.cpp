@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -26,6 +27,8 @@ USING_NAMESPACE_FIVEL
 #ifdef WIN32
 #define snprintf _snprintf
 #endif
+
+char inBuffer[INBUFFER_SIZE];
 
 //
 //  TString - Default constructor.
@@ -114,6 +117,18 @@ TString::TString(const TString &inStr) : TObject()
 	}
 }
 
+TString::TString(const std::string &inStr)
+{
+	m_Length = inStr.length();
+	m_Size = inStr.length();
+	m_String = NULL;
+	m_MinResize = MIN_STRING_RESIZE;
+
+	Resize(m_Length + 1);
+	strcpy(m_String, inStr.c_str());
+}
+
+
 //
 //	~TString - Destructor.
 //
@@ -147,6 +162,10 @@ TString &TString::operator=(const char *inStr)
         Resize(m_Length + 1);
         strcpy(m_String, inStr);
     }
+	else
+	{
+		Resize(1);
+	}
 
     return (*this);
 }
@@ -170,6 +189,10 @@ TString &TString::operator=(const TString &inStr)
         Resize(m_Length + 1);
         strcpy(m_String, inStr.m_String);
     }
+	else
+	{
+		Resize(1);
+	}
 
     return (*this);
 }
@@ -396,6 +419,7 @@ void TString::Resize(uint32 inSize)
 			m_String = newStr;
 		}
 	}
+	ASSERT(m_String != NULL);
 }
 
 //
@@ -473,7 +497,7 @@ void TString::MakeLower()
 	if (not IsEmpty())
 	{
 #ifndef HAVE__STRLWR
-		for (int i = 0; i < m_Length; i++)
+		for (uint32 i = 0; i < m_Length; i++)
 			m_String[i] = tolower(m_String[i]);
 #else
 		_strlwr(m_String);
@@ -486,7 +510,7 @@ void TString::MakeUpper()
 	if (not IsEmpty())
 	{
 #ifndef HAVE__STRUPR
-		for (int i = 0; i < m_Length; i++)
+		for (uint32 i = 0; i < m_Length; i++)
 			m_String[i] = toupper(m_String[i]);
 #else
 		_strupr(m_String);
@@ -831,7 +855,10 @@ TString TString::Mid(uint32 inStart, int32 inLen /* = -1 */)
 	int32		tmpLen = inLen;
 
 	if (inStart > m_Length)
+	{
+		ASSERT(tmpStr.m_String != NULL);
 		return(tmpStr);
+	}
 
 	if ((inLen == -1) or (inStart + inLen > m_Length))
 		tmpLen = m_Length - inStart;
@@ -843,6 +870,7 @@ TString TString::Mid(uint32 inStart, int32 inLen /* = -1 */)
 
     tmpStr.Update();
 
+	ASSERT(tmpStr.m_String != NULL);
     return (tmpStr);
 }
 
@@ -866,9 +894,11 @@ void TString::Set(uint32 inStart, uint32 inLen, const TString &str)
 //
 //	operator [] - Return a character from the array. 
 //
-char TString::operator [] (uint32 inPos) const
+char TString::operator [] (int inPos) const
 {
-    if (inPos >= m_Length) 
+	ASSERT(inPos >= 0);
+
+    if ((uint32) inPos >= m_Length) 
     	inPos = m_Length - 1;
 
     return (m_String[inPos]);
@@ -877,9 +907,11 @@ char TString::operator [] (uint32 inPos) const
 //
 //	operator () - Same as [].
 //
-char TString::operator () (uint32 inPos) const
+char TString::operator () (int inPos) const
 {
-	if (inPos >= m_Length)
+	ASSERT(inPos >= 0);
+
+	if ((uint32) inPos >= m_Length)
 		inPos = m_Length - 1;
 
 	return (m_String[inPos]);
@@ -1085,7 +1117,7 @@ TString TString::IntToString(int32 inNum)
 	char buffer[SNPRINTF_BUFFER_SIZE];
 	int retval;
 
-	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%d", inNum);
+	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%d", (int) inNum);
 	ASSERT(!IsSnprintfError(retval, SNPRINTF_BUFFER_SIZE));
 	return TString(buffer);
 }
@@ -1098,7 +1130,8 @@ TString TString::UIntToString(uint32 inNum)
 	char buffer[SNPRINTF_BUFFER_SIZE];
 	int retval;
 
-	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%u", inNum);
+	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%u",
+					  (unsigned int) inNum);
 	ASSERT(!IsSnprintfError(retval, SNPRINTF_BUFFER_SIZE));
 	return TString(buffer);
 }
@@ -1130,6 +1163,176 @@ istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.7  2002/05/15 11:05:17  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.6.4.2  2002/04/22 05:22:33  emk
+ A weekend's worth of merging, in preparation for the Typography switchover.
+
+ MOVED
+ -----
+
+ * Win32/Crypt/md5.c -> Common/libs/crypto/md5.c
+ * Win32/Crypt/md5.h -> Common/libs/crypto/md5.h
+ * Win32/Crypt/md5main.c -> Common/libs/crypto/md5main.c
+ * Win32/Crypt/_blowfish.c -> Common/libs/crypto/blowfish.c
+ * Win32/Crypt/blowfish.h -> Common/libs/crypto/blowfish.h
+
+ Third-party cryptography files moved to the new Common/libs/crypto
+ directory.  In general, third-party code should go under Common/libs, so we
+ can find it all in one place for updates and license checks.
+ Common/freetype2 will probably move there soon for the sake of consistency.
+
+ MERGED
+ ------
+
+ * Win32/Crypt/CryptStream.cpp -> Common/CryptStream.cpp
+ * Win32/Crypt/CryptStream.h -> Common/CryptStream.h
+ * Win32/TestSuite/TestCryptStream.cpp -> Common/CryptStreamTests.cpp
+
+ Modified to use the portable Path abstraction.  Included our standard key
+ once in this file, instead of having it in many different headers
+ throughout the program. Coerced uchar* to char* in several places required
+ by the fstream API (and some other coercions).
+
+ * Win32/FiveL/Parser.cpp -> Common/TParser.cpp
+ * Win32/FiveL/Parser.h -> Common/TParser.h
+
+ Merged in Elizabeth's improved escape-handling code.  Factored out all code
+ which specifically referred to "card", "header" or "macrodef" forms, and
+ added a generic API for registering abitrary top-level forms.
+
+ * Win32/FiveL/Index.cpp -> Common/TIndex.cpp
+ * Win32/FiveL/Index.h -> Common/TIndex.h
+ * NEW: Common/TIndexTests.cpp
+ * NEW: Common/Scripts/test.scr
+
+ Merged TIndex::GetScript from the Macintosh.  Temporarily stopped closing
+ the TIndexFile in the presence of REDOSCRIPT.  Merged some Macintosh code
+ for building indices from FSSpecs; this probably doesn't work.  Changed the
+ Open and Init methods to use the portable Path library (the APIs might be
+ slightly suboptimal).
+
+ * Win32/FiveL/LUtil.cpp -> Common/TDateUtil.cpp
+ * Win32/FiveL/LUtil.h -> Common/TDateUtil.h
+
+ Extracted date-related code from LUtil.*.  Changed wsprintf calls to
+ sprintf.
+
+ * Win32/FiveL/Variable.cpp -> Common/TVariable.cpp
+ * Win32/FiveL/Variable.h -> Common/TVariable.h
+
+ Disabled certain special variables that caused awkward dependencies, and
+ replaced them with an interface for registering arbitrary special
+ variables.
+
+ MODIFIED
+ --------
+
+ * Common/FileSystem.cpp
+ * Common/FileSystem.h
+
+ Added a RenameFile function, and a GetScriptsDirectory function.  Also
+ added a ReplaceWithTemporaryFile function, which overwrites an existing
+ file with a temporary file (someday, we can implement this as an atomic
+ operation on most operating systems).
+
+ * Common/GraphicsTools.h
+
+ Added a no-arguments constuctor for Point.
+
+ * Common/TString.cpp
+ * Common/TString.h
+
+ Lots of "signed/unsigned comparison" and other warning fixes.
+
+ * Common/TStyleSheet.cpp
+ * Common/TStyleSheet.h
+
+ Added full-fledged INCR_X, INCR_Y support!
+
+ * Common/Typography.cpp
+ * Common/Typography.h
+
+ Made sure that kerning+advance can never move the drawing cursor backwards.
+ Fixed warnings.
+
+ * Common/fonttools/pngtest.cpp
+
+ Added a test of transparent text (just for fun).
+
+ KNOWN ISSUES
+ ------------
+
+ * Logging code needs to have Mac-specific features merged back in.
+
+ * TIndexFile doesn't close the underlying file properly in the presence of
+ REDOSCRIPT.  What's going on here?
+
+ * TParser--and maybe TStream--need to have cross-platform end-of-line
+ handling.
+
+ Revision 1.6.4.1  2002/04/19 11:20:13  emk
+ Start of the heavy typography merging work.  I'm doing this on a branch
+ so I don't cause problems for any of the other developers.
+
+ Alpha-blend text colors.
+
+ Merged Mac and Windows versions of several files into the Common directory.
+ Not all of these work on Mac and/or Windows yet, but they're getting there.
+ Primary sources for the merged code are:
+
+   Win/FiveL/LVersion.h -> Common/TVersion.h
+   Win/FiveL/LStream.h -> Common/TStream.h
+   Mac/Source/CStream.cp -> Common/TStream.cpp
+   Mac/Source/CStreamTests.cp -> Common/TStreamTests.cpp
+
+ TStream changes:
+
+   * The TStream code now uses a callback to variable values.  This will
+     probably go away once Variable and CVariable get merged.
+   * Input operators for std::string and GraphicTools::Color.
+
+ Isolated Windows-specific code in TLogger.*, in preparation for a big merge.
+
+   * Added a portable function to set up logging.
+   * Fixed the logging code to use the portable FileSystem library.
+   * Made FatalError actually quit the application.
+
+ Turned off the FiveL namespace on FIVEL_PLATFORM_OTHER, so we can debug
+ with GDB, which has a few minor but painful namespace issues.
+
+ TString changes:
+
+   * Made sure we can convert from std::string to a TString.
+   * Added some more assertions.
+   * Fixed bug in various operator= methods which would allow the string's
+     internal data pointer to be NULL.
+   * Changed operator[] and operator() arguments to be 'int' instead of
+     'int32' to avoid nasty compiler warnings.
+
+ Typography::Style changes:
+
+   * Added a "ShadowOffset" field that specifies the offset of the
+     drop shadow.
+   * Added an operator== for testing.
+   * Added a ToggleFaceStyle method for toggling specified face style bits.
+
+ Typography::StyledText changes:
+
+   * Added a method to append a single character.
+
+ Other Typography changes:
+
+   * Made FaceStyle an int, not an enum, so we can do bit math with it.
+   * Added assertions to made sure you can't extract a StyledText iterator
+     until you've called EndConstruction.
+
  Revision 1.6  2002/03/07 20:36:18  emk
  TString bug fixes & new constructor.
 

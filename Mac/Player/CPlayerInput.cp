@@ -9,14 +9,14 @@
 #include <LStream.h>
 #include <UDrawingState.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CCard.h"
 #include "CMac5LApp.h"
 #include "CPlayerView.h"
 #include "CPlayerInput.h"
 #include "CPlayerText.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CHeader.h"
 #include "UModalDialogs.h"
 #include "UKeyFilters.h"

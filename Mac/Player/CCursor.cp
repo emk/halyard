@@ -370,11 +370,24 @@ void CCursorManager::ChangeCursor(CursorType inCursor, bool inTZone /* = false *
 
 /*
 $Log$
+Revision 1.5  2002/05/15 11:05:26  emk
+3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+is available, and several subsystems have been refactored.  For more
+detailed descriptions, see the CVS branch.
+
+The merged Mac code hasn't been built yet; I'll take care of that next.
+
+Revision 1.4.4.1  2002/05/15 09:09:47  emk
+Added code to unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+Migrated the Mac (buttpcx ...) to the new anti-aliased typography library.
+
+The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect FiveL to do something childish immediately after fatal errors and assertion failures.
+
 Revision 1.4  2002/03/04 15:41:36  hamon
 Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
-
 Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
-
 Changes by Elizabeth and Eric, okayed by Eric.
 
 Revision 1.3  2000/05/11 12:56:09  chuck

@@ -11,22 +11,139 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// LVersion.h : Version strings.
+// TVersion.h : Version strings.
 //
 
-#define MAJOR_NUM		3
-#define MINOR_NUM		03
-#define REV_BIG			02
-#define REV_SMALL		00
+#define VERSION_MAJOR_NUM	3
+#define VERSION_MINOR_NUM	03
+#define VERSION_REV_BIG		03
+#define VERSION_REV_SMALL	00
 
-#define BUILD_NUM		1
-
-#define VERSION_STRING	"5L for Win32 3.3.2"
+#define VERSION_STRING	"5L 3.3.3 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.10  2002/05/15 11:05:18  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.9.2.9  2002/05/01 11:34:02  emk
+ Added support for passing a "(pcent ...)" argument to "defstyle" to
+ specify leading as a percentage of the base font size (and cleaned up
+ a few minor test suite issues).
+
+ Revision 1.9.2.8  2002/05/01 07:10:49  emk
+ 3.3.2.7 - Fixed assertion failure on "Special Variables" screen, fixed
+ missing bullets, and added "\&Delta;" and "\&delta;" entities for
+ use with the (textaa ...) command only.
+
+ Revision 1.9.2.7  2002/05/01 03:27:02  emk
+ 3.3.2.6 - First Windows engine with (textaa ...) command.
+
+ - Implemented a primitive, slow Image::DrawPixMap command that uses
+ ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+ enough, it's about as fast as the somewhat optimized Mac routines.
+ Anyone got a good GDI book?
+
+ - Fixed several assertion failures.
+
+ Known problems:
+
+ - Occasional assertion failure on exit.  The reference-counting on
+ TIndexFile claims it's getting dereferenced too many times.  This is
+ an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+ - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+ caused by overlong lines.
+
+ Revision 1.9.2.6  2002/04/30 07:57:24  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
+ Revision 1.9.2.5  2002/04/29 06:29:58  emk
+ 3.3.2.4 - Contains first set of performance tweaks, and fixes problem with assertion failures after reload and on CME screens.
+
+ Revision 1.9.2.4  2002/04/26 11:31:01  emk
+ 3.3.2.3 - Fixed highlight shadow color to default to regular shadow color (instead of highlight color, which is obviously wrong).
+
+ Revision 1.9.2.3  2002/04/26 08:51:21  emk
+ 3.3.2.2 - First experimental engine with (textaa ...) and (defstyle ...) commands.
+
+ Changes:
+
+   - Ported new TEncoding template class to the Mac.
+
+   - Updated TStyleSheet to provide bug-for-bug compatibility with the way backslashed escaped sequences are processed.
+
+ Revision 1.9.2.2  2002/04/23 11:29:47  emk
+ Prepended "VERSION_" to the version-related preprocessor defines, because this way is (1) nicer and (2) matches the Mac engine's preprocessor defines.
+
+ Revision 1.9.2.1  2002/04/19 11:20:13  emk
+ Start of the heavy typography merging work.  I'm doing this on a branch
+ so I don't cause problems for any of the other developers.
+
+ Alpha-blend text colors.
+
+ Merged Mac and Windows versions of several files into the Common directory.
+ Not all of these work on Mac and/or Windows yet, but they're getting there.
+ Primary sources for the merged code are:
+
+   Win/FiveL/LVersion.h -> Common/TVersion.h
+   Win/FiveL/LStream.h -> Common/TStream.h
+   Mac/Source/CStream.cp -> Common/TStream.cpp
+   Mac/Source/CStreamTests.cp -> Common/TStreamTests.cpp
+
+ TStream changes:
+
+   * The TStream code now uses a callback to variable values.  This will
+     probably go away once Variable and CVariable get merged.
+   * Input operators for std::string and GraphicTools::Color.
+
+ Isolated Windows-specific code in TLogger.*, in preparation for a big merge.
+
+   * Added a portable function to set up logging.
+   * Fixed the logging code to use the portable FileSystem library.
+   * Made FatalError actually quit the application.
+
+ Turned off the FiveL namespace on FIVEL_PLATFORM_OTHER, so we can debug
+ with GDB, which has a few minor but painful namespace issues.
+
+ TString changes:
+
+   * Made sure we can convert from std::string to a TString.
+   * Added some more assertions.
+   * Fixed bug in various operator= methods which would allow the string's
+     internal data pointer to be NULL.
+   * Changed operator[] and operator() arguments to be 'int' instead of
+     'int32' to avoid nasty compiler warnings.
+
+ Typography::Style changes:
+
+   * Added a "ShadowOffset" field that specifies the offset of the
+     drop shadow.
+   * Added an operator== for testing.
+   * Added a ToggleFaceStyle method for toggling specified face style bits.
+
+ Typography::StyledText changes:
+
+   * Added a method to append a single character.
+
+ Other Typography changes:
+
+   * Made FaceStyle an int, not an enum, so we can do bit math with it.
+   * Added assertions to made sure you can't extract a StyledText iterator
+     until you've called EndConstruction.
+
  Revision 1.9  2002/04/19 10:21:52  hyjin
  Added support for a movie controller in 5L applications, and deleted some buggy pre-roll code that appeared to be causing crashes.  We're not a hundred percent sure all the crashing problems are fixed, but things seem to be working very well.  Please test this extensively!
 

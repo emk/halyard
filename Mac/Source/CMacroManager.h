@@ -7,16 +7,16 @@
 
 #include "THeader.h"
 
-#include "CIndex.h"
+#include "TIndex.h"
 
 BEGIN_NAMESPACE_FIVEL
 
-class CMacroManager : public CIndexManager 
+class CMacroManager : public TIndexManager 
 {
 	public:
 
 		virtual const char	*GetScript(const char *macroname);
-		virtual void	MakeNewIndex(CIndexFile *inFile, const char *inName  = NULL,
+		virtual void	MakeNewIndex(TIndexFile *inFile, const char *inName  = NULL,
 								int32 inStart = 0, int32 inEnd = 0);
 };
 

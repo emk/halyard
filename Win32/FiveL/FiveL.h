@@ -38,7 +38,7 @@ AUTHOR
 #endif // _MSC_VER > 1000
 
 #include "resource.h"
-#include "LVersion.h"
+#include "TVersion.h"
 #include "LCommon.h"
 
 #define FIVEL_TIMER_MSECS		100
@@ -89,6 +89,22 @@ void	PutInForeground(void);
 
 /*
  $Log$
+ Revision 1.4  2002/05/15 11:05:33  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.3.2.1  2002/04/30 07:57:31  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.3  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

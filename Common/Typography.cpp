@@ -9,6 +9,7 @@
 #include <wctype.h>
 
 #include "Typography.h"
+#include "TLogger.h"
 
 using namespace Typography;
 
@@ -53,6 +54,61 @@ Library *Library::GetLibrary()
 	return sLibrary;
 }
 
+//=========================================================================
+//	Typography::Glyph Methods
+//=========================================================================
+
+Glyph::Glyph(FT_GlyphSlot inGlyph)
+	: mAdvance(inGlyph->advance), mMetrics(inGlyph->metrics),
+	  mGreyMapOffset(Point(inGlyph->bitmap_left,
+						   -inGlyph->bitmap_top)),
+	  mGreyMap(inGlyph->bitmap.width,
+			   inGlyph->bitmap.rows)
+	  
+{
+	using GraphicsTools::Channel;
+
+	// Attempt to convert FreeType's various funky bitmap formats into
+	// GreyMap values.  This code isn't especially optimized, because
+    // we cache glyphs, and don't care much about how much it costs
+    // to create them.
+	//
+	// We need to process any pixmap output by FreeType 2.  Unfortunately,
+	// FreeType 2 can output a *lot* of different types of pixmaps, at
+	// least in theory.  In practice, there are only a few kinds, all of
+	// which we should handle below.
+
+	FT_Bitmap *bitmap = &inGlyph->bitmap;
+    ASSERT(bitmap->pitch >= 0);
+    if (bitmap->pixel_mode == ft_pixel_mode_grays)
+	{
+		// Convert 8-bit greyscale characters.
+		ASSERT(bitmap->num_grays == 256);
+		for (int y = 0; y < bitmap->rows; y++)
+		{
+			for (int x = 0; x < bitmap->width; x++)
+			{
+				Channel value = bitmap->buffer[x + bitmap->pitch*y];
+				mGreyMap.At(x, y) = value;
+			}
+		}
+    }
+	else
+	{
+		// Convert 1-bit monochrome characters.
+		ASSERT(bitmap->pixel_mode == ft_pixel_mode_mono);
+		for (int y = 0; y < bitmap->rows; y++)
+		{
+			for (int x = 0; x < bitmap->width; x++)
+			{
+				unsigned char byte = bitmap->buffer[(x/8) + bitmap->pitch * y];
+				Channel value = ((1<<(7-(x%8))) & byte) ? 255 : 0; 
+				mGreyMap.At(x, y) = value;
+			}
+		}	
+    }
+}
+
 
 //=========================================================================
 //	Typography::Style Methods
@@ -66,14 +122,15 @@ Style::Style(const std::string &inFamily, int inSize)
 	try
 	{
 		// Set up all our fields.
-		mRep->mRefCount    = 1;
-		mRep->mFamily      = inFamily;
-		mRep->mFaceStyle   = kRegularFaceStyle;
-		mRep->mSize        = inSize;
-		mRep->mLeading     = 0;
-		mRep->mColor       = Color(0, 0, 0);
-		mRep->mShadowColor = Color(255, 255, 255);
-		mRep->mFace        = NULL;
+		mRep->mRefCount     = 1;
+		mRep->mFamily       = inFamily;
+		mRep->mFaceStyle    = kRegularFaceStyle;
+		mRep->mSize         = inSize;
+		mRep->mLeading      = 0;
+		mRep->mShadowOffset = 1;
+		mRep->mColor        = Color(0, 0, 0);
+		mRep->mShadowColor  = Color(255, 255, 255);
+		mRep->mFace         = NULL;
 	}
 	catch (...)
 	{
@@ -145,6 +202,18 @@ Typography::Style &Style::operator=(const Style &inStyle)
 	return *this;
 }
 
+bool Style::operator==(const Style &inStyle) const
+{
+	return (mRep->mFamily == inStyle.mRep->mFamily &&
+			mRep->mBackupFamilies == inStyle.mRep->mBackupFamilies &&
+			mRep->mFaceStyle == inStyle.mRep->mFaceStyle &&
+			mRep->mSize == inStyle.mRep->mSize &&
+			mRep->mLeading == inStyle.mRep->mLeading &&
+			mRep->mShadowOffset == inStyle.mRep->mShadowOffset &&
+			mRep->mColor == inStyle.mRep->mColor &&
+			mRep->mShadowColor == inStyle.mRep->mShadowColor);
+}
+
 Typography::Style &Style::SetFamily(const std::string &inFamily)
 {
 	Grab();
@@ -169,6 +238,15 @@ Typography::Style &Style::SetFaceStyle(FaceStyle inFaceStyle)
 	return *this;
 }
 
+Typography::Style &Style::ToggleFaceStyle(FaceStyle inToggleFlags)
+{
+	FaceStyle toggled_mask = inToggleFlags;
+	FaceStyle unchanged_mask = ~inToggleFlags;
+	FaceStyle current = GetFaceStyle();
+	SetFaceStyle((current & unchanged_mask) | (~current & toggled_mask));
+	return *this;
+}
+
 Typography::Style &Style::SetSize(int inSize)
 {
 	Grab();
@@ -181,6 +259,13 @@ Typography::Style &Style::SetLeading(Distance inLeading)
 {
 	Grab();
 	mRep->mLeading = inLeading;
+	return *this;
+}
+
+Typography::Style &Style::SetShadowOffset(Distance inOffset)
+{
+	Grab();
+	mRep->mShadowOffset = inOffset;
 	return *this;
 }
 
@@ -265,6 +350,13 @@ StyledText::StyledText(const Style &inBaseStyle)
 void StyledText::AppendText(const std::wstring &inText)
 {
 	ASSERT(!mIsBuilt);
+	mText += inText;
+}
+
+void StyledText::AppendText(wchar_t inText)
+{
+	ASSERT(!mIsBuilt);
+	ASSERT(inText != 0);
 	mText += inText;
 }
 
@@ -360,6 +452,21 @@ Vector AbstractFace::Kern(const StyledText::value_type &inChar1,
 //	Typography::Face Methods
 //=========================================================================
 
+Face::FaceRep::FaceRep(FT_Face inFace)
+	: mFace(inFace), mRefcount(1)
+{
+}
+
+Face::FaceRep::~FaceRep()
+{
+	Error::CheckResult(FT_Done_Face(mFace));
+
+	// Delete our cached glyph objects.
+	std::map<GlyphIndex,Glyph*>::iterator cursor = mGlyphCache.begin();
+	for (; cursor != mGlyphCache.end(); ++cursor)
+		delete cursor->second;
+}
+
 Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 	: AbstractFace(inSize)
 {
@@ -454,14 +561,30 @@ GlyphIndex Face::GetGlyphIndex(CharCode inCharCode)
 		return FT_Get_Char_Index(mFaceRep->mFace, inCharCode);
 }
 
-Glyph Face::GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex)
+Glyph *Face::GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex)
 {
-	Error::CheckResult(FT_Load_Glyph(mFaceRep->mFace, inGlyphIndex,
-									 FT_LOAD_RENDER /*| FT_LOAD_MONOCHROME*/));
-	return mFaceRep->mFace->glyph;
+	// Look for a glyph in our cache.
+	std::map<GlyphIndex,Glyph*>::iterator found =
+		mFaceRep->mGlyphCache.find(inGlyphIndex);
+
+	if (found != mFaceRep->mGlyphCache.end())
+	{
+		// Return the cached glyph glyph.
+		return found->second;
+	}
+	else
+	{
+		// Load and cache a new glyph.
+		Error::CheckResult(FT_Load_Glyph(mFaceRep->mFace, inGlyphIndex,
+										 FT_LOAD_RENDER));
+		Glyph *glyph = new Glyph(mFaceRep->mFace->glyph);
+		mFaceRep->mGlyphCache.insert(std::pair<GlyphIndex,Glyph*>(inGlyphIndex,
+																  glyph));
+		return glyph;
+	}
 }
 
-Glyph Face::GetGlyph(CharCode inCharCode)
+Glyph *Face::GetGlyph(CharCode inCharCode)
 {
 	return GetGlyphFromGlyphIndex(GetGlyphIndex(inCharCode));
 }
@@ -513,8 +636,8 @@ Distance Face::GetAscender()
 	GlyphIndex em_index = GetGlyphIndex('M');
 	if (em_index)
 	{
-		Glyph em_glyph = GetGlyphFromGlyphIndex(em_index);
-		return round_266(em_glyph->metrics.horiBearingY);
+		Glyph *em_glyph = GetGlyphFromGlyphIndex(em_index);
+		return round_266(em_glyph->GetMetrics()->horiBearingY);
 	}
 	else
 	{
@@ -531,8 +654,9 @@ Distance Face::GetDescender()
 	GlyphIndex index = GetGlyphIndex('g');
 	if (index)
 	{
-		Glyph glyph = GetGlyphFromGlyphIndex(index);
-		return round_266(glyph->metrics.height - glyph->metrics.horiBearingY);
+		Glyph *glyph = GetGlyphFromGlyphIndex(index);
+		return round_266(glyph->GetMetrics()->height -
+						 glyph->GetMetrics()->horiBearingY);
 	}
 	else
 	{
@@ -568,7 +692,7 @@ void FaceStack::AddSecondaryFace(const Face &inFace)
 	mFaceStack.push_back(inFace);
 }
 
-Glyph FaceStack::GetGlyph(CharCode inCharCode)
+Glyph *FaceStack::GetGlyph(CharCode inCharCode)
 {
 	Face *face;
 	GlyphIndex glyph;
@@ -853,61 +977,19 @@ TextRenderingEngine::TextRenderingEngine(const StyledText &inText,
 										 Justification inJustification,
 										 Image *inImage)
 	: GenericTextRenderingEngine(inText, inLineLength, inJustification),
-	  mIsFirstLine(true), mLineStart(inPosition),
-	  mBounds(inPosition), mImage(inImage)
+	  mImage(inImage), mIsFirstLine(true),
+	  mLineStart(inPosition), mBounds(inPosition)
 {
-	ASSERT(inPosition.x >= 0 && inPosition.y >= 0);
 	ASSERT(inImage != NULL);
 }
 
-// We need to process any pixmap output by FreeType 2.  Unfortunately,
-// FreeType 2 can output a *lot* of different types of pixmaps, at
-// least in theory.  In practice, there are only a few kinds, all of
-// which we should handle below.
-void TextRenderingEngine::DrawBitmap(Point inPosition, FT_Bitmap *inBitmap,
-									 Color inColor)
+void TextRenderingEngine::DrawGreyMap(Point inPosition,
+									  const GreyMap *inGreyMap,
+									  Color inColor)
 {
-	using GraphicsTools::Channel;
-	using GraphicsTools::Color;
-
-    ASSERT(inBitmap->pitch >= 0);
-
-	GraphicsTools::Pixmap pixmap(inBitmap->width, inBitmap->rows);
-	pixmap.Clear();
-
-    if (inBitmap->pixel_mode == ft_pixel_mode_grays)
-	{
-		// Convert 8-bit greyscale characters.
-		ASSERT(inBitmap->num_grays == 256);
-		for (int y = 0; y < inBitmap->rows; y++)
-		{
-			for (int x = 0; x < inBitmap->width; x++)
-			{
-				Channel value = inBitmap->buffer[x + inBitmap->pitch * y];
-				pixmap.At(x, y) = Color(inColor.red, inColor.green,
-										inColor.blue, 255 - value);
-			}
-		}
-    }
-	else
-	{
-		// Convert 1-bit monochrome characters.
-		ASSERT(inBitmap->pixel_mode == ft_pixel_mode_mono);
-		for (int y = 0; y < inBitmap->rows; y++)
-		{
-			for (int x = 0; x < inBitmap->width; x++)
-			{
-				unsigned char byte = inBitmap->buffer[(x/8) +
-													  inBitmap->pitch * y];
-				Channel value = ((1<<(7-(x%8))) & byte) ? 0 : 255; 
-				pixmap.At(x, y) = Color(inColor.red, inColor.green,
-										inColor.blue, value);
-			}
-		}	
-    }
-
-	// Draw our pixmap.
-	mImage->DrawPixmap(inPosition, pixmap);
+	PixMap colorized(inGreyMap->width, inGreyMap->height);
+	inGreyMap->TransferToPixMap(inColor, &colorized);
+	mImage->DrawPixMap(inPosition, colorized);
 }
 
 void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
@@ -915,31 +997,49 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 										   Point *ioPosition,
 										   bool inShouldDraw)
 {
+	// Remember our previous position.
+	Point previous_position = *ioPosition;
+
 	// Do our kerning.
 	Vector delta = AbstractFace::Kern(*ioPrevious, inCurrent);
 	ioPosition->x += delta.x >> 6; // Don't need round_266 (already fitted).
 	ASSERT(delta.y == 0);
 		
 	// Load our glyph.
-	Glyph glyph = inCurrent.style->GetFace()->GetGlyph(inCurrent.value);
+	Glyph *glyph = inCurrent.style->GetFace()->GetGlyph(inCurrent.value);
 
 	// Draw our glyph (if requested).
 	if (inShouldDraw)
 	{
-		Point loc = *ioPosition + Point(glyph->bitmap_left,-glyph->bitmap_top);
+		Point loc = *ioPosition + glyph->GetGreyMapOffset();
 		if (inCurrent.style->GetIsShadowed())
-			DrawBitmap(loc + Point(1,1), &glyph->bitmap,
-					   inCurrent.style->GetShadowColor());
-		DrawBitmap(loc, &glyph->bitmap, inCurrent.style->GetColor());
+		{
+			Distance offset = inCurrent.style->GetShadowOffset();
+			DrawGreyMap(loc + Point(offset, offset), glyph->GetGreyMap(),
+						inCurrent.style->GetShadowColor());
+		}
+		DrawGreyMap(loc, glyph->GetGreyMap(), inCurrent.style->GetColor());
 	}
 
 	// Advance our cursor.
-	ioPosition->x += round_266(glyph->advance.x);
-	ASSERT(ioPosition->x >= 0);
-	ASSERT(glyph->advance.y == 0);
-	
+	ioPosition->x += round_266(glyph->GetAdvance().x);
+	ASSERT(glyph->GetAdvance().y == 0);
+
 	// Update our previous char.
 	*ioPrevious = inCurrent;
+
+	// Make sure that kerning plus advance didn't actually move our
+	// position backwards.  This can happen for character combinations
+	// such as 'T' and '.' in heavily kerned fonts.  If we omit this
+	// calculation, it causes our right bound to be off slightly,
+	// and produces visually odd results.
+	if (ioPosition->x < previous_position.x)
+	{
+		ioPosition->x = previous_position.x;
+		// We should probably set *ioPrevious to (kNoSuchCharacter, NULL)
+		// here, but intersegment kerning in MeasureSegment only has one
+		// character of lookback, so that will break things.
+	}
 }
 
 Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
@@ -976,8 +1076,30 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 										 LineSegment *outExtracted)
 {
-	// XXX - Not yet implemented.
-	throw Error("Cannot break overlong line (yet)");
+	// This routine isn't especially fast, and it produces ugly
+	// results, but it's better than nothing.
+	ASSERT(ioRemaining != NULL);
+	ASSERT(outExtracted != NULL);
+	
+	FIVEL_NS gDebugLog.Caution("Breaking line in middle of word");
+	
+	// Back up one character at a time until we fit.
+	// This code runs in O(N^2) time (with small values of N).
+	LineSegment seg = *ioRemaining;
+	seg.needsHyphenAtEndOfLine = true; // We'll have to hyphenate.
+	do
+	{
+		--seg.end;
+		if (seg.begin == seg.end)
+			throw Error("Trying to break line in the middle of a character");
+	} while (MeasureSegment(NULL, &seg, true) > GetLineLength());
+	ASSERT(seg.end != ioRemaining->end);
+	
+	// Update our line segments.
+	*outExtracted = *ioRemaining;
+	outExtracted->end = seg.end;
+	outExtracted->needsHyphenAtEndOfLine = true;
+	ioRemaining->begin = seg.end;
 }
 
 void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,

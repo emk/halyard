@@ -8,4 +8,10 @@ config.log
 config.status
 configure
 TestAll
-TestAll?Debug
+TestAll_d
+TestAll?Data
+*.log
+libfivel
+libfivel_debug
+libfivel?Data
+*.xSYM

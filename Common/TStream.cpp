@@ -1,6 +1,7 @@
+// -*- Mode: C++; tab-width: 4; -*-
 /**************************************
 
-    CStream.cpp
+    TStream.cpp
 
     An input class for 5L.
 
@@ -23,12 +24,13 @@
 */
 
 #include "THeader.h"
+#include "TCommon.h"
+#include "TLogger.h"
+#include "TStream.h"
+#include "TVariable.h"
 
-#include "KLogger.h"
-
-#include "CMac5LApp.h"
-#include "CStream.h"
-#include "CVariable.h"
+#include <ctype.h>
+#include <stdio.h>
 
 USING_NAMESPACE_FIVEL
 
@@ -36,9 +38,9 @@ USING_NAMESPACE_FIVEL
 //  Some common character types.
 //
 const char kSPACE = ' ';
-const char kNEWLINE = NEWLINE_CHAR;
+const char kNEWLINE = '\n';
+const char kRETURN = '\r';
 const char kTAB = '\t';
-const char kRETURN = RETURN_CHAR;
 const char P_OPEN = '(';
 const char P_CLOSE = ')';
 const char SLASH = '\\';
@@ -53,7 +55,7 @@ const char COMMENT = '#';       //Changed MAR 31
 
 //  Is this given character a whitespace character?
 //
-bool CStream::whitespace(char ch)
+bool TStream::whitespace(char ch)
 {
     switch (ch) 
     {
@@ -61,9 +63,9 @@ bool CStream::whitespace(char ch)
         case kNEWLINE:
         case kTAB:
         case kRETURN:
-            return (TRUE);
+            return (true);
         default:
-            return (FALSE);
+            return (false);
     }
 }
 
@@ -76,32 +78,32 @@ bool CStream::whitespace(char ch)
 //
 //  Constructors.
 //
-CStream::CStream() : TString()
+TStream::TStream() : TString()
 {
     reset();
 }
 
-CStream::CStream(const int32 newsize) : TString(newsize)
+TStream::TStream(const int32 newsize) : TString(newsize)
 {
     reset();
 }
 
-CStream::CStream(const char *s) : TString(s)
+TStream::TStream(const char *s) : TString(s)
 {
     reset();
 }
     
-CStream::CStream(const TString &other) : TString(other)
+TStream::TStream(const TString &other) : TString(other)
 {
     reset();
 }
 
-CStream::CStream(const CStream &other) : TString(other)
+TStream::TStream(const TStream &other) : TString(other)
 {
     pos = other.pos;
 }
 
-char CStream::curchar()  
+char TStream::curchar()  
 {
     return (m_String[pos]); 
 }
@@ -110,7 +112,7 @@ char CStream::curchar()
 //  Return the next character in the stream. If it is a comment
 //  then ignore it and the rest of the line.
 //
-char CStream::nextchar(void)
+char TStream::nextchar(void)
 {
     char    ch;
 
@@ -133,11 +135,11 @@ char CStream::nextchar(void)
     return (ch);
 }
 
-//  Return TRUE if we haven't hit the closing ) or the
+//  Return true if we haven't hit the closing ) or the
 //  end of the string yet. Used by parsing functions with
 //  optional commands to see if there is more there.
 //
-int CStream::more(void)
+int TStream::more(void)
 {
     char    ch;
     
@@ -150,12 +152,10 @@ int CStream::more(void)
 //  Reset the stream get pointer to 0. Check now to see if first
 //  character is a comment and skip it.
 //
-void CStream::reset(void)
+void TStream::reset(void)
 {
-    char    ch;
     pos = 0;
-
-    ch = m_String[pos];
+    char ch = m_String[pos];
     
     if (not eof() and ch == COMMENT) 
     {
@@ -171,7 +171,7 @@ void CStream::reset(void)
 //  Increment the position mark to the next non-whitespace
 //  character.
 //
-void CStream::skipwhite(void)
+void TStream::skipwhite(void)
 {
     char    ch = curchar();
 
@@ -188,7 +188,7 @@ void CStream::skipwhite(void)
 //  character or parenthesis; in other words, one character
 //  past the current word.
 //
-void CStream::scanword(void)
+void TStream::scanword(void)
 {
     char    ch = curchar();
 
@@ -218,7 +218,7 @@ void CStream::scanword(void)
 //  they are not within commands. (They may be within CARD and
 //  MACRODEF commands, however.)
 //
-void CStream::scanopen(void)
+void TStream::scanopen(void)
 {
     char    ch = curchar();
 
@@ -242,7 +242,7 @@ void CStream::scanopen(void)
 //  Read a token and discard it. We don't care about it, we just
 //  want to get it out of the way.
 //
-void CStream::discard(void)
+void TStream::discard(void)
 {
     TString     junk;
 
@@ -255,7 +255,7 @@ void CStream::discard(void)
 //  too, so keep a counter going. Set the position mark to the
 //  first character after the close.
 //
-void CStream::scanclose(void)
+void TStream::scanclose(void)
 {
     char    ch = curchar();
     int32	dangling_opens = 1;
@@ -295,7 +295,7 @@ void CStream::scanclose(void)
 //  Return the given characters, substituting variable contents
 //  where appropriate. Should never have to worry about white space.
 //
-TString CStream::copystr(uint32 startPos, uint32 numChars)
+TString TStream::copystr(uint32 startPos, uint32 numChars)
 {
     TString 	original, result, vname;
     int32     	base, curpos, origlen, DEREF = 0;
@@ -349,7 +349,7 @@ TString CStream::copystr(uint32 startPos, uint32 numChars)
             //  Append the variable contents to the result string.
             //
             vname = original.Mid(base, curpos - base);
-            result += gVariableManager.GetString(vname);
+			result += gVariableManager.GetString(vname);
             
             //  Bump up the base.
             //
@@ -379,7 +379,7 @@ TString CStream::copystr(uint32 startPos, uint32 numChars)
 //  Basic extraction operator. Most others just use this
 //  and then convert the type.
 //
-CStream& CStream::operator>>(TString &dest)
+TStream& TStream::operator>>(TString &dest)
 {
     TString 	temp;
     int32     	startPos;
@@ -453,16 +453,24 @@ CStream& CStream::operator>>(TString &dest)
     return (*this);
 }
 
+TStream& TStream::operator>>(std::string &outString)
+{
+	TString temp;
+	*this >> temp;
+	outString = std::string(temp.GetString());
+	return *this;
+}
+
 //  This little guy allows manipulator functions to work.
 //
-CStream& CStream::operator>>(CStream& (*_f)(CStream &))
+TStream& TStream::operator>>(TStream& (*_f)(TStream &))
 {
     return (_f (*this));
 }
 
 //  TString class handles string to int conversions.
 //
-CStream& CStream::operator>>(int16 &dest)
+TStream& TStream::operator>>(int16 &dest)
 {
     TString foo;
 
@@ -474,7 +482,7 @@ CStream& CStream::operator>>(int16 &dest)
 
 //  TString class handles string to int conversions.
 //
-CStream& CStream::operator>>(int32 &dest)
+TStream& TStream::operator>>(int32 &dest)
 {
     TString foo;
 
@@ -484,7 +492,7 @@ CStream& CStream::operator>>(int32 &dest)
     return (*this);
 }
 
-CStream& CStream::operator>>(uint32 &dest)
+TStream& TStream::operator>>(uint32 &dest)
 {
 	TString foo;
 	
@@ -496,7 +504,7 @@ CStream& CStream::operator>>(uint32 &dest)
 
 //  TString class handles string to int conversions.
 //
-CStream& CStream::operator>>(double &dest)
+TStream& TStream::operator>>(double &dest)
 {
     TString foo;
 
@@ -515,7 +523,7 @@ CStream& CStream::operator>>(double &dest)
 //  indexing of 4 digit coords.  Note had to use a second symbol other than
 //  '$' because of the way 5L handles strings beginning and ending in '$' 
 
-CStream& CStream::operator>>(TRect &r)
+TStream& TStream::operator>>(TRect &r)
 {
     char	ch;
     TString	temp;
@@ -526,7 +534,7 @@ CStream& CStream::operator>>(TRect &r)
     if ((ch == '&') or (ch == '$'))  
     {
         *this >> temp;
-        CStream tempstream(temp);
+        TStream tempstream(temp);
         tempstream >> left >> top >> right >> bottom;
     }
     else  
@@ -546,7 +554,7 @@ CStream& CStream::operator>>(TRect &r)
 //  The if and the else statement were added to check for '$'.  See
 //  previous operator for description of extra code
 
-CStream& CStream::operator>>(TPoint &pt)
+TStream& TStream::operator>>(TPoint &pt)
 {
     char	ch;
     TString	temp;
@@ -557,7 +565,7 @@ CStream& CStream::operator>>(TPoint &pt)
     if ((ch == '&') or (ch == '$'))  
     {
         *this >> temp;
-        CStream tempstream(temp);
+        TStream tempstream(temp);
         tempstream >> x >> y;
     }
     else  
@@ -568,26 +576,60 @@ CStream& CStream::operator>>(TPoint &pt)
     return (*this);
 }
 
+TStream& TStream::operator>>(GraphicsTools::Color &outColor)
+{
+	TString input;
+	*this >> input;
+	const char *temp = input.GetString();
+
+	// Make sure the value is of the form '0xRRGGBBAA', where RR, etc.,
+	// are hexadecimal digits.
+	bool ok = true;
+	if (temp[0] != '0' || temp[1] != 'x' || strlen(temp) != 10)
+		ok = false;
+	else
+	{
+		// Make sure all the digits are hexadecimal.
+		for (int i = 2; i < 10; ++i)
+			if (!isxdigit(temp[i]))
+				ok = false;
+	}
+	if (!ok)
+		gLog.FatalError("The color \"%s\" does not have the format "
+						"\"0xRRGGBBAA\"", temp);
+
+	// Extract the actual data, and build our color.
+	unsigned int hex;
+	int successful_conversions = sscanf(temp + 2, "%x", &hex);
+	ASSERT(successful_conversions == 1);
+	outColor = GraphicsTools::Color(hex >> 24,
+									(hex >> 16) & 0xFF,
+									(hex >> 8) & 0xFF,
+									hex & 0xFF);
+	return *this;
+}
+
 //  Tests to see if a character is escaped, given position of character
 // 
 //  Goes back along stream counting slashes until we either get a char
 //  that's not a slash or we reach the beginning.
 //  If the number of slashes is even, we are not in escape and return false
 //  If the number of slashes is odd, we are in escape and return true
-bool CStream::inEscape(int32 position)
+bool TStream::inEscape(int32 position)
 {
 	uint16 slashes = 0;
-	uint16 test = 0;
 	
 	while ((position > 0) && (m_String[--position] == SLASH))
 		slashes++;
 	
 #ifdef DEBUG
 	if ((position == 0) && (m_String[0] == SLASH))
-		gDebugLog.Log("WARNING! Reached beginning of stream and first character is a slash");	
-	// We have no idea whether we are handling this case correctly so going to print a warning when we have this case.
-	// (Your guess is as good as ours!)
-	// It worked as we wished in our test suite, but we don't know whether the tested cases are the only cases.
+		gDebugLog.Log("WARNING! Reached beginning of stream and first "
+					  "character is a slash");
+	// We have no idea whether we are handling this case correctly so going
+	// to print a warning when we have this case.  (Your guess is as good
+	// as ours!)  It worked as we wished in our test suite, but we don't
+	// know whether the tested cases are the only cases.
 #endif
 		
 	if ((slashes % 2) == 0)
@@ -596,9 +638,46 @@ bool CStream::inEscape(int32 position)
 		return true;
 }
 
-//  Tests to see if curr character is escaped
-//	Gets current character position and passes it to inEscape(int32 position) function
-bool CStream::inEscape(void)
+// Tests to see if curr character is escaped Gets current character
+// position and passes it to inEscape(int32 position) function
+bool TStream::inEscape(void)
 {
 	return inEscape(GetPos());
+}
+
+// An I/O manipulator support function.  See the header for interface
+// details, or a good iostream tutorial for more information on
+// how manipulator objects work.
+#define PERCENT_COMMAND_PREFIX ("pcent ")
+TStream &FIVEL_NS operator>>(TStream &inStream, const ValueOrPercent &inVoP)
+{
+	// Read in our argument.
+	std::string argument;
+	inStream >> argument;
+	TStream arg_stream(argument.c_str());
+
+	// See if it appears to be a "(pcent ...)" command.
+	int prefix_len = strlen(PERCENT_COMMAND_PREFIX);
+	if (argument.length() > prefix_len &&
+		argument.substr(0, prefix_len) == PERCENT_COMMAND_PREFIX)
+	{
+		// Read a percentage command.
+		int32 percentage;
+		arg_stream >> discard >> percentage;
+
+		// Calculate the value and round it.
+		double value = (inVoP.mBaseValue * percentage) / 100.0;
+		if (value < 0)
+			value -= 0.5;
+		else
+			value += 0.5;
+		*inVoP.mOutputValue = static_cast<int>(value);
+	}
+	else
+	{
+		// Read a simple value.
+		arg_stream >> *inVoP.mOutputValue;
+	}
+
+	return inStream;
 }

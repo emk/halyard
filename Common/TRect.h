@@ -17,6 +17,10 @@
 #if !defined (_TRect_h_)
 #define _TRect_h_
 
+#ifdef _5L_QUICKTIME_
+#include <MacTypes.h>
+#endif // _5L_QUICKTIME_
+
 #include "TCommon.h"
 #include "TObject.h"
 #include "TPoint.h"
@@ -76,7 +80,7 @@ class TRect : public TObject
 		//
 		// [in] inPt - TPoint used to offset the rectangle
 		//
-		void		Offset(TPoint &inPt);
+		void		Offset(const TPoint &inPt);
 
 		//////////
 		// Set top coordinate.
@@ -271,11 +275,27 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4  2002/05/15 11:05:17  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.3.4.2  2002/05/15 08:13:15  emk
+ 3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+ Made tweaks to support the migration of Mac (buttpcx ...) to the new anti-aliased typography library.
+
+ The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect *both* FiveL's to do something childish immediately after fatal errors and assertion failures.
+
+ Revision 1.3.4.1  2002/04/22 08:17:58  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.3  2002/03/04 15:16:13  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-
 Moved OS specific configuration to TPlatform.h
-
 Changes by Elizabeth and Eric, okayed by Eric.
 
  Revision 1.2  2002/02/27 16:38:21  emk

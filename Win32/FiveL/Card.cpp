@@ -31,11 +31,12 @@
 #include "Config.h"
 #include "Graphics.h"
 #include "LHttp.h"
+#include "TStyleSheet.h"
 
 //  Card - Constructor. Cards have a default origin of (0, 0)
 //
-Card::Card(IndexFile *inFile, const char *name, long p1, long p2) 
-	: Index(inFile, name, p1, p2)
+Card::Card(TIndexFile *inFile, const char *name, long p1, long p2) 
+	: TIndex(inFile, name, p1, p2)
 {
 	SetOrigin(0, 0);
 }
@@ -209,6 +210,7 @@ void Card::DoCommand(void)
     else if (opword == (char *)"still") DoStill();
     else if (opword == (char *)"sub") DoSub();
     else if (opword == (char *)"text") DoText();
+    else if (opword == (char *)"textaa") DoTextAA();
     else if (opword == (char *)"timeout") DoTimeout();
     else if (opword == (char *)"touch") DoTouch();
     else if (opword == (char *)"unblippo") DoUnblippo();
@@ -229,7 +231,7 @@ void Card::DoCommand(void)
 // be there.
 void Card::OneCommand(TString &theCommand)
 {
-    LStream     saveScript(m_Script);
+    TStream     saveScript(m_Script);
 
     m_Script = theCommand;
     DoCommand();
@@ -259,7 +261,7 @@ enum EvalMode
  *  Evaluate the given conditional and determine whether or not
  *  it is true.
  ***********************************************************************/
-int Card::Evaluate(LStream& conditional)
+int Card::Evaluate(TStream& conditional)
 {
     int         globalRes, localRes, result;
     EvalMode    mode = FirstTime;
@@ -687,7 +689,7 @@ void Card::DoButtpcx()
 
 	bounds1 = bounds;
     dl = bounds1.Bottom() - bounds1.Top();      //...and text...
-    fontHeight = gHeaderManager.Height((const char *) HeaderName);
+    fontHeight = gStyleSheetManager.GetLineHeight(HeaderName);
 
     dl -= fontHeight;
     dl /= 2;
@@ -697,8 +699,8 @@ void Card::DoButtpcx()
 	gDebugLog.Log("Draw text at T <%d> L <%d>, B <%d>, R <%d>",
 		bounds1.Top(), bounds1.Left(), bounds1.Bottom(), bounds1.Right());
 
-    gHeaderManager.DoText(HeaderName, bounds1, (const char *) Text, 7,0);
- 
+	gStyleSheetManager.DoText(HeaderName, bounds1, Text, gView);
+
 	if (not setvar.IsEmpty())
     {       		//If there's a second command...
         z = new LTouchZone(bounds, theCommand, cursor, thePicture, 
@@ -1072,7 +1074,7 @@ void Card::DoHidemouse()
 -------------------------------------------------------------------*/
 void Card::DoIf()
 {
-    LStream     conditional;
+    TStream     conditional;
 
     m_Script >> conditional;
     conditional.reset();
@@ -1420,7 +1422,7 @@ void Card::DoMacro(TString &name)
     Macro       *theMacro;
     TString     vname, contents;
     int32       vnum;
-    Variable    *local, *temp, *oldlocal;
+    TVariable    *local, *temp, *oldlocal;
 
     theMacro = (Macro *) gMacroManager.Find(name);
     
@@ -1441,7 +1443,7 @@ void Card::DoMacro(TString &name)
         vname = ++vnum;
         m_Script >> contents;
 
-        temp = new Variable(vname, contents);
+        temp = new TVariable(vname, contents);
 
         if (local == 0) 
         	local = temp;
@@ -2166,6 +2168,43 @@ void Card::DoText()
     gHeaderManager.DoText(header, bounds, text, 0, 0);
 }
 
+/*--------------------------------------------------------------
+    (TEXTAA STYLESHEET LEFT TOP RIGHT BOTTOM TEXTSTRING)
+
+    Display the given textstring, using the given stylesheet,
+    within the given rect. Note that the bottom of the rectangle
+    is elastic... it will actually be as much or as little as
+    necessary to display all the text.
+----------------------------------------------------------------*/
+void Card::DoTextAA()
+{
+	TRect		bounds;
+	std::string style, text;
+
+    m_Script >> style >> bounds >> text;
+
+    AdjustRect(&bounds);
+	gDebugLog.Log("textaa: style <%s>, text <%s>",
+				  style.c_str(), text.c_str());
+
+	try
+	{
+		gStyleSheetManager.Draw(style, text,
+								GraphicsTools::Point(bounds.Left(),
+													 bounds.Top()),
+								bounds.Right() - bounds.Left(),
+								gView);
+	}
+	catch (std::exception &error)
+	{
+		gDebugLog.Error("ERROR: %s", error.what());
+	}
+	catch (...)
+	{
+		gDebugLog.Error("ERROR: Unknown exception");
+	}
+}
+
 /*-----------------------------------------------------------
     (TIMEOUT DELAY CARD)
 
@@ -2389,7 +2428,7 @@ void Card::DoWrite()
 
 ***************************/
 
-CardManager::CardManager() : IndexManager()
+CardManager::CardManager() : TIndexManager()
 { 
 	m_HaveJump = false;
 	m_Napping = false; 
@@ -2419,13 +2458,13 @@ void CardManager::RemoveAll(void)
 	m_ReDoScript = false;
 
  	m_CardList.RemoveAll();   
-	IndexManager::RemoveAll();
+	TIndexManager::RemoveAll();
 }
 
 void CardManager::Idle(void)
 { 
-	Variable	*theAfterVar;
-	Variable	*theBeforeVar;
+	TVariable	*theAfterVar;
+	TVariable	*theBeforeVar;
 	Card		*theCard;
 	int32		index;
 	
@@ -2636,7 +2675,7 @@ void CardManager::DoReDoScript(TString &inCardName)
 	m_ReDoCardName = inCardName;
 }
 
-void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName, 
+void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName, 
 							   int32 inStart, int32 inEnd)
 {
     Card    *newCard;  
@@ -2658,6 +2697,52 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.5  2002/05/15 11:05:33  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.4.2.3  2002/05/15 09:23:55  emk
+ 3.3.2.8 - Last typography branch checkin before merge.
+
+ * Fixed (wait ...) bug which caused all (wait ...) commands to wait
+ until the end of the movie.
+
+ * (buttpcx ...) now uses anti-aliased text.
+
+ * Miscellaneous other tweaks and fixes--just getting things into shape
+ for the merge.
+
+ Revision 1.4.2.2  2002/05/01 03:27:07  emk
+ 3.3.2.6 - First Windows engine with (textaa ...) command.
+
+ - Implemented a primitive, slow Image::DrawPixMap command that uses
+ ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+ enough, it's about as fast as the somewhat optimized Mac routines.
+ Anyone got a good GDI book?
+
+ - Fixed several assertion failures.
+
+ Known problems:
+
+ - Occasional assertion failure on exit.  The reference-counting on
+ TIndexFile claims it's getting dereferenced too many times.  This is
+ an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+ - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+ caused by overlong lines.
+
+ Revision 1.4.2.1  2002/04/30 07:57:30  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.4  2002/02/28 15:31:06  tvw
  Fixes subtraction to detect the type of number being subtracted.
 

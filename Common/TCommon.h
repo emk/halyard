@@ -23,6 +23,8 @@ OVERVIEW
 	used throughout the FiveL codebase.
 
 TCOMMON MACRO DEFINITIONS
+	#define ASSERT<br>
+
 	#define not		!<br>
 	#define and		&&<br>
 	#define or		||<br> 
@@ -64,6 +66,28 @@ AUTHOR
 -----------------------------------------------------------------*/
 
 #include "TPlatform.h"
+
+//////////
+// We have our own, portable assertion-checking routine because
+// we want to log assertion failures (because the users *never*
+// write them down).
+//
+// This routine is defined in TLogger.cpp.
+// 
+// [in] inTest - If this value is zero, trigger the assertion.
+// [in] inDescription - Text describing the assertion.
+// [in] inFile - The file in which the assertion appears.
+// [in] inLine - The line number of the assertion.
+//
+extern void FiveLCheckAssertion(int inTest, const char *inDescription,
+								const char *inFile, int inLine);
+
+#ifdef DEBUG
+#	define ASSERT(test) \
+		FiveLCheckAssertion((int) (test), #test, __FILE__, __LINE__);
+#else // DEBUG
+#	define ASSERT(test) 0
+#endif // DEBUG
 
 // TODO - These macro names should go away as soon as somebody gets
 // a chance to dig through the rest of the source.  It's a big job.
@@ -140,6 +164,27 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.6  2002/05/15 11:05:17  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.5.2.3  2002/05/15 09:07:56  emk
+ Cast ASSERT test values to (int) to avoid MSVC++ errors.
+
+ Revision 1.5.2.2  2002/05/15 08:13:15  emk
+ 3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+ Made tweaks to support the migration of Mac (buttpcx ...) to the new anti-aliased typography library.
+
+ The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect *both* FiveL's to do something childish immediately after fatal errors and assertion failures.
+
+ Revision 1.5.2.1  2002/04/22 08:17:57  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.5  2002/04/01 19:24:20  emk
  Preliminary style sheet code!
 
@@ -165,9 +210,7 @@ END_NAMESPACE_FIVEL
 
  Revision 1.3  2002/03/04 15:15:57  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-
 Moved OS specific configuration to TPlatform.h
-
 Changes by Elizabeth and Eric, okayed by Eric.
 
  Revision 1.2  2002/02/27 16:38:21  emk

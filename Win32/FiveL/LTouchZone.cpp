@@ -18,6 +18,7 @@
 
 #include "LTouchZone.h"
 #include "Globals.h"
+#include "TStyleSheet.h"
 
 #define BUTTONXSHIFT 2
 #define BUTTONYSHIFT 3
@@ -154,13 +155,13 @@ void LTouchZone::DoCommand()
 	        itsPictHilite = itsPict->GetHilitePicture();  //Hilited button...
 	        itsPictHilite->Draw(itsPictLoc, true);
 	
-	        dl = itsBounds.Bottom() - itsBounds.Top();      //...and text...
-	        fontHeight = gHeaderManager.Height((const char *) headerText);
+	        dl = bounds1.Bottom() - bounds1.Top();      //...and text...
+	        fontHeight = gStyleSheetManager.GetLineHeight(headerText);
 	        dl -= fontHeight;
 	        dl /= 2;
-			itsBounds.OffsetTop(dl);
-			itsBounds.OffsetBottom(dl);
-	        gHeaderManager.DoText(headerText, itsBounds, (const char *) temp,0,0);
+			bounds1.OffsetTop(dl);
+			bounds1.OffsetBottom(dl);
+			gStyleSheetManager.DoText(headerText, bounds1, temp, gView);
 	        
 	        gView->Draw();		// blast the hilited stuff to the screen
 	
@@ -169,7 +170,7 @@ void LTouchZone::DoCommand()
 
 	        itsPict->Draw(itsPictLoc, true);
 	        temp = itsText;
-	        gHeaderManager.DoText(headerText, itsBounds, (const char *) temp,0,0);
+			gStyleSheetManager.DoText(headerText, bounds1, temp, gView);
         }
         else 
         	itsPict->Hilite(itsPictLoc, true); 
@@ -296,6 +297,25 @@ LTouchZone *LTouchZoneManager::GetTouchZone(WPARAM wParam)
 
 /*
  $Log$
+ Revision 1.4  2002/05/15 11:05:33  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.3.2.1  2002/05/15 09:23:56  emk
+ 3.3.2.8 - Last typography branch checkin before merge.
+
+ * Fixed (wait ...) bug which caused all (wait ...) commands to wait
+ until the end of the movie.
+
+ * (buttpcx ...) now uses anti-aliased text.
+
+ * Miscellaneous other tweaks and fixes--just getting things into shape
+ for the merge.
+
  Revision 1.3  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

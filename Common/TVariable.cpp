@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -11,22 +12,24 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Variable.cpp : Code for handling variables within 5L.
+// TVariable.cpp : Code for handling variables within 5L.
 //
 //
 
-#include "stdafx.h"
+#include "TDateUtil.h"
+#include "TVariable.h"
+#include "TLogger.h"
 
-#include "LUtil.h"
 //#include "LFiles.h"
+//#include "Card.h"
+//#include "Globals.h"
 
-#include "Variable.h"
-#include "Card.h"
-#include "Globals.h"
+USING_NAMESPACE_FIVEL
+
+TVariableManager FIVEL_NS gVariableManager;
 
 //  Initialize the variable.
-//
-Variable::Variable(const char *inName, const char *inValue) : TBNode(inName)
+TVariable::TVariable(const char *inName, const char *inValue) : TBNode(inName)
 {
     if (inValue != NULL)
         mValue = inValue; 
@@ -34,37 +37,32 @@ Variable::Variable(const char *inName, const char *inValue) : TBNode(inName)
 		mValue = (int32) 0;
 }
 
-void Variable::SetDate(uint32 inDate, int32 inDateType)
+void TVariable::SetDate(uint32 inDate, int32 inDateType)
 {
-	TString		theDate;
-	
+	TString theDate;
 	::SetDate(theDate, inDate, inDateType);
 	SetString(theDate.GetString());
 }
 
-/********************************
 
-    VARIABLE MANAGER ROUTINES
-
-********************************/
+//=========================================================================
+//  Variable Manager Routines
+//=========================================================================
 
 //  Initialize the local variable tree.
-//
-VariableManager::VariableManager() : TBTree()
+TVariableManager::TVariableManager() : TBTree()
 {
     localroot = NULL;
 
     //  The special variable is not in the tree so its name won't
     //  conflict with a 5L variable called "Special".
-    //
-    special = new Variable("Special");
+    special = new TVariable("Special");
 }
 
 //  Normally the local tree will never exist. But in case we
 //  exit in the middle of a macro (due to syntax, etc) we should
 //  clean up.
-//
-VariableManager::~VariableManager()
+TVariableManager::~TVariableManager()
 { 
 	RemoveAll();
 
@@ -78,10 +76,16 @@ VariableManager::~VariableManager()
 		delete special;
 }
 
-//
+void
+TVariableManager::RegisterSpecialVariable(const std::string &inName,
+										  SpecialVariableFunction inFunc)
+{
+	mSpecials.insert(std::pair<std::string,SpecialVariableFunction>(inName,
+																	inFunc));
+}
+
 //	RemoveAll - Wipe out all the nodes.
-//
-void VariableManager::RemoveAll(void)
+void TVariableManager::RemoveAll(void)
 {
 	if (localroot != NULL)
 	{
@@ -91,34 +95,30 @@ void VariableManager::RemoveAll(void)
 	}
 	
 	// don't delete special - there is no reason to
-	
 	TBTree::RemoveAll();
 }
+	
 
-	
-	
-/***********************************************************************
- * Function: VariableManager::IsSpecial
- *
- *  Parameter name
- * Return:
- *  1 if special, 0 else.
- * Comments:
- *  Determine if the given variable is a "special" variable. If it is
- *  set the value of the special instance variable to the proper value.
- *  Return whether or not the name is a special variable.
- *  
- *  Special variables:
- *
- *      date        Current date in form 08/21/93
- *      longdate    Current date in form January 22, 1992
- *      time        Current time in form 12:34pm
- ***********************************************************************/
-int VariableManager::IsSpecial(const char *name)
+// Function: TVariableManager::IsSpecial
+//
+//  Parameter name
+// Return:
+//  1 if special, 0 else.
+// Comments:
+//  Determine if the given variable is a "special" variable. If it is
+//  set the value of the special instance variable to the proper value.
+//  Return whether or not the name is a special variable.
+//  
+//  Special variables:
+//
+//      date        Current date in form 08/21/93
+//      longdate    Current date in form January 22, 1992
+//      time        Current time in form 12:34pm
+//
+int TVariableManager::IsSpecial(const char *name)
 {
     TString     vname(name);
     TString     str;
- //   LDate       theDate;
 
     vname.MakeLower();
     
@@ -128,143 +128,83 @@ int VariableManager::IsSpecial(const char *name)
 
 	if (vname.Equal("_date"))
     {
-    	GetDate(str, df_DATE);
-    	
-        //str = theDate.GetDate(df_DATE);
-        special->SetString(str);
+    	::GetDate(str, df_DATE);
+		special->SetString(str);
         return true;
     } 
 	else if (vname.Equal("_longdate")) 
     {
-    	GetDate(str, df_LONGDATE);
-        
-        //str = theDate.GetDate(df_LONGDATE);
+    	::GetDate(str, df_LONGDATE);
         special->SetString(str);
         return true;
     } 
     else if (vname.Equal("_time")) 
     {
-    	GetDate(str, df_TIME);
-    	
-        //str = theDate.GetDate(df_TIME);
+    	::GetDate(str, df_TIME);
         special->SetString(str);
         return true;
     } 
     else if (vname.Equal("_seconds"))
     {
-    	GetDate(str, df_SECONDS);
-    	
-        //str = theDate.GetDate(df_SECONDS);
+    	::GetDate(str, df_SECONDS);
         special->SetString(str);
         return true;
     } 
-    else if (vname.Equal("_system"))
-    {
-        special->SetString(gSysInfo.ShortString());
-        return true;
-    }
-    else if (vname.Equal("_curcard"))
-    {
-    	special->SetString(gCardManager.CurCardName());
-    	return (true);
-    }
-    else if (vname.Equal("_prevcard"))
-    {
-    	special->SetString(gCardManager.PrevCardName());
-    	return (true);
-    }
-    else if (vname.Equal("_eof"))
-    {
-        if (gFileManager.CurFileOpen())
-        {
-        	if (gFileManager.CurFileAtEOF())
-        		special->SetLong(1);
-        	else
-        		special->SetLong(0);
-        }
-        else
-        {
-			gDebugLog.Log("Trying to read _EOF and no file open!");
-			special->SetLong(0);
+	else
+	{
+		std::map<std::string,SpecialVariableFunction>::iterator found =
+			mSpecials.find(std::string(vname));
+		if (found != mSpecials.end())
+		{
+			special->SetString((*found->second)());
+			return true;
 		}
-    	return (true);
-    }
+	}
 
     return false;
 }
 
-/***********************************************************************
- * Function: VariableManager::GetString
- *
- *  Parameter name
- * Return:
- *  Value of "name" as a string.
- * Comments:
- *  
- ***********************************************************************/
-const char *VariableManager::GetString(const char *name)
+// Return value of "name" as a string.
+const char *TVariableManager::GetString(const char *name)
 {
-    Variable    *var;
-
-    var = FindVariable(name, true);
+    TVariable *var = FindVariable(name, true);
     return (var->GetString());
 }
 
-/***********************************************************************
- * Function: VariableManager::GetLong
- *
- *  Parameter name
- * Return:
- *  value of "name" as a long.
- * Comments:
- *
- ***********************************************************************/
-long VariableManager::GetLong(const char *name)
+// Return value of "name" as a long.
+long TVariableManager::GetLong(const char *name)
 {
-    Variable    *var;
-
-    var = FindVariable(name, true);
+    TVariable *var = FindVariable(name, true);
     return var->GetLong();
 }
 
-/***********************************************************************
- * Function: VariableManager::GetDouble
- *
- *  Parameter name
- * Return:
- *  value of "name" as a double float.
- * Comments:
- *
- ***********************************************************************/
-double VariableManager::GetDouble(const char *name)
+// Return value of "name" as a double float.
+double TVariableManager::GetDouble(const char *name)
 {
-    Variable    *var;
-
-    var = FindVariable(name, true);
+    TVariable *var = FindVariable(name, true);
     return var->GetDouble();
 }
 
-/***********************************************************************
- * Function: VariableManager::FindVariable
- *
- *  Parameter name
- *  Parameter fReading
- * Return:
- *  Variable name "name" or new variable created.
- * Comments:
- *  Search the tree for the variable. If it's not there create it.
- *  We always create variables if they don't exist. This is so a
- *  variable may be set in the command line (or not set in the
- *  command line) and still used in the script.
- ***********************************************************************/
-Variable *VariableManager::FindVariable(const char *name, int fReading)
+
+// Function: TVariableManager::FindVariable
+//
+//  Parameter name
+//  Parameter fReading
+// Return:
+//  Variable name "name" or new variable created.
+// Comments:
+//  Search the tree for the variable. If it's not there create it.
+//  We always create variables if they don't exist. This is so a
+//  variable may be set in the command line (or not set in the
+//  command line) and still used in the script.
+//
+TVariable *TVariableManager::FindVariable(const char *name, int fReading)
 {
-    Variable    *var;
+    TVariable *var;
 
     //  First see if it is a special variable. If it is and fReading is
     //  false, complain because these are read-only variables. Otherwise
     //  return the special variable, which IsSpecial has set.
-    //
     if (IsSpecial(name)) 
     {
         if (fReading)
@@ -277,24 +217,22 @@ Variable *VariableManager::FindVariable(const char *name, int fReading)
     }
 
     //  Search the local tree.
-    //
     if (localroot) 
     {
-        var = (Variable *)localroot->Find(name);
+        var = (TVariable*) localroot->Find(name);
         if (var) 
         	return var;
     }
 
     //  Now check the global tree. It's ok to fail; we'll create the
     //  variable if it's not there.
-    //
-    var = (Variable *)Find(name);
+    var = (TVariable*) Find(name);
     if (var == NULL) 
     { 
  		if (fReading)
- 			gDebugLog.Log("Getting variable <%s> before it has been set.", name);
- 
-        var = new Variable(name);
+ 			gDebugLog.Log("Getting variable <%s> before it has been set.",
+						  name);
+        var = new TVariable(name);
         Add(var); 
     
 		var->SetString("0");
@@ -303,87 +241,52 @@ Variable *VariableManager::FindVariable(const char *name, int fReading)
     return var;
 }
 
-/***********************************************************************
- * Function: VariableManager::SetString
- *
- *  Parameter name
- *  Parameter data
- * Return:
- *
- * Comments:
- *  Set "name" to "data"
- ***********************************************************************/
-void VariableManager::SetString(const char *name, const char *data)
+// Set 'name' to 'data'.
+void TVariableManager::SetString(const char *name, const char *data)
 {
-    Variable    *var;
-
-    var = FindVariable(name, false);
+    TVariable *var = FindVariable(name, false);
     var->SetString(data);
 }
 
-/***********************************************************************
- * Function: VariableManager::SetLong
- *
- *  Parameter name
- *  Parameter data
- * Return:
- *
- * Comments:
- *  Set "name" to "data"
- ***********************************************************************/
-void VariableManager::SetLong(const char *name, const long data)
+// Set 'name' to 'data'.
+void TVariableManager::SetLong(const char *name, const long data)
 {
-    Variable    *var;
-
-    var = FindVariable(name, false);
+    TVariable *var = FindVariable(name, false);
     var->SetLong(data);
 }
 
-/***********************************************************************
- * Function: VariableManager::SetDouble
- *
- *  Parameter name
- *  Parameter data
- * Return:
- *
- * Comments:
- *  Set "name" to "data"
- ***********************************************************************/
-void VariableManager::SetDouble(const char *name, const double data)
+// Set 'name' to 'data'.
+void TVariableManager::SetDouble(const char *name, const double data)
 {
-    Variable    *var;
-
-    var = FindVariable(name, false);
+    TVariable *var = FindVariable(name, false);
     var->SetDouble(data);
 } 
 
-void VariableManager::SetDate(const char *name, uint32 date, int32 date_type)
+// Set 'name' to 'data'.
+void TVariableManager::SetDate(const char *name, uint32 date, int32 date_type)
 {
-   Variable    *var;
-
-    var = FindVariable(name, false);
-    var->SetDate(date, date_type);
+	TVariable *var = FindVariable(name, false);
+	var->SetDate(date, date_type);
 }
 
 
-/***********************************************************************
- * Function: VariableManager::GetLocal
- *
- *  Parameter (null)
- * Return:
- *  root of local tree (for $1 etc. in a macro)
- * Comments:
- *  Methods to manage the local tree used by macros.
- *  NOTE: VariableManager will not clean up local trees!
- *  It is up to whoever makes the tree to maintain it
- *  and delete it.
- ***********************************************************************/
-Variable *VariableManager::GetLocal()
+// Function: TVariableManager::GetLocal
+//
+//  Parameter (null)
+// Return:
+//  root of local tree (for $1 etc. in a macro)
+// Comments:
+//  Methods to manage the local tree used by macros.
+//  NOTE: TVariableManager will not clean up local trees!
+//  It is up to whoever makes the tree to maintain it
+//  and delete it.
+//
+TVariable *TVariableManager::GetLocal()
 {
     return localroot;
 }
 
-void VariableManager::SetLocal(Variable *newlocal)
+void TVariableManager::SetLocal(TVariable *newlocal)
 {
     localroot = newlocal;
 }
@@ -391,6 +294,128 @@ void VariableManager::SetLocal(Variable *newlocal)
 
 /*
  $Log$
+ Revision 1.3  2002/05/15 11:05:17  emk
+ 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+ Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
+ is available, and several subsystems have been refactored.  For more
+ detailed descriptions, see the CVS branch.
+
+ The merged Mac code hasn't been built yet; I'll take care of that next.
+
+ Revision 1.2.2.2  2002/04/30 07:57:24  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
+ Revision 1.2.2.1  2002/04/22 05:22:33  emk
+ A weekend's worth of merging, in preparation for the Typography switchover.
+
+ MOVED
+ -----
+
+ * Win32/Crypt/md5.c -> Common/libs/crypto/md5.c
+ * Win32/Crypt/md5.h -> Common/libs/crypto/md5.h
+ * Win32/Crypt/md5main.c -> Common/libs/crypto/md5main.c
+ * Win32/Crypt/_blowfish.c -> Common/libs/crypto/blowfish.c
+ * Win32/Crypt/blowfish.h -> Common/libs/crypto/blowfish.h
+
+ Third-party cryptography files moved to the new Common/libs/crypto
+ directory.  In general, third-party code should go under Common/libs, so we
+ can find it all in one place for updates and license checks.
+ Common/freetype2 will probably move there soon for the sake of consistency.
+
+ MERGED
+ ------
+
+ * Win32/Crypt/CryptStream.cpp -> Common/CryptStream.cpp
+ * Win32/Crypt/CryptStream.h -> Common/CryptStream.h
+ * Win32/TestSuite/TestCryptStream.cpp -> Common/CryptStreamTests.cpp
+
+ Modified to use the portable Path abstraction.  Included our standard key
+ once in this file, instead of having it in many different headers
+ throughout the program. Coerced uchar* to char* in several places required
+ by the fstream API (and some other coercions).
+
+ * Win32/FiveL/Parser.cpp -> Common/TParser.cpp
+ * Win32/FiveL/Parser.h -> Common/TParser.h
+
+ Merged in Elizabeth's improved escape-handling code.  Factored out all code
+ which specifically referred to "card", "header" or "macrodef" forms, and
+ added a generic API for registering abitrary top-level forms.
+
+ * Win32/FiveL/Index.cpp -> Common/TIndex.cpp
+ * Win32/FiveL/Index.h -> Common/TIndex.h
+ * NEW: Common/TIndexTests.cpp
+ * NEW: Common/Scripts/test.scr
+
+ Merged TIndex::GetScript from the Macintosh.  Temporarily stopped closing
+ the TIndexFile in the presence of REDOSCRIPT.  Merged some Macintosh code
+ for building indices from FSSpecs; this probably doesn't work.  Changed the
+ Open and Init methods to use the portable Path library (the APIs might be
+ slightly suboptimal).
+
+ * Win32/FiveL/LUtil.cpp -> Common/TDateUtil.cpp
+ * Win32/FiveL/LUtil.h -> Common/TDateUtil.h
+
+ Extracted date-related code from LUtil.*.  Changed wsprintf calls to
+ sprintf.
+
+ * Win32/FiveL/Variable.cpp -> Common/TVariable.cpp
+ * Win32/FiveL/Variable.h -> Common/TVariable.h
+
+ Disabled certain special variables that caused awkward dependencies, and
+ replaced them with an interface for registering arbitrary special
+ variables.
+
+ MODIFIED
+ --------
+
+ * Common/FileSystem.cpp
+ * Common/FileSystem.h
+
+ Added a RenameFile function, and a GetScriptsDirectory function.  Also
+ added a ReplaceWithTemporaryFile function, which overwrites an existing
+ file with a temporary file (someday, we can implement this as an atomic
+ operation on most operating systems).
+
+ * Common/GraphicsTools.h
+
+ Added a no-arguments constuctor for Point.
+
+ * Common/TString.cpp
+ * Common/TString.h
+
+ Lots of "signed/unsigned comparison" and other warning fixes.
+
+ * Common/TStyleSheet.cpp
+ * Common/TStyleSheet.h
+
+ Added full-fledged INCR_X, INCR_Y support!
+
+ * Common/Typography.cpp
+ * Common/Typography.h
+
+ Made sure that kerning+advance can never move the drawing cursor backwards.
+ Fixed warnings.
+
+ * Common/fonttools/pngtest.cpp
+
+ Added a test of transparent text (just for fun).
+
+ KNOWN ISSUES
+ ------------
+
+ * Logging code needs to have Mac-specific features merged back in.
+
+ * TIndexFile doesn't close the underlying file properly in the presence of
+ REDOSCRIPT.  What's going on here?
+
+ * TParser--and maybe TStream--need to have cross-platform end-of-line
+ handling.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 
