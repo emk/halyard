@@ -32,6 +32,17 @@ public:
     // Resume playing the media stream after a pause.
     //
     virtual void Resume() = 0;
+
+    //////////
+    // Set the volume of this media element.
+    //
+    // [in] inChannel - The channel to change.  Typical values include
+    //                  "left", "right" and "all", although future media
+    //                  frameworks may define more channels.
+    // [in] inVolume - The volume.  0.0 is silent, 1.0 is the media's
+    //                 normal volume.
+    //
+	virtual void SetVolume(const std::string &inChannel, double inVolume) = 0;
 };
 
 #endif // MediaElement_H

@@ -332,7 +332,7 @@ DEFINE_5L_PRIMITIVE(StateDbGet) {
 	std::string listener_name, key;
     int32 serial_number;
 	inArgs >> SymbolName(listener_name) >> serial_number >> SymbolName(key);
-    boost::shared_ptr<TStateListener> listener =
+    shared_ptr<TStateListener> listener =
         gStateListenerManager.FindListener(listener_name, serial_number);
     ::SetPrimitiveResult(gStateDB.Get(listener.get(), key));
 }

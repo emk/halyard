@@ -115,19 +115,21 @@ void MovieWindowQT::Resume()
 		mMovie->Unpause();
 }
 
+void MovieWindowQT::SetVolume(const std::string &inChannel, double inVolume) {
+    float volume = inVolume;
+    if (volume < 0.0)
+        volume = 0.0;
+    if (volume > 1.0)
+        volume = 1.0;
+
+    if (mMovie)
+        mMovie->SetMovieVolume(volume * MAX_INT16);
+}
+
 void MovieWindowQT::OnEraseBackground(wxEraseEvent &inEvent)
 {
-	if (mMovie && mMovie->IsStarted())
-	{
-		wxLogTrace(TRACE_STAGE_DRAWING,
-				   "Ignoring request to erase movie window.");
-	}
-	else
-	{
-		wxLogTrace(TRACE_STAGE_DRAWING,
-				   "Erasing background of movie window.");
-		inEvent.Skip();
-	}
+    // Ignore this event to prevent flicker.
+	wxLogTrace(TRACE_STAGE_DRAWING, "Ignoring request to erase movie.");
 }
 
 void MovieWindowQT::OnPaint(wxPaintEvent &inEvent)

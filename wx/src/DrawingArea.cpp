@@ -62,7 +62,7 @@ void DrawingArea::InitializeQuake2Overlay()
         iter.OffsetY(pdata, 1);
         stride = &(iter.Blue()) - data;
     }
-    boost::shared_ptr<wxQuake2Overlay>
+    shared_ptr<wxQuake2Overlay>
         ptr(new wxQuake2Overlay(format, data, mBounds, stride));
     mQuake2Overlay = ptr;
 }

@@ -5,6 +5,7 @@
 
 class Stage;
 class Element;
+typedef shared_ptr<Element> ElementPtr;
 class DrawingArea;
 
 //////////
@@ -13,7 +14,7 @@ class DrawingArea;
 // into a separate file to keep Stage as small as possible.
 //
 class DrawingContextStack {
-    typedef std::vector<Element*> ElementStack;
+    typedef std::vector<ElementPtr> ElementStack;
 
 	//////////
 	// The stage we're associated with.  This provides our default
@@ -30,12 +31,12 @@ public:
     DrawingContextStack(Stage *inStage) : mStage(inStage) {}
 
 	bool IsEmpty() { return mDrawingContextStack.empty(); }
-	bool ContainsElement(Element *inElement);
+	bool ContainsElement(ElementPtr inElement);
 
 	DrawingArea *GetCurrentDrawingArea();
 
-	void PushDrawingContext(Element *inElement);
-	void PopDrawingContext(Element *inElement);
+	void PushDrawingContext(ElementPtr inElement);
+	void PopDrawingContext(ElementPtr inElement);
 };
 
 #endif // DrawingContextStack_H

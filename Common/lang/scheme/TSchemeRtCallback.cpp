@@ -231,7 +231,7 @@ TValue TSchemeRtCallback::Run(TStateListenerPtr inListener) {
 TValue TSchemeRtCallback::Run(const TValueList &inArguments) {
     if (inArguments.size() != 2)
         THROW("Expected name, serial number as arguments");
-    boost::shared_ptr<TStateListener> listener =
+    shared_ptr<TStateListener> listener =
         gStateListenerManager.FindListener(TSymbol(inArguments[0]).GetName(),
                                            inArguments[1]);
     return Run(listener);

@@ -69,7 +69,7 @@ CustomIEHtmlWindow::CustomIEHtmlWindow(wxWindow *inParent,
 }
 
 void CustomIEHtmlWindow::OnMSHTMLStatusTextChangeX(wxActiveXEvent& event) {
-    mElement->GetDispatcher()->DoEventStatusTextChanged(event["Text"]);
+    mElement->GetEventDispatcher()->DoEventStatusTextChanged(event["Text"]);
 }
 
 void CustomIEHtmlWindow::OnMSHTMLWindowClosingX(wxActiveXEvent& event) {
@@ -79,20 +79,21 @@ void CustomIEHtmlWindow::OnMSHTMLWindowClosingX(wxActiveXEvent& event) {
 
 void CustomIEHtmlWindow::OnMSHTMLBeforeNavigate2X(wxActiveXEvent& event) {
     bool vetoed;
-    mElement->GetDispatcher()->DoEventBrowserNavigate(event["Url"], vetoed);
+    mElement->GetEventDispatcher()->DoEventBrowserNavigate(event["Url"],
+                                                           vetoed);
     if (vetoed)
         event["Cancel"] = true;
 }
 
 void CustomIEHtmlWindow::OnMSHTMLNavigateComplete2X(wxActiveXEvent& event) {
     // We can't use event["Url"], because it may be the URL of a sub-page.
-    mElement->GetDispatcher()->DoEventBrowserPageChanged(LocationUrl());
+    mElement->GetEventDispatcher()->DoEventBrowserPageChanged(LocationUrl());
 }
 
 void CustomIEHtmlWindow::OnMSHTMLTitleChangeX(wxActiveXEvent& event) {
     // TODO - event["Text"] includes URLs as well as titles.  Ick.  I'm
     // not quite sure how to fix this, actually.
-    mElement->GetDispatcher()->DoEventBrowserTitleChanged(event["Text"]);
+    mElement->GetEventDispatcher()->DoEventBrowserTitleChanged(event["Text"]);
 }
 
 void CustomIEHtmlWindow::OnMSHTMLCommandStateChangeX(wxActiveXEvent& event) {
@@ -101,12 +102,12 @@ void CustomIEHtmlWindow::OnMSHTMLCommandStateChangeX(wxActiveXEvent& event) {
     switch (command) {
         case CSC_NAVIGATEFORWARD:
             mElement->mButtonEnabled[BrowserElementIE::FORWARD_BUTTON] = is_on;
-            mElement->GetDispatcher()->DoEventUpdateUI("forward");
+            mElement->GetEventDispatcher()->DoEventUpdateUI("forward");
             break;
 
         case CSC_NAVIGATEBACK:
             mElement->mButtonEnabled[BrowserElementIE::BACK_BUTTON] = is_on;
-            mElement->GetDispatcher()->DoEventUpdateUI("back");
+            mElement->GetEventDispatcher()->DoEventUpdateUI("back");
             break;
 
         default:
@@ -117,7 +118,7 @@ void CustomIEHtmlWindow::OnMSHTMLCommandStateChangeX(wxActiveXEvent& event) {
 
 void CustomIEHtmlWindow::OnMSHTMLUpdateStopButtonX(wxActiveXEvent& event) {
     // Our busy state may have changed, so re-poll the stop button.
-    mElement->GetDispatcher()->DoEventUpdateUI("stop");    
+    mElement->GetEventDispatcher()->DoEventUpdateUI("stop");    
 }
 
 void CustomIEHtmlWindow::OnMSHTMLNewWindow2X(wxActiveXEvent& event) {
@@ -146,7 +147,7 @@ void CustomIEHtmlWindow::OnMSHTMLProgressChangeX(wxActiveXEvent& event) {
         else
             value = 0.0;
     }
-    mElement->GetDispatcher()->DoEventProgressChanged(is_done, value);    
+    mElement->GetEventDispatcher()->DoEventProgressChanged(is_done, value);    
 }
 
 

@@ -69,6 +69,11 @@ public:
 	void SetChannelVolume(int inChannel, float inVolume);
 
 	//////////
+	// Set the volume of the specified channel.
+	//
+	void SetChannelVolume(const std::string &inChannel, float inVolume);
+
+	//////////
 	// Is the stream currently running?
 	//
 	bool IsRunning() { return mIsRunning; }

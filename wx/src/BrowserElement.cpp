@@ -6,14 +6,6 @@
 
 BrowserElement::BrowserElement(Stage *inStage, const wxString &inName,
                                FIVEL_NS TCallbackPtr inDispatch)
-    : Widget(inStage, inName)
+    : Widget(inStage, inName, inDispatch)
 {
-    ASSERT(inDispatch.get());
-	mDispatcher = new EventDispatcher();
-	mDispatcher->SetDispatcher(inDispatch);
-}
-
-BrowserElement::~BrowserElement() {
-	// XXX - The callback in this dispatcher may still be active!
-    delete mDispatcher;
 }

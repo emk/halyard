@@ -80,6 +80,11 @@ public:
 	// Resume the movie
 	//
 	virtual void Resume();
+
+    //////////
+    // Set the movie's volume.
+    //
+	virtual void SetVolume(const std::string &inChannel, double inVolume);
 };
 
 // Define MovieWindowNative to map to an appropriate movie window class.

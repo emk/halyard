@@ -59,7 +59,7 @@ void Quake2Engine::OnMouseEvent(wxMouseEvent &inEvent)
 
 bool Quake2Engine::Show(bool show)
 {
-	if (!show && IsShown())
+	if (!show && IsShown() && wxGetApp().HaveStage())
 	{
 		// Attempt to save our displayed graphics back into our Stage's
 		// offscreen buffer.

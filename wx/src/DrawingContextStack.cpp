@@ -6,7 +6,7 @@
 #include "Element.h"
 #include "DrawingArea.h"
 
-bool DrawingContextStack::ContainsElement(Element *inElement) {
+bool DrawingContextStack::ContainsElement(ElementPtr inElement) {
     ElementStack::iterator i = mDrawingContextStack.begin();
     for (; i != mDrawingContextStack.end(); ++i)
         if (*i == inElement)
@@ -24,14 +24,14 @@ DrawingArea *DrawingContextStack::GetCurrentDrawingArea() {
     }
 }
 
-void DrawingContextStack::PushDrawingContext(Element *inElement) {
+void DrawingContextStack::PushDrawingContext(ElementPtr inElement) {
     DrawingArea *area = inElement->GetDrawingArea();
     if (!area)
         THROW("Element has no associated drawing context");
     mDrawingContextStack.push_back(inElement);
 }
 
-void DrawingContextStack::PopDrawingContext(Element *inElement) {
+void DrawingContextStack::PopDrawingContext(ElementPtr inElement) {
     ASSERT(!IsEmpty());
     if (inElement != mDrawingContextStack.back())
         gLog.FatalError("Mismatched drawing context push/pop");

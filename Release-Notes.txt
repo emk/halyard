@@ -1,5 +1,17 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.23 - 4 March 2004 - emk
+
+  * Added (ON MEDIA-FINISHED (EVENT) ...) handler.
+  * Added support for setting volume of QuickTime movies.
+  * Added support for setting volume of GeigerSynthElement.
+  * Moved EventDispatcher support into Element.
+  * Fixed bug which caused engine to crash if you quit it while Quake 2
+    was displayed.
+  * Attemped to prevent wxWindows from erasing the wxWindow in which
+    we're displaying QuickTime movies.
+  * Added a few 'using boost::foo' directives.
+
 0.0.22 - 1 March 2004 - emk
 
   * Made sure all Quake 2-related state db entries got cleared at Quake 2

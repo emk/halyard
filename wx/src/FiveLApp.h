@@ -65,6 +65,11 @@ public:
 	// Get the Stage for this application.
 	//
 	Stage *GetStage();
+
+    //////////
+    // Return true if and only if this application has a stage.
+    //
+    bool HaveStage() { return mStageFrame != NULL; } 
 };
 
 //////////

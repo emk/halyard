@@ -43,7 +43,7 @@ void VorbisAudioStream::InitializeFile()
 	mDoneWithFile = false;
 	VorbisFile *file =
 		new VorbisFile(mFileName.c_str(), SAMPLES_PER_SECOND, CHANNELS);
-	mFile = boost::shared_ptr<VorbisFile>(file);
+	mFile = shared_ptr<VorbisFile>(file);
 }
 
 void VorbisAudioStream::RestartFileIfLoopingAndDone()

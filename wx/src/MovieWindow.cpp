@@ -54,3 +54,8 @@ void MovieWindow::Resume()
 {
 	return;
 }
+
+void MovieWindow::SetVolume(const std::string &inChannel, double inVolume)
+{
+    return;
+}

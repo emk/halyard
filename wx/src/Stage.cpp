@@ -31,6 +31,8 @@
 #	include "Quake2Engine.h"
 #endif // CONFIG_HAVE_QUAKE2
 
+typedef shared_ptr<IMediaElement> IMediaElementPtr;
+
 #define IDLE_INTERVAL (33) // milliseconds
 
 USING_NAMESPACE_FIVEL
@@ -62,8 +64,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
-	  mTextCtrl(NULL), mCurrentElement(NULL), mGrabbedElement(NULL),
-	  mWaitElement(NULL),
+	  mTextCtrl(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
 {
@@ -254,15 +255,15 @@ void Stage::NotifyElementsChanged()
 	}
 }
 
-void Stage::EnterElement(Element *inElement, wxPoint &inPosition)
+void Stage::EnterElement(ElementPtr inElement, wxPoint &inPosition)
 {
-	ASSERT(inElement->GetEventDispatcher());
+	ASSERT(inElement->GetEventDispatcher().get());
 	inElement->GetEventDispatcher()->DoEventMouseEnter(inPosition);
 }
 
-void Stage::LeaveElement(Element *inElement, wxPoint &inPosition)
+void Stage::LeaveElement(ElementPtr inElement, wxPoint &inPosition)
 {
-	ASSERT(inElement->GetEventDispatcher());
+	ASSERT(inElement->GetEventDispatcher().get());
 	inElement->GetEventDispatcher()->DoEventMouseLeave(inPosition);
 }
 
@@ -270,12 +271,12 @@ void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 {
 	// Find which element we're in.
 	wxPoint pos = ScreenToClient(::wxGetMousePosition());
-	Element *obj = FindLightWeightElement(pos);
+	ElementPtr obj = FindLightWeightElement(pos);
 
 	// Change the cursor, if necessary.  I haven't refactored this
 	// into EnterElement/LeaveElement yet because of how we handle
 	// mIsDisplayingXy.  Feel free to improve.
-	if (!mGrabbedElement && (obj == NULL || obj != mCurrentElement))
+	if (!mGrabbedElement && (!obj || obj != mCurrentElement))
 	{
 		if (mIsDisplayingXy)
 			SetCursor(*wxCROSS_CURSOR);
@@ -356,6 +357,14 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 
         // Now's an excellent time to update the clock information.
         UpdateClock();
+
+        // Send idle events to all our elements.  We use a copy of
+        // mElements in case elements delete themselves in their idle
+        // function.
+        ElementCollection elems = mElements;
+        ElementCollection::iterator i = elems.begin();
+        for (; i != elems.end(); i++)
+            (*i)->Idle();
 
 		// We only pass the idle event to just the card, and not any
 		// of the elements.  Idle event processing is handled differently
@@ -476,7 +485,7 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
 // XXX - these should be refactored, but it's just two lines they have 
 // in common. I'm not sure if it's worth it. Feel free to do so if you
 // want.
-void Stage::DrawElementBorder(wxDC &inDC, Element *inElement)
+void Stage::DrawElementBorder(wxDC &inDC, ElementPtr inElement)
 {
 	inDC.SetPen(*wxRED_PEN);
 	inDC.SetBrush(*wxTRANSPARENT_BRUSH);
@@ -706,7 +715,7 @@ wxString Stage::FinishModalTextInput()
 
 bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 {
-	ASSERT(mWaitElement == NULL);
+	ASSERT(!mWaitElement);
 
 	// Look for our element.
 	ElementCollection::iterator i =
@@ -721,8 +730,8 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 		gDebugLog.Caution("wait: Element %s does not exist", name);
 		return false;
 	}
-	MovieElement *movie = dynamic_cast<MovieElement*>(*i);
-	if (movie == NULL)
+	MovieElementPtr movie = MovieElementPtr(*i, dynamic_cast_tag());
+	if (!movie)
 	{
 		gDebugLog.Caution("wait: Element %s is not a movie", name);
 		return false;		
@@ -745,8 +754,8 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 void Stage::EndWait()
 {
 	gDebugLog.Log("wait: Waking up.");
-	ASSERT(mWaitElement != NULL);
-	mWaitElement = NULL;
+	ASSERT(mWaitElement.get());
+	mWaitElement = MovieElementPtr();
 	mWaitFrame = 0;
 	InterpreterWakeUp();
 }
@@ -789,7 +798,7 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 	ValidateStage();
 }
 
-void Stage::AddElement(Element *inElement)
+void Stage::AddElement(ElementPtr inElement)
 {
 	// Delete any existing Element with the same name.
 	(void) DeleteElementByName(inElement->GetName());
@@ -799,20 +808,20 @@ void Stage::AddElement(Element *inElement)
 	NotifyElementsChanged();
 }
 
-Element *Stage::FindElement(const wxString &inElementName)
+ElementPtr Stage::FindElement(const wxString &inElementName)
 {
 	ElementCollection::iterator i =
 		FindElementByName(mElements, inElementName);
 	if (i == mElements.end())
-		return NULL;
+		return ElementPtr();
 	else
 		return *i;
 }
 
-Element *Stage::FindLightWeightElement(const wxPoint &inPoint)
+ElementPtr Stage::FindLightWeightElement(const wxPoint &inPoint)
 {
 	// Look for the most-recently-added Element containing inPoint.
-	Element *result = NULL;
+	ElementPtr result;
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); i++)
 		if ((*i)->IsLightWeight() && (*i)->IsShown() &&
@@ -825,17 +834,17 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint)
 {
 	// If a grab is in effect, return the element immediately.
 	if (mGrabbedElement)
-		return mGrabbedElement->GetEventDispatcher();
+		return mGrabbedElement->GetEventDispatcher().get();
 
 	// Otherwise, look things up normally.
-	Element *elem = FindLightWeightElement(inPoint);
+	ElementPtr elem = FindLightWeightElement(inPoint);
 	if (elem && elem->GetEventDispatcher())
-		return elem->GetEventDispatcher();
+		return elem->GetEventDispatcher().get();
 	else
 		return GetEventDispatcher();
 }
 
-void Stage::DestroyElement(Element *inElement)
+void Stage::DestroyElement(ElementPtr inElement)
 {
 	wxString name = inElement->GetName();
 
@@ -848,14 +857,14 @@ void Stage::DestroyElement(Element *inElement)
 	if (inElement == mGrabbedElement)
 		MouseUngrab(mGrabbedElement);
 	if (inElement == mCurrentElement)
-		mCurrentElement = NULL;
+		mCurrentElement = ElementPtr();
 	if (inElement == mWaitElement)
 		EndWait();
 
 	// Destroy the object.
 	// TODO - Implemented delayed destruction so element callbacks can
 	// destroy the element they're attached to.
-	delete inElement;
+	// delete inElement;
 }
 
 bool Stage::DeleteElementByName(const wxString &inName)
@@ -865,7 +874,7 @@ bool Stage::DeleteElementByName(const wxString &inName)
 	if (i != mElements.end())
 	{
 		// Completely remove from the collection first, then destroy.
-		Element *elem = *i;
+		ElementPtr elem = *i;
 		mElements.erase(i);
 		DestroyElement(elem);
 		found = true;
@@ -887,7 +896,7 @@ bool Stage::IsMediaPlaying()
 {
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); ++i)
-		if (dynamic_cast<IMediaElement*>(*i))
+		if (IMediaElementPtr(*i, dynamic_cast_tag()))
 			return true;
 	return false;
 }
@@ -896,7 +905,7 @@ void Stage::EndMediaElements()
 {
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); ++i) {
-		IMediaElement *elem = dynamic_cast<IMediaElement*>(*i);
+		IMediaElementPtr elem = IMediaElementPtr(*i, dynamic_cast_tag());
 		if (elem) {
 			gDebugLog.Log("Manually ending media: %s",
 						  (*i)->GetName().mb_str());
@@ -905,10 +914,10 @@ void Stage::EndMediaElements()
 	}
 }
 
-void Stage::MouseGrab(Element *inElement)
+void Stage::MouseGrab(ElementPtr inElement)
 {
 	ASSERT(inElement->IsLightWeight());
-	ASSERT(inElement->GetEventDispatcher());
+	ASSERT(inElement->GetEventDispatcher().get());
 	if (mGrabbedElement)
 	{
 		gLog.Error("Grabbing %s while %s is already grabbed",
@@ -920,7 +929,7 @@ void Stage::MouseGrab(Element *inElement)
 	CaptureMouse();
 }
 
-void Stage::MouseUngrab(Element *inElement)
+void Stage::MouseUngrab(ElementPtr inElement)
 {
 	ASSERT(inElement->IsLightWeight());
 	if (!mGrabbedElement)
@@ -938,15 +947,15 @@ void Stage::MouseUngrab(Element *inElement)
 
 	// Force updating of the current element, cursor, etc.
 	if (mCurrentElement != mGrabbedElement)
-		mCurrentElement = NULL;
+		mCurrentElement = ElementPtr();
 
 	// Release our grab.
-	mGrabbedElement = NULL;
+	mGrabbedElement = ElementPtr();
 	ReleaseMouse();
 	UpdateCurrentElementAndCursor();
 }
 
-bool Stage::ShouldSendMouseEventsToElement(Element *inElement)
+bool Stage::ShouldSendMouseEventsToElement(ElementPtr inElement)
 {
 	return !mGrabbedElement || (inElement == mGrabbedElement);
 }

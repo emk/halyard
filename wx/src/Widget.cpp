@@ -6,8 +6,9 @@
 #include "TLogger.h"
 #include "Widget.h"
 
-Widget::Widget(Stage *inStage, const wxString &inName)
-	: Element(inStage, inName), mWindow(NULL)
+Widget::Widget(Stage *inStage, const wxString &inName,
+               FIVEL_NS TCallbackPtr inDispatcher)
+	: Element(inStage, inName, inDispatcher), mWindow(NULL)
 {
 	// Our subclass must call InitializeWidgetWindow before exiting its
 	// constructor.

@@ -11,8 +11,8 @@ class VorbisAudioStream : public AudioStream
 {
 	std::string mFileName;
 	bool mShouldLoop;
-	boost::shared_ptr<VorbisFile> mFile;
-	boost::shared_array<int16> mBuffer;
+	shared_ptr<VorbisFile> mFile;
+	shared_array<int16> mBuffer;
 	size_t mBufferSize;
 	volatile size_t mDataBegin;
 	volatile size_t mDataEnd;

@@ -4,6 +4,7 @@
 #define GeigerSynthElement_H
 
 #include "InvisibleElement.h"
+#include "MediaElement.h"
 #include "TStateDB.h"
 
 class GeigerAudioStream;
@@ -13,12 +14,14 @@ class VorbisAudioStream;
 // A GeigerSynthElement manages a number of separate audio streams to
 // acheive a complete Geiger-counter-like effect.
 //
-class GeigerSynthElement : public InvisibleElement, public TStateListener {
-    typedef boost::shared_ptr<VorbisAudioStream> VorbisAudioStreamPtr;
+class GeigerSynthElement : public InvisibleElement, public IMediaElement,
+                           public TStateListener
+{
+    typedef shared_ptr<VorbisAudioStream> VorbisAudioStreamPtr;
     typedef std::map<double,VorbisAudioStreamPtr> LoopMap;
 
     std::string mStatePath;
-    boost::shared_ptr<GeigerAudioStream> mGeigerAudioStream;
+    shared_ptr<GeigerAudioStream> mGeigerAudioStream;
     LoopMap mLoopStreams;
     double mCurrentLoopCps;
     size_t mBufferSize;
@@ -36,6 +39,11 @@ public:
     void DoneAddingLoops();
     
     virtual void NotifyStateChanged();
+
+	virtual void EndPlayback();
+    virtual void Pause();
+    virtual void Resume();
+	virtual void SetVolume(const std::string &inChannel, double inVolume);
 };
 
 #endif // GeigerSynthElement_H

@@ -26,7 +26,7 @@ class TStateListenerManager  {
         virtual void NotifyStateChanged();
     };
 
-    typedef boost::shared_ptr<CallbackListener> CallbackListenerPtr;
+    typedef shared_ptr<CallbackListener> CallbackListenerPtr;
     typedef std::multimap<std::string,CallbackListenerPtr> ListenerMap;
 
     ListenerMap mListeners;
@@ -51,8 +51,8 @@ public:
     //////////
     // Find the listener with the specified name and serial number.
     //
-    boost::shared_ptr<TStateListener> FindListener(const std::string &inName,
-                                                   uint32 inSerialNumber);
+    shared_ptr<TStateListener> FindListener(const std::string &inName,
+                                            uint32 inSerialNumber);
 };
 
 extern TStateListenerManager gStateListenerManager;

@@ -12,7 +12,7 @@ class DrawingArea : public GraphicsTools::Image {
 	wxRect mBounds;
     wxBitmap mPixmap;
     bool mIsShown;
-    boost::shared_ptr<wxQuake2Overlay> mQuake2Overlay;
+    shared_ptr<wxQuake2Overlay> mQuake2Overlay;
 
 	void InitializePixmap(bool inHasAlpha);
     void InitializeQuake2Overlay();

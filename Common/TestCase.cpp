@@ -299,7 +299,7 @@ BEGIN_TEST_CASE(TestRegistryRegisterTest, TestCase) {
 	TestCaseFactory *registered_factory = *registry.begin();
 	CHECK_EQ(&created_factory, registered_factory);
 	CHECK_EQ(registered_factory->GetName(), "SimplePassingTestCase");
-	boost::shared_ptr<TestCase> test(registered_factory->Create());
+	shared_ptr<TestCase> test(registered_factory->Create());
 	test->Run();
 } END_TEST_CASE(TestRegistryRegisterTest);
 

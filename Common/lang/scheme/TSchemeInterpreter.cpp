@@ -364,7 +364,7 @@ Scheme_Object *TSchemeInterpreter::MakeSchemePolygon(const TPolygon &inPoly) {
 	std::vector<TPoint> vertices(inPoly.Vertices());
 	size_t sz = vertices.size();
 
-	boost::scoped_array<Scheme_Object *> args(new Scheme_Object *[sz]);
+	scoped_array<Scheme_Object *> args(new Scheme_Object *[sz]);
 	std::vector<TPoint>::iterator i = vertices.begin();
 	for (int j = 0; i != vertices.end(); ++j, ++i) {
 		args[j] = MakeSchemePoint(*i);

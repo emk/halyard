@@ -41,3 +41,24 @@ void GeigerSynthElement::NotifyStateChanged() {
     double cps(gStateDB.Get(this, mStatePath));
     SetChirpsPerSecond(cps);
 }
+
+void GeigerSynthElement::EndPlayback()
+{
+    mGeigerAudioStream->Stop();
+}
+
+void GeigerSynthElement::Pause()
+{
+    mGeigerAudioStream->Stop();
+}
+
+void GeigerSynthElement::Resume()
+{
+    mGeigerAudioStream->Start();
+}
+
+void GeigerSynthElement::SetVolume(const std::string &inChannel,
+                                   double inVolume)
+{
+    mGeigerAudioStream->SetChannelVolume(inChannel, inVolume);
+}

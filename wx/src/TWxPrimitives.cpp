@@ -115,13 +115,14 @@ void FIVEL_NS RegisterWxPrimitives() {
 //=========================================================================
 
 #define FIND_ELEMENT(TYPE, VAR, NAME) \
-	Element *VAR##_temp = wxGetApp().GetStage()->FindElement(NAME); \
-	if (VAR##_temp == NULL) { \
+	ElementPtr VAR##_temp = wxGetApp().GetStage()->FindElement(NAME); \
+	if (!VAR##_temp) { \
 		::SetPrimitiveError("noelement", "The element does not exist."); \
 		return; \
 	} \
-	TYPE *VAR = dynamic_cast<TYPE *>(VAR##_temp); \
-	if (VAR == NULL) { \
+	shared_ptr<TYPE> VAR = \
+        shared_ptr<TYPE>(VAR##_temp, dynamic_cast_tag()); \
+	if (!VAR) { \
 		::SetPrimitiveError("wrongelementtype", \
 			                "The element is not of type " #TYPE); \
 		return; \
@@ -130,7 +131,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 static DrawingArea *GetCurrentDrawingArea() {
 	return wxGetApp().GetStage()->GetCurrentDrawingArea();
 }
- 
+
 
 //=========================================================================
 //  Implementation of wxWindows Primitives
@@ -535,11 +536,10 @@ DEFINE_5L_PRIMITIVE(Nap) {
 }
 
 DEFINE_5L_PRIMITIVE(MediaSetVolume) {
-	// Right now, this only works for media streams.
 	std::string name, channel_name;
 	double volume;
 	inArgs >> SymbolName(name) >> SymbolName(channel_name) >> volume;
-	FIND_ELEMENT(AudioStreamElement, stream, name.c_str());
+	FIND_ELEMENT(IMediaElement, stream, name.c_str());
 	stream->SetVolume(channel_name, volume);
 }
 
@@ -576,10 +576,11 @@ DEFINE_5L_PRIMITIVE(MouseUngrab) {
 
 DEFINE_5L_PRIMITIVE(Movie) {
 	std::string name, path;
+    TCallbackPtr dispatcher;
 	TRect bounds;
 	bool controller, audio_only, loop, interaction;
 
-	inArgs >> SymbolName(name) >> bounds >> path >> controller
+	inArgs >> SymbolName(name) >> dispatcher >> bounds >> path >> controller
 		   >> audio_only >> loop >> interaction;
 
 	MovieWindowStyle style = 0;
@@ -592,8 +593,8 @@ DEFINE_5L_PRIMITIVE(Movie) {
 	if (interaction)
 		style |= MOVIE_INTERACTION;
 
-	new MovieElement(wxGetApp().GetStage(), name.c_str(), TToWxRect(bounds),
-					 path.c_str(), 0, style);
+	new MovieElement(wxGetApp().GetStage(), name.c_str(), dispatcher,
+                     TToWxRect(bounds), path.c_str(), 0, style);
 }
 
 // Note: these primitives may not be happy if the underlying movie code 

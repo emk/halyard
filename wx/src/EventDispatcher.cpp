@@ -232,3 +232,14 @@ bool EventDispatcher::DoEventProgressChanged(bool inIsActive,
     mDispatcher->Run(args);
 	return EventCleanup();
 }
+
+bool EventDispatcher::DoEventMediaFinished()
+{
+    if (!EventSetup())
+		return false;
+
+	TValueList args;
+    args.push_back(TSymbol("media-finished"));
+    mDispatcher->Run(args);
+	return EventCleanup();
+}

@@ -40,7 +40,7 @@ void TStateListenerManager::UnregisterListeners(const std::string &inName) {
     mListeners.erase(inName);
 }
 
-boost::shared_ptr<TStateListener>
+shared_ptr<TStateListener>
 TStateListenerManager::FindListener(const std::string &inName,
                                     uint32 inSerialNumber)
 {

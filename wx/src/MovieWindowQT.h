@@ -68,6 +68,11 @@ public:
 	//
 	virtual void Resume();
 
+    //////////
+    // Set the movie's volume.
+    //
+	virtual void SetVolume(const std::string &inChannel, double inVolume);
+
 	void OnEraseBackground(wxEraseEvent &inEvent);
 
 	//////////

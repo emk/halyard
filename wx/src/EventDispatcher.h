@@ -3,8 +3,6 @@
 #ifndef EventDispatcher_H
 #define EventDispatcher_H
 
-class TCallback;
-
 //////////
 // This class passes events from our GUI to the interpreter.
 //
@@ -108,6 +106,13 @@ public:
     // Dispatch a ProgressChanged event.
     //
     bool DoEventProgressChanged(bool inIsActive, double inPortionCompleted);
+
+    //////////
+    // Dispatch a MediaFinished event.
+    //
+    bool DoEventMediaFinished();
 };
+
+typedef shared_ptr<EventDispatcher> EventDispatcherPtr;
 
 #endif // EventDispatcher_H

@@ -26,7 +26,8 @@ protected:
 	// [in] inStage - The stage to which this widget is attached.
 	// [in] inName - The name of this widget.
 	//
-	Widget(Stage *inStage, const wxString &inName);
+	Widget(Stage *inStage, const wxString &inName,
+           FIVEL_NS TCallbackPtr inDispatcher = FIVEL_NS TCallbackPtr());
 
 	//////////
 	// See the constructor without am inWindow argument for details.

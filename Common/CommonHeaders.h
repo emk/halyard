@@ -24,6 +24,11 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/checked_delete.hpp>
+using boost::shared_ptr;
+using boost::shared_array;
+using boost::detail::dynamic_cast_tag;
+using boost::scoped_ptr;
+using boost::scoped_array;
 
 // Commonly-used "Common" headers.
 #include "TException.h"

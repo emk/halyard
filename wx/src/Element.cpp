@@ -10,13 +10,19 @@
 //  Element Methods
 //=========================================================================
 
-Element::Element(Stage *inStage, const wxString &inName)
+Element::Element(Stage *inStage, const wxString &inName,
+                 FIVEL_NS TCallbackPtr inDispatcher)
 	: mStage(inStage), mName(inName)
 {
     ASSERT(mStage);
     ASSERT(mName != "");
 
-	mStage->AddElement(this);
+    if (inDispatcher) {
+        mEventDispatcher = EventDispatcherPtr(new EventDispatcher());
+        mEventDispatcher->SetDispatcher(inDispatcher);
+    }
+
+	mStage->AddElement(ElementPtr(this));
 }
 
 void Element::OperationNotSupported(const char *inOperationName) {

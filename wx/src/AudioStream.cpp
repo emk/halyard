@@ -107,6 +107,19 @@ void AudioStream::SetChannelVolume(int inChannel, float inVolume)
 	mChannelVolumes[inChannel] = inVolume;
 }
 
+void AudioStream::SetChannelVolume(const std::string &inChannel, float inVolume)
+{
+	int channels = GetChannelCount();
+	if (inChannel == "left" && channels >= 2)
+		SetChannelVolume(AudioStream::LEFT_CHANNEL, inVolume);
+	else if (inChannel == "right" && channels >= 2)
+		SetChannelVolume(AudioStream::RIGHT_CHANNEL, inVolume);
+	else if (inChannel == "all")
+		SetVolume(inVolume);
+	else
+		THROW("Tried to set volume on an unknown channel");
+}
+
 void AudioStream::SetVolume(float inVolume)
 {
 	for (int i = 0; i < GetChannelCount(); i++)

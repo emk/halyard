@@ -17,15 +17,28 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		22
+#define VERSION_REV_BIG		23
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.22 (Development)"
+#define VERSION_STRING		"Tamale 0.0.23 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.64  2004/03/04 18:22:41  emk
+ 0.0.23 - 4 March 2004 - emk
+
+   * Added (ON MEDIA-FINISHED (EVENT) ...) handler.
+   * Added support for setting volume of QuickTime movies.
+   * Added support for setting volume of GeigerSynthElement.
+   * Moved EventDispatcher support into Element.
+   * Fixed bug which caused engine to crash if you quit it while Quake 2
+     was displayed.
+   * Attemped to prevent wxWindows from erasing the wxWindow in which
+     we're displaying QuickTime movies.
+   * Added a few 'using boost::foo' directives.
+
  Revision 1.63  2004/03/01 18:03:36  emk
  0.0.22 - 1 March 2004 - emk
 

@@ -38,7 +38,7 @@ bool CustomWxHtmlWindow::LoadPage(const wxString& inLocation) {
     bool loaded = wxHtmlWindow::LoadPage(inLocation);
     if (loaded) {
         // We can't use inLocation here, because it may be relative.
-        EventDispatcher *dispatcher = mElement->GetDispatcher();
+        EventDispatcherPtr dispatcher = mElement->GetEventDispatcher();
         dispatcher->DoEventBrowserPageChanged(GetOpenedPage());
         dispatcher->DoEventBrowserTitleChanged(GetOpenedPageTitle());
         dispatcher->DoEventUpdateUI("back");
@@ -56,7 +56,7 @@ CustomWxHtmlWindow::OnOpeningURL(wxHtmlURLType inType,
     bool vetoed = false;
     if (inType == wxHTML_URL_PAGE) {
         BrowserElementWx *elem = const_cast<BrowserElementWx*>(mElement);
-        elem->GetDispatcher()->DoEventBrowserNavigate(inUrl, vetoed);
+        elem->GetEventDispatcher()->DoEventBrowserNavigate(inUrl, vetoed);
     }
     if (vetoed)
         return wxHTML_BLOCK;

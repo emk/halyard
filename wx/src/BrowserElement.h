@@ -12,8 +12,6 @@ class EventDispatcher;
 // A browser element displays a web browser of some sort.
 //
 class BrowserElement : public Widget {
-    EventDispatcher *mDispatcher;
-
 protected:
     //////////
     // Create a new browser element with the specified event handlers.
@@ -25,16 +23,7 @@ protected:
     BrowserElement(Stage *inStage, const wxString &inName,
                    FIVEL_NS TCallbackPtr inDispatch);
 
-    //////////
-    // You'll need to dispatch a few events to this dispatcher, typically
-    // DoEventBrowserNavigate, DoEventBrowserPageChanged,
-    // DoEventStatusTextChanged and DoEventProgressChanged.
-    //
-    EventDispatcher *GetDispatcher() { return mDispatcher; }
-
 public:
-	virtual ~BrowserElement();
-
     //////////
     // Open the specified URL in the browser window.
     //

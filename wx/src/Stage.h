@@ -9,7 +9,9 @@
 
 class StageFrame;
 class Element;
+typedef shared_ptr<Element> ElementPtr;
 class MovieElement;
+typedef shared_ptr<MovieElement> MovieElementPtr;
 class EventDispatcher;
 class ImageCache;
 class CursorManager;
@@ -21,7 +23,7 @@ class Stage : public wxWindow
 	//////////
 	// A list of Elements.
 	//
-	typedef std::deque<Element*> ElementCollection;
+	typedef std::deque<ElementPtr> ElementCollection;
 
     //////////
     // The StageFrame associated with the stage.  We need to poke at it
@@ -122,17 +124,17 @@ class Stage : public wxWindow
 	// Invariant: This variable is always NULL, or points to a valid 
 	// lightweight element.  Be careful when deleting element!
 	//
-	Element* mCurrentElement;
+	ElementPtr mCurrentElement;
 
 	//////////
 	// The element which has a "grab" on the mouse.
 	//
-	Element* mGrabbedElement;
+	ElementPtr mGrabbedElement;
 
 	//////////
 	// The movie we're waiting on, or NULL if we're not waiting on anything.
 	//
-	MovieElement *mWaitElement;
+	MovieElementPtr mWaitElement;
 
 	//////////
 	// The movie frame we're waiting on.
@@ -185,7 +187,7 @@ class Stage : public wxWindow
     //////////
     // Draw a border for the specified element.
     //
-    void DrawElementBorder(wxDC &inDC, Element *inElement);
+    void DrawElementBorder(wxDC &inDC, ElementPtr inElement);
 
 	//////////
 	// Draw a border for the text input control, if it exists.
@@ -217,17 +219,17 @@ class Stage : public wxWindow
 	//////////
 	// Detach an element from the stage and destroy it.
 	//
-	void DestroyElement(Element *inElement);
+	void DestroyElement(ElementPtr inElement);
 
 	//////////
 	// We've entered an element; update things appropriately.
 	//
-	void EnterElement(Element *inElement, wxPoint &inPosition);
+	void EnterElement(ElementPtr inElement, wxPoint &inPosition);
 
 	//////////
 	// We've left an element; update things appropriately.
 	//
-	void LeaveElement(Element *inElement, wxPoint &inPosition);
+	void LeaveElement(ElementPtr inElement, wxPoint &inPosition);
 
 	//////////
 	// Figure out which element we're inside, and figure out what cursor
@@ -347,14 +349,14 @@ public:
 	// Redirect all further drawing calls to the specified element until
 	// further notice.
 	//
-	void PushDrawingContext(Element *inElement)
+	void PushDrawingContext(ElementPtr inElement)
 		{ mDrawingContextStack->PushDrawingContext(inElement); }
 
 	//////////
 	// Pop the top element off the current drawing stack, and make sure
 	// it matches the specified element.
 	//
-	void PopDrawingContext(Element *inElement)
+	void PopDrawingContext(ElementPtr inElement)
 		{ mDrawingContextStack->PopDrawingContext(inElement); }
 	
     //////////
@@ -531,7 +533,7 @@ public:
 	// Add a Element to this Stage.  This should only be called
 	// by the Element class.
 	//
-	void AddElement(Element *inElement);
+	void AddElement(ElementPtr inElement);
 
 	//////////
 	// Find an element by name.
@@ -539,7 +541,7 @@ public:
 	// [in] inElementName - The name to search for.
 	// [out] return - A pointer to the element, or NULL.
 	//
-	Element *FindElement(const wxString &inElementName);
+	ElementPtr FindElement(const wxString &inElementName);
 
 	//////////
 	// Find the lightweight Element containing the specified point, if
@@ -548,7 +550,7 @@ public:
 	// [in] inPoint - The point to check.
 	// [out] return - A pointer to the Element, or NULL.
 	//
-	Element *FindLightWeightElement(const wxPoint &inPoint);
+	ElementPtr FindLightWeightElement(const wxPoint &inPoint);
 
 	//////////
 	// Find the appropriate event dispatcher for the given point.
@@ -590,12 +592,12 @@ public:
 	// notice, regardless of where the event occurred.  Grabs are used to
 	// implement standard buttons without busy-looping during mouse down.
 	//
-	void MouseGrab(Element *inElement);
+	void MouseGrab(ElementPtr inElement);
 
 	//////////
 	// Ungrab the mouse.  'inElement' should match the previous grab.
 	//
-	void MouseUngrab(Element *inElement);
+	void MouseUngrab(ElementPtr inElement);
 
 	//////////
 	// Is the mouse grabbed right now?
@@ -605,7 +607,7 @@ public:
 	//////////
 	// Is the mouse grabbed by the specified element?
 	//
-	bool MouseIsGrabbedBy(Element *inElement)
+	bool MouseIsGrabbedBy(ElementPtr inElement)
     	{ return mGrabbedElement == inElement; }
 
 	//////////
@@ -613,7 +615,7 @@ public:
 	// normally true, unless a grab is in effect, in which case only
 	// the grabbed element should receive mouse events.
 	//
-	bool ShouldSendMouseEventsToElement(Element *inElement);
+	bool ShouldSendMouseEventsToElement(ElementPtr inElement);
 
     DECLARE_EVENT_TABLE();
 };

@@ -89,7 +89,7 @@ public:
 	virtual ~TestCaseFactory() {}
 
 	std::string GetName() { return mName; }
-	virtual boost::shared_ptr<TestCase> Create() = 0;
+	virtual shared_ptr<TestCase> Create() = 0;
 };
 
 //////////
@@ -103,7 +103,7 @@ class TestCaseFactoryImpl : public TestCaseFactory
 public:
 	TestCaseFactoryImpl(const char *inName, TestRegistry *inRegistry)
 		: TestCaseFactory(inName, inRegistry) { }
-	boost::shared_ptr<TestCase> Create() { return new TestCaseType(); }
+	shared_ptr<TestCase> Create() { return new TestCaseType(); }
 };
 
 //////////
@@ -112,7 +112,7 @@ public:
 //
 class TestCaseReport {
 public:
-	typedef boost::shared_ptr<TestCaseReport> ptr;
+	typedef shared_ptr<TestCaseReport> ptr;
 
 private:
 	std::string mName;
@@ -157,7 +157,7 @@ class TestRunReport
 
 public:
 	typedef TestCaseReportVector::iterator iterator;
-	typedef boost::shared_ptr<TestRunReport> TestRunReport::ptr;
+	typedef shared_ptr<TestRunReport> TestRunReport::ptr;
 
 	TestRunReport() : mResultCount(TEST_RESULT_MAX, 0) {}
 

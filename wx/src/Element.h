@@ -3,8 +3,9 @@
 #ifndef Element_H
 #define Element_H
 
+#include "EventDispatcher.h"
+
 class Stage;
-class EventDispatcher;
 class DrawingArea;
 
 
@@ -32,6 +33,11 @@ class Element
 	wxString mName;
 
     //////////
+    // The event dispatcher for this object.
+    //
+    EventDispatcherPtr mEventDispatcher;
+
+    //////////
     // Throw an error saying inOperationName is not allowed.
     //
     void OperationNotSupported(const char *inOperationName);
@@ -41,7 +47,8 @@ public:
 	// Create a new Element and attach it to the specified stage.
 	// The stage is responsible for deleting the element.
 	//
-	Element(Stage *inStage, const wxString &inName);
+	Element(Stage *inStage, const wxString &inName,
+            FIVEL_NS TCallbackPtr inDispatcher = FIVEL_NS TCallbackPtr());
 
 	virtual ~Element() {}
 	
@@ -56,10 +63,23 @@ public:
 	//
 	wxString GetName() { return mName; }
 
+    //////////
+    // Get the event dispatcher associated with this element.
+    //
+    EventDispatcherPtr GetEventDispatcher() {
+        ASSERT(mEventDispatcher.get());
+        return mEventDispatcher;
+    }
+
 	//////////
 	// Return true if the element can be shown.
 	//
 	virtual bool HasVisibleRepresentation() { return true; }
+
+    //////////
+    // Let the element do any idle-time processing it needs to do.
+    //
+    virtual void Idle() {}
 
 	//////////
 	// Return true if the element is shown on the screen.
@@ -87,13 +107,6 @@ public:
     // Move the element to the specified location.
     //
     virtual void MoveTo(const wxPoint &inPoint);
-
-	//////////
-	// Get the event dispatcher for the current element.
-	// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
-	//
-	virtual EventDispatcher *GetEventDispatcher()
-		{ return NULL; }
 	
 	//////////
 	// Get an appropriate cursor for this object.
