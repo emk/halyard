@@ -142,6 +142,156 @@
 
 
   ;;=======================================================================
+  ;;  Kernel Entry Points
+  ;;=======================================================================
+  ;;  The '%kernel-' methods are called directly by the 5L engine.  They
+  ;;  shouldn't raise errors, because they're called directly from C++ code
+  ;;  that doesn't want to catch them (and will, in fact, quit the
+  ;;  program).
+  ;;
+  ;;  The theory behind these functions is documented in detail in
+  ;;  TInterpreter.h.
+
+  (define (%kernel-run)
+    ;; The workhorse function.  We get called to manage the main event
+    ;; loop, and we provide support code for handling jumps, STOPPING
+    ;; the interpreter, idling after the end of each card, and quiting
+    ;; the interpreter.  This code needs to be understood in
+    ;; conjuction with *%kernel-state*, the functions that manipulate
+    ;; it, and the callback system.  Yes, it's ugly--but it lets us
+    ;; get the semantics we want without writing an entire interpreter
+    ;; from scratch.
+    (with-errors-blocked (fatal-error)
+      (label exit-interpreter
+        (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
+          (let ((jump-card #f))
+            (let loop ()
+              (label exit-to-top
+                (with-errors-blocked (non-fatal-error)
+                  (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
+                    (idle)
+                    (cond
+                     [jump-card
+                      (%kernel-run-card (%kernel-find-card jump-card))]
+                     [#t
+                      ;; Highly optimized do-nothing loop. :-)  This
+                      ;; is a GC optimization designed to prevent the
+                      ;; interpreter from allocating memory like a crazed
+                      ;; maniac while the user's doing nothing.  If we
+                      ;; removed this block, we'd have to perform a lot
+                      ;; of LABEL and FLUID-LET statements, which are
+                      ;; extremely expensive in quantities of 1,000.
+                      (let idle-loop ()
+                        (unless (eq? *%kernel-state* 'JUMPING)
+                          (idle)
+                          (idle-loop)))]))))
+              (set! jump-card #f)
+              (when (eq? *%kernel-state* 'JUMPING)
+                ;; Handle a jump by setting jump-card for our next goaround.
+                (set! jump-card *%kernel-jump-card*))
+              (%kernel-maybe-clear-state)
+              (loop)))))
+      (%kernel-maybe-clear-state)
+      (%kernel-clear-timeout)))
+
+  (define (%kernel-kill-interpreter)
+    (%kernel-set-state 'INTERPRETER-KILLED))
+
+  (define (%kernel-stop)
+    (%kernel-set-state 'STOPPING))
+
+  (define (%kernel-go)
+    (when (%kernel-stopped?)
+      (%kernel-set-state 'NORMAL)))
+
+  (define (%kernel-stopped?)
+    (or (eq? *%kernel-state* 'STOPPING)
+        (eq? *%kernel-state* 'STOPPED)))
+  
+  (define (%kernel-pause)
+    (%kernel-die-if-callback '%kernel-pause)
+    (%kernel-set-state 'PAUSED))
+
+  (define (%kernel-wake-up)
+    (%kernel-die-if-callback '%kernel-wake-up)
+    (when (%kernel-paused?)
+      (%kernel-maybe-clear-state)))
+
+  (define (%kernel-paused?)
+    (eq? *%kernel-state* 'PAUSED))
+
+  (define (%kernel-timeout card-name seconds)
+    (%kernel-die-if-callback '%kernel-timeout)
+    (%kernel-set-timeout (+ (current-milliseconds) (* seconds 1000))
+                         (lambda () (jump (%kernel-find-card card-name)))))
+
+  (define (%kernel-nap tenths-of-seconds)
+    (%kernel-die-if-callback '%kernel-nap)
+    (set! *%kernel-nap-time* (+ (current-milliseconds)
+                                (* tenths-of-seconds 100)))
+    (%kernel-set-state 'NAPPING))
+
+  (define (%kernel-napping?)
+    (eq? *%kernel-state* 'NAPPING))
+
+  (define (%kernel-kill-nap)
+    (%kernel-die-if-callback '%kernel-kill-nap)
+    (when (%kernel-napping?)
+      (%kernel-maybe-clear-state)))
+
+  (define (%kernel-kill-current-card)
+    (%kernel-set-state 'CARD-KILLED))
+
+  (define (%kernel-jump-to-card-by-name card-name)
+    (set! *%kernel-jump-card* card-name)
+    (%kernel-set-state 'JUMPING))
+
+  (define (%kernel-current-card-name)
+    (if *%kernel-current-card*
+        (value->string (%kernel-card-name *%kernel-current-card*))
+        ""))
+
+  (define (%kernel-previous-card-name)
+    (if *%kernel-previous-card*
+        (value->string (%kernel-card-name *%kernel-previous-card*))
+        ""))
+
+  (define (%kernel-valid-card? card-name)
+    (card-exists? card-name))
+
+  (define (%kernel-eval expression)
+    (let [[ok? #t] [result "#<did not return from jump>"]]
+
+      ;; Jam everything inside a callback so JUMP, etc., work
+      ;; as the user expects.  Do some fancy footwork to store the
+      ;; return value(s) and return them correctly.  This code is ugly
+      ;; because I'm too lazy to redesign the callback architecture
+      ;; to make it pretty.
+      (%kernel-run-as-callback
+       ;; Our callback.
+       (lambda ()
+         (call-with-values
+          (lambda () (eval (read (open-input-string expression))))
+          (lambda r (set! result (apply format-result-values r)))))
+
+       ;; Our error handler.
+       (lambda (error-msg)
+         (set! ok? #f)
+         (set! result error-msg)))
+      
+      ;; Return the result.
+      (cons ok? result)))
+
+  (define (%kernel-run-callback function args)
+    (%kernel-die-if-callback '%kernel-run-callback)
+    (%kernel-run-as-callback (lambda () (apply function args))
+                             non-fatal-error))
+
+  (define (%kernel-reverse! l)
+    (reverse! l))
+
+
+  ;;=======================================================================
   ;;  Internal State
   ;;=======================================================================
   ;;  When the interpreter returns from a primitive call (including a
@@ -156,7 +306,8 @@
   ;;              efficiently busy-wait at the top-level.
   ;;    STOPPED:  The kernel has been stopped.
   ;;    PAUSED:   The interpreter should pause the current card until it is
-  ;;              told to wake back up.
+  ;;              told to wake back up.  This is used for modal text
+  ;;              entry fields, (wait ...), and similar things.
   ;;    JUMPING:  The interpreter should execute a jump.
   ;;    NAPPING:  The interpreter should pause the current card for the
   ;;              specified number of milliseconds.
@@ -168,17 +319,29 @@
   
   (provide call-at-safe-time)
 
+  ;; The most important global state variables.
   (define *%kernel-running-callback?* #f)
   (define *%kernel-state* 'NORMAL)
-  
+
+  ;; Some slightly less important global state variables.  See the
+  ;; functions which define and use them for details.
   (define *%kernel-jump-card* #f)
   (define *%kernel-timeout* #f)
   (define *%kernel-timeout-thunk* #f)
   (define *%kernel-nap-time* #f)
 
+  ;; Deferred thunks are used to implement (deferred-callback () ...).
+  ;; See call-at-safe-time for details.
   (define *%kernel-running-deferred-thunks?* #f)
   (define *%kernel-deferred-thunk-queue* '())
   
+  ;; These are bound at the top level in %kernel-run, and get
+  ;; temporarily rebound during callbacks.  We use
+  ;; *%kernel-exit-interpreter-func* to help shut down the
+  ;; interpreter, and *%kernel-exit-to-top-func* to help implement
+  ;; anything that needs to bail out to the top-level loop (usually
+  ;; after setting up some complex state).  See the functions which define
+  ;; and call these functions for more detail.
   (define *%kernel-exit-interpreter-func* #f)
   (define *%kernel-exit-to-top-func* #f)
   
@@ -197,17 +360,19 @@
     (set! *%kernel-timeout-thunk* thunk))
   
   (define (%kernel-check-timeout)
+    ;; If we have a timeout to run, and it's a safe time to run it, do so.
     (if (%kernel-stopped?)
         (%kernel-clear-timeout)
-        (when (and *%kernel-timeout*
-                   (>= (current-milliseconds) *%kernel-timeout*))
-          (let ((thunk *%kernel-timeout-thunk*))
-            (%kernel-clear-timeout)
-            (thunk)))))
+        (unless *%kernel-running-callback?*
+          (when (and *%kernel-timeout*
+                     (>= (current-milliseconds) *%kernel-timeout*))
+            (let ((thunk *%kernel-timeout-thunk*))
+              (%kernel-clear-timeout)
+              (thunk))))))
 
   (define (%kernel-safe-to-run-deferred-thunks?)
     ;; Would now be a good time to run deferred thunks?  Wait until
-    ;; nothing exciting is happening.
+    ;; nothing exciting is happening.  See call-at-safe-time.
     (and (not *%kernel-running-callback?*)
          (not *%kernel-running-deferred-thunks?*)
          (member? *%kernel-state* '(NORMAL PAUSED NAPPING))))
@@ -223,7 +388,9 @@
     #f)
     
   (define (%kernel-check-deferred)
-    ;; If the interpreter has stopped, cancel any deferred thunks.
+    ;; If the interpreter has stopped, cancel any deferred thunks.  (See
+    ;; call-at-safe-time.)  This function won't call any deferred thunks
+    ;; unless it is safe to do so.
     (when (%kernel-stopped?)
       (set! *%kernel-deferred-thunk-queue* '()))   
 
@@ -248,8 +415,12 @@
       (%kernel-check-deferred)))
 
   (define (%kernel-maybe-clear-state)
+    ;; I'd document this better if I were sure it was correct. :-(  But
+    ;; as it stands, I'm not convinced that we handle STOPPING correctly.
     (case *%kernel-state*
       [[STOPPING]
+       ;; XXX - I'm not sure this is correct if we're called from anywhere
+       ;; but the top-level loop.  Ick.
        (set! *%kernel-state* 'STOPPED)]
       [[STOPPED]
        #f]
@@ -258,6 +429,14 @@
     (set! *%kernel-jump-card* #f))
   
   (define (%kernel-run-as-callback thunk error-handler)
+    ;; This function is in charge of running callbacks from C++ into
+    ;; Scheme.  These include simple callbacks and anything evaled from
+    ;; C++.  When we're in a callback, we need to install special values
+    ;; of *%kernel-exit-to-top-func* and *%kernel-exit-interpreter-func*,
+    ;; because the values installed by %kernel-run can't be invoked without
+    ;; "throwing" across C++ code, which isn't allowed (and which would
+    ;; be disasterous).  Furthermore, we must trap all errors, because
+    ;; our C++-based callers don't want to deal with Scheme exceptions.
     (assert (not *%kernel-running-callback?*))
     (if (eq? *%kernel-state* 'INTERPRETER-KILLED)
         (5l-log "Skipping callback because interpreter is being shut down")
@@ -277,6 +456,15 @@
     (set! *%kernel-state* state))
 
   (define (%kernel-check-state)
+    ;; This function is called immediately after returning from any
+    ;; primitive call (including idle).  It's job is to check flags
+    ;; set by the engine, handle any deferred callbacks, check
+    ;; timeouts, and generally bring the Scheme world back into sync
+    ;; with everybody else.
+    ;; 
+    ;; Since this is called after idle, it needs to be *extremely*
+    ;; careful about allocating memory.  See %kernel-run for more
+    ;; discussion about consing in the idle loop (hint: it's bad).
     (%kernel-check-deferred) ; Should be the first thing we do.
     (unless *%kernel-running-callback?*
       (%kernel-check-timeout))
@@ -288,12 +476,12 @@
              (*%kernel-exit-to-top-func* #f))]
       [[PAUSED]
        (%call-5l-prim 'schemeidle)
-       (%kernel-check-state)]
+       (%kernel-check-state)]       ; Tail-call self without consing.
       [[NAPPING]
        (if (< (current-milliseconds) *%kernel-nap-time*)
            (begin
              (%call-5l-prim 'schemeidle)
-             (%kernel-check-state))
+             (%kernel-check-state)) ; Tail call self without consing.
            (%kernel-maybe-clear-state))]
       [[JUMPING]
        (when *%kernel-exit-to-top-func*
@@ -320,12 +508,18 @@
            engine-var set-engine-var! engine-var-exists?
            throw exit-script jump refresh)
 
+  ;; C++ can't handle very large or small integers.  Here are the
+  ;; typical limits on any modern platform.
   (define *32-bit-signed-min* -2147483648)
   (define *32-bit-signed-max* 2147483647)
   (define *32-bit-unsigned-min* 0)
   (define *32-bit-unsigned-max* 4294967295)
 
   (define (call-5l-prim . args)
+    ;; Our high-level wrapper for %call-5l-prim (which is defined by
+    ;; the engine).  You should almost always call this instead of
+    ;; %call-5l-prim, because this function calls %kernel-check-state
+    ;; to figure out what happened while we were in C++.
     (let ((result (apply %call-5l-prim args)))
       (%kernel-check-state)
       result))
@@ -359,6 +553,8 @@
     (call-5l-prim 'get (if (string? name) (string->symbol name) name)))
   
   (define (set-engine-var! name value)
+    ;; Set an engine variable.  This is a pain, because we have to play
+    ;; along with the engine's lame type system.
     (let [[namesym (if (string? name) (string->symbol name) name)]
           [type
            (cond
@@ -401,6 +597,8 @@
           (%kernel-check-state))))
 
   (define (refresh)
+    ;; Refresh the screen by blitting dirty areas of our offscreen buffer
+    ;; to the display.
     (call-hook-functions *before-draw-hook*)
     (if (have-5l-prim? 'unlock)
         (call-5l-prim 'unlock)))
@@ -717,143 +915,5 @@
              :init-thunk (lambda () (begin/var body ...))
              :children '()))
          (%kernel-register-card name))]))
-
-
-  ;;=======================================================================
-  ;;  Kernel Entry Points
-  ;;=======================================================================
-  ;;  The '%kernel-' methods are called directly by the 5L engine.  They
-  ;;  shouldn't raise errors, because they're called directly from C++ code
-  ;;  that doesn't want to catch them (and will, in fact, quit the
-  ;;  program).
-
-  (define (%kernel-run)
-    (with-errors-blocked (fatal-error)
-      (label exit-interpreter
-        (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
-          (let ((jump-card #f))
-            (let loop ()
-              (label exit-to-top
-                (with-errors-blocked (non-fatal-error)
-                  (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
-                    (idle)
-                    (cond
-                     [jump-card
-                      (%kernel-run-card (%kernel-find-card jump-card))]
-                     [#t
-                      ;; Highly optimized do-nothing loop. :-)  This
-                      ;; is a GC optimization designed to prevent the
-                      ;; interpreter from allocating memory like a crazed
-                      ;; maniac while the user's doing nothing.  If we
-                      ;; removed this block, we'd have to perform a lot
-                      ;; of LABEL and FLUID-LET statements, which are
-                      ;; extremely expensive in quantities of 1,000.
-                      (let idle-loop ()
-                        (unless (eq? *%kernel-state* 'JUMPING)
-                          (idle)
-                          (idle-loop)))]))))
-              (set! jump-card #f)
-              (when (eq? *%kernel-state* 'JUMPING)
-                (set! jump-card *%kernel-jump-card*))
-              (%kernel-maybe-clear-state)
-              (loop)))))
-      (%kernel-maybe-clear-state)
-      (%kernel-clear-timeout)))
-
-  (define (%kernel-kill-interpreter)
-    (%kernel-set-state 'INTERPRETER-KILLED))
-
-  (define (%kernel-stop)
-    (%kernel-set-state 'STOPPING))
-
-  (define (%kernel-go)
-    (when (%kernel-stopped?)
-      (%kernel-set-state 'NORMAL)))
-
-  (define (%kernel-stopped?)
-    (or (eq? *%kernel-state* 'STOPPING)
-        (eq? *%kernel-state* 'STOPPED)))
-  
-  (define (%kernel-pause)
-    (%kernel-die-if-callback '%kernel-pause)
-    (%kernel-set-state 'PAUSED))
-
-  (define (%kernel-wake-up)
-    (%kernel-die-if-callback '%kernel-wake-up)
-    (when (%kernel-paused?)
-      (%kernel-maybe-clear-state)))
-
-  (define (%kernel-paused?)
-    (eq? *%kernel-state* 'PAUSED))
-
-  (define (%kernel-timeout card-name seconds)
-    (%kernel-die-if-callback '%kernel-timeout)
-    (%kernel-set-timeout (+ (current-milliseconds) (* seconds 1000))
-                         (lambda () (jump card-name))))
-
-  (define (%kernel-nap tenths-of-seconds)
-    (%kernel-die-if-callback '%kernel-nap)
-    (set! *%kernel-nap-time* (+ (current-milliseconds)
-                                (* tenths-of-seconds 100)))
-    (%kernel-set-state 'NAPPING))
-
-  (define (%kernel-napping?)
-    (eq? *%kernel-state* 'NAPPING))
-
-  (define (%kernel-kill-nap)
-    (%kernel-die-if-callback '%kernel-kill-nap)
-    (when (%kernel-napping?)
-      (%kernel-maybe-clear-state)))
-
-  (define (%kernel-kill-current-card)
-    (%kernel-set-state 'CARD-KILLED))
-
-  (define (%kernel-jump-to-card-by-name card-name)
-    (set! *%kernel-jump-card* card-name)
-    (%kernel-set-state 'JUMPING))
-
-  (define (%kernel-current-card-name)
-    (if *%kernel-current-card*
-        (value->string (%kernel-card-name *%kernel-current-card*))
-        ""))
-
-  (define (%kernel-previous-card-name)
-    (if *%kernel-previous-card*
-        (value->string (%kernel-card-name *%kernel-previous-card*))
-        ""))
-
-  (define (%kernel-valid-card? card-name)
-    (card-exists? card-name))
-
-  (define (%kernel-eval expression)
-    (let [[ok? #t] [result "#<did not return from jump>"]]
-
-      ;; Jam everything inside a callback so JUMP, etc., work
-      ;; as the user expects.  Do some fancy footwork to store the
-      ;; return value(s) and return them correctly.  This code is ugly
-      ;; because I'm too lazy to redesign the callback architecture
-      ;; to make it pretty.
-      (%kernel-run-as-callback
-       ;; Our callback.
-       (lambda ()
-         (call-with-values
-          (lambda () (eval (read (open-input-string expression))))
-          (lambda r (set! result (apply format-result-values r)))))
-
-       ;; Our error handler.
-       (lambda (error-msg)
-         (set! ok? #f)
-         (set! result error-msg)))
-      
-      ;; Return the result.
-      (cons ok? result)))
-
-  (define (%kernel-run-callback function args)
-    (%kernel-die-if-callback '%kernel-run-callback)
-    (%kernel-run-as-callback (lambda () (apply function args))
-                             non-fatal-error))
-
-  (define (%kernel-reverse! l)
-    (reverse! l))
 
   ) ; end module
