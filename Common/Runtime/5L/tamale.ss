@@ -6,6 +6,8 @@
 
 (module tamale (lib "5l.ss" "5L")
 
+  (require (lib "string.ss" "mzlib"))
+
   (provide load-picture modal-input zone delete-element delete-elements
            clear-screen rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
@@ -14,8 +16,11 @@
            wait tc draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade)
 
+  (define (make-path subdir path)
+    (apply build-path (current-directory) subdir (regexp-split "/" path)))
+
   (define (load-picture name p &key (subrect :rect #f))
-    (let [[path (build-path (current-directory) "Graphics" name)]]
+    (let [[path (make-path "Graphics" name)]]
       (unless (file-exists? path)
         (throw (cat "No such graphic: " path)))
       (if subrect
@@ -91,7 +96,7 @@
   (define (movie name r location
                  &key controller? audio-only? loop? interaction?)
     (call-5l-prim 'movie name r
-                  (build-path (current-directory) "Media" location)
+                  (make-path "Media" location)
                   controller? audio-only? loop? interaction?))
   
   (define (wait name &key frame)
