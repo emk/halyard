@@ -65,10 +65,10 @@ void Macro::Execute()
 	//  Do commands until we jump somewhere or we hit the closing paren.
 	//
 	while ((m_Script.more()) 
-		   and (not m_Return)
+		   and (not IsReturning())
 		   and (not gCardManager.Jumping())) 
 	{
-		DoCommand();
+		DoCommand(m_Script);
 	}
 }
 	
@@ -104,6 +104,46 @@ void MacroManager::MakeNewIndex(TIndexFile *inFile, const char *name, long start
 
 /*
  $Log$
+ Revision 1.8  2002/08/16 16:26:38  emk
+ 3.5.0 - 16 Aug 2002 - emk, zeb
+
+ Preliminary Scheme support for Windows.  The Macintosh build is broken
+ until Brian updates the event loop to use a TInterpreterManager object
+ and figures out how to get the mzscheme libraries building.
+
+ Ported 3.4.1 changes forward to Windows.
+
+ Revision 1.7.2.2  2002/08/14 22:30:10  emk
+ 3.4.1 - Bugfix: Commands with bodies now check for the "returning" flag
+ correctly, even if they're within macros (Macro has its own return system
+ which works slightly differently from Card's).
+
+ Revision 1.7.2.1  2002/08/14 20:24:50  emk
+ Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
+ removed some deeply-buried bugs in TStream and elsewhere, so please test
+ this build thoroughly.
+
+   * New entities: &shy;, &nbsp;, and &radic;.  I've also added
+     &check; and &cross;, but we don't have the necessary font support yet.
+   * TStream now handles whitespace rationally.  String literals are
+     parsed verbatim, and the old "randomly munge whitespace" behavior
+     has been fixed.  Most of the other changes are necessary consequences
+     of this change.
+   * Verbatim CR, LF and TAB characters in strings will be passed through.
+     This may affect screen layout.
+   * The (get ...) primitive has been backported from 3.5.
+   * The '&' syntax has been removed.  Instead of '&foo$bar', you should
+     now write '$(get foo$bar)'.
+   * Entities don't need to be escaped any more: \&amp; -> &amp;.
+
+ Thanks to this cleanup, it was possible to implement several much-wanted
+ features without too much work:
+
+   * New primitives: WHEN, UNLESS and WHILE.
+   * BODY has been renamed to BEGIN, and longer prematurely evaluates all
+     the variables in nested expressions.
+   * Debug log improvements.
+
  Revision 1.7  2002/07/26 17:55:23  emk
  3.3.20 - 26 July 2002 - emk
 

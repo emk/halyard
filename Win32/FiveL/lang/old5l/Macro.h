@@ -51,6 +51,11 @@ class Macro : public Card
 		//
 		virtual void	Return(void);
 
+		//////////
+		// Are we in the process of returning from this script?
+		//
+		virtual bool	IsReturning() { return m_Return; }
+
 	private:
 		//////////
 		// Is it time to return from the macro?
@@ -97,6 +102,20 @@ extern MacroManager gMacroManager;
 
 /*
  $Log$
+ Revision 1.4  2002/08/16 16:26:38  emk
+ 3.5.0 - 16 Aug 2002 - emk, zeb
+
+ Preliminary Scheme support for Windows.  The Macintosh build is broken
+ until Brian updates the event loop to use a TInterpreterManager object
+ and figures out how to get the mzscheme libraries building.
+
+ Ported 3.4.1 changes forward to Windows.
+
+ Revision 1.3.2.1  2002/08/14 22:30:10  emk
+ 3.4.1 - Bugfix: Commands with bodies now check for the "returning" flag
+ correctly, even if they're within macros (Macro has its own return system
+ which works slightly differently from Card's).
+
  Revision 1.3  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

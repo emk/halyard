@@ -14,6 +14,7 @@
 #define TStream_H
 
 #include <string>
+#include <list>
 
 #include "TString.h"
 #include "TRect.h"
@@ -131,13 +132,13 @@ public:
 	
 	//////////
 	// Return the given characters, substituting variable contents where 
-	// appropriate. Should never have to worry about white space.
+	// appropriate.
 	//
 	// [in] startPos - starting postion
 	// [in] numChars - number of characters
 	// [out] return - TString with variable substitutions
 	//
-	TString copystr(uint32 startPos, uint32 numChars);
+	TString ExpandVariables(uint32 startPos, uint32 numChars);
 	
 	//////////
 	// Increment the position mark to the next whitespace character or
@@ -172,7 +173,30 @@ public:
 	//
 	TStream&    operator>>(TStream& (*_f)(TStream &));
 
-protected:        
+	//////////
+	// Extract a single, unevaluated statement from the stream.
+	//
+	// [out] return - A single unevaluated statement.
+	//
+	std::string GetStatement();
+
+	//////////
+	// Extract a list of statements from the stream (until we encounter
+	// a close paren or end-of-file).
+	//
+	// [out] outBody - The individual statements in the body, as a list.
+	//
+	void GetBody(std::list<std::string> &outBody);
+
+protected:
+	//////////
+	// Extract an argument from the stream.
+	//
+	// [in] inWantRawSource - Return the source verbatim?
+	// [out] return - The value of the argument.
+	//
+	std::string GetNextArg(bool inWantRawSource);
+
 	//////////
 	// Read in an standard C++ string.  This is the basic extraction
 	// operator. Most others just call this indirectly and then
@@ -239,14 +263,6 @@ protected:
 	//
 	unsigned int    pos;
 	
-	//////////
-	// Is this given character a whitespace character?
-	//
-	// [in] ch - the character
-	// [out] return - true if it is a whitespace char, false otherwise
-	//
-	bool			whitespace(char ch);	
-
 public:
 	//////////
 	// Return the current stream position.
@@ -334,6 +350,15 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.6  2002/08/16 16:26:22  emk
+ 3.5.0 - 16 Aug 2002 - emk, zeb
+
+ Preliminary Scheme support for Windows.  The Macintosh build is broken
+ until Brian updates the event loop to use a TInterpreterManager object
+ and figures out how to get the mzscheme libraries building.
+
+ Ported 3.4.1 changes forward to Windows.
+
  Revision 1.5  2002/08/16 15:32:18  emk
  Merged basic Win32 Scheme support from the FiveL_3_5_scheme branch.  This
  breaks the Macintosh build, but Brian will be working to fix that.  There
@@ -344,6 +369,35 @@ END_NAMESPACE_FIVEL
  Revision 1.4.4.1  2002/07/29 22:40:56  emk
  Initial support for writing 5L scripts in Scheme.  A lot more work
  remains, particularly in the platform front ends...
+
+ Revision 1.4.2.2  2002/08/14 21:04:26  emk
+ 3.4.1 - Minor build and comment fixes.
+
+ Revision 1.4.2.1  2002/08/14 20:24:49  emk
+ Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
+ removed some deeply-buried bugs in TStream and elsewhere, so please test
+ this build thoroughly.
+
+   * New entities: &shy;, &nbsp;, and &radic;.  I've also added
+     &check; and &cross;, but we don't have the necessary font support yet.
+   * TStream now handles whitespace rationally.  String literals are
+     parsed verbatim, and the old "randomly munge whitespace" behavior
+     has been fixed.  Most of the other changes are necessary consequences
+     of this change.
+   * Verbatim CR, LF and TAB characters in strings will be passed through.
+     This may affect screen layout.
+   * The (get ...) primitive has been backported from 3.5.
+   * The '&' syntax has been removed.  Instead of '&foo$bar', you should
+     now write '$(get foo$bar)'.
+   * Entities don't need to be escaped any more: \&amp; -> &amp;.
+
+ Thanks to this cleanup, it was possible to implement several much-wanted
+ features without too much work:
+
+   * New primitives: WHEN, UNLESS and WHILE.
+   * BODY has been renamed to BEGIN, and longer prematurely evaluates all
+     the variables in nested expressions.
+   * Debug log improvements.
 
  Revision 1.4  2002/06/21 15:41:58  emk
  3.3.8 - 5L language improvements, including nested expressions,

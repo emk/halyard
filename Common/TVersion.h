@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -15,16 +16,51 @@
 //
 
 #define VERSION_MAJOR_NUM	3
-#define VERSION_MINOR_NUM	4
+#define VERSION_MINOR_NUM	5
 #define VERSION_REV_BIG		0
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.4.0"
-#define SHORT_NAME		"5L"
+#define VERSION_STRING		"5L 3.5.0 (Development)"
+#define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.31  2002/08/16 16:26:22  emk
+ 3.5.0 - 16 Aug 2002 - emk, zeb
+
+ Preliminary Scheme support for Windows.  The Macintosh build is broken
+ until Brian updates the event loop to use a TInterpreterManager object
+ and figures out how to get the mzscheme libraries building.
+
+ Ported 3.4.1 changes forward to Windows.
+
+ Revision 1.30.2.1  2002/08/14 20:24:49  emk
+ Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
+ removed some deeply-buried bugs in TStream and elsewhere, so please test
+ this build thoroughly.
+
+   * New entities: &shy;, &nbsp;, and &radic;.  I've also added
+     &check; and &cross;, but we don't have the necessary font support yet.
+   * TStream now handles whitespace rationally.  String literals are
+     parsed verbatim, and the old "randomly munge whitespace" behavior
+     has been fixed.  Most of the other changes are necessary consequences
+     of this change.
+   * Verbatim CR, LF and TAB characters in strings will be passed through.
+     This may affect screen layout.
+   * The (get ...) primitive has been backported from 3.5.
+   * The '&' syntax has been removed.  Instead of '&foo$bar', you should
+     now write '$(get foo$bar)'.
+   * Entities don't need to be escaped any more: \&amp; -> &amp;.
+
+ Thanks to this cleanup, it was possible to implement several much-wanted
+ features without too much work:
+
+   * New primitives: WHEN, UNLESS and WHILE.
+   * BODY has been renamed to BEGIN, and longer prematurely evaluates all
+     the variables in nested expressions.
+   * Debug log improvements.
+
  Revision 1.30  2002/07/26 20:10:22  emk
  (Updating the *rest* of the version numbers.  Ooops.)
 

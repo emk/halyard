@@ -41,7 +41,7 @@ void test_TStream (void)
 	TEST(s1.GetPos() == 1);
 	int startpos = s1.GetPos();
 	s1.scanword();
-	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == "bc");
+	TEST(s1.ExpandVariables(startpos, s1.GetPos() - startpos) == "bc");
 	s1.skipwhite();
 	TEST(s1.GetPos() == 6);
 	TString temp;
@@ -110,7 +110,7 @@ void test_TStream (void)
 	s1 >> temp;
 	TEST(temp == "abc\\\\");
 	s1 >> temp;
-	TEST(temp == "abc \\) def");
+	TEST(temp == "abc \\) def ");
 	s1 >> temp;
 	TEST(temp == "a");
 	s1 >> temp;
@@ -136,22 +136,22 @@ void test_TStream (void)
 	s1 = "abc def (jkl\\)) mno \\(p (a \\( () )a";
 	startpos = s1.GetPos();
 	open(s1);
-	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == "abc def (");	
+	TEST(s1.ExpandVariables(startpos, s1.GetPos() - startpos) == "abc def (");	
 	startpos = s1.GetPos();
 	close(s1);
-	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == "jkl\\))");	
+	TEST(s1.ExpandVariables(startpos, s1.GetPos() - startpos) == "jkl\\))");	
 	startpos = s1.GetPos();
 	discard(s1);
-	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == " mno");
+	TEST(s1.ExpandVariables(startpos, s1.GetPos() - startpos) == " mno");
 	startpos = s1.GetPos();
 	s1.scanopen();
-	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == " \\(p (");
+	TEST(s1.ExpandVariables(startpos, s1.GetPos() - startpos) == " \\(p (");
 	startpos = s1.GetPos();
 	s1.scanclose();
-	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == "a \\( () )");
+	TEST(s1.ExpandVariables(startpos, s1.GetPos() - startpos) == "a \\( () )");
 	startpos = s1.GetPos();
 	s1.discard();
-	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == "a");
+	TEST(s1.ExpandVariables(startpos, s1.GetPos() - startpos) == "a");
 	
 	// Test input of percentages.
 	// It's fairly important that these round the same way on
@@ -190,36 +190,23 @@ void test_TStream (void)
 	s1.nextchar();
 	TEST(s1.inEscape());
 
-
-	// TODO - Demonstrate potential whitespace issues with TStream
-	// Although the above example work as we would expect, the whitespace
-	// stripping and leaving is NOT consistent or seemingly rational
-	// The examples below are included to demonstrate the weird behavior. 
-	// In other words, these tests indicate that although functional,
-	// the skipping of white space is certainly BROKEN!!!
-	// ANY CHANGING OF THE CODE SHOULD PASS ALL ABOVE TEST CASES
-	// However, failure to pass the test cases below is not NECESSARILY bad,
-	// if the actual strings in temp follow a consistent and rational pattern.
-	
+	// Require whitespace handling to be sane and rational, unlike the
+	// old code, which randomly inserted and removed spaces.
 	s1 = "abc (def ghi)( jkl mno)((pqr ))((stu ) )((vw) )     xyz\\( ()";
 	s1 >> temp;
 	TEST(temp == "abc");
 	s1 >> temp;
-	TEST(temp == "def ghi");	// note no addition of spaces before d (see below)
+	TEST(temp == "def ghi");
 	s1 >> temp;
-	TEST(temp == "  jkl mno");	// note the two spaces - addition of first is from??
+	TEST(temp == " jkl mno");
 	s1 >> temp;
-	TEST(temp == " ( pqr)");	// note that a space is in front of both the parens and inside
-								// although neither were there originally 
-								// note also that the space at the end has been stripped 
+	TEST(temp == "(pqr )");	
 	s1 >> temp;
-	TEST(temp == " ( stu)  ");	// note also that the space after stu is stripped
-								// but two spaces after the parens are there instead of the one
-								// that was put in
+	TEST(temp == "(stu ) ");
 	s1 >> temp;
-	TEST(temp == " ( vw)  ");	// note again we have two spaces after the parens instead of one
-								// clearly this is not due to any spaces before parens						
+	TEST(temp == "(vw) ");
 	s1 >> temp;
-	TEST(temp == "xyz\\(");    	// note that space at the beginning is not kept unless in parens
-								// as in jkl mno case
+	TEST(temp == "xyz\\(");
+	s1 >> temp;
+	TEST(temp == "");
 }

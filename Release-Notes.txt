@@ -1,6 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, zeb
+3.5.0 - 16 Aug 2002 - emk, zeb
+
+Preliminary Scheme support for Windows.  The Macintosh build is broken
+until Brian updates the event loop to use a TInterpreterManager object
+and figures out how to get the mzscheme libraries building.
 
   * Imported Boost library (from http://www.boost.org/) into CVS.
   * zeb: Moved some primitives from TMacPrimitives.cpp and TWinPrimitives.cpp
@@ -19,6 +23,34 @@ CVS - emk, zeb
   * Preliminary Windows integration.
   * Fixed nasty "Minimize when backgrounded" behavior when running in
     windowed mode (this was driving me crazy while debugging).
+  * Ported 3.4.1 changes to the development branch.
+
+3.4.1 - 14 Aug 2002 - emk
+
+Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
+removed some deeply-buried bugs in TStream and elsewhere, so please test
+this build thoroughly.
+
+  * New entities: &shy;, &nbsp;, and &radic;.  I've also added
+    &check; and &cross;, but we don't have the necessary font support yet.
+  * TStream now handles whitespace rationally.  String literals are
+    parsed verbatim, and the old "randomly munge whitespace" behavior
+    has been fixed.  Most of the other changes are necessary consequences
+    of this change.
+  * Verbatim CR, LF and TAB characters in strings will be passed through.
+    This may affect screen layout.
+  * The (get ...) primitive has been backported from 3.5.
+  * The '&' syntax has been removed.  Instead of '&foo$bar', you should
+    now write '$(get foo$bar)'.
+  * Entities don't need to be escaped any more: \&amp; -> &amp;.
+
+Thanks to this cleanup, it was possible to implement several much-wanted
+features without too much work:
+
+  * New primitives: WHEN, UNLESS and WHILE.
+  * BODY has been renamed to BEGIN, and longer prematurely evaluates all
+    the variables in nested expressions.
+  * Debug log improvements.
 
 3.4.0 - 26 July 2002 - emk
 

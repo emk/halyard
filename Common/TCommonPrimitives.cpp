@@ -276,5 +276,3 @@ DEFINE_5L_PRIMITIVE(Get)
 	inArgs >> vname;
    	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
 }
-
-    	

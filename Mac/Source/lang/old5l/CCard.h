@@ -69,15 +69,21 @@ class CCard : public TIndex
   		int32	Index(void) { return (mIndex); }      
         void	SetIndex(int32 index) { mIndex = index; }
         
-        void    DoCommand();
+        void    DoCommand(TStream &inScript);
         void    OneCommand(const TString &theCmd);
+		void	RunBody(const std::list<std::string> &inBody);
 
     protected:
-        void    DoIf();
-        void    DoBody();
-        void    DoExit();
-        void	DoReturn();
-		void	DoMacro(TString &name);
+        bool    EvaluateCondition(const char *inFormName,
+								  const char *inConditional);
+        void    DoIf(TStream &inArgs);
+        void    DoBegin(TStream &inArgs);
+        void    DoWhen(TStream &inArgs);
+        void    DoUnless(TStream &inArgs);
+        void    DoWhile(TStream &inArgs);
+        void    DoExit(TStream &inArgs);
+        void	DoReturn(TStream &inArgs);
+		void	DoMacro(TString &name, TStream &inArgs);
 };
 
 class CCardManager : public TIndexManager 
