@@ -23,6 +23,7 @@ void FIVEL_NS RegisterCommonPrimitives()
 {
 	REGISTER_5L_PRIMITIVE(HavePrimitive);
 	REGISTER_5L_PRIMITIVE(Log);
+	REGISTER_5L_PRIMITIVE(PolygonContains);
 	REGISTER_5L_PRIMITIVE(Origin);
 	REGISTER_5L_PRIMITIVE(ResetOrigin);
 	REGISTER_5L_PRIMITIVE(SetTyped);
@@ -207,6 +208,20 @@ DEFINE_5L_PRIMITIVE(Origin)
     gDebugLog.Log("Origin set to <X Y> %d %d", origin.X(), origin.Y());
 }
 
+//-------------------------------------------------------------------------
+// (PolygonContains poly pt)
+//-------------------------------------------------------------------------
+// Determines if pt lies within poly
+
+DEFINE_5L_PRIMITIVE(PolygonContains)
+{
+	::SkipPrimitiveLogging();
+
+	TPolygon poly;
+	TPoint pt;
+	inArgs >> poly >> pt;
+	::SetPrimitiveResult(poly.Contains(pt));
+}
 
 //-------------------------------------------------------------------------
 // (ResetOrigin [DX DY])

@@ -14,7 +14,7 @@
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
            element-shown? set-element-shown?!
            delete-element delete-elements
-           clear-screen offset-rect
+           clear-screen point-in-poly? offset-rect
            rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
@@ -203,6 +203,9 @@
   (define (clear-screen c)
     (call-5l-prim 'screen c))
   
+  (define (point-in-poly? p poly)
+    (call-5l-prim 'PolygonContains poly p))
+
   (define (offset-rect r p)
     (rect (+ (rect-left r) (point-x p))
           (+ (rect-top r) (point-y p))

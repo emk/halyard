@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - djin
+
+  * Added 5L-Prim PolygonContains that uses the TPolygon contains method 
+
 0.0.19 - 19 February 2004 - kwasi, djin, emk
 
   * Added code to detect infinite cycles in TStateDB changes.
