@@ -17,14 +17,17 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		02
-#define VERSION_REV_SMALL	02
+#define VERSION_REV_SMALL	03
 
-#define VERSION_STRING	"5L 3.3.2.2 (Development, FiveL_3_2_2_emk_typography_merge)"
+#define VERSION_STRING	"5L 3.3.2.3 (Development, FiveL_3_2_2_emk_typography_merge)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.9.2.4  2002/04/26 11:31:01  emk
+ 3.3.2.3 - Fixed highlight shadow color to default to regular shadow color (instead of highlight color, which is obviously wrong).
+
  Revision 1.9.2.3  2002/04/26 08:51:21  emk
  3.3.2.2 - First experimental engine with (textaa ...) and (defstyle ...) commands.
 

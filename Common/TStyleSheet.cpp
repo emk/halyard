@@ -49,27 +49,29 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
     else
 		mJustification = Typography::kLeftJustification;
 	
-    // Set sensible defaults for our optional arguments.
-    mLeading = 0;
-    mShadowOffset = 0;
-    mShadowColor = Color(0, 0, 0, 0);
-    mHighlightShadowColor = mHighlightColor;
-	
     // ...LEADING...
     if (stream.more())
 		stream >> mLeading;
+	else
+		mLeading = 0;
 	
     // ...SHADOWOFFSET...
     if (stream.more())
 		stream >> mShadowOffset;
+	else
+		mShadowOffset = 0;
 	
     // ...SHADOWCOLOR...
     if (stream.more())
 		stream >> mShadowColor;
+	else
+		mShadowColor = Color(0, 0, 0);
 
     // ...SHADOWHIGHCOLOR...
     if (stream.more())
 		stream >> mHighlightShadowColor;
+	else
+		mHighlightShadowColor = mShadowColor;
 
     // ...)
     stream >> close;
