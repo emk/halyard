@@ -302,7 +302,18 @@
     [(string? card-or-name)
      (%kernel-find-card (string->symbol card-or-name))]
     [#t
-     (throw (cat "Bogus argument: " card-or-name))]))
+     (throw (cat "Not a card: " card-or-name))]))
+
+(define (card-name card-or-name)
+  (cond
+    [(%kernel-card? card-or-name)
+     (%kernel-card-name card-or-name)]
+    [(symbol? card-or-name)
+     (symbol->string card-or-name)]
+    [(string? card-or-name)
+     card-or-name]
+    [#t
+     (throw (cat "Not a card: " card-or-name))]))
 
 (define-syntax card
   (syntax-rules ()
