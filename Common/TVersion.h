@@ -16,15 +16,18 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
-#define VERSION_REV_BIG		05
+#define VERSION_REV_BIG		06
 #define VERSION_REV_SMALL	00
 
-#define VERSION_STRING	"5L 3.3.5 (Development)"
+#define VERSION_STRING	"5L 3.3.6 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.13  2002/06/20 19:49:57  emk
+ 3.3.6 - Fixed problems with BUTTPCX (and other?) highlighting.
+
  Revision 1.12  2002/06/20 16:31:00  emk
  3.3.5 - Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.
  This branch contained the following enhancements:

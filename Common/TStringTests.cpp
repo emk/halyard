@@ -141,4 +141,12 @@ void test_TString (void)
 	TEST(TString("a").Compare("B", false)  < 0);
 	TEST(TString("C").Compare("b", false)  > 0);
 	TEST(TString("a").Compare("AA", false) < 0);
+	
+	// Test TString::Contains.
+	TEST(TString("").Contains("xy") == false);
+	TEST(TString("x").Contains("xy") == false);
+	TEST(TString("xy").Contains("xy") == true);
+	TEST(TString("xxyy").Contains("xy") == true);
+	TEST(TString("foo").Contains(".") == false);
+	TEST(TString("foo.png").Contains(".") == true);
 }

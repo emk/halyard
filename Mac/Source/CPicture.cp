@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //
 //	CPicture.cp
 //
@@ -36,16 +37,21 @@ CPicture::CPicture(TString &inName) : CResource(inName)
 		
 	gDebugLog.Log("New picture: full path <%s>", m_FullPath.GetString());
 
-	// all pictures have some extension when they get here
-	//	 put H before the . to see if we find a hilite picture	
-	//	 with the same extension
-	int			nameLen = inName.Length();
-	
-	for (int i = 0; i < nameLen; i++)
+	if (m_Name.Contains("."))
 	{
-		if (inName(i) == '.')
-			m_HiliteName += 'H';
-		m_HiliteName += inName(i);
+		// put H before the . to see if we find a hilite picture	
+		// with the same extension
+		int nameLen = inName.Length();
+		for (int i = 0; i < nameLen; i++)
+		{
+			if (inName(i) == '.')
+				m_HiliteName += 'H';
+			m_HiliteName += inName(i);
+		}
+	}
+	else
+	{
+		m_HiliteName = inName + TString("H");
 	}
 	
 	Load(true);

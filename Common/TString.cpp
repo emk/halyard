@@ -1163,6 +1163,9 @@ istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.8  2002/06/20 19:49:57  emk
+ 3.3.6 - Fixed problems with BUTTPCX (and other?) highlighting.
+
  Revision 1.7  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
@@ -1345,9 +1348,7 @@ istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 
  Revision 1.5  2002/03/04 15:30:20  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-
 Moved OS specific configuration to new file TPlatform.h
-
 Changes by Elizabeth and Eric, okayed by Eric.
 
  Revision 1.4  2002/02/28 11:05:05  tvw

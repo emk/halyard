@@ -166,9 +166,9 @@ CTouchZone::FinishCreateSelf()
 			mPicture->Draw(mPictLoc, macGWorld, true);
 		}
 	
-		gStyleSheetManager.DoText(mStyleSheet, mTextBounds, mText, gPlayerView);
-	
 		theGWorld->EndDrawing();
+
+		gStyleSheetManager.DoText(mStyleSheet, mTextBounds, mText, gPlayerView);
 	}
 	
 	Enable();
@@ -192,39 +192,53 @@ CTouchZone::HotSpotAction(
 	SInt16		/* inHotSpot */,
 	Boolean		inCurrInside,
 	Boolean		inPrevInside)
-{
-		
+{		
 	if (not gPlayerView->ProcessingTZones())
-	{
-		//::SysBeep(30);
 		return;
-	}
-									// Draw if cursor moved from IN to OUT
-									//   or from OUT to IN
+
+	// Draw if cursor moved from IN to OUT or from OUT to IN.
 	if (inCurrInside != inPrevInside)
 	{	
 		FocusDraw();
 
 		if (mPicture != nil)
 		{
-			// trying doing the same thing for both - this assumes that the picture
-			// given for "normal" touch zones highlighting has a non-highlight
-			// version
-			if (not inCurrInside)
-				mPicture->Draw(mPictLoc, (CGrafPtr) gPlayerView->GetMacPort(), true);
+			CGWorld *theGWorld = gPlayerView->GetGWorld();
+			StCGWorldDrawingContext begin_drawing(theGWorld);
+			GWorldPtr macGWorld = theGWorld->GetMacGWorld();
+			
+			// trying doing the same thing for both - this assumes that
+			// the picture given for "normal" touch zones highlighting
+			// has a non-highlight version
+			if (!inCurrInside)
+			{
+				mPicture->Draw(mPictLoc, macGWorld, true);
+			}
 			else
 			{
-				CPicture *hilitePict = NULL;
-				
-				hilitePict = mPicture->GetHilitePicture();
+				CPicture *hilitePict = mPicture->GetHilitePicture();
 				if (hilitePict != NULL)
-					hilitePict->Draw(mPictLoc, (CGrafPtr) gPlayerView->GetMacPort(), true);
+					hilitePict->Draw(mPictLoc, macGWorld, true);
 			}
 		}
 		
-		// If we have a style sheet, then we're a buttpcx and should draw some text.
+		// If we have a style sheet, then we're a buttpcx and should
+		// draw some text.
 		if (mStyleSheet != "")
-			gStyleSheetManager.DoText(mStyleSheet, mTextBounds, mText, gPlayerView);
+		{
+			// Decide whether or not to highlight our text.
+			TString text = mText;
+			if (inCurrInside)
+				text = TString("^") + text + TString("^");
+			
+			// Draw our text using the specified style sheet.
+			gStyleSheetManager.DoText(mStyleSheet, mTextBounds, text,
+									  gPlayerView);
+		}
+
+		// Update our display.  Make sure that we're no longer
+		// drawing to our GWorld when we do this!
+		gPlayerView->Draw(nil);
 	}
 }
 
@@ -243,9 +257,6 @@ CTouchZone::HotSpotResult(
 		return;
 		
 	gDoingTZone = true;
-									// Undo Button hilighting
-	HotSpotAction(inHotSpot, false, true);
-	gPlayerView->Draw(nil);			// want to see the highlighted button
 	
 	//if (clickSound != NULL)
 	//	SndPlay(nil, (SndListResource **) clickSound, false);
