@@ -190,7 +190,7 @@ bool InitIndex(FSSpec *scriptSpec, FSSpec *indexSpec, bool fEncrypted)
 	// cbo_fix - do something else when want encrypted file
     
     // open the files
-    Try_
+    try
     {
 	    theIndexFile = new CTextFileStream(*indexSpec);
 	    theIndexFile->OpenDataFork(fsRdPerm);
@@ -198,11 +198,11 @@ bool InitIndex(FSSpec *scriptSpec, FSSpec *indexSpec, bool fEncrypted)
 	    theScriptFile = new CTextFileStream(*scriptSpec);
 	    theScriptFile->OpenDataFork(fsRdPerm);
     }
-    Catch_(err)
+    catch (const LException& inException) 
     {
     	// Couldn't open or find one of the files.
     	return (FALSE);
-    }EndCatch_
+    }
 	
 	//    		
     //  Headers.

@@ -183,8 +183,8 @@ void CMoviePlayer::Kill(void)
 		if (doFades)						// insurance against palette weirdness
 		{
 			::RGBForeColor(&rgbBlack);
-			//::PmForeColor(0);
-			::FillRect(&theFrame, &qd.black);
+			::PenMode(patCopy);
+			::PaintRect(&theFrame);
 			::ValidRect(&theFrame);				// so don't get update
 		}
 		

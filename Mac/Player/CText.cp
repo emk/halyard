@@ -89,11 +89,11 @@ CText::CText(
 	// Now that we've set up all the parameters, process the string to 
 	// determine line breaks and formatting.
 	
-	Try_
+	try
 	{
 		SetupText();
 	}
-	Catch_(inErr)
+	catch (const LException& inException) 
 	{
 		SignalPStr_("\pError in SetupText (string too long?)");
 		
@@ -108,7 +108,7 @@ CText::CText(
 			delete mStyleOffsets;
 			mStyleOffsets = nil;
 		}
-	} EndCatch_
+	}
 }
 
 // ---------------------------------------------------------------------------------

@@ -25,17 +25,23 @@
 
 
 // globals
-extern bool		gPrint;
-extern bool		gPrintToFile;
+extern bool			gPrintToFile;
 
 #ifdef DEBUG_5L
-CTextFileStream	*gDebugFile = nil;
-	
-// cbo_fix - we shouldn't really need this many
-#define PRINFO_BUF_SIZE		50000
-static char		*prinfo_buf = NULL;
-//char			prinfo_buf[50000];
+//#define FILE_CREATOR	'R*ch'
+const long 			FILE_CREATOR = FOUR_CHAR_CODE('R*ch');
+const char			*LogFileName = "debug.log";
+#else
+const long 			FILE_CREATOR = FOUR_CHAR_CODE('ttxt');
+//#define FILE_CREATOR	'ttxt'
+const char 			*LogFileName = "Log";
 #endif
+//#define FILE_TYPE		'TEXT'
+const long			FILE_TYPE = FOUR_CHAR_CODE('TEXT');
+
+CTextFileStream		*gDebugFile = nil;
+const int 			PRINFO_BUF_SIZE = 50000;
+static char			*prinfo_buf = NULL;
 
 //
 //	PinRange - Return a number that is between the given min and max.
@@ -76,38 +82,13 @@ void prerror(char *cs,...)
 }
 
 //
-//	prcaution - Like prerror, except it doesn't quit the program.
+//	prcaution - Exactly like prinfo for now.
 //
 void prcaution(char *cs,...)
 {
-    va_list 	arg_ptr;
-    char 		buf[255];
-    
-    DoGFade(true, 0);			// make sure we aren't faded out
-    
-    va_start(arg_ptr, cs);
-    
-    vsprintf(buf, cs, arg_ptr);
-    
-    c2pstr(buf);
-    
-    ::ParamText((const uint8 *) buf, NULL, NULL, NULL);
-    (void) ::CautionAlert(2001, nil);
-	
-	va_end(arg_ptr);
-}
-
-
-#ifdef DEBUG_5L
-//
-//	prinfo - Print out an info string. It can be printed to a SIOUX window or to a file
-//			depending on the settings of the gPrint and gPrintToFile globals.
-//
-void prinfo(char *cs,...)
-{
 	va_list		arg_ptr;
 
-	if ((gPrint) or (gPrintToFile))
+	if (gPrintToFile)
 	{	
 		va_start(arg_ptr, cs);
 		
@@ -119,14 +100,53 @@ void prinfo(char *cs,...)
 		
 		vsprintf(prinfo_buf, cs, arg_ptr);
 		
-		if (gPrint)
-			cout << "info: " << prinfo_buf << "\r";
-		else if ((gPrintToFile) and (gDebugFile != nil))
+		if (gDebugFile != nil)
 		{
 			Int32	strLen;
 			char	endLine[2];
 
-			endLine[0] = RETURN_CHAR;
+			endLine[0] = NEWLINE_CHAR;
+			endLine[1] = '\0';
+						
+			strcat(prinfo_buf, endLine);
+			strLen = strlen(prinfo_buf);
+			
+			gDebugFile->Write(prinfo_buf, strLen);
+			
+			// don't flush
+			// gDebugFile->Flush();
+		}
+		
+		va_end(arg_ptr);
+	}
+}
+
+//
+//	prinfo - Print out an info string. It can be printed to a SIOUX window or to a file
+//			depending on the settings of the gPrint and gPrintToFile globals.
+//
+void prinfo(char *cs,...)
+{
+	va_list		arg_ptr;
+
+	if (gPrintToFile)
+	{	
+		va_start(arg_ptr, cs);
+		
+		if (prinfo_buf == NULL)
+			prinfo_buf = ::NewPtr(PRINFO_BUF_SIZE);
+			
+		if (prinfo_buf == NULL)
+			return;
+		
+		vsprintf(prinfo_buf, cs, arg_ptr);
+		
+		if (gDebugFile != nil)
+		{
+			Int32	strLen;
+			char	endLine[2];
+
+			endLine[0] = NEWLINE_CHAR;
 			endLine[1] = '\0';
 						
 			strcat(prinfo_buf, endLine);
@@ -185,24 +205,24 @@ void open_debug_file(void)
 	FInfo	theFInfo;
 	OSErr	err;
 
-	Try_
+	try
 	{
 		gDebugFile = nil;
 			
-		theConfig->FillDebugSpec(&debugSpec, "debug.log");
+		theConfig->FillDebugSpec(&debugSpec, LogFileName);
 		
 		gDebugFile = new CTextFileStream(debugSpec);
 		
 		err = FSpGetFInfo(&debugSpec, &theFInfo);
 		
 		if (err == fnfErr)
-			gDebugFile->CreateNewDataFile('R*ch', 'TEXT');
+			gDebugFile->CreateNewDataFile(FILE_CREATOR, FILE_TYPE);
 			
 		gDebugFile->OpenDataFork(fsRdWrPerm);
 		gDebugFile->SetLength(0);
 	}
 	
-	Catch_(inErr)
+	catch (const LException& inException)
 	{
 		if (gDebugFile != nil)
 			close_debug_file();
@@ -223,9 +243,6 @@ void close_debug_file(void)
 		delete gDebugFile;
 	}
 }	
-			
-#endif
-
 
 //
 //	trim - Trim trailing spaces from a string.

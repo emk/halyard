@@ -76,11 +76,13 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 
 	// make sure our primary drawing offscreen world is filled with black
 	mGWorld->BeginDrawing();
-	::PmForeColor(0);	// 0 is always black in our palettes
-	::FillRect(&frame, &qd.black);
+	//::PmForeColor(0);	// 0 is always black in our palettes
+	//::FillRect(&frame, &qd.black);
+	::RGBForeColor(&Color_Black);
+	::PenMode(patCopy);
+	::PaintRect(&frame);
 	mGWorld->EndDrawing();
-
-			
+				
 	mBackPic 	= nil;
 	mBackColor 	= 1;
 	mActive 	= false;
@@ -341,7 +343,9 @@ void  CPlayerView::DrawSelf(void)
 	{
 		if (gMovieManager.FullScreenPlay())
 		{
-			::FillRect(&theFrame, &qd.black);		// cbo_fix - if we do a fade does this go away??
+			::RGBForeColor(&Color_Black);
+			::PenMode(patCopy);
+			::PaintRect(&theFrame);
 			::ValidRect(&theFrame);					// cbo_fix - this is necessary to keep from seeing the 
 			//	black background when a movie starts up - is there another way to do this?
 		}
@@ -409,7 +413,8 @@ void CPlayerView::ColorCard(int16 color)
 	mGWorld->BeginDrawing();
 	CalcLocalFrameRect(theFrame);
 	::PmForeColor(mBackColor);
-	::FillRect(&theFrame, &qd.black);
+	::PenMode(patCopy);
+	::PaintRect(&theFrame);
 	mGWorld->EndDrawing();
 }
 
@@ -465,7 +470,8 @@ void CPlayerView::DoNewPalette(CTabHandle inCTab)
 		
 	mFadeWorld->BeginDrawing();
 	::PmForeColor(0);
-	::FillRect(&theFrame, &qd.black);
+	::PenPat(patCopy);
+	::PaintRect(&theFrame);
 	mFadeWorld->EndDrawing();
 #endif
 }
@@ -653,9 +659,14 @@ void CPlayerView::CTouch(int16 inLeft, int16 inTop)
 		// the left and top postions given
 		if ((frameRect.left == inLeft) and (frameRect.top == inTop))
 		{
-			RemoveSubPane(theButt);
+			// cbo_fix - this doesn't work ???
+//			RemoveSubPane(theButt);
 			//theButt->PutInside(nil);		// to remove from our list of panes
-			delete theButt;
+			//delete theButt;
+			
+			// cbo_fix - as a hack, move the button far, far away
+			theButt->MoveBy(1000, 1000, false);
+			
 			done = true;
 		}
 	}
@@ -780,9 +791,7 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 						keyHandled = true;
 						break;
 					case 'q':							// q -> quit
-					// cbo_fix
 						gTheApp->DoExit(0);
-						//gTheApp->DoQuit();
 						
 						keyHandled = true;
 						break;

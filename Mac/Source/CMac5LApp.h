@@ -6,7 +6,7 @@
 
 #include "CPalette.h"
 
-class	LWindow;
+class	CBackWindow;
 
 class	CMac5LApp : public LApplication
 {
@@ -42,7 +42,7 @@ class	CMac5LApp : public LApplication
 		void				DoExit(int16 inSide);
 									
 	protected:
-		LWindow 			*mDisplayWindow;
+		CBackWindow			*mDisplayWindow;
 		void				DoAEOpenDoc(
 								const AppleEvent 	&inAppleEvent,
 								AppleEvent			&outARReply,

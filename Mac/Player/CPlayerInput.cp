@@ -28,7 +28,7 @@ extern WindowPtr gWindow;
 
 /* Globals used to communicate the background color to UTextTraits.*/
 Boolean		gHaveBackColor = false;
-RGBColor	grgbBackColor = {0, 0, 0};		// default to black
+RGBColor	grgbBackColor = {0, 0, 0};		// default to black	
 
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerInput
@@ -149,7 +149,7 @@ void CPlayerInput::FinishCreateSelf()
 	//}
 	
 	AlignTextEditRects();		// This needs to be done for some reason
-	
+		
 	SwitchTarget(this);
 	SelectAll();	
 }
@@ -327,6 +327,17 @@ Boolean CPlayerInput::HandleKeyPress(
 	return keyHandled;
 }
 
+Boolean
+CPlayerInput::FocusDraw(LPane*	/* inSubPane */)
+{
+	Boolean	focused = LEditField::FocusDraw();
+	
+	// now set the background color to black
+	::RGBBackColor(&Color_Black);	
+	
+	return (focused);
+}	
+	
 bool HaveInputUp(void)
 {
 	if (theInputThing != nil)

@@ -35,6 +35,7 @@
 
 #include "CPlayerView.h"
 #include "CMoviePlayer.h"
+#include "CBackWindow.h"
 
 #include "gamma.h"
 #include "CMenuUtil.h"
@@ -59,10 +60,9 @@ const ResIDT		WIND_Mac5L		= 200;
 // globals
 //
 bool				gInFront = true;			// is the app window in front?
+bool				gPrintToFile = true;		// to print info string
 #ifdef DEBUG_5L
 bool				gFullScreen = false;		
-bool				gPrint = false;				// for SIOUX log window
-bool				gPrintToFile = true;		// to print info string 
 bool				gHideMenuBar = false;		// to hide menu bar
 #else
 bool				gFullScreen = true;			// use the full screen
@@ -96,11 +96,13 @@ int main()
 {
 									// Set Debugging options
 #ifdef DEBUG_5L
-	SetDebugThrow_(debugAction_SourceDebugger);
-	SetDebugSignal_(debugAction_SourceDebugger);
+	SetDebugThrow_(debugAction_Nothing);
+	SetDebugSignal_(debugAction_Nothing);
+	//SetDebugThrow_(debugAction_SourceDebugger);
+	//SetDebugSignal_(debugAction_SourceDebugger);
 #else
-	SetDebugThrow_(debugAction_Alert);
-	SetDebugSignal_(debugAction_Alert);
+	SetDebugThrow_(debugAction_Nothing);
+	SetDebugSignal_(debugAction_Nothing);
 #endif
 
 	InitializeHeap(3);				// Initialize Memory Manager
@@ -157,7 +159,6 @@ CMac5LApp::CMac5LApp()
 	RGBColor	rgbBlack = {0, 0, 0};
 	KeyMap 		keys;
 	Rect		screenBounds;
-	Rect		theFrame;
 	bool		centerOnScreen;
 
 	mHaveNewPal = false;
@@ -169,11 +170,7 @@ CMac5LApp::CMac5LApp()
 
 	// Setup the Gamma tools
 	SetupGammaTools();
-	
-	// Fade the screen out.
-	if (gFullScreen and gHideMenuBar)
-		DoGFade(false, 5, false);
-	
+		
 	// Register classes for objects created from 'PPob' resources
 	// For PowerPlant classes, you can copy the necessary RegisterClass
 	// calls from PPobClasses.cp
@@ -189,25 +186,25 @@ CMac5LApp::CMac5LApp()
 	RegisterClass_(LWindow);
 	RegisterClass_(LEditField);
 	RegisterClass_(CPlayerView);
+	RegisterClass_(CBackWindow);
 	
 	// Initialize the modules.
 	gModMan = new CModuleManager;
 
-#ifdef DEBUG_5L	
 	// Open the debug log file. This HAS to be after new CModuleManager.
 	if (gPrintToFile)
 		open_debug_file();
-#endif
+
+	// Fade the screen out.
+	if (gFullScreen and gHideMenuBar)
+		DoGFade(false, 5, false);
 	
 	// Create and show our window
-	mDisplayWindow = LWindow::CreateWindow(WIND_Mac5L, this);
+	mDisplayWindow = CBackWindow::CreateWindow(WIND_Mac5L, this);
 	
 	// Set our global window pointer.
 	gWindow = (WindowPtr) mDisplayWindow->GetMacPort();
 		
-	// Set background color to black
-	mDisplayWindow->SetForeAndBackColors(&kRGB_White, &kRGB_Black);
-
 	// Make this a subcommander of the main window.
 	gPlayerView = (CPlayerView *) mDisplayWindow->FindPaneByID(210);
 			
@@ -245,7 +242,7 @@ CMac5LApp::CMac5LApp()
 	
 		screenBounds.top += ::LMGetMBarHeight() + 50;
 		screenBounds.left = 50;
-		screenBounds.right = 640;
+		screenBounds.right = screenBounds.left + 640;
 		screenBounds.bottom = screenBounds.top + 480;
 	}
 #endif
@@ -264,7 +261,7 @@ CMac5LApp::CMac5LApp()
 //	if (clickSound != NULL)
 //		SetResAttrs(clickSound, resLocked);
 
-#ifdef DEBUG_5L	
+#ifdef SIOUX_WINDOW_FOR_LOGGING	
 	if (gPrint)
 	{
 		SIOUXSettings.toppixel = screenBounds.bottom + 25;	
@@ -285,12 +282,7 @@ CMac5LApp::CMac5LApp()
 
 	::BringToFront(gWindow);
 	gInFront = true;
-		
-	// Blast the background up and valid the whole thing.
-	mDisplayWindow->CalcLocalFrameRect(theFrame);
-	::FillRect(&theFrame, &qd.black);
-	mDisplayWindow->ValidPortRect(&theFrame);
- 
+		 	
 	// set up initial values for "global" variables
 	gVariableManager.SetString("_NoCheckDisc", "0");		// check for discs by default
 	gVariableManager.SetString("_locked", "0");				// start off unlocked
@@ -307,9 +299,9 @@ CMac5LApp::CMac5LApp()
 	gVariableManager.SetString("_debug", "0");
 #endif
 	
-	// Fade back in.
+	// Fade back in (once the window has drawn itself).
 	if (gFullScreen and gHideMenuBar)
-		DoGFade(true, 5, false);
+		mDisplayWindow->FadeAfterDraw();
 }
 
 
@@ -322,10 +314,8 @@ CMac5LApp::~CMac5LApp()
 {
 	DisposeGammaTools();
 
-#ifdef DEBUG_5L	
 	if (gPrintToFile)
 		close_debug_file();
-#endif
 }
 
 void CMac5LApp::HandleAppleEvent(
@@ -827,6 +817,9 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard)
 
 /* 
 $Log$
+Revision 1.5  1999/10/21 17:21:05  chuck
+Mac5L 2.00 b3
+
 Revision 1.4  1999/10/14 11:59:59  chuck
 no message
 

@@ -240,7 +240,7 @@ void CPicture::LoadPicFile(bool isHiPic)
 		return;
 	}
 
-	Try_
+	try
 	{
 		theFile->OpenDataFork(fsCurPerm);
 		theHand = theFile->ReadDataFork();
@@ -254,7 +254,7 @@ void CPicture::LoadPicFile(bool isHiPic)
 		delete theFile;
 	}
 
-	Catch_(inErr)
+	catch (const LException& inException) 
 	{
 #ifdef DEBUG_5L
 		prinfo("ERROR: Couldn't find Pict file <%s>", thePicName.GetString());
@@ -263,10 +263,13 @@ void CPicture::LoadPicFile(bool isHiPic)
 #endif
 		
 		return;
-	} EndCatch_
+	}
 	
-	SignalIf_(mPicture == nil);
-	SignalIf_(mHiPicture == nil);
+	if (isHiPic)
+		SignalIf_(mHiPicture == nil);
+	else
+		SignalIf_(mPicture == nil);
+	
 	
 	//  - can't do this now, the color table might not be set yet - do it 
 	//	when ready to draw the picture

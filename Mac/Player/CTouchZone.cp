@@ -110,7 +110,6 @@ void CTouchZone::SetupZone(	Rect 			&inBounds, 	// Button rect
 	}
 	else
 		mPicture = nil;
-	
 }
 
 // ---------------------------------------------------------------------------------
@@ -190,6 +189,7 @@ CTouchZone::HotSpotAction(
 	Boolean		inCurrInside,
 	Boolean		inPrevInside)
 {
+		
 	if (not gPlayerView->ProcessingTZones())
 	{
 		//::SysBeep(30);

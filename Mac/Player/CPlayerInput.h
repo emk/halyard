@@ -29,7 +29,8 @@ public:
 				
 	// Destructor
 	virtual 			~CPlayerInput();
-
+	virtual	Boolean		FocusDraw(LPane * /* inSubPane */);
+	
 private:
 	CString				mVarToSet;	// Name of var to receive the text
 	CString				mStyle;		// Style to display in when we're done

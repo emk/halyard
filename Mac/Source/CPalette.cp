@@ -51,7 +51,7 @@ void CPalette::_Load()
 			return;
 		}
 		
-		Try_
+		try
 		{
 			// Now that we have a valid FSSpec, we can create the file stream & get
 			// the picHandle from the file.
@@ -70,14 +70,14 @@ void CPalette::_Load()
 			delete theFile;
 		}
 		
-		Catch_(err)
+		catch (const LException& inException) 
 		{
 #ifdef DEBUG_5L
-			prinfo("couldn't get palette from file, returned <%d>", err);
+			prinfo("couldn't get palette from file");
 #else
 			prcaution("Error getting palette <%s>", (char *) key);
 #endif
-		} EndCatch_
+		} 
 	}
 }
 

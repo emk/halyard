@@ -34,13 +34,11 @@ void 	strlower(char *str);
 int16 	strnicmp(const char *str1, const char *str2, int32 count);
 int16 	stricmp(const char *str1, const char *str2);
 
-#ifdef DEBUG_5L
 void prinfo(char *cs,...);
 void prmem(void);
 void pronecommand(char *inStr, uint32 inPos);
 void open_debug_file(void);
 void close_debug_file(void);
-#endif
 
 
 #endif

@@ -48,7 +48,7 @@ CFile::CFile(char *filename, FileKind fKind)
 	
 	// cbo_fix - 
 	// we have to catch the exceptions that could get thrown here
-	Try_
+	try
 	{
 	    itsFile = new CTextFileStream(fSpec);
     
@@ -71,7 +71,8 @@ CFile::CFile(char *filename, FileKind fKind)
     		itsFile->SetMarker(itsFile->GetLength(), streamFrom_Start);	// seek to the end of the file
    		}
     }
-    Catch_(inErr)
+    
+    catch (const LException& inException) 
     {
 #ifdef DEBUG_5L
 		prinfo("Couldn't open file <%s>, setting _error to -1", filename);
@@ -82,7 +83,7 @@ CFile::CFile(char *filename, FileKind fKind)
     	// cbo_fix - do something appropriate here
     	// prerror("File <%s> not found. Quitting.", filename);
     
-    } EndCatch_
+    }
 }
 
 //  Cleanup. Destroy the file object.
