@@ -76,7 +76,7 @@
 
 (card test-variables
   (foreach [val (list (void) "str" 'sym -2147483648 2147483647 4294967295
-		      -1 0 1 -1.0 0.0 1.0 #f #t)]
+                      -1 0 1 -1.0 0.0 1.0 #f #t)]
     (set! *vartest* val)
     (test (equal? *vartest* val)))
   (jump test-callbacks))
@@ -97,14 +97,18 @@
   (set! *before-callback-flag* #f)
   (set! *after-callback-flag* #f)
   (test-callback (callback
-		   (set! *before-callback-flag* #t)
-		   (jump test-callbacks-2)
-		   (set! *after-callback-flag* #t))))
+                   (set! *before-callback-flag* #t)
+                   (jump test-callbacks-2)
+                   (set! *after-callback-flag* #t))))
 
 (card test-callbacks-2
   (test (eq? *before-callback-flag* #t))
   (test (eq? *after-callback-flag* #f))
-  (jump test-pause))
+  (jump test-stop))
+
+(card test-stop
+  (call-5l-prim 'teststop (card-name test-pause))
+  (test #f))
 
 (card test-pause
   (call-5l-prim 'testpause)

@@ -361,6 +361,25 @@ void TSchemeInterpreter::KillInterpreter(void)
 	(void) CallSchemeSimple("%kernel-kill-interpreter");
 }
 
+void TSchemeInterpreter::Stop()
+{
+	ASSERT(!IsStopped());
+    (void) CallSchemeSimple("%kernel-stop");
+}
+
+bool TSchemeInterpreter::IsStopped()
+{
+	Scheme_Object *o = CallSchemeSimple("%kernel-stopped?");
+	return SCHEME_FALSEP(o) ? false : true;
+}
+
+void TSchemeInterpreter::Go(const char *card)
+{
+	ASSERT(IsStopped());
+    (void) CallSchemeSimple("%kernel-go");
+	JumpToCardByName(card);
+}
+
 void TSchemeInterpreter::Pause(void)
 {
     (void) CallSchemeSimple("%kernel-pause");
@@ -410,6 +429,7 @@ void TSchemeInterpreter::KillCurrentCard(void)
 
 void TSchemeInterpreter::JumpToCardByName(const char *inName)
 {
+	ASSERT(!IsStopped()); // Stopped cards must be resumed by Go().
 	Scheme_Object *args[1];
 	args[0] = scheme_make_string(inName);
 	(void) CallScheme("%kernel-jump-to-card-by-name", 1, args);
@@ -460,8 +480,12 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 
 void TSchemeCallback::Run()
 {
+	// Make sure we have a Scheme interpreter and that it isn't stopped.
+	ASSERT(TSchemeInterpreter::HaveInstance());
+	ASSERT(!TSchemeInterpreter::GetInstance()->IsStopped());
+
 	Scheme_Object *args[1];
-	args[0] = mCallback;	
+	args[0] = mCallback;
 	TSchemeInterpreter::CallScheme("%kernel-run-callback", 1, args);
 }
 

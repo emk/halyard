@@ -105,6 +105,9 @@ public:
 	// For documentation of these virtual methods, see TInterpreter.h.
 	virtual void Run(SystemIdleProc inIdleProc);
 	virtual void KillInterpreter();
+	virtual void Stop();
+	virtual bool IsStopped();
+	virtual void Go(const char *inCard);
 	virtual void Pause(void);
 	virtual void WakeUp(void);
 	virtual bool Paused(void);

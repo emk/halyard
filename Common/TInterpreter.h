@@ -61,6 +61,23 @@ public:
 	virtual void KillInterpreter() = 0;
 
 	//////////
+	// Stop the interpreter so the graphical editor may run.  This
+	// exits the current card.  Use Go() to resume running
+	// the interpreter.
+	//
+	virtual void Stop() = 0;
+
+	//////////
+	// Returns true if the interpreter is stopped.
+	//
+	virtual bool IsStopped() = 0;
+
+	//////////
+	// Resume from a Stop() and jump to the specified card.
+	//
+	virtual void Go(const char *inCard) = 0;
+
+	//////////
 	// Pause the CardManager.  Use WakeUp() to resume.
 	//
 	virtual void Pause(void) = 0;

@@ -37,6 +37,18 @@ static void TestIdleFunc()
 	}
 }
 
+DEFINE_5L_PRIMITIVE(TestStop)
+{
+	std::string next_card;
+	inArgs >> next_card;
+
+	TEST(!TInterpreter::GetInstance()->IsStopped());
+	TInterpreter::GetInstance()->Stop();
+	TEST(TInterpreter::GetInstance()->IsStopped());
+	TInterpreter::GetInstance()->Go(next_card.c_str());
+	TEST(!TInterpreter::GetInstance()->IsStopped());
+}
+
 DEFINE_5L_PRIMITIVE(TestPause)
 {
 	gTestingPause = true;
@@ -102,6 +114,7 @@ DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
 void FIVEL_NS RegisterSchemeTestPrimitives()
 {
+	REGISTER_5L_PRIMITIVE(TestStop);
 	REGISTER_5L_PRIMITIVE(TestPause);
 	REGISTER_5L_PRIMITIVE(TestCallback);
 	REGISTER_5L_PRIMITIVE(TestTimeout);
