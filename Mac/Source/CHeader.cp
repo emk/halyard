@@ -17,9 +17,9 @@ USING_NAMESPACE_FIVEL
 //
 //  Let Index ancestor construct based on these values.
 //
-CHeader::CHeader(CIndexFile *inIndex, const char *inName /* = NULL */, 
+CHeader::CHeader(TIndexFile *inIndex, const char *inName /* = NULL */, 
 				int32 inStart /* = 0 */, int32 inEnd /* = 0 */) :
-    		CIndex(inIndex, inName, inStart, inEnd)
+    		TIndex(inIndex, inName, inStart, inEnd)
 {
     mAlignment = AlignLeft;
     mColor = mHighlightColor = mShadowColor = 0;
@@ -165,7 +165,7 @@ void CHeader::GetFont(const char *inName)
  * Comments:
  *  Create a new CHeader Index
  ***********************************************************************/
-void CHeaderManager::MakeNewIndex(CIndexFile *inFile, const char *inName, 
+void CHeaderManager::MakeNewIndex(TIndexFile *inFile, const char *inName, 
 		int32 inStart, int32 inEnd)
 {
     CHeader  *newHeader;

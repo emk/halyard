@@ -382,14 +382,3 @@ Path FileSystem::GetBaseDirectory()
 {
 	return gCurrentBaseDirectory;	
 }
-
-
-//=========================================================================
-//  Miscellaneous FileSystem methods.
-//=========================================================================
-
-void ReplaceWithTemporaryFile(const Path &inOriginalFile,
-							  const Path &inTemporaryFile)
-{
-	
-}

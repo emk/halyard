@@ -32,7 +32,7 @@
 #include "CMac5LApp.h"
 #include "CConfig.h"
 #include "CModule.h"
-#include "CVariable.h"
+#include "TVariable.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -383,13 +383,22 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.7.4.1  2002/04/22 13:20:08  emk
+Major Mac cleanups:
+
+- We use subprojects to recursively build 5L and its support libraries.  This means no more opening up four different projects, etc., just to do a build.
+
+- Search & replaced class names for merged classes.  This doesn't quite work or build yet, but I'm working on a branch, so that's OK.
+
+- Other Mac build fixes.
+
+Tomorrow: Get things running again, make a test binary, and continue merging.
+
 Revision 1.7  2002/03/11 17:50:10  hamon
  Added logging of _QuickTimeVersion.
 _QuickTimeVersionMajor returns major number, _QuickTimeVersionMinor returns minor number,_QuickTimeVersionRevision returns revision number,
   and _QuickTimeVersion returns version number. Version 5.0.2 will be returned as 50002 and 12.14.10 would be returned as 121410 (if this version ever exists). 
-
 This numbering system DOES NOT match the Windows. Consistency between the two (likely involving a change in the Windows, since it seems likely to be broken) would be good.
-
 Changes by Elizabeth, okayed by Eric.
 
 Revision 1.6  2002/03/04 15:41:34  hamon

@@ -15,7 +15,7 @@
 #include "CResource.h"
 #include "CPictDataFile.h"
 #include "CPlayerView.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CModule.h"
 
 USING_NAMESPACE_FIVEL

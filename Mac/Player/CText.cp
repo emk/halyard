@@ -22,7 +22,7 @@
 #include "CHeader.h"
 #include "CPlayerView.h"
 #include "CText.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "TCommon.h"
 #include "TEncoding.h"
 

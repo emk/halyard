@@ -84,7 +84,9 @@ AUTHOR
 #ifdef Debug_Throw
 #define DEBUG
 
+#ifdef __cplusplus
 #include <assert.h>
+#endif
 #define ASSERT(expr) assert(expr)
 
 /* backwards compatible defines

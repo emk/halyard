@@ -16,7 +16,7 @@
 #include "CMoviePlayer.h"
 #include "CPicture.h"
 #include "CMenuUtil.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CMenuUtil.h"
 #include "CPalette.h"
 #include "gamma.h"

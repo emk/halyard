@@ -10,7 +10,7 @@
 #include "CConfig.h"
 #include "CResource.h"
 #include "CPalette.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CModule.h"
 #include "CPlayerView.h"
 

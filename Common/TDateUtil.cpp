@@ -44,7 +44,7 @@ static void GetDay(char *inStr, int inDay);
 //
 //	GetDate - Get the current date or time.
 //
-void GetDate(TString &inStr, const DateFormat format)
+void FIVEL_NS GetDate(TString &inStr, const DateFormat format)
 {
 	char		theResult[128];
 	struct tm	*theLTime;
@@ -77,7 +77,7 @@ void GetDate(TString &inStr, const DateFormat format)
 //	SetDate - Set inStr based on the passed in time (inSecs) and
 //		the inDateType parameter.
 //
-void SetDate(TString &inStr, int32 inSecs, int32 inDateType)
+void FIVEL_NS SetDate(TString &inStr, int32 inSecs, int32 inDateType)
 {
 	char		theResult[128];
 	time_t		theTime = inSecs;
@@ -275,6 +275,17 @@ static void GetDay(char *inStr, int inDay)
 
 /*
  $Log$
+ Revision 1.4.2.2  2002/04/22 13:20:07  emk
+ Major Mac cleanups:
+
+ - We use subprojects to recursively build 5L and its support libraries.  This means no more opening up four different projects, etc., just to do a build.
+
+ - Search & replaced class names for merged classes.  This doesn't quite work or build yet, but I'm working on a branch, so that's OK.
+
+ - Other Mac build fixes.
+
+ Tomorrow: Get things running again, make a test binary, and continue merging.
+
  Revision 1.4.2.1  2002/04/22 05:22:33  emk
  A weekend's worth of merging, in preparation for the Typography switchover.
 

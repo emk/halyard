@@ -17,7 +17,7 @@
 
 #include "CMac5LApp.h"
 #include "CCard.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CResource.h"
 #include "CMacroManager.h"
 #include "CHeader.h"
@@ -34,6 +34,7 @@
 #include "CPlayerInput.h"
 #include "CTouchZone.h"
 #include "CModule.h"
+#include "TDateUtil.h"
 
 #include "gamma.h"
 
@@ -65,9 +66,9 @@ static Boolean gNeedsRefresh = false;
 //  CCard - Initialize a card. This will happen when the m_Script is read
 //			in from disk so don't activate the card yet.
 //
-CCard::CCard(CIndexFile *inFile, const char *inName /* = NULL */,
+CCard::CCard(TIndexFile *inFile, const char *inName /* = NULL */,
 				int32 inStart /* = 0 */, int32 inEnd /* = 0  */)
-	: CIndex(inFile, inName, inStart, inEnd)
+	: TIndex(inFile, inName, inStart, inEnd)
 {
 	mPaused = false;
 	mActive = false;
@@ -348,7 +349,7 @@ void CCard::DoCommand(void)
  ***********************************************************************/
 void CCard::OneCommand(TString &theCommand)
 {
-    CStream     saveScript(m_Script);
+    TStream     saveScript(m_Script);
 
 	saveScript = m_Script;
 	mDoingOne = true;
@@ -452,7 +453,7 @@ enum EvalMode
  *  Evaluate the given conditional and determine whether or not
  *  it is true.
  ***********************************************************************/
-int16 CCard::Evaluate(CStream& conditional)
+int16 CCard::Evaluate(TStream& conditional)
 {
     int16		globalRes, localRes, result;
     EvalMode	mode = FirstTime;
@@ -1374,7 +1375,7 @@ void CCard::DoHidemouse()
 -------------------------------------------------------------------*/
 void CCard::DoIf()
 {
-    CStream     conditional;
+    TStream     conditional;
 	
     m_Script >> conditional;
 
@@ -1785,13 +1786,13 @@ void CCard::DoLookup()
 ---------------------------------------------------------------------*/
 void CCard::DoMacro(TString &name)
 {
-	CStream		saveScript(m_Script);
-    CIndex		*theMacro;
+	TStream		saveScript(m_Script);
+    TIndex		*theMacro;
     TString		vname, contents;
     int16		vnum;
-    CVariable	*local, *temp, *oldlocal;
+    TVariable	*local, *temp, *oldlocal;
 
-    theMacro = (CIndex *) gMacroManager.Find(name);
+    theMacro = (TIndex *) gMacroManager.Find(name);
 	
 	if (theMacro == NULL)
 	{
@@ -1811,7 +1812,7 @@ void CCard::DoMacro(TString &name)
         vname = ++vnum;
         m_Script >> contents;
 
-        temp = new CVariable(vname, contents);
+        temp = new TVariable(vname, contents);
 
         if (local == 0) 
 			local = temp;
@@ -2925,7 +2926,7 @@ void CCard::DoWrite()
 
 ***************************/
 
-CCardManager::CCardManager() : CIndexManager()
+CCardManager::CCardManager() : TIndexManager()
 {
     mCurrentCard = NULL;
     mExitNow = false;
@@ -3038,8 +3039,8 @@ void CCardManager::DoOneCommand(TString &theCommand)
 //
 void CCardManager::CurCardSpendTime(void)
 {
-	CVariable	*theAfterVar;
-	CVariable	*theBeforeVar;
+	TVariable	*theAfterVar;
+	TVariable	*theBeforeVar;
 	CCard		*theCard;
 	int32		index;
 	
@@ -3180,7 +3181,7 @@ bool CCardManager::CurCardPaused(void)
  * Comments:
  *    Adds node "name" to CCardManager..
  ***********************************************************************/
-void CCardManager::MakeNewIndex(CIndexFile *inFile, const char *inName,
+void CCardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 								int32 inStart, int32 inEnd)
 {
     CCard    	*newCard;

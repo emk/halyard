@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "stack.h"
 #include "CResource.h"
-#include "CStream.h"
+#include "TStream.h"
 #include "CCard.h"
 #include "util.h"
 

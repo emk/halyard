@@ -40,9 +40,9 @@
 #include "CCard.h"
 #include "CMacroManager.h"
 #include "CHeader.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CFiles.h"
-#include "CIndex.h"
+#include "TIndex.h"
 #include "CCursor.h"
 
 
@@ -83,9 +83,9 @@ CCardManager		gCardManager;
 CMacroManager		gMacroManager;
 CHeaderManager		gHeaderManager;
 
-CVariableManager	gVariableManager;
+TVariableManager	gVariableManager;
 CCursorManager		gCursorManager;
-CIndexFileManager	gIndexFileManager;
+TIndexFileManager	gIndexFileManager;
 CPaletteManager		gPaletteManager;
 CPictureManager		gPictureManager;
 
@@ -995,6 +995,17 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.18.2.1  2002/04/22 13:20:08  emk
+Major Mac cleanups:
+
+- We use subprojects to recursively build 5L and its support libraries.  This means no more opening up four different projects, etc., just to do a build.
+
+- Search & replaced class names for merged classes.  This doesn't quite work or build yet, but I'm working on a branch, so that's OK.
+
+- Other Mac build fixes.
+
+Tomorrow: Get things running again, make a test binary, and continue merging.
+
 Revision 1.18  2002/04/19 09:46:30  emk
 Changes to make the Macintosh version build again for the 3.3.1 release, and to allow Elizabeth to work on the Macintosh without any trouble.
 

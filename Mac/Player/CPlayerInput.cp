@@ -16,7 +16,7 @@
 #include "CPlayerView.h"
 #include "CPlayerInput.h"
 #include "CPlayerText.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CHeader.h"
 #include "UModalDialogs.h"
 #include "UKeyFilters.h"

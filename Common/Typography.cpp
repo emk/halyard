@@ -206,7 +206,7 @@ Typography::Style &Style::SetLeading(Distance inLeading)
 	return *this;
 }
 
-Style &Style::SetShadowOffset(Distance inOffset)
+Typography::Style &Style::SetShadowOffset(Distance inOffset)
 {
 	Grab();
 	mRep->mShadowOffset = inOffset;

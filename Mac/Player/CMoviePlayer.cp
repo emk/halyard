@@ -14,7 +14,7 @@
 #include "CPalette.h"
 #include "CPlayerView.h"
 #include "CMoviePlayer.h"
-#include "CVariable.h"
+#include "TVariable.h"
 #include "CCard.h"
 #include "CModule.h"
 #include "gamma.h"

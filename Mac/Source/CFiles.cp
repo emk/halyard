@@ -13,7 +13,7 @@
 #include "CMac5LApp.h"
 #include "CFiles.h"
 #include "CConfig.h"
-#include "CVariable.h"
+#include "TVariable.h"
 
 USING_NAMESPACE_FIVEL
 
