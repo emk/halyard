@@ -22,6 +22,8 @@ public:
 					   AudioStream *inStream);
 	virtual ~AudioStreamElement();
 
+	AudioStream *GetAudioStream() { return mStream; }
+
     virtual void Pause();
     virtual void Resume();
 	

@@ -19,12 +19,13 @@
 
     Useful features
 /     Looping
-      Geiger synth
-      Hook into Tamale for Geigers
-      Hook into Quake for Geigers
-      Stereo panning
-        Allow BufferedAudioStreams to be mono or stereo
+      Geiger counters
+/       Random synth of low to medium count rates
+        Fix clipping artifacts
+        Hook into Tamale for Geigers
+        Hook into Quake for Geigers
       Hook into Quake for ambients
+      Stereo panning
       Kill off Quake sound effects when leaving sim card group
 
     Less Important (Or Even Dubious)

@@ -153,3 +153,24 @@ bool VorbisFile::Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed)
 		return true;
 }
 
+std::vector<int16> *VorbisFile::ReadAll()
+{
+	// Load our data from a file.
+    std::vector<int16> *data = new std::vector<int16>(VORBIS_BUFFER_SIZE);
+    size_t space_used = 0;
+    while (MoreDataIsAvailable())
+    {
+		// If we've run out of space to put the data in, double our vector
+		// size (doubling gives us amortitized O(n) time).
+		if (data->size() == space_used)
+			data->resize(data->size() * 2, 0);
+		
+		// Read the data.
+		size_t space_available = data->size() - space_used;
+		size_t samples_read;
+		if (Read(&(*data)[space_used], space_available, &samples_read))
+			space_used += samples_read;
+    }
+	data->resize(space_used);
+	return data;
+}

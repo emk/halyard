@@ -6,6 +6,8 @@
 #include "TCommon.h"
 #include "ivorbisfile.h"
 
+#include <vector>
+
 enum {
 	// The decoder documentation claims this is a good size.
 	VORBIS_BUFFER_BYTES = 4096,
@@ -66,8 +68,15 @@ public:
 	// [out] result - true if the read succeeded, false if we've reached
 	//                the end of the file
 	//
-	bool Read(int16 *outData, size_t inMaxSize,
-			  size_t *outSizeUsed);
+	bool Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed);
+
+	//////////
+	// Read all remaining data from the file and return it in an
+	// appropriately-sized vector.
+	//
+	// [out] return - The buffer.  The caller must delete this.
+	//
+	std::vector<int16> *ReadAll();
 };
 
 #endif // VorbisFile_H

@@ -24,6 +24,7 @@
 #include "ImageCache.h"
 #include "CursorManager.h"
 #include "AudioStream.h"
+#include "GeigerAudioStream.h"
 #include "VorbisAudioStream.h"
 #include "AudioStreamElement.h"
 #include "CommonWxConv.h"
@@ -41,6 +42,8 @@ using FileSystem::Path;
 
 void FIVEL_NS RegisterWxPrimitives()
 {
+	REGISTER_5L_PRIMITIVE(AudioStreamGeiger);
+	REGISTER_5L_PRIMITIVE(AudioStreamGeigerSetCps);
 	REGISTER_5L_PRIMITIVE(AudioStreamSine);
 	REGISTER_5L_PRIMITIVE(AudioStreamVorbis);
     REGISTER_5L_PRIMITIVE(DeleteElements);
@@ -98,6 +101,29 @@ void FIVEL_NS RegisterWxPrimitives()
 //=========================================================================
 //  Implementation of wxWindows Primitives
 //=========================================================================
+
+DEFINE_5L_PRIMITIVE(AudioStreamGeiger)
+{
+	std::string name, path;
+	inArgs >> SymbolName(name) >> path;
+	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+						   new GeigerAudioStream(path.c_str()));
+}
+
+DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps)
+{
+	std::string name;
+	double cps;
+	inArgs >> SymbolName(name) >> cps;
+	FIND_ELEMENT(AudioStreamElement, element, name.c_str());
+	GeigerAudioStream *stream =
+		dynamic_cast<GeigerAudioStream*>(element->GetAudioStream());
+	if (stream)
+		stream->SetChirpsPerSecond(cps);
+	else
+		::SetPrimitiveError("notgeiger",
+							"Audio stream was not a geiger stream.");
+}
 
 DEFINE_5L_PRIMITIVE(AudioStreamSine)
 {

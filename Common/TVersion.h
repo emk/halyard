@@ -17,15 +17,34 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		5
+#define VERSION_REV_BIG		6
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.5 (Development)"
+#define VERSION_STRING		"Tamale 0.0.6 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.48  2003/06/05 00:46:33  emk
+ 0.0.6 - 4 June 2003 - emk, brian
+
+ Audio work by emk:
+
+   * Mono Vorbis audio supported.
+   * Per-channel volume supported.
+   * Looping Vorbis audio.
+   * Basic real-time Geiger synth implemented.  It still has issues.
+
+ Polygon work by brian:
+
+   * Added support for polygons (POLYGON point ...).
+   * Added support for polygonal zones (ZONE name poly callback). Rects
+     still work: (ZONE name rect callback) will convert the rect to a
+     polygon.
+   * Added support for copying polygon definition strings to clipboard
+     using crosshair control.
+
  Revision 1.47  2003/05/30 18:41:01  emk
  0.0.5 - 30 May 2003 - emk
 

@@ -1,9 +1,16 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.6 - 4 June 2003 - emk, brian
+
+Audio work by emk:
 
   * Mono Vorbis audio supported.
   * Per-channel volume supported.
+  * Looping Vorbis audio.
+  * Basic real-time Geiger synth implemented.  It still has issues.
+
+Polygon work by brian:
+
   * Added support for polygons (POLYGON point ...).
   * Added support for polygonal zones (ZONE name poly callback). Rects
     still work: (ZONE name rect callback) will convert the rect to a
