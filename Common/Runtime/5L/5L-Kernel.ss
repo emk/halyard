@@ -211,15 +211,18 @@
   ;;  kernel's inner workings.  The rest of these functions can be found
   ;;  in the 5L-API module.
   
-  (provide call-5l-prim idle 5l-log debug-log caution debug-caution
-	   non-fatal-error fatal-error engine-var set-engine-var!
-	   throw exit-script jump)
+  (provide call-5l-prim have-5l-prim? idle 5l-log debug-log
+	   caution debug-caution non-fatal-error fatal-error
+	   engine-var set-engine-var! throw exit-script jump refresh)
 
   (define (call-5l-prim . args)
     (let ((result (apply %call-5l-prim args)))
       (%kernel-check-state)
       result))
   
+  (define (have-5l-prim? name)
+    (%call-5l-prim 'haveprimitive name))
+
   (define (idle)
     (%kernel-die-if-callback 'idle)
     (call-5l-prim 'schemeidle))
@@ -242,11 +245,17 @@
   (define (fatal-error msg)
     (%call-5l-prim 'log '5L msg 'fatalerror))
   
-  (define (engine-var name)
-    (call-5l-prim 'get name))
+  (define (engine-var name type)
+    (let [[val (call-5l-prim 'get name)]]
+      (case type
+	[[INTEGER] (string->number val)]
+	[[STRING] val]
+	[else
+	 (throw (cat "Unknown engine variable type " type " for " val))])))
   
-  (define (set-engine-var! name value)
+  (define (set-engine-var! name type value)
     ;; Useless performance hack.
+    ;; TODO - Check whether value matches type?
     (if (string? value)
 	(call-5l-prim 'set name value)
 	(call-5l-prim 'set name (value->string value))))
@@ -260,9 +269,17 @@
     (call-5l-prim 'schemeexit))
   
   (define (jump card)
-    (set! *%kernel-jump-card* (%kernel-find-card card))
-    (%kernel-set-state 'JUMPING)
-    (%kernel-check-state))
+    (if (have-5l-prim? 'jump)
+	(call-5l-prim 'jump (card-name card))
+	(begin
+	  ;; If we don't have a JUMP primitive, fake it by hand.
+	  (set! *%kernel-jump-card* (%kernel-find-card card))
+	  (%kernel-set-state 'JUMPING)
+	  (%kernel-check-state))))
+
+  (define (refresh)
+    (if (have-5l-prim? 'unlock)
+	(call-5l-prim 'unlock)))
 
 
   ;;=======================================================================
@@ -290,7 +307,8 @@
     (set! *%kernel-current-card* card)
     (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
     (with-errors-blocked (non-fatal-error)
-      ((%kernel-card-thunk card))))
+      ((%kernel-card-thunk card))
+      (refresh)))
 
   (define (%kernel-find-card card-or-name)
     (cond
