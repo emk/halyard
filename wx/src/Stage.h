@@ -235,6 +235,11 @@ class Stage : public wxWindow
 	///
 	void InterpreterWakeUp();
 
+    //////////
+    /// Wake the interpreter up if mShouldWakeUpOnIdle is true.
+    ///
+    void InterpreterWakeUpIfNecessary();
+
 	//////////
 	/// Find an element by name, and return an iterator.
 	///

@@ -67,7 +67,11 @@ private:
 
     void OnSize(wxSizeEvent &event);
     void OnEraseBackground(wxEraseEvent &inEvent);
-    
+    void OnSaveAll(wxCommandEvent &event);
+    void OnUpdateUiSaveAll(wxUpdateUIEvent &event);
+    void OnCloseTab(wxCommandEvent &event);
+    void OnUpdateUiCloseTab(wxUpdateUIEvent &event);
+
     DECLARE_EVENT_TABLE();
 };
 
@@ -76,6 +80,7 @@ private:
 /// class for wxWindow subclasses.
 ///
 class DocNotebookTab : boost::noncopyable {
+    friend class DocNotebook;
     friend class DocNotebookBar;
     
     DocNotebook *mParent;
@@ -106,6 +111,12 @@ public:
     bool GetDocumentDirty() const;
     wxString GetDocumentTitleAndDirtyFlag() const;
 
+    void SelectDocument() const;
+
+    /// This can be used by the containing wxFrame class to check
+    /// timestamps and reload files on window activation.
+    virtual void OfferToReloadIfChanged() {}
+
     //virtual void Save() = 0;
     virtual wxWindow *GetDocumentWindow() = 0;
 };
@@ -124,10 +135,12 @@ public:
     size_t GetDocumentCount() const;
     DocNotebookTab *GetDocument(size_t index);
     void SelectDocument(size_t index);
+    void SelectDocument(const DocNotebookTab *doc);
     DocNotebookTab *GetCurrentDocument();
 
     bool MaybeSaveAll(bool canVeto, const wxString &title,
                       const wxString &prompt);
+    bool MaybeCloseTab();
 
 private:
     enum {
@@ -192,7 +205,6 @@ private:
     void DoButtonHeld(ButtonId buttonId);
     void DoButtonReleased(ButtonId buttonId);
 
-    bool MaybeCloseTab();
     void LastTabDeleted();
     void SetCurrentTab(size_t tabId);
 

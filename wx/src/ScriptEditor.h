@@ -34,6 +34,7 @@ class ScriptEditor : public wxFrame {
 
     DocNotebook *mNotebook;
     EventDelegator mDelegator;
+    bool mProcessingActivateEvent;
 
 public:
     static void EditScripts();
@@ -48,9 +49,11 @@ public:
 private:
     void OpenDocument(const wxString &path);
 
+    void OnActivate(wxActivateEvent &event);
     void OnClose(wxCloseEvent &event);
     void OnNew(wxCommandEvent &event);
     void OnOpen(wxCommandEvent &event);
+    void OnCloseWindow(wxCommandEvent &event);
     void DisableUiItem(wxUpdateUIEvent &event);
 
     DECLARE_EVENT_TABLE();

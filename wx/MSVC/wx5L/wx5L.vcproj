@@ -584,10 +584,40 @@
 				RelativePath="..\..\src\tb_borders.bmp">
 			</File>
 			<File
+				RelativePath="..\..\src\tb_copy.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_cut.bmp">
+			</File>
+			<File
 				RelativePath="..\..\src\tb_grid.bmp">
 			</File>
 			<File
+				RelativePath="..\..\src\tb_new.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_open.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_paste.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_redo.bmp">
+			</File>
+			<File
 				RelativePath="..\..\src\tb_reload.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_save.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_saveall.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_undo.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_wrap.bmp">
 			</File>
 			<File
 				RelativePath="..\..\src\tb_xy.bmp">

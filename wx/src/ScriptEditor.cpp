@@ -54,12 +54,12 @@ Soon:
 / Save on close
 / Fix StageFrame::OnClose and OnExit to save files in script editor, too
 / Save on reload
-  Reload on change
+/ Reload on change
 
   Fully implement square braces
   Highlight keywords
+ 
   Indent keywords intelligently
-
   Indent head forms of macros by 4 spaces
   Indent certain macros like functions: AND, OR, PROVIDE?
 
@@ -163,6 +163,11 @@ public:
     void OnClear(wxCommandEvent &event);
     void OnSelectAll(wxCommandEvent &event);
 
+    void OnWrapLines(wxCommandEvent &event);
+    void OnUpdateUiWrapLines(wxUpdateUIEvent &event);
+    void OnShowWhitespace(wxCommandEvent &event);
+    void OnUpdateUiShowWhitespace(wxUpdateUIEvent &event);
+
     void OnFind(wxCommandEvent &event);
     void OnFindAgain(wxCommandEvent &event);
     void OnUpdateUiFindAgain(wxUpdateUIEvent &event);
@@ -223,6 +228,13 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
     EVT_UPDATE_UI(wxID_CLEAR, ScriptTextCtrl::OnUpdateUiCutCopyClear)
     EVT_MENU(wxID_SELECTALL, ScriptTextCtrl::OnSelectAll)
     EVT_UPDATE_UI(wxID_SELECTALL, ScriptTextCtrl::OnUpdateUiAlwaysOn)
+
+    // View menu.
+    EVT_MENU(FIVEL_WRAP_LINES, ScriptTextCtrl::OnWrapLines)
+    EVT_UPDATE_UI(FIVEL_WRAP_LINES, ScriptTextCtrl::OnUpdateUiWrapLines)
+    EVT_MENU(FIVEL_SHOW_WHITESPACE, ScriptTextCtrl::OnShowWhitespace)
+    EVT_UPDATE_UI(FIVEL_SHOW_WHITESPACE,
+                  ScriptTextCtrl::OnUpdateUiShowWhitespace)
 
     // Search menu.
     EVT_MENU(wxID_FIND, ScriptTextCtrl::OnFind)
@@ -552,6 +564,34 @@ void ScriptTextCtrl::OnClear(wxCommandEvent &event) {
 
 void ScriptTextCtrl::OnSelectAll(wxCommandEvent &event) {
     SelectAll();
+}
+
+void ScriptTextCtrl::OnWrapLines(wxCommandEvent &event) {
+    if (GetWrapMode() == wxSTC_WRAP_NONE) {
+        SetWrapMode(wxSTC_WRAP_WORD);
+        SetEdgeMode(wxSTC_EDGE_LINE);
+        SetEdgeColour(wxColour(0x80, 0x80, 0x80));
+    } else {
+        SetWrapMode(wxSTC_WRAP_NONE);
+        SetEdgeMode(wxSTC_EDGE_BACKGROUND);
+        SetEdgeColour(*wxRED);
+    }
+}
+
+void ScriptTextCtrl::OnUpdateUiWrapLines(wxUpdateUIEvent &event) {
+    event.Enable(true);
+    event.Check(GetWrapMode() != wxSTC_WRAP_NONE);
+}
+
+void ScriptTextCtrl::OnShowWhitespace(wxCommandEvent &event) {
+    bool new_value = !GetViewWhiteSpace();
+    SetViewWhiteSpace(new_value);
+    SetViewEOL(new_value);
+}
+
+void ScriptTextCtrl::OnUpdateUiShowWhitespace(wxUpdateUIEvent &event) {
+    event.Enable(true);
+	event.Check(GetViewWhiteSpace() ? true : false);
 }
 
 void ScriptTextCtrl::OnFind(wxCommandEvent &event) {
@@ -1040,12 +1080,19 @@ public:
 
     virtual wxWindow *GetDocumentWindow() { return this; }
 
+    virtual void OfferToReloadIfChanged();
+
 protected:
     virtual bool SaveDocument(bool force);
 
 private:
+    wxDateTime mSavePointModTime;
+    wxDateTime mLastKnownModTime;
+
     void SetTitleAndPath(const wxString &fullPath);
 
+    bool OkToSaveChanges();
+    void UpdateSavePointModTime();
     void WriteDocument();
     void ReadDocument();
 
@@ -1099,6 +1146,67 @@ void ScriptDoc::SetTitleAndPath(const wxString &fullPath) {
     SetDocumentTitle(wxFileName(fullPath).GetFullName());
 }
 
+void ScriptDoc::OfferToReloadIfChanged() {
+    // Make sure we have a file to check.
+    if (GetDocumentPath() == "")
+        return;
+    wxFileName path(GetDocumentPath());
+    if (!path.FileExists())
+        return;
+
+    // If the modification time hasn't changed, we're OK.
+    wxDateTime on_disk_mod_time = path.GetModificationTime();
+    if (on_disk_mod_time == mLastKnownModTime)
+        return;
+
+    // Ask the user what to do.
+    SelectDocument();
+    int flags;
+    wxString prompt;
+    if (GetDocumentDirty()) {
+        flags = wxYES_NO|wxNO_DEFAULT;
+        prompt.Printf("The file \"%s\" has changed on disk.  Reload it "
+                      "and lose the changes you've made in the editor?",
+                      GetDocumentTitle());
+    } else {
+        flags = wxYES_NO|wxYES_DEFAULT;
+        prompt.Printf("The file \"%s\" has changed on disk.  Reload it?",
+                      GetDocumentTitle());
+    }
+    wxMessageDialog dlg(this, prompt, "File Changed", flags);
+    if (dlg.ShowModal() == wxID_YES) {
+        ReadDocument();
+    } else {
+        // Update the last known mod time so we stop bugging the user.
+        mLastKnownModTime = on_disk_mod_time;
+    }
+}
+
+bool ScriptDoc::OkToSaveChanges() {
+    // Make sure somebody hasn't edited the file under us.
+    wxFileName path(GetDocumentPath());
+    if (path.FileExists()
+        && path.GetModificationTime() != mSavePointModTime)
+    {
+        wxString prompt;
+        prompt.Printf("The file \"%s\" has changed on disk.  "
+                      "Overwrite and lose changes?", GetDocumentTitle());
+        wxMessageDialog dlg(this, prompt, "File Changed",
+                            wxYES_NO|wxNO_DEFAULT);
+        return (dlg.ShowModal() == wxID_YES);
+    } else {
+        return true;
+    }
+}
+
+void ScriptDoc::UpdateSavePointModTime() {
+    ASSERT(GetDocumentPath() != "");
+    wxFileName path(GetDocumentPath());
+    /// \todo How does wxWindows report errors here?
+    mSavePointModTime = path.GetModificationTime();
+    mLastKnownModTime = mSavePointModTime;
+}
+
 void ScriptDoc::WriteDocument() {
     wxString path(GetDocumentPath());
     wxFile file(path, wxFile::write);
@@ -1110,6 +1218,8 @@ void ScriptDoc::WriteDocument() {
     /// \todo How does wxWindows deal with errors returned
     /// from close()?  These usually indicate that a previous
     /// write failed.
+
+    UpdateSavePointModTime();
 
     // Set a save point so Scintilla knows that the document isn't dirty.
     SetSavePoint();
@@ -1128,6 +1238,8 @@ void ScriptDoc::ReadDocument() {
         THROW(("Error reading from file: "+path).mb_str());
     SetText(wxString(&data[0], length));
 
+    UpdateSavePointModTime();
+
     // Don't let the user undo document setup.
     EmptyUndoBuffer();
 
@@ -1137,6 +1249,12 @@ void ScriptDoc::ReadDocument() {
 
 bool ScriptDoc::SaveDocument(bool force) {
     if (GetDocumentPath() != "") {
+        // Check for any interesting reasons we shouldn't save, such
+        // as a file changing underneath us on disk.
+        if (!force && !OkToSaveChanges())
+            return false;
+
+        // Write the document to disk.
         WriteDocument();
         return true;
     } else {
@@ -1156,6 +1274,7 @@ bool ScriptDoc::DoSaveAs(const wxString &dialogTitle,
                          const wxString &defaultDir,
                          const wxString &defaultName)
 {
+    SelectDocument();
     wxFileDialog dlg(this, dialogTitle, defaultDir,
                      defaultName, kSchemeWildcards,
                      wxSAVE|wxOVERWRITE_PROMPT);
@@ -1221,15 +1340,20 @@ void ScriptDoc::OnSavePointLeft(wxStyledTextEvent &event) {
 ScriptEditor *ScriptEditor::sFrame = NULL;
 
 BEGIN_EVENT_TABLE(ScriptEditor, wxFrame)
+    EVT_ACTIVATE(ScriptEditor::OnActivate)
     EVT_CLOSE(ScriptEditor::OnClose)
 
     EVT_MENU(wxID_NEW, ScriptEditor::OnNew)
     EVT_MENU(wxID_OPEN, ScriptEditor::OnOpen)
     EVT_UPDATE_UI(wxID_SAVE, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_SAVEAS, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_SAVE_ALL, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REVERT, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(wxID_CLOSE, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_CLOSE_WINDOW, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_CLOSE_TAB, ScriptEditor::DisableUiItem)
+    EVT_MENU(wxID_CLOSE, ScriptEditor::OnCloseWindow)
+
+    EVT_UPDATE_UI(FIVEL_WRAP_LINES, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_SHOW_WHITESPACE, ScriptEditor::DisableUiItem)
 
     EVT_UPDATE_UI(wxID_UNDO, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REDO, ScriptEditor::DisableUiItem)
@@ -1280,7 +1404,8 @@ bool ScriptEditor::ProcessEventIfExists(wxEvent &event) {
 ScriptEditor::ScriptEditor()
     : wxFrame(wxGetApp().GetStageFrame(), -1,
               "Script Editor - " + wxGetApp().GetAppName(),
-              wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE)
+              wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE),
+      mProcessingActivateEvent(false)
 {
     // Set up the static variable pointing to this frame.
     ASSERT(!sFrame);
@@ -1300,12 +1425,14 @@ ScriptEditor::ScriptEditor()
     file_menu->Append(wxID_SAVE, "&Save\tCtrl+S", "Save the current file.");
     file_menu->Append(wxID_SAVEAS, "&Save &As...",
                       "Save the current file under a new name.");
+    file_menu->Append(FIVEL_SAVE_ALL, "Save A&ll\tCtrl+Shift+S",
+                      "Save all open files.");
     file_menu->Append(wxID_REVERT, "&Revert",
                       "Revert to the previously saved version of this file.");
     file_menu->AppendSeparator();
-    file_menu->Append(wxID_CLOSE, "&Close Tab\tCtrl+W",
+    file_menu->Append(FIVEL_CLOSE_TAB, "&Close Tab\tCtrl+W",
                       "Close the current tab.");
-    file_menu->Append(FIVEL_CLOSE_WINDOW, "Close &Window\tCtrl+Shift+W",
+    file_menu->Append(wxID_CLOSE, "Close &Window\tCtrl+Shift+W",
                       "Close the window (including all tabs).");
     file_menu->AppendSeparator();
     file_menu->Append(FIVEL_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
@@ -1331,6 +1458,13 @@ ScriptEditor::ScriptEditor()
     edit_menu->AppendSeparator();
     edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A",
                       "Select the entire document.");
+
+    // Set up our View menu.
+    wxMenu *view_menu = new wxMenu();
+    view_menu->AppendCheckItem(FIVEL_WRAP_LINES, "&Wrap Lines",
+                               "Wrap long lines at the window edge.");
+    view_menu->AppendCheckItem(FIVEL_SHOW_WHITESPACE, "Show White&space",
+                               "View space and end-of-line characters.");
 
     // Set up our Search menu.
     wxMenu *search_menu = new wxMenu();
@@ -1363,9 +1497,34 @@ ScriptEditor::ScriptEditor()
     wxMenuBar *menu_bar = new wxMenuBar();
     menu_bar->Append(file_menu, "&File");
     menu_bar->Append(edit_menu, "&Edit");
+    menu_bar->Append(view_menu, "&View");
     menu_bar->Append(search_menu, "&Search");
     menu_bar->Append(window_menu, "&Window");
     SetMenuBar(menu_bar);
+    menu_bar->EnableTop(4, false);
+
+    // Create a tool bar.
+    CreateToolBar();
+    wxToolBar *tb = GetToolBar();
+    tb->AddTool(FIVEL_RELOAD_SCRIPTS, "Reload", wxBITMAP(tb_reload),
+                "Reload Scripts");
+    tb->AddSeparator();
+    tb->AddTool(wxID_NEW, "New", wxBITMAP(tb_new), "New File");
+    tb->AddTool(wxID_OPEN, "Open", wxBITMAP(tb_open), "Open File");
+    tb->AddTool(wxID_SAVE, "Save", wxBITMAP(tb_save), "Save File");
+    tb->AddTool(FIVEL_SAVE_ALL, "Save All", wxBITMAP(tb_saveall),
+                "Save All Files");
+    tb->AddSeparator();
+    tb->AddTool(wxID_CUT, "Cut", wxBITMAP(tb_cut), "Cut Text");
+    tb->AddTool(wxID_COPY, "Copy", wxBITMAP(tb_copy), "Copy Text");
+    tb->AddTool(wxID_PASTE, "Paste", wxBITMAP(tb_paste), "Paste Text");
+    tb->AddSeparator();
+    tb->AddTool(wxID_UNDO, "Undo", wxBITMAP(tb_undo), "Undo");
+    tb->AddTool(wxID_REDO, "Redo", wxBITMAP(tb_redo), "Redo");
+    tb->AddSeparator();
+    tb->AddCheckTool(FIVEL_WRAP_LINES, "Wrap", wxBITMAP(tb_wrap),
+                     wxNullBitmap, "Wrap Lines");
+    tb->Realize();
 
     // Create a document notebook, delegate menu events to it, and put
     // it in charge of our title bar.
@@ -1421,6 +1580,27 @@ void ScriptEditor::OpenDocument(const wxString &path) {
     mNotebook->AddDocument(new ScriptDoc(mNotebook, -1, path));
 }
 
+void ScriptEditor::OnActivate(wxActivateEvent &event) {
+    // Shield our activate event processing from being called recursively,
+    // because some of our processing may involve popping up dialogs which
+    // temporarily activate and deactivate us.
+    if (!mProcessingActivateEvent) {
+        mProcessingActivateEvent = true;
+        try {
+
+            // Check to see if any documents have changed.
+            if (event.GetActive())
+                for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++)
+                    mNotebook->GetDocument(i)->OfferToReloadIfChanged();
+
+        } catch (...) {
+            mProcessingActivateEvent = false;
+            throw;
+        }
+        mProcessingActivateEvent = false;
+    }
+}
+
 void ScriptEditor::OnClose(wxCloseEvent &event) {
     if (!mNotebook->MaybeSaveAll(event.CanVeto(), "Close Window",
                                  "Save \"%s\" before closing?"))
@@ -1449,6 +1629,10 @@ void ScriptEditor::OnOpen(wxCommandEvent &event) {
         for (size_t i = 0; i < paths.GetCount(); i++)
             OpenDocument(paths[i]);
     }
+}
+
+void ScriptEditor::OnCloseWindow(wxCommandEvent &event) {
+    Close();
 }
 
 void ScriptEditor::DisableUiItem(wxUpdateUIEvent &event) {

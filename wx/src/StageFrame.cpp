@@ -139,6 +139,7 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_UPDATE_UI(FIVEL_SAVE_PROGRAM, StageFrame::UpdateUiSaveProgram)
     EVT_MENU(FIVEL_SAVE_PROGRAM, StageFrame::OnSaveProgram)
     EVT_MENU(FIVEL_EDIT_SCRIPTS, StageFrame::OnEditScripts)
+    EVT_UPDATE_UI(FIVEL_RELOAD_SCRIPTS, StageFrame::OnUpdateUiReloadScripts)
     EVT_MENU(FIVEL_RELOAD_SCRIPTS, StageFrame::OnReloadScripts)
     EVT_MENU(FIVEL_RUN_TESTS, StageFrame::OnRunTests)
 
@@ -600,6 +601,16 @@ void StageFrame::OnSaveProgram(wxCommandEvent &inEvent)
 void StageFrame::OnEditScripts(wxCommandEvent &inEvent)
 {
     ScriptEditor::EditScripts();
+}
+
+void StageFrame::OnUpdateUiReloadScripts(wxUpdateUIEvent &inEvent)
+{
+    if (TInterpreterManager::HaveInstance()) {
+        TInterpreterManager *manager = TInterpreterManager::GetInstance();
+        inEvent.Enable(manager->InterpreterHasBegun());
+    } else {
+        inEvent.Enable(false);
+    }
 }
 
 void StageFrame::OnReloadScripts(wxCommandEvent &inEvent)

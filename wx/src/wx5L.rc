@@ -53,7 +53,7 @@ END
 // Bitmap
 //
 
-TB_XY                   BITMAP                  "tb_xy.bmp"
+TB_WRAP                 BITMAP                  "tb_wrap.bmp"
 TB_RELOAD               BITMAP                  "tb_reload.bmp"
 TB_GRID                 BITMAP                  "tb_grid.bmp"
 TB_BORDERS              BITMAP                  "tb_borders.bmp"
@@ -62,6 +62,16 @@ TAB_LEFT_FULL           BITMAP                  "tab_left_full.bmp"
 TAB_RIGHT_EMPTY         BITMAP                  "tab_right_empty.bmp"
 TAB_RIGHT_FULL          BITMAP                  "tab_right_full.bmp"
 TAB_CLOSE               BITMAP                  "tab_close.bmp"
+TB_XY                   BITMAP                  "tb_xy.bmp"
+TB_UNDO                 BITMAP                  "tb_undo.bmp"
+TB_REDO                 BITMAP                  "tb_redo.bmp"
+TB_OPEN                 BITMAP                  "tb_open.bmp"
+TB_NEW                  BITMAP                  "tb_new.bmp"
+TB_SAVE                 BITMAP                  "tb_save.bmp"
+TB_SAVEALL              BITMAP                  "tb_saveall.bmp"
+TB_CUT                  BITMAP                  "tb_cut.bmp"
+TB_COPY                 BITMAP                  "tb_copy.bmp"
+TB_PASTE                BITMAP                  "tb_paste.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -85,8 +95,8 @@ IC_SCRIPTS              ICON                    "ic_scripts.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,30,0
- PRODUCTVERSION 0,0,30,0
+ FILEVERSION 0,0,31,0
+ PRODUCTVERSION 0,0,31,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -102,13 +112,13 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Interactive Media Lab, Dartmouth Medical School"
-            VALUE "FileDescription", "Tamale 0.0.30"
-            VALUE "FileVersion", "0, 0, 30, 0"
+            VALUE "FileDescription", "Tamale 0.0.31"
+            VALUE "FileVersion", "0, 0, 31, 0"
             VALUE "InternalName", "Tamale"
             VALUE "LegalCopyright", "Copyright © 2003 Trustees of Dartmouth College"
             VALUE "OriginalFilename", "Tamale.exe"
             VALUE "ProductName", "Tamale"
-            VALUE "ProductVersion", "0, 0, 30, 0"
+            VALUE "ProductVersion", "0, 0, 31, 0"
         END
     END
     BLOCK "VarFileInfo"

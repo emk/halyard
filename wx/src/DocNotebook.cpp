@@ -22,6 +22,7 @@
 
 #include "TamaleHeaders.h"
 #include "FiveLApp.h"
+#include "AppGlobals.h"
 #include "DocNotebook.h"
 
 USING_NAMESPACE_FIVEL
@@ -34,6 +35,11 @@ USING_NAMESPACE_FIVEL
 BEGIN_EVENT_TABLE(DocNotebook, wxWindow)
     EVT_SIZE(DocNotebook::OnSize)
     EVT_ERASE_BACKGROUND(DocNotebook::OnEraseBackground)
+
+    EVT_MENU(FIVEL_SAVE_ALL, DocNotebook::OnSaveAll)
+    EVT_UPDATE_UI(FIVEL_SAVE_ALL, DocNotebook::OnUpdateUiSaveAll)
+    EVT_MENU(FIVEL_CLOSE_TAB, DocNotebook::OnCloseTab)
+    EVT_UPDATE_UI(FIVEL_CLOSE_TAB, DocNotebook::OnUpdateUiCloseTab)
 END_EVENT_TABLE()
 
 DocNotebook::DocNotebook(wxWindow *parent, wxWindowID id)
@@ -173,6 +179,34 @@ void DocNotebook::OnEraseBackground(wxEraseEvent &inEvent) {
         /* Ignore event to reduce redraw flicker. */;
 }
 
+void DocNotebook::OnSaveAll(wxCommandEvent &event) {
+    for (size_t i = 0; i < GetDocumentCount(); i++) {
+        DocNotebookTab *doc = GetDocument(i);
+        if (doc->GetDocumentDirty())
+            if (!doc->SaveDocument(false))
+                break;
+    }
+}
+
+void DocNotebook::OnUpdateUiSaveAll(wxUpdateUIEvent &event) {
+    bool enable = false;
+    for (size_t i = 0; i < GetDocumentCount(); i++) {
+        if (GetDocument(i)->GetDocumentDirty()) {
+            enable = true;
+            break;
+        }
+    }
+    event.Enable(enable);
+}
+
+void DocNotebook::OnCloseTab(wxCommandEvent &event) {
+    mBar->MaybeCloseTab();
+}
+
+void DocNotebook::OnUpdateUiCloseTab(wxUpdateUIEvent &event) {
+    event.Enable(GetDocumentCount() > 0);
+}
+
 
 //=========================================================================
 //  DocNotebookTab Methods
@@ -269,6 +303,11 @@ wxString DocNotebookTab::GetDocumentTitleAndDirtyFlag() const {
         return GetDocumentTitle();
 }
 
+void DocNotebookTab::SelectDocument() const {
+    mParent->mBar->SelectDocument(this);
+}
+
+
 
 //=========================================================================
 //  DocNotebookBar Methods
@@ -316,6 +355,12 @@ DocNotebookTab *DocNotebookBar::GetDocument(size_t index) {
 void DocNotebookBar::SelectDocument(size_t index) {
     wxASSERT(0 <= index && index < mTabs.size());
     SetCurrentTab(index);
+}
+
+void DocNotebookBar::SelectDocument(const DocNotebookTab *doc) {
+    for (size_t i = 0; i < mTabs.size(); i++)
+        if (mTabs[i] == doc)
+            SelectDocument(i);
 }
 
 /// Return the currently displayed tab, or NULL if none.

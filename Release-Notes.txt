@@ -1,6 +1,21 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.31 - 2 Aug 2004 - emk
+
+  * Fixed alpha-compositing bug (which affected lots of text).
+  * Fixed mShouldWakeUpOnIdle assertion failure.
+  * Disabled ReloadScripts when it was only going to crash anyway.
+
+Script editor improvements:
+
+  * Close & Close All menu items
+  * Wrap lines.
+  * Show whitespace.
+  * Save All
+  * Offer to reload files which changed on disk
+  * Check for changed files before changing and prompt
+
+0.0.30 - 30 July 2004 - emk
 
 We have a new wxWidgets version:
 
@@ -13,8 +28,9 @@ We have a new wxWidgets version:
   * Added an editor widget based on wxStyledTextCtrl (i.e. Scintilla).
   * Started using FiveL namespace on Windows.
   * Added support for Scheme-style indentation.
-  * Partial implementation of a tabbed-document control.
-  * Basic edit menu works (required event delegation).
+  * Implemented a tabbed-document control.
+  * Simple File, Edit and Search menus work.
+  * Saving, opening and reloading work faily well.
 
 ...and some other stuff:
 

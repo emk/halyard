@@ -233,6 +233,11 @@ void Stage::NotifyEnterCard(const wxString &inName)
 	mLastCard = inName;
 	mFrame->GetLocationBox()->NotifyEnterCard(inName);
 	mFrame->GetProgramTree()->NotifyEnterCard(inName);
+
+    // We need to call this here in case the interpreter was asleep when it
+    // jumped--the mShouldWakeUpOnIdle variable will be set, but the wakeup
+    // won't have been preformed.
+    InterpreterWakeUpIfNecessary();
 }
 
 void Stage::NotifyExitCard()
@@ -353,6 +358,13 @@ void Stage::InterpreterWakeUp()
     TInterpreter::GetInstance()->WakeUp();
 }
 
+void Stage::InterpreterWakeUpIfNecessary() {
+    if (mShouldWakeUpOnIdle) {
+        mShouldWakeUpOnIdle = false;
+        InterpreterWakeUp();
+    }
+}
+
 Stage::ElementCollection::iterator
 Stage::FindElementByName(ElementCollection &inCollection,
 						 const wxString &inName)
@@ -371,10 +383,7 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 
     // We need to do all wakeups here, because InterpreterWakeUp can't
     // be called from a callback.
-    if (mShouldWakeUpOnIdle) {
-        mShouldWakeUpOnIdle = false;
-        InterpreterWakeUp();
-    }    
+    InterpreterWakeUpIfNecessary();
 
 	// Send an idle event to the Scheme engine occasionally.
 	if (ShouldSendEvents() &&
