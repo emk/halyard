@@ -29,6 +29,8 @@ class Stage;
 /// Our main application object.
 class FiveLApp : public wxApp
 {
+    DECLARE_EVENT_TABLE();
+
     //////////
     /// The name of the script we were passed on the command-line.
     ///
@@ -126,6 +128,13 @@ public:
     /// Return true if and only if this application has a stage.
     ///
     bool HaveStage() { return mStageFrame != NULL; } 
+
+    //////////
+    /// We provide an OnActivateApp handler so we can hide full-screen
+    /// windows and fix our screen resolution when we're not in the
+    /// foreground.
+    ///
+    void OnActivateApp(wxActivateEvent &event);
 };
 
 //////////

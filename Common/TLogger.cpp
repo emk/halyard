@@ -35,6 +35,8 @@
 USING_NAMESPACE_FIVEL
 
 void (*TLogger::s_ErrorPrepFunction)() = NULL;
+void (*TLogger::s_ExitPrepFunction)() = NULL;
+
 
 #ifdef FIVEL_PLATFORM_MACINTOSH
 bool TLogger::s_ToolboxIsInitialized = false;
@@ -184,6 +186,7 @@ void TLogger::FatalError(const char *Format, ...)
 }
 
 void TLogger::CrashNow() {
+    PrepareToExit();
     CrashReporter::GetInstance()->CrashNow(m_LogBuffer);
     // We shouldn't get here, but just in case.
 	abort();
@@ -370,6 +373,17 @@ void TLogger::PrepareToDisplayError()
 void TLogger::RegisterErrorPrepFunction(void (*inFunc)())
 {
 	s_ErrorPrepFunction = inFunc;	
+}
+
+void TLogger::PrepareToExit()
+{
+	if (s_ExitPrepFunction)
+		(*s_ExitPrepFunction)();	
+}
+
+void TLogger::RegisterExitPrepFunction(void (*inFunc)())
+{
+	s_ExitPrepFunction = inFunc;	
 }
 
 // This routine is declared in TCommon.h.

@@ -98,8 +98,8 @@ IC_SCRIPTS              ICON                    "ic_scripts.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,44,0
- PRODUCTVERSION 0,0,44,0
+ FILEVERSION 0,0,45,0
+ PRODUCTVERSION 0,0,45,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -115,13 +115,13 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Interactive Media Lab, Dartmouth Medical School"
-            VALUE "FileDescription", "Tamale 0.0.44"
-            VALUE "FileVersion", "0, 0, 44, 0"
+            VALUE "FileDescription", "Tamale 0.0.45"
+            VALUE "FileVersion", "0, 0, 45, 0"
             VALUE "InternalName", "Tamale"
             VALUE "LegalCopyright", "Copyright © 1987-2004 Trustees of Dartmouth College"
             VALUE "OriginalFilename", "Tamale.exe"
             VALUE "ProductName", "Tamale"
-            VALUE "ProductVersion", "0, 0, 44, 0"
+            VALUE "ProductVersion", "0, 0, 45, 0"
         END
     END
     BLOCK "VarFileInfo"

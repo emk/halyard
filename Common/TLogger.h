@@ -181,6 +181,11 @@ private:
 	///
 	static void (*s_ErrorPrepFunction)();
 
+	//////////
+	/// Either NULL, or a function which should be called before exiting.
+	///
+	static void (*s_ExitPrepFunction)();
+
 #ifdef FIVEL_PLATFORM_MACINTOSH
 	//////////
 	/// True if and only if the Macintosh Toolbox has been
@@ -248,6 +253,17 @@ public:
 	/// be called using PrepareToDisplayError, above.
 	///
 	static void RegisterErrorPrepFunction(void (*inFunc)());
+
+    //////////
+    /// We may need to restore some system state before our application
+    /// exits.  Call this function to do anything necessary.
+    ///
+    static void PrepareToExit();
+    
+    //////////
+    /// Install a function to be called before exiting with an error.
+    ///
+    static void RegisterExitPrepFunction(void (*inFunc)());
 
 #ifdef FIVEL_PLATFORM_MACINTOSH
 	//////////

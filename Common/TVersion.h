@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		44
+#define VERSION_REV_BIG		45
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.44 (Development)"
+#define VERSION_STRING		"Tamale 0.0.45 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -35,6 +35,10 @@
 
 /*
  $Log$
+ Revision 1.86  2004/12/15 23:34:23  emk
+   * Added support for Alt-Tab out of full-screen mode (bug #1726).
+   * Added code to hide and show the taskbar (bug #1726).
+
  Revision 1.85  2004/12/13 21:36:04  emk
  0.0.44 - 13 Dec 2004 - emk
 

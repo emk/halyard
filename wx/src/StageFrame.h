@@ -100,6 +100,14 @@ class StageFrame : public wxFrame, public model::View
     wxMenu *mWindowMenu;
     wxMenu *mHelpMenu;
 
+    //////////
+    /// Does UpdateVideoMode believe that our full-screen options are
+    /// currently active?
+    ///
+    /// \see UpdateVideoMode
+    ///
+    bool mAreFullScreenOptionsActive;
+    
 	//////////
 	/// The minimum allowable size of our stage frame.  We save this so
 	/// we can temporarily change it for full-screen mode.
@@ -110,6 +118,22 @@ class StageFrame : public wxFrame, public model::View
 	/// Have we re-loaded our layout?
 	///
 	bool mHaveLoadedFrameLayout;
+
+#if wxUSE_DISPLAY
+
+	//////////
+	/// The best video mode for full-screen displays.  We calculate this
+	/// once at startup.
+	///
+	wxVideoMode mFullScreenVideoMode;
+
+    //////////
+    /// The name of the wxConfig key we'll use to store our screen-resizing
+    /// preferences.
+    ///
+    wxString mResizePrefName;
+
+#endif // wxUSE_DISPLAY
 
     //////////
     /// Returns true iff inRect is entirely on one of the system's
@@ -135,22 +159,6 @@ class StageFrame : public wxFrame, public model::View
 	/// Save the layout for the current frame if it's safe to do so.
 	///
 	void MaybeSaveFrameLayout();
-
-#if wxUSE_DISPLAY
-
-	//////////
-	/// The best video mode for full-screen displays.  We calculate this
-	/// once at startup.
-	///
-	wxVideoMode mFullScreenVideoMode;
-
-    //////////
-    /// The name of the wxConfig key we'll use to store our screen-resizing
-    /// preferences.
-    ///
-    wxString mResizePrefName;
-
-#endif // wxUSE_DISPLAY
 
 	//////////
 	/// Calculate the best video mode to use for full-screen displays.
@@ -190,6 +198,12 @@ class StageFrame : public wxFrame, public model::View
     bool ConfirmScreenSize();
 
 #endif // wxUSE_DISPLAY
+
+    //////////
+    /// Update our video mode (and related parameters) for our current
+    /// window status.
+    ///
+    void UpdateVideoMode(bool inIsFullScreen, bool inIsIconized);
 
 public:
     //////////
@@ -231,6 +245,11 @@ public:
 	/// distracting visual clutter.
 	///
     virtual bool ShowFullScreen(bool show, long style = wxFULLSCREEN_ALL);
+
+    //////////
+    /// We need to restore the screen resolution when we get Iconized.
+    ///
+    virtual void Iconize(bool iconize = TRUE);
 
 	//////////
 	/// Create a new document in the current frame.
@@ -308,6 +327,12 @@ private:
     void OnJumpCard(wxCommandEvent &inEvent);
     void UpdateUiStopMovies(wxUpdateUIEvent &inEvent);
     void OnStopMovies(wxCommandEvent &inEvent);
+
+    //////////
+    /// When our window is activated, we need to make sure that
+    /// UpdateVideoMode has been called properly.
+    ///
+	void OnActivate(wxActivateEvent &inEvent);
 
 	//////////
 	/// "Sashes" are narrow bars between subwindows in frame.  When

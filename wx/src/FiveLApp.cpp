@@ -37,6 +37,7 @@
 #include "AppGlobals.h"
 #include "FiveLApp.h"
 #include "Log5L.h"
+#include "GuiUtil.h"
 #include "StageFrame.h"
 #include "dlg/StartupDlg.h"
 #include "TWxPrimitives.h"
@@ -52,6 +53,10 @@ extern void InitXmlResource();
 USING_NAMESPACE_FIVEL
 
 IMPLEMENT_APP(FiveLApp)
+
+BEGIN_EVENT_TABLE(FiveLApp, wxApp)
+    EVT_ACTIVATE_APP(FiveLApp::OnActivateApp)
+END_EVENT_TABLE()
 
 FiveLApp::FiveLApp()
     : mHaveOwnEventLoop(false), mLogsAreInitialized(false), mStageFrame(NULL)
@@ -204,6 +209,10 @@ bool FiveLApp::OnInit() {
         TInterpreterManager::SetRuntimeMode(false);
     }
 
+    // Make sure we restore the taskbar, etc., before exiting with
+    // an error message.
+    TLogger::RegisterExitPrepFunction(&ShowSystemWindows);
+
     // Create and display our stage frame.
     //mStageFrame = new StageFrame(wxSize(640, 480));
     mStageFrame = new StageFrame(wxSize(800, 600));
@@ -224,6 +233,9 @@ bool FiveLApp::OnInit() {
 
 int FiveLApp::OnExit() {
     BEGIN_EXCEPTION_TRAPPER();
+
+    // Make sure we put back the taskbar, etc.
+    ShowSystemWindows();
 
 	// Shut down our audio synthesis layer.
 	AudioStream::ShutDownStreams();
@@ -329,4 +341,11 @@ void FiveLApp::ExitMainLoop()
 Stage *FiveLApp::GetStage()
 {
     return GetStageFrame()->GetStage();
+}
+
+void FiveLApp::OnActivateApp(wxActivateEvent &event) {
+    // If we're being deactivated, and we have a full-screen window,
+    // iconize it so the user can see the desktop.
+    if (!event.GetActive() && mStageFrame && mStageFrame->IsFullScreen())
+        mStageFrame->Iconize();
 }

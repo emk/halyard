@@ -44,6 +44,7 @@
 #include "Listener.h"
 #include "Timecoder.h"
 #include "ScriptEditor.h"
+#include "GuiUtil.h"
 #include "dlg/ProgramPropDlg.h"
 #include "dlg/AdjustScreenDlg.h"
 #include "dlg/AdjustScreenConfirmDlg.h"
@@ -175,6 +176,8 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_JUMP_CARD, StageFrame::OnJumpCard)
     EVT_UPDATE_UI(FIVEL_STOP_MOVIES, StageFrame::UpdateUiStopMovies)
     EVT_MENU(FIVEL_STOP_MOVIES, StageFrame::OnStopMovies)
+
+    EVT_ACTIVATE(StageFrame::OnActivate)
     EVT_SASH_DRAGGED(FIVEL_PROGRAM_TREE, StageFrame::OnSashDrag)
 	EVT_SIZE(StageFrame::OnSize)
     EVT_CLOSE(StageFrame::OnClose)
@@ -185,7 +188,8 @@ StageFrame::StageFrame(wxSize inSize)
               LoadFramePosition(), wxDefaultSize,
 			  wxDEFAULT_FRAME_STYLE),
 	  mDocument(NULL),
-	  mHaveLoadedFrameLayout(false)
+	  mHaveLoadedFrameLayout(false),
+      mAreFullScreenOptionsActive(false)
 {
     // Set up useful logging.
     mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
@@ -577,7 +581,7 @@ bool StageFrame::ShowFullScreen(bool show, long style)
 	mBackground->UpdateColor();
 	if (!show)
 	{
-		ResetVideoMode();
+        UpdateVideoMode(show, IsIconized());
 		SetSizeHints(mMinimumFrameSize.GetWidth(),
 					 mMinimumFrameSize.GetHeight());
 	}
@@ -588,9 +592,32 @@ bool StageFrame::ShowFullScreen(bool show, long style)
 		// avoid inappropriate padding in full screen mode.
 		SetSizeHints(mStage->GetSize().GetWidth(),
 					 mStage->GetSize().GetHeight());
-		SetFullScreenVideoMode();
+        UpdateVideoMode(show, IsIconized());
 	}
 	return result;
+}
+
+void StageFrame::Iconize(bool iconize) {
+    if (iconize)
+        UpdateVideoMode(IsFullScreen(), iconize);
+    wxFrame::Iconize(iconize);
+    if (!iconize)
+        UpdateVideoMode(IsFullScreen(), iconize);
+}
+
+void StageFrame::UpdateVideoMode(bool inIsFullScreen, bool inIsIconized) {
+    bool want_full_screen_options = (inIsFullScreen && !inIsIconized);   
+    if (want_full_screen_options != mAreFullScreenOptionsActive) {
+        if (want_full_screen_options) {
+            SetFullScreenVideoMode();
+            HideSystemWindows();
+            mAreFullScreenOptionsActive = true;
+        } else {
+            ShowSystemWindows();
+            ResetVideoMode();
+            mAreFullScreenOptionsActive = false;
+        }
+    }
 }
 
 void StageFrame::NewDocument()
@@ -943,6 +970,13 @@ void StageFrame::OnStopMovies(wxCommandEvent &inEvent)
 	if (TInterpreter::HaveInstance() && TInterpreter::GetInstance()->Napping())
 		TInterpreter::GetInstance()->KillNap();
 	mStage->EndMediaElements();
+}
+
+void StageFrame::OnActivate(wxActivateEvent &inEvent) {
+    // We need to call UpdateVideoMode when the window activates, because
+    // StageFrame::Iconize won't always get called when we're directly
+    // de-iconized by Windows.
+    UpdateVideoMode(IsFullScreen(), IsIconized());
 }
 
 void StageFrame::OnSashDrag(wxSashEvent &inEvent)

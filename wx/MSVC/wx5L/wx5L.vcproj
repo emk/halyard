@@ -230,6 +230,9 @@
 				RelativePath="..\..\src\GeigerSynthElement.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\GuiUtil.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\HistoryText.cpp">
 			</File>
 			<File
@@ -475,6 +478,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\GeigerAudioStream.h">
+			</File>
+			<File
+				RelativePath="..\..\src\GuiUtil.h">
 			</File>
 			<File
 				RelativePath="..\..\src\HistoryText.h">
