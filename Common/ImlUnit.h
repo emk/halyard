@@ -1,3 +1,5 @@
+// -*- Mode: C++; tab-width: 4; -*-
+
 //=========================================================================
 //  Test Harness
 //=========================================================================
@@ -39,6 +41,20 @@ extern int tests_finished (void);
 			cout << "."; \
 		} else { \
 			test_failure(__FILE__, __LINE__, "expected", #statement); \
+		} \
+	} while (0)
+
+// Test whether 'STATEMENT' throws an exception of class 'ETYPE'.
+#define TEST_EXCEPTION(STATEMENT,ETYPE) \
+	do { \
+		total_tests++; \
+		try { \
+			(STATEMENT); \
+			test_failure(__FILE__, __LINE__, "didn't throw", #ETYPE); \
+		} catch (ETYPE &e) { \
+			/* We're OK. */ \
+		} catch (...) { \
+			test_failure(__FILE__, __LINE__, "exception wasn't", #ETYPE); \
 		} \
 	} while (0)
 
