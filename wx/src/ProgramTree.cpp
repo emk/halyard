@@ -8,6 +8,7 @@
 
 #include "TCommon.h"
 #include "TInterpreter.h"
+#include "TLogger.h"
 #include "TVectorDiff.h"
 
 #include <map>
@@ -117,6 +118,23 @@ public:
 	ViewItemData(ProgramTreeCtrl *inTreeCtrl)
 		: ProgramTreeItemData(inTreeCtrl) {}	
 };
+
+
+//=========================================================================
+//  SequenceItemData
+//=========================================================================
+//  Sequences of cards can be nested within each other.
+
+class SequenceItemData : public ProgramTreeItemData
+{
+public:
+	SequenceItemData(ProgramTreeCtrl *inTreeCtrl);
+};
+
+SequenceItemData::SequenceItemData(ProgramTreeCtrl *inTreeCtrl)
+	: ProgramTreeItemData(inTreeCtrl)
+{
+}
 
 
 //=========================================================================
@@ -560,13 +578,67 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 	bg_data->SetObject(inDocument->GetRoot());
 }
 
+wxTreeItemId ProgramTree::FindParentContainer(const std::string &inName,
+											  std::string &outLocalName)
+{
+	std::string::size_type slashpos = inName.rfind('/');
+	if (slashpos == std::string::npos)
+	{
+		// We didn't find a slash anywhere in the string, so put it at the
+		// top level and call it done. 
+		outLocalName = inName;
+		return mCardsID;
+	}
+	else if (slashpos == 0 || slashpos == inName.size() - 1)
+	{
+		// We don't like this string.
+		gLog.Error("Illegal card name: \"%s", inName.c_str());
+		outLocalName = inName;
+		return mCardsID;
+	}
+	else
+	{
+		// Extract the local portion of the name for use by our caller.
+		outLocalName = std::string(inName, slashpos + 1, std::string::npos);
+
+		// Extract the parent sequence name.
+		std::string parent_name(inName, 0, slashpos);
+
+		// Either find or create the parent sequence.
+		wxASSERT(mCardMap.find(parent_name) == mCardMap.end());
+		ItemMap::iterator found = mSequenceMap.find(parent_name);
+		if (found != mSequenceMap.end())
+			return found->second;
+		else
+		{
+			// We're going to have to create it.  First, find the grandparent.
+			std::string parent_local_name;
+			wxTreeItemId grandparent_id =
+				FindParentContainer(parent_name, parent_local_name);
+
+			// Now, create the parent.
+			wxTreeItemId parent_id =
+				mTree->AppendItem(grandparent_id, parent_local_name.c_str());
+			mTree->SetItemData(parent_id, new SequenceItemData(mTree));
+			mTree->SetIcon(parent_id, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
+						   ProgramTreeCtrl::ICON_FOLDER_OPEN);
+
+			// Add the parent to our map so we can find it later.
+			mSequenceMap.insert(ItemMap::value_type(parent_name, parent_id));
+			return parent_id;
+		}
+	}
+}
+
 void ProgramTree::RegisterCard(const wxString &inName)
 {
 	// Check to make sure we don't already have a card by this name.
 	wxASSERT(mCardMap.find(inName.mb_str()) == mCardMap.end());
 
 	// Insert the card into our tree.
-	wxTreeItemId id = mTree->AppendItem(mCardsID, inName);
+	std::string local_name;
+	wxTreeItemId parent_id = FindParentContainer(inName.mb_str(), local_name);
+	wxTreeItemId id = mTree->AppendItem(parent_id, local_name.c_str());
 	mTree->SetItemData(id, new CardItemData(mTree, inName));
 	mTree->SetIcon(id, ProgramTreeCtrl::ICON_CARD,
 				   ProgramTreeCtrl::ICON_CARD);
@@ -583,6 +655,7 @@ void ProgramTree::SetDefaultWidth(int inWidth)
 void ProgramTree::NotifyScriptReload()
 {
 	mCardMap.clear();
+	mSequenceMap.clear();
 	mTree->CollapseAndReset(mCardsID);
 }
 

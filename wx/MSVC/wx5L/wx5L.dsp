@@ -398,13 +398,6 @@ SOURCE=..\..\src\wx5L.rc
 # Begin Source File
 
 SOURCE=..\..\src\StageOpt.cpp
-
-!IF  "$(CFG)" == "wx5L - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # End Target
