@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.21 - 27 February 2004 - emk
 
   * Added support for using FOREACH to iterate over hash tables.
   * Allowed defaulted template parameters to be passed to parent template.
@@ -12,10 +12,17 @@ CVS - emk
     specified, then :SHAPE must be a rectangle at 0,0.
   * Moving zones in now much easier.  Drag and drop code will have to
     be changed.
-  * AnimatedOverlay now treats ../x and ../y as being relative to
+  * %animated-graphic% now treats ../x and ../y as being relative to
     the overlay's official location.
+  * %animated-graphic% now takes a symbol as a state-db path.
+  * An element's position is now relative to the element's parent.
+  * Elements move when their parents move.
+  * POINT, RECT, etc., now print in a readable representation.
+  * Added QUAKE2-RUNNING? function.
+  * %geiger-synth% now relies on the state-db to determine how many
+    counts per second to play.
 
-0.0.20 - 23 February - emk, djin
+0.0.20 - 23 February 2004 - emk, djin
 
   * Added support for MATCH-LET.
   * Wrote a REAL->STRING function which can format floating point numbers

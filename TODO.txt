@@ -36,6 +36,7 @@
       Stuttering during disk access
 
   Cleanup
+    Update cursor every time an element cursor changes
     Make sure %kernel-run-callback returns result of callback
     Allow TValue test cases to be run independently of TSchemeInterpreterTests
     Make sure GUI does REFERENCE_TEST_CASE_FILE

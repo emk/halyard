@@ -17,15 +17,38 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		20
+#define VERSION_REV_BIG		21
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.20 (Development)"
+#define VERSION_STRING		"Tamale 0.0.21 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.62  2004/02/27 16:16:43  emk
+ 0.0.21 - 27 February 2004 - emk
+
+   * Added support for using FOREACH to iterate over hash tables.
+   * Allowed defaulted template parameters to be passed to parent template.
+   * Added error message for unexpected template parameters.
+   * Added error message for accessing template parameters which were never
+     defined.
+   * Allow templates to override parameter defaults in parent templates.
+   * %ZONE% now takes an optional :AT parameter.  If this parameter is
+     specified, then :SHAPE must be a rectangle at 0,0.
+   * Moving zones in now much easier.  Drag and drop code will have to
+     be changed.
+   * %animated-graphic% now treats ../x and ../y as being relative to
+     the overlay's official location.
+   * %animated-graphic% now takes a symbol as a state-db path.
+   * An element's position is now relative to the element's parent.
+   * Elements move when their parents move.
+   * POINT, RECT, etc., now print in a readable representation.
+   * Added QUAKE2-RUNNING? function.
+   * %geiger-synth% now relies on the state-db to determine how many
+     counts per second to play.
+
  Revision 1.61  2004/02/23 23:21:41  emk
  0.0.20 - 23 February - emk, djin
 

@@ -13,7 +13,7 @@ extern bool StringIComp(const std::string &inStr1, const std::string &inStr2);
 //////////
 // Trim spaces in string.
 //
-extern void StringLTrim(std::string &inStr);
+extern void StringLTrim(std::string &ioStr);
 
 //////////
 // Return true if inStr1 starts with inStr2. Do a case sensitive 

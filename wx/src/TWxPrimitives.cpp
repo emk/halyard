@@ -74,7 +74,6 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
-	REGISTER_5L_PRIMITIVE(GeigerSynthSetCps);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
@@ -378,30 +377,21 @@ DEFINE_5L_PRIMITIVE(EnableExpensiveEvents) {
 }
 
 DEFINE_5L_PRIMITIVE(GeigerSynth) {
-	std::string name, chirp_location, loop_location;
+	std::string name, state_path, chirp_location, loop_location;
 	double loop_cps;
 	uint32 buffer_size;
 
-	inArgs >> name >> chirp_location >> buffer_size;
+	inArgs >> name >> SymbolName(state_path) >> chirp_location >> buffer_size;
 
     GeigerSynthElement *element =
         new GeigerSynthElement(wxGetApp().GetStage(), name.c_str(),
-                               chirp_location.c_str(), 1000);
+                               state_path, chirp_location.c_str(), 1000);
 
 	while (inArgs.HasMoreArguments()) {
 		inArgs >> loop_cps >> loop_location;
         element->AddLoop(loop_cps, loop_location.c_str());
 	}
     element->DoneAddingLoops();
-}
-
-DEFINE_5L_PRIMITIVE(GeigerSynthSetCps) {
-	std::string name;
-	double cps;
-
-	inArgs >> name >> cps;
-    FIND_ELEMENT(GeigerSynthElement, element, name.c_str());
-    element->SetChirpsPerSecond(cps);
 }
 
 DEFINE_5L_PRIMITIVE(Input) {

@@ -6,12 +6,15 @@
 #include "VorbisAudioStream.h"
 
 GeigerSynthElement::GeigerSynthElement(Stage *inStage, const wxString &inName,
+                                       const std::string &inStatePath,
                                        const char *inChirpLocation,
                                        size_t inBufferSize)
     : InvisibleElement(inStage, inName),
+      mStatePath(inStatePath),
       mGeigerAudioStream(new GeigerAudioStream(inChirpLocation)),
       mCurrentLoopCps(0), mBufferSize(inBufferSize)
 {
+    NotifyStateChanged();
 }
 
 GeigerSynthElement::~GeigerSynthElement() {
@@ -31,6 +34,10 @@ void GeigerSynthElement::DoneAddingLoops() {
 }
 
 void GeigerSynthElement::SetChirpsPerSecond(double inCPS) {
-
     mGeigerAudioStream->SetChirpsPerSecond(inCPS);
+}
+
+void GeigerSynthElement::NotifyStateChanged() {
+    double cps(gStateDB.Get(this, mStatePath));
+    SetChirpsPerSecond(cps);
 }
