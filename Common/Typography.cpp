@@ -9,6 +9,7 @@
 #include <wctype.h>
 
 #include "Typography.h"
+#include "TLogger.h"
 
 using namespace Typography;
 
@@ -1029,8 +1030,29 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 										 LineSegment *outExtracted)
 {
-	// XXX - Not yet implemented.
-	throw Error("Cannot break overlong line (yet)");
+	// This routine isn't especially fast, and it produces ugly
+	// results, but it's better than nothing.
+	ASSERT(ioRemaining != NULL);
+	ASSERT(outExtracted != NULL);
+	
+	FIVEL_NS gDebugLog.Caution("Breaking line in middle of word");
+	
+	// Back up one character at a time until we fit.
+	// This code runs in O(N^2) time (for small values of N).
+	LineSegment seg = *ioRemaining;
+	do
+	{
+		if (seg.begin == seg.end)
+			throw Error("Trying to break line in the middle of a character");
+		--seg.end;
+	} while (MeasureSegment(NULL, &seg, true) > GetLineLength())
+	ASSERT(seg.end != ioRemaining->end);
+	
+	// Update our line segments.
+	*outExtracted = *ioRemaining;
+	outExtracted->end = seg.end;
+	outExtracted->needsHyphenAtEndOfLine = true;
+	ioRemaining->begin = seg.end;
 }
 
 void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
