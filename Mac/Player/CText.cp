@@ -548,11 +548,13 @@ CText::LoopThroughStyles(SInt16	lineHeight, SInt16 lineBase, SInt16 justificatio
 	SInt16		incr_y 		= mDrawRect.top + lineHeight;	// starts out at bottom of current line
 	SInt16		incr_x		= mDrawRect.left;				// starts out at left of current line
 	SInt16		textWidth 	= incr_x;						// pixel line width
+	SInt16		textWidthStart = textWidth;
 	
 	SInt16		loopCount 	= 0;							// catches infinite loops on outer part - determines when to update
 
 	while ((textLeft > 0) and (++loopCount < 256))
 	{		
+		textWidth = textWidthStart;
 		// SetLineBreak returns how much text to print on this line	
 		// We set the line break and then do the corresponding justification		
 		textForLine = SetLineBreak(inText, styleIdx, styleBytes, textLeft, shadow);
@@ -590,9 +592,7 @@ CText::LoopThroughStyles(SInt16	lineHeight, SInt16 lineBase, SInt16 justificatio
 			else 	// I believe it only gets here when two styles start next to each other - E Hamon
 			{
 				styleIdx ++;
-			#ifdef DEBUG
 				gDebugLog.Log("Two styles next to each other? Text address:<%d> Bytes into it: <%d> ", inText, bytesSoFar);
-			#endif			
 			}
 		}
 		
@@ -611,9 +611,7 @@ CText::LoopThroughStyles(SInt16	lineHeight, SInt16 lineBase, SInt16 justificatio
 
 	gVariableManager.SetLong("_incr_y", (int32) incr_y);
 	gVariableManager.SetLong("_incr_x", (int32) incr_x);
-#ifdef DEBUG
 	gDebugLog.Log("text rect: L <%d>, T <%d>, R <%d>, B <%d>", mDrawRect.left, mDrawRect.top, incr_x, incr_y);
-#endif
 }
 
 /* ---------------------------------------------------------------------------
@@ -674,9 +672,7 @@ CText::SetLineBreak(Ptr inText, SInt32 styleIdx, SInt32 styleBytes, SInt32 textL
 				return 0;
 			}
 		}
-#ifdef DEBUG
 		gDebugLog.Log("ERROR! ERROR! StyledLineBreak in SetLineBreak returned incorrectly");
-#endif	
 		return 0;
 }
 		
