@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GR /GX /O2 /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\plt\include" /I "..\..\..\Common\libs\crypto" /I "..\..\..\Common\libs\boost" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /O2 /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\plt\include" /I "..\..\..\Common\libs\crypto" /I "..\..\..\Common\libs\boost" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\plt\include" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\..\Common\libs\crypto" /I "..\..\..\Common\libs\boost" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common" /I "..\..\..\Common\freetype2\include" /I "..\..\..\Common\libs\plt\include" /I "\dev\Quicktime\QT501SDK\SDK\CIncludes" /I "..\..\..\Common\libs\crypto" /I "..\..\..\Common\libs\boost" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
