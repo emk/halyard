@@ -90,9 +90,17 @@ void DocNotebook::SetCurrentDoc(wxWindow *newDoc) {
     Layout();
 }
 
+/// Return the currently displayed document, or NULL if none.
+DocNotebookTab *DocNotebook::GetCurrentDocument() {
+    if (GetDocumentCount() == 0)
+        return NULL;
+    else
+        return GetDocument(mBar->GetCurrentTab());
+}
+
 void DocNotebook::UpdateFrameTitle() {
     if (mFrameToTitle) {
-        DocNotebookTab *doc = mBar->GetCurrentDocument();
+        DocNotebookTab *doc = GetCurrentDocument();
         wxString new_title;
         if (!doc) {
             new_title = mOriginalFrameTitle;
@@ -122,13 +130,12 @@ void DocNotebook::SetFrameToTitle(wxFrame *frame) {
     UpdateFrameTitle();
 }
 
+/// Add a new document to the notebook.
 void DocNotebook::AddDocument(DocNotebookTab *doc) {
-    mBar->AddDocument(doc);
-}
-
-/// Temporary function which will exist until refactoring is done.
-void DocNotebook::AddDocumentInternal(DocNotebookTab *doc) {
+    doc->GetDocumentWindow()->Hide();
+    wxASSERT(doc->GetDocumentWindow()->GetParent() == GetParent());
     mDocs.push_back(doc);
+    SelectDocument(GetDocumentCount()-1);
 }
 
 /// Temporary function which will exist until refactoring is done.
@@ -136,23 +143,73 @@ void DocNotebook::RemoveDocumentInternal(size_t i) {
     mDocs.erase(mDocs.begin()+i);
 }
 
+/// Get the number of open documents.
 size_t DocNotebook::GetDocumentCount() const {
     return mDocs.size();
 }
 
+/// Get a pointer to the specified document.
 DocNotebookTab *DocNotebook::GetDocument(size_t index) {
     wxASSERT(0 <= index && index < mDocs.size());
     return mDocs[index];
 }
 
+/// Select the specified document.
 void DocNotebook::SelectDocument(size_t index) {
-    return mBar->SelectDocument(index);
+    wxASSERT(0 <= index && index < GetDocumentCount());
+    mBar->SetCurrentTab(index);
+    SetCurrentDoc(GetCurrentDocument()->GetDocumentWindow());
+}
+
+/// Select the specified document.
+void DocNotebook::SelectDocument(const DocNotebookTab *doc) {
+    for (size_t i = 0; i < GetDocumentCount(); i++)
+        if (GetDocument(i) == doc)
+            SelectDocument(i);
+}
+
+bool DocNotebook::MaybeCloseTab() {
+    DocNotebookTab *tab = GetCurrentDocument();
+    ASSERT(tab);
+
+    // Verify the closing of this tab.
+    if (tab->GetDocumentDirty())
+        if (!tab->MaybeSave(true, "Close File", "Save \"%s\" before closing?"))
+            return false;
+
+    // Remove the document from our internal list.
+    mDocs.erase(mDocs.begin()+mBar->GetCurrentTab());
+
+    // Update our tab bar.
+    if (GetDocumentCount() == 0) {
+        // Handle deletion of last tab.
+        mBar->LastTabDeleted();
+        SetCurrentDoc(NULL);
+    } else if (mBar->GetCurrentTab() >= GetDocumentCount()) {
+        // Choose a new valid tab number.
+        SelectDocument(GetDocumentCount()-1);
+    } else {
+        // Keep the tab number, but update the display.
+        SelectDocument(mBar->GetCurrentTab());
+    }
+
+    /// \bug This cleanup procedure is almost certainly very buggy.
+    tab->GetDocumentWindow()->Destroy();
+    // delete tab;
+    return true;
 }
 
 bool DocNotebook::MaybeSaveAll(bool canVeto, const wxString &title,
                                const wxString &prompt)
 {
-    return mBar->MaybeSaveAll(canVeto, title, prompt);
+    for (size_t i = 0; i < GetDocumentCount(); i++) {
+        if (GetDocument(i)->GetDocumentDirty()) {
+            SelectDocument(i);
+            if (!GetDocument(i)->MaybeSave(canVeto, title, prompt) && canVeto)
+                return false;
+        }
+    }
+    return true;
 }
 
 /// A handy utility function: Creates unique-per-notebook names for untitled
@@ -211,7 +268,7 @@ void DocNotebook::OnUpdateUiSaveAll(wxUpdateUIEvent &event) {
 }
 
 void DocNotebook::OnCloseTab(wxCommandEvent &event) {
-    mBar->MaybeCloseTab();
+    MaybeCloseTab();
 }
 
 void DocNotebook::OnUpdateUiCloseTab(wxUpdateUIEvent &event) {
@@ -233,7 +290,7 @@ DocNotebookTab::DocNotebookTab(DocNotebook *parent)
 void DocNotebookTab::ReportChanges() {
     DocNotebookBar *bar = mParent->mBar;
     bar->ReportChanges();
-    if (bar->GetCurrentDocument() == this)
+    if (mParent->GetCurrentDocument() == this)
         mParent->UpdateFrameTitle();
 }
 
@@ -315,7 +372,7 @@ wxString DocNotebookTab::GetDocumentTitleAndDirtyFlag() const {
 }
 
 void DocNotebookTab::SelectDocument() const {
-    mParent->mBar->SelectDocument(this);
+    mParent->SelectDocument(this);
 }
 
 
@@ -346,31 +403,26 @@ DocNotebookBar::DocNotebookBar(DocNotebook *parent, wxWindowID id)
     mGrabbedButton = BUTTON_NONE;
 }
 
-void DocNotebookBar::AddDocument(DocNotebookTab *doc) {
-    doc->GetDocumentWindow()->Hide();
-    wxASSERT(doc->GetDocumentWindow()->GetParent() == GetParent());
-    mNotebook->AddDocumentInternal(doc);
-    SetCurrentTab(mNotebook->GetDocumentCount()-1);
+/// Return the index of the currently selected tab.
+size_t DocNotebookBar::GetCurrentTab() {
+    ASSERT(0 <= mCurrentTab && mCurrentTab < mNotebook->GetDocumentCount());
+    return mCurrentTab;
+}
+
+/// Set the currently active tab.
+void DocNotebookBar::SetCurrentTab(size_t tabId) {
+    // Always update this, even if tabId == mCurrentTab--we might be
+    // renumbering tabs because of a deletion.
+    ASSERT(0 <= tabId && tabId < mNotebook->GetDocumentCount());
+    mCurrentTab = tabId;
     Refresh();
 }
 
-void DocNotebookBar::SelectDocument(size_t index) {
-    wxASSERT(0 <= index && index < mNotebook->GetDocumentCount());
-    SetCurrentTab(index);
-}
-
-void DocNotebookBar::SelectDocument(const DocNotebookTab *doc) {
-    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++)
-        if (mNotebook->GetDocument(i) == doc)
-            SelectDocument(i);
-}
-
-/// Return the currently displayed tab, or NULL if none.
-DocNotebookTab *DocNotebookBar::GetCurrentDocument() {
-    if (mNotebook->GetDocumentCount() == 0)
-        return NULL;
-    else
-        return mNotebook->GetDocument(mCurrentTab);
+/// This function is called by the DocNotebook when the last tab is deleted.
+void DocNotebookBar::LastTabDeleted() {
+    ASSERT(mNotebook->GetDocumentCount() == 0);
+    mCurrentTab = 0;
+    Refresh();
 }
 
 void DocNotebookBar::ReportChanges() {
@@ -477,7 +529,8 @@ void DocNotebookBar::OnPaint(wxPaintEvent &event) {
         }
 
         // We want a title like "foo.cpp*".
-        wxString title = mNotebook->GetDocument(i)->GetDocumentTitleAndDirtyFlag();
+        DocNotebookTab *doc = mNotebook->GetDocument(i);
+        wxString title = doc->GetDocumentTitleAndDirtyFlag();
 
         // Calculate the width of our tab.
         wxCoord text_width;
@@ -552,7 +605,7 @@ void DocNotebookBar::OnLeftDown(wxMouseEvent &event) {
     if (click.x < GetTabLimit()) {
         for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
             if (click.x < mNotebook->GetDocument(i)->GetTabRightEdge()) {
-                DocNotebookBar::SetCurrentTab(i);
+                mNotebook->SelectDocument(i);
                 return;
             }
         }
@@ -642,60 +695,8 @@ void DocNotebookBar::DoButtonReleased(ButtonId buttonId) {
     if (!SafeToRunCommandsForButton(buttonId))
         return;
     switch (buttonId) {
-        case BUTTON_CLOSE: MaybeCloseTab(); break;
+        case BUTTON_CLOSE: mNotebook->MaybeCloseTab(); break;
     }
-}
-
-bool DocNotebookBar::MaybeSaveAll(bool canVeto, const wxString &title,
-                                  const wxString &prompt)
-{
-    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
-        if (mNotebook->GetDocument(i)->GetDocumentDirty()) {
-            SelectDocument(i);
-            if (!mNotebook->GetDocument(i)->MaybeSave(canVeto, title, prompt) && canVeto)
-                return false;
-        }
-    }
-    return true;
-}
-
-bool DocNotebookBar::MaybeCloseTab() {
-    DocNotebookTab *tab = mNotebook->GetDocument(mCurrentTab);
-
-    // Verify the closing of this tab.
-    if (tab->GetDocumentDirty())
-        if (!tab->MaybeSave(true, "Close File", "Save \"%s\" before closing?"))
-            return false;
-
-    mNotebook->RemoveDocumentInternal(mCurrentTab);
-    if (mNotebook->GetDocumentCount() == 0)
-        // Handle deletion of last tab.
-        LastTabDeleted();
-    else if (mCurrentTab >= mNotebook->GetDocumentCount())
-        // Choose a new valid tab number.
-        SetCurrentTab(mNotebook->GetDocumentCount()-1);
-    else
-        // Keep the tab number, but update the display.
-        SetCurrentTab(mCurrentTab);
-    tab->GetDocumentWindow()->Destroy();
-    Refresh();
-    return true;
-}
-
-void DocNotebookBar::LastTabDeleted() {
-    mCurrentTab = 0;
-    mNotebook->SetCurrentDoc(NULL);
-    Refresh();
-}
-
-/// Set the currently active tab, updating the current document if
-/// necessary.
-void DocNotebookBar::SetCurrentTab(size_t tabId) {
-    // Always update this, even if tabId == mCurrentTab--we might be
-    // renumbering tabs because of a deletion.
-    mCurrentTab = tabId;
-    mNotebook->SetCurrentDoc(mNotebook->GetDocument(tabId)->GetDocumentWindow());
-    Refresh();
 }
 
 /// Set the state of the specified button, redrawing it if requested.
@@ -815,8 +816,9 @@ wxCoord DocNotebookBar::GetTabLimit() {
 }
 
 void DocNotebookBar::ScrollTabs(wxCoord pixels) {
+    size_t last_doc = mNotebook->GetDocumentCount() - 1;
     wxCoord tab_length =
-        -mScrollAmount + mNotebook->GetDocument(mNotebook->GetDocumentCount()-1)->GetTabRightEdge();
+        -mScrollAmount + mNotebook->GetDocument(last_doc)->GetTabRightEdge();
     wxCoord min_scroll = GetTabLimit() - tab_length;
     mScrollAmount += pixels;
     if (mScrollAmount < min_scroll)

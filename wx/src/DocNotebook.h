@@ -60,6 +60,7 @@ class DocNotebook : public wxWindow {
     wxWindow *mCurrentDoc;
 
     void SetCurrentDoc(wxWindow *newDoc);
+    DocNotebookTab *GetCurrentDocument();
     void UpdateFrameTitle();
 
 public:
@@ -69,13 +70,14 @@ public:
 
     void AddDocument(DocNotebookTab *doc);
 
-    void AddDocumentInternal(DocNotebookTab *doc);
     void RemoveDocumentInternal(size_t i);
 
     size_t GetDocumentCount() const;
     DocNotebookTab *GetDocument(size_t index);
     void SelectDocument(size_t index);
+    void SelectDocument(const DocNotebookTab *doc);
 
+    bool MaybeCloseTab();
     bool MaybeSaveAll(bool canVeto, const wxString &title,
                       const wxString &prompt);
 
@@ -150,16 +152,9 @@ class DocNotebookBar : public wxWindow {
 public:
     DocNotebookBar(DocNotebook *parent, wxWindowID id = -1);
 
-    void AddDocument(DocNotebookTab *doc);
-    size_t GetDocumentCount() const;
-    DocNotebookTab *GetDocument(size_t index);
-    void SelectDocument(size_t index);
-    void SelectDocument(const DocNotebookTab *doc);
-    DocNotebookTab *GetCurrentDocument();
-
-    bool MaybeSaveAll(bool canVeto, const wxString &title,
-                      const wxString &prompt);
-    bool MaybeCloseTab();
+    size_t GetCurrentTab();
+    void SetCurrentTab(size_t tabId);
+    void LastTabDeleted();
 
 private:
     enum {
@@ -222,9 +217,6 @@ private:
     void DoButtonPressed(ButtonId buttonId);
     void DoButtonHeld(ButtonId buttonId);
     void DoButtonReleased(ButtonId buttonId);
-
-    void LastTabDeleted();
-    void SetCurrentTab(size_t tabId);
 
     void SetButtonState(ButtonId buttonId, ButtonState state,
                         bool redraw = true);

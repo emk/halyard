@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * More refactoring of DocNotebook in preparation for window splitting.
+
 0.0.33 - 27 Aug 2004 - emk, madhura
 
 This engine has not been extensively tested; it's just a quick build to
