@@ -24,7 +24,8 @@
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics
            ensure-dir-exists screenshot element-exists? 
-           delete-element-if-exists)
+           delete-element-if-exists
+           %basic-button%)
 
   (define (make-path subdir path)
     (apply build-path (current-directory) subdir (regexp-split "/" path)))
@@ -362,5 +363,38 @@
     (when (element-exists? name)
       (delete-element (@-by-name name))))
 
+  (define-element-template %basic-button%
+      [action]
+      (:template %zone%)
+    (define (draw-self style refresh?)
+      ;; Style is ACTIVE, NORMAL, PRESSED or DISABLED.
+      (send self draw-button style)
+      (when refresh?
+        (refresh)))
+    
+    ;; XXX - Won't work here.
+    ;;(draw-self 'normal #f)
+    
+    (on mouse-enter (event)
+      (if (mouse-grabbed?)
+          (draw-self 'pressed #t)
+          (draw-self 'active #t)))
+    (on mouse-leave (event)
+      (draw-self 'normal #t))
+    (on mouse-down (event)
+      (debug-log (node-full-name self))
+      (grab-mouse self)
+      (draw-self 'pressed #t))
+    (on mouse-up (event)
+      (define in-button?
+        (point-in-rect? (event-position event)
+                        ;; XXX - This is wrong.  We need point-in-shape?.
+                        (bounds (prop self shape))))
+      (draw-self (if in-button? 'active 'normal) #t)
+      (when (mouse-grabbed?)
+        (ungrab-mouse self)
+        (when in-button?
+          ((prop self action)))))
+    )
 
   )
