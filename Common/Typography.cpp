@@ -1002,18 +1002,27 @@ TextRenderingEngine::TextRenderingEngine(const StyledText &inText,
 										 Image *inImage)
 	: GenericTextRenderingEngine(inText, inLineLength, inJustification),
 	  mImage(inImage), mIsFirstLine(true),
-	  mLineStart(inPosition), mBounds(inPosition)
+	  mLineStart(inPosition),
+	  mHaveBounds(false),
+	  mLeftBound(inPosition.x + inLineLength),
+	  mTopBound(inPosition.y),
+	  mRightBound(inPosition.x),
+	  mBottomBound(inPosition.y)
 {
-	ASSERT(inImage != NULL);
+	
 }
 
 void TextRenderingEngine::DrawGreyMap(Point inPosition,
 									  const GreyMap *inGreyMap,
 									  Color inColor)
 {
-	PixMap colorized(inGreyMap->width, inGreyMap->height);
-	inGreyMap->TransferToPixMap(inColor, &colorized);
-	mImage->DrawPixMap(inPosition, colorized);
+	// If we have a destination image, draw to it.
+	if (mImage)
+	{
+		PixMap colorized(inGreyMap->width, inGreyMap->height);
+		inGreyMap->TransferToPixMap(inColor, &colorized);
+		mImage->DrawPixMap(inPosition, colorized);
+	}
 }
 
 void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
@@ -1147,6 +1156,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 
 	// Figure out where to start drawing text.
 	mLineStart.y += line_height;
+	Distance line_left_bound = mLineStart.x + inHorizontalOffset;
 	Point cursor = mLineStart;
 	cursor.x += inHorizontalOffset;
 
@@ -1167,16 +1177,23 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		ProcessCharacter(&previous, current, &cursor, true);
 	}
 
-	// Update our maximum left bound.  (This may be slightly wrong
+	// We have valid bounds now.
+	mHaveBounds = true;
+
+	// Update our minimum left bound.
+	if (line_left_bound < mLeftBound)
+		mLeftBound = line_left_bound;
+
+	// Update our maximum right bound.  (This may be slightly wrong
 	// in the presence of letters which kern entirely within the
 	// previous letter.)
-	if (cursor.x > mBounds.x)
-		mBounds.x = cursor.x;
+	if (cursor.x > mRightBound)
+		mRightBound = cursor.x;
 
 	// Calculate an approximate bottom bound.
 	// TODO - This doesn't take oversized characters into account,
 	// which may have lower base-lines than regular characters.
-	mBounds.y = mLineStart.y + GetDefaultStyle()->GetDescender();
+	mBottomBound = mLineStart.y + GetDefaultStyle()->GetDescender();
 	
 	// Update our drawing state for the next line.
 	mIsFirstLine = false;

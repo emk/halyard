@@ -232,6 +232,11 @@ void TStyleSheet::Draw(const std::string& inText,
 	engine.RenderText();
 	UpdateSpecialVariablesForText(TPoint(engine.GetRightBound(),
 										 engine.GetBottomBound()));
+
+	// TODO - Should these be classified as special variables?
+	// They're really just return values for use with MeasureTextAA.
+	gVariableManager.SetLong("_text_width", engine.GetTextWidth());
+	gVariableManager.SetLong("_text_height", engine.GetTextHeight());
 }
 
 int TStyleSheet::GetLineHeight()

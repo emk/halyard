@@ -30,7 +30,9 @@ void FIVEL_NS RegisterCommonPrimitives()
 	REGISTER_5L_PRIMITIVE(ResetOrigin);
 	REGISTER_5L_PRIMITIVE(Set);
 	REGISTER_5L_PRIMITIVE(Get);
+	REGISTER_5L_PRIMITIVE(VariableExists);
 	REGISTER_5L_PRIMITIVE(DefStyle);
+	REGISTER_5L_PRIMITIVE(MeasureTextAA);
 }
 
 
@@ -288,7 +290,43 @@ DEFINE_5L_PRIMITIVE(Get)
 //-------------------------------------------------------------------------
 // Create a stylesheet with the given name.
 
+DEFINE_5L_PRIMITIVE(VariableExists)
+{
+	TString vname;
+	inArgs >> vname;
+	TVariable *v =
+		gVariableManager.FindVariable(vname.GetString(), true, false);
+	::SetPrimitiveResult(v ? true : false);
+}
+
+
+//-------------------------------------------------------------------------
+// (DefStyle NAME ...)
+//-------------------------------------------------------------------------
+// Create a stylesheet with the given name.
+
 DEFINE_5L_PRIMITIVE(DefStyle)
 {
 	gStyleSheetManager.AddStyleSheet(inArgs);
+}
+
+
+//-------------------------------------------------------------------------
+// (MeasureTextAA STYLE TEXT MAX_WIDTH)
+//-------------------------------------------------------------------------
+// Calculate the width and height required to draw TEXT using STYLE,
+// assuming a maximum width of MAX_WIDTH pixels.
+//
+// This updates all the special variables associated with text.
+
+DEFINE_5L_PRIMITIVE(MeasureTextAA)
+{
+	std::string style;
+	std::string text;
+	uint32 max_width;
+
+	inArgs >> style >> text >> max_width;
+	gStyleSheetManager.Draw(style, text,
+							GraphicsTools::Point(0, 0),
+							max_width, NULL);
 }

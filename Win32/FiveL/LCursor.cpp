@@ -40,6 +40,7 @@ LCursorManager::LCursorManager()
 	mLeftTurnCursor = NULL;
 	mRightTurnCursor = NULL;
 	mDefaultCursor = ARROW_CURSOR;
+	mForceShow = false;
 }
 
 LCursorManager::~LCursorManager()
@@ -251,6 +252,23 @@ void LCursorManager::CheckCursor(void)
 
 /*
  $Log$
+ Revision 1.6  2002/10/15 18:06:05  emk
+ 3.5.8 - 15 Oct 2002 - emk
+
+ Engine:
+
+   * The Windows engine now reloads scripts in the same fashion as the
+     Mac engine--if a load fails, you get a chance to retry it.
+   * Log files get flushed after every line.
+   * The LOG and SCHEMEIDLE primitives are no longer logged, to reduce
+     clutter in Debug.log.
+   * Fixed tons of bugs in places where the Windows engine assumed it
+     had a TInterpreter object, but didn't (i.e., lots of "sInstance"
+     assertions are gone).
+   * Added support for measuring text without drawing it.
+   * Added support for checking whether an engine variable is initialized.
+   * Made sure LCursor initializes mForceShow.
+
  Revision 1.5  2002/10/09 18:38:42  emk
  3.5.7 - 9 Oct 2002 - emk
 

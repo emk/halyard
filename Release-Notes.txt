@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+3.5.8 - 15 Oct 2002 - emk
 
 Engine:
 
@@ -9,12 +9,16 @@ Engine:
   * Log files get flushed after every line.
   * The LOG and SCHEMEIDLE primitives are no longer logged, to reduce
     clutter in Debug.log.
-  * Tons of bugfixes in places where the Windows engine assumed it
+  * Fixed tons of bugs in places where the Windows engine assumed it
     had a TInterpreter object, but didn't (i.e., lots of "sInstance"
     assertions are gone).
+  * Added support for measuring text without drawing it.
+  * Added support for checking whether an engine variable is initialized.
+  * Made sure LCursor initializes mForceShow.
 
 Runtime:
 
+  * Support for compiling *.ss files to *.zo files automatically.
   * Support for deferring code until the engine is in a safe place to
     run it.  This means that you can call VIDEO, INPUT, etc., from
     within a callback.

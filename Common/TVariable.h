@@ -200,12 +200,16 @@ class TVariableManager : public TBTree
 		double		GetDouble(const char *inName);
 
 		//////////
-		// Find a variable by name.  If not found, create a new one.
+		// Find a variable by name.  If not found, create a new one
+		// (unless we're told not to).
 		//
 		// [in] inName - name of the variable
 		// [in_optional] fReading - read-only access? (default true)
+		// [in_optional] fCreate - create? (default true)
 		//
-		TVariable	*FindVariable(const char *inName, int fReading = true);
+		TVariable	*FindVariable(const char *inName,
+								  int fReading = true,
+								  int fCreate = true);
 		
 		//////////
 		// Set the value of the specified variable
@@ -294,6 +298,23 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4  2002/10/15 18:06:05  emk
+ 3.5.8 - 15 Oct 2002 - emk
+
+ Engine:
+
+   * The Windows engine now reloads scripts in the same fashion as the
+     Mac engine--if a load fails, you get a chance to retry it.
+   * Log files get flushed after every line.
+   * The LOG and SCHEMEIDLE primitives are no longer logged, to reduce
+     clutter in Debug.log.
+   * Fixed tons of bugs in places where the Windows engine assumed it
+     had a TInterpreter object, but didn't (i.e., lots of "sInstance"
+     assertions are gone).
+   * Added support for measuring text without drawing it.
+   * Added support for checking whether an engine variable is initialized.
+   * Made sure LCursor initializes mForceShow.
+
  Revision 1.3  2002/07/15 15:56:32  zeb
  3.3.13 - 15 July 2002 - zeb, emk
    * Language change: (IF cond true_cmd false_cmd) now takes arbitrary

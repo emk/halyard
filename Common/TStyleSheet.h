@@ -65,7 +65,8 @@ public:
 	//                     and no pixels should ever be drawn beyond it.
 	// [in] inImage -      The image into which we should draw.
 	//                     This must not be deallocated until the
-	//                     TextRendering engine is destroyed.
+	//                     TextRendering engine is destroyed.  May be
+	//                     NULL if we only want to measure the text.
 	//
 	void Draw(const std::string& inText,
 			  GraphicsTools::Point inPosition,
@@ -112,7 +113,8 @@ public:
 	//                     and no pixels should ever be drawn beyond it.
 	// [in] inImage -      The image into which we should draw.
 	//                     This must not be deallocated until the
-	//                     TextRendering engine is destroyed.
+	//                     TextRendering engine is destroyed.  May be
+	//                     NULL if we only want to measure the text.
 	//
 	void Draw(const std::string &inStyleSheet,
 			  const std::string &inText,

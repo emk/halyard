@@ -198,15 +198,18 @@ double TVariableManager::GetDouble(const char *name)
 //
 //  Parameter name
 //  Parameter fReading
+//  Parameter fCreate
 // Return:
-//  Variable name "name" or new variable created.
+//  Variable name "name" or new variable created.  If fCreate is false,
+//  and the variable does not exist, will return NULL.
 // Comments:
-//  Search the tree for the variable. If it's not there create it.
-//  We always create variables if they don't exist. This is so a
-//  variable may be set in the command line (or not set in the
-//  command line) and still used in the script.
+//  Search the tree for the variable. If it's not there create it.  We
+//  always create variables if they don't exist (unless we've been asked
+//  not to). This is so a variable may be set in the command line (or not
+//  set in the command line) and still used in the script.
 //
-TVariable *TVariableManager::FindVariable(const char *name, int fReading)
+TVariable *TVariableManager::FindVariable(const char *name, int fReading,
+										  int fCreate)
 {
     TVariable *var;
 
@@ -235,8 +238,8 @@ TVariable *TVariableManager::FindVariable(const char *name, int fReading)
     //  Now check the global tree. It's ok to fail; we'll create the
     //  variable if it's not there.
     var = (TVariable*) Find(name);
-    if (var == NULL) 
-    { 
+    if (var == NULL && fCreate)
+    {
  		if (fReading)
  			gDebugLog.Log("Getting variable <%s> before it has been set.",
 						  name);
@@ -302,6 +305,23 @@ void TVariableManager::SetLocal(TVariable *newlocal)
 
 /*
  $Log$
+ Revision 1.6  2002/10/15 18:06:05  emk
+ 3.5.8 - 15 Oct 2002 - emk
+
+ Engine:
+
+   * The Windows engine now reloads scripts in the same fashion as the
+     Mac engine--if a load fails, you get a chance to retry it.
+   * Log files get flushed after every line.
+   * The LOG and SCHEMEIDLE primitives are no longer logged, to reduce
+     clutter in Debug.log.
+   * Fixed tons of bugs in places where the Windows engine assumed it
+     had a TInterpreter object, but didn't (i.e., lots of "sInstance"
+     assertions are gone).
+   * Added support for measuring text without drawing it.
+   * Added support for checking whether an engine variable is initialized.
+   * Made sure LCursor initializes mForceShow.
+
  Revision 1.5  2002/07/15 15:56:32  zeb
  3.3.13 - 15 July 2002 - zeb, emk
    * Language change: (IF cond true_cmd false_cmd) now takes arbitrary

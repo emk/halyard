@@ -927,7 +927,11 @@ namespace Typography {
 		Image *mImage;
 		bool mIsFirstLine;
 		Point mLineStart;
-		Point mBounds;
+		bool mHaveBounds;
+		Distance mTopBound;
+		Distance mLeftBound;
+		Distance mBottomBound;
+		Distance mRightBound;
 
 	public:
 		//////////
@@ -941,7 +945,9 @@ namespace Typography {
 		// [in] inJustification - The desired justification.
 		// [in] inImage -      The image into which we should draw.
 		//                     This must not be deallocated until the
-		//                     TextRendering engine is destroyed.
+		//                     TextRendering engine is destroyed.  If this
+		//                     image is NULL, measure the text instead of
+		//                     drawing it.
 		//
 		TextRenderingEngine(const StyledText &inText,
 							Point inPosition,
@@ -950,10 +956,24 @@ namespace Typography {
 							Image *inImage);
 
 		//////////
+		// After a call to 'RenderText', get the width of the text.  This
+		// can be used with a NULL image to measure text.
+		//
+		Distance GetTextWidth() const
+			{ return mHaveBounds ? mRightBound - mLeftBound : 0; }
+
+		//////////
+		// After a call to 'RenderText', get the height of the text.  This
+		// can be used with a NULL image to measure text.
+		//
+		Distance GetTextHeight() const
+			{ return mHaveBounds ? mBottomBound - mTopBound : 0; }
+
+		//////////
 		// After a call to 'RenderText', get the rightmost coordinate
 		// of any letter drawn.
 		//
-		Distance GetRightBound() const { return mBounds.x; }
+		Distance GetRightBound() const { return mRightBound; }
 
 		//////////
 		// After a call to 'RenderText', get an approximate bottommost
@@ -961,7 +981,7 @@ namespace Typography {
 		// 'g' on the last line drawn.  Note that there may be no characters
 		// on this last line if the text ends in "\n".
 		// 
-		Distance GetBottomBound() const { return mBounds.y; }
+		Distance GetBottomBound() const { return mBottomBound; }
 
 	private:
 		//////////
