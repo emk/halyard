@@ -683,7 +683,7 @@
          body ...)
        (begin
          (define name
-           (with-values [parent local-name] (analyze-node-name 'name)
+           (with-values [[parent local-name] (analyze-node-name 'name)]
              (make node-class
                :group      'group
                :extends    extended

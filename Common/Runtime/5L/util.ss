@@ -129,7 +129,7 @@
 
   (define-syntax with-values
     (syntax-rules ()
-      [(with-values values expr body ...)
+      [(with-values [values expr] body ...)
        (call-with-values (lambda () expr) (lambda values body ...))]))
              
 
