@@ -78,7 +78,7 @@ void QTGraphic::Create(TString &inPath)
 
 	if (not theConfig->FillSpec(&fsSpec, m_path))
 	{
-		gDebugLog.Log("Could not get FSSpec for path <%s>",
+		gDebugLog.Log("Could not find graphic for path <%s>",
 			m_path.GetString());
 		gLog.Log("Error: Missing graphic: <%s>", m_path.GetString()); // Douglas wants 5L log to show this error 
 
@@ -374,6 +374,11 @@ void QTGraphic::Draw(GWorldPtr inGWorld, TPoint &inPt, TRect &inRect)
 
 /*
  $Log$
+ Revision 1.6  2002/05/03 12:24:26  hamon
+ Changed debug log message to read could not find graphic instead of could not get FSSpec.
+
+ Changes by Elizabeth, per Douglas's request.
+
  Revision 1.5  2002/04/25 09:21:04  hamon
  Deleted #ifdef DEBUG lines when they surround gDebugLog.Log messages.
 
