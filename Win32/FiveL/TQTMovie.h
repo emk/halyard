@@ -134,12 +134,25 @@ private:
 		MOVIE_STARTED         // Our movie has been started
 	};
 
+    enum {
+        // Unknown/indefinite duration is supposedly represented as
+		// a duration of 0x7FFFFFF (yes, there really are *six* Fs in that
+		// number).  This can occur for (1) partially loaded movies and
+		// (2) live streaming broadcasts without a duration.
+        INDEFINITE_DURATION = 0x7FFFFFF
+    };
+
 	//////////
 	// The state of our object (and the attached Movie).  Set this using
 	// UpdateMovieState, which may take various actions for certain state
 	// transitions.
 	//
 	MovieState mState;
+
+    //////////
+    // Is enough of the movie loaded to let us ask about movie properties?
+    //
+    bool mCanGetMovieProperties;
 
 	//////////
 	// The port into which we're supposed to draw our movie.
@@ -177,6 +190,11 @@ private:
 	// Where we should draw our movie.
 	//
 	Point mPosition;
+
+    //////////
+    // The time when we started opening the movie.
+    //
+    time_t mMovieOpenTime;
 
     //////////
     // Have we started running the timeout?
@@ -286,10 +304,12 @@ public:
 	//
 	void Unpause();
 
+    bool CanGetMovieProperties() { return mCanGetMovieProperties; }
 	TimeValue GetMovieTime();
 	void SetMovieVolume(short inVolume);
 	TimeScale GetTimeScale();
 	TimeValue GetDuration();
+    TimeValue GetMaxLoadedTimeInMovie();
 	void ThrowIfBroken();
 
     //////////
@@ -359,6 +379,8 @@ protected:
 private:
 	void ProcessAsyncLoad();
 	void AsyncLoadComplete();
+    long GetMovieLoadState();
+    bool SafeToStart(long inLoadState);
 	
 	//////////
 	// Call MCDoAction with the specified command and parameter.
