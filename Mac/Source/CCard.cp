@@ -205,7 +205,7 @@ void CCard::Execute(void)
 				and (not mPaused)
 				and (not mStopped)				// return command stops execution
 				and (not gCardManager.Jumping()))
-					DoCommand();
+					DoCommand(m_Script);
 					
 			// cbo_debug
 			//ProfilerSetStatus(false);
@@ -262,22 +262,25 @@ void CCard::Timeout(int32 inSeconds, const char *inCardName)
  *  Opword determines what we parse and then we call the appropriate
  *  routine DoTheCommand...
  ***********************************************************************/
-void CCard::DoCommand(void)
+void CCard::DoCommand(TStream &inScript)
 {
     TString     opword;
 
-    m_Script >> open >> opword;
+    inScript >> open >> opword;
     opword.MakeLower();
 	
 	try
 	{
-		if (opword == (char *)"if") DoIf();
-		else if (opword == (char *)"body") DoBody();
-		else if (opword == (char *)"return") DoReturn();
-		else if (opword == (char *)"exit") DoExit();
+		if (opword == (char *)"if") DoIf(inScript);
+		else if (opword == (char *)"begin") DoBegin(inScript);
+		else if (opword == (char *)"when") DoWhen(inScript);
+		else if (opword == (char *)"unless") DoUnless(inScript);
+		else if (opword == (char *)"while") DoWhile(inScript);
+		else if (opword == (char *)"return") DoReturn(inScript);
+		else if (opword == (char *)"exit") DoExit(inScript);
 		else if (gPrimitiveManager.DoesPrimitiveExist(opword.GetString()))
-			gPrimitiveManager.CallPrimitive(opword.GetString(), m_Script);
-		else DoMacro(opword);
+			gPrimitiveManager.CallPrimitive(opword.GetString(), inScript);
+		else DoMacro(opword, inScript);
 	}
 	catch (std::exception &e)
 	{
@@ -293,7 +296,7 @@ void CCard::DoCommand(void)
 	// XXX - If an error occurs, we may not always find this close
 	// parentheses.  This could make the interpreter puke pretty badly.
 	// But this works often enough that it's worth trying.
-	m_Script >> close;
+	inScript >> close;
 }
 
 /***********************************************************************
@@ -304,29 +307,29 @@ void CCard::DoCommand(void)
  *
  * Comments:
  *  Execute a single command, perhaps in response to a touch zone or
- *  a timeout. Save the old m_Script, do the one command, and restore
- *  the m_Script.
+ *  a timeout.
  *
  *  theCommand should look like "(jump aCard)", ie both parens need to
  *  be there.
  ***********************************************************************/
 void CCard::OneCommand(const TString &theCommand)
 {
-    TStream     saveScript(m_Script);
+	StValueRestorer<bool> restore_DoingOne(mDoingOne);
+	mDoingOne = true;
 
-	try
+	TStream script(theCommand);
+	DoCommand(script);
+}
+
+// Run a list of commands.
+void CCard::RunBody(const std::list<std::string> &inBody)
+{
+	for (std::list<std::string>::const_iterator iter = inBody.begin();
+		 iter != inBody.end() && !mStopped && !gCardManager.Jumping();
+		 ++iter)
 	{
-		mDoingOne = true;
-		m_Script = theCommand;
-		DoCommand();
+		OneCommand(iter->c_str());
 	}
-	catch (...)
-	{
-		m_Script = saveScript;
-		mDoingOne = false;
-	}
-	m_Script = saveScript;
-	mDoingOne = false;
 }
 
 
@@ -342,88 +345,15 @@ void CCard::OneCommand(const TString &theCommand)
     5L UTILITY METHODS
 
 *************************/
-/*-----------------------------------------------------------------
-    (IF (CONDITIONAL) (TRUE_CMD) <(FALSE_CMD)>)
-
-    Evaluate the conditional expression and execute the appropriate
-    command based on the value of the expression. Only numbers may
-    be compared. It's important that the conditional statement be
-    enclosed in parentheses and that the operator (>, <, =) be
-    separated from the operands by a space.
--------------------------------------------------------------------*/
-void CCard::DoIf()
+bool CCard::EvaluateCondition(const char *inFormName,
+							  const char *inConditional)
 {
-	bool condition;
-	m_Script >> condition;
-
-    if (condition)
-	{
-		gDebugLog.Log("*** if: running true command");
-        DoCommand();
-	}
-    else 
-    {
-        //  Skip true_CMD.
-		gDebugLog.Log("*** if: running false command");
-        m_Script >> open >> close;
-        if (m_Script.more()) 
-        	DoCommand();
-    }
-}
-
-/*-----------------------------------------------------------------
-    (BODY cmd...)
-
-    Evaluate zero or more commands in sequence.  The BODY command
-    can be used to pass a list of commands as an argument to the
-    IF, BUTTPCX and TOUCH commands.
--------------------------------------------------------------------*/
-void CCard::DoBody()
-{
-	while (m_Script.more())
-	{
-		// Extract our command and put back the parentheses removed
-		// by the parser.  This a kludge.
-		TString cmd;
-		m_Script >> cmd;
-		cmd = TString("(") + cmd + TString(")");
-
-		// Execute the command.
-		OneCommand(cmd);
-	}
-}
-
-/*-------------------
-    (EXIT)
-
-    Exit the program.
----------------------*/
-void CCard::DoExit()
-{
-	int16	theSide = 0;
-	
-	if (m_Script.more())
-		m_Script >> theSide;
-
-	gDebugLog.Log("exit: %d", theSide);
-		
-	gCardManager.DoExit(theSide);
-}
-
-//
-//	(return) - stop execution of this card or macro
-//
-void CCard::DoReturn()
-{
-	if (m_Script.more())
-	{
-		TString returnval;
-		m_Script >> returnval;
-		::SetPrimitiveResult(returnval.GetString());
-	}
-
-	gDebugLog.Log("return");
-	mStopped = true;
+	TStream conditional_stream(inConditional);
+	bool result;
+	conditional_stream >> result;
+	gDebugLog.Log("*** %s: %s -> %s", inFormName, inConditional,
+				  result ? "true" : "false");
+	return result;
 }
 
 /*-------------------------------------------------------------------
@@ -433,7 +363,7 @@ void CCard::DoReturn()
     VAR are an optional number of local variables that vary depending
     upon the particular macrodef.
 ---------------------------------------------------------------------*/
-void CCard::DoMacro(TString &name)
+void CCard::DoMacro(TString &name, TStream &inArgs)
 {
     TIndex		*theMacro;
     TString		vname, contents;
@@ -457,12 +387,12 @@ void CCard::DoMacro(TString &name)
     vnum = 0;
     
     TString arg_string = "Macro arguments:";
-    while (m_Script.more()) 
+    while (inArgs.more()) 
 	{
         //  Variables are named 1, 2, 3...
         //
         vname = ++vnum;
-        m_Script >> contents;
+        inArgs >> contents;
 
 		arg_string += (TString(" $") + TString::IntToString(vnum) +
 					   TString(" = <") + contents + TString(">"));
@@ -503,7 +433,7 @@ void CCard::DoMacro(TString &name)
 			   // Don't check mPaused here because we could be waiting for audio
 			   && !gCardManager.Jumping())
 		{
-			DoCommand();
+			DoCommand(m_Script);
 		}
 	}
 	catch (...)
@@ -531,6 +461,122 @@ void CCard::DoMacro(TString &name)
 	gVariableManager.SetLocal(oldlocal);
 	if (vnum > 0) 
 		local->RemoveAll();
+}
+
+/*-----------------------------------------------------------------
+    (IF (CONDITIONAL) (true_CMD) <(false_CMD)>)
+
+    Evaluate the conditional expression and execute the appropriate
+    command based on the value of the expression.
+-------------------------------------------------------------------*/
+void CCard::DoIf(TStream &inArgs)
+{
+	std::string condition = inArgs.GetStatement();
+	std::string then_statement = inArgs.GetStatement();
+	bool have_else_statement = false;
+	std::string else_statement;
+	if (inArgs.more())
+	{
+		else_statement = inArgs.GetStatement();
+		have_else_statement = true;
+	}
+	
+	if (EvaluateCondition("if", condition.c_str()))
+		OneCommand(then_statement.c_str());
+	else if (have_else_statement)
+		OneCommand(else_statement.c_str());
+}
+
+/*-----------------------------------------------------------------
+    (BEGIN body...)
+
+    Evaluate zero or more commands in sequence.  The BEGIN command
+    can be used to pass a list of commands as an argument to the
+    IF, BUTTPCX and TOUCH commands.
+-------------------------------------------------------------------*/
+void CCard::DoBegin(TStream &inArgs)
+{
+	std::list<std::string> body;
+	inArgs.GetBody(body);
+	RunBody(body);
+}
+
+/*-----------------------------------------------------------------
+    (WHEN cond body...)
+
+    Evaluate body if cond is true.
+-------------------------------------------------------------------*/
+void CCard::DoWhen(TStream &inArgs)
+{
+	std::string condition = inArgs.GetStatement();
+	std::list<std::string> body;
+	inArgs.GetBody(body);
+
+	if (EvaluateCondition("when", condition.c_str()))
+		RunBody(body);
+}
+
+/*-----------------------------------------------------------------
+    (UNLESS cond body...)
+
+    Evaluate body if cond is false.
+-------------------------------------------------------------------*/
+void CCard::DoUnless(TStream &inArgs)
+{
+	std::string condition = inArgs.GetStatement();
+	std::list<std::string> body;
+	inArgs.GetBody(body);
+
+	if (!EvaluateCondition("unless", condition.c_str()))
+		RunBody(body);
+}
+
+/*-----------------------------------------------------------------
+    (WHILE cond body...)
+
+    Evaluate body while cond is true.
+-------------------------------------------------------------------*/
+void CCard::DoWhile(TStream &inArgs)
+{
+	std::string condition = inArgs.GetStatement();
+	std::list<std::string> body;
+	inArgs.GetBody(body);
+	
+	while (EvaluateCondition("while", condition.c_str()))
+		RunBody(body);
+}
+
+/*-------------------
+    (EXIT)
+
+    Exit the program.
+---------------------*/
+void CCard::DoExit(TStream &inArgs)
+{
+	int16	theSide = 0;
+	
+	if (inArgs.more())
+		inArgs >> theSide;
+
+	gDebugLog.Log("exit: %d", theSide);
+		
+	gCardManager.DoExit(theSide);
+}
+
+//
+//	(return) - stop execution of this card or macro
+//
+void CCard::DoReturn(TStream &inArgs)
+{
+	if (inArgs.more())
+	{
+		TString returnval;
+		inArgs >> returnval;
+		::SetPrimitiveResult(returnval.GetString());
+	}
+
+	gDebugLog.Log("return");
+	mStopped = true;
 }
 
 
@@ -855,4 +901,5 @@ void CCardManager::JumpToCard(CCard *newCard, bool /* comeBack */)
 		mHaveJump = true;
 	}
 }
+
 
