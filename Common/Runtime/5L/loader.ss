@@ -16,14 +16,14 @@
   ;; collections of support modules.
   (current-library-collection-paths
    (list (build-path (current-directory) "Runtime")
-	 (build-path (current-directory) "Scripts")))
+         (build-path (current-directory) "Scripts")))
   
   ;; Import a function the hard way.  We can't just (require ...) this
   ;; module because we don't set up the collection paths until its
   ;; too late to help.
   (define make-compilation-manager-load/use-compiled-handler
     (dynamic-require '(lib "cm.ss" "mzlib")
-  		     'make-compilation-manager-load/use-compiled-handler))
+                     'make-compilation-manager-load/use-compiled-handler))
   
   ;;; The default namespace into which this script was loaded.  We don't
   ;;; use it to run much except this code.
@@ -65,41 +65,42 @@
     ;; meaningfully.
     (let ((filename "none"))
       (with-handlers [[void (lambda (exn)
-			      (string-append "Error while loading <" filename
-					     ">: " (exn-message exn)))]]
+                              (string-append "Error while loading <" filename
+                                             ">: " (exn-message exn)))]]
 
         ;; First, we install enough of a namespace to parse 'module'.
-	;; We'll need this in just a second when we call load/use-compiled.
+        ;; We'll need this in just a second when we call load/use-compiled.
         (set! filename "bootstrap-env.ss")
         (namespace-require '(lib "bootstrap-env.ss" "5L"))
 
-	;; Ask MzScheme to transparently compile modules to *.zo files.
-	(current-load/use-compiled
-	 (make-compilation-manager-load/use-compiled-handler))
+        ;; Ask MzScheme to transparently compile modules to *.zo files.
+        (current-load/use-compiled
+         (make-compilation-manager-load/use-compiled-handler))
 
-	;; Manually load the kernel into our new namespace.  We need
-	;; to call (load/use-compiled ...) instead of (require ...),
-	;; because we want the kernel registered under its official
-	;; module name (so the engine can easily grovel around inside it)
-	;; but not imported into our namespace (which is the job of the
-	;; 5L language module).
-	(set! filename "kernel.ss")
-	(load/use-compiled (build-path (current-directory)
-				       "Runtime" "5L"
-				       "kernel.ss"))
+        ;; Manually load the kernel into our new namespace.  We need
+        ;; to call (load/use-compiled ...) instead of (require ...),
+        ;; because we want the kernel registered under its official
+        ;; module name (so the engine can easily grovel around inside it)
+        ;; but not imported into our namespace (which is the job of the
+        ;; 5L language module).
+        (set! filename "kernel.ss")
+        (namespace-require '(lib "kernel.ss" "5L"))
+        ;;(load/use-compiled (build-path (current-directory)
+        ;;                               "Runtime" "5L"
+        ;;                               "kernel.ss"))
       
         ;; Provide a reasonable default language for writing scripts.  We
         ;; need to set up both the transformer environment (which is used
         ;; only by code in macro expanders) and the regular environment
         ;; (which is used by normal program code).
         (set! filename "lispish.ss")
-	(namespace-transformer-require '(lib "lispish.ss" "5L"))
-	(set! filename "5l.ss")
-	(namespace-require '(lib "5l.ss" "5L"))
+        (namespace-transformer-require '(lib "lispish.ss" "5L"))
+        (set! filename "5l.ss")
+        (namespace-require '(lib "5l.ss" "5L"))
       
-	;; Load the user's actual script into our new namespace.
-	(set! filename (build-path (current-directory) "Scripts" "start.ss"))
-	(load/use-compiled filename)
-	#f)))
+        ;; Load the user's actual script into our new namespace.
+        (set! filename (build-path (current-directory) "Scripts" "start.ss"))
+        (load/use-compiled filename)
+        #f)))
 
   ) ; end module

@@ -1,7 +1,7 @@
 (module API (lib "lispish.ss" "5L")
 
-  (require 5L-Kernel)
-  (provide (all-from 5L-Kernel))
+  (require (lib "kernel.ss" "5L"))
+  (provide (all-from (lib "kernel.ss" "5L")))
 
 
   ;;=======================================================================

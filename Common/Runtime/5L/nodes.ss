@@ -19,7 +19,7 @@
   ;;  This should not be exported any further than the kernel, unless
   ;;  otherwise specified.
 
-  (provide run-card jump *%kernel-current-card* *%kernel-previous-card*
+  (provide run-card jump
            delete-element-info enable-expensive-events
            dispatch-event-to-current-card)
 
@@ -29,13 +29,16 @@
   ;;=======================================================================
 
   (provide *engine* set-engine! <engine>
-           set-engine-engine-var! engine-current-card
+           engine-current-card engine-last-card
+           set-engine-engine-var! current-card
            engine-have-5l-prim? engine-call-5l-prim engine-jump-to-card
            engine-%kernel-register-card engine-call-enter-card-hook
            engine-call-exit-card-hook engine-call-card-body-finished-hook
            engine-%kernel-clear-timeout engine-refresh)
 
-  (defclass <engine> ())
+  (defclass <engine> ()
+    (current-card :initvalue #f)
+    (last-card :initvalue #f))
 
   (define *engine* #f)
 
@@ -43,7 +46,6 @@
     (set! *engine* engine))
 
   (defgeneric (set-engine-engine-var! (engine <engine>) (name <symbol>) value))
-  (defgeneric (engine-current-card (engine <engine>)))
   (defgeneric (engine-have-5l-prim? (engine <engine>) (name <symbol>)))
   (defgeneric (engine-call-5l-prim (engine <engine>) (name <symbol>) . args))
   (defgeneric (engine-jump-to-card (engine <engine>) (target <card>)))
@@ -55,11 +57,11 @@
   (defgeneric (engine-%kernel-clear-timeout (engine <engine>)))
   (defgeneric (engine-refresh (engine <engine>)))
 
-  (define (set-engine-var! name value)
-    (set-engine-engine-var! *engine* name value))
-
   (define (current-card)
     (engine-current-card *engine*))
+
+  (define (set-engine-var! name value)
+    (set-engine-engine-var! *engine* name value))
 
   (define (have-5l-prim? name)
     (engine-have-5l-prim? *engine* name))
@@ -87,10 +89,6 @@
 
   (define (refresh)
     (engine-refresh *engine*))
-
-  ;; TODO - A different meaning of "previous" from the one below.  Rename.
-  (define *%kernel-current-card* #f)
-  (define *%kernel-previous-card* #f)
 
 
   ;;=======================================================================
@@ -911,15 +909,15 @@
     (%kernel-clear-timeout)
 
     ;; Finish exiting our previous card.
-    (when *%kernel-current-card*
-      (exit-card *%kernel-current-card* card))
+    (when (current-card)
+      (exit-card (current-card) card))
 
     ;; Reset the origin to 0,0.
     (call-5l-prim 'resetorigin)
 
     ;; Update our global variables.
-    (set! *%kernel-previous-card* *%kernel-current-card*)
-    (set! *%kernel-current-card* card)
+    (set! (engine-last-card *engine*) (engine-current-card *engine*))
+    (set! (engine-current-card *engine*) card)
 
     ;; Update our expensive event state.
     (maybe-enable-expensive-events-for-card card)

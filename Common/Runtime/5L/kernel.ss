@@ -1,4 +1,4 @@
-(module 5L-Kernel (lib "lispish.ss" "5L")
+(module kernel (lib "lispish.ss" "5L")
 
   ;; Import %call-5l-prim from the engine.
   (require #%fivel-engine)
@@ -247,13 +247,13 @@
     (%kernel-set-state 'JUMPING))
 
   (define (%kernel-current-card-name)
-    (if *%kernel-current-card*
-        (value->string (node-full-name *%kernel-current-card*))
+    (if (engine-current-card *engine*)
+        (value->string (node-full-name (engine-current-card *engine*)))
         ""))
 
   (define (%kernel-previous-card-name)
-    (if *%kernel-previous-card*
-        (value->string (node-full-name *%kernel-previous-card*))
+    (if (engine-last-card *engine*)
+        (value->string (node-full-name (engine-last-card *engine*)))
         ""))
 
   (define (%kernel-valid-card? card-name)
@@ -511,9 +511,6 @@
   (defmethod (set-engine-engine-var! (eng <real-engine>) (name <symbol>) value)
     (set-engine-var! name value))
 
-  (defmethod (engine-current-card (eng <real-engine>))
-    (current-card))
-
   (defmethod (engine-have-5l-prim? (eng <real-engine>) (name <symbol>))
     (have-5l-prim? name))
 
@@ -556,7 +553,7 @@
   ;;  Older support code for cards.  Some of this should probably be
   ;;  refactored elsewhere; we'll see.
 
-  (provide find-card card-exists? current-card card-name)
+  (provide find-card card-exists? card-name)
   
   (define (%kernel-register-card card)
     (when (have-5l-prim? 'RegisterCard)
@@ -583,9 +580,6 @@
     (define result #t)
     (find-card name (lambda () (set! result #f)))
     result)
-
-  (define (current-card)
-    *%kernel-current-card*)    
 
   (define (card-name card-or-name)
     (cond
