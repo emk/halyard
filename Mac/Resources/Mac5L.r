@@ -2611,25 +2611,3 @@ resource 'snd ' (1001, "Click down", purgeable) {
 		$"7F7F 7F7F 8082 807F"
 	}
 };
-
-resource 'vers' (1) {
-	0x3,
-	0x58,
-	release,
-	0x0,
-	0,
-	"3.5.8 (Development)",
-	"Mac5L 3.5.8 (Development), Copyright © 1"
-	"999-2002 Trustees of Dartmouth College"
-};
-
-resource 'vers' (2) {
-	0x3,
-	0x58,
-	release,
-	0x0,
-	0,
-	"3.5.8 (Development)",
-	"Dartmouth Interactive Media Laboratory"
-};
-
