@@ -6,6 +6,7 @@
 #include <wx/display.h>
 
 #include <deque>
+#include <vector>
 
 #include "GraphicsTools.h"
 #include "AppGlobals.h"
@@ -373,7 +374,7 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	//////////
 	// The last stage position copied with a right-click.
 	//
-	wxPoint mLastCopiedPos;
+	std::vector<wxPoint> mCopiedPosns;
 
 	//////////
 	// Invalidate the entire stage.

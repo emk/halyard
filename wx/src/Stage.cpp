@@ -881,7 +881,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	  mTextCtrl(NULL), mCurrentElement(NULL), mGrabbedElement(NULL),
 	  mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
-      mIsDisplayingBorders(false), mLastCopiedPos(0, 0)
+      mIsDisplayingBorders(false)
 {
     SetBackgroundColour(STAGE_COLOR);
     ClearStage(*wxBLACK);
@@ -1313,12 +1313,25 @@ void Stage::OnRightDown(wxMouseEvent &inEvent)
 		// position for next time.
 		wxPoint pos = inEvent.GetPosition();
 		wxString str;
-		if (inEvent.ShiftDown())
-			str.Printf("%d %d %d %d", mLastCopiedPos.x, mLastCopiedPos.y,
+		if (inEvent.ShiftDown() && mCopiedPosns.size() == 1)
+			str.Printf("(rect %d %d %d %d)", 
+					   (mCopiedPosns.end()-1)->x, 
+					   (mCopiedPosns.end()-1)->y,
 					   pos.x, pos.y);
+		else if (inEvent.ShiftDown() && mCopiedPosns.size() > 1)
+		{
+			str.Printf("(polygon ");
+			std::vector<wxPoint>::iterator i;
+			for (i = mCopiedPosns.begin(); i != mCopiedPosns.end(); ++i)
+				str += wxString::Format("(point %d %d) ", i->x, i->y);
+			str += wxString::Format("(point %d %d))", pos.x, pos.y);
+		}
 		else
-			str.Printf("%d %d", pos.x, pos.y);
-		mLastCopiedPos = pos;
+		{
+			str.Printf("(point %d %d)", pos.x, pos.y);
+			mCopiedPosns.clear();
+		}
+		mCopiedPosns.push_back(pos);
 
 		// Copy our string to the clipboard.  This code snippet comes from
 		// the wxWindows manual.
