@@ -444,6 +444,7 @@
     (let [[path (media-path location)]]
       (check-file path)
       (call-5l-prim 'movie (node-full-name self)
+                    (make-node-event-dispatcher self)
                     (parent->card self (prop self rect))
                     path
                     controller? audio-only? loop? interaction?)))
