@@ -173,9 +173,10 @@ public:
 			test.Run();
 		} catch (ExpectedException &failure) {
 			caught_exception = true;
-			ASSERT(failure.GetErrorMessage() == WantMsg());
+			CHECK(failure.GetErrorMessage() == WantMsg(),
+				  "Didn't get the right message.");
 		}
-		ASSERT(caught_exception);
+		CHECK(caught_exception, "Didn't catch exception.");
 	}
 };
 
