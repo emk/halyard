@@ -45,6 +45,7 @@
 #include "SingleInstance.h"
 #include "TWin5LInterpreter.h"
 #include "TWinPrimitives.h"
+#include "TQTPrimitives.h"
 
 #if defined USE_BUNDLE
 	#include "LFileBundle.h"
@@ -112,12 +113,17 @@ LBrowser			gBrowserTool;
 SingleInstance g_SingleInstanceObj(TEXT("{03C53E8D-4B46-428c-B812-DBAC5F1A6378}"));
 
 // Foward declarations of functions included in this code module:
+int					RealWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+								LPSTR lpCmdLine, int nCmdShow);
 bool				InitInstance(HINSTANCE, int);
 void				DeInitInstance(void);
 bool				InitApplication(HINSTANCE hInstance);
-LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK	ChildWndProc(HWND, UINT, UINT, LPARAM);
-LRESULT CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM) throw ();
+LRESULT				RealWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	ChildWndProc(HWND, UINT, UINT, LPARAM) throw ();
+LRESULT				RealChildWndProc(HWND, UINT, UINT, LPARAM);
+LRESULT CALLBACK	About(HWND, UINT, WPARAM, LPARAM) throw ();
+LRESULT				RealAbout(HWND, UINT, WPARAM, LPARAM);
 void				StartTimer(void);
 void				StopTimer(void);
 bool				CheckSystem(void);
@@ -134,6 +140,17 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
+	throw ()
+{
+	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealWinMain(hInstance, hPrevInstance,
+												lpCmdLine, nCmdShow));
+	return false;
+}
+
+int RealWinMain(HINSTANCE hInstance,
+				HINSTANCE hPrevInstance,
+				LPSTR     lpCmdLine,
+				int       nCmdShow)
 {
 	HWND    	hwndPrev;
 	MSG			msg;
@@ -204,6 +221,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	try
 	{
 		RegisterWindowsPrimitives();
+		RegisterQuickTimePrimitives();
 		gWin5LInterpreter = new TWin5LInterpreter(gConfigManager.CurScript());
 	}
 	catch (...)
@@ -547,6 +565,14 @@ void DeInitInstance(void)
 //  WndProc - 
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	throw ()
+{
+	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealWndProc(hWnd, message,
+												wParam, lParam));
+	return 0;
+}
+
+LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int				wmId, wmEvent;
 	PAINTSTRUCT		ps;
@@ -876,7 +902,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 //
 // Child window to put up the black background.
 //
+
 LRESULT CALLBACK ChildWndProc (HWND hwnd, UINT message, UINT wParam, LPARAM lParam)
+	throw ()
+{
+	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealChildWndProc(hwnd, message,
+													 wParam, lParam));
+	return 0;
+}
+
+LRESULT RealChildWndProc (HWND hwnd, UINT message, UINT wParam, LPARAM lParam)
 {
 	long		retVal = 0;
 	bool		activate = false;
@@ -966,6 +1001,13 @@ void ShutDown(bool Toss /* = true */)
 
 // Mesage handler for about box.
 LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+	throw ()
+{
+	CATCH_ALL_EXCEPTIONS_AND_RETURN(RealAbout(hDlg, message, wParam, lParam));
+	return 0;
+}
+
+LRESULT RealAbout(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
@@ -1232,6 +1274,15 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.10  2002/07/23 21:53:53  emk
+ 3.3.17 - 23 July 2002 - emk
+
+   * Fixed RETURN in macros (bug #1053).
+   * Fixed typography exception when missing buttpcx graphic (bug #1039).
+   * Made Win32 BROWSE return an error if it fails (bug #793).
+   * Forward-ported QtComponentVersion to Win32 (bug #1054).
+   * Performance tuned Win32 textaa (bug #933).
+
  Revision 1.9  2002/07/15 15:56:44  zeb
  3.3.13 - 15 July 2002 - zeb, emk
    * Language change: (IF cond true_cmd false_cmd) now takes arbitrary

@@ -215,6 +215,19 @@ SOURCE=..\..\FiveL\SysInfo.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TQTPrimitives.cpp
+
+!IF  "$(CFG)" == "FiveL - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "FiveL - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\FiveL\TWin5LInterpreter.cpp
 # End Source File
 # Begin Source File
@@ -360,6 +373,10 @@ SOURCE=..\..\FiveL\StdAfx.h
 # Begin Source File
 
 SOURCE=..\..\FiveL\SysInfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TQTPrimitives.h
 # End Source File
 # Begin Source File
 

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -18,6 +19,8 @@
 #include "Globals.h"
 
 #include "Palettes.h"
+
+bool gHaveIssuedSlowGraphicsWarning = false;
 
 View::View()
 { 
@@ -98,6 +101,11 @@ bool View::Init(void)
 			lastError);
 		return (false);
 	}
+
+	// Get the bitmap object for our DIB section, so we have enough
+	// information to draw directly into it.
+	if (!::GetObject(m_screen, sizeof(BITMAP), &m_screen_bitmap))
+		gLog.FatalError("Could not create offscreen bitmap.");
 
 	// create the blippo buffer
 	m_bmp_info.biSize = sizeof(BITMAPINFOHEADER);
@@ -802,31 +810,95 @@ void View::DrawPixMap(GraphicsTools::Point inPoint,
 		portable_base_addr + begin.y * portable_row_size + begin.x;
 	
 	// Draw each row of the pixmap.
-	for (int y = begin.y; y < end.y; y++)
+	if (m_dib_bit_depth == 24)
 	{
-		Color *portable_cursor = portable_row_start;
-		for (int x = begin.x; x < end.x; x++)
+		// Our fast, ugly blitter which directly uses DIBs.
+		ASSERT(m_screen_bitmap.bmBitsPixel == 24);
+
+		// Figure out where in memory to begin drawing the first row.
+		// The formula for win_row_size is taken from DibRowLength
+		// in Microsoft's DibLib.
+		BYTE *win_base_addr = (BYTE*) m_screen_bitmap.bmBits;
+		int win_row_size = m_screen_bitmap.bmWidthBytes;
+		unsigned char *win_row_start =
+			(win_base_addr +
+			 (inPoint.y + begin.y) * win_row_size +
+			 (inPoint.x + begin.x) * 3);
+	
+		for (int y = begin.y; y < end.y; y++)
 		{
-			// Make sure we're in bounds.
-			ASSERT(portable_cursor >= portable_base_addr);
-			ASSERT(portable_cursor <
-				   portable_base_addr + inPixMap.height * portable_row_size);
-		
-			// Draw a single pixel, very slowly.
-			GraphicsTools::Color new_color = *portable_cursor;
-			COLORREF color = ::GetPixel(m_dc, inPoint.x + x, inPoint.y + y);
-			BYTE red = GetRValue(color);
-			BYTE green = GetGValue(color);
-			BYTE blue = GetBValue(color);
-			red = AlphaBlendChannel(red, new_color.red, new_color.alpha);
-			green = AlphaBlendChannel(green, new_color.green, new_color.alpha);
-			blue = AlphaBlendChannel(blue, new_color.blue, new_color.alpha);
-			::SetPixel(m_dc, inPoint.x + x, inPoint.y + y, RGB(red, green, blue));
-			portable_cursor++;
+			BYTE *win_cursor = win_row_start;
+			Color *portable_cursor = portable_row_start;
+			for (int x = begin.x; x < end.x; x++)
+			{
+				// Make sure we're in bounds.
+				ASSERT(win_cursor >= win_base_addr);
+				ASSERT(win_cursor <
+					   win_base_addr + gworld_height * win_row_size);
+				ASSERT(portable_cursor >= portable_base_addr);
+				ASSERT(portable_cursor <
+					   portable_base_addr + (inPixMap.height *
+											 portable_row_size));
+				
+				// Draw a single pixel.
+				GraphicsTools::Color new_color = *portable_cursor;
+				win_cursor[0] = AlphaBlendChannel(win_cursor[0],
+												  new_color.blue,
+												  new_color.alpha);
+				win_cursor[1] = AlphaBlendChannel(win_cursor[1],
+												  new_color.green,
+												  new_color.alpha);
+				win_cursor[2] = AlphaBlendChannel(win_cursor[2],
+												  new_color.red,
+												  new_color.alpha);
+				win_cursor += 3;
+				portable_cursor++;
+			}
+			win_row_start += win_row_size;
+			portable_row_start += portable_row_size;
 		}
-		portable_row_start += portable_row_size;
 	}
-	errno = 0;
+	else
+	{
+		// This is an older, slower version of the drawing code which should
+		// work on 8-bit offscreen buffers and/or other oddities.
+		if (!gHaveIssuedSlowGraphicsWarning)
+		{
+			gLog.Caution("Using slow blit routines!");
+			gHaveIssuedSlowGraphicsWarning = true;
+		}
+
+		for (int y = begin.y; y < end.y; y++)
+		{
+			Color *portable_cursor = portable_row_start;
+			for (int x = begin.x; x < end.x; x++)
+			{
+				// Make sure we're in bounds.
+				ASSERT(portable_cursor >= portable_base_addr);
+				ASSERT(portable_cursor <
+					   portable_base_addr + (inPixMap.height *
+											 portable_row_size));
+				
+				// Draw a single pixel, very slowly.
+				GraphicsTools::Color new_color = *portable_cursor;
+				COLORREF color = ::GetPixel(m_dc, inPoint.x + x,
+											inPoint.y + y);
+				BYTE red = GetRValue(color);
+				BYTE green = GetGValue(color);
+				BYTE blue = GetBValue(color);
+				red = AlphaBlendChannel(red, new_color.red, new_color.alpha);
+				green = AlphaBlendChannel(green, new_color.green,
+										  new_color.alpha);
+				blue = AlphaBlendChannel(blue, new_color.blue,
+										 new_color.alpha);
+				::SetPixel(m_dc, inPoint.x + x, inPoint.y + y,
+						   RGB(red, green, blue));
+				portable_cursor++;
+			}
+			portable_row_start += portable_row_size;
+		}
+	}
+	errno = 0; // XXX - What the?
 }
 
 //
@@ -834,6 +906,8 @@ void View::DrawPixMap(GraphicsTools::Point inPoint,
 //		in the bitmap. The inScreen boolean is used to indicate
 //		which buffer you want. If inScreen is true then use m_screen
 //		else use m_blippo.
+//
+//		XXX - I'm willing to bet this is broken on non-8-bit screens.
 //
 HPSTR View::GetPixelAddress(bool inScreen, long inX, long inY)
 {
@@ -1506,6 +1580,15 @@ Effect View::StringToEffect(TString &effectString)
 
 /*
  $Log$
+ Revision 1.4  2002/07/23 21:53:53  emk
+ 3.3.17 - 23 July 2002 - emk
+
+   * Fixed RETURN in macros (bug #1053).
+   * Fixed typography exception when missing buttpcx graphic (bug #1039).
+   * Made Win32 BROWSE return an error if it fails (bug #793).
+   * Forward-ported QtComponentVersion to Win32 (bug #1054).
+   * Performance tuned Win32 textaa (bug #933).
+
  Revision 1.3  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

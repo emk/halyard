@@ -49,11 +49,13 @@ void Macro::Execute()
 	
 	// Save our member variables, so this macro can be called recursively.
 	bool old_return = m_Return;
+	int old_running = m_Running;
 	TStream old_script = m_Script;
 	try
 	{
 		// Get ready to run.
 		m_Return = false;
+		m_Running = true;
 		m_Script.reset();
  
 		// dump the macro.
@@ -73,11 +75,13 @@ void Macro::Execute()
 	catch (...)
 	{
 		m_Return = old_return;
+		m_Running = old_running;
 		m_Script = old_script;
 		throw;
 	}
 
 	m_Return = old_return;
+	m_Running = old_running;
 	m_Script = old_script;
 }
 	
@@ -113,6 +117,15 @@ void MacroManager::MakeNewIndex(TIndexFile *inFile, const char *name, long start
 
 /*
  $Log$
+ Revision 1.6  2002/07/23 21:53:53  emk
+ 3.3.17 - 23 July 2002 - emk
+
+   * Fixed RETURN in macros (bug #1053).
+   * Fixed typography exception when missing buttpcx graphic (bug #1039).
+   * Made Win32 BROWSE return an error if it fails (bug #793).
+   * Forward-ported QtComponentVersion to Win32 (bug #1054).
+   * Performance tuned Win32 textaa (bug #933).
+
  Revision 1.5  2002/07/19 22:05:06  emk
  3.3.16 - Lots of minor bugfixes.  See Release-Notes.txt for details.
 

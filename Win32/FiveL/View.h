@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -295,6 +296,11 @@ class View : public TObject, public GraphicsTools::Image
 		LPSTR		m_screen_bits;	
 		
 		//////////
+		// More information about offscreen drawing.
+		//
+		BITMAP		m_screen_bitmap;
+		
+		//////////
 		// Device context for blippo.
 		//
 		HDC			m_blippo_dc;	
@@ -447,6 +453,15 @@ class View : public TObject, public GraphicsTools::Image
 
 /*
  $Log$
+ Revision 1.4  2002/07/23 21:53:53  emk
+ 3.3.17 - 23 July 2002 - emk
+
+   * Fixed RETURN in macros (bug #1053).
+   * Fixed typography exception when missing buttpcx graphic (bug #1039).
+   * Made Win32 BROWSE return an error if it fails (bug #793).
+   * Forward-ported QtComponentVersion to Win32 (bug #1054).
+   * Performance tuned Win32 textaa (bug #933).
+
  Revision 1.3  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

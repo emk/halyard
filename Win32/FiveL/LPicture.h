@@ -119,6 +119,28 @@ class LPicture : public LResource
 		// [out] return - a Quicktime color table handle
 		//
 		CTabHandle		GetColorTable(void);
+
+		//////////
+		// Did we actually load a graphic successfully?
+		//
+		bool HaveGraphic()
+		{
+			if (m_NativeBmp)
+				return m_Dib != NULL;
+			else
+				return m_Qtg->HaveGraphic();
+		}
+
+		//////////
+		// This is a wart, and it should probably be folded into HaveGraphic.
+		//
+		bool HaveInfo()
+		{
+			if (m_NativeBmp)
+				return m_Dib != NULL;
+			else
+				return m_Qtg->HaveInfo();
+		}
 		
 	private:
 		//////////
@@ -232,6 +254,15 @@ public:
 
 /*
  $Log$
+ Revision 1.4  2002/07/23 21:53:53  emk
+ 3.3.17 - 23 July 2002 - emk
+
+   * Fixed RETURN in macros (bug #1053).
+   * Fixed typography exception when missing buttpcx graphic (bug #1039).
+   * Made Win32 BROWSE return an error if it fails (bug #793).
+   * Forward-ported QtComponentVersion to Win32 (bug #1054).
+   * Performance tuned Win32 textaa (bug #933).
+
  Revision 1.3  2002/07/08 16:43:56  emk
  3.3.11 - Bugfixes from 3.2.0.5 through 3.2.0.7.
 

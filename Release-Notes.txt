@@ -1,5 +1,13 @@
 When possible, please include bug numbers as seen below.
 
+3.3.17 - 23 July 2002 - emk
+
+  * Fixed RETURN in macros (bug #1053).
+  * Fixed typography exception when missing buttpcx graphic (bug #1039).
+  * Made Win32 BROWSE return an error if it fails (bug #793).
+  * Forward-ported QtComponentVersion to Win32 (bug #1054).
+  * Performance tuned Win32 textaa (bug #933).
+
 3.3.16 - 19 July 2002 - emk
 
   * Fixed "b" parameter to defstyle (bug #1052).

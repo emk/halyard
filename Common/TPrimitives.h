@@ -14,6 +14,7 @@
 #include "GraphicsTools.h"
 #include "TInterpreter.h"
 #include "TTemplateUtils.h"
+#include "TLogger.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -312,6 +313,19 @@ inline void SetPrimitiveResult(bool inValue)
 	gVariableManager.SetLong("_result", inValue ? 1 : 0);
 }
 
+//////////
+// Set the global error value.  Interpreter modules which support
+// exceptions will probably want to check this and throw an exception.
+//
+// [in] inValue - The boolean value to return.
+//
+inline void SetPrimitiveError(const char *inErrorName,
+							  const char *inErrorMessage)
+{
+	gVariableManager.SetString("_error", inErrorName);
+	gVariableManager.SetString("_errormsg", inErrorMessage);
+	gDebugLog.Log("PRIMITIVE ERROR: %s: %s", inErrorName, inErrorMessage);
+}
 
 END_NAMESPACE_FIVEL
 

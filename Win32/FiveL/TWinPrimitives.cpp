@@ -365,6 +365,11 @@ DEFINE_5L_PRIMITIVE(Browse)
 
 	if (gBrowserTool.GoToUrl(theUrl))
 		PutInBackground();
+	else
+	{
+		gLog.Caution("Can't open a web browser for <%s>.", theUrl.GetString());
+		::SetPrimitiveError("nobrowse", "Can't open a web browser.");
+	}
 }
 
 /*---------------------------------------------------------------
@@ -378,7 +383,7 @@ DEFINE_5L_PRIMITIVE(Buttpcx)
 {
     TRect		bounds1, bounds;
     TPoint		buttLoc;
-    LPicture	*thePicture, *hiPicture;
+    LPicture	*thePicture;
     TString     HeaderName, picname, theCommand, Text;
 	TCallback	*callback;
     LTouchZone  *z;
@@ -403,8 +408,12 @@ DEFINE_5L_PRIMITIVE(Buttpcx)
     gOrigin.AdjustPoint(&buttLoc);
 
     thePicture = gPictureManager.GetPicture(picname);
-    picname += "H";
-    hiPicture = gPictureManager.GetPicture(picname);
+
+	if (!thePicture->HaveGraphic() || !thePicture->HaveInfo()) 
+	{
+		gLog.Caution("Missing graphic for button: %s", picname.GetString());
+		return;
+	}
 
 	gDebugLog.Log("Draw picture at X <%d>, Y <%d>", 
 		buttLoc.X(), buttLoc.Y());

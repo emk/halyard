@@ -106,6 +106,32 @@ public:
 	//
 	HPALETTE	GetPalette(CTabHandle inCTab = NULL);
 
+	//////////
+	// Do we have a graphic?
+	//
+	// [out] - true if we have a graphic, false otherwise
+	//
+	inline bool	HaveGraphic(void)
+	{ 
+		if (m_gi != NULL) 
+			return (true); 
+		else 
+			return (false); 
+	}
+
+	//////////
+	// Do we have graphic information?
+	//
+	// [out] - true if we have a graphic info, false otherwise
+	//
+	inline bool HaveInfo(void)
+	{ 
+		if (m_idh != NULL) 
+			return (true); 
+		else 
+			return (false); 
+	}
+
 protected:
 	//////////
 	// Initialize.
@@ -149,32 +175,6 @@ protected:
 	bool		NeedClip(RECT *inRect);
 
 	//////////
-	// Do we have a graphic?
-	//
-	// [out] - true if we have a graphic, false otherwise
-	//
-	inline bool	HaveGraphic(void)
-	{ 
-		if (m_gi != NULL) 
-			return (true); 
-		else 
-			return (false); 
-	}
-
-	//////////
-	// Do we have graphic information?
-	//
-	// [out] - true if we have a graphic info, false otherwise
-	//
-	inline bool HaveInfo(void)
-	{ 
-		if (m_idh != NULL) 
-			return (true); 
-		else 
-			return (false); 
-	}
-
-	//////////
 	// Quicktime graphics importer.
 	//
 	GraphicsImportComponent	m_gi;
@@ -199,6 +199,15 @@ protected:
 
 /*
  $Log$
+ Revision 1.2  2002/07/23 21:53:53  emk
+ 3.3.17 - 23 July 2002 - emk
+
+   * Fixed RETURN in macros (bug #1053).
+   * Fixed typography exception when missing buttpcx graphic (bug #1039).
+   * Made Win32 BROWSE return an error if it fails (bug #793).
+   * Forward-ported QtComponentVersion to Win32 (bug #1054).
+   * Performance tuned Win32 textaa (bug #933).
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

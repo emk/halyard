@@ -4,6 +4,12 @@
 // of exciting platform headers, it's actually built as part of the
 // platform-specific engines.  This is a wart.
 
+// Under MSVC++, you'll need to turn off precompiled headers for this file
+// by selecting it in the file view, chosing "Settings" from the context
+// menu, then "C/C++" > "Precompiled Headers" > "Not using precompiled
+// headers".  This allows us to compile this code without begining the
+// file with #include "stdafx.h", which won't work on the Mac.
+
 // Needed for RegisterQuickTimePrimitives.
 #include "TCommon.h"
 #include "TPrimitives.h"
@@ -11,6 +17,7 @@
 
 // Need to implement the primitives.
 #include <string>
+#include <QTML.h>
 
 USING_NAMESPACE_FIVEL
 
@@ -21,7 +28,7 @@ USING_NAMESPACE_FIVEL
 //  Install our portable primitive functions.  These are only required by
 //  our old 5L interpreter, not by more reasonable languages.
 
-void FIVEL_NS Register5LPrimitives()
+void FIVEL_NS RegisterQuickTimePrimitives()
 {
 	REGISTER_5L_PRIMITIVE(QTComponentVersion);
 }

@@ -16,15 +16,24 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		16
+#define VERSION_REV_BIG		17
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.16 (Development)"
+#define VERSION_STRING	"5L 3.3.17 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.24  2002/07/23 21:53:41  emk
+ 3.3.17 - 23 July 2002 - emk
+
+   * Fixed RETURN in macros (bug #1053).
+   * Fixed typography exception when missing buttpcx graphic (bug #1039).
+   * Made Win32 BROWSE return an error if it fails (bug #793).
+   * Forward-ported QtComponentVersion to Win32 (bug #1054).
+   * Performance tuned Win32 textaa (bug #933).
+
  Revision 1.23  2002/07/19 21:17:47  emk
  * Fixed "b" parameter to defstyle (bug #1052).
  * Fixed Mac engine to log missing macros to Debug.log (bug #1060).
