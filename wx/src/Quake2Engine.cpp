@@ -17,7 +17,7 @@ using FileSystem::GetBaseDirectory;
 
 Quake2Engine::Quake2Engine(Stage *inStage, const std::string &inGame)
     : wxQuake2Window(inStage, -1, wxDefaultPosition,
-					 wxQuake2Window::MODE_640_480,
+					 wxQuake2Window::MODE_800_600,
 					 GetBaseDirectory().ToNativePathString().c_str(),
 					 inGame.c_str())
 {
@@ -30,7 +30,7 @@ Quake2Engine::Quake2Engine(Stage *inStage, const std::string &inGame)
 	// get background level-loading to work.
 	Hide();
 
-	// TODO - Do something reasonable about stages which aren't 640x480.
+	// TODO - Do something reasonable about stages which aren't 800x600.
 }
 
 Quake2Engine::~Quake2Engine()

@@ -38,12 +38,17 @@ FiveLApp::FiveLApp()
 
 void FiveLApp::IdleProc()
 {
+	// We don't allow more than five consecutive idles before returning to
+	// Scheme.  Returning to Scheme is very fast, and we may need to
+	// process a jump command.
+	int max_idles = 5;
+
     // Dispatch all queued events and return from the IdleProc.  Note that
     // the '||' operator short-circuts, and will prevent us from calling
     // ProcessIdle until the pending queue is drained.  See the ProcessIdle
     // documentation for an explanation of when and why we might need to
     // call it multiple times.
-    while (wxGetApp().Pending() || wxGetApp().ProcessIdle())
+    while (wxGetApp().Pending() || (wxGetApp().ProcessIdle() && --max_idles))
     {
         if (wxGetApp().Pending())
             wxGetApp().Dispatch();
@@ -90,8 +95,8 @@ bool FiveLApp::OnInit()
 	InitXmlResource();
 
     // Create and display our stage frame.
-    mStageFrame = new StageFrame(wxSize(640, 480));
-    //mStageFrame = new StageFrame(wxSize(800, 600));
+    //mStageFrame = new StageFrame(wxSize(640, 480));
+    mStageFrame = new StageFrame(wxSize(800, 600));
     mStageFrame->Show();
 	// Enable this to go to full-screen mode *almost* immediately.
 	// TODO - You'll see the standard window for a small fraction of a
