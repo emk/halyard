@@ -40,10 +40,9 @@
     (quake2-print "\n"))
 
   (define (quake2-register-command name func)
-    (define (func-wrapper)
+    (define (func-wrapper . args)
       (with-errors-blocked (quake2-print-line)
-        ;; FIXME - Add support for command arguments.
-        (func)))
+        (apply func args)))
     (call-5l-prim 'Quake2RegisterCommand name func-wrapper))
   
   )
