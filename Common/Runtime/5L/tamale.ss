@@ -216,8 +216,9 @@
   (define (geiger-audio name location)
     (create %geiger-audio% :name name :location location))
 
-  (define (set-geiger-audio-counts-per-second! name counts)
-    (call-5l-prim 'AudioStreamGeigerSetCps name counts))
+  (define (set-geiger-audio-counts-per-second! elem-or-name counts)
+    (call-5l-prim 'AudioStreamGeigerSetCps (elem-or-name-hack elem-or-name)
+                  counts))
 
   (define-element-template %sine-wave-element%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
