@@ -1,6 +1,6 @@
-CXXFLAGS=-I../ @CXXFLAGS@
+CXXFLAGS=-I../ @CXXFLAGS@ -Wall -Werror
 
-noinst_PROGRAMS = pngtest
+noinst_PROGRAMS = pngtest listfonts
 
 pngtest_SOURCES = \
 	pngtest.cpp \
@@ -8,3 +8,9 @@ pngtest_SOURCES = \
 	Image.cpp
 
 pngtest_LDADD = @FREETYPE_LDADD@ -lgd ../libfivel.a
+
+listfonts_SOURCES = \
+	listfonts.cpp
+
+listfonts_LDADD = @FREETYPE_LDADD@ -lgd ../libfivel.a
+

@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
+CXX_FLAGS = @CXX_FLAGS@ -Wall -Werror
+
 SUBDIRS = . fonttools
 
 noinst_LIBRARIES = libimlunit.a libfivel.a
