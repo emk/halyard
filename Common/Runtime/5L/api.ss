@@ -12,6 +12,8 @@
   (require (lib "trace.ss" "5L"))
   (set-trace-output-printer! debug-log)
 
+  (require (rename (lib "match.ss") match-let match-let))
+  (provide match-let)
   
   ;;;======================================================================
   ;;;  Useful Syntax
@@ -218,6 +220,33 @@
   (define $screen-rect (rect 0 0 800 600))
 
   
+  ;;;======================================================================
+  ;;;  Mathematical Primitives
+  ;;;======================================================================
+
+  (provide real->string)
+
+  ;;; Format a real number as "x.xxx".
+  ;;;
+  ;;; @param REAL n The number to format.
+  ;;; @param INTEGER places The number of places past the decimal point.
+  (define (real->string n places)
+    (define (pad-with-zeros str wanted-length)
+      (if (>= (string-length str) wanted-length)
+          str
+          (pad-with-zeros (string-append "0" str) wanted-length)))
+    (define sign (if (< n 0) "-" ""))
+    ;; PORTING - This next line isn't completely portable Scheme--too many
+    ;; behaviors of the number hierarchy are undefined.
+    (define scaled (inexact->exact (round (* (abs n) (expt 10 places)))))
+    (define str (pad-with-zeros (number->string scaled) (+ places 1)))
+    (define split-pos (- (string-length str) places))
+    (cat sign
+         (substring str 0 split-pos)
+         "."
+         (substring str split-pos (string-length str))))
+    
+
   ;;;======================================================================
   ;;;  Geometric Primitives
   ;;;======================================================================
