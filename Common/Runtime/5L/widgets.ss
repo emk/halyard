@@ -26,14 +26,6 @@
            (+ (point-y point1)
               (point-y point2))))
 
-  (define (offset-rect rct point)
-    (let ((x-offset (point-x point))
-          (y-offset (point-y point)))
-      (rect (+ x-offset (rect-left rct))
-            (+ y-offset (rect-top rct))
-            (+ x-offset (rect-right rct))
-            (+ y-offset (rect-bottom rct)))))
-
   (defclass <graphic> ())
 
   (defclass <picture> (<graphic>)

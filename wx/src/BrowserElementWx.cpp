@@ -74,11 +74,7 @@ BrowserElementWx::BrowserElementWx(Stage *inStage, const wxString &inName,
     InitializeWidgetWindow(mHtmlWindow);
 }
 
-void BrowserElementWx::LoadFile(const wxString &inFileName){
-    mHtmlWindow->LoadPage(inFileName);
-}
-
-void BrowserElementWx::LoadUrl(const wxString &inUrl){
+void BrowserElementWx::LoadPage(const wxString &inUrl){
     mHtmlWindow->LoadPage(inUrl);
 }
 

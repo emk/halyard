@@ -76,6 +76,18 @@ void EventDispatcher::CheckForVeto(bool &outWasVetoed) {
 					gVariableManager.GetBoolean("_veto"));
 }
 
+bool EventDispatcher::DoEventUpdateUI(const wxString &inCommandName) {
+	if (!EventSetup())
+		return false;
+
+	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("update-ui");
+	args->AddSymbolArg(inCommandName.mb_str());
+    mDispatcher->Run(args.get());
+
+	return EventCleanup();    
+}
+
 bool EventDispatcher::DoEventLeftDown(wxMouseEvent &inEvent,
 									  bool inIsDoubleClick)
 {
@@ -194,6 +206,18 @@ bool EventDispatcher::DoEventBrowserPageChanged(const wxString &inUrl) {
     std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
     args->AddSymbolArg("browser-page-changed");
     args->AddStringArg(inUrl.mb_str());
+    mDispatcher->Run(args.get());
+
+	return EventCleanup();
+}
+
+bool EventDispatcher::DoEventBrowserTitleChanged(const wxString &inTitle) {
+    if (!EventSetup())
+		return false;
+
+    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("browser-title-changed");
+    args->AddStringArg(inTitle.mb_str());
     mDispatcher->Run(args.get());
 
 	return EventCleanup();

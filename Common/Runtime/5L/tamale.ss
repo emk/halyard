@@ -7,12 +7,14 @@
 (module tamale (lib "5l.ss" "5L")
   (require (lib "shapes.ss" "5L"))
 
-  (provide load-picture set-image-cache-size! modal-input with-drawing-context
+  (provide load-picture measure-picture
+           set-image-cache-size! modal-input with-drawing-context
            drawing-context-rect color-at
            %zone% zone register-cursor mouse-position
            grab-mouse ungrab-mouse mouse-grabbed?
            delete-element delete-elements
-           clear-screen rect-horizontal-center rect-vertical-center
+           clear-screen offset-rect
+           rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
@@ -45,6 +47,11 @@
           (call-5l-prim 'loadsubpic path p subrect)
           (call-5l-prim 'loadpic path p))))
   
+  (define (measure-picture name)
+    (let [[path (make-path "Graphics" name)]]
+      (check-file path)
+      (call-5l-prim 'MeasurePic path)))
+
   (define (set-image-cache-size! bytes)
     (call-5l-prim 'SetImageCacheSize bytes))
 
@@ -152,6 +159,12 @@
   (define (clear-screen c)
     (call-5l-prim 'screen c))
   
+  (define (offset-rect r p)
+    (rect (+ (rect-left r) (point-x p))
+          (+ (rect-top r) (point-y p))
+          (+ (rect-right r) (point-x p))
+          (+ (rect-bottom r) (point-y p))))
+
   (define (rect-horizontal-center r)
     (+ (rect-left r) (round (/ (- (rect-right r) (rect-left r)) 2))))
   

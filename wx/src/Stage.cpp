@@ -245,7 +245,7 @@ void Stage::NotifyElementsChanged()
 	{
 		// Update our element borders (if necessary) and fix our cursor.
 		if (mIsDisplayingBorders)
-			InvalidateStage();
+			InvalidateScreen();
 		UpdateCurrentElementAndCursor();
 	}
 }
@@ -403,14 +403,22 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
 
     // Set up our drawing context, and paint the screen.
     wxPaintDC screen_dc(this);
-    PaintStage(screen_dc);
+    PaintStage(screen_dc, GetUpdateRegion());
 }
 
-void Stage::PaintStage(wxDC &inDC)
+void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
 {
     // Blit our offscreen pixmap to the screen.
-    // TODO - Could we optimize drawing by only blitting dirty regions?
-	inDC.DrawBitmap(GetCompositingPixmap(), 0, 0, false);
+    {
+        wxMemoryDC srcDC;
+        srcDC.SelectObject(GetCompositingPixmap());
+        wxRegionIterator i(inDirtyRegion);
+        while (i) {
+            inDC.Blit(i.GetX(), i.GetY(), i.GetW(), i.GetH(),
+                      &srcDC, i.GetX(), i.GetY());
+            i++;
+        }
+    }
 
     // If necessary, draw the grid.
     if (mIsDisplayingGrid)
@@ -580,9 +588,9 @@ void Stage::OnRightDown(wxMouseEvent &inEvent)
 void Stage::ValidateStage()
 {
 	// XXX - We can't actually *do* this using wxWindows, so we're
-	// repainting the screen too often.  To fix this, we'll need to
-	// manage dirty regions in our offscreen buffer manually, or do
-	// something else to complicate things.
+	// repainting the screen too often.  But this would be an excellent
+    // time to clear mRectsToRefresh.
+    mRectsToRefresh.clear();
 }
 
 void Stage::InvalidateStage()
@@ -591,11 +599,20 @@ void Stage::InvalidateStage()
                           mStageSize.GetWidth(), mStageSize.GetHeight()));
 }
 
+void Stage::InvalidateScreen() {
+    // This is called when we want to invalidate just the stuff on the screen,
+    // and not our offscreen compositing buffers.
+    Refresh(FALSE);
+}
+
 void Stage::InvalidateRect(const wxRect &inRect)
 {
 	wxLogTrace(TRACE_STAGE_DRAWING, "Invalidating: %d %d %d %d",
 			   inRect.x, inRect.y, inRect.GetRight(), inRect.GetBottom());
+    // It's a little bit inelegant to maintain two different dirty lists,
+    // but they get cleared by different actions.
 	mRectsToComposite.MergeRect(inRect);
+    mRectsToRefresh.MergeRect(inRect);
     Refresh(FALSE, &inRect);
 }
 
@@ -736,9 +753,11 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 
 	// Draw our offscreen buffer to the screen, and mark that portion of
 	// the screen as updated.
+    // XXX - This may overwrite any Widget objects on our stage.  We need
+    // to use something like wxCLIP_CHILDREN if we can find it.
 	{
 		wxClientDC client_dc(this);
-		PaintStage(client_dc);
+		PaintStage(client_dc, mRectsToRefresh);
 	}
 	ValidateStage();
 }

@@ -36,14 +36,9 @@ public:
 	virtual ~BrowserElement();
 
     //////////
-    // Open the specified file in the browser window.
-    //
-    virtual void LoadFile(const wxString &inFileName) = 0;
-
-    //////////
     // Open the specified URL in the browser window.
     //
-    virtual void LoadUrl(const wxString &inUrl) = 0;
+    virtual void LoadPage(const wxString &inUrl) = 0;
 
     //////////
     // Get the URL of the currently-opened page.  In a perfect world,

@@ -66,6 +66,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
+    REGISTER_5L_PRIMITIVE(MeasurePic);
 	REGISTER_5L_PRIMITIVE(MediaSetVolume);
 	REGISTER_5L_PRIMITIVE(MouseGrab);
 	REGISTER_5L_PRIMITIVE(MouseIsGrabbed);
@@ -326,7 +327,7 @@ DEFINE_5L_PRIMITIVE(HTML) {
     else
         elem = new BrowserElementIE(wxGetApp().GetStage(), name.c_str(),
                                     TToWxRect(bounds), dispatcher);
-	elem->LoadFile(file_or_url.c_str());
+	elem->LoadPage(file_or_url.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(Input) {
@@ -348,12 +349,16 @@ DEFINE_5L_PRIMITIVE(Input) {
 	XXX - Flags not implemented!
 -----------------------------------------------------------------------*/
 
-static void load_picture(const std::string &inName, TPoint inLoc,
+static wxBitmap load_picture(const std::string &inName) {
+	// Load our image.
+	return wxGetApp().GetStage()->GetImageCache()->GetBitmap(inName.c_str());
+}
+
+static void draw_picture(const std::string &inName, TPoint inLoc,
 						 TRect *inRect = NULL)
 {
 	// Load our image.
-	wxBitmap bitmap = 
-		wxGetApp().GetStage()->GetImageCache()->GetBitmap(inName.c_str());
+	wxBitmap bitmap(load_picture(inName));
 	if (!bitmap.Ok()) {
 		::SetPrimitiveError("noimage", "Can't load the specified image");
 		return;
@@ -407,7 +412,7 @@ DEFINE_5L_PRIMITIVE(Loadpic) {
 	}
 
 	// Do the dirty work.
-	load_picture(picname, loc);
+	draw_picture(picname, loc);
 }
 
 DEFINE_5L_PRIMITIVE(Loadsubpic) {
@@ -416,7 +421,19 @@ DEFINE_5L_PRIMITIVE(Loadsubpic) {
 	TRect		subrect;
 
 	inArgs >> picname >> loc >> subrect;
-	load_picture(picname, loc, &subrect);
+	draw_picture(picname, loc, &subrect);
+}
+
+DEFINE_5L_PRIMITIVE(MeasurePic) {
+	std::string	picname;
+    inArgs >> picname;
+    wxBitmap pic(load_picture(picname));
+    if (!pic.Ok()) {
+		::SetPrimitiveError("noimage", "Can't load the specified image");
+    } else {
+        wxRect r(wxRect(0, 0, pic.GetWidth(), pic.GetHeight()));
+        ::SetPrimitiveResult(WxToTRect(r));
+    }
 }
 
 DEFINE_5L_PRIMITIVE(NotifyEnterCard) {

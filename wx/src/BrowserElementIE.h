@@ -24,8 +24,7 @@ public:
                      const wxRect &inBounds,
                      FIVEL_NS TCallback *inDispatch);
 
-    virtual void LoadFile(const wxString &inFileName);
-    virtual void LoadUrl(const wxString &inUrl);
+    virtual void LoadPage(const wxString &inUrl);
     virtual wxString GetCurrentPageUrl();
     virtual wxString GetCurrentPageTitle();
     virtual bool CanGoBack();

@@ -88,11 +88,12 @@
            <event> event?
            <vetoable-event> veto-event! event-vetoed?
            <idle-event> idle-event?
+           <update-ui-event> update-ui-event? event-command
            <char-event> char-event? event-character event-modifiers
            <mouse-event> mouse-event? event-position event-double-click?
-           <browser-event> browser-event? event-url
+           <url-event> url-event? event-url
+           <text-event> text-event? event-text
            <browser-navigate-event> browser-navigate-event?
-           <status-text-changed-event> event-status-text
            <progress-changed-event> event-progress-done? event-progress-value
            make-node-event-dispatcher ; semi-private
            )
@@ -185,6 +186,9 @@
 
   (defclass <idle-event> (<event>))
 
+  (defclass <update-ui-event> (<event>)
+    (command :accessor event-command))
+
   (defclass <char-event> (<event>)
     (character :accessor event-character)
     (modifiers :accessor event-modifiers))
@@ -193,13 +197,13 @@
     (position :accessor event-position)
     (double-click? :accessor event-double-click? :initvalue #f))
 
-  (defclass <browser-event> (<event>)
+  (defclass <url-event> (<event>)
     (url :accessor event-url))
 
-  (defclass <browser-navigate-event> (<browser-event> <vetoable-event>))
+  (defclass <text-event> (<event>)
+    (text :accessor event-text))
 
-  (defclass <status-text-changed-event> (<event>)
-    (text :accessor event-status-text))
+  (defclass <browser-navigate-event> (<url-event> <vetoable-event>))
 
   (defclass <progress-changed-event> (<event>)
     (done? :accessor event-progress-done?)
@@ -219,9 +223,12 @@
   (define (dispatch-event-to-node node name args)
     (let [[unhandled? #f]
           [event (case name
-                   [[char] (make <char-event>
-                             :character (string-ref (car args) 0)
-                             :modifiers (cadr args))]
+                   [[update-ui]
+                    (make <update-ui-event> :command (car args))]
+                   [[char]
+                    (make <char-event>
+                      :character (string-ref (car args) 0)
+                      :modifiers (cadr args))]
                    [[mouse-down]
                     (make <mouse-event>
                       :position (point (car args) (cadr args))
@@ -232,10 +239,12 @@
                    [[browser-navigate]
                     (make <browser-navigate-event> :url (car args))]
                    [[browser-page-changed]
-                    (make <browser-event> :url (car args))]
+                    (make <url-event> :url (car args))]
+                   [[browser-title-changed]
+                    (make <text-event> :text (car args))]
                    [[status-text-changed]
-                    (make <status-text-changed-event> :text (car args))]
-                   [[progress-changed-event]
+                    (make <text-event> :text (car args))]
+                   [[progress-changed]
                     (make <progress-changed-event>
                       :done? (car args)
                       :value (cadr args))]

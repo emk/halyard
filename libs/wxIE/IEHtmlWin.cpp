@@ -293,6 +293,30 @@ bool wxIEHtmlWin::LoadStream(wxInputStream *is)
     return LoadStream(pstrm);
 };
 
+wxString wxIEHtmlWin::LocationName()
+{
+    HRESULT hret = 0;
+    BSTR bstr;
+    hret = m_webBrowser->get_LocationName(&bstr);
+    if (hret != S_OK)
+        return "";
+    wxString str(bstr);
+    SysFreeString(bstr);
+    return str;
+}
+
+wxString wxIEHtmlWin::LocationUrl()
+{
+    HRESULT hret = 0;
+    BSTR bstr;
+    hret = m_webBrowser->get_LocationURL(&bstr);
+    if (hret != S_OK)
+        return "";
+    wxString str(bstr);
+    SysFreeString(bstr);
+    return str;
+}
+
 
 bool wxIEHtmlWin::GoBack()
 {

@@ -46,9 +46,14 @@ class Stage : public wxWindow
 	wxBitmap mCompositingPixmap;
 
 	//////////
-	// Rectangles marked as dirty.  We need to composite these.
+	// Rectangles which need to be recomposited.
 	//
 	DirtyList mRectsToComposite;
+    
+    //////////
+    // Rectangles which need to be redrawn to the screen during a refresh.
+    //
+    DirtyList mRectsToRefresh;
 
     //////////
     // This drawing area contains the background graphics for the stage.
@@ -175,7 +180,7 @@ class Stage : public wxWindow
 	//////////
 	// Repaint the stage.
 	//
-	void PaintStage(wxDC &inDC);
+	void PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion);
 
     //////////
     // Draw a border for the specified element.
@@ -416,7 +421,7 @@ public:
     // Toggle the display of the grid.
     //
     void ToggleDisplayGrid()
-		{ InvalidateStage(); mIsDisplayingGrid = !mIsDisplayingGrid; }
+		{ InvalidateScreen(); mIsDisplayingGrid = !mIsDisplayingGrid; }
 
     //////////
     // Are we currently displaying the borders?
@@ -427,12 +432,17 @@ public:
     // Toggle the display of the borders.
     //
     void ToggleDisplayBorders()
-		{ InvalidateStage(); mIsDisplayingBorders = !mIsDisplayingBorders; }
+		{ InvalidateScreen(); mIsDisplayingBorders = !mIsDisplayingBorders; }
 
 	//////////
 	// Invalidate the entire stage.
 	//
 	void InvalidateStage();
+
+	//////////
+	// Invalidate just the screen, not the offscreen compositing for the stage.
+	//
+	void InvalidateScreen();
 
 	//////////
 	// Invalidate the specified rectangle.

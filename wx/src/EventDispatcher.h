@@ -40,6 +40,12 @@ public:
 	//
 	static void EnableExpensiveEvents(bool inEnable);
 
+    //////////
+    // Dispatch an event asking for menus and buttons related to
+    // inCommandName to be updated.  Similar to wxWindows EVT_UPDATE_UI.
+    //
+    bool DoEventUpdateUI(const wxString &inCommandName);
+
 	//////////
 	// Dispatch a mouse-down event.
 	//
@@ -86,6 +92,12 @@ public:
     // has loaded a new page, or accomplished some similar task.
     //
     bool DoEventBrowserPageChanged(const wxString &inUrl);
+
+    //////////
+    // Dispatch a TitleChanged event.  This occurs whenever the browser
+    // window title changes.
+    //
+    bool DoEventBrowserTitleChanged(const wxString &inTitle);
 
     //////////
     // Dispatch a SetStatusText event.

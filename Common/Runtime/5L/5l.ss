@@ -11,7 +11,7 @@
   ;; locally to get some decidedly non-Scheme behavior.
   (provide (all-from-except (lib "lispish.ss" "5L")
                             ;; begin/var hacks.
-                            lambda define let
+                            lambda define let unless when
                             ))
 
   (provide (all-from (lib "api.ss" "5L")))
@@ -25,7 +25,9 @@
   
   (provide (rename lambda/var lambda)
            (rename define/var define)
-           (rename let/var let))
+           (rename let/var let)
+           (rename unless/var unless)
+           (rename when/var when))
 
   (define-syntax lambda/var
     (syntax-rules ()
@@ -41,4 +43,14 @@
       [(let/var loop-name [decl ...] body ...)
        (let loop-name [decl ...] (begin/var body ...))]))
 
+  (define-syntax unless/var
+    (syntax-rules ()
+      [(unless/var cond body ...)
+       (unless cond (begin/var body ...))]))
+
+  (define-syntax when/var
+    (syntax-rules ()
+      [(when/var cond body ...)
+       (when cond (begin/var body ...))]))
+  
   )

@@ -23,6 +23,8 @@ public:
 	const_iterator end() const { return mRectangles.end(); }
 
 	void MergeRect(const wxRect &inRect);
+
+    operator wxRegion();
 };
 
 #endif // DIRTYLIST_H

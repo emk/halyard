@@ -72,3 +72,10 @@ void DirtyList::MergeRect(const wxRect &inRect) {
 	// Push the merged rectangle 
 	mRectangles.push_back(merged);
 }
+
+DirtyList::operator wxRegion() {
+    wxRegion result;
+    for (iterator i = begin(); i != end(); ++i)
+        result.Union(*i);
+    return result;
+}
