@@ -21,7 +21,7 @@
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
            %browser% %edit-box-element% %movie-element% 
-           browser edit-box vorbis-audio
+           browser edit-box %vorbis-audio% vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
            %geiger-synth% geiger-synth
            sine-wave set-media-base-url! movie 
@@ -410,7 +410,7 @@
   (define (sine-wave name frequency)
     (create %sine-wave-element% :name name :frequency frequency))
 
-  (define-element-template %vorbis-audio-element%
+  (define-element-template %vorbis-audio%
       [[location :type <string>  :label "Location"]
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
@@ -420,7 +420,7 @@
                   (* 1024 buffer) loop?))
   
   (define (vorbis-audio name location &key (loop? #f))
-    (create %vorbis-audio-element% :name name :location location :loop? loop?))
+    (create %vorbis-audio% :name name :location location :loop? loop?))
 
   (define *media-base-url* #f)
 
