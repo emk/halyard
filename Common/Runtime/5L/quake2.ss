@@ -88,6 +88,9 @@
     ;; Boot the Quake 2 game engine (if it hasn't been launched already).
     (quake2-launch game)
 
+    ;; Initialize /quake2 state-db variables to plausible values.
+    (set! (state-db '/quake2/weapon) "none")
+
     ;; Define any universally useful console commands.
     (define-quake2-command (jump card-name)
       (quake2-jump-helper card-name))
