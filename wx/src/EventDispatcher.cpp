@@ -48,7 +48,7 @@ bool EventDispatcher::IsEventStale(const wxEvent &event) {
     // modified to apply to all event types. But we don't have wxEvent
     // objects for all our events yet, so there's no easy way to make this
     // consistent. Oh, well.
-    return event.GetTimestamp() <= mMaxStaleTime;
+    return PlatformGetEventTimestamp(event) <= mMaxStaleTime;
 }
 
 void EventDispatcher::SetDispatcher(TCallbackPtr inCallback)
@@ -290,6 +290,14 @@ bool EventDispatcher::DoEventMediaFinished()
 #ifdef FIVEL_PLATFORM_WIN32
 
 #include <windows.h>
+
+wxLongLong EventDispatcher::PlatformGetEventTimestamp(const wxEvent &event) {
+    // XXX - We need to cast to a DWORD first, because the Win32 API (and
+    // wxWidgets) treat the return value of GetMessageTime as a 'LONG'
+    // instead of a 'DWORD'.
+    ASSERT(event.GetTimestamp() == ::GetMessageTime());
+    return (wxLongLong) ((DWORD) event.GetTimestamp());
+}
 
 wxLongLong EventDispatcher::PlatformGetTickCount() {
     // The wxWidgets function wxEvent::GetTimestamp is implemented 

@@ -138,6 +138,7 @@ public:
     bool DoEventMediaFinished();
 
 private:
+    wxLongLong PlatformGetEventTimestamp(const wxEvent &event);
     wxLongLong PlatformGetTickCount();
 };
 

@@ -22,15 +22,21 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		40
+#define VERSION_REV_BIG		42
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.40 (Development)"
+#define VERSION_STRING		"Tamale 0.0.42 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.82  2004/12/09 18:01:56  emk
+ 0.0.42 - 06 Dec 2004 - emk
+
+   * EVENT-STALE? no longer gets confused if your system has been
+     up for more than 49.7/2 days (bug #1779).
+
  Revision 1.81  2004/11/08 21:47:22  emk
  0.0.40 - 08 Nov 2005 - emk
 
