@@ -406,3 +406,30 @@ Ancient Versions
   You can find this engine in CVS as FiveL_3_1_1_Stabilization and
   Mac5L_202_Stable.  Release notes are in Win32/ReleaseNotes.txt and
   Mac/ReleaseNotes.
+
+libxml2 Hacks
+-------------
+
+I made a static version of libxml2 for Tamale by cloning the "Win32 Debug"
+and "Win32 Release" targets to "Win32 Debug DLL" and "Win32 Release DLL"
+respectively, then opening up the DSP file in Emacs.  After the TARGTYPE
+line:
+
+  # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
+
+...I inserted a second target type:
+
+  # TARGTYPE "Win32 (x86) Static Library" 0x0104
+
+Then I edited the comments further down to read as follows:
+
+  !MESSAGE "libxml2 - Win32 Debug" (based on "Win32 (x86) Static Library")
+  !MESSAGE "libxml2 - Win32 Release" (based on "Win32 (x86) Static Library")
+
+Then I re-opened the DSP file in Visual Studio and made the following
+changes to each of the non-DLL targets:
+
+  * Set the /nologo flag.
+  * Set appropriate build and output directories.
+  * Replaced the _USRDLL proprocessor define with _LIB.
+  * Set a runtime library which matched my project.
