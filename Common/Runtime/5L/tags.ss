@@ -5,10 +5,18 @@
   (define (insert-def name type line)
     (call-5l-prim 'ScriptEditorDBInsertDef name type line))
 
+  (define (insert-help name help)
+    (call-5l-prim 'ScriptEditorDBInsertHelp name (value->string help)))
+
   (define (maybe-insert-def name type)
     (let [[sym (syntax-object->datum name)]]
       (when (symbol? sym)
         (insert-def sym type (syntax-line name)))))
+
+  (define (maybe-insert-help name help)
+    (let [[sym (syntax-object->datum name)]]
+      (when (symbol? sym)
+        (insert-help sym help))))
 
   (define (form-name stx)
     (syntax-case stx ()
@@ -35,7 +43,8 @@
       [[define]
        (syntax-case stx ()
          [(define (name . args) . body)
-          (maybe-insert-def #'name 'function)]
+          (maybe-insert-def #'name 'function)
+          (maybe-insert-help #'name (syntax-object->datum #'(name . args)))]
          [(define name . body)
           (maybe-insert-def #'name 'variable)]
          [anything-else #f])]
