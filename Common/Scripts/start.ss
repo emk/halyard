@@ -319,49 +319,48 @@
 (define *ttvar2* #f)
 
 (define-card-template %card-template-1%
-    [[param-a :type <string>  :label "Param A"]
-     [param-b :type <integer> :label "Param B"]]
+    [[prop-a :type <string>  :label "Prop A"]
+     [prop-b :type <integer> :label "Prop B"]]
     ()
   (test (not *ttvar1*))
   (test (not *ttvar2*))
-  (test (instance-of? param-a <string>))
-  (test (instance-of? param-b <integer>))
+  (test (instance-of? prop-a <string>))
+  (test (instance-of? prop-b <integer>))
   (set! *ttvar1* #t))
 
 (define-card-template %card-template-2%
-    [[param-c :type <string>  :label "Param C"]
-     [param-d :type <integer> :label "Param D" :default 20]]
-    (:template %card-template-1% :param-b 10)
+    [[prop-c :type <string>  :label "Prop C"]
+     [prop-d :type <integer> :label "Prop D" :default 20]]
+    (:template %card-template-1% :prop-b 10)
   (test *ttvar1*)
   (test (not *ttvar2*))
-  (test (instance-of? param-c <string>))
-  (test (instance-of? param-d <integer>))
+  (test (instance-of? prop-c <string>))
+  (test (instance-of? prop-d <integer>))
   (set! *ttvar2* #t))
 
 (card template-tests-1 (:template %card-template-2%
-                        :param-a "foo"
-                        :param-c "bar")
+                        :prop-a "foo"
+                        :prop-c "bar")
   (test *ttvar1*)
   (test *ttvar2*)
-  (test (equal? (param self 'param-a) "foo"))
-  (test (equal? (param self 'param-b) 10))
-  (test (equal? (param self 'param-c) "bar"))
-  (test (equal? (param self 'param-d) 20))
+  (test (equal? (prop self 'prop-a) "foo"))
+  (test (equal? (prop self 'prop-b) 10))
+  (test (equal? (prop self 'prop-c) "bar"))
+  (test (equal? (prop self 'prop-d) 20))
   (set! *ttvar1* #f)
   (set! *ttvar2* #f)
   (jump template-tests-2))
 
 (card template-tests-2 (:template %card-template-2%
-                        :param-a "baz"
-                        :param-b 30
-                        :param-c "moby"
-                        :param-d 40)
+                        :prop-a "baz"
+                        :prop-c "moby"
+                        :prop-d 30)
   (test *ttvar1*)
   (test *ttvar2*)
-  (test (equal? (param self 'param-a) "baz"))
-  (test (equal? (param self 'param-b) 30))
-  (test (equal? (param self 'param-c) "moby"))
-  (test (equal? (param self 'param-d) 40))
+  (test (equal? (prop self 'prop-a) "baz"))
+  (test (equal? (prop self 'prop-b) 10))
+  (test (equal? (prop self 'prop-c) "moby"))
+  (test (equal? (prop self 'prop-d) 30))
   (jump template-tests-3))
 
 (define *ttvar3* #f)
