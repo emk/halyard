@@ -46,12 +46,11 @@
 #include "TStateListenerManager.h"
 #include "Transition.h"
 #include "DrawingArea.h"
+#include "MediaElement.h"
 
 #if CONFIG_HAVE_QUAKE2
 #	include "Quake2Engine.h"
 #endif // CONFIG_HAVE_QUAKE2
-
-typedef shared_ptr<IMediaElement> IMediaElementPtr;
 
 #define IDLE_INTERVAL (33) // milliseconds
 
@@ -763,28 +762,30 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 
 	// Make sure we can wait on this element.
 	// TODO - Refactor this error-handling code to a standalone
-	// routine so we don't have to keep on typing it.
+	// routine so we don't have to keep on typing it.  (Actually, this code
+    // is handled nicely by some macros in TWxPrimitives.cpp, although they
+    // report errors quite a bit more noisily.
 	const char *name = (const char *) inElementName;
 	if (i == mElements.end())
 	{
 		gDebugLog.Caution("wait: Element %s does not exist", name);
 		return false;
 	}
-	MovieElementPtr movie = MovieElementPtr(*i, dynamic_cast_tag());
-	if (!movie)
+	IMediaElementPtr media = IMediaElementPtr(*i, dynamic_cast_tag());
+	if (!media)
 	{
-		gDebugLog.Caution("wait: Element %s is not a movie", name);
+		gDebugLog.Caution("wait: Element %s is not a media element", name);
 		return false;		
 	}
 
 	// Return immediately (if we're already past the wait point) or
 	// go to sleep for a while.
-	if (movie->HasReachedFrame(inUntilFrame))
-		gDebugLog.Log("wait: Movie %s has already past frame %d",
+	if (media->HasReachedFrame(inUntilFrame))
+		gDebugLog.Log("wait: Media element %s has already past frame %d",
 					  name, inUntilFrame);
 	else
 	{
-		mWaitElement = movie;
+		mWaitElement = media;
 		mWaitFrame = inUntilFrame;
 		InterpreterSleep();
 	}
@@ -795,7 +796,7 @@ void Stage::EndWait()
 {
 	gDebugLog.Log("wait: Waking up.");
 	ASSERT(mWaitElement.get());
-	mWaitElement = MovieElementPtr();
+	mWaitElement = IMediaElementPtr();
 	mWaitFrame = 0;
     mShouldWakeUpOnIdle = true;
 }
@@ -898,7 +899,8 @@ void Stage::DestroyElement(ElementPtr inElement)
 		MouseUngrab(mGrabbedElement);
 	if (inElement == mCurrentElement)
 		mCurrentElement = ElementPtr();
-	if (inElement == mWaitElement)
+    IMediaElementPtr as_media(inElement, dynamic_cast_tag());
+	if (as_media && as_media == mWaitElement)
 		EndWait();
 
 	// Destroy the object.

@@ -299,7 +299,7 @@ void BackgroundListItemData::ObjectChanged()
 
 	// Extract the Objects from our Model.
 	size_t model_count = backgrounds->GetSize();
-	for (int i = 0; i < model_count; i++)
+	for (size_t i = 0; i < model_count; i++)
 		model_items.push_back(model::cast<model::Object>(backgrounds->Get(i)));
 
 	// Calculate our Largest Common Subsequence.  This is essentially

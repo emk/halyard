@@ -75,7 +75,7 @@ void GeigerAudioStream::ZeroBuffer(float *outBuffer, unsigned long inFrames)
 {
 	ASSERT(GetChannelCount() == 2);
 	float *cursor = outBuffer;
-    for (int i = 0; i < inFrames; i++)
+    for (size_t i = 0; i < inFrames; i++)
 	{
 		*cursor++ = 0.0f;
 		*cursor++ = 0.0f;
@@ -86,7 +86,7 @@ void GeigerAudioStream::ClipBuffer(float *ioBuffer, unsigned long inFrames)
 {
 	size_t sample_count = inFrames * GetChannelCount();
 	float *cursor = ioBuffer;
-    for (int i = 0; i < sample_count; i++)
+    for (size_t i = 0; i < sample_count; i++)
 	{
 		float sample = *cursor;
 		if (sample > 1.0)
@@ -153,7 +153,7 @@ void GeigerAudioStream::MixChirpIntoBuffer(size_t inCursor,
 										   unsigned long inFrames)
 {
 	float *cursor = ioBuffer;
-    for (int i = 0; mChirpCursors[inCursor] && i < inFrames; i++)
+    for (size_t i = 0; mChirpCursors[inCursor] && i < inFrames; i++)
     {
 		*cursor++ += *(mChirpCursors[inCursor])++;
 		ASSERT(mChirpCursors[inCursor] < mChirpEnd);

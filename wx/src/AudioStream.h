@@ -93,6 +93,21 @@ public:
 	///
 	void SetChannelVolume(const std::string &inChannel, float inVolume);
 
+    //////////
+    /// Is this stream done playing?  Never returns true for a looping
+    /// stream.
+    ///
+    virtual bool IsDone() const;
+
+    //////////
+    /// How many seconds of audio have been played?  For some more
+    /// advanced stream types, this will generally try not to count
+    /// buffer underrun time, although this may make the result
+    /// occasionally jump backwards in time by a small fraction of a
+    /// second.
+    ///
+    double GetTime() const;
+
 	//////////
 	/// Is the stream currently running?
 	///
@@ -123,6 +138,14 @@ public:
 	void Stop();
 
 protected:
+    //////////
+    /// Get the number of samples played.  The default implementation
+    /// reports solely the number of raw samples actually played, but
+    /// subclasses may attempt to fudge this number to account for
+    /// underruns.
+    ///
+    virtual double GetSamplesPlayed() const;
+
 	//////////
 	/// Our callback function.  This code runs in a separate thread (or
 	/// perhaps at interrupt level), and isn't allowed to do much of

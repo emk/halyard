@@ -92,7 +92,7 @@ void AnimatedOverlay::NotifyStateChanged() {
 
     // Handle changes to our graphic.
 	int32 index = gStateDB.Get(this, mStatePath + "/index");
-	if (index >= mGraphics.size() || index < 0)
+	if (index < 0 || static_cast<size_t>(index) >= mGraphics.size())
 		THROW("Invalid index for AnimatedOverlay");
 	std::string graphic = mGraphics.at(index);
     if (graphic != mCurrentGraphic) {

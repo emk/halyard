@@ -46,6 +46,7 @@ VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 
 	mDataBegin = 0;
 	mDataEnd = 0;
+    mSamplesLoaded = 0;
 	mUnderrunCount = 0;
 
 	InitializeFile();
@@ -80,15 +81,16 @@ size_t VorbisAudioStream::ReadIntoBlock(int16 *inSpace, size_t inLength)
 	if (!mFile->Read(inSpace, inLength, &written))
 		mDoneWithFile = true;
 	ASSERT(!mDoneWithFile || written == 0);
+    mSamplesLoaded += written / CHANNELS;
 	return written;
 }
 
-bool VorbisAudioStream::DoneReadingData()
+inline bool VorbisAudioStream::DoneReadingData() const
 {
 	return mDoneWithFile && !mShouldLoop;
 }
 
-bool VorbisAudioStream::IsBufferFull()
+bool VorbisAudioStream::IsBufferFull() const
 {
 	// We always leave at least one empty frame somewhere in the buffer.
 	// This means that an empty buffer can be represented as
@@ -152,6 +154,11 @@ void VorbisAudioStream::MarkAsWritten(size_t inSize)
 	ASSERT(0 <= mDataEnd && mDataEnd < mBufferSize);
 }
 
+bool VorbisAudioStream::IsDone() const {
+    return (DoneReadingData() &&
+            (GetSamplesPlayed() > mSamplesLoaded));
+}
+
 void VorbisAudioStream::Idle()
 {
 	// Add as much data to the buffer as we can.
@@ -175,6 +182,14 @@ void VorbisAudioStream::Idle()
 	}
 }
 
+double VorbisAudioStream::GetSamplesPlayed() const {
+    // This is only approximate.  We may be substracting unplayed underrun
+    // from the played sample count, so this may temporarily jump back in
+    // time if we've just queued a bunch of empty buffers.  We could get
+    // more accurate results at the cost of a lot more work.
+    return AudioStream::GetSamplesPlayed() - mUnderrunCount;
+}
+
 bool VorbisAudioStream::FillBuffer(void *outBuffer, unsigned long inFrames,
 								   PaTimestamp inTime)
 {
@@ -192,7 +207,7 @@ bool VorbisAudioStream::FillBuffer(void *outBuffer, unsigned long inFrames,
 
 	// Write our data to the output buffer, and pad with zeros if
 	// necessary.
-	for (int i = 0; i < inFrames; i++)
+	for (size_t i = 0; i < inFrames; i++)
 	{
 		if (begin != end)
 		{
@@ -209,7 +224,9 @@ bool VorbisAudioStream::FillBuffer(void *outBuffer, unsigned long inFrames,
 			// may get more later if mDone is false.)
 			*buffer++ = 0;
 			*buffer++ = 0;
-			mUnderrunCount++;
+			/// \todo Although we inline this conditional, is it still to expensive?
+            if (!DoneReadingData()) 
+                mUnderrunCount++;
 		}
 	}
 	mDataBegin = begin;

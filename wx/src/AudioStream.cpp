@@ -148,6 +148,18 @@ void AudioStream::SetVolume(float inVolume)
 		SetChannelVolume(i, inVolume);
 }
 
+bool AudioStream::IsDone() const {
+    return false;
+}
+
+double AudioStream::GetTime() const {
+    return GetSamplesPlayed() / SAMPLES_PER_SECOND;
+}
+
+double AudioStream::GetSamplesPlayed() const {
+    return Pa_StreamTime(mStream);
+}
+
 void AudioStream::Start()
 {
 	if (!mIsRunning)

@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Warning fixes.
+  * Fixed bug #1695: WAIT now works for Vorbis audio.  This is
+    still slightly experimental, but please start playing around.
+    Remember, we can't stream Vorbis yet.
+
 0.0.36 - 13 Sep 2004 - emk
 
   * Closing last tab when there are two or more tabs no longer

@@ -23,6 +23,8 @@
 #ifndef MediaElement_H
 #define MediaElement_H
 
+#include "AppGlobals.h"
+
 //////////
 /// An abstract interface for elements which play media streams.  This
 /// is used as a mixin class.
@@ -32,6 +34,13 @@ class IMediaElement
 public:
     IMediaElement() {} 
 	virtual ~IMediaElement() {}
+
+    //////////
+    /// Return true if the movie has reached the specified frame (or the
+    /// movie is done).  If inFrame is LAST_FRAME, then return true only
+    /// when the movie reaches the end.
+    ///
+    virtual bool HasReachedFrame(MovieFrame inFrame) = 0;
 
     //////////
     /// Returns true if the media is looping.

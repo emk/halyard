@@ -31,8 +31,8 @@
 class StageFrame;
 class Element;
 typedef shared_ptr<Element> ElementPtr;
-class MovieElement;
-typedef shared_ptr<MovieElement> MovieElementPtr;
+class IMediaElement;
+typedef shared_ptr<IMediaElement> IMediaElementPtr;
 class EventDispatcher;
 class ImageCache;
 class CursorManager;
@@ -161,7 +161,7 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	//////////
 	/// The movie we're waiting on, or NULL if we're not waiting on anything.
 	///
-	MovieElementPtr mWaitElement;
+	IMediaElementPtr mWaitElement;
 
 	//////////
 	/// The movie frame we're waiting on.
@@ -545,7 +545,7 @@ public:
 	/// Suspend the interpreter until the named movie reaches the specified
 	/// frame.
 	///
-	/// \param inElementName  The name of the MovieElement to wait on.
+	/// \param inElementName  The name of the IMediaElement to wait on.
 	/// \param inUntilFrame  The frame to wait until.
 	/// \return  true if the wait request was valid, false if the
 	///                named element doesn't exist or isn't a movie.

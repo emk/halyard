@@ -38,6 +38,9 @@ class VorbisAudioStream : public AudioStream
 	volatile size_t mDataBegin;
 	volatile size_t mDataEnd;
 	volatile bool mDoneWithFile;
+    /// \todo Big enough data type?
+    size_t mSamplesLoaded;
+    /// \todo Big enough data type?
 	size_t mUnderrunCount;
 
 	enum {
@@ -53,12 +56,12 @@ class VorbisAudioStream : public AudioStream
 	void RestartFileIfLoopingAndDone();
 
 	size_t ReadIntoBlock(int16 *inSpace, size_t inLength);
-	bool DoneReadingData();
+	bool DoneReadingData() const;
 
 	//////////
 	/// Return true if the circular buffer is full.
 	///
-	bool IsBufferFull();
+	bool IsBufferFull() const;
 
 	//////////
 	/// Get pointers to the free space in the buffer.  Because the buffer is
@@ -81,12 +84,14 @@ public:
 					  bool inShouldLoop);
 	~VorbisAudioStream();
 
+    virtual bool IsDone() const;
     virtual bool IsLooping() { return mShouldLoop; }
 	virtual void Idle();
 
 protected:
-	bool FillBuffer(void *outBuffer, unsigned long inFrames,
-					PaTimestamp inTime);	
+    virtual double GetSamplesPlayed() const;
+	virtual bool FillBuffer(void *outBuffer, unsigned long inFrames,
+                            PaTimestamp inTime);	
 };
 
 

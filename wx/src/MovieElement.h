@@ -46,7 +46,7 @@ public:
 
 	virtual bool HasVisibleRepresentation();
 
-    bool HasReachedFrame(MovieFrame inFrame);
+    virtual bool HasReachedFrame(MovieFrame inFrame);
 
     virtual void Idle();
 

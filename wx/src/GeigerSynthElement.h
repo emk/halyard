@@ -62,6 +62,9 @@ public:
     
     virtual void NotifyStateChanged();
 
+    /// \todo Clean this up once HasReachedFrame logic is factored
+    /// into IMediaElement.
+    virtual bool HasReachedFrame(MovieFrame inFrame) { return true; }
     virtual bool IsLooping() { return true; }
 	virtual void EndPlayback();
     virtual void Pause();

@@ -36,6 +36,7 @@ class AudioStream;
 class AudioStreamElement : public InvisibleElement, public IMediaElement
 {
 	AudioStream *mStream;
+    bool mEndPlaybackWasCalled;
 
 public:
 	AudioStreamElement(Stage *inStage, const wxString &inName,
@@ -44,6 +45,7 @@ public:
 
 	AudioStream *GetAudioStream() { return mStream; }
 
+    virtual bool HasReachedFrame(MovieFrame inFrame);
     virtual bool IsLooping();
 	virtual void EndPlayback();
     virtual void Pause();

@@ -32,7 +32,8 @@
 
 AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
 									   AudioStream *inStream)
-    : InvisibleElement(inStage, inName), mStream(inStream)
+    : InvisibleElement(inStage, inName), mStream(inStream),
+      mEndPlaybackWasCalled(false)
 {
     mStream->Start();
 }
@@ -43,6 +44,17 @@ AudioStreamElement::~AudioStreamElement()
     delete mStream;
 }
 
+bool AudioStreamElement::HasReachedFrame(MovieFrame inFrame) {
+    /// \todo Refactor out code shared with MovieElement.
+    if (mEndPlaybackWasCalled)
+        return true;
+	else if (inFrame == LAST_FRAME)
+		return mStream->IsDone();
+	else
+		return (mStream->IsDone() ||
+                (mStream->GetTime() * FRAMES_PER_SECOND >= inFrame));
+}
+
 bool AudioStreamElement::IsLooping()
 {
     return mStream->IsLooping();
@@ -50,6 +62,8 @@ bool AudioStreamElement::IsLooping()
 
 void AudioStreamElement::EndPlayback()
 {
+    /// \todo Refactor out code shared with MovieElement.
+    mEndPlaybackWasCalled = true;
 	mStream->Stop();
 }
 
