@@ -1,0 +1,19 @@
+#if __POWERPC__
+	#pragma precompile_target "FiveLClassHeaderPPC++"
+
+#elif __CFM68K__
+	#pragma precompile_target "FiveLClassHeaderCFM68K++"
+
+#else
+	#pragma precompile_target "FiveLClassHeader68K++"
+#endif
+
+// Set our PowerPlant options.
+#define PP_Uses_PowerPlant_Namespace	1		// Wrap all system defs in a namespace
+
+#pragma once on
+#include "PP_ClassHeaders.cp"
+
+// Create a shorter alias for the PowerPlant namespace, so we don't have to type
+// as much.
+namespace PP = PowerPlant;
