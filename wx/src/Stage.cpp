@@ -631,13 +631,16 @@ void Stage::InvalidateRect(const wxRect &inRect)
     // It's a little bit inelegant to maintain two different dirty lists,
     // but they get cleared by different actions.
 	mRectsToComposite.MergeRect(inRect);
-    mRectsToRefresh.MergeRect(inRect);
 
-    // Trigger screen repaint events, but only if Quake 2 is not being
-    // displayed.  (Quake 2 covers the entire stage, and if we trigger a
-    // repaint event, it will flicker.)
-    if (!Quake2Engine::IsDisplayed())
+    // Trigger screen repaint events--and update our manual refresh
+    // list--but only if Quake 2 is not being displayed.  (Quake 2 covers
+    // the entire stage, and if we repaint the screen, it will flicker.)
+    // The entire screen will automatically be refreshed when Quake 2
+    // is hidden.
+    if (!Quake2Engine::IsDisplayed()) {
+        mRectsToRefresh.MergeRect(inRect);
         Refresh(FALSE, &inRect);
+    }
 }
 
 void Stage::SaveGraphics(const wxRect &inBounds)

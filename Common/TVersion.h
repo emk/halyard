@@ -17,15 +17,24 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		19
+#define VERSION_REV_BIG		20
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.19 (Development)"
+#define VERSION_STRING		"Tamale 0.0.20 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.61  2004/02/23 23:21:41  emk
+ 0.0.20 - 23 February - emk, djin
+
+   * Added support for MATCH-LET.
+   * Wrote a REAL->STRING function which can format floating point numbers
+     reasonably well.
+   * Added 5L-Prim PolygonContains that uses the TPolygon contains method.
+   * Fixed ugly redraw flicker when updating overlays above Quake 2.
+
  Revision 1.60  2004/02/19 23:12:59  emk
  0.0.19 - 19 February 2004 - kwasi, djin, emk
 

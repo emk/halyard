@@ -26,6 +26,7 @@
 /     Real-time Scheme-like language for updating meter dials, etc.
       Strip Quake 2 meter implementation to bare essentials
       Re-implement meter logic in Scheme and C++
+      Change error-handling system for binmsg?
     Implement other meters
       CDV 715
 

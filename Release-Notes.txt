@@ -1,8 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - djin
+0.0.20 - 23 February - emk, djin
 
-  * Added 5L-Prim PolygonContains that uses the TPolygon contains method 
+  * Added support for MATCH-LET.
+  * Wrote a REAL->STRING function which can format floating point numbers
+    reasonably well.
+  * Added 5L-Prim PolygonContains that uses the TPolygon contains method.
+  * Fixed ugly redraw flicker when updating overlays above Quake 2. 
 
 0.0.19 - 19 February 2004 - kwasi, djin, emk
 

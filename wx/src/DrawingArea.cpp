@@ -72,6 +72,8 @@ void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
 {
 	wxRect r(inRect);
 	r.Inflate(inInflate);
+    r.Intersect(wxRect(wxPoint(0, 0),
+                       mBounds.GetSize()));
     if (inHasPixmapChanged && mQuake2Overlay)
         mQuake2Overlay->DirtyRect(r);
 	r.Offset(mBounds.GetPosition());
