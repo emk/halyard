@@ -79,9 +79,7 @@ CFile::CFile(TString &filename, FileKind fKind)
     
     catch (const PP::LException& inException) 
     {
-#ifdef DEBUG
 		gDebugLog.Log("Couldn't open file <%s>, setting _error to -1", filename);
-#endif
 
     	gVariableManager.SetLong("_error", -1);		// couldn't open the file
     	
@@ -258,18 +256,17 @@ void CFile::Lookup(TString &searchString, int32 numFields)
         if (searchString.Equal(comparison, FALSE))  
         {
             done = TRUE;
-#ifdef DEBUG
             gDebugLog.Log("lookup: found <%s>, in <%s>", searchString.GetString(), comparison.GetString());
-#endif
+
         }
-#ifdef DEBUG
 //		else
 //			gDebugLog.Log("lookup: didn't find <%s> in <%s>", (char *) searchString, (char *) comparison);
-#endif
         
         if (itsFile->AtEOF())
+        {
         	done = TRUE;
-
+			gDebugLog.Log("Lookup reached EOF");
+		}
         //  If not a match, read until the next line.
         //
         if (not done)
