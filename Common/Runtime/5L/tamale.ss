@@ -30,7 +30,7 @@
            current-card-name fade unfade save-graphics restore-graphics
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
-           %basic-button%)
+           %basic-button% state-db-debug)
 
   (define (url? path)
     (regexp-match "^(http|ftp|rtsp):" path))
@@ -598,5 +598,28 @@
       (when (and mouse-in-button? was-grabbed?)
         ((prop self action))))
     )
+
+  ;;-----------------------------------------------------------------------
+  ;;  State DB Debugging Support
+  ;;-----------------------------------------------------------------------
+  ;;  Here's a nasty little hack for reading the state database from
+  ;;  outside an element.  Calling this from anywhere but the listener
+  ;;  is definitely a bug.
+
+  (define-element-template %state-db-debugger% [path report-fn] ()
+    (define-state-db-listener (debug state-db)
+      (report-fn (state-db path))))
+    
+  (define (state-db-debug path)
+    (define result #f)
+    (define (set-result! value)
+      (set! result value))
+    (define elem
+      (create %state-db-debugger%
+              :parent (root-node)
+              :path path
+              :report-fn set-result!))
+    (delete-element elem)
+    result)
 
   )
