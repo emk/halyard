@@ -1,0 +1,5 @@
+CVS -
+
+  * Added a new Release-Notes.txt file.
+  * Fixed a bug which caused LFileBundle to die with an assertion
+    failure when importing an empty file.

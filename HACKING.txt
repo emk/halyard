@@ -1,0 +1,315 @@
+// -*- Mode: Text; tab-width: 4; -*-
+
+Table of Contents
+-----------------
+
+  * History
+  * Checking 5L Out of CVS
+  * Building Win32 5L
+  * Building Macintosh 5L
+  * What Lives Where
+  * Important Classes & Modules
+  * Coding Conventions
+  * Checking in Your Changes to 5L
+  * Updating the Version Number
+
+History
+-------
+
+  5L has its roots in a 16-bit DOS laserdisc application, and earlier
+  multimedia-program-specific runtimes before that.  The current
+  code base contains fragments dating back to at least 1993 and perhaps
+  earlier.  5L has been worked on by many programmers over the years.
+  One of the most prolific programmers in the late 90s and early 2000 was
+  Chuck Officer.
+
+Checking 5L Out of CVS
+----------------------
+
+  Check out the modules "5L" and "5Ltest".  These correspond to the full
+  paths "iml/FiveL/Release" and "iml/iml_programs/5Ltest" (you'll need to
+  know these to use CVSweb).  Make sure your CVS client uses the native
+  end-of-line convetion; this can be a problem under MacOS X and some
+  versions of Cygwin/W2K.
+
+  In the instructions that follow, we'll assume your copy of the 5L] source
+  tree is in $5L_DIR and your copy of 5Ltest is in $5LTEST_DIR.
+
+Building Win32 5L
+-----------------
+
+  Install Visual C++ off of the MSDN subscription, after making sure we
+  have enough licenses.  Make sure you have everything related to C++
+  development.
+
+  Next, download and install the QuickTime 5 SDK.  This can be found at
+  developer.apple.com.  Unzip it in C:\ (or anywhere else you like, but
+  then you'll have to adapt the instructions below).  Select Tools >
+  Options > Directories, and add the follow directories to the following
+  categories:
+
+    Include files:
+      C:\SRC\QT501SDK\SDK\CINCLUDES
+      C:\SRC\QT501SDK\SDK\COMPONENTINCLUDES      
+    Libraries:
+      C:\SRC\QT501SDK\SDK\LIBRARIES
+    Executable files:
+      C:\SRC\QT501SDK\SDK\TOOLS
+
+  Open up $5L_DIR\Win32\VC\FiveL.dsw.  Click on "FileView", right-click on
+  "FiveL files", and select "Settings" > "Settings for: Win32 Debug" >
+  "Debug" > "General".  Set "Working Directory" to $5LTEST_DIR (the actual
+  path, not the variable name!).  Select "Settings for: Win32 Release" and
+  set "Working Directory" to the same value.  Now you'll automatically run
+  5Ltest when you ask Visual Studio to launch your program.
+
+  Select "Build" > "Set Active Configuration" > "FiveL - Win32 Debug" >
+  "OK".  Now click on the "Build" icon in your toolbar (it looks like two
+  arrows pointing down at a hard drive).  If the build is successful, click
+  on the "Execute Program" icon (it looks like an exclamation point).  You
+  should now run 5Ltest successfully.  If not, you'll probably need help.
+
+  To build the release version, choose "Build" > "Set Active Configuration"
+  > "FiveL - Win32 Release" > "OK", and follow the same steps.
+
+  To run the test suites, set the active configuration to "CommonTest -
+  Win32 Debug" and "CommonTest - Win32 Release".  You'll need to run these
+  before each check-in.
+
+Building Macintosh 5L
+---------------------
+
+  [Fill this in Real Soon Now.]
+
+What Lives Where
+----------------
+
+  Common/             - Shared, portable code
+  Common/libs/        - 3rd-party libraries
+  Common/libs/crypto/ - Miscellaneous 3rd-party crypto code
+  Common/freetype2/   - 3rd-party font engine (belongs in libs, actually)
+  Common/Scripts/     - Test scripts
+  Common/Fonts/       - Unix-style fonts for FreeType 2
+  Common/fonttools/   - Font-related programs (some are Linux-only)
+
+  Win32/              - Win32 engine
+  Win32/Bin/          - Win32 binaries
+  Win32/VC/           - Win32 Visual C++ projects and workspaces
+  Win32/DibLib/       - Microsoft code for manipulating bitmaps
+  Win32/FiveL/        - Win32 5L source
+  Win32/CryptTool/    - A tool for encrypting scripts
+
+  Mac/                - Mac OS 9 and Carbon engine
+  Mac/Bin/            - Mac binaries
+  Mac/Source/         - Mac 5L core engine
+  Mac/Player/         - Mac 5L graphics layer 
+  Mac/Resources/      - MacOS and PowerPlant resources
+  Mac/Utility/        - Third-party utility routines
+
+Important Classes & Modules
+---------------------------
+
+  * TCommon.h, TPlatform.h
+    - Lots of defines and portability stuff.
+
+  * TString, TBTree, TBNode, TArray
+    - Basic data structures.  Try to use the STL in new code instead.
+
+  * TPoint, TRect
+    - Fairly featureful points and rectangles
+
+  * FileSystem, GraphicsTools
+    - New portable libraries for pathnames and graphics.  Use these.
+
+  * Typography, TStyleSheet
+    - Portable, anti-aliased text service based on FreeType.  Not as
+      nice as pango, but it doesn't require nearly as much support code.
+
+  * TException
+    - Parent class of most 5L exceptions.
+    - Use exceptions for error-handling in new code.
+    - Not all old code is exception-safe, so be careful.
+  
+  * ImlUnit
+    - A very simple testing library inspired by the various XP tools.
+
+  * TLogger
+    - The logging and error-reporting subsystem.
+    - Use this if you need to abort the program, or show errors to the user.
+
+  * TInterpreter
+    - Abstract interface to (theoretically) interchangeable interpreters.
+    - Subclass this to add a new language.
+
+  * TPrimitives, TCommonPrimitives, TMacPrimitives, TWinPrimitives
+    - Implementations of the actual 5L commands.
+
+  * TIndex, TParser, TStream, C?Card, C?Macro,
+  * T5LPrimitives, T{Win,Mac}5LInterpreter
+    - The nasty old 5L interpreter.
+
+  * {C,L}Resource and subclasses
+    - A simple memory-management architecture for loading and purging
+      various resources, including graphics, cursors and OS fonts.
+
+  * TStartup
+    - Initializes the Common library.
+
+  * CryptStream
+    - Encrypted I/O.
+    - Lots of assertion failures & problem code.
+    - This may be deprecated in the foreseeable future.
+
+  * Audio, Video, LQuickTime
+    - Windows audio/video playback system.
+
+  * Graphics
+    - Old windows drawing routines.
+
+  * Header, LFont, CHeader, CText
+    - Older, non-portable font routines.
+
+  * {C,L}Files, LFileBundle
+    - 5L file I/O code.
+
+  * {C,L}TouchZone
+    - Buttons and touchzones.
+
+  * CConfig, CModule, Config
+    - Managing multiple scripts, media sets.
+    - Finding audio/video resources.
+
+  * CPlayerView (Mac), LView (Win)
+    - The actual 5L "drawing area", as it appears on screen.
+
+  * CMac5LApp (Mac), FiveL.cpp (Win)
+    - The 5L startup code.
+
+  We are slowly merging the Macintosh and Windows code into a portable
+  engine.  This process began in early 2002, and has produced more than
+  20,000 lines of merged code as of this summer.
+
+Coding Conventions
+------------------
+
+  The 5L source includes a wide variety of coding styles.  In general, you
+  should either (1) immitate the locally-prevailing style when making small
+  changes to existing code or (2) use the officially approved coding style
+  (below) when making big changes or writing new code.  Please DO NOT use
+  non-standard styles in new code; the tree is inconsistent enough as is.
+
+  For a small example class (showing reasonably good style), see
+  Common/TException.{h,cpp}.
+
+  All files should begin with the following comment, which should make
+  Emacs Do The Right Thing<tm> on most systems:
+
+    // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+
+  Tabs are four spaces wide, blocks are indented four spaces, and braces
+  always appear on their own line.  The keywords "public:", "private:" and
+  "protected:" should be flush with the "class" keyword, not indented an
+  extra level.  Continued expressions should be indented Emacs-style:
+
+  int long_name = munge(really_long_name,
+                        another_really_long_name);
+
+  Global variables are named with a "g" prefix, static variables with an
+  "s" prefix, and local variables with an "m" prefix (although a few
+  classes use different conventions, and it's best to follow conventions
+  within a class--I've seen both "m_" and "its" prefixes).  Input
+  parameters have a "in" prefix, output parameters have an "out" prefix,
+  and input/ouput parameters have an "io" prefix.
+
+  Publically-visible names use lowercase interior capitals and no
+  underscores (i.e. studlyCaps).  Functions names should have initial
+  capitals; variable names shouldn't.  Local variables may optionally use
+  all lowercase names with internal underscores.  Preprocessor macros
+  follow the usual convention.  Examples:
+
+    MyClass
+    GlobalFunction
+    gGlobalVariable
+    mMemberVariable
+    sStaticVariable
+    inInputParameter
+    outOutputParameter
+    ioInputOutputParameter
+    local_variable
+    PREPROCESSOR_MACRO
+
+  Class and method comments should obey this rather odd format:
+
+    //////////
+    // Munge the input variables, as described on page 12 of the
+	// Really Nifty Multimedia Programming Book.
+	//
+	// [in] inItemCount - The number of items to munge.
+	// [in/out] inItems - The items to munge.
+	// [out] outMungedItemCount - The number of items munged.
+    // [out] return - The number of munging passes required.
+	// 
+    int MungeItems(int inItemCount, Item *ioItems, int *outMungedItemCount);
+
+  There was once some freeware, non-distributable tool which could turn
+  these into nice web pages.  Somebody should probably write an open source
+  version. :-)
+
+  Code is 79 columns wide or less!
+
+Checking in Your Changes to 5L
+------------------------------
+
+  1) Decide whether you want to update the 5L version number.  If so, see
+     the instructions below.
+
+  2) Build your test suite (in all configurations).  Run each version, and
+     make sure it prints "OK".  Don't skip this step; it catches about half
+     of the impossible-to-find-and-really-vicious bugs.
+
+  3) Build 5L (in all configurations).  Run each version, and look at all
+     the relevant 5Ltest cards.  Again, don't skip this step; it catches
+     about half the *dumb* bugs.
+
+  4) Make sure you've issued all the necessary "cvs add" and "cvs remove"
+     commands.  Read your CVS diffs.
+
+  5) Update $5L_DIR/Release-Notes.txt.  If you're not creating a new
+     version number, just use "CVS" as a placeholder instead.
+
+  6) Check in your changes.  If you haven't assigned a new version number,
+     try to avoid checking in the contents of Mac/Bin or Win32/Bin.  If you
+     *have* assigned a version number, you MUST check in the contents of
+     those directories.
+
+     Write a good CVS comment.  It should be useful, informative and
+     reasonably detailed.  It should generally use complete sentences and
+     good grammar.  You're writing for posterity.
+
+  7) If you've assigned a version number to your changes, tag the entire
+     $5L_DIR tree AFTER checking it in.  The tag for 5L 3.3.9 would be
+     "FiveL_3_3_9".  DO NOT FORGET THIS STEP OR PEOPLE WILL GET VERY GRUMPY
+     AND SAY BAD THINGS ABOUT YOU MANY YEARS FROM NOW.
+
+Updating the Version Number
+---------------------------
+
+  5L uses Linux-style version numbers.  That means versions have the form
+  "X.Y.Z", where X is the "major version", Y is the "minor version" and "Z"
+  is the "revision".  (Actually, there will sometimes be an extra number
+  after the revision, if somebody is working on a CVS branch).  X, Y, and Z
+  count up from 0: 0, 1, 2, ..., 9, 10, 11, etc.
+
+  1) Update Common/TVersion.h.
+
+  2) Windows: Click on "ResourceView", "FiveL resources", "Version",
+     "VS_VERSION_INFO", and update 3 occurances of the version number.  The
+     other 2 will update automatically.  While there, check the copyright
+     date; it should be of the form "1993-YYYY", where YYYY is the current
+     year.  The lawyers like this to be correct.
+
+  3) Macintosh: Open up Mac5L.rsrc in ResEdit, and update the two 'vers'
+     resources.  If you have more than 3 version components (e.g.,
+     "3.2.1.3"), then you'll only be able to enter the first 3 in the boxes
+     at the top (you can, of course, enter the full version in the
+     free-form text fields).  Again, check the copyright.

@@ -418,5 +418,13 @@ SOURCE=..\..\FiveL\small.ico
 SOURCE=..\..\FiveL\up_curso.cur
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=..\..\..\HACKING.txt
+# End Source File
+# Begin Source File
+
+SOURCE="..\..\..\Release-Notes.txt"
+# End Source File
 # End Target
 # End Project
