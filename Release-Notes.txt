@@ -1,5 +1,18 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Integrated portaudio audio output library.
+  * Integrated libivorbisdec (a.k.a. "Tremor") integerized Ogg Vorbis
+    audio decoder.
+  * Added new VorbisFile class for loading Ogg Vorbis streams (incomplete).
+  * Added new AudioStream class for streaming audio output.
+  * Added VorbisAudioStream and SineAudioStream classes.
+  * Refactoed IMediaElement interface out of MovieElement.
+  * Added AudioStreamElement class.
+  * New functions: VORBIS-AUDIO and SINE-WAVE.  These are mostly for
+    testing at this point.
+
 0.0.4 - 28 May 2003 - emk, brian
 
   * Changed CARD syntax to (CARD name () body ...).

@@ -4,6 +4,7 @@
 #define MovieElement_H
 
 #include "Widget.h"
+#include "MediaElement.h"
 #include "MovieWindow.h"
 
 //////////
@@ -11,7 +12,7 @@
 //
 // TODO - Make a typedef for Frame counts.
 //
-class MovieElement : public Widget
+class MovieElement : public Widget, public IMediaElement
 {
     MovieWindow *mMovieWindow;
 
@@ -19,6 +20,8 @@ public:
     MovieElement(Stage *inStage, const wxString &inName,
 				 const wxRect &inBounds, const wxString &inLocation,
 				 long inWindowStyle, MovieWindowStyle inMovieWindowStyle);
+
+	virtual bool HasVisibleRepresentation();
 
     bool HasReachedFrame(MovieFrame inFrame);
 

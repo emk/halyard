@@ -1,4 +1,34 @@
 
+  Audio layer
+/   Getting Enough Stuff to Test
+/     Generate idle events using a timer
+/     Build a central registry of AudioStream objects
+/     Allow AudioSynth classes to be used as elements
+/       Clean up "permanently hidden element" (i.e., audio) code
+/       Extract a IMediaElement interface from MovieElement
+
+    Infrastructure
+      Allow AudioStreams to accept int16 *or* floats
+      Volume control?
+      Stop discarding extra Vorbis data when it doesn't fit in buffer
+      Handle mono and 44.1/2^N Vorbis streams
+      Refactor buffering class out of VorbisAudioStream
+
+    Useful features
+      Looping
+      Geiger synth
+      Hook into Tamale for Geigers
+      Hook into Quake for Geigers
+      Stereo panning
+        Allow BufferedAudioStreams to be mono or stereo
+      Hook into Quake for ambients
+      Kill off Quake sound effects when leaving sim card group
+
+    (WAIT ...) on a Vorbis stream
+    Allow Vorbis file loading with wxStream?
+    Hook into Tamale for foley - lower priority
+    Allow AudioStreams to be mono or stereo?
+    
   Send events to zones
 /   Mouse left down
 /   Mouse left up

@@ -3,6 +3,7 @@
 #include <wx/wx.h>
 
 #include "TCommon.h"
+#include "TLogger.h"
 #include "Widget.h"
 
 Widget::Widget(Stage *inStage, const wxString &inName)
@@ -44,6 +45,12 @@ void Widget::Show(bool inShow)
 	// If we're not changing anything, quit now.
 	if (inShow == IsShown())
 		return;
+
+	if (inShow && !HasVisibleRepresentation())
+	{
+		gLog.Error("Cannot show a window without a visible representation");
+		return;
+	}
 
 	// Update the window's visibility, and notify the stage of
 	// the change.

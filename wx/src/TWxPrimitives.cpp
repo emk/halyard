@@ -16,12 +16,17 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Zone.h"
+#include "MediaElement.h"
 #include "MovieElement.h"
 #include "Widget.h"
 #include "FileSystem.h"
 #include "EventDispatcher.h"
 #include "ImageCache.h"
 #include "CursorManager.h"
+#include "AudioStream.h"
+#include "VorbisAudioStream.h"
+#include "AudioStreamElement.h"
+
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -36,6 +41,8 @@ using FileSystem::Path;
 
 void FIVEL_NS RegisterWxPrimitives()
 {
+	REGISTER_5L_PRIMITIVE(AudioStreamSine);
+	REGISTER_5L_PRIMITIVE(AudioStreamVorbis);
     REGISTER_5L_PRIMITIVE(DeleteElements);
 	REGISTER_5L_PRIMITIVE(DrawBoxFill);
 	REGISTER_5L_PRIMITIVE(DrawBoxOutline);
@@ -119,6 +126,24 @@ static wxColour ConvColor(GraphicsTools::Color inColor)
 //=========================================================================
 //  Implementation of wxWindows Primitives
 //=========================================================================
+
+DEFINE_5L_PRIMITIVE(AudioStreamSine)
+{
+	std::string name;
+	uint32 frequency;
+	inArgs >> name >> frequency;
+	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+						   new SineAudioStream(frequency));
+}
+
+DEFINE_5L_PRIMITIVE(AudioStreamVorbis)
+{
+	std::string name, path;
+	uint32 buffer_size;
+	inArgs >> name >> path >> buffer_size;
+	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+						   new VorbisAudioStream(path.c_str(), buffer_size));
+}
 
 DEFINE_5L_PRIMITIVE(DeleteElements)
 {
@@ -421,7 +446,7 @@ DEFINE_5L_PRIMITIVE(MoviePause)
 	
 	inArgs >> SymbolName(name);
 
-	FIND_ELEMENT(MovieElement, movie, name.c_str());
+	FIND_ELEMENT(IMediaElement, movie, name.c_str());
 
 	movie->Pause();
 }
@@ -432,7 +457,7 @@ DEFINE_5L_PRIMITIVE(MovieResume)
 	
 	inArgs >> SymbolName(name);
 
-	FIND_ELEMENT(MovieElement, movie, name.c_str());
+	FIND_ELEMENT(IMediaElement, movie, name.c_str());
 
 	movie->Resume();
 }

@@ -21,6 +21,7 @@
 #if CONFIG_HAVE_QUAKE2
 #	include "TQuake2Primitives.h"
 #endif // CONFIG_HAVE_QUAKE2
+#include "AudioStream.h"
 
 // Provided by auto-generated resources.cpp file.
 extern void InitXmlResource();
@@ -109,6 +110,9 @@ bool FiveLApp::OnInit()
     TQTMovie::InitializeMovies();
 #endif // CONFIG_HAVE_QUICKTIME
 
+	// Start up our audio synthesis layer.
+	AudioStream::InitializeStreams();
+
     // Initialize some optional wxWindows features.
     ::wxInitAllImageHandlers();
     wxFileSystem::AddHandler(new wxInternetFSHandler);
@@ -134,6 +138,9 @@ bool FiveLApp::OnInit()
 
 int FiveLApp::OnExit()
 {
+	// Shut down our audio synthesis layer.
+	AudioStream::ShutDownStreams();
+
     // Shut down QuickTime.  wxWindows guarantees to have destroyed
     // all windows and frames by this point.
 #if CONFIG_HAVE_QUICKTIME

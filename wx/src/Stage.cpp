@@ -1028,11 +1028,13 @@ void Stage::NotifyElementsChanged()
 
 void Stage::EnterElement(Element *inElement, wxPoint &inPosition)
 {
+	ASSERT(inElement->GetEventDispatcher());
 	inElement->GetEventDispatcher()->DoEventMouseEnter(inPosition);
 }
 
 void Stage::LeaveElement(Element *inElement, wxPoint &inPosition)
 {
+	ASSERT(inElement->GetEventDispatcher());
 	inElement->GetEventDispatcher()->DoEventMouseLeave(inPosition);
 }
 
@@ -1598,7 +1600,10 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint)
 
 	// Otherwise, look things up normally.
 	Element *elem = FindLightWeightElement(inPoint);
-	return elem ? elem->GetEventDispatcher() : GetEventDispatcher();
+	if (elem && elem->GetEventDispatcher())
+		return elem->GetEventDispatcher();
+	else
+		return GetEventDispatcher();
 }
 
 void Stage::DestroyElement(Element *inElement)
@@ -1684,6 +1689,7 @@ void Stage::DeleteMovieElements()
 void Stage::MouseGrab(Element *inElement)
 {
 	ASSERT(inElement->IsLightWeight());
+	ASSERT(inElement->GetEventDispatcher());
 	if (mGrabbedElement)
 	{
 		gLog.Error("Grabbing %s while %s is already grabbed",

@@ -19,6 +19,14 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
 	InitializeWidgetWindow(mMovieWindow);
 }
 
+bool MovieElement::HasVisibleRepresentation()
+{
+	if (mMovieWindow->GetMovieWindowStyle() & MOVIE_AUDIO_ONLY)
+		return false;
+	else
+		return true;
+}
+
 bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 {
 	if (inFrame == LAST_FRAME)

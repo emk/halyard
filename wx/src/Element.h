@@ -67,6 +67,11 @@ public:
 	virtual wxRect GetRect() = 0;
 
 	//////////
+	// Return true if the element can be shown.
+	//
+	virtual bool HasVisibleRepresentation() { return true; }
+
+	//////////
 	// Return true if the element is shown on the screen.
 	//
 	virtual bool IsShown() { return true; }
@@ -77,7 +82,8 @@ public:
 	virtual bool IsLightWeight() { return false; }
 
 	//////////
-	// Is the specified point in the element?
+	// Is the specified point in the element?  If this function ever returns
+	// true, then GetEventDispatcher must not return NULL.
 	// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
 	//
 	virtual bool IsPointInElement(const wxPoint &inPoint) { return false; }
@@ -87,7 +93,7 @@ public:
 	// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
 	//
 	virtual EventDispatcher *GetEventDispatcher()
-		{ ASSERT(false); return NULL; }
+		{ return NULL; }
 	
 	//////////
 	// Get an appropriate cursor for this object.
