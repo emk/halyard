@@ -85,120 +85,39 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\Common\TArray.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yu"THeader.h"
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\TArray.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TBTree.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yu"THeader.h"
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\TBTree.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\THeader.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yc
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\THeader.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TLogger.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yu"THeader.h"
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\TLogger.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TObject.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yu"THeader.h"
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\TObject.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TPoint.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yu"THeader.h"
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\TPoint.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TRect.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yu"THeader.h"
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\TRect.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TString.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yu"THeader.h"
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\TString.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TURL.cpp
-
-!IF  "$(CFG)" == "Common - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
-
-# ADD CPP /Yu"THeader.h"
-
-!ENDIF 
-
+SOURCE=..\..\..\Common\TURL.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -206,43 +125,43 @@ SOURCE=..\..\Common\TURL.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\..\Common\TArray.h
+SOURCE=..\..\..\Common\TArray.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TBTree.h
+SOURCE=..\..\..\Common\TBTree.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TCommon.h
+SOURCE=..\..\..\Common\TCommon.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\THeader.h
+SOURCE=..\..\..\Common\THeader.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TLogger.h
+SOURCE=..\..\..\Common\TLogger.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TObject.h
+SOURCE=..\..\..\Common\TObject.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TPoint.h
+SOURCE=..\..\..\Common\TPoint.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TRect.h
+SOURCE=..\..\..\Common\TRect.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TString.h
+SOURCE=..\..\..\Common\TString.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\TURL.h
+SOURCE=..\..\..\Common\TURL.h
 # End Source File
 # End Group
 # End Target
