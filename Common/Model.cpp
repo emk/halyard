@@ -73,6 +73,38 @@ void Change::FreeResources()
 
 
 //=========================================================================
+//  Class Methods
+//=========================================================================
+
+Class::ClassMap Class::sClasses;
+
+Class::Class(const std::string &inName, CreatorFunction inCreator)
+	: mName(inName), mCreator(inCreator)
+{
+	ASSERT(mName != "");
+	ASSERT(mCreator != NULL);
+	
+	ClassMap::iterator found = sClasses.find(mName);
+	if (found != sClasses.end())
+		THROW("Attempted to register a model::Class twice");
+	sClasses.insert(ClassMap::value_type(mName, this));
+}
+
+Object *Class::CreateInstance() const
+{
+	return (*mCreator)();
+}
+
+Class *Class::FindByName(const std::string &inClass)
+{
+	ClassMap::iterator found = sClasses.find(inClass);
+	if (found == sClasses.end())
+		THROW("Attempted to create unknown model::Class");
+	return found->second;
+}
+
+
+//=========================================================================
 //  Datum Methods
 //=========================================================================
 
@@ -87,6 +119,8 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 		return new Map();
 	else if (name == "list")
 		return new List();
+ 	else if (name == "object")
+		return Class::FindByName(inNode.attribute("class"))->CreateInstance();
 	else
 		THROW("Unsupported XML element type");
 }
@@ -118,7 +152,7 @@ void MutableDatum::ApplyChange(Change *inChange)
 	mModel->ApplyChange(inChange);
 }
 
-void MutableDatum::RegisterChildObjectWithModel(Datum *inDatum)
+void MutableDatum::RegisterChildWithModel(Datum *inDatum)
 {
 	ASSERT(mModel != NULL);
 	ASSERT(inDatum != NULL);
@@ -257,7 +291,7 @@ void CollectionDatum<KeyType>::SetChange::DoFreeRevertResources()
 template <typename KeyType>
 void CollectionDatum<KeyType>::PerformSet(ConstKeyType &inKey, Datum *inValue)
 {
-	RegisterChildObjectWithModel(inValue);
+	RegisterChildWithModel(inValue);
 	ApplyChange(new SetChange(this, inKey, inValue));
 }
 
@@ -337,14 +371,47 @@ template class CollectionDatum<size_t>;
 
 
 //=========================================================================
+//  HashDatum Methods
+//=========================================================================
+
+Datum *HashDatum::DoGet(ConstKeyType &inKey)
+{
+	DatumMap::iterator found = mMap.find(inKey);
+	CHECK(found != mMap.end(), "Map::Get: Can't find key");
+	return found->second;
+}
+
+Datum *HashDatum::DoFind(ConstKeyType &inKey)
+{
+	DatumMap::iterator found = mMap.find(inKey);
+	if (found == mMap.end())
+		return NULL;
+	return found->second;
+}
+
+void HashDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
+{
+	DatumMap::iterator found = mMap.find(inKey);
+	ASSERT(found != mMap.end());
+	ASSERT(found->second == inDatum);
+	mMap.erase(found);
+}
+
+void HashDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
+{
+	mMap.insert(DatumMap::value_type(inKey, inDatum));
+}
+
+
+//=========================================================================
 //  Map Methods
 //=========================================================================
 
 void Map::Write(xml_node inParent)
 {
 	xml_node node = inParent.new_child("map");
-	DatumMap::iterator i = mMap.begin();
-	for (; i != mMap.end(); ++i)
+	DatumMap::iterator i = begin();
+	for (; i != end(); ++i)
 	{
 		xml_node item = node.new_child("item");
 		item.set_attribute("key", i->first);
@@ -367,32 +434,35 @@ void Map::Fill(xml_node inNode)
 	}
 }
 
-Datum *Map::DoGet(ConstKeyType &inKey)
+
+//=========================================================================
+//  Object Methods
+//=========================================================================
+
+void Object::Write(xml_node inParent)
 {
-	DatumMap::iterator found = mMap.find(inKey);
-	CHECK(found != mMap.end(), "Map::Get: Can't find key");
-	return found->second;
+	xml_node node = inParent.new_child("object");
+	node.set_attribute("class", mClass->GetName());
+	DatumMap::iterator i = begin();
+	for (; i != end(); ++i)
+	{
+		xml_node item = node.new_child(i->first.c_str());
+		i->second->Write(item);
+	}
 }
 
-Datum *Map::DoFind(ConstKeyType &inKey)
+void Object::Fill(xml_node inNode)
 {
-	DatumMap::iterator found = mMap.find(inKey);
-	if (found == mMap.end())
-		return NULL;
-	return found->second;
-}
-
-void Map::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
-{
-	DatumMap::iterator found = mMap.find(inKey);
-	ASSERT(found != mMap.end());
-	ASSERT(found->second == inDatum);
-	mMap.erase(found);
-}
-
-void Map::DoInsert(ConstKeyType &inKey, Datum *inDatum)
-{
-	mMap.insert(DatumMap::value_type(inKey, inDatum));
+	xml_node::iterator i = inNode.begin();
+	for (; i != inNode.end(); ++i)
+	{
+		xml_node node = *i;
+		std::string key = node.name();
+		xml_node value_node = node.only_child();
+		Datum *value = CreateFromXML(value_node);
+		Set(key, value);
+		value->Fill(value_node);
+	}
 }
 
 
@@ -446,7 +516,7 @@ void List::InsertChange::DoFreeRevertResources()
 
 void List::PerformInsert(ConstKeyType &inKey, Datum *inValue)
 {
-	RegisterChildObjectWithModel(inValue);
+	RegisterChildWithModel(inValue);
 	ApplyChange(new InsertChange(this, inKey, inValue));
 }
 

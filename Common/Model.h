@@ -19,6 +19,7 @@ namespace model {
 
 	// Forward declarations.
 	class Datum;
+	class Object;
 	class Model;
 
 	// Internal support code.
@@ -108,6 +109,30 @@ namespace model {
 		// again.
 		//
 		virtual void DoFreeRevertResources() = 0;
+	};
+
+	//////////
+	// Class information about subclasses of Object. 
+	//
+	class Class {
+	public:
+		typedef Object *(*CreatorFunction)();
+
+	private:
+		typedef std::map<std::string,Class*> ClassMap;
+
+		static ClassMap sClasses;
+
+		std::string mName;
+		CreatorFunction mCreator;
+		
+	public:
+		Class(const std::string &inName, CreatorFunction inCreator);
+
+		const std::string &GetName() const { return mName; }
+
+		Object *CreateInstance() const;
+		static Class *FindByName(const std::string &inClass);
 	};
 
 	//////////
@@ -213,7 +238,7 @@ namespace model {
 		// NOTE - This should really be a method on ContainDatum, but
 		// that class is a template class.
 		//
-		void RegisterChildObjectWithModel(Datum *inDatum);
+		void RegisterChildWithModel(Datum *inDatum);
 
 	public:
 		//////////
@@ -239,8 +264,8 @@ namespace model {
 		typedef const T ConstKeyType;
 
 		template <typename D>
-		void Set(ConstKeyType &inKey, D *inValue)
-		{ PerformSet(inKey, static_cast<Datum*>(inValue)); }
+		D *Set(ConstKeyType &inKey, D *inValue)
+		{ PerformSet(inKey, static_cast<Datum*>(inValue)); return inValue; }
 
 		template <typename VD>
 		void SetValue(ConstKeyType &inKey, typename VD::ConstValueType &inVal)
@@ -306,22 +331,50 @@ namespace model {
 	};
 
 	//////////
-	// A basic hash-table-style datum.
+	// A basic hash-table-style datum.  This is an abstract class used
+	// to implement Map and Object.
 	//
-	class Map : public CollectionDatum<std::string> {
+	class HashDatum : public CollectionDatum<std::string> {
 		Private::DatumMap mMap;
 
-	public:
-		Map() : CollectionDatum<std::string>(MapType) {}
-
-		virtual void Write(xml_node inParent);
-		void Fill(xml_node inNode);
-
 	protected:
+		HashDatum(Type inType) : CollectionDatum<std::string>(inType) {}
+
+		Private::DatumMap::iterator begin() { return mMap.begin(); }
+		Private::DatumMap::iterator end() { return mMap.end(); }
+
 		virtual Datum *DoGet(ConstKeyType &inKey);
 		virtual Datum *DoFind(ConstKeyType &inKey);
 		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum);
 		virtual void DoInsert(ConstKeyType &inKey, Datum *inDatum);
+	};
+
+	//////////
+	// A hash table.
+	//
+	class Map : public HashDatum {
+	public:
+		Map() : HashDatum(MapType) {}
+
+		virtual void Write(xml_node inParent);
+		virtual void Fill(xml_node inNode);
+	};
+
+	//////////
+	// An object.
+	//
+	class Object : public HashDatum {
+		const Class *mClass;
+
+	protected:
+		Object(const Class *inClass)
+			: HashDatum(ObjectType), mClass(inClass) {}
+
+	public:
+		const Class *GetClass() { return mClass; }
+
+		virtual void Write(xml_node inParent);
+		virtual void Fill(xml_node inNode);		
 	};
 
 	//////////
@@ -338,7 +391,7 @@ namespace model {
 		List() : CollectionDatum<size_t>(ListType) {}
 
 		virtual void Write(xml_node inParent);
-		void Fill(xml_node inNode);
+		virtual void Fill(xml_node inNode);
 
 		template <class D>
 		void Insert(ConstKeyType &inKey, D *inValue)

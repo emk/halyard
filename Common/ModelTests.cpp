@@ -10,6 +10,22 @@ extern void test_Model (void);
 
 
 //=========================================================================
+//	Sample Subclass of Object
+//=========================================================================
+
+class Card : public Object {
+public:
+	static Class class_info;
+	static Object *create_object();
+	Card() : Object(&class_info) {}
+
+};
+
+Class Card::class_info("Card", &Card::create_object);
+Object *Card::create_object() { return new Card(); }
+
+
+//=========================================================================
 //	Model Tests
 //=========================================================================
 
@@ -197,6 +213,14 @@ void test_Model (void)
 		TEST(root->GetValue<Integer>("test int") == 20);
 	}
 	*/
+
+	//---------------------------------------------------------------------
+	// Test Objects
+
+	Card *card = root->Set<Card>("sample card", new Card());
+	TEST(root->Get<Card>("sample card") == card);
+	card->SetValue<String>("name", "CardName");
+
 
 	//---------------------------------------------------------------------
 	// Test Serialization
