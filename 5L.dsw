@@ -1,0 +1,200 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "Common"=.\Win32\VC\Common\Common.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name freetype
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libfivel_crypto
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmzsch
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libxml2
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "CommonTest"=.\Win32\VC\CommonTest\CommonTest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name Common
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ImlUnit
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DibLib"=.\Win32\VC\DibLib\DibLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "FiveL"=.\Win32\VC\FiveL\FiveL.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name Common
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DibLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CommonTest
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ImlUnit"=.\Win32\VC\ImlUnit\ImlUnit.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "freetype"=.\libs\freetype2\builds\win32\visualc\freetype.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libfivel_crypto"=.\Win32\VC\libfivel_crypto\libfivel_crypto.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmzgc"=.\libs\plt\src\worksp\libmzgc\libmzgc.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmzsch"=.\libs\plt\src\worksp\libmzsch\libmzsch.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libmzgc
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "libxml2"=.\libs\libxml2\win32\dsp\libxml2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "wx5L"=.\wx\MSVC\wx5L\wx5L.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name Common
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CommonTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name wxq2
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "wxq2"=.\libs\quake2\wxq2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+
