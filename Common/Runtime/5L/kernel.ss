@@ -80,7 +80,22 @@
   ;;  Utility Functions
   ;;=======================================================================
 
-  (provide member? value->string cat label with-errors-blocked)
+  (provide foreach member? value->string cat label with-errors-blocked)
+
+  ;;; Run a body once for each item in a list.
+  ;;;
+  ;;; @syntax (foreach [name list] body ...)
+  ;;; @param NAME name The variable to use as the item name.
+  ;;; @param LIST list The list from which to get the items.
+  ;;; @param BODY body The code to run for each list item.
+  (define-syntax foreach
+    (syntax-rules ()
+      [(foreach [name lst] body ...)
+       (let loop [[remaining lst]]
+         (unless (null? remaining)
+           (let [[name (car remaining)]]
+             (begin/var body ...))
+           (loop (cdr remaining))))]))
   
   (define (member? item list)
     (if (null? list)
@@ -187,7 +202,7 @@
       (label exit-interpreter
         (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
           (let ((jump-card #f))
-            (let loop ()
+            (let loop []
               (label exit-to-top
                 (with-errors-blocked (non-fatal-error)
                   (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
@@ -203,7 +218,7 @@
                       ;; removed this block, we'd have to perform a lot
                       ;; of LABEL and FLUID-LET statements, which are
                       ;; extremely expensive in quantities of 1,000.
-                      (let idle-loop ()
+                      (let idle-loop []
                         (unless (eq? *%kernel-state* 'JUMPING)
                           (if (%kernel-stopped?)
                               (blocking-idle)
@@ -426,16 +441,14 @@
                 (not (%kernel-safe-to-run-deferred-thunks?)))
 
       ;; Make a copy of the old queue and clear the global variable
-      ;; (which may be updated behind our backs.
+      ;; (which may be updated behind our backs).
       (let [[items (reverse *%kernel-deferred-thunk-queue*)]]
         (set! *%kernel-deferred-thunk-queue* '())
 
         ;; Run every thunk in the queue, in order.
         (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
-          (let loop [[items items]]
-            (unless (null? items)
-              ((car items))
-              (loop (cdr items))))))
+          (foreach [item items]
+            (item))))
 
       ;; Check to see if any new items appeared in the queue while we
       ;; were running the first batch.
@@ -714,28 +727,24 @@
                                     args)))
           (hash-table-put! table name handler))))
 
-  (define (send-by-name/internal node name . args)
-    ;; Pass a message to the specified node, and return the result.
-    (let [[handled? #t]]
-      (let [[result
-             (let recurse [[node node]]
-               (if (not node)
-                   (set! handled? #f)
-                   (let* [[handler (hash-table-get (node-handlers node) name
-                                                   (lambda () #f))]
-                          [call-next-handler
-                           (lambda () (recurse (node-parent node)))]]
-                     (if handler
-                         (begin
-                           (apply handler call-next-handler args))
-                         (call-next-handler)))))]]
-        (values handled? result))))
+  (define (send/nonrecursive* call-next-handler node name . args)
+    (let [[handler (hash-table-get (node-handlers node) name (lambda () #f))]]
+      (if handler
+          (apply handler call-next-handler args)
+          (call-next-handler))))
+
+  (define (send* call-next-handler node name . args)
+    (let recurse [[node node]]
+      (if (not node)
+          (call-next-handler)
+          (let [[new-call-next-handler
+                 (lambda () (recurse (node-parent node)))]]
+            (apply send/nonrecursive* new-call-next-handler node name args)))))
 
   (define (send-by-name node name . args)
-    (with-values [handled? result] (apply send-by-name/internal node name args)
-      (if handled?
-          result
-          (error (cat "No handler for " name " on " (node-full-name node))))))
+    (define (no-handler)
+      (error (cat "No handler for " name " on " (node-full-name node))))
+    (apply send* no-handler node name args))
 
   (define-syntax send
     (syntax-rules ()
@@ -754,8 +763,8 @@
     (double-click? :accessor event-double-click? :initvalue #f))
 
   (define (dispatch-event-to-node node name args)
-    (let [[event (case name
-                   [[idle] (make <idle-event>)]
+    (let [[unhandled? #f]
+          [event (case name
                    [[char] (make <char-event>
                              :character (string-ref (car args) 0)
                              :modifiers (cadr args))]
@@ -768,12 +777,29 @@
                       :position (make-point (car args) (cadr args)))]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
-      (with-values [handled? result] (send-by-name/internal node name event)
-        (set! (engine-var '_pass) (not handled?)))))
+      (define (no-handler)
+        (set! unhandled? #t))
+      (send* no-handler node name event)
+      (set! (engine-var '_pass) unhandled?)))
+
+  (define (dispatch-idle-event-to-active-nodes)
+    (define event (make <idle-event>))
+    (define (no-handler)
+      (void))
+    (define (send-idle node)
+      (send/nonrecursive* no-handler node 'idle event))
+    (let loop [[node (current-card)]]
+      (when node
+        (send-idle node)
+        (loop (node-parent node))))
+    (foreach [child (group-children (current-card))]
+      (send-idle child)))  
 
   (define (dispatch-event-to-current-card name . args)
     (when (current-card)
-      (dispatch-event-to-node (current-card) name args)))
+      (if (eq? name 'idle)
+          (dispatch-idle-event-to-active-nodes)
+          (dispatch-event-to-node (current-card) name args))))
 
   (define (make-node-event-dispatcher node)
     (lambda (name . args)
@@ -850,10 +876,8 @@
     (let [[bindings ((template-bindings-eval-fn template) node)]]
       (hash-table-for-each bindings
                            (lambda (k v) (node-bind-value! node k v))))
-    (let loop [[decls (template-prop-decls template)]]
-      (unless (null? decls)
-        (node-maybe-default-property! node (car decls))
-        (loop (cdr decls)))))
+    (foreach [decl (template-prop-decls template)]
+      (node-maybe-default-property! node decl)))
 
   (define (prop-by-name node name)
     ;; This function controls how we search for property bindings.  If
@@ -1397,10 +1421,8 @@
     ;; TRICKY - We call into the engine to do element deletion safely.
     ;; We work with a copy of (GROUP-CHILDREN OLD-CARD) the original
     ;; will be modified as we run.
-    (let loop [[children (group-children old-card)]]
-      (unless (null? children)
-        (delete-element (car children))
-        (loop (cdr children))))
+    (foreach [child (group-children old-card)]
+      (delete-element child))
     ;; Exit old-card.
     (exit-node old-card)
     ;; Exit as many enclosing card groups as necessary.
@@ -1419,10 +1441,8 @@
     ;; Unfortunately, this means that "new element" events generated
     ;; during element initialization can't be caught by the card.
     ;; Weird, but this is what the users voted for.
-    (let loop [[children (group-children new-card)]]
-      (unless (null? children)
-        (enter-node (car children))
-        (loop (cdr children))))
+    (foreach [child (group-children new-card)]
+      (enter-node child))
     ;; Enter new-card.
     (enter-node new-card))
 

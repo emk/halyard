@@ -17,7 +17,7 @@
   ;;;  Useful Syntax
   ;;;======================================================================
 
-  (provide fn callback deferred-callback while for foreach
+  (provide fn callback deferred-callback while for
            define-engine-variable define/p)
 
   ;;; Create an anonymous function object (which can be passed as a
@@ -90,17 +90,6 @@
          (when cond
            (begin/var body ...)
            (loop next-value)))]))
-
-  ;;; Run a body once for each item in a list.
-  ;;;
-  ;;; @syntax (foreach [name list] body ...)
-  ;;; @param NAME name The variable to use as the item name.
-  ;;; @param LIST list The list from which to get the items.
-  ;;; @param BODY body The code to run for each list item.
-  (define-syntax foreach
-    (syntax-rules ()
-      [(foreach [name lst] body ...)
-       (for-each (lambda (name) (begin/var body ...)) lst)]))
 
   ;;; Bind a Scheme variable name to a 5L engine variable.
   ;;;
