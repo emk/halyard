@@ -1,9 +1,21 @@
-// ===========================================================================
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+//		(c) Copyright 1999, Trustees of Dartmouth College. All rights reserved
+//			Interactive Media Lab, Dartmouth Medical School
+//
+//			$Author$
+//			$Date$
+//			$Revision$
+//
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//
 //	CMac5LApp.cp		   
 //
 //		Lifted from a Dashboard App for PowerPlant from MetroWerks.
 //
-// ===========================================================================
 //
 
 #include "debug.h"
@@ -809,3 +821,10 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard)
 	return (retValue);
 }
 #endif
+
+/* 
+$Log$
+Revision 1.3  1999/10/07 12:37:53  chuck
+Initial revision
+
+*/
