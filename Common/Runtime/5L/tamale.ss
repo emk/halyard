@@ -39,7 +39,7 @@
            mark-unprocessed-events-as-stale!
            number->integer interpolate-int make-object-mover animate
            state-db-debug state-db-seconds state-db-milliseconds
-           inc-state-db! inc-state-db-if-true!)
+           update-state-db! inc-state-db! inc-state-db-if-true!)
 
   (define (url? path)
     (regexp-match "^(http|ftp|rtsp):" path))
@@ -830,6 +830,7 @@
     (delete-element elem)
     result)
 
+  
   ;;-----------------------------------------------------------------------
   ;;  State DB Time Support
   ;;-----------------------------------------------------------------------
@@ -848,21 +849,30 @@
 
   
   ;;-----------------------------------------------------------------------
-  ;;  State DB Increment Support
+  ;;  State DB Update Support
   ;;-----------------------------------------------------------------------
   ;;  XXX - THIS SHOULD NOT USE STATE-DB-DEBUG!!! It's extremely slow.
   ;;  Ask one of the C++ programmers to add a primitive to do this.
   
+  ;;; Apply FUNC 
+  (define (update-state-db! path func)
+    (set! (state-db path) (func (state-db-debug path)))
+    #f) ; Make absolutely certain we don't return the value we updated.
+  
   ;;; Add AMOUNT to the value stored in the state-db at PATH.
+  ;;;
+  ;;; TODO - Decide whether this is redundant.
   (define (inc-state-db! path amount)
-    (let [[current (state-db-debug path)]]
-      (set! (state-db path) (+ current amount))))
+    (update-state-db! path (fn (value) (+ value amount))))
 
   ;;; Add AMOUNT to the value stored in the state-db at PATH, unless that
   ;;; value is #f.
+  ;;;
+  ;;; TODO - Decide whether this is redundant.
   (define (inc-state-db-if-true! path amount)
-    (let [[current (state-db-debug path)]]
-      (when current
-        (set! (state-db path) (+ current amount)))))
-
+    (update-state-db! path
+                      (fn (value)
+                        (if value
+                            (+ value amount)
+                            value))))
   )
