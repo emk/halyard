@@ -14,9 +14,12 @@
            wait tc draw-box inset-rect timeout)
 
   (define (load-picture name p &key (subrect :rect #f))
-    (if subrect
-        (call-5l-prim 'loadsubpic name p subrect)
-        (call-5l-prim 'loadpic name p)))
+    (let [[path (build-path (current-directory) "Graphics" name)]]
+      (unless (file-exists? path)
+        (throw (cat "No such graphic: " path)))
+      (if subrect
+          (call-5l-prim 'loadsubpic path p subrect)
+          (call-5l-prim 'loadpic path p))))
 
   (define (modal-input r size forecolor backcolor)
     (call-5l-prim 'input r size forecolor backcolor)
