@@ -1,6 +1,513 @@
-RELEASE Directory
-Created 10 Sept 2001
-===============================
+FiveL for Win32 Release Notes
 
-FiveL for Win 32 Release Notes:
--------------------------------
+3.00, Build 10, Tuesday, Sept 12, 2001, 10:12 AM
+		
+	Fixed bug in updating the timestamp in the global 
+	user header of 5LDB.
+
+3.00, Build 9, Thursday, May 31, 2001, 03:05 PM
+
+	A bug in $_date was found which caused the year to be -1
+	instead of 01 for year 2001.  
+	
+	Modifications were made to the 5LDB to support global files.
+
+	New command was added to tell 5L which files are global.  Global
+	files are those that can be accessed by any user.
+	(globalfiles file1 <file2> ... <fileN>)
+
+3.00, Build 8, Thursday, May 10, 2001, 02:00 PM
+
+	Fixed a bug that was causing synchronous preloading not
+	to wait for the specified "min preload time". 
+
+3.00, Build 7, Monday, May 07, 2001
+
+	Fixed a screen refresh problem that occured when using
+	QT5 and network streaming media.
+
+3.00, Build 6, Thursday, May 03, 2001, 05:00 PM
+
+	First build using Quicktime 5 libraries.
+
+3.00, Build 5, Tuesday, May 01, 2001, 02:08 PM
+
+	Fixed a synchronization problem where if the media that is actually
+	played following a preload command is NOT the file that's
+      been preloaded, wait command does not function properly.
+	
+	Permanent fix for setting application window title
+	(setWindowTitle (HIV Virtual Clinic))
+
+	Fixed Win98 cursor problem which occured when switching windows
+	(e.g. using the browse command).
+
+3.00, Build 4, Friday, April 27, 2001
+	
+	Quick temporary fix for application title.
+
+3.00, Build 3, Monday, April 16, 2001, 02:49 PM
+
+	Incorporated lost black screen fix (from 10/23/00) caused by some 
+	video clips not blacking the screen properly.
+
+3.00, Build 2, Monday, April 09, 2001, 09:49 AM
+	
+	Turned off 5LDB encryption for Debug builds.
+	
+	Fixed RedoScript Problem.
+
+	Fixed open file bug where $_ERROR was not being set properly.
+	
+	Adjusted line and box functions to eliminate inconsistencies between
+	Win32 and Mac 5L.
+
+3.00, Build 1, Monday, March 12, 2001, 12:08:00 PM
+
+	Compile flags allow the 5LDB and legacy file format to be interchanged
+	at build time without code modifications.
+
+	Encryption was added to the 5LDB file.
+
+	In an effort to make 5L compatible with DLS and enhance security, file
+ 	structure was changed to store all 5L files in a single database file
+	(5LDB). This change should be invisible to the 5L scriptor, except for
+	the fact that only file is now written.
+
+	TVW has taken over maintenance of the Win32 FiveL codebase.
+
+2.01, Build 5, Tuesday, August 08, 2000, 4:20:04 PM
+
+- Added browse command that takes a URL as a parameter and brings up the user's
+	preferred browser on that URL.
+	syntax: (browse URL)
+
+	This command will put the release version of the engine in the background.
+	It will no longer take over the screen and will be minimized. When the user
+	reactives the engine (by clicking on the task bar) the black background
+	will reappear.
+
+	While doing the work for this command I also enabled normal Windows
+	task switching (alt-tab) to put the engine in the background.
+
+- Tell QuickTime not to use DirectDraw when starting up. This should not 
+	mess with the user's QuickTime settings it will only make sure that 
+	DirectDraw is not use during this session.
+	We do this because we noticed flashes before playing clips on some
+	machines (easy to reproduct on recent Dell laptops running Win98).
+
+- Added checkurl command to make sure a URL is accessible (both the server
+	and the resource itself.
+	syntax: (checkurl url [var_name])
+		url - a url of the form: http://mccay.dartmouth.edu/XXX
+		var_name - the name of the variable that should be assigned
+			the return code from the server
+	_ERROR will be set to one of the following values:
+		0 - the resource was found
+		-2 - the resource was not found
+		-3 - the server is inaccessible (or some other problem)
+	_CheckURLResult will be set to the server result code
+		200 - the resource was found
+		404 - the resource was not found (but the server is up!)
+		400 - bad request (server down or bad URL?)
+		lots of other values possible (check out 
+			http://www.w3.org/Protocols/rfc2616/rfc2616.html
+
+- The engine will print out the name of the last good card (or header or macro)
+	to the debug log when it encounters a syntax error.
+
+- messed around with QuickTime settings
+
+- changed the behavior of the QuickTime "globals"
+	_QuickTimeVideoPreload
+	_QuickTimeVideoCycles
+	_QuickTimeAudioPreload
+	_QuickTimeAudioCycles
+	Now all of these variables are set to their default values
+	when the engine starts up. Thereafter they are under script
+	control, the engine will never again assign the default
+	values.
+
+2.01, Build 4, Monday June 5, 2000, 12:07 PM
+
+- changed the input command to print out more characters
+	- these are the characters that will be printed out
+		- letter (A-Z, a-z)
+		- digit (0-9)
+		- space
+		- "_:.-+|{}()?@#$%^&*~<>/\=,"
+
+- added a variable to hold the QuickTime version
+	_QuickTimeVersion
+		This will be an integer value corresponding to the QuickTime
+	version installed on the user's machine. 
+
+2.01, Build 3, Thursday May 25, 08:56 AM
+
+- Fixed the unlock command. Effects and times were being ignored.
+
+- Fixed bug in _date special variable that made the year show up as
+	100. Now _date will result in a two digit year (00, 01, etc.) and
+	_longdate will always result in a four digit year (2000, etc.).
+
+- Added variables to tweak QuickTime streaming performance
+	_QuickTimeVideoPreload -> default 2000, controls how much
+		of the video clip is downloaded before starting to play
+	_QuickTimeVideoCycles -> default 50, controls how many
+		cycles the engine will execute before actually starting
+		the clip to prevent flashes and burps
+	_QuickTimeAudioPreload -> default 500, same as video but 
+		for audio
+	_QuickTimeAudioCycles -> default 20, same as video but
+		for audio
+	NOTE: Setting these variables to 0 (or not defining them) will
+		cause the default values to be used. Setting them to -1
+		will cause a value of 0 to be used for the setting.
+	NOTE2: These are only for debugging the engine and should
+		not be in the final engine.
+
+2.01, Build 2, Tuesday May 23, 2000, 11:05 AM
+
+- Palettes will now only be .bmp files, even if an extension is
+	used for the loadpic command. 
+	e.g. (loadpic login.png 0 0 pal)
+	This will load login.png for the graphic and login.bmp for 
+	the palette.
+
+- Added variables for graphics:
+	_BaseGraphicsLocation - this location will be used for all graphics
+		overriding the "Graphics" directory in the installation 
+		directory. This variable should have a '/' on the end, the 
+		engine will not put it there for you.
+	_BaseGraphicsExtension - this extension (e.g. ".png") will be added
+		to all graphics that don't have an extension
+
+- Added the sync flag to the preload command (see below)
+
+- Added the _PreloadedVideo and _PreloadedAudio variables
+	These variables will get set whenever the preload command is
+	used. They will contain the name of the clip that was last
+	passed to the preload command. They will NOT contain the full
+	path to the clip as resolved by the engine.
+
+- Put the preload command back in there
+	(preload clip_name [nap] [sync])
+	both audio and video
+	takes a nap parameter, if the preload command doesn't take that long then
+	go into a nap for the remaining time (parameter in tenths of seconds)
+	- also can preload multiple clips (audio and video) at once
+	- for video it will only preload when something isn't playing, otherwise
+		it will just sit there
+	- for audio, it will preload, this can cause some hiccups when playing from the
+		network -> maybe we should make it like video
+	- if a clip_name of "0" is passed in, it will be ignored (but the 
+		nap will be honored)
+	NOTE: the clip_name is used to identify the clip once it has
+		been preloaded. If you issue another preload command
+		with the same clip name it will be ignored. This could
+		potentially be a problem if you have two different
+		locations with the same clip names. If you change
+		_BaseVideoLocation and call preload for the second
+		time with the same clip name you will not get the
+		results you are looking for.
+	- the sync flag is used to tell the engine to not execute any more
+		commands until the preload is complete. This is necessary as the 
+		engine will otherwise do the preload in the background and continue
+		to execute commands in the foreground.
+
+- Return command, will stop executing a macro or card
+
+- fixed the redoscript command so that keybinds are preserved
+	(they were being tossed)
+
+- may have fixed the (somewhat phantom) problem of flashing before playing
+	a video clip from the network, one of the preload routines will draw a 
+	rectangle where the movie will play, now the movie box is moved way
+	off screen until just before it is ready to play (the problem was made
+	worse by the preload command)
+
+2.01, Build 1
+
+- Changed the behavior of two of the log files: 5L.log and
+	MissingMedia.log. Now they will both append messages on
+	to the end of the existing file rather than starting
+	a new file every time the engine is run. A new session
+	will start off with a time stamp line to identify it.
+
+- Added the checkvol command.
+	Syntax:	(checkvol volume_name real_path [no_volume])
+		volume_name - The volume name to look for. The engine
+			will check all kinds of volumes (floppies, cd-roms,
+			zip/jazz disks, etc.).
+		real_path - The name of a variable to receive the path 
+			to use to access this volume if the volume is found. 
+			If the volume isn't found this will be left blank.
+		no_volume - The name of a card to jump to if this
+			volume isn't found. If this parameter is left
+			blank then the engine will not jump.
+
+- The _ERROR variable will be set to -2 when a media element
+	(audio or video) is not	found. The _FileNotFound variable
+	will contain the full path to the element that wasn't found.
+
+- All missing media is logged to a MissingMedia.log file.
+
+- When streaming media through HTTP, the engine will monitor
+	how much of the stream has been buffered. When the buffer
+	runs close to dry, the engine will pause the media briefly
+	to buffer more data and then resume. This results in a brief
+	flash of black when playing video but it keeps the audio
+	and video in sync (or trys to).
+
+- Video clips are now located using the
+	_BaseVideoLocation variable. This variable should be set to
+	a path to be prepended to each clip passed to the video or
+	playqtfile commands unless a full path or URL is given.
+	The path can either be an HTTP URL or
+	a local path. For a local path, a drive specifier of CD:
+	will get translated into a real CD drive letter.
+	A path can also be a partial path that will have the 
+	installation directory prepended to it.
+	Examples:
+		(set _BaseVideoLocation (http://mccay/program_media/HIV/Cinepak/Side%201/))
+		(video 061_004.MOV 0)
+
+		(set _BaseVideoLocation CD:\media\ ) # need the space at the end!
+		(video 061_004.mov 0)
+
+		(video CD:\media\061_004.mov 0)	# don't use _BaseVideoLocation
+
+		(video media\061_004.mov 0)	# look in the installation directory
+
+	Note:
+		Remember that URLs and the name of clips to be streamed through HTTP
+		are case sensitive!
+		Remember to put on the trailing slash for paths and URLs, the engine 
+		won't do it for you.
+
+- Audio clips are now located using the
+	_BaseAudioLocation variable or the _BaseVideoLocation variable if 
+	_BaseAudioLocation has not been set. As with video, if the audio or
+	playqtfile commands are given a full path or URL then this variable
+	will not be used.
+
+- implemented the Redoscript command (only in the Debug engine)
+	It has the same syntax as the Mac engine:
+		(redoscript card_name)
+
+- .idx files are no longer used, the .scr files will be parsed
+	on the fly to generate the index information
+
+- deprecated the preroll command (all movies are prerolled before
+	playing anyway)
+
+- the playqtfile command now accepts an optional origin parameter that
+	can replace the playqtrect command, it acts the same way in that it
+	only applies for the movie that is about to play
+	syntax: (playqtfile file [frame] [palette] [origin])
+
+- added the video command as a way to play video clips
+	syntax: (video path [frame] [palette] [origin])
+	path can either be just a file name or a full path or URL to
+	a movie file
+	this should replace the playqtfile command eventually
+	ex:
+		(video c2lv06) # play cl2v06.mov in the current media directory
+		(video http://mccay/program_media/Cancer_Sx/Final/c2lv06.mov)
+			# play the clip using http streaming
+		
+2.00, Build 21, 
+- The about box in the debug version now correctly states
+the version of the engine you are running (it had been stuck
+on 2.00, Build 3 for a while).
+
+2.00, Build 20, Friday, January 07, 2000, 10:50:06 AM
+- New global variables:
+	_EngineBuildStr - string that identifies the engine build
+		this string will have the format:
+			5L for Win32 2.00, Build 20
+	_EngineBuild - number that identifies the engine build
+		this number will have the format:
+			(major number * 10000) + (minor number * 100) + build
+			eg. 20020 for 2.00 build 20
+
+- The engine will now quit with an alert if QuickTime is not 
+	installed.
+
+- On some systems the engine was not able to check for the CD
+if the CD Player application was open. This was due to the CD 
+device being opened in an unshareable mode by the CD Player. Now
+the engine will correctly handle this situation.
+
+2.00, Build 19, Thursday, January 06, 2000, 11:29:49 AM
+- Changed the way that palettes are handled. Now all palettes
+should be found in the "Palettes" directory, not the "Graphics"
+directory. It is assumed that all palettes are in BMP files. We
+may change this later to include other formats. One thing to note,
+.BMP will be added to the end of the name of a palette ONLY if 
+there isn't already an extension. If you specify the following:
+(loadpic xxx.png 0 0 pal)
+This will NOT work as we can't extract the palette out of PNG
+files yet. So, to be safe, if you use (loadpic ... pal) do
+not use and extension. This will add .pic for the graphic and
+.bmp for the palette. 
+
+- Fixed the problem with QT graphics that was preventing us
+from using anything other than .BMP files for matted images.
+Now you can use any of the supported formats (PNG, PIC, etc.).
+IMPORTANT: the transparent color must be pure white. We used
+to use an off-white for Windows, this will no longer work.
+
+- 8-bit support is about half-way there. One nice thing is
+that the system palette will be correctly restored by 5L now.
+Still QuickTime images and movies do not work. Hopefully this
+will be fixed soon.
+
+2.00, Build 18, Wednesday, December 22, 1999, 2:50:22 PM
+- Change the built-in cursors to the hand cursors that
+Scott made. Also took out the up, down and backup
+cursors. Here are the legal cursor types to use in the
+buttpcx, cursor and touch commands:
+	arrow, cross, watch, hand, right, left, 
+	turnright, turnleft
+
+2.00, Build 16, Tuesday, November 30, 1999, 4:30:11 PM
+- Changed the input command to allow spaces.
+
+2.00, Build 15, Monday, November 22, 1999, 8:51:30 AM
+- Added code to try and prevent clipping of audio clips. When jumping around a lot,
+on slower machines, the first second of a clip would sometimes get dropped. Now we
+will wait for a fraction of a second when starting clips to let QuickTime catch up.
+
+2.00, Build 14, Tuesday, November 16, 1999, 10:15:26 AM
+- Fixed \w and \m.
+
+2.00, Build 13, Friday, November 12, 1999, 4:47:48 PM
+- Made "contains" operator case insensitive.
+
+2.00, Build 12, Friday, November 12, 1999, 3:06:22 PM
+- Changed the behavior of _INCR_X so that it will have the greatest
+	X value of a multi-line text statement, not the last one.
+
+- Ignore the Mac-only newline character sequence, \m.
+
+2.00, Build 11, 
+- Added new variables:
+	_BitDepth - set to the bit depth of the screen
+	_ResX - Set to the horizontal resolution of the screen
+	_ResY - Set to the vertical resolution of the screen
+
+- New origin variables and command.
+	There are two new variables that track the origin of a card
+	or macro:
+		_OriginX - is the X part
+		_OriginY - is the Y part
+	These are logically read-only variables. If you write to them,
+	you will change their value but will not change the actual 
+	origin of the card or macro.
+	There is also a new command, ResetOrigin. This can be used to
+	set the origin back to (0, 0) by not using a parameter: (resetorigin)
+	It can also be used to set the origin of the current card or macro by
+	passing in a point: (resetorigin 10 10)
+
+- Added a new variable, _INCR_X, which will track the horizontal edge of the
+	bounding rectangle of a text command, just as _INCR_Y does in the vertical
+	direction.
+
+2.00, Build 10, Thursday, November 04, 1999, 9:35:48 AM
+- The offscreen buffer was not being correctly blasted to 
+the screen before or after showing a movie that has its own
+rectangle (using playqtrect).
+
+2.00, Build 9, Wednesday, November 03, 1999, 5:14:56 PM
+- The volume level of movies playing from CD was incorrectly
+being set too low. Playing from the hard disk had the correct
+volume. Weird one.
+
+2.00, Build 8, Tuesday, November 02, 1999, 12:38:04 PM
+- The rewrite command was not working. The temporary file was
+never being copied back into the original file. This has been 
+fixed.
+
+- Audio files were not being correctly terminated with the ESC
+key.
+
+2.00, Build 7, Friday, October 29, 1999, 11:26:19 AM
+- The _system built-in variable had long strings in it to describe the 
+system. These have been changed to the following:
+	Win95 - Windows 95
+	Win98 - Windows 98
+	WinNT4 - Windows NT version 4
+	Win2000 - Windows 2000
+	Win32 - Unknown member of the Windows 95 family
+	WinNT - Unknown member of the Windows NT family
+	Win - Anything else
+
+- Changed the cursor behavior so that the explicit cursor command will
+make the cursor stay visible even when there are not touchzones present.
+A cursor command without a parameter (e.g. (cursor)) will reset the cursor
+back to the default arrow and will no longer force it to be visible when
+touchzones aren't present.
+
+2.00, Build 6, Wednesday, October 27, 1999, 4:11:46 PM
+- The name of the debug engine has been changed to 5L_d.exe to distinguish
+it from the release engine (5L.exe). I don't know why I made them the same
+in the first place.
+
+- Implemented a new command: cursor. It takes one parameter, the name
+of a cursor to display. If no parameter is given then the arrow cursor
+is used. The valid constants are the same as for the buttpcx and touch
+commands: up, down, right, left, backup, hand, arrow, cross, watch
+syntax: (cursor [constant])
+
+- Change cursor support in buttpcx and touch to be backward compatible
+with existing scripts. In both cases, if a valid cursor is not found
+in the place where it should be in the script then script processing
+will continue with the second command (and optional picture for touch).
+	
+2.00, Build 4
+	- cursors
+		- touchzones now support an optional cursor to be displayed when
+			the mouse is over the touchzone
+			the following contants are now supported:
+				up, down, right, left, backup, hand, arrow, cross, watch
+			these constants can be used in the touch and buttpcx commands
+			as follows:
+
+			(touch L T R B cmd [cursor [pict [X Y]]])
+			(buttpcx pict X Y header text cmd [cursor [sec_cmd]])
+
+			the cursor constant is optional and will always default to hand
+			
+				
+	- better CD detection
+		- the installer no longer must figure out the CD drive for the engine and
+			put it in the registry or Win.INI file
+
+2.00, Build 3
+
+	- QuickTime 4 support
+	- looping audio support
+	- more graphics formats supported:
+		- Bitmap (*.bmp) 
+			- this is currently the only format that can
+				be used for palettes (loadpic pal or loadpal)
+			- this is currently the only format that can
+				be used with matte
+		- QuickDraw picture (*.pic)
+		- PNG (*.png)
+		- ...and others
+	- 24-bit offscreen buffers so that palette matching does not
+		need to be done except in 8-bit mode
+	- much of the engine has been rewritten or reorganized so
+		full testing should be done on existing programs to 
+		ensure that they still work
+
+	Known problems:
+		- a file named temp5l.xxx is created on a rewrite command
+			and is not subsequently deleted
+		
+   
+
+	
+
