@@ -72,14 +72,6 @@ public:
 private:
 	friend class TBTree;
 
-    //////////
-	// Add a node to this one. Figures out where it goes and makes the links.
-	//
-	// [in] inNode - new node to attach as a child of this node
-	// [out] return - true if successful, false otherwise
-	//
-	bool			Add(TBNode *inNode);
-
 	//////////
 	// Remove (and delete) this node and return the subtree that is formed.
 	//
@@ -97,9 +89,17 @@ private:
 	TBNode			*FindAndRemove(const char *inKey, bool *outWasFound);
 
 public:
-	// XXX - Find() and RemoveAll() should really be private, but
+	// XXX - Add(), Find() and RemoveAll() should really be private, but
 	// they're used by TVariable, which has no business looking at
 	// them.  Fix this.
+
+    //////////
+	// Add a node to this one. Figures out where it goes and makes the links.
+	//
+	// [in] inNode - new node to attach as a child of this node
+	// [out] return - true if successful, false otherwise
+	//
+	bool			Add(TBNode *inNode);
 
     //////////
 	// Find a node in this subtree.
@@ -212,6 +212,11 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5  2002/05/29 11:41:24  emk
+ Made the TBNode ::Add method public so it can be accessed by the old Win32
+ Card class's local variable handling.  I'm trying to hide as much of the
+ TBNode API as possible, but it's still used in some pretty strange places.
+
  Revision 1.4  2002/05/29 09:38:53  emk
  Fixes for various "crash on exit" bugs in 5L.
 
