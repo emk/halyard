@@ -156,6 +156,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "wx5L"=..\..\wx\MSVC\wx5L\wx5L.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name Common
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CommonTest
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Global:
 
 Package=<5>
