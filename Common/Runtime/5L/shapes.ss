@@ -1,4 +1,12 @@
-(module shapes (lib "5l.ss" "5L")
+;;=========================================================================
+;;  Miscellaneous Shape-Manipulation Routines
+;;=========================================================================
+;;  We should probably look in tamale.ss and see if we can drag more stuff
+;;  into here.
+
+(module shapes (lib "lispish.ss" "5L")
+  (require (lib "types.ss" "5L"))
+  
   (provide bounds)
   
   (defgeneric (bounds (shape <shape>)))

@@ -18,7 +18,7 @@
   (define-syntax-indent quote function)
   (define-syntax-indent lambda 1)
   (define-syntax-indent if 1)
-  (define-syntax-indent set! 1)
+  (define-syntax-indent set! function)
   (define-syntax-indent cond 0)
   (define-syntax-indent case 1)
   (define-syntax-indent and function)

@@ -1,11 +1,11 @@
 ;;=========================================================================
-;; Random Tamale Primitives
+;;  Random Tamale Primitives
 ;;=========================================================================
-;; This is a collection of loosely documented and poorly-organized Tamale
-;; primitives, all subject to change at a moment's notice.
+;;  This is a collection of loosely documented and poorly-organized Tamale
+;;  primitives, all subject to change at a moment's notice.
 
-(module tamale (lib "5l.ss" "5L")
-  (require (lib "shapes.ss" "5L"))
+(module tamale (lib "lispish.ss" "5L")
+  (require (lib "api.ss" "5L"))
 
   (provide make-path-from-abstract draw-picture measure-picture
            set-image-cache-size! modal-input with-dc
@@ -354,12 +354,13 @@
   (define-card-template %flash-card%
       [[location :type <string> :label "Location"]]
       ()
-    (create %activex%
-            :name 'flash
-            :rect $screen-rect
-            :activex-id "ShockwaveFlash.ShockwaveFlash")
-    (set! (activex-prop @flash "movie")
-      (build-path (current-directory) "Flash" location)))
+    (define flash
+      (create %activex%
+              :name 'flash
+              :rect $screen-rect
+              :activex-id "ShockwaveFlash.ShockwaveFlash"))
+    (set! (activex-prop flash "movie")
+          (build-path (current-directory) "Flash" location)))
   
   (define-element-template %browser%
       [[location :type <string> :label "Location" :default "about:blank"]

@@ -3,6 +3,9 @@
   (require (lib "kernel.ss" "5L"))
   (provide (all-from (lib "kernel.ss" "5L")))
 
+  (require (lib "shapes.ss" "5L"))
+  (provide (all-from (lib "shapes.ss" "5L")))
+  
 
   ;;=======================================================================
   ;;  Support Modules
