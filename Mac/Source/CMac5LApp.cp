@@ -275,9 +275,7 @@ CMac5LApp::CMac5LApp()
 	mDisplayWindow->CalcLocalFrameRect(theFrame);
 	::FillRect(&theFrame, &qd.black);
 	mDisplayWindow->ValidPortRect(&theFrame);
-
-// cbo_test - see if CVS picks this up
-
+ 
 	// set up initial values for "global" variables
 	gVariableManager.SetString("_NoCheckDisc", "0");		// check for discs by default
 	gVariableManager.SetString("_locked", "0");				// start off unlocked
