@@ -1,5 +1,14 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * New wxWindows front-end now officially added to the build tree.
+    This is still massively incomplete, but it's on its way.
+  * Lots of compilation flag tweaks, to get all the various projects
+    on the same page re: threads, RTTI, exceptions, etc.
+  * CryptTool removed as first step in preparing for open souce release.
+    This will simplify our legal issues a bit.
+
 3.5.8 - 15 Oct 2002 - emk
 
 Engine:
