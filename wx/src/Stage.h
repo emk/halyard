@@ -725,6 +725,13 @@ public:
 	void RestoreGraphics(const wxRect &inBounds);
 
 	//////////
+	// Save a screenshot to the specified file
+	//
+	// [in] inFilename - The name of the file to save to.
+	//
+	void Screenshot(const wxString &inFilename);
+
+	//////////
 	// Display a modal text input box.
 	//
 	// [in] inBounds - The box to use for text input.

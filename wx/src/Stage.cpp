@@ -6,6 +6,7 @@
 #include <wx/config.h>
 #include <wx/filename.h>
 #include <wx/clipbrd.h>
+#include <wx/image.h>
 
 #include "TCommon.h"
 #include "TInterpreter.h"
@@ -891,7 +892,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	mImageCache = new ImageCache();
 	mCursorManager = new CursorManager();
 	mTransitionManager = new TransitionManager();
-
+	
     mTextCtrl =
         new wxTextCtrl(this, FIVEL_TEXT_ENTRY, "", wxDefaultPosition,
                        wxDefaultSize, wxNO_BORDER | wxTE_PROCESS_ENTER);
@@ -1472,6 +1473,12 @@ void Stage::RestoreGraphics(const wxRect &inBounds)
 	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
 			   &srcDC, inBounds.x, inBounds.y);
 	InvalidateRect(inBounds);
+}
+
+void Stage::Screenshot(const wxString &inFilename)
+{
+	wxImage image = mOffscreenPixmap.ConvertToImage();
+	image.SaveFile(inFilename, wxBITMAP_TYPE_PNG);
 }
 
 void Stage::ModalTextInput(const wxRect &inBounds,

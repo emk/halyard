@@ -72,6 +72,7 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Refresh);
 	REGISTER_5L_PRIMITIVE(SaveGraphics);
 	REGISTER_5L_PRIMITIVE(RestoreGraphics);
+	REGISTER_5L_PRIMITIVE(Screenshot);
 	REGISTER_5L_PRIMITIVE(RegisterCard);
 	REGISTER_5L_PRIMITIVE(RegisterCursor);
 	REGISTER_5L_PRIMITIVE(RegisterEventDispatcher);
@@ -90,13 +91,18 @@ void FIVEL_NS RegisterWxPrimitives()
 //=========================================================================
 
 #define FIND_ELEMENT(TYPE, VAR, NAME) \
-    Element *VAR##_temp = wxGetApp().GetStage()->FindElement(NAME); \
-    if (VAR##_temp == NULL) \
-        ::SetPrimitiveError("noelement", "The element does not exist."); \
-    TYPE *VAR = dynamic_cast<TYPE *>(VAR##_temp); \
-    if (VAR == NULL) \
-        ::SetPrimitiveError("wrongelementtype", \
-                            "The element is not of type " #TYPE)
+	Element *VAR##_temp = wxGetApp().GetStage()->FindElement(NAME); \
+	if (VAR##_temp == NULL) { \
+		::SetPrimitiveError("noelement", "The element does not exist."); \
+		return; \
+	} \
+	TYPE *VAR = dynamic_cast<TYPE *>(VAR##_temp); \
+	if (VAR == NULL) { \
+		::SetPrimitiveError("wrongelementtype", \
+			                "The element is not of type " #TYPE); \
+		return; \
+	}
+ 
 
 //=========================================================================
 //  Implementation of wxWindows Primitives
@@ -492,6 +498,13 @@ DEFINE_5L_PRIMITIVE(RestoreGraphics)
 	TRect bounds;
 	inArgs >> bounds;
 	wxGetApp().GetStage()->RestoreGraphics(TToWxRect(bounds));
+}
+
+DEFINE_5L_PRIMITIVE(Screenshot)
+{
+	std::string filename;
+	inArgs >> filename;
+	wxGetApp().GetStage()->Screenshot(filename.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(RegisterCard)
