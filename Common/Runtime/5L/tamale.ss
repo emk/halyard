@@ -104,15 +104,9 @@
       (call-5l-prim 'RegisterCursor sym path hotspot)))
 
   (define (mouse-position)
-    ;; XXX - AYIEEEE!  We can't actually return points from the engine, so
-    ;; we need to use this vile, disgusting hack instead.  Let's fix the
-    ;; data model at the interpreter/engine boundary, OK?
-    ;;
     ;; XXX - This keeps returning exciting results even if we're in the
     ;; background.  Yuck.
-    (let* [[str (call-5l-prim 'MousePosition)]
-           [lst (map string->number (regexp-split " " str))]]
-      (point (car lst) (cadr lst))))
+    (call-5l-prim 'MousePosition))
 
   (define (delete-element elem-or-name)
     ;; TODO - Get rid of elem-or-name-hack, and rename
