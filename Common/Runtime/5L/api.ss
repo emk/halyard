@@ -596,6 +596,7 @@
 
   (provide set-state-db! register-state-db-fn!
            state-db-fn state-db-fn/rt
+           define-state-db-fn define-state-db-fn/rt
            define-state-db-listener define-state-db-listener/rt)
   
   ;;; Set the specified key in the state database.
@@ -660,6 +661,24 @@
           :bindings (list #,@(expand-bindings #'bindings))
           :code 'body))]))
   (define-syntax-indent state-db-fn/rt 2)
+
+  ;;; Equivalent to (define name (state-db-fn (state-db) ...)).
+  ;;;
+  ;;; @syntax (define-state-db-fn (name state-db) . body)
+  (define-syntax define-state-db-fn
+    (syntax-rules ()
+      [(define-state-db-fn (name state-db) . body)
+       (define name (state-db-fn (state-db) . body))]))
+  (define-syntax-indent define-state-db-fn 1)
+  
+  ;;; Equivalent to (define name (state-db-fn/rt (state-db) ...)).
+  ;;;
+  ;;; @syntax (define-state-db-fn (name state-db) . body)
+  (define-syntax define-state-db-fn/rt
+    (syntax-rules ()
+      [(define-state-db-fn/rt (name state-db) . body)
+       (define name (state-db-fn/rt (state-db) . body))]))
+  (define-syntax-indent define-state-db-fn/rt 1)
 
   ;;; Combines the features of REGISTER-STATE-DB-FN! and STATE-DB-FN.
   ;;;
