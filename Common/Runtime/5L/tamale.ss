@@ -7,7 +7,7 @@
 (module tamale (lib "5l.ss" "5L")
   (require (lib "shapes.ss" "5L"))
 
-  (provide draw-picture measure-picture
+  (provide make-path-from-abstract draw-picture measure-picture
            set-image-cache-size! modal-input with-dc
            dc-rect color-at %element% %invisible-element%
            %zone% zone %animated-graphic% register-cursor mouse-position
