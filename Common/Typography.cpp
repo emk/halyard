@@ -70,6 +70,7 @@ Style::Style(const std::string &inFamily, int inSize)
 		mRep->mFamily      = inFamily;
 		mRep->mFaceStyle   = kRegularFaceStyle;
 		mRep->mSize        = inSize;
+		mRep->mLeading     = 0;
 		mRep->mColor       = Color(0, 0, 0);
 		mRep->mShadowColor = Color(255, 255, 255);
 		mRep->mFace        = NULL;
@@ -176,6 +177,13 @@ Style &Style::SetSize(int inSize)
 	return *this;
 }
 
+Style &Style::SetLeading(Distance inLeading)
+{
+	Grab();
+	mRep->mLeading = inLeading;
+	return *this;
+}
+
 Style &Style::SetColor(Color inColor)
 {
 	Grab();
@@ -221,6 +229,26 @@ bool Style::GetIsUnderlined() const
 bool Style::GetIsShadowed() const
 {
 	return (mRep->mFaceStyle & kShadowFaceStyle) ? true : false;
+}
+
+Distance Style::GetLineHeight(bool isFirstLine /*= false*/) const
+{
+	if (isFirstLine)
+	{
+		// We don't need any inter-line spacing for the first line.
+		return GetFace()->GetAscender();
+	}
+	else
+	{
+		// We need to use the full interline spacing for lines after
+		// the first, and we need to adjust the leading.
+		return GetFace()->GetLineHeight() + GetLeading();
+	}
+}
+
+Distance Style::GetDescender() const
+{
+	return GetFace()->GetDescender();
 }
 
 
@@ -462,6 +490,58 @@ Vector Face::GetKerning(CharCode inPreviousChar,
 	return delta;
 }
 
+Distance Face::GetAscender()
+{
+	// The obvious way to implement this function is to call
+	// 'round_266(mFaceRep->mFace->size->metrics.ascender)', but this would
+	// produce slightly weird results.  In particular, 'ascender' is based
+	// on the height of the tallest character in the face, which is usually
+	// some ridiculously oversized character (such as an integral sign,
+	// which extends above the tallest capital letters, and below the
+	// baseline).  Just to add insult to injury, the FreeType 2 reference
+	// manual says the ascender value doesn't take kerning into account,
+	// and might be off by as much as a pixel.
+	//
+	// Instead, we choose to measure the height of the capital letter 'M'.
+	// This is a good choice for two reasons:
+	//   1) The *width* of the character 'M' is used to measure em-dashes,
+	//      em-spaces, and other values.  So there's a precedent for looking
+	//      at the letter 'M' to get special values.
+	//   2) The letter 'M' typically has flat, horizontal serifs.  Letters
+	//      such as 'T' sometimes have vertical serifs; we want to extend
+	//      these above the top-line, and not include them in the height.
+	GlyphIndex em_index = GetGlyphIndex('M');
+	if (em_index)
+	{
+		Glyph em_glyph = GetGlyphFromGlyphIndex(em_index);
+		return round_266(em_glyph->metrics.horiBearingY);
+	}
+	else
+	{
+		// We don't have an 'M' in this font, so use the approximate height
+		// of the tallest character.
+		return round_266(mFaceRep->mFace->size->metrics.ascender);
+	}
+}
+
+Distance Face::GetDescender()
+{
+	// For descenders, we measure the letter 'g', for the reasons discussed
+	// above.  (We may want to tweak this code a bit.)
+	GlyphIndex index = GetGlyphIndex('g');
+	if (index)
+	{
+		Glyph glyph = GetGlyphFromGlyphIndex(index);
+		return round_266(glyph->metrics.height - glyph->metrics.horiBearingY);
+	}
+	else
+	{
+		// We don't have an 'g' in this font, so use the approximate
+		// maximum descender.
+		return round_266(mFaceRep->mFace->size->metrics.descender);
+	}
+}
+
 Distance Face::GetLineHeight()
 {
 	return round_266(mFaceRep->mFace->size->metrics.height);
@@ -496,9 +576,24 @@ Glyph FaceStack::GetGlyph(CharCode inCharCode)
 	return face->GetGlyphFromGlyphIndex(glyph);
 }
 
+Distance FaceStack::GetAscender()
+{
+	// Use the ascender of our primary face.
+	// (This makes glyph substitution prettier.)
+	return mFaceStack.front().GetAscender();
+}
+
+Distance FaceStack::GetDescender()
+{
+	// Use the ascender of our primary face.
+	// (This makes glyph substitution prettier.)
+	return mFaceStack.front().GetDescender();
+}
+
 Distance FaceStack::GetLineHeight()
 {
 	// Use the line-height of our primary face.
+	// (This makes glyph substitution prettier.)
 	return mFaceStack.front().GetLineHeight();
 }
 
@@ -648,7 +743,9 @@ GenericTextRenderingEngine::
 GenericTextRenderingEngine(const StyledText &inText,
 						   Distance inLineLength,
 						   Justification inJustification)
-	: mIterator(inText), mLineLength(inLineLength),
+	: mIterator(inText),
+	  mDefaultStyle(inText.GetDefaultStyle()),
+	  mLineLength(inLineLength),
 	  mJustification(inJustification)
 {
 	// We can't call RenderText from the constructor because C++ hasn't
@@ -756,7 +853,8 @@ TextRenderingEngine::TextRenderingEngine(const StyledText &inText,
 										 Justification inJustification,
 										 Image *inImage)
 	: GenericTextRenderingEngine(inText, inLineLength, inJustification),
-	  mLineStart(inPosition), mImage(inImage)
+	  mIsFirstLine(true), mLineStart(inPosition),
+	  mBounds(inPosition), mImage(inImage)
 {
 	ASSERT(inPosition.x >= 0 && inPosition.y >= 0);
 	ASSERT(inImage != NULL);
@@ -843,7 +941,6 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 	// Update our previous char.
 	*ioPrevious = inCurrent;
 }
-				 
 
 Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 											 LineSegment *inSegment,
@@ -886,31 +983,34 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 									 Distance inHorizontalOffset)
 {
-	// XXX - Extremely primitive and incorrect line-height system.
-	// This is wrong in *so* *many* different ways.
-	int line_height = 0;
+	// Calculate an appropriate height for this line.
+	Distance line_height = GetDefaultStyle()->GetLineHeight(mIsFirstLine);
+	for (std::deque<LineSegment>::iterator iter1 = inLine->begin();
+		 iter1 < inLine->end(); ++iter1)
+	{
+		for (StyledText::const_iterator cp = iter1->begin;
+			 cp != iter1->end; ++cp)
+		{
+			// Increase the line height if we have any oversized characters.
+			Distance current_height = cp->style->GetLineHeight(mIsFirstLine);
+			if (current_height > line_height)
+				line_height = current_height;
+		}
+	}
 
 	// Figure out where to start drawing text.
+	mLineStart.y += line_height;
 	Point cursor = mLineStart;
 	cursor.x += inHorizontalOffset;
 
 	// Draw each character.
 	StyledText::value_type previous(kNoSuchCharacter, NULL);
-	StyledText::const_iterator cp;
-	for (std::deque<LineSegment>::iterator iter = inLine->begin();
-		 iter < inLine->end(); iter++)
+	for (std::deque<LineSegment>::iterator iter2 = inLine->begin();
+		 iter2 < inLine->end(); ++iter2)
 	{
-		LineSegment seg = *iter;
-		for (cp = seg.begin; cp != seg.end; ++cp)
-		{
-			// Update our line-height.
-			int current_height = cp->style->GetFace()->GetLineHeight();
-			if (current_height > line_height)
-				line_height = current_height;
-
-			// Draw our character.
+		for (StyledText::const_iterator cp = iter2->begin;
+			 cp != iter2->end; ++cp)
 			ProcessCharacter(&previous, *cp, &cursor, true);
-		}
 	}
 
 	// Draw a trailing hyphen if we need one.
@@ -919,9 +1019,20 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		StyledText::value_type current(L'-', previous.style);
 		ProcessCharacter(&previous, current, &cursor, true);
 	}
+
+	// Update our maximum left bound.  (This may be slightly wrong
+	// in the presence of letters which kern entirely within the
+	// previous letter.)
+	if (cursor.x > mBounds.x)
+		mBounds.x = cursor.x;
+
+	// Calculate an approximate bottom bound.
+	// TODO - This doesn't take oversized characters into account,
+	// which may have lower base-lines than regular characters.
+	mBounds.y = mLineStart.y + GetDefaultStyle()->GetDescender();
 	
-	// Update our line start for the next line.
-	mLineStart.y += line_height;
+	// Update our drawing state for the next line.
+	mIsFirstLine = false;
 }
 
 

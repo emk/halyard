@@ -14,6 +14,7 @@ char *fonts[] = {
     "URW Bookman L",
     "Century Schoolbook L",
     "Bitstream Charter",
+    "URW Chancery L",
     "Times",
     NULL
 };
@@ -31,16 +32,19 @@ FamilyDatabase *gFonts;
 
 static void show_with_style_info(const StyledText &inText,
 				 Point inPos, Distance inLength,
-				 Justification inJust)
+				 Justification inJust,
+				 Distance *outBottomBound)
 {
     // Draw our text.
     TextRenderingEngine engine(inText, inPos, inLength, inJust, gImage);
     engine.RenderText();
+    *outBottomBound = engine.GetBottomBound();
 }
 
 static void show(const wchar_t *inText, const Style &inStyle,
 		 Point inPos, Distance inLength,
-		 Justification inJust)
+		 Justification inJust,
+		 Distance *outBottomBound)
 {
     // Build our style run.
     StyledText styledText(inStyle);
@@ -48,7 +52,7 @@ static void show(const wchar_t *inText, const Style &inStyle,
     styledText.EndConstruction();
 
     // Draw our text.
-    show_with_style_info(styledText, inPos, inLength, inJust);
+    show_with_style_info(styledText, inPos, inLength, inJust, outBottomBound);
 }
 
 int main (int argc, char **argv) {
@@ -80,11 +84,14 @@ int main (int argc, char **argv) {
 	baseStyle.SetShadowColor(Color(128, 128, 0));
 
 	// Display a title.
+	Distance bodyStart;
 	show(L"Font Engine Demo",
 	     Style(baseStyle).SetSize(36).SetFaceStyle(kShadowFaceStyle),
-	     Point(10, 50), 620, kCenterJustification);
+	     Point(10, 20), 620, kCenterJustification, &bodyStart);
+	bodyStart += 20;
 
 	// Display some text samples.
+	Distance start = bodyStart;
 	Style sampleStyle(baseStyle);
 	sampleStyle.SetSize(14);
 	for (int fi = 0; fonts[fi] != NULL; fi++) {
@@ -93,8 +100,11 @@ int main (int argc, char **argv) {
 	    str[wcslen(str)-4] = 0x2206;
 	    str[wcslen(str)-3] = 0x03B4;
 	    show(str, Style(sampleStyle).SetFamily(fonts[fi]),
-		 Point(10, 100 + fi * 20), 360, kLeftJustification);
+		 Point(10, start), 360, kLeftJustification, &start);
+	    start += 10;
+	    free(str);
 	}
+	start += 10;
 
 	// Do an elaborate, multi-styled paragraph.
 	Style paraStyle(baseStyle);
@@ -115,8 +125,20 @@ int main (int argc, char **argv) {
 	para.AppendText(L" color is cool.  We like several cheeses! T");
 	para.ChangeStyle(Style(paraStyle).SetColor(Color(255, 0, 0)));
 	para.AppendText(L".");
+	para.ChangeStyle(paraStyle);
+	para.AppendText(L"\nWe also have ");
+	para.ChangeStyle(Style(paraStyle).SetSize(paraStyle.GetSize() + 6));
+	para.AppendText(L"big");
+	para.ChangeStyle(paraStyle);
+	para.AppendText(L" and ");
+	para.ChangeStyle(Style(paraStyle).SetSize(paraStyle.GetSize() / 2));
+	para.AppendText(L"small");
+	para.ChangeStyle(paraStyle);
+	para.AppendText(L" text.");
 	para.EndConstruction();
-	show_with_style_info(para, Point(10, 300), 360, kLeftJustification);
+	show_with_style_info(para, Point(10, start), 360, kLeftJustification,
+			     &start);
+	start += 20;
 
 	wchar_t symbols[5];
 	symbols[0] = 0x2206;
@@ -125,16 +147,20 @@ int main (int argc, char **argv) {
 	symbols[3] = L'a';
 	symbols[4] = 0x0000;
 	show(symbols, Style(baseStyle).SetSize(50),
-	     Point(10, 400), 360, kLeftJustification);
+	     Point(10, start), 360, kLeftJustification, &start);
 
+	start = bodyStart;
 	Justification justifications[] =
 	    {kLeftJustification, kRightJustification, kCenterJustification};
+	Style justStyle(baseStyle);
 	for (int i = 0; i < 3; i++) {
 	    show(L"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, "
 		 "sed diam nonumy eirmod tempor invidunt ut labore et dolore "
 		 "magna aliquyam erat, sed diam voluptua. At vero eos et "
 		 "accusam et justo duo dolores et ea rebum.",
-		 baseStyle, Point(370, 100 + i * 100), 260, justifications[i]);
+		 justStyle, Point(370, start), 260, justifications[i], &start);
+	    start += 20;
+	    justStyle.SetLeading(justStyle.GetLeading() - 2);
 	}
 
         image.save("visual-test.png");

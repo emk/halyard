@@ -26,6 +26,7 @@ static void test_Typography_Style (void)
 	TEST(s1.GetFamily() == "Nimbus Roman No9 L");
 	TEST(s1.GetFaceStyle() == kRegularFaceStyle);
 	TEST(s1.GetSize() == 14);
+	TEST(s1.GetLeading() == 0);
 	TEST(s1.GetColor() == Color(0, 0, 0));
 	TEST(s1.GetShadowColor() == Color(255, 255, 255));
 
@@ -35,6 +36,7 @@ static void test_Typography_Style (void)
 	TEST(s2.GetFamily() == "Nimbus Roman No9 L");
 	TEST(s2.GetFaceStyle() == kRegularFaceStyle);
 	TEST(s2.GetSize() == 14);
+	TEST(s2.GetLeading() == 0);
 	TEST(s2.GetColor() == Color(0, 0, 0));
 	TEST(s2.GetShadowColor() == Color(255, 255, 255));
 	
@@ -43,6 +45,7 @@ static void test_Typography_Style (void)
 	TEST(s3.GetFamily() == "Nimbus Roman No9 L");
 	TEST(s3.GetFaceStyle() == kRegularFaceStyle);
 	TEST(s3.GetSize() == 14);
+	TEST(s3.GetLeading() == 0);
 	TEST(s3.GetColor() == Color(0, 0, 0));
 	TEST(s3.GetShadowColor() == Color(255, 255, 255));
 
@@ -56,6 +59,9 @@ static void test_Typography_Style (void)
 	s1.SetSize(18);
 	TEST(s1.GetSize() == 18);
 	TEST(s2.GetSize() == 14);
+	s1.SetLeading(2);
+	TEST(s1.GetLeading() == 2);
+	TEST(s2.GetLeading() == 0);
 	s1.SetColor(Color(32, 32, 32));
 	TEST(s1.GetColor() == Color(32, 32, 32));
 	TEST(s2.GetColor() == Color(0, 0, 0));

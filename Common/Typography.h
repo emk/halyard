@@ -169,6 +169,7 @@ namespace Typography {
 			std::list<std::string> mBackupFamilies;
 			FaceStyle   mFaceStyle;
 			int         mSize;
+			Distance    mLeading;
 			Color       mColor;
 			Color       mShadowColor;
 			
@@ -223,6 +224,12 @@ namespace Typography {
 		Style &SetSize(int inSize);
 
 		//////////
+		// Get the size of the font, in points.
+		//
+		Distance GetLeading() const { return mRep->mLeading; }
+		Style &SetLeading(Distance inLeading);
+
+		//////////
 		// Get the color used to draw text.
 		//
 		Style &SetColor(Color inColor);
@@ -239,6 +246,8 @@ namespace Typography {
 		AbstractFace *GetFace() const;
 		bool          GetIsUnderlined() const;
 		bool          GetIsShadowed() const;
+		Distance      GetLineHeight(bool isFirstLine = false) const;
+		Distance      GetDescender() const;
 	};
 
 	//////////
@@ -478,6 +487,23 @@ namespace Typography {
 		virtual Glyph GetGlyph(CharCode inCharCode) = 0;
 
 		//////////
+		// Return a best guess for the maximum height of capital letters
+		// above the baseline.  (For some fonts, such as Garamond, serifs
+		// may extend above the ascender.)  This relies on the font's data
+		// tables and FreeType's drivers, so it might occasionally be a bit
+		// whacky.  (But it's all we've got.)
+		//
+		virtual Distance GetAscender() = 0;
+
+		//////////
+		// Return a best guess for the maximum descender below the baseline
+		// for normal lower-case characters.  This relies on
+		// the font's data tables and FreeType's drivers, so it might
+		// occasionally be a bit whacky.  (But it's all we've got.)
+		//
+		virtual Distance GetDescender() = 0;
+
+		//////////
 		// Return a best guess for the appropriate distance between
 		// two lines.  This relies on the font's data tables and
 		// FreeType's drivers, so it might occasionally be a bit whacky.
@@ -559,6 +585,8 @@ namespace Typography {
 		//
 		Vector GetKerning(CharCode inPreviousChar, CharCode inCurrentChar);
 
+		Distance GetAscender();
+		Distance GetDescender();
 		Distance GetLineHeight();
 
 		Face *GetRealFace(CharCode inCharCode) { return this; }
@@ -607,6 +635,8 @@ namespace Typography {
 		void AddSecondaryFace(const Face &inFace);
 
 		virtual Glyph GetGlyph(CharCode inCharCode);
+		virtual Distance GetAscender();
+		virtual Distance GetDescender();
 		virtual Distance GetLineHeight();
 		virtual Face *GetRealFace(CharCode inCharCode);
 
@@ -746,6 +776,7 @@ namespace Typography {
 	class GenericTextRenderingEngine {
 	private:
 		LineSegmentIterator mIterator;
+		const Style *mDefaultStyle;
 		Distance mLineLength;
 		Justification mJustification;
 
@@ -753,7 +784,8 @@ namespace Typography {
 		//////////
 		// Create a new GenericTextRenderingEngine.
 		// 
-		// [in] inText - The text to draw.
+		// [in] inText - The text to draw.  This object must not be
+		//               destroyed before calling RenderText.
 		// [in] inLineLength - Maximum allowable line length.
 		// [in] inJustification - Justification for the line.
 		//
@@ -763,6 +795,7 @@ namespace Typography {
 
 		virtual ~GenericTextRenderingEngine() {}
 		
+		const Style *GetDefaultStyle() { return mDefaultStyle; }
 		Distance GetLineLength() { return mLineLength; }
 		Justification GetJustification() { return mJustification; }
 
@@ -836,7 +869,9 @@ namespace Typography {
 	// 
 	class TextRenderingEngine : public GenericTextRenderingEngine {
 		Image *mImage;
+		bool mIsFirstLine;
 		Point mLineStart;
+		Point mBounds;
 
 	public:
 		//////////
@@ -860,6 +895,20 @@ namespace Typography {
 							Distance inLineLength,
 							Justification inJustification,
 							Image *inImage);
+
+		//////////
+		// After a call to 'RenderText', get the rightmost coordinate
+		// of any letter drawn.
+		//
+		Distance GetRightBound() const { return mBounds.x; }
+
+		//////////
+		// After a call to 'RenderText', get an approximate bottommost
+		// coordinate.  This is based on the descender of a hypothetical
+		// 'g' on the last line drawn.  Note that there may be no characters
+		// on this last line if the text ends in "\n".
+		// 
+		Distance GetBottomBound() const { return mBounds.y; }
 
 	private:
 		//////////
