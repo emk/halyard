@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Made sure all Quake 2-related state db entries got cleared at Quake 2
+    startup.
+
 0.0.21 - 27 February 2004 - emk
 
   * Added support for using FOREACH to iterate over hash tables.
