@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -89,6 +90,10 @@ void	PutInForeground(void);
 
 /*
  $Log$
+ Revision 1.4.6.1  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
  Revision 1.4  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

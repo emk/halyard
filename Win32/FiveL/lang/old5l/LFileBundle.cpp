@@ -27,8 +27,6 @@ LFileBundle::LFileBundle()
 LFileBundle::~LFileBundle()
 {
 	CloseBundle();
-	
-	delete bundleFilename;
 	delete clearFileStream;
 
 	//delete cs;	// Causes memory errors ??
@@ -56,10 +54,8 @@ bool LFileBundle::Init()
 	isEncrypted = (gDeveloperPrefs.GetPref(DB_TYPE) == DB_TYPE_ENCRYPTED);
 	
 	// Construct bundleFilename
-	const char *dataDir = gConfigManager.DataPath();
-	bundleFilename = new char[strlen(dataDir) + strlen(IN_FILENAME) + 1];
-	strcpy(bundleFilename, dataDir);
-	strcat(bundleFilename, IN_FILENAME);
+	bundleFilename =
+		FileSystem::GetDataFilePath(IN_FILENAME).ToNativePathString();
 	
 	filePos = '-';
 	currentFileIsGlobal = true;	// Assume true for imports
@@ -890,50 +886,21 @@ void LFileBundle::UpdateFileHeader(const char *filename, int fTagIndex)
 // Assumes all imported files are global
 void LFileBundle::ImportFiles()
 {
-	TString str;
-	const char *dataPath;
-	char *searchString;
-	WIN32_FIND_DATA FindFileData;
-	HANDLE hFind;
+	// List all the files in our data directory.
+	FileSystem::Path data_dir = FileSystem::GetDataDirectory(); 
+	std::list<std::string> files = data_dir.GetDirectoryEntries();
 
-	dataPath = gConfigManager.DataPath();
-
-	searchString = new char[strlen(dataPath) + 20];	// 20 should be enough
-	strcpy(searchString, dataPath);
-	strcat(searchString, INIT_DATA_DIR);
-	strcat(searchString, "\\*");	// add wilcard
-	
 	// Assume all imported files are global
 	currentFileIsGlobal = true;
 
-	hFind = ::FindFirstFile(searchString, &FindFileData);
-
-	if (hFind == INVALID_HANDLE_VALUE) {
-		//printf ("Invalid File Handle. Get Last Error reports %d\n", GetLastError ());
-		return;
-	} 
-	
-	// Skip over the "." and ".." files
-	//Import(FindFileData.cFileName);
-	::FindNextFile(hFind, &FindFileData);
-
-	while (::FindNextFile(hFind, &FindFileData))
+	// Import each file.
+	std::list<std::string>::const_iterator iter = files.begin();
+	for (; iter != files.end(); ++iter)
 	{
-		char *cFile = FindFileData.cFileName;
-		
-		if (strcmp(cFile, IN_FILENAME) != 0 &&
-			strstr(cFile, ".exe") == NULL &&	 // ignore .exe setup files
-			FindFileData.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY) // ignore directories
-		{
-			str = dataPath;
-			str += INIT_DATA_DIR;
-			str += "\\";
-			str += FindFileData.cFileName;
-			Import(str.GetString());
-			//::DeleteFile(str.GetString());
-		}
+		FileSystem::Path path = data_dir.AddComponent(*iter);
+		if (*iter != IN_FILENAME && path.IsRegularFile())
+			Import(path.ToNativePathString().c_str());
 	}
-	FindClose(hFind);
 }
 
 // 0 = clear -> encrypted,  1 = encrypted -> clear 
@@ -967,7 +934,7 @@ bool LFileBundle::OpenAndReadBundle()
 		uchar inBuf[READ_BUF_SIZE+1];
 		int readCount;
 
-		clearFileStream = new ifstream(bundleFilename, ios::in);
+		clearFileStream = new ifstream(bundleFilename.c_str(), ios::in);
 		cache = "";
 
 		// Is the file empty?
@@ -993,7 +960,7 @@ bool LFileBundle::OpenAndReadBundle()
 			ConvertBundle(1);
 
 			// Re-open, read and re-verify
-			clearFileStream->open(bundleFilename, ios::in);
+			clearFileStream->open(bundleFilename.c_str(), ios::in);
 			cache = "";
 			while (!clearFileStream->eof()) 
 			{
@@ -1070,7 +1037,7 @@ void LFileBundle::RewriteBundle()
 		
 		clearFileStream->close();
 
-		out.open(bundleFilename, ios::out | ios::binary);	// overwrite the old file
+		out.open(bundleFilename.c_str(), ios::out | ios::binary);	// overwrite the old file
 		out << cache;
 
 		//out.open(tmpFilename, ios::out);
@@ -1092,7 +1059,7 @@ void LFileBundle::RewriteBundle()
 		*/
 
 		// Reopen
-		clearFileStream->open(bundleFilename, ios::in);
+		clearFileStream->open(bundleFilename.c_str(), ios::in);
 	}
 	else
 	{

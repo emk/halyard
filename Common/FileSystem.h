@@ -178,6 +178,19 @@ namespace FileSystem {
 	inline Path GetDataDirectory()
 	    { return GetBaseDirectory().AddComponent("Data"); }
 
+	//////////
+	// Given a file name, return a path pointing to a file with
+	// that name in the font directory.
+	//
+	inline Path GetDataFilePath(std::string inDataFileName)
+	    { return GetDataDirectory().AddComponent(inDataFileName); }
+
+	//////////
+	// Get the directory 5L uses to store palette information.
+	//
+	inline Path GetPalettesDirectory()
+	    { return GetBaseDirectory().AddComponent("Palettes"); }
+
 	// TODO - Factor out more platform-specific config to use
 	// the directories listed above.
 }

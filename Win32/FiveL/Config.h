@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -90,6 +91,8 @@ class ConfigManager : public TObject
 
 		//////////
 		// Switch scripts (all scripts should be specified in the config file).
+		// This is only valid for the default, legacy interpreter; newer
+		// interpreter modules ignore it.
 		//
 		// [in] inScriptNum - script number to switch to
 		// [out] return - true on success, false otherwise
@@ -105,7 +108,9 @@ class ConfigManager : public TObject
 				{ return (m_PlayMedia); }
 		
 		//////////
-		// Get current script name.
+		// Get current script name.  This is only valid for the
+		// default, legacy interpreter; newer interpreter modules
+		// ignore it.
 		//
 		// [out] return - name of the current script
 		//
@@ -119,39 +124,7 @@ class ConfigManager : public TObject
 		//
 		const char	*CurMediaPath(void)
 				{ return ((const char *) m_CurMediaDir); }
-		
-		//////////
-		// Get install path.
-		//
-		// [out] return - the path where 5L is installed
-		//
-		const char	*InstallPath(void)
-				{ return ((const char *) m_InstallDir); }
-		
-		//////////
-		// Get palette path.
-		//
-		// [out] return - path where palettes are located
-		//
-		const char	*PalettesPath(void)
-				{ return ((const char *) m_PalettesDir); }
-		
-		//////////
-		// Get data path
-		//
-		// [out] return - path where all 5L data files are stored
-		//
-		const char	*DataPath(void)
-				{ return ((const char *) m_DataDir); }
-		
-		//////////
-		// Get script path.
-		//
-		// [out] return - path where scripts are located
-		//
-		const char	*ScriptsPath(void)
-				{ return ((const char *) m_ScriptsDir); }
-		
+	
 		//////////
 		// Get media drive.
 		//
@@ -247,21 +220,6 @@ class ConfigManager : public TObject
 		TString		m_GraphicsDir;
 		
 		//////////
-		// Palettes directory.
-		//
-		TString		m_PalettesDir;
-		
-		//////////
-		// Data directory.
-		//
-		TString		m_DataDir;
-		
-		//////////
-		// Scripts directory.
-		//
-		TString		m_ScriptsDir;
-		
-		//////////
 		// Local media directory.
 		//
 		TString		m_LocalMediaDir;
@@ -293,6 +251,10 @@ class ConfigManager : public TObject
 
 /*
  $Log$
+ Revision 1.4.8.2  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
  Revision 1.4.8.1  2002/06/05 07:05:30  emk
  Began isolating the 5L-language-specific code in Win5L:
 

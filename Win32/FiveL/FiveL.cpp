@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -1225,6 +1226,10 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.6.6.2  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
  Revision 1.6.6.1  2002/06/05 07:05:30  emk
  Began isolating the 5L-language-specific code in Win5L:
 

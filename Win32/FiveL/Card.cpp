@@ -32,7 +32,11 @@
 #include "Config.h"
 #include "Graphics.h"
 #include "LHttp.h"
+#include "FileSystem.h"
 #include "TStyleSheet.h"
+
+using FileSystem::GetDataFilePath;
+using FileSystem::Path;
 
 //  Card - Constructor. Cards have a default origin of (0, 0)
 //
@@ -860,15 +864,11 @@ void Card::DoCheckVol()
 ------------------------------------------------------------------------*/
 void Card::DoClose()
 {
-    TString     filename;
-    TString 	tempname;
+	std::string	filename;
 
-    m_Script >> filename;
-    
-    tempname = gConfigManager.DataPath();
-	tempname += filename;
-
-    gFileManager.Close(tempname);
+	m_Script >> filename;
+    Path path = FileSystem::GetDataFilePath(filename);
+    gFileManager.Close(path.ToNativePathString().c_str());
 }
 
 /*-------------------------------------------------------------
@@ -1385,7 +1385,6 @@ void Card::DoLock()
 --------------------------------------------------------------------*/
 void Card::DoLookup()
 {
-	TString		tempname;
     TString     searchString, param, filename;
     int         numFields = 0;
 
@@ -1403,12 +1402,10 @@ void Card::DoLookup()
         searchString += param;
     }
 
-    tempname = gConfigManager.DataPath();
-	tempname += filename;
-
+	Path path = FileSystem::GetDataFilePath(filename.GetString());
 	gDebugLog.Log("lookup: look for <%s>, num fields <%d>", searchString.GetString(), numFields);
 
-    gFileManager.Lookup(tempname, searchString, numFields);
+    gFileManager.Lookup(path.ToNativePathString().c_str(), searchString, numFields);
 }
 
 /*-------------------------------------------------------------------
@@ -1508,7 +1505,6 @@ void Card::DoNap()
 ------------------------------------------------------------------*/
 void Card::DoOpen()
 { 
-	TString 	tempname;
     TString     filename, kind;
     FileKind    fKind; 
     bool		open_file = true;
@@ -1530,9 +1526,7 @@ void Card::DoOpen()
 
 	gDebugLog.Log("open: filename <%s>, mode <%s>", filename.GetString(), kind.GetString());
 
-    tempname = gConfigManager.DataPath();
-	tempname += filename;
-
+	Path path = GetDataFilePath(filename.GetString());
     gVariableManager.SetString("_ERROR", "0");
     
 /*	Does not seem to work, also leaves an empty file when non-existent -SS
@@ -1555,7 +1549,7 @@ void Card::DoOpen()
 */    
     // if not new and we couldn't find it, don't try to open it
     if (open_file)
-    	gFileManager.Open(tempname, fKind);
+    	gFileManager.Open(path.ToNativePathString().c_str(), fKind);
 }
 
 /*------------------------------------------------------------
@@ -1878,8 +1872,7 @@ void Card::DoRead()
 
     m_Script >> filename >> vname;
  
-    tempname = gConfigManager.DataPath();
-	tempname += filename;
+	Path path = GetDataFilePath(filename.GetString());
 
     if (m_Script.more()) 
     {
@@ -1895,13 +1888,13 @@ void Card::DoRead()
         	delim = delimstr(0);
 
 		gDebugLog.Log("read: into <%s>, until <%s>", vname.GetString(), delimstr.GetString());
-        gFileManager.ReadUntil(tempname, res, delim);
+        gFileManager.ReadUntil(path.ToNativePathString().c_str(), res, delim);
         
     } 
 	else
 	{
 		gDebugLog.Log("read: into <%s>", res.GetString());
-		gFileManager.Read(tempname, res);
+		gFileManager.Read(path.ToNativePathString().c_str(), res);
 	}
 
     gVariableManager.SetString(vname, res);
@@ -1977,7 +1970,6 @@ void Card::Return()
 ------------------------------------------------------------------------*/
 void Card::DoRewrite()
 { 
-	TString 	tempname;
     TString     searchString, param, filename;
     int         numFields = 0;
 
@@ -1995,12 +1987,11 @@ void Card::DoRewrite()
         searchString += param;
     }
 
-    tempname = gConfigManager.DataPath();
-	tempname += filename;
+	Path path = GetDataFilePath(filename.GetString());
 
 	gDebugLog.Log("rewrite: <%s>, num fields <%d>", searchString.GetString(), numFields);
 
-    gFileManager.Rewrite(tempname, searchString, numFields);
+    gFileManager.Rewrite(path.ToNativePathString().c_str(), searchString, numFields);
 }
 
 /*---------------------------------------------------------------
@@ -2413,12 +2404,11 @@ void Card::DoWrite()
 
     m_Script >> filename >> data;
 
-    tempname = gConfigManager.DataPath();
-	tempname += filename;
+	Path path = GetDataFilePath(filename.GetString());
 
 	gDebugLog.Log("write: <%s>", data.GetString());
 
-    gFileManager.Write(tempname, data);
+    gFileManager.Write(path.ToNativePathString().c_str(), data);
 }
 
 /***************************
@@ -2696,6 +2686,10 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.6.2.2  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
  Revision 1.6.2.1  2002/06/05 07:05:30  emk
  Began isolating the 5L-language-specific code in Win5L:
 

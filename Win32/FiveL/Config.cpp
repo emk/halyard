@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -85,9 +86,6 @@ bool ConfigManager::Init(LPSTR inCmdLine)
     m_InstallDir = ""; 
     m_ConfigFile = "";
     m_GraphicsDir = "";
-	m_PalettesDir = "";
-    m_DataDir = "";
-    m_ScriptsDir = "";
     m_LocalMediaDir = "";
     m_MediaDrive = "";
 
@@ -301,12 +299,6 @@ bool ConfigManager::Init(LPSTR inCmdLine)
     // set up search directories
     m_GraphicsDir = m_InstallDir;
     m_GraphicsDir += "graphics\\";
-	m_PalettesDir = m_InstallDir;
-	m_PalettesDir += "palettes\\";
-    m_ScriptsDir = m_InstallDir;
-    m_ScriptsDir += "scripts\\";
-    m_DataDir = m_InstallDir;
-    m_DataDir += "data\\"; 
     m_LocalMediaDir = m_InstallDir;
     m_LocalMediaDir += "media\\";
 
@@ -645,6 +637,10 @@ TString ConfigManager::GetAudioPath(TString &inName)
  
 /*
  $Log$
+ Revision 1.6.8.2  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
  Revision 1.6.8.1  2002/06/05 07:05:30  emk
  Began isolating the 5L-language-specific code in Win5L:
 

@@ -87,10 +87,9 @@ LPalette::LPalette(const char *name) : LResource(name)
 	//	If we aren't using 8-bit, we can use native BMPs as they are
 	//		probably faster and are certainly simpler.
 	//
-
-	//m_FullPath = gConfigManager.GetGraphicsPath(name);
-	m_FullPath = gConfigManager.PalettesPath();
-	m_FullPath += m_PalName;
+	FileSystem::Path path =
+		FileSystem::GetPalettesDirectory().AddComponent(m_PalName.GetString());
+	m_FullPath = path.ToNativePathString().c_str();
 
 	m_NativeBMP = false;
 	if (not m_PalName.Contains("."))
@@ -466,6 +465,10 @@ void LPaletteManager::ResetPalette(void)
 
 /*
  $Log$
+ Revision 1.2.8.1  2002/06/05 08:50:52  emk
+ A small detour - Moved responsibility for script, palette and data directories
+ from Config.{h,cpp} to FileSystem.{h,cpp}.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

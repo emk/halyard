@@ -9,6 +9,8 @@ BEGIN_NAMESPACE_FIVEL
 
 //////////
 // Initialize the various modules of the Common/ library.
+// If you want to call FileSystem::SetBaseDirectory, do it
+// before calling this function.
 //
 extern void InitializeCommonCode();
 
