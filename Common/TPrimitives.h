@@ -4,6 +4,7 @@
 #define TPrimitives_H
 
 #include <string>
+#include <map>
 
 #include "TCommon.h"
 #include "TString.h"
@@ -11,6 +12,7 @@
 #include "TRect.h"
 #include "GraphicsTools.h"
 #include "TInterpreter.h"
+#include "TTemplateUtils.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -49,7 +51,8 @@ BEGIN_NAMESPACE_FIVEL
 //
 // You have a lot of flexibility in how you implement the Get* methods.
 // For example, these methods might automatically coerce arguments to
-// the correct data type on the fly.
+// the correct data type on the fly, if that's appropriate for the
+// scripting language in question.
 //
 class TArgumentList
 {
@@ -123,6 +126,105 @@ public:
 
 	// TODO - Handle the ValueOrPercent manipulator here.
 };
+
+//////////
+// The TPrimitiveManager class maintains a set of primitive engine
+// functions.  These functions can be called from our scripting
+// language.
+//
+class TPrimitiveManager
+{
+	//////////
+	// The big table of all our primitive functions.  We store
+	// the function pointers as void* to avoid instantiating 
+	// extra template code.  With a good C++ compiler and STL
+	// library, this wouldn't be necessary.
+	//
+	std::map<std::string,void*> mPrimitiveMap;
+
+public:
+	//////////
+	// A PrimitiveFunc implements a single primitive.
+	//
+	// [in] inArgs - The arguments to the primitive.
+	//
+	typedef void (*PrimitiveFunc)(TArgumentList &inArgs);
+	
+	//////////
+	// Register a primitive with the primitive manager.
+	//
+	// [in] inName - The name of the primitive, in lowercase.
+	// [in] inFunc - The function which implements this primitive.
+	//
+	void RegisterPrimitive(const std::string &inName, PrimitiveFunc inFunc);
+
+	//////////
+	// Does a primitive with the given name exist?
+	//
+	// [in] inName - The name of the primitive, in lowercase.
+	// [out] return - Whether the given primitive exists.
+	//
+	bool DoesPrimitiveExist(const std::string &inName);
+
+	//////////
+	// Call the specified primitive.  This function throws
+	// all sorts of exciting exceptions, so you should probably
+	// wrap it in a try/catch block and deal with any problems
+	// that arise.
+	//
+	// [in] inName - The name of the primitive, in lowercase.
+	// [in] inArgs - The arguments to the primitive.
+	//
+	void CallPrimitive(const std::string &inName, TArgumentList &inArgs);
+};
+
+//////////
+// The global object in charge of managing our primitive functions.
+//
+extern TPrimitiveManager gPrimitiveManager;
+
+//////////
+// A handy macro for declaring a 5L primitive function and registering
+// it with the gPrimitiveManager, all in one fell swoop.  There are
+// several bits of pre-processor wizardry going on here:
+//
+//   1) The 'do { ... } while (0)' makes C++ treat the multiple
+//      statements in the body as a single statement.
+//   2) The '#NAME' construct converts the argument token to
+//      to a string literal.
+//   3) The '##' construct glues two adjacent tokens together.
+//
+// Call it as follows:
+//
+//   REGISTER_5L_PRIMITIVE_WITH_NAME("log", LogMessage); // register "log"
+//   REGISTER_5L_PRIMITIVE(LogMessage); // register "logmessage"
+//
+#define REGISTER_5L_PRIMITIVE_WITH_NAME(NAME, TOKEN) \
+	do { \
+		extern void DoPrim_ ## TOKEN(TArgumentList &inArgs); \
+		gPrimitiveManager.RegisterPrimitive(NAME, &DoPrim_ ## TOKEN); \
+	} while (0)
+
+#define REGISTER_5L_PRIMITIVE(NAME) \
+	REGISTER_5L_PRIMITIVE_WITH_NAME(MakeStringLowercase(#NAME), NAME)
+
+//////////
+// Use this macro in place of a function prototype when implementing a
+// 5L primitive.  This will shield you from changes to the standard
+// prototype.  (For an explanation of the macro grik, see
+// REGISTER_5L_PRIMITIVE.)
+//
+// Use it as follows:
+//
+//   DEFINE_5L_PRIMITIVE(LogMessage)
+//   {
+//       std::string message;
+//       inArgs >> message;
+//       gDebugLog.Log("%s", message.c_str());
+//   }
+//
+#define DEFINE_5L_PRIMITIVE(NAME) \
+	void DoPrim_ ## NAME(TArgumentList &inArgs)
 
 END_NAMESPACE_FIVEL
 

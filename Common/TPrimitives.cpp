@@ -1,7 +1,14 @@
+// -*- Mode: C++; tab-width: 4; -*-
+
+#include "TCommon.h"
 #include "TPrimitives.h"
 #include "TException.h"
+#include "TLogger.h"
 
 USING_NAMESPACE_FIVEL
+
+TPrimitiveManager FIVEL_NS gPrimitiveManager;
+
 
 //=========================================================================
 // TArgumentList Methods
@@ -70,4 +77,54 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TCallback* &out)
 {
     out = args.GetCallbackArg();
     return args;
+}
+
+
+//=========================================================================
+// TPrimitiveManager Methods
+//=========================================================================
+
+void TPrimitiveManager::RegisterPrimitive(const std::string &inName,
+										  PrimitiveFunc inFunc)
+{
+    ASSERT(inName != "");
+    ASSERT(inFunc != NULL);
+
+    // Erase any existing primitive with this name.
+    std::map<std::string,void*>::iterator existing =
+	mPrimitiveMap.find(inName);
+    if (existing != mPrimitiveMap.end())
+    {
+		gDebugLog.Log("Replacing primitive <%s>", inName.c_str());
+		mPrimitiveMap.erase(existing);
+    }
+    
+    // Insert the new entry.
+    mPrimitiveMap.insert(std::pair<std::string,void*>(inName, inFunc));
+}
+
+bool TPrimitiveManager::DoesPrimitiveExist(const std::string &inName)
+{
+    ASSERT(inName != "");
+
+    std::map<std::string,void*>::iterator found = mPrimitiveMap.find(inName);
+    if (found != mPrimitiveMap.end())
+		return true;
+    else
+		return false;
+}
+
+void TPrimitiveManager::CallPrimitive(const std::string &inName,
+									  TArgumentList &inArgs)
+{
+    ASSERT(inName != "");
+    
+    // Find the primitive.
+    std::map<std::string,void*>::iterator found = mPrimitiveMap.find(inName);
+    if (found == mPrimitiveMap.end())
+		throw TException("Tried to call non-existant primitive");
+    PrimitiveFunc primitive = static_cast<PrimitiveFunc>(found->second);
+    
+    // Call it.
+    (*primitive)(inArgs);
 }

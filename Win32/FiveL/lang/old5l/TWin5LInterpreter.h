@@ -28,9 +28,11 @@ public:
 	virtual void Pause();
 	virtual void WakeUp();
 	virtual bool Paused();
+	virtual void Timeout(const char *inName, int32 inTime);
 	virtual void Nap(int32 inTime);
 	virtual bool Napping();
 	virtual void KillNap();
+	virtual void DoReDoScript(const char *inCardName);
 	virtual void JumpToCardByName(const char *inName);
 	virtual const char *CurCardName();
 	virtual const char *PrevCardName();

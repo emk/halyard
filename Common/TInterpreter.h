@@ -53,6 +53,14 @@ public:
 	virtual bool Paused(void) = 0;
 
 	//////////
+	// Set the timeout timer. 
+	//
+	// [in] inName - name of Card to jump to after timeout.
+	// [in] inTime - time in seconds (e.g. timeout in 30 sec)
+	//
+	virtual void Timeout(const char *inName, int32 inTime) = 0;
+
+	//////////
 	// Set the nap timer.
 	//
 	// [in] inTime - time in 1/10 seconds (e.g. 20 = timeout in 2 sec)
@@ -71,6 +79,14 @@ public:
 	// aren't napping; check to be certain.
 	//
 	virtual void KillNap(void) = 0;
+
+	//////////
+	// Tell the CardManager to reload the current script
+	// at the next call to Idle().
+	//
+	// [in] inCardName - name of the Card to jump to after reload.
+	//
+	virtual void DoReDoScript(const char *inCardName) = 0;
 
 	//////////
 	// Jump to a card given its name.

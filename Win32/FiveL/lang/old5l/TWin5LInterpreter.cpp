@@ -71,6 +71,11 @@ bool TWin5LInterpreter::Paused()
 	return gCardManager.Paused();
 }
 
+void TWin5LInterpreter::Timeout(const char *inName, int32 inTime)
+{
+	gCardManager.Timeout(inName, inTime);
+}
+
 void TWin5LInterpreter::Nap(int32 inTime)
 {
 	gCardManager.Nap(inTime);
@@ -84,6 +89,11 @@ bool TWin5LInterpreter::Napping()
 void TWin5LInterpreter::KillNap()
 {
 	gCardManager.KillNap();
+}
+
+void TWin5LInterpreter::DoReDoScript(const char *inCardName)
+{
+	gCardManager.DoReDoScript(TString(inCardName));
 }
 
 void TWin5LInterpreter::JumpToCardByName(const char *inName)

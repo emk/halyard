@@ -219,6 +219,10 @@ SOURCE=..\..\FiveL\TWin5LInterpreter.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\FiveL\TWinPrimitives.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\FiveL\Video.cpp
 # End Source File
 # Begin Source File
@@ -360,6 +364,10 @@ SOURCE=..\..\FiveL\SysInfo.h
 # Begin Source File
 
 SOURCE=..\..\FiveL\TWin5LInterpreter.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\FiveL\TWinPrimitives.h
 # End Source File
 # Begin Source File
 

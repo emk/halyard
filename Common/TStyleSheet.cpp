@@ -6,10 +6,9 @@
 #include "TLogger.h"
 #include "TEncoding.h"
 #include "TUtilities.h"
+#include "TTemplateUtils.h"
 
-#include <algorithm>
 #include <string>
-#include <ctype.h>
 
 USING_NAMESPACE_FIVEL
 
@@ -44,8 +43,7 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
     mSize = size;
 
     // Parse our justification value.
-    std::transform(justification.begin(), justification.end(),
-				   justification.begin(), tolower);
+	justification = MakeStringLowercase(justification);
     if (justification == "center")
 		mJustification = Typography::kCenterJustification;
     else if (justification == "right")

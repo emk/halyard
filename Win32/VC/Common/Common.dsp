@@ -177,6 +177,10 @@ SOURCE=..\..\..\Common\TStyleSheet.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TTemplateUtils.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TURL.cpp
 # End Source File
 # Begin Source File
@@ -290,6 +294,10 @@ SOURCE=..\..\..\Common\TString.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TStyleSheet.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TTemplateUtils.h
 # End Source File
 # Begin Source File
 

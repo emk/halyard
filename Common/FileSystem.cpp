@@ -1,12 +1,11 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
 #include "TCommon.h"
+#include "TTemplateUtils.h"
 
-#include <algorithm>
 #include <fstream>
 
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -135,7 +134,7 @@ std::string Path::GetExtension() const
 	if (dotpos == std::string::npos)
 		return std::string("");
 	std::string extension = mPath.substr(dotpos + 1);
-	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	extension = MakeStringLowercase(extension);
 	return extension;
 }
 

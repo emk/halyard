@@ -98,42 +98,6 @@ class Card : public TIndex
 		virtual void    OneCommand(TString &theCmd);
         
 		//////////
-		// Adjust the global rect to local coordinates based on origin.
-		//
-		// [in] r - new rect
-		//
-		virtual void    AdjustRect(TRect *r);
-        
-		//////////
-		// Adjust the global point to local coordinates based on origin
-		//
-		// [in] pt - new point
-		//
-		virtual void    AdjustPoint(TPoint *pt);
-
-        //////////
-		// Sets the card's local coordinate system.
-		//
-		// [in] loc - set the origin to this location
-		//
-		virtual void    SetOrigin(TPoint &loc);
-		
-		//////////
-		// Sets the card's local coordinate system.
-		//
-		// [in] inX - X-coordinate
-		// [in] inY - Y-coordinate
-		//
-		virtual void	SetOrigin(int16 inX, int16 inY);
-        
-		//////////
-		// Offsets the card's local coordinate system by the amount given.
-		//
-		// [in] delta - amount to offset the origin
-		//
-		virtual void    OffsetOrigin(TPoint &delta);
-
-		//////////
 		// Get the index of this Card
 		//
 		// [out] return - the index of this Card
@@ -170,360 +134,16 @@ class Card : public TIndex
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
 		void    DoBody();
-
-        //////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoAdd(TArgumentList &inArgs);
 		
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-		void	DoAudio(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoAudioKill(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoAudioVolume(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoAudioWait(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoBackground(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoBeep(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoBlippo(TArgumentList &inArgs);
-        
-		//void    DoBlueramp(TArgumentList &inArgs);
+		void	DoReturn();
 
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-        void    DoBox(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoBrowse(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void  	DoButtpcx(TArgumentList &inArgs);
-      	
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoCheckDisc(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoCheckUrl(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoCheckVol(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoClose(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoCTouch(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoCursor(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoDiv(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoEjectDisc(TArgumentList &inArgs);
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoExit(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoFade(TArgumentList &inArgs);
-        
-		//void    DoFadeLock(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoGlobalFiles(TArgumentList &inArgs);		//SS
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoHighlight(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoHidemouse(TArgumentList &inArgs);
-        
-        //////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoInput(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoJump(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoKey(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoKeybind(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoKill(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoLine(TArgumentList &inArgs);
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoLoadpal(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoLoadpic(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoLock(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoLookup(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoMicro(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoNap(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoOpen(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoOrigin(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoOval(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPause(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoPlay(TArgumentList &inArgs);
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPlayQTFile(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPlayQTLoop(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoQuitQTLoop(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPlayQTRect(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoPreloadQTFile(TArgumentList &inArgs);
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoPrint(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoRead(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoReDoScript(TArgumentList &inArgs);
-
-        //////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoResume(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoReturn(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoResetOrigin(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoRewrite(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoRnode(TArgumentList &inArgs);
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoScreen(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoSearch(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoSet(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoSetWindowTitle(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoShowmouse(TArgumentList &inArgs);
-		
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void	DoStill(TArgumentList &inArgs);	        
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoSub(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoText(TArgumentList &inArgs);
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoTextAA(TArgumentList &inArgs);
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoTimeout(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoTouch(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoUnblippo(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoUnlock(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoVideo(TArgumentList &inArgs);
-
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-        void    DoWait(TArgumentList &inArgs);
-        
-		//////////
-		// Refer to 5L Scriptor's Guide for details on this 5L command.
-		//
-		void    DoWrite(TArgumentList &inArgs);
+		void	DoExit();
 
 	private:
         //////////
@@ -671,7 +291,6 @@ class CardManager : public TIndexManager
 		//
 		Card			*GetCard(const char *inName) { return ((Card *) Find(inName)); }
  
-
 		//////////
 		// Reload the current script (compiled into DEBUG builds only). 
 		//
@@ -783,6 +402,29 @@ extern CardManager gCardManager;
 
 /*
  $Log$
+ Revision 1.3.6.3  2002/06/12 19:03:03  emk
+ 3.3.4.5 - Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
+ and broke the remaining dependencies between these primitive commands and
+ the current 5L interpreter.  The TInterpreter and TPrimitives interfaces
+ are now quite mature.
+
+ *** Please beat very, very hard on this build.  I don't anticipate
+ further changes to the Windows engine for a while. ***
+
+ REMOVED COMMANDS: kill (use still), loadpick (use loadpic)
+ NEEDS TESTING: origin w/macros, other uses of origin.  5L now
+   sets the origin to 0,0 whenever it begins a new card, which
+   should produce behavior identical to the old system, unless
+   I've overlooked something.
+ NEEDS TESTING: make sure all the commands are available, and
+   have the right names.  I've checked this a dozen times
+   by eye, but I might have overlooked something.
+
+ The only remaining dependencies between the interpreter and the rest of 5L
+ are in the Header and TStyleSheet classes.  I'm postponing this last bit
+ of cleanup until after 3.4.  Up next: Repeat the 3.3.4.{1-5} changes for
+ the Macintosh.
+
  Revision 1.3.6.2  2002/06/11 18:15:43  emk
  3.3.4.4 - Partial separation of primitives from interpreter, and
  various 5L language enhancements related to callbacks.

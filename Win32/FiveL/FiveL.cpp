@@ -44,6 +44,7 @@
 #include "LBrowser.h"
 #include "SingleInstance.h"
 #include "TWin5LInterpreter.h"
+#include "TWinPrimitives.h"
 
 #if defined USE_BUNDLE
 	#include "LFileBundle.h"
@@ -202,6 +203,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// Initialize the interpreter.
 	try
 	{
+		RegisterWindowsPrimitives();
 		gWin5LInterpreter = new TWin5LInterpreter(gConfigManager.CurScript());
 	}
 	catch (...)
@@ -1214,6 +1216,29 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.6.6.6  2002/06/12 19:03:03  emk
+ 3.3.4.5 - Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
+ and broke the remaining dependencies between these primitive commands and
+ the current 5L interpreter.  The TInterpreter and TPrimitives interfaces
+ are now quite mature.
+
+ *** Please beat very, very hard on this build.  I don't anticipate
+ further changes to the Windows engine for a while. ***
+
+ REMOVED COMMANDS: kill (use still), loadpick (use loadpic)
+ NEEDS TESTING: origin w/macros, other uses of origin.  5L now
+   sets the origin to 0,0 whenever it begins a new card, which
+   should produce behavior identical to the old system, unless
+   I've overlooked something.
+ NEEDS TESTING: make sure all the commands are available, and
+   have the right names.  I've checked this a dozen times
+   by eye, but I might have overlooked something.
+
+ The only remaining dependencies between the interpreter and the rest of 5L
+ are in the Header and TStyleSheet classes.  I'm postponing this last bit
+ of cleanup until after 3.4.  Up next: Repeat the 3.3.4.{1-5} changes for
+ the Macintosh.
+
  Revision 1.6.6.5  2002/06/11 18:03:59  emk
  Fixed a bug where 5L deleted the default font when switching scripts,
  causing INPUT to crash when passed a non-existant header name.

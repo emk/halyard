@@ -17,14 +17,37 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		04
-#define VERSION_REV_SMALL	04
+#define VERSION_REV_SMALL	05
 
-#define VERSION_STRING	"5L 3.3.4.4 (Development: Language Refactoring)"
+#define VERSION_STRING	"5L 3.3.4.5 (Development: Language Refactoring)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.11.2.4  2002/06/12 19:02:51  emk
+ 3.3.4.5 - Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
+ and broke the remaining dependencies between these primitive commands and
+ the current 5L interpreter.  The TInterpreter and TPrimitives interfaces
+ are now quite mature.
+
+ *** Please beat very, very hard on this build.  I don't anticipate
+ further changes to the Windows engine for a while. ***
+
+ REMOVED COMMANDS: kill (use still), loadpick (use loadpic)
+ NEEDS TESTING: origin w/macros, other uses of origin.  5L now
+   sets the origin to 0,0 whenever it begins a new card, which
+   should produce behavior identical to the old system, unless
+   I've overlooked something.
+ NEEDS TESTING: make sure all the commands are available, and
+   have the right names.  I've checked this a dozen times
+   by eye, but I might have overlooked something.
+
+ The only remaining dependencies between the interpreter and the rest of 5L
+ are in the Header and TStyleSheet classes.  I'm postponing this last bit
+ of cleanup until after 3.4.  Up next: Repeat the 3.3.4.{1-5} changes for
+ the Macintosh.
+
  Revision 1.11.2.3  2002/06/11 18:15:31  emk
  3.3.4.4 - Partial separation of primitives from interpreter, and
  various 5L language enhancements related to callbacks.
