@@ -21,6 +21,7 @@ inline Distance round_266 (FT_Pos in266Measurement)
 
 #define CHECK_RESULT(RESULT) Error::CheckResult(__FILE__, __LINE__, RESULT)
 
+
 //=========================================================================
 //	Typography::Error Methods
 //=========================================================================

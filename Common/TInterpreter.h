@@ -106,14 +106,14 @@ public:
 	//
 	// [out] return - the name of the current card.
 	//
-	virtual const char *CurCardName(void) = 0;
+	virtual std::string CurCardName(void) = 0;
         
 	//////////
 	// Get name of the previous Card.
 	//
 	// [out] return - the name of the previous card.
 	//
-	virtual const char *PrevCardName(void) = 0;
+	virtual std::string PrevCardName(void) = 0;
 	
 	//////////
 	// Reload the currently running script, and jump to the

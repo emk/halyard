@@ -32,6 +32,8 @@ AC_C_INLINE
 # Checks for library functions.
 AC_CHECK_FUNCS([strstr])
 
+# Some of our libraries also require configuration.
+AC_CONFIG_SUBDIRS(libs/plt/src)
+
 # Output our results.
 AC_OUTPUT([Makefile fonttools/Makefile libs/Makefile libs/crypto/Makefile])
-

@@ -25,7 +25,10 @@
 extern int total_tests;
 extern int total_failures;
 
-extern void test_failure (char *file, int line, char *label, char *statement);
+extern void test_failure (const char *file,
+						  int line,
+						  const char *label,
+						  const char *statement);
 
 // Public API
 
@@ -34,15 +37,18 @@ extern int tests_finished (void);
 // This macro involves quite a bit of preprocessor arcana.  Yes, it all
 // needs to be here.  You are not expected to understand it.  But you are
 // expected *not* to change it unless you do understand it.
-#define TEST(statement) \
+#define TEST_WITH_LABEL(label, statement) \
 	do { \
 		total_tests++; \
 		if ((statement)) { \
 			std::cout << "." << std::flush; \
 		} else { \
-			test_failure(__FILE__, __LINE__, "expected", #statement); \
+			test_failure(__FILE__, __LINE__, "expected", label); \
 		} \
 	} while (0)
+
+#define TEST(statement) \
+	TEST_WITH_LABEL(#statement, statement)
 
 // Test whether 'STATEMENT' throws an exception of class 'ETYPE'.
 #define TEST_EXCEPTION(STATEMENT,ETYPE) \
