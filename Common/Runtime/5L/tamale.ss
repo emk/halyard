@@ -20,7 +20,7 @@
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
-           %browser% %edit-box-element% %movie-element% 
+           %browser% %edit-box-element% %movie-element% %foreground-movie%
            browser edit-box %vorbis-audio% vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
            %geiger-synth% geiger-synth
@@ -449,7 +449,20 @@
                     (parent->card self (prop self rect))
                     path
                     controller? audio-only? loop? interaction?)))
-  
+
+  (define-element-template %foreground-movie%
+      [[self-destruct? :default #t]]
+      (%movie-element%)
+    (set! (state-db '/sim/voiceover-playing?) #t)
+    (on exit ()
+      (set! (state-db '/sim/voiceover-playing?) #f))
+    (on media-finished (event)
+      (when self-destruct?
+        (delete-element self)))
+    (call-at-safe-time
+     (fn ()
+       (send* self 'run-actions :ignorable? #t))))
+
   (define (movie name r location
                  &key controller? audio-only? loop? interaction?)
     (create %movie-element%
