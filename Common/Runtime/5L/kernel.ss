@@ -714,21 +714,28 @@
                                     args)))
           (hash-table-put! table name handler))))
 
-  (define (send-by-name node name . args)
+  (define (send-by-name/internal node name . args)
     ;; Pass a message to the specified node, and return the result.
     (let [[handled? #t]]
-      (let recurse [[node node]]
-        (if (not node)
-            (set! handled? #f)
-            (let* [[handler (hash-table-get (node-handlers node) name
-                                            (lambda () #f))]
-                   [call-next-handler
-                    (lambda () (recurse (node-parent node)))]]
-              (if handler
-                  (begin
-                    (apply handler call-next-handler args))
-                  (call-next-handler)))))
-      handled?))
+      (let [[result
+             (let recurse [[node node]]
+               (if (not node)
+                   (set! handled? #f)
+                   (let* [[handler (hash-table-get (node-handlers node) name
+                                                   (lambda () #f))]
+                          [call-next-handler
+                           (lambda () (recurse (node-parent node)))]]
+                     (if handler
+                         (begin
+                           (apply handler call-next-handler args))
+                         (call-next-handler)))))]]
+        (values handled? result))))
+
+  (define (send-by-name node name . args)
+    (with-values [handled? result] (apply send-by-name/internal node name args)
+      (if handled?
+          result
+          (error (cat "No handler for " name " on " (node-full-name node))))))
 
   (define-syntax send
     (syntax-rules ()
@@ -761,7 +768,8 @@
                       :position (make-point (car args) (cadr args)))]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
-      (set! (engine-var '_pass) (not (send-by-name node name event)))))
+      (with-values [handled? result] (send-by-name/internal node name event)
+        (set! (engine-var '_pass) (not handled?)))))
 
   (define (dispatch-event-to-current-card name . args)
     (when (current-card)
@@ -1376,6 +1384,14 @@
         (recurse (node-parent group))
         (enter-node group))))
   
+  (define (delete-element elem)
+    ;; A little placeholder to make deletion work the same way in Tamale
+    ;; and in Common test.
+    ;; TODO - Remove when cleaning up element deletion.
+    (if (have-5l-prim? 'deleteelements)
+        (call-5l-prim 'deleteelements (node-name elem))
+        (delete-element-info (node-name elem))))
+
   (define (exit-card old-card new-card)
     ;; Exit all our child elements.
     ;; TRICKY - We call into the engine to do element deletion safely.
@@ -1383,7 +1399,7 @@
     ;; will be modified as we run.
     (let loop [[children (group-children old-card)]]
       (unless (null? children)
-        (apply call-5l-prim 'deleteelements (list (node-name (car children))))
+        (delete-element (car children))
         (loop (cdr children))))
     ;; Exit old-card.
     (exit-node old-card)

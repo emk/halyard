@@ -8,6 +8,7 @@ CVS - emk, brian
   * Major restructuring of template property binding.
   * EVENT-CHARACTER now returns a character, not a string
   * PROP and SEND no longer need their name argument to be quoted
+  * ON handlers may now return a value
 
 0.0.6 - 4 June 2003 - emk, brian
 

@@ -365,23 +365,32 @@
 
 (define *ttvar3* #f)
 
-;;(define-element-template %sample-element% [test-str] ()
-;;  (set! *ttvar3* #t)
-;;  (test (equal? test-str "test string")))
+(define-element-template %sample-element% [test-str] ()
+  (set! *ttvar3* #t)
+  (test (equal? test-str "test string")))
 
 (card template-tests-3 ()
-  ;; XXX - CREATE doesn't work right without the full engine, because
-  ;; there's no way to register elements and get them properly delete.
-
-  ;;(define e (create %sample-element% :name 'sample :test-str "test string"))
-  ;;(test *ttvar3*)
-  ;;(test (eq? (node-full-name e) 'template-tests-3/sample))
-
+  (define e (create %sample-element% :name 'sample :test-str "test string"))
+  (test *ttvar3*)
+  (test (eq? (node-full-name e) 'template-tests-3/sample))
   (jump template-tests-4))
 
 (card template-tests-4 ()
   ;; Make sure temporary children get deleted when we exit the card.
   (test (null? (group-children template-tests-3)))
+  (jump template-tests-5))
+
+(define-card-template %card-template-3% [] ()
+  (on message-1 ()
+    'foo))
+
+(card template-tests-5 (:template %card-template-3%)
+  (on message-1 ()
+    (call-next-handler))
+  (on message-2 ()
+    'bar)
+  (test (eq? (send self message-1) 'foo))
+  (test (eq? (send self message-2) 'bar))
   (jump syntax-tests))
 
 

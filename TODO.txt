@@ -21,10 +21,6 @@
   Add EVENT-KEYS method to wrap EVENT-CHARACTER and EVENT-MODIFIERS
 
   Event Handling
-/   Syntax of properties
-X     Rename event handlers to include '-EVENT' - verbose, gains little
-/     (event-character e) should return a character
-/     Loose QUOTE for NAME argument to SEND and PROP
     Nice features
       Send idle events to everything
       Returning values from event handlers?
