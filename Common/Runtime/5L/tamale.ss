@@ -10,7 +10,7 @@
   (provide draw-picture measure-picture
            set-image-cache-size! modal-input with-dc
            dc-rect color-at
-           %zone% zone register-cursor mouse-position
+           %zone% zone %animated-graphic% register-cursor mouse-position
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
            element-shown? set-element-shown?!
            delete-element delete-elements
@@ -123,7 +123,10 @@
       (when (> (rect-width bounds) max-width)
         (set! max-width (rect-width bounds)))
       (when (> (rect-height bounds) max-height)
-        (set! max-height (rect-height bounds)))))
+        (set! max-height (rect-height bounds))))
+    (rect (point-x at) (point-y at)
+          (+ (point-x at) max-width)
+          (+ (point-y at) max-height)))
 
   (define-element-template %animated-graphic%
       [[at :type <point> :label "Location"]

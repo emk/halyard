@@ -3,6 +3,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 CVS - kwasi, djin
 
   * Added APIs for accessing TStateDB from Scheme.
+  * Implemented %animated-graphic% with corresponding AnimatedOverlay class.
 
 0.0.16 - kwasi, djin, emk
 

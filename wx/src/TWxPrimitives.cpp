@@ -16,6 +16,7 @@
 #include "DrawingArea.h"
 #include "Zone.h"
 #include "Overlay.h"
+#include "AnimatedOverlay.h"
 #include "MediaElement.h"
 #include "MovieElement.h"
 #include "Widget.h"
@@ -92,6 +93,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
 	REGISTER_5L_PRIMITIVE(Overlay);
+	REGISTER_5L_PRIMITIVE(OverlayAnimated);
 	REGISTER_5L_PRIMITIVE(Refresh);
 	REGISTER_5L_PRIMITIVE(SaveGraphics);
 	REGISTER_5L_PRIMITIVE(RestoreGraphics);
@@ -651,6 +653,21 @@ DEFINE_5L_PRIMITIVE(Overlay) {
 				dispatcher,
 				wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor),
 				is_trans);
+}
+
+DEFINE_5L_PRIMITIVE(OverlayAnimated) {
+	std::string name, cursor, state;
+	TRect bounds;
+	TCallbackPtr dispatcher;
+	TValue graphics;
+	
+	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor >> state
+		   >> graphics;
+	new AnimatedOverlay(
+		wxGetApp().GetStage(), name.c_str(), 
+		TToWxRect(bounds), dispatcher, 
+		wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor),
+		state, TValueList(graphics));
 }
 
 DEFINE_5L_PRIMITIVE(SaveGraphics) {

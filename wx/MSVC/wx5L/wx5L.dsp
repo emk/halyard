@@ -94,6 +94,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\..\src\AnimatedOverlay.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\AudioStream.cpp
 # End Source File
 # Begin Source File
@@ -283,6 +287,10 @@ SOURCE=..\..\src\Zone.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\..\src\AnimatedOverlay.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\..\src\AudioStream.h
@@ -522,7 +530,7 @@ SOURCE=..\..\src\tamale.xrc
 !IF  "$(CFG)" == "wx5L - Win32 Release"
 
 # Begin Custom Build
-InputDir=\Documents and Settings\emk\src\5L\wx\src
+InputDir=\Documents and Settings\kwasi\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 
@@ -535,7 +543,7 @@ InputName=tamale
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\Documents and Settings\emk\src\5L\wx\src
+InputDir=\Documents and Settings\kwasi\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 
