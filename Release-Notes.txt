@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+3.3.20 - 26 July 2002 - emk
 
 A QA binge, thanks to RedHat's memprof, Bruce Perens' Electric Fence,
 and Rational's Purify.
@@ -24,6 +24,13 @@ and Rational's Purify.
     called before View::Init.
   * PURIFY: Made View::Draw a no-op before View::Init is called.
     (It seems that Windows causes us to call Draw too early.)
+  * Added TOUCHCOUNT, TOUCHCOORDS and TOUCHACTIVATE commands so Douglas
+    can build an automatic test monkey.  These are Win32-only, because
+    the Mac touchzone system needs an overhaul and I don't want to
+    mess with it right now (#1076).
+  * Added StValueRestorer<> template class which can save and restore
+    the values of variables in an exception-safe fashion.
+  * Began code audit for exception safety (bug #1074).
 
 3.3.19 - 24 July 2002 - emk
 

@@ -27,6 +27,29 @@ extern std::string MakeStringLowercase(std::string inString);
 //
 extern std::string MakeQuotedString(const std::string &inString); 
 
+//////////
+// You can use this class to save and restore a value in an exception-safe
+// fashion.  To use:
+//
+//   int i = 0;
+//   StValueRestorer<int> restore_i(i);
+//
+// When restore_i goes out of scope, i will be reset to its original value.
+//
+template<class Type>
+class StValueRestorer
+{
+	Type &mLocation;
+	Type mSaved;
+
+	DISABLE_COPY_AND_ASSIGN_TMPL(StValueRestorer,StValueRestorer<Type>);
+
+public:
+	explicit StValueRestorer(Type &inVariable)
+		: mLocation(inVariable), mSaved(inVariable) { }
+	~StValueRestorer() { mLocation = mSaved; }
+};
+
 END_NAMESPACE_FIVEL
 
 #endif // TTemplateUtils_H

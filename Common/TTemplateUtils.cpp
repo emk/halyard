@@ -14,7 +14,6 @@ std::string FIVEL_NS MakeStringLowercase(std::string inString)
 	return inString;
 }
 
-
 std::string FIVEL_NS MakeQuotedString(const std::string& inString)
 {
 	std::string result = "\"";

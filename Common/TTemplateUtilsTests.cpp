@@ -33,4 +33,12 @@ void test_TTemplateUtils (void)
 	{
 		TEST(MakeQuotedString(test->input) == std::string(test->output));
 	}
+
+	int i = 0;
+	{
+		StValueRestorer<int> restore_i(i);
+		i = 1;
+		TEST(i == 1);
+	}
+	TEST(i == 0);
 }

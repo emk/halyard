@@ -104,6 +104,9 @@ void FIVEL_NS RegisterWindowsPrimitives()
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
 	REGISTER_5L_PRIMITIVE(Touch);
+	REGISTER_5L_PRIMITIVE(TouchActivate);
+	REGISTER_5L_PRIMITIVE(TouchCoords);
+	REGISTER_5L_PRIMITIVE(TouchCount);
 	REGISTER_5L_PRIMITIVE(Unblippo);
 	REGISTER_5L_PRIMITIVE(Unlock);
 	REGISTER_5L_PRIMITIVE_WITH_NAME("video", PlayQTFile);
@@ -1836,6 +1839,52 @@ DEFINE_5L_PRIMITIVE(Touch)
     gTouchZoneManager.Add(theZone);
     
     gCursorManager.CheckCursor();
+}
+
+/*----------------------------------------------------------
+    (TOUCHACTIVATE INDEX)
+
+    Simulate a click of the touchzone INDEX, counting from
+    zero.
+------------------------------------------------------------*/
+DEFINE_5L_PRIMITIVE(TouchActivate)
+{
+	int32 index;
+	inArgs >> index;
+	if (0 <= index && index < gTouchZoneManager.GetTouchZoneCount())
+		gTouchZoneManager.ActivateTouchZone(index);
+	else
+		::SetPrimitiveError("badtouch", "No such touchzone.");
+}
+
+/*----------------------------------------------------------
+    (TOUCHCOORDS INDEX)
+
+    Return the coordinates of the touchzone INDEX, counting
+    from zero.
+------------------------------------------------------------*/
+DEFINE_5L_PRIMITIVE(TouchCoords)
+{
+	int32 index;
+	inArgs >> index;
+	if (0 <= index && index < gTouchZoneManager.GetTouchZoneCount())
+	{
+		TPoint coords = gTouchZoneManager.GetTouchZoneCoordinates(index);
+		::SetPrimitiveResult(coords);
+	}
+	else
+		::SetPrimitiveError("badtouch", "No such touchzone.");
+}	
+
+/*----------------------------------------------------------
+    (TOUCHCOUNT)
+
+    Return the number of touchzones (and buttpcxs) currently
+	displayed.
+------------------------------------------------------------*/
+DEFINE_5L_PRIMITIVE(TouchCount)
+{
+	::SetPrimitiveResult((int32) gTouchZoneManager.GetTouchZoneCount());
 }
 
 /*----------------------------------------------------------

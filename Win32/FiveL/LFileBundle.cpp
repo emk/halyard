@@ -16,6 +16,7 @@
 #include <fstream.h>
 #include <string.h>
 #include <windows.h>
+#include "TTemplateUtils.h"
 
 #include "md5.h"
 #define MD5_SIZE (16)
@@ -150,7 +151,6 @@ void LFileBundle::Write(const char *filename, TString &data)
 	const char  *p;
     char		ch;
 	TString		buf;
-	int			tmpIndex;
 	int			writeIndex;
 
 	if (currentFileKind == fReadOnly)
@@ -159,7 +159,8 @@ void LFileBundle::Write(const char *filename, TString &data)
 		return;
 	}
 
-	tmpIndex = readIndex;	// save readIndex
+	// save readIndex
+	StValueRestorer<int> restore_readIndex(readIndex);
 
 	// We don't want resizes too often when adding char by char
 	buf.SetMinResize(STRING_MIN_RESIZE);
@@ -223,8 +224,6 @@ void LFileBundle::Write(const char *filename, TString &data)
 	// Write cache to disk if needed
 	if (cacheWriteFreq == DB_WRITES_WRITE)
 		WriteCache();
-		
-	readIndex = tmpIndex;	// restore readIndex
 }
 
 // Positions the filepointer immediately after the searchString, 
@@ -781,17 +780,14 @@ void LFileBundle::InitIndices()
 void LFileBundle::InitGlobalUserTag()
 {
 	TString searchString;
-	int		saveReadIndex;
 
-	saveReadIndex = readIndex;
+	StValueRestorer<int> restore_readIndex(readIndex);
 	readIndex = 0;
 
 	searchString = "<User name=\"";
 	searchString += "_GLOBAL_";
 	globalUserTagIndex = BundleSearch(searchString);
 	ASSERT(globalUserTagIndex > 0);
-
-	readIndex = saveReadIndex;
 }
 
 // Have we reached the end of the bundle?

@@ -48,41 +48,28 @@ void Macro::Execute()
     SetScript();
 	
 	// Save our member variables, so this macro can be called recursively.
-	bool old_return = m_Return;
-	int old_running = m_Running;
-	TStream old_script = m_Script;
-	try
+	StValueRestorer<bool> restore_return(m_Return);
+	StValueRestorer<int> restore_running(m_Running);
+	StValueRestorer<TStream> restore_script(m_Script);
+
+	// Get ready to run.
+	m_Return = false;
+	m_Running = true;
+	m_Script.reset();
+	
+	// dump the macro.
+	gDebugLog.Log("macro: %s", m_Script.GetString());	 
+	
+	m_Script >> open >> discard >> discard;   //  Remove "(macrodef NAME"
+
+	//  Do commands until we jump somewhere or we hit the closing paren.
+	//
+	while ((m_Script.more()) 
+		   and (not m_Return)
+		   and (not gCardManager.Jumping())) 
 	{
-		// Get ready to run.
-		m_Return = false;
-		m_Running = true;
-		m_Script.reset();
- 
-		// dump the macro.
-		gDebugLog.Log("macro: %s", m_Script.GetString());	 
-
-		m_Script >> open >> discard >> discard;   //  Remove "(macrodef NAME"
-
-		//  Do commands until we jump somewhere or we hit the closing paren.
-		//
-		while ((m_Script.more()) 
-			   and (not m_Return)
-			   and (not gCardManager.Jumping())) 
-		{
-			DoCommand();
-		}
+		DoCommand();
 	}
-	catch (...)
-	{
-		m_Return = old_return;
-		m_Running = old_running;
-		m_Script = old_script;
-		throw;
-	}
-
-	m_Return = old_return;
-	m_Running = old_running;
-	m_Script = old_script;
 }
 	
 void Macro::Return()
@@ -117,6 +104,39 @@ void MacroManager::MakeNewIndex(TIndexFile *inFile, const char *name, long start
 
 /*
  $Log$
+ Revision 1.7  2002/07/26 17:55:23  emk
+ 3.3.20 - 26 July 2002 - emk
+
+ A QA binge, thanks to RedHat's memprof, Bruce Perens' Electric Fence,
+ and Rational's Purify.
+
+   * Linux build fixes so I can run memprof and Electric Fence.
+   * Fixed a bug in TStream::GetStringArg when called on an empty stream.
+     This is probably why we were seeing weird results when CHeader called
+     TStream::more() too many times.
+   * Fixed a buffer-overflow bug in TLogger when logging large messages.
+   * Squashed a bunch of memory leaks in CryptStream.cpp.
+   * Made new CryptStream auto_ptr code work under Windows.
+   * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+     notify the user if there are duplicate cards, macros, etc.
+   * PURIFY: Fixed memory leak in TBTree destructor.
+   * PURIFY: Fixed memory leak in ConfigManager destructor.
+   * PURIFY: Fixed memory leaks when deleting DIBs.
+   * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+   * PURIFY: Fixed memory leak in LBrowser.
+   * PURIFY: Fixed memory leak in LFileBundle.
+   * PURIFY: Fixed uninitialized memory reads when View methods were
+     called before View::Init.
+   * PURIFY: Made View::Draw a no-op before View::Init is called.
+     (It seems that Windows causes us to call Draw too early.)
+   * Added TOUCHCOUNT, TOUCHCOORDS and TOUCHACTIVATE commands so Douglas
+     can build an automatic test monkey.  These are Win32-only, because
+     the Mac touchzone system needs an overhaul and I don't want to
+     mess with it right now (#1076).
+   * Added StValueRestorer<> template class which can save and restore
+     the values of variables in an exception-safe fashion.
+   * Began code audit for exception safety (bug #1074).
+
  Revision 1.6  2002/07/23 21:53:53  emk
  3.3.17 - 23 July 2002 - emk
 

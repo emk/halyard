@@ -232,12 +232,64 @@ class LTouchZoneManager : public TArray
 		// [out] return - LTouchZone invoked by keypress or NULL if none found
 		//
 		LTouchZone	*GetTouchZone(WPARAM wParam);
+
+		//////////
+		// Return the number of touchzones currently on the screen.
+		//
+		int GetTouchZoneCount();
+	
+		//////////
+		// Get the co-ordinates of the specified touchzone.
+		//
+		// [in] inIndex - The zero-based index of the touchzone.
+		//
+		TPoint GetTouchZoneCoordinates(int inIndex);
+
+		//////////
+		// Simulate a click of the specified touchzone.
+		//
+		// [in] inIndex - The zero-based index of the touchzone.
+		//
+		void ActivateTouchZone(int inIndex);
 };
 
 #endif // _LTouchZone_h_
 
 /*
  $Log$
+ Revision 1.3  2002/07/26 17:55:23  emk
+ 3.3.20 - 26 July 2002 - emk
+
+ A QA binge, thanks to RedHat's memprof, Bruce Perens' Electric Fence,
+ and Rational's Purify.
+
+   * Linux build fixes so I can run memprof and Electric Fence.
+   * Fixed a bug in TStream::GetStringArg when called on an empty stream.
+     This is probably why we were seeing weird results when CHeader called
+     TStream::more() too many times.
+   * Fixed a buffer-overflow bug in TLogger when logging large messages.
+   * Squashed a bunch of memory leaks in CryptStream.cpp.
+   * Made new CryptStream auto_ptr code work under Windows.
+   * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+     notify the user if there are duplicate cards, macros, etc.
+   * PURIFY: Fixed memory leak in TBTree destructor.
+   * PURIFY: Fixed memory leak in ConfigManager destructor.
+   * PURIFY: Fixed memory leaks when deleting DIBs.
+   * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+   * PURIFY: Fixed memory leak in LBrowser.
+   * PURIFY: Fixed memory leak in LFileBundle.
+   * PURIFY: Fixed uninitialized memory reads when View methods were
+     called before View::Init.
+   * PURIFY: Made View::Draw a no-op before View::Init is called.
+     (It seems that Windows causes us to call Draw too early.)
+   * Added TOUCHCOUNT, TOUCHCOORDS and TOUCHACTIVATE commands so Douglas
+     can build an automatic test monkey.  These are Win32-only, because
+     the Mac touchzone system needs an overhaul and I don't want to
+     mess with it right now (#1076).
+   * Added StValueRestorer<> template class which can save and restore
+     the values of variables in an exception-safe fashion.
+   * Began code audit for exception safety (bug #1074).
+
  Revision 1.2  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:
