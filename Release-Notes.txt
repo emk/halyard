@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.9 - 11 Dec 2003 - emk
+
+  * Limited maximum chirp rate for new Geiger synth.
+  * Added a ':multiline?' parameter to edit-box.  See 5Ltest_wx for samples.
+
 0.0.8 - 17 Nov 2003 - emk, brian
 
   * Added SET-MEDIA-BASE-URL! function.  Pass it either a QuickTime-

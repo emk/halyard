@@ -203,13 +203,17 @@ DEFINE_5L_PRIMITIVE(DrawLine) {
 DEFINE_5L_PRIMITIVE(EditBox) {
 	std::string name, text;
 	TRect bounds;
+    bool multiline;
 
-	inArgs >> SymbolName(name) >> bounds >> text;
+	inArgs >> SymbolName(name) >> bounds >> text >> multiline;
+
+    long style = wxBORDER;
+    if (multiline)
+        style |= wxTE_MULTILINE;
 
 	wxTextCtrl *edit =
 		new wxTextCtrl(wxGetApp().GetStage(), -1, text.c_str(),
-					   GetPos(bounds), GetSize(bounds),
-					   wxBORDER | wxTE_MULTILINE);
+					   GetPos(bounds), GetSize(bounds), style);
 	new Widget(wxGetApp().GetStage(), name.c_str(), edit);
 }
 

@@ -97,7 +97,10 @@ bool GeigerAudioStream::ShouldChirpDuringInterval(size_t inSamplesPerInterval)
 {
 	float chirps_per_sample = mChirpsPerSecond / SAMPLES_PER_SECOND;
 	float chirps_per_interval = chirps_per_sample * inSamplesPerInterval;
-	ASSERT(chirps_per_interval <= 1.0);
+    // Limit our chirp rate to a value where we still get some randomness.
+    // We can't just have an assertion here because so many of the constants
+    // and variables used to calculate chirps_per_interval are undefined.
+    chirps_per_interval = std::min(0.5f, chirps_per_interval);
 	return DoesEventOccurGivenProbability(chirps_per_interval);
 }
 

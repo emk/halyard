@@ -31,6 +31,6 @@ void GeigerSynthElement::DoneAddingLoops() {
 }
 
 void GeigerSynthElement::SetChirpsPerSecond(double inCPS) {
+
     mGeigerAudioStream->SetChirpsPerSecond(inCPS);
 }
-
