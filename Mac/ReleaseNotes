@@ -1,5 +1,12 @@
 FiveL for Macintosh Release Notes
 
+2.00, Build 19, Wednesday, December 22, 1999 2:20:05 PM
+
+¥ Changed the built-in cursors to the hand cursors that Scott made. Also
+took out the up, down and backup cursors. Here are the legal cursor types
+to use in the buttpcx, cursor and touch commands:
+	arrow, cross, watch, hand, right, left, turnright, turnleft
+	
 2.00, Build 18, Wednesday, December 15, 1999 2:01:00 PM
 
 ¥ Took out all debug messages from the Release version.
