@@ -1,7 +1,0 @@
-.deps
-Makefile
-Makefile.in
-libfivel_crypto
-libfivel_crypto_debug
-libfivel_crypto?Data
-md5main
