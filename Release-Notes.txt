@@ -1,5 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - tryon
+
+  * Added Quake 2 variable 'cl_disablemenu' which allows the Quake 2
+    menu system to be disabled and replaced with a custom "escape"
+    binding (bug #1740).
+
 0.0.45 - 15 Dec 2004 - emk
 
   * Updated LICENSE.txt file to include latest information (bug #1724).
