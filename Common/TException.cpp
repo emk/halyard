@@ -31,7 +31,7 @@ static std::string get_string(std::ostrstream &stream)
 	return std::string("");
 }
 
-const char* TException::what () const
+const char* TException::what () const throw ()
 {
 	std::ostrstream s;
 	s << GetClassName() << ": " << GetErrorMessage();

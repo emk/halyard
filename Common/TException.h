@@ -61,7 +61,7 @@ public:
 	//////////
 	// Destroy a TException object.
 	//
-	virtual ~TException() {}
+	virtual ~TException() throw () {}
 
 	//////////
 	// Return the name of this exception class.  Subclasses must
@@ -96,7 +96,7 @@ public:
 	//                or what() is called a second time, whichever
 	//                comes sooner.
 	//
-	virtual const char* what () const;
+	virtual const char* what () const throw ();
 };
 
 END_NAMESPACE_FIVEL
