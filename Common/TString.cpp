@@ -18,7 +18,9 @@
 #include "TString.h"
 #include <stdio.h>
 
-
+#ifdef WIN32
+#define snprintf _snprintf
+#endif
 
 //
 //  TString - Default constructor.
@@ -1160,6 +1162,9 @@ istream & operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.4  2002/02/28 11:05:05  tvw
+ A few small changes needed to build FiveL Win32 with new Common library.
+
  Revision 1.3  2002/02/27 16:38:21  emk
  Cross-platform code merge!
 
