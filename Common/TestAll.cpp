@@ -18,6 +18,8 @@ extern void test_TEncoding (void);
 extern void test_FileSystem (void);
 extern void test_Typography (void);
 extern void test_TStyleSheet (void);
+extern void test_CryptStream (void);
+extern void test_TIndex (void);
 
 int main (int argc, char **argv)
 {
@@ -31,6 +33,8 @@ int main (int argc, char **argv)
 		test_FileSystem();
 		test_Typography();
 		test_TStyleSheet();
+		test_CryptStream();
+		test_TIndex();
 	}
 	catch (std::exception &error)
 	{

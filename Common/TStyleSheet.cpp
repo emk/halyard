@@ -1,6 +1,7 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
 #include "TStyleSheet.h"
+#include "TVariable.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -8,6 +9,9 @@ using GraphicsTools::Color;
 using Typography::Style;
 using Typography::StyledText;
 using Typography::TextRenderingEngine;
+
+static const char *INCR_Y_NAME = "_incr_y";
+static const char *INCR_X_NAME = "_incr_x";
 
 
 //=========================================================================
@@ -130,5 +134,6 @@ void TStyleSheet::Draw(const std::string& inText,
 	TextRenderingEngine engine(text, inPosition, inLineLength,
 							   mJustification, inImage);
 	engine.RenderText();
-	// TODO - Update location variables.
+    gVariableManager.SetLong(INCR_Y_NAME, engine.GetBottomBound()); 
+	gVariableManager.SetLong(INCR_X_NAME, engine.GetRightBound());
 }

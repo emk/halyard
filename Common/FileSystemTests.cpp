@@ -119,7 +119,44 @@ void test_FileSystem (void)
 	deltest_stream.close();
 	TEST(deltest.DoesExist() == true);
 	deltest.RemoveFile();
-	TEST(deltest.DoesExist() == false);	
+	TEST(deltest.DoesExist() == false);
+
+	// Test file renaming.
+	Path renametest1("renametest1.txt");
+	Path renametest2("renametest2.txt");
+	TEST(renametest1.DoesExist() == false);
+	TEST(renametest2.DoesExist() == false);
+	std::ofstream renametest_stream(renametest1.ToNativePathString().c_str());
+	renametest_stream.close();
+	TEST(renametest1.DoesExist() == true);
+	TEST(renametest2.DoesExist() == false);
+	renametest1.RenameFile(renametest2);
+	TEST(renametest1.DoesExist() == false);
+	TEST(renametest2.DoesExist() == true);
+	renametest2.RemoveFile();
+
+	// Test file replacement.
+	Path replace_orig("replace_orig.txt");
+	Path replace_temp("replace_temp.txt");
+	TEST(replace_orig.DoesExist() == false);
+	TEST(replace_temp.DoesExist() == false);
+	std::ofstream orig_stream(replace_orig.ToNativePathString().c_str());
+	orig_stream << "OriginalData" << std::endl;
+	orig_stream.close();
+	std::ofstream temp_stream(replace_temp.ToNativePathString().c_str());
+	temp_stream << "NewData" << std::endl;
+	temp_stream.close();
+	TEST(replace_orig.DoesExist() == true);
+	TEST(replace_temp.DoesExist() == true);
+	replace_orig.ReplaceWithTemporaryFile(replace_temp);
+	TEST(replace_orig.DoesExist() == true);
+	TEST(replace_temp.DoesExist() == false);
+	std::ifstream new_stream(replace_orig.ToNativePathString().c_str());
+	std::string new_contents;
+	new_stream >> new_contents;
+	new_stream.close();
+	TEST(new_contents == "NewData");
+	replace_orig.RemoveFile();
 
 	// Do some tricky path manipulation.
 #if !FIVEL_PLATFORM_MACINTOSH

@@ -889,8 +889,8 @@ TextRenderingEngine::TextRenderingEngine(const StyledText &inText,
 										 Justification inJustification,
 										 Image *inImage)
 	: GenericTextRenderingEngine(inText, inLineLength, inJustification),
-	  mIsFirstLine(true), mLineStart(inPosition),
-	  mBounds(inPosition), mImage(inImage)
+	  mImage(inImage), mIsFirstLine(true),
+	  mLineStart(inPosition), mBounds(inPosition)
 {
 	ASSERT(inPosition.x >= 0 && inPosition.y >= 0);
 	ASSERT(inImage != NULL);
@@ -949,6 +949,9 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 										   Point *ioPosition,
 										   bool inShouldDraw)
 {
+	// Remember our previous position.
+	Point previous_position = *ioPosition;
+
 	// Do our kerning.
 	Vector delta = AbstractFace::Kern(*ioPrevious, inCurrent);
 	ioPosition->x += delta.x >> 6; // Don't need round_266 (already fitted).
@@ -974,9 +977,22 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 	ioPosition->x += round_266(glyph->advance.x);
 	ASSERT(ioPosition->x >= 0);
 	ASSERT(glyph->advance.y == 0);
-	
+
 	// Update our previous char.
 	*ioPrevious = inCurrent;
+
+	// Make sure that kerning plus advance didn't actually move our
+	// position backwards.  This can happen for character combinations
+	// such as 'T' and '.' in heavily kerned fonts.  If we omit this
+	// calculation, it causes our right bound to be off slightly,
+	// and produces visually odd results.
+	if (ioPosition->x < previous_position.x)
+	{
+		ioPosition->x = previous_position.x;
+		// We should probably set *ioPrevious to (kNoSuchCharacter, NULL)
+		// here, but intersegment kerning in MeasureSegment only has one
+		// character of lookback, so that will break things.
+	}
 }
 
 Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,

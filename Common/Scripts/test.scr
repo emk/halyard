@@ -1,0 +1,7 @@
+# Some simple tests to get us started.
+(test one 123)
+(test two 456)
+
+# This test has an escaped comment start character, which used to
+# break TParser until Elizabeth fixed it.
+(test three (\#1 is first!))

@@ -604,7 +604,7 @@ TStream& TStream::operator>>(GraphicsTools::Color &outColor)
 						"\"0xRRGGBBAA\"", temp);
 
 	// Extract the actual data, and build our color.
-	uint32 hex;
+	unsigned int hex;
 	int successful_conversions = sscanf(temp + 2, "%x", &hex);
 	ASSERT(successful_conversions == 1);
 	outColor = GraphicsTools::Color(hex >> 24,
@@ -623,7 +623,6 @@ TStream& TStream::operator>>(GraphicsTools::Color &outColor)
 bool TStream::inEscape(int32 position)
 {
 	uint16 slashes = 0;
-	uint16 test = 0;
 	
 	while ((position > 0) && (m_String[--position] == SLASH))
 		slashes++;

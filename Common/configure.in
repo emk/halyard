@@ -33,4 +33,5 @@ AC_C_INLINE
 AC_CHECK_FUNCS([strstr])
 
 # Output our results.
-AC_OUTPUT([Makefile fonttools/Makefile])
+AC_OUTPUT([Makefile fonttools/Makefile libs/Makefile libs/crypto/Makefile])
+

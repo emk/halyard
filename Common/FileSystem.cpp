@@ -216,10 +216,11 @@ std::list<std::string> Path::GetDirectoryEntries() const
 	// Allocate some storage.
 	std::list<std::string> entries;	
 
-	// Create a Windows file search object.
-	// We should never get an empty directory because of the "." and ".." entries.
+	// Create a Windows file search object.  We should never get an empty
+	// directory because of the "." and ".." entries.
 	WIN32_FIND_DATA find_data;
-	HANDLE hFind = ::FindFirstFile((ToNativePathString() + "\\*").c_str(), &find_data);
+	HANDLE hFind = ::FindFirstFile((ToNativePathString() + "\\*").c_str(),
+								   &find_data);
 	if (hFind == INVALID_HANDLE_VALUE)
 		throw Error("Can't open directory"); // TODO - GetLastError()
 
@@ -340,6 +341,25 @@ std::string Path::ToNativePathString () const
 	return mPath;
 }
 
+void Path::RenameFile(const Path &inNewName) const
+{
+	ASSERT(!inNewName.DoesExist());
+
+	ResetErrno();
+	rename(ToNativePathString().c_str(),
+		   inNewName.ToNativePathString().c_str());
+	CheckErrno();	
+}
+
+void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
+{
+	ASSERT(inTemporaryFile.DoesExist());
+
+	if (DoesExist())
+		RemoveFile();
+inTemporaryFile.RenameFile(*this);
+}
+
 bool FileSystem::operator==(const Path& inLeft, const Path& inRight)
 {
 	return (inLeft.mPath == inRight.mPath);
@@ -361,4 +381,15 @@ void FileSystem::SetBaseDirectory(const Path &inDirectory)
 Path FileSystem::GetBaseDirectory()
 {
 	return gCurrentBaseDirectory;	
+}
+
+
+//=========================================================================
+//  Miscellaneous FileSystem methods.
+//=========================================================================
+
+void ReplaceWithTemporaryFile(const Path &inOriginalFile,
+							  const Path &inTemporaryFile)
+{
+	
 }

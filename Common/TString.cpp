@@ -28,6 +28,8 @@ USING_NAMESPACE_FIVEL
 #define snprintf _snprintf
 #endif
 
+char inBuffer[INBUFFER_SIZE];
+
 //
 //  TString - Default constructor.
 //
@@ -495,7 +497,7 @@ void TString::MakeLower()
 	if (not IsEmpty())
 	{
 #ifndef HAVE__STRLWR
-		for (int i = 0; i < m_Length; i++)
+		for (uint32 i = 0; i < m_Length; i++)
 			m_String[i] = tolower(m_String[i]);
 #else
 		_strlwr(m_String);
@@ -508,7 +510,7 @@ void TString::MakeUpper()
 	if (not IsEmpty())
 	{
 #ifndef HAVE__STRUPR
-		for (int i = 0; i < m_Length; i++)
+		for (uint32 i = 0; i < m_Length; i++)
 			m_String[i] = toupper(m_String[i]);
 #else
 		_strupr(m_String);
@@ -896,7 +898,7 @@ char TString::operator [] (int inPos) const
 {
 	ASSERT(inPos >= 0);
 
-    if (inPos >= m_Length) 
+    if ((uint32) inPos >= m_Length) 
     	inPos = m_Length - 1;
 
     return (m_String[inPos]);
@@ -909,7 +911,7 @@ char TString::operator () (int inPos) const
 {
 	ASSERT(inPos >= 0);
 
-	if (inPos >= m_Length)
+	if ((uint32) inPos >= m_Length)
 		inPos = m_Length - 1;
 
 	return (m_String[inPos]);
@@ -1115,7 +1117,7 @@ TString TString::IntToString(int32 inNum)
 	char buffer[SNPRINTF_BUFFER_SIZE];
 	int retval;
 
-	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%d", inNum);
+	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%d", (int) inNum);
 	ASSERT(!IsSnprintfError(retval, SNPRINTF_BUFFER_SIZE));
 	return TString(buffer);
 }
@@ -1128,7 +1130,8 @@ TString TString::UIntToString(uint32 inNum)
 	char buffer[SNPRINTF_BUFFER_SIZE];
 	int retval;
 
-	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%u", inNum);
+	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%u",
+					  (unsigned int) inNum);
 	ASSERT(!IsSnprintfError(retval, SNPRINTF_BUFFER_SIZE));
 	return TString(buffer);
 }
@@ -1160,6 +1163,112 @@ istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.6.4.2  2002/04/22 05:22:33  emk
+ A weekend's worth of merging, in preparation for the Typography switchover.
+
+ MOVED
+ -----
+
+ * Win32/Crypt/md5.c -> Common/libs/crypto/md5.c
+ * Win32/Crypt/md5.h -> Common/libs/crypto/md5.h
+ * Win32/Crypt/md5main.c -> Common/libs/crypto/md5main.c
+ * Win32/Crypt/_blowfish.c -> Common/libs/crypto/blowfish.c
+ * Win32/Crypt/blowfish.h -> Common/libs/crypto/blowfish.h
+
+ Third-party cryptography files moved to the new Common/libs/crypto
+ directory.  In general, third-party code should go under Common/libs, so we
+ can find it all in one place for updates and license checks.
+ Common/freetype2 will probably move there soon for the sake of consistency.
+
+ MERGED
+ ------
+
+ * Win32/Crypt/CryptStream.cpp -> Common/CryptStream.cpp
+ * Win32/Crypt/CryptStream.h -> Common/CryptStream.h
+ * Win32/TestSuite/TestCryptStream.cpp -> Common/CryptStreamTests.cpp
+
+ Modified to use the portable Path abstraction.  Included our standard key
+ once in this file, instead of having it in many different headers
+ throughout the program. Coerced uchar* to char* in several places required
+ by the fstream API (and some other coercions).
+
+ * Win32/FiveL/Parser.cpp -> Common/TParser.cpp
+ * Win32/FiveL/Parser.h -> Common/TParser.h
+
+ Merged in Elizabeth's improved escape-handling code.  Factored out all code
+ which specifically referred to "card", "header" or "macrodef" forms, and
+ added a generic API for registering abitrary top-level forms.
+
+ * Win32/FiveL/Index.cpp -> Common/TIndex.cpp
+ * Win32/FiveL/Index.h -> Common/TIndex.h
+ * NEW: Common/TIndexTests.cpp
+ * NEW: Common/Scripts/test.scr
+
+ Merged TIndex::GetScript from the Macintosh.  Temporarily stopped closing
+ the TIndexFile in the presence of REDOSCRIPT.  Merged some Macintosh code
+ for building indices from FSSpecs; this probably doesn't work.  Changed the
+ Open and Init methods to use the portable Path library (the APIs might be
+ slightly suboptimal).
+
+ * Win32/FiveL/LUtil.cpp -> Common/TDateUtil.cpp
+ * Win32/FiveL/LUtil.h -> Common/TDateUtil.h
+
+ Extracted date-related code from LUtil.*.  Changed wsprintf calls to
+ sprintf.
+
+ * Win32/FiveL/Variable.cpp -> Common/TVariable.cpp
+ * Win32/FiveL/Variable.h -> Common/TVariable.h
+
+ Disabled certain special variables that caused awkward dependencies, and
+ replaced them with an interface for registering arbitrary special
+ variables.
+
+ MODIFIED
+ --------
+
+ * Common/FileSystem.cpp
+ * Common/FileSystem.h
+
+ Added a RenameFile function, and a GetScriptsDirectory function.  Also
+ added a ReplaceWithTemporaryFile function, which overwrites an existing
+ file with a temporary file (someday, we can implement this as an atomic
+ operation on most operating systems).
+
+ * Common/GraphicsTools.h
+
+ Added a no-arguments constuctor for Point.
+
+ * Common/TString.cpp
+ * Common/TString.h
+
+ Lots of "signed/unsigned comparison" and other warning fixes.
+
+ * Common/TStyleSheet.cpp
+ * Common/TStyleSheet.h
+
+ Added full-fledged INCR_X, INCR_Y support!
+
+ * Common/Typography.cpp
+ * Common/Typography.h
+
+ Made sure that kerning+advance can never move the drawing cursor backwards.
+ Fixed warnings.
+
+ * Common/fonttools/pngtest.cpp
+
+ Added a test of transparent text (just for fun).
+
+ KNOWN ISSUES
+ ------------
+
+ * Logging code needs to have Mac-specific features merged back in.
+
+ * TIndexFile doesn't close the underlying file properly in the presence of
+ REDOSCRIPT.  What's going on here?
+
+ * TParser--and maybe TStream--need to have cross-platform end-of-line
+ handling.
+
  Revision 1.6.4.1  2002/04/19 11:20:13  emk
  Start of the heavy typography merging work.  I'm doing this on a branch
  so I don't cause problems for any of the other developers.

@@ -114,6 +114,17 @@ namespace FileSystem {
 		std::string ToNativePathString () const;
 
 		//////////
+		// Rename this file to 'inNewName'.
+		//
+		void RenameFile(const Path &inNewName) const;
+
+		//////////
+		// Replace this file with 'inTemporaryFile'.  On some platforms,
+		// it's possible to implement this as an atomic operation.
+		//
+		void ReplaceWithTemporaryFile(const Path &inTemporaryFile) const;
+
+		//////////
 		// Compare two paths for equality.  This is a dumb test--it doesn't
 		// know anything about simplifying paths, and it doesn't look at
 		// the disk.  It just does a memberwise comparison.  It isn't
@@ -148,6 +159,12 @@ namespace FileSystem {
 	//
 	inline Path GetFontFilePath(std::string inFontFileName)
 	    { return GetFontDirectory().AddComponent(inFontFileName); }
+
+	//////////
+	// Get the directory 5L uses to store scripts.
+	//
+	inline Path GetScriptsDirectory()
+	    { return GetBaseDirectory().AddComponent("Scripts"); }
 }
 
 #endif // FileSystem_H

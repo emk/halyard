@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -15,8 +16,6 @@
 //    with initialization and input commands.
 //
 
-#include "stdafx.h"
-
 #include <time.h>
 
 #include <string.h>
@@ -24,7 +23,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "LUtil.h"
+#include "TDateUtil.h"
+
+USING_NAMESPACE_FIVEL
 
 // forward declarations
 static void GetTime(char *inStr, struct tm *inTime);
@@ -35,20 +36,6 @@ static void GetYear(char *inStr, struct tm *inTime);
 static void GetMonth(char *inStr, int inMonth);
 static void GetDay(char *inStr, int inDay);
 
-
-// Makes a message box to alert the user
-void AlertMsg(const char *msg, bool isError)
-{
-	uint32		alertType;
-
-	alertType = MB_SYSTEMMODAL | MB_OK;
-	if (isError)
-		alertType |= MB_ICONSTOP;
-	else
-		alertType |= MB_ICONINFORMATION;
-
-	::MessageBox(::GetFocus(), msg, NULL, alertType);
-}
 
 //
 // Date and time functions.
@@ -64,10 +51,9 @@ void GetDate(TString &inStr, const DateFormat format)
 	time_t		theTime;
 	
 	time(&theTime);
-    theLTime = localtime(&theTime);      			/* Convert to local time. */
+    theLTime = localtime(&theTime); // Convert to local time.
     
     theResult[0] = 0;
-    
     switch (format)
     {
     	case df_TIME:
@@ -80,7 +66,7 @@ void GetDate(TString &inStr, const DateFormat format)
     		GetShortDate(theResult, theLTime);
     		break;
     	case df_SECONDS:
-    		wsprintf(theResult, "%ld", theTime);
+    		sprintf(theResult, "%ld", theTime);
     		break;
     }
 	
@@ -147,11 +133,11 @@ static void GetTime(char *inStr, struct tm *inTime)
 		if (inTime->tm_hour == 0)
 			inTime->tm_hour = 12;
 		if (inTime->tm_min > 9)
-			wsprintf(min, "%d", inTime->tm_min);
+			sprintf(min, "%d", inTime->tm_min);
 		else
-			wsprintf(min, "0%d", inTime->tm_min);
+			sprintf(min, "0%d", inTime->tm_min);
 			
-		wsprintf(inStr, "%d:%s %s", inTime->tm_hour, min, am_pm);
+		sprintf(inStr, "%d:%s %s", inTime->tm_hour, min, am_pm);
 	}
 } 
 
@@ -161,7 +147,7 @@ static void GetShortDate(char *inStr, struct tm *inTime)
 	if ((inStr != NULL) and (inTime != NULL))
 	{
 		GetShortYear(theYear, inTime);
-		wsprintf(inStr, "%d/%d/%s", inTime->tm_mon + 1,
+		sprintf(inStr, "%d/%d/%s", inTime->tm_mon + 1,
 			inTime->tm_mday, theYear);
 	}
 }
@@ -177,8 +163,7 @@ static void GetLongDate(char *inStr, struct tm *inTime)
 		GetYear(theYear, inTime);
 		GetMonth(theMonth, inTime->tm_mon + 1);
 		GetDay(theDay, inTime->tm_wday);
-	
-		wsprintf(inStr, "%s, %s %d, %s", theDay, theMonth, 
+		sprintf(inStr, "%s, %s %d, %s", theDay, theMonth, 
 			inTime->tm_mday, theYear);
 	}
 }	
@@ -194,8 +179,7 @@ static void GetShortYear(char *inStr, struct tm *inTime)
 			theYear = inTime->tm_year - 100;
 		else
 			theYear = inTime->tm_year;
-		
-		wsprintf(inStr, "%02d", theYear);
+		sprintf(inStr, "%02d", theYear);
 	}
 }
 
@@ -207,8 +191,7 @@ static void GetYear(char *inStr, struct tm *inTime)
 	{
 		// 2000 comes through as 100
 		theYear = 1900 + inTime->tm_year;
-		
-		wsprintf(inStr, "%d", theYear);
+		sprintf(inStr, "%d", theYear);
 	}
 }
 
@@ -289,88 +272,115 @@ static void GetDay(char *inStr, int inDay)
 	}
 }
 
-//
-//	VolIsMounted - 
-//	
-int32 VolIsMounted(char *inCDPath, TString &inVolName)
-{
-	int32	retValue = NO_VOLUME;
-	char	theBuf[255];
-	DWORD	theBufLen = 255;
-	DWORD	theMaxLen;
-	DWORD	theSysFlags;
-	char	theNameBuf[32];
-	DWORD	theNameBufLen = 32;
-
-	if (::GetVolumeInformation(inCDPath, theBuf, theBufLen, 
-			NULL, &theMaxLen, &theSysFlags, theNameBuf, theNameBufLen))
-	{
-		// now compare to see if this is it
-		if (inVolName.Compare(theBuf, false))
-			retValue = WRONG_VOLUME;
-		else
-			retValue = OK_VOLUME;
-	}
-	else
-		retValue = NO_VOLUME;
-
-	return(retValue);
-
-/*  WIN16
-
-	struct _find_t 	fileinfo; 
-	DWORD			now_time;
-	DWORD			start_time;
-    int				result;
-    
-	result = _dos_findfirst(inCDPath, _A_VOLID, &fileinfo);
-	fileinfo.name[8] = '\0';
-	if (result == 0)
-	{
-		if (inVolName.Compare(fileinfo.name, false))
-		{ 
-			gDebugLog.Log("CheckDisc: failed first try, disc inserted is <%s>", fileinfo.name);
-
-			// wait a bit and try again - why is this necessary???
-			start_time = ::GetTickCount();
-			now_time = start_time;
-			while ((now_time - start_time) < 120) 
-			{
-				now_time = ::GetTickCount();
-			}
-			
-			result = _dos_findfirst(inCDPath, _A_VOLID, &fileinfo);
-			fileinfo.name[8] = '\0';
-			if (result == 0)	
-			{	
-				if (inVolName.Compare(fileinfo.name, false))
-				{
-					gDebugLog.Log("CheckDisc: failed 2nd try, disc inserted is <%s>", fileinfo.name);
-					retValue = WRONG_VOLUME;
-				}
-				else
-					retValue = OK_VOLUME;
-			}
-			else
-			{
-				gDebugLog.Log("CheckDisc: 2nd _dos_findfirst failed, returned <%d>", result);
-				retValue = NO_VOLUME;
-			}
-		}
-		else
-			retValue = OK_VOLUME;
-	}
-	else
-	{
-		gDebugLog.Log("CheckDisc: first _dos_findfirst failed, returned <%d>", result);
-		retValue = NO_VOLUME;
-	}
-	return(retValue);
-*/
-}
 
 /*
  $Log$
+ Revision 1.4.2.1  2002/04/22 05:22:33  emk
+ A weekend's worth of merging, in preparation for the Typography switchover.
+
+ MOVED
+ -----
+
+ * Win32/Crypt/md5.c -> Common/libs/crypto/md5.c
+ * Win32/Crypt/md5.h -> Common/libs/crypto/md5.h
+ * Win32/Crypt/md5main.c -> Common/libs/crypto/md5main.c
+ * Win32/Crypt/_blowfish.c -> Common/libs/crypto/blowfish.c
+ * Win32/Crypt/blowfish.h -> Common/libs/crypto/blowfish.h
+
+ Third-party cryptography files moved to the new Common/libs/crypto
+ directory.  In general, third-party code should go under Common/libs, so we
+ can find it all in one place for updates and license checks.
+ Common/freetype2 will probably move there soon for the sake of consistency.
+
+ MERGED
+ ------
+
+ * Win32/Crypt/CryptStream.cpp -> Common/CryptStream.cpp
+ * Win32/Crypt/CryptStream.h -> Common/CryptStream.h
+ * Win32/TestSuite/TestCryptStream.cpp -> Common/CryptStreamTests.cpp
+
+ Modified to use the portable Path abstraction.  Included our standard key
+ once in this file, instead of having it in many different headers
+ throughout the program. Coerced uchar* to char* in several places required
+ by the fstream API (and some other coercions).
+
+ * Win32/FiveL/Parser.cpp -> Common/TParser.cpp
+ * Win32/FiveL/Parser.h -> Common/TParser.h
+
+ Merged in Elizabeth's improved escape-handling code.  Factored out all code
+ which specifically referred to "card", "header" or "macrodef" forms, and
+ added a generic API for registering abitrary top-level forms.
+
+ * Win32/FiveL/Index.cpp -> Common/TIndex.cpp
+ * Win32/FiveL/Index.h -> Common/TIndex.h
+ * NEW: Common/TIndexTests.cpp
+ * NEW: Common/Scripts/test.scr
+
+ Merged TIndex::GetScript from the Macintosh.  Temporarily stopped closing
+ the TIndexFile in the presence of REDOSCRIPT.  Merged some Macintosh code
+ for building indices from FSSpecs; this probably doesn't work.  Changed the
+ Open and Init methods to use the portable Path library (the APIs might be
+ slightly suboptimal).
+
+ * Win32/FiveL/LUtil.cpp -> Common/TDateUtil.cpp
+ * Win32/FiveL/LUtil.h -> Common/TDateUtil.h
+
+ Extracted date-related code from LUtil.*.  Changed wsprintf calls to
+ sprintf.
+
+ * Win32/FiveL/Variable.cpp -> Common/TVariable.cpp
+ * Win32/FiveL/Variable.h -> Common/TVariable.h
+
+ Disabled certain special variables that caused awkward dependencies, and
+ replaced them with an interface for registering arbitrary special
+ variables.
+
+ MODIFIED
+ --------
+
+ * Common/FileSystem.cpp
+ * Common/FileSystem.h
+
+ Added a RenameFile function, and a GetScriptsDirectory function.  Also
+ added a ReplaceWithTemporaryFile function, which overwrites an existing
+ file with a temporary file (someday, we can implement this as an atomic
+ operation on most operating systems).
+
+ * Common/GraphicsTools.h
+
+ Added a no-arguments constuctor for Point.
+
+ * Common/TString.cpp
+ * Common/TString.h
+
+ Lots of "signed/unsigned comparison" and other warning fixes.
+
+ * Common/TStyleSheet.cpp
+ * Common/TStyleSheet.h
+
+ Added full-fledged INCR_X, INCR_Y support!
+
+ * Common/Typography.cpp
+ * Common/Typography.h
+
+ Made sure that kerning+advance can never move the drawing cursor backwards.
+ Fixed warnings.
+
+ * Common/fonttools/pngtest.cpp
+
+ Added a test of transparent text (just for fun).
+
+ KNOWN ISSUES
+ ------------
+
+ * Logging code needs to have Mac-specific features merged back in.
+
+ * TIndexFile doesn't close the underlying file properly in the presence of
+ REDOSCRIPT.  What's going on here?
+
+ * TParser--and maybe TStream--need to have cross-platform end-of-line
+ handling.
+
  Revision 1.4  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

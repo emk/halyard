@@ -280,7 +280,7 @@ namespace Typography {
 		std::wstring mText;
 		std::map<size_t,Style> mStyleRuns;
 		bool mIsBuilt;
-		int mEnd;
+		size_t mEnd;
 
 	public:
 		//////////
@@ -374,7 +374,7 @@ namespace Typography {
 			friend class StyledText;
 
 			const StyledText *mStyledText;
-			int mCurrentPosition;
+			size_t mCurrentPosition;
 			value_type mCurrentValue;
 
 			const_iterator(const StyledText *inStyledText, size_t inPos)

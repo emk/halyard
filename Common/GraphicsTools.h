@@ -30,6 +30,7 @@ namespace GraphicsTools {
 		Distance x;
 		Distance y;
 
+		Point() {}
 		Point(Distance inX, Distance inY) : x(inX), y(inY) {}
 
 		friend Point operator+(const Point &inLeft, const Point &inRight)
