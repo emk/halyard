@@ -341,6 +341,11 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	Element* mCurrentElement;
 
 	//////////
+	// The element which has a "grab" on the mouse.
+	//
+	Element* mGrabbedElement;
+
+	//////////
 	// The movie we're waiting on, or NULL if we're not waiting on anything.
 	//
 	MovieElement *mWaitElement;
@@ -423,9 +428,20 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	void DestroyElement(Element *inElement);
 
 	//////////
+	// We've entered an element; update things appropriately.
+	//
+	void EnterElement(Element *inElement, wxPoint &inPosition);
+
+	//////////
+	// We've left an element; update things appropriately.
+	//
+	void LeaveElement(Element *inElement, wxPoint &inPosition);
+
+	//////////
 	// Figure out which element we're inside, and figure out what cursor
 	// we should be displaying now.
 	//
+	void UpdateCurrentElementAndCursor(wxPoint &inPosition);
 	void UpdateCurrentElementAndCursor();
 
 public:
@@ -559,6 +575,16 @@ public:
     // Handle a mouse-down event.
     //
     void OnLeftDown(wxMouseEvent &inEvent);
+
+    //////////
+    // Handle a mouse double-click event.
+    //
+    void OnLeftDClick(wxMouseEvent &inEvent);
+
+    //////////
+    // Handle a mouse-up event.
+    //
+    void OnLeftUp(wxMouseEvent &inEvent);
 
     //////////
     // Handle a mouse-down event.
@@ -748,13 +774,23 @@ public:
 
 	//////////
 	// Find the lightweight Element containing the specified point, if
-	// any.  We normally call this function when we want to find a
-	// lightweight element to handle some kind of mouse event.
+	// any.
 	//
 	// [in] inPoint - The point to check.
 	// [out] return - A pointer to the Element, or NULL.
 	//
 	Element *FindLightWeightElement(const wxPoint &inPoint);
+
+	//////////
+	// Find the appropriate event dispatcher for the given point.
+	// We normally call this function when we want to find a
+	// lightweight element to handle some kind of mouse event.
+	//
+	// [in] inPoint - The point to check.
+	// [out] return - The event dispatcher which should handle
+	//                this event.
+	//
+	EventDispatcher *FindEventDispatcher(const wxPoint &inPoint);
 
 	//////////
 	// Delete a Element by name.
@@ -778,6 +814,31 @@ public:
 	// Delete all movie (audio & video) elements which are playing.
 	//
 	void DeleteMovieElements();
+
+	//////////
+	// "Grab" the mouse on behalf of the specified element.  This means
+	// that all mouse events will be sent to that element until further
+	// notice, regardless of where the event occurred.  Grabs are used to
+	// implement standard buttons without busy-looping during mouse down.
+	//
+	void MouseGrab(Element *inElement);
+
+	//////////
+	// Ungrab the mouse.  'inElement' should match the previous grab.
+	//
+	void MouseUngrab(Element *inElement);
+
+	//////////
+	// Is the mouse grabbed right now?
+	//
+	bool MouseIsGrabbed() { return mGrabbedElement ? true : false; }
+
+	//////////
+	// Should we send mouse events to the specified element?  This is
+	// normally true, unless a grab is in effect, in which case only
+	// the grabbed element should receive mouse events.
+	//
+	bool ShouldSendMouseEventsToElement(Element *inElement);
 
     DECLARE_EVENT_TABLE();
 };

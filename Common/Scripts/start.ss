@@ -328,7 +328,7 @@
 (define-card-template %card-template-2%
     [[param-c :type <string>  :label "Param C"]
      [param-d :type <integer> :label "Param D" :default 20]]
-    (:extends %card-template-1% :param-b 10)
+    (:template %card-template-1% :param-b 10)
   (test *ttvar1*)
   (test (not *ttvar2*))
   (test (instance-of? param-c <string>))
@@ -363,14 +363,18 @@
 
 (define *ttvar3* #f)
 
-(define-element-template %sample-element% [test-str] ()
-  (set! *ttvar3* #t)
-  (test (equal? test-str "test string")))
+;;(define-element-template %sample-element% [test-str] ()
+;;  (set! *ttvar3* #t)
+;;  (test (equal? test-str "test string")))
 
 (card template-tests-3 ()
-  (define e (create %sample-element% :name 'sample :test-str "test string"))
-  (test *ttvar3*)
-  (test (eq? (node-full-name e) 'template-tests-3/sample))
+  ;; XXX - CREATE doesn't work right without the full engine, because
+  ;; there's no way to register elements and get them properly delete.
+
+  ;;(define e (create %sample-element% :name 'sample :test-str "test string"))
+  ;;(test *ttvar3*)
+  ;;(test (eq? (node-full-name e) 'template-tests-3/sample))
+
   (jump template-tests-4))
 
 (card template-tests-4 ()

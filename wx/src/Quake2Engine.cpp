@@ -104,12 +104,12 @@ void Quake2Engine::HandleCommand()
 	else
 	{
 		TCallback *callback = found->second;
-		callback->BeginArguments();
+		std::auto_ptr<TCallbackArgumentList>
+			args(callback->MakeArgumentList());
 		int argc = CommandArgc();
 		for (int i = 1; i < argc; i++)
-			callback->AddStringArg(CommandArgv(i).mb_str());
-		callback->EndArguments();
-		callback->Run();
+			args->AddStringArg(CommandArgv(i).mb_str());
+		callback->Run(args.get());
 	}
 }
 

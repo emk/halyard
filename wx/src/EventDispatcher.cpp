@@ -1,5 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
+#include <wx/wx.h>
+
 #include "TCommon.h"
 #include "TInterpreter.h"
 #include "TVariable.h"
@@ -66,35 +68,80 @@ bool EventDispatcher::EventCleanup()
     return !gVariableManager.GetBoolean("_pass");
 }
 
-bool EventDispatcher::DoEventChar(char inChar, Modifiers inModifiers)
+bool EventDispatcher::DoEventLeftDown(wxMouseEvent &inEvent,
+									  bool inIsDoubleClick)
+{
+	if (!EventSetup())
+		return false;
+
+	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("mouse-down");
+	args->AddInt32Arg(inEvent.GetPosition().x);
+	args->AddInt32Arg(inEvent.GetPosition().y);
+	args->AddBoolArg(inIsDoubleClick);
+    mDispatcher->Run(args.get());
+
+	return EventCleanup();
+}
+
+bool EventDispatcher::DoSimpleMouseEvent(const char *inType,
+										 wxPoint inPosition)
+{
+	if (!EventSetup())
+		return false;
+
+	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg(inType);
+	args->AddInt32Arg(inPosition.x);
+	args->AddInt32Arg(inPosition.y);
+    mDispatcher->Run(args.get());
+
+	return EventCleanup();
+}
+
+bool EventDispatcher::DoEventLeftUp(wxMouseEvent &inEvent)
+{
+	return DoSimpleMouseEvent("mouse-up", inEvent.GetPosition());
+}
+
+bool EventDispatcher::DoEventMouseEnter(wxPoint inPosition)
+{
+	return DoSimpleMouseEvent("mouse-enter", inPosition);
+}
+
+bool EventDispatcher::DoEventMouseLeave(wxPoint inPosition)
+{
+	return DoSimpleMouseEvent("mouse-leave", inPosition);
+}
+
+bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
 {
     if (!EventSetup())
 		return false;
 
     // Turn our character into a string.
     char str[2];
-    str[0] = inChar;
+    str[0] = inEvent.GetKeyCode();
     str[1] = '\0';
 
     // Build an argument list and call our dispatcher.
-    mDispatcher->BeginArguments();
-    mDispatcher->AddSymbolArg("char");
-    mDispatcher->AddStringArg(str);
-    mDispatcher->BeginListArg();
-    if (inModifiers & Modifier_Control)
-        mDispatcher->AddSymbolArg("control");
-    if (inModifiers & Modifier_Alt)
-        mDispatcher->AddSymbolArg("alt");
-    if (inModifiers & Modifier_Shift)
-        mDispatcher->AddSymbolArg("shift");
-    mDispatcher->EndListArg();
-    mDispatcher->EndArguments();
-    mDispatcher->Run();
+	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("char");
+    args->AddStringArg(str);
+    args->BeginListArg();
+    if (inEvent.ControlDown())
+        args->AddSymbolArg("control");
+    if (inEvent.AltDown())
+        args->AddSymbolArg("alt");
+    if (inEvent.ShiftDown())
+        args->AddSymbolArg("shift");
+    args->EndListArg();
+    mDispatcher->Run(args.get());
 
 	return EventCleanup();
 }
 
-bool EventDispatcher::DoEventIdle()
+bool EventDispatcher::DoEventIdle(wxIdleEvent &inEvent)
 {
 	if (!mEnableExpensiveEvents)
 		return false;
@@ -102,10 +149,9 @@ bool EventDispatcher::DoEventIdle()
     if (!EventSetup())
 		return false;
 
-    mDispatcher->BeginArguments();
-    mDispatcher->AddSymbolArg("idle");
-    mDispatcher->EndArguments();
-    mDispatcher->Run();
+	std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("idle");
+    mDispatcher->Run(args.get());
 
 	return EventCleanup();	
 }

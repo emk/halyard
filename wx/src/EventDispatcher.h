@@ -18,6 +18,8 @@ class EventDispatcher : boost::noncopyable
 	bool EventSetup();
 	bool EventCleanup();
 
+	bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition);
+
 public:
 	EventDispatcher();
 	~EventDispatcher();
@@ -39,22 +41,35 @@ public:
 	//
 	void EnableExpensiveEvents(bool inEnable);
 
-	typedef unsigned long Modifiers;
-	enum /* Modifiers */ {
-		Modifier_Control = 1,
-		Modifier_Alt = 2,
-		Modifier_Shift = 4
-	};
+	//////////
+	// Dispatch a mouse-down event.
+	//
+	bool DoEventLeftDown(wxMouseEvent &inEvent, bool inIsDoubleClick);
+
+	///////////
+	// Dispatch a mouse-up event.
+	//
+	bool DoEventLeftUp(wxMouseEvent &inEvent);
+
+	//////////
+	// Dispatch a mouse-enter event.
+	//
+	bool DoEventMouseEnter(wxPoint inPosition);
+
+	//////////
+	// Dispatch a mouse-leave event.
+	//
+	bool DoEventMouseLeave(wxPoint inPosition);
 
 	//////////
 	// Dispatch a character event.  Return true if the event was handled.
 	//
-	bool DoEventChar(char inChar, Modifiers inModifiers);
+	bool DoEventChar(wxKeyEvent &inEvent);
 
 	//////////
 	// Dispatch an idle event.
 	//
-	bool DoEventIdle();
+	bool DoEventIdle(wxIdleEvent &inEvent);
 };
 
 #endif // EventDispatcher_H

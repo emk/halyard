@@ -865,7 +865,8 @@ BEGIN_EVENT_TABLE(Stage, wxWindow)
     EVT_CHAR(Stage::OnChar)
     EVT_TEXT_ENTER(FIVEL_TEXT_ENTRY, Stage::OnTextEnter)
 	EVT_LEFT_DOWN(Stage::OnLeftDown)
-	EVT_LEFT_DCLICK(Stage::OnLeftDown)
+	EVT_LEFT_DCLICK(Stage::OnLeftDClick)
+	EVT_LEFT_UP(Stage::OnLeftUp)
 	EVT_RIGHT_DOWN(Stage::OnRightDown)
 	EVT_RIGHT_DCLICK(Stage::OnRightDown)
 END_EVENT_TABLE()
@@ -874,9 +875,11 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
       mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
-      mOffscreenFadePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
+      mOffscreenFadePixmap(inStageSize.GetWidth(),
+						   inStageSize.GetHeight(), 24),
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
-	  mTextCtrl(NULL), mCurrentElement(NULL), mWaitElement(NULL),
+	  mTextCtrl(NULL), mCurrentElement(NULL), mGrabbedElement(NULL),
+	  mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mLastCopiedPos(0, 0)
 {
@@ -1023,12 +1026,26 @@ void Stage::NotifyElementsChanged()
 	}
 }
 
-void Stage::UpdateCurrentElementAndCursor()
+void Stage::EnterElement(Element *inElement, wxPoint &inPosition)
+{
+	inElement->GetEventDispatcher()->DoEventMouseEnter(inPosition);
+}
+
+void Stage::LeaveElement(Element *inElement, wxPoint &inPosition)
+{
+	inElement->GetEventDispatcher()->DoEventMouseLeave(inPosition);
+}
+
+void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 {
 	// Find which element we're in.
 	wxPoint pos = ScreenToClient(::wxGetMousePosition());
 	Element *obj = FindLightWeightElement(pos);
-	if (obj == NULL || obj != mCurrentElement)
+
+	// Change the cursor, if necessary.  I haven't refactored this
+	// into EnterElement/LeaveElement yet because of how we handle
+	// mIsDisplayingXy.  Feel free to improve.
+	if (!mGrabbedElement && (obj == NULL || obj != mCurrentElement))
 	{
 		if (mIsDisplayingXy)
 			SetCursor(*wxCROSS_CURSOR);
@@ -1039,8 +1056,22 @@ void Stage::UpdateCurrentElementAndCursor()
 			else
 				SetCursor(wxNullCursor);
 		}
-		mCurrentElement = obj;
 	}
+
+	// Update the current element.
+	if (obj != mCurrentElement)
+	{
+		if (mCurrentElement && ShouldSendMouseEventsToElement(mCurrentElement))
+			LeaveElement(mCurrentElement, inPosition);
+		mCurrentElement = obj;
+		if (obj && ShouldSendMouseEventsToElement(obj))
+			EnterElement(obj, inPosition);
+	}
+}
+
+void Stage::UpdateCurrentElementAndCursor()
+{
+	UpdateCurrentElementAndCursor(ScreenToClient(::wxGetMousePosition()));
 }
 
 void Stage::InterpreterSleep()
@@ -1083,7 +1114,7 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 		::wxGetLocalTimeMillis() > mLastIdleEvent + IDLE_INTERVAL)
 	{
 		mLastIdleEvent = ::wxGetLocalTimeMillis();
-		GetEventDispatcher()->DoEventIdle();
+		GetEventDispatcher()->DoEventIdle(inEvent);
 	}
 }
 
@@ -1201,9 +1232,8 @@ void Stage::DrawElementBorder(wxDC &inDC, const wxRect &inElementRect)
 void Stage::OnChar(wxKeyEvent &inEvent)
 {
 	// NOTE - We handle this event here, but the stage isn't always
-	// focused.  Is this really a good idea?
-	// TODO - Most of this code should probably be refactored into
-	// EventDispatcher at some point.
+	// focused.  Is this really a good idea?  Douglas tells me that
+	// Director works like this, so at least there's precedent.
 	if (!ShouldSendEvents())
 		inEvent.Skip();
 	else if (inEvent.GetKeyCode() == WXK_SPACE &&
@@ -1212,14 +1242,7 @@ void Stage::OnChar(wxKeyEvent &inEvent)
 	else
 	{
 		EventDispatcher *dispatcher = GetEventDispatcher();
-		EventDispatcher::Modifiers mods = 0;
-		if (inEvent.ControlDown())
-			mods |= EventDispatcher::Modifier_Control;
-		if (inEvent.AltDown())
-			mods |= EventDispatcher::Modifier_Alt;
-		if (inEvent.ShiftDown())
-			mods |= EventDispatcher::Modifier_Shift;
-		if (!dispatcher->DoEventChar(inEvent.GetKeyCode(), mods))
+		if (!dispatcher->DoEventChar(inEvent))
 			inEvent.Skip();
 	}
 }
@@ -1246,12 +1269,24 @@ void Stage::OnTextEnter(wxCommandEvent &inEvent)
 
 void Stage::OnLeftDown(wxMouseEvent &inEvent)
 {
-	Element *obj = FindLightWeightElement(inEvent.GetPosition());
-	if (obj)
-		obj->Click();
-	else
-		// Restore focus to the stage.
-	    SetFocus();
+	// Restore focus to the stage.
+	SetFocus();
+
+	// Dispatch the event.
+	EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
+	disp->DoEventLeftDown(inEvent, false);
+}
+
+void Stage::OnLeftDClick(wxMouseEvent &inEvent)
+{
+	EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
+	disp->DoEventLeftDown(inEvent, true);	
+}
+
+void Stage::OnLeftUp(wxMouseEvent &inEvent)
+{
+	EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
+	disp->DoEventLeftUp(inEvent);
 }
 
 void Stage::OnRightDown(wxMouseEvent &inEvent)
@@ -1555,9 +1590,24 @@ Element *Stage::FindLightWeightElement(const wxPoint &inPoint)
 	return result;
 }
 
+EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint)
+{
+	// If a grab is in effect, return the element immediately.
+	if (mGrabbedElement)
+		return mGrabbedElement->GetEventDispatcher();
+
+	// Otherwise, look things up normally.
+	Element *elem = FindLightWeightElement(inPoint);
+	return elem ? elem->GetEventDispatcher() : GetEventDispatcher();
+}
+
 void Stage::DestroyElement(Element *inElement)
 {
+	wxString name = inElement->GetName();
+
 	// Clean up any dangling references to this object.
+	if (inElement == mGrabbedElement)
+		MouseUngrab(mGrabbedElement);
 	if (inElement == mCurrentElement)
 		mCurrentElement = NULL;
 	if (inElement == mWaitElement)
@@ -1567,6 +1617,10 @@ void Stage::DestroyElement(Element *inElement)
 	// TODO - Implemented delayed destruction so element callbacks can
 	// destroy the element they're attached to.
 	delete inElement;
+
+	// Notify Scheme that the element is dead.
+	if (TInterpreter::HaveInstance())
+		TInterpreter::GetInstance()->ElementDeleted(name.mb_str());
 }
 
 bool Stage::DeleteElementByName(const wxString &inName)
@@ -1625,4 +1679,49 @@ void Stage::DeleteMovieElements()
 		DestroyElement(*i);
 	}
 	mElements.erase(first, mElements.end());
+}
+
+void Stage::MouseGrab(Element *inElement)
+{
+	ASSERT(inElement->IsLightWeight());
+	if (mGrabbedElement)
+	{
+		gLog.Error("Grabbing %s while %s is already grabbed",
+				   inElement->GetName().mb_str(),
+				   mGrabbedElement->GetName().mb_str());
+		MouseUngrab(mGrabbedElement);
+	}
+	mGrabbedElement = inElement;
+	CaptureMouse();
+}
+
+void Stage::MouseUngrab(Element *inElement)
+{
+	ASSERT(inElement->IsLightWeight());
+	if (!mGrabbedElement)
+	{
+		gLog.Error("Ungrabbing %s when it isn't grabbed",
+				   inElement->GetName().mb_str());
+		return;
+	}
+	if (inElement != mGrabbedElement)
+	{
+		gLog.Error("Ungrabbing %s when %s is grabbed",
+				   inElement->GetName().mb_str(),
+				   mGrabbedElement->GetName().mb_str());
+	}
+
+	// Force updating of the current element, cursor, etc.
+	if (mCurrentElement != mGrabbedElement)
+		mCurrentElement = NULL;
+
+	// Release our grab.
+	mGrabbedElement = NULL;
+	ReleaseMouse();
+	UpdateCurrentElementAndCursor();
+}
+
+bool Stage::ShouldSendMouseEventsToElement(Element *inElement)
+{
+	return !mGrabbedElement || (inElement == mGrabbedElement);
 }

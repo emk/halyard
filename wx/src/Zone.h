@@ -8,27 +8,34 @@
 
 class Stage;
 
+
 //////////
 // A zone is basically a "virtual widget" on our stage.  It doesn't
 // have an associated wxWindow object; all of its events are passed directly
 // to it by the Stage itself.
 //
+// TODO - Currently, Zones are the only Elements which can have event
+// handlers in Scheme.  This is because I haven't figured out how to
+// combine the wxWindows event-handling system with the Scheme
+// event-handling system we're using.
+//
 class Zone : public Element
 {
 	wxRect mBounds;
-	FIVEL_NS TCallback *mAction;
+	EventDispatcher *mDispatcher;
 	wxCursor mCursor;
 	
 public:
 	Zone(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-		 FIVEL_NS TCallback *inAction, wxCursor &inCursor);
+		 FIVEL_NS TCallback *inDispatch, wxCursor &inCursor);
 	~Zone();
 
 	virtual bool IsLightWeight() { return true; }
 
 	virtual wxRect GetRect() { return mBounds; }
 	virtual bool IsPointInElement(const wxPoint &inPoint);
-	virtual void Click();
+
+	virtual EventDispatcher *GetEventDispatcher() { return mDispatcher; }
 
 	virtual wxCursor GetCursor() { return mCursor; }
 	virtual void SetCursor(wxCursor &inCursor) { mCursor = inCursor; }

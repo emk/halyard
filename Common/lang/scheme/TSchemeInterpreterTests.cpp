@@ -71,15 +71,14 @@ DEFINE_5L_PRIMITIVE(TestCallbackArgs)
 {
 	TCallback *callback;
 	inArgs >> callback;
-	callback->BeginArguments();
-	callback->AddStringArg("hello");
-	callback->AddSymbolArg("world");
-	callback->BeginListArg();
-	callback->AddStringArg("foo");
-	callback->AddSymbolArg("bar");
-	callback->EndListArg();
-	callback->EndArguments();
-	callback->Run();
+	std::auto_ptr<TCallbackArgumentList> args (callback->MakeArgumentList());
+	args->AddStringArg("hello");
+	args->AddSymbolArg("world");
+	args->BeginListArg();
+	args->AddStringArg("foo");
+	args->AddSymbolArg("bar");
+	args->EndListArg();
+	callback->Run(args.get());
 	delete callback;
 }
 

@@ -159,6 +159,15 @@ public:
 	virtual bool IsValidCard(const char *inCardName) = 0;
 
 	//////////
+	// Notify the interpreter that the specified element has been deleted.
+	// This allows the interpreter to get data structures back in sync
+	// with the GUI.
+	//
+	// [in] inElementName - The name of the element deleted.
+	//
+	virtual void ElementDeleted(const char *inElementName) = 0;
+
+	//////////
 	// Evaluate an expression, returning any errors which occur.
 	//
 	// [in] inExpression - The expression to evaluate.
@@ -185,6 +194,37 @@ private:
 };
 
 //////////
+// A list of arguments which can be passed to a callback.
+//
+// TODO - This should probably be refactored to use a common abstract data
+// representation along with TArgumentList and TVariableManager.
+//
+class TCallbackArgumentList : boost::noncopyable
+{
+public:
+	TCallbackArgumentList() {}
+	virtual ~TCallbackArgumentList() {}
+
+	// Append various types of simple arguments.
+	virtual void AddStringArg(const std::string &inArg) = 0;
+	virtual void AddSymbolArg(const std::string &inArg) = 0;
+	virtual void AddInt32Arg(int inArg) = 0;
+	virtual void AddBoolArg(bool inArg) = 0;
+
+	//////////
+	// Until EndListArg() is called, assume all further arguments
+	// should be grouped into a single list argument.  Does not nest.
+	//
+	virtual void BeginListArg() = 0;
+
+	//////////
+	// Assume all further arguments should be added individually.
+	//
+	virtual void EndListArg() = 0;
+};
+
+
+//////////
 // TCallback represents a "callback" function in the interpreter.  These
 // functions may be called repeatedly.  Destroying the TInterpreter
 // object invalidates all TCallbacks; calling ReDoScript may or may
@@ -197,34 +237,18 @@ public:
 	virtual ~TCallback() {}
 
 	//////////
-	// Start building an argument list for the callback.
+	// A factory method which creates an appropriate (empty) argument
+	// list for use with this callback.
 	//
-	virtual void BeginArguments() = 0;
-
-	// Append various types of simple arguments.
-	virtual void AddStringArg(const std::string &inArg) = 0;
-	virtual void AddSymbolArg(const std::string &inArg) = 0;
+	virtual TCallbackArgumentList *MakeArgumentList() = 0;
 
 	//////////
-	// Until EndListArg() is called, assume all further arguments
-	// should be grouped into a single list argument.  Does not nest.
+	// Execute the callback.
 	//
-	virtual void BeginListArg() = 0;
-
-	//////////
-	// Assume all further arguments should be added individually.
+	// [in] inArguments - The argument list to pass to the function,
+	//                    or NULL, for no arguments.
 	//
-	virtual void EndListArg() = 0;
-
-	//////////
-	// End building an argument list for the callback.
-	//
-	virtual void EndArguments() = 0;
-
-	//////////
-	// Execute the callback without any arguments.
-	//
-	virtual void Run() = 0;
+	virtual void Run(TCallbackArgumentList *inArguments = NULL) = 0;
 
 	//////////
 	// Return a form of the callback suitable for printing.  This might not

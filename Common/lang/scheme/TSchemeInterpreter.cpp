@@ -467,6 +467,13 @@ bool TSchemeInterpreter::IsValidCard(const char *inCardName)
 	return SCHEME_FALSEP(o) ? false : true;
 }
 
+void TSchemeInterpreter::ElementDeleted(const char *inElementName)
+{
+	Scheme_Object *args[1];
+	args[0] = scheme_intern_symbol(inElementName);
+	(void) CallScheme("%kernel-element-deleted", 1, args);
+}
+
 bool TSchemeInterpreter::Eval(const std::string &inExpression,
 							  std::string &outResultText)
 {
@@ -483,12 +490,18 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 
 
 //=========================================================================
-//	TSchemeCallback Methods
+//	TSchemeCallbackArgumentList Methods
 //=========================================================================
 
-void TSchemeCallback::AddArg(Scheme_Object *inArg)
+TSchemeCallbackArgumentList::TSchemeCallbackArgumentList()
+	: mIsFrozen(false), mArguments(scheme_null), mListArgument(NULL)
 {
-	ASSERT(mArguments != NULL);
+	// All done.
+}
+
+void TSchemeCallbackArgumentList::AddArg(Scheme_Object *inArg)
+{
+	ASSERT(!mIsFrozen);
 
 	// Push the argument onto the appropriate list.
 	if (mListArgument)
@@ -497,33 +510,36 @@ void TSchemeCallback::AddArg(Scheme_Object *inArg)
 		mArguments = scheme_make_pair(inArg, mArguments);		
 }
 
-void TSchemeCallback::BeginArguments()
-{
-	ASSERT(mArguments == NULL);
-	ASSERT(mListArgument == NULL);
-	mArguments = scheme_null;
-}
-
-void TSchemeCallback::AddStringArg(const std::string &inArg)
+void TSchemeCallbackArgumentList::AddStringArg(const std::string &inArg)
 {
 	AddArg(scheme_make_string(inArg.c_str()));
 }
 
-void TSchemeCallback::AddSymbolArg(const std::string &inArg)
+void TSchemeCallbackArgumentList::AddSymbolArg(const std::string &inArg)
 {
 	AddArg(scheme_intern_symbol(inArg.c_str()));
 }
 
-void TSchemeCallback::BeginListArg()
+void TSchemeCallbackArgumentList::AddInt32Arg(int inArg)
 {
-	ASSERT(mArguments != NULL);
+	AddArg(scheme_make_integer_value(inArg));
+}
+
+void TSchemeCallbackArgumentList::AddBoolArg(bool inArg)
+{
+	AddArg(inArg ? scheme_true : scheme_false);
+}
+
+void TSchemeCallbackArgumentList::BeginListArg()
+{
+	ASSERT(!mIsFrozen);
 	ASSERT(mListArgument == NULL);
 	mListArgument = scheme_null;
 }
 
-void TSchemeCallback::EndListArg()
+void TSchemeCallbackArgumentList::EndListArg()
 {
-	ASSERT(mArguments != NULL);
+	ASSERT(!mIsFrozen);
 	ASSERT(mListArgument != NULL);
 
 	// Reverse the list argument.
@@ -533,30 +549,46 @@ void TSchemeCallback::EndListArg()
 	AddArg(TSchemeInterpreter::CallScheme("%kernel-reverse!", 1, args));
 }
 
-void TSchemeCallback::EndArguments()
+Scheme_Object *TSchemeCallbackArgumentList::GetArgs()
 {
-	ASSERT(mArguments != NULL);
 	ASSERT(mListArgument == NULL);
-	
-	// Reverse the argument list.
-	Scheme_Object *args[1];
-	args[0] = mArguments;
-	mArguments = TSchemeInterpreter::CallScheme("%kernel-reverse!", 1, args);
+
+	// If we haven't frozen the list yet, freeze it and reverse it.
+	if (!mIsFrozen)
+	{
+		Scheme_Object *args[1];
+		args[0] = mArguments;
+		mArguments =
+			TSchemeInterpreter::CallScheme("%kernel-reverse!", 1, args);
+		mIsFrozen = true;
+	}
+
+	return mArguments;	
 }
 
-void TSchemeCallback::Run()
-{
-	ASSERT(mListArgument == NULL);
 
+//=========================================================================
+//	TSchemeCallback Methods
+//=========================================================================
+
+TCallbackArgumentList *TSchemeCallback::MakeArgumentList()
+{
+	return new TSchemeCallbackArgumentList();
+}
+
+void TSchemeCallback::Run(TCallbackArgumentList *inArguments)
+{
 	// Make sure we have a Scheme interpreter and that it isn't stopped.
 	ASSERT(TSchemeInterpreter::HaveInstance());
 	ASSERT(!TSchemeInterpreter::GetInstance()->IsStopped());
 	
+	TSchemeCallbackArgumentList *callback_args =
+		dynamic_cast<TSchemeCallbackArgumentList*>(inArguments);
+
 	Scheme_Object *args[2];
 	args[0] = mCallback;
-	args[1] = mArguments ? mArguments : scheme_null;
+	args[1] = callback_args ? callback_args->GetArgs() : scheme_null;
 	TSchemeInterpreter::CallScheme("%kernel-run-callback", 2, args);
-	mArguments = NULL;
 }
 
 

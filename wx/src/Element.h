@@ -9,6 +9,7 @@
 #include "TInterpreter.h"
 
 class Stage;
+class EventDispatcher;
 
 
 //////////
@@ -82,11 +83,12 @@ public:
 	virtual bool IsPointInElement(const wxPoint &inPoint) { return false; }
 
 	//////////
-	// Pass a click event to the element.
+	// Get the event dispatcher for the current element.
 	// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
 	//
-	virtual void Click() { }
-
+	virtual EventDispatcher *GetEventDispatcher()
+		{ ASSERT(false); return NULL; }
+	
 	//////////
 	// Get an appropriate cursor for this object.
 	//

@@ -48,7 +48,10 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
+	REGISTER_5L_PRIMITIVE(MouseGrab);
+	REGISTER_5L_PRIMITIVE(MouseIsGrabbed);
 	REGISTER_5L_PRIMITIVE(MousePosition);
+	REGISTER_5L_PRIMITIVE(MouseUngrab);
 	REGISTER_5L_PRIMITIVE(Movie);
 	REGISTER_5L_PRIMITIVE(MoviePause);
 	REGISTER_5L_PRIMITIVE(MovieResume);
@@ -359,10 +362,32 @@ DEFINE_5L_PRIMITIVE(Nap)
     TInterpreter::GetInstance()->Nap(tenths);
 }
 
+DEFINE_5L_PRIMITIVE(MouseGrab)
+{
+	std::string name;
+	inArgs >> SymbolName(name);
+	FIND_ELEMENT(Zone, zone, name.c_str());
+	wxGetApp().GetStage()->MouseGrab(zone);
+}
+
+DEFINE_5L_PRIMITIVE(MouseIsGrabbed)
+{
+	::SetPrimitiveResult(wxGetApp().GetStage()->MouseIsGrabbed());
+}
+
 DEFINE_5L_PRIMITIVE(MousePosition)
 {
+	// XXX - Stop returning out-of-bounds co-ordinates.
 	wxPoint p = wxGetApp().GetStage()->ScreenToClient(::wxGetMousePosition());
 	::SetPrimitiveResult(TPoint(p.x, p.y));
+}
+
+DEFINE_5L_PRIMITIVE(MouseUngrab)
+{
+	std::string name;
+	inArgs >> SymbolName(name);
+	FIND_ELEMENT(Zone, zone, name.c_str());
+	wxGetApp().GetStage()->MouseUngrab(zone);
 }
 
 DEFINE_5L_PRIMITIVE(Movie)
@@ -533,9 +558,9 @@ DEFINE_5L_PRIMITIVE(Zone)
 {
 	std::string name, cursor;
 	TRect bounds;
-	TCallback *action;
+	TCallback *dispatcher;
 	
-	inArgs >> SymbolName(name) >> bounds >> action >> cursor;
-	new Zone(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds), action,
+	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor;
+	new Zone(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds), dispatcher,
 			 wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor));
 }

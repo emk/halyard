@@ -76,6 +76,7 @@ protected:
 class TSchemeInterpreter : public TInterpreter
 {
 	friend class TSchemeInterpreterManager;
+	friend class TSchemeCallbackArgumentList;
 	friend class TSchemeCallback;
 	friend class TSchemeArgumentList;
 
@@ -120,22 +121,22 @@ public:
 	virtual std::string CurCardName(void);
 	virtual std::string PrevCardName(void);
 	virtual bool IsValidCard(const char *inCardName);
+	virtual void ElementDeleted(const char *inElementName);
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
 };
 
 //////////
-// A C++ wrapper for a zero-argument Scheme callback function (a "thunk").
+// A C++ wrapper which builds lists of arguments to pass to callbacks.
 //
-class TSchemeCallback : public TCallback
+class TSchemeCallbackArgumentList : public TCallbackArgumentList
 {
 	//////////
-	// Our callback object.  Note that we need to use a TSchemePtr to
-	// prevent mCallback from being garbage-collected, because we're
-	// a heap-based object.
+	// The first time this argument list is passed to a callback,
+	// we freeze the argument list and REVERSE! it destructively.
 	//
-	TSchemePtr<Scheme_Object> mCallback;
-
+	bool mIsFrozen;
+	
 	//////////
 	// The list of arguments we'll pass to the next invocation of Run(),
 	// stored in reverse order.
@@ -154,16 +155,37 @@ class TSchemeCallback : public TCallback
 	void AddArg(Scheme_Object *inArg);
 
 public:
+	TSchemeCallbackArgumentList();
+
+	// For documentation of these virtual methods, see TInterpreter.h.
+	virtual void AddStringArg(const std::string &inArg);
+	virtual void AddSymbolArg(const std::string &inArg);
+	virtual void AddInt32Arg(int inArg);
+	virtual void AddBoolArg(bool inArg);
+	virtual void BeginListArg();
+	virtual void EndListArg();
+
+	Scheme_Object *GetArgs();
+};
+
+//////////
+// A C++ wrapper for a zero-argument Scheme callback function (a "thunk").
+//
+class TSchemeCallback : public TCallback
+{
+	//////////
+	// Our callback object.  Note that we need to use a TSchemePtr to
+	// prevent mCallback from being garbage-collected, because we're
+	// a heap-based object.
+	//
+	TSchemePtr<Scheme_Object> mCallback;
+
+public:
 	TSchemeCallback(Scheme_Object *inCallback) : mCallback(inCallback) {}
 
 	// For documentation of these virtual methods, see TInterpreter.h.
-	virtual void BeginArguments();
-	virtual void AddStringArg(const std::string &inArg);
-	virtual void AddSymbolArg(const std::string &inArg);
-	virtual void BeginListArg();
-	virtual void EndListArg();
-	virtual void EndArguments();
-	virtual void Run();
+	virtual TCallbackArgumentList *MakeArgumentList();
+	virtual void Run(TCallbackArgumentList *inArguments = NULL);
 	virtual std::string PrintableRepresentation() { return "#<thunk>"; }
 };
 

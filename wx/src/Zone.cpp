@@ -4,30 +4,27 @@
 
 #include "TCommon.h"
 #include "Zone.h"
+#include "EventDispatcher.h"
 
 USING_NAMESPACE_FIVEL
 
 Zone::Zone(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-		   FIVEL_NS TCallback *inAction, wxCursor &inCursor)
-    : Element(inStage, inName), mBounds(inBounds), mAction(inAction),
-	  mCursor(inCursor)
+		   FIVEL_NS TCallback *inDispatch, wxCursor &inCursor)
+    : Element(inStage, inName), mBounds(inBounds), mCursor(inCursor)
 {
-    ASSERT(mAction);
+    ASSERT(inDispatch);
+	mDispatcher = new EventDispatcher();
+	mDispatcher->SetDispatcher(inDispatch);
 }
 
 Zone::~Zone()
 {
-	// XXX - This callback may still be active!
-    delete mAction;
+	// XXX - The callback in this dispatcher may still be active!
+    delete mDispatcher;
 }
 
 bool Zone::IsPointInElement(const wxPoint &inPoint)
 {
     return mBounds.Inside(inPoint);
-}
-
-void Zone::Click()
-{
-    mAction->Run();
 }
 
