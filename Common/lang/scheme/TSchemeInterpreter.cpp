@@ -95,9 +95,9 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	scheme_finish_primitive_module(engine_mod);
 }
 
-ScriptEditorDB *TSchemeInterpreterManager::GetScriptEditorDB() {
+ScriptEditorDB *TSchemeInterpreterManager::GetScriptEditorDBInternal() {
     const char *db_path = "definitions.sqlite3";
-    if (!mScriptEditorDB) {
+    if (!mScriptEditorDB && TInterpreter::HaveInstance()) {
         mScriptEditorDB =
             shared_ptr<ScriptEditorDB>(new TSchemeScriptEditorDB(db_path));
     }

@@ -440,7 +440,16 @@ public:
     //////////
     /// Return the ScriptEditorDB associated with this manager's scripts.
     ///
-    virtual ScriptEditorDB *GetScriptEditorDB() = 0;
+    /// \return A pointer or NULL.
+    ///
+    virtual ScriptEditorDB *GetScriptEditorDBInternal() = 0;
+
+    //////////
+    /// Get the global ScriptEditorDB, if one is available.
+    ///
+    /// \return A pointer or NULL.
+    ///
+    static ScriptEditorDB *GetScriptEditorDB();
 
 	//////////
 	/// Do we have a single, global instance of this class?

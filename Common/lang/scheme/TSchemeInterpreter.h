@@ -48,7 +48,7 @@ class TSchemeInterpreterManager : public TInterpreterManager
 public:
 	TSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
 
-    virtual ScriptEditorDB *GetScriptEditorDB();
+    virtual ScriptEditorDB *GetScriptEditorDBInternal();
 	virtual void BeginScript();
 
 private:

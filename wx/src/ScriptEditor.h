@@ -40,6 +40,7 @@ public:
     static void EditScripts();
     static bool SaveAllForReloadScript();
     static bool ProcessEventIfExists(wxEvent &event);
+    static void OpenDocument(const wxString &path, int line = 1);
 
     ScriptEditor();
     ~ScriptEditor();
@@ -51,7 +52,7 @@ public:
     void ChangeTextSize(int delta);
 
 private:
-    void OpenDocument(const wxString &path);
+    void OpenDocumentInternal(const wxString &path, int line = 1);
 
     void OnActivate(wxActivateEvent &event);
     void OnClose(wxCloseEvent &event);

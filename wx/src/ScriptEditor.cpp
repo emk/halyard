@@ -24,6 +24,7 @@
 #include <wx/file.h>
 #include <wx/stc/stc.h>
 #include <wx/config.h>
+#include "ScriptEditorDB.h"
 #include "AppGlobals.h"
 #include "ScriptEditor.h"
 #include "DocNotebook.h"
@@ -152,6 +153,7 @@ class ScriptTextCtrl : public wxStyledTextCtrl, public TReloadNotified {
     
 public:    
     ScriptTextCtrl(wxWindow *parent, wxWindowID id = -1, int font_size = 10);
+    void GotoLineEnsureVisible(int line);
 
 protected:
     void SetUpTextStyles(int size);
@@ -214,6 +216,7 @@ private:
     void OnReplaceAll(wxCommandEvent &event);
     void OnUpdateUiReplace(wxUpdateUIEvent &event);
     void OnGotoLine(wxCommandEvent &event);
+    void OnGotoDefinition(wxCommandEvent &event);
 
     void EnsureSelectionVisible();
     void SetSelectionAndEnsureVisible(int start, int end);
@@ -228,6 +231,8 @@ private:
     void DoReplace(bool interactive = true);
     void DoReplaceAll();
 
+    wxString GetWordAtCursor(int *outPos = NULL,
+                             int *outBegin = NULL, int *outEnd = NULL);
     void AutoCompleteIdentifier();
     void IndentSelection();
     void IndentLine(int inLine);
@@ -295,6 +300,8 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
     EVT_UPDATE_UI(wxID_REPLACE_ALL, ScriptTextCtrl::OnUpdateUiFindAgain)
     EVT_MENU(FIVEL_GOTO_LINE, ScriptTextCtrl::OnGotoLine)
     EVT_UPDATE_UI(FIVEL_GOTO_LINE, ScriptTextCtrl::OnUpdateUiAlwaysOn)
+    EVT_MENU(FIVEL_GOTO_DEFINITION, ScriptTextCtrl::OnGotoDefinition)
+    EVT_UPDATE_UI(FIVEL_GOTO_DEFINITION, ScriptTextCtrl::OnUpdateUiAlwaysOn)
 END_EVENT_TABLE()
 
 ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id, int font_size)
@@ -311,7 +318,7 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id, int font_size)
 
     // Set up parameters affecting EnsureVisibleEnforcePolicy.  This
     // makes sure search results, etc., are on screen.
-    SetVisiblePolicy(wxSTC_CARET_SLOP, 10);
+    SetVisiblePolicy(wxSTC_VISIBLE_SLOP, 10);
 
     // Let Scintilla know which modification events we want.
     SetModEventMask(GetModEventMask()
@@ -518,6 +525,11 @@ void ScriptTextCtrl::UpdateIdentifierInformation() {
 
     // Recolourize the document with new keywords.
     Colourise(0, GetTextLength());
+
+    // Try to update our definition database.
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    if (db)
+        db->UpdateDatabase();
 }
 
 std::string ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
@@ -827,13 +839,40 @@ void ScriptTextCtrl::OnGotoLine(wxCommandEvent &event) {
         if (lineStr.ToLong(&line)
             && 0 < line && line <= GetLineCount())
         {
-            GotoLine(line-1);
-            EnsureVisibleEnforcePolicy(line-1);
+            GotoLineEnsureVisible(line-1);
         } else {
             ::wxBell();
             SetStatusText("No such line.");
         }
     }
+}
+
+void ScriptTextCtrl::OnGotoDefinition(wxCommandEvent &event) {
+    // Get the word underneath the cursor.
+    wxString identifier = GetWordAtCursor();
+    if (identifier == "") {
+        SetStatusText("No identifier under cursor.");
+        return;
+    }
+
+    // Get our ScriptEditorDB.
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    if (!db) {
+        SetStatusText("No definition information available.");
+        return;
+    }
+
+    // Look up the word in the database.
+    ScriptEditorDB::Definitions defs = 
+        db->FindDefinitions(identifier.mb_str());
+    if (defs.empty()) {
+        SetStatusText("Can't find definition.");
+        return;
+    }
+
+    // Jump to the appropriate file and line.
+    ScriptEditor::OpenDocument(defs[0].GetNativePath().c_str(),
+                               defs[0].line_number);
 }
 
 void ScriptTextCtrl::EnsureSelectionVisible() {
@@ -1050,11 +1089,23 @@ void ScriptTextCtrl::DoReplaceAll() {
     SetStatusText(str);
 }
 
-void ScriptTextCtrl::AutoCompleteIdentifier() {
+void ScriptTextCtrl::GotoLineEnsureVisible(int line) {
+    GotoLine(line);
+    // This sort-of-approximately-maybe puts the line we're searching
+    // for comfortably onto the screen.
+    //
+    /// \bug This does silly things if the window is shorter than 10 lines.
+    SetVisiblePolicy(wxSTC_VISIBLE_STRICT|wxSTC_VISIBLE_SLOP, 10);
+    EnsureVisibleEnforcePolicy(line);
+    SetVisiblePolicy(wxSTC_VISIBLE_SLOP, 10);
+}
+
+wxString ScriptTextCtrl::GetWordAtCursor(int *outPos,
+                                         int *outBegin, int *outEnd)
+{
     // Parse the current name, backwards and forwards.
     int pos;
     wxString line = GetCurLine(&pos);
-    ASSERT(pos >= 1 && IsIdentifierChar(line[pos-1]));
     int word_begin = pos;
     while (word_begin > 0 && IsIdentifierChar(line[word_begin-1]))
         word_begin--;
@@ -1062,14 +1113,27 @@ void ScriptTextCtrl::AutoCompleteIdentifier() {
     while (static_cast<size_t>(word_end) < line.length() &&
 		   IsIdentifierChar(line[word_end]))
         word_end++;
-    if (pos < word_end)
+    if (word_begin == word_end ||
+        !IsIdentifierStartChar(line[word_begin]))
+        return "";
+    if (outPos)
+        *outPos = pos;
+    if (outBegin)
+        *outBegin = word_begin;
+    if (outEnd)
+        *outEnd = word_end;
+    return line.Mid(word_begin, word_end - word_begin);
+}
+
+void ScriptTextCtrl::AutoCompleteIdentifier() {
+    int pos, word_begin, word_end;
+    wxString prefix(GetWordAtCursor(&pos, &word_begin, &word_end));
+    if (prefix == "" || pos < word_end)
         return;
-    if (!IsIdentifierStartChar(line[word_begin]))
-        return;
+    ASSERT(pos >= 1);
     
     // If we're adding characters at the end of a name, find any known
     // commands which begin with the name.
-    wxString prefix = line.Mid(word_begin, word_end - word_begin);
     IdentifierList candidates = GetCompletions(prefix.mb_str());
     if (candidates.size() < 1 || candidates.size() > 50) {
         AutoCompCancel();
@@ -1603,6 +1667,11 @@ bool ScriptEditor::ProcessEventIfExists(wxEvent &event) {
         return sFrame->ProcessEvent(event);
 }
 
+void ScriptEditor::OpenDocument(const wxString &path, int line) {
+    if (sFrame)
+        sFrame->OpenDocumentInternal(path, line);
+}
+
 ScriptEditor::ScriptEditor()
     : wxFrame(wxGetApp().GetStageFrame(), -1,
               "Script Editor - " + wxGetApp().GetAppName(),
@@ -1701,6 +1770,8 @@ ScriptEditor::ScriptEditor()
     search_menu->AppendSeparator();
     search_menu->Append(FIVEL_GOTO_LINE, "Go to &Line...\tCtrl+J",
                         "Go to a specific line number.");
+    search_menu->Append(FIVEL_GOTO_DEFINITION, "Go to &Definition\tAlt+.",
+                        "Look up the identifier under the cursor.");
 
     // Set up our Window menu.
     wxMenu *window_menu = new wxMenu();
@@ -1766,7 +1837,7 @@ ScriptEditor::ScriptEditor()
         FileSystem::Path start_script =
             FileSystem::GetScriptsDirectory().AddComponent("start.ss");
         wxString filename = start_script.ToNativePathString().c_str();
-        OpenDocument(filename);
+        OpenDocumentInternal(filename);
     }
 }
 
@@ -1803,19 +1874,29 @@ void ScriptEditor::ChangeTextSize(int delta) {
     SetTextSize(GetTextSize() + delta);
 }
 
-void ScriptEditor::OpenDocument(const wxString &path) {
+void ScriptEditor::OpenDocumentInternal(const wxString &path, int line) {
     // If the document is already open, show it.
     for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
         if (mNotebook->GetDocument(i)->GetDocumentPath() == path) {
             mNotebook->SelectDocument(i);
+            ScriptDoc *doc =
+                dynamic_cast<ScriptDoc*>(mNotebook->GetDocument(i));
+            ASSERT(doc);
+            doc->GotoLineEnsureVisible(line-1);
             return;
         }
     }
     
-    mNotebook->AddDocument(new ScriptDoc(mNotebook, -1, GetTextSize(), path));
+    ScriptDoc *doc = new ScriptDoc(mNotebook, -1, GetTextSize(), path);
+    mNotebook->AddDocument(doc);
+    doc->GotoLineEnsureVisible(line-1);
 }
 
 void ScriptEditor::OnActivate(wxActivateEvent &event) {
+    // Don't do anything if we're deactivating.
+    if (!event.GetActive())
+        return;
+
     // Shield our activate event processing from being called recursively,
     // because some of our processing may involve popping up dialogs which
     // temporarily activate and deactivate us.
@@ -1862,7 +1943,7 @@ void ScriptEditor::OnOpen(wxCommandEvent &event) {
         wxArrayString paths;
         dlg.GetPaths(paths);
         for (size_t i = 0; i < paths.GetCount(); i++)
-            OpenDocument(paths[i]);
+            OpenDocumentInternal(paths[i]);
     }
 }
 

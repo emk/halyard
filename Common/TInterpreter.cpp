@@ -214,6 +214,13 @@ void TInterpreterManager::RequestRetryLoadScript()
 	mLoadScriptFailed = false;
 }
 
+ScriptEditorDB *TInterpreterManager::GetScriptEditorDB() {
+    if (HaveInstance())
+        return GetInstance()->GetScriptEditorDBInternal();
+    else
+        return NULL;
+}
+
 void TInterpreterManager::AddReloadNotified(TReloadNotified *obj) {
     ASSERT(std::find(sReloadNotifiedObjects.begin(),
                      sReloadNotifiedObjects.end(),

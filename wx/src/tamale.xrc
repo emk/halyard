@@ -207,7 +207,7 @@
                         </object>
                     </object>
                     <object class="sizeritem">
-                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                        <flag>wxALIGN_LEFT</flag>
                         <border>10</border>
                         <object class="wxTextCtrl" name="DLG_REPLACE_TEXT">
                             <size>350,75</size>
@@ -363,6 +363,53 @@ to run this program?</label>
                         <object class="wxButton" name="wxID_NO">
                             <label>&amp;No</label>
                             <default>1</default>
+                        </object>
+                    </object>
+                </object>
+            </object>
+        </object>
+    </object>
+    <object class="wxDialog" name="ID_DIALOG" subclass="MyDialog">
+        <style>wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX</style>
+        <exstyle>wxWS_EX_BLOCK_EVENTS</exstyle>
+        <size>400,300</size>
+        <title>Choose Definition</title>
+        <centered>1</centered>
+        <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+                <flag>wxALIGN_LEFT|wxALL|wxADJUST_MINSIZE</flag>
+                <border>10</border>
+                <object class="wxStaticText" name="wxID_STATIC">
+                    <label>Display which definition?</label>
+                </object>
+            </object>
+            <object class="sizeritem">
+                <flag>wxGROW|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+                <border>10</border>
+                <object class="wxListBox" name="DLG_DEF_LIST">
+                    <size>400,-1</size>
+                    <style>wxLB_SINGLE|wxLB_NEEDED_SB</style>
+                </object>
+            </object>
+            <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+                <border>10</border>
+                <object class="wxBoxSizer">
+                    <orient>wxHORIZONTAL</orient>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL</flag>
+                        <border>10</border>
+                        <object class="wxButton" name="wxID_OK">
+                            <label>&amp;OK</label>
+                            <default>1</default>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxLEFT</flag>
+                        <border>10</border>
+                        <object class="wxButton" name="wxID_CANCEL">
+                            <label>&amp;Cancel</label>
                         </object>
                     </object>
                 </object>

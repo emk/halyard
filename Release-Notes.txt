@@ -5,7 +5,10 @@ CVS - tryon, emk, naomi
   * Added Quake 2 variable 'cl_disablemenu' which allows the Quake 2
     menu system to be disabled and replaced with a custom "escape"
     binding (bug #1740).
-  * Began work on ScriptEditorDB.
+  * Added a simple ScriptEditorDB class to support Meta-dot lookups
+    of definitions.
+  * Heavily overhauled ScriptEditorDB to use transactions more extensively,
+    run faster, and provide better APIs to the ScriptEditor.
   * Fixed SQLite3 to automatically destroy reader objects.
 
 0.0.45 - 15 Dec 2004 - emk

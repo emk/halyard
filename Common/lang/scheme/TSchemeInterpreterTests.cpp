@@ -123,16 +123,13 @@ DEFINE_5L_PRIMITIVE(TestScriptEditorDB)
 {
     // Get our script editor database.
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
-    TSchemeScriptEditorDB *db =
-        dynamic_cast<TSchemeScriptEditorDB*>(manager->GetScriptEditorDB());
+    ScriptEditorDB *db = manager->GetScriptEditorDB();
     TEST(db != NULL);
 
     // Scan our script directories and process all files.
-    //db->UpdateDatabase();
-    db->PurgeDataForDeletedFiles();
-
-	db->ProcessTree("Runtime", ".ss");
-    db->ProcessTree("Scripts", ".ss");
+    db->UpdateDatabase();
+    
+    // TODO - Test for the presence of some known definitions?
 }
 
 #define DEFINE_TYPE_TEST_PRIMITIVES(TYPE, COUNT) \

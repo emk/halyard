@@ -62,6 +62,16 @@ DEFINE_5L_PRIMITIVE(ScriptEditorDBInsertDef) {
 //  TSchemeInterpreterDB Methods
 //=========================================================================
 
+void TSchemeScriptEditorDB::UpdateDatabase() {
+    StScriptEditorDBTransaction transaction(this);
+
+    ScriptEditorDB::UpdateDatabase();
+	ProcessTree("Runtime", ".ss");
+    ProcessTree("Scripts", ".ss");
+
+    transaction.Commit();
+}
+
 void TSchemeScriptEditorDB::ProcessFileInternal(const std::string &relpath) {
 	Scheme_Object *args[1];
 	args[0] = scheme_make_string(relpath.c_str());

@@ -48,6 +48,8 @@ public:
                    int inLineNumber)
             : file_path(inFilePath), name(inName),
               type(inType), line_number(inLineNumber) {}
+
+        std::string GetNativePath();
     };
 
     /// A list of definitions.
@@ -57,18 +59,45 @@ public:
     typedef std::vector<std::string> strings;
 
 private:
+    typedef std::map<std::string,time_t> ModTimeMap;
+
     shared_ptr<sqlite3::connection> mDB;
     bool mIsProcessingFile;
     __int64 mProcessingFileId;
+    bool mIsInTransaction;
 
     void EnsureCorrectSchema();
 
+    void FetchModTimesFromDatabase(ModTimeMap &outMap);
+    void ScanTreeInternal(const std::string &relpath,
+                          const std::string &extension,
+                          const ModTimeMap &modtimes,
+                          strings &outFilesToProcess);
+    bool NeedsProcessingInternal(const std::string &relpath,
+                                 const ModTimeMap &modtimes);
+
 protected:
+    /// Transaction monitor class for ScriptEditorDB database.  You can
+    /// nest instances of StScriptEditorDBTransaction, but only the outermost
+    /// object will actually do anything.
+    class StScriptEditorDBTransaction {
+        ScriptEditorDB *mDB;
+        bool mIsRunning;
+
+    public:
+        StScriptEditorDBTransaction(ScriptEditorDB *db);
+        ~StScriptEditorDBTransaction();
+        
+        void Commit();
+    };
+
     virtual void ProcessFileInternal(const std::string &relpath);
 
 public:
     ScriptEditorDB(const std::string &relpath);
     ~ScriptEditorDB();
+
+    virtual void UpdateDatabase();
 
     void PurgeDataForDeletedFiles();
     strings ScanTree(const std::string &relpath,

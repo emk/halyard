@@ -36,6 +36,8 @@ protected:
 public:
     TSchemeScriptEditorDB(const std::string &db_path)
         : ScriptEditorDB(db_path) {}
+
+    virtual void UpdateDatabase();
 };
 
 END_NAMESPACE_FIVEL

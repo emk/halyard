@@ -42,6 +42,7 @@ USING_NAMESPACE_FIVEL
 
 REGISTER_TEST_CASE_FILE(ScriptEditorDB);
 
+
 //=========================================================================
 //  Local Helper Functions
 //=========================================================================
@@ -68,18 +69,57 @@ namespace {
 
 
 //=========================================================================
+//  ScriptEditorDB::Definition Methods
+//=========================================================================
+
+std::string ScriptEditorDB::Definition::GetNativePath() {
+    return (RootPath()/file_path).native_file_string();
+}
+
+//=========================================================================
+//  StScriptEditorDBTransaction Methods
+//=========================================================================
+
+ScriptEditorDB::StScriptEditorDBTransaction::StScriptEditorDBTransaction(
+    ScriptEditorDB *db)
+    : mDB(db), mIsRunning(!mDB->mIsInTransaction)
+{
+    if (mIsRunning) {
+        mDB->mDB->executenonquery("BEGIN TRANSACTION");    
+        mDB->mIsInTransaction = true;
+    }
+}
+
+ScriptEditorDB::StScriptEditorDBTransaction::~StScriptEditorDBTransaction() {
+    if (mIsRunning) {
+        mDB->mDB->executenonquery("ROLLBACK TRANSACTION");
+        mDB->mIsInTransaction = false;
+    }
+}
+        
+void ScriptEditorDB::StScriptEditorDBTransaction::Commit() {
+    if (mIsRunning) {
+        mDB->mDB->executenonquery("COMMIT TRANSACTION");
+        mDB->mIsInTransaction = false;
+        mIsRunning = false;
+    }
+}
+
+
+//=========================================================================
 //  ScriptEditorDB Methods
 //=========================================================================
 
 /// Create a new ScriptEditorDB.
 ScriptEditorDB::ScriptEditorDB(const std::string &relpath)
     : mDB(new sqlite3::connection((RootPath()/relpath).native_file_string().c_str())),
-      mIsProcessingFile(false)
+      mIsProcessingFile(false), mIsInTransaction(false)
 {
     EnsureCorrectSchema();
 }
 
 ScriptEditorDB::~ScriptEditorDB() {
+    ASSERT(!mIsInTransaction);
     try {
         mDB->close();
     } catch (std::exception &e) {
@@ -90,6 +130,8 @@ ScriptEditorDB::~ScriptEditorDB() {
 /// Make sure the database contains the table schema we want. If not,
 /// delete the database and create it from scratch.
 void ScriptEditorDB::EnsureCorrectSchema() {
+    StScriptEditorDBTransaction transaction(this);
+
     // Schema for the tables we want to create.
     struct schema_info {
         const char *type;
@@ -101,6 +143,8 @@ void ScriptEditorDB::EnsureCorrectSchema() {
          "CREATE TABLE file ("
          "  path TEXT NOT NULL,"
          "  modtime INT NOT NULL)"},
+        {"index", "file_path",
+         "CREATE INDEX file_path ON file(path)"},
         {"table", "def",
          "CREATE TABLE def ("
          "  file_id INT NOT NULL,"
@@ -109,6 +153,10 @@ void ScriptEditorDB::EnsureCorrectSchema() {
          "  line INT NOT NULL,"
          "  prefix_len INT,"
          "  prefix TEXT)"},
+        {"index", "def_file_id",
+         "CREATE INDEX def_file_id ON def(file_id)"},
+        {"index", "def_name",
+         "CREATE INDEX def_name ON def(name)"},
         {"table", "alias",
          "CREATE TABLE alias ("
          "  file_id INT NOT NULL,"
@@ -128,7 +176,7 @@ void ScriptEditorDB::EnsureCorrectSchema() {
         try {
             std::string existing_sql =
                 mDB->executescalar("SELECT sql FROM sqlite_master"
-                                   "  WHERE tbl_name = '%q' AND type = '%q'",
+                                   "  WHERE name = '%q' AND type = '%q'",
                                    sptr->name, sptr->type);
             if (existing_sql != sptr->sql)
                 schema_ok = false;
@@ -138,6 +186,8 @@ void ScriptEditorDB::EnsureCorrectSchema() {
         if (schema_ok == false)
             break;
     }
+
+    transaction.Commit();
 
     // If the schemas are OK, return immediately.
     if (schema_ok)
@@ -161,6 +211,12 @@ void ScriptEditorDB::EnsureCorrectSchema() {
     }
 }
 
+/// The primary interface for updating the database.  This will generally
+/// be overriden by subclasses.
+void ScriptEditorDB::UpdateDatabase() {
+    PurgeDataForDeletedFiles();
+}
+
 /// Remove all database entries derived from files which have been
 /// deleted.
 void ScriptEditorDB::PurgeDataForDeletedFiles() {
@@ -180,49 +236,69 @@ void ScriptEditorDB::PurgeDataForDeletedFiles() {
     }
 }
 
+/// Get all the modification times stored in the database, and copy them
+/// into outMap.  
+void ScriptEditorDB::FetchModTimesFromDatabase(ModTimeMap &outMap) {
+    sqlite3::reader r = mDB->executereader("SELECT path,modtime FROM file");
+    while (r.read()) {
+        time_t modtime = static_cast<time_t>(r.getint64(1));
+        ASSERT(outMap.find(r.getstring(0)) == outMap.end());
+        outMap.insert(ModTimeMap::value_type(r.getstring(0), modtime));
+    }
+}
+
+/// The recursive guts of ScanTree.
+void ScriptEditorDB::ScanTreeInternal(const std::string &relpath,
+                                      const std::string &extension,
+                                      const ModTimeMap &modtimes,
+                                      strings &outFilesToProcess)
+{
+    // We need to use fs::no_check here because this path contains
+    // nasty platform-specific characters.
+    //
+    // PORTABILITY - Make sure that this actually works.
+    fs::path path(RootPath()/fs::path(relpath, fs::no_check));
+    if (fs::symbolic_link_exists(path)) {
+        // Don't follow symlinks.
+    } else if (fs::is_directory(path)) {
+        // Recursively scan everything in this directory.
+        fs::directory_iterator i(path);
+        for (; i != fs::directory_iterator(); ++i) {
+            std::string child_relpath(relpath + "/" + i->leaf());
+            ScanTreeInternal(child_relpath, extension, modtimes,
+                             outFilesToProcess);
+        }
+    } else if (fs::extension(path) == extension) {
+        // OK, this is probably a regular file, and it has the right
+        // extension, so we'll pretend it's not (say) a badly named
+        // device node under /dev.
+        if (NeedsProcessingInternal(relpath, modtimes))
+            outFilesToProcess.push_back(relpath);
+    }
+}
+
 /// Scan the specified directory tree, and find all files that end with the
-/// specified extension and that need to be processed. Also, clean up any
-/// database entries corresponding to files which have been deleted.
+/// specified extension and that need to be processed.
 ///
 /// \return A list of files which need to be processed.
 ScriptEditorDB::strings ScriptEditorDB::ScanTree(const std::string &relpath,
                                                  const std::string &extension)
 {
     strings result;
+    ModTimeMap modtimes;
 
-    fs::path path(RootPath()/relpath);
-    fs::directory_iterator i(path);
-    ASSERT(fs::exists(path) && fs::is_directory(path));
-	for (; i != fs::directory_iterator(); ++i) {
-        // Don't process non-existant files, and run screaming from
-        // symlinks.  (The documentation suggests that we check "exists".
-        // I'm not sure why, but I'm definitely scared.)
-        if (!fs::exists(*i) || fs::symbolic_link_exists(*i))
-            continue;
-        
-        std::string child_relpath(relpath + "/" + i->leaf());
-        if (fs::is_directory(*i)) {
-            // Scan the sub-tree and copy its result into our result.
-            // Yes, we know that this is inefficient, but we're too lazy
-            // to write a helper function--and since we're doing file I/O,
-            // CPU time is completely irrelevant compared to disk seek
-            // time.
-            strings sub_tree = ScanTree(child_relpath, extension);
-            result.insert(result.end(), sub_tree.begin(), sub_tree.end());
-        } else if (fs::extension(*i) == extension) {
-            // OK, this is probably a regular file, and it has the right
-            // extension, so we'll pretend it's not (say) a badly named
-            // device node under /dev.
-            if (NeedsProcessing(child_relpath))
-                result.push_back(child_relpath);
-        }
-    }
+    FetchModTimesFromDatabase(modtimes);    
+    StScriptEditorDBTransaction transaction(this);
+    ScanTreeInternal(relpath, extension, modtimes, result);    
+    transaction.Commit();
 
     return result;
 }
 
 /// Delete all the old data associated with the file, if any.
 void ScriptEditorDB::DeleteAnyFileData(const std::string &relpath) {
+    StScriptEditorDBTransaction transaction(this);
+
     sqlite3::reader r =
         mDB->executereader("SELECT rowid FROM file WHERE path = '%q'",
                            relpath.c_str());
@@ -247,26 +323,28 @@ void ScriptEditorDB::DeleteAnyFileData(const std::string &relpath) {
 
     // We shouldn't have multiple file entries in the database.
     ASSERT(rowids.size() <= 1);
+    transaction.Commit();
 }
 
-bool ScriptEditorDB::NeedsProcessing(const std::string &relpath) {
-
+bool ScriptEditorDB::NeedsProcessingInternal(const std::string &relpath,
+                                             const ModTimeMap &modtimes)
+{
 	fs::path path(RootPath()/relpath);
+	time_t new_modtime = fs::last_write_time(path);
 
-    if (!fs::exists(path))
-        throw fs::filesystem_error("ScriptEditorDB::NeedsProcessing",
-                                   relpath, fs::not_found_error);
-
-    sqlite3::reader r = 
-        mDB->executereader("SELECT modtime FROM file"
-                           "  WHERE path = '%q'", relpath.c_str());
-
-    if (r.read()) {
-        time_t modtime = static_cast<time_t>(r.getint64(0));
-        return (modtime < fs::last_write_time(path));
+    ModTimeMap::const_iterator found = modtimes.find(relpath);
+    if (found != modtimes.end()) {
+        time_t old_modtime = found->second;
+        return (old_modtime != new_modtime);
     } else {
         return true;
     }
+}
+
+bool ScriptEditorDB::NeedsProcessing(const std::string &relpath) {
+    ModTimeMap modtimes;
+    FetchModTimesFromDatabase(modtimes);
+    return NeedsProcessingInternal(relpath, modtimes);
 }
 
 void ScriptEditorDB::BeginProcessingFile(const std::string &relpath) {
@@ -297,21 +375,16 @@ void ScriptEditorDB::EndProcessingFile() {
 void ScriptEditorDB::ProcessTree(const std::string &relpath,
                                  const std::string &extension)
 {
-    mDB->executenonquery("BEGIN TRANSACTION");
-    try {
+    StScriptEditorDBTransaction transaction(this);
 
-        strings files = ScanTree(relpath, extension);
-        for (strings::iterator i = files.begin(); i != files.end(); ++i) {
-            BeginProcessingFile(*i);
-            ProcessFileInternal(*i);
-            EndProcessingFile();
-        }
-
-    } catch (...) {
-        mDB->executenonquery("ROLLBACK TRANSACTION");
-        throw;
+    strings files = ScanTree(relpath, extension);
+    for (strings::iterator i = files.begin(); i != files.end(); ++i) {
+        BeginProcessingFile(*i);
+        ProcessFileInternal(*i);
+        EndProcessingFile();
     }
-    mDB->executenonquery("COMMIT TRANSACTION");
+    
+    transaction.Commit();
 }
 
 /// This function is called by ProcessTree.  You'll probably want to
