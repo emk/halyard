@@ -22,15 +22,32 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		39
+#define VERSION_REV_BIG		40
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.39 (Development)"
+#define VERSION_STRING		"Tamale 0.0.40 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.81  2004/11/08 21:47:22  emk
+ 0.0.40 - 08 Nov 2005 - emk
+
+   * Added ANIMATE function.
+   * Modified Tamale to use standard open file dialogs (bug #1713).
+   * Upgraded FreeType from 2.1.4rc1 to 2.1.9.  Text may look different--
+     supposedly better.  This will allow us to start fixing low-level
+     FreeType bugs.
+   * Fixed calculation of nominal point sizes to be compatible with
+     new FreeType version, which appears to be better documented in
+     this respect.
+   * Added code to make sure we position the StageFrame on the actual
+     display (part of bug #1272).
+   * The engine no longer crashes if errors or jumps occur in (ON EXIT ...)
+     handlers--instead, we report the error and continue with the original
+     jump (bug #1761).
+
  Revision 1.80  2004/09/21 11:47:58  emk
  0.0.39 - 21 Sep 2004 - emk
 

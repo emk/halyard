@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.40 - 08 Nov 2005 - emk
 
   * Added ANIMATE function.
   * Modified Tamale to use standard open file dialogs (bug #1713).
@@ -12,6 +12,9 @@ CVS - emk
     this respect.
   * Added code to make sure we position the StageFrame on the actual
     display (part of bug #1272).
+  * The engine no longer crashes if errors or jumps occur in (ON EXIT ...)
+    handlers--instead, we report the error and continue with the original
+    jump (bug #1761).
 
 0.0.39 - 21 Sep 2004 - emk
 
