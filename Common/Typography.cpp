@@ -225,92 +225,82 @@ bool Style::GetIsShadowed() const
 
 
 //=========================================================================
-//	Typography::Face Methods
+//	Typography::StyledText Methods
 //=========================================================================
 
-StyleInformation::StyleInformation(const Style &inBaseStyle)
-	: mIsBuilt(false)
+StyledText::StyledText(const Style &inBaseStyle)
+	: mBaseStyle(inBaseStyle), mIsBuilt(false)
 {
-	mStyleRuns.push_back(StyleRun(0, inBaseStyle));
+	mStyleRuns.insert(std::pair<size_t,Style>(0, inBaseStyle));
 }
 
-void StyleInformation::ChangeStyleAt(int inOffset, const Style &inStyle)
+void StyledText::AppendText(const std::wstring &inText)
 {
 	ASSERT(!mIsBuilt);
-	ASSERT(inOffset >= mStyleRuns.back().offset);
-	if (mStyleRuns.back().offset == inOffset)
-		mStyleRuns.pop_back();
-	mStyleRuns.push_back(StyleRun(inOffset, inStyle));
+	mText += inText;
 }
 
-void StyleInformation::EndStyleAt(int inOffset)
+void StyledText::ChangeStyle(const Style &inStyle)
 {
 	ASSERT(!mIsBuilt);
-	ASSERT(inOffset >= mStyleRuns.back().offset);
-	if (mStyleRuns.back().offset == inOffset)
-		mStyleRuns.pop_back();
+
+	// Delete any existing entry at this offset.
+	size_t offset = mText.length();
+	std::map<size_t,Style>::iterator existing = mStyleRuns.find(offset);
+	if (existing != mStyleRuns.end())
+		mStyleRuns.erase(existing);
+
+	// Insert the new entry.
+	mStyleRuns.insert(std::pair<size_t,Style>(mText.length(), inStyle));
+}
+
+void StyledText::EndConstruction()
+{
+	ASSERT(!mIsBuilt);
 	mIsBuilt = true;
-	mEnd = inOffset;
+	mEnd = mText.length();
 }
 
-StyleInformation::
-const_iterator::const_iterator(const StyleInformation *inStyleInfo, bool isEnd)
-	: mStyleInfo(inStyleInfo)
+// TODO - Cache results of this lookup somehow?  This code is probably
+// performance critical, but profile it before optimizing it.
+const Style *StyledText::GetStyleAt(size_t inOffset) const
 {
-	if (isEnd)
+	ASSERT(mIsBuilt);
+	ASSERT(0 <= inOffset && inOffset < mEnd);
+
+	// Find the first element with a key NOT LESS THAN inOffset.
+	std::map<size_t,Style>::const_iterator lower_bound =
+		mStyleRuns.lower_bound(inOffset);
+
+	// Figure out which style actually applies.
+	std::map<size_t,Style>::const_iterator result = lower_bound;
+	if (result == mStyleRuns.end())
 	{
-		mCurrentPosition = mStyleInfo->mEnd;
-		mCurrentStyle = mStyleInfo->mStyleRuns.end(); // Useless
-		mEndOfRun = mStyleInfo->mEnd;
+		// CASE 1: If all the elements were less than our offset, we'll get
+		// an iterator pointing to the end of the collection.  We want to
+		// back up one item.
+		--result;
 	}
 	else
 	{
-		mCurrentPosition = 0;
-		mCurrentStyle = mStyleInfo->mStyleRuns.begin();
-		UpdateEndOfRun();
-	}
-}
-	
-StyleInformation::const_iterator::const_iterator()
-	: mStyleInfo(NULL), mCurrentPosition(0), mEndOfRun(0)
-{
-}
-
-void StyleInformation::const_iterator::UpdateEndOfRun()
-{
-	if (mCurrentStyle == mStyleInfo->mStyleRuns.end())
-	{
-		mEndOfRun = mStyleInfo->mEnd;
-	}
-	else
-	{
-		StyleRunList::const_iterator next = mCurrentStyle;
-		++next;
-		if (next == mStyleInfo->mStyleRuns.end())
-			mEndOfRun = mStyleInfo->mEnd;
+		std::pair<size_t,Style> item = *result;
+		if (item.first == inOffset)
+		{
+			// CASE 2: We found a style begining exactly at our offset.
+			// We want to use it as is.
+		}
 		else
-			mEndOfRun = next->offset;
+		{
+			// CASE 3: We found the first style greater than our offset.
+			// We need to back up one element.
+			ASSERT(item.first > inOffset);
+			--result;
+		}
 	}
-}
-
-void StyleInformation::const_iterator::LoadNextStyleRun()
-{
-	ASSERT(mCurrentStyle != mStyleInfo->mStyleRuns.end());
-	++mCurrentStyle;
-	UpdateEndOfRun();
-}
-
-StyleInformation::const_iterator &
-StyleInformation::const_iterator::operator--()
-{
-	ASSERT(mCurrentPosition > 0);
-	--mCurrentPosition;
-	if (mCurrentPosition < mCurrentStyle->offset)
-	{
-		--mCurrentStyle;
-		UpdateEndOfRun();
-	}
-	return *this;
+	
+	// Return our result.
+	ASSERT(result->first <= inOffset);
+	return &result->second;
 }
 
 
@@ -318,19 +308,21 @@ StyleInformation::const_iterator::operator--()
 //	Typography::AbstractFace Methods
 //=========================================================================
 
-Vector AbstractFace::Kern(CharCode inChar1, AbstractFace *inFace1,
-						  CharCode inChar2, AbstractFace *inFace2)
+Vector AbstractFace::Kern(const StyledText::value_type &inChar1,
+						  const StyledText::value_type &inChar2)
 {
 	Vector result;
 	result.x = 0;
 	result.y = 0;
 	
-	if (inFace1 != NULL && inFace2 != NULL)
+	if (inChar1.value != kNoSuchCharacter &&
+		inChar2.value != kNoSuchCharacter)
 	{
-		Face *real_face1 = inFace1->GetRealFace(inChar1);
-		Face *real_face2 = inFace2->GetRealFace(inChar2);
-		if (*real_face1 == *real_face2)
-			result = real_face1->GetKerning(inChar1, inChar2);
+		ASSERT(inChar1.style != NULL && inChar2.style != NULL);
+		Face *face1 = inChar1.style->GetFace()->GetRealFace(inChar1.value);
+		Face *face2 = inChar2.style->GetFace()->GetRealFace(inChar2.value);
+		if (*face1 == *face2)
+			result = face1->GetKerning(inChar1.value, inChar2.value);
 	}
 	return result;
 }
@@ -540,29 +532,16 @@ void FaceStack::SearchForCharacter(CharCode inCharCode,
 
 
 //=========================================================================
-//	Typography::StyledTextSpan Methods
-//=========================================================================
-
-StyledTextSpan::StyledTextSpan(const StyledCharIterator &inBegin,
-							   const StyledCharIterator &inEnd)
-	: begin(inBegin), end(inEnd)
-{
-	// MSVC's STL implementation uses NULL, NULL to denote the
-	// begin and end iterators of the empty string.  We allow this.
-	ASSERT((begin.mTextIter != NULL && end.mTextIter != NULL) ||
-		   (begin.mTextIter == NULL && end.mTextIter == NULL));
-}
-
-
-//=========================================================================
 //	Typography::LineSegment(Iterator) Methods
 //=========================================================================
 
-LineSegment::LineSegment(const StyledTextSpan &inSpan,
+LineSegment::LineSegment(const StyledText::const_iterator &inBegin,
+						 const StyledText::const_iterator &inEnd,
 						 bool inIsLineBreak /*= false*/,
 						 bool inDiscardAtEndOfLine /*= false*/,
 						 bool inNeedsHyphenAtEndOfLine /*= false*/)
-	: span(inSpan), isLineBreak(inIsLineBreak),
+	: begin(inBegin), end(inEnd),
+	  isLineBreak(inIsLineBreak),
 	  discardAtEndOfLine(inDiscardAtEndOfLine),
 	  needsHyphenAtEndOfLine(inNeedsHyphenAtEndOfLine),
 	  userDistanceData(0)
@@ -571,17 +550,16 @@ LineSegment::LineSegment(const StyledTextSpan &inSpan,
 
 bool Typography::operator==(const LineSegment &left, const LineSegment &right)
 {
-	return (left.span.begin == right.span.begin &&
-			left.span.end == right.span.end &&
+	return (left.begin == right.begin &&
+			left.end == right.end &&
 			left.isLineBreak == right.isLineBreak &&
 			left.discardAtEndOfLine == right.discardAtEndOfLine &&
 			left.needsHyphenAtEndOfLine == right.needsHyphenAtEndOfLine);
 }
 
-LineSegmentIterator::LineSegmentIterator(const StyledTextSpan &inSpan)
-	: mSegmentBegin(inSpan.begin), mTextEnd(inSpan.end)
+LineSegmentIterator::LineSegmentIterator(const StyledText &inText)
+	: mSegmentBegin(inText.begin()), mTextEnd(inText.end())
 {
-	// We've initialized our iterator.
 }
 
 bool LineSegmentIterator::NextElement(LineSegment *outSegment)
@@ -591,7 +569,7 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 	// Skip past any leading soft hyphens.	(They're merely invisible
 	// segment-breaking hints, and therefore meaningless at the
 	// beginning of a segment.)
-	while (mSegmentBegin != mTextEnd && (*mSegmentBegin).value == kSoftHyphen)
+	while (mSegmentBegin != mTextEnd && mSegmentBegin->value == kSoftHyphen)
 		++mSegmentBegin;
 
 	// If we don't have any more text, give up now.
@@ -599,30 +577,28 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 		return false;
 
 	// Figure out what kind of segment to process next.
-	StyledCharIterator cursor = mSegmentBegin;
-	if ((*cursor).value == '\n')
+	StyledText::const_iterator cursor = mSegmentBegin;
+	if (cursor->value == '\n')
 	{
 		// NEWLINE SEGMENT
 		// Include just the newline in the segment.
 		++cursor;
 
 		// Describe our segment & update our state.
-		outSegment->SetLineSegment(StyledTextSpan(mSegmentBegin, cursor),
-								   true);
+		outSegment->SetLineSegment(mSegmentBegin, cursor, true);
 		mSegmentBegin = cursor; 
 	}
-	else if (iswspace((*cursor).value))
+	else if (iswspace(cursor->value))
 	{
 		// WHITESPACE SEGMENT
 		// Scan forward until we find the end of the whitespace.
 		while (cursor != mTextEnd &&
-			   iswspace((*cursor).value) &&
-			   (*cursor).value != '\n')
+			   iswspace(cursor->value) &&
+			   cursor->value != '\n')
 			++cursor;
 
 		// Describe our segment & update our state.
-		outSegment->SetLineSegment(StyledTextSpan(mSegmentBegin, cursor),
-								   false, true);
+		outSegment->SetLineSegment(mSegmentBegin, cursor, false, true);
 		mSegmentBegin = cursor; 
 	}
 	else
@@ -630,21 +606,21 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 		// TEXT SEGMENT
 		// Scan forward until we find the end of the current word or
 		// a line-break character (e.g., '-').	Soft hyphens are tricky.
-		while (cursor != mTextEnd && !iswspace((*cursor).value) &&
-			   (*cursor).value != '-' && (*cursor).value != kSoftHyphen)
+		while (cursor != mTextEnd && !iswspace(cursor->value) &&
+			   cursor->value != '-' && cursor->value != kSoftHyphen)
 			++cursor;
 
 		// Adjust our stopping point and set up some flags (as needed).
 		bool needHyphenAtEndOfLine = false;
 		if (cursor != mTextEnd)
 		{
-			needHyphenAtEndOfLine = ((*cursor).value == kSoftHyphen);
-			if ((*cursor).value == '-')
+			needHyphenAtEndOfLine = (cursor->value == kSoftHyphen);
+			if (cursor->value == '-')
 				++cursor;
 		}
 		
 		// Describe our segment & update our state.
-		outSegment->SetLineSegment(StyledTextSpan(mSegmentBegin, cursor),
+		outSegment->SetLineSegment(mSegmentBegin, cursor,
 								   false, false, needHyphenAtEndOfLine);
 		mSegmentBegin = cursor;
 	}
@@ -669,10 +645,10 @@ static C* back_or_null(std::deque<C> &d)
 }
 
 GenericTextRenderingEngine::
-GenericTextRenderingEngine(const StyledTextSpan &inSpan,
+GenericTextRenderingEngine(const StyledText &inText,
 						   Distance inLineLength,
 						   Justification inJustification)
-	: mIterator(inSpan), mLineLength(inLineLength),
+	: mIterator(inText), mLineLength(inLineLength),
 	  mJustification(inJustification)
 {
 	// We can't call RenderText from the constructor because C++ hasn't
@@ -774,12 +750,12 @@ void GenericTextRenderingEngine::RenderText()
 //	Typography::TextRenderingEngine Methods
 //=========================================================================
 
-TextRenderingEngine::TextRenderingEngine(const StyledTextSpan &inSpan,
+TextRenderingEngine::TextRenderingEngine(const StyledText &inText,
 										 Point inPosition,
 										 Distance inLineLength,
 										 Justification inJustification,
 										 Image *inImage)
-	: GenericTextRenderingEngine(inSpan, inLineLength, inJustification),
+	: GenericTextRenderingEngine(inText, inLineLength, inJustification),
 	  mLineStart(inPosition), mImage(inImage)
 {
 	ASSERT(inPosition.x >= 0 && inPosition.y >= 0);
@@ -836,69 +812,68 @@ void TextRenderingEngine::DrawBitmap(Point inPosition, FT_Bitmap *inBitmap,
 	mImage->DrawPixmap(inPosition, pixmap);
 }
 
+void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
+										   StyledText::value_type inCurrent,
+										   Point *ioPosition,
+										   bool inShouldDraw)
+{
+	// Do our kerning.
+	Vector delta = AbstractFace::Kern(*ioPrevious, inCurrent);
+	ioPosition->x += delta.x >> 6; // Don't need round_266 (already fitted).
+	ASSERT(delta.y == 0);
+		
+	// Load our glyph.
+	Glyph glyph = inCurrent.style->GetFace()->GetGlyph(inCurrent.value);
+
+	// Draw our glyph (if requested).
+	if (inShouldDraw)
+	{
+		Point loc = *ioPosition + Point(glyph->bitmap_left,-glyph->bitmap_top);
+		if (inCurrent.style->GetIsShadowed())
+			DrawBitmap(loc + Point(1,1), &glyph->bitmap,
+					   inCurrent.style->GetShadowColor());
+		DrawBitmap(loc, &glyph->bitmap, inCurrent.style->GetColor());
+	}
+
+	// Advance our cursor.
+	ioPosition->x += round_266(glyph->advance.x);
+	ASSERT(ioPosition->x >= 0);
+	ASSERT(glyph->advance.y == 0);
+	
+	// Update our previous char.
+	*ioPrevious = inCurrent;
+}
+				 
+
 Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 											 LineSegment *inSegment,
 											 bool inAtEndOfLine)
 {
 	// Attempt to get the last glyph of the previous segment for
-	// kerning purposes.  Default to 0, which is the built-in code for
-	// "no glyph".
-	CharCode previous_char = kNoSuchCharacter;
-	AbstractFace *previous_face = NULL;
+	// kerning purposes.  Default to kNoSuchCharacter.
+	StyledText::value_type previous(kNoSuchCharacter, NULL);
 	if (inPrevious)
 	{
-		ASSERT(inPrevious->span.begin != inPrevious->span.end);
-		StyledCharIterator previous = inPrevious->span.end;
-		previous_char = (*--previous).value;
-		previous_face = (*previous).style.GetFace();
+		ASSERT(inPrevious->begin != inPrevious->end);
+		StyledText::const_iterator previous = inPrevious->end;
+		--previous;
 	}
 
 	// Measure the segment.
-	// TODO - Merge with code below?
-	Distance total = 0;
-	StyledCharIterator cp = inSegment->span.begin;
-	for (; cp != inSegment->span.end; ++cp)
-	{
-		CharCode current_char = (*cp).value;
-		AbstractFace *current_face = (*cp).style.GetFace();
-
-		// Do our kerning.
-		Vector delta = AbstractFace::Kern(previous_char, previous_face,
-										  current_char, current_face);
-		total += delta.x >> 6; // Don't need round_266 (already fitted).
-		ASSERT(delta.y == 0);
-
-		// Load and measure our glyph.
-		Glyph glyph = current_face->GetGlyph(current_char);
-		total += round_266(glyph->advance.x);
-		ASSERT(glyph->advance.y == 0);
-
-		// Update our previous char & face.
-		previous_char = current_char;
-		previous_face = current_face;
-	}
+	Point total(0, 0);
+	StyledText::const_iterator cp = inSegment->begin;
+	for (; cp != inSegment->end; ++cp)
+		ProcessCharacter(&previous, *cp, &total, false);
 
 	// If necessary, add a trailing hyphen.
-	// TODO - Factor our common code shared with above loop.
 	if (inAtEndOfLine && inSegment->needsHyphenAtEndOfLine)
 	{
-		CharCode current_char = '-';
-		AbstractFace *face = (*--cp).style.GetFace();
-		
-		// Do our kerning.
-		Vector delta = AbstractFace::Kern(previous_char, previous_face,
-										  current_char, face);
-		total += delta.x >> 6; // Don't need round_266 (already fitted).
-		ASSERT(delta.y == 0);
-
-		// Load and measure our glyph.
-		Glyph glyph = face->GetGlyph(current_char);
-		total += round_266(glyph->advance.x);
-		ASSERT(glyph->advance.y == 0);
+		StyledText::value_type current(L'-', previous.style);
+		ProcessCharacter(&previous, current, &total, false);
 	}
-
-	ASSERT(total >= 0);
-	return total;
+		
+	ASSERT(total.x >= 0);
+	return total.x;
 }
 
 void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
@@ -920,74 +895,29 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	cursor.x += inHorizontalOffset;
 
 	// Draw each character.
-	GlyphIndex previous_char = kNoSuchCharacter;
-	AbstractFace *previous_face = NULL;
-	StyledCharIterator cp;
+	StyledText::value_type previous(kNoSuchCharacter, NULL);
+	StyledText::const_iterator cp;
 	for (std::deque<LineSegment>::iterator iter = inLine->begin();
 		 iter < inLine->end(); iter++)
 	{
-		// TODO - Factor out common code with MeasureSegment?
 		LineSegment seg = *iter;
-		for (cp = seg.span.begin; cp != seg.span.end; ++cp)
+		for (cp = seg.begin; cp != seg.end; ++cp)
 		{
-			GlyphIndex current_char = (*cp).value;
-			AbstractFace *current_face = (*cp).style.GetFace();
-			
 			// Update our line-height.
-			int current_height = current_face->GetLineHeight();
+			int current_height = cp->style->GetFace()->GetLineHeight();
 			if (current_height > line_height)
 				line_height = current_height;
 
-			// Do our kerning.
-			Vector delta = AbstractFace::Kern(previous_char, previous_face,
-											  current_char, current_face);
-			cursor.x += delta.x >> 6; // Don't need round_266
-			ASSERT(cursor.x >= 0);
-			ASSERT(delta.y == 0);
-
-			// Load and draw our glyph.
-			Glyph glyph = current_face->GetGlyph(current_char);
-			Point loc = cursor;
-			loc.x += glyph->bitmap_left;
-			loc.y -= glyph->bitmap_top;
-			DrawBitmap(loc, &glyph->bitmap, (*cp).style.GetColor());
-
-			// Advance our cursor.
-			cursor.x += round_266(glyph->advance.x);
-			ASSERT(cursor.x >= 0);
-			ASSERT(glyph->advance.y == 0);
-
-			// Update our previous char.
-			previous_char = current_char;
-			previous_face = current_face;
+			// Draw our character.
+			ProcessCharacter(&previous, *cp, &cursor, true);
 		}
 	}
 
 	// Draw a trailing hyphen if we need one.
-	// XXX - (More ridiculous duplication.)
 	if (!inLine->empty() && inLine->back().needsHyphenAtEndOfLine)
 	{
-		GlyphIndex current_char = '-';
-		AbstractFace *face = (*--cp).style.GetFace();
-			
-		// Do our kerning.
-		Vector delta = AbstractFace::Kern(previous_char, previous_face,
-										  current_char, face);
-		cursor.x += delta.x >> 6; // Don't need round_266 (already fitted).
-		ASSERT(cursor.x >= 0);
-		ASSERT(delta.y == 0);
-
-		// Load and draw our glyph.
-		Glyph glyph = face->GetGlyph(current_char);
-		Point loc = cursor;
-		loc.x += glyph->bitmap_left;
-		loc.y -= glyph->bitmap_top;
-		DrawBitmap(loc, &glyph->bitmap, (*cp).style.GetColor());
-
-		// Advance our cursor.
-		cursor.x += round_266(glyph->advance.x);
-		ASSERT(cursor.x >= 0);
-		ASSERT(glyph->advance.y == 0);
+		StyledText::value_type current(L'-', previous.style);
+		ProcessCharacter(&previous, current, &cursor, true);
 	}
 	
 	// Update our line start for the next line.
@@ -1270,7 +1200,8 @@ bool FamilyDatabase::IsFontFile(const FileSystem::Path &inPath)
 void FamilyDatabase::AddAvailableFace(const AvailableFace &inFace)
 {
 	std::string family_name = inFace.GetFamilyName();
-	std::map<std::string,Family>::iterator found = mFamilyMap.find(family_name);
+	std::map<std::string,Family>::iterator found =
+		mFamilyMap.find(family_name);
 	if (found == mFamilyMap.end())
 	{
 		mFamilyMap.insert(std::pair<std::string,Family>(family_name,
@@ -1284,7 +1215,8 @@ void FamilyDatabase::AddAvailableFace(const AvailableFace &inFace)
 Face FamilyDatabase::GetFace(const std::string &inFamilyName,
 							 FaceStyle inStyle, int inSize)
 {
-	std::map<std::string,Family>::iterator found = mFamilyMap.find(inFamilyName);
+	std::map<std::string,Family>::iterator found =
+		mFamilyMap.find(inFamilyName);
 	if (found != mFamilyMap.end())
 		return found->second.GetFace(inStyle, inSize);
 	else
@@ -1343,7 +1275,8 @@ void FamilyDatabase::ReadFromCache(std::istream &in)
 void FamilyDatabase::WriteToCache(std::ostream &out) const
 {
 	FamilyDatabase::AvailableFace::WriteSerializationHeader(out);
-	for (std::map<std::string,Family>::const_iterator iter = mFamilyMap.begin();
+	for (std::map<std::string,Family>::const_iterator iter =
+			 mFamilyMap.begin();
 		 iter != mFamilyMap.end(); ++iter)
 		iter->second.Serialize(out);	
 }

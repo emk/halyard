@@ -29,29 +29,26 @@ FamilyDatabase *gFonts;
 #define SYMBOL_FACE ("Standard Symbols L")
 #define DINGBAT_FACE ("Dingbats")
 
-void show_with_style_info(const wchar_t *inText,
-			  const StyleInformation &inStyleInfo,
-			  Point inPos, Distance inLength,
-			  Justification inJustification)
+static void show_with_style_info(const StyledText &inText,
+				 Point inPos, Distance inLength,
+				 Justification inJust)
 {
     // Draw our text.
-    size_t len = wcslen(inText);
-    StyledTextSpan span(StyledCharIterator(inText, inStyleInfo.begin()),
-			StyledCharIterator(inText + len, inStyleInfo.end()));
-    TextRenderingEngine engine(span, inPos, inLength, inJustification, gImage);
+    TextRenderingEngine engine(inText, inPos, inLength, inJust, gImage);
     engine.RenderText();
 }
 
-void show(const wchar_t *inText, const Style &inStyle,
-	  Point inPos, Distance inLength, Justification inJustification)
+static void show(const wchar_t *inText, const Style &inStyle,
+		 Point inPos, Distance inLength,
+		 Justification inJust)
 {
     // Build our style run.
-    size_t len = wcslen(inText);
-    StyleInformation styleInfo(inStyle);
-    styleInfo.EndStyleAt(len);
+    StyledText styledText(inStyle);
+    styledText.AppendText(inText);
+    styledText.EndConstruction();
 
     // Draw our text.
-    show_with_style_info(inText, styleInfo, inPos, inLength, inJustification);
+    show_with_style_info(styledText, inPos, inLength, inJust);
 }
 
 int main (int argc, char **argv) {
@@ -80,9 +77,11 @@ int main (int argc, char **argv) {
 	backups.push_back(DINGBAT_FACE);
 	baseStyle.SetBackupFamilies(backups);
 	baseStyle.SetColor(Color(0, 0, 96));
+	baseStyle.SetShadowColor(Color(128, 128, 0));
 
 	// Display a title.
-	show(L"Font Engine Demo", Style(baseStyle).SetSize(36),
+	show(L"Font Engine Demo",
+	     Style(baseStyle).SetSize(36).SetFaceStyle(kShadowFaceStyle),
 	     Point(10, 50), 620, kCenterJustification);
 
 	// Display some text samples.
@@ -98,28 +97,26 @@ int main (int argc, char **argv) {
 	}
 
 	// Do an elaborate, multi-styled paragraph.
-	const wchar_t *para = (L"Ms. Matthews' case raises several "
-			       "interesting questions.  RGB color is cool.  "
-			       "We like several cheeses! T.");
-	Style para_style(baseStyle);
-	para_style.SetSize(14);
-	Style bold_italic_para_style(para_style);
-	bold_italic_para_style.SetFaceStyle(kBoldItalicFaceStyle);
-	StyleInformation styleInfo(para_style);
-	styleInfo.ChangeStyleAt(34, bold_italic_para_style);
-	styleInfo.ChangeStyleAt(45, para_style);
-	styleInfo.ChangeStyleAt(58,
-				Style(para_style).SetColor(Color(255, 0, 0)));
-	styleInfo.ChangeStyleAt(59,
-				Style(para_style).SetColor(Color(0, 255, 0)));
-	styleInfo.ChangeStyleAt(60,
-				Style(para_style).SetColor(Color(0, 0, 255)));
-	styleInfo.ChangeStyleAt(61, para_style);
-	styleInfo.ChangeStyleAt(wcslen(para)-1,
-				Style(para_style).SetColor(Color(255, 0, 0)));
-	styleInfo.EndStyleAt(wcslen(para));
-	show_with_style_info(para, styleInfo, Point(10, 300), 360,
-			     kLeftJustification);
+	Style paraStyle(baseStyle);
+	paraStyle.SetSize(14);
+	StyledText para(paraStyle);
+	para.AppendText(L"Ms. Matthews' case raises several ");
+	para.ChangeStyle(Style(paraStyle).SetFaceStyle(kBoldItalicFaceStyle));
+	para.AppendText(L"interesting");
+	para.ChangeStyle(paraStyle);
+	para.AppendText(L" questions.  ");
+	para.ChangeStyle(Style(paraStyle).SetColor(Color(255, 0, 0)));
+	para.AppendText(L"R");
+	para.ChangeStyle(Style(paraStyle).SetColor(Color(0, 255, 0)));
+	para.AppendText(L"G");
+	para.ChangeStyle(Style(paraStyle).SetColor(Color(0, 0, 255)));
+	para.AppendText(L"B");
+	para.ChangeStyle(paraStyle);
+	para.AppendText(L" color is cool.  We like several cheeses! T");
+	para.ChangeStyle(Style(paraStyle).SetColor(Color(255, 0, 0)));
+	para.AppendText(L".");
+	para.EndConstruction();
+	show_with_style_info(para, Point(10, 300), 360, kLeftJustification);
 
 	wchar_t symbols[5];
 	symbols[0] = 0x2206;

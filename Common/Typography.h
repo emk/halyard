@@ -5,6 +5,7 @@
 
 #include "TCommon.h"
 
+#include <string>
 #include <iostream>
 #include <string>
 #include <deque>
@@ -128,6 +129,7 @@ namespace Typography {
 		//////////
 		// Check the result of a FreeType function and throw an error
 		// if necessary.
+		//
 		static void CheckResult(int inResultCode)
 			{ if (inResultCode) throw Error(inResultCode); }
 	};
@@ -240,114 +242,188 @@ namespace Typography {
 	};
 
 	//////////
-	// Style information for a piece of text.
+	// A chunk of text with style information.
 	//
-	class StyleInformation {
+	class StyledText {
 
-		//////////
-		// An individual style run (internal).
-		//
-		struct StyleRun {
-			int   offset;
-			Style style;
-			StyleRun(int inOffset, const Style &inStyle)
-				: offset(inOffset), style(inStyle) {}
-		};
-		typedef std::list<StyleRun> StyleRunList;
-
-		StyleRunList mStyleRuns;
-		bool         mIsBuilt;
-		int          mEnd;
+		Style mBaseStyle;
+		std::wstring mText;
+		std::map<size_t,Style> mStyleRuns;
+		bool mIsBuilt;
+		int mEnd;
 
 	public:
 		//////////
-		// Create a new StyleInformation object.
+		// Create a new StyledText object.
 		//
 		// [in] inBaseStyle - The style to use for the first character.
 		//
-		explicit StyleInformation(const Style &inBaseStyle);
+		explicit StyledText(const Style &inBaseStyle);
 
 		//////////
-		// Change the Style at the specified offset in the string.
+		// Add text to the end of the styled text object.
+		// 
+		void AppendText(const std::wstring &inText);
+
+		//////////
+		// Change the Style at the current offset in the string.
 		//
-		// [in] inOffset - The offset at which to change the style.
-		//                 This must be greater than or equal to the
-        //                 inOffset argument to all previous calls to
-        //                 ChangeStyleAt.
 		// [in] inStyle -  The new style to use.
 		//
-		void ChangeStyleAt(int inOffset, const Style &inStyle);
+		void ChangeStyle(const Style &inStyle);
 
 		//////////
-		// Stop adding style changes, and freeze the StyleInformation.
+		// Stop adding style changes and text, and freeze the StyledText.
 		//
-		// [in] inOffset - The offset at which to end style information.
-		//                 This typically corresponds to the end of the
-		//                 string.  This must be greater than or equal
-		//                 to all previous inOffset arguments.
-		//
-		void EndStyleAt(int inOffset);
+		void EndConstruction();
 
 		//////////
-		// An STL-like iterator class for iterating over styles.
-		// This class returns the Style objects for each offset, counting
-		// by ones from zero (i.e., it returns 3 identical values for
-		// a three-element style run).
+		// Retrieve the text associated with this object.  (You can't
+		// call this until you've called EndConstruction.)
+		//
+		// [out] return - A pointer to the std::wstring that actually
+		//                stores the data.  This pointer is owned by
+		//                by the object, and you shouldn't delete it.
+		//
+		const std::wstring *GetText() const { return &mText; }
+
+		//////////
+		// Get the style for the specified character position.  (You can't
+		// call this until you've called EndConstruction.)
+		//
+		const Style *GetStyleAt(size_t inOffset) const;
+
+		//////////
+		// Get the default style for this block of styled text.  This
+		// is typically used to calculate lineheights for empty lines.
+		//
+		const Style *GetDefaultStyle() const { return &mBaseStyle; }
+
+		//////////
+		// You can treat a 'StyledText' object as though it were an
+		// STL container with the following value_type.
+		// 
+		struct value_type {
+
+			//////////
+			//  The character associated with this element.
+			//
+			wchar_t value;
+
+			//////////
+			//  A pointer to the style associated with this element.
+			//  This pointer belongs to whoever created the value_type
+			//  element, and you shouldn't delete it.  For value_type
+			//  objects created by a StyledText class, this pointer
+			//  remains valid as long as the StyledText object exists.
+			//
+			const Style *style;
+
+			//////////
+			//  Create a new styled text object.
+			//
+			value_type(wchar_t inValue, const Style *inStyle)
+				: value(inValue), style(inStyle) {}
+
+			//////////
+			//  Create a new styled text object with no contents.
+			//
+			value_type() : value(kNoSuchCharacter), style(NULL) {}
+		};
+
+		//////////
+		// An STL-like iterator class for iterating over the data in
+		// a StyledText object.
 		//
 		class const_iterator {
-			friend class StyleInformation;
+			friend class StyledText;
 
-			const StyleInformation *mStyleInfo;
+			const StyledText *mStyledText;
 			int mCurrentPosition;
-			int mEndOfRun;
-			StyleRunList::const_iterator mCurrentStyle;
+			value_type mCurrentValue;
 
-			const_iterator(const StyleInformation *inStyleInfo, bool isEnd);
+			const_iterator(const StyledText *inStyledText, size_t inPos)
+				: mStyledText(inStyledText), mCurrentPosition(inPos) {}
 			
-			void UpdateEndOfRun();
-			void LoadNextStyleRun();
-
 		public:
 			//////////
 			// Construct an empty iterator.  Don't use this for anything
 			// until you assign a real iterator to it.
 			//
-			const_iterator();
+			const_iterator()
+				: mStyledText(NULL), mCurrentPosition(0) {}
 
 			const_iterator &operator++()
 			{
-				ASSERT(mStyleInfo != NULL);
-				ASSERT(mCurrentPosition < mStyleInfo->mEnd);
+				ASSERT(mStyledText != NULL);
+				ASSERT(mCurrentPosition < mStyledText->mEnd);
 				++mCurrentPosition;
-				if (mCurrentPosition == mEndOfRun)
-					LoadNextStyleRun();
 				return *this;
 			}
 
-			const_iterator &operator--();
+			const_iterator &operator+=(size_t inIncrement)
+			{
+				ASSERT(mStyledText != NULL);
+				mCurrentPosition += inIncrement;
+				ASSERT(mCurrentPosition <= mStyledText->mEnd);
+				return *this;
+			}
+
+			friend const_iterator operator+(const const_iterator &inLeft,
+											size_t inRight)
+			{
+				const_iterator result = inLeft;
+				result += inRight;
+				return result;
+			}
+
+			const_iterator &operator--()
+			{
+				ASSERT(mStyledText != NULL);
+				ASSERT(mCurrentPosition > 0);
+				--mCurrentPosition;
+				return *this;
+			}
+
+			friend ptrdiff_t operator-(const const_iterator &inLeft,
+									   const const_iterator &inRight)
+			{
+				ASSERT(inLeft.mStyledText != NULL);
+				ASSERT(inLeft.mStyledText == inRight.mStyledText);
+				return inLeft.mCurrentPosition - inRight.mCurrentPosition;
+			}
 
 		    bool operator==(const const_iterator &inRight) const
 			{
-				ASSERT(mStyleInfo != NULL);
-				ASSERT(mStyleInfo == inRight.mStyleInfo);
+				ASSERT(mStyledText != NULL);
+				ASSERT(mStyledText == inRight.mStyledText);
 				return mCurrentPosition == inRight.mCurrentPosition;
 			}
 
 			bool operator!=(const const_iterator &inRight) const
 			{
-				ASSERT(mStyleInfo != NULL);
-				ASSERT(mStyleInfo == inRight.mStyleInfo);
+				ASSERT(mStyledText != NULL);
+				ASSERT(mStyledText == inRight.mStyledText);
 				return mCurrentPosition != inRight.mCurrentPosition;
 			}
 
-			const Style &operator*() const
+			const value_type &operator*() const
 			{
-				ASSERT(mStyleInfo != NULL);
-				ASSERT(mCurrentPosition < mStyleInfo->mEnd);
-				return mCurrentStyle->style;
+				ASSERT(mStyledText != NULL);
+				ASSERT(mCurrentPosition < mStyledText->mEnd);
+
+				// We have to be careful here--our underlying object
+				// doesn't contain any actual value_type objects, and we
+				// can't return a reference that points to a local varaible
+				// or temporary value.  So we cache our result value in the
+				// iterator itself, and return a read-only reference.
+				const_cast<value_type&>(mCurrentValue) =
+					value_type(mStyledText->mText[mCurrentPosition],
+							   mStyledText->GetStyleAt(mCurrentPosition));
+				return mCurrentValue;
 			}
 
-			const Style *operator->() const
+			const value_type *operator->() const
 			{
 				return &operator*();
 			}
@@ -356,15 +432,17 @@ namespace Typography {
 		friend class const_iterator;
 
 		//////////
-	    // Return an iterator pointing to the first element's style.
+	    // Return an iterator pointing to the first element.
 		//
-		const_iterator begin() const { return const_iterator(this, false); }
+		const_iterator begin() const
+            { return const_iterator(this, 0); }
 
 		//////////
-	    // Return an iterator pointing one past the last element's style.
+	    // Return an iterator pointing one past the last element.
 		// Do not dereference this.
 		//
-		const_iterator end() const { return const_iterator(this, true); }
+		const_iterator end() const
+            { return const_iterator(this, mText.length()); }
 	};
 
 	class Face;
@@ -422,18 +500,15 @@ namespace Typography {
 		virtual Face *GetRealFace(CharCode inCharCode) = 0;
 
 		//////////
-		// Kern two characters.  If either character code is
-		// kNoSuchCharacter, or either face is NULL, this function will
-		// return (0,0).
+		// Kern two characters.  If the value of either character is
+		// kNoSuchCharacter, this function will return (0,0).
 		//
-		// [in] inChar1 - The first character, or kNoSuchCharacter.
-		// [in] inFace1 - The face of the first character, or NULL.
-		// [in] inChar2 - The second character, or kNoSuchCharacter.
-		// [in] inFace2 - The face of the second character, or NULL.
+		// [in] inChar1 - The first character.
+		// [in] inChar2 - The second character.
 		// [out] result - The amount to kern.
 		//
-		static Vector Kern(CharCode inChar1, AbstractFace *inFace1,
-						   CharCode inChar2, AbstractFace *inFace2);
+		static Vector Kern(const StyledText::value_type &inChar1,
+						   const StyledText::value_type &inChar2);
 	};
 
 	//////////
@@ -550,77 +625,6 @@ namespace Typography {
 
 
 	//////////
-	// A representation of a styled character.  The 'style' member
-	// is really a reference to a style stored elsewhere (for performance).
-	//
-	struct StyledChar {
-		const wchar_t value;
-		const Style &style;
-
-		StyledChar(wchar_t inValue, const Style &inStyle)
-			: value(inValue), style(inStyle) {}
-	};
-
-	//////////
-	// An iterator over a chunk of styled text.
-	//
-	// This is a wrapper around the iterators for characters and styles.
-	// By creating a combined interface, we make our code look a lot
-	// nicer.
-	//
-	class StyledCharIterator {
-		friend struct StyledTextSpan;
-
-		const wchar_t *mTextIter;
-	    StyleInformation::const_iterator mStyleIter;
-
-	public:
-		StyledCharIterator(const wchar_t *inTextIter,
-						   const StyleInformation::const_iterator &inStyleIter)
-			: mTextIter(inTextIter), mStyleIter(inStyleIter) {}
-
-		StyledCharIterator() : mTextIter(NULL) {}
-		
-		StyledCharIterator &operator++()
-		    { ++mTextIter; ++mStyleIter; return *this; }
-		StyledCharIterator &operator--()
-		    { --mTextIter; --mStyleIter; return *this; }
-		bool operator==(const StyledCharIterator &inRight) const
-		    { return mTextIter == inRight.mTextIter; }
-		bool operator!=(const StyledCharIterator &inRight) const
-		    { return mTextIter != inRight.mTextIter; }
-		const StyledChar operator*() const
-		    { return StyledChar(*mTextIter, *mStyleIter); }
-	};
-
-	//////////
-	// A chunk of styled text.  This object contains no actual
-	// data; it merely points to data stored elsewhere.  It's a bit
-	// of a strange abstraction--but it was the natural result of
-	// refactoring.
-	//
-	// Make sure you don't deallocate the underlying string or
-	// style information while this object exists.
-	// 
-	struct StyledTextSpan {
-
-		//////////
-		// A pointer to the first character in the span.
-		//
-		StyledCharIterator begin;
-
-		//////////
-		// A pointer one character *beyond* the last character in
-		// the span, as per STL iterator conventions.
-		//
-		StyledCharIterator end;
-
-		StyledTextSpan(const StyledCharIterator &inBegin,
-					   const StyledCharIterator &inEnd);
-		StyledTextSpan() {}
-	};
-
-	//////////
 	// A segment of a line of characters, suitable for drawing as a group.
 	//
 	// The line-breaking routines all work in terms of line segments
@@ -639,9 +643,15 @@ namespace Typography {
 	struct LineSegment {
 
 		//////////
-		// The text span included in this segment.
+		// An iterator pointing to the first character in this segment.
 		//
-		StyledTextSpan span;
+		StyledText::const_iterator begin;
+
+		//////////
+		// An iterator pointing one character beyond the last character
+		// in this segment.
+		//
+		StyledText::const_iterator end;
 
 		//////////
 		// Is the current segment a newline character?  If so, the
@@ -668,19 +678,22 @@ namespace Typography {
 		// XXX - Clean up.
 		Distance userDistanceData;
 
-		void SetLineSegment(const StyledTextSpan &inSpan,
+		void SetLineSegment(const StyledText::const_iterator &inBegin,
+							const StyledText::const_iterator &inEnd,
 							bool inIsLineBreak = false,
 							bool inDiscardAtEndOfLine = false,
 							bool inNeedsHyphenAtEndOfLine = false)
 		{
-			span				   = inSpan;
+			begin				   = inBegin;
+			end					   = inEnd;
 			isLineBreak			   = inIsLineBreak;
 			discardAtEndOfLine	   = inDiscardAtEndOfLine;
 			needsHyphenAtEndOfLine = inNeedsHyphenAtEndOfLine;
 			userDistanceData	   = 0;
 		}
 
-		explicit LineSegment(const StyledTextSpan &inSpan,
+		explicit LineSegment(const StyledText::const_iterator &inBegin,
+							 const StyledText::const_iterator &inEnd,
 							 bool inIsLineBreak = false,
 							 bool inDiscardAtEndOfLine = false,
 							 bool inNeedsHyphenAtEndOfLine = false);
@@ -695,16 +708,16 @@ namespace Typography {
 	// according to typical typographic rules.  It does not modify the
 	// underlying text.
 	class LineSegmentIterator {
-		StyledCharIterator mSegmentBegin;
-		StyledCharIterator mTextEnd;
+		StyledText::const_iterator mSegmentBegin;
+		StyledText::const_iterator mTextEnd;
 
 	public:
 		//////////
 		// Create a new iterator.
 		//
-		// [in] inSpan - The text to break into segments.
+		// [in] inText - The text to break into segments.
 		//
-		explicit LineSegmentIterator(const StyledTextSpan &inSpan);
+		explicit LineSegmentIterator(const StyledText &inText);
 
 		//////////
 		// Return the next segment of the line, if any.
@@ -740,11 +753,11 @@ namespace Typography {
 		//////////
 		// Create a new GenericTextRenderingEngine.
 		// 
-		// [in] inSpan - The text to draw.
+		// [in] inText - The text to draw.
 		// [in] inLineLength - Maximum allowable line length.
 		// [in] inJustification - Justification for the line.
 		//
-		GenericTextRenderingEngine(const StyledTextSpan &inSpan,
+		GenericTextRenderingEngine(const StyledText &inText,
 								   Distance inLineLength,
 								   Justification inJustification);
 
@@ -829,7 +842,7 @@ namespace Typography {
 		//////////
 		// Create a new text rendering engine.
 		//
-		// [in] inSpan -       The styled text to draw.
+		// [in] inText -       The styled text to draw.
 		// [in] inPosition -   The x,y position of the lower-left corner
 		//                     of the first character (actually, this
 		//                     is technically the "origin" of the first
@@ -842,7 +855,7 @@ namespace Typography {
 		//                     This must not be deallocated until the
 		//                     TextRendering engine is destroyed.
 		//
-		TextRenderingEngine(const StyledTextSpan &inSpan,
+		TextRenderingEngine(const StyledText &inText,
 							Point inPosition,
 							Distance inLineLength,
 							Justification inJustification,
@@ -856,6 +869,27 @@ namespace Typography {
 		// [in] inPosition - The location at which to draw the bitmap.
 		//
 		void DrawBitmap(Point inPosition, FT_Bitmap *inBitmap, Color inColor);
+		
+		//////////
+		// Process a single character.
+		//
+		// [in/out] ioPrevious - On input, the character before the
+		//                       current character.  Set to 
+		//                       (kNoSuchCharacter, NULL) if there is no
+		//                       previous character.  On output,
+		//                       the value of 'inCurrent'.
+		// [in] inCurrent -      The character to process.
+		// [in/out] inPosition - On input, the position at which to position
+		//                       and/or draw the character.  On output,
+		//                       the position for the next character.
+		//                       The 'y' position will not be changed.
+		// [in] inShouldDraw -   Should we actually draw this character to
+		//                       our mImage object?
+		//
+		void ProcessCharacter(StyledText::value_type *ioPrevious,
+							  StyledText::value_type inCurrent,
+							  Point *ioPosition,
+							  bool inShouldDraw);
 
 	protected:
 		virtual Distance MeasureSegment(LineSegment *inPrevious,

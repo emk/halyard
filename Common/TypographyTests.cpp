@@ -84,37 +84,41 @@ static void test_Typography_Style (void)
 //	Style Information Tests
 //=========================================================================
 
-static void test_Typography_StyleInformation (void)
+static void test_Typography_StyledText (void)
 {
 	Style base("Nimbus Roman No9 L", 12);
-	StyleInformation info(base);
-	info.ChangeStyleAt(2, Style(base).SetFaceStyle(kItalicFaceStyle));
-	info.ChangeStyleAt(4, Style(base).SetColor(Color(255, 0, 0)));
-	info.ChangeStyleAt(6, Style(base).SetColor(Color(0, 255, 0)));
-	info.ChangeStyleAt(6, Style(base).SetColor(Color(0, 0, 255)));
-	info.EndStyleAt(8);
+	StyledText info(base);
+	info.AppendText(L"xy");
+	info.ChangeStyle(Style(base).SetFaceStyle(kItalicFaceStyle));
+	info.AppendText(L"xy");
+	info.ChangeStyle(Style(base).SetColor(Color(255, 0, 0)));
+	info.AppendText(L"xy");
+	info.ChangeStyle(Style(base).SetColor(Color(0, 255, 0)));
+	info.ChangeStyle(Style(base).SetColor(Color(0, 0, 255)));
+	info.AppendText(L"xy");
+	info.EndConstruction();
 
 	// Make sure we have correct style information.
-	StyleInformation::const_iterator iter = info.begin();
-	TEST(iter->GetSize() == 12);                         // 0
-	TEST(iter->GetFaceStyle() == kRegularFaceStyle);     // 0
-	TEST((++iter)->GetFaceStyle() == kRegularFaceStyle); // 1
-	StyleInformation::const_iterator iter2 = iter;       // COPY AT 1
-	TEST((++iter)->GetFaceStyle() == kItalicFaceStyle);  // 2
-	TEST((++iter)->GetFaceStyle() == kItalicFaceStyle);  // 3
-	TEST((++iter)->GetFaceStyle() == kRegularFaceStyle); // 4
-	TEST(iter->GetColor() == Color(255, 0, 0));          // 4
-	TEST((++iter)->GetColor() == Color(255, 0, 0));      // 5
-	TEST((++iter)->GetColor() == Color(0, 0, 255));      // 6
-	TEST((++iter)->GetColor() == Color(0, 0, 255));      // 7
-	TEST(++iter == info.end());                          // 8
+	StyledText::const_iterator iter = info.begin();
+	TEST(iter->style->GetSize() == 12);                         // 0
+	TEST(iter->style->GetFaceStyle() == kRegularFaceStyle);     // 0
+	TEST((++iter)->style->GetFaceStyle() == kRegularFaceStyle); // 1
+	StyledText::const_iterator iter2 = iter;                    // COPY AT 1
+	TEST((++iter)->style->GetFaceStyle() == kItalicFaceStyle);  // 2
+	TEST((++iter)->style->GetFaceStyle() == kItalicFaceStyle);  // 3
+	TEST((++iter)->style->GetFaceStyle() == kRegularFaceStyle); // 4
+	TEST(iter->style->GetColor() == Color(255, 0, 0));          // 4
+	TEST((++iter)->style->GetColor() == Color(255, 0, 0));      // 5
+	TEST((++iter)->style->GetColor() == Color(0, 0, 255));      // 6
+	TEST((++iter)->style->GetColor() == Color(0, 0, 255));      // 7
+	TEST(++iter == info.end());                                 // 8
 	
 	// Test iterator copy.
-	StyleInformation::const_iterator iter3 = iter2;      // COPY AT 1
-	TEST(iter2 == iter3);                                // 1 == 1
-	TEST(iter2->GetFaceStyle() == kRegularFaceStyle);    // 1
-	TEST((++iter2)->GetFaceStyle() == kItalicFaceStyle); // 2	
-	TEST(iter2 != iter3);                                // 1 != 2
+	StyledText::const_iterator iter3 = iter2;                   // COPY AT 1
+	TEST(iter2 == iter3);                                       // 1 == 1
+	TEST(iter2->style->GetFaceStyle() == kRegularFaceStyle);    // 1
+	TEST((++iter2)->style->GetFaceStyle() == kItalicFaceStyle); // 2	
+	TEST(iter2 != iter3);                                       // 1 != 2
 }
 
 
@@ -122,109 +126,94 @@ static void test_Typography_StyleInformation (void)
 //	LineSegment Tests
 //=========================================================================
 
-typedef std::pair<StyleInformation*,StyledTextSpan> InfoAndSpan;
-
-static InfoAndSpan make_span(const std::wstring &inString)
+static const StyledText *make_text(const std::wstring &inString)
 {
-	int len = inString.length();
-	const wchar_t *str = inString.c_str();
-	StyleInformation *styleInfo =
-		new StyleInformation(Style("Nimbus Roman No9 L", 12));
-	styleInfo->EndStyleAt(len);
-	return InfoAndSpan(styleInfo,
-					   StyledTextSpan(StyledCharIterator(str,
-														 styleInfo->begin()),
-									  StyledCharIterator(str + len,
-														 styleInfo->end())));
+	StyledText *styledText = new StyledText(Style("Nimbus Roman No9 L", 12));
+	styledText->AppendText(inString);
+	styledText->EndConstruction();
+	return styledText;
 }
 
-static LineSegment make_test_seg(const StyledTextSpan &inBaseSpan,
+static LineSegment make_test_seg(const StyledText *inText,
 								 int inBegin, int inEnd,
 								 bool inIsLineBreak = false,
 								 bool inDiscardAtEndOfLine = false,
 								 bool inNeedsHyphenAtEndOfLine = false)
 {
-	StyledCharIterator begin = inBaseSpan.begin;
-	for (int i = 0; i < inBegin; i++)
-		++begin;
-	StyledCharIterator end = inBaseSpan.begin;
-	for (int j = 0; j < inEnd; j++)
-		++end;
-	return LineSegment(StyledTextSpan(begin, end), inIsLineBreak,
-					   inDiscardAtEndOfLine, inNeedsHyphenAtEndOfLine);
+	StyledText::const_iterator begin = inText->begin() + inBegin;
+	StyledText::const_iterator end = inText->begin() + inEnd;
+	return LineSegment(begin, end, inIsLineBreak, inDiscardAtEndOfLine,
+					   inNeedsHyphenAtEndOfLine);
 }
 
-#define TEST_SEGMENT(seg,span,from,to,b1,b2,b3) \
-    TEST(seg == make_test_seg(span, from, to, b1, b2, b3))
+#define TEST_SEGMENT(seg,text,from,to,b1,b2,b3) \
+    TEST(seg == make_test_seg(text, from, to, b1, b2, b3))
 
 static void test_Typography_LineSegment (void) 
 {
 	// Simple words & whitespace.
 	std::wstring text1 = L"abc def  ghi";
-	InfoAndSpan infospan1 = make_span(text1);
-	StyledTextSpan span1 = infospan1.second;
-	LineSegmentIterator iter1(span1);
+	const StyledText *styledtext1 = make_text(text1);
+	LineSegmentIterator iter1(*styledtext1);
 	LineSegment seg1;
 	TEST(iter1.NextElement(&seg1));
-	TEST_SEGMENT(seg1, span1, 0, 3, false, false, false);
+	TEST_SEGMENT(seg1, styledtext1, 0, 3, false, false, false);
 	TEST(iter1.NextElement(&seg1));
-	TEST_SEGMENT(seg1, span1, 3, 4, false, true,  false);
+	TEST_SEGMENT(seg1, styledtext1, 3, 4, false, true,  false);
 	TEST(iter1.NextElement(&seg1));
-	TEST_SEGMENT(seg1, span1, 4, 7, false, false, false);
+	TEST_SEGMENT(seg1, styledtext1, 4, 7, false, false, false);
 	TEST(iter1.NextElement(&seg1));
-	TEST_SEGMENT(seg1, span1, 7, 9, false, true,  false);
+	TEST_SEGMENT(seg1, styledtext1, 7, 9, false, true,  false);
 	TEST(iter1.NextElement(&seg1));
-	TEST_SEGMENT(seg1, span1, 9, 12, false, false,  false);
+	TEST_SEGMENT(seg1, styledtext1, 9, 12, false, false,  false);
 	TEST(!iter1.NextElement(&seg1));
-	delete infospan1.first;
+	delete styledtext1;
 
 	// Basic hyphenation.
 	std::wstring text2 = L"abc-def- ghi---";
-	InfoAndSpan infospan2 = make_span(text2);
-	StyledTextSpan span2 = infospan2.second;
-	LineSegmentIterator iter2(span2);
+	const StyledText *styledtext2 = make_text(text2);
+	LineSegmentIterator iter2(*styledtext2);
 	LineSegment seg2;
 	TEST(iter2.NextElement(&seg2));
-	TEST_SEGMENT(seg2, span2, 0, 4, false, false, false);
+	TEST_SEGMENT(seg2, styledtext2, 0, 4, false, false, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST_SEGMENT(seg2, span2, 4, 8, false, false, false);
+	TEST_SEGMENT(seg2, styledtext2, 4, 8, false, false, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST_SEGMENT(seg2, span2, 8, 9, false, true, false);
+	TEST_SEGMENT(seg2, styledtext2, 8, 9, false, true, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST_SEGMENT(seg2, span2, 9, 13, false, false, false);
+	TEST_SEGMENT(seg2, styledtext2, 9, 13, false, false, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST_SEGMENT(seg2, span2, 13, 14, false, false, false);
+	TEST_SEGMENT(seg2, styledtext2, 13, 14, false, false, false);
 	TEST(iter2.NextElement(&seg2));
-	TEST_SEGMENT(seg2, span2, 14, 15, false, false, false);
+	TEST_SEGMENT(seg2, styledtext2, 14, 15, false, false, false);
 	TEST(!iter2.NextElement(&seg2));
-	delete infospan2.first;
+	delete styledtext2;
 
 	// Explicit newlines.
 	std::wstring text3 = L" abc\ndef \n\n ghi";
-	InfoAndSpan infospan3 = make_span(text3);
-	StyledTextSpan span3 = infospan3.second;
-	LineSegmentIterator iter3(span3);
+	const StyledText *styledtext3 = make_text(text3);
+	LineSegmentIterator iter3(*styledtext3);
 	LineSegment seg3;
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 0, 1, false, true, false);
+	TEST_SEGMENT(seg3, styledtext3, 0, 1, false, true, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 1, 4, false, false, false);
+	TEST_SEGMENT(seg3, styledtext3, 1, 4, false, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 4, 5, true, false, false);
+	TEST_SEGMENT(seg3, styledtext3, 4, 5, true, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 5, 8, false, false, false);
+	TEST_SEGMENT(seg3, styledtext3, 5, 8, false, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 8, 9, false, true, false);
+	TEST_SEGMENT(seg3, styledtext3, 8, 9, false, true, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 9, 10, true, false, false);
+	TEST_SEGMENT(seg3, styledtext3, 9, 10, true, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 10, 11, true, false, false);
+	TEST_SEGMENT(seg3, styledtext3, 10, 11, true, false, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 11, 12, false, true, false);
+	TEST_SEGMENT(seg3, styledtext3, 11, 12, false, true, false);
 	TEST(iter3.NextElement(&seg3));
-	TEST_SEGMENT(seg3, span3, 12, 15, false, false, false);
+	TEST_SEGMENT(seg3, styledtext3, 12, 15, false, false, false);
 	TEST(!iter3.NextElement(&seg3));
-	delete infospan3.first;
+	delete styledtext3;
 
 	// Soft hyphens.
 	std::wstring text4 = L"abcXdefX ghi\nXjklXXX\n X ";
@@ -236,30 +225,29 @@ static void test_Typography_LineSegment (void)
 		else
 			text4[i] = text4[i];
 	}
-	InfoAndSpan infospan4 = make_span(text4);
-	StyledTextSpan span4 = infospan4.second;
-	LineSegmentIterator iter4(span4);
+	const StyledText *styledtext4 = make_text(text4);
+	LineSegmentIterator iter4(*styledtext4);
 	LineSegment seg4;
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 0, 3, false, false, true);
+	TEST_SEGMENT(seg4, styledtext4, 0, 3, false, false, true);
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 4, 7, false, false, true);
+	TEST_SEGMENT(seg4, styledtext4, 4, 7, false, false, true);
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 8, 9, false, true, false);
+	TEST_SEGMENT(seg4, styledtext4, 8, 9, false, true, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 9, 12, false, false, false);
+	TEST_SEGMENT(seg4, styledtext4, 9, 12, false, false, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 12, 13, true, false, false);
+	TEST_SEGMENT(seg4, styledtext4, 12, 13, true, false, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 14, 17, false, false, true);
+	TEST_SEGMENT(seg4, styledtext4, 14, 17, false, false, true);
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 20, 21, true, false, false);
+	TEST_SEGMENT(seg4, styledtext4, 20, 21, true, false, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 21, 22, false, true, false);
+	TEST_SEGMENT(seg4, styledtext4, 21, 22, false, true, false);
 	TEST(iter4.NextElement(&seg4));
-	TEST_SEGMENT(seg4, span4, 23, 24, false, true, false);
+	TEST_SEGMENT(seg4, styledtext4, 23, 24, false, true, false);
 	TEST(!iter4.NextElement(&seg4));
-	delete infospan4.first;
+	delete styledtext4;
 
 	// TODO - Non-breaking space.
 	// TODO - mdash, ndash.
@@ -281,10 +269,10 @@ private:
 	std::basic_string<wchar_t> mRenderedText;
 
 public:
-	TestTextRenderingEngine(const StyledTextSpan &inSpan,
+	TestTextRenderingEngine(const StyledText &inText,
 							Distance inLineLength,
 							Justification inJustification)
-		: GenericTextRenderingEngine(inSpan, inLineLength,
+		: GenericTextRenderingEngine(inText, inLineLength,
 									 inJustification) {}
 	
 	void Test(const wchar_t *result);
@@ -334,12 +322,7 @@ Distance TestTextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 												 bool inAtEndOfLine)
 {
 	TEST(inSegment != NULL);
-
-	Distance result = 0;
-	for (StyledCharIterator iter = inSegment->span.begin;
-		 iter != inSegment->span.end; ++iter)
-		++result;
-	
+	Distance result = inSegment->end - inSegment->begin;
 	if (inAtEndOfLine && inSegment->needsHyphenAtEndOfLine)
 		++result;
 	return result;
@@ -353,14 +336,12 @@ void TestTextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 	TEST(ioRemaining->discardAtEndOfLine == false);
 	TEST(outExtracted != NULL);
 
-	StyledCharIterator new_end = ioRemaining->span.begin;
-	for (int i = 0; i < GetLineLength() - 1; ++i)
-		++new_end;
-	outExtracted->SetLineSegment(StyledTextSpan(ioRemaining->span.begin,
-												new_end),
+	StyledText::const_iterator new_end =
+		ioRemaining->begin + (GetLineLength() - 1);
+	outExtracted->SetLineSegment(ioRemaining->begin, new_end,
 								 false, false, true);
-	TEST(outExtracted->span.end != ioRemaining->span.end);
-	ioRemaining->span.begin = outExtracted->span.end;	
+	TEST(outExtracted->end != ioRemaining->end);
+	ioRemaining->begin = outExtracted->end;	
 }
 
 void TestTextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
@@ -375,9 +356,9 @@ void TestTextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		 iter < inLine->end(); iter++)
 	{
 		LineSegment seg = *iter;
-		for (StyledCharIterator iter = seg.span.begin;
-			 iter != seg.span.end; ++iter)
-			mRenderedText += (*iter).value;
+		for (StyledText::const_iterator iter = seg.begin;
+			 iter != seg.end; ++iter)
+			mRenderedText += iter->value;
 	}
 	
 	// Add a trailing hyphen (if the final segment wants one).
@@ -397,17 +378,11 @@ void rendering_test(const wchar_t *in, Distance width,
 		if (*i == 'X')
 			*i = kSoftHyphen;
 
-	// Build a dummy StyleInformation object.
-	Style style("Nimbus Roman No9 L", 12);
-	StyleInformation styleInfo(style);
-	styleInfo.EndStyleAt(s.length());
-
 	// Set up the rest of our parameters and call the engine.
-	StyledCharIterator s_begin(s.c_str(), styleInfo.begin());
-	StyledCharIterator s_end(s.c_str() + s.length(), styleInfo.end());
-	TestTextRenderingEngine e(StyledTextSpan(s_begin, s_end),
-							  width, justification);
+	const StyledText *text = make_text(s);
+	TestTextRenderingEngine e(*text, width, justification);
 	e.Test(out);
+	delete text;
 }
 
 #define RTEST_L(in,width,out) rendering_test(in,width,kLeftJustification,out)
@@ -589,7 +564,7 @@ static void test_Typography_FamilyDatabase (void)
 void test_Typography (void)
 {
 	test_Typography_Style();
-	test_Typography_StyleInformation();
+	test_Typography_StyledText();
 	test_Typography_LineSegment();
 	test_Typography_GenericTextRenderingEngine();
 	test_Typography_FamilyDatabase();
