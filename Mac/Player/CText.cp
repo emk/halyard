@@ -24,6 +24,7 @@
 #include "CText.h"
 #include "CVariable.h"
 #include "TCommon.h"
+#include "TEncoding.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -47,6 +48,15 @@ CText::CText(void)
 		¥ CText(&header name, Bounds, &text)
    --------------------------------------------------------------------------------- */
 
+// Helper function.
+// TODO - Refactor back into TEncoding (somehow) once logging code is merged between
+// Macintosh and Windows engines.
+static void LogEncodingErrors (const char *inBadString, size_t inBadPos, const char *inErrMsg)
+{
+	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
+		inErrMsg, inBadPos, inBadString);
+}
+	
 CText::CText(
 	const char		*inHeader,		// Name of header format to use.
 	const TRect		&inBounds,		// Bounding rect (relative to PlayerView's rect)
@@ -69,9 +79,13 @@ CText::CText(
 		return;
 	}	
 
+	// Totally experimental entity code.
+	TEncoding encoding("macintosh", &LogEncodingErrors);
+	TString encodedStr = encoding.TransformString(inText);
+
 	// Copy the incoming string
-	mText = (uint8 *) ::NewPtr(strlen(inText) + 1);
-	strcpy((char *) mText, inText);
+	mText = (uint8 *) ::NewPtr(strlen(encodedStr));
+	strcpy((char *) mText, encodedStr);
 	
 	// Assign drawing rect
 	mDrawRect = inBounds.GetRect();
