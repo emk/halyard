@@ -269,6 +269,8 @@ int FiveLApp::MainLoop() {
     // point on the stack!
     FIVEL_SET_STACK_BASE();
 
+    BEGIN_EXCEPTION_TRAPPER();
+
     // Create a wxEventLoop object to process events.  This became
     // necessary in wxWindows 2.5.x or so.
     StEventLoopSetup setup(&m_mainLoop);
@@ -301,6 +303,8 @@ int FiveLApp::MainLoop() {
 	// if there were some reason the above code would not work (perhaps
 	// because of a starup error):
 	//    return wxApp::MainLoop();
+
+    END_EXCEPTION_TRAPPER(ReportFatalException);
 
     // XXX - Is this good enough?  This return value is platform-specific,
     // and it's not always 0.

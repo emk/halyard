@@ -2,12 +2,18 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
+Miscellaneous error fixing for changes in 0.0.43 and 0.0.44:
+
   * Check to make sure the engine has the primitive WakeUpIfNecessary
     before calling it.  (This is what I get for not running the full
     test suites.)
   * Make sure to focus the correct button on screen-adjustment dialogs
     to prevent Windows from changing the default.  This is dumb;
     wxWidgets should do this for me.
+  * The engine now gives a useful error message if exceptions occur
+    in FiveLApp::MainLoop.  This fixes the mystery exception Robinson
+    was seeing when the engine was launched with a bogus startup
+    directory.
 
 0.0.44 - 13 Dec 2004 - emk
 
