@@ -16,15 +16,20 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		21
+#define VERSION_REV_BIG		22
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.21 (Development)"
+#define VERSION_STRING	"5L 3.4.0"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.29  2002/07/26 20:07:39  emk
+ 3.4.0 - 26 July 2002 - emk
+
+   * Updated version numbers for official stable release!
+
  Revision 1.28  2002/07/26 20:00:15  zeb
  3.3.21 - 26 July 2002 - zeb
 

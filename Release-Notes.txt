@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.4.0 - 26 July 2002 - emk
+
+  * Updated version numbers for official stable release!
+
 3.3.21 - 26 July 2002 - zeb
 
   * Added FileSystem::ExistenceCheck, which we use to check for the
