@@ -15,17 +15,21 @@
 // TVersion.h : Version strings.
 //
 
-#define VERSION_MAJOR_NUM	3
-#define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		11
+#define VERSION_MAJOR_NUM	0
+#define VERSION_MINOR_NUM	0
+#define VERSION_REV_BIG		2
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.11 (Development)"
-#define SHORT_NAME			"5L"
+#define VERSION_STRING		"Tamale 0.0.2 (Development)"
+#define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.44  2003/05/03 19:14:27  emk
+ Tamale 0.0.2: Lots of minor new features, including transparency and
+ sequences.
+
  Revision 1.43  2002/11/19 17:50:45  emk
  3.5.11 - Correctly clear resources allocated by a failed attempt to
  load a script before trying to load it again.
