@@ -134,6 +134,8 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_PROPERTIES, StageFrame::OnProperties)
     EVT_UPDATE_UI(FIVEL_INSERT_BACKGROUND, StageFrame::UpdateUiInsertBackground)
     EVT_MENU(FIVEL_INSERT_BACKGROUND, StageFrame::OnInsertBackground)
+    EVT_UPDATE_UI(FIVEL_EDIT_MODE, StageFrame::UpdateUiEditMode)
+    EVT_MENU(FIVEL_EDIT_MODE, StageFrame::OnEditMode)
     EVT_UPDATE_UI(FIVEL_JUMP_CARD, StageFrame::UpdateUiJumpCard)
     EVT_MENU(FIVEL_JUMP_CARD, StageFrame::OnJumpCard)
     EVT_SASH_DRAGGED(FIVEL_PROGRAM_TREE, StageFrame::OnSashDrag)
@@ -194,6 +196,8 @@ StageFrame::StageFrame(wxSize inSize)
 
     // Set up our Card menu.
     mCardMenu = new wxMenu();
+    mCardMenu->Append(FIVEL_EDIT_MODE, "&Edit Card\tCtrl+Space",
+                      "Enter or exit card-editing mode.");
     mCardMenu->Append(FIVEL_JUMP_CARD, "&Jump to Card...\tCtrl+J",
                       "Jump to a specified card by name.");
 
@@ -593,23 +597,41 @@ void StageFrame::OnInsertBackground(wxCommandEvent &inEvent)
 	mDocument->GetTamaleProgram()->InsertBackground();
 }
 
+void StageFrame::UpdateUiEditMode(wxUpdateUIEvent &inEvent)
+{
+	if (mDocument != NULL && mStage->IsScriptInitialized())
+	{
+		inEvent.Enable(TRUE);
+		if (mStage->IsInEditMode())
+			inEvent.SetText("&Run Card\tCtrl+Space");
+		else
+			inEvent.SetText("&Edit Card\tCtrl+Space");
+	}
+	else
+	{
+		inEvent.Enable(FALSE);
+	}
+}
+
+void StageFrame::OnEditMode(wxCommandEvent &inEvent)
+{
+	mStage->SetEditMode(!mStage->IsInEditMode());
+}
+
 void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
 {
-    inEvent.Enable(TInterpreter::HaveInstance());
+    inEvent.Enable(mStage->CanJump());
 }
 
 void StageFrame::OnJumpCard(wxCommandEvent &inEvent)
 {
-    if (TInterpreter::HaveInstance())
-    {
-		if (!IsFullScreen())
-			mLocationBox->Prompt();
-		else
-		{
-			wxTextEntryDialog dialog(this, "Jump to Card", "Card:");
-			if (dialog.ShowModal() == wxID_OK)
-				mLocationBox->TryJump(dialog.GetValue());
-		}
+	if (!IsFullScreen())
+		mLocationBox->Prompt();
+	else
+	{
+		wxTextEntryDialog dialog(this, "Jump to Card", "Card:");
+		if (dialog.ShowModal() == wxID_OK)
+			mLocationBox->TryJump(dialog.GetValue());
 	}
 }
 
@@ -711,12 +733,11 @@ END_EVENT_TABLE()
 
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
-      mFrame(inFrame), mStageSize(inStageSize),
+      mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
       mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight()),
 	  mTextCtrl(NULL), mCurrentElement(NULL), mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
-
 {
     SetBackgroundColour(STAGE_COLOR);
     ClearStage(*wxBLACK);
@@ -735,6 +756,66 @@ Stage::~Stage()
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
 
+bool Stage::IsScriptInitialized()
+{
+	// Assume that the script is properly initialized as soon as it has
+	// entered a card.  This is good enough for now, but we'll need to
+	// change it later.
+	return (mLastCard != "");
+}
+
+void Stage::SetEditMode(bool inWantEditMode)
+{
+	if (IsInEditMode() == inWantEditMode)
+		return;
+	else if (inWantEditMode)
+	{
+		TInterpreter::GetInstance()->Stop();
+		// TODO - NotifyExitCard() should be triggered from kernel.ss, but
+		// this will mean auditing the engine code to only call
+		// CurCardName, etc., only when there is a current card.
+		NotifyExitCard();
+		ClearStage(*wxBLACK);
+	}
+	else
+	{
+		wxASSERT(mLastCard != "");
+		TInterpreter::GetInstance()->Go(mLastCard.c_str());
+	}
+}
+
+bool Stage::IsInEditMode()
+{
+	wxASSERT(TInterpreter::HaveInstance());
+	return TInterpreter::GetInstance()->IsStopped();
+}
+
+bool Stage::CanJump()
+{
+	// This should match the list of sanity-checks in the function below.
+	return (TInterpreter::HaveInstance() &&
+			IsScriptInitialized() &&
+			!IsInEditMode());
+}
+
+void Stage::TryJumpTo(const wxString &inName)
+{
+	// We go to quite a lot of trouble to verify this request.
+	if (!IsScriptInitialized())
+		::wxLogError("Cannot jump until program has finished initializing.");
+	else if (IsInEditMode())
+		::wxLogError("Unimplemented: Cannot jump while in edit mode (yet).");
+	else
+	{
+		wxASSERT(TInterpreter::HaveInstance());
+		TInterpreter *interp = TInterpreter::GetInstance();
+		if (!interp->IsValidCard(inName))
+			::wxLogError("The card \'" + inName + "\' does not exist.");
+		else
+			interp->JumpToCardByName(inName);
+	}
+}
+
 void Stage::RegisterCard(const wxString &inName)
 {
 	mFrame->GetProgramTree()->RegisterCard(inName);
@@ -742,6 +823,7 @@ void Stage::RegisterCard(const wxString &inName)
 
 void Stage::NotifyEnterCard()
 {
+	mLastCard = TInterpreter::GetInstance()->CurCardName();
 	mFrame->GetLocationBox()->NotifyEnterCard();
 	mFrame->GetProgramTree()->NotifyEnterCard();
 }
@@ -755,6 +837,7 @@ void Stage::NotifyExitCard()
 
 void Stage::NotifyScriptReload()
 {
+	mLastCard = "";
 	mFrame->GetProgramTree()->NotifyScriptReload();
     NotifyExitCard();
 	gStyleSheetManager.RemoveAll();
@@ -852,7 +935,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         long y = dc.DeviceToLogicalY(pos.y);
 
         // Get the color at that screen location.
-        // XXX - May not work on non-Windows platforms, according to
+        // PORTING - May not work on non-Windows platforms, according to
         // the wxWindows documentation.
         wxRawBitmapDC offscreen_dc;
         offscreen_dc.SelectObject(mOffscreenPixmap);

@@ -15,6 +15,7 @@
 #include <memory>
 
 #include "AppGlobals.h"
+#include "FiveLApp.h"
 #include "Stage.h"
 #include "ProgramTree.h"
 #include "Model.h"
@@ -139,12 +140,9 @@ CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl,
 
 void CardItemData::OnLeftDClick(wxMouseEvent& event)
 {
-	if (TInterpreter::HaveInstance())
-	{
-		TInterpreter *interp = TInterpreter::GetInstance();
-		if (interp->IsValidCard(mCardName.mb_str()))
-			interp->JumpToCardByName(mCardName.mb_str());
-	}
+	Stage *stage = wxGetApp().GetStage();
+	if (stage->CanJump())
+		stage->TryJumpTo(mCardName);
 }
 
 
@@ -367,6 +365,7 @@ void TamaleProgramItemData::ObjectChanged()
 void TamaleProgramItemData::ObjectDeleted()
 {
 }
+
 
 //=========================================================================
 //  ProgramTreeDropTarget

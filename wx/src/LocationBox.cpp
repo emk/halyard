@@ -6,6 +6,10 @@
 #include "LocationBox.h"
 #include "TInterpreter.h"
 
+// For jumping to cards.
+#include "FiveLApp.h"
+#include "Stage.h"
+
 USING_NAMESPACE_FIVEL
 
 
@@ -62,25 +66,22 @@ void LocationBox::RegisterCard(const wxString &inCardName)
 
 void LocationBox::TryJump(const wxString &inCardName)
 {
-    if (TInterpreter::HaveInstance())
+	Stage *stage = wxGetApp().GetStage();
+    if (stage->CanJump())
 	{
-		TInterpreter *interp = TInterpreter::GetInstance();
-		if (interp->IsValidCard(inCardName))
-		{
-			// Add the specified card to our list and jump to it.
+		// If the specified card exists, add it to our list.
+		if (TInterpreter::GetInstance()->IsValidCard(inCardName))
 			RegisterCard(inCardName);
-			interp->JumpToCardByName(inCardName);
-		}
-		else
-		{
-			wxLogError("The card \"" + inCardName + "\" does not exist.");
-		}
+
+		// Jump to the specified card, or display an error if it
+		// does not exist.
+		stage->TryJumpTo(inCardName);
 	}
 }
 
 void LocationBox::UpdateUiLocationBox(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(TInterpreter::HaveInstance());
+	inEvent.Enable(wxGetApp().GetStage()->CanJump());
 }
 
 void LocationBox::OnChar(wxKeyEvent &inEvent)

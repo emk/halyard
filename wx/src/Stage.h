@@ -191,6 +191,8 @@ private:
     void OnProperties(wxCommandEvent &inEvent);
     void UpdateUiInsertBackground(wxUpdateUIEvent &inEvent);
     void OnInsertBackground(wxCommandEvent &inEvent);
+    void UpdateUiEditMode(wxUpdateUIEvent &inEvent);
+    void OnEditMode(wxCommandEvent &inEvent);
     void UpdateUiJumpCard(wxUpdateUIEvent &inEvent);
     void OnJumpCard(wxCommandEvent &inEvent);
 
@@ -234,6 +236,11 @@ class Stage : public wxWindow, public GraphicsTools::Image
     // The size of our drawing stage.
     //
     wxSize mStageSize;
+
+    //////////
+    // The last card the stage was known to be on.
+    //
+    std::string mLastCard;
 
     //////////
     // The StageFrame associated with the stage.  We need to poke at it
@@ -354,6 +361,36 @@ public:
 	//
 	wxSize GetStageSize() const { return mStageSize; }
 
+	//////////
+	// Return true if and only if the script is fully initialized.
+	// Will briefly return false after the script is reloaded.
+	//
+	bool IsScriptInitialized();
+
+	//////////
+	// Place the stage into edit mode or take it out again.  May
+	// only be called if IsScriptInitialized() returns true.
+	//
+	void SetEditMode(bool inWantEditMode = true);
+
+	//////////
+	// Is the stage in edit mode?  May only be called if
+	// IsScriptInitialized() returns true.
+	//
+	bool IsInEditMode();
+
+	//////////
+	// Return true if and only if it's safe to call TryJumpTo().
+	//
+	bool CanJump();
+
+	//////////
+	// Jump to the specified card.  May only be called if
+	// IsScriptInitialized() returns true.  If the specified
+	// card does not exist, displays an error to the user.
+	//
+	void TryJumpTo(const wxString &inName);
+	
     //////////
     // Register a newly-loaded card with the stage frame.
     //
