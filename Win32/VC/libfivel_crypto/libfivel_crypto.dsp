@@ -85,11 +85,11 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\..\Common\libs\crypto\blowfish.c
+SOURCE=..\..\..\libs\crypto\blowfish.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\libs\crypto\md5.c
+SOURCE=..\..\..\libs\crypto\md5.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -97,11 +97,11 @@ SOURCE=..\..\..\Common\libs\crypto\md5.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\..\..\Common\libs\crypto\blowfish.h
+SOURCE=..\..\..\libs\crypto\blowfish.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\libs\crypto\md5.h
+SOURCE=..\..\..\libs\crypto\md5.h
 # End Source File
 # End Group
 # End Target

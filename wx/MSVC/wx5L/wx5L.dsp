@@ -43,19 +43,19 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /Ob1 /I "../../../Common" /I "../../../Common/freetype2/include" /I "../../../Common/libs/boost" /I "../../../Common/libs/wxWindows/include" /I "../../../Common/libs/wxWindows/lib/msw" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/lib/msw" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
-# ADD RSC /l 0x409 /i "..\..\..\Common\libs\wxWindows\include" /d "NDEBUG"
+# ADD RSC /l 0x409 /i "..\..\..\libs\wxWindows\include" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib wsock32.lib qtmlclient.lib ../../../Common/libs/wxWindows/lib\zlib.lib ../../../Common/libs/wxWindows/lib\regex.lib ../../../Common\libs/wxWindows/lib\png.lib ../../../Common/libs/wxWindows/lib\jpeg.lib ../../../Common/libs/wxWindows/lib\tiff.lib ../../../Common/libs/wxWindows/lib\wxmsw.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none /incremental:yes /map
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib wsock32.lib qtmlclient.lib ../../../libs/wxWindows/lib/zlib.lib ../../../libs/wxWindows/lib/regex.lib ../../../libs/wxWindows/lib/png.lib ../../../libs/wxWindows/lib/jpeg.lib ../../../libs/wxWindows/lib/tiff.lib ../../../libs/wxWindows/lib/wxmsw.lib /nologo /subsystem:windows /debug /machine:I386 /out:"../../../Win32/Bin/wx5L.exe" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none /incremental:yes /map /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
@@ -71,18 +71,18 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "../../../Common" /I "../../../Common/freetype2/include" /I "../../../Common/libs/boost" /I "../../../Common/libs/wxWindows/include" /I "../../../Common/libs/wxWindows/lib/mswd" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/lib/mswd" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
-# ADD RSC /l 0x409 /i "..\..\..\Common\libs\wxWindows\include" /d "_DEBUG"
+# ADD RSC /l 0x409 /i "..\..\..\libs\wxWindows\include" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib qtmlclient.lib ../../../Common/libs/wxWindows/lib\zlibd.lib ../../../Common/libs/wxWindows/lib\regexd.lib ../../../Common\libs/wxWindows/lib\pngd.lib ../../../Common/libs/wxWindows/lib\jpegd.lib ../../../Common/libs/wxWindows/lib\tiffd.lib ../../../Common/libs/wxWindows/lib\wxmswd.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib qtmlclient.lib ../../../libs/wxWindows/lib/zlibd.lib ../../../libs/wxWindows/lib\regexd.lib ../../../libs/wxWindows/lib\pngd.lib ../../../libs/wxWindows/lib\jpegd.lib ../../../libs/wxWindows/lib\tiffd.lib ../../../libs/wxWindows/lib\wxmswd.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcmt" /out:"../../../Win32/Bin/wx5L_d.exe" /pdbtype:sept
 
 !ENDIF 
 

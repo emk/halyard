@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+3.5.9 - 31 Oct 2002 - emk
 
   * New wxWindows front-end now officially added to the build tree.
     This is still massively incomplete, but it's on its way.
@@ -18,7 +18,7 @@ CVS - emk
     - Common/libs -> libs
     - Common/freetype2 -> libs/freetype2
     - Rename Common/Runtime/5L/*.ss to have lowercase names
-    - Linux, Mac build fixes
+    - Linux, Mac, Win32 build fixes
 
 3.5.8 - 15 Oct 2002 - emk
 

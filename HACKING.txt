@@ -31,11 +31,12 @@ Checking 5L Out of CVS
   CVS server: imlcvs.dartmouth.edu
   CVS root:   /usr/local/cvsroot
 
-  Check out the modules "5L" and "5Ltest".  These correspond to the full
-  paths "iml/FiveL/Release" and "iml/iml_programs/5Ltest" (you'll need to
-  know these to use CVSweb).  Make sure your CVS client uses the native
-  end-of-line convetion; this can be a problem under MacOS X and some
-  versions of Cygwin/W2K.
+  Check out the modules "5L", "5Ltest" and "5Ltest_scheme".  These
+  correspond to the full paths "iml/FiveL/Release",
+  "iml/iml_programs/5Ltest" and "iml/iml_programs/5Ltest_scheme" (you'll
+  need to know these to use CVSweb).  Make sure your CVS client uses the
+  native end-of-line convetion; this can be a problem under MacOS X and
+  some versions of Cygwin/W2K.
 
   In the instructions that follow, we'll assume your copy of the 5L source
   tree is in $5L_DIR and your copy of 5Ltest is in $5LTEST_DIR.
@@ -61,12 +62,13 @@ Building Win32 5L
     Executable files:
       C:\SRC\QT501SDK\SDK\TOOLS
 
-  Open up $5L_DIR\Win32\VC\FiveL.dsw.  Click on "FileView", right-click on
+  Open up $5L_DIR\FiveL.dsw.  Click on "FileView", right-click on
   "FiveL files", and select "Settings" > "Settings for: Win32 Debug" >
   "Debug" > "General".  Set "Working Directory" to $5LTEST_DIR (the actual
   path, not the variable name!).  Select "Settings for: Win32 Release" and
   set "Working Directory" to the same value.  Now you'll automatically run
-  5Ltest when you ask Visual Studio to launch your program.
+  5Ltest when you ask Visual Studio to launch your program.  You can do the
+  same thing with 5Ltest_scheme to test the Scheme interpreter.
 
   Using a similar process, set the working directories for both versions
   of "CommonTest" to $5L_DIR/Common.  The test suites won't run without
@@ -98,15 +100,24 @@ Building Macintosh 5L
   the test suites from within CodeWarrior, but you'll need to manually
   copy the 5L binaries to 5Ltest before running them.
 
+  The pre-Carbon ("PPC") versions of 5L do not currently build.  The last
+  time I ran them in MacOS X's OS 9 emulator, they corrupted the OS 9
+  system file.  We've decided to go with all-Carbon builds for now.
+
   Fix these instructions as needed.
 
 What Lives Where
 ----------------
 
+  libs/               - 3rd-party libraries
+  libs/crypto/        - Miscellaneous 3rd-party crypto code
+  libs/freetype2/     - 3rd-party font engine
+  libs/plt/           - MzScheme interpreter, etc.
+  libs/wxWindows/     - Portable GUI library
+
   Common/             - Shared, portable code
-  Common/libs/        - 3rd-party libraries
-  Common/libs/crypto/ - Miscellaneous 3rd-party crypto code
-  Common/freetype2/   - 3rd-party font engine (belongs in libs, actually)
+  Common/Runtime/5L/  - Scheme language runtime support
+  Common/Runtime/*/   - Other MzScheme-derived runtime goodies
   Common/Scripts/     - Test scripts
   Common/Fonts/       - Unix-style fonts for FreeType 2
   Common/fonttools/   - Font-related programs (some are Linux-only)
@@ -124,6 +135,10 @@ What Lives Where
   Mac/Player/         - Mac 5L graphics layer 
   Mac/Resources/      - MacOS and PowerPlant resources
   Mac/Utility/        - Third-party utility routines
+
+  wx/                 - Preliminary (portable?) front-end based on wxWindows
+  wx/MSVC             - MSVC project files
+  wx/src              - Source code to new front end
 
 Important Classes & Modules
 ---------------------------
@@ -157,10 +172,14 @@ Important Classes & Modules
     - Use this if you need to abort the program, or show errors to the user.
 
   * TInterpreter
-    - Abstract interface to (theoretically) interchangeable interpreters.
+    - Abstract interface to interchangeable interpreters.
     - Subclass this to add a new language.
 
-  * TPrimitives, TCommonPrimitives, TMacPrimitives, TWinPrimitives
+  * TInterpreterManager
+    - Manages interpreters and implements script reloading.
+    - Subclass this to add a new language.
+
+  * TPrimitives, TCommonPrimitives, TMacPrimitives, TWinPrimitives, etc.
     - Implementations of the actual 5L commands.
 
   * TIndex, TParser, TStream, C?Card, C?Macro,
@@ -367,11 +386,12 @@ Updating the Version Number
      date; it should be of the form "1993-YYYY", where YYYY is the current
      year.  The lawyers like this to be correct.
 
-  3) Macintosh: Open up Mac5L.rsrc in ResEdit, and update the two 'vers'
+  3) Macintosh: Open up Mac5L-Version.r in ResEdit, and update the two 'vers'
      resources.  If you have more than 3 version components (e.g.,
-     "3.2.1.3"), then you'll only be able to enter the first 3 in the boxes
-     at the top (you can, of course, enter the full version in the
-     free-form text fields).  Again, check the copyright.
+     "3.2.1.3"), then you'll only be able to enter the first 3, and no
+     version component may be greater than 9 (you can, of course, enter the
+     full version in the free-form text fields).  Again, check the
+     copyright.
 
 Ancient Versions
 ----------------
