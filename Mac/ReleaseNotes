@@ -1,5 +1,13 @@
 FiveL for Macintosh Release Notes
 
+2.01, Build 9, February 26, 2002 12:48 PM - E Hamon with help by Eric.
+
+¥ Fixed launching of browser by showing and hiding the menu bar correctly 
+  whenever a suspend or resume event occurs.
+  We also call ShowMenuBar in DoBrowse so that IE launches correctly. 
+  We added GetFrontClicks in project settings so that we could easily 
+  return from the browser to the project. 
+  
 2.01, Build 8, February 25, 2002 11:43 AM - E Hamon with help by Eric.
 
 ¥ Overhauled DrawStyleText and accessory functions.
