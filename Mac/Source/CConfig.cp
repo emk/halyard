@@ -26,7 +26,7 @@
 #include <iostream.h>
 #endif
 
-#include "KLogger.h"
+#include "TLogger.h"
 #include "TString.h"
 
 #include "CMac5LApp.h"
@@ -235,22 +235,6 @@ bool CConfig::FillDataSpec(FSSpec *theSpec, const char *inName)
 	return (retValue);
 }
 
-bool CConfig::FillScriptSpec(FSSpec *theSpec, const char *inName)
-{
-	TString		fileName;
-	bool		retValue = false;
-	
-	if ((theSpec != NULL) and (inName != NULL))
-	{
-		fileName = gModMan->GetScriptPath();
-		fileName += inName;
-				
-		retValue = FillSpec(theSpec, fileName);
-	}
-	
-	return (retValue);
-}
-
 bool CConfig::FillDebugSpec(FSSpec *theSpec, const char *inName)
 {
 	TString		fileName;
@@ -383,6 +367,15 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.7.4.2  2002/04/23 11:36:07  emk
+More merge-related fixes.
+
+1) Removed all code which treats scripts as FSSpecs, and replaced it with code that treats scripts as filenames, minus the path and extension.  This mirrors how TFileIndex wants to work.  A side effect: Dragging scripts to the engine will no longer work (if it ever did).
+
+2) Use TVersion to get the version number.
+
+3) KLogger -> TLogger changes.
+
 Revision 1.7.4.1  2002/04/22 13:20:08  emk
 Major Mac cleanups:
 

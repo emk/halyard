@@ -5,7 +5,7 @@
 #pragma once
 
 #include "THeader.h"
-#include "KLogger.h"
+#include "TLogger.h"
 #include "CPalette.h"
 
 BEGIN_NAMESPACE_FIVEL
@@ -22,10 +22,15 @@ class	CMac5LApp : public PP::LApplication
 		void				QuitScript(void);
 		void				StartUp(void);
 
-		bool				OpenScript(FSSpec *scriptSpec);	
+		//////////
+		// Open a script file.  Scripts are represented without a directory or extension.
+		// For example ":Scripts:sample.scr" would be represented as "sample".  Return
+		// true if no errors occur.
+		//
+		bool				OpenScript(const TString &inScriptName);	
 #ifdef DEBUG
 		void				ReDoScript(const char *curCard);
-		bool				OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard);
+		bool				OpenScriptAgain(const TString &inScriptName, const char *jumpCard);
 		void				ReDoReDoScript(void);
 
 		Boolean				ObeyCommand(PP::CommandT inCommand, void *ioParam);
@@ -90,12 +95,6 @@ class	CMac5LApp : public PP::LApplication
 
 // global application object
 extern CMac5LApp *gTheApp;
-
-extern KLogger gLog;
-extern KLogger gMissingMediaLog;
-#ifdef DEBUG
-extern KLogger gDebugLog;
-#endif
 
 extern Handle clickSound;
 extern WindowPtr gWindow;
