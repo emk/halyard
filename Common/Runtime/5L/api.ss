@@ -360,8 +360,8 @@
   (define-syntax with-offset-origin
     (syntax-rules ()
       [(with-offset-origin by body ...)
-       (let [[old (origin)]
-             [new (point-offset old by)]]
+       (let* [[old (origin)]
+              [new (point-offset old by)]]
          (dynamic-wind
              (lambda () (set! (origin) new))
              (lambda () (begin/var body ...))

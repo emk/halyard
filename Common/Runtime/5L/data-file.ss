@@ -1,29 +1,39 @@
 (module data-file (lib "5L.ss" "5L")
   (require (lib "tamale.ss" "5L"))
-  (provide read-data write-data)
+  (provide ;; TODO - Remove these two functions from API.  They are obsoleted
+           ;; by pref and set-pref!.
+           read-data
+           write-data
 
-  (define tables (make-hash-table 'equal))
-  
-  (define (get-table table 
-            &opt (thunk (lambda () (error "Table doesn't exist" table))))
-    (hash-table-get tables table thunk))
+           pref
+           set-pref!
 
-  (define (make-table table)
-    (hash-table-put! tables table (make-hash-table 'equal)))
+           user-id
+           set-user-id!
+           
+           global-pref
+           set-global-pref!
+           user-pref
+           set-user-pref!
+
+           define-global-pref
+           define-user-pref
+           )
+
+  (define *tables* (make-hash-table 'equal))
   
+  (define (find-table table-name)
+    (unless (hash-table-has-key? *tables* table-name)
+      (hash-table-put! *tables* table-name
+                       (maybe-read-data-from-file table-name)))
+    (hash-table-get *tables* table-name))
+
   (define (read-data table key &key (default #f))
-    (cond
-     ((hash-table-get tables table (lambda() #f)) =>
-      (lambda (table) (hash-table-get table key (lambda () default))))
-     (else (hash-table-get (read-data-from-file table)
-                           key (lambda () default)))))
+    (hash-table-get (find-table table) key (lambda () default)))
 
-  (define (read-data-from-file table)
+  (define (maybe-read-data-from-file table)
     (define file-with-path (build-path "Data" (cat table ".dat")))
-    (define the-table (get-table table 
-                                 (lambda () 
-                                   (begin (make-table table) 
-                                          (get-table table)))))    
+    (define the-table (make-hash-table 'equal))
     (when (file-exists? file-with-path)
       (let ((file-port (open-input-file file-with-path)))
         (letrec ((read-pair
@@ -44,18 +54,56 @@
     (define filename (cat table ".dat"))
     (define file-with-path (build-path dir filename))
     (define file-port (open-output-file file-with-path 'replace))
-    (define the-table (get-table table))
+    (define the-table (find-table table))
     (hash-table-put! the-table key datum)
     (hash-table-for-each the-table (lambda (key value)
-                                     (begin
-                                       (write key file-port)
-                                       (display "\t" file-port)
-                                       (write value file-port)
-                                       (newline file-port))))
+                                     (write key file-port)
+                                     (display "\t" file-port)
+                                     (write value file-port)
+                                     (newline file-port)))
     (close-output-port file-port))
 
-)
+
+  (define pref read-data)
+  (define set-pref! write-data)
+
+  (define *user-id* #f)
+  (define (user-id)
+    (if *user-id*
+        *user-id*
+        (error "Cannot access per-user prefs before setting user-id")))
+  (define (set-user-id! value)
+    (set! *user-id* value))
+
+  (define (user-pref key &key (default #f))
+    (pref (user-id) key default))
+  (define (set-user-pref! key value)
+    (set-pref! (user-id) key value))
+
+  (define (global-pref key &key (default #f))
+    (pref 'global key :default default))
+  (define (set-global-pref! key value)
+    (set-pref! 'global key value))
+
+  ;; Internal helper functions.
+  (define (%pref table key default)
+    (pref table key :default default))
+  (define (set-%pref! table key junk-default value)
+    (set-pref! table key value))
+
+  (define-syntax define-pref
+    (syntax-rules ()
+      [(define-pref var default category)
+       (define-symbol-macro var (%pref category 'var default))])) 
+
+  (define-syntax define-user-pref
+    (syntax-rules ()
+      [(define-user-pref var default)
+       (define-pref var default (user-id))]))
+
+  (define-syntax define-global-pref
+    (syntax-rules ()
+      [(define-global-pref var default)
+       (define-pref var default 'global)]))
   
-
-
-      
+  )
