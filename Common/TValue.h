@@ -28,6 +28,11 @@ inline bool operator==(const TNull &inV1, const TNull &inV2) {
     return true;
 }
 
+inline std::ostream &operator<<(std::ostream &out, const TNull &inV) {
+	out << "#<void>";
+	return out;
+}
+
 
 //=========================================================================
 //  TSymbol

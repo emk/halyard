@@ -6,6 +6,10 @@ CVS - kwasi, djin
     that we have TValue.
   * Removed TObject, TArray and TBTree because they have overstayed their
     welcome by about a decade.
+  * Cleaned up settyped. 
+  * Added output operator for TValue containing TNull().
+  * Added input operator for extracting from a TArgumentList into
+    a TValue. 
 
 0.0.15 - 30 Jan 2004 - emk, kwasi, djin
 

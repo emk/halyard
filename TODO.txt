@@ -31,7 +31,7 @@
 /     Fix CommonHeaders to not have nasty hack
     Simplifications AFTER commit
 /     Delete SET, and fix SETTYPED to use TValues
-?     Clean up SETTYPED interface in kernel.ss
+/     Clean up SETTYPED interface in kernel.ss
 /     Replace big switch statements in TSchemeInterpreter.cpp with *Conv
 /     Let callers of TValueManager call only "Set" and "Get"
 /     LogParameter can now rely on ostringstream and operator<<

@@ -107,29 +107,8 @@
   (define (set-engine-var! name value)
     ;; Set an engine variable.  This is a pain, because we have to play
     ;; along with the engine's lame type system.
-    (let [[namesym (if (string? name) (string->symbol name) name)]
-          [type
-           (cond
-            [(void? value) 'NULL]
-            [(string? value) 'STRING]
-            [(symbol? value) 'SYMBOL]
-            [(and (integer? value) (exact? value))
-             (cond
-              [(<= *32-bit-signed-min* value *32-bit-signed-max*) 'LONG]
-              [(<= *32-bit-unsigned-min* value *32-bit-unsigned-max*) 'ULONG]
-              [else (throw (cat "Cannot store " value " in " name
-                                " because it does fall between "
-                                *32-bit-signed-min* " and "
-                                *32-bit-unsigned-max* "."))])]
-            [(number? value) 'DOUBLE]
-            [(or (eq? value #t) (eq? value #f)) 'BOOLEAN]
-            [(point? value) 'POINT]
-            [(rect? value) 'RECT]
-            [(color? value) 'COLOR]
-            [else (throw (cat "Cannot store " value " in " name "."))])]]
-      (if (eq? type 'NULL)
-          (call-5l-prim 'settyped namesym type)
-          (call-5l-prim 'settyped namesym type value))))
+    (let [[namesym (if (string? name) (string->symbol name) name)]]
+      (call-5l-prim 'settyped namesym value)))
 
   (define (engine-var-exists? name)
     (call-5l-prim 'VariableInitialized name))

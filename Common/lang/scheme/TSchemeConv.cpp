@@ -247,7 +247,10 @@ TValue SchemeToTValue(Scheme_Object *inVal) {
 	Scheme_Type type = SCHEME_TYPE(inVal);
 	
 	switch (type) {
-		case scheme_string_type:
+   	    case scheme_void_type:
+			return TValue(TNull());
+
+	    case scheme_string_type:
 			return TValue(std::string(SCHEME_STR_VAL(inVal), 
 									  SCHEME_STRLEN_VAL(inVal)));
 
@@ -378,6 +381,7 @@ void CHECK_SCHEME_CONV(Scheme_Object *inVal, const TValue inResult) {
 BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 	
 	// Simple types
+	CHECK_SCHEME_CONV(scheme_void, TValue(TNull()));
 	CHECK_SCHEME_CONV(scheme_make_string("hello"), TValue("hello"));
     CHECK_SCHEME_CONV(scheme_intern_symbol("foo"), 
 					  TValue(TSymbol("foo")));

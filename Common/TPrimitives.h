@@ -193,6 +193,7 @@ public:
 									 GraphicsTools::Color &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TCallbackPtr &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TArgumentList* &out);
+	friend TArgumentList &operator>>(TArgumentList &args, TValue &out);
 
 	//////////
 	// Ask the TArgumentList list to start logging all the parameters

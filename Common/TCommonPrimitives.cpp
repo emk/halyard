@@ -229,73 +229,12 @@ DEFINE_5L_PRIMITIVE(SetTyped)
 {
 	::SkipPrimitiveLogging();
 
-	std::string vname, vtype;
-	inArgs >> SymbolName(vname) >> SymbolName(vtype);
+	TValue val;
+	std::string vname;
+	inArgs >> SymbolName(vname) >> val;
 
-	if (vtype == "null")
-	{
-		gVariableManager.MakeNull(vname.c_str());
-	}
-	else if (vtype == "string")
-	{
-		std::string val;
-		inArgs >> val;
-		gVariableManager.Set(vname.c_str(), val.c_str());
-	}
-	else if (vtype == "symbol")
-	{
-		std::string val;
-		inArgs >> SymbolName(val);
-		gVariableManager.Set(vname.c_str(), TSymbol(val.c_str()));
-	}
-	else if (vtype == "long")
-	{
-		int32 val;
-		inArgs >> val;
-		gVariableManager.Set(vname.c_str(), val);
-	}
-	else if (vtype == "ulong")
-	{
-		uint32 val;
-		inArgs >> val;
-		gVariableManager.Set(vname.c_str(), val);
-	}
-	else if (vtype == "double")
-	{
-		double val;
-		inArgs >> val;
-		gVariableManager.Set(vname.c_str(), val);
-	}
-	else if (vtype == "boolean")
-	{
-		bool val;
-		inArgs >> val;
-		gVariableManager.Set(vname.c_str(), val);
-	}
-	else if (vtype == "point")
-	{
-		TPoint val;
-		inArgs >> val;
-		gVariableManager.Set(vname.c_str(), val);
-	}
-	else if (vtype == "rect")
-	{
-		TRect val;
-		inArgs >> val;
-		gVariableManager.Set(vname.c_str(), val);
-	}
-	else if (vtype == "color")
-	{
-		GraphicsTools::Color val;
-		inArgs >> val;
-		gVariableManager.Set(vname.c_str(), val);
-	}
-	else
-	{
-		::SetPrimitiveError("badtype", vtype.c_str());
-	}
+	gVariableManager.Set(vname, val);
 }
-
 
 
 //-------------------------------------------------------------------------

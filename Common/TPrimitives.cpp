@@ -224,6 +224,12 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TArgumentList* &out)
 	return args;
 }
 
+TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TValue &out) {
+	out = args.GetNextArg();
+	args.LogTValueParameter(out);
+	return args;
+}
+
 
 //=========================================================================
 //  SymbolName Methods
