@@ -10,6 +10,7 @@ CVS - emk
       will be needed to debug AI, if we ever do AI.
     - Other minor tweaks and fixes.
     - A few preliminary warning fixes.  Much more to do.
+  * Began work on smtpxx library.
 
 0.0.35 - 09 Sep 2004 - emk
 

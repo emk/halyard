@@ -9,6 +9,7 @@
 //
 #include "afxres.h"
 
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -35,13 +36,13 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
+    "\r\n"
     "\0"
 END
 
 3 TEXTINCLUDE 
 BEGIN
     "#include ""wx/msw/wx.rc""\r\n"
-    "\r\n"
     "\0"
 END
 
@@ -117,7 +118,7 @@ BEGIN
             VALUE "FileDescription", "Tamale 0.0.35"
             VALUE "FileVersion", "0, 0, 35, 0"
             VALUE "InternalName", "Tamale"
-            VALUE "LegalCopyright", "Copyright © 2003 Trustees of Dartmouth College"
+            VALUE "LegalCopyright", "Copyright Â© 1987-2004 Trustees of Dartmouth College"
             VALUE "OriginalFilename", "Tamale.exe"
             VALUE "ProductName", "Tamale"
             VALUE "ProductVersion", "0, 0, 35, 0"
@@ -150,7 +151,6 @@ IDC_RIGHT_CURSOR        CURSOR                  "right_cu.cur"
 // Generated from the TEXTINCLUDE 3 resource.
 //
 #include "wx/msw/wx.rc"
-
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

@@ -18,3 +18,4 @@ libfivel_debug
 libfivel?Data
 *.xSYM
 autom4te.cache
+test.sqlite3
