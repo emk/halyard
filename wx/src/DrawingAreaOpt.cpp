@@ -5,8 +5,8 @@
 
 #include "Stage.h"
 
-void Stage::DrawPixMap(GraphicsTools::Point inPoint,
-					   GraphicsTools::PixMap &inPixMap)
+void DrawingArea::DrawPixMap(GraphicsTools::Point inPoint,
+							 GraphicsTools::PixMap &inPixMap)
 {
 	// Mark the rectangle as dirty.
 	InvalidateRect(wxRect(inPoint.x, inPoint.y,
@@ -19,11 +19,11 @@ void Stage::DrawPixMap(GraphicsTools::Point inPoint,
 	
 	// Clip our pixmap boundaries to fit within our screen.
 	Point begin, end;
-	inPixMap.ClipDrawOperation(inPoint, mStageSize.GetWidth(),
-							   mStageSize.GetHeight(), begin, end);
+	inPixMap.ClipDrawOperation(inPoint, GetPixmap().GetWidth(),
+							   GetPixmap().GetHeight(), begin, end);
 		
 	// Figure out where in memory to begin drawing the first row.
-	wxNativePixelData dst_data(mOffscreenPixmap);
+	wxNativePixelData dst_data(GetPixmap());
 	if ( !dst_data )
 		gLog.FatalError("Error: Can't access raw pixels for bitmap");
 	wxNativePixelData::Iterator dst_row_start(dst_data);
@@ -68,8 +68,8 @@ void Stage::DrawPixMap(GraphicsTools::Point inPoint,
 	}
 }
 
-void Stage::FillBoxAlpha(const wxRect &inBounds, 
-						 const GraphicsTools::Color &inColor)
+void DrawingArea::FillBoxAlpha(const wxRect &inBounds, 
+							   const GraphicsTools::Color &inColor)
 {
 	using GraphicsTools::AlphaBlendChannel;
 	using GraphicsTools::Color;
@@ -81,15 +81,15 @@ void Stage::FillBoxAlpha(const wxRect &inBounds,
 
 	// Clip the rectangle to fit within the screen 
 	Point begin, end;
-	begin.x = Max(0, Min(mStageSize.GetWidth(), inBounds.x));
-	begin.y = Max(0, Min(mStageSize.GetHeight(), inBounds.y));
-	end.x = Max(0, Min(mStageSize.GetWidth(), 
+	begin.x = Max(0, Min(GetPixmap().GetWidth(), inBounds.x));
+	begin.y = Max(0, Min(GetPixmap().GetHeight(), inBounds.y));
+	end.x = Max(0, Min(GetPixmap().GetWidth(), 
 					   inBounds.x + inBounds.width));
-	end.y = Max(0, Min(mStageSize.GetHeight(),
+	end.y = Max(0, Min(GetPixmap().GetHeight(),
 					   inBounds.y + inBounds.height));
 
 	// Get iterator for directly accessing memory.
-	wxNativePixelData data(mOffscreenPixmap);
+	wxNativePixelData data(GetPixmap());
 	if ( !data )
 		gLog.FatalError("Error: Can't access raw pixels for bitmap");
 	wxNativePixelData::Iterator row_start(data);

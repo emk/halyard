@@ -110,6 +110,10 @@ SOURCE=..\..\src\CursorManager.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\DrawingArea.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Element.cpp
 # End Source File
 # Begin Source File
@@ -262,6 +266,10 @@ SOURCE=..\..\src\CommonWxConv.h
 # Begin Source File
 
 SOURCE=..\..\src\CursorManager.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\DrawingArea.h
 # End Source File
 # Begin Source File
 
@@ -495,17 +503,18 @@ SOURCE=..\..\src\wx5L.rc
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\src\StageOpt.cpp
+SOURCE=..\..\src\DrawingAreaOpt.cpp
 
 !IF  "$(CFG)" == "wx5L - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # PROP Ignore_Default_Tool 1
+USERDEP__DRAWI="../../src/DrawingArea.h"	"../../src/TamaleHeaders.h"	
 # Begin Custom Build
 OutDir=.\Debug
-InputPath=..\..\src\StageOpt.cpp
-InputName=StageOpt
+InputPath=..\..\src\DrawingAreaOpt.cpp
+InputName=DrawingAreaOpt
 
 "$(OutDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	rem  Use C++ command line, adding: 
@@ -528,6 +537,7 @@ SOURCE=..\..\src\TransitionOpt.cpp
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # PROP Ignore_Default_Tool 1
+USERDEP__TRANS="../../src/TamaleHeaders.h"	"../../src/Transition.h"	
 # Begin Custom Build
 OutDir=.\Debug
 InputPath=..\..\src\TransitionOpt.cpp

@@ -3,8 +3,8 @@
 #ifndef Stage_H
 #define Stage_H
 
-#include "GraphicsTools.h"
 #include "AppGlobals.h"
+#include "DrawingArea.h"
 
 class StageFrame;
 class Element;
@@ -38,9 +38,9 @@ class Stage : public wxWindow, public GraphicsTools::Image
     std::string mLastCard;
 
     //////////
-    // A bitmap for storing the graphics to display on the stage.
+    // A drawing area for storing the graphics to display on the stage.
     //
-    wxBitmap mOffscreenPixmap;
+	std::auto_ptr<DrawingArea> mOffscreenDrawingArea;
 
     //////////
     // A bitmap for use during various fade effects.
@@ -136,14 +136,13 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	std::vector<wxPoint> mCopiedPoints;
 
 	//////////
-	// Invalidate the entire stage.
+	// Get the primary pixmap associated with this stage.
 	//
-	void InvalidateStage();
-
-	//////////
-	// Invalidate the specified rectangle.
+	// TODO - Remove this method eventually and send all requests
+	// directly to mOffscreenDrawingArea.
 	//
-	void InvalidateRect(const wxRect &inRect);
+	wxBitmap &GetOffscreenPixmap()
+		{ return mOffscreenDrawingArea->GetPixmap(); }
 
 	//////////
 	// Validate the entire stage--i.e., mark it as having been redrawn.
@@ -393,6 +392,18 @@ public:
 	//
 	wxColor GetColor(const GraphicsTools::Color &inColor);
 
+	//////////
+	// Invalidate the entire stage.
+	//
+	void InvalidateStage();
+
+	//////////
+	// Invalidate the specified rectangle.
+	//
+	void InvalidateRect(const wxRect &inRect);
+
+	// XXX - Remove drawing methods ASAP.
+
     //////////
     // Clear the stage to the specified color.
     //
@@ -423,18 +434,6 @@ public:
 	//
 	void OutlineBox(const wxRect &inBounds, const wxColour &inColor,
 					int inWidth);
-
-	// This might be a useful optimization, but we haven't implemented
-	// it yet.  Feel free to remove the stubs if they linger.
-#if 0
-	//////////
-	// Draw a GreyMap to the screen, colorizing it with inColor and
-	// using the grey values as alpha.
-	//
-	void DrawGreyMap(GraphicsTools::Point inPoint,
-					 GraphicsTools::GreyMap &inGreyMap,
-					 GraphicsTools::Color inColor);
-#endif // 0
 
 	//////////
 	// Draw a portable PixMap to the screen, blending alpha

@@ -56,8 +56,7 @@ END_EVENT_TABLE()
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
-      mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
-      mOffscreenFadePixmap(inStageSize.GetWidth(),
+	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
 	  mTextCtrl(NULL), mCurrentElement(NULL), mGrabbedElement(NULL),
@@ -65,6 +64,13 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
 {
+	
+	mOffscreenDrawingArea =
+		std::auto_ptr<DrawingArea>(new DrawingArea(this,
+												   inStageSize.GetWidth(),
+												   inStageSize.GetHeight(),
+												   24));
+
     SetBackgroundColour(STAGE_COLOR);
     ClearStage(*wxBLACK);
     
@@ -324,7 +330,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         // PORTING - May not work on non-Windows platforms, according to
         // the wxWindows documentation.
         wxMemoryDC offscreen_dc;
-        offscreen_dc.SelectObject(mOffscreenPixmap);
+        offscreen_dc.SelectObject(GetOffscreenPixmap());
         wxColour color;
         offscreen_dc.GetPixel(x, y, &color);
 
@@ -368,7 +374,7 @@ void Stage::PaintStage(wxDC &inDC)
 {
     // Blit our offscreen pixmap to the screen.
     // TODO - Could we optimize drawing by only blitting dirty regions?
-	inDC.DrawBitmap(mOffscreenPixmap, 0, 0, false);
+	inDC.DrawBitmap(GetOffscreenPixmap(), 0, 0, false);
 
     // If necessary, draw the grid.
     if (mIsDisplayingGrid)
@@ -458,7 +464,7 @@ void Stage::OnTextEnter(wxCommandEvent &inEvent)
     
     // Set up a drawing context.
     wxMemoryDC dc;
-    dc.SelectObject(mOffscreenPixmap);
+    dc.SelectObject(GetOffscreenPixmap());
     
     // Prepare to draw the text.
     dc.SetTextForeground(mTextCtrl->GetForegroundColour());
@@ -537,9 +543,9 @@ void Stage::OnRightDown(wxMouseEvent &inEvent)
 void Stage::ValidateStage()
 {
 	// XXX - We can't actually *do* this using wxWindows, so we're
-	// repainting the screen too often.  To fix this, we'll need to manage
-	// dirty regions in mOffscreenPixmap manually, or do something else
-	// to complicate things.
+	// repainting the screen too often.  To fix this, we'll need to
+	// manage dirty regions in our offscreen buffer manually, or do
+	// something else to complicate things.
 }
 
 void Stage::InvalidateStage()
@@ -565,83 +571,54 @@ wxColour Stage::GetColor(const GraphicsTools::Color &inColor)
 
 void Stage::ClearStage(const wxColor &inColor)
 {
-    wxMemoryDC dc;
-    dc.SelectObject(mOffscreenPixmap);
-    wxBrush brush(inColor, wxSOLID);
-    dc.SetBackground(brush);
-    dc.Clear();
-    InvalidateStage();
+    mOffscreenDrawingArea->Clear(inColor);
 }
 
 void Stage::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 					 const wxColour &inColor, int inWidth)
 {
-    wxMemoryDC dc;
-    dc.SelectObject(mOffscreenPixmap);
-	wxPen pen(inColor, inWidth, wxSOLID);
-	dc.SetPen(pen);
-	dc.DrawLine(inFrom.x, inFrom.y, inTo.x, inTo.y);
-	InvalidateRect(wxRect(inFrom, inTo));
+	mOffscreenDrawingArea->DrawLine(inFrom, inTo, inColor, inWidth);
 }
 
 void Stage::FillBox(const wxRect &inBounds, 
 					const GraphicsTools::Color &inColor)
 {
-	if (inColor.alpha == 0x00)
-	{
-		wxColor color = GetColor(inColor);
-		wxMemoryDC dc;
-		dc.SelectObject(mOffscreenPixmap);
-		wxBrush brush(color, wxSOLID);
-		dc.SetBrush(brush);
-		dc.SetPen(*wxTRANSPARENT_PEN);
-		dc.DrawRectangle(inBounds.x, inBounds.y, inBounds.width, inBounds.height);
-		InvalidateRect(inBounds);
-	} 
-	else
-	{
-		FillBoxAlpha(inBounds, inColor);
-	}
+	mOffscreenDrawingArea->FillBox(inBounds, inColor);
 }
 
 void Stage::OutlineBox(const wxRect &inBounds, const wxColour &inColor,
 					   int inWidth)
 {
-    wxMemoryDC dc;
-    dc.SelectObject(mOffscreenPixmap);
-	wxPen pen(inColor, inWidth, wxSOLID);
-	dc.SetPen(pen);
-	dc.SetBrush(*wxTRANSPARENT_BRUSH);
-	dc.DrawRectangle(inBounds.x, inBounds.y, inBounds.width, inBounds.height);
-	InvalidateRect(inBounds);
+	mOffscreenDrawingArea->OutlineBox(inBounds, inColor, inWidth);
 }
 
 void Stage::DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
                        bool inTransparent)
 {
-    wxMemoryDC dc;
-    dc.SelectObject(mOffscreenPixmap);
-    dc.DrawBitmap(inBitmap, inX, inY, inTransparent);
-    InvalidateRect(wxRect(inX, inY,
-                          inX + inBitmap.GetWidth(),
-                          inY + inBitmap.GetHeight()));
+	mOffscreenDrawingArea->DrawBitmap(inBitmap, inX, inY, inTransparent);
+}
+
+void Stage::DrawPixMap(GraphicsTools::Point inPoint,
+					   GraphicsTools::PixMap &inPixMap)
+{
+	mOffscreenDrawingArea->DrawPixMap(inPoint, inPixMap);
+}
+
+void Stage::FillBoxAlpha(const wxRect &inBounds, 
+						 const GraphicsTools::Color &inColor)
+{
+	mOffscreenDrawingArea->FillBoxAlpha(inBounds, inColor);
 }
 
 void Stage::DrawDCContents(wxDC &inDC)
 {
-    wxMemoryDC dc;
-    dc.SelectObject(mOffscreenPixmap);
-	if (!dc.Blit(0, 0, mStageSize.GetWidth(), mStageSize.GetHeight(),
-				 &inDC, 0, 0))
-	{
-		ClearStage(*wxBLACK);
-	}
+	mOffscreenDrawingArea->DrawDCContents(inDC);
 }
 
 void Stage::SaveGraphics(const wxRect &inBounds)
 {
 	wxMemoryDC srcDC, dstDC;
-	srcDC.SelectObject(mOffscreenPixmap);
+	srcDC.SelectObject(GetOffscreenPixmap());
 	dstDC.SelectObject(mSavePixmap);
 	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
 			   &srcDC, inBounds.x, inBounds.y);
@@ -651,7 +628,7 @@ void Stage::RestoreGraphics(const wxRect &inBounds)
 {
 	wxMemoryDC srcDC, dstDC;
 	srcDC.SelectObject(mSavePixmap);
-	dstDC.SelectObject(mOffscreenPixmap);
+	dstDC.SelectObject(GetOffscreenPixmap());
 	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
 			   &srcDC, inBounds.x, inBounds.y);
 	InvalidateRect(inBounds);
@@ -659,7 +636,7 @@ void Stage::RestoreGraphics(const wxRect &inBounds)
 
 void Stage::Screenshot(const wxString &inFilename)
 {
-	wxImage image = mOffscreenPixmap.ConvertToImage();
+	wxImage image = GetOffscreenPixmap().ConvertToImage();
 	image.SaveFile(inFilename, wxBITMAP_TYPE_PNG);
 }
 
@@ -767,7 +744,7 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 		// Run transiton, if we can.
 		if (have_before)
 		{
-			TransitionResources r(client_dc, before, mOffscreenPixmap,
+			TransitionResources r(client_dc, before, GetOffscreenPixmap(),
 								  mOffscreenFadePixmap);
 			mTransitionManager->RunTransition(inTransition, inMilliseconds, r);
 		}
