@@ -63,7 +63,7 @@ void test_FileSystem (void)
 	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
 		 "./Fonts/README.txt");
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
-	     == ".\\f\\..\\g");
+	     == "./f/../g");
 
 #else
 #	error "Unknown platform."
