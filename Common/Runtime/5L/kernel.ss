@@ -1225,6 +1225,9 @@
     ;; We're called from C++ after the engine's version of the specified
     ;; element has been deleted.  Our job is to bring our data structures
     ;; back in sync.
+    ;; TODO - We're called repeatedly as nodes get deleted, resulting
+    ;; in an O(n^2) time to delete n nodes.  Not good, but we can live with
+    ;; it for the moment.
     (let [[card (current-card)]]
       (set! (group-children card)
             (let recurse [[children (group-children card)]]
@@ -1233,7 +1236,9 @@
                [(eq? name (node-name (car children)))
                 ;; Delete this node, and exclude it from the new child list.
                 (if (element-temporary? (car children))
-                    (unregister-node (car children))
+                    (begin
+                      (exit-node (car children))
+                      (unregister-node (car children)))
                     (debug-caution
                      (cat "Can't fully delete non-temporary element " name
                           " in this version of the engine")))
@@ -1317,15 +1322,12 @@
   
   (define (exit-card old-card new-card)
     ;; Exit all our child elements.
+    ;; TRICKY - We call into the engine to do element deletion safely.
+    ;; We work with a copy of (GROUP-CHILDREN OLD-CARD); the original
+    ;; will be modified as we run.
     (let loop [[children (group-children old-card)]]
       (unless (null? children)
-        (when (element-temporary? (car children))
-          ;; This gets triggered when a node is CREATEd, but doesn't
-          ;; register itself with the engine.
-          (non-fatal-error (cat "Temporary element '"
-                                (node-name (car children))
-                                "' did not get properly deleted")))
-        (exit-node (car children))
+        (apply call-5l-prim 'deleteelements (list (node-name (car children))))
         (loop (cdr children))))
     ;; Exit old-card.
     (exit-node old-card)
