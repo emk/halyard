@@ -171,8 +171,19 @@ void LTouchZone::DoCommand()
 	        temp = itsText;
 	        gHeaderManager.DoText(headerText, itsBounds, (const char *) temp,0,0);
         }
-        else 
-        	itsPict->Hilite(itsPictLoc, true); 
+        else
+		{
+			// Douglas wants touchzones to stay highlighted, just like on the Mac.
+			LPicture *hilitePict = itsPict->GetHilitePicture();
+			if (hilitePict != NULL)
+			{
+				hilitePict->Draw(itsPictLoc, true);
+				gView->Draw();
+
+				// brief pause needed to see hilited button (esp on fast machines)
+				::Sleep(HILITE_PAUSE);
+			}
+		}
     }
 
     if (not secondCommand.IsEmpty())
@@ -296,6 +307,16 @@ LTouchZone *LTouchZoneManager::GetTouchZone(WPARAM wParam)
 
 /*
  $Log$
+ Revision 1.2.2.2  2002/07/02 13:56:04  zeb
+ 3.2.0.5 - Changed touchzone highlighting to work like the Mac (bug #980).
+ When you click on the touchzone, it draws the highlighted
+ version of the graphic, waits briefly, and then executes the
+ specified commands.  This involved a fix to LTouchZone.  We
+ also fixed the argument parsing of (touch ...) to work like
+ the Macintosh.
+
+ Changes by Zeb and Eric.
+
  Revision 1.2.2.1  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:

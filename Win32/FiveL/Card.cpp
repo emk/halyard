@@ -2174,7 +2174,7 @@ void Card::DoTouch()
     TString     theCommand, SecondCommand;
     TString     cmdText, scmdText;
     TString     picname;
-    LPicture    *thePicture = 0, *hiPicture = 0;
+    LPicture    *thePicture = 0;
     LTouchZone  *theZone;
 	CursorType	cursor = HAND_CURSOR;
 	CursorType	tmpCursor = UNKNOWN_CURSOR;
@@ -2205,8 +2205,6 @@ void Card::DoTouch()
 			// and open paren
 			picname = cursorStr;
 			thePicture = gPictureManager.GetPicture(picname);
-			picname += "H";
-			hiPicture = gPictureManager.GetPicture(picname);
 			if (m_Script.more()) 
 			{
 				m_Script >> loc;
@@ -2226,21 +2224,21 @@ void Card::DoTouch()
             scmdText = "(";
             scmdText += SecondCommand;
             scmdText += ")";
-            theZone = new LTouchZone(bounds, theCommand, cursor, thePicture, loc, scmdText);
-            gTouchZoneManager.Add(theZone);
-            return;
         }
-        m_Script >> picname;
-        thePicture = gPictureManager.GetPicture(picname);
-        picname += "H";
-        hiPicture = gPictureManager.GetPicture(picname);
-        if (m_Script.more()) 
-        {
-            m_Script >> loc;
-            AdjustPoint(&loc);
-        } 
-        else 
-			loc = thePicture->GetOrigin();
+
+		if (m_Script.more())
+		{
+			m_Script >> picname;
+			thePicture = gPictureManager.GetPicture(picname);
+			picname += "H";
+			if (m_Script.more()) 
+			{
+				m_Script >> loc;
+				AdjustPoint(&loc);
+			} 
+			else 
+				loc = thePicture->GetOrigin();
+		}
     }
 
     theZone = new LTouchZone(bounds, theCommand, cursor, thePicture, loc);
@@ -2632,6 +2630,16 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.1.2.2  2002/07/02 13:56:04  zeb
+ 3.2.0.5 - Changed touchzone highlighting to work like the Mac (bug #980).
+ When you click on the touchzone, it draws the highlighted
+ version of the graphic, waits briefly, and then executes the
+ specified commands.  This involved a fix to LTouchZone.  We
+ also fixed the argument parsing of (touch ...) to work like
+ the Macintosh.
+
+ Changes by Zeb and Eric.
+
  Revision 1.1.2.1  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:

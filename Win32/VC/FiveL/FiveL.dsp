@@ -438,5 +438,9 @@ SOURCE=..\..\FiveL\small.ico
 SOURCE=..\..\FiveL\up_curso.cur
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=..\..\ReleaseNotes.txt
+# End Source File
 # End Target
 # End Project

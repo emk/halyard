@@ -1,5 +1,14 @@
 FiveL for Win32 Release Notes
 
+3.2.0.5, Tuesday, July 2, 2002, 3:48 PM
+
+    Changed touchzone highlighting to work like the	Mac (bug #980).
+	When you click on the touchzone, it draws the highlighted
+	version of the graphic, waits briefly, and then executes the
+	specified commands.  This involved a fix to LTouchZone.  We
+	also fixed the argument parsing of (touch ...) to work like
+	the Macintosh.
+
 3.2.0.4, Tuesday, April 16, 2002, 12:28 PM
 
 	Replaced MD5 library with one we're actually allowed to ship.
