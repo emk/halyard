@@ -18,7 +18,7 @@
   ;;;======================================================================
 
   (provide fn callback deferred-callback while for foreach
-	   define-engine-variable define-persistent-variable)
+	   define-engine-variable define/p)
 
   ;;; Create an anonymous function object (which can be passed as a
   ;;; callback to many routines).  This is just an alias for Scheme's
@@ -104,41 +104,39 @@
 
   ;;; Bind a Scheme variable name to a 5L engine variable.
   ;;;
-  ;;; @syntax (define-engine-variable name 5L-name type &opt init-val)
+  ;;; @syntax (define-engine-variable name 5L-name &opt init-val)
   ;;; @param NAME name The Scheme name to use.
   ;;; @param NAME 5L-name The corresponding name in the 5L engine.
-  ;;; @param NAME type The type of the variable.
   ;;; @opt EXPRESSION init-val The initial value of the variable.
   ;;; @xref engine-var set-engine-var!
   (define-syntax define-engine-variable
     (syntax-rules ()
-      [(define-engine-variable name 5l-name type init-val)
+      [(define-engine-variable name 5l-name init-val)
        (begin
-	 (define-symbol-macro name (engine-var '5l-name 'type))
-	 (maybe-initialize-engine-variable '5l-name 'type init-val))]
-      [(define-engine-variable name 5l-name type)
-       (define-symbol-macro name (engine-var '5l-name 'type))]))
+	 (define-symbol-macro name (engine-var '5l-name ))
+	 (maybe-initialize-engine-variable '5l-name init-val))]
+      [(define-engine-variable name 5l-name)
+       (define-symbol-macro name (engine-var '5l-name))]))
 
-  (define (maybe-initialize-engine-variable 5l-name type init-val)
+  (define (maybe-initialize-engine-variable 5l-name init-val)
     ;; A private helper for define-engine-variable.  We only initialize
     ;; a variable if it doesn't already exist, so it can keep its value
     ;; across script reloads.
-    (unless (call-5l-prim 'BOOL 'VariableExists 5l-name)
-      (set! (engine-var 5l-name type) init-val)))
+    (unless (call-5l-prim 'VariableInitialized 5l-name)
+      (set! (engine-var 5l-name) init-val)))
 
-  ;;; Define a global variable which keeps its value across script
-  ;;; reloads.  Note that two persistent variables with the same name,
-  ;;; but in different modules, are essentially the same variable.
+  ;;; Define a persistent global variable which keeps its value across
+  ;;; script reloads.  Note that two persistent variables with the same
+  ;;; name, but in different modules, are essentially the same variable.
   ;;; Do not rely on this fact--it may change.
   ;;;
-  ;;; @syntax (define-persistent-variable name type init-val)
+  ;;; @syntax (define/p name init-val)
   ;;; @param NAME name The name of the variable.
-  ;;; @param NAME type The type of the variable.
   ;;; @param EXPRESSION init-val The initial value of the variable.
-  (define-syntax define-persistent-variable
+  (define-syntax define/p
     (syntax-rules ()
-      [(define-persistent-variable name type init-val)
-       (define-engine-variable name name type init-val)]))
+      [(define/p name init-val)
+       (define-engine-variable name name init-val)]))
 
   ;;; @define SYNTAX with-tracing
   ;;;
@@ -164,16 +162,16 @@
 	   $screen-rect)
 
   ;;; The maximum horizontal position of the last text drawn.
-  (define-engine-variable *text-x*    _INCR_X    INTEGER)
+  (define-engine-variable *text-x*    _INCR_X)
 
   ;;; The maximum vertical position of the last text drawn.
-  (define-engine-variable *text-y*    _INCR_Y    INTEGER)
+  (define-engine-variable *text-y*    _INCR_Y)
 
   ;;; The maximum horizontal position of the last graphic shown.
-  (define-engine-variable *graphic-x* _Graphic_X INTEGER)
+  (define-engine-variable *graphic-x* _Graphic_X)
 
   ;;; The maximum vertical position of the last graphic shown.
-  (define-engine-variable *graphic-y* _Graphic_Y INTEGER)
+  (define-engine-variable *graphic-y* _Graphic_Y)
 
   ;;; @return POINT The point (point *text-x* *text-y*).
   ;;; @xref *text-x* *text-y* 
@@ -306,8 +304,8 @@
   ;;; @return POINT The current origin, in absolute global co-ordinates.
   ;;; @legacy _originx _originy
   (define (origin)
-    (point (engine-var '_originx 'INTEGER)
-	   (engine-var '_originy 'INTEGER)))
+    (point (engine-var '_originx)
+	   (engine-var '_originy)))
 
   ;;; Set the current origin to the specified absolute global co-ordinates,
   ;;; and update all the engine's position-related variables appropriately.
@@ -319,7 +317,7 @@
   (define (set-origin! p)
     (let* [[old (origin)]
 	   [delta (point-difference p old)]]
-      (call-5l-prim 'VOID 'resetorigin p)
+      (call-5l-prim 'resetorigin p)
       (set! (text-position) (point-offset (text-position) delta))
       (set! (graphic-position) (point-offset (graphic-position) delta))))
   
@@ -382,7 +380,7 @@
     ;; XXX - Colors are hard-coded until the engine is modified to
     ;; stop using palette values everywhere.
     (if (have-5l-prim? 'header)
-	(call-5l-prim 'VOID 'header
+	(call-5l-prim 'header
 		      (stylesheet-name sheet)
 		      ;; Generate a fake header fontname.
 		      (cat (if (member? 'bold (stylesheet-flags sheet)) "b" "")
@@ -412,7 +410,7 @@
 
   ;; Helper: Given a stylesheet, register a corresponding defstyle.
   (define (register-defstyle sheet)
-    (call-5l-prim 'VOID 'defstyle
+    (call-5l-prim 'defstyle
 		  (stylesheet-name sheet)
 		  (stylesheet-family sheet)
 		  (stylesheet-size sheet)
@@ -515,7 +513,7 @@
   ;;; @legacy text textaa
   (define (draw-text style r text)
     ;; XXX - textaa uses an idiosyncratic formating language.
-    (call-5l-prim 'VOID 'textaa (stylesheet-name style) r text))
+    (call-5l-prim 'textaa (stylesheet-name style) r text))
   
   ;;; Measure a string of text.
   ;;;
@@ -530,9 +528,9 @@
 			&key (max-width (rect-width $screen-rect)))
     ;;; XXX - We can't measure anything but left-aligned text accurately.
     (with-saved-text-position
-      (call-5l-prim 'VOID 'measuretextaa (stylesheet-name style) msg max-width)
+      (call-5l-prim 'measuretextaa (stylesheet-name style) msg max-width)
       (rect 0 0
-	    (engine-var '_text_width 'INTEGER)
-	    (engine-var '_text_height 'INTEGER))))
+	    (engine-var '_text_width)
+	    (engine-var '_text_height))))
 
   ) ; end module

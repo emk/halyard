@@ -6,6 +6,7 @@
   ;; Get begin/var, and re-export it.
   (require (lib "begin-var.ss" "5L"))
   (provide begin/var)
+  (provide define/var)
   
   ;; Get hooks, and re-export them.
   (require (lib "hook.ss" "5L"))
@@ -293,19 +294,22 @@
 	   caution debug-caution non-fatal-error fatal-error
 	   engine-var set-engine-var! throw exit-script jump refresh)
 
-  (define (call-5l-prim type . args)
+  (define *32-bit-signed-min* -2147483648)
+  (define *32-bit-signed-max* 2147483647)
+  (define *32-bit-unsigned-min* 0)
+  (define *32-bit-unsigned-max* 4294967295)
+
+  (define (call-5l-prim . args)
     (let ((result (apply %call-5l-prim args)))
       (%kernel-check-state)
-      (coerce-from-5l-type type result)))
+      result))
   
   (define (have-5l-prim? name)
-    ;; TODO - Build a general mechanism for extracting return values
-    ;; and converting them to the correct type.
-    (equal? (%call-5l-prim 'haveprimitive name) "1"))
+    (call-5l-prim 'haveprimitive name))
 
   (define (idle)
     (%kernel-die-if-callback 'idle)
-    (call-5l-prim 'VOID 'schemeidle))
+    (call-5l-prim 'schemeidle))
   
   (define (5l-log msg)
     (%call-5l-prim 'log '5L msg 'log))
@@ -325,38 +329,30 @@
   (define (fatal-error msg)
     (%call-5l-prim 'log '5L msg 'fatalerror))
   
-  (define (coerce-from-5l-type type val)
-    (case type
-      [[VOID] #f]
-      [[INTEGER] (string->number val)]
-      [[STRING] val]
-      [[BOOL]
-       (cond
-	[(equal? val "0") #f]
-	[(equal? val "1") #t]
-	[else
-	 (throw (cat "Cannot coerce " val " to boolean value"))])]
-      [else
-       (throw (cat "Unknown engine variable type " type " for " val))]))
-
-  (define (coerce-to-5l-type type val)
-    (case type
-      [[INTEGER]
-       (assert (and (integer? val) (exact? val)))
-       (number->string val)]
-      [[STRING]
-       (assert (string? val))
-       val]
-      [[BOOL]
-       (if val #t #f)]
-      [else
-       (throw (cat "Unknown engine variable type " type " for " val))]))
-
-  (define (engine-var name type)
-    (call-5l-prim type 'get name))
+  (define (engine-var name)
+    (call-5l-prim 'get (if (string? name) (string->symbol name) name)))
   
-  (define (set-engine-var! name type value)
-    (call-5l-prim 'VOID 'set name (coerce-to-5l-type type value)))
+  (define (set-engine-var! name value)
+    (let [[namesym (if (string? name) (string->symbol name) name)]
+	  [type
+	   (cond
+	    [(void? value) 'NULL]
+	    [(string? value) 'STRING]
+	    [(symbol? value) 'SYMBOL]
+	    [(and (integer? value) (exact? value))
+	     (cond
+	      [(<= *32-bit-signed-min* value *32-bit-signed-max*) 'LONG]
+	      [(<= *32-bit-unsigned-min* value *32-bit-unsigned-max*) 'ULONG]
+	      [else (throw (cat "Cannot store " value " in " name
+				" because it does fall between "
+				*32-bit-signed-min* " and "
+				*32-bit-unsigned-max* "."))])]
+	    [(number? value) 'DOUBLE]
+	    [(or (eq? value #t) (eq? value #f)) 'BOOLEAN]
+	    [else (throw (cat "Cannot store " value " in " name "."))])]]
+      (if (eq? type 'NULL)
+	  (call-5l-prim 'settyped namesym type)
+	  (call-5l-prim 'settyped namesym type value))))
   
   (define (throw msg)
     ;; TODO - More elaborate error support.
@@ -364,11 +360,11 @@
     (error msg))
   
   (define (exit-script)
-    (call-5l-prim 'VOID 'schemeexit))
+    (call-5l-prim 'schemeexit))
   
   (define (jump card)
     (if (have-5l-prim? 'jump)
-	(call-5l-prim 'VOID 'jump (card-name card))
+	(call-5l-prim 'jump (card-name card))
 	(begin
 	  ;; If we don't have a JUMP primitive, fake it by hand.
 	  (set! *%kernel-jump-card* (%kernel-find-card card))
@@ -378,7 +374,7 @@
   (define (refresh)
     (call-hook-functions *before-draw-hook*)
     (if (have-5l-prim? 'unlock)
-	(call-5l-prim 'VOID 'unlock)))
+	(call-5l-prim 'unlock)))
 
 
   ;;=======================================================================
@@ -413,19 +409,19 @@
     (when *%kernel-current-card*
       (call-hook-functions *exit-card-hook* *%kernel-current-card*)
       (when (have-5l-prim? 'notifyexitcard)
-	(call-5l-prim 'VOID 'notifyexitcard)))
+	(call-5l-prim 'notifyexitcard)))
 
     ;; Update our global variables.
     (set! *%kernel-previous-card* *%kernel-current-card*)
     (set! *%kernel-current-card* card)
     (when (have-5l-prim? 'notifyentercard)
-      (call-5l-prim 'VOID 'notifyentercard))
+      (call-5l-prim 'notifyentercard))
 
     ;; Actually run the card.
     (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
     (call-hook-functions *enter-card-hook* *%kernel-current-card*)
     (with-errors-blocked (non-fatal-error)
-      (call-5l-prim 'VOID 'resetorigin)
+      (call-5l-prim 'resetorigin)
       ((%kernel-card-thunk card))
       (call-hook-functions *card-body-finished-hook* card)
       (refresh)))

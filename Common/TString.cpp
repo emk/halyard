@@ -829,7 +829,10 @@ TString::operator uint32()
     if ((m_Length < 1) or (not IsNumber()))
     	return (0);
 
-    return (atol(m_String));
+	uint32 result;
+	int items_converted = sscanf(m_String, "%lu", &result);
+	ASSERT(items_converted == 1);
+	return result;
 }
 
 //
@@ -1163,6 +1166,21 @@ istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.9  2002/11/05 23:06:37  emk
+ Added type information to 5L variables, and replaced (var ...) with a more
+ powerful form of (define ...).  These changes should make Scheme more
+ pleasant for content authors.
+
+   * TVariable now stores type information.
+   * Added SetTyped primitive, and replaced VariableExists with
+     VariableInitialized.
+   * Added support for "symbol" arguments to primitives.  These correspond
+     to Scheme symbols, and should eventually be used when a primitive
+     argument refers to a variable name (or one a small, fixed set of strings).
+   * Fixed bugs in TVariable's unsigned integer handling.
+   * Removed TYPE argument from call-5l-prim, engine-var, etc.
+   * Renamed DEFINE-PERSISTENT-VARIABLE to DEFINE/P.
+
  Revision 1.8  2002/06/20 19:49:57  emk
  3.3.6 - Fixed problems with BUTTPCX (and other?) highlighting.
 

@@ -147,6 +147,20 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TArgumentList* &out)
 
 
 //=========================================================================
+//  SymbolName Methods
+//=========================================================================
+
+TArgumentList &FIVEL_NS operator>>(TArgumentList &inArgs,
+								   const SymbolName &inSymbolName)
+{
+	std::string name = inArgs.GetSymbolArg();
+	inArgs.LogParameter(std::string("'") + name);
+	inSymbolName.mName = name;
+	return inArgs;
+}
+
+
+//=========================================================================
 //  ValueOrPercent Methods
 //=========================================================================
 

@@ -45,6 +45,7 @@ BEGIN_NAMESPACE_FIVEL
 // Implicit
 //   thunk - a zero-argument callback
 
+class SymbolName;
 class ValueOrPercent;
 
 
@@ -61,6 +62,8 @@ class ValueOrPercent;
 //
 class TArgumentList
 {
+	friend TArgumentList &operator>>(TArgumentList &inArgs,
+									 const SymbolName &inVoP);
 	friend TArgumentList &operator>>(TArgumentList &inArgs,
 									 const ValueOrPercent &inVoP);
 
@@ -81,6 +84,15 @@ protected:
 	// Return the next argument as a string.
 	//
 	virtual std::string GetStringArg() = 0;
+
+	//////////
+	// Return the next argument as a symbol.  Symbols are basically the
+	// same as strings, but they're typically used to name options in APIs,
+	// and some languages (such as Scheme) want to make a distinction.  If
+	// your language doesn't support symbols, make strings and symbols
+	// equivalent.
+	//
+	virtual std::string GetSymbolArg() = 0;
 
 	//////////
 	// Return the next argument as a singed, 32-bit integer.
@@ -178,6 +190,21 @@ public:
 	// [out] return - The complete entry for Debug.log
 	//
 	std::string EndLog();
+};
+
+//////////
+// An input manipulator which reads a symbol from the input stream and
+// stores it in the specified std::string object.
+//
+class SymbolName
+{
+	std::string &mName;
+
+public:
+	SymbolName(std::string &outName) : mName(outName) { }
+
+	friend TArgumentList &operator>>(TArgumentList &inArgs,
+									 const SymbolName &inSymbolName);
 };
 
 //////////
@@ -316,6 +343,16 @@ inline void SetPrimitiveResult(const char *inValue)
 //////////
 // Set the return value of the current primitive.
 //
+// [in] inValue - The string to return.
+//
+inline void SetPrimitiveSymbolResult(const char *inValue)
+{
+	gVariableManager.SetSymbol("_result", inValue);
+}
+
+//////////
+// Set the return value of the current primitive.
+//
 // [in] inValue - The integer to return.
 //
 inline void SetPrimitiveResult(int32 inValue)
@@ -340,7 +377,7 @@ inline void SetPrimitiveResult(double inValue)
 //
 inline void SetPrimitiveResult(bool inValue)
 {
-	gVariableManager.SetLong("_result", inValue ? 1 : 0);
+	gVariableManager.SetBoolean("_result", inValue);
 }
 
 //////////
@@ -356,6 +393,17 @@ inline void SetPrimitiveResult(const TPoint &inValue)
 					 TString(" ") +
 					 TString::IntToString(inValue.Y()));
 	gVariableManager.SetString("_result", point.GetString());
+}
+
+//////////
+// Set the return value of the current primitive to the
+// value of the specified variable.
+//
+// [in] inVariable - The variable whose value we should use.
+//
+inline void SetPrimitiveResult(TVariable *inVariable)
+{
+	gVariableManager.Assign("_result", inVariable);
 }
 
 #define FIVEL_ERROR_CODE_VAR ("_errorcode")
@@ -384,7 +432,7 @@ inline void SkipPrimitiveLogging()
 {
 	// We don't use an engine variable for any particular reason here--
 	// a global would work fine as well.
-	gVariableManager.SetLong(FIVEL_SKIP_LOGGING_VAR, 1);
+	gVariableManager.SetBoolean(FIVEL_SKIP_LOGGING_VAR, true);
 }
 
 END_NAMESPACE_FIVEL

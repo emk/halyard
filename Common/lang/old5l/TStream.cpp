@@ -518,6 +518,11 @@ std::string TStream::GetStringArg()
 	return GetNextArg(false);
 }
 
+std::string TStream::GetSymbolArg()
+{
+	return MakeStringLowercase(GetNextArg(false));
+}
+
 //  TString class handles string to int conversions.
 //
 int32 TStream::GetInt32Arg()

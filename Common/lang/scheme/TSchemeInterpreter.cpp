@@ -152,8 +152,13 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 		scheme_signal_error("Unknown 5L primitive: %V", inArgv[0]);
 
 	// We need these to get information back out of our try block.
-	bool have_result = false, have_error = false;
-	std::string result, error, errormsg;
+	bool have_error = false;
+	TVariable::Type result_type;
+	std::string res_str, error, errormsg;
+	int32 result_long;
+	uint32 result_ulong;
+	double result_double;
+	bool result_bool;
 
 	// WARNING - Don't signal any Scheme errors from inside this try block.
 	// (I don't know whether it's portable to call scheme_longjmp from
@@ -162,8 +167,8 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 	try
 	{
 		// Clear our error-handling variables.
-		gVariableManager.SetString(FIVEL_ERROR_CODE_VAR, "");
-		gVariableManager.SetString(FIVEL_ERROR_MSG_VAR, "");
+		gVariableManager.MakeNull(FIVEL_ERROR_CODE_VAR);
+		gVariableManager.MakeNull(FIVEL_ERROR_MSG_VAR);
 
 		// Marshal our argument list and call the primitive.
 		TSchemeArgvList arg_list(inArgc - 1, inArgv + 1);
@@ -176,16 +181,47 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 		// Get our various result variables here (inside the try block),
 		// and save them until we're allowed to raise Scheme errors
 		// (outside the try block).
-		if (!gVariableManager.IsNull("_result"))
-		{
-			have_result = true;
-			result = gVariableManager.GetString("_result");
-		}
-		else if (!gVariableManager.IsNull(FIVEL_ERROR_CODE_VAR))
+		if (!gVariableManager.IsNull(FIVEL_ERROR_CODE_VAR))
 		{
 			have_error = true;
 			error = gVariableManager.GetString(FIVEL_ERROR_CODE_VAR);
 			errormsg = gVariableManager.GetString(FIVEL_ERROR_MSG_VAR);
+		}
+		else
+		{
+			TVariable *result = gVariableManager.FindVariable("_result", true);
+			result_type = result->GetType();
+			switch (result_type)
+			{
+				case TVariable::TYPE_STRING: 
+					res_str = result->GetString();
+					break;
+
+				case TVariable::TYPE_SYMBOL:
+					res_str = result->GetSymbol();
+					break;
+
+				case TVariable::TYPE_LONG:
+					result_long = result->GetLong();
+					break;
+
+				case TVariable::TYPE_ULONG:
+					result_ulong = result->GetULong();
+					break;
+
+				case TVariable::TYPE_DOUBLE:
+					result_double = result->GetDouble();
+					break;
+
+				case TVariable::TYPE_BOOLEAN:
+					result_bool = result->GetBoolean();
+					break;
+
+				case TVariable::TYPE_NULL:
+				case TVariable::TYPE_UNINITIALIZED:
+				default:
+					/* Do nothing for now. */;
+			}
 		}
 	}
 	catch (std::exception &e)
@@ -197,15 +233,44 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 		scheme_signal_error("%s: Unknown 5L engine error", prim_name);
 	}
 
-	// Figure out what we should pass back to Scheme.
+	// Do a non-local exit if the primitive returned an error.
 	if (have_error)
 		scheme_signal_error("%s: %s: %s", prim_name,
 							error.c_str(), errormsg.c_str());
-	else if (have_result)
-		// TODO - Support more data types as soon as TVariableManager does.
-		return scheme_make_sized_string(const_cast<char*>(result.c_str()),
-										result.length(), true);
+	
+	// Figure out what we should pass back to Scheme.
+	switch (result_type)
+	{
+		case TVariable::TYPE_UNINITIALIZED:
+			scheme_signal_error("%s: _result is broken", prim_name);
+			
+		case TVariable::TYPE_NULL:
+			return scheme_void;
 
+		case TVariable::TYPE_STRING:
+			return scheme_make_sized_string(const_cast<char*>(res_str.c_str()),
+											res_str.length(), true);
+
+		case TVariable::TYPE_SYMBOL:
+			return scheme_intern_symbol(const_cast<char*>(res_str.c_str()));
+
+		case TVariable::TYPE_LONG:
+			return scheme_make_integer_value(result_long);
+
+		case TVariable::TYPE_ULONG:
+			return scheme_make_integer_value_from_unsigned(result_ulong);
+
+		case TVariable::TYPE_DOUBLE:
+		    return scheme_make_double(result_double);
+
+		case TVariable::TYPE_BOOLEAN:
+			return result_bool ? scheme_true : scheme_false;
+
+		default:
+			scheme_signal_error("%s: _result has unsupported type", prim_name);
+	}		
+
+	ASSERT(false); // Should not get here.
 	return scheme_false;
 }
 
@@ -427,6 +492,9 @@ std::string TSchemeArgumentList::GetStringArg()
 	Scheme_Object *arg = GetNextArg();
 	if (SCHEME_SYMBOLP(arg))
 	{
+		// TODO - Remove support for passing symbols where strings are wanted.
+		gDebugLog.Caution("Symbol '%s passed as string argument.",
+						  SCHEME_SYM_VAL(arg));
 		return SCHEME_SYM_VAL(arg);
 	}
 	else
@@ -434,6 +502,14 @@ std::string TSchemeArgumentList::GetStringArg()
 		TypeCheck(scheme_string_type, arg);
 		return std::string(SCHEME_STR_VAL(arg), SCHEME_STRLEN_VAL(arg));
 	}
+}
+
+std::string TSchemeArgumentList::GetSymbolArg()
+{
+	Scheme_Object *arg = GetNextArg();
+	if (!SCHEME_SYMBOLP(arg))
+		TypeCheckFail();
+	return SCHEME_SYM_VAL(arg);
 }
 
 int32 TSchemeArgumentList::GetInt32Arg()

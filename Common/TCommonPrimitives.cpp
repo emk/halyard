@@ -29,8 +29,9 @@ void FIVEL_NS RegisterCommonPrimitives()
 	REGISTER_5L_PRIMITIVE(Origin);
 	REGISTER_5L_PRIMITIVE(ResetOrigin);
 	REGISTER_5L_PRIMITIVE(Set);
+	REGISTER_5L_PRIMITIVE(SetTyped);
 	REGISTER_5L_PRIMITIVE(Get);
-	REGISTER_5L_PRIMITIVE(VariableExists);
+	REGISTER_5L_PRIMITIVE(VariableInitialized);
 	REGISTER_5L_PRIMITIVE(DefStyle);
 	REGISTER_5L_PRIMITIVE(MeasureTextAA);
 }
@@ -225,7 +226,8 @@ DEFINE_5L_PRIMITIVE(ResetOrigin)
 //-------------------------------------------------------------------------
 // (Set VARIABLE NEWVALUE [Flag])
 //-------------------------------------------------------------------------
-// Sets the variable to the given value.
+// Sets the variable to the given value.  NEWVALUE will be treated as a
+// string or a date string.  See SetTyped for a more general Set function.
 
 DEFINE_5L_PRIMITIVE(Set)
 {
@@ -273,30 +275,91 @@ DEFINE_5L_PRIMITIVE(Set)
 
 
 //-------------------------------------------------------------------------
+// (SetTyped VARIABLE TYPE [NEWVALUE])
+//-------------------------------------------------------------------------
+// Set the value of VARIABLE to NEWVALUE, using the specified TYPE.  If
+// TYPE is "null", then NEWVALUE must be omitted.
+
+DEFINE_5L_PRIMITIVE(SetTyped)
+{
+	std::string vname, vtype;
+	inArgs >> SymbolName(vname) >> SymbolName(vtype);
+
+	if (vtype == "null")
+	{
+		gVariableManager.MakeNull(vname.c_str());
+	}
+	else if (vtype == "string")
+	{
+		std::string val;
+		inArgs >> val;
+		gVariableManager.SetString(vname.c_str(), val.c_str());
+	}
+	else if (vtype == "symbol")
+	{
+		std::string val;
+		inArgs >> SymbolName(val);
+		gVariableManager.SetSymbol(vname.c_str(), val.c_str());
+	}
+	else if (vtype == "long")
+	{
+		int32 val;
+		inArgs >> val;
+		gVariableManager.SetLong(vname.c_str(), val);
+	}
+	else if (vtype == "ulong")
+	{
+		uint32 val;
+		inArgs >> val;
+		gVariableManager.SetULong(vname.c_str(), val);
+	}
+	else if (vtype == "double")
+	{
+		double val;
+		inArgs >> val;
+		gVariableManager.SetDouble(vname.c_str(), val);
+	}
+	else if (vtype == "boolean")
+	{
+		bool val;
+		inArgs >> val;
+		gVariableManager.SetBoolean(vname.c_str(), val);
+	}
+	else
+	{
+		::SetPrimitiveError("badtype", vtype.c_str());
+	}
+}
+
+
+
+//-------------------------------------------------------------------------
 // (Get VARIABLE)
 //-------------------------------------------------------------------------
-// Returns the value stored in the variable, represented as a string.
+// Returns the value stored in the variable, preserving type information.
 
 DEFINE_5L_PRIMITIVE(Get)
 {
-	TString vname;
-	inArgs >> vname;
-   	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
+	std::string vname;
+	inArgs >> SymbolName(vname);
+
+	TVariable *var = gVariableManager.FindVariable(vname.c_str(), true);
+   	::SetPrimitiveResult(var);
 }
 
 
 //-------------------------------------------------------------------------
-// (DefStyle NAME ...)
+// (VariableInitialized NAME)
 //-------------------------------------------------------------------------
-// Create a stylesheet with the given name.
+// Determine whether a variable has been initialized.
 
-DEFINE_5L_PRIMITIVE(VariableExists)
+DEFINE_5L_PRIMITIVE(VariableInitialized)
 {
-	TString vname;
-	inArgs >> vname;
-	TVariable *v =
-		gVariableManager.FindVariable(vname.GetString(), true, false);
-	::SetPrimitiveResult(v ? true : false);
+	std::string vname;
+	inArgs >> SymbolName(vname);
+
+	TVariable::Type type = gVariableManager.GetType(vname.c_str());
+	::SetPrimitiveResult(type == TVariable::TYPE_UNINITIALIZED ? true : false);
 }
 
 

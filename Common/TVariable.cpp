@@ -32,9 +32,15 @@ TVariableManager FIVEL_NS gVariableManager;
 TVariable::TVariable(const char *inName, const char *inValue) : TBNode(inName)
 {
     if (inValue != NULL)
+	{
+		mType = TYPE_STRING;
         mValue = inValue; 
+	}
 	else
+	{
+		mType = TYPE_UNINITIALIZED;
 		mValue = (int32) 0;
+	}
 }
 
 void TVariable::SetDate(uint32 inDate, int32 inDateType)
@@ -160,6 +166,16 @@ int TVariableManager::IsSpecial(const char *name)
     return false;
 }
 
+TVariable::Type TVariableManager::GetType(const char *inName)
+{
+	// Don't create the variable if it doesn't already exist.
+    TVariable *var = FindVariable(inName, true, false);
+	if (var)
+		return var->GetType();
+	else
+		return TVariable::TYPE_UNINITIALIZED;
+}
+
 void TVariableManager::MakeNull(const char *inName)
 {
     TVariable *var = FindVariable(inName, true);
@@ -176,7 +192,14 @@ bool TVariableManager::IsNull(const char *inName)
 const char *TVariableManager::GetString(const char *name)
 {
     TVariable *var = FindVariable(name, true);
-    return (var->GetString());
+    return var->GetString();
+}
+
+// Return value of "name" as a symbol.
+const char *TVariableManager::GetSymbol(const char *name)
+{
+    TVariable *var = FindVariable(name, true);
+    return var->GetSymbol();
 }
 
 // Return value of "name" as a long.
@@ -191,6 +214,13 @@ double TVariableManager::GetDouble(const char *name)
 {
     TVariable *var = FindVariable(name, true);
     return var->GetDouble();
+}
+
+// Return value of "name" as a boolean.
+bool TVariableManager::GetBoolean(const char *name)
+{
+    TVariable *var = FindVariable(name, true);
+    return var->GetBoolean();
 }
 
 
@@ -260,10 +290,24 @@ void TVariableManager::SetString(const char *name, const char *data)
 }
 
 // Set 'name' to 'data'.
-void TVariableManager::SetLong(const char *name, const long data)
+void TVariableManager::SetSymbol(const char *name, const char *data)
+{
+    TVariable *var = FindVariable(name, false);
+    var->SetSymbol(data);
+}
+
+// Set 'name' to 'data'.
+void TVariableManager::SetLong(const char *name, const int32 data)
 {
     TVariable *var = FindVariable(name, false);
     var->SetLong(data);
+}
+
+// Set 'name' to 'data'.
+void TVariableManager::SetULong(const char *name, const uint32 data)
+{
+    TVariable *var = FindVariable(name, false);
+    var->SetULong(data);
 }
 
 // Set 'name' to 'data'.
@@ -274,10 +318,25 @@ void TVariableManager::SetDouble(const char *name, const double data)
 } 
 
 // Set 'name' to 'data'.
+void TVariableManager::SetBoolean(const char *name, bool data)
+{
+    TVariable *var = FindVariable(name, false);
+    var->SetBoolean(data);
+} 
+
+// Set 'name' to 'data'.
 void TVariableManager::SetDate(const char *name, uint32 date, int32 date_type)
 {
 	TVariable *var = FindVariable(name, false);
 	var->SetDate(date, date_type);
+}
+
+// Set 'inName' to the value of 'inVar'.
+void TVariableManager::Assign(const char *inName, const TVariable *inVar)
+{
+	ASSERT(inVar);
+	TVariable *var = FindVariable(inName, false);
+	var->Assign(inVar);
 }
 
 
@@ -305,6 +364,21 @@ void TVariableManager::SetLocal(TVariable *newlocal)
 
 /*
  $Log$
+ Revision 1.7  2002/11/05 23:06:37  emk
+ Added type information to 5L variables, and replaced (var ...) with a more
+ powerful form of (define ...).  These changes should make Scheme more
+ pleasant for content authors.
+
+   * TVariable now stores type information.
+   * Added SetTyped primitive, and replaced VariableExists with
+     VariableInitialized.
+   * Added support for "symbol" arguments to primitives.  These correspond
+     to Scheme symbols, and should eventually be used when a primitive
+     argument refers to a variable name (or one a small, fixed set of strings).
+   * Fixed bugs in TVariable's unsigned integer handling.
+   * Removed TYPE argument from call-5l-prim, engine-var, etc.
+   * Renamed DEFINE-PERSISTENT-VARIABLE to DEFINE/P.
+
  Revision 1.6  2002/10/15 18:06:05  emk
  3.5.8 - 15 Oct 2002 - emk
 

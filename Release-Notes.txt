@@ -2,6 +2,8 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
+wx5L:
+
 Working on making wx5L portable.  The Windows wx5L build is slightly
 broken; I'll fix it once the portable code is happy.
 
@@ -12,6 +14,22 @@ broken; I'll fix it once the portable code is happy.
   * Wrote scripts to convert *.ico and *.bmp files to *.xpm files.
   * Added AppGraphics.h and AppGraphics.cpp, which import xpm files.
   * Checked in some other utility scripts, and updated 5L-stats.
+
+Regular 5L:
+
+Added type information to 5L variables, and replaced (var ...) with a more
+powerful form of (define ...).  These changes should make Scheme more
+pleasant for content authors.
+
+  * TVariable now stores type information.
+  * Added SetTyped primitive, and replaced VariableExists with
+    VariableInitialized.
+  * Added support for "symbol" arguments to primitives.  These correspond
+    to Scheme symbols, and should eventually be used when a primitive
+    argument refers to a variable name (or one a small, fixed set of strings).
+  * Fixed bugs in TVariable's unsigned integer handling.
+  * Removed TYPE argument from call-5l-prim, engine-var, etc.
+  * Renamed DEFINE-PERSISTENT-VARIABLE to DEFINE/P.
 
 3.5.9 - 31 Oct 2002 - emk
 

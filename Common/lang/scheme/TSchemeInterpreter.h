@@ -164,6 +164,7 @@ protected:
 	
 	// For documentation of these virtual methods, see TPrimitives.h.
 	virtual std::string GetStringArg();
+	virtual std::string GetSymbolArg();
 	virtual int32 GetInt32Arg();
 	virtual uint32 GetUInt32Arg();
 	virtual bool GetBoolArg();

@@ -29,6 +29,26 @@ class TVariable : public TBNode
 {
 	public:
 		//////////
+		// Supported value types.  Internally, all values are
+	    // stored as strings, but we keep track of their (alleged) types
+	    // to better support programming languages which distinguish
+	    // between different variable types.
+	    //
+		// A variable will convert its value to any type upon request,
+		// for compatibility with old5l and other string-based languages.
+	    //
+		enum Type {
+			TYPE_UNINITIALIZED = 0,
+			TYPE_NULL,   // No value.
+			TYPE_STRING, // Regular string.
+			TYPE_SYMBOL, // A symbol, as in Scheme.
+			TYPE_LONG,   // A 32-bit signed integer.
+			TYPE_ULONG,  // A 32-bit unsigned integer.
+			TYPE_DOUBLE, // A floating point number.
+			TYPE_BOOLEAN // A boolean value.
+		};
+
+		//////////
 		// Constructor.
 		//
 		// [in] inName - name of the variable
@@ -42,14 +62,19 @@ class TVariable : public TBNode
 		virtual ~TVariable() {}
 
 		//////////
+		// Return the type of the variable's current value.
+		//
+		Type GetType() { return mType; }
+
+		//////////
 		// Make a variable null.
 		//
-		void MakeNull() { mValue = ""; }
+		void MakeNull() { mType = TYPE_NULL; mValue = ""; }
 
 		//////////
 		// Is a variable null?
 		//
-		bool IsNull() { return mValue == "" ? true : false; }
+		bool IsNull() { return mType == TYPE_NULL ? true : false; }
 
 		//////////
 		// Get the value of this variable as a character string.
@@ -57,6 +82,13 @@ class TVariable : public TBNode
 		// [out] return - the value of this variable
 		//
 		const char	*GetString(void) { return (const char *) mValue; }
+
+		//////////
+		// Get the value of this variable as a symbol.
+		//
+		// [out] return - the value of this variable
+		//
+		const char	*GetSymbol(void) { return (const char *) mValue; }
 		
 		//////////
 		// Get the value of this variable as a long.
@@ -80,32 +112,67 @@ class TVariable : public TBNode
 		double	GetDouble(void)	{ return (double) mValue; }
 
 		//////////
-		// Set the value of this variable.
+		// Get the value of this variable as a boolean.
 		//
-		// [in] inValue - new value
+		// [out] return - the value of this variable
 		//
-		void	SetString(const char *inValue) { mValue = inValue; }
+		bool	GetBoolean(void) { return (mValue == "0" ? false : true); }
 		
 		//////////
 		// Set the value of this variable.
 		//
 		// [in] inValue - new value
 		//
-		void	SetString(const TString &inValue) { mValue = inValue; }
+		void	SetString(const char *inValue)
+			{ mType = TYPE_STRING; mValue = inValue; }
 		
 		//////////
 		// Set the value of this variable.
 		//
 		// [in] inValue - new value
 		//
-		void	SetLong(const long inValue) { mValue = inValue; }
+		void	SetString(const TString &inValue)
+			{ mType = TYPE_STRING; mValue = inValue; }
 		
 		//////////
 		// Set the value of this variable.
 		//
 		// [in] inValue - new value
 		//
-		void	SetDouble(const double inValue)	{ mValue = inValue; }
+		void	SetSymbol(const char *inValue)
+			{ mType = TYPE_SYMBOL; mValue = inValue; }
+		
+		//////////
+		// Set the value of this variable.
+		//
+		// [in] inValue - new value
+		//
+		void	SetLong(const int32 inValue)
+			{ mType = TYPE_LONG; mValue = inValue; }
+		
+		//////////
+		// Set the value of this variable.
+		//
+		// [in] inValue - new value
+		//
+		void	SetULong(const uint32 inValue)
+			{ mType = TYPE_ULONG; mValue = inValue; }
+		
+		//////////
+		// Set the value of this variable.
+		//
+		// [in] inValue - new value
+		//
+		void	SetDouble(const double inValue)
+			{ mType = TYPE_DOUBLE; mValue = inValue; }
+
+		//////////
+		// Set the value of this variable.
+		//
+		// [in] inValue - new value
+		//
+		void	SetBoolean(const bool inValue)
+			{ mType = TYPE_BOOLEAN; mValue = (inValue ? "1" : "0"); }
 		
 		//////////
 		// Fill this variable with a date string.
@@ -118,7 +185,19 @@ class TVariable : public TBNode
 		//
 		void	SetDate(uint32 inDate, int32 inDateType);
 
+		//////////
+		// Assign the value of one variable to another, including type
+		// information.
+		//
+		void    Assign(const TVariable *inVar)
+			{ mType = inVar->mType; mValue = inVar->mValue; }
+
 	protected:
+		//////////
+		// The type of this variable.
+		//
+		Type		mType;
+
 		//////////
 		// The value of this variable.
 		//
@@ -166,6 +245,14 @@ class TVariableManager : public TBTree
 									 SpecialVariableFunction inFunction);
 
 		//////////
+		// Return the type of the specified variable's current value.
+		//
+		// [in] inName - name of the variable
+		// [out] return - the type of the variable
+		//
+		TVariable::Type GetType(const char *inName);
+
+		//////////
 		// Make a variable null.
 		//
 		void MakeNull(const char *inName);
@@ -184,6 +271,14 @@ class TVariableManager : public TBTree
 		const char 	*GetString(const char *inName);
 		
 		//////////
+		// Get the value of the specified variable as a symbol.
+		//
+		// [in] inName - name of the variable
+		// [out] return - the value of the variable
+		//
+		const char 	*GetSymbol(const char *inName);
+		
+		//////////
 		// Get the value of the specified variable as a long.
 		//
 		// [in] inName - name of the variable
@@ -199,6 +294,14 @@ class TVariableManager : public TBTree
 		//
 		double		GetDouble(const char *inName);
 
+		//////////
+		// Get the value of the specified variable as a boolean.
+		//
+		// [in] inName - name of the variable
+		// [out] return - the value of the variable
+		//
+		bool		GetBoolean(const char *inName);
+		
 		//////////
 		// Find a variable by name.  If not found, create a new one
 		// (unless we're told not to).
@@ -225,7 +328,23 @@ class TVariableManager : public TBTree
 		// [in] inName - name of the variable
 		// [in] inValue - the value
 		//
-		void		SetLong(const char *inName, const long inValue);
+		void		SetSymbol(const char *inName, const char *inValue);
+		
+		//////////
+		// Set the value of the specified variable
+		//
+		// [in] inName - name of the variable
+		// [in] inValue - the value
+		//
+		void		SetLong(const char *inName, const int32 inValue);
+		
+		//////////
+		// Set the value of the specified variable
+		//
+		// [in] inName - name of the variable
+		// [in] inValue - the value
+		//
+		void		SetULong(const char *inName, const uint32 inValue);
 		
 		//////////
 		// Set the value of the specified variable
@@ -234,6 +353,14 @@ class TVariableManager : public TBTree
 		// [in] inValue - the value
 		//
 		void		SetDouble(const char *inName, const double inValue);
+        
+		//////////
+		// Set the value of the specified variable
+		//
+		// [in] inName - name of the variable
+		// [in] inValue - the value
+		//
+		void		SetBoolean(const char *inName, const bool inValue);
         
 		//////////
 		// Set the value of the specified variable with a date string.
@@ -247,6 +374,14 @@ class TVariableManager : public TBTree
 		//
 		void		SetDate(const char *inName, uint32 inDate,
 							int32 inDateType);
+
+		//////////
+		// Set the value of the specified variable from another variable.
+		//
+		// [in] inName - the variable to set
+		// [in] inName - the variable from which to get the value
+		//
+		void    	Assign(const char *inName, const TVariable *inVar);
         
 		//////////
 		// Get the root of the local variable tree (used by macros).
@@ -298,6 +433,21 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5  2002/11/05 23:06:37  emk
+ Added type information to 5L variables, and replaced (var ...) with a more
+ powerful form of (define ...).  These changes should make Scheme more
+ pleasant for content authors.
+
+   * TVariable now stores type information.
+   * Added SetTyped primitive, and replaced VariableExists with
+     VariableInitialized.
+   * Added support for "symbol" arguments to primitives.  These correspond
+     to Scheme symbols, and should eventually be used when a primitive
+     argument refers to a variable name (or one a small, fixed set of strings).
+   * Fixed bugs in TVariable's unsigned integer handling.
+   * Removed TYPE argument from call-5l-prim, engine-var, etc.
+   * Renamed DEFINE-PERSISTENT-VARIABLE to DEFINE/P.
+
  Revision 1.4  2002/10/15 18:06:05  emk
  3.5.8 - 15 Oct 2002 - emk
 

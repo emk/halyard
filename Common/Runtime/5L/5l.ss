@@ -36,12 +36,7 @@
       [(lambda/var args body ...)
        (lambda args (begin/var body ...))]))
 
-  (define-syntax define/var
-    (syntax-rules ()
-      [(define/var (synopsis ...) body ...)
-       (define (synopsis ...) (begin/var body ...))]
-      [(define/var other ...)
-       (define other ...)]))
+  ; define/var comes from begin-var.ss.
 
   (define-syntax let/var
     (syntax-rules ()

@@ -9,7 +9,7 @@
 (define-syntax test
   (syntax-rules ()
     [(test sexpr)
-     (call-5l-prim 'VOID 'test (value->string 'sexpr) sexpr)]))
+     (call-5l-prim 'test (value->string 'sexpr) sexpr)]))
 
 
 ;;=========================================================================
@@ -18,7 +18,7 @@
 
 (test #t)
 
-(define-engine-variable foo foo STRING)
+(define-engine-variable foo foo "")
 
 (set! foo "bar")
 (test (equal? foo "bar"))
@@ -36,8 +36,8 @@
     (string->symbol (cat prefix sym)))
   (let loop [[i 0] [values values]]
     (unless (null? values)
-      (call-5l-prim 'VOID (prefix-symbol "set_wanted_" type) i)
-      (call-5l-prim 'VOID (prefix-symbol "test_check_" type) (car values))
+      (call-5l-prim (prefix-symbol "set_wanted_" type) i)
+      (call-5l-prim (prefix-symbol "test_check_" type) (car values))
       (loop (+ i 1) (cdr values)))))
 
 (test-arg-type 'string '("" "hello"))
@@ -58,7 +58,7 @@
 
 (define (mark-card-as-seen card-name)
   (debug-log (cat "Marking " card-name))
-  (set! (engine-var (cat "seen-" card-name) 'STRING) "1"))
+  (set! (engine-var (cat "seen-" card-name)) "1"))
 
 (card start
   (mark-card-as-seen "start")
@@ -70,13 +70,22 @@
 
 (card test-2
   (mark-card-as-seen "test-2")
+  (jump test-variables))
+
+(define/p *vartest* #f)
+
+(card test-variables
+  (foreach [val (list (void) "str" 'sym -2147483648 2147483647 4294967295
+		      -1 0 1 -1.0 0.0 1.0 #f #t)]
+    (set! *vartest* val)
+    (test (equal? *vartest* val)))
   (jump test-callbacks))
 
 (define *before-callback-flag* #f)
 (define *after-callback-flag* #f)
 
 (define (test-callback code)
-  (call-5l-prim 'VOID 'testcallback code))
+  (call-5l-prim 'testcallback code))
 
 (card test-callbacks
   ;; Test a simple callback.
@@ -98,14 +107,14 @@
   (jump test-pause))
 
 (card test-pause
-  (call-5l-prim 'VOID 'testpause)
+  (call-5l-prim 'testpause)
   (jump test-timeout))
 
 (define *timeout-start* #f)
 
 (card test-timeout
   (set! *timeout-start* (current-milliseconds))
-  (call-5l-prim 'VOID 'testtimeout 1 'timeout-done))
+  (call-5l-prim 'testtimeout 1 'timeout-done))
 
 (card timeout-done
   (test (>= (current-milliseconds) (+ *timeout-start* 1000)))
@@ -113,7 +122,7 @@
 
 (card test-nap
   (set! *timeout-start* (current-milliseconds))
-  (call-5l-prim 'VOID 'testnap 2)
+  (call-5l-prim 'testnap 2)
   (test (>= (current-milliseconds) (+ *timeout-start* 200)))
   (jump advanced-language-test-cases))
 
@@ -124,16 +133,16 @@
 
 (card advanced-language-test-cases
 
-  ;; Test (var ...).
-  (var x)
+  ;; Test (define ...).
+  (define x #f)
   (test (eq? x #f))
   (set! x 10)
   (test (eq? x 10))
-  (var y 20)
+  (define y 20)
   (test (eq? (+ x y) 30))
 
   ;; Test variable interpolation.
-  (var bar 3)
+  (define bar 3)
   (test (equal? "foo $bar" "foo 3"))
   (test (equal? "foo${bar}baz" "foo3baz"))
   (test (equal? "foo$(+ bar 2)baz" "foo5baz"))
@@ -143,19 +152,19 @@
   (test (eq? :foo ':foo))
 
   ;; Generalized setters.
-  (var test-list (list 1 2 3))
+  (define test-list (list 1 2 3))
   (set! (car test-list) 0)
   (test (equal? '(0 2 3) test-list))
 
-  ;; Magic variables.
-  (let [[x 10]
-	[x-shadow 20]]
-    (define (magic dummy)
-      (test (eq? (* 2 x) x-shadow))
-      x)
-    (define (set-magic! dummy val)
-      (set! x val)
-      (set! x-shadow (* 2 val)))
+  ;; Magic variables (and more define tests...).
+  (define-values [x-real x-shadow] (values 10 20))
+  (define (magic dummy)
+    (test (eq? (* 2 x-real) x-shadow))
+    x-real)
+  (define (set-magic! dummy val)
+    (set! x-real val)
+    (set! x-shadow (* 2 val)))
+  (let []
     (define-symbol-macro magic-x (magic "whatever"))
     (test (eq? magic-x 10))
     (set! magic-x 30)
