@@ -251,11 +251,11 @@
     ;; background.  Yuck.
     (call-5l-prim 'MousePosition))
 
-  (define (element-shown? elem)
-    (call-5l-prim 'ElementIsShown (node-full-name elem)))
-
   (define (set-element-shown?! elem show?)
-    (call-5l-prim 'ElementSetShown (node-full-name elem) show?))
+    ;; Not all subclasses of %element% actually have a corresponding
+    ;; engine object.
+    (when (element-exists-in-engine? elem)
+      (call-5l-prim 'ElementSetShown (node-full-name elem) show?)))
 
   (define (delete-element elem-or-name)
     ;; TODO - Get rid of elem-or-name-hack, and rename
@@ -551,7 +551,7 @@
        [audio-only?  :type <boolean> :label "Audio only"        :default #f]
        [loop?        :type <boolean> :label "Loop movie"        :default #f]
        [interaction? :type <boolean> :label "Allow interaction" :default #f]]
-      (%widget%)
+      (%widget% :shown? (or (not audio-only?) controller?))
     (let [[path (media-path location)]]
       (check-file path)
       (call-5l-prim 'movie (node-full-name self)
@@ -667,6 +667,9 @@
     (and (memq name (map node-name (node-elements parent)))
          #t))
 
+  (define (element-exists-in-engine? elem)
+    (call-5l-prim 'ElementExists (node-full-name elem)))
+    
   (define (delete-element-if-exists name
                                     &key (parent (default-element-parent)))
     (when (element-exists? name :parent parent)
