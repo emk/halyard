@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -43,36 +44,43 @@ Macro::Macro(TIndexFile *inFile, const char *name, long p1, long p2)
  ***********************************************************************/
 void Macro::Execute()
 {
-    if (m_Running)
+	// Make sure our script has been loaded.
+    SetScript();
+	
+	// Save our member variables, so this macro can be called recursively.
+	bool old_return = m_Return;
+	TStream old_script = m_Script;
+	try
 	{
-        gLog.Log("Error: Can't call macro %s recursively.", Key());
-		return;
+		// Get ready to run.
+		m_Return = false;
+		m_Script.reset();
+ 
+		// dump the macro.
+		gDebugLog.Log("macro: %s", m_Script.GetString());	 
+
+		m_Script >> open >> discard >> discard;   //  Remove "(macrodef NAME"
+
+		//  Do commands until we jump somewhere or we hit the closing paren.
+		//
+		while ((m_Script.more()) 
+			   and (not m_Return)
+			   and (not gCardManager.Jumping())) 
+		{
+			DoCommand();
+		}
+	}
+	catch (...)
+	{
+		m_Return = old_return;
+		m_Script = old_script;
+		throw;
 	}
 
-    m_Running = true;
-	m_Return = false;
-
-    SetScript();
-    m_Script.reset();
- 
- 	gDebugLog.Log("macro <%s>", Key());
- 	gDebugLog.Log("<%s>", m_Script.GetString());
-
-    m_Script >> open >> discard >> discard;   //  Remove "(macrodef NAME"
-
-    //  Do commands until we jump somewhere or we hit the closing paren.
-    //
-    while ((m_Script.more()) 
-		and (not m_Return)
-		and (not gCardManager.Jumping())) 
-    {
-        DoCommand();
-    }
-    
-    m_Running = false;
-	m_Return = false;
+	m_Return = old_return;
+	m_Script = old_script;
 }
-
+	
 void Macro::Return()
 {
 	if (m_Running)
@@ -105,6 +113,9 @@ void MacroManager::MakeNewIndex(TIndexFile *inFile, const char *name, long start
 
 /*
  $Log$
+ Revision 1.5  2002/07/19 22:05:06  emk
+ 3.3.16 - Lots of minor bugfixes.  See Release-Notes.txt for details.
+
  Revision 1.4  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

@@ -70,7 +70,7 @@ void Card::Start(void)
 	gOrigin.SetOrigin(0, 0);	// reset the origin
 	m_stopped = false;
 
-	gDebugLog.Log("<%s>", m_Script.GetString());
+	gDebugLog.Log("%s", m_Script.GetString());
 
 	// toss (card name
 	m_Script >> open >> discard >> discard;
@@ -202,7 +202,9 @@ void Card::DoMacro(TString &name)
     
     if (theMacro == NULL)
     {
-		gLog.Log("Error: Unknown macro/opword %s.", (const char *) name);
+        gLog.Caution("Couldn't find macro/command <%s>.", (const char *) name);
+        gDebugLog.Caution("Couldn't find macro/command <%s>.",
+						  (const char *) name);
 		return;
 	}
 
@@ -210,6 +212,7 @@ void Card::DoMacro(TString &name)
     //
     local = 0;
     vnum = 0;
+    TString arg_string = "Macro arguments:";
     while (m_Script.more()) 
     {
         //  Variables are named 1, 2, 3...
@@ -217,6 +220,8 @@ void Card::DoMacro(TString &name)
         vname = ++vnum;
         m_Script >> contents;
 
+		arg_string += (TString(" $") + TString::IntToString(vnum) +
+					   TString(" = <") + contents + TString(">"));
         temp = new TVariable(vname, contents);
 
         if (local == 0) 
@@ -224,6 +229,8 @@ void Card::DoMacro(TString &name)
         else 
         	local->Add(temp);
     }
+    if (vnum > 0)
+		gDebugLog.Log("%s", arg_string.GetString());
 
     //  Save old local tree and set current local tree to ours.
     //
@@ -605,6 +612,9 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.10  2002/07/19 22:05:06  emk
+ 3.3.16 - Lots of minor bugfixes.  See Release-Notes.txt for details.
+
  Revision 1.9  2002/07/15 15:56:44  zeb
  3.3.13 - 15 July 2002 - zeb, emk
    * Language change: (IF cond true_cmd false_cmd) now takes arbitrary

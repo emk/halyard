@@ -3,7 +3,10 @@ When possible, please include bug numbers as seen below.
 3.3.16 - 19 July 2002 - emk
 
   * Fixed "b" parameter to defstyle (bug #1052).
-  * Fixed Mac engine to log missing macros to Debug.log (bug #1060).
+  * Fixed Mac/Win32 engine to log missing macros to Debug.log (bug #1060).
+  * Fixed Windows macro recursion (bug #1053).
+  * Fixed debug-log discrepencies (bug #1064).
+  * Fixed logging of Windows macro arguments (bug #1065).
 
 3.3.15 - 17 July 2002 - brian
 

@@ -123,30 +123,15 @@ void FIVEL_NS RegisterWindowsPrimitives()
 ------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Add)
 {
-    TString 	vname;
-	TString		str_amount;
+    TString vname;
+	int32 amount;
 
-    inArgs >> vname >> str_amount;
+    inArgs >> vname >> amount;
 
-	if (str_amount.Contains("."))
-	{
-		double  sum;
-
-		sum = gVariableManager.GetDouble(vname);
-		sum += (double) str_amount;
-
-		gVariableManager.SetDouble(vname, sum);
-		::SetPrimitiveResult(sum);
-	}
-	else
-	{
-		int32	sum;
-
-		sum = gVariableManager.GetLong(vname);
-		sum += (int32) str_amount;
-		gVariableManager.SetLong(vname, sum);
-		::SetPrimitiveResult(sum);
-	}
+	int32 sum = gVariableManager.GetLong(vname);
+	sum += amount;
+	gVariableManager.SetLong(vname, sum);
+	::SetPrimitiveResult(sum);
 } 
 
 //
@@ -1706,30 +1691,15 @@ DEFINE_5L_PRIMITIVE(Still)
 ------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Sub)
 {
-    TString 	vname;
-	TString		str_amount;
+    TString vname;
+	int32 amount;
 
-    inArgs >> vname >> str_amount;
+    inArgs >> vname >> amount;
 
-	if (str_amount.Contains("."))
-	{
-		double  sum;
-
-		sum = gVariableManager.GetDouble(vname);
-		sum -= (double) str_amount;
-
-		gVariableManager.SetDouble(vname, sum);
-		::SetPrimitiveResult(sum);
-	}
-	else
-	{
-		int32	sum;
-
-		sum = gVariableManager.GetLong(vname);
-		sum -= (int32) str_amount;
-		gVariableManager.SetLong(vname, sum);
-		::SetPrimitiveResult(sum);
-	}
+	int32 sum = gVariableManager.GetLong(vname);
+	sum -= amount;
+	gVariableManager.SetLong(vname, sum);
+	::SetPrimitiveResult(sum);
 }
 
 /*--------------------------------------------------------------
