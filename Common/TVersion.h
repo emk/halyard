@@ -16,15 +16,245 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
-#define VERSION_REV_BIG		04
+#define VERSION_REV_BIG		05
 #define VERSION_REV_SMALL	00
 
-#define VERSION_STRING	"5L 3.3.4 (Development)"
+#define VERSION_STRING	"5L 3.3.5 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.12  2002/06/20 16:31:00  emk
+ 3.3.5 - Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.
+ This branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+ I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+ Revision 1.11.2.11  2002/06/20 15:58:44  emk
+ 3.3.4.12 - Last build of the 'FiveL_3_3_4_refactor_lang_1' branch
+ before merging.
+
+ Revision 1.11.2.10  2002/06/19 22:50:55  emk
+ 3.3.4.11 - Refactored Mac code to move primitives from CCard.{h,cpp} to
+ TMacPrimitives.{h,cpp}, and break most of the remaining dependencies on
+ the 5L interpreter.
+
+ Language changes: LOADPICK, RVAR and RNODE are gone.  I've also disabled
+ the Mac PAUSE command until Douglas tells me how it should work.
+
+ Testing: Please beat *very* hard on this build, and pay special attention
+ to WAIT, NAP, TIMEOUT, and similar commands.
+
+ Next up: I plan to merge this branch into HEAD tomorrow.
+
+ Revision 1.11.2.9  2002/06/19 18:28:47  emk
+ 3.3.4.10 - Debug log message improvements on the Mac.
+
+ Revision 1.11.2.8  2002/06/19 14:07:13  emk
+ 3.3.4.9: Fixed _Origin_X, _Origin_Y on Windows, and added a "default style"
+ parameter to "defstyle" on both platforms.
+
+ The new syntax:
+
+   (defstyle sample (Nimbus Roman No9 L) 12 r left 0xF0F0F000 0xFFFF0000)
+
+ ...where r = "regular", b = "bold", i = "italic" and bi = "bold italic".
+
+ Revision 1.11.2.7  2002/06/18 21:56:38  emk
+ 3.3.4.8 - Added (BODY ...) command on Mac, fixed arguments of BUTTPCX, TOUCH,
+ and KEYBIND to match Win32 engine, and refactored Mac engine to more-or-less
+ respect the TInterpreter interface.
+
+ Things to test: REDOSCRIPT, redo-REDOSCRIPT (feed REDOSCRIPT a bogus script,
+ try to fix it, then run REDOSCRIPT again), TOUCH, BUTTPCX, ORIGIN.
+
+ Some low-level details:
+
+   - Added a KillCurrentCard method to the TInterpreter interface.  This
+     works a lot like Pause, but it cannot be resumed.
+   - Added a rough-cut TMac5LInterpreter class (with some methods stubbed
+     out, because they are not needed on the Mac--we should look at
+     this API in detail and formalize it sometime after 3.4).
+   - Modified CTouchZone to take TCallback objects.
+   - Modified CPlayerView's keybinding support to take TCallback objects
+     (and to use a std::map instead of a PowerPlant list class).
+   - Began to separate special forms (IF, BODY, EXIT, RETURN) from other
+     commands.
+   - Moved ReadSpecialVariable_* methods out of CCard and into CMac5LApp.
+   - Made sure CMac5LApp::mReDoReDo got initialized to false.
+   - Merged OpenScript and OpenScriptAgain into one function.
+
+ Revision 1.11.2.6  2002/06/15 01:06:32  emk
+ 3.3.4.7 - Carbonization of Mac build, support for running non-Carbonized build
+ in MacOS X's OS 9 emulator, and basic support for 5L.prefs on the Mac.  The
+ Carbon build isn't yet ready for prime time--see BugHunt for details--but it
+ is good enough to use for engine development.
+
+ * Language changes
+
+   - CHECKDISC is gone; use CHECKVOL instead.
+   - EJECT is disabled in the Carbon build, because Carbon has no way to
+     identify CD drives reliably.  EJECT still works in the regular build.
+   - Gamma fades are ignored in the Carbon build.
+   - KEYBINDs must now be accessed with the Command key only--not Option.
+
+ * Things to test
+
+ Please be hugely brutal to 5L; this is a big update.
+
+   - 8-bit systems, palettes, ORIGIN, EJECT on the non-Carbon build.
+
+ * Internal changes
+
+   - TException class (and all subclasses) now take a __FILE__ and __LINE__
+     parameter.  This is ugly, but it allows me to debug 5L exceptions even
+     without a working debugger (under the OS 9 emulator, for example).
+   - FileSystem::Path::(DoesExist|IsRegularFile|IsDirectory) now rely on
+     native MacOS File Manager calls instead of the broken MSL stat()
+     function (which fails in the OS 9 emulator).
+   - The ImlUnit test harness flushes its output more often.
+   - Many data structure accessors (and such functions as c2pstr) have been
+     replaced by their Carbon equivalents.
+   - We now use PowerPlant accessors to get at the QuickDraw globals.
+   - We now use PowerPlant calls in place of ValidRect and InvalRect.
+   - Some very nasty code which set the palettes of our offscreen GWorlds
+     has been removed (offscreen GWorlds have CLUTs, not palettes!).
+     The various drawing commands now use gPaletteManager to map indexes
+     to RGBColor values, and RGBForeColor to set the color--no more calls
+     to ::PmForeColor on offscreen GWorlds, thank you!
+   - The CMenuUtil code (which used low-memory system globals to hide
+     and show the menu bar) has been removed entirely and replaced by
+     calls to HideMenuBar and ShowMenuBar (which are present in 8.5 and
+     Carbon).  This is much simpler, nicer, more portable and safer.
+   - A bunch of code which had been disabled with #ifdefs has been
+     removed entirely.  This mostly related to palettes and an obsolete
+     version of the fade code which used GWorlds.
+   - Code which used ROM-based KCHR resources to map option keys back to
+     their unmodified key caps has been removed.  This means KEYBINDs
+     can only be accessed using the Command key.
+   - We assume Carbon systems always support the HFS file system (duh).
+   - We use PowerPlant glue to access either StandardFile or Navigation
+     Services, under OS 8/9 and Carbon, respectively.
+   - Some old subroutines in CModuleManager appeared to have been
+     snarfed from More Files, an old Mac utility library.  These have
+     been moved into MoreFiles.{h,cpp}.
+
+ * Known Carbon Problems
+
+ Fades, ejecting CD-ROMs and playing QuickTime movies are all broken in
+ the Carbon build.  Douglas has found a problem with ORIGIN.  It looks
+ like we should continue to ship the OS 9 build for use with MacOS X,
+ at least for next few months.
+
+ Revision 1.11.2.5  2002/06/12 19:42:36  emk
+ 3.3.4.6 - Fixed bug where the origin didn't get restored after each macro
+ call.  (This bug was introduced in 3.3.4.5.)
+
+ Revision 1.11.2.4  2002/06/12 19:02:51  emk
+ 3.3.4.5 - Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
+ and broke the remaining dependencies between these primitive commands and
+ the current 5L interpreter.  The TInterpreter and TPrimitives interfaces
+ are now quite mature.
+
+ *** Please beat very, very hard on this build.  I don't anticipate
+ further changes to the Windows engine for a while. ***
+
+ REMOVED COMMANDS: kill (use still), loadpick (use loadpic)
+ NEEDS TESTING: origin w/macros, other uses of origin.  5L now
+   sets the origin to 0,0 whenever it begins a new card, which
+   should produce behavior identical to the old system, unless
+   I've overlooked something.
+ NEEDS TESTING: make sure all the commands are available, and
+   have the right names.  I've checked this a dozen times
+   by eye, but I might have overlooked something.
+
+ The only remaining dependencies between the interpreter and the rest of 5L
+ are in the Header and TStyleSheet classes.  I'm postponing this last bit
+ of cleanup until after 3.4.  Up next: Repeat the 3.3.4.{1-5} changes for
+ the Macintosh.
+
+ Revision 1.11.2.3  2002/06/11 18:15:31  emk
+ 3.3.4.4 - Partial separation of primitives from interpreter, and
+ various 5L language enhancements related to callbacks.
+
+   - Finished fleshing out TArgumentList, added support for callbacks.
+   - Made all built-in primitives access their arguments through the
+     TArgument interface.
+   - Implemented a BODY command.
+   - Changed how the TOUCH, BUTTPCX and KEYBIND commands parse their
+     callback arguments.  See below for details; you'll have to change
+     some code.  This was necessary to move callback parsing into
+     TStream's implementation of the TArgumentList interface.
+
+ 5L Language Changes
+ -------------------
+
+   * (KEYBIND ...) now takes an arbitrary command instead of a card name.
+     As with TOUCH and BUTTPCX, variables are evaluated when the
+     keybind is installed, not when it is invoked.  Examples:
+
+       (keybind f (jump foo))
+       (keybind a (add x 10))
+
+   * You can now run a series of zero or more commands using (BODY cmd...).
+     This should work with IF, TOUCH, BUTTPCX and KEYBIND.  Example:
+
+       (body
+         (set x 10)
+         (set y 20))
+
+     Commands such as WAIT, JUMP, NAP, etc., will not do what you expect
+     unless they're the last statement in a BODY.  This is caused by the
+     low-level design of the interpreter, and is non-trivial to fix.
+
+     RETURN is also not BODY-friendly.
+
+     When you pass a body to IF, TOUCH, BUTTPCX or KEYBIND, all the
+     variables in the body will be evaluated *before* any code is run!
+
+   * The arguments to BUTTPCX and TOUCH have been rationalized after
+     consultation with Douglas.  The commands now work as follows:
+
+       (TOUCH rect cmd [cursor [picture [point]]])
+       (BUTTPCX picture point header label cmd [cursor])
+
+     Note that the second callback has disappeared from both TOUCH and
+     BUTTPCX; use BODY instead.
+
+ Revision 1.11.2.2  2002/06/10 17:52:48  emk
+ 3.3.4.3 - Added a TArgumentList class in TPrimitives.  This class provides
+ an abstract interface to argument list parsing, and replaces parts of
+ TStream.  This will allow us to begin breaking dependencies between
+ the primitives and the nasty parsing gunk in TStream.
+
+ Revision 1.11.2.1  2002/06/05 20:42:29  emk
+ 3.3.4.2 - Broke Win5L dependencies on TIndex file by moving various pieces
+ of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter
+ through a well-defined API.  Changes:
+
+   * Removed many direct and indirect #includes of TIndex.h.
+   * Added a TInterpreter method ReloadScript, which can be called by the
+     higher-level ReDoScript command.
+   * Checked in some files which should have been included in the 3.3.4.1
+     checkin--these files contain the initial refactorings of Card and Macro
+     callsites to go through the TInterpreter interface.
+
+ Up next: Refactor various Do* methods out of Card and into a procedural
+ database.
+
  Revision 1.11  2002/05/29 13:58:10  emk
  3.3.4 - Fixed various crash-on-exit problems (including those in TBTree,
  TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code
