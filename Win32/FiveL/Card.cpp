@@ -368,14 +368,27 @@ int Card::Evaluate(LStream& conditional)
 void Card::DoAdd()
 {
     TString 	vname;
-    double  	amount, sum;
+	TString		str_amount;
 
-    m_Script >> vname >> amount;
+    m_Script >> vname >> str_amount;
 
-    sum = gVariableManager.GetDouble(vname);
-    sum += amount;
+	if (str_amount.Contains("."))
+	{
+		double  sum;
 
-    gVariableManager.SetDouble(vname, sum);
+		sum = gVariableManager.GetDouble(vname);
+		sum += (double) str_amount;
+
+		gVariableManager.SetDouble(vname, sum);
+	}
+	else
+	{
+		int32	sum;
+
+		sum = gVariableManager.GetLong(vname);
+		sum += (int32) str_amount;
+		gVariableManager.SetLong(vname, sum);
+	}
 } 
 
 //
@@ -2632,6 +2645,9 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.3  2002/02/28 15:13:18  tvw
+ Fixes addition to detect the type of number being added.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 
