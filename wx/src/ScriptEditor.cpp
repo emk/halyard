@@ -300,7 +300,8 @@ void ScriptTextCtrl::AutoCompleteIdentifier() {
     while (word_begin > 0 && IsIdentifierChar(line[word_begin-1]))
         word_begin--;
     int word_end = pos;
-    while (word_end < line.length() && IsIdentifierChar(line[word_end]))
+    while (static_cast<size_t>(word_end) < line.length() &&
+		   IsIdentifierChar(line[word_end]))
         word_end++;
     if (pos < word_end)
         return;
@@ -436,6 +437,7 @@ int ScriptTextCtrl::CalculateIndentation(int inParentPos,
             // These *might* be function calls, so use the standard rule.
             case wxSTC_LISP_IDENTIFIER:
             case wxSTC_LISP_OPERATOR:
+			default:
                 return CalculateFunctionIndentation(inParentPos, inSiblingPos);
         }
     }
@@ -474,6 +476,518 @@ int ScriptTextCtrl::GetBaseIndentFromPosition(int inPos) {
 
 
 //=========================================================================
+//  NotebookBar
+//=========================================================================
+
+class NotebookBar : public wxWindow {
+public:
+    NotebookBar(wxWindow *parent);
+
+private:
+    enum {
+        TOP_PAD = 4,
+        TAB_START = TOP_PAD / 2,
+        BOTTOM_PAD = 2,
+        SIDE_PAD = 4,
+
+        BUTTON_INSIDE_PAD = 2,
+        BUTTON_GRAPHIC_SIZE = 9,
+        BUTTON_SIZE = BUTTON_GRAPHIC_SIZE + BUTTON_INSIDE_PAD*2,
+    };
+
+    enum ButtonId {
+        BUTTON_NONE = -1,
+        BUTTON_LEFT = 0,
+        BUTTON_RIGHT = 1,
+        BUTTON_CLOSE = 2,
+        BUTTON_COUNT = 3
+    };
+
+    enum ButtonState {
+        STATE_DISABLED,
+        STATE_ENABLED,
+        STATE_PRELIGHTED,
+        STATE_CLICKED
+    };
+
+    enum GuiColor {
+        SELECTED_TEXT,
+        SELECTED_BACKGROUND,
+        SELECTED_HIGHLIGHT,
+        SELECTED_SHADOW,
+        UNSELECTED_TEXT,
+        UNSELECTED_BACKGROUND,
+        UNSELECTED_DIVIDER
+    };
+
+    struct Tab {
+        wxString label;
+        wxCoord rightEdge;
+
+        Tab(const wxString &label_) : label(label_), rightEdge(0) {}
+    };
+
+    std::vector<Tab> mTabs;
+    size_t mCurrentTab;
+    wxCoord mScrollAmount;
+    ButtonState mButtonStates[BUTTON_COUNT];
+    ButtonId mGrabbedButton;
+    wxLongLong mNextRepeatTime;
+
+    unsigned char Lighten(unsigned char value, double fraction);
+    wxColor GetGuiColor(GuiColor color);
+    wxFont GetGuiFont(bool bold);
+    wxCoord UpdateBarHeight();
+
+    void OnPaint(wxPaintEvent &event);
+    void OnLeftDown(wxMouseEvent &event);
+    void OnLeftUp(wxMouseEvent &event);
+    void OnIdle(wxIdleEvent &event);
+    void OnMouseMove(wxMouseEvent &event);
+    void OnSize(wxSizeEvent &event);
+
+    void DoButtonPressed(ButtonId buttonId);
+    void DoButtonHeld(ButtonId buttonId);
+    void DoButtonReleased(ButtonId buttonId);
+
+    void SetButtonState(ButtonId buttonId, ButtonState state,
+                        bool redraw = true);
+    void SetButtonStateIfNotDisabled(ButtonId buttonId, ButtonState state,
+                                     bool redraw = true);
+    void EnableButton(ButtonId buttonId, bool enable, bool redraw = true);
+    bool SafeToRunCommandsForButton(ButtonId buttonId);
+    void DrawButton(wxDC &dc, ButtonId buttonId);
+    wxBitmap GetButtonBitmap(ButtonId buttonId);
+    wxRect GetButtonRect(ButtonId buttonId);
+    ButtonId GetButtonForPoint(const wxPoint &p);
+
+    wxCoord GetTabLimit();
+    void ScrollTabs(wxCoord pixels);
+    
+    DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE(NotebookBar, wxWindow)
+    EVT_PAINT(NotebookBar::OnPaint)
+    EVT_LEFT_DOWN(NotebookBar::OnLeftDown)
+    EVT_LEFT_DCLICK(NotebookBar::OnLeftDown)
+    EVT_LEFT_UP(NotebookBar::OnLeftUp)
+    EVT_IDLE(NotebookBar::OnIdle)
+    EVT_MOTION(NotebookBar::OnMouseMove)
+    EVT_SIZE(NotebookBar::OnSize)
+END_EVENT_TABLE()
+
+NotebookBar::NotebookBar(wxWindow *parent)
+    : wxWindow(parent, -1)
+{
+    UpdateBarHeight();
+    mTabs.push_back(Tab("Untitled"));
+    mTabs.push_back(Tab("Untitled 2"));
+    mTabs.push_back(Tab("Untitled 3"));
+    for (size_t i = 0; i < 15; i++)
+        mTabs.push_back(Tab("Untitled N"));
+    mCurrentTab = 1;
+    mScrollAmount = 0;
+    mButtonStates[BUTTON_LEFT] = STATE_DISABLED;
+    mButtonStates[BUTTON_RIGHT] = STATE_DISABLED;
+    mButtonStates[BUTTON_CLOSE] = STATE_ENABLED;
+    mGrabbedButton = BUTTON_NONE;
+}
+
+unsigned char NotebookBar::Lighten(unsigned char value, double fraction) {
+    return value + (255 - value)*fraction;
+}
+
+wxColor NotebookBar::GetGuiColor(GuiColor color) {
+    wxColor temp;
+    switch (color) {
+        case SELECTED_TEXT:
+            return wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT);
+        case SELECTED_BACKGROUND:
+            return wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
+        case SELECTED_HIGHLIGHT:
+            //return wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT);
+            return *wxWHITE;
+        case SELECTED_SHADOW:
+            //return wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
+            return *wxBLACK;
+        case UNSELECTED_TEXT:
+            temp = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT);
+            return wxColor(Lighten(temp.Red(), 0.35),
+                           Lighten(temp.Green(), 0.35),
+                           Lighten(temp.Blue(), 0.35));
+        case UNSELECTED_DIVIDER:
+            temp = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT);
+            return wxColor(Lighten(temp.Red(), 0.5),
+                           Lighten(temp.Green(), 0.5),
+                           Lighten(temp.Blue(), 0.5));
+        case UNSELECTED_BACKGROUND:
+            {
+                temp = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
+                int red_green = temp.Red()/2 + temp.Green()/2;
+                return wxColor(Lighten(red_green, 0.6),
+                               Lighten(red_green, 0.6),
+                               Lighten(temp.Blue(), 0.3));
+            }
+        default:
+            ASSERT(0);
+            return *wxBLACK;
+    }
+}
+
+wxFont NotebookBar::GetGuiFont(bool bold) {
+    wxFont f = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+    if (bold) {
+        // We have to duplicate this font manually to avoid stomping the
+        // refcounted system version.  Bleh.
+        f = wxFont(f.GetPointSize(), f.GetFamily(), f.GetStyle(), wxBOLD,
+                   f.GetUnderlined(), f.GetFaceName(), f.GetEncoding());
+    }
+    return f;
+}
+
+wxCoord NotebookBar::UpdateBarHeight() {
+    wxCoord width, height;
+    {
+        wxClientDC dc(this);
+        dc.SetFont(GetGuiFont(false));
+        dc.GetTextExtent("W", &width, &height);        
+    }
+    wxCoord padded = TOP_PAD + height + BOTTOM_PAD;
+    SetSizeHints(-1, padded, -1, padded);
+    if (GetSize().GetHeight() != padded)
+        SetSize(GetSize().GetWidth(), padded);
+    return padded;
+}
+
+void NotebookBar::OnPaint(wxPaintEvent &event) {
+    // Get the correct height for our bar.
+    wxCoord height = UpdateBarHeight();
+
+    // Begin refresh painting.
+    wxPaintDC dc(this);
+
+    // Clear the background.
+    dc.SetBackground(GetGuiColor(UNSELECTED_BACKGROUND));
+    dc.Clear();
+
+    // Clip our tab drawing area for drawing tabs.
+    dc.SetClippingRegion(wxPoint(0, 0), wxSize(GetTabLimit(), height));
+
+    // Draw our tabs.
+    wxCoord space_used = mScrollAmount;
+    for (size_t i = 0; i < mTabs.size(); i++) {
+        // Choose our basic drawing parameters.
+        if (i == mCurrentTab) {
+            dc.SetFont(GetGuiFont(true));
+            dc.SetTextBackground(GetGuiColor(SELECTED_BACKGROUND));
+            dc.SetTextForeground(GetGuiColor(SELECTED_TEXT));
+        } else {
+            dc.SetFont(GetGuiFont(false));
+            dc.SetTextBackground(GetGuiColor(UNSELECTED_BACKGROUND));
+            dc.SetTextForeground(GetGuiColor(UNSELECTED_TEXT));
+        }
+
+        // Calculate the width of our tab.
+        wxCoord text_width;
+        dc.GetTextExtent(mTabs[i].label, &text_width, NULL);
+        wxCoord tab_width = text_width + SIDE_PAD*2;
+
+        // Draw an optional background & top for the selected tab.
+        if (i == mCurrentTab) {
+            dc.SetBrush(wxBrush(GetGuiColor(SELECTED_BACKGROUND), wxSOLID));
+            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.DrawRectangle(space_used, TAB_START, tab_width,
+                             height - TAB_START);
+            dc.SetPen(wxPen(GetGuiColor(SELECTED_HIGHLIGHT), 1, wxSOLID));
+            dc.DrawLine(space_used, TAB_START-1, space_used+tab_width,
+                        TAB_START-1);
+        }
+
+        // Draw in the actual text.
+        dc.DrawText(mTabs[i].label, space_used + SIDE_PAD, TOP_PAD);
+        space_used += tab_width;
+
+        // Draw a divider.
+        wxColor div_color;
+        wxCoord div_bottom;
+        if (i == mCurrentTab) {
+            div_color = GetGuiColor(SELECTED_SHADOW);
+            div_bottom = height;
+        } else if (i+1 == mCurrentTab) {
+            div_color = GetGuiColor(SELECTED_HIGHLIGHT);
+            div_bottom = height;
+        } else {
+            div_color = GetGuiColor(UNSELECTED_DIVIDER);
+            div_bottom = height - BOTTOM_PAD;
+        }        
+        dc.SetPen(wxPen(div_color, 1, wxSOLID));
+        dc.DrawLine(space_used, TAB_START, space_used, div_bottom);
+        ++space_used;
+        
+        // Update the rightmost extent of this tab (for hit testing).
+        mTabs[i].rightEdge = space_used;        
+    }
+
+    // Turn off clipping.
+    dc.DestroyClippingRegion();
+
+    // Enable and disable our scrolling buttons as needed.
+    EnableButton(BUTTON_LEFT, (mScrollAmount < 0), false);
+    EnableButton(BUTTON_RIGHT, (space_used > GetTabLimit()), false);
+
+    // Draw our buttons.
+    for (size_t i = 0; i < BUTTON_COUNT; i++)
+        DrawButton(dc, static_cast<ButtonId>(i));
+}
+
+void NotebookBar::OnLeftDown(wxMouseEvent &event) {
+    wxASSERT(mGrabbedButton == BUTTON_NONE);
+    wxPoint click = event.GetPosition();
+
+    // See if the click is in a button.
+    ButtonId button = GetButtonForPoint(click);
+    if (button != BUTTON_NONE) {
+        CaptureMouse();
+        mGrabbedButton = button;
+        SetButtonStateIfNotDisabled(button, STATE_CLICKED);
+        DoButtonPressed(button);
+        ::wxWakeUpIdle();
+        mNextRepeatTime = ::wxGetLocalTimeMillis() + 200;
+        return;
+    }
+
+    // See if the click is in a tab.
+    if (click.x < GetTabLimit()) {
+        for (size_t i = 0; i < mTabs.size(); i++) {
+            if (click.x < mTabs[i].rightEdge) {
+                mCurrentTab = i;
+                Refresh();
+                return;
+            }
+        }
+    }
+}
+
+void NotebookBar::OnLeftUp(wxMouseEvent &event) {
+    if (mGrabbedButton != BUTTON_NONE) {
+        wxPoint click = event.GetPosition();
+        ButtonId button = GetButtonForPoint(click);
+        ButtonId grabbed = mGrabbedButton;
+
+        // Release the mouse.
+        mGrabbedButton = BUTTON_NONE;
+        ReleaseMouse();
+
+        // If we're over a button, prelight it.
+        if (button != BUTTON_NONE)
+            SetButtonStateIfNotDisabled(button, STATE_PRELIGHTED);
+
+        if (button == grabbed) {
+            // We're over the grabbed button, so call the appropriate
+            // action now.
+            DoButtonReleased(button);
+        } else {
+            // We're *not* over the grabbed button, so mark it as released.
+            SetButtonStateIfNotDisabled(grabbed, STATE_ENABLED);
+        }
+    }
+}
+
+void NotebookBar::OnIdle(wxIdleEvent &event) {
+    // Issue repeating commands for buttons which are held down.
+    if (mGrabbedButton != BUTTON_NONE) {
+        event.RequestMore();
+        if (::wxGetLocalTimeMillis() > mNextRepeatTime) {
+            ButtonId button =
+                GetButtonForPoint(ScreenToClient(::wxGetMousePosition()));
+            if (button == mGrabbedButton) {
+                DoButtonHeld(button);
+                mNextRepeatTime = ::wxGetLocalTimeMillis() + 100;
+            }
+        }
+    }
+}
+
+void NotebookBar::OnMouseMove(wxMouseEvent &event) {
+    // Prelight buttons.
+    ButtonId current = GetButtonForPoint(event.GetPosition());
+    for (size_t i = 0; i < BUTTON_COUNT; i++) {
+        if (mButtonStates[i] != STATE_DISABLED) {
+            ButtonState new_state;
+            if (current == i && mGrabbedButton == current)
+                new_state = STATE_CLICKED;
+            else if (current == i && mGrabbedButton == BUTTON_NONE)
+                new_state = STATE_PRELIGHTED;
+            else
+                new_state = STATE_ENABLED;
+            SetButtonStateIfNotDisabled(static_cast<ButtonId>(i), new_state);
+        }
+    }
+}
+
+void NotebookBar::OnSize(wxSizeEvent &event) {
+    Refresh();
+}
+
+void NotebookBar::DoButtonPressed(ButtonId buttonId) {
+    if (!SafeToRunCommandsForButton(buttonId))
+        return;
+    switch (buttonId) {
+        case BUTTON_LEFT: ScrollTabs(100); break;
+        case BUTTON_RIGHT: ScrollTabs(-100); break;
+    }
+}
+
+void NotebookBar::DoButtonHeld(ButtonId buttonId) {
+    if (!SafeToRunCommandsForButton(buttonId))
+        return;
+    switch (buttonId) {
+        case BUTTON_LEFT: ScrollTabs(30); break;
+        case BUTTON_RIGHT: ScrollTabs(-30); break;
+    }
+}
+
+void NotebookBar::DoButtonReleased(ButtonId buttonId) {
+    if (!SafeToRunCommandsForButton(buttonId))
+        return;
+    if (buttonId == BUTTON_CLOSE) {
+            mTabs.erase(mTabs.begin()+mCurrentTab);
+            if (mCurrentTab >= mTabs.size())
+                mCurrentTab = mTabs.size()-1;
+            Refresh();
+    }
+}
+
+/// Set the state of the specified button, redrawing it if requested.
+void NotebookBar::SetButtonState(ButtonId buttonId, ButtonState state,
+                                 bool redraw)
+{
+    mButtonStates[buttonId] = state;
+    if (redraw) {
+        wxClientDC dc(this);
+        DrawButton(dc, buttonId);
+    }
+}
+
+/// Only set the button state if the button is not disabled.  We call this
+/// to avoid accidentally re-enabling buttons.
+void NotebookBar::SetButtonStateIfNotDisabled(ButtonId buttonId,
+                                              ButtonState state,
+                                              bool redraw)
+{
+    if (mButtonStates[buttonId] != STATE_DISABLED)
+        SetButtonState(buttonId, state, redraw);
+}
+
+/// Enable or disable the specified button.  If the button is already
+/// enabled, don't change the enabled/prelighted/clicked state.
+void NotebookBar::EnableButton(ButtonId buttonId, bool enable,
+                               bool redraw)
+{
+    if (enable) {
+        if (mButtonStates[buttonId] == STATE_DISABLED)
+            SetButtonState(buttonId, STATE_ENABLED, redraw);
+    } else {
+        SetButtonState(buttonId, STATE_DISABLED, redraw);
+    }
+}
+
+bool NotebookBar::SafeToRunCommandsForButton(ButtonId buttonId) {
+    return (mTabs.size() > 0 && mButtonStates[buttonId] != STATE_DISABLED);
+}
+
+void NotebookBar::DrawButton(wxDC &dc, ButtonId buttonId) {
+    wxASSERT(dc.Ok());
+    wxRect r = GetButtonRect(buttonId);
+    dc.BeginDrawing();
+
+    // Draw the button's icon.
+    dc.SetTextForeground(GetGuiColor(UNSELECTED_TEXT));
+    dc.SetTextBackground(GetGuiColor(UNSELECTED_BACKGROUND));
+    wxBitmap bitmap = GetButtonBitmap(buttonId);
+    dc.DrawBitmap(bitmap,
+                  r.GetLeft() + BUTTON_INSIDE_PAD,
+                  r.GetTop() + BUTTON_INSIDE_PAD);
+
+    // Draw the button's border.
+    wxColor topleft, bottomright;
+    switch (mButtonStates[buttonId]) {
+        case STATE_PRELIGHTED:
+            topleft = GetGuiColor(UNSELECTED_DIVIDER);
+            bottomright = GetGuiColor(SELECTED_SHADOW);
+            break;
+        case STATE_CLICKED:
+            topleft = GetGuiColor(SELECTED_SHADOW);
+            bottomright = GetGuiColor(UNSELECTED_DIVIDER);
+            break;
+        default:
+            topleft = GetGuiColor(UNSELECTED_BACKGROUND);
+            bottomright = GetGuiColor(UNSELECTED_BACKGROUND);
+    }
+    dc.SetPen(wxPen(topleft, 1, wxSOLID));
+    dc.DrawLine(r.GetLeft(), r.GetTop(), r.GetRight()+1, r.GetTop());
+    dc.DrawLine(r.GetLeft(), r.GetTop(), r.GetLeft(), r.GetBottom()+1);
+    dc.SetPen(wxPen(bottomright, 1, wxSOLID));
+    dc.DrawLine(r.GetLeft()+1, r.GetBottom(), r.GetRight()+1, r.GetBottom());
+    dc.DrawLine(r.GetRight(), r.GetTop()+1, r.GetRight(), r.GetBottom());
+
+    dc.EndDrawing();
+}
+
+wxBitmap NotebookBar::GetButtonBitmap(ButtonId buttonId) {
+    switch (buttonId) {
+        case BUTTON_LEFT:
+            if (mButtonStates[buttonId] != STATE_DISABLED)
+                return wxBITMAP(tab_left_full);
+            else
+                return wxBITMAP(tab_left_empty);
+        case BUTTON_RIGHT:
+            if (mButtonStates[buttonId] != STATE_DISABLED)
+                return wxBITMAP(tab_right_full);
+            else
+                return wxBITMAP(tab_right_empty);
+        case BUTTON_CLOSE:
+            return wxBITMAP(tab_close);
+        default:
+            ASSERT(0);
+            return wxBitmap();
+    }
+}
+
+wxRect NotebookBar::GetButtonRect(ButtonId buttonId) {
+    wxSize sz = GetSize();
+    wxCoord right_limit = sz.GetWidth() - SIDE_PAD;
+    return wxRect(wxPoint(right_limit - (3-buttonId)*BUTTON_SIZE,
+                          (sz.GetHeight() - BUTTON_SIZE) / 2),
+                  wxSize(BUTTON_SIZE, BUTTON_SIZE));
+}
+
+NotebookBar::ButtonId NotebookBar::GetButtonForPoint(const wxPoint &p) {
+    for (size_t i = 0; i < BUTTON_COUNT; i++)
+        if (GetButtonRect(static_cast<ButtonId>(i)).Inside(p))
+            return static_cast<ButtonId>(i);
+    return BUTTON_NONE;
+}
+
+wxCoord NotebookBar::GetTabLimit() {
+    wxRect r = GetButtonRect(static_cast<ButtonId>(0));
+    return (r.GetLeft() - SIDE_PAD);
+}
+
+void NotebookBar::ScrollTabs(wxCoord pixels) {
+    wxCoord tab_length = -mScrollAmount + mTabs[mTabs.size()-1].rightEdge;
+    wxCoord min_scroll = GetTabLimit() - tab_length;
+    mScrollAmount += pixels;
+    if (mScrollAmount < min_scroll)
+        mScrollAmount = min_scroll;
+    if (mScrollAmount > 0)
+        mScrollAmount = 0;
+    Refresh();
+}
+
+
+//=========================================================================
 //  ScriptEditor Methods
 //=========================================================================
 
@@ -486,25 +1000,52 @@ void ScriptEditor::MaybeCreateFrame() {
     sFrame->Raise();    
 }
 
-void ScriptEditor::NewScript() {
+void ScriptEditor::EditScripts() {
     MaybeCreateFrame();
-    sFrame->DoNewScript();
-}
-
-void ScriptEditor::OpenScript() {
-    MaybeCreateFrame();
-    sFrame->DoOpenScript();    
 }
 
 ScriptEditor::ScriptEditor()
-    : wxFrame(wxGetApp().GetStageFrame(), -1, wxGetApp().GetAppName(),
-              wxDefaultPosition, wxSize(850, 700), wxDEFAULT_FRAME_STYLE)
+    : wxFrame(wxGetApp().GetStageFrame(), -1,
+              "Untitled - " + wxGetApp().GetAppName(),
+              wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE)
 {
     // Set up the static variable pointing to this frame.
     ASSERT(!sFrame);
     sFrame = this;
 
+	// Get an appropriate icon for this window.
+    SetIcon(wxICON(ic_SCRIPTS));
+
+    // Add a status bar to our frame.
+    CreateStatusBar();
+
+    // Set up our menus.
+    wxMenu *file_menu = new wxMenu();
+    wxMenu *edit_menu = new wxMenu();
+    wxMenu *search_menu = new wxMenu();
+
+    // Set up our menu bar.
+    wxMenuBar *menu_bar = new wxMenuBar();
+    menu_bar->Append(file_menu, "&File");
+    menu_bar->Append(edit_menu, "&Edit");
+    menu_bar->Append(search_menu, "&Search");
+    SetMenuBar(menu_bar);
+
+    // Create a notebook bar (does nothing for now).
+    NotebookBar *bar = new NotebookBar(this);
+
+    // Create a single editor control for now--we'll make this fancy later.
     mEditor = new ScriptTextCtrl(this);
+
+    // Create a sizer to handle window layout.
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(bar, 0 /* don't stretch */, wxGROW, 0);
+    sizer->Add(mEditor, 1 /* stretch */, wxGROW, 0);
+    SetSizer(sizer);
+    sizer->SetSizeHints(this);
+
+    // Set an appropriate default window size.
+    SetSize(wxSize(900, 650));
 }
 
 ScriptEditor::~ScriptEditor() {

@@ -12,6 +12,8 @@ We have a new wxWidgets version:
 
   * Added an editor widget based on wxStyledTextCtrl (i.e. Scintilla).
   * Started using FiveL namespace on Windows.
+  * Added support for Scheme-style indentation.
+  * Partial implementation of a tabbed-document control.
 
 ...and some other stuff:
 

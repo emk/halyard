@@ -218,9 +218,8 @@ private:
     void OnOpenProgram(wxCommandEvent &inEvent);
     void UpdateUiSaveProgram(wxUpdateUIEvent &inEvent);
     void OnSaveProgram(wxCommandEvent &inEvent);
-    void OnNewScriptFile(wxCommandEvent &inEvent);
-    void OnOpenScriptFile(wxCommandEvent &inEvent);
-    void OnReloadScript(wxCommandEvent &inEvent);
+    void OnEditScripts(wxCommandEvent &inEvent);
+    void OnReloadScripts(wxCommandEvent &inEvent);
     void OnRunTests(wxCommandEvent &inEvent);
     void OnAbout(wxCommandEvent &inEvent);
     void OnShowLog(wxCommandEvent &inEvent);

@@ -474,12 +474,18 @@
 			<File
 				RelativePath="..\..\src\Zone.h">
 			</File>
+			<File
+				RelativePath="..\..\src\resource.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
 				RelativePath="..\..\src\backup_c.cur">
+			</File>
+			<File
+				RelativePath="..\..\src\bitmap1.bmp">
 			</File>
 			<File
 				RelativePath="..\..\src\ic_5L.ico">
@@ -491,6 +497,9 @@
 				RelativePath="..\..\src\ic_document.ico">
 			</File>
 			<File
+				RelativePath="..\..\src\ic_edit.ico">
+			</File>
+			<File
 				RelativePath="..\..\src\ic_folder_closed.ico">
 			</File>
 			<File
@@ -500,6 +509,9 @@
 				RelativePath="..\..\src\ic_listener.ico">
 			</File>
 			<File
+				RelativePath="..\..\src\ic_scripts.ico">
+			</File>
+			<File
 				RelativePath="..\..\src\ic_timecoder.ico">
 			</File>
 			<File
@@ -507,6 +519,21 @@
 			</File>
 			<File
 				RelativePath="..\..\src\right_cu.cur">
+			</File>
+			<File
+				RelativePath="..\..\src\tab_close.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tab_left_empty.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tab_left_full.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tab_right_empty.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tab_right_full.bmp">
 			</File>
 			<File
 				RelativePath="..\..\src\tamale.xrc">

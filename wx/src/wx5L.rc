@@ -57,6 +57,11 @@ TB_XY                   BITMAP                  "tb_xy.bmp"
 TB_RELOAD               BITMAP                  "tb_reload.bmp"
 TB_GRID                 BITMAP                  "tb_grid.bmp"
 TB_BORDERS              BITMAP                  "tb_borders.bmp"
+TAB_LEFT_EMPTY          BITMAP                  "tab_left_empty.bmp"
+TAB_LEFT_FULL           BITMAP                  "tab_left_full.bmp"
+TAB_RIGHT_EMPTY         BITMAP                  "tab_right_empty.bmp"
+TAB_RIGHT_FULL          BITMAP                  "tab_right_full.bmp"
+TAB_CLOSE               BITMAP                  "tab_close.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -72,6 +77,7 @@ IC_CARD                 ICON                    "ic_card.ico"
 IC_FOLDER_CLOSED        ICON                    "ic_folder_closed.ico"
 IC_FOLDER_OPEN          ICON                    "ic_folder_open.ico"
 IC_DOCUMENT             ICON                    "ic_document.ico"
+IC_SCRIPTS              ICON                    "ic_scripts.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -34,8 +34,7 @@ class ScriptEditor : public wxFrame {
     ScriptTextCtrl *mEditor;
 
 public:
-    static void NewScript();
-    static void OpenScript();
+    static void EditScripts();
 
     ScriptEditor();
     ~ScriptEditor();
