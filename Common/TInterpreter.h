@@ -74,7 +74,7 @@ public:
 	//////////
 	// Is the CardManager paused?
 	//
-	// [out] return - true if paused, false otherwise
+	// [out] return - True if paused, false otherwise.
 	//
 	virtual bool Paused(void) = 0;
 

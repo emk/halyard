@@ -8,7 +8,7 @@
 
 (define-syntax test
   (syntax-rules ()
-    [(_ sexpr)
+    [(test sexpr)
      (call-5l-prim 'test (value->string 'sexpr) sexpr)]))
 
 
@@ -31,8 +31,8 @@
 
 (define (test-arg-type type values)
   (define (prefix-symbol prefix sym)
-    (string->symbol (string-append prefix (symbol->string sym))))
-  (let loop ((i 0) (values values))
+    (string->symbol (cat prefix sym)))
+  (let loop [[i 0] [values values]]
     (unless (null? values)
       (call-5l-prim (prefix-symbol "set_wanted_" type) i)
       (call-5l-prim (prefix-symbol "test_check_" type) (car values))
@@ -56,8 +56,7 @@
 
 (define (mark-card-as-seen card-name)
   (debug-log (cat "Marking " card-name))
-  (let ((var-name (string->symbol (cat "seen-" card-name))))
-    (set-engine-var! var-name "1")))
+  (set-engine-var! (cat "seen-" card-name) "1"))
 
 (card start
   (mark-card-as-seen "start")
@@ -74,20 +73,22 @@
 (define *before-callback-flag* #f)
 (define *after-callback-flag* #f)
 
+(define (test-callback code)
+  (call-5l-prim 'testcallback code))
+
 (card test-callbacks
   ;; Test a simple callback.
-  (let ((callback-ran? #f))
-    (call-5l-prim 'testcallback (lambda () (set! callback-ran? #t)))
-    (test callback-ran?))
+  (define callback-ran? #f)
+  (test-callback (callback (set! callback-ran? #t)))
+  (test callback-ran?)
 
   ;; Test a jumping callback.
   (set! *before-callback-flag* #f)
   (set! *after-callback-flag* #f)
-  (call-5l-prim 'testcallback
-		(lambda ()
-		  (set! *before-callback-flag* #t)
-		  (jump test-callbacks-2)
-		  (set! *after-callback-flag* #t))))
+  (test-callback (callback
+		   (set! *before-callback-flag* #t)
+		   (jump test-callbacks-2)
+		   (set! *after-callback-flag* #t))))
 
 (card test-callbacks-2
   (test (eq? *before-callback-flag* #t))
@@ -96,6 +97,22 @@
 
 (card test-pause
   (call-5l-prim 'testpause)
+  (jump test-timeout))
+
+(define *timeout-start* #f)
+
+(card test-timeout
+  (set! *timeout-start* (current-milliseconds))
+  (call-5l-prim 'testtimeout 1 'timeout-done))
+
+(card timeout-done
+  (test (>= (current-milliseconds) (+ *timeout-start* 1000)))
+  (jump test-nap))
+
+(card test-nap
+  (set! *timeout-start* (current-milliseconds))
+  (call-5l-prim 'testnap 2)
+  (test (>= (current-milliseconds) (+ *timeout-start* 200)))
   (jump done))
 
 (card done

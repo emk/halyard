@@ -47,6 +47,23 @@ DEFINE_5L_PRIMITIVE(TestCallback)
 	delete callback;
 }
 
+DEFINE_5L_PRIMITIVE(TestTimeout)
+{
+	int32 seconds;
+	std::string card;
+	inArgs >> seconds >> card;
+	TInterpreter::GetInstance()->Timeout(card.c_str(), seconds);
+}
+
+DEFINE_5L_PRIMITIVE(TestNap)
+{
+	int32 tenths;
+	inArgs >> tenths;
+	TEST(!TInterpreter::GetInstance()->Napping());
+	TInterpreter::GetInstance()->Nap(tenths);
+	TEST(TInterpreter::GetInstance()->Napping());
+}
+
 #define DEFINE_TYPE_TEST_PRIMITIVES(TYPE, COUNT) \
 	static TYPE TYPE##_test_values[COUNT]; \
     static uint32 TYPE##_index = 0; \
@@ -79,6 +96,8 @@ void test_TSchemeInterpreter (void)
 {
 	REGISTER_5L_PRIMITIVE(TestPause);
 	REGISTER_5L_PRIMITIVE(TestCallback);
+	REGISTER_5L_PRIMITIVE(TestTimeout);
+	REGISTER_5L_PRIMITIVE(TestNap);
 
 	string_test_values[0] = "";
 	string_test_values[1] = "hello";

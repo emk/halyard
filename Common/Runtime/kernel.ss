@@ -46,7 +46,6 @@
 
 (define (%kernel-assert label value)
   (when (not value)
-    ;; TODO - Make this error fatal.
     (fatal-error (cat "Assertion failure: " label))))
 
 (define-syntax assert
@@ -58,6 +57,13 @@
 ;;=========================================================================
 ;;  Utility Functions
 ;;=========================================================================
+
+(define (member? item list)
+  (if (null? list)
+      #f
+      (if (equal? item (car list))
+	  #f
+	  (member? item (cdr list)))))
 
 (define (value->string value)
   (if (string? value)
@@ -110,7 +116,10 @@
 ;;    CARD-KILLED: The interpreter should stop executing the current card,
 ;;              and return to the top-level loop.
 ;;    INTERPRETER-KILLED: The interpreter should exit.
+;;
+;;  Callbacks are slightly special, however--see the code for details.
 
+(define *%kernel-running-callback?* #f)
 (define *%kernel-state* 'NORMAL)
 
 (define *%kernel-jump-card* #f)
@@ -120,6 +129,10 @@
 
 (define *%kernel-exit-interpreter-func* #f)
 (define *%kernel-exit-to-top-func* #f)
+
+(define (%kernel-die-if-callback name)
+  (if *%kernel-running-callback?*
+      (throw (cat "Cannot call " name " from within callback."))))
 
 (define (%kernel-clear-timeout)
   (set! *%kernel-timeout* #f)
@@ -133,19 +146,37 @@
 
 (define (%kernel-check-timeout)
   (when (and *%kernel-timeout*
-	     (>= (current-milliseconds *%kernel-timeout*)))
-    (*%kernel-timeout-thunk*)
-    (%kernel-clear-timeout)))
+	     (>= (current-milliseconds) *%kernel-timeout*))
+    (let ((thunk *%kernel-timeout-thunk*))
+      (%kernel-clear-timeout)
+      (thunk))))
 
 (define (%kernel-clear-state)
   (set! *%kernel-state* 'NORMAL)
   (set! *%kernel-jump-card* #f))
 
+(define (%kernel-run-as-callback thunk)
+  (assert (not *%kernel-running-callback?*))
+  (if (eq? *%kernel-state* 'INTERPRETER-KILLED)
+      (log "Skipping callback because interpreter is being shut down")
+      (let [[saved-kernel-state *%kernel-state*]]
+	(set! *%kernel-state* 'NORMAL)
+	(label exit-callback
+	  ;; TODO - Can we have better error handling?
+          (with-errors-blocked (fatal-error)
+	    (fluid-let [[*%kernel-exit-to-top-func* exit-callback]
+			[*%kernel-exit-interpreter-func* exit-callback]
+			[*%kernel-running-callback?* #t]]
+	      (thunk))))
+	(if (eq? *%kernel-state* 'NORMAL)
+	    (set! *%kernel-state* saved-kernel-state)))))
+
 (define (%kernel-set-state state)
   (set! *%kernel-state* state))
 
 (define (%kernel-check-state)
-  (%kernel-check-timeout)
+  (unless *%kernel-running-callback?*
+    (%kernel-check-timeout))
   (case *%kernel-state*
     [[NORMAL]
      #t]
@@ -180,6 +211,7 @@
     result))
 
 (define (idle)
+  (%kernel-die-if-callback 'idle)
   (call-5l-prim 'schemeidle))
 
 (define (log msg)
@@ -209,7 +241,7 @@
       (call-5l-prim 'set name value)
       (call-5l-prim 'set name (value->string value))))
 
-(define (err msg)
+(define (throw msg)
   ;; TODO - More elaborate error support.
   (non-fatal-error msg)
   (error msg))
@@ -221,6 +253,11 @@
   (set! *%kernel-jump-card* (%kernel-find-card card))
   (%kernel-set-state 'JUMPING)
   (%kernel-check-state))
+
+(define-syntax callback
+  (syntax-rules ()
+    [(callback code ...)
+     (lambda () code ...)]))
 
 
 ;;=========================================================================
@@ -256,11 +293,11 @@
      (let ((card (hash-table-get *%kernel-card-table*
 				 card-or-name
 				 (lambda () #f))))
-       (or card (err (cat "Unknown card: " card-or-name))))]
+       (or card (throw (cat "Unknown card: " card-or-name))))]
     [(string? card-or-name)
      (%kernel-find-card (string->symbol card-or-name))]
     [#t
-     (err (cat "Bogus argument: " card-or-name))]))
+     (throw (cat "Bogus argument: " card-or-name))]))
 
 (define-syntax card
   (syntax-rules ()
@@ -304,9 +341,11 @@
   (%kernel-set-state 'INTERPRETER-KILLED))
 
 (define (%kernel-pause)
+  (%kernel-die-if-callback '%kernel-pause)
   (%kernel-set-state 'PAUSED))
 
 (define (%kernel-wake-up)
+  (%kernel-die-if-callback '%kernel-wake-up)
   (when (%kernel-paused?)
     (%kernel-clear-state)))
 
@@ -314,16 +353,21 @@
   (eq? *%kernel-state* 'PAUSED))
 
 (define (%kernel-timeout card-name seconds)
+  (%kernel-die-if-callback '%kernel-timeout)
   (%kernel-set-timeout (+ (current-milliseconds) (* seconds 1000))
 		       (lambda () (jump card-name))))
 
 (define (%kernel-nap tenths-of-seconds)
+  (%kernel-die-if-callback '%kernel-nap)
+  (set! *%kernel-nap-time* (+ (current-milliseconds)
+			      (* tenths-of-seconds 100)))
   (%kernel-set-state 'NAPPING))
 
 (define (%kernel-napping?)
   (eq? *%kernel-state* 'NAPPING))
 
 (define (%kernel-kill-nap)
+  (%kernel-die-if-callback '%kernel-kill-nap)
   (when (%kernel-napping?)
     (%kernel-clear-state)))
 
@@ -345,10 +389,5 @@
       ""))
 
 (define (%kernel-run-callback thunk)
-  (with-errors-blocked (fatal-error)
-    (label exit-to-top
-      (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
-	;; Run our callback, but don't reset any of our state flags
-	;; afterwards--we want to save those for the next time we run
-	;; %kernel-check-state.
-	(thunk)))))
+  (%kernel-die-if-callback '%kernel-run-callback)
+  (%kernel-run-as-callback thunk))
