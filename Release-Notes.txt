@@ -9,6 +9,7 @@ CVS - emk
   * CryptTool removed as first step in preparing for open souce release.
     This will simplify our legal issues a bit.
   * Linux build fixes.
+  * Fixed bug where MacOS X 5L always played the same video from the CD.
 
 3.5.8 - 15 Oct 2002 - emk
 

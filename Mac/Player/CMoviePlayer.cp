@@ -300,7 +300,11 @@ bool CMoviePlayer::Load(const char *inMovieName, bool inAudioOnly)
 	else
 	{
 		// local movie, get the spec
-		theConfig->FillSpec(&mSpec, moviePath);
+		if (!theConfig->FillSpec(&mSpec, moviePath))
+		{
+			retValue = false;
+			goto done;
+		}
 		
 		err = ::OpenMovieFile(&mSpec, &theRefNum, fsRdPerm);
 		if (err != noErr)
