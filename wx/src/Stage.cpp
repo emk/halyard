@@ -13,6 +13,7 @@
 #include "TVariable.h"
 #include "TStyleSheet.h"
 #include "doc/Document.h"
+#include "doc/TamaleProgram.h"
 
 // XXX - Huh?  Who included by TStyleSheet.h (on Win32) is defining DrawText?
 #undef DrawText
@@ -27,6 +28,8 @@
 #include "Listener.h"
 #include "Timecoder.h"
 #include "LocationBox.h"
+#include "dlg/ProgramPropDlg.h"
+
 #if CONFIG_HAVE_QUAKE2
 #	include "Quake2Engine.h"
 #endif // CONFIG_HAVE_QUAKE2
@@ -278,6 +281,8 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_DISPLAY_GRID, StageFrame::OnDisplayGrid)
     EVT_UPDATE_UI(FIVEL_DISPLAY_BORDERS, StageFrame::UpdateUiDisplayBorders)
     EVT_MENU(FIVEL_DISPLAY_BORDERS, StageFrame::OnDisplayBorders)
+    EVT_UPDATE_UI(FIVEL_PROPERTIES, StageFrame::UpdateUiProperties)
+    EVT_MENU(FIVEL_PROPERTIES, StageFrame::OnProperties)
     EVT_UPDATE_UI(FIVEL_JUMP_CARD, StageFrame::UpdateUiJumpCard)
     EVT_MENU(FIVEL_JUMP_CARD, StageFrame::OnJumpCard)
     EVT_SASH_DRAGGED(FIVEL_PROGRAM_TREE, StageFrame::OnSashDrag)
@@ -357,6 +362,10 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     mViewMenu->AppendCheckItem(FIVEL_DISPLAY_BORDERS,
                                "Display &Borders\tCtrl+B",
                                "Display the borders of interactive elements.");
+    mViewMenu->AppendSeparator();
+	mViewMenu->Append(FIVEL_PROPERTIES,
+					  "&Properties...\tAlt+Enter",
+					  "Edit the properties of the selected object.");
 
     // Set up our Window menu.
     mWindowMenu = new wxMenu();
@@ -513,9 +522,13 @@ void StageFrame::NewDocument()
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		wxString file = dlg.GetPath();
-		mStage->Show();
 		mDocument = new Document(file.mb_str());
 		config->Write("/Recent/DocPath", file);
+
+		ProgramPropDlg prop_dlg(this, mDocument->GetTamaleProgram());
+		prop_dlg.ShowModal();
+
+		mStage->Show();
 	}
 }
 
@@ -532,15 +545,15 @@ void StageFrame::OpenDocument()
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		wxString file = dlg.GetPath();
-		mStage->Show();
 		mDocument = new Document(file.mb_str(), Document::OPEN);
 		config->Write("/Recent/DocPath", file);
+		mStage->Show();
 	}
 }
 
 void StageFrame::OnExit(wxCommandEvent &inEvent)
 {
-    Close(TRUE);
+    Close(FALSE);
 }
 
 void StageFrame::UpdateUiNewProgram(wxUpdateUIEvent &inEvent)
@@ -569,12 +582,12 @@ void StageFrame::OnOpenProgram(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiSaveProgram(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(mDocument != NULL);
+	inEvent.Enable(mDocument != NULL && mDocument->IsDirty());
 }
 
 void StageFrame::OnSaveProgram(wxCommandEvent &inEvent)
 {
-
+	mDocument->Save();
 }
 
 void StageFrame::OnReloadScript(wxCommandEvent &inEvent)
@@ -684,6 +697,17 @@ void StageFrame::OnDisplayBorders(wxCommandEvent &inEvent)
     mStage->ToggleDisplayBorders();
 }
 
+void StageFrame::UpdateUiProperties(wxUpdateUIEvent &inEvent)
+{
+	inEvent.Enable(mDocument != NULL);
+}
+
+void StageFrame::OnProperties(wxCommandEvent &inEvent)
+{
+	ProgramPropDlg prop_dlg(this, mDocument->GetTamaleProgram());
+	prop_dlg.ShowModal();
+}
+
 void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
 {
     inEvent.Enable(TInterpreter::HaveInstance());
@@ -744,6 +768,30 @@ void StageFrame::OnSize(wxSizeEvent &WXUNUSED(inEvent))
 
 void StageFrame::OnClose(wxCloseEvent &inEvent)
 {
+	// Ask the user to save any unsaved documents.
+	if (mDocument && mDocument->IsDirty())
+	{
+		if (!inEvent.CanVeto())
+		{
+			mDocument->Save();
+			wxLogError("Tamale forced to exit; saved document.");
+		}
+		else
+		{
+			wxMessageDialog dlg(this, "Save current Tamale program?",
+								"Tamale", wxYES_NO|wxCANCEL|wxCENTRE|
+								wxICON_EXCLAMATION);
+			int button = dlg.ShowModal();
+			if (button == wxID_YES)
+				mDocument->Save();
+			else if (button == wxID_CANCEL)
+			{
+				inEvent.Veto();
+				return;
+			}
+		}
+	}
+
 	// Save our layout one last time.
 	MaybeSaveFrameLayout();
 

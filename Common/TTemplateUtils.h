@@ -4,6 +4,7 @@
 #define TTemplateUtils_H
 
 #include <string>
+#include <boost/checked_delete.hpp>
 
 #include "TCommon.h"
 
@@ -26,6 +27,35 @@ extern std::string MakeStringLowercase(std::string inString);
 // [out] return - the input string, with escaped quotes
 //
 extern std::string MakeQuotedString(const std::string &inString); 
+
+//////////
+// This functor can be used to delete all the pointers in a container
+// as follows:
+//
+//   for_each(container.begin, container.end(), DeletePointer())
+//
+// This code is adapted from Meyer's "Effective STL", and modified
+// to use the appropriate boost deletion operators.
+//
+struct DeletePointer {
+	template <typename T>
+	void operator() (T* ptr) const
+	{
+		boost::checked_delete<T>(ptr);
+	}
+};
+
+//////////
+// The same as DeletePointer, but for use with containers of pointers
+// TO ARRAYS.
+//
+struct DeleteArray {
+	template <typename T>
+	void operator() (T* ptr) const
+	{
+		boost::checked_array_delete<T>(ptr);
+	}
+};
 
 //////////
 // You can use this class to save and restore a value in an exception-safe

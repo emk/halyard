@@ -10,19 +10,27 @@ extern void test_Model (void);
 
 
 //=========================================================================
-//	Sample Subclass of Object
+//	Sample Subclasses of Object
 //=========================================================================
+
+class TestData : public Object {
+public:
+	DECLARE_MODEL_CLASS(TestData);
+};
+
+IMPLEMENT_MODEL_CLASS(TestData);
 
 class Card : public Object {
 public:
-	static Class class_info;
-	static Object *create_object();
-	Card() : Object(&class_info) {}
-
+	DECLARE_MODEL_CLASS(Card);
 };
 
-Class Card::class_info("Card", &Card::create_object);
-Object *Card::create_object() { return new Card(); }
+IMPLEMENT_MODEL_CLASS(Card);
+
+BEGIN_MODEL_CLASSES()
+	REGISTER_MODEL_CLASS(TestData)
+	REGISTER_MODEL_CLASS(Card)
+END_MODEL_CLASSES()
 
 
 //=========================================================================
@@ -36,14 +44,14 @@ void test_Model (void)
 	TEST(model.CanUndo() == false);
 	TEST(model.CanRedo() == false);
 
-	Map *root = model.GetRoot();
+	TestData *root = cast<TestData>(model.GetRoot());
 	TEST(root);
 
 	// Test the basic value types.
-	root->SetInteger("test int", 10);
-	TEST(root->GetInteger("test int") == 10);
-	root->SetString("test string", "foo");
-	TEST(root->GetString("test string") == "foo");
+	root->SetInteger("testInt", 10);
+	TEST(root->GetInteger("testInt") == 10);
+	root->SetString("testString", "foo");
+	TEST(root->GetString("testString") == "foo");
 
 	// Test the error-checking code.
 	TEST_EXCEPTION(root->GetInteger("nosuch"), TException);
@@ -54,8 +62,8 @@ void test_Model (void)
 
 	// Test Undo by removing the "test string" key. 
 	model.Undo();
-	TEST(root->GetInteger("test int") == 10);
-	TEST_EXCEPTION(root->GetString("test string"), TException);
+	TEST(root->GetInteger("testInt") == 10);
+	TEST_EXCEPTION(root->GetString("testString"), TException);
 
 	// Make sure that *both* Undo and Redo are enabled.
 	TEST(model.CanUndo() == true);
@@ -63,8 +71,8 @@ void test_Model (void)
 
 	// Test Undo by removing the "test int" key. 
 	model.Undo();
-	TEST_EXCEPTION(root->GetInteger("test int"), TException);
-	TEST_EXCEPTION(root->GetString("test string"), TException);
+	TEST_EXCEPTION(root->GetInteger("testInt"), TException);
+	TEST_EXCEPTION(root->GetString("testString"), TException);
 
 	// Make sure that only Redo is enabled.
 	TEST(model.CanUndo() == false);
@@ -72,23 +80,23 @@ void test_Model (void)
 
 	// Test Redo.
 	model.Redo();
-	TEST(root->GetInteger("test int") == 10);
-	TEST_EXCEPTION(root->GetString("test string"), TException);
+	TEST(root->GetInteger("testInt") == 10);
+	TEST_EXCEPTION(root->GetString("testString"), TException);
 	TEST(model.CanUndo() == true);
 	TEST(model.CanRedo() == true);
 	model.Redo();
-	TEST(root->GetInteger("test int") == 10);
-	TEST(root->GetString("test string") == "foo");
+	TEST(root->GetInteger("testInt") == 10);
+	TEST(root->GetString("testString") == "foo");
 	TEST(model.CanUndo() == true);
 	TEST(model.CanRedo() == false);
 	
 	// Test overwriting of Redo data.
 	model.Undo();
-	TEST_EXCEPTION(root->GetString("test string"), TException);
-	root->SetString("test string", "bar");
+	TEST_EXCEPTION(root->GetString("testString"), TException);
+	root->SetString("testString", "bar");
 	TEST(model.CanUndo() == true);
 	TEST(model.CanRedo() == false);
-	TEST(root->GetString("test string") == "bar");
+	TEST(root->GetString("testString") == "bar");
 	
 	// Test clearing of Undo data.
 	model.Undo();
@@ -100,15 +108,15 @@ void test_Model (void)
 	model.Redo();
 	TEST(model.CanUndo() == true);
 	TEST(model.CanRedo() == false);
-	TEST(root->GetString("test string") == "bar");
+	TEST(root->GetString("testString") == "bar");
 
 	//---------------------------------------------------------------------
 	// OK, we pretty much believe that Undo/Redo are correct.  Now
 	// we need to test ALL the subclasses of Change.
 
 	// Insert a new map datum to work with.
-	root->Set("map", new Map());
-	Map *map = cast<Map>(root->Get("map"));
+	root->Set("testMap", new Map());
+	Map *map = cast<Map>(root->Get("testMap"));
 
 	// Test CollectionDatum::SetChange on Map.
 	map->SetString("SetChange", "new key");
@@ -136,8 +144,8 @@ void test_Model (void)
 	TEST_EXCEPTION(map->Delete("DeleteChange"), TException);
 
 	// Create a new List.
-	root->Set("list", new List());
-	List *list = cast<List>(root->Get("list"));
+	root->Set("testList", new List());
+	List *list = cast<List>(root->Get("testList"));
 
 	// Insert two elements.
 	list->InsertString(0, "item 0");
@@ -180,14 +188,14 @@ void test_Model (void)
 
 #if 0
 	// Create some collections to move between.
-	root->Set("move map 1", new Map());	
-	root->Set("move map 2", new Map());
-	root->Set("move list 1", new List());	
-	root->Set("move list 2", new List());
-	Map *mmap1 = cast<Map>(root->Get("move map 1"));
-	Map *mmap2 = cast<Map>(root->Get("move map 2"));
-	//List *mlist1 = cast<List>(root->Get("move list 1"));
-	//List *mlist2 = cast<List>(root->Get("move list 2"));
+	root->Set("moveMap1", new Map());	
+	root->Set("moveMap2", new Map());
+	root->Set("moveList1", new List());	
+	root->Set("moveList2", new List());
+	Map *mmap1 = cast<Map>(root->Get("moveMap1"));
+	Map *mmap2 = cast<Map>(root->Get("moveMap2"));
+	//List *mlist1 = cast<List>(root->Get("moveList1"));
+	//List *mlist2 = cast<List>(root->Get("moveList2"));
 	
 	// Add some elements.
 	mmap1->SetString("foo", "foo value");
@@ -209,16 +217,16 @@ void test_Model (void)
 	/*
 	{
 		Transaction t(model);
-		root->SetInteger("test int", 20);
-		TEST(root->GetInteger("test int") == 20);
+		root->SetInteger("testInt", 20);
+		TEST(root->GetInteger("testInt") == 20);
 	}
 	*/
 
 	//---------------------------------------------------------------------
 	// Test Objects
 
-	Card *card = root->Set("sample card", new Card());
-	TEST(cast<Card>(root->Get("sample card")) == card);
+	Card *card = root->Set("sampleCard", new Card());
+	TEST(cast<Card>(root->Get("sampleCard")) == card);
 	card->SetString("name", "CardName");
 
 	//---------------------------------------------------------------------
@@ -231,6 +239,8 @@ void test_Model (void)
 	TEST(model2.CanRedo() == false);
 
 	model2.SaveAs("model2.xml");
-	TEST(root->GetInteger("test int") == 10);
-	TEST(root->GetString("test string") == "bar");
+
+	TestData *root2 = cast<TestData>(model2.GetRoot());
+	TEST(root2->GetInteger("testInt") == 10);
+	TEST(root2->GetString("testString") == "bar");
 }

@@ -1,9 +1,11 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include "TCommon.h"
-#include "Document.h"
 #include "TInterpreter.h"
 #include "FileSystem.h"
+
+#include "Document.h"
+#include "TamaleProgram.h"
 
 USING_NAMESPACE_FIVEL
 using namespace model;
@@ -28,6 +30,18 @@ using namespace model;
 
 
 //=========================================================================
+//  Class Registrations
+//=========================================================================
+//  In theory, we shouldn't need to do this, but there are MSVC linker
+//  bugs which make it a good idea.  See BEGIN_MODEL_CLASSES in Model.h
+//  for a longer explanation.
+
+BEGIN_MODEL_CLASSES()
+	REGISTER_MODEL_CLASS(TamaleProgram)
+END_MODEL_CLASSES()
+
+
+//=========================================================================
 //  Document Format
 //=========================================================================
 
@@ -45,19 +59,24 @@ const static ModelFormat gTamaleFormat("TamaleProgram", CURRENT_FORMAT,
 //  Document Methods
 //=========================================================================
 
+std::string Document::SetBaseAndGetFilePath(const std::string &inDirectory)
+{
+	FileSystem::Path path =
+		FileSystem::SetBaseDirectory(inDirectory).AddComponent("data.tam");
+	return path.ToNativePathString();
+}
+
 Document::Document(const std::string &inDirectory)
     : Model(gTamaleFormat)
 {
-	FileSystem::SetBaseDirectory(inDirectory);
-    SaveAs(FileSystem::Path("data.tam").ToNativePathString().c_str());
+    SaveAs(SetBaseAndGetFilePath(inDirectory).c_str());
 	TInterpreterManager::GetInstance()->BeginScript();
 }
 
 Document::Document(const std::string &inDirectory, Flag inOpen)
     : Model(gTamaleFormat, EARLIEST_READABLE,
-			FileSystem::Path("data.tam").ToNativePathString().c_str())
+			SetBaseAndGetFilePath(inDirectory).c_str())
 {
-	FileSystem::SetBaseDirectory(inDirectory);
 	TInterpreterManager::GetInstance()->BeginScript();    
 }
 
@@ -66,3 +85,7 @@ Document::~Document()
     
 }
 
+TamaleProgram *Document::GetTamaleProgram()
+{
+	return cast<TamaleProgram>(GetRoot());
+}

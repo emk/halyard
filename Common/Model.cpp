@@ -281,6 +281,10 @@ void Map::Fill(xml_node inNode)
 //  Object Methods
 //=========================================================================
 
+void Object::Initialize()
+{
+}
+
 void Object::Write(xml_node inContainer)
 {
 	inContainer.set_attribute("type", "object");
@@ -484,20 +488,24 @@ template void model::Move(Map*, Map::ConstKeyType&,
 void Model::Initialize()
 {
 	mChangePosition = mChanges.begin();
-	mRoot = std::auto_ptr<Map>(new Map());
+	Class *c = Class::FindByName(mFormat.GetName());
+	mRoot = std::auto_ptr<Object>(c->CreateInstance());
 	mRoot->RegisterWithModel(this);
 }
 
 Model::Model(const ModelFormat &inFormat)
-	: mFormat(inFormat), mRoot(NULL)
+	: mFormat(inFormat), mRoot(NULL), mIsDirty(false)
 {
 	Initialize();
+	mRoot->Initialize();
+	ClearUndoList();
+	ClearDirty();
 }
 
 Model::Model(const ModelFormat &inCurrentFormat,
 			 ModelFormat::Version inEarliestFormat,
 			 const std::string &inPath)
-	: mFormat(inCurrentFormat), mRoot(NULL)
+	: mFormat(inCurrentFormat), mRoot(NULL), mSavePath(inPath), mIsDirty(false)
 {
 	typedef ModelFormat::Version Version;
 
@@ -527,9 +535,10 @@ Model::Model(const ModelFormat &inCurrentFormat,
 			  "XML file is in a older, unsupported format");
 		mFormat = file_format;
 
-		// Get our top-level map and fill it out.
-		CHECK(root.attribute("type") == "map",
-			  "Root element in XML document have type 'map'");
+		// Get our top-level object and fill it out.
+		CHECK(root.attribute("type") == "object" &&
+			  root.attribute("class") == mFormat.GetName(),
+			  "Root object in XML document have type 'object'");
 		mRoot->Fill(root);
 	}
 	catch (...)
@@ -541,6 +550,7 @@ Model::Model(const ModelFormat &inCurrentFormat,
 
 	xmlFreeDoc(doc);
 	ClearUndoList();
+	ClearDirty();
 }
 
 Model::~Model()
@@ -610,6 +620,7 @@ void Model::ApplyChange(Change *inChange)
 	inChange->Apply();
 	mChangePosition = mChanges.insert(mChangePosition, inChange);
 	mChangePosition++;
+	mIsDirty = true;
 }
 
 void Model::SaveAs(const std::string &inFile)
@@ -632,4 +643,14 @@ void Model::SaveAs(const std::string &inFile)
 	int result = xmlSaveFormatFile(inFile.c_str(), doc, 1);
 	xmlFreeDoc(doc);
 	CHECK(result != -1, "Failed to save XML file");
+
+	mSavePath = inFile;
+	ClearDirty();
+}
+
+void Model::Save()
+{
+	CHECK(mSavePath != "", "No save path associated with document.");
+	SaveAs(mSavePath);
+	ClearDirty();
 }

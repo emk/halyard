@@ -10,7 +10,7 @@
 #include "../Stage.h"
 #include "StartupDlg.h"
 
-BEGIN_EVENT_TABLE(StartupDlg, wxDialog)
+BEGIN_EVENT_TABLE(StartupDlg, XrcDlg)
 	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_NEW"), StartupDlg::OnNew)
 	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_OPEN"), StartupDlg::OnOpen)
 	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_RECENT"), StartupDlg::OnRecent)
@@ -19,8 +19,8 @@ BEGIN_EVENT_TABLE(StartupDlg, wxDialog)
 END_EVENT_TABLE()
 
 StartupDlg::StartupDlg(wxWindow *inParent)
+	: XrcDlg(inParent, "DLG_STARTUP")
 {
-	wxTheXmlResource->LoadDialog(this, inParent, "DLG_STARTUP");
 	Bind(mRadioNew, XRCID("DLG_STARTUP_NEW"));
 	Bind(mRadioOpen, XRCID("DLG_STARTUP_OPEN"));
 	Bind(mRadioRecent, XRCID("DLG_STARTUP_RECENT"));

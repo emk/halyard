@@ -5,6 +5,8 @@
 
 #include "Model.h"
 
+class FIVEL_NS TamaleProgram;
+
 BEGIN_NAMESPACE_FIVEL
 
 //////////
@@ -13,6 +15,8 @@ BEGIN_NAMESPACE_FIVEL
 //
 class Document : public model::Model {
     DISABLE_COPY_AND_ASSIGN(Document);
+
+	static std::string SetBaseAndGetFilePath(const std::string &inDirectory);
 
 public:
 	enum Flag { OPEN };
@@ -30,6 +34,11 @@ public:
 	//
     Document(const std::string &inDirectory, Flag inOpen);
     ~Document();
+
+	//////////
+	// A more-precisely-typed version of GetRoot.
+	//
+	FIVEL_NS TamaleProgram *GetTamaleProgram();
 };
 
 END_NAMESPACE_FIVEL

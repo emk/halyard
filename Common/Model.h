@@ -7,8 +7,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <list>
 
-#include "FileSystem.h"
 #include "XmlUtils.h"
 
 
@@ -325,6 +325,16 @@ namespace model {
 	public:
 		const Class *GetClass() { return mClass; }
 
+		//////////
+		// After creating a new object and adding it to its
+		// parent container, you should immediately call
+		// Initialize.
+		//
+		// XXX - This is a wart designed to work around the fact
+		// that calling Set(...) in a constructor is broken.
+		//
+		virtual void Initialize();
+
 		virtual void Write(xml_node inContainer);
 		virtual void Fill(xml_node inNode);		
 	};
@@ -410,10 +420,13 @@ namespace model {
 		typedef std::list<Change*> ChangeList;
 
 		ModelFormat mFormat;
-		std::auto_ptr<Map> mRoot;
+		std::auto_ptr<Object> mRoot;
 
 		ChangeList mChanges;
 		ChangeList::iterator mChangePosition;
+		
+		bool mIsDirty;
+		std::string mSavePath;
 
 		void Initialize();
 
@@ -434,11 +447,15 @@ namespace model {
 		void Redo();
 		void ClearRedoList();
 		
-		Map *GetRoot() { ASSERT(mRoot.get()); return mRoot.get(); }
-		const Map *GetRoot() const
+		Object *GetRoot() { ASSERT(mRoot.get()); return mRoot.get(); }
+		const Object *GetRoot() const
 			{ ASSERT(mRoot.get()); return mRoot.get(); }
 
 		void SaveAs(const std::string &inFile);
+		void Save();
+
+		bool IsDirty() { return mIsDirty; }
+		void ClearDirty() { mIsDirty = false; }
 
 	private:
 		friend class MutableDatum;
@@ -449,7 +466,30 @@ namespace model {
 #	undef DEFINE_VALUE_GET
 #	undef DEFINE_VALUE_SET
 #	undef DEFINE_VALUE_DATUM_CLASS
-	
+
 };
+
+#define DECLARE_MODEL_CLASS(NAME) \
+	static model::Class class_info; \
+	NAME() : Object(&class_info) {} \
+	static model::Object *create_object()
+
+#define IMPLEMENT_MODEL_CLASS(NAME) \
+	model::Object *NAME::create_object() { return new NAME(); } \
+	model::Class NAME::class_info(#NAME, &NAME::create_object)
+
+// We need the BEGIN_MODEL_CLASSES, REGISTER_MODEL_CLASS and
+// END_MODEL_CLASSES to work around a bug which causes the MSVC
+// linker to discard static variables with non-trivial destructors
+// if nothing refers to them.  Yes, this is massively stupid.
+#define BEGIN_MODEL_CLASSES() \
+    static model::Class *model_classes[] = {
+
+#define REGISTER_MODEL_CLASS(NAME) \
+    &NAME::class_info,
+
+#define END_MODEL_CLASSES() \
+	NULL };
+
 
 #endif // Model_H

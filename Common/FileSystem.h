@@ -153,13 +153,13 @@ namespace FileSystem {
 	// the current working directory.  Used by GetFontDirectory,
 	// GetFontFilePath, etc.
 	//
-	void SetBaseDirectory(const Path &inDirectory);
+	Path SetBaseDirectory(const Path &inDirectory);
 
 	//////////
 	// Set the base directory for the application using a native
 	// path name.  Any trailing directory separator will be removed.
 	//
-	void SetBaseDirectory(const std::string &inDirectory);
+	Path SetBaseDirectory(const std::string &inDirectory);
 
 	//////////
 	// Return the current base directory for this application.

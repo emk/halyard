@@ -127,6 +127,14 @@ SOURCE=..\..\src\MovieWindowQT.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\dlg\ProgramPropDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\dlg\PropertyDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Quake2Engine.cpp
 # End Source File
 # Begin Source File
@@ -164,6 +172,10 @@ SOURCE=..\..\src\TWxPrimitives.cpp
 # Begin Source File
 
 SOURCE=..\..\src\Widget.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\dlg\XrcDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -207,6 +219,14 @@ SOURCE=..\..\src\MovieWindowQT.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\dlg\ProgramPropDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\dlg\PropertyDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Quake2Engine.h
 # End Source File
 # Begin Source File
@@ -240,6 +260,10 @@ SOURCE=..\..\src\TWxPrimitives.h
 # Begin Source File
 
 SOURCE=..\..\src\Widget.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\dlg\XrcDlg.h
 # End Source File
 # Begin Source File
 

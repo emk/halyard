@@ -70,10 +70,13 @@ void TSchemeInterpreterManager::BeginScript()
 	// Let our parent class set things up.
 	TInterpreterManager::BeginScript();
 
-	// Set the current Scheme directory.
+	// Set the current Scheme directory.  This must be an absolute path,
+	// so we check for ".", which is the only non-absolute path we
+	// expect to receive from GetBaseDirectory.
 	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
-	scheme_set_param(scheme_config, MZCONFIG_CURRENT_DIRECTORY,
-					 scheme_make_string(base.c_str()));
+	if (base != ".")
+		scheme_set_param(scheme_config, MZCONFIG_CURRENT_DIRECTORY,
+						 scheme_make_string(base.c_str()));
 
 	// Install our system loader.
 	FileSystem::Path fivel_collection =

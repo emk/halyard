@@ -528,17 +528,19 @@ Path Path::NativePath(const std::string &inPath)
 // THREAD - Global variable.
 static Path gCurrentBaseDirectory = Path();
 
-void FileSystem::SetBaseDirectory(const Path &inDirectory)
+Path FileSystem::SetBaseDirectory(const Path &inDirectory)
 {
 	gCurrentBaseDirectory = inDirectory;
+	return gCurrentBaseDirectory;
 }
 
-void FileSystem::SetBaseDirectory(const std::string &inDirectory)
+Path FileSystem::SetBaseDirectory(const std::string &inDirectory)
 {
 	Path base = Path::NativePath(inDirectory);
 	CHECK(base.IsDirectory(),
 		  ("\'" + inDirectory + "\' is not a valid directory").c_str());
 	gCurrentBaseDirectory = base;
+	return gCurrentBaseDirectory;
 }
 
 Path FileSystem::GetBaseDirectory()

@@ -7,21 +7,21 @@
       <orient>wxVERTICAL</orient>
       <object class="sizeritem">
         <object class="wxRadioButton" name="DLG_STARTUP_NEW">
-          <label>Create a new program.</label>
+          <label>Create a &amp;new program.</label>
         </object>
         <flag>wxALL</flag>
         <border>10</border>
       </object>
       <object class="sizeritem">
         <object class="wxRadioButton" name="DLG_STARTUP_OPEN">
-          <label>Open an existing program.</label>
+          <label>&amp;Open an existing program.</label>
         </object>
         <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
         <border>10</border>
       </object>
       <object class="sizeritem">
         <object class="wxRadioButton" name="DLG_STARTUP_RECENT">
-          <label>Open a recent program:</label>
+          <label>Open a &amp;recent program:</label>
         </object>
         <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
         <border>10</border>
@@ -60,6 +60,7 @@
   </object>
   <object class="wxDialog" name="PROP_PROGRAM">
     <title>Program Properties</title>
+    <centered>1</centered>
     <object class="wxBoxSizer">
       <orient>wxVERTICAL</orient>
       <object class="sizeritem">
@@ -122,7 +123,7 @@
           <object class="sizeritem">
             <object class="wxTextCtrl" name="PROP_PROGRAM_COMMENTS">
               <size>300, 200</size>
-              <style>wxTE_PROCESS_ENTER|wxTE_MULTILINE</style>
+              <style>wxTE_MULTILINE</style>
             </object>
           </object>
         </object>
@@ -131,7 +132,7 @@
       </object>
       <object class="sizeritem">
         <object class="wxFlexGridSizer">
-          <cols>3</cols>
+          <cols>4</cols>
           <hgap>10</hgap>
           <object class="sizeritem">
             <object class="wxButton" name="wxID_OK">
@@ -145,8 +146,13 @@
             </object>
           </object>
           <object class="sizeritem">
-            <object class="wxButton" name="PROP_PROGRAM_APPLY">
+            <object class="wxButton" name="wxID_APPLY">
               <label>Apply</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_HELP">
+              <label>Help</label>
             </object>
           </object>
         </object>

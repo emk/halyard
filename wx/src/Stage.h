@@ -174,6 +174,8 @@ private:
     void OnDisplayGrid(wxCommandEvent &inEvent);
     void UpdateUiDisplayBorders(wxUpdateUIEvent &inEvent);
     void OnDisplayBorders(wxCommandEvent &inEvent);
+    void UpdateUiProperties(wxUpdateUIEvent &inEvent);
+    void OnProperties(wxCommandEvent &inEvent);
     void UpdateUiJumpCard(wxUpdateUIEvent &inEvent);
     void OnJumpCard(wxCommandEvent &inEvent);
 
