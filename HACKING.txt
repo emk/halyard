@@ -48,13 +48,14 @@ Building Win32 5L
 
   Install Visual C++ off of the MSDN subscription, after making sure we
   have enough licenses.  Make sure you have everything related to C++
-  development.
+  development or media libraries (including ActiveX).  Also, download the
+  latest Service Pack off the msdn site (tested with SP5).
 
-  Next, download and install the QuickTime 5 SDK.  This can be found at
-  developer.apple.com.  Unzip it in C:\ (or anywhere else you like, but
-  then you'll have to adapt the instructions below).  Select Tools >
-  Options > Directories, and add the follow directories to the following
-  categories:
+  Next, download and install the QuickTime 6 SDK.  This can be found at
+  developer.apple.com (under Tools > QuickTime > QuickTime 6 SDK).  Unzip
+  it in C:\ (or anywhere else you like, but then you'll have to adapt the
+  instructions below).  Select Tools > Options > Directories, and add the
+  follow directories to the following categories:
 
     Include files:
       C:\SRC\QT501SDK\SDK\CINCLUDES
@@ -63,6 +64,12 @@ Building Win32 5L
       C:\SRC\QT501SDK\SDK\LIBRARIES
     Executable files:
       C:\SRC\QT501SDK\SDK\TOOLS
+
+  You should probably build wxWindows at this point, so that the libraries
+  are there when you're building 5L later.  Open
+  $5L_DIR/libs/wxWindows/src/wxWindows.dsw, and build the "Win32 Release"
+  and "Win32 Debug" targets.  Once you've built these libraries, add the
+  WXWIN environment variable, pointing to $5L_DIR/libs/wxWindows.
 
   Open up $5L_DIR\FiveL.dsw.  Click on "FileView", right-click on
   "FiveL files", and select "Settings" > "Settings for: Win32 Debug" >
@@ -76,7 +83,9 @@ Building Win32 5L
   of "CommonTest" to $5L_DIR/Common.  The test suites won't run without
   this step.
 
-  Select "Build" > "Set Active Configuration" > "FiveL - Win32 Debug" >
+  You may also need to look at $5L_DIR/libs/quake2/README-WX.txt.
+
+  Select "Build" > "Set Active Configuration" > "wx5L - Win32 Debug" >
   "OK".  Now click on the "Build" icon in your toolbar (it looks like two
   arrows pointing down at a hard drive).  If the build is successful, click
   on the "Execute Program" icon (it looks like an exclamation point).  You
