@@ -52,8 +52,9 @@ namespace GraphicsTools {
 
 		static Color ApplyAlpha(Color inColor, Channel inAlpha)
 		{
-			return Color(inColor.red, inColor.blue, inColor.green,
-						 (((int) inColor.alpha) * ((int) inAlpha)) / 255);
+			return Color(inColor.red, inColor.green, inColor.blue,
+						 255 - ((((int) 255 - inColor.alpha) *
+								 ((int) 255 - inAlpha)) / 255));
 		}
 
 		friend bool operator==(Color inLeft, Color inRight)
