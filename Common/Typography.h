@@ -243,8 +243,114 @@ namespace Typography {
 	// Style information for a piece of text.
 	//
 	class StyleInformation {
-		std::map<int,Style> mMap;
 
+		//////////
+		// An individual style run (internal).
+		//
+		struct StyleRun {
+			int   offset;
+			Style style;
+			StyleRun(int inOffset, const Style &inStyle)
+				: offset(inOffset), style(inStyle) {}
+		};
+		typedef std::list<StyleRun> StyleRunList;
+
+		StyleRunList mStyleRuns;
+		bool         mIsBuilt;
+		int          mEnd;
+
+	public:
+		//////////
+		// Create a new StyleInformation object.
+		//
+		// [in] inBaseStyle - The style to use for the first character.
+		//
+		StyleInformation(const Style &inBaseStyle);
+
+		//////////
+		// Change the Style at the specified offset in the string.
+		//
+		// [in] inOffset - The offset at which to change the style.
+		//                 This must be greater than or equal to the
+        //                 inOffset argument to all previous calls to
+        //                 ChangeStyleAt.
+		// [in] inStyle -  The new style to use.
+		//
+		void ChangeStyleAt(int inOffset, const Style &inStyle);
+
+		//////////
+		// Stop adding style changes, and freeze the StyleInformation.
+		//
+		// [in] inOffset - The offset at which to end style information.
+		//                 This typically corresponds to the end of the
+		//                 string.  This must be greater than or equal
+		//                 to all previous inOffset arguments.
+		//
+		void EndStyleAt(int inOffset);
+
+		//////////
+		// An STL-like iterator class for iterating over styles.
+		// This class returns the Style objects for each offset, counting
+		// by ones from zero (i.e., it returns 3 identical values for
+		// a three-element style run).
+		//
+		friend class const_iterator {
+			friend class StyleInformation;
+
+			const StyleInformation *mStyleInfo;
+			int mCurrentPosition;
+			int mEndOfRun;
+			StyleRunList::const_iterator mCurrentStyle;
+
+			const_iterator(const StyleInformation *inStyleInfo, bool isEnd);
+			
+			void UpdateEndOfRun();
+			void LoadNextStyleRun();
+
+		public:
+			const_iterator &operator++()
+			{
+				ASSERT(mCurrentPosition < mStyleInfo->mEnd);
+				++mCurrentPosition;
+				if (mCurrentPosition == mEndOfRun)
+					LoadNextStyleRun();
+				return *this;
+			}
+
+		    bool operator==(const const_iterator &inRight) const
+			{
+				ASSERT(mStyleInfo == inRight.mStyleInfo);
+				return mCurrentPosition == inRight.mCurrentPosition;
+			}
+
+			bool operator!=(const const_iterator &inRight) const
+			{
+				ASSERT(mStyleInfo == inRight.mStyleInfo);
+				return mCurrentPosition != inRight.mCurrentPosition;
+			}
+
+			const Style &operator*() const
+			{
+				ASSERT(mCurrentPosition < mStyleInfo->mEnd);
+				return mCurrentStyle->style;
+			}
+
+			const Style *operator->() const
+			{
+				return &operator*();
+			}
+		};
+		
+		//////////
+	    // Return an iterator pointing to the first element's style.
+		//
+		const_iterator begin() const { return const_iterator(this, false); }
+
+		//////////
+	    // Return an iterator pointing one past the last element's style.
+		// Do not dereference this.
+		//
+		const_iterator end() const { return const_iterator(this, true); }
 	};
 
 	//////////

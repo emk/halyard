@@ -228,6 +228,74 @@ bool Style::GetIsShadowed() const
 //	Typography::Face Methods
 //=========================================================================
 
+StyleInformation::StyleInformation(const Style &inBaseStyle)
+	: mIsBuilt(false)
+{
+	mStyleRuns.push_back(StyleRun(0, inBaseStyle));
+}
+
+void StyleInformation::ChangeStyleAt(int inOffset, const Style &inStyle)
+{
+	ASSERT(!mIsBuilt);
+	ASSERT(inOffset >= mStyleRuns.back().offset);
+	if (mStyleRuns.back().offset == inOffset)
+		mStyleRuns.pop_back();
+	mStyleRuns.push_back(StyleRun(inOffset, inStyle));
+}
+
+void StyleInformation::EndStyleAt(int inOffset)
+{
+	ASSERT(!mIsBuilt);
+	ASSERT(inOffset >= mStyleRuns.back().offset);
+	if (mStyleRuns.back().offset == inOffset)
+		mStyleRuns.pop_back();
+	mIsBuilt = true;
+	mEnd = inOffset;
+}
+
+StyleInformation::
+const_iterator::const_iterator(const StyleInformation *inStyleInfo, bool isEnd)
+	: mStyleInfo(inStyleInfo)
+{
+	if (isEnd)
+	{
+		mCurrentPosition = mStyleInfo->mEnd;
+		mCurrentStyle = mStyleInfo->mStyleRuns.end(); // Useless
+		mEndOfRun = mStyleInfo->mEnd;
+	}
+	else
+	{
+		mCurrentPosition = 0;
+		mCurrentStyle = mStyleInfo->mStyleRuns.begin();
+		UpdateEndOfRun();
+	}
+}
+			
+void StyleInformation::const_iterator::UpdateEndOfRun()
+{
+	ASSERT(mCurrentStyle != mStyleInfo->mStyleRuns.end());
+	if (mCurrentStyle == mStyleInfo->mStyleRuns.end())
+		mEndOfRun = mStyleInfo->mEnd;
+	else
+	{
+		StyleRunList::const_iterator next = mCurrentStyle;
+		next++;
+		mEndOfRun = next->offset;
+	}
+}
+
+void StyleInformation::const_iterator::LoadNextStyleRun()
+{
+	ASSERT(mCurrentStyle != mStyleInfo->mStyleRuns.end());
+	++mCurrentStyle;
+	UpdateEndOfRun();
+}
+
+
+//=========================================================================
+//	Typography::Face Methods
+//=========================================================================
+
 Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 	: AbstractFace(inSize)
 {

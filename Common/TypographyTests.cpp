@@ -81,6 +81,44 @@ static void test_Typography_Style (void)
 
 
 //=========================================================================
+//	Style Information Tests
+//=========================================================================
+
+static void test_Typography_StyleInformation (void)
+{
+	Style base("Nimbus Roman No9 L", 12);
+	StyleInformation info(base);
+	info.ChangeStyleAt(2, Style(base).SetFaceStyle(kItalicFaceStyle));
+	info.ChangeStyleAt(4, Style(base).SetColor(Color(255, 0, 0)));
+	info.ChangeStyleAt(6, Style(base).SetColor(Color(0, 255, 0)));
+	info.ChangeStyleAt(6, Style(base).SetColor(Color(0, 0, 255)));
+	info.EndStyleAt(8);
+
+	// Make sure we have correct style information.
+	StyleInformation::const_iterator iter = info.begin();
+	TEST(iter->GetSize() == 12);                         // 0
+	TEST(iter->GetFaceStyle() == kRegularFaceStyle);     // 0
+	TEST((++iter)->GetFaceStyle() == kRegularFaceStyle); // 1
+	StyleInformation::const_iterator iter2 = iter;       // COPY AT 1
+	TEST((++iter)->GetFaceStyle() == kItalicFaceStyle);  // 2
+	TEST((++iter)->GetFaceStyle() == kItalicFaceStyle);  // 3
+	TEST((++iter)->GetFaceStyle() == kRegularFaceStyle); // 4
+	TEST(iter->GetColor() == Color(255, 0, 0));          // 4
+	TEST((++iter)->GetColor() == Color(255, 0, 0));      // 5
+	TEST((++iter)->GetColor() == Color(0, 0, 255));      // 6
+	TEST((++iter)->GetColor() == Color(0, 0, 255));      // 7
+	TEST(++iter == info.end());                          // 8
+	
+	// Test iterator copy.
+	StyleInformation::const_iterator iter3 = iter2;      // COPY AT 1
+	TEST(iter2 == iter3);                                // 1 == 1
+	TEST(iter2->GetFaceStyle() == kRegularFaceStyle);    // 1
+	TEST((++iter2)->GetFaceStyle() == kItalicFaceStyle); // 2	
+	TEST(iter2 != iter3);                                // 1 != 2
+}
+
+
+//=========================================================================
 //	LineSegment Tests
 //=========================================================================
 
@@ -494,6 +532,7 @@ static void test_Typography_FamilyDatabase (void)
 void test_Typography (void)
 {
 	test_Typography_Style();
+	test_Typography_StyleInformation();
 	test_Typography_LineSegment();
 	test_Typography_GenericTextRenderingEngine();
 	test_Typography_FamilyDatabase();
