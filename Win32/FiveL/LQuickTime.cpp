@@ -18,6 +18,10 @@
 //                  simpler and more modern playback system.  These days,
 //                  LQuickTime is mostly a compatibility layer.
 //
+//					This code contains a lot of old assumptions and
+//					artifacts, and should probably not be trusted.  We only
+//					update it to keep it limping along as QuickTime evolves.
+//
 
 //=========================================================================
 // Missing-in-Action Bugfixes
@@ -119,6 +123,11 @@ void LQuickTime::Idle(void)
 			}
 			else if (mMovie->IsStarted() && mWaiting)
 			{
+                if (!mHaveComputedWaitTime) {
+                    mWaitTime = ComputeWaitTime(mWaitFrame);
+                    mHaveComputedWaitTime = true;
+                }
+
 				TimeValue time = mMovie->GetMovieTime();
 				if (mWaiting && time > mWaitTime)
 				{
@@ -147,6 +156,28 @@ void LQuickTime::SetVolume(int32 inVolume)
 		mMovie->SetMovieVolume((short) inVolume);
 }
 
+TimeValue LQuickTime::ComputeWaitTime(int32 inFrame)
+{
+    // Assume all movies are 30 frames / second.  We do the math
+    // as floating point here because (1) the old code did and (2)
+    // it might theoretically prevent an overflow for insanely
+    // long movies, and I'm trying to be ultra-cautious while
+    // gutting this code.
+    TimeScale scale = mMovie->GetTimeScale();
+    TimeValue result = (TimeValue) ((((double) inFrame) * scale) / 30.0);
+    
+    // 0 is the end, negative means back from the end.  We test
+    // against the original inFrame, not mWaitTime, which might
+    // have changed from positive to zero above.
+    if (inFrame <= 0)
+    {
+        TimeValue end = mMovie->GetDuration();
+        result += end;
+    }
+
+	return result;
+}
+
 //
 //	SetWaitPoint - Set a wait point at this frame. We have to be playing a 
 //				movie or audio track for this to make any sense. 
@@ -156,23 +187,12 @@ void LQuickTime::SetWaitPoint(int32 inFrame)
 	if (mMovie)
 	{
 		mWaiting = true;
-		
-		// Assume all movies are 30 frames / second.  We do the math
-		// as floating point here because (1) the old code did and (2)
-		// it might theoretically prevent an overflow for insanely
-		// long movies, and I'm trying to be ultra-cautious while
-		// gutting this code.
-		TimeScale scale = mMovie->GetTimeScale();
-		mWaitTime = (TimeValue) ((((double) inFrame) * scale) / 30.0);
+		mWaitFrame = inFrame;
 
-		// 0 is the end, negative means back from the end.  We test
-		// against the original inFrame, not mWaitTime, which might
-		// have changed from positive to zero above.
-		if (inFrame <= 0)
-		{
-			TimeValue end = mMovie->GetDuration();
-			mWaitTime += end;
-		}
+        // We can't compute the wait time right now, because the movie may
+        // not be fully loaded.
+        mHaveComputedWaitTime = false;
+        mWaitTime = 0;
 	}
 }
 
@@ -265,8 +285,9 @@ bool LQuickTime::Load(TString &inMoviePath, bool inAudioOnly, bool inFinish)
 		mPath = inMoviePath;
 		mAudioOnly = inAudioOnly;
 
-		if (inFinish)
-			mMovie->BlockUntilReadyOrBroken();
+        // Does not work.
+		//if (inFinish)
+		//	mMovie->BlockUntilReadyOrBroken();
 
 		mMovie->ThrowIfBroken();
 	}
@@ -391,7 +412,7 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect,
 		else
 		{
 			ASSERT(mMovie);
-			mMovie->BlockUntilReadyOrBroken();
+			//mMovie->BlockUntilReadyOrBroken();
 		
 			if (mMovie->IsBroken())
 			{
@@ -410,10 +431,10 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect,
 	if (not mPreloaded)
 	{
 		gDebugLog.Log("QuickTime: not preloaded, preload now");
-		retValue = DoPreload(inMoviePath, inAudioOnly, true);
+		retValue = DoPreload(inMoviePath, inAudioOnly, /*true*/ false);
 	}
 	else
-		retValue = LQT_NoError;
+        retValue = LQT_NoError;
 	
 	if (retValue == LQT_NoError)
 	{
@@ -442,7 +463,8 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect,
 		// Start playback.
 		mLooping = false;
 		SetVolume(inVolume);
-		mMovie->BlockUntilReadyOrBroken();
+		// Does not work for network playback.
+		//mMovie->BlockUntilReadyOrBroken();
 		mMovie->StartWhenReady(options, loc);
 	}
 
@@ -516,6 +538,13 @@ bool LQuickTime::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.5.2.2  2003/10/21 18:48:31  emk
+ 3.4.6 - 24 Feb 2003 - emk
+
+ STILL UNSTABLE.  Fixed network playback in the new QuickTime layer.  This
+ should be usable for in-house content testing (and a lot faster than the
+ existing engine), but it needs more work before we test the engine.
+
  Revision 1.5.2.1  2003/10/06 20:16:29  emk
  3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
  (Various parts of the new layer include forward ports from

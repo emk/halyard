@@ -338,13 +338,6 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
 }
 
-void TQTMovie::BlockUntilReadyOrBroken()
-{
-	while (MOVIE_INCOMPLETE <= mState && mState < MOVIE_READY)
-		Idle();
-	ASSERT(mState == MOVIE_READY || mState == MOVIE_BROKEN);
-}
-
 
 //=========================================================================
 // Regular TQTMovie Methods

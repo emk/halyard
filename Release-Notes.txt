@@ -1,5 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.4.6 - 24 Feb 2003 - emk
+
+STILL UNSTABLE.  Fixed network playback in the new QuickTime layer.  This
+should be usable for in-house content testing (and a lot faster than the
+existing engine), but it needs more work before we test the engine.
+
 3.4.5 - 24 Feb 2003 - emk
 
 Ripped out old QuickTime layer and replaced with TQTMovie wrapper.

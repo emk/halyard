@@ -17,15 +17,22 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		5
+#define VERSION_REV_BIG		6
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.5 (UNSTABLE!)"
+#define VERSION_STRING		"5L 3.4.6 (UNSTABLE!)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.6  2003/10/21 18:47:58  emk
+ 3.4.6 - 24 Feb 2003 - emk
+
+ STILL UNSTABLE.  Fixed network playback in the new QuickTime layer.  This
+ should be usable for in-house content testing (and a lot faster than the
+ existing engine), but it needs more work before we test the engine.
+
  Revision 1.30.2.5  2003/10/06 20:16:30  emk
  3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
  (Various parts of the new layer include forward ports from

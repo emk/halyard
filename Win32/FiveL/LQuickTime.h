@@ -155,7 +155,10 @@ public:
 	//
 	// [out] return - true if a movie is playing, false otherwise
 	//
-	bool			Playing(void) { return mMovie ? true : false; }
+	bool			Playing(void)
+    {
+        return mMovie ? true : false;
+    }
 	
 	//////////
 	// Is the current movie preloaded?
@@ -185,7 +188,7 @@ public:
 	//                false otherwise
 	//
 	bool			Paused(void)
-		{ return mMovie && mMovie->IsPaused(); }
+		{ return mMovie && mMovie->IsStarted() && mMovie->IsPaused(); }
 	
 	//////////
 	// Is there a full screen video clip playing?
@@ -295,8 +298,20 @@ private:
 	//
 	bool			mSync;
 
+    //////////
+    // Frame to wait for if a wait point is set.  Only valid if mWaiting is
+    // true.
+    //
+    int32			mWaitFrame;
+
+    //////////
+    // Have we computed mWaitTime from mWaitFrame yet?
+    //
+    bool			mHaveComputedWaitTime;
+
 	//////////
-	// Time to wait if a wait point is set.
+	// Time to wait if a wait point is set.  This is only valid if mWaiting
+    // and mHaveComputedWaitTime are true.
 	//
 	TimeValue		mWaitTime;
 	
@@ -309,7 +324,14 @@ private:
 	// Current volume.
 	//
 	int32			mCurrentVolume;
-	
+
+    //////////
+    // Given an abstract frame number (at 30 frames/second), compute the
+    // equivalent TimeValue.  Negative frame numbers are relative to the end
+    // of the movie; 0 means the end of the movie.
+    //
+	TimeValue ComputeWaitTime(int32 inFrame);
+
 	//////////
 	// Preload the movie.
 	//
@@ -375,6 +397,13 @@ private:
 
 /*
  $Log$
+ Revision 1.3.10.2  2003/10/21 18:48:31  emk
+ 3.4.6 - 24 Feb 2003 - emk
+
+ STILL UNSTABLE.  Fixed network playback in the new QuickTime layer.  This
+ should be usable for in-house content testing (and a lot faster than the
+ existing engine), but it needs more work before we test the engine.
+
  Revision 1.3.10.1  2003/10/06 20:16:29  emk
  3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
  (Various parts of the new layer include forward ports from

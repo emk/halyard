@@ -219,8 +219,6 @@ public:
 	//
 	void Start(PlaybackOptions inOptions, Point inPosition);
 
-	void BlockUntilReadyOrBroken();
-	
 	//////////
 	// Did a problem occur either loading or playing this movie?  If
 	// this function returns true, the object is essentially scrap.
