@@ -9,9 +9,11 @@ Table of Contents
   * Building Macintosh 5L
   * What Lives Where
   * Important Classes & Modules
+  * Testing Your Changes
   * Coding Conventions
   * Checking in Your Changes to 5L
   * Updating the Version Number
+  * Ancient Versions
 
 History
 -------
@@ -133,7 +135,7 @@ Important Classes & Modules
     - Basic data structures.  Try to use the STL in new code instead.
 
   * TPoint, TRect
-    - Fairly featureful points and rectangles
+    - Fairly featureful points and rectangles.
 
   * FileSystem, GraphicsTools
     - New portable libraries for pathnames and graphics.  Use these.
@@ -188,9 +190,10 @@ Important Classes & Modules
 
   * {C,L}Files, LFileBundle
     - 5L file I/O code.
+    - LFileBundle has assertion failures and other problems.
 
   * {C,L}TouchZone
-    - Buttons and touchzones.
+    - Buttons and touchzones.  Pretty ugly.
 
   * CConfig, CModule, Config
     - Managing multiple scripts, media sets.
@@ -369,3 +372,15 @@ Updating the Version Number
      "3.2.1.3"), then you'll only be able to enter the first 3 in the boxes
      at the top (you can, of course, enter the full version in the
      free-form text fields).  Again, check the copyright.
+
+Ancient Versions
+----------------
+
+  We shipped Genetics in Clinical Practice on top of an older engine (early
+  2002) which has substantially more primitive build and testing procedures.
+  Also, this engine exists in entirely separate Windows and Macintosh
+  versions, with no shared code.
+
+  You can find this engine in CVS as FiveL_3_1_1_Stabilization and
+  Mac5L_202_Stable.  Release notes are in Win32/ReleaseNotes.txt and
+  Mac/ReleaseNotes.

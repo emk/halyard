@@ -1,4 +1,13 @@
-3.3.10 - 7 July 2002
+3.3.11 - 7 July 2002 - emk
+
+  * Ported Win32 QuickTime 6/VP3 bugfix forward from 3.2.0.x.
+  * Ported Win32 QuickTime 6 gamma bugfix forward from 3.2.0.x.
+  * Ported Win32 line drawing bugfix forward from 3.2.0.x.
+  * Fixed Win32 (touch ...) command to highlight touchzones more like the
+    Macintosh.  (It now redraws the unhighlighted graphic at the end of the
+    highlight sequence.)
+
+3.3.10 - 7 July 2002 - zeb
 
   * Added a new Release-Notes.txt file.
   * Fixed a bug which caused LFileBundle to die with an assertion

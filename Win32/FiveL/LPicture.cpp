@@ -273,7 +273,10 @@ void LPicture::Hilite(TPoint &inPt, bool inMatte /* = true */)
 
     Highlight->Draw(inPt, inMatte); 
     gView->Draw();
-    
+
+	// Brief pause needed to see hilited graphic (esp on fast machines).
+	::Sleep(HILITE_PAUSE);
+
     Draw(inPt, inMatte);
     gView->Draw();
 }
@@ -350,6 +353,16 @@ LPicture *LPictureManager::GetPicture(TString &inName)
 
 /*
  $Log$
+ Revision 1.4  2002/07/08 16:43:56  emk
+ 3.3.11 - Bugfixes from 3.2.0.5 through 3.2.0.7.
+
+   * Ported Win32 QuickTime 6/VP3 bugfix forward from 3.2.0.x.
+   * Ported Win32 QuickTime 6 gamma bugfix forward from 3.2.0.x.
+   * Ported Win32 line drawing bugfix forward from 3.2.0.x.
+   * Fixed Win32 (touch ...) command to highlight touchzones more like the
+     Macintosh.  (It now redraws the unhighlighted graphic at the end of the
+     highlight sequence.)
+
  Revision 1.3  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

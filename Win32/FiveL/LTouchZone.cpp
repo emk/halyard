@@ -27,9 +27,6 @@
 #define NOT_ACTIV 7
 #define BUTT_TXT_MAX    256
 
-// Pause in milliseconds after button is highlighted
-#define HILITE_PAUSE 200
-
 //
 //  Initialize the touch zone. If no location point is given, use
 //  the picture's.
@@ -246,6 +243,16 @@ LTouchZone *LTouchZoneManager::GetTouchZone(WPARAM wParam)
 
 /*
  $Log$
+ Revision 1.6  2002/07/08 16:43:56  emk
+ 3.3.11 - Bugfixes from 3.2.0.5 through 3.2.0.7.
+
+   * Ported Win32 QuickTime 6/VP3 bugfix forward from 3.2.0.x.
+   * Ported Win32 QuickTime 6 gamma bugfix forward from 3.2.0.x.
+   * Ported Win32 line drawing bugfix forward from 3.2.0.x.
+   * Fixed Win32 (touch ...) command to highlight touchzones more like the
+     Macintosh.  (It now redraws the unhighlighted graphic at the end of the
+     highlight sequence.)
+
  Revision 1.5  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:
