@@ -23,7 +23,7 @@ void FIVEL_NS RegisterCommonPrimitives()
 	REGISTER_5L_PRIMITIVE(Log);
 	REGISTER_5L_PRIMITIVE(Origin);
 	REGISTER_5L_PRIMITIVE(ResetOrigin);
-	REGISTER_5L_PRIMITIVE(Set);
+	//REGISTER_5L_PRIMITIVE(Set);
 	REGISTER_5L_PRIMITIVE(SetTyped);
 	REGISTER_5L_PRIMITIVE(Get);
 	REGISTER_5L_PRIMITIVE(VariableInitialized);
@@ -225,8 +225,10 @@ DEFINE_5L_PRIMITIVE(ResetOrigin)
 // Sets the variable to the given value.  NEWVALUE will be treated as a
 // string or a date string.  See SetTyped for a more general Set function.
 
+/*
 DEFINE_5L_PRIMITIVE(Set)
 {
+   
 	::SkipPrimitiveLogging();
 
     TString     vname;
@@ -237,6 +239,8 @@ DEFINE_5L_PRIMITIVE(Set)
 
     inArgs >> vname >> value;
     
+
+
 	if (inArgs.HasMoreArguments())
     {
     	inArgs >> flag;
@@ -266,10 +270,12 @@ DEFINE_5L_PRIMITIVE(Set)
     	gVariableManager.SetDate(vname.GetString(), date_value, date_type);
 	}
 	else
-	{
+	{ 
+
 		gVariableManager.SetString(vname.GetString(), value.GetString());
 	}
 }
+*/
 
 
 //-------------------------------------------------------------------------
@@ -277,6 +283,7 @@ DEFINE_5L_PRIMITIVE(Set)
 //-------------------------------------------------------------------------
 // Set the value of VARIABLE to NEWVALUE, using the specified TYPE.  If
 // TYPE is "null", then NEWVALUE must be omitted.
+
 
 DEFINE_5L_PRIMITIVE(SetTyped)
 {
@@ -363,7 +370,7 @@ DEFINE_5L_PRIMITIVE(Get)
 	std::string vname;
 	inArgs >> SymbolName(vname);
 
-	TVariable *var = gVariableManager.FindVariable(vname.c_str(), true);
+	TValue *var = gVariableManager.FindVariable(vname.c_str(), true);
    	::SetPrimitiveResult(var);
 }
 
@@ -380,8 +387,8 @@ DEFINE_5L_PRIMITIVE(VariableInitialized)
 	std::string vname;
 	inArgs >> SymbolName(vname);
 
-	TVariable::Type type = gVariableManager.GetType(vname.c_str());
-	::SetPrimitiveResult(type == TVariable::TYPE_UNINITIALIZED ? false : true);
+	TValue::Type type = gVariableManager.GetType(vname.c_str());
+	::SetPrimitiveResult(type == TValue::TYPE_UNINITIALIZED ? false : true);
 	//if the variable is uninitialized we return FALSE, not true.
 	//the function is VariableInitialized, not VariableUninitialized
 }

@@ -445,7 +445,7 @@ inline void SetPrimitiveResult(const GraphicsTools::Color &inValue)
 //
 // [in] inVariable - The variable whose value we should use.
 //
-inline void SetPrimitiveResult(TVariable *inVariable)
+inline void SetPrimitiveResult(TValue *inVariable)
 {
 	gVariableManager.Assign("_result", inVariable);
 }

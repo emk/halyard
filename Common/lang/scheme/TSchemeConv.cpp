@@ -27,7 +27,13 @@ static Scheme_Object *MakeSchemeList(const TValueList &inList) {
 
 Scheme_Object *TValueToScheme(TValue inVal) {
 	switch (inVal.GetType())
-	{			
+	{	
+		case TValue::TYPE_UNINITIALIZED:
+			THROW("Attempt to convert uninitialized TValue to scheme.");
+
+		case TValue::TYPE_NULL:
+			return scheme_void;
+
 		case TValue::TYPE_STRING:
 			return scheme_make_string(std::string(inVal).c_str());
 			

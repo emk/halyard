@@ -219,7 +219,7 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 
 	// We need these to get information back out of our try block.
 	bool have_error = false;
-	TVariable::Type result_type;
+	TValue::Type result_type;
 	std::string res_str, error, errormsg;
 	int32 result_long;
 	uint32 result_ulong;
@@ -262,48 +262,47 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 		}
 		else
 		{
-			TVariable *result = gVariableManager.FindVariable("_result", true);
-			result_type = result->GetType();
+			result_type = gVariableManager.GetType("_result");
 			switch (result_type)
 			{
-				case TVariable::TYPE_STRING: 
-					res_str = result->GetString();
+				case TValue::TYPE_STRING: 
+					res_str = gVariableManager.GetString("_result");
 					break;
 
-				case TVariable::TYPE_SYMBOL:
-					res_str = result->GetSymbol();
+				case TValue::TYPE_SYMBOL:
+					res_str = gVariableManager.GetSymbol("_result");
 					break;
 
-				case TVariable::TYPE_LONG:
-					result_long = result->GetLong();
+				case TValue::TYPE_LONG:
+					result_long = gVariableManager.GetLong("_result");
 					break;
 
-				case TVariable::TYPE_ULONG:
-					result_ulong = result->GetULong();
+				case TValue::TYPE_ULONG:
+					result_ulong = gVariableManager.GetULong("_result");
 					break;
 
-				case TVariable::TYPE_DOUBLE:
-					result_double = result->GetDouble();
+				case TValue::TYPE_DOUBLE:
+					result_double = gVariableManager.GetDouble("_result");
 					break;
 
-				case TVariable::TYPE_BOOLEAN:
-					result_bool = result->GetBoolean();
+				case TValue::TYPE_BOOLEAN:
+					result_bool = gVariableManager.GetBoolean("_result");
 					break;
 
-				case TVariable::TYPE_POINT:
-					result_point = result->GetPoint();
+				case TValue::TYPE_POINT:
+					result_point = gVariableManager.GetPoint("_result");
 					break;
 
-				case TVariable::TYPE_RECT:
-					result_rect = result->GetRect();
+				case TValue::TYPE_RECT:
+					result_rect = gVariableManager.GetRect("_result");
 					break;
 
-				case TVariable::TYPE_COLOR:
-					result_color = result->GetColor();
+				case TValue::TYPE_COLOR:
+					result_color = gVariableManager.GetColor("_result");
 					break;
 
-				case TVariable::TYPE_NULL:
-				case TVariable::TYPE_UNINITIALIZED:
+				case TValue::TYPE_NULL:
+				case TValue::TYPE_UNINITIALIZED:
 				default:
 					/* Do nothing for now. */;
 			}
@@ -326,38 +325,38 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 	// Figure out what we should pass back to Scheme.
 	switch (result_type)
 	{
-		case TVariable::TYPE_UNINITIALIZED:
+		case TValue::TYPE_UNINITIALIZED:
 			scheme_signal_error("%s: _result is broken", prim_name);
 			
-		case TVariable::TYPE_NULL:
+		case TValue::TYPE_NULL:
 			return scheme_void;
 
-		case TVariable::TYPE_STRING:
+		case TValue::TYPE_STRING:
 			return scheme_make_sized_string(const_cast<char*>(res_str.c_str()),
 											res_str.length(), true);
 
-		case TVariable::TYPE_SYMBOL:
+		case TValue::TYPE_SYMBOL:
 			return scheme_intern_symbol(const_cast<char*>(res_str.c_str()));
 
-		case TVariable::TYPE_LONG:
+		case TValue::TYPE_LONG:
 			return scheme_make_integer_value(result_long);
 
-		case TVariable::TYPE_ULONG:
+		case TValue::TYPE_ULONG:
 			return scheme_make_integer_value_from_unsigned(result_ulong);
 
-		case TVariable::TYPE_DOUBLE:
+		case TValue::TYPE_DOUBLE:
 		    return scheme_make_double(result_double);
 
-		case TVariable::TYPE_BOOLEAN:
+		case TValue::TYPE_BOOLEAN:
 			return result_bool ? scheme_true : scheme_false;
 
-		case TVariable::TYPE_POINT:
+		case TValue::TYPE_POINT:
 			return MakeSchemePoint(result_point);
 
-		case TVariable::TYPE_RECT:
+		case TValue::TYPE_RECT:
 			return MakeSchemeRect(result_rect);
 
-		case TVariable::TYPE_COLOR:
+		case TValue::TYPE_COLOR:
 			return MakeSchemeColor(result_color);
 
 		default:

@@ -31,6 +31,10 @@ TValue work (kwasi, djin, emk):
   * TValue can now do a few limited sorts of numeric type conversions.
   * Lots of little bug fixes and stress testing related to TValue.
 
+  * Removed SET primitive.
+  * Replaced TVariable/TVariableManager with TValue/new-TVariableManager.
+  * Implemented operator<< for many basic types used by TValue.
+
 Quake 2 Overlays (emk):
 
   * Added a qoverlay.h interface for displaying 32-bit overlays above

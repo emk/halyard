@@ -141,12 +141,22 @@ class TPoint : public TObject
 		int32		m_Y;
 };
 
+inline std::ostream &operator<<(std::ostream &out, const TPoint &p) {
+	out << "(point " << p.X() << " " << p.Y() << ")";
+	return out;
+}
+
 END_NAMESPACE_FIVEL
 
 #endif // _TPoint_h_
 
 /*
  $Log$
+ Revision 1.7  2004/01/30 22:31:18  kwasi
+   * Removed SET primitive.
+   * Replaced TVariable/TVariableManager with TValue/new-TVariableManager.
+   * Implemented operator<< for many basic types used by TValue.
+
  Revision 1.6  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

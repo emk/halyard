@@ -150,3 +150,13 @@ bool TPolygon::operator==(const TPolygon &inPoly) const
 {
 	return mVertices == inPoly.Vertices();
 }
+
+std::ostream &FIVEL_NS operator<<(std::ostream &out, const TPolygon &poly) {
+	out << "(polygon";
+	std::vector<TPoint> vertices(poly.Vertices());
+	std::vector<TPoint>::iterator i = vertices.begin();
+	for (; i != vertices.end(); ++i)
+		out << " " << *i;
+    out << ")";
+	return out;
+}

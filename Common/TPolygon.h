@@ -63,6 +63,8 @@ public:
 	bool operator==(const TPolygon &inPoly) const;
 };
 
+extern std::ostream &operator<<(std::ostream &out, const TPolygon &poly);
+
 END_NAMESPACE_FIVEL
 
 #endif // _TPolygon_h_

@@ -117,6 +117,7 @@ public:
     // ADDING NEW TYPES - You need to add a new item to this
     // enumeration.
     enum Type {
+		TYPE_UNINITIALIZED,
         TYPE_NULL,      // No value.
         TYPE_STRING,    // Regular string.
         TYPE_SYMBOL,    // A symbol, as in Scheme.
@@ -168,6 +169,10 @@ public:
     template <> static Type FindType(const TCallbackPtr &)
     	{ return TYPE_CALLBACK; }
     template <> static Type FindType(const TPercent &) { return TYPE_PERCENT; }
+
+    // Normal casting from a TValue to a TCallbackPtr does not work
+    // so need to explicitly extract TCallbackPtr.
+	TCallbackPtr GetCallbackPtr();
 
 private:
     //////////
@@ -278,14 +283,13 @@ public:
     operator GraphicsTools::Color() const;
     operator TValueList() const;
     operator TPolygon() const;
-    operator TCallbackPtr() const;
     operator TPercent() const;
 
     //////////
     // Has this TValue been initialized?
     //
     bool IsInitialized() const { return mPtr.get() != NULL; }
-    
+
     ////////
     // Get the type of this TValue.  Only valid if the value is
     // initialized.
@@ -304,6 +308,8 @@ extern bool operator==(const TValue &inV1, const TValue &inV2);
 
 extern bool operator!=(const TValue &inV1, const TValue &inV2);
 extern std::ostream &operator<<(std::ostream &out, const TValue &inV);
+
+extern std::ostream &operator<<(std::ostream &out, const TValueList &l);
 
 END_NAMESPACE_FIVEL
 

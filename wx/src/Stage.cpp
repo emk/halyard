@@ -8,7 +8,6 @@
 #include <wx/image.h>
 
 #include "TInterpreter.h"
-#include "TVariable.h"
 #include "TStyleSheet.h"
 
 #include "AppConfig.h"

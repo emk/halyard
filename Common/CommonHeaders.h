@@ -34,7 +34,7 @@
 #include "TPolygon.h"
 #include "GraphicsTools.h"
 #include "TValue.h"
-#include "TVariable.h"
+#include "TVariableManager.h"
 #include "TTemplateUtils.h"
 #include "TLogger.h"
 #include "TestCase.h"

@@ -3,7 +3,6 @@
 #include "TamaleHeaders.h"
 
 #include "TInterpreter.h"
-#include "TVariable.h"
 #include "EventDispatcher.h"
  
 BEGIN_NAMESPACE_FIVEL

@@ -100,7 +100,6 @@ TValue::operator GraphicsTools::Color() const
 	{ GraphicsTools::Color r; return Get(r); }
 TValue::operator TValueList() const { TValueList r; return Get(r); }
 TValue::operator TPolygon() const { TPolygon r; return Get(r); }
-TValue::operator TCallbackPtr() const { TCallbackPtr r; return Get(r); }
 TValue::operator TPercent() const { TPercent r; return Get(r); }
 
 TValue::operator int32() const { 
@@ -148,9 +147,14 @@ TValue::operator double() const {
 	return Get(r); 
 }
 
+TCallbackPtr TValue::GetCallbackPtr() {
+	TCallbackPtr ptr;
+	return Get(ptr);
+}
+
 TValue::Type TValue::GetType() const {
     if (!IsInitialized())
-        THROW("Cannot get type of uninitialized TValue");
+		THROW("Cannot get type of uninitialized TValue");
     return mPtr->GetType();
 }
 
@@ -179,6 +183,15 @@ std::ostream &FIVEL_NS operator<<(std::ostream &out, const TValue &inV) {
     return out;
 }
 
+std::ostream &FIVEL_NS operator<<(std::ostream &out, const TValueList &l) {
+	out << "(list";
+	TValueList::const_iterator i = l.begin();
+	for (; i != l.end(); ++i)
+		out << " " << *i;
+    out << ")";
+	return out;
+}
+
 
 //=========================================================================
 //  Tests
@@ -193,6 +206,11 @@ CHECK_TVALUE_TYPE(TValue::Type inType, const Type &v1, const Type &v2) {
     CHECK_EQ(value.GetType(), inType);
     CHECK_EQ(value, TValue(v1));
     CHECK_NE(value, TValue(v2));
+	
+	// Check to make sure this runs without crashing or infinitely
+	// recursing.  We don't care what it actually returns.
+	std::ostringstream out;
+	out << value;
 }
 
 template <typename Type>

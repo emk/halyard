@@ -106,10 +106,7 @@ void TArgumentList::GetValueOrPercentArg(bool &outIsPercent,
 
 TCallbackPtr TArgumentList::GetCallbackArg() {
 	TValue arg = GetNextArg();
-
-	TCallbackPtr ptr;
-	ptr = arg;
-	return ptr;
+	return arg.GetCallbackPtr();
 }
 
 TArgumentList *TArgumentList::GetListArg() {
@@ -360,11 +357,13 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 	std::string call_info = inArgs.EndLog();
 	if (gVariableManager.IsNull(FIVEL_SKIP_LOGGING_VAR))
 	{
-		if (gVariableManager.IsNull("_result"))
+		if (gVariableManager.IsNull("_result")) {
 			gDebugLog.Log(">>> %s", call_info.c_str());
-		else
+		} else {
+			std::ostringstream out;
+			out << gVariableManager.Get("_result");
 			gDebugLog.Log(">>> %s -> %s",
-						  call_info.c_str(),
-						  gVariableManager.GetString("_result"));
+						  call_info.c_str(), out.str().c_str());
+		}
 	}
 }

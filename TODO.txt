@@ -11,7 +11,6 @@
 /   Make sure we can store minimum and maximum int32 and uint32 values
 /   Move many functions from TValue.h to TValue.cpp
 /   Remove 'inline' from conversion operators
-    Overhaul TVariable
 /   Redesign TArgumentList (for primitives)
 /   Redesign TCallbackArgumentList
     Test TValue extensively with real TCallbacks
@@ -19,10 +18,30 @@
 /   Remove all #include <TValue.h>
 /   Remove all #include <GraphicsTools.h> 
 /   TArgumentList conversion problems
-/      bool
-/      double
-/      int/uint mess
-    Fix TCallbackPtr TArgumentList::GetCallbackArg() to use a member function
+/     bool
+/     double
+/     int/uint mess
+/   Fix TCallbackPtr TArgumentList::GetCallbackArg() to use a member function
+/   TVariableManager API duplication
+    Fix GetType() on an uninitialized TValue to return TYPE_UNINITIALIZED
+    Cleanup
+/     Move TPolygon & TValueList operator<< to .cpp files
+      Rename TValueManager to TVariableManager, including file names
+      Merge TVariableTests into TVariableManager.cpp
+      Delete TVariable.*
+      Fix CommonHeaders to not have nasty hack
+    Simplifications AFTER commit
+      Delete SET, and fix SETTYPED to use TValues
+      Clean up SETTYPED interface in kernel.ss
+      Replace big switch statements in TSchemeInterpreter.cpp with *Conv
+      Let callers of TValueManager call only "Set" and "Get"
+      LogParameter can now rely on ostringstream and operator<<
+      Delete FindVariable and Assign (you'll need to fix the callers)
+      Stop automatically initializing variables to "0"--throw errors instead
+      Delete TBTree code?
+      Delete TArray?
+      Delete TObject?
+      Get rid of TypeUninitialized
 
   Cleanup
     Make sure GUI does REFERENCE_TEST_CASE_FILE
