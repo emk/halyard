@@ -40,9 +40,5 @@ int main(int argc, char **argv)
 	std::cout << "Simulated drawing " << repetitions * strlen(text)
 			  << " letters." << std::endl;
 
-	// XXX - Work around destructor bugs in TBTree and TBNode.
-	gStyleSheetManager.RemoveAll();
-	gIndexFileManager.RemoveAll();
-
 	exit(0);
 }

@@ -62,6 +62,7 @@ libfivel_a_SOURCES = \
 TestAll_SOURCES = \
 	TStringTests.cpp \
 	TStreamTests.cpp \
+	TBTreeTests.cpp \
 	TEncodingTests.cpp \
 	FileSystemTests.cpp \
 	TypographyTests.cpp \

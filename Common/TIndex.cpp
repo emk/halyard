@@ -47,17 +47,13 @@ TIndex::TIndex(TIndexFile *inFile, const char *inName,
 	: TBNode(inName)
 {
 	m_File = inFile;
-	if (m_File != NULL)
-		m_File->AddReference();
-
     m_Start = inStart;
     m_End = inEnd;
 }
 
 TIndex::~TIndex()
 {
-	if (m_File != NULL)
-		m_File->RemoveReference();
+
 }
 
 //
@@ -186,32 +182,12 @@ bool TIndexFileManager::NewIndex(const char *inName)
 //
 TIndexFile::TIndexFile(const char *inName) : TBNode(inName)
 {
-	m_ReferenceCount = 0;
 	m_AtEnd = false;
 }
 
 TIndexFile::~TIndexFile()
 {
 	Close();
-}
-
-// Increment reference count for this index file
-void TIndexFile::AddReference()
-{
-	m_ReferenceCount++;
-}
-
-// Decrement reference count for this index file
-void TIndexFile::RemoveReference()
-{
-	ASSERT(m_ReferenceCount > 0);
-
-	m_ReferenceCount--;
-	if (m_ReferenceCount <= 0)
-	{
-		// remove ourselves from the index file tree
-		gIndexFileManager.Remove(Key());
-	}
 }
 
 // Open the file stream associated with this index file
@@ -465,6 +441,18 @@ bool TIndexFile::Init()
 
 /*
  $Log$
+ Revision 1.5  2002/05/29 09:38:53  emk
+ Fixes for various "crash on exit" bugs in 5L.
+
+   * Fixed lots of bugs in TBTree, mostly in the code for removing nodes.
+     TBTree should now work more or less correctly.
+   * Removed the broken reference counting logic in TIndex and TIndexFile.
+   * Made FatalError call abort(), not exit(1), so the destructors for
+     (possibly corrupt) global variables will not be called.
+
+ This code may break either the Windows or Mac build; I'll try to fix things
+ right away.
+
  Revision 1.4  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

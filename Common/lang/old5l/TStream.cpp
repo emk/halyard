@@ -657,7 +657,7 @@ TStream &FIVEL_NS operator>>(TStream &inStream, const ValueOrPercent &inVoP)
 	TStream arg_stream(argument.c_str());
 
 	// See if it appears to be a "(pcent ...)" command.
-	int prefix_len = strlen(PERCENT_COMMAND_PREFIX);
+	size_t prefix_len = strlen(PERCENT_COMMAND_PREFIX);
 	if (argument.length() > prefix_len &&
 		argument.substr(0, prefix_len) == PERCENT_COMMAND_PREFIX)
 	{

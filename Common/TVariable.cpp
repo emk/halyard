@@ -67,10 +67,7 @@ TVariableManager::~TVariableManager()
 	RemoveAll();
 
 	if (localroot != NULL)
-	{
-		localroot->RemoveAll(localroot);
-		delete localroot;
-	}
+		localroot->RemoveAll();
 
 	if (special != NULL)
 		delete special;
@@ -89,8 +86,7 @@ void TVariableManager::RemoveAll(void)
 {
 	if (localroot != NULL)
 	{
-		localroot->RemoveAll(localroot);
-		delete localroot;
+		localroot->RemoveAll();
 		localroot = NULL;
 	}
 	
@@ -294,6 +290,18 @@ void TVariableManager::SetLocal(TVariable *newlocal)
 
 /*
  $Log$
+ Revision 1.4  2002/05/29 09:38:53  emk
+ Fixes for various "crash on exit" bugs in 5L.
+
+   * Fixed lots of bugs in TBTree, mostly in the code for removing nodes.
+     TBTree should now work more or less correctly.
+   * Removed the broken reference counting logic in TIndex and TIndexFile.
+   * Made FatalError call abort(), not exit(1), so the destructors for
+     (possibly corrupt) global variables will not be called.
+
+ This code may break either the Windows or Mac build; I'll try to fix things
+ right away.
+
  Revision 1.3  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

@@ -85,107 +85,98 @@ bool TBNode::Add(TBNode *inNode)
 }
 
 //
-//	FindMin - Find the next smallest node compared to 
-//		this one.
-//
-TBNode *TBNode::FindMin(void)
-{
-	TBNode	*cursor = this;
-	TBNode	*retNode;
-
-	if (cursor->m_Left == NULL) 
-    	return (cursor);
-
-	while (cursor->m_Left->m_Left != NULL)
-		cursor = cursor->m_Left;
-
-    retNode = cursor->m_Left;
-
-    cursor->m_Left = cursor->m_Left->m_Right;
-
-    return (retNode);
-}
-
-//
 //	Remove - Remove this node and return the sub-tree that is 
 //		formed.
 //
 TBNode *TBNode::Remove(void)
 {
+	ASSERT(this != NULL);
+
+	// Figure our how to update our tree.
     TBNode	*retNode;
-	TBNode	*tmpNode;
-
-    if (this == NULL) 
-    	return this;
-
-    if (m_Right == NULL) 
+	if (m_Right == NULL) 
     {
+		// CASE 1: We have no right child, so promote the left.
         retNode = m_Left;
-        delete this;
-        return (retNode);
     }
+	else if (m_Left == NULL)
+	{
+		// CASE 2: We have no left child, so promote the right.
+		retNode = m_Right;
+	}
+	else if (m_Right->m_Left == NULL)
+	{
+		// CASE 3: Our right child has no left child, so
+		// promote it and attach *our* left child.
+		retNode = m_Right;
+		m_Right->m_Left = m_Left;
+	}
+	else
+	{
+		// CASE 4: We're going to have to do some hard work.
+		// Find the smallest node in our right-hand tree,
+		// detach it, and use it to replace us.
+		TBNode	*cursor = m_Right;
+		ASSERT(cursor->m_Left != NULL);
 
-    tmpNode = m_Right->m_Left;
-    retNode = m_Right->FindMin();
+		// Iterate down the left-hand branch of our tree until
+		// cusor->m_Left points to a node with no left child.
+		// At this point, cursor->m_Left is the smallest node
+		// in our right-hand subtree (the one we're looking for!).
+		while (cursor->m_Left->m_Left != NULL)
+			cursor = cursor->m_Left;
+		retNode = cursor->m_Left;
 
-    if (tmpNode != NULL)
-        retNode->m_Right = m_Right;
-    retNode->m_Left = m_Left;
+		// Patch up the hole left by removing cursor->m_Left.
+		cursor->m_Left = cursor->m_Left->m_Right;
 
+		// Finish hooking up our replacement node.
+		retNode->m_Left = m_Left;
+		retNode->m_Right = m_Right;
+	}
+
+	// Delete the current node and return our result.
     delete this;
-    
-    return (retNode);
+    return retNode;
 }
 
 //
 //	FindAndRemove - 
 //
-TBNode *TBNode::FindAndRemove(const char *inKey)
+TBNode *TBNode::FindAndRemove(const char *inKey, bool *outWasFound)
 {
-	TBNode	*tmpNode = this;
-    int32 	result;
+	ASSERT(this != NULL);
 
-    result = m_Key.Compare(inKey, false);
+	// Compare our search string against the current node's key, and decide
+	// what to do.
+    int32 comparison_result = m_Key.Compare(inKey, false);
+	if (comparison_result == 0)
+	{
+		// CASE 1: The current node matches our search key.
+		*outWasFound = true;
+		return Remove();
+	}
+	else if (comparison_result < 0)
+	{
+		// CASE 2: The current node is less than our search key.
+		if (m_Right == NULL)
+			*outWasFound = false;
+		else
+			m_Right = m_Right->FindAndRemove(inKey, outWasFound);
+	}
+	else // if (comparison_result > 0)
+	{
+		// CASE 3: The current node is greater than our search key.
+		if (m_Left == NULL)
+			*outWasFound = false;
+		else
+			m_Left = m_Left->FindAndRemove(inKey, outWasFound);
+	}
 
-    if (result == 0) 
-		return (Remove());		// this is the one we are going to remove
-
-    for ( ; tmpNode != NULL; result = tmpNode->m_Key.Compare(inKey, false))   
-    {
-        if (result < 0)  
-        {
-            if (tmpNode->m_Right != NULL) 
-                return (NULL);
-            else  
-            {
-                if (tmpNode->m_Right->m_Key.Compare(inKey, false) == 0) 
-                {
-                    tmpNode->m_Right = tmpNode->m_Right->Remove();
-                    return (this);
-				}
-                else 
-                    tmpNode = tmpNode->m_Right;
-            }
-        }
-        else if (result > 0)  
-        {
-            if (tmpNode->m_Left != NULL) 
-                return (NULL);
-            else  
-            {
-                if (tmpNode->m_Left->m_Key.Compare(inKey, false) == 0) 
-                {
-                    tmpNode->m_Left = tmpNode->m_Left->Remove();
-                    return (this);
-                }
-                else 
-                    tmpNode = tmpNode->m_Left;
-            }
-        }
-    }
-
-    return (this);
-}   
+	// Since this node wasn't deleted, we don't need to replace
+	// it in the tree.  Therefore, just return ourself.
+	return this;
+}
 
 //
 //	Find
@@ -218,25 +209,18 @@ TBNode *TBNode::Find(const char *inKey)
 //
 //	RemoveAll - Destroy this sub-tree.
 //
-void TBNode::RemoveAll(TBNode *inRoot)
+TBNode *TBNode::RemoveAll()
 {
-    if (this == NULL) 
-    	return;
+    ASSERT(this != NULL);
 
     if (m_Left != NULL)
-	{
-		m_Left->RemoveAll(inRoot);
-		m_Left = NULL;
-	}
+		m_Left->RemoveAll();
 
     if (m_Right != NULL)
-	{
-		m_Right->RemoveAll(inRoot);
-		m_Right = NULL;
-	}
+		m_Right->RemoveAll();
 
-    if (this != inRoot) 
-    	delete this;
+	delete this;
+	return NULL;
 }
 
 //
@@ -267,6 +251,9 @@ TBNode *TBTree::GetRoot()
 //
 void TBTree::Add(TBNode *inNode)
 {
+	ASSERT(inNode->m_Left == NULL);
+	ASSERT(inNode->m_Right == NULL);
+
     if (m_Root == NULL)
         m_Root = inNode;
     else
@@ -278,24 +265,22 @@ void TBTree::Add(TBNode *inNode)
 //
 TBNode *TBTree::Find(const char *inKey)
 {
-    TBNode   *retNode = NULL;
-
     if (m_Root != NULL)
-    	retNode = m_Root->Find(inKey);
-
-    return (retNode);
+    	return m_Root->Find(inKey);
+	else
+		return NULL;
 }
 
 //
 //	Remove - Remove the node with inKey from
 //		the tree.
 //
-void TBTree::Remove(const char *inKey)
+void TBTree::RemoveIfExists(const char *inKey)
 {
 	if (m_Root != NULL)
 	{
-		if (m_Root->Find(inKey))
-			m_Root = m_Root->FindAndRemove(inKey);
+		bool found;
+		m_Root = m_Root->FindAndRemove(inKey, &found);
 	}
 }
 
@@ -305,15 +290,23 @@ void TBTree::Remove(const char *inKey)
 void TBTree::RemoveAll(void)
 {
     if (m_Root != NULL)
-    { 
-    	m_Root->RemoveAll(m_Root);
-    	delete m_Root;
-    	m_Root = NULL;
-    }
+    	m_Root = m_Root->RemoveAll();
 }
 
 /*
  $Log$
+ Revision 1.5  2002/05/29 09:38:53  emk
+ Fixes for various "crash on exit" bugs in 5L.
+
+   * Fixed lots of bugs in TBTree, mostly in the code for removing nodes.
+     TBTree should now work more or less correctly.
+   * Removed the broken reference counting logic in TIndex and TIndexFile.
+   * Made FatalError call abort(), not exit(1), so the destructors for
+     (possibly corrupt) global variables will not be called.
+
+ This code may break either the Windows or Mac build; I'll try to fix things
+ right away.
+
  Revision 1.4  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

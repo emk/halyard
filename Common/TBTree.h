@@ -60,7 +60,7 @@ public:
 	//////////
 	// Destructor.
 	//
-	~TBNode();    
+	virtual ~TBNode();    
 
 	//////////
 	// Get the key (name) for this node.
@@ -68,6 +68,9 @@ public:
 	// [out] return - the key for this node
 	//
 	inline const char *Key() { return ((const char *) m_Key); }
+
+private:
+	friend class TBTree;
 
     //////////
 	// Add a node to this one. Figures out where it goes and makes the links.
@@ -77,13 +80,6 @@ public:
 	//
 	bool			Add(TBNode *inNode);
 
-    //////////
-	// Find the next smallest node compared to this one.
-	//
-	// [out] return - the next smallest node
-	//
-	TBNode			*FindMin(void);
-    
 	//////////
 	// Remove (and delete) this node and return the subtree that is formed.
 	//
@@ -95,9 +91,15 @@ public:
 	// Find a node in this subtree and remove it.
 	//
 	// [in] inKey - key for the node to be removed
-	// [out] return - the node that was removed, or NULL if not found
+	// [out] outWasFound - Was the node in question found?
+	// [out] return - the subtree formed
 	//
-	TBNode			*FindAndRemove(const char *inKey);
+	TBNode			*FindAndRemove(const char *inKey, bool *outWasFound);
+
+public:
+	// XXX - Find() and RemoveAll() should really be private, but
+	// they're used by TVariable, which has no business looking at
+	// them.  Fix this.
 
     //////////
 	// Find a node in this subtree.
@@ -107,13 +109,15 @@ public:
 	TBNode			*Find(const char *inKey);
 
     //////////
-	// Destroy this subtree.
+	// Destroy this subtree (including this object).
 	//
-	// [in] inRoot - the root of the tree, which will not be deleted
+	// [out] result - the subtree formed (which will always be NULL--
+	//                this return value only exists for consistency
+	//                with Remove and FindAndRemove).
 	//
-	void			RemoveAll(TBNode *inRoot);
+	TBNode			*RemoveAll();
 
-protected:	
+protected:
 	//////////
 	// A key which identifies this node.
 	//
@@ -188,7 +192,7 @@ public:
 	//
 	// [in] inKey - the key (name) of the node to be removed
 	//
-	void			Remove(const char *inKey);
+	void			RemoveIfExists(const char *inKey);
 	
 	//////////
 	// Remove all node from the tree.
@@ -208,6 +212,18 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4  2002/05/29 09:38:53  emk
+ Fixes for various "crash on exit" bugs in 5L.
+
+   * Fixed lots of bugs in TBTree, mostly in the code for removing nodes.
+     TBTree should now work more or less correctly.
+   * Removed the broken reference counting logic in TIndex and TIndexFile.
+   * Made FatalError call abort(), not exit(1), so the destructors for
+     (possibly corrupt) global variables will not be called.
+
+ This code may break either the Windows or Mac build; I'll try to fix things
+ right away.
+
  Revision 1.3  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

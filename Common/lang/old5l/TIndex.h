@@ -50,6 +50,9 @@ class TIndex : public TBNode
 		// Constructor
 		//
 		// [in] inIndex - TIndexFile associated with this index
+	    //                If the TIndexFile object is destroyed
+	    //                before the TIndex object, then it is an error
+	    //                to call any method on TIndex but the destructor.
 		// [in_optional] inName - name of this index (default NULL)
 		// [in_optional] inStart - starting offset of the index (default 0)
 		// [in_optional] inEnd - ending offset of the index (default 0)
@@ -237,16 +240,6 @@ class TIndexFile : public TBNode
 		//
 		void			Close();
 		
-		//////////
-		// Increment reference count for this index file.
-		//
-		void			AddReference();
-		
-		//////////
-		// Decrement reference count for this index file.
-		//
-		void			RemoveReference();
-
 	protected:
 		//////////
 		// Is this index file encrypted?
@@ -267,11 +260,6 @@ class TIndexFile : public TBNode
 		// Have we reached the end of the file?
 		//
 		bool			m_AtEnd;
-		
-		//////////
-		// Number of references made to this index file.
-		//
-		int32			m_ReferenceCount;
 };
 
 /*-----------------------------------------------------------------
@@ -320,6 +308,18 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4  2002/05/29 09:38:53  emk
+ Fixes for various "crash on exit" bugs in 5L.
+
+   * Fixed lots of bugs in TBTree, mostly in the code for removing nodes.
+     TBTree should now work more or less correctly.
+   * Removed the broken reference counting logic in TIndex and TIndexFile.
+   * Made FatalError call abort(), not exit(1), so the destructors for
+     (possibly corrupt) global variables will not be called.
+
+ This code may break either the Windows or Mac build; I'll try to fix things
+ right away.
+
  Revision 1.3  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
