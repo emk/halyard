@@ -1,9 +1,11 @@
 (module quake2 (lib "5L.ss" "5L")
 
   (provide quake2-launch quake2-shown? quake2-show quake2-hide
-           quake2-command quake2-background-load-command quake2-float
-           set-quake2-float! quake2-string set-quake2-string! quake2-print
-           quake2-print-line quake2-register-command)
+           quake2-command quake2-background-load-command
+           quake2-should-run-in-background?
+           set-quake2-should-run-in-background?!
+           quake2-float set-quake2-float! quake2-string set-quake2-string!
+           quake2-print quake2-print-line quake2-register-command)
 
   (define (quake2-launch game)
     (call-5l-prim 'Quake2Init game))
@@ -27,6 +29,12 @@
 
   (define (quake2-loading-in-background?)
     (call-5l-prim 'Quake2IsLoadingInBackground))
+
+  (define (quake2-should-run-in-background?)
+    (call-5l-prim 'Quake2GetShouldRunInBackground))
+
+  (define (set-quake2-should-run-in-background?! run?)
+    (call-5l-prim 'Quake2SetShouldRunInBackground run?))
 
   (define (quake2-float cvar)
     (call-5l-prim 'Quake2GetFloatVar cvar))
