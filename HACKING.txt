@@ -46,7 +46,7 @@ Building Win32 5L
 -----------------
 
   Using the System control panel, set the environment variable WXWIN to
-  $5L_DIR/libs/wxWindows.
+  $5L_DIR/libs/wxWidgets.
 
   Install Visual C++.NET off of the MSDN subscription, after making sure we
   have enough licenses.  Make sure you have everything related to C++
@@ -126,7 +126,7 @@ What Lives Where
   libs/crypto/        - Miscellaneous 3rd-party crypto code
   libs/freetype2/     - 3rd-party font engine
   libs/plt/           - MzScheme interpreter, etc.
-  libs/wxWindows/     - Portable GUI library
+  libs/wxWidgets/     - Portable GUI library
 
   Common/             - Shared, portable code
   Common/Runtime/5L/  - Scheme language runtime support
@@ -149,7 +149,7 @@ What Lives Where
   Mac/Resources/      - MacOS and PowerPlant resources
   Mac/Utility/        - Third-party utility routines
 
-  wx/                 - Preliminary (portable?) front-end based on wxWindows
+  wx/                 - Preliminary (portable?) front-end based on wxWidgets
   wx/MSVC             - MSVC project files
   wx/src              - Source code to new front end
 
@@ -460,16 +460,16 @@ Replace all files containing conflicts with fresh copies from a current
 directory: 
 
   cvs -n update > conflicts.txt
-  for F in `cat conflicts.txt | grep 'C' | sed 's/^. //'`; do mv ../wxWindows/$
+  for F in `cat conflicts.txt | grep 'C' | sed 's/^. //'`; do mv ../wxWidgets/$
 F $F; done
 
-In the following snippet, wxWindows-HEAD is an exported version of HEAD,
-and wxWindows is the latest version of wxWindows, minus CVS directories.
+In the following snippet, wxWidgets-HEAD is an exported version of HEAD,
+and wxWidgets is the latest version of wxWidgets, minus CVS directories.
 We're computing a list of "interesting" differences (hence -x and -I).
 We're trying to revert HEAD to match the vendor branch.
 
 $ diff -ur --unidirectional-new-file -x .cvsignore -I "\\\$\\(Revision\\|Id\\|H
-eader\\|Date\\):" -I "^ * " wxWindows-HEAD/ wxWindows > wx-revert-to-vendor.dif
+eader\\|Date\\):" -I "^ * " wxWidgets-HEAD/ wxWidgets > wx-revert-to-vendor.dif
 f
 
 Remove any files which should be removed from HEAD:
@@ -483,5 +483,5 @@ unchanged, and CVS claimed it couldn't create some of them.  I'm not going
 to worry about it.
 
 $ for F in `grep "^Binary files" /cygdrive/c/src/wx-revert-to-vendor.diff | sed
- 's|^[^/]*/||' | sed 's| and .*||'`; do mv /cygdrive/c/src/wxWindows/$F $F; don
+ 's|^[^/]*/||' | sed 's| and .*||'`; do mv /cygdrive/c/src/wxWidgets/$F $F; don
 e

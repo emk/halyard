@@ -2,6 +2,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
+  * Updated Tamale for latest CVS version of wxWidgets.
   * Small bug-fix to alpha-channel box outline code--stop drawing
     over the same area twice.
 
