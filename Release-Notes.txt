@@ -11,9 +11,15 @@ CVS - emk, brian
     is fairly hard.
   * Fixed loading of alpha channels and alpha channel memory
     allocation bug.
-  * Implemented crossfades.  Use (REFRESH :transition 'crossfade).
-  * Implemented built-in timing of fades, to make different machines
+  * Implemented crossfades.  Use (REFRESH :transition 'crossfade :ms 500).
+  * Implemented built-in timing of transitions, to make different machines
     more consistent.
+  * Implemented more transitions: wipeleft, wiperight, wipeup, wipedown,
+    pushleft, pushright, pushup, pushdown, toblack, fromblack.
+  * Reimplemented FADE and UNFADE commands using timed transitions.
+  * When in cross-hair mode, right-clicking will copy the current point
+    to the clipboard.  Shift-right-clicking will copy the previous and
+    current points to the clipboard as a rectangle.
 
 0.0.2 - 3 April 2003 - emk, brian
 
@@ -29,7 +35,7 @@ What's happened since last update:
 New in this build:
 
   * Sequences, alpha channels, convenience features in the GUI,
-    support for Swindle, etc.
+    support for Swindle, pausing and resuming movies, etc.
 
 0.0.? - emk
 

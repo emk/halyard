@@ -330,6 +330,11 @@ class Stage : public wxWindow, public GraphicsTools::Image
     bool mIsDisplayingBorders;
 
 	//////////
+	// The last stage position copied with a right-click.
+	//
+	wxPoint mLastCopiedPos;
+
+	//////////
 	// Invalidate the entire stage.
 	//
 	void InvalidateStage();
@@ -518,6 +523,11 @@ public:
     // Handle a mouse-down event.
     //
     void OnLeftDown(wxMouseEvent &inEvent);
+
+    //////////
+    // Handle a mouse-down event.
+    //
+    void OnRightDown(wxMouseEvent &inEvent);
 
     //////////
     // Are we currently displaying the XY co-ordinates of the cursor?

@@ -5,6 +5,7 @@
 #include <wx/laywin.h>
 #include <wx/config.h>
 #include <wx/filename.h>
+#include <wx/clipbrd.h>
 
 #include "TCommon.h"
 #include "TInterpreter.h"
@@ -756,6 +757,8 @@ BEGIN_EVENT_TABLE(Stage, wxWindow)
     EVT_TEXT_ENTER(FIVEL_TEXT_ENTRY, Stage::OnTextEnter)
 	EVT_LEFT_DOWN(Stage::OnLeftDown)
 	EVT_LEFT_DCLICK(Stage::OnLeftDown)
+	EVT_RIGHT_DOWN(Stage::OnRightDown)
+	EVT_RIGHT_DCLICK(Stage::OnRightDown)
 END_EVENT_TABLE()
 
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
@@ -765,7 +768,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mOffscreenFadePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
 	  mTextCtrl(NULL), mCurrentElement(NULL), mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
-      mIsDisplayingBorders(false)
+      mIsDisplayingBorders(false), mLastCopiedPos(0, 0)
 {
     SetBackgroundColour(STAGE_COLOR);
     ClearStage(*wxBLACK);
@@ -1139,6 +1142,34 @@ void Stage::OnLeftDown(wxMouseEvent &inEvent)
 	else
 		// Restore focus to the stage.
 	    SetFocus();
+}
+
+void Stage::OnRightDown(wxMouseEvent &inEvent)
+{
+    if (!mIsDisplayingXy)
+		inEvent.Skip();
+	else
+	{
+		// Get the position of the click, build a string, and save the
+		// position for next time.
+		wxPoint pos = inEvent.GetPosition();
+		wxString str;
+		if (inEvent.ShiftDown())
+			str.Printf("%d %d %d %d", mLastCopiedPos.x, mLastCopiedPos.y,
+					   pos.x, pos.y);
+		else
+			str.Printf("%d %d", pos.x, pos.y);
+		mLastCopiedPos = pos;
+
+		// Copy our string to the clipboard.  This code snippet comes from
+		// the wxWindows manual.
+		if (wxTheClipboard->Open())
+		{
+			wxTheClipboard->SetData(new wxTextDataObject(str));
+			wxTheClipboard->Close();
+			mFrame->SetStatusText(wxString("Copied: ") + str);
+		}
+	}
 }
 
 void Stage::ValidateStage()
