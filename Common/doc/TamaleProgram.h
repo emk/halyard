@@ -11,6 +11,10 @@ class TamaleProgram : public model::Object {
 public:
 	DECLARE_MODEL_CLASS(TamaleProgram);
 	virtual void Initialize();
+
+	model::List *GetBackgrounds();
+
+	void InsertBackground();
 };
 
 END_NAMESPACE_FIVEL

@@ -401,12 +401,21 @@ namespace model {
 		virtual void Write(xml_node inContainer);
 		virtual void Fill(xml_node inNode);
 
+		size_t GetSize() { return mVector.size(); }
+
 		template <class D>
 		D* Insert(ConstKeyType &inKey, D *inValue)
 		{ PerformInsert(inKey, static_cast<Datum*>(inValue)); return inValue; }
 
 		DEFINE_VALUE_SET(Insert, Integer)
 		DEFINE_VALUE_SET(Insert, String)
+
+		template <class D>
+		D* Append(D *inValue)
+		{
+			PerformInsert(GetSize(), static_cast<Datum*>(inValue));
+			return inValue;
+		}
 
 	protected:
 		virtual void NotifyDeleted();

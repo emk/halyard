@@ -5,6 +5,7 @@
 
 #include "TCommon.h"
 #include "TamaleProgram.h"
+#include "Background.h"
 
 USING_NAMESPACE_FIVEL
 using namespace model;
@@ -26,4 +27,15 @@ void TamaleProgram::Initialize()
 
 	Set("cards", new List());
 	Set("backgrounds", new List());
+}
+
+List *TamaleProgram::GetBackgrounds()
+{
+	return cast<List>(Get("backgrounds"));
+}
+
+void TamaleProgram::InsertBackground()
+{
+	List *backgrounds = cast<List>(Get("backgrounds"));
+	backgrounds->Append(new Background())->Initialize();
 }
