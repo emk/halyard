@@ -3,12 +3,12 @@
 ;;=========================================================================
 ;;  Handy code by Brian Campbell, with some later hacking by Eric Kidd.
 
-(module trace mzscheme
+(module trace (lib "lispish.ss" "5L")
   (require (lib "begin-var.ss" "5L"))
   
   (provide with-tracing
            set-trace-output-printer!
-	   format-result-values)
+           format-result-values)
   
   (define *trace-output-fn*
     (lambda (str)
@@ -39,21 +39,21 @@
         ;; Attempt to print the results tatsefully.
         (case (length results)
             
-	  ;; No results--a void function.
-	  [[0] (display "(values)" out)]
-	  
-	  ;; The normal case--a single return value.
-	  [[1] (write (car results) out)]
-	  
-	  ;; Multiple return values. 
-	  [else
-	   (display "(values" out)
-	   (let loop [[results results]]
-	     (unless (null? results)
-	       (display " " out)
-	       (write (car results) out)
-	       (loop (cdr results))))
-	   (display ")" out)]))
+          ;; No results--a void function.
+          [[0] (display "(values)" out)]
+          
+          ;; The normal case--a single return value.
+          [[1] (write-object (car results) out)]
+          
+          ;; Multiple return values. 
+          [else
+           (display "(values" out)
+           (let loop [[results results]]
+             (unless (null? results)
+               (display " " out)
+               (write-object (car results) out)
+               (loop (cdr results))))
+           (display ")" out)]))
       (get-output-string out)))
 
   (define (trace-call name-of-f f . args)
@@ -67,13 +67,13 @@
         (display name-of-f out)
         (unless (and (procedure? f) (symbol? name-of-f))
           (display ":" out)
-          (write f out))
+          (write-object f out))
         
         ;; Print each argument.
         (let loop [[args args]]
           (unless (null? args)
             (display " " out)
-            (write (car args) out)
+            (write-object (car args) out)
             (loop (cdr args))))
         
         (display ")" out))
@@ -87,8 +87,8 @@
                     ;; Call our function.
                     (apply f args))]
       (*trace-output-fn* (string-append (get-trace-prefix)
-					">>> -> "
-					(apply format-result-values results)))
+                                        ">>> -> "
+                                        (apply format-result-values results)))
       
       ;; Actually return the result of f to our caller.
       (apply values results)))

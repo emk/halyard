@@ -7,8 +7,9 @@
 (module tamale (lib "5l.ss" "5L")
   (require (lib "shapes.ss" "5L"))
 
-  (provide load-picture set-image-cache-size! modal-input
-           %zone% zone set-zone-cursor! register-cursor mouse-position
+  (provide load-picture set-image-cache-size! modal-input with-drawing-context
+           drawing-context-rect color-at
+           %zone% zone set-element-cursor! register-cursor mouse-position
            grab-mouse ungrab-mouse mouse-grabbed?
            delete-element delete-elements
            clear-screen rect-horizontal-center rect-vertical-center
@@ -51,30 +52,51 @@
     (call-5l-prim 'input r size forecolor backcolor)
     (engine-var '_modal_input_text))
 
+  (define-syntax with-drawing-context
+    (syntax-rules ()
+      [(with-drawing-context dc body ...)
+       (dynamic-wind
+           (lambda () (call-5l-prim 'DcPush (node-full-name dc)))
+           (lambda () body ...)
+           (lambda () (call-5l-prim 'DcPop (node-full-name dc))))]))
+
+  (define (drawing-context-rect)
+    (call-5l-prim 'DcRect))
+
+  (define (color-at p)
+    (call-5l-prim 'ColorAt p))
+
   (define-element-template %element%
       [] ())
 
   (define-element-template %zone%
       [[cursor :type <symbol> :default 'hand :label "Cursor"]
-       [shape :type <shape> :label "Shape"]]
+       [shape :type <shape> :label "Shape"]
+       [overlay? :type <boolean> :default #f :label "Has overlay?"]
+       [alpha? :type <boolean> :default #f :label "Overlay transparent?"]]
       (:template %element%)
-    (call-5l-prim 'zone (node-full-name self) (as <polygon> 
-                                                  (prop self shape))
-                  (make-node-event-dispatcher self) cursor))
+    (if (not overlay?)
+        (call-5l-prim 'zone (node-full-name self) (as <polygon> shape)
+                      (make-node-event-dispatcher self) cursor)
+        (call-5l-prim 'overlay (node-full-name self) shape
+                      (make-node-event-dispatcher self) cursor alpha?)))
 
   (define-element-template %simple-zone% [action] (:template %zone%)
     (on mouse-down (event)
       (action)))
 
-  (define (zone name shape action &key (cursor 'hand))
+  (define (zone name shape action
+                &key (cursor 'hand) (overlay? #f) (alpha? #f))
     (create %simple-zone% 
             :name name 
             :shape shape
             :cursor cursor 
-            :action action))
+            :action action
+            :overlay? overlay?
+            :alpha? alpha?))
   
-  (define (set-zone-cursor! elem-or-name cursor)
-    (call-5l-prim 'SetZoneCursor (elem-or-name-hack elem-or-name) cursor))
+  (define (set-element-cursor! elem-or-name cursor)
+    (call-5l-prim 'SetElemCursor (elem-or-name-hack elem-or-name) cursor))
 
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
     (let [[path (make-path "Graphics" (cat "cursors/" filename))]]

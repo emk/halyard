@@ -37,7 +37,7 @@
   (defclass <color> ()
     red green blue alpha)
 
-  (define (make-color-opt-alpha r g b &opt (a 0))
+  (define (make-color-opt-alpha r g b &opt (a 255))
     (make-color r g b a))
 
   (defclass <percent> () 

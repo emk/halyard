@@ -112,6 +112,9 @@
                                 *32-bit-unsigned-max* "."))])]
             [(number? value) 'DOUBLE]
             [(or (eq? value #t) (eq? value #f)) 'BOOLEAN]
+            [(point? value) 'POINT]
+            [(rect? value) 'RECT]
+            [(color? value) 'COLOR]
             [else (throw (cat "Cannot store " value " in " name "."))])]]
       (if (eq? type 'NULL)
           (call-5l-prim 'settyped namesym type)
