@@ -153,8 +153,7 @@ void Card::DoCommand(TStream &inStream)
 }
 
 // Execute a single command, perhaps in response to a touch zone or
-// a timeout. Save the old m_Script, do the one command, and restore
-// the m_Script.
+// a timeout.
 //
 // theCommand should look like "(jump aCard)", ie both parens need to
 // be there.
@@ -275,10 +274,7 @@ void Card::DoMacro(TString &name, TStream &inArgs)
     (IF (CONDITIONAL) (true_CMD) <(false_CMD)>)
 
     Evaluate the conditional expression and execute the appropriate
-    command based on the value of the expression. Only numbers may
-    be compared. It's important that the conditional statement be
-    enclosed in parentheses and that the operator (>, <, =) be
-    separated from the operands by a space.
+    command based on the value of the expression.
 -------------------------------------------------------------------*/
 void Card::DoIf(TStream &inArgs)
 {
@@ -667,6 +663,9 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.11.2.2  2002/08/14 21:06:01  emk
+ 3.4.1 - Minor build and comment fixes.
+
  Revision 1.11.2.1  2002/08/14 20:24:50  emk
  Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
  removed some deeply-buried bugs in TStream and elsewhere, so please test

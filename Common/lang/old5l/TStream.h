@@ -195,7 +195,7 @@ protected:
 	// [in] inWantRawSource - Return the source verbatim?
 	// [out] return - The value of the argument.
 	//
-	std::string TStream::GetNextArg(bool inWantRawSource);
+	std::string GetNextArg(bool inWantRawSource);
 
 	//////////
 	// Read in an standard C++ string.  This is the basic extraction
@@ -345,6 +345,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4.2.2  2002/08/14 21:04:26  emk
+ 3.4.1 - Minor build and comment fixes.
+
  Revision 1.4.2.1  2002/08/14 20:24:49  emk
  Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
  removed some deeply-buried bugs in TStream and elsewhere, so please test
