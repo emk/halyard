@@ -33,7 +33,7 @@ Runtime:
   * Made call-5L-prim handle return values of non-string types gracefully.
   * Fixed bugs causing centered and left-aligned text to be measured
     incorrectly.
-  
+  * Added a hook system based on Emacs.
 
 3.5.7 - 9 Oct 2002 - emk
 
