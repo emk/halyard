@@ -299,7 +299,7 @@ void TStream::scanclose(void)
 TString TStream::ExpandVariables(uint32 startPos, uint32 numChars)
 {
     TString 	original, result, vname;
-    int32     	base, curpos, origlen, DEREF = 0;
+    int32     	base, curpos, origlen;
     char    	ch;
     const char	*s;
 
@@ -469,7 +469,6 @@ std::string TStream::GetNextArg(bool inWantRawSource)
 	TString		dest;
     TString 	temp;
     int32     	startPos, endPos;
-    int32     	dangling_opens = 0;
     char    	ch;
 	
     skipwhite();

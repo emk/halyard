@@ -29,23 +29,17 @@ libfivel_a_SOURCES = \
 	TException.h \
 	THeader.cpp \
 	THeader.h \
-	TIndex.cpp \
-	TIndex.h \
 	TInterpreter.h \
 	TLogger.cpp \
 	TLogger.h \
 	TObject.cpp \
 	TObject.h \
-	TParser.cpp \
-	TParser.h \
 	TPoint.cpp \
 	TPoint.h \
 	TRect.cpp \
 	TRect.h \
 	TString.cpp \
 	TString.h \
-	TStream.cpp \
-	TStream.h \
 	TStyleSheet.cpp \
 	TStyleSheet.h \
 	TURL.cpp \
@@ -60,36 +54,42 @@ libfivel_a_SOURCES = \
 	FileSystem.h \
 	GraphicsTools.cpp \
 	GraphicsTools.h \
-	CryptStream.cpp \
-	CryptStream.h \
 	TInterpreter.cpp \
 	TInterpreter.h \
 	TPrimitives.cpp \
 	TPrimitives.h \
 	TCommonPrimitives.cpp \
 	TCommonPrimitives.h \
-	T5LPrimitives.cpp \
-	T5LPrimitives.h \
 	TTemplateUtils.cpp \
 	TTemplateUtils.h \
 	TStartup.cpp \
 	TStartup.h \
 	TDeveloperPrefs.cpp \
 	TDeveloperPrefs.h \
+	lang/old5l/TIndex.cpp \
+	lang/old5l/TIndex.h \
+	lang/old5l/TParser.cpp \
+	lang/old5l/TParser.h \
+	lang/old5l/TStream.cpp \
+	lang/old5l/TStream.h \
+	lang/old5l/CryptStream.cpp \
+	lang/old5l/CryptStream.h \
+	lang/old5l/T5LPrimitives.cpp \
+	lang/old5l/T5LPrimitives.h \
 	lang/scheme/TSchemeInterpreter.cpp \
 	lang/scheme/TSchemeInterpreter.h
 
 TestAll_SOURCES = \
 	TTemplateUtilsTests.cpp \
 	TStringTests.cpp \
-	TStreamTests.cpp \
 	TBTreeTests.cpp \
 	TEncodingTests.cpp \
 	FileSystemTests.cpp \
 	TypographyTests.cpp \
 	TStyleSheetTests.cpp \
-	CryptStreamTests.cpp \
-	TIndexTests.cpp \
+	lang/old5l/TStreamTests.cpp \
+	lang/old5l/CryptStreamTests.cpp \
+	lang/old5l/TIndexTests.cpp \
 	lang/scheme/TSchemeInterpreterTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
@@ -102,3 +102,18 @@ TestAll_LDADD = \
 	@FREETYPE_LDADD@ \
 	-ldl
 #	-lefence
+
+#==========================================================================
+#  MzScheme Compilation
+#==========================================================================
+#  MzScheme has a non-standard build procedure, so we need to do this stuff
+#  manually.
+
+all-plt:
+	(cd libs/plt/src; $(MAKE) all)
+	(cd libs/plt/src; $(MAKE) install)
+
+clean-plt:
+	(cd libs/plt/src; $(MAKE) clean)
+	(cd libs/plt/bin; rm -f *)
+	(cd libs/plt/lib; rm -f *)

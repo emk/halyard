@@ -2,7 +2,8 @@
 
 #include "TCommon.h"
 #include "TLogger.h"
-#include "TParser.h"
+#include "TStartup.h"
+#include "lang/old5l/TParser.h"
 #include "Typography.h"
 #include "TStyleSheet.h"
 
@@ -26,8 +27,9 @@ int main(int argc, char **argv)
 	FileSystem::SetBaseDirectory(FileSystem::Path().AddParentComponent());
 
 	// Set up the rest of libfivel.
-	TLogger::OpenStandardLogs(true);
-	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
+	InitializeCommonCode();
+	TPrimitiveTlfProcessor defstyle_processor("defstyle");
+	TParser::RegisterTlfProcessor("defstyle", &defstyle_processor);
 	gIndexFileManager.NewIndex("defstyle");
 
 	const char *text = "The quick @brown@ fox jumped over the lazy dog.";

@@ -174,7 +174,7 @@ inline bool	TArray::Empty()
 }
 inline bool	TArray::ValidIndex(int32 inIndex)					
 { 
-	return (((inIndex >= 0) and (inIndex < m_NumItems)) ? true : false); 
+	return (((inIndex >= 0) && (inIndex < m_NumItems)) ? true : false); 
 }
 	
 inline TObject*	TArray::Item(int32 inIndex)   				
@@ -188,6 +188,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3  2002/09/19 21:04:00  emk
+ I can now build and run the test suites on Linux again, which will let me
+ run the valgrind and cachegrind debugging and optimization tools.
+
  Revision 1.2  2002/03/04 15:15:54  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 

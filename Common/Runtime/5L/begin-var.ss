@@ -19,18 +19,6 @@
 
 (module begin-var mzscheme
   
-  #|
-  (define sample (syntax (1 (var v 2) 3 v)))
-  
-  (define $var-identifier (syntax var))
-    
-  (define (var-form? stx)
-    (let [[expanded (syntax-e stx)]]
-      (and (pair? expanded)
-           (identifier? (car expanded))
-           (free-identifier=? (car expanded) $var-identifier)))) 
-  |#
-  
   (provide begin/var)
   
   (define-syntax (begin/var stx) 
@@ -47,7 +35,7 @@
        (raise-syntax-error #f "var requires a name and optional value"
                            stx #'args)]
       [(_ expr)
-       (quasisyntax/loc stx expr)]
+       #'expr]
       [(_ expr . body)
        (quasisyntax/loc stx (begin expr (begin/var . body)))]))
 
