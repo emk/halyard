@@ -89,6 +89,7 @@ AUTHOR
 
 #else
 
+#define WANT_FIVEL_NAMESPACE (1)
 #define ASSERT(expr) assert(expr)
 
 #endif
