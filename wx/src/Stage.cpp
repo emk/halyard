@@ -15,6 +15,8 @@
 #include "doc/Document.h"
 #include "doc/TamaleProgram.h"
 
+#include <algorithm>
+
 #include "AppConfig.h"
 #include "AppGlobals.h"
 #include "AppGraphics.h"
@@ -26,6 +28,7 @@
 #include "Listener.h"
 #include "Timecoder.h"
 #include "LocationBox.h"
+#include "EventDispatcher.h"
 #include "dlg/ProgramPropDlg.h"
 
 #if CONFIG_HAVE_QUAKE2
@@ -138,6 +141,8 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_EDIT_MODE, StageFrame::OnEditMode)
     EVT_UPDATE_UI(FIVEL_JUMP_CARD, StageFrame::UpdateUiJumpCard)
     EVT_MENU(FIVEL_JUMP_CARD, StageFrame::OnJumpCard)
+    EVT_UPDATE_UI(FIVEL_STOP_MOVIES, StageFrame::UpdateUiStopMovies)
+    EVT_MENU(FIVEL_STOP_MOVIES, StageFrame::OnStopMovies)
     EVT_SASH_DRAGGED(FIVEL_PROGRAM_TREE, StageFrame::OnSashDrag)
 	EVT_SIZE(StageFrame::OnSize)
     EVT_CLOSE(StageFrame::OnClose)
@@ -200,6 +205,8 @@ StageFrame::StageFrame(wxSize inSize)
                       "Enter or exit card-editing mode.");
     mCardMenu->Append(FIVEL_JUMP_CARD, "&Jump to Card...\tCtrl+J",
                       "Jump to a specified card by name.");
+    mCardMenu->Append(FIVEL_STOP_MOVIES, "&Stop Movies\tEsc",
+                      "Stop any playing movies.");
 
     // Set up our View menu.  Only include the "Full Screen" item on
 	// platforms where it's likely to work.
@@ -635,6 +642,20 @@ void StageFrame::OnJumpCard(wxCommandEvent &inEvent)
 	}
 }
 
+void StageFrame::UpdateUiStopMovies(wxUpdateUIEvent &inEvent)
+{
+	inEvent.Enable(mStage->IsMoviePlaying() ||
+				   (TInterpreter::HaveInstance() &&
+					TInterpreter::GetInstance()->Napping()));
+}
+
+void StageFrame::OnStopMovies(wxCommandEvent &inEvent)
+{
+	if (TInterpreter::HaveInstance() && TInterpreter::GetInstance()->Napping())
+		TInterpreter::GetInstance()->KillNap();
+	mStage->DeleteMovieElements();
+}
+
 void StageFrame::OnSashDrag(wxSashEvent &inEvent)
 {
     if (inEvent.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE)
@@ -727,6 +748,7 @@ BEGIN_EVENT_TABLE(Stage, wxWindow)
     EVT_MOTION(Stage::OnMouseMove)
     EVT_ERASE_BACKGROUND(Stage::OnEraseBackground)
     EVT_PAINT(Stage::OnPaint)
+    EVT_CHAR(Stage::OnChar)
     EVT_TEXT_ENTER(FIVEL_TEXT_ENTRY, Stage::OnTextEnter)
 	EVT_LEFT_DOWN(Stage::OnLeftDown)
 END_EVENT_TABLE()
@@ -742,6 +764,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     SetBackgroundColour(STAGE_COLOR);
     ClearStage(*wxBLACK);
     
+	mEventDispatcher = new EventDispatcher();
     mTextCtrl =
         new wxTextCtrl(this, FIVEL_TEXT_ENTRY, "", wxDefaultPosition,
                        wxDefaultSize, wxNO_BORDER | wxTE_PROCESS_ENTER);
@@ -838,6 +861,7 @@ void Stage::NotifyExitCard()
 void Stage::NotifyScriptReload()
 {
 	mLastCard = "";
+	mEventDispatcher->NotifyScriptReload();
 	mFrame->GetProgramTree()->NotifyScriptReload();
     NotifyExitCard();
 	gStyleSheetManager.RemoveAll();
@@ -1021,6 +1045,32 @@ void Stage::DrawElementBorder(wxDC &inDC, const wxRect &inElementRect)
 	inDC.DrawRectangle(r.x, r.y, r.width, r.height);
 }
 
+void Stage::OnChar(wxKeyEvent &inEvent)
+{
+	// NOTE - We handle this event here, but the stage isn't always
+	// focused.  Is this really a good idea?
+	// TODO - Most of this code should probably be refactored into
+	// EventDispatcher at some point.
+	if (!IsScriptInitialized() || IsInEditMode())
+		inEvent.Skip();
+	else if (inEvent.GetKeyCode() == WXK_SPACE &&
+			 inEvent.ControlDown() && !inEvent.AltDown())
+		inEvent.Skip(); // Always allow toggling into edit mode.
+	else
+	{
+		EventDispatcher *dispatcher = GetEventDispatcher();
+		EventDispatcher::Modifiers mods = 0;
+		if (inEvent.ControlDown())
+			mods |= EventDispatcher::Modifier_Control;
+		if (inEvent.AltDown())
+			mods |= EventDispatcher::Modifier_Alt;
+		if (inEvent.ShiftDown())
+			mods |= EventDispatcher::Modifier_Shift;
+		if (!dispatcher->DoEventChar(inEvent.GetKeyCode(), mods))
+			inEvent.Skip();
+	}
+}
+
 void Stage::OnTextEnter(wxCommandEvent &inEvent)
 {
     // Get the text.
@@ -1046,9 +1096,9 @@ void Stage::OnLeftDown(wxMouseEvent &inEvent)
 	Element *obj = FindLightWeightElement(inEvent.GetPosition());
 	if (obj)
 		obj->Click();
-	//else
-		// TODO - For debugging Quake 2 integration.
-	    //SetFocus();
+	else
+		// Restore focus to the stage.
+	    SetFocus();
 }
 
 void Stage::InvalidateStage()
@@ -1328,8 +1378,41 @@ bool Stage::DeleteElementByName(const wxString &inName)
 void Stage::DeleteElements()
 {
 	ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); i++)
+	for (; i != mElements.end(); ++i)
 		DestroyElement(*i);
 	mElements.clear();
 	NotifyElementsChanged();
+}
+
+bool Stage::IsMoviePlaying()
+{
+	ElementCollection::iterator i = mElements.begin();
+	for (; i != mElements.end(); ++i)
+		if (dynamic_cast<MovieElement*>(*i))
+			return true;
+	return false;
+}
+
+static bool is_not_movie_element(Element *inElem)
+{
+	return dynamic_cast<MovieElement*>(inElem) == NULL;
+}
+
+void Stage::DeleteMovieElements()
+{
+	// Selectively deleting pointers from an STL sequence is a bit of a
+	// black art--it's hard to call erase(...) while iterating, and
+	// remove_if(...)  won't free the pointers correctly.  One solution
+	// is to call std::partition or std::stable_partition to sort the
+	// elements into those we wish to keep, and those we wish to delete,
+	// then to handle all the deletions in a bunch.
+	ElementCollection::iterator first =
+		std::stable_partition(mElements.begin(), mElements.end(),
+							  &is_not_movie_element);
+	for (ElementCollection::iterator i = first; i != mElements.end(); ++i)
+	{
+		gDebugLog.Log("Stopping movie: %s", (*i)->GetName().mb_str());
+		DestroyElement(*i);
+	}
+	mElements.erase(first, mElements.end());
 }

@@ -70,7 +70,7 @@ bool FiveLApp::OnInit()
 
     // Configure some useful trace masks for debugging the application.
     // Comment these out to disable a particular kind of tracing.
-    wxLog::AddTraceMask(TRACE_STAGE_DRAWING);
+    //wxLog::AddTraceMask(TRACE_STAGE_DRAWING);
     //wxLog::AddTraceMask(wxTRACE_Messages);
     //wxLog::SetTraceMask(wxTraceMessages);
 

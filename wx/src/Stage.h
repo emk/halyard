@@ -21,6 +21,7 @@ class TQTMovie;
 class MovieElement;
 class StageBackground;
 class wxSashEvent;
+class EventDispatcher;
 
 // See ToolWindow.h.
 enum ToolWindowID {
@@ -195,6 +196,8 @@ private:
     void OnEditMode(wxCommandEvent &inEvent);
     void UpdateUiJumpCard(wxUpdateUIEvent &inEvent);
     void OnJumpCard(wxCommandEvent &inEvent);
+    void UpdateUiStopMovies(wxUpdateUIEvent &inEvent);
+    void OnStopMovies(wxCommandEvent &inEvent);
 
 	//////////
 	// "Sashes" are narrow bars between subwindows in frame.  When
@@ -247,6 +250,11 @@ class Stage : public wxWindow, public GraphicsTools::Image
     // occassionally to implement various features.
     //
     wxRawBitmap mOffscreenPixmap;
+
+	//////////
+	// This object does all of our event-dispatching for us.
+	//
+	EventDispatcher *mEventDispatcher;
 
 	//////////
 	// Our text-entry control.  Will not be visible unless the user
@@ -390,7 +398,12 @@ public:
 	// card does not exist, displays an error to the user.
 	//
 	void TryJumpTo(const wxString &inName);
-	
+
+	//////////
+	// Return the EventDispatcher associated with this stage.
+	//
+	EventDispatcher *GetEventDispatcher() { return mEventDispatcher; }
+
     //////////
     // Register a newly-loaded card with the stage frame.
     //
@@ -435,6 +448,11 @@ public:
     // Redraw the stage.
     //
     void OnPaint(wxPaintEvent &inEvent);
+
+	//////////
+	// Handle a character event.
+	//
+    void OnChar(wxKeyEvent &inEvent);
 
     //////////
     // Intercept ENTER in a text field.
@@ -582,6 +600,16 @@ public:
 	// Delete all Elements owned the Stage.
 	//
 	void DeleteElements();
+
+	//////////
+	// Return true if a movie is playing.
+	//
+	bool IsMoviePlaying();
+
+	//////////
+	// Delete all movie (audio & video) elements which are playing.
+	//
+	void DeleteMovieElements();
 
     DECLARE_EVENT_TABLE();
 };

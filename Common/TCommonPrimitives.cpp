@@ -133,7 +133,7 @@ void Origin::OffsetOrigin(TPoint &delta)
 DEFINE_5L_PRIMITIVE(HavePrimitive)
 {
 	std::string name;
-	inArgs >> name;
+	inArgs >> SymbolName(name);
 	::SetPrimitiveResult(gPrimitiveManager.DoesPrimitiveExist(name));
 }
 
@@ -152,9 +152,9 @@ DEFINE_5L_PRIMITIVE(Log)
 
 	std::string log_name, msg, level;
 	level = "log";
-	inArgs >> log_name >> msg;
+	inArgs >> SymbolName(log_name) >> msg;
 	if (inArgs.HasMoreArguments())
-		inArgs >> level;
+		inArgs >> SymbolName(level);
 	log_name = ::MakeStringLowercase(log_name);
 	level = ::MakeStringLowercase(level);
 
@@ -390,7 +390,7 @@ DEFINE_5L_PRIMITIVE(MeasureTextAA)
 	std::string text;
 	uint32 max_width;
 
-	inArgs >> style >> text >> max_width;
+	inArgs >> SymbolName(style) >> text >> max_width;
 	gStyleSheetManager.Draw(style, text,
 							GraphicsTools::Point(0, 0),
 							max_width, NULL);

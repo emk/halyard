@@ -478,15 +478,77 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 //	TSchemeCallback Methods
 //=========================================================================
 
+void TSchemeCallback::AddArg(Scheme_Object *inArg)
+{
+	ASSERT(mArguments != NULL);
+
+	// Push the argument onto the appropriate list.
+	if (mListArgument)
+		mListArgument = scheme_make_pair(inArg, mListArgument);
+	else
+		mArguments = scheme_make_pair(inArg, mArguments);		
+}
+
+void TSchemeCallback::BeginArguments()
+{
+	ASSERT(mArguments == NULL);
+	ASSERT(mListArgument == NULL);
+	mArguments = scheme_null;
+}
+
+void TSchemeCallback::AddStringArg(const std::string &inArg)
+{
+	AddArg(scheme_make_string(inArg.c_str()));
+}
+
+void TSchemeCallback::AddSymbolArg(const std::string &inArg)
+{
+	AddArg(scheme_intern_symbol(inArg.c_str()));
+}
+
+void TSchemeCallback::BeginListArg()
+{
+	ASSERT(mArguments != NULL);
+	ASSERT(mListArgument == NULL);
+	mListArgument = scheme_null;
+}
+
+void TSchemeCallback::EndListArg()
+{
+	ASSERT(mArguments != NULL);
+	ASSERT(mListArgument != NULL);
+
+	// Reverse the list argument.
+	Scheme_Object *args[1];
+	args[0] = mListArgument;
+	mListArgument = NULL;
+	AddArg(TSchemeInterpreter::CallScheme("%kernel-reverse!", 1, args));
+}
+
+void TSchemeCallback::EndArguments()
+{
+	ASSERT(mArguments != NULL);
+	ASSERT(mListArgument == NULL);
+	
+	// Reverse the argument list.
+	Scheme_Object *args[1];
+	args[0] = mArguments;
+	mArguments = TSchemeInterpreter::CallScheme("%kernel-reverse!", 1, args);
+}
+
 void TSchemeCallback::Run()
 {
+	ASSERT(mListArgument == NULL);
+
 	// Make sure we have a Scheme interpreter and that it isn't stopped.
 	ASSERT(TSchemeInterpreter::HaveInstance());
 	ASSERT(!TSchemeInterpreter::GetInstance()->IsStopped());
-
-	Scheme_Object *args[1];
+	
+	Scheme_Object *args[2];
 	args[0] = mCallback;
-	TSchemeInterpreter::CallScheme("%kernel-run-callback", 1, args);
+	args[1] = mArguments ? mArguments : scheme_null;
+	TSchemeInterpreter::CallScheme("%kernel-run-callback", 2, args);
+	mArguments = NULL;
 }
 
 

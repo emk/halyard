@@ -99,6 +99,10 @@ SOURCE=..\..\src\Element.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\EventDispatcher.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\FiveLApp.cpp
 # End Source File
 # Begin Source File
@@ -192,6 +196,10 @@ SOURCE=..\..\src\Zone.cpp
 # Begin Source File
 
 SOURCE=..\..\src\Element.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\EventDispatcher.h
 # End Source File
 # Begin Source File
 

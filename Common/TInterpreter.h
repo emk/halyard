@@ -196,7 +196,32 @@ public:
 	virtual ~TCallback() {}
 
 	//////////
-	// Execute the callback.
+	// Start building an argument list for the callback.
+	//
+	virtual void BeginArguments() = 0;
+
+	// Append various types of simple arguments.
+	virtual void AddStringArg(const std::string &inArg) = 0;
+	virtual void AddSymbolArg(const std::string &inArg) = 0;
+
+	//////////
+	// Until EndListArg() is called, assume all further arguments
+	// should be grouped into a single list argument.  Does not nest.
+	//
+	virtual void BeginListArg() = 0;
+
+	//////////
+	// Assume all further arguments should be added individually.
+	//
+	virtual void EndListArg() = 0;
+
+	//////////
+	// End building an argument list for the callback.
+	//
+	virtual void EndArguments() = 0;
+
+	//////////
+	// Execute the callback without any arguments.
 	//
 	virtual void Run() = 0;
 

@@ -30,8 +30,8 @@ TStyleSheet::TStyleSheet(TArgumentList &inArgs)
     // (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR...
     std::string flags, justification;
     uint32 size;
-    inArgs >> mStyleName >> mFontName >> size >> flags
-		   >> justification >> mColor >> mHighlightColor;
+    inArgs >> SymbolName(mStyleName) >> mFontName >> size >> SymbolName(flags)
+		   >> SymbolName(justification) >> mColor >> mHighlightColor;
     mSize = size;
 	mStyleName = MakeStringLowercase(mStyleName);
 

@@ -104,6 +104,14 @@
 (card test-callbacks-2
   (test (eq? *before-callback-flag* #t))
   (test (eq? *after-callback-flag* #f))
+  (jump test-callback-args))
+
+(card test-callback-args
+  (define (f h w l)
+    (test (equal? h "hello"))
+    (test (equal? w 'world))
+    (test (equal? l (list "foo" 'bar))))
+  (call-5l-prim 'testcallbackargs f)
   (jump test-stop))
 
 (card test-stop

@@ -41,9 +41,9 @@ public:
 	TSchemePtr(const TSchemePtr &inSchemePtr) : mPtr(NULL)
 		{ Set(inSchemePtr.mPtr); }
 	operator Type*() { return mPtr; }
-	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); }
+	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
 	TSchemePtr<Type> &operator=(const TSchemePtr &inPtr)
-		{ Set(inSchemePtr.mPtr); }
+		{ Set(inSchemePtr.mPtr); return *this; }
 };
 
 
@@ -124,7 +124,6 @@ public:
 					  std::string &outResultText);
 };
 
-
 //////////
 // A C++ wrapper for a zero-argument Scheme callback function (a "thunk").
 //
@@ -137,10 +136,33 @@ class TSchemeCallback : public TCallback
 	//
 	TSchemePtr<Scheme_Object> mCallback;
 
+	//////////
+	// The list of arguments we'll pass to the next invocation of Run(),
+	// stored in reverse order.
+	//
+	TSchemePtr<Scheme_Object> mArguments;
+
+	//////////
+	// We use this variable to store partially constructed lists (in
+	// reverse order) between calls to BeginListArg and EndListArg.
+	//
+	TSchemePtr<Scheme_Object> mListArgument;
+
+	//////////
+	// Internal function to add a single argument.
+	//
+	void AddArg(Scheme_Object *inArg);
+
 public:
 	TSchemeCallback(Scheme_Object *inCallback) : mCallback(inCallback) {}
 
 	// For documentation of these virtual methods, see TInterpreter.h.
+	virtual void BeginArguments();
+	virtual void AddStringArg(const std::string &inArg);
+	virtual void AddSymbolArg(const std::string &inArg);
+	virtual void BeginListArg();
+	virtual void EndListArg();
+	virtual void EndArguments();
 	virtual void Run();
 	virtual std::string PrintableRepresentation() { return "#<thunk>"; }
 };

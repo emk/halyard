@@ -19,6 +19,7 @@
 #include "MovieElement.h"
 #include "Widget.h"
 #include "FileSystem.h"
+#include "EventDispatcher.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -28,7 +29,8 @@ using FileSystem::Path;
 //=========================================================================
 //  RegisterWxPrimitives
 //=========================================================================
-//  Install our wxWindows-specific primitives.
+//  Install our wxWindows-specific primitives.  A lot of these are very
+//  kludgy and should be replaced later on as the editing GUI improves.
 
 void FIVEL_NS RegisterWxPrimitives()
 {
@@ -40,11 +42,13 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
+	REGISTER_5L_PRIMITIVE(Loadsubpic);
 	REGISTER_5L_PRIMITIVE(Movie);
 	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
 	REGISTER_5L_PRIMITIVE(RegisterCard);
+	REGISTER_5L_PRIMITIVE(RegisterEventDispatcher);
     REGISTER_5L_PRIMITIVE(Screen);
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
@@ -119,7 +123,7 @@ DEFINE_5L_PRIMITIVE(DeleteElements)
 		while (inArgs.HasMoreArguments())
 		{
 			std::string name;
-			inArgs >> name;
+			inArgs >> SymbolName(name);
 			bool found =
 				wxGetApp().GetStage()->DeleteElementByName(name.c_str());
 			if (!found)
@@ -134,7 +138,7 @@ DEFINE_5L_PRIMITIVE(EditBox)
 	std::string name, text;
 	TRect bounds;
 
-	inArgs >> name >> bounds >> text;
+	inArgs >> SymbolName(name) >> bounds >> text;
 
 	wxTextCtrl *edit =
 		new wxTextCtrl(wxGetApp().GetStage(), -1, text.c_str(),
@@ -176,7 +180,7 @@ DEFINE_5L_PRIMITIVE(HTML)
 	std::string name, file_or_url;
 	TRect bounds;
 
-	inArgs >> name >> bounds >> file_or_url;
+	inArgs >> SymbolName(name) >> bounds >> file_or_url;
 
 	wxHtmlWindow *html =
 		new wxHtmlWindow(wxGetApp().GetStage(), -1,
@@ -205,6 +209,53 @@ DEFINE_5L_PRIMITIVE(Input)
 
 	XXX - Flags not implemented!
 -----------------------------------------------------------------------*/
+
+static void load_picture(const std::string &inName, TPoint inLoc,
+						 TRect *inRect = NULL)
+{
+	// Build a path to our image.
+	Path p = FileSystem::GetBaseDirectory().AddComponent("Graphics").AddComponent(inName).ReplaceExtension("png");
+
+	// Load our image.
+	wxImage image;
+	image.LoadFile(p.ToNativePathString().c_str());
+	if (!image.Ok())
+	{
+		::SetPrimitiveError("noimage", "Can't load the specified image");
+		return;
+	}
+
+	// If we were given a sub-rectangle, try to extract it.
+	if (inRect)
+	{
+		wxRect rect(inRect->Left(), inRect->Top(),
+					inRect->Right() - inRect->Left(),
+					inRect->Bottom() - inRect->Top());
+		if (rect.GetX() < 0 || rect.GetY() < 0 ||
+			rect.GetWidth() > image.GetWidth() ||
+			rect.GetHeight() > image.GetHeight())
+		{
+			::SetPrimitiveError("outofbounds",
+								"Sub-rectangle does not fit inside image");
+			return;
+		}
+		image = image.GetSubImage(rect);
+		inLoc.SetX(inLoc.X() + rect.GetX());
+		inLoc.SetY(inLoc.Y() + rect.GetY());
+	}
+
+	// Convert our image to a bitmap and draw it.
+	wxBitmap bitmap(image);
+	wxGetApp().GetStage()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y());
+
+	// Update our special variables.
+	// XXX - TRect constructor uses height/width order!  Ayiee!
+	TRect bounds(TRect(inLoc.Y(), inLoc.X(),
+					   inLoc.Y() + bitmap.GetHeight(),
+					   inLoc.X() + bitmap.GetWidth()));
+	UpdateSpecialVariablesForGraphic(bounds);	
+}
+
 DEFINE_5L_PRIMITIVE(Loadpic)
 {
 	std::string	picname;
@@ -225,23 +276,18 @@ DEFINE_5L_PRIMITIVE(Loadpic)
 		return;
 	}
 
-	// Build a path to our image.
-	Path p = FileSystem::GetBaseDirectory().AddComponent("Graphics").AddComponent(picname).ReplaceExtension("png");
+	// Do the dirty work.
+	load_picture(picname, loc);
+}
 
-	// Convert our image to a bitmap.
-	wxImage image;
-	image.LoadFile(p.ToNativePathString().c_str());
-	wxBitmap bitmap(image);
+DEFINE_5L_PRIMITIVE(Loadsubpic)
+{
+	std::string	picname;
+    TPoint		loc;
+	TRect		subrect;
 
-	// Draw the bitmap.
-	wxGetApp().GetStage()->DrawBitmap(bitmap, loc.X(), loc.Y());
-
-	// Update our special variables.
-	// XXX - TRect constructor uses height/width order!  Ayiee!
-	TRect bounds(TRect(loc.Y(), loc.X(),
-					   loc.Y() + bitmap.GetHeight(),
-					   loc.X() + bitmap.GetWidth()));
-	UpdateSpecialVariablesForGraphic(bounds);
+	inArgs >> picname >> loc >> subrect;
+	load_picture(picname, loc, &subrect);
 }
 
 DEFINE_5L_PRIMITIVE(NotifyEnterCard)
@@ -277,7 +323,8 @@ DEFINE_5L_PRIMITIVE(Movie)
 	TRect bounds;
 	bool controller, audio_only, loop;
 
-	inArgs >> name >> bounds >> path >> controller >> audio_only >> loop;
+	inArgs >> SymbolName(name) >> bounds >> path >> controller
+		   >> audio_only >> loop;
 
 	MovieWindowStyle style = 0;
 	if (controller)
@@ -298,6 +345,13 @@ DEFINE_5L_PRIMITIVE(RegisterCard)
 	wxGetApp().GetStage()->RegisterCard(name.c_str());
 }
 
+DEFINE_5L_PRIMITIVE(RegisterEventDispatcher)
+{
+	TCallback *callback;
+	inArgs >> callback;
+	wxGetApp().GetStage()->GetEventDispatcher()->SetDispatcher(callback);
+}
+
 /*---------------------------------------------------------------
     (SCREEN COLOR)
 
@@ -315,7 +369,7 @@ DEFINE_5L_PRIMITIVE(TextAA)
 	TRect		bounds;
 	std::string style, text;
 
-    inArgs >> style >> bounds >> text;
+    inArgs >> SymbolName(style) >> bounds >> text;
     gOrigin.AdjustRect(&bounds);
 	gStyleSheetManager.Draw(style, text,
 							GraphicsTools::Point(bounds.Left(),
@@ -332,11 +386,11 @@ DEFINE_5L_PRIMITIVE(TextAA)
 -------------------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Timeout)
 {
-    TString 	cardName;
+	std::string cardName;
     int32     	secs;
 
-    inArgs >> secs >> cardName;
-    TInterpreter::GetInstance()->Timeout(cardName.GetString(), secs);
+    inArgs >> secs >> SymbolName(cardName);
+    TInterpreter::GetInstance()->Timeout(cardName.c_str(), secs);
 }
 
 DEFINE_5L_PRIMITIVE(Wait)
@@ -344,7 +398,7 @@ DEFINE_5L_PRIMITIVE(Wait)
 	std::string name;
 	int32 frame = LAST_FRAME;
 
-	inArgs >> name;
+	inArgs >> SymbolName(name);
 	if (inArgs.HasMoreArguments())
 		inArgs >> frame;
 
@@ -357,6 +411,6 @@ DEFINE_5L_PRIMITIVE(Zone)
 	TRect bounds;
 	TCallback *action;
 	
-	inArgs >> name >> bounds >> action;
+	inArgs >> SymbolName(name) >> bounds >> action;
 	new Zone(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds), action);
 }

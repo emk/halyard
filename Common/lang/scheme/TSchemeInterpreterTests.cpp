@@ -67,6 +67,22 @@ DEFINE_5L_PRIMITIVE(TestCallback)
 	delete callback;
 }
 
+DEFINE_5L_PRIMITIVE(TestCallbackArgs)
+{
+	TCallback *callback;
+	inArgs >> callback;
+	callback->BeginArguments();
+	callback->AddStringArg("hello");
+	callback->AddSymbolArg("world");
+	callback->BeginListArg();
+	callback->AddStringArg("foo");
+	callback->AddSymbolArg("bar");
+	callback->EndListArg();
+	callback->EndArguments();
+	callback->Run();
+	delete callback;
+}
+
 DEFINE_5L_PRIMITIVE(TestTimeout)
 {
 	int32 seconds;
@@ -117,6 +133,7 @@ void FIVEL_NS RegisterSchemeTestPrimitives()
 	REGISTER_5L_PRIMITIVE(TestStop);
 	REGISTER_5L_PRIMITIVE(TestPause);
 	REGISTER_5L_PRIMITIVE(TestCallback);
+	REGISTER_5L_PRIMITIVE(TestCallbackArgs);
 	REGISTER_5L_PRIMITIVE(TestTimeout);
 	REGISTER_5L_PRIMITIVE(TestNap);
 

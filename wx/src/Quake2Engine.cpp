@@ -82,8 +82,15 @@ void Quake2Engine::HandleCommand()
 	if (found == mCallbackMap.end())
 		wxQuake2Window::HandleCommand();
 	else
-		// FIXME - Add support for command arguments.
-		found->second->Run();
+	{
+		TCallback *callback = found->second;
+		callback->BeginArguments();
+		int argc = CommandArgc();
+		for (int i = 1; i < argc; i++)
+			callback->AddStringArg(CommandArgv(i).mb_str());
+		callback->EndArguments();
+		callback->Run();
+	}
 }
 
 void Quake2Engine::Initialize()
