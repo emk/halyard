@@ -38,7 +38,8 @@
            quicktime-component-version
            mark-unprocessed-events-as-stale!
            number->integer interpolate-int make-object-mover animate
-           state-db-debug state-db-seconds state-db-milliseconds)
+           state-db-debug state-db-seconds state-db-milliseconds
+           inc-state-db! inc-state-db-if-true!)
 
   (define (url? path)
     (regexp-match "^(http|ftp|rtsp):" path))
@@ -844,5 +845,24 @@
 
   (define (state-db-milliseconds)
     (state-db-debug '/system/clock/milliseconds))
+
+  
+  ;;-----------------------------------------------------------------------
+  ;;  State DB Increment Support
+  ;;-----------------------------------------------------------------------
+  ;;  XXX - THIS SHOULD NOT USE STATE-DB-DEBUG!!! It's extremely slow.
+  ;;  Ask one of the C++ programmers to add a primitive to do this.
+  
+  ;;; Add AMOUNT to the value stored in the state-db at PATH.
+  (define (inc-state-db! path amount)
+    (let [[current (state-db-debug path)]]
+      (set! (state-db path) (+ current amount))))
+
+  ;;; Add AMOUNT to the value stored in the state-db at PATH, unless that
+  ;;; value is #f.
+  (define (inc-state-db-if-true! path amount)
+    (let [[current (state-db-debug path)]]
+      (when current
+        (set! (state-db path) (+ current amount)))))
 
   )
