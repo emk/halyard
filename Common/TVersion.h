@@ -14,19 +14,20 @@
 // TVersion.h : Version strings.
 //
 
-#define MAJOR_NUM		3
-#define MINOR_NUM		03
-#define REV_BIG			02
-#define REV_SMALL		00
+#define VERSION_MAJOR_NUM	3
+#define VERSION_MINOR_NUM	03
+#define VERSION_REV_BIG		02
+#define VERSION_REV_SMALL	01
 
-#define BUILD_NUM		1
-
-#define VERSION_STRING	"5L 3.3.2"
+#define VERSION_STRING	"5L 3.3.2.1 (Development, FiveL_3_2_2_emk_typography_merge)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.9.2.2  2002/04/23 11:29:47  emk
+ Prepended "VERSION_" to the version-related preprocessor defines, because this way is (1) nicer and (2) matches the Mac engine's preprocessor defines.
+
  Revision 1.9.2.1  2002/04/19 11:20:13  emk
  Start of the heavy typography merging work.  I'm doing this on a branch
  so I don't cause problems for any of the other developers.
