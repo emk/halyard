@@ -124,6 +124,8 @@ TInterpreter *TSchemeInterpreterManager::MakeInterpreter()
 
 Scheme_Env *TSchemeInterpreter::sGlobalEnv = NULL;
 Scheme_Env *TSchemeInterpreter::sScriptEnv = NULL;
+TSchemePtr<Scheme_Object> TSchemeInterpreter::sLoaderModule = NULL;
+TSchemePtr<Scheme_Object> TSchemeInterpreter::sKernelModule = NULL;
 TInterpreter::SystemIdleProc TSchemeInterpreter::sSystemIdleProc = NULL;
 
 TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
@@ -134,14 +136,17 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 	// Remember our global environment.
 	sGlobalEnv = inGlobalEnv;
 
+	InitializeModuleNames();
+
 	// Create a new script environment, and store it where we can find it.
 	sScriptEnv = NULL;
-	CallSchemeEx(sGlobalEnv, "5L-Loader", "new-script-environment", 0, &args);
+	CallSchemeEx(sGlobalEnv, sLoaderModule, "new-script-environment",
+				 0, &args);
 	sScriptEnv = scheme_get_env(scheme_config);
 
 	// Load our kernel and script.
 	Scheme_Object *result = 
-		CallSchemeEx(sGlobalEnv, "5L-Loader", "load-script", 0, &args);
+		CallSchemeEx(sGlobalEnv, sLoaderModule, "load-script", 0, &args);
 	if (!SCHEME_FALSEP(result))
 	{
 		ASSERT(SCHEME_STRINGP(result));
@@ -153,6 +158,17 @@ TSchemeInterpreter::~TSchemeInterpreter()
 {
 	// We don't actually shut down the Scheme interpreter.  But we'll
 	// reinitialize it later if we need to.
+}
+
+void TSchemeInterpreter::InitializeModuleNames()
+{
+	sLoaderModule = scheme_intern_symbol("5L-Loader");
+	Scheme_Object *tail = scheme_make_pair(scheme_make_string("5L"),
+										   scheme_null);
+	sKernelModule =
+		scheme_make_pair(scheme_intern_symbol("lib"),
+						 scheme_make_pair(scheme_make_string("kernel.ss"),
+										  tail));
 }
 
 Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
@@ -297,7 +313,7 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 }
 
 Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
-												const char *inModuleName,
+												Scheme_Object *inModuleName,
 												const char *inFuncName,
 												int inArgc,
 												Scheme_Object **inArgv)
@@ -324,16 +340,15 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 		// Call the function.  Note that scheme_module_bucket will look
 		// up names in the module's *internal* namespace, not its official
 		// export namespace.
-		// TODO - Is this a performance bottleneck?
-		Scheme_Object *mod = scheme_intern_symbol(inModuleName);
 		Scheme_Object *sym = scheme_intern_symbol(inFuncName);
-		Scheme_Bucket *bucket = scheme_module_bucket(mod, sym, -1, inEnv);
+		Scheme_Bucket *bucket = scheme_module_bucket(inModuleName, sym, -1,
+													 inEnv);
 		ASSERT(bucket != NULL);
 		Scheme_Object *f = static_cast<Scheme_Object*>(bucket->val);
 		if (f)
 			result = scheme_apply(f, inArgc, inArgv);
 		else
-			gLog.FatalError("Can't find %s in %s", inFuncName, inModuleName);
+			gLog.FatalError("Can't find %s", inFuncName);
 	}
 
 	// Restore our jump buffer and exit.
@@ -347,7 +362,7 @@ Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
 {
 	// Under normal circumstances, we only want to call functions defined
 	// in the kernel, which is running in the script's namespace.
-	return CallSchemeEx(sScriptEnv, "5L-Kernel", inFuncName,
+	return CallSchemeEx(sScriptEnv, sKernelModule, inFuncName,
 						inArgc, inArgv);
 }
 

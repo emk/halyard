@@ -81,13 +81,17 @@ class TSchemeInterpreter : public TInterpreter
 
 	static Scheme_Env *sGlobalEnv;
 	static Scheme_Env *sScriptEnv;
+	static TSchemePtr<Scheme_Object> sLoaderModule;
+	static TSchemePtr<Scheme_Object> sKernelModule;
 
 	static SystemIdleProc sSystemIdleProc;
+
+	static void InitializeModuleNames();
 
 	static Scheme_Object *Call5LPrim(int inArgc, Scheme_Object **inArgv);
 
 	static Scheme_Object *CallSchemeEx(Scheme_Env *inEnv,
-									   const char *inModuleName,
+									   Scheme_Object *inModuleName,
 									   const char *inFuncName,
 									   int inArgc, Scheme_Object **inArgv);
 
