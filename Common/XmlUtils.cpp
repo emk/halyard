@@ -1,5 +1,8 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
+#include <libxml/globals.h>
+#include <libxml/tree.h>
+
 #include "XmlUtils.h"
 
 USING_NAMESPACE_FIVEL
@@ -9,13 +12,13 @@ USING_NAMESPACE_FIVEL
 //  Support Code
 //=========================================================================
 
-const xmlChar *xml_node::to_utf8(const char *inStr)
+const xml_node::char_type *xml_node::to_utf8(const char *inStr)
 {
 	ASSERT(xmlCheckUTF8(reinterpret_cast<const unsigned char*>(inStr)));
 	return reinterpret_cast<const xmlChar*>(inStr);
 }
 
-const char *xml_node::to_ascii(const xmlChar *inStr)
+const char *xml_node::to_ascii(const char_type *inStr)
 {
 	// This function should check carefully for UTF-8 characters.  Failing
 	// to do so may result in overlong-encoding attacks, which might or might
@@ -34,7 +37,7 @@ const char *xml_node::to_ascii(const xmlChar *inStr)
 //  xml_node::iterator Methods
 //=========================================================================
 
-xml_node::iterator::iterator(xmlNodePtr inNode, bool inIsInMixed)
+xml_node::iterator::iterator(node_ptr inNode, bool inIsInMixed)
 	: mNode(inNode), mIsInMixed(inIsInMixed)
 {
 	if (!mIsInMixed)
@@ -77,12 +80,22 @@ size_t xml_node::size()
 	return count;
 }
 
+xml_node::iterator xml_node::begin()
+{
+	return iterator(mNode->children);
+}
+
 size_t xml_node::size_mixed()
 {
 	size_t count = 0;
 	for (iterator node = begin_mixed(); node != end_mixed(); ++node)
 		++count;
 	return count;
+}
+
+xml_node::iterator xml_node::begin_mixed()
+{
+	return iterator(mNode->children, true);
 }
 
 xml_node xml_node::only_child()

@@ -1,10 +1,12 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include <boost/lexical_cast.hpp>
+#include <libxml/tree.h>
 #include <libxml/parser.h>
 
 #include "TCommon.h"
 #include "Model.h"
+#include "ModelChange.h"
 
 USING_NAMESPACE_FIVEL
 using namespace model;
@@ -29,54 +31,13 @@ DatumVector::~DatumVector()
 }
 
 
-//=========================================================================
-//  Change Methods
-//=========================================================================
-
-Change::Change()
-	: mIsApplied(false), mIsFreed(false)
-{
-}
-
-Change::~Change()
-{
-	ASSERT(mIsFreed);
-}
-
-void Change::Apply()
-{
-	ASSERT(mIsFreed == false);
-	ASSERT(mIsApplied == false);
-	DoApply();
-	mIsApplied = true;
-}
-
-void Change::Revert()
-{
-	ASSERT(mIsFreed == false);
-	ASSERT(mIsApplied == true);
-	DoRevert();
-	mIsApplied = false;
-}
-
-void Change::FreeResources()
-{
-	// This function can't be part of the destructor because destructors
-	// apparently can't call virtual functions.
-	ASSERT(mIsFreed == false);
-	if (mIsApplied)
-		DoFreeRevertResources();
-	else
-		DoFreeApplyResources();
-	mIsFreed = true;
-}
 
 
 //=========================================================================
 //  Class Methods
 //=========================================================================
 
-Class::ClassMap Class::sClasses;
+Class::ClassMap *Class::sClasses = NULL;
 
 Class::Class(const std::string &inName, CreatorFunction inCreator)
 	: mName(inName), mCreator(inCreator)
@@ -84,10 +45,16 @@ Class::Class(const std::string &inName, CreatorFunction inCreator)
 	ASSERT(mName != "");
 	ASSERT(mCreator != NULL);
 	
-	ClassMap::iterator found = sClasses.find(mName);
-	if (found != sClasses.end())
+	// We have to allocate this map dynamically, because we're called
+	// for static member variables, and our own static constructor
+	// may not have been called yet.
+	if (!sClasses)
+		sClasses = new ClassMap();
+
+	ClassMap::iterator found = sClasses->find(mName);
+	if (found != sClasses->end())
 		THROW("Attempted to register a model::Class twice");
-	sClasses.insert(ClassMap::value_type(mName, this));
+	sClasses->insert(ClassMap::value_type(mName, this));
 }
 
 Object *Class::CreateInstance() const
@@ -97,8 +64,9 @@ Object *Class::CreateInstance() const
 
 Class *Class::FindByName(const std::string &inClass)
 {
-	ClassMap::iterator found = sClasses.find(inClass);
-	if (found == sClasses.end())
+	ASSERT(sClasses);
+	ClassMap::iterator found = sClasses->find(inClass);
+	if (found == sClasses->end())
 		THROW("Attempted to create unknown model::Class");
 	return found->second;
 }
@@ -112,7 +80,7 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 {
 	std::string type  = inNode.attribute("type");
 	if (type == "int")
-		return new Integer(lexical_cast<long>(inNode.text()));
+		return new Integer(boost::lexical_cast<int>(inNode.text()));
 	else if (type == "str")
 		return new String(inNode.text());
 	else if (type == "map")
@@ -133,7 +101,7 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 void Integer::Write(xml_node inContainer)
 {
 	inContainer.set_attribute("type", "int");
-	inContainer.append_text(lexical_cast<std::string>(mValue));
+	inContainer.append_text(boost::lexical_cast<std::string>(mValue));
 }
 
 void String::Write(xml_node inContainer)
@@ -225,151 +193,24 @@ void MutableDatum::RegisterWithModel(Model *inModel)
 
 
 //=========================================================================
-//  CollectionDatum::SetChange
+//  CollectionDatum Methods
 //=========================================================================
-
-template <typename KeyType>
-class CollectionDatum<KeyType>::SetChange : public Change {
-	CollectionDatum<KeyType> *mCollection;
-	Datum *mOldDatum;
-	Datum *mNewDatum;
-	ConstKeyType mKey;
-
-public:
-	SetChange(CollectionDatum<KeyType> *inDatum,
-			  ConstKeyType &inKey,
-			  Datum *inValue);
-
-protected:
-	virtual void DoApply();
-	virtual void DoRevert();
-	virtual void DoFreeApplyResources();
-	virtual void DoFreeRevertResources();
-};
-
-template <typename KeyType>
-CollectionDatum<KeyType>::
-SetChange::SetChange(CollectionDatum<KeyType> *inDatum,
-					 ConstKeyType &inKey,
-					 Datum *inValue)
-	: mCollection(inDatum), mOldDatum(NULL), mNewDatum(inValue), mKey(inKey)
-{
-	mOldDatum = mCollection->DoFind(inKey);
-}
-
-template <typename KeyType>
-void CollectionDatum<KeyType>::SetChange::DoApply()
-{
-	if (mOldDatum)
-		mCollection->DoRemoveKnown(mKey, mOldDatum);
-	mCollection->DoInsert(mKey, mNewDatum);
-}
-
-template <typename KeyType>
-void CollectionDatum<KeyType>::SetChange::DoRevert()
-{
-	mCollection->DoRemoveKnown(mKey, mNewDatum);
-	if (mOldDatum)
-		mCollection->DoInsert(mKey, mOldDatum);
-}
-
-template <typename KeyType>
-void CollectionDatum<KeyType>::SetChange::DoFreeApplyResources()
-{
-	delete mNewDatum;
-	mNewDatum = NULL;
-}
-
-template <typename KeyType>
-void CollectionDatum<KeyType>::SetChange::DoFreeRevertResources()
-{
-	if (mOldDatum)
-	{
-		delete mOldDatum;
-		mOldDatum = NULL;
-	}
-}
 
 template <typename KeyType>
 void CollectionDatum<KeyType>::PerformSet(ConstKeyType &inKey, Datum *inValue)
 {
 	RegisterChildWithModel(inValue);
-	ApplyChange(new SetChange(this, inKey, inValue));
-}
-
-
-//=========================================================================
-//  CollectionDatum::DeleteChange
-//=========================================================================
-
-template <typename KeyType>
-class CollectionDatum<KeyType>::DeleteChange : public Change
-{
-	CollectionDatum<KeyType> *mCollection;
-	Datum *mOldDatum;
-	ConstKeyType mKey;
-
-public:
-	DeleteChange(CollectionDatum<KeyType> *inDatum,
-				 ConstKeyType &inKey);
-
-protected:
-	virtual void DoApply();
-	virtual void DoRevert();
-	virtual void DoFreeApplyResources();
-	virtual void DoFreeRevertResources();
-};
-
-template <typename KeyType>
-CollectionDatum<KeyType>::DeleteChange::DeleteChange(
-	CollectionDatum<KeyType> *inDatum, ConstKeyType &inKey)
-	: mCollection(inDatum), mKey(inKey)
-{
-	mOldDatum = mCollection->DoFind(inKey);
-	if (!mOldDatum)
-	{
-		ConstructorFailing();
-		THROW("DeleteChange: No such key");
-	}
-}
-
-template <typename KeyType>
-void CollectionDatum<KeyType>::DeleteChange::DoApply()
-{
-	mCollection->DoRemoveKnown(mKey, mOldDatum);
-}
-
-template <typename KeyType>
-void CollectionDatum<KeyType>::DeleteChange::DoRevert()
-{
-	mCollection->DoInsert(mKey, mOldDatum);
-}
-
-template <typename KeyType>
-void CollectionDatum<KeyType>::DeleteChange::DoFreeApplyResources()
-{
-}
-
-template <typename KeyType>
-void CollectionDatum<KeyType>::DeleteChange::DoFreeRevertResources()
-{
-	delete mOldDatum;
-	mOldDatum = NULL;
+	ApplyChange(new SetChange<KeyType>(this, inKey, inValue));
 }
 
 template <typename KeyType>
 void CollectionDatum<KeyType>::PerformDelete(ConstKeyType &inKey)
 {
-	ApplyChange(new DeleteChange(this, inKey));
+	ApplyChange(new DeleteChange<KeyType>(this, inKey));
 }
 
-
-//=========================================================================
-//  CollectionDatum Instantiation
-//=========================================================================
-
-template class CollectionDatum<std::string>;
-template class CollectionDatum<size_t>;
+template class model::CollectionDatum<std::string>;
+template class model::CollectionDatum<size_t>;
 
 
 //=========================================================================
@@ -467,63 +308,14 @@ void Object::Fill(xml_node inNode)
 
 
 //=========================================================================
-//  List::InsertChange
+//  List Methods
 //=========================================================================
-
-class List::InsertChange : public Change {
-	List *mCollection;
-	Datum *mNewDatum;
-	ConstKeyType mKey;
-
-public:
-	InsertChange(List *inCollection,
-				 ConstKeyType &inKey,
-				 Datum *inValue);
-
-protected:
-	virtual void DoApply();
-	virtual void DoRevert();
-	virtual void DoFreeApplyResources();
-	virtual void DoFreeRevertResources();
-};
-
-List::InsertChange::InsertChange(List *inCollection,
-								 ConstKeyType &inKey,
-								 Datum *inValue)
-	: mCollection(inCollection), mNewDatum(inValue), mKey(inKey)
-{
-}
-
-void List::InsertChange::DoApply()
-{
-	mCollection->DoInsert(mKey, mNewDatum);
-}
-
-void List::InsertChange::DoRevert()
-{
-	mCollection->DoRemoveKnown(mKey, mNewDatum);
-}
-
-void List::InsertChange::DoFreeApplyResources()
-{
-	delete mNewDatum;
-	mNewDatum = NULL;	
-}
-
-void List::InsertChange::DoFreeRevertResources()
-{
-}
 
 void List::PerformInsert(ConstKeyType &inKey, Datum *inValue)
 {
 	RegisterChildWithModel(inValue);
 	ApplyChange(new InsertChange(this, inKey, inValue));
 }
-
-
-//=========================================================================
-//  List Methods
-//=========================================================================
 
 void List::Write(xml_node inContainer)
 {
@@ -692,7 +484,7 @@ template void model::Move(Map*, Map::ConstKeyType&,
 void Model::Initialize()
 {
 	mChangePosition = mChanges.begin();
-	mRoot = new Map();
+	mRoot = std::auto_ptr<Map>(new Map());
 	mRoot->RegisterWithModel(this);
 }
 
@@ -725,8 +517,8 @@ Model::Model(const ModelFormat &inCurrentFormat,
 		// Check the format and version.
 		ModelFormat file_format
 			(root.name(),
-			 lexical_cast<Version>(root.attribute("version")),
-			 lexical_cast<Version>(root.attribute("backto")));
+			 boost::lexical_cast<Version>(root.attribute("version")),
+			 boost::lexical_cast<Version>(root.attribute("backto")));
 		CHECK(file_format.GetName() == mFormat.GetName(),
 			  "XML file contains the wrong type of data");
 		CHECK(mFormat.GetVersion() >= file_format.GetCompatibleBackTo(),
@@ -828,8 +620,8 @@ void Model::SaveAs(const std::string &inFile)
 		xmlNewDocNode(doc, NULL, xml_node::to_utf8(mFormat.GetName().c_str()),
 					  NULL);
 	xml_node root(doc->children);
-	std::string vers(lexical_cast<std::string>(mFormat.GetVersion()));
-	std::string back(lexical_cast<std::string>(mFormat.GetCompatibleBackTo()));
+	std::string vers(boost::lexical_cast<std::string>(mFormat.GetVersion()));
+	std::string back(boost::lexical_cast<std::string>(mFormat.GetCompatibleBackTo()));
 	root.set_attribute("version", vers);
 	root.set_attribute("backto", back);
 

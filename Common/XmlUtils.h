@@ -5,7 +5,8 @@
 #define XmlUtils_H
 
 #include <string>
-#include <libxml/tree.h>
+
+struct _xmlNode;
 
 #include "TException.h"
 
@@ -15,26 +16,34 @@ BEGIN_NAMESPACE_FIVEL
 // A lightweight pointer/iterator for referring to libxml2 XML nodes.
 //
 class xml_node {
-	const xmlNodePtr mNode;
+public:
+	// We declare local versions of libxml2 types here, so users of this
+	// library can avoid including any libxml headers.
+	typedef struct _xmlNode *node_ptr;     // xmlNodePtr
+	typedef const node_ptr const_node_ptr; // const xmlNodePtr
+	typedef unsigned char char_type;       // xmlChar
+
+private:
+	const_node_ptr mNode;
 	xml_node();
 
 public:
 	typedef std::string string;
 
-	static const xmlChar *to_utf8(const char *inStr);
-	static const char *to_ascii(const xmlChar *inStr);
+	static const char_type *to_utf8(const char *inStr);
+	static const char *to_ascii(const char_type *inStr);
 
-	xml_node(const xmlNodePtr inNode) : mNode(inNode) { ASSERT(mNode); }
+	xml_node(const_node_ptr inNode) : mNode(inNode) { ASSERT(mNode); }
 
 	class iterator {
-		xmlNodePtr mNode;
+		node_ptr mNode;
 		bool mIsInMixed;
 
 		void skip_whitespace();
 
 	public:
 		iterator() : mNode(NULL), mIsInMixed(false) {}
-		iterator(xmlNodePtr inNode, bool inIsInMixed = false);
+		iterator(const_node_ptr inNode, bool inIsInMixed = false);
 
 		xml_node operator*() { return xml_node(mNode); }
 		//xml_node operator->() { return xml_node(mNode); }
@@ -51,10 +60,10 @@ public:
 	// nodes and throw an exception if they encounter non-whitespace text
 	// content.
 	size_t size();
-	iterator begin() { return iterator(mNode->children); }
+	iterator begin();
 	iterator end() { return iterator(); }
 	size_t size_mixed();
-	iterator begin_mixed() { return iterator(mNode->children, true); }
+	iterator begin_mixed();
 	iterator end_mixed() { return iterator(); }
 
 	// Useful accessors.
@@ -75,7 +84,7 @@ public:
 	void set_attribute(const char *inName, const std::string &inValue);
 	
 	// Conversion operator.
-	operator xmlNodePtr() { return mNode; }
+	operator node_ptr() { return mNode; }
 };
 
 inline bool operator==(const xml_node::iterator &inLeft,

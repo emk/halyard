@@ -20,6 +20,7 @@ namespace model {
 	// Forward declarations.
 	class Datum;
 	class Object;
+	class Change;
 	class Model;
 
 	// Internal support code.
@@ -51,67 +52,6 @@ namespace model {
 	};
 	
 	//////////
-	// A Change represents a mutation of something within the Model.  A
-	// Change may be applied, or reverted.  Changes to a given Model occur
-	// in a sequence, and must be applied or reverted in that sequence.
-	//
-	// Because of this careful sequencing, a Change is allowed to hold onto
-	// pointers and other resources.  All Change objects are destroyed
-	// before the corresponding Model object is destroyed.  This means
-	// that half their resources will be owned by the Model, and half
-	// by the Change object, depending on whether the change has been
-	// applied or reverted.
-	//
-	class Change {
-		bool mIsApplied;
-		bool mIsFreed;
-		
-	public:
-		Change();
-		virtual ~Change();
-		
-		void Apply();
-		void Revert();
-		void FreeResources();
-		
-	protected:	
-		//////////
-		// If an error occurs in the constructor, free any resources
-		// allocated by the object, call this function, and throw an
-		// exception.
-		//
-		void ConstructorFailing() { mIsFreed = true; }
-
-		//////////
-		// Apply this change.  This method is called when the change first
-		// occurs, and perhaps later on, when the change is redone.  This
-		// method must be atomic--if it fails, it must leave the object
-		// unchanged and throw an exception.
-		//
-		virtual void DoApply() = 0;
-		
-		//////////
-		// Revert this change.  This method is called when the change is
-		// undone.  This method must be atomic--if it fails, it must leave
-		// the object unchanged and throw an exception.
-		// 
-		virtual void DoRevert() = 0;
-		
-		//////////
-		// Free any resources need to apply this Change, because this
-		// Change is being destroyed and will not need to be applied again.
-		//
-		virtual void DoFreeApplyResources() = 0;
-
-		//////////
-		// Free any resources need to revert this Change, because this
-		// Change is being destroyed and will not need to be reverted
-		// again.
-		//
-		virtual void DoFreeRevertResources() = 0;
-	};
-
-	//////////
 	// Class information about subclasses of Object. 
 	//
 	class Class {
@@ -121,7 +61,7 @@ namespace model {
 	private:
 		typedef std::map<std::string,Class*> ClassMap;
 
-		static ClassMap sClasses;
+		static ClassMap *sClasses;
 
 		std::string mName;
 		CreatorFunction mCreator;
@@ -172,7 +112,7 @@ namespace model {
 	// Verify that inDatum is of type T.  If it isn't, throw an error.
 	//
 	template <typename T>
-	T *TypeCheck(Datum *inDatum)
+	T *cast(Datum *inDatum)
 	{	
 		T *datum = dynamic_cast<T*>(inDatum);
 		if (!datum)
@@ -203,6 +143,7 @@ namespace model {
 		ValueType mValue;
 	};
 
+	// Declare a value datum class.  Undeclared at end of file.
 #	define DEFINE_VALUE_DATUM_CLASS(NAME,TYPECODE,DATATYPE) \
 		class NAME : public ValueDatum<DATATYPE> { \
 		public: \
@@ -210,12 +151,21 @@ namespace model {
 				: ValueDatum<DATATYPE>(TYPECODE, inValue) {} \
 			virtual void Write(xml_node inContainer); \
 		}
+
+	// Declare a collection accessor.  Undeclared at end of file.
+	// This should have been a template function, but MSVC 6 didn't like it.
+#	define DEFINE_VALUE_SET(OP,TYPE) \
+		void OP ## TYPE(ConstKeyType &inKey, TYPE::ConstValueType &inVal) \
+		{ OP(inKey, new TYPE(inVal)); }
+
+	// Declare a collection accessor.  Undeclared at end of file.
+	// This should have been a template function, but MSVC 6 didn't like it.
+#	define DEFINE_VALUE_GET(OP,TYPE) \
+		TYPE::ConstValueType OP ## TYPE(ConstKeyType &inKey) \
+		{ return cast<TYPE>(OP(inKey))->Value(); }
 	
 	DEFINE_VALUE_DATUM_CLASS(Integer,IntegerType,long);
 	DEFINE_VALUE_DATUM_CLASS(String,StringType,std::string);
-
-
-#	undef DEF_VALUE_DATUM
 
 	//////////
 	// A MutableDatum can be changed and must therefore support Undo.
@@ -258,6 +208,8 @@ namespace model {
 	//
 	template <typename T>
 	class CollectionDatum : public MutableDatum {
+		friend class Change;
+
 	public:
 		// TODO - Use type traits to get an efficient reference type.
 		typedef T KeyType;
@@ -267,17 +219,15 @@ namespace model {
 		D *Set(ConstKeyType &inKey, D *inValue)
 		{ PerformSet(inKey, static_cast<Datum*>(inValue)); return inValue; }
 
-		template <typename VD>
-		void SetValue(ConstKeyType &inKey, typename VD::ConstValueType &inVal)
-		{ Set<VD>(inKey, new VD(inVal)); }
-		
-		template <typename D>
-		D *Get(ConstKeyType &inKey)
-		{ return TypeCheck<D>(DoGet(inKey)); }
+		DEFINE_VALUE_SET(Set, Integer)
+		DEFINE_VALUE_SET(Set, String)
 
-		template <typename VD>
-		typename VD::ConstValueType GetValue(ConstKeyType &inKey)
-		{ return Get<VD>(inKey)->Value(); }	
+		// This used to be a template function with a built-in call to
+		// model::cast, but that broke MSVC 6. 
+		Datum *Get(ConstKeyType &inKey) { return DoGet(inKey); }
+
+		DEFINE_VALUE_GET(Get, Integer)
+		DEFINE_VALUE_GET(Get, String)
 
 		void Delete(ConstKeyType &inKey) { PerformDelete(inKey); }
 
@@ -287,8 +237,9 @@ namespace model {
 
 		//////////
 		// Return the datum associated with the specified key.
+		// MSVC 6 - Not pure virtual to work around template bug.
 		//
-		virtual Datum *DoGet(ConstKeyType &inKey) = 0;
+		virtual Datum *DoGet(ConstKeyType &inKey) { return NULL; }
 
 		//////////
 		// Search the collection for the specified key.  If the key
@@ -297,8 +248,9 @@ namespace model {
 		//
 		// This is part of the low-level editing API called by various
 		// subclasses of Change.
+		// MSVC 6 - Not pure virtual to work around template bug.
 		//
-		virtual Datum *DoFind(ConstKeyType &inKey) = 0;
+		virtual Datum *DoFind(ConstKeyType &inKey) { return NULL; }
 
 		//////////
 		// Remove the specified key/datum pair from the collection.  The
@@ -308,8 +260,9 @@ namespace model {
 		//
 		// This is part of the low-level editing API called by various
 		// subclasses of Change.
+		// MSVC 6 - Not pure virtual to work around template bug.
 		//
-		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum) = 0;
+		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum) {}
 
 		//////////
 		// Insert the specified datum into the collection with the
@@ -320,12 +273,11 @@ namespace model {
 		//
 		// This is part of the low-level editing API called by various
 		// subclasses of Change.
+		// MSVC 6 - Not pure virtual to work around template bug.
 		//
-		virtual void DoInsert(ConstKeyType &inKey, Datum *inDatum) = 0;
+		virtual void DoInsert(ConstKeyType &inKey, Datum *inDatum) {}
 
 	private:
-		class SetChange;
-		class DeleteChange;
 		void PerformSet(ConstKeyType &inKey, Datum *inValue);
 		void PerformDelete(ConstKeyType &inKey);
 	};
@@ -382,9 +334,10 @@ namespace model {
 	// deleting items (from anywhere), and setting items.
 	//
 	class List : public CollectionDatum<size_t> {
+		friend class Change;
+
 		Private::DatumVector mVector;
 
-		class InsertChange;
 		void PerformInsert(ConstKeyType &inKey, Datum *inValue);
 		
 	public:
@@ -394,12 +347,11 @@ namespace model {
 		virtual void Fill(xml_node inNode);
 
 		template <class D>
-		void Insert(ConstKeyType &inKey, D *inValue)
-		{ PerformInsert(inKey, static_cast<Datum*>(inValue)); }
+		D* Insert(ConstKeyType &inKey, D *inValue)
+		{ PerformInsert(inKey, static_cast<Datum*>(inValue)); return inValue; }
 
-		template <typename VD>
-		void InsertValue(ConstKeyType &inKey, typename VD::ConstValueType &inV)
-		{ Insert<VD>(inKey, new VD(inV)); }
+		DEFINE_VALUE_SET(Insert, Integer)
+		DEFINE_VALUE_SET(Insert, String)
 
 	protected:
 		virtual Datum *DoGet(ConstKeyType &inKey);
@@ -494,6 +446,9 @@ namespace model {
 		void ApplyChange(Change *inChange);
 	};
 
+#	undef DEFINE_VALUE_GET
+#	undef DEFINE_VALUE_SET
+#	undef DEFINE_VALUE_DATUM_CLASS
 	
 };
 
