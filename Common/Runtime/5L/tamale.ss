@@ -15,7 +15,8 @@
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
            %html-element% %edit-box-element% %movie-element% 
-           html edit-box movie movie-pause movie-resume
+           html edit-box vorbis-audio sine-wave movie 
+           movie-pause movie-resume
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics)
 
@@ -160,6 +161,25 @@
 
   (define (edit-box name r text)
     (create %edit-box-element% :name name :rect r :text text))
+
+  (define-element-template %sine-wave-element%
+      [[frequency :type <integer> :label "Frequency (Hz)"]]
+      (:template %element%)
+    (call-5l-prim 'AudioStreamSine (node-name self) frequency))
+
+  (define (sine-wave name frequency)
+    (create %sine-wave-element% :name name :frequency frequency))
+
+  (define-element-template %vorbis-audio-element%
+      [[location :type <string>  :label "Location"]
+       [buffer   :type <integer> :label "Buffer Size (K)" :default 512]]
+      (:template %element%)
+    (call-5l-prim 'AudioStreamVorbis (node-name self)
+                  (build-path (current-directory) "Media" location)
+                  (* 1024 buffer)))
+  
+  (define (vorbis-audio name location)
+    (create %vorbis-audio-element% :name name :location location))
 
   (define-element-template %movie-element%
       [[location     :type <string>  :label "Location"]
