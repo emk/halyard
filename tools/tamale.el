@@ -104,7 +104,7 @@ Tamale is a language for card-based interactive multimedia programming."
 	     '("fn" "callback" "deferred-callback" "while" "when" "unless"
 	       "with-saved-text-position"
 	       "with-saved-graphic-position" "with-offset-origin"
-	       "require" "set!" "and" "or" "module" "on") t)
+	       "require" "set!" "and" "or" "module" "on" "send" "prop") t)
 	"\\>") 1)
 
       ;; Magic variables.
