@@ -47,10 +47,10 @@
 
 
 // build stuff
-#define VERSION_STRING	"5L for MacOS 3.3.0 (Development)"
+#define VERSION_STRING	"5L for MacOS 3.3.1 (Development)"
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_BUILD_NUM	0
+#define VERSION_BUILD_NUM	1
 
 //
 // constants
@@ -995,6 +995,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.18  2002/04/19 09:46:30  emk
+Changes to make the Macintosh version build again for the 3.3.1 release, and to allow Elizabeth to work on the Macintosh without any trouble.
+
 Revision 1.17  2002/03/28 20:22:29  emk
 FreeType2 build fixes for the Mac:
 
