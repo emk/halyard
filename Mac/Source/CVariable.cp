@@ -8,6 +8,8 @@
 
 #include <string.h>
 
+#include <time.mac.h>	// looking for _mac_msl_epoch_offset_
+
 #include "KLogger.h"
 
 #include "CMac5LApp.h"
@@ -31,11 +33,14 @@ CVariable::CVariable(const char *name, const char *data) : KBNode(name)
 //		date_type to see what format to put it in.
 //
 void CVariable::SetDate(uint32 date, int32 date_type)
-{
+{	
 	char		dateStr[255];
 	KString		result;
 	char		*strPtr;
 	char		*strPtr2;
+
+	// using internal metrowerks constant to convert from unix epoch to mac epoch
+	date -= _mac_msl_epoch_offset_;
 	
 	dateStr[0] = 0;
 	
@@ -404,7 +409,8 @@ bool CVariableManager::IsSpecial(const char *name)
 			
 			wide = U64SetU(timeSecs);
 			
-			wide -= 2147483600;
+			// using internal metrowerks constant to convert from mac epoch to unix epoch
+			wide += _mac_msl_epoch_offset_;
 
 			timeSecs = U32SetU(wide);
 		}
