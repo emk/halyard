@@ -36,7 +36,7 @@ class Quake2Engine : public wxQuake2Window
     //////////
     // Create a new Quake 2 window on the specified stage.
     //
-    Quake2Engine(Stage *inStage);
+    Quake2Engine(Stage *inStage, const std::string &inGame);
 
 public:
 	~Quake2Engine();
@@ -63,10 +63,10 @@ public:
 	//////////
 	// Initialize the engine, and attach a wxQuake2Window to the stage.
 	//
-	static void Initialize();
+	static void Initialize(const std::string &inGame);
 
 	//////////
-	// Get the single instanc of the engine object.
+	// Get the single instance of the engine object.
 	//
 	static Quake2Engine *GetInstance() { ASSERT(sInstance); return sInstance; }
 

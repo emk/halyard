@@ -15,11 +15,11 @@ using FileSystem::GetBaseDirectory;
 // another window is displayed over it?
 // TODO - Definitely broken in the presence of Reload Script.
 
-Quake2Engine::Quake2Engine(Stage *inStage)
+Quake2Engine::Quake2Engine(Stage *inStage, const std::string &inGame)
     : wxQuake2Window(inStage, -1, wxDefaultPosition,
 					 wxQuake2Window::MODE_640_480,
 					 GetBaseDirectory().ToNativePathString().c_str(),
-					 "tamale")
+					 inGame.c_str())
 {
 	ASSERT(!sHasBeenCreated && !sInstance);
 	sInstance = this;
@@ -93,9 +93,9 @@ void Quake2Engine::HandleCommand()
 	}
 }
 
-void Quake2Engine::Initialize()
+void Quake2Engine::Initialize(const std::string &inGame)
 {
-	new Quake2Engine(wxGetApp().GetStage());
+	new Quake2Engine(wxGetApp().GetStage(), inGame);
 }
 
 #endif CONFIG_HAVE_QUAKE2

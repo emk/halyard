@@ -50,8 +50,11 @@ void FIVEL_NS RegisterQuake2Primitives()
 
 DEFINE_5L_PRIMITIVE(Quake2Init)
 {	
+	std::string game;
+
+	inArgs >> game;
 	if (!Quake2Engine::IsInitialized())
-		Quake2Engine::Initialize();
+		Quake2Engine::Initialize(game);
 }
 
 DEFINE_5L_PRIMITIVE(Quake2Command)
