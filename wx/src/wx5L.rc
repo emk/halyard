@@ -57,6 +57,17 @@ TB_XY                   BITMAP  DISCARDABLE     "tb_xy.bmp"
 TB_RELOAD               BITMAP  DISCARDABLE     "tb_reload.bmp"
 TB_GRID                 BITMAP  DISCARDABLE     "tb_grid.bmp"
 TB_BORDERS              BITMAP  DISCARDABLE     "tb_borders.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+ic_5L                   ICON    DISCARDABLE     "ic_5L.ico"
+ic_listener             ICON    DISCARDABLE     "ic_listener.ico"
+ic_timecoder            ICON    DISCARDABLE     "ic_timecoder.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

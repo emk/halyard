@@ -18,7 +18,8 @@ BEGIN_EVENT_TABLE(Timecoder, ToolWindow)
 END_EVENT_TABLE()
 
 Timecoder::Timecoder(StageFrame *inStageFrame)
-    : ToolWindow(inStageFrame, TOOL_LISTENER, "Timecoder")
+    : ToolWindow(inStageFrame, TOOL_TIMECODER, "Timecoder",
+				 wxICON(ic_timecoder))
 {
     // Create a panel to hold our movie.
     mMovieWindow =

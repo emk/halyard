@@ -146,6 +146,9 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
 	for (int i = 0; i < TOOL_COUNT; i++)
 		mToolWindows[i] = NULL;
 
+	// Get an appropriate icon for this window.
+    SetIcon(wxICON(ic_5L));
+
     // Make our background black.  This should theoretically be handled
     // by 'background->SetBackgroundColour' below, but Windows takes a
     // fraction of a second to show that object.

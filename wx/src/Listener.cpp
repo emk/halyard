@@ -15,7 +15,7 @@ BEGIN_EVENT_TABLE(Listener, ToolWindow)
 END_EVENT_TABLE()
 
 Listener::Listener(StageFrame *inStageFrame)
-    : ToolWindow(inStageFrame, TOOL_LISTENER, "Listener")
+    : ToolWindow(inStageFrame, TOOL_LISTENER, "Listener", wxICON(ic_listener))
 {
     mHistory = new wxTextCtrl(this, -1, "", wxDefaultPosition,
 							  wxDefaultSize,

@@ -34,7 +34,7 @@ protected:
 	// [in] inTitle - The user-visible title of this window.
 	//
 	ToolWindow(StageFrame *inStageFrame, ToolWindowID inID,
-			   const wxString &inTitle);
+			   const wxString &inTitle, const wxIcon &inIcon);
 
 public:
 	//////////
