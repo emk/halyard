@@ -576,6 +576,8 @@
     ;; Treat 'name' as a relative path.  If 'name' can be found relative
     ;; to 'base', return it.  If not, try the parent of base if it
     ;; exists.  If all fails, return #f.
+    (unless base
+      (error (cat "Can't find relative path '@" name "' outside of a card")))
     (if (eq? base (root-node))
         (find-node name)
         (let* [[base-name (node-full-name base)]
@@ -584,10 +586,8 @@
           (or found (find-node-relative (node-parent base) name)))))
 
   (define (@* name)
-    (if (current-card)
-        (or (find-node-relative (current-card) name)
-            (error (cat "Can't find node " name)))
-        (error (cat "Can't call (@-helper " name ") outside of a card"))))
+    (or (find-node-relative (current-card) name)
+        (error (cat "Can't find relative path: @" name))))
 
   (define-syntax @
     ;; Syntactic sugar for find-node-relative.
@@ -869,6 +869,8 @@
   (defgeneric (enter-node (node <node>)))
 
   (defmethod (exit-node (node <node>))
+    ;; Run any exit handler.
+    (run-on-exit-handler node)
     ;; Clear our handler list.
     (clear-node-state! node))
 
@@ -986,4 +988,21 @@
       (enter-card card)
       (engine-notify-card-body-finished *engine* card)))
 
+  (define (run-on-exit-handler node)
+    ;; This is pretty simple--just send an EXIT message.  But we need to
+    ;; trap any JUMP calls and quit immediately, because actually allowing
+    ;; the jump will hopeless corrupt the data structures in this file.
+    ;; Other errors we can simply trap and display.
+    (define exited-normally? #f)
+    (dynamic-wind
+        (lambda () #f)
+        (lambda ()
+          (with-errors-blocked (non-fatal-error)
+            (send/nonrecursive* (lambda () #f) node 'exit)
+            (set! exited-normally? #t)))
+        (lambda ()
+          (unless exited-normally?
+            (fatal-error (cat "Cannot JUMP in (on exit () ...) handler for "
+                              (node-full-name node)))))))
+  
   )
