@@ -20,6 +20,8 @@ libfivel_a_SOURCES = \
 	TBTree.cpp \
 	TBTree.h \
 	TCommon.h \
+	TException.cpp \
+	TException.h \
 	THeader.cpp \
 	THeader.h \
 	TObject.cpp \

@@ -18,7 +18,7 @@
 #ifndef IMLUNIT_H
 #define IMLUNIT_H
 
-#include <iostream.h>
+#include <iostream>
 
 // Private API (needed by preprocessor macros)
 

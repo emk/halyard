@@ -3,9 +3,12 @@
 #ifndef FileSystem_H
 #define FileSystem_H
 
+#include <stdexcept>
 #include <iostream>
 #include <string>
 #include <list>
+
+#include "TException.h"
 
 //////////
 // Portable interface to various filesystem functions.  Over time,
@@ -17,15 +20,14 @@ namespace FileSystem {
 	// A file-system related error. 
 	// TODO - Refactor and combine with Typography::Error?
 	//
-	class Error {
-		int mErrorCode;
-		string mErrorMessage;
-
+	class Error : public FIVEL_NS TException {
 	public:
 		Error(int inErrorCode);
+		Error(const std::string &inErrorMessage)
+			: TException(inErrorMessage) {}
 		
-		int GetErrorCode() const { return mErrorCode; }
-		string GetErrorMessage() const { return mErrorMessage; }
+		virtual const char *GetClassName() const
+		    { return "FileSystem::Error"; }
 
 		friend std::ostream &operator<<(std::ostream &out, const Error &error);
 	};

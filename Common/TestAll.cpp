@@ -1,7 +1,9 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include <iostream>
+#include <stdexcept>
+
 #include "ImlUnit.h"
-#include <iostream.h>
 
 // XXX - For now, we'll declare the per-file test entry points here, to
 // avoid creating extra header files just for one function.  These will
@@ -14,10 +16,23 @@ extern void test_Typography (void);
 
 int main (int argc, char **argv)
 {
-	test_TString();
-	test_TEncoding();
-	test_FileSystem();
-	test_Typography();
+	try
+	{
+		test_TString();
+		test_TEncoding();
+		test_FileSystem();
+		test_Typography();
+	}
+	catch (std::exception &error)
+	{
+		std::cerr << endl << error.what() << endl;
+		return 1;
+	}
+	catch (...)
+	{
+		std::cerr << endl << "An unknown exception occurred!" << endl;
+		return 1;
+	}
 
 	return tests_finished();
 }

@@ -424,20 +424,7 @@ static void test_Typography_FamilyDatabase (void)
 
 void test_Typography (void)
 {
-	try
-	{
-		test_Typography_LineSegment();
-		test_Typography_GenericTextRenderingEngine();
-		test_Typography_FamilyDatabase();
-	}
-	catch (FileSystem::Error &e)
-	{
-		std::cerr << endl << e << endl;
-		throw;
-	}
-	catch (Error &e)
-	{
-		std::cerr << endl << e << endl;
-		throw;
-	}
+	test_Typography_LineSegment();
+	test_Typography_GenericTextRenderingEngine();
+	test_Typography_FamilyDatabase();
 }

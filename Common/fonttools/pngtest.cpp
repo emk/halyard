@@ -143,7 +143,15 @@ int main (int argc, char **argv) {
 #ifdef HAVE_EYE_OF_GNOME
 	system("eog visual-test.png");
 #endif
-    } catch (Error &error) {
-	printf("FreeType error #%d occurred.\n", error.GetErrorCode());
+    }
+    catch (std::exception &error)
+    {
+	std::cerr << endl << error.what() << endl;
+	return 1;
+    }
+    catch (...)
+    {
+	std::cerr << endl << "An unknown exception occurred!" << endl;
+	return 1;
     }
 }

@@ -22,6 +22,12 @@ inline Distance round_266 (FT_Pos in266Measurement)
 //	Typography::Error Methods
 //=========================================================================
 
+Error::Error(int inErrorCode)
+{
+	SetErrorCode(inErrorCode);
+	SetErrorMessage("(no error strings, yet--try fterrors.h)");
+}
+
 std::ostream &Typography::operator<<(std::ostream &out, const Error &error)
 {
 	out << "Typography::Error (" << error.GetErrorCode() << "): "
@@ -107,9 +113,8 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 					break;
 				}
 			}
-			// TODO - Add an error string here.
 			if (!found_size)
-				throw Error(Error::kOtherError);
+				throw Error("Cannot scale bitmap font");
 		}
 		
 		// Set the size of our font.
@@ -546,7 +551,7 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 										 LineSegment *outExtracted)
 {
 	// XXX - Not yet implemented.
-	throw Error(Error::kOtherError);
+	throw Error("Cannot break overlong line (yet)");
 }
 
 void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
@@ -704,13 +709,13 @@ void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in)
 	int version;
 	in >> filetype >> vers_label >> version >> ws;
 	if (!in || filetype != "facecache" || vers_label != "vers" || version != 1)
-		throw Error(Error::kOtherError); // TODO - Error message
+		throw Error("Incorrectly formatted face cache");
 	
 	// Discard our human-readable comment line.
 	string junk;
 	std::getline(in, junk);
 	if (!in)
-		throw Error(Error::kOtherError); // TODO - Error message		
+		throw Error("Error reading face cache");
 }
 
 void FamilyDatabase::AvailableFace::WriteSerializationHeader(std::ostream &out)
@@ -731,7 +736,7 @@ FamilyDatabase::AvailableFace::AvailableFace(std::istream &in)
 	std::getline(in, is_bold, '|');
 	std::getline(in, is_italic);
 	if (!in)
-		throw Error(Error::kOtherError); // TODO - Error message.
+		throw Error("Error reading entry from face cache");
 
 	// Needed so eof() will return true after last record.
 	// XXX - Will cause problems if font names begin with spaces.
@@ -761,7 +766,7 @@ FamilyDatabase::FaceSizeGroup::AddAvailableFace(const AvailableFace &inFace)
 {
 	int size = inFace.GetSize();
 	if (mAvailableFaces.find(size) != mAvailableFaces.end())
-		throw Error(Error::kOtherError); // TODO - Error message
+		throw Error("Tried to add duplicate font to font database");
 	mAvailableFaces.insert(std::pair<int,AvailableFace>(size, inFace));
 }
 
@@ -781,7 +786,7 @@ Face FamilyDatabase::FaceSizeGroup::GetFace(int inSize)
 	// If we *still* don't have a face, give up.  If we were feeling
 	// very ambitious, we could look for the nearest size and use that.
 	if (found == mAvailableFaces.end())
-		throw Error(Error::kOtherError); // TODO - Error message
+		throw Error("Can't scale bitmap fonts");
 
 	// Open the face, remember it, and return it.
 	Face face = found->second.OpenFace(inSize);
@@ -848,7 +853,7 @@ Face FamilyDatabase::Family::GetFace(FaceStyle inStyle, int inSize)
 
 		default:
 			// Illegal style codes!
-			throw Error(Error::kOtherError); // TODO - Add error message.
+			throw Error("Unknown font style codes, giving up");
 	}
 	ASSERT(false);
 	return *(Face*) NULL; // This code should NEVER get run.
@@ -894,7 +899,7 @@ Face FamilyDatabase::GetFace(const string &inFamilyName,
 	if (found != mFamilyMap.end())
 		return found->second.GetFace(inStyle, inSize);
 	else
-		throw Error(Error::kOtherError); // TODO - Add error message.
+		throw Error("Unknown font family \"" + inFamilyName + "\"");
 }
 
 void FamilyDatabase::ReadFromFontDirectory()

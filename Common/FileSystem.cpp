@@ -20,14 +20,12 @@ using namespace FileSystem;
 //  Error Methods
 //=========================================================================
 
-#define STRERROR_BUFF_SIZE (1024)
-
 Error::Error(int inErrorCode)
-	: mErrorCode(inErrorCode)
 {
-	char buffer[STRERROR_BUFF_SIZE];
-	strerror_r(errno, buffer, STRERROR_BUFF_SIZE);
-	mErrorMessage = buffer;
+	// THREAD - Use strerror because strerror_r appears broken on some
+	// platforms (include Linux?).
+	SetErrorMessage(strerror(inErrorCode));
+	SetErrorCode(inErrorCode);
 }
 
 std::ostream &FileSystem::operator<<(std::ostream &out, const Error &error)

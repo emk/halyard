@@ -20,19 +20,14 @@ int main(int argc, char **argv)
 		familyDatabase.ReadFromFontDirectory();
 		familyDatabase.WriteToCache(std::cout);
 	}
-	catch (FileSystem::Error &e)
+	catch (std::exception &error)
 	{
-		std::cerr << e << endl;
-		return 1;
-	}
-	catch (Error &e)
-	{
-		std::cerr << e << endl;
+		std::cerr << endl << error.what() << endl;
 		return 1;
 	}
 	catch (...)
 	{
-		std::cerr << "An error of an unknown sort occurred." << endl;
+		std::cerr << endl << "An unknown exception occurred!" << endl;
 		return 1;
 	}
 

@@ -15,15 +15,12 @@
 
 #include <wchar.h>
 
+#include "TException.h"
 #include "FileSystem.h"
 
 // TODO - Handle copy constructors, assignment operators
 
 namespace Typography {
-
-	//////////
-	// A FreeType 2 error code, used in exceptions.
-	typedef FT_Error ErrorCode;
 
 	//////////
 	// A FreeType 2 vector, used for kerning.
@@ -121,23 +118,20 @@ namespace Typography {
 	// A Typography-related exception.  Any of the functions in the
 	// Typography module may throw exceptions (which is not the case
 	// for the rest of the 5L code base, so be sure to catch them).
-	class Error {
-		ErrorCode mErrorCode;
-
+	//
+	class Error : public FIVEL_NS TException {
 	public:
-		//////////
-		// A generic, temporary error code representing a non-FreeType
-		// error.  TODO - We need to provide more detail.
-		enum { kOtherError = -1 };
-
-		Error(ErrorCode inErrorCode) : mErrorCode(inErrorCode) {}
+		Error(int inErrorCode);
+		Error(const std::string &inErrorMessage)
+			: TException(inErrorMessage) {}
 		
-		ErrorCode GetErrorCode() const { return mErrorCode; }
+		virtual const char *GetClassName() const
+		    { return "Typography::Error"; }
 
 		//////////
 		// Check the result of a FreeType function and throw an error
 		// if necessary.
-		static void CheckResult(ErrorCode inResultCode)
+		static void CheckResult(int inResultCode)
 			{ if (inResultCode) throw Error(inResultCode); }
 
 		//////////

@@ -1,0 +1,41 @@
+// -*- Mode: C++; tab-width: 4; -*-
+
+#include <strstream>
+
+#include "TException.h"
+
+USING_NAMESPACE_FIVEL
+
+static string get_string(std::ostrstream &stream)
+{
+	// Go through the foolish new rigamarole for extracting a string.
+	// We must unfreeze the stream before we exit this function, or
+	// we'll leak memory.
+	//
+	// TODO - Major candidate for refactoring, but where should it live?
+	// There's already a duplicate copy in TypographyTests.cpp.
+	stream.freeze(1);
+	try
+	{
+		string str(stream.str(), stream.pcount());
+		stream.freeze(0);
+		return str;
+	}
+	catch (...)
+	{
+		stream.freeze(0);
+		throw;
+	}
+}
+
+const char* TException::what () const
+{
+    ostrstream s;
+	s << GetClassName() << ": " << GetErrorMessage();
+	if (GetErrorCode() != kNoErrorCode)
+	{
+		s << " (" << GetErrorCode() << ")";
+	}
+	const_cast<TException*>(this)->mWhatCache = get_string(s);
+	return mWhatCache.c_str();
+}
