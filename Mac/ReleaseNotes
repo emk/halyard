@@ -1,5 +1,21 @@
 FiveL for Macintosh Release Notes
 
+2.01, Build 6, February 19, 2002 5:20 PM - E Hamon with help by Eric Kidd.
+
+¥ Fixed bug that caused flickering of cursor. See CVS for long description. 
+  Basically, AdjustCursor was changed to AdjustMouse, but we hadn't changed it. 
+  AdjustMouse forced change of cursor. We overrided it and deleted addtl 
+  unnecessary code (MouseEnter, etc). This solved the problem.  
+
+¥ Fixed bug that prevented drawing filled circle. Typo in previously saved 
+  code by others.
+
+¥ Added feature that allows launch of web browser from Mac. 
+
+¥ Fixed wordWrap problem - bold will wrap correctly using @ signs.
+  In addition, right justification  now works
+  (It is called by "right" just like "center" or "left).
+  
 2.01, Build 5, February 4, 2002 4:54 PM
 
 ¥ Updated for CodeWarrior 7.
