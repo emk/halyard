@@ -461,8 +461,10 @@ void AudioManager::Play(TString &inName, int32 inOffset,
 	}
 	else
 	{
-		gLog.Log("AudioManager: could not play audio clip <%s>", 
-			inName.GetString());		
+		// This logging is now handled by the script itself, which will try
+		// playing the movie from several different sources before giving up.
+		//gLog.Log("AudioManager: could not play audio clip <%s>", 
+		//	inName.GetString());		
 
 		gDebugLog.Log("AudioManager: could not play audio clip <%s>", 
 			inName.GetString());
@@ -794,6 +796,9 @@ bool AudioManager::HandleEvent(HWND /*inWind*/, UINT /*inMessage*/,
 
 /*
  $Log$
+ Revision 1.1.2.2  2002/07/24 15:47:05  emk
+ Pruned messages in 5L.log (bug #1057).
+
  Revision 1.1.2.1  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:

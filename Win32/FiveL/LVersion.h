@@ -17,16 +17,19 @@
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
 #define REV_BIG			00
-#define REV_SMALL		09
+#define REV_SMALL		10
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0.9"
+#define VERSION_STRING	"5L for Win32 3.2.0.10"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.11  2002/07/24 15:47:05  emk
+ Pruned messages in 5L.log (bug #1057).
+
  Revision 1.3.2.10  2002/07/18 19:25:31  emk
  3.2.0.9 - Added (QTComponentVersion TYPE SUBTYPE) function, which
    will fetch the version of a QuickTime component and store

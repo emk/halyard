@@ -148,7 +148,9 @@ bool Video::Play(int32 inOffset, int32 inVolume /* = 100 */)
 		gVariableManager.SetString("_ERROR", "-2");
 		gVariableManager.SetString("_FileNotFound", moviePath.GetString());
 
-		gLog.Log("Video: could not play movie <%s>", moviePath.GetString());
+		// This logging is now handled by the script itself, which will try
+		// playing the movie from several different sources before giving up.
+		//gLog.Log("Video: could not play movie <%s>", moviePath.GetString());
 		gDebugLog.Log("Video: could not play movie <%s>", moviePath.GetString());
 
 		gCursorManager.CheckCursor();
@@ -696,6 +698,9 @@ bool VideoManager::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.1.2.2  2002/07/24 15:47:05  emk
+ Pruned messages in 5L.log (bug #1057).
+
  Revision 1.1.2.1  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:

@@ -1,5 +1,11 @@
 FiveL for Win32 Release Notes
 
+3.2.0.10, Wednesday, July 24, 2002
+
+    Moved some of the contents of 5L.log in Debug.log so
+	the bug reports from the testing house won't include quite
+	so much cruft.
+
 3.2.0.9, Wednesday, July 18, 2002, 2:27 PM
 
 	Added (QTComponentVersion TYPE SUBTYPE) function, which
@@ -8,7 +14,7 @@ FiveL for Win32 Release Notes
 	the VP3 version.  If this number is >= 131075, then your
 	copy of VP3 should have the QT 6 GDI bugfix.
 
-3.2.0.8, Wednesday, July 15, 2002, 2:53 PM
+3.2.0.8, Wednesday, July 15, 2002
 
 	Backported the (log ...) command so Douglas has some hope
 	of debugging Windows problems.

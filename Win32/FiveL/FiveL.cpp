@@ -1169,7 +1169,7 @@ void PutInBackground(void)
 
 	gInBackground = true;
 
-	gLog.Log("PutInBackground");
+	gDebugLog.Log("PutInBackground");
 }
 
 //
@@ -1190,12 +1190,15 @@ void PutInForeground(void)
 
 	gInBackground = false;
 
-	gLog.Log("PutInForeground");
+	gDebugLog.Log("PutInForeground");
 }
 
 
 /*
  $Log$
+ Revision 1.2.2.5  2002/07/24 15:47:05  emk
+ Pruned messages in 5L.log (bug #1057).
+
  Revision 1.2.2.4  2002/07/03 11:44:39  emk
  3.2.0.6 - All known, fixable 3.2.0.x Windows bugs should be fixed.  Please
  test this engine carefully, especially line drawing (including diagonal)
