@@ -120,6 +120,8 @@
        [cursor :type <symbol> :default 'hand :label "Cursor"]
        [overlay? :type <boolean> :default #f :label "Has overlay?"]
        [alpha? :type <boolean> :default #f :label "Overlay transparent?"]
+       [clickable-where-transparent? :type <boolean> :default #f
+                                     :label "Clickable where transparent?"]
        [%nocreate? :type <boolean> :default #f
                    :label "Set to true if subclass creates in engine"]]
       (%element%)
@@ -148,7 +150,8 @@
      [overlay?
       (call-5l-prim 'overlay (node-full-name self)
                     (parent->card self real-shape)
-                    (make-node-event-dispatcher self) cursor alpha?)]
+                    (make-node-event-dispatcher self) cursor alpha?
+                    clickable-where-transparent?)]
      [else
       (call-5l-prim 'zone (node-full-name self)
                     (parent->card self (as <polygon> real-shape))
