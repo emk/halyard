@@ -11,7 +11,10 @@
 #include <Movies.h>
 
 // TODO - 
+//   Preload support
 //   Don't show movie until ready to play
+//   Preloading
+//   Auto-centering
 // / Center movie in screen
 // / Hide controller bar
 // / Disable all interaction
@@ -54,6 +57,28 @@ public:
 #define CHECK_MAC_ERROR(expr) \
 	/*FIVEL_NS*/ TMacError::Check(__FILE__, __LINE__, (expr))
 
+//////////
+// A stack-based resource management class for the current Macintosh
+// QuickDraw port.  Look up "resource aquisition is initialization"
+// for a summary of why we do this.
+//
+class StMacDrawingContext
+{
+	GrafPtr mSavedPort;
+
+public:
+	StMacDrawingContext(CGrafPtr inPort)
+	{
+		GrafPtr port = reinterpret_cast<GrafPtr>(inPort);
+		::GetPort(&mSavedPort);
+		::MacSetPort(port);
+	}
+
+	~StMacDrawingContext()
+	{
+		::MacSetPort(mSavedPort);
+	}
+};
 
 //////////
 // This class is intended to be a portable QuickTime movie wrapper
@@ -69,6 +94,7 @@ class TQTMovie
 {
 private:
 	static bool sIsQuickTimeInitialized;
+	static GWorldPtr sDummyGWorld;
 
 public:
 	static void InitializeMovies();
@@ -77,6 +103,35 @@ public:
 	static CGrafPtr GetPortFromHWND(HWND inWindow);
 
 private:
+	//////////
+	// We use non-blocking versions of all our QuickTime calls in an
+	// effort to allow as much movie setup to run in the background
+	// as possible.
+	//
+	// This means our object is basically a state machine--it
+	// advances from one state to another as the movie opens.
+	//
+	enum MovieState {
+		MOVIE_UNINITIALIZED,  // We're in the constructor
+		MOVIE_INCOMPLETE,     // We're waiting for newMovieAsyncOK
+		MOVIE_PREPREROLLING,  // We're waiting for pre-prerolling to complete
+		MOVIE_READY,          // Our movie is fully loaded, with a controller
+		MOVIE_STARTED,        // Our movie has been started
+		MOVIE_BROKEN          // Something went wrong; this object is dead
+	};
+
+	//////////
+	// The state of our object (and the attached Movie).  Set this using
+	// UpdateMovieState, which may take various actions for certain state
+	// transitions.
+	//
+	MovieState mState;
+
+	//////////
+	// The port into which we're supposed to draw our movie.
+	//
+	CGrafPtr mPort;
+
     //////////
     // The movie we're playing.
     //
@@ -100,23 +155,50 @@ private:
 	Fixed mRate;
 
 public:
-	TQTMovie(const std::string &inMoviePath);
-	virtual ~TQTMovie();
+	TQTMovie(CGrafPtr inPort, const std::string &inMoviePath);
+	virtual ~TQTMovie() throw ();
 
+	void Idle() throw ();
 	bool HandleMovieEvent(HWND hWnd, UINT message, WPARAM wParam,
-						  LPARAM lParam);
-	void Redraw(HWND hWnd);
+						  LPARAM lParam) throw ();
+	void Redraw(HWND hWnd) throw ();
+
+	bool IsBroken() throw () { return mState == MOVIE_BROKEN; }
 
 	bool IsPaused();
 	void Pause();
 	void Resume();
 
+protected:
+	virtual bool ActionFilter(short inAction, void* inParams);
+
 private:
+	void ProcessAsyncLoad();
+	void AsyncLoadComplete();
+	void PrePrerollComplete(OSErr inError);
+	
 	//////////
 	// Release all resources held by this object.  (This call may
 	// safely be made on half-constructed objects.)
 	//
-	void ReleaseResources();
+	void ReleaseResources() throw ();
+
+	//////////
+	// Advance to the next state in our state machine.
+	//
+	void UpdateMovieState(MovieState inNewState);
+
+	//////////
+	// We pass this function to QuickTime when we call PrePrerollMovie,
+	// and QuickTime calls it when everything is ready.
+	//
+	// [in] inMovie - The movie being preprerolled.
+	// [in] inError - noErr, or an error value if preprerolling failed.
+	// [in] inRefCon - User data (a 'this' pointer, in our case).
+	// 
+	static void PrePrerollCompleteCallback(Movie inMovie,
+										   OSErr inError,
+										   void *inRefCon) throw ();
 
 	//////////
 	// We use this function to process movie controller events.  This allows
@@ -126,14 +208,12 @@ private:
 	// [in] inController - The controller for this event.
 	// [in] inAction - The event code.
 	// [in] inParams - The event parameters.
-	// [in] inRefCon - User data.
+	// [in] inRefCon - User data (a 'this' pointer, in our case).
+	// [out] return - Undocumented (!!).  Return false for now.
 	//
-	static Boolean ActionFilterProc(MovieController inController,
-									short inAction, void *inParams,
-									long inRefCon);
-
-protected:
-	virtual bool ActionFilter(short inAction, void* inParams);
+	static Boolean ActionFilterCallback(MovieController inController,
+										short inAction, void *inParams,
+										long inRefCon) throw ();
 };
 
 //END_NAMESPACE_FIVEL
