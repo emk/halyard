@@ -28,7 +28,8 @@
 LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
 									   FIVEL_NS TCallbackPtr inDispatch,
 									   wxCursor &inCursor)
-    : Element(inStage, inName, inDispatch), mCursor(inCursor), mIsShown(true)
+    : Element(inStage, inName, inDispatch), mCursor(inCursor), mIsShown(true),
+      mWantsCursor(false)
 {
 }
 

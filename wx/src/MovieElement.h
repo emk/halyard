@@ -45,6 +45,7 @@ public:
 				 long inWindowStyle, MovieWindowStyle inMovieWindowStyle);
 
 	virtual bool HasVisibleRepresentation();
+    virtual bool WantsCursor() const;
 
     virtual bool HasReachedFrame(MovieFrame inFrame);
 

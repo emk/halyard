@@ -85,7 +85,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
 	  mTextCtrl(NULL), mShouldWakeUpOnIdle(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
-      mIsDisplayingBorders(false)
+      mIsDisplayingBorders(false), mIsBeingDestroyed(false)
 {
 	mBackgroundDrawingArea = 
 		std::auto_ptr<DrawingArea>(new DrawingArea(this,
@@ -117,6 +117,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 
 Stage::~Stage()
 {
+	mIsBeingDestroyed = true;
 	DeleteElements();
 	delete mImageCache;
 	delete mCursorManager;
@@ -189,6 +190,28 @@ bool Stage::IsInEditMode()
 {
 	wxASSERT(TInterpreter::HaveInstance());
 	return TInterpreter::GetInstance()->IsStopped();
+}
+
+bool Stage::ShouldShowCursor() {
+    ASSERT(!mIsBeingDestroyed);
+
+    // Handle the easy cases first.
+    if (!IsScriptInitialized()
+        || !mFrame->IsFullScreen()
+        || mIsDisplayingXy
+        || IsInEditMode()
+        || mGrabbedElement
+        || mTextCtrl->IsShown())
+        return true;
+
+    // See if any of our elements want a cursor.
+    ElementCollection::iterator i = mElements.begin();
+	for (; i != mElements.end(); i++)
+        if ((*i)->IsShown() && (*i)->WantsCursor())
+            return true;
+
+    // By default, we want to hide it.
+    return false;
 }
 
 bool Stage::ShouldSendEvents()
@@ -265,7 +288,7 @@ void Stage::NotifyElementsChanged()
 	// Don't do anything unless there's a good chance this window still
 	// exists in some sort of valid state.
 	// TODO - Is IsShown a good way to tell whether a window is still good?
-	if (IsShown())
+	if (IsShown() && !mIsBeingDestroyed)
 	{
 		// Update our element borders (if necessary) and fix our cursor.
 		if (mIsDisplayingBorders)
@@ -300,15 +323,19 @@ void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 	if (!mGrabbedElement && (!obj || obj != mCurrentElement))
 	{
 		if (mIsDisplayingXy)
-			SetCursor(*wxCROSS_CURSOR);
+			mCurrentCursor = *wxCROSS_CURSOR;
 		else
 		{
 			if (obj)
-				SetCursor(obj->GetCursor());
+				mCurrentCursor = obj->GetCursor();
 			else
-				SetCursor(wxNullCursor);
+				mCurrentCursor = wxNullCursor;
 		}
 	}
+
+    // We *always* call this function, because the result of
+    // ShouldShowCursor() may have changed.
+    UpdateDisplayedCursor();
 
 	// Update the current element.
 	if (obj != mCurrentElement)
@@ -324,6 +351,14 @@ void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 void Stage::UpdateCurrentElementAndCursor()
 {
 	UpdateCurrentElementAndCursor(ScreenToClient(::wxGetMousePosition()));
+}
+
+void Stage::UpdateDisplayedCursor() {
+    wxCursor desired_cursor(mCurrentCursor);
+    if (!ShouldShowCursor())
+        desired_cursor = wxCursor(wxCURSOR_BLANK);
+    if (GetCursor() != desired_cursor)
+        SetCursor(desired_cursor);
 }
 
 void Stage::UpdateClock() {
@@ -372,8 +407,26 @@ Stage::FindElementByName(ElementCollection &inCollection,
 	return inCollection.end();
 }
 
+void Stage::IdleElements() {
+    // Send idle events to all our elements.  We use a copy of
+    // mElements in case elements delete themselves in their idle
+    // function.
+    ElementCollection elems = mElements;
+    ElementCollection::iterator i = elems.begin();
+    for (; i != elems.end(); i++)
+        /// \bug *i may have been deleted by *someone else* earlier in idle
+        /// processing.  The state-db contains code to handle similar
+        /// problems, but for now, we're going to hope nobody does this.
+        (*i)->Idle();
+}
+
 void Stage::OnIdle(wxIdleEvent &inEvent)
 {
+    // Check our displayed cursor, because the return value of
+    // ShouldShowCursor() might have changed.
+    UpdateDisplayedCursor();
+
+    // If we've reached the end of our current WAIT, end it.
 	if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
 		EndWait();
 
@@ -390,13 +443,8 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
         // Now's an excellent time to update the clock information.
         UpdateClock();
 
-        // Send idle events to all our elements.  We use a copy of
-        // mElements in case elements delete themselves in their idle
-        // function.
-        ElementCollection elems = mElements;
-        ElementCollection::iterator i = elems.begin();
-        for (; i != elems.end(); i++)
-            (*i)->Idle();
+        // Send idle events to all our elements.
+        IdleElements();
 
 		// We only pass the idle event to just the card, and not any
 		// of the elements.  Idle event processing is handled differently
@@ -519,7 +567,10 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
 // want.
 void Stage::DrawElementBorder(wxDC &inDC, ElementPtr inElement)
 {
-	inDC.SetPen(*wxRED_PEN);
+    if (inElement->WantsCursor())
+        inDC.SetPen(*wxRED_PEN);
+    else
+        inDC.SetPen(*wxGREY_PEN);
 	inDC.SetBrush(*wxTRANSPARENT_BRUSH);
 
 	inElement->DrawElementBorder(inDC);
@@ -823,7 +874,11 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 		if (have_before)
 		{
 			TransitionResources r(client_dc, before, GetCompositingPixmap(),
-								  mOffscreenFadePixmap);
+								  mOffscreenFadePixmap,
+                                  /// TODO - If this is too expensive, we
+                                  /// could pass in mRectsToRefresh direcly
+                                  /// and calculate it on demand.
+                                  mRectsToRefresh.GetBounds());
 			mTransitionManager->RunTransition(inTransition, inMilliseconds, r);
 		}
 	}
@@ -866,7 +921,7 @@ ElementPtr Stage::FindLightWeightElement(const wxPoint &inPoint)
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); i++)
 		if ((*i)->IsLightWeight() && (*i)->IsShown() &&
-            (*i)->IsPointInElement(inPoint))
+            (*i)->WantsCursor() && (*i)->IsPointInElement(inPoint))
 			result = *i;
 	return result;
 }

@@ -25,6 +25,9 @@
 
 #include "Transition.h"
 
+// Included so we can call ProcessIdle.
+#include "FiveLApp.h"
+
 USING_NAMESPACE_FIVEL
 
 
@@ -37,15 +40,26 @@ USING_NAMESPACE_FIVEL
 /// crossfades require approximately 40 milliseconds.  We set this
 /// value artificially low so that we'll run extra frames in the beginning
 /// and get a more accurate sample.
-#define DEFAULT_MILLISECONDS_PER_FRAME (20)
+#define DEFAULT_MILLISECONDS_PER_BLOCK (20)
 
 /// A graphical transition effect.
 class Transition
 {
-	int mTotalFrames;
+	double mTotalBlocks;
 	int mTotalMilliseconds;
 
+    double BlocksPerFrame(TransitionResources &inResources) const;
+    double EstimateMillisecondsPerBlock() const;
+
 protected:
+    //////////
+    /// Returns true if this transition only needs to update the dirty
+    /// rectangle.  This is most useful for transitions like crossfades,
+    /// where the value of a given pixel is not affected by surrounding
+    /// pixels.
+    ///
+    virtual bool AffectsOnlyDirtyRect() const { return false; }
+
 	//////////
 	/// Show a single step of the transition.
 	///
@@ -61,30 +75,69 @@ public:
 };
 
 Transition::Transition()
-	: mTotalFrames(0), mTotalMilliseconds(0)
+	: mTotalBlocks(0), mTotalMilliseconds(0)
 {
     // Do nothing.
+}
+
+/// A block is equivalent to one full screen's worth of pixels.
+double Transition::BlocksPerFrame(TransitionResources &inResources) const
+{
+    if (!AffectsOnlyDirtyRect()) {
+        return 1.0;
+    } else {
+        double pixels_per_block =
+            (inResources.GetBeforeBmp().GetWidth() *
+             inResources.GetBeforeBmp().GetHeight());
+        double pixels_per_frame =
+            (inResources.GetDirtyRect().GetWidth() *
+             inResources.GetDirtyRect().GetHeight());
+        return pixels_per_frame / pixels_per_block;
+    }    
+}
+
+/// Based on our history, how many milliseconds do we think it takes to
+/// draw a block?
+///
+/// We have to be careful about this, because our minimum stopwatch
+/// resolution tends to be longer than some transitions.  This means we
+/// need to (1) be careful of outrageous results and (b) average over as
+/// much data as possible.
+double Transition::EstimateMillisecondsPerBlock() const {
+	double est_ms_per_block = DEFAULT_MILLISECONDS_PER_BLOCK;
+	if (mTotalBlocks > 0)
+	{
+		est_ms_per_block = mTotalMilliseconds / mTotalBlocks;
+
+		// Don't believe really small numbers until we have a large sample
+		// size.  These constants are arbitrary.
+		if (mTotalMilliseconds < 1000)
+			est_ms_per_block = Max(DEFAULT_MILLISECONDS_PER_BLOCK,
+								   est_ms_per_block);
+	}
+    return est_ms_per_block;
 }
 
 void Transition::RunTransition(int inMilliseconds,
 							   TransitionResources &inResources)
 {
-	// Figure out what step size to use for the transition.
-	// We have to be careful about this, because our minimum stopwatch
-	// resolution tends to be longer than some transitions.  This means
-	// we need to (1) be careful of outrageous results and (b) average over
-	// as much data as possible.
-	double est_ms_per_frame = DEFAULT_MILLISECONDS_PER_FRAME;
-	if (mTotalFrames > 0)
-	{
-		est_ms_per_frame = mTotalMilliseconds / mTotalFrames;
+#ifdef DEBUG
+    // Just because we're paranoid, doesn't mean they're not out to get
+    // us...  Make sure the dirty rect is sane.
+    wxRect dirty(inResources.GetDirtyRect());
+    wxRect all(0, 0,
+               inResources.GetBeforeBmp().GetWidth(),
+               inResources.GetBeforeBmp().GetHeight());
+    ASSERT(all.GetLeft() <= dirty.GetLeft());
+    ASSERT(all.GetTop() <= dirty.GetTop());
+    ASSERT(dirty.GetRight() <= all.GetRight());
+    ASSERT(dirty.GetBottom() <= all.GetBottom());
+#endif // DEBUG
 
-		// Don't believe really small numbers until we have a large
-		// sample size.  These numbers are arbitrary.
-		if (mTotalMilliseconds < 1000)
-			est_ms_per_frame = Max(DEFAULT_MILLISECONDS_PER_FRAME,
-								   est_ms_per_frame);
-	}
+	// Figure out what step size to use for the transition.
+	double est_ms_per_block = EstimateMillisecondsPerBlock();
+    double blocks_per_frame = BlocksPerFrame(inResources);
+    double est_ms_per_frame = est_ms_per_block * blocks_per_frame;
 	double frames = (inMilliseconds / est_ms_per_frame);
 	double step = 1.0 / (frames + 1);
 	double panic_ms = Max(2000, 4 * inMilliseconds);
@@ -95,11 +148,22 @@ void Transition::RunTransition(int inMilliseconds,
 	if (frames >= 1.0 && step > 0.0)
 	{
 		// Run the transition.
+        //
+        /// \todo This timing loop is based on the assumpting that our
+        /// timer resolution is ridiculously poor.  We could time things
+        /// much better, with less interference Stage::IdleElements, if we
+        /// had a high-resolution timer.
 		wxStopWatch watch;
 		for (double s = step; s < 1.0; s += step)
 		{
-			mTotalFrames += 1;
+			mTotalBlocks += blocks_per_frame;
 			ShowStep(s, inResources);
+            
+            // This makes our fades less smooth, and our timing incorrect.
+            // Unfortunately, if we don't do it, we can't do any
+            // transitions during QuickTime playback, which the script
+            // authors find unacceptable.
+            wxGetApp().ProcessIdle();
 
 			// Just to be safe!
 			if (watch.Time() > panic_ms)
@@ -120,6 +184,7 @@ void Transition::RunTransition(int inMilliseconds,
 /// A gradual fade from one image to another.
 class CrossFade : public Transition
 {
+    bool AffectsOnlyDirtyRect() const { return true; }
 	void ShowStep(double inStep, TransitionResources &inResources);
 };
 
@@ -134,18 +199,24 @@ void CrossFade::ShowStep(double inStep, TransitionResources &inResources)
 	int alpha = 256 * inStep;
 	int beta  = 256 - alpha;
 
+    wxRect bounds(inResources.GetDirtyRect());
+    int line_width(bounds.GetWidth());
+
 	// Our outer loop.
-	wxNativePixelData::Iterator before_row_start(before_data);
-	wxNativePixelData::Iterator after_row_start(after_data);
-	wxNativePixelData::Iterator scratch_row_start(scratch_data);
-	for (int y = inResources.GetBeforeBmp().GetHeight(); y > 0; --y)
+    wxNativePixelData::Iterator before_row_start(before_data);
+    wxNativePixelData::Iterator after_row_start(after_data);
+    wxNativePixelData::Iterator scratch_row_start(scratch_data);
+    before_row_start.Offset(before_data, bounds.GetLeft(), bounds.GetTop());
+    after_row_start.Offset(after_data, bounds.GetLeft(), bounds.GetTop());
+    scratch_row_start.Offset(scratch_data, bounds.GetLeft(), bounds.GetTop());
+	for (int y = bounds.GetHeight(); y > 0; --y)
 	{
 		wxNativePixelData::Iterator before(before_row_start);
 		wxNativePixelData::Iterator after(after_row_start);
 		wxNativePixelData::Iterator scratch(scratch_row_start);
 
 		// Our fast inner loop.
-		for (int y = inResources.GetBeforeBmp().GetWidth(); y > 0; --y)
+		for (int y = line_width; y > 0; --y)
 		{
 			scratch.Red() = (after.Red() * alpha + before.Red() * beta) >> 8;
 			scratch.Green() =
@@ -158,14 +229,18 @@ void CrossFade::ShowStep(double inStep, TransitionResources &inResources)
 			++scratch;
 		}
 
-		before_row_start.OffsetY(before_data, 1);
-		after_row_start.OffsetY(after_data, 1);
-		scratch_row_start.OffsetY(scratch_data, 1);
+        before_row_start.OffsetY(before_data, 1);
+        after_row_start.OffsetY(after_data, 1);
+        scratch_row_start.OffsetY(scratch_data, 1);
 	}
 
 	// Draw our scratch buffer to the screen.
-	inResources.GetOutputDC().DrawBitmap(inResources.GetScratchBmp(), 0, 0,
-										 false);
+    wxMemoryDC scratch_dc;
+    scratch_dc.SelectObject(inResources.GetScratchBmp());
+	inResources.GetOutputDC().Blit(bounds.GetLeft(), bounds.GetTop(),
+                                   bounds.GetWidth(), bounds.GetHeight(),
+                                   &scratch_dc,
+                                   bounds.GetLeft(), bounds.GetTop());
 }
 
 

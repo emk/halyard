@@ -1,11 +1,46 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.37 - 19 Sep 2004 - emk
 
   * Warning fixes.
-  * Fixed bug #1695: WAIT now works for Vorbis audio.  This is
-    still slightly experimental, but please start playing around.
-    Remember, we can't stream Vorbis yet.
+  * Fixed bug #1687: Suspending and restoring Tamale in the inventory
+    screen no longer causes Quake 2 to lock the cursor.
+  * Fixed bug #1695: WAIT now works for Vorbis audio.  This is still
+    slightly experimental, but please start playing around.  Remember, we
+    can't stream Vorbis yet.
+  * Fixed bug #1706: Scheme ASSERT is no longer fatal, which means it can
+    be used to report user errors.  %ASSERT can still be used to report
+    kernel errors, and will mail a bug report.  This makes a number of
+    engine-crashing bugs non-fatal script bugs.
+  * Fixed bug #1738: In full screen mode, the engine automatically hides
+    the cursor when there's nothing to click on.  This is still slightly
+    experimental.  Some basic caveats:
+      - QuickTime movies force the cursor to be shown only if they have a
+        controller bar or they're interactive.
+      - Other native widgets always force the cursor to be shown, including
+        browsers, text boxes and ActiveX controls.
+      - By default, zones and overlays only force the cursor to be shown if
+        they have MOUSE-UP, MOUSE-DOWN, MOUSE-ENTER, MOUSE-LEAVE or
+        MOUSE-MOVED handlers.  You can override this manually using the
+        WANTS-CURSOR? property.
+      - Cards with MOUSE-* handlers, but no zones, will not currently
+        display a cursor.  This is half design decision and half bug; we'll
+        wait for some experience before deciding one way or another.
+      - The cursor doesn't always seem to update until you move the mouse.
+        In particular, hidden cursors may not immediately become visible.
+        So far, it *seems* that this is a Windows issue, but there's a
+        chance Stage::OnIdle is doing something wrong.
+      - "Show borders" uses red borders for elements which want a cursor,
+        and grey borders for elements which don't care.
+      - Zones which don't have WANTS-CURSOR? set will no longer participate
+        in any mouse activities--they're effectively invisible to the
+        mouse-handling code.
+  * Fixed bug #1748: Crossfades can now be run during QuickTime movies.
+    This required fixing the crossfader to only touch dirty portions of the
+    screen, and to call wxApp::ProcessIdle between each frame so QuickTime
+    doesn't starve for lack of CPU.  Unfortunately, fade durations are
+    probably even less accurate by now, and won't get better unless I use
+    high-resolution multimedia timers.
 
 0.0.36 - 13 Sep 2004 - emk
 

@@ -92,6 +92,11 @@ public:
 	///
 	virtual bool IsShown();
 
+    //////////
+    /// In general, most widgets will want a cursor.
+    ///
+    virtual bool WantsCursor() const { return true; }
+
 	//////////
 	/// Draw an outline around the widget.
 	///

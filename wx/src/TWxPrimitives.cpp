@@ -130,6 +130,8 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Wait);
+    REGISTER_5L_PRIMITIVE(WantsCursorGet);
+    REGISTER_5L_PRIMITIVE(WantsCursorSet);
     REGISTER_5L_PRIMITIVE(Zone);
 }
 
@@ -814,6 +816,22 @@ DEFINE_5L_PRIMITIVE(Wait) {
 		inArgs >> frame;
 
 	wxGetApp().GetStage()->Wait(name.c_str(), frame);
+}
+
+DEFINE_5L_PRIMITIVE(WantsCursorGet) {
+	std::string name;
+	inArgs >> SymbolName(name);
+
+	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+    ::SetPrimitiveResult(elem->WantsCursor());
+}
+
+DEFINE_5L_PRIMITIVE(WantsCursorSet) {
+    std::string name;
+    bool wants_cursor;
+	inArgs >> SymbolName(name) >> wants_cursor;
+    FIND_ELEMENT(LightweightElement, elem, name.c_str());
+    elem->SetWantsCursor(wants_cursor);
 }
 
 DEFINE_5L_PRIMITIVE(Zone) {

@@ -36,6 +36,7 @@ class TransitionResources
 	wxBitmap &mBeforeBmp;
 	wxBitmap &mAfterBmp;
 	wxBitmap &mScratchBmp;
+    wxRect &mDirtyRect;
 
 public:
 	//////////
@@ -47,15 +48,21 @@ public:
 	/// \param inAfterBmp  What the screen looks like after our transition.
 	/// \param inScratchBmp  A bitmap which we can use for building
 	///        intermediate stages, if we wish.
+    /// \param inDirtyRect A bounding rectangle containing all pixels
+    ///        which vary between inBeforeBmp and inAfterBmp.  Some
+    ///        transitions can use this for optimization.
 	TransitionResources(wxDC &inOutputDC, wxBitmap &inBeforeBmp,
-						wxBitmap &inAfterBmp, wxBitmap &inScratchBmp)
+						wxBitmap &inAfterBmp, wxBitmap &inScratchBmp,
+                        wxRect &inDirtyRect)
 		: mOutputDC(inOutputDC), mBeforeBmp(inBeforeBmp),
-		  mAfterBmp(inAfterBmp), mScratchBmp(inScratchBmp) {}
+		  mAfterBmp(inAfterBmp), mScratchBmp(inScratchBmp),
+          mDirtyRect(inDirtyRect) {}
 	
 	wxDC &GetOutputDC() { return mOutputDC; }
 	wxBitmap &GetBeforeBmp() { return mBeforeBmp; }
 	wxBitmap &GetAfterBmp() { return mAfterBmp; }
 	wxBitmap &GetScratchBmp() { return mScratchBmp; }
+	wxRect &GetDirtyRect() { return mDirtyRect; }
 };
 
 //////////

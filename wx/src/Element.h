@@ -111,6 +111,11 @@ public:
 	///
 	virtual void Show(bool inShow);
 
+    //////////
+    /// Does this element want the engine to display a cursor?
+    ///
+    virtual bool WantsCursor() const { return false; }
+
 	//////////
 	/// Does this element need to receive events from the Stage?
 	///

@@ -68,7 +68,7 @@ public:
 	//////////
 	/// Get the style of this movie window.
 	///
-	MovieWindowStyle GetMovieWindowStyle() { return mMovieWindowStyle; }
+	MovieWindowStyle GetMovieWindowStyle() const { return mMovieWindowStyle; }
 
     //////////
     /// Ask this widget to create and manage the specified movie.
@@ -83,6 +83,11 @@ public:
     ///
     virtual MovieFrame GetFrame();
     
+    //////////
+    /// Does this movie want a cursor?
+    ///
+    virtual bool WantsCursor() const;
+
     //////////
     /// Returns true if the movie is looping.
     ///

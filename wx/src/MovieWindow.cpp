@@ -60,6 +60,12 @@ MovieFrame MovieWindow::GetFrame()
 	return 0;
 }
 
+bool MovieWindow::WantsCursor() const {
+    unsigned flags =
+        GetMovieWindowStyle() & (MOVIE_CONTROLLER|MOVIE_INTERACTION);
+    return (flags ? true : false);
+}
+
 bool MovieWindow::IsDone()
 {
 	return true;

@@ -48,6 +48,10 @@ bool MovieElement::HasVisibleRepresentation()
 		return true;
 }
 
+bool MovieElement::WantsCursor() const {
+    return mMovieWindow->WantsCursor();
+}
+
 bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 {
 	if (mEndPlaybackWasCalled)

@@ -46,6 +46,8 @@ public:
 
 	void MergeRect(const wxRect &inRect);
 
+    wxRect GetBounds() const;
+
     operator wxRegion();
 };
 

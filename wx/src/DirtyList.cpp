@@ -93,6 +93,25 @@ void DirtyList::MergeRect(const wxRect &inRect) {
 	mRectangles.push_back(merged);
 }
 
+/// Calculate the rectangle including all items in the dirty list.  Useful
+/// for localized transitions, which can only run on a rectangular area.
+wxRect DirtyList::GetBounds() const {
+	wxLogTrace(TRACE_STAGE_DRAWING, "Calculating bounds of dirty region.");
+
+    wxRect result(0, 0, 0, 0);
+    const_iterator i = begin();
+    const_iterator end_i = end();
+    if (i != end_i) {
+        result = *i++;
+        for (; i != end_i; ++i)
+            result = merge_rects(result, *i);
+    }
+    
+    wxLogTrace(TRACE_STAGE_DRAWING, "Bounds of dirty region: %d %d %d %d",
+               RECT_BOUNDS(result));
+    return result;
+}
+
 DirtyList::operator wxRegion() {
     wxRegion result;
     for (iterator i = begin(); i != end(); ++i)

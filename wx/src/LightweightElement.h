@@ -41,6 +41,7 @@
 class LightweightElement : public Element {
     wxCursor mCursor;
     bool mIsShown;
+    bool mWantsCursor;
 	
 public:
 	LightweightElement(Stage *inStage, const wxString &inName,
@@ -49,6 +50,8 @@ public:
 	virtual bool IsShown() { return mIsShown; }
 	virtual void Show(bool inShow);
 
+    virtual bool WantsCursor() const { return mWantsCursor; }
+    void SetWantsCursor(bool wantsCursor) { mWantsCursor = wantsCursor; }
 	virtual bool IsLightWeight() { return true; }
 
 	virtual wxCursor GetCursor() { return mCursor; }

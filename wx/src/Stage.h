@@ -135,6 +135,12 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	/// is entering something.
 	///
 	wxTextCtrl *mTextCtrl;
+    
+	//////////
+    /// The cursor that we're (nominally) displaying for the stage right
+    /// now, if we're actually displaying a cursor.
+    ///
+    wxCursor mCurrentCursor;
 
 	//////////
 	/// Our currently active elements.
@@ -182,6 +188,11 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     /// Are we displaying borders for the interactive elements.
     ///
     bool mIsDisplayingBorders;
+
+    //////////
+    /// Is the stage being destroyed yet?
+    ///
+    bool mIsBeingDestroyed;
 
 	//////////
 	/// The last stage position copied with a right-click.
@@ -263,6 +274,14 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	///
 	void LeaveElement(ElementPtr inElement, wxPoint &inPosition);
 
+    //////////
+    /// Actually update the current cursor to match mCurrentCursor
+    /// and the result of ShouldShowCursor().  You generally want to
+    /// call UpdateCurrentElementAndCursor instead, which will actually
+    /// detect when mCurrentCursor need to be changed.
+    ///
+    void UpdateDisplayedCursor();
+
 	//////////
 	/// Figure out which element we're inside, and figure out what cursor
 	/// we should be displaying now.
@@ -319,6 +338,11 @@ public:
 	/// IsScriptInitialized() returns true.
 	///
 	bool IsInEditMode();
+
+	//////////
+	/// Should we display a cursor?
+	///
+    bool ShouldShowCursor();
 
 	//////////
 	/// Should we send events to our event dispatcher?
@@ -391,6 +415,15 @@ public:
 	void PopDrawingContext(ElementPtr inElement)
 		{ mDrawingContextStack->PopDrawingContext(inElement); }
 	
+    //////////
+    /// Send an idle message to any elements on the stage.  (This is one
+    /// of many functions called by OnIdle, and you probably won't need
+    /// to call it directly.)
+    ///
+    /// \todo Make this function and On* functions private or protected.
+    ///
+    void IdleElements();
+
     //////////
     /// Do our idle-time processing.
     ///
