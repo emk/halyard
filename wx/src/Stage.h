@@ -6,12 +6,14 @@
 #include <deque>
 
 #include "GraphicsTools.h"
+#include "AppGlobals.h"
 
 class Stage;
 class Element;
 class LocationBox;
 class ToolWindow;
 class TQTMovie;
+class MovieElement;
 
 // See ToolWindow.h.
 enum ToolWindowID {
@@ -155,6 +157,16 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	//
 	Element* mLastElement;
 
+	//////////
+	// The movie we're waiting on, or NULL if we're not waiting on anything.
+	//
+	MovieElement *mWaitElement;
+
+	//////////
+	// The movie frame we're waiting on.
+	//
+	MovieFrame mWaitFrame;
+
     //////////
     // Are we displaying the XY co-ordinates of the cursor?
     //
@@ -184,6 +196,33 @@ class Stage : public wxWindow, public GraphicsTools::Image
     // Draw a border for the specified rectangle.
     //
     void DrawElementBorder(wxDC &inDC, const wxRect &inElementRect);
+
+	//////////
+	// End an active Wait().
+	//
+	void EndWait();
+
+	//////////
+	// Put the interpreter to sleep.
+	//
+	void InterpreterSleep();
+
+	//////////
+	// Wake the interpreter up.
+	//
+	void InterpreterWakeUp();
+
+	//////////
+	// Find an element by name, and return an iterator.
+	//
+	ElementCollection::iterator
+	FindElementByName(ElementCollection &inCollection,
+					  const wxString &inName);
+
+	//////////
+	// Detach an element from the stage and destroy it.
+	//
+	void DestroyElement(Element *inElement);
 
     //////////
     // Let the stage know that the list of active elements has changed.
@@ -340,6 +379,17 @@ public:
 	// [out] return - The text entered by the user.
 	//
 	wxString FinishModalTextInput();
+
+	//////////
+	// Suspend the interpreter until the named movie reaches the specified
+	// frame.
+	//
+	// [in] inElementName - The name of the MovieElement to wait on.
+	// [in] inUntilFrame - The frame to wait until.
+	// [out] return - true if the wait request was valid, false if the
+	//                named element doesn't exist or isn't a movie.
+	//
+	bool Wait(const wxString &inElementName, MovieFrame inUntilFrame);
 
 	//////////
 	// Add a Element to this Stage.  This should only be called

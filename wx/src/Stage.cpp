@@ -14,6 +14,7 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Element.h"
+#include "MovieElement.h"
 #include "Listener.h"
 #include "Timecoder.h"
 
@@ -414,7 +415,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize),
       mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), -1),
-	  mTextCtrl(NULL), mLastElement(NULL),
+	  mTextCtrl(NULL), mLastElement(NULL), mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
 
@@ -469,9 +470,40 @@ void Stage::NotifyElementsChanged()
 	}
 }
 
+void Stage::InterpreterSleep()
+{
+    // Put our interpreter to sleep.
+	// TODO - Keep track of who we're sleeping for.
+    ASSERT(TInterpreter::HaveInstance() &&
+           !TInterpreter::GetInstance()->Paused());
+    TInterpreter::GetInstance()->Pause();
+}
+
+void Stage::InterpreterWakeUp()
+{
+	// Wake up our Scheme interpreter.
+	// We can't check TInterpreter::GetInstance()->Paused() because
+	// the engine might have already woken the script up on its own.
+	// TODO - Keep track of who we're sleeping for.
+    ASSERT(TInterpreter::HaveInstance());
+    TInterpreter::GetInstance()->WakeUp();
+}
+
+Stage::ElementCollection::iterator
+Stage::FindElementByName(ElementCollection &inCollection,
+						 const wxString &inName)
+{
+	ElementCollection::iterator i = inCollection.begin();
+	for (; i != inCollection.end(); i++)
+		if ((*i)->GetName() == inName)
+			return i;
+	return inCollection.end();
+}
+
 void Stage::OnIdle(wxIdleEvent &inEvent)
 {
-	// Do nothing, for now.
+	if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
+		EndWait();
 }
 
 void Stage::OnMouseMove(wxMouseEvent &inEvent)
@@ -770,20 +802,14 @@ void Stage::ModalTextInput(const wxRect &inBounds,
     mTextCtrl->SetFocus();
 	NotifyElementsChanged();
 
-    // Put our Scheme interpreter to sleep.
-    ASSERT(TInterpreter::HaveInstance() &&
-           !TInterpreter::GetInstance()->Paused());
-    TInterpreter::GetInstance()->Pause();
+	InterpreterSleep();
 }
 
 wxString Stage::FinishModalTextInput()
 {
     ASSERT(mTextCtrl->IsShown());
 
-    // Wake up our Scheme interpreter.
-    ASSERT(TInterpreter::HaveInstance() &&
-           TInterpreter::GetInstance()->Paused());
-    TInterpreter::GetInstance()->WakeUp();
+	InterpreterWakeUp();
 
 	// Store our result somewhere useful.
 	gVariableManager.SetString("_modal_input_text", mTextCtrl->GetValue());
@@ -792,6 +818,53 @@ wxString Stage::FinishModalTextInput()
     mTextCtrl->Hide();
 	NotifyElementsChanged();
     return mTextCtrl->GetValue();
+}
+
+bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
+{
+	ASSERT(mWaitElement == NULL);
+
+	// Look for our element.
+	ElementCollection::iterator i =
+		FindElementByName(mElements, inElementName);
+
+	// Make sure we can wait on this element.
+	// TODO - Refactor this error-handling code to a standalone
+	// routine so we don't have to keep on typing it.
+	const char *name = (const char *) inElementName;
+	if (i == mElements.end())
+	{
+		gDebugLog.Caution("wait: Element %s does not exist", name);
+		return false;
+	}
+	MovieElement *movie = dynamic_cast<MovieElement*>(*i);
+	if (movie == NULL)
+	{
+		gDebugLog.Caution("wait: Element %s is not a movie", name);
+		return false;		
+	}
+
+	// Return immediately (if we're already past the wait point) or
+	// go to sleep for a while.
+	if (movie->HasReachedFrame(inUntilFrame))
+		gDebugLog.Log("wait: Movie %s has already past frame %d",
+					  name, inUntilFrame);
+	else
+	{
+		mWaitElement = movie;
+		mWaitFrame = inUntilFrame;
+		InterpreterSleep();
+	}
+	return true;
+}
+
+void Stage::EndWait()
+{
+	gDebugLog.Log("wait: Waking up.");
+	ASSERT(mWaitElement != NULL);
+	mWaitElement = NULL;
+	mWaitFrame = 0;
+	InterpreterWakeUp();
 }
 
 void Stage::AddElement(Element *inElement)
@@ -816,19 +889,30 @@ Element *Stage::FindLightWeightElement(const wxPoint &inPoint)
 	return result;
 }
 
+void Stage::DestroyElement(Element *inElement)
+{
+	// Clean up any dangling references to this object.
+	if (inElement == mLastElement)
+		mLastElement = NULL;
+	if (inElement == mWaitElement)
+		EndWait();
+
+	// Destroy the object.
+	// TODO - Implemented delayed destruction so element callbacks can
+	// destroy the element they're attached to.
+	delete inElement;
+}
+
 bool Stage::DeleteElementByName(const wxString &inName)
 {
 	bool found = false;
-	ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); i++)
+	ElementCollection::iterator i = FindElementByName(mElements, inName);
+	if (i != mElements.end())
 	{
-		if ((*i)->GetName() == inName)
-		{
-			delete *i;
-			mElements.erase(i);
-			found = true;
-			break;
-		}
+
+		DestroyElement(*i);
+		mElements.erase(i);
+		found = true;
 	}
 	NotifyElementsChanged();
 	return found;
@@ -839,7 +923,7 @@ void Stage::DeleteElements()
 	mLastElement = NULL;
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); i++)
-		delete *i;
+		DestroyElement(*i);
 	mElements.clear();
 	NotifyElementsChanged();
 }

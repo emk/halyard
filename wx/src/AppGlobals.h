@@ -31,6 +31,27 @@ enum {
 	FIVEL_LISTENER_TEXT_ENTRY
 };
 
+//////////
+// The frame number of a movie.
+//
+typedef long MovieFrame;
+
+enum /* MovieFrame */ {
+	//////////
+	// A constant representing the last frame of a movie.
+	//
+	LAST_FRAME = -1
+};
+
+enum {
+	//////////
+	// The nominal number of frames/second in a movie.  The real number of
+	// frames/second might be higher or lower, but we try to insulate
+	// scripts from this fact.
+	//
+	FRAMES_PER_SECOND = 30
+};
+
 // Define this symbol to 1 to help debug redraw problems by making each
 // suspicious widget a different, alarming color.
 #define FIVEL_USE_UGLY_WINDOW_COLORS 0

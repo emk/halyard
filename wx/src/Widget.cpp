@@ -5,10 +5,18 @@
 #include "TCommon.h"
 #include "Widget.h"
 
-Widget::Widget(Stage *inStage, const wxString &inName, wxWindow *inWindow)
-    : Element(inStage, inName), mWindow(inWindow)
+Widget::Widget(Stage *inStage, const wxString &inName)
+	: Element(inStage, inName), mWindow(NULL)
 {
-    ASSERT(inWindow);
+	// Our subclass must call InitializeWidgetWindow before exiting its
+	// constructor.
+}
+
+
+Widget::Widget(Stage *inStage, const wxString &inName, wxWindow *inWindow)
+    : Element(inStage, inName), mWindow(NULL)
+{
+    InitializeWidgetWindow(inWindow);
 }
 
 Widget::~Widget()
@@ -18,3 +26,21 @@ Widget::~Widget()
     mWindow->Destroy();
 }
 
+void Widget::InitializeWidgetWindow(wxWindow *inWindow)
+{
+	ASSERT(mWindow == NULL);
+	ASSERT(inWindow != NULL);
+	mWindow = inWindow;
+}
+
+wxRect Widget::GetRect()
+{
+	ASSERT(mWindow != NULL);
+	return mWindow->GetRect();
+}
+
+bool Widget::IsShown()
+{
+	ASSERT(mWindow != NULL);
+	return mWindow->IsShown();
+}

@@ -15,7 +15,7 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Zone.h"
-#include "MovieWindow.h"
+#include "MovieElement.h"
 #include "Widget.h"
 
 USING_NAMESPACE_FIVEL
@@ -43,6 +43,7 @@ void FIVEL_NS RegisterWxPrimitives()
     REGISTER_5L_PRIMITIVE(SetWindowTitle);
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
+    REGISTER_5L_PRIMITIVE(Wait);
     REGISTER_5L_PRIMITIVE(Zone);
 }
 
@@ -239,12 +240,8 @@ DEFINE_5L_PRIMITIVE(Movie)
 	if (loop)
 		style |= MOVIE_LOOP;
 
-	MovieWindow *movie =
-		new MovieWindow(wxGetApp().GetStage(), -1, GetPos(bounds),
-						GetSize(bounds), 0, style);
-	movie->Show();
-	movie->SetMovie(path.c_str());
-	new Widget(wxGetApp().GetStage(), name.c_str(), movie);
+	new MovieElement(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds),
+					 path.c_str(), 0, style);
 }
 
 /*---------------------------------------------------------------------
@@ -298,6 +295,18 @@ DEFINE_5L_PRIMITIVE(Timeout)
 
     inArgs >> secs >> cardName;
     TInterpreter::GetInstance()->Timeout(cardName.GetString(), secs);
+}
+
+DEFINE_5L_PRIMITIVE(Wait)
+{
+	std::string name;
+	int32 frame = LAST_FRAME;
+
+	inArgs >> name;
+	if (inArgs.HasMoreArguments())
+		inArgs >> frame;
+
+	wxGetApp().GetStage()->Wait(name.c_str(), frame);
 }
 
 DEFINE_5L_PRIMITIVE(Zone)

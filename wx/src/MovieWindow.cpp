@@ -8,8 +8,6 @@
 #include "FiveLApp.h"
 #include "MovieWindow.h"
 
-#define FRAMES_PER_SECOND (30)
-
 BEGIN_EVENT_TABLE(MovieWindow, wxWindow)
 	EVT_ERASE_BACKGROUND(MovieWindow::OnEraseBackground)
     EVT_PAINT(MovieWindow::OnPaint)
@@ -88,7 +86,7 @@ void MovieWindow::SetMovie(const wxString &inName)
     mMovie->StartWhenReady(opt, p);
 }
 
-int MovieWindow::GetFrame()
+MovieFrame MovieWindow::GetFrame()
 {
 	if (!mMovie || !mMovie->IsStarted())
 		return 0;
@@ -101,6 +99,14 @@ int MovieWindow::GetFrame()
 		TimeValue time = mMovie->GetMovieTime();
 		return time * FRAMES_PER_SECOND / scale;
 	}
+}
+
+bool MovieWindow::IsDone()
+{
+	if (!mMovie)
+		return false;
+	else
+		return mMovie->IsDone();
 }
 
 void MovieWindow::OnEraseBackground(wxEraseEvent &inEvent)

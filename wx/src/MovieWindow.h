@@ -3,6 +3,8 @@
 #ifndef MovieWindow_H
 #define MovieWindow_H
 
+#include "AppGlobals.h" // For MovieFrame.
+
 class TQTMovie;
 
 typedef unsigned long MovieWindowStyle;
@@ -60,7 +62,13 @@ public:
 	// started.  This number *can* decrease, especially if the user
 	// is playing with the movie controller.
     //
-    int GetFrame();
+    MovieFrame GetFrame();
+
+    //////////
+    // Is the movie finished?  This function is fairly smart about broken
+	// movies, looping movies, etc.
+    //
+    bool IsDone();
 
 	void OnEraseBackground(wxEraseEvent &inEvent);
 

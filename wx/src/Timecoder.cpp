@@ -49,14 +49,14 @@ Timecoder::Timecoder(StageFrame *inStageFrame)
 void Timecoder::OnIdle(wxIdleEvent &inEvent)
 {
 	// Get the most recent frame count.
-	// TODO - We use 30fps timecodes.  Is this good enough?
-	int frames = mMovieWindow->GetFrame();
-	int seconds = frames / 30;
+	MovieFrame frames = mMovieWindow->GetFrame();
+	int seconds = frames / FRAMES_PER_SECOND;
 	int minutes = seconds / 60;
 
 	// Make a label.
 	wxString label;
-	label.Printf("%d:%02d:%02d", minutes, seconds % 60, frames % 30);
+	label.Printf("%d:%02d:%02d",
+				 minutes, seconds % 60, frames % FRAMES_PER_SECOND);
 
 	// If the label is different from what we're currently displaying,
 	// update it.  We don't update the label unnecessarily, because

@@ -17,6 +17,27 @@ class Widget : public Element
 	//
 	wxWindow *mWindow;
 	
+protected:
+	//////////
+	// A constructor for Widget subclasses which need to do complicated
+	// widget creation.  Before the subclass exits its constructor, it
+	// must call InitializeWidgetWindow (below).
+	//
+	// [in] inStage - The stage to which this widget is attached.
+	// [in] inName - The name of this widget.
+	//
+	Widget(Stage *inStage, const wxString &inName);
+
+	//////////
+	// See the constructor without am inWindow argument for details.
+	//
+	// [in] inWindow - The wxWindow implementing this widget.
+	//                 Set the parent of this window to the Stage--
+	//                 this will get event-handling and destruction
+	//                 hooked up correctly.
+	//
+	void InitializeWidgetWindow(wxWindow *inWindow);
+
 public:
 	//////////
 	// Create a new Widget, and add it to the stage.
@@ -38,12 +59,12 @@ public:
 	//////////
 	// Get the bounding rectangle for the widget.
 	//
-	virtual wxRect GetRect() { return mWindow->GetRect(); }
+	virtual wxRect GetRect();
 
 	//////////
 	// Return true if the stage object is shown on the screen.
 	//
-	virtual bool IsShown() { return mWindow->IsShown(); }
+	virtual bool IsShown();
 };
 
 #endif // Widget_H
