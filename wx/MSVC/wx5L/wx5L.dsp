@@ -521,6 +521,17 @@ SOURCE=..\..\src\tamale.xrc
 
 !IF  "$(CFG)" == "wx5L - Win32 Release"
 
+# Begin Custom Build
+InputDir=\Documents and Settings\emk\src\5L\wx\src
+InputPath=..\..\src\tamale.xrc
+InputName=tamale
+
+"$(InputDir)\resources.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	cd $(InputDir) 
+	..\..\libs\wxWindows\contrib\utils\wxrc\Debug\wxrc.exe /c /o resources.cpp $(InputName).xrc 
+	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
