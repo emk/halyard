@@ -693,25 +693,19 @@ void CMac5LApp::RestorePalette(void)
 	
 	if (mGraphicsPal != NULL)
 	{
-#ifdef DEBUG
 		//gDebugLog.Log("restoring graphics palette to <%s>", mGraphicsPal->key.GetString());
-#endif
 
 		theCTab = mGraphicsPal->GetCTab();
 
 		if (theCTab == NULL)
 		{
-#ifdef DEBUG
 			//gDebugLog.Log("trying to restore palette, got dodo");
-#endif
 			mGraphicsPal->Load();		// reload the palette
 			theCTab = mGraphicsPal->GetCTab();
 			
 			if (theCTab == NULL)
 			{
-#ifdef DEBUG
 			//	gDebugLog.Log("still trying to restore, couldn't get graphics palette");
-#endif
 				return;
 			}
 		}
@@ -871,9 +865,7 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard)
 	// set mSleepTime again, just to be sure
 	mSleepTime = 0;
 
-#ifdef DEBUG
 	gDebugLog.Log("reinit everything for redoscript");
-#endif
 
 	if (gIndexFileManager.NewIndex(scriptSpec))		
 	{
@@ -995,6 +987,11 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.19  2002/05/03 10:37:01  hamon
+Deleted #ifdef DEBUG lines surrounding gDebugLog.Log messages
+
+Changes by Elizabeth.
+
 Revision 1.18  2002/04/19 09:46:30  emk
 Changes to make the Macintosh version build again for the 3.3.1 release, and to allow Elizabeth to work on the Macintosh without any trouble.
 

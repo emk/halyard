@@ -139,9 +139,7 @@ void CHeader::GetFont(const char *inName)
 //			mFontFamily = fnum;
 //		else
 //		{
-//#ifdef DEBUG
 //			gDebugLog.Log("Couldn't find Times New Roman - using old times");
-//#endif
 			mFontFamily = kFontIDTimes;	// default to regular times
 //		}
 	}

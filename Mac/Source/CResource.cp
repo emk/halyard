@@ -87,9 +87,7 @@ void CResource::Load(void)
 {
     if (IsUnloaded()) 
     {
-#ifdef DEBUG
 	//	gDebugLog.Log("loading resource <%s>, size <%ld>", key.GetString(), m_Size);
-#endif
     	
         _Load();        	
         m_State = kResLoaded;
@@ -193,10 +191,8 @@ void CResourceManager::ChangeResSize(int32 newSize, int32 oldSize)
 	m_TotalSize -= oldSize;
 	m_TotalSize += newSize;
 
-#ifdef DEBUG	
 	// cbo_fix - just for debugging purposes
 	//gDebugLog.Log("CResourceManager::ChangeResSize: total resource cache size <%d> bytes", m_TotalSize);
-#endif
 }
 
 void CResourceManager::CheckMemory(void)
@@ -270,11 +266,9 @@ void CResourceManager::FreeMemory(int32 freeMemSize)
 		}
 	}
 
-#ifdef DEBUG	
 	// if we get here, we have freed the memory
 	// cbo_fix - just for debugging purposes
 	//gDebugLog.Log("CResourceManager::FreeMemory: freed <%d> bytes", totalFreed);
-#endif
 }
 
 

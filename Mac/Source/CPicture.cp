@@ -34,9 +34,7 @@ CPicture::CPicture(TString &inName) : CResource(inName)
 	if (not m_FullPath.Contains("."))
 		m_FullPath += ".pic";
 		
-#ifdef DEBUG
 	gDebugLog.Log("New picture: full path <%s>", m_FullPath.GetString());
-#endif
 
 	// all pictures have some extension when they get here
 	//	 put H before the . to see if we find a hilite picture	

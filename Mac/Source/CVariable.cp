@@ -267,10 +267,8 @@ CVariable *CVariableManager::FindVariable(const char *inName, bool inReading)
     		// we are getting the variable but it isn't in the tree, tell the user
     	//	gLog.Caution("Getting Variable <%s> before it has been set", inName);
 
-#ifdef DEBUG
 		//if (inReading)
 		//	gDebugLog.Log("Getting Variable <%s> before it has been set", inName);
-#endif
     	
     	theVar = new CVariable(inName);
     	Add(theVar);

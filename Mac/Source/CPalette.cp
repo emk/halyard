@@ -84,11 +84,8 @@ void CPalette::LoadClutResource(void)
 		
 	if (not theConfig->FillSpec(&theFSSpec, m_FullPath))
 	{
-#ifdef DEBUG
 		gDebugLog.Log("ERROR: Couldn't find palette <%s>", m_FullPath.GetString());
-#else	
 		gLog.Caution("Could not find CLUT <%s>", m_FullPath.GetString());
-#endif
 		return;
 	}
 	
@@ -103,9 +100,8 @@ void CPalette::LoadClutResource(void)
 		
 		m_CTab = ::GetCTable(128);
 
-#ifdef DEBUG
 		//gDebugLog.Log("Loaded palette: <%s>, size <%ld>", key.GetString(), DEFAULT_PAL_SIZE);
-#endif
+
 		SetSize(DEFAULT_PAL_SIZE);
 					
 		theFile->CloseResourceFork();
@@ -114,11 +110,8 @@ void CPalette::LoadClutResource(void)
 	
 	catch (const PP::LException& inException) 
 	{
-#ifdef DEBUG
 		gDebugLog.Log("Couldn't get palette from file");
-#else
 		gLog.Caution("Error getting palette <%s>", m_FullPath.GetString());
-#endif
 	} 
 }
 
@@ -323,9 +316,7 @@ void CPaletteManager::SetPalette(CPalette *inPal, bool inGraphPal)
 			CheckPalette();
 			
 		gVariableManager.SetString("_GraphPal", inPal->Key());
-#ifdef DEBUG
 	//	gDebugLog.Log("Setting _GraphPal to <%s>", Key());
-#endif
 
 	}
 	else
