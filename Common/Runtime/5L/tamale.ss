@@ -70,10 +70,11 @@
   (define (edit-box name r text)
     (call-5l-prim 'editbox name r text))
   
-  (define (movie name r location &key controller? audio-only? loop?)
+  (define (movie name r location
+                 &key controller? audio-only? loop? interaction?)
     (call-5l-prim 'movie name r
                   (build-path (current-directory) "Media" location)
-                  controller? audio-only? loop?))
+                  controller? audio-only? loop? interaction?))
   
   (define (wait name &key frame)
     (if frame
