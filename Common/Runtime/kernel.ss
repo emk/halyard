@@ -39,6 +39,11 @@
   ;; TODO - Alpha should be optional.
   (make-color r g b a))
 
+(define-struct percent (value))
+
+(define (percent p)
+  (make-percent p))
+
 
 ;;=========================================================================
 ;;  Assertions
