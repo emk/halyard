@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.44 - 13 Dec 2004 - emk
 
   * Added splash screen with graphic and copyright notice (bug #1725).
   * The screen-resizing code is now polite--it asks first, confirms
@@ -51,7 +51,7 @@ CVS - emk
   * EVENT-STALE? no longer gets confused if your system has been
     up for more than 49.7/2 days (bug #1779).
 
-0.0.41 - 06 Dec 2004- emk
+0.0.41 - 06 Dec 2004 - emk
 
   * Added version to "About..." dialog (bug #1785).
   * Fixed Quake 2 to stop playing CD audio and blocking CD mounts (bug

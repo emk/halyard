@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		43
+#define VERSION_REV_BIG		44
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.43 (Development)"
+#define VERSION_STRING		"Tamale 0.0.44 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -35,6 +35,15 @@
 
 /*
  $Log$
+ Revision 1.85  2004/12/13 21:36:04  emk
+ 0.0.44 - 13 Dec 2004 - emk
+
+   * Added splash screen with graphic and copyright notice (bug #1725).
+   * The screen-resizing code is now polite--it asks first, confirms
+     afterwards, and stores prefs based on system screen geometry.
+     You can override it by holding down "shift" when Tamale switches
+     into full-screen mode.
+
  Revision 1.84  2004/12/13 16:56:05  emk
  Added splash screen with graphic and copyright notice (bug #1725).
 
