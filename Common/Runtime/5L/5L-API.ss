@@ -341,12 +341,12 @@
 			   "ser"
 			   (number->string (stylesheet-size sheet)))
 		      (stylesheet-justification sheet)
-		      248 ;(stylesheet-color sheet)
-		      2 ;(stylesheet-highlight-color sheet)
+		      (stylesheet-color sheet)
+		      (stylesheet-highlight-color sheet)
 		      (stylesheet-shadow-offset sheet)
-		      0 ;(stylesheet-shadow-color sheet)
+		      (stylesheet-shadow-color sheet)
 		      (stylesheet-windows-adjustment sheet)
-		      0 ;(stylesheet-highlight-shadow-color sheet)
+		      (stylesheet-highlight-shadow-color sheet)
 		      )))
 
   ;; Helper: Convert a list of flags to a defstyle flag value.
