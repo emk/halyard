@@ -1,6 +1,7 @@
 #define WANT_FIVEL_TEST_INTERFACES 1
 
 #include <iostream.h>
+#include <string.h>
 
 #include "ImlUnit.h"
 #include "TEncoding.h"
@@ -140,16 +141,19 @@ void test_TEncoding (void)
 		TEST(e1.FixSpecials("Bye...") == "Bye&hellip;");
 				
 		// Education of quotes.
+		// Double quotes within strings must be written as \042 (the octal
+		// escape sequence) to avoid bugs in the expansion of the TEST macro
+		// under Metrowerks C++ and Visual C++.
 		TEST(e1.FixQuotes("") == "");
-		TEST(e1.FixQuotes("\"Hello!\"") == "&ldquo;Hello!&rdquo;");
+		TEST(e1.FixQuotes("\042Hello!\042") == "&ldquo;Hello!&rdquo;");
 		TEST(e1.FixQuotes("Sam's") == "Sam&rsquo;s");
 		TEST(e1.FixQuotes(" 'foo' ") == " &lsquo;foo&rsquo; ");
 		TEST(e1.FixQuotes(" 'foo,' ") == " &lsquo;foo,&rsquo; ");
 		TEST(e1.FixQuotes(" 'foo', ") == " &lsquo;foo&rsquo;, ");
-		TEST(e1.FixQuotes(" \"foo\" ") == " &ldquo;foo&rdquo; ");
-		TEST(e1.FixQuotes(" \"foo,\" ") == " &ldquo;foo,&rdquo; ");
-		TEST(e1.FixQuotes(" \"foo\", ") == " &ldquo;foo&rdquo;, ");
-		TEST(e1.FixQuotes(" \"\'foo,\' he said!\" ") ==
+		TEST(e1.FixQuotes(" \042foo\042 ") == " &ldquo;foo&rdquo; ");
+		TEST(e1.FixQuotes(" \042foo,\042 ") == " &ldquo;foo,&rdquo; ");
+		TEST(e1.FixQuotes(" \042foo\042, ") == " &ldquo;foo&rdquo;, ");
+		TEST(e1.FixQuotes(" \042\'foo,\' he said!\042 ") ==
 			 " &ldquo;&lsquo;foo,&rsquo; he said!&rdquo; ");
 		
 		// I know authors won't like these behaviors, but they match

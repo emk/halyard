@@ -145,4 +145,4 @@ public:
 
 END_NAMESPACE_FIVEL
 
-#endif TEncoding_h
+#endif // TEncoding_h

@@ -41,7 +41,7 @@ USING_NAMESPACE_FIVEL
 
 static const int kMaxEncodedCharLength = 10;
 
-typedef struct FiveL::EntityMapping {
+struct FiveL::EntityMapping {
     char *name;
     char encoded[kMaxEncodedCharLength];
 };
@@ -289,7 +289,7 @@ TString TEncoding::EncodeEntities (const TString& inString) const
 			{
 				(*mErrorLoggingFunc)(inString, start - 1,
 									 "Unknown entity name");
-				result += "&" + name + ";";
+				result += TString("&") + name + TString(";");
 			}
 		}
 		else
