@@ -6,7 +6,8 @@
            set-quake2-should-run-in-background?!
            quake2-float set-quake2-float! quake2-string set-quake2-string!
            quake2-print quake2-print-line quake2-register-command
-           define-quake2-command %quake2-level% %quake2-level-run%)
+           define-quake2-command quake2-jump-helper
+           %quake2-level% %quake2-level-run%)
 
   (define (quake2-launch game)
     (call-5l-prim 'Quake2Init game))
@@ -68,6 +69,12 @@
       [(define-quake2-command (name . args) . body)
        (quake2-register-command 'name (fn args . body))]))
 
+  (define (quake2-jump-helper card-name)
+    (if (and (> (string-length card-name) 0)
+             (eq? (string-ref card-name 0) #\@))
+        (jump (@* (substring card-name 1 (string-length card-name))))
+        (jump (find-card card-name))))
+  
   (define-group-template %quake2-level%
       [[game :type <string> :label "Game directory"]
        [level :type <string> :label "Level name"]]
@@ -83,10 +90,7 @@
 
     ;; Define any universally useful console commands.
     (define-quake2-command (jump card-name)
-      (if (and (> (string-length card-name) 0)
-               (eq? (string-ref card-name 0) #\@))
-          (jump (@* (substring card-name 1 (string-length card-name))))
-          (jump (find-card card-name))))
+      (quake2-jump-helper card-name))
   
     ;; Next, give the groups based on this template a chance to initialize.
     ;; Once they've done any extra initialization, *then* we can respond
