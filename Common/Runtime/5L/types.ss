@@ -32,20 +32,37 @@
            realtime-state-db-listener-code
            )
   
+  (define (bare-class-name class)
+    ;; Get a class's name with the extra <>.
+    (define name (symbol->string (class-name class)))
+    (substring name 1 (- (string-length name) 1)))
+
+  (define (simple-printer object escape? port)
+    (define (print-slot slot)
+      (display " " port)
+      (print (slot-ref object (car slot)) port))
+    (display "(" port)
+    (display (bare-class-name (class-of object)) port)
+    (for-each print-slot (class-slots (class-of object)))
+    (display ")" port))
+
   (defclass <point> ()
-    x y)
+    x y
+    :printer simple-printer)
 
   (make-equals?-compare-class+slots <point>)
 
   (defclass <shape> ())
 
   (defclass <rect> (<shape>)
-    left top right bottom)
+    left top right bottom
+    :printer simple-printer)
 
   (make-equals?-compare-class+slots <rect>)
 
   (defclass <color> ()
-    red green blue alpha)
+    red green blue alpha
+    :printer simple-printer)
 
   (define (make-color-opt-alpha r g b &opt (a 255))
     (make-color r g b a))
@@ -53,12 +70,23 @@
   (make-equals?-compare-class+slots <color>)
 
   (defclass <percent> () 
-    value)
+    value
+    :printer simple-printer)
 
   (make-equals?-compare-class+slots <percent>)
 
+  (define (polygon-printer object escape? port)
+    (define (print-value value)
+      (display " " port)
+      (print value port))
+    (display "(" port)
+    (display (bare-class-name (class-of object)) port)
+    (for-each print-value (polygon-vertices object))
+    (display ")" port))
+
   (defclass <polygon> (<shape>)
-    vertices)
+    vertices
+    :printer polygon-printer)
 
   (make-equals?-compare-class+slots <polygon>)
 
