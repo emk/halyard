@@ -76,45 +76,58 @@
   (define (color-at p)
     (call-5l-prim 'ColorAt p))
 
-  (define-element-template %element% [] ())
-#|
+  (define-element-template %element%
       [[at :type <point> :label "Position"]] ()
     (on prop-change (name value prev veto)
       (if (eq? name 'at)
           (move-element-to! self value)
           (call-next-handler))))
-|#
+
+  (define-element-template %invisible-element% [] (%element% :at (point 0 0)))
+
+  (define-element-template %widget%
+      [[rect :type <rect> :label "Rectangle"]]
+      (%element% :at (rect-left-top rect)))
 
   (define-element-template %zone%
-      [[cursor :type <symbol> :default 'hand :label "Cursor"]
+      [[at :new-default (point 0 0)]
        [shape :type <shape> :label "Shape"]
+       [cursor :type <symbol> :default 'hand :label "Cursor"]
        [overlay? :type <boolean> :default #f :label "Has overlay?"]
        [alpha? :type <boolean> :default #f :label "Overlay transparent?"]
        [%nocreate? :type <boolean> :default #f
                    :label "Set to true if subclass creates in engine"]]
       (%element%)
+
+    ;; Deal with our bizarre arguments.
+    (define origin-rect?
+      (and (rect? shape)
+           (equals? (rect-left-top shape) (point 0 0))))
+    (unless (or (equals? at (point 0 0)) origin-rect?)
+      (error "Cannot specify AT unless SHAPE is a rectangle at 0,0: "
+             (node-full-name self)))
+    (define real-shape (offset-shape shape at))
+    (define movable? (and overlay? origin-rect?))
+               
     (on prop-change (name value prev veto)
       (case name
         [[cursor] (set-element-cursor! self value)]
-        [[shape]
-         (unless overlay?
-           (veto "Can only move overlays for now."))
-         (unless (and (= (rect-width prev) (rect-width value))
-                      (= (rect-height prev) (rect-height value)))
-           (veto "Can only move zones, not resize them."))
-         (move-element-to! self (rect-left-top value))]
+        [[at]
+         (unless movable?
+           (veto (cat "Can't move element: " (node-full-name self))))
+         (call-next-handler)]
         [else (call-next-handler)]))
     (cond
      [%nocreate?
       #f]
      [overlay?
-      (call-5l-prim 'overlay (node-full-name self) shape
+      (call-5l-prim 'overlay (node-full-name self) real-shape
                     (make-node-event-dispatcher self) cursor alpha?)]
      [else
-      (call-5l-prim 'zone (node-full-name self) (as <polygon> shape)
+      (call-5l-prim 'zone (node-full-name self) (as <polygon> real-shape)
                     (make-node-event-dispatcher self) cursor)]))
 
-  (define (animated-graphic-shape at graphics)
+  (define (animated-graphic-shape graphics)
     (define max-width 0)
     (define max-height 0)
     (foreach [graphic graphics]
@@ -123,19 +136,17 @@
         (set! max-width (rect-width bounds)))
       (when (> (rect-height bounds) max-height)
         (set! max-height (rect-height bounds))))
-    (rect (point-x at) (point-y at)
-          (+ (point-x at) max-width)
-          (+ (point-y at) max-height)))
+    (rect 0 0 max-width max-height))
 
   (define-element-template %animated-graphic%
-      [[at :type <point> :label "Location"]
-       [state-path :type <string> :label "State DB Key Path"]
+      [[state-path :type <string> :label "State DB Key Path"]
        [graphics :type <list> :label "Graphics to display"]]
       (%zone%
-       :shape (animated-graphic-shape at graphics)
+       :shape (animated-graphic-shape graphics)
        :overlay? #t
        :%nocreate? #t)
-    (call-5l-prim 'OverlayAnimated (node-full-name self) (prop self shape)
+    (call-5l-prim 'OverlayAnimated (node-full-name self)
+                  (offset-rect (prop self shape) (prop self at))
                   (make-node-event-dispatcher self) (prop self cursor)
                   (prop self alpha?) state-path
                   (map (fn (p) (make-path "Graphics" p)) graphics)))
@@ -212,11 +223,23 @@
   (define (point-in-poly? p poly)
     (call-5l-prim 'PolygonContains poly p))
 
+  (define (offset-point p1 p2)
+    (point (+ (point-x p1) (point-x p2))
+           (+ (point-y p1) (point-y p2))))
+
   (define (offset-rect r p)
     (rect (+ (rect-left r) (point-x p))
           (+ (rect-top r) (point-y p))
           (+ (rect-right r) (point-x p))
           (+ (rect-bottom r) (point-y p))))
+
+  (define (offset-shape s p)
+    (cond
+     [(rect? s) (offset-rect s p)]
+     [(polygon? s) (apply polygon (map (fn (v) (offset-point v p))
+                                       (polygon-vertices s)))]
+     [else
+      (error (cat "Don't know how to offset " s))]))
 
   (define (rect-horizontal-center r)
     (+ (rect-left r) (round (/ (- (rect-right r) (rect-left r)) 2))))
@@ -269,11 +292,10 @@
     (draw-text stylesheet r msg))
 
   (define-element-template %browser%
-      [rect
-       [location :type <string> :label "Location" :default "about:blank"]
+      [[location :type <string> :label "Location" :default "about:blank"]
        [fallback? :type <boolean> :label "Use primitive fallback web browser?"
                   :default #f]]
-      (%element%)
+      (%widget%)
 
     (on load-page (page)
       (let [[path (make-path "HTML" page)]]
@@ -322,20 +344,16 @@
     (create %browser% :name name :rect r :location location))
 
   (define-element-template %edit-box-element%
-      [rect
-       [text :type <string> :label "Initial text"]
+      [[text :type <string> :label "Initial text"]
        [font-size :type <integer> :label "Font size"]
        [multiline? :type <boolean> :label "Allow multiple lines?"]]
-      (%element%)
+      (%widget%)
     (call-5l-prim 'editbox (node-full-name self) (prop self rect) text
                   font-size multiline?))
 
   (define (edit-box name r text &key (font-size 9) (multiline? #f))
     (create %edit-box-element% :name name :rect r :text text
             :font-size font-size :multiline? multiline?))
-
-  (define-element-template %invisible-element% [] (%element% ;;:at (point 0 0)
-                                                             ))
 
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
@@ -400,13 +418,12 @@
         (make-path "Media" location)))
 
   (define-element-template %movie-element%
-      [rect
-       [location     :type <string>  :label "Location"]
+      [[location     :type <string>  :label "Location"]
        [controller?  :type <boolean> :label "Has movie controller" :default #f]
        [audio-only?  :type <boolean> :label "Audio only"        :default #f]
        [loop?        :type <boolean> :label "Loop movie"        :default #f]
        [interaction? :type <boolean> :label "Allow interaction" :default #f]]
-      (%element%)
+      (%widget%)
     (let [[path (media-path location)]]
       (check-file path)
       (call-5l-prim 'movie (node-full-name self) (prop self rect)

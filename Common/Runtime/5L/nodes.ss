@@ -455,9 +455,12 @@
       result))
 
   (define-syntax expand-prop-decls
-    (syntax-rules ()
+    (syntax-rules (:new-default)
       [(expand-prop-decls)
        '()]
+      [(expand-prop-decls (name :new-default default) rest ...)
+       (cons (make <template-prop-decl> :name 'name :default default)
+             (expand-prop-decls rest ...))]
       [(expand-prop-decls (name keywords ...) rest ...)
        (cons (make <template-prop-decl> :name 'name keywords ...)
              (expand-prop-decls rest ...))]
@@ -467,7 +470,7 @@
 
   (define-syntax (expand-fn-with-self-and-prop-names stx)
     (syntax-case stx ()
-      [(expand-fn-with-self self prop-decls . body)
+      [(expand-fn-with-self-and-prop-names self prop-decls . body)
        (begin
 
          ;; Bind each template property NAME to a call to (prop self
