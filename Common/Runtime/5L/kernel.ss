@@ -114,6 +114,11 @@
        (call-with-errors-blocked report-func
                                  (lambda () (begin/var body ...)))]))
 
+  (define-syntax with-values
+    (syntax-rules ()
+      [(with-values values expr body ...)
+       (call-with-values (lambda () expr) (lambda values body ...))]))
+             
 
   ;;=======================================================================
   ;;  Standard Hooks
@@ -386,7 +391,7 @@
   (define (exit-script)
     (call-5l-prim 'schemeexit))
   
-  (define (jump card)
+  (define (jump-to-card card)
     (if (have-5l-prim? 'jump)
         (call-5l-prim 'jump (card-name card))
         (begin
@@ -402,16 +407,209 @@
 
 
   ;;=======================================================================
+  ;;  Object Model
+  ;;=======================================================================
+
+  ;;-----------------------------------------
+  ;; Nodes
+
+  (provide <node> node? node-name node-full-name node-parent find-node @)
+
+  (defclass <node> ()
+    name
+    parent
+    init-thunk)
+
+  (defmethod (initialize (node <node>) initargs)
+    (call-next-method)
+    (when (node-parent node)
+      (group-add-child! (node-parent node) node)))
+
+  (define (node-full-name node)
+    ;; Join together local names with "/" characters.
+    (let [[parent (node-parent node)]]
+      (if (and parent (not (eq? parent $root-node)))
+        (string->symbol (cat (node-full-name (node-parent node))
+                             "/" (node-name node)))
+        (node-name node))))
+
+  (define *node-table* (make-hash-table))
+
+  (define (register-node node)
+    (let [[name (node-full-name node)]]
+      (when (hash-table-get *node-table* name (lambda () #f))
+        (error (cat "Duplicate copies of node " node)))
+      (hash-table-put! *node-table* name node)))
+
+  (define (find-node name)
+    (hash-table-get *node-table* name (lambda () #f)))
+
+  (define (find-node-relative base name)
+    (if (eq? base $root-node)
+        (find-node name)
+        (let* [[base-name (node-full-name base)]
+               [candidate (string->symbol (cat base-name "/" name))]
+               [found (find-node candidate)]]
+          (or found (find-node-relative (node-parent base) name)))))
+
+  (define-syntax @
+    (syntax-rules ()
+      [(@ name)
+       (find-node-relative (node-parent (current-card)) 'name)]))
+
+  (define (analyze-node-name name)
+    ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
+    ;; node's parent and the "local" portion of the name (excluding the
+    ;; parent).  A "/" character separates different levels of nesting.
+    (if (eq? name |/|)
+        (values #f |/|) ; Handle the root node.
+        (let* [[str (symbol->string name)]
+               [matches (regexp-match "^(([^/].*)/)?([^/]+)$" str)]]
+          (cond
+           [(not matches)
+            (error (cat "Illegal node name: " name))]
+           [(not (cadr matches))
+            (values $root-node name)]
+           [else
+            (let [[parent (find-node (string->symbol (caddr matches)))]]
+              (unless parent
+                (error (cat "Parent of " name " does not exist.")))
+              (values parent
+                      (string->symbol (cadddr matches))))]))))
+
+  ;;-----------------------------------------
+  ;; Groups
+
+  (provide <group> group? group-children)
+
+  (defclass <group> (<node>)
+    children)
+
+  (defgeneric (group-add-child! (group <group>) (child <node>)))
+
+  (defmethod (group-add-child! (group <group>) (child <node>))
+    (set! (group-children group)
+          (append (group-children group) (list child))))
+    
+
+  ;;-----------------------------------------
+  ;; Jumpables (things which support jump)
+
+  (provide <jumpable> jumpable?)
+
+  (defclass <jumpable> (<node>))
+
+  (defgeneric (jump (target <jumpable>)))
+
+  ;;-----------------------------------------
+  ;; Groups of Cards
+
+  (provide $root-node)
+
+  (define (card-or-card-group? node)
+    (or (card? node) (card-group? node)))
+
+  (defclass <card-group> (<group>)
+    active?)
+
+  (defgeneric (card-group-find-next (group <card-group>) (child <jumpable>)))
+  (defgeneric (card-group-find-prev (group <card-group>) (child <jumpable>)))
+
+  (defmethod (card-group-find-next (group <card-group>) (child <jumpable>))
+    #f)
+
+  (defmethod (card-group-find-prev (group <card-group>) (child <jumpable>))
+    #f)
+
+  (defmethod (group-add-child! (group <card-group>) (child <node>))
+    (assert (card-or-card-group? child))
+    (call-next-method))
+
+  (define $root-node
+    (make <card-group>
+      :name |/| :parent #f :active? #t :init-thunk #f
+      :children '()))
+  
+  ;;-----------------------------------------
+  ;; Sequences of Cards (like groups, but ordered)
+
+  (defclass <card-sequence> (<jumpable> <card-group>))
+
+  (defmethod (jump (target <card-sequence>))
+    (if (null? (group-children target))
+        (error (cat "Can't jump to sequence " (node-full-name target)
+                    " because it contains no cards."))
+        (jump (car (group-children target)))))
+
+  (defmethod (card-group-find-next (group <card-sequence>) (child <jumpable>))
+    ;; Find the node *after* child.
+    (let [[remainder (memq child (group-children group))]]
+      (assert (not (null? remainder)))
+      (if (null? (cdr remainder))
+          #f
+          (cadr remainder))))
+
+  (defmethod (card-group-find-prev (group <card-group>) (child <jumpable>))
+    ;; Find the node *before* child.
+    (let search [[children (group-children group)] [candidate #f]]
+      (assert (not (null? children) ))
+      (if (eq? (car children) child)
+          candidate
+          (search (cdr children) (car children)))))
+
+  ;;-----------------------------------------
+  ;; Cards
+
+  (provide <card> card? card-next card-prev jump-next jump-prev)
+
+  (defclass <card>          (<jumpable> <group>))
+
+  (defmethod (jump (target <card>))
+    (jump-to-card target))
+
+  (define (card-next)
+    (card-group-find-next (node-parent (current-card)) (current-card)))
+
+  (define (card-prev)
+    (card-group-find-prev (node-parent (current-card)) (current-card)))
+
+  (define (jump-helper find-card str)
+    (let [[c (find-card)]]
+      (if c
+          (jump c)
+          (error (cat "No card " str " " (node-full-name (current-card))
+                      " in sequence.")))))
+      
+  (define (jump-next) (jump-helper card-next "after"))
+  (define (jump-prev) (jump-helper card-prev "before"))
+
+  ;;-----------------------------------------
+  ;; Elements (currently unused)
+
+  ;;(defclass <element>       (<node>))
+
+
+  ;;=======================================================================
   ;;  Cards
   ;;=======================================================================
 
-  (provide card-exists? current-card card-name card)
+  (provide card-exists? current-card card-name group sequence card)
 
+  ;; TODO - A different meaning of "previous" from the one above.  Rename.
   (define *%kernel-current-card* #f)
   (define *%kernel-previous-card* #f)
   
-  (define-struct %kernel-card (name thunk) (make-inspector))
-  
+  ;; TODO - This glue makes <card> look like the old %kernel-card.  Remove.
+  ;; TODO - We need to start creating sequences, etc., to contain cards.
+  ;;(define-struct %kernel-card (name thunk) (make-inspector))
+  (define (make-%kernel-card name thunk)
+    (make <card> :name name :init-thunk thunk :parent $root-node
+          :children '()))
+  (define %kernel-card? card?)
+  (define %kernel-card-name node-full-name)
+  (define %kernel-card-thunk node-init-thunk)
+
+  ;; TODO - Redundant with *node-table*.  Remove.
   (define *%kernel-card-table* (make-hash-table))
   
   (define (%kernel-register-card card)
@@ -481,12 +679,43 @@
      [#t
       (throw (cat "Not a card: " card-or-name))]))
 
+  (define-syntax define-node
+    (syntax-rules ()
+      [(define-node name [parent local-name] init-expr)
+       (begin
+         (define name
+           (with-values [parent local-name] (analyze-node-name 'name)
+             init-expr))
+         (register-node name))]))
+
+  (define-syntax group
+    (syntax-rules ()
+      [(group name)
+       (define-node name [parent local-name]
+         (make <card-group>
+           :parent parent
+           :name local-name
+           :children '()))]))
+
+  (define-syntax sequence
+    (syntax-rules ()
+      [(group name)
+       (define-node name [parent local-name]
+         (make <card-sequence>
+           :parent parent
+           :name local-name
+           :children '()))]))
+
   (define-syntax card
     (syntax-rules ()
       [(card name body ...)
        (begin
-         (define name (make-%kernel-card 'name
-                                         (lambda () (begin/var body ...))))
+         (define-node name [parent local-name]
+           (make <card>
+             :parent parent
+             :name local-name
+             :init-thunk (lambda () (begin/var body ...))
+             :children '()))
          (%kernel-register-card name))]))
 
 

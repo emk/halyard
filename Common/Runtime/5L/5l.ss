@@ -6,19 +6,15 @@
 
 (module 5L (lib "lispish.ss" "5L")
   (require (lib "api.ss" "5L"))
-  (require (lib "interpolate.ss" "5L"))
 
   ;; We want to export most of lispish, but override a few definitions
   ;; locally to get some decidedly non-Scheme behavior.
   (provide (all-from-except (lib "lispish.ss" "5L")
-			    ;; String interpolation.
-			    #%datum
-			    ;; begin/var hacks.
-			    lambda define let
-			    ))
+                            ;; begin/var hacks.
+                            lambda define let
+                            ))
 
   (provide (all-from (lib "api.ss" "5L")))
-  (provide (rename interpolating-#%datum #%datum))
 
 
   ;;=======================================================================
@@ -28,8 +24,8 @@
   ;;  accept (var ...) declarations.
   
   (provide (rename lambda/var lambda)
-	   (rename define/var define)
-	   (rename let/var let))
+           (rename define/var define)
+           (rename let/var let))
 
   (define-syntax lambda/var
     (syntax-rules ()
