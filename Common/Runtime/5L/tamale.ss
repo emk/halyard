@@ -203,10 +203,13 @@
     (draw-text stylesheet r msg))
 
   (define-element-template %html-element%
-      [[location :type <string> :label "Location"]]
+      [[location :type <string> :label "Location"]
+       [fallback? :type <boolean> :label "Use primitive fallback web browser?"
+                  :default #f]]
       (:template %element%)
     (call-5l-prim 'html (node-full-name self) 
                   (make-node-event-dispatcher self) (prop self rect)
+                  fallback?
                   ;; TODO - Support actual URL's.
                   (build-path (current-directory) location)))
 
