@@ -4,7 +4,6 @@
 #include "TDeveloperPrefs.h"
 #include "TLogger.h"
 #include "TCommonPrimitives.h"
-#include "T5LPrimitives.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -19,7 +18,4 @@ void FIVEL_NS InitializeCommonCode()
     
     // Register our portable interpreter primitives.
     RegisterCommonPrimitives();
-
-	// Register our 5L-only portable interpreter primitives.
-	Register5LPrimitives();
 }

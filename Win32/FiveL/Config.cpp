@@ -363,6 +363,7 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 		}
 		
 		theConfigFile.close(); 
+		SwitchScripts(1);
 	}
 	return (true);
 }
@@ -640,6 +641,13 @@ TString ConfigManager::GetAudioPath(TString &inName)
  
 /*
  $Log$
+ Revision 1.8.4.1  2002/07/31 21:18:53  emk
+ Overhaul of the Windows event handling system.
+
+   * emk: The interpreter now calls the idle loop, instead of vice versa.
+   * emk: Redoscript is now handled by a TInterpreterManager object.
+   * emk: It's no longer possible to switch between scripts.
+
  Revision 1.8  2002/07/25 22:25:36  emk
    * Made new CryptStream auto_ptr code work under Windows.
    * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now

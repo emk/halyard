@@ -8,6 +8,10 @@ CVS - emk, zeb
   * zeb: Added a GET primitive.
   * zeb: Cleaned date stuff out of LUtil.{h,cpp}.
   * emk: First work on Scheme.
+  * emk: Overhaul of the Windows event handling system.
+  * emk: The interpreter now calls the idle loop, instead of vice versa.
+  * emk: Redoscript is now handled by a TInterpreterManager object.
+  * emk: It's no longer possible to switch between scripts.
 
 3.4.0 - 26 July 2002 - emk
 

@@ -333,10 +333,10 @@ void Card::DoExit()
 {
     int16 WhichSide = 0;
     
-    if (m_Script.more()) 
-    	m_Script >> WhichSide;
-    
-    gCardManager.DoExit(WhichSide);
+    if (m_Script.more())
+		gLog.Error("Switching scripts is no longer supported.");
+
+	TInterpreterManager::GetInstance()->RequestQuitApplication();
 }
 
 /***************************
@@ -355,9 +355,6 @@ CardManager::CardManager() : TIndexManager()
     m_CurrentCard = NULL;
     m_JumpCard = NULL; 
     m_TimeoutCard = NULL;
-    m_ExitNow = false;
-    m_ExitScript = 0;
-	m_ReDoScript = false;
 }
 
 void CardManager::RemoveAll(void)
@@ -370,9 +367,6 @@ void CardManager::RemoveAll(void)
     m_CurrentCard = NULL;
     m_JumpCard = NULL; 
     m_TimeoutCard = NULL;
-    m_ExitNow = false;
-    m_ExitScript = 0;
-	m_ReDoScript = false;
 
  	m_CardList.RemoveAll();   
 	TIndexManager::RemoveAll();
@@ -474,25 +468,6 @@ void CardManager::Idle(void)
 		// process some commands
 		m_CurrentCard->Execute();
 	}
-	
-	// see if we need to leave
-	if (m_ExitNow)
-	{
-		SwitchScripts(m_ExitScript);
-	}
-
-	// see if we need to do redoscript
-	if (m_ReDoScript)
-	{
-		m_ReDoScript = false;
-		ReDoScript(m_ReDoCardName);
-	}
-}
-
-void CardManager::DoExit(int32 inScript)
-{
-	m_ExitNow = true;
-	m_ExitScript = inScript;
 }
 
 void CardManager::OneCommand(TString &inCmd)
@@ -586,12 +561,6 @@ void CardManager::JumpToCard(Card *inCard)
 		gDebugLog.Log("Trying to jump to a null card");
 }
 
-void CardManager::DoReDoScript(TString &inCardName)
-{
-	m_ReDoScript = true;
-	m_ReDoCardName = inCardName;
-}
-
 void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName, 
 							   int32 inStart, int32 inEnd)
 {
@@ -614,6 +583,13 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.11.4.1  2002/07/31 21:18:53  emk
+ Overhaul of the Windows event handling system.
+
+   * emk: The interpreter now calls the idle loop, instead of vice versa.
+   * emk: Redoscript is now handled by a TInterpreterManager object.
+   * emk: It's no longer possible to switch between scripts.
+
  Revision 1.11  2002/07/26 17:55:23  emk
  3.3.20 - 26 July 2002 - emk
 

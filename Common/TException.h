@@ -110,14 +110,15 @@ public:
 	virtual const char* what () const throw ();
 };
 
-#define CATCH_ALL_EXCEPTIONS_AND_RETURN(func) \
+#define CATCH_ALL_EXCEPTIONS_AND_RETURN(FUNC,DEFAULT) \
 	try { \
-		return (func); \
+		return (FUNC); \
 	} catch (std::exception &e) { \
 		gLog.FatalError("Unexpected internal error: %s.", e.what()); \
     } catch (...) { \
 		gLog.FatalError("Unexpected, unknown internal error."); \
-	}
+	} \
+    return DEFAULT;
 
 END_NAMESPACE_FIVEL
 
