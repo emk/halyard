@@ -126,6 +126,13 @@ void ConfigManager::ParsePrefs(TString absoluteFilename)
 				else if (value.Equal("window", false))
 					userPrefs[MODE] = MODE_WINDOW;
 			}
+			else if (key.Equal("multiple_instances", false))
+			{
+				if (value.Equal("no"))
+					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_NO;
+				else if (value.Equal("yes"))
+					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_YES;
+			}
 			else if (key.Equal("redoscript", false))
 			{
 				if (value.Equal("off", false))
@@ -143,7 +150,7 @@ void ConfigManager::ParsePrefs(TString absoluteFilename)
 			else
 			{
 				errFlag = true;
-				sprintf(errString, "Unknown option in user preferences file \"%s\", reverting to defaults", key);
+				sprintf(errString, "Unknown option in user preferences file \"%s\", reverting to defaults", key.GetString());
 			}
 		}
 	}
@@ -780,6 +787,21 @@ bool	ConfigManager::GetPrefsKeyValue(char *line, TString &key, TString &value)
  
 /*
  $Log$
+ Revision 1.3.2.2  2002/03/13 16:32:37  emk
+ FiveL 3.2.0.2!
+
+ Merged fixes from unreleased 3.2.3 code into stable branch:
+
+  - 5L.prefs can allow multiple instances of 5L to run.
+
+ This engine is a release candidate for Genetics in Clinical Practice.
+ Please test it extensively; if everything works, this binary will go
+ to the testing house.
+
+ Revision 1.6  2002/03/05 10:25:41  tvw
+ Added new option to 5L.prefs to optionally allow multiple
+ instances of 5L to run.
+
  Revision 1.3.2.1  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:

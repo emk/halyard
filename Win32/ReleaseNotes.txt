@@ -1,6 +1,6 @@
 FiveL for Win32 Release Notes
 
-Unreleased
+3.2.0.2, Wednesday, March 13, 2002, 4:13 PM
 
 	Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
         because we want these in the stable engine.  Highlights:
@@ -8,7 +8,19 @@ Unreleased
 	1) FiveL.prefs file support.
 	2) Removal of -D command line flag.
 
+        Also merged fixes from unreleased 3.2.3 code:
+
+        3) 5L.prefs can allow multiple instances of 5L to run.
+
         The relevant release notes have been merged into this file.
+
+Some (but not all) changes from 3.2.3 unreleased version
+
+	(1) Added new option to 5L.prefs to optionally allow multiple
+	instances of 5L to run.
+
+	# Allow multiple instances of FiveL (yes, NO)
+	multiple_instances = "yes"	
 
 3.2.1, Tuesday, February 19, 2002, 12:15 PM
 
