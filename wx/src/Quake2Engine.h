@@ -41,6 +41,12 @@ class Quake2Engine : public wxQuake2Window
 public:
 	~Quake2Engine();
 
+	//////////
+	// We need to intercept Show(FALSE) to blit a copy of the onscreen
+	// image to our offscreen buffer.
+	//
+    virtual bool Show(bool show = TRUE);
+
     //////////
     // Notify the Quake2Engine that the script is being reloaded.
     //

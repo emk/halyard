@@ -1207,6 +1207,17 @@ void Stage::DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
                           inY + inBitmap.GetHeight()));
 }
 
+void Stage::DrawDCContents(wxDC &inDC)
+{
+    wxMemoryDC dc;
+    dc.SelectObject(mOffscreenPixmap);
+	if (!dc.Blit(0, 0, mStageSize.GetWidth(), mStageSize.GetHeight(),
+				 &inDC, 0, 0))
+	{
+		ClearStage(*wxBLACK);
+	}
+}
+
 void Stage::ModalTextInput(const wxRect &inBounds,
                            const int inTextSize,
                            const wxColour &inForeColor,

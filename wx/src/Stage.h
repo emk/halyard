@@ -603,6 +603,16 @@ public:
 					bool inTransparent = true);
 
 	//////////
+	// Blit the contents of the specified DC to our offscreen buffer.
+	// If the blit fails, fill the offscreen buffer with black.
+	// (This is currently used for synchronizing our display with
+	// whatever Quake 2 left on the screen.)
+	// 
+	// [in] inDC - a DC the same size as the stage
+	//
+	void DrawDCContents(wxDC &inDC);
+
+	//////////
 	// Display a modal text input box.
 	//
 	// [in] inBounds - The box to use for text input.

@@ -39,6 +39,21 @@ Quake2Engine::~Quake2Engine()
 	sInstance = NULL;
 }
 
+bool Quake2Engine::Show(bool show)
+{
+	if (!show && IsShown())
+	{
+		// Attempt to save our displayed graphics back into our Stage's
+		// offscreen buffer.
+		wxClientDC client_dc(this);
+		wxGetApp().GetStage()->DrawDCContents(client_dc);
+	}
+
+	// Pass the request along to our parent.
+	return wxQuake2Window::Show(show);
+}
+
+
 void Quake2Engine::NotifyScriptReload()
 {
 	// Hide the Quake 2 window, if necessary.  If the reloaded script wants
