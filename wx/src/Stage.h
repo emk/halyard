@@ -3,6 +3,8 @@
 #ifndef Stage_H
 #define Stage_H
 
+#include "GraphicsTools.h"
+
 class Stage;
 
 //////////
@@ -26,6 +28,7 @@ class StageFrame : public wxFrame
     wxMenuBar *mMenuBar;
     wxMenu *mFileMenu;
     wxMenu *mViewMenu;
+    wxMenu *mWindowMenu;
     wxMenu *mHelpMenu;
 
 public:
@@ -37,15 +40,20 @@ public:
     //
     StageFrame(const wxChar *inTitle, wxSize inStageSize);
 
+    //////////
+    // Get the stage attached to this frame.
+    //
+    Stage *GetStage() { return mStage; }
+
     void OnExit();
     void OnReloadScript();
     void OnAbout();
 
     void OnShowLog();
-    void UpdateUiShowFullScreen(wxUpdateUIEvent &inEvent);
-    void OnShowFullScreen();
-    void UpdateUiShowXy(wxUpdateUIEvent &inEvent);
-    void OnShowXy();
+    void UpdateUiFullScreen(wxUpdateUIEvent &inEvent);
+    void OnFullScreen();
+    void UpdateUiDisplayXy(wxUpdateUIEvent &inEvent);
+    void OnDisplayXy();
 
     //////////
     // We provide an OnClose event handler so we can notify the application
@@ -66,9 +74,25 @@ class Stage : public wxWindow
     StageFrame *mFrame;
 
     //////////
+    // The size of our drawing stage.
+    //
+    wxSize mStageSize;
+
+    //////////
+    // The StageFrame associated with the stage.  We need to poke at it
+    // occassionally to implement various features.
+    //
+    wxBitmap mOffscreenPixmap;
+
+    //////////
     // Are we displaying the XY co-ordinates of the cursor?
     //
-    bool mIsShowingXy;
+    bool mIsDisplayingXy;
+
+	//////////
+	// Invalidate the specified rectangle.
+	//
+	void InvalidateRect(const wxRect &inRect);
 
 public:
     //////////
@@ -87,14 +111,41 @@ public:
     void OnMouseMove(wxMouseEvent &inEvent);
 
     //////////
+    // Redraw the stage.
+    //
+    void OnPaint(wxPaintEvent &inEvent);
+
+    //////////
     // Are we currently displaying the XY co-ordinates of the cursor?
     //
-    bool IsShowingXy() { return mIsShowingXy; }
+    bool IsDisplayingXy() { return mIsDisplayingXy; }
 
     //////////
     // Toggle the display of the cursor's XY co-ordinates.
     //
-    void ToggleShowXy() { mIsShowingXy = !mIsShowingXy; }
+    void ToggleDisplayXy() { mIsDisplayingXy = !mIsDisplayingXy; }
+
+	//////////
+	// Handy conversion operator to transform 5L colors into wxWindows colors.
+	//
+	wxColor GetColor(const GraphicsTools::Color &inColor);
+
+    //////////
+    // Clear the stage to the specified color.
+    //
+    void ClearStage(const wxColor &inColor);
+
+    //////////
+    // Draw a bitmap on the stage at the specified location.
+	//
+	// [in] inBitmap - The bitmap to draw.
+	// [in] inX - The X coordinate to draw it at.
+	// [in] inY - The Y coordinate to draw it at.
+	// [in_optional] inTransparent - Should we honor transparency information
+	//                               in the bitmap?
+    //
+    void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
+					bool inTransparent = true);
 
     DECLARE_EVENT_TABLE();
 };

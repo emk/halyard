@@ -98,6 +98,10 @@ SOURCE=..\..\src\FiveLApp.cpp
 
 SOURCE=..\..\src\Stage.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\src\TWxPrimitives.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -109,6 +113,10 @@ SOURCE=..\..\src\FiveLApp.h
 # Begin Source File
 
 SOURCE=..\..\src\Stage.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\TWxPrimitives.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

@@ -1,16 +1,19 @@
 #include <wx/wx.h>
+#include <wx/image.h>
 
 #include "TStartup.h"
+#include "TDeveloperPrefs.h"
 
 #include "FiveLApp.h"
 #include "Stage.h"
+#include "TWxPrimitives.h"
 
 USING_NAMESPACE_FIVEL
 
 IMPLEMENT_APP(FiveLApp)
 
 FiveLApp::FiveLApp()
-    : mHaveOwnEventLoop(false)
+    : mHaveOwnEventLoop(false), mStageFrame(NULL)
 {
     // Do nothing here but set up instance variables.  Real work should
     // happen in FiveLApp::OnInit, below.
@@ -18,19 +21,31 @@ FiveLApp::FiveLApp()
 
 void FiveLApp::IdleProc()
 {
-    // Dispatch all queued events and return from the IdleProc.
-    while (wxGetApp().Pending())
-        wxGetApp().Dispatch();
+    // Dispatch all queued events and return from the IdleProc.  Note that
+    // the '||' operator short-circuts, and will prevent us from calling
+    // ProcessIdle until the pending queue is drained.  See the ProcessIdle
+    // documentation for an explanation of when and why we might need to
+    // call it multiple times.
+    while (wxGetApp().Pending() || wxGetApp().ProcessIdle())
+    {
+	if (wxGetApp().Pending())
+	    wxGetApp().Dispatch();
+    }
 }
 
 bool FiveLApp::OnInit()
 {
     // Get the 5L runtime going...
     ::InitializeCommonCode();
+    ::RegisterWxPrimitives();
 
-    StageFrame *frame = new StageFrame("wx5L", wxSize(640, 480));
-    frame->Show();
-    SetTopWindow(frame);
+    // Initialize some optional wxWindows features.
+    ::wxInitAllImageHandlers();
+
+    // Create and display our stage frame.
+    mStageFrame = new StageFrame("wx5L", wxSize(640, 480));
+    mStageFrame->Show();
+    SetTopWindow(mStageFrame);
     return TRUE;
 }
 
@@ -49,7 +64,7 @@ int FiveLApp::MainLoop()
         // Run our own event loop.
         SetExitOnFrameDelete(FALSE);
         mHaveOwnEventLoop = true;
-		IdleProc();
+	IdleProc();
         manager->Run();
         delete manager;
         manager = NULL;
@@ -80,4 +95,9 @@ void FiveLApp::ExitMainLoop()
         // Handle things normally.
         wxApp::ExitMainLoop();
     }
+}
+
+Stage *FiveLApp::GetStage()
+{
+    return GetStageFrame()->GetStage();
 }

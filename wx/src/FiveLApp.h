@@ -3,6 +3,9 @@
 #ifndef FiveLApp_H
 #define FiveLApp_H
 
+class StageFrame;
+class Stage;
+
 //////////
 // Enumerations for menu items, toolbar buttons, and other command-
 // generating widgets.
@@ -13,8 +16,8 @@ enum {
     FIVEL_ABOUT = 200,
 
     FIVEL_SHOW_LOG = 300,
-    FIVEL_SHOW_FULL_SCREEN,
-    FIVEL_SHOW_XY
+    FIVEL_FULL_SCREEN,
+    FIVEL_DISPLAY_XY
 };
 
 class FiveLApp : public wxApp
@@ -24,6 +27,11 @@ class FiveLApp : public wxApp
 	// event loop?
 	//
     bool mHaveOwnEventLoop;
+
+	//////////
+	// Our StageFrame.
+	//
+	StageFrame *mStageFrame;
 
 	//////////
 	// This procedure is called periodically by the script interpreter
@@ -50,6 +58,22 @@ public:
 	// override the standard "request application shutdown" function.
 	//
     virtual void ExitMainLoop();
+
+	//////////
+	// Remove the stage frame from this application.  This should only
+	// be called by the StageFrame.
+	//
+	void DetachStageFrame() { mStageFrame = NULL; }
+	
+	//////////
+	// Get the StageFrame for this application.
+	//
+	StageFrame *GetStageFrame() { ASSERT(mStageFrame); return mStageFrame; }
+	
+	//////////
+	// Get the Stage for this application.
+	//
+	Stage *GetStage();
 };
 
 //////////

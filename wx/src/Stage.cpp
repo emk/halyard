@@ -1,6 +1,7 @@
 #include <wx/wx.h>
 
 #include "TInterpreter.h"
+#include "TLogger.h"
 
 #include "FiveLApp.h"
 #include "Stage.h"
@@ -15,11 +16,11 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_RELOAD_SCRIPT, StageFrame::OnReloadScript)
     EVT_MENU(FIVEL_ABOUT, StageFrame::OnAbout)
     EVT_MENU(FIVEL_SHOW_LOG, StageFrame::OnShowLog)
-    EVT_UPDATE_UI(FIVEL_SHOW_FULL_SCREEN, StageFrame::UpdateUiShowFullScreen)
-    EVT_MENU(FIVEL_SHOW_FULL_SCREEN, StageFrame::OnShowFullScreen)
-    EVT_UPDATE_UI(FIVEL_SHOW_XY, StageFrame::UpdateUiShowXy)
-	EVT_CLOSE(StageFrame::OnClose)
-    EVT_MENU(FIVEL_SHOW_XY, StageFrame::OnShowXy)
+    EVT_MENU(FIVEL_FULL_SCREEN, StageFrame::OnFullScreen)
+    EVT_UPDATE_UI(FIVEL_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
+    EVT_MENU(FIVEL_DISPLAY_XY, StageFrame::OnDisplayXy)
+    EVT_UPDATE_UI(FIVEL_DISPLAY_XY, StageFrame::UpdateUiDisplayXy)
+    EVT_CLOSE(StageFrame::OnClose)
 END_EVENT_TABLE()
 
 StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
@@ -29,6 +30,11 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
 {
     // Set up useful logging.
     mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
+
+    // Make our background black.  This should theoretically be handled
+    // by 'background->SetBackgroundColour' below, but Windows takes a
+    // fraction of a second to show that object.
+    SetBackgroundColour(*wxBLACK);
 
     // Create a background panel to surround our stage with.  This keeps
     // life simple.
@@ -56,14 +62,18 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
 
     // Set up our View menu.
     mViewMenu = new wxMenu();
-    mViewMenu->AppendCheckItem(FIVEL_SHOW_FULL_SCREEN,
-                               "Show &Full Screen\tCtrl+F",
+    mViewMenu->AppendCheckItem(FIVEL_FULL_SCREEN,
+                               "&Full Screen\tCtrl+F",
                                "Use a full screen window.");
-    mViewMenu->Append(FIVEL_SHOW_LOG, "Show &Log\tCtrl+L",
-                      "Show application log window.");
     mViewMenu->AppendSeparator();
-    mViewMenu->AppendCheckItem(FIVEL_SHOW_XY, "Show Cursor &XY",
-                               "Show the cursor's XY position.");
+    mViewMenu->AppendCheckItem(FIVEL_DISPLAY_XY, "Display Cursor &XY",
+                               "Display the cursor's XY position.");
+
+    // Set up our Window menu.
+    mWindowMenu = new wxMenu();
+    mWindowMenu->Append(FIVEL_SHOW_LOG, "Show &Log\tCtrl+L",
+    			"Show application log window.");
+    
 
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
@@ -74,6 +84,7 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     mMenuBar = new wxMenuBar();
     mMenuBar->Append(mFileMenu, "&File");
     mMenuBar->Append(mViewMenu, "&View");
+    mMenuBar->Append(mWindowMenu, "&Window");
     mMenuBar->Append(mHelpMenu, "&Help");
     SetMenuBar(mMenuBar);
 
@@ -83,8 +94,8 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     tb->AddTool(FIVEL_RELOAD_SCRIPT, "Reload", wxBITMAP(tb_reload),
                 "Reload Script");
     tb->AddSeparator();
-    tb->AddCheckTool(FIVEL_SHOW_XY, "Show XY", wxBITMAP(tb_xy),
-                     wxNullBitmap, "Show Cursor XY");
+    tb->AddCheckTool(FIVEL_DISPLAY_XY, "Display XY", wxBITMAP(tb_xy),
+                     wxNullBitmap, "Display Cursor XY");
     tb->Realize();
 	
     // Add a status bar with 1 field.  The 0 disables the resize thumb
@@ -138,12 +149,12 @@ void StageFrame::OnShowLog()
     mLogWindow->Show(TRUE);
 }
 
-void StageFrame::UpdateUiShowFullScreen(wxUpdateUIEvent &inEvent)
+void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent)
 {
     inEvent.Check(IsFullScreen());
 }
 
-void StageFrame::OnShowFullScreen()
+void StageFrame::OnFullScreen()
 {
     if (IsFullScreen())
         ShowFullScreen(FALSE);
@@ -155,14 +166,14 @@ void StageFrame::OnShowFullScreen()
     }
 }
 
-void StageFrame::UpdateUiShowXy(wxUpdateUIEvent &inEvent)
+void StageFrame::UpdateUiDisplayXy(wxUpdateUIEvent &inEvent)
 {
-    inEvent.Check(mStage->IsShowingXy());
+    inEvent.Check(mStage->IsDisplayingXy());
 }
 
-void StageFrame::OnShowXy()
+void StageFrame::OnDisplayXy()
 {
-    mStage->ToggleShowXy();
+    mStage->ToggleDisplayXy();
 }
 
 void StageFrame::OnClose(wxCloseEvent &inEvent)
@@ -172,9 +183,14 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
     if (TInterpreterManager::HaveInstance())
         TInterpreterManager::GetInstance()->RequestQuitApplication();
 
-	// Mark this object for destruction (as soon as the event queue
-	// is empty).
-	Destroy();
+    // Detach this object from the application.  This will make various
+    // assertions far more useful, and keep people from reaching us
+    // through the application object.
+    wxGetApp().DetachStageFrame();
+
+    // Mark this object for destruction (as soon as the event queue
+    // is empty).
+    Destroy();
 }
 
 
@@ -184,18 +200,22 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
 
 BEGIN_EVENT_TABLE(Stage, wxWindow)
     EVT_MOTION(Stage::OnMouseMove)
+    EVT_PAINT(Stage::OnPaint)
 END_EVENT_TABLE()
 
-Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inSize)
-    : wxWindow(inParent, -1, wxDefaultPosition, inSize),
-      mFrame(inFrame), mIsShowingXy(false)
+Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
+    : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
+      mFrame(inFrame), mStageSize(inStageSize),
+      mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), -1),
+      mIsDisplayingXy(false)
 {
     SetBackgroundColour(*wxBLACK);
+    ClearStage(*wxBLACK);
 }
 
 void Stage::OnMouseMove(wxMouseEvent &inEvent)
 {
-    if (mIsShowingXy)
+    if (mIsDisplayingXy)
     {
         wxClientDC dc(this);
 
@@ -207,4 +227,50 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         str.Printf("X: %d, Y: %d", (int) x, (int) y);
         mFrame->SetStatusText(str);
     }
+}
+
+void Stage::OnPaint(wxPaintEvent &inEvent)
+{
+    // Set up our drawing contexts.
+    wxPaintDC screen_dc(this);
+    wxMemoryDC offscreen_dc;
+    offscreen_dc.SelectObject(mOffscreenPixmap);
+    
+    // Blit our offscreen pixmap to the screen.
+    screen_dc.Blit(0, 0, mStageSize.GetWidth(), mStageSize.GetHeight(),
+		   &offscreen_dc, 0, 0);
+}
+
+void Stage::InvalidateRect(const wxRect &inRect)
+{
+    Refresh(FALSE, &inRect);
+}
+
+wxColour Stage::GetColor(const GraphicsTools::Color &inColor)
+{
+    if (inColor.alpha)
+	gDebugLog.Caution("Removing alpha channel from color");
+    return wxColour(inColor.red, inColor.green, inColor.blue);
+}
+
+void Stage::ClearStage(const wxColor &inColor)
+{
+    wxMemoryDC dc;
+    dc.SelectObject(mOffscreenPixmap);
+    wxBrush brush(inColor, wxSOLID);
+    dc.SetBackground(brush);
+    dc.Clear();
+    InvalidateRect(wxRect(0, 0,
+			  mStageSize.GetWidth(), mStageSize.GetHeight()));
+}
+
+void Stage::DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
+		       bool inTransparent)
+{
+    wxMemoryDC dc;
+    dc.SelectObject(mOffscreenPixmap);
+    dc.DrawBitmap(inBitmap, inX, inY, inTransparent);
+    InvalidateRect(wxRect(inX, inY,
+			  inX + inBitmap.GetWidth(),
+			  inY + inBitmap.GetHeight()));
 }
