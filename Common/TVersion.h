@@ -17,15 +17,18 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		5
+#define VERSION_REV_BIG		6
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.5 (Development)"
+#define VERSION_STRING		"5L 3.5.6 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.37  2002/10/03 19:26:10  emk
+ Rebuilt Windows engine with MzScheme 202 and cursor fix from 3.4.2.
+
  Revision 1.36  2002/10/03 02:46:29  emk
  3.5.5 - 1 Oct 2002 - emk
 

@@ -34,12 +34,12 @@ Engine changes:
     marginally works and (2) we might need it again someday.
   * Removed a number of unused files with licensing problems, and sorted
     the rest of the problematic files into categories.
-  * Changed event-handling model to give the TInterpreterManager object control,
-    instead of the traditional PowerPlant::LApplication::Run method.  This
-    requires us to roll our own version of Run and do some tricky event
-    handling in CMac5LApp::MacIdleProc.  But it also means the Mac engine
-    now supports arbitrary interpreters.  This change has lots of
-    consequences, most of them complicated--and it may affect stability.
+  * Changed event-handling model to give the TInterpreterManager object
+    control, instead of the traditional PowerPlant::LApplication::Run
+    method.  This requires us to roll our own version of Run and do some
+    tricky event handling in CMac5LApp::MacIdleProc.  But it also means the
+    Mac engine now supports arbitrary interpreters.  This change has lots
+    of consequences, most of them complicated--and it may affect stability.
   * CPlayerView is now more careful about checking whether a TInterpreter
     object actually exists before calling methods on it.
   * Renamed MakeNewIndex methods to ProcessTopLevelForm.
@@ -161,6 +161,11 @@ and figures out how to get the mzscheme libraries building.
   * Fixed nasty "Minimize when backgrounded" behavior when running in
     windowed mode (this was driving me crazy while debugging).
   * Ported 3.4.1 changes to the development branch.
+
+3.4.2 - 28 Sep 2002 - emk
+
+  * Fixed bug where cursor was visible during movie playback.  This bug
+    was introduced when the movie controller patches were added.
 
 3.4.1 - 14 Aug 2002 - emk
 
