@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -270,12 +271,7 @@ void LFont::Draw(TPoint &pt, char ch)
 //
 LFontManager::LFontManager()
 {
-	// create our "default" font
-	LFont		*theFont;
-
-	theFont = new LFont(DEFAULT_FONT_NAME, 24);
-	if (theFont != NULL)
-		AddNode(theFont);
+	AddDefaultFont();
 }
 
 //
@@ -310,12 +306,34 @@ LFont *LFontManager::GetDefaultFont(void)
 	
 	if (theFont != NULL)
 		theFont->Load();
+	else
+		gLog.FatalError("Can't find default font.  Quitting to avoid crash.");
 
 	return (theFont);
 }
 
+void LFontManager::RemoveAllButDefaultFont()
+{
+	RemoveAll();
+	AddDefaultFont();
+}
+
+void LFontManager::AddDefaultFont()
+{
+	// create our "default" font
+	LFont		*theFont;
+
+	theFont = new LFont(DEFAULT_FONT_NAME, 24);
+	if (theFont != NULL)
+		AddNode(theFont);
+}
+
 /*
  $Log$
+ Revision 1.2.8.1  2002/06/11 18:03:59  emk
+ Fixed a bug where 5L deleted the default font when switching scripts,
+ causing INPUT to crash when passed a non-existant header name.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

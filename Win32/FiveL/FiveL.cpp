@@ -924,7 +924,7 @@ void CleanUp()
 	gCommandKeyManager.RemoveAll();	
 	gPictureManager.RemoveAll();
 	gPaletteManager.RemoveAll();
-	gFontManager.RemoveAll();
+	gFontManager.RemoveAllButDefaultFont();
 	
 	DumpStats();
 }
@@ -1214,6 +1214,10 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.6.6.5  2002/06/11 18:03:59  emk
+ Fixed a bug where 5L deleted the default font when switching scripts,
+ causing INPUT to crash when passed a non-existant header name.
+
  Revision 1.6.6.4  2002/06/05 20:42:38  emk
  3.3.4.2 - Broke Win5L dependencies on TIndex file by moving various pieces
  of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter
