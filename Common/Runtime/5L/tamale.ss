@@ -35,6 +35,7 @@
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
            %basic-button% symcat
+           quicktime-component-version
            number->integer interpolate-int make-object-mover animate
            state-db-debug state-db-seconds state-db-milliseconds)
 
@@ -703,6 +704,13 @@
 
   (define (symcat . args)
     (string->symbol (apply cat args)))
+
+  ;;; Get the version of a QuickTime component, given the four-letter,
+  ;;; case-sensitive type and subtype strings. Returns 0 if the component
+  ;;; is not installed.
+  (define (quicktime-component-version type subtype)
+    (call-5l-prim 'QTComponentVersion type subtype))
+
   
   ;;-----------------------------------------------------------------------
   ;;  Animation
