@@ -1,6 +1,7 @@
 (module util (lib "lispish.ss" "5L")
 
   (require (lib "begin-var.ss" "5L"))
+  (require (lib "indent.ss" "5L"))
 
 
   ;;=======================================================================
@@ -48,6 +49,7 @@
     (syntax-rules ()
       [(assert cond)
        (%kernel-assert 'cond cond)]))
+  (define-syntax-indent assert function)
 
 
   ;;=======================================================================
@@ -74,7 +76,8 @@
            (let [[name (car remaining)]]
              (begin/var body ...))
            (loop (cdr remaining))))]))
-  
+  (define-syntax-indent foreach 1)
+
   (define (member? item list)
     (if (null? list)
         #f
@@ -109,6 +112,7 @@
       [(label name body ...)
        (call-with-escape-continuation (lambda (name)
                                         (begin/var body ...)))]))
+  (define-syntax-indent label 1)
 
   (define (call-with-errors-blocked report-func thunk)
     (let* ((result (with-handlers ([void (lambda (exn) (cons #f exn))])
@@ -126,11 +130,13 @@
       [(with-errors-blocked (report-func) body ...)
        (call-with-errors-blocked report-func
                                  (lambda () (begin/var body ...)))]))
+  (define-syntax-indent with-errors-blocked 1)
 
   (define-syntax with-values
     (syntax-rules ()
       [(with-values [values expr] body ...)
        (call-with-values (lambda () expr) (lambda values body ...))]))
+  (define-syntax-indent with-values 1)
              
 
   )

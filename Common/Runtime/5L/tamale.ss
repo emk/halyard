@@ -71,6 +71,7 @@
            (lambda () (call-5l-prim 'DcPush (node-full-name dc)))
            (lambda () body ...)
            (lambda () (call-5l-prim 'DcPop (node-full-name dc))))]))
+  (define-syntax-indent with-dc 1)
 
   (define (dc-rect)
     (call-5l-prim 'DcRect))

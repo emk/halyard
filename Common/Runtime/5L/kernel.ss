@@ -19,6 +19,8 @@
   (provide (all-from (lib "util.ss" "5L")))
   (require (lib "nodes.ss" "5L"))
   (provide (all-from (lib "nodes.ss" "5L")))
+  (require (lib "indent.ss" "5L"))
+  (provide (all-from (lib "indent.ss" "5L")))
 
   ;; Get format-result-values.
   (require (lib "trace.ss" "5L"))
@@ -292,9 +294,9 @@
           (cond
            [(function? val) 'function]
            [#t 'variable]))))
-    (define (sym->sym+type sym)
-      (cons sym (sym->type sym)))
-    (map sym->sym+type (namespace-mapped-symbols)))
+    (define (sym->record sym)
+      (list sym (sym->type sym) (syntax-indent sym)))
+    (map sym->record (namespace-mapped-symbols)))
   
   (define (%kernel-run-callback function args)
     (%kernel-run-as-callback (lambda () (apply function args))

@@ -11,6 +11,7 @@
 
   ;; Require our macro-related helpers.
   (require-for-syntax (lib "capture.ss" "5L"))
+  (require (lib "indent.ss" "5L"))
 
 
   ;;=======================================================================
@@ -140,6 +141,7 @@
     (syntax-rules ()
       [(on . rest)
        (expand-on (root-node) . rest)]))
+  (define-syntax-indent on 2)
 
   (define (register-event-handler node name handler)
     (debug-log (cat "Registering handler: " name " in " (node-full-name node)))
@@ -210,6 +212,7 @@
     (syntax-rules ()
       [(send node name . args)
        (send* node 'name :arguments (list . args))]))
+  (define-syntax-indent send 2)
 
   (defclass <event> ())
 
@@ -443,6 +446,7 @@
     (syntax-rules ()
       [(prop node name)
        (prop* node 'name)]))
+  (define-syntax-indent prop function)
 
   (define (bindings->hash-table bindings)
     ;; Turns a keyword argument list into a hash table.
@@ -550,10 +554,12 @@
   (define-syntax define-template-definer
     (syntax-rules ()
       [(define-template-definer definer-name group)
-       (define-syntax definer-name
-         (syntax-rules ()
-           [(definer-name . rest)
-            (define-template 'group . rest)]))]))
+       (begin
+         (define-syntax definer-name
+           (syntax-rules ()
+             [(definer-name . rest)
+              (define-template 'group . rest)]))
+         (define-syntax-indent definer-name 3))]))
 
   ;;-----------------------------------------------------------------------
   ;;  Nodes
@@ -650,6 +656,7 @@
     (syntax-rules ()
       [(@ name)
        (@* 'name)]))
+  (define-syntax-indent @ function)
 
   (define (elem-or-name-hack elem-or-name)
     ;; Backwards compatibility glue for code which refers to elements
@@ -707,10 +714,12 @@
   (define-syntax define-node-definer
     (syntax-rules ()
       [(define-node-definer definer-name group node-class)
-       (define-syntax definer-name
-         (syntax-rules ()
-           [(definer-name name . rest)
-            (define-node name group node-class . rest)]))]))
+       (begin
+         (define-syntax definer-name
+           (syntax-rules ()
+             [(definer-name name . rest)
+              (define-node name group node-class . rest)]))
+         (define-syntax-indent definer-name 2))]))
 
   ;;-----------------------------------------------------------------------
   ;;  Group Member
@@ -866,6 +875,7 @@
     (syntax-rules ()
       [(with-default-element-parent node . body)
        (call-with-default-element-parent node (lambda () . body))]))
+  (define-syntax-indent with-default-element-parent 1)
 
   (define (create template
                   &key (name (gensym)) (parent (default-element-parent))

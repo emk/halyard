@@ -33,6 +33,7 @@
     (syntax-rules ()
       [(fn arglist code ...)
        (lambda arglist (begin/var code ...))]))
+  (define-syntax-indent fn 1)
 
   ;;; Create an anonymous function object with no parameters.
   ;;;
@@ -42,6 +43,7 @@
     (syntax-rules ()
       [(callback code ...)
        (lambda () (begin/var code ...))]))
+  (define-syntax-indent callback 0)
 
   ;;; Create an anonymous function object with no parameters.  When
   ;;; invoked, this function object may run immediately, or it may run at
@@ -57,6 +59,7 @@
     (syntax-rules ()
       [(deferred-callback code ...)
        (callback (call-at-safe-time (callback code ...)))]))
+  (define-syntax-indent deferred-callback 0)
 
   ;;; Run a body of code until a condition is met.
   ;;;
@@ -73,6 +76,7 @@
            (begin/var body ...)
            (when cond
              (loop))))]))
+  (define-syntax-indent while 0)
 
   ;;; Run a body of code until a condition is met, updating a loop variable
   ;;; as specified.  This works in a fashion similar to C's 'for' loop.
@@ -92,6 +96,7 @@
          (when cond
            (begin/var body ...)
            (loop next-value)))]))
+  (define-syntax-indent for 1)
 
   ;;; Bind a Scheme variable name to a 5L engine variable.
   ;;;
@@ -108,6 +113,7 @@
          (maybe-initialize-engine-variable '5l-name init-val))]
       [(define-engine-variable name 5l-name)
        (define-symbol-macro name (engine-var '5l-name))]))
+  (define-syntax-indent define-engine-variable 2)
 
   (define (maybe-initialize-engine-variable 5l-name init-val)
     ;; A private helper for define-engine-variable.  We only initialize
@@ -128,6 +134,7 @@
     (syntax-rules ()
       [(define/p name init-val)
        (define-engine-variable name name init-val)]))
+  (define-syntax-indent define/p 1)
 
   ;;; @define SYNTAX with-tracing
   ;;;
@@ -201,6 +208,7 @@
              (lambda () (set! saved (text-position)))
              (lambda () (begin/var body ...))
              (lambda () (set! (text-position) saved))))]))
+  (define-syntax-indent with-saved-text-position 0)
 
   ;;; Save (graphic-position) while executing a body, and restore it
   ;;; afterwards.
@@ -215,6 +223,7 @@
              (lambda () (set! saved (graphic-position)))
              (lambda () (begin/var body ...))
              (lambda () (set! (graphic-position) saved))))]))  
+  (define-syntax-indent with-saved-graphic-position 0)
 
   ;;; @type RECT The screen rectangle, in global co-ordinates.
   (define $screen-rect (rect 0 0 800 600))
@@ -368,6 +377,7 @@
              (lambda () (set! (origin) new))
              (lambda () (begin/var body ...))
              (lambda () (set! (origin) old))))]))
+  (define-syntax-indent with-offset-origin 1)
 
 
   ;;;======================================================================
@@ -524,6 +534,7 @@
     (syntax-rules ()
       [(define-stylesheet name args ...)
        (define name (register-style 'name args ...))]))
+  (define-syntax-indent define-stylesheet 1)
 
   ;;; Draw a string of text.
   ;;;
@@ -615,6 +626,7 @@
     (syntax-rules ()
       [(state-db-fn (state-db) . body)
        (make-state-db-fn (fn (state-db) . body))]))
+  (define-syntax-indent state-db-fn 1)
 
   ;;; Create a function suitable for passing to REGISTER-STATE-DB-FN!.
   ;;; This function is written in a special, non-consing dialect of Scheme.
@@ -644,6 +656,7 @@
           :getter-name 'state-db
           :bindings (list #,@(expand-bindings #'bindings))
           :code 'body))]))
+  (define-syntax-indent state-db-fn/rt 2)
 
   ;;; Combines the features of REGISTER-STATE-DB-FN! and STATE-DB-FN.
   ;;;
@@ -661,6 +674,7 @@
         ;; We ignore #'NAME, but we use it to get the lexical context in
         ;; which a reasonable SELF variable is defined.
         (register-state-db-fn! #,(datum->syntax-object #'name 'self) value))]))
+  (define-syntax-indent define-state-db-listener 1)
   
   ;;; Combines the features of REGISTER-STATE-DB-FN! and STATE-DB-FN/RT.
   ;;;
@@ -670,5 +684,6 @@
       [(define-state-db-listener/rt (name state-db) bindings . body)
        (define-state-db-listener name
          (state-db-fn/rt (state-db) bindings . body))]))
+  (define-syntax-indent define-state-db-listener/rt 2)
 
   ) ; end module
