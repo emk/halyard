@@ -104,7 +104,7 @@ Tamale is a language for card-based interactive multimedia programming."
 	     '("fn" "callback" "deferred-callback" "while" "when" "unless"
 	       "with-saved-text-position"
 	       "with-saved-graphic-position" "with-offset-origin"
-	       "require" "set!" "and" "or" "module") t)
+	       "require" "set!" "and" "or" "module" "param") t)
 	"\\>") 1)
 
       ;; Non-standard definitions.  Make sure these get processed *after*
@@ -118,15 +118,10 @@ Tamale is a language for card-based interactive multimedia programming."
 		  'font-lock-type-face)
 		 (t 'font-lock-variable-name-face))))
       
-      ;; Tabs.
-      (list "(\\(\\(test-\\)?card\\)\\> *\\(\\sw+\\)\\>"
-	    '(1 font-lock-keyword-face)
-            '(3 font-lock-function-name-face))
-      
       ;; Cards.
-      (list "(\\(\\(test-\\)?card\\)\\> *\\(\\sw+\\)\\>"
+      (list "(\\(\\(test-\\)?\\(group\\|sequence\\|card\\|element\\)\\)\\> *\\(\\sw+\\)\\>"
 	    '(1 font-lock-keyword-face)
-            '(3 font-lock-function-name-face))
+            '(4 font-lock-function-name-face))
       
       ;; Loops.
       (list "(\\(for\\(each\\)?\\)\\> *[[(] *\\(\\sw+\\)\\>"
@@ -152,7 +147,13 @@ Tamale is a language for card-based interactive multimedia programming."
 ;;; which go on the same line as the the name of the form.
 
 (put 'module 'scheme-indent-function 2)
-(put 'card 'scheme-indent-function 1)
+(put 'group 'scheme-indent-function 2)
+(put 'sequence 'scheme-indent-function 2)
+(put 'card 'scheme-indent-function 2)
+(put 'element 'scheme-indent-function 2)
+(put 'define-group-template 'scheme-indent-function 3)
+(put 'define-card-template 'scheme-indent-function 3)
+(put 'define-element-template 'scheme-indent-function 3)
 (put 'test-card 'scheme-indent-function 2) ; for 5Ltest_scheme only.
 (put 'fn 'scheme-indent-function 1)
 (put 'callback 'scheme-indent-function 0)

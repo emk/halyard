@@ -653,7 +653,7 @@
     (extends                       :initvalue #f)
     (parameters :type <list>       :initvalue '())
     (bindings   :type <hash-table> :initvalue (make-hash-table))
-    (init-thunk :type <function>   :initvalue (lambda () #f)))
+    (init-thunk :type <function>   :initvalue (lambda (node) #f)))
 
   (defmethod (initialize (template <template>) initargs)
     (call-next-method)
@@ -802,6 +802,15 @@
       (when (hash-table-get *node-table* name (lambda () #f))
         (error (cat "Duplicate copies of node " node)))
       (hash-table-put! *node-table* name node)))
+
+  (define (unregister-node node)
+    ;; This is only used to delete temporary <element> nodes, simulating
+    ;; end-of-card rollback.
+    (let [[name (node-full-name node)]]
+      (assert (and (instance-of? node <element>)
+                   (element-temporary? node)))
+      (assert (eq? (hash-table-get *node-table* name (lambda () #f)) node))
+      (hash-table-remove! *node-table* name)))
 
   (define (find-node name)
     (hash-table-get *node-table* name (lambda () #f)))
@@ -1033,12 +1042,13 @@
     (assert (current-card))
     (assert (eq? (template-group template) '<element>))
     (let [[e (make <element>
-               :group      'element
+               :group      '<element>
                :extends    template
                :bindings   (bindings->hash-table bindings)
                :parent     (current-card)
                :name       name
                :temporary? #t)]]
+      (register-node e)
       (enter-node e)
       e))
 
@@ -1114,13 +1124,27 @@
         (recurse (node-parent group))
         (enter-node group))))
 
+  (define (delete-temporary-elements card)
+    (set! (group-children card)
+          (let recurse [[children (group-children card)]]
+            (cond
+             [(null? children) '()]
+             [(element-temporary? (car children))
+              ;; Delete this node, and exclude it from the new child list.
+              (unregister-node (car children))
+              (recurse (cdr children))]
+             [else
+              ;; Keep this node.
+              (cons (car children) (recurse (cdr children)))]))))
+
   (define (exit-card old-card new-card)
     ;; Exit all our child elements.
     (let loop [[children (group-children old-card)]]
       (unless (null? children)
         (exit-node (car children))
         (loop (cdr children))))
-    ;; TODO - Delete temporary elements.
+    ;; Delete temporary elements.
+    (delete-temporary-elements old-card)
     ;; Exit old-card.
     (exit-node old-card)
     ;; Exit as many enclosing card groups as necessary.

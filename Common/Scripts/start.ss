@@ -358,6 +358,23 @@
   (test (equal? (param param-b) 30))
   (test (equal? (param param-c) "moby"))
   (test (equal? (param param-d) 40))
+  (jump template-tests-3))
+
+(define *ttvar3* #f)
+
+(define-element-template %sample-element% () [[test-str]]
+  (set! *ttvar3* #t)
+  (test (equal? (param test-str) "test string")))
+
+(card template-tests-3 ()
+  (define e (create %sample-element% :name 'sample :test-str "test string"))
+  (test *ttvar3*)
+  (test (eq? (node-full-name e) 'template-tests-3/sample))
+  (jump template-tests-4))
+
+(card template-tests-4 ()
+  ;; Make sure temporary children get deleted when we exit the card.
+  (test (null? (group-children template-tests-3)))
   (jump syntax-tests))
 
 
