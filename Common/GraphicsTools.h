@@ -24,6 +24,16 @@ namespace GraphicsTools {
 	typedef unsigned char Channel;
 
 	//////////
+	// Multiply two channels together, treating values in the range
+	// 0 to 255 as floating point numbers between 0.0 and 1.0 inclusive.
+	// It might be wise to compute this function using a table lookup.
+	//
+	static Channel MultiplyChannels(Channel inLeft, Channel inRight)
+	{
+		return (((unsigned int) inLeft) * ((unsigned int) inRight)) / 255;
+	}
+
+	//////////
 	// A point.
 	//
 	struct Point {
@@ -35,6 +45,9 @@ namespace GraphicsTools {
 
 		friend Point operator+(const Point &inLeft, const Point &inRight)
 		    { return Point(inLeft.x + inRight.x, inLeft.y + inRight.y); }
+
+		friend Point operator-(const Point &inLeft, const Point &inRight)
+		    { return Point(inLeft.x - inRight.x, inLeft.y - inRight.y); }
 	};
 
 	//////////
@@ -53,9 +66,10 @@ namespace GraphicsTools {
 
 		static Color ApplyAlpha(Color inColor, Channel inAlpha)
 		{
+			// Mark Noel says we should actually use some kind of log scale here.
 			return Color(inColor.red, inColor.green, inColor.blue,
-						 255 - ((((int) 255 - inColor.alpha) *
-								 ((int) 255 - inAlpha)) / 255));
+						 255 - MultiplyChannels(255 - inColor.alpha,
+												255 - inAlpha));
 		}
 
 		friend bool operator==(Color inLeft, Color inRight)
@@ -66,6 +80,20 @@ namespace GraphicsTools {
 					inLeft.alpha == inRight.alpha);
 		}
 	};
+
+
+	//////////
+	// Blend the foreground color into the background color, using the
+	// alpha value to control the mixing.  An alpha 255 uses only the
+	// background color, and an alpha of 0 uses only the foreground color.
+	//
+	static Channel AlphaBlendChannel(Channel inBackground,
+									 Channel inForeground,
+									 Channel inAlpha)
+	{
+		return (MultiplyChannels(inBackground, inAlpha) +
+				MultiplyChannels(inForeground, 255 - inAlpha));
+	}
 
 	//////////
 	// An RGBA pixmap, used as a portable output buffer by a number
