@@ -1,0 +1,28 @@
+FiveL for Macintosh Release Notes
+
+2.00, Build 3, Thursday, October 21, 1999 10:38:34 AM
+
+¥ The problem with the white background in the release engine has been fixed.
+
+¥ The debug engine will ignore fade commands. This was making it impossible to
+debug certain parts of the engine. (It is hard to debug when faded out)
+
+¥ The debug engine will no longer send signals when it encounters an exception. 
+It was doing this when it couldn't find a file, etc. Signals would cause a 
+Type 12 error when a debugger wasn't present.
+
+¥ The release engine will maintain a log file for interesting messages. This
+file is called "Log" and will be created in the same directory as the engine.
+The creator and type of this file match Simple Text.
+
+¥ The release engine will no longer put up alerts for missing media, it will
+just write an entry to its log file.
+
+2.00, Build 2, Tuesday, October 19, 1999 12:25:17 PM
+¥ input fields had white background, now it is back to black
+¥ signals from engine should no longer make their way to the user
+
+2.00, Build 1
+
+¥ first build with CodeWarrior Pro 3
+¥ fixed ctouch bug
