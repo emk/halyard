@@ -20,6 +20,7 @@
 #include "Widget.h"
 #include "FileSystem.h"
 #include "EventDispatcher.h"
+#include "ImageCache.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -245,9 +246,9 @@ static void load_picture(const std::string &inName, TPoint inLoc,
 						 TRect *inRect = NULL)
 {
 	// Load our image.
-	wxImage image;
-	image.LoadFile(inName.c_str());
-	if (!image.Ok())
+	wxBitmap bitmap = 
+		wxGetApp().GetStage()->GetImageCache()->GetBitmap(inName.c_str());
+	if (!bitmap.Ok())
 	{
 		::SetPrimitiveError("noimage", "Can't load the specified image");
 		return;
@@ -260,20 +261,19 @@ static void load_picture(const std::string &inName, TPoint inLoc,
 					inRect->Right() - inRect->Left(),
 					inRect->Bottom() - inRect->Top());
 		if (rect.GetX() < 0 || rect.GetY() < 0 ||
-			rect.GetWidth() > image.GetWidth() ||
-			rect.GetHeight() > image.GetHeight())
+			rect.GetWidth() > bitmap.GetWidth() ||
+			rect.GetHeight() > bitmap.GetHeight())
 		{
 			::SetPrimitiveError("outofbounds",
 								"Sub-rectangle does not fit inside image");
 			return;
 		}
-		image = image.GetSubImage(rect);
+		bitmap = bitmap.GetSubBitmap(rect);
 		inLoc.SetX(inLoc.X() + rect.GetX());
 		inLoc.SetY(inLoc.Y() + rect.GetY());
 	}
 
-	// Convert our image to a bitmap and draw it.
-	wxBitmap bitmap(image);
+	// Draw our bitmap.
 	wxGetApp().GetStage()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y());
 
 	// Update our special variables.

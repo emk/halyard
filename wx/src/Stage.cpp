@@ -29,6 +29,7 @@
 #include "Timecoder.h"
 #include "LocationBox.h"
 #include "EventDispatcher.h"
+#include "ImageCache.h"
 #include "dlg/ProgramPropDlg.h"
 
 #if CONFIG_HAVE_QUAKE2
@@ -766,6 +767,8 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     ClearStage(*wxBLACK);
     
 	mEventDispatcher = new EventDispatcher();
+	mImageCache = new ImageCache();
+
     mTextCtrl =
         new wxTextCtrl(this, FIVEL_TEXT_ENTRY, "", wxDefaultPosition,
                        wxDefaultSize, wxNO_BORDER | wxTE_PROCESS_ENTER);
@@ -777,6 +780,8 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 Stage::~Stage()
 {
 	DeleteElements();
+	delete mImageCache;
+	delete mEventDispatcher;
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
 

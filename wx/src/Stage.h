@@ -22,6 +22,7 @@ class MovieElement;
 class StageBackground;
 class wxSashEvent;
 class EventDispatcher;
+class ImageCache;
 
 // See ToolWindow.h.
 enum ToolWindowID {
@@ -261,6 +262,12 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	EventDispatcher *mEventDispatcher;
 
 	//////////
+	// Our image cache.  This allows us to speed up image loading
+	// tremendously in some common cases.
+	//
+	ImageCache *mImageCache;
+
+	//////////
 	// Our text-entry control.  Will not be visible unless the user
 	// is entering something.
 	//
@@ -414,6 +421,11 @@ public:
 	// Return the EventDispatcher associated with this stage.
 	//
 	EventDispatcher *GetEventDispatcher() { return mEventDispatcher; }
+
+	//////////
+	// Return the image cache associated with this stage.
+	//
+	ImageCache *GetImageCache() { return mImageCache; }
 
     //////////
     // Register a newly-loaded card with the stage frame.

@@ -107,6 +107,10 @@ SOURCE=..\..\src\FiveLApp.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\ImageCache.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Listener.cpp
 # End Source File
 # Begin Source File
@@ -204,6 +208,10 @@ SOURCE=..\..\src\EventDispatcher.h
 # Begin Source File
 
 SOURCE=..\..\src\FiveLApp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ImageCache.h
 # End Source File
 # Begin Source File
 
