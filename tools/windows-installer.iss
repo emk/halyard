@@ -1,13 +1,22 @@
+;; Use this file with Inno Setup, an excellent open source
+;; installer builder for windows.  You probably want to edit
+;; this using the ISTool GUI, and you'll need the ISPP
+;; preprocessor module.
+
 ;; The executable which contains our version information.
 #define MAIN_EXE "..\Win32\Bin\Tamale.exe"
 
+;; Should we include debugging support? When this is set
+;; to 0, we build regular installers. When this is set to
+;; 1, we build installers which include the "_d" versions
+;; of our executables as an option.
+#define DEBUG 1
+
 ;; Extract some useful version fields--no need to duplicate.
 #define COMPANY GetStringFileInfo(MAIN_EXE, COMPANY_NAME)
-#define VERSION GetStringFileInfo(MAIN_EXE, FILE_DESCRIPTION)
+#define VERSION GetFileVersion(MAIN_EXE)
+#define VERNAME GetStringFileInfo(MAIN_EXE, FILE_DESCRIPTION)
 #define COPYRIGHT GetStringFileInfo(MAIN_EXE, LEGAL_COPYRIGHT)
-
-;; Should we include debugging support?
-#define DEBUG 1
 
 [Setup]
 AppID={{59979E48-B18E-4878-9974-3A5D9ACE78E3}
@@ -17,10 +26,12 @@ AppName=Tamale
 DefaultGroupName=Tamale
 ShowLanguageDialog=yes
 LicenseFile=..\LICENSE
-AppVerName={#VERSION}
+AppVerName={#VERNAME}
 DefaultDirName={pf}\Tamale
 AppPublisher={#COMPANY}
 AppPublisherURL=http://iml.dartmouth.edu/
+OutputDir=..\Win32\Bin
+OutputBaseFilename=Tamale {#VERSION} Installer
 [Files]
 Source: ..\Win32\Bin\libmzgc2.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\libmzsch2.dll; DestDir: {app}; Components: release
@@ -29,9 +40,7 @@ Source: ..\Win32\Bin\wxref_gl.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\wxref_soft.dll; DestDir: {app}; Components: release
 Source: ..\Release-Notes.txt; DestDir: {app}; Components: release
 Source: ..\LICENSE; DestDir: {app}; Components: release
-Source: ..\Common\Runtime\*.ss; DestDir: {app}\Runtime\; Flags: recursesubdirs; Components: release
-Source: ..\Common\Runtime\*.txt; DestDir: {app}\Runtime\; Flags: recursesubdirs; Components: release
-Source: ..\Common\Runtime\*.gif; DestDir: {app}\Runtime\; Flags: recursesubdirs; Components: release
+Source: ..\Common\Runtime\*; DestDir: {app}\Runtime\; Flags: recursesubdirs; Components: release; Excludes: CVS,compiled
 #if DEBUG
 Source: ..\Win32\Bin\libmzgc2_d.dll; DestDir: {app}; Components: debug
 Source: ..\Win32\Bin\libmzsch2_d.dll; DestDir: {app}; Components: debug
