@@ -8,7 +8,9 @@
 
   (require (lib "string.ss" "mzlib"))
 
-  (provide load-picture modal-input zone delete-element delete-elements
+  (provide load-picture set-image-cache-size! modal-input
+           zone set-zone-cursor! register-cursor mouse-position
+           delete-element delete-elements
            clear-screen rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
@@ -26,14 +28,37 @@
       (if subrect
           (call-5l-prim 'loadsubpic path p subrect)
           (call-5l-prim 'loadpic path p))))
+  
+  (define (set-image-cache-size! bytes)
+    (call-5l-prim 'SetImageCacheSize bytes))
 
   (define (modal-input r size forecolor backcolor)
     (call-5l-prim 'input r size forecolor backcolor)
     (engine-var '_modal_input_text))
   
   (define (zone name r action &key (cursor 'hand))
-    (call-5l-prim 'zone name r action))
+    (call-5l-prim 'zone name r action cursor))
   
+  (define (set-zone-cursor! name cursor)
+    (call-5l-prim 'SetZoneCursor name cursor))
+
+  (define (register-cursor sym filename &key (hotspot (point -1 -1)))
+    (let [[path (make-path "Graphics" (cat "cursors/" filename))]]
+      (unless (file-exists? path)
+        (throw (cat "No such cursor: " path)))
+      (call-5l-prim 'RegisterCursor sym path hotspot)))
+
+  (define (mouse-position)
+    ;; XXX - AYIEEEE!  We can't actually return points from the engine, so
+    ;; we need to use this vile, disgusting hack instead.  Let's fix the
+    ;; data model at the interpreter/engine boundary, OK?
+    ;;
+    ;; XXX - This keeps returning exciting results even if we're in the
+    ;; background.  Yuck.
+    (let* [[str (call-5l-prim 'MousePosition)]
+           [lst (map string->number (regexp-split " " str))]]
+      (point (car lst) (cadr lst))))
+
   (define (delete-element name)
     (delete-elements (list name)))
   

@@ -499,7 +499,7 @@
   ;;  program).
 
   (define (%kernel-run)
-    (with-errors-blocked (fatal-error)
+    (with-errors-blocked (non-fatal-error)
       (label exit-interpreter
         (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
           (let ((jump-card #f))
