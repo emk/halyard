@@ -33,6 +33,7 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
+	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
     REGISTER_5L_PRIMITIVE(Screen);
     REGISTER_5L_PRIMITIVE(SetWindowTitle);
@@ -92,7 +93,6 @@ DEFINE_5L_PRIMITIVE(DeleteStageObjects)
 	}
 }
 
-/*
 DEFINE_5L_PRIMITIVE(EditBox)
 {
 	std::string name, text;
@@ -100,13 +100,12 @@ DEFINE_5L_PRIMITIVE(EditBox)
 
 	inArgs >> name >> bounds >> text;
 
-	wxTextCtrl *text =
+	wxTextCtrl *edit =
 		new wxTextCtrl(wxGetApp().GetStage(), -1, text.c_str(),
 					   GetPos(bounds), GetSize(bounds),
-					   wxBORDER | wxTE_MULTILINE
-
+					   wxBORDER | wxTE_MULTILINE);
+	new Widget(wxGetApp().GetStage(), name.c_str(), edit);
 }
-*/
 
 DEFINE_5L_PRIMITIVE(HTML)
 {
@@ -176,6 +175,11 @@ DEFINE_5L_PRIMITIVE(Loadpic)
 					   loc.Y() + bitmap.GetHeight(),
 					   loc.X() + bitmap.GetWidth()));
 	UpdateSpecialVariablesForGraphic(bounds);
+}
+
+DEFINE_5L_PRIMITIVE(NotifyEnterCard)
+{
+	wxGetApp().GetStage()->NotifyEnterCard();
 }
 
 DEFINE_5L_PRIMITIVE(NotifyExitCard)

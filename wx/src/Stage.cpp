@@ -12,6 +12,100 @@
 
 #include "FiveLApp.h"
 #include "Stage.h"
+#include "Listener.h"
+
+
+//=========================================================================
+//  LocationBox
+//=========================================================================
+//  A specialized combobox that works more-or-less like the "Location"
+//  box in a web browser's tool bar.
+
+class LocationBox : public wxComboBox
+{
+	void TryJump(const wxString &inCardName);
+
+public:
+	LocationBox(wxToolBar *inParent);
+	
+	void NotifyEnterCard();
+
+	void UpdateUiLocationBox(wxUpdateUIEvent &inEvent);
+	void OnChar(wxKeyEvent &inEvent);
+	void OnComboBoxSelected(wxCommandEvent &inEvent);
+
+	//////////
+	// Call this function to focus the location box and prepare for the
+	// user to enter a card name.
+	//
+	void Prompt();
+
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE(LocationBox, wxComboBox)
+    EVT_UPDATE_UI(FIVEL_LOCATION_BOX, LocationBox::UpdateUiLocationBox)
+	EVT_CHAR(LocationBox::OnChar)
+	EVT_COMBOBOX(FIVEL_LOCATION_BOX, LocationBox::OnComboBoxSelected)
+END_EVENT_TABLE()
+
+LocationBox::LocationBox(wxToolBar *inParent)
+	: wxComboBox(inParent, FIVEL_LOCATION_BOX, "",
+				 wxDefaultPosition, wxSize(200, -1),
+				 0, NULL, wxWANTS_CHARS|wxCB_DROPDOWN|wxCB_SORT)
+{
+
+}
+
+void LocationBox::TryJump(const wxString &inCardName)
+{
+    if (TInterpreter::HaveInstance())
+	{
+		TInterpreter *interp = TInterpreter::GetInstance();
+		if (interp->IsValidCard(inCardName))
+		{
+			// Update our drop-down list of cards.
+			if (FindString(inCardName) == -1)
+				Append(inCardName);
+
+			// Jump to the specified card.
+			interp->JumpToCardByName(inCardName);
+		}
+		else
+		{
+			wxLogError("The card \"" + inCardName + "\" does not exist.");
+		}
+	}
+}
+
+void LocationBox::NotifyEnterCard()
+{
+	ASSERT(TInterpreter::HaveInstance());
+	SetValue(TInterpreter::GetInstance()->CurCardName().c_str());
+}
+
+void LocationBox::UpdateUiLocationBox(wxUpdateUIEvent &inEvent)
+{
+	inEvent.Enable(TInterpreter::HaveInstance());
+}
+
+void LocationBox::OnChar(wxKeyEvent &inEvent)
+{
+	if (inEvent.GetKeyCode() == WXK_RETURN)
+		TryJump(GetValue());
+	else
+		inEvent.Skip();
+}
+
+void LocationBox::OnComboBoxSelected(wxCommandEvent &inEvent)
+{
+	TryJump(inEvent.GetString());
+}
+
+void LocationBox::Prompt()
+{
+	SetFocus();
+}
 
 
 //=========================================================================
@@ -23,6 +117,7 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_RELOAD_SCRIPT, StageFrame::OnReloadScript)
     EVT_MENU(FIVEL_ABOUT, StageFrame::OnAbout)
     EVT_MENU(FIVEL_SHOW_LOG, StageFrame::OnShowLog)
+    EVT_MENU(FIVEL_SHOW_LISTENER, StageFrame::OnShowListener)
     EVT_UPDATE_UI(FIVEL_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
     EVT_MENU(FIVEL_FULL_SCREEN, StageFrame::OnFullScreen)
     EVT_UPDATE_UI(FIVEL_DISPLAY_XY, StageFrame::UpdateUiDisplayXy)
@@ -43,6 +138,9 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
 {
     // Set up useful logging.
     mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
+
+	// We create our listener window on demand.
+	mListenerWindow = NULL;
 
     // Make our background black.  This should theoretically be handled
     // by 'background->SetBackgroundColour' below, but Windows takes a
@@ -94,8 +192,10 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
 
     // Set up our Window menu.
     mWindowMenu = new wxMenu();
-    mWindowMenu->Append(FIVEL_SHOW_LOG, "Show &Log\tCtrl+L",
-                        "Show application log window.");
+    mWindowMenu->Append(FIVEL_SHOW_LISTENER, "Show &Listener\tCtrl+L",
+                        "Show interactive script listener.");
+    mWindowMenu->Append(FIVEL_SHOW_LOG, "Show &Debug Log",
+                        "Show application debug log window.");
 
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
@@ -116,6 +216,8 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     wxToolBar *tb = GetToolBar();
     tb->AddTool(FIVEL_RELOAD_SCRIPT, "Reload", wxBITMAP(tb_reload),
                 "Reload Script");
+	mLocationBox = new LocationBox(tb);
+	tb->AddControl(mLocationBox);
     tb->AddSeparator();
     tb->AddCheckTool(FIVEL_DISPLAY_XY, "Display XY", wxBITMAP(tb_xy),
                      wxNullBitmap, "Display Cursor XY");
@@ -148,7 +250,9 @@ void StageFrame::OnReloadScript()
         if (manager->FailedToLoad())
         {
             // The previous attempt to load a script failed, so we need
-            // to try loading it again.
+            // to try loading it again.  We call NotifyScriptReload to
+			// purge any remaining data from a partially completed load.
+            mStage->NotifyScriptReload();
             manager->RequestRetryLoadScript();
         }
         else
@@ -178,6 +282,15 @@ void StageFrame::OnAbout()
 void StageFrame::OnShowLog()
 {
     mLogWindow->Show(TRUE);
+}
+
+void StageFrame::OnShowListener()
+{
+	if (!mListenerWindow)
+		mListenerWindow = new Listener(this);
+	if (!mListenerWindow->IsShown())
+		mListenerWindow->Show();
+	mListenerWindow->Raise();
 }
 
 void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent)
@@ -234,6 +347,8 @@ void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
 
 void StageFrame::OnJumpCard()
 {
+	mLocationBox->Prompt();
+	/*
     if (TInterpreter::HaveInstance())
     {
         wxTextEntryDialog dialog(this, "Jump to Card", "Card:");
@@ -243,6 +358,7 @@ void StageFrame::OnJumpCard()
             TInterpreter::GetInstance()->JumpToCardByName(card_name);
         }
     }
+	*/
 }
 
 void StageFrame::OnClose(wxCloseEvent &inEvent)
@@ -296,6 +412,11 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 Stage::~Stage()
 {
 	DeleteStageObjects();
+}
+
+void Stage::NotifyEnterCard()
+{
+	mFrame->GetLocationBox()->NotifyEnterCard();
 }
 
 void Stage::NotifyExitCard()

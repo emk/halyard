@@ -9,6 +9,9 @@
 
 class Stage;
 class StageObject;
+class LocationBox;
+class Listener;
+
 
 //////////
 // Our main window--the "frame" around our stage.
@@ -20,6 +23,11 @@ class StageFrame : public wxFrame
     // events.
     //
     wxLogWindow *mLogWindow;
+
+    //////////
+    // An interactive listener window.
+    //
+    Listener *mListenerWindow;
 
     //////////
     // Our most important child--the actual "stage" itself on which our
@@ -35,6 +43,11 @@ class StageFrame : public wxFrame
     wxMenu *mWindowMenu;
     wxMenu *mHelpMenu;
 
+	//////////
+	// The drop-down box which allows us to jump between cards.
+	//
+	LocationBox *mLocationBox;
+
 public:
     //////////
     // Create and display a new stage frame.
@@ -49,11 +62,23 @@ public:
     //
     Stage *GetStage() { return mStage; }
 
+    //////////
+    // Get the location box attached to this frame.
+    //
+    LocationBox *GetLocationBox() { return mLocationBox; }
+
+	//////////
+	// Notify the StageFrame that the listener window is being
+	// destroyed.  This should only be called by the Listener.
+	//
+	void DetachListenerWindow() { mListenerWindow = NULL; }
+
     void OnExit();
     void OnReloadScript();
     void OnAbout();
 
     void OnShowLog();
+    void OnShowListener();
     void UpdateUiFullScreen(wxUpdateUIEvent &inEvent);
     void OnFullScreen();
     void UpdateUiDisplayXy(wxUpdateUIEvent &inEvent);
@@ -170,7 +195,12 @@ public:
     ~Stage();
 
     //////////
-    // Notify the stage that the interpreter is moving to a new card.
+    // Notify the stage that the interpreter has moved to a new card.
+    //
+    void NotifyEnterCard();
+
+    //////////
+    // Notify the stage that the interpreter is leaving an old card.
     //
     void NotifyExitCard();
 
