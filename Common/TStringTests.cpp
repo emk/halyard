@@ -5,9 +5,113 @@ USING_NAMESPACE_FIVEL
 
 extern void test_TString (void);
 
+typedef struct {
+	char *str1;
+	char *str2;
+
+	// -1 if str1 < str2, 0 if str1 == str2, 1 if str1 > str2
+	// Comparisons are case sensitive.
+	int order;
+} ComparisonPair;
+
+static ComparisonPair comparison_pairs[] = {
+	{"", "a", -1},
+	{"a", "", 1},
+	{"a", "a", 0},
+	{"a", "A", 1},
+	{"A", "a", -1},
+	{"a", "aa", -1},
+	{"", "", 0},
+	{NULL, NULL, 0}
+};
+
 void test_TString (void) 
 {
-	
+    // Test recently-changed constructors.
+	TString cs1(TString(""));    // Copy constructor
+	TEST(cs1 == "");
+	TString cs2(TString("foo")); // Copy constructor
+	TEST(cs2 == "foo");
+	TString cs3((char *) NULL);  // XXX - Dangerous, nasty API
+	TEST(cs3 == "");
+	TString cs4("");
+	TEST(cs4 == "");
+	TString cs5("bar");
+	TEST(cs5 == "bar");
+
+	// Create TStrings given a character array and a length.
+	TEST(TString("barrel", 0) == "");
+	TEST(TString("barrel", 3) == "bar");
+	TEST(TString("barrel", 4) == "barr");
+
+	// Test comparison operators.
+	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
+		if (p->order == 0) {
+			TEST(TString(p->str1) == TString(p->str2));
+			TEST(TString(p->str1) == p->str2);
+			TEST(p->str1 == TString(p->str2));
+		} else {
+			TEST(!(TString(p->str1) == TString(p->str2)));
+			TEST(!(TString(p->str1) == p->str2));
+			TEST(!(p->str1 == TString(p->str2)));
+		}
+	}
+	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
+		if (p->order != 0) {
+			TEST(TString(p->str1) != TString(p->str2));
+			TEST(TString(p->str1) != p->str2);
+			TEST(p->str1 != TString(p->str2));
+		} else {
+			TEST(!(TString(p->str1) != TString(p->str2)));
+			TEST(!(TString(p->str1) != p->str2));
+			TEST(!(p->str1 != TString(p->str2)));
+		}
+	}
+	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
+		if (p->order < 0) {
+			TEST(TString(p->str1) < TString(p->str2));
+			TEST(TString(p->str1) < p->str2);
+			TEST(p->str1 < TString(p->str2));
+		} else {
+			TEST(!(TString(p->str1) < TString(p->str2)));
+			TEST(!(TString(p->str1) < p->str2));
+			TEST(!(p->str1 < TString(p->str2)));
+		}
+	}
+	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
+		if (p->order > 0) {
+			TEST(TString(p->str1) > TString(p->str2));
+			TEST(TString(p->str1) > p->str2);
+			TEST(p->str1 > TString(p->str2));
+		} else {
+			TEST(!(TString(p->str1) > TString(p->str2)));
+			TEST(!(TString(p->str1) > p->str2));
+			TEST(!(p->str1 > TString(p->str2)));
+		}
+	}
+	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
+		if (p->order <= 0) {
+			TEST(TString(p->str1) <= TString(p->str2));
+			TEST(TString(p->str1) <= p->str2);
+			TEST(p->str1 <= TString(p->str2));
+		} else {
+			TEST(!(TString(p->str1) <= TString(p->str2)));
+			TEST(!(TString(p->str1) <= p->str2));
+			TEST(!(p->str1 <= TString(p->str2)));
+		}
+	}
+	for (ComparisonPair *p = comparison_pairs; p->str1 != NULL; p++) {
+		if (p->order >= 0) {
+			TEST(TString(p->str1) >= TString(p->str2));
+			TEST(TString(p->str1) >= p->str2);
+			TEST(p->str1 >= TString(p->str2));
+		} else {
+			TEST(!(TString(p->str1) >= TString(p->str2)));
+			TEST(!(TString(p->str1) >= p->str2));
+			TEST(!(p->str1 >= TString(p->str2)));
+		}
+	}
+
 	// Test conversions from integers to strings.
 	// The large values below are the maximum and minimum values
 	// allowed for each type.  We're careful to never to type a

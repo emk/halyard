@@ -69,6 +69,27 @@ TString::TString(const char *inStr) : TObject()
         Resize(m_Length + 1);
         strcpy(m_String, inStr);
     }
+	else
+	{
+		Resize(1);
+	}
+}
+
+//
+//  TString - Construct from a character array.
+//
+TString::TString(const char *inStr, uint32 inLength)
+{
+	ASSERT(inStr != NULL);
+
+    m_Length = inLength;
+    m_Size = 0;
+    m_String = NULL;
+	m_MinResize = MIN_STRING_RESIZE;
+
+	Resize(m_Length + 1);
+	strncpy(m_String, inStr, inLength);
+	m_String[m_Length] = '\0';
 }
 
 //
@@ -87,6 +108,10 @@ TString::TString(const TString &inStr) : TObject()
         Resize(m_Length + 1);
         strcpy(m_String, inStr.m_String);
     }
+	else
+	{
+		Resize(1);
+	}
 }
 
 //
@@ -275,68 +300,6 @@ void TString::Update()
 TString::operator const char *() const
 {
 	return (m_String);
-}
-
-//
-//	operator < - Less than operator. Return an int
-//		that is not equal to 0 (true) if inStr is
-//		less than this. Return 0 (false) if inStr
-//		is greater than or equal to this.
-//
-int TString::operator < (const TString &inStr) const
-{
-	return (Compare(inStr) < 0);
-}
-
-//
-//	operator > - Greater than operator. Return an int
-//		this is not equal to 0 (true) if inStr is
-//		greater than this. Return 0 (false) if inStr
-//		is less than or equal to this.
-//
-int TString::operator > (const TString &inStr) const
-{
-	return (Compare(inStr) > 0);
-}
-
-//
-//	operator <= -
-//
-int TString::operator <= (const TString &inStr) const
-{
-	return (Compare(inStr) <= 0);
-}
-
-//
-//	operator >= -
-//
-int TString::operator >= (const TString &inStr) const
-{
-	return (Compare(inStr) >= 0);
-}
-
-//
-//	operator == -
-//
-int TString::operator == (const TString &inStr) const
-{
-	return (Compare(inStr) == 0);
-}
-
-//
-//	operator != -
-//
-int TString::operator != (const TString &inStr) const
-{
-	return (Compare(inStr) != 0);
-}
-
-//
-//	operator == -
-//
-int TString::operator == (const char *inStr) const
-{
-	return (Compare(inStr) == 0);
 }
 
 //
@@ -1167,6 +1130,16 @@ istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.6  2002/03/07 20:36:18  emk
+ TString bug fixes & new constructor.
+
+   - Fixed copy constructor bug where input string is empty
+   - Implemented a full set of comparison operators as friends
+     (not methods), so the compiler doesn't convert the
+     right hand argument of (char*) == (TString) to a char*.
+   - Added constructor which takes char* and length
+   - Test cases for new features
+
  Revision 1.5  2002/03/04 15:30:20  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 

@@ -94,6 +94,14 @@ class TString : public TObject
 		// [in] inStr - character string
 		//
 		TString(const char *inStr);
+
+		//////////
+		// Constructor.  Construct from a char array and a length. 
+		//
+		// [in] inStr - character array (NULL termination not required)
+		// [in] inLength - the number of characters to use
+		//
+		TString(const char *inStr, uint32 inLength);
 		
 		//////////
 		// Copy Constructor.  Construct from another TString. 
@@ -175,7 +183,12 @@ class TString : public TObject
 		// [out] return - true (!= 0) if the string is less than inStr, 
 		//				  false (== 0) otherwise
 		//
-		int		operator < (const TString &inStr) const;
+		friend int operator < (const TString &inStr1, const TString &inStr2)
+			{ return inStr1.Compare(inStr2) < 0; }
+		friend int operator < (const TString &inStr1, const char *inStr2)
+			{ return inStr1.Compare(inStr2) < 0; }
+		friend int operator < (const char *inStr1, const TString &inStr2)
+			{ return TString(inStr1).Compare(inStr2) < 0; }
 		
 		//////////
 		// Greater than operator. 
@@ -184,8 +197,13 @@ class TString : public TObject
 		// [out] return - true (!= 0) if the string is greater than inStr, 
 		//				  false (== 0) otherwise
 		//
-		int		operator > (const TString &inStr) const;
-		
+		friend int operator > (const TString &inStr1, const TString &inStr2)
+			{ return inStr1.Compare(inStr2) > 0; }
+		friend int operator > (const TString &inStr1, const char *inStr2)
+			{ return inStr1.Compare(inStr2) > 0; }
+		friend int operator > (const char *inStr1, const TString &inStr2)
+			{ return TString(inStr1).Compare(inStr2) > 0; }
+
 		//////////
 		// Less than or equal operator. 
 		//
@@ -193,7 +211,12 @@ class TString : public TObject
 		// [out] return - true (!= 0) if the string is less than or equal to inStr, 
 		//				  false (== 0) otherwise
 		//
-		int		operator <= (const TString &inStr) const;
+		friend int operator <= (const TString &inStr1, const TString &inStr2)
+			{ return inStr1.Compare(inStr2) <= 0; }
+		friend int operator <= (const TString &inStr1, const char *inStr2)
+			{ return inStr1.Compare(inStr2) <= 0; }
+		friend int operator <= (const char *inStr1, const TString &inStr2)
+			{ return TString(inStr1).Compare(inStr2) <= 0; }
 		
 		//////////
 		// Greater than or equal operator. 
@@ -202,7 +225,12 @@ class TString : public TObject
 		// [out] return - true (!= 0) if the string is greater than or equal to inStr, 
 		//				  false (== 0) otherwise
 		//
-		int		operator >= (const TString &inStr) const;
+		friend int operator >= (const TString &inStr1, const TString &inStr2)
+			{ return inStr1.Compare(inStr2) >= 0; }
+		friend int operator >= (const TString &inStr1, const char *inStr2)
+			{ return inStr1.Compare(inStr2) >= 0; }
+		friend int operator >= (const char *inStr1, const TString &inStr2)
+			{ return TString(inStr1).Compare(inStr2) >= 0; }
 		
 		//////////
 		// Equal operator. 
@@ -211,16 +239,12 @@ class TString : public TObject
 		// [out] return - true (!= 0) if the string is equal to inStr, 
 		//				  false (== 0) otherwise
 		//
-		int		operator == (const TString &inStr) const;
-		
-		//////////
-		// Equal operator. 
-		//
-		// [in] inStr - a character string to compare against
-		// [out] return - true (!= 0) if the string is equal to inStr, 
-		//				  false (== 0) otherwise
-		//
-		int		operator == (const char *inStr) const;
+		friend int operator == (const TString &inStr1, const TString &inStr2)
+			{ return inStr1.Compare(inStr2) == 0; }
+		friend int operator == (const TString &inStr1, const char *inStr2)
+			{ return inStr1.Compare(inStr2) == 0; }
+		friend int operator == (const char *inStr1, const TString &inStr2)
+			{ return TString(inStr1).Compare(inStr2) == 0; }
 		
 		//////////
 		// Not Equal operator. 
@@ -229,7 +253,12 @@ class TString : public TObject
 		// [out] return - true (!= 0) if the string is not equal to inStr, 
 		//				  false (== 0) otherwise
 		//
-		int		operator != (const TString &inStr) const;
+		friend int operator != (const TString &inStr1, const TString &inStr2)
+			{ return inStr1.Compare(inStr2) != 0; }
+		friend int operator != (const TString &inStr1, const char *inStr2)
+			{ return inStr1.Compare(inStr2) != 0; }
+		friend int operator != (const char *inStr1, const TString &inStr2)
+			{ return TString(inStr1).Compare(inStr2) != 0; }
 
 		//////////
 		// Does this string start with the given character string? 
@@ -614,6 +643,16 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4  2002/03/07 20:36:18  emk
+ TString bug fixes & new constructor.
+
+   - Fixed copy constructor bug where input string is empty
+   - Implemented a full set of comparison operators as friends
+     (not methods), so the compiler doesn't convert the
+     right hand argument of (char*) == (TString) to a char*.
+   - Added constructor which takes char* and length
+   - Test cases for new features
+
  Revision 1.3  2002/03/04 15:16:14  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 
