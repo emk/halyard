@@ -325,13 +325,38 @@ StageFrame::StageFrame(wxSize inSize)
 	FindBestFullScreenVideoMode();
 }
 
+#if !wxUSE_DISPLAY
+
+bool StageFrame::IsRectOnDisplay(const wxRect &inRect) {
+    /// \TODO See if there's a way to get rough display bounds even if
+    /// the required class is missing.
+    return true;
+}
+
+#else // wxUSE_DISPLAY
+
+bool StageFrame::IsRectOnDisplay(const wxRect &inRect) {
+    size_t count = wxDisplay::GetCount();
+    for (size_t i = 0; i < count; i++) {
+        wxRect display(wxDisplay(i).GetGeometry());
+        if (display.GetLeft() <= inRect.GetLeft()
+            && inRect.GetRight() <= display.GetRight()
+            && display.GetTop() <= inRect.GetTop()
+            && inRect.GetBottom() <= display.GetBottom())
+            return true;
+    }
+    return false;
+}
+
+#endif // wxUSE_DISPLAY
+
 wxPoint StageFrame::LoadFramePosition()
 {
-	// TODO - Sanity-check position.
 	long pos_x, pos_y;
 	wxConfigBase *config = wxConfigBase::Get();
 	if (config->Read("/Layout/Default/StageFrame/Left", &pos_x) &&
-		config->Read("/Layout/Default/StageFrame/Top", &pos_y))
+		config->Read("/Layout/Default/StageFrame/Top", &pos_y) &&
+        IsRectOnDisplay(wxRect(pos_x, pos_y, 100, 100)))
 		return wxPoint(pos_x, pos_y);
 	else
 		return wxDefaultPosition;

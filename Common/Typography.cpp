@@ -601,8 +601,7 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 		{
 			bool found_size = false;
 			for (FT_Int i = 0; i < face->num_fixed_sizes; i++) {
-				if (face->available_sizes[i].height == inSize &&
-					face->available_sizes[i].width == inSize)
+				if (round_266(face->available_sizes[i].y_ppem) == inSize)
 				{
 					found_size = true;
 					break;
@@ -1323,11 +1322,10 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inFileName)
 			// Search for a fixed size we can use.
 			bool found_size = false;
 			for (FT_Int i = 0; i < face->num_fixed_sizes; i++) {
-				if (face->available_sizes[i].height == 
-					face->available_sizes[i].width)
+				if (face->available_sizes[i].y_ppem)
 				{
 					found_size = true;
-					mSize = face->available_sizes[i].height;
+					mSize = round_266(face->available_sizes[i].y_ppem);
 					break;
 				}
 			}

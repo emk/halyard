@@ -7,6 +7,11 @@ CVS - emk
   * Upgraded FreeType from 2.1.4rc1 to 2.1.9.  Text may look different--
     supposedly better.  This will allow us to start fixing low-level
     FreeType bugs.
+  * Fixed calculation of nominal point sizes to be compatible with
+    new FreeType version, which appears to be better documented in
+    this respect.
+  * Added code to make sure we position the StageFrame on the actual
+    display (part of bug #1272).
 
 0.0.39 - 21 Sep 2004 - emk
 

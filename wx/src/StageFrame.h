@@ -111,6 +111,14 @@ class StageFrame : public wxFrame, public model::View
 	///
 	bool mHaveLoadedFrameLayout;
 
+    //////////
+    /// Returns true iff inRect is entirely on one of the system's
+    /// displays.  Used for trying to put windows in the same place they
+    /// were the last time they were closed, but only if that's a
+    /// reasonably sane thing to do.
+    ///
+    static bool IsRectOnDisplay(const wxRect &inRect);
+
 	//////////
 	/// We need to load this layout information *before* we load anything
 	/// else, because there's no portable way to change it once the window
