@@ -17,16 +17,23 @@
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
 #define REV_BIG			00
-#define REV_SMALL		08
+#define REV_SMALL		09
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0.8"
+#define VERSION_STRING	"5L for Win32 3.2.0.9"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.10  2002/07/18 19:25:31  emk
+ 3.2.0.9 - Added (QTComponentVersion TYPE SUBTYPE) function, which
+   will fetch the version of a QuickTime component and store
+   it in _result.  Use (QTComponentVersion imco VP31) to get
+   the VP3 version.  If this number is >= 131075, then your
+   copy of VP3 should have the QT 6 GDI bugfix.
+
  Revision 1.3.2.9  2002/07/16 16:16:57  emk
  3.2.0.8 - Backported (log ...) command.
 

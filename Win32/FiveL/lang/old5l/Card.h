@@ -392,6 +392,11 @@ class Card : public Index
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
+		void	DoQTComponentVersion();
+
+		//////////
+		// Refer to 5L Scriptor's Guide for details on this 5L command.
+		//
 		void	DoQuitQTLoop();
 		
 		//////////
@@ -772,6 +777,13 @@ class CardManager : public IndexManager
 
 /*
  $Log$
+ Revision 1.1.2.3  2002/07/18 19:25:31  emk
+ 3.2.0.9 - Added (QTComponentVersion TYPE SUBTYPE) function, which
+   will fetch the version of a QuickTime component and store
+   it in _result.  Use (QTComponentVersion imco VP31) to get
+   the VP3 version.  If this number is >= 131075, then your
+   copy of VP3 should have the QT 6 GDI bugfix.
+
  Revision 1.1.2.2  2002/07/16 16:16:57  emk
  3.2.0.8 - Backported (log ...) command.
 

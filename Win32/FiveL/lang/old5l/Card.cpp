@@ -195,6 +195,7 @@ void Card::DoCommand(void)
     else if (opword == (char *)"playqtrect") DoPlayQTRect();
 	else if (opword == (char *)"preload") DoPreloadQTFile();   
     else if (opword == (char *)"print") DoPrint();
+	else if (opword == (char *)"qtcomponentversion") DoQTComponentVersion();
     else if (opword == (char *)"read") DoRead();
 	else if (opword == (char *)"redoscript") DoReDoScript();
 	else if (opword == (char *)"resetorigin") DoResetOrigin();
@@ -1871,6 +1872,65 @@ void Card::DoPrint()
 }
 
 /*-----------------------------------------------------------------
+    (QtComponentVersion TYPE SUBTYPE)
+
+    Get the version of the QuickTime component specified by TYPE and
+	SUBTYPE.  This allows us to check the versions of our video
+	codecs.
+
+	TYPE and SUBTYPE are four-character, case-sensitive strings.
+-------------------------------------------------------------------*/
+void Card::DoQTComponentVersion()
+{
+	long version = 0;
+	OSType type, subtype;
+	ComponentInstance ci = NULL;
+	OSErr err = noErr;
+
+	// Get our type & subtype.
+	TString type_str, subtype_str;
+	m_Script >> type_str >> subtype_str;
+	if (type_str.Length() != 4 || subtype_str.Length() != 4)
+	{
+		gLog.Caution("QTComponent type and subtype must be four characters.");
+		goto done;
+	}
+	
+	// Convert them to OSType values.  We use << to avoid endianness problems.
+	type = (type_str(0) << 24 | type_str(1) << 16 |
+			type_str(2) << 8 | type_str(3));
+	subtype = (subtype_str(0) << 24 | subtype_str(1) << 16 |
+			   subtype_str(2) << 8 | subtype_str(3));
+	
+	// Open the component.
+	ci = ::OpenDefaultComponent(type, subtype);
+	if (!ci)
+	{
+		gLog.Log("Can't open component %s/%s",
+				 type_str.GetString(), subtype_str.GetString());
+		goto done;
+	}
+
+	// Get the version number.
+	version = ::GetComponentVersion(ci);
+	if (::GetComponentInstanceError(ci) != noErr)
+	{
+		gLog.Log("Can't get component version for %s/%s",
+				 type_str.GetString(), subtype_str.GetString());
+		version = 0;
+	}
+	
+	// Close the component.
+	err = ::CloseComponent(ci);
+	if (err != noErr)
+		gLog.Log("Can't close component %s/%s",
+				 type_str.GetString(), subtype_str.GetString());
+
+done:
+	gVariableManager.SetLong("_result", version);
+}
+
+/*-----------------------------------------------------------------
     (READ FILENAME VARIABLE <UNTIL DELIM>)
 
     Read data from a text file and put it into the variable.
@@ -2654,6 +2714,13 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.1.2.6  2002/07/18 19:25:31  emk
+ 3.2.0.9 - Added (QTComponentVersion TYPE SUBTYPE) function, which
+   will fetch the version of a QuickTime component and store
+   it in _result.  Use (QTComponentVersion imco VP31) to get
+   the VP3 version.  If this number is >= 131075, then your
+   copy of VP3 should have the QT 6 GDI bugfix.
+
  Revision 1.1.2.5  2002/07/16 16:16:57  emk
  3.2.0.8 - Backported (log ...) command.
 
