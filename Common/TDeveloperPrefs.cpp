@@ -89,10 +89,10 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 			{
 				if (StringIComp(value, "no"))
 					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_NO;
-				else if (value == "yes")
+				else if (StringIComp(value, "yes"))
 					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_YES;
 			}
-			else if (key == "redoscript")
+            else if (StringIComp(key, "redoscript"))
 			{
 				if (StringIComp(value, "off"))
 					userPrefs[REDOSCRIPT] = REDOSCRIPT_OFF;

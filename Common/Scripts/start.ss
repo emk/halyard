@@ -331,14 +331,14 @@
 (define-card-template %card-template-2%
     [[prop-c :type <string>  :label "Prop C"]
      [prop-d :type <integer> :label "Prop D" :default 20]]
-    (:template %card-template-1% :prop-b 10)
+    (%card-template-1% :prop-b 10)
   (test *ttvar1*)
   (test (not *ttvar2*))
   (test (instance-of? prop-c <string>))
   (test (instance-of? prop-d <integer>))
   (set! *ttvar2* #t))
 
-(card template-tests-1 (:template %card-template-2%
+(card template-tests-1 (%card-template-2%
                         :prop-a "foo"
                         :prop-c "bar")
   (test *ttvar1*)
@@ -351,7 +351,7 @@
   (set! *ttvar2* #f)
   (jump template-tests-2))
 
-(card template-tests-2 (:template %card-template-2%
+(card template-tests-2 (%card-template-2%
                         :prop-a "baz"
                         :prop-c "moby"
                         :prop-d 30)
@@ -376,15 +376,15 @@
   (jump template-tests-4))
 
 (card template-tests-4 ()
-  ;; Make sure temporary children get deleted when we exit the card.
-  (test (null? (group-children template-tests-3)))
+  ;; Make sure temporary elements get deleted when we exit the card.
+  (test (null? (node-elements template-tests-3)))
   (jump template-tests-5))
 
 (define-card-template %card-template-3% [] ()
   (on message-1 ()
     'foo))
 
-(card template-tests-5 (:template %card-template-3%)
+(card template-tests-5 (%card-template-3%)
   (on message-1 ()
     (call-next-handler))
   (on message-2 ()
