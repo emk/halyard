@@ -1,5 +1,5 @@
-CCFLAGS = @CCFLAGS@ -Wall -Werror
-CXXFLAGS = @CXXFLAGS@ -Wall -Werror
+CFLAGS = @CFLAGS@ -Wall -Werror -I ../..
+CXXFLAGS = @CXXFLAGS@ -Wall -Werror -I ../..
 
 noinst_PROGRAMS = md5main
 
