@@ -1,5 +1,26 @@
 FiveL for Macintosh Release Notes
 
+2.02, Build 2, March 6, 2002 - E Hamon with help by Eric.
+
+¥ Fixed some of the bugs in CParser and CStream - now it will allow escaping of comments,
+  as well as unbalanced (escaped) parens. Changed the way CParser and CStream
+  determined whether something was escaped in order to do this.
+  
+¥ Added a new file main.cp which includes the function main() which calls 5LMain in CMac5LApp.
+  (Previously main() was in CMac5LApp). This allows the test suite to have its own call to main
+  without problems.
+  
+¥ Fixed warnings appearing in CPalette and CPicture, by fixing the Load() virtual function.
+  This should not change any program behavior.
+
+2.02, Build 1, March 4, 2002 - E Hamon with help by Eric.
+
+¥ Merged common code into our code, changing all K classes to T classes.
+  Added namespaces to deal with Codewarrior's template string and array classes
+  which conflicted with our TString and TArray classes (same name).
+  Designed our own precompiled headers to declare to Codewarrior that we were using 
+  namespaces. 
+
 2.01, Build 9, February 26, 2002 12:48 PM - E Hamon with help by Eric.
 
 ¥ Fixed launching of browser by showing and hiding the menu bar correctly 
