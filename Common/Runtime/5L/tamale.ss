@@ -178,14 +178,15 @@
 
   (define-element-template %edit-box-element%
       [[text :type <string> :label "Initial text"]
+       [font-size :type <integer> :label "Font size"]
        [multiline? :type <boolean> :label "Allow multiple lines?"]]
       (:template %element%)
     (call-5l-prim 'editbox (node-full-name self) (prop self rect) text
-                  multiline?))
+                  font-size multiline?))
 
-  (define (edit-box name r text &key (multiline? #f))
+  (define (edit-box name r text &key (font-size 9) (multiline? #f))
     (create %edit-box-element% :name name :rect r :text text
-            :multiline? multiline?))
+            :font-size font-size :multiline? multiline?))
 
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]

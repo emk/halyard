@@ -69,20 +69,26 @@
     ;; the engine).  You should almost always call this instead of
     ;; %call-5l-prim, because this function calls %kernel-check-state
     ;; to figure out what happened while we were in C++.
-    (let ((result (apply %call-5l-prim args)))
+    (let [[result (apply %call-5l-prim args)]]
       (%kernel-check-state)
       result))
   
   (define (have-5l-prim? name)
     (call-5l-prim 'haveprimitive name))
   
-  (define (blocking-idle)
+  (define (%idle blocking?)
     (%kernel-die-if-callback 'idle)
-    (call-5l-prim 'schemeidle #t))
+    ;; We call %call-5l-prim directly to avoid using rest arguments or
+    ;; 'apply', both of which cons (which we don't want to happen in the
+    ;; idle loop.)
+    (%call-5l-prim 'schemeidle blocking?)
+    (%kernel-check-state))
+
+  (define (blocking-idle)
+    (%idle #t))
 
   (define (idle)
-    (%kernel-die-if-callback 'idle)
-    (call-5l-prim 'schemeidle #f))
+    (%idle #f))
   
   (define (engine-var name)
     (call-5l-prim 'get (if (string? name) (string->symbol name) name)))
