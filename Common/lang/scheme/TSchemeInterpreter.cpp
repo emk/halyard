@@ -412,11 +412,27 @@ GraphicsTools::Color TSchemeArgumentList::GetColorArg()
 								GetInt32Member("color-alpha", arg));
 }
 
-//int32 TSchemeArgumentList::GetPercentArg()
-//{
-//    UNIMPLEMENTED;
-//    return 0;
-//}
+void TSchemeArgumentList::GetValueOrPercentArg(bool &outIsPercent,
+											   int32 &outValue)
+{
+	Scheme_Object *arg = GetNextArg();
+	Scheme_Object *b = TSchemeInterpreter::CallScheme("percent?", 1, &arg);
+	if (SCHEME_FALSEP(b))
+	{
+		outIsPercent = false;
+		if (!SCHEME_EXACT_INTEGERP(arg))
+			TypeCheckFail();
+		long result;
+		if (!scheme_get_int_val(arg, &result))
+			TypeCheckFail();
+		outValue = result;
+	}
+	else
+	{
+		outIsPercent = true;
+		outValue = GetInt32Member("percent-value", arg);
+	}
+}
 
 TCallback *TSchemeArgumentList::GetCallbackArg()
 {

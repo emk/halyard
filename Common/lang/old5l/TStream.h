@@ -240,6 +240,11 @@ protected:
 	GraphicsTools::Color GetColorArg();
 	
 	//////////
+	// Return the next argument as either a value or a percentage.
+	//
+	void GetValueOrPercentArg(bool &outIsPercent, int32 &outValue);
+
+	//////////
 	// Read in a callback function.  Note that any variables will
 	// be expanded when the callback function is parsed, not
 	// when it is called.
@@ -323,33 +328,33 @@ inline TStream& close(TStream &src) { src.scanclose(); return src; }
 //
 inline TStream& discard(TStream &src) { src.discard(); return src; }
 
-//////////
-// An input manipulator which parses either (1) percentage values
-// of the form "(pcent 20)" or (2) absolute values of the form "4".
-// Call it as:
-//   int result;
-//   stream >> ValueOrPercent(10, result);
-// When passed "(pcent 20)", this will return 2.  When passed "4", this
-// will return "4".
-//
-class ValueOrPercent
-{
-	int32 mBaseValue;
-	int32 *mOutputValue;
-
-public:
-	ValueOrPercent(int32 baseValue, int32 *outputValue)
-		: mBaseValue(baseValue), mOutputValue(outputValue) {}
-
-	friend TStream &operator>>(TStream &, const ValueOrPercent &);
-};
-
 END_NAMESPACE_FIVEL
 
 #endif // TStream_h
 
 /*
  $Log$
+ Revision 1.7  2002/08/17 01:41:55  emk
+ 3.5.1 - 16 Aug 2002 - emk
+
+ Added support for defining stylesheets in Scheme.  This means that Scheme
+ can draw text!  (The INPUT doesn't work yet, because this relies on the
+ separate, not-yet-fixed header system.)  This involved lots of refactoring.
+
+   * Created TTopLevelFormProcessor as an abstract superclass of
+     TIndexManager, and modified TParser to use TTopLevelFormProcessor.
+     This allows the legacy 5L language to contain non-TIndex tlfs.
+   * Implemented a TPrimitiveTlfProcessor class, which allows
+     top-level-forms to be implemented as calls to regular 5L primitives.
+   * Yanked our ValueOrPercent support from TStream into the
+     TArgumentList superclass, and implemented it for all TArgumentList
+     subclasses.  This allows non-5L languages to specify the funky
+     percentage arguments used by the DEFSTYLE command.
+   * Removed all TIndex/TIndexManager support from TStyleSheet, and
+     reimplemented it using an STL std::map.  This breaks the dependencies
+     between stylesheets and the old 5L interpreter.
+   * Implemented a DEFSTYLE primitive.
+
  Revision 1.6  2002/08/16 16:26:22  emk
  3.5.0 - 16 Aug 2002 - emk, zeb
 

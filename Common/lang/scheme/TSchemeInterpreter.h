@@ -153,7 +153,8 @@ protected:
 	virtual TPoint GetPointArg();
 	virtual TRect GetRectArg();
 	virtual GraphicsTools::Color GetColorArg();
-	//virtual int32 GetPercentArg();
+	virtual void GetValueOrPercentArg(bool &outIsPercent,
+									  int32 &outValue);
 	virtual TCallback *GetCallbackArg();
 	virtual TArgumentList *GetListArg();
 };

@@ -29,6 +29,7 @@
 
 #include <string>
 #include <map>
+#include <boost/utility.hpp>
 
 #include "TCommon.h"
 #include "TString.h"
@@ -38,6 +39,7 @@ BEGIN_NAMESPACE_FIVEL
 
 #define PARSER_BUFFER_SIZE 512
 #define ILLEGAL_TYPE ("")
+
 
 /*-----------------------------------------------------------------
 
@@ -56,20 +58,20 @@ class TParser : public TObject
 	private:
 		//////////
 	    // A mapping from top-level-form names ("card", "macrodef")
-		// to the appropriate TIndexManager.
+		// to the appropriate processor.
 	    //
-	    static std::map<std::string,TIndexManager*> sManagerMap;
+	    static std::map<std::string,TTopLevelFormProcessor*> sProcessorMap;
 
 	public:
 		//////////
-		// Register an index manager to process a new kind of top-level-form
+		// Register a processor to handle a new kind of top-level-form
 		// (e.g., "card", "macrodef", etc.).
 	    //
 	    // [in] inTypeName - The lower-case name ("card", etc.).
-		// [in] inManager - The index manager to handle tlf's with this name.
+		// [in] inProcessor - The object which handles this type of tlf.
 	    //
-		static void RegisterIndexManager(const std::string &inTypeName,
-										 TIndexManager *inManager);
+		static void RegisterTlfProcessor(const std::string &inTypeName,
+										 TTopLevelFormProcessor *inProcessor);
 
 		//////////
 		// Constructor.
@@ -250,6 +252,27 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3  2002/08/17 01:41:55  emk
+ 3.5.1 - 16 Aug 2002 - emk
+
+ Added support for defining stylesheets in Scheme.  This means that Scheme
+ can draw text!  (The INPUT doesn't work yet, because this relies on the
+ separate, not-yet-fixed header system.)  This involved lots of refactoring.
+
+   * Created TTopLevelFormProcessor as an abstract superclass of
+     TIndexManager, and modified TParser to use TTopLevelFormProcessor.
+     This allows the legacy 5L language to contain non-TIndex tlfs.
+   * Implemented a TPrimitiveTlfProcessor class, which allows
+     top-level-forms to be implemented as calls to regular 5L primitives.
+   * Yanked our ValueOrPercent support from TStream into the
+     TArgumentList superclass, and implemented it for all TArgumentList
+     subclasses.  This allows non-5L languages to specify the funky
+     percentage arguments used by the DEFSTYLE command.
+   * Removed all TIndex/TIndexManager support from TStyleSheet, and
+     reimplemented it using an STL std::map.  This breaks the dependencies
+     between stylesheets and the old 5L interpreter.
+   * Implemented a DEFSTYLE primitive.
+
  Revision 1.2  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

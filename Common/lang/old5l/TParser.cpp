@@ -26,13 +26,15 @@
 
 USING_NAMESPACE_FIVEL
 
-std::map<std::string,TIndexManager*> TParser::sManagerMap;
+std::map<std::string,TTopLevelFormProcessor*> TParser::sProcessorMap;
 
-void TParser::RegisterIndexManager(const std::string &inTypeName,
-								   TIndexManager *inManager)
+void TParser::RegisterTlfProcessor(const std::string &inTypeName,
+								   TTopLevelFormProcessor *inProcessor)
 {
-	sManagerMap.insert(std::pair<std::string,TIndexManager*>(inTypeName,
-															 inManager));
+	std::pair<std::string,TTopLevelFormProcessor*> new_entry =
+		std::pair<std::string,TTopLevelFormProcessor*>(inTypeName,
+													   inProcessor);
+	sProcessorMap.insert(new_entry);
 }
 
 TParser::TParser()
@@ -97,12 +99,12 @@ bool TParser::Parse(TIndexFile *inFile)
 	    		state = 5;
 	    		break;
 	    	case 5:	
-				// create the index for the correct manager
-				std::map<std::string,TIndexManager*>::iterator found =
-					sManagerMap.find(std::string(type));
-				ASSERT(found != sManagerMap.end());
-				found->second->MakeNewIndex(scriptFile, theName,
-											startPos, endPos);
+				// create the index for the correct processor
+				std::map<std::string,TTopLevelFormProcessor*>::iterator found =
+					sProcessorMap.find(std::string(type));
+				ASSERT(found != sProcessorMap.end());
+				found->second->ProcessTopLevelForm(scriptFile, theName,
+												   startPos, endPos);
 
 				// Update our error-reporting information.
 				lastGoodThing = theName;
@@ -179,8 +181,8 @@ int32 TParser::findClose(void)
 				// Make sure this string does not begin with a valid
 				// top-level-form name ("card", etc.).
 				theType.MakeLower();
-				if (sManagerMap.find(std::string(theType)) !=
-					sManagerMap.end())
+				if (sProcessorMap.find(std::string(theType)) !=
+					sProcessorMap.end())
 					haveErr = true;
 
 				if (haveErr)
@@ -232,9 +234,9 @@ TString TParser::findType(void)
 	}
 	else
 	{
-		std::map<std::string,TIndexManager*>::iterator found =
-			sManagerMap.find(std::string(theType));
-		if (found == sManagerMap.end())
+		std::map<std::string,TTopLevelFormProcessor*>::iterator found =
+			sProcessorMap.find(std::string(theType));
+		if (found == sProcessorMap.end())
 		{
 			gDebugLog.Log("Error: expecting top-level form, got <%s>",
 						  theType.GetString());
@@ -434,8 +436,30 @@ void TParser::getBuffer(void)
 		bufAtEOF = true;
 }	
 
+
 /*
  $Log$
+ Revision 1.4  2002/08/17 01:41:55  emk
+ 3.5.1 - 16 Aug 2002 - emk
+
+ Added support for defining stylesheets in Scheme.  This means that Scheme
+ can draw text!  (The INPUT doesn't work yet, because this relies on the
+ separate, not-yet-fixed header system.)  This involved lots of refactoring.
+
+   * Created TTopLevelFormProcessor as an abstract superclass of
+     TIndexManager, and modified TParser to use TTopLevelFormProcessor.
+     This allows the legacy 5L language to contain non-TIndex tlfs.
+   * Implemented a TPrimitiveTlfProcessor class, which allows
+     top-level-forms to be implemented as calls to regular 5L primitives.
+   * Yanked our ValueOrPercent support from TStream into the
+     TArgumentList superclass, and implemented it for all TArgumentList
+     subclasses.  This allows non-5L languages to specify the funky
+     percentage arguments used by the DEFSTYLE command.
+   * Removed all TIndex/TIndexManager support from TStyleSheet, and
+     reimplemented it using an STL std::map.  This breaks the dependencies
+     between stylesheets and the old 5L interpreter.
+   * Implemented a DEFSTYLE primitive.
+
  Revision 1.3  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

@@ -6,8 +6,7 @@
 #include <string>
 
 #include "TCommon.h"
-#include "TStream.h"
-#include "TIndex.h"
+#include "TPrimitives.h"
 
 #include "GraphicsTools.h"
 #include "Typography.h"
@@ -15,8 +14,7 @@
 
 BEGIN_NAMESPACE_FIVEL
 
-class TStyleSheet : public TIndex {
-private:
+class TStyleSheet {
 	// (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR
 	//           [LEADING [SHADOWOFFSET SHADOWCOLOR [SHADOWHIGHCOLOR]]])
 	std::string          mStyleName;
@@ -39,12 +37,15 @@ private:
 
 public:
 	//////////
-	// Create a new style sheet from a TIndexFile and a pair
-	// of offsets.
+	// Create a new style sheet from an argument list.
 	//
-	TStyleSheet(TIndexFile *inFile, const char *inName,
-				int32 inStart, int32 inEnd);
+	TStyleSheet(TArgumentList &inArgs);
 	
+	//////////
+	// Get the name of this style sheet.
+	//
+	std::string GetName() const { return mStyleName; }
+
 	//////////
 	// Convert a 5L-format string into a StyledText object, using the
 	// data stored in this style.  This is a pretty nasty formatting
@@ -76,10 +77,27 @@ public:
 	int GetLineHeight();
 };
 
-class TStyleSheetManager : public TIndexManager {   
+class TStyleSheetManager {
+private:
+	std::map<std::string,TStyleSheet*> mStyleSheetMap;
+
 public:
-	virtual void MakeNewIndex(TIndexFile *inFile, const char *inName,
-							  int32 inStart, int32 inEnd);
+	virtual ~TStyleSheetManager() { RemoveAll(); }
+
+	//////////
+	// Return the specified stylesheet, or NULL.
+	//
+	TStyleSheet *Find(const std::string &inName);
+
+	//////////
+	// Create a new style sheet using the supplied parameters.
+	//
+	void AddStyleSheet(TArgumentList &inArgs);
+
+	//////////
+	// Remove all the stylesheets from this object.
+	//
+	void RemoveAll();
 
 	//////////
 	// Draw text onto the specified image, using the specified
@@ -96,7 +114,7 @@ public:
 	//                     TextRendering engine is destroyed.
 	//
 	void Draw(const std::string &inStyleSheet,
-			  const std::string& inText,
+			  const std::string &inText,
 			  GraphicsTools::Point inPosition,
 			  GraphicsTools::Distance inLineLength,
 			  GraphicsTools::Image *inImage);

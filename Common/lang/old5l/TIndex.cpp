@@ -31,6 +31,7 @@
 
 #include "TIndex.h"
 #include "TLogger.h"
+#include "TStream.h"
 
 // define IGNORE_IDX_FILE to parse script files on the fly
 #define IGNORE_IDX_FILE
@@ -39,6 +40,11 @@
 #endif
 
 USING_NAMESPACE_FIVEL
+
+
+//=========================================================================
+//  TIndex Methods
+//=========================================================================
 
 TIndexFileManager FIVEL_NS gIndexFileManager;
 
@@ -109,9 +115,49 @@ const char *TIndex::GetScript()
     return (m_Script.GetString());
 }
 
-//
-//	TIndexManager methods
-//
+
+//=========================================================================
+//  TPrimitiveTlfProcessor Methods
+//=========================================================================
+
+void TPrimitiveTlfProcessor::ProcessTopLevelForm(TIndexFile *inFile,
+												 const char *inName,
+												 int32 inStart, int32 inEnd)
+{
+	// Figure out how much data to read.
+    int32 length = (inEnd - inStart) + 1;
+
+	// Allocate a buffer to store our script in.
+	TStream script;
+	script.Resize(length + 1);
+    char *str = script.GetBuffer();
+
+	// Read code from the script file.
+    inFile->Seek(inStart);
+    int count = inFile->Read(str, length);
+    if (count < length)
+	{
+        gLog.Error("I/O error reading data for top-level-form <%s>.", inName);
+		return;
+	}
+
+    // Set the terminating 0 and tell the string to recalc its length since
+    // we did some direct manipulation.
+    str[length] = '\0';
+    script.Update();
+
+	// Scan off the leading data and process the rest as primitive
+	// arguments.
+	std::string name;
+	script >> open >> name;
+	ASSERT(gPrimitiveManager.DoesPrimitiveExist(mPrimitiveName));
+	gPrimitiveManager.CallPrimitive(mPrimitiveName, script);
+}
+
+
+//=========================================================================
+//  TIndexManager Methods
+//=========================================================================
 
 //
 //	TIndexManager - Constructor
@@ -124,9 +170,10 @@ TIndexManager::~TIndexManager()
 {
 }
 
-//
-//	TIndexFileManager methods
-//
+
+//=========================================================================
+//  TIndexFileManager Methods
+//=========================================================================
 
 TIndexFileManager::TIndexFileManager() : TBTree()
 {
@@ -175,9 +222,11 @@ bool TIndexFileManager::NewIndex(const char *inName)
 	return (retValue);
 }
 
-//
-//	TIndexFile methods
-//
+
+//=========================================================================
+//  TIndexFile Methods
+//=========================================================================
+
 TIndexFile::TIndexFile(const char *inName) : TBNode(inName)
 {
 	m_AtEnd = false;
@@ -440,6 +489,27 @@ bool TIndexFile::Init()
 
 /*
  $Log$
+ Revision 1.8  2002/08/17 01:41:55  emk
+ 3.5.1 - 16 Aug 2002 - emk
+
+ Added support for defining stylesheets in Scheme.  This means that Scheme
+ can draw text!  (The INPUT doesn't work yet, because this relies on the
+ separate, not-yet-fixed header system.)  This involved lots of refactoring.
+
+   * Created TTopLevelFormProcessor as an abstract superclass of
+     TIndexManager, and modified TParser to use TTopLevelFormProcessor.
+     This allows the legacy 5L language to contain non-TIndex tlfs.
+   * Implemented a TPrimitiveTlfProcessor class, which allows
+     top-level-forms to be implemented as calls to regular 5L primitives.
+   * Yanked our ValueOrPercent support from TStream into the
+     TArgumentList superclass, and implemented it for all TArgumentList
+     subclasses.  This allows non-5L languages to specify the funky
+     percentage arguments used by the DEFSTYLE command.
+   * Removed all TIndex/TIndexManager support from TStyleSheet, and
+     reimplemented it using an STL std::map.  This breaks the dependencies
+     between stylesheets and the old 5L interpreter.
+   * Implemented a DEFSTYLE primitive.
+
  Revision 1.7  2002/07/26 20:00:15  zeb
  3.3.21 - 26 July 2002 - zeb
 

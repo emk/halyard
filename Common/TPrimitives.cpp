@@ -147,7 +147,41 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TArgumentList* &out)
 
 
 //=========================================================================
-// TPrimitiveManager Methods
+//  ValueOrPercent Methods
+//=========================================================================
+
+TArgumentList &FIVEL_NS operator>>(TArgumentList &inArgs,
+								   const ValueOrPercent &inVoP)
+{
+	// Fetch the value.
+	bool is_percent;
+	int32 value;
+	inArgs.GetValueOrPercentArg(is_percent, value);
+
+	// Interpret it.
+	if (is_percent)
+	{
+		double result = (inVoP.mBaseValue * value) / 100.0;
+		if (result < 0)
+			result -= 0.5;
+		else
+			result += 0.5;
+		*inVoP.mOutputValue = static_cast<int>(result);
+		inArgs.LogParameter(std::string("(percent ") +
+							TString::IntToString(value).GetString() +
+							std::string(")"));
+	}
+	else
+	{
+		*inVoP.mOutputValue = value;
+		inArgs.LogParameter(TString::IntToString(value).GetString());
+	}
+	return inArgs;
+}
+
+
+//=========================================================================
+//  TPrimitiveManager Methods
 //=========================================================================
 
 void TPrimitiveManager::RegisterPrimitive(const std::string &inName,

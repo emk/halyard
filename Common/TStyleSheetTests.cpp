@@ -22,18 +22,18 @@ static void test_style(const StyledText &inText, int inBegin, int inEnd,
 void test_TStyleSheet(void)
 {
     // Install support for top-level forms of type "defstyle".
-    TStyleSheetManager style_manager;
-    TParser::RegisterIndexManager("defstyle", &style_manager);
+    TParser::RegisterTlfProcessor("defstyle",
+								  new TPrimitiveTlfProcessor("defstyle"));
 
     // Parse our index file and get our style sheet.
     gIndexFileManager.NewIndex("defstyle");
-	TBNode *node = style_manager.Find("S1");
-	TEST(node != NULL);
+	TStyleSheet *style1 = gStyleSheetManager.Find("S1");
+	TEST(style1 != NULL);
 
     // Set up a style.
-    TStyleSheet *style1 = dynamic_cast<TStyleSheet*>(node);
-    StyledText text1 = style1->MakeStyledText(" foo |bar| ^baz^ @wub@ || "
-											  "|foo@bar@| \\n\\t\\^\\@\\|\\\\");
+    StyledText text1 =
+		style1->MakeStyledText(" foo |bar| ^baz^ @wub@ || "
+							   "|foo@bar@| \\n\\t\\^\\@\\|\\\\");
     TEST(*text1.GetText() == L" foo bar baz wub  foobar \n\t^@|\\");
 
     // Build something to compare it against.

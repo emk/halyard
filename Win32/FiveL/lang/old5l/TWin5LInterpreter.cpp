@@ -25,15 +25,6 @@ USING_NAMESPACE_FIVEL
 TWin5LInterpreter::TWin5LInterpreter(const TString &inStartScript)
 	: mKilled(false)
 {
-	// Install our callback creator.
-	TStream::SetCallbackMaker(&TWin5LCallback::MakeCallback);
-
-	// Register our top-level forms.
-	TParser::RegisterIndexManager("card", &gCardManager);
-	TParser::RegisterIndexManager("macrodef", &gMacroManager);
-	TParser::RegisterIndexManager("header", &gHeaderManager);
-	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
-
 	// Read the startup script.
 	if (!gIndexFileManager.NewIndex(inStartScript))
 	{
@@ -164,10 +155,20 @@ TCallback *TWin5LCallback::MakeCallback(const TString &inCmd)
 
 TWin5LInterpreterManager::TWin5LInterpreterManager(
 	TInterpreter::SystemIdleProc inIdleProc)
-	: TInterpreterManager(inIdleProc)
+	: TInterpreterManager(inIdleProc),
+	  mDefStyleProcessor("defstyle")
 {
 	// Register our 5L-only portable interpreter primitives.
 	Register5LPrimitives();
+
+	// Install our callback creator.
+	TStream::SetCallbackMaker(&TWin5LCallback::MakeCallback);
+
+	// Register our top-level forms.
+	TParser::RegisterTlfProcessor("card", &gCardManager);
+	TParser::RegisterTlfProcessor("macrodef", &gMacroManager);
+	TParser::RegisterTlfProcessor("header", &gHeaderManager);
+	TParser::RegisterTlfProcessor("defstyle", &mDefStyleProcessor);
 }
 
 TInterpreter *TWin5LInterpreterManager::MakeInterpreter()

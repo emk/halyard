@@ -45,6 +45,9 @@ BEGIN_NAMESPACE_FIVEL
 // Implicit
 //   thunk - a zero-argument callback
 
+class ValueOrPercent;
+
+
 //////////
 // TArgumentList provides an abstract interface to the argument lists
 // passed to a 5L primitive function.  To allow a new TInterpreter
@@ -58,7 +61,9 @@ BEGIN_NAMESPACE_FIVEL
 //
 class TArgumentList
 {
-private:
+	friend TArgumentList &operator>>(TArgumentList &inArgs,
+									 const ValueOrPercent &inVoP);
+
 	//////////
 	// Keeps track of function name and evaluated parameters for Debug.log
 	//
@@ -113,9 +118,10 @@ protected:
 	virtual GraphicsTools::Color GetColorArg() = 0;
 
 	//////////
-	// Return the next argument as a percent.
+	// Return the next argument as either a value or a percentage.
 	//
-	//virtual int32 GetPercentArg() = 0;
+	virtual void GetValueOrPercentArg(bool &outIsPercent,
+									  int32 &outValue) = 0;
 
 	//////////
 	// Return the next argument as a callback.  This object
@@ -155,8 +161,6 @@ public:
 	friend TArgumentList &operator>>(TArgumentList &args, TCallback* &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TArgumentList* &out);
 
-	// TODO - Handle the ValueOrPercent manipulator here.
-
 	//////////
 	// Ask the TArgumentList list to start logging all the parameters
 	// extracted from it.  You can retrieve this log data from EndLog.
@@ -174,6 +178,28 @@ public:
 	// [out] return - The complete entry for Debug.log
 	//
 	std::string EndLog();
+};
+
+//////////
+// An input manipulator which parses either (1) percentage values
+// relative to some base or (2) absolute values of the form "4".
+// Call it as:
+//   int result;
+//   stream >> ValueOrPercent(10, result);
+// When passed 20%, this will return 2.  When passed "4", this
+// will return "4".
+//
+class ValueOrPercent
+{
+	int32 mBaseValue;
+	int32 *mOutputValue;
+
+public:
+	ValueOrPercent(int32 baseValue, int32 *outputValue)
+		: mBaseValue(baseValue), mOutputValue(outputValue) {}
+
+	friend TArgumentList &operator>>(TArgumentList &inArgs,
+									 const ValueOrPercent &inVoP);
 };
 
 //////////

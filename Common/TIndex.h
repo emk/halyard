@@ -115,6 +115,65 @@ class TIndex : public TBNode
 /*-----------------------------------------------------------------
 
 CLASS
+    TTopLevelFormProcessor
+
+	An abstract interface for processing top-level forms (such
+	as CARD, MACRODEF, DEFSTYLE, etc.).  I'm trying to break the
+	connection between DEFSTYLE (and HEADER) and the old 5L
+	interpreter.
+
+AUTHOR
+    Eric Kidd
+
+-----------------------------------------------------------------*/
+class TTopLevelFormProcessor
+{
+public:
+	TTopLevelFormProcessor() {}
+	virtual ~TTopLevelFormProcessor() {}
+	
+	//////////
+	// Process a single top-level form.  Abstract virtual method to be
+	// overridden by the descendant.
+	//
+	// [in] inFile - index file associated with this index
+	// [in] inName - name of this index
+	// [in] inStart - starting offset of the index
+	// [in] inEnd - ending offset of the index
+	//
+	virtual void ProcessTopLevelForm(TIndexFile *inFile, const char *inName,
+									 int32 inStart, int32 inEnd) = 0;
+};
+
+/*-----------------------------------------------------------------
+
+CLASS
+    TPrimitiveTlfProcessor
+
+	Process a top-level form by calling the specified primitive.
+    This saves us the trouble of subclassing TIndex and
+	TIndexManager (and getting all the nasty dependencies) when
+    what we really want is a regular, straightforward primitive.
+
+AUTHOR
+    Eric Kidd
+
+-----------------------------------------------------------------*/
+class TPrimitiveTlfProcessor : public TTopLevelFormProcessor,
+							   boost::noncopyable
+{
+	std::string mPrimitiveName;
+	
+public:
+	TPrimitiveTlfProcessor(const std::string &inPrimitiveName)
+		: mPrimitiveName(inPrimitiveName) {}
+	virtual void ProcessTopLevelForm(TIndexFile *inFile, const char *inName,
+									 int32 inStart, int32 inEnd);
+};
+
+/*-----------------------------------------------------------------
+
+CLASS
     TIndexManager
 
 	Manages a set of TIndex objects.
@@ -123,7 +182,7 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class TIndexManager : public TBTree 
+class TIndexManager : public TBTree, public TTopLevelFormProcessor
 {
     public:
         
@@ -136,17 +195,6 @@ class TIndexManager : public TBTree
 		// Destructor.
 		//
 		virtual			~TIndexManager();
-		
-		//////////
-		// Abstract virtual method to be overridden by the descendant.
-		//
-		// [in] inFile - index file associated with this index
-		// [in] inName - name of this index
-		// [in] inStart - starting offset of the index
-		// [in] inEnd - ending offset of the index
-		//
-		virtual void	MakeNewIndex(TIndexFile *inFile, const char *inName,
-									 int32 inStart, int32 inEnd) = 0;
 };
 
 /*-----------------------------------------------------------------
@@ -308,6 +356,27 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5  2002/08/17 01:41:55  emk
+ 3.5.1 - 16 Aug 2002 - emk
+
+ Added support for defining stylesheets in Scheme.  This means that Scheme
+ can draw text!  (The INPUT doesn't work yet, because this relies on the
+ separate, not-yet-fixed header system.)  This involved lots of refactoring.
+
+   * Created TTopLevelFormProcessor as an abstract superclass of
+     TIndexManager, and modified TParser to use TTopLevelFormProcessor.
+     This allows the legacy 5L language to contain non-TIndex tlfs.
+   * Implemented a TPrimitiveTlfProcessor class, which allows
+     top-level-forms to be implemented as calls to regular 5L primitives.
+   * Yanked our ValueOrPercent support from TStream into the
+     TArgumentList superclass, and implemented it for all TArgumentList
+     subclasses.  This allows non-5L languages to specify the funky
+     percentage arguments used by the DEFSTYLE command.
+   * Removed all TIndex/TIndexManager support from TStyleSheet, and
+     reimplemented it using an STL std::map.  This breaks the dependencies
+     between stylesheets and the old 5L interpreter.
+   * Implemented a DEFSTYLE primitive.
+
  Revision 1.4  2002/05/29 09:38:53  emk
  Fixes for various "crash on exit" bugs in 5L.
 

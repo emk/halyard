@@ -6,6 +6,7 @@
 #include "TCommon.h"
 #include "TInterpreter.h"
 #include "TString.h"
+#include "TIndex.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -85,6 +86,8 @@ public:
 //
 class TWin5LInterpreterManager : public TInterpreterManager
 {
+	TPrimitiveTlfProcessor mDefStyleProcessor;
+
 public:
 	//////////
 	// Create a new TWin5LInterpreterManager with the specified idle

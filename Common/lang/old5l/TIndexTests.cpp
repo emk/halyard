@@ -14,8 +14,8 @@ class TestIndexManager : public TIndexManager {
 public:
     TestIndexManager() {}
 
-    void MakeNewIndex(TIndexFile *inFile, const char *inName,
-					  int32 inStart, int32 inEnd)
+    void ProcessTopLevelForm(TIndexFile *inFile, const char *inName,
+							 int32 inStart, int32 inEnd)
     {
 		Add(new TIndex(inFile, inName, inStart, inEnd));
     }
@@ -33,7 +33,7 @@ void test_TIndex (void)
 {
     // Install support for top-level forms of type "test".
     TestIndexManager test_manager;
-    TParser::RegisterIndexManager("test", &test_manager);
+    TParser::RegisterTlfProcessor("test", &test_manager);
 
     // Parse our index file.
     gIndexFileManager.NewIndex("test");

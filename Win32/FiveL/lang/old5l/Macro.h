@@ -90,7 +90,9 @@ class MacroManager : public TIndexManager
 		// [in] inStart - starting index (in inFile)
 		// [in] inEnd - ending index (in inFile)
 		//
-		virtual void	MakeNewIndex(TIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
+		virtual void	ProcessTopLevelForm(TIndexFile *inFile,
+											const char *inName,
+											int32 inStart, int32 inEnd);
 };
 
 //////////
@@ -102,6 +104,27 @@ extern MacroManager gMacroManager;
 
 /*
  $Log$
+ Revision 1.5  2002/08/17 01:42:12  emk
+ 3.5.1 - 16 Aug 2002 - emk
+
+ Added support for defining stylesheets in Scheme.  This means that Scheme
+ can draw text!  (The INPUT doesn't work yet, because this relies on the
+ separate, not-yet-fixed header system.)  This involved lots of refactoring.
+
+   * Created TTopLevelFormProcessor as an abstract superclass of
+     TIndexManager, and modified TParser to use TTopLevelFormProcessor.
+     This allows the legacy 5L language to contain non-TIndex tlfs.
+   * Implemented a TPrimitiveTlfProcessor class, which allows
+     top-level-forms to be implemented as calls to regular 5L primitives.
+   * Yanked our ValueOrPercent support from TStream into the
+     TArgumentList superclass, and implemented it for all TArgumentList
+     subclasses.  This allows non-5L languages to specify the funky
+     percentage arguments used by the DEFSTYLE command.
+   * Removed all TIndex/TIndexManager support from TStyleSheet, and
+     reimplemented it using an STL std::map.  This breaks the dependencies
+     between stylesheets and the old 5L interpreter.
+   * Implemented a DEFSTYLE primitive.
+
  Revision 1.4  2002/08/16 16:26:38  emk
  3.5.0 - 16 Aug 2002 - emk, zeb
 

@@ -10,6 +10,7 @@
 #include "TCommonPrimitives.h"
 
 #include <string>
+#include <memory>
 
 USING_NAMESPACE_FIVEL
 
@@ -24,19 +25,12 @@ TStyleSheetManager FIVEL_NS gStyleSheetManager;
 //  TStyleSheet Methods
 //=========================================================================
 
-TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
-						 int32 inStart, int32 inEnd)
-	: TIndex(inFile, inName, inStart, inEnd)
+TStyleSheet::TStyleSheet(TArgumentList &inArgs)
 {
-	// Read in our script.
-	if (!SetScript())
-		gLog.FatalError("I/O error reading script for %s", inName);
-	TStream stream(GetScript());
-
     // (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR...
     std::string flags, justification;
     uint32 size;
-    stream >> open >> discard >> mStyleName >> mFontName >> size >> flags
+    inArgs >> mStyleName >> mFontName >> size >> flags
 		   >> justification >> mColor >> mHighlightColor;
     mSize = size;
 
@@ -63,34 +57,28 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
 		mJustification = Typography::kLeftJustification;
 	
     // ...LEADING...
-    if (stream.more())
-		stream >> ValueOrPercent(mSize, &mLeading);
+    if (inArgs.HasMoreArguments())
+		inArgs >> ValueOrPercent(mSize, &mLeading);
 	else
 		mLeading = 0;
 	
     // ...SHADOWOFFSET...
-    if (stream.more())
-		stream >> mShadowOffset;
+    if (inArgs.HasMoreArguments())
+		inArgs >> mShadowOffset;
 	else
 		mShadowOffset = 0;
 	
     // ...SHADOWCOLOR...
-    if (stream.more())
-		stream >> mShadowColor;
+    if (inArgs.HasMoreArguments())
+		inArgs >> mShadowColor;
 	else
 		mShadowColor = Color(0, 0, 0);
 
     // ...SHADOWHIGHCOLOR...
-    if (stream.more())
-		stream >> mHighlightShadowColor;
+    if (inArgs.HasMoreArguments())
+		inArgs >> mHighlightShadowColor;
 	else
 		mHighlightShadowColor = mShadowColor;
-
-    // ...)
-    stream >> close;
-    
-    // Release our script data.
-    FlushScript();
 }
 
 Typography::Style TStyleSheet::GetBaseStyle()
@@ -256,10 +244,44 @@ int TStyleSheet::GetLineHeight()
 //  TStyleSheetManager Methods
 //=========================================================================
 
-void TStyleSheetManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
-							  		  int32 inStart, int32 inEnd)
+TStyleSheet *TStyleSheetManager::Find(const std::string &inName)
 {
-	Add(new TStyleSheet(inFile, inName, inStart, inEnd));
+	std::map<std::string,TStyleSheet*>::iterator found =
+		mStyleSheetMap.find(inName);
+	if (found != mStyleSheetMap.end())
+		return found->second;
+	else
+		return NULL;
+
+}
+
+void TStyleSheetManager::AddStyleSheet(TArgumentList &inArgs)
+{
+	// Create the stylesheet and get the name.
+	std::auto_ptr<TStyleSheet> sheet =
+		std::auto_ptr<TStyleSheet>(new TStyleSheet(inArgs));
+	std::string name = sheet->GetName();
+
+	// Check for an exiting stylesheet with the same name.
+	if (Find(name))
+	{
+		gLog.Error("Can't redefine style sheet <%s>.", name.c_str());
+		return;
+	}
+
+	// Insert the new stylesheet in our map.
+	mStyleSheetMap.insert(std::pair<std::string,TStyleSheet*>(name,
+															  sheet.release()));
+}
+
+void TStyleSheetManager::RemoveAll()
+{
+	// Delete the individual stylesheets and empty the map.
+	std::map<std::string,TStyleSheet*>::iterator iter =
+		mStyleSheetMap.begin();
+	for (; iter != mStyleSheetMap.end(); ++iter)
+		delete iter->second;
+	mStyleSheetMap.clear();
 }
 
 void TStyleSheetManager::Draw(const std::string &inStyleSheet,
@@ -268,14 +290,13 @@ void TStyleSheetManager::Draw(const std::string &inStyleSheet,
 							  GraphicsTools::Distance inLineLength,
 							  GraphicsTools::Image *inImage)
 {
-	TBNode *node = Find(inStyleSheet.c_str());
-	if (!node)
+	TStyleSheet *style_sheet = Find(inStyleSheet);
+	if (!style_sheet)
 	{
 		gDebugLog.Caution("Tried to draw text using non-existant style "
 						  "sheet <%s>", inStyleSheet.c_str());
 		return;
 	}
-	TStyleSheet *style_sheet = dynamic_cast<TStyleSheet*>(node);
 	style_sheet->Draw(inText, inPosition, inLineLength, inImage);
 }
 
@@ -290,10 +311,9 @@ void TStyleSheetManager::DoText(const char *inStyleSheet, TRect inRect,
 
 int TStyleSheetManager::GetLineHeight(const char *inStyleSheet)
 {
-	TBNode *node = Find(inStyleSheet);
-	if (!node)
+	TStyleSheet *style_sheet = Find(inStyleSheet);
+	if (!style_sheet)
 		gLog.FatalError("Tried to measure height of non-existant style "
 						"sheet <%s>", inStyleSheet);
-	TStyleSheet *style_sheet = dynamic_cast<TStyleSheet*>(node);
 	return style_sheet->GetLineHeight();
 }

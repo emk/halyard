@@ -7,6 +7,7 @@
 #include "TVariable.h"
 #include "TLogger.h"
 #include "TDateUtil.h"
+#include "TStyleSheet.h"
 
 // Needed to implement the primitives.
 #include <string>
@@ -29,6 +30,7 @@ void FIVEL_NS RegisterCommonPrimitives()
 	REGISTER_5L_PRIMITIVE(ResetOrigin);
 	REGISTER_5L_PRIMITIVE(Set);
 	REGISTER_5L_PRIMITIVE(Get);
+	REGISTER_5L_PRIMITIVE(DefStyle);
 }
 
 
@@ -275,4 +277,15 @@ DEFINE_5L_PRIMITIVE(Get)
 	TString vname;
 	inArgs >> vname;
    	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
+}
+
+
+//-------------------------------------------------------------------------
+// (DefStyle NAME ...)
+//-------------------------------------------------------------------------
+// Create a stylesheet with the given name.
+
+DEFINE_5L_PRIMITIVE(DefStyle)
+{
+	gStyleSheetManager.AddStyleSheet(inArgs);
 }
