@@ -183,6 +183,10 @@ static EntityMapping<wchar_t> UnicodeEntityMapping[] = {
     {L"Ccedil", WCHAR_1(0x00C7)},
     {L"ccedil", WCHAR_1(0x00E7)},
 
+	// Unicode-only entities.
+	{L"Delta",  WCHAR_1(0x2206)}, // Unicode INCREMENT character.
+	{L"delta",  WCHAR_1(0x03B4)}, // Lowercase greek delta.
+
     {NULL}
 };
 
