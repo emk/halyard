@@ -62,7 +62,7 @@
 //
 // DURING PLAYBACK:
 //   - Pause movie shortly before stalling to stream more data.
-//     I assume the controller does this for us.
+//     I assume the controller does this for us.  GOOD.
 //     
 
 #include "stdafx.h"
@@ -72,6 +72,8 @@
 #include "LQuickTime.h"
 #include "Globals.h"
 #include "Devices.h"
+#include "FiveL.h"
+#include "resource.h"
 
 //
 //	LQuickTime - the construct-from-stream constructor
@@ -99,6 +101,35 @@ LQuickTime::~LQuickTime()
 		delete mMovie;
 }
 
+static LRESULT
+SkipOrExitProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
+	switch (message) {
+        case WM_INITDIALOG:
+            // For some reason, this doesn't happen automatically, and without
+            // the focus, keyboard accelerators don't work.
+            SetFocus(GetDlgItem(hDlg, IDIGNORE));
+            break;
+
+		case WM_COMMAND:
+			if (LOWORD(wParam) == IDIGNORE || LOWORD(wParam) == IDABORT)
+			{
+				EndDialog(hDlg, LOWORD(wParam));
+				return true;
+			}
+			break;
+	}
+    return false;
+    
+}
+
+static void SkipOrExitDialog(int inTemplate) {
+    StModalDialogLock lock;
+    WORD result = ::DialogBox(hAppInst, MAKEINTRESOURCE(inTemplate),
+                              hwndApp, (DLGPROC) SkipOrExitProc);
+    if (result == IDABORT)
+        ShutDown(); 
+}
+
 //
 //	Idle
 //
@@ -115,12 +146,21 @@ void LQuickTime::Idle(void)
 				gMissingMediaLog.Log("Broken movie: %s", mPath.GetString());
 				gDebugLog.Log("Broken movie: %s", mPath.GetString());
 				Kill();
+                SkipOrExitDialog(IDD_NETMOVERROR);
 			}
 			else if (mMovie->IsDone())
 			{
 				gDebugLog.Log("Movie done: %s", mPath.GetString());
 				Kill();
 			}
+            else if (mMovie->GetTimeoutEllapsed() >
+                     gVariableManager.GetLong("_mediatimeout"))
+            {
+				gMissingMediaLog.Log("Movie timed out: %s", mPath.GetString());
+				gDebugLog.Log("Movie timed out: %s", mPath.GetString());
+				Kill();
+                SkipOrExitDialog(IDD_NETMOVTIMEOUT);
+            }   
 			else if (mMovie->IsStarted() && mWaiting)
 			{
                 if (!mHaveComputedWaitTime) {
@@ -538,6 +578,18 @@ bool LQuickTime::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.5.2.3  2003/10/30 21:49:39  emk
+ 3.4.7 - 24 Feb 2003 - emk
+
+ BEGINNING TO STABLIZE.  Added code to display dialogs when QuickTime
+ network errors occur or when the movie times out.  Timeouts are 10 seconds
+ by default, but you can change them by setting _mediatimeout.  Fun!
+
+ Please test this thoroughly (in full screen mode, too--some of my changes
+ affect full screen mode) on a range of machines.  I don't anticipate making
+ many more changes before doing a stable build.  Particularly interesting
+ are network failures in the middle of a long video, etc.
+
  Revision 1.5.2.2  2003/10/21 18:48:31  emk
  3.4.6 - 24 Feb 2003 - emk
 

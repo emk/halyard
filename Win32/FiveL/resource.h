@@ -25,6 +25,8 @@
 #define IDC_BACKUP_CURSOR               138
 #define IDC_TURN_RIGHT_CURSOR           138
 #define IDC_CURSOR2                     139
+#define IDD_NETMOVERROR                 140
+#define IDD_NETMOVTIMEOUT               141
 #define IDC_VERSION_LINE                1000
 #define IDC_STATIC                      -1
 
@@ -32,7 +34,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           110

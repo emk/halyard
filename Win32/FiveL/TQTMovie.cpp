@@ -110,7 +110,8 @@ CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
 
 TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     : mPort(inPort), mState(MOVIE_UNINITIALIZED),
-	  mMovie(NULL), mMovieController(NULL), mShouldStartWhenReady(false)
+	  mMovie(NULL), mMovieController(NULL), mShouldStartWhenReady(false),
+      mTimeoutStarted(false), mTimeoutBase(0), mLastSeenTimeValue(0)
 {
 	ASSERT(sIsQuickTimeInitialized);
 
@@ -211,6 +212,9 @@ void TQTMovie::Idle() throw ()
 		// See if we need to finish an asynchronous load.
 		if (mState == MOVIE_INCOMPLETE)
 			ProcessAsyncLoad();
+
+        // Maybe update our timeout.
+        UpdateTimeout();
 	}
 	catch (...)
 	{
@@ -269,6 +273,9 @@ void TQTMovie::StartWhenReady(PlaybackOptions inOptions, Point inPosition)
 		mShouldStartWhenReady = true;
 		mOptions = inOptions;
 		mPosition = inPosition;
+
+        // This is a good time to activate the timeout.
+        UpdateTimeout(true);
 	}
 }
 
@@ -279,6 +286,10 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	// Store our options so other routines can find them.
 	mOptions = inOptions;
 	mPosition = inPosition;
+
+    // Activate our timeout, if we haven't already.
+    if (!mTimeoutStarted)
+        UpdateTimeout(true);
 
 	// The movie should be done flashing (and drawing in awkward places),
 	// so we should attach it to the correct port (if it has any graphics
@@ -443,6 +454,44 @@ void TQTMovie::ThrowIfBroken()
 	if (IsBroken())
 		// XXX - Find a better error to throw.
 		throw TMacError(__FILE__, __LINE__, noErr);
+}
+
+int TQTMovie::GetTimeoutEllapsed() {
+    // Under certain circumstances, we always return a timeout of 0.
+    if (!mTimeoutStarted) {
+        // The timeout hasn't been started yet.
+        return 0; 
+    } else if (IsBroken()) {
+        // The movie is broken, so no timeout.
+        return 0;
+    }
+
+    return ::time(NULL) - mTimeoutBase;
+}
+
+void TQTMovie::UpdateTimeout(bool inStart) {
+    // Make sure the timeout is started.
+    if (!mTimeoutStarted) {
+        if (inStart) {
+            mTimeoutStarted = true;
+            mTimeoutBase = ::time(NULL);
+        }
+        return;
+    }
+
+    if (IsStarted()) {
+        if (IsPaused())
+            // If we're paused, we don't expect the movie to make progress.
+            mTimeoutBase = ::time(NULL);
+        else {
+            // If the movie has made progress, reset the timeout.
+            TimeValue currentTimeValue = GetMovieTime();
+            if (currentTimeValue != mLastSeenTimeValue) {
+                mLastSeenTimeValue = currentTimeValue;
+                mTimeoutBase = ::time(NULL);
+            }
+        }
+    }
 }
 
 void TQTMovie::FillOutMSG(HWND inHWND, UINT inMessage, WPARAM inWParam,

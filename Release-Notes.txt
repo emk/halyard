@@ -1,5 +1,16 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.4.7 - 24 Feb 2003 - emk
+
+BEGINNING TO STABLIZE.  Added code to display dialogs when QuickTime
+network errors occur or when the movie times out.  Timeouts are 10 seconds
+by default, but you can change them by setting _mediatimeout.  Fun!
+
+Please test this thoroughly (in full screen mode, too--some of my changes
+affect full screen mode) on a range of machines.  I don't anticipate making
+many more changes before doing a stable build.  Particularly interesting
+are network failures in the middle of a long video, etc.
+
 3.4.6 - 24 Feb 2003 - emk
 
 STILL UNSTABLE.  Fixed network playback in the new QuickTime layer.  This

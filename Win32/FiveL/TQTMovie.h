@@ -7,6 +7,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <time.h>
 
 #include <Movies.h>
 
@@ -177,6 +178,23 @@ private:
 	//
 	Point mPosition;
 
+    //////////
+    // Should our timeout be active right now?
+    //
+    bool mTimeoutStarted;
+
+    //////////
+    // The last time something interesting happened, for various values
+    // of "interesting".  This is used as the base number for calculating
+    // timeouts.
+    //
+    time_t mTimeoutBase;
+
+    //////////
+    // The TimeValue the movie was at when we lasted updated TimeoutBase.
+    //
+    TimeValue mLastSeenTimeValue;
+
 public:
 	//////////
 	// Create a new movie object, and begin the preloading process.
@@ -266,6 +284,12 @@ public:
 	TimeValue GetDuration();
 	void ThrowIfBroken();
 
+    //////////
+    // How much time has ellapsed towards a timeout?  (We don't actually
+    // worry about how long the timeout is; that's our caller's job.)
+    //
+    int GetTimeoutEllapsed();
+
 	//////////
 	// Fill out a Win32 MSG object based on the parameters to this
 	// function and the per-thread message state.
@@ -348,6 +372,11 @@ private:
 	// Advance to the next state in our state machine.
 	//
 	void UpdateMovieState(MovieState inNewState);
+
+    //////////
+    // Update the timeout base with the current time.
+    //
+    void UpdateTimeout(bool inStart = false);
 
 	//////////
 	// We use this function to process movie controller events.  This allows

@@ -119,7 +119,7 @@ class Card : public TIndex
 		// [in] index - the index
 		//
 		void			SetIndex(int32 index) { m_index = index;  }
-
+    
     protected:
 		//////////
 		// Evaluate the given conditional and determine whether or not it
@@ -430,6 +430,18 @@ extern CardManager gCardManager;
 
 /*
  $Log$
+ Revision 1.4.2.3  2003/10/30 21:49:39  emk
+ 3.4.7 - 24 Feb 2003 - emk
+
+ BEGINNING TO STABLIZE.  Added code to display dialogs when QuickTime
+ network errors occur or when the movie times out.  Timeouts are 10 seconds
+ by default, but you can change them by setting _mediatimeout.  Fun!
+
+ Please test this thoroughly (in full screen mode, too--some of my changes
+ affect full screen mode) on a range of machines.  I don't anticipate making
+ many more changes before doing a stable build.  Particularly interesting
+ are network failures in the middle of a long video, etc.
+
  Revision 1.4.2.2  2002/08/14 22:30:10  emk
  3.4.1 - Bugfix: Commands with bodies now check for the "returning" flag
  correctly, even if they're within macros (Macro has its own return system

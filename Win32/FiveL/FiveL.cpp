@@ -109,6 +109,8 @@ CGrafPtr			gGrafPtr = NULL;
 LHttp				gHttpTool;
 LBrowser			gBrowserTool;
 
+int StModalDialogLock::s_Lock = 0;
+
 // The one and only CLimitSingleInstance object
 SingleInstance g_SingleInstanceObj(TEXT("{03C53E8D-4B46-428c-B812-DBAC5F1A6378}"));
 
@@ -600,13 +602,17 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			switch (wmId)
 			{
 				case IDM_ABOUT:
-				   DialogBox(hAppInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
-				   break;
+                    {
+                        StModalDialogLock lock;
+                        ::DialogBox(hAppInst, (LPCTSTR)IDD_ABOUTBOX, hWnd,
+                                    (DLGPROC)About);
+                    }
+                    break;
 				case IDM_EXIT:
-				   DestroyWindow(hWnd);
-				   break;
+                    DestroyWindow(hWnd);
+                    break;
 				default:
-				   return DefWindowProc(hWnd, message, wParam, lParam);
+                    return DefWindowProc(hWnd, message, wParam, lParam);
 			}
 			break;
 
@@ -694,7 +700,7 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			// do our idle time processing
 			if (wParam == FIVEL_TIMER)
 			{
-				if (gInFront)
+				if (gInFront && !StModalDialogLock::IsDialogActive())
 				{
 					TInterpreter::GetInstance()->Idle();
 					gVideoManager.Idle();
@@ -874,7 +880,7 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
    }
 
    // cbo_test - try to improve performance
-	if (gInFront)
+	if (gInFront && !StModalDialogLock::IsDialogActive())
 	{
 		//TInterpreter::GetInstance()->Idle();
 		gVideoManager.Idle();
@@ -1164,6 +1170,7 @@ void SetGlobals(void)
 	gVariableManager.SetLong("_resy", gVertRes);
 	gVariableManager.SetLong("_bitdepth", gView->BitDepth());
 
+    gVariableManager.SetLong("_mediatimeout", 10);
 	gVariableManager.SetLong("_QuickTimeVideoPreload", 2000);
 	gVariableManager.SetLong("_QuickTimeVideoCycles", 50);
 	gVariableManager.SetLong("_QuickTimeAudioPreload", 500);
@@ -1197,10 +1204,18 @@ void SetGlobals(void)
 //
 void PutInBackground(void)
 {
-	SetWindowPos(hwndApp, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN
+        // Don't bother to hide the window if we're popping up a dialog.
+        && !StModalDialogLock::IsDialogActive())
+	{
+		// XXX - Causes off-center QuickTime playback when backgrounded
+		// window is restored.
+		SetWindowPos(hwndApp, HWND_BOTTOM, 0, 0, 0, 0,
+					 SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
 
-	ShowWindow(hwndApp, SW_MINIMIZE);
-	ShowWindow(hBackgroundWnd, SW_HIDE);
+		ShowWindow(hwndApp, SW_MINIMIZE);
+		ShowWindow(hBackgroundWnd, SW_HIDE);
+	}
 
 	gInBackground = true;
 
@@ -1212,14 +1227,18 @@ void PutInBackground(void)
 //
 void PutInForeground(void)
 {
-	ShowWindow(hBackgroundWnd, SW_SHOW);
-	ShowWindow(hwndApp, SW_MAXIMIZE);
-
-	SetWindowPos(hwndApp, /*HWND_TOP*/ HWND_TOPMOST, 
-		gWinRect.left, gWinRect.top, gWinRect.right, gWinRect.bottom, 0);
-//	SetWindowPos(hBackgroundWnd, hwndApp, 
-//		gBackgroundWinRect.left, gBackgroundWinRect.top, 
-//		gBackgroundWinRect.right, gBackgroundWinRect.bottom, 0);
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
+	{
+		ShowWindow(hBackgroundWnd, SW_SHOW);
+		ShowWindow(hwndApp, SW_MAXIMIZE);
+		
+		SetWindowPos(hwndApp, /*HWND_TOP*/ HWND_TOPMOST, 
+					 gWinRect.left, gWinRect.top,
+					 gWinRect.right, gWinRect.bottom, 0);
+		//	SetWindowPos(hBackgroundWnd, hwndApp, 
+		//		gBackgroundWinRect.left, gBackgroundWinRect.top, 
+		//		gBackgroundWinRect.right, gBackgroundWinRect.bottom, 0);
+	}
 
 	gInBackground = false;
 
@@ -1259,6 +1278,18 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.13.2.3  2003/10/30 21:49:39  emk
+ 3.4.7 - 24 Feb 2003 - emk
+
+ BEGINNING TO STABLIZE.  Added code to display dialogs when QuickTime
+ network errors occur or when the movie times out.  Timeouts are 10 seconds
+ by default, but you can change them by setting _mediatimeout.  Fun!
+
+ Please test this thoroughly (in full screen mode, too--some of my changes
+ affect full screen mode) on a range of machines.  I don't anticipate making
+ many more changes before doing a stable build.  Particularly interesting
+ are network failures in the middle of a long video, etc.
+
  Revision 1.13.2.2  2003/10/06 20:16:28  emk
  3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
  (Various parts of the new layer include forward ports from

@@ -17,15 +17,27 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		6
+#define VERSION_REV_BIG		7
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.6 (UNSTABLE!)"
+#define VERSION_STRING		"5L 3.4.7 (UNSTABLE!)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.7  2003/10/30 21:49:05  emk
+ 3.4.7 - 24 Feb 2003 - emk
+
+ BEGINNING TO STABLIZE.  Added code to display dialogs when QuickTime
+ network errors occur or when the movie times out.  Timeouts are 10 seconds
+ by default, but you can change them by setting _mediatimeout.  Fun!
+
+ Please test this thoroughly (in full screen mode, too--some of my changes
+ affect full screen mode) on a range of machines.  I don't anticipate making
+ many more changes before doing a stable build.  Particularly interesting
+ are network failures in the middle of a long video, etc.
+
  Revision 1.30.2.6  2003/10/21 18:47:58  emk
  3.4.6 - 24 Feb 2003 - emk
 

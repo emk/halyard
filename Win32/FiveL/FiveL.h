@@ -85,11 +85,45 @@ void	PutInBackground(void);
 //
 void	PutInForeground(void);
 
+//////////
+// Before opening a modal dialog, acquire this lock to shut down idle-time
+// processing as follows:
+//
+//   { // Introduce a local scope.
+//       StModalDialogLock lock;
+//       WORD result = DialogBox(...);
+//       ...
+//   } // The lock automatically goes away here.
+//
+// This will deactivate certain idle-time processing in the main engine,
+// including QuickTime and the interpreter.
+//
+class StModalDialogLock {
+    static int s_Lock;
+
+public:
+    StModalDialogLock() { s_Lock++; }
+    ~StModalDialogLock() { s_Lock--; }
+    static bool IsDialogActive() { return s_Lock > 0; }
+};
+
 
 #endif // _FiveL_h_
 
 /*
  $Log$
+ Revision 1.5.2.1  2003/10/30 21:49:39  emk
+ 3.4.7 - 24 Feb 2003 - emk
+
+ BEGINNING TO STABLIZE.  Added code to display dialogs when QuickTime
+ network errors occur or when the movie times out.  Timeouts are 10 seconds
+ by default, but you can change them by setting _mediatimeout.  Fun!
+
+ Please test this thoroughly (in full screen mode, too--some of my changes
+ affect full screen mode) on a range of machines.  I don't anticipate making
+ many more changes before doing a stable build.  Particularly interesting
+ are network failures in the middle of a long video, etc.
+
  Revision 1.5  2002/06/20 16:32:54  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:
