@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+3.5.10 - 6 Nov 2002 - emk
 
 wx5L:
 

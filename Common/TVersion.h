@@ -17,15 +17,48 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		9
+#define VERSION_REV_BIG		10
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.9 (Development)"
+#define VERSION_STRING		"5L 3.5.10 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.42  2002/11/06 18:29:46  emk
+ 3.5.10 - 6 Nov 2002 - emk
+
+ wx5L:
+
+ Working on making wx5L portable.  The Windows wx5L build is slightly
+ broken; I'll fix it once the portable code is happy.
+
+   * Added FIVEL_NO_MOVIES define to supress use of QuickTime in wx5L builds.
+   * Refactored MovieWindow into two classes: MovieWindow, which does
+     nothing, and MovieWindowQT which does all the work.  Refer to
+     MovieWindowNative to get the right one on a given platform.
+   * Wrote scripts to convert *.ico and *.bmp files to *.xpm files.
+   * Added AppGraphics.h and AppGraphics.cpp, which import xpm files.
+   * Checked in some other utility scripts, and updated 5L-stats.
+
+ Regular 5L:
+
+ Added type information to 5L variables, and replaced (var ...) with a more
+ powerful form of (define ...).  These changes should make Scheme more
+ pleasant for content authors.
+
+   * TVariable now stores type information.
+   * Added SetTyped primitive, and replaced VariableExists with
+     VariableInitialized.
+   * Added support for "symbol" arguments to primitives.  These correspond
+     to Scheme symbols, and should eventually be used when a primitive
+     argument refers to a variable name (or one a small, fixed set of strings).
+   * Fixed bugs in TVariable's unsigned integer handling.
+   * Removed TYPE argument from call-5l-prim, engine-var, etc.
+   * Renamed DEFINE-PERSISTENT-VARIABLE to DEFINE/P.
+   * Updated fake-engine.ss to mimic new engine, and fixed bug in tool.ss.
+
  Revision 1.41  2002/10/31 22:58:48  emk
  Edited a comment which prevented GCC from compiling this file.
 
