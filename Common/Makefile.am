@@ -66,6 +66,8 @@ libfivel_a_SOURCES = \
 	TStartup.h \
 	TDeveloperPrefs.cpp \
 	TDeveloperPrefs.h \
+	XmlUtils.cpp \
+	XmlUtils.h \
 	lang/old5l/TIndex.cpp \
 	lang/old5l/TIndex.h \
 	lang/old5l/TParser.cpp \
@@ -101,5 +103,6 @@ TestAll_LDADD = \
 	../libs/plt/lib/libmzgc.a \
 	../libs/plt/lib/mzdyn.o \
 	@FREETYPE_LDADD@ \
+	@LIBXML2_LDADD@ \
 	-ldl
 #	-lefence

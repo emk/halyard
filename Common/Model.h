@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "FileSystem.h"
+#include "XmlUtils.h"
 
 
 //////////
@@ -128,6 +129,11 @@ namespace DataStore {
 		// into a container, which will call RegisterWithStore.
 		//
 		virtual void RegisterWithStore(Store *inStore) {}
+
+		//////////
+		// Write a Datum to the specified file.
+		//
+		virtual void Write(xml_node inParent) = 0;
 	};
 
 	//////////
@@ -161,19 +167,21 @@ namespace DataStore {
 		ValueDatum(Type inType, ConstValueType &inValue)
 			: Datum(inType), mValue(inValue) {}
 
-	private:
+	protected:
 		ValueType mValue;
 	};
 
-#	define DEF_VALUE_DATUM_CLASS(NAME,TYPECODE,DATATYPE) \
+#	define DEFINE_VALUE_DATUM_CLASS(NAME,TYPECODE,DATATYPE) \
 		class NAME : public ValueDatum<DATATYPE> { \
 		public: \
 			NAME(DATATYPE inValue) \
 				: ValueDatum<DATATYPE>(TYPECODE, inValue) {} \
+			virtual void Write(xml_node inParent); \
 		}
 	
-	DEF_VALUE_DATUM_CLASS(IntegerDatum,IntegerType,long);
-	DEF_VALUE_DATUM_CLASS(StringDatum,StringType,std::string);
+	DEFINE_VALUE_DATUM_CLASS(IntegerDatum,IntegerType,long);
+	DEFINE_VALUE_DATUM_CLASS(StringDatum,StringType,std::string);
+
 
 #	undef DEF_VALUE_DATUM
 
@@ -207,6 +215,8 @@ namespace DataStore {
 		// actually pay attention to this method.
 		//
 		virtual void RegisterWithStore(Store *inStore);
+
+		Store *GetStore() { ASSERT(mStore); return mStore; }
 	};		
 
 	//////////
@@ -297,6 +307,9 @@ namespace DataStore {
 	public:
 		MapDatum() : CollectionDatum<std::string>(MapType) {}
 
+		virtual void Write(xml_node inParent);
+		void Fill(xml_node inNode);
+
 	protected:
 		virtual Datum *DoGet(ConstKeyType &inKey);
 		virtual Datum *DoFind(ConstKeyType &inKey);
@@ -317,6 +330,8 @@ namespace DataStore {
 	public:
 		ListDatum() : CollectionDatum<size_t>(ListType) {}
 
+		virtual void Write(xml_node inParent);
+
 		template <class D>
 		void Insert(ConstKeyType &inKey, D *inValue)
 		{ PerformInsert(inKey, static_cast<Datum*>(inValue)); }
@@ -331,6 +346,15 @@ namespace DataStore {
 		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum);
 		virtual void DoInsert(ConstKeyType &inKey, Datum *inDatum);
 	};
+
+#if 0
+	//////////
+	// Move an item within a collection or between collections.
+	//
+	template <typename C1, typename C2>
+	extern void Move(C1 *inDest, typename C1::ConstKeyType &inDestKey,
+					 C2 *inSrc, typename C2::ConstKeyType &inSrcKey);
+#endif // 0
 
 	//////////
 	// The DataStore itself.  This class manages a single persistent
@@ -359,6 +383,10 @@ namespace DataStore {
 		MapDatum *GetRoot() { ASSERT(mRoot.get()); return mRoot.get(); }
 		const MapDatum *GetRoot() const
 			{ ASSERT(mRoot.get()); return mRoot.get(); }
+
+		void Write(const std::string &inFile);
+
+		static Store *Read(const std::string &inFile);
 		
 	private:
 		friend class MutableDatum;

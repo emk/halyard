@@ -120,6 +120,12 @@ public:
 	} \
     return DEFAULT;
 
+#define THROW(MSG) \
+    throw TException(__FILE__, __LINE__, (MSG))
+
+#define CHECK(COND,MSG) \
+    do { if (!(COND)) THROW(MSG); } while (0)
+
 END_NAMESPACE_FIVEL
 
 #endif // TException_H

@@ -1,8 +1,12 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
+#include <boost/lexical_cast.hpp>
+#include <libxml/parser.h>
+
 #include "TCommon.h"
 #include "DataStore.h"
 
+USING_NAMESPACE_FIVEL
 using namespace DataStore;
 using namespace DataStore::Private;
 
@@ -64,6 +68,22 @@ void Change::FreeResources()
 	else
 		DoFreeApplyResources();
 	mIsFreed = true;
+}
+
+
+//=========================================================================
+//  ValueDatum Implementation
+//=========================================================================
+
+
+void IntegerDatum::Write(xml_node inParent)
+{
+	inParent.new_child("int", boost::lexical_cast<std::string>(mValue));
+}
+
+void StringDatum::Write(xml_node inParent)
+{
+	inParent.new_child("str", mValue);
 }
 
 
@@ -253,7 +273,7 @@ CollectionDatum<KeyType>::DeleteChange::DeleteChange(
 	if (!mOldDatum)
 	{
 		ConstructorFailing();
-		throw TException(__FILE__, __LINE__, "DeleteChange: No such key");
+		THROW("DeleteChange: No such key");
 	}
 }
 
@@ -300,11 +320,34 @@ template class CollectionDatum<size_t>;
 //  MapDatum Methods
 //=========================================================================
 
+void MapDatum::Write(xml_node inParent)
+{
+	xml_node node = inParent.new_child("map");
+	DatumMap::iterator i = mMap.begin();
+	for (; i != mMap.end(); ++i)
+	{
+		xml_node item = node.new_child("item");
+		item.set_attribute("key", i->first);
+		i->second->Write(item);
+	}
+}
+
+void MapDatum::Fill(xml_node inNode)
+{
+	xml_node::iterator i = inNode.begin();
+	for (; i != inNode.end(); ++i)
+	{
+		xml_node node = *i;
+		XML_CHECK_NAME(node, "item");
+		std::string key = node.attribute("key");
+		//xml_node value = node.only_child();
+	}
+}
+
 Datum *MapDatum::DoGet(ConstKeyType &inKey)
 {
 	DatumMap::iterator found = mMap.find(inKey);
-	if (found == mMap.end())
-		throw TException(__FILE__, __LINE__, "MapDatum::Get: Can't find key");
+	CHECK(found != mMap.end(), "MapDatum::Get: Can't find key");
 	return found->second;
 }
 
@@ -389,11 +432,17 @@ void ListDatum::PerformInsert(ConstKeyType &inKey, Datum *inValue)
 //  ListDatum Methods
 //=========================================================================
 
+void ListDatum::Write(xml_node inParent)
+{
+	xml_node node = inParent.new_child("list");
+	DatumVector::iterator i = mVector.begin();
+	for (; i != mVector.end(); ++i)
+		(*i)->Write(node);
+}
+
 Datum *ListDatum::DoGet(ConstKeyType &inKey)
 {
-	if (inKey >= mVector.size())
-		throw TException(__FILE__, __LINE__,
-						 "No such key in ListDatum::DoGet");
+	CHECK(inKey < mVector.size(), "No such key in ListDatum::DoGet");
 	return mVector[inKey];
 }
 
@@ -421,6 +470,110 @@ void ListDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
 	ASSERT(inDatum != NULL);
 	mVector.insert(mVector.begin() + inKey, inDatum);
 }
+
+
+//=========================================================================
+//  MoveChange
+//=========================================================================
+
+#if 0
+template <typename DestKeyType, typename SrcKeyType>
+class MoveChange : public Change {
+	typedef CollectionDatum<DestKeyType> DestCollection;
+	typedef CollectionDatum<SrcKeyType> SrcCollection;
+	typedef DestCollection::ConstKeyType DestConstKeyType;
+	typedef SrcCollection::ConstKeyType SrcConstKeyType;
+
+	SrcCollection *mOldCollection;
+	SrcConstKeyType mOldKey;
+	DestCollection *mNewCollection;
+	DestConstKeyType mNewKey;
+	Datum *mReplacedDatum;
+	Datum *mMovedDatum;
+
+public:
+	MoveChange(DestCollection *inDest, DestConstKeyType &inDestKey,
+			   SrcCollection *inSrc, SrcConstKeyType &inSrcKey);
+
+protected:
+	virtual void DoApply();
+	virtual void DoRevert();
+	virtual void DoFreeApplyResources();
+	virtual void DoFreeRevertResources();
+};
+
+template <typename DestKeyType, typename SrcKeyType>
+MoveChange<DestKeyType,SrcKeyType>::MoveChange(DestCollection *inDest,
+											   DestConstKeyType &inDestKey,
+											   SrcCollection *inSrc,
+											   SrcConstKeyType &inSrcKey)
+	: mOldCollection(inSrc), mOldKey(inSrcKey),
+	  mNewCollection(inDest), mNewKey(inDestKey),
+	  mReplacedDatum(NULL), mMovedDatum(NULL)
+{
+	mReplacedDatum = mNewCollection->DoFind(mNewKey);
+	mMovedDatum = mOldCollection->DoFind(mOldKey);
+	if (!mMovedDatum)
+	{
+		ConstructorFailing();
+		THROW("DeleteChange: No such key");
+	}
+}
+
+template <typename DestKeyType, typename SrcKeyType>
+void MoveChange<DestKeyType,SrcKeyType>::DoApply()
+{
+	if (mReplacedDatum)
+		mNewCollection->DoRemoveKnown(mNewKey, mReplacedDatum);
+	mOldCollection->DoRemoveKnown(mOldKey, mMovedDatum);
+	mNewCollection->DoInsert(mNewKey, mMovedDatum);
+}
+
+template <typename DestKeyType, typename SrcKeyType>
+void MoveChange<DestKeyType,SrcKeyType>::DoRevert()
+{
+	mNewCollection->DoRemoveKnown(mNewKey, mMovedDatum);
+	mOldCollection->DoInsert(mOldKey, mMovedDatum);
+	if (mReplacedDatum)
+		mNewCollection->DoInsert(mNewKey, mReplacedDatum);
+}
+
+template <typename DestKeyType, typename SrcKeyType>
+void MoveChange<DestKeyType,SrcKeyType>::DoFreeApplyResources()
+{
+}
+
+template <typename DestKeyType, typename SrcKeyType>
+void MoveChange<DestKeyType,SrcKeyType>::DoFreeRevertResources()
+{
+	if (mReplacedDatum)
+	{
+		delete mReplacedDatum;
+		mReplacedDatum = NULL;
+	}
+}
+
+template <typename C1, typename C2>
+void DataStore::Move(C1 *inDest, typename C1::ConstKeyType &inDestKey,
+					 C2 *inSrc, typename C2::ConstKeyType &inSrcKey)
+{
+	inDest->GetStore()->
+      ApplyChange(new MoveChange<typename C1::KeyType,
+				                 typename C2::KeyType>(inDest, inDestKey,
+													   inSrc, inSrcKey));
+}
+
+template MoveChange<size_t,size_t>;
+template MoveChange<std::string,size_t>;
+template MoveChange<size_t,std::string>;
+template MoveChange<std::string,std::string>;
+
+template void DataStore::Move(ListDatum*, ListDatum::ConstKeyType&,
+							  ListDatum*, ListDatum::ConstKeyType&);
+
+template void DataStore::Move(MapDatum*, MapDatum::ConstKeyType&,
+							  MapDatum*, MapDatum::ConstKeyType&);
+#endif // 0
 
 
 //=========================================================================
@@ -502,4 +655,52 @@ void Store::ApplyChange(Change *inChange)
 	inChange->Apply();
 	mChangePosition = mChanges.insert(mChangePosition, inChange);
 	mChangePosition++;
+}
+
+void Store::Write(const std::string &inFile)
+{
+	// Create a tree.
+	xmlDocPtr doc = xmlNewDoc(xml_node::to_utf8("1.0"));
+	doc->children =
+		xmlNewDocNode(doc, NULL, xml_node::to_utf8("TamaleData"), NULL);
+	xml_node root(doc->children);
+	root.set_attribute("version", "0");
+	root.set_attribute("backto", "0");
+
+	// Add nodes as appropriate.
+	mRoot->Write(root);
+
+	// Serialize it to a file.
+	int result = xmlSaveFormatFile(inFile.c_str(), doc, 1);
+	xmlFreeDoc(doc);
+	CHECK(result != -1, "Failed to save XML file");
+}
+
+Store *Store::Read(const std::string &inFile)
+{
+	// Create a new data store.
+	std::auto_ptr<Store> store(new Store());
+
+	// Open the XML file.
+	xmlDocPtr doc = xmlParseFile(inFile.c_str());
+	CHECK(doc, "Failed to load XML file");
+	try
+	{
+		// Check out the root element.
+		// XXX - Version check goes here.
+		xmlNodePtr root = xmlDocGetRootElement(doc);
+		CHECK(root, "No document root in XML file");
+		xml_node map_node = xml_node(root).only_child();
+		XML_CHECK_NAME(map_node, "map");
+		store->GetRoot()->Fill(map_node);
+	}
+	catch (...)
+	{
+		xmlFreeDoc(doc);
+		throw;
+	}
+
+	xmlFreeDoc(doc);
+	store->ClearUndoList();
+	return store.release();
 }

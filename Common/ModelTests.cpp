@@ -157,7 +157,38 @@ void test_DataStore (void)
 	store.Undo();
 	TEST(list->GetValue<StringDatum>(0) == "item 0");
 	TEST(list->GetValue<StringDatum>(1) == "item 1");
+
+	//---------------------------------------------------------------------
+	// Move is an especially tricky case.
+
+#if 0
+	// Create some collections to move between.
+	root->Set<MapDatum>("move map 1", new MapDatum());	
+	root->Set<MapDatum>("move map 2", new MapDatum());
+	root->Set<ListDatum>("move list 1", new ListDatum());	
+	root->Set<ListDatum>("move list 2", new ListDatum());
+	MapDatum *mmap1 = root->Get<MapDatum>("move map 1");
+	MapDatum *mmap2 = root->Get<MapDatum>("move map 2");
+	//ListDatum *mlist1 = root->Get<ListDatum>("move list 1");
+	//ListDatum *mlist2 = root->Get<ListDatum>("move list 2");
 	
+	// Add some elements.
+	mmap1->SetValue<StringDatum>("foo", "foo value");
+
+	// Test various sorts of moves.
+	TEST(mmap1->GetValue<StringDatum>("foo") == "foo value");
+	TEST_EXCEPTION(mmap2->GetValue<StringDatum>("new foo"), TException);
+	Move(mmap2, "new foo", mmap1, "foo");
+	TEST_EXCEPTION(mmap1->GetValue<StringDatum>("foo"), TException);
+	TEST(mmap2->GetValue<StringDatum>("new foo") == "foo value");
+	store.Undo();
+	TEST(mmap1->GetValue<StringDatum>("foo") == "foo value");
+	TEST_EXCEPTION(mmap2->GetValue<StringDatum>("new foo"), TException);
+	store.Redo();
+	TEST_EXCEPTION(mmap1->GetValue<StringDatum>("foo"), TException);
+	TEST(mmap2->GetValue<StringDatum>("new foo") == "foo value");
+#endif // 0
+
 	/*
 	{
 		Transaction t(store);
@@ -165,4 +196,15 @@ void test_DataStore (void)
 		TEST(root->GetValue<IntegerDatum>("test int") == 20);
 	}
 	*/
+
+	//---------------------------------------------------------------------
+	// Test Serialization
+
+	store.Write("store.xml");
+
+	std::auto_ptr<Store> store2(Store::Read("store.xml"));
+	TEST(store2->CanUndo() == false);
+	TEST(store2->CanRedo() == false);
+	//TEST(root->GetValue<IntegerDatum>("test int") == 10);
+	//TEST(root->GetValue<StringDatum>("test string") == "foo");
 }
