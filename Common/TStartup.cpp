@@ -3,6 +3,7 @@
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
 #include "TLogger.h"
+#include "TCommonPrimitives.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -14,4 +15,7 @@ void FIVEL_NS InitializeCommonCode()
     // Open up our logfiles.
     bool want_log = (gDeveloperPrefs.GetPref(DEBUG_LOG) == DEBUG_LOG_ON);
     TLogger::OpenStandardLogs(want_log);
+    
+    // Register our portable interpreter primitives.
+    RegisterCommonPrimitives();
 }
