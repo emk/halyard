@@ -637,15 +637,19 @@
     (set! *extract-definitions-fn* f))
   
   (define (%kernel-extract-definitions relative-file-path)
-    ;;; TODO - This should be a fatal error once we finish debugging
-    ;;; the definition extractor.
-    (define (ignore-error msg)
-      #f)
-    (with-errors-blocked (ignore-error)
+    (with-errors-blocked (fatal-error)
       (define path (apply build-path (current-directory)
                           (regexp-split "/" relative-file-path)))
       (%assert *extract-definitions-fn*)
-      (*extract-definitions-fn* path)))
+      ;; We want to ignore errors here (unless we're debugging tags.ss),
+      ;; because *EXTRACT-DEFINITIONS-FN* regularly blows up when
+      ;; encountering malformed source code, especially things which
+      ;; READ-SYNTAX can't lex.
+      (%kernel-run-as-callback
+       (lambda ()
+         (*extract-definitions-fn* path))
+       (lambda (msg)
+         (debug-caution (cat "ScriptEditorDB: " msg))))))
   
 
   ;;=======================================================================
