@@ -28,12 +28,6 @@ Error::Error(int inErrorCode)
 	SetErrorMessage("(no error strings, yet--try fterrors.h)");
 }
 
-std::ostream &Typography::operator<<(std::ostream &out, const Error &error)
-{
-	out << "Typography::Error (" << error.GetErrorCode() << "): "
-		<< "(no error strings, yet--try fterrors.h)";
-}
-
 
 //=========================================================================
 //	Typography::Library Methods

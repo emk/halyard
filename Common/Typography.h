@@ -133,10 +133,6 @@ namespace Typography {
 		// if necessary.
 		static void CheckResult(int inResultCode)
 			{ if (inResultCode) throw Error(inResultCode); }
-
-		//////////
-		// Describe an error as usefully as possible.
-		friend std::ostream &operator<<(std::ostream &out, const Error &error);
 	};
 
 	//////////

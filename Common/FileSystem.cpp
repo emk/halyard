@@ -28,12 +28,6 @@ Error::Error(int inErrorCode)
 	SetErrorCode(inErrorCode);
 }
 
-std::ostream &FileSystem::operator<<(std::ostream &out, const Error &error)
-{
-	out << "FileSystem::Error (" << error.GetErrorCode() << "): "
-		<< error.GetErrorMessage();
-}
-
 // Call this function before making a system call which sets errno.
 // This will zero any pre-existing errno value, and warn the programmer
 // about it.

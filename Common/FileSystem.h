@@ -4,7 +4,6 @@
 #define FileSystem_H
 
 #include <stdexcept>
-#include <iostream>
 #include <string>
 #include <list>
 
@@ -28,8 +27,6 @@ namespace FileSystem {
 		
 		virtual const char *GetClassName() const
 		    { return "FileSystem::Error"; }
-
-		friend std::ostream &operator<<(std::ostream &out, const Error &error);
 	};
 	
 	//////////
