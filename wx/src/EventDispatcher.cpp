@@ -35,11 +35,20 @@ USING_NAMESPACE_FIVEL
 bool EventDispatcher::sEnableExpensiveEvents = false;
 
 EventDispatcher::EventDispatcher()
+    : mMaxStaleTime(PlatformGetTickCount())
 {
 }
  
 EventDispatcher::~EventDispatcher()
 {
+}
+
+bool EventDispatcher::IsEventStale(const wxEvent &event) {
+    // TODO - This function should probably be merged into EventSetup and
+    // modified to apply to all event types. But we don't have wxEvent
+    // objects for all our events yet, so there's no easy way to make this
+    // consistent. Oh, well.
+    return event.GetTimestamp() <= mMaxStaleTime;
 }
 
 void EventDispatcher::SetDispatcher(TCallbackPtr inCallback)
@@ -78,6 +87,10 @@ bool EventDispatcher::EventSetup()
 
 bool EventDispatcher::EventCleanup()
 {
+    // Any as-yet-unprocessed events which occurred before this time are
+    // considered "stale", and may be ignored if the script so desires.
+    mMaxStaleTime = PlatformGetTickCount();
+
     // Check our "pass" flag.
     return !bool(gVariableManager.Get("_pass"));
 }
@@ -110,12 +123,14 @@ bool EventDispatcher::DoEventLeftDown(wxMouseEvent &inEvent,
 	args.push_back(inEvent.GetPosition().x);
 	args.push_back(inEvent.GetPosition().y);
 	args.push_back(inIsDoubleClick);
+    args.push_back(IsEventStale(inEvent));
     mDispatcher->Run(args);
 	return EventCleanup();
 }
 
 bool EventDispatcher::DoSimpleMouseEvent(const char *inType,
-										 wxPoint inPosition)
+										 wxPoint inPosition,
+                                         bool inIsStale)
 {
 	if (!EventSetup())
 		return false;
@@ -124,13 +139,15 @@ bool EventDispatcher::DoSimpleMouseEvent(const char *inType,
 	args.push_back(TSymbol(inType));
 	args.push_back(inPosition.x);
 	args.push_back(inPosition.y);
+    args.push_back(inIsStale);
 	mDispatcher->Run(args);
 	return EventCleanup();
 }
 
 bool EventDispatcher::DoEventLeftUp(wxMouseEvent &inEvent)
 {
-	return DoSimpleMouseEvent("mouse-up", inEvent.GetPosition());
+	return DoSimpleMouseEvent("mouse-up", inEvent.GetPosition(),
+                              IsEventStale(inEvent));
 }
 
 bool EventDispatcher::DoEventMouseEnter(wxPoint inPosition)
@@ -165,6 +182,7 @@ bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
         modifiers.push_back(TSymbol("shift"));
 
 	args.push_back(modifiers);
+    args.push_back(IsEventStale(inEvent));
 
     mDispatcher->Run(args);
 	return EventCleanup();
@@ -263,3 +281,24 @@ bool EventDispatcher::DoEventMediaFinished()
     mDispatcher->Run(args);
 	return EventCleanup();
 }
+
+
+//=========================================================================
+// Platform-Specific Methods
+//=========================================================================
+
+#ifdef FIVEL_PLATFORM_WIN32
+
+#include <windows.h>
+
+wxLongLong EventDispatcher::PlatformGetTickCount() {
+    // The wxWidgets function wxEvent::GetTimestamp is implemented 
+    // with ::GetMessageTime(), which returns the time in the same
+    // units as ::GetTickCount(), according to the ::GetTickCount()
+    // MSDN documentation.
+    //
+    // A similar hack will be required on other platforms as well.
+    return ::GetTickCount();
+}
+
+#endif

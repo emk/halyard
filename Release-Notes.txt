@@ -1,10 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.41 - 03 Dec 2004- emk
 
-  * Added version to About... dialog (bug #1785).
+  * Added version to "About..." dialog (bug #1785).
   * Fixed Quake 2 to stop playing CD audio and blocking CD mounts (bug
     #1676).
+  * Added EVENT-STALE? to detect old mouse and key events (bug #1779).
 
 0.0.40 - 08 Nov 2005 - emk
 

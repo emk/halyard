@@ -31,13 +31,16 @@
 class EventDispatcher : boost::noncopyable, public FIVEL_NS TReloadNotified
 {
     FIVEL_NS TCallbackPtr mDispatcher;
+    wxLongLong mMaxStaleTime;
 	static bool sEnableExpensiveEvents;
 
 	bool EventSetup();
 	bool EventCleanup();
     void CheckForVeto(bool &outWasVetoed);
 
-	bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition);
+    bool IsEventStale(const wxEvent &event);
+	bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition,
+                            bool inIsStale = false);
 
 public:
 	EventDispatcher();
@@ -133,6 +136,9 @@ public:
     /// Dispatch a MediaFinished event.
     ///
     bool DoEventMediaFinished();
+
+private:
+    wxLongLong PlatformGetTickCount();
 };
 
 typedef shared_ptr<EventDispatcher> EventDispatcherPtr;
