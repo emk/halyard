@@ -1319,22 +1319,6 @@ void Stage::EndWait()
 	InterpreterWakeUp();
 }
 
-void Stage::Fade()
-{
-	wxStopWatch watch;
-	for (int i = 256; i >= 0; i -= 16)
-		ShowFadeStep(i);
-	gDebugLog.Log("Fade: 16 frames in %ld milliseconds", watch.Time());
-}
-
-void Stage::Unfade()
-{
-	wxStopWatch watch;
-	for (int i = 0; i <= 256; i += 16)
-		ShowFadeStep(i);
-	gDebugLog.Log("Unfade: 16 frames in %ld milliseconds", watch.Time());
-}
-
 void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 {
 	// If we're supposed to run a transiton, do so now.

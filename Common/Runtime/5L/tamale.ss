@@ -167,10 +167,11 @@
   (define (current-card-name)
     (card-name (current-card)))
 
-  (define (fade)
-    (call-5l-prim 'fade))
+  (define (fade &key (ms 500))
+    (clear-screen (color 0 0 0))
+    (refresh :transition 'toblack :ms ms))
 
-  (define (unfade)
-    (call-5l-prim 'unfade))
+  (define (unfade &key (ms 500))
+    (refresh :transition 'fromblack :ms ms))
 
   )

@@ -360,13 +360,6 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	void EndWait();
 
 	//////////
-	// Draw a faded version of the mOffscreenPixmap.  The inIntensity
-	// parameter should be a number between 0 (fully faded) and
-	// 256 (fully visible).
-	//
-	void ShowFadeStep(int inIntensity);
-
-	//////////
 	// Put the interpreter to sleep.
 	//
 	void InterpreterSleep();
@@ -659,16 +652,6 @@ public:
 	//                named element doesn't exist or isn't a movie.
 	//
 	bool Wait(const wxString &inElementName, MovieFrame inUntilFrame);
-
-	//////////
-	// Fade the stage to black.
-	//
-	void Fade();
-
-	//////////
-	// Unfade the stage from black.
-	//
-	void Unfade();
 
 	//////////
 	// Refresh the screen using the specified effect.
