@@ -11,6 +11,7 @@
 // XXX - Huh?  Who included by TStyleSheet.h (on Win32) is defining DrawText?
 #undef DrawText
 
+#include "AppConfig.h"
 #include "AppGlobals.h"
 #include "AppGraphics.h"
 #include "FiveLApp.h"
@@ -20,6 +21,9 @@
 #include "Listener.h"
 #include "Timecoder.h"
 #include "LocationBox.h"
+#if CONFIG_HAVE_QUAKE2
+#	include "Quake2Engine.h"
+#endif // CONFIG_HAVE_QUAKE2
 
 USING_NAMESPACE_FIVEL
 
@@ -410,6 +414,12 @@ void Stage::NotifyScriptReload()
 {
     NotifyExitCard();
 	gStyleSheetManager.RemoveAll();
+
+	// For now, treat Quake 2 as a special case.
+#if CONFIG_HAVE_QUAKE2
+	if (Quake2Engine::IsInitialized())
+		Quake2Engine::GetInstance()->NotifyScriptReload();
+#endif // CONFIG_HAVE_QUAKE2
 }
 
 void Stage::NotifyElementsChanged()

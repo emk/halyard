@@ -7,6 +7,7 @@
 
 #if CONFIG_HAVE_QUAKE2
 
+#include <map>
 #include "Widget.h"
 #include "wxquake2.h"
 
@@ -17,8 +18,20 @@
 //
 class Quake2Engine : public wxQuake2Window
 {
+	typedef std::map<std::string,TCallback*> CallbackMap;
+
 	static bool sHasBeenCreated;
     static Quake2Engine *sInstance;
+
+	//////////
+	// All the Scheme callbacks registered by this class.
+	//
+	CallbackMap mCallbackMap;
+
+	//////////
+	// Delete all the callbacks in our callback map.
+	//
+	void DeleteCallbacks();
 
     //////////
     // Create a new Quake 2 window on the specified stage.
@@ -28,9 +41,37 @@ class Quake2Engine : public wxQuake2Window
 public:
 	~Quake2Engine();
 
+    //////////
+    // Notify the Quake2Engine that the script is being reloaded.
+    //
+	void NotifyScriptReload();
+
+	//////////
+	// Register a Scheme callback as a Quake 2 command.
+	//
+	// [in] inName - The name of the callback to register.
+	// [in] inCallback - The callback.  The callback will be deleted
+	//      by this class.
+	//
+	void RegisterCallback(const std::string &inName, TCallback *inCallback);
+	
+	//////////
+	// Return true if and only if our singleton has been initialized.
+	//
 	static bool IsInitialized() { return sHasBeenCreated; }
+
+	//////////
+	// Initialize the engine, and attach a wxQuake2Window to the stage.
+	//
 	static void Initialize();
+
+	//////////
+	// Get the single instanc of the engine object.
+	//
 	static Quake2Engine *GetInstance() { ASSERT(sInstance); return sInstance; }
+
+protected:
+	virtual void HandleCommand();
 };
 
 #endif // CONFIG_HAVE_QUAKE2
