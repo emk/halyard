@@ -2,14 +2,12 @@
 
 #include "CommonHeaders.h"
 
-#include <string.h>
-
 #include "TTemplateUtils.h"
-#include "ImlUnit.h"
+#include "TestCase.h"
 
 USING_NAMESPACE_FIVEL
 
-extern void test_TTemplateUtils (void);
+#if BUILD_TEST_CASES
 
 struct QuotedStringTestData
 {
@@ -26,21 +24,20 @@ QuotedStringTestData quoted_string_tests[] = {
 };
 
 
-void test_TTemplateUtils (void)
-{
-    TEST(MakeStringLowercase("aBCd") == std::string("abcd"));
+BEGIN_TEST_CASE(TestTTemplateUtils, TestCase) {
+    CHECK_EQ(MakeStringLowercase("aBCd"), std::string("abcd"));
 
 	for (QuotedStringTestData *test = &quoted_string_tests[0];
 		 test->input != NULL; test++)
-	{
-		TEST(MakeQuotedString(test->input) == std::string(test->output));
-	}
+		CHECK_EQ(MakeQuotedString(test->input), std::string(test->output));
 
 	int i = 0;
 	{
 		StValueRestorer<int> restore_i(i);
 		i = 1;
-		TEST(i == 1);
+		CHECK_EQ(i, 1);
 	}
-	TEST(i == 0);
-}
+	CHECK_EQ(i, 0);
+} END_TEST_CASE(TestTTemplateUtils);
+
+#endif // BUILD_TEST_CASES

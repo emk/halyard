@@ -2,8 +2,7 @@
 
 #include "CommonHeaders.h"
 
-#include <iostream.h>
-#include <fstream.h>
+#include <fstream>
 #include <stdio.h>
 
 #include "TDeveloperPrefs.h"
@@ -28,7 +27,7 @@ void TDeveloperPrefs::UseDefaultPrefs()
 // Parses user preferences file
 void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 {
-	ifstream	prefsFile;			// user preferences
+	std::ifstream prefsFile;			// user preferences
 	bool		errFlag = false;	// error flag
 	char		errString[256];		// used to print error message
 
@@ -37,7 +36,7 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 	std::string filename = inPrefsFile.ToNativePathString();
 	if (inPrefsFile.DoesExist())
 	{
-		prefsFile.open(filename.c_str(), ios::in);
+		prefsFile.open(filename.c_str(), std::ios::in);
 		if (!prefsFile.fail())
 			could_open = true;
 	}

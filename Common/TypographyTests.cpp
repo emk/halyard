@@ -2,9 +2,6 @@
 
 #include "CommonHeaders.h"
 
-#include <iostream>
-#include <strstream>
-
 #include <string.h>
 #include <stdlib.h>
 
@@ -486,28 +483,6 @@ static void test_Typography_GenericTextRenderingEngine (void)
 //	GenericTextRenderingEngine Tests
 //=========================================================================
 
-static std::string get_string(std::ostrstream &stream)
-{
-	// Go through the foolish new rigamarole for extracting a string.
-	// We must unfreeze the stream before we exit this function, or
-	// we'll leak memory.
-	stream.freeze(1);
-	try
-	{
-		std::string str(stream.str(), stream.pcount());
-		stream.freeze(0);
-		return str;
-	}
-	catch (...)
-	{
-		stream.freeze(0);
-		throw;
-	}
-	
-	ASSERT(false);
-	return std::string("");
-}
-
 static void test_Typography_FamilyDatabase (void)
 {
 	// Delete the cache file.
@@ -566,15 +541,15 @@ static void test_Typography_FamilyDatabase (void)
 	TEST(f8.GetStyleName() == "Regular");
 
 	// Test serialization and deserialization.
-	std::ostrstream outstream;
+	std::ostringstream outstream;
 	db1.WriteToCache(outstream);
-	std::string outstring = get_string(outstream);
-	std::istrstream instream(outstring.c_str());
+	std::string outstring = outstream.str();
+	std::istringstream instream(outstring.c_str());
 	FamilyDatabase db3;
 	db3.ReadFromCache(instream);
-	std::ostrstream outstream2;
+	std::ostringstream outstream2;
 	db3.WriteToCache(outstream2);
-	TEST(outstring == get_string(outstream2));
+	TEST(outstring == outstream2.str());
 }
 
 

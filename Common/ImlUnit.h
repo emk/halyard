@@ -18,8 +18,6 @@
 #ifndef IMLUNIT_H
 #define IMLUNIT_H
 
-#include <iostream>
-
 // Private API (needed by preprocessor macros)
 
 extern int total_tests;

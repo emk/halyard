@@ -3,8 +3,6 @@
 #ifndef Typography_H
 #define Typography_H
 
-#include <iostream>
-
 #include "ft2build.h"
 #include FT_FREETYPE_H
 #include FT_GLYPH_H

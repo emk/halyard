@@ -37,7 +37,7 @@ enum TestResult {
 	TEST_PASSED,
 	TEST_FAILED,
 	TEST_SKIPPED,
-	TEST_RESULT_TYPE_COUNT
+	TEST_RESULT_MAX
 };
 
 //////////
@@ -139,6 +139,8 @@ public:
 		{ ASSERT(mErrorMessage != ""); return mErrorMessage; }
 	std::string GetErrorFile() const { return mErrorFile; }
 	int GetErrorLine() const { return mErrorLine; }
+
+	std::string GetSummaryIfInteresting() const;
 };
 
 //////////
@@ -157,7 +159,7 @@ public:
 	typedef TestCaseReportVector::iterator iterator;
 	typedef boost::shared_ptr<TestRunReport> TestRunReport::ptr;
 
-	TestRunReport() : mResultCount(TEST_RESULT_TYPE_COUNT, 0) {}
+	TestRunReport() : mResultCount(TEST_RESULT_MAX, 0) {}
 
 	void AddTestCaseReport(TestCaseReport::ptr inTestCaseReport);
 

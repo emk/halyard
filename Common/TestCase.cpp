@@ -2,9 +2,6 @@
 
 #include "CommonHeaders.h"
 
-#include <iostream>
-#include <sstream>
-
 #include "TestCase.h"
 
 // Static variables definitions.
@@ -54,19 +51,26 @@ TestCaseReport::TestCaseReport(TestRunReport *inReport,
 	inReport->AddTestCaseReport(TestCaseReport::ptr(this));
 }
 
+std::string TestCaseReport::GetSummaryIfInteresting() const {
+	std::ostringstream out;
+	if (GetTestResult() == TEST_FAILED) {
+		out << GetErrorFile() << ":" << GetErrorLine() << ": "
+			<< GetName() << ": " << GetErrorMessage() << std::endl;
+	}
+	return out.str();
+}
+
 
 //=========================================================================
 //  TestRunReport Methods
 //=========================================================================
 
-void TestRunReport::AddTestCaseReport(TestCaseReport::ptr inTestCaseReport)
-{
+void TestRunReport::AddTestCaseReport(TestCaseReport::ptr inTestCaseReport) {
 	mResultCount[inTestCaseReport->GetTestResult()]++;
 	mTestCaseReports.push_back(inTestCaseReport);
 }
 
-std::string TestRunReport::GetSummary()
-{
+std::string TestRunReport::GetSummary() {
 	std::ostringstream out;
 	if (AnyTestFailed())
 		out << "FAIL: " << GetNumTestsFailed() << " failed, ";
@@ -82,8 +86,7 @@ std::string TestRunReport::GetSummary()
 //  TestRegistry Methods
 //=========================================================================
 
-TestRegistry *TestRegistry::GetGlobalRegistry()
-{
+TestRegistry *TestRegistry::GetGlobalRegistry() {
 	if (sGlobalRegistry == NULL)
 		sGlobalRegistry = new TestRegistry;
 	return sGlobalRegistry;

@@ -17,15 +17,33 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		6
+#define VERSION_REV_BIG		7
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.6 (Development)"
+#define VERSION_STRING		"Tamale 0.0.7 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.49  2003/07/02 17:46:18  emk
+ 0.0.7 - 2 July 2003 - emk, brian
+
+   * All known audio artifacts in Geiger synth and looping Vorbis
+     playback have now been fixed.
+   * PARAM renamed to PROP.
+   * Major restructuring of template property binding.
+   * EVENT-CHARACTER now returns a character, not a string
+   * PROP and SEND no longer need their name argument to be quoted
+   * Support for screenshots: (SCREENSHOT) will write the current screen
+     to a file in the Screenshots directory
+   * ON handlers may now return a value
+   * Scheme elements don't need to have corresponding C++ elements
+   * More or less everything can have an idle handler now
+   * Added a MOUSE-MOVED event.
+   * New TestCase classes based on xUnit.  These run within the engine.
+   * Lots of improvements in build performance.
+
  Revision 1.48  2003/06/05 00:46:33  emk
  0.0.6 - 4 June 2003 - emk, brian
 

@@ -18,8 +18,6 @@
 #if !defined (_TString_h_)
 #define _TString_h_
 
-#include <iostream>
-
 BEGIN_NAMESPACE_FIVEL
 
 //////////
@@ -651,6 +649,24 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.8  2003/07/02 17:46:18  emk
+ 0.0.7 - 2 July 2003 - emk, brian
+
+   * All known audio artifacts in Geiger synth and looping Vorbis
+     playback have now been fixed.
+   * PARAM renamed to PROP.
+   * Major restructuring of template property binding.
+   * EVENT-CHARACTER now returns a character, not a string
+   * PROP and SEND no longer need their name argument to be quoted
+   * Support for screenshots: (SCREENSHOT) will write the current screen
+     to a file in the Screenshots directory
+   * ON handlers may now return a value
+   * Scheme elements don't need to have corresponding C++ elements
+   * More or less everything can have an idle handler now
+   * Added a MOUSE-MOVED event.
+   * New TestCase classes based on xUnit.  These run within the engine.
+   * Lots of improvements in build performance.
+
  Revision 1.7  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

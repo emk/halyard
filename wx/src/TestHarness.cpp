@@ -2,10 +2,6 @@
 
 #include "TamaleHeaders.h"
 
-#include <iostream>
-#include <sstream>
-
-#include "TestCase.h"
 #include "FiveLApp.h"
 #include "TestHarness.h"
 #include "Stage.h"
@@ -67,31 +63,37 @@ TestHarness *TestHarness::GetInstance()
 	return sInstance;
 }
 
+TestHarness::TestHarness()
+{
+	mFrame = wxGetApp().GetStageFrame();
+	mStatusBar = dynamic_cast<FancyStatusBar*>(mFrame->GetStatusBar());
+	ASSERT(mStatusBar);
+}
+
+void TestHarness::UpdateTestProgress(int inTestIndex, int inTestCount,
+									 const TestCaseReport &inReport)
+{
+	mStatusBar->SetProgress((inTestIndex + 1.0) / inTestCount);
+	if (inReport.GetTestResult() == TEST_FAILED)
+		mStatusBar->SetProgressColor(*wxRED);
+}
+
 void TestHarness::RunTests()
 {
-	// Get some useful data.
-	StageFrame *frame = wxGetApp().GetStageFrame();
-	FancyStatusBar *status_bar =
-		dynamic_cast<FancyStatusBar*>(frame->GetStatusBar());
-	ASSERT(status_bar);
-
 	// Prepare to run tests.
-	frame->SetStatusText("Running tests...");
-	status_bar->SetProgress(0.0);
-	status_bar->SetProgressColor(FancyStatusBar::DEFAULT_PROGRESS_COLOR);
+	mFrame->SetStatusText("Running tests...");
+	mStatusBar->SetProgress(0.0);
+	mStatusBar->SetProgressColor(FancyStatusBar::DEFAULT_PROGRESS_COLOR);
 
 	// Run all the tests in the global registry.
 	TestRegistry *registry = TestRegistry::GetGlobalRegistry();
 	TestRunReport::ptr report = registry->RunAllTests();
 
 	// Display the results of the tests to the user.
-	status_bar->SetProgress(1.0);
-	frame->SetStatusText(report->GetSummary().c_str());
+	mStatusBar->SetProgress(1.0);
+	mFrame->SetStatusText(report->GetSummary().c_str());
 	if (!report->AnyTestFailed())
-		status_bar->SetProgressColor(*wxGREEN);
+		mStatusBar->SetProgressColor(*wxGREEN);
 	else
-	{
-		status_bar->SetProgressColor(*wxRED);
-		(new TestReportFrame(wxGetApp().GetStageFrame(), report))->Show();
-	}
+		(new TestReportFrame(mFrame, report))->Show();
 }

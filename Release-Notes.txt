@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.7 - 2 July 2003 - emk, brian
 
   * All known audio artifacts in Geiger synth and looping Vorbis
     playback have now been fixed.
@@ -15,6 +15,7 @@ CVS - emk, brian
   * More or less everything can have an idle handler now
   * Added a MOUSE-MOVED event.
   * New TestCase classes based on xUnit.  These run within the engine.
+  * Lots of improvements in build performance.
 
 0.0.6 - 4 June 2003 - emk, brian
 

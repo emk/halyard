@@ -2,9 +2,6 @@
 
 #include "CommonHeaders.h"
 
-#include <iostream>
-#include <strstream>
-
 #include "ImlUnit.h"
 #include "TStyleSheet.h"
 #include "TPrimitives.h"
@@ -18,7 +15,7 @@ extern void test_TStyleSheet(void);
 class TDummyArgumentList : public TArgumentList
 {
 	int mCount;
-	std::istrstream mData;
+	std::istringstream mData;
 
 public:
 	TDummyArgumentList()

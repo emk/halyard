@@ -3,12 +3,25 @@
 #ifndef TestHarness_H
 #define TestHarness_H
 
-class TestHarness
+#include "TestCase.h"
+
+class StageFrame;
+class FancyStatusBar;
+
+class TestHarness : public ITestProgressMeter
 {
 	static TestHarness *sInstance;
 
+	StageFrame *mFrame;
+	FancyStatusBar *mStatusBar;
+
 public:
 	static TestHarness *GetInstance();
+
+	TestHarness();
+
+	void UpdateTestProgress(int inTestIndex, int inTestCount,
+							const TestCaseReport &inReport);
 
 	void RunTests();
 
