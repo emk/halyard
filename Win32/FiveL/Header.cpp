@@ -159,7 +159,7 @@ void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
     TPoint  loc(bounds.Left(), bounds.Top());
     int     maxWidth = bounds.Right() - bounds.Left();
     int     pixWidth;
-	TPoint	text_size;
+	int		text_width = 0;
 	int		incr_x;
     long    lineStart;
     long    index = 0;
@@ -218,12 +218,12 @@ void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
 	        //itsFont->SetColor(color);
 	        // Color support for text command removed. Color set in header.
 	        
-	        text_size = DrawLine(loc, text, lineStart, index);
-			incr_x = max(incr_x, text_size.X());
+	        text_width = DrawLine(loc, text, lineStart, index);
+			incr_x = max(incr_x, text_width);
 	
 	        //  Bump the y coordinate for the next line.
-	        //loc.OffsetY(itsFont->Height());
-			loc.OffsetY(text_size.Y());
+	        loc.OffsetY(itsFont->Height());
+
 	        
 	        //  Don't bother drawing text once we hit the bottom of the screen.
 	        //
@@ -234,8 +234,7 @@ void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
 		// reset stuff
 		::SetBkMode(hDC,OPAQUE);
 		::SelectObject(hDC, hOldFont);
-
-	} // end-while
+	}
 
 end:
     gVariableManager.SetLong(INCR_Y_NAME, loc.Y()); 
@@ -244,8 +243,7 @@ end:
     // make sure the dirty rect extends down to cover characters below the
     // text line - use g as an example (should really see if there are chars
     // that are below the line - and use the right one)
-    //dirty_rect.SetBottom(loc.Y() + (itsFont->CharHeight('g') - itsFont->Height()) + 2);
-	dirty_rect.SetBottom(loc.Y() + 2);
+    dirty_rect.SetBottom(loc.Y() + (itsFont->CharHeight('g') - itsFont->Height()) + 2);
 	dirty_rect.SetRight(incr_x);
 
     gView->DirtyRect(&dirty_rect);
@@ -407,15 +405,13 @@ int Header::GetLineLength(const char *s, long *index, long tLen, int maxWidth)
  *  Parameter s    (what to print)
  *  Parameter a    (start at a in "s")
  *  Parameter b    (..and end in b)
- * 
  * Return:
- *		a point containing the actual width (in pixels) and
- *		height (including any descenders) of the text that was output
+ *		The actual width (in pixels) of the text that was output.
  *
  * Comments:
  *   Draw the number of characters given, starting at s.
  ***********************************************************************/
-TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
+int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 {
 	HDC				hDC;
 	COLORREF		theColor;
@@ -423,8 +419,6 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
     TPoint   		shad;
     unsigned char	ch;
 	int				incr_x = loc.X();
-	int				incr_y = itsFont->Height();
-	TPoint			ret;				// return value
     
     hDC = gView->GetDC();
  
@@ -468,13 +462,11 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
         
 		::SetTextColor(hDC, theColor);
 
-		// set incr_x and incr_y
+		// set incr_x
 		SIZE	textSize;
+
 		if (::GetTextExtentPoint32(hDC, tptr, (int) (b-a-1), &textSize))
-		{
 			incr_x += textSize.cx;
-			incr_y = max(incr_y, textSize.cy);
-		}
 
 		::TabbedTextOut(hDC, pt.X(), pt.Y() + itsOffset, tptr, (int) (b-a-1), 0, NULL, 0);
 	}
@@ -483,24 +475,23 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	    //  Skip leading spaces. They should not be drawn.
 	    //
 
-	    pt.OffsetY(itsOffset);
+	    pt.OffsetY(itsOffset); //@@@9-19-96 added offset
 
-	    while (s[a] == ' ') 					// skip whitespace at start
+	    while (s[a] == ' ') 		// skip whitespace at start
 	        a++;
 	
 	    while (a < b) 
 		{
-			
+	
 	        switch (ch = s[a]) 
 	        {
-	            case 0:							//  End of string.
-	                ret.Set(incr_x, incr_y);
-					return ret;
+	            case 0:             //  End of string.
+	                return (incr_x);
 	
-	            case '^':						//  Hilite char.
+	            case '^':           //  Hilite char.
 	                a++;
 	                fHilite = !fHilite;
-	                ch = 0;						//  Set to 0 so we don't draw it.
+	                ch = 0;             //  Set to 0 so we don't draw it.
 	                
 	                if (fHilite)				// just starting style text
 	                {
@@ -543,8 +534,7 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	                    case 0:
 						case 'w':			// newline (windows only)
 	                    case 'n':           //  End of string or line.
-	                        ret.Set(incr_x, incr_y);
-							return ret;
+	                        return (incr_x);
 	                    case 't':
 	                    	ch = 9; //tab
 							break;
@@ -583,6 +573,7 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	            //create new font, bold/underline if necessary: 
 	            itsFont->SetUnderline(fUnderline); //this sets bold, too!!!
 	             
+	
 	            //  Shadow first.
 	            //
 	            if (itsShadow) 
@@ -605,15 +596,12 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 					pt.OffsetX(itsFont->CharWidth(ch));
 	            
 				incr_x = pt.X();
-				incr_y = max(incr_y, itsFont->CharHeight(ch));
 
 	            a++;
 	        }
-	    } // end-while
+	    }
 	} 
-
-	ret.Set(incr_x, incr_y);
-	return ret;
+	return (incr_x);
 }
 
 /*****************************
@@ -724,6 +712,11 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.6  2002/05/29 13:58:17  emk
+ 3.3.4 - Fixed various crash-on-exit problems (including those in TBTree,
+ TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code
+ to the behavior that shipped with Genetics.
+
  Revision 1.5  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

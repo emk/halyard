@@ -125,10 +125,9 @@ class Header : public TIndex
 		// [in] s, - string of text to print
 		// [in] a - starting index in s
 		// [in] b - ending index in s
-		// [out] return - a point containing the actual width (in pixels) and
-		//				  height (including any descenders) of the text that was output
+		// [out] return - the actual width (in pixels) of the text that was output
 		//
-		virtual TPoint DrawLine(TPoint &loc, const char *s, long a, long b);
+		virtual int DrawLine(TPoint &loc, const char *s, long a, long b);
 
 	protected:
         //////////
@@ -240,6 +239,11 @@ class HeaderManager : public TIndexManager
 
 /*
  $Log$
+ Revision 1.5  2002/05/29 13:58:17  emk
+ 3.3.4 - Fixed various crash-on-exit problems (including those in TBTree,
+ TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code
+ to the behavior that shipped with Genetics.
+
  Revision 1.4  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

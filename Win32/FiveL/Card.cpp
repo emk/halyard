@@ -1464,10 +1464,8 @@ void Card::DoMacro(TString &name)
     //  Restore old local tree and delete ours.
     //
     gVariableManager.SetLocal(oldlocal);
-	if (vnum > 0) 
-    	local->RemoveAll(local);
-    
-    delete local;
+	if (vnum > 0)
+    	local->RemoveAll();
 }
 
 /*-------------------------------------------------------------------
@@ -2697,6 +2695,11 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.6  2002/05/29 13:58:17  emk
+ 3.3.4 - Fixed various crash-on-exit problems (including those in TBTree,
+ TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code
+ to the behavior that shipped with Genetics.
+
  Revision 1.5  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

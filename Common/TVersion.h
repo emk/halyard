@@ -16,15 +16,20 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
-#define VERSION_REV_BIG		03
+#define VERSION_REV_BIG		04
 #define VERSION_REV_SMALL	00
 
-#define VERSION_STRING	"5L 3.3.3 (Development)"
+#define VERSION_STRING	"5L 3.3.4 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.11  2002/05/29 13:58:10  emk
+ 3.3.4 - Fixed various crash-on-exit problems (including those in TBTree,
+ TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code
+ to the behavior that shipped with Genetics.
+
  Revision 1.10  2002/05/15 11:05:18  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
