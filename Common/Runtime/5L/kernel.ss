@@ -209,6 +209,9 @@
     (or (eq? *%kernel-state* 'STOPPING)
         (eq? *%kernel-state* 'STOPPED)))
   
+  (define (%kernel-can-suspend?)
+    (not *%kernel-running-callback?*))
+
   (define (%kernel-pause)
     (with-errors-blocked (non-fatal-error)
       (%kernel-die-if-callback '%kernel-pause)
