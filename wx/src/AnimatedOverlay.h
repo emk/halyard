@@ -5,7 +5,7 @@
 
 #include "Overlay.h"
 
-class AnimatedOverlay : public Overlay {
+class AnimatedOverlay : public Overlay, public TStateListener {
 	typedef std::vector<std::string> GraphicsList;
 	GraphicsList mGraphics;
 	std::string mState;

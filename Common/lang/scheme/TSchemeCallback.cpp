@@ -11,7 +11,7 @@ USING_NAMESPACE_FIVEL
 //	TSchemeCallback Methods
 //=========================================================================
 
-void TSchemeCallback::Run(const TValueList &inArguments)
+TValue TSchemeCallback::Run(const TValueList &inArguments)
 {
 	// Make sure we have a Scheme interpreter and that it isn't stopped.
 	ASSERT(TSchemeInterpreter::HaveInstance());
@@ -21,5 +21,7 @@ void TSchemeCallback::Run(const TValueList &inArguments)
 	Scheme_Object *args[2];
 	args[0] = mCallback;
 	args[1] = TValueToScheme(inArguments);
-	TSchemeInterpreter::CallScheme("%kernel-run-callback", 2, args);
+    Scheme_Object *result =
+        TSchemeInterpreter::CallScheme("%kernel-run-callback", 2, args);
+    return SchemeToTValue(result);
 }

@@ -108,11 +108,6 @@ public:
     // Dispatch a ProgressChanged event.
     //
     bool DoEventProgressChanged(bool inIsActive, double inPortionCompleted);
-
-	//////////
-    // Dispatch a StateDBChanged event.
-    //
-    bool DoEventStateDbChanged();
 };
 
 #endif // EventDispatcher_H

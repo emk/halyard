@@ -31,7 +31,6 @@ X                                    (lambda (get) (whatever (get '/foo))))
       Stuttering during disk access
     Reticule/look support
       Figure out what the player is looking at
-/       Get Quake 2 working in 5Ltest_wx again, with non-VTR AI
 ?       Figure out where to hook in look check code--probably post-movement
         Send a simple text message to the client
         Send an explicit "look" message to the client
@@ -39,24 +38,16 @@ X                                    (lambda (get) (whatever (get '/foo))))
       Activate reticules (acts as trigger)
       Looking at reticulates (acts as trigger)
       Looking at entities (acts as trigger)
-/   Trigger Quake 2 targets from Scheme
     Reimplement meters in Scheme
-/     Allow elements to be attached to sequences
-/       Don't allow elements to be attached to inactive nodes
-/       Fix ELEMENT-EXISTS? and DELETE-ELEMENT-IF-EXISTS
-/       Check Q2 performance problems (breakpoint on GC_malloc)
       Extend Quake 2 net protocol to allow reporting of state vars
-      Real-time Scheme-like language for updating meter dials, etc.
-/       Lightweight TStateListeners associated with elements
-/         Delete all listeners when reloading script
-/         Delete listeners associated with node when exiting
-        Replace old state-db reading interface
+/     Real-time Scheme-like language for updating meter dials, etc.
       Strip Quake 2 meter implementation to bare essentials
       Re-implement meter logic in Scheme and C++
     Implement other meters
       CDV 715
 
   Cleanup
+    Make sure %kernel-run-callback returns result of callback
     Allow TValue test cases to be run independently of TSchemeInterpreterTests
     Make sure GUI does REFERENCE_TEST_CASE_FILE
     Replace all old-style test cases with new-style test cases

@@ -104,8 +104,6 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(Screen);
     REGISTER_5L_PRIMITIVE(SetImageCacheSize);
     REGISTER_5L_PRIMITIVE(SetZoneCursor);
-	REGISTER_5L_PRIMITIVE(StateDbGetViaElement);
-	REGISTER_5L_PRIMITIVE(StateDbNotifyElement);
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Wait);
@@ -736,22 +734,6 @@ DEFINE_5L_PRIMITIVE(SetZoneCursor) {
 	FIND_ELEMENT(LightweightElement, elem, name.c_str());
 	CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
 	elem->SetCursor(manager->FindCursor(cursor));
-}
-
-DEFINE_5L_PRIMITIVE(StateDbGetViaElement) {
-	std::string name, key;
-	inArgs >> SymbolName(name) >> SymbolName(key);
-
-	FIND_ELEMENT(LightweightElement, listener, name.c_str());
-	::SetPrimitiveResult(gStateDB.Get(listener, key));
-}
-
-DEFINE_5L_PRIMITIVE(StateDbNotifyElement) {
-	std::string name;
-	inArgs >> SymbolName(name);
-
-	FIND_ELEMENT(LightweightElement, listener, name.c_str());
-	listener->NotifyStateChanged();
 }
 
 DEFINE_5L_PRIMITIVE(TextAA) {

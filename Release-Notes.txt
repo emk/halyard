@@ -10,6 +10,10 @@ CVS - kwasi, djin, emk
     DEFINE-STATE-DB-LISTENER, and DEFINE-STATE-DB-LISTENER/RT.
   * Fixed a bug (I hope) which caused Quake commands to have extra
     text appended to the end of the command string.
+  * Implemented core of realtime Scheme interpreter.  This isn't very
+    fast, but it never generates Scheme garbage.
+  * Removed old STATE-DB-CHANGED event-handling code.  Use the new
+    listener system.
 
 0.0.18 - 15 February 2004 - emk
 

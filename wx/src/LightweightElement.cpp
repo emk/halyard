@@ -27,7 +27,3 @@ void LightweightElement::Show(bool inShow) {
         GetStage()->NotifyElementsChanged();
     }
 }
-
-void LightweightElement::NotifyStateChanged() {
-	mDispatcher->DoEventStateDbChanged();
-}

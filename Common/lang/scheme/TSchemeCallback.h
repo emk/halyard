@@ -21,7 +21,7 @@ public:
 	TSchemeCallback(Scheme_Object *inCallback) : mCallback(inCallback) {}
 
 	// For documentation of these virtual methods, see TInterpreter.h.
-	virtual void Run(const TValueList &inArguments = TValueList());
+	virtual TValue Run(const TValueList &inArguments = TValueList());
 	virtual std::string PrintableRepresentation() { return "#<thunk>"; }
 };
 

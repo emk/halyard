@@ -556,11 +556,6 @@
                                                    (node <node>))
     (call-5l-prim 'StateDbUnregisterListeners (node-full-name node)))
 
-  (defmethod (engine-state-db-get-via-element (engine <real-engine>)
-                                              (node <node>)
-                                              (key <symbol>))
-    (call-5l-prim 'StateDbGetViaElement (node-full-name node) key))
-
   (set-engine! (make <real-engine>))
 
   ;; Set up our event handling machinery.

@@ -199,7 +199,7 @@ public:
 	//
 	// [in] inArguments - The argument list to pass to the function.
 	//
-	virtual void Run(const TValueList &inArguments = TValueList()) = 0;
+	virtual TValue Run(const TValueList &inArguments = TValueList()) = 0;
 
 	//////////
 	// Return a form of the callback suitable for printing.  This might not

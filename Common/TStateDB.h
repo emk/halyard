@@ -28,6 +28,8 @@ public:
 	virtual void NotifyStateChanged() = 0;								
 };
 
+typedef boost::shared_ptr<TStateListener> TStateListenerPtr;
+
 //////////
 // A TStateDB stores key/value pairs (much like the Windows registry) and
 // notifies TStateListeners when those keys change.

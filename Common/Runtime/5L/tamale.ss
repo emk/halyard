@@ -98,12 +98,6 @@
            (veto "Can only move zones, not resize them."))
          (move-element-to! self (rect-left-top value))]
         [else (call-next-handler)]))
-    (on setup-finished ()
-      (call-next-handler)
-      (call-5l-prim 'StateDbNotifyElement (node-full-name self)))
-    (on state-db-changed (event)
-      ;; Never pass this event to our containing element.
-      #f)
     (cond
      [%nocreate?
       #f]
