@@ -50,6 +50,9 @@
     Respond gracefully to errors in idle handlers
     ON should highlight method name in emacs
 
+  Quake 2
+    Notify level when somebody looks at something
+
   Audio layer
     Bugs
       Fix stutter when switching from sine to vorbis clip (portaudio bug?)

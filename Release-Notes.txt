@@ -2,6 +2,8 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk, kwasi, djin
 
+TValue work (kwasi, djin, emk):
+
   * Implemented TValue class, with full test cases.
   * Added a TCallbackPtr typedef (using a shared pointer) and an
     output operator.
@@ -28,6 +30,15 @@ CVS - emk, kwasi, djin
     TValueList.
   * TValue can now do a few limited sorts of numeric type conversions.
   * Lots of little bug fixes and stress testing related to TValue.
+
+Quake 2 Overlays (emk):
+
+  * Added a qoverlay.h interface for displaying 32-bit overlays above
+    Quake 2.
+  * Added overlay-related functions to the Quake 2 renderer interface.
+  * Implemented 5-bit-per-channel inverse CLUT, which maps 24-bit
+    colors onto the selected Quake 2 palette.
+  * Implemented basic Q2_FORMAT_BGR support in the software renderer.
 
 0.0.14 - 13 Jan 2004 - emk
 
