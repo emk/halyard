@@ -4,11 +4,6 @@
 
 #include "CMacroManager.h"
 
-/**************************
-
-    MACRO MANAGER STUFF
-
-**************************/
 
 /***********************************************************************
  * Function: CMacroManager::GetScript
@@ -19,11 +14,11 @@
  * Comments:
  *  Overwrite the IndexManager's GetScript()
  ***********************************************************************/
-char *CMacroManager::GetScript(const char *macroname)
+const char *CMacroManager::GetScript(const char *macroname)
 {
     CIndex   *mac;
 
-    mac = (CIndex *) FindNode(macroname);
+    mac = (CIndex *) Find(macroname);
     return (mac->GetScript());
 }
 
@@ -38,13 +33,14 @@ char *CMacroManager::GetScript(const char *macroname)
  * Comments:
  *  Creates new macro entry into the macro tree
  ***********************************************************************/
-void CMacroManager::MakeNewIndex(char *name, int32 start, int32 end)
+void CMacroManager::MakeNewIndex(CIndexFile *inFile, const char *inName, 
+	int32 inStart, int32 inEnd)
 {
-    CIndex   *newMacro;
+    CIndex   *newMacro = NULL;
 
-    newMacro = new CIndex(name, start, end);
-
-    AddNode(newMacro);
-    newMacro->SetScript();
+    newMacro = new CIndex(inFile, inName, inStart, inEnd);
+    
+    if (newMacro->SetScript())
+    	Add(newMacro);
 }
 

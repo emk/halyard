@@ -16,8 +16,10 @@
 
 #pragma once
 
+#include "KHeader.h"
+
 #include "CText.h"
-#include "CString.h"
+#include "KString.h"
 #include "CPicture.h"
 #include "CCursor.h"
 
@@ -29,13 +31,13 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		enum { class_ID = 'PlTz' };	// Class ID - needs to be unique & not all lower-case
 	
 		// Standard constructor
-		CTouchZone(Rect &r, CString &cmd, CPicture *inPict, Point &loc, 
-					const CursorType = HAND_CURSOR, const CString &SecondCmd = nil);
+		CTouchZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, 
+					const CursorType = HAND_CURSOR, const KString &SecondCmd = nil);
 	
 		// This constructor is used for the 'Buttpcx' command
-		CTouchZone(Rect &r, CString &cmd, CPicture *inPict, Point &loc, char *text,
+		CTouchZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, const char *text,
 					const CursorType = HAND_CURSOR,
-					const char *header = nil, const CString &secCmd = nil);
+					const char *header = nil, const KString &secCmd = nil);
 					
 		// Destructor
 		virtual 	~CTouchZone();
@@ -51,19 +53,17 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		CursorType	GetCursor(void) { return (mCursor); }
 		
 	private:
-		CString     mCommand;
-		CString     mSecondCommand;  //for second command support.
-		Point       mPictLoc;
+		KString     mCommand;
+		KString     mSecondCommand;  //for second command support.
+		KPoint       mPictLoc;
 		CPicture	*mPicture;		// pict & hilite pict that we use in the touchzone
 		bool		mNormalTouch;	// to distinguish touchzones from buttpcx's
 		CursorType	mCursor;
 		
 	protected:
-		void			SetupZone(Rect &r, CString &cmd, CPicture *inPict, Point &loc, 
-								const CString &SecondCmd = nil, const CursorType cursor = HAND_CURSOR);
-		
-		
-	
+		void		SetupZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, 
+							const KString &SecondCmd = nil, const CursorType cursor = HAND_CURSOR);
+			
 		virtual Boolean PointIsInFrame(Int32 inHoriz, Int32	inVert) const
 		{
 			return (LPane::PointIsInFrame(inHoriz, inVert));

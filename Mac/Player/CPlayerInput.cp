@@ -2,14 +2,15 @@
 	CPlayerInput.cp	
    ================================================================================= */
 
+#include "KHeader.h"
+
 #include <iostream>
 #include <Palettes.h>
 #include <LStream.h>
 #include <UDrawingState.h>
 
-#include "debug.h"
+#include "KLogger.h"
 
-#include "Mac5L.h"
 #include "CCard.h"
 #include "CMac5LApp.h"
 #include "CPlayerView.h"
@@ -20,8 +21,6 @@
 #include "UModalDialogs.h"
 #include "UKeyFilters.h"
 #include "CKeyFilters.h"
-
-#include "util.h"
 
 static CPlayerInput *theInputThing = nil;
 extern WindowPtr gWindow;
@@ -34,9 +33,9 @@ extern WindowPtr gWindow;
    --------------------------------------------------------------------------------- */
 
 CPlayerInput::CPlayerInput(
-	CString inVarName,
-	CString	inStyle,
-	CString	inMask,
+	KString inVarName,
+	KString	inStyle,
+	KString	inMask,
 	Rect	inBounds,
 	bool	inRequired)
 {
@@ -57,13 +56,13 @@ CPlayerInput::CPlayerInput(
 	mHaveBackColor = false;			// assume we won't get it
 	
 	// Fill in the Text Traits resource and write it back out.
-	if (not inStyle.empty())
+	if (not inStyle.IsEmpty())
 	{
 		PaletteHandle		thePal = NULL;
 		CHeader				*theHeader = NULL;
 		TextTraitsH			tthand;
 		
-		theHeader = (CHeader *) gHeaderManager.FindNode(inStyle);
+		theHeader = (CHeader *) gHeaderManager.Find(inStyle);
 		if (theHeader != NULL)
 		{
 			tthand = (TextTraitsH) ::Get1Resource('Txtr', 1000);
@@ -103,12 +102,12 @@ CPlayerInput::CPlayerInput(
 	mHasBox = false;				// don't frame the input area
 	
 	// Figure out what kind of input is expected, and the max length.
-	SetMaxChars(mMask.length());
+	SetMaxChars(mMask.Length());
 	
 	// We don't use the predefined filter functions here because we 
-	if (mMask.getch(0) == 'N')			// We want any alphanumeric input
+	if (mMask(0) == 'N')			// We want any alphanumeric input
 		SetKeyFilter(&UKeyFilters::AlphaNumericField);
-	else if (mMask.getch(0) == '9')		// We want any numeric input
+	else if (mMask(0) == '9')		// We want any numeric input
 		SetKeyFilter(&UKeyFilters::IntegerField);
 				
 	FinishCreate();
@@ -196,17 +195,20 @@ Boolean CPlayerInput::HandleKeyPress(
 				if (theString[0] != 0)
 				{
 					// Set the appropriate var
-					gVariableManager.SetString((char *) mVarToSet, p2cstr(theString));
+					gVariableManager.SetString((const char *) mVarToSet, p2cstr(theString));
 
-#ifdef DEBUG_5L
-					prinfo("input: variable <%s>, value <%s>", (char *) mVarToSet, theString);
+#ifdef DEBUG
+					gDebugLog.Log("input: variable <%s>, value <%s>", (const char *) mVarToSet, theString);
 #endif
 					
 					// Create a new text field to take its place
 					CalcLocalFrameRect(macBounds);
 					macBounds.left += 1;
 					macBounds.top -= 1;
-	   				new CPlayerText(mStyle, macBounds, (char *)theString, 0, 0);
+					KRect	bounds;
+					bounds.Set(macBounds);
+					
+	   				new CPlayerText(mStyle, bounds, (char *)theString, 0, 0);
 	   				::InvalRect(&macBounds);
 					
 					// Nuke the TE field
@@ -346,9 +348,9 @@ bool HaveInputUp(void)
 }
 
 void DoCPlayerInput(
-	CString inVarName,
-	CString	inStyle,
-	CString	inMask,
+	KString inVarName,
+	KString	inStyle,
+	KString	inMask,
 	Rect	inBounds,
 	bool	inRequired)
 {

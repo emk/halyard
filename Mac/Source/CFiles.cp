@@ -3,14 +3,15 @@
 
 */
 
-#include "debug.h"
+#include "KHeader.h"
 
-#include "CString.h"
+#include "KLogger.h"
+#include "KString.h"
+
+#include "CMac5LApp.h"
 #include "CFiles.h"
 #include "CConfig.h"
 #include "CVariable.h"
-
-#include "util.h"
 
 /********************
 
@@ -21,7 +22,7 @@
 //  Open the given file for reading and writing. If writing and it doesn't
 //			exist, create it first.
 //
-CFile::CFile(char *filename, FileKind fKind)
+CFile::CFile(KString &filename, FileKind fKind)
 {
 	FInfo	theFInfo;
 	FSSpec	fSpec;
@@ -44,7 +45,7 @@ CFile::CFile(char *filename, FileKind fKind)
             break;
     }
     
-    theConfig->FillDataSpec(&fSpec, filename);
+    theConfig->FillDataSpec(&fSpec, filename.GetString());
 	
 	// cbo_fix - 
 	// we have to catch the exceptions that could get thrown here
@@ -74,14 +75,14 @@ CFile::CFile(char *filename, FileKind fKind)
     
     catch (const LException& inException) 
     {
-#ifdef DEBUG_5L
-		prinfo("Couldn't open file <%s>, setting _error to -1", filename);
+#ifdef DEBUG
+		gDebugLog.Log("Couldn't open file <%s>, setting _error to -1", filename);
 #endif
 
     	gVariableManager.SetLong("_error", -1);		// couldn't open the file
     	
     	// cbo_fix - do something appropriate here
-    	// prerror("File <%s> not found. Quitting.", filename);
+    	// gLog.Error("File <%s> not found. Quitting.", filename);
     
     }
 }
@@ -111,16 +112,16 @@ int CFile::Match(const char *aName)
 /***********************************************************************
  * Function: CFile::Read
  *
- * Parameter: str - CString to assign into.
+ * Parameter: str - KString to assign into.
  * Return:
  *
  * Comments:
  *      Read the next word as determined by whitespace.
  ***********************************************************************/
-void CFile::Read(CString &str)
+void CFile::Read(KString &str)
 {
     if ((itsKind != fReadOnly) and (itsKind != fWriteAppend))
-        prcaution("File %s is write-only.", (char *)itsName);
+        gLog.Caution("File %s is write-only.", (const char *)itsName);
 	else
 	{
 		readBuf[0] = '\0';
@@ -141,10 +142,10 @@ void CFile::Read(CString &str)
  *   Read until the given delimiter. Return everything up to
  *  the delimiter, and throw the delimiter away.
  ***********************************************************************/
-void CFile::ReadUntil(CString &str, unsigned char delim)
+void CFile::ReadUntil(KString &str, unsigned char delim)
 {
     if ((itsKind != fReadOnly) and (itsKind != fWriteAppend))
-        prcaution("File %s is write-only.", (char *)itsName);
+        gLog.Caution("File %s is write-only.", (const char *)itsName);
     else
     {    
 		readBuf[0] = '\0';
@@ -164,16 +165,16 @@ void CFile::ReadUntil(CString &str, unsigned char delim)
  *  Write some data to the file. Convert \t and \n to tab and
  *  newline characters respectively.
  ***********************************************************************/
-void CFile::Write(CString &data)
+void CFile::Write(KString &data)
 {
-	char    *ptr;
-	int32	count = 0;
-    char    ch;
-    bool	done = FALSE;
+	const char   *ptr;
+	int32		count = 0;
+    char    	ch;
+    bool		done = FALSE;
 
     if (itsKind == fReadOnly)
     {
-        prcaution("File %s is read-only.", (char *) itsName);
+        gLog.Caution("File %s is read-only.", (const char *) itsName);
         return;
     }
 
@@ -225,9 +226,9 @@ void CFile::Write(CString &data)
  *      Read until we find the given search string at the start of a
  *  line or we hit the end of file.
  ***********************************************************************/
-void CFile::Lookup(CString &searchString, int32 numFields)
+void CFile::Lookup(KString &searchString, int32 numFields)
 {
-    CString     theField, comparison;
+    KString     theField, comparison;
     int32       count;
     bool        done = FALSE;
 
@@ -253,13 +254,13 @@ void CFile::Lookup(CString &searchString, int32 numFields)
         if (searchString.Equal(comparison, FALSE))  
         {
             done = TRUE;
-#ifdef DEBUG_5L
-            prinfo("lookup: found <%s>, in <%s>", searchString.GetString(), comparison.GetString());
+#ifdef DEBUG
+            gDebugLog.Log("lookup: found <%s>, in <%s>", searchString.GetString(), comparison.GetString());
 #endif
         }
-#ifdef DEBUG_5L
+#ifdef DEBUG
 //		else
-//			prinfo("lookup: didn't find <%s> in <%s>", (char *) searchString, (char *) comparison);
+//			gDebugLog.Log("lookup: didn't find <%s> in <%s>", (char *) searchString, (char *) comparison);
 #endif
         
         if (itsFile->AtEOF())
@@ -285,18 +286,18 @@ void CFile::Lookup(CString &searchString, int32 numFields)
  *  the end of the file and let the scriptor append data with write
  *  commands.
  ***********************************************************************/
-void CFile::Rewrite(CString &searchString, int32 /* numFields */)
+void CFile::Rewrite(KString &searchString, int32 /* numFields */)
 {
 	CFile			*tempFile;
-    CString     	theLine;
-    CString     	tempName("temp5L");
+    KString     	theLine;
+    KString     	tempName("temp5L");
     FSSpec			tempSpec, goodSpec;
     OSErr			err;
     bool       		done = FALSE;
 
     if (itsKind != fWriteAppend)
     {
-        prcaution("Rewrite expects WRITEAPPEND files.");
+        gLog.Caution("Rewrite expects WRITEAPPEND files.");
         return;
     }
 
@@ -317,7 +318,7 @@ void CFile::Rewrite(CString &searchString, int32 /* numFields */)
         //
         ReadUntil(theLine, NEWLINE_CHAR);
         
-        if (theLine.empty()) 
+        if (theLine.IsEmpty()) 
             done = TRUE;
         else if (theLine.StartsWith(searchString, FALSE) == FALSE)
         {
@@ -391,7 +392,7 @@ CFileList::~CFileList()
  *  Find the file in the array by name. If failClosed == TRUE,
  *  fail if the file isn't found.
  ***********************************************************************/
-CFile *CFileList::FindFile(char *filename, int failClosed)
+CFile *CFileList::FindFile(KString &filename, int failClosed)
 {
 	CheckPath(filename);
 	
@@ -399,7 +400,7 @@ CFile *CFileList::FindFile(char *filename, int failClosed)
             return (CurrentFile);
 
     if (failClosed)
-        prcaution("File <%s> not found.", filename);
+        gLog.Caution("File <%s> not found.", filename);
 
     return NULL;
 }
@@ -414,7 +415,7 @@ CFile *CFileList::FindFile(char *filename, int failClosed)
  * Comments:
  *    Open a file. Make sure it's not already open.
  ***********************************************************************/
-void CFileList::Open(char *filename, FileKind fKind)
+void CFileList::Open(KString &filename, FileKind fKind)
 {
     CFile   *theFile;
     int32	theError;
@@ -422,7 +423,7 @@ void CFileList::Open(char *filename, FileKind fKind)
     theFile = FindFile(filename, FALSE);
     if (theFile != NULL)
     {
-        prcaution("File %s is already open.", filename);
+        gLog.Caution("File %s is already open.", filename.GetString());
         return;
     }
 
@@ -445,7 +446,7 @@ void CFileList::Open(char *filename, FileKind fKind)
  * Comments:
  *   Close an open file and remove it from the array.
  ***********************************************************************/
-void CFileList::Close(char *filename)
+void CFileList::Close(KString &filename)
 {
 	CFile	*theFile;
 	
@@ -455,9 +456,9 @@ void CFileList::Close(char *filename)
 		delete CurrentFile;
 		CurrentFile = nil;
 	}
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	else
-		prcaution("Trying to close file <%s>, it isn't open!", filename);
+		gDebugLog.Caution("Trying to close file <%s>, it isn't open!", filename.GetString());
 #endif
 }
 
@@ -471,7 +472,7 @@ void CFileList::Close(char *filename)
  * Comments:
  *   Read certain data from a file.
  ***********************************************************************/
-void CFileList::Read(char *filename, CString &str)
+void CFileList::Read(KString &filename, KString &str)
 {
     CFile   *theFile;
 
@@ -491,7 +492,7 @@ void CFileList::Read(char *filename, CString &str)
  * Comments:
  *  Read certain data from a file.
  ***********************************************************************/
-void CFileList::ReadUntil(char *filename, CString &str, unsigned char delim)
+void CFileList::ReadUntil(KString &filename, KString &str, unsigned char delim)
 {
     CFile   *theFile;
 
@@ -510,7 +511,7 @@ void CFileList::ReadUntil(char *filename, CString &str, unsigned char delim)
  * Comments:
  *      Write given data to the file.
  ***********************************************************************/
-void CFileList::Write(char *filename, CString &data)
+void CFileList::Write(KString &filename, KString &data)
 {
     CFile   *theFile;
 
@@ -530,7 +531,7 @@ void CFileList::Write(char *filename, CString &data)
  * Comments:
  *   Try to find a particular record in the file.
  ***********************************************************************/
-void CFileList::Lookup(char *filename, CString &searchString, int numFields)
+void CFileList::Lookup(KString &filename, KString &searchString, int numFields)
 {
     CFile   *theFile;
 
@@ -550,7 +551,7 @@ void CFileList::Lookup(char *filename, CString &searchString, int numFields)
  * Comments:
  *  Rewrite (move to end of file) a particular record in the file.
  ***********************************************************************/
-void CFileList::Rewrite(char *filename, CString &searchString, int numFields)
+void CFileList::Rewrite(KString &filename, KString &searchString, int numFields)
 {
     CFile   *theFile;
 
@@ -586,12 +587,12 @@ bool CFileList::CurFileAtEOF(void)
 //
 //	CheckPath - Get any DOS-ness out of the path.
 //
-void CFileList::CheckPath(char *inPath)
+void CFileList::CheckPath(KString &inPath)
 {
 	char	*slashPtr;
 	
 	// See if the name is a DOS path.
-	slashPtr = inPath;
+	slashPtr = inPath.GetBuffer();
 	while (slashPtr != NULL)
 	{
 		slashPtr = strstr(slashPtr, "\\");

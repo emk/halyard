@@ -16,9 +16,10 @@
 //
 //
 
+#include "KHeader.h"
+
 #include "CCursor.h"
-#include "debug.h"
-#include "Mac5L.h"
+
 #include "CPlayerView.h"
 #include "CTouchZone.h"
 #include "CMoviePlayer.h"
@@ -112,7 +113,7 @@ void CCursorManager::ShowCursor(void)
 //
 //	FindCursor - Given a string, return the cursor constant.
 //
-CursorType CCursorManager::FindCursor(CString &inString)
+CursorType CCursorManager::FindCursor(KString &inString)
 {
 	CursorType	cursor;
 	
@@ -158,7 +159,7 @@ void CCursorManager::CheckCursor(void)
 {
 	LArray			&paneList = gPlayerView->GetSubPanes();
 		
-#ifdef DEBUG_5L	
+#ifdef DEBUG	
 	if (not gFadedIn)
 	{
 		HideCursor();
@@ -367,6 +368,9 @@ void CCursorManager::ChangeCursor(CursorType inCursor, bool inTZone /* = false *
 
 /*
 $Log$
+Revision 1.3  2000/05/11 12:56:09  chuck
+v 2.01 b1
+
 Revision 1.2  2000/02/01 16:50:48  chuck
 Fix cursors on overlapping touch zones.
 

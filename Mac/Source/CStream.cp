@@ -9,7 +9,7 @@
 /*
     Need to do:
 
-    Handle ; comments. What if ptext[0] is a comment?
+    Handle ; comments. What if m_String[0] is a comment?
 
     Handle \x things.
 
@@ -22,15 +22,13 @@
     If ask for data and there's none then give signal somehow.
 */
 
-#include "debug.h"
+#include "KHeader.h"
 
-#include "Mac5L.h"
+#include "KLogger.h"
 
+#include "CMac5LApp.h"
 #include "CStream.h"
 #include "CVariable.h"
-
-#include "util.h"
-
 
 //
 //  Some common character types.
@@ -75,34 +73,34 @@ bool CStream::whitespace(char ch)
 //
 //  Constructors.
 //
-CStream::CStream() : CString()
+CStream::CStream() : KString()
 {
     reset();
 }
 
-CStream::CStream(const int32 newsize) : CString(newsize)
+CStream::CStream(const int32 newsize) : KString(newsize)
 {
     reset();
 }
 
-CStream::CStream(const char *s) : CString(s)
+CStream::CStream(const char *s) : KString(s)
 {
     reset();
 }
     
-CStream::CStream(const CString &other) : CString(other)
+CStream::CStream(const KString &other) : KString(other)
 {
     reset();
 }
 
-CStream::CStream(const CStream &other) : CString(other)
+CStream::CStream(const CStream &other) : KString(other)
 {
     pos = other.pos;
 }
 
 char CStream::curchar()  
 {
-    return (ptext[pos]); 
+    return (m_String[pos]); 
 }
 
 //
@@ -116,14 +114,14 @@ char CStream::nextchar(void)
     if (eof()) 
     	return (0);
 
-    ch = ptext[++pos];
+    ch = m_String[++pos];
     
     if (ch == COMMENT) 
     {
-        if (ptext[pos - 1] != SLASH) 
+        if (m_String[pos - 1] != SLASH) 
         {
 			while (not eof() and (ch != kNEWLINE) and (ch != kRETURN))
-                ch = ptext[++pos];
+                ch = m_String[++pos];
                 
             if ((ch == kNEWLINE) or (ch == kRETURN))
                 return (nextchar());
@@ -154,15 +152,15 @@ void CStream::reset(void)
     char    ch;
     pos = 0;
 
-    ch = ptext[pos];
+    ch = m_String[pos];
     
     if (not eof() and ch == COMMENT) 
     {
         while (not eof() and (ch != kNEWLINE) and (ch != kRETURN))
-            ch = ptext[++pos];
+            ch = m_String[++pos];
             
         if ((ch == kNEWLINE) or (ch == kRETURN))
-            ch = ptext[++pos];
+            ch = m_String[++pos];
     }
 }
 
@@ -240,7 +238,7 @@ void CStream::scanopen(void)
 //
 void CStream::discard(void)
 {
-    CString     junk;
+    KString     junk;
 
     *this >> junk;
 }
@@ -281,26 +279,26 @@ void CStream::scanclose(void)
 
     //  Error: unterminated parentheses.
     //
-    prerror("unterminated parentheses, close not found.");
+    gLog.Error("unterminated parentheses, close not found.");
 }
 
 //
 //  Return the given characters, substituting variable contents
 //  where appropriate. Should never have to worry about white space.
 //
-CString CStream::copystr(uint32 startPos, uint32 numChars)
+KString CStream::copystr(uint32 startPos, uint32 numChars)
 {
-    CString 	original, result, vname;
+    KString 	original, result, vname;
     int32     	base, curpos, origlen, DEREF = 0;
     char    	ch;
-    char		*s;
+    const char	*s;
 
-    ASSERT(startPos < len)
-    ASSERT(startPos + numChars <= len + 1)
+    ASSERT(startPos < m_Length);
+    ASSERT(startPos + numChars <= m_Length + 1);
 
-    original = substr(startPos, numChars);
+	original = Mid(startPos, numChars);
     s = original.GetString(); 
-    origlen = original.length(); 
+    origlen = original.Length(); 
     
     if (numChars == 0) 
     	result = " ";
@@ -324,7 +322,7 @@ CString CStream::copystr(uint32 startPos, uint32 numChars)
         {
             //  Copy up until the $ sign.
             //
-            result += original.substr(base, curpos - base);
+            result += original.Mid(base, curpos - base);
             base = curpos + 1;
             
             //  Find out how long the name is. Name ends with
@@ -341,7 +339,7 @@ CString CStream::copystr(uint32 startPos, uint32 numChars)
 
             //  Append the variable contents to the result string.
             //
-            vname = original.substr(base, curpos - base);
+            vname = original.Mid(base, curpos - base);
             result += gVariableManager.GetString(vname);
             
             //  Bump up the base.
@@ -355,7 +353,7 @@ CString CStream::copystr(uint32 startPos, uint32 numChars)
     }
 
     if (base < origlen)
-        result += original.substr(base, curpos - base);
+        result += original.Mid(base, curpos - base);
 
     if (DEREF) 
 		result = gVariableManager.GetString(result);
@@ -372,9 +370,9 @@ CString CStream::copystr(uint32 startPos, uint32 numChars)
 //  Basic extraction operator. Most others just use this
 //  and then convert the type.
 //
-CStream& CStream::operator>>(CString &dest)
+CStream& CStream::operator>>(KString &dest)
 {
-    CString 	temp;
+    KString 	temp;
     int32     	startPos;
     int32     	dangling_opens = 0;
     char    	ch;
@@ -426,7 +424,7 @@ CStream& CStream::operator>>(CString &dest)
                 default:
                     startPos = pos;
                     scanword();
-                    if (not dest.empty())
+                    if (not dest.IsEmpty())
                         dest += kSPACE;
                     temp = copystr(startPos, pos - startPos);
                     dest += temp;
@@ -453,11 +451,11 @@ CStream& CStream::operator>>(CStream& (*_f)(CStream &))
     return (_f (*this));
 }
 
-//  CString class handles string to int conversions.
+//  KString class handles string to int conversions.
 //
 CStream& CStream::operator>>(int16 &dest)
 {
-    CString foo;
+    KString foo;
 
     *this >> foo;
     dest = (int16) foo;
@@ -465,11 +463,11 @@ CStream& CStream::operator>>(int16 &dest)
     return (*this);
 }
 
-//  CString class handles string to int conversions.
+//  KString class handles string to int conversions.
 //
 CStream& CStream::operator>>(int32 &dest)
 {
-    CString foo;
+    KString foo;
 
     *this >> foo;
     dest = (int32) foo;
@@ -479,7 +477,7 @@ CStream& CStream::operator>>(int32 &dest)
 
 CStream& CStream::operator>>(uint32 &dest)
 {
-	CString foo;
+	KString foo;
 	
 	*this >> foo;
 	dest = (uint32) foo;
@@ -487,11 +485,11 @@ CStream& CStream::operator>>(uint32 &dest)
 	return (*this);
 }
 
-//  CString class handles string to int conversions.
+//  KString class handles string to int conversions.
 //
 CStream& CStream::operator>>(double &dest)
 {
-    CString foo;
+    KString foo;
 
     *this >> foo;
     dest = (double) foo;
@@ -508,10 +506,11 @@ CStream& CStream::operator>>(double &dest)
 //  indexing of 4 digit coords.  Note had to use a second symbol other than
 //  '$' because of the way 5L handles strings beginning and ending in '$' 
 
-CStream& CStream::operator>>(CRect &r)
+CStream& CStream::operator>>(KRect &r)
 {
     char	ch;
-    CString	temp;
+    KString	temp;
+    int32	left, top, right, bottom;
 
     skipwhite();
     ch = curchar();
@@ -519,11 +518,13 @@ CStream& CStream::operator>>(CRect &r)
     {
         *this >> temp;
         CStream tempstream(temp);
-        tempstream >> r.left >> r.top >> r.right >> r.bottom;
+        tempstream >> left >> top >> right >> bottom;
     }
     else  
-        *this >> r.left >> r.top >> r.right >> r.bottom;
-    
+        *this >> left >> top >> right >> bottom;
+  
+  	r.Set(top, left, bottom, right);
+  	  
     return (*this);
 }
 
@@ -536,10 +537,11 @@ CStream& CStream::operator>>(CRect &r)
 //  The if and the else statement were added to check for '$'.  See
 //  previous operator for description of extra code
 
-CStream& CStream::operator>>(CPoint &pt)
+CStream& CStream::operator>>(KPoint &pt)
 {
     char	ch;
-    CString	temp;
+    KString	temp;
+    int32	x, y;
 
     skipwhite();
     ch = curchar();
@@ -547,10 +549,12 @@ CStream& CStream::operator>>(CPoint &pt)
     {
         *this >> temp;
         CStream tempstream(temp);
-        tempstream >> pt.x >> pt.y;
+        tempstream >> x >> y;
     }
     else  
-        *this >> pt.x >> pt.y;
+        *this >> x >> y;
+    
+    pt.Set(x, y);
     
     return (*this);
 }

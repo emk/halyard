@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "KHeader.h"
+#include "KLogger.h"
 #include "CPalette.h"
 
 class	CBackWindow;
@@ -16,10 +18,11 @@ class	CMac5LApp : public LApplication
 	
 		void				QuitScript(void);
 		void				StartUp(void);
-		
-#ifdef DEBUG_5L
-		void				ReDoScript(char *curCard);
-		bool				OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard);
+
+		bool				OpenScript(FSSpec *scriptSpec);	
+#ifdef DEBUG
+		void				ReDoScript(const char *curCard);
+		bool				OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard);
 #endif
 		void				CheckMemory(void);
 		void				MaxMemory(void);
@@ -27,13 +30,14 @@ class	CMac5LApp : public LApplication
 
 //		void				SetPalette(PaletteHandle inPalHand, bool inActivateNow);
 		
-		void				NewColorTable(CPalette *inPal, bool inGraphics);
-		void				DoNewPalette(CTabHandle inCTab);
-		void				RestorePalette(void);
-		CTabHandle			GetCTab(void) { return (mGraphicsPal->GetCTab()); }
-		void				CheckPalette(void);
-		bool				HaveNewPal(void)
-					{ return (mHaveNewPal); }
+//		void				NewColorTable(CPalette *inPal, bool inGraphics);
+		
+//		void				DoNewPalette(CTabHandle inCTab);
+//		void				RestorePalette(void);
+//		CTabHandle			GetCTab(void) { return (mGraphicsPal->GetCTab()); }
+//		void				CheckPalette(void);
+//		bool				HaveNewPal(void)
+//					{ return (mHaveNewPal); }
 		
 		Boolean				AttemptQuitSelf(Int32 inSaveOption);
 		virtual void		HandleAppleEvent(
@@ -41,12 +45,13 @@ class	CMac5LApp : public LApplication
 								AppleEvent			&outAEReply,
 								AEDesc				&outResult,
 								Int32				inAENumber);
-		bool				OpenScript(FSSpec *scriptSpec);
+		
 		void				DoExit(int16 inSide);
 									
 	protected:
 		CBackWindow			*mDisplayWindow;
 		
+		void				CleanUp(void);
 		void				SetGlobals(void);
 		void				DoAEOpenDoc(
 								const AppleEvent 	&inAppleEvent,
@@ -57,14 +62,22 @@ class	CMac5LApp : public LApplication
 		Rect				mScreenRect;
 		int					mBitDepth;
 		bool				mScriptRunning;
-		bool				mHaveNewPal;
-		CPalette			*mGraphicsPal;
-		CPalette			*mMoviePal;
-		PaletteHandle		mCurPal;
+//		bool				mHaveNewPal;
+//		CPalette			*mGraphicsPal;
+//		CPalette			*mMoviePal;
+//		PaletteHandle		mCurPal;
 	
 		bool				GetScriptFile(FSSpec *scriptSpec);
 };
 
 // global application object
 extern CMac5LApp *gTheApp;
+
+extern KLogger gLog;
+extern KLogger gMissingMediaLog;
+#ifdef DEBUG
+extern KLogger gDebugLog;
+#endif
+
 extern Handle clickSound;
+extern WindowPtr gWindow;

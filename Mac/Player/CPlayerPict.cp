@@ -2,12 +2,13 @@
 	CPlayerPict.cp	
    ================================================================================= */
 
+#include "KHeader.h"
+
 #include <iostream>
 #include <Palettes.h>
 #include <LStream.h>
 #include <UDrawingState.h>
 
-#include "Mac5L.h"
 #include "CPlayerView.h"
 #include "CPlayerPict.h"
 
@@ -20,8 +21,8 @@
    --------------------------------------------------------------------------------- */
 
 CPlayerPict::CPlayerPict(CPicture		*inPict,
-						 const Rect		&inBounds,
-						 const Boolean	inMatte)
+							KPoint		&inPt,
+						 	bool		inMatte)
 {
 	if (inPict == NULL)
 		return;
@@ -31,7 +32,7 @@ CPlayerPict::CPlayerPict(CPicture		*inPict,
 	GWorldPtr macGWorld = theGWorld->GetMacGWorld();
 
 	theGWorld->BeginDrawing();		// Draw to offscreem GWorld
-	inPict->DrawPic(topLeft(inBounds), BITMAP(macGWorld), inMatte);
+	inPict->Draw(inPt, macGWorld, inMatte);
 	theGWorld->EndDrawing();
 
 	inPict->Purge();				// free memory for the picture

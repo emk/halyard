@@ -13,13 +13,15 @@
 	Needs the header manager to be working before it's complete.
    ================================================================================= */
 
-#include "debug.h"
+#include "KHeader.h"
 
-#include "Mac5L.h"
+#include "KLogger.h"
+#include "KRect.h"
+
+#include "CMac5LApp.h"
 #include "CHeader.h"
 #include "CPlayerView.h"
 #include "CText.h"
-#include "CRect.h"
 #include "CVariable.h"
 
 // used to SetupText to process out control characters
@@ -42,7 +44,7 @@ CText::CText(void)
 
 CText::CText(
 	const char		*inHeader,		// Name of header format to use.
-	const Rect		&inBounds,		// Bounding rect (relative to PlayerView's rect)
+	const KRect		&inBounds,		// Bounding rect (relative to PlayerView's rect)
 	const char 		*inText)		// The 'raw' string (including format chars)
 {
 	CHeader			*theHeader;
@@ -54,10 +56,10 @@ CText::CText(
 		return;
 	
 	// Find the header in the header tree
-	theHeader = (CHeader *) gHeaderManager.FindNode(inHeader);
+	theHeader = (CHeader *) gHeaderManager.Find(inHeader);
 	if (theHeader == NULL)
 	{
-		prcaution("Couldn't find Header <%s>.", inHeader);
+		gLog.Caution("Couldn't find Header <%s>.", inHeader);
 		
 		return;
 	}	
@@ -67,7 +69,7 @@ CText::CText(
 	strcpy((char *) mText, inText);
 	
 	// Assign drawing rect
-	mDrawRect = inBounds;
+	mDrawRect = inBounds.GetRect();
 	
 	// Drop shadow dist. (from header)
 	mShadowPix	= theHeader->GetShadow();
@@ -181,7 +183,7 @@ CText::SetupText()
 				mText = (uint8 *) ::NewPtr(finalLen + 1);							// allocate new buffer
 				if (mText == nil)
 				{
-					prcaution("Memory error in text command.");
+					gLog.Caution("Memory error in text command.");
 					return;
 				}
 				
@@ -256,7 +258,7 @@ CText::SetupText()
 						// first check that this won't blow out the string
 						if ((finalLen + 8) >= kFinalStrLen)
 						{
-							prcaution("Text too long! More than <%d> characters.", kFinalStrLen);
+							gLog.Caution("Text too long! More than <%d> characters.", kFinalStrLen);
 							::DisposePtr((char *) mText);
 							::DisposePtr((char *) finalStr);
 							mText = nil;
@@ -301,27 +303,28 @@ CText::SetupText()
 				}
 				break;
 
+#ifdef TRY_NOT_DOING_THIS
             case 0xCE:			// don't know why this comes through as a single open smart quote
             case 0xE1:			// single open smart quote
-            case 145:
+            case 145:			// 0x91
             	ch = 0xD4;
             	index++;
             	styleLen++;
             	break;     
             case 0xE2:			// single close smart quote
-            case 146:
+            case 146:			// 0x92
               	ch = 0xD5;
             	index++;
             	styleLen++;
             	break;
             case 0xE3:			// double open smart quote
-            case 147:
+            case 147:			// 0x93
             	ch = 0xD2;
             	index++;
             	styleLen++;
             	break;
             case 0xE4:			// double close smart quote
-            case 148:
+            case 148:			// 0x94
             	ch = 0xD3;
             	index++;
             	styleLen++;
@@ -340,11 +343,12 @@ CText::SetupText()
             	styleLen++;
             	break;	
             	
-            case 133:
+            case 133:			// elipsis
             	ch = 0xC9;
             	index++;
             	styleLen++;
             	break;
+#endif
             	
   			default:
         		index++;
@@ -359,7 +363,7 @@ CText::SetupText()
 		{
 			if (finalLen >= kFinalStrLen)
 			{
-				prcaution("Text too long! More than <%d> characters.", kFinalStrLen);
+				gLog.Caution("Text too long! More than <%d> characters.", kFinalStrLen);
 				::DisposePtr((char *) mText);
 				::DisposePtr((char *) finalStr);
 				mText = nil;
@@ -381,7 +385,7 @@ CText::SetupText()
 	mText = (uint8 *) ::NewPtr(finalLen + 1);							// allocate new buffer
 	if (mText == nil)
 	{
-		prcaution("Memory error in text command.");
+		gLog.Caution("Memory error in text command.");
 		return;
 	}
 	
@@ -625,12 +629,12 @@ CText::DrawStyleText(Boolean shadow)
 	}
 	
 	if (loopCount >= 256)
-		prerror("Too many loops in DrawText");
+		gLog.Error("Too many loops in DrawText");
 	
 	gVariableManager.SetLong("_incr_y", (int32) incr_y);
 	gVariableManager.SetLong("_incr_x", (int32) incr_x);
-#ifdef DEBUG_5L
-	prinfo("text rect: L <%d>, T <%d>, R <%d>, B <%d>", mDrawRect.left, mDrawRect.top, incr_x, incr_y);
+#ifdef DEBUG
+	gDebugLog.Log("text rect: L <%d>, T <%d>, R <%d>, B <%d>", mDrawRect.left, mDrawRect.top, incr_x, incr_y);
 #endif
 }
 
@@ -660,12 +664,12 @@ CText::DrawSimpleText(Boolean highlight)
 		::TextFace(bold);
 	else
 		::TextFace(0);
-
+	
 	if (highlight)
 		::PmForeColor(mHiColor);
 	else
 		::PmForeColor(mBaseColor);
-		
+				
 	UTextDrawing::DrawWithJustification((char *) mText, strlen((char *) mText), mDrawRect, mJust);
 }
 

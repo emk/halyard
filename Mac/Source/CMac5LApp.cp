@@ -18,17 +18,14 @@
 //
 //
 
-#include "debug.h"
+#include "KHeader.h"
 
 #include <Palettes.h>
 
-//#ifdef DEBUG_5L
-#include <LSIOUXAttachment.h>
-#include <SIOUX.h>
 #include <iostream.h>
-//#endif
 
-#include "Mac5L.h"
+#include "KLogger.h"
+
 #include "CConfig.h"
 #include "CMac5LApp.h"
 #include "CModule.h"
@@ -45,12 +42,12 @@
 #include "CHeader.h"
 #include "CVariable.h"
 #include "CFiles.h"
-#include "CPrefs.h"
 #include "CIndex.h"
 #include "CCursor.h"
 
+
 // build stuff
-#define VERSION_STRING	"5L for MacOS 2.00, build 20"
+#define VERSION_STRING	"5L for MacOS 2.01, build 1"
 #define VERSION_MAJOR_NUM	2
 #define VERSION_MINOR_NUM	00
 #define VERSION_BUILD_NUM	20
@@ -66,7 +63,7 @@ const ResIDT		WIND_Mac5L_d	= 202;
 //
 bool				gInFront = true;			// is the app window in front?
 bool				gPrintToFile = true;		// to print info string
-#ifdef DEBUG_5L
+#ifdef DEBUG
 bool				gFullScreen = false;		
 bool				gHideMenuBar = false;		// to hide menu bar
 bool				gPrintDebug = true;
@@ -77,8 +74,6 @@ bool				gPrintDebug = false;		// normally off
 #endif
 bool				gDoShiftScript = false;		// by default, start from beginning
 
-CPreferences        *gPrefs = NULL;
-
 CFileList			gFileManager;
 CCardManager		gCardManager;
 CMacroManager		gMacroManager;
@@ -86,10 +81,19 @@ CHeaderManager		gHeaderManager;
 CVariableManager	gVariableManager;
 CMenuUtil			gMenuUtil;
 CCursorManager		gCursorManager;
+CIndexFileManager	gIndexFileManager;
+CPaletteManager		gPaletteManager;
+CPictureManager		gPictureManager;
 
 CPlayerView			*gPlayerView;
 CMoviePlayer		gMovieManager;
 WindowPtr			gWindow;
+
+KLogger				gLog;
+KLogger				gMissingMediaLog;
+#ifdef DEBUG
+KLogger				gDebugLog;
+#endif
 
 CMac5LApp			*gTheApp;
 
@@ -102,7 +106,7 @@ CMac5LApp			*gTheApp;
 int main()
 {
 									// Set Debugging options
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	SetDebugThrow_(debugAction_Nothing);
 	SetDebugSignal_(debugAction_Nothing);
 	//SetDebugThrow_(debugAction_SourceDebugger);
@@ -132,7 +136,7 @@ int main()
 	// cbo_debug
 	//if (ProfilerInit(collectDetailed, bestTimeBase, 100, 10))
 	//{
-	//	prcaution("Couldn't start the profiler");
+	//	gLog.Caution("Couldn't start the profiler");
 	//}
 	//ProfilerSetStatus(false);
 	
@@ -172,8 +176,6 @@ CMac5LApp::CMac5LApp()
 	KeyMap 		keys;
 	Rect		screenBounds;
 	bool		centerOnScreen;
-
-	mHaveNewPal = false;
 	
 	// If the Shift key is down when starting up, do the shift script.
 	::GetKeys(keys);
@@ -203,16 +205,25 @@ CMac5LApp::CMac5LApp()
 	// Initialize the modules.
 	gModMan = new CModuleManager;
 
-	// Open the debug log file. This HAS to be after new CModuleManager.
-	if (gPrintToFile)
-		open_debug_file();
+	KString		homeDir = gModMan->GetMasterPath();
+	
+	// Open the log file and append to it.
+	gLog.Init(homeDir.GetString(), "5L", true, true);
+	
+	// Initialize the MissingMedia log file but don't open it.
+	gMissingMediaLog.Init(homeDir.GetString(), "MissingMedia", false, true);
+	
+#ifdef DEBUG
+	gDebugLog.Init(homeDir.GetString(), "Debug");
+	gDebugLog.TimeStamp();
+#endif
 
 	// Fade the screen out.
 	if (gFullScreen and gHideMenuBar)
 		DoGFade(false, 5, false);
 	
 	// Create and show our window
-#ifndef DEBUG_5L
+#ifndef DEBUG
 	mDisplayWindow = CBackWindow::CreateWindow(WIND_Mac5L, this);
 #else
 	mDisplayWindow = CBackWindow::CreateWindow(WIND_Mac5L_d, this);
@@ -223,21 +234,20 @@ CMac5LApp::CMac5LApp()
 		
 	// Make this a subcommander of the main window.
 	gPlayerView = (CPlayerView *) mDisplayWindow->FindPaneByID(210);
-			
+				
+	// cbo_fix - if we really need this, figure out a new way to do it
 	// Set the window's default palette
-	CTabHandle	theCTabHand;
+	//CTabHandle	theCTabHand;
+	//theCTabHand = ::GetCTable(128);
 	
-	mGraphicsPal = NULL;
-	mMoviePal = NULL;
-	mCurPal = NULL;
-	theCTabHand = ::GetCTable(128);
-	
-	if (theCTabHand != nil)
-	{
-		DoNewPalette(theCTabHand);
-		gPlayerView->DoNewPalette(theCTabHand);
-		CheckPalette();
-	}
+	//if (theCTabHand != nil)
+	//{
+	//	DoNewPalette(theCTabHand);
+	//	gPlayerView->DoNewPalette(theCTabHand);
+	//	CheckPalette();
+	//}
+	// cbo_fix - this should be the equivalent of the above stuff
+	gPaletteManager.Init();
 	
 	gCursorManager.Init();
 	gCursorManager.ChangeCursor(ARROW_CURSOR);
@@ -252,7 +262,7 @@ CMac5LApp::CMac5LApp()
 
 	centerOnScreen = true;			// by default
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	if ((not gFullScreen) 
 		and (screenBounds.bottom >= 550) 
 		and (screenBounds.right >= 750))
@@ -279,20 +289,6 @@ CMac5LApp::CMac5LApp()
 //	clickSound = Get1Resource('snd ', 1001);
 //	if (clickSound != NULL)
 //		SetResAttrs(clickSound, resLocked);
-
-#ifdef SIOUX_WINDOW_FOR_LOGGING	
-	if (gPrint)
-	{
-		SIOUXSettings.toppixel = screenBounds.bottom + 25;	
-		SIOUXSettings.leftpixel = 0;
-		SIOUXSettings.columns = 80;
-		SIOUXSettings.rows = 15;
-		
-		AddAttachment(new LSIOUXAttachment);
-				
-		cout << "Mac5L starting up\r";	// this will get it to appear
-	}
-#endif
 	
 	if (gHideMenuBar)
 		gMenuUtil.HideMenuBar();
@@ -319,9 +315,6 @@ CMac5LApp::CMac5LApp()
 CMac5LApp::~CMac5LApp()
 {
 	DisposeGammaTools();
-
-	if (gPrintToFile)
-		close_debug_file();
 }
 
 void CMac5LApp::HandleAppleEvent(
@@ -418,7 +411,7 @@ void CMac5LApp::DoAEOpenDoc(
 //
 void CMac5LApp::DoExit(int16 inSide)
 {
-	CString		theCurPal;
+	KString		theCurPal;
 	Rect		theRect = {0, 0, 480, 640};
 	int32		theCheckDisc;				// want to keep this value
 	bool		goodModule = false;
@@ -432,37 +425,25 @@ void CMac5LApp::DoExit(int16 inSide)
 		
 		// save the value of _NoCheckDisc and _graphpal
 		theCheckDisc = gVariableManager.GetLong("_NoCheckDisc");
-		if (mGraphicsPal != NULL)
+		if (gPaletteManager.GetCurrentPalette() != NULL)
 		{
-			theCurPal = gVariableManager.GetString("_graphpal");
+			theCurPal = gVariableManager.GetString("_GraphPal");
 			reloadPal = true;
 		}
 		
-		KillIndex();						// kills the script file
-		
-		gHeaderManager.ZapTree();			// toss all headers
-		gMacroManager.ZapTree();			// toss all macros
-		gCardManager.ZapTree();				// toss all cards
-		gVariableManager.ZapTree();			// toss all variables
-		
-		gResManager.Kill();					// toss all resources (pictures)
-
-		mGraphicsPal = NULL;
-		mMoviePal = NULL;
-		mCurPal = NULL;
-
+		CleanUp();
+				
 		// reset our "global" variables
 		SetGlobals();
 		
 		// reload the current palette - it is already set so we don't
 		// 	have to do anything else
 		if (reloadPal)
-			mGraphicsPal = GetPalette(theCurPal.GetString());
-		
-		if (mGraphicsPal == NULL)
-			gVariableManager.SetString("_graphpal", "NULL");
+		{
+			gVariableManager.SetString("_GraphPal", theCurPal.GetString());
+		}
 		else
-			gVariableManager.SetString("_graphpal", theCurPal.GetString());
+			gVariableManager.SetString("_GraphPal", "NULL");	
 	}
 
 	if ((inSide > 0) and (gModMan->HaveModules()))
@@ -487,7 +468,7 @@ void CMac5LApp::DoExit(int16 inSide)
 //
 void CMac5LApp::StartUp(void)
 {
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	FSSpec	scrSpec;
 #endif
 	bool	stayRunning = true;
@@ -502,7 +483,7 @@ void CMac5LApp::StartUp(void)
 		else
 			stayRunning = gModMan->LoadModule(-1);
 	}
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	// We can ask for a script. Only for debugging??
 	else if (GetScriptFile(&scrSpec))
 		stayRunning = OpenScript(&scrSpec);
@@ -511,7 +492,7 @@ void CMac5LApp::StartUp(void)
 #else
 	else
 	{
-		prcaution("Mac5L does not have a configuration file <Mac5L.config>");
+		gLog.Caution("Mac5L does not have a configuration file <Mac5L.config>");
 		stayRunning = false;
 	}
 #endif
@@ -520,16 +501,34 @@ void CMac5LApp::StartUp(void)
 		DoQuit();
 }
 
+//
+//	CleanUp - Toss everything.
+//
+void CMac5LApp::CleanUp(void)
+{
+	gHeaderManager.RemoveAll();			// toss all headers
+	gMacroManager.RemoveAll();			// toss all macros
+	gCardManager.RemoveAll();			// toss all cards
+	gVariableManager.RemoveAll();		// toss all variables
+	gPaletteManager.RemoveAll();		// toss all palettes
+	gPictureManager.RemoveAll();		// toss all pictures
+	gIndexFileManager.RemoveAll();		// toss all the script files	
+}
+
 Boolean CMac5LApp::AttemptQuitSelf(Int32 /* inSaveOption */)
 {
 	if (mScriptRunning)
+	{
 		gPlayerView->KillScript();
+		CleanUp();
+	}
+	
 	mScriptRunning = false;
 	
 	DoGFade(true, 0, false);			// make sure we aren't faded out
 	gMenuUtil.ShowMenuBar();	// make sure we have the menu
 	::ShowCursor();				// make sure the cursor is still there
-	
+		
 	// cbo_debug
 	//ProfilerDump((unsigned char *) "\pdump.out");
 	//ProfilerTerm();
@@ -572,29 +571,12 @@ void CMac5LApp::QuitScript(void)
 //
 bool  CMac5LApp::OpenScript(FSSpec *scriptSpec)
 {
-	FSSpec	indexSpec;
-	char	*strPtr;
-	char	*indexName;
-	Int16	nameLen;
 	bool	retValue = false;
-
-	indexSpec = *scriptSpec;
-	
-	// null terminate the name so we can use it as a c-string
-	nameLen = indexSpec.name[0];
-	indexSpec.name[nameLen+1] = '\0';
-	indexName = (char *) &(indexSpec.name[1]);
-	
+		
 	// set mSleepTime again, just to be sure
 	mSleepTime = 0;
 
-	strPtr = strstr(indexName, ".");
-	if (strPtr != NULL)
-		strcpy(strPtr, ".idx");
-	else
-		strcat(indexName, ".idx");
-	
-	if (InitIndex(scriptSpec, &indexSpec, FALSE))		// start the ball rolling
+	if (gIndexFileManager.NewIndex(scriptSpec))	
 	{
 		mScriptRunning = true;
 		
@@ -607,6 +589,7 @@ bool  CMac5LApp::OpenScript(FSSpec *scriptSpec)
 	return (retValue);
 }
 
+#ifdef OLD_PALETTE_STUFF
 void CMac5LApp::NewColorTable(CPalette *inPal, bool inGraphics)
 {
 	CPalette		*theOldPal;
@@ -641,14 +624,14 @@ void CMac5LApp::NewColorTable(CPalette *inPal, bool inGraphics)
 		theOldPal->Purge();		// clear it from memory (unless it is locked)
 }
 		
-		
 void CMac5LApp::DoNewPalette(CTabHandle inCTab)
 {
 	PaletteHandle	thePalHand;
 	PaletteHandle	theOldPalHand;
 
 	// now make the new palette
-	thePalHand = ::NewPalette(256, inCTab,  pmTolerant + pmExplicit, 0);
+	//thePalHand = ::NewPalette(256, inCTab,  pmTolerant + pmExplicit, 0);
+	thePalHand = ::NewPalette((**inCTab).ctSize+1, inCTab, pmTolerant + pmExplicit, 0);
 	
 	theOldPalHand = ::GetPalette(gWindow);
 	
@@ -679,24 +662,24 @@ void CMac5LApp::RestorePalette(void)
 	
 	if (mGraphicsPal != NULL)
 	{
-#ifdef DEBUG_5L
-		//prinfo("restoring graphics palette to <%s>", mGraphicsPal->key.GetString());
+#ifdef DEBUG
+		//gDebugLog.Log("restoring graphics palette to <%s>", mGraphicsPal->key.GetString());
 #endif
 
 		theCTab = mGraphicsPal->GetCTab();
 
 		if (theCTab == NULL)
 		{
-#ifdef DEBUG_5L
-			//prinfo("trying to restore palette, got dodo");
+#ifdef DEBUG
+			//gDebugLog.Log("trying to restore palette, got dodo");
 #endif
 			mGraphicsPal->Load();		// reload the palette
 			theCTab = mGraphicsPal->GetCTab();
 			
 			if (theCTab == NULL)
 			{
-#ifdef DEBUG_5L
-			//	prinfo("still trying to restore, couldn't get graphics palette");
+#ifdef DEBUG
+			//	gDebugLog.Log("still trying to restore, couldn't get graphics palette");
 #endif
 				return;
 			}
@@ -707,16 +690,17 @@ void CMac5LApp::RestorePalette(void)
 		CheckPalette();				// will always be faded out for this
 	}
 }
+#endif // OLD_PALETTE_STUFF
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 
 //
 //	ReDoScript - Read in the current script from disc and start again.
 //
-void CMac5LApp::ReDoScript(char *curCard)
+void CMac5LApp::ReDoScript(const char *curCard)
 {
 	FSSpec	scriptSpec;
-	CString	scriptString;
+	KString	scriptString;
 	bool	thing;
 
 	mScriptRunning = false;
@@ -728,25 +712,26 @@ void CMac5LApp::ReDoScript(char *curCard)
 		
 	gPlayerView->KillTZones();
 
-	prinfo("Killing everything for redoscript");
-		
-	KillIndex();
-	
+#ifdef DEBUG
+	gDebugLog.Log("Killing everything for redoscript");
+#endif
+			
 	//
 	// don't kill the variable tree as we want the variables to have their current values
 	//
-	gHeaderManager.ZapTree();
-	gMacroManager.ZapTree();
-	gCardManager.ZapTree();
+	gHeaderManager.RemoveAll();
+	gMacroManager.RemoveAll();
+	gCardManager.RemoveAll();
+	gIndexFileManager.RemoveAll();
 		
-	gModMan->GetCurScript(scriptString);
-	theConfig->FillScriptSpec(&scriptSpec, (char *) scriptString);
+	scriptString = gModMan->GetCurScript();
+	theConfig->FillScriptSpec(&scriptSpec, scriptString.GetString());
 	
 	thing = OpenScriptAgain(&scriptSpec, curCard);
 	
 	if (not thing)
 	{
-		prcaution("Couldn't restart <%s>", curCard);
+		gLog.Caution("Couldn't restart <%s>", curCard);
 		DoQuit();
 	}
 }
@@ -754,33 +739,18 @@ void CMac5LApp::ReDoScript(char *curCard)
 //
 //	OpenScriptAgain
 //
-bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard)
+bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard)
 {
-	FSSpec	indexSpec;
-	char	*strPtr;
-	char	*indexName;
-	Int16	nameLen;
 	bool	retValue = false;
-	
-	indexSpec = *scriptSpec;
-	
-	// null terminate the name so we can use it as a c-string
-	nameLen = indexSpec.name[0];
-	indexSpec.name[nameLen+1] = '\0';
-	indexName = (char *) &(indexSpec.name[1]);
-	
+		
 	// set mSleepTime again, just to be sure
 	mSleepTime = 0;
 
-	strPtr = strstr(indexName, ".");
-	if (strPtr != NULL)
-		strcpy(strPtr, ".idx");
-	else
-		strcat(indexName, ".idx");
+#ifdef DEBUG
+	gDebugLog.Log("reinit everything for redoscript");
+#endif
 
-	prinfo("reinit everything for redoscript");
-		
-	if (InitIndex(scriptSpec, &indexSpec, FALSE))		// start the ball rolling
+	if (gIndexFileManager.NewIndex(scriptSpec))		
 	{
 		mScriptRunning = true;
 		
@@ -819,7 +789,7 @@ void CMac5LApp::CheckMemory(void)
 		minFreeMem = mem;
 	else if (mem < minFreeMem)
 		minFreeMem = mem;
-	//prinfo("FreeMem used: %d", memUsed);
+	//gLog.Log("FreeMem used: %d", memUsed);
 	
 	mem = ::TempFreeMem();
 	if (mem > maxTempFreeMem)
@@ -829,7 +799,7 @@ void CMac5LApp::CheckMemory(void)
 		minTempFreeMem = mem;
 	else if (mem < minTempFreeMem)
 		minTempFreeMem = mem;
-	//prinfo("TempFreeMem used: %d", memUsed);
+	//gLog.Log("TempFreeMem used: %d", memUsed);
 }
 
 void CMac5LApp::DumpMemory(void)
@@ -839,23 +809,23 @@ void CMac5LApp::DumpMemory(void)
 	long		mem = 0;
 	
 	mem = ::FreeMem();
-	prinfo("FreeMem: %d", mem);
+	gLog.Log("FreeMem: %d", mem);
 	mem = 0;
 	mem = ::TempFreeMem();
-	prinfo("TempFreeMem: %d", mem);
-	mem = gResManager.CacheSize();
-	prinfo("Resource cache: %d", mem);
+	gLog.Log("TempFreeMem: %d", mem);
+	mem = gPictureManager.CacheSize();
+	gLog.Log("Resource cache: %d", mem);
 }
 
 void CMac5LApp::MaxMemory(void)
 {
-	prinfo("Memory statistics: number of times checked: %d", numTimesChecked);
-	prinfo("Lowest number returned from FreeMem: %d", minFreeMem);
-	prinfo("Highest number returned from FreeMem: %d", maxFreeMem);
-	prinfo("Difference: %d", maxFreeMem - minFreeMem);
-	prinfo("Lowest number returned from TempFreeMem: %d", minTempFreeMem);
-	prinfo("Highest number returned from TempFreeMem: %d", maxTempFreeMem);
-	prinfo("Difference: %d", maxTempFreeMem - minTempFreeMem);
+	gLog.Log("Memory statistics: number of times checked: %d", numTimesChecked);
+	gLog.Log("Lowest number returned from FreeMem: %d", minFreeMem);
+	gLog.Log("Highest number returned from FreeMem: %d", maxFreeMem);
+	gLog.Log("Difference: %d", maxFreeMem - minFreeMem);
+	gLog.Log("Lowest number returned from TempFreeMem: %d", minTempFreeMem);
+	gLog.Log("Highest number returned from TempFreeMem: %d", maxTempFreeMem);
+	gLog.Log("Difference: %d", maxTempFreeMem - minTempFreeMem);
 }
 
 void CMac5LApp::SetGlobals(void)
@@ -873,7 +843,7 @@ void CMac5LApp::SetGlobals(void)
 	gVariableManager.SetLong("_resy", mScreenRect.bottom);
 	gVariableManager.SetLong("_bitdepth", mBitDepth);
 	
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	gVariableManager.SetString("_debug", "1");
 #else
 	gVariableManager.SetString("_debug", "0");
@@ -892,6 +862,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.10  2000/05/11 12:56:10  chuck
+v 2.01 b1
+
 Revision 1.9  2000/02/01 16:50:49  chuck
 Fix cursors on overlapping touch zones.
 

@@ -16,17 +16,19 @@
 //					of the machine we are running on.
 //
 
-#include "debug.h"
+#include "KHeader.h"
 
 #include <OSUtils.h>
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 #include <iostream.h>
 #endif
 
-#include "Mac5L.h"
+#include "KLogger.h"
+#include "KString.h"
+
+#include "CMac5LApp.h"
 #include "CConfig.h"
-#include "CString.h"
 #include "CModule.h"
 #include "CVariable.h"
 
@@ -62,13 +64,13 @@ bool CConfig::CheckConfig(void)
 {
 	if (theConfiguration.systemVersion < 0x0700)
 	{
-		prcaution("This program will only run under System 7 or later.");
+		gLog.Caution("This program will only run under System 7 or later.");
 		return (false);
 	}
 	
 	if (not theConfiguration.hasQuickTime)
 	{
-		prcaution("QuickTime is not installed. Please reinstall the program.");
+		gLog.Caution("QuickTime is not installed. Please reinstall the program.");
 		return (false);
 	}		
 	
@@ -84,7 +86,7 @@ bool CConfig::CheckDevices(void)
 	
 	if (bitDepth < 8)
 	{
-		prcaution("You need to have at least 256 colors to run this program.");
+		gLog.Caution("You need to have at least 256 colors to run this program.");
 		return (false);
 	}
 	
@@ -196,16 +198,14 @@ void CConfig::DefineConfiguration(void)
 //	FillDataSpec - Fill in the volume ref and parent ID fields of the given
 //			FSSpec with information about the Data directory.
 //
-bool CConfig::FillDataSpec(FSSpec *theSpec, char *inName)
+bool CConfig::FillDataSpec(FSSpec *theSpec, const char *inName)
 {
-	CString		fileName;
+	KString		fileName;
 	bool		retValue = false;
 	
 	if ((theSpec != NULL) and (inName != NULL))
 	{
-		gModMan->GetMasterPath(fileName);
-				
-		fileName += "Data:";
+		fileName = gModMan->GetDataPath();
 		fileName += inName;
 		
 		retValue = FillSpec(theSpec, fileName);
@@ -216,16 +216,14 @@ bool CConfig::FillDataSpec(FSSpec *theSpec, char *inName)
 
 bool CConfig::FillScriptSpec(FSSpec *theSpec, const char *inName)
 {
-	CString		fileName;
+	KString		fileName;
 	bool		retValue = false;
 	
 	if ((theSpec != NULL) and (inName != NULL))
 	{
-		gModMan->GetMasterPath(fileName);
-		
-		fileName += "Scripts:";
+		fileName = gModMan->GetScriptPath();
 		fileName += inName;
-		
+				
 		retValue = FillSpec(theSpec, fileName);
 	}
 	
@@ -234,43 +232,14 @@ bool CConfig::FillScriptSpec(FSSpec *theSpec, const char *inName)
 
 bool CConfig::FillDebugSpec(FSSpec *theSpec, const char *inName)
 {
-	CString		fileName;
+	KString		fileName;
 	bool		retValue = false;
 	
 	if ((theSpec != NULL) and (inName != NULL))
 	{	
-		gModMan->GetMasterPath(fileName);
-		// don't use Debug directory as it doesn't always exist	
-		//fileName += "Debug:";
+		fileName = gModMan->GetMasterPath();
 		fileName += inName;
 
-		retValue = FillSpec(theSpec, fileName);
-	}
-	
-	return (retValue);
-}
-
-//
-//	FillMovieSpec - Fill in the volume ref and parent ID fields of the given
-//			FSSpec with information about the Movie directory.
-//
-bool CConfig::FillMovieSpec(FSSpec *theSpec, const char *inName, bool inLocal)
-{
-	CString		fileName;
-	bool		retValue = false;
-	
-	if (theSpec != NULL)
-	{
-		if (inLocal)
-		{
-			gModMan->GetMasterPath(fileName);
-			fileName += "Media:";
-		}
-		else
-			gModMan->GetMoviePath(fileName);
-		
-		fileName += inName;
-		
 		retValue = FillSpec(theSpec, fileName);
 	}
 	
@@ -283,19 +252,14 @@ bool CConfig::FillMovieSpec(FSSpec *theSpec, const char *inName, bool inLocal)
 //
 bool CConfig::FillGraphicsSpec(FSSpec *theSpec, const char *inName)
 {
-	CString		fileName;
+	KString		tmpName = inName;
+	KString		fileName;
 	bool		retValue = false;
 	
 	if (theSpec != NULL)
 	{
-		gModMan->GetMasterPath(fileName);
-		
-		fileName += "Graphics:";
-		fileName += inName;
-		// no longer have to add .pic as GetPicture() ensures that all
-		// picture names end with it
-		//fileName += ".pic";
-		
+		fileName = gModMan->GetGraphicsPath(tmpName);
+				
 		retValue = FillSpec(theSpec, fileName);
 	}
 	
@@ -308,18 +272,13 @@ bool CConfig::FillGraphicsSpec(FSSpec *theSpec, const char *inName)
 //
 bool CConfig::FillCLUTSpec(FSSpec *theSpec, const char *inName)
 {
-	CString		fileName;
+	KString		tmpName = inName;
+	KString		fileName;
 	bool		retValue = false;
 	
 	if (theSpec != NULL)
 	{
-		gModMan->GetMasterPath(fileName);
-		
-		fileName += "CLUTs:";
-		fileName += inName;
-		// no longer have to add .CLUT as GetPalette() ensures that all
-		// palette names end with it
-		//fileName += ".CLUT";
+		fileName = gModMan->GetCLUTPath(tmpName);
 
 		retValue = FillSpec(theSpec, fileName);
 	}
@@ -327,7 +286,7 @@ bool CConfig::FillCLUTSpec(FSSpec *theSpec, const char *inName)
 	return (retValue);
 }
 
-bool CConfig::FillSpec(FSSpec *theSpec, CString &inName)
+bool CConfig::FillSpec(FSSpec *theSpec, KString &inName)
 {
 	Str255		thePath;
 	OSErr		err;
@@ -403,6 +362,9 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.4  2000/05/11 12:56:09  chuck
+v 2.01 b1
+
 Revision 1.3  2000/02/01 16:50:49  chuck
 Fix cursors on overlapping touch zones.
 

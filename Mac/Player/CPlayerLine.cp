@@ -2,16 +2,17 @@
 	CPlayerLine.cp	
    ================================================================================= */
 
+#include "KHeader.h"
+
 #include <iostream>
 #include <Palettes.h>
 #include <LStream.h>
 #include <UDrawingState.h>
 
-#include "Mac5L.h"
 #include "CPlayerView.h"
 #include "CPlayerBox.h"
 #include "CPlayerLine.h"
-
+#include "CPalette.h"
 
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerLine(&Rect, Fill, LIneWidth, ColorIdx)
@@ -64,7 +65,7 @@ CPlayerLine::DrawSelf()
 	
 	// Set the pen state for color, width. Get the rgb color from
 	// the color index.
-	::PmForeColor(mColorIdx);
+	::PmForeColor(mColorIdx);	
 	::PenSize(mLineWidth, mLineWidth);
 	
 	::MoveTo(mLineFrame.left, mLineFrame.top);

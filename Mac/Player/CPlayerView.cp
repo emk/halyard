@@ -2,11 +2,12 @@
 // CPlayerView.cp
 //
 
-#include "debug.h"
+#include "KHeader.h"
 
 #include <ctype.h>
 
-#include "Mac5L.h"
+#include "KLogger.h"
+
 #include "CMac5LApp.h"
 #include "CConfig.h"
 #include "CCard.h"
@@ -17,17 +18,18 @@
 #include "CMenuUtil.h"
 #include "CVariable.h"
 #include "CMenuUtil.h"
+#include "CPalette.h"
 #include "gamma.h"
 //#include "CGWorld.h"
 //#include <UGworld.h>
 #include <OSUtils.h>
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 #include "CModule.h"
 #endif
 #include "CTouchZone.h"
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 bool gShowTZones = false;
 extern WindowPtr gWindow;
 extern bool gInFront;
@@ -77,8 +79,6 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 
 	// make sure our primary drawing offscreen world is filled with black
 	mGWorld->BeginDrawing();
-	//::PmForeColor(0);	// 0 is always black in our palettes
-	//::FillRect(&frame, &qd.black);
 	::RGBForeColor(&Color_Black);
 	::PenMode(patCopy);
 	::PaintRect(&frame);
@@ -235,8 +235,8 @@ void CPlayerView::DoPause(bool inFromKey)
 		if (gMovieManager.Playing())
 		{
 			gMovieManager.Pause();
-#ifdef DEBUG_5L
-		//	prinfo("pausing the movie");
+#ifdef DEBUG
+		//	gDebugLog.Log("pausing the movie");
 #endif			
 			mPauseFromKey = inFromKey;
 			mMoviePaused = true;
@@ -244,14 +244,14 @@ void CPlayerView::DoPause(bool inFromKey)
 			if (inFromKey)
 				ProcessTZones(false);	// turn off touch zone processing
 		}
-#ifdef DEBUG_5L
+#ifdef DEBUG
 		//else
-		//	prinfo("nothing to pause");
+		//	gDebugLog.Log("nothing to pause");
 #endif
 	}
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	//else
-	//	prinfo("movie is already paused");
+	//	gDebugLog.Log("movie is already paused");
 #endif
 }
 
@@ -308,14 +308,14 @@ void CPlayerView::Refresh(void)
 	
 	CalcLocalFrameRect(theFrame);
 	
-	if ((theConfig->GetBitDepth() <= 8) and (gTheApp->HaveNewPal()))
+	if ((theConfig->GetBitDepth() <= 8) and (gPaletteManager.HaveNewPal()))
 	{
 		did_fade = true;
 		DoGFade(false, 0, false);
 		//::FillRect(&theFrame, &qd.black);
 		//::ValidRect(&theFrame);
 		
-		gTheApp->CheckPalette();
+		gPaletteManager.CheckPalette();
 	}
 	
 	mGWorld->CopyImage(GetMacPort(), theFrame);
@@ -334,7 +334,7 @@ void  CPlayerView::DrawSelf(void)
 	int32	subPanes = 0;
 	StColorPenState savePenState;
 
-	gTheApp->CheckPalette();
+	gPaletteManager.CheckPalette();
 	
 	// Sets fore & background color for CopyBits.
 	StColorPenState::Normalize();
@@ -366,29 +366,32 @@ void  CPlayerView::DrawSelf(void)
 //
 // Sets the background picture of a card. Pass 'nil' to delete the current one
 //
-void  CPlayerView::SetBackPic(char *picName, Rect inRect)
+void  CPlayerView::SetBackPic(KString &picName, Rect inRect)
 {
 	RgnHandle	theClip = nil;
-	Rect		theFrame;
+	KPoint		thePt(0, 0);
+	//Rect		theFrame;
+	KRect		clipRect;
 	
 	if (picName == nil)
 		mBackPic = nil;
 	else
 	{
-		mBackPic = GetPicture(picName, false);
-		CalcLocalFrameRect(theFrame);
+		mBackPic = gPictureManager.GetPicture(picName);
+		//CalcLocalFrameRect(theFrame);
 		
-		PicHandle thePic = mBackPic->GetPicHandle();
+		clipRect.Set(inRect);
+		
 		mGWorld->BeginDrawing();
 		
-		theClip = ::NewRgn();
-		::GetClip(theClip);
-		::ClipRect(&inRect);				// clip to the rect that was passed in
+		//theClip = ::NewRgn();
+		//::GetClip(theClip);
+		//::ClipRect(&inRect);				// clip to the rect that was passed in
 		
-		::DrawPicture(thePic, &theFrame);
+		mBackPic->Draw(thePt, mGWorld->GetMacGWorld(), clipRect);
 		
-		::SetClip(theClip);
-		::DisposeRgn(theClip);				
+		//::SetClip(theClip);
+		//::DisposeRgn(theClip);				
 		
 		mGWorld->EndDrawing();
 		
@@ -468,7 +471,8 @@ void CPlayerView::DoNewPalette(CTabHandle inCTab)
 		::DisposePalette(theOldPalHand);
 		
 	mFadeWorld->BeginDrawing();
-	::PmForeColor(0);
+	//::PmForeColor(0);
+	::RGBForeColor(&Color_Black);
 	::PenPat(patCopy);
 	::PaintRect(&theFrame);
 	mFadeWorld->EndDrawing();
@@ -524,7 +528,7 @@ void CPlayerView::AdjustMyCursor(void)
 	gCursorManager.CheckCursor();
 }
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 //
 //	ShowTZones - Outline all TZones in red. Do it directly to the screen so
 //			we don't mess up the offscreen world.
@@ -543,8 +547,7 @@ void CPlayerView::ShowTZones(void)
 		
 		theButt->CalcLocalFrameRect(frameRect);
 		
-		::PmForeColor(253);
-		
+		::PmForeColor(253);		
 		::FrameRect(&frameRect);
 	}
 
@@ -687,7 +690,7 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 					
 				if (gCardManager.CurCardNapping())
 					gCardManager.CurCardWakeUp();
-#ifdef DEBUG_5L
+#ifdef DEBUG
 				else if ((gModMan->NoVolume()) and (gCardManager.CurCardPaused()))
 					gCardManager.CurCardWakeUp();
 #endif
@@ -721,7 +724,7 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 							
 						keyHandled = true;
 						break;
-#ifdef DEBUG_5L
+#ifdef DEBUG
 					case '=':
 						if (gShowTZones)
 						{
@@ -768,7 +771,7 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 					
 					if (gCardManager.CurCardNapping())
 						gCardManager.CurCardWakeUp();
-#ifdef DEBUG_5L
+#ifdef DEBUG
 					else if ((gModMan->NoVolume()) and (gCardManager.CurCardPaused()))
 						gCardManager.CurCardWakeUp();
 #endif
@@ -842,11 +845,11 @@ bool CPlayerView::DoKeyBind(const char inKey)
 				if (gMovieManager.Playing())
 					gMovieManager.Kill();
 
-#ifdef DEBUG_5L
-				prinfo("keybind hit: key <%c>, jump to <%s>", 
-					inKey, (char *) *(theBind.mCardName));
+#ifdef DEBUG
+				gDebugLog.Log("keybind hit: key <%c>, jump to <%s>", 
+					inKey, (const char *) *(theBind.mCardName));
 #endif				
-				gCardManager.JumpToCardByName((char *) *(theBind.mCardName), false);
+				gCardManager.JumpToCardByName((const char *) *(theBind.mCardName), false);
 				return (true);
 			}
 			else
@@ -881,7 +884,7 @@ void CPlayerView::AddKeyBinding(const char inKey, CCard *inCardToJumpTo)
 		bindIdx--;	// if we found it we have already incremented past it
 		
 	theBind.mTheChar 	= realInKey;
-	theBind.mCardName   = new CString;
+	theBind.mCardName   = new KString;
 	*(theBind.mCardName)	= inCardToJumpTo->Name();
 	//theBind.mCard 		= inCardToJumpTo;
 	
@@ -1553,9 +1556,9 @@ void CPlayerView::DoFade(const int8 inTime, const bool inFadeIn)
 //
 // Translate the string 'inText' to the appropriate effect.
 //
-FXType StringToEffect(CString inText)
+FXType StringToEffect(KString inText)
 {
-	inText.makelower();
+	inText.MakeLower();
 	
 	if (inText == "none")
 		return (kFXNone);
@@ -1584,7 +1587,7 @@ FXType StringToEffect(CString inText)
 // end of new effects
 	else
 	{
-		prcaution("Illegal/unknown effect :%s", (char *) inText);
+		gLog.Caution("Illegal/unknown effect :%s", (const char *) inText);
 		return (kFXNone);
 	}		
 }

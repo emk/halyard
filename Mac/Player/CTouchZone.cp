@@ -2,7 +2,7 @@
 	CTouchZone.cp	
    ================================================================================= */
 
-#include "debug.h"
+#include "KHeader.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -10,7 +10,8 @@
 #include <LStream.h>
 #include <UDrawingState.h>
 
-#include "Mac5L.h"
+#include "KLogger.h"
+
 #include "CMac5LApp.h"
 #include "CPlayerView.h"
 #include "CMoviePlayer.h"
@@ -35,12 +36,12 @@ extern CursHandle	gHandCursor;
   ==================================================================================*/
 
 CTouchZone::CTouchZone(
-	Rect 			&inBounds, 	// Button rect
-	CString 		&cmd, 		// Command text
+	KRect 			&inBounds, 	// Button rect
+	KString 		&cmd, 		// Command text
 	CPicture		*inPict,	// Default picture
-	Point 			&loc, 		// Pic offset??
+	KPoint 			&loc, 		// Pic offset??
 	const CursorType cursor,	// cursor (= HAND_CURSOR)
-	const CString	&secCmd)	// optional second command (= NULL)
+	const KString	&secCmd)	// optional second command (= NULL)
 {
 	mNormalTouch = true;
 
@@ -55,18 +56,18 @@ CTouchZone::CTouchZone(
 	BUTTPCX constructor
   ==================================================================================*/
 
-//	CTouchZone(Rect &r, CString &cmd, char *pict, Point &loc, char *text,
-//				const char *header = nil, const CString &secCmd = nil);
+//	CTouchZone(Rect &r, KString &cmd, char *pict, Point &loc, char *text,
+//				const char *header = nil, const KString &secCmd = nil);
 
 CTouchZone::CTouchZone(
-	Rect 			&inBounds, 
-	CString 		&cmd, 
+	KRect 			&inBounds, 
+	KString 		&cmd, 
 	CPicture		*inPict,
-	Point	 		&loc, 
-	char 			*text, 
+	KPoint	 		&loc, 
+	const char 		*text, 
 	const CursorType cursor,		// = HAND_CURSOR
 	const char 		*header, 		// = NULL
-	const CString 	&secCmd)		// = NULL
+	const KString 	&secCmd)		// = NULL
 	: CText(header, inBounds, text)
 {
 	mNormalTouch = false;
@@ -77,18 +78,26 @@ CTouchZone::CTouchZone(
 	LButton::FinishCreate();
 }
 
-void CTouchZone::SetupZone(	Rect 			&inBounds, 	// Button rect
-							CString			&cmd, 		// Command text
+void CTouchZone::SetupZone(	KRect 			&inBounds, 	// Button rect
+							KString			&cmd, 		// Command text
 							CPicture		*inPict,	// Default picture
 //							char			*pict, 		// Default pic name
-							Point 			&loc, 		// Pic offset??
-							const CString	&secCmd,	// optional second command
+							KPoint 			&loc, 		// Pic offset??
+							const KString	&secCmd,	// optional second command
 							const CursorType cursor)	// cursor
 {
+	Rect	macBounds = inBounds.GetRect();
+	//Point	macLoc = loc.GetPoint();
+	
 	// Set the frame size, the pane's superview, and position within the superview.
-	ResizeFrameTo(inBounds.right - inBounds.left, inBounds.bottom - inBounds.top, false);
+	ResizeFrameTo(macBounds.right - macBounds.left, macBounds.bottom - macBounds.top, false);
 	PutInside(gPlayerView, false);
-	PlaceInSuperFrameAt(inBounds.left, inBounds.top, false);
+	PlaceInSuperFrameAt(macBounds.left, macBounds.top, false);
+
+#ifdef DEBUG
+	gDebugLog.Log("SetupZone: Left <%d>, Top <%d>, Right <%d>, Bottom <%d>",
+		macBounds.left, macBounds.top, macBounds.right, macBounds.bottom);
+#endif
 
 	// Skanky hack to set pane ID
 	LArray &paneList = gPlayerView->GetSubPanes();
@@ -103,12 +112,11 @@ void CTouchZone::SetupZone(	Rect 			&inBounds, 	// Button rect
     if (inPict != nil)
     {
     	mPicture = inPict;
-    	//mPicture = GetPicture(pict);
     	
-    	if ((loc.h != 0 || loc.v != 0))
+    	if ((loc.X() != 0) or (loc.Y() != 0))
 			mPictLoc = loc;
 		else 
-			mPictLoc = topLeft(inBounds);
+			mPictLoc = inBounds.TopLeft();
 	}
 	else
 		mPicture = nil;
@@ -136,7 +144,7 @@ CTouchZone::~CTouchZone()
 void
 CTouchZone::FinishCreateSelf()
 {
-	Rect frameRect;
+	Rect 	frameRect;
 	Int32	fontHeight;
 	
 	CalcLocalFrameRect(frameRect);
@@ -159,7 +167,7 @@ CTouchZone::FinishCreateSelf()
 	// Non-buttpcx touchzones should only draw when pressed.
 	if ((mPicture != nil) and (not mNormalTouch))
 	{
-		mPicture->DrawPic(mPictLoc, BITMAP(macGWorld), true);
+		mPicture->Draw(mPictLoc, macGWorld, true);
 	}
 		
 	DrawSimpleText(false);
@@ -205,16 +213,16 @@ CTouchZone::HotSpotAction(
 			// trying doing the same thing for both - this assumes that the picture
 			// given for "normal" touch zones highlighting has a non-highlight
 			// version
-			//
-			//if (not mNormalTouch)
-			//{
-				if (not inCurrInside)
-					mPicture->DrawPic(mPictLoc, BITMAP(gPlayerView->GetMacPort()), true);
-				else
-					mPicture->DrawHiPic(mPictLoc, BITMAP(gPlayerView->GetMacPort()), true);
-			//}
-			//else
-			//	mPicture->DrawHiPic(mPictLoc, BITMAP(gPlayerView->GetMacPort()), true);
+			if (not inCurrInside)
+				mPicture->Draw(mPictLoc, (CGrafPort *) gPlayerView->GetMacPort(), true);
+			else
+			{
+				CPicture *hilitePict = NULL;
+				
+				hilitePict = mPicture->GetHilitePicture();
+				if (hilitePict != NULL)
+					hilitePict->Draw(mPictLoc, (CGrafPort *) gPlayerView->GetMacPort(), true);
+			}
 		}
 			
 		DrawSimpleText(inCurrInside);
@@ -243,17 +251,17 @@ CTouchZone::HotSpotResult(
 	//if (clickSound != NULL)
 	//	SndPlay(nil, (SndListResource **) clickSound, false);
 
-#ifdef DEBUG_5L
-	if (not mSecondCommand.empty())
-		prinfo("hit touchzone: commands <%s> then <%s>", mSecondCommand.GetString(), mCommand.GetString());
+#ifdef DEBUG
+	if (not mSecondCommand.IsEmpty())
+		gDebugLog.Log("hit touchzone: commands <%s> then <%s>", mSecondCommand.GetString(), mCommand.GetString());
 	else
-		prinfo("hit touchzone: command <%s>", mCommand.GetString());
+		gDebugLog.Log("hit touchzone: command <%s>", mCommand.GetString());
 #endif
 
 	// cbo - suspend event processing while we are executing these commands
 	gPlayerView->ProcessEvents(false);
 	
-    if (not mSecondCommand.empty())
+    if (not mSecondCommand.IsEmpty())
     	gCardManager.DoOneCommand(mSecondCommand);
     
     gCardManager.DoOneCommand(mCommand);

@@ -18,7 +18,9 @@
 
 #pragma once
 
-#include "CString.h"
+#include "KHeader.h"
+
+#include "KString.h"
 
 typedef enum
 {
@@ -49,7 +51,7 @@ class CCursorManager
 		void		CheckCursor(Point &inPoint);
 		void		ChangeCursor(CursorType	inCursor, bool inTZone = false);
 		void		SetCursorPos(Point &inPoint) { mCursorPos = inPoint; }
-		CursorType	FindCursor(CString &inString);
+		CursorType	FindCursor(KString &inString);
 		
 	protected:
 		void		CheckZones(void);
@@ -74,6 +76,9 @@ extern CCursorManager gCursorManager;
 		
 /*
 $Log$
+Revision 1.2  2000/05/11 12:56:09  chuck
+v 2.01 b1
+
 Revision 1.1  2000/01/04 13:40:20  chuck
 New cursors
 

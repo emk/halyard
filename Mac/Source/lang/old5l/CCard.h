@@ -22,17 +22,18 @@
 #ifndef _H_CCARD
 #define _H_CCARD
 
-#include "Mac5L.h"
+#include "KHeader.h"
+
 #include "CIndex.h"
-#include "CRect.h"
+#include "KRect.h"
 #include "CTimer.h"
-#include "CArray.h"
+#include "KArray.h"
 
 class CCard : public CIndex
 {
     private:
 
-        CPoint  mOrigin;
+        KPoint  mOrigin;
         bool	mPaused;
 		bool	mActive;
 		bool	mDoingOne;
@@ -45,7 +46,9 @@ class CCard : public CIndex
 		CTimer	*mNapTimer;
 		
     public:
-        		CCard(const char *name = 0, int32 p1 = 0, int32 p2 = 0);
+    			CCard(CIndexFile *inFile, const char *inName = NULL,
+    					int32 inStart = 0, int32 inEnd = 0);
+        		//CCard(const char *name = 0, int32 p1 = 0, int32 p2 = 0);
 				~CCard();
 						
         void	SpendTime(void);
@@ -62,13 +65,13 @@ class CCard : public CIndex
         void	SetIndex(int32 index) { mIndex = index; }
         
         void    DoCommand();
-        void    OneCommand(CString &theCmd);
-        void    AdjustRect(CRect *r);
-        void    AdjustPoint(CPoint *pt);
+        void    OneCommand(KString &theCmd);
+        void    AdjustRect(KRect *r);
+        void    AdjustPoint(KPoint *pt);
 
-        void    SetOrigin(CPoint &loc);
+        void    SetOrigin(KPoint &loc);
         void	SetOrigin(int32 inX, int32 inY);
-        void    OffsetOrigin(CPoint &delta);
+        void    OffsetOrigin(KPoint &delta);
 
     protected:
 
@@ -76,6 +79,7 @@ class CCard : public CIndex
 
         void    DoAdd();
         // new audio commands
+        void	DoAudio(void);
         void 	DoAudioKill(void);
         void	DoAudioPlay(void);
         void	DoAudioVolume(void);
@@ -89,10 +93,11 @@ class CCard : public CIndex
         void    DoBox();
         void  	DoButtpcx();
 		void    DoCheckDisc();
+		void	DoCheckVol();
         void    DoClose();
         void    DoCTouch(); 
         void	DoCursor();
-#ifdef DEBUG_5L
+#ifdef DEBUG
         void	DoDebug();	// cbo_fix
 #endif
         void    DoDiv();
@@ -115,7 +120,7 @@ class CCard : public CIndex
         void    DoLoadpic();
         void    DoLock();
         void    DoLookup();
-        void    DoMacro(CString &name);
+        void    DoMacro(KString &name);
 
         void    DoMicro();
         void    DoNap();
@@ -127,11 +132,11 @@ class CCard : public CIndex
 		void	DoPlayQTFile();
 		void	DoPlayQTLoop();
 		void	DoPlayQTRect();
-		void	DoPreloadQTFile();
+		//void	DoPreloadQTFile();
         void    DoPrint();
         void	DoQTPause();
         void    DoRead();
-#ifdef DEBUG_5L
+#ifdef DEBUG
 		void	DoReDoScript();
 #endif
 		void	DoRefresh();
@@ -165,30 +170,31 @@ class CCardManager : public CIndexManager
     	int16			mExitSide;
         CCard    		*mCurrentCard;
         CCard			*mJumpCard;
-        CString			mPrevCard;
+        KString			mPrevCard;
         
-        CArray			mCardList;	// cbo - list of cards in order
-#ifdef DEBUG_5L
+        KArray			mCardList;	// cbo - list of cards in order
+#ifdef DEBUG
 		bool			mReDoScript;
-		CString			mReDoCard;
+		KString			mReDoCard;
 #endif
 
     public:
         				CCardManager();
 
-        OVERRIDE void 	MakeNewIndex(char *name, int32 start, int32 end);
+		virtual void	MakeNewIndex(CIndexFile *inFile, const char *inName,
+									int32 inStart, int32 inEnd);
         
-        OVERRIDE void	ZapTree();	// cbo - 
+        virtual void	RemoveAll();	// cbo - 
        
-	    virtual char 	*CurCardName(void);
-	    char			*PrevCardName(void);
-	    char			*BeforeCardName(void);
-	    char			*AfterCardName(void);
+	    virtual const char 	*CurCardName(void);
+	    const char		*PrevCardName(void);
+	    const char		*BeforeCardName(void);
+	    const char		*AfterCardName(void);
 	    
         CCard			*GetCurCard(void);		// need??
-        CCard			*GetCard(const char *cardName) { return ((CCard *) FindNode(cardName)); }
+        CCard			*GetCard(const char *cardName) { return ((CCard *) Find(cardName)); }
 		
-		void			DoOneCommand(CString &theCommand);
+		void			DoOneCommand(KString &theCommand);
 		
 		void			CurCardSpendTime(void);
 		void			CurCardKill(void);
@@ -196,15 +202,14 @@ class CCardManager : public CIndexManager
 		bool			CurCardNapping(void);
 		bool			CurCardPaused(void);
 		void			DoExit(int16 inSide);
-#ifdef DEBUG_5L
-		void			DoReDoScript(char *curCardName);
+#ifdef DEBUG
+		void			DoReDoScript(KString &cardName);
 #endif
 		
         void			JumpToCardByName(const char *newCardName, bool comeBack);
         void			JumpToCard(CCard *newCard, bool comeBack);
 		bool			Jumping(void) { return (mHaveJump); }
 };
-
 
 extern CCardManager gCardManager;
 

@@ -5,7 +5,7 @@
 #ifndef _H_CMACROMANAGER
 #define _H_CMACROMANAGER
 
-#include "Mac5L.h"
+#include "KHeader.h"
 
 #include "CIndex.h"
 
@@ -13,8 +13,9 @@ class CMacroManager : public CIndexManager
 {
 	public:
 
-		virtual char	*GetScript(const char *macroname);
-		OVERRIDE void	MakeNewIndex(char *name, int32 start, int32 end);
+		virtual const char	*GetScript(const char *macroname);
+		virtual void	MakeNewIndex(CIndexFile *inFile, const char *inName  = NULL,
+								int32 inStart = 0, int32 inEnd = 0);
 };
 
 extern CMacroManager gMacroManager;

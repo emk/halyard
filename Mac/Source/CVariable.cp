@@ -4,15 +4,21 @@
 
 */
 
+#include "KHeader.h"
+
+#include "KLogger.h"
+
+#include "CMac5LApp.h"
+
 #include "CVariable.h"
 #include "CCard.h"
 #include "CFiles.h"
-#include "util.h"
+
 #include "Math64.h"
 
 //  Initialize the variable.
 //
-CVariable::CVariable(const char *name, const char *data) : CBNode(name)
+CVariable::CVariable(const char *name, const char *data) : KBNode(name)
 {
     if (data)
         contents = data;
@@ -25,7 +31,7 @@ CVariable::CVariable(const char *name, const char *data) : CBNode(name)
 void CVariable::SetDate(uint32 date, int32 date_type)
 {
 	char		dateStr[255];
-	CString		result;
+	KString		result;
 	char		*strPtr;
 	char		*strPtr2;
 	
@@ -128,7 +134,7 @@ void CVariable::SetDate(uint32 date, int32 date_type)
 
 //  Initialize the local variable tree.
 //
-CVariableManager::CVariableManager() : CBTree()
+CVariableManager::CVariableManager() : KBTree()
 {
     localroot = 0;
 
@@ -157,12 +163,12 @@ CVariableManager::~CVariableManager()
  * Comments:
  *  
  ***********************************************************************/
-char *CVariableManager::GetString(const char *name)
+const char *CVariableManager::GetString(const char *name)
 {
     CVariable    *var;
 
     var = FindVariable(name, TRUE);
-    return var->GetString();
+    return (var->GetString());
 }
 
 /***********************************************************************
@@ -179,7 +185,7 @@ long CVariableManager::GetLong(const char *name)
     CVariable    *var;
 
     var = FindVariable(name, TRUE);
-    return var->GetLong();
+    return (var->GetLong());
 }
 
 /***********************************************************************
@@ -196,7 +202,7 @@ double CVariableManager::GetDouble(const char *name)
     CVariable    *var;
 
     var = FindVariable(name, TRUE);
-    return var->GetDouble();
+    return (var->GetDouble());
 }
 
 /***********************************************************************
@@ -224,7 +230,7 @@ CVariable *CVariableManager::FindVariable(const char *inName, bool inReading)
 	if (IsSpecial(inName))
 	{
 		if (not inReading)
-			prcaution("$%s is a read-only variable.", inName);
+			gLog.Caution("$%s is a read-only variable.", inName);
 		else
 			return (special);
 	}
@@ -241,7 +247,7 @@ CVariable *CVariableManager::FindVariable(const char *inName, bool inReading)
     //  Now check the global tree. It's ok to fail; we'll create the
     //  variable if it's not there.
     //
-    theVar = (CVariable *) FindNode(inName, TRUE);
+    theVar = (CVariable *) Find(inName);
     if (theVar == NULL) 
     {
     	// cbo - have changed behavior so that don't get warning when
@@ -250,15 +256,15 @@ CVariable *CVariableManager::FindVariable(const char *inName, bool inReading)
     	//
     	//if (inReading)
     		// we are getting the variable but it isn't in the tree, tell the user
-    	//	prcaution("Getting Variable <%s> before it has been set", inName);
+    	//	gLog.Caution("Getting Variable <%s> before it has been set", inName);
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 		//if (inReading)
-		//	prinfo("Getting Variable <%s> before it has been set", inName);
+		//	gDebugLog.Log("Getting Variable <%s> before it has been set", inName);
 #endif
     	
     	theVar = new CVariable(inName);
-    	AddNode(theVar);
+    	Add(theVar);
     	
     	// make sure it has a value
     	theVar->SetLong(0);
@@ -339,13 +345,13 @@ void CVariableManager::SetDouble(const char *name, const double data)
 //
 bool CVariableManager::IsSpecial(const char *name)
 {
-	CString			vname(name);
-	CString			str;
+	KString			vname(name);
+	KString			str;
 	static Str255	dateStr;
 	UInt32			timeSecs;
 	bool			retValue = false;
 	
-	vname.makelower();
+	vname.MakeLower();
 	
 	// do a quick check to see if it could be a special variable
 	if (name[0] != '_')
@@ -430,8 +436,8 @@ bool CVariableManager::IsSpecial(const char *name)
 		}
 		else
 		{
-#ifdef DEBUG_5L
-			//prcaution("Trying to read _EOF and no file open!");
+#ifdef DEBUG
+			//gDebugLog.Caution("Trying to read _EOF and no file open!");
 #endif
 			special->SetLong(0);
 		}

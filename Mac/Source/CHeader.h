@@ -9,7 +9,7 @@
 #ifndef _H_CHEADER
 #define _H_CHEADER
 
-#include "Mac5L.h"
+#include "KHeader.h"
 
 #include "CIndex.h"
 
@@ -32,7 +32,8 @@ class CHeader : public CIndex
 		
     public:
 
-        				CHeader(const char *name = 0, int32 p1 = 0, int32 p2 = 0);
+        				CHeader(CIndexFile *inFile, const char *inName = NULL, 
+        						int32 inStart = 0, int32 inEnd = 0);
 						~CHeader();
 						
         virtual void 	ParseScript(void);
@@ -54,7 +55,7 @@ class CHeaderManager : public CIndexManager
 {
 	public:
 	
-		OVERRIDE void 	MakeNewIndex(char *name, int32 start, int32 end);
+		virtual void 	MakeNewIndex(CIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
 };
 
 extern CHeaderManager gHeaderManager;

@@ -16,7 +16,8 @@
 
 #pragma once
 
-#include "Mac5L.h"
+#include "KHeader.h"
+
 #include "CText.h"
 
 class CPlayerText :public CText 
@@ -26,7 +27,7 @@ class CPlayerText :public CText
 	
 		// Standard constructor.
 		CPlayerText(const char	*inHeader,	// Name of header format to use.
-				const Rect	&inBounds,		// Bouding rect (relative to PlayerView's rect)
+				const KRect	&inBounds,		// Bouding rect (relative to PlayerView's rect)
 				const char 	*inText,		// The 'raw' string (including format chars)
 				const int8	ignore = 0,
 				const int8	ignore2 = 0);	// Ignore these (for compatibility)

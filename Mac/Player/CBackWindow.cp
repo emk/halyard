@@ -16,8 +16,8 @@
 //
 //
 
-#include "debug.h"
-#include "Mac5L.h"
+#include "KHeader.h"
+
 #include "gamma.h"
 
 #include "CBackWindow.h"
@@ -94,6 +94,9 @@ CBackWindow::DrawSelf()
 
 /* 
 $Log$
+Revision 1.2  2000/05/11 12:56:09  chuck
+v 2.01 b1
+
 Revision 1.1  1999/10/21 17:19:17  chuck
 Initial revisioni
 

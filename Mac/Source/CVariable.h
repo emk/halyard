@@ -9,7 +9,9 @@
 #ifndef _H_CVARIABLE
 #define _H_CVARIABLE
 
-#include "CBTree.h"
+#include "KHeader.h"
+
+#include "KBTree.h"
 
 #define DT_LONGDATE		1
 #define DT_DATE			2
@@ -25,42 +27,32 @@
 //	of the variable. It also knows how to convert to a number of
 //	different formats.
 //
-class CVariable : public CBNode 
+class CVariable : public KBNode 
 {
-	protected:
-
-		CString	contents;
-
 	public:
+					CVariable(const char *name, const char *data = 0);
+		virtual 	~CVariable() {}
 
-				CVariable(const char *name, const char *data = 0);
-		virtual ~CVariable() {}
+		const char	*GetString(void) { return ((const char *) contents); }
+		long		GetLong(void) { return ((long) contents); }
+		uint32		GetULong(void) { return ((uint32) contents); }
+		double		GetDouble(void) { return ((double) contents); }
 
-		char	*GetString(void) 
-					{ return (char *) contents; }
-		long	GetLong(void) 
-					{ return (long) contents; }
-		uint32	GetULong(void)
-					{ return (uint32) contents; }
-		double	GetDouble(void) 
-					{ return (double) contents; }
-
-		void	SetString(const char *data) 
-					{ contents = data; }
-		void	SetLong(const long data) 
-					{ contents = data; }
-		void	SetULong(const uint32 data)
-					{ contents = data; }
-		void	SetDouble(const double data) 
-					{ contents = data; }
-		void	SetDate(uint32 date, int32 date_type);
+		void		SetString(const char *data) { contents = data; }
+		void		SetLong(const long data) { contents = data; }
+		void		SetULong(const uint32 data) { contents = data; }
+		void		SetDouble(const double data) { contents = data; }
+		void		SetDate(uint32 date, int32 date_type);
+		
+	protected:
+		KString		contents;
 };
 
 //
 //	This class manages a binary tree of variables. Commands to
 //	set and get variable values pass through this manager.
 //
-class CVariableManager : public CBTree 
+class CVariableManager : public KBTree 
 {
 	private:
 
@@ -74,7 +66,7 @@ class CVariableManager : public CBTree
 				CVariableManager();
 		virtual ~CVariableManager();
 
-		char 	*GetString(const char *name);
+		const char 	*GetString(const char *name);
 		long 	GetLong(const char *name);
 		double	GetDouble(const char *name);
 

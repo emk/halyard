@@ -32,3 +32,5 @@ class CAudioManager
 	private:
 		CAudio		*m_Loop;
 		
+};
+		

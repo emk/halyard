@@ -2,9 +2,14 @@
 //	CResource.cp - Implementation of CResource class.
 //
 
+#include "KHeader.h"
+
+#include "KLogger.h"
+
+#include "CMac5LApp.h"
 #include "CResource.h"
 
-CResourceManager	gResManager;
+//CResourceManager	gResManager;
 
 /*********************
 
@@ -15,14 +20,12 @@ CResourceManager	gResManager;
 static const int 	MAX_MEM_SIZE =   1024000;		// 1 MB of total cache space
 static const int	CHUNK_MEM_SIZE =  256000;	// 256K chunk size
 
-//  Add the resource to the priority list. The name should include the
-//  suffix (.GFT, .PCX).
 //  
-CResource::CResource(const char *name) : CBNode(name)
+CResource::CResource(KString &inName) : KBNode(inName)
 {
-    size = 0;
-    times_used = 0;
-    state = kResUnloaded;
+    m_Size = 0;
+    m_TimesUsed = 0;
+    m_State = kResUnloaded;
 }
 
 //
@@ -32,7 +35,7 @@ CResource::CResource(const char *name) : CBNode(name)
 //
 void CResource::Lock(bool inLock)
 {
-	if (state > kResUnloaded)		// make sure it is in memory first
+	if (IsLoaded())		// make sure it is in memory first
 	{
 // cbo_mem - only allow locking of resources if we are managing memory in 
 //		the resource tree
@@ -48,9 +51,9 @@ void CResource::Lock(bool inLock)
 //
 void CResource::SetState(ResState newState)
 {
-    if (state > kResUnloaded && state != newState) 
+    if ((IsLoaded()) and (m_State != newState))
     {
-        state = newState;
+        m_State = newState;
        	UpdatePriority();
     }
 }
@@ -60,14 +63,7 @@ void CResource::SetState(ResState newState)
 //
 void CResource::SetSize(uint32 newSize)
 {
-	int		oldSize = size;
-
-	if (oldSize != newSize)
-	{	
-		size = newSize;
-		
-		gResManager.ChangeResSize(newSize, oldSize);
-	}
+	m_Size = newSize;
 }
 
 //  We was used! Bump the counter and move the object if necessary.
@@ -78,7 +74,7 @@ void CResource::SetSize(uint32 newSize)
 //
 void CResource::Used()
 {
-    times_used++;
+    m_TimesUsed++;
     UpdatePriority();
 }
 
@@ -86,26 +82,17 @@ void CResource::Used()
 //  then load it. Loading a resource counts as a use, so bump
 //  use counter as well.
 //
-void CResource::Load(bool firstTime /* = false */)
+void CResource::Load(void)
 {
-    if (state == kResUnloaded) 
+    if (IsUnloaded()) 
     {
-#ifdef DEBUG_5L
-	//	prinfo("loading resource <%s>, size <%ld>", key.GetString(), size);
+#ifdef DEBUG
+	//	gDebugLog.Log("loading resource <%s>, size <%ld>", key.GetString(), m_Size);
 #endif
     	
         _Load();        	
-        state = kResLoaded;
-		       
-       	Used();
-     
-     	// if this is the first time this resource has been loaded then the 
-     	// resource manager will check memory on the AddResource call
-     	// otherwise, we should do it here to make sure we haven't gone
-     	// over our limit   
-        if (not firstTime)
-        	gResManager.CheckMemory();
-    }
+        m_State = kResLoaded;
+   	}
 	else
 	{
 		Used();
@@ -116,20 +103,13 @@ void CResource::Load(bool firstTime /* = false */)
 //
 void CResource::Purge()
 {
-    if (state > kResLocked) 
+    if (m_State > kResLocked) 
     {
         _Purge();
-        state = kResUnloaded;
+        m_State = kResUnloaded;
+        
         UpdatePriority();
 	}
-}
-
-//  This resource's priority has changed because its load status,
-//  purge status, lock status, or use value has changed.
-//
-void CResource::UpdatePriority()
-{
-		gResManager.Update(this); 
 }
 
 /*  Return TRUE if the other resource should have a higher
@@ -151,14 +131,14 @@ void CResource::UpdatePriority()
 */
 int16 CResource::IsHigher(CResource *other)
 {
-    if (state != other->state)
-        return (other->state > state);
+    if (m_State != other->m_State)
+        return (other->m_State > m_State);
 
-    if (times_used != other->times_used)
-        return (other->times_used < times_used);
+    if (m_TimesUsed != other->m_TimesUsed)
+        return (other->m_TimesUsed < m_TimesUsed);
 
-    if (size != other->size)
-        return (other->size > size);
+    if (m_Size != other->m_Size)
+        return (other->m_Size > m_Size);
     
     return (TRUE);
 }
@@ -178,31 +158,29 @@ CResourceManager::CResourceManager()
 
 CResourceManager::~CResourceManager()
 {
-	Kill();
+	RemoveAll();
 }
 
-CResource *CResourceManager::GetResource(const char *name)
+CResource *CResourceManager::GetResource(KString &inName)
 {
-    CResource    *res;
+    CResource    *res = NULL;
 
-    //  FindNode may return 0.
-    //
-    res = (CResource *) FindNode(name, TRUE);
+    res = (CResource *) Find(inName.GetString());
     return res;
 }
 
 void CResourceManager::AddResource(CResource *newRes)
 {
-	CBTree::AddNode(newRes);
+	KBTree::Add(newRes);
 	m_PriorityList.Add(newRes);
 	
 	CheckMemory();
 }
 
-void CResourceManager::Kill(void)
+void CResourceManager::RemoveAll(void)
 {
 	m_CheckingMemory = true;
-	ZapTree();
+	KBTree::RemoveAll();
 	m_PriorityList.RemoveAll();
 	m_CheckingMemory = false;
 	
@@ -213,9 +191,11 @@ void CResourceManager::ChangeResSize(int32 newSize, int32 oldSize)
 {
 	m_TotalSize -= oldSize;
 	m_TotalSize += newSize;
-	
+
+#ifdef DEBUG	
 	// cbo_fix - just for debugging purposes
-	//prinfo("CResourceManager::ChangeResSize: total resource cache size <%d> bytes", m_TotalSize);
+	//gDebugLog.Log("CResourceManager::ChangeResSize: total resource cache size <%d> bytes", m_TotalSize);
+#endif
 }
 
 void CResourceManager::CheckMemory(void)
@@ -240,7 +220,7 @@ void CResourceManager::CheckMemory(void)
 
 void CResourceManager::FreeMemory(int32 freeMemSize)
 {
-	CArray		tmpList;
+	KArray		tmpList;
 	CResource	*theRes = NULL;
 	int32		resSize = 0;
 	int32		totalFreed = 0;
@@ -264,7 +244,7 @@ void CResourceManager::FreeMemory(int32 freeMemSize)
 		if (not tmpList.ValidIndex(curIndex))
 		{
 			// no more memory to free
-			prerror("Out of memory: resource tree full");
+			gLog.Error("Out of memory: resource tree full");
 			return;
 		}
 		
@@ -273,11 +253,11 @@ void CResourceManager::FreeMemory(int32 freeMemSize)
 		switch (theRes->GetState())
 		{
 			case kResUnloaded:
-				prerror("Out of memory: all resources purged");
+				gLog.Error("Out of memory: all resources purged");
 				done = true;
 				break;
 			case kResLocked:
-				prerror("Out of memory: remaining resources locked");
+				gLog.Error("Out of memory: remaining resources locked");
 				done = true;
 				break;
 			default:
@@ -288,10 +268,12 @@ void CResourceManager::FreeMemory(int32 freeMemSize)
 				break;
 		}
 	}
-	
+
+#ifdef DEBUG	
 	// if we get here, we have freed the memory
 	// cbo_fix - just for debugging purposes
-	//prinfo("CResourceManager::FreeMemory: freed <%d> bytes", totalFreed);
+	//gDebugLog.Log("CResourceManager::FreeMemory: freed <%d> bytes", totalFreed);
+#endif
 }
 
 

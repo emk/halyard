@@ -4,21 +4,22 @@
 
 *********************/
 
-#include "debug.h"
+#include "KHeader.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "KLogger.h"
 #include "CHeader.h"
-#include "debug.h"
 
 //
 //  Let Index ancestor construct based on these values.
 //
-CHeader::CHeader(const char *name, int32 start, int32 end) :
-    		CIndex(name, start, end)
+CHeader::CHeader(CIndexFile *inIndex, const char *inName /* = NULL */, 
+				int32 inStart /* = 0 */, int32 inEnd /* = 0 */) :
+    		CIndex(inIndex, inName, inStart, inEnd)
 {
-    mAlignment = Left;
+    mAlignment = AlignLeft;
     mColor = mHighlightColor = mShadowColor = 0;
     mShadow = 0;
 }
@@ -42,32 +43,32 @@ CHeader::~CHeader()
 void CHeader::ParseScript(void)
 {
 
-    CString     align, fontname;
+    KString     align, fontname;
     int16		offset;				// new parameter
 
     // (CHeader HNAME FONTNAME...
     //
-    script >> open >> discard >> discard >> fontname;
+    m_Script >> open >> discard >> discard >> fontname;
    
     GetFont(fontname); 	
     
     //  ...ALIGNMENT COLOR HIGHCOLOR...
-    script >> align >> mColor >> mHighlightColor; 
-    align.makelower();
+    m_Script >> align >> mColor >> mHighlightColor; 
+    align.MakeLower();
    
     if (align == (char *) "center")
-        mAlignment = Center;
+        mAlignment = AlignCenter;
     else if (align == (char *) "right")
-        mAlignment = Right;
+        mAlignment = AlignRight;
     else
-        mAlignment = Left;
+        mAlignment = AlignLeft;
 
     //  ...SHADOW SHADCOLOR OFFSET) - the offset is ignored for now, it is used on Windows
     //									to help with text alignment
-    if (script.more())
-        script >> mShadow >> mShadowColor >> offset;
+    if (m_Script.more())
+        m_Script >> mShadow >> mShadowColor >> offset;
         
-    script >> close;
+    m_Script >> close;
      
     FlushScript();
 }
@@ -136,8 +137,8 @@ void CHeader::GetFont(const char *inName)
 //			mFontFamily = fnum;
 //		else
 //		{
-//#ifdef DEBUG_5L
-//			prinfo("Couldn't find Times New Roman - using old times");
+//#ifdef DEBUG
+//			gDebugLog.Log("Couldn't find Times New Roman - using old times");
 //#endif
 			mFontFamily = kFontIDTimes;	// default to regular times
 //		}
@@ -162,12 +163,17 @@ void CHeader::GetFont(const char *inName)
  * Comments:
  *  Create a new CHeader Index
  ***********************************************************************/
-void CHeaderManager::MakeNewIndex(char *name, int32 start, int32 end)
+void CHeaderManager::MakeNewIndex(CIndexFile *inFile, const char *inName, 
+		int32 inStart, int32 inEnd)
 {
     CHeader  *newHeader;
     
-    newHeader = new CHeader(name, start, end);
-    newHeader->SetScript();
-    newHeader->ParseScript();
-    AddNode(newHeader);
+    newHeader = new CHeader(inFile, inName, inStart, inEnd);
+    
+    if (newHeader->SetScript())
+    {
+    	newHeader->ParseScript(); 
+    	
+    	Add(newHeader);
+    }
 }

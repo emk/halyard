@@ -5,11 +5,12 @@
 
 */
 
+#pragma once
 
-#include "Mac5L.h"
-#include "CArray.h"
+#include "KHeader.h"
+
+#include "KArray.h"
 #include "CTextFileStream.h"
-
 
 enum FileKind 
 {
@@ -19,56 +20,54 @@ enum FileKind
 };
 
 
-class CFile : public CObject 
+class CFile : public KObject 
 {
 	private:
-		CString		itsName;
+		KString		itsName;
 		FileKind	itsKind;
 		CTextFileStream		*itsFile;
 		char		readBuf[BUFFER_SIZE];
 		char		writeBuf[BUFFER_SIZE];
 				
 	public:
-					CFile(char *filename, FileKind fKind = fReadOnly);
+					CFile(KString &filename, FileKind fKind = fReadOnly);
 		virtual 	~CFile();
 
 		int			Match(const char *aName);
-		void		Read(CString &str);
-		void		ReadUntil(CString &str, unsigned char delim);
-		void		ReadUntilCore(CString &str, unsigned char delim);
-		void		Write(CString &data);
-		void		Lookup(CString &searchString, int32 numFields);
-		void		Rewrite(CString &searchString, int32 numFields);
+		void		Read(KString &str);
+		void		ReadUntil(KString &str, unsigned char delim);
+		void		ReadUntilCore(KString &str, unsigned char delim);
+		void		Write(KString &data);
+		void		Lookup(KString &searchString, int32 numFields);
+		void		Rewrite(KString &searchString, int32 numFields);
 		bool		AtEOF(void);
 };
 
-class CFileList : public CObject 
+class CFileList : public KObject 
 {
-	private:
-		CFile		*CurrentFile;
-	
-	protected:
-		CFile		*FindFile(char *filename, int failClosed);
-		void		CheckPath(char *inPath);
-
 	public:
  					CFileList();
 		virtual 	~CFileList();
 
-		void		Open(char *filename, FileKind fKind);
-		void		Close(char *filename);
-		void		Read(char *filename, CString &str);
-		void		ReadUntil(char *filename, CString &str,
+		void		Open(KString &filename, FileKind fKind);
+		void		Close(KString &filename);
+		void		Read(KString &filename, KString &str);
+		void		ReadUntil(KString &filename, KString &str,
 							unsigned char delim);
-		void		Write(char *filename, CString &data);
-
-		void		Lookup(char *filename, CString &searchString,
+		void		Write(KString &filename, KString &data);
+		void		Lookup(KString &filename, KString &searchString,
 							int numFields);
-		void		Rewrite(char *filename, CString &searchString,
+		void		Rewrite(KString &filename, KString &searchString,
 							int numFields);
 							
 		bool		CurFileOpen(void);
 		bool		CurFileAtEOF(void);
+		
+	protected:
+		CFile		*CurrentFile;
+		
+		CFile		*FindFile(KString &filename, int failClosed);
+		void		CheckPath(KString &inPath);
 };
 
 extern CFileList gFileManager;

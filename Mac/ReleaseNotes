@@ -1,5 +1,113 @@
 FiveL for Macintosh Release Notes
 
+2.01, Build 1, Thursday May, 3, 2000, 11:50 AM
+
+¥ The _ERROR variable will be set to -2 when a media element
+	(audio or video) is not	found. The _FileNotFound variable
+	will contain the full path to the element that wasn't found.
+
+¥ All missing media is logged to a MissingMedia.log file.
+
+¥ Video clips are now located using the
+	_BaseVideoLocation variable. This variable should be set to
+	a path to be prepended to each clip passed to the video or
+	playqtfile commands unless a full path or URL is given.
+	The path can either be an HTTP URL or
+	a local path. 
+	
+	NOTE: The Windows version can accept CD:\ on the front of a path. The
+		Mac engine will not do anything with this!
+		
+	A path can also be a partial path that will have the 
+	installation directory prepended to it. A Mac partial path has to start
+	with a colon (:).
+	Examples:
+		(set _BaseVideoLocation (http://mccay/program_media/HIV/Cinepak/Side%201/))
+		(video 061_004.MOV 0)
+
+		(set _BaseVideoLocation V_CLINIC99:media: ) 
+		(video 061_004.mov 0)
+
+		(video V_CLINIC99:media:061_004.mov 0)	# don't use _BaseVideoLocation
+
+		(video :media:061_004.mov 0)	# look in the installation directory
+
+	Note:
+		Remember that URLs and the name of clips to be streamed through HTTP
+		are case sensitive!
+		Remember to put on the trailing slash for URLs (or colon for local
+		paths), the engine 
+		won't do it for you.
+
+¥ Audio clips are now located using the
+	_BaseAudioLocation variable or the _BaseVideoLocation variable if 
+	_BaseAudioLocation has not been set. As with video, if the audio or
+	playqtfile commands are given a full path or URL then this variable
+	will not be used.
+	
+¥ Changed the behavior of two of the log files: 5L.log and
+	MissingMedia.log. Now they will both append messages on
+	to the end of the existing file rather than starting
+	a new file every time the engine is run. A new session
+	will start off with a time stamp line to identify it.
+	
+¥ Other graphics formats supported: pict, png, gif, jpeg, bmp
+	All can be used with matted graphics too, the transparent color
+		has to be pure white (255, 255, 255) though.
+	To change the default extension used by the engine set the
+	_BaseGraphicsExtension. By default, the engine will add ".pic"
+	to the end of graphics names.
+	If you want to try out PNG files you can either use full names
+	(with an extension) directly in the script 
+	(e.g. (loadpic graphic.png 10 10))
+	or just
+	(set _BaseGraphicsExtension .png)
+	to have .png used for all graphics.
+		
+¥ Added the checkvol command.
+	Syntax:	(checkvol volume_name real_path [no_volume])
+		volume_name - The volume name to look for. The engine
+			will check all kinds of volumes (floppies, cd-roms,
+			zip/jazz disks, etc.).
+		real_path - The name of a variable to receive the path 
+			to use to access this volume if the volume is found. 
+			If the volume isn't found this will be left blank.
+			(On a Mac, this will just put : on the end of the 
+				volume name).
+		no_volume - The name of a card to jump to if this
+			volume isn't found. If this parameter is left
+			blank then the engine will not jump.
+	
+¥ .idx files are no longer used, the .scr files will be parsed
+	on the fly to generate the index information
+
+¥ New commands:
+	¥ audio 
+	¥Êvideo (same as playqtfile)
+	
+¥ Deprecated the preroll command (all movies are prerolled before
+	playing anyway)
+	
+¥ The playqtfile command now accepts an optional origin parameter that
+	can replace the playqtrect command, it acts the same way in that it
+	only applies for the movie that is about to play
+	syntax: (playqtfile file [frame] [palette] [origin])
+
+2.00, Build 22, Wednesday, March 15, 2000 4:22:24 PM
+
+¥ The checkdisc() command will now first just check if there is any volume
+with the given name mounted (CD or not). If it is there then it will be
+happy, if there isn't then it will go back to looking to see if there is a 
+CD in the CD drive and if it has the given volume name. 
+
+¥ Now the entire script will be kept in memory and not read in card by
+card as needed. This is to prevent problems with someone editing the
+script file so that the index information is no longer valid. As it was 
+before, if you edited the script file and then jumped to a card that hadn't 
+been read in from the file yet, you ran the risk of not getting the
+correct set of commands if the changes you made to the file were located before
+the card you were jumping too.
+
 2.00, Build 21, Tuesday, February 1, 2000 9:05:10 AM
 
 ¥ Fixed cursors for overlapping touch zones. Now the last

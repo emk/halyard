@@ -2,11 +2,13 @@
 // CMoviePlayer.cp
 //
 
-#include "debug.h"
+#include "KHeader.h"
 
 #include <string.h>
+#include "Movies.h"
 
-#include "Mac5L.h"
+#include "KLogger.h"
+
 #include "CMac5LApp.h"
 #include "CConfig.h"
 #include "CPalette.h"
@@ -14,9 +16,10 @@
 #include "CMoviePlayer.h"
 #include "CVariable.h"
 #include "CCard.h"
+#include "CModule.h"
 #include "gamma.h"
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 #include "CModule.h"
 #endif
 
@@ -33,6 +36,7 @@ CMoviePlayer::CMoviePlayer(void)
 	mHaveOrigin = false;
 	mHavePal = false;
 	mLooping = false;
+	mStreamed = false;
 	
 	mWaitTime = 0;
 	mWaitOffset = 0;
@@ -107,9 +111,9 @@ void CMoviePlayer::WakeCard(int32 inFrame)
 		else
 			mWaitTime = (inFrame - mWaitOffset) * mScale / 30;
 	}	
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	//else
-	//	prinfo("wait called but no movie playing");
+	//	gDebugLog.Log("wait called but no movie playing");
 #endif
 }
 
@@ -126,9 +130,9 @@ void CMoviePlayer::DrawSelf(void)
 //
 //	SetOrigin - Set the origin for the NEXT movie to play.
 //
-void CMoviePlayer::SetOrigin(Point inPoint)
+void CMoviePlayer::SetOrigin(KPoint &inPoint)
 {
-	if (inPoint.h == -1)
+	if (inPoint.X() == -1)
 		mHaveOrigin = false;
 	else
 		mHaveOrigin = true;
@@ -174,7 +178,7 @@ void CMoviePlayer::Kill(void)
 		gPlayerView->CalcLocalFrameRect(theFrame);
 		
 		if (mHavePal)
-			gTheApp->RestorePalette();		// go back to the graphics palette
+			gPaletteManager.ResetPalette();
 		
 		gPlayerView->AdjustMyCursor();		// see if we want the cursor back
 		
@@ -213,6 +217,7 @@ void CMoviePlayer::Cleanup(void)
 	mAudioOnly = false;
 	mHavePal = false;
 	mLooping = false;
+	mStreamed = false;
 	
 	mWaitTime = 0;
 	mWaitOffset = 0;
@@ -222,11 +227,7 @@ void CMoviePlayer::Cleanup(void)
 	mScale = 0;
 		
 	if (mMovie != NULL)
-	{
-		// cbo_fix - take this out later
-		//prinfo("CMoviePlayer::Cleanup");
-		//gTheApp->DumpMemory();
-		
+	{		
 		::DisposeMovie(mMovie);
 		mMovie = NULL;
 	}
@@ -242,49 +243,82 @@ bool CMoviePlayer::Load(const char *inMovieName, bool inAudioOnly)
 	TimeValue	theStart, theDuration;
 	OSErr		err;
 	int32		diff;
-	int32		theStartTime;
 	int16		dh, dv;
 	int16		actualResID = DoTheRightThing;
 	int16		theRefNum;
 	uint8		wasChanged;
 	bool		retValue = true;
-	
-	// look in the local movie directory first
-	theConfig->FillMovieSpec(&mSpec, inMovieName, true);
-	
-	err = ::OpenMovieFile(&mSpec, &theRefNum, fsRdPerm);
 
-	if (err != noErr)
+	// Get the full path to the movie.
+	KString		moviePath = inMovieName;
+
+	if (not inAudioOnly)	
+		moviePath = gModMan->GetVideoPath(moviePath);
+	else
+		moviePath = gModMan->GetAudioPath(moviePath);
+	
+	if (moviePath.Contains("http:"))
 	{
-		// then check the one on the CD
-		theConfig->FillMovieSpec(&mSpec, inMovieName, false);
+		// do remote things
+		Handle		myHandle = NULL;
+		TimeValue	startTime;
+		Size		mySize = 0;
 		
-		err = ::OpenMovieFile(&mSpec, &theRefNum, fsRdPerm);
+		// get the size of the URL
+		mySize = (Size) strlen(moviePath.GetString()) + 1;
+		
+		// allocate a new handle
+		myHandle = NewHandleClear(mySize);
+		
+		// copy the URL into the handle
+		BlockMove(moviePath.GetString(), *myHandle, mySize);
+		
+		// get the data ref
+		err = ::NewMovieFromDataRef(&mMovie, newMovieActive, NULL, myHandle,
+					URLDataHandlerSubType);
+					
+		// toss the handle
+		DisposeHandle(myHandle);
 		
 		if (err != noErr)
 		{
-#ifdef DEBUG_5L
-			prinfo("OpenMovieFile: returned <%d>", err);
-#else
-			prcaution("Could not open Movie <%s>", inMovieName);
-#endif
-			return (false);
+			retValue = false;
+			goto done;
 		}
+		
+		mRate = ::GetMoviePreferredRate(mMovie);
+		startTime = ::GetMovieTime(mMovie, NULL);
+		
+		err = ::PrePrerollMovie(mMovie, startTime, mRate, NULL, NULL);
+		if (err != noErr)
+		{
+			retValue = false;
+			goto done;
+		}
+		
+		mStreamed = true;
 	}
-	
-	err = ::NewMovieFromFile(&mMovie, theRefNum, &actualResID, nil, 0, &wasChanged);
-
-	if (err != noErr)
+	else
 	{
-#ifdef DEBUG_5L
-		prinfo("NewMovieFromFile: returned <%d>", err);
-#else
-		prcaution("Could not create Movie <%s>", inMovieName);
-#endif
-		retValue = false;
+		// local movie, get the spec
+		theConfig->FillSpec(&mSpec, moviePath);
+		
+		err = ::OpenMovieFile(&mSpec, &theRefNum, fsRdPerm);
+		if (err != noErr)
+		{
+			retValue = false;
+			goto done;
+		}
+			
+		err = ::NewMovieFromFile(&mMovie, theRefNum, &actualResID, nil, 0, &wasChanged);
+		if (err != noErr)
+			retValue = false;
+	
+		err = ::CloseMovieFile(theRefNum);
+		
+		if (not retValue)
+			goto done;
 	}
-				
-	err = ::CloseMovieFile(theRefNum);
 
 	if (retValue)
 	{
@@ -305,7 +339,7 @@ bool CMoviePlayer::Load(const char *inMovieName, bool inAudioOnly)
 			else
 			{
 				// use the stored origin
-				::OffsetRect(&theBounds, mOrigin.h, mOrigin.v);
+				::OffsetRect(&theBounds, mOrigin.X(), mOrigin.Y());
 			}
 			
 			::SetMovieBox(mMovie, &theBounds);
@@ -318,23 +352,26 @@ bool CMoviePlayer::Load(const char *inMovieName, bool inAudioOnly)
 		mScale = ::GetMovieTimeScale(mMovie);
 	
 		// set the start and duration of the clip
-		theStart = mStartOffset;
+		theStart = 0;
 		theDuration = mEndTime - theStart;
 		
 		// we don't support anything but starting at the start for now
-		if (theStart == 0)
-			::GoToBeginningOfMovie(mMovie);	
-		else
-		{
-			theStartTime = mStartOffset * mScale / 30;
-			::SetMovieTimeValue(mMovie, theStartTime);
-		}		
+		::GoToBeginningOfMovie(mMovie);	
 			
 		mInMovie = true;			// we have a movie
 		mAudioOnly = inAudioOnly;
 		mPaused = true;				// and it isn't playing yet
 	}
-	
+
+done:
+	if (not retValue)
+	{
+		// can't find the movie
+		gMissingMediaLog.Log("%s", moviePath.GetString());
+		gVariableManager.SetString("_ERROR", "-2");
+		gVariableManager.SetString("_FileNotFound", moviePath.GetString());
+	}
+		
 	return (retValue);
 }
 
@@ -343,7 +380,7 @@ bool CMoviePlayer::DoPreroll(const char *inMovieName, bool inAudioOnly, bool inP
 	OSErr	err;
 	bool	playIt = false;
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	if (gModMan->NoVolume())
 		return (false);
 #endif
@@ -356,25 +393,13 @@ bool CMoviePlayer::DoPreroll(const char *inMovieName, bool inAudioOnly, bool inP
 		{
 			if (inPreroll)
 			{
-#ifdef USE_QUICKTIME4
-				err = ::PrePrerollMovie(mMovie, 0, mRate, NULL, NULL);
-				if (err != noErr)
-				{
-#ifdef DEBUG_5L
-					prinfo("PrePrerollMovie: returned <%d>", err);
-#else
-					prcaution("Could not PrePreroll Movie <%s>", inMovieName);
-#endif	
-					playIt = false;			
-				}
-#endif
 				err = ::PrerollMovie(mMovie, 0, mRate);
 				if (err != noErr)
 				{
-#ifdef DEBUG_5L
-					prinfo("PrerollMovie: returned <%d>", err);
+#ifdef DEBUG
+					gDebugLog.Log("PrerollMovie: returned <%d>", err);
 #else
-					prcaution("Cound not Preroll Movie <%s>", inMovieName);
+					gLog.Caution("Cound not Preroll Movie <%s>", inMovieName);
 #endif
 					playIt = false;
 				}
@@ -403,30 +428,24 @@ void CMoviePlayer::Preroll(const char *inMovieName, bool inAudioOnly)
 //	Play
 //
 void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset, 
-	bool inAudioOnly, const char *inPalStr, int32 inStartOffset)
+	bool inAudioOnly, const char *inPalStr)
 {
 	CPalette	*thePalette = nil;
 	bool		doThePreroll;
 	bool		playIt = false;
 
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	if (gModMan->NoVolume())		// if no volume, don't even look for the movie
 		return;
 #endif
 
 	Cleanup();
-
-// cbo_fix - take this out later
-	//prinfo("CMoviePlayer::Play");
-	//gTheApp->DumpMemory();	
-		
-	if (not inAudioOnly)
-		doThePreroll = true;
-	else
-	{
-		doThePreroll = false;
-		mStartOffset = inStartOffset;		// where to start in movie (only audio can have this)
-	}
+	
+	// reset our "file not found" error
+	gVariableManager.SetString("_ERROR", "0");
+	
+	// always preroll	
+	doThePreroll = true;
 
 	if (not inAudioOnly)
 	{
@@ -438,11 +457,13 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 			
 		if (inPalStr != NULL)				// if we have a palette, find it and set it
 		{
-			thePalette = GetPalette(inPalStr);
+			KString		palName = inPalStr;
+			
+			thePalette = gPaletteManager.GetPalette(palName);
 			
 			if (thePalette != nil)
 			{
-				thePalette->SetPalette(false);	
+				gPaletteManager.SetPalette(thePalette, false);	
 			}		
 		}
 	}
@@ -476,10 +497,6 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 		
 		gPlayerView->DoResetPause();		// tell player view
 
-		// cbo_fix - take this out later
-		//prinfo("CMoviePlayer:: just before Resume");
-		//gTheApp->DumpMemory();			
-
 		Resume();							// start playing
 		
 		gVariableManager.SetString("_movieplaying", "1");
@@ -491,7 +508,7 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 			DoGFade(true, 0, false);
 		
 			if (inPalStr != NULL)
-				gTheApp->RestorePalette();
+				gPaletteManager.ResetPalette();
 		}
 	}
 }
@@ -505,7 +522,7 @@ void CMoviePlayer::PlayLoop(const char *inMovieName, int32 inFadeTime)
 	bool		doThePreroll = false;		// for now as we only do audio
 	bool		playIt = false;				// assume the worst
 	
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	if (gModMan->NoVolume())				// if no volume, don't even look for the movie
 		return;
 #endif
@@ -539,8 +556,8 @@ void CMoviePlayer::PlayLoop(const char *inMovieName, int32 inFadeTime)
 			int32		i;
 			int16		theVol = 0x0000;
 
-#ifdef DEBUG_5L
-	//		prinfo("fade in to the looping audio");
+#ifdef DEBUG
+	//		gDebugLog.Log("fade in to the looping audio");
 #endif
 			
 			gVariableManager.SetString("_lpstat", "1");
@@ -590,8 +607,8 @@ void CMoviePlayer::Pause(void)
 		gVariableManager.SetString("_lpstat", "0");
 		gVariableManager.SetString("_lpactive", "0");
 
-#ifdef DEBUG_5L
-	//	prinfo("REALLY pausing the movie");
+#ifdef DEBUG
+	//	gDebugLog.Log("REALLY pausing the movie");
 #endif
 
 		if (mLooping)
@@ -635,9 +652,9 @@ bool CMoviePlayer::AtEnd(TimeValue &inMovieTime)
 		
 		theRetValue = ::IsMovieDone(mMovie);
 	}
-#ifdef DEBUG_5L
+#ifdef DEBUG
 	//else
-	//	prerror("in AtEnd() - no movie");
+	//	gDebugLog.Error("in AtEnd() - no movie");
 #endif
 	
 	inMovieTime = theTime;
@@ -659,8 +676,8 @@ void CMoviePlayer::FadeLoop(void)
 	
 	if ((mMovie != NULL) and (mLooping))
 	{
-#ifdef DEBUG_5L
-	//	prinfo("fade out of the looping audio");
+#ifdef DEBUG
+	//	gDebugLog.Log("fade out of the looping audio");
 #endif
 
 		theVolume = 0x0100;							// full volume

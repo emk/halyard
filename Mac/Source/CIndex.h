@@ -11,59 +11,96 @@
 #define _H_CINDEX
 
 #include <fstream.h>
-//#include "const.h"
 
-#include "CBTree.h"
+#include "KCommon.h"
+#include "KBTree.h"
+
 #include "CStream.h"
-#include "CTextFileStream.h"
 
-const char Cipher = '\xBD';     // Encryption key.
+class CIndexFile;
 
-//
-//  Basic index class. You tell it where to find its data
-//  (fStart, fEnd) and it will load data from disk and
-//  parse the data when you request the next index.
-//
-class CIndex : public CBNode 
+class CIndex : public KBNode 
 {
     public:
+					CIndex(CIndexFile *inIndex, const char *inName = NULL,
+							int32 inStart = 0, int32 inEnd = 0);
+		virtual		~CIndex();
+		
+        //CIndex(const char *name = 0, long p1 = 0, long p2 = 0);
 
-       static bool      		encrypted;
-
-    protected:
-
-        int32       fStart, fEnd;
-        CStream    	script; //card/macro/header string (so why called script?)
-
-    public:
-
-        CIndex(const char *name = 0, long p1 = 0, long p2 = 0);
-
-        virtual char *Name(void) { return (char *)key; }
+        virtual const char *Name(void) { return (Key()); }
 
         //
         //  Commands to get at the index' raw data.
         //
-        virtual void SetScript(void);
-        virtual char *GetScript(void);
+        virtual bool SetScript(void);
+        virtual const char *GetScript(void);
         virtual void FlushScript(void);
+    
+    protected:
+    	CIndexFile	*m_File;
+    	int32		m_Start;
+    	int32		m_End;
+        CStream    	m_Script;
+
 };
 
-class CIndexManager : public CBTree 
+class CIndexManager : public KBTree 
 {
     public:
 
-        CIndexManager();
+        			CIndexManager();
+        virtual		~CIndexManager();
 
-        virtual void MakeNewIndex(char */* name */, long /* start */, long /* end */) {}
+		virtual void	MakeNewIndex(CIndexFile * /* inFile */, const char * /* inName */, 
+									int32 /* inStart */, int32 /* inEnd */) {}
 };
+
+class CIndexFile : public KBNode
+{
+	public:
+					CIndexFile(const char *inName);
+		virtual		~CIndexFile();
+		
+		bool		Init();
+		
+		bool		IsOpen();
+		int32		GetPos();
+		bool		AtEnd();	
+		void		Seek(int32 inPos);
+		int32		Read(char *inBuffer, int32 inLength);
+		void		Close();
+		
+		void		AddReference();
+		void		RemoveReference();
+		
+	protected:
+		bool		Open(const char *inPath);
+		
+		
+		ifstream	m_File;
+		bool		m_AtEnd;
+		int32		m_ReferenceCount;
+};
+
+class CIndexFileManager : public KBTree
+{
+	public:
+					CIndexFileManager();
+		virtual		~CIndexFileManager();
+		
+		bool		NewIndex(const char *inName);
+		bool		NewIndex(FSSpec *inSpec);
+};
+
+extern CIndexFileManager gIndexFileManager;
 
 //
 //  Initializer for all indices.
 //
 
-bool InitIndex(FSSpec *scriptSpec, FSSpec *indexScript, bool fEncrypted);
-void KillIndex(void);
-bool CheckFileDates(FSSpec *inIndexSpec, FSSpec *inScriptSpec);
+//bool InitIndex(FSSpec *scriptSpec, FSSpec *indexScript, bool fEncrypted);
+//void KillIndex(void);
+//bool CheckFileDates(FSSpec *inIndexSpec, FSSpec *inScriptSpec);
 
 #endif

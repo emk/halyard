@@ -2,15 +2,16 @@
 	CPlayerOval.cp	
    ================================================================================= */
 
+#include "KHeader.h"
+
 #include <iostream>
 #include <Palettes.h>
 #include <LStream.h>
 #include <UDrawingState.h>
 
-#include "Mac5L.h"
 #include "CPlayerView.h"
 #include "CPlayerOval.h"
-
+#include "CPalette.h"
 
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerOval(&Rect, Fill, LIneWidth, ColorIdx)
@@ -58,7 +59,7 @@ CPlayerOval::DrawSelf()
 	
 	// Set the pen state for color, width. Get the rgb color from
 	// the color index.
-	::PmForeColor(mColorIdx);
+	::PmForeColor(mColorIdx);	
 	::PenSize(mLineWidth, mLineWidth);
 	
 	// If 'mFill' is TRUE, we want to fill the box. Otherwise, just frame it.

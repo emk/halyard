@@ -26,7 +26,7 @@ class CText
 		// Standard constructors.
 		CText(void);
 		CText(	const char	*inHeader,	// Name of header format to use.
-				const Rect	&inBounds,	// Bouding rect (relative to PlayerView's rect)
+				const KRect	&inBounds,	// Bouding rect (relative to PlayerView's rect)
 				const char 	*inText);	// The 'raw' string (including format chars)
 					
 		// Destructor

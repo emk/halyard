@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "KHeader.h"
+
 #include "CPicture.h"
 #include "CCard.h"
 #include "CGWorld.h"
@@ -36,7 +38,7 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 						~CPlayerView(void);
 						
 		void			ColorCard(int16 color);
-		void			SetBackPic(char *picName, Rect inRect);
+		void			SetBackPic(KString &picName, Rect inRect);
 		
 		void			KillScript(void);
        	void			SpendTime(const EventRecord &inMacEvent);
@@ -66,7 +68,7 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 		
 		void			AdjustCursor(Point inPortPt, const EventRecord &inMacEvent);
 		void			AdjustMyCursor(void);
-#ifdef DEBUG_5L
+#ifdef DEBUG
 		void			ShowTZones(void);
 		void			KillTZones(void) { DeleteAllSubPanes(); }
 #endif
@@ -130,12 +132,12 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 
 struct sCardKey {
 	char		mTheChar;
-	CString		*mCardName;
+	KString		*mCardName;
 //	CCard		*mCard;
 };
 
 // Get the effect from a string
-FXType StringToEffect(CString inText);
+FXType StringToEffect(KString inText);
 
 // Global pointer to the card view.
 extern CPlayerView *gPlayerView;

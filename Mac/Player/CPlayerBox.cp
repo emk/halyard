@@ -2,15 +2,16 @@
 	CPlayerBox.cp	
    ================================================================================= */
 
+#include "KHeader.h"
+
 #include <iostream>
 #include <Palettes.h>
 #include <LStream.h>
 #include <UDrawingState.h>
-
-#include "Mac5L.h"
 #include "CPlayerView.h"
 #include "CPlayerBox.h"
-
+#include "CMac5LApp.h"
+#include "CPalette.h"
 
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerBox(&Rect, Fill, LIneWidth, ColorIdx)
@@ -20,7 +21,7 @@
    --------------------------------------------------------------------------------- */
 
 CPlayerBox::CPlayerBox(
-	const Rect		&inBounds,		// Bouding rect (relative to PlayerView's rect)
+	const Rect		&inBounds,		// Bounding rect (relative to PlayerView's rect)
 	const Boolean 	inFill,			// TRUE if rect to be filled (solid)
 	const int8		inLineWidth,	// Frame's line width, in pixels
 	const int16		inColorIdx)		// Index into CLUT
@@ -61,7 +62,7 @@ CPlayerBox::DrawSelf()
 	
 	// Set the pen state for color, width. Get the rgb color from
 	// the color index.
-	::PmForeColor(mColorIdx);
+	::PmForeColor(mColorIdx);	
 	::PenSize(mLineWidth, mLineWidth);
 	
 	// If 'mFill' is TRUE, we want to fill the box. Otherwise, just frame it.
