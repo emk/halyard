@@ -6,6 +6,7 @@
 #include "TCommonPrimitives.h"
 #include "TVariable.h"
 #include "TLogger.h"
+#include "TDateUtil.h"
 
 // Needed to implement the primitives.
 #include <string>
@@ -23,6 +24,10 @@ Origin FIVEL_NS gOrigin;
 void FIVEL_NS RegisterCommonPrimitives()
 {
 	REGISTER_5L_PRIMITIVE(Log);
+	REGISTER_5L_PRIMITIVE(Origin);
+	REGISTER_5L_PRIMITIVE(ResetOrigin);
+	REGISTER_5L_PRIMITIVE(Set);
+	REGISTER_5L_PRIMITIVE(Get);
 }
 
 
@@ -113,7 +118,7 @@ void Origin::OffsetOrigin(TPoint &delta)
 //=========================================================================
 
 //-------------------------------------------------------------------------
-// (LOG STRING STRING)
+// (Log STRING STRING)
 //-------------------------------------------------------------------------
 // Logs the second argument to the file specified by the first.
 // Available logs: debug, 5L, MissingMedia.
@@ -134,3 +139,102 @@ DEFINE_5L_PRIMITIVE(Log)
 		gDebugLog.Caution("No such log file: %s", log_name.c_str());
 }
 
+//-------------------------------------------------------------------------
+// (ORIGIN DX DY)
+//-------------------------------------------------------------------------
+// Move the local coordinates for this particular card (or macro) by 
+// the delta values given. This change is an offset from whatever the 
+// current coordinates are. There is no way to set the absolute 
+// coordinates for a macro or card!
+
+DEFINE_5L_PRIMITIVE(Origin)
+{
+    TPoint   delta;
+
+    inArgs >> delta;
+
+    gOrigin.OffsetOrigin(delta);
+    
+	TPoint origin = gOrigin.GetOrigin();
+    gDebugLog.Log("Origin set to <X Y> %d %d", origin.X(), origin.Y());
+}
+
+//-------------------------------------------------------------------------
+// (ResetOrigin [DX DY])
+//-------------------------------------------------------------------------
+// Reset the origin or set it to something new.
+
+DEFINE_5L_PRIMITIVE(ResetOrigin)
+{
+	TPoint		newOrigin(0, 0);
+
+	if (inArgs.HasMoreArguments())
+		inArgs >> newOrigin;
+
+	gOrigin.SetOrigin(newOrigin);
+}
+
+//-------------------------------------------------------------------------
+// (Set VARIABLE NEWVALUE [Flag])
+//-------------------------------------------------------------------------
+// Sets the variable to the given value.
+
+DEFINE_5L_PRIMITIVE(Set)
+{
+    TString     vname;
+    TString		value;
+    TString		flag; 
+	uint32      date_value;
+	int32		date_type;
+
+    inArgs >> vname >> value;
+    
+	if (inArgs.HasMoreArguments())
+    {
+    	inArgs >> flag;
+    	flag.MakeLower();
+
+		if (flag.Equal("longdate"))
+    		date_type = DT_LONGDATE;
+    	else if (flag.Equal("date"))
+    		date_type = DT_DATE;
+    	else if (flag.Equal("time"))
+    		date_type = DT_TIME;
+    	else if (flag.Equal("year"))
+    		date_type = DT_YEAR;
+    	else if (flag.Equal("month"))
+    		date_type = DT_MONTH;
+    	else if (flag.Equal("longmonth"))
+    		date_type = DT_LONGMONTH;
+    	else if (flag.Equal("day"))
+    		date_type = DT_DAY;
+    	else if (flag.Equal("longday"))
+    		date_type = DT_LONGDAY;
+    	else
+    		gLog.Caution("Bad flag to set command <%s>.", flag.GetString());
+
+		date_value = (uint32) value;
+
+    	gVariableManager.SetDate(vname.GetString(), date_value, date_type);
+	}
+	else
+	{
+		gVariableManager.SetString(vname.GetString(), value.GetString());
+	}
+}
+
+//-------------------------------------------------------------------------
+// (Get VARIABLE)
+//-------------------------------------------------------------------------
+// Returns the value stored in the variable, represented as a string.
+
+DEFINE_5L_PRIMITIVE(Get)
+{
+	TString vname;
+	
+	inArgs >> vname;
+   
+	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
+}
+
+    	

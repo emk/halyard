@@ -24,6 +24,9 @@ USING_NAMESPACE_FIVEL
 void FIVEL_NS Register5LPrimitives()
 {
 	// Integer operations.
+	REGISTER_5L_PRIMITIVE(Add);
+	REGISTER_5L_PRIMITIVE(Sub);
+    REGISTER_5L_PRIMITIVE(Div);
 	REGISTER_5L_PRIMITIVE_WITH_NAME("+", Plus);
 	REGISTER_5L_PRIMITIVE_WITH_NAME("-", Minus);
 	REGISTER_5L_PRIMITIVE_WITH_NAME("*", Times);
@@ -69,6 +72,65 @@ void FIVEL_NS Register5LPrimitives()
 //=========================================================================
 //  Integer Operations
 //=========================================================================
+
+//-------------------------------------------------------------------------
+// (ADD VARIABLE AMOUNT)
+//-------------------------------------------------------------------------
+// Adds the given amount to the given variable.
+
+DEFINE_5L_PRIMITIVE(Add)
+{
+    TString vname;
+	int32 amount;
+
+    inArgs >> vname >> amount;
+
+	int32 sum = gVariableManager.GetLong(vname);
+	sum += amount;
+	gVariableManager.SetLong(vname, sum);
+	::SetPrimitiveResult(sum);
+}
+
+//-------------------------------------------------------------------------
+// (SUB VARIABLE AMOUNT)
+//-------------------------------------------------------------------------
+// Subtracts the given amount to the given variable.
+
+DEFINE_5L_PRIMITIVE(Sub)
+{
+    TString vname;
+	int32 amount;
+
+    inArgs >> vname >> amount;
+
+	int32 sum = gVariableManager.GetLong(vname);
+	sum -= amount;
+	gVariableManager.SetLong(vname, sum);
+	::SetPrimitiveResult(sum);
+}
+
+//-------------------------------------------------------------------------
+// (DIV INT INT)
+//-------------------------------------------------------------------------
+// Performs integer division on two numbers.
+
+DEFINE_5L_PRIMITIVE(Div)
+{
+	TString vname;
+	int32 Divisor = 0;
+	int32 Dividend;
+
+	inArgs >> vname >> Divisor;
+	Dividend = gVariableManager.GetLong(vname);
+
+	if (Divisor == 0)
+		gLog.Caution("Error: Division by zero: %s <%d> / <%d>.",
+					 (const char *) vname, Divisor, Dividend);
+
+	Dividend = Dividend / Divisor;
+	gVariableManager.SetLong(vname, Dividend);
+	::SetPrimitiveResult(Dividend);
+}
 
 //-------------------------------------------------------------------------
 // (+ INT...)
