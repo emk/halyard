@@ -3,13 +3,16 @@
   ;; Import %call-5l-prim from the engine.
   (require #%fivel-engine)
 
-  ;; Get begin/var.
+  ;; Get begin/var, and re-export it.
   (require (lib "begin-var.ss" "5L"))
   (provide begin/var)
   
   ;; Get hooks, and re-export them.
   (require (lib "hook.ss" "5L"))
   (provide (all-from (lib "hook.ss" "5L")))
+
+  ;; Get format-result-values.
+  (require (lib "trace.ss" "5L"))
 
 
   ;;=======================================================================
@@ -231,7 +234,7 @@
     (set! *%kernel-state* 'NORMAL)
     (set! *%kernel-jump-card* #f))
   
-  (define (%kernel-run-as-callback thunk)
+  (define (%kernel-run-as-callback thunk error-handler)
     (assert (not *%kernel-running-callback?*))
     (if (eq? *%kernel-state* 'INTERPRETER-KILLED)
 	(5l-log "Skipping callback because interpreter is being shut down")
@@ -239,7 +242,7 @@
 	  (set! *%kernel-state* 'NORMAL)
 	  (label exit-callback
 	    ;; TODO - Can we have better error handling?
-            (with-errors-blocked (non-fatal-error)
+            (with-errors-blocked (error-handler)
 	      (fluid-let [[*%kernel-exit-to-top-func* exit-callback]
 			  [*%kernel-exit-interpreter-func* exit-callback]
 			  [*%kernel-running-callback?* #t]]
@@ -408,11 +411,15 @@
 
     ;; Finish exiting our previous card.
     (when *%kernel-current-card*
-      (call-hook-functions *exit-card-hook* *%kernel-current-card*))
+      (call-hook-functions *exit-card-hook* *%kernel-current-card*)
+      (when (have-5l-prim? 'notifyexitcard)
+	(call-5l-prim 'VOID 'notifyexitcard)))
 
     ;; Update our global variables.
     (set! *%kernel-previous-card* *%kernel-current-card*)
     (set! *%kernel-current-card* card)
+    (when (have-5l-prim? 'notifyentercard)
+      (call-5l-prim 'VOID 'notifyentercard))
 
     ;; Actually run the card.
     (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
@@ -548,8 +555,34 @@
 	(value->string (%kernel-card-name *%kernel-previous-card*))
 	""))
 
+  (define (%kernel-valid-card? card-name)
+    (card-exists? card-name))
+
+  (define (%kernel-eval expression)
+    (let [[ok? #t] [result "#<did not return from jump>"]]
+
+      ;; Jam everything inside a callback so JUMP, etc., work
+      ;; as the user expects.  Do some fancy footwork to store the
+      ;; return value(s) and return them correctly.  This code is ugly
+      ;; because I'm too lazy to redesign the callback architecture
+      ;; to make it pretty.
+      (%kernel-run-as-callback
+       ;; Our callback.
+       (lambda ()
+	 (call-with-values
+	  (lambda () (eval (read (open-input-string expression))))
+	  (lambda r (set! result (apply format-result-values r)))))
+
+       ;; Our error handler.
+       (lambda (error-msg)
+	 (set! ok? #f)
+	 (set! result error-msg)))
+      
+      ;; Return the result.
+      (cons ok? result)))
+
   (define (%kernel-run-callback thunk)
     (%kernel-die-if-callback '%kernel-run-callback)
-    (%kernel-run-as-callback thunk))
+    (%kernel-run-as-callback thunk non-fatal-error))
 
   ) ; end module

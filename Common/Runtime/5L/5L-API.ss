@@ -403,10 +403,10 @@
   (define (flags->defstyle-flags flags)
     (cond
      [(null? flags) 'r]
-     [(eq? flags '(bold)) 'b]
-     [(eq? flags '(italic)) 'i]
-     [(eq? flags '(bold italic)) 'bi]
-     [(eq? flags '(italic bold)) 'bi]
+     [(equal? flags '(bold)) 'b]
+     [(equal? flags '(italic)) 'i]
+     [(equal? flags '(bold italic)) 'bi]
+     [(equal? flags '(italic bold)) 'bi]
      [else
       (throw (cat "Unknown stylesheet flags: " flags))]))
 

@@ -7,7 +7,8 @@
   (require (lib "begin-var.ss" "5L"))
   
   (provide with-tracing
-           set-trace-output-printer!)
+           set-trace-output-printer!
+	   format-result-values)
   
   (define *trace-output-fn*
     (lambda (str)
@@ -31,6 +32,30 @@
           ""
           (string-append "  " (loop (- depth 1))))))
   
+  (define (format-result-values . results)
+    (let [[out (open-output-string)]]
+      (parameterize [[print-struct #t]]
+
+        ;; Attempt to print the results tatsefully.
+        (case (length results)
+            
+	  ;; No results--a void function.
+	  [[0] (display "(values)" out)]
+	  
+	  ;; The normal case--a single return value.
+	  [[1] (write (car results) out)]
+	  
+	  ;; Multiple return values. 
+	  [else
+	   (display "(values" out)
+	   (let loop [[results results]]
+	     (unless (null? results)
+	       (display " " out)
+	       (write (car results) out)
+	       (loop (cdr results))))
+	   (display ")" out)]))
+      (get-output-string out)))
+
   (define (trace-call name-of-f f . args)
     (let [[out (open-output-string)]]
       (parameterize [[print-struct #t]]
@@ -61,34 +86,12 @@
                   (fluid-let [[*trace-depth* (+ *trace-depth* 1)]]
                     ;; Call our function.
                     (apply f args))]
-      (let [[out (open-output-string)]]
-        (parameterize [[print-struct #t]]
-          (display (get-trace-prefix) out)
-          (display ">>> -> " out)
-        
-          ;; Attempt to print the results tatsefully.
-          (case (length results)
-            
-            ;; No results--a void function.
-            [[0] (display "(void)" out)]
-            
-            ;; The normal case--a single return value.
-            [[1] (write (car results) out)]
-            
-            ;; Multiple return values. 
-            [else
-             (display "(values" out)
-             (let loop [[results results]]
-               (unless (null? results)
-                 (display " " out)
-                 (write (car results) out)
-                 (loop (cdr results))))
-             
-             (display ")" out)]))
-        (*trace-output-fn* (get-output-string out)))
+      (*trace-output-fn* (string-append (get-trace-prefix)
+					">>> -> "
+					(apply format-result-values results)))
       
       ;; Actually return the result of f to our caller.
-      (apply values results))) 
+      (apply values results)))
   
   ;; The goal: With a with-tracing form, replace (#%app name . values)
   ;; with (#%app trace-call 'name name . values).  We do this using
