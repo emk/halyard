@@ -12,6 +12,8 @@ CVS - emk, brian
   * Fixed loading of alpha channels and alpha channel memory
     allocation bug.
   * Implemented crossfades.  Use (REFRESH :transition 'crossfade).
+  * Implemented built-in timing of fades, to make different machines
+    more consistent.
 
 0.0.2 - 3 April 2003 - emk, brian
 

@@ -11,8 +11,18 @@
 //  Transition
 //=========================================================================
 
+// The amount of time required to show a single frame of an arbitrary
+// transition, at leat until we know better.  On an 800MHz laptop,
+// crossfades require approximately 40 milliseconds.  We set this
+// value artificially low so that we'll run extra frames in the beginning
+// and get a more accurate sample.
+#define DEFAULT_MILLISECONDS_PER_FRAME (20)
+
 class Transition
 {
+	int mTotalFrames;
+	int mTotalMilliseconds;
+
 protected:
 	//////////
 	// Show a single step of the transition.
@@ -29,6 +39,7 @@ public:
 };
 
 Transition::Transition()
+	: mTotalFrames(0), mTotalMilliseconds(0)
 {
     // Do nothing.
 }
@@ -36,9 +47,47 @@ Transition::Transition()
 void Transition::RunTransition(int inMilliseconds,
 							   TransitionResources &inResources)
 {
-	// TODO - Keep a running average of how long each step takes.
-	for (double time = 0.2; time < 1.0; time += 0.2)
-		ShowStep(time, inResources);
+	// Figure out what step size to use for the transition.
+	// We have to be careful about this, because our minimum stopwatch
+	// resolution tends to be longer than some transitions.  This means
+	// we need to (1) be careful of outrageous results and (b) average over
+	// as much data as possible.
+	double est_ms_per_frame = DEFAULT_MILLISECONDS_PER_FRAME;
+	if (mTotalFrames > 0)
+	{
+		est_ms_per_frame = mTotalMilliseconds / mTotalFrames;
+
+		// Don't believe really small numbers until we have a large
+		// sample size.  These numbers are arbitrary.
+		if (mTotalMilliseconds < 1000)
+			est_ms_per_frame = Max(DEFAULT_MILLISECONDS_PER_FRAME,
+								   est_ms_per_frame);
+	}
+	double frames = (inMilliseconds / est_ms_per_frame);
+	double step = 1.0 / (frames + 1);
+	double panic_ms = Max(2000, 4 * inMilliseconds);
+
+	gDebugLog.Log("Transition: %d ms, est. %f ms/frame, est. %f frames",
+				  inMilliseconds, est_ms_per_frame, frames);
+
+	if (frames >= 1.0 && step > 0.0)
+	{
+		// Run the transition.
+		wxStopWatch watch;
+		for (double s = step; s < 1.0; s += step)
+		{
+			mTotalFrames += 1;
+			ShowStep(s, inResources);
+
+			// Just to be safe!
+			if (watch.Time() > panic_ms)
+			{
+				gLog.Caution("Transition: way too long, aborting");
+				break;
+			}
+		}
+		mTotalMilliseconds += watch.Time();
+	}
 }
 
 
