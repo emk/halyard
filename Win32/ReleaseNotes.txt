@@ -13,6 +13,10 @@ FiveL for Win32 Release Notes
 	(3) Updated VC++ project files to reflect movement of Common library 
 	(up one level).
 
+    (4) Added support for smart quotes, m-dashes, ellipses and HTML entities.
+	Everywhere that '\&' appears in a script, it needs to be replaced with
+	'\&amp;'.
+
 3.2.2, Wednesday, February 27, 2002, 1:12 PM
 
 	Bug #613 - Changed calculation of _INCR_Y to include descenders

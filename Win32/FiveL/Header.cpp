@@ -19,6 +19,7 @@
 #include "LUtil.h"
 #include "Header.h"
 #include "Globals.h"
+#include "TEncoding.h"
 
 static const char *INCR_Y_NAME = "_incr_y";
 static const char *INCR_X_NAME = "_incr_x";
@@ -124,7 +125,7 @@ char    *vval = new char[10];
  * Function: Draw
  *
  *  Parameter bounds    (where to stick it in)
- *  Parameter text      (what to stick in)
+ *  Parameter inText    (what to stick in)
  *  Parameter color     (what color)
  *  Parameter shadow    (what shadow displacement)
  * Return:
@@ -136,7 +137,17 @@ char    *vval = new char[10];
  *      Also maintains the _incr_y 5L GLOBAL to reflect the last coord.
  *  of printed text (for bullet drawing)
  ***********************************************************************/
-void Header::Draw(TRect &bounds, char *text, int color, int Shadow)
+
+// Helper function.
+// TODO - Refactor back into TEncoding (somehow) once logging code is merged between
+// Macintosh and Windows engines.
+static void LogEncodingErrors (const char *inBadString, size_t inBadPos, const char *inErrMsg)
+{
+	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
+		inErrMsg, inBadPos, inBadString);
+}
+
+void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
 {
 	HDC		hDC;
 	HFONT	hOldFont;
@@ -146,7 +157,6 @@ void Header::Draw(TRect &bounds, char *text, int color, int Shadow)
     int     pixWidth;
 	TPoint	text_size;
 	int		incr_x;
-    long    tLen = strlen(text);
     long    lineStart;
     long    index = 0;
     bool	first_line = true;		// only use offset for first line
@@ -154,6 +164,12 @@ void Header::Draw(TRect &bounds, char *text, int color, int Shadow)
     ASSERT(itsFont);
     Prep();
     fHilite = fUnderline = false;
+
+	// Encode our string for Windows.
+	TEncoding encoding("windows-1252", &LogEncodingErrors);
+	TString encodedString = encoding.TransformString(inText);
+	const char *text = (const char*) encodedString;
+    long tLen = strlen(text);
 
 	incr_x = bounds.Left();
     
@@ -261,7 +277,7 @@ end:
  *  This routine must progress or we may loop forever...
  *  Does some weird stuff with SmartQuotes, check out the case '`': etc..
  ***********************************************************************/
-int Header::GetLineLength(char *s, long *index, long tLen, int maxWidth)
+int Header::GetLineLength(const char *s, long *index, long tLen, int maxWidth)
 {
     long            pos = *index;
     long            wordBreak = *index;
@@ -704,6 +720,10 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.4  2002/03/13 12:57:18  emk
+ Support for 7-bit source code--smart quotes, m-dashes, ellipsis and HTML
+ entities are now integrated into the Windows engine.
+
  Revision 1.3  2002/02/27 14:47:33  tvw
  Merged changes from 3.2.0.1 into trunk
 

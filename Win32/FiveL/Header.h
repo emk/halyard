@@ -116,7 +116,7 @@ class Header : public Index
 		// [in] maxWidth - determined by the box & font size
 		// [out] return - the number of chars that should be printed.
 		//
-		virtual int GetLineLength(char *s, long *index, long tLen, int maxWidth);
+		virtual int GetLineLength(const char *s, long *index, long tLen, int maxWidth);
         
 		//////////
 		// Draw the number of characters given, starting at s.
@@ -240,6 +240,10 @@ class HeaderManager : public IndexManager
 
 /*
  $Log$
+ Revision 1.3  2002/03/13 12:57:18  emk
+ Support for 7-bit source code--smart quotes, m-dashes, ellipsis and HTML
+ entities are now integrated into the Windows engine.
+
  Revision 1.2  2002/02/27 13:21:12  tvw
  Bug #613 - Changed calculation of _INCR_Y to include descenders
  (part or letter that goes below baseline).
