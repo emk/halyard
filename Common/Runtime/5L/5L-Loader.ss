@@ -5,6 +5,8 @@
 ;;  kernel and the user scripts are loaded into an isolated namespace,
 ;;  which we can throw away and recreate in a pristine condition whenever
 ;;  a developer asks us to reload the currently running script.
+;;
+;;  You can find similar code for the DrScheme IDE in 5L-tool.ss.
 
 (module 5L-Loader mzscheme
 
@@ -59,27 +61,31 @@
 			      (string-append "Error while loading <" filename
 					     ">: " (exn-message exn)))]]
 
+        ;; First, we install enough of a namespace to parse 'module'.
+	;; We'll need this in just a second when we call load/use-compiled.
+        (set! filename "bootstrap-env.ss")
+        (namespace-require '(lib "bootstrap-env.ss" "5L"))
+
+	;; Manually load the kernel into our new namespace.  We need
+	;; to call (load/use-compiled ...) instead of (require ...),
+	;; because we want the kernel registered under its official
+	;; module name (so the engine can easily grovel around inside it)
+	;; but not imported into our namespace (which is the job of the
+	;; 5L language module).
+	(set! filename "5L-Kernel.ss")
+	(load/use-compiled (build-path (current-directory)
+				       "Runtime" "5L"
+				       "5L-Kernel.ss"))
+      
         ;; Provide a reasonable default language for writing scripts.  We
         ;; need to set up both the transformer environment (which is used
         ;; only by code in macro expanders) and the regular environment
         ;; (which is used by normal program code).
         (set! filename "lispish.ss")
 	(namespace-transformer-require '(lib "lispish.ss" "5L"))
-	(namespace-require '(lib "lispish.ss" "5L"))
+	(set! filename "5L.ss")
+	(namespace-require '(lib "5L.ss" "5L"))
       
-	;; Manually load the kernel into our new namespace.  We need
-	;; to call (load/use-compiled ...) instead of (require ...),
-	;; because we want the kernel registered under its official
-	;; module name but not imported into our namespace.
-	(set! filename "5L-Kernel.ss")
-	(load/use-compiled (build-path (current-directory)
-				       "Runtime" "5L"
-				       "5L-Kernel.ss"))
-      
-	;; Install the 5L API into our new namespace.
-	(set! filename "5L-API.ss")
-	(namespace-require '(lib "5L-API.ss" "5L"))
-
 	;; Load the user's actual script into our new namespace.
 	(set! filename (build-path (current-directory) "Scripts" "start.ss"))
 	(load/use-compiled filename)

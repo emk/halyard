@@ -6,6 +6,8 @@
 ;;  takes care of correctly registering our language, and loading a few
 ;;  tricky modules during 'on-execute'.  We need to do things that
 ;;  hard way because we don't like the defaults.
+;;
+;;  You can find similar code for the standalone engine in 5L-Loader.ss.
 
 (module 5L-tool mzscheme
   (require (lib "unitsig.ss")
@@ -52,33 +54,6 @@
       ;;  in htdp-langs.ss, which does such evil things as construct
       ;;  complex class hiearchies at runtime.
 
-;      (define 5L-language%
-;	(class drscheme:language:module-based-language%
-;	  
-;	  (define/override (get-language-position)
-;	    (get-position "5L Multimedia Programming Language"))
-;
-;	  (define/override (
-
-#|
-      (define lispish-language%
-	(class drscheme:language:simple-module-based-language%
-	  
-	  (define/override (get-language-numbers)
-	    (get-numbers 2))
-
-	  (define/override (get-language-position)
-	    (get-position "LISPish (MzScheme plus LISP-like extensions)"))
-
-	  (define/override (get-one-line-summary)
-	    "MzScheme plus symbol macros, keywords & generalized setters")
-
-	  (define/override (get-module)
-	    '(lib "lispish.ss" "5L"))
-
-	  (super-instantiate ())))
-|#
-
       ;; We'll need something to subclass when creating our custom
       ;; languages.  We use this magic grik to generate a parent class.
       ;; Basically, this takes a built-in class implementing a the
@@ -107,10 +82,10 @@
 	    (run-in-user-thread
 	     (lambda ()
 	       ;; Now we're running in the user's namespace, and we can
-	       ;; munge stuff appropriately.
-	       ;; XXX - Install enough of a namespace to parse '(module'.
-	       ;; This is a nasty hack.
-	       (namespace-require (get-transformer-module))
+	       ;; munge stuff appropriately.  First, we install enough of a
+	       ;; namespace to parse 'module'.  We'll need this in just a
+	       ;; second when we call load/use-compiled.
+	       (namespace-require '(lib "bootstrap-env.ss" "5L"))
 
 	       ;; We need these two modules to be loaded directly into the
 	       ;; namespace, where they'll be known as #%fivel-engine and
