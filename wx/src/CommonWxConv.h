@@ -2,7 +2,6 @@
 
 #include "TRect.h"
 #include "TPoint.h"
-#include "GraphicsTools.h"
 
 wxRect TToWxRect(const TRect &inRect);
 TRect WxToTRect(const wxRect &inRect);

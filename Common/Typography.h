@@ -10,7 +10,6 @@
 #include <wchar.h>
 
 #include "FileSystem.h"
-#include "GraphicsTools.h"
 
 // TODO - Handle copy constructors, assignment operators
 

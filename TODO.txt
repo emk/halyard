@@ -16,8 +16,9 @@
 /   Redesign TCallbackArgumentList
     Test TValue extensively with real TCallbacks
     Test TValueToScheme extensively with real TCallbacks
-    Remove all #include <TValue.h>
-    Remove all #include <GraphicsTools.h>
+/   Remove all #include <TValue.h>
+/   Remove all #include <GraphicsTools.h> 
+
 
   Cleanup
     Make sure GUI does REFERENCE_TEST_CASE_FILE

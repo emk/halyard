@@ -1,7 +1,6 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
 #include "CommonHeaders.h"
-#include "GraphicsTools.h"
 
 using namespace GraphicsTools;
 

@@ -3,7 +3,6 @@
 #ifndef DrawingArea_H
 #define DrawingArea_H
 
-#include "GraphicsTools.h"
 
 class Stage;
 

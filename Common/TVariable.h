@@ -14,7 +14,6 @@
 #define TVariable_H
 
 #include "TBTree.h"
-#include "GraphicsTools.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -513,6 +512,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.8  2004/01/23 17:55:58  kwasi
+ Removed all redundant includes of TValue.h and GraphicsTools.h.
+
  Revision 1.7  2003/12/31 00:33:01  emk
  0.0.11 - 30 Dec 2003 - emk
 

@@ -3,7 +3,6 @@
 #ifndef TPrimitives_H
 #define TPrimitives_H
 
-#include "GraphicsTools.h"
 #include "TInterpreter.h"
 
 BEGIN_NAMESPACE_FIVEL

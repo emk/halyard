@@ -4,7 +4,6 @@
 #define DrawingAreaOpt_H
 
 #include <wx/rawbmp.h>
-#include "GraphicsTools.h"
 
 // These functions require raw bitmap access because they work with
 // alpha channels.  Most of them are parameterized for PixelData type

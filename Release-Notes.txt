@@ -21,6 +21,7 @@ CVS - emk, kwasi, djin
   * Deleted TCallbackArgumentList and TSchemeCallbackArgumentList, and
     replaced them with much simpler TValueList code.
   * Re-arranged headers a bit, and added new files to CommonHeaders.h.
+  * Removed all redundant includes of TValue.h and GraphicsTools.h.
 
 0.0.14 - 13 Jan 2004 - emk
 
