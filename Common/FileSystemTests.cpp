@@ -158,6 +158,18 @@ void test_FileSystem (void)
 	TEST(new_contents == "NewData");
 	replace_orig.RemoveFile();
 
+	// Test file creation.
+	Path fake_txt("fake.txt");
+	TEST(!fake_txt.DoesExist());
+	fake_txt.CreateWithMimeType("text/plain");
+	TEST(fake_txt.DoesExist());
+	fake_txt.RemoveFile();
+	Path fake_jpg("fake.jpg");
+	TEST(!fake_jpg.DoesExist());
+	fake_jpg.CreateWithMimeType("image/jpeg");
+	TEST(fake_jpg.DoesExist());
+	fake_jpg.RemoveFile();
+
 	// Do some tricky path manipulation.
 #if !FIVEL_PLATFORM_MACINTOSH
 	Path tricky = GetFontDirectory().AddParentComponent();

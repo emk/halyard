@@ -125,6 +125,12 @@ namespace FileSystem {
 		void ReplaceWithTemporaryFile(const Path &inTemporaryFile) const;
 
 		//////////
+		// Create an empty file with the specified MIME type.  (The type
+		// is only used on operating systems which support file types.)
+		//
+		void CreateWithMimeType(const std::string &inMimeType);
+
+		//////////
 		// Compare two paths for equality.  This is a dumb test--it doesn't
 		// know anything about simplifying paths, and it doesn't look at
 		// the disk.  It just does a memberwise comparison.  It isn't

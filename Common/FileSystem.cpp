@@ -3,6 +3,7 @@
 #include "TCommon.h"
 
 #include <algorithm>
+#include <fstream>
 
 #include <stdio.h>
 #include <ctype.h>
@@ -359,6 +360,71 @@ void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
 		RemoveFile();
 inTemporaryFile.RenameFile(*this);
 }
+
+#if FIVEL_PLATFORM_WINDOWS || FIVEL_PLATFORM_OTHER
+
+void FileSystem::CreateWithMimeType(const std::string &inMimeType)
+{
+	std::ofstream file(ToNativePathString().c_str());
+	file.close();
+}
+
+#elif FIVEL_PLATFORM_MACINTOSH
+
+#include <TextUtils.h>
+#include <Files.h>
+#include <Script.h>
+#include <Resources.h>
+
+#define TEXT_PLAIN_TYPE ('TEXT')
+#ifdef DEBUG
+	// Developers want text files to open in a real editor...
+#	define TEXT_PLAIN_CREATOR ('R*ch')
+#else
+	// ...but users may have nothing better than TeachText.
+#	define TEXT_PLAIN_CREATOR ('ttxt')
+#endif // DEBUG
+
+// This function taken from the MacUtils.cpp file in the old
+// Mac engine.
+static bool PathToFSSpec(const char *inPath, FSSpec *inSpec)
+{
+	Str255		thePath;
+	OSErr		err;
+	bool		retValue = true;	// cbo - why is it not returning noErr?
+	
+	strcpy((char *) thePath, inPath);
+	c2pstr((char *) thePath);
+	
+	if ((err = ::FSMakeFSSpec(0, 0, thePath, inSpec)) == noErr)
+		retValue = true;
+		
+	return (retValue);
+}
+
+void Path::CreateWithMimeType(const std::string &inMimeType)
+{
+	// We could be really classy and call Internet Config to map the MIME
+	// type to a creator/type pair.  But this will work for now.
+	if (inMimeType == "text/plain")
+	{
+		FSSpec spec;
+		if (PathToFSSpec(ToNativePathString().c_str(), &spec))
+		{
+			::FSpCreateResFile(&spec, TEXT_PLAIN_CREATOR,
+							   TEXT_PLAIN_TYPE, smRoman);
+			if (ResError() == noErr)
+				return;
+		}
+	}
+	
+	std::ofstream file(ToNativePathString().c_str());
+	file.close();
+}
+
+#else
+#	error "Unknown FiveL platform."
+#endif // FILEL_PLATFORM_*
 
 bool FileSystem::operator==(const Path& inLeft, const Path& inRight)
 {
