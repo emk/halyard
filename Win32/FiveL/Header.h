@@ -125,9 +125,10 @@ class Header : public Index
 		// [in] s, - string of text to print
 		// [in] a - starting index in s
 		// [in] b - ending index in s
-		// [out] return - the actual width (in pixels) of the text that was output
+		// [out] return - a point containing the actual width (in pixels) and
+		//				  height (including any descenders) of the text that was output
 		//
-		virtual int DrawLine(TPoint &loc, const char *s, long a, long b);
+		virtual TPoint DrawLine(TPoint &loc, const char *s, long a, long b);
 
 	protected:
         //////////
@@ -239,6 +240,10 @@ class HeaderManager : public IndexManager
 
 /*
  $Log$
+ Revision 1.2  2002/02/27 13:21:12  tvw
+ Bug #613 - Changed calculation of _INCR_Y to include descenders
+ (part or letter that goes below baseline).
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

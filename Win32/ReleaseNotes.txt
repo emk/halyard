@@ -1,5 +1,13 @@
 FiveL for Win32 Release Notes
 
+3.2.2, Wednesday, February 27, 2002, 1:12 PM
+
+	Bug #613 - Changed calculation of _INCR_Y to include descenders
+	(part or letter that goes below baseline).
+	
+	NOTE: All 5L scripts will likely need to be updated to reflect
+	this change. 
+
 3.2.1, Tuesday, February 19, 2002, 12:15 PM
 
 	Bugs #494 and #495 are addressed in this update.

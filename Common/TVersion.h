@@ -16,17 +16,21 @@
 
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
-#define REV_BIG			01
+#define REV_BIG			02
 #define REV_SMALL		00
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.1"
+#define VERSION_STRING	"5L for Win32 3.2.2"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.6  2002/02/27 13:21:12  tvw
+ Bug #613 - Changed calculation of _INCR_Y to include descenders
+ (part or letter that goes below baseline).
+
  Revision 1.5  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

@@ -144,7 +144,7 @@ void Header::Draw(TRect &bounds, char *text, int color, int Shadow)
     TPoint  loc(bounds.Left(), bounds.Top());
     int     maxWidth = bounds.Right() - bounds.Left();
     int     pixWidth;
-	int		text_width = 0;
+	TPoint	text_size;
 	int		incr_x;
     long    tLen = strlen(text);
     long    lineStart;
@@ -198,12 +198,12 @@ void Header::Draw(TRect &bounds, char *text, int color, int Shadow)
 	        //itsFont->SetColor(color);
 	        // Color support for text command removed. Color set in header.
 	        
-	        text_width = DrawLine(loc, text, lineStart, index);
-			incr_x = max(incr_x, text_width);
+	        text_size = DrawLine(loc, text, lineStart, index);
+			incr_x = max(incr_x, text_size.X());
 	
 	        //  Bump the y coordinate for the next line.
-	        loc.OffsetY(itsFont->Height());
-
+	        //loc.OffsetY(itsFont->Height());
+			loc.OffsetY(text_size.Y());
 	        
 	        //  Don't bother drawing text once we hit the bottom of the screen.
 	        //
@@ -214,7 +214,8 @@ void Header::Draw(TRect &bounds, char *text, int color, int Shadow)
 		// reset stuff
 		::SetBkMode(hDC,OPAQUE);
 		::SelectObject(hDC, hOldFont);
-	}
+
+	} // end-while
 
 end:
     gVariableManager.SetLong(INCR_Y_NAME, loc.Y()); 
@@ -223,7 +224,8 @@ end:
     // make sure the dirty rect extends down to cover characters below the
     // text line - use g as an example (should really see if there are chars
     // that are below the line - and use the right one)
-    dirty_rect.SetBottom(loc.Y() + (itsFont->CharHeight('g') - itsFont->Height()) + 2);
+    //dirty_rect.SetBottom(loc.Y() + (itsFont->CharHeight('g') - itsFont->Height()) + 2);
+	dirty_rect.SetBottom(loc.Y() + 2);
 	dirty_rect.SetRight(incr_x);
 
     gView->DirtyRect(&dirty_rect);
@@ -385,13 +387,15 @@ int Header::GetLineLength(char *s, long *index, long tLen, int maxWidth)
  *  Parameter s    (what to print)
  *  Parameter a    (start at a in "s")
  *  Parameter b    (..and end in b)
+ * 
  * Return:
- *		The actual width (in pixels) of the text that was output.
+ *		a point containing the actual width (in pixels) and
+ *		height (including any descenders) of the text that was output
  *
  * Comments:
  *   Draw the number of characters given, starting at s.
  ***********************************************************************/
-int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
+TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 {
 	HDC				hDC;
 	COLORREF		theColor;
@@ -399,6 +403,8 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
     TPoint   		shad;
     unsigned char	ch;
 	int				incr_x = loc.X();
+	int				incr_y = itsFont->Height();
+	TPoint			ret;				// return value
     
     hDC = gView->GetDC();
  
@@ -442,11 +448,13 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
         
 		::SetTextColor(hDC, theColor);
 
-		// set incr_x
+		// set incr_x and incr_y
 		SIZE	textSize;
-
 		if (::GetTextExtentPoint32(hDC, tptr, (int) (b-a-1), &textSize))
+		{
 			incr_x += textSize.cx;
+			incr_y = max(incr_y, textSize.cy);
+		}
 
 		::TabbedTextOut(hDC, pt.X(), pt.Y() + itsOffset, tptr, (int) (b-a-1), 0, NULL, 0);
 	}
@@ -455,23 +463,24 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	    //  Skip leading spaces. They should not be drawn.
 	    //
 
-	    pt.OffsetY(itsOffset); //@@@9-19-96 added offset
+	    pt.OffsetY(itsOffset);
 
-	    while (s[a] == ' ') 		// skip whitespace at start
+	    while (s[a] == ' ') 					// skip whitespace at start
 	        a++;
 	
 	    while (a < b) 
 		{
-	
+			
 	        switch (ch = s[a]) 
 	        {
-	            case 0:             //  End of string.
-	                return (incr_x);
+	            case 0:							//  End of string.
+	                ret.Set(incr_x, incr_y);
+					return ret;
 	
-	            case '^':           //  Hilite char.
+	            case '^':						//  Hilite char.
 	                a++;
 	                fHilite = !fHilite;
-	                ch = 0;             //  Set to 0 so we don't draw it.
+	                ch = 0;						//  Set to 0 so we don't draw it.
 	                
 	                if (fHilite)				// just starting style text
 	                {
@@ -514,7 +523,8 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	                    case 0:
 						case 'w':			// newline (windows only)
 	                    case 'n':           //  End of string or line.
-	                        return (incr_x);
+	                        ret.Set(incr_x, incr_y);
+							return ret;
 	                    case 't':
 	                    	ch = 9; //tab
 							break;
@@ -553,7 +563,6 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	            //create new font, bold/underline if necessary: 
 	            itsFont->SetUnderline(fUnderline); //this sets bold, too!!!
 	             
-	
 	            //  Shadow first.
 	            //
 	            if (itsShadow) 
@@ -576,12 +585,15 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 					pt.OffsetX(itsFont->CharWidth(ch));
 	            
 				incr_x = pt.X();
+				incr_y = max(incr_y, itsFont->CharHeight(ch));
 
 	            a++;
 	        }
-	    }
+	    } // end-while
 	} 
-	return (incr_x);
+
+	ret.Set(incr_x, incr_y);
+	return ret;
 }
 
 /*****************************
@@ -692,6 +704,10 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.2  2002/02/27 13:21:12  tvw
+ Bug #613 - Changed calculation of _INCR_Y to include descenders
+ (part or letter that goes below baseline).
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 
