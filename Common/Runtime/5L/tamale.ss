@@ -589,7 +589,7 @@
   ;; initialized to [frame 0] when tamale.ss is loaded.
   ;;
   (define (rel-wait elem-or-name &key (frame 0)) 
-    (wait elem-or-name (+ frame last-wait-frame)))
+    (wait elem-or-name :frame (+ frame last-wait-frame)))
            
   ;; what is 'tc' short for?
   (define (tc arg1 &opt arg2 arg3)
