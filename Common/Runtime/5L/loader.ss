@@ -18,6 +18,13 @@
    (list (build-path (current-directory) "Runtime")
 	 (build-path (current-directory) "Scripts")))
   
+  ;; Import a function the hard way.  We can't just (require ...) this
+  ;; module because we don't set up the collection paths until its
+  ;; too late to help.
+  (define make-compilation-manager-load/use-compiled-handler
+    (dynamic-require '(lib "cm.ss" "mzlib")
+  		     'make-compilation-manager-load/use-compiled-handler))
+  
   ;;; The default namespace into which this script was loaded.  We don't
   ;;; use it to run much except this code.
   (define *original-namespace* #f)
@@ -65,6 +72,10 @@
 	;; We'll need this in just a second when we call load/use-compiled.
         (set! filename "bootstrap-env.ss")
         (namespace-require '(lib "bootstrap-env.ss" "5L"))
+
+	;; Ask MzScheme to transparently compile modules to *.zo files.
+	(current-load/use-compiled
+	 (make-compilation-manager-load/use-compiled-handler))
 
 	;; Manually load the kernel into our new namespace.  We need
 	;; to call (load/use-compiled ...) instead of (require ...),
