@@ -11,6 +11,8 @@
 // We declare some testing-related primitives for the interpreter.
 #include "TPrimitives.h"
 
+USING_NAMESPACE_FIVEL
+
 // XXX - For now, we'll declare the per-file test entry points here, to
 // avoid creating extra header files just for one function.  These will
 // most likely be replaced with static constructor tricks as I continue to

@@ -6,6 +6,8 @@
 #include "ImlUnit.h"
 #include "TSchemeInterpreter.h"
 
+USING_NAMESPACE_FIVEL
+
 // Make sure we have single-token names for all our types.
 using std::string;
 using GraphicsTools::Color;
