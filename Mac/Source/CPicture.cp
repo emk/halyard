@@ -62,7 +62,7 @@ CPicture::~CPicture()
 		delete m_Qtg;
 }
 
-void CPicture::Load(bool firstTime /* = false */)
+void CPicture::Load(bool firstTime)
 {
 	CResource::Load();
 	

@@ -50,7 +50,7 @@ CPalette::~CPalette()
 //
 //	Load - 
 //
-void CPalette::Load(bool firstTime /* = false */)
+void CPalette::Load(bool firstTime)
 {
 	CResource::Load();
 	

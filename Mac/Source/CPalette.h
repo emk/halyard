@@ -19,7 +19,9 @@ class CPalette : public CResource
 					CPalette(TString &inName);
 		virtual		~CPalette();
 	
-		virtual void	Load(bool firstTime = false);	
+		virtual void	Load() { Load(false); }	
+		virtual void	Load(bool firstTime);	
+
 		virtual void	_Load(void);
 		virtual void	_Purge(void);
 

@@ -21,7 +21,8 @@ class CPicture : public CResource
 						CPicture(TString &inName);
 		virtual			~CPicture();
 	
-		virtual void	Load(bool firstTime = false);	
+		virtual void	Load() { Load(false); }	
+		virtual void	Load(bool firstTime);	
 		virtual void	_Load(void);
 		virtual void	_Purge(void);
 		void			Draw(TPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte = false);
