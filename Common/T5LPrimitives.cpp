@@ -28,6 +28,7 @@ void FIVEL_NS Register5LPrimitives()
 	REGISTER_5L_PRIMITIVE_WITH_NAME("-", Minus);
 	REGISTER_5L_PRIMITIVE_WITH_NAME("*", Times);
 	REGISTER_5L_PRIMITIVE_WITH_NAME("/", Divide);
+	REGISTER_5L_PRIMITIVE_WITH_NAME("%", Modulo);
 
 	// Floating-point operations.
 	REGISTER_5L_PRIMITIVE(Truncate);
@@ -122,6 +123,19 @@ DEFINE_5L_PRIMITIVE(Divide)
 	int32 arg1, arg2;
 	inArgs >> arg1 >> arg2;
 	::SetPrimitiveResult(arg1 / arg2);
+}
+
+
+//-------------------------------------------------------------------------
+// (% INT INT)
+//-------------------------------------------------------------------------
+// Get the value of one number modulo another.
+
+DEFINE_5L_PRIMITIVE(Modulo)
+{
+	int32 arg1, arg2;
+	inArgs >> arg1 >> arg2;
+	::SetPrimitiveResult(arg1 % arg2);
 }
 
 

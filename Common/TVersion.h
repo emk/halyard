@@ -16,15 +16,24 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		9
+#define VERSION_REV_BIG		10
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.9 (Development)"
+#define VERSION_STRING	"5L 3.3.10 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.17  2002/07/08 14:25:33  zeb
+ 3.3.10 - 7 July 2002
+
+   * Added a new Release-Notes.txt file.
+   * Fixed a bug which caused LFileBundle to die with an assertion
+     failure when importing an empty file.
+   * New feature: Modulo primitive.  5L now supports Modulo(x,y).
+     Syntax is (% x y).
+
  Revision 1.16  2002/06/24 15:17:11  emk
  3.3.9 - Highly experimental engine which makes _INCR_X,
  _INCR_Y, _Graphic_X and _Graphic_Y relative to the current

@@ -1,5 +1,7 @@
-CVS -
+3.3.10 - 7 July 2002
 
   * Added a new Release-Notes.txt file.
   * Fixed a bug which caused LFileBundle to die with an assertion
     failure when importing an empty file.
+  * New feature: Modulo primitive.  5L now supports Modulo(x,y).
+    Syntax is (% x y).
