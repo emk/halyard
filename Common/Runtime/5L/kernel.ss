@@ -221,7 +221,9 @@
       result))
   
   (define (have-5l-prim? name)
-    (%call-5l-prim 'haveprimitive name))
+    ;; TODO - Build a general mechanism for extracting return values
+    ;; and converting them to the correct type.
+    (equal? (%call-5l-prim 'haveprimitive name) "1"))
 
   (define (idle)
     (%kernel-die-if-callback 'idle)
