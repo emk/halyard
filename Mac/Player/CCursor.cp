@@ -197,7 +197,9 @@ void CCursorManager::CheckCursor(void)
 }	
 
 //
-//	CheckZones - Check the touch zones.
+//	CheckZones - Check the touch zones. Go through the list and remember the 
+//		last zone that contains the cursor. We want touch zones defined later
+//		ta take precedence.
 //
 void CCursorManager::CheckZones(void)
 {
@@ -206,8 +208,8 @@ void CCursorManager::CheckZones(void)
 	LArrayIterator	iterator(paneList, LArrayIterator::from_Start);
 	CTouchZone		*theButt;
 	bool			found = false;
-		
-	while ((not found) and (iterator.Next(&theButt)))
+	
+	while (iterator.Next(&theButt))	
 	{
 		Rect	frameRect;
 		
@@ -217,15 +219,14 @@ void CCursorManager::CheckZones(void)
 		{
 			// ask the touch zone for its cursor
 			theCursor = theButt->GetCursor();
-			ChangeCursor(theCursor, true);
 			found = true;
 		}
 	}
 	
-	if (not found)
-	{
+	if (found)
+		ChangeCursor(theCursor, true);
+	else
 		ChangeCursor(mDefaultCursor);
-	}
 }
 	
 
@@ -366,6 +367,9 @@ void CCursorManager::ChangeCursor(CursorType inCursor, bool inTZone /* = false *
 
 /*
 $Log$
+Revision 1.2  2000/02/01 16:50:48  chuck
+Fix cursors on overlapping touch zones.
+
 Revision 1.1  2000/01/04 13:40:20  chuck
 New cursors
 

@@ -11,6 +11,7 @@ struct Configuration
 	short environsVersion;
 	short machineType;
 	short systemVersion;
+	short quicktimeVersion;
 	short processor;
 	Boolean hasFPU;
 	Boolean hasColorQD;

@@ -49,8 +49,11 @@
 #include "CIndex.h"
 #include "CCursor.h"
 
-// cbo_debug - take this out when don't need anymore
-//#include <profiler.h>
+// build stuff
+#define VERSION_STRING	"5L for MacOS 2.00, build 20"
+#define VERSION_MAJOR_NUM	2
+#define VERSION_MINOR_NUM	00
+#define VERSION_BUILD_NUM	20
 
 //
 // constants
@@ -300,23 +303,7 @@ CMac5LApp::CMac5LApp()
 	gInFront = true;
 		 	
 	// set up initial values for "global" variables
-	gVariableManager.SetString("_NoCheckDisc", "0");		// check for discs by default
-	gVariableManager.SetString("_locked", "0");				// start off unlocked
-	gVariableManager.SetString("_graphpal", "NULL");		// something dumb in graphpal
-	gVariableManager.SetString("_faded", "0");				// we aren't faded
-	gVariableManager.SetString("_error", "0");
-	gVariableManager.SetString("_lpstat", "0");
-	gVariableManager.SetString("_lpactive", "0");
-	gVariableManager.SetString("_movieplaying", "0");
-	gVariableManager.SetLong("_resx", mScreenRect.right);
-	gVariableManager.SetLong("_resy", mScreenRect.bottom);
-	gVariableManager.SetLong("_bitdepth", mBitDepth);
-	
-#ifdef DEBUG_5L
-	gVariableManager.SetString("_debug", "1");
-#else
-	gVariableManager.SetString("_debug", "0");
-#endif
+	SetGlobals();
 	
 	// Fade back in (once the window has drawn itself).
 	if (gFullScreen and gHideMenuBar)
@@ -464,7 +451,10 @@ void CMac5LApp::DoExit(int16 inSide)
 		mMoviePal = NULL;
 		mCurPal = NULL;
 
-		// cbo - reload the current palette - it is already set so we don't
+		// reset our "global" variables
+		SetGlobals();
+		
+		// reload the current palette - it is already set so we don't
 		// 	have to do anything else
 		if (reloadPal)
 			mGraphicsPal = GetPalette(theCurPal.GetString());
@@ -473,32 +463,6 @@ void CMac5LApp::DoExit(int16 inSide)
 			gVariableManager.SetString("_graphpal", "NULL");
 		else
 			gVariableManager.SetString("_graphpal", theCurPal.GetString());
-			
-		// recreate our "global" variables
-		gVariableManager.SetLong("_NoCheckDisc", theCheckDisc);	// reset this variable
-		gVariableManager.SetString("_locked", "0");				// start off unlocked
-		gVariableManager.SetString("_faded", "0");				// and not faded
-		gVariableManager.SetString("_lpstat", "0");
-		gVariableManager.SetString("_lpactive", "0");
-		gVariableManager.SetString("_movieplaying", "0");
-		gVariableManager.SetLong("_resx", mScreenRect.right);
-		gVariableManager.SetLong("_resy", mScreenRect.bottom);
-		gVariableManager.SetLong("_bitdepth", mBitDepth);
-#ifdef DEBUG_5L
-		gVariableManager.SetString("_debug", "1");
-#else
-		gVariableManager.SetString("_debug", "0");
-#endif
-		
-		// cbo - don't know why we were doing this as KillScript() drew black
-		// anyway - but now we want to leave up the last graphic so we
-		// really don't need this
-		//if (gModMan->HaveModules())
-		//{
-		//	gPlayerView->ColorCard(0);
-		//	
-		//	gPlayerView->Draw(nil);			// draw whatever it is we did
-		//}
 	}
 
 	if ((inSide > 0) and (gModMan->HaveModules()))
@@ -534,9 +498,9 @@ void CMac5LApp::StartUp(void)
 		// If shift key was down start with -1 (shift script).
 		
 		if (gDoShiftScript)
-			gModMan->LoadModule(-2);
+			stayRunning = gModMan->LoadModule(-2);
 		else
-			gModMan->LoadModule(-1);
+			stayRunning = gModMan->LoadModule(-1);
 	}
 #ifdef DEBUG_5L
 	// We can ask for a script. Only for debugging??
@@ -894,8 +858,43 @@ void CMac5LApp::MaxMemory(void)
 	prinfo("Difference: %d", maxTempFreeMem - minTempFreeMem);
 }
 
+void CMac5LApp::SetGlobals(void)
+{
+	// set up initial values for "global" variables
+	gVariableManager.SetString("_NoCheckDisc", "0");		// check for discs by default
+	gVariableManager.SetString("_locked", "0");				// start off unlocked
+	gVariableManager.SetString("_graphpal", "NULL");		// something dumb in graphpal
+	gVariableManager.SetString("_faded", "0");				// we aren't faded
+	gVariableManager.SetString("_error", "0");
+	gVariableManager.SetString("_lpstat", "0");
+	gVariableManager.SetString("_lpactive", "0");
+	gVariableManager.SetString("_movieplaying", "0");
+	gVariableManager.SetLong("_resx", mScreenRect.right);
+	gVariableManager.SetLong("_resy", mScreenRect.bottom);
+	gVariableManager.SetLong("_bitdepth", mBitDepth);
+	
+#ifdef DEBUG_5L
+	gVariableManager.SetString("_debug", "1");
+#else
+	gVariableManager.SetString("_debug", "0");
+#endif
+
+	// set the engine build variables
+	gVariableManager.SetString("_enginebuildstr", VERSION_STRING);
+	
+	int32	buildNum;
+	
+	buildNum = 10000 * VERSION_MAJOR_NUM;
+	buildNum += (100 * VERSION_MINOR_NUM);
+	buildNum += VERSION_BUILD_NUM;
+	gVariableManager.SetLong("_enginebuild", buildNum);
+}
+
 /* 
 $Log$
+Revision 1.9  2000/02/01 16:50:49  chuck
+Fix cursors on overlapping touch zones.
+
 Revision 1.8  1999/12/16 17:30:56  chuck
 no message
 

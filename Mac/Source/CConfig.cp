@@ -187,6 +187,7 @@ void CConfig::DefineConfiguration(void)
 	theConfiguration.systemVersion = (short)response;
 
 	theConfiguration.hasQuickTime = (Gestalt(gestaltQuickTime, &response) == noErr);
+	theConfiguration.quicktimeVersion = (short) response;
 	
 } // DefineConfiguration 
 
@@ -402,6 +403,9 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.3  2000/02/01 16:50:49  chuck
+Fix cursors on overlapping touch zones.
+
 Revision 1.2  1999/10/07 12:51:14  chuck
 Initial revision
 

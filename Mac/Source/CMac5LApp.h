@@ -46,6 +46,8 @@ class	CMac5LApp : public LApplication
 									
 	protected:
 		CBackWindow			*mDisplayWindow;
+		
+		void				SetGlobals(void);
 		void				DoAEOpenDoc(
 								const AppleEvent 	&inAppleEvent,
 								AppleEvent			&outARReply,

@@ -1,5 +1,22 @@
 FiveL for Macintosh Release Notes
 
+2.00, Build 21, Tuesday, February 1, 2000 9:05:10 AM
+
+¥ Fixed cursors for overlapping touch zones. Now the last
+touch zone defined will take precedence in deciding the
+cursor to display.
+
+2.00, Build 20, Friday, January 7, 2000 4:02:34 PM
+
+¥ New global variables:
+	_EngineBuildStr - string that identifies the engine build
+		this string will have the format:
+			5L for MacOS 2.00, build 20
+	_EngineBuild - number that identifies the engine build
+		this number will have the format:
+			(major * 10000) + (minor * 100) + build
+			e.g. 20020 for 2.00 build 20
+			
 2.00, Build 19, Wednesday, December 22, 1999 2:20:05 PM
 
 ¥ Changed the built-in cursors to the hand cursors that Scott made. Also

@@ -179,7 +179,7 @@ bool InitIndex(FSSpec *scriptSpec, FSSpec *indexSpec, bool fEncrypted)
 		nameLen = scriptSpec->name[0];
 		scriptSpec->name[nameLen+1] = '\0';
 		
-		prcaution("The index file for <%s> needs to be regenerated!!",
+		prerror("The index file for <%s> needs to be regenerated!!",
 				&(scriptSpec->name[1]));
 				
 		return (FALSE);
