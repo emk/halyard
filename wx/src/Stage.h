@@ -598,6 +598,12 @@ public:
 	bool MouseIsGrabbed() { return mGrabbedElement ? true : false; }
 
 	//////////
+	// Is the mouse grabbed by the specified element?
+	//
+	bool MouseIsGrabbedBy(Element *inElement)
+    	{ return mGrabbedElement == inElement; }
+
+	//////////
 	// Should we send mouse events to the specified element?  This is
 	// normally true, unless a grab is in effect, in which case only
 	// the grabbed element should receive mouse events.

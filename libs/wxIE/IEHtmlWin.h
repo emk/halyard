@@ -55,6 +55,7 @@ public:
 	bool GoHome();
 	bool GoSearch();
 	bool Refresh(wxIEHtmlRefreshLevel level);
+    bool IsBusy();
 	bool Stop();
 
 	DECLARE_EVENT_TABLE();

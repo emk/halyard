@@ -79,6 +79,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(MediaSetVolume);
 	REGISTER_5L_PRIMITIVE(MouseGrab);
 	REGISTER_5L_PRIMITIVE(MouseIsGrabbed);
+	REGISTER_5L_PRIMITIVE(MouseIsGrabbedBy);
 	REGISTER_5L_PRIMITIVE(MousePosition);
 	REGISTER_5L_PRIMITIVE(MouseUngrab);
 	REGISTER_5L_PRIMITIVE(Movie);
@@ -205,14 +206,14 @@ DEFINE_5L_PRIMITIVE(BrowserCanReload) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
-    ::SetPrimitiveResult(browser->Refresh());
+    ::SetPrimitiveResult(browser->CanRefresh());
 }
 
 DEFINE_5L_PRIMITIVE(BrowserCanStop) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
-    ::SetPrimitiveResult(browser->Stop());
+    ::SetPrimitiveResult(browser->CanStop());
 }
 
 DEFINE_5L_PRIMITIVE(BrowserBack) {
@@ -549,6 +550,13 @@ DEFINE_5L_PRIMITIVE(MouseGrab) {
 
 DEFINE_5L_PRIMITIVE(MouseIsGrabbed) {
 	::SetPrimitiveResult(wxGetApp().GetStage()->MouseIsGrabbed());
+}
+
+DEFINE_5L_PRIMITIVE(MouseIsGrabbedBy) {
+	std::string name;
+	inArgs >> SymbolName(name);
+	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+	::SetPrimitiveResult(wxGetApp().GetStage()->MouseIsGrabbedBy(elem));
 }
 
 DEFINE_5L_PRIMITIVE(MousePosition) {

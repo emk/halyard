@@ -34,6 +34,8 @@ private:
     void OnMSHTMLBeforeNavigate2X(wxActiveXEvent& event);
     void OnMSHTMLNavigateComplete2X(wxActiveXEvent& event);
     void OnMSHTMLTitleChangeX(wxActiveXEvent& event);
+    void OnMSHTMLCommandStateChangeX(wxActiveXEvent& event);
+    void OnMSHTMLUpdateStopButtonX(wxActiveXEvent& event);
 	void OnMSHTMLNewWindow2X(wxActiveXEvent& event);
     void OnMSHTMLProgressChangeX(wxActiveXEvent& event);
 
@@ -47,6 +49,9 @@ BEGIN_EVENT_TABLE(CustomIEHtmlWindow, wxIEHtmlWin)
     EVT_ACTIVEX(ID_MSHTML, "BeforeNavigate2",   OnMSHTMLBeforeNavigate2X)
     EVT_ACTIVEX(ID_MSHTML, "NavigateComplete2", OnMSHTMLNavigateComplete2X)
 	EVT_ACTIVEX(ID_MSHTML, "TitleChange",       OnMSHTMLTitleChangeX)
+	EVT_ACTIVEX(ID_MSHTML, "CommandStateChange",OnMSHTMLCommandStateChangeX)
+    EVT_ACTIVEX(ID_MSHTML, "DownloadBegin",     OnMSHTMLUpdateStopButtonX)
+    EVT_ACTIVEX(ID_MSHTML, "DownloadComplete",  OnMSHTMLUpdateStopButtonX)
 	EVT_ACTIVEX(ID_MSHTML, "NewWindow2",        OnMSHTMLNewWindow2X)
 	EVT_ACTIVEX(ID_MSHTML, "ProgressChange",    OnMSHTMLProgressChangeX)
 END_EVENT_TABLE()
@@ -90,6 +95,31 @@ void CustomIEHtmlWindow::OnMSHTMLTitleChangeX(wxActiveXEvent& event) {
     mElement->GetDispatcher()->DoEventBrowserTitleChanged(event["Text"]);
 }
 
+void CustomIEHtmlWindow::OnMSHTMLCommandStateChangeX(wxActiveXEvent& event) {
+    long command = event["Command"];
+    bool is_on = event["Enable"];
+    switch (command) {
+        case CSC_NAVIGATEFORWARD:
+            mElement->mButtonEnabled[BrowserElementIE::FORWARD_BUTTON] = is_on;
+            mElement->GetDispatcher()->DoEventUpdateUI("forward");
+            break;
+
+        case CSC_NAVIGATEBACK:
+            mElement->mButtonEnabled[BrowserElementIE::BACK_BUTTON] = is_on;
+            mElement->GetDispatcher()->DoEventUpdateUI("back");
+            break;
+
+        default:
+            /* Ignore unknown commands. */
+            break;
+    }
+}
+
+void CustomIEHtmlWindow::OnMSHTMLUpdateStopButtonX(wxActiveXEvent& event) {
+    // Our busy state may have changed, so re-poll the stop button.
+    mElement->GetDispatcher()->DoEventUpdateUI("stop");    
+}
+
 void CustomIEHtmlWindow::OnMSHTMLNewWindow2X(wxActiveXEvent& event) {
     // Theoretically, we can do 'event["Cancel"] = true' to force all
     // navigation to occur in the current window.  Unfortunately, this
@@ -127,11 +157,12 @@ void CustomIEHtmlWindow::OnMSHTMLProgressChangeX(wxActiveXEvent& event) {
 BrowserElementIE::BrowserElementIE(Stage *inStage, const wxString &inName,
                                    const wxRect &inBounds,
                                    FIVEL_NS TCallback *inDispatch)
-    : BrowserElement(inStage, inName, inDispatch)
-                      
+    : BrowserElement(inStage, inName, inDispatch)                      
 {
     mHtmlWindow = new CustomIEHtmlWindow(inStage, inBounds, this);
     InitializeWidgetWindow(mHtmlWindow);
+    for (int i = 0; i < MAX_BUTTONS; i++)
+        mButtonEnabled[i] = false;
 }
 
 void BrowserElementIE::LoadPage(const wxString &inUrl){
@@ -149,8 +180,7 @@ wxString BrowserElementIE::GetCurrentPageTitle() {
 }
 
 bool BrowserElementIE::CanGoBack() {
-    // XXX - We can figure this out from the control update events.
-    return true;
+    return mButtonEnabled[BACK_BUTTON];
 }
 
 bool BrowserElementIE::GoBack() {
@@ -158,8 +188,7 @@ bool BrowserElementIE::GoBack() {
 }
 
 bool BrowserElementIE::CanGoForward() {
-    // XXX - We can figure this out from the control update events.
-    return true;
+    return mButtonEnabled[FORWARD_BUTTON];
 }
 
 bool BrowserElementIE::GoForward() {
@@ -175,8 +204,7 @@ bool BrowserElementIE::Refresh() {
 }
 
 bool BrowserElementIE::CanStop() {
-    // XXX - We can figure this out using various page load events.
-    return true;
+    return mHtmlWindow->IsBusy();
 }
 
 bool BrowserElementIE::Stop() {

@@ -26,6 +26,15 @@ to embed Internet Explorer using wxIE.
   * Added support for opening pages in existing browser widgets from scripts.
   * Added basic support for forward, back, reload and stop buttons.
 
+  * PROP-BY-NAME -> PROP*
+  * @-BY-NAME -> @*
+  * SEND-BY-NAME replaced by more flexible SEND*
+  * New syntax for relative pathnames: (@ relpath) -> @relpath
+  * New MOUSE-GRABBED-BY? function.
+  * New ENABLED? property on %BASIC-BUTTON%.
+  * Support for (ON SETUP-FINISHED () ...) handlers.
+  * Added support for enabling and disabling forward/back/reload/stop buttons.
+
 0.0.13 - 6 Jan 2004 - emk
 
 Basic drag & drop can now be implemented in Scheme.

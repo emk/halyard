@@ -63,6 +63,13 @@ Tamale is a language for card-based interactive multimedia programming."
   :group 'faces
   :group 'tamale)
 
+(defface tamale-relative-path-face
+  '((t
+     (:foreground "blue")))
+  "Face to use for highlighting relative node paths in Tamale mode."
+  :group 'faces
+  :group 'tamale)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -110,6 +117,13 @@ Tamale is a language for card-based interactive multimedia programming."
 
       ;; Magic variables.
       (cons "\\<\\(self\\)\\>" 1)
+
+      ;; Relative pathnames.
+      (list "\\s-\\(@\\sw+\\)"
+            ;; (The extra ' in front of tamale-relative-path-face is needed
+            ;; in Emacs 21 for some horrible, evil, and inexplicable
+            ;; reason.)
+            '(1 'tamale-relative-path-face))
 
       ;; Non-standard definitions.  Make sure these get processed *after*
       ;; the rules we inherit from scheme-mode.  (This is loosely adapted

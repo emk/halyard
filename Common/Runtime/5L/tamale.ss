@@ -30,11 +30,13 @@
            delete-element-if-exists
            %basic-button%)
 
-  (define (make-path subdir path)
-    (apply build-path (current-directory) subdir (regexp-split "/" path)))
-
   (define (url? path)
     (regexp-match "^(http|ftp|rtsp):" path))
+
+  (define (make-path subdir path)
+    (if (url? path)
+        path
+        (apply build-path (current-directory) subdir (regexp-split "/" path))))
 
   (define (check-file path)
     (unless (or (url? path) (file-exists? path))
@@ -156,6 +158,9 @@
   (define (mouse-grabbed?)
     (call-5l-prim 'MouseIsGrabbed))
   
+  (define (mouse-grabbed-by? elem)
+    (call-5l-prim 'MouseIsGrabbedBy (node-full-name elem)))
+
   (define (clear-screen c)
     (call-5l-prim 'screen c))
   
@@ -247,6 +252,17 @@
       (call-5l-prim 'BrowserReload (node-full-name self)))
     (on stop ()
       (call-5l-prim 'BrowserStop (node-full-name self)))
+
+    (on setup-finished ()
+      (define (update-command command)
+        (send* self 'update-ui
+               :ignorable? #t
+               :arguments (list (make <update-ui-event> :command command))))
+      (call-next-handler)
+      (update-command 'back)
+      (update-command 'forward)
+      (update-command 'reload)
+      (update-command 'stop))
 
     (call-5l-prim 'Browser (node-full-name self) 
                   (make-node-event-dispatcher self) (prop self rect)
@@ -445,40 +461,49 @@
 
   (define (delete-element-if-exists name)
     (when (element-exists? name)
-      (delete-element (@-by-name name))))
+      (delete-element (@* name))))
 
   (define-element-template %basic-button%
-      [action]
+      [[action :type <function> :label "Click action"]
+       [enabled? :type <boolean> :label "Enabled?" :default #t]]
       (:template %zone%)
-    (define (draw-self style refresh?)
-      ;; Style is ACTIVE, NORMAL, PRESSED or DISABLED.
-      (send self draw-button style)
+
+    (define mouse-in-button? #f)
+    (define (do-draw refresh?)
+      (send self draw-button 
+            (cond [(not enabled?) 'disabled]
+                  [(not mouse-in-button?) 'normal]
+                  [(mouse-grabbed-by? self) 'pressed]
+                  [#t 'active]))
       (when refresh?
         (refresh)))
     
-    ;; XXX - Won't work here.
-    ;;(draw-self 'normal #f)
-    
+    (on prop-change (name value prev veto)
+      (case name
+        [[enabled?] (do-draw #f)]
+        [else (call-next-handler)]))
+
+    (on setup-finished ()
+      (call-next-handler)
+      (do-draw #f))
     (on mouse-enter (event)
-      (if (mouse-grabbed?)
-          (draw-self 'pressed #t)
-          (draw-self 'active #t)))
+      (set! mouse-in-button? #t)
+      (do-draw #t))
     (on mouse-leave (event)
-      (draw-self 'normal #t))
+      (set! mouse-in-button? #f)
+      (do-draw #t))
     (on mouse-down (event)
-      (debug-log (node-full-name self))
-      (grab-mouse self)
-      (draw-self 'pressed #t))
+      (when enabled?
+        (grab-mouse self)
+        (do-draw #t)))
     (on mouse-up (event)
-      (define in-button?
-        (point-in-rect? (event-position event)
-                        ;; XXX - This is wrong.  We need point-in-shape?.
-                        (bounds (prop self shape))))
-      (draw-self (if in-button? 'active 'normal) #t)
-      (when (mouse-grabbed?)
-        (ungrab-mouse self)
-        (when in-button?
-          ((prop self action)))))
+      (define was-grabbed? #f)
+      (when (mouse-grabbed-by? self)
+        (set! was-grabbed? #t)
+        (ungrab-mouse self))
+      (do-draw #t)
+      (when (and mouse-in-button? was-grabbed?)
+        ((prop self action))))
     )
 
   )

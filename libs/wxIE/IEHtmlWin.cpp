@@ -363,6 +363,17 @@ bool wxIEHtmlWin::Refresh(wxIEHtmlRefreshLevel level)
     return hret == S_OK;
 }
 
+bool wxIEHtmlWin::IsBusy()
+{
+    HRESULT hret = 0;
+    VARIANT_BOOL busy;
+    hret = m_webBrowser->get_Busy(&busy);
+    if (hret != S_OK)
+        return false; // If the call fails, assume we're not busy.
+    else
+        return (busy == VARIANT_TRUE);
+}
+
 bool wxIEHtmlWin::Stop()
 {
     HRESULT hret = 0;

@@ -84,7 +84,7 @@
   ;;  Events
   ;;-----------------------------------------------------------------------
 
-  (provide on send-by-name send
+  (provide on send send*
            <event> event?
            <vetoable-event> veto-event! event-vetoed?
            <idle-event> idle-event?
@@ -161,7 +161,7 @@
           (apply handler call-next-handler args)
           (call-next-handler))))
 
-  (define (send* call-next-handler node name . args)
+  (define (send/recursive* call-next-handler node name . args)
     (let recurse [[node node]]
       (if (not node)
           (call-next-handler)
@@ -169,15 +169,20 @@
                  (lambda () (recurse (node-parent node)))]]
             (apply send/nonrecursive* new-call-next-handler node name args)))))
 
-  (define (send-by-name node name . args)
-    (define (no-handler)
+  (define (send* node name
+                 &key (arguments '()) (recursive? #t) (ignorable? #f))
+    (define (error-handler)
       (error (cat "No handler for " name " on " (node-full-name node))))
-    (apply send* no-handler node name args))
+    (define (ignore-handler)
+      #f)
+    (apply (if recursive? send/recursive* send/nonrecursive*)
+           (if ignorable? ignore-handler error-handler)
+           node name arguments))
 
   (define-syntax send
     (syntax-rules ()
       [(send node name . args)
-       (send-by-name node 'name . args)]))
+       (send* node 'name :arguments (list . args))]))
 
   (defclass <event> ())
 
@@ -252,7 +257,7 @@
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
       (define (no-handler)
         (set! unhandled? #t))
-      (send* no-handler node name event)
+      (send/recursive* no-handler node name event)
       (set! (engine-event-vetoed? *engine*) (was-vetoed? event))
       (set! (engine-event-handled? *engine*) (not unhandled?))))
 
@@ -293,7 +298,7 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide prop-by-name set-prop-by-name! prop)
+  (provide prop* set-prop*! prop)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
@@ -344,7 +349,7 @@
     (foreach [decl (template-prop-decls template)]
       (node-maybe-default-property! node decl)))
 
-  (define (prop-by-name node name)
+  (define (prop* node name)
     ;; This function controls how we search for property bindings.  If
     ;; you want to change search behavior, here's the place to do it.
     (let [[value (hash-table-get (node-values node)
@@ -353,7 +358,7 @@
           value
           (error "Unable to find template property" name))))
 
-  (define (set-prop-by-name! node name value)
+  (define (set-prop*! node name value)
     ;; We allow the scriptor to set properties on a node.  However, we
     ;; must notify the node of the change.  The node may choose to veto
     ;; the change--in which case, we undo the change.
@@ -390,7 +395,7 @@
   (define-syntax prop
     (syntax-rules ()
       [(prop node name)
-       (prop-by-name node 'name)]))
+       (prop* node 'name)]))
 
   (define (bindings->hash-table bindings)
     ;; Turns a keyword argument list into a hash table.
@@ -507,7 +512,7 @@
   ;;  contains <card>s and <card-groups>.  <card>s contain <element>s.
 
   (provide <node> node? node-name node-full-name node-parent find-node
-           @-by-name @ elem-or-name-hack)
+           @* @ elem-or-name-hack)
 
   (defclass <node> (<template>)
     name
@@ -566,7 +571,7 @@
                [found (find-node candidate)]]
           (or found (find-node-relative (node-parent base) name)))))
 
-  (define (@-by-name name)
+  (define (@* name)
     (if (current-card)
         (or (find-node-relative (current-card) name)
             (error (cat "Can't find node " name)))
@@ -576,7 +581,7 @@
     ;; Syntactic sugar for find-node-relative.
     (syntax-rules ()
       [(@ name)
-       (@-by-name 'name)]))
+       (@* 'name)]))
 
   (define (elem-or-name-hack elem-or-name)
     ;; Backwards compatibility glue for code which refers to elements
@@ -588,7 +593,7 @@
                         (begin
                           (debug-caution (cat "Change '" elem-or-name
                                               " to (@ " elem-or-name ")"))
-                          (@-by-name elem-or-name)))))
+                          (@* elem-or-name)))))
 
   (define (analyze-node-name name)
     ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
@@ -865,7 +870,11 @@
         (node-bind-property-values! node template)
         (recurse (template-extends template))
         ;; Pass NODE to the init-fn so SELF refers to the right thing.
-        ((template-init-fn template) node))))
+        ((template-init-fn template) node)))
+    ;; Let the node know all initialization functions have been run.
+    ;; (This allows "two-phase" construction, where templates can effectively
+    ;; send messages to subtemplates.)
+    (send/nonrecursive* (lambda () #f) node 'setup-finished))
 
   (defmethod (exit-node (group <card-group>))
     (set! (card-group-active? group) #f)

@@ -1,19 +1,30 @@
 
+  VTRA fixes
+    (@ ...) -> @...
+    @-by-name -> @*
+    prop-by-name -> prop*
+    send-by-name -> send*    
+
   Bugs
     %basic-button% does not hit test correctly with overlays
 
   Node/event model
-    (@ ...) -> @...
-    (on setup ...)
-      Fix %basic-button%
+/   Need MOUSE-GRABBED-BY? function
+/   (on setup-finished ...)
+/     Fix %basic-button%
     (on cleanup ...)
-    Is update-ui the right event name?  We don't have wxWindows semantics.
+    Is UPDATE-UI the right event name?  We don't have wxWindows semantics.
     Allow elements to be attached to sequences
+    Enable and disable zones in engine (for cursor purposes only?)
+    PROP-CHANGE API needs work
+    Do we want to systematize DRAW-BUTTON method for all zones?
+    with-drawing-context -> with-dc
 
   Browser
-    Make commands available from Scheme
-    Implement buttons
-    Implement enabling/disabling of buttons
+/   Make commands available from Scheme
+/   Implement buttons
+/   Implement enabling/disabling of buttons
+    Update BrowserElementWx to support more BrowserElement features
 
   Audio layer
     Bugs

@@ -17,7 +17,15 @@
 class BrowserElementIE : public BrowserElement {
     friend class CustomIEHtmlWindow;
 
+    enum {
+        BACK_BUTTON,
+        FORWARD_BUTTON,
+        MAX_BUTTONS
+    };
+    typedef long BrowserControlFlags;
+
     CustomIEHtmlWindow *mHtmlWindow;
+    bool mButtonEnabled[MAX_BUTTONS];
 
 public:
     BrowserElementIE(Stage *inStage, const wxString &inName,
