@@ -12,20 +12,11 @@
   (require (lib "trace.ss" "5L"))
   (set-trace-output-printer! debug-log)
   
-  ;;; @define SYNTAX with-tracing
-  ;;;
-  ;;; Trace execution of a code body by dumping information to the
-  ;;; debug log.  This is very handy.
-  ;;;
-  ;;; @syntax (with-tracing body ...)
-  ;;; @param BODY body The code to trace.
-
-
   ;;;======================================================================
   ;;;  Useful Syntax
   ;;;======================================================================
 
-  (provide fn callback while for-each-item define-engine-variable)
+  (provide fn callback while for foreach define-engine-variable)
 
   ;;; Create an anonymous function object (which can be passed as a
   ;;; callback to many routines).  This is just an alias for Scheme's
@@ -64,15 +55,33 @@
 	   (when cond
 	     (loop))))]))
 
+  ;;; Run a body of code until a condition is met, updating a loop variable
+  ;;; as specified.  This works in a fashion similar to C's 'for' loop.
+  ;;;
+  ;;; @syntax (for [[name init-value] cond next-value] body ...)
+  ;;; @param NAME name The name of the loop variable.
+  ;;; @param EXPRESSION init-value The initial value of 'name' before starting
+  ;;;   the loop.
+  ;;; @param EXPRESSION cond This expression is tested before each pass
+  ;;;   through the loop.  If it returns false, the loop will end.
+  ;;; @param EXPRESSION next-value An expression to calculate the value of
+  ;;;   'name' for the next trip through the loop.
+  (define-syntax for
+    (syntax-rules ()
+      [(for [[name init-value] cond next-value] body ...)
+       (let loop [[name init-value]]
+	 (begin/var body ...)
+	 (loop next-value))]))
+
   ;;; Run a body once for each item in a list.
   ;;;
-  ;;; @syntax (for-each-item [name list] body ...)
+  ;;; @syntax (foreach [name list] body ...)
   ;;; @param NAME name The variable to use as the item name.
   ;;; @param LIST list The list from which to get the items.
   ;;; @param BODY body The code to run for each list item.
-  (define-syntax for-each-item
+  (define-syntax foreach
     (syntax-rules ()
-      [(for-each-item [name lst] body ...)
+      [(foreach [name lst] body ...)
        (for-each (lambda (name) (begin/var body ...)) lst)]))
 
   ;;; Bind a Scheme variable name to a 5L engine variable.
@@ -86,6 +95,14 @@
     (syntax-rules ()
       [(define-engine-variable name 5l-name type)
        (define-symbol-macro name (engine-var '5l-name 'type))]))
+
+  ;;; @define SYNTAX with-tracing
+  ;;;
+  ;;; Trace execution of a code body by dumping information to the
+  ;;; debug log.  This is very handy.
+  ;;;
+  ;;; @syntax (with-tracing body ...)
+  ;;; @param BODY body The code to trace.
 
 
   ;;;======================================================================
@@ -302,11 +319,13 @@
 	   stylesheet-highlight-shadow-color
 	   define-stylesheet measure-text draw-text)
 
-  (define-struct stylesheet (name family size flags justification
-			     color highlight-color height-adjustment
-			     shadow-offset shadow-color
-			     highlight-shadow-color
-			     windows-adjustment))
+  (define-struct stylesheet
+    (name family size flags justification
+     color highlight-color height-adjustment
+     shadow-offset shadow-color
+     highlight-shadow-color
+     windows-adjustment)
+    (make-inspector))
   
   ;; Helper: Given a stylesheet, register a corresponding header for
   ;; legacy support.
