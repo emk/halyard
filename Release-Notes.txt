@@ -1,5 +1,24 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.4.9 - 20 Nov 2003 - emk
+
+Bug fixes for the new media layer.
+
+  * Add a (card brokenvideoexit ...) card to each script.  This will be
+    called if the user chooses to abort video playback.
+  * newMovieAsyncOK is no longer used.  This thoroughly breaks preloading,
+    but it fixes severe performance problems with movie startup latency.
+  * More spinning on MoviesTask.  This seems to be necessary *in addition*
+    to the newMovieAsyncOK change.
+  * The controller bar can be turned on during audio playback.
+
+Please check all scripts to make sure they recover gracefully from missing
+networks--'_ERROR' may be used to report missing network connections again,
+and some of our scripts appear to ignore it.
+
+Also, try reducing the media timeouts from 30 seconds in the scripts we're
+testing--we should be able to do better than that.
+
 3.4.8 - 5 Nov 2003 - emk
 
 This engine seems to be working pretty well in my testing, so I'm dropping

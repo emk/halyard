@@ -73,6 +73,7 @@
 #include "Globals.h"
 #include "Devices.h"
 #include "FiveL.h"
+#include "TInterpreter.h"
 #include "resource.h"
 
 //
@@ -126,8 +127,12 @@ static void SkipOrExitDialog(int inTemplate) {
     StModalDialogLock lock;
     WORD result = ::DialogBox(hAppInst, MAKEINTRESOURCE(inTemplate),
                               hwndApp, (DLGPROC) SkipOrExitProc);
-    if (result == IDABORT)
-        ShutDown(); 
+    if (result == IDABORT) {
+        if (TInterpreter::HaveInstance())
+            TInterpreter::GetInstance()->JumpToCardByName("brokenvideoexit"); 
+        else
+            ShutDown();
+    }
 }
 
 //
@@ -488,18 +493,24 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect,
 			// Put our movie at the specified location.
 			loc = mOrigin;
 		}
-		else
+		else if (inAudioOnly)
+        {
+            // Just in case we're showing a controller, pick a useful loc.
+            loc.h = 0;
+            loc.v = 0;
+        }
+        else
 		{
-			// Center it.
+            // Center it.
 			options |= TQTMovie::kCenterMovie;
 			loc.h = VSCREEN_WIDTH / 2;
 			loc.v = VSCREEN_HEIGHT / 2;
 		}
 
-		if (inAudioOnly)
-			options |= TQTMovie::kAudioOnly;
         if (gVariableManager.GetLong("_showcontroller"))
             options |= TQTMovie::kEnableMovieController;
+		else if (inAudioOnly)
+			options |= TQTMovie::kAudioOnly;
 
 		// Start playback.
 		mLooping = false;
@@ -579,6 +590,26 @@ bool LQuickTime::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.5.2.5  2003/12/01 19:35:17  emk
+ 3.4.9 - 20 Nov 2003 - emk
+
+ Bug fixes for the new media layer.
+
+   * Add a (card brokenvideoexit ...) card to each script.  This will be
+     called if the user chooses to abort video playback.
+   * newMovieAsyncOK is no longer used.  This thoroughly breaks preloading,
+     but it fixes severe performance problems with movie startup latency.
+   * More spinning on MoviesTask.  This seems to be necessary *in addition*
+     to the newMovieAsyncOK change.
+   * The controller bar can be turned on during audio playback.
+
+ Please check all scripts to make sure they recover gracefully from missing
+ networks--'_ERROR' may be used to report missing network connections again,
+ and some of our scripts appear to ignore it.
+
+ Also, try reducing the media timeouts from 30 seconds in the scripts we're
+ testing--we should be able to do better than that.
+
  Revision 1.5.2.4  2003/11/05 20:59:00  emk
  3.4.8 - 5 Nov 2003 - emk
 

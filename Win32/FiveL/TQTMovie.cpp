@@ -393,58 +393,6 @@ bool TQTMovie::SafeToStart(long inLoadState) {
     if (inLoadState >= kMovieLoadStatePlaythroughOK) {
         // QuickTime thinks the movie will play through to the end.
         return true;
-    } else if (inLoadState >= kMovieLoadStatePlayable) {
-#ifndef USE_CUSTOM_QT_ESTIMATOR
-        return false;
-#else // USE_CUSTOM_QT_ESTIMATOR
-        // Because of problems with QuickTime's PlaythroughOK estimator,
-        // we've experimented with the following function.  Unfortunately,
-        // many of the problems in QuickTime's estimator are apparently due
-        // to weird GetDuration behavior, which affects our estimator
-        // similarly.  So this code doesn't help much.  *sigh*
-        //
-        // QuickTime thinks the movie *could* be started, but fears that
-        // it would run out of data half way through.  However, QuickTime
-        // tends to be overly cautious, so let's make some calculations.
-        TimeValue loaded_tv = GetMaxLoadedTimeInMovie();
-        TimeValue total_tv = GetDuration();
-        double tv_played_per_second = (double) GetTimeScale();
-        time_t current_time = ::time(NULL);
-        double time_ellapsed = current_time - mMovieOpenTime;
-
-        gDebugLog.Log("*** TimeValue loaded: %d, total: %d, per second: %.1f\n"
-                      "||| Time ellapsed: %.1f",
-                      loaded_tv, total_tv, tv_played_per_second,
-                      time_ellapsed);
-
-        // If the movie is either incomplete or a live video stream, it
-        // may not have a duration.  Let QuickTime worry about this.
-        if (total_tv == INDEFINITE_DURATION)
-            return false;
-
-        // If we haven't loaded anything, we can't calculate the loading
-        // speed.  Oh, well.  Division by zero is not our friend.
-        if (loaded_tv == 0)
-            return false;
-
-        // Calculate the speed at which we've been loading the movie so
-        // far.  This is the least accurate part of this calculation.
-        double tv_loaded_per_second = loaded_tv / time_ellapsed;
-        
-        // Calculate the length of the movie, in seconds.
-        TimeValue unloaded_tv = total_tv - loaded_tv;
-        double seconds_needed_to_load = 
-            unloaded_tv / tv_loaded_per_second;
-        double seconds_needed_to_play =
-            total_tv / tv_played_per_second;
-
-        gDebugLog.Log("||| Time needed to play: %.1f, to load: %.1f",
-                      seconds_needed_to_load, seconds_needed_to_play);
-                      
-        // Make a guess.
-        if (seconds_needed_to_load + 2 < seconds_needed_to_play)
-            return true;
-#endif // USE_CUSTOM_QT_ESTIMATOR
     }
 
     return false;

@@ -17,15 +17,35 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		8
+#define VERSION_REV_BIG		9
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.8"
+#define VERSION_STRING		"5L 3.4.9"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.9  2003/12/01 19:34:50  emk
+ 3.4.9 - 20 Nov 2003 - emk
+
+ Bug fixes for the new media layer.
+
+   * Add a (card brokenvideoexit ...) card to each script.  This will be
+     called if the user chooses to abort video playback.
+   * newMovieAsyncOK is no longer used.  This thoroughly breaks preloading,
+     but it fixes severe performance problems with movie startup latency.
+   * More spinning on MoviesTask.  This seems to be necessary *in addition*
+     to the newMovieAsyncOK change.
+   * The controller bar can be turned on during audio playback.
+
+ Please check all scripts to make sure they recover gracefully from missing
+ networks--'_ERROR' may be used to report missing network connections again,
+ and some of our scripts appear to ignore it.
+
+ Also, try reducing the media timeouts from 30 seconds in the scripts we're
+ testing--we should be able to do better than that.
+
  Revision 1.30.2.8  2003/11/05 20:58:23  emk
  3.4.8 - 5 Nov 2003 - emk
 
