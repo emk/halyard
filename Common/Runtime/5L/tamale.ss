@@ -15,7 +15,9 @@
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
            %html-element% %edit-box-element% %movie-element% 
-           html edit-box vorbis-audio sine-wave movie 
+           html edit-box vorbis-audio
+           geiger-audio set-geiger-audio-counts-per-second!
+           sine-wave movie 
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics)
@@ -201,6 +203,18 @@
 
   (define (edit-box name r text)
     (create %edit-box-element% :name name :rect r :text text))
+
+  (define-element-template %geiger-audio%
+      [[location :type <string> :label "Location"]]
+      (:template %element%)
+    (call-5l-prim 'AudioStreamGeiger (node-name self)
+                  (build-path (current-directory) "Media" location)))
+
+  (define (geiger-audio name location)
+    (create %geiger-audio% :name name :location location))
+
+  (define (set-geiger-audio-counts-per-second! name counts)
+    (call-5l-prim 'AudioStreamGeigerSetCps name counts))
 
   (define-element-template %sine-wave-element%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
