@@ -40,8 +40,10 @@ RSC=rc.exe
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
+MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GR /GX /O2 /I "..\..\..\Common" /I "..\..\..\libs\freetype2\include" /I "..\..\..\libs\plt\include" /I "..\..\..\libs\crypto" /I "..\..\..\libs\boost" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /O2 /I "..\..\..\Common" /I "..\..\..\libs\libxml2\include" /I "..\..\..\libs\freetype2\include" /I "..\..\..\libs\plt\include" /I "..\..\..\libs\crypto" /I "..\..\..\libs\boost" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "LIBXML_STATIC" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -63,8 +65,10 @@ LIB32=link.exe -lib
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
+MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common" /I "..\..\..\libs\freetype2\include" /I "..\..\..\libs\plt\include" /I "..\..\..\libs\crypto" /I "..\..\..\libs\boost" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common" /I "..\..\..\libs\libxml2\include" /I "..\..\..\libs\freetype2\include" /I "..\..\..\libs\plt\include" /I "..\..\..\libs\crypto" /I "..\..\..\libs\boost" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "LIBXML_STATIC" /FR /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -94,6 +98,14 @@ SOURCE=..\..\..\Common\FileSystem.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\GraphicsTools.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\Model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\ModelChange.cpp
 # End Source File
 # Begin Source File
 
@@ -199,6 +211,10 @@ SOURCE=..\..\..\Common\TVariable.cpp
 
 SOURCE=..\..\..\Common\Typography.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\XmlUtils.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -214,6 +230,14 @@ SOURCE=..\..\..\Common\FileSystem.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\GraphicsTools.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\Model.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\ModelChange.h
 # End Source File
 # Begin Source File
 
@@ -334,6 +358,10 @@ SOURCE=..\..\..\Common\TVersion.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\Typography.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\XmlUtils.h
 # End Source File
 # End Group
 # End Target
