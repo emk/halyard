@@ -1,5 +1,16 @@
 FiveL for Macintosh Release Notes
 
+2.00, Build 4, Friday, October 22, 1999 4:53:43 PM
+
+¥ New cursor support in touchzones. Now touchzones can have an optional cursor
+to be displayed when the mouse is over the touchzone. The following constants
+are supported for cursors:
+	up, down, right, left, backup, hand, arrow, cross, watch
+These contants can be used in the buttpcx and touch commands as follows:
+(touch L T R B cmd [cursor [pict [X Y]]])
+(buttpcx pict X Y header text cmd [cursor [sec_cmd]])
+The cursor constant is optional for both commands and will default to the hand.
+
 2.00, Build 3, Thursday, October 21, 1999 10:38:34 AM
 
 ¥ The problem with the white background in the release engine has been fixed.
