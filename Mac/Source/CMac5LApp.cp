@@ -47,10 +47,10 @@
 
 
 // build stuff
-#define VERSION_STRING	"5L for MacOS 2.01, build 1"
+#define VERSION_STRING	"5L for MacOS 2.02, build 2"
 #define VERSION_MAJOR_NUM	2
-#define VERSION_MINOR_NUM	00
-#define VERSION_BUILD_NUM	20
+#define VERSION_MINOR_NUM	02
+#define VERSION_BUILD_NUM	02
 
 //
 // constants
@@ -112,7 +112,7 @@ using namespace PowerPlant;
 //		¥ Main Program
 // ===========================================================================
 
-int main()
+int FiveL::FiveLmain()
 {
 									// Set Debugging options
 #ifdef DEBUG
@@ -995,6 +995,14 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.15  2002/03/06 16:29:28  hamon
+Added a new file main.cp. main.cp has the function main, and it calls 5LMain in CMac5LApp.
+ (Previously main() was in CMac5LApp and it has been renamed to 5LMain ). 
+This allows the test suite to have its own call to main
+  without conflicts because two functions are named main. 
+
+Changes by Eric and Elizabeth, okayed by Eric
+
 Revision 1.14  2002/03/04 15:41:49  hamon
 Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
 

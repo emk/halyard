@@ -99,5 +99,6 @@ extern KLogger gDebugLog;
 
 extern Handle clickSound;
 extern WindowPtr gWindow;
+extern int FiveLmain();
 
 END_NAMESPACE_FIVEL
