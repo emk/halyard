@@ -45,6 +45,7 @@
 #include "TVersion.h"
 #include "TMac5LInterpreter.h"
 #include "TMacPrimitives.h"
+#include "TQTPrimitives.h"
 
 //
 // constants
@@ -67,6 +68,7 @@ bool				gHideMenuBar = true;		// to hide menu bar
 bool				gPrintDebug = false;		// normally off
 #endif
 bool				gDoShiftScript = false;		// by default, start from beginning
+PP::LGrowZone		*gGrowZone = NULL;
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -96,63 +98,72 @@ using namespace PowerPlant;
 
 int FiveL::FiveLmain()
 {
-									// Set Debugging options
-#ifdef DEBUG
-	SetDebugThrow_(debugAction_Nothing);
-	SetDebugSignal_(debugAction_Nothing);
-	//SetDebugThrow_(debugAction_SourceDebugger);
-	//SetDebugSignal_(debugAction_SourceDebugger);
-#else
-	SetDebugThrow_(debugAction_Nothing);
-	SetDebugSignal_(debugAction_Nothing);
-#endif
-
-	InitializeHeap(3);				// Initialize Memory Manager
-									// Parameter is number of Master Pointer
-									//   blocks to allocate
-	
-									// Initialize standard Toolbox managers
-#if TARGET_API_MAC_CARBON
-	UQDGlobals::InitializeToolbox();
-#else
-	UQDGlobals::InitializeToolbox(&qd);
-#endif
-	TLogger::MarkToolboxAsInitialized();
-	
-	new LGrowZone(20000);			// Install a GrowZone function to catch
-									//    low memory situations.
-									//    Parameter is size of reserve memory
-									//    block to allocate. The first time
-									//    the GrowZone function is called,
-									//    there will be at least this much
-									//    memory left (so you'll have enough
-									//    memory to alert the user or finish
-									//    what you are doing).
-
-	// cbo_debug
-	//if (ProfilerInit(collectDetailed, bestTimeBase, 100, 10))
-	//{
-	//	gLog.Caution("Couldn't start the profiler");
-	//}
-	//ProfilerSetStatus(false);
-	
-	// Check our configuration.
-	theConfig = new CConfig;
-	
-	if (theConfig->CheckConfig())	// if we don't have a good config, don't run
+	try
 	{
-		gTheApp = new CMac5LApp;	// create instance of application
+		// Set Debugging options
+#ifdef DEBUG
+		SetDebugThrow_(debugAction_Nothing);
+		SetDebugSignal_(debugAction_Nothing);
+		//SetDebugThrow_(debugAction_SourceDebugger);
+		//SetDebugSignal_(debugAction_SourceDebugger);
+#else
+		SetDebugThrow_(debugAction_Nothing);
+		SetDebugSignal_(debugAction_Nothing);
+#endif
 
-		//gTheApp->CheckMemory();
+		InitializeHeap(3); // Initialize Memory Manager
+		                   // Parameter is number of Master Pointer
+						   //   blocks to allocate
+	
+		// Initialize standard Toolbox managers
+#if TARGET_API_MAC_CARBON
+		UQDGlobals::InitializeToolbox();
+#else
+		UQDGlobals::InitializeToolbox(&qd);
+#endif
+		TLogger::MarkToolboxAsInitialized();
+	
+		// Install a GrowZone function to catch low memory situations.
+		// Parameter is size of reserve memory block to allocate. The first
+		// time the GrowZone function is called, there will be at least
+		// this much memory left (so you'll have enough memory to alert the
+		// user or finish what you are doing).
+		gGrowZone = new LGrowZone(100000);
 
-		gTheApp->Run();				//   class and run it
+		// cbo_debug
+		//if (ProfilerInit(collectDetailed, bestTimeBase, 100, 10))
+		//{
+		//	gLog.Caution("Couldn't start the profiler");
+		//}
+		//ProfilerSetStatus(false);
+	
+		// Check our configuration.
+		theConfig = new CConfig;
+	
+		// if we don't have a good config, don't run
+		if (theConfig->CheckConfig())
+		{
+			gTheApp = new CMac5LApp;	// create instance of application
+			
+			//gTheApp->CheckMemory();
+			
+			gTheApp->Run();				//   class and run it
+			
+			//gTheApp->MaxMemory();
+		}
 		
-		//gTheApp->MaxMemory();
+		if (gTheApp != NULL)
+			delete gTheApp;
 	}
-	
-	if (gTheApp != NULL)
-		delete gTheApp;
-	
+	catch (std::exception &e)
+	{
+		gLog.Error("Unexpected internal error: %s.", e.what());
+    }
+    catch (...)
+    {
+		gLog.Error("Unexpected, unknown internal error.");
+	}
+
 	return (0);
 }
 
@@ -224,6 +235,7 @@ CMac5LApp::CMac5LApp()
 	
 	// Install our Macintosh-specific primitive functions.
 	RegisterMacPrimitives();
+	RegisterQuickTimePrimitives();
 
 	// Register our platform-specific special variables.
 	gVariableManager.RegisterSpecialVariable("_system",
@@ -791,6 +803,16 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.23  2002/07/24 01:17:32  emk
+3.3.18 - 23 July 2002 - emk
+
+  * Forward-ported QtComponentVersion to the Mac (bug #1054).
+  * Fixed redoscript/keybind race condition (bug #1036).
+  * Added a top-level try/catch block on the Mac (bug #955).
+  * Added error checking in Mac BROWSE (bug #1070).
+  * Enlarged our growzone a bit, and made sure it's working.
+    This will help us determine if we have memory usage problems.
+
 Revision 1.22  2002/06/20 21:02:26  emk
 3.3.7 - Debug log updates, and error message if 5L is run without
 Mac5L.config or other support files.

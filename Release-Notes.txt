@@ -1,5 +1,14 @@
 When possible, please include bug numbers as seen below.
 
+3.3.18 - 23 July 2002 - emk
+
+  * Forward-ported QtComponentVersion to the Mac (bug #1054).
+  * Fixed redoscript/keybind race condition (bug #1036).
+  * Added a top-level try/catch block on the Mac (bug #955).
+  * Added error checking in Mac BROWSE (bug #1070).
+  * Enlarged our growzone a bit, and made sure it's working.
+    This will help us determine if we have memory usage problems.
+
 3.3.17 - 23 July 2002 - emk
 
   * Fixed RETURN in macros (bug #1053).
@@ -7,6 +16,7 @@ When possible, please include bug numbers as seen below.
   * Made Win32 BROWSE return an error if it fails (bug #793).
   * Forward-ported QtComponentVersion to Win32 (bug #1054).
   * Performance tuned Win32 textaa (bug #933).
+  * Added lots of try/catch wrappers on Win32 (bug #955).
 
 3.3.16 - 19 July 2002 - emk
 

@@ -148,7 +148,14 @@ std::string TMac5LCallback::PrintableRepresentation()
 
 void TMac5LCallback::Run()
 {
-    gCardManager.DoOneCommand(mCommand);
+	if (gCardManager.CardManagerReady())
+		gCardManager.DoOneCommand(mCommand);
+	else
+		// XXX - Race condition with leftover keybinds during a redoscript.
+		// The stale keybinds are still around (and will become valid in
+		// a second), but we haven't actually begun executing our first
+		// card.  This is silly legacy cruft.
+		gLog.Error("Can't run callback yet.  Please wait a moment.");
 }
 
 TCallback *TMac5LCallback::MakeCallback(const TString &inCmd)

@@ -109,6 +109,7 @@ class CCardManager : public TIndexManager
 	    const char		*BeforeCardName(void);
 	    const char		*AfterCardName(void);
 	    
+		bool			CardManagerReady() { return mCurrentCard != NULL; }
         CCard			*GetCurCard(void);		// need??
         CCard			*GetCard(const char *cardName) { return ((CCard *) Find(cardName)); }
 		

@@ -16,15 +16,25 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		17
+#define VERSION_REV_BIG		18
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.17 (Development)"
+#define VERSION_STRING	"5L 3.3.18 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.25  2002/07/24 01:16:43  emk
+ 3.3.18 - 23 July 2002 - emk
+
+   * Forward-ported QtComponentVersion to the Mac (bug #1054).
+   * Fixed redoscript/keybind race condition (bug #1036).
+   * Added a top-level try/catch block on the Mac (bug #955).
+   * Added error checking in Mac BROWSE (bug #1070).
+   * Enlarged our growzone a bit, and made sure it's working.
+     This will help us determine if we have memory usage problems.
+
  Revision 1.24  2002/07/23 21:53:41  emk
  3.3.17 - 23 July 2002 - emk
 

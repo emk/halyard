@@ -431,17 +431,23 @@ DEFINE_5L_PRIMITIVE(Browse)
     {
     	gDebugLog.Log("Launching default web browser");
     
-    	// Theoretically our suspend event should show the menu bar without problems. 
-    	// However, this doesn't work. Internet explorer's menu bar will be screwed up 
-    	// if Internet Explorer was not previously running. 
-    	// Therefore we need to show the menu bar here, before we call PP_ICLaunchURL. 
+    	// Theoretically our suspend event should show the menu bar without
+    	// problems.  However, this doesn't work. Internet explorer's menu
+    	// bar will be screwed up if Internet Explorer was not previously
+    	// running.  Therefore we need to show the menu bar here, before we
+    	// call PP_ICLaunchURL.  (Actually, now that we're calling
+		// ::HideMenuBar/::ShowMenuBar, this bug may be gone.)
     	::ShowMenuBar();
-        PP::UInternetConfig::PP_ICLaunchURL("\p", (char *) theURL.GetString(), endSel, &startSel, &endSel);
-    	
+        OSErr err =
+			PP::UInternetConfig::PP_ICLaunchURL("\p",
+												(char *) theURL.GetString(),
+												endSel, &startSel, &endSel);
+    	if (err != noErr)
+			::SetPrimitiveError("nobrowse", "Can't open a web browser.");
     }
     else
     {
-    	gDebugLog.Log("Problems with accessing InternetConfig during browse command.");
+		::SetPrimitiveError("notsupported", "Internet Config not available.");
 	}
 }
 
