@@ -14,6 +14,15 @@
 // Parser.h : Front end for the IndexGen application. It takes a script file 
 //			and parses it to find the start of commands.
 //
+// 			This code is used to split the file into separate top-level forms,
+//			which are headers, cards, and macrodefs. It doesn't actually parse
+//			the code for use by the engine. Instead, the engine creates CStreams
+//			from each top-level form and uses CStream to do the actual parsing.
+//
+//			This means that a lot of paren balancing code and escape processing
+//			is duplicated between CStream and CParser in some form or another,
+//			and if the two files disagree, the results might be weird.
+//			Quite frankly, this is not the cleanest design.
 
 #if !defined (_CParser_h_)
 #define _CParser_h_
@@ -55,6 +64,7 @@ class CParser
 		bool			haveErr;
 		bool			inComment;
 		bool			inEscape;
+		bool 			escapeNext;
 		int32			curLine;		// current line in the input file
 		
 		CIndexFile		*scriptFile;
@@ -76,6 +86,15 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3  2002/03/06 16:18:29  hamon
+ Fixed CStream and CParser to enable correct escaping of comments and escaping of unbalanced parens.  
+
+CStream changes pass all tests in new CStreamTests.cpp. 
+
+Added comment in CParser indicating remaining issues with it. 
+
+Changes by Elizabeth Hamon (comment in CParser by Eric), okayed by Eric.
+
  Revision 1.2  2002/03/04 15:42:03  hamon
  Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
 

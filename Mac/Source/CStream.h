@@ -41,6 +41,9 @@ class CStream : public FiveL::TString
         
         uint32			GetPos(void) { return (pos); }
 
+		bool			inEscape(int32 position); 			 
+		bool			inEscape(void);
+
         virtual int  	eof(void) { return (pos >= m_Length); }
         virtual int     more(void);
         virtual void    reset(void);

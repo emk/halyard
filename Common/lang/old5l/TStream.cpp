@@ -121,7 +121,7 @@ char CStream::nextchar(void)
     
     if (ch == COMMENT) 
     {
-        if (m_String[pos - 1] != SLASH) 
+        if (not inEscape()) 
         {
 			while (not eof() and (ch != kNEWLINE) and (ch != kRETURN))
                 ch = m_String[++pos];
@@ -143,7 +143,7 @@ int CStream::more(void)
     
     skipwhite();
     ch = curchar();
-    return ((not eof()) and ((ch != P_CLOSE) and (prevchar() != SLASH)));
+    return ((not eof()) and ((ch != P_CLOSE) and (not inEscape())));
 }
 
 //
@@ -198,7 +198,7 @@ void CStream::scanword(void)
         {
             case P_OPEN:
             case P_CLOSE:
-                if (prevchar() != SLASH)
+                if (not inEscape())
                     return;
             default:
                 if (whitespace(ch))
@@ -227,8 +227,11 @@ void CStream::scanopen(void)
         switch (ch) 
         {
             case P_OPEN:
-                pos++;
-                return;
+            	if (not inEscape())
+                {
+                	pos++;
+                	return;
+                }
             default:
                 ch = nextchar();
                 break;
@@ -262,18 +265,21 @@ void CStream::scanclose(void)
         switch (ch) 
         {
             case P_OPEN:
-                dangling_opens++;
+                if (not inEscape())
+                	dangling_opens++;
                 ch = nextchar();
                 break;
 
             case P_CLOSE:
-                dangling_opens--;
-                if (dangling_opens < 1) 
+                if (not inEscape())
                 {
-                    pos++;
-                    return;
-                }               // else drop into default...
-
+                	dangling_opens--;
+                	if (dangling_opens < 1) 
+                	{
+                    	pos++;
+                    	return;
+                	}               // else drop into default...
+				}
             default:
                 ch = nextchar();
                 break;
@@ -321,7 +327,7 @@ TString CStream::copystr(uint32 startPos, uint32 numChars)
     {
         //  Do we have the start of a variable name?
         //
-        if ((s[curpos] == '$') and ((curpos == 0) or (s[curpos - 1] != SLASH))) 
+        if ((s[curpos] == '$') and ((curpos == 0) or (not inEscape(curpos)))) 
         {
             //  Copy up until the $ sign.
             //
@@ -336,7 +342,7 @@ TString CStream::copystr(uint32 startPos, uint32 numChars)
             while (curpos < origlen) 
             {
                 ch = s[++curpos];
-                if ((ch == '$') and (s[curpos - 1] != SLASH))
+                if ((ch == '$') and (not inEscape(curpos)))
                     break;
             }
 
@@ -394,7 +400,7 @@ CStream& CStream::operator>>(TString &dest)
     //  entire contents of this set of parentheses. Otherwise go
     //  until we hit whitespace.
     //
-    if ((ch == P_OPEN) and (prevchar() != SLASH)) 
+    if ((ch == P_OPEN) and (not inEscape())) 
     {
         startPos = ++pos;
         //skipwhite();
@@ -560,4 +566,39 @@ CStream& CStream::operator>>(TPoint &pt)
     pt.Set(x, y);
     
     return (*this);
+}
+
+//  Tests to see if a character is escaped, given position of character
+// 
+//  Goes back along stream counting slashes until we either get a char
+//  that's not a slash or we reach the beginning.
+//  If the number of slashes is even, we are not in escape and return false
+//  If the number of slashes is odd, we are in escape and return true
+bool CStream::inEscape(int32 position)
+{
+	uint16 slashes = 0;
+	uint16 test = 0;
+	
+	while ((position > 0) && (m_String[--position] == SLASH))
+		slashes++;
+	
+#ifdef DEBUG
+	if ((position == 0) && (m_String[0] == SLASH))
+		gDebugLog.Log("WARNING! Reached beginning of stream and first character is a slash");	
+	// We have no idea whether we are handling this case correctly so going to print a warning when we have this case.
+	// (Your guess is as good as ours!)
+	// It worked as we wished in our test suite, but we don't know whether the tested cases are the only cases.
+#endif
+		
+	if ((slashes % 2) == 0)
+		return false;
+	else
+		return true;
+}
+
+//  Tests to see if curr character is escaped
+//	Gets current character position and passes it to inEscape(int32 position) function
+bool CStream::inEscape(void)
+{
+	return inEscape(GetPos());
 }

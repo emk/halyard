@@ -40,6 +40,8 @@
 
 USING_NAMESPACE_FIVEL
 
+const char SLASH = '\\';
+
 CParser::CParser()
 {
 	filePos = 0;
@@ -51,6 +53,7 @@ CParser::CParser()
 	curLine = 1;
 	inComment = false;
 	inEscape = false;
+	escapeNext = false;
 	haveErr = false;
 }
 
@@ -98,7 +101,6 @@ bool CParser::Parse(CIndexFile *inFile)
 	    		endPos = findClose();
 	    		state = 5;
 	    		break;
-
 	    	case 5:	
 				// create the index for the correct manager
 				switch (iType)
@@ -305,7 +307,7 @@ bool CParser::getString(TString &inString)
 		{
 			ch = getChar();		// no more skipping within a string
 
-			if ((isspace(ch)) or (ch == '#'))		// stop when come to a space
+			if ((isspace(ch)) or ((ch == '#') and (not inEscape)))		// stop when come to a space
 				done = true;						// don't worry about pushing char back
 			else if (((ch == '(') or (ch == ')')) and (not inEscape))	// can't have parens in strings
 			{
@@ -355,7 +357,12 @@ unsigned char CParser::getChar(void)
 {
 	unsigned char	ch;
 	
-	inEscape = false;
+	if (escapeNext)			// we are supposed to escape this character
+		inEscape = true;	// so set it as such
+	else 
+		inEscape = false;	// this character shouldn't be escaped
+		
+	escapeNext = false;		// unless character is SLASH, we won't escape next character
 
 	if (putCh != 255)					// do we have a put character
 	{
@@ -396,10 +403,10 @@ unsigned char CParser::getChar(void)
 
 		curLine++;
 	}
-	else if (ch == '#')	
+	else if ((ch == '#') && (not inEscape))	  // only in comment if not escaped
 		inComment = true;
-	else if (ch == '\\') 
-		inEscape = true;						
+	else if ((ch == SLASH) && (not inEscape)) // if ch == SLASH but in escape, this is the escaped character
+		escapeNext = true;					  // else the next character is the escaped character
 
 	return (ch);
 }
@@ -432,6 +439,15 @@ void CParser::getBuffer(void)
 
 /*
  $Log$
+ Revision 1.3  2002/03/06 16:18:28  hamon
+ Fixed CStream and CParser to enable correct escaping of comments and escaping of unbalanced parens.  
+
+CStream changes pass all tests in new CStreamTests.cpp. 
+
+Added comment in CParser indicating remaining issues with it. 
+
+Changes by Elizabeth Hamon (comment in CParser by Eric), okayed by Eric.
+
  Revision 1.2  2002/03/04 15:42:01  hamon
  Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
 
