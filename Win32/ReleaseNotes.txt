@@ -1,17 +1,16 @@
 FiveL for Win32 Release Notes
 
-3.2.3, Unreleased
+3.3.0, Friday, March 29, 2002
 
-    *** DO NOT MAKE NEW RELEASE BINARIES WITHOUT TALKING TO ERIC.  The
-	version numbering system is changing so that the Mac and Windows
-	engines will have the same version number.  You can check in
-	code like usual, of course.  Thank you. ***
+    Change to Linux-style version numbering--even minor numbers
+    (i.e., the "2" in "3.2") are stable engines, odd minor numbers
+	(i.e., the "3" in "1.3") are the development engines.
 
 	(1) Added new option to 5L.prefs to optionally allow multiple
 	instances of 5L to run.
 
-	# Allow multiple instances of FiveL (yes, NO)
-	multiple_instances = "yes"	
+	  # Allow multiple instances of FiveL (yes, NO)
+	  multiple_instances = "yes"	
 
 	(2) Merged changes from 3.2.0.1 into the development trunk.
 
@@ -22,16 +21,18 @@ FiveL for Win32 Release Notes
 	Everywhere that '\&' appears in a script, it needs to be replaced with
 	'\&amp;'.
 
-	(5) Ongoing work on native typography using FreeType 2.
+	(5) Ongoing work on native typography using FreeType 2, and the new
+	filesystem layer.  These features aren't actually accessible yet.
 
 	(6) Complete overhaul of the Crypt library.  It now supports streaming 
 	reads and writes.  Many function names were changed.  The encryption 
 	header was modified to include signature, payload, and timestamp.
 	NOTE: Previous versions of 5LDB will be incompatible because of this 
-	change.  
+	change.  The incompatible DB files are in 3.2.0.2, and may be
+    shipped with Genetics.
 
 	(7) Added CryptTool, a command-line utility to encrypt/decrypt scripts,
-	 5LDB, etc.  Run with no options for help.
+	5LDB, etc.  Run with no options for help.
 
 	(8) Modified IndexFile to automatically detect encrypted scripts and 
 	use a CryptStream for I/O if detected.
@@ -151,7 +152,7 @@ FiveL for Win32 Release Notes
 
 	Fixed a synchronization problem where if the media that is actually
 	played following a preload command is NOT the file that's
-      been preloaded, wait command does not function properly.
+    been preloaded, wait command does not function properly.
 	
 	Permanent fix for setting application window title
 	(setWindowTitle (HIV Virtual Clinic))
