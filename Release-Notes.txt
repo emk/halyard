@@ -12,6 +12,7 @@ CVS - emk
   * Added AudioStreamElement class.
   * New functions: VORBIS-AUDIO and SINE-WAVE.  These are mostly for
     testing at this point.
+  * We no longer drop Vorbis samples during playback (I hope!).
 
 0.0.4 - 28 May 2003 - emk, brian
 

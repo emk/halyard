@@ -23,6 +23,11 @@ class AudioStream
 							 void *inUserData);
 
 public:
+	enum Format {
+		INT16_PCM_STREAM,
+		FLOAT32_STREAM
+	};
+
 	enum {
 		SAMPLES_PER_SECOND = 44100
 	};
@@ -31,7 +36,7 @@ public:
 	// Create a new AudioStream.  You must call Start() afterwards if
 	// you want to play any audio.
 	//
-	AudioStream();
+	AudioStream(Format inFormat);
 
 	//////////
 	// Destroy an AudioStream.  The stream must be stopped before
@@ -68,16 +73,16 @@ protected:
 	// perhaps at interrupt level), and isn't allowed to do much of
 	// anything besides filling the buffer.
 	//
-	// [out] outBuffer - 2*inFrames floating point values, representing
-	//                   left and right channels (I'm not sure which is
-	//                   which, actually).
+	// [out] outBuffer - 2*inFrames values in the specified
+	//	                 format, representing left and right channels (I'm
+	//                   not sure which is which, actually).
 	// [in] inFrames   - The number of left/right pairs of samples
 	//                   to generate.
 	// [in] inTime     - The number of frames already played through
 	//                   this channel.
 	// [out] return    - Should we stop this stream now?
 	//
-	virtual bool FillBuffer(float *outBuffer, unsigned long inFrames,
+	virtual bool FillBuffer(void *outBuffer, unsigned long inFrames,
 							PaTimestamp inTime) = 0;
 
 	//////////
@@ -120,10 +125,11 @@ class SineAudioStream : public AudioStream
 	int mFrequency;
 
 public:
-	SineAudioStream(int inFrequency) : mFrequency(inFrequency) {}
+	SineAudioStream(int inFrequency)
+		: AudioStream(FLOAT32_STREAM), mFrequency(inFrequency) {}
 
 protected:
-	bool FillBuffer(float *outBuffer, unsigned long inFrames,
+	bool FillBuffer(void *outBuffer, unsigned long inFrames,
 					PaTimestamp inTime);
 
 };

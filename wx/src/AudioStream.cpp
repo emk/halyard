@@ -35,13 +35,15 @@ static inline float int16_to_float(int16 inSample)
 //  AudioStream Methods
 //=========================================================================
 
-AudioStream::AudioStream()
+AudioStream::AudioStream(Format inFormat)
 	: mIsRunning(false)
 {
+	PaSampleFormat format =
+		(inFormat == INT16_PCM_STREAM) ? paInt16 : paFloat32;
 	PaError err = Pa_OpenDefaultStream(&mStream,
 									   0,         // no input
 									   2,         // stereo output
-									   paFloat32, // floating-point samples
+									   format,
 									   SAMPLES_PER_SECOND,
 									   256,       // frames/buffer
 									   0,         // default number of buffers
@@ -164,7 +166,7 @@ void AudioStream::IdleAllStreams()
 //  SineAudioStream
 //=========================================================================
 
-bool SineAudioStream::FillBuffer(float *outBuffer,
+bool SineAudioStream::FillBuffer(void *outBuffer,
 								 unsigned long inFrames,
 								 PaTimestamp inTime)
 {

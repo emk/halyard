@@ -15,26 +15,50 @@ enum {
 class VorbisFile
 {
 	OggVorbis_File mVF;
-	int16 mReadBuffer[VORBIS_BUFFER_SIZE];
+	
+	int mWantedFrequency;
+	int mWantedChannels;
+
+	// We use a small buffer for reading data from the Vorbis codec, and
+	// storing it until Read() is called.  mBufferBegin points to the
+	// first valid data in the buffer, and mBufferEnd points one past
+	// the last valid data.
+	int16 mBuffer[VORBIS_BUFFER_SIZE];
+	int16 *mBufferBegin, *mBufferEnd;
+	int mBufferFrequency;
+	int mBufferChannels;
+	bool mDoneReading;
+
+	// Read the next chunk from this file, and update the mBuffer
+	// variables accordingly.
+	bool ReadChunk();
 
 public:
-	VorbisFile(const char *inFileName);
+	//////////
+	// Open an Ogg Vorbis audio file for reading.  You must specify
+	// the data format you wish to receive; this class has limited
+	// conversion capabilities.
+	//
+	// [in] inFileName - The name of the file to open
+	// [in] inWantedFrequency - The frequency of the data we want to read
+	// [in] inWantedChannels - The number of channels we want to read
+	//
+	VorbisFile(const char *inFileName, int inWantedFrequency,
+			   int inWantedChannels);
 	~VorbisFile();
 
 	//////////
-	// Read the next chunk from this file.  All output values remain
-	// valid until the next call to ReadChunk.
+	// Read the specified amount of data into a buffer, using the
+	// specified format.
 	//
-	// [out] outData - A pointer to the data.
-	// [out] outSize - The size of the output data, in 16-bit words.
-	// [out] outFrequency - The frequency of this data block, in hertz.
-	//                 (Yes, this can change from block to block.)
-	// [out] outChannels - The frequency of this data block, in hertz.
-	//                 (Yes, this can change from block to block.)
-	// [out] return -  true if a chunk was read, false if the file is done
+	// [out] outData - The buffer to fill
+	// [in] inMaxSize - The maximum size of the buffer
+	// [out] outSizeUsed - The amount of data actually read
+	// [out] result - true if the read succeeded, false if we've reached
+	//                the end of the file
 	//
-	bool ReadChunk(int16 **outData, size_t *outSize, int *outFrequency,
-				   int *outChannels);
+	bool Read(int16 *outData, size_t inMaxSize,
+			  size_t *outSizeUsed);
 };
 
 #endif // VorbisFile_H

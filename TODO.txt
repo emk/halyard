@@ -8,11 +8,13 @@
 /       Extract a IMediaElement interface from MovieElement
 
     Infrastructure
-      Allow AudioStreams to accept int16 *or* floats
-      Volume control?
-      Stop discarding extra Vorbis data when it doesn't fit in buffer
+/     Allow AudioStreams to accept int16 *or* floats
+/     Stop discarding extra Vorbis data when it doesn't fit in buffer
       Handle mono and 44.1/2^N Vorbis streams
+      Volume control?
       Refactor buffering class out of VorbisAudioStream
+      Fix endianess in libivorbisdec?
+      Fix stutter when switching from sine to vorbis clip (portaudio bug?)
 
     Useful features
       Looping
@@ -24,10 +26,11 @@
       Hook into Quake for ambients
       Kill off Quake sound effects when leaving sim card group
 
-    (WAIT ...) on a Vorbis stream
-    Allow Vorbis file loading with wxStream?
-    Hook into Tamale for foley - lower priority
-    Allow AudioStreams to be mono or stereo?
+    Less Important, Perhaps Even Dubious
+      (WAIT ...) on a Vorbis stream
+      Allow Vorbis file loading with wxStream?
+      Hook into Tamale for foley - lower priority
+      Allow AudioStreams to be mono or stereo?
     
   Send events to zones
 /   Mouse left down
