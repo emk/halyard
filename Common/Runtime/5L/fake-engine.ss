@@ -59,6 +59,14 @@
   (define (%call-5l-prim name . args)
     (case name
 
+      ;; See if a primitive is available.
+      [[haveprimitive]
+       (case (car args)
+         [[haveprimitive get set log setwindowtitle defstyle header keybind loadpal]
+          "1"]
+         [else
+          "0"])]
+
       ;; Primitives with actual implementations.
       [[get] (apply prim-get args)]
       [[set] (apply prim-set args)]
