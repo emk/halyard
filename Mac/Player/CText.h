@@ -32,7 +32,7 @@ class CText
 		// Destructor
 		virtual 			~CText();
 		void				DrawSimpleText(Boolean highlight);
-		Int32				GetLineHeight(void);	// Returns lineheight of text object
+		SInt32				GetLineHeight(void);	// Returns lineheight of text object
 
 	protected:
 		LArray				*mStyleOffsets;	// List of styles & offsets into mText for display

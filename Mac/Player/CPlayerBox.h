@@ -31,8 +31,8 @@ public:
 	
 protected:
 	Boolean					mFill;				// TRUE if box is to be filled
-	Int8					mLineWidth;			// Width of frame, in pixels
-	Int16					mColorIdx;			// Index into the CLUT
+	SInt8					mLineWidth;			// Width of frame, in pixels
+	SInt16					mColorIdx;			// Index into the CLUT
 	Rect					mBounds;
 	
 	virtual void			DrawSelf();	

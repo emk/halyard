@@ -106,7 +106,7 @@ void prcaution(char *cs,...)
 		
 		if (gDebugFile != nil)
 		{
-			Int32	strLen;
+			SInt32	strLen;
 			char	endLine[2];
 
 			endLine[0] = NEWLINE_CHAR;
@@ -147,7 +147,7 @@ void prinfo(char *cs,...)
 		
 		if (gDebugFile != nil)
 		{
-			Int32	strLen;
+			SInt32	strLen;
 			char	endLine[2];
 
 			endLine[0] = NEWLINE_CHAR;
@@ -188,7 +188,7 @@ void prdebug(char *cs,...)
 		
 		if (gDebugFile != nil)
 		{
-			Int32	strLen;
+			SInt32	strLen;
 			char	endLine[2];
 
 			endLine[0] = NEWLINE_CHAR;

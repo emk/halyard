@@ -354,7 +354,7 @@ void CMac5LApp::DoAEOpenDoc(
 	if (err != noErr) 
 		Throw_(err);
 	
-	Int32	numDocs;
+	SInt32	numDocs;
 	err = AECountItems(&docList, &numDocs);
 	if (err != noErr) 
 		Throw_(err);
@@ -364,7 +364,7 @@ void CMac5LApp::DoAEOpenDoc(
 	// Coerce descriptor data into a FSSpec
 	// Tell Program object to open document
 		
-	for (Int32 i = 1; i <= numDocs; i++) 
+	for (SInt32 i = 1; i <= numDocs; i++) 
 	{
 		AEKeyword	theKey;
 		DescType	theType;
@@ -515,7 +515,7 @@ void CMac5LApp::CleanUp(void)
 	gIndexFileManager.RemoveAll();		// toss all the script files	
 }
 
-Boolean CMac5LApp::AttemptQuitSelf(Int32 /* inSaveOption */)
+Boolean CMac5LApp::AttemptQuitSelf(SInt32 /* inSaveOption */)
 {
 	if (mScriptRunning)
 	{
@@ -964,6 +964,18 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.12  2002/02/04 20:04:28  hamon
+Updated Macintosh engine to compile under CodeWarrior 7.0 (Professional) and tested it lightly.  This will give us a base for future development and testing.
+
+* Changed IntN types to SIntN types.
+* Added some new libraries.
+* Renamed LTimerTask to CTimerTask to avoid conflict with built-in Metrowerks class.
+* Included C <string.h> header as needed.  This also affects one file in the Common directory, which we'll need to merge into Stable/ later on.
+* We no longer init KString with 'nil', because of function overloading errors.  We use "", the empty string, instead.  We *think* this is a safe change, but the KString code is pretty iffy.
+* Replaced a call to 'max', which can no longer be found in the system headers, with an explicit if statement.
+
+Changes by Elizabeth Hamon with help from Eric Kidd.  Code reviewed by Eric.
+
 Revision 1.11  2000/06/15 13:03:07  chuck
 2.01 b4
 

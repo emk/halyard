@@ -31,8 +31,8 @@ public:
 
 protected:
 	Rect			mLineFrame;			// Points to draw line between
-	Int8			mLineWidth;			// Width of line, in pixels
-	Int16			mColorIdx;			// Index into the CLUT
+	SInt8			mLineWidth;			// Width of line, in pixels
+	SInt16			mColorIdx;			// Index into the CLUT
 
 	virtual void	DrawSelf();	
 };

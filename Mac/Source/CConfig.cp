@@ -18,6 +18,8 @@
 
 #include "KHeader.h"
 
+#include <string.h>
+
 #include <OSUtils.h>
 
 #ifdef DEBUG
@@ -362,6 +364,18 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.5  2002/02/04 20:04:22  hamon
+Updated Macintosh engine to compile under CodeWarrior 7.0 (Professional) and tested it lightly.  This will give us a base for future development and testing.
+
+* Changed IntN types to SIntN types.
+* Added some new libraries.
+* Renamed LTimerTask to CTimerTask to avoid conflict with built-in Metrowerks class.
+* Included C <string.h> header as needed.  This also affects one file in the Common directory, which we'll need to merge into Stable/ later on.
+* We no longer init KString with 'nil', because of function overloading errors.  We use "", the empty string, instead.  We *think* this is a safe change, but the KString code is pretty iffy.
+* Replaced a call to 'max', which can no longer be found in the system headers, with an explicit if statement.
+
+Changes by Elizabeth Hamon with help from Eric Kidd.  Code reviewed by Eric.
+
 Revision 1.4  2000/05/11 12:56:09  chuck
 v 2.01 b1
 

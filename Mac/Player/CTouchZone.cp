@@ -145,7 +145,7 @@ void
 CTouchZone::FinishCreateSelf()
 {
 	Rect 	frameRect;
-	Int32	fontHeight;
+	SInt32	fontHeight;
 	
 	CalcLocalFrameRect(frameRect);
 	
@@ -192,7 +192,7 @@ CTouchZone::DrawSelf()
 
 void
 CTouchZone::HotSpotAction(
-	Int16		/* inHotSpot */,
+	SInt16		/* inHotSpot */,
 	Boolean		inCurrInside,
 	Boolean		inPrevInside)
 {
@@ -232,7 +232,7 @@ CTouchZone::HotSpotAction(
 
 void
 CTouchZone::HotSpotResult(
-	Int16	inHotSpot)
+	SInt16	inHotSpot)
 {
 	if (not gPlayerView->ProcessingTZones())
 	{

@@ -32,12 +32,12 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 	
 		// Standard constructor
 		CTouchZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, 
-					const CursorType = HAND_CURSOR, const KString &SecondCmd = nil);
+					const CursorType = HAND_CURSOR, const KString &SecondCmd = "");
 	
 		// This constructor is used for the 'Buttpcx' command
 		CTouchZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, const char *text,
 					const CursorType = HAND_CURSOR,
-					const char *header = nil, const KString &secCmd = nil);
+					const char *header = nil, const KString &secCmd = "");
 					
 		// Destructor
 		virtual 	~CTouchZone();
@@ -47,8 +47,8 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		void		MouseLeave();
 		void		MouseWithin(Point inPortPt, const EventRecord& inMacEvent);
 		bool		IsButtPcx(void) { return (not mNormalTouch);}
-		virtual void	HotSpotResult(Int16	inHotSpot);
-		virtual void	HotSpotAction(Int16, Boolean, Boolean);
+		virtual void	HotSpotResult(SInt16	inHotSpot);
+		virtual void	HotSpotAction(SInt16, Boolean, Boolean);
 		char		FirstChar(void) { return ((mText != nil) ? *mText: 0); }
 		CursorType	GetCursor(void) { return (mCursor); }
 		
@@ -62,9 +62,9 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		
 	protected:
 		void		SetupZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, 
-							const KString &SecondCmd = nil, const CursorType cursor = HAND_CURSOR);
+							const KString &SecondCmd = "", const CursorType cursor = HAND_CURSOR);
 			
-		virtual Boolean PointIsInFrame(Int32 inHoriz, Int32	inVert) const
+		virtual Boolean PointIsInFrame(SInt32 inHoriz, SInt32	inVert) const
 		{
 			return (LPane::PointIsInFrame(inHoriz, inVert));
 		}

@@ -6,6 +6,8 @@
 
 #include "KHeader.h"
 
+#include <string.h>
+
 #include "KLogger.h"
 
 #include "CMac5LApp.h"

@@ -49,12 +49,12 @@ class	CMac5LApp : public LApplication
 //		bool				HaveNewPal(void)
 //					{ return (mHaveNewPal); }
 		
-		Boolean				AttemptQuitSelf(Int32 inSaveOption);
+		Boolean				AttemptQuitSelf(SInt32 inSaveOption);
 		virtual void		HandleAppleEvent(
 								const AppleEvent	&inAppleEvent,
 								AppleEvent			&outAEReply,
 								AEDesc				&outResult,
-								Int32				inAENumber);
+								SInt32				inAENumber);
 		
 		void				DoExit(int16 inSide);
 									

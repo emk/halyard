@@ -1,0 +1,17 @@
+In CPlayerView.h:383, we changed:
+
+	if (picName == nil)
+		mBackPic = nil;
+
+...to:
+
+	if (picName == "")
+		mBackPic = nil;
+
+We also changed many initializers to use "" instead of nil.  What do these changes
+affect?  Let's test them.
+
+---
+
+Can we still compile a copy of 5L for 68K, and see whether we broke TaskUPP or
+sTaskUPP in CTimerTask.cp?

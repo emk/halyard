@@ -5,6 +5,8 @@
 
 #include "KHeader.h"
 
+#include <string.h>
+
 #include "KLogger.h"
 #include "KString.h"
 

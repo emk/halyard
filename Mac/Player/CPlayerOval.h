@@ -33,8 +33,8 @@ public:
 protected:
 	Boolean			mFill;
 	Rect			mBounds;
-	Int8			mLineWidth;			// Width of frame, in pixels
-	Int16			mColorIdx;			// Index into the CLUT
+	SInt8			mLineWidth;			// Width of frame, in pixels
+	SInt16			mColorIdx;			// Index into the CLUT
 
 	virtual void	DrawSelf();	
 };

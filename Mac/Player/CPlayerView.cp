@@ -379,7 +379,7 @@ void  CPlayerView::SetBackPic(KString &picName, Rect inRect)
 	//Rect		theFrame;
 	KRect		clipRect;
 	
-	if (picName == nil)
+	if (picName == "")
 		mBackPic = nil;
 	else
 	{

@@ -437,20 +437,20 @@ CText::DrawStyleText(Boolean shadow)
 	Ptr			inText = (char *) mText;	// Get ptr to text
 	Fixed		drawWidth = ::Long2Fix(mDrawRect.right - mDrawRect.left);
 	Fixed		wrapWidth;
-	Int32		blackSpace, lineBytes;
-	Int32		drawBytes;		// Number of chars to draw on a line
-	Int32		styleBytes = 0;	// Number of chars drawn in this style
-	Int32		textLeft;		// Number of chars left to display
-	Int32		inLength;		// Total length of string (mText)
-	Int32		styleIdx = 1;	// NOT ZERO!! 1st elem in list is at idx 1. Find out why.
+	SInt32		blackSpace, lineBytes;
+	SInt32		drawBytes;		// Number of chars to draw on a line
+	SInt32		styleBytes = 0;	// Number of chars drawn in this style
+	SInt32		textLeft;		// Number of chars left to display
+	SInt32		inLength;		// Total length of string (mText)
+	SInt32		styleIdx = 1;	// NOT ZERO!! 1st elem in list is at idx 1. Find out why.
 	FontInfo	fontInfo;
 	sTextStyle	theStyle;
 	StyledLineBreakCode	lineBreak;
-	Int16		text_width;
-	Int16		incr_y;
-	Int16		incr_x;
-	Int16		loopCount;
-	Int16		textStyle;
+	SInt16		text_width;
+	SInt16		incr_y;
+	SInt16		incr_x;
+	SInt16		loopCount;
+	SInt16		textStyle;
 	
 	if (mText == nil)
 		return;
@@ -478,8 +478,8 @@ CText::DrawStyleText(Boolean shadow)
 	
 	// Figure out how high each line of text is, and also the baseline for the 
 	// first line. The baseline is incremented each time we jump to the next line.
-	Int16 lineHeight = fontInfo.ascent + fontInfo.descent + fontInfo.leading;
-	Int16 lineBase = mDrawRect.top + fontInfo.ascent + fontInfo.leading;
+	SInt16 lineHeight = fontInfo.ascent + fontInfo.descent + fontInfo.leading;
+	SInt16 lineBase = mDrawRect.top + fontInfo.ascent + fontInfo.leading;
 	
 	// cbo_hack- 
 	if ((mFont == kFontIDHelvetica) and (mSize == 18))
@@ -491,7 +491,7 @@ CText::DrawStyleText(Boolean shadow)
 	incr_x = mDrawRect.left;
 
 	// Set the justification
-	Int16	justification = mJust;
+	SInt16	justification = mJust;
 	
 	// If we spec default justification, get the default justification from
 	// WorldScript
@@ -625,7 +625,8 @@ CText::DrawStyleText(Boolean shadow)
 		}
 		
 		lineBase += lineHeight;						// Bump the baseline
-		incr_x = max(incr_x, text_width);			// bump _INCR_X, if necessary
+		if (text_width > incr_x)
+			incr_x = text_width;					// bump _INCR_X, if necessary
 	}
 	
 	if (loopCount >= 256)
@@ -704,7 +705,7 @@ CText::CreateStyleEntry(const int16 inStyleStart,	// Starting offset into mText 
 	mStyleOffsets->InsertItemsAt(1, LArray::index_Last, &theStyle);
 }
 
-Int32
+SInt32
 CText::GetLineHeight(void)
 {
 	FontInfo	fontInfo;
