@@ -65,8 +65,8 @@
       [[log] (apply prim-log args)]
       
       ;; The do-nothing primitives.
-      [[set-window-title defstyle header keybind loadpal]
-       #f]
+      [[setwindowtitle defstyle header keybind loadpal]
+       (void)]
 
       ;; 
       [else
