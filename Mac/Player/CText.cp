@@ -23,6 +23,7 @@
 #include "CPlayerView.h"
 #include "CText.h"
 #include "CVariable.h"
+#include "KCommon.h"
 
 // used to SetupText to process out control characters
 const int kFinalStrLen = 4096;
@@ -400,6 +401,7 @@ CText::SetupText()
 	is a shadow specified. If so, offset the drawing rect & call the style drawing
 	routine. Then reset the rect back to the original coords & call the same
 	drawing routine.
+	
 */
 	
 void
@@ -422,57 +424,35 @@ CText::DrawText()
 		¥ DrawStyleText
    ---------------------------------------------------------------------------
 	Draw justified text within a rectangle, using the style information stored
-	in the style list. This is lifted directly from PowerPlants
+	in the style list. This is lifted directly (and then modified) from PowerPlants 
 	"UDrawingUtils::DrawWithJustification()" routine. Pass 'TRUE' to draw the
 	drop shadow (draws all text in the shadow color).
 
 	During this routine we maintain a pointer to the remainder of the text to be drawn. This
 	pointer is incremented when we finish a line, or finish the current style we're drawing.
 	We then use this pointer to figure out the next line break.
+	
+	Sets up text in beginning. then calls LoopThroughStyles to actually do it - EH
 */
 
 void
 CText::DrawStyleText(Boolean shadow)
-{
-	Ptr			inText = (char *) mText;	// Get ptr to text
-	Fixed		drawWidth = ::Long2Fix(mDrawRect.right - mDrawRect.left);
-	Fixed		wrapWidth;
-	SInt32		blackSpace, lineBytes;
-	SInt32		drawBytes;		// Number of chars to draw on a line
-	SInt32		styleBytes = 0;	// Number of chars drawn in this style
-	SInt32		textLeft;		// Number of chars left to display
-	SInt32		inLength;		// Total length of string (mText)
-	SInt32		styleIdx = 1;	// NOT ZERO!! 1st elem in list is at idx 1. Find out why.
+{	SInt32		styleIdx = 1;	// NOT ZERO!! 1st elem in list is at idx 1. Find out why.
 	FontInfo	fontInfo;
-	sTextStyle	theStyle;
-	StyledLineBreakCode	lineBreak;
-	SInt16		text_width;
-	SInt16		incr_y;
-	SInt16		incr_x;
-	SInt16		loopCount;
-	SInt16		textStyle;
 	
 	if (mText == nil)
 		return;
 	
 	StColorPenState savePenState;
 	StColorPenState::Normalize();
-		
-	textLeft = inLength = strlen((char *) mText);	// Number of chars left to display
-	Ptr	textEnd = inText + inLength;				// Ptr to end of the string
-
+	
 	// Set font, size, drawing mode (srcOr so don't blast the background pict)
 	::TextMode(srcOr);
 	::TextFont(mFont);
 	::TextSize(mSize);
 	
-	// If all the text is bold, set the text face up here so the calculations for
-	//	line breaks will be correct.
-	if (mBold)
-		::TextFace(bold);
-	else
-		::TextFace(0);
-
+	::TextFace(0);	// reset text
+	
 	// Get font-related info.
 	::GetFontInfo(&fontInfo);
 	
@@ -485,158 +465,205 @@ CText::DrawStyleText(Boolean shadow)
 	if ((mFont == kFontIDHelvetica) and (mSize == 18))
 		lineBase += 2;
 	
-	// Start _incr_y out at the bottom of the current line.
-	incr_y = mDrawRect.top + lineHeight;
-	// Start _incr_x out at the left of the current line.
-	incr_x = mDrawRect.left;
-
 	// Set the justification
 	SInt16	justification = mJust;
 	
-	// If we spec default justification, get the default justification from
-	// WorldScript
+	// If we spec default justification, get the default justification from WorldScript
 	if (justification == teFlushDefault)
 		justification = ::GetSysDirection();
 
+	// if bold header set accordingly
+	if (mBold)
+		::TextFace(bold);
 	// Get and set the characteristics of the first style
-	if (mStyleOffsets->FetchItemAt(styleIdx+1, &theStyle))
+	SetupStyle(styleIdx+1);
+	
+	// Time to run through loop to display text
+	LoopThroughStyles(lineHeight, lineBase, justification, shadow);
+		
+
+}
+/* ---------------------------------------------------------------------------
+		¥ SetupStyle
+   ---------------------------------------------------------------------------
+	Set style for given section. Called from DrawStyleText and Loop through Styles
+*/
+void
+CText::SetupStyle(SInt32 sIdx) 
+{
+	sTextStyle theStyle;
+	if (mStyleOffsets->FetchItemAt(sIdx, &theStyle)) // if no style at this point, do nothing
 	{
-		if (theStyle.mLen != 0)
+		if (theStyle.mLen != 0)					// if style has length 0, do nothing 
 		{
-			textStyle = 0;
-			if (theStyle.mUnderline)
+			SInt16 textStyle = 0;				
+	
+			if (theStyle.mUnderline)			
 				textStyle |= underline;
 			if ((mBold) or (theStyle.mBold))	// have two ways of making bold
-			{
 				textStyle |= bold;
-			}		
 			
-			::TextFace(textStyle);	
+			::TextFace(textStyle);				
 		}
 	}
-	
-	/* Loop until we either:
-		- run out of text
-		- Overrun the bottom of the drawing rect	*/
-	
-	loopCount = 0;
-		
-	while ((inText < textEnd) and (++loopCount < 256))
-	{
-		lineBytes = 1;
-		wrapWidth = drawWidth;
-		
-		// If we have gone past the first line (which was initialized above) increment _incr_y by
-		//	the line height.
-		if (loopCount > 1)
-			incr_y += lineHeight;
-					
-		/* 	Figure out where the text breaks. Returns the 'extra' chars in 'wrapWidth',
-			and the number of chars to display in 'lineBytes'. */
-		
-		lineBreak = ::StyledLineBreak(inText, textLeft, 0, textLeft, 0,
-										&wrapWidth,
-										&lineBytes);
+}
 
-		//	Figure out the line width, based on current script. Used for justification. 
+
+
+/* ---------------------------------------------------------------------------
+		¥ LoopThroughStyles
+   ---------------------------------------------------------------------------
+	Goes through each style - checks when to line break and draws text for style
+	Outer loop is for each line. Inner loop is for each style within line. EHamon
+*/
+void 
+CText::LoopThroughStyles(SInt16	lineHeight, SInt16 lineBase, SInt16 justification, Boolean shadow) 
+{	Ptr			inText 		= (char *) mText;				// Get ptr to text
+	SInt16		loopCount 	= 0;							// catches infinite loops on outer part
+	SInt32		drawBytes;									// Number of chars to draw for style on loop run
+	SInt32		styleBytes 	= 0;							// Number of chars drawn so far in current style
+	SInt32		lineBytes;									// Number of bytes still to draw for given line 
+	SInt32		bytesSoFar;									// Number of bytes drawn so far on line
+	SInt32		textLeft	= strlen(inText);				// Number of chars left to display
+	SInt32 		styleIdx 	= 1;							// style we're currently on
+	Fixed		drawWidth 	= ::Long2Fix(mDrawRect.right - mDrawRect.left);
+	Fixed		wrapWidth;									// width left - StyledLineBreak controls this
+	sTextStyle	theStyle;
+	StyledLineBreakCode	lineBreak;
+	SInt16		incr_y 		= mDrawRect.top + lineHeight;	// starts out at bottom of current line
+	SInt16		incr_x		= mDrawRect.left;				// starts out at left of current line
+	SInt32		blackSpace;									// used for justification
+	SInt16		textWidth;									// width in pixels
+
+	while ((textLeft > 0) and (++loopCount < 256))
+	{
+		drawBytes = 1;										// reset values for new line
+		bytesSoFar = 0;
+		wrapWidth = drawWidth;
+		textWidth = mDrawRect.left;
+			
+		/* 	Figure out where the text breaks. For more info, see below.
+			'wrapWidth' gets space left on line (neg if more than one line);
+			'drawBytes' gets number of chars to display now */
+		::StyledLineBreak(inText, textLeft, 0, textLeft, 0, &wrapWidth, &drawBytes);
+
+		/*	Figure out the line width, based on current script, for justification. Then justify.  
+			Linebytes has how many bytes we think are still to be printed on line.
+		    If we switch between bold and not bold this number may change */
+		lineBytes = drawBytes;		
 		
 		blackSpace = ::VisibleLength(inText, lineBytes);
+		DoJustification(justification, inText, blackSpace, lineBase);
 		
-		// Now do the justification
-		switch (justification)
+		wrapWidth = drawWidth;		// wrapWidth and drawBytes need to be reset for first loop call of StyledLineBreak
+		drawBytes = 1;			
+		
+		/* Loop until we have no more styles or we hit the end of the line 
+		   We draw in given loop run  the min of the bytes that fit on line or the # of chars left in the style.*/
+		while ((lineBytes > 0) && (mStyleOffsets->FetchItemAt(styleIdx, &theStyle)))
 		{
-			case teForceLeft:
-			case teJustLeft:
-				::MoveTo(mDrawRect.left, lineBase);
-				
-				break;
-
-			case teJustRight:
-				::MoveTo(mDrawRect.right - ::TextWidth(inText, 0, blackSpace),
-							lineBase);
-				break;
-
-			case teJustCenter:
-				::MoveTo(mDrawRect.left + ((mDrawRect.right - mDrawRect.left) -
-						::TextWidth(inText, 0, blackSpace)) / 2, lineBase);
-				break;
-		}
-				
-		// Now we know how many characters of this string will fit on the line. Draw the
-		// minimum of that number or the number of chars left in this style.
-		
-		/* Loop until we have no more styles or we hit the end of the line */
-		text_width = mDrawRect.left;
-		
-		while ((mStyleOffsets->FetchItemAt(styleIdx, &theStyle))
-				&& (lineBytes > 0))
-		{
-			/* 	If we are drawing fewer characters than the style has, then we want to
-				keep the same style for the next line. Otherwise, increment the style
-				index to the next style for the next time around. */
-				
-			if (lineBytes < (theStyle.mLen - styleBytes))
-			{
-				drawBytes = lineBytes;
-				styleBytes += drawBytes;
-			}
-			else
-			{
-				drawBytes = theStyle.mLen - styleBytes;
-				++styleIdx;
-				styleBytes = 0;
-			}
-				
-			if (theStyle.mLen != 0)	// Special Char (tab, newline)
+			if (theStyle.mLen != 0)	
 			{
 				// If we're drawing the shadow, set the color to the shadow color.
-				
 				if (shadow)
 					::PmForeColor(mShadColor);
 				else
 					::PmForeColor(theStyle.mColor);
 				
-				// Draw the underline and/or bold, if spec'd.
+				// Set the underline and/or bold, if spec'd.
+				SetupStyle(styleIdx);
 				
-				textStyle = 0;
-				if (theStyle.mUnderline)
-					textStyle |= underline;
-				if ((mBold) or (theStyle.mBold))	// have two ways of making bold
-					textStyle |= bold;
-					
-				::TextFace(textStyle);
-               
- 				text_width += ::TextWidth(inText, 0, drawBytes);	// increment the right edge of the text
 				
-				::DrawText(inText, 0, drawBytes);
+				/* StyledLineBreakCode StyledLineBreak (Ptr textPtr, SInt32 textLen, SInt32 textStart, SInt32 textEnd, 
+    													SInt32 flags, Fixed *textWidth, SInt32 *textOffset);
+				textLen is length of script run (length still to be printed).
+				textPtr should point to beginning of line (it's updated as such).textStart is start of style. 
+				textEnd is end of style. (theStyle.mLen - styleBytes) is amount of style still left to be printed
+				textOffset needs to be set to 0 after first run within loop (done below). 
+				textOffset returns number of bytes that fit on line. INCLUDES # already drawn.
 				
-				inText   += drawBytes;				// Incement string ptr to start of next line
-				textLeft -= drawBytes;				// Decrement number of chars remaining in string
-				lineBytes -= drawBytes; 			// and number of chars left on this line
+				FOR MORE INFO SEE: http://developer.apple.com/techpubs/mac/Text/Text-332.html for definition
+				and http://developer.apple.com/techpubs/mac/Text/Text-289.html for sample code */
+				lineBreak = ::StyledLineBreak(inText, textLeft, bytesSoFar, bytesSoFar + (theStyle.mLen - styleBytes), 0,
+										&wrapWidth,
+										&drawBytes);
+
+				if (lineBreak != smBreakOverflow)		// if lineBreak != smBreakOverflow, all of style doesn't fit on line
+				{
+					drawBytes -= bytesSoFar;			// only draw part that fits, and not what we already drew		
+					lineBytes = 0;						// we've finished the line so set it back to 0
+					styleBytes += drawBytes;			// record how much of style we did do
+					incr_y += lineHeight;				// finished line so increment _incr_y by line height
+					// Don't update style because we need to finish drawing it next time.
+				}
+				else
+				{					
+					drawBytes = theStyle.mLen - styleBytes;			// we can draw whole style on line, so we do
+					++styleIdx;										// now get ready for next style
+					styleBytes = 0;	
+					lineBytes -=drawBytes;							//update bytes left to draw on line
+				}	
+ 				textWidth += ::TextWidth(inText, bytesSoFar, drawBytes);	// increment the right edge of the text
+			
+				::DrawText(inText, bytesSoFar, drawBytes);
+				bytesSoFar += drawBytes;				// increase bytesSoFar;
+				textLeft -= drawBytes;					// Decrement number of chars remaining in string
+				
+				drawBytes = 0;							// reset drawBytes for next lineBreak
 			}
-			else
+			else // Special Char (tab, newline) OR two styles started next to each other may yield this case 
 			{
+				styleIdx ++;
+				
+				// E Hamon - this if may be broken. Previous maintainer wrote, and thought this was only called for special char
 				if (inText != (char *) mText)		// if we haven't output any characters, don't do anything
 				{
 					lineBase += lineHeight;			// Bump the baseline
 					incr_y += lineHeight;			// bump incr_y
-				}
+				} 
 			}
 		}
-		
+		inText   += bytesSoFar;						// Incement string ptr to start of next style
 		lineBase += lineHeight;						// Bump the baseline
-		if (text_width > incr_x)
-			incr_x = text_width;					// bump _INCR_X, if necessary
+		if (textWidth > incr_x)
+			incr_x = textWidth;						// bump _INCR_X, if necessary
 	}
-	
 	if (loopCount >= 256)
 		gLog.Error("Too many loops in DrawText");
 	
 	gVariableManager.SetLong("_incr_y", (int32) incr_y);
 	gVariableManager.SetLong("_incr_x", (int32) incr_x);
-#ifdef DEBUG
-	gDebugLog.Log("text rect: L <%d>, T <%d>, R <%d>, B <%d>", mDrawRect.left, mDrawRect.top, incr_x, incr_y);
-#endif
+	#ifdef DEBUG
+		gDebugLog.Log("text rect: L <%d>, T <%d>, R <%d>, B <%d>", mDrawRect.left, mDrawRect.top, incr_x, incr_y);
+	#endif
+}		
+
+		
+
+/* ---------------------------------------------------------------------------
+		¥ SetupJustification
+   ---------------------------------------------------------------------------
+	Set justification for given section. Called from DrawStyleText - originally in it. EHamon
+*/
+void 
+CText::DoJustification(SInt16 justification, Ptr inText, SInt32 blackSpace, SInt16 lineBase) 
+{
+	switch (justification)
+		{
+			case AlignLeft:
+				::MoveTo(mDrawRect.left, lineBase);
+				
+				break;
+			case AlignRight:		
+				::MoveTo(mDrawRect.right - ::TextWidth(inText, 0, blackSpace),
+							lineBase);
+				break;
+
+			case AlignCenter:
+				::MoveTo(mDrawRect.left + ((mDrawRect.right - mDrawRect.left) -
+						::TextWidth(inText, 0, blackSpace)) / 2, lineBase);
+				break;
+		}
 }
 
 /* ---------------------------------------------------------------------------

@@ -46,14 +46,17 @@ class CText
 		int8				mShadowPix;	// # of pixels to offset drop shadow
 		Boolean				mBold;
 			
-		void 				SetupText();
+		void 				SetupText();			
 		void 				CreateStyleEntry(const int16 inStyleStart,	// Starting offset into mText for this style
 											 const int16 inStyleLen, 	// Number of chars to display in this style
 											 const int16 inHighlite,	// TRUE if in highlight color
 											 const Boolean inUnderline,	// TRUE if text is underlined
 											 const Boolean inBold);		// TRUE if text is bold
-		void		DrawText();	
-		void		DrawStyleText(Boolean underline);	
+		void				DrawText();	
+		void				DrawStyleText(Boolean shadow);	
+		void				LoopThroughStyles(SInt16 lineHeight, SInt16 lineBase, SInt16 justification, Boolean shadow);
+		void 				DoJustification(SInt16 justification, Ptr inText, SInt32 blackSpace, SInt16 lineBase);
+		void				SetupStyle(SInt32 sIdx);
 };
 
 /*	sTextStyle
