@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <list>
+#include <map>
 
 #include <assert.h>
 #include <sys/types.h>
@@ -15,6 +16,7 @@
 #include <unistd.h>
 
 #include "Typography.h"
+#include "FileSystem.h"
 
 #define ASSERT(x) assert(x)
 
@@ -22,102 +24,15 @@
 
 using namespace Typography;
 
-void HandlePosixError ()
+bool IsFontFile(const FileSystem::Path &inPath)
 {
-	char buffer[STRERROR_BUFF_SIZE];
-	strerror_r(errno, buffer, STRERROR_BUFF_SIZE);
-	std::cerr << "listfonts: error: " << buffer << endl;
-	exit(1);
-}
-
-std::string FileExtension (const std::string &inFileName)
-{
-	std::string::size_type dotpos = inFileName.rfind('.');
-	if (dotpos == std::string::npos)
-		return std::string("");
-	std::string extension = inFileName.substr(dotpos + 1);
-	transform(extension.begin(), extension.end(), extension.begin(), tolower);
-	return extension;
-}
-
-std::string FileWithoutExtension (const std::string &inFileName)
-{
-	std::string::size_type dotpos = inFileName.rfind('.');
-	if (dotpos == std::string::npos)
-		return inFileName;
-	return inFileName.substr(0, dotpos);
-}
-
-std::string FileReplaceExtension (const std::string &inFileName,
-								  const std::string &inFileExtension)
-{
-	return FileWithoutExtension(inFileName) + "." + inFileExtension;
-}
-
-bool IsFontFile(const std::string &inFileName)
-{
-	std::string extension = FileExtension(inFileName);
+	std::string extension = inPath.GetExtension();
 	return (extension == "pfb" || extension == "pcf" || extension == "ttf");
-}
-
-std::list<std::string> ReadDirectory (std::string inDirName)
-{
-	DIR *dir = opendir(inDirName.c_str());
-	if (dir == NULL)
-		HandlePosixError();
-
-	std::list<std::string> entries;	
-	for (struct dirent *entry = readdir(dir);
-		 entry != NULL; entry = readdir(dir))
-	{
-		if (entry->d_name != "." && entry->d_name != "..")
-			entries.push_back(entry->d_name);
-	}
-	if (errno)
-		HandlePosixError();
-
-	if (closedir(dir) < 0)
-		HandlePosixError();
-
-	return entries;
-}
-
-bool IsRegularFile (const string &inFileName)
-{
-	struct stat info;
-	if (stat(inFileName.c_str(), &info) < 0)
-		HandlePosixError();
-	return S_ISREG(info.st_mode);
-}
-
-bool IsDirectory (const string &inFileName)
-{
-	struct stat info;
-	if (stat(inFileName.c_str(), &info) < 0)
-		HandlePosixError();
-	return S_ISDIR(info.st_mode);
-}
-
-bool FileExists (const string &inFileName)
-{
-	struct stat info;
-
-	int result = stat(inFileName.c_str(), &info);
-	if (result >= 0)
-		return true;
-	else if (result < 0 && errno == ENOENT)
-		return false;
-
-	HandlePosixError();
-	ASSERT(false);
-	return false;	
 }
 
 class AvailableFace {
 	Library    *mLibrary; // TODO - No ownership, document.
 	std::string mFileName;
-	std::string mMetricsFileName;
-	bool        mHasMetrics;
 
 	int         mSize;
 	std::string mFamilyName;
@@ -127,12 +42,9 @@ class AvailableFace {
 
 public:
  	enum { kAnySize = 0 };
-	static const string kNoMetrics;
 
-	AvailableFace(Library *inLibrary,
-				  string inFileName,
-				  string inMetricsFileName = kNoMetrics);
-	
+	AvailableFace(Library *inLibrary, const string &inFileName);
+
 	int    GetSize() const { return mSize; }
 	string GetFamilyName() const { return mFamilyName; }
 	string GetStyleName() const { return mStyleName; }
@@ -141,21 +53,22 @@ public:
 	bool   IsScalable() const { return GetSize() == kAnySize; }
 
 	Face   OpenFace(int inSize) const;
+
+	static void WriteSerializationHeader(std::ostream &out);
+	static void ReadSerializationHeader(std::istream &in);
+
+				AvailableFace(std::istream &in);
+	void        Serialize(std::ostream &out) const;
 };
 
-const string AvailableFace::kNoMetrics = "";
-
-AvailableFace::AvailableFace(Library *inLibrary,
-							 string inFileName,
-							 string inMetricsFileName /* = kNoMetrics */)
-	: mLibrary(inLibrary),
-	  mFileName(inFileName),
-	  mMetricsFileName(inMetricsFileName),
-	  mHasMetrics(inMetricsFileName != kNoMetrics)
+AvailableFace::AvailableFace(Library *inLibrary, const string &inFileName)
+	: mLibrary(inLibrary), mFileName(inFileName)
 {
 	// Open up our face file.
 	FT_Face face;
-	Error::CheckResult(FT_New_Face(*mLibrary, mFileName.c_str(), 0, &face));
+	std::string path =
+		FileSystem::GetFontFilePath(mFileName).ToNativePathString();
+	Error::CheckResult(FT_New_Face(*mLibrary, path.c_str(), 0, &face));
 				
 	try
 	{
@@ -208,57 +121,320 @@ Face AvailableFace::OpenFace(int inSize) const
 {
 	ASSERT(inSize != kAnySize && inSize > 0);
 	ASSERT(mSize == kAnySize || mSize == inSize);
-	if (mHasMetrics)
-		return Face(*mLibrary, mFileName.c_str(),
-					mMetricsFileName.c_str(), inSize);
+
+	FileSystem::Path path = FileSystem::GetFontFilePath(mFileName);
+	std::string file = path.ToNativePathString();
+	FileSystem::Path metrics_path = path.ReplaceExtension("afm");
+	std::string metrics_file = metrics_path.ToNativePathString();
+
+	if (metrics_path.DoesExist())
+		return Face(*mLibrary, file.c_str(), metrics_file.c_str(), inSize);
 	else
-		return Face(*mLibrary, mFileName.c_str(), NULL, inSize);
+		return Face(*mLibrary, file.c_str(), NULL, inSize);
 }
 
-/*
-class FamilyStyle {
+void AvailableFace::ReadSerializationHeader(std::istream &in)
+{
+	// Check our header information.
+	string filetype, vers_label;
+	int version;
+	in >> filetype >> vers_label >> version >> ws;
+	if (!in || filetype != "facecache" || vers_label != "vers" || version != 1)
+		throw Error(Error::kOtherError); // TODO - Error message
 	
-};
-*/
+	// Discard our human-readable comment line.
+	string junk;
+	std::getline(in, junk);
+	if (!in)
+		throw Error(Error::kOtherError); // TODO - Error message		
+}
 
-int main (int argc, char **argv)
+void AvailableFace::WriteSerializationHeader(std::ostream &out)
+{
+	out << "facecache vers 1" << endl
+		<< "FILE|FAMILY|STYLE|SIZE|IS BOLD|IS ITALIC"
+		<< endl;
+}
+
+AvailableFace::AvailableFace(std::istream &in)
+{
+	// Read in our individual fields.
+	std::string has_metrics, size, is_bold, is_italic;
+	std::getline(in, mFileName, '|');
+	std::getline(in, mFamilyName, '|');
+	std::getline(in, mStyleName, '|');
+	std::getline(in, size, '|');
+	std::getline(in, is_bold, '|');
+	std::getline(in, is_italic);
+	if (!in)
+		throw Error(Error::kOtherError); // TODO - Error message.
+
+	// Needed so eof() will return true after last record.
+	// XXX - Will cause problems if font names begin with spaces.
+	in >> std::ws; 
+	
+	// Convert a few numeric values.  Use ternary operator to
+	// convert booleans so MSVC++ doesn't whine at us.
+	mSize       = atoi(size.c_str());
+	mIsBold     = atoi(is_bold.c_str()) ? true : false;
+	mIsItalic   = atoi(is_italic.c_str()) ? true : false;
+}
+
+void AvailableFace::Serialize(std::ostream &out) const
+{
+	// XXX - This will fail if any of our strings contain '|'.
+	out << mFileName << '|' << mFamilyName << '|' << mStyleName << '|'
+		<< mSize << '|' << mIsBold << '|' << mIsItalic << endl;
+}
+
+class FaceSizeGroup {
+	std::map<int,AvailableFace> mAvailableFaces;
+	std::map<int,Face> mFaces;
+
+public:
+	FaceSizeGroup() {}
+	
+	void AddAvailableFace(const AvailableFace &inFace);
+	Face GetFace(int inSize);
+
+	void Serialize(std::ostream &out) const;
+};
+
+void FaceSizeGroup::AddAvailableFace(const AvailableFace &inFace)
+{
+	int size = inFace.GetSize();
+	if (mAvailableFaces.find(size) != mAvailableFaces.end())
+		throw Error(Error::kOtherError); // TODO - Error message
+	mAvailableFaces.insert(std::pair<int,AvailableFace>(size, inFace));
+}
+
+Face FaceSizeGroup::GetFace(int inSize)
+{
+	// First, look for an already instantiated face.
+	std::map<int,Face>::iterator foundFace = mFaces.find(inSize);
+	if (foundFace != mFaces.end())
+		return foundFace->second;
+	
+	// Next, look for either (1) an available face in the exact size or
+	// (2) an available face which can be displayed at any size.
+	std::map<int,AvailableFace>::iterator found = mAvailableFaces.find(inSize);
+	if (found == mAvailableFaces.end())
+		found = mAvailableFaces.find(AvailableFace::kAnySize);
+
+	// If we *still* don't have a face, give up.  If we were feeling
+	// very ambitious, we could look for the nearest size and use that.
+	if (found == mAvailableFaces.end())
+		throw Error(Error::kOtherError); // TODO - Error message
+
+	// Open the face, remember it, and return it.
+	Face face = found->second.OpenFace(inSize);
+	mFaces.insert(std::pair<int,Face>(inSize, face));
+	return face;
+}
+
+void FaceSizeGroup::Serialize(std::ostream &out) const
+{
+	for (std::map<int,AvailableFace>::const_iterator iter =
+			 mAvailableFaces.begin();
+		 iter != mAvailableFaces.end(); ++iter)
+		iter->second.Serialize(out);
+}
+
+enum FaceStyle {
+	kRegularFaceStyle = 0,
+	kBoldFaceStyle = 1,
+	kItalicFaceStyle = 2,
+	kBoldItalicFaceStyle = kBoldFaceStyle | kItalicFaceStyle
+};
+
+class Family {
+	string        mFamilyName;
+
+	FaceSizeGroup mRegularFaces;
+	FaceSizeGroup mBoldFaces;
+	FaceSizeGroup mItalicFaces;
+	FaceSizeGroup mBoldItalicFaces;
+
+public:
+	Family(const string &inFamilyName) : mFamilyName(inFamilyName) {}
+
+	void AddAvailableFace(const AvailableFace &inFace);
+	Face GetFace(FaceStyle inStyle, int inSize);
+
+	void Serialize(std::ostream &out) const;
+};
+
+void Family::AddAvailableFace(const AvailableFace &inFace)
+{
+	ASSERT(mFamilyName == inFace.GetFamilyName());
+
+	// Store the face in the appropriate group.
+	if (inFace.IsBold() && inFace.IsItalic())
+		mBoldItalicFaces.AddAvailableFace(inFace);
+	else if (inFace.IsBold())
+		mBoldFaces.AddAvailableFace(inFace);
+	else if (inFace.IsItalic())
+		mItalicFaces.AddAvailableFace(inFace);
+	else
+		mRegularFaces.AddAvailableFace(inFace);
+}
+
+Face Family::GetFace(FaceStyle inStyle, int inSize)
+{
+	// We use an elaborate system of recursive fallbacks to find
+	// an appropriate face.
+	switch (inStyle)
+	{
+		case kRegularFaceStyle:
+			// Fallback: Regular -> Error
+			return mRegularFaces.GetFace(inSize);
+
+		case kBoldFaceStyle:
+			// Fallback: Bold -> Regular -> Error
+			try { return mBoldFaces.GetFace(inSize); }
+			catch (...) { return GetFace(kRegularFaceStyle, inSize); }
+
+		case kItalicFaceStyle:
+			// Fallback: Italic -> Regular -> Error
+			try { return mItalicFaces.GetFace(inSize); }
+			catch (...) { return GetFace(kRegularFaceStyle, inSize); }
+
+		case kBoldItalicFaceStyle:
+			// Fallback: BoldItalic -> Bold -> Italic -> Regular -> Error
+			try { return mBoldItalicFaces.GetFace(inSize); }
+			catch (...)
+			{ 
+				try { return mBoldFaces.GetFace(inSize); }
+				catch (...) { return GetFace(kItalicFaceStyle, inSize); }
+			}
+
+		default:
+			// Illegal style codes!
+			throw Error(Error::kOtherError); // TODO - Add error message.
+	}
+	ASSERT(false);
+	return *(Face*) NULL; // This code should NEVER get run.
+}
+
+void Family::Serialize(std::ostream &out) const
+{
+	mRegularFaces.Serialize(out);
+	mBoldFaces.Serialize(out);
+	mItalicFaces.Serialize(out);
+	mBoldItalicFaces.Serialize(out);
+}
+
+class FamilyDatabase {
+	std::map<string,Family> mFamilyMap;
+
+public:
+	FamilyDatabase() {}
+
+	void AddAvailableFace(const AvailableFace &inFace);
+	Face GetFace(const string &inFamilyName, FaceStyle inStyle, int inSize);
+
+	FamilyDatabase(std::istream &in);
+	void Serialize(std::ostream &out) const;
+};
+
+void FamilyDatabase::AddAvailableFace(const AvailableFace &inFace)
+{
+	string family_name = inFace.GetFamilyName();
+	std::map<string,Family>::iterator found = mFamilyMap.find(family_name);
+	if (found == mFamilyMap.end())
+	{
+		mFamilyMap.insert(std::pair<string,Family>(family_name,
+												   Family(family_name)));
+		found = mFamilyMap.find(family_name);
+		ASSERT(found != mFamilyMap.end());
+	}
+	found->second.AddAvailableFace(inFace);
+}
+
+Face FamilyDatabase::GetFace(const string &inFamilyName,
+							 FaceStyle inStyle, int inSize)
+{
+	std::map<string,Family>::iterator found = mFamilyMap.find(inFamilyName);
+	if (found != mFamilyMap.end())
+		return found->second.GetFace(inStyle, inSize);
+	else
+		throw Error(Error::kOtherError); // TODO - Add error message.
+}
+
+FamilyDatabase::FamilyDatabase(std::istream &in)
+{
+	AvailableFace::ReadSerializationHeader(in);
+	while (!in.eof())
+		AddAvailableFace(AvailableFace(in));
+}
+
+void FamilyDatabase::Serialize(std::ostream &out) const
+{
+	AvailableFace::WriteSerializationHeader(out);
+	for (std::map<string,Family>::const_iterator iter = mFamilyMap.begin();
+		 iter != mFamilyMap.end(); ++iter)
+		iter->second.Serialize(out);	
+}
+
+#include <strstream>
+
+static string get_string(std::ostrstream &stream)
+{
+	// Go through the foolish new rigamarole for extracting a string.
+	// We must unfreeze the stream before we exit this function, or
+	// we'll leak memory.
+	stream.freeze(1);
+	try
+	{
+		string str(stream.str(), stream.pcount());
+		stream.freeze(0);
+		return str;
+	}
+	catch (...)
+	{
+		stream.freeze(0);
+		throw;
+	}
+}
+
+int main(int argc, char **argv)
 {
 	try
 	{
 		Library library;
+		FamilyDatabase familyDatabase;
 		
-		std::list<std::string> entries = ReadDirectory("../Fonts");
+		FileSystem::SetBaseDirectory(FileSystem::Path().AddParentComponent());
+
+		FileSystem::Path fontdir = FileSystem::GetFontDirectory();
+		std::list<std::string> entries = fontdir.GetDirectoryEntries();
 		for (std::list<std::string>::iterator iter = entries.begin();
 			 iter != entries.end(); iter++)
 		{
-			std::string filename = *iter;
-			if (IsRegularFile("../Fonts/" + filename) && IsFontFile(filename))
+			FileSystem::Path file = fontdir.AddComponent(*iter);
+			if (file.IsRegularFile() && IsFontFile(file))
 			{
-				// Look for a metrics file.
-				std::string metrics = FileReplaceExtension(filename, "afm");
-				if (!FileExists("../Fonts/" + metrics))
-					metrics = AvailableFace::kNoMetrics;
-
 				// Use FreeType to load the face.
-				AvailableFace face(&library, "../Fonts/" + filename, metrics);
-									
-				// Display some useful information about the face.
-				std::cout << filename;
-				if (metrics != AvailableFace::kNoMetrics)
-					std::cout << "/" << metrics;
-				std::cout << ": " << face.GetFamilyName() << " ("
-						  << face.GetStyleName() << ") ";
-				if (face.GetSize() == AvailableFace::kAnySize)
-					std::cout << "ANY ";
-				else
-					std::cout << face.GetSize() << " ";
-				if (face.IsBold())
-					std::cout << "B";
-				if (face.IsItalic())
-					std::cout << "I";
-				std::cout << endl;
+				AvailableFace face(&library, *iter);
+
+				// Store the face in our database.
+				familyDatabase.AddAvailableFace(face);
 			}
 		}
+
+		Face f = familyDatabase.GetFace("Times",
+										kBoldItalicFaceStyle,
+										12);
+		familyDatabase.Serialize(std::cout);
+
+		ostrstream outstream;
+		familyDatabase.Serialize(outstream);
+		string outstring = get_string(outstream);
+		istrstream instream(outstring.c_str());
+		FamilyDatabase database2(instream);
+		ostrstream outstream2;
+		database2.Serialize(outstream2);
+		ASSERT(outstring == get_string(outstream2));
 	}
 	catch (...)
 	{

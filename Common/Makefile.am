@@ -35,7 +35,9 @@ libfivel_a_SOURCES = \
 	TEncoding.cpp \
 	TEncoding.h \
 	Typography.cpp \
-	Typography.h
+	Typography.h \
+	FileSystem.cpp \
+	FileSystem.h
 
 # These only compile on Windows.  But nobody else uses them, so it
 # doesn't matter for now.
@@ -45,6 +47,7 @@ libfivel_a_SOURCES = \
 TestAll_SOURCES = \
 	TStringTests.cpp \
 	TEncodingTests.cpp \
+	FileSystemTests.cpp \
 	TypographyTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
