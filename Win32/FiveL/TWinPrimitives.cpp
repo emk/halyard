@@ -5,6 +5,7 @@
 // Needed for RegisterWindowsPrimitives.
 #include "TCommon.h"
 #include "TPrimitives.h"
+#include "TCommonPrimitives.h"
 #include "TWinPrimitives.h"
 
 // Needed to implement the primitives.
@@ -25,9 +26,8 @@
 using FileSystem::GetDataFilePath;
 using FileSystem::Path;
 
-Origin gOrigin;
-
 USING_NAMESPACE_FIVEL
+
 
 //=========================================================================
 //  RegisterWindowsPrimitives
@@ -109,59 +109,6 @@ void FIVEL_NS RegisterWindowsPrimitives()
 	REGISTER_5L_PRIMITIVE_WITH_NAME("video", PlayQTFile);
 	REGISTER_5L_PRIMITIVE(Wait);
 	REGISTER_5L_PRIMITIVE(Write);
-}
-
-
-//=========================================================================
-//  Origin Methods
-//=========================================================================
-
-void Origin::AdjustRect(TRect *r)
-{
-	r->Offset(mOrigin);
-}
-
-void Origin::AdjustPoint(TPoint *pt)
-{
-	pt->Offset(mOrigin);
-}
-
-TPoint Origin::GetOrigin()
-{
-	return mOrigin;
-}
-
-void Origin::SetOrigin(TPoint &loc)
-{
-    mOrigin = loc;
-	gVariableManager.SetLong("_originx", mOrigin.X());
-	gVariableManager.SetLong("_originy", mOrigin.Y());
-}
-
-void Origin::SetOrigin(int16 inX, int16 inY)
-{
-	TPoint newOrigin(inX, inY);
-	SetOrigin(newOrigin);
-}
-
-void Origin::OffsetOrigin(TPoint &delta)
-{
-	TPoint newOrigin(mOrigin);
-	newOrigin.Offset(delta);
-	SetOrigin(newOrigin);
-}
-
-/*----------------------------------------------------------------
-  	Log _Graphic_X and _Graphic_Y for variable manager
-  	Requires TRect bounds to already be offset from origin.
-  	_Graphic_X and _Graphic_Y hold bottom & right pixel coordinates 
-  	of latest drawn graphic that called this.
-------------------------------------------------------------------*/
-static void UpdateSpecialVariablesForGraphic(const TRect &bounds)
-{
-	Rect sides = bounds.GetRect();
-	gVariableManager.SetLong("_Graphic_X", (short) sides.right);
-	gVariableManager.SetLong("_Graphic_Y", (short) sides.bottom);
 }
 
 

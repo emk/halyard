@@ -39,6 +39,7 @@
 #include "Header.h"
 #include "TStyleSheet.h"
 #include "TWin5LInterpreter.h"
+#include "TCommonPrimitives.h"
 #include "TWinPrimitives.h"
 #include "TException.h"
 
@@ -701,6 +702,9 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.6.2.8  2002/06/19 19:18:08  emk
+ Make the refactored TCommonPrimitives code work on Windows.
+
  Revision 1.6.2.7  2002/06/12 19:42:46  emk
  3.3.4.6 - Fixed bug where the origin didn't get restored after each macro
  call.  (This bug was introduced in 3.3.4.5.)

@@ -109,6 +109,10 @@ SOURCE=..\..\..\Common\TBTree.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TCommonPrimitives.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TDateUtil.cpp
 # End Source File
 # Begin Source File
@@ -222,6 +226,10 @@ SOURCE=..\..\..\Common\TBTree.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TCommon.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TCommonPrimitives.h
 # End Source File
 # Begin Source File
 

@@ -28,9 +28,8 @@ void FIVEL_NS RegisterCommonPrimitives()
 
 void UpdateSpecialVariablesForGraphic(const TRect &bounds)
 {
-	Rect sides = bounds.GetRect();
-	gVariableManager.SetLong("_Graphic_X", (short) sides.right);
-	gVariableManager.SetLong("_Graphic_Y", (short) sides.bottom);
+	gVariableManager.SetLong("_Graphic_X", (short) bounds.Right());
+	gVariableManager.SetLong("_Graphic_Y", (short) bounds.Bottom());
 }
 
 
