@@ -134,6 +134,10 @@ SOURCE=..\..\src\GeigerAudioStream.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\GeigerSynthElement.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\HistoryText.cpp
 # End Source File
 # Begin Source File
@@ -460,7 +464,7 @@ SOURCE=..\..\src\tamale.xrc
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\cygwin\home\brian\5L\wx\src
+InputDir=\Documents and Settings\emk\src\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 

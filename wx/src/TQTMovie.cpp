@@ -45,9 +45,12 @@ void TQTMovie::InitializeMovies()
 	// kInitializeQTMLUseGDIFlag as we have seen flashes on startup of
 	// certain movies on certain platforms (Dell laptops and Win98).
 	//
-	// This flag breaks VP3.2 with QT6.
-	//CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
-	CHECK_MAC_ERROR(::InitializeQTML(0));
+	// kInitializeQTMLUseGDIFlag breaks VP3.2 with QT6.  But if we don't
+    // use it, QuickTime interacts horribly with the Boehm GC, causing
+    // the performance of both to plummet.  So let's hope our VP3 codec
+    // is up to date.
+	CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
+	//CHECK_MAC_ERROR(::InitializeQTML(0));
 
 	// As Chuck discovered, QuickTime likes to draw movies to 
 	// inappropriate places on the screen, and to engage in other bits
@@ -108,7 +111,9 @@ CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
 
 TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     : mPort(inPort), mState(MOVIE_UNINITIALIZED),
-	  mMovie(NULL), mMovieController(NULL), mShouldStartWhenReady(false)
+	  mMovie(NULL), mMovieController(NULL), mShouldStartWhenReady(false),
+      mTimeoutStarted(false), mTimeoutDisabled(false),
+      mTimeoutBase(0), mLastSeenTimeValue(0)
 {
 	ASSERT(sIsQuickTimeInitialized);
 
@@ -209,6 +214,9 @@ void TQTMovie::Idle() throw ()
 		// See if we need to finish an asynchronous load.
 		if (mState == MOVIE_INCOMPLETE)
 			ProcessAsyncLoad();
+
+        // Maybe update our timeout.
+        UpdateTimeout();
 	}
 	catch (...)
 	{
@@ -267,6 +275,9 @@ void TQTMovie::StartWhenReady(PlaybackOptions inOptions, Point inPosition)
 		mShouldStartWhenReady = true;
 		mOptions = inOptions;
 		mPosition = inPosition;
+
+        // This is a good time to activate the timeout.
+        UpdateTimeout(true);
 	}
 }
 
@@ -277,6 +288,10 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	// Store our options so other routines can find them.
 	mOptions = inOptions;
 	mPosition = inPosition;
+
+    // Activate our timeout, if we haven't already.
+    if (!mTimeoutStarted)
+        UpdateTimeout(true);
 
 	// The movie should be done flashing (and drawing in awkward places),
 	// so we should attach it to the correct port (if it has any graphics
@@ -336,13 +351,6 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
 }
 
-void TQTMovie::BlockUntilReadyOrBroken()
-{
-	while (MOVIE_INCOMPLETE <= mState && mState < MOVIE_READY)
-		Idle();
-	ASSERT(mState == MOVIE_READY || mState == MOVIE_BROKEN);
-}
-
 
 //=========================================================================
 // Regular TQTMovie Methods
@@ -397,6 +405,7 @@ bool TQTMovie::IsPaused()
 void TQTMovie::Pause()
 {
 	ASSERT(mState == MOVIE_STARTED);
+    mTimeoutDisabled = true; // XXX - Massive kludge, see comment for variable.
 	if (!IsPaused())
 		DoAction(mcActionPlay, reinterpret_cast<void*>(0));
 }
@@ -448,6 +457,39 @@ void TQTMovie::ThrowIfBroken()
 	if (IsBroken())
 		// XXX - Find a better error to throw.
 		throw TMacError(__FILE__, __LINE__, noErr);
+}
+
+int TQTMovie::GetTimeoutEllapsed() {
+    // Under certain circumstances, we always return a timeout of 0.
+    if (!mTimeoutStarted) {
+        return 0; // The timeout hasn't been started yet.
+    } else if (mTimeoutDisabled) {
+        return 0; // We've disabled the timeout.  A total kludge.
+    } else if (IsBroken()) {
+        return 0; // The movie is broken, so no timeout.
+    }
+
+    return ::time(NULL) - mTimeoutBase;
+}
+
+void TQTMovie::UpdateTimeout(bool inStart) {
+    // Make sure the timeout is started.
+    if (!mTimeoutStarted) {
+        if (inStart) {
+            mTimeoutStarted = true;
+            mTimeoutBase = ::time(NULL);
+        }
+        return;
+    }
+
+    if (IsStarted()) {
+        // If the movie has made progress, reset the timeout.
+        TimeValue currentTimeValue = GetMovieTime();
+        if (currentTimeValue != mLastSeenTimeValue) {
+            mLastSeenTimeValue = currentTimeValue;
+            mTimeoutBase = ::time(NULL);
+        }
+    }
 }
 
 void TQTMovie::FillOutMSG(HWND inHWND, UINT inMessage, WPARAM inWParam,

@@ -17,15 +17,31 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		7
+#define VERSION_REV_BIG		8
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.7 (Development)"
+#define VERSION_STRING		"Tamale 0.0.8 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.50  2003/11/17 16:38:15  emk
+ 0.0.8 - 17 Nov 2003 - emk, brian
+
+   * Added SET-MEDIA-BASE-URL! function.  Pass it either a QuickTime-
+     compatible URL or #f (to use the hard drive).
+   * Major refactorings of Scheme runtime to help make it testable.
+   * Fixed bug where api.ss didn't get recompiled when kernel.ss changed.
+   * Split StageFrame out of Stage.
+   * Split DrawingArea out of Stage.
+   * Reduced coupling between nodes.ss and kernel.ss.
+   * Made element deletion the responsibility of Scheme.
+   * More work on Geiger audio synth.
+   * Turned on QuickTime safe mode to avoid nasty performance problems
+     with Boehm.
+   * Merged TQTMovie changes from FiveL 3.4.
+
  Revision 1.49  2003/07/02 17:46:18  emk
  0.0.7 - 2 July 2003 - emk, brian
 

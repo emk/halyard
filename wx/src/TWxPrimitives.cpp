@@ -27,6 +27,7 @@
 #include "GeigerAudioStream.h"
 #include "VorbisAudioStream.h"
 #include "AudioStreamElement.h"
+#include "GeigerSynthElement.h"
 #include "CommonWxConv.h"
 
 USING_NAMESPACE_FIVEL
@@ -245,20 +246,29 @@ DEFINE_5L_PRIMITIVE(EnableExpensiveEvents) {
 
 DEFINE_5L_PRIMITIVE(GeigerSynth) {
 	std::string name, chirp_location, loop_location;
-	uint32 loop_cps;
+	double loop_cps;
+	uint32 buffer_size;
 
-	inArgs >> name >> chirp_location;
+	inArgs >> name >> chirp_location >> buffer_size;
+
+    GeigerSynthElement *element =
+        new GeigerSynthElement(wxGetApp().GetStage(), name.c_str(),
+                               chirp_location.c_str(), 1000);
 
 	while (inArgs.HasMoreArguments()) {
 		inArgs >> loop_cps >> loop_location;
+        element->AddLoop(loop_cps, loop_location.c_str());
 	}
+    element->DoneAddingLoops();
 }
 
 DEFINE_5L_PRIMITIVE(GeigerSynthSetCps) {
 	std::string name;
-	uint32 cps;
+	double cps;
 
 	inArgs >> name >> cps;
+    FIND_ELEMENT(GeigerSynthElement, element, name.c_str());
+    element->SetChirpsPerSecond(cps);
 }
 
 DEFINE_5L_PRIMITIVE(HTML) {

@@ -12,7 +12,7 @@
 
 AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
 									   AudioStream *inStream)
-    : Element(inStage, inName), mStream(inStream)
+    : InvisibleElement(inStage, inName), mStream(inStream)
 {
     mStream->Start();
 }

@@ -42,7 +42,7 @@ AudioStream::AudioStream(Format inFormat)
 									   mFormat,
 									   SAMPLES_PER_SECOND,
 									   256,       // frames/buffer
-									   0,         // default number of buffers
+									   16,         // default number of buffers
 									   &AudioCallback,
 									   this);     // user data for callback
     if (err != paNoError)

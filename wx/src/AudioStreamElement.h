@@ -4,7 +4,7 @@
 #define AudioStreamElement_H
 
 #include "Stage.h"
-#include "Element.h"
+#include "InvisibleElement.h"
 #include "MediaElement.h"
 
 class AudioStream;
@@ -13,7 +13,7 @@ class AudioStream;
 // A widget represents a full-fledged wxWindow object hanging around on
 // our stage.  It does its own event processing.
 //
-class AudioStreamElement : public Element, public IMediaElement
+class AudioStreamElement : public InvisibleElement, public IMediaElement
 {
 	AudioStream *mStream;
 
@@ -29,12 +29,6 @@ public:
     virtual void Resume();
 	
 	virtual void SetVolume(const std::string &inChannel, double inVolume);
-
-	virtual wxRect GetRect() { return wxRect(0, 0, 0, 0); }
-	virtual bool HasVisibleRepresentation() { return false; }
-	virtual bool IsShown() { return false; }
-	virtual bool IsLightWeight() { return true; }
-	virtual bool IsPointInElement(const wxPoint &inPoint) { return false; }
 };
 
 #endif // AudioStreamElement_H

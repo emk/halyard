@@ -7,6 +7,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <time.h>
 
 #include <Movies.h>
 
@@ -177,6 +178,31 @@ private:
 	//
 	Point mPosition;
 
+    //////////
+    // Have we started running the timeout?
+    //
+    bool mTimeoutStarted;
+
+    //////////
+    // Have we disabled our timeout?
+    //
+    // XXX - This is a badly flawed kludge to detect when the movie may
+    // have been paused.  We'll need to do better.
+    //
+    bool mTimeoutDisabled;
+
+    //////////
+    // The last time something interesting happened, for various values
+    // of "interesting".  This is used as the base number for calculating
+    // timeouts.
+    //
+    time_t mTimeoutBase;
+
+    //////////
+    // The TimeValue the movie was at when we lasted updated TimeoutBase.
+    //
+    TimeValue mLastSeenTimeValue;
+
 public:
 	//////////
 	// Create a new movie object, and begin the preloading process.
@@ -219,8 +245,6 @@ public:
 	//
 	void Start(PlaybackOptions inOptions, Point inPosition);
 
-	void BlockUntilReadyOrBroken();
-	
 	//////////
 	// Did a problem occur either loading or playing this movie?  If
 	// this function returns true, the object is essentially scrap.
@@ -267,6 +291,12 @@ public:
 	TimeScale GetTimeScale();
 	TimeValue GetDuration();
 	void ThrowIfBroken();
+
+    //////////
+    // How much time has ellapsed towards a timeout?  (We don't actually
+    // worry about how long the timeout is; that's our caller's job.)
+    //
+    int GetTimeoutEllapsed();
 
 	//////////
 	// Fill out a Win32 MSG object based on the parameters to this
@@ -350,6 +380,11 @@ private:
 	// Advance to the next state in our state machine.
 	//
 	void UpdateMovieState(MovieState inNewState);
+
+    //////////
+    // Update the timeout base with the current time.
+    //
+    void UpdateTimeout(bool inStart = false);
 
 	//////////
 	// We use this function to process movie controller events.  This allows

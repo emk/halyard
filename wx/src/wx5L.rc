@@ -65,13 +65,13 @@ TB_BORDERS              BITMAP  DISCARDABLE     "tb_borders.bmp"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-ic_5L                   ICON    DISCARDABLE     "ic_5L.ico"
-ic_listener             ICON    DISCARDABLE     "ic_listener.ico"
-ic_timecoder            ICON    DISCARDABLE     "ic_timecoder.ico"
-ic_card                 ICON    DISCARDABLE     "ic_card.ico"
-ic_folder_closed        ICON    DISCARDABLE     "ic_folder_closed.ico"
-ic_folder_open          ICON    DISCARDABLE     "ic_folder_open.ico"
-ic_document             ICON    DISCARDABLE     "ic_document.ico"
+IC_5L                   ICON    DISCARDABLE     "ic_5L.ico"
+IC_LISTENER             ICON    DISCARDABLE     "ic_listener.ico"
+IC_TIMECODER            ICON    DISCARDABLE     "ic_timecoder.ico"
+IC_CARD                 ICON    DISCARDABLE     "ic_card.ico"
+IC_FOLDER_CLOSED        ICON    DISCARDABLE     "ic_folder_closed.ico"
+IC_FOLDER_OPEN          ICON    DISCARDABLE     "ic_folder_open.ico"
+IC_DOCUMENT             ICON    DISCARDABLE     "ic_document.ico"
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -80,8 +80,8 @@ ic_document             ICON    DISCARDABLE     "ic_document.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,7,0
- PRODUCTVERSION 0,0,7,0
+ FILEVERSION 0,0,8,0
+ PRODUCTVERSION 0,0,8,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -98,15 +98,15 @@ BEGIN
         BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Interactive Media Lab, Dartmouth Medical School\0"
-            VALUE "FileDescription", "Tamale 0.0.7\0"
-            VALUE "FileVersion", "0, 0, 7, 0\0"
+            VALUE "FileDescription", "Tamale 0.0.8\0"
+            VALUE "FileVersion", "0, 0, 8, 0\0"
             VALUE "InternalName", "Tamale\0"
             VALUE "LegalCopyright", "Copyright © 2003 Trustees of Dartmouth College\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "Tamale.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Tamale\0"
-            VALUE "ProductVersion", "0, 0, 7, 0\0"
+            VALUE "ProductVersion", "0, 0, 8, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END

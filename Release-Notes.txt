@@ -1,13 +1,19 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.8 - 17 Nov 2003 - emk, brian
 
+  * Added SET-MEDIA-BASE-URL! function.  Pass it either a QuickTime-
+    compatible URL or #f (to use the hard drive).
   * Major refactorings of Scheme runtime to help make it testable.
   * Fixed bug where api.ss didn't get recompiled when kernel.ss changed.
   * Split StageFrame out of Stage.
   * Split DrawingArea out of Stage.
   * Reduced coupling between nodes.ss and kernel.ss.
   * Made element deletion the responsibility of Scheme.
+  * More work on Geiger audio synth.
+  * Turned on QuickTime safe mode to avoid nasty performance problems
+    with Boehm.
+  * Merged TQTMovie changes from FiveL 3.4.
 
 0.0.7 - 2 July 2003 - emk, brian
 
