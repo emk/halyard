@@ -899,9 +899,7 @@
     (equal? (symbol->string sym1) (symbol->string sym2)))
 
   (define (delete-element-internal elem)
-    ;; We're called from C++ after the engine's version of the specified
-    ;; element has been deleted.  Our job is to bring our data structures
-    ;; back in sync.
+    ;; We're the master node deletion routine--C++ is no longer in charge.
     ;; TODO - We're called repeatedly as nodes get deleted, resulting
     ;; in an O(n^2) time to delete n nodes.  Not good, but we can live with
     ;; it for the moment.

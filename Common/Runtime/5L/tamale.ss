@@ -14,7 +14,8 @@
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
            element-shown? set-element-shown?!
            delete-element delete-elements
-           clear-screen point-in-poly? offset-rect
+           clear-screen point-in-poly?
+           offset-rect offset-shape
            rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
@@ -76,11 +77,23 @@
   (define (color-at p)
     (call-5l-prim 'ColorAt p))
 
+  (define (local->card node x)
+    ;; Convert the co-ordinates of a point or shape X into card
+    ;; co-ordinates.  We do this do that elements attached to elements
+    ;; can interpret AT, RECT and similar parameters relative to their
+    ;; parent elements.
+    (if (element? node)
+        (local->card (node-parent node) (offset-shape x (prop node at)))
+        x))
+
+  (define (parent->card node x)
+    (local->card (node-parent node) x))
+
   (define-element-template %element%
       [[at :type <point> :label "Position"]] ()
     (on prop-change (name value prev veto)
       (if (eq? name 'at)
-          (move-element-to! self value)
+          (update-element-position self)
           (call-next-handler))))
 
   (define-element-template %invisible-element% [] (%element% :at (point 0 0)))
@@ -121,10 +134,12 @@
      [%nocreate?
       #f]
      [overlay?
-      (call-5l-prim 'overlay (node-full-name self) real-shape
+      (call-5l-prim 'overlay (node-full-name self)
+                    (parent->card self real-shape)
                     (make-node-event-dispatcher self) cursor alpha?)]
      [else
-      (call-5l-prim 'zone (node-full-name self) (as <polygon> real-shape)
+      (call-5l-prim 'zone (node-full-name self)
+                    (parent->card self (as <polygon> real-shape))
                     (make-node-event-dispatcher self) cursor)]))
 
   (define (animated-graphic-shape graphics)
@@ -146,7 +161,8 @@
        :overlay? #t
        :%nocreate? #t)
     (call-5l-prim 'OverlayAnimated (node-full-name self)
-                  (offset-rect (prop self shape) (prop self at))
+                  (parent->card self
+                                (offset-rect (prop self shape) (prop self at)))
                   (make-node-event-dispatcher self) (prop self cursor)
                   (prop self alpha?) state-path
                   (map (fn (p) (make-path "Graphics" p)) graphics)))
@@ -169,9 +185,12 @@
             :overlay? overlay?
             :alpha? alpha?))
   
-  (define (move-element-to! elem p)
+  (define (update-element-position elem)
     ;; Don't make me public.
-    (call-5l-prim 'MoveElementTo (node-full-name elem) p))
+    (call-5l-prim 'MoveElementTo (node-full-name elem)
+                  (parent->card elem (prop elem at)))
+    (foreach [e (node-elements elem)]
+      (update-element-position e)))
 
   (define (set-element-cursor! elem cursor)
     ;; Don't make me public.
@@ -223,10 +242,6 @@
   (define (point-in-poly? p poly)
     (call-5l-prim 'PolygonContains poly p))
 
-  (define (offset-point p1 p2)
-    (point (+ (point-x p1) (point-x p2))
-           (+ (point-y p1) (point-y p2))))
-
   (define (offset-rect r p)
     (rect (+ (rect-left r) (point-x p))
           (+ (rect-top r) (point-y p))
@@ -235,8 +250,9 @@
 
   (define (offset-shape s p)
     (cond
+     [(point? s) (point-offset s p)]
      [(rect? s) (offset-rect s p)]
-     [(polygon? s) (apply polygon (map (fn (v) (offset-point v p))
+     [(polygon? s) (apply polygon (map (fn (v) (point-offset v p))
                                        (polygon-vertices s)))]
      [else
       (error (cat "Don't know how to offset " s))]))
@@ -336,7 +352,8 @@
       (update-command 'stop))
 
     (call-5l-prim 'Browser (node-full-name self) 
-                  (make-node-event-dispatcher self) (prop self rect)
+                  (make-node-event-dispatcher self)
+                  (parent->card self (prop self rect))
                   fallback?)
     (send self load-page location))
 
@@ -348,7 +365,8 @@
        [font-size :type <integer> :label "Font size"]
        [multiline? :type <boolean> :label "Allow multiple lines?"]]
       (%widget%)
-    (call-5l-prim 'editbox (node-full-name self) (prop self rect) text
+    (call-5l-prim 'editbox (node-full-name self)
+                  (parent->card self (prop self rect)) text
                   font-size multiline?))
 
   (define (edit-box name r text &key (font-size 9) (multiline? #f))
@@ -426,7 +444,8 @@
       (%widget%)
     (let [[path (media-path location)]]
       (check-file path)
-      (call-5l-prim 'movie (node-full-name self) (prop self rect)
+      (call-5l-prim 'movie (node-full-name self)
+                    (parent->card self (prop self rect))
                     path
                     controller? audio-only? loop? interaction?)))
   
