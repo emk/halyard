@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Changed 'for-each-item' to 'foreach', and added 'for'.
+  * Added extract-docs.pl.
+  * Added many new test cases for the new 5L language.
+  * Fixed minor bugs in CryptStream*.*, as discovered by valgrind.
+
 3.5.6 - 3 Oct 2002 - emk
 
   * Refactored CHeader in the same fashion as Header and TStyleSheet,
