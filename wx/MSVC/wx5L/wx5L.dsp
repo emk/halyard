@@ -106,6 +106,10 @@ SOURCE=..\..\src\AudioStreamElement.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\BinMsg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\BrowserElement.cpp
 # End Source File
 # Begin Source File
@@ -530,7 +534,7 @@ SOURCE=..\..\src\tamale.xrc
 !IF  "$(CFG)" == "wx5L - Win32 Release"
 
 # Begin Custom Build
-InputDir=\Documents and Settings\kwasi\5L\wx\src
+InputDir=\Documents and Settings\emk\src\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 
@@ -543,7 +547,7 @@ InputName=tamale
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\Documents and Settings\kwasi\5L\wx\src
+InputDir=\Documents and Settings\emk\src\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 

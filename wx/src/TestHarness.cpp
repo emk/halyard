@@ -7,6 +7,10 @@
 #include "StageFrame.h"
 #include "FancyStatusBar.h"
 
+// This is as good a place to reference extra test case files as any.
+// TODO - Figure out what to with list of test cases in TestAll.cpp.
+REFERENCE_TEST_CASE_FILE(BinMsg);
+
 
 //=========================================================================
 //  TestReportFrame

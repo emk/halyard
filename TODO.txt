@@ -26,9 +26,6 @@ X                                    (lambda (get) (whatever (get '/foo))))
 /     .../index - Index of graphic to display
 
   March Demo
-    Fix audio problems when in background
-      Premature restart of loops
-      Stuttering during disk access
     Reticule/look support
       Figure out what the player is looking at
 ?       Figure out where to hook in look check code--probably post-movement
@@ -40,11 +37,18 @@ X                                    (lambda (get) (whatever (get '/foo))))
       Looking at entities (acts as trigger)
     Reimplement meters in Scheme
       Extend Quake 2 net protocol to allow reporting of state vars
+/       Write serializer
+        Write deserializer
 /     Real-time Scheme-like language for updating meter dials, etc.
       Strip Quake 2 meter implementation to bare essentials
       Re-implement meter logic in Scheme and C++
     Implement other meters
       CDV 715
+
+  Postponed after demo
+    Fix audio problems when in background
+      Premature restart of loops
+      Stuttering during disk access
 
   Cleanup
     Make sure %kernel-run-callback returns result of callback

@@ -13,7 +13,8 @@ CVS - kwasi, djin, emk
   * Implemented core of realtime Scheme interpreter.  This isn't very
     fast, but it never generates Scheme garbage.
   * Removed old STATE-DB-CHANGED event-handling code.  Use the new
-    listener system.
+    listener system instead; it's happy.
+  * Wrote serialization code for binmsg protocol.
 
 0.0.18 - 15 February 2004 - emk
 
