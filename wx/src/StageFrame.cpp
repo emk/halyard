@@ -45,6 +45,8 @@
 #include "Timecoder.h"
 #include "ScriptEditor.h"
 #include "dlg/ProgramPropDlg.h"
+#include "dlg/AdjustScreenDlg.h"
+#include "dlg/AdjustScreenConfirmDlg.h"
 
 
 USING_NAMESPACE_FIVEL
@@ -488,12 +490,19 @@ void StageFrame::FindBestFullScreenVideoMode()
 				 mFullScreenVideoMode.bpp);
 }
 
-void StageFrame::SetFullScreenVideoMode()
-{
-	if (mFullScreenVideoMode != wxDefaultVideoMode)
-	{
-		wxDisplay display;
-		display.ChangeMode(mFullScreenVideoMode);
+void StageFrame::SetFullScreenVideoMode() {
+    ComputeResizePrefName();
+	if (mFullScreenVideoMode != wxDefaultVideoMode) {
+        bool should_confirm;
+        if (ShouldResizeScreen(should_confirm)) {
+            // Resize the screen.
+            wxDisplay display;
+            display.ChangeMode(mFullScreenVideoMode);
+
+            // Make sure the user actually likes the new mode.
+            if (should_confirm && !ConfirmScreenSize())
+                display.ResetMode();                
+        }
 	}
 	mBackground->UpdateStagePosition();
 }
@@ -505,6 +514,59 @@ void StageFrame::ResetVideoMode()
 		wxDisplay display;
 		display.ResetMode();
 	}		
+}
+
+void StageFrame::ComputeResizePrefName() {
+    mResizePrefName = "";
+    size_t count = wxDisplay::GetCount();
+    for (size_t i = 0; i < count; i++) {
+        // Separate monitors with a colon.
+        if (mResizePrefName != "")
+            mResizePrefName += ":";
+
+        // Store width and height for each monitor.
+        wxRect r(wxDisplay(i).GetGeometry());
+        wxString geometry;
+        geometry.sprintf("%dx%d", r.GetWidth(), r.GetHeight());
+        mResizePrefName += geometry;
+    }
+    mResizePrefName = "/Resize/" + mResizePrefName;
+}
+
+bool StageFrame::ShouldResizeScreen(bool &outShouldConfirm) {
+	wxConfigBase *config = wxConfigBase::Get();
+
+    // Unless the user has pressed the shift key, we first check the
+    // registry to see if we know the answer.
+    if (::wxGetKeyState(WXK_SHIFT) == false) {
+        bool should_resize;
+        if (config->Read(mResizePrefName, &should_resize)) {
+            outShouldConfirm = false;
+            return should_resize;
+        }
+    }
+
+    // We're going to need to ask the user.  But just in case the engine
+    // crashes when it resizes the screen (or does something else
+    // childish), we'll default our registry key to false.  We'll change it
+    // later if the user decides to resize.
+    config->Write(mResizePrefName, false);
+
+    // We'll want to confirm this change.
+    outShouldConfirm = true;
+    
+    // OK, now we can actually ask the user.
+    AdjustScreenDlg dlg(this);
+    return (dlg.ShowModal() == wxID_YES);
+}
+
+bool StageFrame::ConfirmScreenSize() {
+	wxConfigBase *config = wxConfigBase::Get();
+    AdjustScreenConfirmDlg dlg(this);
+    bool is_confirmed = (dlg.ShowModal() == wxID_YES);
+    if (is_confirmed)
+        config->Write(mResizePrefName, true);
+    return is_confirmed;
 }
 
 #endif // wxUSE_DISPLAY

@@ -3,6 +3,10 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 CVS - emk
 
   * Added splash screen with graphic and copyright notice (bug #1725).
+  * The screen-resizing code is now polite--it asks first, confirms
+    afterwards, and stores prefs based on system screen geometry.
+    You can override it by holding down "shift" when Tamale switches
+    into full-screen mode.
 
 0.0.43 - 13 Dec 2004 - emk
 

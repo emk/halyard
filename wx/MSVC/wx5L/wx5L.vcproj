@@ -145,6 +145,12 @@
 				RelativePath="..\..\src\ActiveXElement.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\dlg\AdjustScreenConfirmDlg.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\dlg\AdjustScreenDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\AnimatedOverlay.cpp">
 			</File>
 			<File
@@ -397,6 +403,12 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\src\ActiveXElement.h">
+			</File>
+			<File
+				RelativePath="..\..\src\dlg\AdjustScreenConfirmDlg.h">
+			</File>
+			<File
+				RelativePath="..\..\src\dlg\AdjustScreenDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\src\AnimatedOverlay.h">

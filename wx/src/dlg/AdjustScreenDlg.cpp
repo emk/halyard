@@ -20,27 +20,17 @@
 //
 // @END_LICENSE
 
-#ifndef XrcDlg_H
-#define XrcDlg_H
+#include "TamaleHeaders.h"
+#include "AdjustScreenDlg.h"
 
-//////////
-/// This abstract class displays a dialog defined in our XRC resources file.
-///
-class XrcDlg : public wxDialog
+USING_NAMESPACE_FIVEL
+
+BEGIN_EVENT_TABLE(AdjustScreenDlg, XrcDlg)
+	EVT_BUTTON(wxID_YES, XrcDlg::OnSimpleButton)
+	EVT_BUTTON(wxID_NO, XrcDlg::OnSimpleButton)
+END_EVENT_TABLE()
+
+AdjustScreenDlg::AdjustScreenDlg(wxWindow *inParent)
+	: XrcDlg(inParent, "DLG_ADJUST")
 {
-    DECLARE_EVENT_TABLE();
-    
-protected:
-	XrcDlg(wxWindow *inParent, const wxString &inResourceName);
-
-    template <class T>
-	void Bind(T* &outVar, long inID)
-	{ outVar = dynamic_cast<T*>(FindWindow(inID)); wxASSERT(outVar); }
-
-    /// Generic handler which dismisses the dialog and returns the
-    /// button ID.
-	void OnSimpleButton(wxCommandEvent &inEvent);
-};
-
-
-#endif // XrcDlg_H
+}

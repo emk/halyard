@@ -20,27 +20,21 @@
 //
 // @END_LICENSE
 
-#ifndef XrcDlg_H
-#define XrcDlg_H
+#ifndef AdjustScreenDlg_H
+#define AdjustScreenDlg_H
+
+#include "XrcDlg.h"
 
 //////////
-/// This abstract class displays a dialog defined in our XRC resources file.
+/// This is the dialog which asks you whether you want to change your
+/// screen resolution.
 ///
-class XrcDlg : public wxDialog
+class AdjustScreenDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
-    
-protected:
-	XrcDlg(wxWindow *inParent, const wxString &inResourceName);
-
-    template <class T>
-	void Bind(T* &outVar, long inID)
-	{ outVar = dynamic_cast<T*>(FindWindow(inID)); wxASSERT(outVar); }
-
-    /// Generic handler which dismisses the dialog and returns the
-    /// button ID.
-	void OnSimpleButton(wxCommandEvent &inEvent);
+	
+public:
+	AdjustScreenDlg(wxWindow *inParent);
 };
 
-
-#endif // XrcDlg_H
+#endif // AdjustScreenDlg_H

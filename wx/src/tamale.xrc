@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <resource version="2.3.0.1" xmlns="http://www.wxwidgets.org/wxxrc">
     <object class="wxDialog" name="DLG_STARTUP">
-        <style></style>
         <exstyle>wxWS_EX_BLOCK_EVENTS</exstyle>
-        <size>-1,-1</size>
         <title>Select a Program</title>
         <centered>1</centered>
         <object class="wxBoxSizer">
@@ -12,8 +10,6 @@
                 <flag>wxALIGN_LEFT|wxALL</flag>
                 <border>10</border>
                 <object class="wxRadioButton" name="DLG_STARTUP_NEW">
-                    <size>-1,-1</size>
-                    <style></style>
                     <label>Create a &amp;new program.</label>
                     <value>0</value>
                 </object>
@@ -22,8 +18,6 @@
                 <flag>wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
                 <border>10</border>
                 <object class="wxRadioButton" name="DLG_STARTUP_OPEN">
-                    <size>-1,-1</size>
-                    <style></style>
                     <label>&amp;Open an existing program.</label>
                     <value>0</value>
                 </object>
@@ -32,8 +26,6 @@
                 <flag>wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
                 <border>10</border>
                 <object class="wxRadioButton" name="DLG_STARTUP_RECENT">
-                    <size>-1,-1</size>
-                    <style></style>
                     <label>Open a &amp;recent program:</label>
                     <value>0</value>
                 </object>
@@ -55,8 +47,6 @@
                         <flag>wxALIGN_TOP|wxRIGHT</flag>
                         <border>10</border>
                         <object class="wxButton" name="wxID_OK">
-                            <size>-1,-1</size>
-                            <style></style>
                             <label>OK</label>
                             <default>1</default>
                         </object>
@@ -65,8 +55,6 @@
                         <flag>wxALIGN_CENTER_VERTICAL</flag>
                         <border>5</border>
                         <object class="wxButton" name="wxID_CANCEL">
-                            <size>-1,-1</size>
-                            <style></style>
                             <label>Cancel</label>
                         </object>
                     </object>
@@ -74,7 +62,7 @@
             </object>
         </object>
     </object>
-    <object class="wxDialog" name="DLG_FIND_REPLACE">
+    <object class="wxDialog" name="DLG_FIND_REPLACE" subclass="MyDialog">
         <style>wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL</style>
         <exstyle>wxWS_EX_BLOCK_EVENTS</exstyle>
         <size>400,300</size>
@@ -96,8 +84,6 @@
                                 <flag>wxALIGN_CENTER_VERTICAL|wxADJUST_MINSIZE</flag>
                                 <border>5</border>
                                 <object class="wxStaticText" name="wxID_STATIC">
-                                    <size>-1,-1</size>
-                                    <style></style>
                                     <label>Search for:</label>
                                 </object>
                             </object>
@@ -105,9 +91,7 @@
                                 <flag>wxALIGN_CENTER_VERTICAL|wxLEFT</flag>
                                 <border>40</border>
                                 <object class="wxCheckBox" name="DLG_USE_REGEX">
-                                    <size>-1,-1</size>
                                     <tooltip>Use simple POSIX-like regular expressions (experts only).</tooltip>
-                                    <style></style>
                                     <label>Use (Simple) Re&amp;gular Expressions</label>
                                     <checked>0</checked>
                                 </object>
@@ -120,7 +104,6 @@
                         <object class="wxTextCtrl" name="DLG_SEARCH_TEXT">
                             <size>350,75</size>
                             <style>wxTE_MULTILINE|wxTE_RICH</style>
-                            <value></value>
                         </object>
                     </object>
                     <object class="sizeritem">
@@ -137,8 +120,6 @@
                                         <flag>wxALIGN_LEFT|wxBOTTOM</flag>
                                         <border>5</border>
                                         <object class="wxCheckBox" name="DLG_START_AT_TOP">
-                                            <size>-1,-1</size>
-                                            <style></style>
                                             <label>Start at &amp;Top</label>
                                             <checked>0</checked>
                                         </object>
@@ -147,8 +128,6 @@
                                         <flag>wxALIGN_LEFT|wxBOTTOM</flag>
                                         <border>5</border>
                                         <object class="wxCheckBox" name="DLG_WRAP_AROUND">
-                                            <size>-1,-1</size>
-                                            <style></style>
                                             <label>&amp;Wrap Around</label>
                                             <checked>0</checked>
                                         </object>
@@ -157,8 +136,6 @@
                                         <flag>wxALIGN_LEFT|wxBOTTOM</flag>
                                         <border>5</border>
                                         <object class="wxCheckBox" name="DLG_SEARCH_BACKWARDS">
-                                            <size>-1,-1</size>
-                                            <style></style>
                                             <label>Search &amp;Backwards</label>
                                             <checked>0</checked>
                                         </object>
@@ -167,8 +144,6 @@
                                         <flag>wxALIGN_LEFT|wxBOTTOM</flag>
                                         <border>5</border>
                                         <object class="wxCheckBox" name="DLG_CASE_SENSITIVE">
-                                            <size>-1,-1</size>
-                                            <style></style>
                                             <label>&amp;Case Sensitive</label>
                                             <checked>0</checked>
                                         </object>
@@ -177,8 +152,6 @@
                                         <flag>wxALIGN_LEFT</flag>
                                         <border>5</border>
                                         <object class="wxCheckBox" name="DLG_MATCH_ENTIRE_WORDS">
-                                            <size>-1,-1</size>
-                                            <style></style>
                                             <label>Match &amp;Entire Words</label>
                                             <checked>0</checked>
                                         </object>
@@ -195,8 +168,6 @@
                                         <flag>wxALIGN_LEFT|wxALL</flag>
                                         <border>5</border>
                                         <object class="wxRadioButton" name="DLG_SEARCH_CURRENT_SCRIPT">
-                                            <size>-1,-1</size>
-                                            <style></style>
                                             <label>Current &amp;Script</label>
                                             <value>0</value>
                                         </object>
@@ -205,8 +176,6 @@
                                         <flag>wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
                                         <border>5</border>
                                         <object class="wxRadioButton" name="DLG_SEARCH_ALL_SCRIPTS">
-                                            <size>-1,-1</size>
-                                            <style></style>
                                             <label>&amp;All Scripts</label>
                                             <value>0</value>
                                         </object>
@@ -215,8 +184,6 @@
                                         <flag>wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
                                         <border>5</border>
                                         <object class="wxRadioButton" name="DLG_SEARCH_SELECTION_ONLY">
-                                            <size>-1,-1</size>
-                                            <style></style>
                                             <label>Selection &amp;Only</label>
                                             <value>0</value>
                                         </object>
@@ -234,8 +201,6 @@
                                 <flag>wxALIGN_CENTER_VERTICAL|wxADJUST_MINSIZE</flag>
                                 <border>5</border>
                                 <object class="wxStaticText" name="wxID_STATIC">
-                                    <size>-1,-1</size>
-                                    <style></style>
                                     <label>Replace with:</label>
                                 </object>
                             </object>
@@ -247,7 +212,6 @@
                         <object class="wxTextCtrl" name="DLG_REPLACE_TEXT">
                             <size>350,75</size>
                             <style>wxTE_MULTILINE|wxTE_RICH</style>
-                            <value></value>
                         </object>
                     </object>
                 </object>
@@ -261,9 +225,7 @@
                         <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
                         <border>10</border>
                         <object class="wxButton" name="DLG_FIND">
-                            <size>-1,-1</size>
                             <tooltip>Find the first occurance of the search string.</tooltip>
-                            <style></style>
                             <label>&amp;Find</label>
                             <default>1</default>
                         </object>
@@ -272,9 +234,7 @@
                         <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
                         <border>20</border>
                         <object class="wxButton" name="DLG_FIND_ALL">
-                            <size>-1,-1</size>
                             <tooltip>Find all occurances of the search string.</tooltip>
-                            <style></style>
                             <label>Fi&amp;nd All</label>
                         </object>
                     </object>
@@ -282,9 +242,7 @@
                         <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
                         <border>10</border>
                         <object class="wxButton" name="DLG_REPLACE">
-                            <size>-1,-1</size>
                             <tooltip>Replace the first occurance of the search string.</tooltip>
-                            <style></style>
                             <label>&amp;Replace</label>
                         </object>
                     </object>
@@ -292,9 +250,7 @@
                         <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
                         <border>20</border>
                         <object class="wxButton" name="DLG_REPLACE_ALL">
-                            <size>-1,-1</size>
                             <tooltip>Replace all occurances of the search string.</tooltip>
-                            <style></style>
                             <label>Re&amp;place All</label>
                         </object>
                     </object>
@@ -302,9 +258,7 @@
                         <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
                         <border>10</border>
                         <object class="wxButton" name="DLG_DONT_FIND">
-                            <size>-1,-1</size>
                             <tooltip>Exit the dialog without finding anything, but remember the current settings.</tooltip>
-                            <style></style>
                             <label>&amp;Don't Find</label>
                         </object>
                     </object>
@@ -312,10 +266,103 @@
                         <flag>wxALIGN_CENTER_HORIZONTAL</flag>
                         <border>5</border>
                         <object class="wxButton" name="wxID_CANCEL">
-                            <size>-1,-1</size>
                             <tooltip>Exit the dialog, and discard any changes.</tooltip>
-                            <style></style>
                             <label>Cancel</label>
+                        </object>
+                    </object>
+                </object>
+            </object>
+        </object>
+    </object>
+    <object class="wxDialog" name="DLG_ADJUST" subclass="MyDialog">
+        <style>wxCAPTION|wxSTAY_ON_TOP</style>
+        <exstyle>wxWS_EX_BLOCK_EVENTS</exstyle>
+        <title>Adjust Screen</title>
+        <centered>1</centered>
+        <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+                <flag>wxALIGN_CENTER_HORIZONTAL|wxALL|wxADJUST_MINSIZE</flag>
+                <border>5</border>
+                <object class="wxStaticText" name="wxID_STATIC">
+                    <label>Automatically adjust your screen to make text and movies larger? 
+
+If the adjustments don't work, your screen will be automatically
+restored in 15 seconds.</label>
+                </object>
+            </object>
+            <object class="sizeritem">
+                <flag>wxALIGN_RIGHT</flag>
+                <border>5</border>
+                <object class="wxBoxSizer">
+                    <orient>wxHORIZONTAL</orient>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="wxID_YES">
+                            <label>&amp;Yes</label>
+                            <default>1</default>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="wxID_NO">
+                            <label>&amp;No</label>
+                        </object>
+                    </object>
+                </object>
+            </object>
+        </object>
+    </object>
+    <object class="wxDialog" name="DLG_ADJUST_CONFIRM" subclass="MyDialog">
+        <style>wxCAPTION|wxSTAY_ON_TOP</style>
+        <exstyle>wxWS_EX_BLOCK_EVENTS</exstyle>
+        <title>Confirm Adjustments</title>
+        <centered>1</centered>
+        <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+                <flag>wxALIGN_LEFT|wxALL|wxADJUST_MINSIZE</flag>
+                <border>5</border>
+                <object class="wxStaticText" name="wxID_STATIC">
+                    <pos>250,200</pos>
+                    <label>Your screen has been adjusted. Do you want to use these settings
+to run this program?</label>
+                </object>
+            </object>
+            <object class="sizeritem">
+                <flag>wxGROW|wxALL|wxADJUST_MINSIZE</flag>
+                <border>5</border>
+                <object class="wxStaticText" name="wxID_STATIC">
+                </object>
+            </object>
+            <object class="sizeritem">
+                <flag>wxGROW</flag>
+                <border>5</border>
+                <object class="wxBoxSizer">
+                    <orient>wxHORIZONTAL</orient>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE</flag>
+                        <border>5</border>
+                        <option>1</option>
+                        <object class="wxStaticText" name="DLG_REVERT_MSG">
+                            <label>Reverting in 15 seconds</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="wxID_YES">
+                            <label>&amp;Yes</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxRIGHT|wxTOP|wxBOTTOM</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="wxID_NO">
+                            <label>&amp;No</label>
+                            <default>1</default>
                         </object>
                     </object>
                 </object>

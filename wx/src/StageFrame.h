@@ -136,13 +136,21 @@ class StageFrame : public wxFrame, public model::View
 	///
 	void MaybeSaveFrameLayout();
 
+#if wxUSE_DISPLAY
+
 	//////////
 	/// The best video mode for full-screen displays.  We calculate this
 	/// once at startup.
 	///
-#if wxUSE_DISPLAY
 	wxVideoMode mFullScreenVideoMode;
-#endif
+
+    //////////
+    /// The name of the wxConfig key we'll use to store our screen-resizing
+    /// preferences.
+    ///
+    wxString mResizePrefName;
+
+#endif // wxUSE_DISPLAY
 
 	//////////
 	/// Calculate the best video mode to use for full-screen displays.
@@ -158,6 +166,30 @@ class StageFrame : public wxFrame, public model::View
 	/// Switch the video mode back to normal, if possible.
 	///
 	void ResetVideoMode();
+
+#if wxUSE_DISPLAY
+
+    //////////
+    /// Figure out what wxConfig key we should use to store our resizing
+    /// preferences.  This is dependent on the display geometry when our
+    /// application is first launched, because we want to store separate
+    /// preferences for separate display configurations.  This affects
+    /// laptops with external screens, rotatable monitors, and other such
+    /// beasts.
+    ///
+    void ComputeResizePrefName();
+
+    //////////
+    /// Should we resize the screen?  (May interact with the user.)
+    ///
+    bool ShouldResizeScreen(bool &outShouldConfirm);
+    
+    //////////
+    /// Is the current screen size OK?  Interacts with the user.
+    ///
+    bool ConfirmScreenSize();
+
+#endif // wxUSE_DISPLAY
 
 public:
     //////////

@@ -34,3 +34,7 @@ XrcDlg::XrcDlg(wxWindow *inParent, const wxString &inResourceName)
     Layout();
 }
 
+void XrcDlg::OnSimpleButton(wxCommandEvent &inEvent) {
+    Hide();
+    EndModal(inEvent.GetId());
+}

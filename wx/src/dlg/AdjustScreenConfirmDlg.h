@@ -20,27 +20,28 @@
 //
 // @END_LICENSE
 
-#ifndef XrcDlg_H
-#define XrcDlg_H
+#ifndef AdjustScreenConfirmDlg_H
+#define AdjustScreenConfirmDlg_H
+
+#include "XrcDlg.h"
 
 //////////
-/// This abstract class displays a dialog defined in our XRC resources file.
+/// This is the dialog which asks you whether you want to keep the changed
+/// screen resolution.
 ///
-class XrcDlg : public wxDialog
+class AdjustScreenConfirmDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
-    
-protected:
-	XrcDlg(wxWindow *inParent, const wxString &inResourceName);
 
-    template <class T>
-	void Bind(T* &outVar, long inID)
-	{ outVar = dynamic_cast<T*>(FindWindow(inID)); wxASSERT(outVar); }
+    enum { EXPIRE_SECONDS = 15 };
 
-    /// Generic handler which dismisses the dialog and returns the
-    /// button ID.
-	void OnSimpleButton(wxCommandEvent &inEvent);
+    wxStaticText *mRevertMsg;
+    long mExpireTime;
+
+    void OnIdle(wxIdleEvent &inEvent);
+	
+public:
+    AdjustScreenConfirmDlg(wxWindow *inParent);
 };
 
-
-#endif // XrcDlg_H
+#endif // AdjustScreenConfirmDlg_H
