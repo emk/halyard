@@ -22,7 +22,12 @@ CVS - emk, kwasi, djin
     replaced them with much simpler TValueList code.
   * Re-arranged headers a bit, and added new files to CommonHeaders.h.
   * Removed all redundant includes of TValue.h and GraphicsTools.h.
-  , Still working on getting the SchemeToTValue conversions.
+  * Finished SchemeToTValue conversions.
+  * Replaced TCallback* with TCallbackPtr (a smart pointer) everywhere.
+  * TArgumentList no longer needs language-specific subclasses--it uses
+    TValueList.
+  * TValue can now do a few limited sorts of numeric type conversions.
+  * Lots of little bug fixes and stress testing related to TValue.
 
 0.0.14 - 13 Jan 2004 - emk
 

@@ -12,13 +12,17 @@
 /   Move many functions from TValue.h to TValue.cpp
 /   Remove 'inline' from conversion operators
     Overhaul TVariable
-    Redesign TArgumentList (for primitives)
+/   Redesign TArgumentList (for primitives)
 /   Redesign TCallbackArgumentList
     Test TValue extensively with real TCallbacks
     Test TValueToScheme extensively with real TCallbacks
 /   Remove all #include <TValue.h>
 /   Remove all #include <GraphicsTools.h> 
-
+/   TArgumentList conversion problems
+/      bool
+/      double
+/      int/uint mess
+    Fix TCallbackPtr TArgumentList::GetCallbackArg() to use a member function
 
   Cleanup
     Make sure GUI does REFERENCE_TEST_CASE_FILE
