@@ -4,6 +4,8 @@
 
 #include "MacUtils.h"
 
+#include <string.h>
+
 bool PathToFSSpec(KString &inPath, FSSpec *inSpec)
 {
 	Str255		thePath;

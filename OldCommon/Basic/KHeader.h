@@ -42,6 +42,7 @@
 #if defined (macintosh)
 #define MACOS
 #include "KCommon.h"
+#include <string.h>	
 
 #endif	// macintosh
 
@@ -49,6 +50,9 @@
 
 /*
  $Log$
+ Revision 1.2  2002/02/04 21:35:05  hamon
+ More code warrior 7 updates that weren't checked in previously.
+
  Revision 1.1  2000/05/11 12:59:44  chuck
  v 2.01 b1
 
