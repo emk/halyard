@@ -120,9 +120,12 @@
   
   (define (movie name r location
                  &key controller? audio-only? loop? interaction?)
-    (call-5l-prim 'movie name r
-                  (make-path "Media" location)
-                  controller? audio-only? loop? interaction?))
+    (let [[path (make-path "Media" location)]]
+      (unless (file-exists? path)
+        (throw (cat "No such movie: " path)))
+      (call-5l-prim 'movie name r
+                    path
+                    controller? audio-only? loop? interaction?)))
   
   (define (wait name &key frame)
     (if frame
