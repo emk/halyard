@@ -65,7 +65,7 @@ void Macro::Execute()
 	//  Do commands until we jump somewhere or we hit the closing paren.
 	//
 	while ((m_Script.more()) 
-		   and (not m_Return)
+		   and (not IsReturning())
 		   and (not gCardManager.Jumping())) 
 	{
 		DoCommand(m_Script);
@@ -104,6 +104,11 @@ void MacroManager::MakeNewIndex(TIndexFile *inFile, const char *name, long start
 
 /*
  $Log$
+ Revision 1.7.2.2  2002/08/14 22:30:10  emk
+ 3.4.1 - Bugfix: Commands with bodies now check for the "returning" flag
+ correctly, even if they're within macros (Macro has its own return system
+ which works slightly differently from Card's).
+
  Revision 1.7.2.1  2002/08/14 20:24:50  emk
  Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
  removed some deeply-buried bugs in TStream and elsewhere, so please test

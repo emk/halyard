@@ -91,7 +91,7 @@ void Card::Execute(void)
 	{
 		while ((not gCardManager.Paused())
 		   and (m_Script.more())
-		   and (not m_stopped)
+		   and (not IsReturning())
 		   and (not gCardManager.Napping())
 		   and (not gCardManager.Jumping()))
 		{
@@ -167,7 +167,7 @@ void Card::OneCommand(const TString &theCommand)
 void Card::RunBody(const std::list<std::string> &inBody)
 {
 	for (std::list<std::string>::const_iterator iter = inBody.begin();
-		 iter != inBody.end() && !m_stopped && !gCardManager.Jumping();
+		 iter != inBody.end() && !IsReturning() && !gCardManager.Jumping();
 		 ++iter)
 	{
 		OneCommand(iter->c_str());
@@ -663,6 +663,11 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.11.2.3  2002/08/14 22:30:10  emk
+ 3.4.1 - Bugfix: Commands with bodies now check for the "returning" flag
+ correctly, even if they're within macros (Macro has its own return system
+ which works slightly differently from Card's).
+
  Revision 1.11.2.2  2002/08/14 21:06:01  emk
  3.4.1 - Minor build and comment fixes.
 

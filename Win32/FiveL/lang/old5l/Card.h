@@ -78,6 +78,11 @@ class Card : public TIndex
 		virtual void	Return(void);
         
 		//////////
+		// Are we in the process of returning from this script?
+		//
+		virtual bool	IsReturning() { return m_stopped; }
+        
+		//////////
 		// Evaluate a given command. Trim opening paren and read opword.
 		// Opword determines what we parse and then we call the appropriate
 		// routine DoTheCommand...
@@ -425,6 +430,11 @@ extern CardManager gCardManager;
 
 /*
  $Log$
+ Revision 1.4.2.2  2002/08/14 22:30:10  emk
+ 3.4.1 - Bugfix: Commands with bodies now check for the "returning" flag
+ correctly, even if they're within macros (Macro has its own return system
+ which works slightly differently from Card's).
+
  Revision 1.4.2.1  2002/08/14 20:24:50  emk
  Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
  removed some deeply-buried bugs in TStream and elsewhere, so please test
