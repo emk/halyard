@@ -39,6 +39,34 @@
          [(define name . body)
           (maybe-insert-def #'name 'variable)]
          [anything-else #f])]
+      [[define-syntax]
+       (syntax-case stx ()
+         [(define-syntax (name stx) . body)
+          (maybe-insert-def #'name 'keyword)]
+         [(define-syntax name . body)
+          (maybe-insert-def #'name 'keyword)]
+         [anything-else #f])]
+      [[card]
+       (syntax-case stx ()
+         [(card name args . body)
+          (maybe-insert-def #'name 'card)]
+         [anything-else #f])]
+      [[define-group-template define-card-template define-element-template]
+       (syntax-case stx ()
+         [(_ name params args . body)
+          (maybe-insert-def #'name 'template)]
+         [anything-else #f])]
+      [[define-stylesheet]
+       (syntax-case stx ()
+         [(define-stylesheet name . body)
+          (maybe-insert-def #'name 'variable)]
+         [anything-else #f])]
+      [[defclass]
+       (syntax-case stx ()
+         [(defclass name args . body)
+          ;; TODO - Register getter and setter functions.
+          (maybe-insert-def #'name 'class)]
+         [anything-else #f])]
       [else
        #f]))
 
