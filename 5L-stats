@@ -9,7 +9,7 @@ use warnings;
 #  Configuration Options
 #==========================================================================
 
-my @categories = qw(Common Mac Win32);
+my @categories = qw(Common Mac Win32 wx);
 
 my @exclude = qw(Common/freetype2
 		 Common/libs
