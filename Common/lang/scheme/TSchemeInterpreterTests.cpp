@@ -146,6 +146,7 @@ void test_TSchemeInterpreter (void)
 	
 	// Boot the interpreter.
 	TSchemeInterpreterManager scheme(&TestIdleFunc);
+	scheme.BeginScript();
 	scheme.Run();
 
 	// Make sure we visited all the right cards.

@@ -90,6 +90,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "XrcVC"=.\libs\wxWindows\contrib\src\xrc\XrcVC.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "freetype"=.\libs\freetype2\builds\win32\visualc\freetype.dsp - Package Owner=<4>
 
 Package=<5>
@@ -169,6 +181,27 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name wxq2
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name XrcVC
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name wxRcVC
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "wxRcVC"=.\libs\wxWindows\contrib\utils\wxrc\wxRcVC.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XrcVC
     End Project Dependency
 }}}
 

@@ -486,6 +486,40 @@ bool FileSystem::operator==(const Path& inLeft, const Path& inRight)
 	return (inLeft.mPath == inRight.mPath);
 }
 
+Path Path::NativePath(const std::string &inPath)
+{
+	CHECK(inPath != "", "Path cannot be an empty string");
+	Path result;
+
+#if FIVEL_PLATFORM_OTHER
+
+	CHECK(inPath.size() > 0 && inPath[0] == PATH_SEPARATOR,
+		  ("\'" + inPath + "\' does not begin with a slash").c_str());
+	if (inPath.size() > 1 && inPath[inPath.length()-1] == PATH_SEPARATOR)
+		result.mPath = inPath.substr(0, inPath.length() - 1);
+	else
+		result.mPath = inPath;
+
+#elif FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_MACINTOSH
+
+	if (inPath.size() >= 2 &&
+		inPath[inPath.length()-1] == PATH_SEPARATOR &&
+		inPath[inPath.length()-2] != PATH_SEPARATOR)
+	{
+		result.mPath = inPath.substr(0, inPath.length() - 1);
+	}
+	else
+	{
+		result.mPath = inPath;
+	}
+
+#else
+#	error "Unknown FiveL platform."
+#endif // FILEL_PLATFORM_*
+
+	return result;
+}
+
 
 //=========================================================================
 //  Base Directory Methods
@@ -497,6 +531,14 @@ static Path gCurrentBaseDirectory = Path();
 void FileSystem::SetBaseDirectory(const Path &inDirectory)
 {
 	gCurrentBaseDirectory = inDirectory;
+}
+
+void FileSystem::SetBaseDirectory(const std::string &inDirectory)
+{
+	Path base = Path::NativePath(inDirectory);
+	CHECK(base.IsDirectory(),
+		  ("\'" + inDirectory + "\' is not a valid directory").c_str());
+	gCurrentBaseDirectory = base;
 }
 
 Path FileSystem::GetBaseDirectory()

@@ -422,7 +422,7 @@ namespace model {
 		Model(const ModelFormat &inCurrentFormat,
 			  ModelFormat::Version inEarliestFormat,
 			  const std::string &inPath);
-		~Model();
+		virtual ~Model();
 		
 		const ModelFormat &GetFormat() { return mFormat; }
 

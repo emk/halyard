@@ -218,6 +218,12 @@ class TInterpreterManager : boost::noncopyable
 	TInterpreter *mInterpreter;
 
 	//////////
+	// This is set to true once the interpreter manager is allowed
+	// to create an interpreter and start it running.
+	//
+	bool mScriptIsBegun;
+
+	//////////
 	// Should we exit our top-level event loop?
 	//
 	bool mDone;
@@ -256,6 +262,13 @@ public:
 	// application quits.
 	//
 	void Run();
+
+	//////////
+	// Call this function to start the script running.  This step is
+	// separate from the constructor so the application can choose
+	// a script to run and set up a working directory.
+	//
+	virtual void BeginScript();
 
 	//////////
 	// Call this function to notify the TInterpreterManager of an

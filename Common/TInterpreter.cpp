@@ -47,6 +47,7 @@ TInterpreterManager::TInterpreterManager(
 	mSystemIdleProc = inIdleProc;
 	mInterpreter = NULL;
 	mDone = false;
+	mScriptIsBegun = false;
 	mLoadScriptFailed = false;
 	ResetInitialCardName();
 }
@@ -70,7 +71,7 @@ void TInterpreterManager::Run()
 		{
 			// Either create and run an interpreter, or just call the
 			// idle procedure.
-			if (!mLoadScriptFailed)
+			if (mScriptIsBegun && !mLoadScriptFailed)
 				LoadAndRunScript();
 			else
 				(*mSystemIdleProc)();
@@ -103,7 +104,12 @@ void TInterpreterManager::Run()
 		}
 	}
 }
-	
+
+void TInterpreterManager::BeginScript()
+{
+	mScriptIsBegun = true;
+}
+
 void TInterpreterManager::LoadAndRunScript()
 {
 	try

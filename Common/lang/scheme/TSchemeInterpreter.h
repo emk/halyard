@@ -59,6 +59,8 @@ class TSchemeInterpreterManager : public TInterpreterManager
 public:
 	TSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
 
+	virtual void BeginScript();
+
 private:
 	void LoadFile(const FileSystem::Path &inFile);
 

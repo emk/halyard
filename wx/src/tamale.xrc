@@ -1,0 +1,158 @@
+<?xml version="1.0" ?>
+<resource>
+  <object class="wxDialog" name="DLG_STARTUP">
+    <title>Select a Program</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxRadioButton" name="DLG_STARTUP_NEW">
+          <label>Create a new program.</label>
+        </object>
+        <flag>wxALL</flag>
+        <border>10</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxRadioButton" name="DLG_STARTUP_OPEN">
+          <label>Open an existing program.</label>
+        </object>
+        <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+        <border>10</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxRadioButton" name="DLG_STARTUP_RECENT">
+          <label>Open a recent program:</label>
+        </object>
+        <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+        <border>10</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxListBox" name="DLG_STARTUP_LIST">
+          <content/>
+          <size>300, 100</size>
+          <style>wxLB_ALWAYS_SB</style>
+        </object>
+        <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
+        <border>10</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_OK">
+              <label>OK</label>
+              <default>1</default>
+            </object>
+            <flag>wxRIGHT</flag>
+            <border>10</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_CANCEL">
+              <label>Cancel</label>
+            </object>
+          </object>
+        </object>
+        <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxALIGN_RIGHT</flag>
+        <border>10</border>
+      </object>
+    </object>
+    <style></style>
+  </object>
+  <object class="wxDialog" name="PROP_PROGRAM">
+    <title>Program Properties</title>
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxFlexGridSizer">
+          <cols>2</cols>
+          <rows>2</rows>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Program name:</label>
+            </object>
+            <flag>wxALIGN_CENTRE_VERTICAL</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="PROP_PROGRAM_NAME"/>
+            <flag>wxEXPAND</flag>
+          </object>
+          <vgap>10</vgap>
+          <hgap>10</hgap>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Stage size:</label>
+            </object>
+            <flag>wxALIGN_CENTRE_VERTICAL</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxChoice" name="PROP_PROGRAM_STAGE_SIZE">
+              <content>
+                <item>640x480</item>
+                <item>800x600</item>
+                <item>1024x768</item>
+              </content>
+              <style></style>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Copyright:</label>
+            </object>
+            <flag>wxALIGN_CENTRE_VERTICAL</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="PROP_PROGRAM_COPYRIGHT"/>
+            <flag>wxGROW</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Version:</label>
+            </object>
+            <flag>wxALIGN_CENTRE_VERTICAL</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="PROP_PROGRAM_VERSION"/>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Comments:</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="PROP_PROGRAM_COMMENTS">
+              <size>300, 200</size>
+              <style>wxTE_PROCESS_ENTER|wxTE_MULTILINE</style>
+            </object>
+          </object>
+        </object>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>10</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxFlexGridSizer">
+          <cols>3</cols>
+          <hgap>10</hgap>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_OK">
+              <label>OK</label>
+              <default>1</default>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_CANCEL">
+              <label>Cancel</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="PROP_PROGRAM_APPLY">
+              <label>Apply</label>
+            </object>
+          </object>
+        </object>
+        <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxALIGN_RIGHT</flag>
+        <border>10</border>
+      </object>
+    </object>
+  </object>
+</resource>

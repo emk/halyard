@@ -63,6 +63,17 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 
 	// Finish creating our engine module.
 	scheme_finish_primitive_module(engine_mod);
+}
+
+void TSchemeInterpreterManager::BeginScript()
+{
+	// Let our parent class set things up.
+	TInterpreterManager::BeginScript();
+
+	// Set the current Scheme directory.
+	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
+	scheme_set_param(scheme_config, MZCONFIG_CURRENT_DIRECTORY,
+					 scheme_make_string(base.c_str()));
 
 	// Install our system loader.
 	FileSystem::Path fivel_collection =

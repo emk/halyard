@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/lib/msw" /I "../../../libs/quake2/wx" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/msw" /I "../../../libs/quake2/wx" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/lib/mswd" /I "../../../libs/quake2/wx" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /D "__WXWINDOWS__" /D "REF_HARD_LINKED" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/mswd" /I "../../../libs/quake2/wx" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /D "__WXWINDOWS__" /D "REF_HARD_LINKED" /FD /GZ /c
 # SUBTRACT CPP /X /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -131,7 +131,15 @@ SOURCE=..\..\src\Quake2Engine.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\resources.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Stage.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\dlg\StartupDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -207,6 +215,10 @@ SOURCE=..\..\src\Stage.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\dlg\StartupDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Timecoder.h
 # End Source File
 # Begin Source File
@@ -248,6 +260,28 @@ SOURCE=..\..\src\ic_listener.ico
 # Begin Source File
 
 SOURCE=..\..\src\ic_timecoder.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\tamale.xrc
+
+!IF  "$(CFG)" == "wx5L - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
+
+# Begin Custom Build
+InputDir=\src\5L\wx\src
+InputPath=..\..\src\tamale.xrc
+InputName=tamale
+
+"$(InputDir)\resources.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	cd $(InputDir) 
+	..\..\libs\wxWindows\contrib\utils\wxrc\Debug\wxrc.exe /c /o resources.cpp $(InputName).xrc 
+	
+# End Custom Build
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

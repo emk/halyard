@@ -2,6 +2,7 @@
 
 #include <strstream>
 
+#include "TLogger.h"
 #include "TException.h"
 
 USING_NAMESPACE_FIVEL
@@ -42,4 +43,14 @@ const char* TException::what () const throw ()
 	s << "at " << mErrorFile << ":" << mErrorLine << ")";
 	const_cast<TException*>(this)->mWhatCache = get_string(s);
 	return mWhatCache.c_str();
+}
+
+void TException::ReportException(std::exception &e)
+{
+	gLog.Error("Error: %s", e.what());
+}
+
+void TException::ReportException()
+{
+	gLog.FatalError("An unexpected internal error occurred, quitting now.");
 }

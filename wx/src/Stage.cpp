@@ -5,12 +5,14 @@
 #include <wx/treectrl.h>
 #include <wx/laywin.h>
 #include <wx/config.h>
+#include <wx/filename.h>
 
 #include "TCommon.h"
 #include "TInterpreter.h"
 #include "TLogger.h"
 #include "TVariable.h"
 #include "TStyleSheet.h"
+#include "doc/Document.h"
 
 // XXX - Huh?  Who included by TStyleSheet.h (on Win32) is defining DrawText?
 #undef DrawText
@@ -255,7 +257,15 @@ void ProgramTree::NotifyEnterCard()
 
 BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_EXIT, StageFrame::OnExit)
+
+    EVT_UPDATE_UI(FIVEL_NEW_PROGRAM, StageFrame::UpdateUiNewProgram)
+    EVT_MENU(FIVEL_NEW_PROGRAM, StageFrame::OnNewProgram)
+    EVT_UPDATE_UI(FIVEL_OPEN_PROGRAM, StageFrame::UpdateUiOpenProgram)
+    EVT_MENU(FIVEL_OPEN_PROGRAM, StageFrame::OnOpenProgram)
+    EVT_UPDATE_UI(FIVEL_SAVE_PROGRAM, StageFrame::UpdateUiSaveProgram)
+    EVT_MENU(FIVEL_SAVE_PROGRAM, StageFrame::OnSaveProgram)
     EVT_MENU(FIVEL_RELOAD_SCRIPT, StageFrame::OnReloadScript)
+
     EVT_MENU(FIVEL_ABOUT, StageFrame::OnAbout)
     EVT_MENU(FIVEL_SHOW_LOG, StageFrame::OnShowLog)
     EVT_MENU(FIVEL_SHOW_LISTENER, StageFrame::OnShowListener)
@@ -279,6 +289,7 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     : wxFrame((wxFrame*) NULL, -1, inTitle,
               LoadFramePosition(), wxDefaultSize,
 			  wxDEFAULT_FRAME_STYLE),
+	  mDocument(NULL),
 	  mHaveLoadedFrameLayout(false)
 {
     // Set up useful logging.
@@ -309,9 +320,17 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     // Create a stage object to scribble on, and center it.
     mStage = new Stage(mBackground, this, inSize);
 	mBackground->CenterStage(mStage);
+	mStage->Hide();
 
     // Set up our File menu.
     mFileMenu = new wxMenu();
+    mFileMenu->Append(FIVEL_NEW_PROGRAM, "&New Program...\tCtrl+N",
+                      "Create a new Tamale program.");
+    mFileMenu->Append(FIVEL_OPEN_PROGRAM, "&Open Program...\tCtrl+O",
+                      "Open an existing Tamale program.");
+    mFileMenu->Append(FIVEL_SAVE_PROGRAM, "&Save Program\tCtrl+S",
+                      "Save the current Tamale program.");
+    mFileMenu->AppendSeparator();
     mFileMenu->Append(FIVEL_RELOAD_SCRIPT, "&Reload Script\tCtrl+R",
                       "Reload the currently executing 5L script.");
     mFileMenu->AppendSeparator();
@@ -481,9 +500,81 @@ bool StageFrame::ShowFullScreen(bool show, long style)
 	return result;
 }
 
+void StageFrame::NewDocument()
+{
+	wxASSERT(mDocument == NULL);
+	wxDirDialog dlg(this, "Add Tamale data to an existing program folder:");
+
+	wxConfigBase *config = wxConfigBase::Get();
+	wxString recent;
+	if (config->Read("/Recent/DocPath", &recent))
+		dlg.SetPath(recent);
+
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		wxString file = dlg.GetPath();
+		mStage->Show();
+		mDocument = new Document(file.mb_str());
+		config->Write("/Recent/DocPath", file);
+	}
+}
+
+void StageFrame::OpenDocument()
+{
+	wxASSERT(mDocument == NULL);
+	wxDirDialog dlg(this, "Open a Tamale program folder:");
+
+	wxConfigBase *config = wxConfigBase::Get();
+	wxString recent;
+	if (config->Read("/Recent/DocPath", &recent))
+		dlg.SetPath(recent);
+
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		wxString file = dlg.GetPath();
+		mStage->Show();
+		mDocument = new Document(file.mb_str(), Document::OPEN);
+		config->Write("/Recent/DocPath", file);
+	}
+}
+
 void StageFrame::OnExit(wxCommandEvent &inEvent)
 {
     Close(TRUE);
+}
+
+void StageFrame::UpdateUiNewProgram(wxUpdateUIEvent &inEvent)
+{
+	inEvent.Enable(mDocument == NULL);
+}
+
+void StageFrame::OnNewProgram(wxCommandEvent &inEvent)
+{
+	BEGIN_EXCEPTION_TRAPPER()
+		NewDocument();
+	END_EXCEPTION_TRAPPER()
+}
+
+void StageFrame::UpdateUiOpenProgram(wxUpdateUIEvent &inEvent)
+{
+	inEvent.Enable(mDocument == NULL);
+}
+
+void StageFrame::OnOpenProgram(wxCommandEvent &inEvent)
+{
+	BEGIN_EXCEPTION_TRAPPER()
+		OpenDocument();
+	END_EXCEPTION_TRAPPER()
+}
+
+void StageFrame::UpdateUiSaveProgram(wxUpdateUIEvent &inEvent)
+{
+	inEvent.Enable(mDocument != NULL);
+}
+
+void StageFrame::OnSaveProgram(wxCommandEvent &inEvent)
+{
+
 }
 
 void StageFrame::OnReloadScript(wxCommandEvent &inEvent)

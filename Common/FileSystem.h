@@ -138,6 +138,14 @@ namespace FileSystem {
 		// good for much besides the test suites, actually.
 		//
 		friend bool operator==(const Path& inLeft, const Path& inRight);
+
+		//////////
+		// Create a path from an absolute native pathname string.
+		// DO NOT PASS A RELATIVE PATH STRING.  The quality of the
+		// Path returned by this function is directly related to
+		// the quality of the input path.
+		//
+		static Path NativePath(const std::string &inPath);
 	};
 
 	//////////
@@ -146,6 +154,12 @@ namespace FileSystem {
 	// GetFontFilePath, etc.
 	//
 	void SetBaseDirectory(const Path &inDirectory);
+
+	//////////
+	// Set the base directory for the application using a native
+	// path name.  Any trailing directory separator will be removed.
+	//
+	void SetBaseDirectory(const std::string &inDirectory);
 
 	//////////
 	// Return the current base directory for this application.

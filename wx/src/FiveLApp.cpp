@@ -1,7 +1,9 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/fs_inet.h>
+#include <wx/xrc/xmlres.h>
 
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
@@ -14,10 +16,14 @@
 #include "FiveLApp.h"
 #include "Log5L.h"
 #include "Stage.h"
+#include "dlg/StartupDlg.h"
 #include "TWxPrimitives.h"
 #if CONFIG_HAVE_QUAKE2
 #	include "TQuake2Primitives.h"
 #endif // CONFIG_HAVE_QUAKE2
+
+// Provided by auto-generated resources.cpp file.
+extern void InitXmlResource();
 
 USING_NAMESPACE_FIVEL
 
@@ -77,15 +83,22 @@ bool FiveLApp::OnInit()
     ::wxInitAllImageHandlers();
     wxFileSystem::AddHandler(new wxInternetFSHandler);
 
+	// Load our resources (they're linked into our application).
+	// TODO - Only initialize the handlers we need; this will greatly
+	// reduce application size.
+	wxXmlResource::Get()->InitAllHandlers();
+	InitXmlResource();
+
     // Create and display our stage frame.
-    //mStageFrame = new StageFrame("wx5L", wxSize(640, 480));
-    mStageFrame = new StageFrame("wx5L", wxSize(800, 600));
+    mStageFrame = new StageFrame("wx5L", wxSize(640, 480));
+    //mStageFrame = new StageFrame("wx5L", wxSize(800, 600));
     mStageFrame->Show();
 	// Enable this to go to full-screen mode *almost* immediately.
 	// TODO - You'll see the standard window for a small fraction of a
 	// second.  Fixing this will require tweaking wxWindows.
 	//mStageFrame->ShowFullScreen(TRUE);
     SetTopWindow(mStageFrame);
+
     return TRUE;
 }
 
@@ -107,27 +120,30 @@ int FiveLApp::MainLoop()
     // point on the stack!
     FIVEL_SET_STACK_BASE();
         
-    // Try to create a SchemeInterpreterManager.
+    // Create a SchemeInterpreterManager.
     TInterpreterManager *manager =
-        ::MaybeGetSchemeInterpreterManager(&FiveLApp::IdleProc);
+		GetSchemeInterpreterManager(&FiveLApp::IdleProc);
 
-    if (manager)
-    {
-        // Run our own event loop.
-        SetExitOnFrameDelete(FALSE);
-        mHaveOwnEventLoop = true;
-        IdleProc();
-        manager->Run();
-        delete manager;
-        manager = NULL;
-    }
-    else
-    {
-        wxLogError("Could not find a \"Runtime\" directory.");
+	// Prompt for a program to open.  We can't do this until the
+	// TInterpreterManager is loaded.  (We need to do this inside
+	// a block to make sure the object is destroyed quickly.)
+	{
+		StartupDlg startup_dialog(mStageFrame);
+		startup_dialog.ShowModal();
+	}
 
-        // Run the built-in main loop instead.
-        return wxApp::MainLoop();
-    }
+	// Run our own event loop.
+	SetExitOnFrameDelete(FALSE);
+	mHaveOwnEventLoop = true;
+	IdleProc();
+	manager->Run();
+	delete manager;
+	manager = NULL;
+
+	// We could run the built-in event loop using the following call,
+	// if there were some reason the above code would not work (perhaps
+	// because of a starup error):
+	//    return wxApp::MainLoop();
 
     // XXX - Is this good enough?  This return value is platform-specific,
     // and it's not always 0.

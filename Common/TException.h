@@ -108,13 +108,36 @@ public:
 	//                comes sooner.
 	//
 	virtual const char* what () const throw ();
+
+	//////////
+	// Report an exception to the user.  Since these tend to be well-behaved
+	// C++ exceptions, this function is non-fatal.
+	//
+	static void ReportException(std::exception &e);
+
+	//////////
+	// Report an unknown exception to the user.  Since these tend to be
+	// Win32 protection violations, this function is fatal.
+	//
+	static void ReportException();
 };
+
+#define BEGIN_EXCEPTION_TRAPPER() \
+	try {
+
+#define END_EXCEPTION_TRAPPER() \
+	} catch (std::exception &e) { \
+		TException::ReportException(e); \
+    } catch (...) { \
+		TException::ReportException(); \
+	}
 
 #define CATCH_ALL_EXCEPTIONS_AND_RETURN(FUNC,DEFAULT) \
 	try { \
 		return (FUNC); \
 	} catch (std::exception &e) { \
-		gLog.FatalError("Unexpected internal error: %s.", e.what()); \
+		gLog.FatalError("Unexpected internal error: " + \
+                               std::string(e.what())); \
     } catch (...) { \
 		gLog.FatalError("Unexpected, unknown internal error."); \
 	} \

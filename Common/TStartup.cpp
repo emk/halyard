@@ -21,6 +21,13 @@ void FIVEL_NS InitializeCommonCode()
     RegisterCommonPrimitives();
 }
 
+TInterpreterManager *
+GetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
+{
+	// Create and return a new Scheme interpreter manager.
+	return new TSchemeInterpreterManager(inIdleProc);
+}
+
 TInterpreterManager *FIVEL_NS
 MaybeGetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
 {
@@ -30,5 +37,5 @@ MaybeGetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
 		return NULL;
 
 	// Create and return a new Scheme interpreter manager.
-	return new TSchemeInterpreterManager(inIdleProc);
+	return GetSchemeInterpreterManager(inIdleProc);
 }

@@ -10,7 +10,7 @@
 #include "GraphicsTools.h"
 #include "AppGlobals.h"
 
-
+class FIVEL_NS Document;
 class Stage;
 class Element;
 class LocationBox;
@@ -37,6 +37,11 @@ enum ToolWindowID {
 //
 class StageFrame : public wxFrame
 {
+	//////////
+	// Our associated document object.
+	//
+	FIVEL_NS Document *mDocument;
+
     //////////
     // A separate top-level window which logs a variety of interesting
     // events.
@@ -137,9 +142,25 @@ public:
 	//
     virtual bool ShowFullScreen(bool show, long style = wxFULLSCREEN_ALL);
 
+	//////////
+	// Create a new document in the current frame.
+	//
+	void NewDocument();
+
+	//////////
+	// Create a new document in the current frame.
+	//
+	void OpenDocument();
+
 private:
 	// Lots of menu and toolbar event handlers.
     void OnExit(wxCommandEvent &inEvent);
+    void UpdateUiNewProgram(wxUpdateUIEvent &inEvent);
+    void OnNewProgram(wxCommandEvent &inEvent);
+    void UpdateUiOpenProgram(wxUpdateUIEvent &inEvent);
+    void OnOpenProgram(wxCommandEvent &inEvent);
+    void UpdateUiSaveProgram(wxUpdateUIEvent &inEvent);
+    void OnSaveProgram(wxCommandEvent &inEvent);
     void OnReloadScript(wxCommandEvent &inEvent);
     void OnAbout(wxCommandEvent &inEvent);
     void OnShowLog(wxCommandEvent &inEvent);
