@@ -368,20 +368,26 @@
                         (template-prop-decl-default prop-decl))))
 
   (define (node-bind-property-values! node template)
-    (let [[bindings ((template-bindings-eval-fn template) node)]]
-      (hash-table-for-each bindings
-                           (lambda (k v) (node-bind-value! node k v))))
     (foreach [decl (template-prop-decls template)]
-      (node-maybe-default-property! node decl)))
+      (node-maybe-default-property! node decl))
+    (let [[bindings ((template-bindings-eval-fn template) node)]]
+      (foreach [[k v] bindings]
+        (node-bind-value! node k v))))
 
   (define (prop* node name)
     ;; This function controls how we search for property bindings.  If
     ;; you want to change search behavior, here's the place to do it.
     (let [[value (hash-table-get (node-values node)
                                  name (lambda () $no-such-key))]]
-      (if (not (eq? value $no-such-key))
-          value
-          (error "Unable to find template property" name))))
+      (cond
+       [(eq? value $no-such-key)
+        (error (cat "No property named '" name "' on: "
+                    (node-full-name node)))]
+       [(eq? value $no-default)
+        (error (cat "No value for property '" name "' on: "
+                    (node-full-name node)))]
+       [else
+        value])))
 
   (define (set-prop*! node name value)
     ;; We allow the scriptor to set properties on a node.  However, we

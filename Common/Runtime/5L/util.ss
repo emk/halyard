@@ -66,6 +66,8 @@
   ;;; @param BODY body The code to run for each list item.
   (define-syntax foreach
     (syntax-rules ()
+      [(foreach [[key value] hash] body ...)
+       (hash-table-for-each hash (lambda (key value) body ...))]
       [(foreach [name lst] body ...)
        (let loop [[remaining lst]]
          (unless (null? remaining)

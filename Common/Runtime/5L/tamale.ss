@@ -76,8 +76,14 @@
   (define (color-at p)
     (call-5l-prim 'ColorAt p))
 
-  (define-element-template %element%
-      [] ())
+  (define-element-template %element% [] ())
+#|
+      [[at :type <point> :label "Position"]] ()
+    (on prop-change (name value prev veto)
+      (if (eq? name 'at)
+          (move-element-to! self value)
+          (call-next-handler))))
+|#
 
   (define-element-template %zone%
       [[cursor :type <symbol> :default 'hand :label "Cursor"]
@@ -123,16 +129,16 @@
 
   (define-element-template %animated-graphic%
       [[at :type <point> :label "Location"]
-       [state :type <string> :label "State DB Key Path"]
+       [state-path :type <string> :label "State DB Key Path"]
        [graphics :type <list> :label "Graphics to display"]]
       (%zone%
        :shape (animated-graphic-shape at graphics)
        :overlay? #t
-       :alpha? #t
        :%nocreate? #t)
     (call-5l-prim 'OverlayAnimated (node-full-name self) (prop self shape)
                   (make-node-event-dispatcher self) (prop self cursor)
-                  state (map (fn (p) (make-path "Graphics" p)) graphics)))
+                  (prop self alpha?) state-path
+                  (map (fn (p) (make-path "Graphics" p)) graphics)))
 
   (define-element-template %simple-zone% [action] (%zone%)
     (on prop-change (name value prev veto)
@@ -263,7 +269,8 @@
     (draw-text stylesheet r msg))
 
   (define-element-template %browser%
-      [[location :type <string> :label "Location" :default "about:blank"]
+      [rect
+       [location :type <string> :label "Location" :default "about:blank"]
        [fallback? :type <boolean> :label "Use primitive fallback web browser?"
                   :default #f]]
       (%element%)
@@ -315,7 +322,8 @@
     (create %browser% :name name :rect r :location location))
 
   (define-element-template %edit-box-element%
-      [[text :type <string> :label "Initial text"]
+      [rect
+       [text :type <string> :label "Initial text"]
        [font-size :type <integer> :label "Font size"]
        [multiline? :type <boolean> :label "Allow multiple lines?"]]
       (%element%)
@@ -326,9 +334,11 @@
     (create %edit-box-element% :name name :rect r :text text
             :font-size font-size :multiline? multiline?))
 
+  (define-element-template %invisible-element% [] (%element% :at (point 0 0)))
+
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
-      (%element%)
+      (%invisible-element%)
     (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                   (build-path (current-directory) "Media" location)))
 
@@ -341,7 +351,7 @@
 
   (define-element-template %geiger-synth%
       [chirp loops]
-      (%element%)
+      (%invisible-element%)
     (apply call-5l-prim 'GeigerSynth (node-full-name self)
            (build-path (current-directory) "Media" chirp) (* 512 1024)
            (map (fn (item)
@@ -358,7 +368,7 @@
 
   (define-element-template %sine-wave-element%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
-      (%element%)
+      (%invisible-element%)
     (call-5l-prim 'AudioStreamSine (node-full-name self) frequency))
 
   (define (sine-wave name frequency)
@@ -368,7 +378,7 @@
       [[location :type <string>  :label "Location"]
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
-      (%element%)
+      (%invisible-element%)
     (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                   (build-path (current-directory) "Media" location)
                   (* 1024 buffer) loop?))
@@ -389,7 +399,8 @@
         (make-path "Media" location)))
 
   (define-element-template %movie-element%
-      [[location     :type <string>  :label "Location"]
+      [rect
+       [location     :type <string>  :label "Location"]
        [controller?  :type <boolean> :label "Has movie controller" :default #f]
        [audio-only?  :type <boolean> :label "Audio only"        :default #f]
        [loop?        :type <boolean> :label "Loop movie"        :default #f]
