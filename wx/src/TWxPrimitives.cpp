@@ -213,12 +213,9 @@ DEFINE_5L_PRIMITIVE(Input)
 static void load_picture(const std::string &inName, TPoint inLoc,
 						 TRect *inRect = NULL)
 {
-	// Build a path to our image.
-	Path p = FileSystem::GetBaseDirectory().AddComponent("Graphics").AddComponent(inName).ReplaceExtension("png");
-
 	// Load our image.
 	wxImage image;
-	image.LoadFile(p.ToNativePathString().c_str());
+	image.LoadFile(inName.c_str());
 	if (!image.Ok())
 	{
 		::SetPrimitiveError("noimage", "Can't load the specified image");
