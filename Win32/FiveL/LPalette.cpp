@@ -144,7 +144,7 @@ void LPalette::_Load(void)
 			if (theDib == NULL)
 			{
 				gLog.Error("Error getting Palette from BMP file <%s>", m_FullPath.GetString());
-				free(hDib);		
+				::DibDelete(hDib);		
 			}
 			else
 			{
@@ -465,6 +465,21 @@ void LPaletteManager::ResetPalette(void)
 
 /*
  $Log$
+ Revision 1.4  2002/07/25 22:25:36  emk
+   * Made new CryptStream auto_ptr code work under Windows.
+   * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+     notify the user if there are duplicate cards, macros, etc.
+   * PURIFY: Fixed memory leak in TBTree destructor.
+   * PURIFY: Fixed memory leak in ConfigManager destructor.
+   * PURIFY: Fixed memory leaks when deleting DIBs.
+   * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+   * PURIFY: Fixed memory leak in LBrowser.
+   * PURIFY: Fixed memory leak in LFileBundle.
+   * PURIFY: Fixed uninitialized memory reads when View methods were
+     called before View::Init.
+   * PURIFY: Made View::Draw a no-op before View::Init is called.
+     (It seems that Windows causes us to call Draw too early.)
+
  Revision 1.3  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

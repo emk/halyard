@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //
 //	LFileBundle: Acts as a file database for 5L files. 
 //
@@ -352,6 +353,7 @@ void LFileBundle::Open(const char *filename, FileKind fKind)
 	// Check for a duplicate open or a missing close
 	if (currentFilename.Equal(sFilename)) {
 		gLog.Log("Error. File %s is already open.", sFilename);
+		delete sFilename;
 		return;
 	}
 	else if (currentFilename.Equal("") == false)
@@ -380,6 +382,8 @@ void LFileBundle::Open(const char *filename, FileKind fKind)
 		gDebugLog.Log("Setting _ERROR to -1");
 		currentFilename = "";	
 	}
+
+	delete sFilename;
 }
 
 // Close a file
@@ -409,7 +413,7 @@ void LFileBundle::Close(const char *filename)
 	fileTagIndex = -1;
 	readIndex = userTagIndex;
 
-	//delete [] sFilename; // crashes program when Open calls Close ??
+	delete [] sFilename;
 }
 
 // Is the current file open?

@@ -2,12 +2,28 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
+A QA binge, thanks to RedHat's memprof, Bruce Perens' Electric Fence,
+and Rational's Purify.
+
   * Linux build fixes so I can run memprof and Electric Fence.
   * Fixed a bug in TStream::GetStringArg when called on an empty stream.
     This is probably why we were seeing weird results when CHeader called
     TStream::more() too many times.
   * Fixed a buffer-overflow bug in TLogger when logging large messages.
   * Squashed a bunch of memory leaks in CryptStream.cpp.
+  * Made new CryptStream auto_ptr code work under Windows.
+  * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+    notify the user if there are duplicate cards, macros, etc.
+  * PURIFY: Fixed memory leak in TBTree destructor.
+  * PURIFY: Fixed memory leak in ConfigManager destructor.
+  * PURIFY: Fixed memory leaks when deleting DIBs.
+  * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+  * PURIFY: Fixed memory leak in LBrowser.
+  * PURIFY: Fixed memory leak in LFileBundle.
+  * PURIFY: Fixed uninitialized memory reads when View methods were
+    called before View::Init.
+  * PURIFY: Made View::Draw a no-op before View::Init is called.
+    (It seems that Windows causes us to call Draw too early.)
 
 3.3.19 - 24 July 2002 - emk
 

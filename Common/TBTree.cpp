@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999,2000 Trustees of Dartmouth College, All rights reserved.
@@ -17,6 +17,8 @@
 
 #include "THeader.h"
 #include "TBTree.h"
+#include "TLogger.h"
+#include "TException.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -79,9 +81,13 @@ bool TBNode::Add(TBNode *inNode)
         	m_Left->Add(inNode);
 	}
     else
-		return (false);
+	{
+		// XXX - We'd like to do a throw() here, but it seems to
+		// cause a bunch of yucky errors.  So just die for now.
+		gLog.Error("Duplicate node <%s>.", inNode->Key());
+	}
 
-	return (true);
+	return true;
 }
 
 //
@@ -234,8 +240,7 @@ TBTree::TBTree()
 
 TBTree::~TBTree()
 {
-    if (m_Root != NULL) 
-    	delete m_Root;
+	RemoveAll();
 }
 
 //
@@ -295,6 +300,21 @@ void TBTree::RemoveAll(void)
 
 /*
  $Log$
+ Revision 1.6  2002/07/25 22:25:25  emk
+   * Made new CryptStream auto_ptr code work under Windows.
+   * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+     notify the user if there are duplicate cards, macros, etc.
+   * PURIFY: Fixed memory leak in TBTree destructor.
+   * PURIFY: Fixed memory leak in ConfigManager destructor.
+   * PURIFY: Fixed memory leaks when deleting DIBs.
+   * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+   * PURIFY: Fixed memory leak in LBrowser.
+   * PURIFY: Fixed memory leak in LFileBundle.
+   * PURIFY: Fixed uninitialized memory reads when View methods were
+     called before View::Init.
+   * PURIFY: Made View::Draw a no-op before View::Init is called.
+     (It seems that Windows causes us to call Draw too early.)
+
  Revision 1.5  2002/05/29 09:38:53  emk
  Fixes for various "crash on exit" bugs in 5L.
 
@@ -331,11 +351,7 @@ void TBTree::RemoveAll(void)
  - Miscellaneous other cleanups and tweaks.
 
  Revision 1.3  2002/03/04 15:15:55  hamon
- Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-
-Moved OS specific configuration to TPlatform.h
-
-Changes by Elizabeth and Eric, okayed by Eric.
+ Added support for compiler's namespaces. Namespaces are only enabled on macintosh.Moved OS specific configuration to TPlatform.hChanges by Elizabeth and Eric, okayed by Eric.
 
  Revision 1.2  2002/02/27 16:38:21  emk
  Cross-platform code merge!

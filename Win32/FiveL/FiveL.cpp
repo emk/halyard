@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -557,6 +557,12 @@ void DeInitInstance(void)
 
 	::DestroyPortAssociation (gGrafPtr);      // Unregister window with QTML
 
+	if (gDummyGWorldPtr != NULL)
+	{
+		::DisposeGWorld(gDummyGWorldPtr);
+		gDummyGWorldPtr = NULL;
+	}
+
 	::ExitMovies();                               // Terminate QuickTime
 	::TerminateQTML();                            // Terminate QTML
 }
@@ -969,7 +975,11 @@ void CleanUp()
 		gAudioManager.Kill(0, true);
 
 	// Shut down our interpreter.
-	delete gWin5LInterpreter;
+	if (gWin5LInterpreter)
+	{
+		delete gWin5LInterpreter;
+		gWin5LInterpreter = NULL;
+	}
 
 	// Clean up our other resources.
 	gVariableManager.RemoveAll();
@@ -1274,6 +1284,21 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.12  2002/07/25 22:25:36  emk
+   * Made new CryptStream auto_ptr code work under Windows.
+   * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+     notify the user if there are duplicate cards, macros, etc.
+   * PURIFY: Fixed memory leak in TBTree destructor.
+   * PURIFY: Fixed memory leak in ConfigManager destructor.
+   * PURIFY: Fixed memory leaks when deleting DIBs.
+   * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+   * PURIFY: Fixed memory leak in LBrowser.
+   * PURIFY: Fixed memory leak in LFileBundle.
+   * PURIFY: Fixed uninitialized memory reads when View methods were
+     called before View::Init.
+   * PURIFY: Made View::Draw a no-op before View::Init is called.
+     (It seems that Windows causes us to call Draw too early.)
+
  Revision 1.11  2002/07/24 17:41:14  emk
  3.3.19 - 24 July 2002 - emk
 

@@ -39,6 +39,22 @@ View::View()
 
 	// set the rest of the stuff
 	m_new_pal = false;
+
+	// Initialize member variables.
+	m_is_initialized = false;
+	m_screen = NULL;
+	m_blippo = NULL;
+	m_screen_bits = NULL;
+	m_blippo_bits = NULL;
+	m_gworld = NULL;
+
+	// Initialize more member variables.
+	m_pal = NULL;			// no palette yet
+	m_faded = false; 		// not faded
+	m_locked = false; 		// not locked
+	m_blippoed = false;		// and not blippoed
+	m_dirty = false;		// and nothing to draw 
+	m_num_rects = 0;		// no dirty rects
 }
 
 View::~View()
@@ -69,11 +85,6 @@ bool View::Init(void)
 	hDC = ::GetDC(hwndApp);
 
 	// CreateDIBSection - match the display's pixel depth
-	m_screen = NULL;
-	m_blippo = NULL;
-	m_screen_bits = NULL;
-	m_blippo_bits = NULL;
-	m_gworld = NULL;
 
     // set these fields with information about our bitmap
 	m_bmp_info.biSize = sizeof(BITMAPINFOHEADER);
@@ -150,15 +161,9 @@ bool View::Init(void)
 		return (false);
 	}
 	   	
-	m_pal = NULL;			// no palette yet
-	m_faded = false; 		// not faded
-	m_locked = false; 		// not locked
-	m_blippoed = false;		// and not blippoed
-	m_dirty = false;		// and nothing to draw 
-	m_num_rects = 0;		// no dirty rects
-
 	::ReleaseDC(hwndApp, hDC);
 
+	m_is_initialized = true;
 	return (true);
 }
 
@@ -290,6 +295,11 @@ void View::SetPalette(LPalette *inPal)
 		
 void View::Draw(bool inForce)
 { 
+	// We sometimes get called after object creation but before Init,
+	// due to the oddities of FiveL.cpp and the Windows event loop.
+	if (!IsInitialized())
+		return;
+
 	HDC			hDC;  
 	HPALETTE	oldPal;
 
@@ -1580,6 +1590,21 @@ Effect View::StringToEffect(TString &effectString)
 
 /*
  $Log$
+ Revision 1.5  2002/07/25 22:25:36  emk
+   * Made new CryptStream auto_ptr code work under Windows.
+   * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+     notify the user if there are duplicate cards, macros, etc.
+   * PURIFY: Fixed memory leak in TBTree destructor.
+   * PURIFY: Fixed memory leak in ConfigManager destructor.
+   * PURIFY: Fixed memory leaks when deleting DIBs.
+   * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+   * PURIFY: Fixed memory leak in LBrowser.
+   * PURIFY: Fixed memory leak in LFileBundle.
+   * PURIFY: Fixed uninitialized memory reads when View methods were
+     called before View::Init.
+   * PURIFY: Made View::Draw a no-op before View::Init is called.
+     (It seems that Windows causes us to call Draw too early.)
+
  Revision 1.4  2002/07/23 21:53:53  emk
  3.3.17 - 23 July 2002 - emk
 

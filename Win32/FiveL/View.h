@@ -87,6 +87,11 @@ class View : public TObject, public GraphicsTools::Image
 		// Create a Mac GWorld for the QuickTime Image components.
 		//
 		bool		Init(void);
+
+		//////////
+		// Has this view been initialized yet?
+		//
+		bool IsInitialized() { return m_is_initialized; }
     	
     	//////////
 		// Get the graphical device context for the offscreen world.
@@ -276,6 +281,11 @@ class View : public TObject, public GraphicsTools::Image
     	
 	private:
 		//////////
+		// Has this view been initialized yet?
+		//
+		bool		m_is_initialized;
+
+		//////////
 		// Device context.
 		//
 		HDC			m_dc;
@@ -453,6 +463,21 @@ class View : public TObject, public GraphicsTools::Image
 
 /*
  $Log$
+ Revision 1.5  2002/07/25 22:25:36  emk
+   * Made new CryptStream auto_ptr code work under Windows.
+   * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+     notify the user if there are duplicate cards, macros, etc.
+   * PURIFY: Fixed memory leak in TBTree destructor.
+   * PURIFY: Fixed memory leak in ConfigManager destructor.
+   * PURIFY: Fixed memory leaks when deleting DIBs.
+   * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+   * PURIFY: Fixed memory leak in LBrowser.
+   * PURIFY: Fixed memory leak in LFileBundle.
+   * PURIFY: Fixed uninitialized memory reads when View methods were
+     called before View::Init.
+   * PURIFY: Made View::Draw a no-op before View::Init is called.
+     (It seems that Windows causes us to call Draw too early.)
+
  Revision 1.4  2002/07/23 21:53:53  emk
  3.3.17 - 23 July 2002 - emk
 

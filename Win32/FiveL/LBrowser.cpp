@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 2000 Trustees of Dartmouth College, All rights reserved.
@@ -15,6 +16,7 @@
 //
 
 #include "stdafx.h"
+#include <memory>
 #include "LBrowser.h"
 #include "Globals.h"
 
@@ -160,21 +162,19 @@ bool LBrowser::GetString(HKEY inKey, TString &outValueStr)
 	while (err == ERROR_MORE_DATA)
 	{ 
 		size += 64;
-		char*	buf = new char[size];
+		std::auto_ptr<char> buf(new char[size]);
 		DWORD	type;
 		err = ::RegQueryValueEx(inKey, NULL, NULL, &type, 
-			(unsigned char *) buf, &size);
+			(unsigned char *) buf.get(), &size);
 		if ((err != ERROR_MORE_DATA) && (err != ERROR_SUCCESS))
 			return (false);
 		else if ((type != REG_SZ) && (type != REG_EXPAND_SZ))
 			return (false);
 		else
 		{
-			outValueStr = buf;
+			outValueStr = buf.get();
 			return (true);
 		}
-
-		delete buf;
 	}
 
 	return (false);
@@ -182,6 +182,21 @@ bool LBrowser::GetString(HKEY inKey, TString &outValueStr)
 
 /*
  $Log$
+ Revision 1.3  2002/07/25 22:25:36  emk
+   * Made new CryptStream auto_ptr code work under Windows.
+   * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
+     notify the user if there are duplicate cards, macros, etc.
+   * PURIFY: Fixed memory leak in TBTree destructor.
+   * PURIFY: Fixed memory leak in ConfigManager destructor.
+   * PURIFY: Fixed memory leaks when deleting DIBs.
+   * PURIFY: Made sure we deleted offscreen GWorld when exiting.
+   * PURIFY: Fixed memory leak in LBrowser.
+   * PURIFY: Fixed memory leak in LFileBundle.
+   * PURIFY: Fixed uninitialized memory reads when View methods were
+     called before View::Init.
+   * PURIFY: Made View::Draw a no-op before View::Init is called.
+     (It seems that Windows causes us to call Draw too early.)
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

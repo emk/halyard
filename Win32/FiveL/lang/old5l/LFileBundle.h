@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 #if !defined (_LFileBundle_h_)
 #define _LFileBundle_h_
 
