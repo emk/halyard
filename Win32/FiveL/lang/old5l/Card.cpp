@@ -689,7 +689,7 @@ void Card::DoButtpcx()
 
 	bounds1 = bounds;
     dl = bounds1.Bottom() - bounds1.Top();      //...and text...
-    fontHeight = gHeaderManager.Height((const char *) HeaderName);
+    fontHeight = gStyleSheetManager.GetLineHeight(HeaderName);
 
     dl -= fontHeight;
     dl /= 2;
@@ -699,8 +699,8 @@ void Card::DoButtpcx()
 	gDebugLog.Log("Draw text at T <%d> L <%d>, B <%d>, R <%d>",
 		bounds1.Top(), bounds1.Left(), bounds1.Bottom(), bounds1.Right());
 
-    gHeaderManager.DoText(HeaderName, bounds1, (const char *) Text, 7,0);
- 
+	gStyleSheetManager.DoText(HeaderName, bounds1, Text, gView);
+
 	if (not setvar.IsEmpty())
     {       		//If there's a second command...
         z = new LTouchZone(bounds, theCommand, cursor, thePicture, 
@@ -2697,6 +2697,17 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.4.2.3  2002/05/15 09:23:55  emk
+ 3.3.2.8 - Last typography branch checkin before merge.
+
+ * Fixed (wait ...) bug which caused all (wait ...) commands to wait
+ until the end of the movie.
+
+ * (buttpcx ...) now uses anti-aliased text.
+
+ * Miscellaneous other tweaks and fixes--just getting things into shape
+ for the merge.
+
  Revision 1.4.2.2  2002/05/01 03:27:07  emk
  3.3.2.6 - First Windows engine with (textaa ...) command.
 

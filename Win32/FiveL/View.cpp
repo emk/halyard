@@ -768,15 +768,18 @@ void View::DrawPixMap(GraphicsTools::Point inPoint,
 	DirtyRect(&bounds);
 
 	// XXX - We draw our data in a slow, kludgy fashion.
+	// This code is stolen from the Mac engine and
+	// quickly hacked into a drawing routine.  It needs
+	// to be replaced with something faster and cleaner.
 
 	using GraphicsTools::AlphaBlendChannel;
 	using GraphicsTools::Color;
 	using GraphicsTools::Distance;
 	using GraphicsTools::Point;
 	
-	// Clip our pixmap boundaries to fit within our GWorld.
-	int gworld_width = 640;
-	int gworld_height = 480;
+	// Clip our pixmap boundaries to fit within our screen.
+	int gworld_width = VSCREEN_WIDTH;
+	int gworld_height = VSCREEN_HEIGHT;
 	Point begin = inPoint;
 	begin.x = Max(0, Min(gworld_width, begin.x));
 	begin.y = Max(0, Min(gworld_height, begin.y));
@@ -1503,6 +1506,17 @@ Effect View::StringToEffect(TString &effectString)
 
 /*
  $Log$
+ Revision 1.2.2.2  2002/05/15 09:23:56  emk
+ 3.3.2.8 - Last typography branch checkin before merge.
+
+ * Fixed (wait ...) bug which caused all (wait ...) commands to wait
+ until the end of the movie.
+
+ * (buttpcx ...) now uses anti-aliased text.
+
+ * Miscellaneous other tweaks and fixes--just getting things into shape
+ for the merge.
+
  Revision 1.2.2.1  2002/05/01 03:27:07  emk
  3.3.2.6 - First Windows engine with (textaa ...) command.
 

@@ -11,7 +11,10 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Header.cpp : 
+// Header.cpp : Old, Windows-specific text drawing code.  This file is
+//              obsolete, and is only kept for backwards-compatibility
+//				with older 5L programs.  All new programs and features
+//				should use TStyleSheet instead.
 //
 
 #include "stdafx.h"
@@ -721,6 +724,17 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.4.2.2  2002/05/15 09:23:56  emk
+ 3.3.2.8 - Last typography branch checkin before merge.
+
+ * Fixed (wait ...) bug which caused all (wait ...) commands to wait
+ until the end of the movie.
+
+ * (buttpcx ...) now uses anti-aliased text.
+
+ * Miscellaneous other tweaks and fixes--just getting things into shape
+ for the merge.
+
  Revision 1.4.2.1  2002/04/30 07:57:31  emk
  3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
  exists.  The (defstyle ...) command should work, but (textaa ...) isn't

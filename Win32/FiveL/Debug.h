@@ -33,12 +33,21 @@
 #undef DEBUG
 #endif
 
-#define ASSERT(exp) _ASSERTE(exp)
-
 #endif // _Debug_h_
 
 /*
  $Log$
+ Revision 1.1.4.1  2002/05/15 09:23:56  emk
+ 3.3.2.8 - Last typography branch checkin before merge.
+
+ * Fixed (wait ...) bug which caused all (wait ...) commands to wait
+ until the end of the movie.
+
+ * (buttpcx ...) now uses anti-aliased text.
+
+ * Miscellaneous other tweaks and fixes--just getting things into shape
+ for the merge.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 
