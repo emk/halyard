@@ -41,19 +41,37 @@
       Try to get complete code coverage testing Vorbis playback path
 
   Make TException stop reporting line numbers
-  Allow templates to define parent parameters in terms of their own parameters
-    
-  Send events to zones
+
+/ Allow templates to define parent parameters in terms of their own parameters
+/ Can we comine clear-node-(handlers|values) ?
+/ binding-func is a bad name
+/ template-bind-property-values -> node-bind-property-values!
+/ give an error for duplicate properties
+/ init-thunk -> init-fn 
+
+  Deletion of elements is a mess.  Fix.
+  Allow deletion of CREATE'd elements
+  Send idle events to everything
+  Returning values from event handlers?
+  NODE-HAS-EXPENSIVE-HANDLERS? is currently a bit tricky
+  Can we combine node-handlers and node-values?
+  Can we combine @ and node-values?
+  Rename event handlers to include '-EVENT'
+  (event-character e) should return a character
+  Loose QUOTE for NAME argument to SEND and PROP
+
+  Not now
+    SET-PROP! -- is it what we want?
+    Hierarchial property value searching -- is it what we want?
+
+/ Send events to zones
 /   Mouse left down
 /   Mouse left up
 /   Mouse left double-click
 /   Mouse enter
 /   Mouse leave
-    Idle
 /   Mouse grabs
-  Only send idle events to zones that will try to handle them? No.
 / Use element templates for everything that creates elements
-  Allow deletion of CREATE'd elements
 
 Older Stuff
 -----------

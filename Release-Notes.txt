@@ -1,9 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, brian
 
   * All known audio artifacts in Geiger synth and looping Vorbis
     playback have now been fixed.
+  * PARAM renamed to PROP.
+  * Major restructuring of template property binding.
 
 0.0.6 - 4 June 2003 - emk, brian
 
