@@ -68,14 +68,29 @@ void TStateDB::Datum::UnregisterListener(TStateListener *inListener) {
 	mListeners.erase(iter);
 }
 
+bool TStateDB::Datum::IsRegistered(TStateListener *listener) {
+    ListenerList::iterator found =
+        std::find(mListeners.begin(), mListeners.end(), listener);
+    return (found != mListeners.end());
+}
+
 void TStateDB::Datum::NotifyListeners() {
-    // XXX - Iterate through a copy of this list in case
-    // TStateListeners are managing to unregister themselves.
-	// Let's not mention what that does to NotifyStateChanged.
+    // We need to iterate through a copy of this list, in case any TStateDB
+    // listeners unregister themselves or other listeners in their
+    // NotifyStateChanged message, which would invalidate any iterators
+    // over mListeners.
 	ListenerList copy = mListeners;
 	ListenerList::iterator iter = copy.begin(); 
-	for (; iter != copy.end(); ++iter)
-		(*iter)->NotifyStateChanged();
+	for (; iter != copy.end(); ++iter) {
+        // Check to make sure this listener hasn't been unregistered
+        // while we were iterating.  Yes, this means NotifyListeners
+        // runs in O(N^2) time, which is probably acceptable for
+        // our typical small value of N.
+        if (IsRegistered(*iter))
+            // XXX - *iter may be deleted by the time we return from
+            // NotifyStateChanged.  This is probably not good.
+            (*iter)->NotifyStateChanged();
+    }
 }
 
 void TStateDB::Datum::MaybeSetVal(TStateDB *inDB, TValue inValue) {

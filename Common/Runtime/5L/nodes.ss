@@ -572,7 +572,7 @@
            node-elements find-node @* @ elem-or-name-hack)
 
   (defclass <node> (<template>)
-    name
+    (name :type <symbol>)
     parent
     (running? :type <boolean> :initvalue #f)
     (elements :type <list> :initvalue '())
@@ -598,7 +598,20 @@
                              "/" (node-name node)))
         (node-name node))))
 
+  (define (check-for-duplicate-nodes node-list node)
+    (let recurse [[node-list node-list]]
+      (cond
+       [(null? node-list)
+        #f]
+       [(eq? (node-name node) (node-name (car node-list)))
+        (error (cat "Duplicate node: " (node-full-name node)))]
+       [#t
+        (recurse (cdr node-list))])))
+
   (define (node-add-element! node elem)
+    ;; We need to check for duplicates before adding or we violate
+    ;; some pretty obvious invariants.
+    (check-for-duplicate-nodes (node-elements node) elem)
     (set! (node-elements node)
           (append (node-elements node) (list elem))))
 
@@ -756,6 +769,9 @@
     (active? :type <boolean> :initvalue #f))
 
   (define (group-add-member! group member)
+    ;; We need to check for duplicates before adding or we violate
+    ;; some pretty obvious invariants.
+    (check-for-duplicate-nodes (group-members group) member)
     (set! (group-members group)
           (append (group-members group) (list member))))
 

@@ -194,7 +194,8 @@ bool Stage::IsInEditMode()
 
 bool Stage::ShouldSendEvents()
 {
-	return IsScriptInitialized() && !IsInEditMode();
+	return (TInterpreter::HaveInstance() && IsScriptInitialized() &&
+            !IsInEditMode());
 }
 
 bool Stage::CanJump()
@@ -234,6 +235,10 @@ void Stage::NotifyEnterCard(const wxString &inName)
 	mFrame->GetLocationBox()->NotifyEnterCard(inName);
 	mFrame->GetProgramTree()->NotifyEnterCard(inName);
 
+    // If the script is waiting on a media element, end the wait now.
+    if (mWaitElement)
+        EndWait();
+
     // We need to call this here in case the interpreter was asleep when it
     // jumped--the mShouldWakeUpOnIdle variable will be set, but the wakeup
     // won't have been preformed.
@@ -272,12 +277,14 @@ void Stage::NotifyElementsChanged()
 
 void Stage::EnterElement(ElementPtr inElement, wxPoint &inPosition)
 {
+    ASSERT(ShouldSendEvents());
 	ASSERT(inElement->GetEventDispatcher().get());
 	inElement->GetEventDispatcher()->DoEventMouseEnter(inPosition);
 }
 
 void Stage::LeaveElement(ElementPtr inElement, wxPoint &inPosition)
 {
+    ASSERT(ShouldSendEvents());
 	ASSERT(inElement->GetEventDispatcher().get());
 	inElement->GetEventDispatcher()->DoEventMouseLeave(inPosition);
 }
@@ -582,20 +589,26 @@ void Stage::OnLeftDown(wxMouseEvent &inEvent)
 		SetFocus();
 
 	// Dispatch the event.
-	EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
-	disp->DoEventLeftDown(inEvent, false);
+    if (ShouldSendEvents()) {
+        EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
+        disp->DoEventLeftDown(inEvent, false);
+    }
 }
 
 void Stage::OnLeftDClick(wxMouseEvent &inEvent)
 {
-	EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
-	disp->DoEventLeftDown(inEvent, true);	
+    if (ShouldSendEvents()) {
+        EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
+        disp->DoEventLeftDown(inEvent, true);	
+    }
 }
 
 void Stage::OnLeftUp(wxMouseEvent &inEvent)
 {
-	EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
-	disp->DoEventLeftUp(inEvent);
+    if (ShouldSendEvents()) {
+        EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
+        disp->DoEventLeftUp(inEvent);
+    }
 }
 
 void Stage::OnRightDown(wxMouseEvent &inEvent)

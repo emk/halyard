@@ -22,15 +22,42 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		35
+#define VERSION_REV_BIG		36
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.35 (Development)"
+#define VERSION_STRING		"Tamale 0.0.36 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.77  2004/09/13 18:12:37  emk
+ 0.0.36 - 13 Sep 2004 - emk
+
+   * Closing last tab when there are two or more tabs no longer
+     causes an assertion failure.  The low-design still has issues,
+     though, which we will need to address in a future refactoring.
+   * Fixed bug #1690: We now completely clean up from (WAIT ...)
+     when changing cards.
+   * Fixed bug #1696: When notifying state-db listeners of changes,
+     we watch out for listeners which delete other listeners.
+   * Fixed bug #1697: Clicking on the stage without a script loaded
+     no longer causes an assertion failure.
+   * Fixed bug #1698: When "Reload Script" can't find the card
+     it wants to jump to, it will jump to 'start' instead.
+   * Fixed bug #1700: We now detect attempts to create nodes named
+     '#f', and we check for duplicate node names earlier in the
+     creation process, better preserving nodes.ss invariants.
+   * Merged in lots of stuff from my laptop:
+     - Preliminary sqlite3 integration for future use with editor.
+     - More bsptools work.  This still doesn't run, but it provides
+       pretty good documentation of how bsp files work.
+     - Support for drawing lines in 3D while running Quake 2. This
+       will be needed to debug AI, if we ever do AI.
+     - Other minor tweaks and fixes.
+     - A few preliminary warning fixes.  Much more to do.
+   * Began work on smtpxx library.
+
  Revision 1.76  2004/09/10 15:40:13  emk
  0.0.35 - 09 Sep 2004 - emk
 

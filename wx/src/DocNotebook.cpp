@@ -177,7 +177,7 @@ bool DocNotebook::MaybeCloseTab() {
         if (!tab->MaybeSave(true, "Close File", "Save \"%s\" before closing?"))
             return false;
 
-    // Remove the document from our internal list.
+	// Remove the document from our internal list.
     mDocs.erase(mDocs.begin()+mBar->GetCurrentTab());
 
     // Update our tab bar.
@@ -185,7 +185,12 @@ bool DocNotebook::MaybeCloseTab() {
         // Handle deletion of last tab.
         mBar->LastTabDeleted();
         SetCurrentDoc(NULL);
-    } else if (mBar->GetCurrentTab() >= GetDocumentCount()) {
+    } else if (mBar->mCurrentTab >= GetDocumentCount()) {
+		/// \bug We have to check mCurrentTab instead of calling
+		/// GetCurrentTab because mBar is temporarily in an
+		/// inconsistent state.  We should fix this *before*
+		/// deleting the current tab.
+
         // Choose a new valid tab number.
         SelectDocument(GetDocumentCount()-1);
     } else {

@@ -55,12 +55,15 @@ void test_email() {
     BOOST_CHECK(msg.from() == "foo@bar.com");
     msg.to("baz1@bar.com");
     msg.to("baz2@bar.com");
+    msg.cc("baz3@bar.com");
+    msg.bcc("baz4@bar.com");
     BOOST_CHECK(msg.to().size() == 2);
     BOOST_CHECK(msg.to()[0] == "baz1@bar.com");
     BOOST_CHECK(msg.to()[1] == "baz2@bar.com");
-    msg.cc("baz3@bar.com");
     BOOST_CHECK(msg.cc().size() == 1);
     BOOST_CHECK(msg.cc()[0] == "baz3@bar.com");
+    BOOST_CHECK(msg.bcc().size() == 1);
+    BOOST_CHECK(msg.bcc()[0] == "baz4@bar.com");
 }
 
 int test_main(int, char **) {

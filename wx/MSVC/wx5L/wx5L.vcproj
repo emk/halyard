@@ -46,7 +46,9 @@
 				SuppressStartupBanner="TRUE"
 				IgnoreDefaultLibraryNames="libcmt"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Debug/Tamale_d.pdb"
+				ProgramDatabaseFile="../../../Win32/Bin/Tamale_d.pdb"
+				GenerateMapFile="TRUE"
+				MapFileName="../../../Win32/Bin/Tamale_d.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -107,7 +109,9 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Release/Tamale.pdb"
+				ProgramDatabaseFile="../../../Win32/Bin/Tamale.pdb"
+				GenerateMapFile="TRUE"
+				MapFileName="../../../Win32/Bin/Tamale.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -126,7 +130,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="..\..\..\libs\wxWindows\include"/>
+				AdditionalIncludeDirectories="$(WXWIN)\include;..\..\src"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool

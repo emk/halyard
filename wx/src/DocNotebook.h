@@ -150,6 +150,7 @@ public:
 /// work.
 ///
 class DocNotebookBar : public wxWindow {
+    friend class DocNotebook;
     friend class DocNotebookTab;
 
 public:

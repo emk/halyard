@@ -45,23 +45,45 @@
 namespace smtpxx {
 
     class email {
+    public:
+        typedef std::vector<std::string> address_list;
+
+    private:
         std::string m_subject;
         std::string m_from;
-        std::vector<std::string> m_to;
-        std::vector<std::string> m_cc;
+        address_list m_to;
+        address_list m_cc;
+        address_list m_bcc;
 
     public:
+        /// Create a new e-mail message
+        /// @param subject The subject of the message.
+        /// @param from The sender of the message.
         email(const std::string &subject, const std::string &from)
             : m_subject(subject), m_from(from) {}
-
+        
+        /// Get the subject of the e-mail message.
         std::string subject() const { return m_subject; }
+
+        /// Get the sender of the e-mail message.
         std::string from() const { return m_from; }
 
+        /// Add a "To:" recipient to the message.
         void to(const std::string &to) { m_to.push_back(to); }
-        std::vector<std::string> to() const { return m_to; }
 
+        /// Get a list of all "To:" recipients of the message.
+        address_list to() const { return m_to; }
+
+        /// Add a "CC:" recipient to the message.
         void cc(const std::string &cc) { m_cc.push_back(cc); }
-        std::vector<std::string> cc() const { return m_cc; }        
+        /// Get a list of all "CC:" recipients of the message.
+        address_list cc() const { return m_cc; }
+
+        /// Add a "BCC:" recipient to the message.  These recipients
+        /// will not be mentioned in the message headers.
+        void bcc(const std::string &bcc) { m_bcc.push_back(bcc); }
+        /// Get a list of all "BCC:" recipients of the message.
+        address_list bcc() const { return m_bcc; }
     };
 };
 

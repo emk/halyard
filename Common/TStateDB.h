@@ -70,6 +70,7 @@ class TStateDB {
 		
 		void EnsureListenerRegistered(TStateListener *inListener);
 		void UnregisterListener(TStateListener *inListener);
+        bool IsRegistered(TStateListener *listener);
 		void NotifyListeners();
 		void MaybeSetVal(TStateDB *inDB, TValue inValue);
 	};

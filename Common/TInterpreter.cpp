@@ -152,6 +152,8 @@ void TInterpreterManager::LoadAndRunScript()
 		// appropriate card.
 		mInterpreter = MakeInterpreter();
         NotifyReloadScriptSucceeded();
+        if (!mInterpreter->IsValidCard(mInitialCardName.c_str()))
+            ResetInitialCardName();
 		mInterpreter->JumpToCardByName(mInitialCardName.c_str());
 
 		// Reset any special variables.
