@@ -30,7 +30,8 @@
            current-card-name fade unfade save-graphics restore-graphics
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
-           %basic-button% state-db-debug)
+           %basic-button% symcat
+           state-db-debug state-db-seconds state-db-milliseconds)
 
   (define (url? path)
     (regexp-match "^(http|ftp|rtsp):" path))
@@ -599,6 +600,9 @@
         ((prop self action))))
     )
 
+  (define (symcat . args)
+    (string->symbol (apply cat args)))
+
   ;;-----------------------------------------------------------------------
   ;;  State DB Debugging Support
   ;;-----------------------------------------------------------------------
@@ -621,5 +625,21 @@
               :report-fn set-result!))
     (delete-element elem)
     result)
+
+  ;;-----------------------------------------------------------------------
+  ;;  State DB Time Support
+  ;;-----------------------------------------------------------------------
+  ;;  The state-db's /system/clock/seconds and /system/clock/milliseconds
+  ;;  values do not use the same units as 
+  ;;
+  ;;  XXX - THESE SHOULD NOT USE STATE-DB-DEBUG!!! It's extremely slow.
+  ;;  Ask one of the C++ programmers to add primitives which fetch
+  ;;  these values,
+  
+  (define (state-db-seconds)
+    (state-db-debug '/system/clock/seconds))
+
+  (define (state-db-milliseconds)
+    (state-db-debug '/system/clock/milliseconds))
 
   )
