@@ -1319,6 +1319,12 @@
     ;; Exit all our child elements.
     (let loop [[children (group-children old-card)]]
       (unless (null? children)
+        (when (element-temporary? (car children))
+          ;; This gets triggered when a node is CREATEd, but doesn't
+          ;; register itself with the engine.
+          (non-fatal-error (cat "Temporary element '"
+                                (node-name (car children))
+                                "' did not get properly deleted")))
         (exit-node (car children))
         (loop (cdr children))))
     ;; Exit old-card.
