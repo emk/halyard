@@ -6,6 +6,7 @@ CVS - emk, brian
   * Fixed bug where api.ss didn't get recompiled when kernel.ss changed.
   * Split StageFrame out of Stage.
   * Split DrawingArea out of Stage.
+  * Reduced coupling between nodes.ss and kernel.ss.
 
 0.0.7 - 2 July 2003 - emk, brian
 

@@ -508,36 +508,51 @@
 
   (defclass <real-engine> (<engine>))
 
+  (defmethod (set-engine-event-handled?! (eng <engine>) (handled? <boolean>))
+    (set! (engine-engine-var *engine* '_pass) (not handled?)))
+
   (defmethod (set-engine-engine-var! (eng <real-engine>) (name <symbol>) value)
     (set-engine-var! name value))
-
-  (defmethod (engine-have-5l-prim? (eng <real-engine>) (name <symbol>))
-    (have-5l-prim? name))
-
-  (defmethod (engine-call-5l-prim (eng <real-engine>) (name <symbol>) . args)
-    (apply call-5l-prim name args))
 
   (defmethod (engine-jump-to-card (eng <real-engine>) (target <card>))
     (jump-to-card target))
 
-  (defmethod (engine-%kernel-register-card (eng <real-engine>) (card <card>))
+  (defmethod (engine-register-card (eng <real-engine>) (card <card>))
     (%kernel-register-card card))
 
-  (defmethod (engine-call-enter-card-hook (eng <real-engine>) (card <card>))
+  (defmethod (engine-enable-expensive-events (engine <real-engine>)
+                                             (enable? <boolean>))
+    (enable-expensive-events enable?))
+
+  (define (enable-expensive-events enable?)
+    (when (have-5l-prim? 'EnableExpensiveEvents)
+      (call-5l-prim 'EnableExpensiveEvents enable?)))
+
+  (defmethod (engine-notify-enter-card (engine <real-engine>) (card <card>))
+    (%kernel-clear-timeout)
+    (call-5l-prim 'resetorigin)
+    (when (have-5l-prim? 'notifyentercard)
+      (call-5l-prim 'notifyentercard))
     (call-hook-functions *enter-card-hook* card))
 
-  (defmethod (engine-call-exit-card-hook (eng <real-engine>) (card <card>))
-    (call-hook-functions *exit-card-hook*))
+  (defmethod (engine-notify-exit-card (engine <real-engine>) (card <card>))
+    (call-hook-functions *exit-card-hook* card)
+    (when (have-5l-prim? 'notifyexitcard)
+      (call-5l-prim 'notifyexitcard)))
 
-  (defmethod (engine-call-card-body-finished-hook (eng <real-engine>)
-                                                   (card <card>))
-    (call-hook-functions *card-body-finished-hook*))
-
-  (defmethod (engine-%kernel-clear-timeout (eng <real-engine>))
-    (%kernel-clear-timeout))
-
-  (defmethod (engine-refresh (eng <real-engine>))
+  (defmethod (engine-notify-card-body-finished (eng <real-engine>)
+                                               (card <card>))
+    (call-hook-functions *card-body-finished-hook*)
     (refresh))
+
+  (defmethod (engine-delete-element (engine <real-engine>)
+                                    (elem <element>))
+    ;; A little placeholder to make deletion work the same way in Tamale
+    ;; and in Common test.
+    ;; TODO - Remove when cleaning up element deletion.
+    (if (have-5l-prim? 'deleteelements)
+        (call-5l-prim 'deleteelements (node-full-name elem))
+        (delete-element-info (node-full-name elem))))
 
   (set-engine! (make <real-engine>))
 

@@ -20,8 +20,9 @@
   ;;  otherwise specified.
 
   (provide run-card jump
-           delete-element-info enable-expensive-events
-           dispatch-event-to-current-card)
+           delete-element-info
+           dispatch-event-to-current-card
+           current-card)
 
 
   ;;=======================================================================
@@ -30,13 +31,19 @@
 
   (provide *engine* set-engine! <engine>
            engine-current-card engine-last-card
-           set-engine-engine-var! current-card
-           engine-have-5l-prim? engine-call-5l-prim engine-jump-to-card
-           engine-%kernel-register-card engine-call-enter-card-hook
-           engine-call-exit-card-hook engine-call-card-body-finished-hook
-           engine-%kernel-clear-timeout engine-refresh)
+           set-engine-event-handled?!
+           engine-jump-to-card
+           engine-register-card
+           engine-enable-expensive-events
+           engine-notify-enter-card engine-notify-exit-card
+           engine-notify-card-body-finished
+           engine-delete-element)
 
   (defclass <engine> ()
+    (root-node
+     :initializer (lambda () (make <card-group>
+                               :name '|/| :parent #f :active? #t)))
+    (node-table :initializer make-hash-table)
     (current-card :initvalue #f)
     (last-card :initvalue #f))
 
@@ -45,50 +52,26 @@
   (define (set-engine! engine)
     (set! *engine* engine))
 
-  (defgeneric (set-engine-engine-var! (engine <engine>) (name <symbol>) value))
-  (defgeneric (engine-have-5l-prim? (engine <engine>) (name <symbol>)))
-  (defgeneric (engine-call-5l-prim (engine <engine>) (name <symbol>) . args))
-  (defgeneric (engine-jump-to-card (engine <engine>) (target <card>)))
-  (defgeneric (engine-%kernel-register-card (engine <engine>) (card <card>)))
-  (defgeneric (engine-call-enter-card-hook (engine <engine>) (card <card>)))
-  (defgeneric (engine-call-exit-card-hook (engine <engine>) (card <card>)))
-  (defgeneric (engine-call-card-body-finished-hook (engine <engine>)
-                                                   (card <card>)))
-  (defgeneric (engine-%kernel-clear-timeout (engine <engine>)))
-  (defgeneric (engine-refresh (engine <engine>)))
+  (define (root-node)
+    (engine-root-node *engine*))
+
+  (define (node-table)
+    (engine-node-table *engine*))
 
   (define (current-card)
     (engine-current-card *engine*))
 
-  (define (set-engine-var! name value)
-    (set-engine-engine-var! *engine* name value))
-
-  (define (have-5l-prim? name)
-    (engine-have-5l-prim? *engine* name))
-
-  (define (call-5l-prim name . args)
-    (apply engine-call-5l-prim *engine* name args))
-
-  (define (jump-to-card target)
-    (engine-jump-to-card *engine* target))
-
-  (define (%kernel-register-card c)
-    (engine-%kernel-register-card *engine* c))
-
-  (define (call-enter-card-hook card)
-    (engine-call-enter-card-hook *engine* card))
-
-  (define (call-exit-card-hook card)
-    (engine-call-exit-card-hook *engine* card))
-
-  (define (call-card-body-finished-hook card)
-    (engine-call-card-body-finished-hook *engine* card))
-
-  (define (%kernel-clear-timeout)
-    (engine-%kernel-clear-timeout *engine*))
-
-  (define (refresh)
-    (engine-refresh *engine*))
+  (defgeneric (set-engine-event-handled?! (eng <engine>) (handled? <boolean>)))
+  (defgeneric (engine-jump-to-card (engine <engine>) (target <card>)))
+  (defgeneric (engine-register-card (engine <engine>) (card <card>)))
+  (defgeneric (engine-enable-expensive-events (engine <engine>)
+                                              (enable? <boolean>)))
+  (defgeneric (engine-notify-exit-card (engine <engine>) (card <card>)))
+  (defgeneric (engine-notify-enter-card (engine <engine>) (card <card>)))
+  (defgeneric (engine-notify-card-body-finished (engine <engine>)
+                                                (card <card>)))
+  (defgeneric (engine-delete-element (engine <real-engine>)
+                                     (elem <element>)))
 
 
   ;;=======================================================================
@@ -123,10 +106,10 @@
 
   (define-syntax on
     ;; This gets lexically overridden by expand-init-fn to refer
-    ;; to nodes other than $root-node.
+    ;; to nodes other than (root-node).
     (syntax-rules ()
       [(on . rest)
-       (expand-on $root-node . rest)]))
+       (expand-on (root-node) . rest)]))
 
   (define (register-event-handler node name handler)
     (debug-log (cat "Registering handler: " name " in " (node-full-name node)))
@@ -140,7 +123,7 @@
     ;; the rest of our bookkeeping.
     (when (expensive-event? name)
       (set! (node-has-expensive-handlers? node) #t)
-      (enable-expensive-events #t))
+      (engine-enable-expensive-events *engine* #t))
 
     ;; Update our handler table.
     (let* [[table (node-handlers node)]
@@ -217,7 +200,7 @@
       (define (no-handler)
         (set! unhandled? #t))
       (send* no-handler node name event)
-      (set! (engine-var '_pass) unhandled?)))
+      (set! (engine-event-handled? *engine*) (not unhandled?))))
 
   (define (dispatch-idle-event-to-active-nodes)
     (define event (make <idle-event>))
@@ -251,10 +234,6 @@
       [[idle mouse-moved] #t]
       [else #f]))
 
-  (define (enable-expensive-events enable?)
-    (when (have-5l-prim? 'EnableExpensiveEvents)
-      (call-5l-prim 'EnableExpensiveEvents enable?)))
-    
 
   ;;-----------------------------------------------------------------------
   ;;  Templates
@@ -458,7 +437,7 @@
   (define (node-full-name node)
     ;; Join together local names with "/" characters.
     (let [[parent (node-parent node)]]
-      (if (and parent (not (eq? parent $root-node)))
+      (if (and parent (not (eq? parent (root-node))))
         (string->symbol (cat (node-full-name (node-parent node))
                              "/" (node-name node)))
         (node-name node))))
@@ -468,15 +447,13 @@
     (set! (node-handlers node) (make-hash-table))
     (set! (node-values node) (make-hash-table)))
 
-  (define *node-table* (make-hash-table))
-
   (defgeneric (register-node (node <node>)))
 
   (defmethod (register-node (node <node>))
     (let [[name (node-full-name node)]]
-      (when (hash-table-get *node-table* name (lambda () #f))
+      (when (hash-table-get (node-table) name (lambda () #f))
         (error (cat "Duplicate copies of node " (node-full-name node))))
-      (hash-table-put! *node-table* name node)))
+      (hash-table-put! (node-table) name node)))
 
   (define (unregister-node node)
     ;; This is only used to delete temporary <element> nodes, simulating
@@ -484,17 +461,17 @@
     (let [[name (node-full-name node)]]
       (assert (and (instance-of? node <element>)
                    (element-temporary? node)))
-      (assert (eq? (hash-table-get *node-table* name (lambda () #f)) node))
-      (hash-table-remove! *node-table* name)))
+      (assert (eq? (hash-table-get (node-table) name (lambda () #f)) node))
+      (hash-table-remove! (node-table) name)))
 
   (define (find-node name)
-    (hash-table-get *node-table* name (lambda () #f)))
+    (hash-table-get (node-table) name (lambda () #f)))
 
   (define (find-node-relative base name)
     ;; Treat 'name' as a relative path.  If 'name' can be found relative
     ;; to 'base', return it.  If not, try the parent of base if it
     ;; exists.  If all fails, return #f.
-    (if (eq? base $root-node)
+    (if (eq? base (root-node))
         (find-node name)
         (let* [[base-name (node-full-name base)]
                [candidate (string->symbol (cat base-name "/" name))]
@@ -537,7 +514,7 @@
            [(not matches)
             (error (cat "Illegal node name: " name))]
            [(not (cadr matches))
-            (values $root-node name)]
+            (values (root-node) name)]
            [else
             (let [[parent (find-node (string->symbol (caddr matches)))]]
               (unless parent
@@ -608,7 +585,7 @@
   ;;  By default, groups of cards are not assumed to be in any particular
   ;;  linear order, at least for purposes of program navigation.
 
-  (provide $root-node define-group-template group)
+  (provide define-group-template group)
 
   (define (card-or-card-group? node)
     (or (card? node) (card-group? node)))
@@ -628,10 +605,6 @@
   (defmethod (group-add-child! (group <card-group>) (child <node>))
     (assert (card-or-card-group? child))
     (call-next-method))
-
-  (define $root-node
-    (make <card-group>
-      :name '|/| :parent #f :active? #t))
 
   (define-template-definer define-group-template <card-group>)
   (define-node-definer group <card-group> <card-group>)
@@ -683,7 +656,7 @@
   (defclass <card>          (<jumpable> <group>))
 
   (defmethod (jump (target <card>))
-    (jump-to-card target))
+    (engine-jump-to-card *engine* target))
 
   (define (card-next)
     (card-group-find-next (node-parent (current-card)) (current-card)))
@@ -703,7 +676,7 @@
 
   (defmethod (register-node (c <card>))
     (call-next-method)
-    (%kernel-register-card c))
+    (engine-register-card *engine* c))
 
   (define-template-definer define-card-template <card>)
   (define-node-definer card <card> <card>)
@@ -812,21 +785,6 @@
     (call-next-method)
     (set! (card-group-active? group) #t))
 
-  (defmethod (exit-node (card <card>))
-    ;; We have some extra hooks and primitives to call here.
-    (call-exit-card-hook card)
-    (when (have-5l-prim? 'notifyexitcard)
-      (call-5l-prim 'notifyexitcard))
-    (call-next-method))
-
-  (defmethod (enter-node (card <card>))
-    ;; We have some extra hooks and primitives to call here.
-    (when (have-5l-prim? 'notifyentercard)
-      (call-5l-prim 'notifyentercard))
-    (call-enter-card-hook card)
-    (call-next-method)
-    (call-card-body-finished-hook card))
-
   (define (find-active-parent new-card)
     ;; Walk back up the node hierarchy from new-card until we find the
     ;; nearest active parent.  The root node is always active, so this
@@ -854,21 +812,13 @@
         (recurse (node-parent group))
         (enter-node group))))
   
-  (define (delete-element elem)
-    ;; A little placeholder to make deletion work the same way in Tamale
-    ;; and in Common test.
-    ;; TODO - Remove when cleaning up element deletion.
-    (if (have-5l-prim? 'deleteelements)
-        (call-5l-prim 'deleteelements (node-full-name elem))
-        (delete-element-info (node-full-name elem))))
-
   (define (exit-card old-card new-card)
     ;; Exit all our child elements.
     ;; TRICKY - We call into the engine to do element deletion safely.
     ;; We work with a copy of (GROUP-CHILDREN OLD-CARD) the original
     ;; will be modified as we run.
     (foreach [child (group-children old-card)]
-      (delete-element child))
+      (engine-delete-element *engine* child))
     ;; Exit old-card.
     (exit-node old-card)
     ;; Exit as many enclosing card groups as necessary.
@@ -903,17 +853,13 @@
           (if (node-has-expensive-handlers? node)
               (set! enable? #t)
               (recurse (node-parent node)))))
-      (enable-expensive-events enable?)))
+      (engine-enable-expensive-events *engine* enable?)))
 
   (define (run-card card)
-    (%kernel-clear-timeout)
-
     ;; Finish exiting our previous card.
     (when (current-card)
+      (engine-notify-exit-card *engine* (current-card))
       (exit-card (current-card) card))
-
-    ;; Reset the origin to 0,0.
-    (call-5l-prim 'resetorigin)
 
     ;; Update our global variables.
     (set! (engine-last-card *engine*) (engine-current-card *engine*))
@@ -925,7 +871,8 @@
     ;; Actually run the card.
     (debug-log (cat "Begin card: <" (node-full-name card) ">"))
     (with-errors-blocked (non-fatal-error)
+      (engine-notify-enter-card *engine* card)
       (enter-card card)
-      (refresh)))
+      (engine-notify-card-body-finished *engine* card)))
 
   )
