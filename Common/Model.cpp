@@ -1,9 +1,9 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include "TCommon.h"
+#include "CommonHeaders.h"
 
-#include <algorithm>
 #include <boost/lexical_cast.hpp>
+
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 

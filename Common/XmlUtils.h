@@ -4,11 +4,7 @@
 #if !defined (XmlUtils_H)
 #define XmlUtils_H
 
-#include <string>
-
 struct _xmlNode;
-
-#include "TException.h"
 
 BEGIN_NAMESPACE_FIVEL
 

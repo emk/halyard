@@ -15,6 +15,8 @@
 // TString.cpp : 
 //
 
+#include "CommonHeaders.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -1142,13 +1144,15 @@ TString TString::UIntToString(uint32 inNum)
 //
 // stream I/O functions
 //
-ostream & FIVEL_NS operator << (ostream &inStream, const TString &inStr)
+std::ostream & FIVEL_NS operator << (std::ostream &inStream,
+									 const TString &inStr)
 {
 	inStream << inStr.m_String;
 	return (inStream);
 }
 
-istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
+std::istream & FIVEL_NS operator >> (std::istream &inStream,
+									 TString &inStr)
 {
 //	char				endline;
 
@@ -1166,6 +1170,10 @@ istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.10  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.9  2002/11/05 23:06:37  emk
  Added type information to 5L variables, and replaced (var ...) with a more
  powerful form of (define ...).  These changes should make Scheme more

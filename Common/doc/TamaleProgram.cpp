@@ -1,9 +1,10 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include <ctime>
-#include "boost/lexical_cast.hpp"
+#include "CommonHeaders.h"
 
-#include "TCommon.h"
+#include <boost/lexical_cast.hpp>
+
+#include <ctime>
 #include "TamaleProgram.h"
 #include "Background.h"
 

@@ -1,6 +1,6 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
-#include "TString.h"
+#include "CommonHeaders.h"
 #include "ImlUnit.h"
 
 USING_NAMESPACE_FIVEL

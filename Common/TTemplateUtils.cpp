@@ -1,6 +1,7 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
- #include <algorithm>
+#include "CommonHeaders.h"
+
 #include <ctype.h>
 
 #include "TTemplateUtils.h"

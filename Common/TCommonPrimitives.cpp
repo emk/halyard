@@ -1,16 +1,11 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 // Needed for RegisterCommonPrimitives.
-#include "TCommon.h"
+#include "CommonHeaders.h"
 #include "TPrimitives.h"
 #include "TCommonPrimitives.h"
-#include "TVariable.h"
-#include "TLogger.h"
 #include "TDateUtil.h"
 #include "TStyleSheet.h"
-
-// Needed to implement the primitives.
-#include <string>
 
 USING_NAMESPACE_FIVEL
 

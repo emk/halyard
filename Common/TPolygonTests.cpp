@@ -1,9 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include "TCommon.h"
-#include "TPoint.h"
-#include "TRect.h"
-#include "TPolygon.h"
+#include "CommonHeaders.h"
+
 #include "ImlUnit.h"
 
 USING_NAMESPACE_FIVEL

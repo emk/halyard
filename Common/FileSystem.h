@@ -3,10 +3,6 @@
 #ifndef FileSystem_H
 #define FileSystem_H
 
-#include <stdexcept>
-#include <string>
-#include <list>
-
 #include "TException.h"
 
 //////////

@@ -3,11 +3,6 @@
 #ifndef TTemplateUtils_H
 #define TTemplateUtils_H
 
-#include <string>
-#include <boost/checked_delete.hpp>
-
-#include "TCommon.h"
-
 BEGIN_NAMESPACE_FIVEL
 
 //////////

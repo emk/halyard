@@ -3,7 +3,6 @@
 #if !defined (_TStartup_h_)
 #define _TStartup_h_
 
-#include "TCommon.h"
 #include "TInterpreter.h"
 
 // On the Macintosh, we need to manually set the stack base so the

@@ -40,8 +40,8 @@ RSC=rc.exe
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
-LINK32=link.exe
 MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MT /W3 /GR /GX /O2 /I "..\..\..\Common" /I "..\..\..\libs\libxml2\include" /I "..\..\..\libs\freetype2\include" /I "..\..\..\libs\plt\include" /I "..\..\..\libs\crypto" /I "..\..\..\libs\boost" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "LIBXML_STATIC" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -65,10 +65,10 @@ LIB32=link.exe -lib
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-LINK32=link.exe
 MTL=midl.exe
+LINK32=link.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common" /I "..\..\..\libs\libxml2\include" /I "..\..\..\libs\freetype2\include" /I "..\..\..\libs\plt\include" /I "..\..\..\libs\crypto" /I "..\..\..\libs\boost" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "LIBXML_STATIC" /FR /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "..\..\..\Common" /I "..\..\..\libs\libxml2\include" /I "..\..\..\libs\freetype2\include" /I "..\..\..\libs\plt\include" /I "..\..\..\libs\crypto" /I "..\..\..\libs\boost" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "LIBXML_STATIC" /FR /Yu"CommonHeaders.h" /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -90,6 +90,19 @@ LIB32=link.exe -lib
 # Begin Source File
 
 SOURCE=..\..\..\Common\doc\Background.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\CommonHeaders.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yc"CommonHeaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -130,6 +143,15 @@ SOURCE=..\..\..\Common\TCommonPrimitives.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\TDateUtil.cpp
+
+!IF  "$(CFG)" == "Common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Common - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -142,10 +164,6 @@ SOURCE=..\..\..\Common\TEncoding.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\TException.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Common\THeader.cpp
 # End Source File
 # Begin Source File
 
@@ -218,6 +236,10 @@ SOURCE=..\..\..\Common\XmlUtils.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\doc\Background.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\CommonHeaders.h
 # End Source File
 # Begin Source File
 

@@ -17,14 +17,6 @@
 #if !defined (_TRect_h_)
 #define _TRect_h_
 
-#ifdef _5L_QUICKTIME_
-#include <MacTypes.h>
-#endif // _5L_QUICKTIME_
-
-#include "TCommon.h"
-#include "TObject.h"
-#include "TPoint.h"
-
 BEGIN_NAMESPACE_FIVEL
 
 /*-----------------------------------------------------------------
@@ -211,41 +203,6 @@ class TRect : public TObject
 		//			false otherwise
 		//
 		bool		Contains(TPoint &inPt);
-
-#if defined (_5L_QUICKTIME_)
-		//////////
-		// Get a Quicktime Rect structure for the rectangle.<br>
-		// COMPILE FLAG - if defined _5L_QUICKTIME
-		//
-		// [out] return - a Quicktime Rect structure for the rectangle
-		//
-		Rect		GetRect(void) const;
-		
-		//////////
-		// Set the rectangle using the values from a Quicktime Rect structure.<br>
-		// COMPILE FLAG - if defined _5L_QUICKTIME
-		//
-		// [in] inPt - a Quicktime Rect structure
-		//
-		void		Set(Rect &inRect);
-#endif
-#if defined (_5L_WIN32_)
-		//////////
-		// Get a Win32 RECT structure for the rectangle.<br>
-		// COMPILE FLAG - if defined _5L_WIN32_
-		//
-		// [out] return - a Win32 RECT structure for the rectangle
-		//
-		RECT		GetRECT(void);
-		
-		//////////
-		// Set the point using the values from a Win32 RECT structure.<br>
-		// COMPILE FLAG - if defined _5L_WIN32_
-		//
-		// [in] inPt - a Win32 RECT structure
-		//
-		void		Set(RECT &inRect);
-#endif
 		
 	protected:
         //////////
@@ -275,6 +232,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.7  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.6  2003/06/04 15:24:12  brian
  Added support for polygons and polygonal zones.
 

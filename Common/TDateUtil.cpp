@@ -16,6 +16,8 @@
 //    with initialization and input commands.
 //
 
+#include "CommonHeaders.h"
+
 #include <time.h>
 
 #include <string.h>
@@ -275,6 +277,10 @@ static void GetDay(char *inStr, int inDay)
 
 /*
  $Log$
+ Revision 1.6  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.5  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

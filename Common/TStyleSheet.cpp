@@ -1,12 +1,9 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include "TCommon.h"
+#include "CommonHeaders.h"
 #include "TStyleSheet.h"
-#include "TVariable.h"
-#include "TLogger.h"
 #include "TEncoding.h"
 #include "TUtilities.h"
-#include "TTemplateUtils.h"
 #include "TCommonPrimitives.h"
 
 #include <string>

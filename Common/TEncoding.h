@@ -19,8 +19,6 @@
 #ifndef TEncoding_h
 #define TEncoding_h
 
-#include <string>
-
 BEGIN_NAMESPACE_FIVEL
 
 //////////

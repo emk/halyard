@@ -15,6 +15,7 @@
 // TPoint.cpp : 
 //
 
+#include "CommonHeaders.h"
 #include "THeader.h"
 #include "TPoint.h"
 
@@ -70,44 +71,12 @@ void TPoint::Offset(TPoint &inPt)
 	m_Y += inPt.Y();
 }
 
-#if defined (_5L_QUICKTIME_)
-Point TPoint::GetPoint(void)
-{
-	Point	retPt;
-
-	retPt.h = (short) m_X;
-	retPt.v = (short) m_Y;
-
-	return (retPt);
-}
-
-void TPoint::Set(Point &inPt) 
-{ 
-	m_X = inPt.h; 
-	m_Y = inPt.v; 
-}
-#endif
-
-#if defined (_5L_WIN32_)
-POINT TPoint::GetPOINT(void) 
-{		
-	POINT retPt; 
-
-	retPt.x = m_X;
-	retPt.y = m_Y;
-
-	return (retPt);
-}
-
-void TPoint::Set(POINT &inPt) 
-{ 
-	m_X = inPt.x; 
-	m_Y = inPt.y; 
-}
-#endif
-
 /*
  $Log$
+ Revision 1.5  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.4  2003/06/04 15:24:11  brian
  Added support for polygons and polygonal zones.
 

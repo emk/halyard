@@ -1,9 +1,8 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "CommonHeaders.h"
 #include <strstream>
 
-#include "TLogger.h"
-#include "TException.h"
 
 USING_NAMESPACE_FIVEL
 

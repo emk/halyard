@@ -3,10 +3,7 @@
 #ifndef TCommonPrimitives_H
 #define TCommonPrimitives_H
 
-#include "TCommon.h"
 #include "TPrimitives.h"
-#include "TRect.h"
-#include "TPoint.h"
 
 BEGIN_NAMESPACE_FIVEL
 

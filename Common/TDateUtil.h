@@ -14,9 +14,6 @@
 #if !defined (TDateUtil_H)
 #define TDateUtil_H
 
-#include "TCommon.h" 
-#include "TString.h"
-
 BEGIN_NAMESPACE_FIVEL
 
 //
@@ -63,6 +60,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.4  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

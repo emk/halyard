@@ -3,11 +3,6 @@
 #if !defined (TVectorDiff_H)
 #define TVectorDiff_H
 
-#include "TCommon.h"
-#include <algorithm>
-#include <vector>
-#include <boost/config.hpp> // Get working std::max under MSVC.
-
 BEGIN_NAMESPACE_FIVEL
 
 //////////

@@ -18,7 +18,6 @@
 #if !defined (_TBTree_h_)
 #define _TBTree_h_
 
-#include "TCommon.h"
 #include "TObject.h"
 #include "TString.h"
 
@@ -212,6 +211,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.7  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.6  2002/07/25 22:25:25  emk
    * Made new CryptStream auto_ptr code work under Windows.
    * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now

@@ -16,9 +16,10 @@
 //
 //
 
+#include "CommonHeaders.h"
+
 #include "TDateUtil.h"
 #include "TVariable.h"
-#include "TLogger.h"
 
 //#include "LFiles.h"
 //#include "Card.h"
@@ -364,6 +365,10 @@ void TVariableManager::SetLocal(TVariable *newlocal)
 
 /*
  $Log$
+ Revision 1.8  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.7  2002/11/05 23:06:37  emk
  Added type information to 5L variables, and replaced (var ...) with a more
  powerful form of (define ...).  These changes should make Scheme more

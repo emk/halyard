@@ -12,7 +12,6 @@
 #if !defined (_TArray_h_)
 #define _TArray_h_
 
-#include "TCommon.h"
 #include "TObject.h"
 
 BEGIN_NAMESPACE_FIVEL
@@ -188,6 +187,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.3  2002/09/19 21:04:00  emk
  I can now build and run the test suites on Linux again, which will let me
  run the valgrind and cachegrind debugging and optimization tools.

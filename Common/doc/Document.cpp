@@ -1,6 +1,6 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#include "TCommon.h"
+#include "CommonHeaders.h"
 #include "TInterpreter.h"
 #include "FileSystem.h"
 

@@ -15,10 +15,10 @@
 // TBTree.cpp : 
 //
 
+#include "CommonHeaders.h"
+
 #include "THeader.h"
 #include "TBTree.h"
-#include "TLogger.h"
-#include "TException.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -300,6 +300,10 @@ void TBTree::RemoveAll(void)
 
 /*
  $Log$
+ Revision 1.8  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.7  2002/07/26 19:18:34  emk
  Make an error fatal, and tweak the release notes.
 

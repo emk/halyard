@@ -15,16 +15,15 @@
 // TLogger.cpp : 
 //
 
+#include "CommonHeaders.h"
+
 #include <time.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 
 #include "THeader.h"
-#include "TCommon.h"
 #include "TLogger.h"
-#include "TString.h"
 #include "TVersion.h"
 
 USING_NAMESPACE_FIVEL
@@ -373,6 +372,10 @@ void FiveLCheckAssertion(int inTest, const char *inDescription,
 
 /*
  $Log$
+ Revision 1.9  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.8  2002/10/10 00:03:19  emk
    * The Windows engine now reloads scripts in the same fashion as the
      Mac engine--if a load fails, you get a chance to retry it.

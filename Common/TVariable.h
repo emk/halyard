@@ -13,9 +13,6 @@
 #if !defined (TVariable_H)
 #define TVariable_H
 
-#include <map>
-#include <string>
-
 #include "TBTree.h"
 
 BEGIN_NAMESPACE_FIVEL
@@ -433,6 +430,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.6  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.5  2002/11/05 23:06:37  emk
  Added type information to 5L variables, and replaced (var ...) with a more
  powerful form of (define ...).  These changes should make Scheme more

@@ -14,6 +14,7 @@
 // TArray.cpp : 
 //
 
+#include "CommonHeaders.h"
 #include "THeader.h"
 #include "TArray.h"
 
@@ -203,6 +204,10 @@ void TArray::DeleteAll(void)
 
 /*
  $Log$
+ Revision 1.3  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.2  2002/03/04 15:15:52  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 

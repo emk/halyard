@@ -3,10 +3,6 @@
 #ifndef TStyleSheet_H
 #define TStyleSheet_H
 
-#include <string>
-#include <map>
-
-#include "TCommon.h"
 #include "TPrimitives.h"
 
 #include "GraphicsTools.h"

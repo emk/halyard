@@ -1,12 +1,12 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "CommonHeaders.h"
+
 #include <iostream.h>
 #include <fstream.h>
 #include <stdio.h>
 
 #include "TDeveloperPrefs.h"
-#include "TLogger.h"
-#include "TVariable.h"
 
 USING_NAMESPACE_FIVEL
 

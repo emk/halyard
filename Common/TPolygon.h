@@ -3,14 +3,6 @@
 #if !defined (_TPolygon_h_)
 #define _TPolygon_h_
 
-#include "TCommon.h"
-
-#include "TObject.h"
-#include "TPoint.h"
-#include "TRect.h"
-
-#include <vector>
-
 BEGIN_NAMESPACE_FIVEL
 
 //////////

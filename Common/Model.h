@@ -3,12 +3,6 @@
 #if !defined (Model_H)
 #define Model_H
 
-#include <memory>
-#include <map>
-#include <string>
-#include <vector>
-#include <list>
-
 #include "XmlUtils.h"
 
 

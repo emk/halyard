@@ -1,9 +1,10 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "CommonHeaders.h"
+
 #include <iostream>
 #include <string.h>
 
-#include "TCommon.h"
 #include "ImlUnit.h"
 #include "TEncoding.h"
 

@@ -3,10 +3,6 @@
 #if !defined (_TInterpreter_h_)
 #define _TInterpreter_h_
 
-#include "TCommon.h"
-#include <string>
-#include <boost/utility.hpp>
-
 BEGIN_NAMESPACE_FIVEL
 
 //////////

@@ -1,6 +1,7 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
-#include <string>
+#include "CommonHeaders.h"
+
 #include <iostream>
 #include <strstream>
 
@@ -8,7 +9,6 @@
 #include <stdlib.h>
 
 #include "ImlUnit.h"
-#include "TCommon.h"
 #include "Typography.h"
 
 using namespace Typography;

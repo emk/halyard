@@ -3,7 +3,6 @@
 #if !defined (_TSchemeInterpreter_h_)
 #define _TSchemeInterpreter_h_
 
-#include "TCommon.h"
 #include "TInterpreter.h"
 #include "TPrimitives.h"
 #include "FileSystem.h"

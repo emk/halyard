@@ -3,8 +3,6 @@
 #ifndef GraphicsTools_H
 #define GraphicsTools_H
 
-#include "TCommon.h"
-
 #include <assert.h>
 #include <stddef.h>
 

@@ -3,19 +3,8 @@
 #ifndef TPrimitives_H
 #define TPrimitives_H
 
-#include <string>
-#include <map>
-
-#include "TCommon.h"
-#include "TString.h"
-#include "TPoint.h"
-#include "TRect.h"
-#include "TPolygon.h"
-#include "TVariable.h"
 #include "GraphicsTools.h"
 #include "TInterpreter.h"
-#include "TTemplateUtils.h"
-#include "TLogger.h"
 
 BEGIN_NAMESPACE_FIVEL
 

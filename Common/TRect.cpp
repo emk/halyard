@@ -14,6 +14,7 @@
 // TRect.cpp : 
 //
 
+#include "CommonHeaders.h"
 #include "THeader.h"
 #include "TRect.h"
 
@@ -100,50 +101,12 @@ void TRect::Offset(const TPoint &inPt)
 	m_Right += inPt.X();
 }
 
-#if defined (_5L_QUICKTIME_)
-Rect TRect::GetRect(void) const
-{
-	Rect	retRect;
-	
-	retRect.top = (short) m_Top;
-	retRect.left = (short) m_Left;
-	retRect.bottom = (short) m_Bottom;
-	retRect.right = (short) m_Right;
-
-	return (retRect);
-}
-
-void TRect::Set(Rect &inRect)
-{
-	m_Top = inRect.top;
-	m_Left = inRect.left;
-	m_Bottom = inRect.bottom;
-	m_Right = inRect.right;
-}
-#endif
-
-#if defined (_5L_WIN32_)
-RECT TRect::GetRECT(void)
-{
-	RECT	retRect;
-
-	retRect.top = m_Top;
-	retRect.left = m_Left;
-	retRect.bottom = m_Bottom;
-	retRect.right = m_Right;
-
-	return (retRect);
-}
-void TRect::Set(RECT &inRect)
-{
-	m_Top = inRect.top;
-	m_Left = inRect.left;
-	m_Bottom = inRect.bottom;
-	m_Right = inRect.right;
-}
-#endif
 /*
  $Log$
+ Revision 1.7  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.6  2003/06/04 15:24:12  brian
  Added support for polygons and polygonal zones.
 

@@ -15,14 +15,13 @@
 // TEncoding.cpp : 
 //
 
+#include "CommonHeaders.h"
+
 #include <ctype.h>
 #include <string.h>
-#include <algorithm>
 
 #include "THeader.h"
-#include "TCommon.h"
 #include "TEncoding.h"
-#include "TLogger.h"
 #include "TUtilities.h"
 
 USING_NAMESPACE_FIVEL

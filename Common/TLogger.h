@@ -20,9 +20,7 @@
 
 #include <fstream>
 
-#include "TCommon.h"
 #include "TObject.h"
-#include "TString.h"
 #include "FileSystem.h"
 
 BEGIN_NAMESPACE_FIVEL
@@ -291,6 +289,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.4  2002/07/26 20:00:15  zeb
  3.3.21 - 26 July 2002 - zeb
 

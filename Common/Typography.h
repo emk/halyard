@@ -3,14 +3,7 @@
 #ifndef Typography_H
 #define Typography_H
 
-#include "TCommon.h"
-
-#include <string>
 #include <iostream>
-#include <string>
-#include <deque>
-#include <list>
-#include <map>
 
 #include "ft2build.h"
 #include FT_FREETYPE_H
@@ -18,7 +11,6 @@
 
 #include <wchar.h>
 
-#include "TException.h"
 #include "FileSystem.h"
 #include "GraphicsTools.h"
 

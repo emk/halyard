@@ -1,6 +1,6 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
-#include "TCommon.h"
+#include "CommonHeaders.h"
 
 #include <fstream>
 
@@ -9,7 +9,6 @@
 #include <wctype.h>
 
 #include "Typography.h"
-#include "TLogger.h"
 
 using namespace Typography;
 

@@ -18,17 +18,6 @@
 #if !defined (_TPoint_h_)
 #define _TPoint_h_
 
-#ifdef _5L_QUICKTIME_
-#include <MacTypes.h>
-#endif // _5L_QUICKTIME_
-
-#if FIVEL_PLATFORM_WIN32
-#include "Windows.h"
-#endif // FIVEL_PLATFORM_*
-
-#include "TCommon.h"
-#include "TObject.h"
-
 BEGIN_NAMESPACE_FIVEL
 
 /*-----------------------------------------------------------------
@@ -140,42 +129,6 @@ class TPoint : public TObject
 		//
 		bool			operator==(const TPoint &inPt) const;
 
-#if defined (_5L_QUICKTIME_)
-		//////////
-		// Get a Quicktime Point structure for the point.<br>
-		// COMPILE FLAG - if defined _5L_QUICKTIME
-		//
-		// [out] return - a Quicktime Point structure for the point
-		//
-		Point			GetPoint(void);
-		
-		//////////
-		// Set the point using the values from a Quicktime Point structure.<br>
-		// COMPILE FLAG - if defined _5L_QUICKTIME
-		//
-		// [in] inPt - a Quicktime Point structure
-		//
-		void			Set(Point &inPt);
-#endif
-#if FIVEL_PLATFORM_WIN32
-		
-		//////////
-		// Get a Win32 POINT structure for the point.<br>
-		// COMPILE FLAG - if defined _5L_WIN32_
-		//
-		// [out] return - a Win32 POINT structure for the point
-		//
-		POINT			GetPOINT(void);
-		
-		//////////
-		// Set the point using the values from a Win32 POINT structure.<br>
-		// COMPILE FLAG - if defined _5L_WIN32_
-		//
-		// [in] inPt - a Win32 POINT structure
-		//
-		void			Set(POINT &inPt);
-#endif // FIVEL_PLATFORM_*
-
 	protected:
         //////////
 		// X-Coordinate
@@ -194,6 +147,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.6  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.5  2003/06/04 15:24:11  brian
  Added support for polygons and polygonal zones.
 

@@ -3,9 +3,7 @@
 #if !defined (_TDeveloperPrefs_h_)
 #define _TDeveloperPrefs_h_
 
-#include "TCommon.h"
 #include "FileSystem.h"
-#include "TString.h"
 
 BEGIN_NAMESPACE_FIVEL
 

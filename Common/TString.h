@@ -18,11 +18,7 @@
 #if !defined (_TString_h_)
 #define _TString_h_
 
-#include <iostream.h>
-#include <string>
-
-#include "TCommon.h"
-#include "TObject.h"
+#include <iostream>
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -563,7 +559,8 @@ class TString : public TObject
 		// [in] inStream - the output stream
 		// [in] inStr - the TString
 		//
-		friend ostream & operator << (ostream &inStream, const TString &inStr);
+		friend std::ostream & operator << (std::ostream &inStream,
+										   const TString &inStr);
         
 		//////////
 		// Stream data from an input stream into a TString . 
@@ -571,7 +568,8 @@ class TString : public TObject
 		// [in] inStream - the input stream
 		// [in] inStr - the TString
 		//
-		friend istream & operator >> (istream &inStream, TString &inStr);
+		friend std::istream & operator >> (std::istream &inStream,
+										   TString &inStr);
 
 	protected:
 		//////////
@@ -653,6 +651,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.7  2003/06/13 10:57:30  emk
+ Further use of precompiled headers; pruning of various inappropriate
+ includes.
+
  Revision 1.6  2002/06/20 16:32:53  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

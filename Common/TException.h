@@ -3,11 +3,6 @@
 #ifndef TException_H
 #define TException_H
 
-#include <stdexcept>
-#include <string>
-
-#include "TCommon.h"
-
 BEGIN_NAMESPACE_FIVEL
 
 //////////

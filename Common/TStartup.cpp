@@ -1,8 +1,8 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "CommonHeaders.h"
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
-#include "TLogger.h"
 #include "TCommonPrimitives.h"
 #include "lang/scheme/TSchemeInterpreter.h"
 
