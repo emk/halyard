@@ -1,6 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include <wx/wx.h>
+#include <vector>
 
 #include "AppGlobals.h"
 #include "LocationBox.h"
@@ -33,7 +34,7 @@ END_EVENT_TABLE()
 LocationBox::LocationBox(wxToolBar *inParent)
 	: wxComboBox(inParent, FIVEL_LOCATION_BOX, "",
 				 wxDefaultPosition, wxSize(200, -1),
-				 0, NULL, wxWANTS_CHARS|wxCB_DROPDOWN|wxCB_SORT)
+				 0, NULL, wxWANTS_CHARS|wxCB_DROPDOWN)
 {
 }
 
@@ -59,8 +60,26 @@ void LocationBox::RegisterCard(const wxString &inCardName)
 {
 #if CONFIG_LOCATION_BOX_IS_COMBO
 	// Update our drop-down list of cards.
-	if (FindString(inCardName) == -1)
-		Append(inCardName);	
+	// First, delete the card from the list
+	int loc = FindString(inCardName);
+	std::vector<wxString> vec;
+	int i;
+
+	if (loc != wxNOT_FOUND)
+		Delete(loc);	
+
+	// Now move all of the remaining cards into a vector
+	for (i = GetCount() - 1; i >= 0; i--) {
+		vec.push_back(GetString(i));
+		Delete(i);
+	}
+
+	// Add our new card at the front of the list
+	Append(inCardName);
+
+	// Put back all of the remaining cards
+	for (i = vec.size() - 1; i >= 0; i--) 
+		Append(vec[i]);
 #endif // CONFIG_LOCATION_BOX_IS_COMBO
 }
 
