@@ -23,13 +23,24 @@ class DrawingArea : public GraphicsTools::Image {
 	//	
 	void InvalidateRect(const wxRect &inRect, int inInflate = 0);
 
+    //////////
+    // Invalidate everything associated with this drawing area.
+    //
+    void InvalidateDrawingArea();
+
 public:
     DrawingArea(Stage *inStage, int inWidth, int inHeight, bool inHasAlpha);
 	DrawingArea(Stage *inStage, const wxRect &inBounds, bool inHasAlpha);
-
+    ~DrawingArea();
+    
     wxBitmap &GetPixmap() { return mPixmap; }
 	wxRect GetBounds() { return mBounds; }
 	bool HasAlpha() { return mPixmap.HasAlpha(); }
+
+    //////////
+    // Relocate this drawing area to the specified location.
+    //
+    void MoveTo(const wxPoint &inPoint);
 
     //////////
     // Clear the drawing area to the default color.

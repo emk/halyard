@@ -20,6 +20,11 @@ DrawingArea::DrawingArea(Stage *inStage, const wxRect &inBounds,
 	InitializePixmap(inHasAlpha);
 }
 
+DrawingArea::~DrawingArea() {
+    // We're going away, so force recompositing later.
+    InvalidateDrawingArea();
+}
+
 void DrawingArea::InitializePixmap(bool inHasAlpha) {
 	mPixmap.Create(mBounds.GetWidth(), mBounds.GetHeight(),
 				   inHasAlpha ? 32 : 24);
@@ -33,6 +38,16 @@ void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate) {
 	r.Inflate(inInflate);
 	r.Offset(mBounds.GetPosition());
 	mStage->InvalidateRect(r);
+}
+
+void DrawingArea::InvalidateDrawingArea() {
+    InvalidateRect(wxRect(0, 0, mBounds.GetWidth(), mBounds.GetHeight()));
+}
+
+void DrawingArea::MoveTo(const wxPoint &inPoint) {
+    InvalidateDrawingArea();
+    mBounds = wxRect(inPoint, mBounds.GetSize());
+    InvalidateDrawingArea();
 }
 
 void DrawingArea::Clear() {
@@ -57,7 +72,7 @@ void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
 	} else {
 		THROW("Cannot clear opaque overlay with transparent color.");
 	}
-    InvalidateRect(wxRect(0, 0, mBounds.GetWidth(), mBounds.GetHeight()));
+    InvalidateDrawingArea();
 }
 
 void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
@@ -77,7 +92,7 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 				   inWidth);
 }
 
-void DrawingArea::FillBox(const wxRect &inBounds, 
+void DrawingArea::FillBox(const wxRect &inBounds,
 						  const GraphicsTools::Color &inColor)
 {
 	if (inColor.IsCompletelyOpaque()) {

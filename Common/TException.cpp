@@ -39,7 +39,9 @@ const char* TException::what () const throw ()
 	{
 		s << "error " << GetErrorCode() << " ";
 	}
+#ifdef DEBUG
 	s << "at " << mErrorFile << ":" << mErrorLine << ")";
+#endif // DEBUG
 	const_cast<TException*>(this)->mWhatCache = get_string(s);
 	return mWhatCache.c_str();
 }

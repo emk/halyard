@@ -510,7 +510,8 @@ void Stage::OnTextEnter(wxCommandEvent &inEvent)
     // Draw the text.
     // PORTING - These offsets are unreliable and platform-specific.
     wxPoint pos = mTextCtrl->GetPosition();
-    dc.DrawText(text, pos.x + 2, pos.y);
+    dc.DrawText(text, pos.x + 5, pos.y);
+    InvalidateRect(mTextCtrl->GetRect());
 }
 
 void Stage::OnLeftDown(wxMouseEvent &inEvent)
@@ -790,9 +791,6 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint)
 void Stage::DestroyElement(Element *inElement)
 {
 	wxString name = inElement->GetName();
-
-	// Force an update of the element's location.
-	inElement->InvalidateCurrentLocation();
 
 	// Make sure this element isn't on our drawing context stack.
 	if (mDrawingContextStack->ContainsElement(inElement))

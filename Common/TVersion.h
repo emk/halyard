@@ -17,15 +17,32 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		12
+#define VERSION_REV_BIG		13
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.12 (Development)"
+#define VERSION_STRING		"Tamale 0.0.13 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.54  2004/01/06 19:23:06  emk
+ 0.0.13 - 6 Jan 2004 - emk
+
+ Basic drag & drop can now be implemented in Scheme.
+
+   * Added support for (SET! (PROP elem name) value) in Scheme.  To support
+     this on your templates, you need to implement an
+     (ON PROP-CHANGE (name value prev veto) ...) handler.  Be sure to
+     CALL-NEXT-HANDLER for properties you don't know about!  This API will
+     probably change.
+   * SET-ELEMENT-CURSOR! -> (SET! (PROP elem CURSOR) new-value)
+   * Made several zone properties setable at runtime.
+   * Overlays can now be moved.
+   * Overlays no longer need to invalidate themselves when
+     deleted--DrawingArea handles this internally.
+   * Fixed some text-entry-related bugs.
+
  Revision 1.53  2004/01/05 20:43:28  emk
  0.0.12 - 5 Jan 2004 - emk
 

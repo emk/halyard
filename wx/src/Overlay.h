@@ -20,10 +20,10 @@ public:
 			bool inHasAlpha);
 
 	virtual bool IsPointInElement(const wxPoint &inPoint);
+    virtual void MoveTo(const wxPoint &inPoint);
 	virtual void DrawElementBorder(wxDC &inDC);
 	virtual DrawingArea *GetDrawingArea() { return &mDrawingArea; }
 	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect);
-	virtual void InvalidateCurrentLocation();
 };
 
 #endif // Overlay_H

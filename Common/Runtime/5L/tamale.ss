@@ -9,7 +9,7 @@
 
   (provide load-picture set-image-cache-size! modal-input with-drawing-context
            drawing-context-rect color-at
-           %zone% zone set-element-cursor! register-cursor mouse-position
+           %zone% zone register-cursor mouse-position
            grab-mouse ungrab-mouse mouse-grabbed?
            delete-element delete-elements
            clear-screen rect-horizontal-center rect-vertical-center
@@ -75,6 +75,17 @@
        [overlay? :type <boolean> :default #f :label "Has overlay?"]
        [alpha? :type <boolean> :default #f :label "Overlay transparent?"]]
       (:template %element%)
+    (on prop-change (name value prev veto)
+      (case name
+        [[cursor] (set-element-cursor! self value)]
+        [[shape]
+         (unless overlay?
+           (veto "Can only move overlays for now."))
+         (unless (and (= (rect-width prev) (rect-width value))
+                      (= (rect-height prev) (rect-height value)))
+           (veto "Can only move zones, not resize them."))
+         (move-element-to! self (rect-left-top value))]
+        [else (call-next-handler)]))
     (if (not overlay?)
         (call-5l-prim 'zone (node-full-name self) (as <polygon> shape)
                       (make-node-event-dispatcher self) cursor)
@@ -82,6 +93,10 @@
                       (make-node-event-dispatcher self) cursor alpha?)))
 
   (define-element-template %simple-zone% [action] (:template %zone%)
+    (on prop-change (name value prev veto)
+      (case name
+        [[action] (void)]
+        [else (call-next-handler)]))
     (on mouse-down (event)
       (action)))
 
@@ -95,8 +110,13 @@
             :overlay? overlay?
             :alpha? alpha?))
   
-  (define (set-element-cursor! elem-or-name cursor)
-    (call-5l-prim 'SetElemCursor (elem-or-name-hack elem-or-name) cursor))
+  (define (move-element-to! elem p)
+    ;; Don't make me public.
+    (call-5l-prim 'MoveElementTo (node-full-name elem) p))
+
+  (define (set-element-cursor! elem cursor)
+    ;; Don't make me public.
+    (call-5l-prim 'SetElemCursor (node-full-name elem) cursor))
 
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
     (let [[path (make-path "Graphics" (cat "cursors/" filename))]]

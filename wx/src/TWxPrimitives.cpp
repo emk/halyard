@@ -73,6 +73,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(Movie);
 	REGISTER_5L_PRIMITIVE(MoviePause);
 	REGISTER_5L_PRIMITIVE(MovieResume);
+    REGISTER_5L_PRIMITIVE(MoveElementTo);
 	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
@@ -513,6 +514,14 @@ DEFINE_5L_PRIMITIVE(MovieResume) {
 	FIND_ELEMENT(IMediaElement, movie, name.c_str());
 
 	movie->Resume();
+}
+
+DEFINE_5L_PRIMITIVE(MoveElementTo) {
+	std::string name;
+	TPoint p;
+	inArgs >> SymbolName(name) >> p;
+    FIND_ELEMENT(Element, elem, name.c_str());
+    elem->MoveTo(TToWxPoint(p));
 }
 
 DEFINE_5L_PRIMITIVE(Refresh) {

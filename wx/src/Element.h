@@ -73,6 +73,11 @@ public:
 	//
 	virtual bool IsPointInElement(const wxPoint &inPoint) { return false; }
 
+    //////////
+    // Move the element to the specified location.
+    //
+    virtual void MoveTo(const wxPoint &inPoint);
+
 	//////////
 	// Get the event dispatcher for the current element.
 	// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
@@ -103,11 +108,6 @@ public:
 	//                   which we're updating.
 	//
 	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect) {}
-
-	//////////
-	// Invalidate the current location of this element.
-	//
-	virtual void InvalidateCurrentLocation() {}
 };
 
 #endif // Element_H

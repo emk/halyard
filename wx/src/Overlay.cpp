@@ -33,14 +33,14 @@ bool Overlay::IsPointInElement(const wxPoint &inPoint) {
 	}
 }
 
+void Overlay::MoveTo(const wxPoint &inPoint) {
+    mDrawingArea.MoveTo(inPoint);
+}
+
 void Overlay::DrawElementBorder(wxDC &inDC) {
     inDC.DrawRectangle(mDrawingArea.GetBounds());
 }
 
 void Overlay::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
     mDrawingArea.CompositeInto(inDC, inClipRect);
-}
-
-void Overlay::InvalidateCurrentLocation() {
-	GetStage()->InvalidateRect(mDrawingArea.GetBounds());
 }

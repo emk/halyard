@@ -19,3 +19,6 @@ Element::Element(Stage *inStage, const wxString &inName)
 	mStage->AddElement(this);
 }
 
+void Element::MoveTo(const wxPoint &inPoint) {
+    THROW("Cannot move this kind of element");
+}

@@ -239,7 +239,7 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide prop-by-name prop)
+  (provide prop-by-name set-prop-by-name! prop)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
@@ -298,6 +298,40 @@
       (if (not (eq? value $no-such-key))
           value
           (error "Unable to find template property" name))))
+
+  (define (set-prop-by-name! node name value)
+    ;; We allow the scriptor to set properties on a node.  However, we
+    ;; must notify the node of the change.  The node may choose to veto
+    ;; the change--in which case, we undo the change.
+    (define (veto &opt reason)
+      (define msg (cat "Cannot set property '" name "' on node '"
+                       (node-full-name node) "'"))
+      (if reason
+          (error (cat msg ": " reason))
+          (error msg)))
+    (define (no-handler)
+      (veto "Property is read-only."))
+    (unless (node-has-value? node name)
+      (veto "Property does not exist."))
+    (let [[accepted? #f]
+          [table (node-values node)]
+          [previous #f]]
+      (dynamic-wind
+          (lambda ()
+            ;; Store our previous property value, and set the new one.
+            (set! previous (hash-table-get table name (lambda () #f)))
+            (hash-table-put! table name value))
+          (lambda ()
+            ;; Notify the node that the property has changed.  If the node
+            ;; vetos the change, send/nonrecursive* will raise an error, and
+            ;; we'll never set accepted? to #t.
+            (send/nonrecursive* no-handler node 'prop-change name value
+                                previous veto)
+            (set! accepted? #t))
+          (lambda ()
+            ;; If we didn't accept the change, revert it.
+            (unless accepted?
+              (hash-table-put! table name previous))))))
 
   (define-syntax prop
     (syntax-rules ()
