@@ -17,7 +17,7 @@
 #include "TRect.h"
 #include "TPoint.h"
 //#include "TDictionary.h"
-#include "Index.h"
+#include "TIndex.h"
 
 // globals
 static bool	gNeedsRefresh;
@@ -39,7 +39,7 @@ AUTHOR
 
 -----------------------------------------------------------------*/
 
-class Card : public Index 
+class Card : public TIndex 
 {
     public:
 		//////////
@@ -50,7 +50,7 @@ class Card : public Index
 		// [in_optional] p1 - starting index (in infile) (default 0)
 		// [in_optional] p2 - ending index (in infile) (default 0)
 		//
-        Card(IndexFile *inFile, const char *name = NULL, long p1 = 0, long p2 = 0);
+        Card(TIndexFile *inFile, const char *name = NULL, long p1 = 0, long p2 = 0);
         
 		//////////
 		// Get the card ready for execution
@@ -153,7 +153,7 @@ class Card : public Index
 		// [in] conditional - the conditional input
 		// [out] return - result of the conditional
 		//
-        int     Evaluate(LStream& conditional);
+        int     Evaluate(TStream& conditional);
 
         //////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
@@ -543,7 +543,7 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class CardManager : public IndexManager 
+class CardManager : public TIndexManager 
 {
 	public:
         
@@ -581,7 +581,7 @@ class CardManager : public IndexManager
 		// [in] inStart - starting index (in inFile)
 		// [in] inEnd - ending index (in inFile)
 		//
-		virtual void 	MakeNewIndex(IndexFile *inFile, const char *inName, 
+		virtual void 	MakeNewIndex(TIndexFile *inFile, const char *inName, 
 							long inStart, long inEnd);
 
         //////////
@@ -767,6 +767,14 @@ class CardManager : public IndexManager
 
 /*
  $Log$
+ Revision 1.2.2.1  2002/04/30 07:57:31  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

@@ -37,7 +37,7 @@ class Macro : public Card
 		// [in_optional] inStart - starting index (in inFile) (default 0)
 		// [in_optional] inEnd2 - ending index (in inFile) (default 0)
 		//
-		Macro(IndexFile *inFile, const char *inName = NULL, int32 inStart = 0, int32 inEnd2 = 0);
+		Macro(TIndexFile *inFile, const char *inName = NULL, int32 inStart = 0, int32 inEnd2 = 0);
 
 		//////////
 		// Execute the set of commands in this macro.  A little different from 
@@ -74,7 +74,7 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class MacroManager : public IndexManager 
+class MacroManager : public TIndexManager 
 {
 	public:
 		//////////
@@ -85,7 +85,7 @@ class MacroManager : public IndexManager
 		// [in] inStart - starting index (in inFile)
 		// [in] inEnd - ending index (in inFile)
 		//
-		virtual void	MakeNewIndex(IndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
+		virtual void	MakeNewIndex(TIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
 };
 
 
@@ -93,6 +93,14 @@ class MacroManager : public IndexManager
 
 /*
  $Log$
+ Revision 1.1.4.1  2002/04/30 07:57:31  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

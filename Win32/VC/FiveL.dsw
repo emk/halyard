@@ -11,6 +11,12 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name freetype
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libfivel_crypto
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -29,24 +35,6 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name ImlUnit
     End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name freetype
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "Crypt"=.\Crypt\Crypt.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name Common
-    End Project Dependency
 }}}
 
 ###############################################################################
@@ -59,9 +47,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name Crypt
-    End Project Dependency
     Begin Project Dependency
     Project_Dep_Name Common
     End Project Dependency
@@ -93,9 +78,6 @@ Package=<4>
     Project_Dep_Name Common
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name Crypt
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name DibLib
     End Project Dependency
     Begin Project Dependency
@@ -117,7 +99,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "TestSuite"=.\TestSuite\TestSuite.dsp - Package Owner=<4>
+Project: "freetype"=..\..\Common\freetype2\builds\win32\visualc\freetype.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -125,26 +107,11 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name Common
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name Crypt
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name CryptTool
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name DibLib
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name FiveL
-    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "freetype"=..\..\Common\freetype2\builds\win32\visualc\freetype.dsp - Package Owner=<4>
+Project: "libfivel_crypto"=.\libfivel_crypto\libfivel_crypto.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

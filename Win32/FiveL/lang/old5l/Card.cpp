@@ -34,8 +34,8 @@
 
 //  Card - Constructor. Cards have a default origin of (0, 0)
 //
-Card::Card(IndexFile *inFile, const char *name, long p1, long p2) 
-	: Index(inFile, name, p1, p2)
+Card::Card(TIndexFile *inFile, const char *name, long p1, long p2) 
+	: TIndex(inFile, name, p1, p2)
 {
 	SetOrigin(0, 0);
 }
@@ -229,7 +229,7 @@ void Card::DoCommand(void)
 // be there.
 void Card::OneCommand(TString &theCommand)
 {
-    LStream     saveScript(m_Script);
+    TStream     saveScript(m_Script);
 
     m_Script = theCommand;
     DoCommand();
@@ -259,7 +259,7 @@ enum EvalMode
  *  Evaluate the given conditional and determine whether or not
  *  it is true.
  ***********************************************************************/
-int Card::Evaluate(LStream& conditional)
+int Card::Evaluate(TStream& conditional)
 {
     int         globalRes, localRes, result;
     EvalMode    mode = FirstTime;
@@ -1072,7 +1072,7 @@ void Card::DoHidemouse()
 -------------------------------------------------------------------*/
 void Card::DoIf()
 {
-    LStream     conditional;
+    TStream     conditional;
 
     m_Script >> conditional;
     conditional.reset();
@@ -1420,7 +1420,7 @@ void Card::DoMacro(TString &name)
     Macro       *theMacro;
     TString     vname, contents;
     int32       vnum;
-    Variable    *local, *temp, *oldlocal;
+    TVariable    *local, *temp, *oldlocal;
 
     theMacro = (Macro *) gMacroManager.Find(name);
     
@@ -1441,7 +1441,7 @@ void Card::DoMacro(TString &name)
         vname = ++vnum;
         m_Script >> contents;
 
-        temp = new Variable(vname, contents);
+        temp = new TVariable(vname, contents);
 
         if (local == 0) 
         	local = temp;
@@ -2389,7 +2389,7 @@ void Card::DoWrite()
 
 ***************************/
 
-CardManager::CardManager() : IndexManager()
+CardManager::CardManager() : TIndexManager()
 { 
 	m_HaveJump = false;
 	m_Napping = false; 
@@ -2419,13 +2419,13 @@ void CardManager::RemoveAll(void)
 	m_ReDoScript = false;
 
  	m_CardList.RemoveAll();   
-	IndexManager::RemoveAll();
+	TIndexManager::RemoveAll();
 }
 
 void CardManager::Idle(void)
 { 
-	Variable	*theAfterVar;
-	Variable	*theBeforeVar;
+	TVariable	*theAfterVar;
+	TVariable	*theBeforeVar;
 	Card		*theCard;
 	int32		index;
 	
@@ -2636,7 +2636,7 @@ void CardManager::DoReDoScript(TString &inCardName)
 	m_ReDoCardName = inCardName;
 }
 
-void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName, 
+void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName, 
 							   int32 inStart, int32 inEnd)
 {
     Card    *newCard;  
@@ -2658,6 +2658,14 @@ void CardManager::MakeNewIndex(IndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.4.2.1  2002/04/30 07:57:30  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.4  2002/02/28 15:31:06  tvw
  Fixes subtraction to detect the type of number being subtracted.
 

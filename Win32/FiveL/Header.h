@@ -18,7 +18,7 @@
 #define _Header_h_
 
 #include "TCommon.h"
-#include "Index.h"
+#include "TIndex.h"
 #include "LFont.h"
 
 //Sets up screen text buffer.
@@ -36,18 +36,18 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class Header : public Index 
+class Header : public TIndex 
 {
 	public:
 		//////////
 		// Constructor.
 		//
-		// [in] inFile - IndexFile which has the header indexed
+		// [in] inFile - TIndexFile which has the header indexed
 		// [in_optional] name - name of this Header (default NULL)
 		// [in_optional] p1 - starting index (default 0)
 		// [in_optional] p2 - ending index (default 0)
 		//
-        Header(IndexFile *inFile, const char *name = NULL, long p1 = 0, long p2 = 0);
+        Header(TIndexFile *inFile, const char *name = NULL, long p1 = 0, long p2 = 0);
         
         //////////
 		// Get the header font.
@@ -194,7 +194,7 @@ AUTHOR
     Chuck Officer
 
 -----------------------------------------------------------------*/
-class HeaderManager : public IndexManager 
+class HeaderManager : public TIndexManager 
 {
     public:
         //////////
@@ -219,12 +219,12 @@ class HeaderManager : public IndexManager
 		//////////
 		// Create a new Header Index
 		//
-		// [in] inFile - IndexFile which has the header indexed
+		// [in] inFile - TIndexFile which has the header indexed
 		// [in] name - name of the Header
 		// [in] start - starting index
 		// [in] end - ending index
 		//
-		virtual void	MakeNewIndex(IndexFile *inFile, const char *name, long start,
+		virtual void	MakeNewIndex(TIndexFile *inFile, const char *name, long start,
 									 long end);
         
 		//////////
@@ -240,6 +240,14 @@ class HeaderManager : public IndexManager
 
 /*
  $Log$
+ Revision 1.3.2.1  2002/04/30 07:57:31  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.3  2002/03/13 12:57:18  emk
  Support for 7-bit source code--smart quotes, m-dashes, ellipsis and HTML
  entities are now integrated into the Windows engine.

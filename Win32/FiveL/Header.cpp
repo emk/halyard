@@ -24,10 +24,10 @@
 static const char *INCR_Y_NAME = "_incr_y";
 static const char *INCR_X_NAME = "_incr_x";
 
-//  Let Index ancestor construct based on these values.
+//  Let TIndex ancestor construct based on these values.
 //
-Header::Header(IndexFile *inFile, const char *name, long start, long end) :
-    Index(inFile, name, start, end)
+Header::Header(TIndexFile *inFile, const char *name, long start, long end) :
+    TIndex(inFile, name, start, end)
 {
     itsAlign = AlignLeft;
     itsColor = itsHighlightColor = itsShadowColor = itsShadHighColor = 0;
@@ -141,10 +141,11 @@ char    *vval = new char[10];
 // Helper function.
 // TODO - Refactor back into TEncoding (somehow) once logging code is merged between
 // Macintosh and Windows engines.
-static void LogEncodingErrors (const char *inBadString, size_t inBadPos, const char *inErrMsg)
+static void LogEncodingErrors (const std::string &inBadString,
+							   size_t inBadPos, const char *inErrMsg)
 {
 	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
-		inErrMsg, inBadPos, inBadString);
+		inErrMsg, inBadPos, inBadString.c_str());
 }
 
 void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
@@ -166,10 +167,10 @@ void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
     fHilite = fUnderline = false;
 
 	// Encode our string for Windows.
-	TEncoding encoding("windows-1252", &LogEncodingErrors);
-	TString encodedString = encoding.TransformString(inText);
-	const char *text = (const char*) encodedString;
-    long tLen = strlen(text);
+	TEncoding<char> encoding("windows-1252", &LogEncodingErrors);
+	std::string encodedString = encoding.TransformString(inText);
+	const char *text = encodedString.c_str();
+    long tLen = encodedString.length();
 
 	incr_x = bounds.Left();
     
@@ -622,14 +623,14 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
  * Function: HeaderManager::MakeNewIndex
  *
  *  Parameter name
- *  Parameter start         (see Index class)
+ *  Parameter start         (see TIndex class)
  *  Parameter end
  * Return:
  *
  * Comments:
- *  Create a new Header Index
+ *  Create a new Header TIndex
  ***********************************************************************/
-void HeaderManager::MakeNewIndex(IndexFile *inFile, const char *name, long start, long end)
+void HeaderManager::MakeNewIndex(TIndexFile *inFile, const char *name, long start, long end)
 {
     Header  *newHeader;
     
@@ -720,6 +721,14 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.4.2.1  2002/04/30 07:57:31  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.4  2002/03/13 12:57:18  emk
  Support for 7-bit source code--smart quotes, m-dashes, ellipsis and HTML
  entities are now integrated into the Windows engine.

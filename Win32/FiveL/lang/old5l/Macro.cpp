@@ -20,7 +20,7 @@
 #include "LUtil.h"
 #include "Globals.h"
 
-Macro::Macro(IndexFile *inFile, const char *name, long p1, long p2) 
+Macro::Macro(TIndexFile *inFile, const char *name, long p1, long p2) 
 	: Card(inFile, name, p1, p2)
 {
     m_Running = false;
@@ -89,7 +89,7 @@ void Macro::Return()
  * Comments:
  *  Creates new macro entry into the macro tree
  ***********************************************************************/
-void MacroManager::MakeNewIndex(IndexFile *inFile, const char *name, long start, long end)
+void MacroManager::MakeNewIndex(TIndexFile *inFile, const char *name, long start, long end)
 {
     Macro   *newMacro;
 
@@ -102,6 +102,14 @@ void MacroManager::MakeNewIndex(IndexFile *inFile, const char *name, long start,
 
 /*
  $Log$
+ Revision 1.2.2.1  2002/04/30 07:57:31  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

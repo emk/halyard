@@ -23,7 +23,7 @@
 #include "Card.h"
 #include "Macro.h"
 #include "Header.h"
-#include "Variable.h"
+#include "TVariable.h"
 #include "TLogger.h"
 #include "Video.h"
 #include "Audio.h"
@@ -43,7 +43,7 @@
 #include "LTouchZone.h"
 #include "LCommandKey.h"
 #include "Input.h"
-#include "Index.h"
+#include "TIndex.h"
 #include "LHttp.h"
 #include "LBrowser.h"
 
@@ -68,11 +68,6 @@ extern MacroManager			gMacroManager;
 extern HeaderManager		gHeaderManager;
 
 //////////
-// Global Variable Manager
-//
-extern VariableManager		gVariableManager;
-
-//////////
 // Global TouchZone Manager
 //
 extern LTouchZoneManager	gTouchZoneManager;    
@@ -91,16 +86,6 @@ extern AudioManager			gAudioManager;
 // Global Cursor Manager
 //
 extern LCursorManager		gCursorManager;
-
-//////////
-// Global Logger
-//
-extern TLogger				gLog;
-
-//////////
-// Global Missing Media Logger
-//
-extern TLogger				gMissingMediaLog;
 
 //////////
 // Global File Manager
@@ -165,11 +150,6 @@ extern GWorldPtr			gDummyGWorldPtr;
 extern TRect				gScreenRect;
 
 //////////
-// Global IndexFile Manager
-//
-extern IndexFileManager		gIndexFileManager;
-
-//////////
 // Global URL Checker
 //
 extern LHttp				gHttpTool;
@@ -178,11 +158,6 @@ extern LHttp				gHttpTool;
 // Global Web Browser
 //
 extern LBrowser				gBrowserTool;
-
-//////////
-// Global Debug Logger
-//
-extern TLogger				gDebugLog;
 
 //////////
 // Global handle to Win32 window
@@ -208,6 +183,14 @@ extern int V_SCREEN;
 
 /*
  $Log$
+ Revision 1.2.2.1  2002/04/30 07:57:31  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

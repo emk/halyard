@@ -4,7 +4,10 @@
 #include "TVariable.h"
 #include "TLogger.h"
 #include "TEncoding.h"
+#include "TUtilities.h"
 
+#include <algorithm>
+#include <string>
 #include <ctype.h>
 
 USING_NAMESPACE_FIVEL
@@ -80,12 +83,14 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
     FlushScript();
 }
 
-static void LogEncodingErrors (const std::wstring &inBadString, size_t inBadPos,
+static void LogEncodingErrors (const std::wstring &inBadStr, size_t inBadPos,
 							   const char *inErrMsg)
 {
+	std::string bad_string =
+		ConstructString<char,std::wstring::const_iterator>(inBadStr.begin(),
+														   inBadStr.end());
 	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
-		inErrMsg, inBadPos,
-		std::string(inBadString.begin(), inBadString.end()).c_str());
+				 inErrMsg, inBadPos, bad_string.c_str());
 }
 	
 Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
@@ -93,7 +98,9 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 	// Convert 7-bit to 8-bit code.
 	// See the notes about TEncoding; it desperately needs refactoring.
 	TEncoding<wchar_t> encoding("UTF-16", &LogEncodingErrors);
-	std::wstring expanded(inText.begin(), inText.end());
+	std::wstring expanded =
+		ConstructString<wchar_t,std::string::const_iterator>(inText.begin(),
+															 inText.end());
 	std::wstring encoded = encoding.TransformString(expanded);
 
     // Create our base style for non-highlighted text.

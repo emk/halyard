@@ -21,7 +21,7 @@
 #include "Debug.h"
 #include "Audio.h"
 #include "Config.h"
-#include "Variable.h"
+#include "TVariable.h"
 #include "LUtil.h"
 #include "Globals.h"
 
@@ -794,6 +794,14 @@ bool AudioManager::HandleEvent(HWND /*inWind*/, UINT /*inMessage*/,
 
 /*
  $Log$
+ Revision 1.2.2.1  2002/04/30 07:57:30  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

@@ -17,14 +17,22 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		02
-#define VERSION_REV_SMALL	04
+#define VERSION_REV_SMALL	05
 
-#define VERSION_STRING	"5L 3.3.2.4 (Development, FiveL_3_2_2_emk_typography_merge)"
+#define VERSION_STRING	"5L 3.3.2.5 (Development, FiveL_3_2_2_emk_typography_merge)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.9.2.6  2002/04/30 07:57:24  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.9.2.5  2002/04/29 06:29:58  emk
  3.3.2.4 - Contains first set of performance tweaks, and fixes problem with assertion failures after reload and on CME screens.
 

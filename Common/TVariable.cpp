@@ -161,42 +161,6 @@ int TVariableManager::IsSpecial(const char *name)
 		}
 	}
 
-	// XXX - This code needs to be converted into platform-specific
-	// SpecialVariableFunctions.
-#if 0
-    else if (vname.Equal("_system"))
-    {
-        special->SetString(gSysInfo.ShortString());
-        return true;
-    }
-    else if (vname.Equal("_curcard"))
-    {
-    	special->SetString(gCardManager.CurCardName());
-    	return (true);
-    }
-    else if (vname.Equal("_prevcard"))
-    {
-    	special->SetString(gCardManager.PrevCardName());
-    	return (true);
-    }
-    else if (vname.Equal("_eof"))
-    {
-        if (gFileManager.CurFileOpen())
-        {
-        	if (gFileManager.CurFileAtEOF())
-        		special->SetLong(1);
-        	else
-        		special->SetLong(0);
-        }
-        else
-        {
-			gDebugLog.Log("Trying to read _EOF and no file open!");
-			special->SetLong(0);
-		}
-    	return (true);
-    }
-#endif // 0
-
     return false;
 }
 
@@ -330,6 +294,14 @@ void TVariableManager::SetLocal(TVariable *newlocal)
 
 /*
  $Log$
+ Revision 1.2.2.2  2002/04/30 07:57:24  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.2.2.1  2002/04/22 05:22:33  emk
  A weekend's worth of merging, in preparation for the Typography switchover.
 

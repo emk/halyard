@@ -14,11 +14,6 @@
 #define INIT_DATA_DIR ""
 //#define INIT_DATA_DIR "\\init"
 
-//////////
-// Key for encryption/decryption.
-//
-const unsigned char HCK[] = { 0x2c, 0xf3, 0x38, 0xbb, 0x4c, 0xd5, 0xfd, 0x58 };
-
 /*-----------------------------------------------------------------
 
 CLASS

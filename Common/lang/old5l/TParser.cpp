@@ -20,6 +20,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "TCommon.h"
 #include "TLogger.h"
 #include "TParser.h"
 
@@ -435,6 +436,14 @@ void TParser::getBuffer(void)
 
 /*
  $Log$
+ Revision 1.2.2.3  2002/04/30 07:57:24  emk
+ 3.3.2.5 - Port Win32 code to use the 20Kloc of Common code that now
+ exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+ available yet.
+
+ Next up: Implement the (textaa ...) command and the low-level
+ GraphicsTools::Image::DrawBitMap.
+
  Revision 1.2.2.2  2002/04/22 08:17:58  emk
  Updated Common code to build on Macintosh and pass all unit tests.
 

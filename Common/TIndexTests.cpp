@@ -1,6 +1,7 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
 #include "ImlUnit.h"
+#include "TCommon.h"
 #include "TIndex.h"
 #include "TParser.h"
 

@@ -71,6 +71,7 @@ void GreyMap::TransferToPixMap(Color inColor, PixMap *outPixMap) const
 //=========================================================================
 // Template Instantiations
 //=========================================================================
+// We use the full names here to avoid confusing MSVC++.
 
-template class PixelMap<Color>;
-template class PixelMap<Channel>;
+template class GraphicsTools::PixelMap<GraphicsTools::Color>;
+template class GraphicsTools::PixelMap<GraphicsTools::Channel>;

@@ -171,6 +171,15 @@ namespace FileSystem {
 	//
 	inline Path GetScriptsDirectory()
 	    { return GetBaseDirectory().AddComponent("Scripts"); }
+
+	//////////
+	// Get the directory 5L uses to store user data.
+	//
+	inline Path GetDataDirectory()
+	    { return GetBaseDirectory().AddComponent("Data"); }
+
+	// TODO - Factor out more platform-specific config to use
+	// the directories listed above.
 }
 
 #endif // FileSystem_H

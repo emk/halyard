@@ -17,11 +17,13 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <algorithm>
 
 #include "THeader.h"
 #include "TCommon.h"
 #include "TEncoding.h"
 #include "TLogger.h"
+#include "TUtilities.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -228,7 +230,8 @@ find_mapping(const std::string& inEncoding, wchar_t tag)
 template <class CharT>
 static std::basic_string<CharT> convert_string(const char *inString)
 {
-	return std::basic_string<CharT>(inString, inString + strlen(inString));
+	return ConstructString<CharT,const char*>(inString,
+											  inString+strlen(inString));
 }
 
 

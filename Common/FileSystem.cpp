@@ -361,7 +361,7 @@ void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
 inTemporaryFile.RenameFile(*this);
 }
 
-#if FIVEL_PLATFORM_WINDOWS || FIVEL_PLATFORM_OTHER
+#if FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER
 
 void Path::CreateWithMimeType(const std::string &inMimeType)
 {
