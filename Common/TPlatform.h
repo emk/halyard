@@ -41,7 +41,12 @@ AUTHOR
 //=========================================================================
 
 #if defined (WIN32)
+
+// TODO - This symbol begins with an underscore, which is illegal.
+// Refactor the code to replace it with FIVEL_PLATFORM_WIN32.
 #define _5L_WIN32_
+
+#define FIVEL_PLATFORM_WIN32 (1)
 
 #if defined (_DEBUG)
 #define DEBUG
@@ -61,6 +66,8 @@ AUTHOR
 //=========================================================================
 
 #elif defined (macintosh)
+
+#define FIVEL_PLATFORM_MACINTOSH (1)
 
 #define WANT_FIVEL_NAMESPACE (1)
 
@@ -88,6 +95,8 @@ AUTHOR
 //=========================================================================
 
 #else
+
+#define FIVEL_PLATFORM_OTHER (1)
 
 #define WANT_FIVEL_NAMESPACE (1)
 #define ASSERT(expr) assert(expr)
