@@ -39,6 +39,9 @@ Quake 2 Overlays (emk):
   * Implemented 5-bit-per-channel inverse CLUT, which maps 24-bit
     colors onto the selected Quake 2 palette.
   * Implemented basic Q2_FORMAT_BGR support in the software renderer.
+  * Implemented basic Q2_FORMAT_BGRA_PREMUL support in the software
+    renderer.
+  * Integrated Quake 2 overlays into Overlay and Stage classes.
 
 0.0.14 - 13 Jan 2004 - emk
 

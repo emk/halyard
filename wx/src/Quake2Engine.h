@@ -72,10 +72,22 @@ public:
 	//
 	static void Initialize(const std::string &inGame);
 
+    //////////
+    // Return true if an instance has been created.
+    //
+    static bool HaveInstance() { return sInstance != NULL; }
+
 	//////////
 	// Get the single instance of the engine object.
 	//
 	static Quake2Engine *GetInstance() { ASSERT(sInstance); return sInstance; }
+
+    //////////
+    // Are we displaying the Quake 2 engine right now?
+    //
+    static bool IsDisplayed() {
+        return HaveInstance() && GetInstance()->IsShown();
+    }
 
 protected:
 	virtual void HandleCommand();

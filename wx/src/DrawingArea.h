@@ -3,29 +3,38 @@
 #ifndef DrawingArea_H
 #define DrawingArea_H
 
-
 class Stage;
+class wxQuake2Overlay;
+
 
 class DrawingArea : public GraphicsTools::Image {
     Stage *mStage;
 	wxRect mBounds;
     wxBitmap mPixmap;
+    boost::shared_ptr<wxQuake2Overlay> mQuake2Overlay;
 
 	void InitializePixmap(bool inHasAlpha);
+    void InitializeQuake2Overlay();
 
 	//////////
 	// Invalidate the specified rectangle.
 	//
 	// [in] inRect - The rectangle to invalidate.
 	// [in] inInflate - The number of pixels by which we should inflate
-	// 		            the rectangle.
+	// 		         the rectangle.
+    // [in] inHasPixmapChanged - If false, the contents of this rect haven't
+    //               changed, just the stage's alpha-compositing for this
+    //               region.  If we're relying on game engine for real-time
+    //               compositing, it doesn't need to reconvert the data in
+    //               this rectangle.
 	//	
-	void InvalidateRect(const wxRect &inRect, int inInflate = 0);
+	void InvalidateRect(const wxRect &inRect, int inInflate = 0,
+                        bool inHasPixmapChanged = true);
 
     //////////
     // Invalidate everything associated with this drawing area.
     //
-    void InvalidateDrawingArea();
+    void InvalidateDrawingArea(bool inHasPixmapChanged = true);
 
 public:
     DrawingArea(Stage *inStage, int inWidth, int inHeight, bool inHasAlpha);

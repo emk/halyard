@@ -5,6 +5,7 @@
 #include "DrawingAreaOpt.h"
 #include "Stage.h"
 #include "CommonWxConv.h"
+#include "Quake2Engine.h"
 
 DrawingArea::DrawingArea(Stage *inStage, int inWidth, int inHeight,
 						 bool inHasAlpha)
@@ -22,7 +23,7 @@ DrawingArea::DrawingArea(Stage *inStage, const wxRect &inBounds,
 
 DrawingArea::~DrawingArea() {
     // We're going away, so force recompositing later.
-    InvalidateDrawingArea();
+    InvalidateDrawingArea(false);
 }
 
 void DrawingArea::InitializePixmap(bool inHasAlpha) {
@@ -31,23 +32,62 @@ void DrawingArea::InitializePixmap(bool inHasAlpha) {
 	if (inHasAlpha)
 		mPixmap.UseAlpha();
 	Clear();
+
+    if (Quake2Engine::HaveInstance())
+        InitializeQuake2Overlay();
 }
 
-void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate) {
+void DrawingArea::InitializeQuake2Overlay()
+{
+    int format;
+    unsigned char *data;
+    int stride;
+    if (mPixmap.HasAlpha()) {
+        // PORTING - This assumes a BGR offscreen buffer.
+        wxAlphaPixelData pdata(mPixmap);
+        wxAlphaPixelData::Iterator iter(pdata);
+        format = Q2_FORMAT_BGRA_PREMUL;
+        ASSERT(wxAlphaPixelData::Iterator::PixelFormat::BLUE == 0);
+        data = &(iter.Blue());
+        iter.OffsetY(pdata, 1);
+        stride = &(iter.Blue()) - data;
+    } else {
+        // PORTING - This assumes a BGR offscreen buffer.
+        wxNativePixelData pdata(mPixmap);
+        wxNativePixelData::Iterator iter(pdata);
+        format = Q2_FORMAT_BGR;
+        ASSERT(wxNativePixelData::Iterator::PixelFormat::BLUE == 0);
+        data = &(iter.Blue());
+        iter.OffsetY(pdata, 1);
+        stride = &(iter.Blue()) - data;
+    }
+    boost::shared_ptr<wxQuake2Overlay>
+        ptr(new wxQuake2Overlay(format, data, mBounds, stride));
+    mQuake2Overlay = ptr;
+}
+
+void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
+                                 bool inHasPixmapChanged)
+{
 	wxRect r(inRect);
 	r.Inflate(inInflate);
+    if (inHasPixmapChanged && mQuake2Overlay)
+        mQuake2Overlay->DirtyRect(r);
 	r.Offset(mBounds.GetPosition());
 	mStage->InvalidateRect(r);
 }
 
-void DrawingArea::InvalidateDrawingArea() {
-    InvalidateRect(wxRect(0, 0, mBounds.GetWidth(), mBounds.GetHeight()));
+void DrawingArea::InvalidateDrawingArea(bool inHasPixmapChanged) {
+    InvalidateRect(wxRect(0, 0, mBounds.GetWidth(), mBounds.GetHeight()),
+                   0, inHasPixmapChanged);
 }
 
 void DrawingArea::MoveTo(const wxPoint &inPoint) {
-    InvalidateDrawingArea();
+    InvalidateDrawingArea(false);
     mBounds = wxRect(inPoint, mBounds.GetSize());
-    InvalidateDrawingArea();
+    if (mQuake2Overlay)
+        mQuake2Overlay->MoveTo(inPoint);
+    InvalidateDrawingArea(false);
 }
 
 void DrawingArea::Clear() {

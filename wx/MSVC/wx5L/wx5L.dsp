@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /Ob2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/msw" /I "../../../libs/quake2/wx" /I "../../../libs/wxIE" /I "../../../libs/portaudio/pa_common" /I "../../../libs/libivorbisdec" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /Yu"TamaleHeaders.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /Ob2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/msw" /I "../../../libs/quake2/wx" /I "../../../libs/wxIE" /I "../../../libs/portaudio/pa_common" /I "../../../libs/libivorbisdec" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "IML_Q2_EXTENSIONS" /Yu"TamaleHeaders.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"

@@ -613,7 +613,12 @@ void Stage::InvalidateRect(const wxRect &inRect)
     // but they get cleared by different actions.
 	mRectsToComposite.MergeRect(inRect);
     mRectsToRefresh.MergeRect(inRect);
-    Refresh(FALSE, &inRect);
+
+    // Trigger screen repaint events, but only if Quake 2 is not being
+    // displayed.  (Quake 2 covers the entire stage, and if we trigger a
+    // repaint event, it will flicker.)
+    if (!Quake2Engine::IsDisplayed())
+        Refresh(FALSE, &inRect);
 }
 
 void Stage::SaveGraphics(const wxRect &inBounds)
