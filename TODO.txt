@@ -1,6 +1,38 @@
 Short Term
 ----------
 
+  Object store
+    Implement data types
+/     Basic value types (string, int, float, point, rect, color)
+/     Maps
+/     Lists
+/     Objects
+    Operations
+/     Set
+/     Insert
+/     Delete
+      Move
+      Copy within and between stores
+    Model-View-Controller
+      Change-notification system
+    Transactions
+/   Serialization
+/     Serialize basic value types
+/     Serialize maps & lists
+/     Serialize objects
+/   Deserialization
+/     Choose an XML parser
+/     Deserialize basic value types
+/     Deserialize maps & lists
+/     Deserialize objects
+/   Cleanup
+X     Consider using boost::shared_ptr<Datum>
+/     Consider renaming DataStore to model
+/     Rename some FooDatum classes to Foo
+/     Improve the load/save API
+    Testing
+      Test format version support
+
   wxRawBitmap stuff
 /   Get native wxRawBitmapDC working on Windows
 /     Get side-by-side builds of native and generic wxRawBitmapDC
@@ -16,7 +48,7 @@ Short Term
 /     Integrate into Win32 engine
       Integrate into Linux engine?
 
-    New PNG loader
+  New PNG loader
     
 Long Term
 ---------
