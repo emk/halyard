@@ -75,7 +75,6 @@ class Card : public TIndex
 		//////////
 		// Stop processing and return from the current script
 		//
-		//
 		virtual void	Return(void);
         
 		//////////
@@ -83,20 +82,25 @@ class Card : public TIndex
 		// Opword determines what we parse and then we call the appropriate
 		// routine DoTheCommand...
 		//
-		//
-        virtual void    DoCommand();
+        virtual void    DoCommand(TStream &inStream);
         
 		//////////
 		// Execute a single command, perhaps in response to a touch zone or
 		// a timeout. Save the old m_Script, do the one command, and restore
 		// the m_Script.
-		//	
 		//
-		// [in] theCmd - should look like "(jump aCard)", ie both parens need to
-		//				 be there.
+		// [in] theCmd - should look like "(jump aCard)", ie both parens
+		//               need to be there.
 		//
-		virtual void    OneCommand(TString &theCmd);
+		virtual void    OneCommand(const TString &theCmd);
         
+	    //////////
+	    // Run a list of commands.
+		//
+		// [in] inBody - The commands to run, with all parens.
+	    //
+		void			RunBody(const std::list<std::string> &inBody);
+
 		//////////
 		// Get the index of this Card
 		//
@@ -113,37 +117,56 @@ class Card : public TIndex
 
     protected:
 		//////////
-		// Evaluate the given conditional and determine whether or not it is true.
+		// Evaluate the given conditional and determine whether or not it
+	    // is true.
 		//
-		// [in] conditional - the conditional input
-		// [out] return - result of the conditional
+		// [in] inFormName - The name of form containing the conditional
+		//                   (e.g., "if", "when", etc.).
+		// [in] inConditional - The conditional statement to evaluate.
+		// [out] return - The result of the conditional.
 		//
-        int     Evaluate(TStream& conditional);
+        bool     EvaluateCondition(const char *inFormName,
+								   const char *inConditional);
 
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-		void    DoMacro(TString &name);
+		void    DoMacro(TString &name, TStream &inArgs);
 
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-		void    DoIf();
+		void    DoIf(TStream &inArgs);
 
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-		void    DoBody();
+		void    DoBegin(TStream &inArgs);
 		
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-		void	DoReturn();
+		void    DoWhen(TStream &inArgs);
+		
+		//////////
+		// Refer to 5L Scriptor's Guide for details on this 5L command.
+		//
+		void    DoUnless(TStream &inArgs);
+		
+		//////////
+		// Refer to 5L Scriptor's Guide for details on this 5L command.
+		//
+		void    DoWhile(TStream &inArgs);
+		
+		//////////
+		// Refer to 5L Scriptor's Guide for details on this 5L command.
+		//
+		void	DoReturn(TStream &inArgs);
 
 		//////////
 		// Refer to 5L Scriptor's Guide for details on this 5L command.
 		//
-		void	DoExit();
+		void	DoExit(TStream &inArgs);
 
 	private:
         //////////
@@ -402,6 +425,32 @@ extern CardManager gCardManager;
 
 /*
  $Log$
+ Revision 1.4.2.1  2002/08/14 20:24:50  emk
+ Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
+ removed some deeply-buried bugs in TStream and elsewhere, so please test
+ this build thoroughly.
+
+   * New entities: &shy;, &nbsp;, and &radic;.  I've also added
+     &check; and &cross;, but we don't have the necessary font support yet.
+   * TStream now handles whitespace rationally.  String literals are
+     parsed verbatim, and the old "randomly munge whitespace" behavior
+     has been fixed.  Most of the other changes are necessary consequences
+     of this change.
+   * Verbatim CR, LF and TAB characters in strings will be passed through.
+     This may affect screen layout.
+   * The (get ...) primitive has been backported from 3.5.
+   * The '&' syntax has been removed.  Instead of '&foo$bar', you should
+     now write '$(get foo$bar)'.
+   * Entities don't need to be escaped any more: \&amp; -> &amp;.
+
+ Thanks to this cleanup, it was possible to implement several much-wanted
+ features without too much work:
+
+   * New primitives: WHEN, UNLESS and WHILE.
+   * BODY has been renamed to BEGIN, and longer prematurely evaluates all
+     the variables in nested expressions.
+   * Debug log improvements.
+
  Revision 1.4  2002/06/20 16:32:54  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

@@ -68,7 +68,7 @@ void Macro::Execute()
 		   and (not m_Return)
 		   and (not gCardManager.Jumping())) 
 	{
-		DoCommand();
+		DoCommand(m_Script);
 	}
 }
 	
@@ -104,6 +104,32 @@ void MacroManager::MakeNewIndex(TIndexFile *inFile, const char *name, long start
 
 /*
  $Log$
+ Revision 1.7.2.1  2002/08/14 20:24:50  emk
+ Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
+ removed some deeply-buried bugs in TStream and elsewhere, so please test
+ this build thoroughly.
+
+   * New entities: &shy;, &nbsp;, and &radic;.  I've also added
+     &check; and &cross;, but we don't have the necessary font support yet.
+   * TStream now handles whitespace rationally.  String literals are
+     parsed verbatim, and the old "randomly munge whitespace" behavior
+     has been fixed.  Most of the other changes are necessary consequences
+     of this change.
+   * Verbatim CR, LF and TAB characters in strings will be passed through.
+     This may affect screen layout.
+   * The (get ...) primitive has been backported from 3.5.
+   * The '&' syntax has been removed.  Instead of '&foo$bar', you should
+     now write '$(get foo$bar)'.
+   * Entities don't need to be escaped any more: \&amp; -> &amp;.
+
+ Thanks to this cleanup, it was possible to implement several much-wanted
+ features without too much work:
+
+   * New primitives: WHEN, UNLESS and WHILE.
+   * BODY has been renamed to BEGIN, and longer prematurely evaluates all
+     the variables in nested expressions.
+   * Debug log improvements.
+
  Revision 1.7  2002/07/26 17:55:23  emk
  3.3.20 - 26 July 2002 - emk
 

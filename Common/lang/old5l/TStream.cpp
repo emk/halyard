@@ -50,28 +50,6 @@ const char COMMENT = '#';       //Changed MAR 31
 TStream::CallbackMakerFunc TStream::s_CallbackMaker = NULL;
 
 
-/************************
-
-    PROTECTED METHODS
-
-************************/
-
-//  Is this given character a whitespace character?
-//
-bool TStream::whitespace(char ch)
-{
-    switch (ch) 
-    {
-        case kSPACE:
-        case kNEWLINE:
-        case kTAB:
-        case kRETURN:
-            return (true);
-        default:
-            return (false);
-    }
-}
-
 /*********************
 
     PUBLIC METHODS
@@ -180,7 +158,7 @@ void TStream::skipwhite(void)
 
     while (not eof()) 
     {
-        if (whitespace(ch))
+        if (isspace(ch))
             ch = nextchar();
         else
             return;
@@ -225,7 +203,7 @@ void TStream::scanword(void)
                 if (not inEscape())
                     return;
             default:
-                if (whitespace(ch))
+                if (isspace(ch))
                     return;
                 else 
                 	ch = nextchar();
@@ -311,13 +289,14 @@ void TStream::scanclose(void)
     //  Error: unterminated parentheses.
     //
     gLog.Error("unterminated parentheses, close not found.");
+    gDebugLog.Error("unterminated parentheses, close not found.");
 }
 
 //
 //  Return the given characters, substituting variable contents
-//  where appropriate. Should never have to worry about white space.
+//  where appropriate.
 //
-TString TStream::copystr(uint32 startPos, uint32 numChars)
+TString TStream::ExpandVariables(uint32 startPos, uint32 numChars)
 {
     TString 	original, result, vname;
     int32     	base, curpos, origlen, DEREF = 0;
@@ -332,24 +311,14 @@ TString TStream::copystr(uint32 startPos, uint32 numChars)
     origlen = original.Length(); 
     
     if (numChars == 0) 
-    	result = " ";
+    	result = "";
     base = curpos = 0;
-    
-    if (numChars)  
-    {
-        if (*s == '&')  
-        {
-            DEREF = 1;
-            curpos++; 
-            base++;
-        }   
-    }
     
     while (curpos < origlen) 
     {
         //  Do we have the start of a variable name?
         //
-        if ((s[curpos] == '$') and ((curpos == 0) or (not inEscape(curpos)))) 
+        if (s[curpos] == '$' && (curpos == 0 || !inEscape(startPos + curpos)))
         {
 			//  Copy up until the $ sign.
 			//
@@ -417,14 +386,23 @@ TString TStream::copystr(uint32 startPos, uint32 numChars)
 				//  REGULAR VARIABLE SUBSTITUTION
 				//				
 				//  Find out how long the name is. Name ends with
-				//  whitespace or another $. If we end on a $, set
-				//  varadjust to 1. This means we won't include the
-				//  final $ in the string we copy to the variable name.
+				//  whitespace or another $.  Set need_bump to true
+				//  if and only if we should skip a trailling $ after
+				//  copying the string.
 				//
+				bool need_bump = false;
 				while (curpos < origlen) 
 				{
 					ch = s[++curpos];
-					if ((ch == '$') and (not inEscape(curpos)))
+					if (isspace(ch))
+						break;
+					if (ch == '$' && !inEscape(startPos + curpos))
+					{
+						need_bump = true;
+						break;
+					}
+					if ((ch == P_OPEN || ch == P_CLOSE) &&
+						!inEscape(startPos + curpos))
 						break;
 				}
 				
@@ -433,9 +411,13 @@ TString TStream::copystr(uint32 startPos, uint32 numChars)
 				vname = original.Mid(base, curpos - base);
 				result += gVariableManager.GetString(vname);
 				
+				// Skip any trailing $.
+				if (need_bump)
+					++curpos;
+
 				//  Bump up the base.
 				//
-				base = ++curpos;
+				base = curpos;
 			}
         } 
         else 
@@ -447,9 +429,6 @@ TString TStream::copystr(uint32 startPos, uint32 numChars)
     if (base < origlen)
         result += original.Mid(base, curpos - base);
 
-    if (DEREF) 
-		result = gVariableManager.GetString(result);
-		
     return (result);
 }
 
@@ -466,14 +445,30 @@ TStream& TStream::operator>>(TStream& (*_f)(TStream &))
     return (_f (*this));
 }
 
+std::string TStream::GetStatement()
+{
+	return GetNextArg(true);
+}
+
+void TStream::GetBody(std::list<std::string> &outBody)
+{
+	outBody.clear();
+	while (more())
+	{
+		std::string statement = GetStatement();
+		outBody.push_back(statement);
+	}
+}
+
+
 //  Basic extraction operator. Most others just use this
 //  and then convert the type.
 //
-std::string TStream::GetStringArg()
+std::string TStream::GetNextArg(bool inWantRawSource)
 {
 	TString		dest;
     TString 	temp;
-    int32     	startPos;
+    int32     	startPos, endPos;
     int32     	dangling_opens = 0;
     char    	ch;
 	
@@ -482,64 +477,43 @@ std::string TStream::GetStringArg()
 		return "";
     
     ch = curchar();
-    startPos = pos;
+	startPos = pos;
     
-    //  If the first character is an open paren then return the
-    //  entire contents of this set of parentheses. Otherwise go
-    //  until we hit whitespace.
-    //
-
+    // If the first character is an open paren then return the
+    // entire contents of this set of parentheses. Otherwise go
+    // until we hit whitespace.
     if ((ch == P_OPEN) and (not inEscape())) 
     {
-        startPos = ++pos;
-        //skipwhite();
-        scanword();
-        dest = copystr(startPos, pos - startPos);
-        skipwhite();
-        dangling_opens = 1;
+		// We want everything up to the matching P_CLOSE character.
+        ++pos;
+        scanclose();
+		endPos = pos;
 
-        while (not eof() and dangling_opens > 0) 
-        {
-            //  This is the first character of the word so
-            //  parens will always be parens, never \( or \).
-            //
-            ch = curchar();
-            switch (ch) 
-            {
-                case P_OPEN:
-                    dangling_opens++;
-                    pos++;
-                    dest += P_OPEN;
-                    break;
-
-                case P_CLOSE:
-                    dangling_opens--;
-                    pos++;
-                    if (dangling_opens > 0)
-                        dest += P_CLOSE;
-                    break;
-
-                default:
-                    startPos = pos;
-                    scanword();
-                    if (not dest.IsEmpty())
-                        dest += kSPACE;
-                    temp = copystr(startPos, pos - startPos);
-                    dest += temp;
-                    skipwhite();
-                    break;
-            }
-
-        }
-
+		// Unless we're extracting the raw statement, lop off the parens.
+		if (!inWantRawSource)
+		{
+			++startPos;
+			--endPos;
+		}
     } 
     else 
     {
+		startPos = pos;
         scanword();
-        dest = copystr(startPos, pos - startPos);
+		endPos = pos;
     }
     
+	if (inWantRawSource)
+		dest = TString(&m_String[startPos], endPos - startPos);
+	else
+		dest = ExpandVariables(startPos, endPos - startPos);
+
     return std::string(dest.GetString());
+}
+
+std::string TStream::GetStringArg()
+{
+	return GetNextArg(false);
 }
 
 //  TString class handles string to int conversions.
@@ -665,6 +639,9 @@ GraphicsTools::Color TStream::GetColorArg()
 TCallback *TStream::GetCallbackArg()
 {
 	// Get our code, and put back the parens removed by the parser.
+	// XXX - We should really use GetStatement here, but that would delay
+	// variable evaluation until the callback is run, which would break
+	// legacy scripts quite badly.
 	TString code = GetStringArg().c_str();
 	code = TString("(") + code + TString(")");
 

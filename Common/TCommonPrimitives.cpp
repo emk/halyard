@@ -23,6 +23,7 @@ Origin FIVEL_NS gOrigin;
 void FIVEL_NS RegisterCommonPrimitives()
 {
 	REGISTER_5L_PRIMITIVE(Log);
+	REGISTER_5L_PRIMITIVE(Get);
 }
 
 
@@ -134,3 +135,14 @@ DEFINE_5L_PRIMITIVE(Log)
 		gDebugLog.Caution("No such log file: %s", log_name.c_str());
 }
 
+//-------------------------------------------------------------------------
+// (Get VARIABLE)
+//-------------------------------------------------------------------------
+// Returns the value stored in the variable, represented as a string.
+
+DEFINE_5L_PRIMITIVE(Get)
+{
+	TString vname;
+   	inArgs >> vname;
+   	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
+}

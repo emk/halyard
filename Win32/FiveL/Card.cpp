@@ -95,7 +95,7 @@ void Card::Execute(void)
 		   and (not gCardManager.Napping())
 		   and (not gCardManager.Jumping()))
 		{
-			DoCommand();
+			DoCommand(m_Script);
 		}
     }
     
@@ -114,23 +114,26 @@ void Card::Execute(void)
 // Evaluate a given command. Trim opening paren and read opword.
 // Opword determines what we parse and then we call the appropriate
 // routine DoTheCommand...
-void Card::DoCommand(void)
+void Card::DoCommand(TStream &inStream)
 {
 	TString     opword;
 	
-	m_Script >> open;
-	m_Script >> opword;
+	inStream >> open;
+	inStream >> opword;
 	opword.MakeLower();
 
 	try
 	{
-		if (opword == (char *)"if") DoIf();
-		else if (opword == (char *)"body") DoBody();
-		else if (opword == (char *)"return") DoReturn();
-		else if (opword == (char *)"exit") DoExit();
+		if (opword == (char *)"if") DoIf(inStream);
+		else if (opword == (char *)"begin") DoBegin(inStream);
+		else if (opword == (char *)"when") DoWhen(inStream);
+		else if (opword == (char *)"unless") DoUnless(inStream);
+		else if (opword == (char *)"while") DoWhile(inStream);
+		else if (opword == (char *)"return") DoReturn(inStream);
+		else if (opword == (char *)"exit") DoExit(inStream);
 		else if (gPrimitiveManager.DoesPrimitiveExist(opword.GetString()))
-			gPrimitiveManager.CallPrimitive(opword.GetString(), m_Script);
-		else DoMacro(opword);
+			gPrimitiveManager.CallPrimitive(opword.GetString(), inStream);
+		else DoMacro(opword, inStream);
 	}
 	catch (std::exception &e)
 	{
@@ -146,7 +149,7 @@ void Card::DoCommand(void)
 	// XXX - If an error occurs, we may not always find this close
 	// parentheses.  This could make the interpreter puke pretty badly.
 	// But this works often enough that it's worth trying.
-	m_Script >> close;
+	inStream >> close;
 }
 
 // Execute a single command, perhaps in response to a touch zone or
@@ -155,12 +158,23 @@ void Card::DoCommand(void)
 //
 // theCommand should look like "(jump aCard)", ie both parens need to
 // be there.
-void Card::OneCommand(TString &theCommand)
+void Card::OneCommand(const TString &theCommand)
 {
-	StValueRestorer<TStream> restore_script(m_Script);
-	m_Script = theCommand;
-	DoCommand();
+	TStream script(theCommand);
+	DoCommand(script);
 }
+
+// Run a list of commands.
+void Card::RunBody(const std::list<std::string> &inBody)
+{
+	for (std::list<std::string>::const_iterator iter = inBody.begin();
+		 iter != inBody.end() && !m_stopped && !gCardManager.Jumping();
+		 ++iter)
+	{
+		OneCommand(iter->c_str());
+	}
+}
+
 
 /************************
 
@@ -168,12 +182,16 @@ void Card::OneCommand(TString &theCommand)
 
 ************************/
 
-enum EvalMode 
+bool Card::EvaluateCondition(const char *inFormName,
+							 const char *inConditional)
 {
-    FirstTime,
-    And,
-    Or
-};
+	TStream conditional_stream(inConditional);
+	bool result;
+	conditional_stream >> result;
+	gDebugLog.Log("*** %s: %s -> %s", inFormName, inConditional,
+				  result ? "true" : "false");
+	return result;
+}
 
 /*-------------------------------------------------------------------
     (MACRONAME <VAR>...)
@@ -182,7 +200,7 @@ enum EvalMode
     VAR are an optional number of local variables that vary depending
     upon the particular macrodef.
 ---------------------------------------------------------------------*/
-void Card::DoMacro(TString &name)
+void Card::DoMacro(TString &name, TStream &inArgs)
 {
     Macro       *theMacro;
     TString     vname, contents;
@@ -204,12 +222,12 @@ void Card::DoMacro(TString &name)
     local = 0;
     vnum = 0;
     TString arg_string = "Macro arguments:";
-    while (m_Script.more()) 
+    while (inArgs.more()) 
     {
         //  Variables are named 1, 2, 3...
         //
         vname = ++vnum;
-        m_Script >> contents;
+        inArgs >> contents;
 
 		arg_string += (TString(" $") + TString::IntToString(vnum) +
 					   TString(" = <") + contents + TString(">"));
@@ -262,57 +280,92 @@ void Card::DoMacro(TString &name)
     enclosed in parentheses and that the operator (>, <, =) be
     separated from the operands by a space.
 -------------------------------------------------------------------*/
-void Card::DoIf()
+void Card::DoIf(TStream &inArgs)
 {
-	bool condition;
-	m_Script >> condition;
-
-    if (condition)
+	std::string condition = inArgs.GetStatement();
+	std::string then_statement = inArgs.GetStatement();
+	bool have_else_statement = false;
+	std::string else_statement;
+	if (inArgs.more())
 	{
-		gDebugLog.Log("*** if: running true command");
-        DoCommand();
+		else_statement = inArgs.GetStatement();
+		have_else_statement = true;
 	}
-    else 
-    {
-        //  Skip true_CMD.
-		gDebugLog.Log("*** if: running false command");
-        m_Script >> open >> close;
-        if (m_Script.more()) 
-        	DoCommand();
-    }
+	
+	if (EvaluateCondition("if", condition.c_str()))
+		OneCommand(then_statement.c_str());
+	else if (have_else_statement)
+		OneCommand(else_statement.c_str());
 }
 
 /*-----------------------------------------------------------------
-    (BODY cmd...)
+    (BEGIN body...)
 
-    Evaluate zero or more commands in sequence.  The BODY command
+    Evaluate zero or more commands in sequence.  The BEGIN command
     can be used to pass a list of commands as an argument to the
     IF, BUTTPCX and TOUCH commands.
 -------------------------------------------------------------------*/
-void Card::DoBody()
+void Card::DoBegin(TStream &inArgs)
 {
-	while (m_Script.more())
-	{
-		// Extract our command and put back the parentheses removed
-		// by the parser.  This a kludge.
-		TString cmd;
-		m_Script >> cmd;
-		cmd = TString("(") + cmd + TString(")");
+	std::list<std::string> body;
+	inArgs.GetBody(body);
+	RunBody(body);
+}
 
-		// Execute the command.
-		OneCommand(cmd);
-	}
+/*-----------------------------------------------------------------
+    (WHEN cond body...)
+
+    Evaluate body if cond is true.
+-------------------------------------------------------------------*/
+void Card::DoWhen(TStream &inArgs)
+{
+	std::string condition = inArgs.GetStatement();
+	std::list<std::string> body;
+	inArgs.GetBody(body);
+
+	if (EvaluateCondition("when", condition.c_str()))
+		RunBody(body);
+}
+
+/*-----------------------------------------------------------------
+    (UNLESS cond body...)
+
+    Evaluate body if cond is false.
+-------------------------------------------------------------------*/
+void Card::DoUnless(TStream &inArgs)
+{
+	std::string condition = inArgs.GetStatement();
+	std::list<std::string> body;
+	inArgs.GetBody(body);
+
+	if (!EvaluateCondition("unless", condition.c_str()))
+		RunBody(body);
+}
+
+/*-----------------------------------------------------------------
+    (WHILE cond body...)
+
+    Evaluate body while cond is true.
+-------------------------------------------------------------------*/
+void Card::DoWhile(TStream &inArgs)
+{
+	std::string condition = inArgs.GetStatement();
+	std::list<std::string> body;
+	inArgs.GetBody(body);
+	
+	while (EvaluateCondition("while", condition.c_str()))
+		RunBody(body);
 }
 
 //
 //	DoReturn - Stop processing and return from the current script
 //
-void Card::DoReturn()
+void Card::DoReturn(TStream &inArgs)
 {
-	if (m_Script.more())
+	if (inArgs.more())
 	{
 		TString returnval;
-		m_Script >> returnval;
+		inArgs >> returnval;
 		::SetPrimitiveResult(returnval.GetString());
 	}
 	Return();
@@ -329,12 +382,12 @@ void Card::Return()
 
     Exit the program.
 ---------------------*/
-void Card::DoExit()
+void Card::DoExit(TStream &inArgs)
 {
     int16 WhichSide = 0;
     
-    if (m_Script.more()) 
-    	m_Script >> WhichSide;
+    if (inArgs.more()) 
+    	inArgs >> WhichSide;
     
     gCardManager.DoExit(WhichSide);
 }
@@ -614,6 +667,32 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.11.2.1  2002/08/14 20:24:50  emk
+ Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
+ removed some deeply-buried bugs in TStream and elsewhere, so please test
+ this build thoroughly.
+
+   * New entities: &shy;, &nbsp;, and &radic;.  I've also added
+     &check; and &cross;, but we don't have the necessary font support yet.
+   * TStream now handles whitespace rationally.  String literals are
+     parsed verbatim, and the old "randomly munge whitespace" behavior
+     has been fixed.  Most of the other changes are necessary consequences
+     of this change.
+   * Verbatim CR, LF and TAB characters in strings will be passed through.
+     This may affect screen layout.
+   * The (get ...) primitive has been backported from 3.5.
+   * The '&' syntax has been removed.  Instead of '&foo$bar', you should
+     now write '$(get foo$bar)'.
+   * Entities don't need to be escaped any more: \&amp; -> &amp;.
+
+ Thanks to this cleanup, it was possible to implement several much-wanted
+ features without too much work:
+
+   * New primitives: WHEN, UNLESS and WHILE.
+   * BODY has been renamed to BEGIN, and longer prematurely evaluates all
+     the variables in nested expressions.
+   * Debug log improvements.
+
  Revision 1.11  2002/07/26 17:55:23  emk
  3.3.20 - 26 July 2002 - emk
 
