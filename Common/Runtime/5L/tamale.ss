@@ -27,7 +27,7 @@
            sine-wave set-media-base-url! movie 
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
-           current-card-name fade unfade save-graphics restore-graphics
+           current-card-name fade unfade opacity save-graphics restore-graphics
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
            %basic-button% symcat
@@ -514,6 +514,10 @@
 
   (define (unfade &key (ms 500))
     (refresh :transition 'fromblack :ms ms))
+
+  (define (opacity initial-color opacity-value)
+    (color (color-red initial-color) (color-green initial-color) (color-blue initial-color) opacity-value)
+    )
 
   ;;Save and Restore graphics deprecated, but are still being used by Widgets.ss
   (define (save-graphics &key (bounds $screen-rect))

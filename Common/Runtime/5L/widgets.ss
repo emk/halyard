@@ -383,5 +383,5 @@
       (with-dc self
         (draw-box-outline (dc-rect) stylesheet thickness))
     )
-    
+
 )
