@@ -86,7 +86,7 @@ extern void FiveLCheckAssertion(int inTest, const char *inDescription,
 #	define ASSERT(test) \
 		FiveLCheckAssertion((int) (test), #test, __FILE__, __LINE__);
 #else // DEBUG
-#	define ASSERT(test) 0
+#	define ASSERT(test) ((void) 0)
 #endif // DEBUG
 
 // TODO - These macro names should go away as soon as somebody gets
@@ -164,6 +164,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.7  2002/05/29 09:28:09  emk
+ Warning fix for ASSERT on Linux.
+
  Revision 1.6  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
