@@ -46,7 +46,11 @@ void xml_node::iterator::skip_whitespace()
 {
 	while (mNode != NULL && xmlNodeIsText(mNode))
 	{
-		CHECK(xmlIsBlankNode(mNode), "Unexpected text among XML elements");
+		// XXX - Disabled to work around bug in libxml2 2.5.0, which thinks
+		// that the "\n  " after the open tag of the root element is not
+		// a blank node.  Feel free to enable this check if the bug is
+		// fixed.
+		//CHECK(xmlIsBlankNode(mNode), "Unexpected text among XML elements");
 		mNode = mNode->next;
 	}
 }
@@ -118,6 +122,12 @@ xml_node::string xml_node::text()
 		xmlFree(text);
 		return result;
 	}
+}
+
+void xml_node::append_text(const std::string &inText)
+{
+	CHECK(xmlAddChild(mNode, xmlNewText(to_utf8(inText.c_str()))),
+		  "Could not add text to XML tree");
 }
 
 xml_node xml_node::new_child(const char *inName)

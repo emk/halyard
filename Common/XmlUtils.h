@@ -69,6 +69,7 @@ public:
 	xml_node only_child();
 
 	// Modification functions.
+	void append_text(const std::string &inText);
 	xml_node new_child(const char *inName);
 	xml_node new_child(const char *inName, const std::string &inData);
 	void set_attribute(const char *inName, const std::string &inValue);

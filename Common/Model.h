@@ -163,9 +163,9 @@ namespace model {
 		virtual void Fill(xml_node inNode) {}
 
 		//////////
-		// Write a Datum to the specified file.
+		// Write a Datum to the specified XML node.
 		//
-		virtual void Write(xml_node inParent) = 0;
+		virtual void Write(xml_node inContainer) = 0;
 	};
 
 	//////////
@@ -208,7 +208,7 @@ namespace model {
 		public: \
 			NAME(DATATYPE inValue) \
 				: ValueDatum<DATATYPE>(TYPECODE, inValue) {} \
-			virtual void Write(xml_node inParent); \
+			virtual void Write(xml_node inContainer); \
 		}
 	
 	DEFINE_VALUE_DATUM_CLASS(Integer,IntegerType,long);
@@ -356,7 +356,7 @@ namespace model {
 	public:
 		Map() : HashDatum(MapType) {}
 
-		virtual void Write(xml_node inParent);
+		virtual void Write(xml_node inContainer);
 		virtual void Fill(xml_node inNode);
 	};
 
@@ -373,7 +373,7 @@ namespace model {
 	public:
 		const Class *GetClass() { return mClass; }
 
-		virtual void Write(xml_node inParent);
+		virtual void Write(xml_node inContainer);
 		virtual void Fill(xml_node inNode);		
 	};
 
@@ -390,7 +390,7 @@ namespace model {
 	public:
 		List() : CollectionDatum<size_t>(ListType) {}
 
-		virtual void Write(xml_node inParent);
+		virtual void Write(xml_node inContainer);
 		virtual void Fill(xml_node inNode);
 
 		template <class D>

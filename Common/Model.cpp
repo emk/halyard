@@ -110,19 +110,19 @@ Class *Class::FindByName(const std::string &inClass)
 
 Datum *Datum::CreateFromXML(xml_node inNode)
 {
-	std::string name  = inNode.name();
-	if (name == "int")
+	std::string type  = inNode.attribute("type");
+	if (type == "int")
 		return new Integer(lexical_cast<long>(inNode.text()));
-	else if (name == "str")
+	else if (type == "str")
 		return new String(inNode.text());
-	else if (name == "map")
+	else if (type == "map")
 		return new Map();
-	else if (name == "list")
+	else if (type == "list")
 		return new List();
- 	else if (name == "object")
+ 	else if (type == "object")
 		return Class::FindByName(inNode.attribute("class"))->CreateInstance();
 	else
-		THROW("Unsupported XML element type");
+		THROW("Unsupported XML data type");
 }
 
 
@@ -130,14 +130,16 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 //  ValueDatum Implementation
 //=========================================================================
 
-void Integer::Write(xml_node inParent)
+void Integer::Write(xml_node inContainer)
 {
-	inParent.new_child("int", lexical_cast<std::string>(mValue));
+	inContainer.set_attribute("type", "int");
+	inContainer.append_text(lexical_cast<std::string>(mValue));
 }
 
-void String::Write(xml_node inParent)
+void String::Write(xml_node inContainer)
 {
-	inParent.new_child("str", mValue);
+	inContainer.set_attribute("type", "str");
+	inContainer.append_text(mValue);
 }
 
 
@@ -407,13 +409,13 @@ void HashDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
 //  Map Methods
 //=========================================================================
 
-void Map::Write(xml_node inParent)
+void Map::Write(xml_node inContainer)
 {
-	xml_node node = inParent.new_child("map");
+	inContainer.set_attribute("type", "map");
 	DatumMap::iterator i = begin();
 	for (; i != end(); ++i)
 	{
-		xml_node item = node.new_child("item");
+		xml_node item = inContainer.new_child("item");
 		item.set_attribute("key", i->first);
 		i->second->Write(item);
 	}
@@ -427,10 +429,9 @@ void Map::Fill(xml_node inNode)
 		xml_node node = *i;
 		XML_CHECK_NAME(node, "item");
 		std::string key = node.attribute("key");
-		xml_node value_node = node.only_child();
-		Datum *value = CreateFromXML(value_node);
+		Datum *value = CreateFromXML(node);
 		Set(key, value);
-		value->Fill(value_node);
+		value->Fill(node);
 	}
 }
 
@@ -439,14 +440,14 @@ void Map::Fill(xml_node inNode)
 //  Object Methods
 //=========================================================================
 
-void Object::Write(xml_node inParent)
+void Object::Write(xml_node inContainer)
 {
-	xml_node node = inParent.new_child("object");
-	node.set_attribute("class", mClass->GetName());
+	inContainer.set_attribute("type", "object");
+	inContainer.set_attribute("class", mClass->GetName());
 	DatumMap::iterator i = begin();
 	for (; i != end(); ++i)
 	{
-		xml_node item = node.new_child(i->first.c_str());
+		xml_node item = inContainer.new_child(i->first.c_str());
 		i->second->Write(item);
 	}
 }
@@ -458,10 +459,9 @@ void Object::Fill(xml_node inNode)
 	{
 		xml_node node = *i;
 		std::string key = node.name();
-		xml_node value_node = node.only_child();
-		Datum *value = CreateFromXML(value_node);
+		Datum *value = CreateFromXML(node);
 		Set(key, value);
-		value->Fill(value_node);
+		value->Fill(node);
 	}
 }
 
@@ -525,12 +525,15 @@ void List::PerformInsert(ConstKeyType &inKey, Datum *inValue)
 //  List Methods
 //=========================================================================
 
-void List::Write(xml_node inParent)
+void List::Write(xml_node inContainer)
 {
-	xml_node node = inParent.new_child("list");
+	inContainer.set_attribute("type", "list");
 	DatumVector::iterator i = mVector.begin();
 	for (; i != mVector.end(); ++i)
+	{
+		xml_node node = inContainer.new_child("item");
 		(*i)->Write(node);
+	}
 }
 
 void List::Fill(xml_node inNode)
@@ -539,6 +542,7 @@ void List::Fill(xml_node inNode)
 	for (; i != inNode.end(); ++i)
 	{
 		xml_node node = *i;
+		XML_CHECK_NAME(node, "item");
 		Datum *value = CreateFromXML(node);
 		Insert(mVector.size(), value);
 		value->Fill(node);
@@ -732,9 +736,9 @@ Model::Model(const ModelFormat &inCurrentFormat,
 		mFormat = file_format;
 
 		// Get our top-level map and fill it out.
-		xml_node map_node = xml_node(root).only_child();
-		XML_CHECK_NAME(map_node, "map");
-		mRoot->Fill(map_node);
+		CHECK(root.attribute("type") == "map",
+			  "Root element in XML document have type 'map'");
+		mRoot->Fill(root);
 	}
 	catch (...)
 	{
