@@ -27,6 +27,9 @@
 ;;    - DEFINE and DEFINE-VALUES work.
 ;;    - Other internal definitions do not.  This is a bug.
 ;;    - It may not appear at the top-level.
+;;
+;;  XXX - There is a deep architectural problem with making BEGIN/VAR a
+;;  replacement for BEGIN.
 
 (module begin-var (lib "lispish.ss" "5L")
   
