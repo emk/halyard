@@ -23,7 +23,8 @@
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics
-           screenshot element-exists? delete-element-if-exists)
+           ensure-dir-exists screenshot element-exists? 
+           delete-element-if-exists)
 
   (define (make-path subdir path)
     (apply build-path (current-directory) subdir (regexp-split "/" path)))
@@ -315,10 +316,14 @@
      ((> n -1) (format "00~a" n))
      (else "000")))
 
-  (define (screenshot)
-    (define dir (build-path (current-directory) "Screenshots"))
+  (define (ensure-dir-exists name)
+    (define dir (build-path (current-directory) name))
     (when (not (directory-exists? dir))
       (make-directory dir))
+    dir)
+  
+  (define (screenshot)
+    (define dir (ensure-dir-exists "Screenshots"))
     (call-5l-prim 
      'screenshot 
      (let loop ((count 0))
