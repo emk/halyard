@@ -11,7 +11,7 @@
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to center-text html edit-box movie
-           wait tc draw-box inset-rect timeout)
+           wait tc draw-line draw-box draw-box-outline inset-rect timeout)
 
   (define (load-picture name p &key (subrect :rect #f))
     (let [[path (build-path (current-directory) "Graphics" name)]]
@@ -90,8 +90,14 @@
      [arg2 (+ (* arg1 30) arg2)]
      [else arg1]))
   
+  (define (draw-line from to c width)
+    (call-5l-prim 'drawline from to c width))
+
   (define (draw-box r c)
-    (call-5l-prim 'box r c))
+    (call-5l-prim 'drawboxfill r c))
+
+  (define (draw-box-outline r c width)
+    (call-5l-prim 'drawboxoutline r c width))
   
   (define (inset-rect r pixels)
     ;; TODO - Rename foo-offset to offset-foo.
