@@ -53,6 +53,7 @@
 #include "TCommon.h"
 #include <string.h>
 #include <assert.h>	
+#include <MacTypes.h>
 
 
 //=========================================================================
@@ -81,6 +82,11 @@
 
 /*
  $Log$
+ Revision 1.4  2002/03/06 10:57:44  hamon
+ Included additional headers necessary for Mac5L and/or test suite and changed format so opening bracket appears on new line, to follow 5L format.
+
+Changes by Elizabeth with Eric, okayed by Eric.
+
  Revision 1.3  2002/03/04 15:16:00  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 

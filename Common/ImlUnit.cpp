@@ -1,10 +1,13 @@
-#include <ImlUnit.h>
+#include <stdlib.h>
+
+#include "ImlUnit.h"
 
 int total_tests = 0;
 int total_failures = 0;
 
 // This is a good place to set a breakpoint.
-void test_failure (char *file, int line, char *label, char *statement) {
+void test_failure (char *file, int line, char *label, char *statement) 
+{
 	total_failures++;
 	cout << endl << file << ":" << line << ": test failure: "
 		 << label << " (" << statement << ")" << endl;
@@ -15,7 +18,8 @@ void test_failure (char *file, int line, char *label, char *statement) {
 	exit(1);
 }
 
-int tests_finished (void) {
+int tests_finished (void) 
+{
 	// Summarize our test run.
 	cout << endl << "Ran " << total_tests << " tests, "
 		 << total_failures << " failed, "

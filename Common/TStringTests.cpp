@@ -1,9 +1,12 @@
 #include "TString.h"
 #include "ImlUnit.h"
 
+USING_NAMESPACE_FIVEL
+
 extern void test_TString (void);
 
-void test_TString (void) {
+void test_TString (void) 
+{
 	
 	// Test conversions from integers to strings.
 	// The large values below are the maximum and minimum values
