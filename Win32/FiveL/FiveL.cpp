@@ -43,6 +43,7 @@
 #include "LHttp.h"
 #include "LBrowser.h"
 #include "SingleInstance.h"
+#include "TStyleSheet.h"
 #include "TWin5LInterpreter.h"
 #include "TWinPrimitives.h"
 #include "TQTPrimitives.h"
@@ -1117,6 +1118,7 @@ void ReDoScript(TString &inCardName)
 		gAudioManager.Kill();
 
 	gTouchZoneManager.RemoveAll();
+	gStyleSheetManager.RemoveAll();
 
 	// XXX - Does this potentially destroy an object in our call chain?
 	if (!gHaveLegacyInterpreterManager)
@@ -1256,6 +1258,19 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.15  2002/08/19 17:27:46  emk
+ 3.5.2 - 18 Aug 2002 - emk
+
+   * Modified the TSchemeInterpreter class to make intelligent use of
+     namespaces and modules.
+   * Fully modularized the runtime, and made the lispish language extensions
+     available.  The "lispish" code currently belongs to me (and is released
+     under the LGPL), but I'll be happy to relicense it to the Trustees.
+   * Got redoscript to work--we no longer attempt to restart the entire
+     Scheme interpreter; we merely throw away a sandbox.
+   * Moved the code for resetting stylesheets out of the TWin5LInterpreter
+     and into the main Win32 engine.
+
  Revision 1.14  2002/08/16 15:32:21  emk
  Merged basic Win32 Scheme support from the FiveL_3_5_scheme branch.  This
  breaks the Macintosh build, but Brian will be working to fix that.  There

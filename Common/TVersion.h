@@ -17,15 +17,28 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		1
+#define VERSION_REV_BIG		2
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.1 (Development)"
+#define VERSION_STRING		"5L 3.5.2 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.33  2002/08/19 17:27:28  emk
+ 3.5.2 - 18 Aug 2002 - emk
+
+   * Modified the TSchemeInterpreter class to make intelligent use of
+     namespaces and modules.
+   * Fully modularized the runtime, and made the lispish language extensions
+     available.  The "lispish" code currently belongs to me (and is released
+     under the LGPL), but I'll be happy to relicense it to the Trustees.
+   * Got redoscript to work--we no longer attempt to restart the entire
+     Scheme interpreter; we merely throw away a sandbox.
+   * Moved the code for resetting stylesheets out of the TWin5LInterpreter
+     and into the main Win32 engine.
+
  Revision 1.32  2002/08/17 01:41:55  emk
  3.5.1 - 16 Aug 2002 - emk
 

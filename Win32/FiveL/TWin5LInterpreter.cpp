@@ -45,7 +45,6 @@ void TWin5LInterpreter::CleanupIndexes()
 	gCardManager.RemoveAll();
 	gMacroManager.RemoveAll();
 	gHeaderManager.RemoveAll();
-	gStyleSheetManager.RemoveAll();
 	gIndexFileManager.RemoveAll();
 }
 

@@ -67,7 +67,10 @@
 	(namespace-transformer-require '(lib "lispish.ss" "5L"))
 	(namespace-require '(lib "lispish.ss" "5L"))
       
-	;; Manually load the kernel into our new namespace.
+	;; Manually load the kernel into our new namespace.  We need
+	;; to call (load/use-compiled ...) instead of (require ...),
+	;; because we want the kernel registered under its official
+	;; module name but not imported into our namespace.
 	(set! filename "5L-Kernel.ss")
 	(load/use-compiled (build-path (current-directory)
 				       "Runtime" "5L"

@@ -34,45 +34,106 @@ DEFINE_5L_PRIMITIVE(SchemeIdle)
 
 
 //=========================================================================
+//	TSchemeInterpreterManager Methods
+//=========================================================================
+
+TSchemeInterpreterManager::TSchemeInterpreterManager(
+	TInterpreter::SystemIdleProc inIdleProc)
+	: TInterpreterManager(inIdleProc)
+{
+	// Install our primitives.
+	REGISTER_5L_PRIMITIVE(SchemeExit);
+	REGISTER_5L_PRIMITIVE(SchemeIdle);
+
+	// Initialize the Scheme interpreter.
+	mGlobalEnv = scheme_basic_env();
+
+	// Make a module to hold functions exported by the engine.
+	Scheme_Object *modname = scheme_intern_symbol("#%fivel-engine");
+	Scheme_Env *engine_mod = scheme_primitive_module(modname, mGlobalEnv);
+
+	// Provide a way for Scheme code to call 5L primitives.
+	Scheme_Object *call_5l_prim =
+		scheme_make_prim_w_arity(&TSchemeInterpreter::Call5LPrim,
+								 CALL_5L_PRIM, 1, -1);
+	scheme_add_global(CALL_5L_PRIM, call_5l_prim, engine_mod);
+
+	// Finish creating our engine module.
+	scheme_finish_primitive_module(engine_mod);
+
+	// Install our system loader.
+	FileSystem::Path fivel_collection =
+		FileSystem::GetRuntimeDirectory().AddComponent("5L");
+	LoadFile(fivel_collection.AddComponent("5L-Loader.ss"));
+}
+
+void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
+{
+	// Make sure the file exists.
+	std::string name = inFile.ToNativePathString();
+	if (!inFile.DoesExist())
+		gLog.FatalError("Cannot open required support file <%s>.",
+						name.c_str());
+
+	// Load the file.
+	if (!scheme_load(name.c_str()))
+	{
+		// An error occurred in the code below, so give an error message.
+		// Note that this error message isn't very helpful, so we shouldn't
+		// use this routine to load ordinary user code--just the kernel
+		// and its support files.
+		std::string error_msg = "Error loading file <" + name + ">";
+		throw TException(__FILE__, __LINE__, error_msg.c_str());
+	}
+}
+
+TInterpreter *TSchemeInterpreterManager::MakeInterpreter()
+{
+	return new TSchemeInterpreter(mGlobalEnv);
+}
+
+
+//=========================================================================
 //	TSchemeInterpreter Methods
 //=========================================================================
 
 Scheme_Env *TSchemeInterpreter::sGlobalEnv = NULL;
+Scheme_Env *TSchemeInterpreter::sScriptEnv = NULL;
 TInterpreter::SystemIdleProc TSchemeInterpreter::sSystemIdleProc = NULL;
 
-TSchemeInterpreter::TSchemeInterpreter()
+TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 {
-	// Initialize the Scheme interpreter.
-	sGlobalEnv = scheme_basic_env();
+	// Declare a dummy argument list for calling Scheme functions.
+	Scheme_Object *args;
 
-	// Provide a way for Scheme code to call 5L primitives.
-	Scheme_Object *call_5l_prim =
-		scheme_make_closed_prim_w_arity(&TSchemeInterpreter::Call5LPrim,
-										this, CALL_5L_PRIM, 1, -1);
-	scheme_add_global(CALL_5L_PRIM, call_5l_prim, sGlobalEnv);
+	// Remember our global environment.
+	sGlobalEnv = inGlobalEnv;
 
-	// Load our Scheme code.
-	FileSystem::Path scriptsDir = FileSystem::GetScriptsDirectory();
-	FileSystem::Path source = FileSystem::GetRuntimeFilePath("kernel.ss");
-	if (!scheme_load(source.ToNativePathString().c_str()))
-		throw TException(__FILE__, __LINE__, "Error loading Scheme kernel");
-	source = FileSystem::GetScriptFilePath("start.ss");
-	if (!scheme_load(source.ToNativePathString().c_str()))
-		throw TException(__FILE__, __LINE__, "Error loading Scheme code");
+	// Create a new script environment, and store it where we can find it.
+	sScriptEnv = NULL;
+	CallSchemeEx(sGlobalEnv, "5L-Loader", "new-script-environment", 0, &args);
+	sScriptEnv = scheme_get_env(scheme_config);
+
+	// Load our kernel and script.
+	Scheme_Object *result = 
+		CallSchemeEx(sGlobalEnv, "5L-Loader", "load-script", 0, &args);
+	if (!SCHEME_FALSEP(result))
+	{
+		ASSERT(SCHEME_STRINGP(result));
+		throw TException(__FILE__, __LINE__, SCHEME_STR_VAL(result));
+	}
 }
 
 TSchemeInterpreter::~TSchemeInterpreter()
 {
-	// We can't actually shut down the Scheme interpreter.  But if our
-	// constructor is called again, the call to scheme_basic_env in
-	// our constructor will re-initialize everything.
+	// We don't actually shut down the Scheme interpreter.  But we'll
+	// reinitialize it later if we need to.
 }
 
-Scheme_Object *TSchemeInterpreter::Call5LPrim(void *inData, int inArgc,
+Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 											  Scheme_Object **inArgv)
 {
-	// Fetch our object.
-	// TSchemeInterpreter *interp = static_cast<TSchemeInterpreter*>(inData);
+	ASSERT(sScriptEnv != NULL);
 
 	// The interpreter checks the arity for us, but we need to check the
 	// argument types.  The various error-reporting functions call
@@ -145,9 +206,11 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(void *inData, int inArgc,
 	return scheme_false;
 }
 
-Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
-											  int inArgc,
-											  Scheme_Object **inArgv)
+Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
+												const char *inModuleName,
+												const char *inFuncName,
+												int inArgc,
+												Scheme_Object **inArgv)
 {
 	Scheme_Object *result = scheme_false;
 
@@ -168,11 +231,19 @@ Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
 	}
 	else
 	{
-		// Call the function.
+		// Call the function.  Note that scheme_module_bucket will look
+		// up names in the module's *internal* namespace, not its official
+		// export namespace.
 		// TODO - Is this a performance bottleneck?
+		Scheme_Object *mod = scheme_intern_symbol(inModuleName);
 		Scheme_Object *sym = scheme_intern_symbol(inFuncName);
-		Scheme_Object *f = scheme_lookup_global(sym, sGlobalEnv);
-		result = scheme_apply(f, inArgc, inArgv);
+		Scheme_Bucket *bucket = scheme_module_bucket(mod, sym, -1, inEnv);
+		ASSERT(bucket != NULL);
+		Scheme_Object *f = static_cast<Scheme_Object*>(bucket->val);
+		if (f)
+			result = scheme_apply(f, inArgc, inArgv);
+		else
+			gLog.FatalError("Can't find %s in %s", inFuncName, inModuleName);
 	}
 
 	// Restore our jump buffer and exit.
@@ -180,8 +251,19 @@ Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
 	return result;
 }
 
+Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
+											  int inArgc,
+											  Scheme_Object **inArgv)
+{
+	// Under normal circumstances, we only want to call functions defined
+	// in the kernel, which is running in the script's namespace.
+	return CallSchemeEx(sScriptEnv, "5L-Kernel", inFuncName,
+						inArgc, inArgv);
+}
+
 Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName)
 {
+	// Call a function with no arguments.
 	Scheme_Object *junk = scheme_false;
 	return CallScheme(inFuncName, 0, &junk);
 }
@@ -277,25 +359,6 @@ void TSchemeCallback::Run()
 	Scheme_Object *args[1];
 	args[0] = mCallback;	
 	TSchemeInterpreter::CallScheme("%kernel-run-callback", 1, args);
-}
-
-
-//=========================================================================
-//	TSchemeInterpreterManager Methods
-//=========================================================================
-
-TSchemeInterpreterManager::TSchemeInterpreterManager(
-	TInterpreter::SystemIdleProc inIdleProc)
-	: TInterpreterManager(inIdleProc)
-{
-	// Install our primitives.
-	REGISTER_5L_PRIMITIVE(SchemeExit);
-	REGISTER_5L_PRIMITIVE(SchemeIdle);
-}
-
-TInterpreter *TSchemeInterpreterManager::MakeInterpreter()
-{
-	return new TSchemeInterpreter();
 }
 
 

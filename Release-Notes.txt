@@ -1,5 +1,17 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.5.2 - 18 Aug 2002 - emk
+
+  * Modified the TSchemeInterpreter class to make intelligent use of
+    namespaces and modules.
+  * Fully modularized the runtime, and made the lispish language extensions
+    available.  The "lispish" code currently belongs to me (and is released
+    under the LGPL), but I'll be happy to relicense it to the Trustees.
+  * Got redoscript to work--we no longer attempt to restart the entire
+    Scheme interpreter; we merely throw away a sandbox.
+  * Moved the code for resetting stylesheets out of the TWin5LInterpreter
+    and into the main Win32 engine.
+
 3.5.1 - 16 Aug 2002 - emk
 
 Added support for defining stylesheets in Scheme.  This means that Scheme

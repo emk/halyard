@@ -22,7 +22,7 @@
 (test (equal? (engine-var 'foo) "bar"))
 
 (debug-log "Completed simple tests")
-(log "Completed simple tests")
+(5l-log "Completed simple tests")
 
 
 ;;=========================================================================

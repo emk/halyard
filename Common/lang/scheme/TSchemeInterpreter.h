@@ -6,6 +6,7 @@
 #include "TCommon.h"
 #include "TInterpreter.h"
 #include "TPrimitives.h"
+#include "FileSystem.h"
 #include "scheme.h"
 
 BEGIN_NAMESPACE_FIVEL
@@ -37,27 +38,56 @@ class TSchemePtr
 public:
 	TSchemePtr() : mPtr(NULL) {}
 	TSchemePtr(Type *inPtr) : mPtr(NULL) { Set(inPtr); }
-	TSchemePtr(const TSchemePtr &inSchemePtr) : mPtr(NULL) { Set(inSchemePtr.mPtr); }
+	TSchemePtr(const TSchemePtr &inSchemePtr) : mPtr(NULL)
+		{ Set(inSchemePtr.mPtr); }
 	operator Type*() { return mPtr; }
 	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); }
-	TSchemePtr<Type> &operator=(const TSchemePtr &inPtr) { Set(inSchemePtr.mPtr); }
+	TSchemePtr<Type> &operator=(const TSchemePtr &inPtr)
+		{ Set(inSchemePtr.mPtr); }
 };
 
 
 //////////
-// The interface to our Scheme interpreter.
+// A TInterpreterManager for our Scheme interpreter.  This handles
+// reloading scripts and other fun stuff that involves creating
+// and destroying interpreters.
+//
+class TSchemeInterpreterManager : public TInterpreterManager
+{
+	Scheme_Env *mGlobalEnv;
+
+public:
+	TSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
+
+private:
+	void LoadFile(const FileSystem::Path &inFile);
+
+protected:
+	virtual TInterpreter *MakeInterpreter();
+};
+
+
+//////////
+// The interface to our Scheme interpreter.  Since this is a singleton
+// class, we store a lot of variables as static data to ease implementation.
 //
 class TSchemeInterpreter : public TInterpreter
 {
+	friend class TSchemeInterpreterManager;
 	friend class TSchemeCallback;
 	friend class TSchemeArgumentList;
 
 	static Scheme_Env *sGlobalEnv;
+	static Scheme_Env *sScriptEnv;
 
 	static SystemIdleProc sSystemIdleProc;
 
-	static Scheme_Object *Call5LPrim(void *inData, int inArgc,
-									 Scheme_Object **inArgv);
+	static Scheme_Object *Call5LPrim(int inArgc, Scheme_Object **inArgv);
+
+	static Scheme_Object *CallSchemeEx(Scheme_Env *inEnv,
+									   const char *inModuleName,
+									   const char *inFuncName,
+									   int inArgc, Scheme_Object **inArgv);
 
 	static Scheme_Object *CallScheme(const char *inFuncName,
 									 int inArgc, Scheme_Object **inArgv);
@@ -65,7 +95,7 @@ class TSchemeInterpreter : public TInterpreter
 	static Scheme_Object *CallSchemeSimple(const char *inFuncName);
 
 public:
-	TSchemeInterpreter();
+	TSchemeInterpreter(Scheme_Env *inGlobalEnv);
 	virtual ~TSchemeInterpreter();
 
 	void DoIdle() { ASSERT(sSystemIdleProc); (*sSystemIdleProc)(); }
@@ -105,21 +135,6 @@ public:
 	// For documentation of these virtual methods, see TInterpreter.h.
 	virtual void Run();
 	virtual std::string PrintableRepresentation() { return "#<thunk>"; }
-};
-
-
-//////////
-// A TInterpreterManager for our Scheme interpreter.  This handles
-// reloading scripts and other fun stuff that involves creating
-// and destroying interpreters.
-//
-class TSchemeInterpreterManager : public TInterpreterManager
-{
-public:
-	TSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
-
-protected:
-	virtual TInterpreter *MakeInterpreter();
 };
 
 
