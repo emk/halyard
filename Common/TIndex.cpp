@@ -174,9 +174,8 @@ bool TIndexFileManager::NewIndex(const char *inName)
 	{
 		Add(newIndex);
 		
-		// Close the new index.  We used to do this only when redoscript was
-		// enabled, but we couldn't think of any reason to leave it open.
-		//newIndex->Close();
+		// We used to call newIndex->Close() here when redoscript
+		// was enabled, but it isn't necessary on the Mac.
 	}
 
 	return (retValue);
@@ -465,6 +464,9 @@ bool TIndexFile::Init()
 
 /*
  $Log$
+ Revision 1.3.2.3  2002/04/24 04:32:32  emk
+ After much thought, I've finally decided that TIndexFileManager shouldn't close individual files, even if redoscript is turned on.  If this breaks the Windows engine, I'll port the Macintosh redoscript code to Windows.
+
  Revision 1.3.2.2  2002/04/22 08:17:57  emk
  Updated Common code to build on Macintosh and pass all unit tests.
 
