@@ -14,7 +14,7 @@ protected:
 	XrcDlg(wxWindow *inParent, const wxString &inResourceName);
 
     template <class T>
-	Bind(T* &outVar, long inID)
+	void Bind(T* &outVar, long inID)
 	{ outVar = dynamic_cast<T*>(FindWindow(inID)); wxASSERT(outVar); }
 };
 
