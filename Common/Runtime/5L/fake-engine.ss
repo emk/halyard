@@ -23,28 +23,23 @@
 
   (define *variable-table* (make-hash-table))
   
-  (define (prim-get variable)
-    ;; This behavior is silly, but it mimicks the engine.
-    (let [[val (hash-table-get *variable-table*
-                               (sym-or-str-arg variable)
-                               (lambda () #f))]]
-      (if val
-          val
-          (begin
-            (prim-log 'Debug
-                      (string-append "Getting "
-                                     (symbol->string (sym-or-str-arg variable))
-                                     " before it is set.")
-                      'log)
-            (prim-set variable "0")
-            "0"))))
+  (define (prim-variableinitialized variable)
+    (call-with-current-continuation
+     (lambda (return)
+       (let [[val (hash-table-get *variable-table* variable
+				  (lambda () (return #f)))]]
+	 #t))))
 
-  (define (prim-set variable value)
+  (define (prim-get variable)
+    (define (uninitialized-error)
+      (error (string-append "Uninitialized variable: "
+			    (symbol->string variable))))
+    (hash-table-get *variable-table* variable uninitialized-error))
+
+  (define (prim-settyped variable type value)
     ;; This behavior is silly, but it mimicks the engine.
-    (hash-table-put! *variable-table*
-                     (sym-or-str-arg variable)
-                     (value->string value))
-    #f)
+    (hash-table-put! *variable-table* variable value)
+    (void))
     
   (define (prim-log facility msg level)
     (display facility)
@@ -54,7 +49,8 @@
     (when (eq? (sym-or-str-arg level) 'fatalerror)
       ;; Try to do something semi-useful with fatal errors.  These should
       ;; really abort all further execution, but this will do for now.
-      (error msg)))
+      (error msg))
+    (void))
     
   (define (%call-5l-prim name . args)
     (case name
@@ -62,14 +58,16 @@
       ;; See if a primitive is available.
       [[haveprimitive]
        (case (car args)
-         [[haveprimitive get set log setwindowtitle defstyle header keybind loadpal]
-          "1"]
+         [[haveprimitive variableinitialized get settyped log setwindowtitle
+	   defstyle header keybind loadpal]
+          #t]
          [else
-          "0"])]
+          #f])]
 
       ;; Primitives with actual implementations.
+      [[variableinitialized] (apply prim-variableinitialized args)]
       [[get] (apply prim-get args)]
-      [[set] (apply prim-set args)]
+      [[settyped] (apply prim-settyped args)]
       [[log] (apply prim-log args)]
       
       ;; The do-nothing primitives.

@@ -9,7 +9,7 @@
 ;;
 ;;  You can find similar code for the standalone engine in 5L-Loader.ss.
 
-(module 5L-tool mzscheme
+(module tool mzscheme
   (require (lib "unitsig.ss")
 	   (lib "class.ss")
 	   (lib "framework.ss" "framework")

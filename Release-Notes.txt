@@ -30,6 +30,7 @@ pleasant for content authors.
   * Fixed bugs in TVariable's unsigned integer handling.
   * Removed TYPE argument from call-5l-prim, engine-var, etc.
   * Renamed DEFINE-PERSISTENT-VARIABLE to DEFINE/P.
+  * Updated fake-engine.ss to mimic new engine, and fixed bug in tool.ss.
 
 3.5.9 - 31 Oct 2002 - emk
 
