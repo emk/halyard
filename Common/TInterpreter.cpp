@@ -74,7 +74,7 @@ void TInterpreterManager::Run()
 			if (mScriptIsBegun && !mLoadScriptFailed)
 				LoadAndRunScript();
 			else
-				(*mSystemIdleProc)(false);
+				(*mSystemIdleProc)(true);
 		}
 		catch (std::exception &e)
 		{

@@ -169,7 +169,7 @@
               (label exit-to-top
                 (with-errors-blocked (non-fatal-error)
                   (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
-                    (idle #f)
+                    (idle)
                     (cond
                      [jump-card
                       (%kernel-run-card (%kernel-find-card jump-card))]
@@ -183,7 +183,9 @@
                       ;; extremely expensive in quantities of 1,000.
                       (let idle-loop ()
                         (unless (eq? *%kernel-state* 'JUMPING)
-                          (idle (%kernel-stopped?))
+                          (if (%kernel-stopped?)
+                              (blocking-idle)
+                              (idle))
                           (idle-loop)))]))))
               (set! jump-card #f)
               (when (eq? *%kernel-state* 'JUMPING)
@@ -510,10 +512,10 @@
   ;;  kernel's inner workings.  The rest of these functions can be found
   ;;  in the 5L-API module.
   
-  (provide call-5l-prim have-5l-prim? idle 5l-log debug-log
-           caution debug-caution non-fatal-error fatal-error
-           engine-var set-engine-var! engine-var-exists?
-           throw exit-script jump refresh)
+  (provide call-5l-prim have-5l-prim? idle blocking-idle 5l-log
+           debug-log caution debug-caution non-fatal-error fatal-error 
+           engine-var set-engine-var! engine-var-exists?  throw 
+           exit-script jump refresh)
 
   ;; C++ can't handle very large or small integers.  Here are the
   ;; typical limits on any modern platform.
@@ -533,10 +535,14 @@
   
   (define (have-5l-prim? name)
     (call-5l-prim 'haveprimitive name))
-
-  (define (idle block)
+  
+  (define (blocking-idle)
     (%kernel-die-if-callback 'idle)
-    (call-5l-prim 'schemeidle block))
+    (call-5l-prim 'schemeidle #t))
+
+  (define (idle)
+    (%kernel-die-if-callback 'idle)
+    (call-5l-prim 'schemeidle #f))
   
   (define (5l-log msg)
     (%call-5l-prim 'log '5L msg 'log))
