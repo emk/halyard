@@ -620,6 +620,12 @@
 				RelativePath="..\..\src\tb_saveall.bmp">
 			</File>
 			<File
+				RelativePath="..\..\src\tb_sizedec.bmp">
+			</File>
+			<File
+				RelativePath="..\..\src\tb_sizeinc.bmp">
+			</File>
+			<File
 				RelativePath="..\..\src\tb_undo.bmp">
 			</File>
 			<File

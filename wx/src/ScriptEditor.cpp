@@ -23,6 +23,7 @@
 #include "TamaleHeaders.h"
 #include <wx/file.h>
 #include <wx/stc/stc.h>
+#include <wx/config.h>
 #include "AppGlobals.h"
 #include "ScriptEditor.h"
 #include "DocNotebook.h"
@@ -150,7 +151,10 @@ class ScriptTextCtrl : public wxStyledTextCtrl, public TReloadNotified {
     wxString mReplaceStateText;
     
 public:    
-    ScriptTextCtrl(wxWindow *parent, wxWindowID id = -1);
+    ScriptTextCtrl(wxWindow *parent, wxWindowID id = -1, int font_size = 10);
+
+protected:
+    void SetUpTextStyles(int size);
 
 private:
     void SetStatusText(const wxString &text);
@@ -293,7 +297,7 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
     EVT_UPDATE_UI(FIVEL_GOTO_LINE, ScriptTextCtrl::OnUpdateUiAlwaysOn)
 END_EVENT_TABLE()
 
-ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id)
+ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id, int font_size)
     : wxStyledTextCtrl(parent, id)
 {
     // Set up some basic text editing parameters.
@@ -313,32 +317,9 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id)
     SetModEventMask(GetModEventMask()
                     | wxSTC_MOD_INSERTTEXT | wxSTC_MOD_DELETETEXT);
 
-    // Set up default style attributes and copy them to all styles.
-    StyleSetFont(wxSTC_STYLE_DEFAULT,
-                 wxFont(12, wxMODERN, wxNORMAL, wxNORMAL));
-    StyleClearAll();
-
     // Choose our language and set up syntax highlighting.
     SetLexer(wxSTC_LEX_LISP);
-    StyleSetBold(wxSTC_STYLE_BRACELIGHT, true);
-    StyleSetForeground(wxSTC_STYLE_BRACELIGHT, *wxBLUE);
-    StyleSetBackground(wxSTC_STYLE_BRACELIGHT, wxColor(0xD0, 0xD0, 0xD0));
-    StyleSetBold(wxSTC_STYLE_BRACEBAD, true);
-    StyleSetForeground(wxSTC_STYLE_BRACEBAD, *wxRED);
-    StyleSetForeground(wxSTC_LISP_COMMENT, wxColor(0xC0, 0x00, 0x00));
-    StyleSetForeground(wxSTC_LISP_COMMENTBLOCK, wxColor(0xC0, 0x00, 0x00));
-    StyleSetForeground(wxSTC_LISP_KEYWORD, wxColor(0x00, 0x00, 0xC0));
-    StyleSetForeground(wxSTC_LISP_STRING, wxColor(0x80, 0x40, 0x00));
-    StyleSetForeground(wxSTC_LISP_CHAR, wxColor(0x80, 0x40, 0x00));
-    StyleSetForeground(wxSTC_LISP_STRINGEOL, *wxRED);
-    StyleSetForeground(wxSTC_LISP_KEYWORDARG, wxColor(0x80, 0x00, 0x80));
-    StyleSetForeground(wxSTC_LISP_WORD1, wxColor(0x00, 0x60, 0x20));
-    StyleSetForeground(wxSTC_LISP_WORD2, wxColor(0x00, 0x60, 0x20));
-    StyleSetForeground(wxSTC_LISP_WORD3, wxColor(0x00, 0x60, 0x20));
-    StyleSetForeground(wxSTC_LISP_WORD4, wxColor(0x00, 0x60, 0x20));
-    StyleSetForeground(wxSTC_LISP_WORD5, wxColor(0x00, 0x60, 0x20));
-
-    // Boring: wxSTC_LISP_NUMBER, wxSTC_LISP_IDENTIFIER, wxSTC_LISP_OPERATOR
+    SetUpTextStyles(font_size);
 
     // Set up line numbers.
     SetMarginWidth(MARGIN_LINENUM, 0);
@@ -364,6 +345,34 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id)
     SetFoldFlags(16); // Draw fold line...
 
     UpdateIdentifierInformation();
+}
+
+void ScriptTextCtrl::SetUpTextStyles(int size) {
+    // Set up default style attributes and copy them to all styles.
+    StyleSetFont(wxSTC_STYLE_DEFAULT,
+                 wxFont(size, wxMODERN, wxNORMAL, wxNORMAL));
+    StyleClearAll();
+
+    // Set up syntax highlighting.
+    StyleSetBold(wxSTC_STYLE_BRACELIGHT, true);
+    StyleSetForeground(wxSTC_STYLE_BRACELIGHT, *wxBLUE);
+    StyleSetBackground(wxSTC_STYLE_BRACELIGHT, wxColor(0xD0, 0xD0, 0xD0));
+    StyleSetBold(wxSTC_STYLE_BRACEBAD, true);
+    StyleSetForeground(wxSTC_STYLE_BRACEBAD, *wxRED);
+    StyleSetForeground(wxSTC_LISP_COMMENT, wxColor(0xC0, 0x00, 0x00));
+    StyleSetForeground(wxSTC_LISP_COMMENTBLOCK, wxColor(0xC0, 0x00, 0x00));
+    StyleSetForeground(wxSTC_LISP_KEYWORD, wxColor(0x00, 0x00, 0xC0));
+    StyleSetForeground(wxSTC_LISP_STRING, wxColor(0x80, 0x40, 0x00));
+    StyleSetForeground(wxSTC_LISP_CHAR, wxColor(0x80, 0x40, 0x00));
+    StyleSetForeground(wxSTC_LISP_STRINGEOL, *wxRED);
+    StyleSetForeground(wxSTC_LISP_KEYWORDARG, wxColor(0x80, 0x00, 0x80));
+    StyleSetForeground(wxSTC_LISP_WORD1, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_WORD2, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_WORD3, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_WORD4, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_WORD5, wxColor(0x00, 0x60, 0x20));
+
+    // Boring: wxSTC_LISP_NUMBER, wxSTC_LISP_IDENTIFIER, wxSTC_LISP_OPERATOR
 }
 
 void ScriptTextCtrl::SetStatusText(const wxString &text) {
@@ -1256,13 +1265,14 @@ int ScriptTextCtrl::GetBaseIndentFromPosition(int inPos) {
 
 class ScriptDoc : public ScriptTextCtrl, public DocNotebookTab {
 public:
-    ScriptDoc(DocNotebook *parent, wxWindowID id = -1);
-    ScriptDoc(DocNotebook *parent, wxWindowID id,
+    ScriptDoc(DocNotebook *parent, wxWindowID id = -1, int font_size = 10);
+    ScriptDoc(DocNotebook *parent, wxWindowID id, int font_size,
               const wxString &path);
 
     virtual wxWindow *GetDocumentWindow() { return this; }
 
     virtual void OfferToReloadIfChanged();
+    virtual void SetTextSize(int size);
 
 protected:
     virtual bool SaveDocument(bool force);
@@ -1307,15 +1317,15 @@ BEGIN_EVENT_TABLE(ScriptDoc, ScriptTextCtrl)
     EVT_STC_SAVEPOINTLEFT(-1, ScriptDoc::OnSavePointLeft)
 END_EVENT_TABLE()
 
-ScriptDoc::ScriptDoc(DocNotebook *parent, wxWindowID id)
-    : ScriptTextCtrl(parent, id), DocNotebookTab(parent)
+ScriptDoc::ScriptDoc(DocNotebook *parent, wxWindowID id, int font_size)
+    : ScriptTextCtrl(parent, id, font_size), DocNotebookTab(parent)
 {
     SetDocumentTitle(parent->GetNextUntitledDocumentName());
 }
 
-ScriptDoc::ScriptDoc(DocNotebook *parent, wxWindowID id,
+ScriptDoc::ScriptDoc(DocNotebook *parent, wxWindowID id, int font_size,
                      const wxString &path)
-    : ScriptTextCtrl(parent, id), DocNotebookTab(parent)
+    : ScriptTextCtrl(parent, id, font_size), DocNotebookTab(parent)
 {
     SetTitleAndPath(path);
     ReadDocument();
@@ -1362,6 +1372,10 @@ void ScriptDoc::OfferToReloadIfChanged() {
         // Update the last known mod time so we stop bugging the user.
         mLastKnownModTime = on_disk_mod_time;
     }
+}
+
+void ScriptDoc::SetTextSize(int size) {
+    SetUpTextStyles(size);
 }
 
 bool ScriptDoc::OkToSaveChanges() {
@@ -1540,6 +1554,8 @@ BEGIN_EVENT_TABLE(ScriptEditor, wxFrame)
     EVT_UPDATE_UI(FIVEL_SHOW_WHITESPACE, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(FIVEL_SHOW_LINENUMS, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(FIVEL_EXPAND_ALL, ScriptEditor::DisableUiItem)
+    EVT_MENU(FIVEL_TEXT_SIZE_INC, ScriptEditor::OnIncreaseTextSize)
+    EVT_MENU(FIVEL_TEXT_SIZE_DEC, ScriptEditor::OnDecreaseTextSize)
 
     EVT_UPDATE_UI(wxID_UNDO, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REDO, ScriptEditor::DisableUiItem)
@@ -1656,6 +1672,11 @@ ScriptEditor::ScriptEditor()
     view_menu->AppendSeparator();
     view_menu->Append(FIVEL_EXPAND_ALL, "&Expand All",
                       "Expand all collapsed lines of code.");
+    view_menu->AppendSeparator();
+    view_menu->Append(FIVEL_TEXT_SIZE_INC, "&Increase Text Size",
+                      "Increase the size of displayed text.");
+    view_menu->Append(FIVEL_TEXT_SIZE_DEC, "&Decrease Text Size",
+                      "Decrease the size of displayed text.");
 
     // Set up our Search menu.
     wxMenu *search_menu = new wxMenu();
@@ -1715,6 +1736,10 @@ ScriptEditor::ScriptEditor()
     tb->AddSeparator();
     tb->AddCheckTool(FIVEL_WRAP_LINES, "Wrap", wxBITMAP(tb_wrap),
                      wxNullBitmap, "Wrap Lines");
+    tb->AddTool(FIVEL_TEXT_SIZE_INC, "Bigger text", wxBITMAP(tb_sizeinc),
+                "Increase Text Size");
+    tb->AddTool(FIVEL_TEXT_SIZE_DEC, "Smaller text", wxBITMAP(tb_sizedec),
+                "Decrease Text Size");
     tb->Realize();
 
     // Create a document notebook, delegate menu events to it, and put
@@ -1758,6 +1783,26 @@ bool ScriptEditor::ProcessEvent(wxEvent& event) {
         return wxFrame::ProcessEvent(event);
 }
 
+int ScriptEditor::GetTextSize() {
+    int size = 10;
+	wxConfigBase *config = wxConfigBase::Get();
+	config->Read("/ScriptEditor/TextSize", &size);
+    return size;
+}
+
+void ScriptEditor::SetTextSize(int size) {
+	wxConfigBase *config = wxConfigBase::Get();
+    config->Write("/ScriptEditor/TextSize", size);
+    
+    // Push our change to all open documents.
+    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++)
+        mNotebook->GetDocument(i)->SetTextSize(size);
+}
+
+void ScriptEditor::ChangeTextSize(int delta) {
+    SetTextSize(GetTextSize() + delta);
+}
+
 void ScriptEditor::OpenDocument(const wxString &path) {
     // If the document is already open, show it.
     for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
@@ -1767,8 +1812,7 @@ void ScriptEditor::OpenDocument(const wxString &path) {
         }
     }
     
-    // Otherwise, open the new document.
-    mNotebook->AddDocument(new ScriptDoc(mNotebook, -1, path));
+    mNotebook->AddDocument(new ScriptDoc(mNotebook, -1, GetTextSize(), path));
 }
 
 void ScriptEditor::OnActivate(wxActivateEvent &event) {
@@ -1804,7 +1848,7 @@ void ScriptEditor::OnClose(wxCloseEvent &event) {
 }
 
 void ScriptEditor::OnNew(wxCommandEvent &event) {
-    mNotebook->AddDocument(new ScriptDoc(mNotebook));
+    mNotebook->AddDocument(new ScriptDoc(mNotebook, -1, GetTextSize()));
 }
 
 void ScriptEditor::OnOpen(wxCommandEvent &event) {
@@ -1828,4 +1872,12 @@ void ScriptEditor::OnCloseWindow(wxCommandEvent &event) {
 
 void ScriptEditor::DisableUiItem(wxUpdateUIEvent &event) {
     event.Enable(false);
+}
+
+void ScriptEditor::OnIncreaseTextSize(wxCommandEvent &event) {
+    ChangeTextSize(1);
+}
+
+void ScriptEditor::OnDecreaseTextSize(wxCommandEvent &event) {
+    ChangeTextSize(-1);
 }

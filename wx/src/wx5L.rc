@@ -72,6 +72,8 @@ TB_SAVEALL              BITMAP                  "tb_saveall.bmp"
 TB_CUT                  BITMAP                  "tb_cut.bmp"
 TB_COPY                 BITMAP                  "tb_copy.bmp"
 TB_PASTE                BITMAP                  "tb_paste.bmp"
+TB_SIZEINC              BITMAP                  "tb_sizeinc.bmp"
+TB_SIZEDEC              BITMAP                  "tb_sizedec.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

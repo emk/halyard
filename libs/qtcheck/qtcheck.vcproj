@@ -31,8 +31,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="qtmlclient.lib"
 				OutputFile="$(OutDir)/qtcheck.dll"
 				LinkIncremental="2"
+				ModuleDefinitionFile="qtcheck.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/qtcheck.pdb"
 				SubSystem="2"

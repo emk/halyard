@@ -138,6 +138,9 @@ public:
     /// timestamps and reload files on window activation.
     virtual void OfferToReloadIfChanged() {}
 
+    /// Call this method to (attempt to) change the text size.
+    virtual void SetTextSize(int size) {}
+
     //virtual void Save() = 0;
     virtual wxWindow *GetDocumentWindow() = 0;
 };

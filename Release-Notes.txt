@@ -6,6 +6,11 @@ CVS - emk
   * Added qtcheck project.  This is a DLL for use with InnoSetup; it
     allows installers to access the current QuickTime version, and the
     version of any QuickTime components.
+  * The runtime now checks for different media locations automatically.
+  * Added debug-var.ss for debugging local variables.
+  * Fixed assertion failure in script editor.
+  * Fixed debug build of qtcheck.
+  * Added support for changing the font size in the script editor.
 
 0.0.33 - 27 Aug 2004 - emk, madhura
 

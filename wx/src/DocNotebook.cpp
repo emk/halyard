@@ -133,7 +133,7 @@ void DocNotebook::SetFrameToTitle(wxFrame *frame) {
 /// Add a new document to the notebook.
 void DocNotebook::AddDocument(DocNotebookTab *doc) {
     doc->GetDocumentWindow()->Hide();
-    wxASSERT(doc->GetDocumentWindow()->GetParent() == GetParent());
+    wxASSERT(doc->GetDocumentWindow()->GetParent() == this);
     mDocs.push_back(doc);
     SelectDocument(GetDocumentCount()-1);
 }

@@ -46,6 +46,10 @@ public:
 
     virtual bool ProcessEvent(wxEvent& event);
 
+    int GetTextSize();
+    void SetTextSize(int size);
+    void ChangeTextSize(int delta);
+
 private:
     void OpenDocument(const wxString &path);
 
@@ -55,6 +59,8 @@ private:
     void OnOpen(wxCommandEvent &event);
     void OnCloseWindow(wxCommandEvent &event);
     void DisableUiItem(wxUpdateUIEvent &event);
+    void OnIncreaseTextSize(wxCommandEvent &event);
+    void OnDecreaseTextSize(wxCommandEvent &event);
 
     DECLARE_EVENT_TABLE();
 };
