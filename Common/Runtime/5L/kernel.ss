@@ -276,6 +276,9 @@
   (define (%kernel-valid-card? card-name)
     (card-exists? card-name))
 
+  (define (%kernel-element-deleted element-name)
+    (delete-element-info element-name))
+
   (define (%kernel-eval expression)
     (let [[ok? #t] [result "#<did not return from jump>"]]
 
@@ -300,7 +303,6 @@
       (cons ok? result)))
 
   (define (%kernel-run-callback function args)
-    (%kernel-die-if-callback '%kernel-run-callback)
     (%kernel-run-as-callback (lambda () (apply function args))
                              non-fatal-error))
 
@@ -461,7 +463,6 @@
     ;; "throwing" across C++ code, which isn't allowed (and which would
     ;; be disasterous).  Furthermore, we must trap all errors, because
     ;; our C++-based callers don't want to deal with Scheme exceptions.
-    (assert (not *%kernel-running-callback?*))
     (if (eq? *%kernel-state* 'INTERPRETER-KILLED)
         (5l-log "Skipping callback because interpreter is being shut down")
         (let [[saved-kernel-state *%kernel-state*]]
@@ -643,7 +644,10 @@
   (provide on send
            <event> event?
            <idle-event> idle-event?
-           <char-event> char-event? event-character event-modifiers)
+           <char-event> char-event? event-character event-modifiers
+           <mouse-event> mouse-event? event-position event-double-click?
+           make-node-event-dispatcher ; semi-private
+           )
 
   (define-syntax (expand-on stx)
     (syntax-case stx ()
@@ -651,7 +655,7 @@
        ;; Create a capture variable NEXT-HANDLER which will be visible in
        ;; BODY.  It's exceptionally evil to capture using BODY's context
        ;; instead of EXPAND-ON's context, but that's what we want.
-       (with-syntax [[next-handler
+       (with-syntax [[call-next-handler
                       (make-capture-var/ellipsis #'body 'call-next-handler)]]
          (quasisyntax/loc
           stx
@@ -704,35 +708,55 @@
 
   (define (send node name . args)
     ;; Pass a message to the specified node, and return the result.
-    (let recurse [[node node]]
-      (if (not node)
-          #f
-          (let* [[handler (hash-table-get (node-handlers node) name
-                                          (lambda () #f))]
-                 [call-next-handler (lambda () (recurse (node-parent node)))]]
-            (if handler
-                (apply handler call-next-handler args)
-                (call-next-handler))))))
+    (let [[handled? #t]]
+      (let recurse [[node node]]
+        (if (not node)
+            (set! handled? #f)
+            (let* [[handler (hash-table-get (node-handlers node) name
+                                            (lambda () #f))]
+                   [call-next-handler
+                    (lambda () (recurse (node-parent node)))]]
+              (if handler
+                  (begin
+                    (apply handler call-next-handler args))
+                  (call-next-handler)))))
+      handled?))
 
   (defclass <event> ())
   (defclass <idle-event> (<event>))
 
   (defclass <char-event> (<event>)
     (character :accessor event-character)
-    (modifiers :accessor event-modifiers)
-    )
+    (modifiers :accessor event-modifiers))
 
-  (define (dispatch-event name . args)
-    (let [[target (current-card)]
-          [event (case name
+  (defclass <mouse-event> (<event>)
+    (position :accessor event-position)
+    (double-click? :accessor event-double-click? :initvalue #f))
+
+  (define (dispatch-event-to-node node name args)
+    (let [[event (case name
                    [[idle] (make <idle-event>)]
                    [[char] (make <char-event>
                              :character (car args)
                              :modifiers (cadr args))]
+                   [[mouse-down]
+                    (make <mouse-event>
+                      :position (make-point (car args) (cadr args))
+                      :double-click? (caddr args))]
+                   [[mouse-up mouse-enter mouse-leave]
+                    (make <mouse-event>
+                      :position (make-point (car args) (cadr args)))]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
-      (when target
-        (send target name event))))
+      (set! (engine-var '_pass) (not (send node name event)))))
+
+  (define (dispatch-event-to-current-card name . args)
+    (when (current-card)
+      (dispatch-event-to-node (current-card) name args)))
+
+  (define (make-node-event-dispatcher node)
+    (lambda (name . args)
+      (dispatch-event-to-node node name args)))
 
   (define (expensive-event? name)
     ;; Some events are sent almost constantly, and cause us to allocate
@@ -750,7 +774,7 @@
   ;; Set up our event handling machinery.
   (enable-expensive-events #f)
   (when (have-5l-prim? 'RegisterEventDispatcher)
-    (call-5l-prim 'RegisterEventDispatcher dispatch-event))
+    (call-5l-prim 'RegisterEventDispatcher dispatch-event-to-current-card))
   
 
   ;;-----------------------------------------------------------------------
@@ -774,7 +798,7 @@
     (group      :type <symbol>     :initvalue 'none)
     (extends                       :initvalue #f)
     (parameters :type <list>       :initvalue '())
-    (bindings   :type <hash-table> :initvalue (make-hash-table))
+    (bindings   :type <hash-table> :initializer (lambda () (make-hash-table)))
     (init-thunk :type <function>   :initvalue (lambda (node) #f)))
 
   (defmethod (initialize (template <template>) initargs)
@@ -883,9 +907,9 @@
                   (begin/var . body)))))))]))
     
   (define-syntax define-template
-    (syntax-rules (:extends)
+    (syntax-rules (:template)
       [(define-template group name parameters
-                              (:extends extended . bindings)
+                              (:template extended . bindings)
          . body)
        (define name (make <template>
                       :group      group
@@ -894,7 +918,7 @@
                       :parameters (expand-parameters . parameters)
                       :init-thunk (expand-init-thunk parameters . body)))]
       [(define-template group name parameters bindings . body)
-       (define-template group name parameters (:extends #f . bindings)
+       (define-template group name parameters (:template #f . bindings)
          . body)]))
 
   (define-syntax define-template-definer
@@ -917,7 +941,7 @@
     name
     parent
     (has-expensive-handlers? :type <boolean> :initvalue #f)
-    (handlers :type <hash-table> :initvalue (make-hash-table))
+    (handlers :type <hash-table> :initializer (lambda () (make-hash-table)))
     )
 
   (defmethod (initialize (node <node>) initargs)
@@ -944,7 +968,7 @@
   (defmethod (register-node (node <node>))
     (let [[name (node-full-name node)]]
       (when (hash-table-get *node-table* name (lambda () #f))
-        (error (cat "Duplicate copies of node " node)))
+        (error (cat "Duplicate copies of node " (node-full-name node))))
       (hash-table-put! *node-table* name node)))
 
   (define (unregister-node node)
@@ -1197,6 +1221,27 @@
       (enter-node e)
       e))
 
+  (define (delete-element-info name)
+    ;; We're called from C++ after the engine's version of the specified
+    ;; element has been deleted.  Our job is to bring our data structures
+    ;; back in sync.
+    (let [[card (current-card)]]
+      (set! (group-children card)
+            (let recurse [[children (group-children card)]]
+              (cond
+               [(null? children) '()]
+               [(eq? name (node-name (car children)))
+                ;; Delete this node, and exclude it from the new child list.
+                (if (element-temporary? (car children))
+                    (unregister-node (car children))
+                    (debug-caution
+                     (cat "Can't fully delete non-temporary element " name
+                          " in this version of the engine")))
+                (recurse (cdr children))]
+               [else
+                ;; Keep this node.
+                (cons (car children) (recurse (cdr children)))])))))
+  
 
   ;;=======================================================================
   ;;  Changing Cards
@@ -1269,28 +1314,13 @@
         (assert (node-parent group))
         (recurse (node-parent group))
         (enter-node group))))
-
-  (define (delete-temporary-elements card)
-    (set! (group-children card)
-          (let recurse [[children (group-children card)]]
-            (cond
-             [(null? children) '()]
-             [(element-temporary? (car children))
-              ;; Delete this node, and exclude it from the new child list.
-              (unregister-node (car children))
-              (recurse (cdr children))]
-             [else
-              ;; Keep this node.
-              (cons (car children) (recurse (cdr children)))]))))
-
+  
   (define (exit-card old-card new-card)
     ;; Exit all our child elements.
     (let loop [[children (group-children old-card)]]
       (unless (null? children)
         (exit-node (car children))
         (loop (cdr children))))
-    ;; Delete temporary elements.
-    (delete-temporary-elements old-card)
     ;; Exit old-card.
     (exit-node old-card)
     ;; Exit as many enclosing card groups as necessary.

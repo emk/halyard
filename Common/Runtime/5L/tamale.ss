@@ -7,13 +7,15 @@
 (module tamale (lib "5l.ss" "5L")
 
   (provide load-picture set-image-cache-size! modal-input
-           zone set-zone-cursor! register-cursor mouse-position
+           %zone% zone set-zone-cursor! register-cursor mouse-position
+           grab-mouse ungrab-mouse mouse-grabbed?
            delete-element delete-elements
            clear-screen rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
-           move-rect-center-to center-text html edit-box
-           movie movie-pause movie-resume
+           move-rect-center-to point-in-rect? center-text 
+           %html-element% %edit-box-element% %movie-element% 
+           html edit-box movie movie-pause movie-resume
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics)
 
@@ -34,9 +36,22 @@
   (define (modal-input r size forecolor backcolor)
     (call-5l-prim 'input r size forecolor backcolor)
     (engine-var '_modal_input_text))
-  
+
+  (define-element-template %element%
+      [[rect :default #f :label "Rectangle"]] ())
+
+  (define-element-template %zone%
+      [[cursor :type <symbol> :default 'hand :label "Cursor"]]
+      (:template %element%)
+    (call-5l-prim 'zone (node-name self) (param self 'rect)
+                  (make-node-event-dispatcher self) cursor))
+
+  (define-element-template %simple-zone% [action] (:template %zone%)
+    (on mouse-down (event)
+      (action)))
+
   (define (zone name r action &key (cursor 'hand))
-    (call-5l-prim 'zone name r action cursor))
+    (create %simple-zone% :name name :rect r :cursor cursor :action action))
   
   (define (set-zone-cursor! name cursor)
     (call-5l-prim 'SetZoneCursor name cursor))
@@ -63,6 +78,17 @@
   
   (define (delete-elements &opt (names '()))
     (apply call-5l-prim 'deleteelements names))
+
+  (define (grab-mouse elem)
+    (assert (instance-of? elem <element>))
+    (call-5l-prim 'MouseGrab (node-name elem)))
+
+  (define (ungrab-mouse elem)
+    (assert (instance-of? elem <element>))
+    (call-5l-prim 'MouseUngrab (node-name elem)))
+
+  (define (mouse-grabbed?)
+    (call-5l-prim 'MouseIsGrabbed))
   
   (define (clear-screen c)
     (call-5l-prim 'screen c))
@@ -93,6 +119,12 @@
                                                                   (point-y p))
                                     (point-x p)))
 
+  (define (point-in-rect? p r)
+    (and (<= (rect-left r) (point-x p))
+         (<  (point-x p)   (rect-right r))
+         (<= (rect-top r)  (point-y p))
+         (<  (point-y p)   (rect-bottom r))))
+
   (define (center-text stylesheet box msg &key (axis 'both))
     (define bounds (measure-text stylesheet msg :max-width (rect-width box)))
     (define r
@@ -111,20 +143,46 @@
          (throw (cat "center-text: Unknown centering axis: " axis))]))
     (draw-text stylesheet r msg))
 
+  (define-element-template %html-element%
+      [[location :type <string> :label "Location"]]
+      (:template %element%)
+    (call-5l-prim 'html (node-name self) (param self 'rect)
+                  ;; TODO - Support actual URL's.
+                  (build-path (current-directory) location)))
+
   (define (html name r location)
-    (call-5l-prim 'html name r (build-path (current-directory) location)))
+    (create %html-element% :name name :rect r :location location))
+
+  (define-element-template %edit-box-element%
+      [[text :type <string> :label "Initial text"]]
+      (:template %element%)
+    (call-5l-prim 'editbox (node-name self) (param self 'rect) text))
 
   (define (edit-box name r text)
-    (call-5l-prim 'editbox name r text))
-  
-  (define (movie name r location
-                 &key controller? audio-only? loop? interaction?)
+    (create %edit-box-element% :name name :rect r :text text))
+
+  (define-element-template %movie-element%
+      [[location     :type <string>  :label "Location"]
+       [controller?  :type <boolean> :label "Has movie controller" :default #f]
+       [audio-only?  :type <boolean> :label "Audio only"        :default #f]
+       [loop?        :type <boolean> :label "Loop movie"        :default #f]
+       [interaction? :type <boolean> :label "Allow interaction" :default #f]]
+      (:template %element%)
     (let [[path (make-path "Media" location)]]
       (unless (file-exists? path)
         (throw (cat "No such movie: " path)))
-      (call-5l-prim 'movie name r
+      (call-5l-prim 'movie (node-name self) (param self 'rect)
                     path
                     controller? audio-only? loop? interaction?)))
+  
+  (define (movie name r location
+                 &key controller? audio-only? loop? interaction?)
+    (create %movie-element%
+            :name name :rect r :location location
+            :controller? controller? 
+            :audio-only? audio-only?
+            :loop? loop?
+            :interaction? interaction?))
 
   ;; Note: these functions may not be happy if the underlying movie code
   ;; doesn't like to be paused.
