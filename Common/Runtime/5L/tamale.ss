@@ -14,7 +14,7 @@
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to center-text html edit-box
            movie movie-pause movie-resume
-           wait tc draw-line draw-box draw-box-outline inset-rect timeout
+           wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics)
 
   (define (make-path subdir path)
@@ -145,6 +145,9 @@
      [arg2 (+ (* arg1 30) arg2)]
      [else arg1]))
   
+  (define (nap tenths)
+    (call-5l-prim 'nap tenths))
+
   (define (draw-line from to c width)
     (call-5l-prim 'drawline from to c width))
 
