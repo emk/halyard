@@ -25,6 +25,11 @@ Quake2Engine::Quake2Engine(Stage *inStage, const std::string &inGame)
 	sInstance = this;
 	sHasBeenCreated = true;
 
+	// XXX - Forcibly hide Quake 2, even if it was previously shown
+	// elsewhere.  This is an experimental hack to see if I can
+	// get background level-loading to work.
+	Hide();
+
 	// TODO - Do something reasonable about stages which aren't 640x480.
 }
 

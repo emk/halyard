@@ -26,6 +26,8 @@ void FIVEL_NS RegisterQuake2Primitives()
 {
 	REGISTER_5L_PRIMITIVE(Quake2Init);
 	REGISTER_5L_PRIMITIVE(Quake2Command);
+	REGISTER_5L_PRIMITIVE(Quake2BackgroundLoadCommand);
+	REGISTER_5L_PRIMITIVE(Quake2IsLoadingInBackground);
 	REGISTER_5L_PRIMITIVE(Quake2Print);
 	REGISTER_5L_PRIMITIVE(Quake2RegisterCommand);
 	REGISTER_5L_PRIMITIVE(Quake2IsShown);
@@ -65,6 +67,20 @@ DEFINE_5L_PRIMITIVE(Quake2Command)
 	Quake2Engine::GetInstance()->ExecCommand(cmd.c_str());
 }
 
+DEFINE_5L_PRIMITIVE(Quake2BackgroundLoadCommand)
+{
+	std::string cmd;
+	inArgs >> cmd;
+	REQUIRE_QUAKE2_INITIALIZATION;
+	Quake2Engine::GetInstance()->ExecBackgroundLoadCommand(cmd.c_str());
+}
+
+DEFINE_5L_PRIMITIVE(Quake2IsLoadingInBackground)
+{
+	REQUIRE_QUAKE2_INITIALIZATION;
+	::SetPrimitiveResult(Quake2Engine::GetInstance()->IsLoadingInBackground());
+}
+
 DEFINE_5L_PRIMITIVE(Quake2Print)
 {
 	std::string msg;
@@ -85,7 +101,7 @@ DEFINE_5L_PRIMITIVE(Quake2RegisterCommand)
 DEFINE_5L_PRIMITIVE(Quake2IsShown)
 {
 	REQUIRE_QUAKE2_INITIALIZATION;
-	Quake2Engine::GetInstance()->IsShown();
+	::SetPrimitiveResult(Quake2Engine::GetInstance()->IsShown());
 }
 
 DEFINE_5L_PRIMITIVE(Quake2Show)
