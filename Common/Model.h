@@ -20,6 +20,7 @@ namespace model {
 	// Forward declarations.
 	class Datum;
 	class Object;
+	class View;
 	class Change;
 	class Model;
 
@@ -317,12 +318,15 @@ namespace model {
 	//
 	class Object : public HashDatum {
 		const Class *mClass;
+		std::vector<View*> mViews;
 
 	protected:
 		Object(const Class *inClass)
 			: HashDatum(ObjectType), mClass(inClass) {}
 
 	public:
+		~Object();
+
 		const Class *GetClass() { return mClass; }
 
 		//////////
@@ -336,7 +340,10 @@ namespace model {
 		virtual void Initialize();
 
 		virtual void Write(xml_node inContainer);
-		virtual void Fill(xml_node inNode);		
+		virtual void Fill(xml_node inNode);
+
+		void RegisterView(View *inView);
+		void UnregisterView(View *inView);
 	};
 
 	//////////
@@ -378,6 +385,27 @@ namespace model {
 	extern void Move(C1 *inDest, typename C1::ConstKeyType &inDestKey,
 					 C2 *inSrc, typename C2::ConstKeyType &inSrcKey);
 #endif // 0
+
+	//////////
+	// The 'view' class of the model/view/control triad.  This View
+	// associates itself with an Object in the model.  Every time
+	// that Object changes, the View receives an ObjectChanged
+	// message.
+	//
+	class View {
+		DISABLE_COPY_AND_ASSIGN(View);
+
+		Object *mObject;
+
+	public:
+		View();
+		virtual ~View();
+
+		void SetObject(Object *mObject);
+		void GetObject();
+
+		virtual void ObjectChanged() = 0;
+	};
 
 	//////////
 	// We support different data model formats.  Each format has three

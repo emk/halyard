@@ -281,6 +281,10 @@ void Map::Fill(xml_node inNode)
 //  Object Methods
 //=========================================================================
 
+Object::~Object()
+{
+}
+
 void Object::Initialize()
 {
 }

@@ -18,6 +18,10 @@ class Document : public model::Model {
 
 	static std::string SetBaseAndGetFilePath(const std::string &inDirectory);
 
+	void CheckStructure();
+	void CheckDirectory(FileSystem::Path inPath);
+	void CheckFile(FileSystem::Path inPath);
+
 public:
 	enum Flag { OPEN };
 

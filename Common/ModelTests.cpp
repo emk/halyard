@@ -32,6 +32,11 @@ BEGIN_MODEL_CLASSES()
 	REGISTER_MODEL_CLASS(Card)
 END_MODEL_CLASSES()
 
+class CardView : public View {
+public:
+	void ObjectChanged() {}
+};
+
 
 //=========================================================================
 //	Model Tests
@@ -228,6 +233,11 @@ void test_Model (void)
 	Card *card = root->Set("sampleCard", new Card());
 	TEST(cast<Card>(root->Get("sampleCard")) == card);
 	card->SetString("name", "CardName");
+
+	//---------------------------------------------------------------------
+	// Test Views
+
+	
 
 	//---------------------------------------------------------------------
 	// Test Serialization

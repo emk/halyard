@@ -9,6 +9,8 @@
 
 USING_NAMESPACE_FIVEL
 using namespace model;
+using FileSystem::Path;
+
 
 //=========================================================================
 //  Document Layout
@@ -66,10 +68,40 @@ std::string Document::SetBaseAndGetFilePath(const std::string &inDirectory)
 	return path.ToNativePathString();
 }
 
+void Document::CheckStructure()
+{
+	// Sanity-check our directory structure.
+	Path base = FileSystem::GetBaseDirectory();
+	Path runtime = FileSystem::GetRuntimeDirectory();
+	CheckDirectory(runtime);
+	CheckDirectory(runtime.AddComponent("5L"));
+	CheckFile(runtime.AddComponent("5L").AddComponent("loader.ss"));
+	CheckDirectory(base.AddComponent("Fonts"));
+	CheckDirectory(base.AddComponent("Scripts"));
+	CheckFile(base.AddComponent("Scripts").AddComponent("start.ss"));
+	CheckDirectory(base.AddComponent("Graphics"));
+}
+
+void Document::CheckDirectory(Path inPath)
+{
+	CHECK(inPath.DoesExist() && inPath.IsDirectory(),
+		  ("Cannot find directory " + inPath.ToNativePathString() +
+		   " in Tamale program").c_str());
+}
+
+void Document::CheckFile(Path inPath)
+{
+	CHECK(inPath.DoesExist() && inPath.IsRegularFile(),
+		  ("Cannot find file " + inPath.ToNativePathString() +
+		   " in Tamale program").c_str());
+}
+
 Document::Document(const std::string &inDirectory)
     : Model(gTamaleFormat)
 {
-    SaveAs(SetBaseAndGetFilePath(inDirectory).c_str());
+	std::string data_file = SetBaseAndGetFilePath(inDirectory);
+	CheckStructure();
+    SaveAs(data_file.c_str());
 	TInterpreterManager::GetInstance()->BeginScript();
 }
 
@@ -77,6 +109,7 @@ Document::Document(const std::string &inDirectory, Flag inOpen)
     : Model(gTamaleFormat, EARLIEST_READABLE,
 			SetBaseAndGetFilePath(inDirectory).c_str())
 {
+	CheckStructure();
 	TInterpreterManager::GetInstance()->BeginScript();    
 }
 
