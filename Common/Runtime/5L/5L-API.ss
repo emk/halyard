@@ -11,6 +11,7 @@
   (provide with-tracing)
   (require (lib "trace.ss" "5L"))
   (set-trace-output-printer! debug-log)
+
   
   ;;;======================================================================
   ;;;  Useful Syntax
@@ -463,7 +464,8 @@
   ;;; @param STRING text The text to measure.
   ;;; @key STRING max-width The maximum horizontal space which may be used
   ;;;   for laying out the text.  Defaults to the screen width.
-  ;;; @return RECT
+  ;;; @return RECT A rectangle large enough to hold the text, with an
+  ;;;   an origin at 0,0.
   ;;; @xref draw-text
   (define (measure-text style msg
 			&key (max-width (rect-width $screen-rect)))
