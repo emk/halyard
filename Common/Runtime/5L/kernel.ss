@@ -744,11 +744,13 @@
       [else #f]))
 
   (define (enable-expensive-events enable?)
-    (call-5l-prim 'EnableExpensiveEvents enable?))
+    (when (have-5l-prim? 'EnableExpensiveEvents)
+      (call-5l-prim 'EnableExpensiveEvents enable?)))
   
   ;; Set up our event handling machinery.
   (enable-expensive-events #f)
-  (call-5l-prim 'RegisterEventDispatcher dispatch-event)
+  (when (have-5l-prim? 'RegisterEventDispatcher)
+    (call-5l-prim 'RegisterEventDispatcher dispatch-event))
   
 
   ;;-----------------------------------------------------------------------
