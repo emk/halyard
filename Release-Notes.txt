@@ -10,6 +10,10 @@ CVS - emk
     This will simplify our legal issues a bit.
   * Linux build fixes.
   * Fixed bug where MacOS X 5L always played the same video from the CD.
+  * Converted all *.rsrc and *.PPob files to *.r files, and included
+    instructions on converting them back and forth.  This will allow us
+    to play a bit more nicely with CVS, and eliminate all but a few
+    files with resource forks from our CVS repository.
 
 3.5.8 - 15 Oct 2002 - emk
 

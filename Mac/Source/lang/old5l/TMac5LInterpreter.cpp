@@ -126,6 +126,18 @@ std::string TMac5LInterpreter::PrevCardName()
 	return gCardManager.PrevCardName();
 }
 
+bool TMac5LInterpreter::IsValidCard(const char *inCardName)
+{
+	return (gCardManager.GetCard(inCardName) !=  NULL);
+}
+
+bool TMac5LInterpreter::Eval(const std::string &inExpression,
+							 std::string &outResultText)
+{
+	outResultText = "old5l eval unimplemented";
+	return false;
+}
+
 
 //=========================================================================
 // TMac5LCallback Methods

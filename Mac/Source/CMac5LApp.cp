@@ -54,6 +54,8 @@
 //
 const PP::ResIDT	WIND_Mac5L		= 200;
 const PP::ResIDT	WIND_Mac5L_d	= 202;
+static const int gScreenWidth = 640;
+static const int gScreenHeight = 480;
 
 //
 // globals
@@ -720,6 +722,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.27  2002/10/30 21:12:56  emk
+Updated Mac build, and converted all *.rsrc files to *.r files.
+
 Revision 1.26  2002/10/28 17:13:35  emk
 Removed some 640x480 constants from the code.
 
