@@ -27,7 +27,9 @@ libfivel_a_SOURCES = \
 	TString.cpp \
 	TString.h \
 	TURL.cpp \
-	TURL.h
+	TURL.h \
+	TEncoding.cpp \
+	TEncoding.h
 
 # These only compile on Windows.  But nobody else uses them, so it
 # doesn't matter for now.
@@ -36,7 +38,10 @@ libfivel_a_SOURCES = \
 
 TestAll_SOURCES = \
 	TStringTests.cpp \
+	TEncodingTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
 	libfivel.a \
 	libimlunit.a
+
+#	-lefence

@@ -6,9 +6,12 @@
 // most likely be replaced with static constructor tricks as I continue to
 // C++-ify the testing API.
 extern void test_TString (void);
+extern void test_TEncoding (void);
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+{
 	test_TString();
+	test_TEncoding();
 
 	return tests_finished();
 }
