@@ -172,14 +172,15 @@
 
   (define-element-template %vorbis-audio-element%
       [[location :type <string>  :label "Location"]
-       [buffer   :type <integer> :label "Buffer Size (K)" :default 512]]
+       [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
+       [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (:template %element%)
     (call-5l-prim 'AudioStreamVorbis (node-name self)
                   (build-path (current-directory) "Media" location)
-                  (* 1024 buffer)))
+                  (* 1024 buffer) loop?))
   
-  (define (vorbis-audio name location)
-    (create %vorbis-audio-element% :name name :location location))
+  (define (vorbis-audio name location &key (loop? #f))
+    (create %vorbis-audio-element% :name name :location location :loop? loop?))
 
   (define-element-template %movie-element%
       [[location     :type <string>  :label "Location"]
