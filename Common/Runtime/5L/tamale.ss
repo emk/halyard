@@ -13,7 +13,6 @@
            %zone% %simple-zone% zone
            %animated-graphic% register-cursor mouse-position
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
-           element-shown? set-element-shown?!
            delete-element delete-elements
            clear-screen point-in-poly?
            offset-rect offset-shape
@@ -107,13 +106,24 @@
     (local->card (node-parent node) x))
 
   (define-element-template %element%
-      [[at :type <point> :label "Position"]] ()
+      [[at :type <point> :label "Position"]
+       [shown? :type <boolean> :label "Shown?" :default #t]]
+      ()
     (on prop-change (name value prev veto)
-      (if (eq? name 'at)
-          (update-element-position self)
-          (call-next-handler))))
+      (case name
+        [[at]
+         (update-element-position self)]
+        [[shown?]
+         (set! (element-shown? self) value)]
+        [else
+         (call-next-handler)]))
+    (on setup-finished ()
+      ;; TODO - This is technically too late to set this value, and we should
+      ;; probably add a SHOWN? parameter to every object creation primitive.
+      (set! (element-shown? self) shown?)))
 
-  (define-element-template %invisible-element% [] (%element% :at (point 0 0)))
+  (define-element-template %invisible-element% []
+      (%element% :at (point 0 0) :shown? #f))
 
   (define-element-template %widget%
       [[rect :type <rect> :label "Rectangle"]]
