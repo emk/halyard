@@ -44,7 +44,7 @@ void TStateListenerManager::CallbackListener::NotifyStateChanged() {
     mCallback->Run(args);
 }
 
-void TStateListenerManager::NotifyScriptReload() {
+void TStateListenerManager::NotifyReloadScriptStarting() {
     mListeners.clear();
 }
 

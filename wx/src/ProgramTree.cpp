@@ -677,7 +677,7 @@ void ProgramTree::SetDefaultWidth(int inWidth)
 	SetDefaultSize(wxSize(inWidth, 0 /* unused */));
 }
 
-void ProgramTree::NotifyScriptReload()
+void ProgramTree::NotifyReloadScriptStarting()
 {
 	mCardMap.clear();
 	mSequenceMap.clear();

@@ -24,6 +24,7 @@
 #define StateListenerManager_H
 
 #include "TStateDB.h"
+#include "TInterpreter.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -33,7 +34,7 @@ BEGIN_NAMESPACE_FIVEL
 /// C++ Node objects, but we don't have a Node class corresponding to
 /// the interpreter's <node> class.
 ///
-class TStateListenerManager  {
+class TStateListenerManager : public TReloadNotified  {
     class CallbackListener : public TStateListener {
         static uint32 sNextSerialNumber;
         uint32 mSerialNumber;
@@ -55,7 +56,7 @@ public:
     //////////
     /// Unregister all TStateListeners in the manager.
     ///
-    void NotifyScriptReload();
+    void NotifyReloadScriptStarting();
 
     //////////
     /// Register inListener under inName.  You may use inName for more

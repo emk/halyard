@@ -531,11 +531,19 @@ std::vector<TScriptIdentifier> TSchemeInterpreter::GetKnownIdentifiers() {
 	std::vector<TScriptIdentifier> ids;
     while (SCHEME_PAIRP(raw_ids)) {
         Scheme_Object *raw_id = SCHEME_CAR(raw_ids);
-        if (!SCHEME_PAIRP(raw_id))
+        Scheme_Object *cdr, *cddr;
+        if (!SCHEME_PAIRP(raw_id)
+            || !SCHEME_PAIRP((cdr = SCHEME_CDR(raw_id)))
+            || !SCHEME_PAIRP((cddr = SCHEME_CDR(cdr)))
+            || !SCHEME_NULLP(SCHEME_CDR(cddr)))
             gLog.FatalError("Malformed result from %kernel-get-identifiers");
         Scheme_Object *raw_name = SCHEME_CAR(raw_id);
-        Scheme_Object *raw_type = SCHEME_CDR(raw_id);
+        Scheme_Object *raw_type = SCHEME_CAR(cdr);
+        Scheme_Object *raw_hint = SCHEME_CAR(cddr);
         if (!SCHEME_SYMBOLP(raw_name) || !SCHEME_SYMBOLP(raw_type))
+            gLog.FatalError("Malformed result from %kernel-get-identifiers");
+        long hint;
+        if (!scheme_get_int_val(raw_hint, &hint))
             gLog.FatalError("Malformed result from %kernel-get-identifiers");
 		std::string type_str(SCHEME_SYM_VAL(raw_type));
 		TScriptIdentifier::Type type = TScriptIdentifier::UNKNOWN;
@@ -545,7 +553,13 @@ std::vector<TScriptIdentifier> TSchemeInterpreter::GetKnownIdentifiers() {
             type = TScriptIdentifier::FUNCTION;
         else if (type_str == "variable")
             type = TScriptIdentifier::VARIABLE;
-        ids.push_back(TScriptIdentifier(SCHEME_SYM_VAL(raw_name), type));
+        else if (type_str == "constant")
+            type = TScriptIdentifier::CONSTANT;
+        else if (type_str == "class")
+            type = TScriptIdentifier::CLASS;
+        else if (type_str == "template")
+            type = TScriptIdentifier::TEMPLATE;
+        ids.push_back(TScriptIdentifier(SCHEME_SYM_VAL(raw_name), type, hint));
         raw_ids = SCHEME_CDR(raw_ids);
     }
     if (!SCHEME_NULLP(raw_ids))

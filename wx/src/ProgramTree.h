@@ -34,7 +34,7 @@ class StageFrame;
 class ProgramTreeCtrl;
 
 /// Public interface to tree widget describing a Tamale script.
-class ProgramTree : public wxSashLayoutWindow
+class ProgramTree : public wxSashLayoutWindow, public FIVEL_NS TReloadNotified
 {
 	DECLARE_EVENT_TABLE()
 
@@ -87,7 +87,7 @@ public:
 	//////////
 	/// Notify the program tree that script is being reloaded.
 	///
-    void NotifyScriptReload();
+    void NotifyReloadScriptStarting();
 
     //////////
     /// Notify the program tree that the interpreter has moved to a new card.

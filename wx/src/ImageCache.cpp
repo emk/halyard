@@ -148,7 +148,7 @@ wxBitmap ImageCache::GetBitmap(wxString inPath)
 	return bitmap;
 }
 
-void ImageCache::NotifyScriptReload()
+void ImageCache::NotifyReloadScriptStarting()
 {
     // Dump our entire cache when the script gets reloaded.
     mCache.clear();

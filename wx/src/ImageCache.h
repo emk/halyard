@@ -23,8 +23,10 @@
 #if !defined (ImageCache_H)
 #define ImageCache_H
 
+#include "TInterpreter.h"
+
 /// A cache of recently displayed wxBitmap objects.
-class ImageCache
+class ImageCache : public FIVEL_NS TReloadNotified
 {
 	struct CachedImage {
 		wxBitmap bitmap;
@@ -50,7 +52,7 @@ public:
 
 	wxBitmap GetBitmap(wxString inPath);
 
-	void NotifyScriptReload();
+	void NotifyReloadScriptStarting();
 };
 
 #endif // ImageCache_H

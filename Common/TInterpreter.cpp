@@ -46,6 +46,19 @@ TInterpreter::~TInterpreter()
 
 
 //=========================================================================
+//  TReloadNotified Methods
+//=========================================================================
+
+TReloadNotified::TReloadNotified() {
+    TInterpreterManager::AddReloadNotified(this);
+}
+
+TReloadNotified::~TReloadNotified() {
+    TInterpreterManager::RemoveReloadNotified(this);
+}
+
+
+//=========================================================================
 //  TInterpreterManager Methods
 //=========================================================================
 //  This class contains a fairly odd state machine, which is used to
@@ -54,6 +67,7 @@ TInterpreter::~TInterpreter()
 
 TInterpreterManager *TInterpreterManager::sInstance = NULL;
 bool TInterpreterManager::sHaveAlreadyCreatedSingleton = false;
+std::vector<TReloadNotified*> TInterpreterManager::sReloadNotifiedObjects;
 
 TInterpreterManager::TInterpreterManager(
 	TInterpreter::SystemIdleProc inIdleProc)
@@ -132,11 +146,13 @@ void TInterpreterManager::BeginScript()
 
 void TInterpreterManager::LoadAndRunScript()
 {
+    NotifyReloadScriptStarting();
 	try
 	{
 		// Create an interpreter object, and ask it to jump to the
 		// appropriate card.
 		mInterpreter = MakeInterpreter();
+        NotifyReloadScriptSucceeded();
 		mInterpreter->JumpToCardByName(mInitialCardName.c_str());
 
 		// Reset any special variables.
@@ -195,6 +211,35 @@ void TInterpreterManager::RequestRetryLoadScript()
 
 	// Turn off our load error flag, and Run will take care of the rest.
 	mLoadScriptFailed = false;
+}
+
+void TInterpreterManager::AddReloadNotified(TReloadNotified *obj) {
+    ASSERT(std::find(sReloadNotifiedObjects.begin(),
+                     sReloadNotifiedObjects.end(),
+                     obj) == sReloadNotifiedObjects.end());
+    sReloadNotifiedObjects.push_back(obj);
+}
+
+void TInterpreterManager::RemoveReloadNotified(TReloadNotified *obj) {
+    std::vector<TReloadNotified*>::iterator found =
+        std::find(sReloadNotifiedObjects.begin(),
+                  sReloadNotifiedObjects.end(),
+                  obj);
+    ASSERT(found != sReloadNotifiedObjects.end());
+
+    sReloadNotifiedObjects.erase(found);
+}
+
+void TInterpreterManager::NotifyReloadScriptStarting() {
+    std::vector<TReloadNotified*>::iterator i = sReloadNotifiedObjects.begin();
+    for (; i != sReloadNotifiedObjects.end(); ++i)
+        (*i)->NotifyReloadScriptStarting();
+}
+
+void TInterpreterManager::NotifyReloadScriptSucceeded() {
+    std::vector<TReloadNotified*>::iterator i = sReloadNotifiedObjects.begin();
+    for (; i != sReloadNotifiedObjects.end(); ++i)
+        (*i)->NotifyReloadScriptSucceeded();
 }
 
 

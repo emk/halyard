@@ -22,15 +22,28 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		30
+#define VERSION_REV_BIG		32
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.30 (Development)"
+#define VERSION_STRING		"Tamale 0.0.32 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.73  2004/08/04 17:03:40  emk
+ 0.0.32 - 4 Aug 2004 - emk
+
+   * Correct indentation of most special forms.
+   * Support for [] braces in script editor.
+   * Much smarter brace balancing code than is built into Scintilla.
+   * Much more extensive syntax highlighting, including comments,
+     characters, and many different types of identifiers.
+   * Syntax highlighting automatically updates after Reload Scripts.
+   * Bug fixes in file clobber detection code.
+   * New Reload Scripts architecture--objects get notified automatically.
+   * Support for viewing line numbers in script editor.
+
  Revision 1.72  2004/07/30 20:01:01  emk
  0.0.30 - 30 July 2004 - emk
 

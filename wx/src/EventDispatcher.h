@@ -23,10 +23,12 @@
 #ifndef EventDispatcher_H
 #define EventDispatcher_H
 
+#include "TInterpreter.h"
+
 //////////
 /// This class passes events from our GUI to the interpreter.
 ///
-class EventDispatcher : boost::noncopyable
+class EventDispatcher : boost::noncopyable, public FIVEL_NS TReloadNotified
 {
     FIVEL_NS TCallbackPtr mDispatcher;
 	static bool sEnableExpensiveEvents;
@@ -49,7 +51,7 @@ public:
 	//////////
 	/// Notify the EventDispatcher that script is being reloaded.
 	///
-    void NotifyScriptReload();
+    void NotifyReloadScriptStarting();
 
 	//////////
 	/// Turn "expensive" events--idle events, mouse moved events--on or

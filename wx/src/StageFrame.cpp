@@ -626,9 +626,7 @@ void StageFrame::OnReloadScripts(wxCommandEvent &inEvent)
         if (manager->FailedToLoad())
         {
             // The previous attempt to load a script failed, so we need
-            // to try loading it again.  We call NotifyScriptReload to
-			// purge any remaining data from a partially completed load.
-            mStage->NotifyScriptReload();
+            // to try loading it again.
             manager->RequestRetryLoadScript();
         }
         else
@@ -637,9 +635,6 @@ void StageFrame::OnReloadScripts(wxCommandEvent &inEvent)
             ASSERT(TInterpreter::HaveInstance());
             TInterpreter *interp = TInterpreter::GetInstance();
             manager->RequestReloadScript(interp->CurCardName().c_str());
-
-            // Tell our stage that the script is going away.
-            mStage->NotifyScriptReload();
         }
     }
             

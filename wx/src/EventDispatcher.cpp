@@ -48,7 +48,7 @@ void EventDispatcher::SetDispatcher(TCallbackPtr inCallback)
     mDispatcher = inCallback;
 }
 
-void EventDispatcher::NotifyScriptReload()
+void EventDispatcher::NotifyReloadScriptStarting()
 {
     mDispatcher.reset();
 	sEnableExpensiveEvents = false;

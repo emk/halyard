@@ -94,7 +94,7 @@ bool Quake2Engine::Show(bool show)
 }
 
 
-void Quake2Engine::NotifyScriptReload()
+void Quake2Engine::NotifyReloadScriptStarting()
 {
 	// Hide the Quake 2 window, if necessary.  If the reloaded script wants
 	// Quake 2 to be visible, it will show it.

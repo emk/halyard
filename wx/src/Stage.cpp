@@ -246,22 +246,12 @@ void Stage::NotifyExitCard()
         mTextCtrl->Hide();
 }
 
-void Stage::NotifyScriptReload()
+void Stage::NotifyReloadScriptStarting()
 {
 	mLastCard = "";
-    gStateListenerManager.NotifyScriptReload();
-	mEventDispatcher->NotifyScriptReload();
-	mImageCache->NotifyScriptReload();
-	mFrame->GetProgramTree()->NotifyScriptReload();
     NotifyExitCard();
 	DeleteElements();
 	gStyleSheetManager.RemoveAll();
-
-	// For now, treat Quake 2 as a special case.
-#if CONFIG_HAVE_QUAKE2
-	if (Quake2Engine::IsInitialized())
-		Quake2Engine::GetInstance()->NotifyScriptReload();
-#endif // CONFIG_HAVE_QUAKE2
 }
 
 void Stage::NotifyElementsChanged()

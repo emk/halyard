@@ -37,7 +37,7 @@ class TCallback;
 /// is a singleton, and once created, it remains permanently attached
 /// to the Stage object (although we may hide and show it).
 ///
-class Quake2Engine : public wxQuake2Window
+class Quake2Engine : public wxQuake2Window, public FIVEL_NS TReloadNotified
 {
 	typedef std::map<std::string,FIVEL_NS TCallbackPtr> CallbackMap;
 
@@ -76,7 +76,7 @@ public:
     //////////
     /// Notify the Quake2Engine that the script is being reloaded.
     ///
-	void NotifyScriptReload();
+	void NotifyReloadScriptStarting();
 
 	//////////
 	/// Register a Scheme callback as a Quake 2 command.

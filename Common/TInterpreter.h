@@ -39,23 +39,43 @@ public:
         KEYWORD,  //< For Scheme, includes a macro or special form.
         FUNCTION,
         VARIABLE,
+        CONSTANT,
+        CLASS,
+        TEMPLATE,
         UNKNOWN
     };
 
 private:
 	std::string mName;
     Type mType;
+    int mIndentHint;
 
 public:
-	TScriptIdentifier(std::string inName, Type inType)
-        : mName(inName), mType(inType) {}
+	TScriptIdentifier(std::string inName, Type inType, int inIndentHint = 0)
+        : mName(inName), mType(inType), mIndentHint(inIndentHint) {}
 
     /// Get the name of this identifier.
-	std::string GetName() { return mName; }
+	std::string GetName() const { return mName; }
 
     /// Get the type of this identifier.
-    Type GetType() { return mType; }
+    Type GetType() const { return mType; }
+
+    /// Get the indentation hint for this identifier.  The meaning of this
+    /// value is scripting-language-specific.
+    int GetIndentHint() const { return mIndentHint; }
+
+    /// Return true if two identifiers are equal.  (For use with STL.)
+    operator==(const TScriptIdentifier &right) const {
+        return mName == right.mName;
+    }
+
+    /// Return true if the first identifier is less than the second.  (For
+    /// use with STL.)
+    operator<(const TScriptIdentifier &right) const {
+        return mName < right.mName;
+    }
 };
+
 
 //////////
 /// TInterpreter provides an abstract interface to a programming language
@@ -266,6 +286,19 @@ public:
 
 
 //////////
+/// Objects of this class are automatically notified when the script is
+/// is reloaded.
+///
+class TReloadNotified {
+public:
+    TReloadNotified();
+    virtual ~TReloadNotified();
+    virtual void NotifyReloadScriptStarting() {}
+    virtual void NotifyReloadScriptSucceeded() {}
+};
+
+
+//////////
 /// This class is in charge of creating, running and destroying interpreters
 /// as required by the application.  It handles such features as redoscript,
 /// switchscript, etc.  (These features are implemented by a separate
@@ -280,6 +313,7 @@ class TInterpreterManager : boost::noncopyable
 {
 	static TInterpreterManager *sInstance;
 	static bool sHaveAlreadyCreatedSingleton;
+    static std::vector<TReloadNotified*> sReloadNotifiedObjects;
 
 	//////////
 	/// We call this procedure to yield time to the system.
@@ -404,6 +438,16 @@ public:
 	static TInterpreterManager *GetInstance()
 		{ ASSERT(sInstance); return sInstance; }
 
+    //////////
+    /// Request that an object be notified of script reload events.
+    ///
+    static void AddReloadNotified(TReloadNotified *obj);
+
+    /////////
+    /// Requent an end to reload notifications for this object.
+    ///
+    static void RemoveReloadNotified(TReloadNotified *obj);
+
 protected:
 	//////////
 	/// Create a new TInterpreter object with all the appropriate
@@ -421,6 +465,16 @@ private:
 	/// Load and run a script by calling MakeInterpreter.
 	///
 	void LoadAndRunScript();
+
+    //////////
+    /// Let everybody know we're starting to reload the script.
+    ///
+    void NotifyReloadScriptStarting();
+
+    //////////
+    /// Let everybody know we're succeeded in reloading the script.
+    ///
+    void NotifyReloadScriptSucceeded();
 };
 
 END_NAMESPACE_FIVEL

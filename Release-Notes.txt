@@ -1,5 +1,17 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.32 - 4 Aug 2004 - emk
+
+  * Correct indentation of most special forms.
+  * Support for [] braces in script editor.
+  * Much smarter brace balancing code than is built into Scintilla.
+  * Much more extensive syntax highlighting, including comments,
+    characters, and many different types of identifiers.
+  * Syntax highlighting automatically updates after Reload Scripts.
+  * Bug fixes in file clobber detection code.
+  * New Reload Scripts architecture--objects get notified automatically.
+  * Support for viewing line numbers in script editor.
+
 0.0.31 - 2 Aug 2004 - emk
 
   * Fixed alpha-compositing bug (which affected lots of text).

@@ -23,6 +23,7 @@
 #ifndef Stage_H
 #define Stage_H
 
+#include "TInterpreter.h"
 #include "AppGlobals.h"
 #include "DirtyList.h"
 #include "DrawingContextStack.h"
@@ -39,7 +40,7 @@ class TransitionManager;
 class DrawingArea;
 
 /// The window where all actual script output and interaction occurs.
-class Stage : public wxWindow
+class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 {
 	//////////
 	/// A list of Elements.
@@ -369,7 +370,7 @@ public:
     //////////
     /// Notify the stage that the script is being reloaded.
     ///
-    void NotifyScriptReload();
+    void NotifyReloadScriptStarting();
 
     //////////
     /// Let the stage know that the list of active elements has changed.

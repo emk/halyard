@@ -56,18 +56,31 @@ Soon:
 / Save on reload
 / Reload on change
 
-  Fully implement square braces
-  Highlight keywords
- 
-  Indent keywords intelligently
-  Indent head forms of macros by 4 spaces
-  Indent certain macros like functions: AND, OR, PROVIDE?
+/ Fully implement square braces
+/ Highlight argument keywords
+/ Highlight more types of identifiers
+/   Keywords Functions Variables Classes Constants Templates
 
-  Fix brace balancing to handle multiple brace types
+/ Highlight Scheme character constants
+/ Fully handle #| |# comments
+
+/ Line numbers
 
 / Fix deletion of last tab
 / Fix window title bar to show file name
-  Fix accelerator for Replace All
+/ Fix accelerator for Replace All
+/ Fix brace balancing to handle multiple brace types
+
+/ Indent head forms of macros by 4 spaces
+/ Indent certain macros like functions: AND, OR, PROVIDE?
+/ Update indent info for known special forms
+
+/ Update keywords after reloading scripts SUCCESSFULLY
+
+/ Folding:
+/   Expand all
+/   Collapse siblings
+/   Expand siblings
 
 Next:
 
@@ -75,6 +88,12 @@ Next:
     Meta-dot (aka "go to definition")
     Buffer index
     Function argument tooltips
+
+Sometime:
+
+  Line & column numbers
+  Indent keywords intelligently
+  Syntax highlighting can't recognize identifiers at end of file
 
 */
 
@@ -91,8 +110,10 @@ namespace {
 //  ScriptTextCtrl Definition & Methods
 //=========================================================================
 
-class ScriptTextCtrl : public wxStyledTextCtrl {
+class ScriptTextCtrl : public wxStyledTextCtrl, public TReloadNotified {
     enum {
+        /// The margin where we put our line numbers.
+        MARGIN_LINENUM = 0,
         /// The number of the margin where we put our fold widgets.
         MARGIN_FOLD = 2
     };
@@ -121,6 +142,7 @@ class ScriptTextCtrl : public wxStyledTextCtrl {
             : start1(s1), end1(e1), start2(s2), end2(e2) {}
     };
 
+    bool mShowLineNums;
     IdentifierList mIdentifiers;
     BufferSpanTable mSpans;
 
@@ -130,6 +152,7 @@ class ScriptTextCtrl : public wxStyledTextCtrl {
 public:    
     ScriptTextCtrl(wxWindow *parent, wxWindowID id = -1);
 
+private:
     void SetStatusText(const wxString &text);
 
     bool IsBraceAt(int pos);
@@ -140,7 +163,13 @@ public:
     bool IsIdentifierChar(char c);
     bool IsIdentifierStartChar(char c);
     bool IsTokenStart(int pos);
-    std::string GetKeywords();
+
+    bool BracesMatch(char brace1, char brace2);
+    int BetterBraceMatch(int pos);
+
+    void NotifyReloadScriptSucceeded();
+    void UpdateIdentifierInformation();
+    std::string GetKeywords(TScriptIdentifier::Type type);
     IdentifierList GetCompletions(const std::string &partial);
 
     void OnModified(wxStyledTextEvent &event);
@@ -167,6 +196,9 @@ public:
     void OnUpdateUiWrapLines(wxUpdateUIEvent &event);
     void OnShowWhitespace(wxCommandEvent &event);
     void OnUpdateUiShowWhitespace(wxUpdateUIEvent &event);
+    void OnShowLineNums(wxCommandEvent &event);
+    void OnUpdateUiShowLineNums(wxUpdateUIEvent &event);
+    void OnExpandAll(wxCommandEvent &event);
 
     void OnFind(wxCommandEvent &event);
     void OnFindAgain(wxCommandEvent &event);
@@ -235,6 +267,11 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
     EVT_MENU(FIVEL_SHOW_WHITESPACE, ScriptTextCtrl::OnShowWhitespace)
     EVT_UPDATE_UI(FIVEL_SHOW_WHITESPACE,
                   ScriptTextCtrl::OnUpdateUiShowWhitespace)
+    EVT_MENU(FIVEL_SHOW_LINENUMS, ScriptTextCtrl::OnShowLineNums)
+    EVT_UPDATE_UI(FIVEL_SHOW_LINENUMS,
+                  ScriptTextCtrl::OnUpdateUiShowLineNums)
+    EVT_MENU(FIVEL_EXPAND_ALL, ScriptTextCtrl::OnExpandAll)
+    EVT_UPDATE_UI(FIVEL_EXPAND_ALL, ScriptTextCtrl::OnUpdateUiAlwaysOn)
 
     // Search menu.
     EVT_MENU(wxID_FIND, ScriptTextCtrl::OnFind)
@@ -259,10 +296,6 @@ END_EVENT_TABLE()
 ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id)
     : wxStyledTextCtrl(parent, id)
 {
-    // If possible, fetch an identifier list.
-    if (TInterpreter::HaveInstance())
-        mIdentifiers = TInterpreter::GetInstance()->GetKnownIdentifiers();
-
     // Set up some basic text editing parameters.
     SetTabWidth(4);
     SetUseTabs(false);
@@ -293,14 +326,29 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id)
     StyleSetBold(wxSTC_STYLE_BRACEBAD, true);
     StyleSetForeground(wxSTC_STYLE_BRACEBAD, *wxRED);
     StyleSetForeground(wxSTC_LISP_COMMENT, wxColor(0xC0, 0x00, 0x00));
+    StyleSetForeground(wxSTC_LISP_COMMENTBLOCK, wxColor(0xC0, 0x00, 0x00));
     StyleSetForeground(wxSTC_LISP_KEYWORD, wxColor(0x00, 0x00, 0xC0));
-    StyleSetForeground(wxSTC_LISP_STRING, wxColor(0x80, 0x80, 0x80));
+    StyleSetForeground(wxSTC_LISP_STRING, wxColor(0x80, 0x40, 0x00));
+    StyleSetForeground(wxSTC_LISP_CHAR, wxColor(0x80, 0x40, 0x00));
     StyleSetForeground(wxSTC_LISP_STRINGEOL, *wxRED);
+    StyleSetForeground(wxSTC_LISP_KEYWORDARG, wxColor(0x80, 0x00, 0x80));
+    StyleSetForeground(wxSTC_LISP_WORD1, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_WORD2, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_WORD3, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_WORD4, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_WORD5, wxColor(0x00, 0x60, 0x20));
+
     // Boring: wxSTC_LISP_NUMBER, wxSTC_LISP_IDENTIFIER, wxSTC_LISP_OPERATOR
+
+    // Set up line numbers.
+    SetMarginWidth(MARGIN_LINENUM, 0);
+    SetMarginType(MARGIN_LINENUM, wxSTC_MARGIN_NUMBER);
+    mShowLineNums = false;
 
     // Set up folding.
     //SetStyleBits(5); Not actually necessary...
     SetProperty("fold", "1");
+    SetProperty("fold.compact", "0"); // Hiding blank lines is weird...
     SetMarginWidth(MARGIN_FOLD, 0);
     SetMarginType(MARGIN_FOLD, wxSTC_MARGIN_SYMBOL);
     SetMarginMask(MARGIN_FOLD, wxSTC_MASK_FOLDERS);
@@ -315,8 +363,7 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id)
     MarkerDefine(wxSTC_MARKNUM_FOLDERTAIL, wxSTC_MARK_EMPTY);
     SetFoldFlags(16); // Draw fold line...
 
-    // Keywords.
-    SetKeyWords(0, GetKeywords().c_str());
+    UpdateIdentifierInformation();
 }
 
 void ScriptTextCtrl::SetStatusText(const wxString &text) {
@@ -396,11 +443,79 @@ bool ScriptTextCtrl::IsTokenStart(int pos) {
     return true;
 }
  
-std::string ScriptTextCtrl::GetKeywords() {
+bool ScriptTextCtrl::BracesMatch(char brace1, char brace2) {
+    switch (brace1) {
+        case '(': return brace2 == ')';
+        case '[': return brace2 == ']';
+        case '{': return brace2 == '}';
+        case '<': return brace2 == '>';
+        case ')': return brace2 == '(';
+        case ']': return brace2 == '[';
+        case '}': return brace2 == '{';
+        case '>': return brace2 == '<';
+        default:
+            ASSERT(0);
+            return false;
+    }
+}
+
+/// Like the built-in BraceMatch function, but we don't get confused by
+/// "[(])".  I don't know why this isn't included in Scintilla.
+int ScriptTextCtrl::BetterBraceMatch(int pos) {
+    ASSERT(IsBraceAt(pos));
+
+    // Push our starting brace onto the stack.
+    char c = GetCharAt(pos);
+    std::vector<char> stack;
+    stack.push_back(c);
+
+    // Decide which direction to travel.
+    int incr = IsOpenBrace(c) ? 1 : -1;
+
+    // Iterate.
+    int len = GetTextLength();
+    for (int i = pos + incr; 0 <= i && i < len; i += incr) {
+        ASSERT(stack.size() > 0);
+        if (IsBraceAt(i)) {
+            c = GetCharAt(i);
+            if (BracesMatch(c, stack.back())) {
+                stack.pop_back();
+                if (stack.size() == 0)
+                    return i;
+            } else {
+                stack.push_back(c);
+            }
+        }
+    }
+    return wxSTC_INVALID_POSITION;
+}
+
+void ScriptTextCtrl::NotifyReloadScriptSucceeded() {
+    UpdateIdentifierInformation();
+}
+
+void ScriptTextCtrl::UpdateIdentifierInformation() {
+    // If possible, fetch an identifier list.
+    if (TInterpreter::HaveInstance())
+        mIdentifiers = TInterpreter::GetInstance()->GetKnownIdentifiers();
+
+    // Install keywords.
+    SetKeyWords(0, GetKeywords(TScriptIdentifier::KEYWORD).c_str());
+    SetKeyWords(1, GetKeywords(TScriptIdentifier::FUNCTION).c_str());
+    SetKeyWords(2, GetKeywords(TScriptIdentifier::VARIABLE).c_str());
+    SetKeyWords(3, GetKeywords(TScriptIdentifier::CONSTANT).c_str());
+    SetKeyWords(4, GetKeywords(TScriptIdentifier::CLASS).c_str());
+    SetKeyWords(5, GetKeywords(TScriptIdentifier::TEMPLATE).c_str());
+
+    // Recolourize the document with new keywords.
+    Colourise(0, GetTextLength());
+}
+
+std::string ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
 	std::string result;
     IdentifierList::iterator i = mIdentifiers.begin();
     for (; i != mIdentifiers.end(); ++i) {
-        if (i->GetType() == TScriptIdentifier::KEYWORD) {
+        if (i->GetType() == type) {
             if (result.size() != 0)
                 result += " ";
             result += i->GetName();
@@ -420,6 +535,7 @@ ScriptTextCtrl::GetCompletions(const std::string &partial) {
         if (name.compare(0, partial.size(), partial) == 0)
             result.push_back(*i);
     }
+    std::sort(result.begin(), result.end());
     return result;
 }
 
@@ -445,7 +561,28 @@ void ScriptTextCtrl::OnModified(wxStyledTextEvent &event) {
 void ScriptTextCtrl::OnMarginClick(wxStyledTextEvent &event) {
     if (event.GetMargin() == MARGIN_FOLD) {
         int line = LineFromPosition(event.GetPosition());
-        ToggleFold(line);
+        if (event.GetModifiers() == 0) {
+            // Toggle just this line.
+            ToggleFold(line);
+        } else if (event.GetModifiers() == wxSTC_SCMOD_SHIFT) {
+            // Set all siblings to same state.
+            bool goal_state = !GetFoldExpanded(line);
+            int parent = GetFoldParent(line);
+            int first_sibling, last_sibling;
+            if (parent != wxSTC_INVALID_POSITION) {
+                first_sibling = parent + 1;
+                last_sibling = GetLastChild(parent, -1);
+            } else {
+                first_sibling = 0;
+                last_sibling = GetLineCount() - 1;
+            }
+            for (int i = first_sibling; i <= last_sibling; i++) {
+                if (GetFoldExpanded(i) != goal_state)
+                    ToggleFold(i);
+                i = GetLastChild(i, -1);
+            }
+            EnsureVisibleEnforcePolicy(line);
+        }
     }   
 }
 
@@ -482,8 +619,7 @@ void ScriptTextCtrl::OnUpdateTextUI(wxStyledTextEvent &event) {
         brace_pos = pos;
     int brace_match_pos = wxSTC_INVALID_POSITION;
     if (brace_pos != wxSTC_INVALID_POSITION)
-        /// \bug BraceMatch doesn't balance multiple brace types correctly.
-        brace_match_pos = BraceMatch(brace_pos);
+        brace_match_pos = BetterBraceMatch(brace_pos);
 
     // Highlight braces appropriately.
     if (brace_match_pos != wxSTC_INVALID_POSITION)
@@ -500,15 +636,15 @@ void ScriptTextCtrl::OnKeyDown(wxKeyEvent &event) {
         // Handle TAB ourselves, before Scintilla sees it.
         IndentSelection();
     } else if (event.GetKeyCode() == '+' &&
-               event.ControlDown() && !event.AltDown() &&
-               !event.MetaDown() && !event.ShiftDown()) {
+               event.ControlDown() && !event.AltDown() && !event.MetaDown()) {
         // HACK - Under Windows, a keypress of Ctrl-= gets sent as Ctrl-+,
         // causing our Ctrl-= accelerator to fail.  Apply a cluestick of
         // dubious origins.
         /// \todo Move this code up to ScriptEditor class?
-        wxUpdateUIEvent update(wxID_REPLACE);
+        int id = (event.ShiftDown()) ? wxID_REPLACE_ALL : wxID_REPLACE;
+        wxUpdateUIEvent update(id);
         if (ProcessEvent(update) && update.GetEnabled()) {            
-            wxCommandEvent command(wxEVT_COMMAND_MENU_SELECTED, wxID_REPLACE);
+            wxCommandEvent command(wxEVT_COMMAND_MENU_SELECTED, id);
             ProcessEvent(command);
         }
     } else {
@@ -592,6 +728,26 @@ void ScriptTextCtrl::OnShowWhitespace(wxCommandEvent &event) {
 void ScriptTextCtrl::OnUpdateUiShowWhitespace(wxUpdateUIEvent &event) {
     event.Enable(true);
 	event.Check(GetViewWhiteSpace() ? true : false);
+}
+
+void ScriptTextCtrl::OnShowLineNums(wxCommandEvent &event) {
+    mShowLineNums = !mShowLineNums;
+    if (mShowLineNums)
+        SetMarginWidth(MARGIN_LINENUM, 45);
+    else
+        SetMarginWidth(MARGIN_LINENUM, 0);
+}
+
+void ScriptTextCtrl::OnUpdateUiShowLineNums(wxUpdateUIEvent &event) {
+    event.Enable(true);
+    event.Check(mShowLineNums);
+}
+
+void ScriptTextCtrl::OnExpandAll(wxCommandEvent &event) {
+    size_t count = GetLineCount();
+    for (size_t i = 0; i < count; ++i)
+        if (!GetFoldExpanded(i))
+            ToggleFold(i);
 }
 
 void ScriptTextCtrl::OnFind(wxCommandEvent &event) {
@@ -925,6 +1081,8 @@ void ScriptTextCtrl::AutoCompleteIdentifier() {
 }
 
 void ScriptTextCtrl::IndentSelection() {
+    BeginUndoAction();
+
     // Figure out which lines are in the selection.
     int begin_pos, end_pos;
     GetSelection(&begin_pos, &end_pos);
@@ -954,6 +1112,8 @@ void ScriptTextCtrl::IndentSelection() {
         SetSelectionStart(PositionFromLine(begin_line));
         SetSelectionEnd(GetLineEndPosition(end_line));
     }
+
+    EndUndoAction();
 }
 
 void ScriptTextCtrl::IndentLine(int inLine) {
@@ -1041,8 +1201,30 @@ int ScriptTextCtrl::CalculateSyntaxIndentation(
     int inParentPos,
     const std::vector<int> &inSiblingPos)
 {
-    /// \todo Count sub-forms correctly.
-    return (GetBaseIndentFromPosition(inParentPos) + 2);
+    // Extract the name of our special form or macro.
+    int parent_end = inParentPos+1;
+    int length = GetTextLength();
+    while (parent_end < length && GetStyleAt(parent_end) == wxSTC_LISP_KEYWORD)
+        parent_end++;
+    std::string key(GetTextRange(inParentPos+1, parent_end).mb_str());
+
+    // Look up the number of head forms used by this macro.
+    /// \todo Linear probe is *slow*.
+    int head_forms = 0;
+    for (size_t i = 0; i < mIdentifiers.size(); i++) {
+        if (mIdentifiers[i].GetName() == key) {
+            head_forms = mIdentifiers[i].GetIndentHint();
+            break;
+        }
+    }
+
+    // Calculate our indentation.
+    if (head_forms == -1)
+        return CalculateFunctionIndentation(inParentPos, inSiblingPos);
+    else if (static_cast<int>(inSiblingPos.size()) <= head_forms)
+        return (GetBaseIndentFromPosition(inParentPos) + 4);
+    else
+        return (GetBaseIndentFromPosition(inParentPos) + 2);
 }
 
 int ScriptTextCtrl::CalculateFunctionIndentation(
@@ -1218,6 +1400,7 @@ void ScriptDoc::WriteDocument() {
     /// \todo How does wxWindows deal with errors returned
     /// from close()?  These usually indicate that a previous
     /// write failed.
+    file.Close();
 
     UpdateSavePointModTime();
 
@@ -1237,6 +1420,7 @@ void ScriptDoc::ReadDocument() {
     if (file.Read(&data[0], length) != length)
         THROW(("Error reading from file: "+path).mb_str());
     SetText(wxString(&data[0], length));
+    file.Close();
 
     UpdateSavePointModTime();
 
@@ -1354,6 +1538,8 @@ BEGIN_EVENT_TABLE(ScriptEditor, wxFrame)
 
     EVT_UPDATE_UI(FIVEL_WRAP_LINES, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(FIVEL_SHOW_WHITESPACE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_SHOW_LINENUMS, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_EXPAND_ALL, ScriptEditor::DisableUiItem)
 
     EVT_UPDATE_UI(wxID_UNDO, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REDO, ScriptEditor::DisableUiItem)
@@ -1465,6 +1651,11 @@ ScriptEditor::ScriptEditor()
                                "Wrap long lines at the window edge.");
     view_menu->AppendCheckItem(FIVEL_SHOW_WHITESPACE, "Show White&space",
                                "View space and end-of-line characters.");
+    view_menu->AppendCheckItem(FIVEL_SHOW_LINENUMS, "Show Line &Numbers",
+                               "View line numbers in the left margin.");
+    view_menu->AppendSeparator();
+    view_menu->Append(FIVEL_EXPAND_ALL, "&Expand All",
+                      "Expand all collapsed lines of code.");
 
     // Set up our Search menu.
     wxMenu *search_menu = new wxMenu();
@@ -1480,7 +1671,7 @@ ScriptEditor::ScriptEditor()
     search_menu->AppendSeparator();
     search_menu->Append(wxID_REPLACE, "&Replace\tCtrl+=",
                         "Replace the selected text.");
-    search_menu->Append(wxID_REPLACE_ALL, "Replace &All\tCtrl+Alt+=",
+    search_menu->Append(wxID_REPLACE_ALL, "Replace &All\tCtrl+Shift+=",
                         "Replace all occurances of the search string.");
     search_menu->Append(FIVEL_REPLACE_AND_FIND_AGAIN,
                         "Re&place and Find Again\tCtrl+T",
