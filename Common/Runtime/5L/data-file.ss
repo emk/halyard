@@ -7,14 +7,17 @@
 
            pref
            set-pref!
+           clear-prefs!
 
            user-id
            set-user-id!
            
            global-pref
            set-global-pref!
+           clear-global-prefs!
            user-pref
            set-user-pref!
+           clear-user-prefs!
 
            define-global-pref
            define-user-pref
@@ -49,23 +52,31 @@
     the-table)
 
   (define (write-data table key datum)
+    (define the-table (find-table table))
+    (hash-table-put! the-table key datum)
+    (flush-data table))
+
+  (define (flush-data table)
     (define path "Data")
     (define dir (ensure-dir-exists path))
     (define filename (cat table ".dat"))
     (define file-with-path (build-path dir filename))
     (define file-port (open-output-file file-with-path 'replace))
     (define the-table (find-table table))
-    (hash-table-put! the-table key datum)
     (hash-table-for-each the-table (lambda (key value)
                                      (write key file-port)
                                      (display "\t" file-port)
                                      (write value file-port)
                                      (newline file-port)))
     (close-output-port file-port))
-
+    
+  (define (clear-data table)
+    (hash-table-put! *tables* table (make-hash-table 'equal))
+    (flush-data table))
 
   (define pref read-data)
   (define set-pref! write-data)
+  (define clear-prefs! clear-data)
 
   (define *user-id* #f)
   (define (user-id)
@@ -79,11 +90,15 @@
     (pref (user-id) key default))
   (define (set-user-pref! key value)
     (set-pref! (user-id) key value))
+  (define (clear-user-prefs!)
+    (clear-prefs! (user-id)))
 
   (define (global-pref key &key (default #f))
     (pref 'global key :default default))
   (define (set-global-pref! key value)
     (set-pref! 'global key value))
+  (define (clear-global-prefs!)
+    (clear-prefs! 'global))
 
   ;; Internal helper functions.
   (define (%pref table key default)
