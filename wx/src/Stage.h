@@ -3,6 +3,8 @@
 #ifndef Stage_H
 #define Stage_H
 
+#include <wx/display.h>
+
 #include <deque>
 
 #include "GraphicsTools.h"
@@ -88,6 +90,12 @@ class StageFrame : public wxFrame, public model::View
     wxMenu *mHelpMenu;
 
 	//////////
+	// The minimum allowable size of our stage frame.  We save this so
+	// we can temporarily change it for full-screen mode.
+	//
+	wxSize mMinimumFrameSize;
+
+	//////////
 	// Have we re-loaded our layout?
 	//
 	bool mHaveLoadedFrameLayout;
@@ -108,6 +116,29 @@ class StageFrame : public wxFrame, public model::View
 	// Save the layout for the current frame if it's safe to do so.
 	//
 	void MaybeSaveFrameLayout();
+
+	//////////
+	// The best video mode for full-screen displays.  We calculate this
+	// once at startup.
+	//
+#if wxUSE_DISPLAY
+	wxVideoMode mFullScreenVideoMode;
+#endif
+
+	//////////
+	// Calculate the best video mode to use for full-screen displays.
+	//
+	void FindBestFullScreenVideoMode();
+
+	//////////
+	// Switch the video mode to full-screen, if possible.
+	//
+	void SetFullScreenVideoMode();
+
+	//////////
+	// Switch the video mode back to normal, if possible.
+	//
+	void ResetVideoMode();
 
 public:
     //////////

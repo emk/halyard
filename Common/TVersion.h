@@ -17,15 +17,21 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		2
+#define VERSION_REV_BIG		3
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.2 (Development)"
+#define VERSION_STRING		"Tamale 0.0.3 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.45  2003/05/09 17:05:31  emk
+   * Very naive implementation of screen resizing--this has no sanity
+     checks, no warnings, and probably dies a miserable death if
+     multiple monitors are involved.  However, it does fix the bug
+     where windows would not be properly centered in full-screen mode.
+
  Revision 1.44  2003/05/03 19:14:27  emk
  Tamale 0.0.2: Lots of minor new features, including transparency and
  sequences.

@@ -54,7 +54,7 @@ class StageBackground : public wxSashLayoutWindow
 	DECLARE_EVENT_TABLE();
 
 	StageFrame *mStageFrame;
-	bool mHaveStage;
+	Stage *mStage;
 
 	void OnSize(wxSizeEvent& event);
 
@@ -62,6 +62,8 @@ public:
 	StageBackground(StageFrame *inStageFrame);
 	void UpdateColor();
 	void CenterStage(Stage *inStage);
+
+	void UpdateStagePosition();
 };
 
 BEGIN_EVENT_TABLE(StageBackground, wxSashLayoutWindow)
@@ -71,7 +73,7 @@ END_EVENT_TABLE()
 StageBackground::StageBackground(StageFrame *inStageFrame)
 	: wxSashLayoutWindow(inStageFrame, -1, wxDefaultPosition, wxDefaultSize,
 						 wxNO_BORDER),
-	  mStageFrame(inStageFrame), mHaveStage(false)
+	  mStageFrame(inStageFrame), mStage(NULL)
 {
 	if (mStageFrame->IsFullScreen())
 		SetBackgroundColour(STAGE_BACKGROUND_COLOR);
@@ -79,10 +81,25 @@ StageBackground::StageBackground(StageFrame *inStageFrame)
 		SetBackgroundColour(STAGE_BACKGROUND_COLOR_NEUTRAL);
 }
 
+void StageBackground::UpdateStagePosition()
+{
+	if (mStage)
+	{
+		// Calling CentreOnParent produces weird results when the size
+		// of stage is exactly equal to the size of background (and I've
+		// tracked down enough wxWindows bugs this afternoon).  So let's
+		// just do this by hand.
+		wxSize bg_size = GetClientSize();
+		wxSize stage_size = mStage->GetClientSize();
+		int xpos = (bg_size.GetWidth() - stage_size.GetWidth()) / 2;
+		int ypos = (bg_size.GetHeight() - stage_size.GetHeight()) / 2;
+		mStage->Move(xpos, ypos);
+	}
+}
+
 void StageBackground::OnSize(wxSizeEvent &WXUNUSED(event))
 {
-    if (GetAutoLayout())
-        Layout();
+	UpdateStagePosition();
 }
 
 void StageBackground::UpdateColor()
@@ -98,16 +115,9 @@ void StageBackground::UpdateColor()
 
 void StageBackground::CenterStage(Stage *inStage)
 {
-	ASSERT(!mHaveStage);
-	mHaveStage = true;
-
-	// Align our stage within the StageBackground using a pair of
-    // sizers.  I arrived at these parameters using trial and error.
-    wxBoxSizer *v_sizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *h_sizer = new wxBoxSizer(wxHORIZONTAL);
-    v_sizer->Add(h_sizer, 1 /* stretch */, wxALIGN_CENTER, 0);
-    h_sizer->Add(inStage, 0 /* no stretch */, wxALIGN_CENTER, 0);
-    SetSizer(v_sizer);
+	ASSERT(!mStage);
+	mStage = inStage;
+	UpdateStagePosition();
 }
 
 
@@ -293,12 +303,15 @@ StageFrame::StageFrame(wxSize inSize)
 
 	// Don't allow the window to get any smaller.
 	// XXX - This probably isn't a reliable way to do this.
-	wxSize min_size = GetSize();
-	SetSizeHints(min_size.GetWidth(), min_size.GetHeight());
+	mMinimumFrameSize = GetSize();
+	SetSizeHints(mMinimumFrameSize.GetWidth(), mMinimumFrameSize.GetHeight());
 
 	// Re-load our saved frame layout.  We can't do this until after
 	// our setup is completed.
 	LoadFrameLayout();
+
+	// Calculate this once at startup.
+	FindBestFullScreenVideoMode();
 }
 
 wxPoint StageFrame::LoadFramePosition()
@@ -375,11 +388,102 @@ void StageFrame::MaybeSaveFrameLayout()
 				  mProgramTree->GetSize().GetWidth());
 }
 
+#if !wxUSE_DISPLAY
+void StageFrame::FindBestFullScreenVideoMode() {}
+void StageFrame::SetFullScreenVideoMode() {}
+void StageFrame::ResetVideoMode() {}
+#else // wxUSE_DISPLAY
+
+void StageFrame::FindBestFullScreenVideoMode()
+{
+	// TODO - DirectX support is broken in wxWindows.  A fair bit of work
+	// is required to fix it.  For now, leave it alone.
+	//wxDisplay::UseDirectX(true);
+	wxDisplay display;
+
+	// Search for the most promising mode.
+	wxArrayVideoModes modes = display.GetModes();
+	mFullScreenVideoMode = wxDefaultVideoMode;
+	wxSize min_size = mStage->GetStageSize();
+	for (int i = 0; i < modes.GetCount(); i++)
+	{
+		wxVideoMode &mode = modes[i];
+		gDebugLog.Log("Found mode: %dx%d, %d bit, %d Hz",
+					  mode.w, mode.h, mode.bpp, mode.refresh);
+
+		// See if the video mode is good enough to display our content.
+		if (mode.bpp >= 24 &&
+			mode.w >= min_size.GetWidth() && mode.h >= min_size.GetHeight())
+		{
+			// If the video mode is better than what we have, keep.
+			if (mFullScreenVideoMode == wxDefaultVideoMode ||
+				(mode.w <= mFullScreenVideoMode.w &&
+				 mode.h <= mFullScreenVideoMode.h))
+			{
+				mFullScreenVideoMode = mode;
+			}
+			
+		}
+	}
+
+	// DANGER - We must clear the refresh rate here.  This causes the OS
+	// to pick a refresh rate for us, depending on what the OS and the
+	// video card drivers think is safe.  We can't simply choose the highest
+	// advertised refresh rate, because it's *still* (in 2003) possible to
+	// damage monitors by setting high refresh rates.  Unfortunately, this
+	// may cause Windows to choose ridiculously low refresh rates on some
+	// systems.  That's the price of safety.
+	mFullScreenVideoMode.refresh = 0;
+
+	// Log the video mode we chose.
+	if (mFullScreenVideoMode == wxDefaultVideoMode)
+		gLog.Log("Screen resizing not available.");
+	else
+		gLog.Log("Best full screen mode: %dx%d, %d bit",
+				 mFullScreenVideoMode.w, mFullScreenVideoMode.h,
+				 mFullScreenVideoMode.bpp);
+}
+
+void StageFrame::SetFullScreenVideoMode()
+{
+	if (mFullScreenVideoMode != wxDefaultVideoMode)
+	{
+		wxDisplay display;
+		display.ChangeMode(mFullScreenVideoMode);
+	}
+	mBackground->UpdateStagePosition();
+}
+
+void StageFrame::ResetVideoMode()
+{
+	if (mFullScreenVideoMode != wxDefaultVideoMode)
+	{
+		wxDisplay display;
+		display.ResetMode();
+	}		
+}
+
+#endif // wxUSE_DISPLAY
+
 bool StageFrame::ShowFullScreen(bool show, long style)
 {
 	mProgramTree->Show(!show);
 	mBackground->UpdateColor();
+	if (!show)
+	{
+		ResetVideoMode();
+		SetSizeHints(mMinimumFrameSize.GetWidth(),
+					 mMinimumFrameSize.GetHeight());
+	}
 	bool result = wxFrame::ShowFullScreen(show, style);
+	if (show)
+	{
+		// Set our size hints to exactly the stage size, so we can
+		// avoid inappropriate padding in full screen mode.
+		SetSizeHints(mStage->GetSize().GetWidth(),
+					 mStage->GetSize().GetHeight());
+		SetFullScreenVideoMode();
+	}
 	return result;
 }
 
@@ -701,6 +805,11 @@ void StageFrame::OnSize(wxSizeEvent &WXUNUSED(inEvent))
 
 void StageFrame::OnClose(wxCloseEvent &inEvent)
 {
+	// If we're in full screen mode, leave it, so we don't exit Tamale
+	// with the screen in an awkward resized mode.
+	if (IsFullScreen())
+		ShowFullScreen(false);
+
 	// Ask the user to save any unsaved documents.
 	if (mDocument && mDocument->IsDirty())
 	{

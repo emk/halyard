@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.3 - 9 May 2003 - emk, brian
 
   * When switching from 3D to 2D, blit the Quake display into our
     offscreen buffer to avoid an ugly "cut to black".
@@ -24,8 +24,12 @@ CVS - emk, brian
     SAVE-GRAPHICS and RESTORE-GRAPHICS. To save or restore a
     particular rectangle, use (SAVE-GRAPHICS :bounds (rect ...)) or
     (RESTORE-GRAPHICS :bounds (rect ...))
+  * Very naive implementation of screen resizing--this has no sanity
+    checks, no warnings, and probably dies a miserable death if
+    multiple monitors are involved.  However, it does fix the bug
+    where windows would not be properly centered in full-screen mode.
 
-0.0.2 - 3 April 2003 - emk, brian
+0.0.2 - 3 May 2003 - emk, brian
 
 Now that we're producing real builds again, we're going to start keeping
 this file up to do date.
