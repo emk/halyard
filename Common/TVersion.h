@@ -17,15 +17,26 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		11
+#define VERSION_REV_BIG		12
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.11 (Development)"
+#define VERSION_STRING		"Tamale 0.0.12 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.53  2004/01/05 20:43:28  emk
+ 0.0.12 - 5 Jan 2004 - emk
+
+ Graphics-related bug fixes:
+
+   * Fixed bug where PNG's with 1-bit "mask" transparency were accidentally
+     made transparent in too many places on 16-bit displays.
+   * Fixed bug where opaque overlays with width N (where N*3 is odd) were
+     reporting incorrect bmWidthBytes values under Win2K and causing raw
+     access to look funny.
+
  Revision 1.52  2003/12/31 00:33:01  emk
  0.0.11 - 30 Dec 2003 - emk
 

@@ -1,5 +1,16 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+
+0.0.12 - 5 Jan 2004 - emk
+
+Graphics-related bug fixes:
+
+  * Fixed bug where PNG's with 1-bit "mask" transparency were accidentally
+    made transparent in too many places on 16-bit displays.
+  * Fixed bug where opaque overlays with width N (where N*3 is odd) were
+    reporting incorrect bmWidthBytes values under Win2K and causing raw
+    access to look funny.
+
 0.0.11 - 30 Dec 2003 - emk
 
 TRANSPARENT OVERLAYS!  Added support for alpha-composited layers.  This

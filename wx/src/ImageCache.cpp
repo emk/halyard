@@ -98,7 +98,11 @@ wxBitmap ImageCache::GetBitmap(wxString inPath)
 		ASSERT(!bitmap.Ok());
 		return bitmap; 
 	}
-	wxBitmap bitmap(image);
+    // We MUST use an explicit bit depth here, because wxWindows gets
+    // confused about mask colors when using DDBs instead of DIBs.
+    // Symptom: all colors equivalent to 24-bit mask color using a 16-bit
+    // comparison become transparent.
+	wxBitmap bitmap(image, image.HasAlpha() ? 32 : 24);
 
     // If the image is too big to cache, just return it.
 	size_t size = ImageSize(image);
