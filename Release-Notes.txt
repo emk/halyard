@@ -1,6 +1,20 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-3.4.7 - 24 Feb 2003 - emk
+3.4.8 - 5 Nov 2003 - emk
+
+This engine seems to be working pretty well in my testing, so I'm dropping
+the UNSTABLE disclaimers.  Please test this engine extensively.
+
+  * Made timeouts work correctly if a video stream gets starved part way
+    through.  As an unfortunate side-effect, pausing the movie will turn
+    off any further timeout processing.
+  * Added developer-only movie controller support.  Set _showcontroller to
+    1.  (This will crash if you scrub to the end of the movie, probably
+    because, when forcibly quiting a movie, we don't call
+    UnregisterWindowForMovies and delete the window playing the movie before
+    returning to the event loop.)
+
+3.4.7 - ??? - emk
 
 BEGINNING TO STABLIZE.  Added code to display dialogs when QuickTime
 network errors occur or when the movie times out.  Timeouts are 10 seconds
@@ -11,13 +25,13 @@ affect full screen mode) on a range of machines.  I don't anticipate making
 many more changes before doing a stable build.  Particularly interesting
 are network failures in the middle of a long video, etc.
 
-3.4.6 - 24 Feb 2003 - emk
+3.4.6 - ??? - emk
 
 STILL UNSTABLE.  Fixed network playback in the new QuickTime layer.  This
 should be usable for in-house content testing (and a lot faster than the
 existing engine), but it needs more work before we test the engine.
 
-3.4.5 - 24 Feb 2003 - emk
+3.4.5 - ??? - emk
 
 Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
 (Various parts of the new layer include forward ports from

@@ -306,12 +306,11 @@ void LQuickTime::Cleanup(void)
 //		TInterpreter::GetInstance()->WakeUp();
 
 	mSync = false;
-		
-	if (mMovie != NULL)
-	{
-		delete mMovie;
-		mMovie = NULL;
-	}
+
+    if (mMovie) {
+        delete mMovie;
+        mMovie = NULL;
+    }
 }
 
 //
@@ -499,6 +498,8 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect,
 
 		if (inAudioOnly)
 			options |= TQTMovie::kAudioOnly;
+        if (gVariableManager.GetLong("_showcontroller"))
+            options |= TQTMovie::kEnableMovieController;
 
 		// Start playback.
 		mLooping = false;
@@ -578,6 +579,21 @@ bool LQuickTime::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.5.2.4  2003/11/05 20:59:00  emk
+ 3.4.8 - 5 Nov 2003 - emk
+
+ This engine seems to be working pretty well in my testing, so I'm dropping
+ the UNSTABLE disclaimers.  Please test this engine extensively.
+
+   * Made timeouts work correctly if a video stream gets starved part way
+     through.  As an unfortunate side-effect, pausing the movie will turn
+     off any further timeout processing.
+   * Added developer-only movie controller support.  Set _showcontroller to
+     1.  (This will crash if you scrub to the end of the movie, probably
+     because, when forcibly quiting a movie, we don't call
+     UnregisterWindowForMovies and delete the window playing the movie before
+     returning to the event loop.)
+
  Revision 1.5.2.3  2003/10/30 21:49:39  emk
  3.4.7 - 24 Feb 2003 - emk
 

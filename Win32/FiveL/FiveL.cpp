@@ -1171,6 +1171,7 @@ void SetGlobals(void)
 	gVariableManager.SetLong("_bitdepth", gView->BitDepth());
 
     gVariableManager.SetLong("_mediatimeout", 10);
+    gVariableManager.SetLong("_showcontroller", 0);
 	gVariableManager.SetLong("_QuickTimeVideoPreload", 2000);
 	gVariableManager.SetLong("_QuickTimeVideoCycles", 50);
 	gVariableManager.SetLong("_QuickTimeAudioPreload", 500);
@@ -1278,6 +1279,21 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.13.2.4  2003/11/05 20:59:00  emk
+ 3.4.8 - 5 Nov 2003 - emk
+
+ This engine seems to be working pretty well in my testing, so I'm dropping
+ the UNSTABLE disclaimers.  Please test this engine extensively.
+
+   * Made timeouts work correctly if a video stream gets starved part way
+     through.  As an unfortunate side-effect, pausing the movie will turn
+     off any further timeout processing.
+   * Added developer-only movie controller support.  Set _showcontroller to
+     1.  (This will crash if you scrub to the end of the movie, probably
+     because, when forcibly quiting a movie, we don't call
+     UnregisterWindowForMovies and delete the window playing the movie before
+     returning to the event loop.)
+
  Revision 1.13.2.3  2003/10/30 21:49:39  emk
  3.4.7 - 24 Feb 2003 - emk
 

@@ -17,15 +17,30 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		7
+#define VERSION_REV_BIG		8
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.7 (UNSTABLE!)"
+#define VERSION_STRING		"5L 3.4.8"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.8  2003/11/05 20:58:23  emk
+ 3.4.8 - 5 Nov 2003 - emk
+
+ This engine seems to be working pretty well in my testing, so I'm dropping
+ the UNSTABLE disclaimers.  Please test this engine extensively.
+
+   * Made timeouts work correctly if a video stream gets starved part way
+     through.  As an unfortunate side-effect, pausing the movie will turn
+     off any further timeout processing.
+   * Added developer-only movie controller support.  Set _showcontroller to
+     1.  (This will crash if you scrub to the end of the movie, probably
+     because, when forcibly quiting a movie, we don't call
+     UnregisterWindowForMovies and delete the window playing the movie before
+     returning to the event loop.)
+
  Revision 1.30.2.7  2003/10/30 21:49:05  emk
  3.4.7 - 24 Feb 2003 - emk
 

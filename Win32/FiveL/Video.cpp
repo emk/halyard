@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -698,6 +699,21 @@ bool VideoManager::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.5.2.2  2003/11/05 20:59:00  emk
+ 3.4.8 - 5 Nov 2003 - emk
+
+ This engine seems to be working pretty well in my testing, so I'm dropping
+ the UNSTABLE disclaimers.  Please test this engine extensively.
+
+   * Made timeouts work correctly if a video stream gets starved part way
+     through.  As an unfortunate side-effect, pausing the movie will turn
+     off any further timeout processing.
+   * Added developer-only movie controller support.  Set _showcontroller to
+     1.  (This will crash if you scrub to the end of the movie, probably
+     because, when forcibly quiting a movie, we don't call
+     UnregisterWindowForMovies and delete the window playing the movie before
+     returning to the event loop.)
+
  Revision 1.5.2.1  2003/10/06 20:16:29  emk
  3.4.5 - Ripped out old QuickTime layer and replaced with TQTMovie wrapper.
  (Various parts of the new layer include forward ports from

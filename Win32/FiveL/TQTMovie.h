@@ -179,9 +179,17 @@ private:
 	Point mPosition;
 
     //////////
-    // Should our timeout be active right now?
+    // Have we started running the timeout?
     //
     bool mTimeoutStarted;
+
+    //////////
+    // Have we disabled our timeout?
+    //
+    // XXX - This is a badly flawed kludge to detect when the movie may
+    // have been paused.  We'll need to do better.
+    //
+    bool mTimeoutDisabled;
 
     //////////
     // The last time something interesting happened, for various values

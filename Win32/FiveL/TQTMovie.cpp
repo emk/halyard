@@ -111,7 +111,8 @@ CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
 TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     : mPort(inPort), mState(MOVIE_UNINITIALIZED),
 	  mMovie(NULL), mMovieController(NULL), mShouldStartWhenReady(false),
-      mTimeoutStarted(false), mTimeoutBase(0), mLastSeenTimeValue(0)
+      mTimeoutStarted(false), mTimeoutDisabled(false),
+      mTimeoutBase(0), mLastSeenTimeValue(0)
 {
 	ASSERT(sIsQuickTimeInitialized);
 
@@ -403,6 +404,7 @@ bool TQTMovie::IsPaused()
 void TQTMovie::Pause()
 {
 	ASSERT(mState == MOVIE_STARTED);
+    mTimeoutDisabled = true; // XXX - Massive kludge, see comment for variable.
 	if (!IsPaused())
 		DoAction(mcActionPlay, reinterpret_cast<void*>(0));
 }
@@ -459,11 +461,11 @@ void TQTMovie::ThrowIfBroken()
 int TQTMovie::GetTimeoutEllapsed() {
     // Under certain circumstances, we always return a timeout of 0.
     if (!mTimeoutStarted) {
-        // The timeout hasn't been started yet.
-        return 0; 
+        return 0; // The timeout hasn't been started yet.
+    } else if (mTimeoutDisabled) {
+        return 0; // We've disabled the timeout.  A total kludge.
     } else if (IsBroken()) {
-        // The movie is broken, so no timeout.
-        return 0;
+        return 0; // The movie is broken, so no timeout.
     }
 
     return ::time(NULL) - mTimeoutBase;
@@ -480,16 +482,11 @@ void TQTMovie::UpdateTimeout(bool inStart) {
     }
 
     if (IsStarted()) {
-        if (IsPaused())
-            // If we're paused, we don't expect the movie to make progress.
+        // If the movie has made progress, reset the timeout.
+        TimeValue currentTimeValue = GetMovieTime();
+        if (currentTimeValue != mLastSeenTimeValue) {
+            mLastSeenTimeValue = currentTimeValue;
             mTimeoutBase = ::time(NULL);
-        else {
-            // If the movie has made progress, reset the timeout.
-            TimeValue currentTimeValue = GetMovieTime();
-            if (currentTimeValue != mLastSeenTimeValue) {
-                mLastSeenTimeValue = currentTimeValue;
-                mTimeoutBase = ::time(NULL);
-            }
         }
     }
 }
