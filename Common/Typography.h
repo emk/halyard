@@ -19,10 +19,15 @@
 
 #include "TException.h"
 #include "FileSystem.h"
+#include "GraphicsTools.h"
 
 // TODO - Handle copy constructors, assignment operators
 
 namespace Typography {
+
+	using GraphicsTools::Distance;
+	using GraphicsTools::Point;
+	using GraphicsTools::Image;
 
 	//////////
 	// A FreeType 2 vector, used for kerning.
@@ -42,15 +47,6 @@ namespace Typography {
 	// A FreeType 2 glyph object.  This usually contains a bitmap and
 	// a whole bunch of measurements.
 	typedef FT_GlyphSlot Glyph;
-
-	//////////
-	// A distance, typically in pixels.  But some classes, including
-	// GenericTextRenderingEngine, use it in a more abstract fashion.
-	typedef signed long Distance;
-
-	//////////
-	// An 8-bit color channel.
-	typedef unsigned char Channel;
 
 	//////////
 	// Names for a few special Unicode characters.
@@ -95,15 +91,6 @@ namespace Typography {
 		kLeftJustification,
 		kCenterJustification,
 		kRightJustification
-	};
-
-	//////////
-	// A point.  See Distance for a description.
-	struct Point {
-		Distance x;
-		Distance y;
-
-		Point(Distance inX, Distance inY) : x(inX), y(inY) {}
 	};
 
 	//////////
@@ -494,12 +481,12 @@ namespace Typography {
 	// A real rendering engine which uses real fonts.
 	//
 	// We subclass GenericTextRenderingEngine, and provide support for
-	// AbstractFaces, drawing positions, and output to bitmaps.  (We must
-	// be further subclassed to implement the DrawBitmap method.)
+	// AbstractFaces, drawing positions, and output to images.
 	//
 	// We assume that all Distance and Point values are measured in pixels.
 	// 
 	class TextRenderingEngine : public GenericTextRenderingEngine {
+		Image *mImage;
 		AbstractFace *mFace;
 		Point mLineStart;
 
@@ -517,23 +504,26 @@ namespace Typography {
 		// [in] inLineLength - The maximum number of pixels available for
 		//                     a line.  This is (I hope) a hard limit.
 		// [in] inJustification - The desired justification.
+		// [in] inImage -      The image into which we should draw.
+		//                     This must not be deallocated until the
+		//                     TextRendering engine is destroyed.
 		//
 		TextRenderingEngine(const wchar_t *inTextBegin,
 							const wchar_t *inTextEnd,
 							AbstractFace *inFace,
 							Point inPosition,
 							Distance inLineLength,
-							Justification inJustification);
+							Justification inJustification,
+							Image *inImage);
 
-	protected:
+	private:
 		//////////
-		// Subclasses must override this method to draw a bitmap to their
-		// actual output device.
+		// Draw a FreeType 2 bitmap to our image.
 		//
 		// [in] inBitmap -   The bitmap to draw (in FreeType 2 format).
 		// [in] inPosition - The location at which to draw the bitmap.
 		//
-		virtual void DrawBitmap(FT_Bitmap *inBitmap, Point inPosition) = 0;
+		void DrawBitmap(FT_Bitmap *inBitmap, Point inPosition);
 
 	protected:
 		virtual Distance MeasureSegment(LineSegment *inPrevious,

@@ -25,30 +25,6 @@ char *fonts[] = {
 //  A subclass of TextRenderingEngine which draws into an Image (for
 //  testing purposes).
 
-class ImageTextRenderingEngine : public TextRenderingEngine {
-    Image *mImage;
-
-public:
-    ImageTextRenderingEngine(const wchar_t *inTextBegin,
-			     const wchar_t *inTextEnd,
-			     AbstractFace *inFace,
-			     Point inPosition,
-			     Distance inLineLength,
-			     Justification inJustification,
-			     Image *inImage)
-	: TextRenderingEngine(inTextBegin, inTextEnd, inFace, inPosition,
-			      inLineLength, inJustification),
-	  mImage(inImage) {}
-    
-protected:
-    virtual void DrawBitmap(FT_Bitmap *inBitmap, Point inPosition);
-};
-
-void ImageTextRenderingEngine::DrawBitmap(FT_Bitmap *inBitmap,
-					  Point inPosition)
-{
-    mImage->draw_bitmap(inBitmap, inPosition.x, inPosition.y);
-}
 
 
 //=========================================================================
@@ -73,8 +49,8 @@ void show(const wchar_t *inText, const std::string &inFont, int inSize,
     stack.AddSecondaryFace(&dingbats);
 
     // Draw our text.
-    ImageTextRenderingEngine engine(inText, inText + wcslen(inText), &stack,
-				    inPos, inLength, inJustification, gImage);
+    TextRenderingEngine engine(inText, inText + wcslen(inText), &stack,
+			       inPos, inLength, inJustification, gImage);
     engine.RenderText();
 }
 
@@ -84,7 +60,7 @@ int main (int argc, char **argv) {
 	FileSystem::SetBaseDirectory(FileSystem::Path().AddParentComponent());
 
 	// Allocate an image for our output.
-	Image image(640, 480);
+	PngImage image(640, 480);
 	gImage = &image;
 
 	// Load our FamilyDatabase.

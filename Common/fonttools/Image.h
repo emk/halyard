@@ -4,16 +4,18 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
-class Image {
+#include "GraphicsTools.h"
+
+class PngImage : public GraphicsTools::Image {
 private:
     gdImagePtr m_image;
 
 public:
-    Image(int width, int height);
-    ~Image();
+    PngImage(int width, int height);
+    ~PngImage();
 
-    void draw_bitmap(FT_Bitmap *bitmap, FT_Int xpos, FT_Int ypos);
+    virtual void DrawPixmap(GraphicsTools::Point inPoint,
+			    GraphicsTools::Pixmap &inPixmap);
 
     void save(const char *filename);
 };
-

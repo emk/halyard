@@ -39,7 +39,9 @@ libfivel_a_SOURCES = \
 	Typography.cpp \
 	Typography.h \
 	FileSystem.cpp \
-	FileSystem.h
+	FileSystem.h \
+	GraphicsTools.cpp \
+	GraphicsTools.h
 
 # These only compile on Windows.  But nobody else uses them, so it
 # doesn't matter for now.

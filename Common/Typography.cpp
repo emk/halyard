@@ -477,13 +477,62 @@ TextRenderingEngine::TextRenderingEngine(const wchar_t *inTextBegin,
 										 AbstractFace *inFace,
 										 Point inPosition,
 										 Distance inLineLength,
-										 Justification inJustification)
+										 Justification inJustification,
+										 Image *inImage)
 	: GenericTextRenderingEngine(inTextBegin, inTextEnd,
 								 inLineLength, inJustification),
-	  mFace(inFace), mLineStart(inPosition)
+	  mFace(inFace), mLineStart(inPosition), mImage(inImage)
 {
 	ASSERT(inFace);
 	ASSERT(inPosition.x >= 0 && inPosition.y >= 0);
+	ASSERT(inImage != NULL);
+}
+
+// We need to process any pixmap output by FreeType 2.  Unfortunately,
+// FreeType 2 can output a *lot* of different types of pixmaps, at
+// least in theory.  In practice, there are only a few kinds, all of
+// which we should handle below.
+void TextRenderingEngine::DrawBitmap(FT_Bitmap *inBitmap, Point inPosition)
+{
+	using GraphicsTools::Channel;
+	using GraphicsTools::Color;
+
+    ASSERT(inBitmap->pitch >= 0);
+
+	GraphicsTools::Pixmap pixmap(inBitmap->width, inBitmap->rows);
+	pixmap.Clear();
+
+    if (inBitmap->pixel_mode == ft_pixel_mode_grays)
+	{
+		// Convert 8-bit greyscale characters.
+		ASSERT(inBitmap->num_grays == 256);
+		for (int y = 0; y < inBitmap->rows; y++)
+		{
+			for (int x = 0; x < inBitmap->width; x++)
+			{
+				Channel value = inBitmap->buffer[x + inBitmap->pitch * y];
+				pixmap.At(x, y) = Color(0, 0, 96, 255 - value);
+			}
+		}
+    }
+	else
+	{
+		// Convert 1-bit monochrome characters.
+		ASSERT(inBitmap->pixel_mode == ft_pixel_mode_mono);
+		for (int y = 0; y < inBitmap->rows; y++)
+		{
+			for (int x = 0; x < inBitmap->width; x++)
+			{
+				unsigned char byte = inBitmap->buffer[(x/8) +
+													  inBitmap->pitch * y];
+				Channel value = ((1<<(7-(x%8))) & byte) ? 0 : 255; 
+				pixmap.At(x, y) = Color(0, 0, 96, value);
+			}
+		}	
+    }
+
+	// Draw our pixmap.
+	mImage->DrawPixmap(inPosition, pixmap);
 }
 
 Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
