@@ -2,6 +2,28 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
+  * When switching from 3D to 2D, blit the Quake display into our
+    offscreen buffer to avoid an ugly "cut to black".
+  * Renamed PAUSE and RESUME to MOVIE-PAUSE and MOVIE-RESUME.
+
+0.0.2 - 3 April 2003 - emk, brian
+
+Now that we're producing real builds again, we're going to start keeping
+this file up to do date.
+
+What's happened since last update:
+
+  * The engine was renamed to Tamale.
+  * We added lots of new features.  It's beginning to resemble a real
+    program.
+
+New in this build:
+
+  * Sequences, alpha channels, convenience features in the GUI,
+    support for Swindle, etc.
+
+0.0.? - emk
+
 Primitive support for running Quake 2 from within wx5L.
 
   * Added primitives to show/hide widgets, and perform some other

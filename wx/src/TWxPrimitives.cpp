@@ -51,8 +51,8 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
 	REGISTER_5L_PRIMITIVE(MousePosition);
 	REGISTER_5L_PRIMITIVE(Movie);
-	REGISTER_5L_PRIMITIVE(Pause);
-	REGISTER_5L_PRIMITIVE(Resume);
+	REGISTER_5L_PRIMITIVE(MoviePause);
+	REGISTER_5L_PRIMITIVE(MovieResume);
 	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
@@ -394,7 +394,7 @@ DEFINE_5L_PRIMITIVE(Movie)
 
 // Note: these primitives may not be happy if the underlying movie code 
 // does not like to be paused.
-DEFINE_5L_PRIMITIVE(Pause)
+DEFINE_5L_PRIMITIVE(MoviePause)
 {
 	std::string name;
 	
@@ -405,7 +405,7 @@ DEFINE_5L_PRIMITIVE(Pause)
 	movie->Pause();
 }
 
-DEFINE_5L_PRIMITIVE(Resume)
+DEFINE_5L_PRIMITIVE(MovieResume)
 {
 	std::string name;
 	
