@@ -11,6 +11,7 @@ CVS - emk, brian
     is fairly hard.
   * Fixed loading of alpha channels and alpha channel memory
     allocation bug.
+  * Implemented crossfades.  Use (REFRESH :transition 'crossfade).
 
 0.0.2 - 3 April 2003 - emk, brian
 
