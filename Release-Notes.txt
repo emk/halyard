@@ -7,6 +7,7 @@ CVS - emk
     This is probably why we were seeing weird results when CHeader called
     TStream::more() too many times.
   * Fixed a buffer-overflow bug in TLogger when logging large messages.
+  * Squashed a bunch of memory leaks in CryptStream.cpp.
 
 3.3.19 - 24 July 2002 - emk
 
