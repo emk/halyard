@@ -23,16 +23,18 @@ DEFINE_5L_PRIMITIVE(SchemeExit)
 
 DEFINE_5L_PRIMITIVE(SchemeIdle)
 {
-	// Logging this primitive would only clutter the debug log.
-	::SkipPrimitiveLogging();
-
 	// Recover our Scheme interpreter.
 	TSchemeInterpreter *scheme_interp =
 		dynamic_cast<TSchemeInterpreter*>(TSchemeInterpreter::GetInstance());
 	ASSERT(scheme_interp);
 
-	// Call our stored idle procedure.
+	// Call our stored idle procedure and let the GUI run for a bit.
 	scheme_interp->DoIdle();
+
+	// Logging this primitive would only clutter the debug log.  We need
+	// to do this *after* calling DoIdle, so that it doesn't get
+	// confused with any internal primitive calls.
+	::SkipPrimitiveLogging();
 }
 
 

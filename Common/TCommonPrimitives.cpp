@@ -134,6 +134,7 @@ DEFINE_5L_PRIMITIVE(HavePrimitive)
 {
 	std::string name;
 	inArgs >> SymbolName(name);
+	::SkipPrimitiveLogging();
 	::SetPrimitiveResult(gPrimitiveManager.DoesPrimitiveExist(name));
 }
 
@@ -231,6 +232,8 @@ DEFINE_5L_PRIMITIVE(ResetOrigin)
 
 DEFINE_5L_PRIMITIVE(Set)
 {
+	::SkipPrimitiveLogging();
+
     TString     vname;
     TString		value;
     TString		flag; 
@@ -282,6 +285,8 @@ DEFINE_5L_PRIMITIVE(Set)
 
 DEFINE_5L_PRIMITIVE(SetTyped)
 {
+	::SkipPrimitiveLogging();
+
 	std::string vname, vtype;
 	inArgs >> SymbolName(vname) >> SymbolName(vtype);
 
@@ -340,6 +345,8 @@ DEFINE_5L_PRIMITIVE(SetTyped)
 
 DEFINE_5L_PRIMITIVE(Get)
 {
+	::SkipPrimitiveLogging();
+
 	std::string vname;
 	inArgs >> SymbolName(vname);
 
@@ -355,6 +362,8 @@ DEFINE_5L_PRIMITIVE(Get)
 
 DEFINE_5L_PRIMITIVE(VariableInitialized)
 {
+	::SkipPrimitiveLogging();
+
 	std::string vname;
 	inArgs >> SymbolName(vname);
 
