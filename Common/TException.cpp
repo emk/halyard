@@ -26,6 +26,9 @@ static std::string get_string(std::ostrstream &stream)
 		stream.freeze(0);
 		throw;
 	}
+	
+	ASSERT(false);
+	return std::string("");
 }
 
 const char* TException::what () const

@@ -148,6 +148,6 @@ namespace FileSystem {
 	//
 	inline Path GetFontFilePath(std::string inFontFileName)
 	    { return GetFontDirectory().AddComponent(inFontFileName); }
-};
+}
 
 #endif // FileSystem_H

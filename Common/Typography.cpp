@@ -4,6 +4,7 @@
 
 #include <fstream>
 
+#include <stdlib.h>
 #include <assert.h>
 #include <wctype.h>
 
@@ -894,6 +895,9 @@ Face FamilyDatabase::GetFace(const std::string &inFamilyName,
 		return found->second.GetFace(inStyle, inSize);
 	else
 		throw Error("Unknown font family \"" + inFamilyName + "\"");
+
+	ASSERT(false);
+	return *(Face *) NULL; // Never run.
 }
 
 void FamilyDatabase::ReadFromFontDirectory()

@@ -5,7 +5,8 @@
 #include <algorithm>
 
 #include <stdio.h>
-#include <sys/types.h>
+#include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
@@ -14,7 +15,11 @@
 #	include <windows.h>
 #	define S_ISREG(m) ((m)&_S_IFREG)
 #	define S_ISDIR(m) ((m)&_S_IFDIR)
-#elif (FIVEL_PLATFORM_MACINTOSH || FIVEL_PLATFORM_OTHER)
+#elif FIVEL_PLATFORM_MACINTOSH
+#	include <dirent.h>
+#	include <unistd.h>
+#elif FIVEL_PLATFORM_OTHER
+#	include <sys/types.h>
 #	include <dirent.h>
 #	include <unistd.h>
 #else
@@ -77,6 +82,8 @@ static void CheckErrno()
 #	error "Unknown platform."
 #endif
 
+#if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
+
 Path::Path()
 	: mPath(".")
 {
@@ -88,6 +95,24 @@ Path::Path(const std::string &inPath)
 {
 	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
 }
+
+#elif FIVEL_PLATFORM_MACINTOSH
+
+Path::Path()
+	: mPath(":")
+{
+	// All done!
+}
+
+Path::Path(const std::string &inPath)
+	: mPath(std::string(":") + inPath)
+{
+	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
+}
+
+#else
+#	error "Unknown platform!"
+#endif // FIVEL_PLATFORM_*
 
 static std::string::size_type find_extension_dot(const std::string &inPath)
 {
@@ -123,6 +148,25 @@ Path Path::ReplaceExtension(std::string inNewExtension) const
 	newPath.mPath = without_extension + "." + inNewExtension;
 	return newPath;
 }
+
+#if FIVEL_PLATFORM_MACINTOSH
+
+//////////
+// The Metrowerks Standard Library (MSL) contains a weird stat() function.
+// When called on a non-existant file, 'stat' returns an error code of -1,
+// but fails to set ENOENT.  We attempt to patch around this.
+//
+static int mac_stat(const char *inFileName, struct stat *outInfo)
+{
+	int result = stat(inFileName, outInfo);
+	if (result < 0 && errno == 0)
+		errno = ENOENT;
+	return result;
+}
+
+#define stat(x,y) mac_stat(x,y)
+
+#endif // FIVEL_PLATFORM_*
 
 bool Path::DoesExist() const
 {
@@ -242,6 +286,8 @@ void Path::RemoveFile() const
 	CheckErrno();
 }
 
+#if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
+
 Path Path::AddComponent(const std::string &inFileName) const
 {
 	ASSERT(inFileName != "." && inFileName != "..");
@@ -257,6 +303,37 @@ Path Path::AddParentComponent() const
 	newPath.mPath = mPath + PATH_SEPARATOR + "..";
 	return newPath;	
 }
+
+#elif FIVEL_PLATFORM_MACINTOSH
+
+static const std::string ensure_trailing_colon(const std::string &inString)
+{
+	// Path names always contain at least ':'.
+	ASSERT(inString.end() > inString.begin());
+	if (*(inString.end() - 1) == ':')
+		return inString;
+	else
+		return inString + ':';
+}
+
+Path Path::AddComponent(const std::string &inFileName) const
+{
+	ASSERT(inFileName.find(PATH_SEPARATOR) == std::string::npos);
+	Path newPath;
+	newPath.mPath = ensure_trailing_colon(mPath) + inFileName;
+	return newPath;
+}
+
+Path Path::AddParentComponent() const
+{
+	Path newPath;
+	newPath.mPath = ensure_trailing_colon(mPath) + PATH_SEPARATOR;
+	return newPath;	
+}
+
+#else 
+#	error "Unknown platform."
+#endif // FIVEL_PLATFORM_*
 
 std::string Path::ToNativePathString () const
 {

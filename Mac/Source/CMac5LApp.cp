@@ -47,10 +47,10 @@
 
 
 // build stuff
-#define VERSION_STRING	"5L for MacOS 2.02, build 3"
-#define VERSION_MAJOR_NUM	2
-#define VERSION_MINOR_NUM	02
-#define VERSION_BUILD_NUM	03
+#define VERSION_STRING	"5L for MacOS 3.3.0 (Development)"
+#define VERSION_MAJOR_NUM	3
+#define VERSION_MINOR_NUM	3
+#define VERSION_BUILD_NUM	0
 
 //
 // constants
@@ -995,9 +995,15 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.17  2002/03/28 20:22:29  emk
+FreeType2 build fixes for the Mac:
+
+  - Added a CodeWarrior project file with the correct extension, no text/binary corruption, and the options we want.
+
+  - Disabled support for loading FOND-format Macintosh fonts, because the FreeType2 code relies on a MacOS X function: FSOpenResourceFile.
+
 Revision 1.16  2002/03/11 17:51:47  hamon
 Added new version numbers ( 2.02 b3) to files. Release notes lists additions in this version.
-
 Changes by Elizabeth, okayed by Eric.
 
 Revision 1.15  2002/03/06 16:29:28  hamon
