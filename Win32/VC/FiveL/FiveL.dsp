@@ -215,6 +215,10 @@ SOURCE=..\..\FiveL\SysInfo.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\FiveL\TWin5LInterpreter.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\FiveL\Video.cpp
 # End Source File
 # Begin Source File

@@ -23,8 +23,6 @@
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
 #include "LUtil.h"
-#include "TIndex.h"
-#include "Header.h"
 #include "Graphics.h"
 #include "TVariable.h"
 #include "Video.h"
@@ -45,8 +43,6 @@
 #include "LHttp.h"
 #include "LBrowser.h"
 #include "SingleInstance.h"
-#include "TParser.h"
-#include "TStyleSheet.h"
 #include "TWin5LInterpreter.h"
 
 #if defined USE_BUNDLE
@@ -204,15 +200,15 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	gView->BlackScreen();
 
 	// Initialize the interpreter.
-	gWin5LInterpreter = new TWin5LInterpreter();
-
-	// read in the script 
-	if (not gIndexFileManager.NewIndex(gConfigManager.CurScript()))
+	try
 	{
- 		DeInitInstance();
- 		
+		gWin5LInterpreter = new TWin5LInterpreter(gConfigManager.CurScript());
+	}
+	catch (...)
+	{
+		DeInitInstance();		
     	return (false);
-    }
+	}
 
 	// initialize the URL checker
 	gHttpTool.Init();
@@ -908,7 +904,7 @@ LRESULT CALLBACK ChildWndProc (HWND hwnd, UINT message, UINT wParam, LPARAM lPar
 //
 //	CleanUp - Clean everything up.
 //
-void CleanUp(bool inWillExit)
+void CleanUp()
 {
 	gDebugLog.Log("CleanUp: tossing everything"); 
 	DumpStats();
@@ -920,11 +916,7 @@ void CleanUp(bool inWillExit)
 		gAudioManager.Kill(0, true);
 
 	// Shut down our interpreter.
-	// TODO - This conditional smells funny.  Refactor it.
-	if (inWillExit)
-		delete gWin5LInterpreter;
-	else
-		gWin5LInterpreter->CleanupIndexes();
+	delete gWin5LInterpreter;
 
 	// Clean up our other resources.
 	gVariableManager.RemoveAll();
@@ -945,7 +937,7 @@ void ShutDown(bool Toss /* = true */)
 	gDebugLog.Log("ShutDown");
 
 	if (Toss)
-		CleanUp(true); 
+		CleanUp(); 
 	
     gView->BlackScreen();
         
@@ -1031,25 +1023,20 @@ void ReDoScript(TString &inCardName)
 
 	gTouchZoneManager.RemoveAll();
 
-	gWin5LInterpreter->CleanupIndexes();
-
-	// NOTE - if we implement loadscript then we will have to open up
-	//	all files here that were open before
-
-	// now try to open up the same script file
-	if (gIndexFileManager.NewIndex(gConfigManager.CurScript()))
+	try
 	{
-		// (We don't need to rebuild our key bindings any more because
-		// they now remain valid across a reload.)
-
-		gWin5LInterpreter->JumpToCardByName(inCardName.GetString());
+		TInterpreter::GetInstance()->ReloadScript(inCardName);
 	}
-	else
+	catch (...)
+	{
 		ShutDown(false);
+	}
 }
 
 //
-//	SwitchScripts - 
+//	SwitchScripts - Switch to an entirely different script file.
+//                  This function really isn't necessary for recent
+//                  5L programs, and should probably go away.
 //
 void SwitchScripts(int32 inScript)
 { 
@@ -1069,10 +1056,12 @@ void SwitchScripts(int32 inScript)
 		}
 
 		gCursorManager.ChangeCursor(NO_CURSOR);
+
+		// Delete everything, including our interpreter.
+		CleanUp();
 		
-		CleanUp(false);
-		
-		gDebugLog.Log("SwitchScript: start script <%s>", gConfigManager.CurScript());
+		gDebugLog.Log("SwitchScript: start script <%s>",
+					  gConfigManager.CurScript());
 
 		SetGlobals();
 
@@ -1089,10 +1078,16 @@ void SwitchScripts(int32 inScript)
         }
 
 		// now try to start the new script
-		if (gIndexFileManager.NewIndex(gConfigManager.CurScript()))
+		try
+		{
+			gWin5LInterpreter =
+				new TWin5LInterpreter(gConfigManager.CurScript());
 			TInterpreter::GetInstance()->JumpToCardByName("start"); 
-		else
+		}
+		catch (...)
+		{
     		ShutDown(true);
+		}
 	}
 	else
 		ShutDown(true);
@@ -1219,6 +1214,21 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.6.6.4  2002/06/05 20:42:38  emk
+ 3.3.4.2 - Broke Win5L dependencies on TIndex file by moving various pieces
+ of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter
+ through a well-defined API.  Changes:
+
+   * Removed many direct and indirect #includes of TIndex.h.
+   * Added a TInterpreter method ReloadScript, which can be called by the
+     higher-level ReDoScript command.
+   * Checked in some files which should have been included in the 3.3.4.1
+     checkin--these files contain the initial refactorings of Card and Macro
+     callsites to go through the TInterpreter interface.
+
+ Up next: Refactor various Do* methods out of Card and into a procedural
+ database.
+
  Revision 1.6.6.3  2002/06/06 05:47:30  emk
  3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
  abstract interface.

@@ -15,10 +15,10 @@ BEGIN_NAMESPACE_FIVEL
 class TWin5LInterpreter : public TInterpreter
 {
 public:
-	TWin5LInterpreter();
+	TWin5LInterpreter(const TString &inStartScript);
 	virtual ~TWin5LInterpreter();
 
-	// This will become private once we refactor ReDoScript into this class.
+	// This will become private once we refactor ReloadScript into this class.
 	// TODO - Rename to PurgeScriptData, or something like that.
 	void CleanupIndexes();
 
@@ -33,11 +33,12 @@ public:
 	virtual void JumpToCardByName(const char *inName);
 	virtual const char *CurCardName();
 	virtual const char *PrevCardName();
+	virtual void ReloadScript(const char *inGotoCardName);
 };
 
 //////////
 // When invoked, this callback jumps to the specified card.  This
-// callback remains valid across a ReDoScript.
+// callback remains valid across a ReloadScript.
 //
 class TWin5LCardCallback : public TCallback
 {
@@ -62,7 +63,7 @@ public:
 //////////
 // When invoked, this callback (1) runs an optional (set ...) command, and
 // (2) runs a regular 5L command.  This callback remains valid across a
-// ReDoScript (but that doesn't matter much, since all the touchzones
+// ReloadScript (but that doesn't matter much, since all the touchzones
 // get cleared).
 //
 // This class has a pretty crockish design; it was refactored out of

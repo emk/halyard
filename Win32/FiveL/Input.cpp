@@ -17,6 +17,7 @@
 #include "stdafx.h"
 #include "Input.h"
 #include "Globals.h"
+#include "Header.h"
 
 //
 //	InputManager
@@ -295,6 +296,21 @@ bool InputManager::IsLegalInputChar(char inKey)
 
 /*
  $Log$
+ Revision 1.2.8.2  2002/06/05 20:42:38  emk
+ 3.3.4.2 - Broke Win5L dependencies on TIndex file by moving various pieces
+ of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter
+ through a well-defined API.  Changes:
+
+   * Removed many direct and indirect #includes of TIndex.h.
+   * Added a TInterpreter method ReloadScript, which can be called by the
+     higher-level ReDoScript command.
+   * Checked in some files which should have been included in the 3.3.4.1
+     checkin--these files contain the initial refactorings of Card and Macro
+     callsites to go through the TInterpreter interface.
+
+ Up next: Refactor various Do* methods out of Card and into a procedural
+ database.
+
  Revision 1.2.8.1  2002/06/06 05:47:30  emk
  3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
  abstract interface.

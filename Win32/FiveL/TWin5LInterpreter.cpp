@@ -3,32 +3,34 @@
 #include "stdafx.h"
 
 #include "TLogger.h"
+#include "TException.h"
 #include "TWin5LInterpreter.h"
 #include "TStyleSheet.h"
 #include "TParser.h"
 #include "Header.h"
 
+#include "Globals.h"
 #include "Card.h"
 #include "Macro.h"
 
 BEGIN_NAMESPACE_FIVEL
-
-// TODO - Make Win5L build again.
-// TODO - Break dependencies of LTouchZone on Card.
-// TODO - Move Win5L dependencies on TIndex(File) into here.
 
 
 //=========================================================================
 // TWin5LInterpreter Methods 
 //=========================================================================
 
-TWin5LInterpreter::TWin5LInterpreter()
+TWin5LInterpreter::TWin5LInterpreter(const TString &inStartScript)
 {
 	// Register our top-level forms.
 	TParser::RegisterIndexManager("card", &gCardManager);
 	TParser::RegisterIndexManager("macrodef", &gMacroManager);
 	TParser::RegisterIndexManager("header", &gHeaderManager);
 	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
+
+	// Read the startup script.
+	if (!gIndexFileManager.NewIndex(inStartScript))
+		throw TException("Error reading startup script");
 }
 
 TWin5LInterpreter::~TWin5LInterpreter()
@@ -95,6 +97,28 @@ const char *TWin5LInterpreter::PrevCardName()
 {
 	return gCardManager.PrevCardName();
 }
+
+void TWin5LInterpreter::ReloadScript(const char *inGotoCardName)
+{
+	CleanupIndexes();
+	
+	// NOTE - if we implement loadscript then we will have to open up
+	//	all files here that were open before
+
+	// now try to open up the same script file
+	if (gIndexFileManager.NewIndex(gConfigManager.CurScript()))
+	{
+		// (We don't need to rebuild our key bindings any more because
+		// they now remain valid across a reload.)
+
+		JumpToCardByName(inGotoCardName);
+	}
+	else
+	{
+		throw TException("Error reading script for redoscript");	
+	}
+}
+
 
 //=========================================================================
 // TWin5LCardCallback Methods

@@ -133,6 +133,10 @@ SOURCE=..\..\..\Common\TIndex.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TInterpreter.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TLogger.cpp
 # End Source File
 # Begin Source File
