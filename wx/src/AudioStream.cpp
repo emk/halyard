@@ -25,11 +25,6 @@ static inline float note_amplitude(PaTimestamp sample, int cycles_per_second)
 					   cycles_per_second * RADIANS_PER_CYCLE);
 }
 
-static inline float int16_to_float(int16 inSample)
-{
-	return (inSample / 32768.0f);
-}
-
 
 //=========================================================================
 //  AudioStream Methods

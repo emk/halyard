@@ -26,25 +26,27 @@ class GeigerAudioStream : public AudioStream
 
     int mChirpsPlayed;
     double mFrameEndTime;
+	int mClipCount;
 
     void ZeroBuffer(float *outBuffer, unsigned long inFrames);
+	void ClipBuffer(float *ioBuffer, unsigned long inFrames);
     bool DoesEventOccurGivenProbability(float inProbability);
     bool ShouldChirpDuringInterval(size_t inSamplesPerInterval);
     size_t FindCursorIndexForNewChirp();
     void UpdateChirpStateForInterval(unsigned long inFrames);
     void MixChirpIntoBuffer(size_t inCursor, float *ioBuffer,
-			    unsigned long inFrames);
+							unsigned long inFrames);
 
 public:
     GeigerAudioStream(const char *inFileName);
     ~GeigerAudioStream();
     
     void SetChirpsPerSecond(float inChirpsPerSecond)
-	{ mChirpsPerSecond = inChirpsPerSecond; }
+		{ mChirpsPerSecond = inChirpsPerSecond; }
 
 protected:
     bool FillBuffer(void *outBuffer, unsigned long inFrames,
-		    PaTimestamp inTime);	
+					PaTimestamp inTime);	
 };
 
 #endif // GeigerAudioStream_H

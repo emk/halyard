@@ -32,18 +32,21 @@ GeigerAudioStream::GeigerAudioStream(const char *inFileName)
 	for (size_t j = 0; j < len; j++)
 		mChirpBegin[j] = int16_pcm_to_float((*data)[j]);
 
-	// Delete our data buffer.
+	// Delete our read data buffer.
 	delete data;
 
 	// Prepare for logging.
 	mChirpsPlayed = 0;
 	mFrameEndTime = 0;
+	mClipCount = 0;
 }
 
 GeigerAudioStream::~GeigerAudioStream()
 {
-	gDebugLog.Log("Played %d geiger counts in %.1f seconds",
-				  mChirpsPlayed, mFrameEndTime / SAMPLES_PER_SECOND);
+	gDebugLog.Log("Played %d geiger counts in %.1f seconds, %d samples "
+				  "clipped",
+				  mChirpsPlayed, mFrameEndTime / SAMPLES_PER_SECOND,
+				  mClipCount);
 	delete [] mChirpBegin;
 }
 
@@ -55,6 +58,27 @@ void GeigerAudioStream::ZeroBuffer(float *outBuffer, unsigned long inFrames)
 	{
 		*cursor++ = 0.0f;
 		*cursor++ = 0.0f;
+	}
+}
+
+void GeigerAudioStream::ClipBuffer(float *ioBuffer, unsigned long inFrames)
+{
+	size_t sample_count = inFrames * GetChannelCount();
+	float *cursor = ioBuffer;
+    for (int i = 0; i < sample_count; i++)
+	{
+		float sample = *cursor;
+		if (sample > 1.0)
+		{
+			*cursor = 1.0;
+			mClipCount++;
+		}
+		if (sample < -1.0)
+		{
+			*cursor = -1.0;
+			mClipCount++;
+		}
+		cursor++;
 	}
 }
 
@@ -84,7 +108,7 @@ size_t GeigerAudioStream::FindCursorIndexForNewChirp()
 	for (size_t i = 0; i < MAX_CHIRP_CURSORS; i++)
 	{
 		if (mChirpCursors[i] == NULL)
-			return 0;
+			return i;
 		else if (mChirpCursors[i] > mChirpCursors[best_candidate])
 			best_candidate = i;
 	}
@@ -107,9 +131,9 @@ void GeigerAudioStream::MixChirpIntoBuffer(size_t inCursor,
 	float *cursor = ioBuffer;
     for (int i = 0; mChirpCursors[inCursor] && i < inFrames; i++)
     {
-		*cursor++ = *(mChirpCursors[inCursor])++;
+		*cursor++ += *(mChirpCursors[inCursor])++;
 		ASSERT(mChirpCursors[inCursor] < mChirpEnd);
-		*cursor++ = *(mChirpCursors[inCursor])++;
+		*cursor++ += *(mChirpCursors[inCursor])++;
 		
 		// We're done with this one.
 		if (mChirpCursors[inCursor] == mChirpEnd)
@@ -121,12 +145,13 @@ bool GeigerAudioStream::FillBuffer(void *outBuffer, unsigned long inFrames,
 								   PaTimestamp inTime)
 {
 	ASSERT(GetChannelCount() == 2);
-	float *buffer = (float *) outBuffer;	
+	float *buffer = (float *) outBuffer;
 
 	ZeroBuffer(buffer, inFrames);
 	UpdateChirpStateForInterval(inFrames);
 	for (size_t i = 0; i < MAX_CHIRP_CURSORS; i++)
 		MixChirpIntoBuffer(i, buffer, inFrames);
+	ClipBuffer(buffer, inFrames);
 
 	mFrameEndTime = inTime + inFrames;
     return false;
