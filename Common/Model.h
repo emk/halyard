@@ -74,6 +74,13 @@ namespace DataStore {
 		
 	protected:	
 		//////////
+		// If an error occurs in the constructor, free any resources
+		// allocated by the object, call this function, and throw an
+		// exception.
+		//
+		void ConstructorFailing() { mIsFreed = true; }
+
+		//////////
 		// Apply this change.  This method is called when the change first
 		// occurs, and perhaps later on, when the change is redone.  This
 		// method must be atomic--if it fails, it must leave the object
@@ -230,6 +237,8 @@ namespace DataStore {
 		typename VD::ConstValueType GetValue(ConstKeyType &inKey)
 		{ return Get<VD>(inKey)->Value(); }	
 
+		void Delete(ConstKeyType &inKey) { PerformDelete(inKey); }
+
 	protected:
 		CollectionDatum(Type inType)
 			: MutableDatum(inType) {}
@@ -274,7 +283,9 @@ namespace DataStore {
 
 	private:
 		class SetChange;
+		class DeleteChange;
 		void PerformSet(ConstKeyType &inKey, Datum *inValue);
+		void PerformDelete(ConstKeyType &inKey);
 	};
 
 	//////////

@@ -223,6 +223,72 @@ void CollectionDatum<KeyType>::PerformSet(ConstKeyType &inKey, Datum *inValue)
 
 
 //=========================================================================
+//  CollectionDatum::DeleteChange
+//=========================================================================
+
+template <typename KeyType>
+class CollectionDatum<KeyType>::DeleteChange : public Change
+{
+	CollectionDatum<KeyType> *mCollection;
+	Datum *mOldDatum;
+	ConstKeyType mKey;
+
+public:
+	DeleteChange(CollectionDatum<KeyType> *inDatum,
+				 ConstKeyType &inKey);
+
+protected:
+	virtual void DoApply();
+	virtual void DoRevert();
+	virtual void DoFreeApplyResources();
+	virtual void DoFreeRevertResources();
+};
+
+template <typename KeyType>
+CollectionDatum<KeyType>::DeleteChange::DeleteChange(
+	CollectionDatum<KeyType> *inDatum, ConstKeyType &inKey)
+	: mCollection(inDatum), mKey(inKey)
+{
+	mOldDatum = mCollection->DoFind(inKey);
+	if (!mOldDatum)
+	{
+		ConstructorFailing();
+		throw TException(__FILE__, __LINE__, "DeleteChange: No such key");
+	}
+}
+
+template <typename KeyType>
+void CollectionDatum<KeyType>::DeleteChange::DoApply()
+{
+	mCollection->DoRemoveKnown(mKey, mOldDatum);
+}
+
+template <typename KeyType>
+void CollectionDatum<KeyType>::DeleteChange::DoRevert()
+{
+	mCollection->DoInsert(mKey, mOldDatum);
+}
+
+template <typename KeyType>
+void CollectionDatum<KeyType>::DeleteChange::DoFreeApplyResources()
+{
+}
+
+template <typename KeyType>
+void CollectionDatum<KeyType>::DeleteChange::DoFreeRevertResources()
+{
+	delete mOldDatum;
+	mOldDatum = NULL;
+}
+
+template <typename KeyType>
+void CollectionDatum<KeyType>::PerformDelete(ConstKeyType &inKey)
+{
+	ApplyChange(new DeleteChange(this, inKey));
+}
+
+
+//=========================================================================
 //  CollectionDatum Instantiation
 //=========================================================================
 

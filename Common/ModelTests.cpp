@@ -107,6 +107,17 @@ void test_DataStore (void)
 	store.Redo();
 	TEST(map->GetValue<StringDatum>("SetChange") == "change value");
 
+	// Test CollectionDatum::DeleteChange on MapDatum.
+	TEST_EXCEPTION(map->Delete("nosuch"), TException);
+	map->SetValue<StringDatum>("DeleteChange", "foo");
+	TEST(map->GetValue<StringDatum>("DeleteChange") == "foo");
+	map->Delete("DeleteChange");
+	TEST_EXCEPTION(map->Delete("DeleteChange"), TException);
+	store.Undo();
+	TEST(map->GetValue<StringDatum>("DeleteChange") == "foo");
+	store.Redo();
+	TEST_EXCEPTION(map->Delete("DeleteChange"), TException);
+
 	// Create a new ListDatum.
 	root->Set<ListDatum>("list", new ListDatum());
 	ListDatum *list = root->Get<ListDatum>("list");
