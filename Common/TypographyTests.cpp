@@ -244,7 +244,9 @@ void rendering_test(const wchar_t *in, Distance width,
 		if (*i == 'X')
 			*i = kSoftHyphen;
 
-	TestTextRenderingEngine e(s.begin(), s.end(), width, justification);
+	const wchar_t *s_begin = s.c_str();
+	const wchar_t *s_end = s_begin + wcslen(s_begin);
+	TestTextRenderingEngine e(s_begin, s_end, width, justification);
 	e.Test(out);
 }
 
