@@ -7,6 +7,7 @@
 #include "AppGlobals.h"
 #include "AppGraphics.h"
 #include "Stage.h"
+#include "HistoryText.h"
 #include "Listener.h"
 
 USING_NAMESPACE_FIVEL
@@ -23,9 +24,10 @@ Listener::Listener(StageFrame *inStageFrame)
     mHistory = new wxTextCtrl(this, -1, "", wxDefaultPosition,
 							  wxDefaultSize,
 							  wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
-    mInput = new wxTextCtrl(this, FIVEL_LISTENER_TEXT_ENTRY, "",
-							wxDefaultPosition, wxDefaultSize,
-							wxTE_PROCESS_ENTER);
+	// Use a history text control, so we can have a command history
+    mInput = new HistoryText(this, FIVEL_LISTENER_TEXT_ENTRY, "",
+							 wxDefaultPosition, wxDefaultSize,
+							 wxTE_PROCESS_ENTER);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(mHistory, 1 /* stretch */, wxGROW, 0);
@@ -76,7 +78,7 @@ void Listener::OnTextEnter(wxCommandEvent &inEvent)
 		mHistory->SetDefaultStyle(wxTextAttr(*wxBLACK, wxNullColour,
 											 mBoldFont));
 		mHistory->AppendText(input + "\n");
-		
+	
 		// Talk to the interpreter.
 		std::string result;
 		bool ok =

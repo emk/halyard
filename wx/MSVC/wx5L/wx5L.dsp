@@ -111,6 +111,10 @@ SOURCE=..\..\src\FiveLApp.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\HistoryText.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\ImageCache.cpp
 # End Source File
 # Begin Source File
@@ -216,6 +220,10 @@ SOURCE=..\..\src\EventDispatcher.h
 # Begin Source File
 
 SOURCE=..\..\src\FiveLApp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\HistoryText.h
 # End Source File
 # Begin Source File
 
@@ -354,7 +362,7 @@ SOURCE=..\..\src\tamale.xrc
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\src\5L\wx\src
+InputDir=\cygwin\home\brian\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 

@@ -25,7 +25,7 @@ public:
 	void OnActivate(wxActivateEvent &inEvent);
 	void UpdateUiInput(wxUpdateUIEvent &inEvent);
 	void OnTextEnter(wxCommandEvent &inEvent);
-	
+
     DECLARE_EVENT_TABLE();
 };
 
