@@ -15,7 +15,8 @@ extern void test_Model (void);
 
 void test_Model (void)
 {
-	Model model;
+	ModelFormat format("TestData", 0, 0);
+	Model model(format);
 	TEST(model.CanUndo() == false);
 	TEST(model.CanRedo() == false);
 
@@ -200,13 +201,13 @@ void test_Model (void)
 	//---------------------------------------------------------------------
 	// Test Serialization
 
-	model.Write("model.xml");
+	model.SaveAs("model.xml");
 
-	std::auto_ptr<Model> model2(Model::Read("model.xml"));
-	TEST(model2->CanUndo() == false);
-	TEST(model2->CanRedo() == false);
+	Model model2(format, 0, "model.xml");
+	TEST(model2.CanUndo() == false);
+	TEST(model2.CanRedo() == false);
 
-	model2->Write("model2.xml");
-	//TEST(root->GetValue<Integer>("test int") == 10);
-	//TEST(root->GetValue<String>("test string") == "foo");
+	model2.SaveAs("model2.xml");
+	TEST(root->GetValue<Integer>("test int") == 10);
+	TEST(root->GetValue<String>("test string") == "bar");
 }

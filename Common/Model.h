@@ -365,21 +365,62 @@ namespace model {
 #endif // 0
 
 	//////////
+	// We support different data model formats.  Each format has three
+	// properties:
+	//
+	//   name: The name of this format.
+	//   version: The version of this format.
+	//   compatible back to: The earliest version of this format with
+	//     which the current version maintains backwards compatibility.
+	//
+	class ModelFormat {
+	public:
+		typedef unsigned long Version;
+
+	private:
+		std::string mName;
+		Version mVersion;
+		Version mCompatibleBackTo;
+
+	public:
+		ModelFormat(const std::string &inName, Version inVersion,
+					Version inCompatibleBackTo)
+			: mName(inName), mVersion(inVersion),
+			  mCompatibleBackTo(inCompatibleBackTo) {}
+
+		std::string GetName() const { return mName; }
+		Version GetVersion() const { return mVersion; }
+		Version GetCompatibleBackTo() const { return mCompatibleBackTo; }
+	};
+
+	//////////
 	// The Model itself.  This class manages a single persistent
 	// object tree.
 	//
 	class Model {
+	public:
+		typedef unsigned long Version;
+
+	private:
 		typedef std::list<Change*> ChangeList;
 
+		ModelFormat mFormat;
 		std::auto_ptr<Map> mRoot;
 
 		ChangeList mChanges;
 		ChangeList::iterator mChangePosition;
 
+		void Initialize();
+
 	public:
-		Model();
+		Model(const ModelFormat &inFormat);
+		Model(const ModelFormat &inCurrentFormat,
+			  ModelFormat::Version inEarliestFormat,
+			  const std::string &inPath);
 		~Model();
 		
+		const ModelFormat &GetFormat() { return mFormat; }
+
 		bool CanUndo();
 		void Undo();
 		void ClearUndoList();
@@ -392,10 +433,8 @@ namespace model {
 		const Map *GetRoot() const
 			{ ASSERT(mRoot.get()); return mRoot.get(); }
 
-		void Write(const std::string &inFile);
+		void SaveAs(const std::string &inFile);
 
-		static Model *Read(const std::string &inFile);
-		
 	private:
 		friend class MutableDatum;
 

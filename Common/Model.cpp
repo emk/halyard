@@ -9,6 +9,7 @@
 USING_NAMESPACE_FIVEL
 using namespace model;
 using namespace model::Private;
+using boost::lexical_cast;
 
 
 //=========================================================================
@@ -79,7 +80,7 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 {
 	std::string name  = inNode.name();
 	if (name == "int")
-		return new Integer(boost::lexical_cast<long>(inNode.text()));
+		return new Integer(lexical_cast<long>(inNode.text()));
 	else if (name == "str")
 		return new String(inNode.text());
 	else if (name == "map")
@@ -97,7 +98,7 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 
 void Integer::Write(xml_node inParent)
 {
-	inParent.new_child("int", boost::lexical_cast<std::string>(mValue));
+	inParent.new_child("int", lexical_cast<std::string>(mValue));
 }
 
 void String::Write(xml_node inParent)
@@ -614,12 +615,66 @@ template void model::Move(Map*, Map::ConstKeyType&,
 //  Model Methods
 //=========================================================================
 
-Model::Model()
-	: mRoot(NULL)
+void Model::Initialize()
 {
 	mChangePosition = mChanges.begin();
 	mRoot = new Map();
 	mRoot->RegisterWithModel(this);
+}
+
+Model::Model(const ModelFormat &inFormat)
+	: mFormat(inFormat), mRoot(NULL)
+{
+	Initialize();
+}
+
+Model::Model(const ModelFormat &inCurrentFormat,
+			 ModelFormat::Version inEarliestFormat,
+			 const std::string &inPath)
+	: mFormat(inCurrentFormat), mRoot(NULL)
+{
+	typedef ModelFormat::Version Version;
+
+	Initialize();
+
+	// Open the XML file.
+	xmlDocPtr doc = xmlParseFile(inPath.c_str());
+	try
+	{
+		CHECK(doc, "Failed to load XML file");
+
+		// Get the root element.
+		xmlNodePtr root_node = xmlDocGetRootElement(doc);
+		CHECK(root_node, "No document root in XML file");
+		xml_node root(root_node);
+
+		// Check the format and version.
+		ModelFormat file_format
+			(root.name(),
+			 lexical_cast<Version>(root.attribute("version")),
+			 lexical_cast<Version>(root.attribute("backto")));
+		CHECK(file_format.GetName() == mFormat.GetName(),
+			  "XML file contains the wrong type of data");
+		CHECK(mFormat.GetVersion() >= file_format.GetCompatibleBackTo(),
+			  "XML file is in a newer, unsupported format");
+		CHECK(file_format.GetVersion() >= inEarliestFormat,
+			  "XML file is in a older, unsupported format");
+		mFormat = file_format;
+
+		// Get our top-level map and fill it out.
+		xml_node map_node = xml_node(root).only_child();
+		XML_CHECK_NAME(map_node, "map");
+		mRoot->Fill(map_node);
+	}
+	catch (...)
+	{
+		if (doc)
+			xmlFreeDoc(doc);
+		throw;
+	}
+
+	xmlFreeDoc(doc);
+	ClearUndoList();
 }
 
 Model::~Model()
@@ -691,15 +746,18 @@ void Model::ApplyChange(Change *inChange)
 	mChangePosition++;
 }
 
-void Model::Write(const std::string &inFile)
+void Model::SaveAs(const std::string &inFile)
 {
 	// Create a tree.
 	xmlDocPtr doc = xmlNewDoc(xml_node::to_utf8("1.0"));
 	doc->children =
-		xmlNewDocNode(doc, NULL, xml_node::to_utf8("TamaleData"), NULL);
+		xmlNewDocNode(doc, NULL, xml_node::to_utf8(mFormat.GetName().c_str()),
+					  NULL);
 	xml_node root(doc->children);
-	root.set_attribute("version", "0");
-	root.set_attribute("backto", "0");
+	std::string vers(lexical_cast<std::string>(mFormat.GetVersion()));
+	std::string back(lexical_cast<std::string>(mFormat.GetCompatibleBackTo()));
+	root.set_attribute("version", vers);
+	root.set_attribute("backto", back);
 
 	// Add nodes as appropriate.
 	mRoot->Write(root);
@@ -708,33 +766,4 @@ void Model::Write(const std::string &inFile)
 	int result = xmlSaveFormatFile(inFile.c_str(), doc, 1);
 	xmlFreeDoc(doc);
 	CHECK(result != -1, "Failed to save XML file");
-}
-
-Model *Model::Read(const std::string &inFile)
-{
-	// Create a new data model.
-	std::auto_ptr<Model> model(new Model());
-
-	// Open the XML file.
-	xmlDocPtr doc = xmlParseFile(inFile.c_str());
-	CHECK(doc, "Failed to load XML file");
-	try
-	{
-		// Check out the root element.
-		// XXX - Version check goes here.
-		xmlNodePtr root = xmlDocGetRootElement(doc);
-		CHECK(root, "No document root in XML file");
-		xml_node map_node = xml_node(root).only_child();
-		XML_CHECK_NAME(map_node, "map");
-		model->GetRoot()->Fill(map_node);
-	}
-	catch (...)
-	{
-		xmlFreeDoc(doc);
-		throw;
-	}
-
-	xmlFreeDoc(doc);
-	model->ClearUndoList();
-	return model.release();
 }
