@@ -85,6 +85,10 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\..\..\Common\ImlUnit.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TArray.cpp
 # End Source File
 # Begin Source File
@@ -123,14 +127,14 @@ SOURCE=..\..\..\Common\TString.cpp
 
 SOURCE=..\..\..\Common\TURL.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Common\Typography.cpp
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\..\..\Common\ImlUnit.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\..\..\Common\TArray.h
@@ -178,10 +182,6 @@ SOURCE=..\..\..\Common\TString.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TURL.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Common\Typography.h
 # End Source File
 # End Group
 # End Target

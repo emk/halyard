@@ -39,10 +39,14 @@ bool LFileBundle::Init()
 {
 	/*
 	// Test CryptStream cryptFile()
- 	CryptStream *test;
- 	test = new CryptStream(gConfigManager.InstallPath(), "5L.tmp", (unsigned char *)HCK, sizeof(HCK));
- 	test->cryptFile(1);
+ 	DWORD startTime, endTime;
+	CryptStream *test;
+	startTime = ::timeGetTime();
+ 	test = new CryptStream(gConfigManager.InstallPath(), "hiv.test", (unsigned char *)HCK, sizeof(HCK));
+ 	test->cryptFile(0);
  	test->close();
+	endTime = ::timeGetTime();
+	gDebugLog.Log("CryptFile test time = %ld millis", endTime - startTime);
 	*/
 
 	isEncrypted = (gConfigManager.GetUserPref(DB_TYPE) == DB_TYPE_ENCRYPTED);
@@ -939,11 +943,10 @@ void LFileBundle::ConvertBundle(int dir)
 		gLog.Log("ConvertBundle: Trying to convert %s, encrypted -> clear", IN_FILENAME);
 
 		if (cryptStream == NULL)
-			cryptStream = new CryptStream(gConfigManager.DataPath(), IN_FILENAME, (unsigned char *)HCK, sizeof(HCK));
+			cryptStream = new CryptStream(gConfigManager.DataPath(), IN_FILENAME,
+						                  PAYLOAD_5LDB, (unsigned char *)HCK, sizeof(HCK));
 
 		cryptStream->cryptFile(1);
-		cryptStream->close();
-
 		delete cryptStream;
 	}
 }
@@ -1000,16 +1003,18 @@ bool LFileBundle::OpenAndReadBundle()
 	}
 	else
 	{
-		cryptStream = new CryptStream(gConfigManager.DataPath(), IN_FILENAME, (unsigned char *)HCK, sizeof(HCK));
+		cryptStream = new CryptStream(gConfigManager.DataPath(), IN_FILENAME, 
+									  PAYLOAD_5LDB, (unsigned char *)HCK, sizeof(HCK));
 		cache = "";
 
 		// Is the file empty?
-		if (cryptStream->isEmpty())
+		if (cryptStream->in_isEmpty())
 			return true;
 
 		// Read in the data
 		cryptStream->fileToString(cache);
-		if (cryptStream->bad())
+		cache.RTrim();						// trim whitespace at end
+		if (cryptStream->in_bad())
 			return false;
 
 		// Verification
@@ -1020,7 +1025,8 @@ bool LFileBundle::OpenAndReadBundle()
 
 			// Read in and re-verify
 			cryptStream->fileToString(cache);
-			if (cryptStream->bad())
+			cache.RTrim();
+			if (cryptStream->in_bad())
 				return false;
 
 			if (cache.Find("<Program") < 0)
@@ -1084,7 +1090,7 @@ void LFileBundle::RewriteBundle()
 	{
 		cryptStream->rewriteFile(cache.GetString(), cache.Length());
 
-		if (cryptStream->writeFail())
+		if (cryptStream->out_fail())
 		{
 			gLog.Log("Write error on file \"%s\".", IN_FILENAME);
 			return;

@@ -1,6 +1,7 @@
 #if !defined (_LFileBundle_h_)
 #define _LFileBundle_h_
 
+//#include "FiveL.h"		// need HCK
 #include "TString.h"
 #include "TBTree.h"
 #include "Config.h"
@@ -13,15 +14,10 @@
 #define INIT_DATA_DIR ""
 //#define INIT_DATA_DIR "\\init"
 
-// Key Len     12345678901234567890123456789012345678901234567890123456
-//#define HCK "§%Yf3fsmf#iIi±3\\SsSDgw|{s¦g}DA'dpHVewsq^zZvWrs?_3tNX=d"
-//#define   HCK "1234567890123456789012345678901234567890123456789012345"
-//#define HCK_LEN 55
-
 //////////
 // Key for encryption/decryption.
 //
-const unsigned char HCK[] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };
+const unsigned char HCK[] = { 0x2c, 0xf3, 0x38, 0xbb, 0x4c, 0xd5, 0xfd, 0x58 };
 
 extern "C" {
 	#include "md5.h"

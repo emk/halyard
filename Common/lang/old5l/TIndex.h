@@ -22,8 +22,8 @@
 
 #include "TCommon.h"
 #include "TBTree.h"
-
 #include "LStream.h"
+#include "CryptStream.h"
 
 class IndexFile;
 
@@ -35,7 +35,8 @@ CLASS
 	A class for indexing script files.   
 
 AUTHOR
-    Chuck Officer
+    Chuck Officer<br>
+	Sean Sharp
 
 -----------------------------------------------------------------*/
 class Index : public TBNode 
@@ -179,9 +180,8 @@ class IndexFile : public TBNode
 		// Open the file stream associated with this index file.
 		//
 		// [in] inPath - full path of the file to be indexed (e.g. c:\foo\test.scr)
-		// [in] inFlags - flags to use when opening the stream
 		//
-		bool			Open(const char *inPath, int32 inFlags);
+		bool			Open(const char *inPath);
 		
 		//////////
 		// Is the assocaiated file stream open?
@@ -238,10 +238,20 @@ class IndexFile : public TBNode
 
 	protected:
 		//////////
+		// Is this index file encrypted?
+		//
+		bool		isEncrypted;
+
+		//////////
 		// File input stream.
 		//
 		ifstream		m_File;
 		
+		//////////
+		// Encrypted input stream.
+		//
+		CryptStream		*cryptStream;
+
 		//////////
 		// Have we reached the end of the file?
 		//
@@ -295,6 +305,25 @@ class IndexFileManager : public TBTree
 
 /*
  $Log$
+ Revision 1.2  2002/03/26 17:03:49  tvw
+ Crypt library rewrite, support for encrypted 5L scripts, command-line tool
+ for encrypting/decrypting 5L scripts, 5LDB, potentially other 5L files.
+
+ (1) Complete overhaul of the Crypt library.  It now supports streaming
+ reads and writes.  Many function names were changed.  The encryption
+ header was modified to include signature, payload, and timestamp.
+ NOTE: Previous versions of 5LDB will be incompatible because of this
+ change.
+
+ (2) Added CryptTool, a command-line utility to encrypt/decrypt scripts,
+ 5LDB, etc.  Run with no options for help.
+
+ (3) Modified IndexFile to automatically detect encrypted scripts and
+ use a CryptStream for I/O if detected.
+
+ (4) Added TestSuite project to house FiveL unit testing.  Added some unit
+ tests for CryptStream.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -18,11 +18,26 @@ FiveL for Win32 Release Notes
 	(3) Updated VC++ project files to reflect movement of Common library 
 	(up one level).
 
-    (4) Added support for smart quotes, m-dashes, ellipses and HTML entities.
+    	(4) Added support for smart quotes, m-dashes, ellipses and HTML entities.
 	Everywhere that '\&' appears in a script, it needs to be replaced with
 	'\&amp;'.
 
-    (5) Ongoing work on native typography using FreeType 2.
+    	(5) Ongoing work on native typography using FreeType 2.
+
+	(6) Complete overhaul of the Crypt library.  It now supports streaming 
+	reads and writes.  Many function names were changed.  The encryption 
+	header was modified to include signature, payload, and timestamp.
+	NOTE: Previous versions of 5LDB will be incompatible because of this 
+	change.  
+
+	(7) Added CryptTool, a command-line utility to encrypt/decrypt scripts,
+	 5LDB, etc.  Run with no options for help.
+
+	(8) Modified IndexFile to automatically detect encrypted scripts and 
+	use a CryptStream for I/O if detected.
+
+	(9) Added TestSuite project to house FiveL unit testing.  Added some unit
+	tests for CryptStream. 
 
 3.2.2, Wednesday, February 27, 2002, 1:12 PM
 

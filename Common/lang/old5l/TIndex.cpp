@@ -177,7 +177,7 @@ IndexFile::IndexFile(const char *inName) : TBNode(inName)
 
 IndexFile::~IndexFile()
 {
-	m_File.close();
+	Close();
 }
 
 // Increment reference count for this index file
@@ -199,33 +199,81 @@ void IndexFile::RemoveReference()
 }
 
 // Open the file stream associated with this index file
-bool IndexFile::Open(const char *inPath, int32 inFlags)
+// inPath is the full path including filename
+bool IndexFile::Open(const char *inPath)
 {
-	m_File.open(inPath, inFlags);
+	int		len = strlen(inPath);
+	char	*path = new char[len+1];
+	char	*filename = new char[len+1];
+	char	*ptr;
 
-	if (not m_File.is_open())
+	ptr = strrchr(inPath, '\\');
+	
+	if (ptr != NULL)
+	{
+		strncpy(path, inPath, ptr - inPath);
+		path[ptr - inPath] = '\0';
+		strcpy(filename, ptr + 1);
+	}
+	else	// assume no path, just filename
+		strcpy(filename, inPath);
+		
+	// determine whether the script is encrypted
+	cryptStream = new CryptStream(path, filename, PAYLOAD_SCRIPT, HCK, sizeof(HCK));
+	isEncrypted = cryptStream->in_verify();
+	
+	delete [] path;
+	delete [] filename;
+	
+	if(!isEncrypted)
+	{
+		// CryptStream not needed
+		delete cryptStream;
+		cryptStream = NULL;
+
+		m_File.open(inPath, ios::in | ios::binary);
+		
+	}
+
+	if (!IsOpen())
 		return (false);
+	
 	return (true);
 }
 
 // Returns true if the associated file stream is open
 bool IndexFile::IsOpen()
 {
-	if (m_File.is_open())
-		return (true);
+	if (!isEncrypted)
+	{
+		if (m_File.is_open())
+			return true;
+	}
+	else
+	{
+		if (cryptStream->in_isOpen())
+			return true;
+	}
+
 	return (false);
 }
 
 // Seek to the given position in the associated file stream
 void IndexFile::Seek(int32 inPos)
 {
-	m_File.seekg(inPos);
+	if (!isEncrypted)
+		m_File.seekg(inPos);
+	else
+		cryptStream->in_seek(inPos);
 }
 
 // Returns the current position in the associated file stream
 int32 IndexFile::GetPos()
 {
-	return (m_File.tellg());
+	if (!isEncrypted)
+		return m_File.tellg();
+	else
+		return cryptStream->in_tellg();
 }
 
 // Returns true if the EOF has been reached in the associated file 
@@ -243,13 +291,27 @@ int32 IndexFile::Read(char *inBuffer, int32 inLength)
 	ASSERT(inBuffer != NULL);
 	ASSERT(inLength > 0);
 
-	m_File.read(inBuffer, inLength);
-	bytesRead = m_File.gcount();
-
-	if (m_File.eof())
+	if (!isEncrypted)
 	{
-		m_AtEnd = true;
-		m_File.clear();
+		m_File.read(inBuffer, inLength);
+		bytesRead = m_File.gcount();
+
+		if (m_File.eof())
+		{
+			m_AtEnd = true;
+			m_File.clear();
+		}
+	}
+	else
+	{
+		cryptStream->read((uchar *)inBuffer, inLength);
+		bytesRead = cryptStream->gcount();
+
+		if (cryptStream->in_eof())
+		{
+			m_AtEnd = true;
+			cryptStream->in_reset();
+		}
 	}
 
 	return (bytesRead);
@@ -258,7 +320,16 @@ int32 IndexFile::Read(char *inBuffer, int32 inLength)
 // Close the associated file stream
 void IndexFile::Close()
 {
-	m_File.close();
+	if (isEncrypted)
+	{
+		if (cryptStream != NULL)
+		{
+			delete cryptStream;
+			cryptStream = NULL;
+		}
+	}
+	else
+		m_File.close();
 }
 
 //
@@ -310,7 +381,7 @@ bool IndexFile::Init()
 #endif
 
     // Open the script file.
-	if (not Open(scriptName, ios::in | ios::binary))
+	if (not Open(scriptName))
 	{
         gLog.Error("Couldn't open script file <%s>.", scriptName.GetString());
 		return (false);
@@ -398,6 +469,25 @@ bool IndexFile::Init()
 
 /*
  $Log$
+ Revision 1.3  2002/03/26 17:03:49  tvw
+ Crypt library rewrite, support for encrypted 5L scripts, command-line tool
+ for encrypting/decrypting 5L scripts, 5LDB, potentially other 5L files.
+
+ (1) Complete overhaul of the Crypt library.  It now supports streaming
+ reads and writes.  Many function names were changed.  The encryption
+ header was modified to include signature, payload, and timestamp.
+ NOTE: Previous versions of 5LDB will be incompatible because of this
+ change.
+
+ (2) Added CryptTool, a command-line utility to encrypt/decrypt scripts,
+ 5LDB, etc.  Run with no options for help.
+
+ (3) Modified IndexFile to automatically detect encrypted scripts and
+ use a CryptStream for I/O if detected.
+
+ (4) Added TestSuite project to house FiveL unit testing.  Added some unit
+ tests for CryptStream.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 
