@@ -80,6 +80,7 @@ void QTGraphic::Create(KString &inPath)
 		gDebugLog.Log("Could not get FSSpec for path <%s>",
 			m_path.GetString());
 #endif
+		gLog.Log("Error: Missing graphic: <%s>", m_path.GetString()); // Douglas wants 5L log to show this error 
 
 		gMissingMediaLog.Log("%s", m_path.GetString());
 		return;
@@ -392,6 +393,11 @@ void QTGraphic::Draw(GWorldPtr inGWorld, KPoint &inPt, KRect &inRect)
 
 /*
  $Log$
+ Revision 1.3  2002/02/25 11:22:42  hamon
+ Added missing graphic  error message to 5L log per Douglas's request.
+
+Changes by Elizabeth Hamon, okayed by Eric.
+
  Revision 1.2  2000/06/15 13:03:07  chuck
  2.01 b4
 
