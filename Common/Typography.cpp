@@ -125,7 +125,7 @@ void Style::InvalidateFace()
 	}
 }
 
-Style &Style::operator=(const Style &inStyle)
+Typography::Style &Style::operator=(const Style &inStyle)
 {
 	// Watch out for self-assignment.
 	if (mRep == inStyle.mRep)
@@ -145,7 +145,7 @@ Style &Style::operator=(const Style &inStyle)
 	return *this;
 }
 
-Style &Style::SetFamily(const std::string &inFamily)
+Typography::Style &Style::SetFamily(const std::string &inFamily)
 {
 	Grab();
 	InvalidateFace();
@@ -153,7 +153,7 @@ Style &Style::SetFamily(const std::string &inFamily)
 	return *this;
 }
 
-Style &Style::SetBackupFamilies(const std::list<std::string> &inBFs)
+Typography::Style &Style::SetBackupFamilies(const std::list<std::string> &inBFs)
 {
 	Grab();
 	InvalidateFace();
@@ -161,7 +161,7 @@ Style &Style::SetBackupFamilies(const std::list<std::string> &inBFs)
 	return *this;	
 }
 
-Style &Style::SetFaceStyle(FaceStyle inFaceStyle)
+Typography::Style &Style::SetFaceStyle(FaceStyle inFaceStyle)
 {
 	Grab();
 	InvalidateFace();
@@ -169,7 +169,7 @@ Style &Style::SetFaceStyle(FaceStyle inFaceStyle)
 	return *this;
 }
 
-Style &Style::SetSize(int inSize)
+Typography::Style &Style::SetSize(int inSize)
 {
 	Grab();
 	InvalidateFace();
@@ -177,21 +177,21 @@ Style &Style::SetSize(int inSize)
 	return *this;
 }
 
-Style &Style::SetLeading(Distance inLeading)
+Typography::Style &Style::SetLeading(Distance inLeading)
 {
 	Grab();
 	mRep->mLeading = inLeading;
 	return *this;
 }
 
-Style &Style::SetColor(Color inColor)
+Typography::Style &Style::SetColor(Color inColor)
 {
 	Grab();
 	mRep->mColor = inColor;
 	return *this;
 }
 
-Style &Style::SetShadowColor(Color inColor)
+Typography::Style &Style::SetShadowColor(Color inColor)
 {
 	Grab();
 	mRep->mShadowColor = inColor;
@@ -291,7 +291,7 @@ void StyledText::EndConstruction()
 
 // TODO - Cache results of this lookup somehow?  This code is probably
 // performance critical, but profile it before optimizing it.
-const Style *StyledText::GetStyleAt(size_t inOffset) const
+const Typography::Style *StyledText::GetStyleAt(size_t inOffset) const
 {
 	ASSERT(mIsBuilt);
 	ASSERT(0 <= inOffset && inOffset < mEnd);
