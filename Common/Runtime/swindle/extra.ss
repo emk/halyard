@@ -222,6 +222,15 @@
   ;; the default is false - the around method returns #t if they're equal?
   #f)
 
+(defmethod (equals? (x <list>) (y <list>))
+  (cond ((and (null? x) (null? y))
+         #t)
+        ((or (null? x) (null? y))
+         #f)
+        (else
+         (and (equals? (car x) (car y))
+              (equals? (cdr x) (cdr y))))))
+
 ;;>> (add-equals?-method class pred?)
 ;;>   Adds a method to `equals?' that will use the given `pred?' predicate
 ;;>   to compare instances of `class'.
