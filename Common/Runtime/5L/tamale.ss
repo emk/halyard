@@ -19,7 +19,7 @@
            html edit-box vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
            geiger-synth set-geiger-synth-counts-per-second!
-           sine-wave movie 
+           sine-wave set-media-base-url! movie 
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade save-graphics restore-graphics
@@ -29,10 +29,16 @@
   (define (make-path subdir path)
     (apply build-path (current-directory) subdir (regexp-split "/" path)))
 
+  (define (url? path)
+    (regexp-match "^(http|ftp|rtsp):" path))
+
+  (define (check-file path)
+    (unless (or (url? path) (file-exists? path))
+      (throw (cat "No such file: " path))))
+  
   (define (load-picture name p &key (subrect :rect #f))
     (let [[path (make-path "Graphics" name)]]
-      (unless (file-exists? path)
-        (throw (cat "No such graphic: " path)))
+      (check-file path)
       (if subrect
           (call-5l-prim 'loadsubpic path p subrect)
           (call-5l-prim 'loadpic path p))))
@@ -71,8 +77,7 @@
 
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
     (let [[path (make-path "Graphics" (cat "cursors/" filename))]]
-      (unless (file-exists? path)
-        (throw (cat "No such cursor: " path)))
+      (check-file path)
       (call-5l-prim 'RegisterCursor sym path hotspot)))
 
   (define (mouse-position)
@@ -228,6 +233,18 @@
   (define (vorbis-audio name location &key (loop? #f))
     (create %vorbis-audio-element% :name name :location location :loop? loop?))
 
+  (define *media-base-url* #f)
+
+  (define (set-media-base-url! url)
+    (set! *media-base-url* url))
+
+  (define (media-path location)
+    ;; Find the remote version of a movie.
+    ;; This will need quite a bit of rethinking.
+    (if *media-base-url*
+        (cat *media-base-url* "/" location)
+        (make-path "Media" location)))
+
   (define-element-template %movie-element%
       [[location     :type <string>  :label "Location"]
        [controller?  :type <boolean> :label "Has movie controller" :default #f]
@@ -235,9 +252,8 @@
        [loop?        :type <boolean> :label "Loop movie"        :default #f]
        [interaction? :type <boolean> :label "Allow interaction" :default #f]]
       (:template %element%)
-    (let [[path (make-path "Media" location)]]
-      (unless (file-exists? path)
-        (throw (cat "No such movie: " path)))
+    (let [[path (media-path location)]]
+      (check-file path)
       (call-5l-prim 'movie (node-full-name self) (prop self rect)
                     path
                     controller? audio-only? loop? interaction?)))
