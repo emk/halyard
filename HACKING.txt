@@ -45,6 +45,9 @@ Checking 5L Out of CVS
 Building Win32 5L
 -----------------
 
+  Using the System control panel, set the environment variable WXWIN to
+  $5L_DIR/libs/wxWindows.
+
   Install Visual C++.NET off of the MSDN subscription, after making sure we
   have enough licenses.  Make sure you have everything related to C++
   development or media libraries (including ActiveX).  Also, you probably
@@ -52,25 +55,17 @@ Building Win32 5L
 
   Next, download and install the QuickTime 6 SDK.  This can be found at
   developer.apple.com (under Tools > QuickTime > QuickTime 6 SDK).  Unzip
-  it in C:\ (or anywhere else you like, but then you'll have to adapt the
+  it in C:\sdk (or anywhere else you like, but then you'll have to adapt the
   instructions below).  Select Tools > Options > Projects > VC++
   Directories, and add the follow directories to the following categories:
 
     Include files:
-	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\CIncludes
-	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\ComponentIncludes
+	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\CIncludes
+	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\ComponentIncludes
     Libraries:
-	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Libraries
+	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Libraries
     Executable files:
-	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Tools
-
-  You should probably build wxWindows at this point, so that the
-  libraries are there when you're building 5L later.  Open
-  $5L_DIR/libs/wxWindows/src/wxWindows.dsw, and build the "Win32
-  Release" and "Win32 Debug" targets.  Once you've built these
-  libraries, add the WXWIN environment variable, pointing to
-  $5L_DIR/libs/wxWindows. You will need to restart MSVC for this
-  environment variable to be read.
+	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Tools
 
   Open up $5L_DIR\FiveL.dsw.  Click on "FileView", right-click on
   "FiveL files", and select "Settings" > "Settings for: Win32 Debug" >
@@ -103,21 +98,7 @@ Building Win32 5L
 Building Macintosh 5L
 ---------------------
 
-  [Improve these instructions Real Soon Now.]
-
-  Install a recent version of CodeWarrior Pro (7 or maybe 8?), and any
-  documentation you want (hint: that's most of it).
-
-  Open up Mac/BuildAll.mcp from the Finder, and open the various nested
-  projects.  You can build 5L in the normal fashion, and you can run
-  the test suites from within CodeWarrior, but you'll need to manually
-  copy the 5L binaries to 5Ltest before running them.
-
-  The pre-Carbon ("PPC") versions of 5L do not currently build.  The last
-  time I ran them in MacOS X's OS 9 emulator, they corrupted the OS 9
-  system file.  We've decided to go with all-Carbon builds for now.
-
-  Fix these instructions as needed.
+  Mac5L is not currently supported.  Feel free to do a port.
 
 Source Documentation
 --------------------
