@@ -99,6 +99,10 @@ AUTHOR
 
 /*#define WANT_FIVEL_NAMESPACE (1)*/
 
+#ifndef NDEBUG
+#define DEBUG (1)
+#endif /* NDEBUG */
+
 #endif
 
 
