@@ -17,14 +17,24 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		04
-#define VERSION_REV_SMALL	08
+#define VERSION_REV_SMALL	09
 
-#define VERSION_STRING	"5L 3.3.4.8 (Development: Language Refactoring)"
+#define VERSION_STRING	"5L 3.3.4.9 (Development: Language Refactoring)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.11.2.8  2002/06/19 14:07:13  emk
+ 3.3.4.9: Fixed _Origin_X, _Origin_Y on Windows, and added a "default style"
+ parameter to "defstyle" on both platforms.
+
+ The new syntax:
+
+   (defstyle sample (Nimbus Roman No9 L) 12 r left 0xF0F0F000 0xFFFF0000)
+
+ ...where r = "regular", b = "bold", i = "italic" and bi = "bold italic".
+
  Revision 1.11.2.7  2002/06/18 21:56:38  emk
  3.3.4.8 - Added (BODY ...) command on Mac, fixed arguments of BUTTPCX, TOUCH,
  and KEYBIND to match Win32 engine, and refactored Mac engine to more-or-less
