@@ -20,6 +20,10 @@ CVS - emk, brian
   * When in cross-hair mode, right-clicking will copy the current point
     to the clipboard.  Shift-right-clicking will copy the previous and
     current points to the clipboard as a rectangle.
+  * Added support for saving current offcreen buffer. Use
+    SAVE-GRAPHICS and RESTORE-GRAPHICS. To save or restore a
+    particular rectangle, use (SAVE-GRAPHICS :bounds (rect ...)) or
+    (RESTORE-GRAPHICS :bounds (rect ...))
 
 0.0.2 - 3 April 2003 - emk, brian
 

@@ -766,6 +766,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
       mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
       mOffscreenFadePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
+	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
 	  mTextCtrl(NULL), mCurrentElement(NULL), mWaitElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mLastCopiedPos(0, 0)
@@ -1265,6 +1266,25 @@ void Stage::DrawDCContents(wxDC &inDC)
 	{
 		ClearStage(*wxBLACK);
 	}
+}
+
+void Stage::SaveGraphics(const wxRect &inBounds)
+{
+	wxMemoryDC srcDC, dstDC;
+	srcDC.SelectObject(mOffscreenPixmap);
+	dstDC.SelectObject(mSavePixmap);
+	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
+			   &srcDC, inBounds.x, inBounds.y);
+}
+
+void Stage::RestoreGraphics(const wxRect &inBounds)
+{
+	wxMemoryDC srcDC, dstDC;
+	srcDC.SelectObject(mSavePixmap);
+	dstDC.SelectObject(mOffscreenPixmap);
+	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
+			   &srcDC, inBounds.x, inBounds.y);
+	InvalidateRect(inBounds);
 }
 
 void Stage::ModalTextInput(const wxRect &inBounds,

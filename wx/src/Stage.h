@@ -257,6 +257,11 @@ class Stage : public wxWindow, public GraphicsTools::Image
     wxBitmap mOffscreenFadePixmap;
 
 	//////////
+	// A bitmap for saving and restoring graphics
+	// 
+	wxBitmap mSavePixmap;
+
+	//////////
 	// We try to rate-limit our idle events to prevent performance
 	// problems with the Scheme garbage collector (the event dispatching
 	// system allocates some memory to process events).
@@ -631,6 +636,21 @@ public:
 	// [in] inDC - a DC the same size as the stage
 	//
 	void DrawDCContents(wxDC &inDC);
+
+	//////////
+	// Save a portion of the current offscreen buffer to our save
+	// buffer.
+	// 
+	// [in] inBounds - The rectangle defining the portion to save.
+	//
+	void SaveGraphics(const wxRect &inBounds);
+
+	//////////
+	// Restore a portion of the save buffer to our offscreen buffer.
+	//
+	// [in] inBounds - The rectangle defining the portion to restore.
+	//
+	void RestoreGraphics(const wxRect &inBounds);
 
 	//////////
 	// Display a modal text input box.

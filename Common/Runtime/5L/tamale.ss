@@ -15,7 +15,7 @@
            move-rect-center-to center-text html edit-box
            movie movie-pause movie-resume
            wait tc draw-line draw-box draw-box-outline inset-rect timeout
-           current-card-name fade unfade)
+           current-card-name fade unfade save-graphics restore-graphics)
 
   (define (make-path subdir path)
     (apply build-path (current-directory) subdir (regexp-split "/" path)))
@@ -173,5 +173,11 @@
 
   (define (unfade &key (ms 500))
     (refresh :transition 'fromblack :ms ms))
+
+  (define (save-graphics &key (bounds $screen-rect))
+    (call-5l-prim 'savegraphics bounds))
+  
+  (define (restore-graphics &key (bounds $screen-rect))
+    (call-5l-prim 'restoregraphics bounds))
 
   )

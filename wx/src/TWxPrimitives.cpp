@@ -56,6 +56,8 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
 	REGISTER_5L_PRIMITIVE(Refresh);
+	REGISTER_5L_PRIMITIVE(SaveGraphics);
+	REGISTER_5L_PRIMITIVE(RestoreGraphics);
 	REGISTER_5L_PRIMITIVE(RegisterCard);
 	REGISTER_5L_PRIMITIVE(RegisterCursor);
 	REGISTER_5L_PRIMITIVE(RegisterEventDispatcher);
@@ -416,6 +418,20 @@ DEFINE_5L_PRIMITIVE(Refresh)
 	int32 milliseconds;
 	inArgs >> SymbolName(transition) >> milliseconds;
 	wxGetApp().GetStage()->RefreshStage(transition, milliseconds);
+}
+
+DEFINE_5L_PRIMITIVE(SaveGraphics)
+{
+	TRect bounds;
+	inArgs >> bounds;
+	wxGetApp().GetStage()->SaveGraphics(ConvRect(bounds));
+}
+
+DEFINE_5L_PRIMITIVE(RestoreGraphics)
+{
+	TRect bounds;
+	inArgs >> bounds;
+	wxGetApp().GetStage()->RestoreGraphics(ConvRect(bounds));
 }
 
 DEFINE_5L_PRIMITIVE(RegisterCard)
