@@ -31,6 +31,9 @@ namespace GraphicsTools {
 		Distance y;
 
 		Point(Distance inX, Distance inY) : x(inX), y(inY) {}
+
+		friend Point operator+(const Point &inLeft, const Point &inRight)
+		    { return Point(inLeft.x + inRight.x, inLeft.y + inRight.y); }
 	};
 
 	//////////
