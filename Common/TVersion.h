@@ -17,15 +17,19 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		10
+#define VERSION_REV_BIG		11
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.10 (Development)"
+#define VERSION_STRING		"5L 3.5.11 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.43  2002/11/19 17:50:45  emk
+ 3.5.11 - Correctly clear resources allocated by a failed attempt to
+ load a script before trying to load it again.
+
  Revision 1.42  2002/11/06 18:29:46  emk
  3.5.10 - 6 Nov 2002 - emk
 

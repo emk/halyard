@@ -117,6 +117,7 @@ LRESULT CALLBACK	ChildWndProc(HWND, UINT, UINT, LPARAM) throw ();
 LRESULT				RealChildWndProc(HWND, UINT, UINT, LPARAM);
 LRESULT CALLBACK	About(HWND, UINT, WPARAM, LPARAM) throw ();
 LRESULT				RealAbout(HWND, UINT, WPARAM, LPARAM);
+void 				ReleaseScriptResources();
 void				StartTimer(void);
 void				StopTimer(void);
 bool				CheckSystem(void);
@@ -780,6 +781,9 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				// If the interpreter is broken, but we're still running,
 				// then provide support for retrying the failed load.
+				// Release the script resources in case something got
+				// allocated during the previous failed load.
+				ReleaseScriptResources();
 				TInterpreterManager::GetInstance()->RequestRetryLoadScript();
 			}
             else if (__iscsym((char) wParam))  
@@ -1096,7 +1100,7 @@ void DumpStats(void)
 	gDebugLog.Log("Free virtual memory <%ld>", memStat.dwAvailVirtual);
 }
 
-void ReDoScript(TString &inCardName)
+void ReleaseScriptResources()
 {
 	if (gVideoManager.Playing())
 		gVideoManager.Kill();
@@ -1111,7 +1115,11 @@ void ReDoScript(TString &inCardName)
 	// XXX - Does this potentially destroy an object in our call chain?
 	if (!gHaveLegacyInterpreterManager)
 		gCommandKeyManager.RemoveAll();
+}
 
+void ReDoScript(TString &inCardName)
+{
+	ReleaseScriptResources();
 	gInterpreterManager->RequestReloadScript(inCardName);
 }
 
@@ -1242,6 +1250,10 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.19  2002/11/19 17:51:16  emk
+ 3.5.11 - Correctly clear resources allocated by a failed attempt to
+ load a script before trying to load it again.
+
  Revision 1.18  2002/10/10 00:03:20  emk
    * The Windows engine now reloads scripts in the same fashion as the
      Mac engine--if a load fails, you get a chance to retry it.
