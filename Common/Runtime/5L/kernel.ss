@@ -650,10 +650,15 @@
                [found (find-node candidate)]]
           (or found (find-node-relative (node-parent base) name)))))
 
+  (define (@-helper name)
+    (if (current-card)
+        (find-node-relative (node-parent (current-card)) name)
+        (error (cat "Can't write (@ " name ") outside of a card"))))    
+
   (define-syntax @
     (syntax-rules ()
       [(@ name)
-       (find-node-relative (node-parent (current-card)) 'name)]))
+       (@-helper 'name)]))
 
   (define (analyze-node-name name)
     ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
@@ -744,16 +749,19 @@
     (let [[remainder (memq child (group-children group))]]
       (assert (not (null? remainder)))
       (if (null? (cdr remainder))
-          #f
+          (card-group-find-next (node-parent group) group)
           (cadr remainder))))
 
-  (defmethod (card-group-find-prev (group <card-group>) (child <jumpable>))
+  (defmethod (card-group-find-prev (group <card-sequence>) (child <jumpable>))
     ;; Find the node *before* child.
-    (let search [[children (group-children group)] [candidate #f]]
-      (assert (not (null? children) ))
+    (let search [[children (group-children group)]
+                 [candidate-func 
+                  (lambda ()
+                    (card-group-find-prev (node-parent group) group))]]
+      (assert (not (null? children)))
       (if (eq? (car children) child)
-          candidate
-          (search (cdr children) (car children)))))
+          (candidate-func)
+          (search (cdr children) (lambda () (car children))))))
 
   ;;-----------------------------------------
   ;; Cards
@@ -800,9 +808,6 @@
   ;; TODO - This glue makes <card> look like the old %kernel-card.  Remove.
   ;; TODO - We need to start creating sequences, etc., to contain cards.
   ;;(define-struct %kernel-card (name thunk) (make-inspector))
-  (define (make-%kernel-card name thunk)
-    (make <card> :name name :init-thunk thunk :parent $root-node
-          :children '()))
   (define %kernel-card? card?)
   (define %kernel-card-name node-full-name)
   (define %kernel-card-thunk node-init-thunk)
