@@ -552,10 +552,14 @@
     (when (have-5l-prim? 'deleteelements)
       (call-5l-prim 'deleteelements (node-full-name elem))))
 
-  (defmethod (engine-state-db-get (engine <real-engine>)
-                                  (node <node>)
-                                  (key <symbol>))
-    (call-5l-prim 'StateDbGet (node-full-name node) key))
+  (defmethod (engine-state-db-unregister-listeners (engine <real-engine>)
+                                                   (node <node>))
+    (call-5l-prim 'StateDbUnregisterListeners (node-full-name node)))
+
+  (defmethod (engine-state-db-get-via-element (engine <real-engine>)
+                                              (node <node>)
+                                              (key <symbol>))
+    (call-5l-prim 'StateDbGetViaElement (node-full-name node) key))
 
   (set-engine! (make <real-engine>))
 

@@ -40,7 +40,8 @@
            engine-notify-enter-card engine-notify-exit-card
            engine-notify-card-body-finished
            engine-delete-element
-           engine-state-db-get)
+           engine-state-db-unregister-listeners
+           engine-state-db-get-via-element)
 
   (defclass <engine> ()
     (root-node
@@ -92,9 +93,11 @@
   (defgeneric (engine-notify-card-body-finished (engine <engine>)
                                                 (card <card>)))
   (defgeneric (engine-delete-element (engine <engine>) (elem <element>)))
-  (defgeneric (engine-state-db-get (engine <engine>)
-                                   (node <node>)
-                                   (key <symbol>)))
+  (defgeneric (engine-state-db-unregister-listeners (engine <engine>)
+                                                    (node <node>)))
+  (defgeneric (engine-state-db-get-via-element (engine <engine>)
+                                               (node <node>)
+                                               (key <symbol>)))
                                    
 
 
@@ -117,7 +120,7 @@
            <text-event> text-event? event-text
            <browser-navigate-event> browser-navigate-event?
            <progress-changed-event> event-progress-done? event-progress-value
-           <state-db-changed-event> event-db-get
+           <state-db-changed-event> event-state-db-getter
            make-node-event-dispatcher ; semi-private
            )
 
@@ -244,7 +247,7 @@
     (value :accessor event-progress-value))
 
   (defclass <state-db-changed-event> (<event>)
-    (db-get :accessor event-db-get))
+    (state-db-getter :accessor event-state-db-getter))
 
   (define (veto-event! event)
     (set! (event-vetoed? event) #t))
@@ -286,8 +289,9 @@
                       :value (cadr args))]
                    [[state-db-changed]
                     (make <state-db-changed-event>
-                      :db-get (lambda (key)
-                                (engine-state-db-get *engine* node key)))]
+                      :state-db-getter
+                      (lambda (key)
+                        (engine-state-db-get-via-element *engine* node key)))]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
       (define (no-handler)
@@ -932,6 +936,8 @@
     ;; will be modified as we run.
     (foreach [elem (node-elements node)]
       (delete-element-internal elem))
+    ;; Unregister our state-db listeners, if we have any.
+    (engine-state-db-unregister-listeners *engine* node)
     ;; Run any exit handler.
     (run-on-exit-handler node)
     ;; Mark this node as no longer running, so nobody tries to call ON

@@ -29,7 +29,6 @@
            current-card-name fade unfade save-graphics restore-graphics
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
-           set-state-db-datum!
            %basic-button%)
 
   (define (url? path)
@@ -512,9 +511,6 @@
       (delete-element (find-node (string->symbol (cat (node-full-name parent)
                                                       "/" name))))))
   
-  (define (set-state-db-datum! key val)
-    (call-5l-prim 'StateDbSet key val))
-
   (define-element-template %basic-button%
       [[action :type <function> :label "Click action"]
        [enabled? :type <boolean> :label "Enabled?" :default #t]]

@@ -522,4 +522,112 @@
             (engine-var '_text_width)
             (engine-var '_text_height))))
 
+
+  ;;;======================================================================
+  ;;;  State DB
+  ;;;======================================================================
+  ;;;  In most applications, it's necessary to update the GUI based on
+  ;;;  some internal application state.  If both the GUI and the internal
+  ;;;  state are complicated, the resulting application can be a mess.
+  ;;;
+  ;;;  One popular way to reduce this complexity is to use the
+  ;;;  model-view-controller paradigm (see the web for details).  We choose
+  ;;;  a similar approach: We create a global state database with
+  ;;;  hierarchial keys of the form /foo/bar/baz.  To get data from the
+  ;;;  state database, you need to register a listener, which will be run
+  ;;;  immediately.  The engine will keep track of the data accessed, and
+  ;;;  re-run the listener whenever any of that data changes.
+  ;;;
+  ;;;  A listener is a special kind of function.  You can create a
+  ;;;  listener using DEFINE-STATE-DB-LISTENER, DEFINE-STATE-DB-LISTENER/RT,
+  ;;;  STATE-DB-FN, or STATE-DB-FN/RT.  The RT versions are implemented in
+  ;;;  a special, non-consing subset of Scheme which should not cause
+  ;;;  the garbage collector to be invoked.
+  ;;;
+  ;;;  This is an advanced language feature, and simple Tamale programs
+  ;;;  will almost never need to use it.
+
+  (provide set-state-db! register-state-db-fn!
+           state-db-fn state-db-fn/rt
+           define-state-db-listener define-state-db-listener/rt)
+  
+  ;;; Set the specified key in the state database.
+  ;;;
+  ;;; @param SYMBOL key The key to set.
+  ;;; @param ANY val The new value.
+  (define (set-state-db! key value)
+    (call-5l-prim 'StateDbSet key value))
+
+  ;;; Register a listener with the state database, and call the listener
+  ;;; the first time.
+  ;;;
+  ;;; @param NODE node The node to which this listener should be attached.
+  ;;; @param LISTENER listener 
+  (define (register-state-db-fn! node fn)
+    (call-5l-prim 'StateDbRegisterListener (node-full-name node) fn))
+
+  (define (make-state-db-fn f)
+    (fn (listener-name listener-serial-number)
+      (define (state-db key)
+        (call-5l-prim 'StateDbGet listener-name listener-serial-number key))
+      (f state-db)))
+
+  ;;; Create a function suitable for passing to REGISTER-STATE-DB-FN!.
+  ;;;
+  ;;; @syntax (STATE-DB-FN (state-db) body ...)
+  ;;; @param FUNCTION state-db A function which will fetch data from the
+  ;;;   state database.
+  ;;; @param BODY body The code to run.
+  (define-syntax state-db-fn
+    (syntax-rules ()
+      [(state-db-fn (state-db) . body)
+       (make-state-db-fn (fn (state-db) . body))]))
+
+  ;;; Create a function suitable for passing to REGISTER-STATE-DB-FN!.
+  ;;; This function is written in a special, non-consing dialect of Scheme.
+  ;;;
+  ;;; @syntax (STATE-DB-FN/RT (state-db) [binding ...] body ...)
+  ;;; @param FUNCTION state-db A function which will fetch data from the
+  ;;;   state database.
+  ;;; @param NAME binding A name from the enclosing lexical scope which
+  ;;;   should be made available within the body.  Note that STATE-DB-FN/RT
+  ;;;   will immediate create a read-only copy of the original binding; the
+  ;;;   code body will not see any future updates from Scheme.
+  ;;; @param BODY body The code to run.  For more documentation on the
+  ;;;   subset of Scheme supported here, consult the engine source code
+  ;;;   or experiment.
+  (define-syntax (state-db-fn/rt stx)
+    (syntax-case stx ()
+      [(state-db-fn/rt (state-db) bound . body)
+       (quasisyntax/loc
+        stx
+        ;; TODO - Implement this function for real.
+        (state-db-fn (state-db) . body))]))
+
+  ;;; Combines the features of REGISTER-STATE-DB-FN! and STATE-DB-FN.
+  ;;;
+  ;;; @syntax (DEFINE-STATE-DB-LISTENER (name state-db) body ...)
+  ;;; @syntax (DEFINE-STATE-DB-LISTENER name value)
+  (define-syntax (define-state-db-listener stx)
+    (syntax-case stx ()
+      [(define-state-db-listener (name state-db) . body)
+       (quasisyntax/loc
+        stx
+        (define-state-db-listener name (state-db-fn (state-db) . body)))]
+      [(define-state-db-listener name value)
+       (quasisyntax/loc
+        stx
+        ;; We ignore #'NAME, but we use it to get the lexical context in
+        ;; which a reasonable SELF variable is defined.
+        (register-state-db-fn! #,(datum->syntax-object #'name 'self) value))]))
+  
+  ;;; Combines the features of REGISTER-STATE-DB-FN! and STATE-DB-FN/RT.
+  ;;;
+  ;;; @syntax (DEFINE-STATE-DB-LISTENER (name state-db) [binding ...] body ...)
+  (define-syntax define-state-db-listener/rt
+    (syntax-rules ()
+      [(define-state-db-listener/rt (name state-db) bound . body)
+       (define-state-db-listener name
+         (state-db-fn/rt (state-db) bound . body))]))
+
   ) ; end module
