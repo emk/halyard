@@ -53,10 +53,10 @@ TSchemeInterpreter::TSchemeInterpreter()
 
 	// Load our Scheme code.
 	FileSystem::Path scriptsDir = FileSystem::GetScriptsDirectory();
-	FileSystem::Path source = scriptsDir.AddComponent("kernel.ss");
+	FileSystem::Path source = FileSystem::GetRuntimeFilePath("kernel.ss");
 	if (!scheme_load(source.ToNativePathString().c_str()))
 		throw TException(__FILE__, __LINE__, "Error loading Scheme kernel");
-	source = scriptsDir.AddComponent("test.ss");
+	source = FileSystem::GetScriptFilePath("start.ss");
 	if (!scheme_load(source.ToNativePathString().c_str()))
 		throw TException(__FILE__, __LINE__, "Error loading Scheme code");
 }

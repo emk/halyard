@@ -273,10 +273,8 @@ DEFINE_5L_PRIMITIVE(Set)
 DEFINE_5L_PRIMITIVE(Get)
 {
 	TString vname;
-	
 	inArgs >> vname;
-   
-	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
+   	::SetPrimitiveResult(gVariableManager.GetString(vname.GetString()));
 }
 
     	

@@ -84,7 +84,8 @@ int					gHorizRes;
 int					gVertRes;
 
 TWin5LInterpreter   *gWin5LInterpreter = NULL;
-TWin5LInterpreterManager *gInterpreterManager = NULL;
+TInterpreterManager *gInterpreterManager = NULL;
+bool				gHaveLegacyInterpreterManager = false;
 View				*gView = NULL;
 LTouchZoneManager	gTouchZoneManager;     
 SysInfo				gSysInfo; 
@@ -237,7 +238,13 @@ int RealWinMain(HINSTANCE hInstance,
 	RegisterQuickTimePrimitives();
 
 	// Create our interpreter and give it control of the application.
-	gInterpreterManager = new TWin5LInterpreterManager(&WindowsIdleProc);
+	gInterpreterManager = MaybeGetSchemeInterpreterManager(&WindowsIdleProc);
+	if (!gInterpreterManager)
+	{
+		gHaveLegacyInterpreterManager = true;
+		gInterpreterManager = new TWin5LInterpreterManager(&WindowsIdleProc);
+	}
+		
 	gInterpreterManager->Run();
 	delete gInterpreterManager;
 	gInterpreterManager = NULL;
@@ -427,19 +434,21 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 	{ 
 		if ((gHorizRes > 650) and (gVertRes > 500))
 		{
-			win_style = WS_CAPTION;
-			::AdjustWindowRect(&Rectgl, WS_CAPTION, true); 	// find window size based on desired client area (Rectgl)
+			// We have enough space to display a floating window.
+			win_style = WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX;
+			// find window size based on desired client area (Rectgl)
+			::AdjustWindowRect(&Rectgl, win_style, true);
 		}
 		else
 		{
 			win_style = WS_POPUP;
-			::AdjustWindowRect(&Rectgl, WS_POPUP, false);
+			::AdjustWindowRect(&Rectgl, win_style, false);
 		}
 	}
 	else
 	{
 		win_style = WS_POPUP;
-		::AdjustWindowRect(&Rectgl, WS_POPUP, false);
+		::AdjustWindowRect(&Rectgl, win_style, false);
 	}
  
 	gWinRect.top = (gVertRes / 2) - (V_SCREEN / 2);
@@ -618,7 +627,9 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			::SetFocus(hWnd);
             break;
 
-		case WM_CLOSE:				
+		case WM_CLOSE:
+			// XXX - Stopgap.  We may not have an interpreter manager.
+			TInterpreterManager::GetInstance()->RequestQuitApplication();
 			break;
 
 		case WM_COMMAND:
@@ -1107,6 +1118,10 @@ void ReDoScript(TString &inCardName)
 
 	gTouchZoneManager.RemoveAll();
 
+	// XXX - Does this potentially destroy an object in our call chain?
+	if (!gHaveLegacyInterpreterManager)
+		gCommandKeyManager.RemoveAll();
+
 	gInterpreterManager->RequestReloadScript(inCardName);
 }
 
@@ -1165,12 +1180,18 @@ void SetGlobals(void)
 //
 void PutInBackground(void)
 {
-	SetWindowPos(hwndApp, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
+	{
+		// XXX - Causes off-center QuickTime playback when backgrounded
+		// window is restored.
+		SetWindowPos(hwndApp, HWND_BOTTOM, 0, 0, 0, 0,
+					 SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
 
-	ShowWindow(hwndApp, SW_MINIMIZE);
-	ShowWindow(hBackgroundWnd, SW_HIDE);
+		ShowWindow(hwndApp, SW_MINIMIZE);
+		ShowWindow(hBackgroundWnd, SW_HIDE);
 
-	gCursorManager.UnClipCursor();	// remove cursor restraints
+		gCursorManager.UnClipCursor();	// remove cursor restraints
+	}
 
 	gInBackground = true;
 
@@ -1182,16 +1203,20 @@ void PutInBackground(void)
 //
 void PutInForeground(void)
 {
-	ShowWindow(hBackgroundWnd, SW_SHOW);
-	ShowWindow(hwndApp, SW_MAXIMIZE);
-
-	gCursorManager.ReClipCursor();
-
-	SetWindowPos(hwndApp, /*HWND_TOP*/ HWND_TOPMOST, 
-		gWinRect.left, gWinRect.top, gWinRect.right, gWinRect.bottom, 0);
-//	SetWindowPos(hBackgroundWnd, hwndApp, 
-//		gBackgroundWinRect.left, gBackgroundWinRect.top, 
-//		gBackgroundWinRect.right, gBackgroundWinRect.bottom, 0);
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
+	{
+		ShowWindow(hBackgroundWnd, SW_SHOW);
+		ShowWindow(hwndApp, SW_MAXIMIZE);
+		
+		gCursorManager.ReClipCursor();
+		
+		SetWindowPos(hwndApp, /*HWND_TOP*/ HWND_TOPMOST, 
+					 gWinRect.left, gWinRect.top,
+					 gWinRect.right, gWinRect.bottom, 0);
+		//	SetWindowPos(hBackgroundWnd, hwndApp, 
+		//		gBackgroundWinRect.left, gBackgroundWinRect.top, 
+		//		gBackgroundWinRect.right, gBackgroundWinRect.bottom, 0);
+	}
 
 	gInBackground = false;
 
@@ -1231,6 +1256,11 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.13.4.2  2002/08/16 15:02:54  emk
+   * Preliminary Windows integration.
+   * Fixed nasty "Minimize when backgrounded" behavior when running in
+     windowed mode (this was driving me crazy while debugging).
+
  Revision 1.13.4.1  2002/07/31 21:18:53  emk
  Overhaul of the Windows event handling system.
 

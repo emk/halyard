@@ -4,6 +4,7 @@
 #define _TStartup_h_
 
 #include "TCommon.h"
+#include "TInterpreter.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -13,6 +14,13 @@ BEGIN_NAMESPACE_FIVEL
 // before calling this function.
 //
 extern void InitializeCommonCode();
+
+//////////
+// If the current program looks like a Scheme script, attempt
+// to start a Scheme interpreter.  Otherwise, return NULL.
+//
+extern TInterpreterManager *
+MaybeGetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
 
 END_NAMESPACE_FIVEL
 

@@ -2,20 +2,23 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk, zeb
 
-  * emk: Imported Boost library (from http://www.boost.org/) into CVS.
+  * Imported Boost library (from http://www.boost.org/) into CVS.
   * zeb: Moved some primitives from TMacPrimitives.cpp and TWinPrimitives.cpp
     to TCommonPrimitives.cpp and T5LPrimitives.cpp.
   * zeb: Added a GET primitive.
   * zeb: Cleaned date stuff out of LUtil.{h,cpp}.
-  * emk: First work on Scheme.
-  * emk: Overhaul of the Windows event handling system.
-  * emk: The interpreter now calls the idle loop, instead of vice versa.
-  * emk: Redoscript is now handled by a TInterpreterManager object.
-  * emk: It's no longer possible to switch between scripts.
-  * emk: Updated TSchemeInterpreter to use new event loop system.
-  * emk: Filled in lots of missing Scheme support.
-  * emk: Converted kernel.ss to use an internal state machine.
-  * emk: Implemented various timer systems.
+  * First work on Scheme.
+  * Overhaul of the Windows event handling system.
+  * The interpreter now calls the idle loop, instead of vice versa.
+  * Redoscript is now handled by a TInterpreterManager object.
+  * It's no longer possible to switch between scripts.
+  * Updated TSchemeInterpreter to use new event loop system.
+  * Filled in lots of missing Scheme support.
+  * Converted kernel.ss to use an internal state machine.
+  * Implemented various timer systems.
+  * Preliminary Windows integration.
+  * Fixed nasty "Minimize when backgrounded" behavior when running in
+    windowed mode (this was driving me crazy while debugging).
 
 3.4.0 - 26 July 2002 - emk
 

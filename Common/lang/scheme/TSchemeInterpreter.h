@@ -34,17 +34,13 @@ class TSchemePtr
 			scheme_dont_gc_ptr(mPtr);
 	}
 
-	// Don't allow const copies--we don't need to pass const pointers to
-	// Scheme, and it's hard to get const smart pointers to have
-	// tasteful semantics.
-	TSchemePtr(const TSchemePtr &inSchemePtr);
-
 public:
 	TSchemePtr() : mPtr(NULL) {}
 	TSchemePtr(Type *inPtr) : mPtr(NULL) { Set(inPtr); }
-	TSchemePtr(TSchemePtr &inSchemePtr) : mPtr(NULL) { Set(inSchemePtr.mPtr); }
+	TSchemePtr(const TSchemePtr &inSchemePtr) : mPtr(NULL) { Set(inSchemePtr.mPtr); }
 	operator Type*() { return mPtr; }
 	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); }
+	TSchemePtr<Type> &operator=(const TSchemePtr &inPtr) { Set(inSchemePtr.mPtr); }
 };
 
 

@@ -380,12 +380,12 @@
 
 (define (%kernel-current-card-name)
   (if *%kernel-current-card*
-      (%kernel-card-name *%kernel-current-card*)
+      (value->string (%kernel-card-name *%kernel-current-card*))
       ""))
 
 (define (%kernel-previous-card-name)
   (if *%kernel-previous-card*
-      (%kernel-card-name *%kernel-previous-card*)
+      (value->string (%kernel-card-name *%kernel-previous-card*))
       ""))
 
 (define (%kernel-run-callback thunk)

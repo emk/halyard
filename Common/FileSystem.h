@@ -164,7 +164,7 @@ namespace FileSystem {
 	// Given a file name, return a path pointing to a file with
 	// that name in the font directory.
 	//
-	inline Path GetFontFilePath(std::string inFontFileName)
+	inline Path GetFontFilePath(const std::string &inFontFileName)
 	    { return GetFontDirectory().AddComponent(inFontFileName); }
 
 	//////////
@@ -172,6 +172,24 @@ namespace FileSystem {
 	//
 	inline Path GetScriptsDirectory()
 	    { return GetBaseDirectory().AddComponent("Scripts"); }
+
+	//////////
+	// Get the path to a specific script file.
+	//
+	inline Path GetScriptFilePath(const std::string &inScriptFileName)
+	    { return GetScriptsDirectory().AddComponent(inScriptFileName); }
+
+	//////////
+	// Get the directory 5L uses to store runtime support files.
+	//
+	inline Path GetRuntimeDirectory()
+	    { return GetBaseDirectory().AddComponent("Runtime"); }
+
+	//////////
+	// Get the path to a specific runtime file.
+	//
+	inline Path GetRuntimeFilePath(const std::string &inRuntimeFileName)
+	    { return GetRuntimeDirectory().AddComponent(inRuntimeFileName); }
 
 	//////////
 	// Get the directory 5L uses to store user data.
@@ -183,7 +201,7 @@ namespace FileSystem {
 	// Given a file name, return a path pointing to a file with
 	// that name in the font directory.
 	//
-	inline Path GetDataFilePath(std::string inDataFileName)
+	inline Path GetDataFilePath(const std::string &inDataFileName)
 	    { return GetDataDirectory().AddComponent(inDataFileName); }
 
 	//////////
