@@ -26,6 +26,9 @@
 
 /*
  $Log$
+ Revision 1.41  2002/10/31 22:58:48  emk
+ Edited a comment which prevented GCC from compiling this file.
+
  Revision 1.40  2002/10/31 18:25:11  emk
  3.5.9 - 31 Oct 2002 - emk
 
@@ -44,7 +47,7 @@
    * Source tree re-organization:
      - Common/libs -> libs
      - Common/freetype2 -> libs/freetype2
-     - Rename Common/Runtime/5L/*.ss to have lowercase names
+     - Rename Common/Runtime/5L/ *.ss to have lowercase names
      - Linux, Mac, Win32 build fixes
 
  Revision 1.39  2002/10/15 18:32:34  emk
