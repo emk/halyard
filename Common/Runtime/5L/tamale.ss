@@ -466,6 +466,11 @@
   (define (media-cd-is-available?)
     (and *cd-media-directory* #t))
 
+  ;;; Try to determine whether or not we have a CD with our media
+  ;;; files on it.  We look at each drive on the system, and see
+  ;;; whether it contains a Media directory with a file named
+  ;;; 'pathname'.  You can use '/' as a path separator in pathname,
+  ;;; as usual.
   (define (search-for-media-cd pathname)
     (label return
       (foreach [drive (filesystem-root-list)]
