@@ -26,6 +26,8 @@
 #include "TEncoding.h"
 #include "TCommonPrimitives.h"
 
+using GraphicsTools::Color;
+
 HeaderManager gHeaderManager;
 
 //  Build the header.  Colors are allegedly checked to match InfoWindows
@@ -34,7 +36,8 @@ HeaderManager gHeaderManager;
 Header::Header(TArgumentList &inArgs)
 {
     itsAlign = AlignLeft;
-    itsColor = itsHighlightColor = itsShadowColor = itsShadHighColor = 0;
+    itsColor = itsHighlightColor = itsShadowColor = itsShadHighColor =
+		Color(0, 0, 0);
     itsShadow = 0;
     itsOffset = 0;
 
@@ -113,7 +116,6 @@ char    *vval = new char[10];
  *
  *  Parameter bounds    (where to stick it in)
  *  Parameter inText    (what to stick in)
- *  Parameter color     (what color)
  *  Parameter shadow    (what shadow displacement)
  * Return:
  *
@@ -135,7 +137,7 @@ static void LogEncodingErrors (const std::string &inBadString,
 		inErrMsg, inBadPos, inBadString.c_str());
 }
 
-void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
+void Header::Draw(TRect &bounds, char *inText, int Shadow)
 {
 	HDC		hDC;
 	HFONT	hOldFont;
@@ -198,9 +200,6 @@ void Header::Draw(TRect &bounds, char *inText, int color, int Shadow)
 	
 	        //  Draw the text.
 	        //
-	        
-	        //itsFont->SetColor(color);
-	        // Color support for text command removed. Color set in header.
 	        
 	        text_width = DrawLine(loc, text, lineStart, index);
 			incr_x = max(incr_x, text_width);
@@ -669,7 +668,7 @@ void HeaderManager::DoHeader(const char *headername)
  * Comments:
  *      Wrapper to call Header::Draw()...
  ***********************************************************************/
-void HeaderManager::DoText(const char *header, TRect &bounds, const char *text, int color, int shadow)
+void HeaderManager::DoText(const char *header, TRect &bounds, const char *text, int shadow)
 {
     Header  *hdr;
     
@@ -681,7 +680,7 @@ void HeaderManager::DoText(const char *header, TRect &bounds, const char *text, 
     	return;
     }
     
-    hdr->Draw(bounds, (char *)text, color, shadow);
+    hdr->Draw(bounds, (char *)text, shadow);
 }
 
 /***********************************************************************
@@ -711,6 +710,16 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.12  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.11  2002/10/03 18:05:40  emk
  Comment fix.
 

@@ -20,6 +20,8 @@
 
 #include "Palettes.h"
 
+using GraphicsTools::Color;
+
 bool gHaveIssuedSlowGraphicsWarning = false;
 
 View::View()
@@ -449,7 +451,7 @@ void View::UnBlippo(TString &inEffect, long inTime)
 void View::Lock(bool inClear)
 {
 	if (inClear)
-		ClearScreen(0);			// make the buffer all black
+		ClearScreen(Color(0, 0, 0, 0)); // make the buffer all black
 		
     Draw();						// make sure the screen is up to date
     
@@ -482,7 +484,7 @@ void View::Unlock(TString &inEffect, long inTime)
 //
 //	ClearScreen - Clear the screen to the given color.
 //
-void View::ClearScreen(int inColor)
+void View::ClearScreen(GraphicsTools::Color inColor)
 {
 	HBRUSH		theBrush;
 	COLORREF	theColor;
@@ -493,7 +495,7 @@ void View::ClearScreen(int inColor)
 	theBrush = ::CreateSolidBrush(theColor);
 	if (theBrush == NULL)
 	{
-		gDebugLog.Log("ClearScreen: couldn't create brush for <%d>", inColor);
+		gDebugLog.Log("ClearScreen: couldn't create brush", inColor);
 		return;
 	}
 	
@@ -504,7 +506,8 @@ void View::ClearScreen(int inColor)
 	theRect.right = VSCREEN_WIDTH;
 	theRect.bottom = VSCREEN_HEIGHT;
 
-	gDebugLog.Log("ClearScreen: to <%d>", inColor);
+	gDebugLog.Log("ClearScreen: to <%d %d %d>",
+				  inColor.red, inColor.green, inColor.blue);
 	
 	::FillRect(m_dc, &theRect, theBrush);
 	::DeleteObject(theBrush);		 
@@ -529,17 +532,14 @@ void View::BlackScreen(void)
 }
 
 //
-//	GetColor - Return a COLORREF with info about the given color in the
-//		current palette.
+//	GetColor - Return a COLORREF with info about the given color.
 //
-COLORREF View::GetColor(int inColor)
+COLORREF View::GetColor(GraphicsTools::Color inColor)
 {
-	COLORREF		theRef = RGB(0, 0, 0);
-	
-	if (m_pal != NULL)
-		theRef = m_pal->GetColor(inColor);
-
-	return (theRef);
+	if (inColor.alpha != 0)
+		gLog.Caution("Passed a color with an alpha channel to primitive which "
+					 "doesn't support alpha channels.");
+	return RGB(inColor.red, inColor.green, inColor.blue);
 }
 
 //
@@ -1507,8 +1507,9 @@ void View::DoBlinds(bool inClose, long inTime)
 	// cbo_note - why don't we use the parameter?
 	effect_step = 10;			// make them really fast no matter what
 	
+	// set the offscreen to black.
 	if (inClose)
-		ClearScreen(0);			// set the offscreen to black	
+		ClearScreen(GraphicsTools::Color(0, 0, 0));
 	
 	rect_height = VSCREEN_HEIGHT/num_slats/num_iterations;
 
@@ -1590,6 +1591,16 @@ Effect View::StringToEffect(TString &effectString)
 
 /*
  $Log$
+ Revision 1.6  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.5  2002/07/25 22:25:36  emk
    * Made new CryptStream auto_ptr code work under Windows.
    * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now

@@ -62,7 +62,7 @@ void InputManager::Start(TString &inVariable, TString &inStyle,
     theHeader = gHeaderManager.Find(inStyle.GetString());
     if (theHeader != NULL)
     {
-		int		foreColor, backColor; 
+		GraphicsTools::Color foreColor, backColor;
 
     	m_Font = theHeader->GetFont();
     	foreColor = theHeader->GetColor();
@@ -165,7 +165,7 @@ void InputManager::KeyDown(char inKey)
 			gVariableManager.SetString(m_Variable.GetString(), m_Buffer);
 			TInterpreter::GetInstance()->WakeUp();
 			gView->DirtyRect(&m_Bounds);
-			gHeaderManager.DoText(m_Style.GetString(), m_Bounds, m_Buffer, 0, 0);
+			gHeaderManager.DoText(m_Style.GetString(), m_Bounds, m_Buffer, 0);
 			gView->Draw();
 
 			Reset();
@@ -296,6 +296,16 @@ bool InputManager::IsLegalInputChar(char inKey)
 
 /*
  $Log$
+ Revision 1.5  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.4  2002/08/22 00:12:22  emk
  3.5.4 - 21 Aug 2002 - emk
 

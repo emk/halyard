@@ -2,10 +2,13 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
-  * Changed 'for-each-item' to 'foreach', and added 'for'.
+  * Scheme: Changed 'for-each-item' to 'foreach', and added 'for'.
   * Added extract-docs.pl.
   * Added many new test cases for the new 5L language.
   * Fixed minor bugs in CryptStream*.*, as discovered by valgrind.
+  * All primitives which used to take palette indices now take RGB colors.
+  * Old 5L: Added DEFPALETTE command for declaring palettes without
+    BMP files.  This provides backwards compatibility for old code.
 
 3.5.6 - 3 Oct 2002 - emk
 

@@ -328,12 +328,33 @@ inline TStream& close(TStream &src) { src.scanclose(); return src; }
 //
 inline TStream& discard(TStream &src) { src.discard(); return src; }
 
+//////////
+// The number of palette entries available for emulating the old 8-bit
+// palettes (for backwards compatibility with old scripts).
+//
+#define TSTREAM_PALETTE_SIZE (256)
+
+//////////
+// The current palette entries for emulating the old 8-bit palettes.
+//
+extern GraphicsTools::Color gPalette[TSTREAM_PALETTE_SIZE];
+
 END_NAMESPACE_FIVEL
 
 #endif // TStream_h
 
 /*
  $Log$
+ Revision 1.8  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.7  2002/08/17 01:41:55  emk
  3.5.1 - 16 Aug 2002 - emk
 

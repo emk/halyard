@@ -18,6 +18,7 @@
 #define _Graphics_h_
 
 #include "TRect.h"
+#include "GraphicsTools.h"
 
 /*-----------------------------------------------------------------
 
@@ -39,7 +40,8 @@ LIBRARY
 // [in] color - color to use for drawing the line
 // [in] thickness - line thickness
 //
-void    DrawLine(int x1,int y1, int x2, int y2, int color, int thickness = 1);
+void    DrawLine(int x1,int y1, int x2, int y2, GraphicsTools::Color color,
+		 int thickness = 1);
 
 //////////
 // Draw a rectangle with the given coordinates.  The background palette is 
@@ -52,7 +54,8 @@ void    DrawLine(int x1,int y1, int x2, int y2, int color, int thickness = 1);
 // [in] color - color to use for drawing the rectangle
 // [in] filled - if true, flood fills the rectangle
 //
-void    DrawRect(int x1,int y1, int x2, int y2, int color, int filled = false);
+void    DrawRect(int x1,int y1, int x2, int y2, GraphicsTools::Color color,
+		 int filled = false);
 
 //////////
 // Draw a rectangle with the given coordinates.  The background palette is 
@@ -62,7 +65,8 @@ void    DrawRect(int x1,int y1, int x2, int y2, int color, int filled = false);
 // [in] color - color to use for drawing the rectangle
 // [in] filled - if true, flood fills the rectangle
 //
-void	DrawRect(TRect &inRect, int inColor, int inFilled = false);
+void	DrawRect(TRect &inRect, GraphicsTools::Color inColor,
+		 int inFilled = false);
 
 //////////
 // Draw a circle at the given coordinates.  The background palette is 
@@ -73,7 +77,7 @@ void	DrawRect(TRect &inRect, int inColor, int inFilled = false);
 // [in] radius - radius of the circle
 // [in] color - color to use for drawing the circle
 //
-void    DrawCircle(int x, int y, int radius, int color);
+void    DrawCircle(int x, int y, int radius, GraphicsTools::Color color);
 
 //////////
 // Produces the system defualt beep.
@@ -87,6 +91,16 @@ void    Beep(int freq = 1500, int duration = 80);
 
 /*
  $Log$
+ Revision 1.3  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.2  2002/06/20 16:32:54  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

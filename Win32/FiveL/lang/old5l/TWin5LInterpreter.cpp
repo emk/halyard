@@ -160,6 +160,7 @@ TCallback *TWin5LCallback::MakeCallback(const TString &inCmd)
 TWin5LInterpreterManager::TWin5LInterpreterManager(
 	TInterpreter::SystemIdleProc inIdleProc)
 	: TInterpreterManager(inIdleProc),
+	  mDefPaletteProcessor("defpalette"),
 	  mDefStyleProcessor("defstyle"),
 	  mHeaderProcessor("header")
 {
@@ -182,6 +183,7 @@ TWin5LInterpreterManager::TWin5LInterpreterManager(
 	TParser::RegisterTlfProcessor("macrodef", &gMacroManager);
 	TParser::RegisterTlfProcessor("header", &mHeaderProcessor);
 	TParser::RegisterTlfProcessor("defstyle", &mDefStyleProcessor);
+	TParser::RegisterTlfProcessor("defpalette", &mDefPaletteProcessor);
 }
 
 TInterpreter *TWin5LInterpreterManager::MakeInterpreter()

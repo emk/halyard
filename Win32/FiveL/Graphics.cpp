@@ -38,7 +38,8 @@
  * Draw a line from point a to point b with the given
  *  color and thickness. Note:  background palette is used!
  ***********************************************************************/
-void DrawLine(int ax, int ay, int bx, int by, int color, int thickness)
+void DrawLine(int ax, int ay, int bx, int by, GraphicsTools::Color color,
+			  int thickness)
 {
 	COLORREF	theColor;
     HPEN    	hPen, hPenOld;
@@ -112,7 +113,8 @@ void DrawLine(int ax, int ay, int bx, int by, int color, int thickness)
     ::DeleteObject(hPen);
 }
 
-void DrawRect(TRect &inRect, int inColor, int inFilled /* = false */)
+void DrawRect(TRect &inRect, GraphicsTools::Color inColor,
+			  int inFilled /* = false */)
 {
 	DrawRect(inRect.Left(), inRect.Top(), inRect.Right(), inRect.Bottom(),
 		inColor, inFilled);
@@ -130,7 +132,8 @@ void DrawRect(TRect &inRect, int inColor, int inFilled /* = false */)
  *    Draw the rectangle r, color "color" and fill it if filled==true
  *  Same background palette trick. 
  ***********************************************************************/
-void DrawRect(int x1,int y1, int x2, int y2, int color, int filled)
+void DrawRect(int x1,int y1, int x2, int y2, GraphicsTools::Color color,
+			  int filled)
 {
 	COLORREF	theColor;
     HBRUSH  	hBrushTrans;
@@ -176,7 +179,7 @@ void DrawRect(int x1,int y1, int x2, int y2, int color, int filled)
  * Comments:
  *  Draw a circle. Again, background palette is used.
  ***********************************************************************/
-void DrawCircle(int x, int y, int radius, int color)  
+void DrawCircle(int x, int y, int radius, GraphicsTools::Color color)  
 {
 	COLORREF	theColor;
     HBRUSH  	hBrushTrans;
@@ -214,6 +217,16 @@ void Beep(int freq, int duration)
     
 /*
  $Log$
+ Revision 1.4  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.3  2002/07/08 16:43:56  emk
  3.3.11 - Bugfixes from 3.2.0.5 through 3.2.0.7.
 

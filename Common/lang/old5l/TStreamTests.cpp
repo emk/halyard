@@ -59,7 +59,7 @@ void test_TStream (void)
 	// Input formats.
 	// TODO - Test all operator >> here.
 	
-	s1 = "abc foo 32767 -32768 2147483647 -2147483648 0.5 0xFFee0080";
+	s1 = "abc foo 32767 -32768 2147483647 -2147483648 0.5 0xFFee0080 0";
 	TString temp2;
 	s1 >> temp2;
 	TEST(temp2 == "abc");
@@ -82,6 +82,8 @@ void test_TStream (void)
 	GraphicsTools::Color temp_color;
 	s1 >> temp_color;
 	TEST(temp_color == GraphicsTools::Color(0xFF, 0xEE, 0x00, 0x80));
+	s1 >> temp_color;
+	TEST(temp_color == GraphicsTools::Color(0x00, 0x00, 0x00, 0x00));
 
 	// Input using callback function.
 	s1 = "a(bc de)f";

@@ -30,7 +30,7 @@ LFont::LFont(const char *inName, int16 inHeight) : LResource(inName)
 {
 	m_Height = inHeight;
 	m_Bold = false;
-	m_Color = 255;			// default to black
+	m_Color = GraphicsTools::Color(0, 0, 0); // default to black
 
 	size = DEFAULT_FONT_SIZE;
 	m_FamilyName = "Times New Roman";
@@ -52,7 +52,7 @@ LFont::LFont(const char *name) : LResource(name)
 
 	m_Font = NULL;
 	m_Bold = false;
-	m_Color = 255;
+	m_Color = GraphicsTools::Color(0, 0, 0);
 
     //first, get rid of underscores:
     char	*undloc = strstr(namebuf, "_");
@@ -242,7 +242,7 @@ int16 LFont::CharHeight(char ch)
 }
                  
 
-void LFont::SetColor(int32 inColor)
+void LFont::SetColor(GraphicsTools::Color inColor)
 {
     m_Color = inColor;
 }
@@ -330,6 +330,16 @@ void LFontManager::AddDefaultFont()
 
 /*
  $Log$
+ Revision 1.4  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.3  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

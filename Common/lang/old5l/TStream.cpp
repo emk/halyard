@@ -49,6 +49,9 @@ const char COMMENT = '#';       //Changed MAR 31
 // Initialize our static variable.
 TStream::CallbackMakerFunc TStream::s_CallbackMaker = NULL;
 
+// Define our global variable.
+GraphicsTools::Color gPalette[TSTREAM_PALETTE_SIZE];
+
 
 /*********************
 
@@ -613,31 +616,57 @@ GraphicsTools::Color TStream::GetColorArg()
 {
 	std::string input = GetStringArg();
     const char *temp = input.c_str();
+	size_t len = strlen(temp);
 
-	// Make sure the value is of the form '0xRRGGBBAA', where RR, etc.,
-	// are hexadecimal digits.
-	bool ok = true;
-	if (temp[0] != '0' || temp[1] != 'x' || strlen(temp) != 10)
-		ok = false;
+	// If we have an integer argument, look it up in the current palette
+	// for backwards compatibility.
+	if (len >= 1 && (len < 2 || temp[1] != 'x'))
+	{
+		// Check the individual digits.
+		bool ok = true;
+		for (int i = 0; i < len; i++)
+			if (!isdigit(temp[i]))
+				ok = false;
+		if (!ok)
+			gLog.FatalError("The color \"%s\" does not have the format "
+							"\"0xRRGGBBAA\", and is not a palette index",
+							temp);
+
+		// Extract the color and look it up in our palette.
+		unsigned int index;
+		int successful_conversions = sscanf(temp, "%d", &index);
+		ASSERT(successful_conversions == 1);
+		if (index < 0 || TSTREAM_PALETTE_SIZE <= index)
+			gLog.FatalError("Palette index %d is out-of-bounds", index);
+		return gPalette[index];
+	}
 	else
 	{
-		// Make sure all the digits are hexadecimal.
-		for (int i = 2; i < 10; ++i)
-			if (!isxdigit(temp[i]))
-				ok = false;
-	}
-	if (!ok)
-		gLog.FatalError("The color \"%s\" does not have the format "
-						"\"0xRRGGBBAA\"", temp);
+		// Make sure the value is of the form '0xRRGGBBAA', where RR, etc.,
+		// are hexadecimal digits.
+		bool ok = true;
+		if (len != 10 || temp[0] != '0' || temp[1] != 'x')
+			ok = false;
+		else
+		{
+			// Make sure all the digits are hexadecimal.
+			for (int i = 2; i < 10; ++i)
+				if (!isxdigit(temp[i]))
+					ok = false;
+		}
+		if (!ok)
+			gLog.FatalError("The color \"%s\" does not have the format "
+							"\"0xRRGGBBAA\"", temp);
 
-	// Extract the actual data, and build our color.
-	unsigned int hex;
-	int successful_conversions = sscanf(temp + 2, "%x", &hex);
-	ASSERT(successful_conversions == 1);
-	return GraphicsTools::Color(hex >> 24,
-								(hex >> 16) & 0xFF,
-								(hex >> 8) & 0xFF,
-								hex & 0xFF);
+		// Extract the actual data, and build our color.
+		unsigned int hex;
+		int successful_conversions = sscanf(temp + 2, "%x", &hex);
+		ASSERT(successful_conversions == 1);
+		return GraphicsTools::Color(hex >> 24,
+									(hex >> 16) & 0xFF,
+									(hex >> 8) & 0xFF,
+									hex & 0xFF);
+	}
 }
 
 TCallback *TStream::GetCallbackArg()

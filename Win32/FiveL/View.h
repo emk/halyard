@@ -156,7 +156,7 @@ class View : public TObject, public GraphicsTools::Image
 		//
 		// [in] inColor - color used to fill the screen
 		//
-		void		ClearScreen(int inColor); 
+		void		ClearScreen(GraphicsTools::Color inColor); 
     	
 		//////////
 		// Copy a DIB into the offscreen buffer. We always copy the entire DIB.
@@ -227,11 +227,11 @@ class View : public TObject, public GraphicsTools::Image
 		void		BlackScreen(void);
 		
 		//////////
-		// Return a COLORREF with info about the given color in the	current palette.
+		// Return a COLORREF with info about the given RGB color.
 		//
 		// [in] inColor - the color
 		//
-		COLORREF	GetColor(int inColor);
+		COLORREF	GetColor(GraphicsTools::Color inColor);
    	    
 		//////////
 		// Get the current bit depth.
@@ -463,6 +463,16 @@ class View : public TObject, public GraphicsTools::Image
 
 /*
  $Log$
+ Revision 1.6  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.5  2002/07/25 22:25:36  emk
    * Made new CryptStream auto_ptr code work under Windows.
    * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now

@@ -11,6 +11,7 @@
 #include "TCommonPrimitives.h"
 #include "TVariable.h"
 #include "TException.h"
+#include "TStream.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -23,6 +24,9 @@ USING_NAMESPACE_FIVEL
 
 void FIVEL_NS Register5LPrimitives()
 {
+	// Declarations.
+	REGISTER_5L_PRIMITIVE(DefPalette);
+
 	// Integer operations.
 	REGISTER_5L_PRIMITIVE(Add);
 	REGISTER_5L_PRIMITIVE(Sub);
@@ -66,6 +70,47 @@ void FIVEL_NS Register5LPrimitives()
 	REGISTER_5L_PRIMITIVE_WITH_NAME(">", GreaterThan);
 	REGISTER_5L_PRIMITIVE_WITH_NAME("<=", LessThanOrEqualTo);
 	REGISTER_5L_PRIMITIVE_WITH_NAME(">=", GreaterThanOrEqualTo);
+}
+
+
+//=========================================================================
+//  Declarations
+//=========================================================================
+//  Top-level defining forms.  You probably want to register these as
+//  as top-level form processors, too (see the interpreters for details).
+
+//-------------------------------------------------------------------------
+// (DefPalette [INDEX COLOR]...)
+//-------------------------------------------------------------------------
+// Map 8-bit palette indices to RGB colors, for use with the drawing
+// commands.  This will allow us to modify all remaining primitives to
+// accept RGB colors, and to dispose of the palette and CLUT code in
+// both engines.
+
+DEFINE_5L_PRIMITIVE(DefPalette)
+{
+	// Clear the entire palette to black.
+	for (int i = 0; i < TSTREAM_PALETTE_SIZE; i++)
+		gPalette[i] = GraphicsTools::Color(0, 0, 0);
+
+	// Read in the INDEX/COLOR pairs and enter them into the palette.
+	while (inArgs.HasMoreArguments())
+	{
+		// Get the index.
+		int32 index;
+		inArgs >> index;
+		if (index < 0 || TSTREAM_PALETTE_SIZE <= index)
+			gLog.FatalError("DefPalette: Index %d out of bounds", index);
+
+		// Get the color.
+		GraphicsTools::Color color;
+		if (!inArgs.HasMoreArguments())
+			gLog.FatalError("DefPalette: Uneven number of INDEX/COLOR pairs");
+		inArgs >> color;
+
+		// Update the palette.
+		gPalette[index] = color;
+	}
 }
 
 

@@ -24,6 +24,7 @@
 #include "TCommon.h"
 #include "LFont.h"
 #include "TPrimitives.h"
+#include "GraphicsTools.h"
 
 //Sets up screen text buffer.
 //void TEXTLOC_init();
@@ -71,14 +72,14 @@ class Header
 		//
 		// [out] return - the font color for this header
 		//
-		int			GetColor(void) {return(itsColor);}
+		GraphicsTools::Color GetColor(void) {return(itsColor);}
         
 		//////////
 		// Get the highlight color.
 		//
 		// [out] return - the highlight color for this header
 		//
-		int			GetHiColor(void) {return(itsHighlightColor);}
+		GraphicsTools::Color GetHiColor(void) {return(itsHighlightColor);}
         
 		//////////
 		// Prepare header for text printing
@@ -94,10 +95,9 @@ class Header
 		//
 		// [in] bounds - a TRect specifying where to put the text
 		// [in] text - the text being displayed
-		// [in] color - text color
 		// [in] Shadow - text shadow displacement
 		//
-		virtual void Draw(TRect &bounds, char *text, int color, int Shadow);
+		virtual void Draw(TRect &bounds, char *text, int Shadow);
         
 		//////////
 		// Get the header font height.
@@ -146,12 +146,12 @@ class Header
 		//////////
 		// Header color.
 		//
-		int16       itsColor;
+		GraphicsTools::Color itsColor;
         
 		//////////
 		// Header highlight color.
 		//
-		int16       itsHighlightColor;
+		GraphicsTools::Color itsHighlightColor;
         
 		//////////
 		// Does this header have a shadow?
@@ -161,12 +161,12 @@ class Header
 		//////////
 		// Shadow color.
 		//
-		int16       itsShadowColor;
+		GraphicsTools::Color itsShadowColor;
         
 		//////////
 		// Shadow highlight color.
 		//
-		int16		itsShadHighColor;  
+		GraphicsTools::Color itsShadHighColor;
         
 		//////////
 		// Used to handle font alignment differences between Windows and Mac versions
@@ -232,11 +232,10 @@ class HeaderManager
 		// [in] header - name of the Header
 		// [in] bounds - a TRect specifying where to put the text
 		// [in] text - the text being displayed
-		// [in] color - text color
 		// [in] Shadow - text shadow displacement
 		//
-		virtual void	DoText(const char *header, TRect &bounds, const char *text,
-							   int color, int shadow);
+		virtual void	DoText(const char *header, TRect &bounds,
+							   const char *text, int shadow);
         
 		//////////
 		// Get the height of the font in the specified header.
@@ -256,6 +255,16 @@ extern HeaderManager gHeaderManager;
 
 /*
  $Log$
+ Revision 1.9  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.8  2002/08/22 00:12:22  emk
  3.5.4 - 21 Aug 2002 - emk
 

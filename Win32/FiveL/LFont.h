@@ -18,6 +18,7 @@
 #if !defined (_LFont_h_)
 #define _LFont_h_
 
+#include "GraphicsTools.h"
 #include "LResource.h"
 
 /*-----------------------------------------------------------------
@@ -85,7 +86,7 @@ class LFont : public LResource
 		//
 		// [in] inColor - the color
 		//
-		void    		SetColor(int32 inColor);
+		void    		SetColor(GraphicsTools::Color inColor);
         
 		//////////
 		// To underline or not to underline?
@@ -129,7 +130,7 @@ class LFont : public LResource
 		//
 		// [out] return - font color
 		//
-		int32			Color(void)
+		GraphicsTools::Color Color(void)
 					{ return (m_Color); }
 		
 		//////////
@@ -154,7 +155,7 @@ class LFont : public LResource
 		//////////
 		// Font color.
 		//
-		int32     		m_Color;
+		GraphicsTools::Color m_Color;
         
 		//////////
 		// Is the font bold?
@@ -230,6 +231,16 @@ class LFontManager : public LResourceManager
 
 /*
  $Log$
+ Revision 1.3  2002/10/08 21:42:25  emk
+ Palette removal, part 1:
+
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+
+ I haven't removed the palette code yet, but plan to do so as soon as the
+ migration is complete.
+
  Revision 1.2  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

@@ -92,6 +92,7 @@ public:
 //
 class TWin5LInterpreterManager : public TInterpreterManager
 {
+	TPrimitiveTlfProcessor mDefPaletteProcessor;
 	TPrimitiveTlfProcessor mDefStyleProcessor;
 	TPrimitiveTlfProcessor mHeaderProcessor;
 

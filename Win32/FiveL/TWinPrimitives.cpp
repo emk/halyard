@@ -23,6 +23,7 @@
 #include "TException.h"
 
 USING_NAMESPACE_FIVEL
+using GraphicsTools::Color;
 
 
 //=========================================================================
@@ -57,7 +58,6 @@ void FIVEL_NS RegisterWindowsPrimitives()
 	REGISTER_5L_PRIMITIVE(Hidemouse);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Jump);
-	REGISTER_5L_PRIMITIVE(Key);
 	REGISTER_5L_PRIMITIVE(Keybind);
 	//REGISTER_5L_PRIMITIVE_WITH_NAME("kill", still); - Never finished
 	REGISTER_5L_PRIMITIVE(Line);
@@ -292,7 +292,8 @@ DEFINE_5L_PRIMITIVE(Box)
 {
     TRect    	bounds;
     TRect		dirtyRect;
-    int16     	color, lineThickness = 1;
+	Color       color;
+    int16     	lineThickness = 1;
     TString 	fill;
     int			do_fill = false;
 
@@ -737,18 +738,6 @@ DEFINE_5L_PRIMITIVE(Jump)
     gView->Draw();
 }
 
-/*--------------------------------------------------------
-    (KEY COLOR)
-
-    Switch the overlay mode and set the keycolor to COLOR.
-----------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Key)
-{
-    int16     newKeyColor;
-
-    inArgs >> newKeyColor;
-}
-
 /*-----------------------------------------------------------
     (KEYBIND CHAR <LINKCARD>)
 
@@ -786,8 +775,9 @@ DEFINE_5L_PRIMITIVE(Keybind)
 ----------------------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Line)
 {
-    TPoint	a, b;
-    int16		color, thickness = 1;
+    TPoint a, b;
+	Color color;
+    int16 thickness = 1;
 
     inArgs >> a >> b >> color;
     if (inArgs.HasMoreArguments()) 
@@ -845,6 +835,18 @@ DEFINE_5L_PRIMITIVE(Loadpal)
 		else if (unlock)
 			thePal->Unlock();
 			
+		// Dump the palette to the debug log to ease migration.
+		gDebugLog.Log("(defpalette");
+		for (int i = 0; i < 256; i++)
+		{
+			COLORREF win_color = thePal->GetColor(i);
+			gDebugLog.Log("  %03d 0x%02x%02x%02x00", i,
+						  GetRValue(win_color),
+						  GetGValue(win_color),
+						  GetBValue(win_color));
+		}
+		gDebugLog.Log("  )");
+
 		if (not noload)
 			gPaletteManager.SetPalette(thePal, true);
 	}
@@ -1010,7 +1012,8 @@ DEFINE_5L_PRIMITIVE(Nap)
 DEFINE_5L_PRIMITIVE(Oval)
 {
 	TRect		bounds;
-	int16     	color, x,y, radius;
+	Color       color;
+	int16     	x,y, radius;
 	TString 	fill;
 
 	inArgs >> x >> y >> radius >> color;
@@ -1090,7 +1093,7 @@ DEFINE_5L_PRIMITIVE(PlayQTFile)
 		else
 			gView->Fade(false, 2, false);
 			
-		gView->ClearScreen(0); 
+		gView->ClearScreen(Color(0, 0, 0)); 
 	}
 
 	// set the palette if we have one	
@@ -1308,7 +1311,7 @@ DEFINE_5L_PRIMITIVE(Resume)
 -----------------------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Screen)
 {
-    int16 color;
+    Color color;
 
     inArgs >> color; 
     
@@ -1358,7 +1361,7 @@ DEFINE_5L_PRIMITIVE(Still)
 }
 
 /*--------------------------------------------------------------
-    (TEXT HEADER LEFT TOP RIGHT BOTTOM COLOR SHADOW TEXTSTRING)
+    (TEXT HEADER LEFT TOP RIGHT BOTTOM TEXTSTRING)
 
     Display the given textstring, using the given header style,
     within the given rect. Note that the bottom of the rectangle
@@ -1374,7 +1377,7 @@ DEFINE_5L_PRIMITIVE(Text)
     
     gOrigin.AdjustRect(&bounds);
 
-    gHeaderManager.DoText(header, bounds, text, 0, 0);
+    gHeaderManager.DoText(header, bounds, text, 0);
 }
 
 /*--------------------------------------------------------------
