@@ -47,6 +47,18 @@ static const long INBUFFER_SIZE = 256;
 //
 static char inBuffer[INBUFFER_SIZE];
 
+//////////
+// Size of the buffer used by internal calls to snprintf.  This must
+// be big enough to hold the maximum allowable double value, as
+// formatted by %f.  According to Dave Peticolas:
+// "64-bit double values...can be as high as 10e+308,
+// resulting in a %f formatted string with around 310 [ed.- 320!] digits."
+// We still ASSERT for snprintf overflow, just in case this assumption
+// is wrong.
+//
+static const int SNPRINTF_BUFFER_SIZE = 512;
+
+
 /*-----------------------------------------------------------------
 
 CLASS
@@ -440,11 +452,25 @@ class TString : public TObject
 		TString &operator = (const int32 inNum);
 		
 		//////////
+		// Set to a uint32. 
+		//
+		// [in] inNum - a uint32
+		//
+		TString &operator = (const uint32 inNum);
+
+		//////////
 		// Set to an int16. 
 		//
 		// [in] inNum - an int16
 		//
 		TString &operator = (const int16 inNum);
+
+		//////////
+		// Set to a uint16. 
+		//
+		// [in] inNum - a uint16
+		//
+		TString &operator = (const uint16 inNum);
 		
 		//////////
 		// Set to a double. 
@@ -563,20 +589,66 @@ class TString : public TObject
 		//				  false otherwise	
 		//
 		bool		IsDate();
-		
+
+		//////////
+		// Portably determine whether a call to snprintf failed, given
+		// its return value and the size of the buffer it was using.
+		// See the source code if you want to know why this is tricky.
+		//
+		// [in] inSnprintfRetval - number to convert
+		// [in] inBufferSize - char string to store number as a string
+		// [out] return - true if snprintf failed
+		//
+		static bool IsSnprintfError(int inSnprintfRetval, int inBufferSize);
+
 		//////////
 		// Convert a double to a char string.
 		//
 		// [in] inNum - number to convert
-		// [in/out] inStr - char string to store number as a string
+		// [out] return - the number as a string
 		//
-		void		DoubleToString(double inNum, char *inStr);
+		static TString DoubleToString(double inNum);
+
+		//////////
+		// Convert a signed integer to a char string.
+		//
+		// [in] inNum - number to convert
+		// [out] return - the number as a string
+		//
+		static TString IntToString(int32 inNum);
+
+		//////////
+		// Convert an unsigned integer to a char string.
+		//
+		// [in] inNum - number to convert
+		// [out] return - the number as a string
+		//
+		static TString UIntToString(uint32 inNum);
 };
 
 #endif // _TString_h_
 
 /*
  $Log$
+ Revision 1.2  2002/02/27 16:38:21  emk
+ Cross-platform code merge!
+
+ * Merged back in support for the Macintosh platform.  This is an ongoing
+   process, and we'll need to do more work.
+
+ * Separated out platform specific configuration with big block comments.
+
+ * Merged in a few changes from KBTree which appeared to fix bugs.
+
+ * Merged in IntToString, UIntToString, DoubleToString changes from the
+   Macintosh engine, and improved the error handling.  NOTE: doubles now
+   print using "%f" (the way the Mac engine always did it).  This means
+   that "tstr = 0.0" will set 'tstr' to "0.000000", not "0" (as it
+   did in the Win32 engine).
+
+ This code might not build on Windows.  As soon as I hear from ssharp
+ that he's updated the project files, I'll test it myself.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

@@ -57,6 +57,10 @@ bool TBNode::Add(TBNode *inNode)
 {
     int32 result = m_Key.Compare(inNode->Key(), false);
 
+	// Make sure our new node has no children attached.
+	ASSERT(inNode->m_Left == NULL);
+	ASSERT(inNode->m_Right == NULL);
+	
     if (result < 0)
     {
         if (m_Right == NULL) 
@@ -216,11 +220,17 @@ void TBNode::RemoveAll(TBNode *inRoot)
     if (this == NULL) 
     	return;
 
-    if (m_Left != NULL)  
-    	m_Left->RemoveAll(inRoot);
+    if (m_Left != NULL)
+	{
+		m_Left->RemoveAll(inRoot);
+		m_Left = NULL;
+	}
 
-    if (m_Right != NULL) 
-    	m_Right->RemoveAll(inRoot);
+    if (m_Right != NULL)
+	{
+		m_Right->RemoveAll(inRoot);
+		m_Right = NULL;
+	}
 
     if (this != inRoot) 
     	delete this;
@@ -301,6 +311,25 @@ void TBTree::RemoveAll(void)
 
 /*
  $Log$
+ Revision 1.2  2002/02/27 16:38:21  emk
+ Cross-platform code merge!
+
+ * Merged back in support for the Macintosh platform.  This is an ongoing
+   process, and we'll need to do more work.
+
+ * Separated out platform specific configuration with big block comments.
+
+ * Merged in a few changes from KBTree which appeared to fix bugs.
+
+ * Merged in IntToString, UIntToString, DoubleToString changes from the
+   Macintosh engine, and improved the error handling.  NOTE: doubles now
+   print using "%f" (the way the Mac engine always did it).  This means
+   that "tstr = 0.0" will set 'tstr' to "0.000000", not "0" (as it
+   did in the Win32 engine).
+
+ This code might not build on Windows.  As soon as I hear from ssharp
+ that he's updated the project files, I'll test it myself.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

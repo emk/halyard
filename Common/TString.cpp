@@ -147,9 +147,17 @@ TString &TString::operator=(const TString &inStr)
 //
 TString &TString::operator=(const int32 inNum)
 {
-    *this = (double) inNum;
+	*this = IntToString(inNum);
+	return *this;
+}
 
-    return (*this);
+//
+//  operator = - Set to an uint32.
+//
+TString &TString::operator=(const uint32 inNum)
+{
+	*this = UIntToString(inNum);
+	return *this;
 }
 
 //
@@ -157,21 +165,25 @@ TString &TString::operator=(const int32 inNum)
 //
 TString &TString::operator=(const int16 inNum)
 {
-    *this = (double) inNum;
+	*this = IntToString(inNum);
+	return *this;
+}
 
-    return (*this);
+//
+//  operator = - Set to a uint16.
+//
+TString &TString::operator=(const uint16 inNum)
+{
+	*this = UIntToString(inNum);
+	return *this;
 }
 
 //  Set to a double.
 //
 TString &TString::operator=(const double inNum)
 {
-    char    tmpStr[64];
-
-    DoubleToString(inNum, tmpStr);
-    *this = tmpStr;
-
-    return (*this);
+	*this = DoubleToString(inNum);
+	return *this;
 }
 
 //
@@ -194,58 +206,9 @@ TString &TString::operator+=(const char *inStr)
 //
 TString &TString::operator+=(const int32 inNum)
 {
-	char	tmpStr[64];
-
-	DoubleToString((double) inNum, tmpStr);
-	*this += tmpStr;
-
-	return (*this);
+	*this += IntToString(inNum);
+	return *this;
 }
-/***** Old Code
-{
-    char	TheNumber[20], TempChar;
-    int		i = 0, denominator = 10000, count = 0;
-    long	k = inNum, tmp;
-    
-    tmp = k/denominator;
-
-    while((tmp == 0) && (i < 4))
-    {
-        k -= (tmp * denominator);
-        denominator /= 10;
-        i++;
-        tmp = k/denominator;
-
-    }
-
-    while(i < 5 )
-    {
-        TempChar = (char)(48 + tmp);
-        TheNumber[count] = TempChar;
-        i++;
-        count++;
-        
-        if(denominator >= 10)
-        {
-            k -= (tmp * denominator);
-            denominator /= 10;
-            tmp = k/denominator;
-        }
-        
-    }
-    TheNumber[count] = (char)0;
-
-    if (TheNumber) 
-    {
-        m_Length += strlen(TheNumber);
-        Resize(m_Length + 1);
-        strcat(m_String, TheNumber);
-    }
-
-    return (*this);
-}
-#endif
-*/
 
 //
 //	Length - return the length of the string.
@@ -538,13 +501,27 @@ void TString::LChop(void)
 void TString::MakeLower()
 {
 	if (not IsEmpty())
+	{
+#ifndef HAVE__STRLWR
+		for (int i = 0; i < m_Length; i++)
+			m_String[i] = tolower(m_String[i]);
+#else
 		_strlwr(m_String);
+#endif
+	}
 }
 
 void TString::MakeUpper()
 {
 	if (not IsEmpty())
+	{
+#ifndef HAVE__STRUPR
+		for (int i = 0; i < m_Length; i++)
+			m_String[i] = toupper(m_String[i]);
+#else
 		_strupr(m_String);
+#endif
+	}
 }
 
 TString	TString::GetLower() const
@@ -589,7 +566,19 @@ int TString::Compare(const char *inStr, bool inCaseSens /* = true */) const
     if (inCaseSens) 
     	return ::strcmp(m_String, inStr);
     else 
+	{
+#ifndef HAVE__STRICMP
+		TString		srcStr = m_String;
+		TString		compStr = inStr;
+
+		srcStr.MakeLower();
+		compStr.MakeLower();
+
+		return (::strcmp(srcStr.GetString(), compStr.GetString()));
+#else
     	return ::_stricmp(m_String, inStr);
+#endif
+	}
 }
 
 //
@@ -791,13 +780,11 @@ int32 TString::Find(const char *inStr, int32 inStartPos /* = 0 */, bool inCaseSe
 		// if we are at the end of the search string then we
 		//	have found it in this string
 		if (searchPos >= (int32) searchStr.Length())
-		//if (searchStr(searchPos) == '\0')
 			return (targetPos);
 
 		// see if we have gone past the last possible end 
 		//	position in this string
 		if ((targetPos2 >= (int32)thisStr.Length()) or (targetPos >= endPos))
-		//if ((thisStr(targetPos2) == '\0') or (targetPos >= endPos))
 			return (-1);
 
 		// move one character down this string to try and match
@@ -974,7 +961,7 @@ bool TString::IsNumber()
     if (m_Length > 100)
         return (false);
  
-    while (ch = *s++) 
+    while ((ch = *s++) != '\0') 
     {
         if (ch != ' ')
 
@@ -1091,81 +1078,59 @@ bool TString::IsDate()
 }
 
 //
-//	DoubleToString - Use maximum precision of doubles: 
-//		15 decimal digits. Return a string representation of 
-//		the double. This is never shortened with exponential 
-//		notation. The calling string must allocate enough room 
-//		for s. 32 chars is enough. Anything bigger generates 
-//		an error.
+//	IsSnprintfError -  Portably determine whether a call to
+//                     snprintf failed, given its return value and the
+//                     size of the buffer it was using.
 //
-void TString::DoubleToString(double inNum, char *inStr)
+bool TString::IsSnprintfError(int inSnprintfRetval, int inBufferSize)
 {
-    char    *tmpStr;
-    int     dec, sign, digits;
+	// Old C libraries return -1 if snprintf overflows its buffer.
+	// New C libraries return the number of characters which *would* have
+	// been printed if the error did not occur. This is impressively vile.
+	// Thank the C99 committee for this bright idea. But wait! We also
+	// need to keep track of the trailing NULL.
+	int maximum_allowable_string_size = inBufferSize - 1;
+	return (inSnprintfRetval < 0 ||
+			inSnprintfRetval >= maximum_allowable_string_size);
+}
 
-	if (inStr == NULL)
-		return;
+//
+//	DoubleToString - Convert a double to a char string.
+//
+TString TString::DoubleToString(double inNum)
+{
+	char buffer[SNPRINTF_BUFFER_SIZE];
+	int retval;
 
-	inStr[0] = '\0';
+	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%f", inNum);
+	ASSERT(!IsSnprintfError(retval, SNPRINTF_BUFFER_SIZE));
+	return TString(buffer);
+}
 
-	if (inNum == 0)
-	{
-		strcat(inStr, "0");
-		return;
-	}
+//
+//	IntToString - Convert an int to a char string.
+//
+TString TString::IntToString(int32 inNum)
+{
+	char buffer[SNPRINTF_BUFFER_SIZE];
+	int retval;
 
-    tmpStr = ecvt(inNum, 15, &dec, &sign);
+	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%d", inNum);
+	ASSERT(!IsSnprintfError(retval, SNPRINTF_BUFFER_SIZE));
+	return TString(buffer);
+}
 
-    //
-    //  Sanity check. If the decimal is < -16 or > 16 this number
-    //  is too big for us to handle.
-    //
+//
+//	IntToString - Convert a uint to a char string.
+//
+TString TString::UIntToString(uint32 inNum)
+{
+	char buffer[SNPRINTF_BUFFER_SIZE];
+	int retval;
 
-    if (abs(dec) > 16)
-        return;
-
-    //
-    //  Trim trailing zeros.
-    //
-
-    digits = strlen(tmpStr);
-    while (digits > dec && tmpStr[digits - 1] == '0') 
-    {
-        digits--;
-    }
-
-    if (sign) 
-    	strcpy(inStr, "-");
-    else 
-    	strcpy(inStr, "");
-    
-    //
-    //  Decimal?
-    //
-
-    if (dec < 1) 
-    {  
-		strcat(inStr, "0.");
-        while (dec++ < 0)
-            strcat(inStr, "0");
-
-        strncat(inStr, tmpStr, digits);
-    } 
-    else 
-    {
-        strncat(inStr, tmpStr, dec);
-        if (dec < digits) 
-        {
-            strcat(inStr, ".");
-            strncat(inStr, (char *)(tmpStr + dec), digits - dec);
-        }
-
-        while (dec > digits) 
-        {
-            strcat(inStr, "0");
-            digits++;
-        }
-    }
+	retval = snprintf(buffer, SNPRINTF_BUFFER_SIZE, "%u", inNum);
+	ASSERT(!IsSnprintfError(retval, SNPRINTF_BUFFER_SIZE));
+	return TString(buffer);
 }
 
 //
@@ -1195,6 +1160,25 @@ istream & operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.3  2002/02/27 16:38:21  emk
+ Cross-platform code merge!
+
+ * Merged back in support for the Macintosh platform.  This is an ongoing
+   process, and we'll need to do more work.
+
+ * Separated out platform specific configuration with big block comments.
+
+ * Merged in a few changes from KBTree which appeared to fix bugs.
+
+ * Merged in IntToString, UIntToString, DoubleToString changes from the
+   Macintosh engine, and improved the error handling.  NOTE: doubles now
+   print using "%f" (the way the Mac engine always did it).  This means
+   that "tstr = 0.0" will set 'tstr' to "0.000000", not "0" (as it
+   did in the Win32 engine).
+
+ This code might not build on Windows.  As soon as I hear from ssharp
+ that he's updated the project files, I'll test it myself.
+
  Revision 1.2  2002/02/19 12:35:11  tvw
  Bugs #494 and #495 are addressed in this update.
 

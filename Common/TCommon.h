@@ -121,12 +121,19 @@ enum Alignment
     AlignRight
 };
 
-// include platform specific header files here
 
-// look at what is defined to define some internal things
+//=========================================================================
+//  QuickTime Configuration
+//=========================================================================
+
 #if defined (__QTML__)
 #define _5L_QUICKTIME_
 #endif
+
+
+//=========================================================================
+//  Win32 Configuration
+//=========================================================================
 
 #if defined (WIN32)
 #define _5L_WIN32_
@@ -137,12 +144,74 @@ enum Alignment
 
 #define ASSERT(x) _ASSERTE(x)
 
-#endif	// WIN32
+// For now, the Windows engine uses some non-standard string functions
+// instead of using our own, equivalent code.
+#define HAVE__STRLWR 1
+#define HAVE__STRUPR 1
+#define HAVE__STRICMP 1
+
+
+//=========================================================================
+//  Macintosh Configuration
+//=========================================================================
+
+#elif defined (macintosh)
+
+#define NEWLINE_CHAR	'\r'
+#define RETURN_CHAR		'\n'
+
+#ifdef Debug_Throw
+#define DEBUG
+
+#define ASSERT(x) \
+	if (!(x)) \
+		gLog.Error("Assertion failed in file %s, line %d", __FILE__, __LINE__);
+
+// backwards compatible defines
+//#define DEBUG_5L
+//#define DEBUG_5L_SCRIPT
+
+#else
+
+#define ASSERT(x)
+
+#endif	// Debug_Throw
+
+
+//=========================================================================
+//  Other Platform Configuration
+//=========================================================================
+
+#else
+
+#define ASSERT(expr) assert(expr)
+
+#endif
+
 
 #endif // _TCommon_h_
 
 /*
  $Log$
+ Revision 1.2  2002/02/27 16:38:21  emk
+ Cross-platform code merge!
+
+ * Merged back in support for the Macintosh platform.  This is an ongoing
+   process, and we'll need to do more work.
+
+ * Separated out platform specific configuration with big block comments.
+
+ * Merged in a few changes from KBTree which appeared to fix bugs.
+
+ * Merged in IntToString, UIntToString, DoubleToString changes from the
+   Macintosh engine, and improved the error handling.  NOTE: doubles now
+   print using "%f" (the way the Mac engine always did it).  This means
+   that "tstr = 0.0" will set 'tstr' to "0.000000", not "0" (as it
+   did in the Win32 engine).
+
+ This code might not build on Windows.  As soon as I hear from ssharp
+ that he's updated the project files, I'll test it myself.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 

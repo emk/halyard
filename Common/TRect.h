@@ -161,6 +161,13 @@ class TRect : public TObject
 		inline int32	Right(void) { return (m_Right); }
 
 		//////////
+		// Get the top-left corner of the rectangle.
+		//
+		// [out] return - the top-left corner
+		//
+		TPoint          TopLeft(void);
+
+		//////////
 		// Get the width of the rectangle.
 		//
 		// [out] return - the width
@@ -260,6 +267,25 @@ class TRect : public TObject
 
 /*
  $Log$
+ Revision 1.2  2002/02/27 16:38:21  emk
+ Cross-platform code merge!
+
+ * Merged back in support for the Macintosh platform.  This is an ongoing
+   process, and we'll need to do more work.
+
+ * Separated out platform specific configuration with big block comments.
+
+ * Merged in a few changes from KBTree which appeared to fix bugs.
+
+ * Merged in IntToString, UIntToString, DoubleToString changes from the
+   Macintosh engine, and improved the error handling.  NOTE: doubles now
+   print using "%f" (the way the Mac engine always did it).  This means
+   that "tstr = 0.0" will set 'tstr' to "0.000000", not "0" (as it
+   did in the Win32 engine).
+
+ This code might not build on Windows.  As soon as I hear from ssharp
+ that he's updated the project files, I'll test it myself.
+
  Revision 1.1  2001/09/24 15:11:00  tvw
  FiveL v3.00 Build 10
 
