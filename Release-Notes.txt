@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Imported Boost library (from http://www.boost.org/) into CVS.
+
 3.4.0 - 26 July 2002 - emk
 
   * Updated version numbers for official stable release!
