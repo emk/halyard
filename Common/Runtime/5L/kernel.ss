@@ -123,7 +123,13 @@
   (define (exit-script)
     (call-5l-prim 'schemeexit))
   
+  (define (check-whether-jump-allowed)
+    (when *running-on-exit-handler-for-node*
+      (error (cat "Cannot JUMP in (on exit () ...) handler for node "
+                  (node-full-name *running-on-exit-handler-for-node*)))))
+
   (define (jump-to-card card)
+    (check-whether-jump-allowed)
     (if (have-5l-prim? 'jump)
         (call-5l-prim 'jump (card-name card))
         (begin
@@ -399,7 +405,7 @@
     ;; nothing exciting is happening.  See call-at-safe-time.
     (and (not *%kernel-running-callback?*)
          (not *%kernel-running-deferred-thunks?*)
-         (not *running-on-exit-handler?*)
+         (not *running-on-exit-handler-for-node*)
          (member? *%kernel-state* '(NORMAL PAUSED NAPPING))))
 
   (define (call-at-safe-time thunk)

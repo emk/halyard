@@ -25,7 +25,7 @@
            dispatch-event-to-current-group-member
            current-group-member
            current-card
-           *running-on-exit-handler?*)
+           *running-on-exit-handler-for-node*)
 
 
   ;;=======================================================================
@@ -1138,23 +1138,24 @@
       (enter-node new-card)))
     
 
-  (define *running-on-exit-handler?* #f)
+  (define *running-on-exit-handler-for-node* #f)
 
   (define (run-on-exit-handler node)
     ;; This is pretty simple--just send an EXIT message.  But we need to
     ;; trap any JUMP calls and quit immediately, because actually allowing
     ;; the jump will hopeless corrupt the data structures in this file.
     ;; Other errors we can simply trap and display.
-    (define exited-normally? #f)
+    (define exited-safely? #f)
     (dynamic-wind
         (lambda () #f)
         (lambda ()
-          (fluid-let [[*running-on-exit-handler?* #t]]
+          (fluid-let [[*running-on-exit-handler-for-node* node]]
+            (%assert *running-on-exit-handler-for-node*)
             (with-errors-blocked (non-fatal-error)
-              (send/nonrecursive* (lambda () #f) node 'exit)
-              (set! exited-normally? #t))))
+              (send/nonrecursive* (lambda () #f) node 'exit))
+            (set! exited-safely? #t)))
         (lambda ()
-          (unless exited-normally?
+          (unless exited-safely?
             (fatal-error (cat "Cannot JUMP in (on exit () ...) handler for "
                               (node-full-name node)))))))
   
