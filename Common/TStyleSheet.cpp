@@ -108,7 +108,7 @@ Typography::Style TStyleSheet::GetBaseStyle()
     base_style.SetLeading(mLeading);
     if (mShadowOffset != 0)
     {
-		base_style.SetFaceStyle(Typography::kShadowFaceStyle);
+		base_style.ToggleFaceStyle(Typography::kShadowFaceStyle);
 		base_style.SetShadowOffset(mShadowOffset);
     }
 	return base_style;

@@ -16,15 +16,19 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		15
+#define VERSION_REV_BIG		16
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.15 (Development)"
+#define VERSION_STRING	"5L 3.3.16 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.23  2002/07/19 21:17:47  emk
+ * Fixed "b" parameter to defstyle (bug #1052).
+ * Fixed Mac engine to log missing macros to Debug.log (bug #1060).
+
  Revision 1.22  2002/07/17 16:06:48  brian
  3.3.15 - 17 July 2002 - brian
 

@@ -445,6 +445,8 @@ void CCard::DoMacro(TString &name)
 	if (theMacro == NULL)
 	{
         gLog.Caution("Couldn't find macro/command <%s>.", (const char *) name);
+        gDebugLog.Caution("Couldn't find macro/command <%s>.",
+						  (const char *) name);
         return;
 	}
 
