@@ -685,7 +685,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_LBUTTONDOWN: 
             cursorPos.Set(LOWORD(lParam), HIWORD(lParam));
 
-            if (not gCardManager.Napping())
+			if (gInputManager.InInput())
+			{
+				// If a text entry box has grabbed our input, and we get
+				// a mouse event, act like the user pressed return.
+				// (This keeps users from flailing around quite so much
+				// on our initial login screens.)
+				gInputManager.KeyDown(VK_RETURN);
+			}
+            else if (not gCardManager.Napping())
             {  
                 if (theZone = gTouchZoneManager.GetTouchZone(cursorPos))  
 					theZone->DoCommand();
@@ -1176,6 +1184,15 @@ void PutInForeground(void)
 
 /*
  $Log$
+ Revision 1.2.2.3  2002/04/09 13:53:45  emk
+ Mouse-click during text entry now works the same as typing RETURN.
+
+ This fixes a common usability problem with our program's login screens--
+ people don't read the "Press ENTER or TAB to continue" message, and
+ click around blindy.  This is a very tiny UI tweak.
+
+ This code is tagged in CVS as FiveL_3_2_0_3.
+
  Revision 1.2.2.2  2002/03/13 16:32:37  emk
  FiveL 3.2.0.2!
 

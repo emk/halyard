@@ -17,16 +17,25 @@
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
 #define REV_BIG			00
-#define REV_SMALL		02
+#define REV_SMALL		03
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0.2"
+#define VERSION_STRING	"5L for Win32 3.2.0.3"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.4  2002/04/09 13:53:45  emk
+ Mouse-click during text entry now works the same as typing RETURN.
+
+ This fixes a common usability problem with our program's login screens--
+ people don't read the "Press ENTER or TAB to continue" message, and
+ click around blindy.  This is a very tiny UI tweak.
+
+ This code is tagged in CVS as FiveL_3_2_0_3.
+
  Revision 1.3.2.3  2002/03/13 15:06:56  emk
  Merged changed from 3.1.1 -> 3.2.1 into the 3.2.0.1 codebase,
  because we want these in the stable engine.  Highlights:
