@@ -58,8 +58,9 @@ void TMac5LInterpreter::Idle()
 
 void TMac5LInterpreter::Pause()
 {
-	// TODO - Implement?
-	throw TException(__FILE__, __LINE__, "Feature not implemented on Mac");
+	CCard *card = gCardManager.GetCurCard();
+	ASSERT(card);
+	card->Pause();
 }
 
 void TMac5LInterpreter::WakeUp()
@@ -74,14 +75,16 @@ bool TMac5LInterpreter::Paused()
 
 void TMac5LInterpreter::Timeout(const char *inName, int32 inTime)
 {
-	// TODO - Implement?
-	throw TException(__FILE__, __LINE__, "Feature not implemented on Mac");
+	CCard *card = gCardManager.GetCurCard();
+	ASSERT(card);
+	card->Timeout(inTime, inName);
 }
 
 void TMac5LInterpreter::Nap(int32 inTime)
 {
-	// TODO - Implement?
-	throw TException(__FILE__, __LINE__, "Feature not implemented on Mac");
+	CCard *card = gCardManager.GetCurCard();
+	ASSERT(card);
+	card->Nap(inTime);
 }
 
 bool TMac5LInterpreter::Napping()

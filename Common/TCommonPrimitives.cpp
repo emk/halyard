@@ -26,7 +26,7 @@ void FIVEL_NS RegisterCommonPrimitives()
 //  Support Methods
 //=========================================================================
 
-void UpdateSpecialVariablesForGraphic(const TRect &bounds)
+void FIVEL_NS UpdateSpecialVariablesForGraphic(const TRect &bounds)
 {
 	gVariableManager.SetLong("_Graphic_X", (short) bounds.Right());
 	gVariableManager.SetLong("_Graphic_Y", (short) bounds.Bottom());

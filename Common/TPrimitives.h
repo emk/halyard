@@ -224,7 +224,10 @@ extern TPrimitiveManager gPrimitiveManager;
 //   }
 //
 #define DEFINE_5L_PRIMITIVE(NAME) \
-	void DoPrim_ ## NAME(TArgumentList &inArgs)
+	BEGIN_NAMESPACE_FIVEL \
+	extern void DoPrim_ ## NAME(TArgumentList &inArgs); \
+	END_NAMESPACE_FIVEL \
+	void FIVEL_NS DoPrim_ ## NAME(TArgumentList &inArgs)
 
 END_NAMESPACE_FIVEL
 

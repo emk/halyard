@@ -44,6 +44,7 @@
 #include "TStartup.h"
 #include "TVersion.h"
 #include "TMac5LInterpreter.h"
+#include "TMacPrimitives.h"
 
 //
 // constants
@@ -220,6 +221,9 @@ CMac5LApp::CMac5LApp()
 
 	// Initialize our portable Common library.
 	InitializeCommonCode();
+	
+	// Install our Macintosh-specific primitive functions.
+	RegisterMacPrimitives();
 
 	// Register our platform-specific special variables.
 	gVariableManager.RegisterSpecialVariable("_system",
@@ -782,6 +786,19 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.20.6.4  2002/06/19 22:51:32  emk
+3.3.4.11 - Refactored Mac code to move primitives from CCard.{h,cpp} to
+TMacPrimitives.{h,cpp}, and break most of the remaining dependencies on
+the 5L interpreter.
+
+Language changes: LOADPICK, RVAR and RNODE are gone.  I've also disabled
+the Mac PAUSE command until Douglas tells me how it should work.
+
+Testing: Please beat *very* hard on this build, and pay special attention
+to WAIT, NAP, TIMEOUT, and similar commands.
+
+Next up: I plan to merge this branch into HEAD tomorrow.
+
 Revision 1.20.6.3  2002/06/18 21:57:02  emk
 3.3.4.8 - Added (BODY ...) command on Mac, fixed arguments of BUTTPCX, TOUCH,
 and KEYBIND to match Win32 engine, and refactored Mac engine to more-or-less
