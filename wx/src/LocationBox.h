@@ -22,7 +22,7 @@ class LocationBox : public LOCATION_BOX_PARENT_CLASS
 public:
 	LocationBox(wxToolBar *inParent);
 	
-	void NotifyEnterCard();
+	void NotifyEnterCard(const wxString &inName);
 
 	void RegisterCard(const wxString &inCardName);
 	void TryJump(const wxString &inCardName);

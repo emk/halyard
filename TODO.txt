@@ -41,7 +41,10 @@ X                                    (lambda (get) (whatever (get '/foo))))
       Looking at entities (acts as trigger)
     Trigger Quake 2 targets from Scheme
     Reimplement meters in Scheme
-      Allow elements to be attached to sequences
+/     Allow elements to be attached to sequences
+/       Don't allow elements to be attached to inactive nodes
+/       Fix ELEMENT-EXISTS? and DELETE-ELEMENT-IF-EXISTS
+/       Check Q2 performance problems (breakpoint on GC_malloc)
       Extend Quake 2 net protocol to allow reporting of state vars
       Real-time Scheme-like language for updating meter dials, etc.
       Strip Quake 2 meter implementation to bare essentials

@@ -321,7 +321,7 @@ public:
     //////////
     // Notify the stage that the interpreter has moved to a new card.
     //
-    void NotifyEnterCard();
+    void NotifyEnterCard(const wxString &inName);
 
     //////////
     // Notify the stage that the interpreter is leaving an old card.

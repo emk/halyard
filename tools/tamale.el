@@ -112,6 +112,7 @@ Tamale is a language for card-based interactive multimedia programming."
 	     '("fn" "callback" "deferred-callback" "while" "when" "unless"
 	       "with-dc" "with-saved-text-position"
 	       "with-saved-graphic-position" "with-offset-origin"
+	       "with-default-element-parent"
 	       "require" "set!" "and" "or" "module" "on" "send" "prop") t)
 	"\\>") 1)
 
@@ -186,6 +187,7 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'with-saved-text-position 'scheme-indent-function 0)
 (put 'with-saved-graphic-position 'scheme-indent-function 0)
 (put 'with-offset-origin 'scheme-indent-function 1)
+(put 'with-default-element-parent 'scheme-indent-function 1)
 (put 'define-stylesheet 'scheme-indent-function 1)
 (put 'syntax-case 'scheme-indent-function 2)
 

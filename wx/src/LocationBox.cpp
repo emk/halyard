@@ -47,12 +47,10 @@ LocationBox::LocationBox(wxToolBar *inParent)
 
 #endif // !CONFIG_LOCATION_BOX_IS_COMBO
 
-void LocationBox::NotifyEnterCard()
+void LocationBox::NotifyEnterCard(const wxString &inName)
 {
-	ASSERT(TInterpreter::HaveInstance());
-	std::string card = TInterpreter::GetInstance()->CurCardName();
-	SetValue(card.c_str());
-	RegisterCard(card.c_str());
+	SetValue(inName);
+	RegisterCard(inName);
 }
 
 void LocationBox::RegisterCard(const wxString &inCardName)

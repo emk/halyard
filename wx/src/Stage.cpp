@@ -203,11 +203,11 @@ void Stage::RegisterCard(const wxString &inName)
 	mFrame->GetProgramTree()->RegisterCard(inName);
 }
 
-void Stage::NotifyEnterCard()
+void Stage::NotifyEnterCard(const wxString &inName)
 {
-	mLastCard = TInterpreter::GetInstance()->CurCardName();
-	mFrame->GetLocationBox()->NotifyEnterCard();
-	mFrame->GetProgramTree()->NotifyEnterCard();
+	mLastCard = inName;
+	mFrame->GetLocationBox()->NotifyEnterCard(inName);
+	mFrame->GetProgramTree()->NotifyEnterCard(inName);
 }
 
 void Stage::NotifyExitCard()

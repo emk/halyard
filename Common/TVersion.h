@@ -17,15 +17,62 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		17
+#define VERSION_REV_BIG		18
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.17 (Development)"
+#define VERSION_STRING		"Tamale 0.0.18 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.59  2004/02/16 16:08:21  emk
+ 0.0.18 - 15 February 2004 - emk
+
+ Added support for attaching elements to any node, not just cards.  This
+ includes groups, sequences, and other elements.  When dynamically creating
+ an element, there are two ways to specify what parent it should have.
+ First, you can use the :PARENT argument to CREATE:
+
+   (create %my-elem% :parent self :silly 'foo)
+
+ Second, you can use the WITH-DEFAULT-ELEMENT-PARENT special form:
+
+   (with-default-element-parent self
+     (create %my-elem% :silly 'foo))
+
+ WITH-DEFAULT-ELEMENT-PARENT is dynamically scoped, which means that it
+ affects calls to CREATE within any subroutine called during its duration.
+
+ If you use neither :PARENT nor WITH-DEFAULT-ELEMENT-PARENT, then the engine
+ will attach nodes to the current card.  (There is no current card when
+ initializing groups and sequences.)  You can call DEFAULT-ELEMENT-PARENT
+ to get the default parent used by CREATE.  The functions ELEMENT-EXISTS?
+ and DELETE-ELEMENT-IF-EXISTS now operate on the default element parent
+ unless told otherwise.
+
+   * Allowed elements to be attached to any node, not just cards.
+   * Added WITH-DEFAULT-ELEMENT-PARENT, DEFAULT-ELEMENT-PARENT, and
+     :PARENT argument to CREATE.
+   * Removed the need for :TEMPLATE to be used when declaring nodes or
+     other templates.
+   * Added CURRENT-GROUP-MEMBER function, which (for want of a better name)
+     reports the card, sequence or group which is currently the topmost
+     active element in the event handling stack.
+   * CURRENT-CARD will now raise an error if no card is active.
+   * We now check for attempts to attach handlers or elements to inactive
+     nodes.
+   * You can access the elements on a node with NODE-ELEMENTS.
+   * @* now takes a :IF-NOT-FOUND argument.  By default, this argument
+     raises an error if no matching node is found.
+   * Major overhaul of entering and exiting nodes.
+   * The engine no longer relies on TInterpreterManager to get the name
+     of the current card.  Instead, it gets the card name through
+     a parameter to NotifyEnterCard.
+   * A recent bug which caused the engine to exit unnecessarily due to
+     load time errors should now be fixed.
+   * Updated tamale.ss.
+
  Revision 1.58  2004/02/12 15:34:57  emk
  0.0.17 - kwasi, djin, emk
 

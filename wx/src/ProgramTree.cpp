@@ -655,12 +655,10 @@ void ProgramTree::NotifyScriptReload()
 	mTree->CollapseAndReset(mCardsID);
 }
 
-void ProgramTree::NotifyEnterCard()
+void ProgramTree::NotifyEnterCard(const wxString &inName)
 {
 	// Look up the ID corresponding to this card.
-	ASSERT(TInterpreter::HaveInstance());
-	std::string card = TInterpreter::GetInstance()->CurCardName();
-	ItemMap::iterator found = mCardMap.find(card);
+	ItemMap::iterator found = mCardMap.find(inName.mb_str());
 	wxASSERT(found != mCardMap.end());
 
 	// Move the highlighting to the appropriate card.

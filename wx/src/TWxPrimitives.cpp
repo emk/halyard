@@ -518,11 +518,15 @@ DEFINE_5L_PRIMITIVE(MeasurePic) {
 }
 
 DEFINE_5L_PRIMITIVE(NotifyEnterCard) {
-	wxGetApp().GetStage()->NotifyEnterCard();
+	std::string name;
+	inArgs >> name;
+	wxGetApp().GetStage()->NotifyEnterCard(name.c_str());
 	::SkipPrimitiveLogging();
 }
 
 DEFINE_5L_PRIMITIVE(NotifyExitCard) {
+	std::string name;
+	inArgs >> name;
 	wxGetApp().GetStage()->NotifyExitCard();
 	::SkipPrimitiveLogging();
 }

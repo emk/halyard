@@ -68,7 +68,7 @@ public:
     //////////
     // Notify the program tree that the interpreter has moved to a new card.
     //
-    void NotifyEnterCard();
+    void NotifyEnterCard(const wxString &inName);
 };
 
 #endif // ProgramTree_H
