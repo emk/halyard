@@ -151,16 +151,16 @@
            $screen-rect)
 
   ;;; The maximum horizontal position of the last text drawn.
-  (define-engine-variable *text-x*    _INCR_X)
+  (define-engine-variable *text-x*    _INCR_X     0)
 
   ;;; The maximum vertical position of the last text drawn.
-  (define-engine-variable *text-y*    _INCR_Y)
+  (define-engine-variable *text-y*    _INCR_Y     0)
 
   ;;; The maximum horizontal position of the last graphic shown.
-  (define-engine-variable *graphic-x* _Graphic_X)
+  (define-engine-variable *graphic-x* _Graphic_X  0)
 
   ;;; The maximum vertical position of the last graphic shown.
-  (define-engine-variable *graphic-y* _Graphic_Y)
+  (define-engine-variable *graphic-y* _Graphic_Y  0)
 
   ;;; @return POINT The point (point *text-x* *text-y*).
   ;;; @xref *text-x* *text-y* 
