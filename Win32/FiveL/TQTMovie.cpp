@@ -300,19 +300,13 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 
 	// If interaction is enabled, pass keyboard events to the movie.
 	if (mOptions & kEnableInteraction)
-		CHECK_MAC_ERROR(::MCDoAction(mMovieController,
-									 mcActionSetKeysEnabled,
-									 reinterpret_cast<void*>(true)));
+		DoAction(mcActionSetKeysEnabled, reinterpret_cast<void*>(true));
 
 	// Handle our other controller options.
 	if (mOptions & kLoopMovie)
-		CHECK_MAC_ERROR(::MCDoAction(mMovieController,
-									 mcActionSetLooping,
-									 reinterpret_cast<void*>(true)));
+		DoAction(mcActionSetLooping, reinterpret_cast<void*>(true));
 	if (mOptions & kPlayEveryFrame)
-		CHECK_MAC_ERROR(::MCDoAction(mMovieController,
-									 mcActionSetPlayEveryFrame,
-									 reinterpret_cast<void*>(true)));
+		DoAction(mcActionSetPlayEveryFrame, reinterpret_cast<void*>(true));
 
 	// Figure out our preferred playback rate.  We used to store this
 	// in a member variable, but it's *much* safer to ask for it just
@@ -321,9 +315,7 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	
 	// Start the movie.
 	UpdateMovieState(MOVIE_STARTED);
-	CHECK_MAC_ERROR(::MCDoAction(mMovieController,
-								 mcActionPrerollAndPlay,
-								 reinterpret_cast<void*>(rate)));
+	DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
 }
 
 
@@ -381,11 +373,7 @@ void TQTMovie::Pause()
 {
 	ASSERT(mState == MOVIE_STARTED);
 	if (!IsPaused())
-	{
-		::StopMovie(mMovie);
-		CHECK_MAC_ERROR(::GetMoviesError());
-		CHECK_MAC_ERROR(::MCMovieChanged(mMovieController, mMovie));
-	}
+		DoAction(mcActionPlay, reinterpret_cast<void*>(0));
 }
 
 void TQTMovie::Unpause()
@@ -393,10 +381,15 @@ void TQTMovie::Unpause()
 	ASSERT(mState == MOVIE_STARTED);
 	if (IsPaused())
 	{
-		::StartMovie(mMovie);
-		CHECK_MAC_ERROR(::GetMoviesError());
-		CHECK_MAC_ERROR(::MCMovieChanged(mMovieController, mMovie));
+		Fixed rate = ::GetMoviePreferredRate(mMovie);
+		DoAction(mcActionPlay, reinterpret_cast<void*>(rate));
 	}
+}
+
+void TQTMovie::DoAction(mcAction inAction, void *inParam)
+{
+	ASSERT(mMovieController);
+	CHECK_MAC_ERROR(::MCDoAction(mMovieController, inAction, inParam));
 }
 
 bool TQTMovie::HandleMovieEvent(HWND hWnd, UINT message,
@@ -448,32 +441,8 @@ void TQTMovie::Redraw(HWND hWnd)
 
 void TQTMovie::UpdateMovieState(MovieState inNewState)
 {
-	// Sanity-check our new state, and run any transition actions.
-	switch (inNewState)
-	{
-		case MOVIE_INCOMPLETE:
-			ASSERT(mState == MOVIE_UNINITIALIZED);
-			break;
-
-		case MOVIE_READY:
-			ASSERT(mState == MOVIE_INCOMPLETE);
-			break;
-
-		case MOVIE_STARTED:
-			ASSERT(mState == MOVIE_READY);
-			break;
-
-		case MOVIE_BROKEN:
-			// We can enter the broken state from any state.
-			// We shouldn't call ReleaseResources here,
-			// because we might be nested deep inside some
-			// QuickTime callback which would blow up if we
-			// started deleting things.
-			break;
-
-		default:
-			ASSERT(false);
-	}
+	// Sanity-check our new state.
+	ASSERT(inNewState == MOVIE_BROKEN || (inNewState - 1 == mState));
 
 	// Actually update our state.
 	mState = inNewState;

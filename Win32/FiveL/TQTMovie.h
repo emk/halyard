@@ -260,6 +260,16 @@ public:
 	void Unpause();
 
 	//////////
+	// Call MCDoAction with the specified command and parameter.
+	//
+	// [in] inAction - The action to perform.  There's about a zillion
+	//                 of these, and they're not all centrally
+	//                 documented.
+	// [in] inParam -  The parameter value to use.
+	//
+	void DoAction(mcAction inAction, void *inParam);
+
+	//////////
 	// Allow the TQTMovie object first crack at processing window
 	// events.  If Windows is generating idle messages for your
 	// window, you can call this instead of 
