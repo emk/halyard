@@ -186,6 +186,10 @@ SOURCE=..\..\..\Common\lang\scheme\TSchemeInterpreter.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\lang\scheme\TSchemeRtCallback.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TStartup.cpp
 # End Source File
 # Begin Source File
@@ -327,6 +331,10 @@ SOURCE=..\..\..\Common\lang\scheme\TSchemeInterpreter.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\lang\scheme\TSchemePtr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\lang\scheme\TSchemeRtCallback.h
 # End Source File
 # Begin Source File
 
