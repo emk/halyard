@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.4.4 - 24 Feb 2003 - emk
+
+Backported freetype2 2.1.4rc1 from Tamale, for improved text rendering.
+Also fixed the cursor visibility bug *again*.
+
 3.4.3 - 11 Oct 2002 - emk
 
 Douglas--I don't have the scripts required to test this properly, so

@@ -17,15 +17,18 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		3
+#define VERSION_REV_BIG		4
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.3"
+#define VERSION_STRING		"5L 3.4.4"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.4  2003/02/24 22:47:11  emk
+ 3.4.4 - Properly updated engines, with version numbers.
+
  Revision 1.30.2.3  2002/10/11 18:02:50  emk
  3.4.3 - 11 Oct 2002 - emk
 
