@@ -28,6 +28,7 @@ CVS - emk
     simulation (bug #1838).  When the engine goes into edit mode, it
     now deletes all elements and any StateDB listeners registered by the
     script.
+  * The error dialog no longer floats over all other windows (bug #1829).
 
 0.0.42 - 06 Dec 2004 - emk
 

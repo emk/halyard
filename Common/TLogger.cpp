@@ -262,13 +262,13 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 {
 	PrepareToDisplayError();
 
-	uint32 alertType = MB_SYSTEMMODAL | MB_OK;
+	uint32 alertType = MB_TASKMODAL | MB_OK;
 	if (isError)
 		alertType |= MB_ICONSTOP;
 	else
 		alertType |= MB_ICONINFORMATION;
 
-	::MessageBox(::GetFocus(), m_LogBuffer, NULL, alertType);
+	::MessageBox(NULL, m_LogBuffer, NULL, alertType);
 }
 
 #elif FIVEL_PLATFORM_MACINTOSH
