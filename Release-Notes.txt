@@ -1,7 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, brian
 
+  * Added clear-prefs!, clear-user-prefs!, and clear-global-prefs!, to
+    support automatically clearing an entire preference file.
   * Moved most of overlay support into quake2/client, except for
     actual drawing/conversion code.
   * Added a broken stub implementation of GL overlays.  This might
