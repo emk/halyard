@@ -36,6 +36,8 @@
 #	include "Quake2Engine.h"
 #endif // CONFIG_HAVE_QUAKE2
 
+#define IDLE_INTERVAL (33) // milliseconds
+
 USING_NAMESPACE_FIVEL
 
 
@@ -752,6 +754,7 @@ BEGIN_EVENT_TABLE(Stage, wxWindow)
     EVT_CHAR(Stage::OnChar)
     EVT_TEXT_ENTER(FIVEL_TEXT_ENTRY, Stage::OnTextEnter)
 	EVT_LEFT_DOWN(Stage::OnLeftDown)
+	EVT_LEFT_DCLICK(Stage::OnLeftDown)
 END_EVENT_TABLE()
 
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
@@ -766,6 +769,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     SetBackgroundColour(STAGE_COLOR);
     ClearStage(*wxBLACK);
     
+	mLastIdleEvent = ::wxGetLocalTimeMillis();
 	mEventDispatcher = new EventDispatcher();
 	mImageCache = new ImageCache();
 
@@ -819,6 +823,11 @@ bool Stage::IsInEditMode()
 	return TInterpreter::GetInstance()->IsStopped();
 }
 
+bool Stage::ShouldSendEvents()
+{
+	return IsScriptInitialized() && !IsInEditMode();
+}
+
 bool Stage::CanJump()
 {
 	// This should match the list of sanity-checks in the function below.
@@ -868,6 +877,7 @@ void Stage::NotifyScriptReload()
 {
 	mLastCard = "";
 	mEventDispatcher->NotifyScriptReload();
+	mImageCache->NotifyScriptReload();
 	mFrame->GetProgramTree()->NotifyScriptReload();
     NotifyExitCard();
 	gStyleSheetManager.RemoveAll();
@@ -949,6 +959,14 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 {
 	if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
 		EndWait();
+
+	// Send an idle event to the Scheme engine occasionally.
+	if (ShouldSendEvents() &&
+		::wxGetLocalTimeMillis() > mLastIdleEvent + IDLE_INTERVAL)
+	{
+		mLastIdleEvent = ::wxGetLocalTimeMillis();
+		GetEventDispatcher()->DoEventIdle();
+	}
 }
 
 void Stage::OnMouseMove(wxMouseEvent &inEvent)
@@ -979,6 +997,11 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
                    (int) color.Green(), color.Blue());
         mFrame->SetStatusText(str);
     }
+
+	// XXX - We should send a mouse-moved event here, not an idle event,
+	// but we're just testing potential performance.
+	//if (ShouldSendEvents())
+	//	GetEventDispatcher()->DoEventIdle();
 }
 
 void Stage::OnEraseBackground(wxEraseEvent &inEvent)
@@ -1057,7 +1080,7 @@ void Stage::OnChar(wxKeyEvent &inEvent)
 	// focused.  Is this really a good idea?
 	// TODO - Most of this code should probably be refactored into
 	// EventDispatcher at some point.
-	if (!IsScriptInitialized() || IsInEditMode())
+	if (!ShouldSendEvents())
 		inEvent.Skip();
 	else if (inEvent.GetKeyCode() == WXK_SPACE &&
 			 inEvent.ControlDown() && !inEvent.AltDown())

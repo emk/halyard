@@ -124,4 +124,5 @@ void ImageCache::NotifyScriptReload()
 {
     // Dump our entire cache when the script gets reloaded.
     mCache.clear();
+	mCurrentBytes = 0;
 }

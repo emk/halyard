@@ -42,6 +42,7 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(EditBox);
 	REGISTER_5L_PRIMITIVE(ElementExists);
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
+	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
 	REGISTER_5L_PRIMITIVE(Fade);
 	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
@@ -202,6 +203,14 @@ DEFINE_5L_PRIMITIVE(ElementSetShown)
 	// TODO - Override MovieElement::Show for unshowable movies.
 }
 
+DEFINE_5L_PRIMITIVE(EnableExpensiveEvents)
+{
+	bool enable;
+	inArgs >> enable;
+	
+	wxGetApp().GetStage()->GetEventDispatcher()->EnableExpensiveEvents(enable);
+}
+
 DEFINE_5L_PRIMITIVE(Fade)
 {
 	wxGetApp().GetStage()->Fade();
@@ -321,11 +330,13 @@ DEFINE_5L_PRIMITIVE(Loadsubpic)
 DEFINE_5L_PRIMITIVE(NotifyEnterCard)
 {
 	wxGetApp().GetStage()->NotifyEnterCard();
+	::SkipPrimitiveLogging();
 }
 
 DEFINE_5L_PRIMITIVE(NotifyExitCard)
 {
 	wxGetApp().GetStage()->NotifyExitCard();
+	::SkipPrimitiveLogging();
 }
 
 /*------------------------------------------------
@@ -373,6 +384,7 @@ DEFINE_5L_PRIMITIVE(RegisterCard)
 	std::string name;
 	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->RegisterCard(name.c_str());
+	::SkipPrimitiveLogging();
 }
 
 DEFINE_5L_PRIMITIVE(RegisterEventDispatcher)

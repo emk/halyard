@@ -257,6 +257,13 @@ class Stage : public wxWindow, public GraphicsTools::Image
     wxRawBitmap mOffscreenFadePixmap;
 
 	//////////
+	// We try to rate-limit our idle events to prevent performance
+	// problems with the Scheme garbage collector (the event dispatching
+	// system allocates some memory to process events).
+	//
+	wxLongLong mLastIdleEvent;
+
+	//////////
 	// This object does all of our event-dispatching for us.
 	//
 	EventDispatcher *mEventDispatcher;
@@ -404,6 +411,11 @@ public:
 	// IsScriptInitialized() returns true.
 	//
 	bool IsInEditMode();
+
+	//////////
+	// Should we send events to our event dispatcher?
+	//
+	bool ShouldSendEvents();
 
 	//////////
 	// Return true if and only if it's safe to call TryJumpTo().

@@ -13,6 +13,10 @@ class TCallback;
 class EventDispatcher : boost::noncopyable
 {
     TCallback *mDispatcher;
+	bool mEnableExpensiveEvents;
+
+	bool EventSetup();
+	bool EventCleanup();
 
 public:
 	EventDispatcher();
@@ -28,6 +32,13 @@ public:
 	//
     void NotifyScriptReload();
 
+	//////////
+	// Turn "expensive" events--idle events, mouse moved events--on or
+	// off.  These tend to generate a lot of garbage for the Scheme
+	// GC to clean up.
+	//
+	void EnableExpensiveEvents(bool inEnable);
+
 	typedef unsigned long Modifiers;
 	enum /* Modifiers */ {
 		Modifier_Control = 1,
@@ -39,6 +50,11 @@ public:
 	// Dispatch a character event.  Return true if the event was handled.
 	//
 	bool DoEventChar(char inChar, Modifiers inModifiers);
+
+	//////////
+	// Dispatch an idle event.
+	//
+	bool DoEventIdle();
 };
 
 #endif // EventDispatcher_H

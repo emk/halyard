@@ -4,6 +4,7 @@
 #include "TInterpreter.h"
 #include "TVariable.h"
 #include "EventDispatcher.h"
+#include "TLogger.h"
  
 BEGIN_NAMESPACE_FIVEL
 
@@ -13,7 +14,7 @@ BEGIN_NAMESPACE_FIVEL
 //=========================================================================
 
 EventDispatcher::EventDispatcher()
-    : mDispatcher(NULL)
+    : mDispatcher(NULL), mEnableExpensiveEvents(false)
 {
 }
  
@@ -38,13 +39,37 @@ void EventDispatcher::NotifyScriptReload()
     mDispatcher = NULL;
 }
 
-bool EventDispatcher::DoEventChar(char inChar, Modifiers inModifiers)
+void EventDispatcher::EnableExpensiveEvents(bool inEnable)
 {
-    if (!mDispatcher)
+	if (inEnable == mEnableExpensiveEvents)
+		return;
+	if (inEnable)
+		gDebugLog.Log("Turning expensive events on.");
+	else
+		gDebugLog.Log("Turning expensive events off.");
+	mEnableExpensiveEvents = inEnable;
+}
+
+bool EventDispatcher::EventSetup()
+{
+	if (!mDispatcher)
 		return false;
 
     // Clear our "pass" flag.
     gVariableManager.SetBoolean("_pass", false);
+	return true;
+}
+
+bool EventDispatcher::EventCleanup()
+{
+    // Check our "pass" flag.
+    return !gVariableManager.GetBoolean("_pass");
+}
+
+bool EventDispatcher::DoEventChar(char inChar, Modifiers inModifiers)
+{
+    if (!EventSetup())
+		return false;
 
     // Turn our character into a string.
     char str[2];
@@ -66,6 +91,22 @@ bool EventDispatcher::DoEventChar(char inChar, Modifiers inModifiers)
     mDispatcher->EndArguments();
     mDispatcher->Run();
 
-    // Check our "pass" flag.
-    return !gVariableManager.GetBoolean("_pass");
+	return EventCleanup();
 }
+
+bool EventDispatcher::DoEventIdle()
+{
+	if (!mEnableExpensiveEvents)
+		return false;
+
+    if (!EventSetup())
+		return false;
+
+    mDispatcher->BeginArguments();
+    mDispatcher->AddSymbolArg("idle");
+    mDispatcher->EndArguments();
+    mDispatcher->Run();
+
+	return EventCleanup();	
+}
+
