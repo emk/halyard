@@ -7,6 +7,7 @@
 
 #include "TQTMovie.h"
 
+#include "AppGlobals.h"
 #include "FiveLApp.h"
 #include "Log5L.h"
 #include "Stage.h"

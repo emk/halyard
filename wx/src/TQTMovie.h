@@ -269,6 +269,20 @@ public:
 	void ThrowIfBroken();
 
 	//////////
+	// Fill out a Win32 MSG object based on the parameters to this
+	// function and the per-thread message state.
+	//
+	void FillOutMSG(HWND inHWND, UINT inMessage, WPARAM inWParam,
+					LPARAM inLParam, MSG *outMessage);
+
+	//////////
+	// Fill out a QuickTime event object based on the parameters to this
+	// function and the per-thread message state.
+	//
+	void FillOutEvent(HWND inHWND, UINT inMessage, WPARAM inWParam,
+					  LPARAM inLParam, EventRecord *outEvent);
+
+	//////////
 	// Allow the TQTMovie object first crack at processing window
 	// events.  If Windows is generating idle messages for your
 	// window, you can call this instead of 
@@ -292,6 +306,22 @@ public:
 	//
 	void Redraw(HWND hWnd) throw ();
 
+	//////////
+	// Notify the movie of window activation and deactivation.
+	//
+	void Activate(HWND hWnd, bool inIsActivating) throw ();
+
+	//////////
+	// Notify the movie of a mouse click.
+	//
+	void Click(HWND hWnd, Point inWhere, long inWhen, long inModifiers)
+		throw ();
+
+	//////////
+	// Notify the movie of a key press.
+	//
+	void Key(HWND hWnd, SInt8 inKey, long inModifiers)
+		throw ();
 
 protected:
 	virtual bool ActionFilter(short inAction, void* inParams);

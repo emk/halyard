@@ -10,6 +10,7 @@
 // XXX - Huh?  Who included by TStyleSheet.h is defining DrawText?
 #undef DrawText
 
+#include "AppGlobals.h"
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Listener.h"
@@ -148,12 +149,12 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     // Make our background black.  This should theoretically be handled
     // by 'background->SetBackgroundColour' below, but Windows takes a
     // fraction of a second to show that object.
-    SetBackgroundColour(*wxBLACK);
+    SetBackgroundColour(STAGE_FRAME_COLOR);
 
     // Create a background panel to surround our stage with.  This keeps
     // life simple.
     wxPanel *background = new wxPanel(this);
-    background->SetBackgroundColour(*wxBLACK);
+    background->SetBackgroundColour(STAGE_BACKGROUND_COLOR);
 
     // Create a stage object to scribble on.  Use a sizer to center it
     // on the background.
@@ -415,7 +416,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mIsDisplayingBorders(false)
 
 {
-    SetBackgroundColour(*wxBLACK);
+    SetBackgroundColour(STAGE_COLOR);
     ClearStage(*wxBLACK);
     
     mTextCtrl =

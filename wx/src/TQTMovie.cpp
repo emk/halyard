@@ -450,6 +450,33 @@ void TQTMovie::ThrowIfBroken()
 		throw TMacError(__FILE__, __LINE__, noErr);
 }
 
+void TQTMovie::FillOutMSG(HWND inHWND, UINT inMessage, WPARAM inWParam,
+						  LPARAM inLParam, MSG *outMessage)
+{
+	// Build a Windows MSG object.  This code is from Apple's
+	// sample SimplePlayerSDI application.
+	outMessage->hwnd = inHWND;
+	outMessage->message = inMessage;
+	outMessage->wParam = inWParam;
+	outMessage->lParam = inLParam;
+	outMessage->time = ::GetMessageTime();
+
+	// Fetch the point associated with the most recent message, and use it.
+	// TODO - Is this safe in an environment such as wxWindows?
+	LONG thePoints = ::GetMessagePos();
+	outMessage->pt.x = LOWORD(thePoints);
+	outMessage->pt.y = HIWORD(thePoints);	
+}
+
+void TQTMovie::FillOutEvent(HWND inHWND, UINT inMessage, WPARAM inWParam,
+							LPARAM inLParam, EventRecord *outEvent)
+{
+	MSG msg;
+	FillOutMSG(inHWND, inMessage, inWParam, inLParam, &msg);
+	::WinEventToMacEvent(&msg, outEvent);
+}
+
+
 bool TQTMovie::HandleMovieEvent(HWND hWnd, UINT message,
 								WPARAM wParam, LPARAM lParam)
 	throw ()
@@ -461,21 +488,9 @@ bool TQTMovie::HandleMovieEvent(HWND hWnd, UINT message,
 	if (!::GetNativeWindowPort(hWnd))
 		return false;
 	
-	// Build a Windows MSG object.  This code is from Apple's
-	// sample SimplePlayerSDI application.
-	MSG	msg;
-	LONG thePoints = ::GetMessagePos();
-	msg.hwnd = hWnd;
-	msg.message = message;
-	msg.wParam = wParam;
-	msg.lParam = lParam;
-	msg.time = ::GetMessageTime();
-	msg.pt.x = LOWORD(thePoints);
-	msg.pt.y = HIWORD(thePoints);
-	
-	// Convert the Windows event to a Mac event.
+	// Convert everything into a Macintosh event record.
 	EventRecord	mac_event;
-	::WinEventToMacEvent(&msg, &mac_event);
+	FillOutEvent(hWnd, message, wParam, lParam, &mac_event);
 
 	// Pass the event to our movie.
 	bool res = false;
@@ -495,6 +510,40 @@ void TQTMovie::Redraw(HWND hWnd)
 	WindowPtr mac_window =
 		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
 	::MCDraw(mMovieController, mac_window);
+}
+
+void TQTMovie::Activate(HWND hWnd, bool inIsActivating)
+	throw ()
+{
+	if (IsBroken() || !mMovieController)
+		return;
+
+	WindowPtr mac_window =
+		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
+	::MCActivate(mMovieController, mac_window, inIsActivating);
+}
+
+void TQTMovie::Click(HWND hWnd, Point inWhere, long inWhen, long inModifiers)
+	throw ()
+{
+	if (IsBroken() || !mMovieController)
+		return;
+
+	WindowPtr mac_window =
+		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
+	::MCClick(mMovieController, mac_window, inWhere, inWhen, inModifiers);
+}
+
+
+void TQTMovie::Key(HWND hWnd, SInt8 inKey, long inModifiers)
+	throw ()
+{
+	if (IsBroken() || !mMovieController)
+		return;
+
+	WindowPtr mac_window =
+		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
+	::MCKey(mMovieController, inKey, inModifiers);	
 }
 
 void TQTMovie::DoAction(mcAction inAction, void *inParam)

@@ -4,13 +4,19 @@
 
 #include "TCommon.h"
 #include "TQTMovie.h"
+#include "AppGlobals.h"
 #include "FiveLApp.h"
 #include "MovieWindow.h"
 
+#define FRAMES_PER_SECOND (30)
+
 BEGIN_EVENT_TABLE(MovieWindow, wxWindow)
-	//EVT_ERASE_BACKGROUND(MovieWindow::OnEraseBackground)
+	EVT_ERASE_BACKGROUND(MovieWindow::OnEraseBackground)
     EVT_PAINT(MovieWindow::OnPaint)
     EVT_IDLE(MovieWindow::OnIdle)
+    EVT_ACTIVATE(MovieWindow::OnActivate)
+    EVT_LEFT_DOWN(MovieWindow::OnLeftDown)
+	//EVT_KEY_DOWN(MovieWindow::OnKeyDown) - Incomplete!
 END_EVENT_TABLE()
 
 MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
@@ -23,7 +29,7 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
       mMovie(NULL), mMovieWindowStyle(inMovieWindowStyle)
 {
     // Set a more-appropriate default background color for a movie.
-    SetBackgroundColour(*wxBLACK);
+    SetBackgroundColour(MOVIE_WINDOW_COLOR);
 
     // Prepare this window for use with QuickTime.
     // TODO - PORTING - This code is Windows-specific.
@@ -66,9 +72,7 @@ void MovieWindow::SetMovie(const wxString &inName)
     // TODO - We'll change this to better integrate with pre-rolling.
     Point p;
     p.h = p.v = 0;
-    mMovie->StartWhenReady(TQTMovie::kEnableMovieController |
-						   TQTMovie::kEnableInteraction,
-						   p);
+    mMovie->StartWhenReady(TQTMovie::kEnableMovieController, p);
 }
 
 int MovieWindow::GetFrame()
@@ -77,43 +81,19 @@ int MovieWindow::GetFrame()
 		return 0;
 	else
 	{
-		// XXX - I have no idea if this calculation is correct.  See
-		// the QuickTime documentation.
+		// TODO - I have no idea if this calculation is correct.  See
+		// the QuickTime documentation.  But it appears to produce
+		// correct results...
 		TimeScale scale = mMovie->GetTimeScale();
 		TimeValue time = mMovie->GetMovieTime();
-		return time * 30 / scale;
+		return time * FRAMES_PER_SECOND / scale;
 	}
 }
-
-/*
-long MovieWindow::MSWWindowProc(WXUINT message, WXWPARAM wParam,
-								WXLPARAM lParam)
-{
-	wxLogTrace(TRACE_STAGE_DRAWING, "MovieWindow::MSWWindowProc: %d %d %ld",
-			   message, wParam, lParam);
-
-	bool handled = false;
-	if (mMovie)
-	{
-		// TODO - In theory, we should pay attention to the return
-		// value of this function, but see the documentation in TQTMovie.h.
-		handled = mMovie->HandleMovieEvent((HWND) mHWND, (UINT) message,
-										   (WPARAM) wParam, (LPARAM) lParam);
-	}
-
-	// Pass the event along to be handled normally.
-	//if (!handled)
-	return wxWindow::MSWWindowProc(message, wParam, lParam);
-	//else
-	//return 0;
-}
-*/
 
 void MovieWindow::OnEraseBackground(wxEraseEvent &inEvent)
 {
 	if (mMovie && mMovie->IsStarted())
 	{
-		inEvent.Skip();
 		wxLogTrace(TRACE_STAGE_DRAWING,
 				   "Ignoring request to erase movie window.");
 	}
@@ -121,26 +101,78 @@ void MovieWindow::OnEraseBackground(wxEraseEvent &inEvent)
 	{
 		wxLogTrace(TRACE_STAGE_DRAWING,
 				   "Erasing background of movie window.");
+		inEvent.Skip();
 	}
 }
 
 void MovieWindow::OnPaint(wxPaintEvent &inEvent)
 {
-	//wxPaintDC dc; // We must always create one of these in OnPaint.
 	wxLogTrace(TRACE_STAGE_DRAWING, "Asked to repaint movie window.");
     if (mMovie)
 	{
 		wxLogTrace(TRACE_STAGE_DRAWING, "Passing repaint event to movie.");
 		mMovie->Redraw((HWND) mHWND);
 	}
-	//else
-	//{
+
+	// Let wxWindows handle this paint event properly.  It won't paint
+	// anything, but it will do a bunch of other magic with a PaintDC
+	// and other stuff, none of which I wish to figure out right now.
 	inEvent.Skip();
-	//}
 }
 
 void MovieWindow::OnIdle(wxIdleEvent &inEvent)
 {
 	if (mMovie)
 		mMovie->Idle();
+}
+
+void MovieWindow::OnActivate(wxActivateEvent &inEvent)
+{
+	if (mMovie)
+	{
+		if (inEvent.GetActive())
+			wxLogTrace(TRACE_STAGE_DRAWING, "Activate movie window.");
+		else
+			wxLogTrace(TRACE_STAGE_DRAWING, "Deactivate movie window.");
+		mMovie->Activate((HWND) mHWND, inEvent.GetActive());
+	}
+}
+
+void MovieWindow::OnLeftDown(wxMouseEvent &inEvent)
+{
+	// TODO - Figure out why double-clicking is broken.
+	if (mMovie)
+	{
+		// Get usable event.when and event.modifiers values.  Note that
+		// these aren't strictly accurate, merely usable.
+		EventRecord event;
+		mMovie->FillOutEvent((HWND) mHWND, WM_LBUTTONDOWN, (WPARAM) MK_LBUTTON,
+							 (LPARAM) 0 /* We'll do the mouse. */, &event);
+
+		// Get the click location and convert it to a Mac point.
+		wxPoint p = inEvent.GetPosition();
+		Point mac_point;
+		mac_point.h = p.x;
+		mac_point.v = p.y;
+
+		// Pass the event to our movie.
+		// TODO - Fix 'when' and 'modifiers' parameters.
+		mMovie->Click((HWND) mHWND, mac_point, event.when, event.modifiers);
+	}
+}
+
+void MovieWindow::OnKeyDown(wxKeyEvent &inEvent)
+{
+	// TODO - Only pass appropriate keys to QuickTime, and Skip() the
+	// rest of the events.  Figure out why SPACE isn't working.  And
+	// re-enable this handler in our event table.
+	if (mMovie)
+	{
+		EventRecord event;
+		mMovie->FillOutEvent((HWND) mHWND, WM_KEYDOWN,
+							 (WPARAM) inEvent.GetRawKeyCode(),
+							 (LPARAM) inEvent.GetRawKeyFlags(), &event);
+		mMovie->Key((HWND) mHWND, event.message & charCodeMask,
+					event.modifiers);
+	}
 }

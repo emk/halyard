@@ -13,6 +13,7 @@ class LocationBox;
 class ToolWindow;
 class TQTMovie;
 
+// See ToolWindow.h.
 enum ToolWindowID {
 	TOOL_LISTENER,
 	TOOL_TIMECODER,

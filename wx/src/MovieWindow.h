@@ -15,6 +15,9 @@ class MovieWindow : public wxWindow
     TQTMovie *mMovie;
     long mMovieWindowStyle;
 
+	//////////
+	// Delete any movie attached to this object.
+	//
     void CleanUpMovie();
 
 public:
@@ -51,19 +54,6 @@ public:
     //
     int GetFrame();
 
-	//////////
-	// QuickTime needs to receive raw Windows events to implement
-	// interaction (the controller, Flash, etc.).  We could painstakingly
-	// reconstruct these events by hand from the wxEvents we receive,
-	// or we can simply intercept the raw Windows events as they are fed
-	// to us.  We choose the later course of action.
-	//
-	// TODO - PORTABILITY - We'll need a similar hack on the Macintosh,
-	// which may require modifying the wxWindows source code.
-	//
-	//virtual long MSWWindowProc(WXUINT message, WXWPARAM wParam,
-	//						   WXLPARAM lParam);
-
 	void OnEraseBackground(wxEraseEvent &inEvent);
 
 	//////////
@@ -78,6 +68,12 @@ public:
 	void OnPaint(wxPaintEvent &inEvent);
 
 	void OnIdle(wxIdleEvent &inEvent);
+
+	void OnActivate(wxActivateEvent &inEvent);
+
+	void OnLeftDown(wxMouseEvent &inEvent);
+
+	void OnKeyDown(wxKeyEvent &inEvent);
 
     DECLARE_EVENT_TABLE();
 };

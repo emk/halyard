@@ -4,7 +4,7 @@
 
 #include "TCommon.h"
 #include "TInterpreter.h"
-#include "FiveLApp.h"
+#include "AppGlobals.h"
 #include "Stage.h"
 #include "Listener.h"
 
