@@ -1,3 +1,15 @@
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+//		(c) Copyright 1999, Trustees of Dartmouth College. All rights reserved
+//			Interactive Media Lab, Dartmouth Medical School
+//
+//			$Author$
+//			$Date$
+//			$Revision$
+//
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+
 /****************************************
 
     Binary Tree source.
@@ -403,6 +415,11 @@ void CBTree::Walk()
     root->Walk();
 }   
 
+/*
+$Log$
+Revision 1.2  1999/10/07 13:40:10  chuck
+Initial Revision
 
+*/
 
  
