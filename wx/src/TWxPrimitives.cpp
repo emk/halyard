@@ -21,6 +21,7 @@
 #include "FileSystem.h"
 #include "EventDispatcher.h"
 #include "ImageCache.h"
+#include "CursorManager.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -48,13 +49,17 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
+	REGISTER_5L_PRIMITIVE(MousePosition);
 	REGISTER_5L_PRIMITIVE(Movie);
 	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
 	REGISTER_5L_PRIMITIVE(RegisterCard);
+	REGISTER_5L_PRIMITIVE(RegisterCursor);
 	REGISTER_5L_PRIMITIVE(RegisterEventDispatcher);
     REGISTER_5L_PRIMITIVE(Screen);
+    REGISTER_5L_PRIMITIVE(SetImageCacheSize);
+    REGISTER_5L_PRIMITIVE(SetZoneCursor);
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
 	REGISTER_5L_PRIMITIVE(Unfade);
@@ -356,6 +361,12 @@ DEFINE_5L_PRIMITIVE(Nap)
     TInterpreter::GetInstance()->Nap(tenths);
 }
 
+DEFINE_5L_PRIMITIVE(MousePosition)
+{
+	wxPoint p = wxGetApp().GetStage()->ScreenToClient(::wxGetMousePosition());
+	::SetPrimitiveResult(TPoint(p.x, p.y));
+}
+
 DEFINE_5L_PRIMITIVE(Movie)
 {
 	std::string name, path;
@@ -387,6 +398,15 @@ DEFINE_5L_PRIMITIVE(RegisterCard)
 	::SkipPrimitiveLogging();
 }
 
+DEFINE_5L_PRIMITIVE(RegisterCursor)
+{
+	std::string name, path;
+	TPoint hotspot;
+	inArgs >> SymbolName(name) >> path >> hotspot;
+	CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
+	manager->RegisterImageCursor(name, path, hotspot.X(), hotspot.Y());
+}
+
 DEFINE_5L_PRIMITIVE(RegisterEventDispatcher)
 {
 	TCallback *callback;
@@ -404,6 +424,23 @@ DEFINE_5L_PRIMITIVE(Screen)
     Color color;
     inArgs >> color; 
 	wxGetApp().GetStage()->ClearStage(ConvColor(color));
+}
+
+DEFINE_5L_PRIMITIVE(SetImageCacheSize)
+{
+	uint32 sz;
+	inArgs >> sz;
+	wxGetApp().GetStage()->GetImageCache()->SetMaxCacheSize(sz);
+}
+
+DEFINE_5L_PRIMITIVE(SetZoneCursor)
+{
+	std::string name, cursor;
+	inArgs >> SymbolName(name) >> SymbolName(cursor);
+
+	FIND_ELEMENT(Zone, zone, name.c_str());
+	CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
+	zone->SetCursor(manager->FindCursor(cursor));
 }
 
 DEFINE_5L_PRIMITIVE(TextAA)
@@ -455,10 +492,11 @@ DEFINE_5L_PRIMITIVE(Wait)
 
 DEFINE_5L_PRIMITIVE(Zone)
 {
-	std::string name;
+	std::string name, cursor;
 	TRect bounds;
 	TCallback *action;
 	
-	inArgs >> SymbolName(name) >> bounds >> action;
-	new Zone(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds), action);
+	inArgs >> SymbolName(name) >> bounds >> action >> cursor;
+	new Zone(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds), action,
+			 wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor));
 }

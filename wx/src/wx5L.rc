@@ -118,6 +118,16 @@ END
 
 #endif    // !_MAC
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_LEFT_CURSOR         CURSOR  DISCARDABLE     "left_cur.cur"
+IDC_TURN_RIGHT_CURSOR   CURSOR  DISCARDABLE     "backup_c.cur"
+IDC_TURN_LEFT_CURSOR    CURSOR  DISCARDABLE     "up_curso.cur"
+IDC_RIGHT_CURSOR        CURSOR  DISCARDABLE     "right_cu.cur"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

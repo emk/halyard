@@ -4,9 +4,9 @@
 #define Zone_H
 
 #include "TInterpreter.h"
-
-#include "Stage.h"
 #include "Element.h"
+
+class Stage;
 
 //////////
 // A zone is basically a "virtual widget" on our stage.  It doesn't
@@ -17,10 +17,11 @@ class Zone : public Element
 {
 	wxRect mBounds;
 	FIVEL_NS TCallback *mAction;
+	wxCursor mCursor;
 	
 public:
 	Zone(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-		 FIVEL_NS TCallback *inAction);
+		 FIVEL_NS TCallback *inAction, wxCursor &inCursor);
 	~Zone();
 
 	virtual bool IsLightWeight() { return true; }
@@ -28,6 +29,9 @@ public:
 	virtual wxRect GetRect() { return mBounds; }
 	virtual bool IsPointInElement(const wxPoint &inPoint);
 	virtual void Click();
+
+	virtual wxCursor GetCursor() { return mCursor; }
+	virtual void SetCursor(wxCursor &inCursor) { mCursor = inCursor; }
 };
 
 #endif // Zone_H

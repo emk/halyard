@@ -86,6 +86,11 @@ public:
 	// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
 	//
 	virtual void Click() { }
+
+	//////////
+	// Get an appropriate cursor for this object.
+	//
+	virtual wxCursor GetCursor() { return wxCursor(wxCURSOR_HAND); }
 };
 
 #endif // Element_H

@@ -23,6 +23,7 @@ class StageBackground;
 class wxSashEvent;
 class EventDispatcher;
 class ImageCache;
+class CursorManager;
 
 // See ToolWindow.h.
 enum ToolWindowID {
@@ -275,6 +276,12 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	ImageCache *mImageCache;
 
 	//////////
+	// Our cursor manager.  This maps strings to cursors, and allows the
+	// application to register new cursors.
+	//
+	CursorManager *mCursorManager;
+
+	//////////
 	// Our text-entry control.  Will not be visible unless the user
 	// is entering something.
 	//
@@ -438,6 +445,11 @@ public:
 	// Return the image cache associated with this stage.
 	//
 	ImageCache *GetImageCache() { return mImageCache; }
+
+	//////////
+	// Return the cursor manager associated with this stage.
+	//
+	CursorManager *GetCursorManager() { return mCursorManager; }
 
     //////////
     // Register a newly-loaded card with the stage frame.

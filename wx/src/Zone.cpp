@@ -8,8 +8,9 @@
 USING_NAMESPACE_FIVEL
 
 Zone::Zone(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-		   FIVEL_NS TCallback *inAction)
-    : Element(inStage, inName), mBounds(inBounds), mAction(inAction)
+		   FIVEL_NS TCallback *inAction, wxCursor &inCursor)
+    : Element(inStage, inName), mBounds(inBounds), mAction(inAction),
+	  mCursor(inCursor)
 {
     ASSERT(mAction);
 }

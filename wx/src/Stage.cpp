@@ -30,6 +30,7 @@
 #include "LocationBox.h"
 #include "EventDispatcher.h"
 #include "ImageCache.h"
+#include "CursorManager.h"
 #include "dlg/ProgramPropDlg.h"
 
 #if CONFIG_HAVE_QUAKE2
@@ -772,6 +773,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	mLastIdleEvent = ::wxGetLocalTimeMillis();
 	mEventDispatcher = new EventDispatcher();
 	mImageCache = new ImageCache();
+	mCursorManager = new CursorManager();
 
     mTextCtrl =
         new wxTextCtrl(this, FIVEL_TEXT_ENTRY, "", wxDefaultPosition,
@@ -785,6 +787,7 @@ Stage::~Stage()
 {
 	DeleteElements();
 	delete mImageCache;
+	delete mCursorManager;
 	delete mEventDispatcher;
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
@@ -917,7 +920,7 @@ void Stage::UpdateCurrentElementAndCursor()
 		else
 		{
 			if (obj)
-				SetCursor(wxCursor(wxCURSOR_HAND));
+				SetCursor(obj->GetCursor());
 			else
 				SetCursor(wxNullCursor);
 		}
