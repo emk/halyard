@@ -492,7 +492,7 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 		
 		if ((not inAudioOnly) and (not mHaveOrigin))	// check for audio or not full screen
 		{
-			gPlayerView->ColorCard(0);		// wipe out everything in offscreen -> why do we do this??
+			gPlayerView->ColorCard(GraphicsTools::Color(0, 0, 0));		// wipe out everything in offscreen -> why do we do this??
 			gPlayerView->Draw(nil);			// put up the black background
 		}
 		else								// when audio only or not full screen, make sure the screen is up to date

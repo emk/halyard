@@ -16,6 +16,7 @@
 
 #pragma once
 #include "CPlayerBox.h"
+#include "GraphicsTools.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -26,7 +27,7 @@ public:
 	// Standard constructor. Will call the SPaneInfo constructor
 	CPlayerLine(	const Rect		&inBounds,
 					const int8		inLineWidth,
-					const int16		inColorIdx);
+					const GraphicsTools::Color inColor);
 				
 	// Destructor
 	virtual 	~CPlayerLine();
@@ -34,7 +35,7 @@ public:
 protected:
 	Rect			mLineFrame;			// Points to draw line between
 	SInt8			mLineWidth;			// Width of line, in pixels
-	SInt16			mColorIdx;			// Index into the CLUT
+	GraphicsTools::Color mColor;		// Index into the CLUT
 
 	virtual void	DrawSelf();	
 };

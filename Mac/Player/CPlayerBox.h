@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "GraphicsTools.h"
+
 BEGIN_NAMESPACE_FIVEL
 
 class CPlayerBox {
@@ -26,7 +28,7 @@ public:
 	CPlayerBox(	const Rect		&inBounds,
 				const Boolean 	inFill,
 				const int8		inLineWidth,
-				const int16		inColorIdx);
+				const GraphicsTools::Color inColor);
 				
 	// Destructor
 	virtual 	~CPlayerBox();
@@ -34,7 +36,7 @@ public:
 protected:
 	Boolean					mFill;				// TRUE if box is to be filled
 	SInt8					mLineWidth;			// Width of frame, in pixels
-	SInt16					mColorIdx;			// Index into the CLUT
+	GraphicsTools::Color	mColor;				// Color
 	Rect					mBounds;
 	
 	virtual void			DrawSelf();	

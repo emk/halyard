@@ -28,6 +28,7 @@
 #include "TCommonPrimitives.h"
 
 USING_NAMESPACE_FIVEL
+using GraphicsTools::Color;
 
 // used to SetupText to process out control characters
 const int kFinalStrLen = 4096;
@@ -513,9 +514,9 @@ CText::SetupStyle(SInt32 sIdx, Boolean shadow)
 			// If we're drawing the shadow, set the color to the shadow color.
 			RGBColor color;
 			if (shadow)
-				color = gPaletteManager.GetColor(mShadColor);
+				color = gPlayerView->GetColor(mShadColor);
 			else
-				color = gPaletteManager.GetColor(theStyle.mColor);
+				color = gPlayerView->GetColor(theStyle.mColor);
 			::RGBForeColor(&color);	
 			SInt16 textStyle = 0;				
 	
@@ -736,9 +737,9 @@ CText::DrawSimpleText(Boolean highlight)
 	
 	RGBColor color;
 	if (highlight)
-		color = gPaletteManager.GetColor(mHiColor);
+		color = gPlayerView->GetColor(mHiColor);
 	else
-		color = gPaletteManager.GetColor(mBaseColor);
+		color = gPlayerView->GetColor(mBaseColor);
 	::RGBForeColor(&color);	
 				
 	PP::UTextDrawing::DrawWithJustification((char *) mText, strlen((char *) mText), mDrawRect, mJust);
@@ -758,7 +759,12 @@ CText::CreateStyleEntry(const int16 inStyleStart,	// Starting offset into mText 
 						const Boolean inUnderline,	// TRUE if text is underlined
 						const Boolean inBold)		// TRUE if text is bold
 {
-	sTextStyle	theStyle = {0, 0, mBaseColor, false, false};
+	sTextStyle	theStyle;
+	theStyle.mStartPos = 0;
+	theStyle.mLen = 0;
+	theStyle.mColor = mBaseColor;
+	theStyle.mUnderline = false;
+	theStyle.mBold = false;
 			
 	theStyle.mStartPos 	= inStyleStart;			
 	theStyle.mLen 		= inStyleLen;			

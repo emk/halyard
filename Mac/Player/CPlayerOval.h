@@ -16,6 +16,7 @@
 
 #pragma once
 #include "CPlayerBox.h"
+#include "GraphicsTools.h"
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -27,7 +28,7 @@ public:
 	CPlayerOval(	const Rect		&inBounds,
 					const Boolean	inFill,
 					const int8		inLineWidth,
-					const int16		inColorIdx);
+					const GraphicsTools::Color inColor);
 				
 	// Destructor
 	virtual 	~CPlayerOval();
@@ -36,7 +37,7 @@ protected:
 	Boolean			mFill;
 	Rect			mBounds;
 	SInt8			mLineWidth;			// Width of frame, in pixels
-	SInt16			mColorIdx;			// Index into the CLUT
+	GraphicsTools::Color mColor;		// Color
 
 	virtual void	DrawSelf();	
 };

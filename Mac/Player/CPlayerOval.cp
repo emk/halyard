@@ -14,20 +14,21 @@
 #include "CPalette.h"
 
 /* ---------------------------------------------------------------------------------
-		¥ CPlayerOval(&Rect, Fill, LIneWidth, ColorIdx)
+		¥ CPlayerOval(&Rect, Fill, LIneWidth, Color)
    --------------------------------------------------------------------------------- */
 USING_NAMESPACE_FIVEL
+using GraphicsTools::Color;
 
 CPlayerOval::CPlayerOval(
 	const Rect		&inBounds,		// Bouding rect (relative to PlayerView's rect)
 	const Boolean 	inFill,			// TRUE if rect to be filled (solid)
 	const int8		inLineWidth,	// Frame's line width, in pixels
-	const int16		inColorIdx)		// Index into CLUT
+	const Color 	inColor)		// Color
 {
 	// Assign our data.
 	mFill 		= inFill;
 	mLineWidth 	= inLineWidth;
-	mColorIdx 	= inColorIdx;
+	mColor	 	= inColor;
 	mBounds		= inBounds;
 	
 	// Get the offscreen gworld from the card view, and draw into it.
@@ -58,9 +59,8 @@ CPlayerOval::DrawSelf()
 	PP::StColorPenState savePenState;
 	PP::StColorPenState::Normalize();
 	
-	// Set the pen state for color, width. Get the rgb color from
-	// the color index.
-	RGBColor color = gPaletteManager.GetColor(mColorIdx);
+	// Set the pen state for color, width.
+	RGBColor color = gPlayerView->GetColor(mColor);
 	::RGBForeColor(&color);	
 	::PenSize(mLineWidth, mLineWidth);
 	

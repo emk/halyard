@@ -43,7 +43,6 @@ private:
 	TString				mMask;			// Input format mask
 	RGBColor			mBackColor;		// our background color
 	bool				mRequired;		// TRUE if some entry is required.
-	bool				mHaveBackColor;	// true if was have a background color
 	
 	virtual void		FinishCreateSelf();
 	virtual Boolean		HandleKeyPress(const EventRecord	&inKeyEvent);

@@ -37,6 +37,7 @@
 #include "gamma.h"
 
 USING_NAMESPACE_FIVEL
+using GraphicsTools::Color;
 
 
 //=========================================================================
@@ -351,7 +352,8 @@ DEFINE_5L_PRIMITIVE(Box)
 	CPlayerBox	*boxPtr;
     TRect		bounds;
     Rect		macBounds;
-    int16		color, lineThickness = 1;
+	Color       color;
+    int16		lineThickness = 1;
     TString		fill;
     Boolean		theFill = false;
 
@@ -810,7 +812,8 @@ DEFINE_5L_PRIMITIVE(Line)
 {
 	CPlayerLine	*linePtr;
     TPoint  	a, b;
-    int16   	color, thickness = 1;
+	Color       color;
+    int16   	thickness = 1;
     Rect		theRect;
  	inArgs >> a >> b >> color;
     
@@ -834,14 +837,14 @@ DEFINE_5L_PRIMITIVE(Line)
 		delete linePtr;
 		
 	if (a.X()==b.X())
-		gDebugLog.Log("Vertical line: <L T R B> %d %d %d %d color %d thickness: %d width: %d height: %d", 
-					  a.X(), a.Y(),b.X(), b.Y(), color, thickness, abs(b.X()-a.X()), abs(b.Y()-a.Y())); 
+		gDebugLog.Log("Vertical line: <L T R B> %d %d %d %d thickness: %d width: %d height: %d", 
+					  a.X(), a.Y(),b.X(), b.Y(), thickness, abs(b.X()-a.X()), abs(b.Y()-a.Y())); 
 	else if (a.Y()==b.Y())
-		gDebugLog.Log("Horizontal line: <L T R B> %d %d %d %d color %d thickness: %d width: %d height: %d", 
-					  a.X(), a.Y(),b.X(), b.Y(), color, thickness, abs(b.X()-a.X()), abs(b.Y()-a.Y())); 
+		gDebugLog.Log("Horizontal line: <L T R B> %d %d %d %d thickness: %d width: %d height: %d", 
+					  a.X(), a.Y(),b.X(), b.Y(), thickness, abs(b.X()-a.X()), abs(b.Y()-a.Y())); 
 	else
-		gDebugLog.Log("Line: <L T R B> %d %d %d %d color %d thickness: %d width: %d height: %d", 
-					  a.X(), a.Y(),b.X(), b.Y(), color, thickness, abs(b.X()-a.X()), abs(b.Y()-a.Y())); 
+		gDebugLog.Log("Line: <L T R B> %d %d %d %d thickness: %d width: %d height: %d", 
+					  a.X(), a.Y(),b.X(), b.Y(), thickness, abs(b.X()-a.X()), abs(b.Y()-a.Y())); 
 }
 
 /*-------------------------------------------------------------
@@ -1081,7 +1084,8 @@ DEFINE_5L_PRIMITIVE(Oval)
 	CPlayerOval	*ovalPtr;
     TRect		bounds;
     Rect		macBounds;
-    int16		color, lineThickness = 1;
+	Color       color;
+    int16		lineThickness = 1;
     TString		fill;
     Boolean		theFill = false;
 
@@ -1418,10 +1422,8 @@ DEFINE_5L_PRIMITIVE(QTPause)
 -----------------------------------------------------------------*/
 DEFINE_5L_PRIMITIVE(Screen)
 {
-    int16 color;
-
+    Color color;
     inArgs >> color;
-
     gPlayerView->ColorCard(color);
 }
 

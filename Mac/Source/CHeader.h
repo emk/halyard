@@ -22,11 +22,11 @@ class CHeader
 
 		std::string		mName;
 		Alignment   	mAlignment;
-        int16         	mColor;
-        int16         	mHighlightColor;
+        GraphicsTools::Color mColor;
+        GraphicsTools::Color mHighlightColor;
         int16         	mShadow;
-        int16         	mShadowColor;
-        int16         	mShadowHighlightColor;
+        GraphicsTools::Color mShadowColor;
+        GraphicsTools::Color mShadowHighlightColor;
         int16         	mHilite;
         int16			mUnderline;
 
@@ -44,10 +44,11 @@ class CHeader
         int16			GetFontFamily(void) 	{ return (mFontFamily); }
         int16			GetHeight(void)			{ return (mHeight); }
         Alignment		GetAlignment(void)		{ return (mAlignment); }
-        int16			GetColor(void)			{ return (mColor); }
-		int16			GetHighlightColor(void) { return (mHighlightColor); }
+        GraphicsTools::Color GetColor(void)			{ return (mColor); }
+		GraphicsTools::Color GetHighlightColor(void)
+                            { return (mHighlightColor); }
 		int16			GetShadow(void)			{ return (mShadow); }
-		int16			GetShadowColor(void)	{ return (mShadowColor); }
+		GraphicsTools::Color GetShadowColor(void)	{ return (mShadowColor); }
 		bool			GetBold(void)			{ return (mBold); }
         
 	private:

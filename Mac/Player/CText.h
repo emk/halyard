@@ -39,7 +39,7 @@ class CText
 		PP::LArray			*mStyleOffsets;	// List of styles & offsets into mText for display
 
 		uint8				*mText;		// Pointer to the text to display
-		int16				mBaseColor, mHiColor, mShadColor;	// Base, highlight & shadow colors
+		GraphicsTools::Color mBaseColor, mHiColor, mShadColor;	// Base, highlight & shadow colors
 		int16				mFont;		// Font index
 		int16				mSize;		// Point size
 		int16				mJust;		// Alignment
@@ -71,7 +71,7 @@ class CText
 struct sTextStyle {
 	int16	mStartPos;	// Starting offset into mText for this style
 	int16	mLen;		// Number of chars to display in this style
-	int16	mColor;		// Color of style
+	GraphicsTools::Color mColor; // Color of style
 	Boolean	mUnderline;	// TRUE if underline
 	Boolean	mBold;		// TRUE if bold
 };

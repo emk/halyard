@@ -50,7 +50,7 @@ const char COMMENT = '#';       //Changed MAR 31
 TStream::CallbackMakerFunc TStream::s_CallbackMaker = NULL;
 
 // Define our global variable.
-GraphicsTools::Color gPalette[TSTREAM_PALETTE_SIZE];
+GraphicsTools::Color FIVEL_NS gPalette[TSTREAM_PALETTE_SIZE];
 
 
 /*********************

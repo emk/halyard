@@ -40,6 +40,7 @@ extern bool			gHideMenuBar;
 
 USING_NAMESPACE_FIVEL
 using namespace PowerPlant;
+using GraphicsTools::Color;
 
 // 
 //	CPlayerView - create a CPlayerView pane from a PPob resource
@@ -75,7 +76,7 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 	mGWorld->EndDrawing();
 				
 	mBackPic 	= nil;
-	mBackColor 	= 1;
+	mBackColor 	= Color(0xFF, 0xFF, 0xFF);
 	mActive 	= false;
 	mIsLocked 	= false;
 	mHasBlip	= false;
@@ -107,6 +108,27 @@ void CPlayerView::DeleteAllKeyBinds()
 	for (; iter != mKeyBinds.end(); ++iter)
 		delete iter->second;
 	mKeyBinds.clear();
+}
+
+RGBColor CPlayerView::GetColor(GraphicsTools::Color inColor)
+{
+	RGBColor result;
+
+	// Extend the 8-bit values to the 16-bit values required
+	// by QuickDraw.  We do this by shifting the value left
+	// 8 bits, and OR'ing with a copy of itself, which produces
+	// a slightly better result for 0xFF than we'd get by simply
+	// shifting left by 8 bits.
+	result.red = inColor.red << 8 | inColor.red;
+	result.green = inColor.green << 8 | inColor.green;
+	result.blue = inColor.blue << 8 | inColor.blue;
+
+	// Make sure the color didn't have an alpha channel, which
+	// none of our callers would know how to understand anyway.
+	if (inColor.alpha != 0)
+		gLog.Caution("Discarding alpha channel from color");
+
+	return result;
 }
 
 // 
@@ -394,7 +416,7 @@ void  CPlayerView::SetBackPic(TString &picName, Rect inRect)
 //
 //	ColorCard
 //
-void CPlayerView::ColorCard(int16 color)
+void CPlayerView::ColorCard(Color color)
 {
 	Rect  theFrame;
 	StColorPenState savePenState;
@@ -406,7 +428,7 @@ void CPlayerView::ColorCard(int16 color)
 
 	mGWorld->BeginDrawing();
 	CalcLocalFrameRect(theFrame);
-	RGBColor rgbcolor = gPaletteManager.GetColor(mBackColor);
+	RGBColor rgbcolor = GetColor(mBackColor);
 	::RGBForeColor(&rgbcolor);	
 	::PenMode(patCopy);
 	::PaintRect(&theFrame);
@@ -499,7 +521,9 @@ void CPlayerView::ShowTZones(void)
 		
 		theButt->CalcLocalFrameRect(frameRect);
 		
-		RGBColor color = gPaletteManager.GetColor(253);
+		// This color is a rather random shade of red, but it's what
+		// we used in at least one of the old palettes.
+		RGBColor color = GetColor(Color(0xC9, 0x0A, 0x1E));
 		::RGBForeColor(&color);	
 		::FrameRect(&frameRect);
 	}

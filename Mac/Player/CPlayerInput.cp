@@ -55,8 +55,6 @@ CPlayerInput::CPlayerInput(
 	LArray &paneList = gPlayerView->GetSubPanes();
 	SetPaneID((paneList.GetCount()) + 2000);
 
-	mHaveBackColor = false;			// assume we won't get it
-	
 	// Fill in the Text Traits resource and write it back out.
 	if (not inStyle.IsEmpty())
 	{
@@ -76,22 +74,14 @@ CPlayerInput::CPlayerInput(
 				(*tthand)->style = theHeader->GetBold() ? bold : 0;
 				(*tthand)->justification = theHeader->GetAlignment();
 				(*tthand)->mode = srcCopy;
-				thePal = ::GetPalette(gWindow);
-				::GetEntryColor( thePal, theHeader->GetColor(), &((*tthand)->color)); 
+				(*tthand)->color = gPlayerView->GetColor(theHeader->GetColor());
 				(*tthand)->fontNumber = theHeader->GetFontFamily();
 				(*tthand)->fontName[0] = 0;
 							
 				::ChangedResource((Handle) tthand);
 			}
 			
-			if (theHeader->GetHighlightColor() != 0)
-			{
-				if (thePal == NULL)
-					thePal = ::GetPalette(gWindow);
-					
-				::GetEntryColor(thePal, theHeader->GetHighlightColor(), &mBackColor);
-				mHaveBackColor = true;
-			}
+			mBackColor = gPlayerView->GetColor(theHeader->GetHighlightColor());
 		}
 	}
 
@@ -330,12 +320,7 @@ CPlayerInput::FocusDraw(LPane*	/* inSubPane */)
 {
 	Boolean	focused = LEditField::FocusDraw();
 
-	if (mHaveBackColor)
-		::RGBBackColor(&mBackColor);
-	else
-		// now set the background color to black
-		::RGBBackColor(&Color_Black);	
-	
+	::RGBBackColor(&mBackColor);
 	return (focused);
 }	
 	

@@ -45,7 +45,9 @@ class  CPlayerView
 		static  		CPlayerView *CreatePlayerViewStream(PP::LStream *inStream);
 						~CPlayerView(void);
 						
-		void			ColorCard(int16 color);
+		RGBColor        GetColor(GraphicsTools::Color inColor);
+
+		void			ColorCard(GraphicsTools::Color color);
 		void			SetBackPic(TString &picName, Rect inRect);
 		
 		void			KillScript(void);
@@ -132,7 +134,7 @@ class  CPlayerView
 		bool			mProcessKeys;
 		bool			mProcessTZones;
 		
-		int16			mBackColor;
+		GraphicsTools::Color mBackColor;
 		CPicture		*mBackPic;
 		std::map<char,TCallback*> mKeyBinds;
 		Point			mCursorPos;

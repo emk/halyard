@@ -17,15 +17,28 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		6
+#define VERSION_REV_BIG		7
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.6 (Development)"
+#define VERSION_STRING		"5L 3.5.7 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.38  2002/10/09 17:34:33  emk
+ 3.5.7 - 9 Oct 2002 - emk
+
+   * Scheme: Changed 'for-each-item' to 'foreach', and added 'for'.
+   * Added extract-docs.pl, which generates HTML manuals.
+   * Added many new test cases for the new 5L language.
+   * Fixed minor bugs in CryptStream*.*, as discovered by valgrind.
+   * All primitives which used to take palette indices now take RGB colors.
+   * Old 5L: Added DEFPALETTE command for declaring palettes without
+     BMP files.  This provides backwards compatibility for old code.
+   * Removed Windows cursor-clipping code because it was occassionally
+     immobilizing the cursor completely.
+
  Revision 1.37  2002/10/03 19:26:10  emk
  Rebuilt Windows engine with MzScheme 202 and cursor fix from 3.4.2.
 

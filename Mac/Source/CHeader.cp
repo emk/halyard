@@ -14,6 +14,7 @@
 #include "CHeader.h"
 
 USING_NAMESPACE_FIVEL
+using GraphicsTools::Color;
 
 CHeaderManager FIVEL_NS gHeaderManager;
 
@@ -23,7 +24,8 @@ CHeaderManager FIVEL_NS gHeaderManager;
 CHeader::CHeader(TArgumentList &inArgs)
 {
     mAlignment = AlignLeft;
-    mColor = mHighlightColor = mShadowColor = 0;
+    mColor = mHighlightColor = mShadowColor = mShadowHighlightColor =
+		Color(0, 0, 0);
     mShadow = 0;
 
     TString     align, fontname;

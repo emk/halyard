@@ -15,21 +15,22 @@
 #include "CPalette.h"
 
 /* ---------------------------------------------------------------------------------
-		¥ CPlayerLine(&Rect, Fill, LIneWidth, ColorIdx)
+		¥ CPlayerLine(&Rect, Fill, LIneWidth, Color)
 		
 		Constructor for a custom Player Pane class. Sets up a SPaneInfo struct to
 		call the custom pane's constructor.
    --------------------------------------------------------------------------------- */
 USING_NAMESPACE_FIVEL
+using GraphicsTools::Color;
 
 CPlayerLine::CPlayerLine(
 	const Rect		&inBounds,		// Bouding rect (relative to PlayerView's rect)
 	const int8		inLineWidth,	// Frame's line width, in pixels
-	const int16		inColorIdx)		// Index into CLUT
+	const Color		inColor)		// Color
 {
 	// Assign our data.
 	mLineWidth 	= inLineWidth;
-	mColorIdx 	= inColorIdx;
+	mColor	 	= inColor;
 	
 	// Set the LineFrame rect to the bounds. Need to do this because we will
 	// expand the frame in order for PowerPlant to recognize it as a Rect (if
@@ -66,7 +67,7 @@ CPlayerLine::DrawSelf()
 	
 	// Set the pen state for color, width. Get the rgb color from
 	// the color index.
-	RGBColor color = gPaletteManager.GetColor(mColorIdx);
+	RGBColor color = gPlayerView->GetColor(mColor);
 	::RGBForeColor(&color);	
 	::PenSize(mLineWidth, mLineWidth);
 	
