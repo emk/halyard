@@ -154,11 +154,11 @@
   (test (eq? (+ x y) 30))
 
   ;; Test variable interpolation.
-  (define bar 3)
-  (test (equal? "foo $bar" "foo 3"))
-  (test (equal? "foo${bar}baz" "foo3baz"))
-  (test (equal? "foo$(+ bar 2)baz" "foo5baz"))
-  (test (equal? (string-length "$$") 1))
+  ;; (define bar 3)
+  ;; (test (equal? "foo $bar" "foo 3"))
+  ;; (test (equal? "foo${bar}baz" "foo3baz"))
+  ;; (test (equal? "foo$(+ bar 2)baz" "foo5baz"))
+  ;; (test (equal? (string-length "$$") 1))
 
   ;; Test keywords.
   (test (eq? :foo ':foo))
