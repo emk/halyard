@@ -60,8 +60,8 @@ class  CPlayerView
 		//////////
 		// Draw a portable pixmap at the specified point.
 		//
-		void			DrawPixmap(GraphicsTools::Point inPoint,
-								   GraphicsTools::Pixmap &inPixmap);
+		void			DrawPixMap(GraphicsTools::Point inPoint,
+								   GraphicsTools::PixMap &inPixmap);
 		
 		void 			AddKeyBinding(const char inKeyChar, CCard *inCardToJumpTo);
 

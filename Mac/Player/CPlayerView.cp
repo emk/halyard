@@ -805,8 +805,8 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 		mExecuteHost = true;
 }
 
-void CPlayerView::DrawPixmap(GraphicsTools::Point inPoint,
-							 GraphicsTools::Pixmap &inPixmap)
+void CPlayerView::DrawPixMap(GraphicsTools::Point inPoint,
+							 GraphicsTools::PixMap &inPixmap)
 {
 	// We need to draw a portable RGBA pixmap onto a Macintosh RGB
 	// Offscreen GWorld.  This is fairly exciting in a variety of
