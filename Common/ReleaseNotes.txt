@@ -4,3 +4,26 @@ Created 10 Sept 2001
 
 FiveL (common) Release Notes:
 -----------------------------
+
+February 26, 2002 03:30 PM - Eric Kidd
+
+* Merged back in support for the Macintosh platform.  This is an ongoing
+  process, and we'll need to do more work.
+
+* Separated out platform specific configuration with big block comments.
+
+* Merged in a few changes from KBTree which appeared to fix bugs.
+
+* Merged in IntToString, UIntToString, DoubleToString changes from the
+  Macintosh engine, and improved the error handling.  NOTE: doubles now
+  print using "%f" (the way the Mac engine always did it).  This means
+  that "tstr = 0.0" will set 'tstr' to "0.000000", not "0" (as it
+  did in the Win32 engine).
+
+* Added Makefile.am and configure.in so I can build these utility classes
+  under Linux.
+
+* Implemented a ridiculously simple unit-testing library.  This will
+  be improved in future releases.
+
+* Wrote test suites for the portions of the TString that I touched.
