@@ -159,6 +159,7 @@
                       [[#f auto] #f]
                       [[#t] #t])))
     (on setup-finished ()
+      (call-next-handler)
       ;; We need to postpone this until the underlying engine object
       ;; is created.
       (set-wants-cursor! wants-cursor?))
