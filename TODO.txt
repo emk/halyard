@@ -6,12 +6,12 @@
 /   Support all types
 /   Implement some sort of get() method
 /   Make sure we can store minimum and maximum int32 and uint32 values
-    Move many functions from TValue.h to TValue.cpp
-    Remove 'inline' from conversion operators
-    Test TValue extensively with real TCallbacks
+/   Move many functions from TValue.h to TValue.cpp
+/   Remove 'inline' from conversion operators
     Overhaul TVariable
     Redesign TArgumentList (for primitives)
     Redesign TCallbackArgumentList
+    Test TValue extensively with real TCallbacks
 
   Cleanup
     Make sure GUI does REFERENCE_TEST_CASE_FILE

@@ -10,11 +10,125 @@ REGISTER_TEST_CASE_FILE(TValue);
 
 
 //=========================================================================
-//  Tests
+//  TSymbol and TPercent Methods
 //=========================================================================
 
-/*
-*/
+bool FIVEL_NS operator==(const TSymbol &inS1, const TSymbol &inS2) {
+    return inS1.GetName() == inS2.GetName();
+}
+
+bool FIVEL_NS operator!=(const TSymbol &inS1, const TSymbol &inS2) {
+    return !(inS1 == inS2);
+}
+
+std::ostream &FIVEL_NS operator<<(std::ostream &out, const TSymbol &inSym) {
+    out << "'" << inSym.GetName();
+    return out;
+}
+
+bool FIVEL_NS operator==(const TPercent &inP1, const TPercent &inP2) {
+    return inP1.GetValue() == inP2.GetValue();
+}
+
+bool FIVEL_NS operator!=(const TPercent &inP1, const TPercent &inP2) {
+    return !(inP1 == inP2);
+}
+
+std::ostream &FIVEL_NS operator<<(std::ostream &out, const TPercent &inPercent)
+{
+    out << inPercent.GetValue() << "%";
+    return out;
+}
+
+
+//=========================================================================
+//  TValue Methods
+//=========================================================================
+
+TValue::TValue(const TNull &inValue)
+    : mPtr(new TemplateImpl<TNull>(TNull())) {}
+TValue::TValue(int inValue)
+    : mPtr(new TemplateImpl<int32>(inValue)) {}
+TValue::TValue(int32 inValue)
+    : mPtr(new TemplateImpl<int32>(inValue)) {}
+TValue::TValue(uint32 inValue)
+    : mPtr(new TemplateImpl<uint32>(inValue)) {}
+TValue::TValue(double inValue)
+    : mPtr(new TemplateImpl<double>(inValue)) {}
+TValue::TValue(bool inValue)
+    : mPtr(new TemplateImpl<bool>(inValue)) {}
+TValue::TValue(const TPoint &inValue)
+    : mPtr(new TemplateImpl<TPoint>(inValue)) {}
+TValue::TValue(const TRect &inValue)
+    : mPtr(new TemplateImpl<TRect>(inValue)) {}
+TValue::TValue(const GraphicsTools::Color &inValue)
+    : mPtr(new TemplateImpl<GraphicsTools::Color>(inValue)) {}
+TValue::TValue(const std::string &inValue)
+    : mPtr(new TemplateImpl<std::string>(inValue)) {}
+TValue::TValue(const TSymbol &inValue)
+    : mPtr(new TemplateImpl<TSymbol>(inValue)) {}
+TValue::TValue(const TPercent &inValue)
+    : mPtr(new TemplateImpl<TPercent>(inValue)) {}
+TValue::TValue(const char *inValue)
+    : mPtr(new TemplateImpl<std::string>(inValue)) {}
+TValue::TValue(const TPolygon &inValue)
+    : mPtr(new TemplateImpl<TPolygon>(inValue)) {}
+TValue::TValue(const TValueList &inValue)
+    : mPtr(new TemplateImpl<TValueList>(inValue)) {}
+TValue::TValue(const TCallbackPtr &inValue)
+    : mPtr(new TemplateImpl<TCallbackPtr>(inValue)) {}
+
+TValue::operator TNull() const { TNull r; return Get(r); }
+TValue::operator std::string() const { std::string r; return Get(r); }
+TValue::operator TSymbol() const { TSymbol r; return Get(r); }
+TValue::operator int32() const { int32 r; return Get(r); }
+TValue::operator uint32() const { uint32 r; return Get(r); }
+TValue::operator double() const { double r; return Get(r); }
+TValue::operator bool() const { bool r; return Get(r); }
+TValue::operator TPoint() const { TPoint r; return Get(r); }
+TValue::operator TRect() const { TRect r; return Get(r); }
+TValue::operator GraphicsTools::Color() const
+	{ GraphicsTools::Color r; return Get(r); }
+TValue::operator TValueList() const { TValueList r; return Get(r); }
+TValue::operator TPolygon() const { TPolygon r; return Get(r); }
+TValue::operator TCallbackPtr() const { TCallbackPtr r; return Get(r); }
+TValue::operator TPercent() const { TPercent r; return Get(r); }
+
+TValue::Type TValue::GetType() const {
+    if (!IsInitialized())
+        THROW("Cannot get type of uninitialized TValue");
+    return mPtr->GetType();
+}
+
+bool FIVEL_NS operator==(const TValue &inV1, const TValue &inV2) {
+    // Check for uninitialized values.
+    if (!inV1.IsInitialized() || !inV2.IsInitialized())
+        THROW("Cannot compare uninitialized TValue");
+    
+    // If the Impl classes aren't the same, the values can't be equal.
+    if (typeid(*inV1.mPtr.get()) != typeid(*inV2.mPtr.get()))
+        return false;
+
+    // Delegate the comparison to our implementation class.
+    return inV1.mPtr->Equals(inV2.mPtr.get());
+}
+
+bool FIVEL_NS operator!=(const TValue &inV1, const TValue &inV2) {
+    return !(inV1 == inV2);
+}
+
+std::ostream &FIVEL_NS operator<<(std::ostream &out, const TValue &inV) {
+    if (!inV.IsInitialized())
+        out << "#<TValue: uninitialized>";
+    else
+        inV.mPtr->Write(out);
+    return out;
+}
+
+
+//=========================================================================
+//  Tests
+//=========================================================================
 
 #if BUILD_TEST_CASES
 
