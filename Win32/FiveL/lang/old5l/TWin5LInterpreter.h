@@ -47,6 +47,9 @@ public:
 	virtual void JumpToCardByName(const char *inName);
 	virtual std::string CurCardName();
 	virtual std::string PrevCardName();
+	virtual bool IsValidCard(const char *inCardName);
+	virtual bool Eval(const std::string &inExpression,
+					  std::string &outResultText);
 };
 
 //////////

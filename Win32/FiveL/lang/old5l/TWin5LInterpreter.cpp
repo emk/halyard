@@ -126,6 +126,18 @@ std::string TWin5LInterpreter::PrevCardName()
 	return gCardManager.PrevCardName();
 }
 
+bool TWin5LInterpreter::IsValidCard(const char *inCardName)
+{
+	return (gCardManager.GetCard(inCardName) !=  NULL);
+}
+
+bool TWin5LInterpreter::Eval(const std::string &inExpression,
+							 std::string &outResultText)
+{
+	outResultText = "old5l eval unimplemented";
+	return false;
+}
+
 
 //=========================================================================
 // TWin5LCallback Methods
