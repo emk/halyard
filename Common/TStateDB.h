@@ -34,7 +34,7 @@ public:
 //
 class TStateDB {     
 	friend class TStateListener;
-	
+		
 	//////////
 	// Represents the value of an event and all the Listerners
 	// to that event.
@@ -44,16 +44,20 @@ class TStateDB {
 		typedef std::vector<TStateListener *>  ListenerList;
 		ListenerList mListeners;
 		
-		Datum(TValue inValue) :mValue(inValue) {}
+		Datum(TValue inValue) : mValue(inValue) {}
 		
 		void EnsureListenerRegistered(TStateListener *inListener);
 		void UnregisterListener(TStateListener *inListener);
 		void NotifyListeners();
-		void MaybeSetVal(TValue inValue);
+		void MaybeSetVal(TStateDB *inDB, TValue inValue);
 	};
+	friend struct Datum;
 	
+	enum { MAX_RECURSION = 64 };
+
 	typedef std::map<std::string, Datum> DatumMap;	
 	DatumMap mDB;
+	int mNotifyCount;
 	
 	//////////
 	// Accept only keys of the form "/pathname". Should not
@@ -66,6 +70,7 @@ class TStateDB {
 							std::vector<std::string> inKeyList);
 	
 public:
+	TStateDB() : mNotifyCount(0) {}
 	void Set(const std::string &inKey, TValue inValue);     
 	TValue Get(TStateListener *inListener, const std::string &inKey);
 };

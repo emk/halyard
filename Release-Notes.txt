@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - kwasi, djin
+
+  * Added code to detect infinite cycles in TStateDB changes.
+
 0.0.18 - 15 February 2004 - emk
 
 Added support for attaching elements to any node, not just cards.  This

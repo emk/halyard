@@ -58,10 +58,21 @@ void TStateDB::Datum::NotifyListeners() {
 		(*iter)->NotifyStateChanged();
 }
 
-void TStateDB::Datum::MaybeSetVal(TValue inValue) {
+void TStateDB::Datum::MaybeSetVal(TStateDB *inDB, TValue inValue) {
 	if (mValue != inValue) {
+		if (inDB->mNotifyCount >= MAX_RECURSION)
+			THROW("TStateDB does not allow infinitely recursive changes.");
+
 		mValue = inValue;
-		NotifyListeners();
+
+		++inDB->mNotifyCount;
+		try {
+			NotifyListeners();
+		} catch(...) {
+			--inDB->mNotifyCount;
+			throw;
+		}
+		--inDB->mNotifyCount;
 	}
 }
 
@@ -95,7 +106,7 @@ void TStateDB::Set(const std::string &inKey, TValue inValue) {
 	CheckForLegalKey(inKey);
 	DatumMap::iterator found = mDB.find(inKey);
 	if (found != mDB.end())
-		found->second.MaybeSetVal(inValue);
+		found->second.MaybeSetVal(this, inValue);
 	else
 		mDB.insert(DatumMap::value_type(inKey, Datum(inValue)));
 }
@@ -132,6 +143,21 @@ public:
 	
 	virtual void NotifyStateChanged(){++mUpdateCount;}
 	int GetUpdateCount() { return mUpdateCount; }	
+};
+
+class RecursiveListener : public TStateListener {
+
+	TStateDB *mStateDb;
+	std::string mTargetKey;
+	int mTargetVal;
+
+public:
+	RecursiveListener(TStateDB *inDB, std::string inTargetKey) 
+		: mStateDb(inDB), mTargetKey(inTargetKey), mTargetVal(0) {}
+
+	virtual void NotifyStateChanged() {
+		mStateDb->Set(mTargetKey, mTargetVal++);
+	}
 };
 
 void CHECK_DB_EQ(TStateDB &db, const std::string &inKey, TValue inValue) {
@@ -204,6 +230,23 @@ BEGIN_TEST_CASE(TestTStateDB, TestCase) {
 	// key's value now?
 	db.Set("/listener/1", "foo");
 	CHECK_DB_EQ(db, "/listener/1", "foo");
+
+    // Make sure infinite event handling loops don't occur
+	{
+		RecursiveListener listener1 = 
+			RecursiveListener(&db, "/listener/2");
+		RecursiveListener listener2 = 
+			RecursiveListener(&db, "/listener/1");
+		
+		db.Set("/listener/1", "foo");
+		db.Set("/listener/2", 23.0);
+		db.Get(&listener1, "/listener/1");
+		db.Get(&listener2, "/listener/2");
+
+		CHECK_THROWN(std::exception,
+					 db.Set("/listener/2", "bar"));
+	}	
+
 } END_TEST_CASE(TestTStateDB);
 
 #endif // BUILD_TEST_CASES
