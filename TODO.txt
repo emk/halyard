@@ -1,6 +1,7 @@
-
   Patches
     Send equals? fix to author of Swindle
+    Handle large mass of wxWindows patches
+    Look for other patches to send back upstream
 
   TStateDB
 /   Implement TStateDB
@@ -16,9 +17,28 @@
       .../y - y coordinate of element
       .../index - Index of graphic to display
 
-  Allow TValue test cases to be run independently of TSchemeInterpreterTests
+  March Demo
+    Fix audio problems when in background
+      Premature restart of loops
+      Stuttering during disk access
+    Reticule/look support
+      Displaying reticules (hack video support)
+      Activate reticules (acts as trigger)
+      Looking at reticulates (acts as trigger)
+      Looking at entities (acts as trigger)
+    What do we want to do about teaching commands?  Triggers?  Console hacks?
+    Trigger Quake 2 targets from Scheme
+    Reimplement meters in Scheme
+      Allow elements to be attached to sequences
+      Extend Quake 2 net protocol to allow reporting of state vars
+      Real-time Scheme-like language for updating meter dials, etc.
+      Strip Quake 2 meter implementation to bare essentials
+      Re-implement meter logic in Scheme and C++
+    Implement other meters
+      CDV 715
 
   Cleanup
+    Allow TValue test cases to be run independently of TSchemeInterpreterTests
     Make sure GUI does REFERENCE_TEST_CASE_FILE
     Replace all old-style test cases with new-style test cases
     Remove TestCase.h inclusions from random cpp files
@@ -28,7 +48,6 @@
     (on cleanup ...)
     Is (on setup-finished () ...) called at the right time?
     Is UPDATE-UI the right event name?  We don't have wxWindows semantics.
-    Allow elements to be attached to sequences
     Enable and disable zones in engine (for cursor purposes only?)
     PROP-CHANGE API needs work
     Do we want to systematize DRAW-BUTTON method for all zones?
@@ -42,7 +61,6 @@
       Hierarchial property value searching -- is it what we want?
     Add EVENT-KEYS method to wrap EVENT-CHARACTER and EVENT-MODIFIERS
     Respond gracefully to errors in idle handlers
-    ON should highlight method name in emacs
 
   Quake 2
     Notify level when somebody looks at something
