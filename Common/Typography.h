@@ -149,6 +149,30 @@ namespace Typography {
 			{ if (inResultCode) throw Error(inFile, inLine, inResultCode); }
 	};
 
+    //////////
+    /// Several shared-implementation classes inherit from this class
+    /// to get reference-counting support.
+    ///
+    class Representation {
+        int mRefCount;
+
+    protected:
+        Representation();
+        Representation(const Representation &obj);
+        Representation &operator=(const Representation &obj);
+
+        /// Override the destructor to do cleanup.
+        virtual ~Representation();
+
+    public:
+        /// Increment our reference count.
+        void IncRef();
+        /// Increment our reference count.
+        void DecRef();
+        /// Is this object shared by multiple users?
+        bool IsShared() const { return (mRefCount > 1); }
+    };
+
 	//////////
 	/// An instance of the FreeType 2 library's context.
 	///
@@ -197,10 +221,9 @@ namespace Typography {
 	/// we use an internal reference-counted 'rep' class.
 	///
 	class Style {
-		struct StyleRep {
-			int         mRefCount;
-
-			// If you any fields here, be sure to update operator==.
+		struct StyleRep : public Representation, boost::noncopyable {
+			// If you any fields here, be sure to update operator==
+            // and the constructors.
 			std::string mFamily;
 			std::list<std::string> mBackupFamilies;
 			FaceStyle   mFaceStyle;
@@ -211,6 +234,14 @@ namespace Typography {
 			Color       mShadowColor;
 			
 			FaceStack   *mFace;
+
+            StyleRep(const std::string &inFamily, int inSize);
+            StyleRep(const StyleRep &inBase);
+            void InvalidateFace();
+            bool operator==(const StyleRep &inRep) const;
+
+        private:
+            StyleRep::~StyleRep();
 		};
 
 		//////////
@@ -601,10 +632,9 @@ namespace Typography {
 		// internal "rep" objects is a common C++ technique to avoid
 		// copying heavyweight data structures around.  In our case, we
 		// simply *can't* copy the underlying FreeType data.
-		struct FaceRep {
+		struct FaceRep : public Representation, boost::noncopyable {
 			FT_Face mFace;
 			std::map<GlyphIndex,Glyph*> mGlyphCache;
-			int mRefcount;
 
 			FaceRep(FT_Face inFace);
 			~FaceRep();
@@ -631,6 +661,7 @@ namespace Typography {
 			 int inSize);
 		Face(const Face &inFace);
 		virtual ~Face();
+        Face &operator=(const Face &inFace);
 		
 		operator FT_Face() { return mFaceRep->mFace; }
 		operator FT_Face*() { return &mFaceRep->mFace; }

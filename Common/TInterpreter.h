@@ -146,6 +146,14 @@ public:
 	///
 	virtual void Go(const char *inCard) = 0;
 
+    //////////
+    /// Can the interepreter suspend in its current context?  Call this
+    /// before calling Pause, Timeout or Nap to prevent errors.  I'm not
+    /// exactly sure why Timeout is actually on this list, but the Scheme
+    /// runtime kernel thinks it should be.
+    ///
+    virtual bool CanSuspend() = 0;
+
 	//////////
 	/// Pause the CardManager.  Use WakeUp() to resume.
 	///

@@ -131,6 +131,7 @@ public:
 	virtual void Stop();
 	virtual bool IsStopped();
 	virtual void Go(const char *inCard);
+    virtual bool CanSuspend();
 	virtual void Pause(void);
 	virtual void WakeUp(void);
 	virtual bool Paused(void);

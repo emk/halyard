@@ -158,6 +158,16 @@ static DrawingArea *GetCurrentDrawingArea() {
 	return wxGetApp().GetStage()->GetCurrentDrawingArea();
 }
 
+#define CHECK_SUSPEND_OK(PRIMNAME) \
+    do { \
+        if (!TInterpreter::GetInstance()->CanSuspend()) { \
+            ::SetPrimitiveError("nosuspend", \
+                                "You cannot call " PRIMNAME \
+                                " from inside a callback."); \
+            return; \
+        } \
+    } while (0)
+
 
 //=========================================================================
 //  Implementation of wxWindows Primitives
@@ -451,6 +461,7 @@ DEFINE_5L_PRIMITIVE(Input) {
 	Color fore, back;
 
 	inArgs >> bounds >> size >> fore >> back;
+    CHECK_SUSPEND_OK("ModalTextInput");    
 	wxGetApp().GetStage()->ModalTextInput(TToWxRect(bounds), size,
 										  GraphicsToolsToWxColor(fore),
 										  GraphicsToolsToWxColor(back));
@@ -582,6 +593,7 @@ DEFINE_5L_PRIMITIVE(Nap) {
 
     //gCursorManager.CheckCursor();
     //gView->Draw();
+    CHECK_SUSPEND_OK("NAP");
     TInterpreter::GetInstance()->Nap(tenths);
 }
 
@@ -804,6 +816,7 @@ DEFINE_5L_PRIMITIVE(Timeout) {
     int32     	secs;
 
     inArgs >> secs >> SymbolName(cardName);
+    CHECK_SUSPEND_OK("TIMEOUT");
     TInterpreter::GetInstance()->Timeout(cardName.c_str(), secs);
 }
 
@@ -814,7 +827,7 @@ DEFINE_5L_PRIMITIVE(Wait) {
 	inArgs >> SymbolName(name);
 	if (inArgs.HasMoreArguments())
 		inArgs >> frame;
-
+    CHECK_SUSPEND_OK("WAIT");
 	wxGetApp().GetStage()->Wait(name.c_str(), frame);
 }
 

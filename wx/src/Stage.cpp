@@ -299,16 +299,18 @@ void Stage::NotifyElementsChanged()
 
 void Stage::EnterElement(ElementPtr inElement, wxPoint &inPosition)
 {
-    ASSERT(ShouldSendEvents());
-	ASSERT(inElement->GetEventDispatcher().get());
-	inElement->GetEventDispatcher()->DoEventMouseEnter(inPosition);
+    if (ShouldSendEvents()) {
+        ASSERT(inElement->GetEventDispatcher().get());
+        inElement->GetEventDispatcher()->DoEventMouseEnter(inPosition);
+    }
 }
 
 void Stage::LeaveElement(ElementPtr inElement, wxPoint &inPosition)
 {
-    ASSERT(ShouldSendEvents());
-	ASSERT(inElement->GetEventDispatcher().get());
-	inElement->GetEventDispatcher()->DoEventMouseLeave(inPosition);
+    if (ShouldSendEvents()) {
+        ASSERT(inElement->GetEventDispatcher().get());
+        inElement->GetEventDispatcher()->DoEventMouseLeave(inPosition);
+    }
 }
 
 void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
@@ -370,18 +372,20 @@ void Stage::UpdateClock() {
 				 ::wxGetLocalTimeMillis().GetLo());
 }
 
+/// Put our interpreter to sleep.  It's our caller's responsibility to make
+/// sure TInterpreter::CanSuspend() is currently true.
 void Stage::InterpreterSleep()
 {
-    // Put our interpreter to sleep.
 	// TODO - Keep track of who we're sleeping for.
     ASSERT(TInterpreter::HaveInstance() &&
-           !TInterpreter::GetInstance()->Paused());
+           !TInterpreter::GetInstance()->Paused() &&
+           TInterpreter::GetInstance()->CanSuspend());
     TInterpreter::GetInstance()->Pause();
 }
 
+/// Wake up our Scheme interpreter.
 void Stage::InterpreterWakeUp()
 {
-	// Wake up our Scheme interpreter.
 	// We can't check TInterpreter::GetInstance()->Paused() because
 	// the engine might have already woken the script up on its own.
 	// TODO - Keep track of who we're sleeping for.
@@ -392,7 +396,8 @@ void Stage::InterpreterWakeUp()
 void Stage::InterpreterWakeUpIfNecessary() {
     if (mShouldWakeUpOnIdle) {
         mShouldWakeUpOnIdle = false;
-        InterpreterWakeUp();
+        if (TInterpreter::HaveInstance())
+            InterpreterWakeUp();
     }
 }
 
@@ -804,8 +809,8 @@ wxString Stage::FinishModalTextInput()
 
 bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 {
-    ASSERT(!mShouldWakeUpOnIdle);
 	ASSERT(!mWaitElement);
+    ASSERT(!mShouldWakeUpOnIdle);
 
 	// Look for our element.
 	ElementCollection::iterator i =

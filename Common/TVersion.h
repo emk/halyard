@@ -22,15 +22,31 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		37
+#define VERSION_REV_BIG		38
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.37 (Development)"
+#define VERSION_STRING		"Tamale 0.0.38 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.79  2004/09/20 13:22:57  emk
+ 0.0.38 - 20 Sep 2004 - emk
+
+   * Fixed bug: Engine no longer tries to wake up interpreter if interpreter
+     doesn't exist.
+   * Fixed bug #1271: Calling %kernel-pause from a callback no longer
+     crashes the engine.
+   * Fixed bug #1729: We give appropriate errors if the user calls illegal
+     functions from inside a callback (instead of sometimes crashing).  The
+     prohibited list is WAIT, NAP, TIMEOUT and the modal text input stuff.
+   * Fixed bug #1746: Screen resizing code turned back on.
+   * Miscellaneous cleanup in typography code.  I was trying to track down a
+     bug--which turns out to probably be in FreeType--but this reworked code
+     is clearer and better.  The actual bug fix will wait until we upgrade
+     FreeType.
+
  Revision 1.78  2004/09/19 23:25:02  emk
  0.0.37 - 19 Sep 2004 - emk
 

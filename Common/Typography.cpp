@@ -54,6 +54,42 @@ Error::Error(const char* inFile, int inLine, int inErrorCode)
 
 
 //=========================================================================
+//	Typography::Representation Methods
+//=========================================================================
+
+Representation::Representation()
+    : mRefCount(1)
+{
+}
+
+Representation::Representation(const Representation &obj)
+    : mRefCount(1)
+{
+}
+
+Representation &Representation::operator=(const Representation &obj) {
+    // Leave mRefCount alone.
+	return *this;
+}
+
+Representation::~Representation() {
+    ASSERT(mRefCount == 0);
+}
+
+void Representation::IncRef() {
+    // THREAD - Not thread safe.
+    ++mRefCount;
+}
+
+void Representation::DecRef() {
+    // THREAD - Not thread safe.
+    --mRefCount;
+    if (mRefCount < 1)
+        delete this;
+}
+
+
+//=========================================================================
 //	Typography::Library Methods
 //=========================================================================
 
@@ -138,27 +174,63 @@ Glyph::Glyph(FT_GlyphSlot inGlyph)
 //  The 'StyleRep' code in this class is getting out of control, and should
 //  probably be factored into a standard 5L 'Representation' class.
 
+/// Construct a StyleRep from a family and size.
+Style::StyleRep::StyleRep(const std::string &inFamily, int inSize)
+    : mFamily(inFamily),
+      mBackupFamilies(),
+      mFaceStyle(kRegularFaceStyle),
+      mSize(inSize),
+      mLeading(0),
+      mShadowOffset(1),
+      mColor(Color(0, 0, 0)),
+      mShadowColor(Color(255, 255, 255)),
+      mFace(NULL)
+{
+}
+
+/// Copy a StyleRep so we can modify it destructively.
+Style::StyleRep::StyleRep(const StyleRep &inBase)
+    : mFamily(inBase.mFamily),
+      mBackupFamilies(inBase.mBackupFamilies),
+      mFaceStyle(inBase.mFaceStyle),
+      mSize(inBase.mSize),
+      mLeading(inBase.mLeading),
+      mShadowOffset(inBase.mShadowOffset),
+      mColor(inBase.mColor),
+      mShadowColor(inBase.mShadowColor),
+      mFace(NULL)
+{    
+}
+
+Style::StyleRep::~StyleRep() {
+    InvalidateFace();
+}
+
+/// Release the face associated with this style, typically because some
+/// property of the style has been changed and we'll need to reload the
+/// face.
+void Style::StyleRep::InvalidateFace() {
+	if (mFace) {
+		delete mFace;
+		mFace = NULL;
+	}
+}
+
+bool Style::StyleRep::operator==(const StyleRep &inRep) const {
+	return (mFamily == inRep.mFamily &&
+			mBackupFamilies == inRep.mBackupFamilies &&
+			mFaceStyle == inRep.mFaceStyle &&
+			mSize == inRep.mSize &&
+			mLeading == inRep.mLeading &&
+			mShadowOffset == inRep.mShadowOffset &&
+			mColor == inRep.mColor &&
+			mShadowColor == inRep.mShadowColor);
+}
+
+
 Style::Style(const std::string &inFamily, int inSize)
 {
-	mRep = new StyleRep();
-	try
-	{
-		// Set up all our fields.
-		mRep->mRefCount     = 1;
-		mRep->mFamily       = inFamily;
-		mRep->mFaceStyle    = kRegularFaceStyle;
-		mRep->mSize         = inSize;
-		mRep->mLeading      = 0;
-		mRep->mShadowOffset = 1;
-		mRep->mColor        = Color(0, 0, 0);
-		mRep->mShadowColor  = Color(255, 255, 255);
-		mRep->mFace         = NULL;
-	}
-	catch (...)
-	{
-		delete mRep;
-		throw;
-	}
+	mRep = new StyleRep(inFamily, inSize);
 }
 
 Style::Style(const Style &inStyle)
@@ -166,42 +238,31 @@ Style::Style(const Style &inStyle)
 	// It's safe to cast away the const here because we always call
 	// 'Grab' before modifying the representation.
 	mRep = const_cast<StyleRep*>(inStyle.mRep);
-	mRep->mRefCount++;
+	mRep->IncRef();
 }
 
 Style::~Style()
 {
 	// Only throw away the rep if we're the last reference.
-	mRep->mRefCount--;
-	if (mRep->mRefCount < 1)
-	{
-		InvalidateFace();
-		delete mRep;
-	}
+    mRep->DecRef();
 }
 
 void Style::Grab()
 {
 	// If we don't have our own copy, get one.
-	if (mRep->mRefCount > 1)
+	if (mRep->IsShared())
 	{
 		StyleRep *oldRep = mRep;
 		mRep = new StyleRep(*mRep);
-		mRep->mRefCount = 1;
-		mRep->mFace = NULL;
 
 		// It's safe to decrement this only after we've updated 'mRep'.
-		oldRep->mRefCount--;
+		oldRep->DecRef();
 	}
 }
 
 void Style::InvalidateFace()
 {
-	if (mRep->mFace)
-	{
-		delete mRep->mFace;
-		mRep->mFace = NULL;
-	}
+    mRep->InvalidateFace();
 }
 
 Typography::Style &Style::operator=(const Style &inStyle)
@@ -211,29 +272,17 @@ Typography::Style &Style::operator=(const Style &inStyle)
 		return *this;
 
 	// Delete our reference to our representation.
-	mRep->mRefCount--;
-	if (mRep->mRefCount < 1)
-	{
-		InvalidateFace();
-		delete mRep;
-	}
+	mRep->DecRef();
 
 	// Make a new reference to inStyle's representation.
 	mRep = inStyle.mRep;
-	mRep->mRefCount++;
+    mRep->IncRef();
 	return *this;
 }
 
 bool Style::operator==(const Style &inStyle) const
 {
-	return (mRep->mFamily == inStyle.mRep->mFamily &&
-			mRep->mBackupFamilies == inStyle.mRep->mBackupFamilies &&
-			mRep->mFaceStyle == inStyle.mRep->mFaceStyle &&
-			mRep->mSize == inStyle.mRep->mSize &&
-			mRep->mLeading == inStyle.mRep->mLeading &&
-			mRep->mShadowOffset == inStyle.mRep->mShadowOffset &&
-			mRep->mColor == inStyle.mRep->mColor &&
-			mRep->mShadowColor == inStyle.mRep->mShadowColor);
+	return (*mRep == *inStyle.mRep);
 }
 
 Typography::Style &Style::SetFamily(const std::string &inFamily)
@@ -479,7 +528,7 @@ size_t Face::sGlyphCacheSizeAtLastWarning = 0;
 const size_t Face::kGlyphCacheSizeWarningIncrement = 100 * 1024;
 
 Face::FaceRep::FaceRep(FT_Face inFace)
-	: mFace(inFace), mRefcount(1)
+	: mFace(inFace)
 {
 }
 
@@ -510,7 +559,7 @@ void Face::UpdateGlyphCacheSize(const Glyph *inGlyph)
 }
 
 Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
-	: AbstractFace(inSize)
+	: AbstractFace(inSize), mFaceRep(NULL)
 {
 	ASSERT(inFontFile != NULL);
 	ASSERT(inSize > 0);
@@ -529,7 +578,7 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 	{
 		mFaceRep = new FaceRep(face);
 	}
-	catch (...)
+	catch (std::exception &)
 	{
 		// Allocation failed, so finish using our face and bail.
 		FT_Done_Face(face);
@@ -571,9 +620,10 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 		// (Manual conversion to true, false to avoid MSVC++ warning.
 		mHasKerning = (FT_HAS_KERNING(face) ? true : false);
 	}
-	catch (...)
+	catch (std::exception &)
 	{
-		delete mFaceRep;
+        mFaceRep->DecRef();
+        mFaceRep = NULL;
 		throw;
 	}
 }
@@ -581,18 +631,28 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 Face::Face(const Face &inFace)
 	: AbstractFace(inFace.GetSize())
 {
-	// THREAD - Not thread safe!
-	inFace.mFaceRep->mRefcount++;
+	inFace.mFaceRep->IncRef();
 	mFaceRep = inFace.mFaceRep;
 	mHasKerning = inFace.mHasKerning;
 }
 
 Face::~Face()
 {
-	// THREAD - Not thread safe!
-	mFaceRep->mRefcount--;
-	if (mFaceRep->mRefcount < 1)
-		delete mFaceRep;
+	mFaceRep->DecRef();
+}
+
+Face &Face::operator=(const Face &inFace) {
+    // Check for self-assignment.
+    if (mFaceRep == inFace.mFaceRep)
+        return *this;
+
+    // Call inherited assignment.
+    AbstractFace::operator=(inFace);
+
+    mFaceRep->DecRef();
+    mFaceRep = inFace.mFaceRep;
+    mFaceRep->IncRef();
+    return *this;
 }
 
 GlyphIndex Face::GetGlyphIndex(CharCode inCharCode)
@@ -1277,7 +1337,7 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inFileName)
 				throw Error(__FILE__, __LINE__, FT_Err_Invalid_File_Format);
 		}
 	}
-	catch (...)
+	catch (std::exception &)
 	{
 		FT_Done_Face(face);
 		throw;
@@ -1373,27 +1433,30 @@ FamilyDatabase::FaceSizeGroup::AddAvailableFace(const AvailableFace &inFace)
 
 Face FamilyDatabase::FaceSizeGroup::GetFace(int inSize)
 {
-	// First, look for an already instantiated face.
-	std::map<int,Face>::iterator foundFace = mFaces.find(inSize);
-	if (foundFace != mFaces.end())
-		return foundFace->second;
-	
-	// Next, look for either (1) an available face in the exact size or
-	// (2) an available face which can be displayed at any size.
-	std::map<int,AvailableFace>::iterator found = mAvailableFaces.find(inSize);
-	if (found == mAvailableFaces.end())
-		found = mAvailableFaces.find(kAnySize);
-
-	// If we *still* don't have a face, give up.  If we were feeling
-	// very ambitious, we could look for the nearest size and use that.
-	if (found == mAvailableFaces.end())
-		throw Error(__FILE__, __LINE__,
-					"No matching font (did you try to scale a bitmap font?)");
-
-	// Open the face, remember it, and return it.
-	Face face = found->second.OpenFace(inSize);
-	mFaces.insert(std::pair<int,Face>(inSize, face));
-	return face;
+    // First, look for an already instantiated face.
+    std::map<int,Face>::iterator foundFace = mFaces.find(inSize);
+    if (foundFace != mFaces.end())
+        return foundFace->second;
+    
+    // Next, look for either (1) an available face in the exact size or
+    // (2) an available face which can be displayed at any size.
+    std::map<int,AvailableFace>::iterator found =
+        mAvailableFaces.find(inSize);
+    if (found == mAvailableFaces.end())
+        found = mAvailableFaces.find(kAnySize);
+    
+    if (found != mAvailableFaces.end()) {
+        // Open the face, remember it, and return it.
+        Face face(found->second.OpenFace(inSize));
+        mFaces.insert(std::pair<int,Face>(inSize, face));
+        return face;
+    }
+    
+    // If (after all that) we *still* don't have a face, give up.  If we
+    // were feeling very ambitious, we could look for the nearest size and
+    // use that.
+    throw Error(__FILE__, __LINE__,
+                "No matching font (did you try to scale a bitmap font?)");
 }
 
 void FamilyDatabase::FaceSizeGroup::Serialize(std::ostream &out) const
@@ -1428,40 +1491,65 @@ Face FamilyDatabase::Family::GetFace(FaceStyle inStyle, int inSize)
 {
 	ASSERT((inStyle & ~kIntrisicFaceStyles) == 0);
 
-	// We use an elaborate system of recursive fallbacks to find
-	// an appropriate face.
-	switch (inStyle)
-	{
-		case kRegularFaceStyle:
-			// Fallback: Regular -> Error
-			return mRegularFaces.GetFace(inSize);
+    // Fallback lists.  Because not all faces are available in all styles,
+    // we often need to fall back from what we have to less appropriate
+    // options.  (We used to do this with exceptions, but it appears that
+    // returning a 'Face' object from a 'catch' handler may crash the
+    // Microsoft C++.NET runtime.)
+    //
+    // Each list must begin with the prefered style and end with
+    // kRegularFaceStyle.
+    const FaceStyle fallback_regular[] = {
+        kRegularFaceStyle
+    };
+    const FaceStyle fallback_bold[] = {
+        kBoldFaceStyle, kRegularFaceStyle
+    };
+    const FaceStyle fallback_italic[] = {
+        kItalicFaceStyle, kRegularFaceStyle
+    };
+    const FaceStyle fallback_bolditalic[] = {
+        kBoldItalicFaceStyle, kBoldFaceStyle,
+        kItalicFaceStyle, kRegularFaceStyle
+    };
 
-		case kBoldFaceStyle:
-			// Fallback: Bold -> Regular -> Error
-			try { return mBoldFaces.GetFace(inSize); }
-			catch (...) { return GetFace(kRegularFaceStyle, inSize); }
-
-		case kItalicFaceStyle:
-			// Fallback: Italic -> Regular -> Error
-			try { return mItalicFaces.GetFace(inSize); }
-			catch (...) { return GetFace(kRegularFaceStyle, inSize); }
-
-		case kBoldItalicFaceStyle:
-			// Fallback: BoldItalic -> Bold -> Italic -> Regular -> Error
-			try { return mBoldItalicFaces.GetFace(inSize); }
-			catch (...)
-			{ 
-				try { return mBoldFaces.GetFace(inSize); }
-				catch (...) { return GetFace(kItalicFaceStyle, inSize); }
-			}
-
+	// Figure out which fallback list to use.
+    const FaceStyle *fallback = NULL;
+    switch (inStyle) {
+		case kRegularFaceStyle:    fallback = fallback_regular; break;
+		case kBoldFaceStyle:       fallback = fallback_bold; break;
+		case kItalicFaceStyle:     fallback = fallback_italic; break;
+		case kBoldItalicFaceStyle: fallback = fallback_bolditalic; break;
 		default:
 			// Illegal style codes!
 			throw Error(__FILE__, __LINE__,
-						"Unknown font style codes, giving up");
-	}
-	ASSERT(false);
-	return *(Face*) NULL; // This code should NEVER get run.
+						"Unknown font style codes, giving up");        
+    }
+    
+    // Try all options but kRegularFaceStyle.
+    for (; *fallback != kRegularFaceStyle; ++fallback) {
+        try {
+            switch (*fallback) {
+                case kRegularFaceStyle:
+                    return mRegularFaces.GetFace(inSize);
+                case kBoldFaceStyle:
+                    return mBoldFaces.GetFace(inSize);
+                case kItalicFaceStyle:
+                    return mItalicFaces.GetFace(inSize);
+                case kBoldItalicFaceStyle:
+                    return mBoldItalicFaces.GetFace(inSize);
+                default:
+                    // We shouldn't be able to get here.
+                    ASSERT(false);
+            }
+        } catch (std::exception &) {
+            // Well, that didn't work.
+        }
+    }
+
+    // OK, if this fails, we really do want to throw an error.
+    ASSERT(*fallback == kRegularFaceStyle);
+    return mRegularFaces.GetFace(inSize);
 }
 
 void FamilyDatabase::Family::Serialize(std::ostream &out) const
@@ -1557,7 +1645,7 @@ void FamilyDatabase::ReadFromFontDirectory()
 		std::ofstream cache(cachePath.ToNativePathString().c_str());
 		WriteToCache(cache);
 	}
-	catch (...)
+	catch (std::exception &)
 	{
 		// Just ignore the exception.
 		// TODO - Try logging a warning?

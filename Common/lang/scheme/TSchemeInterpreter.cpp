@@ -430,6 +430,12 @@ void TSchemeInterpreter::Go(const char *card)
 	JumpToCardByName(card);
 }
 
+bool TSchemeInterpreter::CanSuspend()
+{
+	Scheme_Object *o = CallSchemeSimple("%kernel-can-suspend?");
+	return SCHEME_FALSEP(o) ? false : true;
+}
+
 void TSchemeInterpreter::Pause(void)
 {
     (void) CallSchemeSimple("%kernel-pause");

@@ -115,7 +115,8 @@ Tamale is a language for card-based interactive multimedia programming."
 	       "with-default-element-parent"
 	       "require" "set!" "and" "or" "module" "on" "send" "prop"
                "state-db-fn" "state-db-fn/rt" "match-let" "with-syntax"
-               "define-goal" "define-goal*") t)
+               "define-goal" "define-goal*"
+               "with-errors-blocked") t)
 	"\\>") 1)
 
       ;; Magic variables.
@@ -200,6 +201,7 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'with-syntax 'scheme-indent-function 1)
 (put 'define-goal 'scheme-indent-function 2)
 (put 'define-goal* 'scheme-indent-function 4)
+(put 'with-errors-blocked 'scheme-indent-function 1)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
