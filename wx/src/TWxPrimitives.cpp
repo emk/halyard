@@ -664,7 +664,7 @@ DEFINE_5L_PRIMITIVE(OverlayAnimated) {
 	TValue graphics;
 	
 	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor
-           >> is_trans >> state_path >> graphics;
+           >> is_trans >> SymbolName(state_path) >> graphics;
 	new AnimatedOverlay(
 		wxGetApp().GetStage(), name.c_str(), 
 		TToWxRect(bounds), dispatcher, 
