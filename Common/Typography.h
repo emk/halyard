@@ -928,10 +928,10 @@ namespace Typography {
 		bool mIsFirstLine;
 		Point mLineStart;
 		bool mHaveBounds;
-		Distance mTopBound;
 		Distance mLeftBound;
-		Distance mBottomBound;
+		Distance mTopBound;
 		Distance mRightBound;
+		Distance mBottomBound;
 
 	public:
 		//////////

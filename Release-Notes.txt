@@ -8,6 +8,7 @@ CVS - emk
     on the same page re: threads, RTTI, exceptions, etc.
   * CryptTool removed as first step in preparing for open souce release.
     This will simplify our legal issues a bit.
+  * Linux build fixes.
 
 3.5.8 - 15 Oct 2002 - emk
 

@@ -624,7 +624,7 @@ GraphicsTools::Color TStream::GetColorArg()
 	{
 		// Check the individual digits.
 		bool ok = true;
-		for (int i = 0; i < len; i++)
+		for (size_t i = 0; i < len; i++)
 			if (!isdigit(temp[i]))
 				ok = false;
 		if (!ok)
