@@ -195,7 +195,12 @@
       [chirp loops]
       (:template %element%)
     (apply call-5l-prim 'GeigerSynth (node-full-name self)
-           chirp loops))
+           (build-path (current-directory) "Media" chirp) (* 512 1024)
+           (map (fn (item)
+                  (if (string? item)
+                      (build-path (current-directory) "Media" item)
+                      item))
+                loops)))
 
   (define (geiger-synth name chirp . loops)
     (create %geiger-synth% :name name :chirp chirp :loops loops))
