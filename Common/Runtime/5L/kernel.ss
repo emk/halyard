@@ -376,9 +376,7 @@
           (call-5l-prim 'settyped namesym type value))))
 
   (define (engine-var-exists? name)
-    ;; XXX - This test is backward because VariableInitialized is
-    ;; broken in the engine.  Fix this.
-    (not (call-5l-prim 'VariableInitialized name)))
+    (call-5l-prim 'VariableInitialized name))
   
   (define (throw msg)
     ;; TODO - More elaborate error support.
@@ -407,7 +405,7 @@
   ;;  Cards
   ;;=======================================================================
 
-  (provide card-exists? card-name card)
+  (provide card-exists? current-card card-name card)
 
   (define *%kernel-current-card* #f)
   (define *%kernel-previous-card* #f)
@@ -468,6 +466,9 @@
       (%kernel-find-card (string->symbol card-or-name))]
      [#t
       (throw (cat "Not a card: " card-or-name))]))
+
+  (define (current-card)
+    *%kernel-current-card*)    
 
   (define (card-name card-or-name)
     (cond

@@ -11,7 +11,7 @@
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to center-text html edit-box movie
-           wait tc draw-line draw-box draw-box-outline inset-rect timeout)
+           wait tc draw-line draw-box draw-box-outline inset-rect timeout current-card-name)
 
   (define (load-picture name p &key (subrect :rect #f))
     (let [[path (build-path (current-directory) "Graphics" name)]]
@@ -25,7 +25,7 @@
     (call-5l-prim 'input r size forecolor backcolor)
     (engine-var '_modal_input_text))
   
-  (define (zone name r action)
+  (define (zone name r action &key (cursor 'hand))
     (call-5l-prim 'zone name r action))
   
   (define (delete-element name)
@@ -63,9 +63,23 @@
                                                                   (point-y p))
                                     (point-x p)))
 
-  (define (center-text stylesheet box msg)
+  (define (center-text stylesheet box msg &key (axis 'both))
     (define bounds (measure-text stylesheet msg :max-width (rect-width box)))
-    (draw-text stylesheet (move-rect-center-to bounds (rect-center box)) msg))
+    (define r
+      (case axis
+        [[both]
+         (move-rect-center-to bounds (rect-center box))]
+        [[y]
+         (move-rect-left-to
+          (move-rect-vertical-center-to bounds (rect-vertical-center box))
+          (rect-left box))]
+        [[x]
+         (move-rect-top-to
+          (move-rect-horizontal-center-to bounds (rect-horizontal-center box))
+          (rect-top box))]
+        [else
+         (throw (cat "center-text: Unknown centering axis: " axis))]))
+    (draw-text stylesheet r msg))
 
   (define (html name r location)
     (call-5l-prim 'html name r (build-path (current-directory) location)))
@@ -108,5 +122,8 @@
   
   (define (timeout seconds card)
     (call-5l-prim 'timeout seconds (card-name card)))
-  
+
+  (define (current-card-name)
+    (card-name (current-card)))
+
   )
