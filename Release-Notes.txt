@@ -18,7 +18,8 @@ Engine:
 
 Runtime:
 
-  * Support for compiling *.ss files to *.zo files automatically.
+  * Support for compiling *.ss files to *.zo files automatically
+    (incomplete--it only handles modules loaded with REQUIRE right now).
   * Support for deferring code until the engine is in a safe place to
     run it.  This means that you can call VIDEO, INPUT, etc., from
     within a callback.
@@ -28,6 +29,11 @@ Runtime:
   * Fixed bug in 'member?'.
   * Added support for using (var ...) declarations within 'lambda', 'define'
     and 'let'.
+  * Added support for initializing engine variables.
+  * Made call-5L-prim handle return values of non-string types gracefully.
+  * Fixed bugs causing centered and left-aligned text to be measured
+    incorrectly.
+  
 
 3.5.7 - 9 Oct 2002 - emk
 

@@ -17,15 +17,51 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		7
+#define VERSION_REV_BIG		8
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.7 (Development)"
+#define VERSION_STRING		"5L 3.5.8 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.39  2002/10/15 18:32:34  emk
+ 3.5.8 - 15 Oct 2002 - emk
+
+ Engine:
+
+   * The Windows engine now reloads scripts in the same fashion as the
+     Mac engine--if a load fails, you get a chance to retry it.
+   * Log files get flushed after every line.
+   * The LOG and SCHEMEIDLE primitives are no longer logged, to reduce
+     clutter in Debug.log.
+   * Fixed tons of bugs in places where the Windows engine assumed it
+     had a TInterpreter object, but didn't (i.e., lots of "sInstance"
+     assertions are gone).
+   * Added support for measuring text without drawing it.
+   * Added support for checking whether an engine variable is initialized.
+   * Made sure LCursor initializes mForceShow.
+
+ Runtime:
+
+   * Support for compiling *.ss files to *.zo files automatically
+     (incomplete--it only handles modules loaded with REQUIRE right now).
+   * Support for deferring code until the engine is in a safe place to
+     run it.  This means that you can call VIDEO, INPUT, etc., from
+     within a callback.
+   * The syntax of 'for' loops has been simplified.
+   * Explicit support for using stylesheets with the INPUT command.
+   * Added 'card-exists?' predicate.
+   * Fixed bug in 'member?'.
+   * Added support for using (var ...) declarations within 'lambda', 'define'
+     and 'let'.
+   * Added support for initializing engine variables.
+   * Made call-5L-prim handle return values of non-string types gracefully.
+   * Fixed bugs causing centered and left-aligned text to be measured
+     incorrectly.
+   * Added a hook system based on Emacs.
+
  Revision 1.38  2002/10/09 17:34:33  emk
  3.5.7 - 9 Oct 2002 - emk
 
