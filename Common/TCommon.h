@@ -65,9 +65,17 @@ AUTHOR
 
 #include "TPlatform.h"
 
-#define not		!
-#define and		&&
-#define or		|| 
+// TODO - These macro names should go away as soon as somebody gets
+// a chance to dig through the rest of the source.  It's a big job.
+#if FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_MACINTOSH
+#	define not	!
+#	define and	&&
+#	define or	|| 
+#elif FIVEL_PLATFORM_OTHER
+	// These names are reserved C++ operators, and g++ 3.0 doesn't like them.
+#else
+#	error "Unknown platform."
+#endif // FIVEL_PLATFORM_*
 
 #ifndef NULL
 #ifdef __cplusplus
@@ -132,6 +140,26 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5  2002/04/01 19:24:20  emk
+ Preliminary style sheet code!
+
+   - All text drawing routines now take Typography::Style arguments instead
+     of AbstractFace* values.
+
+   - Typography::Style provides fairly sophisticated (character) style
+     sheets--you can copy style sheets, base one style sheet off another,
+     and use style sheets to look up faces.  The style-sheet class uses
+     an internal STL-style 'rep' object for reference-counting and copy-on-
+     write behavior, so these objects are *extremely* light weight.
+
+   - Text colors now work correctly.
+
+   - TextRenderingEngine can still only handle one style at a time.  This
+     is next on my TODO list.
+
+ The test suites all pass, and pngtest produces output identical to what we
+ had before.
+
  Revision 1.4  2002/03/08 13:33:41  emk
  Support for testing private and protected class interfaces.
 

@@ -16,6 +16,71 @@ extern void test_Typography (void);
 
 
 //=========================================================================
+//	Style Tests
+//=========================================================================
+
+static void test_Typography_Style (void)
+{
+	// Test constructor
+	Style s1("Nimbus Roman No9 L", 14);
+	TEST(s1.GetFamily() == "Nimbus Roman No9 L");
+	TEST(s1.GetFaceStyle() == kRegularFaceStyle);
+	TEST(s1.GetSize() == 14);
+	TEST(s1.GetColor() == Color(0, 0, 0));
+	TEST(s1.GetShadowColor() == Color(255, 255, 255));
+
+	// Test assignment
+	Style s2("Times", 12);
+	s2 = s1;
+	TEST(s2.GetFamily() == "Nimbus Roman No9 L");
+	TEST(s2.GetFaceStyle() == kRegularFaceStyle);
+	TEST(s2.GetSize() == 14);
+	TEST(s2.GetColor() == Color(0, 0, 0));
+	TEST(s2.GetShadowColor() == Color(255, 255, 255));
+	
+	// Test copy constructor
+	Style s3(s1);
+	TEST(s3.GetFamily() == "Nimbus Roman No9 L");
+	TEST(s3.GetFaceStyle() == kRegularFaceStyle);
+	TEST(s3.GetSize() == 14);
+	TEST(s3.GetColor() == Color(0, 0, 0));
+	TEST(s3.GetShadowColor() == Color(255, 255, 255));
+
+	// Test setting of properties
+	s1.SetFamily("Times");
+	TEST(s1.GetFamily() == "Times");
+	TEST(s2.GetFamily() == "Nimbus Roman No9 L");
+	s1.SetFaceStyle(kBoldFaceStyle);
+	TEST(s1.GetFaceStyle() == kBoldFaceStyle);
+	TEST(s2.GetFaceStyle() == kRegularFaceStyle);
+	s1.SetSize(18);
+	TEST(s1.GetSize() == 18);
+	TEST(s2.GetSize() == 14);
+	s1.SetColor(Color(32, 32, 32));
+	TEST(s1.GetColor() == Color(32, 32, 32));
+	TEST(s2.GetColor() == Color(0, 0, 0));
+	s1.SetShadowColor(Color(64, 64, 64));
+	TEST(s1.GetShadowColor() == Color(64, 64, 64));
+	TEST(s2.GetShadowColor() == Color(255, 255, 255));
+
+	// Test fetching of faces
+	TEST(s1.GetFace()->GetSize() == 18);
+	TEST(s2.GetFace()->GetSize() == 14);
+	TEST(s3.GetFace()->GetSize() == 14);
+	s1.SetSize(12);
+	TEST(s1.GetFace()->GetSize() == 12);
+
+	// Test drawing properties
+	s1.SetFaceStyle(kUnderlineFaceStyle);
+	TEST(s1.GetIsUnderlined());
+	TEST(!s1.GetIsShadowed());
+	s1.SetFaceStyle(kShadowFaceStyle);
+	TEST(!s1.GetIsUnderlined());
+	TEST(s1.GetIsShadowed());
+}
+
+
+//=========================================================================
 //	LineSegment Tests
 //=========================================================================
 
@@ -428,6 +493,7 @@ static void test_Typography_FamilyDatabase (void)
 
 void test_Typography (void)
 {
+	test_Typography_Style();
 	test_Typography_LineSegment();
 	test_Typography_GenericTextRenderingEngine();
 	test_Typography_FamilyDatabase();

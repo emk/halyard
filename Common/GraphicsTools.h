@@ -46,6 +46,14 @@ namespace GraphicsTools {
 		Color(Channel inRed, Channel inGreen,
 			  Channel inBlue, Channel inAlpha = 0)
 			: red(inRed), green(inGreen), blue(inBlue), alpha(inAlpha) {}
+
+		friend bool operator==(Color inLeft, Color inRight)
+		{
+			return (inLeft.red == inRight.red &&
+					inLeft.green == inRight.green &&
+					inLeft.blue == inRight.blue &&
+					inLeft.alpha == inRight.alpha);
+		}
 	};
 
 	//////////

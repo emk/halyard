@@ -28,6 +28,7 @@ namespace Typography {
 	using GraphicsTools::Distance;
 	using GraphicsTools::Point;
 	using GraphicsTools::Image;
+	using GraphicsTools::Color;
 
 	//////////
 	// A FreeType 2 vector, used for kerning.
@@ -94,13 +95,20 @@ namespace Typography {
 	};
 
 	//////////
-	// A style.  Currently, the only values provided are the ones
-	// supported by the face database.
+	// A face style.  This is combined with a face, colors, and other
+	// information to make a full-fledged Style.
+	//
 	enum FaceStyle {
+		// These styles are directly supported by the FamilyDatabase.
 		kRegularFaceStyle = 0,
 		kBoldFaceStyle = 1,
 		kItalicFaceStyle = 2,
-		kBoldItalicFaceStyle = kBoldFaceStyle | kItalicFaceStyle
+		kBoldItalicFaceStyle = kBoldFaceStyle | kItalicFaceStyle,
+		kIntrisicFaceStyles = kBoldFaceStyle | kItalicFaceStyle,
+
+		// These styles are implemented manually.
+		kUnderlineFaceStyle = 4,
+		kShadowFaceStyle = 8
 	};
 
 	//////////
@@ -126,6 +134,7 @@ namespace Typography {
 
 	//////////
 	// An instance of the FreeType 2 library's context.
+	//
 	class Library {
 	private:
 		FT_Library mLibrary;
@@ -140,7 +149,104 @@ namespace Typography {
 
 		static Library *GetLibrary();
 	};
+
+	class AbstractFace;
+	class FaceStack;
 	
+	//////////
+	// A style.
+	//
+	// This class must be quick to copy and efficient to store, so
+	// we use an internal reference-counted 'rep' class.
+	//
+	class Style {
+		struct StyleRep {
+			int         mRefCount;
+
+			std::string mFamily;
+			std::list<std::string> mBackupFamilies;
+			FaceStyle   mFaceStyle;
+			int         mSize;
+			Color       mColor;
+			Color       mShadowColor;
+			
+			FaceStack   *mFace;
+		};
+
+		//////////
+		// A pointer to our representation's data.
+		//
+		StyleRep *mRep;
+
+		//////////
+		// Make sure we don't share this representation with anybody else.
+		//
+		void Grab();
+
+		//////////
+		// Invalidate the cached mFace value.
+		//
+		void InvalidateFace();
+
+	public:
+		Style(const std::string &inFamily, int inSize);
+		Style(const Style &inStyle);
+		~Style();
+
+		Style &operator=(const Style &inStyle);
+
+		//////////
+		// Get the font family.  e.g., "Times", "Nimbus Roman No9 L".
+		//
+		std::string GetFamily() const { return mRep->mFamily; }
+		Style &SetFamily(const std::string &inFamily);
+
+		//////////
+		// Get other families to use when performing font substitution.
+		//
+		std::list<std::string> GetBackupFamilies() const
+		    { return mRep->mBackupFamilies; }
+		Style &SetBackupFamilies(const std::list<std::string> &inBFs);
+
+		//////////
+		// Get the style flags for this face.
+		//
+		FaceStyle GetFaceStyle() const { return mRep->mFaceStyle; }
+		Style &SetFaceStyle(FaceStyle inFaceStyle);
+
+		//////////
+		// Get the size of the font, in points.
+		//
+		int GetSize() const { return mRep->mSize; }
+		Style &SetSize(int inSize);
+
+		//////////
+		// Get the color used to draw text.
+		//
+		Style &SetColor(Color inColor);
+		Color GetColor() const { return mRep->mColor; }
+
+		//////////
+		// Get the color used to draw drop-shadows.
+		//
+		Style &SetShadowColor(Color inColor);
+		Color GetShadowColor() const { return mRep->mShadowColor; }
+
+		// Drawing-related information.
+		// TODO - Document.
+		AbstractFace *GetFace() const;
+		bool          GetIsUnderlined() const;
+		bool          GetIsShadowed() const;
+	};
+
+	//////////
+	// Style information for a piece of text.
+	//
+	class StyleInformation {
+		std::map<int,Style> mMap;
+
+	};
+
 	//////////
 	// An abstract typeface (with a specific size).
 	//
@@ -148,6 +254,7 @@ namespace Typography {
 	// kern two characters, and calculate the height of a line.
 	// They don't know about GlyphIndex values or other low-level
 	// abstractions.
+	//
 	class AbstractFace {
 		int mSize;
 		
@@ -189,6 +296,7 @@ namespace Typography {
 	// A simple typeface is associated with a single FreeType 2 face
 	// object.  It understands GlyphIndex values and other low-level
 	// details of layout.
+	//
 	class Face : public AbstractFace {
 		// Refcounting so we can implement copy & assignment.  The use of
 		// internal "rep" objects is a common C++ technique to avoid
@@ -242,20 +350,19 @@ namespace Typography {
 	// The Right Thing<tm>.
 	//
 	// All faces in a a stack must be the same size.
-	// TODO - Enforce sizes in a stack.
 	//
 	class FaceStack : public AbstractFace {
-		// TODO - Figure out a good memory management scheme.
-		std::deque<Face*> mFaceStack;
+		std::deque<Face> mFaceStack;
 
 	public:
-		FaceStack(Face *inPrimaryFace);
+		FaceStack(const Face &inPrimaryFace);
 		virtual ~FaceStack();
 
 		//////////
 		// Add another face to the stack.  Faces are searched
 		// in the order they are added.
-		void AddSecondaryFace(Face *inFace);
+		//
+		void AddSecondaryFace(const Face &inFace);
 
 		virtual Glyph GetGlyph(CharCode inCharCode);
 		virtual Vector GetKerning(CharCode inPreviousChar,
@@ -487,7 +594,7 @@ namespace Typography {
 	// 
 	class TextRenderingEngine : public GenericTextRenderingEngine {
 		Image *mImage;
-		AbstractFace *mFace;
+		Style mStyle;
 		Point mLineStart;
 
 	public:
@@ -510,7 +617,7 @@ namespace Typography {
 		//
 		TextRenderingEngine(const wchar_t *inTextBegin,
 							const wchar_t *inTextEnd,
-							AbstractFace *inFace,
+							const Style &inStyle,
 							Point inPosition,
 							Distance inLineLength,
 							Justification inJustification,
@@ -523,7 +630,7 @@ namespace Typography {
 		// [in] inBitmap -   The bitmap to draw (in FreeType 2 format).
 		// [in] inPosition - The location at which to draw the bitmap.
 		//
-		void DrawBitmap(FT_Bitmap *inBitmap, Point inPosition);
+		void DrawBitmap(Point inPosition, FT_Bitmap *inBitmap, Color inColor);
 
 	protected:
 		virtual Distance MeasureSegment(LineSegment *inPrevious,
@@ -683,7 +790,7 @@ namespace Typography {
 		
 	private:
 		std::map<std::string,Family> mFamilyMap;
-		
+
 		//////////
 		// Does the file pointed to by 'inPath' look like a font file?
 		//
@@ -695,7 +802,14 @@ namespace Typography {
 		//
 		void AddAvailableFace(const AvailableFace &inFace);
 
+		static FamilyDatabase *sFamilyDatabase;
+		
 	public:
+		//////////
+		// Get a global instance of FamilyDatabase.
+		//
+		static FamilyDatabase *GetFamilyDatabase();
+
 		FamilyDatabase() {}
 		
 		//////////

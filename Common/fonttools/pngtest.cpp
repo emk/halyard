@@ -20,14 +20,6 @@ char *fonts[] = {
 	
 
 //=========================================================================
-//  ImageTextRenderingEngine
-//=========================================================================
-//  A subclass of TextRenderingEngine which draws into an Image (for
-//  testing purposes).
-
-
-
-//=========================================================================
 //  Test Program
 //=========================================================================
 
@@ -37,19 +29,11 @@ FamilyDatabase *gFonts;
 #define SYMBOL_FACE ("Standard Symbols L")
 #define DINGBAT_FACE ("Dingbats")
 
-void show(const wchar_t *inText, const std::string &inFont, int inSize,
+void show(const wchar_t *inText, const Style &inStyle,
 	  Point inPos, Distance inLength, Justification inJustification)
 {
-    // Build our face stack.
-    Face face     = gFonts->GetFace(inFont,       kRegularFaceStyle, inSize);
-    Face symbol   = gFonts->GetFace(SYMBOL_FACE,  kRegularFaceStyle, inSize);
-    Face dingbats = gFonts->GetFace(DINGBAT_FACE, kRegularFaceStyle, inSize);
-    FaceStack stack(&face);
-    stack.AddSecondaryFace(&symbol);
-    stack.AddSecondaryFace(&dingbats);
-
     // Draw our text.
-    TextRenderingEngine engine(inText, inText + wcslen(inText), &stack,
+    TextRenderingEngine engine(inText, inText + wcslen(inText), inStyle,
 			       inPos, inLength, inJustification, gImage);
     engine.RenderText();
 }
@@ -63,34 +47,41 @@ int main (int argc, char **argv) {
 	PngImage image(640, 480);
 	gImage = &image;
 
-	// Load our FamilyDatabase.
-	gFonts = new FamilyDatabase();
-	gFonts->ReadFromFontDirectory();
-
-	// Dump all entries in the specified font.
 #if 0
-	Face sym = gFonts->GetFace("Dingbats", kRegularFaceStyle, 24);
+	// Dump all entries in the specified font.
+	FamilyDatabase *db = FamilyDatabase::GetFamilyDatabase();
+	Face sym = db->GetFace("Dingbats", kRegularFaceStyle, 24);
 	for (unsigned int code = 0; code <= 0xFFFF; code++)
 	    if (sym.GetGlyphIndex(code))
 		printf("0x%X\n", code);
 	exit(0);
 #endif
 
+	// Create our base style.
+	Style baseStyle("Bitstream Charter", 12);
+	std::list<std::string> backups;
+	backups.push_back(SYMBOL_FACE);
+	backups.push_back(DINGBAT_FACE);
+	baseStyle.SetBackupFamilies(backups);
+	baseStyle.SetColor(Color(0, 0, 96));
+
 	// Display a title.
-	show(L"Font Engine Demo", "Bitstream Charter", 36,
+	show(L"Font Engine Demo", Style(baseStyle).SetSize(36),
 	     Point(10, 50), 620, kCenterJustification);
 
 	// Display some text samples.
+	Style sampleStyle(baseStyle);
+	sampleStyle.SetSize(14);
 	for (int fi = 0; fonts[fi] != NULL; fi++) {
 	    wchar_t *str =
 		wcsdup(L"The quick brown fox jumped over the lazy dog. DdT.");
 	    str[wcslen(str)-4] = 0x2206;
 	    str[wcslen(str)-3] = 0x03B4;
-	    show(str, fonts[fi], 14, Point(10, 100 + fi * 20), 360,
-		 kLeftJustification);
+	    show(str, Style(sampleStyle).SetFamily(fonts[fi]),
+		 Point(10, 100 + fi * 20), 360, kLeftJustification);
 	}
 
-	show(L"Font Drawing Demo (Fun, Fun!)", "Bitstream Charter", 30,
+	show(L"Font Drawing Demo (Fun, Fun!)", Style(baseStyle).SetSize(30),
 	     Point(10, 300), 360, kCenterJustification);
 
 	wchar_t symbols[5];
@@ -99,7 +90,7 @@ int main (int argc, char **argv) {
 	symbols[2] = 0x2022;
 	symbols[3] = L'a';
 	symbols[4] = 0x0000;
-	show(symbols, "Bitstream Charter", 50,
+	show(symbols, Style(baseStyle).SetSize(50),
 	     Point(10, 400), 360, kLeftJustification);
 
 	Justification justifications[] =
@@ -109,8 +100,7 @@ int main (int argc, char **argv) {
 		 "sed diam nonumy eirmod tempor invidunt ut labore et dolore "
 		 "magna aliquyam erat, sed diam voluptua. At vero eos et "
 		 "accusam et justo duo dolores et ea rebum.",
-		 "Bitstream Charter", 12,
-		 Point(370, 100 + i * 100), 260, justifications[i]);
+		 baseStyle, Point(370, 100 + i * 100), 260, justifications[i]);
 	}
 
         image.save("visual-test.png");

@@ -55,6 +55,176 @@ Library *Library::GetLibrary()
 
 
 //=========================================================================
+//	Typography::Style Methods
+//=========================================================================
+//  The 'StyleRep' code in this class is getting out of control, and should
+//  probably be factored into a standard 5L 'Representation' class.
+
+Style::Style(const std::string &inFamily, int inSize)
+{
+	mRep = new StyleRep();
+	try
+	{
+		// Set up all our fields.
+		mRep->mRefCount    = 1;
+		mRep->mFamily      = inFamily;
+		mRep->mFaceStyle   = kRegularFaceStyle;
+		mRep->mSize        = inSize;
+		mRep->mColor       = Color(0, 0, 0);
+		mRep->mShadowColor = Color(255, 255, 255);
+		mRep->mFace        = NULL;
+	}
+	catch (...)
+	{
+		delete mRep;
+		throw;
+	}
+}
+
+Style::Style(const Style &inStyle)
+{
+	// It's safe to cast away the const here because we always call
+	// 'Grab' before modifying the representation.
+	mRep = const_cast<StyleRep*>(inStyle.mRep);
+	mRep->mRefCount++;
+}
+
+Style::~Style()
+{
+	// Only throw away the rep if we're the last reference.
+	mRep->mRefCount--;
+	if (mRep->mRefCount < 1)
+	{
+		InvalidateFace();
+		delete mRep;
+	}
+}
+
+void Style::Grab()
+{
+	// If we don't have our own copy, get one.
+	if (mRep->mRefCount > 1)
+	{
+		StyleRep *oldRep = mRep;
+		mRep = new StyleRep(*mRep);
+		mRep->mRefCount = 1;
+		mRep->mFace = NULL;
+
+		// It's safe to decrement this only after we've updated 'mRep'.
+		oldRep->mRefCount--;
+	}
+}
+
+void Style::InvalidateFace()
+{
+	if (mRep->mFace)
+	{
+		delete mRep->mFace;
+		mRep->mFace = NULL;
+	}
+}
+
+Style &Style::operator=(const Style &inStyle)
+{
+	// Watch out for self-assignment.
+	if (mRep == inStyle.mRep)
+		return *this;
+
+	// Delete our reference to our representation.
+	mRep->mRefCount--;
+	if (mRep->mRefCount < 1)
+	{
+		InvalidateFace();
+		delete mRep;
+	}
+
+	// Make a new reference to inStyle's representation.
+	mRep = inStyle.mRep;
+	mRep->mRefCount++;
+	return *this;
+}
+
+Style &Style::SetFamily(const std::string &inFamily)
+{
+	Grab();
+	InvalidateFace();
+	mRep->mFamily = inFamily;
+	return *this;
+}
+
+Style &Style::SetBackupFamilies(const std::list<std::string> &inBFs)
+{
+	Grab();
+	InvalidateFace();
+	mRep->mBackupFamilies = inBFs;
+	return *this;	
+}
+
+Style &Style::SetFaceStyle(FaceStyle inFaceStyle)
+{
+	Grab();
+	InvalidateFace();
+	mRep->mFaceStyle = inFaceStyle;
+	return *this;
+}
+
+Style &Style::SetSize(int inSize)
+{
+	Grab();
+	InvalidateFace();
+	mRep->mSize = inSize;
+	return *this;
+}
+
+Style &Style::SetColor(Color inColor)
+{
+	Grab();
+	mRep->mColor = inColor;
+	return *this;
+}
+
+Style &Style::SetShadowColor(Color inColor)
+{
+	Grab();
+	mRep->mShadowColor = inColor;
+	return *this;
+}
+
+AbstractFace *Style::GetFace() const
+{
+	if (!mRep->mFace)
+	{
+		// Load a face if we don't have one already.
+		FamilyDatabase *db = FamilyDatabase::GetFamilyDatabase();
+		FaceStyle intrinsic =
+			(FaceStyle) (mRep->mFaceStyle & kIntrisicFaceStyles);
+		Face base = db->GetFace(mRep->mFamily, intrinsic, mRep->mSize);
+		mRep->mFace = new FaceStack(base);
+		
+		// Add our backup faces.
+		for (std::list<std::string>::iterator i= mRep->mBackupFamilies.begin();
+			 i != mRep->mBackupFamilies.end(); i++)
+		{
+			// TODO - Fix Secondary vs Backup naming inconsistency.
+			Face backup = db->GetFace(*i, intrinsic, mRep->mSize);
+			mRep->mFace->AddSecondaryFace(backup);
+		}
+	}
+	return mRep->mFace;
+}
+
+bool Style::GetIsUnderlined() const
+{
+	return (mRep->mFaceStyle & kUnderlineFaceStyle) ? true : false;
+}
+
+bool Style::GetIsShadowed() const
+{
+	return (mRep->mFaceStyle & kShadowFaceStyle) ? true : false;
+}
+
+
+//=========================================================================
 //	Typography::Face Methods
 //=========================================================================
 
@@ -198,20 +368,19 @@ Distance Face::GetLineHeight()
 //	Typography::FaceStack Methods
 //=========================================================================
 
-FaceStack::FaceStack(Face *inPrimaryFace)
-	: AbstractFace(inPrimaryFace->GetSize())
+FaceStack::FaceStack(const Face &inPrimaryFace)
+	: AbstractFace(inPrimaryFace.GetSize())
 {
 	mFaceStack.push_back(inPrimaryFace);
 }
 
 FaceStack::~FaceStack()
 {
-	// TODO - Figure out memory management.
 }
 
-void FaceStack::AddSecondaryFace(Face *inFace)
+void FaceStack::AddSecondaryFace(const Face &inFace)
 {
-	ASSERT(GetSize() == inFace->GetSize());
+	ASSERT(GetSize() == inFace.GetSize());
 	mFaceStack.push_back(inFace);
 }
 
@@ -227,13 +396,13 @@ Vector FaceStack::GetKerning(CharCode inPreviousChar,
 							 CharCode inCurrentChar)
 {
 	// TODO - Do real kerning.
-	return mFaceStack.front()->GetKerning(inPreviousChar, inCurrentChar);
+	return mFaceStack.front().GetKerning(inPreviousChar, inCurrentChar);
 }
 
 Distance FaceStack::GetLineHeight()
 {
 	// Use the line-height of our primary face.
-	return mFaceStack.front()->GetLineHeight();
+	return mFaceStack.front().GetLineHeight();
 }
 
 void FaceStack::SearchForCharacter(CharCode inCharCode,
@@ -241,10 +410,10 @@ void FaceStack::SearchForCharacter(CharCode inCharCode,
 								   GlyphIndex *outGlyphIndex)
 {
 	// Search for the first font which has a glyph for our char code.
-	for (std::deque<Face*>::iterator iter = mFaceStack.begin();
+	for (std::deque<Face>::iterator iter = mFaceStack.begin();
 		 iter < mFaceStack.end(); iter++)
 	{
-		*outFace = *iter;
+		*outFace = &*iter;
 		*outGlyphIndex = (*outFace)->GetGlyphIndex(inCharCode);
 		if (*outGlyphIndex != 0)
 			return;
@@ -252,7 +421,7 @@ void FaceStack::SearchForCharacter(CharCode inCharCode,
 
 	// If we didn't find anything, return the default glyph from our
 	// primary face.
-	*outFace = mFaceStack.front();
+	*outFace = &mFaceStack.front();
 	*outGlyphIndex = 0;
 }
 
@@ -474,16 +643,15 @@ void GenericTextRenderingEngine::RenderText()
 
 TextRenderingEngine::TextRenderingEngine(const wchar_t *inTextBegin,
 										 const wchar_t *inTextEnd,
-										 AbstractFace *inFace,
+										 const Style &inStyle,
 										 Point inPosition,
 										 Distance inLineLength,
 										 Justification inJustification,
 										 Image *inImage)
 	: GenericTextRenderingEngine(inTextBegin, inTextEnd,
 								 inLineLength, inJustification),
-	  mFace(inFace), mLineStart(inPosition), mImage(inImage)
+	  mStyle(inStyle), mLineStart(inPosition), mImage(inImage)
 {
-	ASSERT(inFace);
 	ASSERT(inPosition.x >= 0 && inPosition.y >= 0);
 	ASSERT(inImage != NULL);
 }
@@ -492,7 +660,8 @@ TextRenderingEngine::TextRenderingEngine(const wchar_t *inTextBegin,
 // FreeType 2 can output a *lot* of different types of pixmaps, at
 // least in theory.  In practice, there are only a few kinds, all of
 // which we should handle below.
-void TextRenderingEngine::DrawBitmap(FT_Bitmap *inBitmap, Point inPosition)
+void TextRenderingEngine::DrawBitmap(Point inPosition, FT_Bitmap *inBitmap,
+									 Color inColor)
 {
 	using GraphicsTools::Channel;
 	using GraphicsTools::Color;
@@ -511,7 +680,8 @@ void TextRenderingEngine::DrawBitmap(FT_Bitmap *inBitmap, Point inPosition)
 			for (int x = 0; x < inBitmap->width; x++)
 			{
 				Channel value = inBitmap->buffer[x + inBitmap->pitch * y];
-				pixmap.At(x, y) = Color(0, 0, 96, 255 - value);
+				pixmap.At(x, y) = Color(inColor.red, inColor.green,
+										inColor.blue, 255 - value);
 			}
 		}
     }
@@ -526,7 +696,8 @@ void TextRenderingEngine::DrawBitmap(FT_Bitmap *inBitmap, Point inPosition)
 				unsigned char byte = inBitmap->buffer[(x/8) +
 													  inBitmap->pitch * y];
 				Channel value = ((1<<(7-(x%8))) & byte) ? 0 : 255; 
-				pixmap.At(x, y) = Color(0, 0, 96, value);
+				pixmap.At(x, y) = Color(inColor.red, inColor.green,
+										inColor.blue, value);
 			}
 		}	
     }
@@ -552,17 +723,18 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 	// Measure the segment.
 	// TODO - Merge with code below?
 	Distance total = 0;
+	AbstractFace *face = mStyle.GetFace();
 	for (const wchar_t *cp = inSegment->begin; cp < inSegment->end; cp++)
 	{
 		CharCode current_char = *cp;
 
 		// Do our kerning.
-		Vector delta = mFace->GetKerning(previous_char, current_char);
+		Vector delta = face->GetKerning(previous_char, current_char);
 		total += delta.x >> 6; // Don't need round_266 (already fitted).
 		ASSERT(delta.y == 0);
 
 		// Load and measure our glyph.
-		Glyph glyph = mFace->GetGlyph(current_char);
+		Glyph glyph = face->GetGlyph(current_char);
 		total += round_266(glyph->advance.x);
 		ASSERT(glyph->advance.y == 0);
 
@@ -577,12 +749,12 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 		CharCode current_char = '-';
 		
 		// Do our kerning.
-		Vector delta = mFace->GetKerning(previous_char, current_char);
+		Vector delta = face->GetKerning(previous_char, current_char);
 		total += delta.x >> 6; // Don't need round_266 (already fitted).
 		ASSERT(delta.y == 0);
 
 		// Load and measure our glyph.
-		Glyph glyph = mFace->GetGlyph(current_char);
+		Glyph glyph = face->GetGlyph(current_char);
 		total += round_266(glyph->advance.x);
 		ASSERT(glyph->advance.y == 0);
 	}
@@ -606,6 +778,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	cursor.x += inHorizontalOffset;
 
 	// Draw each character.
+	AbstractFace *face = mStyle.GetFace();
 	GlyphIndex previous_char = kNoSuchCharacter;
 	for (std::deque<LineSegment>::iterator iter = inLine->begin();
 		 iter < inLine->end(); iter++)
@@ -617,17 +790,17 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 			GlyphIndex current_char = *cp;
 			
 			// Do our kerning.
-			Vector delta = mFace->GetKerning(previous_char, current_char);
+			Vector delta = face->GetKerning(previous_char, current_char);
 			cursor.x += delta.x >> 6; // Don't need round_266 (already fitted).
 			ASSERT(cursor.x >= 0);
 			ASSERT(delta.y == 0);
 
 			// Load and draw our glyph.
-			Glyph glyph = mFace->GetGlyph(current_char);
+			Glyph glyph = face->GetGlyph(current_char);
 			Point loc = cursor;
 			loc.x += glyph->bitmap_left;
 			loc.y -= glyph->bitmap_top;
-			DrawBitmap(&glyph->bitmap, loc);
+			DrawBitmap(loc, &glyph->bitmap, mStyle.GetColor());
 
 			// Advance our cursor.
 			cursor.x += round_266(glyph->advance.x);
@@ -646,17 +819,17 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		GlyphIndex current_char = '-';
 			
 		// Do our kerning.
-		Vector delta = mFace->GetKerning(previous_char, current_char);
+		Vector delta = face->GetKerning(previous_char, current_char);
 		cursor.x += delta.x >> 6; // Don't need round_266 (already fitted).
 		ASSERT(cursor.x >= 0);
 		ASSERT(delta.y == 0);
 
 		// Load and draw our glyph.
-		Glyph glyph = mFace->GetGlyph(current_char);
+		Glyph glyph = face->GetGlyph(current_char);
 		Point loc = cursor;
 		loc.x += glyph->bitmap_left;
 		loc.y -= glyph->bitmap_top;
-		DrawBitmap(&glyph->bitmap, loc);
+		DrawBitmap(loc, &glyph->bitmap, mStyle.GetColor());
 
 		// Advance our cursor.
 		cursor.x += round_266(glyph->advance.x);
@@ -665,7 +838,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	}
 	
 	// Update our line start for the next line.
-	mLineStart.y += mFace->GetLineHeight();
+	mLineStart.y += face->GetLineHeight();
 }
 
 
@@ -873,6 +1046,8 @@ void FamilyDatabase::Family::AddAvailableFace(const AvailableFace &inFace)
 
 Face FamilyDatabase::Family::GetFace(FaceStyle inStyle, int inSize)
 {
+	ASSERT((inStyle & ~kIntrisicFaceStyles) == 0);
+
 	// We use an elaborate system of recursive fallbacks to find
 	// an appropriate face.
 	switch (inStyle)
@@ -920,6 +1095,18 @@ void FamilyDatabase::Family::Serialize(std::ostream &out) const
 //=========================================================================
 //	Typography::FamilyDatabase Methods
 //=========================================================================
+
+FamilyDatabase *FamilyDatabase::sFamilyDatabase = NULL;
+		
+FamilyDatabase *FamilyDatabase::GetFamilyDatabase()
+{
+	if (!sFamilyDatabase)
+	{
+		sFamilyDatabase = new FamilyDatabase();
+		sFamilyDatabase->ReadFromFontDirectory();
+	}
+	return sFamilyDatabase;
+}
 
 bool FamilyDatabase::IsFontFile(const FileSystem::Path &inPath)
 {
