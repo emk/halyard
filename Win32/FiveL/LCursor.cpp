@@ -40,7 +40,6 @@ LCursorManager::LCursorManager()
 	mLeftTurnCursor = NULL;
 	mRightTurnCursor = NULL;
 	mDefaultCursor = ARROW_CURSOR;
-	cursorRect = NULL;
 }
 
 LCursorManager::~LCursorManager()
@@ -78,45 +77,6 @@ void LCursorManager::Init(HINSTANCE inInstance)
 	mRightTurnCursor = ::LoadCursor(inInstance, MAKEINTRESOURCE(IDC_TURN_RIGHT_CURSOR));
 
 	mDefaultCursor = ARROW_CURSOR;
-}
-
-void LCursorManager::ClipCursor(TRect *inClipRect)
-{
-	RECT theRect;
-
-	if (inClipRect != NULL)
-	{
-		cursorRect = new TRect(*inClipRect);
-		theRect = inClipRect->GetRECT();
-		::ClipCursor(&theRect);
-	}
-	else
-		::ClipCursor(NULL);
-}
-
-// Removes cursor constraints
-void LCursorManager::UnClipCursor()
-{
-	RECT theRect;
-
-	if (cursorRect == NULL) 
-	{
-		::GetClipCursor(&theRect);
-		cursorRect = new TRect();
-		cursorRect->Set(theRect);
-		
-	}
-	::ClipCursor(NULL);	
-
-}
-
-// Restore cursor clipping rect after a call to UnClipCursor
-void LCursorManager::ReClipCursor()
-{
-	RECT theRect;
-
-	theRect = cursorRect->GetRECT();
-	::ClipCursor(&theRect);	
 }
 
 //
@@ -293,6 +253,18 @@ void LCursorManager::CheckCursor(void)
 
 /*
  $Log$
+ Revision 1.3.10.2  2002/10/11 18:03:30  emk
+ 3.4.3 - 11 Oct 2002 - emk
+
+ Douglas--I don't have the scripts required to test this properly, so
+ you'll have to arrange for both the smoke testing (i.e., does it work
+ at all?) and the regular testing (i,e., does everything work right?).
+ If there are problems, I'll build a 3.4.4 on Monday.
+
+   * Removed code to clip cursor into box.  (Backported from 3.5.)
+     This *should* fix a bug which caused the cursor to be locked at
+     0,0 after startup on some machines.
+
  Revision 1.3.10.1  2002/09/26 15:54:13  emk
  3.4.2 - Fix cursor display during movies.
 

@@ -1,5 +1,16 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.4.3 - 11 Oct 2002 - emk
+
+Douglas--I don't have the scripts required to test this properly, so
+you'll have to arrange for both the smoke testing (i.e., does it work
+at all?) and the regular testing (i,e., does everything work right?).
+If there are problems, I'll build a 3.4.4 on Monday.
+
+  * Removed code to clip cursor into box.  (Backported from 3.5.)
+    This *should* fix a bug which caused the cursor to be locked at
+    0,0 after startup on some machines.
+
 3.4.2 - 28 Sep 2002 - emk
 
   * Fixed bug where cursor was visible during movie playback.  This bug

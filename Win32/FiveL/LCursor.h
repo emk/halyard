@@ -86,23 +86,6 @@ public:
 	void	ForceShow(bool inForce) { mForceShow = inForce; }
 	
 	//////////
-	// Confines the cursor to a rectangular area on the screen.
-	//
-	// [in] inClipRect - a rectangular region
-	//
-	void	ClipCursor(TRect *inClipRect);
-	
-	//////////
-	// Removes cursor constraints made by ClipCursor().
-	//
-	void	UnClipCursor();
-	
-	//////////
-	// Restore cursor clipping rect after a call to UnClipCursor().
-	//
-	void	ReClipCursor();
-	
-	//////////
 	// Set the cursor position and CheckCursor().
 	//
 	// [in] cursorPos - new cursor position
@@ -200,17 +183,24 @@ private:
 	// Right turn cursor.
 	//
 	HCURSOR		mRightTurnCursor;
-
-	//////////
-	// Rectangle to which cursor movement is constrained.
-	//
-	TRect		*cursorRect;
 };
 
 #endif // _LCursor_h_
 
 /*
  $Log$
+ Revision 1.1.14.1  2002/10/11 18:03:30  emk
+ 3.4.3 - 11 Oct 2002 - emk
+
+ Douglas--I don't have the scripts required to test this properly, so
+ you'll have to arrange for both the smoke testing (i.e., does it work
+ at all?) and the regular testing (i,e., does everything work right?).
+ If there are problems, I'll build a 3.4.4 on Monday.
+
+   * Removed code to clip cursor into box.  (Backported from 3.5.)
+     This *should* fix a bug which caused the cursor to be locked at
+     0,0 after startup on some machines.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

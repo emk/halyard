@@ -520,9 +520,6 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 		::ClientToScreen(hWnd, &cursorPos);
 		gScreenRect.SetRight(cursorPos.x);
 		gScreenRect.SetBottom(cursorPos.y);
-		
-		// now gScreenRect has the screen coordinates of our virtual screen
-		gCursorManager.ClipCursor(&gScreenRect);
 	}
     
     hwndApp = hWnd; 
@@ -676,10 +673,6 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     				gView->Draw();		// blast the screen on and reset the palette	
 				}
 
-				// go back to restricting cursor movement
-				if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)	
-					gCursorManager.ClipCursor(&gScreenRect);
-    			
     			// make sure we have a cursor
     			gCursorManager.ChangeCursor(NO_CURSOR);
     			gCursorManager.CheckCursor();
@@ -698,10 +691,6 @@ LRESULT RealWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					gPaletteManager.Deactivate(hDC);
 				}
  
-				// stop restricting cursor movement
-				if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
-					gCursorManager.ClipCursor(NULL);
-
 				// set the cursor to something normal
 				gCursorManager.ChangeCursor(ARROW_CURSOR); 
 
@@ -1223,8 +1212,6 @@ void PutInBackground(void)
 	ShowWindow(hwndApp, SW_MINIMIZE);
 	ShowWindow(hBackgroundWnd, SW_HIDE);
 
-	gCursorManager.UnClipCursor();	// remove cursor restraints
-
 	gInBackground = true;
 
 	gDebugLog.Log("PutInBackground");
@@ -1237,8 +1224,6 @@ void PutInForeground(void)
 {
 	ShowWindow(hBackgroundWnd, SW_SHOW);
 	ShowWindow(hwndApp, SW_MAXIMIZE);
-
-	gCursorManager.ReClipCursor();
 
 	SetWindowPos(hwndApp, /*HWND_TOP*/ HWND_TOPMOST, 
 		gWinRect.left, gWinRect.top, gWinRect.right, gWinRect.bottom, 0);
@@ -1284,6 +1269,18 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.13.2.1  2002/10/11 18:03:30  emk
+ 3.4.3 - 11 Oct 2002 - emk
+
+ Douglas--I don't have the scripts required to test this properly, so
+ you'll have to arrange for both the smoke testing (i.e., does it work
+ at all?) and the regular testing (i,e., does everything work right?).
+ If there are problems, I'll build a 3.4.4 on Monday.
+
+   * Removed code to clip cursor into box.  (Backported from 3.5.)
+     This *should* fix a bug which caused the cursor to be locked at
+     0,0 after startup on some machines.
+
  Revision 1.13  2002/07/26 20:00:27  zeb
  3.3.21 - 26 July 2002 - zeb
 

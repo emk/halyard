@@ -17,15 +17,27 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		2
+#define VERSION_REV_BIG		3
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.2"
+#define VERSION_STRING		"5L 3.4.3"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.3  2002/10/11 18:02:50  emk
+ 3.4.3 - 11 Oct 2002 - emk
+
+ Douglas--I don't have the scripts required to test this properly, so
+ you'll have to arrange for both the smoke testing (i.e., does it work
+ at all?) and the regular testing (i,e., does everything work right?).
+ If there are problems, I'll build a 3.4.4 on Monday.
+
+   * Removed code to clip cursor into box.  (Backported from 3.5.)
+     This *should* fix a bug which caused the cursor to be locked at
+     0,0 after startup on some machines.
+
  Revision 1.30.2.2  2002/09/26 15:53:41  emk
  3.4.2 - Fix cursor display during movies.
 
