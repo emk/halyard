@@ -2,6 +2,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
+  * Updated LICENSE.txt file to include latest information.
   * Added the function MARK-UNPROCESSED-EVENTS-AS-STALE! for manually
     marking all queued events as stale.  This is helpful if the user
     is repeated clicking on something or pressing a key waiting for

@@ -25,7 +25,7 @@ AppCopyright={#COPYRIGHT}
 AppName=Tamale
 DefaultGroupName=Tamale
 ShowLanguageDialog=yes
-LicenseFile=..\LICENSE
+LicenseFile=..\LICENSE.txt
 AppVerName={#VERNAME}
 DefaultDirName={pf}\Tamale
 AppPublisher={#COMPANY}
@@ -42,7 +42,7 @@ Source: ..\Win32\Bin\dbghelp.dll; DestDir: {app}
 Source: ..\Win32\Bin\zlib.dll; DestDir: {app}
 Source: ..\Win32\Bin\CrashRpt.dll; DestDir: {app}
 Source: ..\Release-Notes.txt; DestDir: {app}; Components: release
-Source: ..\LICENSE; DestDir: {app}; Components: release
+Source: ..\LICENSE.txt; DestDir: {app}; Components: release
 Source: ..\wx\MSVC\wx5L\5L.prefs; DestDir: {app}
 Source: ..\Common\Runtime\*; DestDir: {app}\Runtime\; Flags: recursesubdirs; Components: release; Excludes: CVS,compiled
 #if DEBUG
