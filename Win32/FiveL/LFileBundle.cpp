@@ -15,6 +15,9 @@
 #include <string.h>
 #include <windows.h>
 
+#include "md5.h"
+#define MD5_SIZE (16)
+
 LFileBundle::LFileBundle()
 {
 	
@@ -817,15 +820,19 @@ TString LFileBundle::GetTimestamp()
 // Compute the MD5 hash for the given string
 TString LFileBundle::ComputeMD5(const TString &str)
 {
-	unsigned char	sig[MD5_SIZE];
+	md5_state_t		state;
+	md5_byte_t		digest[MD5_SIZE];
 	char			md5_string[MD5_SIZE*2+1];
-	TString			*ret;
 
-	md5_buffer(str.GetString(), str.Length(), sig);
-	md5_sig_to_string(sig, md5_string, sizeof(md5_string));
-	ret = new TString(md5_string);
+	// Calculate the MD5 digest of our data.
+	md5_init(&state);
+	md5_append(&state, reinterpret_cast<const md5_byte_t*>(str.GetString()), str.Length());
+	md5_finish(&state, digest);
 
-	return *ret;
+	// Convert the digest to a string and return it.
+	for (int i = 0; i < MD5_SIZE; i++)
+		sprintf(md5_string + i * 2, "%02x", (int) digest[i]);
+	return TString(md5_string);
 }
 
 // Update the MD5 hash for the the file with tag located at fTagIndex

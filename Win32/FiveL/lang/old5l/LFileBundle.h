@@ -19,12 +19,6 @@
 //
 const unsigned char HCK[] = { 0x2c, 0xf3, 0x38, 0xbb, 0x4c, 0xd5, 0xfd, 0x58 };
 
-extern "C" {
-	#include "md5.h"
-	void	md5_buffer(const char *buffer, const unsigned int buf_len, void *signature);
-	void	md5_sig_to_string(void *signature, char *str, const int str_len);
-}
-
 /*-----------------------------------------------------------------
 
 CLASS

@@ -1,9 +1,13 @@
 FiveL for Win32 Release Notes
 
-CVS, Unreleased
+3.3.1, Friday, April 19, 2002
 
 	(1) Merged code from 3.2.0.3 (mouse-down during text input now
 	works like RETURN).  This fixes a usability glitch.
+
+	(2) Merged code from 3.2.0.4 which removes the FSF's GPL'd MD5
+    code, which Eben Moglen, the FSF's lawyer, has asked us to
+	remove.
 
 3.3.0, Friday, March 29, 2002
 

@@ -16,17 +16,23 @@
 
 #define MAJOR_NUM		3
 #define MINOR_NUM		03
-#define REV_BIG			00
+#define REV_BIG			01
 #define REV_SMALL		00
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.3.0"
+#define VERSION_STRING	"5L for Win32 3.3.1"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.8  2002/04/19 06:02:57  emk
+ Merged in MD5-replacement changes from 3.2.0.4.
+
+ This code will become 3.3.1.  PLEASE USE THIS VERSION IN PREFERENCE TO THE 3.3.0
+ OR OLDER BINARIES, WHICH THE FSF's LEGAL COUNCIL HAS ASKED US NOT TO SHIP.
+
  Revision 1.7  2002/03/29 11:14:42  emk
  Final Win32 fixes for 3.3.0 development release.
 
