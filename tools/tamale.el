@@ -79,6 +79,7 @@ Tamale is a language for card-based interactive multimedia programming."
     ("Persistent Variables" "^(define/p\\s-+\\(\\sw+\\)" 1)
     ("Functions" "^(define\\s-+(\\(\\sw+\\)" 1)
     ("Macros" "^(define-syntax\\s-+(?\\(\\sw+\\)" 1)
+    ("Templates" "^\\s-*(define-[^-]*-template\\s-+\\(\\sw+\\)" 1)
     )
   "Imenu generic expression for Tamale mode.  See `imenu-generic-expression'.")
 
