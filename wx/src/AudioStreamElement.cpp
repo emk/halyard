@@ -3,6 +3,7 @@
 #include <wx/wx.h>
 
 #include "TCommon.h"
+#include "TException.h"
 #include "AudioStreamElement.h"
 #include "AudioStream.h"
 
@@ -32,4 +33,18 @@ void AudioStreamElement::Pause()
 void AudioStreamElement::Resume()
 {
     mStream->Start();
+}
+
+void AudioStreamElement::SetVolume(const std::string &inChannel,
+								   double inVolume)
+{
+	int channels = mStream->GetChannelCount();
+	if (inChannel == "left" && channels >= 2)
+		mStream->SetChannelVolume(AudioStream::LEFT_CHANNEL, inVolume);
+	else if (inChannel == "right" && channels >= 2)
+		mStream->SetChannelVolume(AudioStream::RIGHT_CHANNEL, inVolume);
+	else if (inChannel == "all")
+		mStream->SetVolume(inVolume);
+	else
+		THROW("Tried to set volume on an unknown channel");
 }

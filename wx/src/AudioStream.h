@@ -13,15 +13,6 @@
 //
 class AudioStream
 {
-	PortAudioStream *mStream;
-	bool mIsRunning;
-
-	static int AudioCallback(void *inInputBuffer,
-							 void *outOutputBuffer,
-							 unsigned long inFramesPerBuffer,
-							 PaTimestamp inOutTime,
-							 void *inUserData);
-
 public:
 	enum Format {
 		INT16_PCM_STREAM,
@@ -29,9 +20,28 @@ public:
 	};
 
 	enum {
-		SAMPLES_PER_SECOND = 44100
+		SAMPLES_PER_SECOND = 44100,
+		LEFT_CHANNEL = 0,
+		RIGHT_CHANNEL = 1,
+		MAX_CHANNELS = 2
 	};
 
+private:
+	PortAudioStream *mStream;
+	PaSampleFormat mFormat;
+	bool mIsRunning;
+	float mChannelVolumes[MAX_CHANNELS];
+
+	static int AudioCallback(void *inInputBuffer,
+							 void *outOutputBuffer,
+							 unsigned long inFramesPerBuffer,
+							 PaTimestamp inOutTime,
+							 void *inUserData);
+
+	void ApplyChannelVolumes(void *ioOutputBuffer,
+							 unsigned long inFramesPerBuffer);
+
+public:
 	//////////
 	// Create a new AudioStream.  You must call Start() afterwards if
 	// you want to play any audio.
@@ -43,6 +53,21 @@ public:
 	// destroying it.
 	//
 	virtual ~AudioStream();
+
+	//////////
+	// How many audio channels does this stream have?
+	//
+	int GetChannelCount() { return MAX_CHANNELS; }
+
+	//////////
+	// Set the volume of all channels.
+	//
+	void SetVolume(float inVolume);
+
+	//////////
+	// Set the volume of the specified channel.
+	//
+	void SetChannelVolume(int inChannel, float inVolume);
 
 	//////////
 	// Is the stream currently running?

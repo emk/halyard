@@ -25,6 +25,8 @@ public:
     virtual void Pause();
     virtual void Resume();
 	
+	virtual void SetVolume(const std::string &inChannel, double inVolume);
+
 	virtual wxRect GetRect() { return wxRect(0, 0, 0, 0); }
 	virtual bool HasVisibleRepresentation() { return false; }
 	virtual bool IsShown() { return false; }

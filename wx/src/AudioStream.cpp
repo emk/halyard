@@ -38,12 +38,14 @@ static inline float int16_to_float(int16 inSample)
 AudioStream::AudioStream(Format inFormat)
 	: mIsRunning(false)
 {
-	PaSampleFormat format =
-		(inFormat == INT16_PCM_STREAM) ? paInt16 : paFloat32;
+	for (int i = 0; i < MAX_CHANNELS; i++)
+		mChannelVolumes[i] = 1.0f;
+
+	mFormat = (inFormat == INT16_PCM_STREAM) ? paInt16 : paFloat32;
 	PaError err = Pa_OpenDefaultStream(&mStream,
 									   0,         // no input
 									   2,         // stereo output
-									   format,
+									   mFormat,
 									   SAMPLES_PER_SECOND,
 									   256,       // frames/buffer
 									   0,         // default number of buffers
@@ -71,7 +73,50 @@ int AudioStream::AudioCallback(void *inInputBuffer,
 	AudioStream *obj = (AudioStream *) inUserData;
 	bool should_stop = obj->FillBuffer((float *) outOutputBuffer,
 									   inFramesPerBuffer, inOutTime);
+	obj->ApplyChannelVolumes(outOutputBuffer, inFramesPerBuffer);
 	return should_stop ? 1 : 0;
+}
+
+void AudioStream::ApplyChannelVolumes(void *ioOutputBuffer,
+									  unsigned long inFramesPerBuffer)
+{
+	ASSERT(GetChannelCount() == 2);
+	ASSERT(mFormat == paInt16 || mFormat == paFloat32);
+
+	// If the volume is 1.0, we don't need to do anything.
+	if (mChannelVolumes[0] == 1.0 && mChannelVolumes[1] == 1.0)
+		return;
+
+	if (mFormat == paInt16)
+	{
+		int16 *buffer = (int16 *) ioOutputBuffer;
+		for (int i = 0; i < inFramesPerBuffer; i++)
+		{
+			*buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
+			*buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
+		}
+	}
+	else if (mFormat == paFloat32)
+	{
+		float *buffer = (float *) ioOutputBuffer;
+		for (int i = 0; i < inFramesPerBuffer; i++)
+		{
+			*buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
+			*buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
+		}		
+	}
+}
+
+void AudioStream::SetChannelVolume(int inChannel, float inVolume)
+{
+	ASSERT(0 <= inChannel && inChannel < GetChannelCount());
+	mChannelVolumes[inChannel] = inVolume;
+}
+
+void AudioStream::SetVolume(float inVolume)
+{
+	for (int i = 0; i < GetChannelCount(); i++)
+		SetChannelVolume(i, inVolume);
 }
 
 void AudioStream::Start()
@@ -170,17 +215,13 @@ bool SineAudioStream::FillBuffer(void *outBuffer,
 								 unsigned long inFrames,
 								 PaTimestamp inTime)
 {
-	float *left_buffer = (float *) outBuffer;
-	float *right_buffer = left_buffer + 1;
+	float *buffer = (float *) outBuffer;
 	PaTimestamp time = inTime;
 	for (int i = 0; i < inFrames; i++)
 	{
-		*left_buffer = note_amplitude(time, mFrequency) * 0.5;
-		*right_buffer = 0; //note_amplitude(time, 900);
-
-		left_buffer += 2;
-		right_buffer += 2;
-		time++;
+		float sample = note_amplitude(time++, mFrequency) * 0.5;
+		*buffer++ = sample;
+		*buffer++ = sample;
 	}
 	return false;	
 }

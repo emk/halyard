@@ -3,6 +3,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 CVS - emk
 
   * Mono Vorbis audio supported.
+  * Per-channel volume supported.
 
 0.0.5 - 30 May 2003 - emk
 

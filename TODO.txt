@@ -12,13 +12,10 @@
 /     Stop discarding extra Vorbis data when it doesn't fit in buffer
 /     Handle mono
       Replace test clips with custom clips
-      Are we clipping a few samples at the end?
-      Volume control?
-      Refactor buffering class out of VorbisAudioStream
+/     Volume control
       Don't run timer unless there's an active stream
       Fix endianess in libivorbisdec?
       Fix stutter when switching from sine to vorbis clip (portaudio bug?)
-      Try to get complete code coverage testing Vorbis playback path
 
     Useful features
       Looping
@@ -30,12 +27,19 @@
       Hook into Quake for ambients
       Kill off Quake sound effects when leaving sim card group
 
-    Less Important, Perhaps Even Dubious
+    Less Important (Or Even Dubious)
       (WAIT ...) on a Vorbis stream
+      Refactor buffering class out of VorbisAudioStream
       Allow Vorbis file loading with wxStream?
       Hook into Tamale for foley - lower priority
       Allow AudioStreams to be mono or stereo?
       Handle 44.1/2^N Vorbis streams?
+      We're clipping the last 0.5 seconds or so (actually, I think
+        portaudio is), and we should fix this
+      Try to get complete code coverage testing Vorbis playback path
+
+  Make TException stop reporting line numbers
+  Allow templates to define parent parameters in terms of their own parameters
     
   Send events to zones
 /   Mouse left down
