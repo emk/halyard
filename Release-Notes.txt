@@ -1,9 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - kwasi, djin
+CVS - kwasi, djin, emk
 
   * Added APIs for accessing TStateDB from Scheme.
   * Implemented %animated-graphic% with corresponding AnimatedOverlay class.
+  * Added support for (ON EXIT () ...) handlers.
+  * Updated Quake 2 game interface.
 
 0.0.16 - kwasi, djin, emk
 

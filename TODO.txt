@@ -30,6 +30,11 @@ X                                    (lambda (get) (whatever (get '/foo))))
       Premature restart of loops
       Stuttering during disk access
     Reticule/look support
+      Figure out what the player is looking at
+/       Get Quake 2 working in 5Ltest_wx again, with non-VTR AI
+        Figure out where to hook in look check code--probably post-movement
+        Send a simple text message to the client
+        Send an explicit "look" message to the client
       Displaying reticules (hack video support)
       Activate reticules (acts as trigger)
       Looking at reticulates (acts as trigger)
@@ -50,13 +55,15 @@ X                                    (lambda (get) (whatever (get '/foo))))
     Replace all old-style test cases with new-style test cases
     Remove TestCase.h inclusions from random cpp files
     Comment new macros in TestCase.h
+    Add interface for getting modifiers+char as list from char events
 
   Node/event model
-    (on cleanup ...)
+/   (on exit ...)
     Is (on setup-finished () ...) called at the right time?
     Is UPDATE-UI the right event name?  We don't have wxWindows semantics.
     Enable and disable zones in engine (for cursor purposes only?)
     PROP-CHANGE API needs work
+    We may need to fully virtualize property getters and setters
     Do we want to systematize DRAW-BUTTON method for all zones?
     Areas in need of major refactoring
       Can we combine node-handlers and node-values?
