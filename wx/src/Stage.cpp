@@ -13,6 +13,7 @@
 #include "AppGlobals.h"
 #include "FiveLApp.h"
 #include "Stage.h"
+#include "Element.h"
 #include "Listener.h"
 #include "Timecoder.h"
 
@@ -25,12 +26,12 @@
 
 class LocationBox : public wxComboBox
 {
-	void TryJump(const wxString &inCardName);
-
 public:
 	LocationBox(wxToolBar *inParent);
 	
 	void NotifyEnterCard();
+
+	void TryJump(const wxString &inCardName);
 
 	void UpdateUiLocationBox(wxUpdateUIEvent &inEvent);
 	void OnChar(wxKeyEvent &inEvent);
@@ -59,6 +60,12 @@ LocationBox::LocationBox(wxToolBar *inParent)
 
 }
 
+void LocationBox::NotifyEnterCard()
+{
+	ASSERT(TInterpreter::HaveInstance());
+	SetValue(TInterpreter::GetInstance()->CurCardName().c_str());
+}
+
 void LocationBox::TryJump(const wxString &inCardName)
 {
     if (TInterpreter::HaveInstance())
@@ -78,12 +85,6 @@ void LocationBox::TryJump(const wxString &inCardName)
 			wxLogError("The card \"" + inCardName + "\" does not exist.");
 		}
 	}
-}
-
-void LocationBox::NotifyEnterCard()
-{
-	ASSERT(TInterpreter::HaveInstance());
-	SetValue(TInterpreter::GetInstance()->CurCardName().c_str());
 }
 
 void LocationBox::UpdateUiLocationBox(wxUpdateUIEvent &inEvent)
@@ -365,18 +366,17 @@ void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
 
 void StageFrame::OnJumpCard()
 {
-	mLocationBox->Prompt();
-	/*
     if (TInterpreter::HaveInstance())
     {
-        wxTextEntryDialog dialog(this, "Jump to Card", "Card:");
-        if (dialog.ShowModal() == wxID_OK)
-        {
-            wxString card_name = dialog.GetValue();
-            TInterpreter::GetInstance()->JumpToCardByName(card_name);
-        }
-    }
-	*/
+		if (!IsFullScreen())
+			mLocationBox->Prompt();
+		else
+		{
+			wxTextEntryDialog dialog(this, "Jump to Card", "Card:");
+			if (dialog.ShowModal() == wxID_OK)
+				mLocationBox->TryJump(dialog.GetValue());
+		}
+	}
 }
 
 void StageFrame::OnClose(wxCloseEvent &inEvent)
@@ -414,7 +414,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
       mFrame(inFrame), mStageSize(inStageSize),
       mOffscreenPixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), -1),
-	  mTextCtrl(NULL), mLastStageObject(NULL),
+	  mTextCtrl(NULL), mLastElement(NULL),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
 
@@ -432,7 +432,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 
 Stage::~Stage()
 {
-	DeleteStageObjects();
+	DeleteElements();
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
 
@@ -445,7 +445,7 @@ void Stage::NotifyExitCard()
 {
     if (mTextCtrl->IsShown())
         mTextCtrl->Hide();
-	DeleteStageObjects();
+	DeleteElements();
 }
 
 void Stage::NotifyScriptReload()
@@ -454,16 +454,16 @@ void Stage::NotifyScriptReload()
 	gStyleSheetManager.RemoveAll();
 }
 
-void Stage::NotifyObjectsChanged()
+void Stage::NotifyElementsChanged()
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, "Objects on stage have changed.");
+	wxLogTrace(TRACE_STAGE_DRAWING, "Elements on stage have changed.");
 
-	// Don't do anything unless there's a good chance this object still
+	// Don't do anything unless there's a good chance this window still
 	// exists in some sort of valid state.
 	// TODO - Is IsShown a good way to tell whether a window is still good?
 	if (IsShown())
 	{
-		// Update our object borders (if necessary).
+		// Update our element borders (if necessary).
 		if (mIsDisplayingBorders)
 			InvalidateStage();
 	}
@@ -476,9 +476,9 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 
 void Stage::OnMouseMove(wxMouseEvent &inEvent)
 {
-	// Do any mouse-moved processing for our StageObjects.
-	StageObject *obj = FindLightWeightStageObject(inEvent.GetPosition());
-	if (obj == NULL || obj != mLastStageObject)
+	// Do any mouse-moved processing for our Elements.
+	Element *obj = FindLightWeightElement(inEvent.GetPosition());
+	if (obj == NULL || obj != mLastElement)
 	{
 		if (!mIsDisplayingXy)
 		{
@@ -487,7 +487,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
 			else
 				SetCursor(wxNullCursor);
 		}
-		mLastStageObject = obj;
+		mLastElement = obj;
 	}
 
     if (mIsDisplayingXy)
@@ -570,21 +570,22 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
 	if (mIsDisplayingBorders)
 	{
 		if (mTextCtrl->IsShown())
-			DrawObjectBorder(screen_dc, mTextCtrl->GetRect());
+			DrawElementBorder(screen_dc, mTextCtrl->GetRect());
 
-		StageObjectCollection::iterator i = mStageObjects.begin();
-		for (; i != mStageObjects.end(); i++)
-			DrawObjectBorder(screen_dc, (*i)->GetRect());
+		ElementCollection::iterator i = mElements.begin();
+		for (; i != mElements.end(); i++)
+			if ((*i)->IsShown())
+				DrawElementBorder(screen_dc, (*i)->GetRect());
 	}
 }
 
-void Stage::DrawObjectBorder(wxDC &inDC, const wxRect &inObjectRect)
+void Stage::DrawElementBorder(wxDC &inDC, const wxRect &inElementRect)
 {
 	inDC.SetPen(*wxRED_PEN);
 	inDC.SetBrush(*wxTRANSPARENT_BRUSH);
 
 	// Draw the border *outside* our rectangle.
-	wxRect r = inObjectRect;
+	wxRect r = inElementRect;
 	r.Inflate(1);
 	inDC.DrawRectangle(r.x, r.y, r.width, r.height);
 }
@@ -611,7 +612,7 @@ void Stage::OnTextEnter(wxCommandEvent &inEvent)
 
 void Stage::OnLeftDown(wxMouseEvent &inEvent)
 {
-	StageObject *obj = FindLightWeightStageObject(inEvent.GetPosition());
+	Element *obj = FindLightWeightElement(inEvent.GetPosition());
 	if (obj)
 		obj->Click();
 }
@@ -645,6 +646,17 @@ void Stage::ClearStage(const wxColor &inColor)
     dc.SetBackground(brush);
     dc.Clear();
     InvalidateStage();
+}
+
+void Stage::FillBox(const wxRect &inBounds, const wxColour &inColor)
+{
+    wxMemoryDC dc;
+    dc.SelectObject(mOffscreenPixmap);
+    wxBrush brush(inColor, wxSOLID);
+    dc.SetBrush(brush);
+    dc.SetPen(*wxTRANSPARENT_PEN);
+	dc.DrawRectangle(inBounds.x, inBounds.y, inBounds.width, inBounds.height);
+	InvalidateRect(inBounds);
 }
 
 void Stage::DrawPixMap(GraphicsTools::Point inPoint,
@@ -756,7 +768,7 @@ void Stage::ModalTextInput(const wxRect &inBounds,
     mTextCtrl->SetSize(inBounds);
     mTextCtrl->Show();
     mTextCtrl->SetFocus();
-	NotifyObjectsChanged();
+	NotifyElementsChanged();
 
     // Put our Scheme interpreter to sleep.
     ASSERT(TInterpreter::HaveInstance() &&
@@ -778,70 +790,56 @@ wxString Stage::FinishModalTextInput()
 
     // Hide our text control and get the text.
     mTextCtrl->Hide();
-	NotifyObjectsChanged();
+	NotifyElementsChanged();
     return mTextCtrl->GetValue();
 }
 
-void Stage::AddStageObject(StageObject *inStageObject)
+void Stage::AddElement(Element *inElement)
 {
-	// Delete any existing StageObject with the same name.
-	(void) DeleteStageObjectByName(inStageObject->GetName());
+	// Delete any existing Element with the same name.
+	(void) DeleteElementByName(inElement->GetName());
 
-	// Add the new StageObject to our list.
-	mStageObjects.push_back(inStageObject);
-	NotifyObjectsChanged();
+	// Add the new Element to our list.
+	mElements.push_back(inElement);
+	NotifyElementsChanged();
 }
 
-StageObject *Stage::FindLightWeightStageObject(const wxPoint &inPoint)
+Element *Stage::FindLightWeightElement(const wxPoint &inPoint)
 {
-	// Look for the most-recently-added StageObject containing inPoint.
-	StageObject *result = NULL;
-	StageObjectCollection::iterator i = mStageObjects.begin();
-	for (; i != mStageObjects.end(); i++)
+	// Look for the most-recently-added Element containing inPoint.
+	Element *result = NULL;
+	ElementCollection::iterator i = mElements.begin();
+	for (; i != mElements.end(); i++)
 		if ((*i)->IsLightWeight() &&
-			(*i)->IsPointInStageObject(inPoint))
+			(*i)->IsPointInElement(inPoint))
 			result = *i;
 	return result;
 }
 
-bool Stage::DeleteStageObjectByName(const wxString &inName)
+bool Stage::DeleteElementByName(const wxString &inName)
 {
 	bool found = false;
-	StageObjectCollection::iterator i = mStageObjects.begin();
-	for (; i != mStageObjects.end(); i++)
+	ElementCollection::iterator i = mElements.begin();
+	for (; i != mElements.end(); i++)
 	{
 		if ((*i)->GetName() == inName)
 		{
 			delete *i;
-			mStageObjects.erase(i);
+			mElements.erase(i);
 			found = true;
 			break;
 		}
 	}
-	NotifyObjectsChanged();
+	NotifyElementsChanged();
 	return found;
 }
 
-void Stage::DeleteStageObjects()
+void Stage::DeleteElements()
 {
-	mLastStageObject = NULL;
-	StageObjectCollection::iterator i = mStageObjects.begin();
-	for (; i != mStageObjects.end(); i++)
+	mLastElement = NULL;
+	ElementCollection::iterator i = mElements.begin();
+	for (; i != mElements.end(); i++)
 		delete *i;
-	mStageObjects.clear();
-	NotifyObjectsChanged();
-}
-
-
-//=========================================================================
-//  StageObject Methods
-//=========================================================================
-
-StageObject::StageObject(Stage *inStage, const wxString &inName)
-	: mStage(inStage), mName(inName)
-{
-    ASSERT(mStage);
-    ASSERT(mName != "");
-
-	mStage->AddStageObject(this);
+	mElements.clear();
+	NotifyElementsChanged();
 }

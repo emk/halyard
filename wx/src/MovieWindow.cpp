@@ -23,7 +23,7 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
 						 const wxPoint &inPos,
 						 const wxSize &inSize,
 						 long inWindowStyle,
-						 long inMovieWindowStyle,
+						 MovieWindowStyle inMovieWindowStyle,
 						 const wxString &inName)
     : wxWindow(inParent, inID, inPos, inSize, inWindowStyle, inName),
       mMovie(NULL), mMovieWindowStyle(inMovieWindowStyle)
@@ -35,6 +35,10 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
     // TODO - PORTING - This code is Windows-specific.
     mHWND = GetHWND();
     TQTMovie::RegisterWindowForMovies((HWND) mHWND);
+
+	// If this is an audio-only movie, hide the widget.
+	if (mMovieWindowStyle & MOVIE_AUDIO_ONLY)
+		Hide();
 
 	wxLogTrace(TRACE_STAGE_DRAWING, "Created movie window.");
 }
@@ -68,11 +72,20 @@ void MovieWindow::SetMovie(const wxString &inName)
     mMovie = new TQTMovie(TQTMovie::GetPortFromHWND((HWND) mHWND),
 						  (const char *) inName);
 
+	// Figure out what playback options we want.
+	TQTMovie::PlaybackOptions opt = TQTMovie::kDefaultOptions;
+	if (mMovieWindowStyle & MOVIE_CONTROLLER)
+		opt |= TQTMovie::kEnableMovieController;
+	if (mMovieWindowStyle & MOVIE_AUDIO_ONLY)
+		opt |= TQTMovie::kAudioOnly;
+	if (mMovieWindowStyle & MOVIE_LOOP)
+		opt |= TQTMovie::kLoopMovie;
+
     // Set the movie to play as soon as it can.
     // TODO - We'll change this to better integrate with pre-rolling.
     Point p;
     p.h = p.v = 0;
-    mMovie->StartWhenReady(TQTMovie::kEnableMovieController, p);
+    mMovie->StartWhenReady(opt, p);
 }
 
 int MovieWindow::GetFrame()

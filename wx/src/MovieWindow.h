@@ -5,6 +5,14 @@
 
 class TQTMovie;
 
+typedef unsigned long MovieWindowStyle;
+
+enum /* MovieWindowStyle */ {
+	MOVIE_CONTROLLER = 1,
+	MOVIE_LOOP = 2,
+	MOVIE_AUDIO_ONLY = 4
+};
+
 //////////
 // A wxWindow subclass which can display and manage a QuickTime movie.
 // TODO - Still frightfully incomplete, but enough to get by with.
@@ -13,7 +21,7 @@ class MovieWindow : public wxWindow
 {
     WXHWND mHWND;
     TQTMovie *mMovie;
-    long mMovieWindowStyle;
+    MovieWindowStyle mMovieWindowStyle;
 
 	//////////
 	// Delete any movie attached to this object.
@@ -32,7 +40,7 @@ public:
 				const wxPoint &inPos = wxDefaultPosition,
 				const wxSize &inSize = wxDefaultSize,
 				long inWindowStyle = 0,
-				long inMovieWindowStyle = 0,
+				MovieWindowStyle inMovieWindowStyle = 0,
 				const wxString &inName = wxPanelNameStr);
 
     //////////

@@ -7,7 +7,7 @@
 
 Zone::Zone(Stage *inStage, const wxString &inName, const wxRect &inBounds,
 		   TCallback *inAction)
-    : StageObject(inStage, inName), mBounds(inBounds), mAction(inAction)
+    : Element(inStage, inName), mBounds(inBounds), mAction(inAction)
 {
     ASSERT(mAction);
 }
@@ -18,7 +18,7 @@ Zone::~Zone()
     delete mAction;
 }
 
-bool Zone::IsPointInStageObject(const wxPoint &inPoint)
+bool Zone::IsPointInElement(const wxPoint &inPoint)
 {
     return mBounds.Inside(inPoint);
 }

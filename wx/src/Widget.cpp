@@ -6,7 +6,7 @@
 #include "Widget.h"
 
 Widget::Widget(Stage *inStage, const wxString &inName, wxWindow *inWindow)
-    : StageObject(inStage, inName), mWindow(inWindow)
+    : Element(inStage, inName), mWindow(inWindow)
 {
     ASSERT(inWindow);
 }

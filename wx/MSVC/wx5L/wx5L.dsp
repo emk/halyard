@@ -188,6 +188,26 @@ SOURCE=..\..\src\Zone.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=..\..\src\ic_5L.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ic_listener.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ic_timecoder.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\tb_borders.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\tb_grid.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\tb_reload.bmp
 # End Source File
 # Begin Source File

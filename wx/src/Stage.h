@@ -8,7 +8,7 @@
 #include "GraphicsTools.h"
 
 class Stage;
-class StageObject;
+class Element;
 class LocationBox;
 class ToolWindow;
 class TQTMovie;
@@ -116,9 +116,9 @@ public:
 class Stage : public wxWindow, public GraphicsTools::Image
 {
 	//////////
-	// A list of StageObjects.
+	// A list of Elements.
 	//
-	typedef std::deque<StageObject*> StageObjectCollection;
+	typedef std::deque<Element*> ElementCollection;
 
     //////////
     // The StageFrame associated with the stage.  We need to poke at it
@@ -144,16 +144,16 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	wxTextCtrl *mTextCtrl;
 
 	//////////
-	// Our currently active stage objects.
+	// Our currently active elements.
 	//
-	StageObjectCollection mStageObjects;
+	ElementCollection mElements;
 
 	//////////
-	// The stage object which most recently contained the mouse.
+	// The element which most recently contained the mouse.
 	// Invariant: This variable is always NULL, or points to a valid 
-	// lightweight stage object.  Be careful when deleting stage objects!
+	// lightweight element.  Be careful when deleting element!
 	//
-	StageObject* mLastStageObject;
+	Element* mLastElement;
 
     //////////
     // Are we displaying the XY co-ordinates of the cursor?
@@ -183,12 +183,12 @@ class Stage : public wxWindow, public GraphicsTools::Image
     //////////
     // Draw a border for the specified rectangle.
     //
-    void DrawObjectBorder(wxDC &inDC, const wxRect &inObjectRect);
+    void DrawElementBorder(wxDC &inDC, const wxRect &inElementRect);
 
     //////////
-    // Let the stage know that the list of active objects has changed.
+    // Let the stage know that the list of active elements has changed.
     //
-    void NotifyObjectsChanged();
+    void NotifyElementsChanged();
 
 public:
     //////////
@@ -295,6 +295,11 @@ public:
     void ClearStage(const wxColor &inColor);
 
 	//////////
+	// Fill in the specified box with the specified color.
+	//
+	void FillBox(const wxRect &inBounds, const wxColour &inColor);
+
+	//////////
 	// Draw a portable PixMap to the screen, blending alpha
 	// values appropriately.
 	//
@@ -337,97 +342,35 @@ public:
 	wxString FinishModalTextInput();
 
 	//////////
-	// Add a StageObject to this Stage.  This should only be called
-	// by the StageObject class.
+	// Add a Element to this Stage.  This should only be called
+	// by the Element class.
 	//
-	void AddStageObject(StageObject *inStageObject);
+	void AddElement(Element *inElement);
 
 	//////////
-	// Find the lightweight StageObject containing the specified point, if
+	// Find the lightweight Element containing the specified point, if
 	// any.  We normally call this function when we want to find a
-	// lightweight stage object to handle some kind of mouse event.
+	// lightweight element to handle some kind of mouse event.
 	//
 	// [in] inPoint - The point to check.
-	// [out] return - A pointer to the StageObject, or NULL.
+	// [out] return - A pointer to the Element, or NULL.
 	//
-	StageObject *FindLightWeightStageObject(const wxPoint &inPoint);
+	Element *FindLightWeightElement(const wxPoint &inPoint);
 
 	//////////
-	// Delete a StageObject by name.
+	// Delete a Element by name.
 	//
-	// [in] inName - The name of the StageObject to delete.
-	// [out] return - Returns true if that StageObject existed.
+	// [in] inName - The name of the Element to delete.
+	// [out] return - Returns true if that Element existed.
 	//
-	bool DeleteStageObjectByName(const wxString &inName);
+	bool DeleteElementByName(const wxString &inName);
 
 	//////////
-	// Delete all StageObjects owned the Stage.
+	// Delete all Elements owned the Stage.
 	//
-	void DeleteStageObjects();
+	void DeleteElements();
 
     DECLARE_EVENT_TABLE();
-};
-
-//////////
-// A StageObject is something which appears on a stage--typically either
-// a Zone or an full-fledged widget.  StageObjects are either "lightweight",
-// meaning they need help from the stage to process events, or they are
-// heavyweight and use wxWindows to process their events.  Zones are
-// lightweight; widgets are heavyweight.
-//
-// This class has a "fat" interface--a number of methods are only useful
-// if IsLightWeight returns true.  This allows us to avoid using RTTI,
-// but is otherwise a slightly odd design.
-//
-class StageObject
-{
-	//////////
-	// The stage on which this object appears.
-	//
-	Stage *mStage;
-
-	//////////
-	// The name of this object.  Must be unique on any given card. 
-	//
-	wxString mName;
-
-public:
-	//////////
-	// Create a new StageObject and attach it to the specified stage.
-	// The stage is responsible for deleting the object.
-	//
-	StageObject(Stage *inStage, const wxString &inName);
-
-	virtual ~StageObject() {}
-	
-	//////////
-	// Return the name of the stage object.  Should be unique on any
-	// given card.
-	//
-	wxString GetName() { return mName; }
-
-	//////////
-	// Return the bounding box of the stage object.  Used for drawing
-	// borders around the object.
-	//
-	virtual wxRect GetRect() = 0;
-
-	//////////
-	// Does this object need to receive
-	//
-	virtual bool IsLightWeight() { return false; }
-
-	//////////
-	// Is the specified point in the object?
-	// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
-	//
-	virtual bool IsPointInStageObject(const wxPoint &inPoint) { return false; }
-
-	//////////
-	// Pass a click event to the object.
-	// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
-	//
-	virtual void Click() { }
 };
 
 #endif // Stage_H

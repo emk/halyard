@@ -29,17 +29,20 @@ using GraphicsTools::Color;
 
 void FIVEL_NS RegisterWxPrimitives()
 {
-    REGISTER_5L_PRIMITIVE(DeleteStageObjects);
+	REGISTER_5L_PRIMITIVE(Box);
+    REGISTER_5L_PRIMITIVE(DeleteElements);
 	REGISTER_5L_PRIMITIVE(EditBox);
 	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Movie);
+	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
     REGISTER_5L_PRIMITIVE(Screen);
     REGISTER_5L_PRIMITIVE(SetWindowTitle);
 	REGISTER_5L_PRIMITIVE(TextAA);
+	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Zone);
 }
 
@@ -81,10 +84,19 @@ static wxColour ConvColor(GraphicsTools::Color inColor)
 //  Implementation of wxWindows Primitives
 //=========================================================================
 
-DEFINE_5L_PRIMITIVE(DeleteStageObjects)
+DEFINE_5L_PRIMITIVE(Box)
+{
+	TRect bounds;
+	Color color;
+
+	inArgs >> bounds >> color;
+	wxGetApp().GetStage()->FillBox(ConvRect(bounds), ConvColor(color));
+}
+
+DEFINE_5L_PRIMITIVE(DeleteElements)
 {
 	if (!inArgs.HasMoreArguments())
-		wxGetApp().GetStage()->DeleteStageObjects();
+		wxGetApp().GetStage()->DeleteElements();
 	else
 	{
 		while (inArgs.HasMoreArguments())
@@ -92,9 +104,9 @@ DEFINE_5L_PRIMITIVE(DeleteStageObjects)
 			std::string name;
 			inArgs >> name;
 			bool found =
-				wxGetApp().GetStage()->DeleteStageObjectByName(name.c_str());
+				wxGetApp().GetStage()->DeleteElementByName(name.c_str());
 			if (!found)
-				gDebugLog.Caution("Deleting non-existant stage object %s.",
+				gDebugLog.Caution("Deleting non-existant element '%s'.",
 								  name.c_str());
 		}
 	}
@@ -194,16 +206,42 @@ DEFINE_5L_PRIMITIVE(NotifyExitCard)
 	wxGetApp().GetStage()->NotifyExitCard();
 }
 
+/*------------------------------------------------
+    (NAP TIME)
+
+    Pause execution for TIME tenths of seconds.
+    The user can abort a long nap via the ESC key.
+--------------------------------------------------*/
+DEFINE_5L_PRIMITIVE(Nap)
+{
+    int32    tenths;
+
+    inArgs >> tenths;
+
+    //gCursorManager.CheckCursor();
+    //gView->Draw();
+    TInterpreter::GetInstance()->Nap(tenths);
+}
+
 DEFINE_5L_PRIMITIVE(Movie)
 {
 	std::string name, path;
-	TPoint pos;
+	TRect bounds;
+	bool controller, audio_only, loop;
 
-	inArgs >> name >> pos >> path;
+	inArgs >> name >> bounds >> path >> controller >> audio_only >> loop;
+
+	MovieWindowStyle style = 0;
+	if (controller)
+		style |= MOVIE_CONTROLLER;
+	if (audio_only)
+		style |= MOVIE_AUDIO_ONLY;
+	if (loop)
+		style |= MOVIE_LOOP;
 
 	MovieWindow *movie =
-		new MovieWindow(wxGetApp().GetStage(), -1, ConvPoint(pos),
-						wxSize(320, 256));
+		new MovieWindow(wxGetApp().GetStage(), -1, GetPos(bounds),
+						GetSize(bounds), 0, style);
 	movie->Show();
 	movie->SetMovie(path.c_str());
 	new Widget(wxGetApp().GetStage(), name.c_str(), movie);
@@ -245,6 +283,21 @@ DEFINE_5L_PRIMITIVE(TextAA)
 												 bounds.Top()),
 							bounds.Right() - bounds.Left(),
 							wxGetApp().GetStage());
+}
+
+/*-----------------------------------------------------------
+    (TIMEOUT DELAY CARD)
+
+    If the user doesn't respond in DELAY seconds, jump to the
+    given card.
+-------------------------------------------------------------*/
+DEFINE_5L_PRIMITIVE(Timeout)
+{
+    TString 	cardName;
+    int32     	secs;
+
+    inArgs >> secs >> cardName;
+    TInterpreter::GetInstance()->Timeout(cardName.GetString(), secs);
 }
 
 DEFINE_5L_PRIMITIVE(Zone)

@@ -4,6 +4,7 @@
 #define Zone_H
 
 #include "Stage.h"
+#include "Element.h"
 
 class TCallback;
 
@@ -12,7 +13,7 @@ class TCallback;
 // have an associated wxWindow object; all of its events are passed directly
 // to it by the Stage itself.
 //
-class Zone : public StageObject
+class Zone : public Element
 {
 	wxRect mBounds;
 	TCallback *mAction;
@@ -25,7 +26,7 @@ public:
 	virtual bool IsLightWeight() { return true; }
 
 	virtual wxRect GetRect() { return mBounds; }
-	virtual bool IsPointInStageObject(const wxPoint &inPoint);
+	virtual bool IsPointInElement(const wxPoint &inPoint);
 	virtual void Click();
 };
 

@@ -4,12 +4,13 @@
 #define Widget_H
 
 #include "Stage.h"
+#include "Element.h"
 
 //////////
 // A widget represents a full-fledged wxWindow object hanging around on
-// our stage.  It does its own event processing
+// our stage.  It does its own event processing.
 //
-class Widget : public StageObject
+class Widget : public Element
 {
 	//////////
 	// The wxWindow implementing this widget.
@@ -38,6 +39,11 @@ public:
 	// Get the bounding rectangle for the widget.
 	//
 	virtual wxRect GetRect() { return mWindow->GetRect(); }
+
+	//////////
+	// Return true if the stage object is shown on the screen.
+	//
+	virtual bool IsShown() { return mWindow->IsShown(); }
 };
 
 #endif // Widget_H

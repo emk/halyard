@@ -22,8 +22,10 @@ Timecoder::Timecoder(StageFrame *inStageFrame)
 				 wxICON(ic_timecoder))
 {
     // Create a panel to hold our movie.
+	// TODO - This is way too hard-coded.
     mMovieWindow =
-		new MovieWindow(this, -1, wxDefaultPosition, wxSize(320, 256));
+		new MovieWindow(this, -1, wxDefaultPosition, wxSize(320, 256),
+						0, MOVIE_CONTROLLER);
     mMovieWindow->SetMovie(TEST_MOVIE);
 
     // Create a panel to hold our timecode value.
