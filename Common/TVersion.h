@@ -17,15 +17,25 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		9
+#define VERSION_REV_BIG		10
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.9"
+#define VERSION_STRING		"5L 3.4.10"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.10  2004/04/22 22:51:59  emk
+ 3.4.10 - 22 Apr 2004 - emk
+
+   * Turned database encryption off by default, for use with IML programs
+     DVD.  The encryption layer was causing crashes when run from a locked
+     volume, and I'm willing to devote 5 minutes to testing out a quick and
+     dirty workaround.  This is far from an all-inclusive fix--the engine is
+     still not designed for serious use on locked volumes--but it will
+     probably fix the worst problems we're seeing in demos.
+
  Revision 1.30.2.9  2003/12/01 19:34:50  emk
  3.4.9 - 20 Nov 2003 - emk
 

@@ -1,5 +1,14 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.4.10 - 22 Apr 2004 - emk
+
+  * Turned database encryption off by default, for use with IML programs
+    DVD.  The encryption layer was causing crashes when run from a locked
+    volume, and I'm willing to devote 5 minutes to testing out a quick and
+    dirty workaround.  This is far from an all-inclusive fix--the engine is
+    still not designed for serious use on locked volumes--but it will
+    probably fix the worst problems we're seeing in demos.
+
 3.4.9 - 20 Nov 2003 - emk
 
 Bug fixes for the new media layer.
