@@ -84,7 +84,7 @@ bool TBNode::Add(TBNode *inNode)
 	{
 		// XXX - We'd like to do a throw() here, but it seems to
 		// cause a bunch of yucky errors.  So just die for now.
-		gLog.Error("Duplicate node <%s>.", inNode->Key());
+		gLog.FatalError("Duplicate node <%s>.", inNode->Key());
 	}
 
 	return true;
@@ -300,6 +300,9 @@ void TBTree::RemoveAll(void)
 
 /*
  $Log$
+ Revision 1.7  2002/07/26 19:18:34  emk
+ Make an error fatal, and tweak the release notes.
+
  Revision 1.6  2002/07/25 22:25:25  emk
    * Made new CryptStream auto_ptr code work under Windows.
    * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now
