@@ -5,6 +5,9 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Quake2Engine.h"
+#include "FileSystem.h"
+
+using FileSystem::GetBaseDirectory;
 
 #if CONFIG_HAVE_QUAKE2
 
@@ -14,7 +17,9 @@
 
 Quake2Engine::Quake2Engine(Stage *inStage)
     : wxQuake2Window(inStage, -1, wxDefaultPosition,
-					 wxQuake2Window::MODE_640_480, "tamale")
+					 wxQuake2Window::MODE_640_480,
+					 GetBaseDirectory().ToNativePathString().c_str(),
+					 "tamale")
 {
 	ASSERT(!sHasBeenCreated && !sInstance);
 	sInstance = this;

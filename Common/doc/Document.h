@@ -26,10 +26,7 @@ public:
     Document(const std::string &inDirectory);
 
 	//////////
-	// Create a new document in the specified directory, and make
-	// sure that all the appropriate support files are already in place.
-	// This should eventually create all the support files, but we're
-	// not that clever yet.
+	// Open the document in the specified directory.
 	//
     Document(const std::string &inDirectory, Flag inOpen);
     ~Document();
