@@ -8,10 +8,11 @@
 #include "TVariable.h"
 #include "TStyleSheet.h"
 
-// XXX - Huh?  Who included by TStyleSheet.h is defining DrawText?
+// XXX - Huh?  Who included by TStyleSheet.h (on Win32) is defining DrawText?
 #undef DrawText
 
 #include "AppGlobals.h"
+#include "AppGraphics.h"
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "Element.h"
@@ -602,7 +603,7 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
             if (x % large_spacing)
                 screen_dc.DrawLine(x, 0, x, height);
         for (int y = 0; y < width; y += small_spacing)
-            if (x % large_spacing)
+            if (y % large_spacing)
                 screen_dc.DrawLine(0, y, width, y);
 
         // Draw the major divisions of the grid.

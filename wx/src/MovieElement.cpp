@@ -12,9 +12,9 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
 						   MovieWindowStyle inMovieWindowStyle)
     : Widget(inStage, inName), mMovieWindow(NULL)
 {
-    mMovieWindow = new MovieWindow(inStage, -1, inBounds.GetPosition(),
-								   inBounds.GetSize(), inWindowStyle,
-								   inMovieWindowStyle);
+    mMovieWindow = new MovieWindowNative(inStage, -1, inBounds.GetPosition(),
+										 inBounds.GetSize(), inWindowStyle,
+										 inMovieWindowStyle);
 	mMovieWindow->SetMovie(inLocation);
 	InitializeWidgetWindow(mMovieWindow);
 }

@@ -36,3 +36,10 @@
     SCORM and/or mainstream LMS software
     Content security
     GUI editing tools for content authors, graphic artists
+
+Notes
+-----
+
+  To build Linux wxWindows, configure as:
+
+    $ CC=gcc-3.0 CXX=g++-3.0 ./configure --disable-shared

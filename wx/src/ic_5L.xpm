@@ -1,0 +1,43 @@
+/* XPM */
+static char *ic_5L_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"32 32 4 1",
+/* colors */
+"  c #000000",
+". c #008080",
+"X c #FF0000",
+"o c None",
+/* pixels */
+"oooooooooooooooooooooooooooooooo",
+"oooooooooooooooooooooooooooooooo",
+"oXXXXXXXXXXXooooXXXooooooooooooo",
+"oXXXXXXXXXXX oooXXX oooooooooooo",
+"oXXXXXXXXXXX  ooXXX  ooooooooooo",
+"oXXX          ooXXX  ooooooooooo",
+"oXXX          ooXXX  ooooooooooo",
+"oXXX  ooooooooooXXX  ooooooooooo",
+"oXXX  ooooooooooXXX  ooooooooooo",
+"oXXX  ooooooooooXXX  ooooooooooo",
+"oXXX  ooooooooooXXX  ooooooooooo",
+"oXXX  ooooooooooXXX  ooooooooooo",
+"oXXXXXXXXXooooooXXX  ooooooooooo",
+"oXXXXXXXXXXoooooXXX  ooooooooooo",
+"oXXXXXXXXXXX oooXXX  ooooooooooo",
+"oo       XXX  ooXXX  ooooooooooo",
+"ooo      XXX  ooXXX  ooooooooooo",
+"oooooooooXXX  ooXXX  ooooooooooo",
+"oooooooooXXX  ooXXX  ooooooooooo",
+"oooooooooXXX  ooXXX  ooooooooooo",
+"oooooooooXXX  ooXXX  ooooooooooo",
+"oooooooooXXX  ooXXX  ooooooooooo",
+"oooooooooXXX  ooXXX  ooooooooooo",
+"oXXXXXXXXXXX  ooXXXXXXXXXXXXoooo",
+"oXXXXXXXXXXX  ooXXXXXXXXXXXX .oo",
+"oXXXXXXXXXXX  ooXXXXXXXXXXXX  oo",
+"oo            ooo             oo",
+"ooo          .oooo            oo",
+"oooooooooooooooooooooooooooooooo",
+"oooooooooooooooooooooooooooooooo",
+"oooooooooooooooooooooooooooooooo",
+"oooooooooooooooooooooooooooooooo"
+};

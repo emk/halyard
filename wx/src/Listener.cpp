@@ -5,6 +5,7 @@
 #include "TCommon.h"
 #include "TInterpreter.h"
 #include "AppGlobals.h"
+#include "AppGraphics.h"
 #include "Stage.h"
 #include "Listener.h"
 

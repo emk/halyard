@@ -2,6 +2,7 @@
 
 #include <wx/wx.h>
 
+#include "AppGraphics.h"
 #include "Stage.h"
 #include "Timecoder.h"
 #include "MovieWindow.h"
@@ -24,8 +25,8 @@ Timecoder::Timecoder(StageFrame *inStageFrame)
     // Create a panel to hold our movie.
 	// TODO - This is way too hard-coded.
     mMovieWindow =
-		new MovieWindow(this, -1, wxDefaultPosition, wxSize(320, 256),
-						0, MOVIE_CONTROLLER);
+		new MovieWindowNative(this, -1, wxDefaultPosition, wxSize(320, 256),
+							  0, MOVIE_CONTROLLER);
     mMovieWindow->SetMovie(TEST_MOVIE);
 
     // Create a panel to hold our timecode value.
@@ -56,7 +57,7 @@ void Timecoder::OnIdle(wxIdleEvent &inEvent)
 	// Make a label.
 	wxString label;
 	label.Printf("%d:%02d:%02d",
-				 minutes, seconds % 60, frames % FRAMES_PER_SECOND);
+				 minutes, seconds % 60, (int) frames % FRAMES_PER_SECOND);
 
 	// If the label is different from what we're currently displaying,
 	// update it.  We don't update the label unnecessarily, because

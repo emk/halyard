@@ -58,10 +58,12 @@ static wxRect ConvRect(const TRect &inRect)
 				  wxPoint(inRect.Right(), inRect.Bottom()));
 }
 
+/*
 static wxPoint ConvPoint(const TPoint &inPoint)
 {
 	return wxPoint(inPoint.X(), inPoint.Y());
 }
+*/
 
 static wxPoint GetPos(const TRect &inRect)
 {

@@ -1,0 +1,25 @@
+/* XPM */
+static char *tb_xy_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"15 15 3 1",
+/* colors */
+"  c #000000",
+". c #C0C0C0",
+"X c None",
+/* pixels */
+"XXXX XXXXXXXXXX",
+"XXXX XXXXXXXXXX",
+"XXXX XXXXXXXXXX",
+"XXXXXXXXXXXXXXX",
+"   X X   X X X ",
+"XXXXXXXXXXXXXXX",
+"XXXX XXXXXXXXX ",
+"XXXX XXXXXXXXXX",
+"XXXX XXXXXXXXX ",
+"XXXXXXXXXXXXXXX",
+"XXXX XXXXXXXXX ",
+"XXXXXXXXXXXXXXX",
+"XXXX XXXXXXXXX ",
+"XXXXXXXXXXXXXXX",
+"XXXX X X X X X "
+};

@@ -11,8 +11,7 @@ use warnings;
 
 my @categories = qw(Common Mac Win32 wx);
 
-my @exclude = qw(Common/freetype2
-		 Common/libs
+my @exclude = qw(libs
 		 Common/Runtime/mzlib
 		 Common/Runtime/net
 		 Common/Runtime/xml

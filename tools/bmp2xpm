@@ -1,0 +1,22 @@
+#!/bin/sh
+# Convert a Windows BMP to an xpm file.
+
+# Work out all the names we'll need.
+BASE_NAME="$1"
+BMP_NAME="$BASE_NAME.bmp"
+PPM_NAME="$BASE_NAME.ppm"
+MASK_NAME="$BASE_NAME-mask.pgm"
+XPM_NAME="$BASE_NAME.xpm"
+XPM_LABEL="${BASE_NAME}_xpm"
+
+# Ask /bin/sh to exit immediately if an error occurs.
+set -e
+
+# Do the conversion.
+bmptoppm "$BMP_NAME" > "$PPM_NAME"
+ppmcolormask rgb:C0/C0/C0 "$PPM_NAME" > "$MASK_NAME"
+ppmtoxpm -name "$XPM_LABEL" -alphamask="$MASK_NAME" "$PPM_NAME" > "$XPM_NAME"
+
+# Clean up.
+rm "$PPM_NAME"
+rm "$MASK_NAME"

@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+# Given the output of the CVS command, ask the user what to do with each
+# unknown file.  To use:
+#  $ update-cvs-ignore
+
+use strict;
+use warnings;
+
+print STDOUT "Running cvs update...\n";
+
+# Get the ouput of cvs update.
+open(CVS_UPDATE, "cvs -n update 2>&1 |") or die "Can't run cvs update: $!";
+my @output = <CVS_UPDATE>;
+close(CVS_UPDATE) or die "Error running cvs update: $!";
+
+print STDOUT "I = ignore in CVS, A = add to CVS, S = skip file\n";
+
+foreach (@output) {
+    chomp;
+    /^\? / or next;
+    s/^\? //;
+    
+    # Ask the user what to do.
+    print STDOUT "$_ [i,a,s]? ";
+    my $resp = <STDIN>;
+    defined $resp or exit 0; # end-of-file
+    $resp =~ tr/A-Z/a-z/;
+    chomp $resp;
+    if ($resp eq 'i') {
+	# Update the CVS ignore file.
+	$_ = "./" . $_;
+	my ($dir, $filename) = m|^(.+/)([^/]*)$|;
+	defined $filename or die "Bad filename: $_, stopping";
+	print STDOUT "Adding $filename to ${dir}.cvsignore\n";
+	open(IGNORE, ">>${dir}.cvsignore") or die "Can't open ignore file: $!";
+	print IGNORE "$filename\n";
+	close(IGNORE) or die "Can't close ignore file: $!";
+    } elsif ($resp eq 'a') {
+	# Add the file to CVS.
+	system("cvs", "add", $_) == 0 or die "cvs add failed: $!";
+    } elsif ($resp eq 's') {
+	# Do nothing.
+    } else {
+	die "Unknown command $resp, stopping"
+    }
+}

@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = libs Common
+SUBDIRS = libs Common wx
 
 #==========================================================================
 #  MzScheme Compilation

@@ -5,7 +5,9 @@
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
 
+#ifndef FIVEL_NO_MOVIES
 #include "TQTMovie.h"
+#endif // FIVEL_NO_MOVIES
 
 #include "AppGlobals.h"
 #include "FiveLApp.h"
@@ -56,8 +58,10 @@ bool FiveLApp::OnInit()
     //wxLog::AddTraceMask(wxTRACE_Messages);
     //wxLog::SetTraceMask(wxTraceMessages);
 
+#ifndef FIVEL_NO_MOVIES
     // Start up QuickTime.
     TQTMovie::InitializeMovies();
+#endif // FIVEL_NO_MOVIES
 
     // Initialize some optional wxWindows features.
     ::wxInitAllImageHandlers();
@@ -74,7 +78,9 @@ int FiveLApp::OnExit()
 {
     // Shut down QuickTime.  wxWindows guarantees to have destroyed
     // all windows and frames by this point.
+#ifndef FIVEL_NO_MOVIES
     TQTMovie::ShutDownMovies();
+#endif // FIVEL_NO_MOVIES
 
     // XXX - Undocumented return value, trying 0 for now.
     return 0;

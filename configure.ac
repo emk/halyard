@@ -79,4 +79,4 @@ AC_CHECK_FUNCS([strstr])
 AC_CONFIG_SUBDIRS(libs/plt/src)
 
 # Output our results.
-AC_OUTPUT([Makefile libs/Makefile libs/crypto/Makefile Common/Makefile Common/fonttools/Makefile])
+AC_OUTPUT([Makefile libs/Makefile libs/crypto/Makefile Common/Makefile Common/fonttools/Makefile wx/Makefile wx/src/Makefile])

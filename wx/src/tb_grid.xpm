@@ -1,0 +1,26 @@
+/* XPM */
+static char *tb_grid_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"15 15 4 1",
+/* colors */
+"  c #000000",
+". c #C0C0C0",
+"X c #008000",
+"o c None",
+/* pixels */
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"          X    ",
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"XXXXXXXXXXXXXXX",
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"oooo oooooXoooo",
+"oooo oooooXoooo"
+};

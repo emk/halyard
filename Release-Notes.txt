@@ -1,5 +1,18 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+Working on making wx5L portable.  The Windows wx5L build is slightly
+broken; I'll fix it once the portable code is happy.
+
+  * Added FIVEL_NO_MOVIES define to supress use of QuickTime in wx5L builds.
+  * Refactored MovieWindow into two classes: MovieWindow, which does
+    nothing, and MovieWindowQT which does all the work.  Refer to
+    MovieWindowNative to get the right one on a given platform.
+  * Wrote scripts to convert *.ico and *.bmp files to *.xpm files.
+  * Added AppGraphics.h and AppGraphics.cpp, which import xpm files.
+  * Checked in some other utility scripts, and updated 5L-stats.
+
 3.5.9 - 31 Oct 2002 - emk
 
   * New wxWindows front-end now officially added to the build tree.

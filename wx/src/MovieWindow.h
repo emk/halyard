@@ -5,8 +5,6 @@
 
 #include "AppGlobals.h" // For MovieFrame.
 
-class TQTMovie;
-
 typedef unsigned long MovieWindowStyle;
 
 enum /* MovieWindowStyle */ {
@@ -16,19 +14,13 @@ enum /* MovieWindowStyle */ {
 };
 
 //////////
-// A wxWindow subclass which can display and manage a QuickTime movie.
-// TODO - Still frightfully incomplete, but enough to get by with.
+// A wxWindow subclass for displaying and managing a movie.  By itself, this
+// class does nothing but display a blank widget; you generally want to use
+// an appropriate subclass to actually show a movie.
 //
 class MovieWindow : public wxWindow
 {
-    WXHWND mHWND;
-    TQTMovie *mMovie;
     MovieWindowStyle mMovieWindowStyle;
-
-	//////////
-	// Delete any movie attached to this object.
-	//
-    void CleanUpMovie();
 
 public:
     //////////
@@ -51,10 +43,15 @@ public:
     //
     virtual ~MovieWindow();
 
+	//////////
+	// Get the style of this movie window.
+	//
+	MovieWindowStyle GetMovieWindowStyle();
+
     //////////
     // Ask this widget to create and manage the specified movie.
     //
-    void SetMovie(const wxString &inName);
+    virtual void SetMovie(const wxString &inName);
 
     //////////
     // Get the current frame of the movie (where there are 30 frames
@@ -62,36 +59,22 @@ public:
 	// started.  This number *can* decrease, especially if the user
 	// is playing with the movie controller.
     //
-    MovieFrame GetFrame();
+    virtual MovieFrame GetFrame();
 
     //////////
     // Is the movie finished?  This function is fairly smart about broken
 	// movies, looping movies, etc.
     //
-    bool IsDone();
-
-	void OnEraseBackground(wxEraseEvent &inEvent);
-
-	//////////
-	// Some Sorenson codecs need to receive this paint message, or they
-	// won't display video at all.  So just smile and nod, and do what
-	// they want.
-	//
-	// TODO - I haven't tested whether this is still necessary under
-	// wxWindows, but it was in older applications using this QuickTime
-	// interface.)
-	//
-	void OnPaint(wxPaintEvent &inEvent);
-
-	void OnIdle(wxIdleEvent &inEvent);
-
-	void OnActivate(wxActivateEvent &inEvent);
-
-	void OnLeftDown(wxMouseEvent &inEvent);
-
-	void OnKeyDown(wxKeyEvent &inEvent);
-
-    DECLARE_EVENT_TABLE();
+    virtual bool IsDone();
 };
+
+// Define MovieWindowNative to map to an appropriate movie window class.
+// This is essentially a low-budget MovieWindow "factory" pattern.
+#ifdef FIVEL_NO_MOVIES
+#   define MovieWindowNative MovieWindow
+#else // !defined FIVEL_NO_MOVIES
+#   include "MovieWindowQT.h"
+#   define MovieWindowNative MovieWindowQT
+#endif // !defined FIVEL_NO_MOVIES
 
 #endif // MovieWindow_H

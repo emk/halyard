@@ -1,0 +1,22 @@
+#!/bin/sh
+# Convert all our BMP and ICO graphics into XPM files for use with non-Windows
+# platforms.  You may want to edit AppGraphics.{h,cpp} after running this
+# script.
+
+# The files to convert.
+BMP_FILES="`ls *.bmp | sed 's/.bmp//g'`"
+ICO_FILES="`ls *.ico | sed 's/.ico//g'`"
+
+# Ask the shell to exit if something goes wrong.
+set -e
+
+# Process the bitmaps.
+for BMP in $BMP_FILES; do
+    ../../tools/bmp2xpm $BMP
+done
+
+# Process the icons.
+for ICO in $ICO_FILES; do
+    ../../tools/ico2xpm $ICO
+done
+

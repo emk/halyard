@@ -1,0 +1,24 @@
+#!/bin/sh
+# Convert a Windows ICO to an xpm file.  If your icons appear blank, you
+# might want to make sure you've properly defined the largest version of the
+# icon under Windows, and not just the smaller versions.
+
+# Work out all the names we'll need.
+BASE_NAME="$1"
+ICO_NAME="$BASE_NAME.ico"
+PPM_NAME="${BASE_NAME}_xor.ppm"
+MASK_NAME="${BASE_NAME}_and.pbm"
+XPM_NAME="$BASE_NAME.xpm"
+XPM_LABEL="${BASE_NAME}_xpm"
+
+# Ask /bin/sh to exit immediately if an error occurs.
+set -e
+
+# Do the conversion.
+rm -f "$MASK_NAME"
+winicontoppm -writeands -bestqual "$ICO_NAME" "$BASE_NAME"
+ppmtoxpm -name "$XPM_LABEL" -alphamask="$MASK_NAME" "$PPM_NAME" > "$XPM_NAME"
+
+# Clean up.
+rm "$PPM_NAME"
+rm "$MASK_NAME"

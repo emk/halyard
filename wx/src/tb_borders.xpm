@@ -1,0 +1,25 @@
+/* XPM */
+static char *tb_borders_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"15 15 3 1",
+/* colors */
+"  c #800000",
+". c #C0C0C0",
+"X c None",
+/* pixels */
+"          XXXXX",
+" XXXXXXXX XXXXX",
+" XXX         XX",
+" XXX XXXXXXX XX",
+" XXX XXXXXXX XX",
+" XXX         XX",
+" XXXXXXXX XXXXX",
+" XXXXX         ",
+" XXXXX XXXXXXX ",
+" XXXXX XXXXXXX ",
+"       XXXXXXX ",
+"XXXXXX XXXXXXX ",
+"XXXXXX XXXXXXX ",
+"XXXXXX XXXXXXX ",
+"XXXXXX         "
+};
