@@ -1,5 +1,24 @@
 FiveL for Macintosh Release Notes
 
+2.01, Build 8, February 25, 2002 11:43 AM - E Hamon with help by Eric.
+
+¥ Overhauled DrawStyleText and accessory functions.
+  Code is now understandable and problems appear to be fixed acc. to test script.
+ 
+¥ Changed underscore symbol to | from _ as _ is used too much and can't always be escaped.
+ 
+¥ Removed disabling of gfades from debug engine per Douglas's request.
+
+¥ Added special variables _Graphic_X and _Graphic_Y to store bottom & right coordinates
+  of last loaded loadpic and buttpcx, per Douglas's request.
+  
+¥ Added error message in 5L log for missing graphic, per Douglas's request
+
+
+2.01, Build 7, February 20, 2002
+
+¥ Fixed bug with _incr_y resulting from changes to DrawStyleText to fix word wrap
+
 2.01, Build 6, February 19, 2002 5:20 PM - E Hamon with help by Eric Kidd.
 
 ¥ Fixed bug that caused flickering of cursor. See CVS for long description. 
