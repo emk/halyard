@@ -3,6 +3,9 @@
 #ifndef ProgramTree_H
 #define ProgramTree_H
 
+#include <wx/laywin.h>
+#include <wx/treectrl.h>
+
 class StageFrame;
 class Document;
 class ProgramTreeCtrl;

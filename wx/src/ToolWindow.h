@@ -3,7 +3,7 @@
 #ifndef ToolWindow_H
 #define ToolWindow_H
 
-class StageFrame;
+#include "StageFrame.h"
 
 //////////
 // A ToolWindow is a unique, named window associated with a given

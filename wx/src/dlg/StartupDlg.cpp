@@ -2,7 +2,7 @@
 
 #include "TamaleHeaders.h"
 #include "../FiveLApp.h"
-#include "../Stage.h"
+#include "../StageFrame.h"
 #include "StartupDlg.h"
 
 BEGIN_EVENT_TABLE(StartupDlg, XrcDlg)

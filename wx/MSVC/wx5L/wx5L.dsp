@@ -187,22 +187,16 @@ SOURCE=..\..\src\Stage.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\StageFrame.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\dlg\StartupDlg.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\src\TamaleHeaders.cpp
-
-!IF  "$(CFG)" == "wx5L - Win32 Release"
-
 # ADD CPP /Yc"TamaleHeaders.h"
-
-!ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
-
-# ADD CPP /Yc"TamaleHeaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -347,6 +341,10 @@ SOURCE=..\..\src\Stage.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\StageFrame.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\dlg\StartupDlg.h
 # End Source File
 # Begin Source File
@@ -454,7 +452,7 @@ SOURCE=..\..\src\tamale.xrc
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\src\5L\wx\src
+InputDir=\cygwin\home\brian\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 

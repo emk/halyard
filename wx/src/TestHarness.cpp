@@ -4,7 +4,7 @@
 
 #include "FiveLApp.h"
 #include "TestHarness.h"
-#include "Stage.h"
+#include "StageFrame.h"
 #include "FancyStatusBar.h"
 
 

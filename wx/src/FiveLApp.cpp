@@ -15,7 +15,7 @@
 #include "AppGlobals.h"
 #include "FiveLApp.h"
 #include "Log5L.h"
-#include "Stage.h"
+#include "StageFrame.h"
 #include "dlg/StartupDlg.h"
 #include "TWxPrimitives.h"
 #if CONFIG_HAVE_QUAKE2

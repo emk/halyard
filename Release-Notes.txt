@@ -1,9 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, brian
 
   * Major refactorings of Scheme runtime to help make it testable.
   * Fixed bug where api.ss didn't get recompiled when kernel.ss changed.
+  * Split StageFrame out of Stage.
 
 0.0.7 - 2 July 2003 - emk, brian
 
