@@ -17,7 +17,6 @@
 #include "CMoviePlayer.h"
 #include "CTouchZone.h"
 #include "CPlayerInput.h"
-#include "CText.h"
 #include "CCard.h"
 #include "CPicture.h"
 
@@ -66,9 +65,9 @@ CTouchZone::CTouchZone(
 	TPoint	 		&loc, 
 	const char 		*text, 
 	const CursorType cursor,		// = HAND_CURSOR
-	const char 		*header, 		// = NULL
+	const char 		*stylesheet, 	// = NULL
 	const TString 	&secCmd)		// = NULL
-	: CText(header, inBounds, text)
+	: mStyleSheet(stylesheet), mBounds(inBounds), mText(text)
 {
 	mNormalTouch = false;
 	
@@ -144,36 +143,41 @@ CTouchZone::~CTouchZone()
 void
 CTouchZone::FinishCreateSelf()
 {
-	Rect 	frameRect;
-	SInt32	fontHeight;
-	
-	CalcLocalFrameRect(frameRect);
-	
-	// Center text vertically (justification is set by header)
-    int32 dl = frameRect.bottom - frameRect.top;
-    fontHeight = GetLineHeight();
-
-    dl -= fontHeight;
-    dl /= 2;
-
-	::OffsetRect(&mDrawRect, 0, dl);
-	
-	// Get the offscreen gworld from the card view, and draw into it.
-	CGWorld *theGWorld = gPlayerView->GetGWorld();
-	GWorldPtr macGWorld = theGWorld->GetMacGWorld();
-
-	theGWorld->BeginDrawing();		// Draw to offscreem GWorld
-
-	// Non-buttpcx touchzones should only draw when pressed.
-	if ((mPicture != nil) and (not mNormalTouch))
+	// If we have a style sheet, then we're a buttpcx and should draw some
+	// text.
+	if (mStyleSheet != "")
 	{
-		mPicture->Draw(mPictLoc, macGWorld, true);
-	}
-		
-	DrawSimpleText(false);
+		Rect 	frameRect;
+		SInt32	fontHeight;
 	
-	theGWorld->EndDrawing();
+		CalcLocalFrameRect(frameRect);
+	
+		// Center text vertically (justification is set by header)
+    	int32 dl = frameRect.bottom - frameRect.top;
+    	fontHeight = gStyleSheetManager.GetLineHeight(mStyleSheet);
 
+    	dl -= fontHeight;
+    	dl /= 2;
+
+		mBounds.Offset(TPoint(0, dl));
+	
+		// Get the offscreen gworld from the card view, and draw into it.
+		CGWorld *theGWorld = gPlayerView->GetGWorld();
+		GWorldPtr macGWorld = theGWorld->GetMacGWorld();
+
+		theGWorld->BeginDrawing();		// Draw to offscreem GWorld
+
+		// Non-buttpcx touchzones should only draw when pressed.
+		if ((mPicture != nil) and (not mNormalTouch))
+		{
+			mPicture->Draw(mPictLoc, macGWorld, true);
+		}
+	
+		gStyleSheetManager.DoText(mStyleSheet, mBounds, mText, gPlayerView);
+	
+		theGWorld->EndDrawing();
+	}
+	
 	Enable();
 }
 
@@ -224,8 +228,10 @@ CTouchZone::HotSpotAction(
 					hilitePict->Draw(mPictLoc, (CGrafPort *) gPlayerView->GetMacPort(), true);
 			}
 		}
-			
-		DrawSimpleText(inCurrInside);
+		
+		// If we have a style sheet, then we're a buttpcx and should draw some text.
+		if (mStyleSheet != "")
+			gStyleSheetManager.DoText(mStyleSheet, mBounds, mText, gPlayerView);
 	}
 }
 

@@ -119,6 +119,7 @@ int FiveL::FiveLmain()
 	
 									// Initialize standard Toolbox managers
 	UQDGlobals::InitializeToolbox(&qd);
+	TLogger::MarkToolboxAsInitialized();
 	
 	new LGrowZone(20000);			// Install a GrowZone function to catch
 									//    low memory situations.
@@ -162,6 +163,11 @@ int FiveL::FiveLmain()
 //		¥ CMac5LApp Class
 // ===========================================================================
 
+void CMac5LApp::EmergencyUnfade()
+{
+	DoGFade(true, 5, false);
+}
+
 // ---------------------------------------------------------------------------
 //		¥ CMac5LApp
 // ---------------------------------------------------------------------------
@@ -181,7 +187,7 @@ CMac5LApp::CMac5LApp()
 
 	// Setup the Gamma tools
 	SetupGammaTools();
-		
+	
 	// Register classes for objects created from 'PPob' resources
 	// For PowerPlant classes, you can copy the necessary RegisterClass
 	// calls from PPobClasses.cp
@@ -255,11 +261,11 @@ CMac5LApp::CMac5LApp()
 	//}
 	// cbo_fix - this should be the equivalent of the above stuff
 	gPaletteManager.Init();
-	
+		
 	gCursorManager.Init();
 	gCursorManager.ChangeCursor(ARROW_CURSOR);
 	gCursorManager.ShowCursor();
-		
+
 	// Set our sleep time.
 	mSleepTime = 0;
 	
@@ -307,6 +313,13 @@ CMac5LApp::CMac5LApp()
 		 	
 	// set up initial values for "global" variables
 	SetGlobals();
+
+	// Register a function to unfade the screen before displaying
+	// engine errors.
+	// XXX - We should do this much sooner, but DoGFade has some
+	// nasty dependencies on gView when unfading.  This coupling
+	// should be broken.
+	TLogger::RegisterErrorPrepFunction(&CMac5LApp::EmergencyUnfade);
 	
 	// Fade back in (once the window has drawn itself).
 	if (gFullScreen and gHideMenuBar)
@@ -920,6 +933,13 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.18.2.5  2002/05/15 09:09:57  emk
+Added code to unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+Migrated the Mac (buttpcx ...) to the new anti-aliased typography library.
+
+The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect FiveL to do something childish immediately after fatal errors and assertion failures.
+
 Revision 1.18.2.4  2002/04/25 11:34:25  emk
 Added a (defstyle ...) top-level form, and a (textaa ...) command for drawing anti-aliased text.
 

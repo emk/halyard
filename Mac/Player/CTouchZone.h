@@ -16,9 +16,8 @@
 
 #pragma once
 
-#include "THeader.h"
+#include "TStyleSheet.h"
 
-#include "CText.h"
 #include "TString.h"
 #include "CPicture.h"
 #include "CCursor.h"
@@ -26,7 +25,7 @@
 #include <LMouseTracker.h>
 BEGIN_NAMESPACE_FIVEL
 
-class CTouchZone : public PP::LButton, public PP::LCommander, public CText, public PP::LMouseTracker 
+class CTouchZone : public PP::LButton, public PP::LCommander, public PP::LMouseTracker 
 {
 	public:
 		enum { class_ID = 'PlTz' };	// Class ID - needs to be unique & not all lower-case
@@ -38,7 +37,7 @@ class CTouchZone : public PP::LButton, public PP::LCommander, public CText, publ
 		// This constructor is used for the 'Buttpcx' command
 		CTouchZone(TRect &r, TString &cmd, CPicture *inPict, TPoint &loc, const char *text,
 					const CursorType = HAND_CURSOR,
-					const char *header = nil, const TString &secCmd = "");
+					const char *stylesheet = nil, const TString &secCmd = "");
 					
 		// Destructor
 		virtual 	~CTouchZone();
@@ -51,7 +50,7 @@ class CTouchZone : public PP::LButton, public PP::LCommander, public CText, publ
 		bool		IsButtPcx(void) { return (not mNormalTouch);}
 		virtual void	HotSpotResult(SInt16	inHotSpot);
 		virtual void	HotSpotAction(SInt16, Boolean, Boolean);
-		char		FirstChar(void) { return ((mText != nil) ? *mText: 0); }
+		char		FirstChar(void) { return ((mText != "") ? *mText: 0); }
 		CursorType	GetCursor(void) { return (mCursor); }
 		
 	private:
@@ -61,6 +60,11 @@ class CTouchZone : public PP::LButton, public PP::LCommander, public CText, publ
 		CPicture	*mPicture;		// pict & hilite pict that we use in the touchzone
 		bool		mNormalTouch;	// to distinguish touchzones from buttpcx's
 		CursorType	mCursor;
+		
+		// Used for drawing text.
+		TString		mStyleSheet;
+		TRect		mBounds;
+		TString		mText;
 		
 	protected:
 		void		SetupZone(TRect &r, TString &cmd, CPicture *inPict, TPoint &loc, 

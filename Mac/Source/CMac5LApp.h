@@ -96,6 +96,8 @@ class	CMac5LApp : public PP::LApplication
 		bool				mReDoReDo;		// waiting for a redo redoscript?
 	
 		bool				GetScriptFile(FSSpec *scriptSpec);
+		
+		static void			EmergencyUnfade();
 };
 
 // global application object
