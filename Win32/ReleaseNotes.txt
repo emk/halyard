@@ -1,5 +1,12 @@
 FiveL for Win32 Release Notes
 
+3.2.3, Unreleased
+
+	Merged changes from 3.2.0.1 into the development trunk.
+
+	Updated VC++ project files to reflect movement of Common library 
+	(up one level).
+
 3.2.2, Wednesday, February 27, 2002, 1:12 PM
 
 	Bug #613 - Changed calculation of _INCR_Y to include descenders
@@ -7,6 +14,12 @@ FiveL for Win32 Release Notes
 	
 	NOTE: All 5L scripts will likely need to be updated to reflect
 	this change. 
+
+3.2.0.1, Tuesday, February 26, 2002, 2:27 PM (patch to 3.2.0)
+
+	Bugs #497 and #613 addressed.
+	Quick fix to change the delimiter for underlining text.
+	The pipe character ('|') is now used for underlining.
 
 3.2.1, Tuesday, February 19, 2002, 12:15 PM
 

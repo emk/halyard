@@ -5,7 +5,7 @@
 //
 //			$Author$
 //          $Date$
-//          $Revision$   
+//          $Revision$  
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -237,7 +237,7 @@ end:
 	\w		Newline (windows only)
     \*      Literals. Examples include \(, \), \$, \;, \`, \', \\
     ^       Hilite toggle.
-    _       Underline toggle.
+    |       Underline toggle.
     `,'     Single smart quotes. (ASCII 212, 213)
     ``, ''  Double smart quotes. (ASCII 210, 211)
 
@@ -286,7 +286,7 @@ int Header::GetLineLength(char *s, long *index, long tLen, int maxWidth)
                 done = true;
 
             case '^':           //  Hilite char. Ignore.
-            case '_':           //  Underline char. Ignore.
+            case '|':           //  Underline char. Ignore.
                 pos++;  
                 ch = 0;         //  Set to 0 so we don't count its width
                 break;
@@ -411,7 +411,7 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	// See if we don't have anything special to do.
 	//
 	if (not (strstr(s, "^")		// no hilite
-		or (strstr(s, "_"))		// no underline
+		or (strstr(s, "|"))		// no underline
 		or (strstr(s, "\\"))	// no special characters
 		or (strstr(s, "@"))))	// no bold
 	{
@@ -490,7 +490,7 @@ TPoint Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	                
 	                break;
 	
-	            case '_':
+	            case '|':
 	                a++;
 	                fUnderline = !fUnderline;
 	                ch = 0; 
@@ -704,6 +704,9 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.3  2002/02/27 14:47:33  tvw
+ Merged changes from 3.2.0.1 into trunk
+
  Revision 1.2  2002/02/27 13:21:12  tvw
  Bug #613 - Changed calculation of _INCR_Y to include descenders
  (part or letter that goes below baseline).
