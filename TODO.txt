@@ -2,48 +2,21 @@
   Patches
     Send equals? fix to author of Swindle
 
-  TValue Cleanup
-/   operator== should compare
-/   operator== on uninitialized values should throw exception
-/   operator== on dissimilar types should return false
-/   Support all types
-/   Implement some sort of get() method
-/   Make sure we can store minimum and maximum int32 and uint32 values
-/   Move many functions from TValue.h to TValue.cpp
-/   Remove 'inline' from conversion operators
-/   Redesign TArgumentList (for primitives)
-/   Redesign TCallbackArgumentList
-/   Test TValue extensively with real TCallbacks
-/   Test TValueToScheme extensively with real TCallbacks
-/   Remove all #include <TValue.h>
-/   Remove all #include <GraphicsTools.h> 
-/   TArgumentList conversion problems
-/     bool
-/     double
-/     int/uint mess
-/   Fix TCallbackPtr TArgumentList::GetCallbackArg() to use a member function
-/   TVariableManager API duplication
-    Cleanup
-/     Move TPolygon & TValueList operator<< to .cpp files
-/     Rename TValueManager to TVariableManager, including file names
-/     Merge TVariableTests into TVariableManager.cpp
-/     Delete TVariable.*
-/     Fix CommonHeaders to not have nasty hack
-    Simplifications AFTER commit
-/     Delete SET, and fix SETTYPED to use TValues
-/     Clean up SETTYPED interface in kernel.ss
-/     Replace big switch statements in TSchemeInterpreter.cpp with *Conv
-/     Let callers of TValueManager call only "Set" and "Get"
-/     LogParameter can now rely on ostringstream and operator<<
-/     Delete FindVariable and Assign (you'll need to fix the callers)
-/     Stop automatically initializing variables to "0"--throw errors instead
-/     Delete TBTree code?
-/     Delete TArray?
-/     Delete TObject?
-/     Get rid of TYPE_UNINITIALIZED
-/     Fewer SetPrimitiveResult* functions?  Definitely.
-/     Fix up TRect so that it takes x-y values, and not y-x values.
-/     Get rid of TString.
+  TStateDB
+/   Implement TStateDB
+    Make a single TStateDB readable and writable from Scheme
+      (set-state-db-datum! '/foo value) ;; Decide on either symbols or strings
+      Allow listener to be an (on state-db-changed (get) ...) handler
+        (call-5l-prim 'StateDbGet (node-full-name ELEM) key)
+      Allow listener to be a simple lambda?  Maybe too hard?
+        (state-db-register-listener! '/foo
+                                     (lambda (get) (whatever (get '/foo))))
+    Implement a new graphic element which listens to three keys:
+      .../x - x coordinate of element
+      .../y - y coordinate of element
+      .../index - Index of graphic to display
+
+  Allow TValue test cases to be run independently of TSchemeInterpreterTests
 
   Cleanup
     Make sure GUI does REFERENCE_TEST_CASE_FILE

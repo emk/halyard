@@ -12,6 +12,7 @@ CVS - kwasi, djin
     a TValue. 
   * Fixed TRect argument order (finally!).
   * Deleted TString and TURL.
+  * Added TStateDB class.
 
 0.0.15 - 30 Jan 2004 - emk, kwasi, djin
 
