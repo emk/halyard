@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /Ob2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/msw" /I "../../../libs/quake2/wx" /I "../../../libs/portaudio/pa_common" /I "../../../libs/libivorbisdec" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /Yu"TamaleHeaders.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /Ob2 /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/msw" /I "../../../libs/quake2/wx" /I "../../../libs/wxIE" /I "../../../libs/portaudio/pa_common" /I "../../../libs/libivorbisdec" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /Yu"TamaleHeaders.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/mswd" /I "../../../libs/quake2/wx" /I "../../../libs/portaudio/pa_common" /I "../../../libs/libivorbisdec" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /D "__WXWINDOWS__" /D "REF_HARD_LINKED" /D "IML_Q2_EXTENSIONS" /Yu"TamaleHeaders.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /I "../../../Common" /I "../../../libs/freetype2/include" /I "../../../libs/boost" /I "../../../libs/wxWindows/include" /I "../../../libs/wxWindows/contrib/include" /I "../../../libs/wxWindows/lib/mswd" /I "../../../libs/quake2/wx" /I "../../../libs/wxIE" /I "../../../libs/portaudio/pa_common" /I "../../../libs/libivorbisdec" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /D "__WXWINDOWS__" /D "REF_HARD_LINKED" /D "IML_Q2_EXTENSIONS" /Yu"TamaleHeaders.h" /FD /GZ /c
 # SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -99,6 +99,14 @@ SOURCE=..\..\src\AudioStream.cpp
 # Begin Source File
 
 SOURCE=..\..\src\AudioStreamElement.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\BrowserElement.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\BrowserElementWx.cpp
 # End Source File
 # Begin Source File
 
@@ -278,6 +286,14 @@ SOURCE=..\..\src\AudioStream.h
 # Begin Source File
 
 SOURCE=..\..\src\AudioStreamElement.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\BrowserElement.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\BrowserElementWx.h
 # End Source File
 # Begin Source File
 
@@ -500,7 +516,7 @@ SOURCE=..\..\src\tamale.xrc
 !ELSEIF  "$(CFG)" == "wx5L - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\src\5L\wx\src
+InputDir=\Documents and Settings\emk\src\5L\wx\src
 InputPath=..\..\src\tamale.xrc
 InputName=tamale
 

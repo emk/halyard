@@ -1,5 +1,19 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+IN PROGRESS: Vastly improved web browser integration, including the ability
+to embed Internet Explorer using wxIE.
+
+  * Added BrowserElement class to represent all web-browser-like elements.
+    This includes foward/back/stop and set of standard events.
+  * Added BrowserElementWx class to wrap the built-in wxHtmlWindow class.
+    This isn't very good yet.
+  * Support for vetoing events.
+  * New event types for EventDispatcher: browser-navigate,
+    browser-page-changed, status-text-changed, progress-changed.
+  * Added support for passing floating-point numbers to TCallbacks.
+
 0.0.13 - 6 Jan 2004 - emk
 
 Basic drag & drop can now be implemented in Scheme.

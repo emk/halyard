@@ -3,7 +3,6 @@
 // Needed for RegisterWxPrimitives.
 #include "TamaleHeaders.h"
 #include <wx/image.h>
-#include <wx/html/htmlwin.h> // TODO - Temporary?
 
 #include "TPrimitives.h"
 #include "TWxPrimitives.h"
@@ -30,6 +29,8 @@
 #include "AudioStreamElement.h"
 #include "GeigerSynthElement.h"
 #include "CommonWxConv.h"
+#include "BrowserElementWx.h"
+#include "IEHtmlWin.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -62,6 +63,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
 	REGISTER_5L_PRIMITIVE(GeigerSynthSetCps);
 	REGISTER_5L_PRIMITIVE(HTML);
+	REGISTER_5L_PRIMITIVE(HTMLMS);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
@@ -312,14 +314,27 @@ DEFINE_5L_PRIMITIVE(GeigerSynthSetCps) {
 DEFINE_5L_PRIMITIVE(HTML) {
 	std::string name, file_or_url;
 	TRect bounds;
+    TCallback *dispatcher;
+
+	inArgs >> SymbolName(name) >> dispatcher >> bounds >> file_or_url;
+
+    BrowserElement *elem =
+        new BrowserElementWx(wxGetApp().GetStage(), name.c_str(),
+                             TToWxRect(bounds), dispatcher);
+	elem->LoadUrl(file_or_url.c_str());
+}
+
+DEFINE_5L_PRIMITIVE(HTMLMS) {
+	std::string name, file_or_url;
+	TRect bounds;
 
 	inArgs >> SymbolName(name) >> bounds >> file_or_url;
 
-	wxHtmlWindow *html =
-		new wxHtmlWindow(wxGetApp().GetStage(), -1,
-						 GetPos(bounds), GetSize(bounds),
-						 wxHW_SCROLLBAR_AUTO | wxBORDER);
-	html->LoadPage(file_or_url.c_str());
+	wxIEHtmlWin *html =
+		new wxIEHtmlWin(wxGetApp().GetStage(), -1,
+                        GetPos(bounds), GetSize(bounds),
+                        wxSIMPLE_BORDER);
+	html->LoadUrl(file_or_url.c_str());
 	new Widget(wxGetApp().GetStage(), name.c_str(), html);
 }
 

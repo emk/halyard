@@ -196,6 +196,7 @@ public:
 	virtual void AddStringArg(const std::string &inArg) = 0;
 	virtual void AddSymbolArg(const std::string &inArg) = 0;
 	virtual void AddInt32Arg(int inArg) = 0;
+	virtual void AddDoubleArg(double inArg) = 0;
 	virtual void AddBoolArg(bool inArg) = 0;
 
 	//////////

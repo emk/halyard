@@ -205,7 +205,8 @@
   (define-element-template %html-element%
       [[location :type <string> :label "Location"]]
       (:template %element%)
-    (call-5l-prim 'html (node-full-name self) (prop self rect)
+    (call-5l-prim 'html (node-full-name self) 
+                  (make-node-event-dispatcher self) (prop self rect)
                   ;; TODO - Support actual URL's.
                   (build-path (current-directory) location)))
 

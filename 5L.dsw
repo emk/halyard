@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "Common"=.\Win32\VC\Common\Common.dsp - Package Owner=<4>
+Project: "Common"=".\Win32\VC\Common\Common.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -27,7 +27,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "CommonTest"=.\Win32\VC\CommonTest\CommonTest.dsp - Package Owner=<4>
+Project: "CommonTest"=".\Win32\VC\CommonTest\CommonTest.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -45,7 +45,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ImlUnit"=.\Win32\VC\ImlUnit\ImlUnit.dsp - Package Owner=<4>
+Project: "ImlUnit"=".\Win32\VC\ImlUnit\ImlUnit.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -57,7 +57,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "XrcVC"=.\libs\wxWindows\contrib\src\xrc\XrcVC.dsp - Package Owner=<4>
+Project: "XrcVC"=".\libs\wxWindows\contrib\src\xrc\XrcVC.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -69,7 +69,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "freetype"=.\libs\freetype2\builds\win32\visualc\freetype.dsp - Package Owner=<4>
+Project: "freetype"=".\libs\freetype2\builds\win32\visualc\freetype.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -81,7 +81,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libfivel_crypto"=.\Win32\VC\libfivel_crypto\libfivel_crypto.dsp - Package Owner=<4>
+Project: "libfivel_crypto"=".\Win32\VC\libfivel_crypto\libfivel_crypto.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -93,7 +93,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libivorbisdec"=.\wx\MSVC\libivorbisdec\libivorbisdec.dsp - Package Owner=<4>
+Project: "libivorbisdec"=".\wx\MSVC\libivorbisdec\libivorbisdec.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -105,7 +105,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libmzgc"=.\libs\plt\src\worksp\libmzgc\libmzgc.dsp - Package Owner=<4>
+Project: "libmzgc"=".\libs\plt\src\worksp\libmzgc\libmzgc.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -117,7 +117,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libmzsch"=.\libs\plt\src\worksp\libmzsch\libmzsch.dsp - Package Owner=<4>
+Project: "libmzsch"=".\libs\plt\src\worksp\libmzsch\libmzsch.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -132,7 +132,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libxml2"=.\libs\libxml2\win32\dsp\libxml2.dsp - Package Owner=<4>
+Project: "libxml2"=".\libs\libxml2\win32\dsp\libxml2.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -144,7 +144,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "portaudio"=.\wx\MSVC\portaudio\portaudio.dsp - Package Owner=<4>
+Project: "portaudio"=".\wx\MSVC\portaudio\portaudio.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -156,7 +156,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "wx5L"=.\wx\MSVC\wx5L\wx5L.dsp - Package Owner=<4>
+Project: "wx5L"=".\wx\MSVC\wx5L\wx5L.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -185,11 +185,26 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name libivorbisdec
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name wxIE
+    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "wxRcVC"=.\libs\wxWindows\contrib\utils\wxrc\wxRcVC.dsp - Package Owner=<4>
+Project: "wxIE"=".\WX\MSVC\wxIE\wxIE.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "wxRcVC"=".\libs\wxWindows\contrib\utils\wxrc\wxRcVC.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -204,7 +219,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "wxq2"=.\libs\quake2\wxq2.dsp - Package Owner=<4>
+Project: "wxq2"=".\libs\quake2\wxq2.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -32,6 +32,7 @@
   (provide *engine* set-engine! <engine>
            engine-current-card engine-last-card
            set-engine-event-handled?!
+           set-engine-event-vetoed?!
            engine-jump-to-card
            engine-register-card
            engine-enable-expensive-events
@@ -62,6 +63,7 @@
     (engine-current-card *engine*))
 
   (defgeneric (set-engine-event-handled?! (eng <engine>) (handled? <boolean>)))
+  (defgeneric (set-engine-event-vetoed?! (eng <engine>) (vetoed? <boolean>)))
   (defgeneric (engine-jump-to-card (engine <engine>) (target <card>)))
   (defgeneric (engine-register-card (engine <engine>) (card <card>)))
   (defgeneric (engine-enable-expensive-events (engine <engine>)
@@ -84,9 +86,14 @@
 
   (provide on send-by-name send
            <event> event?
+           <vetoable-event> veto-event! event-vetoed?
            <idle-event> idle-event?
            <char-event> char-event? event-character event-modifiers
            <mouse-event> mouse-event? event-position event-double-click?
+           <browser-event> browser-event? event-url
+           <browser-navigate-event> browser-navigate-event?
+           <status-text-changed-event> event-status-text
+           <progress-changed-event> event-progress-done? event-progress-value
            make-node-event-dispatcher ; semi-private
            )
 
@@ -172,6 +179,10 @@
        (send-by-name node 'name . args)]))
 
   (defclass <event> ())
+
+  (defclass <vetoable-event> (<event>)
+    (vetoed? :accessor event-vetoed? :initvalue #f))
+
   (defclass <idle-event> (<event>))
 
   (defclass <char-event> (<event>)
@@ -181,6 +192,29 @@
   (defclass <mouse-event> (<event>)
     (position :accessor event-position)
     (double-click? :accessor event-double-click? :initvalue #f))
+
+  (defclass <browser-event> (<event>)
+    (url :accessor event-url))
+
+  (defclass <browser-navigate-event> (<browser-event> <vetoable-event>))
+
+  (defclass <status-text-changed-event> (<event>)
+    (text :accessor event-status-text))
+
+  (defclass <progress-changed-event> (<event>)
+    (done? :accessor event-progress-done?)
+    ;; value is 0.0 to 1.0, inclusive.
+    (value :accessor event-progress-value))
+
+  (define (veto-event! event)
+    (set! (event-vetoed? event) #t))
+
+  ;; A local helper.
+  (defgeneric (was-vetoed? (event <event>)))
+  (defmethod (was-vetoed? (event <event>))
+    #f)
+  (defmethod (was-vetoed? (event <vetoable-event>))
+    (event-vetoed? event))
 
   (define (dispatch-event-to-node node name args)
     (let [[unhandled? #f]
@@ -195,11 +229,22 @@
                    [[mouse-up mouse-enter mouse-leave mouse-moved]
                     (make <mouse-event>
                       :position (point (car args) (cadr args)))]
+                   [[browser-navigate]
+                    (make <browser-navigate-event> :url (car args))]
+                   [[browser-page-changed]
+                    (make <browser-event> :url (car args))]
+                   [[status-text-changed]
+                    (make <status-text-changed-event> :text (car args))]
+                   [[progress-changed-event]
+                    (make <progress-changed-event>
+                      :done? (car args)
+                      :value (cadr args))]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
       (define (no-handler)
         (set! unhandled? #t))
       (send* no-handler node name event)
+      (set! (engine-event-vetoed? *engine*) (was-vetoed? event))
       (set! (engine-event-handled? *engine*) (not unhandled?))))
 
   (define (dispatch-idle-event-to-active-nodes)

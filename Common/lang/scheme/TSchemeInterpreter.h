@@ -195,6 +195,7 @@ public:
 	virtual void AddStringArg(const std::string &inArg);
 	virtual void AddSymbolArg(const std::string &inArg);
 	virtual void AddInt32Arg(int inArg);
+	virtual void AddDoubleArg(double inArg);
 	virtual void AddBoolArg(bool inArg);
 	virtual void BeginListArg();
 	virtual void EndListArg();

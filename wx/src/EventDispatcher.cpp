@@ -58,8 +58,9 @@ bool EventDispatcher::EventSetup()
 	if (!mDispatcher)
 		return false;
 
-    // Clear our "pass" flag.
+    // Clear our "pass" and "vetoed" flags.
     gVariableManager.SetBoolean("_pass", false);
+    gVariableManager.SetBoolean("_veto", false);
 	return true;
 }
 
@@ -67,6 +68,12 @@ bool EventDispatcher::EventCleanup()
 {
     // Check our "pass" flag.
     return !gVariableManager.GetBoolean("_pass");
+}
+
+void EventDispatcher::CheckForVeto(bool &outWasVetoed) {
+    // See if this event was vetoed.
+    outWasVetoed = (!gVariableManager.GetBoolean("_pass") &&
+					gVariableManager.GetBoolean("_veto"));
 }
 
 bool EventDispatcher::DoEventLeftDown(wxMouseEvent &inEvent,
@@ -154,7 +161,7 @@ bool EventDispatcher::DoEventIdle(wxIdleEvent &inEvent)
     args->AddSymbolArg("idle");
     mDispatcher->Run(args.get());
 
-	return EventCleanup();	
+	return EventCleanup();
 }
 
 bool EventDispatcher::DoEventMouseMoved(wxMouseEvent &inEvent)
@@ -165,3 +172,56 @@ bool EventDispatcher::DoEventMouseMoved(wxMouseEvent &inEvent)
 	return DoSimpleMouseEvent("mouse-moved", inEvent.GetPosition());
 }
 	
+bool EventDispatcher::DoEventBrowserNavigate(const wxString &inUrl,
+                                             bool &outWasVetoed)
+{
+    if (!EventSetup())
+		return false;
+
+    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("browser-navigate");
+    args->AddStringArg(inUrl.mb_str());
+    mDispatcher->Run(args.get());
+
+    CheckForVeto(outWasVetoed);
+	return EventCleanup();
+}
+
+bool EventDispatcher::DoEventBrowserPageChanged(const wxString &inUrl) {
+    if (!EventSetup())
+		return false;
+
+    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("browser-page-changed");
+    args->AddStringArg(inUrl.mb_str());
+    mDispatcher->Run(args.get());
+
+	return EventCleanup();
+}
+
+bool EventDispatcher::DoEventStatusTextChanged(const wxString &inText) {
+    if (!EventSetup())
+		return false;
+
+    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("status-text-changed");
+    args->AddStringArg(inText.mb_str());
+    mDispatcher->Run(args.get());
+
+	return EventCleanup();
+}
+
+bool EventDispatcher::DoEventProgressChanged(bool inIsActive,
+                                             double inPortionCompleted)
+{
+    if (!EventSetup())
+		return false;
+
+    std::auto_ptr<TCallbackArgumentList> args(mDispatcher->MakeArgumentList());
+    args->AddSymbolArg("progress-changed");
+    args->AddBoolArg(inIsActive);
+    args->AddDoubleArg(inPortionCompleted);
+    mDispatcher->Run(args.get());
+
+	return EventCleanup();
+}

@@ -15,6 +15,7 @@ class EventDispatcher : boost::noncopyable
 
 	bool EventSetup();
 	bool EventCleanup();
+    void CheckForVeto(bool &outWasVetoed);
 
 	bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition);
 
@@ -73,6 +74,28 @@ public:
 	// Dispatch a mouse move event.
 	//
 	bool DoEventMouseMoved(wxMouseEvent &inEvent);
+
+    //////////
+    // Dispatch a BrowserNavigate event.  This occurs before loading a new
+    // page, and it may be vetoed.
+    //
+    bool DoEventBrowserNavigate(const wxString &inUrl, bool &outWasVetoed);
+
+    //////////
+    // Dispatch a PageChanged event.  This occurs whenever the browser
+    // has loaded a new page, or accomplished some similar task.
+    //
+    bool DoEventBrowserPageChanged(const wxString &inUrl);
+
+    //////////
+    // Dispatch a SetStatusText event.
+    //
+    bool DoEventStatusTextChanged(const wxString &inText);
+    
+    //////////
+    // Dispatch a ProgressChanged event.
+    //
+    bool DoEventProgressChanged(bool inIsActive, double inPortionCompleted);
 };
 
 #endif // EventDispatcher_H

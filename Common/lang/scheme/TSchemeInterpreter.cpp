@@ -609,6 +609,11 @@ void TSchemeCallbackArgumentList::AddInt32Arg(int inArg)
 	AddArg(scheme_make_integer_value(inArg));
 }
 
+void TSchemeCallbackArgumentList::AddDoubleArg(double inArg)
+{
+	AddArg(scheme_make_double(inArg));
+}
+
 void TSchemeCallbackArgumentList::AddBoolArg(bool inArg)
 {
 	AddArg(inArg ? scheme_true : scheme_false);

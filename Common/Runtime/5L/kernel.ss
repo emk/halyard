@@ -516,6 +516,9 @@
   (defmethod (set-engine-event-handled?! (eng <engine>) (handled? <boolean>))
     (set! (engine-engine-var *engine* '_pass) (not handled?)))
 
+  (defmethod (set-engine-event-vetoed?! (eng <engine>) (vetoed? <boolean>))
+    (set! (engine-engine-var *engine* '_veto) vetoed?))
+
   (defmethod (set-engine-engine-var! (eng <real-engine>) (name <symbol>) value)
     (set-engine-var! name value))
 
