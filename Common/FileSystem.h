@@ -83,9 +83,10 @@ namespace FileSystem {
 		std::list<std::string> GetDirectoryEntries() const;
 
 		//////////
-		// Delete the file pointed to by this path.
+		// Delete the file pointed to by this path.  (If we name this
+		// "DeleteFile", it gets clobbered by a #define in windows.h.)
 		//
-		void DeleteFile() const;
+		void RemoveFile() const;
 
 		//////////
 		// Add a component to the end of the path (as though the

@@ -25,7 +25,7 @@ protected:
 	// Constructor for use by subclasses.  You can call this, then set up
 	// the member variables with SetErrorCode and SetErrorMessage.
 	//
-	TException() : mErrorCode(kNoErrorCode) {}
+	TException() : std::runtime_error(""), mErrorCode(kNoErrorCode) {}
 
 	//////////
 	// Set the error code associated with this exception.
@@ -55,7 +55,8 @@ public:
 	//
 	TException(const std::string &inErrorMessage,
 			   int inErrorCode = kNoErrorCode)
-		: mErrorMessage(inErrorMessage), mErrorCode(inErrorCode) {}
+		: std::runtime_error(""), mErrorMessage(inErrorMessage),
+		  mErrorCode(inErrorCode) {}
 
 	//////////
 	// Destroy a TException object.

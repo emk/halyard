@@ -178,8 +178,8 @@ void TestTextRenderingEngine::Test (const wchar_t *result)
 	{
 		// Many debuggers can't print whcar_t* and/or string<wchar_t>
 		// data correctly, so display some more data about the test failure.
-		cout << "\n--- Result:\n" << to_ascii(mRenderedText).c_str()
-			 << "--- Expected:\n" << to_ascii(result).c_str() << "---";
+		std::cout << "\n--- Result:\n" << to_ascii(mRenderedText).c_str()
+			      << "--- Expected:\n" << to_ascii(result).c_str() << "---";
 	}
 	TEST(mRenderedText == result);
 }
@@ -328,7 +328,7 @@ static void test_Typography_GenericTextRenderingEngine (void)
 //	GenericTextRenderingEngine Tests
 //=========================================================================
 
-static string get_string(std::ostrstream &stream)
+static std::string get_string(std::ostrstream &stream)
 {
 	// Go through the foolish new rigamarole for extracting a string.
 	// We must unfreeze the stream before we exit this function, or
@@ -336,7 +336,7 @@ static string get_string(std::ostrstream &stream)
 	stream.freeze(1);
 	try
 	{
-		string str(stream.str(), stream.pcount());
+		std::string str(stream.str(), stream.pcount());
 		stream.freeze(0);
 		return str;
 	}
@@ -352,12 +352,11 @@ static void test_Typography_FamilyDatabase (void)
 	// Delete the cache file.
 	try
 	{
-		FileSystem::GetFontFilePath("cache.dat").DeleteFile();
+		FileSystem::GetFontFilePath("cache.dat").RemoveFile();
 	}
-	catch (...)
+	catch (FileSystem::Error)
 	{
-		// TODO - Ignore errors.
-		throw;
+		// Ignore errors.
 	}
 
 	// Create a database directly.
@@ -406,13 +405,13 @@ static void test_Typography_FamilyDatabase (void)
 	TEST(f8.GetStyleName() == "Regular");
 
 	// Test serialization and deserialization.
-	ostrstream outstream;
+	std::ostrstream outstream;
 	db1.WriteToCache(outstream);
-	string outstring = get_string(outstream);
-	istrstream instream(outstring.c_str());
+	std::string outstring = get_string(outstream);
+	std::istrstream instream(outstring.c_str());
 	FamilyDatabase db3;
 	db3.ReadFromCache(instream);
-	ostrstream outstream2;
+	std::ostrstream outstream2;
 	db3.WriteToCache(outstream2);
 	TEST(outstring == get_string(outstream2));
 }

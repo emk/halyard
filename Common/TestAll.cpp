@@ -25,12 +25,12 @@ int main (int argc, char **argv)
 	}
 	catch (std::exception &error)
 	{
-		std::cerr << endl << error.what() << endl;
+		std::cerr << std::endl << error.what() << std::endl;
 		return 1;
 	}
 	catch (...)
 	{
-		std::cerr << endl << "An unknown exception occurred!" << endl;
+		std::cerr << std::endl << "An unknown exception occurred!" << std::endl;
 		return 1;
 	}
 

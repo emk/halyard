@@ -3,6 +3,8 @@
 #ifndef Typography_H
 #define Typography_H
 
+#include "TCommon.h"
+
 #include <iostream>
 #include <string>
 #include <deque>
@@ -571,12 +573,15 @@ namespace Typography {
 	// FamilyDatabase objects using a series of GetFace methods.
 	//
 	class FamilyDatabase {
-	private:
+	public:
 		//////////
-		// We represent scalable faces by a size of kAnySize.
+		// We represent scalable faces by a size of kAnySize.  This is only
+		// public because MSVC++ won't allow nested classes to access
+		// private members; you can't do anything with it.
 		//
 		enum { kAnySize = 0 };
 		
+	private:
 		//////////
 		// An AvailableFace stores information about a single face on disk.
 		// This is the lowest level of data storage in the FamilyDatabase.
@@ -597,14 +602,14 @@ namespace Typography {
 			// directory (this is so we don't have to portably serialize
 			// FileSystem::Path objects to the cache, which would by icky).
 			//
-			AvailableFace(const string &inFileName);
+			AvailableFace(const std::string &inFileName);
 			
-			int    GetSize() const { return mSize; }
-			string GetFamilyName() const { return mFamilyName; }
-			string GetStyleName() const { return mStyleName; }
-			bool   IsBold() const { return mIsBold; }
-			bool   IsItalic() const { return mIsItalic; }
-			bool   IsScalable() const { return GetSize() == kAnySize; }
+			int         GetSize() const { return mSize; }
+			std::string GetFamilyName() const { return mFamilyName; }
+			std::string GetStyleName() const { return mStyleName; }
+			bool        IsBold() const { return mIsBold; }
+			bool        IsItalic() const { return mIsItalic; }
+			bool        IsScalable() const { return GetSize() == kAnySize; }
 			
 			//////////
 			// Load this face as a 'Face' object, using the specified
@@ -670,7 +675,7 @@ namespace Typography {
 		// try to find an appropriate substitute in a different style.
 		// 
 		class Family {
-			string        mFamilyName;
+			std::string   mFamilyName;
 			
 			FaceSizeGroup mRegularFaces;
 			FaceSizeGroup mBoldFaces;
@@ -678,7 +683,7 @@ namespace Typography {
 			FaceSizeGroup mBoldItalicFaces;
 			
 		public:
-			Family(const string &inFamilyName) : mFamilyName(inFamilyName) {}
+			Family(const std::string &inFamilyName) : mFamilyName(inFamilyName) {}
 			
 			void AddAvailableFace(const AvailableFace &inFace);
 			Face GetFace(FaceStyle inStyle, int inSize);
@@ -687,7 +692,7 @@ namespace Typography {
 		};
 		
 	private:
-		std::map<string,Family> mFamilyMap;
+		std::map<std::string,Family> mFamilyMap;
 		
 		//////////
 		// Does the file pointed to by 'inPath' look like a font file?
@@ -729,7 +734,7 @@ namespace Typography {
 		// [in] inSize -       A font size, in points.
 		// [out] return -      An appropriate Face object.
 		//
-		Face GetFace(const string &inFamilyName,
+		Face GetFace(const std::string &inFamilyName,
 					 FaceStyle inStyle, int inSize);
 	};
 }

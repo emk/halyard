@@ -1,16 +1,26 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "TCommon.h"
+
 #include <algorithm>
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <dirent.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
-#include "TCommon.h"
+#if FIVEL_PLATFORM_WIN32
+#	include <windows.h>
+#	define S_ISREG(m) ((m)&_S_IFREG)
+#	define S_ISDIR(m) ((m)&_S_IFDIR)
+#elif (FIVEL_PLATFORM_MACINTOSH || FIVEL_PLATFORM_OTHER)
+#	include <dirent.h>
+#	include <unistd.h>
+#else
+#	error "Unknown platform."
+#endif
+
 #include "FileSystem.h"
 
 using namespace FileSystem;
@@ -57,12 +67,14 @@ static void CheckErrno()
 //  Path Methods
 //=========================================================================
 
-#if FIVEL_PLATFORM_WINDOWS
+#if FIVEL_PLATFORM_WIN32
 #	define PATH_SEPARATOR '\\'
 #elif FIVEL_PLATFORM_MACINTOSH
 #	define PATH_SEPARATOR ':'
-#else
+#elif FIVEL_PLATFORM_OTHER
 #	define PATH_SEPARATOR '/'
+#else
+#	error "Unknown platform."
 #endif
 
 Path::Path()
@@ -72,7 +84,7 @@ Path::Path()
 }
 
 Path::Path(const std::string &inPath)
-	: mPath("./" + inPath)
+	: mPath(std::string(".") + PATH_SEPARATOR + inPath)
 {
 	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
 }
@@ -95,7 +107,7 @@ std::string Path::GetExtension() const
 	if (dotpos == std::string::npos)
 		return std::string("");
 	std::string extension = mPath.substr(dotpos + 1);
-	transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
 	return extension;
 }
 
@@ -128,7 +140,7 @@ bool Path::DoesExist() const
 	}
 	else
 	{
-		Error(errno);
+		throw Error(errno);
 	}
 
 	ASSERT(false);
@@ -141,7 +153,7 @@ bool Path::IsRegularFile() const
 	ResetErrno();
 	stat(ToNativePathString().c_str(), &info);
 	CheckErrno();
-	return S_ISREG(info.st_mode);
+	return S_ISREG(info.st_mode) ? true : false;
 }
 
 bool Path::IsDirectory() const
@@ -150,8 +162,50 @@ bool Path::IsDirectory() const
 	ResetErrno();
 	stat(ToNativePathString().c_str(), &info);
 	CheckErrno();
-	return S_ISDIR(info.st_mode);
+	return S_ISDIR(info.st_mode) ? true : false;
 }
+
+#if FIVEL_PLATFORM_WIN32
+
+std::list<std::string> Path::GetDirectoryEntries() const
+{
+	// Allocate some storage.
+	std::list<std::string> entries;	
+
+	// Create a Windows file search object.
+	// We should never get an empty directory because of the "." and ".." entries.
+	WIN32_FIND_DATA find_data;
+	HANDLE hFind = ::FindFirstFile((ToNativePathString() + "\\*").c_str(), &find_data);
+	if (hFind == INVALID_HANDLE_VALUE)
+		throw Error("Can't open directory"); // TODO - GetLastError()
+
+	// Make sure we close our WIN32_FIND_DATA correctly.
+	try
+	{
+		do
+		{
+			// Add our directory entry to the list.
+			std::string name = find_data.cFileName;
+			if (name != "." && name != "..")
+				entries.push_back(name);
+		} while (::FindNextFile(hFind, &find_data));
+
+		// Check for any errors reading the directory.
+		if (::GetLastError() != ERROR_NO_MORE_FILES)
+			throw Error("Error reading directory"); // TODO - GetLastError()
+	}
+	catch (...)
+	{
+		::FindClose(hFind);
+		throw;
+	}
+	if (!::FindClose(hFind))
+		throw Error("Can't close directory"); // TODO - GetLastError()
+
+	return entries;
+}
+
+#elif (FIVEL_PLATFORM_MACINTOSH || FIVEL_PLATFORM_OTHER)
 
 std::list<std::string> Path::GetDirectoryEntries() const
 {
@@ -165,7 +219,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
 	{
 		// Be careful to skip useless magic entries when running
 		// on Unix.
-		string name = entry->d_name;
+		std::string name = entry->d_name;
 		if (name != "." && name != "..")
 			entries.push_back(name);
 	}
@@ -177,7 +231,11 @@ std::list<std::string> Path::GetDirectoryEntries() const
 	return entries;
 }
 
-void Path::DeleteFile() const
+#else 
+#	error "Unknown platform."
+#endif // FIVEL_PLATFORM_*
+
+void Path::RemoveFile() const
 {
 	ResetErrno();
 	remove(ToNativePathString().c_str());

@@ -52,6 +52,7 @@ AUTHOR
 #define DEBUG
 #endif
 
+#include <crtdbg.h>
 #define ASSERT(x) _ASSERTE(x)
 
 // For now, the Windows engine uses some non-standard string functions
@@ -59,6 +60,10 @@ AUTHOR
 #define HAVE__STRLWR 1
 #define HAVE__STRUPR 1
 #define HAVE__STRICMP 1
+
+// Turn off warnings about identifiers being truncated in debug information.
+// Without this, working with STL templates will drive us nuts.
+#pragma warning(disable: 4786)
 
 
 //=========================================================================

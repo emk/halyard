@@ -9,9 +9,9 @@ int total_failures = 0;
 void test_failure (char *file, int line, char *label, char *statement) 
 {
 	total_failures++;
-	cout << endl << file << ":" << line << ": test failure: "
-		 << label << " (" << statement << ")" << endl;
-
+	std::cout << std::endl << file << ":" << line << ": test failure: "
+		      << label << " (" << statement << ")" << std::endl;
+ 
 	// We exit automatically, because these tests are supposed to run
 	// at 100% all the time.  No test failures should ever be checked
 	// into the CVS repository.
@@ -21,17 +21,17 @@ void test_failure (char *file, int line, char *label, char *statement)
 int tests_finished (void) 
 {
 	// Summarize our test run.
-	cout << endl << "Ran " << total_tests << " tests, "
-		 << total_failures << " failed, "
-		 << 100.0 - (100.0 * total_failures) / total_tests
-		 << "% passed" << endl;
+	std::cout << std::endl << "Ran " << total_tests << " tests, "
+		      << total_failures << " failed, "
+		      << 100.0 - (100.0 * total_failures) / total_tests
+		      << "% passed" << std::endl;
 
 	// Print the final result.
 	if (total_failures == 0) {
-		cout << "OK" << endl;
+		std::cout << "OK" << std::endl;
 		return 0;
 	}
 
-	cout << "FAILED" << endl;
+	std::cout << "FAILED" << std::endl;
 	return 1;
 }

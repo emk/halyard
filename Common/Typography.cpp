@@ -1,13 +1,13 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "TCommon.h"
+
 #include <fstream>
 
 #include <assert.h>
 #include <wctype.h>
 
 #include "Typography.h"
-
-#define ASSERT(x) assert(x)
 
 using namespace Typography;
 
@@ -623,7 +623,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 //	Typography::FamilyDatabase::AvailableFace Methods
 //=========================================================================
 
-FamilyDatabase::AvailableFace::AvailableFace(const string &inFileName)
+FamilyDatabase::AvailableFace::AvailableFace(const std::string &inFileName)
 	: mFileName(inFileName)
 {
 	// Open up our face file.
@@ -699,14 +699,14 @@ Face FamilyDatabase::AvailableFace::OpenFace(int inSize) const
 void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in)
 {
 	// Check our header information.
-	string filetype, vers_label;
+	std::string filetype, vers_label;
 	int version;
-	in >> filetype >> vers_label >> version >> ws;
+	in >> filetype >> vers_label >> version >> std::ws;
 	if (!in || filetype != "facecache" || vers_label != "vers" || version != 1)
 		throw Error("Incorrectly formatted face cache");
 	
 	// Discard our human-readable comment line.
-	string junk;
+	std::string junk;
 	std::getline(in, junk);
 	if (!in)
 		throw Error("Error reading face cache");
@@ -714,9 +714,9 @@ void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in)
 
 void FamilyDatabase::AvailableFace::WriteSerializationHeader(std::ostream &out)
 {
-	out << "facecache vers 1" << endl
+	out << "facecache vers 1" << std::endl
 		<< "FILE|FAMILY|STYLE|SIZE|IS BOLD|IS ITALIC"
-		<< endl;
+		<< std::endl;
 }
 
 FamilyDatabase::AvailableFace::AvailableFace(std::istream &in)
@@ -747,7 +747,7 @@ void FamilyDatabase::AvailableFace::Serialize(std::ostream &out) const
 {
 	// XXX - This will fail if any of our strings contain '|'.
 	out << mFileName << '|' << mFamilyName << '|' << mStyleName << '|'
-		<< mSize << '|' << mIsBold << '|' << mIsItalic << endl;
+		<< mSize << '|' << mIsBold << '|' << mIsItalic << std::endl;
 }
 
 
@@ -874,22 +874,22 @@ bool FamilyDatabase::IsFontFile(const FileSystem::Path &inPath)
 
 void FamilyDatabase::AddAvailableFace(const AvailableFace &inFace)
 {
-	string family_name = inFace.GetFamilyName();
-	std::map<string,Family>::iterator found = mFamilyMap.find(family_name);
+	std::string family_name = inFace.GetFamilyName();
+	std::map<std::string,Family>::iterator found = mFamilyMap.find(family_name);
 	if (found == mFamilyMap.end())
 	{
-		mFamilyMap.insert(std::pair<string,Family>(family_name,
-												   Family(family_name)));
+		mFamilyMap.insert(std::pair<std::string,Family>(family_name,
+												        Family(family_name)));
 		found = mFamilyMap.find(family_name);
 		ASSERT(found != mFamilyMap.end());
 	}
 	found->second.AddAvailableFace(inFace);
 }
 
-Face FamilyDatabase::GetFace(const string &inFamilyName,
+Face FamilyDatabase::GetFace(const std::string &inFamilyName,
 							 FaceStyle inStyle, int inSize)
 {
-	std::map<string,Family>::iterator found = mFamilyMap.find(inFamilyName);
+	std::map<std::string,Family>::iterator found = mFamilyMap.find(inFamilyName);
 	if (found != mFamilyMap.end())
 		return found->second.GetFace(inStyle, inSize);
 	else
@@ -945,7 +945,7 @@ void FamilyDatabase::ReadFromCache(std::istream &in)
 void FamilyDatabase::WriteToCache(std::ostream &out) const
 {
 	FamilyDatabase::AvailableFace::WriteSerializationHeader(out);
-	for (std::map<string,Family>::const_iterator iter = mFamilyMap.begin();
+	for (std::map<std::string,Family>::const_iterator iter = mFamilyMap.begin();
 		 iter != mFamilyMap.end(); ++iter)
 		iter->second.Serialize(out);	
 }

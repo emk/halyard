@@ -6,7 +6,7 @@
 
 USING_NAMESPACE_FIVEL
 
-static string get_string(std::ostrstream &stream)
+static std::string get_string(std::ostrstream &stream)
 {
 	// Go through the foolish new rigamarole for extracting a string.
 	// We must unfreeze the stream before we exit this function, or
@@ -17,7 +17,7 @@ static string get_string(std::ostrstream &stream)
 	stream.freeze(1);
 	try
 	{
-		string str(stream.str(), stream.pcount());
+		std::string str(stream.str(), stream.pcount());
 		stream.freeze(0);
 		return str;
 	}
@@ -30,7 +30,7 @@ static string get_string(std::ostrstream &stream)
 
 const char* TException::what () const
 {
-    ostrstream s;
+	std::ostrstream s;
 	s << GetClassName() << ": " << GetErrorMessage();
 	if (GetErrorCode() != kNoErrorCode)
 	{

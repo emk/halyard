@@ -1,5 +1,7 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "TCommon.h"
+
 #include <algorithm>
 #include <fstream>
 
@@ -51,25 +53,37 @@ void test_FileSystem (void)
 	TEST(std::find(entries.begin(), entries.end(), "README.txt") !=
 		 entries.end());
 
-	// Test file deletion.
-	Path deltest("deltest.txt");
-	TEST(deltest.DoesExist() == false);
-	ofstream deltest_stream(deltest.ToNativePathString().c_str());
-	deltest_stream.close();
-	TEST(deltest.DoesExist() == true);
-	deltest.DeleteFile();
-	TEST(deltest.DoesExist() == false);	
-
 	// Make sure the directory isn't contaminated with magic Unix entries.
 	TEST(std::find(entries.begin(), entries.end(), ".") == entries.end());
 	TEST(std::find(entries.begin(), entries.end(), "..") == entries.end());
+
+	// Test file deletion.
+	Path deltest("deltest.txt");
+	TEST(deltest.DoesExist() == false);
+	std::ofstream deltest_stream(deltest.ToNativePathString().c_str());
+	deltest_stream.close();
+	TEST(deltest.DoesExist() == true);
+	deltest.RemoveFile();
+	TEST(deltest.DoesExist() == false);	
 
 	// Do some tricky path manipulation.
 	Path tricky = GetFontDirectory().AddParentComponent();
 	TEST(tricky.AddComponent("FileSystemTests.cpp").DoesExist());
 
-#if FIVEL_PLATFORM_WINDOWS
-#	error "Not yet implemented for Windows."
+#if FIVEL_PLATFORM_WIN32
+
+	// Test conversion to native path strings.
+	TEST(Path().ToNativePathString() == ".");
+	TEST(Path().AddComponent("foo").ToNativePathString() == ".\\foo");
+	TEST(Path().AddParentComponent().ToNativePathString() == ".\\..");
+	TEST(Path().AddParentComponent().AddComponent("f").ToNativePathString() ==
+		 ".\\..\\f");
+	TEST(Path("foo").ToNativePathString() == ".\\foo");
+	TEST(GetBaseDirectory().ToNativePathString() == ".");
+	TEST(GetFontDirectory().ToNativePathString() == ".\\Fonts");
+	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
+		 ".\\Fonts\\README.txt");
+
 #elif FIVEL_PLATFORM_MACINTOSH
 #	error "Not yet implemented for Macintosh."
 #else FIVEL_PLATFORM_OTHER
@@ -86,5 +100,7 @@ void test_FileSystem (void)
 	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
 		 "./Fonts/README.txt");
 
+#else
+#	error "Unknown platform."
 #endif // FIVEL_PLATFORM_*
 }
