@@ -228,11 +228,12 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
     // Do this using box drawing primitives for reliable placement and
     // alpha channel support.
     FillBox(wxRect(inBounds.x, inBounds.y, inBounds.width, inWidth), inColor);
-    FillBox(wxRect(inBounds.x, inBounds.y, inWidth, inBounds.height), inColor);
+    FillBox(wxRect(inBounds.x, inBounds.y + inWidth,
+                   inWidth, inBounds.height - 2*inWidth), inColor);
     FillBox(wxRect(inBounds.x, inBounds.y + inBounds.height - inWidth,
                    inBounds.width, inWidth), inColor);
-    FillBox(wxRect(inBounds.x + inBounds.width - inWidth, inBounds.y,
-                   inWidth, inBounds.height), inColor);
+    FillBox(wxRect(inBounds.x + inBounds.width - inWidth, inBounds.y + inWidth,
+                   inWidth, inBounds.height - 2*inWidth), inColor);
 }
 
 void DrawingArea::DrawPixMap(GraphicsTools::Point inPoint,

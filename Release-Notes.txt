@@ -1,6 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-0.0.29 - emk, brian
+CVS - emk
+
+  * Small bug-fix to alpha-channel box outline code--stop drawing
+    over the same area twice.
+
+0.0.29 - 02 June 2004 - emk, brian
 
   * Moved most of overlay support into quake2/client, except for
     actual drawing/conversion code.
