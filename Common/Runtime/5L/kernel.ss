@@ -763,8 +763,8 @@
     ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
     ;; node's parent and the "local" portion of the name (excluding the
     ;; parent).  A "/" character separates different levels of nesting.
-    (if (eq? name |/|)
-        (values #f |/|) ; Handle the root node.
+    (if (eq? name '|/|)
+        (values #f '|/|) ; Handle the root node.
         (let* [[str (symbol->string name)]
                [matches (regexp-match "^(([^/].*)/)?([^/]+)$" str)]]
           (cond
@@ -864,7 +864,7 @@
 
   (define $root-node
     (make <card-group>
-      :name |/| :parent #f :active? #t))
+      :name '|/| :parent #f :active? #t))
 
   (define-template-definer define-group-template <card-group>)
   (define-node-definer group <card-group> <card-group>)
@@ -1032,7 +1032,8 @@
     ;; ending before 'stop-before'.
     (let recurse [[group group]]
       (unless (eq? group stop-before)
-        (enter-node group)
+        (assert (node-parent group))
+        (exit-node group)
         (recurse (node-parent group)))))
 
   (define (enter-card-group-recursively group)
@@ -1040,8 +1041,9 @@
     ;; active groups from the root to 'group'.
     (let recurse  [[group group]]
       (unless (card-group-active? group)
+        (assert (node-parent group))
         (recurse (node-parent group))
-        (exit-node group))))
+        (enter-node group))))
 
   (define (exit-card old-card new-card)
     ;; Exit all our child elements.
@@ -1060,7 +1062,7 @@
     ;; Clear our handler list.  We also do this in exit-node; this
     ;; invocation is basically defensive, in case something went
     ;; wrong during the node exiting process.
-    (set! (node-handlers node) (make-hash-table))
+    (set! (node-handlers new-card) (make-hash-table))
     ;; Enter as many enclosing card groups as necessary.
     (enter-card-group-recursively (node-parent new-card))
     ;; Enter all our child elements.  Notice we do this first, so

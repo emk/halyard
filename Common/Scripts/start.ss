@@ -60,21 +60,21 @@
   (debug-log (cat "Marking " card-name))
   (set! (engine-var (cat "seen-" card-name)) "1"))
 
-(card start
+(card start ()
   (mark-card-as-seen "start")
   (jump test-1))
 
-(card test-1
+(card test-1 ()
   (mark-card-as-seen "test-1")
   (jump test-2))
 
-(card test-2
+(card test-2 ()
   (mark-card-as-seen "test-2")
   (jump test-variables))
 
 (define/p *vartest* #f)
 
-(card test-variables
+(card test-variables ()
   (foreach [val (list (void) "str" 'sym -2147483648 2147483647 4294967295
                       -1 0 1 -1.0 0.0 1.0 #f #t)]
     (set! *vartest* val)
@@ -87,7 +87,7 @@
 (define (test-callback code)
   (call-5l-prim 'testcallback code))
 
-(card test-callbacks
+(card test-callbacks ()
   ;; Test a simple callback.
   (define callback-ran? #f)
   (test-callback (callback (set! callback-ran? #t)))
@@ -101,12 +101,12 @@
                    (jump test-callbacks-2)
                    (set! *after-callback-flag* #t))))
 
-(card test-callbacks-2
+(card test-callbacks-2 ()
   (test (eq? *before-callback-flag* #t))
   (test (eq? *after-callback-flag* #f))
   (jump test-callback-args))
 
-(card test-callback-args
+(card test-callback-args ()
   (define (f h w l)
     (test (equal? h "hello"))
     (test (equal? w 'world))
@@ -114,25 +114,25 @@
   (call-5l-prim 'testcallbackargs f)
   (jump test-stop))
 
-(card test-stop
+(card test-stop ()
   (call-5l-prim 'teststop (card-name test-pause))
   (test #f))
 
-(card test-pause
+(card test-pause ()
   (call-5l-prim 'testpause)
   (jump test-timeout))
 
 (define *timeout-start* #f)
 
-(card test-timeout
+(card test-timeout ()
   (set! *timeout-start* (current-milliseconds))
   (call-5l-prim 'testtimeout 1 'timeout-done))
 
-(card timeout-done
+(card timeout-done ()
   (test (>= (current-milliseconds) (+ *timeout-start* 1000)))
   (jump test-nap))
 
-(card test-nap
+(card test-nap ()
   (set! *timeout-start* (current-milliseconds))
   (call-5l-prim 'testnap 2)
   (test (>= (current-milliseconds) (+ *timeout-start* 200)))
@@ -143,7 +143,7 @@
 ;;  Advanced Language Test Cases
 ;;=========================================================================
 
-(card advanced-language-test-cases
+(card advanced-language-test-cases ()
 
   ;; Test (define ...).
   (define x #f)
@@ -210,7 +210,7 @@
 (define (k4 n &key (x n) (y (* 2 n))) (list x y))
 (define (k5 &key x &rest y) (list x y))
 
-(card argument-lists
+(card argument-lists ()
   (test (eq? (t1) 'ok))
   (test (equal? (t2 1 2 3) '(1 2 3)))
   (test (equal? (t3 1 2 3) '(2 3)))
@@ -251,13 +251,13 @@
 
 (group g1)
 
-(card g1/start
+(card g1/start ()
   (set! *last-card* g1/start)
   (jump (@ s1)))
 
 (sequence g1/s1)
 
-(card g1/s1/c1
+(card g1/s1/c1 ()
   (test (eq? *last-card* g1/start))
   (test (not (card-prev)))
   (test (eq? 'g1/s1/c2 (card-name (card-next))))
@@ -266,7 +266,7 @@
   (set! *last-card* g1/s1/c1)
   (jump (@ c2)))
 
-(card g1/s1/c2
+(card g1/s1/c2 ()
   (test (eq? *last-card* g1/s1/c1))
   (test (eq? 'g1/s1/c1 (card-name (card-prev))))
   (set! *last-card* g1/s1/c2)
@@ -274,29 +274,29 @@
 
 (sequence g1/s1/s2)
 
-(card g1/s1/s2/c1
+(card g1/s1/s2/c1 ()
   (test (eq? *last-card* g1/s1/c2))
   (test (eq? 'g1/s1/c2 (card-name (card-prev))))
   (set! *last-card* g1/s1/s2/c1)
   (jump (@ c3)))
 
-(card g1/s1/s2/c2 ; We jump here out of order!
+(card g1/s1/s2/c2 () ; We jump here out of order!
   (test (eq? *last-card* g1/s1/c3))
   (set! *last-card* g1/s1/s2/c2)
   (jump (@ c4)))
 
-(card g1/s1/c3
+(card g1/s1/c3 ()
   (test (eq? *last-card* g1/s1/s2/c1))
   (set! *last-card* g1/s1/c3)
   (jump (@ s2/c2)))
 
-(card g1/s1/c4
+(card g1/s1/c4 ()
   (test (eq? *last-card* g1/s1/s2/c2))
   (test (not (card-next)))
   (set! *last-card* g1/s1/c4)
   (jump swindle-tests))
 
-(card g1/done
+(card g1/done ()
   (test (eq? *last-card* g1/s1/c4))
   (jump swindle-tests))
 
@@ -305,7 +305,7 @@
 ;;  Syntax
 ;;=========================================================================
 
-(card syntax-tests
+(card syntax-tests ()
 
   (test (eq? ((fn (x) (* x x)) 3) 9))
   (test (eq? ((callback 1)) 1))
@@ -378,7 +378,7 @@
                                     (arg2 <swindle-test-multiple-subclass>))
   'both-multiple)
 
-(card swindle-tests
+(card swindle-tests ()
   (define test-obj-1 (make <swindle-test> 
                        :simple-slot 'foo
                        :typed-slot 10))
@@ -437,6 +437,6 @@
 
   (jump done))
 
-(card done
+(card done ()
   (exit-script))
 
