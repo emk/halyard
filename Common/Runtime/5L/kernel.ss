@@ -27,38 +27,47 @@
   ;;  called directly from C++ code that isn't prepared to cope with Scheme
   ;;  errors.
 
-  (provide (rename point <point>) (rename make-point point) point?
+  (provide <point> (rename make-point point) point?
            point-x set-point-x! point-y set-point-y!
 
-           (rename rect <rect>) (rename make-rect rect) rect?
+           <rect> (rename make-rect rect) rect?
            rect-left set-rect-left! rect-top set-rect-top!
            rect-right set-rect-right! rect-bottom set-rect-bottom!
 
-           (rename color <color>) (rename make-color-opt-alpha color) color?
+           <color> (rename make-color-opt-alpha color) color?
            color-red set-color-red! color-green set-color-green!
            color-blue set-color-blue! color-alpha set-color-alpha!
 
-           (rename percent <percent>) (rename make-percent percent)
-           percent? percent-value
+           <percent> (rename make-percent percent) percent? percent-value
            
-           (rename polygon <polygon>) (rename make-polygon-var polygon)
-           polygon? polygon-vertices)
+           <polygon> polygon polygon? 
+           polygon-vertices set-polygon-vertices!
+
+           <shape> shape?)
   
-  (define-struct point (x y) (make-inspector))
+  (defclass <point> ()
+    x y)
 
-  (define-struct rect (left top right bottom) (make-inspector))
+  (defclass <shape> ())
 
-  (define-struct color (red green blue alpha) (make-inspector))
+  (defclass <rect> (<shape>)
+    left top right bottom)
+
+  (defclass <color> ()
+    red green blue alpha)
 
   (define (make-color-opt-alpha r g b &opt (a 0))
     (make-color r g b a))
 
-  (define-struct percent (value) (make-inspector))
+  (defclass <percent> () 
+    value)
 
-  (define-struct polygon (vertices) (make-inspector))
+  (defclass <polygon> (<shape>)
+    vertices)
 
-  (define (make-polygon-var &rest args)
+  (define (polygon &rest args)
     (make-polygon args))
+
 
   ;;=======================================================================
   ;;  Assertions

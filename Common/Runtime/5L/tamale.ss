@@ -5,6 +5,7 @@
 ;; primitives, all subject to change at a moment's notice.
 
 (module tamale (lib "5l.ss" "5L")
+  (require (lib "shapes.ss" "5L"))
 
   (provide load-picture set-image-cache-size! modal-input
            %zone% zone set-zone-cursor! register-cursor mouse-position
@@ -41,62 +42,26 @@
     (engine-var '_modal_input_text))
 
   (define-element-template %element%
-      [[rect :default #f :label "Rectangle"]] ())
+      [] ())
 
   (define-element-template %zone%
       [[cursor :type <symbol> :default 'hand :label "Cursor"]
-       [polygon :default #f :label "Polygon"]]
+       [shape :type <shape> :label "Shape"]]
       (:template %element%)
-    (if polygon
-        (call-5l-prim 'zone (node-full-name self) polygon
-                      (make-node-event-dispatcher self) cursor)
-        (call-5l-prim 'zone (node-full-name self) (rect->polygon 
-                                                   (prop self rect))
-                      (make-node-event-dispatcher self) cursor)))
+    (call-5l-prim 'zone (node-full-name self) (as <polygon> 
+                                                  (prop self shape))
+                  (make-node-event-dispatcher self) cursor))
 
   (define-element-template %simple-zone% [action] (:template %zone%)
     (on mouse-down (event)
       (action)))
 
-  (define (rect->polygon r)
-    (polygon (point (rect-left r) (rect-top r)) 
-             (point (rect-right r) (rect-top r))
-             (point (rect-right r) (rect-bottom r))
-             (point (rect-left r) (rect-bottom r))))
-
-  (define (polygon-bounds poly)
-    (define pts (polygon-vertices poly))
-    (if (null? pts)
-        (rect 0 0 0 0)
-        (let loop [[left (point-x (car pts))]
-                   [top (point-y (car pts))]
-                   [right (point-x (car pts))]
-                   [bottom (point-y (car pts))]
-                   [pts (cdr pts)]]
-          (if (null? pts)
-              (rect left top right bottom)
-              (loop (min left (point-x (car pts)))
-                    (min top (point-y (car pts)))
-                    (max right (point-x (car pts)))
-                    (max bottom (point-y (car pts)))
-                    (cdr pts))))))
-
-  (define (zone name poly action &key (cursor 'hand))
-    ;; XXX - We hackishly provide both :rect and :poly from
-    ;; this function because the template system sucks.
-    (if (rect? poly)
-        (create %simple-zone% 
-                :name name 
-                :rect poly
-                :polygon (rect->polygon poly)
-                :cursor cursor 
-                :action action)
-        (create %simple-zone% 
-                :name name 
-                :rect (polygon-bounds poly)
-                :polygon poly
-                :cursor cursor 
-                :action action)))
+  (define (zone name shape action &key (cursor 'hand))
+    (create %simple-zone% 
+            :name name 
+            :shape shape
+            :cursor cursor 
+            :action action))
   
   (define (set-zone-cursor! elem-or-name cursor)
     (call-5l-prim 'SetZoneCursor (elem-or-name-hack elem-or-name) cursor))
