@@ -17,15 +17,36 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		18
+#define VERSION_REV_BIG		19
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.18 (Development)"
+#define VERSION_STRING		"Tamale 0.0.19 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.60  2004/02/19 23:12:59  emk
+ 0.0.19 - 19 February 2004 - kwasi, djin, emk
+
+   * Added code to detect infinite cycles in TStateDB changes.
+   * Added tamale-tags.sh script for Emacs users.
+   * Added new Quake 2 console trigger command to activate targets.
+   * Provide a whole new API for state db listeners: STATE-DB-FN,
+     STATE-DB-FN/RT, REGISTER-STATE-DB-LISTENER!,
+     DEFINE-STATE-DB-LISTENER, and DEFINE-STATE-DB-LISTENER/RT.
+   * Fixed a bug (I hope) which caused Quake commands to have extra
+     text appended to the end of the command string.
+   * Implemented core of realtime Scheme interpreter.  This isn't very
+     fast, but it never generates Scheme garbage.
+   * Removed old STATE-DB-CHANGED event-handling code.  Use the new
+     listener system instead; it's happy.
+   * Wrote serialization code for binmsg protocol.
+   * Wrote deserialization code for binmsg protocol.
+   * Implemented binmsg support in stock gamex86.dll, client, wxquake2
+     and Tamale.
+   * Added countdown template in scheme
+
  Revision 1.59  2004/02/16 16:08:21  emk
  0.0.18 - 15 February 2004 - emk
 

@@ -11,20 +11,6 @@
       Opaque wxBitmaps
       Masked wxBitmaps
 
-  TStateDB
-/   Implement TStateDB
-,   Make a single TStateDB readable and writable from Scheme
-/     (set-state-db-datum! "/foo" value) ;; Defined in tamale.ss?
-/     Allow listener to be an (on state-db-changed (get) ...) handler
-/       (call-5l-prim 'StateDbGet (node-full-name ELEM) key)
-X     Allow listener to be a simple lambda?  Maybe too hard?
-X       (state-db-register-listener! '/foo
-X                                    (lambda (get) (whatever (get '/foo))))
-/   Implement a new graphic element which listens to three keys:
-/     .../x - x coordinate of element
-/     .../y - y coordinate of element
-/     .../index - Index of graphic to display
-
   March Demo
     Reticule/look support
       Figure out what the player is looking at
@@ -36,13 +22,7 @@ X                                    (lambda (get) (whatever (get '/foo))))
       Looking at reticulates (acts as trigger)
       Looking at entities (acts as trigger)
     Reimplement meters in Scheme
-      Extend Quake 2 net protocol to allow reporting of state vars
-/       Write serializer
-/       Write deserializer
-/       Hook into server & stock gamex86.dll
-/       Hook into client
-/       Write test code in 5Ltest_wx
-        Port changes to VTR AI module
+/     Extend Quake 2 net protocol to allow reporting of state vars
 /     Real-time Scheme-like language for updating meter dials, etc.
       Strip Quake 2 meter implementation to bare essentials
       Re-implement meter logic in Scheme and C++

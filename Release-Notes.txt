@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - kwasi, djin, emk
+0.0.19 - 19 February 2004 - kwasi, djin, emk
 
   * Added code to detect infinite cycles in TStateDB changes.
   * Added tamale-tags.sh script for Emacs users.
