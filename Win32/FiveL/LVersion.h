@@ -16,17 +16,24 @@
 
 #define MAJOR_NUM		3
 #define MINOR_NUM		03
-#define REV_BIG			01
+#define REV_BIG			02
 #define REV_SMALL		00
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.3.1"
+#define VERSION_STRING	"5L for Win32 3.3.2"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.9  2002/04/19 10:21:52  hyjin
+ Added support for a movie controller in 5L applications, and deleted some buggy pre-roll code that appeared to be causing crashes.  We're not a hundred percent sure all the crashing problems are fixed, but things seem to be working very well.  Please test this extensively!
+
+ Set global variable _bShowMC to see the movie controller (case insensitive).
+
+ Changes by Yijin, reviewed by Eric Kidd.
+
  Revision 1.8  2002/04/19 06:02:57  emk
  Merged in MD5-replacement changes from 3.2.0.4.
 

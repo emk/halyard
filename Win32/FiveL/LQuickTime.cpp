@@ -63,6 +63,7 @@ LQuickTime::LQuickTime(void)
 	mPrerollError = LQT_NoError;
 	
 	mMovie = NULL;
+	mMovieController = NULL;
 
 	mRate = fixed1;
 	mEndTime = 0;
@@ -115,43 +116,9 @@ void LQuickTime::Idle(void)
 			if (not mLooping)
 			{
 				if (AtEnd(movieTime))
-					Kill();				// clean everything up
-				else
 				{
-					// if we aren't at the end, see if we have passed the wait time
-					if (mWaiting and (mWaitTime > 0))
-					{
-						if (movieTime >= mWaitTime)
-						{
-							mWaiting = false;
-							mWaitTime = 0;
-						}
-					}
-					
-					::MoviesTask(mMovie, 0);
-
-					// if we are streaming, see if the buffer is empty
-					if (mStreamed)
-					{
-						TimeValue	bufferTime = 0;
-						OSErr		err;
-
-						err = ::GetMaxLoadedTimeInMovie(mMovie, &bufferTime);
-						if (err == noErr)
-						{
-							if (bufferTime <= (movieTime + 5))
-							{
-								// wait for a while
-								Pause();
-
-								for (int i = 1; i < 100; i++)
-									::MoviesTask(mMovie, 0);
-
-								Resume();
-								gDebugLog.Log("QuickTime: Pause to buffer more of movie");
-							}
-						}
-					}
+					Kill();				// clean everything up
+					gDebugLog.Log("Reach the end of the movie (%d)", movieTime);
 				}
 			}
 		}
@@ -287,7 +254,14 @@ void LQuickTime::Cleanup(void)
 
 	mEndTime = 0;
 	mScale = 0;
-		
+
+	// release the movie controller, if any
+	if (mMovieController != NULL)
+	{
+		::DisposeMovieController(mMovieController);
+		mMovieController = NULL;
+	}
+
 	if (mMovie != NULL)
 	{
 		::DisposeMovie(mMovie);
@@ -383,32 +357,46 @@ bool LQuickTime::Load(TString &inMoviePath, bool inAudioOnly, bool inFinish)
 	{
 		// see if we have enough of the movie to make some movie calls
 		if (mLoadStep > LQT_BEFORE_PRELOAD)
-		{
 			mRate = ::GetMoviePreferredRate(mMovie);
-
-			if (not inAudioOnly)
-			{
-				// save the bounding rect for the movie and set
-				// it off the screen to prevent flashing
-				::GetMovieBox(mMovie, &mBounds);
-
-				Rect	fakeBounds = {-1, -1, -1, -1};
-				::SetMovieBox(mMovie, &fakeBounds);
-			}
-		}
 
 		// set the movie gworld to keep it from drawing to the screen
 		if (not inAudioOnly)
 		{
+			// center the movie on the virtual screen
+			::GetMovieBox(mMovie, &mBounds);
+			::MacOffsetRect(&mBounds, -mBounds.left, -mBounds.top);
+	
+			if (not mHaveOrigin)
+			{
+				// center the movie in the view
+				short		dh, dv;
+
+				dh = VSCREEN_WIDTH - mBounds.right;
+				dv = VSCREEN_HEIGHT - mBounds.bottom;
+				::MacOffsetRect(&mBounds, dh/2, dv/2);
+			}
+			else
+			{
+				// use the stored origin
+				::MacOffsetRect(&mBounds, mOrigin.h, mOrigin.v);
+			}
+
+			::SetMovieBox(mMovie, &mBounds);
+
 			//
-			// Modified by Chuck on Oct 23, 2000.
+			// Modified by Yijin on Mar 28, 2002.
 			//
-			// Set gDummyGWorldPtr to avoid the BLACK WINDOW bug
-			//  in 5L engine.  This seems to be the only place
-			//  we should modified to avoid the "black window".
+			// This was originally changed by Chuck Officer on Oct 23, 2000.
+			//  Chuck uses gDummyGWorldPtr in MovieGWorld to avoid the
+			//  BLACK WINDOW in upper-left corner, which, actually is
+			//  caused by the first few frames being written to the upper-
+			//  left corner of the virtual screen. However, I found that
+			//  if we would like to display movie controller, we have to 
+			//  use gGrafPtr as the movie's display coordinate system.
+			//  The black window bug has been solved by the above lines of
+			//  code which place the movie right in center of the screen.
 			//
-			//::SetMovieGWorld(mMovie, gGrafPtr, NULL);
-			::SetMovieGWorld(mMovie, gDummyGWorldPtr, NULL);
+			::SetMovieGWorld(mMovie, gGrafPtr, NULL);
 		}
 
 		mInMovie = true;			// we have a movie
@@ -710,6 +698,23 @@ LQTError LQuickTime::Play(TString &inMoviePath, TRect &inRect, int32 inWaitOffse
 			}
 		}
 
+		// attach a movie controller if the user likes to
+		TString	showMovieController = gVariableManager.GetString("_bShowMC");
+		if (showMovieController.Equal("1"))
+		{
+			mMovieController = NewMovieController(mMovie, &mBounds, mcTopLeftMovie);
+
+			if (mMovieController == NULL)
+			{
+				gLog.Log("MovieController(hyjin): failed to attach the movie controller!");
+				goto bail;
+			}
+
+			// play the movie while it is still being prerolled
+			MCDoAction(mMovieController, mcActionPrerollAndPlay, (void *)GetMoviePreferredRate(mMovie));
+		}
+
+bail:
 		SetVolume(inVolume);
 
 		// get the end time for the movie
@@ -788,7 +793,10 @@ void LQuickTime::Pause(void)
 //
 void LQuickTime::Resume(void)
 {
-	if (mInMovie and mPaused)
+	if (mMovie == NULL)
+		gDebugLog.Log("LQuickTime::Resume: we found mMoive is NIL, should check it!");
+
+	if (mMovie && mInMovie && mPaused)
 	{
 		::StartMovie(mMovie);
 		mPaused = false;
@@ -810,7 +818,12 @@ bool LQuickTime::AtEnd(TimeValue &inMovieTime)
 	{
 		theTime = ::GetMovieTime(mMovie, nil);
 		
-		if (not ::IsMovieDone(mMovie))
+		// I don't know the reason but IsMovieDone seems to work in a wrong way
+		//  when user click on the "unbuffered" area on the movie controller.
+		//  In order to correctly tell whether the movie has been done, I use
+		//  the total duration of the movie (mEndTime) to do this.
+//		if (not ::IsMovieDone(mMovie))
+		if (theTime < mEndTime)
 			theRetValue = false;
 	}
 	
@@ -1057,14 +1070,54 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 //
 //	HandleEvent - Handle the event.
 //
-bool LQuickTime::HandleEvent(HWND /*inWind*/, UINT /*inMessage*/, 
-							  WPARAM /*inWParam*/, LPARAM /*inLParam*/)
+bool LQuickTime::HandleEvent(HWND inWind, UINT inMessage, 
+							  WPARAM inWParam, LPARAM inLParam)
 {
-	return (false);
+	ComponentResult	theResult = FALSE;
+	bool			retValue = false;
+
+	if (mPlaying)
+	{
+		// convert the Windows event to a QTML event
+		MSG				theMsg;
+		EventRecord		macEvent;
+		LONG			thePoints = GetMessagePos();
+
+		theMsg.hwnd		= inWind;
+		theMsg.message	= inMessage;
+		theMsg.wParam	= inWParam;
+		theMsg.lParam	= inLParam;
+		theMsg.time		= GetMessageTime();
+		theMsg.pt.x		= LOWORD(thePoints);
+		theMsg.pt.y		= HIWORD(thePoints);
+
+		// tranlate a windows event to a mac event
+		WinEventToMacEvent(&theMsg, &macEvent);
+
+		// handle all movie controller events
+		if (mMovieController)
+			theResult = ::MCIsPlayerEvent(mMovieController, (const EventRecord *) &macEvent);
+
+		if (theResult)
+			retValue = true;
+	}
+
+	// serve all the movies exactly once, we should do this often
+	if (mMovie)
+		::MoviesTask(mMovie, 0);
+
+	return (retValue);
 }
 
 /*
  $Log$
+ Revision 1.3  2002/04/19 10:21:52  hyjin
+ Added support for a movie controller in 5L applications, and deleted some buggy pre-roll code that appeared to be causing crashes.  We're not a hundred percent sure all the crashing problems are fixed, but things seem to be working very well.  Please test this extensively!
+
+ Set global variable _bShowMC to see the movie controller (case insensitive).
+
+ Changes by Yijin, reviewed by Eric Kidd.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

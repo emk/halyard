@@ -258,7 +258,12 @@ class LQuickTime : public TObject
 		// NOT IN USE - returns false
 		//
 		bool			HandleEvent(HWND inWind, UINT inMessage, WPARAM inWParam, LPARAM inLParam);
-		
+
+		//////////
+		// Quicktime MovieController: hyjin
+		//
+		MovieController	mMovieController;
+
 	protected:
 		//////////
 		// Do we have a movie?
@@ -471,6 +476,13 @@ class LQuickTime : public TObject
 
 /*
  $Log$
+ Revision 1.3  2002/04/19 10:21:52  hyjin
+ Added support for a movie controller in 5L applications, and deleted some buggy pre-roll code that appeared to be causing crashes.  We're not a hundred percent sure all the crashing problems are fixed, but things seem to be working very well.  Please test this extensively!
+
+ Set global variable _bShowMC to see the movie controller (case insensitive).
+
+ Changes by Yijin, reviewed by Eric Kidd.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 
