@@ -313,20 +313,21 @@
   (define (register-header sheet)
     ;; XXX - Colors are hard-coded until the engine is modified to
     ;; stop using palette values everywhere.
-    (call-5l-prim 'header
-		  (stylesheet-name sheet)
-		  ;; Generate a fake header fontname.
-		  (cat (if (member? 'bold (stylesheet-flags sheet)) "b" "")
-		       "ser"
-		       (number->string (stylesheet-size sheet)))
-		  (stylesheet-justification sheet)
-		  248 ;(stylesheet-color sheet)
-		  2 ;(stylesheet-highlight-color sheet)
-		  (stylesheet-shadow-offset sheet)
-		  0 ;(stylesheet-shadow-color sheet)
-		  (stylesheet-windows-adjustment sheet)
-		  0 ;(stylesheet-highlight-shadow-color sheet)
-		  ))
+    (if (have-5l-prim? 'header)
+	(call-5l-prim 'header
+		      (stylesheet-name sheet)
+		      ;; Generate a fake header fontname.
+		      (cat (if (member? 'bold (stylesheet-flags sheet)) "b" "")
+			   "ser"
+			   (number->string (stylesheet-size sheet)))
+		      (stylesheet-justification sheet)
+		      248 ;(stylesheet-color sheet)
+		      2 ;(stylesheet-highlight-color sheet)
+		      (stylesheet-shadow-offset sheet)
+		      0 ;(stylesheet-shadow-color sheet)
+		      (stylesheet-windows-adjustment sheet)
+		      0 ;(stylesheet-highlight-shadow-color sheet)
+		      )))
 
   ;; Helper: Convert a list of flags to a defstyle flag value.
   (define (flags->defstyle-flags flags)
