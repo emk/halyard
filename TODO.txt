@@ -16,23 +16,35 @@
 /     Figure out what the player is looking at
 /       Figure out where to hook in look check code--probably post-movement
 /       Send a simple text message to the client
-      Looking at entities (acts as trigger)
-        Read new fields into edict
-        Keep track of what player is currently looking at
-        Activate target when using looks at something new with look_target
-      Looking at reticulates (acts as trigger)
-      Activate reticules (acts as trigger)
-      Displaying reticules (hack video support)
+/     Looking at entities (acts as trigger)
+/       Read new fields into edict
+/       Keep track of what player is currently looking at
+/       Activate target when using looks at something new with look_target
+/     Looking at reticulates (acts as trigger)
+/     Activate reticules (acts as trigger)
+/     Displaying reticules (hack video support)
+/       Figure out what data to send to client
+/       Send data to client
+/       Figure out where to put projection and clipping code
+/       Handle the various projections and clippings
+/       Extend ref_exports to include an API for drawing the reticle
+/       Draw the reticle
+      Rename r_activated_target -> r_look_target
+      Merge with VTRA AI
     Reimplement meters in Scheme
 /     Extend Quake 2 net protocol to allow reporting of state vars
 /     Real-time Scheme-like language for updating meter dials, etc.
 /     Strip Quake 2 meter implementation to bare essentials
-,     Re-implement meter logic in Scheme and C++
+/     Re-implement meter logic in Scheme and C++
+      Fix trailer and HLL?
     Implement other meters
       CDV 715
 
   Postponed after demo
     Change error-handling system for binmsg?
+    Reticle bugs
+      Fix bug where reticle data doesn't get cleared at beginning of level
+      Fix bug where reticle is too large when part of object behind player
     Fix audio problems when in background
       Premature restart of loops
       Stuttering during disk access
