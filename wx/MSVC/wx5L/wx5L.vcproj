@@ -234,6 +234,9 @@
 				RelativePath="..\..\src\Quake2Engine.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\ScriptEditor.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\Stage.cpp">
 			</File>
 			<File
@@ -419,6 +422,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\Quake2Engine.h">
+			</File>
+			<File
+				RelativePath="..\..\src\ScriptEditor.h">
 			</File>
 			<File
 				RelativePath="..\..\src\Stage.h">

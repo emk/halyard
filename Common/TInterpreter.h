@@ -23,9 +23,39 @@
 #if !defined (_TInterpreter_h_)
 #define _TInterpreter_h_
 
+BEGIN_NAMESPACE_FIVEL
+
 class TValue;
 
-BEGIN_NAMESPACE_FIVEL
+//////////
+/// An identifier which might appear in a script.  Used to inform the editor
+/// of highlightable keywords, autocompletable names, etc.
+///
+class TScriptIdentifier {
+public:
+    /// The type of an identifier.  I expect this will be extended to include
+    /// cards, elements, etc., as the editor improves.
+    enum Type {
+        KEYWORD,  //< For Scheme, includes a macro or special form.
+        FUNCTION,
+        VARIABLE,
+        UNKNOWN
+    };
+
+private:
+	std::string mName;
+    Type mType;
+
+public:
+	TScriptIdentifier(std::string inName, Type inType)
+        : mName(inName), mType(inType) {}
+
+    /// Get the name of this identifier.
+	std::string GetName() { return mName; }
+
+    /// Get the type of this identifier.
+    Type GetType() { return mType; }
+};
 
 //////////
 /// TInterpreter provides an abstract interface to a programming language
@@ -187,6 +217,11 @@ public:
 	///
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText) = 0;
+
+    //////////
+    /// Fetch a list of known identifiers from the interpreter.
+    ///
+	virtual std::vector<TScriptIdentifier> GetKnownIdentifiers() = 0;
 	
 	//////////
 	/// Do we have a single, global instance of this class?

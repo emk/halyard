@@ -41,6 +41,7 @@
 #include "TestHarness.h"
 #include "Listener.h"
 #include "Timecoder.h"
+#include "ScriptEditor.h"
 #include "dlg/ProgramPropDlg.h"
 
 
@@ -137,6 +138,8 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_OPEN_PROGRAM, StageFrame::OnOpenProgram)
     EVT_UPDATE_UI(FIVEL_SAVE_PROGRAM, StageFrame::UpdateUiSaveProgram)
     EVT_MENU(FIVEL_SAVE_PROGRAM, StageFrame::OnSaveProgram)
+    EVT_MENU(FIVEL_NEW_SCRIPT_FILE, StageFrame::OnNewScriptFile)
+    EVT_MENU(FIVEL_OPEN_SCRIPT_FILE, StageFrame::OnOpenScriptFile)
     EVT_MENU(FIVEL_RELOAD_SCRIPT, StageFrame::OnReloadScript)
     EVT_MENU(FIVEL_RUN_TESTS, StageFrame::OnRunTests)
 
@@ -212,6 +215,13 @@ StageFrame::StageFrame(wxSize inSize)
                       "Open an existing Tamale program.");
     mFileMenu->Append(FIVEL_SAVE_PROGRAM, "&Save Program\tCtrl+S",
                       "Save the current Tamale program.");
+    mFileMenu->AppendSeparator();
+    mFileMenu->Append(FIVEL_NEW_SCRIPT_FILE,
+                      "&New Script File...\tCtrl+Shift+N",
+                      "Create a new Tamale script file.");
+    mFileMenu->Append(FIVEL_OPEN_SCRIPT_FILE,
+                      "&Open Script File...\tCtrl+Shift+O",
+                      "Open an existing Tamale script file.");
     mFileMenu->AppendSeparator();
     mFileMenu->Append(FIVEL_RELOAD_SCRIPT, "&Reload Script\tCtrl+R",
                       "Reload the currently executing Tamale script.");
@@ -589,6 +599,16 @@ void StageFrame::UpdateUiSaveProgram(wxUpdateUIEvent &inEvent)
 void StageFrame::OnSaveProgram(wxCommandEvent &inEvent)
 {
 	mDocument->Save();
+}
+
+void StageFrame::OnNewScriptFile(wxCommandEvent &inEvent)
+{
+    ScriptEditor::NewScript();
+}
+
+void StageFrame::OnOpenScriptFile(wxCommandEvent &inEvent)
+{
+    ScriptEditor::OpenScript();
 }
 
 void StageFrame::OnReloadScript(wxCommandEvent &inEvent)

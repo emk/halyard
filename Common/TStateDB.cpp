@@ -28,7 +28,7 @@ USING_NAMESPACE_FIVEL
 
 REGISTER_TEST_CASE_FILE(TStateDB);
 	
-class TStateDB;
+class FIVEL_NS TStateDB;
 
 TStateDB FIVEL_NS gStateDB;
 

@@ -64,7 +64,7 @@ enum TestResult {
 /// If a test case fails explicity (by calling FAIL, or violating a CHECK_*
 /// assertion), we throw a TestFailed exception.
 ///
-class TestFailed : public TException
+class TestFailed : public FIVEL_NS TException
 {
 	std::string mMessage;
 

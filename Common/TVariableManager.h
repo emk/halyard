@@ -58,4 +58,6 @@ public:
 
 extern TVariableManager gVariableManager;
 
+END_NAMESPACE_FIVEL
+
 #endif // TVariableManager_H

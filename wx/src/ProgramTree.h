@@ -26,8 +26,11 @@
 #include <wx/laywin.h>
 #include <wx/treectrl.h>
 
-class StageFrame;
+BEGIN_NAMESPACE_FIVEL
 class Document;
+END_NAMESPACE_FIVEL
+
+class StageFrame;
 class ProgramTreeCtrl;
 
 /// Public interface to tree widget describing a Tamale script.
@@ -69,7 +72,7 @@ public:
 	//////////
 	/// Notify the tree that a document has been loaded.
 	///
-	void RegisterDocument(Document *inDocument);
+	void RegisterDocument(FIVEL_NS Document *inDocument);
 
     //////////
     /// Register a newly-loaded card with the program tree.

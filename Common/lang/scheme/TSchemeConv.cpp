@@ -46,7 +46,7 @@ static Scheme_Object *MakeSchemeList(const TValueList &inList) {
 	return result;
 }
 
-Scheme_Object *TValueToScheme(TValue inVal) {
+Scheme_Object *FIVEL_NS TValueToScheme(TValue inVal) {
 	switch (inVal.GetType())
 	{	
 		case TValue::TYPE_NULL:
@@ -102,8 +102,6 @@ Scheme_Object *TValueToScheme(TValue inVal) {
 //=========================================================================
 //  SchemeToTValue
 //========================================================================= 
-
-TValue SchemeToTValue(Scheme_Object *inVal);
 
 static void SchemeTypeCheckFail() {
 	throw TException(__FILE__, __LINE__, "Argument type mismatch");
@@ -286,7 +284,7 @@ static TValue SchemeStructToTValue(Scheme_Object *inVal) {
 	return TValue();
 }
 
-TValue SchemeToTValue(Scheme_Object *inVal) {
+TValue FIVEL_NS SchemeToTValue(Scheme_Object *inVal) {
 	Scheme_Type type = SCHEME_TYPE(inVal);
 	
 	switch (type) {

@@ -25,6 +25,8 @@
 
 #include "ImageCache.h"
 
+USING_NAMESPACE_FIVEL
+
 // Tuning parameters for our cache.
 static const size_t DEFAULT_MAX_BYTES = 2 * 1024 * 1024; // 2 megabytes
 static const time_t AGE_MARGIN = 120;                    // in seconds

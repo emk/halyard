@@ -26,6 +26,8 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 
+USING_NAMESPACE_FIVEL
+
 wxRect TToWxRect(const TRect &inRect) {
 	return wxRect(GetPos(inRect), GetSize(inRect));
 }

@@ -26,6 +26,8 @@
 
 #include "AudioStream.h"
 
+USING_NAMESPACE_FIVEL
+
 
 //=========================================================================
 //  Utility Functions

@@ -26,6 +26,8 @@
 #include "Element.h"
 #include "DrawingArea.h"
 
+USING_NAMESPACE_FIVEL
+
 bool DrawingContextStack::ContainsElement(ElementPtr inElement) {
     ElementStack::iterator i = mDrawingContextStack.begin();
     for (; i != mDrawingContextStack.end(); ++i)

@@ -26,6 +26,8 @@
 #include "TInterpreter.h"
 #include "TStateDB.h"
 
+BEGIN_NAMESPACE_FIVEL
+
 //////////
 /// We'll use this type to refer to TValueLists without copying them.  We
 /// need a typedef because we'll be using this type in places where the
@@ -102,5 +104,7 @@ public:
 
 	virtual TValue Run(const TValueList &inArguments);
 };
+
+END_NAMESPACE_FIVEL
 
 #endif // TSchemeRtCallback_H

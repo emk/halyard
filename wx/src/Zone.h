@@ -32,10 +32,10 @@
 ///
 class Zone : public LightweightElement
 {
-	TPolygon mPolygon;
+	FIVEL_NS TPolygon mPolygon;
 	
 public:
-	Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
+	Zone(Stage *inStage, const wxString &inName, const FIVEL_NS TPolygon &inPoly,
 		 FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor);
 
 	virtual bool IsPointInElement(const wxPoint &inPoint);

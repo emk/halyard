@@ -2,9 +2,19 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk
 
+We have a new wxWidgets version:
+
   * Updated Tamale for latest CVS version of wxWidgets.
   * Worked around radio-button defaut selection bug.
   * Fixed assertion failure caused by latest wxWidgets.
+
+...and a new text editor:
+
+  * Added an editor widget based on wxStyledTextCtrl (i.e. Scintilla).
+  * Started using FiveL namespace on Windows.
+
+...and some other stuff:
+
   * Small bug-fix to alpha-channel box outline code--stop drawing
     over the same area twice.
 

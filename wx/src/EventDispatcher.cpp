@@ -25,7 +25,7 @@
 #include "TInterpreter.h"
 #include "EventDispatcher.h"
  
-BEGIN_NAMESPACE_FIVEL
+USING_NAMESPACE_FIVEL
 
 
 //=========================================================================

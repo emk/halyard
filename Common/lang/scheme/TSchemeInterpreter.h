@@ -30,9 +30,9 @@
 #include "TSchemeCallback.h"
 #include "TSchemeConv.h"
 
-class TPercent;
-
 BEGIN_NAMESPACE_FIVEL
+
+class TPercent;
 
 
 //////////
@@ -145,6 +145,7 @@ public:
 	virtual bool IsValidCard(const char *inCardName);
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
+    virtual std::vector<TScriptIdentifier> GetKnownIdentifiers();
 };
 
 END_NAMESPACE_FIVEL

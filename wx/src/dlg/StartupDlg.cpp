@@ -25,6 +25,8 @@
 #include "../StageFrame.h"
 #include "StartupDlg.h"
 
+USING_NAMESPACE_FIVEL
+
 BEGIN_EVENT_TABLE(StartupDlg, XrcDlg)
 	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_NEW"), StartupDlg::OnNew)
 	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_OPEN"), StartupDlg::OnOpen)

@@ -27,6 +27,8 @@
 #include "CommonWxConv.h"
 #include "Quake2Engine.h"
 
+USING_NAMESPACE_FIVEL
+
 DrawingArea::DrawingArea(Stage *inStage, int inWidth, int inHeight,
 						 bool inHasAlpha)
 	: mStage(inStage), mBounds(wxPoint(0, 0), wxSize(inWidth, inHeight)),

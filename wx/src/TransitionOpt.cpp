@@ -25,6 +25,8 @@
 
 #include "Transition.h"
 
+USING_NAMESPACE_FIVEL
+
 
 //=========================================================================
 //  Transition

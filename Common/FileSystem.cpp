@@ -49,6 +49,7 @@
 #include "FileSystem.h"
 #include "TLogger.h"
 
+USING_NAMESPACE_FIVEL
 using namespace FileSystem;
 
 

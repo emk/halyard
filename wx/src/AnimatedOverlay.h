@@ -27,7 +27,7 @@
 
 /// An Overlay which moves and changes appearance automatically.
 /// The changes are controlled by keys in the TStateDB.
-class AnimatedOverlay : public Overlay, public TStateListener {
+class AnimatedOverlay : public Overlay, public FIVEL_NS TStateListener {
     wxPoint mBasePosition;
     wxPoint mCurrentOffset;
     std::string mCurrentGraphic;
@@ -47,7 +47,7 @@ public:
                     wxCursor &inCursor,
                     bool inHasAlpha,
                     std::string &inStatePath, 
-                    TValueList graphics);
+                    FIVEL_NS TValueList graphics);
 
     virtual void MoveTo(const wxPoint &inPoint);
 	virtual void NotifyStateChanged();

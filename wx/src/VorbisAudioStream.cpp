@@ -24,6 +24,8 @@
 #include "VorbisAudioStream.h"
 #include "VorbisFile.h"
 
+USING_NAMESPACE_FIVEL
+
 
 //=========================================================================
 //  VorbisAudioStream Methods

@@ -26,6 +26,8 @@
 
 #include "DrawingAreaOpt.h"
 
+USING_NAMESPACE_FIVEL
+
 using GraphicsTools::Channel;
 using GraphicsTools::AlphaBlendChannel;
 using GraphicsTools::MultiplyChannels;

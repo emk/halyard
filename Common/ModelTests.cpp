@@ -26,6 +26,7 @@
 #include "Model.h"
 #include "ModelView.h"
 
+USING_NAMESPACE_FIVEL
 using namespace model;
 
 extern void test_Model (void);

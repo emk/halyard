@@ -40,6 +40,8 @@
 #include "doc/TamaleProgram.h"
 #include "dlg/ProgramPropDlg.h"
 
+USING_NAMESPACE_FIVEL
+
 class ProgramTreeItemData;
 
 

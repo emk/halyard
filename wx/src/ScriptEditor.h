@@ -20,14 +20,29 @@
 //
 // @END_LICENSE
 
-#include "TRect.h"
-#include "TPoint.h"
+#ifndef ScriptEditor_H
+#define ScriptEditor_H
 
-wxRect TToWxRect(const FIVEL_NS TRect &inRect);
-FIVEL_NS TRect WxToTRect(const wxRect &inRect);
-wxPoint TToWxPoint(const FIVEL_NS TPoint &inPoint);
-FIVEL_NS TPoint WxToTPoint(const wxPoint &inPoint);
-wxPoint GetPos(const FIVEL_NS TRect &inRect);
-wxSize GetSize(const FIVEL_NS TRect &inRect);
-wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor);
+#include "TInterpreter.h"
 
+class ScriptTextCtrl;
+
+class ScriptEditor : public wxFrame {
+    static ScriptEditor *sFrame;
+    static void MaybeCreateFrame();
+
+    ScriptTextCtrl *mEditor;
+
+public:
+    static void NewScript();
+    static void OpenScript();
+
+    ScriptEditor();
+    ~ScriptEditor();
+
+private:
+    void DoNewScript();
+    void DoOpenScript();
+};
+
+#endif // ScriptEditor_H

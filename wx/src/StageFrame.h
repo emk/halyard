@@ -26,7 +26,10 @@
 #include <wx/display.h>
 #include "ModelView.h"
 
-class FIVEL_NS Document;
+BEGIN_NAMESPACE_FIVEL
+class Document;
+END_NAMESPACE_FIVEL
+
 class Stage;
 class LocationBox;
 class ProgramTree;
@@ -215,6 +218,8 @@ private:
     void OnOpenProgram(wxCommandEvent &inEvent);
     void UpdateUiSaveProgram(wxUpdateUIEvent &inEvent);
     void OnSaveProgram(wxCommandEvent &inEvent);
+    void OnNewScriptFile(wxCommandEvent &inEvent);
+    void OnOpenScriptFile(wxCommandEvent &inEvent);
     void OnReloadScript(wxCommandEvent &inEvent);
     void OnRunTests(wxCommandEvent &inEvent);
     void OnAbout(wxCommandEvent &inEvent);

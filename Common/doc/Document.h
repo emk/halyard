@@ -26,9 +26,9 @@
 #include "FileSystem.h"
 #include "Model.h"
 
-class FIVEL_NS TamaleProgram;
-
 BEGIN_NAMESPACE_FIVEL
+
+class TamaleProgram;
 
 //////////
 /// This class represents a Tamale document.  It should have no dependencies

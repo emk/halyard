@@ -31,6 +31,8 @@
 
 #include "ivorbiscodec.h"
 
+USING_NAMESPACE_FIVEL
+
 VorbisFile::VorbisFile(const char *inFileName, int inWantedFrequency,
 					   int inWantedChannels)
 	: mWantedFrequency(inWantedFrequency), mWantedChannels(inWantedChannels),

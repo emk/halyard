@@ -54,6 +54,8 @@
 
 #define FIVEL_PLATFORM_WIN32 (1)
 
+#define WANT_FIVEL_NAMESPACE (1)
+
 #if defined (_DEBUG)
 #define DEBUG
 #endif

@@ -41,7 +41,7 @@ void FIVEL_NS InitializeCommonCode()
     RegisterCommonPrimitives();
 }
 
-TInterpreterManager *
+TInterpreterManager *FIVEL_NS
 GetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
 {
 	// Create and return a new Scheme interpreter manager.

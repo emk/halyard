@@ -29,16 +29,16 @@
 /// messages from Quake 2 AI DLL.
 class BinMsg {
     binmsg_message mMessage;
-    TValue mArgs;
+    FIVEL_NS TValue mArgs;
 
-    TValue ConvArray(binmsg_array *inArray);
-    TValue ConvNext(binmsg_array *inArray);
+    FIVEL_NS TValue ConvArray(binmsg_array *inArray);
+    FIVEL_NS TValue ConvNext(binmsg_array *inArray);
 
 public:
     BinMsg(binmsg_byte *buffer, size_t size);
     
     std::string GetName() { return mMessage.name; }
-    TValue GetArgs() { return mArgs; }
+    FIVEL_NS TValue GetArgs() { return mArgs; }
 };
 
 #endif // BinMsgConv_H

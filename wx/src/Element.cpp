@@ -25,6 +25,8 @@
 #include "Element.h"
 #include "Stage.h"
 
+USING_NAMESPACE_FIVEL
+
 
 //=========================================================================
 //  Element Methods

@@ -26,6 +26,8 @@
 #include "TLogger.h"
 #include "Widget.h"
 
+USING_NAMESPACE_FIVEL
+
 Widget::Widget(Stage *inStage, const wxString &inName,
                FIVEL_NS TCallbackPtr inDispatcher)
 	: Element(inStage, inName, inDispatcher), mWindow(NULL)

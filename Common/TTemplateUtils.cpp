@@ -30,17 +30,19 @@ USING_NAMESPACE_FIVEL
 
 REGISTER_TEST_CASE_FILE(TTemplateUtils);
 
-bool StringIComp(const std::string &inStr1, const std::string &inStr2) {
+bool FIVEL_NS StringIComp(const std::string &inStr1,
+                          const std::string &inStr2)
+{
     return MakeStringLowercase(inStr1) == MakeStringLowercase(inStr2);
 }
 
-void StringLTrim(std::string &ioStr) {
+void FIVEL_NS StringLTrim(std::string &ioStr) {
     while (ioStr.size() && (ioStr[0] == ' ' || ioStr[0] == '\t'))
         ioStr = ioStr.substr(1);
 }
 
-bool StringStartsWith(const std::string &inStr1, 
-					  const std::string &inStr2) 
+bool FIVEL_NS StringStartsWith(const std::string &inStr1, 
+                               const std::string &inStr2) 
 {
     return (inStr1.find_first_of(inStr2) == 0);
 }

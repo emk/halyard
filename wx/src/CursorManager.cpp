@@ -25,6 +25,8 @@
 
 #include "CursorManager.h"
 
+USING_NAMESPACE_FIVEL
+
 CursorManager::CursorManager()
 {
 	// wxWindows stock cursors.

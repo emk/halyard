@@ -27,6 +27,8 @@
 #include "GeigerAudioStream.h"
 #include "VorbisFile.h"
 
+USING_NAMESPACE_FIVEL
+
 
 //=========================================================================
 //  GeigerAudioStream Methods

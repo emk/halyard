@@ -28,7 +28,7 @@
 ///
 class EventDispatcher : boost::noncopyable
 {
-    TCallbackPtr mDispatcher;
+    FIVEL_NS TCallbackPtr mDispatcher;
 	static bool sEnableExpensiveEvents;
 
 	bool EventSetup();
@@ -44,7 +44,7 @@ public:
 	//////////
 	/// Set the event-dispatching callback.
 	///
-	void SetDispatcher(TCallbackPtr inCallback);
+	void SetDispatcher(FIVEL_NS TCallbackPtr inCallback);
 
 	//////////
 	/// Notify the EventDispatcher that script is being reloaded.

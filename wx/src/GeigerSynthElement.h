@@ -27,6 +27,8 @@
 #include "MediaElement.h"
 #include "TStateDB.h"
 
+USING_NAMESPACE_FIVEL
+
 class GeigerAudioStream;
 class VorbisAudioStream;
 

@@ -24,6 +24,8 @@
 
 #include "TestCase.h"
 
+USING_NAMESPACE_FIVEL
+
 REGISTER_TEST_CASE_FILE(TestCase);
 
 // Static variables definitions.
@@ -126,7 +128,7 @@ TestRunReport::ptr TestRegistry::RunAllTests(ITestProgressMeter *inMeter) {
 		try {
 			(*i)->Create()->Run();
 			new TestCaseReport(report.get(), name, TEST_PASSED);
-		} catch (TException &e) {
+		} catch (FIVEL_NS TException &e) {
 			new TestCaseReport(report.get(), name, TEST_FAILED,
 							   e.GetErrorMessage(),
 							   e.GetErrorFile(), e.GetErrorLine());

@@ -523,3 +523,32 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 	return SCHEME_FALSEP(SCHEME_CAR(o)) ? false : true;
 }
 
+std::vector<TScriptIdentifier> TSchemeInterpreter::GetKnownIdentifiers() {
+    // Fetch our list of identifiers & types.
+    Scheme_Object *raw_ids = CallSchemeSimple("%kernel-get-identifiers");
+
+    // Convert this list into C++ objects.
+	std::vector<TScriptIdentifier> ids;
+    while (SCHEME_PAIRP(raw_ids)) {
+        Scheme_Object *raw_id = SCHEME_CAR(raw_ids);
+        if (!SCHEME_PAIRP(raw_id))
+            gLog.FatalError("Malformed result from %kernel-get-identifiers");
+        Scheme_Object *raw_name = SCHEME_CAR(raw_id);
+        Scheme_Object *raw_type = SCHEME_CDR(raw_id);
+        if (!SCHEME_SYMBOLP(raw_name) || !SCHEME_SYMBOLP(raw_type))
+            gLog.FatalError("Malformed result from %kernel-get-identifiers");
+		std::string type_str(SCHEME_SYM_VAL(raw_type));
+		TScriptIdentifier::Type type = TScriptIdentifier::UNKNOWN;
+        if (type_str == "syntax")
+            type = TScriptIdentifier::KEYWORD;
+        else if (type_str == "function")
+            type = TScriptIdentifier::FUNCTION;
+        else if (type_str == "variable")
+            type = TScriptIdentifier::VARIABLE;
+        ids.push_back(TScriptIdentifier(SCHEME_SYM_VAL(raw_name), type));
+        raw_ids = SCHEME_CDR(raw_ids);
+    }
+    if (!SCHEME_NULLP(raw_ids))
+        gLog.FatalError("Malformed result from %kernel-get-identifiers");
+    return ids;
+}

@@ -26,7 +26,7 @@
 
 USING_NAMESPACE_FIVEL
 
-TStateListenerManager gStateListenerManager;
+TStateListenerManager FIVEL_NS gStateListenerManager;
 
 uint32 TStateListenerManager::CallbackListener::sNextSerialNumber = 0;
 
