@@ -7,7 +7,8 @@ CVS - emk
   * Renamed PAUSE and RESUME to MOVIE-PAUSE and MOVIE-RESUME.
   * Modified the (REFRESH ...) command to do something useful in the new
     engine.  However, since there's no way to mark the screen as having
-    been repainted, this leads to duplicate painting.
+    been repainted, this leads to duplicate painting.  Fixing this
+    is fairly hard.
 
 0.0.2 - 3 April 2003 - emk, brian
 
