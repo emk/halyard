@@ -30,7 +30,7 @@
   ;;  Engine Interface
   ;;=======================================================================
 
-  (provide *engine* set-engine! <engine>
+  (provide *engine* set-engine! <engine> root-node
            engine-current-card engine-last-card
            set-engine-event-handled?!
            set-engine-event-vetoed?!
