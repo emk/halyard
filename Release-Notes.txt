@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Began integration with CrashRpt library for crash reporting.
+
 0.0.34 - 07 Sep 2004 - emk
 
   * More refactoring of DocNotebook in preparation for window splitting.

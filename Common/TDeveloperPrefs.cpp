@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include "TDeveloperPrefs.h"
+#include "CrashReporter.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -68,6 +69,10 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 		return;	
 	}
 	
+    // We might as well include our preferences in crash dumps, too.
+    CrashReporter::GetInstance()->AddDiagnosticFile(filename.c_str(),
+                                                    "Developer preferences");
+
 	// _debug is set in the presence of 5L.prefs
 	gVariableManager.Set("_debug", "1");
 	

@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\Common,..\..\..\libs\libxml2\include,..\..\..\libs\freetype2\include,..\..\..\libs\plt\include,..\..\..\libs\crypto,..\..\..\libs\boost"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\CrashRpt\crashrpt\include"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -68,7 +68,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\Common,..\..\..\libs\libxml2\include,..\..\..\libs\freetype2\include,..\..\..\libs\plt\include,..\..\..\libs\crypto,..\..\..\libs\boost"
+				AdditionalIncludeDirectories="..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\include;..\..\..\libs\crypto;..\..\..\libs\boost"
 				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -121,6 +121,9 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\CrashReporter.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\Common\doc\Document.cpp">
@@ -221,6 +224,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\CommonHeaders.h">
+			</File>
+			<File
+				RelativePath="..\..\..\Common\CrashReporter.h">
 			</File>
 			<File
 				RelativePath="..\..\..\Common\doc\Document.h">

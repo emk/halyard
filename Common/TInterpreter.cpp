@@ -117,8 +117,7 @@ void TInterpreterManager::Run()
 		}
 		catch (...)
 		{
-			gLog.Error("Unexpected internal error.");
-			caught_error = true;
+			gLog.FatalError("Unexpected internal error.");
 		}
 
 		// Handle any errors.

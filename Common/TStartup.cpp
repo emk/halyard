@@ -22,6 +22,7 @@
 
 #include "CommonHeaders.h"
 #include "TStartup.h"
+#include "CrashReporter.h"
 #include "TDeveloperPrefs.h"
 #include "TCommonPrimitives.h"
 #include "lang/scheme/TSchemeInterpreter.h"
@@ -30,6 +31,9 @@ USING_NAMESPACE_FIVEL
 
 void FIVEL_NS InitializeCommonCode()
 {
+    // Initialize our CrashReporter.
+    CrashReporter::InitializeCrashReporting();
+
     // Parse our developer preferences, if we have any.
     gDeveloperPrefs.ParsePrefs();
 

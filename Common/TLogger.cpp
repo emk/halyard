@@ -29,6 +29,7 @@
 
 #include "TLogger.h"
 #include "TVersion.h"
+#include "CrashReporter.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -101,12 +102,16 @@ void TLogger::Init(const FileSystem::Path &inLogFile,
 		else
 			m_OpenFailed = true;
 
-		if (m_LogOpen and m_Append)
-		{
-			// put welcome line
-			m_Log << std::endl;
-			TimeStamp();
-		}
+        if (m_LogOpen) {
+            CrashReporter::GetInstance()->AddDiagnosticFile(m_FileName,
+                                                            "Log file");
+            if (m_Append)
+            {
+                // put welcome line
+                m_Log << std::endl;
+                TimeStamp();
+            }
+        }
 	}
 }
 
@@ -163,11 +168,6 @@ void TLogger::Caution(const char *Format, ...)
 
 void TLogger::FatalError(const char *Format, ...)
 {
-	// XXX - This old code is completely wrong.  We definitely
-	// shouldn't continue from here!
-	if (!m_LogOpen)
-		return;
-
 	// We call AlertBuffer before LogBuffer, because
 	// the AlertBuffer code is required NOT to
 	// call back into FatalError, whereas LogBuffer
@@ -175,7 +175,10 @@ void TLogger::FatalError(const char *Format, ...)
 	// somehow fail.
 	FormatMsg(Format);
 	AlertBuffer(true);
-	LogBuffer(FATAL_HEADER);
+    if (m_LogOpen)
+        LogBuffer(FATAL_HEADER);
+    CrashReporter::GetInstance()->CrashNow(m_LogBuffer);
+    // We shouldn't get here, but just in case.
 	abort();
 }
 

@@ -38,8 +38,12 @@ Source: ..\Win32\Bin\libmzsch2.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\Tamale.exe; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\wxref_gl.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\wxref_soft.dll; DestDir: {app}; Components: release
+Source: ..\Win32\Bin\dbghelp.dll; DestDir: {app}
+Source: ..\Win32\Bin\zlib.dll; DestDir: {app}
+Source: ..\Win32\Bin\CrashRpt.dll; DestDir: {app}
 Source: ..\Release-Notes.txt; DestDir: {app}; Components: release
 Source: ..\LICENSE; DestDir: {app}; Components: release
+Source: ..\wx\MSVC\wx5L\5L.prefs; DestDir: {app}
 Source: ..\Common\Runtime\*; DestDir: {app}\Runtime\; Flags: recursesubdirs; Components: release; Excludes: CVS,compiled
 #if DEBUG
 Source: ..\Win32\Bin\libmzgc2_d.dll; DestDir: {app}; Components: debug
