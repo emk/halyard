@@ -68,6 +68,7 @@
       [[define-stylesheet]
        (syntax-case stx ()
          [(define-stylesheet name . body)
+          (maybe-insert-help #'name (syntax-object->datum stx))
           (maybe-insert-def #'name 'variable)]
          [anything-else #f])]
       [[defclass]
