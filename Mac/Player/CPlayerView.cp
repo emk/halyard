@@ -653,7 +653,8 @@ void CPlayerView::CTouch(int16 inLeft, int16 inTop)
 		// the left and top postions given
 		if ((frameRect.left == inLeft) and (frameRect.top == inTop))
 		{
-			mSubPanes.Remove(theButt);
+			RemoveSubPane(theButt);
+			//theButt->PutInside(nil);		// to remove from our list of panes
 			delete theButt;
 			done = true;
 		}
