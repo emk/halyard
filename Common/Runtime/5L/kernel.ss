@@ -608,15 +608,19 @@
   ;;  Object Model
   ;;=======================================================================
 
-  ;;-----------------------------------------
-  ;; Nodes
+  ;;-----------------------------------------------------------------------
+  ;;  Nodes
+  ;;-----------------------------------------------------------------------
+  ;;  A program is (among other things) a tree of nodes.  The root node
+  ;;  contains <card>s and <card-groups>.  <card>s contain <element>s.
 
   (provide <node> node? node-name node-full-name node-parent find-node @)
 
   (defclass <node> ()
     name
-    parent
-    init-thunk)
+    parent                              
+    init-thunk                    ; Will be used for more than cards later.
+    )
 
   (defmethod (initialize (node <node>) initargs)
     (call-next-method)
@@ -643,6 +647,9 @@
     (hash-table-get *node-table* name (lambda () #f)))
 
   (define (find-node-relative base name)
+    ;; Treat 'name' as a relative path.  If 'name' can be found relative
+    ;; to 'base', return it.  If not, try the parent of base if it
+    ;; exists.  If all fails, return #f.
     (if (eq? base $root-node)
         (find-node name)
         (let* [[base-name (node-full-name base)]
@@ -656,6 +663,7 @@
         (error (cat "Can't write (@ " name ") outside of a card"))))    
 
   (define-syntax @
+    ;; Syntactic sugar for find-node-relative.
     (syntax-rules ()
       [(@ name)
        (@-helper 'name)]))
@@ -680,8 +688,10 @@
               (values parent
                       (string->symbol (cadddr matches))))]))))
 
-  ;;-----------------------------------------
-  ;; Groups
+  ;;-----------------------------------------------------------------------
+  ;;  Groups
+  ;;-----------------------------------------------------------------------
+  ;;  A group contains other nodes.
 
   (provide <group> group? group-children)
 
@@ -695,8 +705,11 @@
           (append (group-children group) (list child))))
     
 
-  ;;-----------------------------------------
-  ;; Jumpables (things which support jump)
+  ;;-----------------------------------------------------------------------
+  ;;  Jumpable
+  ;;-----------------------------------------------------------------------
+  ;;  The abstract superclass of all nodes which support 'jump'.  In
+  ;;  general, these are either cards or <card-sequence>s.
 
   (provide <jumpable> jumpable?)
 
@@ -704,8 +717,11 @@
 
   (defgeneric (jump (target <jumpable>)))
 
-  ;;-----------------------------------------
-  ;; Groups of Cards
+  ;;-----------------------------------------------------------------------
+  ;;  Groups of Cards
+  ;;-----------------------------------------------------------------------
+  ;;  By default, groups of cards are not assumed to be in any particular
+  ;;  linear order, at least for purposes of program navigation.
 
   (provide $root-node)
 
@@ -733,8 +749,10 @@
       :name |/| :parent #f :active? #t :init-thunk #f
       :children '()))
   
-  ;;-----------------------------------------
-  ;; Sequences of Cards (like groups, but ordered)
+  ;;-----------------------------------------------------------------------
+  ;;  Sequences of Cards
+  ;;-----------------------------------------------------------------------
+  ;;  Like groups, but ordered.
 
   (defclass <card-sequence> (<jumpable> <card-group>))
 
@@ -763,8 +781,10 @@
           (candidate-func)
           (search (cdr children) (lambda () (car children))))))
 
-  ;;-----------------------------------------
-  ;; Cards
+  ;;-----------------------------------------------------------------------
+  ;;  Cards
+  ;;-----------------------------------------------------------------------
+  ;;  More functions are defined in the next section below.
 
   (provide <card> card? card-next card-prev jump-next jump-prev)
 
@@ -789,8 +809,9 @@
   (define (jump-next) (jump-helper card-next "after"))
   (define (jump-prev) (jump-helper card-prev "before"))
 
-  ;;-----------------------------------------
+  ;;-----------------------------------------------------------------------
   ;; Elements (currently unused)
+  ;;-----------------------------------------------------------------------
 
   ;;(defclass <element>       (<node>))
 
