@@ -570,10 +570,15 @@
     (call-5l-prim 'MediaSetVolume (elem-or-name-hack elem-or-name)
                   channel volume))
 
+  ;; keeps track of the last frame at which we did a wait; for (rel-wait ...)
+  (define last-wait-frame 0)
+
   (define (wait elem-or-name &key frame)
     (when (or (not (symbol? elem-or-name)) (element-exists? elem-or-name))
       (if frame
-          (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame)
+          (begin
+            (set! last-wait-frame frame)
+            (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame))
           (call-5l-prim 'wait (elem-or-name-hack elem-or-name)))))
   
   ;; -- This func performs a wait relative to the last 'wait' or 'rel-wait'.
@@ -583,7 +588,6 @@
   ;; -- The frame of the last wait is stored in last-wait-frame, which is 
   ;; initialized to [frame 0] when tamale.ss is loaded.
   ;;
-  (define last-wait-frame 0)
   (define (rel-wait elem-or-name frame)
     (wait elem-or-name (+ frame last-wait-frame)))
            
