@@ -80,12 +80,12 @@ Tamale is a language for card-based interactive multimedia programming."
 
 (defconst tamale-imenu-generic-expression
   '((nil "^(\\(test-\\)?card\\s-+\\(\\sw+\\)" 2)
-    ("Structures" "^(define-struct\\s-+\\(\\sw+\\)" 1)
-    ("Stylesheets" "^(define-stylesheet\\s-+\\(\\sw+\\)" 1)
-    ("Variables" "^(define\\s-+\\(\\sw+\\)" 1)
-    ("Persistent Variables" "^(define/p\\s-+\\(\\sw+\\)" 1)
-    ("Functions" "^(define\\s-+(\\(\\sw+\\)" 1)
-    ("Macros" "^(define-syntax\\s-+(?\\(\\sw+\\)" 1)
+    ("Structures" "^\\s-*(define-struct\\s-+\\(\\sw+\\)" 1)
+    ("Stylesheets" "^\\s-*(define-stylesheet\\s-+\\(\\sw+\\)" 1)
+    ("Variables" "^\\s-*(define\\s-+\\(\\sw+\\)" 1)
+    ("Persistent Variables" "^\\s-*(define/p\\s-+\\(\\sw+\\)" 1)
+    ("Functions" "^\\s-*(define\\s-+(\\(\\sw+\\)" 1)
+    ("Macros" "^\\s-*(define-syntax\\s-+(?\\(\\sw+\\)" 1)
     ("Templates" "^\\s-*(define-[^-]*-template\\s-+\\(\\sw+\\)" 1)
     )
   "Imenu generic expression for Tamale mode.  See `imenu-generic-expression'.")
