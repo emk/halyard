@@ -314,6 +314,28 @@ StyleInformation::const_iterator::operator--()
 
 
 //=========================================================================
+//	Typography::AbstractFace Methods
+//=========================================================================
+
+Vector AbstractFace::Kern(CharCode inChar1, AbstractFace *inFace1,
+						  CharCode inChar2, AbstractFace *inFace2)
+{
+	Vector result;
+	result.x = 0;
+	result.y = 0;
+	
+	if (inFace1 != NULL && inFace2 != NULL)
+	{
+		Face *real_face1 = inFace1->GetRealFace(inChar1);
+		Face *real_face2 = inFace2->GetRealFace(inChar2);
+		if (*real_face1 == *real_face2)
+			result = real_face1->GetKerning(inChar1, inChar2);
+	}
+	return result;
+}
+
+
+//=========================================================================
 //	Typography::Face Methods
 //=========================================================================
 
@@ -481,17 +503,18 @@ Glyph FaceStack::GetGlyph(CharCode inCharCode)
 	return face->GetGlyphFromGlyphIndex(glyph);
 }
 
-Vector FaceStack::GetKerning(CharCode inPreviousChar,
-							 CharCode inCurrentChar)
-{
-	// TODO - Do real kerning.
-	return mFaceStack.front().GetKerning(inPreviousChar, inCurrentChar);
-}
-
 Distance FaceStack::GetLineHeight()
 {
 	// Use the line-height of our primary face.
 	return mFaceStack.front().GetLineHeight();
+}
+
+Face *FaceStack::GetRealFace(CharCode inCharCode)
+{
+	Face *face;
+	GlyphIndex glyph;
+	SearchForCharacter(inCharCode, &face, &glyph);
+	return face;
 }
 
 void FaceStack::SearchForCharacter(CharCode inCharCode,
@@ -513,6 +536,7 @@ void FaceStack::SearchForCharacter(CharCode inCharCode,
 	*outFace = &mFaceStack.front();
 	*outGlyphIndex = 0;
 }
+
 
 //=========================================================================
 //	Typography::StyledTextSpan Methods
@@ -838,14 +862,10 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 		AbstractFace *current_face = (*cp).style.GetFace();
 
 		// Do our kerning.
-		// XXX - operator== here is wrong.
-		if (previous_face == current_face)
-		{
-			Vector delta =
-				current_face->GetKerning(previous_char, current_char);
-			total += delta.x >> 6; // Don't need round_266 (already fitted).
-			ASSERT(delta.y == 0);
-		}
+		Vector delta = AbstractFace::Kern(previous_char, previous_face,
+										  current_char, current_face);
+		total += delta.x >> 6; // Don't need round_266 (already fitted).
+		ASSERT(delta.y == 0);
 
 		// Load and measure our glyph.
 		Glyph glyph = current_face->GetGlyph(current_char);
@@ -865,7 +885,8 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 		AbstractFace *face = (*--cp).style.GetFace();
 		
 		// Do our kerning.
-		Vector delta = face->GetKerning(previous_char, current_char);
+		Vector delta = AbstractFace::Kern(previous_char, previous_face,
+										  current_char, face);
 		total += delta.x >> 6; // Don't need round_266 (already fitted).
 		ASSERT(delta.y == 0);
 
@@ -917,14 +938,11 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 				line_height = current_height;
 
 			// Do our kerning.
-			if (current_face == previous_face)
-			{
-				Vector delta =
-					current_face->GetKerning(previous_char, current_char);
-				cursor.x += delta.x >> 6; // Don't need round_266
-				ASSERT(cursor.x >= 0);
-				ASSERT(delta.y == 0);
-			}
+			Vector delta = AbstractFace::Kern(previous_char, previous_face,
+											  current_char, current_face);
+			cursor.x += delta.x >> 6; // Don't need round_266
+			ASSERT(cursor.x >= 0);
+			ASSERT(delta.y == 0);
 
 			// Load and draw our glyph.
 			Glyph glyph = current_face->GetGlyph(current_char);
@@ -952,7 +970,8 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		AbstractFace *face = (*--cp).style.GetFace();
 			
 		// Do our kerning.
-		Vector delta = face->GetKerning(previous_char, current_char);
+		Vector delta = AbstractFace::Kern(previous_char, previous_face,
+										  current_char, face);
 		cursor.x += delta.x >> 6; // Don't need round_266 (already fitted).
 		ASSERT(cursor.x >= 0);
 		ASSERT(delta.y == 0);

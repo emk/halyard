@@ -365,6 +365,8 @@ namespace Typography {
 		const_iterator end() const { return const_iterator(this, true); }
 	};
 
+	class Face;
+
 	//////////
 	// An abstract typeface (with a specific size).
 	//
@@ -392,20 +394,44 @@ namespace Typography {
 		//
 		// For now, the glyph is always rendered to a pixmap.  This
 		// may or may not change.
+		//
 		virtual Glyph GetGlyph(CharCode inCharCode) = 0;
-
-		//////////
-		// Kern two character codes.  If either character code
-		// is kNoSuchCharacter, this function will return (0,0).
-		virtual Vector GetKerning(CharCode inPreviousChar,
-								  CharCode inCurrentChar) = 0;
 
 		//////////
 		// Return a best guess for the appropriate distance between
 		// two lines.  This relies on the font's data tables and
 		// FreeType's drivers, so it might occasionally be a bit whacky.
 		// (But it's all we've got.)
+		//
 		virtual Distance GetLineHeight() = 0;
+
+		//////////
+		// Find the concrete face object which would be used to draw the
+		// specified character.
+		//
+		// [in] inCharCode - The character whose face we want to find.
+		// [out] return -    The face associated with that character.
+		//                   (This is returned as a pointer because
+		//                   Face can't be declared until AbstractFace
+		//                   has been declared.  This pointer points
+		//                   to somebody else's face object; don't
+		//                   destroy it.)
+		//
+		virtual Face *GetRealFace(CharCode inCharCode) = 0;
+
+		//////////
+		// Kern two characters.  If either character code is
+		// kNoSuchCharacter, or either face is NULL, this function will
+		// return (0,0).
+		//
+		// [in] inChar1 - The first character, or kNoSuchCharacter.
+		// [in] inFace1 - The face of the first character, or NULL.
+		// [in] inChar2 - The second character, or kNoSuchCharacter.
+		// [in] inFace2 - The face of the second character, or NULL.
+		// [out] result - The amount to kern.
+		//
+		static Vector Kern(CharCode inChar1, AbstractFace *inFace1,
+						   CharCode inChar2, AbstractFace *inFace2);
 	};
 
 	//////////
@@ -449,9 +475,30 @@ namespace Typography {
 		Glyph GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex);
 
 		Glyph GetGlyph(CharCode inCharCode);
+
+		//////////
+		// Kern two character codes.  If either character code
+		// is kNoSuchCharacter, this function will return (0,0).
+		//
 		Vector GetKerning(CharCode inPreviousChar, CharCode inCurrentChar);
 
 		Distance GetLineHeight();
+
+		Face *GetRealFace(CharCode inCharCode) { return this; }
+
+		//////////
+		// Return true if and only if two 'Face' objects have the same
+		// underlying FT_Face.
+		//
+		friend bool operator==(const Face &inLeft, const Face &inRight)
+		    { return inLeft.mFaceRep->mFace == inRight.mFaceRep->mFace; }
+
+		//////////
+		// Return true if and only if two 'Face' objects don't have the
+		// same underlying FT_Face.
+		//
+		friend bool operator!=(const Face &inLeft, const Face &inRight)
+		    { return !(inLeft == inRight); }
 	};
 
 	//////////
@@ -483,10 +530,8 @@ namespace Typography {
 		void AddSecondaryFace(const Face &inFace);
 
 		virtual Glyph GetGlyph(CharCode inCharCode);
-		virtual Vector GetKerning(CharCode inPreviousChar,
-								  CharCode inCurrentChar);
-
 		virtual Distance GetLineHeight();
+		virtual Face *GetRealFace(CharCode inCharCode);
 
 	private:
 		//////////
