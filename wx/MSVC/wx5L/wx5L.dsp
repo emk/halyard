@@ -106,6 +106,10 @@ SOURCE=..\..\src\BrowserElement.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\BrowserElementIE.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\BrowserElementWx.cpp
 # End Source File
 # Begin Source File
@@ -290,6 +294,10 @@ SOURCE=..\..\src\AudioStreamElement.h
 # Begin Source File
 
 SOURCE=..\..\src\BrowserElement.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\BrowserElementIE.h
 # End Source File
 # Begin Source File
 

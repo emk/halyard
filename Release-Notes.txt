@@ -9,6 +9,8 @@ to embed Internet Explorer using wxIE.
     This includes foward/back/stop and set of standard events.
   * Added BrowserElementWx class to wrap the built-in wxHtmlWindow class.
     This isn't very good yet.
+  * Added BrowserElementIE class to wrap the wxIEHtmlWin class.
+    This isn't very good yet, either.
   * Support for vetoing events.
   * New event types for EventDispatcher: browser-navigate,
     browser-page-changed, status-text-changed, progress-changed.

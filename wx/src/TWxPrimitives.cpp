@@ -30,7 +30,7 @@
 #include "GeigerSynthElement.h"
 #include "CommonWxConv.h"
 #include "BrowserElementWx.h"
-#include "IEHtmlWin.h"
+#include "BrowserElementIE.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -63,7 +63,6 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
 	REGISTER_5L_PRIMITIVE(GeigerSynthSetCps);
 	REGISTER_5L_PRIMITIVE(HTML);
-	REGISTER_5L_PRIMITIVE(HTMLMS);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
@@ -313,29 +312,21 @@ DEFINE_5L_PRIMITIVE(GeigerSynthSetCps) {
 
 DEFINE_5L_PRIMITIVE(HTML) {
 	std::string name, file_or_url;
+    bool want_builtin;
 	TRect bounds;
     TCallback *dispatcher;
 
-	inArgs >> SymbolName(name) >> dispatcher >> bounds >> file_or_url;
+	inArgs >> SymbolName(name) >> dispatcher >> bounds >> want_builtin
+           >> file_or_url;
 
-    BrowserElement *elem =
-        new BrowserElementWx(wxGetApp().GetStage(), name.c_str(),
-                             TToWxRect(bounds), dispatcher);
-	elem->LoadUrl(file_or_url.c_str());
-}
-
-DEFINE_5L_PRIMITIVE(HTMLMS) {
-	std::string name, file_or_url;
-	TRect bounds;
-
-	inArgs >> SymbolName(name) >> bounds >> file_or_url;
-
-	wxIEHtmlWin *html =
-		new wxIEHtmlWin(wxGetApp().GetStage(), -1,
-                        GetPos(bounds), GetSize(bounds),
-                        wxSIMPLE_BORDER);
-	html->LoadUrl(file_or_url.c_str());
-	new Widget(wxGetApp().GetStage(), name.c_str(), html);
+    BrowserElement *elem;
+    if (want_builtin)
+        elem = new BrowserElementWx(wxGetApp().GetStage(), name.c_str(),
+                                    TToWxRect(bounds), dispatcher);
+    else
+        elem = new BrowserElementIE(wxGetApp().GetStage(), name.c_str(),
+                                    TToWxRect(bounds), dispatcher);
+	elem->LoadFile(file_or_url.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(Input) {
