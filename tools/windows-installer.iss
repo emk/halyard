@@ -31,7 +31,7 @@ DefaultDirName={pf}\Tamale
 AppPublisher={#COMPANY}
 AppPublisherURL=http://iml.dartmouth.edu/
 OutputDir=..\Win32\Bin
-OutputBaseFilename=Tamale {#VERSION} Installer
+OutputBaseFilename=Tamale Setup {#VERSION}
 [Files]
 Source: ..\Win32\Bin\libmzgc2.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\libmzsch2.dll; DestDir: {app}; Components: release
