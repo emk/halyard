@@ -2,20 +2,33 @@
 
 #include <wx/wx.h>
 #include "TCommon.h"
+#include "FiveLApp.h"
+#include "Stage.h"
 #include "Quake2Engine.h"
 
 #if CONFIG_HAVE_QUAKE2
 
-Quake2Element::Quake2Element(Stage *inStage, const wxString &inName)
-    : Widget(inStage, inName), mQuake2Window(NULL)
+// TODO - Do we want to allow the Quake 2 to refresh the screen while
+// another window is displayed over it?
+
+Quake2Engine::Quake2Engine(Stage *inStage)
+    : wxQuake2Window(inStage)
 {
-	mQuake2Window = new wxQuake2Window(inStage);
-	InitializeWidgetWindow(mQuake2Window);
+	ASSERT(!sHasBeenCreated && !sInstance);
+	sInstance = this;
+	sHasBeenCreated = true;
+
+	// TODO - Do something reasonable about stages which aren't 640x480.
 }
 
-void Quake2Element::ExecCommand(const wxString &inName)
+Quake2Engine::~Quake2Engine()
 {
-	mQuake2Window->ExecCommand(inName);
+	sInstance = NULL;
+}
+
+void Quake2Engine::Initialize()
+{
+	new Quake2Engine(wxGetApp().GetStage());
 }
 
 #endif CONFIG_HAVE_QUAKE2

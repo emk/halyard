@@ -14,11 +14,11 @@
 //////////
 // Set this option to 1 to enable Quake 2 support.  You'll
 // also need to place a specially-patched version of Quake 2
-// in the libs/ directory, and add winmm.lib and wxquake2lib.lib
-// to the application's libraries.
+// in the libs/ directory, and add wxq2 to the application's
+// dependencies.
 //
 // To disable Quake 2 support, set this option to 0, and remove
-// the libraries listed above.
+// wxq2 from this applications's dependencies.
 //
 #define CONFIG_OPTION_QUAKE2             1
 

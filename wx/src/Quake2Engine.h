@@ -11,22 +11,26 @@
 #include "wxquake2.h"
 
 //////////
-// A Widget subclass which contains a Quake 2 game.
+// Our local "value-added" subclass of wxQuake2Window.  This class
+// is a singleton, and once created, it remains permanently attached
+// to the Stage object (although we may hide and show it).
 //
-class Quake2Element : public Widget
+class Quake2Engine : public wxQuake2Window
 {
-    wxQuake2Window *mQuake2Window;
+	static bool sHasBeenCreated;
+    static Quake2Engine *sInstance;
 
-public:
     //////////
     // Create a new Quake 2 window on the specified stage.
     //
-    Quake2Element(Stage *inStage, const wxString &inName);
+    Quake2Engine(Stage *inStage);
 
-	//////////
-	// Send a command to the Quake 2 window.
-	//
-	void ExecCommand(const wxString &inName);
+public:
+	~Quake2Engine();
+
+	static bool IsInitialized() { return sHasBeenCreated; }
+	static void Initialize();
+	static Quake2Engine *GetInstance() { ASSERT(sInstance); return sInstance; }
 };
 
 #endif // CONFIG_HAVE_QUAKE2

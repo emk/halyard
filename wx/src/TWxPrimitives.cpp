@@ -19,7 +19,6 @@
 #include "MovieElement.h"
 #include "Widget.h"
 #include "FileSystem.h"
-#include "Quake2Engine.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -51,11 +50,6 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Wait);
     REGISTER_5L_PRIMITIVE(Zone);
-
-#if CONFIG_HAVE_QUAKE2
-	REGISTER_5L_PRIMITIVE(Quake2);
-	REGISTER_5L_PRIMITIVE(Quake2Command);
-#endif // CONFIG_HAVE_QUAKE2
 }
 
 
@@ -371,27 +365,3 @@ DEFINE_5L_PRIMITIVE(Zone)
 	inArgs >> name >> bounds >> action;
 	new Zone(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds), action);
 }
-
-
-//=========================================================================
-//  Implementation of Quake 2 Primitives
-//=========================================================================
-
-#if CONFIG_HAVE_QUAKE2
-
-DEFINE_5L_PRIMITIVE(Quake2)
-{	
-	std::string name;
-	inArgs >> SymbolName(name);	
-	new Quake2Element(wxGetApp().GetStage(), name.c_str());
-}
-
-DEFINE_5L_PRIMITIVE(Quake2Command)
-{
-	std::string name, cmd;
-	inArgs >> SymbolName(name) >> cmd;	
-	FIND_ELEMENT(Quake2Element, element, name.c_str());
-	element->ExecCommand(cmd.c_str());
-}
-
-#endif // CONFIG_HAVE_QUAKE2

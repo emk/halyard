@@ -15,6 +15,9 @@
 #include "Log5L.h"
 #include "Stage.h"
 #include "TWxPrimitives.h"
+#if CONFIG_HAVE_QUAKE2
+#	include "TQuake2Primitives.h"
+#endif // CONFIG_HAVE_QUAKE2
 
 USING_NAMESPACE_FIVEL
 
@@ -46,6 +49,9 @@ bool FiveLApp::OnInit()
     // Get the 5L runtime going.
     ::InitializeCommonCode();
     ::RegisterWxPrimitives();
+#if CONFIG_HAVE_QUAKE2
+	::RegisterQuake2Primitives();
+#endif // CONFIG_HAVE_QUAKE2
 
     // Send copies of all wxWindows logging messages to our traditional 5L
     // logs.  This gives us a single copy of everything.
