@@ -122,7 +122,7 @@
     ;; A private helper for define-engine-variable.  We only initialize
     ;; a variable if it doesn't already exist, so it can keep its value
     ;; across script reloads.
-    (unless (call-5l-prim 'VariableInitialized 5l-name)
+    (unless (engine-var-exists? 5l-name)
       (set! (engine-var 5l-name) init-val)))
 
   ;;; Define a persistent global variable which keeps its value across

@@ -292,7 +292,8 @@
   
   (provide call-5l-prim have-5l-prim? idle 5l-log debug-log
 	   caution debug-caution non-fatal-error fatal-error
-	   engine-var set-engine-var! throw exit-script jump refresh)
+	   engine-var set-engine-var! engine-var-exists?
+           throw exit-script jump refresh)
 
   (define *32-bit-signed-min* -2147483648)
   (define *32-bit-signed-max* 2147483647)
@@ -353,6 +354,11 @@
       (if (eq? type 'NULL)
 	  (call-5l-prim 'settyped namesym type)
 	  (call-5l-prim 'settyped namesym type value))))
+
+  (define (engine-var-exists? name)
+    ;; XXX - This test is backward because VariableInitialized is
+    ;; broken in the engine.  Fix this.
+    (not (call-5l-prim 'VariableInitialized name)))
   
   (define (throw msg)
     ;; TODO - More elaborate error support.
