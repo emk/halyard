@@ -172,7 +172,7 @@
                     (idle)
                     (cond
                      [jump-card
-                      (%kernel-run-card (%kernel-find-card jump-card))]
+                      (%kernel-run-card (find-card jump-card))]
                      [#t
                       ;; Highly optimized do-nothing loop. :-)  This
                       ;; is a GC optimization designed to prevent the
@@ -225,7 +225,7 @@
   (define (%kernel-timeout card-name seconds)
     (%kernel-die-if-callback '%kernel-timeout)
     (%kernel-set-timeout (+ (current-milliseconds) (* seconds 1000))
-                         (lambda () (jump (%kernel-find-card card-name)))))
+                         (lambda () (jump (find-card card-name)))))
 
   (define (%kernel-nap tenths-of-seconds)
     (%kernel-die-if-callback '%kernel-nap)
@@ -605,7 +605,7 @@
         (call-5l-prim 'jump (card-name card))
         (begin
           ;; If we don't have a JUMP primitive, fake it by hand.
-          (set! *%kernel-jump-card* (%kernel-find-card card))
+          (set! *%kernel-jump-card* card)
           (%kernel-set-state 'JUMPING)
           (%kernel-check-state))))
 
@@ -833,7 +833,7 @@
   ;;  Cards
   ;;=======================================================================
 
-  (provide card-exists? current-card card-name group sequence card)
+  (provide card-exists? find-card current-card card-name group sequence card)
 
   ;; TODO - A different meaning of "previous" from the one above.  Rename.
   (define *%kernel-current-card* #f)
@@ -888,7 +888,7 @@
       (call-hook-functions *card-body-finished-hook* card)
       (refresh)))
 
-  (define (%kernel-find-card card-or-name)
+  (define (find-card card-or-name)
     (cond
      [(%kernel-card? card-or-name)
       card-or-name]
@@ -898,7 +898,7 @@
                                   (lambda () #f))))
         (or card (throw (cat "Unknown card: " card-or-name))))]
      [(string? card-or-name)
-      (%kernel-find-card (string->symbol card-or-name))]
+      (find-card (string->symbol card-or-name))]
      [#t
       (throw (cat "Not a card: " card-or-name))]))
 
