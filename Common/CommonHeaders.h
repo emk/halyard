@@ -27,7 +27,6 @@
 
 // Commonly-used "Common" headers.
 #include "TException.h"
-#include "TObject.h"
 #include "TString.h"
 #include "TPoint.h"
 #include "TRect.h"

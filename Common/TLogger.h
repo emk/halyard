@@ -20,7 +20,6 @@
 
 #include <fstream>
 
-#include "TObject.h"
 #include "FileSystem.h"
 
 BEGIN_NAMESPACE_FIVEL
@@ -53,7 +52,7 @@ AUTHOR
 	Sean Sharp
 
 -----------------------------------------------------------------*/
-class TLogger : public TObject
+class TLogger
 {
 public:
 	//////////
@@ -289,6 +288,12 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.6  2004/02/02 22:07:55  djin
+   * Cleaned up a whole bunch of legacy code that can be much simpler now
+     that we have TValue.
+   * Removed TObject, TArray and TBTree because they have overstayed their
+     welcome by about a decade.
+
  Revision 1.5  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

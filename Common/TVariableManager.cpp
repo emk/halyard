@@ -57,81 +57,6 @@ bool TVariableManager::IsNull(const char *inName) {
     return (Get(inName).GetType() == TValue::TYPE_NULL);
 }
 
-const char *TVariableManager::GetString(const char *inName) {
-	return std::string(Get(inName)).c_str();
-}
-
-const char *TVariableManager::GetSymbol(const char *inName) {
-	return TSymbol(Get(inName)).GetName().c_str();
-}
-
-int32 TVariableManager::GetLong(const char *inName) {
-	return Get(inName);
-}
-
-uint32 TVariableManager::GetULong(const char *inName) {
-	return Get(inName);
-}
-
-double TVariableManager::GetDouble(const char *inName) {
-	return Get(inName);
-}
-
-bool TVariableManager::GetBoolean(const char *inName) {
-	return Get(inName);
-}
-
-TPoint TVariableManager::GetPoint(const char *inName) {
-	return Get(inName);
-}
-
-TRect TVariableManager::GetRect(const char *inName) {
-	return Get(inName);
-}
-
-GraphicsTools::Color TVariableManager::GetColor(const char *inName) {
-	return Get(inName);
-}
-
-void TVariableManager::SetString(const char *inName, const char *inValue) {
-	Set(inName, std::string(inValue));
-}
-
-void TVariableManager::SetSymbol(const char *inName, const char *inValue) {
-	Set(inName, TSymbol(inValue));
-}
-
-void TVariableManager::SetLong(const char *inName, const int32 inValue) {
-	Set(inName, inValue);
-}
-
-void TVariableManager::SetULong(const char *inName, const uint32 inValue) {
-	Set(inName, inValue);
-}
-
-void TVariableManager::SetDouble(const char *inName, const double inValue) {
-	Set(inName, inValue);
-}
-
-void TVariableManager::SetBoolean(const char *inName, const bool inValue) {
-	Set(inName, inValue);
-}
-
-
-void TVariableManager::SetPoint(const char *inName, const TPoint &inValue) {
-	Set(inName, inValue);
-}
-
-void TVariableManager::SetRect(const char *inName, const TRect &inValue) {
-	Set(inName, inValue);
-}
-
-void TVariableManager::SetColor(const char *inName, 
-								const GraphicsTools::Color &inValue) 
-{
-	Set(inName, inValue);
-}
-
 
 //=========================================================================
 //  Tests
@@ -142,53 +67,53 @@ void TVariableManager::SetColor(const char *inName,
 BEGIN_TEST_CASE(TestTVariableManager, TestCase) {
 	TVariableManager manager;
 
-	manager.SetString("foo", "bar");
-	CHECK_EQ(std::string(manager.GetString("foo")), 
-			 std::string("bar"));
-	manager.SetString("foo", "bar");
+	manager.Set("foo", "bar");
+	CHECK_EQ(std::string(manager.Get("foo")), 
+			 "bar");
+	//manager.SetString("foo", "bar");
 	CHECK_EQ(manager.GetType("foo"), TValue::TYPE_STRING); 
 
 	// check extracting a non existent variable
 	//CHECK_THROWN(std::exception,
 	//			   std::string(manager.GetString("bar")));
 
-	manager.SetString("CASETEST", "foo");
-	CHECK_EQ(strcmp(manager.GetString("casetest"), "foo"), 0);
+	manager.Set("CASETEST", "foo");
+	CHECK_EQ(std::string(manager.Get("casetest")), "foo");
 
-	manager.SetSymbol("hello", "world");
-	CHECK_EQ(std::string(manager.GetSymbol("hello")),
-			 std::string("world"));
+	manager.Set("hello", TSymbol("world"));
+	CHECK_EQ(TSymbol(manager.Get("hello")).GetName(),
+			 "world");
 	CHECK_EQ(manager.GetType("hello"), TValue::TYPE_SYMBOL); 
 
-	manager.SetLong("longVar", MAX_INT32);
-	CHECK_EQ(manager.GetLong("longVar"), MAX_INT32);
+	manager.Set("longVar", MAX_INT32);
+	CHECK_EQ(int32(manager.Get("longVar")), MAX_INT32);
 	CHECK_EQ(manager.GetType("longVar"), TValue::TYPE_LONG); 
 
-	manager.SetULong("ulongVar", MAX_UINT32);
-	CHECK_EQ(manager.GetULong("ulongVar"), MAX_UINT32);
+	manager.Set("ulongVar", MAX_UINT32);
+	CHECK_EQ(uint32(manager.Get("ulongVar")), MAX_UINT32);
 	CHECK_EQ(manager.GetType("ulongVar"), TValue::TYPE_ULONG); 
 
-	manager.SetDouble("doubleVar", 10.0);
-	CHECK_EQ(manager.GetDouble("doubleVar"), 10.0);
+	manager.Set("doubleVar", 10.0);
+	CHECK_EQ(double(manager.Get("doubleVar")), 10.0);
 	CHECK_EQ(manager.GetType("doubleVar"), TValue::TYPE_DOUBLE);
 
-	manager.SetBoolean("boolVar", true);
-	CHECK_EQ(manager.GetBoolean("boolVar"), true);
-	manager.SetBoolean("boolVar", false);
-	CHECK_EQ(manager.GetBoolean("boolVar"), false);
+	manager.Set("boolVar", true);
+	CHECK_EQ(bool(manager.Get("boolVar")), true);
+	manager.Set("boolVar", false);
+	CHECK_EQ(bool(manager.Get("boolVar")), false);
 	CHECK_EQ(manager.GetType("boolVar"), TValue::TYPE_BOOLEAN);
 
-	manager.SetPoint("pointVar", TPoint(0, 0));
-	CHECK_EQ(manager.GetPoint("pointVar"), TPoint(0, 0));
+	manager.Set("pointVar", TPoint(0, 0));
+	CHECK_EQ(TPoint(manager.Get("pointVar")), TPoint(0, 0));
 	CHECK_EQ(manager.GetType("pointVar"), TValue::TYPE_POINT);
 
-	manager.SetRect("rectVar", TRect(0, 1, 2, 3));
-	CHECK_EQ(manager.GetRect("rectVar"),TRect(0, 1, 2, 3));
+	manager.Set("rectVar", TRect(0, 1, 2, 3));
+	CHECK_EQ(TRect(manager.Get("rectVar")),TRect(0, 1, 2, 3));
 	CHECK_EQ(manager.GetType("rectVar"), TValue::TYPE_RECT);
 
-	manager.SetColor("colorVar", 
-					 GraphicsTools::Color(0, 1, 2, 3));
-	CHECK_EQ(manager.GetColor("colorVar"), 
+	manager.Set("colorVar", 
+	    GraphicsTools::Color(0, 1, 2, 3));
+	CHECK_EQ(GraphicsTools::Color(manager.Get("colorVar")), 
 			 GraphicsTools::Color(0, 1, 2, 3));
 	CHECK_EQ(manager.GetType("colorVar"), TValue::TYPE_COLOR);
 	

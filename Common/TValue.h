@@ -117,7 +117,6 @@ public:
     // ADDING NEW TYPES - You need to add a new item to this
     // enumeration.
     enum Type {
-		TYPE_UNINITIALIZED,
         TYPE_NULL,      // No value.
         TYPE_STRING,    // Regular string.
         TYPE_SYMBOL,    // A symbol, as in Scheme.

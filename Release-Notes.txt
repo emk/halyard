@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - kwasi, djin
+
+  * Cleaned up a whole bunch of legacy code that can be much simpler now
+    that we have TValue.
+  * Removed TObject, TArray and TBTree because they have overstayed their
+    welcome by about a decade.
+
 0.0.15 - 30 Jan 2004 - emk, kwasi, djin
 
 Two major new features: Tamale overlays can now float over Quake 2

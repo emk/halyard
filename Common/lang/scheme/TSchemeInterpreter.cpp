@@ -219,15 +219,7 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 
 	// We need these to get information back out of our try block.
 	bool have_error = false;
-	TValue::Type result_type;
-	std::string res_str, error, errormsg;
-	int32 result_long;
-	uint32 result_ulong;
-	double result_double;
-	bool result_bool;
-	TPoint result_point;
-	TRect result_rect;
-	GraphicsTools::Color result_color;
+	std::string error, errormsg;
 
 	// WARNING - Don't signal any Scheme errors from inside this try block.
 	// (I don't know whether it's portable to call scheme_longjmp from
@@ -257,55 +249,12 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 		if (!gVariableManager.IsNull(FIVEL_ERROR_CODE_VAR))
 		{
 			have_error = true;
-			error = gVariableManager.GetString(FIVEL_ERROR_CODE_VAR);
-			errormsg = gVariableManager.GetString(FIVEL_ERROR_MSG_VAR);
+			error = gVariableManager.Get(FIVEL_ERROR_CODE_VAR);
+			errormsg = gVariableManager.Get(FIVEL_ERROR_MSG_VAR);
 		}
 		else
 		{
-			result_type = gVariableManager.GetType("_result");
-			switch (result_type)
-			{
-				case TValue::TYPE_STRING: 
-					res_str = gVariableManager.GetString("_result");
-					break;
-
-				case TValue::TYPE_SYMBOL:
-					res_str = gVariableManager.GetSymbol("_result");
-					break;
-
-				case TValue::TYPE_LONG:
-					result_long = gVariableManager.GetLong("_result");
-					break;
-
-				case TValue::TYPE_ULONG:
-					result_ulong = gVariableManager.GetULong("_result");
-					break;
-
-				case TValue::TYPE_DOUBLE:
-					result_double = gVariableManager.GetDouble("_result");
-					break;
-
-				case TValue::TYPE_BOOLEAN:
-					result_bool = gVariableManager.GetBoolean("_result");
-					break;
-
-				case TValue::TYPE_POINT:
-					result_point = gVariableManager.GetPoint("_result");
-					break;
-
-				case TValue::TYPE_RECT:
-					result_rect = gVariableManager.GetRect("_result");
-					break;
-
-				case TValue::TYPE_COLOR:
-					result_color = gVariableManager.GetColor("_result");
-					break;
-
-				case TValue::TYPE_NULL:
-				case TValue::TYPE_UNINITIALIZED:
-				default:
-					/* Do nothing for now. */;
-			}
+			return TValueToScheme(gVariableManager.Get("_result"));
 		}
 	}
 	catch (std::exception &e)
@@ -321,47 +270,6 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 	if (have_error)
 		scheme_signal_error("%s: %s: %s", prim_name,
 							error.c_str(), errormsg.c_str());
-	
-	// Figure out what we should pass back to Scheme.
-	switch (result_type)
-	{
-		case TValue::TYPE_UNINITIALIZED:
-			scheme_signal_error("%s: _result is broken", prim_name);
-			
-		case TValue::TYPE_NULL:
-			return scheme_void;
-
-		case TValue::TYPE_STRING:
-			return scheme_make_sized_string(const_cast<char*>(res_str.c_str()),
-											res_str.length(), true);
-
-		case TValue::TYPE_SYMBOL:
-			return scheme_intern_symbol(const_cast<char*>(res_str.c_str()));
-
-		case TValue::TYPE_LONG:
-			return scheme_make_integer_value(result_long);
-
-		case TValue::TYPE_ULONG:
-			return scheme_make_integer_value_from_unsigned(result_ulong);
-
-		case TValue::TYPE_DOUBLE:
-		    return scheme_make_double(result_double);
-
-		case TValue::TYPE_BOOLEAN:
-			return result_bool ? scheme_true : scheme_false;
-
-		case TValue::TYPE_POINT:
-			return MakeSchemePoint(result_point);
-
-		case TValue::TYPE_RECT:
-			return MakeSchemeRect(result_rect);
-
-		case TValue::TYPE_COLOR:
-			return MakeSchemeColor(result_color);
-
-		default:
-			scheme_signal_error("%s: _result has unsupported type", prim_name);
-	}		
 
 	ASSERT(false); // Should not get here.
 	return scheme_false;

@@ -79,6 +79,8 @@ class TArgumentList
 	//
 	void LogParameter(const std::string &inParameterValue);
 
+	void LogTValueParameter(const TValue &inParameterValue);
+
 protected:
 	//////////
 	// Fetch the next argument.
@@ -350,96 +352,6 @@ extern TPrimitiveManager gPrimitiveManager;
 	void FIVEL_NS DoPrim_ ## NAME(TArgumentList &inArgs)
 
 //////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The string to return.
-//
-inline void SetPrimitiveResult(const char *inValue)
-{
-	gVariableManager.SetString("_result", inValue);
-}
-
-//////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The string to return.
-//
-inline void SetPrimitiveSymbolResult(const char *inValue)
-{
-	gVariableManager.SetSymbol("_result", inValue);
-}
-
-//////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The integer to return.
-//
-inline void SetPrimitiveResult(int32 inValue)
-{
-	gVariableManager.SetLong("_result", inValue);
-}
-
-//////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The integer to return.
-//
-inline void SetPrimitiveResult(uint32 inValue)
-{
-	gVariableManager.SetULong("_result", inValue);
-}
-
-//////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The floating point value to return.
-//
-inline void SetPrimitiveResult(double inValue)
-{
-	gVariableManager.SetDouble("_result", inValue);
-}
-
-//////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The boolean value to return.
-//
-inline void SetPrimitiveResult(bool inValue)
-{
-	gVariableManager.SetBoolean("_result", inValue);
-}
-
-//////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The TPoint to return.
-//
-inline void SetPrimitiveResult(const TPoint &inValue)
-{
-	gVariableManager.SetPoint("_result", inValue);
-}
-
-//////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The TRect to return.
-//
-inline void SetPrimitiveResult(const TRect &inValue)
-{
-	gVariableManager.SetRect("_result", inValue);
-}
-
-//////////
-// Set the return value of the current primitive.
-//
-// [in] inValue - The color to return.
-//
-inline void SetPrimitiveResult(const GraphicsTools::Color &inValue)
-{
-	gVariableManager.SetColor("_result", inValue);
-}
-
-//////////
 // Set the return value of the current primitive to the
 // value of the specified variable.
 //
@@ -463,8 +375,8 @@ inline void SetPrimitiveResult(const TValue &inVariable)
 inline void SetPrimitiveError(const char *inErrorName,
 							  const char *inErrorMessage)
 {
-	gVariableManager.SetString(FIVEL_ERROR_CODE_VAR, inErrorName);
-	gVariableManager.SetString(FIVEL_ERROR_MSG_VAR, inErrorMessage);
+	gVariableManager.Set(FIVEL_ERROR_CODE_VAR, inErrorName);
+	gVariableManager.Set(FIVEL_ERROR_MSG_VAR, inErrorMessage);
 	gDebugLog.Log("PRIMITIVE ERROR: %s: %s", inErrorName, inErrorMessage);
 }
 
@@ -476,7 +388,7 @@ inline void SkipPrimitiveLogging()
 {
 	// We don't use an engine variable for any particular reason here--
 	// a global would work fine as well.
-	gVariableManager.SetBoolean(FIVEL_SKIP_LOGGING_VAR, true);
+	gVariableManager.Set(FIVEL_SKIP_LOGGING_VAR, true);
 }
 
 END_NAMESPACE_FIVEL

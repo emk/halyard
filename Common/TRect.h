@@ -30,7 +30,7 @@ AUTHOR
     Chuck Officer<br>
 
 ------------------------------------------------------------------*/
-class TRect : public TObject 
+class TRect 
 {  
 	public:
 		//////////
@@ -238,6 +238,12 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.9  2004/02/02 22:07:55  djin
+   * Cleaned up a whole bunch of legacy code that can be much simpler now
+     that we have TValue.
+   * Removed TObject, TArray and TBTree because they have overstayed their
+     welcome by about a decade.
+
  Revision 1.8  2004/01/30 22:31:18  kwasi
    * Removed SET primitive.
    * Replaced TVariable/TVariableManager with TValue/new-TVariableManager.

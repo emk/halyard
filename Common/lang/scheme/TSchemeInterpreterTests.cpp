@@ -187,7 +187,7 @@ void test_TSchemeInterpreter (void)
 	scheme.Run();
 
 	// Make sure we visited all the right cards.
-	TEST(gVariableManager.GetString("seen-start") == std::string("1"));
-	TEST(gVariableManager.GetString("seen-test-1") == std::string("1"));
-	TEST(gVariableManager.GetString("seen-test-2") == std::string("1"));
+	TEST(gVariableManager.Get("seen-start") == std::string("1"));
+	TEST(gVariableManager.Get("seen-test-1") == std::string("1"));
+	TEST(gVariableManager.Get("seen-test-2") == std::string("1"));
 }

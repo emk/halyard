@@ -8,7 +8,7 @@ BEGIN_NAMESPACE_FIVEL
 //////////
 // A class representing a closed polygon.
 //
-class TPolygon : public TObject
+class TPolygon
 {
 	std::vector<TPoint> mVertices;
 	TRect mBounds;

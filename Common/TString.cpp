@@ -35,7 +35,7 @@ char inBuffer[INBUFFER_SIZE];
 //
 //  TString - Default constructor.
 //
-TString::TString() : TObject()
+TString::TString() 
 {
     m_Length = 0;
     m_Size = 0;
@@ -48,7 +48,7 @@ TString::TString() : TObject()
 //
 //  TString - Construct with a fixed array size.
 //
-TString::TString(const uint32 inSize) : TObject()
+TString::TString(const uint32 inSize) 
 {
     m_Length = 0;
     m_Size = 0;
@@ -61,7 +61,7 @@ TString::TString(const uint32 inSize) : TObject()
 //
 //  TString - Construct from a string.
 //
-TString::TString(const char *inStr) : TObject()
+TString::TString(const char *inStr) 
 {
     m_Length = 0;
     m_Size = 0;
@@ -100,7 +100,7 @@ TString::TString(const char *inStr, uint32 inLength)
 //
 //  TString - Construct from a TString.
 //
-TString::TString(const TString &inStr) : TObject()
+TString::TString(const TString &inStr)
 {
     m_Length = 0;
     m_Size = 0;
@@ -1170,6 +1170,12 @@ std::istream & FIVEL_NS operator >> (std::istream &inStream,
 
 /*
  $Log$
+ Revision 1.11  2004/02/02 22:07:55  djin
+   * Cleaned up a whole bunch of legacy code that can be much simpler now
+     that we have TValue.
+   * Removed TObject, TArray and TBTree because they have overstayed their
+     welcome by about a decade.
+
  Revision 1.10  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

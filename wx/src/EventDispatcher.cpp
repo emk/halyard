@@ -51,21 +51,21 @@ bool EventDispatcher::EventSetup()
 		return false;
 
     // Clear our "pass" and "vetoed" flags.
-    gVariableManager.SetBoolean("_pass", false);
-    gVariableManager.SetBoolean("_veto", false);
+    gVariableManager.Set("_pass", false);
+    gVariableManager.Set("_veto", false);
 	return true;
 }
 
 bool EventDispatcher::EventCleanup()
 {
     // Check our "pass" flag.
-    return !gVariableManager.GetBoolean("_pass");
+    return !bool(gVariableManager.Get("_pass"));
 }
 
 void EventDispatcher::CheckForVeto(bool &outWasVetoed) {
     // See if this event was vetoed.
-    outWasVetoed = (!gVariableManager.GetBoolean("_pass") &&
-					gVariableManager.GetBoolean("_veto"));
+    outWasVetoed = (!bool(gVariableManager.Get("_pass")) &&
+					bool(gVariableManager.Get("_veto")));
 }
 
 bool EventDispatcher::DoEventUpdateUI(const wxString &inCommandName) {

@@ -676,7 +676,7 @@ wxString Stage::FinishModalTextInput()
 	InterpreterWakeUp();
 
 	// Store our result somewhere useful.
-	gVariableManager.SetString("_modal_input_text", mTextCtrl->GetValue());
+	gVariableManager.Set("_modal_input_text", mTextCtrl->GetValue().c_str());
 
     // Hide our text control and get the text.
     mTextCtrl->Hide();

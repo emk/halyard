@@ -43,13 +43,13 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 	if (!could_open)
 	{
 		gDebugLog.Log("Could not open user preferences file \"%s\", using defaults.", filename.c_str());
-		gVariableManager.SetString("_debug", "0");
+		gVariableManager.Set("_debug", "0");
 		UseDefaultPrefs();
 		return;	
 	}
 	
 	// _debug is set in the presence of 5L.prefs
-	gVariableManager.SetString("_debug", "1");
+	gVariableManager.Set("_debug", "1");
 	
 	// Parse the file
 	while (!prefsFile.eof()) 

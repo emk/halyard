@@ -69,7 +69,7 @@ AUTHOR
 	Sean Sharp<br>
 
 ------------------------------------------------------------------*/
-class TString : public TObject 
+class TString 
 {
 	public:
 		//////////
@@ -649,6 +649,12 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.9  2004/02/02 22:07:55  djin
+   * Cleaned up a whole bunch of legacy code that can be much simpler now
+     that we have TValue.
+   * Removed TObject, TArray and TBTree because they have overstayed their
+     welcome by about a decade.
+
  Revision 1.8  2003/07/02 17:46:18  emk
  0.0.7 - 2 July 2003 - emk, brian
 

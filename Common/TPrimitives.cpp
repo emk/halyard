@@ -24,6 +24,14 @@ void TArgumentList::LogParameter(const std::string &inParameterValue)
 		mDebugString += std::string(" ") + inParameterValue;
 }
 
+void TArgumentList::LogTValueParameter(const TValue &inParameterValue) {
+	std::ostringstream out;
+	out << inParameterValue;
+
+	LogParameter(out.str());
+}
+																  
+
 std::string TArgumentList::EndLog()
 {
 	ASSERT(!mDebugString.empty());
@@ -141,15 +149,15 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, int16 &out)
 		throw TException(__FILE__, __LINE__,
 						 "Can't represent value as 16-bit integer");
     out = temp;
-	args.LogParameter(TString::IntToString(out).GetString());
+	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, int32 &out)
 {
     out = args.GetInt32Arg();
-	args.LogParameter(TString::IntToString(out).GetString());
-    return args;
+	args.LogTValueParameter(out);
+	return args;
 }
 
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, bool &out)
@@ -162,57 +170,35 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, bool &out)
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, uint32 &out)
 {
     out = args.GetUInt32Arg();
-	args.LogParameter(TString::UIntToString(out).GetString());
+	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, double &out)
 {
     out = args.GetDoubleArg();
-	args.LogParameter(TString::DoubleToString(out).GetString());
+	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TRect &out)
 {
     out = args.GetRectArg();
-	args.LogParameter(std::string("(rect ") +
-					  TString::IntToString(out.Left()).GetString() +
-					  std::string(" ") +
-					  TString::IntToString(out.Top()).GetString() +
-					  std::string(" ") +
-					  TString::IntToString(out.Right()).GetString() +
-					  std::string(" ") +
-					  TString::IntToString(out.Bottom()).GetString() +
-					  std::string(")"));
+	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TPolygon &out)
 {
     out = args.GetPolygonArg();
-	std::string logmsg = "(poly";
-	for (int i = 0; i < out.GetPointCount(); i++)
-	{
-		TPoint p = out.GetPoint(i);
-		logmsg += (std::string(" ") +
-				   TString::IntToString(p.X()).GetString() +
-				   std::string(",") +
-				   TString::IntToString(p.Y()).GetString());
-	}
-	logmsg += ")";
-	args.LogParameter(logmsg);
+	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TPoint &out)
 {
     out = args.GetPointArg();
-	args.LogParameter(std::string("(point ") +
-					  TString::IntToString(out.X()).GetString() +
-					  std::string(" ") +
-					  TString::IntToString(out.Y()).GetString() +
-					  std::string(")"));
+	args.LogTValueParameter(out);
     return args;
 }
 
@@ -220,22 +206,14 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args,
 								   GraphicsTools::Color &out)
 {
     out = args.GetColorArg();
-	args.LogParameter(std::string("(color ") +
-					  TString::IntToString(out.red).GetString() +
-					  std::string(" ") +
-					  TString::IntToString(out.green).GetString() +
-					  std::string(" ") +
-					  TString::IntToString(out.blue).GetString() +
-					  std::string(" ") +
-					  TString::IntToString(out.alpha).GetString() +
-					  std::string(")"));
+	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TCallbackPtr &out)
 {
     out = args.GetCallbackArg();
-	args.LogParameter(out->PrintableRepresentation());
+	args.LogTValueParameter(out);
     return args;
 }
 
@@ -282,14 +260,12 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &inArgs,
 		else
 			result += 0.5;
 		*inVoP.mOutputValue = static_cast<int>(result);
-		inArgs.LogParameter(std::string("(percent ") +
-							TString::IntToString(value).GetString() +
-							std::string(")"));
+		inArgs.LogTValueParameter(TPercent(result));
 	}
 	else
 	{
 		*inVoP.mOutputValue = value;
-		inArgs.LogParameter(TString::IntToString(value).GetString());
+		inArgs.LogTValueParameter(value);
 	}
 	return inArgs;
 }
