@@ -29,6 +29,12 @@
 
 USING_NAMESPACE_FIVEL
 
+void (*TLogger::s_ErrorPrepFunction)() = NULL;
+
+#ifdef FIVEL_PLATFORM_MACINTOSH
+bool TLogger::s_ToolboxIsInitialized = false;
+#endif
+
 #define FATAL_HEADER	"Fatal Error: "
 #define ERROR_HEADER	"Error: "
 #define CAUTION_HEADER	"Caution: "
@@ -149,12 +155,19 @@ void TLogger::Caution(const char *Format, ...)
 
 void TLogger::FatalError(const char *Format, ...)
 {
+	// XXX - This old code is completely wrong.  We definitely
+	// shouldn't continue from here!
 	if (!m_LogOpen)
 		return;
 
+	// We call AlertBuffer before LogBuffer, because
+	// the AlertBuffer code is required NOT to
+	// call back into FatalError, whereas LogBuffer
+	// relies on a lot of subsystems which might
+	// somehow fail.
 	FormatMsg(Format);
-	LogBuffer(FATAL_HEADER);
 	AlertBuffer(true);
+	LogBuffer(FATAL_HEADER);
 	exit(1);
 }
 
@@ -225,15 +238,18 @@ void TLogger::LogBuffer(const char *Header)
 }
 
 //
-//	AlertBuffer -
+//	AlertBuffer - Display an alert.
+//
+//  THIS ROUTINE MAY NOT USE 'ASSERT' OR 'FatalError', BECAUSE IS CALLED
+//  BY THE ERROR-LOGGING CODE!
 //
 #ifdef FIVEL_PLATFORM_WIN32
 
 void TLogger::AlertBuffer(bool isError /* = false */)
 {
-	uint32		alertType;
+	PrepareToDisplayError();
 
-	alertType = MB_SYSTEMMODAL | MB_OK;
+	uint32 alertType = MB_SYSTEMMODAL | MB_OK;
 	if (isError)
 		alertType |= MB_ICONSTOP;
 	else
@@ -249,21 +265,41 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 
 void TLogger::AlertBuffer(bool isError /* = false */)
 {
-	c2pstr(m_LogBuffer);
+	PrepareToDisplayError();
+
+	// Make sure we don't call StopAlert or CautionAlert before
+	// the Toolbox has been initialized.  This typically happens
+	// with the Metrowerks SIOUX console when we're running the test
+	// suites.
+	if (s_ToolboxIsInitialized)
+	{
+		c2pstr(m_LogBuffer);
 	
-	::ParamText((const uint8 *) m_LogBuffer, NULL, NULL, NULL);
-	if (isError)
-    	(void) ::StopAlert(2001, nil);
-    else
-    	(void) ::CautionAlert(2001, nil);
+		::ParamText((const uint8 *) m_LogBuffer, NULL, NULL, NULL);
+		if (isError)
+    		(void) ::StopAlert(2001, nil);
+    	else
+    		(void) ::CautionAlert(2001, nil);
     
-    p2cstr((unsigned char *) m_LogBuffer);
+    	p2cstr((unsigned char *) m_LogBuffer);
+	}
+	else
+	{
+		std::cerr << std::endl;
+		if (isError)
+			std::cerr << "ERROR: ";
+		else
+			std::cerr << "INFO: ";
+		std::cerr << m_LogBuffer << std::endl;
+	}
 }
 
 #elif FIVEL_PLATFORM_OTHER
 
 void TLogger::AlertBuffer(bool isError /* = false */)
 {
+	PrepareToDisplayError();
+
 	std::cerr << std::endl;
 	if (isError)
 		std::cerr << "ERROR: ";
@@ -305,9 +341,40 @@ void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 	}	
 }
 
+void TLogger::PrepareToDisplayError()
+{
+	if (s_ErrorPrepFunction)
+		(*s_ErrorPrepFunction)();	
+}
+
+void TLogger::RegisterErrorPrepFunction(void (*inFunc)())
+{
+	s_ErrorPrepFunction = inFunc;	
+}
+
+// This routine is declared in TCommon.h.
+void FiveLCheckAssertion(int inTest, const char *inDescription,
+						 const char *inFile, int inLine)
+{
+	if (!inTest)
+	{
+		// Log a fatal error and bail.
+		gLog.FatalError("ASSERTION FAILURE: %s:%d: %s",
+						inFile, inLine, inDescription);
+		exit(1);
+	}
+}
+
 
 /*
  $Log$
+ Revision 1.3.4.4  2002/05/15 08:13:15  emk
+ 3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+ Made tweaks to support the migration of Mac (buttpcx ...) to the new anti-aliased typography library.
+
+ The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect *both* FiveL's to do something childish immediately after fatal errors and assertion failures.
+
  Revision 1.3.4.3  2002/04/23 13:25:40  emk
  Merged some KLogger (Mac) features into TLogger (portable).
 

@@ -23,6 +23,8 @@ OVERVIEW
 	used throughout the FiveL codebase.
 
 TCOMMON MACRO DEFINITIONS
+	#define ASSERT<br>
+
 	#define not		!<br>
 	#define and		&&<br>
 	#define or		||<br> 
@@ -64,6 +66,28 @@ AUTHOR
 -----------------------------------------------------------------*/
 
 #include "TPlatform.h"
+
+//////////
+// We have our own, portable assertion-checking routine because
+// we want to log assertion failures (because the users *never*
+// write them down).
+//
+// This routine is defined in TLogger.cpp.
+// 
+// [in] inTest - If this value is zero, trigger the assertion.
+// [in] inDescription - Text describing the assertion.
+// [in] inFile - The file in which the assertion appears.
+// [in] inLine - The line number of the assertion.
+//
+extern void FiveLCheckAssertion(int inTest, const char *inDescription,
+								const char *inFile, int inLine);
+
+#ifdef DEBUG
+#	define ASSERT(test) \
+		FiveLCheckAssertion((test), #test, __FILE__, __LINE__);
+#else // DEBUG
+#	define ASSERT(test) 0
+#endif // DEBUG
 
 // TODO - These macro names should go away as soon as somebody gets
 // a chance to dig through the rest of the source.  It's a big job.
@@ -140,6 +164,13 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5.2.2  2002/05/15 08:13:15  emk
+ 3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+ Made tweaks to support the migration of Mac (buttpcx ...) to the new anti-aliased typography library.
+
+ The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect *both* FiveL's to do something childish immediately after fatal errors and assertion failures.
+
  Revision 1.5.2.1  2002/04/22 08:17:57  emk
  Updated Common code to build on Macintosh and pass all unit tests.
 

@@ -54,9 +54,6 @@ AUTHOR
 #define DEBUG
 #endif
 
-#include <crtdbg.h>
-#define ASSERT(x) _ASSERTE(x)
-
 /* For now, the Windows engine uses some non-standard string functions */
 /* instead of using our own, equivalent code. */
 #define HAVE__STRLWR 1
@@ -84,19 +81,10 @@ AUTHOR
 #ifdef Debug_Throw
 #define DEBUG
 
-#ifdef __cplusplus
-#include <assert.h>
-#endif
-#define ASSERT(expr) assert(expr)
-
 /* backwards compatible defines
 **#define DEBUG_5L
 **#define DEBUG_5L_SCRIPT
 */
-
-#else
-
-#define ASSERT(x)
 
 #endif	/* Debug_Throw */
 
@@ -110,7 +98,6 @@ AUTHOR
 #define FIVEL_PLATFORM_OTHER (1)
 
 /*#define WANT_FIVEL_NAMESPACE (1)*/
-#define ASSERT(expr) assert(expr)
 
 #endif
 

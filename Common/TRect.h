@@ -80,7 +80,7 @@ class TRect : public TObject
 		//
 		// [in] inPt - TPoint used to offset the rectangle
 		//
-		void		Offset(TPoint &inPt);
+		void		Offset(const TPoint &inPt);
 
 		//////////
 		// Set top coordinate.
@@ -275,6 +275,13 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3.4.2  2002/05/15 08:13:15  emk
+ 3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+ Made tweaks to support the migration of Mac (buttpcx ...) to the new anti-aliased typography library.
+
+ The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect *both* FiveL's to do something childish immediately after fatal errors and assertion failures.
+
  Revision 1.3.4.1  2002/04/22 08:17:58  emk
  Updated Common code to build on Macintosh and pass all unit tests.
 

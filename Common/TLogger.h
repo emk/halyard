@@ -189,6 +189,20 @@ private:
 	//
 	uint32		m_LogMask;
 
+	//////////
+	// Either NULL, or a function which can be used to unfade the screen,
+	// etc., before displaying errors.
+	//
+	static void (*s_ErrorPrepFunction)();
+
+#ifdef FIVEL_PLATFORM_MACINTOSH
+	//////////
+	// True if and only if the Macintosh Toolbox has been
+	// properly initialized.
+	//
+	static bool	s_ToolboxIsInitialized;
+#endif
+
 	// Deprecated
 	//
 	//bool		CheckLog();
@@ -228,6 +242,29 @@ public:
 	// [in] inOpenDebugLog - Should we open up the debugging log as well?
 	//
 	static void OpenStandardLogs(bool inOpenDebugLog = false);
+
+	//////////
+    // We may need to unfade the screen or perform other cleanup
+    // before displaying an error.  This method will call any
+    // function registered with RegisterErrorPrepFunction, below,
+    // or simply do nothing if no such function has been registered.
+    //
+    static void PrepareToDisplayError();
+
+	//////////
+	// Install a function to be called before displaying dialog
+	// boxes, triggering assertions, etc.  This function can
+	// be called using PrepareToDisplayError, above.
+	//
+	static void RegisterErrorPrepFunction(void (*inFunc)());
+
+#ifdef FIVEL_PLATFORM_MACINTOSH
+	//////////
+	// Tell the logging subsystem that the toolbox has been initialized, and
+	// that it's OK to use dialogs.
+	//
+	static void MarkToolboxAsInitialized() { s_ToolboxIsInitialized = true; }
+#endif
 };
 
 //////////
@@ -244,7 +281,7 @@ extern TLogger gDebugLog;
 
 //////////
 // This log is used to log missing media items.  This file typically exists
-// on a normal user's system.
+// on a normal user's system *if* some media is unavailable.
 //
 extern TLogger gMissingMediaLog;
 
@@ -254,6 +291,13 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.2.4.2  2002/05/15 08:13:15  emk
+ 3.3.2.8 - Overhauled assertion handling to call FatalError and log problems in 5L.log.  Also added hooks for unfading the screen before displaying errors (this is needed to play nicely with the Mac gamma fader).
+
+ Made tweaks to support the migration of Mac (buttpcx ...) to the new anti-aliased typography library.
+
+ The TBTree destructor is still a broken nightmare, especially on FatalError's forced shutdowns.  Expect *both* FiveL's to do something childish immediately after fatal errors and assertion failures.
+
  Revision 1.2.4.1  2002/04/19 11:20:13  emk
  Start of the heavy typography merging work.  I'm doing this on a branch
  so I don't cause problems for any of the other developers.
