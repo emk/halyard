@@ -4,7 +4,7 @@
 ;;  The actual 5L programming language, including both the API and the
 ;;  special syntax.
 
-(module |5L| (lib "lispish.ss" "5L")
+(module 5L (lib "lispish.ss" "5L")
   (require (lib "5L-API.ss" "5L"))
   (require (lib "interpolate.ss" "5L"))
 

@@ -1,4 +1,4 @@
-(module |5L-API| (lib "lispish.ss" "5L")
+(module 5L-API (lib "lispish.ss" "5L")
 
   (require 5L-Kernel)
   (provide (all-from 5L-Kernel))
