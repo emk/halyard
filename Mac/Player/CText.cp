@@ -541,6 +541,10 @@ CText::LoopThroughStyles(SInt16	lineHeight, SInt16 lineBase, SInt16 justificatio
 		bytesSoFar = 0;
 		wrapWidth = drawWidth;
 		textWidth = mDrawRect.left;
+		
+		if (loopCount > 1)
+			incr_y += lineHeight;				// finished line so increment _incr_y by line height
+
 			
 		/* 	Figure out where the text breaks. For more info, see below.
 			'wrapWidth' gets space left on line (neg if more than one line);
@@ -593,7 +597,6 @@ CText::LoopThroughStyles(SInt16	lineHeight, SInt16 lineBase, SInt16 justificatio
 					drawBytes -= bytesSoFar;			// only draw part that fits, and not what we already drew		
 					lineBytes = 0;						// we've finished the line so set it back to 0
 					styleBytes += drawBytes;			// record how much of style we did do
-					incr_y += lineHeight;				// finished line so increment _incr_y by line height
 					// Don't update style because we need to finish drawing it next time.
 				}
 				else
