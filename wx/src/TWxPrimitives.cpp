@@ -48,6 +48,16 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(AudioStreamGeigerSetCps);
 	REGISTER_5L_PRIMITIVE(AudioStreamSine);
 	REGISTER_5L_PRIMITIVE(AudioStreamVorbis);
+	REGISTER_5L_PRIMITIVE(Browser);
+	REGISTER_5L_PRIMITIVE(BrowserCanBack);
+	REGISTER_5L_PRIMITIVE(BrowserCanForward);
+	REGISTER_5L_PRIMITIVE(BrowserCanReload);
+	REGISTER_5L_PRIMITIVE(BrowserCanStop);
+	REGISTER_5L_PRIMITIVE(BrowserBack);
+	REGISTER_5L_PRIMITIVE(BrowserForward);
+    REGISTER_5L_PRIMITIVE(BrowserLoadPage);
+	REGISTER_5L_PRIMITIVE(BrowserReload);
+	REGISTER_5L_PRIMITIVE(BrowserStop);
 	REGISTER_5L_PRIMITIVE(ColorAt);
 	REGISTER_5L_PRIMITIVE(DcPop);
 	REGISTER_5L_PRIMITIVE(DcPush);
@@ -62,7 +72,6 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
 	REGISTER_5L_PRIMITIVE(GeigerSynthSetCps);
-	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
@@ -160,6 +169,85 @@ DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
 	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
 						   new VorbisAudioStream(path.c_str(), buffer_size,
 												 should_loop));
+}
+
+DEFINE_5L_PRIMITIVE(Browser) {
+	std::string name;
+    bool want_builtin;
+	TRect bounds;
+    TCallback *dispatcher;
+
+	inArgs >> SymbolName(name) >> dispatcher >> bounds >> want_builtin;
+
+    if (want_builtin)
+        new BrowserElementWx(wxGetApp().GetStage(), name.c_str(),
+                             TToWxRect(bounds), dispatcher);
+    else
+        new BrowserElementIE(wxGetApp().GetStage(), name.c_str(),
+                             TToWxRect(bounds), dispatcher);
+}
+
+DEFINE_5L_PRIMITIVE(BrowserCanBack) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    ::SetPrimitiveResult(browser->CanGoBack());
+}
+
+DEFINE_5L_PRIMITIVE(BrowserCanForward) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    ::SetPrimitiveResult(browser->CanGoForward());
+}
+
+DEFINE_5L_PRIMITIVE(BrowserCanReload) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    ::SetPrimitiveResult(browser->Refresh());
+}
+
+DEFINE_5L_PRIMITIVE(BrowserCanStop) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    ::SetPrimitiveResult(browser->Stop());
+}
+
+DEFINE_5L_PRIMITIVE(BrowserBack) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    ::SetPrimitiveResult(browser->GoBack());
+}
+
+DEFINE_5L_PRIMITIVE(BrowserForward) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    ::SetPrimitiveResult(browser->GoForward());
+}
+
+DEFINE_5L_PRIMITIVE(BrowserLoadPage) {
+    std::string name, file_or_url;
+    inArgs >> SymbolName(name) >> file_or_url;
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+	browser->LoadPage(file_or_url.c_str());
+}
+
+DEFINE_5L_PRIMITIVE(BrowserReload) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    ::SetPrimitiveResult(browser->Refresh());
+}
+
+DEFINE_5L_PRIMITIVE(BrowserStop) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    ::SetPrimitiveResult(browser->Stop());
 }
 
 DEFINE_5L_PRIMITIVE(ColorAt) {
@@ -309,25 +397,6 @@ DEFINE_5L_PRIMITIVE(GeigerSynthSetCps) {
 	inArgs >> name >> cps;
     FIND_ELEMENT(GeigerSynthElement, element, name.c_str());
     element->SetChirpsPerSecond(cps);
-}
-
-DEFINE_5L_PRIMITIVE(HTML) {
-	std::string name, file_or_url;
-    bool want_builtin;
-	TRect bounds;
-    TCallback *dispatcher;
-
-	inArgs >> SymbolName(name) >> dispatcher >> bounds >> want_builtin
-           >> file_or_url;
-
-    BrowserElement *elem;
-    if (want_builtin)
-        elem = new BrowserElementWx(wxGetApp().GetStage(), name.c_str(),
-                                    TToWxRect(bounds), dispatcher);
-    else
-        elem = new BrowserElementIE(wxGetApp().GetStage(), name.c_str(),
-                                    TToWxRect(bounds), dispatcher);
-	elem->LoadPage(file_or_url.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(Input) {

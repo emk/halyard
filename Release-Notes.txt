@@ -14,7 +14,6 @@ to embed Internet Explorer using wxIE.
   * New event types for EventDispatcher: browser-navigate,
     browser-page-changed, status-text-changed, progress-changed.
   * Added support for passing floating-point numbers to TCallbacks.
-
   * Added a MEASURE-PICTURE command.
   * Added an OFFSET-RECT command.
   * Modified PaintStage to only repaint the modified parts of the screen.
@@ -24,6 +23,8 @@ to embed Internet Explorer using wxIE.
   * Various bugfixes to wxIE library.
   * More new event types for EventDispatcher: update-ui, browser-title-changed.
   * Added a function to convert DirtyLists to wxRegions.
+  * Added support for opening pages in existing browser widgets from scripts.
+  * Added basic support for forward, back, reload and stop buttons.
 
 0.0.13 - 6 Jan 2004 - emk
 

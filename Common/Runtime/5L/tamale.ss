@@ -18,8 +18,8 @@
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
-           %html-element% %edit-box-element% %movie-element% 
-           html edit-box vorbis-audio
+           %browser% %edit-box-element% %movie-element% 
+           browser edit-box vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
            geiger-synth set-geiger-synth-counts-per-second!
            sine-wave set-media-base-url! movie 
@@ -215,19 +215,46 @@
          (throw (cat "center-text: Unknown centering axis: " axis))]))
     (draw-text stylesheet r msg))
 
-  (define-element-template %html-element%
-      [[location :type <string> :label "Location"]
+  (define-element-template %browser%
+      [[location :type <string> :label "Location" :default "about:blank"]
        [fallback? :type <boolean> :label "Use primitive fallback web browser?"
                   :default #f]]
       (:template %element%)
-    (call-5l-prim 'html (node-full-name self) 
-                  (make-node-event-dispatcher self) (prop self rect)
-                  fallback?
-                  ;; TODO - Support actual URL's.
-                  (build-path (current-directory) location)))
 
-  (define (html name r location)
-    (create %html-element% :name name :rect r :location location))
+    (on load-page (page)
+      (let [[path (make-path "HTML" page)]]
+        (check-file path)
+        (call-5l-prim 'BrowserLoadPage (node-full-name self) path)))
+
+    (on command-enabled? (command)
+      (case command
+        [[back]
+         (call-5l-prim 'BrowserCanBack (node-full-name self))]
+        [[forward]
+         (call-5l-prim 'BrowserCanForward (node-full-name self))]
+        [[reload]
+         (call-5l-prim 'BrowserCanReload (node-full-name self))]
+        [[stop]
+         (call-5l-prim 'BrowserCanStop (node-full-name self))]
+        [else
+         (call-next-handler)]))
+
+    (on back ()
+      (call-5l-prim 'BrowserBack (node-full-name self)))
+    (on forward ()
+      (call-5l-prim 'BrowserForward (node-full-name self)))
+    (on reload ()
+      (call-5l-prim 'BrowserReload (node-full-name self)))
+    (on stop ()
+      (call-5l-prim 'BrowserStop (node-full-name self)))
+
+    (call-5l-prim 'Browser (node-full-name self) 
+                  (make-node-event-dispatcher self) (prop self rect)
+                  fallback?)
+    (send self load-page location))
+
+  (define (browser name r location)
+    (create %browser% :name name :rect r :location location))
 
   (define-element-template %edit-box-element%
       [[text :type <string> :label "Initial text"]

@@ -1,20 +1,19 @@
 
-  VTRA fixes
-    set-zone-cursor! -> set-element-cursor!
-    0-opaque alpha -> 255-opaque alpha
-    All (rect ...) objects exclude their right and bottom edges
-  Overlays
-/   Use opacity to hit-test overlays
-/   Enhance rectangle merging code
-/   Fix engine to use 255-opaque alpha instead of 0-opaque alpha
+  Bugs
+    %basic-button% does not hit test correctly with overlays
+
+  Node/event model
     (@ ...) -> @...
-    Drag-and-drop demo
-/ Cleanups
-/   SetZoneCursor -> SetElementCursor
-/   Don't allow idle with non-default DC
-/   Allow fetching of bounds rect for current DC
-/   Allow fetching of color for current DC
-/   Make sure textaa layer uses right-/bottom-exclusive rects
+    (on setup ...)
+      Fix %basic-button%
+    (on cleanup ...)
+    Is update-ui the right event name?  We don't have wxWindows semantics.
+    Allow elements to be attached to sequences
+
+  Browser
+    Make commands available from Scheme
+    Implement buttons
+    Implement enabling/disabling of buttons
 
   Audio layer
     Bugs
