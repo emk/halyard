@@ -4,13 +4,17 @@
            quake2-command quake2-background-load-command
            quake2-should-run-in-background?
            set-quake2-should-run-in-background?!
+           quake2-running?
            quake2-float set-quake2-float! quake2-string set-quake2-string!
            quake2-print quake2-print-line quake2-register-command
            define-quake2-command quake2-jump-helper
            %quake2-level% %quake2-level-run%)
 
+  (define *quake2-initialized?* #f)
+
   (define (quake2-launch game)
-    (call-5l-prim 'Quake2Init game))
+    (call-5l-prim 'Quake2Init game)
+    (set! *quake2-initialized?* #t))
 
   (define (quake2-shown?)
     (call-5l-prim 'Quake2IsShown))
@@ -37,6 +41,11 @@
 
   (define (set-quake2-should-run-in-background?! run?)
     (call-5l-prim 'Quake2SetShouldRunInBackground run?))
+
+  (define (quake2-running?)
+    (and *quake2-initialized?*
+         (or (quake2-shown?)
+             (quake2-should-run-in-background?))))
 
   (define (quake2-float cvar)
     (call-5l-prim 'Quake2GetFloatVar cvar))
