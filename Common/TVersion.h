@@ -22,15 +22,20 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		34
+#define VERSION_REV_BIG		35
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.34 (Development)"
+#define VERSION_STRING		"Tamale 0.0.35 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.76  2004/09/10 15:40:13  emk
+ 0.0.35 - 09 Sep 2004 - emk
+
+   * Began integration with CrashRpt library for crash reporting.
+
  Revision 1.75  2004/09/07 18:36:22  emk
  0.0.34 - 07 Sep 2004 - emk
 

@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.35 - 09 Sep 2004 - emk
 
   * Began integration with CrashRpt library for crash reporting.
 
