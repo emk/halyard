@@ -1,5 +1,20 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Added support for using FOREACH to iterate over hash tables.
+  * Allowed defaulted template parameters to be passed to parent template.
+  * Added error message for unexpected template parameters.
+  * Added error message for accessing template parameters which were never
+    defined.
+  * Allow templates to override parameter defaults in parent templates.
+  * %ZONE% now takes an optional :AT parameter.  If this parameter is
+    specified, then :SHAPE must be a rectangle at 0,0.
+  * Moving zones in now much easier.  Drag and drop code will have to
+    be changed.
+  * AnimatedOverlay now treats ../x and ../y as being relative to
+    the overlay's official location.
+
 0.0.20 - 23 February - emk, djin
 
   * Added support for MATCH-LET.

@@ -657,18 +657,19 @@ DEFINE_5L_PRIMITIVE(Overlay) {
 }
 
 DEFINE_5L_PRIMITIVE(OverlayAnimated) {
-	std::string name, cursor, state;
+	std::string name, cursor, state_path;
 	TRect bounds;
 	TCallbackPtr dispatcher;
+    bool is_trans;
 	TValue graphics;
 	
-	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor >> state
-		   >> graphics;
+	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor
+           >> is_trans >> state_path >> graphics;
 	new AnimatedOverlay(
 		wxGetApp().GetStage(), name.c_str(), 
 		TToWxRect(bounds), dispatcher, 
 		wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor),
-		state, TValueList(graphics));
+        is_trans, state_path, TValueList(graphics));
 }
 
 DEFINE_5L_PRIMITIVE(SaveGraphics) {
