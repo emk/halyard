@@ -95,10 +95,6 @@ SOURCE=..\..\..\Common\ModelTests.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TBTreeTests.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\Common\TEncodingTests.cpp
 # End Source File
 # Begin Source File
