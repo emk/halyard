@@ -2,7 +2,7 @@
 	CPlayerLine.cp	
    ================================================================================= */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -20,6 +20,7 @@
 		Constructor for a custom Player Pane class. Sets up a SPaneInfo struct to
 		call the custom pane's constructor.
    --------------------------------------------------------------------------------- */
+USING_NAMESPACE_FIVEL
 
 CPlayerLine::CPlayerLine(
 	const Rect		&inBounds,		// Bouding rect (relative to PlayerView's rect)
@@ -60,8 +61,8 @@ CPlayerLine::~CPlayerLine()
 void
 CPlayerLine::DrawSelf()
 {
-	StColorPenState savePenState;
-	StColorPenState::Normalize();
+	PP::StColorPenState savePenState;
+	PP::StColorPenState::Normalize();
 	
 	// Set the pen state for color, width. Get the rgb color from
 	// the color index.

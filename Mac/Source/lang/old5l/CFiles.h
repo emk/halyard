@@ -7,10 +7,12 @@
 
 #pragma once
 
-#include "KHeader.h"
+#include "THeader.h"
 
-#include "KArray.h"
+#include "TArray.h"
 #include "CTextFileStream.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 enum FileKind 
 {
@@ -19,45 +21,44 @@ enum FileKind
 	fReadOnly
 };
 
-
-class CFile : public KObject 
+class CFile : public TObject 
 {
 	private:
-		KString		itsName;
+		TString		itsName;
 		FileKind	itsKind;
 		CTextFileStream		*itsFile;
 		char		readBuf[BUFFER_SIZE];
 		char		writeBuf[BUFFER_SIZE];
 				
 	public:
-					CFile(KString &filename, FileKind fKind = fReadOnly);
+					CFile(TString &filename, FileKind fKind = fReadOnly);
 		virtual 	~CFile();
 
 		int			Match(const char *aName);
-		void		Read(KString &str);
-		void		ReadUntil(KString &str, unsigned char delim);
-		void		ReadUntilCore(KString &str, unsigned char delim);
-		void		Write(KString &data);
-		void		Lookup(KString &searchString, int32 numFields);
-		void		Rewrite(KString &searchString, int32 numFields);
+		void		Read(TString &str);
+		void		ReadUntil(TString &str, unsigned char delim);
+		void		ReadUntilCore(TString &str, unsigned char delim);
+		void		Write(TString &data);
+		void		Lookup(TString &searchString, int32 numFields);
+		void		Rewrite(TString &searchString, int32 numFields);
 		bool		AtEOF(void);
 };
 
-class CFileList : public KObject 
+class CFileList : public TObject 
 {
 	public:
  					CFileList();
 		virtual 	~CFileList();
 
-		void		Open(KString &filename, FileKind fKind);
-		void		Close(KString &filename);
-		void		Read(KString &filename, KString &str);
-		void		ReadUntil(KString &filename, KString &str,
+		void		Open(TString &filename, FileKind fKind);
+		void		Close(TString &filename);
+		void		Read(TString &filename, TString &str);
+		void		ReadUntil(TString &filename, TString &str,
 							unsigned char delim);
-		void		Write(KString &filename, KString &data);
-		void		Lookup(KString &filename, KString &searchString,
+		void		Write(TString &filename, TString &data);
+		void		Lookup(TString &filename, TString &searchString,
 							int numFields);
-		void		Rewrite(KString &filename, KString &searchString,
+		void		Rewrite(TString &filename, TString &searchString,
 							int numFields);
 							
 		bool		CurFileOpen(void);
@@ -66,8 +67,10 @@ class CFileList : public KObject
 	protected:
 		CFile		*CurrentFile;
 		
-		CFile		*FindFile(KString &filename, int failClosed);
-		void		CheckPath(KString &inPath);
+		CFile		*FindFile(TString &filename, int failClosed);
+		void		CheckPath(TString &inPath);
 };
 
 extern CFileList gFileManager;
+
+END_NAMESPACE_FIVEL

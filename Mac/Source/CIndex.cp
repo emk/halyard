@@ -6,7 +6,7 @@
     memory.
 */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -23,6 +23,8 @@
 
 #include "MacUtils.h"
 
+USING_NAMESPACE_FIVEL
+
 //
 //	CIndex methods
 //
@@ -31,7 +33,7 @@
 //	CIndex - Constructor
 //
 CIndex::CIndex(CIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd) 
-	: KBNode(inName)
+	: TBNode(inName)
 {  
 	m_File = inFile;
 	if (m_File != NULL)
@@ -105,7 +107,7 @@ const char *CIndex::GetScript()
 //
 //	CIndexManager - Constructor
 //
-CIndexManager::CIndexManager() : KBTree()
+CIndexManager::CIndexManager() : TBTree()
 {  
 }
 
@@ -119,7 +121,7 @@ CIndexManager::~CIndexManager()
 //	CIndexFileManager methods
 //
 
-CIndexFileManager::CIndexFileManager() : KBTree()
+CIndexFileManager::CIndexFileManager() : TBTree()
 {
 }
 
@@ -168,7 +170,7 @@ bool CIndexFileManager::NewIndex(const char *inName)
 
 bool CIndexFileManager::NewIndex(FSSpec *inSpec)
 {
-	KString		fullPath;
+	TString		fullPath;
 	
 	ASSERT(inSpec != NULL);
 	
@@ -176,11 +178,10 @@ bool CIndexFileManager::NewIndex(FSSpec *inSpec)
 	return (NewIndex(fullPath));
 }
 
-
 //
 //	CIndexFile methods
 //
-CIndexFile::CIndexFile(const char *inName) : KBNode(inName)
+CIndexFile::CIndexFile(const char *inName) : TBNode(inName)
 {	
 	m_ReferenceCount = 0;
 	m_AtEnd = false;
@@ -270,8 +271,8 @@ void CIndexFile::Close()
 bool CIndexFile::Init()
 {
 	ifstream		theIndexFile;
-	KString			scriptName; 
-    KString			theName;
+	TString			scriptName; 
+    TString			theName;
 
 	// see if the script name is a full path or just a file name
 	//	if it doesn't contain at least one ':', assume it is just a 

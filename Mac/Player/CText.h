@@ -18,6 +18,7 @@
 #include <TextEdit.h>
 #include <LArray.h>
 
+BEGIN_NAMESPACE_FIVEL
 class CText 
 {
 	public:
@@ -26,7 +27,7 @@ class CText
 		// Standard constructors.
 		CText(void);
 		CText(	const char	*inHeader,	// Name of header format to use.
-				const KRect	&inBounds,	// Bouding rect (relative to PlayerView's rect)
+				const TRect	&inBounds,	// Bouding rect (relative to PlayerView's rect)
 				const char 	*inText);	// The 'raw' string (including format chars)
 					
 		// Destructor
@@ -35,7 +36,7 @@ class CText
 		SInt32				GetLineHeight(void);	// Returns lineheight of text object
 
 	protected:
-		LArray				*mStyleOffsets;	// List of styles & offsets into mText for display
+		PP::LArray			*mStyleOffsets;	// List of styles & offsets into mText for display
 
 		uint8				*mText;		// Pointer to the text to display
 		int16				mBaseColor, mHiColor, mShadColor;	// Base, highlight & shadow colors
@@ -74,3 +75,5 @@ struct sTextStyle {
 	Boolean	mUnderline;	// TRUE if underline
 	Boolean	mBold;		// TRUE if bold
 };
+
+END_NAMESPACE_FIVEL

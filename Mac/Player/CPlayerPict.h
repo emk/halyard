@@ -16,7 +16,9 @@
 
 #pragma once
 #include "CPicture.h"
-#include "KPoint.h"
+#include "TPoint.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 class CPlayerPict 
 {
@@ -25,9 +27,11 @@ class CPlayerPict
 
 		// Standard constructor. Will call the SPaneInfo constructor
 		CPlayerPict(CPicture		*inPict,
-					KPoint			&inPt,
+					TPoint			&inPt,
 					bool			inMatte = false);
 					
 		// Destructor
 		virtual 	~CPlayerPict();
 };
+
+END_NAMESPACE_FIVEL

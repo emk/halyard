@@ -2,7 +2,7 @@
 // CMoviePlayer.cp
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <string.h>
 #include "Movies.h"
@@ -23,6 +23,7 @@
 #include "CModule.h"
 #endif
 
+USING_NAMESPACE_FIVEL
 
 //
 //	CMoviePlayer - the construct-from-stream constructor
@@ -131,7 +132,7 @@ void CMoviePlayer::DrawSelf(void)
 //
 //	SetOrigin - Set the origin for the NEXT movie to play.
 //
-void CMoviePlayer::SetOrigin(KPoint &inPoint)
+void CMoviePlayer::SetOrigin(TPoint &inPoint)
 {
 	if (inPoint.X() == -1)
 		mHaveOrigin = false;
@@ -251,7 +252,7 @@ bool CMoviePlayer::Load(const char *inMovieName, bool inAudioOnly)
 	bool		retValue = true;
 
 	// Get the full path to the movie.
-	KString		moviePath = inMovieName;
+	TString		moviePath = inMovieName;
 
 	if (not inAudioOnly)	
 		moviePath = gModMan->GetVideoPath(moviePath);
@@ -470,7 +471,7 @@ void CMoviePlayer::Play(const char *inMovieName, int32 inWaitOffset,
 			
 		if (inPalStr != NULL)				// if we have a palette, find it and set it
 		{
-			KString		palName = inPalStr;
+			TString		palName = inPalStr;
 			
 			thePalette = gPaletteManager.GetPalette(palName);
 			

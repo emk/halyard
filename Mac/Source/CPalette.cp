@@ -2,7 +2,7 @@
 //	CPalette.cp
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "KLogger.h"
 
@@ -16,9 +16,11 @@
 
 #define DEFAULT_PAL_SIZE	2048
 
-CPalette::CPalette(KString &inName) : CResource(inName)
+USING_NAMESPACE_FIVEL
+
+CPalette::CPalette(TString &inName) : CResource(inName)
 {	
-	KString		name = inName;
+	TString		name = inName;
 	
 	m_CTab = NULL;
 	m_Qtg = NULL;
@@ -95,7 +97,7 @@ void CPalette::LoadClutResource(void)
 		// Now that we have a valid FSSpec, we can create the file stream & get
 		// the picHandle from the file.
 				
-		LFile *theFile = new LFile(theFSSpec);
+		PP::LFile *theFile = new PP::LFile(theFSSpec);
 		
 		theFile->OpenResourceFork(fsCurPerm);
 		
@@ -110,7 +112,7 @@ void CPalette::LoadClutResource(void)
 		delete theFile;
 	}
 	
-	catch (const LException& inException) 
+	catch (const PP::LException& inException) 
 	{
 #ifdef DEBUG
 		gDebugLog.Log("Couldn't get palette from file");
@@ -260,10 +262,10 @@ void CPaletteManager::Init(void)
 //
 //	GetPalette - 
 //
-CPalette *CPaletteManager::GetPalette(KString &inName)
+CPalette *CPaletteManager::GetPalette(TString &inName)
 {
 	CPalette	*thePal = NULL;
-	KString		newName;
+	TString		newName;
 
 	// make sure only the .clut extension is used
 	if (inName.Contains("."))

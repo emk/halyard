@@ -4,7 +4,7 @@
 
 #include "CMacroManager.h"
 
-
+USING_NAMESPACE_FIVEL
 /***********************************************************************
  * Function: CMacroManager::GetScript
  *

@@ -16,21 +16,23 @@
 //
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "gamma.h"
 
 #include "CBackWindow.h"
 #include "CPlayerView.h"
 
+USING_NAMESPACE_FIVEL
+
 CBackWindow::CBackWindow()
-	:LWindow()
+	: PP::LWindow()
 {
 	mFadeAfterDraw = false;
 	
 }
 
-CBackWindow::CBackWindow(LStream  *inStream) : LWindow(inStream)
+CBackWindow::CBackWindow(PP::LStream  *inStream) : PP::LWindow(inStream)
 {
 
 }
@@ -39,21 +41,19 @@ CBackWindow::CBackWindow(LStream  *inStream) : LWindow(inStream)
 //	¥ CreateWindow											 [static] [public]
 // ---------------------------------------------------------------------------
 //	Return a newly created Window object initialized from a PPob resource
-CBackWindow*
-CBackWindow::CreateWindow(
-	ResIDT			inWindowID,
-	LCommander*		inSuperCommander)
+CBackWindow* 
+CBackWindow::CreateWindow(PP::ResIDT inWindowID, PP::LCommander* inSuperCommander)
 {
 	SetDefaultCommander(inSuperCommander);
 	SetDefaultAttachable(nil);
 	
 	CBackWindow	*theWindow = static_cast<CBackWindow*>
-						(UReanimator::ReadObjects(ResType_PPob, inWindowID));
+						(PP::UReanimator::ReadObjects(PP::ResType_PPob, inWindowID));
 	ThrowIfNil_(theWindow);
 	
 	try {
 		theWindow->FinishCreate();
-		if (theWindow->HasAttribute(windAttr_ShowNew)) {
+		if (theWindow->HasAttribute(PP::windAttr_ShowNew)) {
 			theWindow->Show();
 		}
 	}
@@ -77,8 +77,8 @@ CBackWindow::DrawSelf()
 	CalcLocalFrameRect(theFrame);
 	
 	//ApplyForeAndBackColors();
-	::RGBBackColor(&Color_Black);
-	::RGBForeColor(&Color_Black);
+	::RGBBackColor(&PP::Color_Black);
+	::RGBForeColor(&PP::Color_Black);
 	::PenMode(patCopy);
 	::PaintRect(&theFrame);	
 		
@@ -94,6 +94,13 @@ CBackWindow::DrawSelf()
 
 /* 
 $Log$
+Revision 1.3  2002/03/04 15:41:16  hamon
+Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
 Revision 1.2  2000/05/11 12:56:09  chuck
 v 2.01 b1
 

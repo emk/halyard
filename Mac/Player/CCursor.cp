@@ -16,13 +16,15 @@
 //
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "CCursor.h"
 
 #include "CPlayerView.h"
 #include "CTouchZone.h"
 #include "CMoviePlayer.h"
+
+USING_NAMESPACE_FIVEL
 
 extern bool gFadedIn;
 
@@ -113,7 +115,7 @@ void CCursorManager::ShowCursor(void)
 //
 //	FindCursor - Given a string, return the cursor constant.
 //
-CursorType CCursorManager::FindCursor(KString &inString)
+CursorType CCursorManager::FindCursor(TString &inString)
 {
 	CursorType	cursor;
 	
@@ -157,7 +159,7 @@ void CCursorManager::CheckCursor(Point &inPoint)
 //
 void CCursorManager::CheckCursor(void)
 {
-	LArray			&paneList = gPlayerView->GetSubPanes();
+	PP::LArray			&paneList = gPlayerView->GetSubPanes();
 		
 #ifdef DEBUG	
 	if (not gFadedIn)
@@ -205,8 +207,8 @@ void CCursorManager::CheckCursor(void)
 void CCursorManager::CheckZones(void)
 {
 	CursorType		theCursor = NO_CURSOR;
-	LArray			&paneList = gPlayerView->GetSubPanes();
-	LArrayIterator	iterator(paneList, LArrayIterator::from_Start);
+	PP::LArray			&paneList = gPlayerView->GetSubPanes();
+	PP::LArrayIterator	iterator(paneList, PP::LArrayIterator::from_Start);
 	CTouchZone		*theButt;
 	bool			found = false;
 	
@@ -357,7 +359,7 @@ void CCursorManager::ChangeCursor(CursorType inCursor, bool inTZone /* = false *
 	if (SetArrow)
 	{
 		mCurrentCursor = ARROW_CURSOR;
-		::MacSetCursor(&UQDGlobals::GetQDGlobals()->arrow);
+		::MacSetCursor(&PP::UQDGlobals::GetQDGlobals()->arrow);
 	}
 	
 	if (prevCursor == NO_CURSOR)
@@ -368,6 +370,13 @@ void CCursorManager::ChangeCursor(CursorType inCursor, bool inTZone /* = false *
 
 /*
 $Log$
+Revision 1.4  2002/03/04 15:41:36  hamon
+Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
 Revision 1.3  2000/05/11 12:56:09  chuck
 v 2.01 b1
 

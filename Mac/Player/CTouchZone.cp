@@ -2,7 +2,7 @@
 	CTouchZone.cp	
    ================================================================================= */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -21,7 +21,7 @@
 #include "CCard.h"
 #include "CPicture.h"
 
-
+USING_NAMESPACE_FIVEL
 /**************************************
 		GLOBALS
 ***************************************/
@@ -36,12 +36,12 @@ extern CursHandle	gHandCursor;
   ==================================================================================*/
 
 CTouchZone::CTouchZone(
-	KRect 			&inBounds, 	// Button rect
-	KString 		&cmd, 		// Command text
+	TRect 			&inBounds, 	// Button rect
+	TString 		&cmd, 		// Command text
 	CPicture		*inPict,	// Default picture
-	KPoint 			&loc, 		// Pic offset??
+	TPoint 			&loc, 		// Pic offset??
 	const CursorType cursor,	// cursor (= HAND_CURSOR)
-	const KString	&secCmd)	// optional second command (= NULL)
+	const TString	&secCmd)	// optional second command (= NULL)
 {
 	mNormalTouch = true;
 
@@ -56,18 +56,18 @@ CTouchZone::CTouchZone(
 	BUTTPCX constructor
   ==================================================================================*/
 
-//	CTouchZone(Rect &r, KString &cmd, char *pict, Point &loc, char *text,
-//				const char *header = nil, const KString &secCmd = nil);
+//	CTouchZone(Rect &r, TString &cmd, char *pict, Point &loc, char *text,
+//				const char *header = nil, const TString &secCmd = nil);
 
 CTouchZone::CTouchZone(
-	KRect 			&inBounds, 
-	KString 		&cmd, 
+	TRect 			&inBounds, 
+	TString 		&cmd, 
 	CPicture		*inPict,
-	KPoint	 		&loc, 
+	TPoint	 		&loc, 
 	const char 		*text, 
 	const CursorType cursor,		// = HAND_CURSOR
 	const char 		*header, 		// = NULL
-	const KString 	&secCmd)		// = NULL
+	const TString 	&secCmd)		// = NULL
 	: CText(header, inBounds, text)
 {
 	mNormalTouch = false;
@@ -78,12 +78,12 @@ CTouchZone::CTouchZone(
 	LButton::FinishCreate();
 }
 
-void CTouchZone::SetupZone(	KRect 			&inBounds, 	// Button rect
-							KString			&cmd, 		// Command text
+void CTouchZone::SetupZone(	TRect 			&inBounds, 	// Button rect
+							TString			&cmd, 		// Command text
 							CPicture		*inPict,	// Default picture
 //							char			*pict, 		// Default pic name
-							KPoint 			&loc, 		// Pic offset??
-							const KString	&secCmd,	// optional second command
+							TPoint 			&loc, 		// Pic offset??
+							const TString	&secCmd,	// optional second command
 							const CursorType cursor)	// cursor
 {
 	Rect	macBounds = inBounds.GetRect();
@@ -100,7 +100,7 @@ void CTouchZone::SetupZone(	KRect 			&inBounds, 	// Button rect
 #endif
 
 	// Skanky hack to set pane ID
-	LArray &paneList = gPlayerView->GetSubPanes();
+	PP::LArray &paneList = gPlayerView->GetSubPanes();
 	SetPaneID((paneList.GetCount()) + 2000);
 
 	// Set private data members

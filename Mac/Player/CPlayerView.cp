@@ -2,7 +2,7 @@
 // CPlayerView.cp
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <ctype.h>
 
@@ -38,6 +38,9 @@ extern bool gInFront;
 // externals
 extern bool 		gFadedIn;
 extern bool			gHideMenuBar;
+
+USING_NAMESPACE_FIVEL
+using namespace PowerPlant;
 
 // 
 //	CPlayerView - create a CPlayerView pane from a PPob resource
@@ -369,12 +372,12 @@ void  CPlayerView::DrawSelf(void)
 //
 // Sets the background picture of a card. Pass 'nil' to delete the current one
 //
-void  CPlayerView::SetBackPic(KString &picName, Rect inRect)
+void  CPlayerView::SetBackPic(TString &picName, Rect inRect)
 {
-	RgnHandle	theClip = nil;
-	KPoint		thePt(0, 0);
+	RgnHandle		theClip = nil;
+	FiveL::TPoint	thePt(0, 0);
 	//Rect		theFrame;
-	KRect		clipRect;
+	FiveL::TRect	clipRect;
 	
 	if (picName == "")
 		mBackPic = nil;
@@ -513,7 +516,7 @@ void CPlayerView::ShowTZones(void)
 {
 	LArray			&paneList = GetSubPanes();
 	LArrayIterator	iterator(paneList, LArrayIterator::from_Start);
-	CTouchZone		*theButt;
+	CTouchZone			*theButt;
 	
 	StColorPenState::Normalize();
 	
@@ -540,8 +543,8 @@ void CPlayerView::CTouch(int16 inLeft, int16 inTop)
 {
 	LArray			&paneList = GetSubPanes();
 	LArrayIterator	iterator(paneList, LArrayIterator::from_Start);
-	CTouchZone		*theButt;
-	bool			done = false;
+	CTouchZone			*theButt;
+	bool				done = false;
 	
 	while ((not done) and (iterator.Next(&theButt)))
 	{
@@ -760,10 +763,10 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 				// see if this is an accelerator for a touch zone
 				LArray			&paneList = GetSubPanes();
 				LArrayIterator	iterator(paneList, LArrayIterator::from_Start);
-				CTouchZone		*theButt;
-				CTouchZone		*theButtOnly = nil;
-				int16			numButts = 0;
-				bool			done = false;
+				CTouchZone			*theButt;
+				CTouchZone			*theButtOnly = nil;
+				int16				numButts = 0;
+				bool				done = false;
 				
 				// if there is only one buttpcx, enter works to hit it
 				while ((iterator.Next(&theButt)) and (not done))
@@ -859,8 +862,8 @@ void CPlayerView::AddKeyBinding(const char inKey, CCard *inCardToJumpTo)
 	if (foundIt)
 		bindIdx--;	// if we found it we have already incremented past it
 		
-	theBind.mTheChar 	= realInKey;
-	theBind.mCardName   = new KString;
+	theBind.mTheChar 		= realInKey;
+	theBind.mCardName  		= new FiveL::TString;
 	*(theBind.mCardName)	= inCardToJumpTo->Name();
 	//theBind.mCard 		= inCardToJumpTo;
 	
@@ -1532,7 +1535,7 @@ void CPlayerView::DoFade(const int8 inTime, const bool inFadeIn)
 //
 // Translate the string 'inText' to the appropriate effect.
 //
-FXType StringToEffect(KString inText)
+FXType FiveL::StringToEffect(TString inText)
 {
 	inText.MakeLower();
 	

@@ -16,7 +16,7 @@
 //					of the machine we are running on.
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <string.h>
 
@@ -27,14 +27,16 @@
 #endif
 
 #include "KLogger.h"
-#include "KString.h"
+#include "TString.h"
 
 #include "CMac5LApp.h"
 #include "CConfig.h"
 #include "CModule.h"
 #include "CVariable.h"
 
-CConfig		*theConfig;				// global so everybody can query for stuff
+USING_NAMESPACE_FIVEL
+
+CConfig		*FiveL::theConfig;				// global so everybody can query for stuff
 
 //
 //	CConfig:
@@ -202,7 +204,7 @@ void CConfig::DefineConfiguration(void)
 //
 bool CConfig::FillDataSpec(FSSpec *theSpec, const char *inName)
 {
-	KString		fileName;
+	TString		fileName;
 	bool		retValue = false;
 	
 	if ((theSpec != NULL) and (inName != NULL))
@@ -218,7 +220,7 @@ bool CConfig::FillDataSpec(FSSpec *theSpec, const char *inName)
 
 bool CConfig::FillScriptSpec(FSSpec *theSpec, const char *inName)
 {
-	KString		fileName;
+	TString		fileName;
 	bool		retValue = false;
 	
 	if ((theSpec != NULL) and (inName != NULL))
@@ -234,7 +236,7 @@ bool CConfig::FillScriptSpec(FSSpec *theSpec, const char *inName)
 
 bool CConfig::FillDebugSpec(FSSpec *theSpec, const char *inName)
 {
-	KString		fileName;
+	TString		fileName;
 	bool		retValue = false;
 	
 	if ((theSpec != NULL) and (inName != NULL))
@@ -254,8 +256,8 @@ bool CConfig::FillDebugSpec(FSSpec *theSpec, const char *inName)
 //
 bool CConfig::FillGraphicsSpec(FSSpec *theSpec, const char *inName)
 {
-	KString		tmpName = inName;
-	KString		fileName;
+	TString		tmpName = inName;
+	TString		fileName;
 	bool		retValue = false;
 	
 	if (theSpec != NULL)
@@ -274,8 +276,8 @@ bool CConfig::FillGraphicsSpec(FSSpec *theSpec, const char *inName)
 //
 bool CConfig::FillCLUTSpec(FSSpec *theSpec, const char *inName)
 {
-	KString		tmpName = inName;
-	KString		fileName;
+	TString		tmpName = inName;
+	TString		fileName;
 	bool		retValue = false;
 	
 	if (theSpec != NULL)
@@ -288,7 +290,7 @@ bool CConfig::FillCLUTSpec(FSSpec *theSpec, const char *inName)
 	return (retValue);
 }
 
-bool CConfig::FillSpec(FSSpec *theSpec, KString &inName)
+bool CConfig::FillSpec(FSSpec *theSpec, TString &inName)
 {
 	Str255		thePath;
 	OSErr		err;
@@ -364,6 +366,13 @@ TrapType CConfig::GetTrapType(short theTrap)
 
 /*
 $Log$
+Revision 1.6  2002/03/04 15:41:34  hamon
+Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
 Revision 1.5  2002/02/04 20:04:22  hamon
 Updated Macintosh engine to compile under CodeWarrior 7.0 (Professional) and tested it lightly.  This will give us a base for future development and testing.
 
@@ -371,7 +380,7 @@ Updated Macintosh engine to compile under CodeWarrior 7.0 (Professional) and tes
 * Added some new libraries.
 * Renamed LTimerTask to CTimerTask to avoid conflict with built-in Metrowerks class.
 * Included C <string.h> header as needed.  This also affects one file in the Common directory, which we'll need to merge into Stable/ later on.
-* We no longer init KString with 'nil', because of function overloading errors.  We use "", the empty string, instead.  We *think* this is a safe change, but the KString code is pretty iffy.
+* We no longer init TString with 'nil', because of function overloading errors.  We use "", the empty string, instead.  We *think* this is a safe change, but the TString code is pretty iffy.
 * Replaced a call to 'max', which can no longer be found in the system headers, with an explicit if statement.
 
 Changes by Elizabeth Hamon with help from Eric Kidd.  Code reviewed by Eric.

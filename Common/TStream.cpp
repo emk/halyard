@@ -22,13 +22,15 @@
     If ask for data and there's none then give signal somehow.
 */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "KLogger.h"
 
 #include "CMac5LApp.h"
 #include "CStream.h"
 #include "CVariable.h"
+
+USING_NAMESPACE_FIVEL
 
 //
 //  Some common character types.
@@ -41,6 +43,7 @@ const char P_OPEN = '(';
 const char P_CLOSE = ')';
 const char SLASH = '\\';
 const char COMMENT = '#';       //Changed MAR 31
+
 
 /************************
 
@@ -73,27 +76,27 @@ bool CStream::whitespace(char ch)
 //
 //  Constructors.
 //
-CStream::CStream() : KString()
+CStream::CStream() : TString()
 {
     reset();
 }
 
-CStream::CStream(const int32 newsize) : KString(newsize)
+CStream::CStream(const int32 newsize) : TString(newsize)
 {
     reset();
 }
 
-CStream::CStream(const char *s) : KString(s)
+CStream::CStream(const char *s) : TString(s)
 {
     reset();
 }
     
-CStream::CStream(const KString &other) : KString(other)
+CStream::CStream(const TString &other) : TString(other)
 {
     reset();
 }
 
-CStream::CStream(const CStream &other) : KString(other)
+CStream::CStream(const CStream &other) : TString(other)
 {
     pos = other.pos;
 }
@@ -238,7 +241,7 @@ void CStream::scanopen(void)
 //
 void CStream::discard(void)
 {
-    KString     junk;
+    TString     junk;
 
     *this >> junk;
 }
@@ -286,9 +289,9 @@ void CStream::scanclose(void)
 //  Return the given characters, substituting variable contents
 //  where appropriate. Should never have to worry about white space.
 //
-KString CStream::copystr(uint32 startPos, uint32 numChars)
+TString CStream::copystr(uint32 startPos, uint32 numChars)
 {
-    KString 	original, result, vname;
+    TString 	original, result, vname;
     int32     	base, curpos, origlen, DEREF = 0;
     char    	ch;
     const char	*s;
@@ -370,13 +373,13 @@ KString CStream::copystr(uint32 startPos, uint32 numChars)
 //  Basic extraction operator. Most others just use this
 //  and then convert the type.
 //
-CStream& CStream::operator>>(KString &dest)
+CStream& CStream::operator>>(TString &dest)
 {
-    KString 	temp;
+    TString 	temp;
     int32     	startPos;
     int32     	dangling_opens = 0;
     char    	ch;
-
+	
     skipwhite();
     if (eof()) 
     {
@@ -440,7 +443,7 @@ CStream& CStream::operator>>(KString &dest)
         scanword();
         dest = copystr(startPos, pos - startPos);
     }
-
+    
     return (*this);
 }
 
@@ -451,11 +454,11 @@ CStream& CStream::operator>>(CStream& (*_f)(CStream &))
     return (_f (*this));
 }
 
-//  KString class handles string to int conversions.
+//  TString class handles string to int conversions.
 //
 CStream& CStream::operator>>(int16 &dest)
 {
-    KString foo;
+    TString foo;
 
     *this >> foo;
     dest = (int16) foo;
@@ -463,11 +466,11 @@ CStream& CStream::operator>>(int16 &dest)
     return (*this);
 }
 
-//  KString class handles string to int conversions.
+//  TString class handles string to int conversions.
 //
 CStream& CStream::operator>>(int32 &dest)
 {
-    KString foo;
+    TString foo;
 
     *this >> foo;
     dest = (int32) foo;
@@ -477,7 +480,7 @@ CStream& CStream::operator>>(int32 &dest)
 
 CStream& CStream::operator>>(uint32 &dest)
 {
-	KString foo;
+	TString foo;
 	
 	*this >> foo;
 	dest = (uint32) foo;
@@ -485,11 +488,11 @@ CStream& CStream::operator>>(uint32 &dest)
 	return (*this);
 }
 
-//  KString class handles string to int conversions.
+//  TString class handles string to int conversions.
 //
 CStream& CStream::operator>>(double &dest)
 {
-    KString foo;
+    TString foo;
 
     *this >> foo;
     dest = (double) foo;
@@ -506,10 +509,10 @@ CStream& CStream::operator>>(double &dest)
 //  indexing of 4 digit coords.  Note had to use a second symbol other than
 //  '$' because of the way 5L handles strings beginning and ending in '$' 
 
-CStream& CStream::operator>>(KRect &r)
+CStream& CStream::operator>>(TRect &r)
 {
     char	ch;
-    KString	temp;
+    TString	temp;
     int32	left, top, right, bottom;
 
     skipwhite();
@@ -537,10 +540,10 @@ CStream& CStream::operator>>(KRect &r)
 //  The if and the else statement were added to check for '$'.  See
 //  previous operator for description of extra code
 
-CStream& CStream::operator>>(KPoint &pt)
+CStream& CStream::operator>>(TPoint &pt)
 {
     char	ch;
-    KString	temp;
+    TString	temp;
     int32	x, y;
 
     skipwhite();

@@ -4,14 +4,17 @@
 
 #pragma once
 
-#include "KHeader.h"
+#include "THeader.h"
 #include "KLogger.h"
 #include "CPalette.h"
 
+BEGIN_NAMESPACE_FIVEL
+
 class	CBackWindow;
 
-class	CMac5LApp : public LApplication
+class	CMac5LApp : public PP::LApplication
 {
+
 	public:
 							CMac5LApp();
 		virtual 			~CMac5LApp();
@@ -25,9 +28,9 @@ class	CMac5LApp : public LApplication
 		bool				OpenScriptAgain(FSSpec *scriptSpec, const char *jumpCard);
 		void				ReDoReDoScript(void);
 
-		Boolean				ObeyCommand(CommandT inCommand, void *ioParam);
+		Boolean				ObeyCommand(PP::CommandT inCommand, void *ioParam);
 		void				FindCommandStatus(
-								CommandT 			inCommand,
+								PP::CommandT 		inCommand,
 								Boolean&			outEnabled,
 								Boolean&			outUsesMark,
 								UInt16&				outMark,
@@ -79,7 +82,7 @@ class	CMac5LApp : public LApplication
 //		CPalette			*mGraphicsPal;
 //		CPalette			*mMoviePal;
 //		PaletteHandle		mCurPal;
-		KString				mReDoCard;		// card to jump to when redo redoscript
+		TString				mReDoCard;		// card to jump to when redo redoscript
 		bool				mReDoReDo;		// waiting for a redo redoscript?
 	
 		bool				GetScriptFile(FSSpec *scriptSpec);
@@ -96,3 +99,5 @@ extern KLogger gDebugLog;
 
 extern Handle clickSound;
 extern WindowPtr gWindow;
+
+END_NAMESPACE_FIVEL

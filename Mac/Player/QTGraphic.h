@@ -17,22 +17,24 @@
 #if !defined (_QTGraphic_h_)
 #define _QTGraphic_h_
 
-#include "KCommon.h"
-#include "KString.h"
-#include "KRect.h"
-#include "KPoint.h"
+#include "TCommon.h"
+#include "TString.h"
+#include "TRect.h"
+#include "TPoint.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 class QTGraphic
 {
 public:
 				QTGraphic();
-				QTGraphic(KString &inPath);
+				QTGraphic(TString &inPath);
 				~QTGraphic();
 
-	void		Create(KString &inPath);
+	void		Create(TString &inPath);
 
-	void		Draw(GWorldPtr inGWorld, KPoint &inPt, bool inTrans = false);
-	void		Draw(GWorldPtr inGWorld, KPoint &inPt, KRect &inRect);
+	void		Draw(GWorldPtr inGWorld, TPoint &inPt, bool inTrans = false);
+	void		Draw(GWorldPtr inGWorld, TPoint &inPt, TRect &inRect);
 	
 
 	long		Width(void);
@@ -46,8 +48,8 @@ protected:
 	void		Toss(void);
 	bool		SetQTGWorld(GWorldPtr inGWorld);
 	bool		SetTransparent(void);
-	bool		SetDestRect(KRect &inRect);
-	bool		NeedClip(KRect &inRect);
+	bool		SetDestRect(TRect &inRect);
+	bool		NeedClip(TRect &inRect);
 
 	inline bool	HaveGraphic(void)
 	{ 
@@ -66,15 +68,24 @@ protected:
 
 	GraphicsImportComponent	m_gi;
 	ImageDescriptionHandle	m_idh;
-	KString					m_path;
+	TString			m_path;
 	uint32					m_size;
 	bool					m_transparent;
 };
+
+END_NAMESPACE_FIVEL
 
 #endif // _QTGraphic_h_
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 15:42:51  hamon
+ Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.1  2000/05/11 13:00:22  chuck
  v 2.01 b1
 

@@ -4,12 +4,14 @@
 
 #pragma once
 
-#include "KPoint.h"
+#include "TPoint.h"
 
 #include <LPane.h>
 #include <LCommander.h>
 
-class  CMoviePlayer : public KObject
+BEGIN_NAMESPACE_FIVEL
+
+class  CMoviePlayer : public TObject
 {
 	public:
       					CMoviePlayer();
@@ -24,7 +26,7 @@ class  CMoviePlayer : public KObject
 		void			Pause(void);
 		void			Resume(void);
 		void			Kill(void);
-		void			SetOrigin(KPoint &inPoint);
+		void			SetOrigin(TPoint &inPoint);
 		
 		bool			AtEnd(TimeValue &inMovieTime);
 		
@@ -48,7 +50,7 @@ class  CMoviePlayer : public KObject
 		bool			mHavePal;
 		bool			mLooping;
 		
-		KPoint			mOrigin;
+		TPoint			mOrigin;
 		Rect			mBounds;
 		
 		TimeValue		mWaitTime;
@@ -74,3 +76,5 @@ class  CMoviePlayer : public KObject
 
 // global
 extern CMoviePlayer gMovieManager;
+
+END_NAMESPACE_FIVEL

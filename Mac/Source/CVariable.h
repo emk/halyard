@@ -9,9 +9,9 @@
 #ifndef _H_CVARIABLE
 #define _H_CVARIABLE
 
-#include "KHeader.h"
+#include "THeader.h"
 
-#include "KBTree.h"
+#include "TBTree.h"
 
 #define DT_LONGDATE		1
 #define DT_DATE			2
@@ -22,12 +22,14 @@
 #define DT_DAY			7
 #define DT_LONGDAY		8
 
+BEGIN_NAMESPACE_FIVEL
+
 //
 //	This is a variable. It consists of the name and the contents
 //	of the variable. It also knows how to convert to a number of
 //	different formats.
 //
-class CVariable : public KBNode 
+class CVariable : public TBNode 
 {
 	public:
 					CVariable(const char *name, const char *data = 0);
@@ -45,14 +47,14 @@ class CVariable : public KBNode
 		void		SetDate(uint32 date, int32 date_type);
 		
 	protected:
-		KString		contents;
+		TString		contents;
 };
 
 //
 //	This class manages a binary tree of variables. Commands to
 //	set and get variable values pass through this manager.
 //
-class CVariableManager : public KBTree 
+class CVariableManager : public TBTree 
 {
 	private:
 
@@ -81,5 +83,7 @@ class CVariableManager : public KBTree
 };
 
 extern CVariableManager gVariableManager;
+
+END_NAMESPACE_FIVEL
 
 #endif

@@ -5,15 +5,15 @@
 
 ***********************************************/
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "KLogger.h"
-#include "KRect.h"
-#include "KPoint.h"
+#include "TRect.h"
+#include "TPoint.h"
 
 #include "CMac5LApp.h"
 #include "CCard.h"
@@ -42,9 +42,9 @@
 
 #include <UInternetConfig.h>
 
-//test
 #include "CMenuUtil.h"
-//end test
+
+USING_NAMESPACE_FIVEL
 
 /**************
 
@@ -244,7 +244,7 @@ void CCard::WakeUp(void)
  ***********************************************************************/
 void CCard::DoCommand(void)
 {
-    KString     opword;
+    TString     opword;
 
     m_Script >> open >> opword;
     opword.MakeLower();
@@ -346,7 +346,7 @@ void CCard::DoCommand(void)
  *  theCommand should look like "(jump aCard)", ie both parens need to
  *  be there.
  ***********************************************************************/
-void CCard::OneCommand(KString &theCommand)
+void CCard::OneCommand(TString &theCommand)
 {
     CStream     saveScript(m_Script);
 
@@ -370,7 +370,7 @@ void CCard::OneCommand(KString &theCommand)
  * Comments:
  *  Adjust the global rect to local coordinates based on mOrigin.
  ***********************************************************************/
-void CCard::AdjustRect(KRect *r)
+void CCard::AdjustRect(TRect *r)
 {
 	r->Offset(mOrigin);
 }
@@ -384,7 +384,7 @@ void CCard::AdjustRect(KRect *r)
  * Comments:
  *  Adjust the global point to local coordinates based on mOrigin.
  ***********************************************************************/
-void CCard::AdjustPoint(KPoint *pt)
+void CCard::AdjustPoint(TPoint *pt)
 {
 	pt->Offset(mOrigin);
 }
@@ -398,7 +398,7 @@ void CCard::AdjustPoint(KPoint *pt)
  * Comments:
  *  Sets the card's local coordinate system.
  ***********************************************************************/
-void CCard::SetOrigin(KPoint &loc)
+void CCard::SetOrigin(TPoint &loc)
 {
     mOrigin = loc;
     gVariableManager.SetLong("_originx", mOrigin.X());
@@ -406,7 +406,7 @@ void CCard::SetOrigin(KPoint &loc)
 }
 void CCard::SetOrigin(int32 inX, int32 inY)
 {
-	KPoint	newOrigin(inX, inY);
+	TPoint	newOrigin(inX, inY);
 	SetOrigin(newOrigin);
 }
 
@@ -419,9 +419,9 @@ void CCard::SetOrigin(int32 inX, int32 inY)
  * Comments:
  *      Offsets the card's local coordinate system by the amount given.
  ***********************************************************************/
-void CCard::OffsetOrigin(KPoint &delta)
+void CCard::OffsetOrigin(TPoint &delta)
 {
-	KPoint newOrigin(mOrigin);
+	TPoint newOrigin(mOrigin);
 	
 	newOrigin.Offset(delta);
 	
@@ -456,11 +456,11 @@ int16 CCard::Evaluate(CStream& conditional)
 {
     int16		globalRes, localRes, result;
     EvalMode	mode = FirstTime;
-    KString     op;
-    KString     modeStr;
-    KString     str1, str2;
+    TString     op;
+    TString     modeStr;
+    TString     str1, str2;
 #ifdef DEBUG
-	KString		origStr1, origStr2, origOp;
+	TString		origStr1, origStr2, origOp;
 #endif
 
     globalRes = localRes = false;
@@ -579,11 +579,11 @@ end:
 *************************/
 /*----------------------------------------------------------------
   	Log _Graphic_X and _Graphic_Y for variable manager
-  	Requires KRect bounds to already be offset from origin.
+  	Requires TRect bounds to already be offset from origin.
   	_Graphic_X and _Graphic_Y hold bottom & right pixel coordinates 
   	of latest drawn graphic that called this.
 ------------------------------------------------------------------*/
-void CCard::UpdateSpecialVariablesForGraphic(KRect bounds)
+void CCard::UpdateSpecialVariablesForGraphic(TRect bounds)
 {
 	Rect sides = bounds.GetRect();
 	gVariableManager.SetLong("_Graphic_X", (short) sides.right);
@@ -605,7 +605,7 @@ void CCard::UpdateSpecialVariablesForGraphic(KRect bounds)
 ------------------------------------------------*/
 void CCard::DoAdd()
 {
-	KString		theVarName;
+	TString		theVarName;
 	int32		theAmount;
 	int32		theOrigValue;
 	int32		theResValue;
@@ -631,8 +631,8 @@ void CCard::DoAdd()
 //
 void CCard::DoAudio(void)
 {
-	KString		audio_file;
-	KString		flag;
+	TString		audio_file;
+	TString		flag;
 	int32		offset = 0;
 	int32		volume = 100;
 	int32		fade_time = 0;
@@ -676,7 +676,7 @@ void CCard::DoAudio(void)
 //
 void CCard::DoAudioKill(void)
 {
-	KString		loop_flag;
+	TString		loop_flag;
 	int32		fade_time = 0;
 	bool		do_kill_loops = FALSE;
 	
@@ -709,8 +709,8 @@ void CCard::DoAudioKill(void)
 //
 void CCard::DoAudioPlay(void)
 {
-	KString		audio_file;
-	KString		flag;
+	TString		audio_file;
+	TString		flag;
 	int32		the_offset = 0;
 	int32		the_volume = 100;
 	int32		the_fade_time = 0;
@@ -785,8 +785,8 @@ void CCard::DoAudioWait(void)
 -----------------------------------------------------------------*/
 void CCard::DoBackground()
 {
-    KString     TempCmd, picname;
-    KRect     	loc;
+    TString     TempCmd, picname;
+    TRect     	loc;
     Rect		macLoc;
     
     m_Script >> picname >> loc;
@@ -852,7 +852,7 @@ void CCard::DoBlippo()
 void CCard::DoBlueramp()
 {
 #ifdef CBO_FIX
-    KRect bounds;
+    TRect bounds;
 
     m_Script >> bounds;
     Blueramp(bounds);
@@ -869,10 +869,10 @@ void CCard::DoBlueramp()
 void CCard::DoBox()
 {
 	CPlayerBox	*boxPtr;
-    KRect		bounds;
+    TRect		bounds;
     Rect		macBounds;
     int16		color, lineThickness = 1;
-    KString		fill;
+    TString		fill;
     Boolean		theFill = false;
 
 
@@ -910,14 +910,14 @@ void CCard::DoBox()
 void CCard::DoBrowse()
 {
 	
-	KString theURL;
+	TString theURL;
 	
 	m_Script >> theURL;
 	
 	long startSel = 0;
    	long endSel = theURL.Length();
   	
-    if (UInternetConfig::PP_ICAvailable())	
+    if (PP::UInternetConfig::PP_ICAvailable())	
     {
     	#ifdef DEBUG
     		gDebugLog.Log("PP_IC Available");
@@ -928,7 +928,7 @@ void CCard::DoBrowse()
     	// if Internet Explorer was not previously running. 
     	// Therefore we need to show the menu bar here, before we call PP_ICLaunchURL. 
     	gMenuUtil.ShowMenuBar();
-        UInternetConfig::PP_ICLaunchURL("\p", (char *) theURL.GetString(), endSel, &startSel, &endSel);
+        PP::UInternetConfig::PP_ICLaunchURL("\p", (char *) theURL.GetString(), endSel, &startSel, &endSel);
     	
     }
     else
@@ -951,13 +951,13 @@ void CCard::DoBrowse()
 
 void CCard::DoButtpcx()
 {
-    KRect       bounds;
-    KPoint      buttLoc;
+    TRect       bounds;
+    TPoint      buttLoc;
 	const char		*theHeadName = nil;
     CPicture    *thePicture = nil;
-    KString     theHeaderName, picname, theCommand, cmdText, Text, scmdText;
-    KString     secondCommand;
-    KString		cursorType;
+    TString     theHeaderName, picname, theCommand, cmdText, Text, scmdText;
+    TString     secondCommand;
+    TString		cursorType;
     CursorType	cursor = HAND_CURSOR;
     CursorType	tmpCursor = UNKNOWN_CURSOR;
 
@@ -1032,10 +1032,10 @@ void CCard::DoButtpcx()
 //
 void CCard::DoCheckDisc()
 {
-	KString		vol_name;
-	KString		wrong_disc;			// where to jump if wrong disc 
-	KString		no_disc;			// where to jump if no disc
-	KString		jump_card;			// which one of these two to jump to
+	TString		vol_name;
+	TString		wrong_disc;			// where to jump if wrong disc 
+	TString		no_disc;			// where to jump if no disc
+	TString		jump_card;			// which one of these two to jump to
 	int32		check_disc;
 	bool		do_jump = FALSE;
 	
@@ -1111,9 +1111,9 @@ void CCard::DoCheckDisc()
 //
 void CCard::DoCheckVol()
 {
-	KString		vol_name;
-	KString		real_path_var;
-	KString		no_volume;
+	TString		vol_name;
+	TString		real_path_var;
+	TString		no_volume;
 	
 	m_Script >> vol_name >> real_path_var;
 	
@@ -1155,7 +1155,7 @@ void CCard::DoCheckVol()
 ------------------------------------------------------------------------*/
 void CCard::DoClose()
 {
-    KString     filename;
+    TString     filename;
 
     m_Script >> filename;
 
@@ -1205,7 +1205,7 @@ void CCard::DoCursor()
 {
 	CursorType	theCursor = ARROW_CURSOR;
 	CursorType	tmpCursor;
-	KString		cursorStr;
+	TString		cursorStr;
 	bool		forceShow = false;
 	
 	if (m_Script.more())
@@ -1244,7 +1244,7 @@ void CCard::DoDebug()
  ---------------------------------------------------------*/
 void CCard::DoDiv()
 {
-    KString		theVarName;
+    TString		theVarName;
     double		theAmount;
     int32		theOrigValue;
     int32		theResValue;
@@ -1306,7 +1306,7 @@ void CCard::DoExit()
 -----------------------------------------------------------------*/
 void CCard::DoFade()
 {
-    KString     direction;
+    TString     direction;
     int16       steps = 1;
 
     m_Script >> direction;
@@ -1343,9 +1343,9 @@ void CCard::DoFade()
 void CCard::DoHighlight()
 {
 #ifdef CBO_FIX
-    KString     picName;
+    TString     picName;
     Picture     *thePicture;
-    KPoint       pt;
+    TPoint       pt;
 
     m_Script >> picName;
 
@@ -1375,9 +1375,9 @@ void CCard::DoHidemouse()
 void CCard::DoIf()
 {
     CStream     conditional;
-
+	
     m_Script >> conditional;
-    
+
     conditional.reset();
 
     if (Evaluate(conditional)) 
@@ -1407,8 +1407,8 @@ void CCard::DoIf()
 -----------------------------------------------------------------------*/
 void CCard::DoInput()
 {
-    KString     theVarName, mask, style, required;
-    KRect		bounds;
+    TString     theVarName, mask, style, required;
+    TRect		bounds;
     Rect		macBounds;
     int16       fRequire = false;
 
@@ -1447,7 +1447,7 @@ void CCard::DoInput()
 ---------------------------*/
 void CCard::DoJump()
 {
-    KString     jumpCard;
+    TString     jumpCard;
 
     m_Script >> jumpCard;
 
@@ -1488,8 +1488,8 @@ void CCard::DoKey()
 -------------------------------------------------------------*/
 void CCard::DoKeybind()
 {
-    KString 	keyEquiv; 
-    KString		linkCard;
+    TString 	keyEquiv; 
+    TString		linkCard;
 	CCard		*theCard;
 	char		theChar;
 	
@@ -1546,7 +1546,7 @@ void CCard::DoKill()
 void CCard::DoLine()
 {
 	CPlayerLine	*linePtr;
-    KPoint  	a, b;
+    TPoint  	a, b;
     int16   	color, thickness = 1;
     Rect		theRect;
 
@@ -1580,8 +1580,8 @@ void CCard::DoLine()
 void CCard::DoLoadpal()
 {
 	CPalette	*thePal = nil;
-    KString 	palname;
-    KString		flag;
+    TString 	palname;
+    TString		flag;
     bool		noload = false;
     bool		lock = false;
     bool		unlock = false;
@@ -1633,10 +1633,10 @@ void CCard::DoLoadpal()
 void CCard::DoLoadpic()
 {
 	CPlayerPict	*pictPtr;
-    KString     TempCmd, picname, flag;
+    TString     TempCmd, picname, flag;
     CPicture    *thePicture = NULL;
     CPalette	*thePalette = NULL;
-    KPoint	    loc;
+    TPoint	    loc;
     bool       	matte = false;
     bool		noshow = false;
     bool		lock = false;
@@ -1675,7 +1675,8 @@ void CCard::DoLoadpic()
 	
 	// GetBounds returns rect with (0,0,width, height)
 	// We need to offset this before calling UpdateGraphicsForSpecialVariables.
-	KRect bounds = thePicture->GetBounds();	
+	TRect bounds; 
+	bounds = thePicture->GetBounds();	
 	bounds.Offset(loc);
 	UpdateSpecialVariablesForGraphic(bounds);
 
@@ -1714,7 +1715,7 @@ void CCard::DoLoadpic()
 ----------------------------------------------------------*/
 void CCard::DoLock()
 {
-    KString     clear;
+    TString     clear;
     bool		doClear = false;
 
     if (m_Script.more())
@@ -1751,7 +1752,7 @@ void CCard::DoLock()
 --------------------------------------------------------------------*/
 void CCard::DoLookup()
 {
-    KString     searchString, param, filename;
+    TString     searchString, param, filename;
     int16       numFields = 0;
 
     m_Script >> filename;
@@ -1782,11 +1783,11 @@ void CCard::DoLookup()
     VAR are an optional number of local variables that vary depending
     upon the particular macrodef.
 ---------------------------------------------------------------------*/
-void CCard::DoMacro(KString &name)
+void CCard::DoMacro(TString &name)
 {
 	CStream		saveScript(m_Script);
     CIndex		*theMacro;
-    KString		vname, contents;
+    TString		vname, contents;
     int16		vnum;
     CVariable	*local, *temp, *oldlocal;
 
@@ -1840,7 +1841,7 @@ void CCard::DoMacro(KString &name)
 	m_Script >> open >> discard >> discard; // toss (macrodef name
 	
 	// Save the origin so we can reset it when the macro is done.
-	KPoint		saveOrigin(mOrigin);
+	TPoint		saveOrigin(mOrigin);
 
 	mStopped = false;
 			
@@ -1877,7 +1878,7 @@ void CCard::DoMacro(KString &name)
 void CCard::DoMicro()
 {
 #ifdef DONT_DO_THIS
-	KString     strEffect;
+	TString     strEffect;
     FXType      theEffect;
 
     m_Script >> strEffect;
@@ -1931,7 +1932,7 @@ void CCard::DoNap()
 ------------------------------------------------------------------*/
 void CCard::DoOpen()
 {
-    KString     filename, kind;
+    TString     filename, kind;
     char		*slashPtr;
     FileKind    fKind = fReadOnly;
 
@@ -1969,7 +1970,7 @@ void CCard::DoOpen()
 --------------------------------------------------------------*/
 void CCard::DoOrigin()
 {
-    KPoint   delta;
+    TPoint   delta;
 
     m_Script >> delta;
 
@@ -1987,10 +1988,10 @@ void CCard::DoOrigin()
 void CCard::DoOval()
 {
 	CPlayerOval	*ovalPtr;
-    KRect		bounds;
+    TRect		bounds;
     Rect		macBounds;
     int16		color, lineThickness = 1;
-    KString		fill;
+    TString		fill;
     Boolean		theFill = false;
 
 
@@ -2082,9 +2083,9 @@ void CCard::DoPlay()
 -------------------------------------------------------------*/
 void CCard::DoPlayQTFile()
 {
-	KString			theQTFile;
-	KString			thePal;
-	KPoint			movieOrigin(0, 0);
+	TString			theQTFile;
+	TString			thePal;
+	TPoint			movieOrigin(0, 0);
 	const char		*thePalStr = NULL;
 	int32			theOffset = 0;
 	bool			audioOnly = false;
@@ -2138,7 +2139,7 @@ void CCard::DoPlayQTFile()
 //
 void CCard::DoPlayQTLoop()
 {
-	KString		theQTFile;
+	TString		theQTFile;
 	int32		theFadeTime = 0;
 	bool		audioOnly = false;
 	
@@ -2170,9 +2171,9 @@ void CCard::DoPlayQTLoop()
 //
 void CCard::DoPlayQTRect()
 {
-	KString		theQTFile;
-	KString		thePal;
-	KPoint		thePT;
+	TString		theQTFile;
+	TString		thePal;
+	TPoint		thePT;
 	
 	m_Script >> thePT;
 	
@@ -2187,8 +2188,8 @@ void CCard::DoPlayQTRect()
 	
 void CCard::DoPreloadQTFile()
 {
-	KString 	theQTFile;
-	KString		syncFlag;
+	TString 	theQTFile;
+	TString		syncFlag;
 	int32		tenths = 0;
 	bool		audioOnly = false;
 	bool		doSync = false;
@@ -2245,8 +2246,8 @@ void CCard::DoPreloadQTFile()
 void CCard::DoPrint()
 {
 #ifdef CBO_FIX
-    KString     just;
-    KString     text;
+    TString     just;
+    TString     text;
 
     m_Script >> just >> text;
 
@@ -2275,9 +2276,9 @@ void CCard::DoPrint()
 -------------------------------------------------------------------*/
 void CCard::DoRead()
 {
-    KString         filename, vname, delimstr;
+    TString         filename, vname, delimstr;
     unsigned char   delim;
-    KString         res;
+    TString         res;
 
     m_Script >> filename >> vname;
 
@@ -2313,7 +2314,7 @@ void CCard::DoRead()
 //
 void CCard::DoReDoScript()
 {
-	KString		theCard;
+	TString		theCard;
 	
 	m_Script >> theCard;
 	
@@ -2336,7 +2337,7 @@ void CCard::DoRefresh(void)
 //
 void CCard::DoResetOrigin(void)
 {
-	KPoint		newOrigin(0, 0);
+	TPoint		newOrigin(0, 0);
 	
 	if (m_Script.more())
 		m_Script >> newOrigin;
@@ -2386,7 +2387,7 @@ void CCard::DoReturn()
 ------------------------------------------------------------------------*/
 void CCard::DoRewrite()
 {
-    KString		searchString, param, filename;
+    TString		searchString, param, filename;
     int16		numFields = 0;
 
     m_Script >> filename;
@@ -2417,7 +2418,7 @@ void CCard::DoRewrite()
 void CCard::DoRnode()
 {
 #ifdef CBO_FIX
-    KString NodeKey;
+    TString NodeKey;
 
     m_Script >> NodeKey;
    //   gHeaderManager.Remove(NodPt);
@@ -2506,9 +2507,9 @@ void CCard::DoSearch()
 -----------------------------------------*/
 void CCard::DoSet()
 {
-    KString     	vname;
-    KString			value;
-    KString			flag;
+    TString     	vname;
+    TString			value;
+    TString			flag;
     uint32			date;
     int32			date_type;
 	
@@ -2590,7 +2591,7 @@ void CCard::DoStill()
 ------------------------------------------------*/
 void CCard::DoSub()
 {
-	KString 	theVarName;
+	TString 	theVarName;
 	uint32		theAmount;
 	uint32		theOrigValue;
 	uint32		theResValue;
@@ -2620,8 +2621,8 @@ void CCard::DoSub()
 void CCard::DoText()
 {
 	CPlayerText	*textPtr;
-	KRect		bounds;
-	KString 	header, text;
+	TRect		bounds;
+	TString 	header, text;
 
     m_Script >> header >> bounds >> text;
 
@@ -2645,7 +2646,7 @@ void CCard::DoText()
 void CCard::DoTimeout()
 {
 	CCard		*theCard;
-    KString 	cardName;
+    TString 	cardName;
     int32     	secs = 0;
 
     m_Script >> secs >> cardName;
@@ -2674,13 +2675,13 @@ void CCard::DoTimeout()
 void CCard::DoTouch()
 {
     char        ch_sep;
-    KRect       bounds;
-    KPoint		loc;
+    TRect       bounds;
+    TPoint		loc;
     CPicture	*thePicture = NULL;
-    KString     theCommand, SecondCommand;
-    KString     cmdText, scmdText;
-    KString     picname;
-    KString		cursorType;
+    TString     theCommand, SecondCommand;
+    TString     cmdText, scmdText;
+    TString     picname;
+    TString		cursorType;
     CursorType	cursor = HAND_CURSOR;
     CursorType	tmpCursor;
 
@@ -2765,7 +2766,7 @@ void CCard::DoTouch()
 ------------------------------------------------------------*/
 void CCard::DoUnblippo()
 {
-    KString	effect;
+    TString	effect;
     int32   delay = 0;
     FXType	theEffect = kFXNone;
 
@@ -2801,7 +2802,7 @@ void CCard::DoUnblippo()
 ------------------------------------------------------------*/
 void CCard::DoUnlock()
 {
-    KString	effect;
+    TString	effect;
     int32   delay = 0;
     FXType	theEffect = kFXNone;
 
@@ -2833,7 +2834,7 @@ void CCard::DoUnlock()
 void CCard::DoVideo()
 {
 #ifdef CBO_FIX
-    KString effect;
+    TString effect;
     Effect  theEffect;
 
     m_Script >> effect;
@@ -2907,7 +2908,7 @@ void CCard::DoWait()
 -------------------------------------------------------------*/
 void CCard::DoWrite()
 {
-    KString     filename, data;
+    TString     filename, data;
 
     m_Script >> filename >> data;
 
@@ -3025,7 +3026,7 @@ CCard *CCardManager::GetCurCard(void)
 //
 //	DoOneCommand
 //
-void CCardManager::DoOneCommand(KString &theCommand)
+void CCardManager::DoOneCommand(TString &theCommand)
 {
 	ASSERT(mCurrentCard != NULL);
 	
@@ -3129,7 +3130,7 @@ void CCardManager::DoExit(int16 inSide)
 }
 
 #ifdef DEBUG
-void CCardManager::DoReDoScript(KString &cardName)
+void CCardManager::DoReDoScript(TString &cardName)
 {
 	mReDoScript = true;
 	mReDoCard = cardName;
@@ -3206,7 +3207,7 @@ void CCardManager::MakeNewIndex(CIndexFile *inFile, const char *inName,
 void CCardManager::RemoveAll()
 {
 	mCardList.RemoveAll();
-	KBTree::RemoveAll();
+	TBTree::RemoveAll();
 }
 
 //

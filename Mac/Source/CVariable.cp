@@ -4,7 +4,7 @@
 
 */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <string.h>
 
@@ -20,9 +20,11 @@
 
 #include "Math64.h"
 
+USING_NAMESPACE_FIVEL
+
 //  Initialize the variable.
 //
-CVariable::CVariable(const char *name, const char *data) : KBNode(name)
+CVariable::CVariable(const char *name, const char *data) : TBNode(name)
 {
     if (data)
         contents = data;
@@ -35,7 +37,7 @@ CVariable::CVariable(const char *name, const char *data) : KBNode(name)
 void CVariable::SetDate(uint32 date, int32 date_type)
 {	
 	char		dateStr[255];
-	KString		result;
+	TString		result;
 	char		*strPtr;
 	char		*strPtr2;
 
@@ -141,7 +143,7 @@ void CVariable::SetDate(uint32 date, int32 date_type)
 
 //  Initialize the local variable tree.
 //
-CVariableManager::CVariableManager() : KBTree()
+CVariableManager::CVariableManager() : TBTree()
 {
     localroot = 0;
 
@@ -352,8 +354,8 @@ void CVariableManager::SetDouble(const char *name, const double data)
 //
 bool CVariableManager::IsSpecial(const char *name)
 {
-	KString			vname(name);
-	KString			str;
+	TString			vname(name);
+	TString			str;
 	static Str255	dateStr;
 	UInt32			timeSecs;
 	bool			retValue = false;

@@ -2,7 +2,7 @@
 
     CStream
 
-    An input class based on KString.
+    An input class based on TString.
     Allows >> style setting.
 
 ***************************************/
@@ -10,15 +10,17 @@
 #ifndef _H_CSTREAM
 #define _H_CSTREAM
 
-#include "KHeader.h"
+#include "THeader.h"
 
-#include "KString.h"
-#include "KRect.h"
-#include "KPoint.h"
+#include "TString.h"
+#include "TRect.h"
+#include "TPoint.h"
 
-class CStream : public KString 
+BEGIN_NAMESPACE_FIVEL
+
+class CStream : public FiveL::TString 
 {
-
+	
     protected:
 
       	uint32			pos;
@@ -30,7 +32,7 @@ class CStream : public KString
         CStream();
         CStream(const int32 newsize);
         CStream(const char *s);
-        CStream(const KString &other);
+        CStream(const TString &other);
         CStream(const CStream &other);
 
         char 			curchar(void); 
@@ -44,25 +46,27 @@ class CStream : public KString
         virtual void    reset(void);
         virtual void    skipwhite(void);
 
-        virtual KString copystr(uint32 startPos, uint32 numChars);
+        virtual TString copystr(uint32 startPos, uint32 numChars);
 
         virtual void    scanword(void);
         virtual void    scanopen(void);
         virtual void    scanclose(void);
         virtual void    discard(void);
 
-        virtual CStream&    operator>>(KString &dest);
+        virtual CStream&    operator>>(TString &dest);
         virtual CStream&    operator>>(CStream& (*_f)(CStream &));
         virtual CStream&    operator>>(int16 &dest);
         virtual CStream&    operator>>(int32 &dest);
         virtual CStream&	operator>>(uint32 &dest);
         virtual CStream&    operator>>(double &dest);
-        virtual CStream&    operator>>(KRect &r);
-        virtual CStream&    operator>>(KPoint &pt);
+        virtual CStream&    operator>>(TRect &r);
+        virtual CStream&    operator>>(TPoint &pt);
 };
 
 inline CStream& open(CStream &src) { src.scanopen(); return src; }
 inline CStream& close(CStream &src) { src.scanclose(); return src; }
 inline CStream& discard(CStream &src) { src.discard(); return src; }
+
+END_NAMESPACE_FIVEL
 
 #endif

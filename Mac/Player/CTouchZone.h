@@ -16,28 +16,29 @@
 
 #pragma once
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "CText.h"
-#include "KString.h"
+#include "TString.h"
 #include "CPicture.h"
 #include "CCursor.h"
 
 #include <LMouseTracker.h>
+BEGIN_NAMESPACE_FIVEL
 
-class CTouchZone : public LButton, public LCommander, public CText, public LMouseTracker 
+class CTouchZone : public PP::LButton, public PP::LCommander, public CText, public PP::LMouseTracker 
 {
 	public:
 		enum { class_ID = 'PlTz' };	// Class ID - needs to be unique & not all lower-case
 	
 		// Standard constructor
-		CTouchZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, 
-					const CursorType = HAND_CURSOR, const KString &SecondCmd = "");
+		CTouchZone(TRect &r, TString &cmd, CPicture *inPict, TPoint &loc, 
+					const CursorType = HAND_CURSOR, const TString &SecondCmd = "");
 	
 		// This constructor is used for the 'Buttpcx' command
-		CTouchZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, const char *text,
+		CTouchZone(TRect &r, TString &cmd, CPicture *inPict, TPoint &loc, const char *text,
 					const CursorType = HAND_CURSOR,
-					const char *header = nil, const KString &secCmd = "");
+					const char *header = nil, const TString &secCmd = "");
 					
 		// Destructor
 		virtual 	~CTouchZone();
@@ -54,16 +55,16 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		CursorType	GetCursor(void) { return (mCursor); }
 		
 	private:
-		KString     mCommand;
-		KString     mSecondCommand;  //for second command support.
-		KPoint       mPictLoc;
+		TString     mCommand;
+		TString     mSecondCommand;  //for second command support.
+		TPoint       mPictLoc;
 		CPicture	*mPicture;		// pict & hilite pict that we use in the touchzone
 		bool		mNormalTouch;	// to distinguish touchzones from buttpcx's
 		CursorType	mCursor;
 		
 	protected:
-		void		SetupZone(KRect &r, KString &cmd, CPicture *inPict, KPoint &loc, 
-							const KString &SecondCmd = "", const CursorType cursor = HAND_CURSOR);
+		void		SetupZone(TRect &r, TString &cmd, CPicture *inPict, TPoint &loc, 
+							const TString &SecondCmd = "", const CursorType cursor = HAND_CURSOR);
 			
 		virtual Boolean PointIsInFrame(SInt32 inHoriz, SInt32	inVert) const
 		{
@@ -73,3 +74,4 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		virtual void	FinishCreateSelf(); 
 		virtual void	DrawSelf();
 };
+END_NAMESPACE_FIVEL

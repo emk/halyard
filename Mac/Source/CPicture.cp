@@ -2,7 +2,7 @@
 //	CPicture.cp
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <stdio.h>
 #include <PictUtils.h>
@@ -18,10 +18,12 @@
 #include "CVariable.h"
 #include "CModule.h"
 
+USING_NAMESPACE_FIVEL
+
 //
 //	CPicture - Constructor
 //
-CPicture::CPicture(KString &inName) : CResource(inName)
+CPicture::CPicture(TString &inName) : CResource(inName)
 {
 	m_Qtg = NULL;
 	
@@ -115,14 +117,14 @@ void CPicture::UpdatePriority(void)
 //
 //	Draw - Draw the picture.
 //
-void CPicture::Draw(KPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte /* = false */)
+void CPicture::Draw(TPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte /* = false */)
 {
 	if (IsUnloaded())
 		Load();
 	
 	m_Origin = inPt;
 			
-	StColorPenState::Normalize();
+	PP::StColorPenState::Normalize();
 	
 	if (m_Qtg != NULL)
 		m_Qtg->Draw(inGWorldPtr, inPt, inMatte);		
@@ -131,14 +133,14 @@ void CPicture::Draw(KPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte /* = false
 //
 //	Draw - Draw the picture.
 //
-void CPicture::Draw(KPoint &inPt, GWorldPtr inGWorldPtr, KRect &inRect)
+void CPicture::Draw(TPoint &inPt, GWorldPtr inGWorldPtr, TRect &inRect)
 {
 	if (IsUnloaded())
 		Load();
 		
 	m_Origin = inPt;
 	
-	StColorPenState::Normalize();
+	PP::StColorPenState::Normalize();
 	
 	if (m_Qtg != NULL)
 		m_Qtg->Draw(inGWorldPtr, inPt, inRect);
@@ -147,7 +149,7 @@ void CPicture::Draw(KPoint &inPt, GWorldPtr inGWorldPtr, KRect &inRect)
 //
 //	Hilite - Draw the hilite picture.
 //
-void CPicture::Hilite(KPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte /* = true */)
+void CPicture::Hilite(TPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte /* = true */)
 {
 	CPicture	*hiPict = NULL;
 	
@@ -192,9 +194,9 @@ CTabHandle CPicture::GetColorTable(void)
 //
 //	GetBounds - Get the bounds of the graphic.
 //
-KRect CPicture::GetBounds(void)
+TRect CPicture::GetBounds(void)
 {
-	KRect	bounds;
+	TRect	bounds;
 	
 	if (IsUnloaded())
 		Load();
@@ -223,9 +225,9 @@ void CPicture::SetSize(uint32 inNewSize)
 //  GetPicture - Get the given picture. If it's not there add it to the
 //  resource list.
 //
-CPicture *CPictureManager::GetPicture(KString &inName)
+CPicture *CPictureManager::GetPicture(TString &inName)
 {
-	KString		thePictName;
+	TString		thePictName;
     CPicture	*thePict = NULL;
 
 	thePict = (CPicture *) GetResource(inName);

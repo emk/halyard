@@ -4,13 +4,15 @@
 
 *********************/
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "KLogger.h"
 #include "CHeader.h"
+
+USING_NAMESPACE_FIVEL
 
 //
 //  Let Index ancestor construct based on these values.
@@ -43,7 +45,7 @@ CHeader::~CHeader()
 void CHeader::ParseScript(void)
 {
 
-    KString     align, fontname;
+    TString     align, fontname;
     int16		offset;				// new parameter
 
     // (CHeader HNAME FONTNAME...

@@ -17,7 +17,9 @@
 #pragma once
 #include "CPlayerBox.h"
 
-class CPlayerOval : public LPane {
+BEGIN_NAMESPACE_FIVEL
+
+class CPlayerOval : public PP::LPane {
 public:
 	enum { class_ID = 'PlOv' };	// Class ID - needs to be unique & not all lower-case
 
@@ -38,3 +40,5 @@ protected:
 
 	virtual void	DrawSelf();	
 };
+
+END_NAMESPACE_FIVEL

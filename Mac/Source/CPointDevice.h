@@ -12,9 +12,9 @@
 #ifndef _H_CPOINTDEVICE
 #define _H_CPOINTDEVICE
 
-#include "KObject.h"
+#include "TObject.h"
 
-class CPointDevice : KObject 
+class CPointDevice : TObject 
 {
 
   	public:

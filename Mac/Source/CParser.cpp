@@ -18,7 +18,7 @@
 #ifdef WIN32
 #include "stdafx.h"
 #else
-#include "KHeader.h"
+#include "THeader.h"
 #endif
 
 #include "KLogger.h"
@@ -37,6 +37,8 @@
 
 //#include "LUtil.h"
 //#include "Globals.h"
+
+USING_NAMESPACE_FIVEL
 
 CParser::CParser()
 {
@@ -62,7 +64,7 @@ CParser::~CParser()
 //
 bool CParser::Parse(CIndexFile *inFile)
 {
-	KString		theName;
+	TString		theName;
 	int32		iType;
 	int32		startPos;
 	int32		endPos;
@@ -165,7 +167,7 @@ int32 CParser::findStart(void)
 //
 int32 CParser::findClose(void)
 {
-	KString			theType;
+	TString			theType;
 	int16			parenLevel = 0;
 	unsigned char	ch;
 	bool			done = false;	
@@ -220,7 +222,7 @@ int32 CParser::findClose(void)
 
 int32 CParser::findType(void)
 {
-	KString			theType;
+	TString			theType;
 	int32			iType = ILLEGAL_TYPE;
 
 	if (getString(theType))
@@ -256,7 +258,7 @@ int32 CParser::findType(void)
 //
 //	findName - Get the next identifier out of the input file.
 //
-bool CParser::findName(KString &inString)
+bool CParser::findName(TString &inString)
 {	
 	if (not getString(inString))
 	{
@@ -284,7 +286,7 @@ bool CParser::findName(KString &inString)
 //				memory to just fit the string and return it. Skip
 //				white space before the string.
 //
-bool CParser::getString(KString &inString)
+bool CParser::getString(TString &inString)
 {
 	unsigned char	inBuf[128];	
 	int16			strLen = 0;
@@ -352,7 +354,7 @@ unsigned char CParser::getRealChar()
 unsigned char CParser::getChar(void)
 {
 	unsigned char	ch;
-
+	
 	inEscape = false;
 
 	if (putCh != 255)					// do we have a put character
@@ -394,10 +396,10 @@ unsigned char CParser::getChar(void)
 
 		curLine++;
 	}
-	else if (ch == '#')
+	else if (ch == '#')	
 		inComment = true;
-	else if (ch == '\\')
-		inEscape = true;
+	else if (ch == '\\') 
+		inEscape = true;						
 
 	return (ch);
 }
@@ -430,6 +432,13 @@ void CParser::getBuffer(void)
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 15:42:01  hamon
+ Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.1  2000/05/11 12:58:09  chuck
  v 2.01 b1
 

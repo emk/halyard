@@ -5,16 +5,18 @@
 #ifndef _H_CPALETTE
 #define _H_CPALETTE
 
-#include "KHeader.h"
-#include "KString.h"
+#include "THeader.h"
+#include "TString.h"
 
 #include "CResource.h"
 #include "QTGraphic.h"
 
+BEGIN_NAMESPACE_FIVEL
+
 class CPalette : public CResource
 {
 	public:
-					CPalette(KString &inName);
+					CPalette(TString &inName);
 		virtual		~CPalette();
 	
 		virtual void	Load(bool firstTime = false);	
@@ -30,7 +32,7 @@ class CPalette : public CResource
 	protected:
 		CTabHandle	m_CTab;	
 		QTGraphic	*m_Qtg;
-		KString		m_FullPath;
+		TString		m_FullPath;
 		bool		m_ClutResource;	
 		
 		void		LoadClutResource();
@@ -45,7 +47,7 @@ class CPaletteManager : public CResourceManager
 					
 		void		Init(void);
 		
-		CPalette	*GetPalette(KString &inName);
+		CPalette	*GetPalette(TString &inName);
 		CPalette	*GetCurrentPalette(void) { return (m_GraphicsPal); }
 		void		SetPalette(CPalette *inPal, bool inGraphPal);
 		RGBColor	GetColor(int32 inIndex);
@@ -64,5 +66,7 @@ class CPaletteManager : public CResourceManager
 };	
 
 extern CPaletteManager gPaletteManager;	
+
+END_NAMESPACE_FIVEL
 		
 #endif

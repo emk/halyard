@@ -4,7 +4,7 @@
 	Draw text on the screen. Combines 'LPane' and 'CText' objects.
    ================================================================================= */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <iostream>
 #include <TextEdit.h>
@@ -15,9 +15,9 @@
 
 #include "CPlayerView.h"
 #include "CPlayerText.h"
-#include "KRect.h"
+#include "TRect.h"
 
-
+USING_NAMESPACE_FIVEL
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerText(&Header, BoundsRect, text)
 		
@@ -28,7 +28,7 @@
 
 CPlayerText::CPlayerText(
 	const char		*inHeader,		// Name of header format to use.
-	const KRect		&inBounds,		// Bouding rect (relative to PlayerView's rect)
+	const TRect		&inBounds,		// Bouding rect (relative to PlayerView's rect)
 	const char 		*inText,		// The 'raw' string (including format chars)
 	const int8		/* ignore */,
 	const int8		/* ignore2 */)		// Ignore these (for compatibility)
@@ -55,8 +55,8 @@ CPlayerText::~CPlayerText()
 void
 CPlayerText::DrawSelf()
 {
-	StColorPenState savePenState;
-	StColorPenState::Normalize();
+	PP::StColorPenState savePenState;
+	PP::StColorPenState::Normalize();
 	
 	DrawText();
 }

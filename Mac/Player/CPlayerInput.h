@@ -16,18 +16,20 @@
 
 #pragma once
 
-#include "KHeader.h"
+#include "THeader.h"
 
-#include "KString.h"
+#include "TString.h"
 
-class CPlayerInput : public LEditField {
+BEGIN_NAMESPACE_FIVEL
+
+class CPlayerInput : public PP::LEditField {
 public:
 	enum { class_ID = 'PlBx' };	// Class ID - needs to be unique & not all lower-case
 
 	// Standard constructor. Will call the SPaneInfo constructor
-	CPlayerInput(	const	KString inVarName,
-							KString	inStyle,
-							KString	inMask,
+	CPlayerInput(	const	TString inVarName,
+							TString	inStyle,
+							TString	inMask,
 							Rect	inBounds,
 							bool	inRequired);
 				
@@ -36,9 +38,9 @@ public:
 	virtual	Boolean		FocusDraw(LPane * /* inSubPane */);
 	
 private:
-	KString				mVarToSet;		// Name of var to receive the text
-	KString				mStyle;			// Style to display in when we're done
-	KString				mMask;			// Input format mask
+	TString				mVarToSet;		// Name of var to receive the text
+	TString				mStyle;			// Style to display in when we're done
+	TString				mMask;			// Input format mask
 	RGBColor			mBackColor;		// our background color
 	bool				mRequired;		// TRUE if some entry is required.
 	bool				mHaveBackColor;	// true if was have a background color
@@ -48,7 +50,8 @@ private:
 };
 
 bool HaveInputUp(void);
+void DoCPlayerInput(TString inVarName, TString inStyle,
+					TString	inMask, Rect inBounds, bool inRequired);
 
-void DoCPlayerInput(KString inVarName, KString inStyle,
-					KString	inMask, Rect inBounds, bool inRequired);
 
+END_NAMESPACE_FIVEL

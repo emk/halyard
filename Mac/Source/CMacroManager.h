@@ -5,9 +5,11 @@
 #ifndef _H_CMACROMANAGER
 #define _H_CMACROMANAGER
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "CIndex.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 class CMacroManager : public CIndexManager 
 {
@@ -19,5 +21,7 @@ class CMacroManager : public CIndexManager
 };
 
 extern CMacroManager gMacroManager;
+
+END_NAMESPACE_FIVEL
 
 #endif

@@ -2,7 +2,7 @@
 	CPlayerInput.cp	
    ================================================================================= */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -22,8 +22,11 @@
 #include "UKeyFilters.h"
 #include "CKeyFilters.h"
 
+USING_NAMESPACE_FIVEL
+using namespace PowerPlant;
+
 static CPlayerInput *theInputThing = nil;
-extern WindowPtr gWindow;
+extern WindowPtr FiveL::gWindow;
 
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerInput
@@ -33,9 +36,9 @@ extern WindowPtr gWindow;
    --------------------------------------------------------------------------------- */
 
 CPlayerInput::CPlayerInput(
-	KString inVarName,
-	KString	inStyle,
-	KString	inMask,
+	TString inVarName,
+	TString	inStyle,
+	TString	inMask,
 	Rect	inBounds,
 	bool	inRequired)
 {
@@ -205,7 +208,7 @@ Boolean CPlayerInput::HandleKeyPress(
 					CalcLocalFrameRect(macBounds);
 					macBounds.left += 1;
 					macBounds.top -= 1;
-					KRect	bounds;
+					FiveL::TRect	bounds;
 					bounds.Set(macBounds);
 					
 	   				new CPlayerText(mStyle, bounds, (char *)theString, 0, 0);
@@ -339,7 +342,7 @@ CPlayerInput::FocusDraw(LPane*	/* inSubPane */)
 	return (focused);
 }	
 	
-bool HaveInputUp(void)
+bool FiveL::HaveInputUp(void)
 {
 	if (theInputThing != nil)
 		return (true);
@@ -347,10 +350,10 @@ bool HaveInputUp(void)
 		return (false);
 }
 
-void DoCPlayerInput(
-	KString inVarName,
-	KString	inStyle,
-	KString	inMask,
+void FiveL::DoCPlayerInput(
+	TString inVarName,
+	TString	inStyle,
+	TString	inMask,
 	Rect	inBounds,
 	bool	inRequired)
 {

@@ -18,8 +18,8 @@
 #if !defined (_CParser_h_)
 #define _CParser_h_
 
-#include "KCommon.h"
-#include "KString.h"
+#include "TCommon.h"
+#include "TString.h"
 
 #include "CIndex.h"
 
@@ -32,6 +32,8 @@
 #define HEADER_TYPE		2
 #define MACRO_TYPE		3
 
+BEGIN_NAMESPACE_FIVEL
+
 class CParser
 {
 
@@ -41,7 +43,7 @@ class CParser
 	
 		bool			Parse(CIndexFile *inFile);
 
-	protected:
+	protected:		
 		int32			filePos;		// current position in file
 		int32			curPos;			// current position in input buffer
 		int32			curBufCount;	// number of characters in input buffer
@@ -60,8 +62,8 @@ class CParser
 		int32			findStart(void);
 		int32			findClose(void);
 		int32			findType(void);
-		bool			findName(KString &inString);
-		bool			getString(KString &inString);
+		bool			findName(TString &inString);
+		bool			getString(TString &inString);
 		unsigned char	getRealChar(void);
 		unsigned char	getChar(void);
 		void			putChar(unsigned char ch);
@@ -69,10 +71,18 @@ class CParser
 		
 };
 
+END_NAMESPACE_FIVEL
 #endif // _CParser_h_
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 15:42:03  hamon
+ Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.1  2000/05/11 12:58:09  chuck
  v 2.01 b1
 

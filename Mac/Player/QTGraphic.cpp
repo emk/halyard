@@ -14,19 +14,21 @@
 // QTGraphic.cpp : 
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 
 #include "CMac5LApp.h"
 #include "QTGraphic.h"
 #include "CConfig.h"
 
+USING_NAMESPACE_FIVEL
+
 QTGraphic::QTGraphic()
 {
 	Init();
 }
 
-QTGraphic::QTGraphic(KString &inPath)
+QTGraphic::QTGraphic(TString &inPath)
 {
 	Init();
 	Create(inPath);
@@ -65,7 +67,7 @@ void QTGraphic::Toss(void)
 	m_size = 0;
 }
 
-void QTGraphic::Create(KString &inPath)
+void QTGraphic::Create(TString &inPath)
 {
 	FSSpec		fsSpec;
 	OSErr		err;
@@ -239,7 +241,7 @@ bool QTGraphic::SetTransparent(void)
 	return (retValue);
 }
 
-bool QTGraphic::SetDestRect(KRect &inRect)
+bool QTGraphic::SetDestRect(TRect &inRect)
 {
 	ComponentResult	cr;
 	Rect			dstRect = inRect.GetRect();
@@ -262,7 +264,7 @@ bool QTGraphic::SetDestRect(KRect &inRect)
 	return (retValue);
 }
 
-bool QTGraphic::NeedClip(KRect &inRect)
+bool QTGraphic::NeedClip(TRect &inRect)
 {
 	if (inRect.Width() < Width())
 		return (true);
@@ -272,10 +274,10 @@ bool QTGraphic::NeedClip(KRect &inRect)
 	return (false);
 }
 
-void QTGraphic::Draw(GWorldPtr inGWorld, KPoint &inPt, bool inTrans /* = false */)
+void QTGraphic::Draw(GWorldPtr inGWorld, TPoint &inPt, bool inTrans /* = false */)
 {
 	ComponentResult	cr;
-	KRect			destRect;
+	TRect			destRect;
 
 	if (HaveGraphic())
 	{
@@ -320,10 +322,10 @@ void QTGraphic::Draw(GWorldPtr inGWorld, KPoint &inPt, bool inTrans /* = false *
 	}
 }
 
-void QTGraphic::Draw(GWorldPtr inGWorld, KPoint &inPt, KRect &inRect)
+void QTGraphic::Draw(GWorldPtr inGWorld, TPoint &inPt, TRect &inRect)
 {
 	ComponentResult	cr;
-	KRect			destRect;
+	TRect			destRect;
 
 	if (HaveGraphic())
 	{
@@ -393,6 +395,13 @@ void QTGraphic::Draw(GWorldPtr inGWorld, KPoint &inPt, KRect &inRect)
 
 /*
  $Log$
+ Revision 1.4  2002/03/04 15:42:49  hamon
+ Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
  Revision 1.3  2002/02/25 11:22:42  hamon
  Added missing graphic  error message to 5L log per Douglas's request.
 

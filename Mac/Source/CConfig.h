@@ -2,7 +2,9 @@
 
 #include "Configuration.h"
 
-#include "KString.h"
+#include "TString.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 class	CConfig 
 {
@@ -18,7 +20,7 @@ class	CConfig
 			bool			FillDataSpec(FSSpec *theSpec, const char *inName);
 			bool			FillDebugSpec(FSSpec *theSpec, const char *inName);
 			bool			FillScriptSpec(FSSpec *theSpec, const char *inName);
-			bool			FillSpec(FSSpec *theSpec, KString &inName);
+			bool			FillSpec(FSSpec *theSpec, TString &inName);
 						
 			Rect			GetScreenRect(void);
 			
@@ -45,3 +47,5 @@ class	CConfig
 };
 		
 extern CConfig *theConfig;
+
+END_NAMESPACE_FIVEL

@@ -18,7 +18,7 @@
 //
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <Palettes.h>
 
@@ -55,8 +55,8 @@
 //
 // constants
 //
-const ResIDT		WIND_Mac5L		= 200;
-const ResIDT		WIND_Mac5L_d	= 202;
+const PP::ResIDT	WIND_Mac5L		= 200;
+const PP::ResIDT	WIND_Mac5L_d	= 202;
 
 //
 // globals
@@ -74,12 +74,16 @@ bool				gPrintDebug = false;		// normally off
 #endif
 bool				gDoShiftScript = false;		// by default, start from beginning
 
+CMenuUtil			gMenuUtil;
+
+BEGIN_NAMESPACE_FIVEL
+
 CFileList			gFileManager;
 CCardManager		gCardManager;
 CMacroManager		gMacroManager;
 CHeaderManager		gHeaderManager;
+
 CVariableManager	gVariableManager;
-CMenuUtil			gMenuUtil;
 CCursorManager		gCursorManager;
 CIndexFileManager	gIndexFileManager;
 CPaletteManager		gPaletteManager;
@@ -96,6 +100,11 @@ KLogger				gDebugLog;
 #endif
 
 CMac5LApp			*gTheApp;
+
+END_NAMESPACE_FIVEL
+
+USING_NAMESPACE_FIVEL
+using namespace PowerPlant;
 
 //Handle				clickSound = NULL;
 
@@ -205,7 +214,7 @@ CMac5LApp::CMac5LApp()
 	// Initialize the modules.
 	gModMan = new CModuleManager;
 
-	KString		homeDir = gModMan->GetMasterPath();
+	FiveL::TString	homeDir = gModMan->GetMasterPath();
 	
 	// Open the log file and append to it.
 	gLog.Init(homeDir.GetString(), "5L", true, true);
@@ -411,7 +420,7 @@ void CMac5LApp::DoAEOpenDoc(
 //
 void CMac5LApp::DoExit(int16 inSide)
 {
-	KString		theCurPal;
+	FiveL::TString theCurPal;
 	Rect		theRect = {0, 0, 480, 640};
 	int32		theCheckDisc;				// want to keep this value
 	bool		goodModule = false;
@@ -721,9 +730,9 @@ void CMac5LApp::RestorePalette(void)
 //
 void CMac5LApp::ReDoScript(const char *curCard)
 {
-	FSSpec	scriptSpec;
-	KString	scriptString;
-	bool	thing;
+	FSSpec			scriptSpec;
+	FiveL::TString	scriptString;
+	bool			thing;
 
 	mScriptRunning = false;
 
@@ -819,7 +828,7 @@ void CMac5LApp::FindCommandStatus(CommandT inCommand,
 void CMac5LApp::ReDoReDoScript(void)
 {
 	FSSpec	scriptSpec;
-	KString	scriptString;
+	FiveL::TString	scriptString;
 	bool	thing = false;
 	
 	if (mReDoReDo)
@@ -986,6 +995,13 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.14  2002/03/04 15:41:49  hamon
+Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
 Revision 1.13  2002/02/26 12:42:19  hamon
 Made changes in order to show and hide the menu bar correctly when launching  the internet browser and returning to the program.
 
@@ -1004,7 +1020,7 @@ Updated Macintosh engine to compile under CodeWarrior 7.0 (Professional) and tes
 * Added some new libraries.
 * Renamed LTimerTask to CTimerTask to avoid conflict with built-in Metrowerks class.
 * Included C <string.h> header as needed.  This also affects one file in the Common directory, which we'll need to merge into Stable/ later on.
-* We no longer init KString with 'nil', because of function overloading errors.  We use "", the empty string, instead.  We *think* this is a safe change, but the KString code is pretty iffy.
+* We no longer init TString with 'nil', because of function overloading errors.  We use "", the empty string, instead.  We *think* this is a safe change, but the TString code is pretty iffy.
 * Replaced a call to 'max', which can no longer be found in the system headers, with an explicit if statement.
 
 Changes by Elizabeth Hamon with help from Eric Kidd.  Code reviewed by Eric.

@@ -4,6 +4,8 @@
 
 #pragma once
 
+BEGIN_NAMESPACE_FIVEL
+
 class CAudioManager
 {
 	public:
@@ -33,4 +35,4 @@ class CAudioManager
 		CAudio		*m_Loop;
 		
 };
-		
+END_NAMESPACE_FIVEL		

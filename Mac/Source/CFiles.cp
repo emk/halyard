@@ -3,17 +3,19 @@
 
 */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <string.h>
 
 #include "KLogger.h"
-#include "KString.h"
+#include "TString.h"
 
 #include "CMac5LApp.h"
 #include "CFiles.h"
 #include "CConfig.h"
 #include "CVariable.h"
+
+USING_NAMESPACE_FIVEL
 
 /********************
 
@@ -24,7 +26,7 @@
 //  Open the given file for reading and writing. If writing and it doesn't
 //			exist, create it first.
 //
-CFile::CFile(KString &filename, FileKind fKind)
+CFile::CFile(TString &filename, FileKind fKind)
 {
 	FInfo	theFInfo;
 	FSSpec	fSpec;
@@ -71,11 +73,11 @@ CFile::CFile(KString &filename, FileKind fKind)
     	}
 		else if (itsKind == fWriteAppend)
 		{			
-    		itsFile->SetMarker(itsFile->GetLength(), streamFrom_Start);	// seek to the end of the file
+    		itsFile->SetMarker(itsFile->GetLength(), PP::streamFrom_Start);	// seek to the end of the file
    		}
     }
     
-    catch (const LException& inException) 
+    catch (const PP::LException& inException) 
     {
 #ifdef DEBUG
 		gDebugLog.Log("Couldn't open file <%s>, setting _error to -1", filename);
@@ -114,13 +116,13 @@ int CFile::Match(const char *aName)
 /***********************************************************************
  * Function: CFile::Read
  *
- * Parameter: str - KString to assign into.
+ * Parameter: str - TString to assign into.
  * Return:
  *
  * Comments:
  *      Read the next word as determined by whitespace.
  ***********************************************************************/
-void CFile::Read(KString &str)
+void CFile::Read(TString &str)
 {
     if ((itsKind != fReadOnly) and (itsKind != fWriteAppend))
         gLog.Caution("File %s is write-only.", (const char *)itsName);
@@ -144,7 +146,7 @@ void CFile::Read(KString &str)
  *   Read until the given delimiter. Return everything up to
  *  the delimiter, and throw the delimiter away.
  ***********************************************************************/
-void CFile::ReadUntil(KString &str, unsigned char delim)
+void CFile::ReadUntil(TString &str, unsigned char delim)
 {
     if ((itsKind != fReadOnly) and (itsKind != fWriteAppend))
         gLog.Caution("File %s is write-only.", (const char *)itsName);
@@ -167,7 +169,7 @@ void CFile::ReadUntil(KString &str, unsigned char delim)
  *  Write some data to the file. Convert \t and \n to tab and
  *  newline characters respectively.
  ***********************************************************************/
-void CFile::Write(KString &data)
+void CFile::Write(TString &data)
 {
 	const char   *ptr;
 	int32		count = 0;
@@ -228,13 +230,13 @@ void CFile::Write(KString &data)
  *      Read until we find the given search string at the start of a
  *  line or we hit the end of file.
  ***********************************************************************/
-void CFile::Lookup(KString &searchString, int32 numFields)
+void CFile::Lookup(TString &searchString, int32 numFields)
 {
-    KString     theField, comparison;
+    TString     theField, comparison;
     int32       count;
     bool        done = FALSE;
 
-	itsFile->SetMarker(0, streamFrom_Start);	// seek to start of file
+	itsFile->SetMarker(0, PP::streamFrom_Start);	// seek to start of file
 
     while (not done) 
     {
@@ -288,11 +290,11 @@ void CFile::Lookup(KString &searchString, int32 numFields)
  *  the end of the file and let the scriptor append data with write
  *  commands.
  ***********************************************************************/
-void CFile::Rewrite(KString &searchString, int32 /* numFields */)
+void CFile::Rewrite(TString &searchString, int32 /* numFields */)
 {
 	CFile			*tempFile;
-    KString     	theLine;
-    KString     	tempName("temp5L");
+    TString     	theLine;
+    TString     	tempName("temp5L");
     FSSpec			tempSpec, goodSpec;
     OSErr			err;
     bool       		done = FALSE;
@@ -312,7 +314,7 @@ void CFile::Rewrite(KString &searchString, int32 /* numFields */)
 
     tempFile = new CFile(tempName, fWriteNew);
     
-    itsFile->SetMarker(0, streamFrom_Start);	// seek to start of file
+    itsFile->SetMarker(0, PP::streamFrom_Start);	// seek to start of file
 
     while (not done) 
     {
@@ -349,7 +351,7 @@ void CFile::Rewrite(KString &searchString, int32 /* numFields */)
     
     // now reopen the file and seek to the end so all writes will come after what we just wrote
     itsFile->OpenDataFork(fsRdWrPerm);
-	itsFile->SetMarker(itsFile->GetLength(), streamFrom_Start);
+	itsFile->SetMarker(itsFile->GetLength(), PP::streamFrom_Start);
     
     delete tempFile;
 }
@@ -394,7 +396,7 @@ CFileList::~CFileList()
  *  Find the file in the array by name. If failClosed == TRUE,
  *  fail if the file isn't found.
  ***********************************************************************/
-CFile *CFileList::FindFile(KString &filename, int failClosed)
+CFile *CFileList::FindFile(TString &filename, int failClosed)
 {
 	CheckPath(filename);
 	
@@ -417,7 +419,7 @@ CFile *CFileList::FindFile(KString &filename, int failClosed)
  * Comments:
  *    Open a file. Make sure it's not already open.
  ***********************************************************************/
-void CFileList::Open(KString &filename, FileKind fKind)
+void CFileList::Open(TString &filename, FileKind fKind)
 {
     CFile   *theFile;
     int32	theError;
@@ -448,7 +450,7 @@ void CFileList::Open(KString &filename, FileKind fKind)
  * Comments:
  *   Close an open file and remove it from the array.
  ***********************************************************************/
-void CFileList::Close(KString &filename)
+void CFileList::Close(TString &filename)
 {
 	CFile	*theFile;
 	
@@ -474,7 +476,7 @@ void CFileList::Close(KString &filename)
  * Comments:
  *   Read certain data from a file.
  ***********************************************************************/
-void CFileList::Read(KString &filename, KString &str)
+void CFileList::Read(TString &filename, TString &str)
 {
     CFile   *theFile;
 
@@ -494,7 +496,7 @@ void CFileList::Read(KString &filename, KString &str)
  * Comments:
  *  Read certain data from a file.
  ***********************************************************************/
-void CFileList::ReadUntil(KString &filename, KString &str, unsigned char delim)
+void CFileList::ReadUntil(TString &filename, TString &str, unsigned char delim)
 {
     CFile   *theFile;
 
@@ -513,7 +515,7 @@ void CFileList::ReadUntil(KString &filename, KString &str, unsigned char delim)
  * Comments:
  *      Write given data to the file.
  ***********************************************************************/
-void CFileList::Write(KString &filename, KString &data)
+void CFileList::Write(TString &filename, TString &data)
 {
     CFile   *theFile;
 
@@ -533,7 +535,7 @@ void CFileList::Write(KString &filename, KString &data)
  * Comments:
  *   Try to find a particular record in the file.
  ***********************************************************************/
-void CFileList::Lookup(KString &filename, KString &searchString, int numFields)
+void CFileList::Lookup(TString &filename, TString &searchString, int numFields)
 {
     CFile   *theFile;
 
@@ -553,7 +555,7 @@ void CFileList::Lookup(KString &filename, KString &searchString, int numFields)
  * Comments:
  *  Rewrite (move to end of file) a particular record in the file.
  ***********************************************************************/
-void CFileList::Rewrite(KString &filename, KString &searchString, int numFields)
+void CFileList::Rewrite(TString &filename, TString &searchString, int numFields)
 {
     CFile   *theFile;
 
@@ -589,7 +591,7 @@ bool CFileList::CurFileAtEOF(void)
 //
 //	CheckPath - Get any DOS-ness out of the path.
 //
-void CFileList::CheckPath(KString &inPath)
+void CFileList::CheckPath(TString &inPath)
 {
 	char	*slashPtr;
 	

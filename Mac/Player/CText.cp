@@ -13,21 +13,25 @@
 	Needs the header manager to be working before it's complete.
    ================================================================================= */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "KLogger.h"
-#include "KRect.h"
+#include "TRect.h"
 
 #include "CMac5LApp.h"
 #include "CHeader.h"
 #include "CPlayerView.h"
 #include "CText.h"
 #include "CVariable.h"
-#include "KCommon.h"
+#include "TCommon.h"
+
+USING_NAMESPACE_FIVEL
 
 // used to SetupText to process out control characters
 const int kFinalStrLen = 4096;
 static uint8 finalStr[kFinalStrLen];
+
+
 
 /* ---------------------------------------------------------------------------------
 		¥ CText() - Default constructor
@@ -45,7 +49,7 @@ CText::CText(void)
 
 CText::CText(
 	const char		*inHeader,		// Name of header format to use.
-	const KRect		&inBounds,		// Bounding rect (relative to PlayerView's rect)
+	const TRect		&inBounds,		// Bounding rect (relative to PlayerView's rect)
 	const char 		*inText)		// The 'raw' string (including format chars)
 {
 	CHeader			*theHeader;
@@ -87,7 +91,7 @@ CText::CText(
 	mBold		= theHeader->GetBold();
 	
 	// Init the list of style elements
-	mStyleOffsets = new LArray(sizeof(sTextStyle));
+	mStyleOffsets = new PP::LArray(sizeof(sTextStyle));
 	
 	// Now that we've set up all the parameters, process the string to 
 	// determine line breaks and formatting.
@@ -96,7 +100,7 @@ CText::CText(
 	{
 		SetupText();
 	}
-	catch (const LException& inException) 
+	catch (const PP::LException& inException) 
 	{
 		SignalPStr_("\pError in SetupText (string too long?)");
 		
@@ -444,8 +448,8 @@ CText::DrawStyleText(Boolean shadow)
 	if (mText == nil)
 		return;
 	
-	StColorPenState savePenState;
-	StColorPenState::Normalize();
+	PP::StColorPenState savePenState;
+	PP::StColorPenState::Normalize();
 	
 	// Set font, size, drawing mode (srcOr so don't blast the background pict)
 	::TextMode(srcOr);
@@ -590,7 +594,7 @@ CText::LoopThroughStyles(SInt16	lineHeight, SInt16 lineBase, SInt16 justificatio
 	}
 	if (loopCount >= 256)
 		gLog.Error("Too many loops in DrawText");
-	
+
 	gVariableManager.SetLong("_incr_y", (int32) incr_y);
 	gVariableManager.SetLong("_incr_x", (int32) incr_x);
 #ifdef DEBUG
@@ -702,8 +706,8 @@ CText::DrawSimpleText(Boolean highlight)
 	if (mText == nil)
 		return;
 		
-	StColorPenState savePenState;
-	StColorPenState::Normalize();
+	PP::StColorPenState savePenState;
+	PP::StColorPenState::Normalize();
 	
 	// Set font, size, drawing mode (srcOr so don't blast the background pict)
 	::TextMode(srcOr);
@@ -720,7 +724,7 @@ CText::DrawSimpleText(Boolean highlight)
 	else
 		::PmForeColor(mBaseColor);
 				
-	UTextDrawing::DrawWithJustification((char *) mText, strlen((char *) mText), mDrawRect, mJust);
+	PP::UTextDrawing::DrawWithJustification((char *) mText, strlen((char *) mText), mDrawRect, mJust);
 }
 
 /* ---------------------------------------------------------------------------
@@ -751,14 +755,14 @@ CText::CreateStyleEntry(const int16 inStyleStart,	// Starting offset into mText 
 	theStyle.mBold = inBold;			// TRUE if bold
 	
 	// Insert at the end of the list.
-	mStyleOffsets->InsertItemsAt(1, LArray::index_Last, &theStyle);
+	mStyleOffsets->InsertItemsAt(1, PP::LArray::index_Last, &theStyle);
 }
 
 SInt32
 CText::GetLineHeight(void)
 {
 	FontInfo	fontInfo;
-	StTextState	textState;
+	PP::StTextState	textState;
 	
 	if (mText == nil)
 		return (0);

@@ -2,7 +2,7 @@
 	CPlayerOval.cp	
    ================================================================================= */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -16,6 +16,7 @@
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerOval(&Rect, Fill, LIneWidth, ColorIdx)
    --------------------------------------------------------------------------------- */
+USING_NAMESPACE_FIVEL
 
 CPlayerOval::CPlayerOval(
 	const Rect		&inBounds,		// Bouding rect (relative to PlayerView's rect)
@@ -54,8 +55,8 @@ CPlayerOval::~CPlayerOval()
 void
 CPlayerOval::DrawSelf()
 {
-	StColorPenState savePenState;
-	StColorPenState::Normalize();
+	PP::StColorPenState savePenState;
+	PP::StColorPenState::Normalize();
 	
 	// Set the pen state for color, width. Get the rgb color from
 	// the color index.

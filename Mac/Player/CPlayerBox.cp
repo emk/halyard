@@ -2,7 +2,7 @@
 	CPlayerBox.cp	
    ================================================================================= */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -19,6 +19,7 @@
 		Constructor for a custom Player Pane class. Sets up a SPaneInfo struct to
 		call the custom pane's constructor.
    --------------------------------------------------------------------------------- */
+USING_NAMESPACE_FIVEL
 
 CPlayerBox::CPlayerBox(
 	const Rect		&inBounds,		// Bounding rect (relative to PlayerView's rect)
@@ -57,8 +58,8 @@ CPlayerBox::~CPlayerBox()
 void
 CPlayerBox::DrawSelf()
 {
-	StColorPenState savePenState;
-	StColorPenState::Normalize();
+	PP::StColorPenState savePenState;
+	PP::StColorPenState::Normalize();
 	
 	// Set the pen state for color, width. Get the rgb color from
 	// the color index.

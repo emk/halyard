@@ -2,7 +2,7 @@
 	CPlayerPict.cp	
    ================================================================================= */
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -12,7 +12,7 @@
 #include "CPlayerView.h"
 #include "CPlayerPict.h"
 
-
+USING_NAMESPACE_FIVEL
 /* ---------------------------------------------------------------------------------
 		¥ CPlayerPict()
 		
@@ -21,7 +21,7 @@
    --------------------------------------------------------------------------------- */
 
 CPlayerPict::CPlayerPict(CPicture		*inPict,
-							KPoint		&inPt,
+							TPoint		&inPt,
 						 	bool		inMatte)
 {
 	if (inPict == NULL)

@@ -16,6 +16,8 @@
 
 #pragma once
 
+BEGIN_NAMESPACE_FIVEL
+
 class CPlayerBox {
 public:
 	enum { class_ID = 'PlBx' };	// Class ID - needs to be unique & not all lower-case
@@ -37,3 +39,5 @@ protected:
 	
 	virtual void			DrawSelf();	
 };
+
+END_NAMESPACE_FIVEL

@@ -18,14 +18,16 @@
 
 #pragma once
 
-class CBackWindow : public LWindow
+BEGIN_NAMESPACE_FIVEL
+
+class CBackWindow : public PP::LWindow
 {
 	public:
 		enum { class_ID = FOUR_CHAR_CODE('PlBk') };
 		
 					CBackWindow();
-					CBackWindow(LStream *inStream);
-	static CBackWindow		*CreateWindow(ResIDT	inWindowID, LCommander*	inSuperCommander)	;
+					CBackWindow(PP::LStream *inStream);
+	static CBackWindow		*CreateWindow(PP::ResIDT	inWindowID, PP::LCommander*	inSuperCommander)	;
 				
 	void 			DrawSelf();
 	void			FadeAfterDraw(void) { mFadeAfterDraw = true; }	
@@ -34,10 +36,18 @@ class CBackWindow : public LWindow
 		bool		mFadeAfterDraw;
 		
 };
-	
+
+END_NAMESPACE_FIVEL
 
 /* 
 $Log$
+Revision 1.3  2002/03/04 15:41:17  hamon
+Changed calls to KString, KRect etc to TString, TRect, etc to reflect new names of merged common code.
+
+Added namespace support for compiler. New files that use TString or TArray need to specify the FiveL namespace to differentiate between Code Warrior's template string and array classes and FiveL's common string and array classes.
+
+Changes by Elizabeth and Eric, okayed by Eric.
+
 Revision 1.2  1999/10/22 20:42:27  chuck
 New cursor management
 

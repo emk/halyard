@@ -12,14 +12,17 @@
 
 #include <fstream.h>
 
-#include "KCommon.h"
-#include "KBTree.h"
+#include "TCommon.h"
+#include "TBTree.h"
 
 #include "CStream.h"
 
+
+BEGIN_NAMESPACE_FIVEL
+
 class CIndexFile;
 
-class CIndex : public KBNode 
+class CIndex : public TBNode 
 {
     public:
 					CIndex(CIndexFile *inIndex, const char *inName = NULL,
@@ -45,7 +48,7 @@ class CIndex : public KBNode
 
 };
 
-class CIndexManager : public KBTree 
+class CIndexManager : public TBTree 
 {
     public:
 
@@ -56,7 +59,7 @@ class CIndexManager : public KBTree
 									int32 /* inStart */, int32 /* inEnd */) {}
 };
 
-class CIndexFile : public KBNode
+class CIndexFile : public TBNode
 {
 	public:
 					CIndexFile(const char *inName);
@@ -83,7 +86,7 @@ class CIndexFile : public KBNode
 		int32		m_ReferenceCount;
 };
 
-class CIndexFileManager : public KBTree
+class CIndexFileManager : public TBTree
 {
 	public:
 					CIndexFileManager();
@@ -102,5 +105,5 @@ extern CIndexFileManager gIndexFileManager;
 //bool InitIndex(FSSpec *scriptSpec, FSSpec *indexScript, bool fEncrypted);
 //void KillIndex(void);
 //bool CheckFileDates(FSSpec *inIndexSpec, FSSpec *inScriptSpec);
-
+END_NAMESPACE_FIVEL
 #endif

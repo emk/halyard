@@ -2,12 +2,14 @@
 //	CResource.cp - Implementation of CResource class.
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "KLogger.h"
 
 #include "CMac5LApp.h"
 #include "CResource.h"
+
+USING_NAMESPACE_FIVEL
 
 //CResourceManager	gResManager;
 
@@ -19,9 +21,8 @@
 
 static const int 	MAX_MEM_SIZE =   1024000;		// 1 MB of total cache space
 static const int	CHUNK_MEM_SIZE =  256000;	// 256K chunk size
-
-//  
-CResource::CResource(KString &inName) : KBNode(inName)
+  
+CResource::CResource(TString &inName) : TBNode(inName)
 {
     m_Size = 0;
     m_TimesUsed = 0;
@@ -161,7 +162,7 @@ CResourceManager::~CResourceManager()
 	RemoveAll();
 }
 
-CResource *CResourceManager::GetResource(KString &inName)
+CResource *CResourceManager::GetResource(TString &inName)
 {
     CResource    *res = NULL;
 
@@ -171,7 +172,7 @@ CResource *CResourceManager::GetResource(KString &inName)
 
 void CResourceManager::AddResource(CResource *newRes)
 {
-	KBTree::Add(newRes);
+	TBTree::Add(newRes);
 	m_PriorityList.Add(newRes);
 	
 	CheckMemory();
@@ -180,7 +181,7 @@ void CResourceManager::AddResource(CResource *newRes)
 void CResourceManager::RemoveAll(void)
 {
 	m_CheckingMemory = true;
-	KBTree::RemoveAll();
+	TBTree::RemoveAll();
 	m_PriorityList.RemoveAll();
 	m_CheckingMemory = false;
 	
@@ -220,7 +221,7 @@ void CResourceManager::CheckMemory(void)
 
 void CResourceManager::FreeMemory(int32 freeMemSize)
 {
-	KArray		tmpList;
+	TArray		tmpList;
 	CResource	*theRes = NULL;
 	int32		resSize = 0;
 	int32		totalFreed = 0;

@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "CPicture.h"
 #include "CCard.h"
 #include "CGWorld.h"
 
 #include <LMouseTracker.h>
+
+BEGIN_NAMESPACE_FIVEL
 
 // Video effects
 enum FXType 
@@ -28,17 +30,17 @@ enum FXType
 	kFXPushDown
 };
 
-class  CPlayerView : public LView, public LAttachment, public LMouseTracker
+class  CPlayerView : public PP::LView, public PP::LAttachment, public PP::LMouseTracker
 {
 	public:
 		enum { class_ID = FOUR_CHAR_CODE('PlVw') };
 		
-      					CPlayerView(LStream *inStream);
-		static  CPlayerView *CreatePlayerViewStream(LStream *inStream);
+      					CPlayerView(PP::LStream *inStream);
+		static  		CPlayerView *CreatePlayerViewStream(PP::LStream *inStream);
 						~CPlayerView(void);
 						
 		void			ColorCard(int16 color);
-		void			SetBackPic(KString &picName, Rect inRect);
+		void			SetBackPic(TString &picName, Rect inRect);
 		
 		void			KillScript(void);
        	void			SpendTime(const EventRecord &inMacEvent);
@@ -99,7 +101,7 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 		CGWorld			*mFadeWorld;
 #endif
 		
-		void			ExecuteSelf(MessageT /* inMessage */, void *ioParam);
+		void			ExecuteSelf(PP::MessageT /* inMessage */, void *ioParam);
 		
 	private:
 		bool 			DoKeyBind(const char inKey);
@@ -119,7 +121,7 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 		
 		int16			mBackColor;
 		CPicture		*mBackPic;
-		LArray			*mKeyBinds;
+		PP::LArray		*mKeyBinds;
 		Point			mCursorPos;
 		bool			mPauseFromKey;
 		bool			mMoviePaused;
@@ -131,12 +133,12 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 
 struct sCardKey {
 	char		mTheChar;
-	KString		*mCardName;
+	TString		*mCardName;
 //	CCard		*mCard;
 };
 
 // Get the effect from a string
-FXType StringToEffect(KString inText);
+FXType StringToEffect(TString inText);
 
 // Global pointer to the card view.
 extern CPlayerView *gPlayerView;
@@ -146,3 +148,4 @@ const RGBColor kRGB_Black = {0, 0, 0};
 const RGBColor kRGB_White = {65535, 65535, 65535};
 const RGBColor kRGB_Blue = {0, 0, 61132};
 
+END_NAMESPACE_FIVEL

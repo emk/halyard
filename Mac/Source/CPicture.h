@@ -5,39 +5,41 @@
 #ifndef _H_CPICTURE
 #define _H_CPICTURE
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "CResource.h"
-#include "KRect.h"
-#include "KPoint.h"
+#include "TRect.h"
+#include "TPoint.h"
 #include "CGWorld.h"
 #include "QTGraphic.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 class CPicture : public CResource
 {
 	public:
-						CPicture(KString &inName);
+						CPicture(TString &inName);
 		virtual			~CPicture();
 	
 		virtual void	Load(bool firstTime = false);	
 		virtual void	_Load(void);
 		virtual void	_Purge(void);
-		void			Draw(KPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte = false);
-		void			Draw(KPoint &inPt, GWorldPtr inGWorldPtr, KRect &inRect);
-		void			Hilite(KPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte = true);
+		void			Draw(TPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte = false);
+		void			Draw(TPoint &inPt, GWorldPtr inGWorldPtr, TRect &inRect);
+		void			Hilite(TPoint &inPt, GWorldPtr inGWorldPtr, bool inMatte = true);
 		CPicture		*GetHilitePicture(void);
 				
-		KRect			GetBounds(void);
+		TRect			GetBounds(void);
 		CTabHandle		GetColorTable(void);
 		
 		void			SetSize(uint32 inNewSize);
 		void			UpdatePriority();
 		
 	protected:
-		KString			m_FullPath;
-		KString			m_Name;
-		KString			m_HiliteName;
-		KPoint			m_Origin;
+		TString			m_FullPath;
+		TString			m_Name;
+		TString			m_HiliteName;
+		TPoint			m_Origin;
 		int32			m_Width;
 		int32			m_Height;
 		QTGraphic		*m_Qtg;	
@@ -49,9 +51,11 @@ class CPictureManager : public CResourceManager
 					CPictureManager() {}
 					~CPictureManager() {}
 					
-		CPicture	*GetPicture(KString &inName);
+		CPicture	*GetPicture(TString &inName);
 };
 
 extern CPictureManager gPictureManager;
+
+END_NAMESPACE_FIVEL
 
 #endif

@@ -5,11 +5,13 @@
 #ifndef _H_CRESOURCE
 #define _H_CRESOURCE
 
-#include "KHeader.h"
+#include "THeader.h"
 
-#include "KBTree.h"
-#include "KArray.h"
+#include "TBTree.h"
+#include "TArray.h"
 
+BEGIN_NAMESPACE_FIVEL
+ 
 //  Resource flags.
 enum ResState 
 {
@@ -19,10 +21,11 @@ enum ResState
     kResPurgeable        //  Data in memory; purge as soon as space is needed.
 };
 
-class CResource : public KBNode 
+
+class CResource : public TBNode 
 {
     public:
-        					CResource(KString &inName);
+        					CResource(TString &inName);
         virtual 			~CResource() {}
 		
         virtual int16     	IsHigher(CResource *other);
@@ -55,13 +58,13 @@ class CResource : public KBNode
 		uint32				m_Size;
 };
 
-class CResourceManager : public KBTree
+class CResourceManager : public TBTree
 {
 	public:
 		CResourceManager();
 		~CResourceManager();
 		
-		CResource	*GetResource(KString &inName);
+		CResource	*GetResource(TString &inName);
 		int32		FreeUpSpace(int32 bytesNeeded);
 		void 		AddResource(CResource *newRes);
 		void		RemoveAll(void);
@@ -72,7 +75,7 @@ class CResourceManager : public KBTree
 		
 	protected:
 		enum 		PDir { dirUp, dirDown };
-		KArray		m_PriorityList;
+		TArray		m_PriorityList;
 		int			m_TotalSize;
 		bool		m_CheckingMemory;
 		
@@ -80,6 +83,8 @@ class CResourceManager : public KBTree
 		bool		ShouldMove(int32 inIndex, PDir inDir);
 		void		Swap(int32 inIndex1, int32 inIndex2);
 		void		FreeMemory(int32 freeMemSize);		
-};			
+};	
+		
+END_NAMESPACE_FIVEL
 
 #endif

@@ -9,9 +9,11 @@
 #ifndef _H_CHEADER
 #define _H_CHEADER
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "CIndex.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 class CHeader : public CIndex 
 {
@@ -60,4 +62,5 @@ class CHeaderManager : public CIndexManager
 
 extern CHeaderManager gHeaderManager;
 
+END_NAMESPACE_FIVEL
 #endif
