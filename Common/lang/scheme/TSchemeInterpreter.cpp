@@ -587,5 +587,13 @@ TSchemeInterpreter::IdentifierType(const std::string &type_str) {
         type = TScriptIdentifier::CLASS;
     else if (type_str == "template")
         type = TScriptIdentifier::TEMPLATE;
+    else if (type_str == "group")
+        type = TScriptIdentifier::GROUP;
+    else if (type_str == "sequence")
+        type = TScriptIdentifier::SEQUENCE;
+    else if (type_str == "card")
+        type = TScriptIdentifier::CARD;
+    else if (type_str == "element")
+        type = TScriptIdentifier::ELEMENT;
     return type;
 }

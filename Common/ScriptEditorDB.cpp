@@ -77,10 +77,10 @@ std::string ScriptEditorDB::Definition::GetNativePath() {
 }
 
 //=========================================================================
-//  StScriptEditorDBTransaction Methods
+//  StTransaction Methods
 //=========================================================================
 
-ScriptEditorDB::StScriptEditorDBTransaction::StScriptEditorDBTransaction(
+ScriptEditorDB::StTransaction::StTransaction(
     ScriptEditorDB *db)
     : mDB(db), mIsRunning(!mDB->mIsInTransaction)
 {
@@ -90,14 +90,14 @@ ScriptEditorDB::StScriptEditorDBTransaction::StScriptEditorDBTransaction(
     }
 }
 
-ScriptEditorDB::StScriptEditorDBTransaction::~StScriptEditorDBTransaction() {
+ScriptEditorDB::StTransaction::~StTransaction() {
     if (mIsRunning) {
         mDB->mDB->executenonquery("ROLLBACK TRANSACTION");
         mDB->mIsInTransaction = false;
     }
 }
         
-void ScriptEditorDB::StScriptEditorDBTransaction::Commit() {
+void ScriptEditorDB::StTransaction::Commit() {
     if (mIsRunning) {
         mDB->mDB->executenonquery("COMMIT TRANSACTION");
         mDB->mIsInTransaction = false;
@@ -130,7 +130,7 @@ ScriptEditorDB::~ScriptEditorDB() {
 /// Make sure the database contains the table schema we want. If not,
 /// delete the database and create it from scratch.
 void ScriptEditorDB::EnsureCorrectSchema() {
-    StScriptEditorDBTransaction transaction(this);
+    StTransaction transaction(this);
 
     // Schema for the tables we want to create.
     struct schema_info {
@@ -167,6 +167,10 @@ void ScriptEditorDB::EnsureCorrectSchema() {
          "  file_id INT NOT NULL,"
          "  name TEXT NOT NULL,"
          "  helpstr TEXT NOT NULL)"},
+        {"index", "help_file_id",
+         "CREATE INDEX help_file_id ON help(file_id)"},
+        {"index", "help_name",
+         "CREATE INDEX help_name ON help(name)"},
         {NULL, NULL, NULL}
     };
 
@@ -288,7 +292,7 @@ ScriptEditorDB::strings ScriptEditorDB::ScanTree(const std::string &relpath,
     ModTimeMap modtimes;
 
     FetchModTimesFromDatabase(modtimes);    
-    StScriptEditorDBTransaction transaction(this);
+    StTransaction transaction(this);
     ScanTreeInternal(relpath, extension, modtimes, result);    
     transaction.Commit();
 
@@ -297,7 +301,7 @@ ScriptEditorDB::strings ScriptEditorDB::ScanTree(const std::string &relpath,
 
 /// Delete all the old data associated with the file, if any.
 void ScriptEditorDB::DeleteAnyFileData(const std::string &relpath) {
-    StScriptEditorDBTransaction transaction(this);
+    StTransaction transaction(this);
 
     sqlite3::reader r =
         mDB->executereader("SELECT rowid FROM file WHERE path = '%q'",
@@ -318,6 +322,7 @@ void ScriptEditorDB::DeleteAnyFileData(const std::string &relpath) {
         // sqlite uses the format string '%lld' to pass __int64 values back
         // to the database.
         mDB->executenonquery("DELETE FROM def WHERE file_id = %lld", *i);
+        mDB->executenonquery("DELETE FROM help WHERE file_id = %lld", *i);
         mDB->executenonquery("DELETE FROM file WHERE rowid = %lld", *i);
     }
 
@@ -375,7 +380,7 @@ void ScriptEditorDB::EndProcessingFile() {
 void ScriptEditorDB::ProcessTree(const std::string &relpath,
                                  const std::string &extension)
 {
-    StScriptEditorDBTransaction transaction(this);
+    StTransaction transaction(this);
 
     strings files = ScanTree(relpath, extension);
     for (strings::iterator i = files.begin(); i != files.end(); ++i) {
@@ -404,6 +409,14 @@ void ScriptEditorDB::InsertDefinition(const std::string &name,
                          static_cast<int>(type), lineno);
 }
 
+void ScriptEditorDB::InsertHelp(const std::string &name, 
+                                const std::string &help)
+{
+    ASSERT(mIsProcessingFile);
+    mDB->executenonquery("INSERT INTO help VALUES(%lld, '%q', '%q')",
+                         mProcessingFileId, name.c_str(), help.c_str());
+}
+
 ScriptEditorDB::Definitions
 ScriptEditorDB::FindDefinitions(const std::string &name) {
     Definitions result;
@@ -422,6 +435,21 @@ ScriptEditorDB::FindDefinitions(const std::string &name) {
         result.push_back(d);
     }
 
+    return result;
+}
+
+ScriptEditorDB::strings ScriptEditorDB::FindHelp(const std::string &name) {
+    strings result;
+    
+    // Look up the help strings in the database.
+    sqlite3::reader r =
+        mDB->executereader("SELECT helpstr FROM help WHERE name = '%q'",
+                           name.c_str());
+    
+    // Add each row returned by the query to our result.
+    while (r.read()) 
+        result.push_back(r.getstring(0));
+    
     return result;
 }
 
@@ -450,6 +478,8 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     // Process a file.
     db.BeginProcessingFile("Scripts/indexed.ss");
     db.InsertDefinition("foo", TScriptIdentifier::FUNCTION, 19);
+    db.InsertHelp("foo", "(foo x)");
+    db.InsertHelp("foo", "(foo y)");
     db.InsertDefinition("bar", TScriptIdentifier::VARIABLE, 20);
     db.InsertDefinition("bar", TScriptIdentifier::FUNCTION, 21);
     db.EndProcessingFile();
@@ -470,6 +500,11 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     CHECK_EQ(foo_defs.size(), 1);
     CHECK_DEF(foo_defs[0], "Scripts/indexed.ss", "foo",
               TScriptIdentifier::FUNCTION, 19);
+
+    std::vector<std::string> foo_help(db.FindHelp("foo"));
+    CHECK_EQ(foo_help.size(), 2);
+    CHECK_EQ(foo_help[0], "(foo x)");
+    CHECK_EQ(foo_help[1], "(foo y)");
 
     ScriptEditorDB::Definitions bar_defs = db.FindDefinitions("bar");
     CHECK_EQ(bar_defs.size(), 2);

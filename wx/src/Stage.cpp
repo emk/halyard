@@ -173,9 +173,9 @@ void Stage::MaybeShowSplashScreen() {
     // Get our copyright strings.
     TamaleProgram *prog = mFrame->GetDocument()->GetTamaleProgram();
     std::string script_copyright =
-        prog->GetName() + ", " + prog->GetCopyright();
+        prog->GetName() + ". " + prog->GetCopyright();
     std::string tamale_copyright =
-        std::string(TAMALE_COPYRIGHT_NAME) + ", " + TAMALE_COPYRIGHT_NOTICE;
+        std::string(TAMALE_COPYRIGHT_NAME) + ". " + TAMALE_COPYRIGHT_NOTICE;
 
     // Now, set up a drawing context for our text.  We use wxWidgets to
     // draw the text because our font system won't have any text styles

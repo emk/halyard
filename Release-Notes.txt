@@ -1,15 +1,24 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - tryon, emk, naomi
+0.0.46 - 4 Feb 2005 - tryon, emk, naomi
 
-  * Added Quake 2 variable 'cl_disablemenu' which allows the Quake 2
-    menu system to be disabled and replaced with a custom "escape"
-    binding (bug #1740).
+Major editor improvements:
+
+  * You can use Alt-. to jump to the script for the currently running
+    card, and to look up the definition of functions in the editor.
+  * The editor now displays call tips after you type a function name.
+  * Fixed a crash when the user hit Control-E on the loading screen.
   * Added a simple ScriptEditorDB class to support Meta-dot lookups
     of definitions.
   * Heavily overhauled ScriptEditorDB to use transactions more extensively,
     run faster, and provide better APIs to the ScriptEditor.
   * Fixed SQLite3 to automatically destroy reader objects.
+
+Other changes:
+
+  * Added Quake 2 variable 'cl_disablemenu' which allows the Quake 2
+    menu system to be disabled and replaced with a custom "escape"
+    binding (bug #1740).
 
 0.0.45 - 15 Dec 2004 - emk
 

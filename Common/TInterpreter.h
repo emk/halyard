@@ -34,8 +34,7 @@ class ScriptEditorDB;
 ///
 class TScriptIdentifier {
 public:
-    /// The type of an identifier.  I expect this will be extended to include
-    /// cards, elements, etc., as the editor improves.
+    /// The type of an identifier.
     enum Type {
         KEYWORD,  //< For Scheme, includes a macro or special form.
         FUNCTION,
@@ -43,6 +42,10 @@ public:
         CONSTANT,
         CLASS,
         TEMPLATE,
+        GROUP,
+        SEQUENCE,
+        CARD,
+        ELEMENT,
         UNKNOWN
     };
 

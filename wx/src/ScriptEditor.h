@@ -41,6 +41,7 @@ public:
     static bool SaveAllForReloadScript();
     static bool ProcessEventIfExists(wxEvent &event);
     static void OpenDocument(const wxString &path, int line = 1);
+    static void ShowDefinition(const wxString &identifier);
 
     ScriptEditor();
     ~ScriptEditor();
@@ -53,6 +54,7 @@ public:
 
 private:
     void OpenDocumentInternal(const wxString &path, int line = 1);
+    void ShowDefinitionInternal(const wxString &identifier);
 
     void OnActivate(wxActivateEvent &event);
     void OnClose(wxCloseEvent &event);

@@ -251,6 +251,9 @@
 				RelativePath="..\..\src\Log5L.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\dlg\MetaDotDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\MovieElement.cpp">
 			</File>
 			<File
@@ -394,8 +397,8 @@
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="cd $(InputDir)
-..\..\libs\wxWidgets\contrib\utils\wxrc\Release\wxrc.exe /c /o resources.cpp $(InputName).xrc
+						CommandLine="cd &quot;$(InputDir)&quot;
+..\..\libs\wxWidgets\contrib\utils\wxrc\vc_msw\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;
 "
 						Outputs="$(InputDir)resources.cpp"/>
 				</FileConfiguration>
@@ -502,6 +505,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\MediaElement.h">
+			</File>
+			<File
+				RelativePath="..\..\src\dlg\MetaDotDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\src\MovieElement.h">

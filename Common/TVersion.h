@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		45
+#define VERSION_REV_BIG		46
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.45 (Development)"
+#define VERSION_STRING		"Tamale 0.0.46 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -35,6 +35,27 @@
 
 /*
  $Log$
+ Revision 1.87  2005/02/04 21:44:44  emk
+ 0.0.46 - 4 Feb 2005 - tryon, emk, naomi
+
+ Major editor improvements:
+
+   * You can use Alt-. to jump to the script for the currently running
+     card, and to look up the definition of functions in the editor.
+   * The editor now displays call tips after you type a function name.
+   * Fixed a crash when the user hit Control-E on the loading screen.
+   * Added a simple ScriptEditorDB class to support Meta-dot lookups
+     of definitions.
+   * Heavily overhauled ScriptEditorDB to use transactions more extensively,
+     run faster, and provide better APIs to the ScriptEditor.
+   * Fixed SQLite3 to automatically destroy reader objects.
+
+ Other changes:
+
+   * Added Quake 2 variable 'cl_disablemenu' which allows the Quake 2
+     menu system to be disabled and replaced with a custom "escape"
+     binding (bug #1740).
+
  Revision 1.86  2004/12/15 23:34:23  emk
    * Added support for Alt-Tab out of full-screen mode (bug #1726).
    * Added code to hide and show the taskbar (bug #1726).

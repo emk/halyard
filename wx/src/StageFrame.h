@@ -323,6 +323,8 @@ private:
     void OnInsertBackground(wxCommandEvent &inEvent);
     void UpdateUiEditMode(wxUpdateUIEvent &inEvent);
     void OnEditMode(wxCommandEvent &inEvent);
+    void UpdateUiEditCardScript(wxUpdateUIEvent &inEvent);
+    void OnEditCardScript(wxCommandEvent &inEvent);
     void UpdateUiJumpCard(wxUpdateUIEvent &inEvent);
     void OnJumpCard(wxCommandEvent &inEvent);
     void UpdateUiStopMovies(wxUpdateUIEvent &inEvent);

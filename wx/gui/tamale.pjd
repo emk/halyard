@@ -2572,7 +2572,7 @@ to run this program?</value>
 				<value name="base-id" type="Integer">10000</value>
 				<value name="use-id-prefix" type="bool">FALSE</value>
 				<value name="id-prefix" type="string"></value>
-				<value name="proxy-Id name" type="string">ID_DIALOG</value>
+				<value name="proxy-Id name" type="string">DLG_META_DOT</value>
 				<value name="proxy-Id value" type="Integer">10024</value>
 				<value name="proxy-Class" type="string">MyDialog</value>
 				<value name="proxy-Base class" type="string">wxDialog</value>
@@ -2742,7 +2742,7 @@ to run this program?</value>
 						<value name="proxy-Custom styles" type="string"></value>
 						<value name="proxy-X" type="Integer">-1</value>
 						<value name="proxy-Y" type="Integer">-1</value>
-						<value name="proxy-Width" type="Integer">400</value>
+						<value name="proxy-Width" type="Integer">300</value>
 						<value name="proxy-Height" type="Integer">-1</value>
 						<value name="proxy-AlignH" type="string">Expand</value>
 						<value name="proxy-AlignV" type="string">Centre</value>

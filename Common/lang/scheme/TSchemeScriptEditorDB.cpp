@@ -35,6 +35,7 @@ USING_NAMESPACE_FIVEL
 void FIVEL_NS RegisterSchemeScriptEditorDBPrimitives()
 {
 	REGISTER_5L_PRIMITIVE(ScriptEditorDBInsertDef);
+    REGISTER_5L_PRIMITIVE(ScriptEditorDBInsertHelp);
 }
 
 
@@ -43,7 +44,6 @@ void FIVEL_NS RegisterSchemeScriptEditorDBPrimitives()
 //=========================================================================
 
 DEFINE_5L_PRIMITIVE(ScriptEditorDBInsertDef) {
-
     std::string name;
     std::string type_name;
     int32 lineno;
@@ -57,19 +57,30 @@ DEFINE_5L_PRIMITIVE(ScriptEditorDBInsertDef) {
     db->InsertDefinition(name, type, lineno);
 }
 
+DEFINE_5L_PRIMITIVE(ScriptEditorDBInsertHelp) {
+    std::string name, help_string;
+    inArgs >> SymbolName(name) >> help_string;
+
+    ScriptEditorDB *db =
+        TInterpreterManager::GetInstance()->GetScriptEditorDB();
+    db->InsertHelp(name, help_string);
+}
+
 
 //=========================================================================
 //  TSchemeInterpreterDB Methods
 //=========================================================================
 
 void TSchemeScriptEditorDB::UpdateDatabase() {
-    StScriptEditorDBTransaction transaction(this);
-
-    ScriptEditorDB::UpdateDatabase();
-	ProcessTree("Runtime", ".ss");
-    ProcessTree("Scripts", ".ss");
-
-    transaction.Commit();
+    if (TInterpreter::HaveInstance()) {
+        StTransaction transaction(this);
+        
+        ScriptEditorDB::UpdateDatabase();
+        ProcessTree("Runtime", ".ss");
+        ProcessTree("Scripts", ".ss");
+        
+        transaction.Commit();
+    }
 }
 
 void TSchemeScriptEditorDB::ProcessFileInternal(const std::string &relpath) {

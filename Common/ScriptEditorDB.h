@@ -80,13 +80,13 @@ protected:
     /// Transaction monitor class for ScriptEditorDB database.  You can
     /// nest instances of StScriptEditorDBTransaction, but only the outermost
     /// object will actually do anything.
-    class StScriptEditorDBTransaction {
+    class StTransaction {
         ScriptEditorDB *mDB;
         bool mIsRunning;
 
     public:
-        StScriptEditorDBTransaction(ScriptEditorDB *db);
-        ~StScriptEditorDBTransaction();
+        StTransaction(ScriptEditorDB *db);
+        ~StTransaction();
         
         void Commit();
     };
@@ -113,8 +113,10 @@ public:
     void InsertDefinition(const std::string &name,
                           TScriptIdentifier::Type type,
                           int lineno);
+    void InsertHelp(const std::string &name, const std::string &help);
 
     Definitions FindDefinitions(const std::string &name);
+    strings FindHelp(const std::string &name);
 };
 
 END_NAMESPACE_FIVEL

@@ -30,6 +30,7 @@
 #include "DocNotebook.h"
 #include "BufferSpan.h"
 #include "dlg/FindDlg.h"
+#include "dlg/MetaDotDlg.h"
 #include "FiveLApp.h"
 
 // Only so we can find our parent window.
@@ -217,6 +218,7 @@ private:
     void OnUpdateUiReplace(wxUpdateUIEvent &event);
     void OnGotoLine(wxCommandEvent &event);
     void OnGotoDefinition(wxCommandEvent &event);
+    void OnUpdateUiGotoDefinition(wxUpdateUIEvent &event);
 
     void EnsureSelectionVisible();
     void SetSelectionAndEnsureVisible(int start, int end);
@@ -231,6 +233,8 @@ private:
     void DoReplace(bool interactive = true);
     void DoReplaceAll();
 
+    wxString GetWordAt(int pos,
+                       int *outBegin = NULL, int *outEnd = NULL);
     wxString GetWordAtCursor(int *outPos = NULL,
                              int *outBegin = NULL, int *outEnd = NULL);
     void AutoCompleteIdentifier();
@@ -243,6 +247,7 @@ private:
     int CalculateFunctionIndentation(int inParentPos,
                                      const std::vector<int> &inSiblingPos);
     int GetBaseIndentFromPosition(int inPos);
+    void MaybeShowCallTip();
 
     DECLARE_EVENT_TABLE();
 };
@@ -301,7 +306,8 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
     EVT_MENU(FIVEL_GOTO_LINE, ScriptTextCtrl::OnGotoLine)
     EVT_UPDATE_UI(FIVEL_GOTO_LINE, ScriptTextCtrl::OnUpdateUiAlwaysOn)
     EVT_MENU(FIVEL_GOTO_DEFINITION, ScriptTextCtrl::OnGotoDefinition)
-    EVT_UPDATE_UI(FIVEL_GOTO_DEFINITION, ScriptTextCtrl::OnUpdateUiAlwaysOn)
+    EVT_UPDATE_UI(FIVEL_GOTO_DEFINITION,
+                  ScriptTextCtrl::OnUpdateUiGotoDefinition)
 END_EVENT_TABLE()
 
 ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id, int font_size)
@@ -626,6 +632,10 @@ void ScriptTextCtrl::OnCharAdded(wxStyledTextEvent &event) {
     // Auto-indent new lines.
     if (inserted == '\n' || inserted == '\r')
         IndentSelection();
+
+    // Display tool tips when appropriate.
+    if (inserted == ' ')
+        MaybeShowCallTip();
 }
 
 void ScriptTextCtrl::OnUpdateTextUI(wxStyledTextEvent &event) {
@@ -850,30 +860,16 @@ void ScriptTextCtrl::OnGotoLine(wxCommandEvent &event) {
 void ScriptTextCtrl::OnGotoDefinition(wxCommandEvent &event) {
     // Get the word underneath the cursor.
     wxString identifier = GetWordAtCursor();
-    if (identifier == "") {
-        SetStatusText("No identifier under cursor.");
-        return;
-    }
-
-    // Get our ScriptEditorDB.
-    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
-    if (!db) {
-        SetStatusText("No definition information available.");
-        return;
-    }
-
-    // Look up the word in the database.
-    ScriptEditorDB::Definitions defs = 
-        db->FindDefinitions(identifier.mb_str());
-    if (defs.empty()) {
-        SetStatusText("Can't find definition.");
-        return;
-    }
-
-    // Jump to the appropriate file and line.
-    ScriptEditor::OpenDocument(defs[0].GetNativePath().c_str(),
-                               defs[0].line_number);
+    ASSERT(identifier != "");
+    ScriptEditor::ShowDefinition(identifier);
 }
+
+void ScriptTextCtrl::OnUpdateUiGotoDefinition(wxUpdateUIEvent &event) {
+    event.Enable(GetWordAtCursor() != "" &&
+                 TInterpreterManager::GetScriptEditorDB());
+                 
+}
+
 
 void ScriptTextCtrl::EnsureSelectionVisible() {
     int start_line = LineFromPosition(GetSelectionStart());
@@ -1100,29 +1096,37 @@ void ScriptTextCtrl::GotoLineEnsureVisible(int line) {
     SetVisiblePolicy(wxSTC_VISIBLE_SLOP, 10);
 }
 
-wxString ScriptTextCtrl::GetWordAtCursor(int *outPos,
-                                         int *outBegin, int *outEnd)
+wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd)
 {
-    // Parse the current name, backwards and forwards.
-    int pos;
-    wxString line = GetCurLine(&pos);
-    int word_begin = pos;
+    int line_number = LineFromPosition(pos);
+    int line_start = PositionFromLine(line_number);
+    wxString line = GetLine(line_number);
+
+    int word_begin = pos - line_start;
     while (word_begin > 0 && IsIdentifierChar(line[word_begin-1]))
         word_begin--;
-    int word_end = pos;
+    int word_end = pos - line_start;
     while (static_cast<size_t>(word_end) < line.length() &&
 		   IsIdentifierChar(line[word_end]))
         word_end++;
     if (word_begin == word_end ||
         !IsIdentifierStartChar(line[word_begin]))
         return "";
+    if (outBegin)
+        *outBegin = line_start + word_begin;
+    if (outEnd)
+        *outEnd = line_start + word_end;
+    return line.Mid(word_begin, word_end - word_begin);
+}
+
+wxString ScriptTextCtrl::GetWordAtCursor(int *outPos,
+                                         int *outBegin, int *outEnd)
+{
+    int pos = GetCurrentPos();
+    wxString result = GetWordAt(pos, outBegin, outEnd);
     if (outPos)
         *outPos = pos;
-    if (outBegin)
-        *outBegin = word_begin;
-    if (outEnd)
-        *outEnd = word_end;
-    return line.Mid(word_begin, word_end - word_begin);
+    return result;
 }
 
 void ScriptTextCtrl::AutoCompleteIdentifier() {
@@ -1322,6 +1326,39 @@ int ScriptTextCtrl::GetBaseIndentFromPosition(int inPos) {
     int line_start = PositionFromLine(LineFromPosition(inPos));
     return (inPos - line_start);
 }
+
+void ScriptTextCtrl::MaybeShowCallTip() {
+    // Try to extract a function name.  If we can't, give up.
+    int pos = GetCurrentPos();
+    if (pos < 2) 
+        return;
+    ASSERT(GetCharAt(pos - 1) == ' ');
+    int word_begin;
+    wxString word = GetWordAt(pos - 2, &word_begin);
+    if (word == "")
+        return;
+
+    // Look the word up in the database.
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    if (!db)
+        return;
+    std::vector<std::string> help(db->FindHelp(word.Lower().c_str()));
+    if (help.empty())
+        return;
+
+    // Combine our help strings.
+    std::string combined_help;
+    std::vector<std::string>::iterator i = help.begin();
+    for (; i != help.end(); ++i) {
+        if (i != help.begin())
+            combined_help += "\n";
+        combined_help += *i;
+    }
+    
+    // Display the actual call tip.
+    CallTipShow(word_begin, combined_help.c_str());
+}
+
 
 //=========================================================================
 //  ScriptDoc Definition & Methods
@@ -1668,8 +1705,13 @@ bool ScriptEditor::ProcessEventIfExists(wxEvent &event) {
 }
 
 void ScriptEditor::OpenDocument(const wxString &path, int line) {
-    if (sFrame)
-        sFrame->OpenDocumentInternal(path, line);
+    MaybeCreateFrame();
+    sFrame->OpenDocumentInternal(path, line);
+}
+
+void ScriptEditor::ShowDefinition(const wxString &identifier) {
+    MaybeCreateFrame();
+    sFrame->ShowDefinitionInternal(identifier);
 }
 
 ScriptEditor::ScriptEditor()
@@ -1890,6 +1932,35 @@ void ScriptEditor::OpenDocumentInternal(const wxString &path, int line) {
     ScriptDoc *doc = new ScriptDoc(mNotebook, -1, GetTextSize(), path);
     mNotebook->AddDocument(doc);
     doc->GotoLineEnsureVisible(line-1);
+}
+
+void ScriptEditor::ShowDefinitionInternal(const wxString &identifier) {
+    
+    // Get our ScriptEditorDB.
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    if (!db) {
+        ::wxBell();
+        SetStatusText("No definition database available.");
+        return;
+    }
+
+    // Look up the word in the database.
+    ScriptEditorDB::Definitions defs = 
+        db->FindDefinitions(identifier.Lower().mb_str());
+    if (defs.empty()) {
+        ::wxBell();
+        SetStatusText("Can't find definition of \"" + identifier + "\".");
+        return;
+    } else if (defs.size() == 1) {
+        // Jump to the appropriate file and line.
+        OpenDocument(defs[0].GetNativePath().c_str(), defs[0].line_number);
+    } else {
+        MetaDotDlg dlg(this, defs);
+        if (dlg.ShowModal() == wxID_OK) {
+            ScriptEditorDB::Definition def = dlg.GetChosenDef();
+            OpenDocument(def.GetNativePath().c_str(), def.line_number);
+        }
+    }
 }
 
 void ScriptEditor::OnActivate(wxActivateEvent &event) {

@@ -369,7 +369,7 @@ to run this program?</label>
             </object>
         </object>
     </object>
-    <object class="wxDialog" name="ID_DIALOG" subclass="MyDialog">
+    <object class="wxDialog" name="DLG_META_DOT" subclass="MyDialog">
         <style>wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX</style>
         <exstyle>wxWS_EX_BLOCK_EVENTS</exstyle>
         <size>400,300</size>
@@ -388,7 +388,7 @@ to run this program?</label>
                 <flag>wxGROW|wxLEFT|wxRIGHT|wxBOTTOM</flag>
                 <border>10</border>
                 <object class="wxListBox" name="DLG_DEF_LIST">
-                    <size>400,-1</size>
+                    <size>300,-1</size>
                     <style>wxLB_SINGLE|wxLB_NEEDED_SB</style>
                 </object>
             </object>

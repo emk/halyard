@@ -168,10 +168,14 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_DISPLAY_BORDERS, StageFrame::OnDisplayBorders)
     EVT_UPDATE_UI(FIVEL_PROPERTIES, StageFrame::UpdateUiProperties)
     EVT_MENU(FIVEL_PROPERTIES, StageFrame::OnProperties)
-    EVT_UPDATE_UI(FIVEL_INSERT_BACKGROUND, StageFrame::UpdateUiInsertBackground)
+    EVT_UPDATE_UI(FIVEL_INSERT_BACKGROUND,
+                  StageFrame::UpdateUiInsertBackground)
     EVT_MENU(FIVEL_INSERT_BACKGROUND, StageFrame::OnInsertBackground)
     EVT_UPDATE_UI(FIVEL_EDIT_MODE, StageFrame::UpdateUiEditMode)
     EVT_MENU(FIVEL_EDIT_MODE, StageFrame::OnEditMode)
+    EVT_UPDATE_UI(FIVEL_EDIT_CARD_SCRIPT,
+                  StageFrame::UpdateUiEditCardScript)
+    EVT_MENU(FIVEL_EDIT_CARD_SCRIPT, StageFrame::OnEditCardScript)
     EVT_UPDATE_UI(FIVEL_JUMP_CARD, StageFrame::UpdateUiJumpCard)
     EVT_MENU(FIVEL_JUMP_CARD, StageFrame::OnJumpCard)
     EVT_UPDATE_UI(FIVEL_STOP_MOVIES, StageFrame::UpdateUiStopMovies)
@@ -244,6 +248,8 @@ StageFrame::StageFrame(wxSize inSize)
     mCardMenu = new wxMenu();
     mCardMenu->Append(FIVEL_EDIT_MODE, "&Edit Card\tCtrl+Space",
                       "Enter or exit card-editing mode.");
+    mCardMenu->Append(FIVEL_EDIT_CARD_SCRIPT, "Edit Card Sc&ript\tAlt+.",
+                      "Edit this card's script.");
     mCardMenu->Append(FIVEL_JUMP_CARD, "&Jump to Card...\tCtrl+J",
                       "Jump to a specified card by name.");
     mCardMenu->Append(FIVEL_STOP_MOVIES, "&Stop Movies\tEsc",
@@ -939,6 +945,21 @@ void StageFrame::UpdateUiEditMode(wxUpdateUIEvent &inEvent)
 void StageFrame::OnEditMode(wxCommandEvent &inEvent)
 {
 	mStage->SetEditMode(!mStage->IsInEditMode());
+}
+
+void StageFrame::UpdateUiEditCardScript(wxUpdateUIEvent &inEvent) {
+    inEvent.Enable(AreDevToolsAvailable() &&
+                   mStage->IsScriptInitialized() &&
+                   TInterpreter::HaveInstance() &&
+                   TInterpreter::GetInstance()->CurCardName() != "");
+}
+
+void StageFrame::OnEditCardScript(wxCommandEvent &inEvent) {
+    ASSERT(TInterpreter::HaveInstance());
+    TInterpreter *interp = TInterpreter::GetInstance();
+    std::string name = interp->CurCardName();
+    ASSERT(name != "");
+    ScriptEditor::ShowDefinition(name.c_str());
 }
 
 void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
