@@ -588,7 +588,7 @@
   ;; -- The frame of the last wait is stored in last-wait-frame, which is 
   ;; initialized to [frame 0] when tamale.ss is loaded.
   ;;
-  (define (rel-wait elem-or-name frame)
+  (define (rel-wait elem-or-name &key (frame 0)) 
     (wait elem-or-name (+ frame last-wait-frame)))
            
   ;; what is 'tc' short for?
