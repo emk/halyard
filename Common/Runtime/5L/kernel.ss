@@ -284,7 +284,8 @@
     (card-exists? card-name))
 
   (define (%kernel-element-deleted element-name)
-    (delete-element-info element-name))
+    (with-errors-blocked (non-fatal-error)
+      (delete-element-info element-name)))
 
   (define (%kernel-eval expression)
     (let [[ok? #t] [result "#<did not return from jump>"]]
@@ -671,7 +672,7 @@
                                     . body))))]))
 
   (define-syntax on
-    ;; This gets lexically overridden by expand-init-thunk to refer
+    ;; This gets lexically overridden by expand-init-fn to refer
     ;; to nodes other than $root-node.
     (syntax-rules ()
       [(on . rest)
@@ -788,14 +789,14 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide param)
+  (provide prop)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
   (define $no-default (list 'no 'default))
   (define $no-such-key (list 'no 'such 'key))
 
-  (defclass <template-parameter> ()
+  (defclass <template-prop-decl> ()
     (name      :type <symbol>)
     (type      :type <class>       :initvalue <object>)
     (label     :type <string>      :initvalue "")
@@ -804,45 +805,51 @@
   (defclass <template> ()
     (group      :type <symbol>     :initvalue 'none)
     (extends                       :initvalue #f)
-    (parameters :type <list>       :initvalue '())
-    (bindings   :type <hash-table> :initializer (lambda () (make-hash-table)))
-    (init-thunk :type <function>   :initvalue (lambda (node) #f)))
+    (prop-decls :type <list>       :initvalue '())
+    (bindings-eval-fn :type <function>)
+    (init-fn :type <function>   :initvalue (lambda (node) #f)))
 
   (defmethod (initialize (template <template>) initargs)
     (call-next-method)
+    ;; Make sure templates only extend other templates in their own group.
     (assert (or (not (template-extends template))
                 (eq? (template-group template)
                      (template-group (template-extends template))))))
 
-  (define (find-local-parameter template name)
-    (let loop [[params (template-parameters template)]]
-      (cond
-       [(null? params) #f]
-       [(eq? (template-parameter-name (car params)) name)
-        (car params)]
-       [else (loop (cdr params))])))
+  (define (node-bind-value! node name value)
+    (if (node-has-value? node name)
+        (error (cat "Duplicate property " name " on node "
+                    (node-full-name node)))
+        (hash-table-put! (node-values node) name value)))
 
-  (define (param template name)
-    ;; A very rudimentary binding finder--this will probably be completely
-    ;; rewritten as we add test cases.
-    ;;
-    ;; This function controls how we search for parameter bindings.  If
+  (define (node-has-value? node name)
+    (not (eq? (hash-table-get (node-values node) name
+                              (lambda () $no-such-key))
+              $no-such-key)))
+
+  (define (node-maybe-default-property! node prop-decl)
+    (unless (node-has-value? node (template-prop-decl-name prop-decl))
+      (node-bind-value! node
+                        (template-prop-decl-name prop-decl)
+                        (template-prop-decl-default prop-decl))))
+
+  (define (node-bind-property-values! node template)
+    (let [[bindings ((template-bindings-eval-fn template) node)]]
+      (hash-table-for-each bindings
+                           (lambda (k v) (node-bind-value! node k v))))
+    (let loop [[decls (template-prop-decls template)]]
+      (unless (null? decls)
+        (node-maybe-default-property! node (car decls))
+        (loop (cdr decls)))))
+
+  (define (prop node name)
+    ;; This function controls how we search for property bindings.  If
     ;; you want to change search behavior, here's the place to do it.
-    (let loop [[template template]]
-      (if template
-        (let [[binding (hash-table-get (template-bindings template)
-                                       name (lambda () $no-such-key))]
-              [parameter (find-local-parameter template name)]]
-          (cond
-           [(not (eq? binding $no-such-key))
-            binding]
-           [(and parameter
-                 (not (eq? (template-parameter-default parameter)
-                           $no-default)))
-            (template-parameter-default parameter)]
-           [else
-            (loop (template-extends template))]))
-        (error "Unable to find template parameter" name))))
+    (let [[value (hash-table-get (node-values node)
+                                 name (lambda () $no-such-key))]]
+      (if (not (eq? value $no-such-key))
+          value
+          (error "Unable to find template property" name))))
 
   (define (bindings->hash-table bindings)
     ;; Turns a keyword argument list into a hash table.
@@ -859,73 +866,89 @@
           (hash-table-put! result (keyword-name (car b)) (cadr b))
           (recursive (cddr b))]))
       result))
-  
-  (define-syntax expand-parameters
-    (syntax-rules ()
-      [(expand-parameters)
-       '()]
-      [(expand-parameters (name keywords ...) rest ...)
-       (cons (make <template-parameter> :name 'name keywords ...)
-             (expand-parameters rest ...))]
-      [(expand-parameters name rest ...)
-       (cons (make <template-parameter> :name 'name)
-             (expand-parameters rest ...))]))
 
-  (define-syntax (expand-init-thunk stx)
+  (define-syntax expand-prop-decls
+    (syntax-rules ()
+      [(expand-prop-decls)
+       '()]
+      [(expand-prop-decls (name keywords ...) rest ...)
+       (cons (make <template-prop-decl> :name 'name keywords ...)
+             (expand-prop-decls rest ...))]
+      [(expand-prop-decls name rest ...)
+       (cons (make <template-prop-decl> :name 'name)
+             (expand-prop-decls rest ...))]))
+
+  (define-syntax (expand-fn-with-self-and-prop-names stx)
     (syntax-case stx ()
-      [(expand-init-thunk parameters . body)
+      [(expand-fn-with-self self prop-decls . body)
        (begin
 
-         ;; Create a capture variable NAME which will be visible in BODY.
-         ;; It's exceptionally evil to capture using BODY's context instead
-         ;; of EXPAND-INIT-THUNK's context, but that's what we want.
-         (define (capture-var name)
-           (make-capture-var/ellipsis #'body name))
-
-         ;; Bind each template parameter NAME to a call to (param self
-         ;; 'name), so it's convenient to access from with the init-thunk.
+         ;; Bind each template property NAME to a call to (prop self
+         ;; 'name), so it's convenient to access from with the init-fn.
          ;; We don't need to use capture variables for this, because
          ;; the programmer supplied the names--which means they're already
          ;; in the right context.
-         (define (make-param-bindings self-stx parameters-stx)
+         (define (make-prop-bindings self-stx prop-decls-stx)
            (with-syntax [[self self-stx]]
              (datum->syntax-object
               stx
-              (map (lambda (param-stx)
-                     (syntax-case param-stx ()
+              (map (lambda (prop-stx)
+                     (syntax-case prop-stx ()
                        [(name . rest)
-                        (syntax/loc param-stx [name (param self 'name)])]
+                        (syntax/loc prop-stx [name (prop self 'name)])]
                        [name
-                        (syntax/loc param-stx [name (param self 'name)])]))
-                   (syntax->list parameters-stx)))))
+                        (syntax/loc prop-stx [name (prop self 'name)])]))
+                   (syntax->list prop-decls-stx)))))
 
          ;; We introduce a number of "capture" variables in BODY.  These
          ;; will be bound automagically within BODY without further
          ;; declaration.  See the PLT203 mzscheme manual for details.
-         (with-syntax [[self (capture-var 'self)]
-                       [on   (capture-var 'on)]]
-           (quasisyntax/loc
-            stx
-            (lambda (self)
-              (let-syntax [[on (syntax-rules ()
-                                 [(_ . rest)
-                                  (expand-on self . rest)])]]
-                (let #,(make-param-bindings #'self #'parameters)
-                  (begin/var . body)))))))]))
-    
+         (quasisyntax/loc
+          stx
+          (lambda (self)
+            (letsubst #,(make-prop-bindings #'self #'prop-decls)
+              (begin/var . body)))))]))
+
+  (define-syntax (expand-init-fn stx)
+    (syntax-case stx ()
+      [(expand-init-fn prop-decls . body)
+         
+       ;; We introduce a number of "capture" variables in BODY.  These
+       ;; will be bound automagically within BODY without further
+       ;; declaration.  See the PLT203 mzscheme manual for details.
+       (with-syntax [[self (make-capture-var/ellipsis #'body 'self)]
+                     [on   (make-capture-var/ellipsis #'body 'on)]]
+         (quasisyntax/loc
+          stx
+          (expand-fn-with-self-and-prop-names self prop-decls
+            (let-syntax [[on (syntax-rules ()
+                               [(_ . rest)
+                                (expand-on self . rest)])]]
+              (begin/var . body)))))]))
+  
+  (define-syntax (expand-bindings-eval-fn stx)
+    (syntax-case stx ()
+      [(expand-bindings-eval-fn prop-decls . bindings)
+       (with-syntax [[self (make-capture-var/ellipsis #'body 'self)]]
+         (quasisyntax/loc
+          stx
+          (expand-fn-with-self-and-prop-names self prop-decls
+            (bindings->hash-table (list . bindings)))))]))
+
   (define-syntax define-template
     (syntax-rules (:template)
-      [(define-template group name parameters
+      [(define-template group name prop-decls
                               (:template extended . bindings)
          . body)
        (define name (make <template>
                       :group      group
                       :extends    extended
-                      :bindings   (bindings->hash-table (list . bindings))
-                      :parameters (expand-parameters . parameters)
-                      :init-thunk (expand-init-thunk parameters . body)))]
-      [(define-template group name parameters bindings . body)
-       (define-template group name parameters (:template #f . bindings)
+                      :bindings-eval-fn (expand-bindings-eval-fn prop-decls 
+                                                                 . bindings)
+                      :prop-decls (expand-prop-decls . prop-decls)
+                      :init-fn    (expand-init-fn prop-decls . body)))]
+      [(define-template group name prop-decls bindings . body)
+       (define-template group name prop-decls (:template #f . bindings)
          . body)]))
 
   (define-syntax define-template-definer
@@ -949,6 +972,7 @@
     parent
     (has-expensive-handlers? :type <boolean> :initvalue #f)
     (handlers :type <hash-table> :initializer (lambda () (make-hash-table)))
+    (values   :type <hash-table> :initializer (lambda () (make-hash-table)))
     )
 
   (defmethod (initialize (node <node>) initargs)
@@ -964,9 +988,10 @@
                              "/" (node-name node)))
         (node-name node))))
 
-  (define (clear-node-handlers node)
+  (define (clear-node-state! node)
     (set! (node-has-expensive-handlers? node) #f)
-    (set! (node-handlers node) (make-hash-table)))
+    (set! (node-handlers node) (make-hash-table))
+    (set! (node-values node) (make-hash-table)))
 
   (define *node-table* (make-hash-table))
 
@@ -1042,8 +1067,8 @@
              (make node-class
                :group      'group
                :extends    extended
-               :bindings   (bindings->hash-table (list bindings ...))
-               :init-thunk (expand-init-thunk () body ...)
+               :bindings-eval-fn (expand-bindings-eval-fn [] bindings ...)
+               :init-fn    (expand-init-fn () body ...)
                :parent     parent
                :name       local-name)))
          (register-node name))]
@@ -1215,18 +1240,28 @@
     ;; Someday I expect this to be handled by a transactional rollback of the
     ;; C++ document model.  But this will simulate things well enough for
     ;; now, I think.
+    (define (bindings-eval-fn self)
+      (bindings->hash-table bindings))
     (assert (current-card))
     (assert (eq? (template-group template) '<element>))
     (let [[e (make <element>
                :group      '<element>
                :extends    template
-               :bindings   (bindings->hash-table bindings)
+               :bindings-eval-fn bindings-eval-fn
                :parent     (current-card)
                :name       name
                :temporary? #t)]]
       (register-node e)
       (enter-node e)
       e))
+
+  (define (eq-with-gensym-hack? sym1 sym2)
+    ;; STUPID BUG - We name anonymous elements with gensyms, for
+    ;; which (eq? sym (string->symbol (symbol->string sym))) is never
+    ;; true.  This is dumb, and is evidence of a fundamental misdesign
+    ;; in element management responsibilities.  I need to fix this ASAP.
+    ;; But for now, this will allow the engine to limp along.
+    (equal? (symbol->string sym1) (symbol->string sym2)))
 
   (define (delete-element-info name)
     ;; We're called from C++ after the engine's version of the specified
@@ -1240,7 +1275,7 @@
             (let recurse [[children (group-children card)]]
               (cond
                [(null? children) '()]
-               [(eq? name (node-name (car children)))
+               [(eq-with-gensym-hack? name (node-name (car children)))
                 ;; Delete this node, and exclude it from the new child list.
                 (if (element-temporary? (car children))
                     (begin
@@ -1267,15 +1302,19 @@
 
   (defmethod (exit-node (node <node>))
     ;; Clear our handler list.
-    (clear-node-handlers node))
+    (clear-node-state! node))
 
   (defmethod (enter-node (node <node>))
-    ;; TODO - Make sure all our template parameters are bound.
+    ;; TODO - Make sure all our template properties are bound.
     ;; Initialize our templates one at a time.
     (let recurse [[template node]]
       (when template
+        ;; We bind property values on the way in, and run init-fns
+        ;; on the way out.
+        (node-bind-property-values! node template)
         (recurse (template-extends template))
-        ((template-init-thunk template) node))))
+        ;; Pass NODE to the init-fn so SELF refers to the right thing.
+        ((template-init-fn template) node))))
 
   (defmethod (exit-node (group <card-group>))
     (set! (card-group-active? group) #f)
@@ -1330,7 +1369,7 @@
   (define (exit-card old-card new-card)
     ;; Exit all our child elements.
     ;; TRICKY - We call into the engine to do element deletion safely.
-    ;; We work with a copy of (GROUP-CHILDREN OLD-CARD); the original
+    ;; We work with a copy of (GROUP-CHILDREN OLD-CARD) the original
     ;; will be modified as we run.
     (let loop [[children (group-children old-card)]]
       (unless (null? children)
@@ -1346,7 +1385,7 @@
     ;; Clear our handler list.  We also do this in exit-node; this
     ;; invocation is basically defensive, in case something went
     ;; wrong during the node exiting process.
-    (clear-node-handlers new-card)
+    (clear-node-state! new-card)
     ;; Enter as many enclosing card groups as necessary.
     (enter-card-group-recursively (node-parent new-card))
     ;; Enter all our child elements.  Notice we do this first, so
@@ -1415,7 +1454,7 @@
   ;;(define-struct %kernel-card (name thunk) (make-inspector))
   (define %kernel-card? card?)
   (define %kernel-card-name node-full-name)
-  (define %kernel-card-thunk template-init-thunk)
+  (define %kernel-card-thunk template-init-fn)
 
   ;; TODO - Redundant with *node-table*.  Remove.
   (define *%kernel-card-table* (make-hash-table))

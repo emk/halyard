@@ -51,7 +51,7 @@
         (call-5l-prim 'zone (node-name self) polygon
                       (make-node-event-dispatcher self) cursor)
         (call-5l-prim 'zone (node-name self) (rect->polygon 
-                                              (param self 'rect))
+                                              (prop self 'rect))
                       (make-node-event-dispatcher self) cursor)))
 
   (define-element-template %simple-zone% [action] (:template %zone%)
@@ -191,7 +191,7 @@
   (define-element-template %html-element%
       [[location :type <string> :label "Location"]]
       (:template %element%)
-    (call-5l-prim 'html (node-name self) (param self 'rect)
+    (call-5l-prim 'html (node-name self) (prop self 'rect)
                   ;; TODO - Support actual URL's.
                   (build-path (current-directory) location)))
 
@@ -201,7 +201,7 @@
   (define-element-template %edit-box-element%
       [[text :type <string> :label "Initial text"]]
       (:template %element%)
-    (call-5l-prim 'editbox (node-name self) (param self 'rect) text))
+    (call-5l-prim 'editbox (node-name self) (prop self 'rect) text))
 
   (define (edit-box name r text)
     (create %edit-box-element% :name name :rect r :text text))
@@ -248,7 +248,7 @@
     (let [[path (make-path "Media" location)]]
       (unless (file-exists? path)
         (throw (cat "No such movie: " path)))
-      (call-5l-prim 'movie (node-name self) (param self 'rect)
+      (call-5l-prim 'movie (node-name self) (prop self 'rect)
                     path
                     controller? audio-only? loop? interaction?)))
   
