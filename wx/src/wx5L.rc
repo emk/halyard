@@ -55,6 +55,8 @@ END
 
 TB_XY                   BITMAP  DISCARDABLE     "tb_xy.bmp"
 TB_RELOAD               BITMAP  DISCARDABLE     "tb_reload.bmp"
+TB_GRID                 BITMAP  DISCARDABLE     "tb_grid.bmp"
+TB_BORDERS              BITMAP  DISCARDABLE     "tb_borders.bmp"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

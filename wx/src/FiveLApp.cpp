@@ -1,5 +1,6 @@
 #include <wx/wx.h>
 #include <wx/image.h>
+#include <wx/fs_inet.h>
 
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
@@ -41,6 +42,7 @@ bool FiveLApp::OnInit()
 
     // Initialize some optional wxWindows features.
     ::wxInitAllImageHandlers();
+    wxFileSystem::AddHandler(new wxInternetFSHandler);
 
     // Create and display our stage frame.
     mStageFrame = new StageFrame("wx5L", wxSize(640, 480));
