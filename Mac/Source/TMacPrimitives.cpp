@@ -1871,8 +1871,10 @@ DEFINE_5L_PRIMITIVE(Text)
 
     gOrigin.AdjustRect(&bounds);
 
-	gDebugLog.Log("text: header <%s>, text <%s>", header.GetString(), text.GetString());
-    
+	gDebugLog.Log("text: header <%s>, L T R B <%d %d %d %d>, text <%s>",
+				  header.GetString(), bounds.Left(), bounds.Top(), bounds.Right(),
+				  bounds.Bottom(), text.GetString());
+				      
     textPtr = new CPlayerText(header.GetString(), bounds, text.GetString(), 0, 0);
 	if (textPtr != nil)
 		delete textPtr;
@@ -1894,8 +1896,9 @@ DEFINE_5L_PRIMITIVE(TextAA)
     inArgs >> style >> bounds >> text;
 
     gOrigin.AdjustRect(&bounds);
-	gDebugLog.Log("textaa: style <%s>, text <%s>",
-				  style.c_str(), text.c_str());
+	gDebugLog.Log("textaa: style <%s>, L T R B <%d %d %d %d>, text <%s>",
+				  style.c_str(), bounds.Left(), bounds.Top(), bounds.Right(),
+				  bounds.Bottom(), text.c_str());
 
 	try
 	{

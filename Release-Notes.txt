@@ -1,5 +1,9 @@
 When possible, please include bug numbers as seen below.
 
+3.3.12 - 10 July 2002 - brian
+
+  * Made textAA and text log coordinates of bounding box (bug #979).
+
 3.3.11 - 7 July 2002 - emk
 
 Ported forward 3.2.0.x fixes (bug #1008).

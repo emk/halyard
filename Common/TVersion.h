@@ -16,15 +16,18 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		11
+#define VERSION_REV_BIG		12
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.11 (Development)"
+#define VERSION_STRING	"5L 3.3.12 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.19  2002/07/10 15:21:33  brian
+ 3.3.12 - Improved debug.log for text and textaa commands (bug #979).
+
  Revision 1.18  2002/07/08 16:43:46  emk
  3.3.11 - Bugfixes from 3.2.0.5 through 3.2.0.7.
 
