@@ -47,10 +47,10 @@
 
 
 // build stuff
-#define VERSION_STRING	"5L for MacOS 2.02, build 2"
+#define VERSION_STRING	"5L for MacOS 2.02, build 3"
 #define VERSION_MAJOR_NUM	2
 #define VERSION_MINOR_NUM	02
-#define VERSION_BUILD_NUM	02
+#define VERSION_BUILD_NUM	03
 
 //
 // constants
@@ -995,6 +995,11 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.16  2002/03/11 17:51:47  hamon
+Added new version numbers ( 2.02 b3) to files. Release notes lists additions in this version.
+
+Changes by Elizabeth, okayed by Eric.
+
 Revision 1.15  2002/03/06 16:29:28  hamon
 Added a new file main.cp. main.cp has the function main, and it calls 5LMain in CMac5LApp.
  (Previously main() was in CMac5LApp and it has been renamed to 5LMain ). 

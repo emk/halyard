@@ -1,5 +1,13 @@
 FiveL for Macintosh Release Notes
 
+2.03 Build 3, March 11, 2002 5:49 PM. - E Hamon with help by Eric.
+
+¥ Logs QuickTimeVersion correctly.
+
+¥ Sets _BaseGraphicsLocation correctly. This variable can now be used to set an alternate base 
+  location for graphics, other than folder Graphics. It does not need trailing punctuation. 
+  The master path is automatically included. 
+
 2.02, Build 2, March 6, 2002 - E Hamon with help by Eric.
 
 ¥ Fixed some of the bugs in CParser and CStream - now it will allow escaping of comments,
