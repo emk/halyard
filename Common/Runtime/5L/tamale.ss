@@ -25,8 +25,9 @@
            %browser% %edit-box-element% %movie-element%
            browser edit-box %vorbis-audio% vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
-           %geiger-synth% geiger-synth
-           sine-wave set-media-base-url! movie 
+           %geiger-synth% geiger-synth sine-wave
+           media-is-installed? media-cd-is-available? search-for-media-cd
+           set-media-base-url! movie 
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade opacity save-graphics restore-graphics
@@ -38,10 +39,17 @@
   (define (url? path)
     (regexp-match "^(http|ftp|rtsp):" path))
 
+  (define (make-path-from-abstract . args)
+    (define reversed (reverse! args))
+    (define abstract-component (car reversed))
+    (define regular-components (reverse! (cdr reversed)))
+    (apply build-path (append! regular-components
+                               (regexp-split "/" abstract-component))))
+
   (define (make-path subdir path)
     (if (url? path)
         path
-        (apply build-path (current-directory) subdir (regexp-split "/" path))))
+        (make-path-from-abstract (current-directory) subdir path)))
 
   (define (check-file path)
     (unless (or (url? path) (file-exists? path))
@@ -450,21 +458,45 @@
   (define (vorbis-audio name location &key (loop? #f))
     (create %vorbis-audio% :name name :location location :loop? loop?))
 
+  (define *cd-media-directory* #f)
+
+  (define (media-is-installed?)
+    (directory-exists? (build-path (current-directory) "Media")))
+
+  (define (media-cd-is-available?)
+    (and *cd-media-directory* #t))
+
+  (define (search-for-media-cd)
+    (label return
+      (foreach [drive (filesystem-root-list)]
+        (define candidate (build-path drive "Media"))
+        (when (directory-exists? candidate)
+          (set! *cd-media-directory* candidate)
+          (return)))))
+
   (define *media-base-url* #f)
 
   (define (set-media-base-url! url)
     (set! *media-base-url* url))
 
   (define (media-path location)
+    ;; Create some of the paths we'll check.
+    (define hd-path (make-path "Media" location))
+    (define cd-path
+      (if (media-cd-is-available?)
+          (make-path-from-abstract *cd-media-directory* location)
+          #f))
+
     (cond
      ;; Pass explicit URLs straight through.
      [(url? location)
       location]
      ;; Otherwise, first check our media directory for the file.
-     [(file-exists? (make-path "Media" location))
-      (make-path "Media" location)]
+     [(file-exists? hd-path)
+      hd-path]
      ;; Then check the CD, if we have one.
-     ;; TODO - Implement.
+     [(and cd-path (file-exists? cd-path))
+      cd-path]
      ;; If all else fails, and we've been told about a server, assume our
      ;; media is there.
      [*media-base-url*
