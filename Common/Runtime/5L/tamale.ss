@@ -29,6 +29,7 @@
            current-card-name fade unfade save-graphics restore-graphics
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
+           set-state-db-datum!
            %basic-button%)
 
   (define (url? path)
@@ -83,7 +84,9 @@
       [[cursor :type <symbol> :default 'hand :label "Cursor"]
        [shape :type <shape> :label "Shape"]
        [overlay? :type <boolean> :default #f :label "Has overlay?"]
-       [alpha? :type <boolean> :default #f :label "Overlay transparent?"]]
+       [alpha? :type <boolean> :default #f :label "Overlay transparent?"]
+       [%nocreate? :type <boolean> :default #f
+                   :label "Set to true if subclass creates in engine"]]
       (:template %element%)
     (on prop-change (name value prev veto)
       (case name
@@ -96,11 +99,44 @@
            (veto "Can only move zones, not resize them."))
          (move-element-to! self (rect-left-top value))]
         [else (call-next-handler)]))
-    (if (not overlay?)
-        (call-5l-prim 'zone (node-full-name self) (as <polygon> shape)
-                      (make-node-event-dispatcher self) cursor)
-        (call-5l-prim 'overlay (node-full-name self) shape
-                      (make-node-event-dispatcher self) cursor alpha?)))
+    (on setup-finished ()
+      (call-next-handler)
+      (call-5l-prim 'StateDbNotifyElement (node-full-name self)))
+    (on state-db-changed (event)
+      ;; Never pass this event to our containing element.
+      #f)
+    (cond
+     [%nocreate?
+      #f]
+     [overlay?
+      (call-5l-prim 'overlay (node-full-name self) shape
+                    (make-node-event-dispatcher self) cursor alpha?)]
+     [else
+      (call-5l-prim 'zone (node-full-name self) (as <polygon> shape)
+                    (make-node-event-dispatcher self) cursor)]))
+
+  (define (animated-graphic-shape at graphics)
+    (define max-width 0)
+    (define max-height 0)
+    (foreach [graphic graphics]
+      (define bounds (measure-picture graphic))
+      (when (> (rect-width bounds) max-width)
+        (set! max-width (rect-width bounds)))
+      (when (> (rect-height bounds) max-height)
+        (set! max-height (rect-height bounds)))))
+
+  (define-element-template %animated-graphic%
+      [[at :type <point> :label "Location"]
+       [state :type <string> :label "State DB Key Path"]
+       [graphics :type <list> :label "Graphics to display"]]
+      (:template %zone%
+                 :shape (animated-graphic-shape at graphics)
+                 :overlay? #t
+                 :alpha? #t
+                 :%nocreate? #t)
+    (call-5l-prim 'OverlayAnimated (node-full-name self) (prop self shape)
+                  (make-node-event-dispatcher self) (prop self cursor)
+                  state (map (fn (p) (make-path "Graphics" p)) graphics)))
 
   (define-element-template %simple-zone% [action] (:template %zone%)
     (on prop-change (name value prev veto)
@@ -469,6 +505,9 @@
   (define (delete-element-if-exists name)
     (when (element-exists? name)
       (delete-element (@* name))))
+
+  (define (set-state-db-datum! key val)
+    (call-5l-prim 'StateDbSet key val))
 
   (define-element-template %basic-button%
       [[action :type <function> :label "Click action"]

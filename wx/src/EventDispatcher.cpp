@@ -232,3 +232,13 @@ bool EventDispatcher::DoEventProgressChanged(bool inIsActive,
     mDispatcher->Run(args);
 	return EventCleanup();
 }
+
+bool EventDispatcher::DoEventStateDbChanged() {
+	if (!EventSetup())
+		return false;
+	
+	TValueList args;
+    args.push_back(TSymbol("state-db-changed"));
+    mDispatcher->Run(args);
+	return EventCleanup();
+}

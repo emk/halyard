@@ -552,6 +552,11 @@
     (when (have-5l-prim? 'deleteelements)
       (call-5l-prim 'deleteelements (node-full-name elem))))
 
+  (defmethod (engine-state-db-get (engine <real-engine>)
+                                  (node <node>)
+                                  (key <symbol>))
+    (call-5l-prim 'StateDbGet (node-full-name node) key))
+
   (set-engine! (make <real-engine>))
 
   ;; Set up our event handling machinery.

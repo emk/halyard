@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - kwasi, djin
+
+  * Added APIs for accessing TStateDB from Scheme.
+
 0.0.16 - kwasi, djin, emk
 
   * Cleaned up a whole bunch of legacy code that can be much simpler now

@@ -5,13 +5,13 @@
 
   TStateDB
 /   Implement TStateDB
-    Make a single TStateDB readable and writable from Scheme
-      (set-state-db-datum! '/foo value) ;; Decide on either symbols or strings
-      Allow listener to be an (on state-db-changed (get) ...) handler
-        (call-5l-prim 'StateDbGet (node-full-name ELEM) key)
-      Allow listener to be a simple lambda?  Maybe too hard?
-        (state-db-register-listener! '/foo
-                                     (lambda (get) (whatever (get '/foo))))
+,   Make a single TStateDB readable and writable from Scheme
+/     (set-state-db-datum! "/foo" value) ;; Defined in tamale.ss?
+/     Allow listener to be an (on state-db-changed (get) ...) handler
+/       (call-5l-prim 'StateDbGet (node-full-name ELEM) key)
+X     Allow listener to be a simple lambda?  Maybe too hard?
+X       (state-db-register-listener! '/foo
+X                                    (lambda (get) (whatever (get '/foo))))
     Implement a new graphic element which listens to three keys:
       .../x - x coordinate of element
       .../y - y coordinate of element

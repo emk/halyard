@@ -70,6 +70,8 @@ public:
 	TValue Get(TStateListener *inListener, const std::string &inKey);
 };
 
+extern TStateDB gStateDB;
+
 END_NAMESPACE_FIVEL
 
 #endif // TStateDB_H

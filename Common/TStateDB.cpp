@@ -10,6 +10,8 @@ REGISTER_TEST_CASE_FILE(TStateDB);
 	
 class TStateDB;
 
+TStateDB FIVEL_NS gStateDB;
+
 
 //=========================================================================
 //  TStateListener methods
@@ -47,8 +49,12 @@ void TStateDB::Datum::UnregisterListener(TStateListener *inListener) {
 }
 
 void TStateDB::Datum::NotifyListeners() {
-	ListenerList::iterator iter = mListeners.begin(); 
-	for (; iter != mListeners.end(); ++iter)
+    // XXX - Iterate through a copy of this list in case
+    // TStateListeners are managing to unregister themselves.
+	// Let's not mention what that does to NotifyStateChanged.
+	ListenerList copy = mListeners;
+	ListenerList::iterator iter = copy.begin(); 
+	for (; iter != copy.end(); ++iter)
 		(*iter)->NotifyStateChanged();
 }
 

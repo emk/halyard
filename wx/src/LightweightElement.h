@@ -5,6 +5,7 @@
 
 #include "TInterpreter.h"
 #include "Element.h"
+#include "TStateDB.h"
 
 
 //////////
@@ -17,7 +18,7 @@
 // how to combine the wxWindows event-handling system with the Scheme
 // event-handling system we're using.
 //
-class LightweightElement : public Element {
+class LightweightElement : public Element, public TStateListener {
     EventDispatcher *mDispatcher;
     wxCursor mCursor;
     bool mIsShown;
@@ -36,6 +37,8 @@ public:
 
 	virtual wxCursor GetCursor() { return mCursor; }
 	virtual void SetCursor(wxCursor &inCursor) { mCursor = inCursor; }
+
+	virtual void NotifyStateChanged();
 };
 
 #endif // LightweightElement_H

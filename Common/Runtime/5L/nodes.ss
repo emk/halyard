@@ -38,7 +38,8 @@
            engine-enable-expensive-events
            engine-notify-enter-card engine-notify-exit-card
            engine-notify-card-body-finished
-           engine-delete-element)
+           engine-delete-element
+           engine-state-db-get)
 
   (defclass <engine> ()
     (root-node
@@ -72,8 +73,11 @@
   (defgeneric (engine-notify-enter-card (engine <engine>) (card <card>)))
   (defgeneric (engine-notify-card-body-finished (engine <engine>)
                                                 (card <card>)))
-  (defgeneric (engine-delete-element (engine <real-engine>)
-                                     (elem <element>)))
+  (defgeneric (engine-delete-element (engine <engine>) (elem <element>)))
+  (defgeneric (engine-state-db-get (engine <engine>)
+                                   (node <node>)
+                                   (key <symbol>)))
+                                   
 
 
   ;;=======================================================================
@@ -95,6 +99,7 @@
            <text-event> text-event? event-text
            <browser-navigate-event> browser-navigate-event?
            <progress-changed-event> event-progress-done? event-progress-value
+           <state-db-changed-event> event-db-get
            make-node-event-dispatcher ; semi-private
            )
 
@@ -215,6 +220,9 @@
     ;; value is 0.0 to 1.0, inclusive.
     (value :accessor event-progress-value))
 
+  (defclass <state-db-changed-event> (<event>)
+    (db-get :accessor event-db-get))
+
   (define (veto-event! event)
     (set! (event-vetoed? event) #t))
 
@@ -253,6 +261,10 @@
                     (make <progress-changed-event>
                       :done? (car args)
                       :value (cadr args))]
+                   [[state-db-changed]
+                    (make <state-db-changed-event>
+                      :db-get (lambda (key)
+                                (engine-state-db-get *engine* node key)))]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
       (define (no-handler)
