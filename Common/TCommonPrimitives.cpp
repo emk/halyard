@@ -28,8 +28,18 @@ void FIVEL_NS RegisterCommonPrimitives()
 
 void FIVEL_NS UpdateSpecialVariablesForGraphic(const TRect &bounds)
 {
-	gVariableManager.SetLong("_Graphic_X", (short) bounds.Right());
-	gVariableManager.SetLong("_Graphic_Y", (short) bounds.Bottom());
+	TPoint p(bounds.Right(), bounds.Bottom());
+	gOrigin.UnadjustPoint(&p);
+	gVariableManager.SetLong("_Graphic_X", (int32) p.X());
+	gVariableManager.SetLong("_Graphic_Y", (int32) p.Y());
+}
+
+void FIVEL_NS UpdateSpecialVariablesForText(const TPoint &bottomLeft)
+{
+	TPoint p = bottomLeft;
+	gOrigin.UnadjustPoint(&p);
+	gVariableManager.SetLong("_INCR_X", (int32) p.X());
+	gVariableManager.SetLong("_INCR_Y", (int32) p.Y());
 }
 
 
@@ -45,6 +55,12 @@ void Origin::AdjustRect(TRect *r)
 void Origin::AdjustPoint(TPoint *pt)
 {
 	pt->Offset(mOrigin);
+}
+
+void Origin::UnadjustPoint(TPoint *pt)
+{
+	pt->OffsetX(-mOrigin.X());
+	pt->OffsetY(-mOrigin.Y());
 }
 
 TPoint Origin::GetOrigin()

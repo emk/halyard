@@ -24,6 +24,14 @@ extern void RegisterCommonPrimitives();
 //
 extern void UpdateSpecialVariablesForGraphic(const TRect &bounds);
 
+//////////
+// Update '_INCR_X' and '_INCR_Y' variables to hold
+// leftmost and bottommost edges of the most recently drawn graphic.
+//
+// [in] bottomLeft - The text's bottom left point, already offset from the
+//                   origin.
+//
+extern void UpdateSpecialVariablesForText(const TPoint &bottomLeft);
 
 //////////
 //  The 5L graphics primitives all draw relative to an "origin", which
@@ -51,6 +59,13 @@ public:
 	// [in/out] pt - The point to adjust.
 	//
 	void AdjustPoint(TPoint *pt);
+
+	//////////
+	// Adjust the local point to global coordinates based on origin
+	//
+	// [in/out] pt - The point to unadjust.
+	//
+	void UnadjustPoint(TPoint *pt);
 
 	//////////
 	// Gets the card's local coordinate system.

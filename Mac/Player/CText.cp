@@ -25,6 +25,7 @@
 #include "TVariable.h"
 #include "TCommon.h"
 #include "TEncoding.h"
+#include "TCommonPrimitives.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -612,8 +613,7 @@ CText::LoopThroughStyles(SInt16	lineHeight, SInt16 lineBase, SInt16 justificatio
 	if (loopCount >= 256)
 		gLog.Error("Too many loops in DrawText");
 
-	gVariableManager.SetLong("_incr_y", (int32) incr_y);
-	gVariableManager.SetLong("_incr_x", (int32) incr_x);
+	UpdateSpecialVariablesForText(TPoint(incr_x, incr_y));
 	
 	if (!shadow) //Douglas only wants it logged once 
 		gDebugLog.Log("text rect: L <%d>, T <%d>, R <%d>, B <%d>", mDrawRect.left, mDrawRect.top, incr_x, incr_y);

@@ -16,15 +16,20 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		8
+#define VERSION_REV_BIG		9
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.8 (Development)"
+#define VERSION_STRING	"5L 3.3.9 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.16  2002/06/24 15:17:11  emk
+ 3.3.9 - Highly experimental engine which makes _INCR_X,
+ _INCR_Y, _Graphic_X and _Graphic_Y relative to the current
+ origin.   This will break macros in existing code!
+
  Revision 1.15  2002/06/21 15:41:58  emk
  3.3.8 - 5L language improvements, including nested expressions,
  return values and new primitives.

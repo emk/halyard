@@ -7,6 +7,7 @@
 #include "TEncoding.h"
 #include "TUtilities.h"
 #include "TTemplateUtils.h"
+#include "TCommonPrimitives.h"
 
 #include <string>
 
@@ -15,9 +16,6 @@ USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
 using Typography::StyledText;
 using Typography::TextRenderingEngine;
-
-static const char *INCR_Y_NAME = "_incr_y";
-static const char *INCR_X_NAME = "_incr_x";
 
 TStyleSheetManager FIVEL_NS gStyleSheetManager;
 
@@ -243,8 +241,8 @@ void TStyleSheet::Draw(const std::string& inText,
 	TextRenderingEngine engine(text, inPosition, inLineLength,
 							   mJustification, inImage);
 	engine.RenderText();
-    gVariableManager.SetLong(INCR_Y_NAME, engine.GetBottomBound()); 
-	gVariableManager.SetLong(INCR_X_NAME, engine.GetRightBound());
+	UpdateSpecialVariablesForText(TPoint(engine.GetRightBound(),
+										 engine.GetBottomBound()));
 }
 
 int TStyleSheet::GetLineHeight()
