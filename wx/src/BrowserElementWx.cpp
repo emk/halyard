@@ -30,6 +30,7 @@
 //  CustomWxHtmlWindow Support Class
 //=========================================================================
 
+/// Support class for BrowserElementWx.
 class CustomWxHtmlWindow : public wxHtmlWindow {
     BrowserElementWx *mElement;
 

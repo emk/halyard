@@ -34,6 +34,7 @@
 
 BEGIN_NAMESPACE_FIVEL
 
+/// A stylesheet for text displayed by a script.
 class TStyleSheet {
 	// (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR
 	//           [LEADING [SHADOWOFFSET SHADOWCOLOR [SHADOWHIGHCOLOR]]])
@@ -72,6 +73,8 @@ public:
 	/// system, and it handles a lot of escapes which should be processed
 	/// by TStream instead.
 	///
+    /// \deprecated Replace with an XML-based styled text system.
+    ///
 	Typography::StyledText MakeStyledText(const std::string& inText);
 	
 	//////////
@@ -98,6 +101,7 @@ public:
 	int GetLineHeight();
 };
 
+/// Centralized manager class for TStyleSheet objects.
 class TStyleSheetManager
 {
 	std::map<std::string,TStyleSheet*> mStyleSheetMap;

@@ -47,6 +47,7 @@ class ProgramTreeItemData;
 //  ProgramTreeCtrl
 //=========================================================================
 
+/// Tree widget showing structure of Tamale script.
 class ProgramTreeCtrl : public wxTreeCtrl
 {
 	DECLARE_EVENT_TABLE()
@@ -61,8 +62,8 @@ public:
 	ProgramTreeCtrl(wxWindow *inParent);
 
 	//////////
-	// Any of these icons may be used by nodes in the ProgramTree.
-	//
+	/// Any of these icons may be used by nodes in the ProgramTree.
+	///
 	enum {
 		ICON_CARD,
 		ICON_DOCUMENT,
@@ -89,10 +90,10 @@ private:
 //=========================================================================
 //  ProgramTreeItemData
 //=========================================================================
-//  This class respresents a "smart" node in our tree.  Most node-specific
-//  events will be passed to a subclass of ProgramTreeItemData by our
-//  event handlers.
 
+///  This class respresents a "smart" node in our ProgramTreeCtrl.  Most
+///  node-specific events will be passed to a subclass of
+///  ProgramTreeItemData by our event handlers.
 class ProgramTreeItemData : public wxTreeItemData
 {
 	ProgramTreeCtrl *mTreeCtrl;
@@ -128,6 +129,7 @@ void ProgramTreeItemData::OnBeginLabelEdit(wxTreeEvent &event)
 //  ViewItemData
 //=========================================================================
 
+/// An object in our ProgramTreeCtrl which listens to our Document model.
 class ViewItemData : public ProgramTreeItemData, public model::View
 {
 public:
@@ -139,8 +141,8 @@ public:
 //=========================================================================
 //  SequenceItemData
 //=========================================================================
-//  Sequences of cards can be nested within each other.
 
+/// Sequences of cards can be nested within each other.
 class SequenceItemData : public ProgramTreeItemData
 {
 public:
@@ -157,6 +159,7 @@ SequenceItemData::SequenceItemData(ProgramTreeCtrl *inTreeCtrl)
 //  CardItemData
 //=========================================================================
 
+/// Representation of a card in our ProgramTreeCtrl.
 class CardItemData : public ProgramTreeItemData
 {
 	wxString mCardName;
@@ -184,6 +187,7 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 //  BackgroundItemData
 //=========================================================================
 
+/// Representation of a background in our ProgramTreeCtrl.
 class BackgroundItemData : public ViewItemData
 {
 public:
@@ -248,6 +252,7 @@ void BackgroundItemData::ObjectDeleted()
 //  BackgroundListItemData
 //=========================================================================
 
+/// Folder containing all backgrounds in our ProgramTreeCtrl.
 class BackgroundListItemData : public ViewItemData
 {
 	model::Object *GetItemObject(wxTreeItemId id);
@@ -335,6 +340,7 @@ void BackgroundListItemData::ObjectDeleted()
 //  TamaleProgramMenu
 //=========================================================================
 
+/// Right-click menu for the TamaleProgramItemData in our ProgramTreeCtrl.
 class TamaleProgramMenu : public wxMenu
 {
 	DECLARE_EVENT_TABLE();
@@ -371,6 +377,7 @@ void TamaleProgramMenu::OnProperties(wxCommandEvent &inEvent)
 //  TamaleProgramItemData
 //=========================================================================
 
+/// Representation of the entire Tamale script in our ProgramTreeCtrl.
 class TamaleProgramItemData : public ViewItemData
 {
 public:

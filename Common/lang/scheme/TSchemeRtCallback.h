@@ -46,6 +46,8 @@ typedef const TValueList &ConstTValueListRef;
 ///
 class TSchemeRtCallback : public TCallback {
 public:
+    /// A primitive function callable only from the real-time Scheme
+    /// interpreter.
     class Primitive : public TCallback {
         std::string mName;
     

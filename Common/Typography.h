@@ -33,6 +33,7 @@
 
 // TODO - Handle copy constructors, assignment operators
 
+/// A portable line-breaking and text-drawing library based on FreeType.
 namespace Typography {
 
 	using GraphicsTools::Distance;

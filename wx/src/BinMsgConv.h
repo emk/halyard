@@ -25,6 +25,8 @@
 
 #include "wxquake2.h"
 
+/// Wrapper for low-level C binary message type used to receive state
+/// messages from Quake 2 AI DLL.
 class BinMsg {
     binmsg_message mMessage;
     TValue mArgs;

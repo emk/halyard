@@ -49,9 +49,9 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 //  StageBackground
 //=========================================================================
-//  This class implements the wxWindow *behind* the stage.  It has few
-//  duties other than (1) being black and (2) keeping the stage centered.
 
+///  This class implements the wxWindow *behind* the stage.  It has few
+///  duties other than (1) being black and (2) keeping the stage centered.
 class StageBackground : public wxSashLayoutWindow
 {
 	DECLARE_EVENT_TABLE();

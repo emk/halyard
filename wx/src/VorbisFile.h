@@ -26,11 +26,12 @@
 #include "ivorbisfile.h"
 
 enum {
-	// The decoder documentation claims this is a good size.
+	/// The decoder documentation claims this is a good size.
 	VORBIS_BUFFER_BYTES = 4096,
 	VORBIS_BUFFER_SIZE = VORBIS_BUFFER_BYTES / sizeof(int16)
 };
 
+/// Reads and decodes a file containing Ogg Vorbis audio data.
 class VorbisFile
 {
 	OggVorbis_File mVF;
@@ -38,18 +39,18 @@ class VorbisFile
 	int mWantedFrequency;
 	int mWantedChannels;
 
-	// We use a small buffer for reading data from the Vorbis codec, and
-	// storing it until Read() is called.  mBufferBegin points to the
-	// first valid data in the buffer, and mBufferEnd points one past
-	// the last valid data.
+	/// We use a small buffer for reading data from the Vorbis codec, and
+	/// storing it until Read() is called.  mBufferBegin points to the
+	/// first valid data in the buffer, and mBufferEnd points one past
+	/// the last valid data.
 	int16 mBuffer[VORBIS_BUFFER_SIZE];
 	int16 *mBufferBegin, *mBufferEnd;
 	int mBufferFrequency;
 	int mBufferChannels;
 	bool mDoneReading;
 
-	// Read the next chunk from this file, and update the mBuffer
-	// variables accordingly.
+	/// Read the next chunk from this file, and update the mBuffer
+	/// variables accordingly.
 	bool ReadChunk();
 
 	void TryToRefillBufferIfEmpty();

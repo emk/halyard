@@ -39,25 +39,29 @@ namespace model {
 	class Change;
 	class Model;
 
-	// Internal support code.
+	/// Internal support code.
 	namespace Private {
-		class DatumMap : public std::map<std::string,Datum *> {
+		/// A std::map wrapper for Datum *.
+        /// \obsolete - Used a standard map with shared_ptr<Datum>.
+        class DatumMap : public std::map<std::string,Datum *> {
 		public:
-			// Becase std::map does not have a virtual destructor, it is
-			// not safe to cast this class to std::map.
+			/// Becase std::map does not have a virtual destructor, it is
+			/// not safe to cast this class to std::map.
 			~DatumMap();
 		};
 
+		/// A std::vector wrapper for Datum *.
+        /// \obsolete - Used a standard map with shared_ptr<Datum>.
 		class DatumVector : public std::vector<Datum *> {
 		public:
-			// Becase std::list does not have a virtual destructor, it is
-			// not safe to cast this class to std::list.
+			/// Becase std::list does not have a virtual destructor, it is
+			/// not safe to cast this class to std::list.
 			~DatumVector();
 		};
 	};
 
 	//////////
-	/// The type of the data.
+	/// The type of the data represented by a Datum.
 	///
 	enum Type {
 		StringType,
@@ -68,7 +72,7 @@ namespace model {
 	};
 	
 	//////////
-	/// Class information about subclasses of Object. 
+	/// Class information about subclasses of model::Object. 
 	///
 	class Class {
 	public:

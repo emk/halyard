@@ -52,6 +52,7 @@ public:
 
 	xml_node(const_node_ptr inNode) : mNode(inNode) { ASSERT(mNode); }
 
+    /// Iterator class for xml_node objects.
 	class iterator {
 		node_ptr mNode;
 		bool mIsInMixed;

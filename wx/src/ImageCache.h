@@ -23,6 +23,7 @@
 #if !defined (ImageCache_H)
 #define ImageCache_H
 
+/// A cache of recently displayed wxBitmap objects.
 class ImageCache
 {
 	struct CachedImage {

@@ -26,7 +26,7 @@
 class Stage;
 class wxQuake2Overlay;
 
-
+/// An object which can be drawn to by scripts.
 class DrawingArea : public GraphicsTools::Image {
     Stage *mStage;
 	wxRect mBounds;

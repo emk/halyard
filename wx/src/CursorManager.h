@@ -23,6 +23,7 @@
 #if !defined (CursorManager_H)
 #define CursorManager_H
 
+/// Centralized manager class for cursor resources.
 class CursorManager
 {
     typedef std::map<std::string,wxCursor> CursorMap;

@@ -34,9 +34,9 @@ class TValue;
 //=========================================================================
 // TVariableManager
 //=========================================================================
-// A wrapper class for an STL map that stores variable names and their 
-// corresponding variables as TValues. 
 
+/// Centralized manager for special variables shared between the Tamale engine
+/// and a script.  The variables store TValue objects.
 class TVariableManager {
 	typedef std::map<std::string, TValue> TValueMap;
 

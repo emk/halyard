@@ -55,6 +55,8 @@ struct EntityMapping;
 /// drawing routines (Header.* on Win32, and CText.* on the Mac),
 /// this code will get much better.
 ///
+/// \deprecated Replace with an XML-based styled text system.
+///
 template <class CharT>
 class TEncoding
 {

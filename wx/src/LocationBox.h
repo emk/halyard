@@ -38,6 +38,7 @@
 #	define LOCATION_BOX_PARENT_CLASS wxTextCtrl
 #endif
 
+/// The browser-like text-entry box on the StageFrame.
 class LocationBox : public LOCATION_BOX_PARENT_CLASS
 {
 public:

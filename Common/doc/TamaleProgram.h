@@ -27,6 +27,7 @@
 
 BEGIN_NAMESPACE_FIVEL
 
+/// Savable representation of a TamaleProgram.
 class TamaleProgram : public model::Object {
 public:
 	DECLARE_MODEL_CLASS(TamaleProgram);

@@ -36,6 +36,7 @@ REFERENCE_TEST_CASE_FILE(BinMsg);
 //  TestReportFrame
 //=========================================================================
 
+/// A simple window for displaying a TestRunReport.
 class TestReportFrame : public wxFrame {
 	wxTextCtrl *mOutput;
 

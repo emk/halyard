@@ -35,10 +35,12 @@ class TCallback;
 //=========================================================================
 //  TNull
 //=========================================================================
-//  This class represents a "null" value, which may have different meanings
-//  in different contexts.  Included mostly for the sake of completeness
-//  and backwards compatibility.
 
+/// This class represents a "null" value, which may have different meanings
+/// in different contexts.  Included mostly for the sake of completeness
+/// and backwards compatibility.
+///
+/// \see TValue
 class TNull {
 public:
     TNull() {}
@@ -57,11 +59,13 @@ inline std::ostream &operator<<(std::ostream &out, const TNull &inV) {
 //=========================================================================
 //  TSymbol
 //=========================================================================
-//  This class represents a Scheme-style "symbol".  In Scheme, symbols are
-//  essentially pre-hashed ("interned") strings.  They can be compared
-//  much quicker than strings, and are typically used to represent names
-//  or tokens.
 
+/// This class represents a Scheme-style "symbol".  In Scheme, symbols are
+/// essentially pre-hashed ("interned") strings.  They can be compared
+/// much quicker than strings, and are typically used to represent names
+/// or tokens.
+///
+/// \see TValue
 class TSymbol {
     std::string mName;
 
@@ -79,9 +83,11 @@ extern std::ostream &operator<<(std::ostream &out, const TSymbol &inSym);
 //=========================================================================
 //  TPercent
 //=========================================================================
-//  This class represents a percentage value.  We need this in a few places
-//  in the API.
 
+/// This class represents a percentage value.  We need this in a few places
+/// in the API.
+///
+/// \see TValue
 class TPercent {
     double mValue;
 
@@ -100,6 +106,7 @@ extern std::ostream &operator<<(std::ostream &out, const TPercent &inPercent);
 //  TCallbackPtr
 //=========================================================================
 
+/// \see TValue
 typedef shared_ptr<TCallback> TCallbackPtr;
 extern std::ostream &operator<<(std::ostream &out,
 								const TCallbackPtr &inCallback);
@@ -107,74 +114,74 @@ extern std::ostream &operator<<(std::ostream &out,
 
 //=========================================================================
 //  TValue & TValueList
-//=========================================================================
-//  TValue is a fairly straightforward implementation of dynamic typing
-//  in C++.  In Windows terms, TValue is a "variant" type--it can hold a
-//  wide range of different data types, including lists.
-//
-//  TValue is used to interface between C++ and dynamically-typed scripting
-//  languages.  It may also be useful for working with COM variants on
-//  Windows systems.
-//
-//  TValue has many constructors and many output conversions; these should
-//  be used to access the data types.  For more examples of using TValue,
-//  see the test cases in TValue.cpp.
-//
-//  TValue has "value" semantics--you can copy it, store it in STL
-//  containers, and generally treat it as a well-behaved data type.
-//  No pointers are necessary.  All TValues are read-only, and use
-//  reference counting for efficient copying.
-//
-//  One warning about TValue: Any class with so many implicit constructors
-//  and conversion operators is asking for trouble.  It's convenient to
-//  use, but you must be VERY CAREFUL about which constructors and
-//  conversion operators you add, or you (and every future user) of
-//  TValue will drown in a sea of weird C++ compilation errors.
-//
-//  If you need to add a new data type, please see the locations marked
-//  with "ADDING NEW TYPES", here and in TValue.cpp.
-//  
+//=========================================================================  
 
+/// A list of TValue objects, which can in turn be stored in a TValue.
 typedef std::vector<TValue> TValueList;
 
+/// TValue is a fairly straightforward implementation of dynamic typing
+/// in C++.  In Windows terms, TValue is a "variant" type--it can hold a
+/// wide range of different data types, including lists.
+///
+/// TValue is used to interface between C++ and dynamically-typed scripting
+/// languages.  It may also be useful for working with COM variants on
+/// Windows systems.
+///
+/// TValue has many constructors and many output conversions; these should
+/// be used to access the data types.  For more examples of using TValue,
+/// see the test cases in TValue.cpp.
+///
+/// TValue has "value" semantics--you can copy it, store it in STL
+/// containers, and generally treat it as a well-behaved data type.
+/// No pointers are necessary.  All TValues are read-only, and use
+/// reference counting for efficient copying.
+///
+/// One warning about TValue: Any class with so many implicit constructors
+/// and conversion operators is asking for trouble.  It's convenient to
+/// use, but you must be VERY CAREFUL about which constructors and
+/// conversion operators you add, or you (and every future user) of
+/// TValue will drown in a sea of weird C++ compilation errors.
+///
+/// If you need to add a new data type, please see the locations marked
+/// with "ADDING NEW TYPES", here and in TValue.cpp.
 class TValue {
 public:
-    // ADDING NEW TYPES - You need to add a new item to this
-    // enumeration.
+    /// ADDING NEW TYPES - You need to add a new item to this
+    /// enumeration.
     enum Type {
-        TYPE_NULL,      // No value.
-        TYPE_STRING,    // Regular string.
-        TYPE_SYMBOL,    // A symbol, as in Scheme.
-        TYPE_LONG,      // A 32-bit signed integer.
-        TYPE_ULONG,     // A 32-bit unsigned integer.
-        TYPE_DOUBLE,    // A floating point number.
-        TYPE_BOOLEAN,   // A boolean value.
-        TYPE_POINT,     // A point.
-        TYPE_RECT,      // A rectangle, right-bottom exclusive.
-        TYPE_COLOR,     // An RGB color.
-        TYPE_LIST,      // A list of TValues
-        TYPE_POLYGON,   // A TPolygon
-        TYPE_CALLBACK,  // A scripting language callback
-        TYPE_PERCENT    // A TPercent
+        TYPE_NULL,      ///< No value.
+        TYPE_STRING,    ///< Regular string.
+        TYPE_SYMBOL,    ///< A symbol, as in Scheme.
+        TYPE_LONG,      ///< A 32-bit signed integer.
+        TYPE_ULONG,     ///< A 32-bit unsigned integer.
+        TYPE_DOUBLE,    ///< A floating point number.
+        TYPE_BOOLEAN,   ///< A boolean value.
+        TYPE_POINT,     ///< A point.
+        TYPE_RECT,      ///< A rectangle, right-bottom exclusive.
+        TYPE_COLOR,     ///< An RGB color.
+        TYPE_LIST,      ///< A list of TValues
+        TYPE_POLYGON,   ///< A TPolygon
+        TYPE_CALLBACK,  ///< A scripting language callback
+        TYPE_PERCENT    ///< A TPercent
     };
 
-    // Magic helper functions for converting C++ types back into runtime
-    // type IDs.  We rely on template specialization--we never
-    // define a body for the generic version of 'FindType', but we
-    // supply a specialized version for each value of T.
-    //
-    // ADDING NEW TYPES - Add exactly one new entry here, mapping from
-    // the C++ type used to store your data to the enumeration value
-    // you added above.
-    //
-    // WARNING - The type you choose to store data MUST HAVE VALUE
-    // SEMANTICS.  This means, specifically, the it supports copy-by-value,
-    // assignment, and can be stored in an STL container safely.  Pointers
-    // which need to be deleted and std::auto_ptr are NOT SAFE.
-    //
-    // XXX - These are really only public for use by TemplateImpl, due to
-    // either (a) bizarre C++ design flaws or (b) bizarre MSVC++ bugs.
-    // I'm too lazy to look up which.
+    /// Magic helper functions for converting C++ types back into runtime
+    /// type IDs.  We rely on template specialization--we never
+    /// define a body for the generic version of 'FindType', but we
+    /// supply a specialized version for each value of T.
+    ///
+    /// ADDING NEW TYPES - Add exactly one new entry here, mapping from
+    /// the C++ type used to store your data to the enumeration value
+    /// you added above.
+    ///
+    /// WARNING - The type you choose to store data MUST HAVE VALUE
+    /// SEMANTICS.  This means, specifically, the it supports copy-by-value,
+    /// assignment, and can be stored in an STL container safely.  Pointers
+    /// which need to be deleted and std::auto_ptr are NOT SAFE.
+    ///
+    /// XXX - These are really only public for use by TemplateImpl, due to
+    /// either (a) bizarre C++ design flaws or (b) bizarre MSVC++ bugs.
+    /// I'm too lazy to look up which.
     template <typename T> static Type FindType(const T &);
     template <> static Type FindType(const TNull &) { return TYPE_NULL; }
     template <> static Type FindType(const std::string &)
@@ -194,8 +201,8 @@ public:
     	{ return TYPE_CALLBACK; }
     template <> static Type FindType(const TPercent &) { return TYPE_PERCENT; }
 
-    // Normal casting from a TValue to a TCallbackPtr does not work
-    // so need to explicitly extract TCallbackPtr.
+    /// Normal casting from a TValue to a TCallbackPtr does not work
+    /// so need to explicitly extract TCallbackPtr.
 	TCallbackPtr GetCallbackPtr();
 
 private:
@@ -264,14 +271,14 @@ private:
     }
 
 public:
-    // Create an uninitialized TValue.
+    /// Create an uninitialized TValue.
     TValue() {}
 
-    // Create a TValue from common datatypes.
-    //
-    // ADDING NEW TYPES - You should add one or more constructors here
-    // for each new type.  It's relatively safe to define convenience
-    // constructors.
+    /// Create a TValue from common datatypes.
+    ///
+    /// ADDING NEW TYPES - You should add one or more constructors here
+    /// for each new type.  It's relatively safe to define convenience
+    /// constructors.
     TValue(const TNull &inValue);
     TValue(int inValue);
     TValue(int32 inValue);
@@ -289,11 +296,11 @@ public:
     TValue(const TValueList &inValue);
     TValue(const TCallbackPtr &inValue);
 
-    // Convert a TValue to common data types.
-    //
-    // ADDING NEW TYPES - You should add one conversion operator for
-    // each new type you add.  Adding the wrong operators here may
-    // trigger lots of C++ errors; be careful and test thoroughly.
+    /// Convert a TValue to common data types.
+    ///
+    /// ADDING NEW TYPES - You should add one conversion operator for
+    /// each new type you add.  Adding the wrong operators here may
+    /// trigger lots of C++ errors; be careful and test thoroughly.
     operator TNull() const;
     operator std::string() const;
     operator TSymbol() const;

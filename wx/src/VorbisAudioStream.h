@@ -27,6 +27,7 @@
 
 class VorbisFile;
 
+/// An AudioStream which reads from a VorbisFile.
 class VorbisAudioStream : public AudioStream
 {
 	std::string mFileName;

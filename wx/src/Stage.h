@@ -38,6 +38,7 @@ class CursorManager;
 class TransitionManager;
 class DrawingArea;
 
+/// The window where all actual script output and interaction occurs.
 class Stage : public wxWindow
 {
 	//////////

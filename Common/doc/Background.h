@@ -27,6 +27,7 @@
 
 BEGIN_NAMESPACE_FIVEL
 
+/// Experimental class representing a card background (probably obsolete).
 class Background : public model::Object {
 public:
 	DECLARE_MODEL_CLASS(Background);

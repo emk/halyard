@@ -46,6 +46,8 @@ void PropertyDlg::Description::AddField(const Field &inField)
 //  ModelValidator
 //=========================================================================
 
+/// Used to transfer data to and from a model::Object (does no actual
+/// validation!).
 class ModelStringValidator : public wxValidator
 {
 	model::Object *mObject;

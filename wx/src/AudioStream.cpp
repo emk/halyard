@@ -172,6 +172,7 @@ void AudioStream::Stop()
 //  AudioStreamTimer Methods
 //=========================================================================
 
+/// An internal timer called from the idle loop to trigger stream processing.
 class AudioStreamTimer : public wxTimer
 {
 public:

@@ -26,8 +26,7 @@
 namespace model { class Object; };
 
 //////////
-/// This is the dialog which pops up at startup time and asks you whether
-/// you want to open an existing program or create a new one.
+/// A dialog which allows you to edit the properties of a model::Object.
 ///
 class PropertyDlg : public wxDialog
 {
@@ -37,6 +36,7 @@ public:
 		MULTILINE = 1
 	};
 
+    /// A mapping between a dialog item and a field of a model::Object.
 	class Field {
 	public:
 		Field(const char *inName, const char *inLabel, Flags inFlags)
@@ -47,6 +47,7 @@ public:
 		Flags flags;
 	};
 
+    /// The description of a PropertyDlg to create.
 	class Description {
 	public:
 		Description(const char *inName);

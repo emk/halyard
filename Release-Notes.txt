@@ -8,6 +8,8 @@ CVS - emk
   * Manually reformatted a few comments to the doxygen comment style.
   * Automatically reformatted zillions of standard-format comments to
     the doxygen style.
+  * Added at least one sentence of documentation for all public classes in
+    the main program, no matter how simple or obscure.
 
 0.0.24 - 10 March 2004 - emk
 

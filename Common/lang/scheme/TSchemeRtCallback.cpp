@@ -59,6 +59,7 @@ void TSchemeRtCallback::Primitive::CheckArity(int inWantedArgCount,
     }
 }
 
+/// A TSchemeRtCallback which fetches a value from the TStateDB.
 class StateDbGet : public TSchemeRtCallback::Primitive {
     TStateListenerPtr mListener;
 

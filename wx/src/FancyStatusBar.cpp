@@ -26,8 +26,8 @@
 //=========================================================================
 //  ProgressMeter
 //=========================================================================
-//  A simple thermometer-style class with a setable color.
 
+///  A simple thermometer-style class with a setable color.
 class ProgressMeter : public wxWindow
 {
 	wxColour mColor;

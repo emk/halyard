@@ -26,6 +26,7 @@
 class StageFrame;
 class Stage;
 
+/// Our main application object.
 class FiveLApp : public wxApp
 {
 	//////////

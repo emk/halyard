@@ -30,13 +30,14 @@
 //  Transition
 //=========================================================================
 
-// The amount of time required to show a single frame of an arbitrary
-// transition, at leat until we know better.  On an 800MHz laptop,
-// crossfades require approximately 40 milliseconds.  We set this
-// value artificially low so that we'll run extra frames in the beginning
-// and get a more accurate sample.
+/// The amount of time required to show a single frame of an arbitrary
+/// transition, at leat until we know better.  On an 800MHz laptop,
+/// crossfades require approximately 40 milliseconds.  We set this
+/// value artificially low so that we'll run extra frames in the beginning
+/// and get a more accurate sample.
 #define DEFAULT_MILLISECONDS_PER_FRAME (20)
 
+/// A graphical transition effect.
 class Transition
 {
 	int mTotalFrames;
@@ -44,12 +45,12 @@ class Transition
 
 protected:
 	//////////
-	// Show a single step of the transition.
-	//
-	// [in] inStep - a number > 0.0 and < 1.0, corresponding to the step
-	//          to show.
-	// [in] inResources - The resources to use.
-	//
+	/// Show a single step of the transition.
+	///
+	/// \param inStep  A number > 0.0 and < 1.0, corresponding to the step
+	///          to show.
+	/// \param inResources  The resources to use.
+	///
 	virtual void ShowStep(double inStep, TransitionResources &inResources) = 0;
 
 public:
@@ -114,6 +115,7 @@ void Transition::RunTransition(int inMilliseconds,
 //  CrossFade
 //=========================================================================
 
+/// A gradual fade from one image to another.
 class CrossFade : public Transition
 {
 	void ShowStep(double inStep, TransitionResources &inResources);
@@ -174,6 +176,7 @@ enum FadeBlackType {
 	FADE_FROM_BLACK
 };
 
+/// A fade to or from a black screen.
 class FadeBlack : public Transition
 {
 	FadeBlackType mType;
@@ -246,17 +249,27 @@ enum Direction {
 	DIRECTION_DOWN
 };
 
+/// A transition which can move in one of four directions.
 class DirectionalTransition : public Transition
 {
 	Direction mDirection;
 
 protected:
-	// We pass these parameters to quite a few subroutines, so let's
-	// group them into a handy struct.
+	/// We pass these parameters to quite a few subroutines, so let's
+	/// group them into a handy struct.
 	struct Params {
+        /// Overall height and width of the transition.
 		int height, width;
-		int before_width, after_width;   // Only for horizontal transitions
-		int before_height, after_height; // Only for vertical transitions
+
+        /// Width of the original and new image.  Only for horizontal
+        /// transitions.
+		int before_width, after_width;
+
+        /// Height of the original and new image.  Only for vertical
+        /// transitions.
+		int before_height, after_height;
+
+        /// The wxDCs for the images used by this transition.
 		wxDC *before_dc, *after_dc, *output_dc;
 	};
 
@@ -270,11 +283,13 @@ public:
 	DirectionalTransition(Direction inDir) : mDirection(inDir) {}
 };
 
+/// This function does a lot of common setup for all the different
+/// versions of ShowStepXXX defined by our subclasses.
+///
+/// \see ShowStepLeft(), ShowStepRight(), ShowStepUp(), ShowStepDown()
 void DirectionalTransition::ShowStep(double inStep,
 									 TransitionResources &inResources)
 {
-	// This function does a lot of common setup for all the different
-	// versions of ShowStepXXX defined by our subclasses.
 
 	// Set up our basic parameters.
 	Params p;
@@ -308,11 +323,13 @@ void DirectionalTransition::ShowStep(double inStep,
 //=========================================================================
 //  Wipe
 //=========================================================================
-//  NOTE - Transition currently assumes that steps take constant time
-//  when computing speeds.  For now, we slow down wipes considerably
-//  to ensure this.  A different timing algorithm could be used with
-//  "incremental" wipes.
 
+///  A transition where the new image "wipes" over the old image.
+///
+///  NOTE - Transition currently assumes that steps take constant time
+///  when computing speeds.  For now, we slow down wipes considerably
+///  to ensure this.  A different timing algorithm could be used with
+///  "incremental" wipes.
 class Wipe : public DirectionalTransition
 {
 	void ShowStepLeft(Params &p);
@@ -361,6 +378,7 @@ void Wipe::ShowStepDown(Params &p)
 //  Push
 //=========================================================================
 
+/// A transition where the new image pushes the old image off screen.
 class Push : public DirectionalTransition
 {
 	void ShowStepLeft(Params &p);

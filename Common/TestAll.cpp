@@ -94,6 +94,7 @@ static void run_imlunit_tests() {
 //  Support for Tests Using the New-Style TestCase Framework
 //=========================================================================
 
+/// Output for a command-line-based unit test run.
 class ConsoleMeter : public ITestProgressMeter {
 public:
 	void UpdateTestProgress(int inTestIndex, int inTestCount,

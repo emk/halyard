@@ -48,6 +48,7 @@ USING_NAMESPACE_FIVEL
 
 static const int kMaxEncodedCharLength = 10;
 
+/// A template mapping HTML-style entity names to groups of characters.
 template <class CharT>
 struct FIVEL_NS EntityMapping {
     CharT *name;

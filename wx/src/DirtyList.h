@@ -23,6 +23,8 @@
 #ifndef DIRTYLIST_H
 #define DIRTYLIST_H
 
+/// A collection of screen rectangles which have been marked "dirty".  This
+/// class does smart merging of dirty rectangles to minimize redraw.
 class DirtyList {
 	typedef std::vector<wxRect> RectVector;
 	RectVector mRectangles;

@@ -28,6 +28,7 @@
 class StageFrame;
 class FancyStatusBar;
 
+/// The GUI-based unit test driver.
 class TestHarness : public ITestProgressMeter
 {
 	static TestHarness *sInstance;

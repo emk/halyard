@@ -30,6 +30,7 @@ class StageFrame;
 class Document;
 class ProgramTreeCtrl;
 
+/// Public interface to tree widget describing a Tamale script.
 class ProgramTree : public wxSashLayoutWindow
 {
 	DECLARE_EVENT_TABLE()

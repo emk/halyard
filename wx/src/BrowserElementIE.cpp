@@ -30,16 +30,18 @@
 //=========================================================================
 //  CustomIEHtmlWindow Support Class
 //=========================================================================
-//  You will probably find the following documentation useful:
-//
-//    http://msdn.microsoft.com/workshop/browser/webbrowser/reflist_cpp.asp
-//    http://msdn.microsoft.com/workshop/browser/prog_browser_node_entry.asp
 
 enum {
 	// XXX - Assign a real ID.
     ID_MSHTML = 592
 };
 
+
+///  Support class for BrowserElementIE.  You will probably find the
+///  following documentation useful:
+///
+///    - http://msdn.microsoft.com/workshop/browser/webbrowser/reflist_cpp.asp
+///    - http://msdn.microsoft.com/workshop/browser/prog_browser_node_entry.asp
 class CustomIEHtmlWindow : public wxIEHtmlWin {
     BrowserElementIE *mElement;
 

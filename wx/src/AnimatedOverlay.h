@@ -25,6 +25,8 @@
 
 #include "Overlay.h"
 
+/// An Overlay which moves and changes appearance automatically.
+/// The changes are controlled by keys in the TStateDB.
 class AnimatedOverlay : public Overlay, public TStateListener {
     wxPoint mBasePosition;
     wxPoint mCurrentOffset;

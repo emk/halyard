@@ -246,17 +246,17 @@ static TValue SchemeToRtCallback(Scheme_Object *inVal) {
     return TCallbackPtr(ptr);
 }
 
-// TypeInfo encapsulates the name of a Scheme predicate to check
-// the type of a Scheme object, and the conversion function to 
-// convert the Scheme object into a TValue if the predicate
-// returns true.
+/// TypeInfo encapsulates the name of a Scheme predicate to check
+/// the type of a Scheme object, and the conversion function to 
+/// convert the Scheme object into a TValue if the predicate
+/// returns true.
 struct TypeInfo {
     const char *predicate;
 	TValue (*conv)(Scheme_Object *);
 };
 
-// Remember to add TypeInfo data for any new supported Swindle 
-// classes that TSchemeConv can support.
+/// Remember to add TypeInfo data for any new supported Swindle 
+/// classes that TSchemeConv can support.
 static TypeInfo gTypeInfo[] = {
 	{"point?", &SchemeToTPoint},
 	{"rect?", &SchemeToTRect},
