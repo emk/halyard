@@ -64,7 +64,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
-	  mTextCtrl(NULL),
+	  mTextCtrl(NULL), mShouldWakeUpOnIdle(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false)
 {
@@ -348,6 +348,13 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 {
 	if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
 		EndWait();
+
+    // We need to do all wakeups here, because InterpreterWakeUp can't
+    // be called from a callback.
+    if (mShouldWakeUpOnIdle) {
+        mShouldWakeUpOnIdle = false;
+        InterpreterWakeUp();
+    }    
 
 	// Send an idle event to the Scheme engine occasionally.
 	if (ShouldSendEvents() &&
@@ -715,6 +722,7 @@ wxString Stage::FinishModalTextInput()
 
 bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 {
+    ASSERT(!mShouldWakeUpOnIdle);
 	ASSERT(!mWaitElement);
 
 	// Look for our element.
@@ -757,7 +765,7 @@ void Stage::EndWait()
 	ASSERT(mWaitElement.get());
 	mWaitElement = MovieElementPtr();
 	mWaitFrame = 0;
-	InterpreterWakeUp();
+    mShouldWakeUpOnIdle = true;
 }
 
 void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)

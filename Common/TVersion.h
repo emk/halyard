@@ -17,15 +17,24 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		23
+#define VERSION_REV_BIG		24
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.23 (Development)"
+#define VERSION_STRING		"Tamale 0.0.24 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.65  2004/03/10 19:29:17  emk
+ 0.0.24 - 10 March 2004 - emk
+
+   * Added STATE-DB-DEBUG function.
+   * Added "trigger_region" entity to Quake 2.
+   * Added support for ending WAITs from a callback.  Experimental.
+   * More state-db support functions.
+   * SYMCAT works like CAT, but returns symbols.
+
  Revision 1.64  2004/03/04 18:22:41  emk
  0.0.23 - 4 March 2004 - emk
 

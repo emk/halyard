@@ -131,6 +131,11 @@ class Stage : public wxWindow
 	//
 	ElementPtr mGrabbedElement;
 
+    //////////
+    // Are we currently waiting for a movie to reach a specified time?
+    //
+    bool mShouldWakeUpOnIdle;
+
 	//////////
 	// The movie we're waiting on, or NULL if we're not waiting on anything.
 	//

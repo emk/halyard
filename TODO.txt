@@ -20,6 +20,7 @@
       CDV 715
 
   Postponed after demo
+    Send binmsgs to clear regions when player connects
     Make Stage::GetEventDispatcher return shared pointer
     Change error-handling system for binmsg?
     Reticle bugs

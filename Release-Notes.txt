@@ -1,5 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.24 - 10 March 2004 - emk
+
+  * Added STATE-DB-DEBUG function.
+  * Added "trigger_region" entity to Quake 2.
+  * Added support for ending WAITs from a callback.  Experimental.
+  * More state-db support functions.
+  * SYMCAT works like CAT, but returns symbols.
+
 0.0.23 - 4 March 2004 - emk
 
   * Added (ON MEDIA-FINISHED (EVENT) ...) handler.
