@@ -23,7 +23,7 @@
            %browser% %edit-box-element% %movie-element% 
            browser edit-box vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
-           geiger-synth
+           %geiger-synth% geiger-synth
            sine-wave set-media-base-url! movie 
            movie-pause movie-resume set-media-volume!
            wait tc nap draw-line draw-box draw-box-outline inset-rect timeout
