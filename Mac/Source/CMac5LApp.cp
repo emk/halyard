@@ -47,7 +47,7 @@
 #include "CPrefs.h"
 #include "CIndex.h"
 
-// cbo_debug - take this out when don't need it anymore
+// cbo_debug - take this out when don't need anymore
 //#include <profiler.h>
 
 //
@@ -135,6 +135,9 @@ int main()
 		gTheApp = new CMac5LApp;	// create instance of application
 		gTheApp->Run();				//   class and run it
 	}
+	
+	if (gTheApp != NULL)
+		delete gTheApp;
 	
 	return (0);
 }
@@ -545,7 +548,7 @@ Boolean CMac5LApp::AttemptQuitSelf(Int32 /* inSaveOption */)
 {
 	if (mScriptRunning)
 		gPlayerView->KillScript();
-	mScriptRunning = FALSE;
+	mScriptRunning = false;
 	
 	DoGFade(true, 0, false);			// make sure we aren't faded out
 	gMenuUtil.ShowMenuBar();	// make sure we have the menu
@@ -617,7 +620,7 @@ bool  CMac5LApp::OpenScript(FSSpec *scriptSpec)
 	
 	if (InitIndex(scriptSpec, &indexSpec, FALSE))		// start the ball rolling
 	{
-		mScriptRunning = TRUE;
+		mScriptRunning = true;
 		
 		gPlayerView->Activate();
 		gCardManager.JumpToCardByName("Start", FALSE);
@@ -806,7 +809,7 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard)
 		
 	if (InitIndex(scriptSpec, &indexSpec, FALSE))		// start the ball rolling
 	{
-		mScriptRunning = TRUE;
+		mScriptRunning = true;
 		
 		gVariableManager.SetString("_lpstat", "0");
 		gVariableManager.SetString("_lpactive", "0");
@@ -824,6 +827,9 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard)
 
 /* 
 $Log$
+Revision 1.4  1999/10/14 11:59:59  chuck
+no message
+
 Revision 1.3  1999/10/07 12:37:53  chuck
 Initial revision
 

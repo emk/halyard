@@ -22,7 +22,6 @@
 #include "CMacroManager.h"
 #include "CHeader.h"
 #include "CFiles.h"
-#include "CPointDevice.h"
 #include "CPicture.h"
 
 #include "CPlayerView.h"

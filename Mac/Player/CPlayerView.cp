@@ -686,19 +686,6 @@ void CPlayerView::KillScript(void)
 	mPauseFromKey = false;
 	mMoviePaused = false;
 
-#ifdef OLD_WAY_TO_DO_EXIT
-	- we used to make the screen black whenever exit was called - now just leave
-	whatever is on the screen 
-	// Sets fore & background color for CopyBits.
-	//StColorPenState::Normalize();
-
-	//CalcLocalFrameRect(theFrame);
-
-	//::FillRect(&theFrame, &qd.black);		// cbo_fix - if we do a fade does this go away??
-	//::ValidRect(&theFrame);					// cbo_fix - this is necessary to keep from seeing the 
-
-#endif
-
 	gCardManager.CurCardKill();
 	
 	if (gMovieManager.Playing())
@@ -792,8 +779,9 @@ void CPlayerView::ExecuteSelf(MessageT /* inMessage */, void *ioParam)
 						keyHandled = true;
 						break;
 					case 'q':							// q -> quit
-						KillScript();
-						gTheApp->DoQuit();
+					// cbo_fix
+						gTheApp->DoExit(0);
+						//gTheApp->DoQuit();
 						
 						keyHandled = true;
 						break;
