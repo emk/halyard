@@ -53,7 +53,7 @@
   ;;  kernel's inner workings.  The rest of these functions can be found
   ;;  in the 5L-API module.
   
-  (provide call-5l-prim have-5l-prim? idle blocking-idle
+  (provide call-5l-prim have-5l-prim? value->boolean idle blocking-idle
            engine-var set-engine-var! engine-var-exists?  throw 
            exit-script refresh)
 
@@ -75,6 +75,17 @@
   
   (define (have-5l-prim? name)
     (call-5l-prim 'haveprimitive name))
+
+  (define (value->boolean val)
+    ;; XXX - Coerce a Scheme value to an explicit boolean value.  This
+    ;; is currently needed in a few points in the Scheme/C++
+    ;; interface, because C++ doesn't understand Scheme's rules for
+    ;; which values are true and which are false.  We should probably
+    ;; do something language-independent in C++, but the correct
+    ;; design is unclear.
+    (if val
+        #t
+        #f))
   
   (define (%idle blocking?)
     (%kernel-die-if-callback 'idle)

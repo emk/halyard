@@ -8,7 +8,7 @@
 USING_NAMESPACE_FIVEL
 
 Zone::Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
-		   FIVEL_NS TCallback *inDispatch, wxCursor &inCursor)
+		   FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor)
     : LightweightElement(inStage, inName, inDispatch, inCursor),
 	  mPolygon(inPoly)
 {

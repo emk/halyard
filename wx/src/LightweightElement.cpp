@@ -5,11 +5,11 @@
 #include "EventDispatcher.h"
 
 LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
-									   FIVEL_NS TCallback *inDispatch,
+									   FIVEL_NS TCallbackPtr inDispatch,
 									   wxCursor &inCursor)
     : Element(inStage, inName), mCursor(inCursor)
 {
-    ASSERT(inDispatch);
+    ASSERT(inDispatch.get());
 	mDispatcher = new EventDispatcher();
 	mDispatcher->SetDispatcher(inDispatch);
 }

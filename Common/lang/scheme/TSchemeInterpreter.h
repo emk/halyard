@@ -8,6 +8,7 @@
 #include "FileSystem.h"
 #include "TSchemePtr.h"
 #include "TSchemeCallback.h"
+#include "TSchemeConv.h"
 
 class TPercent;
 
@@ -43,9 +44,7 @@ protected:
 class TSchemeInterpreter : public TInterpreter
 {
 	friend class TSchemeInterpreterManager;
-	friend class TSchemeCallbackArgumentList;
 	friend class TSchemeCallback;
-	friend class TSchemeArgumentList;
 
 	static Scheme_Env *sGlobalEnv;
 	static Scheme_Env *sScriptEnv;
@@ -126,83 +125,6 @@ public:
 	virtual bool IsValidCard(const char *inCardName);
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
-};
-
-//////////
-// A list of Scheme values, for use by the argument-parsing system.  This
-// is an abstract class with several subclasses, because mzscheme has several
-// different kinds of lists which we might want to process.
-//
-class TSchemeArgumentList : public TArgumentList
-{
-	void TypeCheckFail();
-	void TypeCheck(Scheme_Type inType, Scheme_Object *inValue);
-	void TypeCheckStruct(const char *inPredicate, Scheme_Object *inVal);
-	int32 GetInt32Member(const char *inName, Scheme_Object *inVal);
-
-public:
-	TSchemeArgumentList() {}
-
-protected:
-	//////////
-	// Fetch the next argument.
-	//
-	virtual Scheme_Object *GetNextArg() = 0;
-	
-	// For documentation of these virtual methods, see TPrimitives.h.
-	virtual std::string GetStringArg();
-	virtual std::string GetSymbolArg();
-	virtual int32 GetInt32Arg();
-	virtual uint32 GetUInt32Arg();
-	virtual bool GetBoolArg();
-	virtual double GetDoubleArg();
-	virtual TPoint GetPointArg();
-	virtual TRect GetRectArg();
-	virtual TPolygon GetPolygonArg();
-	virtual GraphicsTools::Color GetColorArg();
-	virtual void GetValueOrPercentArg(bool &outIsPercent,
-									  int32 &outValue);
-	virtual TCallback *GetCallbackArg();
-	virtual TArgumentList *GetListArg();
-};
-
-
-//////////
-// A list of Scheme_Object values stored as an argc,argv pair.  This is
-// the format which mzscheme uses to pass function arguments on the stack.
-//
-class TSchemeArgvList : public TSchemeArgumentList
-{
-	//////////
-	// The number of arguments in mArgv.
-	//
-	int mArgc;
-
-	//////////
-	// The arguments passed to a primitive.  We don't need to use a
-	// TSchemePtr here, because mzscheme protects this object from
-	// collection.
-	//
-	Scheme_Object **mArgv;
-
-	//////////
-	// The number of arguments processed so far.
-	//
-	int mArgsReturned;
-
-public:
-	TSchemeArgvList(int inArgc, Scheme_Object **inArgv)
-		: mArgc(inArgc), mArgv(inArgv), mArgsReturned(0) {}
-
-	virtual bool HasMoreArguments() { return mArgsReturned < mArgc; }
-
-protected:
-	Scheme_Object *GetNextArg()
-	{
-		if (!HasMoreArguments())
-			throw TException(__FILE__, __LINE__, "Not enough arguments");
-		return mArgv[mArgsReturned++];
-	}
 };
 
 END_NAMESPACE_FIVEL

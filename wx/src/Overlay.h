@@ -16,7 +16,7 @@ class Overlay : public LightweightElement
 	
 public:
 	Overlay(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-			FIVEL_NS TCallback *inDispatch, wxCursor &inCursor,
+			FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor,
 			bool inHasAlpha);
 
 	virtual bool IsPointInElement(const wxPoint &inPoint);

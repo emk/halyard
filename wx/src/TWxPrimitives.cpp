@@ -176,7 +176,7 @@ DEFINE_5L_PRIMITIVE(Browser) {
 	std::string name;
     bool want_builtin;
 	TRect bounds;
-    TCallback *dispatcher;
+    TCallbackPtr dispatcher;
 
 	inArgs >> SymbolName(name) >> dispatcher >> bounds >> want_builtin;
 
@@ -634,7 +634,7 @@ DEFINE_5L_PRIMITIVE(Refresh) {
 DEFINE_5L_PRIMITIVE(Overlay) {
 	std::string name, cursor;
 	TRect bounds;
-	TCallback *dispatcher;
+	TCallbackPtr dispatcher;
 	bool is_trans;
 	
 	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor >> is_trans;
@@ -678,7 +678,7 @@ DEFINE_5L_PRIMITIVE(RegisterCursor) {
 }
 
 DEFINE_5L_PRIMITIVE(RegisterEventDispatcher) {
-	TCallback *callback;
+	TCallbackPtr callback;
 	inArgs >> callback;
 	wxGetApp().GetStage()->GetEventDispatcher()->SetDispatcher(callback);
 }
@@ -751,7 +751,7 @@ DEFINE_5L_PRIMITIVE(Wait) {
 DEFINE_5L_PRIMITIVE(Zone) {
 	std::string name, cursor;
 	TPolygon poly;
-	TCallback *dispatcher;
+	TCallbackPtr dispatcher;
 	
 	inArgs >> SymbolName(name) >> poly >> dispatcher >> cursor;
 	new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher,

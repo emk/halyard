@@ -51,6 +51,17 @@ class ValueOrPercent;
 //
 class TArgumentList
 {
+	//////////
+	// The arguments passed to a primitive will be stored as TValues
+	// in a TValueList.
+    //
+	TValueList mArgList;
+
+	//////////
+	// A pointer to the current TValue object in mArgList
+    //
+	TValueList::iterator mArgPtr;
+
 	friend TArgumentList &operator>>(TArgumentList &inArgs,
 									 const SymbolName &inVoP);
 	friend TArgumentList &operator>>(TArgumentList &inArgs,
@@ -70,9 +81,18 @@ class TArgumentList
 
 protected:
 	//////////
+	// Fetch the next argument.
+	//
+	virtual TValue GetNextArg() {
+		if(!HasMoreArguments())
+			THROW("Not enough arguments");
+		return *mArgPtr++;
+	}
+
+    //////////
 	// Return the next argument as a string.
 	//
-	virtual std::string GetStringArg() = 0;
+	virtual std::string GetStringArg();
 
 	//////////
 	// Return the next argument as a symbol.  Symbols are basically the
@@ -81,75 +101,79 @@ protected:
 	// your language doesn't support symbols, make strings and symbols
 	// equivalent.
 	//
-	virtual std::string GetSymbolArg() = 0;
+	virtual std::string GetSymbolArg();
 
 	//////////
 	// Return the next argument as a singed, 32-bit integer.
 	//
-	virtual int32 GetInt32Arg() = 0;
+	virtual int32 GetInt32Arg();
 
 	//////////
 	// Return the next argument as an unsinged, 32-bit integer.
 	//
-	virtual uint32 GetUInt32Arg() = 0;
+	virtual uint32 GetUInt32Arg();
 
 	//////////
 	// Return the next argument as a boolean value.
 	//
-	virtual bool GetBoolArg() = 0;
+	virtual bool GetBoolArg();
 
 	//////////
 	// Return the next argument as a double.
 	//
-	virtual double GetDoubleArg() = 0;
+	virtual double GetDoubleArg();
 
 	//////////
 	// Return the next argument as a point.
 	//
-	virtual TPoint GetPointArg() = 0;
+	virtual TPoint GetPointArg();
 
 	//////////
 	// Return the next argument as a rectangle.
 	//
-	virtual TRect GetRectArg() = 0;
+	virtual TRect GetRectArg();
 
 	//////////
 	// Return the next argument as a polygon.
 	//
-	virtual TPolygon GetPolygonArg() = 0;
+	virtual TPolygon GetPolygonArg();
 
 	//////////
 	// Return the next argument as a color.
 	//
-	virtual GraphicsTools::Color GetColorArg() = 0;
+	virtual GraphicsTools::Color GetColorArg();
 
 	//////////
 	// Return the next argument as either a value or a percentage.
 	//
 	virtual void GetValueOrPercentArg(bool &outIsPercent,
-									  int32 &outValue) = 0;
+									  int32 &outValue);
 
 	//////////
 	// Return the next argument as a callback.  This object
 	// is allocated on the heap, and must be destroyed by the
 	// caller (typically the primitive function) using delete.
 	//
-	virtual TCallback *GetCallbackArg() = 0;
+	virtual TCallbackPtr GetCallbackArg();
 
 	//////////
 	// Return the next argument as a list.  This object
 	// is allocated on the heap, and must be destroyed by the
 	// caller (typically the primitive function) using delete.
 	//
-	virtual TArgumentList *GetListArg() = 0;
+	virtual TArgumentList *GetListArg();
 
 public:
+	TArgumentList() {}
+	TArgumentList(TValueList inVal);
 	virtual ~TArgumentList() {}
-	
+		
 	//////////
 	// Are there any more arguments left?
-	//
-	virtual bool HasMoreArguments() = 0;
+	//	
+	virtual bool HasMoreArguments() { 
+		return (mArgPtr != mArgList.end());
+	}
 
 	// These functions provide handy wrapper functions
 	// for the protected Get* functions above.
@@ -165,7 +189,7 @@ public:
 	friend TArgumentList &operator>>(TArgumentList &args, TPoint &out);
 	friend TArgumentList &operator>>(TArgumentList &args,
 									 GraphicsTools::Color &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TCallback* &out);
+	friend TArgumentList &operator>>(TArgumentList &args, TCallbackPtr &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TArgumentList* &out);
 
 	//////////

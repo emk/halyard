@@ -23,7 +23,7 @@ class LightweightElement : public Element {
 	
 public:
 	LightweightElement(Stage *inStage, const wxString &inName,
-					   FIVEL_NS TCallback *inDispatch, wxCursor &inCursor);
+					   FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor);
 	~LightweightElement();
 
 	virtual bool IsLightWeight() { return true; }

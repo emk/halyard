@@ -23,7 +23,7 @@ protected:
     // [in] inDispatch - The event dispatcher to use.
     //
     BrowserElement(Stage *inStage, const wxString &inName,
-                   FIVEL_NS TCallback *inDispatch);
+                   FIVEL_NS TCallbackPtr inDispatch);
 
     //////////
     // You'll need to dispatch a few events to this dispatcher, typically

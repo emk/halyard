@@ -69,14 +69,11 @@ void Quake2Engine::NotifyScriptReload()
 
 void Quake2Engine::DeleteCallbacks()
 {
-	CallbackMap::iterator i = mCallbackMap.begin();
-	for (; i != mCallbackMap.end(); ++i)
-		delete i->second;
 	mCallbackMap.clear();
 }
 
 void Quake2Engine::RegisterCallback(const std::string &inName,
-									TCallback *inCallback)
+									TCallbackPtr inCallback)
 {
 	// Check to see if this command is currently in our map.
 	CallbackMap::iterator found = mCallbackMap.find(inName);
@@ -89,12 +86,11 @@ void Quake2Engine::RegisterCallback(const std::string &inName,
 	else
 	{
 		// Delete an existing command with this name.
-		delete found->second;
 		mCallbackMap.erase(found);
 	}
 
 	// Add the new command to our map.
-	mCallbackMap.insert(std::pair<std::string,TCallback*>(inName, inCallback));
+	mCallbackMap.insert(std::pair<std::string,TCallbackPtr>(inName, inCallback));
 }
 
 void Quake2Engine::HandleCommand()
@@ -105,7 +101,7 @@ void Quake2Engine::HandleCommand()
 		wxQuake2Window::HandleCommand();
 	else
 	{
-		TCallback *callback = found->second;
+		TCallbackPtr callback = found->second;
 
 		TValueList args;
 		int argc = CommandArgc();

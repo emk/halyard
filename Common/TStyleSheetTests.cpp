@@ -61,7 +61,10 @@ protected:
 		outIsPercent = false;
 		outValue = GetInt32Arg();
 	}
-	virtual TCallback *GetCallbackArg() { ASSERT(false); return NULL; }
+	virtual TCallbackPtr GetCallbackArg() { 
+	   ASSERT(false); 
+	   return TCallbackPtr(); 
+	}
 	virtual TArgumentList *GetListArg() { ASSERT(false); return NULL; }
 };
 

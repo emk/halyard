@@ -18,7 +18,7 @@ class BrowserElementWx : public BrowserElement {
 public:
     BrowserElementWx(Stage *inStage, const wxString &inName,
                      const wxRect &inBounds,
-                     FIVEL_NS TCallback *inDispatch);
+                     FIVEL_NS TCallbackPtr inDispatch);
 
     virtual void LoadPage(const wxString &inUrl);
     virtual wxString GetCurrentPageUrl();

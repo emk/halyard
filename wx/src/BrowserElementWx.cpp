@@ -71,7 +71,7 @@ CustomWxHtmlWindow::OnOpeningURL(wxHtmlURLType inType,
 
 BrowserElementWx::BrowserElementWx(Stage *inStage, const wxString &inName,
                                    const wxRect &inBounds,
-                                   FIVEL_NS TCallback *inDispatch)
+                                   FIVEL_NS TCallbackPtr inDispatch)
     : BrowserElement(inStage, inName, inDispatch)
                       
 {

@@ -91,7 +91,7 @@ DEFINE_5L_PRIMITIVE(Quake2Print)
 DEFINE_5L_PRIMITIVE(Quake2RegisterCommand)
 {
 	std::string name;
-	TCallback *callback;
+	TCallbackPtr callback;
 	inArgs >> SymbolName(name) >> callback;
 	REQUIRE_QUAKE2_INITIALIZATION; // FIXME - We may leak callback here.
 	Quake2Engine::GetInstance()->RegisterCallback(name, callback);

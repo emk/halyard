@@ -9,7 +9,7 @@
 (define-syntax test
   (syntax-rules ()
     [(test sexpr)
-     (call-5l-prim 'test (value->string 'sexpr) sexpr)]))
+     (call-5l-prim 'test (value->string 'sexpr) (value->boolean sexpr))]))
 
 
 ;;=========================================================================
@@ -44,7 +44,6 @@
 (test-arg-type 'int32 '(-2147483648 0 2147483647))
 (test-arg-type 'uint32 '(0 1 4294967295))
 (test-arg-type 'bool '(#t #f))
-(test-arg-type 'bool '(0 #f))
 (test-arg-type 'double '(-1.0 0.0 1.0))
 (test-arg-type 'double '(-1 0 1))
 (test-arg-type 'TPoint (list (point 1 2)))

@@ -62,15 +62,14 @@ DEFINE_5L_PRIMITIVE(TestPause)
 
 DEFINE_5L_PRIMITIVE(TestCallback)
 {
-	TCallback *callback;
+	TCallbackPtr callback;
 	inArgs >> callback;
 	callback->Run();
-	delete callback;
 }
 
 DEFINE_5L_PRIMITIVE(TestCallbackArgs)
 {
-	TCallback *callback;
+	TCallbackPtr callback;
 	inArgs >> callback;
 
 	TValueList args, nested;
@@ -80,8 +79,6 @@ DEFINE_5L_PRIMITIVE(TestCallbackArgs)
 	nested.push_back(TSymbol("bar"));
 	args.push_back(nested);
 	callback->Run(args);
-
-	delete callback;
 }
 
 DEFINE_5L_PRIMITIVE(TestTimeout)

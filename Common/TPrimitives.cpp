@@ -32,6 +32,96 @@ std::string TArgumentList::EndLog()
 	return result;
 }
 
+std::string TArgumentList::GetStringArg() {
+	TValue arg = GetNextArg(); 
+
+	if(arg.GetType() == TValue::TYPE_SYMBOL) {
+		gDebugLog.Caution("Symbol '%s passed as string argument.",
+						  TSymbol(arg).GetName().c_str());
+		
+		return TSymbol(arg).GetName();
+	}
+	
+	return std::string(arg);
+}
+
+std::string TArgumentList::GetSymbolArg() {
+	TValue arg = GetNextArg(); 
+	return TSymbol(arg).GetName();
+}
+
+int32 TArgumentList::GetInt32Arg() {
+	TValue arg = GetNextArg(); 
+	return int32(arg);
+}
+
+uint32 TArgumentList::GetUInt32Arg() {	
+    TValue arg = GetNextArg(); 
+	return uint32(arg);
+}
+
+bool TArgumentList::GetBoolArg() {
+	TValue arg = GetNextArg(); 
+	return bool(arg);
+}
+
+double TArgumentList::GetDoubleArg() {	
+	TValue arg = GetNextArg(); 
+	return double(arg);
+}
+
+TPoint TArgumentList::GetPointArg() {
+	TValue arg = GetNextArg(); 
+	return TPoint(arg);
+}
+
+TRect TArgumentList::GetRectArg() {
+	TValue arg = GetNextArg(); 
+	return TRect(arg);
+}
+
+TPolygon TArgumentList::GetPolygonArg() {
+	TValue arg = GetNextArg(); 
+	return TPolygon(arg);
+}
+
+GraphicsTools::Color TArgumentList::GetColorArg() {
+	TValue arg = GetNextArg(); 
+	return GraphicsTools::Color(arg);
+}
+
+void TArgumentList::GetValueOrPercentArg(bool &outIsPercent,
+										 int32 &outValue)
+{
+	TValue arg = GetNextArg(); 
+
+	if(arg.GetType() != TValue::TYPE_PERCENT) {
+		outIsPercent = false;
+		outValue = int32(arg);
+	} else {
+		outIsPercent = true;
+		outValue = TPercent(arg).GetValue();
+	}
+}
+
+TCallbackPtr TArgumentList::GetCallbackArg() {
+	TValue arg = GetNextArg();
+
+	TCallbackPtr ptr;
+	ptr = arg;
+	return ptr;
+}
+
+TArgumentList *TArgumentList::GetListArg() {
+	TValue arg = GetNextArg(); 
+	return new TArgumentList(TValueList(arg));
+}
+
+TArgumentList::TArgumentList(TValueList inVal) {
+	mArgList = TValueList(inVal);
+	mArgPtr = mArgList.begin();
+}
+
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TString &out)
 {
     out = TString(args.GetStringArg().c_str());
@@ -145,7 +235,7 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args,
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TCallback* &out)
+TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TCallbackPtr &out)
 {
     out = args.GetCallbackArg();
 	args.LogParameter(out->PrintableRepresentation());

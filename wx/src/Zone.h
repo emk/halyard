@@ -16,7 +16,7 @@ class Zone : public LightweightElement
 	
 public:
 	Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
-		 FIVEL_NS TCallback *inDispatch, wxCursor &inCursor);
+		 FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor);
 
 	virtual bool IsPointInElement(const wxPoint &inPoint);
 

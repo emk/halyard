@@ -5,10 +5,10 @@
 #include "EventDispatcher.h"
 
 BrowserElement::BrowserElement(Stage *inStage, const wxString &inName,
-                               FIVEL_NS TCallback *inDispatch)
+                               FIVEL_NS TCallbackPtr inDispatch)
     : Widget(inStage, inName)
 {
-    ASSERT(inDispatch);
+    ASSERT(inDispatch.get());
 	mDispatcher = new EventDispatcher();
 	mDispatcher->SetDispatcher(inDispatch);
 }

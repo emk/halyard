@@ -25,13 +25,9 @@ static Scheme_Object *MakeSchemeList(const TValueList &inList) {
 	return result;
 }
 
-
 Scheme_Object *TValueToScheme(TValue inVal) {
 	switch (inVal.GetType())
-	{
-		case TValue::TYPE_NULL:
-			return scheme_null;
-			
+	{			
 		case TValue::TYPE_STRING:
 			return scheme_make_string(std::string(inVal).c_str());
 			
@@ -83,6 +79,8 @@ Scheme_Object *TValueToScheme(TValue inVal) {
 //  SchemeToTValue
 //========================================================================= 
 
+TValue SchemeToTValue(Scheme_Object *inVal);
+
 static void SchemeTypeCheckFail() {
 	throw TException(__FILE__, __LINE__, "Argument type mismatch");
 }
@@ -95,6 +93,9 @@ static void SchemeTypeCheck(Scheme_Type inType, Scheme_Object *inValue) {
 static void SchemeTypeCheckStruct(const char *inPredicate,
 								  Scheme_Object *inVal)
 {
+	// We want to verify that inVal is an instance of a Swindle class 
+	// class specified by inPredicate. If the object if of the right 
+	// class, CallScheme returns true.
 	Scheme_Object *b = TSchemeInterpreter::CallScheme(inPredicate, 1, &inVal);
 	if (SCHEME_FALSEP(b))
 		SchemeTypeCheckFail();
@@ -118,18 +119,22 @@ static double SchemeGetRealMember(const char *inName,
 	Scheme_Object *val = TSchemeInterpreter::CallScheme(inName, 1, &inVal);
 	if (!SCHEME_REALP(val))
 		SchemeTypeCheckFail();
-
 	return scheme_real_to_double(val);
 }
 
 static TValue SchemeLongOrULongToTValue(Scheme_Object *inVal) {
 	if (!SCHEME_EXACT_INTEGERP(inVal))
 		SchemeTypeCheckFail();
-	long result;
-	unsigned long uresult;
+	
+	// Since there is no distinction in Scheme between a signed
+	// and an unsigned integer, we will assume that inVal is a
+	// signed integer, unless it cannot fit into a C++ signed 
+	// long.
+	int32 result;
 	if (scheme_get_int_val(inVal, &result)) 
 		return TValue(result);
 
+	uint32 uresult;
 	if (scheme_get_unsigned_int_val(inVal, &uresult))
 		return TValue(uresult);
 
@@ -159,6 +164,18 @@ static TValue SchemeToColor(Scheme_Object *inVal) {
 						SchemeGetInt32Member("color-alpha", inVal)));
 }
 
+static TValue SchemeListToTValue(Scheme_Object *inVal) {
+	TValueList list;
+	while (SCHEME_PAIRP(inVal)) {
+		list.push_back(SchemeToTValue(SCHEME_CAR(inVal)));
+		inVal = SCHEME_CDR(inVal);
+	}
+	if (!SCHEME_NULLP(inVal))
+		THROW("Cannot pass dotted lists to primitives");
+
+	return TValue(list);
+}
+
 static TValue SchemeToTPolygon(Scheme_Object *inVal) {	
 	std::vector<TPoint> pts;
 	Scheme_Object *scheme_pts = 
@@ -167,9 +184,7 @@ static TValue SchemeToTPolygon(Scheme_Object *inVal) {
 		SchemeTypeCheckFail();
 	
 	Scheme_Object *current;
-
-	while (!SCHEME_NULLP(scheme_pts))
-	{
+	while (SCHEME_PAIRP(scheme_pts)) {
 		current = SCHEME_CAR(scheme_pts);
 		SchemeTypeCheckStruct("point?", current);
 		pts.push_back(TPoint(SchemeGetInt32Member("point-x", current),
@@ -183,14 +198,20 @@ static TValue SchemeToTPolygon(Scheme_Object *inVal) {
 }
 
 static TValue SchemeToTPercent (Scheme_Object *inVal) {
-	return (TValue(TPercent(SchemeGetRealMember("percent-value", inVal))));
+	return TValue(TPercent(SchemeGetRealMember("percent-value", inVal)));
 }
 
+// TypeInfo encapsulates the name of a Scheme predicate to check
+// the type of a Scheme object, and the conversion function to 
+// convert the Scheme object into a TValue if the predicate
+// returns true.
 struct TypeInfo {
     const char *predicate;
 	TValue (*conv)(Scheme_Object *);
 };
 
+// Remember to add TypeInfo data for any new supported Swindle 
+// classes that TSchemeConv can support.
 static TypeInfo gTypeInfo[] = {
 	{"point?", &SchemeToTPoint},
 	{"rect?", &SchemeToTRect},
@@ -200,7 +221,13 @@ static TypeInfo gTypeInfo[] = {
 	{NULL, NULL}
 };
 
+static TValue SchemeClosureToTValue(Scheme_Object *inVal) {
+	return TValue(TCallbackPtr(new TSchemeCallback(inVal)));
+}
+
 static TValue SchemeStructToTValue(Scheme_Object *inVal) {
+	// Loop through the array of all supported SchemeToTValue 
+	// conversions for struct types.
 	int i = 0;
 	while (gTypeInfo[i].predicate != NULL) {
 		Scheme_Object *b = 
@@ -210,40 +237,48 @@ static TValue SchemeStructToTValue(Scheme_Object *inVal) {
 			return gTypeInfo[i].conv(inVal);
 		i++;
 	}
-	
 	return TValue();
 }
 
 TValue SchemeToTValue(Scheme_Object *inVal) {
 	Scheme_Type type = SCHEME_TYPE(inVal);
 	
-	switch (type)
-	{
+	switch (type) {
 		case scheme_string_type:
 			return TValue(std::string(SCHEME_STR_VAL(inVal), 
 									  SCHEME_STRLEN_VAL(inVal)));
 
 		case scheme_symbol_type:
-			return TValue(std::string(SCHEME_SYM_VAL(inVal)));
+			return TValue(TSymbol(std::string(SCHEME_SYM_VAL(inVal))));
 
+		// We will convert both 16bit and 32bit numbers to C++
+		// longs or ulongs.
 		case scheme_integer_type:
 		case scheme_bignum_type:
 			return SchemeLongOrULongToTValue(inVal);
-
+			
+		case scheme_rational_type:
 		case scheme_double_type:
 			return TValue(scheme_real_to_double(inVal));
 
-		case scheme_true_type:
+		case scheme_true_type :
 			return TValue(true);
 
 		case scheme_false_type:
 			return TValue(false);
 
+		case scheme_null_type:
+		case scheme_pair_type:
+			return SchemeListToTValue(inVal);
+
 		case scheme_proc_struct_type:
 			return SchemeStructToTValue(inVal);
 									  
 		default:
-			THROW("Unhandled Scheme Object conversion");
+			if (SCHEME_PROCP(inVal))
+				return SchemeClosureToTValue(inVal); // for callbacks!!
+			else
+				THROW("Unhandled Scheme Object conversion");
 	}
 
 	ASSERT(false);  // We should never get here.
@@ -287,7 +322,6 @@ BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
 			 false);
 
 	// Test simple types.
-	CHECK_TVALUE_CONV(TNull(), scheme_null);
 	CHECK_TVALUE_CONV("Hello", scheme_make_string("Hello"));
 	CHECK_TVALUE_CONV(TSymbol("foo"), scheme_intern_symbol("foo"));
 	CHECK_TVALUE_CONV(MAX_INT32, scheme_make_integer_value(MAX_INT32));
@@ -339,36 +373,15 @@ void CHECK_SCHEME_CONV(Scheme_Object *inVal, const TValue inResult) {
 
 
 BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
-/*
-    enum Type {
--       TYPE_NULL,      // No value.
-/       TYPE_STRING,    // Regular string.
-/       TYPE_SYMBOL,    // A symbol, as in Scheme.
-/       TYPE_LONG,      // A 32-bit signed integer.
-/       TYPE_ULONG,     // A 32-bit unsigned integer.
-/       TYPE_DOUBLE,    // A floating point number.
-/       TYPE_BOOLEAN,   // A boolean value.
-/       TYPE_POINT,     // A point.
-/       TYPE_RECT,      // A rectangle, right-bottom exclusive.
-/       TYPE_COLOR,     // An RGB color.
--       TYPE_LIST,      // A list of TValues
-/       TYPE_POLYGON,   // A TPolygon
-        TYPE_CALLBACK,  // A scripting language callback
-/       TYPE_PERCENT    // A TPercent
-*/
-
-	// We will not be converting scheme_nulls to TNulls
 	
 	// Simple types
 	CHECK_SCHEME_CONV(scheme_make_string("hello"), TValue("hello"));
     CHECK_SCHEME_CONV(scheme_intern_symbol("foo"), 
-					  TValue("foo"));
-	// Long
+					  TValue(TSymbol("foo")));
 	CHECK_SCHEME_CONV(scheme_make_integer_value(MAX_INT32),
 					  TValue(MAX_INT32));
 	CHECK_SCHEME_CONV(scheme_make_integer_value(MIN_INT32),
 					  TValue(MIN_INT32));		
-    // ULong
 	CHECK_SCHEME_CONV(scheme_make_integer_value_from_unsigned(MAX_UINT32),
 					  TValue(MAX_UINT32));
 	
@@ -382,11 +395,22 @@ BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 					  TValue(TPoint(0, 1)));
 
 	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemeRect(TRect(0, 1, 2, 3)),
-				  TValue(TRect(0, 1, 2, 3)));
+					  TValue(TRect(0, 1, 2, 3)));
 	
 	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemeColor(Color(0, 1, 2, 3)),
-				  TValue(Color(0, 1, 2, 3)));
-	
+					  TValue(Color(0, 1, 2, 3)));
+
+	// Test lists.
+	CHECK_SCHEME_CONV(scheme_null, TValueList());
+	TValueList list;
+	list.push_back(1);
+	list.push_back("foo");
+	Scheme_Object *result =
+		scheme_make_pair(scheme_make_integer_value(1),
+						 scheme_make_pair(scheme_make_string("foo"),
+										  scheme_null));
+	CHECK_SCHEME_CONV(result, list);
+
 	// Test polygons.
 	std::vector<TPoint> poly;
 	poly.push_back(TPoint(0, 0));
@@ -395,8 +419,7 @@ BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemePolygon(TPolygon(poly)),
 					  TPolygon(poly));
 
-	// TODO - Add support for converting Scheme lists to TValues.
-
+	// Test percent.
 	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemePercent(TPercent(72.0)),
 					  TPercent(72.0));
 	

@@ -16,29 +16,22 @@ BEGIN_NAMESPACE_FIVEL
 bool EventDispatcher::sEnableExpensiveEvents = false;
 
 EventDispatcher::EventDispatcher()
-    : mDispatcher(NULL)
 {
 }
  
 EventDispatcher::~EventDispatcher()
 {
-    if (mDispatcher)
-        delete mDispatcher;
 }
 
-void EventDispatcher::SetDispatcher(TCallback *inCallback)
+void EventDispatcher::SetDispatcher(TCallbackPtr inCallback)
 {
-    ASSERT(inCallback);
-    if (mDispatcher)
-        delete mDispatcher;
+    ASSERT(inCallback.get());
     mDispatcher = inCallback;
 }
 
 void EventDispatcher::NotifyScriptReload()
 {
-    if (mDispatcher)
-        delete mDispatcher;
-    mDispatcher = NULL;
+    mDispatcher.reset();
 	sEnableExpensiveEvents = false;
 }
 

@@ -93,9 +93,6 @@ TValue::TValue(const TCallbackPtr &inValue)
 TValue::operator TNull() const { TNull r; return Get(r); }
 TValue::operator std::string() const { std::string r; return Get(r); }
 TValue::operator TSymbol() const { TSymbol r; return Get(r); }
-TValue::operator int32() const { int32 r; return Get(r); }
-TValue::operator uint32() const { uint32 r; return Get(r); }
-TValue::operator double() const { double r; return Get(r); }
 TValue::operator bool() const { bool r; return Get(r); }
 TValue::operator TPoint() const { TPoint r; return Get(r); }
 TValue::operator TRect() const { TRect r; return Get(r); }
@@ -105,6 +102,51 @@ TValue::operator TValueList() const { TValueList r; return Get(r); }
 TValue::operator TPolygon() const { TPolygon r; return Get(r); }
 TValue::operator TCallbackPtr() const { TCallbackPtr r; return Get(r); }
 TValue::operator TPercent() const { TPercent r; return Get(r); }
+
+TValue::operator int32() const { 
+	int32 r; 
+	// Convert to int32 if TValue is a unint32
+	// but only if the unint32 is less than MAX_INT32.
+	if (GetType() == TYPE_ULONG) {
+		uint32 rUInt;
+		rUInt = Get(rUInt); 
+		if (rUInt <= MAX_INT32)
+			return rUInt;
+		THROW("Type mismatch fetching TValue"); 
+	}
+	return Get(r); 
+}
+
+TValue::operator uint32() const { 
+	uint32 r;
+	// Convert to uint32 if TValue is an int32
+	// but only if the int32 is non-negative.
+	if (GetType() == TValue::TYPE_LONG) {
+		int32 rInt;
+		rInt = Get(rInt); 
+		if (rInt >= 0)
+			return rInt;
+		THROW("Type mismatch fetching TValue"); 
+	}
+	return Get(r); 
+}
+
+TValue::operator double() const {
+	double r;
+	// Convert to a double if TValue is an int32
+	// or a unint32.
+	if (GetType() == TValue::TYPE_LONG) {
+		int32 rInt;
+		rInt = Get(rInt); 
+		return rInt;
+	}
+	if (GetType() == TValue::TYPE_ULONG) {
+		uint32 rUInt;
+		rUInt = Get(rUInt); 
+		return rUInt;			
+	}
+	return Get(r); 
+}
 
 TValue::Type TValue::GetType() const {
     if (!IsInitialized())
@@ -242,8 +284,8 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
     CHECK_TVALUE_GET(list1);
 
     // Conversion operator sanity checks.
-    CHECK_THROWN(std::exception, double(TValue(10)));
     CHECK_THROWN(std::exception, double(TValue()));
+    CHECK_THROWN(std::exception, double(TValue("foo")));
 
     // operator== special cases
     CHECK_THROWN(std::exception, TValue() == TValue());
@@ -253,7 +295,17 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
     CHECK_NE(TValue(10.0), TValue(10));
     CHECK_NE(TValue(1), TValue(true));
     CHECK_NE(TValue(0), TValue(false));
-    
+
+	// TValue autoconversions.
+	CHECK_EQ(uint32(TValue(MAX_INT32)), uint32(MAX_INT32));
+	CHECK_THROWN(std::exception, uint32(TValue(-1)));
+	CHECK_EQ(int32(TValue(uint32(MAX_INT32))), MAX_INT32);
+	CHECK_THROWN(std::exception, int32(TValue(uint32(MAX_INT32) + 1)));
+    CHECK_EQ(double(TValue(1)), 1.0); 
+	CHECK_EQ(double(TValue(MAX_UINT32)), double(MAX_UINT32)); 
+	CHECK_EQ(double(TValue(MIN_INT32)), double(MIN_INT32)); 
+	CHECK_EQ(double(TValue(-1)), -1.0); 
+	
 } END_TEST_CASE(TestTValue);
 
 #endif // BUILD_TEST_CASES

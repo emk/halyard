@@ -9,7 +9,7 @@
 USING_NAMESPACE_FIVEL
 
 Overlay::Overlay(Stage *inStage, const wxString &inName,
-		 const wxRect &inBounds, FIVEL_NS TCallback *inDispatch,
+		 const wxRect &inBounds, FIVEL_NS TCallbackPtr inDispatch,
 		 wxCursor &inCursor, bool inHasAlpha)
     : LightweightElement(inStage, inName, inDispatch, inCursor),
       mDrawingArea(inStage, inBounds, inHasAlpha)

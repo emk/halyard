@@ -19,7 +19,7 @@ class TCallback;
 //
 class Quake2Engine : public wxQuake2Window
 {
-	typedef std::map<std::string,TCallback*> CallbackMap;
+	typedef std::map<std::string,TCallbackPtr> CallbackMap;
 
 	static bool sHasBeenCreated;
     static Quake2Engine *sInstance;
@@ -60,7 +60,7 @@ public:
 	// [in] inCallback - The callback.  The callback will be deleted
 	//      by this class.
 	//
-	void RegisterCallback(const std::string &inName, TCallback *inCallback);
+	void RegisterCallback(const std::string &inName, TCallbackPtr inCallback);
 	
 	//////////
 	// Return true if and only if our singleton has been initialized.
