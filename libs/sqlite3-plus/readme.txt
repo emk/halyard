@@ -1,0 +1,1 @@
+The SQLite wrappers are very small and are meant to be compiled in with your project.  Have your project link to the sqlite dll.
