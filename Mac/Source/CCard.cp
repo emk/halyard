@@ -3238,3 +3238,14 @@ void CCardManager::JumpToCard(CCard *newCard, bool /* comeBack */)
 		mHaveJump = true;
 	}
 }
+
+TString CCardManager::ReadSpecialVariable_curcard()
+{
+	return gCardManager.CurCardName();
+}
+
+TString CCardManager::ReadSpecialVariable_prevcard()
+{
+	return gCardManager.PrevCardName();
+}
+

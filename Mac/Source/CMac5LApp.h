@@ -69,6 +69,11 @@ class	CMac5LApp : public PP::LApplication
 		virtual void		EventResume		(const EventRecord& inMacEvent);
 		virtual void		EventSuspend	(const EventRecord& inMacEvent);							
 	
+		//////////
+		// A SpecialVariableFunction to get the _system variable.
+		//
+		static TString		ReadSpecialVariable_system() { return "MacOS"; }
+	
 	protected:
 		CBackWindow			*mDisplayWindow;
 		

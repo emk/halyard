@@ -588,6 +588,22 @@ bool CFileList::CurFileAtEOF(void)
 		return (true);
 }
 
+TString CFileList::ReadSpecialVariable_eof()
+{ 
+	if (gFileManager.CurFileOpen())
+	{
+		if (gFileManager.CurFileAtEOF())
+			return "1";
+		else
+			return "0";
+	}
+	else
+	{
+		gDebugLog.Log("Trying to read _EOF and no file open!");
+		return "0";
+	}
+}
+
 //
 //	CheckPath - Get any DOS-ness out of the path.
 //

@@ -213,6 +213,16 @@ CMac5LApp::CMac5LApp()
 	TParser::RegisterIndexManager("macrodef", &gMacroManager);
 	TParser::RegisterIndexManager("header", &gHeaderManager);
 
+	// Register our platform-specific special variables.
+	gVariableManager.RegisterSpecialVariable("_system",
+		&ReadSpecialVariable_system);
+	gVariableManager.RegisterSpecialVariable("_curcard",
+		&CCardManager::ReadSpecialVariable_curcard);
+	gVariableManager.RegisterSpecialVariable("_prevcard",
+		&CCardManager::ReadSpecialVariable_prevcard);
+	gVariableManager.RegisterSpecialVariable("_eof",		
+		&CFileList::ReadSpecialVariable_eof);
+
 	// Fade the screen out.
 	if (gFullScreen and gHideMenuBar)
 		DoGFade(false, 5, false);
@@ -905,6 +915,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.18.2.3  2002/04/24 04:34:53  emk
+Added static member functions to CCard, FFiles, CMac5LApp to implement various 5L special variables that depend on unmerged and/or non-portable code.
+
 Revision 1.18.2.2  2002/04/23 11:36:07  emk
 More merge-related fixes.
 

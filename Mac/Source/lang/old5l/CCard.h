@@ -216,6 +216,16 @@ class CCardManager : public TIndexManager
         void			JumpToCardByName(const char *newCardName, bool comeBack);
         void			JumpToCard(CCard *newCard, bool comeBack);
 		bool			Jumping(void) { return (mHaveJump); }
+		
+		//////////
+		// A SpecialVariableFunction to get the _curcard variable.
+		//
+		static TString	ReadSpecialVariable_curcard();
+		
+		//////////
+		// A SpecialVariableFunction to get the _prevcard variable.
+		//
+		static TString	ReadSpecialVariable_prevcard();
 };
 
 extern CCardManager gCardManager;

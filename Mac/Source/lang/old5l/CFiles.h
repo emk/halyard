@@ -64,6 +64,11 @@ class CFileList : public TObject
 		bool		CurFileOpen(void);
 		bool		CurFileAtEOF(void);
 		
+		//////////
+		// A SpecialVariableFunction to get the _eof variable.
+		//
+		static TString		ReadSpecialVariable_eof();	
+		
 	protected:
 		CFile		*CurrentFile;
 		
