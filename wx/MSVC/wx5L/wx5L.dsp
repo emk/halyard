@@ -131,6 +131,10 @@ SOURCE=..\..\src\dlg\ProgramPropDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\ProgramTree.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\dlg\PropertyDlg.cpp
 # End Source File
 # Begin Source File
@@ -220,6 +224,10 @@ SOURCE=..\..\src\MovieWindowQT.h
 # Begin Source File
 
 SOURCE=..\..\src\dlg\ProgramPropDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\ProgramTree.h
 # End Source File
 # Begin Source File
 

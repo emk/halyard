@@ -3,6 +3,7 @@
 #ifndef Document_H
 #define Document_H
 
+#include "FileSystem.h"
 #include "Model.h"
 
 class FIVEL_NS TamaleProgram;

@@ -23,6 +23,7 @@
 #include "AppGraphics.h"
 #include "FiveLApp.h"
 #include "Stage.h"
+#include "ProgramTree.h"
 #include "Element.h"
 #include "MovieElement.h"
 #include "Listener.h"
@@ -102,155 +103,6 @@ void StageBackground::CenterStage(Stage *inStage)
     v_sizer->Add(h_sizer, 1 /* stretch */, wxALIGN_CENTER, 0);
     h_sizer->Add(inStage, 0 /* no stretch */, wxALIGN_CENTER, 0);
     SetSizer(v_sizer);
-}
-
-
-//=========================================================================
-//  ProgramTree
-//=========================================================================
-
-#include <map>
-
-class ProgramTreeCtrl : public wxTreeCtrl
-{
-	DECLARE_EVENT_TABLE()
-
-public:
-	ProgramTreeCtrl(wxWindow *inParent, int id);
-
-private:
-	void OnMouseDClick(wxMouseEvent& event);
-};	
-
-class ProgramTree : public wxSashLayoutWindow
-{
-	DECLARE_EVENT_TABLE()
-
-	typedef std::map<std::string,wxTreeItemId> ItemMap;
-
-	wxTreeCtrl *mTree;
-
-	wxTreeItemId mRootID;
-	wxTreeItemId mCardsID;
-	wxTreeItemId mBackgroundsID;
-
-	ItemMap mCardMap;
-
-	bool mHaveLastHighlightedItem;
-	wxTreeItemId mLastHighlightedItem;
-
-	enum {
-		MINIMUM_WIDTH = 150
-	};
-
-public:
-	ProgramTree(StageFrame *inStageFrame, int inID);
-
-    //////////
-    // Regiter a newly-loaded card with the program tree.
-    //
-    void RegisterCard(const wxString &inName);
-
-	//////////
-	// Set the name of the currently executing program.
-	//
-	void SetProgramName(const wxString &inName);
-
-	//////////
-	// Set the default width which will be used when laying out this window.
-	//
-	void SetDefaultWidth(int inWidth);
-
-	//////////
-	// Notify the program tree that script is being reloaded.
-	//
-    void NotifyScriptReload();
-
-    //////////
-    // Notify the program tree that the interpreter has moved to a new card.
-    //
-    void NotifyEnterCard();
-};
-
-BEGIN_EVENT_TABLE(ProgramTreeCtrl, wxTreeCtrl)
-    EVT_LEFT_DCLICK(ProgramTreeCtrl::OnMouseDClick)
-END_EVENT_TABLE()
-
-ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent, int id)
-	: wxTreeCtrl(inParent, id)
-{
-}
-
-void ProgramTreeCtrl::OnMouseDClick(wxMouseEvent& event)
-{
-    wxTreeItemId id = HitTest(event.GetPosition());
-    if (id)
-        ::wxLogError("Clicked on: " + GetItemText(id));
-}
-
-BEGIN_EVENT_TABLE(ProgramTree, wxSashLayoutWindow)
-END_EVENT_TABLE()
-
-ProgramTree::ProgramTree(StageFrame *inStageFrame, int inID)
-	: wxSashLayoutWindow(inStageFrame, inID),
-	  mHaveLastHighlightedItem(false)
-{
-	// Set up our tree control.
-	mTree = new ProgramTreeCtrl(this, FIVEL_PROGRAM_TREE_CTRL);
-	mRootID = mTree->AddRoot("Program");
-	mCardsID = mTree->AppendItem(mRootID, "Cards");
-	mBackgroundsID = mTree->AppendItem(mRootID, "Backgrounds");
-
-	// Set our minimum sash width.
-	SetMinimumSizeX(MINIMUM_WIDTH);
-    SetDefaultWidth(MINIMUM_WIDTH);
-}
-
-void ProgramTree::RegisterCard(const wxString &inName)
-{
-	// Check to make sure we don't already have a card by this name.
-	wxASSERT(mCardMap.find(inName.mb_str()) == mCardMap.end());
-
-	// Insert the card into our tree.
-	wxTreeItemId id = mTree->AppendItem(mCardsID, inName);
-
-	// Record the card in our map.
-	mCardMap.insert(ItemMap::value_type(inName.mb_str(), id));
-}
-
-void ProgramTree::SetProgramName(const wxString &inName)
-{
-	mTree->SetItemText(mRootID, "Program '" + inName + "'");
-}
-
-void ProgramTree::SetDefaultWidth(int inWidth)
-{
-	SetDefaultSize(wxSize(inWidth, 0 /* unused */));
-}
-
-void ProgramTree::NotifyScriptReload()
-{
-	mCardMap.clear();
-	mTree->SetItemText(mRootID, "Program");
-	mTree->CollapseAndReset(mCardsID);
-	mTree->CollapseAndReset(mBackgroundsID);
-}
-
-void ProgramTree::NotifyEnterCard()
-{
-	// Look up the ID corresponding to this card.
-	ASSERT(TInterpreter::HaveInstance());
-	std::string card = TInterpreter::GetInstance()->CurCardName();
-	ItemMap::iterator found = mCardMap.find(card);
-	wxASSERT(found != mCardMap.end());
-
-	// Move the highlighting to the appropriate card.
-	if (mHaveLastHighlightedItem)
-		mTree->SetItemBold(mLastHighlightedItem, FALSE);
-	mTree->SetItemBold(found->second);
-	mHaveLastHighlightedItem = true;
-	mLastHighlightedItem = found->second;
-	mTree->EnsureVisible(found->second);
 }
 
 
@@ -528,6 +380,7 @@ void StageFrame::NewDocument()
 		ProgramPropDlg prop_dlg(this, mDocument->GetTamaleProgram());
 		prop_dlg.ShowModal();
 
+		mProgramTree->RegisterDocument(mDocument);
 		mStage->Show();
 	}
 }
@@ -547,6 +400,7 @@ void StageFrame::OpenDocument()
 		wxString file = dlg.GetPath();
 		mDocument = new Document(file.mb_str(), Document::OPEN);
 		config->Write("/Recent/DocPath", file);
+		mProgramTree->RegisterDocument(mDocument);
 		mStage->Show();
 	}
 }
@@ -858,7 +712,6 @@ void Stage::RegisterCard(const wxString &inName)
 void Stage::SetProgramName(const wxString &inName)
 {
 	mFrame->SetTitle(inName);
-	mFrame->GetProgramTree()->SetProgramName(inName);
 }
 
 void Stage::NotifyEnterCard()
