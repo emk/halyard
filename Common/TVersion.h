@@ -22,15 +22,41 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		26
+#define VERSION_REV_BIG		27
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.26 (Development)"
+#define VERSION_STRING		"Tamale 0.0.27 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.69  2004/05/07 23:47:21  emk
+ 0.0.27 - 23 April 2004 - emk
+
+ New compiler.  Test this engine thoroughly, and do not use it to update any
+ of our programs until at least Wednesday of next week.
+
+   * Updated to Visual Studio .NET to get access to the
+     more-standards-compliant C++ compiler.  I'm tired of working around
+     MSVC++ 6 bugs.
+
+   * Worked around a fascinating compiler bug: No toolbar icons appeared
+     when running Tamale because of breakage in wxDynamicCast.  It turns out
+     that the wxClassInfo for wxBMPResourceHandler didn't include a correct
+     m_baseInfo1 pointer.  This pointer was incorrect because
+     wxBitmapHandler never got processed by wxClassInfo::InitializeClasses.
+     *This*, in turn, occurred because the sm_first/m_next chain was broken
+     at wxObject::sm_classwxObject.  *This* happened because the optimizer
+     for the sm_classwxObject constructor could see the declaration
+     'wxClassInfo* wxClassInfo::sm_first = NULL;' and optimized away the
+     initialization 'm_next(sm_first)' because it assumed sm_first would
+     still be NULL when the constructor was called (and because
+     uninitialized fields default to NULL).  Solution: Turn off optimization
+     for object.cpp in wxWindows.
+
+     This is why you need to be able to read assembly.
+
  Revision 1.68  2004/04/23 14:47:18  emk
  0.0.25 - 23 April 2004 - emk
 

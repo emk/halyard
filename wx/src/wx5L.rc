@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#include ""wx/msw/wx.rc""\r\n"
     "\r\n"
@@ -53,10 +53,10 @@ END
 // Bitmap
 //
 
-TB_XY                   BITMAP  DISCARDABLE     "tb_xy.bmp"
-TB_RELOAD               BITMAP  DISCARDABLE     "tb_reload.bmp"
-TB_GRID                 BITMAP  DISCARDABLE     "tb_grid.bmp"
-TB_BORDERS              BITMAP  DISCARDABLE     "tb_borders.bmp"
+TB_XY                   BITMAP                  "tb_xy.bmp"
+TB_RELOAD               BITMAP                  "tb_reload.bmp"
+TB_GRID                 BITMAP                  "tb_grid.bmp"
+TB_BORDERS              BITMAP                  "tb_borders.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -65,23 +65,22 @@ TB_BORDERS              BITMAP  DISCARDABLE     "tb_borders.bmp"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IC_5L                   ICON    DISCARDABLE     "ic_5L.ico"
-IC_LISTENER             ICON    DISCARDABLE     "ic_listener.ico"
-IC_TIMECODER            ICON    DISCARDABLE     "ic_timecoder.ico"
-IC_CARD                 ICON    DISCARDABLE     "ic_card.ico"
-IC_FOLDER_CLOSED        ICON    DISCARDABLE     "ic_folder_closed.ico"
-IC_FOLDER_OPEN          ICON    DISCARDABLE     "ic_folder_open.ico"
-IC_DOCUMENT             ICON    DISCARDABLE     "ic_document.ico"
+IC_5L                   ICON                    "ic_5L.ico"
+IC_LISTENER             ICON                    "ic_listener.ico"
+IC_TIMECODER            ICON                    "ic_timecoder.ico"
+IC_CARD                 ICON                    "ic_card.ico"
+IC_FOLDER_CLOSED        ICON                    "ic_folder_closed.ico"
+IC_FOLDER_OPEN          ICON                    "ic_folder_open.ico"
+IC_DOCUMENT             ICON                    "ic_document.ico"
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,26,0
- PRODUCTVERSION 0,0,26,0
+ FILEVERSION 0,0,27,0
+ PRODUCTVERSION 0,0,27,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -96,18 +95,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "Interactive Media Lab, Dartmouth Medical School\0"
-            VALUE "FileDescription", "Tamale 0.0.26\0"
-            VALUE "FileVersion", "0, 0, 26, 0\0"
-            VALUE "InternalName", "Tamale\0"
-            VALUE "LegalCopyright", "Copyright © 2003 Trustees of Dartmouth College\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "Tamale.exe\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Tamale\0"
-            VALUE "ProductVersion", "0, 0, 26, 0\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "CompanyName", "Interactive Media Lab, Dartmouth Medical School"
+            VALUE "FileDescription", "Tamale 0.0.27"
+            VALUE "FileVersion", "0, 0, 27, 0"
+            VALUE "InternalName", "Tamale"
+            VALUE "LegalCopyright", "Copyright © 2003 Trustees of Dartmouth College"
+            VALUE "OriginalFilename", "Tamale.exe"
+            VALUE "ProductName", "Tamale"
+            VALUE "ProductVersion", "0, 0, 27, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -116,18 +111,16 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_LEFT_CURSOR         CURSOR  DISCARDABLE     "left_cur.cur"
-IDC_TURN_RIGHT_CURSOR   CURSOR  DISCARDABLE     "backup_c.cur"
-IDC_TURN_LEFT_CURSOR    CURSOR  DISCARDABLE     "up_curso.cur"
-IDC_RIGHT_CURSOR        CURSOR  DISCARDABLE     "right_cu.cur"
+IDC_LEFT_CURSOR         CURSOR                  "left_cur.cur"
+IDC_TURN_RIGHT_CURSOR   CURSOR                  "backup_c.cur"
+IDC_TURN_LEFT_CURSOR    CURSOR                  "up_curso.cur"
+IDC_RIGHT_CURSOR        CURSOR                  "right_cu.cur"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -45,16 +45,16 @@ Checking 5L Out of CVS
 Building Win32 5L
 -----------------
 
-  Install Visual C++ off of the MSDN subscription, after making sure we
+  Install Visual C++.NET off of the MSDN subscription, after making sure we
   have enough licenses.  Make sure you have everything related to C++
-  development or media libraries (including ActiveX).  Also, download the
-  latest Service Pack off the msdn site (tested with SP5).
+  development or media libraries (including ActiveX).  Also, you probably
+  want to download the latest Service Pack.
 
   Next, download and install the QuickTime 6 SDK.  This can be found at
   developer.apple.com (under Tools > QuickTime > QuickTime 6 SDK).  Unzip
   it in C:\ (or anywhere else you like, but then you'll have to adapt the
-  instructions below).  Select Tools > Options > Directories, and add the
-  follow directories to the following categories:
+  instructions below).  Select Tools > Options > Projects > VC++
+  Directories, and add the follow directories to the following categories:
 
     Include files:
 	  C:\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\CIncludes

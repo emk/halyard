@@ -123,7 +123,7 @@ class TestCaseFactoryImpl : public TestCaseFactory
 public:
 	TestCaseFactoryImpl(const char *inName, TestRegistry *inRegistry)
 		: TestCaseFactory(inName, inRegistry) { }
-	shared_ptr<TestCase> Create() { return new TestCaseType(); }
+	shared_ptr<TestCase> Create() { return shared_ptr<TestCase>(new TestCaseType()); }
 };
 
 //////////
@@ -198,6 +198,12 @@ public:
 	std::string GetSummary();
 };
 
+inline std::ostream &operator<<(std::ostream &out, TestRunReport::iterator i)
+{
+	out << "<iterator>";
+	return out;
+}
+
 //////////
 /// An abstract interface for code which reports on the status of a test
 /// run.  We don't implement this here; it's the responsibility of
@@ -246,6 +252,11 @@ public:
 
 	TestRunReport::ptr RunAllTests(ITestProgressMeter *inMeter = NULL);
 };
+
+inline std::ostream &operator<<(std::ostream &out, TestRegistry::iterator i) {
+	out << "<iterator>";
+	return out;
+}
 
 //////////
 /// Immediately fail the current test case.
