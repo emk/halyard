@@ -11,7 +11,8 @@ typedef unsigned long MovieWindowStyle;
 enum /* MovieWindowStyle */ {
 	MOVIE_CONTROLLER = 1,
 	MOVIE_LOOP = 2,
-	MOVIE_AUDIO_ONLY = 4
+	MOVIE_AUDIO_ONLY = 4,
+	MOVIE_INTERACTION = 8
 };
 
 //////////

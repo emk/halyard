@@ -13,6 +13,7 @@ BEGIN_EVENT_TABLE(MovieWindowQT, wxWindow) // XXX - What should the parent be?
 	EVT_ERASE_BACKGROUND(MovieWindowQT::OnEraseBackground)
     EVT_PAINT(MovieWindowQT::OnPaint)
     EVT_IDLE(MovieWindowQT::OnIdle)
+    EVT_MOTION(MovieWindowQT::OnMouseMove)
     EVT_ACTIVATE(MovieWindowQT::OnActivate)
     EVT_LEFT_DOWN(MovieWindowQT::OnLeftDown)
 	//EVT_KEY_DOWN(MovieWindowQT::OnKeyDown) - Incomplete!
@@ -70,6 +71,8 @@ void MovieWindowQT::SetMovie(const wxString &inName)
 		opt |= TQTMovie::kAudioOnly;
 	if (style & MOVIE_LOOP)
 		opt |= TQTMovie::kLoopMovie;
+	if (style & MOVIE_INTERACTION)
+		opt |= TQTMovie::kEnableInteraction;
 
     // Set the movie to play as soon as it can.
     // TODO - We'll change this to better integrate with pre-rolling.
@@ -135,6 +138,15 @@ void MovieWindowQT::OnIdle(wxIdleEvent &inEvent)
 {
 	if (mMovie)
 		mMovie->Idle();
+}
+
+void MovieWindowQT::OnMouseMove(wxMouseEvent &inEvent)
+{
+	// Ignore this event so it doesn't propogate to the stage, which
+	// would try to update the cursor, which QuickTime would prefer
+	// to manage on its own.
+	// XXX - Nice theory--the events don't reach the stage--but
+	// the flicker continues anyway.
 }
 
 void MovieWindowQT::OnActivate(wxActivateEvent &inEvent)

@@ -71,6 +71,8 @@ public:
 
 	void OnIdle(wxIdleEvent &inEvent);
 
+    void OnMouseMove(wxMouseEvent &inEvent);
+
 	void OnActivate(wxActivateEvent &inEvent);
 
 	void OnLeftDown(wxMouseEvent &inEvent);

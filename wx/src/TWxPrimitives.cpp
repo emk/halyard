@@ -73,7 +73,7 @@ void FIVEL_NS RegisterWxPrimitives()
 static wxRect ConvRect(const TRect &inRect)
 {
 	return wxRect(wxPoint(inRect.Left(), inRect.Top()),
-				  wxPoint(inRect.Right(), inRect.Bottom()));
+				  wxPoint(inRect.Right() - 1, inRect.Bottom() - 1));
 }
 
 /*
@@ -321,10 +321,10 @@ DEFINE_5L_PRIMITIVE(Movie)
 {
 	std::string name, path;
 	TRect bounds;
-	bool controller, audio_only, loop;
+	bool controller, audio_only, loop, interaction;
 
 	inArgs >> SymbolName(name) >> bounds >> path >> controller
-		   >> audio_only >> loop;
+		   >> audio_only >> loop >> interaction;
 
 	MovieWindowStyle style = 0;
 	if (controller)
@@ -333,6 +333,8 @@ DEFINE_5L_PRIMITIVE(Movie)
 		style |= MOVIE_AUDIO_ONLY;
 	if (loop)
 		style |= MOVIE_LOOP;
+	if (interaction)
+		style |= MOVIE_INTERACTION;
 
 	new MovieElement(wxGetApp().GetStage(), name.c_str(), ConvRect(bounds),
 					 path.c_str(), 0, style);
