@@ -11,7 +11,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 #include "TRect.h"
 #include "TPoint.h"
 

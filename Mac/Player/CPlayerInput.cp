@@ -9,7 +9,7 @@
 #include <LStream.h>
 #include <UDrawingState.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CCard.h"
 #include "CMac5LApp.h"

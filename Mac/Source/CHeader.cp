@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 #include "CHeader.h"
 
 USING_NAMESPACE_FIVEL

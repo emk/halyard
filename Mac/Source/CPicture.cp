@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <PictUtils.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CMac5LApp.h"
 #include "CConfig.h"

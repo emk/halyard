@@ -10,7 +10,7 @@
 #include <LStream.h>
 #include <UDrawingState.h>
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CMac5LApp.h"
 #include "CPlayerView.h"

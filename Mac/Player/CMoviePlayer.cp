@@ -7,7 +7,7 @@
 #include <string.h>
 #include "Movies.h"
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CMac5LApp.h"
 #include "CConfig.h"

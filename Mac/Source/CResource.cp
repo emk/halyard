@@ -4,7 +4,7 @@
 
 #include "THeader.h"
 
-#include "KLogger.h"
+#include "TLogger.h"
 
 #include "CMac5LApp.h"
 #include "CResource.h"
