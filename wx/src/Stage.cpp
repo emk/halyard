@@ -914,7 +914,7 @@ void Stage::EndMediaElements()
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); ++i) {
 		IMediaElementPtr elem = IMediaElementPtr(*i, dynamic_cast_tag());
-		if (elem) {
+		if (elem && !elem->IsLooping()) {
 			gDebugLog.Log("Manually ending media: %s",
 						  (*i)->GetName().mb_str());
 			elem->EndPlayback();

@@ -23,6 +23,11 @@ AudioStreamElement::~AudioStreamElement()
     delete mStream;
 }
 
+bool AudioStreamElement::IsLooping()
+{
+    return mStream->IsLooping();
+}
+
 void AudioStreamElement::EndPlayback()
 {
 	mStream->Stop();

@@ -95,6 +95,11 @@ MovieFrame MovieWindowQT::GetFrame()
 	}
 }
 
+bool MovieWindowQT::IsLooping()
+{
+    return mMovie && mMovie->IsLooping();
+}
+
 bool MovieWindowQT::IsDone()
 {
 	if (!mMovie)

@@ -62,6 +62,11 @@ public:
 	// is playing with the movie controller.
     //
     virtual MovieFrame GetFrame();
+    
+    //////////
+    // Returns true if the movie is looping.
+    //
+    virtual bool IsLooping() { return false; }
 
     //////////
     // Is the movie finished?  This function is fairly smart about broken

@@ -78,6 +78,12 @@ public:
 	//
 	bool IsRunning() { return mIsRunning; }
 
+    //////////
+    // Returns true if the audio stream is looping (or some other form
+    // of infinitely long, repetitive stream).
+    //
+    virtual bool IsLooping() = 0;
+
 	//////////
 	// Start the stream running.  It's OK to call this if the stream
 	// is already running.
@@ -156,6 +162,8 @@ class SineAudioStream : public AudioStream
 public:
 	SineAudioStream(int inFrequency)
 		: AudioStream(FLOAT32_STREAM), mFrequency(inFrequency) {}
+
+    virtual bool IsLooping() { return true; }
 
 protected:
 	bool FillBuffer(void *outBuffer, unsigned long inFrames,

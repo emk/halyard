@@ -60,8 +60,9 @@ public:
 					  bool inShouldLoop);
 	~VorbisAudioStream();
 
+    virtual bool IsLooping() { return mShouldLoop; }
 	virtual void Idle();
-	
+
 protected:
 	bool FillBuffer(void *outBuffer, unsigned long inFrames,
 					PaTimestamp inTime);	

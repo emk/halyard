@@ -13,6 +13,11 @@ public:
     IMediaElement() {} 
 	virtual ~IMediaElement() {}
 
+    //////////
+    // Returns true if the media is looping.
+    //
+    virtual bool IsLooping() = 0;
+
 	//////////
 	// Cease playback, and make sure all future calls to
 	// HasReachedFrame() return true.

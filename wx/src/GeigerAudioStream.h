@@ -41,6 +41,8 @@ public:
     void SetChirpsPerSecond(float inChirpsPerSecond)
 		{ mChirpsPerSecond = inChirpsPerSecond; }
 
+    virtual bool IsLooping() { return true; }
+
 protected:
     bool FillBuffer(void *outBuffer, unsigned long inFrames,
 					PaTimestamp inTime);	

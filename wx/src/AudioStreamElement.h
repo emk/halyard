@@ -24,6 +24,7 @@ public:
 
 	AudioStream *GetAudioStream() { return mStream; }
 
+    virtual bool IsLooping();
 	virtual void EndPlayback();
     virtual void Pause();
     virtual void Resume();

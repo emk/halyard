@@ -40,6 +40,7 @@ public:
     
     virtual void NotifyStateChanged();
 
+    virtual bool IsLooping() { return true; }
 	virtual void EndPlayback();
     virtual void Pause();
     virtual void Resume();

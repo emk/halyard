@@ -17,15 +17,21 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		24
+#define VERSION_REV_BIG		25
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.24 (Development)"
+#define VERSION_STRING		"Tamale 0.0.25 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.66  2004/03/11 20:33:41  emk
+ 0.0.25 - 11 March 2004 - emk
+
+   * ESC no longer cancels looping movies.  It still cancels all other
+     movies as before.
+
  Revision 1.65  2004/03/10 19:29:17  emk
  0.0.24 - 10 March 2004 - emk
 

@@ -32,6 +32,7 @@ public:
 
 	// Note: these methods may not be happy if the underlying movie code 
 	// does not like to be paused.
+    virtual bool IsLooping();
 	virtual void EndPlayback();
 	virtual void Pause();
 	virtual void Resume();

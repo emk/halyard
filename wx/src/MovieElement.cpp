@@ -46,6 +46,11 @@ void MovieElement::Idle()
     }
 }
 
+bool MovieElement::IsLooping()
+{
+    return mMovieWindow->IsLooping();
+}
+
 void MovieElement::EndPlayback()
 {
 	mMovieWindow->Pause();

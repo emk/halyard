@@ -286,6 +286,11 @@ public:
 	//
 	void Unpause();
 
+    //////////
+    // Is the movie looping?
+    //
+    bool IsLooping() { return mOptions & kLoopMovie ? true : false; }
+
 	TimeValue GetMovieTime();
 	void SetMovieVolume(short inVolume);
 	TimeScale GetTimeScale();
