@@ -20,7 +20,6 @@
 #include "CHeader.h"
 #include "UModalDialogs.h"
 #include "UKeyFilters.h"
-#include "CKeyFilters.h"
 
 USING_NAMESPACE_FIVEL
 using namespace PowerPlant;
