@@ -88,9 +88,9 @@ void TLogger::Init(const FileSystem::Path &inLogFile,
 			file_path.CreateWithMimeType("text/plain");
 	
 		if (m_Append)
-			m_Log.open(m_FileName.GetString(), std::ios::out | std::ios::app);
+			m_Log.open(m_FileName.c_str(), std::ios::out | std::ios::app);
 		else
-			m_Log.open(m_FileName.GetString(), std::ios::out);
+			m_Log.open(m_FileName.c_str(), std::ios::out);
 
 		if (not m_Log.fail())
 			m_LogOpen = true;
@@ -372,6 +372,10 @@ void FiveLCheckAssertion(int inTest, const char *inDescription,
 
 /*
  $Log$
+ Revision 1.10  2004/02/05 22:11:15  kwasi
+   * Fixed TRect argument order (finally!).
+   * Deleted TString and TURL.
+
  Revision 1.9  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

@@ -28,7 +28,7 @@ USING_NAMESPACE_FIVEL
 // avoid creating extra header files just for one function.  These will
 // most likely be replaced with static constructor tricks as I continue to
 // C++-ify the testing API.
-extern void test_TString (void);
+//extern void test_TString (void);
 extern void test_TEncoding (void);
 extern void test_FileSystem (void);
 extern void test_Model(void);
@@ -57,7 +57,6 @@ void FIVEL_NS RegisterTestPrimitives() {
 
 static void run_imlunit_tests() {
 	RegisterTestPrimitives();
-	test_TString();
 	test_TEncoding();
 	test_FileSystem();
 	test_Model();

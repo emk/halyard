@@ -111,10 +111,6 @@ SOURCE=..\..\..\Common\lang\scheme\TSchemeInterpreterTests.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\TStringTests.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\Common\TStyleSheetTests.cpp
 # End Source File
 # Begin Source File

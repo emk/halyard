@@ -37,7 +37,7 @@ TPolygon::TPolygon(const std::vector<TPoint> &inVertices)
       bottom = pt.Y();
   }
   
-  mBounds = TRect(top, left, bottom, right);
+  mBounds = TRect(left, top, right, bottom);
 }
 
 // NB: I think I confused up and down in all of these comments (the

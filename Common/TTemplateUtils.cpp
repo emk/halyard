@@ -10,6 +10,21 @@ USING_NAMESPACE_FIVEL
 
 REGISTER_TEST_CASE_FILE(TTemplateUtils);
 
+bool StringIComp(const std::string &inStr1, const std::string &inStr2) {
+	 return MakeStringLowercase(inStr1) == MakeStringLowercase(inStr2);
+}
+
+void StringLTrim(std::string &inStr) {
+	 std::istringstream str(inStr);
+	 str >> std::ws >> inStr;
+}
+
+bool StringStartsWith(const std::string &inStr1, 
+					  const std::string &inStr2) 
+{
+	 return (inStr1.find_first_of(inStr2) == 0);
+}
+
 std::string FIVEL_NS MakeStringLowercase(std::string inString)
 {
     std::transform(inString.begin(), inString.end(), inString.begin(),

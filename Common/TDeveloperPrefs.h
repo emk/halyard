@@ -98,7 +98,7 @@ private:
 	// [in/out] value - the value parsed from this line
 	// [out] return - true a key and value were parsed, false otherwise
 	//
-	bool GetPrefsKeyValue(char *line, TString &key, TString &value); 
+	bool GetPrefsKeyValue(char *line, std::string &key, std::string &value); 
 };
 
 extern TDeveloperPrefs gDeveloperPrefs;

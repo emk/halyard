@@ -10,6 +10,8 @@ CVS - kwasi, djin
   * Added output operator for TValue containing TNull().
   * Added input operator for extracting from a TArgumentList into
     a TValue. 
+  * Fixed TRect argument order (finally!).
+  * Deleted TString and TURL.
 
 0.0.15 - 30 Jan 2004 - emk, kwasi, djin
 

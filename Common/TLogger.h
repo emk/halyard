@@ -153,7 +153,7 @@ private:
 	//////////
 	// Filename for log output
 	//
-	TString		m_FileName;
+	std::string m_FileName;
 	
 	//////////
 	// Log buffer
@@ -288,6 +288,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.7  2004/02/05 22:11:15  kwasi
+   * Fixed TRect argument order (finally!).
+   * Deleted TString and TURL.
+
  Revision 1.6  2004/02/02 22:07:55  djin
    * Cleaned up a whole bunch of legacy code that can be much simpler now
      that we have TValue.

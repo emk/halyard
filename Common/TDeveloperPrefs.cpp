@@ -54,63 +54,62 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 	// Parse the file
 	while (!prefsFile.eof()) 
 	{
-		TString key, 
-				value;
+		std::string key, value;
 		char	lineBuf[128];
 
 		prefsFile.getline(lineBuf, 128, '\n');
 		if (GetPrefsKeyValue(lineBuf, key, value))
 		{
-			if (key.Equal("db_type", false)) 
-			{
-				if (value.Equal("encrypted", false))
-					userPrefs[DB_TYPE] = DB_TYPE_ENCRYPTED;
-				else if (value.Equal("clear", false))
-					userPrefs[DB_TYPE] = DB_TYPE_CLEAR;
-				else
+			 if (StringIComp(key, "db_type")) 
+			 {
+			     if (StringIComp(value, "encrypted"))
+					  userPrefs[DB_TYPE] = DB_TYPE_ENCRYPTED;
+				 else if (StringIComp(value, "clear"))
+					  userPrefs[DB_TYPE] = DB_TYPE_CLEAR;
+				 else
 					errFlag = true;	
 			}
-			else if (key.Equal("db_writes", false)) 
+			else if (StringIComp(key, "db_writes")) 
 			{
-				if (value.Equal("exit", false))
+				if (StringIComp(value, "exit"))
 					userPrefs[DB_WRITES] = DB_WRITES_EXIT;
-				else if (value.Equal("close", false))
+				else if (StringIComp(value, "close"))
 					userPrefs[DB_WRITES] = DB_WRITES_CLOSE;
-				else if (value.Equal("write", false))
+				else if (StringIComp(value, "write"))
 					userPrefs[DB_WRITES] = DB_WRITES_WRITE;			
 			}
-			else if (key.Equal("mode", false)) 
+			else if (StringIComp(key, "mode")) 
 			{
-				if (value.Equal("fullscreen", false))
+				if (StringIComp(value, "fullscreen"))
 					userPrefs[MODE] = MODE_FULLSCREEN;
-				else if (value.Equal("window", false))
+				else if (StringIComp(value, "window"))
 					userPrefs[MODE] = MODE_WINDOW;
 			}
-			else if (key.Equal("multiple_instances", false))
+			else if (StringIComp(key, "multiple_instances"))
 			{
-				if (value.Equal("no"))
+				if (StringIComp(value, "no"))
 					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_NO;
-				else if (value.Equal("yes"))
+				else if (value == "yes")
 					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_YES;
 			}
-			else if (key.Equal("redoscript", false))
+			else if (key == "redoscript")
 			{
-				if (value.Equal("off", false))
+				if (StringIComp(value, "off"))
 					userPrefs[REDOSCRIPT] = REDOSCRIPT_OFF;
-				else if (value.Equal("on", false))
+				else if (StringIComp(value, "on"))
 					userPrefs[REDOSCRIPT] = REDOSCRIPT_ON;
 			}
-			else if (key.Equal("debug_log", false))
+			else if (StringIComp(key, "debug_log"))
 			{
-				if (value.Equal("off", false))
+				if (StringIComp(value, "off"))
 					userPrefs[DEBUG_LOG] = DEBUG_LOG_OFF;
-				else if (value.Equal("on", false))
+				else if (StringIComp(value, "on"))
 					userPrefs[DEBUG_LOG] = DEBUG_LOG_ON;
 			}
 			else
 			{
 				errFlag = true;
-				sprintf(errString, "Unknown option in user preferences file \"%s\", reverting to defaults", key.GetString());
+				sprintf(errString, "Unknown option in user preferences file \"%s\", reverting to defaults", key.c_str());
 			}
 		}
 	}
@@ -125,37 +124,38 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 }
 
 bool TDeveloperPrefs::GetPrefsKeyValue(char *line,
-									   TString &key,
-									   TString &value)
+									   std::string &key,
+									   std::string &value)
 {	
 	int pos1, pos2;
 
-	TString sLine = line;
-	sLine.LTrim();
-
+	std::string sLine = line;
+	StringLTrim(sLine);
+	
 	key = "";
 	value = "";
 
 	// First check for comment chars
-	if (sLine.StartsWith("#") ||
-		sLine.StartsWith(";") ||
-		sLine.StartsWith("//"))
+	if (StringStartsWith(sLine, "#") ||
+		StringStartsWith(sLine, ";") ||
+		StringStartsWith(sLine, "//"))
 		return false;
 
 	// Parse the key
-	if ((pos1 = sLine.Find(' ')) < 0)
-		return false;
-	key = sLine.Mid(0, pos1);
+	if ((pos1 = sLine.find(' ')) == std::string::npos)
+		 return false;
+	key = sLine.substr(0, pos1);
 
 	// Parse the value
-	pos2 = sLine.Find('"', pos1);					// set pos2 to 1st quote
-	pos1 = sLine.Find('"', pos2 + 1);				// set pos1 to 2nd quote
-	if (pos2 < 0 || pos1 < 0)
+	pos2 = sLine.find('"', pos1);		  // set pos2 to 1st quote
+	pos1 = sLine.find('"', pos2 + 1);	  // set pos1 to 2nd quote
+	if (pos2 == std::string::npos || 
+		pos1 == std::string::npos)
 		return false;
-	value = sLine.Mid(pos2 + 1, pos1 - pos2 - 1);  
+	value = sLine.substr(pos2 + 1, pos1 - pos2 - 1);  
 
 	// Make sure a key and value are not empty 
-	if (key.IsEmpty() || value.IsEmpty())
+	if (key.empty() || value.empty())
 		return false;
 	
 	return true;

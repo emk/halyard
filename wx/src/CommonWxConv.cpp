@@ -12,8 +12,8 @@ wxRect TToWxRect(const TRect &inRect) {
 
 TRect WxToTRect(const wxRect &inRect) {
 	// Incredibly rude argument order!
-	return TRect(inRect.y, inRect.x, 
-				 inRect.y + inRect.height, inRect.x + inRect.width);
+	return TRect(inRect.x, inRect.y, 
+				 inRect.x + inRect.width, inRect.y + inRect.height); 
 }
 
 wxPoint TToWxPoint(const TPoint &inPoint)

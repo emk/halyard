@@ -154,10 +154,10 @@ static TValue SchemeToTPoint(Scheme_Object *inVal) {
 }
 
 static TValue SchemeToTRect(Scheme_Object *inVal) {	
-	return TValue(TRect(SchemeGetInt32Member("rect-top", inVal),
-						SchemeGetInt32Member("rect-left", inVal),
-						SchemeGetInt32Member("rect-bottom", inVal),
-						SchemeGetInt32Member("rect-right", inVal)));
+	return TValue(TRect(SchemeGetInt32Member("rect-left", inVal),
+						SchemeGetInt32Member("rect-top", inVal),
+						SchemeGetInt32Member("rect-right", inVal),
+						SchemeGetInt32Member("rect-bottom", inVal)));
 }
 
 static TValue SchemeToColor(Scheme_Object *inVal) {	

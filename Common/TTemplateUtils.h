@@ -6,13 +6,29 @@
 BEGIN_NAMESPACE_FIVEL
 
 //////////
+// Perform a case-insensitive comparison of two strings.
+//
+extern bool StringIComp(const std::string &inStr1, const std::string &inStr2);
+
+//////////
+// Trim spaces in string.
+//
+extern void StringLTrim(std::string &inStr);
+
+//////////
+// Return true if inStr1 starts with inStr2. Do a case sensitive 
+// comparison by default.
+//
+extern bool StringStartsWith(const std::string &inStr1, 
+							 const std::string &inStr2);
+
+//////////
 // Convert an STL string to lowercase.
 //
 // [in] inString - the string to convert
 // [out] return - the input string, as lowercase
 //
 extern std::string MakeStringLowercase(std::string inString);
-
 
 //////////
 // Convert nested quotes within an STL string into 

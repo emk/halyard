@@ -162,7 +162,7 @@ void FIVEL_NS RegisterSchemeTestPrimitives()
 	TPoint_test_values[0] = TPoint(1, 2);
 	REGISTER_TYPE_TEST_PRIMITIVES(TPoint);
 
-	TRect_test_values[0] = TRect(2, 1, 4, 3);
+	TRect_test_values[0] = TRect(1, 2, 3, 4);
 	REGISTER_TYPE_TEST_PRIMITIVES(TRect);
 
 	std::vector<TPoint> pts;

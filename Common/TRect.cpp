@@ -20,8 +20,8 @@
 
 USING_NAMESPACE_FIVEL
 
-TRect::TRect(int32 inTop /* = 0 */, int32 inLeft /* = 0 */, 
-			 int32 inBottom /* = 0 */, int32 inRight /* = 0 */)
+TRect::TRect(int32 inLeft, int32 inTop,
+	     int32 inRight, int32 inBottom)
 { 
 	m_Top = inTop;
 	m_Left = inLeft;
@@ -37,7 +37,7 @@ TRect::TRect(const TRect &inRect)
 	m_Right = inRect.m_Right;
 }
 
-void TRect::Set(int32 inTop, int32 inLeft, int32 inBottom, int32 inRight)
+void TRect::Set(int32 inLeft, int32 inTop, int32 inRight, int32 inBottom)
 {  
 	m_Top = inTop; 
 	m_Left = inLeft; 
@@ -103,6 +103,10 @@ void TRect::Offset(const TPoint &inPt)
 
 /*
  $Log$
+ Revision 1.8  2004/02/05 22:11:15  kwasi
+   * Fixed TRect argument order (finally!).
+   * Deleted TString and TURL.
+
  Revision 1.7  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

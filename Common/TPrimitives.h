@@ -11,7 +11,6 @@ BEGIN_NAMESPACE_FIVEL
 // arguments to a 5L command.
 //
 // String
-//   TString
 //   std::string
 //
 // Integer
@@ -179,7 +178,6 @@ public:
 
 	// These functions provide handy wrapper functions
 	// for the protected Get* functions above.
-	friend TArgumentList &operator>>(TArgumentList &args, TString &out);
 	friend TArgumentList &operator>>(TArgumentList &args, std::string &out);
 	friend TArgumentList &operator>>(TArgumentList &args, int16 &out);
 	friend TArgumentList &operator>>(TArgumentList &args, int32 &out);

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -32,197 +33,62 @@ AUTHOR
 ------------------------------------------------------------------*/
 class TRect 
 {  
-	public:
-		//////////
-		// Constructor.
-		//
-		// [in_optional] inTop - top of rect (default 0)
-		// [in_optional] inLeft - left side of rect (default 0)
-		// [in_optional] inBottom - bottom of rect (default 0)
-		// [in_optional] inRight - right side of rect (default 0)
-		//
-		TRect(int32 inTop = 0, int32 inLeft = 0, int32 inBottom = 0, int32 inRight = 0);
-		
-		//////////
-		// Copy Constructor.
-		//
-		// [in] rect - copy values from another TRect
-		//
+    public:
+	    TRect(int32 inLeft = 0, int32 inTop = 0, 
+			  int32 inRight = 0, int32 inBottom = 0);
+
 		TRect(const TRect &rect);
-
-		//////////
-		// Set the coordinates for the rectangle.
-		//
-		// [in] inTop - top of rect 
-		// [in] inLeft - left side of rect 
-		// [in] inBottom - bottom of rect 
-		// [in] inRight - right side of rect 
-		//
-		void		Set(int32 inTop, int32 inLeft, int32 inBottom, int32 inRight);
+	    
+	    void Set(int32 inLeft, int32 inTop, 
+				 int32 inRight, int32 inBottom);
 		
-		//////////
-		// Copy the coordinates for this rectangle from another TRect.
-		//
-		// [in] inRect - TRect to copy coordinates from
-		//
-		void		Set(const TRect &inRect);
-		
-		//////////
-		// Offset the rectangle using the given TPoint.
-		//
-		// [in] inPt - TPoint used to offset the rectangle
-		//
-		void		Offset(const TPoint &inPt);
+	    void Set(const TRect &inRect);
 
-		//////////
-		// Set top coordinate.
-		//
-		// [in] inTop - the top coordinate 
-		//
+	    void Offset(const TPoint &inPt);
+
 		inline void SetTop(int32 inTop) { m_Top = inTop; }
 		
-		//////////
-		// Set left coordinate.
-		//
-		// [in] inLeft - the left coordinate
-		//
 		inline void	SetLeft(int32 inLeft) { m_Left = inLeft; }
 		
-		//////////
-		// Set bottom coordinate.
-		//
-		// [in] inBottom - the bottom coordinate
-		//
 		inline void	SetBottom(int32 inBottom) { m_Bottom = inBottom; }
 		
-		//////////
-		// Set right coordinate.
-		//
-		// [in] inRight - the right coordinate
-		//
 		inline void	SetRight(int32 inRight) { m_Right = inRight; }
 
-		//////////
-		// Offset the top coordinate.
-		//
-		// [in] inTopOffset - offset for the top coordinate 
-		//
-		inline void	OffsetTop(int32 inTopOffset) { m_Top += inTopOffset; }
+	    inline void	OffsetLeft(int32 inLeftOffset) { m_Left += inLeftOffset; }
 		
-		//////////
-		// Offset the left coordinate.
-		//
-		// [in] inLeftOffset - offset for the left coordinate
-		//
-		inline void	OffsetLeft(int32 inLeftOffset) { m_Left += inLeftOffset; }
+		inline void	OffsetBottom(int32 inBottomOffset) { 
+			m_Bottom += inBottomOffset; 
+		}
 		
-		//////////
-		// Offset the bottom coordinate.
-		//
-		// [in] inBottomOffset - offset for the bottom coordinate
-		//
-		inline void	OffsetBottom(int32 inBottomOffset) { m_Bottom += inBottomOffset; }
-		
-		//////////
-		// Offset the right coordinate.
-		//
-		// [in] inRightOffset - offset for the right coordinate
-		//
-		inline void	OffsetRight(int32 inRightOffset) { m_Right += inRightOffset; }
+		inline void	OffsetRight(int32 inRightOffset) { 
+			m_Right += inRightOffset; 
+		}
 
-		//////////
-		// Get the top coordinate.
-		//
-		// [out] return - the top coordinate
-		//
-		inline int32	Top(void) const { return (m_Top); }
+		inline int32 Top() const { return (m_Top); }
 		
-		//////////
-		// Get the left coordinate.
-		//
-		// [out] return - the left coordinate
-		//
-		inline int32	Left(void) const { return (m_Left); }
+		inline int32 Left() const { return (m_Left); }
 		
-		//////////
-		// Get the bottom coordinate.
-		//
-		// [out] return - the bottom coordinate
-		//
-		inline int32	Bottom(void) const { return (m_Bottom); }
+		inline int32 Bottom() const { return (m_Bottom); }
 		
-		//////////
-		// Get the right coordinate.
-		//
-		// [out] return - the right coordinate
-		//
-		inline int32	Right(void) const { return (m_Right); }
+		inline int32 Right() const { return (m_Right); }
 
-		//////////
-		// Get the top-left corner of the rectangle.
-		//
-		// [out] return - the top-left corner
-		//
-		TPoint          TopLeft(void) const;
+		TPoint TopLeft() const;
 
-		//////////
-		// Get the width of the rectangle.
-		//
-		// [out] return - the width
-		//
-		int32		Width(void) { return (m_Right - m_Left); }
+		int32 Width() { return (m_Right - m_Left); }
 		
-		//////////
-		// Get the height of the rectangle.
-		//
-		// [out] return - the height
-		//
-		int32		Height(void) { return (m_Bottom - m_Top); }
+		int32 Height() { return (m_Bottom - m_Top); }
 
-		//////////
-		// Set the value of this rect using another TRect.  Same as Set().
-		//
-		// [in] inPt - TRect to copy values from (r-value)
-		// [out] return - l-value with coordinates set to r-value
-		//
-		TRect		&operator=(const TRect &inRect);
+		TRect &operator=(const TRect &inRect);
 		
-		//////////
-		// Equality check.
-		//
-		// [in] inRect - another rectangle to compare against
-		// [out] return - true if they are equal, false otherwise
-		//
-		bool		operator==(const TRect &inRect) const;
+		bool operator==(const TRect &inRect) const;
 
-		//////////
-		// Check whether a TPoint is contained within the rectangle.
-		//
-		// [in] inPt - a TPoint to check for containment
-		// [out] return - true if the point is contained within the rectangle, 
-		//			false otherwise
-		//
-		bool		Contains(TPoint &inPt);
+        // Does TRect contain TPoint?
+		bool Contains(TPoint &inPt);
 		
 	protected:
-        //////////
-		// Top Coordinate
-		//
-		int32	m_Top;
-
-		//////////
-		// Left Coordinate
-		//
-		int32	m_Left;
-		
-		//////////
-		// Bottom Coordinate
-		//
-		int32	m_Bottom;
-		
-		//////////
-		// Right Coordinate
-		//
+        int32 m_Top;
+		int32 m_Left;
+		int32 m_Bottom;
 		int32	m_Right;
 };
 
@@ -238,6 +104,10 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.10  2004/02/05 22:11:15  kwasi
+   * Fixed TRect argument order (finally!).
+   * Deleted TString and TURL.
+
  Revision 1.9  2004/02/02 22:07:55  djin
    * Cleaned up a whole bunch of legacy code that can be much simpler now
      that we have TValue.

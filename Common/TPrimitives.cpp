@@ -127,13 +127,6 @@ TArgumentList::TArgumentList(TValueList inVal) {
 	mArgPtr = mArgList.begin();
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TString &out)
-{
-    out = TString(args.GetStringArg().c_str());
-	args.LogParameter(MakeQuotedString(out.GetString()));
-    return args;
-}
-
 TArgumentList &FIVEL_NS operator>>(TArgumentList &args, std::string &out)
 {
     out = args.GetStringArg();

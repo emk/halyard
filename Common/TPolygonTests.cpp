@@ -64,8 +64,8 @@ void test_TPolygon (void)
 	intersect2.Offset(TPoint(-1, -1));
 
 	TEST(convex.Bounds() == TRect(1, 1, 4, 4));
-	TEST(concave.Bounds() == TRect(1, 1, 3, 4));
-	TEST(intersect.Bounds() == TRect(1, 0, 5, 9));
+	TEST(concave.Bounds() == TRect(1, 1, 4, 3));
+	TEST(intersect.Bounds() == TRect(0, 1, 9, 5));
 	TEST(rect.Bounds() == TRect(10, 10, 20, 20));
 	TEST(convex.Vertices() == convex_pts);
 	TEST(concave.Vertices() == concave_pts);

@@ -457,9 +457,10 @@ static void draw_picture(const std::string &inName, TPoint inLoc,
 
 	// Update our special variables.
 	// XXX - TRect constructor uses height/width order!  Ayiee!
-	TRect bounds(TRect(inLoc.Y(), inLoc.X(),
-					   inLoc.Y() + bitmap.GetHeight(),
-					   inLoc.X() + bitmap.GetWidth()));
+	TRect bounds(TRect(inLoc.X(), inLoc.Y(),
+					   inLoc.X() + bitmap.GetWidth(),
+					   inLoc.Y() + bitmap.GetHeight()));
+					   
 	UpdateSpecialVariablesForGraphic(bounds);	
 }
 
