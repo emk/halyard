@@ -17,17 +17,7 @@ DatumMap::~DatumMap()
 		delete i->second;
 }
 
-void DatumMap::RemoveKnownDatum(const std::string &inKey, Datum *inDatum)
-{
-	// This method removes a Datum known to be in the map, without deleting
-	// it.  This is generally called from Apply and Revert methods.
-	DatumMap::iterator found = find(inKey);
-	ASSERT(found != end());
-	ASSERT(found->second == inDatum);
-	erase(found);
-}
-
-DatumList::~DatumList()
+DatumVector::~DatumVector()
 {
 	for (iterator i = begin(); i != end(); i++)
 		delete *i;	
@@ -104,20 +94,76 @@ void MutableDatum::RegisterWithStore(Store *inStore)
 
 
 //=========================================================================
-//  MapDatum Methods
+//  CollectionDatum Methods
+//=========================================================================
+//  Supported types of changes
+//    MapDatum container
+//      Set
+//        mContainer
+//        mKey
+//        mOldDatum (optional) *
+//        mNewDatum
+//        find(key) -> datum-or-null
+//        remove-known-datum(key, datum)
+//        insert(key, datum)
+//      Delete
+//        mContainer
+//        mKey
+//        mOldDatum *
+//        find(key) -> datum-or-null
+//        remove-known-datum(key, datum)
+//        insert(key, datum)
+//    ListDatum container
+//      Set
+//        mContainer
+//        mKey
+//        mOldDatum (optional) *
+//        mNewDatum
+//        find(key) -> datum-or-null
+//        remove-known-datum(key, datum)
+//        insert(key, datum)
+//      Insert
+//        mContainer
+//        mKey
+//        mNewDatum
+//        insert(key, datum)
+//        remove-known-datum(key, datum)
+//      Delete
+//        mContainer
+//        mKey
+//        mOldDatum *
+//        find(key) -> datum-or-null
+//        remove-known-datum(key, datum)
+//        insert(key, datum)
+//    Multiple containers
+//      Transfer
+//        mOldContainer
+//        mOldKey
+//        mNewContainer
+//        mNewKey
+//        mOldDatum (optional) *
+//        mNewDatum
+//        find(key) -> datum-or-null
+//        remove-known-datum(key, datum)
+//        insert(key, datum)
+
+
+//=========================================================================
+//  CollectionDatum::SetChange
 //=========================================================================
 
-class MapDatum::SetChange : public Change {
-	MapDatum *mMapDatum;
+template <typename KeyType>
+class CollectionDatum<KeyType>::SetChange : public Change {
+	CollectionDatum<KeyType> *mCollection;
 	Datum *mOldDatum;
 	Datum *mNewDatum;
-	MapDatum::ConstKeyType mKey;
-	
+	ConstKeyType mKey;
+
 public:
-	SetChange(MapDatum *inDatum,
-			  MapDatum::ConstKeyType &inKey,
+	SetChange(CollectionDatum<KeyType> *inDatum,
+			  ConstKeyType &inKey,
 			  Datum *inValue);
-	
+
 protected:
 	virtual void DoApply();
 	virtual void DoRevert();
@@ -125,37 +171,41 @@ protected:
 	virtual void DoFreeRevertResources();
 };
 
-MapDatum::SetChange::SetChange(MapDatum *inDatum,
-							   MapDatum::ConstKeyType &inKey,
-							   Datum *inValue)
-	: mMapDatum(inDatum), mOldDatum(NULL), mNewDatum(inValue), mKey(inKey)
+template <typename KeyType>
+CollectionDatum<KeyType>::
+SetChange::SetChange(CollectionDatum<KeyType> *inDatum,
+					 ConstKeyType &inKey,
+					 Datum *inValue)
+	: mCollection(inDatum), mOldDatum(NULL), mNewDatum(inValue), mKey(inKey)
 {
-	DatumMap::iterator found = mMapDatum->mMap.find(inKey);
-	if (found != mMapDatum->mMap.end())
-		mOldDatum = found->second;
+	mOldDatum = mCollection->DoFind(inKey);
 }
 
-void MapDatum::SetChange::DoApply()
+template <typename KeyType>
+void CollectionDatum<KeyType>::SetChange::DoApply()
 {
 	if (mOldDatum)
-		mMapDatum->mMap.RemoveKnownDatum(mKey, mOldDatum);
-	mMapDatum->mMap.insert(DatumMap::value_type(mKey, mNewDatum));
+		mCollection->DoRemoveKnown(mKey, mOldDatum);
+	mCollection->DoInsert(mKey, mNewDatum);
 }
 
-void MapDatum::SetChange::DoRevert()
+template <typename KeyType>
+void CollectionDatum<KeyType>::SetChange::DoRevert()
 {
-	mMapDatum->mMap.RemoveKnownDatum(mKey, mNewDatum);
+	mCollection->DoRemoveKnown(mKey, mNewDatum);
 	if (mOldDatum)
-		mMapDatum->mMap.insert(DatumMap::value_type(mKey, mOldDatum));
+		mCollection->DoInsert(mKey, mOldDatum);
 }
 
-void MapDatum::SetChange::DoFreeApplyResources()
+template <typename KeyType>
+void CollectionDatum<KeyType>::SetChange::DoFreeApplyResources()
 {
 	delete mNewDatum;
 	mNewDatum = NULL;
 }
 
-void MapDatum::SetChange::DoFreeRevertResources()
+template <typename KeyType>
+void CollectionDatum<KeyType>::SetChange::DoFreeRevertResources()
 {
 	if (mOldDatum)
 	{
@@ -164,11 +214,25 @@ void MapDatum::SetChange::DoFreeRevertResources()
 	}
 }
 
-void MapDatum::DoSet(ConstKeyType &inKey, Datum *inValue)
+template <typename KeyType>
+void CollectionDatum<KeyType>::PerformSet(ConstKeyType &inKey, Datum *inValue)
 {
 	RegisterChildObjectWithStore(inValue);
-	ApplyChange(new MapDatum::SetChange(this, inKey, inValue));
+	ApplyChange(new SetChange(this, inKey, inValue));
 }
+
+
+//=========================================================================
+//  CollectionDatum Instantiation
+//=========================================================================
+
+template class CollectionDatum<std::string>;
+template class CollectionDatum<size_t>;
+
+
+//=========================================================================
+//  MapDatum Methods
+//=========================================================================
 
 Datum *MapDatum::DoGet(ConstKeyType &inKey)
 {
@@ -176,6 +240,120 @@ Datum *MapDatum::DoGet(ConstKeyType &inKey)
 	if (found == mMap.end())
 		throw TException(__FILE__, __LINE__, "MapDatum::Get: Can't find key");
 	return found->second;
+}
+
+Datum *MapDatum::DoFind(ConstKeyType &inKey)
+{
+	DatumMap::iterator found = mMap.find(inKey);
+	if (found == mMap.end())
+		return NULL;
+	return found->second;
+}
+
+void MapDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
+{
+	DatumMap::iterator found = mMap.find(inKey);
+	ASSERT(found != mMap.end());
+	ASSERT(found->second == inDatum);
+	mMap.erase(found);
+}
+
+void MapDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
+{
+	mMap.insert(DatumMap::value_type(inKey, inDatum));
+}
+
+
+//=========================================================================
+//  ListDatum::InsertChange
+//=========================================================================
+
+class ListDatum::InsertChange : public Change {
+	ListDatum *mCollection;
+	Datum *mNewDatum;
+	ConstKeyType mKey;
+
+public:
+	InsertChange(ListDatum *inCollection,
+				 ConstKeyType &inKey,
+				 Datum *inValue);
+
+protected:
+	virtual void DoApply();
+	virtual void DoRevert();
+	virtual void DoFreeApplyResources();
+	virtual void DoFreeRevertResources();
+};
+
+ListDatum::InsertChange::InsertChange(ListDatum *inCollection,
+									  ConstKeyType &inKey,
+									  Datum *inValue)
+	: mCollection(inCollection), mNewDatum(inValue), mKey(inKey)
+{
+}
+
+void ListDatum::InsertChange::DoApply()
+{
+	mCollection->DoInsert(mKey, mNewDatum);
+}
+
+void ListDatum::InsertChange::DoRevert()
+{
+	mCollection->DoRemoveKnown(mKey, mNewDatum);
+}
+
+void ListDatum::InsertChange::DoFreeApplyResources()
+{
+	delete mNewDatum;
+	mNewDatum = NULL;	
+}
+
+void ListDatum::InsertChange::DoFreeRevertResources()
+{
+}
+
+void ListDatum::PerformInsert(ConstKeyType &inKey, Datum *inValue)
+{
+	RegisterChildObjectWithStore(inValue);
+	ApplyChange(new InsertChange(this, inKey, inValue));
+}
+
+
+//=========================================================================
+//  ListDatum Methods
+//=========================================================================
+
+Datum *ListDatum::DoGet(ConstKeyType &inKey)
+{
+	if (inKey >= mVector.size())
+		throw TException(__FILE__, __LINE__,
+						 "No such key in ListDatum::DoGet");
+	return mVector[inKey];
+}
+
+Datum *ListDatum::DoFind(ConstKeyType &inKey)
+{
+	if (inKey < mVector.size())
+		return mVector[inKey];
+	else
+		return NULL;
+}
+
+void ListDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
+{
+	// This runs in O(N) time, which isn't great.
+	ASSERT(inKey < mVector.size());
+	ASSERT(inDatum != NULL);
+	ASSERT(mVector[inKey] == inDatum);
+	mVector.erase(mVector.begin() + inKey);
+}
+
+void ListDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
+{
+	// This runs in O(N) time, which isn't great.
+	ASSERT(inKey <= mVector.size());
+	ASSERT(inDatum != NULL);
+	mVector.insert(mVector.begin() + inKey, inDatum);
 }
 
 

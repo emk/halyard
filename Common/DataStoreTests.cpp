@@ -93,7 +93,7 @@ void test_DataStore (void)
 	root->Set<MapDatum>("map", new MapDatum());
 	MapDatum *map = root->Get<MapDatum>("map");
 
-	// Test MapDatum::SetChange.
+	// Test CollectionDatum::SetChange on MapDatum.
 	map->SetValue<StringDatum>("SetChange", "new key");
 	TEST(map->GetValue<StringDatum>("SetChange") == "new key");
 	store.Undo();
@@ -106,6 +106,46 @@ void test_DataStore (void)
 	TEST(map->GetValue<StringDatum>("SetChange") == "new key");
 	store.Redo();
 	TEST(map->GetValue<StringDatum>("SetChange") == "change value");
+
+	// Create a new ListDatum.
+	root->Set<ListDatum>("list", new ListDatum());
+	ListDatum *list = root->Get<ListDatum>("list");
+
+	// Insert two elements.
+	list->InsertValue<StringDatum>(0, "item 0");
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	list->InsertValue<StringDatum>(1, "item 1");
+	TEST(list->GetValue<StringDatum>(1) == "item 1");
+
+	// Test MapDatum::SetChange and ListDatum::InsertChange on ListDatum.
+	store.Undo();
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	TEST_EXCEPTION(list->GetValue<StringDatum>(1), TException);
+	store.Redo();
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	TEST(list->GetValue<StringDatum>(1) == "item 1");
+	list->InsertValue<StringDatum>(1, "item 0.5");
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	TEST(list->GetValue<StringDatum>(1) == "item 0.5");
+	TEST(list->GetValue<StringDatum>(2) == "item 1");
+	store.Undo();
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	TEST(list->GetValue<StringDatum>(1) == "item 1");
+	store.Redo();
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	TEST(list->GetValue<StringDatum>(1) == "item 0.5");
+	TEST(list->GetValue<StringDatum>(2) == "item 1");
+	list->SetValue<StringDatum>(1, "item 1/2");
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	TEST(list->GetValue<StringDatum>(1) == "item 1/2");
+	TEST(list->GetValue<StringDatum>(2) == "item 1");
+	store.Undo();
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	TEST(list->GetValue<StringDatum>(1) == "item 0.5");
+	TEST(list->GetValue<StringDatum>(2) == "item 1");
+	store.Undo();
+	TEST(list->GetValue<StringDatum>(0) == "item 0");
+	TEST(list->GetValue<StringDatum>(1) == "item 1");
 	
 	/*
 	{

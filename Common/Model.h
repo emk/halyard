@@ -6,6 +6,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "FileSystem.h"
 
@@ -18,7 +19,6 @@ namespace DataStore {
 	// Forward declarations.
 	class Datum;
 	class Store;
-	class Change;
 
 	// Internal support code.
 	namespace Private {
@@ -27,14 +27,13 @@ namespace DataStore {
 			// Becase std::map does not have a virtual destructor, it is
 			// not safe to cast this class to std::map.
 			~DatumMap();
-			void RemoveKnownDatum(const std::string &inKey, Datum *inDatum);
 		};
 
-		class DatumList : public std::list<Datum *> {
+		class DatumVector : public std::vector<Datum *> {
 		public:
 			// Becase std::list does not have a virtual destructor, it is
 			// not safe to cast this class to std::list.
-			~DatumList();
+			~DatumVector();
 		};
 	};
 
@@ -49,6 +48,60 @@ namespace DataStore {
 		ObjectType
 	};
 	
+	//////////
+	// A Change represents a mutation of something within the Store.  A
+	// Change may be applied, or reverted.  Changes to a given Store occur
+	// in a sequence, and must be applied or reverted in that sequence.
+	//
+	// Because of this careful sequencing, a Change is allowed to hold onto
+	// pointers and other resources.  All Change objects are destroyed
+	// before the corresponding DataStore object is destroyed.  This means
+	// that half their resources will be owned by the DataStore, and half
+	// by the Change object, depending on whether the change has been
+	// applied or reverted.
+	//
+	class Change {
+		bool mIsApplied;
+		bool mIsFreed;
+		
+	public:
+		Change();
+		virtual ~Change();
+		
+		void Apply();
+		void Revert();
+		void FreeResources();
+		
+	protected:	
+		//////////
+		// Apply this change.  This method is called when the change first
+		// occurs, and perhaps later on, when the change is redone.  This
+		// method must be atomic--if it fails, it must leave the object
+		// unchanged and throw an exception.
+		//
+		virtual void DoApply() = 0;
+		
+		//////////
+		// Revert this change.  This method is called when the change is
+		// undone.  This method must be atomic--if it fails, it must leave
+		// the object unchanged and throw an exception.
+		// 
+		virtual void DoRevert() = 0;
+		
+		//////////
+		// Free any resources need to apply this Change, because this
+		// Change is being destroyed and will not need to be applied again.
+		//
+		virtual void DoFreeApplyResources() = 0;
+
+		//////////
+		// Free any resources need to revert this Change, because this
+		// Change is being destroyed and will not need to be reverted
+		// again.
+		//
+		virtual void DoFreeRevertResources() = 0;
+	};
+
 	//////////
 	// The abstract superclass of all data in the DataStore.
 	//
@@ -69,6 +122,19 @@ namespace DataStore {
 		//
 		virtual void RegisterWithStore(Store *inStore) {}
 	};
+
+	//////////
+	// Verify that inDatum is of type T.  If it isn't, throw an error.
+	//
+	template <typename T>
+	T *TypeCheck(Datum *inDatum)
+	{	
+		T *datum = dynamic_cast<T*>(inDatum);
+		if (!datum)
+			throw TException(__FILE__, __LINE__,
+							 "Wrong data type in DataStore::TypeCheck");
+		return datum;
+	}
 
 	//////////
 	// A ValueDatum is a simple, immutable datum which holds a basic
@@ -148,27 +214,18 @@ namespace DataStore {
 		typedef T KeyType;
 		typedef const T ConstKeyType;
 
-		virtual void DoSet(ConstKeyType &inKey, Datum *inValue) = 0;
-		virtual Datum *DoGet(ConstKeyType &inKey) = 0;
-
 		template <typename D>
 		void Set(ConstKeyType &inKey, D *inValue)
-		{ DoSet(inKey, static_cast<Datum*>(inValue)); }
-			
-		template <typename D>
-		D *Get(ConstKeyType &inKey)
-		{
-			D *datum = dynamic_cast<D*>(DoGet(inKey));
-			if (!datum)
-				throw TException(__FILE__, __LINE__,
-								 "Wrong type in CollectionDatum::Get");
-			return datum;
-		}
+		{ PerformSet(inKey, static_cast<Datum*>(inValue)); }
 
 		template <typename VD>
 		void SetValue(ConstKeyType &inKey, typename VD::ConstValueType &inVal)
 		{ Set<VD>(inKey, new VD(inVal)); }
 		
+		template <typename D>
+		D *Get(ConstKeyType &inKey)
+		{ return TypeCheck<D>(DoGet(inKey)); }
+
 		template <typename VD>
 		typename VD::ConstValueType GetValue(ConstKeyType &inKey)
 		{ return Get<VD>(inKey)->Value(); }	
@@ -176,6 +233,48 @@ namespace DataStore {
 	protected:
 		CollectionDatum(Type inType)
 			: MutableDatum(inType) {}
+
+		//////////
+		// Return the datum associated with the specified key.
+		//
+		virtual Datum *DoGet(ConstKeyType &inKey) = 0;
+
+		//////////
+		// Search the collection for the specified key.  If the key
+		// exists, return a pointer to the associated Datum.  If the
+		// key does not exist, return NULL.
+		//
+		// This is part of the low-level editing API called by various
+		// subclasses of Change.
+		//
+		virtual Datum *DoFind(ConstKeyType &inKey) = 0;
+
+		//////////
+		// Remove the specified key/datum pair from the collection.  The
+		// key/datum *must* exist--if not, trigger an assertion.  Do not
+		// delete the Datum; it will become the responsibility of the
+		// caller.
+		//
+		// This is part of the low-level editing API called by various
+		// subclasses of Change.
+		//
+		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum) = 0;
+
+		//////////
+		// Insert the specified datum into the collection with the
+		// specified key.  This operation never destroys any existing
+		// values--for map-type classes, any existing key has been
+		// removed with DoRemoveKnown; for list-type classes, existing
+		// values should be moved forward.
+		//
+		// This is part of the low-level editing API called by various
+		// subclasses of Change.
+		//
+		virtual void DoInsert(ConstKeyType &inKey, Datum *inDatum) = 0;
+
+	private:
+		class SetChange;
+		void PerformSet(ConstKeyType &inKey, Datum *inValue);
 	};
 
 	//////////
@@ -184,67 +283,42 @@ namespace DataStore {
 	class MapDatum : public CollectionDatum<std::string> {
 		Private::DatumMap mMap;
 
-		class SetChange;
-
 	public:
 		MapDatum() : CollectionDatum<std::string>(MapType) {}
 
-		void DoSet(ConstKeyType &inKey, Datum *inValue);
-		Datum *DoGet(ConstKeyType &inKey);
+	protected:
+		virtual Datum *DoGet(ConstKeyType &inKey);
+		virtual Datum *DoFind(ConstKeyType &inKey);
+		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum);
+		virtual void DoInsert(ConstKeyType &inKey, Datum *inDatum);
 	};
 
 	//////////
-	// A Change represents a mutation of something within the Store.  A
-	// Change may be applied, or reverted.  Changes to a given Store occur
-	// in a sequence, and must be applied or reverted in that sequence.
+	// A simle list class, which supports inserting items (anywhere),
+	// deleting items (from anywhere), and setting items.
 	//
-	// Because of this careful sequencing, a Change is allowed to hold onto
-	// pointers and other resources.  All Change objects are destroyed
-	// before the corresponding DataStore object is destroyed.  This means
-	// that half their resources will be owned by the DataStore, and half
-	// by the Change object, depending on whether the change has been
-	// applied or reverted.
-	//
-	class Change {
-		bool mIsApplied;
-		bool mIsFreed;
+	class ListDatum : public CollectionDatum<size_t> {
+		Private::DatumVector mVector;
+
+		class InsertChange;
+		void PerformInsert(ConstKeyType &inKey, Datum *inValue);
 		
 	public:
-		Change();
-		virtual ~Change();
-		
-		void Apply();
-		void Revert();
-		void FreeResources();
-		
-	protected:	
-		//////////
-		// Apply this change.  This method is called when the change first
-		// occurs, and perhaps later on, when the change is redone.  This
-		// method must be atomic--if it fails, it must leave the object
-		// unchanged and throw an exception.
-		//
-		virtual void DoApply() = 0;
-		
-		//////////
-		// Revert this change.  This method is called when the change is
-		// undone.  This method must be atomic--if it fails, it must leave
-		// the object unchanged and throw an exception.
-		// 
-		virtual void DoRevert() = 0;
-		
-		//////////
-		// Free any resources need to apply this Change, because this
-		// Change is being destroyed and will not need to be applied again.
-		//
-		virtual void DoFreeApplyResources() = 0;
+		ListDatum() : CollectionDatum<size_t>(ListType) {}
 
-		//////////
-		// Free any resources need to revert this Change, because this
-		// Change is being destroyed and will not need to be reverted
-		// again.
-		//
-		virtual void DoFreeRevertResources() = 0;
+		template <class D>
+		void Insert(ConstKeyType &inKey, D *inValue)
+		{ PerformInsert(inKey, static_cast<Datum*>(inValue)); }
+
+		template <typename VD>
+		void InsertValue(ConstKeyType &inKey, typename VD::ConstValueType &inV)
+		{ Insert<VD>(inKey, new VD(inV)); }
+
+	protected:
+		virtual Datum *DoGet(ConstKeyType &inKey);
+		virtual Datum *DoFind(ConstKeyType &inKey);
+		virtual void DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum);
+		virtual void DoInsert(ConstKeyType &inKey, Datum *inDatum);
 	};
 
 	//////////
