@@ -17,15 +17,24 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		21
+#define VERSION_REV_BIG		22
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.21 (Development)"
+#define VERSION_STRING		"Tamale 0.0.22 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.63  2004/03/01 18:03:36  emk
+ 0.0.22 - 1 March 2004 - emk
+
+   * Made sure all Quake 2-related state db entries got cleared at Quake 2
+     startup.
+   * Implemented look_target, r_text, r_target, and r_activated_target.
+   * Implemented basic reticle drawing.
+   * Renamed r_activated_target -> r_look_target.
+
  Revision 1.62  2004/02/27 16:16:43  emk
  0.0.21 - 27 February 2004 - emk
 
