@@ -35,66 +35,106 @@ Library::~Library()
 //	Typography::Face Methods
 //=========================================================================
 
-Face::Face(Library &inLibrary, char *inFontFile, char *inMetricsFile,
-		   int inSize)
+Face::Face(Library &inLibrary, const char *inFontFile,
+		   const char *inMetricsFile, int inSize)
 	: AbstractFace(inSize)
 {
 	ASSERT(inFontFile != NULL);
 	ASSERT(inSize > 0);
 
-	// Open up our face, and any associated metrics.
-	Error::CheckResult(FT_New_Face(inLibrary, inFontFile, 0, &mFace));
-	if (inMetricsFile)
-		Error::CheckResult(FT_Attach_File(mFace, inMetricsFile));
-	
-	// Attempt to set a Unicode charmap.
-	Error::CheckResult(FT_Select_Charmap(mFace, ft_encoding_unicode));
-	
-	// Check to see if our font is either (1) scalable or (2) available
-	// in the specified point size.	 We never attempt to scale bitmap
-	// fonts; the results are gross.
-	if (!FT_IS_SCALABLE(mFace))
+	// Open up our face.
+	// Until our FaceRep is successfully constructed, we're in charge
+	// of calling FT_Done_Face on this data.
+	FT_Face face;
+	Error::CheckResult(FT_New_Face(inLibrary, inFontFile, 0, &face));
+
+	// Allocate a new FaceRep structure.  This takes ownership
+	// of the face object.  Until the constructor exits successfully,
+	// we're in change of calling delete on the FaceRep.
+	try
 	{
-		bool found_size = false;
-		for (FT_Int i = 0; i < mFace->num_fixed_sizes; i++) {
-			if (mFace->available_sizes[i].height == inSize &&
-				mFace->available_sizes[i].width == inSize)
-			{
-				found_size = true;
-				break;
-			}
-		}
-		// TODO - Add an error string here.
-		if (!found_size)
-			throw Error(Error::kOtherError);
+		mFaceRep = new FaceRep(face);
+	}
+	catch (...)
+	{
+		// Allocation failed, so finish using our face and bail.
+		FT_Done_Face(face);
+		throw;
 	}
 
-	// Set the size of our font.
-	Error::CheckResult(FT_Set_Char_Size(mFace, inSize*64, inSize*64, 72, 72));
+	try
+	{
+		// Attach our metrics, if we have any.
+		if (inMetricsFile)
+			Error::CheckResult(FT_Attach_File(face, inMetricsFile));
+		
+		// Attempt to set a Unicode charmap.
+		Error::CheckResult(FT_Select_Charmap(face, ft_encoding_unicode));
+		
+		// Check to see if our font is either (1) scalable or (2) available
+		// in the specified point size.	 We never attempt to scale bitmap
+		// fonts; the results are gross.
+		if (!FT_IS_SCALABLE(face))
+		{
+			bool found_size = false;
+			for (FT_Int i = 0; i < face->num_fixed_sizes; i++) {
+				if (face->available_sizes[i].height == inSize &&
+					face->available_sizes[i].width == inSize)
+				{
+					found_size = true;
+					break;
+				}
+			}
+			// TODO - Add an error string here.
+			if (!found_size)
+				throw Error(Error::kOtherError);
+		}
+		
+		// Set the size of our font.
+		Error::CheckResult(FT_Set_Char_Size(face, inSize*64, inSize*64,
+											72, 72));
 
-	// Set various font properties that we'll need later.
-	// (Manual conversion to true, false to avoid MSVC++ warning.
-	mHasKerning = (FT_HAS_KERNING(mFace) ? true : false);
+		// Set various font properties that we'll need later.
+		// (Manual conversion to true, false to avoid MSVC++ warning.
+		mHasKerning = (FT_HAS_KERNING(face) ? true : false);
+	}
+	catch (...)
+	{
+		delete mFaceRep;
+		throw;
+	}
+}
+
+Face::Face(const Face &inFace)
+	: AbstractFace(inFace.GetSize())
+{
+	// THREAD - Not thread safe!
+	inFace.mFaceRep->mRefcount++;
+	mFaceRep = inFace.mFaceRep;
+	mHasKerning = inFace.mHasKerning;
 }
 
 Face::~Face()
 {
-	Error::CheckResult(FT_Done_Face(mFace));
+	// THREAD - Not thread safe!
+	mFaceRep->mRefcount--;
+	if (mFaceRep->mRefcount < 1)
+		delete mFaceRep;
 }
-		
+
 GlyphIndex Face::GetGlyphIndex(CharCode inCharCode)
 {
 	if (inCharCode == kNoSuchCharacter)
 		return 0;
 	else
-		return FT_Get_Char_Index(mFace, inCharCode);
+		return FT_Get_Char_Index(mFaceRep->mFace, inCharCode);
 }
 
 Glyph Face::GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex)
 {
-	Error::CheckResult(FT_Load_Glyph(mFace, inGlyphIndex,
+	Error::CheckResult(FT_Load_Glyph(mFaceRep->mFace, inGlyphIndex,
 									 FT_LOAD_RENDER /*| FT_LOAD_MONOCHROME*/));
-	return mFace->glyph;
+	return mFaceRep->mFace->glyph;
 }
 
 Glyph Face::GetGlyph(CharCode inCharCode)
@@ -112,7 +152,7 @@ Vector Face::GetKerning(CharCode inPreviousChar,
 	if (mHasKerning && previous_glyph && current_glyph)
 	{	
 		// If we actually have kerning data, use it.
-		Error::CheckResult(FT_Get_Kerning(mFace,
+		Error::CheckResult(FT_Get_Kerning(mFaceRep->mFace,
 										  previous_glyph, current_glyph,
 										  ft_kerning_default, &delta));
 	}
@@ -128,7 +168,7 @@ Vector Face::GetKerning(CharCode inPreviousChar,
 
 Distance Face::GetLineHeight()
 {
-	return round_266(mFace->size->metrics.height);
+	return round_266(mFaceRep->mFace->size->metrics.height);
 }
 
 

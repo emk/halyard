@@ -213,17 +213,30 @@ namespace Typography {
 	// object.  It understands GlyphIndex values and other low-level
 	// details of layout.
 	class Face : public AbstractFace {
-		FT_Face mFace;
+		// Refcounting so we can implement copy & assignment.  The use of
+		// internal "rep" objects is a common C++ technique to avoid
+		// copying heavyweight data structures around.  In our case, we
+		// simply *can't* copy the underlying FreeType data.
+		struct FaceRep {
+			FT_Face mFace;
+			int mRefcount;
+
+			FaceRep(FT_Face inFace) : mFace(inFace), mRefcount(1) {}
+			~FaceRep() { Error::CheckResult(FT_Done_Face(mFace)); }
+		};
+
+		FaceRep *mFaceRep;
 		bool mHasKerning;
 
 	public:
 		Face(Library &inLibrary,
-			 char *inFontFile, char *inMetricsFile,
+			 const char *inFontFile, const char *inMetricsFile,
 			 int inSize);
+		Face(const Face &inFace);
 		virtual ~Face();
 		
-		operator FT_Face() { return mFace; }
-		operator FT_Face*() { return &mFace; }
+		operator FT_Face() { return mFaceRep->mFace; }
+		operator FT_Face*() { return &mFaceRep->mFace; }
 
 		GlyphIndex GetGlyphIndex(CharCode inCharCode);
 		Glyph GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex);
