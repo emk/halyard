@@ -523,8 +523,11 @@ void Stage::OnTextEnter(wxCommandEvent &inEvent)
 
 void Stage::OnLeftDown(wxMouseEvent &inEvent)
 {
-	// Restore focus to the stage.
-	SetFocus();
+	// Restore focus to the stage (or our game engine, if it's on top).
+	if (Quake2Engine::IsDisplayed())
+		Quake2Engine::GetInstance()->SetFocus();
+	else
+		SetFocus();
 
 	// Dispatch the event.
 	EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());

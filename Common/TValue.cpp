@@ -200,7 +200,7 @@ std::ostream &FIVEL_NS operator<<(std::ostream &out, const TValueList &l) {
 #if BUILD_TEST_CASES
 
 template <typename Type>
-CHECK_TVALUE_TYPE(TValue::Type inType, const Type &v1, const Type &v2) {
+void CHECK_TVALUE_TYPE(TValue::Type inType, const Type &v1, const Type &v2) {
     TValue value(v1);
     CHECK_EQ(value.IsInitialized(), true);
     CHECK_EQ(value.GetType(), inType);
@@ -214,7 +214,7 @@ CHECK_TVALUE_TYPE(TValue::Type inType, const Type &v1, const Type &v2) {
 }
 
 template <typename Type>
-CHECK_TVALUE_GET(const Type &inVal) {
+void CHECK_TVALUE_GET(const Type &inVal) {
     TValue value(inVal);
     CHECK_EQ(Type(value), inVal);
 }

@@ -39,6 +39,10 @@ class Quake2Engine : public wxQuake2Window
     //
     Quake2Engine(Stage *inStage, const std::string &inGame);
 
+    DECLARE_EVENT_TABLE();
+
+	void OnMouseEvent(wxMouseEvent &inEvent);
+
 public:
 	~Quake2Engine();
 

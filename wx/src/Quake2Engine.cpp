@@ -13,6 +13,13 @@ using FileSystem::GetBaseDirectory;
 
 #if CONFIG_HAVE_QUAKE2
 
+BEGIN_EVENT_TABLE(Quake2Engine, wxQuake2Window)
+    EVT_MOTION(Quake2Engine::OnMouseEvent)
+	EVT_LEFT_DOWN(Quake2Engine::OnMouseEvent)
+	EVT_LEFT_DCLICK(Quake2Engine::OnMouseEvent)
+	EVT_LEFT_UP(Quake2Engine::OnMouseEvent)
+END_EVENT_TABLE()
+
 // TODO - Do we want to allow the Quake 2 to refresh the screen while
 // another window is displayed over it?
 // TODO - Definitely broken in the presence of Reload Script.
@@ -39,6 +46,13 @@ Quake2Engine::~Quake2Engine()
 {
 	DeleteCallbacks();
 	sInstance = NULL;
+}
+
+void Quake2Engine::OnMouseEvent(wxMouseEvent &inEvent)
+{
+	// We redirect mouse events to the underlying stage.  We only receive
+	// these events if mouse interaction is enabled.
+	GetParent()->GetEventHandler()->ProcessEvent(inEvent);
 }
 
 bool Quake2Engine::Show(bool show)
