@@ -117,7 +117,10 @@ void LocationBox::TryJump(const wxString &inCardName)
 
 void LocationBox::UpdateUiLocationBox(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(wxGetApp().GetStage()->CanJump());
+	// We need to check for a stage because we may be called after the
+	// Stage is unregistered.
+	if (wxGetApp().HaveStage())
+		inEvent.Enable(wxGetApp().GetStage()->CanJump());
 }
 
 void LocationBox::OnChar(wxKeyEvent &inEvent)

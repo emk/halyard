@@ -41,6 +41,12 @@ StartupDlg::StartupDlg(wxWindow *inParent)
 	Bind(mRadioRecent, XRCID("DLG_STARTUP_RECENT"));
 	Bind(mRecentList, XRCID("DLG_STARTUP_LIST"));
 
+    // XXX - HACK - We need to SetFocus here to prevent later
+    // calls to SetFocus from selecting mRadioNew as the default
+    // button.  Presumably this bug will get fixed in wxWindows.
+    //
+    // https://sourceforge.net/tracker/index.php?func=detail&aid=992497&group_id=9863&atid=109863
+    mRadioOpen->SetFocus();
 	mRadioOpen->SetValue(true);
 
 	// TODO - Implement the recent documents list.
