@@ -1217,7 +1217,7 @@ void PutInBackground(void)
 
 	gInBackground = true;
 
-	gLog.Log("PutInBackground");
+	gDebugLog.Log("PutInBackground");
 }
 
 //
@@ -1238,7 +1238,7 @@ void PutInForeground(void)
 
 	gInBackground = false;
 
-	gLog.Log("PutInForeground");
+	gDebugLog.Log("PutInForeground");
 }
 
 static TString ReadSpecialVariable_system()
@@ -1274,6 +1274,12 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.11  2002/07/24 17:41:14  emk
+ 3.3.19 - 24 July 2002 - emk
+
+   * Cleaned up Win32 5L.log (bug #1057).
+   * We now print the glyph cache size every 100K (bug #969).
+
  Revision 1.10  2002/07/23 21:53:53  emk
  3.3.17 - 23 July 2002 - emk
 

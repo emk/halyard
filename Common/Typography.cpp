@@ -454,6 +454,10 @@ Vector AbstractFace::Kern(const StyledText::value_type &inChar1,
 //	Typography::Face Methods
 //=========================================================================
 
+size_t Face::sGlyphCacheSize = 0;
+size_t Face::sGlyphCacheSizeAtLastWarning = 0;
+const size_t Face::kGlyphCacheSizeWarningIncrement = 100 * 1024;
+
 Face::FaceRep::FaceRep(FT_Face inFace)
 	: mFace(inFace), mRefcount(1)
 {
@@ -467,6 +471,22 @@ Face::FaceRep::~FaceRep()
 	std::map<GlyphIndex,Glyph*>::iterator cursor = mGlyphCache.begin();
 	for (; cursor != mGlyphCache.end(); ++cursor)
 		delete cursor->second;
+}
+
+void Face::UpdateGlyphCacheSize(const Glyph *inGlyph)
+{
+	// Update our cache size.
+	size_t size = sizeof(Glyph) + inGlyph->GetGreyMap()->EstimatedMemoryUse();
+	sGlyphCacheSize += size;
+
+	// Print as many warnings as we need.
+	while (sGlyphCacheSize >
+		   (sGlyphCacheSizeAtLastWarning + kGlyphCacheSizeWarningIncrement))
+	{
+		gDebugLog.Log("Typography: glyph cache is now %dK.",
+					  sGlyphCacheSize / 1024);
+		sGlyphCacheSizeAtLastWarning += kGlyphCacheSizeWarningIncrement;
+	}
 }
 
 Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
@@ -582,6 +602,7 @@ Glyph *Face::GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex)
 		Glyph *glyph = new Glyph(mFaceRep->mFace->glyph);
 		mFaceRep->mGlyphCache.insert(std::pair<GlyphIndex,Glyph*>(inGlyphIndex,
 																  glyph));
+		UpdateGlyphCacheSize(glyph);
 		return glyph;
 	}
 }

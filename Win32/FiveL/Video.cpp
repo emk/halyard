@@ -148,7 +148,9 @@ bool Video::Play(int32 inOffset, int32 inVolume /* = 100 */)
 		gVariableManager.SetString("_ERROR", "-2");
 		gVariableManager.SetString("_FileNotFound", moviePath.GetString());
 
-		gLog.Log("Video: could not play movie <%s>", moviePath.GetString());
+		// This logging is now handled by the script itself, which will try
+		// playing the movie from several different sources before giving up.
+		//gLog.Log("Video: could not play movie <%s>", moviePath.GetString());
 		gDebugLog.Log("Video: could not play movie <%s>", moviePath.GetString());
 
 		gCursorManager.CheckCursor();
@@ -696,6 +698,12 @@ bool VideoManager::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.5  2002/07/24 17:41:14  emk
+ 3.3.19 - 24 July 2002 - emk
+
+   * Cleaned up Win32 5L.log (bug #1057).
+   * We now print the glyph cache size every 100K (bug #969).
+
  Revision 1.4  2002/06/20 16:32:55  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

@@ -16,15 +16,21 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		18
+#define VERSION_REV_BIG		19
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.18 (Development)"
+#define VERSION_STRING	"5L 3.3.19 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.26  2002/07/24 17:41:02  emk
+ 3.3.19 - 24 July 2002 - emk
+
+   * Cleaned up Win32 5L.log (bug #1057).
+   * We now print the glyph cache size every 100K (bug #969).
+
  Revision 1.25  2002/07/24 01:16:43  emk
  3.3.18 - 23 July 2002 - emk
 

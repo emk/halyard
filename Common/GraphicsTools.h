@@ -168,6 +168,13 @@ namespace GraphicsTools {
 			return At(inPoint.x, inPoint.y);
 		}
 
+		//////////
+		// Estimate the memory used to store this pixmap.
+		//
+		size_t EstimatedMemoryUse() const
+		{
+			return sizeof(PixelMap<Pixel>) + sizeof(Pixel) * height * pitch;
+		}
 	};
 
 	//////////

@@ -603,6 +603,19 @@ namespace Typography {
 		FaceRep *mFaceRep;
 		bool mHasKerning;
 
+		static size_t sGlyphCacheSize;
+		static size_t sGlyphCacheSizeAtLastWarning;
+		static const size_t kGlyphCacheSizeWarningIncrement;
+
+		//////////
+		// Update the estimated amount of memory used to store
+		// all our cached glyphs.
+		//
+		// [in] inGlyph - A newly created glyph.  Only call this
+		//                function once per glyph.
+		//
+		static void UpdateGlyphCacheSize(const Glyph *inGlyph);
+
 	public:
 		Face(const char *inFontFile, const char *inMetricsFile,
 			 int inSize);

@@ -1,4 +1,9 @@
-When possible, please include bug numbers as seen below.
+When possible, please include bug numbers in the form "(bug #NNN)".
+
+3.3.19 - 24 July 2002 - emk
+
+  * Cleaned up Win32 5L.log (bug #1057).
+  * We now print the glyph cache size every 100K (bug #969).
 
 3.3.18 - 23 July 2002 - emk
 
@@ -6,8 +11,8 @@ When possible, please include bug numbers as seen below.
   * Fixed redoscript/keybind race condition (bug #1036).
   * Added a top-level try/catch block on the Mac (bug #955).
   * Added error checking in Mac BROWSE (bug #1070).
-  * Enlarged our growzone a bit, and made sure it's working.
-    This will help us determine if we have memory usage problems.
+  * Enlarged our growzone a bit, and made sure it's working.  This will
+    help us determine if we have memory usage problems (bug #969).
 
 3.3.17 - 23 July 2002 - emk
 
@@ -73,3 +78,461 @@ Ported forward 3.2.0.x fixes (bug #1008).
     failure when importing an empty file.
   * New feature: Modulo primitive.  5L now supports Modulo(x,y).
     Syntax is (% x y).
+
+OLDER LOGS, RECOVERED FROM CVS
+------------------------------
+
+3.3.9 - emk
+
+  Highly experimental engine which makes _INCR_X, _INCR_Y, _Graphic_X and
+   _Graphic_Y relative to the current origin.  This will break macros in
+   existing code!
+
+3.3.8 - emk
+
+  5L language improvements, including nested expressions, return values and
+  new primitives.
+
+   * Expressions can now be nested: '(set x $(+ 2 $(* 3 5)))' will
+     set 'x' to 17.  Nested expressions should be indented as follows:
+
+       (set x $(+ $really_big_variable_1
+                  $really_big_variable_2))
+
+     ...that is, arguments should _stack in a column_.  I will be
+     extremely anal about this if I'm reading your code.
+
+   * '(return ...)' now takes an optional argument, which will be
+     returned from the macro.  So you can define your own functions, too.
+
+   * New primitives: +, -, *, /, truncate, float+, float-, float*,
+     float/, strlen, substr, findsubstr, length, nth, haskey, getval.
+
+  A note on Lisp naming conventions--when you create a new "data structure"
+  type, you should generally name functions as follows:
+
+   # Define a type 'pt' with members 'x' and 'y' using lists.
+   (macrodef pt (return ($1 $2)))
+   (macrodef pt-x (return $(nth 0 $1)))
+   (macrodef pt-y (return $(nth 1 $1)))
+
+   # Alternative implementation of a type 'pt2' using associative lists.
+   # (You couldn't pass 'pt2' to a built-in command, but it's a nice small
+   # example.)
+   (macrodef pt2 (return (x $1 y $2)))      # (pt2 10 20) => (x 10 y 20)
+   (macrodef pt2-x (return $(getval $1 x))) # (pt2-x ...) => 10
+   (macrodef pt2-y (return $(getval $1 y))) # (pt2-y ...) => 20
+
+  The function 'pt' is called the "constructor", and the functions 'pt-x'
+  and 'pt-y' are called "accessors".
+
+3.3.7 - emk
+
+  Debug log updates, and error message if 5L is run without
+  Mac5L.config or other support files.
+
+3.3.6 - emk
+
+  Fixed problems with BUTTPCX (and other?) highlighting.
+
+3.3.5 - emk
+
+  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.
+  This branch contained the following enhancements:
+
+   * Most of the communication between the interpreter and the
+     engine now goes through the interfaces defined in
+     TInterpreter.h and TPrimitive.h.  Among other things, this
+     refactoring makes will make it easier to (1) change the interpreter
+     from 5L to Scheme and (2) add portable primitives that work
+     the same on both platforms.
+   * A new system for handling callbacks.
+
+  I also slipped in the following, unrelated enhancements:
+
+   * MacOS X fixes.  Classic Mac5L once again runs under OS X, and
+     there is a new, not-yet-ready-for-prime-time Carbonized build.
+   * Bug fixes from the "Fix for 3.4" list.
+
+3.3.4.12 - emk
+
+  Last build of the 'FiveL_3_3_4_refactor_lang_1' branch
+  before merging.
+
+3.3.4.11 - emk
+
+  Refactored Mac code to move primitives from CCard.{h,cpp} to
+  TMacPrimitives.{h,cpp}, and break most of the remaining dependencies on
+  the 5L interpreter.
+
+  Language changes: LOADPICK, RVAR and RNODE are gone.  I've also disabled
+  the Mac PAUSE command until Douglas tells me how it should work.
+
+  Testing: Please beat *very* hard on this build, and pay special attention
+  to WAIT, NAP, TIMEOUT, and similar commands.
+
+  Next up: I plan to merge this branch into HEAD tomorrow.
+
+3.3.4.10 - emk
+
+  Debug log message improvements on the Mac.
+
+3.3.4.9 - emk
+
+  Fixed _Origin_X, _Origin_Y on Windows, and added a "default style"
+  parameter to "defstyle" on both platforms.
+
+  The new syntax:
+
+   (defstyle sample (Nimbus Roman No9 L) 12 r left 0xF0F0F000 0xFFFF0000)
+
+   ...where r = "regular", b = "bold", i = "italic" and bi = "bold italic".
+
+3.3.4.8 - emk
+
+  Added (BODY ...) command on Mac, fixed arguments of BUTTPCX, TOUCH,
+  and KEYBIND to match Win32 engine, and refactored Mac engine to more-or-less
+  respect the TInterpreter interface.
+
+  Things to test: REDOSCRIPT, redo-REDOSCRIPT (feed REDOSCRIPT a bogus script,
+  try to fix it, then run REDOSCRIPT again), TOUCH, BUTTPCX, ORIGIN.
+
+  Some low-level details:
+
+   - Added a KillCurrentCard method to the TInterpreter interface.  This
+     works a lot like Pause, but it cannot be resumed.
+   - Added a rough-cut TMac5LInterpreter class (with some methods stubbed
+     out, because they are not needed on the Mac--we should look at
+     this API in detail and formalize it sometime after 3.4).
+   - Modified CTouchZone to take TCallback objects.
+   - Modified CPlayerView's keybinding support to take TCallback objects
+     (and to use a std::map instead of a PowerPlant list class).
+   - Began to separate special forms (IF, BODY, EXIT, RETURN) from other
+     commands.
+   - Moved ReadSpecialVariable_* methods out of CCard and into CMac5LApp.
+   - Made sure CMac5LApp::mReDoReDo got initialized to false.
+   - Merged OpenScript and OpenScriptAgain into one function.
+
+3.3.4.7 - emk
+
+  Carbonization of Mac build, support for running non-Carbonized build
+  in MacOS X's OS 9 emulator, and basic support for 5L.prefs on the Mac.  The
+  Carbon build isn't yet ready for prime time--see BugHunt for details--but it
+  is good enough to use for engine development.
+
+  * Language changes
+
+   - CHECKDISC is gone; use CHECKVOL instead.
+   - EJECT is disabled in the Carbon build, because Carbon has no way to
+     identify CD drives reliably.  EJECT still works in the regular build.
+   - Gamma fades are ignored in the Carbon build.
+   - KEYBINDs must now be accessed with the Command key only--not Option.
+
+  * Things to test
+
+  Please be hugely brutal to 5L; this is a big update.
+
+   - 8-bit systems, palettes, ORIGIN, EJECT on the non-Carbon build.
+
+  * Internal changes
+
+   - TException class (and all subclasses) now take a __FILE__ and __LINE__
+     parameter.  This is ugly, but it allows me to debug 5L exceptions even
+     without a working debugger (under the OS 9 emulator, for example).
+   - FileSystem::Path::(DoesExist|IsRegularFile|IsDirectory) now rely on
+     native MacOS File Manager calls instead of the broken MSL stat()
+     function (which fails in the OS 9 emulator).
+   - The ImlUnit test harness flushes its output more often.
+   - Many data structure accessors (and such functions as c2pstr) have been
+     replaced by their Carbon equivalents.
+   - We now use PowerPlant accessors to get at the QuickDraw globals.
+   - We now use PowerPlant calls in place of ValidRect and InvalRect.
+   - Some very nasty code which set the palettes of our offscreen GWorlds
+     has been removed (offscreen GWorlds have CLUTs, not palettes!).
+     The various drawing commands now use gPaletteManager to map indexes
+     to RGBColor values, and RGBForeColor to set the color--no more calls
+     to ::PmForeColor on offscreen GWorlds, thank you!
+   - The CMenuUtil code (which used low-memory system globals to hide
+     and show the menu bar) has been removed entirely and replaced by
+     calls to HideMenuBar and ShowMenuBar (which are present in 8.5 and
+     Carbon).  This is much simpler, nicer, more portable and safer.
+   - A bunch of code which had been disabled with #ifdefs has been
+     removed entirely.  This mostly related to palettes and an obsolete
+     version of the fade code which used GWorlds.
+   - Code which used ROM-based KCHR resources to map option keys back to
+     their unmodified key caps has been removed.  This means KEYBINDs
+     can only be accessed using the Command key.
+   - We assume Carbon systems always support the HFS file system (duh).
+   - We use PowerPlant glue to access either StandardFile or Navigation
+     Services, under OS 8/9 and Carbon, respectively.
+   - Some old subroutines in CModuleManager appeared to have been
+     snarfed from More Files, an old Mac utility library.  These have
+     been moved into MoreFiles.{h,cpp}.
+
+  * Known Carbon Problems
+
+  Fades, ejecting CD-ROMs and playing QuickTime movies are all broken in
+  the Carbon build.  Douglas has found a problem with ORIGIN.  It looks
+  like we should continue to ship the OS 9 build for use with MacOS X,
+  at least for next few months.
+
+3.3.4.6 - 2002/06/12 19:42:36 - emk
+
+  Fixed bug where the origin didn't get restored after each macro
+  call.  (This bug was introduced in 3.3.4.5.)
+
+3.3.4.5 - 2002/06/12 19:02:51 - emk 
+
+  Moved Do* commands from Card.{h,cpp} to TWinPrimitives.{h,cpp},
+  and broke the remaining dependencies between these primitive commands and
+  the current 5L interpreter.  The TInterpreter and TPrimitives interfaces
+  are now quite mature.
+
+  *** Please beat very, very hard on this build.  I don't anticipate
+  further changes to the Windows engine for a while. ***
+
+  REMOVED COMMANDS: kill (use still), loadpick (use loadpic)
+  NEEDS TESTING: origin w/macros, other uses of origin.  5L now
+   sets the origin to 0,0 whenever it begins a new card, which
+   should produce behavior identical to the old system, unless
+   I've overlooked something.
+  NEEDS TESTING: make sure all the commands are available, and
+   have the right names.  I've checked this a dozen times
+   by eye, but I might have overlooked something.
+
+  The only remaining dependencies between the interpreter and the rest of
+  5L are in the Header and TStyleSheet classes.  I'm postponing this last
+  bit of cleanup until after 3.4.  Up next: Repeat the 3.3.4.{1-5} changes
+  for the Macintosh.
+ 
+3.3.4.4 - 2002/06/11 18:15:31 - emk
+
+  Partial separation of primitives from interpreter, and
+  various 5L language enhancements related to callbacks.
+
+   - Finished fleshing out TArgumentList, added support for callbacks.
+   - Made all built-in primitives access their arguments through the
+     TArgument interface.
+   - Implemented a BODY command.
+   - Changed how the TOUCH, BUTTPCX and KEYBIND commands parse their
+     callback arguments.  See below for details; you'll have to change
+     some code.  This was necessary to move callback parsing into
+     TStream's implementation of the TArgumentList interface.
+
+  5L Language Changes
+  -------------------
+
+   * (KEYBIND ...) now takes an arbitrary command instead of a card name.
+     As with TOUCH and BUTTPCX, variables are evaluated when the
+     keybind is installed, not when it is invoked.  Examples:
+
+       (keybind f (jump foo))
+       (keybind a (add x 10))
+
+   * You can now run a series of zero or more commands using (BODY cmd...).
+     This should work with IF, TOUCH, BUTTPCX and KEYBIND.  Example:
+
+       (body
+         (set x 10)
+         (set y 20))
+
+     Commands such as WAIT, JUMP, NAP, etc., will not do what you expect
+     unless they're the last statement in a BODY.  This is caused by the
+     low-level design of the interpreter, and is non-trivial to fix.
+
+     RETURN is also not BODY-friendly.
+
+     When you pass a body to IF, TOUCH, BUTTPCX or KEYBIND, all the
+     variables in the body will be evaluated *before* any code is run!
+
+   * The arguments to BUTTPCX and TOUCH have been rationalized after
+     consultation with Douglas.  The commands now work as follows:
+
+       (TOUCH rect cmd [cursor [picture [point]]])
+       (BUTTPCX picture point header label cmd [cursor])
+
+     Note that the second callback has disappeared from both TOUCH and
+     BUTTPCX; use BODY instead.
+
+3.3.4.3 - 2002/06/10 17:52:48 - emk
+
+  Added a TArgumentList class in TPrimitives.  This class provides
+  an abstract interface to argument list parsing, and replaces parts of
+  TStream.  This will allow us to begin breaking dependencies between
+  the primitives and the nasty parsing gunk in TStream.
+
+3.3.4.2 - 2002/06/05 20:42:29 - emk
+
+  Broke Win5L dependencies on TIndex file by moving various pieces
+  of code into TWin5LInterpreter.  Windows 5L now accesses the interpreter
+  through a well-defined API.  Changes:
+
+   * Removed many direct and indirect #includes of TIndex.h.
+   * Added a TInterpreter method ReloadScript, which can be called by the
+     higher-level ReDoScript command.
+   * Checked in some files which should have been included in the 3.3.4.1
+     checkin--these files contain the initial refactorings of Card and Macro
+     callsites to go through the TInterpreter interface.
+
+  Up next: Refactor various Do* methods out of Card and into a procedural
+  database.
+
+3.3.4 - 2002/05/29 13:58:10 - emk
+
+  Fixed various crash-on-exit problems (including those in TBTree,
+  TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code
+  to the behavior that shipped with Genetics.
+
+3.3.3 - 2002/05/15 11:05:18 - emk
+
+  Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
+  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography is
+  available, and several subsystems have been refactored.  For more
+  detailed descriptions, see the CVS branch.
+
+  The merged Mac code hasn't been built yet; I'll take care of that next.
+
+  Added support for passing a "(pcent ...)" argument to "defstyle" to
+  specify leading as a percentage of the base font size (and cleaned up a
+  few minor test suite issues).
+
+3.3.2.7 - 2002/05/01 07:10:49 - emk
+
+  Fixed assertion failure on "Special Variables" screen, fixed
+  missing bullets, and added "\&Delta;" and "\&delta;" entities for
+  use with the (textaa ...) command only.
+
+3.3.2.6 - 2002/05/01 03:27:02 - emk
+
+  First Windows engine with (textaa ...) command.
+
+   - Implemented a primitive, slow Image::DrawPixMap command that uses
+     ::GetPixel and ::SetPixel to do alpha blending (shudder).  Strangely
+     enough, it's about as fast as the somewhat optimized Mac routines.
+     Anyone got a good GDI book?
+
+   - Fixed several assertion failures.
+
+  Known problems:
+
+   - Occasional assertion failure on exit.  The reference-counting on
+     TIndexFile claims it's getting dereferenced too many times.  This is
+     an old bug; all the TBTree and TBNode classes are pretty dodgy.
+
+   - Assertion failure on "Special Variables" screen in 5Ltest.  This is
+     caused by overlong lines.
+
+3.3.2.5 - 2002/04/30 07:57:24 - emk
+
+  Port Win32 code to use the 20Kloc of Common code that now
+  exists.  The (defstyle ...) command should work, but (textaa ...) isn't
+  available yet.
+
+  Next up: Implement the (textaa ...) command and the low-level
+  GraphicsTools::Image::DrawBitMap.
+
+3.3.2.4 - 2002/04/29 06:29:58 - emk
+
+  Contains first set of performance tweaks, and fixes problem with
+  assertion failures after reload and on CME screens.
+
+3.3.2.3 - 2002/04/26 11:31:01 - emk
+
+  Fixed highlight shadow color to default to regular shadow color (instead
+  of highlight color, which is obviously wrong).
+
+3.3.2.2 - 2002/04/26 08:51:21 - emk
+
+  First experimental engine with (textaa ...) and (defstyle ...) commands.
+
+  Changes:
+
+   - Ported new TEncoding template class to the Mac.
+
+   - Updated TStyleSheet to provide bug-for-bug compatibility with the way
+     backslashed escaped sequences are processed.
+
+??? - 2002/04/23 11:29:47 - emk
+
+  Prepended "VERSION_" to the version-related preprocessor defines, because
+  this way is (1) nicer and (2) matches the Mac engine's preprocessor
+  defines.
+
+??? - 2002/04/19 11:20:13 - emk
+
+  Start of the heavy typography merging work.  I'm doing this on a branch
+  so I don't cause problems for any of the other developers.
+
+  Alpha-blend text colors.
+
+  Merged Mac and Windows versions of several files into the Common directory.
+  Not all of these work on Mac and/or Windows yet, but they're getting there.
+  Primary sources for the merged code are:
+
+   Win/FiveL/LVersion.h -> Common/TVersion.h
+   Win/FiveL/LStream.h -> Common/TStream.h
+   Mac/Source/CStream.cp -> Common/TStream.cpp
+   Mac/Source/CStreamTests.cp -> Common/TStreamTests.cpp
+
+  TStream changes:
+
+   * The TStream code now uses a callback to variable values.  This will
+     probably go away once Variable and CVariable get merged.
+   * Input operators for std::string and GraphicTools::Color.
+
+  Isolated Windows-specific code in TLogger.*, in preparation for a big merge.
+
+   * Added a portable function to set up logging.
+   * Fixed the logging code to use the portable FileSystem library.
+   * Made FatalError actually quit the application.
+
+  Turned off the FiveL namespace on FIVEL_PLATFORM_OTHER, so we can debug
+  with GDB, which has a few minor but painful namespace issues.
+
+  TString changes:
+
+   * Made sure we can convert from std::string to a TString.
+   * Added some more assertions.
+   * Fixed bug in various operator= methods which would allow the string's
+     internal data pointer to be NULL.
+   * Changed operator[] and operator() arguments to be 'int' instead of
+     'int32' to avoid nasty compiler warnings.
+
+  Typography::Style changes:
+
+   * Added a "ShadowOffset" field that specifies the offset of the
+     drop shadow.
+   * Added an operator== for testing.
+   * Added a ToggleFaceStyle method for toggling specified face style bits.
+
+  Typography::StyledText changes:
+
+   * Added a method to append a single character.
+
+  Other Typography changes:
+
+   * Made FaceStyle an int, not an enum, so we can do bit math with it.
+   * Added assertions to made sure you can't extract a StyledText iterator
+     until you've called EndConstruction.
+
+??? - 2002/04/19 10:21:52 - hyjin
+
+  Added support for a movie controller in 5L applications, and deleted some
+  buggy pre-roll code that appeared to be causing crashes.  We're not a
+  hundred percent sure all the crashing problems are fixed, but things seem
+  to be working very well.  Please test this extensively!
+
+  Set global variable _bShowMC to see the movie controller (case insensitive).
+
+  Changes by Yijin, reviewed by Eric Kidd.
+
+EARLIER REVISIONS
+-----------------
+
+  Lots of work to create a Common/ directory from the platform-specific
+  directories, followed by work to create a portable Typography and
+  GraphicsTools library.
+
+  For even earlier work, look at the ReleaseNotes.txt files in
+  Mac/ and Win32/, which contain the history of the old, platform-specific
+  engines before the merge.
