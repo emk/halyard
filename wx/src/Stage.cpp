@@ -418,7 +418,7 @@ void StageFrame::LoadFrameLayout()
 	long is_maximized = IsMaximized();
 	long sz_client_width = sz.GetWidth();
 	long sz_client_height = sz.GetHeight();
-	long program_tree_width;
+	long program_tree_width = mProgramTree->GetMinimumSizeX();
 
 	// Load values from our config file.
 	wxConfigBase *config = wxConfigBase::Get();
