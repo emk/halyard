@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.43 - 13 Dec 2004 - emk
 
   * Added QUICKTIME-COMPONENT-VERSION primitive.
   * Removed the kInitializeQTMLUseGDIFlag from QuickTime startup. This

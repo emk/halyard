@@ -22,15 +22,54 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		42
+#define VERSION_REV_BIG		43
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.42 (Development)"
+#define VERSION_STRING		"Tamale 0.0.43 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.83  2004/12/13 12:45:39  emk
+ 0.0.43 - 13 Dec 2004 - emk
+
+   * Added QUICKTIME-COMPONENT-VERSION primitive.
+   * Removed the kInitializeQTMLUseGDIFlag from QuickTime startup. This
+     will once again allow us to use hardware acceleration, with possible
+     negative consequences. Keep an eye out for QuickTime bugs on weird
+     machines for the next month or two.
+   * Made sure we call scheme_set_stack_base with a second argument of 1 to
+     prevent the Boehm GC from scanning video card memory mapped into our
+     address space by QuickTime (which is hideously slow).  We've been
+     neglecting this fix for a while because we've been using
+     kInitializeQTMLUseGDIFlag, which keeps QuickTime from mapping video
+     memory.
+   * We now detect if QuickTime isn't installed and give an appropriate
+     error (bug #1846).
+   * We handle top-level exceptions much more gracefully and informatively
+     than before (bug #1846).
+   * We no longer register elements with the stage before they're fully
+     created. This fixes the bug where throwing an exception in an element
+     constructor would crash the engine (bug #1836).
+   * The engine now preforms delayed wake-ups of the interpreter (after the
+     end of a WAIT) more robustly, which should fix some ugly assertion
+     failures (bug #1845). I'm convinced this portion of the code will need
+     a redesign, and have added some comments to that effect.
+   * The engine no longer crashes if you press control-space in a
+     simulation (bug #1838).  When the engine goes into edit mode, it
+     now deletes all elements and any StateDB listeners registered by the
+     script.
+   * The error dialog no longer floats over all other windows (bug #1829).
+   * Basic runtime mode implemented.  This supports launching directly to
+     full-screen mode with a specified script, and disabling editing options
+     if 5L.prefs is missing (bug #1726).  As noted in the bug, a number of
+     other issues remain, and we'll have to deal with them before declaring
+     the runtime mode perfect.
+   * Added code to update menu accelerators more reliably while in runtime
+     mode (bug #1726).  This may cause performance problems.
+   * All script errors are fatal in runtime mode (bug #1730).
+
  Revision 1.82  2004/12/09 18:01:56  emk
  0.0.42 - 06 Dec 2004 - emk
 
