@@ -50,6 +50,12 @@ namespace GraphicsTools {
 			  Channel inBlue, Channel inAlpha = 0)
 			: red(inRed), green(inGreen), blue(inBlue), alpha(inAlpha) {}
 
+		static Color ApplyAlpha(Color inColor, Channel inAlpha)
+		{
+			return Color(inColor.red, inColor.blue, inColor.green,
+						 (((int) inColor.alpha) * ((int) inAlpha)) / 255);
+		}
+
 		friend bool operator==(Color inLeft, Color inRight)
 		{
 			return (inLeft.red == inRight.red &&

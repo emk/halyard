@@ -9,3 +9,4 @@ config.status
 configure
 TestAll
 TestAll?Debug
+*.log

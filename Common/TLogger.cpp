@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -14,11 +15,16 @@
 // TLogger.cpp : 
 //
 
+#include <time.h>
+#include <stdarg.h>
+#include <iostream>
+
 #include "THeader.h"
 #include "TLogger.h"
 #include "TString.h"
+#include "TVersion.h"
 
-#include <time.h>
+USING_NAMESPACE_FIVEL
 
 #define FATAL_HEADER	"Fatal Error: "
 #define ERROR_HEADER	"Error: "
@@ -27,8 +33,13 @@
 #define FormatMsg(Format)	\
 	va_list	argPtr;			\
 	va_start(argPtr, (Format));		\
-	wvsprintf(m_LogBuffer, (Format), argPtr);	\
+	vsprintf(m_LogBuffer, (Format), argPtr);	\
 	va_end(argPtr)
+
+// Standard logs.
+TLogger FIVEL_NS gLog;
+TLogger FIVEL_NS gDebugLog;
+TLogger FIVEL_NS gMissingMediaLog;
 
 TLogger::TLogger()
 { 
@@ -48,20 +59,14 @@ TLogger::~TLogger()
 //
 //	Init - Initialize the log file. 
 //
-void TLogger::Init(const char *Path, const char *Name, 
+void TLogger::Init(const FileSystem::Path &inLogFile, 
 				   bool OpenFile /* = true */, bool Append /* = false */)
 {
 	ASSERT(not m_LogOpen);
-	ASSERT(Path != NULL);
-	ASSERT(Name != NULL);
 
 	m_Append = Append;
-
-	m_FileName = Path;
-	if (not m_FileName.EndsWith('\\'))
-		m_FileName += '\\';
-	m_FileName += Name;
-	m_FileName += ".log";
+	m_FileName =
+		inLogFile.ReplaceExtension("log").ToNativePathString().c_str();
 
 	if (OpenFile)
 	{
@@ -87,14 +92,10 @@ void TLogger::Init(const char *Path, const char *Name,
 //
 //	Init - Initialize the log file. Use the current directory.
 //
-void TLogger::Init(const char *Name, bool OpenFile /* = true */)
+void TLogger::Init(const char *Name, bool OpenFile /* = true */,
+				   bool Append /* = false */)
 {	
-	char		pathBuf[MAX_PATH];
-	DWORD		retLen = 0;
-
-	retLen = ::GetCurrentDirectory(MAX_PATH, pathBuf);
-	if (retLen > 0)
-		Init(pathBuf, Name, OpenFile);
+	Init(FileSystem::GetBaseDirectory().AddComponent(Name), OpenFile, Append);
 }
 
 void TLogger::Log(int32 Mask, const char *Format, ...)
@@ -147,7 +148,7 @@ void TLogger::FatalError(const char *Format, ...)
 	FormatMsg(Format);
 	LogBuffer(FATAL_HEADER);
 	AlertBuffer(true);
-//	ShutDown(true);
+	exit(1);
 }
 
 //
@@ -205,6 +206,8 @@ void TLogger::LogBuffer(const char *Header)
 //
 //	AlertBuffer -
 //
+#ifdef FIVEL_PLATFORM_WIN32
+
 void TLogger::AlertBuffer(bool isError /* = false */)
 {
 	uint32		alertType;
@@ -217,6 +220,23 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 
 	::MessageBox(::GetFocus(), m_LogBuffer, NULL, alertType);
 }
+
+#elif FIVEL_PLATFORM_MACINTOSH
+#	error "AlertBuffer not yet merged from old Macintosh KLogger code."
+#elif FIVEL_PLATFORM_OTHER
+
+void TLogger::AlertBuffer(bool isError /* = false */)
+{
+	std::cerr << std::endl;
+	if (isError)
+		std::cerr << "ERROR: ";
+	else
+		std::cerr << "INFO: ";
+	std::cerr << m_LogBuffer << std::endl;
+}
+
+#endif
+
 
 //
 //	TimeStamp - Put a time stamp in the log
@@ -231,9 +251,82 @@ void TLogger::TimeStamp(void)
 	m_Log << timeStrPtr << std::endl;
 }
 
+void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
+{
+	// Initialize the global log file.
+	gLog.Init(SHORT_NAME, true, true);
+	gLog.Log("%s", VERSION_STRING);
+
+	// Initialize the missing media file.
+	gMissingMediaLog.Init("MissingMedia", false, true);
+
+	if (inShouldOpenDebugLog)
+	{
+		// Initialize the debug log.
+		gDebugLog.Init("Debug");
+		gDebugLog.Log("%s", VERSION_STRING);
+	}	
+}
+
 
 /*
  $Log$
+ Revision 1.3.4.1  2002/04/19 11:20:13  emk
+ Start of the heavy typography merging work.  I'm doing this on a branch
+ so I don't cause problems for any of the other developers.
+
+ Alpha-blend text colors.
+
+ Merged Mac and Windows versions of several files into the Common directory.
+ Not all of these work on Mac and/or Windows yet, but they're getting there.
+ Primary sources for the merged code are:
+
+   Win/FiveL/LVersion.h -> Common/TVersion.h
+   Win/FiveL/LStream.h -> Common/TStream.h
+   Mac/Source/CStream.cp -> Common/TStream.cpp
+   Mac/Source/CStreamTests.cp -> Common/TStreamTests.cpp
+
+ TStream changes:
+
+   * The TStream code now uses a callback to variable values.  This will
+     probably go away once Variable and CVariable get merged.
+   * Input operators for std::string and GraphicTools::Color.
+
+ Isolated Windows-specific code in TLogger.*, in preparation for a big merge.
+
+   * Added a portable function to set up logging.
+   * Fixed the logging code to use the portable FileSystem library.
+   * Made FatalError actually quit the application.
+
+ Turned off the FiveL namespace on FIVEL_PLATFORM_OTHER, so we can debug
+ with GDB, which has a few minor but painful namespace issues.
+
+ TString changes:
+
+   * Made sure we can convert from std::string to a TString.
+   * Added some more assertions.
+   * Fixed bug in various operator= methods which would allow the string's
+     internal data pointer to be NULL.
+   * Changed operator[] and operator() arguments to be 'int' instead of
+     'int32' to avoid nasty compiler warnings.
+
+ Typography::Style changes:
+
+   * Added a "ShadowOffset" field that specifies the offset of the
+     drop shadow.
+   * Added an operator== for testing.
+   * Added a ToggleFaceStyle method for toggling specified face style bits.
+
+ Typography::StyledText changes:
+
+   * Added a method to append a single character.
+
+ Other Typography changes:
+
+   * Made FaceStyle an int, not an enum, so we can do bit math with it.
+   * Added assertions to made sure you can't extract a StyledText iterator
+     until you've called EndConstruction.
+
  Revision 1.3  2002/02/19 12:35:11  tvw
  Bugs #494 and #495 are addressed in this update.
 

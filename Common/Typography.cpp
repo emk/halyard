@@ -66,14 +66,15 @@ Style::Style(const std::string &inFamily, int inSize)
 	try
 	{
 		// Set up all our fields.
-		mRep->mRefCount    = 1;
-		mRep->mFamily      = inFamily;
-		mRep->mFaceStyle   = kRegularFaceStyle;
-		mRep->mSize        = inSize;
-		mRep->mLeading     = 0;
-		mRep->mColor       = Color(0, 0, 0);
-		mRep->mShadowColor = Color(255, 255, 255);
-		mRep->mFace        = NULL;
+		mRep->mRefCount     = 1;
+		mRep->mFamily       = inFamily;
+		mRep->mFaceStyle    = kRegularFaceStyle;
+		mRep->mSize         = inSize;
+		mRep->mLeading      = 0;
+		mRep->mShadowOffset = 1;
+		mRep->mColor        = Color(0, 0, 0);
+		mRep->mShadowColor  = Color(255, 255, 255);
+		mRep->mFace         = NULL;
 	}
 	catch (...)
 	{
@@ -145,6 +146,18 @@ Typography::Style &Style::operator=(const Style &inStyle)
 	return *this;
 }
 
+bool Style::operator==(const Style &inStyle) const
+{
+	return (mRep->mFamily == inStyle.mRep->mFamily &&
+			mRep->mBackupFamilies == inStyle.mRep->mBackupFamilies &&
+			mRep->mFaceStyle == inStyle.mRep->mFaceStyle &&
+			mRep->mSize == inStyle.mRep->mSize &&
+			mRep->mLeading == inStyle.mRep->mLeading &&
+			mRep->mShadowOffset == inStyle.mRep->mShadowOffset &&
+			mRep->mColor == inStyle.mRep->mColor &&
+			mRep->mShadowColor == inStyle.mRep->mShadowColor);
+}
+
 Typography::Style &Style::SetFamily(const std::string &inFamily)
 {
 	Grab();
@@ -169,6 +182,15 @@ Typography::Style &Style::SetFaceStyle(FaceStyle inFaceStyle)
 	return *this;
 }
 
+Typography::Style &Style::ToggleFaceStyle(FaceStyle inToggleFlags)
+{
+	FaceStyle toggled_mask = inToggleFlags;
+	FaceStyle unchanged_mask = ~inToggleFlags;
+	FaceStyle current = GetFaceStyle();
+	SetFaceStyle((current & unchanged_mask) | (~current & toggled_mask));
+	return *this;
+}
+
 Typography::Style &Style::SetSize(int inSize)
 {
 	Grab();
@@ -181,6 +203,13 @@ Typography::Style &Style::SetLeading(Distance inLeading)
 {
 	Grab();
 	mRep->mLeading = inLeading;
+	return *this;
+}
+
+Style &Style::SetShadowOffset(Distance inOffset)
+{
+	Grab();
+	mRep->mShadowOffset = inOffset;
 	return *this;
 }
 
@@ -265,6 +294,13 @@ StyledText::StyledText(const Style &inBaseStyle)
 void StyledText::AppendText(const std::wstring &inText)
 {
 	ASSERT(!mIsBuilt);
+	mText += inText;
+}
+
+void StyledText::AppendText(wchar_t inText)
+{
+	ASSERT(!mIsBuilt);
+	ASSERT(inText != 0);
 	mText += inText;
 }
 
@@ -883,9 +919,8 @@ void TextRenderingEngine::DrawBitmap(Point inPosition, FT_Bitmap *inBitmap,
 		{
 			for (int x = 0; x < inBitmap->width; x++)
 			{
-				Channel value = inBitmap->buffer[x + inBitmap->pitch * y];
-				pixmap.At(x, y) = Color(inColor.red, inColor.green,
-										inColor.blue, 255 - value);
+				Channel value = 255 - inBitmap->buffer[x + inBitmap->pitch*y];
+				pixmap.At(x, y) = Color::ApplyAlpha(inColor, value);
 			}
 		}
     }
@@ -900,8 +935,7 @@ void TextRenderingEngine::DrawBitmap(Point inPosition, FT_Bitmap *inBitmap,
 				unsigned char byte = inBitmap->buffer[(x/8) +
 													  inBitmap->pitch * y];
 				Channel value = ((1<<(7-(x%8))) & byte) ? 0 : 255; 
-				pixmap.At(x, y) = Color(inColor.red, inColor.green,
-										inColor.blue, value);
+				pixmap.At(x, y) = Color::ApplyAlpha(inColor, value);
 			}
 		}	
     }
@@ -928,8 +962,11 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 	{
 		Point loc = *ioPosition + Point(glyph->bitmap_left,-glyph->bitmap_top);
 		if (inCurrent.style->GetIsShadowed())
-			DrawBitmap(loc + Point(1,1), &glyph->bitmap,
+		{
+			Distance offset = inCurrent.style->GetShadowOffset();
+			DrawBitmap(loc + Point(offset, offset), &glyph->bitmap,
 					   inCurrent.style->GetShadowColor());
+		}
 		DrawBitmap(loc, &glyph->bitmap, inCurrent.style->GetColor());
 	}
 

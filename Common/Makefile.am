@@ -24,6 +24,8 @@ libfivel_a_SOURCES = \
 	TException.h \
 	THeader.cpp \
 	THeader.h \
+	TLogger.cpp \
+	TLogger.h \
 	TObject.cpp \
 	TObject.h \
 	TPoint.cpp \
@@ -32,6 +34,10 @@ libfivel_a_SOURCES = \
 	TRect.h \
 	TString.cpp \
 	TString.h \
+	TStream.cpp \
+	TStream.h \
+	TStyleSheet.cpp \
+	TStyleSheet.h \
 	TURL.cpp \
 	TURL.h \
 	TEncoding.cpp \
@@ -43,16 +49,13 @@ libfivel_a_SOURCES = \
 	GraphicsTools.cpp \
 	GraphicsTools.h
 
-# These only compile on Windows.  But nobody else uses them, so it
-# doesn't matter for now.
-#	TLogger.cpp \
-#	TLogger.h \
-
 TestAll_SOURCES = \
 	TStringTests.cpp \
+	TStreamTests.cpp \
 	TEncodingTests.cpp \
 	FileSystemTests.cpp \
 	TypographyTests.cpp \
+	TStyleSheetTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
 	libfivel.a \

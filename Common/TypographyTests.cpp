@@ -27,6 +27,7 @@ static void test_Typography_Style (void)
 	TEST(s1.GetFaceStyle() == kRegularFaceStyle);
 	TEST(s1.GetSize() == 14);
 	TEST(s1.GetLeading() == 0);
+	TEST(s1.GetShadowOffset() == 1);
 	TEST(s1.GetColor() == Color(0, 0, 0));
 	TEST(s1.GetShadowColor() == Color(255, 255, 255));
 
@@ -37,6 +38,7 @@ static void test_Typography_Style (void)
 	TEST(s2.GetFaceStyle() == kRegularFaceStyle);
 	TEST(s2.GetSize() == 14);
 	TEST(s2.GetLeading() == 0);
+	TEST(s2.GetShadowOffset() == 1);
 	TEST(s2.GetColor() == Color(0, 0, 0));
 	TEST(s2.GetShadowColor() == Color(255, 255, 255));
 	
@@ -46,6 +48,7 @@ static void test_Typography_Style (void)
 	TEST(s3.GetFaceStyle() == kRegularFaceStyle);
 	TEST(s3.GetSize() == 14);
 	TEST(s3.GetLeading() == 0);
+	TEST(s3.GetShadowOffset() == 1);
 	TEST(s3.GetColor() == Color(0, 0, 0));
 	TEST(s3.GetShadowColor() == Color(255, 255, 255));
 
@@ -62,6 +65,9 @@ static void test_Typography_Style (void)
 	s1.SetLeading(2);
 	TEST(s1.GetLeading() == 2);
 	TEST(s2.GetLeading() == 0);
+	s1.SetShadowOffset(2);
+	TEST(s1.GetShadowOffset() == 2);
+	TEST(s2.GetShadowOffset() == 1);
 	s1.SetColor(Color(32, 32, 32));
 	TEST(s1.GetColor() == Color(32, 32, 32));
 	TEST(s2.GetColor() == Color(0, 0, 0));
@@ -83,6 +89,12 @@ static void test_Typography_Style (void)
 	s1.SetFaceStyle(kShadowFaceStyle);
 	TEST(!s1.GetIsUnderlined());
 	TEST(s1.GetIsShadowed());
+
+	// Test toggling of FaceStyle flags.
+	s1.SetFaceStyle(kBoldItalicFaceStyle | kShadowFaceStyle);
+	s1.ToggleFaceStyle(kBoldFaceStyle | kUnderlineFaceStyle);
+	TEST(s1.GetFaceStyle() ==
+		 (kItalicFaceStyle | kUnderlineFaceStyle | kShadowFaceStyle));
 }
 
 
@@ -101,8 +113,10 @@ static void test_Typography_StyledText (void)
 	info.AppendText(L"xy");
 	info.ChangeStyle(Style(base).SetColor(Color(0, 255, 0)));
 	info.ChangeStyle(Style(base).SetColor(Color(0, 0, 255)));
-	info.AppendText(L"xy");
+	info.AppendText(L'x');
+	info.AppendText(L'y');
 	info.EndConstruction();
+	TEST(*info.GetText() == L"xyxyxyxy");
 
 	// Make sure we have correct style information.
 	StyledText::const_iterator iter = info.begin();

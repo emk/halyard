@@ -104,7 +104,7 @@ AUTHOR
 
 #define FIVEL_PLATFORM_OTHER (1)
 
-#define WANT_FIVEL_NAMESPACE (1)
+//#define WANT_FIVEL_NAMESPACE (1)
 #define ASSERT(expr) assert(expr)
 
 #endif

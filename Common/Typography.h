@@ -99,7 +99,7 @@ namespace Typography {
 	// A face style.  This is combined with a face, colors, and other
 	// information to make a full-fledged Style.
 	//
-	enum FaceStyle {
+	enum /* FaceStyle */ {
 		// These styles are directly supported by the FamilyDatabase.
 		kRegularFaceStyle = 0,
 		kBoldFaceStyle = 1,
@@ -111,6 +111,12 @@ namespace Typography {
 		kUnderlineFaceStyle = 4,
 		kShadowFaceStyle = 8
 	};
+
+	//////////
+	// 'FaceStyle' is an integer, not an enumeration, so we can do
+	// bitwise operations on FaceStyles under picky C++ compilers.
+	//
+	typedef int FaceStyle;
 
 	//////////
 	// A Typography-related exception.  Any of the functions in the
@@ -165,11 +171,13 @@ namespace Typography {
 		struct StyleRep {
 			int         mRefCount;
 
+			// If you any fields here, be sure to update operator==.
 			std::string mFamily;
 			std::list<std::string> mBackupFamilies;
 			FaceStyle   mFaceStyle;
 			int         mSize;
 			Distance    mLeading;
+			Distance    mShadowOffset;
 			Color       mColor;
 			Color       mShadowColor;
 			
@@ -198,6 +206,8 @@ namespace Typography {
 
 		Style &operator=(const Style &inStyle);
 
+		bool operator==(const Style &inStyle) const;
+
 		//////////
 		// Get the font family.  e.g., "Times", "Nimbus Roman No9 L".
 		//
@@ -218,6 +228,11 @@ namespace Typography {
 		Style &SetFaceStyle(FaceStyle inFaceStyle);
 
 		//////////
+		// Toggle the values of the specified face flags.
+		//
+		Style &ToggleFaceStyle(FaceStyle inToggleFlags);
+
+		//////////
 		// Get the size of the font, in points.
 		//
 		int GetSize() const { return mRep->mSize; }
@@ -228,6 +243,12 @@ namespace Typography {
 		//
 		Distance GetLeading() const { return mRep->mLeading; }
 		Style &SetLeading(Distance inLeading);
+
+		//////////
+		// Get the offset used to draw shadows.
+		//
+		Distance GetShadowOffset () const { return mRep->mShadowOffset; }
+		Style &SetShadowOffset(Distance inOffset);
 
 		//////////
 		// Get the color used to draw text.
@@ -273,6 +294,11 @@ namespace Typography {
 		// Add text to the end of the styled text object.
 		// 
 		void AppendText(const std::wstring &inText);
+
+		//////////
+		// Add text to the end of the styled text object.
+		// 
+		void AppendText(wchar_t inText);
 
 		//////////
 		// Change the Style at the current offset in the string.
@@ -444,14 +470,14 @@ namespace Typography {
 	    // Return an iterator pointing to the first element.
 		//
 		const_iterator begin() const
-            { return const_iterator(this, 0); }
+            { ASSERT(mIsBuilt); return const_iterator(this, 0); }
 
 		//////////
 	    // Return an iterator pointing one past the last element.
 		// Do not dereference this.
 		//
 		const_iterator end() const
-            { return const_iterator(this, mText.length()); }
+            { ASSERT(mIsBuilt); return const_iterator(this, mText.length()); }
 	};
 
 	class Face;
@@ -878,10 +904,7 @@ namespace Typography {
 		// Create a new text rendering engine.
 		//
 		// [in] inText -       The styled text to draw.
-		// [in] inPosition -   The x,y position of the lower-left corner
-		//                     of the first character (actually, this
-		//                     is technically the "origin" of the first
-		//                     character in FreeType 2 terminology).
+		// [in] inPosition -   The upper-left corner of the text box.
 		// [in] inLineLength - The maximum number of pixels available for
 		//                     a line.  This is (I hope) a hard limit,
 		//                     and no pixels should ever be drawn beyond it.

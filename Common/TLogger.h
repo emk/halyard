@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, 2000 Trustees of Dartmouth College, All rights reserved.
@@ -22,6 +23,9 @@
 #include "TCommon.h"
 #include "TObject.h"
 #include "TString.h"
+#include "FileSystem.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 #define LOG_NONE		0x00000000
 #define LOG_ALL			0xFFFFFFFF
@@ -69,23 +73,26 @@ public:
 	//
 	// [in] Name - name of the log file (no file extension)
 	// [in_optional] OpenFile - if true opens the file on init (default true)
+	// [in_optional] Append - if true, opens file for append only
+    //                        (defualt false)
 	//
-	void	Init(const char *Name, bool OpenFile = true);
+	void	Init(const char *Name, bool OpenFile = true, bool Append = false);
 
 	//////////
 	// Initialize the log file.
 	//
-	// [in] Path - path where the log file should be written
-	// [in] Name - name of the log file (no file extension)
+	// [in] inLogFile - location where the log file should be written
 	// [in_optional] OpenFile - if true, opens the file on init (default true)
-	// [in_optional] Append - if true, opens file for append only (defualt false)
+	// [in_optional] Append - if true, opens file for append only
+    //                        (defualt false)
 	//
-	void	Init(const char *Path, const char *Name, bool OpenFile = true, bool Append = false);
+	void	Init(const FileSystem::Path &inLogFile, bool OpenFile = true,
+				 bool Append = false);
 
 	//////////
 	// Log a general message.
 	//
-	// [in] Mask - a mask to check against the log mask before logging this message
+	// [in] Mask - a mask to check against the log mask before logging
 	// [in] Format - a printf format string (e.g. "Count is %d.", count)
 	//
 	void	Log(int32 Mask, const char *Format, ...);
@@ -213,12 +220,96 @@ private:
 				return (true);
 		return (false);
 	}
+
+public:
+	//////////
+	// Open up all the log files which will be required by our program.
+	//
+	// [in] inOpenDebugLog - Should we open up the debugging log as well?
+	//
+	static void OpenStandardLogs(bool inOpenDebugLog = false);
 };
+
+//////////
+// This log is used to log ordinary, relatively important events.  This
+// file typically exists on a normal user's system.
+//
+extern TLogger gLog;
+
+//////////
+// This log is used to log low-level debugging events.  This file typically
+// exists on a developer's system.
+//
+extern TLogger gDebugLog;
+
+//////////
+// This log is used to log missing media items.  This file typically exists
+// on a normal user's system.
+//
+extern TLogger gMissingMediaLog;
+
+END_NAMESPACE_FIVEL
 
 #endif // _TLogger_h_
 
 /*
  $Log$
+ Revision 1.2.4.1  2002/04/19 11:20:13  emk
+ Start of the heavy typography merging work.  I'm doing this on a branch
+ so I don't cause problems for any of the other developers.
+
+ Alpha-blend text colors.
+
+ Merged Mac and Windows versions of several files into the Common directory.
+ Not all of these work on Mac and/or Windows yet, but they're getting there.
+ Primary sources for the merged code are:
+
+   Win/FiveL/LVersion.h -> Common/TVersion.h
+   Win/FiveL/LStream.h -> Common/TStream.h
+   Mac/Source/CStream.cp -> Common/TStream.cpp
+   Mac/Source/CStreamTests.cp -> Common/TStreamTests.cpp
+
+ TStream changes:
+
+   * The TStream code now uses a callback to variable values.  This will
+     probably go away once Variable and CVariable get merged.
+   * Input operators for std::string and GraphicTools::Color.
+
+ Isolated Windows-specific code in TLogger.*, in preparation for a big merge.
+
+   * Added a portable function to set up logging.
+   * Fixed the logging code to use the portable FileSystem library.
+   * Made FatalError actually quit the application.
+
+ Turned off the FiveL namespace on FIVEL_PLATFORM_OTHER, so we can debug
+ with GDB, which has a few minor but painful namespace issues.
+
+ TString changes:
+
+   * Made sure we can convert from std::string to a TString.
+   * Added some more assertions.
+   * Fixed bug in various operator= methods which would allow the string's
+     internal data pointer to be NULL.
+   * Changed operator[] and operator() arguments to be 'int' instead of
+     'int32' to avoid nasty compiler warnings.
+
+ Typography::Style changes:
+
+   * Added a "ShadowOffset" field that specifies the offset of the
+     drop shadow.
+   * Added an operator== for testing.
+   * Added a ToggleFaceStyle method for toggling specified face style bits.
+
+ Typography::StyledText changes:
+
+   * Added a method to append a single character.
+
+ Other Typography changes:
+
+   * Made FaceStyle an int, not an enum, so we can do bit math with it.
+   * Added assertions to made sure you can't extract a StyledText iterator
+     until you've called EndConstruction.
+
  Revision 1.2  2002/02/19 12:35:11  tvw
  Bugs #494 and #495 are addressed in this update.
 

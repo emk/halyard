@@ -1,10 +1,11 @@
-#include "CStream.h"
+// -*- Mode: C++; tab-width: 4; -*-
+
+#include "TStream.h"
 #include "ImlUnit.h"
-#include "CVariable.h"
 
 USING_NAMESPACE_FIVEL
 
-extern void test_CStream (void);
+extern void test_TStream (void);
 
 
 //=========================================================================
@@ -12,7 +13,7 @@ extern void test_CStream (void);
 //=========================================================================
 //  These functions and variables are required to run the tests.
 
-static CStream& sample_callback(CStream &stream)
+static TStream& sample_callback(TStream &stream)
 {
 	TEST(stream.curchar() == 'a');
 	TEST(stream.nextchar() == '(');
@@ -22,15 +23,25 @@ static CStream& sample_callback(CStream &stream)
 	return stream;
 }
 
+static TString get_variable(const TString &inVarName)
+{
+	if (inVarName == "myVar")
+		return TString("Hello World");
+	else
+		return TString("0");
+}
+
 
 //=========================================================================
-//  test_CStream
+//  test_TStream
 //=========================================================================
 
-void test_CStream (void) 
+void test_TStream (void) 
 {	
+	TStream::SetVariableLookupFuction(&get_variable);
+
 	// A simple test.
-	CStream s1 = "abc \t def (ghi jkl mno) pqr";
+	TStream s1 = "abc \t def (ghi jkl mno) pqr";
 	TEST(s1.curchar() == 'a');
 	TEST(s1.nextchar() == 'b');
 	TEST(s1.curchar() == 'b');
@@ -56,10 +67,13 @@ void test_CStream (void)
 	// Input formats.
 	// TODO - Test all operator >> here.
 	
-	s1 = "abc 32767 -32768 2147483647 -2147483648 0.5";
+	s1 = "abc foo 32767 -32768 2147483647 -2147483648 0.5 0xFFee0080";
 	TString temp2;
 	s1 >> temp2;
 	TEST(temp2 == "abc");
+	std::string temp_std_string;
+	s1 >> temp_std_string;
+	TEST(temp_std_string == "foo");
 	int16 temp3;
 	s1 >> temp3;
 	TEST(temp3 == 32767);
@@ -69,11 +83,14 @@ void test_CStream (void)
 	s1 >> temp4;
 	TEST(temp4 == 2147483647);
 	s1 >> temp4;
-	TEST(temp4 == -2147483648);
+	TEST(temp4 == (-2147483647)-1);
 	double temp5;
 	s1 >> temp5;
 	TEST(temp5 == 0.500000);
-	
+	GraphicsTools::Color temp_color;
+	s1 >> temp_color;
+	TEST(temp_color == GraphicsTools::Color(0xFF, 0xEE, 0x00, 0x80));
+
 	// Input using callback function.
 	s1 = "a(bc de)f";
 	s1 >> &sample_callback;
@@ -109,7 +126,7 @@ void test_CStream (void)
 	s1 >> temp;
 	TEST(temp == "1\\)2\\)3\\)");
 	
-	gVariableManager.SetString("myVar", "Hello World");
+	// Test variable interpolation.
 	s1 = "\\$myVar$  \\\\$myVar$";
 	s1 >> temp;
 	TEST(temp == "\\$myVar0");
@@ -139,7 +156,8 @@ void test_CStream (void)
 	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == "a");
 	
 	
-	//TODO - Test inEscape briefly (thorough testing in above tricky escape cases)
+	// TODO - Test inEscape briefly (thorough testing in above tricky
+	// escape cases)
 	s1 = "\\\\ \\((\\\\(";
 	TEST(!s1.inEscape(0));
 	TEST(s1.inEscape(1));
@@ -156,7 +174,7 @@ void test_CStream (void)
 	TEST(s1.inEscape());
 
 
-	// TODO - Demonstrate potential whitespace issues with CStream
+	// TODO - Demonstrate potential whitespace issues with TStream
 	// Although the above example work as we would expect, the whitespace
 	// stripping and leaving is NOT consistent or seemingly rational
 	// The examples below are included to demonstrate the weird behavior. 

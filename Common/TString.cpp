@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -114,6 +115,18 @@ TString::TString(const TString &inStr) : TObject()
 	}
 }
 
+TString::TString(const std::string &inStr)
+{
+	m_Length = inStr.length();
+	m_Size = inStr.length();
+	m_String = NULL;
+	m_MinResize = MIN_STRING_RESIZE;
+
+	Resize(m_Length + 1);
+	strcpy(m_String, inStr.c_str());
+}
+
+
 //
 //	~TString - Destructor.
 //
@@ -147,6 +160,10 @@ TString &TString::operator=(const char *inStr)
         Resize(m_Length + 1);
         strcpy(m_String, inStr);
     }
+	else
+	{
+		Resize(1);
+	}
 
     return (*this);
 }
@@ -170,6 +187,10 @@ TString &TString::operator=(const TString &inStr)
         Resize(m_Length + 1);
         strcpy(m_String, inStr.m_String);
     }
+	else
+	{
+		Resize(1);
+	}
 
     return (*this);
 }
@@ -396,6 +417,7 @@ void TString::Resize(uint32 inSize)
 			m_String = newStr;
 		}
 	}
+	ASSERT(m_String != NULL);
 }
 
 //
@@ -831,7 +853,10 @@ TString TString::Mid(uint32 inStart, int32 inLen /* = -1 */)
 	int32		tmpLen = inLen;
 
 	if (inStart > m_Length)
+	{
+		ASSERT(tmpStr.m_String != NULL);
 		return(tmpStr);
+	}
 
 	if ((inLen == -1) or (inStart + inLen > m_Length))
 		tmpLen = m_Length - inStart;
@@ -843,6 +868,7 @@ TString TString::Mid(uint32 inStart, int32 inLen /* = -1 */)
 
     tmpStr.Update();
 
+	ASSERT(tmpStr.m_String != NULL);
     return (tmpStr);
 }
 
@@ -866,8 +892,10 @@ void TString::Set(uint32 inStart, uint32 inLen, const TString &str)
 //
 //	operator [] - Return a character from the array. 
 //
-char TString::operator [] (uint32 inPos) const
+char TString::operator [] (int inPos) const
 {
+	ASSERT(inPos >= 0);
+
     if (inPos >= m_Length) 
     	inPos = m_Length - 1;
 
@@ -877,8 +905,10 @@ char TString::operator [] (uint32 inPos) const
 //
 //	operator () - Same as [].
 //
-char TString::operator () (uint32 inPos) const
+char TString::operator () (int inPos) const
 {
+	ASSERT(inPos >= 0);
+
 	if (inPos >= m_Length)
 		inPos = m_Length - 1;
 
@@ -1130,6 +1160,62 @@ istream & FIVEL_NS operator >> (istream &inStream, TString &inStr)
 
 /*
  $Log$
+ Revision 1.6.4.1  2002/04/19 11:20:13  emk
+ Start of the heavy typography merging work.  I'm doing this on a branch
+ so I don't cause problems for any of the other developers.
+
+ Alpha-blend text colors.
+
+ Merged Mac and Windows versions of several files into the Common directory.
+ Not all of these work on Mac and/or Windows yet, but they're getting there.
+ Primary sources for the merged code are:
+
+   Win/FiveL/LVersion.h -> Common/TVersion.h
+   Win/FiveL/LStream.h -> Common/TStream.h
+   Mac/Source/CStream.cp -> Common/TStream.cpp
+   Mac/Source/CStreamTests.cp -> Common/TStreamTests.cpp
+
+ TStream changes:
+
+   * The TStream code now uses a callback to variable values.  This will
+     probably go away once Variable and CVariable get merged.
+   * Input operators for std::string and GraphicTools::Color.
+
+ Isolated Windows-specific code in TLogger.*, in preparation for a big merge.
+
+   * Added a portable function to set up logging.
+   * Fixed the logging code to use the portable FileSystem library.
+   * Made FatalError actually quit the application.
+
+ Turned off the FiveL namespace on FIVEL_PLATFORM_OTHER, so we can debug
+ with GDB, which has a few minor but painful namespace issues.
+
+ TString changes:
+
+   * Made sure we can convert from std::string to a TString.
+   * Added some more assertions.
+   * Fixed bug in various operator= methods which would allow the string's
+     internal data pointer to be NULL.
+   * Changed operator[] and operator() arguments to be 'int' instead of
+     'int32' to avoid nasty compiler warnings.
+
+ Typography::Style changes:
+
+   * Added a "ShadowOffset" field that specifies the offset of the
+     drop shadow.
+   * Added an operator== for testing.
+   * Added a ToggleFaceStyle method for toggling specified face style bits.
+
+ Typography::StyledText changes:
+
+   * Added a method to append a single character.
+
+ Other Typography changes:
+
+   * Made FaceStyle an int, not an enum, so we can do bit math with it.
+   * Added assertions to made sure you can't extract a StyledText iterator
+     until you've called EndConstruction.
+
  Revision 1.6  2002/03/07 20:36:18  emk
  TString bug fixes & new constructor.
 
