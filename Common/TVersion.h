@@ -16,15 +16,21 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	3
-#define VERSION_REV_BIG		20
+#define VERSION_REV_BIG		21
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING	"5L 3.3.20 (Development)"
+#define VERSION_STRING	"5L 3.3.21 (Development)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.28  2002/07/26 20:00:15  zeb
+ 3.3.21 - 26 July 2002 - zeb
+
+   * Added FileSystem::ExistenceCheck, which we use to check for the
+     existence of various files during the startup process (bug #937).
+
  Revision 1.27  2002/07/26 17:55:10  emk
  3.3.20 - 26 July 2002 - emk
 

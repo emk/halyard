@@ -169,13 +169,13 @@ int RealWinMain(HINSTANCE hInstance,
         return (false);
     }
 
+	// Initialize the Common library.
+	InitializeCommonCode();
+
 	// Initialize global strings
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_FIVEL, szWindowClass, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_FIVEL_CHILD, szChildClass, MAX_LOADSTRING);
-
-	// Initialize the Common library.
-	InitializeCommonCode();
 
 	// Process the command line, configuration file, and user prefs.
 	if (not gConfigManager.Init(lpCmdLine))
@@ -1284,6 +1284,12 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.13  2002/07/26 20:00:27  zeb
+ 3.3.21 - 26 July 2002 - zeb
+
+   * Added FileSystem::ExistenceCheck, which we use to check for the
+     existence of various files during the startup process (bug #937).
+
  Revision 1.12  2002/07/25 22:25:36  emk
    * Made new CryptStream auto_ptr code work under Windows.
    * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now

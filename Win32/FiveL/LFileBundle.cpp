@@ -59,6 +59,9 @@ bool LFileBundle::Init()
 	bundleFilename =
 		FileSystem::GetDataFilePath(IN_FILENAME).ToNativePathString();
 	
+	// Check that the file we are going to access exists. 
+	FileSystem::ExistenceCheck(FileSystem::GetDataDirectory(), true);
+
 	filePos = '-';
 	currentFileIsGlobal = true;	// Assume true for imports
 	currentUser = gConfigManager.DLSUser();

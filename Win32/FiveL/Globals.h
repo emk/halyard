@@ -1,3 +1,4 @@
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -164,6 +165,12 @@ extern int V_SCREEN;
 
 /*
  $Log$
+ Revision 1.5  2002/07/26 20:00:27  zeb
+ 3.3.21 - 26 July 2002 - zeb
+
+   * Added FileSystem::ExistenceCheck, which we use to check for the
+     existence of various files during the startup process (bug #937).
+
  Revision 1.4  2002/06/20 16:32:54  emk
  Merged the 'FiveL_3_3_4_refactor_lang_1' branch back into the trunk.  This
  branch contained the following enhancements:

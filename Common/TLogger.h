@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4 -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, 2000 Trustees of Dartmouth College, All rights reserved.
@@ -89,7 +89,7 @@ public:
 	void	Init(const FileSystem::Path &inLogFile, bool OpenFile = true,
 				 bool Append = false);
 
-	//////////
+    //////////
 	// Log a general message.
 	//
 	// [in] Mask - a mask to check against the log mask before logging
@@ -291,6 +291,12 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4  2002/07/26 20:00:15  zeb
+ 3.3.21 - 26 July 2002 - zeb
+
+   * Added FileSystem::ExistenceCheck, which we use to check for the
+     existence of various files during the startup process (bug #937).
+
  Revision 1.3  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

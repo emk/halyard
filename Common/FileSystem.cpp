@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include "TCommon.h"
 #include "TTemplateUtils.h"
@@ -502,4 +502,35 @@ void FileSystem::SetBaseDirectory(const Path &inDirectory)
 Path FileSystem::GetBaseDirectory()
 {
 	return gCurrentBaseDirectory;	
+}
+
+
+//=========================================================================
+//  Miscellaneous Utility Methods
+//=========================================================================
+
+void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
+{
+	if (inShouldBeDir)
+	{
+		if (!inPath.DoesExist() || !inPath.IsDirectory())
+		{
+			gLog.FatalError("5L was unable to open the directory \"%s\".  "
+							"Please make sure 5L is running in the correct "
+							"directory, and that all source files are "
+							"available.",
+							inPath.ToNativePathString().c_str());
+		}
+	}
+	else 
+	{	
+		if (!inPath.DoesExist() || !inPath.IsRegularFile())
+		{
+			gLog.FatalError("5L was unable to open the file \"%s\".  "
+							"Please make sure 5L is running in the correct "
+							"directory, and that all source files are "
+							"available.", 
+							inPath.ToNativePathString().c_str());
+		}
+	}	
 }

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -192,6 +192,9 @@ TIndexFile::~TIndexFile()
 bool TIndexFile::Open(const FileSystem::Path &inDirectory,
 					  const char *inFile)
 {
+	FileSystem::Path filePath = inDirectory.AddComponent(inFile);
+	FileSystem::ExistenceCheck(filePath, false);
+
 	// determine whether the script is encrypted
 	cryptStream = new CryptStream(inDirectory, inFile, PAYLOAD_SCRIPT,
 								  HCK, HCK_SIZE);
@@ -203,10 +206,8 @@ bool TIndexFile::Open(const FileSystem::Path &inDirectory,
 		delete cryptStream;
 		cryptStream = NULL;
 
-		std::string file =
-			inDirectory.AddComponent(inFile).ToNativePathString();
-		m_File.open(file.c_str(), ios::in | ios::binary);
-		
+		std::string file = filePath.ToNativePathString();
+		m_File.open(file.c_str(), ios::in | ios::binary);		
 	}
 
 	if (!IsOpen())
@@ -439,6 +440,12 @@ bool TIndexFile::Init()
 
 /*
  $Log$
+ Revision 1.7  2002/07/26 20:00:15  zeb
+ 3.3.21 - 26 July 2002 - zeb
+
+   * Added FileSystem::ExistenceCheck, which we use to check for the
+     existence of various files during the startup process (bug #937).
+
  Revision 1.6  2002/07/25 22:25:25  emk
    * Made new CryptStream auto_ptr code work under Windows.
    * PURIFY: Fixed memory leak in TBTree::Add of duplicate node.  We now

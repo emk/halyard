@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #ifndef FileSystem_H
 #define FileSystem_H
@@ -194,6 +194,16 @@ namespace FileSystem {
 
 	// TODO - Factor out more platform-specific config to use
 	// the directories listed above.
+
+	//////////
+	// Checks existence of file and directory and displays specific
+	// error message if non-existent.
+	//
+	// [in] inPath - The path to check on.
+	// [in] inShouldBeDir  - True if the path refers to a directory, false if
+	//                       path refers to a file
+	//
+	void ExistenceCheck(const Path &inPath, const bool &isDir);
 }
 
 #endif // FileSystem_H
