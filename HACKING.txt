@@ -307,7 +307,7 @@ Coding Conventions
 	// Really Nifty Multimedia Programming Book.
 	//
 	// [in] inItemCount - The number of items to munge.
-	// [in/out] inItems - The items to munge.
+	// [in/out] ioItems - The items to munge.
 	// [out] outMungedItemCount - The number of items munged.
     // [out] return - The number of munging passes required.
 	// 
