@@ -507,9 +507,21 @@ public:
     void ClearStage(const wxColor &inColor);
 
 	//////////
+	// Draw a line in the specified color.
+	//
+	void DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
+				  const wxColour &inColor, int inWidth);
+
+	//////////
 	// Fill in the specified box with the specified color.
 	//
 	void FillBox(const wxRect &inBounds, const wxColour &inColor);
+
+	//////////
+	// Fill in the specified box with the specified color.
+	//
+	void OutlineBox(const wxRect &inBounds, const wxColour &inColor,
+					int inWidth);
 
 	//////////
 	// Draw a portable PixMap to the screen, blending alpha

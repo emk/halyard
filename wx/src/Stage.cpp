@@ -1132,6 +1132,17 @@ void Stage::ClearStage(const wxColor &inColor)
     InvalidateStage();
 }
 
+void Stage::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
+					 const wxColour &inColor, int inWidth)
+{
+    wxRawBitmapDC dc;
+    dc.SelectObject(mOffscreenPixmap);
+	wxPen pen(inColor, inWidth, wxSOLID);
+	dc.SetPen(pen);
+	dc.DrawLine(inFrom.x, inFrom.y, inTo.x, inTo.y);
+	InvalidateRect(wxRect(inFrom, inTo));
+}
+
 void Stage::FillBox(const wxRect &inBounds, const wxColour &inColor)
 {
     wxRawBitmapDC dc;
@@ -1139,6 +1150,18 @@ void Stage::FillBox(const wxRect &inBounds, const wxColour &inColor)
     wxBrush brush(inColor, wxSOLID);
     dc.SetBrush(brush);
     dc.SetPen(*wxTRANSPARENT_PEN);
+	dc.DrawRectangle(inBounds.x, inBounds.y, inBounds.width, inBounds.height);
+	InvalidateRect(inBounds);
+}
+
+void Stage::OutlineBox(const wxRect &inBounds, const wxColour &inColor,
+					   int inWidth)
+{
+    wxRawBitmapDC dc;
+    dc.SelectObject(mOffscreenPixmap);
+	wxPen pen(inColor, inWidth, wxSOLID);
+	dc.SetPen(pen);
+	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 	dc.DrawRectangle(inBounds.x, inBounds.y, inBounds.width, inBounds.height);
 	InvalidateRect(inBounds);
 }

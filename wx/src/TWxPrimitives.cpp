@@ -34,8 +34,10 @@ using FileSystem::Path;
 
 void FIVEL_NS RegisterWxPrimitives()
 {
-	REGISTER_5L_PRIMITIVE(Box);
     REGISTER_5L_PRIMITIVE(DeleteElements);
+	REGISTER_5L_PRIMITIVE(DrawBoxFill);
+	REGISTER_5L_PRIMITIVE(DrawBoxOutline);
+	REGISTER_5L_PRIMITIVE(DrawLine);
 	REGISTER_5L_PRIMITIVE(EditBox);
 	REGISTER_5L_PRIMITIVE(ElementExists);
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
@@ -76,12 +78,10 @@ static wxRect ConvRect(const TRect &inRect)
 				  wxPoint(inRect.Right() - 1, inRect.Bottom() - 1));
 }
 
-/*
 static wxPoint ConvPoint(const TPoint &inPoint)
 {
 	return wxPoint(inPoint.X(), inPoint.Y());
 }
-*/
 
 static wxPoint GetPos(const TRect &inRect)
 {
@@ -105,15 +105,6 @@ static wxColour ConvColor(GraphicsTools::Color inColor)
 //  Implementation of wxWindows Primitives
 //=========================================================================
 
-DEFINE_5L_PRIMITIVE(Box)
-{
-	TRect bounds;
-	Color color;
-
-	inArgs >> bounds >> color;
-	wxGetApp().GetStage()->FillBox(ConvRect(bounds), ConvColor(color));
-}
-
 DEFINE_5L_PRIMITIVE(DeleteElements)
 {
 	if (!inArgs.HasMoreArguments())
@@ -131,6 +122,39 @@ DEFINE_5L_PRIMITIVE(DeleteElements)
 								  name.c_str());
 		}
 	}
+}
+
+DEFINE_5L_PRIMITIVE(DrawBoxFill)
+{
+	TRect bounds;
+	Color color;
+
+	inArgs >> bounds >> color;
+	wxGetApp().GetStage()->FillBox(ConvRect(bounds), ConvColor(color));
+}
+
+DEFINE_5L_PRIMITIVE(DrawBoxOutline)
+{
+	TRect bounds;
+	Color color;
+	int32 width;
+
+	inArgs >> bounds >> color >> width;
+	wxGetApp().GetStage()->OutlineBox(ConvRect(bounds), ConvColor(color),
+									  width);
+
+}
+
+DEFINE_5L_PRIMITIVE(DrawLine)
+{
+	TPoint from, to;
+	Color color;
+	int32 width;
+
+	inArgs >> from >> to >> color >> width;
+	wxGetApp().GetStage()->DrawLine(ConvPoint(from), ConvPoint(to),
+									ConvColor(color), width);
+
 }
 
 DEFINE_5L_PRIMITIVE(EditBox)
