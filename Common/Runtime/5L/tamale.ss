@@ -12,6 +12,7 @@
            dc-rect color-at
            %zone% zone register-cursor mouse-position
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
+           element-shown? set-element-shown?!
            delete-element delete-elements
            clear-screen offset-rect
            rect-horizontal-center rect-vertical-center
@@ -136,6 +137,12 @@
     ;; XXX - This keeps returning exciting results even if we're in the
     ;; background.  Yuck.
     (call-5l-prim 'MousePosition))
+
+  (define (element-shown? elem)
+    (call-5l-prim 'ElementIsShown (node-full-name elem)))
+
+  (define (set-element-shown?! elem show?)
+    (call-5l-prim 'ElementSetShown (node-full-name elem) show?))
 
   (define (delete-element elem-or-name)
     ;; TODO - Get rid of elem-or-name-hack, and rename
