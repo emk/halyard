@@ -235,13 +235,12 @@ private:
     // determine what type we want to bind to T.
     //
     template <typename T>
-    inline T &Get(T &outVal) const {
+    inline const T &Get(T &outVal) const {
         const TemplateImpl<T> *impl =
             dynamic_cast<const TemplateImpl<T> *>(mPtr.get());
         if (!impl)
             THROW("Type mismatch fetching TValue");
-        outVal = impl->mValue;
-        return outVal;
+        return impl->mValue;
     }
 
 public:
@@ -285,7 +284,7 @@ public:
     operator TPoint() const;
     operator TRect() const;
     operator GraphicsTools::Color() const;
-    operator TValueList() const;
+    operator const TValueList &() const;
     operator TPolygon() const;
     operator TPercent() const;
 

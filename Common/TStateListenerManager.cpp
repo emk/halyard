@@ -8,7 +8,7 @@ USING_NAMESPACE_FIVEL
 
 TStateListenerManager gStateListenerManager;
 
-int TStateListenerManager::CallbackListener::sNextSerialNumber = 0;
+uint32 TStateListenerManager::CallbackListener::sNextSerialNumber = 0;
 
 TStateListenerManager::CallbackListener::CallbackListener(
     const std::string &inName,
@@ -42,7 +42,7 @@ void TStateListenerManager::UnregisterListeners(const std::string &inName) {
 
 boost::shared_ptr<TStateListener>
 TStateListenerManager::FindListener(const std::string &inName,
-                                    int inSerialNumber)
+                                    uint32 inSerialNumber)
 {
     std::pair<ListenerMap::iterator,ListenerMap::iterator> found =
         mListeners.equal_range(inName);

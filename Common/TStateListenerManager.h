@@ -15,14 +15,14 @@ BEGIN_NAMESPACE_FIVEL
 //
 class TStateListenerManager  {
     class CallbackListener : public TStateListener {
-        static int sNextSerialNumber;
-        int mSerialNumber;
+        static uint32 sNextSerialNumber;
+        uint32 mSerialNumber;
         std::string mName;
         TCallbackPtr mCallback;
 
     public:
         CallbackListener(const std::string &inName, TCallbackPtr inCallback);
-        int GetSerialNumber() { return mSerialNumber; }
+        uint32 GetSerialNumber() { return mSerialNumber; }
         virtual void NotifyStateChanged();
     };
 
@@ -52,7 +52,7 @@ public:
     // Find the listener with the specified name and serial number.
     //
     boost::shared_ptr<TStateListener> FindListener(const std::string &inName,
-                                                   int inSerialNumber);
+                                                   uint32 inSerialNumber);
 };
 
 extern TStateListenerManager gStateListenerManager;

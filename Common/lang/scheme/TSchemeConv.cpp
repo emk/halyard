@@ -3,6 +3,7 @@
 #include "CommonHeaders.h"
 #include "TSchemeInterpreter.h"
 #include "TSchemeConv.h"
+#include "TSchemeRtCallback.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -104,10 +105,16 @@ static void SchemeTypeCheckStruct(const char *inPredicate,
 		SchemeTypeCheckFail();
 }
 
+static Scheme_Object *SchemeGetMember(const char *inName,
+                                      Scheme_Object *inVal)
+{
+    return TSchemeInterpreter::CallScheme(inName, 1, &inVal);
+}
+
 static int32 SchemeGetInt32Member(const char *inName,
 								  Scheme_Object *inVal)
 {
-	Scheme_Object *val = TSchemeInterpreter::CallScheme(inName, 1, &inVal);
+	Scheme_Object *val = SchemeGetMember(inName, inVal);
 	if (!SCHEME_EXACT_INTEGERP(val))
 		SchemeTypeCheckFail();
 	long result;
@@ -119,7 +126,7 @@ static int32 SchemeGetInt32Member(const char *inName,
 static double SchemeGetRealMember(const char *inName,
 								  Scheme_Object *inVal)
 {
-	Scheme_Object *val = TSchemeInterpreter::CallScheme(inName, 1, &inVal);
+	Scheme_Object *val = SchemeGetMember(inName, inVal);
 	if (!SCHEME_REALP(val))
 		SchemeTypeCheckFail();
 	return scheme_real_to_double(val);
@@ -200,8 +207,23 @@ static TValue SchemeToTPolygon(Scheme_Object *inVal) {
 	return TValue(TPolygon(pts));	
 }
 
-static TValue SchemeToTPercent (Scheme_Object *inVal) {
+static TValue SchemeToTPercent(Scheme_Object *inVal) {
 	return TValue(TPercent(SchemeGetRealMember("percent-value", inVal)));
+}
+
+static TValue SchemeToRtCallback(Scheme_Object *inVal) {
+    Scheme_Object *getter =
+        SchemeGetMember("realtime-state-db-listener-getter-name", inVal);
+    Scheme_Object *bindings =
+        SchemeGetMember("realtime-state-db-listener-bindings", inVal);
+    Scheme_Object *code =
+        SchemeGetMember("realtime-state-db-listener-code", inVal);
+
+    TSchemeRtCallback *ptr =
+        new TSchemeRtCallback(TSymbol(SchemeToTValue(getter)).GetName(),
+                              SchemeToTValue(bindings),
+                              SchemeToTValue(code));
+    return TCallbackPtr(ptr);
 }
 
 // TypeInfo encapsulates the name of a Scheme predicate to check
@@ -221,6 +243,7 @@ static TypeInfo gTypeInfo[] = {
 	{"color?", &SchemeToColor},
 	{"polygon?", &SchemeToTPolygon},
 	{"percent?", &SchemeToTPercent},
+    {"realtime-state-db-listener?", &SchemeToRtCallback},
 	{NULL, NULL}
 };
 

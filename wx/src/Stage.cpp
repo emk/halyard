@@ -307,6 +307,7 @@ void Stage::UpdateCurrentElementAndCursor()
 void Stage::UpdateClock() {
     // Set our two clock variables.  Note that this may cause script code
     // to run in response to the updates.
+	// XXX - Do something more accurate than GetLo with the milliseconds.
     gStateDB.Set("/system/clock/seconds", ::wxGetLocalTime());
     gStateDB.Set("/system/clock/milliseconds",
 				 ::wxGetLocalTimeMillis().GetLo());

@@ -98,7 +98,7 @@ TValue::operator TPoint() const { TPoint r; return Get(r); }
 TValue::operator TRect() const { TRect r; return Get(r); }
 TValue::operator GraphicsTools::Color() const
 	{ GraphicsTools::Color r; return Get(r); }
-TValue::operator TValueList() const { TValueList r; return Get(r); }
+TValue::operator const TValueList &() const { TValueList r; return Get(r); }
 TValue::operator TPolygon() const { TPolygon r; return Get(r); }
 TValue::operator TPercent() const { TPercent r; return Get(r); }
 
@@ -136,13 +136,11 @@ TValue::operator double() const {
 	// or a unint32.
 	if (GetType() == TValue::TYPE_LONG) {
 		int32 rInt;
-		rInt = Get(rInt); 
-		return rInt;
+		return Get(rInt);
 	}
 	if (GetType() == TValue::TYPE_ULONG) {
 		uint32 rUInt;
-		rUInt = Get(rUInt); 
-		return rUInt;			
+		return Get(rUInt);
 	}
 	return Get(r); 
 }
