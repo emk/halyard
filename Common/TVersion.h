@@ -17,14 +17,19 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		02
-#define VERSION_REV_SMALL	06
+#define VERSION_REV_SMALL	07
 
-#define VERSION_STRING	"5L 3.3.2.6 (Development, FiveL_3_2_2_emk_typography_merge)"
+#define VERSION_STRING	"5L 3.3.2.7 (Development, FiveL_3_2_2_emk_typography_merge)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.9.2.8  2002/05/01 07:10:49  emk
+ 3.3.2.7 - Fixed assertion failure on "Special Variables" screen, fixed
+ missing bullets, and added "\&Delta;" and "\&delta;" entities for
+ use with the (textaa ...) command only.
+
  Revision 1.9.2.7  2002/05/01 03:27:02  emk
  3.3.2.6 - First Windows engine with (textaa ...) command.
 
