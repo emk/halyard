@@ -1116,6 +1116,11 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 		::wxGetLocalTimeMillis() > mLastIdleEvent + IDLE_INTERVAL)
 	{
 		mLastIdleEvent = ::wxGetLocalTimeMillis();
+
+		// We only pass the idle event to just the card, and not any
+		// of the elements.  Idle event processing is handled differently
+		// from most other events; we let the scripting language work
+		// out the details.
 		GetEventDispatcher()->DoEventIdle(inEvent);
 	}
 }

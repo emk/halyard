@@ -18,19 +18,23 @@
 ,     Try to get complete code coverage testing Vorbis playback path
 
   Make TException stop reporting line numbers
+  Rename LOAD-PICTURE to DRAW-something.
   Add EVENT-KEYS method to wrap EVENT-CHARACTER and EVENT-MODIFIERS
+  Respond gracefully to errors in idle handlers
+  ON should highlight method name in emacs
 
-  Event Handling
-    Nice features
-      Send idle events to everything
-      Returning values from event handlers?
+/ Event Handling
+/   Nice features
+/     Returning values from event handlers?
+/     Send idle events to everything
 
     Areas in need of major refactoring
       Deletion of elements is a mess.  Fix.
       NODE-HAS-EXPENSIVE-HANDLERS? is currently a bit tricky
       Can we combine node-handlers and node-values?
       Can we combine @ and node-values?
-      Use FOREACH in kernel, and look for other syntactic patterns
+/     Use FOREACH in kernel
+      Look for other syntactic patterns
     Open questions
       Hierarchial property value searching -- is it what we want?
       SET-PROP! -- Is it what we want?  Probably good to avoid for now.

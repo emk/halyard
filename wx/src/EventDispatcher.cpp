@@ -15,8 +15,10 @@ BEGIN_NAMESPACE_FIVEL
 // EventDispatcher Methods
 //=========================================================================
 
+bool EventDispatcher::sEnableExpensiveEvents = false;
+
 EventDispatcher::EventDispatcher()
-    : mDispatcher(NULL), mEnableExpensiveEvents(false)
+    : mDispatcher(NULL)
 {
 }
  
@@ -39,17 +41,18 @@ void EventDispatcher::NotifyScriptReload()
     if (mDispatcher)
         delete mDispatcher;
     mDispatcher = NULL;
+	sEnableExpensiveEvents = false;
 }
 
 void EventDispatcher::EnableExpensiveEvents(bool inEnable)
 {
-	if (inEnable == mEnableExpensiveEvents)
+	if (inEnable == sEnableExpensiveEvents)
 		return;
 	if (inEnable)
 		gDebugLog.Log("Turning expensive events on.");
 	else
 		gDebugLog.Log("Turning expensive events off.");
-	mEnableExpensiveEvents = inEnable;
+	sEnableExpensiveEvents = inEnable;
 }
 
 bool EventDispatcher::EventSetup()
@@ -143,7 +146,7 @@ bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
 
 bool EventDispatcher::DoEventIdle(wxIdleEvent &inEvent)
 {
-	if (!mEnableExpensiveEvents)
+	if (!sEnableExpensiveEvents)
 		return false;
 
     if (!EventSetup())

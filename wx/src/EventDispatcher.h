@@ -13,7 +13,7 @@ class TCallback;
 class EventDispatcher : boost::noncopyable
 {
     TCallback *mDispatcher;
-	bool mEnableExpensiveEvents;
+	static bool sEnableExpensiveEvents;
 
 	bool EventSetup();
 	bool EventCleanup();
@@ -39,7 +39,7 @@ public:
 	// off.  These tend to generate a lot of garbage for the Scheme
 	// GC to clean up.
 	//
-	void EnableExpensiveEvents(bool inEnable);
+	static void EnableExpensiveEvents(bool inEnable);
 
 	//////////
 	// Dispatch a mouse-down event.

@@ -244,8 +244,7 @@ DEFINE_5L_PRIMITIVE(EnableExpensiveEvents)
 {
 	bool enable;
 	inArgs >> enable;
-	
-	wxGetApp().GetStage()->GetEventDispatcher()->EnableExpensiveEvents(enable);
+	EventDispatcher::EnableExpensiveEvents(enable);
 }
 
 DEFINE_5L_PRIMITIVE(HTML)
