@@ -95,10 +95,6 @@ SOURCE=..\..\Crypt\CryptStream.cpp
 
 SOURCE=..\..\Crypt\md5.c
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\Crypt\md5_t.c
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -114,10 +110,6 @@ SOURCE=..\..\Crypt\CryptStream.h
 # Begin Source File
 
 SOURCE=..\..\Crypt\md5.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Crypt\md5_loc.h
 # End Source File
 # End Group
 # End Target
