@@ -236,7 +236,7 @@ int main (int argc, char **argv)
 			{
 				// Look for a metrics file.
 				std::string metrics = FileReplaceExtension(filename, "afm");
-				if (FileExists("../Fonts/" + metrics))
+				if (!FileExists("../Fonts/" + metrics))
 					metrics = AvailableFace::kNoMetrics;
 
 				// Use FreeType to load the face.
