@@ -23,7 +23,8 @@
            delete-element-internal
            dispatch-event-to-current-group-member
            current-group-member
-           current-card)
+           current-card
+           *running-on-exit-handler?*)
 
 
   ;;=======================================================================
@@ -1095,6 +1096,9 @@
       ;; Enter our card.
       (enter-node new-card)))
     
+
+  (define *running-on-exit-handler?* #f)
+
   (define (run-on-exit-handler node)
     ;; This is pretty simple--just send an EXIT message.  But we need to
     ;; trap any JUMP calls and quit immediately, because actually allowing
@@ -1104,9 +1108,10 @@
     (dynamic-wind
         (lambda () #f)
         (lambda ()
-          (with-errors-blocked (non-fatal-error)
-            (send/nonrecursive* (lambda () #f) node 'exit)
-            (set! exited-normally? #t)))
+          (fluid-let [[*running-on-exit-handler?* #t]]
+            (with-errors-blocked (non-fatal-error)
+              (send/nonrecursive* (lambda () #f) node 'exit)
+              (set! exited-normally? #t))))
         (lambda ()
           (unless exited-normally?
             (fatal-error (cat "Cannot JUMP in (on exit () ...) handler for "

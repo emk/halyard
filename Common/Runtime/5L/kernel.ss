@@ -374,6 +374,7 @@
     ;; nothing exciting is happening.  See call-at-safe-time.
     (and (not *%kernel-running-callback?*)
          (not *%kernel-running-deferred-thunks?*)
+         (not *running-on-exit-handler?*)
          (member? *%kernel-state* '(NORMAL PAUSED NAPPING))))
 
   (define (call-at-safe-time thunk)
