@@ -1,9 +1,9 @@
 
   Source-tree re-organization
-    Move 5L/Common/libs to 5L/libs so it's easier to avoid during 'cvs update'
-    Rename Common/Runtime/5L files to have lowercase names
-    Move configure.ac to top level
-    Move BuildAll.mcp to top level
+,   Move 5L/Common/libs to 5L/libs so it's easier to avoid during 'cvs update'
+,   Rename Common/Runtime/5L files to have lowercase names
+/   Move configure.ac to top level
+/   Move BuildAll.mcp to top level
     Move FiveL.dsw to top level
     Remove cryptographic code to avoid problems with export law
     Remove Macintosh code with license problems
@@ -26,6 +26,7 @@
     Decide whether to stablize wxWindows or the current front-ends
     Pick a version number: either 3.6 or 4.0
     Work with Douglas to prioritize bugs for stabilization
+    Fix the chosen bugs
     Two rounds of testing?
 
   Big Stuff
@@ -34,3 +35,4 @@
     Field-customizability
     SCORM and/or mainstream LMS software
     Content security
+    GUI editing tools for content authors, graphic artists
