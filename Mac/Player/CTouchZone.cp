@@ -94,10 +94,8 @@ void CTouchZone::SetupZone(	TRect 			&inBounds, 	// Button rect
 	PutInside(gPlayerView, false);
 	PlaceInSuperFrameAt(macBounds.left, macBounds.top, false);
 
-#ifdef DEBUG
-	gDebugLog.Log("SetupZone: Left <%d>, Top <%d>, Right <%d>, Bottom <%d>",
+	gDebugLog.Log("SetupZone: <L T R B> %d %d %d %d",
 		macBounds.left, macBounds.top, macBounds.right, macBounds.bottom);
-#endif
 
 	// Skanky hack to set pane ID
 	PP::LArray &paneList = gPlayerView->GetSubPanes();
@@ -251,12 +249,10 @@ CTouchZone::HotSpotResult(
 	//if (clickSound != NULL)
 	//	SndPlay(nil, (SndListResource **) clickSound, false);
 
-#ifdef DEBUG
 	if (not mSecondCommand.IsEmpty())
 		gDebugLog.Log("hit touchzone: commands <%s> then <%s>", mSecondCommand.GetString(), mCommand.GetString());
 	else
 		gDebugLog.Log("hit touchzone: command <%s>", mCommand.GetString());
-#endif
 
 	// cbo - suspend event processing while we are executing these commands
 	gPlayerView->ProcessEvents(false);
