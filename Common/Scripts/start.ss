@@ -320,6 +320,8 @@
      [param-b :type <integer> :label "Param B"]]
   (test (not *ttvar1*))
   (test (not *ttvar2*))
+  (test (instance-of? (param param-a) <string>))
+  (test (instance-of? (param param-b) <integer>))
   (set! *ttvar1* #t))
 
 (define-card-template %card-template-2% (:extends %card-template-1%
@@ -328,6 +330,8 @@
      [param-d :type <integer> :label "Param D" :default 20]]
   (test *ttvar1*)
   (test (not *ttvar2*))
+  (test (instance-of? (param param-c) <string>))
+  (test (instance-of? (param param-d) <integer>))
   (set! *ttvar2* #t))
 
 (card template-tests-1 (:extends %card-template-2%
@@ -335,6 +339,10 @@
                         :param-c "bar")
   (test *ttvar1*)
   (test *ttvar2*)
+  (test (equal? (param param-a) "foo"))
+  (test (equal? (param param-b) 10))
+  (test (equal? (param param-c) "bar"))
+  (test (equal? (param param-d) 20))
   (set! *ttvar1* #f)
   (set! *ttvar2* #f)
   (jump template-tests-2))
@@ -346,6 +354,10 @@
                         :param-d 40)
   (test *ttvar1*)
   (test *ttvar2*)
+  (test (equal? (param param-a) "baz"))
+  (test (equal? (param param-b) 30))
+  (test (equal? (param param-c) "moby"))
+  (test (equal? (param param-d) 40))
   (jump syntax-tests))
 
 

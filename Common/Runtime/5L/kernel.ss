@@ -637,9 +637,10 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  ;; This object is distinct from every other object, so we use it as
-  ;; a unique value.
+  ;; These objects are distinct from every other object, so we use them as
+  ;; unique values.
   (define $no-default (list 'no 'default))
+  (define $no-such-key (list 'no 'such 'key))
 
   (defclass <template-parameter> ()
     (name      :type <symbol>)
@@ -659,6 +660,33 @@
     (assert (or (not (template-extends template))
                 (eq? (template-group template)
                      (template-group (template-extends template))))))
+
+  (define (find-local-parameter template name)
+    (let loop [[params (template-parameters template)]]
+      (cond
+       [(null? params) #f]
+       [(eq? (template-parameter-name (car params)) name)
+        (car params)]
+       [else (loop (cdr params))])))
+
+  (define (find-binding template name)
+    ;; A very rudimentary binding finder--this will probably be completely
+    ;; rewritten as we add test cases.
+    (let loop [[template template]]
+      (if template
+        (let [[binding (hash-table-get (template-bindings template)
+                                       name (lambda () $no-such-key))]
+              [parameter (find-local-parameter template name)]]
+          (cond
+           [(not (eq? binding $no-such-key))
+            binding]
+           [(and parameter
+                 (not (eq? (template-parameter-default parameter)
+                           $no-default)))
+            (template-parameter-default parameter)]
+           [else
+            (loop (template-extends template))]))
+        (error "Unable to find template parameter" name))))
 
   (define (bindings->hash-table bindings)
     ;; Turns a keyword argument list into a hash table.
@@ -684,18 +712,51 @@
        (cons (make <template-parameter> :name 'name keywords ...)
              (expand-parameters rest ...))]))
 
+  (define-syntax (expand-init-thunk stx)
+    (syntax-case stx ()
+      [(expand-init-thunk . body)
+       (begin
+
+         ;; Create a capture variable NAME which will be visible in BODY.
+         ;; It's exceptionally evil to capture using BODY's context instead
+         ;; of EXPAND-INIT-THUNK's context, but that's what we want.
+         ;;
+         ;; XXX - There's a gross hack here--we have to use the context of
+         ;; (car (syntax-e #'body)) instead of just #'body, because PLT203
+         ;; looses all syntax information on pattern variables of the form
+         ;; '. body' and 'body ...'.  Aiyeee!  (If #'body isn't a syntax
+         ;; pair, it doesn't really matter what context we pick.)
+         (define (make-capture-var name)
+           (datum->syntax-object (if (pair? (syntax-e #'body))
+                                     (car (syntax-e #'body))
+                                     #'body)
+                                 name))
+
+         ;; We introduce a number of "capture" variables in BODY.  These
+         ;; will be bound automagically within BODY without further
+         ;; declaration.  See the PLT203 mzscheme manual for details.
+         (with-syntax [[param (make-capture-var 'param)]]
+           (syntax/loc
+            stx
+            (lambda (node)
+              (let-syntax [[param
+                            (syntax-rules ()
+                              [(_ name)
+                               (find-binding node 'name)])]]
+                (begin/var . body))))))]))
+    
   (define-syntax define-template
     (syntax-rules (:extends)
-      [(define-template name group (:extends extended bindings ...)
-         (parameters ...) body ...)
+      [(define-template name group (:extends extended . bindings)
+         parameters . body)
        (define name (make <template>
                       :group      group
                       :extends    extended
-                      :bindings   (bindings->hash-table (list bindings ...))
-                      :parameters (expand-parameters parameters ...)
-                      :init-thunk (lambda () (begin/var body ...))))]
-      [(define-template name group (bindings ...) rest ...)
-       (define-template name group (:extends #f bindings ...) rest ...)]))
+                      :bindings   (bindings->hash-table (list . bindings))
+                      :parameters (expand-parameters . parameters)
+                      :init-thunk (expand-init-thunk . body)))]
+      [(define-template name group bindings . rest)
+       (define-template name group (:extends #f . bindings) . rest)]))
 
   (define-syntax define-template-definer
     (syntax-rules ()
@@ -798,7 +859,7 @@
                :group      'group
                :extends    extended
                :bindings   (bindings->hash-table (list bindings ...))
-               :init-thunk (lambda () (begin/var body ...))
+               :init-thunk (expand-init-thunk body ...)
                :parent     parent
                :name       local-name)))
          (register-node name))]
@@ -978,7 +1039,7 @@
                :parent     (current-card)
                :name       name
                :temporary? #t)]]
-      ((template-init-thunk e))
+      (enter-node e)
       e))
 
   ;;=======================================================================
@@ -1001,7 +1062,7 @@
     (let recurse [[template node]]
       (when template
         (recurse (template-extends template))
-        ((template-init-thunk template)))))
+        ((template-init-thunk template) node))))
 
   (defmethod (exit-node (group <card-group>))
     (set! (card-group-active? group) #f)

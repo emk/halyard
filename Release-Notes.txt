@@ -5,7 +5,8 @@ CVS - emk
   * Changed CARD syntax to (CARD name () body ...).
   * Allowed GROUP and SEQUENCE to have initialization code:
     (GROUP name () body ...).
-  * Scafolding in place for a template system.
+  * Can define templates for card groups, cards and elements.
+    Use (PARAM name) to access template parameters from within code.
 
 0.0.3 - 9 May 2003 - emk, brian
 
