@@ -23,6 +23,12 @@
 
 BEGIN_NAMESPACE_FIVEL
 
+//////////
+// An opaque struct type for storing entity to character mappings.
+//
+struct EntityMapping;
+
+
 /*-----------------------------------------------------------------
 
 CLASS
@@ -66,8 +72,9 @@ private:
 	ErrorLoggingFunc mErrorLoggingFunc;
 	
 	//////////
-	// TODO - Internal encoding data structures.
+	// The entity mappings for this encoding.
 	//
+	EntityMapping *mEntityMapping;
 
 public:
 	//////////
@@ -84,10 +91,7 @@ public:
 	// [in] inEncodingName - An encoding name.
 	//
 	TEncoding (const TString& inEncodingName,
-			   ErrorLoggingFunc inErrorLoggingFunc)
-		: mEncodingName(inEncodingName),
-		  mErrorLoggingFunc(inErrorLoggingFunc)
-		{}
+			   ErrorLoggingFunc inErrorLoggingFunc);
 
 	//////////
 	// Fetch the name of the encoding supported by this class.
@@ -97,12 +101,13 @@ public:
 
 	//////////
 	// Transform double hyphens into m-dash entities (a dash the
-	// width of the capital letter 'M').
+	// width of the capital letter 'M'), and '...' sequences into
+	// horizontal ellipsis entities.
 	//
 	// [in] inString - The string to transform.
 	// [out] return - The transformed string.
 	//
-	TString FixMDashes (const TString& inString) const;
+	TString FixSpecials (const TString& inString) const;
 
 	//////////
 	// Transform \' and \" characters into appropriate left and right
@@ -118,21 +123,24 @@ public:
 	// characters in the current encoding.  Not all entities are
 	// supported.
 	//
-	// http://hotwired.lycos.com/webmonkey/reference/special_characters/
-	//
+	// For now, 8-bit data is passed unchanged for backwards compatibility.
+   	//
 	// [in] inString - The string to transform.
 	// [out] return - The transformed string.
 	//
 	TString EncodeEntities (const TString& inString) const;
 
 	//////////
-	// Transform string into a native 8-bit string.
+	// Transform string into a native 8-bit string.  This applies all
+	// the transformations supported by this object in an appropriate
+	// sequence.
 	//
-	// [in] in7BitString - A specially formatted 7-bit string.
+	// For now, 8-bit data is passed unchanged for backwards compatibility.
+   	//
+	// [in] inString - A specially formatted 7-bit string.
 	// [out] return - An 8-bit string.
 	//
-	TString EncodeString (const TString& in7BitString) const
-		{ return in7BitString; }
+	TString TransformString (const TString& inString) const;
 };
 
 END_NAMESPACE_FIVEL
