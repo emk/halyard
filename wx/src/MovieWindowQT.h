@@ -1,7 +1,7 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
-#ifndef MovieWindow_H
-#define MovieWindow_H
+#ifndef MovieWindowQT_H
+#define MovieWindowQT_H
 
 class TQTMovie;
 
@@ -35,7 +35,7 @@ public:
     // Clean up the resources held by the MovieWindow.  Use Destroy()
     // instead of calling this function directly.
     //
-    virtual ~MovieWindow();
+    virtual ~MovieWindowQT();
 
     //////////
     // Ask this widget to create and manage the specified movie.
@@ -80,4 +80,4 @@ public:
     DECLARE_EVENT_TABLE();
 };
 
-#endif // MovieWindow_H
+#endif // MovieWindowQT_H

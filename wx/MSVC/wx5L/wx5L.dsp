@@ -107,6 +107,10 @@ SOURCE=..\..\src\Listener.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\LocationBox.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Log5L.cpp
 # End Source File
 # Begin Source File
@@ -116,6 +120,10 @@ SOURCE=..\..\src\MovieElement.cpp
 # Begin Source File
 
 SOURCE=..\..\src\MovieWindow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\MovieWindowQT.cpp
 # End Source File
 # Begin Source File
 
@@ -163,6 +171,10 @@ SOURCE=..\..\src\Listener.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\LocationBox.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\Log5L.h
 # End Source File
 # Begin Source File
@@ -172,6 +184,10 @@ SOURCE=..\..\src\MovieElement.h
 # Begin Source File
 
 SOURCE=..\..\src\MovieWindow.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\MovieWindowQT.h
 # End Source File
 # Begin Source File
 

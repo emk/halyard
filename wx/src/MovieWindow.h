@@ -3,6 +3,7 @@
 #ifndef MovieWindow_H
 #define MovieWindow_H
 
+#include "AppConfig.h"
 #include "AppGlobals.h" // For MovieFrame.
 
 typedef unsigned long MovieWindowStyle;
@@ -46,7 +47,7 @@ public:
 	//////////
 	// Get the style of this movie window.
 	//
-	MovieWindowStyle GetMovieWindowStyle();
+	MovieWindowStyle GetMovieWindowStyle() { return mMovieWindowStyle; }
 
     //////////
     // Ask this widget to create and manage the specified movie.

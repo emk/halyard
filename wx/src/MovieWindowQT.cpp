@@ -34,7 +34,7 @@ MovieWindowQT::MovieWindowQT(wxWindow *inParent, wxWindowID inID,
     TQTMovie::RegisterWindowForMovies((HWND) mHWND);
 }
 
-MovieWindowQT::~MovieWindow()
+MovieWindowQT::~MovieWindowQT()
 {
     CleanUpMovie();
 
