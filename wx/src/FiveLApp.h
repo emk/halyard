@@ -23,7 +23,7 @@ class FiveLApp : public wxApp
 	// This procedure is called periodically by the script interpreter
 	// to give time to the GUI.
 	//
-    static void IdleProc();
+    static void IdleProc(bool inBlock);
 
 public:
     FiveLApp();

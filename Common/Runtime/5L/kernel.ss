@@ -169,7 +169,7 @@
               (label exit-to-top
                 (with-errors-blocked (non-fatal-error)
                   (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
-                    (idle)
+                    (idle #f)
                     (cond
                      [jump-card
                       (%kernel-run-card (%kernel-find-card jump-card))]
@@ -183,7 +183,7 @@
                       ;; extremely expensive in quantities of 1,000.
                       (let idle-loop ()
                         (unless (eq? *%kernel-state* 'JUMPING)
-                          (idle)
+                          (idle (%kernel-stopped?))
                           (idle-loop)))]))))
               (set! jump-card #f)
               (when (eq? *%kernel-state* 'JUMPING)
@@ -215,7 +215,7 @@
   (define (%kernel-wake-up)
     (%kernel-die-if-callback '%kernel-wake-up)
     (when (%kernel-paused?)
-      (%kernel-maybe-clear-state)))
+      (%kernel-clear-state)))
 
   (define (%kernel-paused?)
     (eq? *%kernel-state* 'PAUSED))
@@ -237,7 +237,7 @@
   (define (%kernel-kill-nap)
     (%kernel-die-if-callback '%kernel-kill-nap)
     (when (%kernel-napping?)
-      (%kernel-maybe-clear-state)))
+      (%kernel-clear-state)))
 
   (define (%kernel-kill-current-card)
     (%kernel-set-state 'CARD-KILLED))
@@ -414,13 +414,20 @@
       ;; were running the first batch.
       (%kernel-check-deferred)))
 
+  (define (%kernel-clear-state)
+    ;; This is the version that we want to call from most places to get the
+    ;; current state set back to normal.
+    (assert (not (or (eq? *%kernel-state* 'STOPPING) 
+                     (eq? *%kernel-state* 'STOPPED))))
+    (set! *%kernel-state* 'NORMAL)
+    (set! *%kernel-jump-card* #f))
+
   (define (%kernel-maybe-clear-state)
-    ;; I'd document this better if I were sure it was correct. :-(  But
-    ;; as it stands, I'm not convinced that we handle STOPPING correctly.
+    ;; This should only ever be called from the main loop, because then
+    ;; stopping has finished and the interpreter is in a stopped state. 
+    ;; Everyone else should only ever call %kernel-clear-state
     (case *%kernel-state*
       [[STOPPING]
-       ;; XXX - I'm not sure this is correct if we're called from anywhere
-       ;; but the top-level loop.  Ick.
        (set! *%kernel-state* 'STOPPED)]
       [[STOPPED]
        #f]
@@ -475,14 +482,14 @@
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
       [[PAUSED]
-       (%call-5l-prim 'schemeidle)
+       (%call-5l-prim 'schemeidle #f)
        (%kernel-check-state)]       ; Tail-call self without consing.
       [[NAPPING]
        (if (< (current-milliseconds) *%kernel-nap-time*)
            (begin
-             (%call-5l-prim 'schemeidle)
+             (%call-5l-prim 'schemeidle #f)
              (%kernel-check-state)) ; Tail call self without consing.
-           (%kernel-maybe-clear-state))]
+           (%kernel-clear-state))]
       [[JUMPING]
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
@@ -527,9 +534,9 @@
   (define (have-5l-prim? name)
     (call-5l-prim 'haveprimitive name))
 
-  (define (idle)
+  (define (idle block)
     (%kernel-die-if-callback 'idle)
-    (call-5l-prim 'schemeidle))
+    (call-5l-prim 'schemeidle block))
   
   (define (5l-log msg)
     (%call-5l-prim 'log '5L msg 'log))

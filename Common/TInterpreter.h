@@ -23,9 +23,10 @@ public:
 	// called from within the interpreter's idle loop to process
 	// GUI events, give time to movie playback libraries, etc.
 	//
-	// [out] return - false if and only if the application is finished
+	// [in] block - true if we want the system to block until user
+	//              events are received
 	//
-	typedef void (*SystemIdleProc)();
+	typedef void (*SystemIdleProc)(bool inBlock);
 
 	//////////
 	// Create a new TInterpreter object.  TInterpreter is a singleton

@@ -28,8 +28,14 @@ DEFINE_5L_PRIMITIVE(SchemeIdle)
 		dynamic_cast<TSchemeInterpreter*>(TSchemeInterpreter::GetInstance());
 	ASSERT(scheme_interp);
 
+	// Should our idle loop block until any events are received from 
+	// the user?
+	bool block;
+
+	inArgs >> block;
+
 	// Call our stored idle procedure and let the GUI run for a bit.
-	scheme_interp->DoIdle();
+	scheme_interp->DoIdle(block);
 
 	// Logging this primitive would only clutter the debug log.  We need
 	// to do this *after* calling DoIdle, so that it doesn't get

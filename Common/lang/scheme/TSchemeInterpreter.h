@@ -100,7 +100,7 @@ public:
 	TSchemeInterpreter(Scheme_Env *inGlobalEnv);
 	virtual ~TSchemeInterpreter();
 
-	void DoIdle() { ASSERT(sSystemIdleProc); (*sSystemIdleProc)(); }
+	void DoIdle(bool block) { ASSERT(sSystemIdleProc); (*sSystemIdleProc)(block); }
 
 	// For documentation of these virtual methods, see TInterpreter.h.
 	virtual void Run(SystemIdleProc inIdleProc);

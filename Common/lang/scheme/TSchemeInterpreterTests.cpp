@@ -24,7 +24,7 @@ static bool gTestingPause = false;
 static int gPauseCount = 0;
 
 // The idle function called periodically by our Scheme interpreter.
-static void TestIdleFunc()
+static void TestIdleFunc(bool inBlock)
 {
 	if (gTestingPause && --gPauseCount <= 0)
 	{

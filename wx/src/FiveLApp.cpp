@@ -36,23 +36,48 @@ FiveLApp::FiveLApp()
     // happen in FiveLApp::OnInit, below.
 }
 
-void FiveLApp::IdleProc()
+void FiveLApp::IdleProc(bool inBlock)
 {
+	// Constraints:
+	//   1) Cannot leave until all pending events are dispatched,
+	//      or else GUI responsiveness will drop dramatically.
+	//   2) Cannot make a *blocking* call to Dispatch() until
+	//      all outstanding idles have been processed, or
+	//      else idle event processing will be delayed indefinitely.
+	//   3) Must not process idles if events are pending, or else
+	//      the application may freeze.
+	//   4) If we're not in blocking mode, must place an upper limit
+	//      on how many idles we process before returning to
+	//      Scheme, or an infinitely repeating idler (such as wxQuake2)
+	//      will prevent us from ever returning.
+
+	// Run the idle loop, getting events from the user and giving time to
+	// process idles. Block will be true when we want to block and only 
+	// process user events, never going back to scheme until an event tells us
+	// to.
+
+	if (inBlock)
+	{
+		while (!wxGetApp().Pending() && wxGetApp().ProcessIdle())
+			;
+		wxGetApp().Dispatch();
+	}
+
 	// We don't allow more than five consecutive idles before returning to
 	// Scheme.  Returning to Scheme is very fast, and we may need to
 	// process a jump command.
 	int max_idles = 5;
 
-    // Dispatch all queued events and return from the IdleProc.  Note that
-    // the '||' operator short-circuts, and will prevent us from calling
-    // ProcessIdle until the pending queue is drained.  See the ProcessIdle
-    // documentation for an explanation of when and why we might need to
-    // call it multiple times.
-    while (wxGetApp().Pending() || (wxGetApp().ProcessIdle() && --max_idles))
-    {
-        if (wxGetApp().Pending())
-            wxGetApp().Dispatch();
-    }
+	// Dispatch all queued events and return from the IdleProc.  Note that
+	// the '||' operator short-circuts, and will prevent us from calling
+	// ProcessIdle until the pending queue is drained.  See the ProcessIdle
+	// documentation for an explanation of when and why we might need to
+	// call it multiple times.
+	while (wxGetApp().Pending() || (wxGetApp().ProcessIdle() && --max_idles))
+	{
+		if (wxGetApp().Pending())
+			wxGetApp().Dispatch();
+	}
 }
 
 bool FiveLApp::OnInit()
@@ -140,7 +165,7 @@ int FiveLApp::MainLoop()
 	// Run our own event loop.
 	SetExitOnFrameDelete(FALSE);
 	mHaveOwnEventLoop = true;
-	IdleProc();
+	IdleProc(false);
 	manager->Run();
 	delete manager;
 	manager = NULL;
