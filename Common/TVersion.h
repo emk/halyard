@@ -17,15 +17,36 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	5
-#define VERSION_REV_BIG		8
+#define VERSION_REV_BIG		9
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.5.8 (Development)"
+#define VERSION_STRING		"5L 3.5.9 (Development)"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.40  2002/10/31 18:25:11  emk
+ 3.5.9 - 31 Oct 2002 - emk
+
+   * New wxWindows front-end now officially added to the build tree.
+     This is still massively incomplete, but it's on its way.
+   * Lots of compilation flag tweaks, to get all the various Win32 projects
+     on the same page re: threads, RTTI, exceptions, etc.
+   * CryptTool removed as first step in preparing for open souce release.
+     This will simplify our legal issues a bit.
+   * Linux build fixes.
+   * Fixed bug where MacOS X 5L always played the same video from the CD.
+   * Converted all *.rsrc and *.PPob files to *.r files, and included
+     instructions on converting them back and forth.  This will allow us
+     to play a bit more nicely with CVS, and eliminate all but a few
+     files with resource forks from our CVS repository.
+   * Source tree re-organization:
+     - Common/libs -> libs
+     - Common/freetype2 -> libs/freetype2
+     - Rename Common/Runtime/5L/*.ss to have lowercase names
+     - Linux, Mac, Win32 build fixes
+
  Revision 1.39  2002/10/15 18:32:34  emk
  3.5.8 - 15 Oct 2002 - emk
 
