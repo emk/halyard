@@ -22,6 +22,7 @@
 
 #include "CommonHeaders.h"
 #include "TSchemeInterpreter.h"
+#include "TSchemeScriptEditorDB.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -75,6 +76,7 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	// Install our primitives.
 	REGISTER_5L_PRIMITIVE(SchemeExit);
 	REGISTER_5L_PRIMITIVE(SchemeIdle);
+    RegisterSchemeScriptEditorDBPrimitives();
 
 	// Initialize the Scheme interpreter.
 	mGlobalEnv = scheme_basic_env();
@@ -91,6 +93,15 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 
 	// Finish creating our engine module.
 	scheme_finish_primitive_module(engine_mod);
+}
+
+ScriptEditorDB *TSchemeInterpreterManager::GetScriptEditorDB() {
+    const char *db_path = "definitions.sqlite3";
+    if (!mScriptEditorDB) {
+        mScriptEditorDB =
+            shared_ptr<ScriptEditorDB>(new TSchemeScriptEditorDB(db_path));
+    }
+    return mScriptEditorDB.get();
 }
 
 void TSchemeInterpreterManager::BeginScript()
@@ -552,23 +563,29 @@ std::vector<TScriptIdentifier> TSchemeInterpreter::GetKnownIdentifiers() {
         if (!scheme_get_int_val(raw_hint, &hint))
             gLog.FatalError("Malformed result from %kernel-get-identifiers");
 		std::string type_str(SCHEME_SYM_VAL(raw_type));
-		TScriptIdentifier::Type type = TScriptIdentifier::UNKNOWN;
-        if (type_str == "syntax")
-            type = TScriptIdentifier::KEYWORD;
-        else if (type_str == "function")
-            type = TScriptIdentifier::FUNCTION;
-        else if (type_str == "variable")
-            type = TScriptIdentifier::VARIABLE;
-        else if (type_str == "constant")
-            type = TScriptIdentifier::CONSTANT;
-        else if (type_str == "class")
-            type = TScriptIdentifier::CLASS;
-        else if (type_str == "template")
-            type = TScriptIdentifier::TEMPLATE;
+		TScriptIdentifier::Type type = IdentifierType(type_str);
         ids.push_back(TScriptIdentifier(SCHEME_SYM_VAL(raw_name), type, hint));
         raw_ids = SCHEME_CDR(raw_ids);
     }
     if (!SCHEME_NULLP(raw_ids))
         gLog.FatalError("Malformed result from %kernel-get-identifiers");
     return ids;
+}
+
+TScriptIdentifier::Type
+TSchemeInterpreter::IdentifierType(const std::string &type_str) {
+    TScriptIdentifier::Type type = TScriptIdentifier::UNKNOWN;
+    if (type_str == "syntax")
+        type = TScriptIdentifier::KEYWORD;
+    else if (type_str == "function")
+        type = TScriptIdentifier::FUNCTION;
+    else if (type_str == "variable")
+        type = TScriptIdentifier::VARIABLE;
+    else if (type_str == "constant")
+        type = TScriptIdentifier::CONSTANT;
+    else if (type_str == "class")
+        type = TScriptIdentifier::CLASS;
+    else if (type_str == "template")
+        type = TScriptIdentifier::TEMPLATE;
+    return type;
 }

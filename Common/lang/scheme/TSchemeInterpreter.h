@@ -43,10 +43,12 @@ class TPercent;
 class TSchemeInterpreterManager : public TInterpreterManager
 {
 	Scheme_Env *mGlobalEnv;
+    shared_ptr<ScriptEditorDB> mScriptEditorDB;
 
 public:
 	TSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
 
+    virtual ScriptEditorDB *GetScriptEditorDB();
 	virtual void BeginScript();
 
 private:
@@ -147,6 +149,7 @@ public:
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
     virtual std::vector<TScriptIdentifier> GetKnownIdentifiers();
+    static TScriptIdentifier::Type IdentifierType(const std::string &type_str);
 };
 
 END_NAMESPACE_FIVEL

@@ -29,14 +29,30 @@ using namespace std;
 #include "sqlite3_internal.h"
 
 namespace sqlite3 {
-	reader::reader() {
-		this->vm=NULL;
+    reader::impl::~impl() {
+        try {
+            close();
+        } catch(std::exception &) {
+            // XXX - Log this error.
+        }
+    }
+
+    void reader::impl::close() {
+		if(this->vm) {
+			_sqlite3_finalize(this->vm);
+			this->vm=NULL;
+		}
+    }
+    
+	reader::reader()
+        : pimpl(new impl)
+    {
 	}
 
 	bool reader::read() {
-		if(!this->vm) throw runtime_error("read: reader is closed");
+		if(!this->pimpl->vm) throw runtime_error("read: reader is closed");
 
-		int ret=_sqlite3_step(this->vm);
+		int ret=_sqlite3_step(this->pimpl->vm);
 		switch(ret) {
 			case SQLITE_ROW:
 				return true;
@@ -48,46 +64,43 @@ namespace sqlite3 {
 	}
 	
 	void reader::close() {
-		if(this->vm) {
-			_sqlite3_finalize(this->vm);
-			this->vm=NULL;
-		}
+        this->pimpl->close();
 	}
 
 	void reader::reset() {
-		if(!this->vm) throw runtime_error("reset: reader is closed");
-		if(_sqlite3_reset(this->vm)!=SQLITE_OK)
+		if(!this->pimpl->vm) throw runtime_error("reset: reader is closed");
+		if(_sqlite3_reset(this->pimpl->vm)!=SQLITE_OK)
 			throw runtime_error(_sqlite3_errmsg(this->con->db));
 	}
 	
 	int reader::getint32(int index) const {
-		if(!this->vm) throw runtime_error("getint32: reader is closed");
+		if(!this->pimpl->vm) throw runtime_error("getint32: reader is closed");
 		if((index)>(argc-1)) throw out_of_range("getint32: index out of range");
-		return _sqlite3_column_int(this->vm, index);
+		return _sqlite3_column_int(this->pimpl->vm, index);
 	}
 
 	__int64 reader::getint64(int index) const {
-		if(!this->vm) throw runtime_error("getint64: reader is closed");
+		if(!this->pimpl->vm) throw runtime_error("getint64: reader is closed");
 		if((index)>(argc-1)) throw out_of_range("getint64: index out of range");
-		return _sqlite3_column_int64(this->vm, index);
+		return _sqlite3_column_int64(this->pimpl->vm, index);
 	}
 
 	double reader::getdouble(int index) const {
-		if(!this->vm) throw runtime_error("getdouble: reader is closed");
+		if(!this->pimpl->vm) throw runtime_error("getdouble: reader is closed");
 		if((index)>(argc-1)) throw out_of_range("getdouble: index out of range");
-		return _sqlite3_column_double(this->vm, index);
+		return _sqlite3_column_double(this->pimpl->vm, index);
 	}
 
 	string reader::getstring(int index) const {
-		if(!this->vm) throw runtime_error("getstring: reader is closed");
+		if(!this->pimpl->vm) throw runtime_error("getstring: reader is closed");
 		if(index>(argc-1)) throw out_of_range("getstring: index out of range");
-		return string(_sqlite3_column_text(this->vm, index), _sqlite3_column_bytes(this->vm, index));
+		return string(_sqlite3_column_text(this->pimpl->vm, index), _sqlite3_column_bytes(this->pimpl->vm, index));
 	}
 
 	string reader::getcolname(int index) const {
-		if(!this->vm) throw runtime_error("getcolname: reader is closed");
+		if(!this->pimpl->vm) throw runtime_error("getcolname: reader is closed");
 		if(index>(argc-1)) throw out_of_range("getcolname: index out of range");
-		return _sqlite3_column_name(this->vm, index);
+		return _sqlite3_column_name(this->pimpl->vm, index);
 	}
 
 	string reader::operator[](int index) const {

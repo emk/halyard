@@ -26,6 +26,7 @@
 
 #include "ImlUnit.h"
 #include "TSchemeInterpreter.h"
+#include "TSchemeScriptEditorDB.h"
 
 // XXX - Hack to make REGISTER_5L_PRIMITIVE work correctly.  It needs to be
 // called from a function in the FiveL:: namespace, which is silly.
@@ -118,6 +119,22 @@ DEFINE_5L_PRIMITIVE(TestNap)
 	TEST(TInterpreter::GetInstance()->Napping());
 }
 
+DEFINE_5L_PRIMITIVE(TestScriptEditorDB)
+{
+    // Get our script editor database.
+    TInterpreterManager *manager = TInterpreterManager::GetInstance();
+    TSchemeScriptEditorDB *db =
+        dynamic_cast<TSchemeScriptEditorDB*>(manager->GetScriptEditorDB());
+    TEST(db != NULL);
+
+    // Scan our script directories and process all files.
+    //db->UpdateDatabase();
+    db->PurgeDataForDeletedFiles();
+
+	db->ProcessTree("Runtime", ".ss");
+    db->ProcessTree("Scripts", ".ss");
+}
+
 #define DEFINE_TYPE_TEST_PRIMITIVES(TYPE, COUNT) \
 	static TYPE TYPE##_test_values[COUNT]; \
     static uint32 TYPE##_index = 0; \
@@ -155,6 +172,7 @@ void FIVEL_NS RegisterSchemeTestPrimitives()
 	REGISTER_5L_PRIMITIVE(TestCallbackArgs);
 	REGISTER_5L_PRIMITIVE(TestTimeout);
 	REGISTER_5L_PRIMITIVE(TestNap);
+    REGISTER_5L_PRIMITIVE(TestScriptEditorDB);
 
 	string_test_values[0] = "";
 	string_test_values[1] = "hello";

@@ -26,6 +26,7 @@
 BEGIN_NAMESPACE_FIVEL
 
 class TValue;
+class ScriptEditorDB;
 
 //////////
 /// An identifier which might appear in a script.  Used to inform the editor
@@ -435,6 +436,11 @@ public:
 	/// primitive.
 	///
 	void RequestRetryLoadScript();
+
+    //////////
+    /// Return the ScriptEditorDB associated with this manager's scripts.
+    ///
+    virtual ScriptEditorDB *GetScriptEditorDB() = 0;
 
 	//////////
 	/// Do we have a single, global instance of this class?

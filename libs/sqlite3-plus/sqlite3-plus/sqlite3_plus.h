@@ -26,6 +26,7 @@
 
 #include <string>
 #include <cstdarg>
+#include <boost/shared_ptr.hpp>
 
 namespace sqlite3 {
 	class connection {
@@ -54,8 +55,16 @@ namespace sqlite3 {
 		friend class connection;
 
 	private:
+        struct impl {
+            void *vm;
+
+            impl() : vm(NULL) {}
+            ~impl();
+            void close();
+        };
+        
 		class connection *con;
-		void *vm;
+        boost::shared_ptr<impl> pimpl;
 		int argc;
 
 	public:

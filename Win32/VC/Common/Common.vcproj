@@ -192,6 +192,9 @@
 				RelativePath="..\..\..\Common\lang\scheme\TSchemeRtCallback.cpp">
 			</File>
 			<File
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeScriptEditorDB.cpp">
+			</File>
+			<File
 				RelativePath="..\..\..\Common\TStartup.cpp">
 			</File>
 			<File
@@ -256,6 +259,9 @@
 				RelativePath="..\..\..\Common\ModelView.h">
 			</File>
 			<File
+				RelativePath="..\..\..\Common\ScriptEditorDB.h">
+			</File>
+			<File
 				RelativePath="..\..\..\Common\TCommon.h">
 			</File>
 			<File
@@ -305,6 +311,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\lang\scheme\TSchemeRtCallback.h">
+			</File>
+			<File
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeScriptEditorDB.h">
 			</File>
 			<File
 				RelativePath="..\..\..\Common\TStartup.h">

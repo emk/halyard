@@ -528,6 +528,15 @@
   (test (eq? (inheritance-test-method single multiple)
              'arg1-single))
 
+  (jump script-editor-db-tests))
+
+
+;;=========================================================================
+;;  ScriptEditorDB
+;;=========================================================================
+
+(card script-editor-db-tests ()
+  (call-5l-prim 'TestScriptEditorDB)
   (jump done))
 
 (card done ()

@@ -42,7 +42,7 @@ namespace sqlite3 {
 	connection::~connection() {
         try {
             this->close();
-        } catch (exception &e) {
+        } catch (exception &) {
             // XXX - Log this error.
         }
 	}
@@ -71,12 +71,12 @@ namespace sqlite3 {
 		reader r;
 		r.con=this;
 
-		int ret=_sqlite3_prepare(this->db, sql, &r.vm);
+		int ret=_sqlite3_prepare(this->db, sql, &r.pimpl->vm);
 		_sqlite3_free(sql);
 
 		if(ret!=SQLITE_OK) throw runtime_error(string("executereader: ")+_sqlite3_errmsg(this->db));
 
-		r.argc=_sqlite3_column_count(r.vm);
+		r.argc=_sqlite3_column_count(r.pimpl->vm);
 
 		return r;
 	}

@@ -5,7 +5,7 @@
 
   (require (lib "shapes.ss" "5L"))
   (provide (all-from (lib "shapes.ss" "5L")))
-  
+
 
   ;;=======================================================================
   ;;  Support Modules
@@ -17,6 +17,10 @@
 
   (require (rename (lib "match.ss") match-let match-let))
   (provide match-let)
+
+  ;; Make sure this gets loaded.  It will register itself with the kernel.
+  (require (lib "tags.ss" "5L"))
+  
   
   ;;;======================================================================
   ;;;  Useful Syntax

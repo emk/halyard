@@ -625,6 +625,28 @@
 
 
   ;;=======================================================================
+  ;;  Scanning Source Files
+  ;;=======================================================================
+  ;;  See tags.ss for more information.
+
+  (provide set-extract-definitions-fn!)
+  
+  (define *extract-definitions-fn* #f)
+  
+  (define (set-extract-definitions-fn! f)
+    (set! *extract-definitions-fn* f))
+  
+  (define (%kernel-extract-definitions relative-file-path)
+    ;;; TODO - This should be a fatal error once we finish debugging
+    ;;; the definition extractor.
+    (with-errors-blocked (non-fatal-error)
+      (define path (apply build-path (current-directory)
+                          (regexp-split "/" relative-file-path)))
+      (%assert *extract-definitions-fn*)
+      (*extract-definitions-fn* path)))
+  
+
+  ;;=======================================================================
   ;;  Cards
   ;;=======================================================================
   ;;  Older support code for cards.  Some of this should probably be
