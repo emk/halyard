@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, brian
 
   * When switching from 3D to 2D, blit the Quake display into our
     offscreen buffer to avoid an ugly "cut to black".
@@ -9,6 +9,8 @@ CVS - emk
     engine.  However, since there's no way to mark the screen as having
     been repainted, this leads to duplicate painting.  Fixing this
     is fairly hard.
+  * Fixed loading of alpha channels and alpha channel memory
+    allocation bug.
 
 0.0.2 - 3 April 2003 - emk, brian
 
