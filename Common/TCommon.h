@@ -140,6 +140,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5.2.1  2002/04/22 08:17:57  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.5  2002/04/01 19:24:20  emk
  Preliminary style sheet code!
 
@@ -165,9 +168,7 @@ END_NAMESPACE_FIVEL
 
  Revision 1.3  2002/03/04 15:15:57  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-
 Moved OS specific configuration to TPlatform.h
-
 Changes by Elizabeth and Eric, okayed by Eric.
 
  Revision 1.2  2002/02/27 16:38:21  emk

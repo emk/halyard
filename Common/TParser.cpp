@@ -47,6 +47,7 @@ TParser::TParser()
 	inComment = false;
 	inEscape = false;
 	escapeNext = false;
+	mLastCharWasCR = false;
 	haveErr = false;
 }
 
@@ -373,15 +374,32 @@ unsigned char TParser::getChar(void)
 		}
 	}
 
-	// XXX - Make newline handling portable!
-	if (ch == '\n')
+	// Attempt to detect the end-of-line in a portable fashion.
+	bool is_newline;
+	if (ch == '\r')
 	{
-		if (inComment)
-			inComment = false;
-
+		is_newline = true;
+		mLastCharWasCR = true;
+	}
+	else if (ch == '\n' && !mLastCharWasCR)
+	{
+		is_newline = true;
+		mLastCharWasCR = false;
+	}
+	else
+	{
+		is_newline = false;
+		mLastCharWasCR = false;
+	}
+	
+	// If we found a new line, advance.
+	if (is_newline)
+	{
+		inComment = false;
 		curLine++;
 	}
-	else if (ch == '#' && !inEscape)
+	
+	if (ch == '#' && !inEscape)
 		inComment = true;
 	else if (ch == '\\' && !inEscape)
 		escapeNext = true;
@@ -417,6 +435,9 @@ void TParser::getBuffer(void)
 
 /*
  $Log$
+ Revision 1.2.2.2  2002/04/22 08:17:58  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.2.2.1  2002/04/22 05:22:33  emk
  A weekend's worth of merging, in preparation for the Typography switchover.
 

@@ -3,10 +3,11 @@
 #include "TStyleSheet.h"
 #include "TVariable.h"
 
+#include <ctype.h>
+
 USING_NAMESPACE_FIVEL
 
 using GraphicsTools::Color;
-using Typography::Style;
 using Typography::StyledText;
 using Typography::TextRenderingEngine;
 
@@ -62,7 +63,7 @@ TStyleSheet::TStyleSheet(TStream &inStream)
 Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 {
     // Create our base style for non-highlighted text.
-    Style base_style(mFontName, mSize);
+    Typography::Style base_style(mFontName, mSize);
     base_style.SetColor(mColor);
     base_style.SetShadowColor(mShadowColor);
     base_style.SetLeading(mLeading);
@@ -73,7 +74,7 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
     }
 	
     // Create a styled text object.
-    Style style(base_style);
+    Typography::Style style(base_style);
     StyledText text(style);
 	
     // XXX - Skip leading whitespace (to preserve backwards compatibility).

@@ -17,6 +17,10 @@
 #if !defined (_TRect_h_)
 #define _TRect_h_
 
+#ifdef _5L_QUICKTIME_
+#include <MacTypes.h>
+#endif // _5L_QUICKTIME_
+
 #include "TCommon.h"
 #include "TObject.h"
 #include "TPoint.h"
@@ -271,11 +275,12 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.3.4.1  2002/04/22 08:17:58  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.3  2002/03/04 15:16:13  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
-
 Moved OS specific configuration to TPlatform.h
-
 Changes by Elizabeth and Eric, okayed by Eric.
 
  Revision 1.2  2002/02/27 16:38:21  emk

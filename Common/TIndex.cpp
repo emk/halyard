@@ -18,10 +18,14 @@
 //    memory.
 //
 
+#include "TCommon.h"
+
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>  
-#include <sys/types.h> 
+#include <stdio.h>
+#if !FIVEL_PLATFORM_MACINTOSH
+#	include <sys/types.h>
+#endif
 #include <sys/stat.h>
 #include <time.h>
 
@@ -36,7 +40,7 @@
 
 USING_NAMESPACE_FIVEL
 
-TIndexFileManager gIndexFileManager;
+TIndexFileManager FIVEL_NS gIndexFileManager;
 
 TIndex::TIndex(TIndexFile *inFile, const char *inName,
 			   int32 inStart, int32 inEnd)
@@ -177,20 +181,6 @@ bool TIndexFileManager::NewIndex(const char *inName)
 
 	return (retValue);
 }
-
-#ifdef FIVEL_PLATFORM_MACINTOSH
-
-bool TIndexFileManager::NewIndex(FSSpec *inSpec)
-{
-	TString		fullPath;
-	
-	ASSERT(inSpec != NULL);
-	
-	fullPath = PathFromFSSpec(inSpec);
-	return (NewIndex(fullPath));
-}
-
-#endif // FIVEL_PLATFORM_MACINTOSH
 
 //
 //	TIndexFile methods
@@ -388,7 +378,7 @@ bool TIndexFile::Init()
 
     // Open the script file.
 	if (not Open(FileSystem::GetScriptsDirectory(),
-				 TString(Key()) + ".scr"))
+				 (TString(Key()) + TString(".scr")).GetString()))
 	{
         gLog.Error("Couldn't open script file <%s>.", scriptName.GetString());
 		return (false);
@@ -475,6 +465,9 @@ bool TIndexFile::Init()
 
 /*
  $Log$
+ Revision 1.3.2.2  2002/04/22 08:17:57  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.3.2.1  2002/04/22 05:22:33  emk
  A weekend's worth of merging, in preparation for the Typography switchover.
 

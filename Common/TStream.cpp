@@ -28,6 +28,9 @@
 #include "TLogger.h"
 #include "TStream.h"
 
+#include <ctype.h>
+#include <stdio.h>
+
 USING_NAMESPACE_FIVEL
 
 //

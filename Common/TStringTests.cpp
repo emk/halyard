@@ -49,10 +49,10 @@ void test_TString (void)
 	cs7 = std::string("whump");
 	TEST(cs7 == "whump");
 	std::string cs8;
-	cs8 = TString("");
+	cs8 = TString("").GetString();
 	TEST(cs8 == "");
 	std::string cs9;
-	cs9 = TString("thud");
+	cs9 = TString("thud").GetString();
 	TEST(cs9 == "thud");
 
 	// Create TStrings given a character array and a length.

@@ -17,9 +17,12 @@
 
 #include <time.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 
 #include "THeader.h"
+#include "TCommon.h"
 #include "TLogger.h"
 #include "TString.h"
 #include "TVersion.h"
@@ -222,7 +225,23 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 }
 
 #elif FIVEL_PLATFORM_MACINTOSH
-#	error "AlertBuffer not yet merged from old Macintosh KLogger code."
+
+#include <Dialogs.h>
+#include <TextUtils.h>
+
+void TLogger::AlertBuffer(bool isError /* = false */)
+{
+	c2pstr(m_LogBuffer);
+	
+	::ParamText((const uint8 *) m_LogBuffer, NULL, NULL, NULL);
+	if (isError)
+    	(void) ::StopAlert(2001, nil);
+    else
+    	(void) ::CautionAlert(2001, nil);
+    
+    p2cstr((unsigned char *) m_LogBuffer);
+}
+
 #elif FIVEL_PLATFORM_OTHER
 
 void TLogger::AlertBuffer(bool isError /* = false */)
@@ -271,6 +290,9 @@ void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 
 /*
  $Log$
+ Revision 1.3.4.2  2002/04/22 08:17:57  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.3.4.1  2002/04/19 11:20:13  emk
  Start of the heavy typography merging work.  I'm doing this on a branch
  so I don't cause problems for any of the other developers.

@@ -148,6 +148,11 @@ class TParser : public TObject
 		bool			escapeNext;
 		
 		//////////
+		// Was the last character a carriage return?
+		//
+		bool			mLastCharWasCR;
+		
+		//////////
 		// Current line in the input file.
 		//
 		int32			curLine;
@@ -245,6 +250,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.1.4.2  2002/04/22 08:17:58  emk
+ Updated Common code to build on Macintosh and pass all unit tests.
+
  Revision 1.1.4.1  2002/04/22 05:22:33  emk
  A weekend's worth of merging, in preparation for the Typography switchover.
 
