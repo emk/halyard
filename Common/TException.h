@@ -86,6 +86,9 @@ public:
 	// don't usually wish to call this; call what() instead.
 	//
 	std::string GetErrorMessage() const { return mErrorMessage; }
+
+	std::string GetErrorFile() const { return mErrorFile; }
+	int GetErrorLine() const { return mErrorLine; }
 	
 	//////////
 	// Return a formatted error string for this error.  This method is
