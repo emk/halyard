@@ -456,20 +456,17 @@ int16 CCard::Evaluate(TStream& conditional)
     TString     op;
     TString     modeStr;
     TString     str1, str2;
-#ifdef DEBUG
 	TString		origStr1, origStr2, origOp;
-#endif
 
     globalRes = localRes = false;
 
     while (conditional.more()) 
 	{
         conditional >> str1 >> op >> str2;
-#ifdef DEBUG
 		origStr1 = str1;
 		origStr2 = str2;
 		origOp = op;
-#endif
+
 		// See if op is contains first.
 		if (op.Equal("contains", false))
 		//if (op == (char *)"contains")
