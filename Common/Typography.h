@@ -294,7 +294,7 @@ namespace Typography {
 		// by ones from zero (i.e., it returns 3 identical values for
 		// a three-element style run).
 		//
-		friend class const_iterator {
+		class const_iterator {
 			friend class StyleInformation;
 
 			const StyleInformation *mStyleInfo;
@@ -353,6 +353,8 @@ namespace Typography {
 			}
 		};
 		
+		friend class const_iterator;
+
 		//////////
 	    // Return an iterator pointing to the first element's style.
 		//
@@ -567,7 +569,7 @@ namespace Typography {
 	// nicer.
 	//
 	class StyledCharIterator {
-		friend class StyledTextSpan;
+		friend struct StyledTextSpan;
 
 		const wchar_t *mTextIter;
 	    StyleInformation::const_iterator mStyleIter;

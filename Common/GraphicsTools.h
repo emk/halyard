@@ -67,7 +67,7 @@ namespace GraphicsTools {
 		Pixmap &operator=(const Pixmap &inPixmap)
 		    { ASSERT(false); return *this; }
 		Pixmap(const Pixmap &inPixmap)
-			{ ASSERT(false); }
+			: width(0), height(0), pitch(0), pixels(NULL) { ASSERT(false); }
 
 	public:
 		//////////

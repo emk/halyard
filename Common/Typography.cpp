@@ -310,6 +310,7 @@ StyleInformation::const_iterator::operator--()
 		--mCurrentStyle;
 		UpdateEndOfRun();
 	}
+	return *this;
 }
 
 
@@ -558,9 +559,9 @@ StyledTextSpan::StyledTextSpan(const StyledCharIterator &inBegin,
 //=========================================================================
 
 LineSegment::LineSegment(const StyledTextSpan &inSpan,
-						 bool inIsLineBreak = false,
-						 bool inDiscardAtEndOfLine = false,
-						 bool inNeedsHyphenAtEndOfLine = false)
+						 bool inIsLineBreak /*= false*/,
+						 bool inDiscardAtEndOfLine /*= false*/,
+						 bool inNeedsHyphenAtEndOfLine /*= false*/)
 	: span(inSpan), isLineBreak(inIsLineBreak),
 	  discardAtEndOfLine(inDiscardAtEndOfLine),
 	  needsHyphenAtEndOfLine(inNeedsHyphenAtEndOfLine),

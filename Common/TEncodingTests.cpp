@@ -161,8 +161,8 @@ void test_TEncoding (void)
 		TEST(e1.FixQuotes(" \042foo\042, ") == " &ldquo;foo&rdquo;, ");
 		TEST(e1.FixQuotes(" \042\'foo,\' he said!\042 ") ==
 			 " &ldquo;&lsquo;foo,&rsquo; he said!&rdquo; ");
-		TEST(e1.FixQuotes("\n\"Hi!\"") == "\n&ldquo;Hi!&rdquo;");
-		TEST(e1.FixQuotes("\r\"Hi!\"") == "\r&ldquo;Hi!&rdquo;");
+		TEST(e1.FixQuotes("\n\042Hi!\042") == "\n&ldquo;Hi!&rdquo;");
+		TEST(e1.FixQuotes("\r\042Hi!\042") == "\r&ldquo;Hi!&rdquo;");
 		
 		// I know authors won't like these behaviors, but they match
 		// most smart quoting algorithms, and they keep the code simple.

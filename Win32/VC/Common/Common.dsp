@@ -89,6 +89,10 @@ SOURCE=..\..\..\Common\FileSystem.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\GraphicsTools.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\ImlUnit.cpp
 # End Source File
 # Begin Source File
@@ -146,6 +150,10 @@ SOURCE=..\..\..\Common\Typography.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\FileSystem.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\GraphicsTools.h
 # End Source File
 # Begin Source File
 

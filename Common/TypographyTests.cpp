@@ -148,7 +148,7 @@ static LineSegment make_test_seg(const StyledTextSpan &inBaseSpan,
 	for (int i = 0; i < inBegin; i++)
 		++begin;
 	StyledCharIterator end = inBaseSpan.begin;
-	for (int i = 0; i < inEnd; i++)
+	for (int j = 0; j < inEnd; j++)
 		++end;
 	return LineSegment(StyledTextSpan(begin, end), inIsLineBreak,
 					   inDiscardAtEndOfLine, inNeedsHyphenAtEndOfLine);
