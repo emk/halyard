@@ -20,6 +20,7 @@
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
+           %activex% activex-prop set-activex-prop!
            %browser% %edit-box-element% %movie-element%
            browser edit-box %vorbis-audio% vorbis-audio
            geiger-audio set-geiger-audio-counts-per-second!
@@ -308,6 +309,20 @@
         [else
          (throw (cat "center-text: Unknown centering axis: " axis))]))
     (draw-text stylesheet r msg))
+
+  (define-element-template %activex%
+      [[activex-id :type <string>]]
+      (%widget%)
+    (call-5l-prim 'ActiveX (node-full-name self) 
+                  (make-node-event-dispatcher self)
+                  (parent->card self (prop self rect))
+                  activex-id))
+
+  (define (activex-prop elem prop)
+    (call-5l-prim 'ActiveXPropGet (node-full-name elem) prop))
+
+  (define (set-activex-prop! elem prop value)
+    (call-5l-prim 'ActiveXPropSet (node-full-name elem) prop value))
 
   (define-element-template %browser%
       [[location :type <string> :label "Location" :default "about:blank"]
