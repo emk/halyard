@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -131,6 +132,13 @@ class LPicture : public LResource
 		void			LoadQTGraphic(void);
 
 		//////////
+		// Make sure m_Height and m_Width are up to date.  (This was
+		// refactored out of the code; ideally, we'd set these variables
+		// up correctly *once* instead of updating them repeatedly.)
+		//
+		void			UpdateHeightAndWidth();
+
+		//////////
 		// Full path to this picture.
 		//
 		TString			m_FullPath;
@@ -217,6 +225,11 @@ public:
 
 /*
  $Log$
+ Revision 1.1.10.1  2002/06/19 15:47:31  emk
+ 3.3.4.9 - Fixed _Origin_X, _Origin_Y bugs, and added a default style
+ parameter to the DEFSTYLE command.  See TVersion.h log message for more
+ detailed documentation.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -32,6 +32,7 @@ public:
 	virtual void Nap(int32 inTime);
 	virtual bool Napping();
 	virtual void KillNap();
+	virtual void KillCurrentCard();
 	virtual void DoReDoScript(const char *inCardName);
 	virtual void JumpToCardByName(const char *inName);
 	virtual const char *CurCardName();

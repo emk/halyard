@@ -1592,15 +1592,19 @@ void CCard::DoLoadpic()
 
 	thePicture = gPictureManager.GetPicture(picname);
 	
-	// GetBounds returns rect with (0,0,width, height)
-	// We need to offset this before calling UpdateGraphicsForSpecialVariables.
-	TRect bounds; 
-	bounds = thePicture->GetBounds();	
-	bounds.Offset(loc);
-	UpdateSpecialVariablesForGraphic(bounds);
-	Rect sides = bounds.GetRect();
+	if (thePicture != NULL)
+	{
+		// GetBounds returns rect with (0,0,width, height).  We need to
+		// offset this before calling UpdateGraphicsForSpecialVariables.
+		TRect bounds = thePicture->GetBounds();	
+		bounds.Offset(loc);
+		UpdateSpecialVariablesForGraphic(bounds);
+		Rect sides = bounds.GetRect();
 	
-	gDebugLog.Log("loadpic: <%s>, <L T R B> %d %d %d %d %s", picname.GetString(), loc.X(), loc.Y(), sides.right, sides.bottom, theFlags.GetString());
+		gDebugLog.Log("loadpic: <%s>, <L T R B> %d %d %d %d %s",
+					  picname.GetString(), loc.X(), loc.Y(),
+					  sides.right, sides.bottom, theFlags.GetString());
+	}
 
 	if (thePicture != nil)
 	{

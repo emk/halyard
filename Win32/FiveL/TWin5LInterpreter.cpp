@@ -35,7 +35,8 @@ TWin5LInterpreter::TWin5LInterpreter(const TString &inStartScript)
 	if (!gIndexFileManager.NewIndex(inStartScript))
 	{
 		CleanupIndexes();
-		throw TException("Error reading startup script");
+		throw TException(__FILE__, __LINE__,
+						 "Error reading startup script");
 	}
 }
 
@@ -89,6 +90,12 @@ bool TWin5LInterpreter::Napping()
 	return gCardManager.Napping();
 }
 
+void TWin5LInterpreter::KillCurrentCard()
+{
+	// TODO - Implement?
+	throw TException(__FILE__, __LINE__, "Feature not implemented on Windows");
+}
+
 void TWin5LInterpreter::KillNap()
 {
 	gCardManager.KillNap();
@@ -131,7 +138,8 @@ void TWin5LInterpreter::ReloadScript(const char *inGotoCardName)
 	}
 	else
 	{
-		throw TException("Error reading script for redoscript");	
+		throw TException(__FILE__, __LINE__,
+						 "Error reading script for redoscript");	
 	}
 }
 

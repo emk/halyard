@@ -151,6 +151,19 @@ void Origin::OffsetOrigin(TPoint &delta)
 	SetOrigin(newOrigin);
 }
 
+/*----------------------------------------------------------------
+  	Log _Graphic_X and _Graphic_Y for variable manager
+  	Requires TRect bounds to already be offset from origin.
+  	_Graphic_X and _Graphic_Y hold bottom & right pixel coordinates 
+  	of latest drawn graphic that called this.
+------------------------------------------------------------------*/
+static void UpdateSpecialVariablesForGraphic(const TRect &bounds)
+{
+	Rect sides = bounds.GetRect();
+	gVariableManager.SetLong("_Graphic_X", (short) sides.right);
+	gVariableManager.SetLong("_Graphic_Y", (short) sides.bottom);
+}
+
 
 //=========================================================================
 //  Implementation of Windows Primitives
@@ -466,9 +479,11 @@ DEFINE_5L_PRIMITIVE(Buttpcx)
 
     thePicture->Draw(buttLoc, true);
 	bounds = thePicture->GetBounds();
+	bounds.Offset(buttLoc);
 
 	gDebugLog.Log("Picture bounds: T <%d> L <%d>, B <%d>, R <%d>",
 		bounds.Top(), bounds.Left(), bounds.Bottom(), bounds.Right());
+	UpdateSpecialVariablesForGraphic(bounds);
 
 	bounds1 = bounds;
     dl = bounds1.Bottom() - bounds1.Top();      //...and text...
@@ -1050,6 +1065,20 @@ DEFINE_5L_PRIMITIVE(Loadpic)
 		gDebugLog.Log("loadpic: can't find <%s>.", picname.GetString());
 		gLog.Log("Error: Can't find graphic <%s>. Please reinstall.", (char *) picname.GetString());
 		return;
+	}
+
+	if (thePicture != NULL)
+	{
+		// GetBounds returns rect with (0,0,width, height).  We need to
+		// offset this before calling UpdateGraphicsForSpecialVariables.
+		TRect bounds = thePicture->GetBounds();	
+		bounds.Offset(loc);
+		UpdateSpecialVariablesForGraphic(bounds);
+		Rect sides = bounds.GetRect();
+	
+		gDebugLog.Log("loadpic: <%s>, <L T R B> %d %d %d %d",
+					  picname.GetString(), loc.X(), loc.Y(),
+					  sides.right, sides.bottom);
 	}
 
     if (thePicture != NULL)
