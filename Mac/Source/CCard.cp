@@ -40,6 +40,7 @@
 // cbo_debug
 //#include <profiler.h>
 
+#include <UInternetConfig.h>
 
 /**************
 
@@ -321,6 +322,7 @@ void CCard::DoCommand(void)
     else if (opword == (char *)"video") DoPlayQTFile();
     else if (opword == (char *)"wait") DoWait();
     else if (opword == (char *)"write") DoWrite();
+    else if (opword == (char *)"browse") DoBrowse();
     else DoMacro(opword);
 
     m_Script >> close;
@@ -876,6 +878,34 @@ void CCard::DoBox()
 	if (boxPtr != nil)
 		delete boxPtr;
 }
+
+void CCard::DoBrowse()
+{
+	KString theURL;
+	
+	m_Script >> theURL;
+	
+	long startSel = 0;
+   	long endSel = theURL.Length();
+  	
+    if (UInternetConfig::PP_ICAvailable())	
+    {
+    	#ifdef DEBUG
+    		gDebugLog.Log("PP_IC Available");
+    	#endif	
+        
+        UInternetConfig::PP_ICLaunchURL("\p", (char *) theURL.GetString(), endSel, &startSel, &endSel);
+    }
+    else
+    {
+    	#ifdef DEBUG
+    		gDebugLog.Log("PP_IC Not available");
+		#endif
+	}
+}
+
+
+
 
 /*---------------------------------------------------------------
     (BUTTPCX PCXFILE X Y header text Command <second Command>)

@@ -90,8 +90,8 @@ class CCard : public CIndex
         void    DoBeep();
         void    DoBlippo();
         void    DoBlueramp();
-
         void    DoBox();
+        void    DoBrowse();
         void  	DoButtpcx();
 		void    DoCheckDisc();
 		void	DoCheckVol();
