@@ -29,6 +29,7 @@ extern void test_TStream (void);
 extern void test_TBTree (void);
 extern void test_TEncoding (void);
 extern void test_FileSystem (void);
+extern void test_DataStore (void);
 extern void test_Typography (void);
 extern void test_CryptStream (void);
 extern void test_TIndex (void);
@@ -62,6 +63,7 @@ int main (int argc, char **argv)
 		test_TBTree();
 		test_TEncoding();
 		test_FileSystem();
+		test_DataStore();
 		test_Typography();
 		test_CryptStream();
 		test_TIndex();

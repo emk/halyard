@@ -16,6 +16,8 @@ libimlunit_a_SOURCES = \
 	ImlUnit.h
 
 libfivel_a_SOURCES = \
+	DataStore.cpp \
+	DataStore.h \
 	TArray.cpp \
 	TArray.h \
 	TBTree.cpp \
@@ -78,6 +80,7 @@ libfivel_a_SOURCES = \
 	lang/scheme/TSchemeInterpreter.h
 
 TestAll_SOURCES = \
+	DataStoreTests.cpp \
 	TTemplateUtilsTests.cpp \
 	TStringTests.cpp \
 	TBTreeTests.cpp \
