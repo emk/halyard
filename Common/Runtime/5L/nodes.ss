@@ -162,6 +162,16 @@
       (set! (node-has-expensive-handlers? node) #t)
       (engine-enable-expensive-events *engine* #t))
 
+    ;; If we're registering a handler for a mouse event, and the node
+    ;; appears to care, let it know.
+    ;;
+    ;; TODO - This is a bit more informal than our EXPENSIVE-EVENT?
+    ;; handling; perhaps we should unify the two?
+    (when (and (mouse-event-name? name)
+               (node-has-value? node 'wants-cursor?)
+               (eq? (prop node wants-cursor?) 'auto))
+      (set! (prop node wants-cursor?) #t))
+
     ;; Update our handler table.
     (let* [[table (node-handlers node)]
            [old-handler (hash-table-get table name (lambda () #f))]]
@@ -325,6 +335,11 @@
     ;; if we believe there is a handler to receive them.
     (case name
       [[idle mouse-moved] #t]
+      [else #f]))
+
+  (define (mouse-event-name? name)
+    (case name
+      [[mouse-moved mouse-down mouse-up mouse-enter mouse-leave] #t]
       [else #f]))
 
 

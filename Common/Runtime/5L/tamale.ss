@@ -120,6 +120,7 @@
        [cursor :type <symbol> :default 'hand :label "Cursor"]
        [overlay? :type <boolean> :default #f :label "Has overlay?"]
        [alpha? :type <boolean> :default #f :label "Overlay transparent?"]
+       [wants-cursor? :default 'auto :label "Wants cursor?"]
        [clickable-where-transparent? :type <boolean> :default #f
                                      :label "Clickable where transparent?"]
        [%nocreate? :type <boolean> :default #f
@@ -135,7 +136,18 @@
              (node-full-name self)))
     (define real-shape (offset-shape shape at))
     (define movable? (and overlay? origin-rect?))
-               
+
+    ;; Let the engine know whether we want a cursor.
+    (define (set-wants-cursor! value)
+      (call-5l-prim 'WantsCursorSet (node-full-name self)
+                    (case value
+                      [[#f auto] #f]
+                      [[#t] #t])))
+    (on setup-finished ()
+      ;; We need to postpone this until the underlying engine object
+      ;; is created.
+      (set-wants-cursor! wants-cursor?))
+    
     (on prop-change (name value prev veto)
       (case name
         [[cursor] (set-element-cursor! self value)]
@@ -143,6 +155,8 @@
          (unless movable?
            (veto (cat "Can't move element: " (node-full-name self))))
          (call-next-handler)]
+        [[wants-cursor?]
+         (set-wants-cursor! value)]
         [else (call-next-handler)]))
     (cond
      [%nocreate?
