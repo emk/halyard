@@ -16,15 +16,17 @@ REGISTER_TEST_CASE_FILE(TVariableManager);
 //  TVariableManager Methods
 //=========================================================================
 
-TValue TVariableManager::Get(std::string inName) {
-	TValueMap::iterator it = mMap.find(MakeStringLowercase(inName));
-	if (it != mMap.end()) 
-		return it->second; 
-	else 
-		return TValue("0"); 
+TValue TVariableManager::Get(const std::string &inName) {
+	TValueMap::iterator iter = mMap.find(MakeStringLowercase(inName));
+	if (iter != mMap.end()) {
+		return iter->second; 
+    } else {
+        std::string err = "Tried to read uninitialized variable: " + inName;
+		THROW(err.c_str());
+    }
 }
 
-void TVariableManager::Set(std::string inName, TValue inValue) {
+void TVariableManager::Set(const std::string &inName, const TValue &inValue) {
 	std::pair<std::string, TValue> p(MakeStringLowercase(inName), inValue); 
 	
 	std::pair<TValueMap::iterator, bool> result;
@@ -38,17 +40,9 @@ void TVariableManager::Set(std::string inName, TValue inValue) {
 	}
 }
 
-TValue *TVariableManager::FindVariable(const char *inName,
-									int fReading, int fCreate)
-{
-	TValueMap::iterator found = mMap.find(MakeStringLowercase(inName));
-
-	if (found == mMap.end()) {
-		mMap.insert(TValueMap::value_type(MakeStringLowercase(inName), TValue("0")));
-		found = mMap.find(inName);
-	}
-
-	return &found->second;
+bool TVariableManager::VariableExists(const std::string &inName) {
+	TValueMap::iterator iter = mMap.find(MakeStringLowercase(inName));
+	return iter != mMap.end();
 }
 		
 TValue::Type TVariableManager::GetType(const char *inName) {
@@ -61,10 +55,6 @@ void TVariableManager::MakeNull(const char *inName) {
 
 bool TVariableManager::IsNull(const char *inName) {
     return (Get(inName).GetType() == TValue::TYPE_NULL);
-}
-
-void TVariableManager::Assign(const char *inName, const TValue *inVar) {
-	Set(inName, *inVar);
 }
 
 const char *TVariableManager::GetString(const char *inName) {
@@ -207,12 +197,6 @@ BEGIN_TEST_CASE(TestTVariableManager, TestCase) {
 	manager.MakeNull("longVar");
 	CHECK_EQ(manager.IsNull("longVar"), true);
 
-	// Check FindVariable.
-	TValue *var = manager.FindVariable("create_me");
-	CHECK_EQ(strcmp(manager.GetString("create_me"), "0"), 0);
-	manager.SetString("assign_src", "foo");
-	manager.SetString("assign_dst", "bar");
-	manager.Assign("assign_dst", manager.FindVariable("assign_src"));
 } END_TEST_CASE(TestTVariableManager);
 
 

@@ -26,16 +26,13 @@ public:
 	TVariableManager() {}
 	virtual ~TVariableManager() {}
 
-	void Set(std::string inName, TValue inVal);
-	TValue Get(std::string inName);
-	TValue *FindVariable(const char *inName,
-						 int fReading = true,
-						 int fCreate = true);
+	void Set(const std::string &inName, const TValue &inVal);
+	TValue Get(const std::string &inName);
+    bool VariableExists(const std::string &inName);
 
 	TValue::Type GetType(const char *inName);
 	void MakeNull(const char *inName);
 	bool IsNull(const char *inName);	
-	void Assign(const char *inName, const TValue *inVar);
 
 	const char *GetString(const char *inName);
 	const char *GetSymbol(const char *inName);

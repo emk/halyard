@@ -370,8 +370,7 @@ DEFINE_5L_PRIMITIVE(Get)
 	std::string vname;
 	inArgs >> SymbolName(vname);
 
-	TValue *var = gVariableManager.FindVariable(vname.c_str(), true);
-   	::SetPrimitiveResult(var);
+   	::SetPrimitiveResult(gVariableManager.Get(vname.c_str()));
 }
 
 
@@ -387,10 +386,7 @@ DEFINE_5L_PRIMITIVE(VariableInitialized)
 	std::string vname;
 	inArgs >> SymbolName(vname);
 
-	TValue::Type type = gVariableManager.GetType(vname.c_str());
-	::SetPrimitiveResult(type == TValue::TYPE_UNINITIALIZED ? false : true);
-	//if the variable is uninitialized we return FALSE, not true.
-	//the function is VariableInitialized, not VariableUninitialized
+	::SetPrimitiveResult(gVariableManager.VariableExists(vname.c_str()));
 }
 
 

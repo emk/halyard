@@ -36,12 +36,13 @@
       Replace big switch statements in TSchemeInterpreter.cpp with *Conv
       Let callers of TValueManager call only "Set" and "Get"
       LogParameter can now rely on ostringstream and operator<<
-      Delete FindVariable and Assign (you'll need to fix the callers)
-      Stop automatically initializing variables to "0"--throw errors instead
+/     Delete FindVariable and Assign (you'll need to fix the callers)
+/     Stop automatically initializing variables to "0"--throw errors instead
       Delete TBTree code?
       Delete TArray?
       Delete TObject?
-      Get rid of TypeUninitialized
+      Get rid of TYPE_UNINITIALIZED
+      Fewer SetPrimitiveResult* functions?  Definitely.
 
   Cleanup
     Make sure GUI does REFERENCE_TEST_CASE_FILE

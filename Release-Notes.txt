@@ -1,6 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, kwasi, djin
+0.0.15 - 30 Jan 2004 - emk, kwasi, djin
+
+Two major new features: Tamale overlays can now float over Quake 2
+(graphically, at least--input hasn't been implemented), and the Scheme/C++
+value-passing interface has been extensively revamped.  Expect a few
+glitches.
 
 TValue work (kwasi, djin, emk):
 
@@ -30,10 +35,12 @@ TValue work (kwasi, djin, emk):
     TValueList.
   * TValue can now do a few limited sorts of numeric type conversions.
   * Lots of little bug fixes and stress testing related to TValue.
-
   * Removed SET primitive.
   * Replaced TVariable/TVariableManager with TValue/new-TVariableManager.
   * Implemented operator<< for many basic types used by TValue.
+  * Removed FindVariable and Assign.
+  * Made TVariableManager::Get throw errors when trying to read a
+    non-existant variable.
 
 Quake 2 Overlays (emk):
 

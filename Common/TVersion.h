@@ -17,15 +17,58 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		14
+#define VERSION_REV_BIG		15
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.14 (Development)"
+#define VERSION_STRING		"Tamale 0.0.15 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.56  2004/01/31 00:21:42  emk
+ 0.0.15 - 30 Jan 2004 - emk, kwasi, djin
+
+ Two major new features: Tamale overlays can now float over Quake 2
+ (graphically, at least--input hasn't been implemented), and the Scheme/C++
+ value-passing interface has been extensively revamped.  Expect a few
+ glitches.
+
+ TValue work (kwasi, djin, emk):
+
+   * Implemented TValue class, with full test cases.
+   * Added a TCallbackPtr typedef (using a shared pointer) and an
+     output operator.
+   * Added TestCase.h to CommonHeaders.h.
+   * Added macros REGISTER_TEST_CASE_FILE and REFERENCE_TEST_CASE_FILE
+     to TestCase.h and used them in TestAll.cpp.
+   * Documented TValue and moved as much code as possible into TValue.cpp.
+   * Reorganized TSchemeInterpreter and began work on conversion functions.
+   * TValueToScheme can now convert almost all TValue types.
+   * Patched swindle's EQUALS? function to compare lists recursively with
+     EQUALS? instead of EQUAL?.
+   * Added a CheckFuncHelper to TestCase.h for programmers who need to
+     define custom versions of CHECK_EQ, etc.
+   * Exported %kernel-equals from the kernel so C++ can test for equality
+     of two Scheme values.
+   * Added TInterpreter::MakeSchemePolygon and MakeSchemePercent.
+   * Deleted TCallbackArgumentList and TSchemeCallbackArgumentList, and
+     replaced them with much simpler TValueList code.
+   * Re-arranged headers a bit, and added new files to CommonHeaders.h.
+   * Removed all redundant includes of TValue.h and GraphicsTools.h.
+   * Finished SchemeToTValue conversions.
+   * Replaced TCallback* with TCallbackPtr (a smart pointer) everywhere.
+   * TArgumentList no longer needs language-specific subclasses--it uses
+     TValueList.
+   * TValue can now do a few limited sorts of numeric type conversions.
+   * Lots of little bug fixes and stress testing related to TValue.
+   * Removed SET primitive.
+   * Replaced TVariable/TVariableManager with TValue/new-TVariableManager.
+   * Implemented operator<< for many basic types used by TValue.
+   * Removed FindVariable and Assign.
+   * Made TVariableManager::Get throw errors when trying to read a
+     non-existant variable.
+
  Revision 1.55  2004/01/13 21:10:46  emk
  0.0.14 - 13 Jan 2004 - emk
 

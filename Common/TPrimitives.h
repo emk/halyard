@@ -445,9 +445,9 @@ inline void SetPrimitiveResult(const GraphicsTools::Color &inValue)
 //
 // [in] inVariable - The variable whose value we should use.
 //
-inline void SetPrimitiveResult(TValue *inVariable)
+inline void SetPrimitiveResult(const TValue &inVariable)
 {
-	gVariableManager.Assign("_result", inVariable);
+	gVariableManager.Set("_result", inVariable);
 }
 
 #define FIVEL_ERROR_CODE_VAR ("_errorcode")
