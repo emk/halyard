@@ -40,8 +40,7 @@ using FileSystem::Path;
 //  Install our wxWindows-specific primitives.  A lot of these are very
 //  kludgy and should be replaced later on as the editing GUI improves.
 
-void FIVEL_NS RegisterWxPrimitives()
-{
+void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(AudioStreamGeiger);
 	REGISTER_5L_PRIMITIVE(AudioStreamGeigerSetCps);
 	REGISTER_5L_PRIMITIVE(AudioStreamSine);
@@ -54,6 +53,8 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(ElementExists);
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
+	REGISTER_5L_PRIMITIVE(GeigerSynth);
+	REGISTER_5L_PRIMITIVE(GeigerSynthSetCps);
 	REGISTER_5L_PRIMITIVE(HTML);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
@@ -112,16 +113,14 @@ static DrawingArea *GetDrawingArea() {
 //  Implementation of wxWindows Primitives
 //=========================================================================
 
-DEFINE_5L_PRIMITIVE(AudioStreamGeiger)
-{
+DEFINE_5L_PRIMITIVE(AudioStreamGeiger) {
 	std::string name, path;
 	inArgs >> SymbolName(name) >> path;
 	new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
 						   new GeigerAudioStream(path.c_str()));
 }
 
-DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps)
-{
+DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps) {
 	std::string name;
 	double cps;
 	inArgs >> SymbolName(name) >> cps;
@@ -135,8 +134,7 @@ DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps)
 							"Audio stream was not a geiger stream.");
 }
 
-DEFINE_5L_PRIMITIVE(AudioStreamSine)
-{
+DEFINE_5L_PRIMITIVE(AudioStreamSine) {
 	std::string name;
 	uint32 frequency;
 	inArgs >> name >> frequency;
@@ -144,8 +142,7 @@ DEFINE_5L_PRIMITIVE(AudioStreamSine)
 						   new SineAudioStream(frequency));
 }
 
-DEFINE_5L_PRIMITIVE(AudioStreamVorbis)
-{
+DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
 	std::string name, path;
 	uint32 buffer_size;
 	bool should_loop;
@@ -155,14 +152,11 @@ DEFINE_5L_PRIMITIVE(AudioStreamVorbis)
 												 should_loop));
 }
 
-DEFINE_5L_PRIMITIVE(DeleteElements)
-{
-	if (!inArgs.HasMoreArguments())
+DEFINE_5L_PRIMITIVE(DeleteElements) {
+	if (!inArgs.HasMoreArguments()) {
 		wxGetApp().GetStage()->DeleteElements();
-	else
-	{
-		while (inArgs.HasMoreArguments())
-		{
+	} else {
+		while (inArgs.HasMoreArguments()) {
 			std::string name;
 			inArgs >> SymbolName(name);
 			bool found =
@@ -174,8 +168,7 @@ DEFINE_5L_PRIMITIVE(DeleteElements)
 	}
 }
 
-DEFINE_5L_PRIMITIVE(DrawBoxFill)
-{
+DEFINE_5L_PRIMITIVE(DrawBoxFill) {
 	TRect bounds;
 	Color color;
 
@@ -183,8 +176,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxFill)
 	GetDrawingArea()->FillBox(TToWxRect(bounds), color);
 }
 
-DEFINE_5L_PRIMITIVE(DrawBoxOutline)
-{
+DEFINE_5L_PRIMITIVE(DrawBoxOutline) {
 	TRect bounds;
 	Color color;
 	int32 width;
@@ -196,8 +188,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxOutline)
 
 }
 
-DEFINE_5L_PRIMITIVE(DrawLine)
-{
+DEFINE_5L_PRIMITIVE(DrawLine) {
 	TPoint from, to;
 	Color color;
 	int32 width;
@@ -208,8 +199,7 @@ DEFINE_5L_PRIMITIVE(DrawLine)
 
 }
 
-DEFINE_5L_PRIMITIVE(EditBox)
-{
+DEFINE_5L_PRIMITIVE(EditBox) {
 	std::string name, text;
 	TRect bounds;
 
@@ -222,8 +212,7 @@ DEFINE_5L_PRIMITIVE(EditBox)
 	new Widget(wxGetApp().GetStage(), name.c_str(), edit);
 }
 
-DEFINE_5L_PRIMITIVE(ElementExists)
-{
+DEFINE_5L_PRIMITIVE(ElementExists) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	if (wxGetApp().GetStage()->FindElement(name.c_str()))
@@ -232,16 +221,14 @@ DEFINE_5L_PRIMITIVE(ElementExists)
 		::SetPrimitiveResult(false);
 }
 
-DEFINE_5L_PRIMITIVE(ElementIsShown)
-{
+DEFINE_5L_PRIMITIVE(ElementIsShown) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(Widget, element, name.c_str());
 	::SetPrimitiveResult(element->IsShown());
 }
 
-DEFINE_5L_PRIMITIVE(ElementSetShown)
-{
+DEFINE_5L_PRIMITIVE(ElementSetShown) {
 	std::string name;
 	bool show;
 	inArgs >> SymbolName(name) >> show;
@@ -250,15 +237,31 @@ DEFINE_5L_PRIMITIVE(ElementSetShown)
 	// TODO - Override MovieElement::Show for unshowable movies.
 }
 
-DEFINE_5L_PRIMITIVE(EnableExpensiveEvents)
-{
+DEFINE_5L_PRIMITIVE(EnableExpensiveEvents) {
 	bool enable;
 	inArgs >> enable;
 	EventDispatcher::EnableExpensiveEvents(enable);
 }
 
-DEFINE_5L_PRIMITIVE(HTML)
-{
+DEFINE_5L_PRIMITIVE(GeigerSynth) {
+	std::string name, chirp_location, loop_location;
+	uint32 loop_cps;
+
+	inArgs >> name >> chirp_location;
+
+	while (inArgs.HasMoreArguments()) {
+		inArgs >> loop_cps >> loop_location;
+	}
+}
+
+DEFINE_5L_PRIMITIVE(GeigerSynthSetCps) {
+	std::string name;
+	uint32 cps;
+
+	inArgs >> name >> cps;
+}
+
+DEFINE_5L_PRIMITIVE(HTML) {
 	std::string name, file_or_url;
 	TRect bounds;
 
@@ -272,8 +275,7 @@ DEFINE_5L_PRIMITIVE(HTML)
 	new Widget(wxGetApp().GetStage(), name.c_str(), html);
 }
 
-DEFINE_5L_PRIMITIVE(Input)
-{
+DEFINE_5L_PRIMITIVE(Input) {
 	TRect bounds;
 	uint32 size;
 	Color fore, back;
@@ -298,15 +300,13 @@ static void load_picture(const std::string &inName, TPoint inLoc,
 	// Load our image.
 	wxBitmap bitmap = 
 		wxGetApp().GetStage()->GetImageCache()->GetBitmap(inName.c_str());
-	if (!bitmap.Ok())
-	{
+	if (!bitmap.Ok()) {
 		::SetPrimitiveError("noimage", "Can't load the specified image");
 		return;
 	}
 
 	// If we were given a sub-rectangle, try to extract it.
-	if (inRect)
-	{
+	if (inRect) {
 		wxRect rect(inRect->Left(), inRect->Top(),
 					inRect->Right() - inRect->Left(),
 					inRect->Bottom() - inRect->Top());
@@ -334,8 +334,7 @@ static void load_picture(const std::string &inName, TPoint inLoc,
 	UpdateSpecialVariablesForGraphic(bounds);	
 }
 
-DEFINE_5L_PRIMITIVE(Loadpic)
-{
+DEFINE_5L_PRIMITIVE(Loadpic) {
 	std::string	picname;
     TPoint		loc;
 
@@ -343,8 +342,7 @@ DEFINE_5L_PRIMITIVE(Loadpic)
 
 	// Process flags.
 	// XXX - We're just throwing them away for now.
-	if (inArgs.HasMoreArguments())
-	{
+	if (inArgs.HasMoreArguments()) {
 		std::string junk;
 		while (inArgs.HasMoreArguments())
 			inArgs >> junk;
@@ -358,8 +356,7 @@ DEFINE_5L_PRIMITIVE(Loadpic)
 	load_picture(picname, loc);
 }
 
-DEFINE_5L_PRIMITIVE(Loadsubpic)
-{
+DEFINE_5L_PRIMITIVE(Loadsubpic) {
 	std::string	picname;
     TPoint		loc;
 	TRect		subrect;
@@ -368,14 +365,12 @@ DEFINE_5L_PRIMITIVE(Loadsubpic)
 	load_picture(picname, loc, &subrect);
 }
 
-DEFINE_5L_PRIMITIVE(NotifyEnterCard)
-{
+DEFINE_5L_PRIMITIVE(NotifyEnterCard) {
 	wxGetApp().GetStage()->NotifyEnterCard();
 	::SkipPrimitiveLogging();
 }
 
-DEFINE_5L_PRIMITIVE(NotifyExitCard)
-{
+DEFINE_5L_PRIMITIVE(NotifyExitCard) {
 	wxGetApp().GetStage()->NotifyExitCard();
 	::SkipPrimitiveLogging();
 }
@@ -386,8 +381,7 @@ DEFINE_5L_PRIMITIVE(NotifyExitCard)
     Pause execution for TIME tenths of seconds.
     The user can abort a long nap via the ESC key.
 --------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Nap)
-{
+DEFINE_5L_PRIMITIVE(Nap) {
     int32    tenths;
 
     inArgs >> tenths;
@@ -397,8 +391,7 @@ DEFINE_5L_PRIMITIVE(Nap)
     TInterpreter::GetInstance()->Nap(tenths);
 }
 
-DEFINE_5L_PRIMITIVE(MediaSetVolume)
-{
+DEFINE_5L_PRIMITIVE(MediaSetVolume) {
 	// Right now, this only works for media streams.
 	std::string name, channel_name;
 	double volume;
@@ -407,36 +400,31 @@ DEFINE_5L_PRIMITIVE(MediaSetVolume)
 	stream->SetVolume(channel_name, volume);
 }
 
-DEFINE_5L_PRIMITIVE(MouseGrab)
-{
+DEFINE_5L_PRIMITIVE(MouseGrab) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(Zone, zone, name.c_str());
 	wxGetApp().GetStage()->MouseGrab(zone);
 }
 
-DEFINE_5L_PRIMITIVE(MouseIsGrabbed)
-{
+DEFINE_5L_PRIMITIVE(MouseIsGrabbed) {
 	::SetPrimitiveResult(wxGetApp().GetStage()->MouseIsGrabbed());
 }
 
-DEFINE_5L_PRIMITIVE(MousePosition)
-{
+DEFINE_5L_PRIMITIVE(MousePosition) {
 	// XXX - Stop returning out-of-bounds co-ordinates.
 	wxPoint p = wxGetApp().GetStage()->ScreenToClient(::wxGetMousePosition());
 	::SetPrimitiveResult(TPoint(p.x, p.y));
 }
 
-DEFINE_5L_PRIMITIVE(MouseUngrab)
-{
+DEFINE_5L_PRIMITIVE(MouseUngrab) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(Zone, zone, name.c_str());
 	wxGetApp().GetStage()->MouseUngrab(zone);
 }
 
-DEFINE_5L_PRIMITIVE(Movie)
-{
+DEFINE_5L_PRIMITIVE(Movie) {
 	std::string name, path;
 	TRect bounds;
 	bool controller, audio_only, loop, interaction;
@@ -460,8 +448,7 @@ DEFINE_5L_PRIMITIVE(Movie)
 
 // Note: these primitives may not be happy if the underlying movie code 
 // does not like to be paused.
-DEFINE_5L_PRIMITIVE(MoviePause)
-{
+DEFINE_5L_PRIMITIVE(MoviePause) {
 	std::string name;
 	
 	inArgs >> SymbolName(name);
@@ -471,8 +458,7 @@ DEFINE_5L_PRIMITIVE(MoviePause)
 	movie->Pause();
 }
 
-DEFINE_5L_PRIMITIVE(MovieResume)
-{
+DEFINE_5L_PRIMITIVE(MovieResume) {
 	std::string name;
 	
 	inArgs >> SymbolName(name);
@@ -482,45 +468,39 @@ DEFINE_5L_PRIMITIVE(MovieResume)
 	movie->Resume();
 }
 
-DEFINE_5L_PRIMITIVE(Refresh)
-{
+DEFINE_5L_PRIMITIVE(Refresh) {
 	std::string transition;
 	int32 milliseconds;
 	inArgs >> SymbolName(transition) >> milliseconds;
 	wxGetApp().GetStage()->RefreshStage(transition, milliseconds);
 }
 
-DEFINE_5L_PRIMITIVE(SaveGraphics)
-{
+DEFINE_5L_PRIMITIVE(SaveGraphics) {
 	TRect bounds;
 	inArgs >> bounds;
 	wxGetApp().GetStage()->SaveGraphics(TToWxRect(bounds));
 }
 
-DEFINE_5L_PRIMITIVE(RestoreGraphics)
-{
+DEFINE_5L_PRIMITIVE(RestoreGraphics) {
 	TRect bounds;
 	inArgs >> bounds;
 	wxGetApp().GetStage()->RestoreGraphics(TToWxRect(bounds));
 }
 
-DEFINE_5L_PRIMITIVE(Screenshot)
-{
+DEFINE_5L_PRIMITIVE(Screenshot) {
 	std::string filename;
 	inArgs >> filename;
 	wxGetApp().GetStage()->Screenshot(filename.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(RegisterCard)
-{
+DEFINE_5L_PRIMITIVE(RegisterCard) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->RegisterCard(name.c_str());
 	::SkipPrimitiveLogging();
 }
 
-DEFINE_5L_PRIMITIVE(RegisterCursor)
-{
+DEFINE_5L_PRIMITIVE(RegisterCursor) {
 	std::string name, path;
 	TPoint hotspot;
 	inArgs >> SymbolName(name) >> path >> hotspot;
@@ -528,8 +508,7 @@ DEFINE_5L_PRIMITIVE(RegisterCursor)
 	manager->RegisterImageCursor(name, path, hotspot.X(), hotspot.Y());
 }
 
-DEFINE_5L_PRIMITIVE(RegisterEventDispatcher)
-{
+DEFINE_5L_PRIMITIVE(RegisterEventDispatcher) {
 	TCallback *callback;
 	inArgs >> callback;
 	wxGetApp().GetStage()->GetEventDispatcher()->SetDispatcher(callback);
@@ -540,22 +519,19 @@ DEFINE_5L_PRIMITIVE(RegisterEventDispatcher)
 
     A fast way to fill the entire screen with a particular color.
 -----------------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Screen)
-{
+DEFINE_5L_PRIMITIVE(Screen) {
     Color color;
     inArgs >> color; 
 	GetDrawingArea()->Clear(GraphicsToolsToWxColor(color));
 }
 
-DEFINE_5L_PRIMITIVE(SetImageCacheSize)
-{
+DEFINE_5L_PRIMITIVE(SetImageCacheSize) {
 	uint32 sz;
 	inArgs >> sz;
 	wxGetApp().GetStage()->GetImageCache()->SetMaxCacheSize(sz);
 }
 
-DEFINE_5L_PRIMITIVE(SetZoneCursor)
-{
+DEFINE_5L_PRIMITIVE(SetZoneCursor) {
 	std::string name, cursor;
 	inArgs >> SymbolName(name) >> SymbolName(cursor);
 
@@ -564,8 +540,7 @@ DEFINE_5L_PRIMITIVE(SetZoneCursor)
 	zone->SetCursor(manager->FindCursor(cursor));
 }
 
-DEFINE_5L_PRIMITIVE(TextAA)
-{
+DEFINE_5L_PRIMITIVE(TextAA) {
 	TRect		bounds;
 	std::string style, text;
 
@@ -585,8 +560,7 @@ DEFINE_5L_PRIMITIVE(TextAA)
     If the user doesn't respond in DELAY seconds, jump to the
     given card.
 -------------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Timeout)
-{
+DEFINE_5L_PRIMITIVE(Timeout) {
 	std::string cardName;
     int32     	secs;
 
@@ -594,8 +568,7 @@ DEFINE_5L_PRIMITIVE(Timeout)
     TInterpreter::GetInstance()->Timeout(cardName.c_str(), secs);
 }
 
-DEFINE_5L_PRIMITIVE(Wait)
-{
+DEFINE_5L_PRIMITIVE(Wait) {
 	std::string name;
 	int32 frame = LAST_FRAME;
 
@@ -606,8 +579,7 @@ DEFINE_5L_PRIMITIVE(Wait)
 	wxGetApp().GetStage()->Wait(name.c_str(), frame);
 }
 
-DEFINE_5L_PRIMITIVE(Zone)
-{
+DEFINE_5L_PRIMITIVE(Zone) {
 	std::string name, cursor;
 	TPolygon poly;
 	TCallback *dispatcher;
