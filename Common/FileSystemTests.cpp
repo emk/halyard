@@ -1,6 +1,7 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
 #include <algorithm>
+#include <fstream>
 
 #include "FileSystem.h"
 #include "ImlUnit.h"
@@ -49,6 +50,15 @@ void test_FileSystem (void)
 	std::list<std::string> entries = GetFontDirectory().GetDirectoryEntries();
 	TEST(std::find(entries.begin(), entries.end(), "README.txt") !=
 		 entries.end());
+
+	// Test file deletion.
+	Path deltest("deltest.txt");
+	TEST(deltest.DoesExist() == false);
+	ofstream deltest_stream(deltest.ToNativePathString().c_str());
+	deltest_stream.close();
+	TEST(deltest.DoesExist() == true);
+	deltest.DeleteFile();
+	TEST(deltest.DoesExist() == false);	
 
 	// Make sure the directory isn't contaminated with magic Unix entries.
 	TEST(std::find(entries.begin(), entries.end(), ".") == entries.end());

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include <stdio.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <string.h>
@@ -29,11 +30,28 @@ Error::Error(int inErrorCode)
 	mErrorMessage = buffer;
 }
 
-static void CheckErrno ()
+std::ostream &FileSystem::operator<<(std::ostream &out, const Error &error)
+{
+	out << "FileSystem::Error (" << error.GetErrorCode() << "): "
+		<< error.GetErrorMessage();
+}
+
+// Call this function before making a system call which sets errno.
+// This will zero any pre-existing errno value, and warn the programmer
+// about it.
+static void ResetErrno()
+{
+	ASSERT(errno == 0); // TODO - Log a warning instead of failing.
+	errno = 0;
+}
+
+// Call this function *after* making a system call which sets errno.
+// This will reset errno, and if errno is set, will throw an error.
+static void CheckErrno()
 {
 	// Surprisingly, this function is threadsafe on most platforms.
 	// 'errno' isn't really a variable; it's a magic pre-processor
-	// define that access thread-local state.
+	// define that accesses thread-local state.
 	if (errno != 0)
 	{
 		int temp = (errno);
@@ -65,14 +83,6 @@ Path::Path(const std::string &inPath)
 	: mPath("./" + inPath)
 {
 	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
-}
-
-// TODO - Test me!
-std::string Path::GetBaseName() const
-{
-	std::string::size_type pos = mPath.rfind(PATH_SEPARATOR);
-	ASSERT(pos != std::string::npos); // Paths always contain a separator.
-	return mPath.substr(pos + 1);
 }
 
 static std::string::size_type find_extension_dot(const std::string &inPath)
@@ -116,11 +126,18 @@ bool Path::DoesExist() const
 
 	int result = stat(ToNativePathString().c_str(), &info);
 	if (result >= 0)
+	{
 		return true;
+	}
 	else if (result < 0 && errno == ENOENT)
+	{
+		errno = 0;
 		return false;
+	}
 	else
+	{
 		Error(errno);
+	}
 
 	ASSERT(false);
 	return false;	
@@ -129,6 +146,7 @@ bool Path::DoesExist() const
 bool Path::IsRegularFile() const
 {
 	struct stat info;
+	ResetErrno();
 	stat(ToNativePathString().c_str(), &info);
 	CheckErrno();
 	return S_ISREG(info.st_mode);
@@ -137,6 +155,7 @@ bool Path::IsRegularFile() const
 bool Path::IsDirectory() const
 {
 	struct stat info;
+	ResetErrno();
 	stat(ToNativePathString().c_str(), &info);
 	CheckErrno();
 	return S_ISDIR(info.st_mode);
@@ -144,6 +163,7 @@ bool Path::IsDirectory() const
 
 std::list<std::string> Path::GetDirectoryEntries() const
 {
+	ResetErrno();
 	DIR *dir = opendir(ToNativePathString().c_str());
 	CheckErrno();
 
@@ -163,6 +183,13 @@ std::list<std::string> Path::GetDirectoryEntries() const
 	CheckErrno();
 
 	return entries;
+}
+
+void Path::DeleteFile() const
+{
+	ResetErrno();
+	remove(ToNativePathString().c_str());
+	CheckErrno();
 }
 
 Path Path::AddComponent(const std::string &inFileName) const

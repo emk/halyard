@@ -1,5 +1,9 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#ifndef FileSystem_H
+#define FileSystem_H
+
+#include <iostream>
 #include <string>
 #include <list>
 
@@ -22,6 +26,8 @@ namespace FileSystem {
 		
 		int GetErrorCode() const { return mErrorCode; }
 		string GetErrorMessage() const { return mErrorMessage; }
+
+		friend std::ostream &operator<<(std::ostream &out, const Error &error);
 	};
 	
 	//////////
@@ -43,11 +49,6 @@ namespace FileSystem {
 		// 
 		Path(const std::string &inPath);
 		
-		//////////
-		// Return the last element of the path.
-		//
-		std::string GetBaseName() const;
-
 		//////////
 		// Return the extension of the last element of the path, if
 		// it appears to have one.  Otherwise, return "".
@@ -81,6 +82,11 @@ namespace FileSystem {
 		// Read in all the entries from a directory.
 		//
 		std::list<std::string> GetDirectoryEntries() const;
+
+		//////////
+		// Delete the file pointed to by this path.
+		//
+		void DeleteFile() const;
 
 		//////////
 		// Add a component to the end of the path (as though the
@@ -143,3 +149,5 @@ namespace FileSystem {
 	inline Path GetFontFilePath(std::string inFontFileName)
 	    { return GetFontDirectory().AddComponent(inFontFileName); }
 };
+
+#endif // FileSystem_H
