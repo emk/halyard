@@ -126,6 +126,13 @@ void ConfigManager::ParsePrefs(TString absoluteFilename)
 				else if (value.Equal("window", false))
 					userPrefs[MODE] = MODE_WINDOW;
 			}
+			else if (key.Equal("multiple_instances", false))
+			{
+				if (value.Equal("no"))
+					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_NO;
+				else if (value.Equal("yes"))
+					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_YES;
+			}
 			else if (key.Equal("redoscript", false))
 			{
 				if (value.Equal("off", false))
@@ -143,7 +150,7 @@ void ConfigManager::ParsePrefs(TString absoluteFilename)
 			else
 			{
 				errFlag = true;
-				sprintf(errString, "Unknown option in user preferences file \"%s\", reverting to defaults", key);
+				sprintf(errString, "Unknown option in user preferences file \"%s\", reverting to defaults", key.GetString());
 			}
 		}
 	}
@@ -780,6 +787,10 @@ bool	ConfigManager::GetPrefsKeyValue(char *line, TString &key, TString &value)
  
 /*
  $Log$
+ Revision 1.6  2002/03/05 10:25:41  tvw
+ Added new option to 5L.prefs to optionally allow multiple
+ instances of 5L to run.
+
  Revision 1.5  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

@@ -312,8 +312,11 @@ bool InitApplication(HINSTANCE hInstance)
 bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     // first make sure we are the only instance running
-    if (g_SingleInstanceObj.IsAnotherInstanceRunning())
-		return FALSE;
+	if (gConfigManager.GetUserPref(MULTIPLE_INSTANCES) == MULTIPLE_INSTANCES_NO)
+	{
+		if (g_SingleInstanceObj.IsAnotherInstanceRunning())
+			return FALSE;
+	}
 	
 	HWND        hWnd;
     POINT		cursorPos;
@@ -1173,6 +1176,10 @@ void PutInForeground(void)
 
 /*
  $Log$
+ Revision 1.4  2002/03/05 10:25:41  tvw
+ Added new option to 5L.prefs to optionally allow multiple
+ instances of 5L to run.
+
  Revision 1.3  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

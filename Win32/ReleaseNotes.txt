@@ -2,9 +2,15 @@ FiveL for Win32 Release Notes
 
 3.2.3, Unreleased
 
-	Merged changes from 3.2.0.1 into the development trunk.
+	(1) Added new option to 5L.prefs to optionally allow multiple
+	instances of 5L to run.
 
-	Updated VC++ project files to reflect movement of Common library 
+	# Allow multiple instances of FiveL (yes, NO)
+	multiple_instances = "yes"	
+
+	(2) Merged changes from 3.2.0.1 into the development trunk.
+
+	(3) Updated VC++ project files to reflect movement of Common library 
 	(up one level).
 
 3.2.2, Wednesday, February 27, 2002, 1:12 PM

@@ -18,28 +18,32 @@
 // Size and Indices for user preferences 
 #define PREFS_SIZE	5
 
-#define DB_TYPE		0
-#define DB_WRITES	1
-#define MODE		2
-#define DEBUG_LOG	3
-#define REDOSCRIPT	4
+#define DB_TYPE				0
+#define DB_WRITES			1
+#define MODE				2
+#define MULTIPLE_INSTANCES	3
+#define DEBUG_LOG			4
+#define REDOSCRIPT			5
 
 // Options for the above user preferences (first option is default)
-#define DB_TYPE_ENCRYPTED	0
-#define DB_TYPE_CLEAR		1
+#define DB_TYPE_ENCRYPTED		0
+#define DB_TYPE_CLEAR			1
 
-#define DB_WRITES_EXIT		0
-#define DB_WRITES_CLOSE		1
-#define DB_WRITES_WRITE		2
+#define DB_WRITES_EXIT			0
+#define DB_WRITES_CLOSE			1
+#define DB_WRITES_WRITE			2
 
-#define MODE_FULLSCREEN		0
-#define MODE_WINDOW			1
+#define MODE_FULLSCREEN			0
+#define MODE_WINDOW				1
 
-#define DEBUG_LOG_OFF		0
-#define DEBUG_LOG_ON		1
+#define MULTIPLE_INSTANCES_NO	0
+#define MULTIPLE_INSTANCES_YES	1
 
-#define REDOSCRIPT_OFF		0
-#define REDOSCRIPT_ON		1
+#define DEBUG_LOG_OFF			0
+#define DEBUG_LOG_ON			1
+
+#define REDOSCRIPT_OFF			0
+#define REDOSCRIPT_ON			1
 
 #include "TCommon.h"
 #include "TString.h"
@@ -356,6 +360,10 @@ class ConfigManager : public TObject
 
 /*
  $Log$
+ Revision 1.4  2002/03/05 10:25:41  tvw
+ Added new option to 5L.prefs to optionally allow multiple
+ instances of 5L to run.
+
  Revision 1.3  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 
