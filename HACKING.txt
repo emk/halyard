@@ -26,13 +26,16 @@ History
 Checking 5L Out of CVS
 ----------------------
 
+  CVS server: imlcvs.dartmouth.edu
+  CVS root:   /usr/local/cvsroot
+
   Check out the modules "5L" and "5Ltest".  These correspond to the full
   paths "iml/FiveL/Release" and "iml/iml_programs/5Ltest" (you'll need to
   know these to use CVSweb).  Make sure your CVS client uses the native
   end-of-line convetion; this can be a problem under MacOS X and some
   versions of Cygwin/W2K.
 
-  In the instructions that follow, we'll assume your copy of the 5L] source
+  In the instructions that follow, we'll assume your copy of the 5L source
   tree is in $5L_DIR and your copy of 5Ltest is in $5LTEST_DIR.
 
 Building Win32 5L
@@ -63,6 +66,10 @@ Building Win32 5L
   set "Working Directory" to the same value.  Now you'll automatically run
   5Ltest when you ask Visual Studio to launch your program.
 
+  Using a similar process, set the working directories for both versions
+  of "CommonTest" to $5L_DIR/Common.  The test suites won't run without
+  this step.
+
   Select "Build" > "Set Active Configuration" > "FiveL - Win32 Debug" >
   "OK".  Now click on the "Build" icon in your toolbar (it looks like two
   arrows pointing down at a hard drive).  If the build is successful, click
@@ -79,7 +86,17 @@ Building Win32 5L
 Building Macintosh 5L
 ---------------------
 
-  [Fill this in Real Soon Now.]
+  [Improve these instructions Real Soon Now.]
+
+  Install a recent version of CodeWarrior Pro (7 or maybe 8?), and any
+  documentation you want (hint: that's most of it).
+
+  Open up Mac/BuildAll.mcp from the Finder, and open the various nested
+  projects.  You can build 5L in the normal fashion, and you can run
+  the test suites from within CodeWarrior, but you'll need to manually
+  copy the 5L binaries to 5Ltest before running them.
+
+  Fix these instructions as needed.
 
 What Lives Where
 ----------------
@@ -257,6 +274,40 @@ Coding Conventions
 
   Code is 79 columns wide or less!
 
+Testing Your Changes
+--------------------
+
+  We have two test suites: "TestAll", which is a fully-automated, low-level
+  test suite (as advocated by the eXtreme Programming folks), and "5Ltest",
+  an interactive, high-level test script written in 5L.
+
+  * Updating "TestAll"  
+
+  Let's say you've added a new data structure, FooList, to the Common
+  directory.  You should create a file named "FooListTests.cpp", and fill
+  it full of tests.  Take a look at TStringTests.cpp for a good example.
+  There's an art to writing good tests: You get all the common behaviors
+  and corner cases, but you shouldn't write zillions of tests which prove
+  nothing.
+
+  For bonus points, write your tests *before* adding new features.
+
+  Hook your test cases into TestAll.cpp.  You can figure out how to
+  do this by looking at the source.
+
+  * Updating "5Ltest"
+
+  Unfortunately, "TestAll" still can't test lots of things: primitives,
+  graphics, platform-specific code, etc.  In these cases, add one or
+  more new cards to $5LTEST_DIR/Scripts/5Ltest.scr and hook them into the
+  main menu.
+
+  Be sure to include a good description of how to use your test card!
+  Anybody at IML should be able to read instructions on the screen and
+  tell whether or not the test card is working.  (We have lots of older
+  test cards without such helpful documentation; these are real problems
+  when testing.
+
 Checking in Your Changes to 5L
 ------------------------------
 
@@ -271,13 +322,16 @@ Checking in Your Changes to 5L
      the relevant 5Ltest cards.  Again, don't skip this step; it catches
      about half the *dumb* bugs.
 
-  4) Make sure you've issued all the necessary "cvs add" and "cvs remove"
+  4) If you're using Windows, MAKE SURE YOU SAVE YOUR WORKSPACE, or else
+     CVS won't know about any changes.
+
+  5) Make sure you've issued all the necessary "cvs add" and "cvs remove"
      commands.  Read your CVS diffs.
 
-  5) Update $5L_DIR/Release-Notes.txt.  If you're not creating a new
+  6) Update $5L_DIR/Release-Notes.txt.  If you're not creating a new
      version number, just use "CVS" as a placeholder instead.
 
-  6) Check in your changes.  If you haven't assigned a new version number,
+  7) Check in your changes.  If you haven't assigned a new version number,
      try to avoid checking in the contents of Mac/Bin or Win32/Bin.  If you
      *have* assigned a version number, you MUST check in the contents of
      those directories.
@@ -286,10 +340,12 @@ Checking in Your Changes to 5L
      reasonably detailed.  It should generally use complete sentences and
      good grammar.  You're writing for posterity.
 
-  7) If you've assigned a version number to your changes, tag the entire
+  8) If you've assigned a version number to your changes, tag the entire
      $5L_DIR tree AFTER checking it in.  The tag for 5L 3.3.9 would be
      "FiveL_3_3_9".  DO NOT FORGET THIS STEP OR PEOPLE WILL GET VERY GRUMPY
      AND SAY BAD THINGS ABOUT YOU MANY YEARS FROM NOW.
+
+  9) Check in 5Ltest, too, if you've made any changes.
 
 Updating the Version Number
 ---------------------------
