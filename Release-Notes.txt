@@ -1,39 +1,49 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.14 - 13 Jan 2004 - emk
 
-IN PROGRESS: Vastly improved web browser integration, including the ability
-to embed Internet Explorer using wxIE.
+Vastly improved web browser integration, including the ability to embed
+Internet Explorer using wxIE.
 
-  * Added BrowserElement class to represent all web-browser-like elements.
-    This includes foward/back/stop and set of standard events.
-  * Added BrowserElementWx class to wrap the built-in wxHtmlWindow class.
-    This isn't very good yet.
-  * Added BrowserElementIE class to wrap the wxIEHtmlWin class.
-  * Support for vetoing events.
-  * New event types for EventDispatcher: browser-navigate,
-    browser-page-changed, status-text-changed, progress-changed.
-  * Added support for passing floating-point numbers to TCallbacks.
-  * Added a MEASURE-PICTURE command.
-  * Added an OFFSET-RECT command.
-  * Modified PaintStage to only repaint the modified parts of the screen.
-    This makes REFRESH slightly less likely to overdraw Widgets on the
-    stage, but it does not fix the problem entirely.
-  * Major enhancements to wxBrowserElementIE.
-  * Various bugfixes to wxIE library.
-  * More new event types for EventDispatcher: update-ui, browser-title-changed.
-  * Added a function to convert DirtyLists to wxRegions.
-  * Added support for opening pages in existing browser widgets from scripts.
-  * Added basic support for forward, back, reload and stop buttons.
+Scripting API changes:
 
+  * HTML-related commands replaced with BROWSER-related commands.  See
+    tamale.ss for details.
+  * LOAD-PICTURE -> DRAW-PICTURE
+  * WITH-DRAWING-CONTEXT -> WITH-DC
+  * DRAWING-CONTEXT-RECT -> DC-RECT
   * PROP-BY-NAME -> PROP*
   * @-BY-NAME -> @*
   * SEND-BY-NAME replaced by more flexible SEND*
   * New syntax for relative pathnames: (@ relpath) -> @relpath
+  * Added a MEASURE-PICTURE command.
+  * Added an OFFSET-RECT command.
   * New MOUSE-GRABBED-BY? function.
   * New ENABLED? property on %BASIC-BUTTON%.
   * Support for (ON SETUP-FINISHED () ...) handlers.
+  * New event types: BROWSER-NAVIGATE, BROWSER-PAGE-CHANGED,
+    STATUS-TEXT-CHANGED, PROGRESS-CHANGED, UPDATE-UI, BROWSER-TITLE-CHANGED.
+
+Other engine changes:
+
+  * Added BrowserElement class to represent all web-browser-like elements.
+    This includes foward/back/stop and set of standard events.
+  * Added BrowserElementWx class to wrap the built-in wxHtmlWindow class.
+  * Added BrowserElementIE class to wrap the wxIEHtmlWin class.
+  * Support for vetoing events.
+  * Added support for passing floating-point numbers to TCallbacks.
+  * Modified PaintStage to only repaint the modified parts of the screen.
+    This makes REFRESH slightly less likely to overdraw Widgets on the
+    stage, but it does not fix the problem entirely.
+  * Various bugfixes to wxIE library.
+  * Added a function to convert DirtyLists to wxRegions.
+  * Added support for opening pages in existing browser widgets from scripts.
+  * Added basic support for forward, back, reload and stop buttons.
   * Added support for enabling and disabling forward/back/reload/stop buttons.
+  * Fixed bugs which occurred when CLEAR-SCREEN and FILL-BOX were applied
+    to transparent overlays with opaque colors.
+  * Fixed bug which occurred when PNGs with 1-bit transparency were drawn
+    onto transparent overlays.
 
 0.0.13 - 6 Jan 2004 - emk
 
@@ -79,7 +89,7 @@ Changes to Scheme Runtime:
     alpha channel).  If :OVERLAY? is true, the zone must be rectangular.
   * Added (WITH-DRAWING-CONTEXT ZONE BODY...), which allows you to change
     the current drawing context.  Do not call IDLE within this form.
-  * Added (DRAWING-CONTEXT-REXT), which returns the bounding rectangle
+  * Added (DRAWING-CONTEXT-RECT), which returns the bounding rectangle
     for the current drawing context.
   * Added (COLOR-AT POINT), which returns the color at POINT in the
     current drawing context.

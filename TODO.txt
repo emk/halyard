@@ -4,27 +4,17 @@
     @-by-name -> @*
     prop-by-name -> prop*
     send-by-name -> send*    
-
-  Bugs
-    %basic-button% does not hit test correctly with overlays
+    with-drawing-context -> with-dc
+    drawing-context-rect -> dc-rect
+    load-picture -> draw-picture
 
   Node/event model
-/   Need MOUSE-GRABBED-BY? function
-/   (on setup-finished ...)
-/     Fix %basic-button%
     (on cleanup ...)
     Is UPDATE-UI the right event name?  We don't have wxWindows semantics.
     Allow elements to be attached to sequences
     Enable and disable zones in engine (for cursor purposes only?)
     PROP-CHANGE API needs work
     Do we want to systematize DRAW-BUTTON method for all zones?
-    with-drawing-context -> with-dc
-
-  Browser
-/   Make commands available from Scheme
-/   Implement buttons
-/   Implement enabling/disabling of buttons
-    Update BrowserElementWx to support more BrowserElement features
 
   Audio layer
     Bugs
@@ -45,7 +35,6 @@
 ,     Try to get complete code coverage testing Vorbis playback path
 
   Make TException stop reporting line numbers
-  Rename LOAD-PICTURE to DRAW-something.
   Add EVENT-KEYS method to wrap EVENT-CHARACTER and EVENT-MODIFIERS
   Respond gracefully to errors in idle handlers
   ON should highlight method name in emacs

@@ -7,11 +7,11 @@
 (module tamale (lib "5l.ss" "5L")
   (require (lib "shapes.ss" "5L"))
 
-  (provide load-picture measure-picture
-           set-image-cache-size! modal-input with-drawing-context
-           drawing-context-rect color-at
+  (provide draw-picture measure-picture
+           set-image-cache-size! modal-input with-dc
+           dc-rect color-at
            %zone% zone register-cursor mouse-position
-           grab-mouse ungrab-mouse mouse-grabbed?
+           grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
            delete-element delete-elements
            clear-screen offset-rect
            rect-horizontal-center rect-vertical-center
@@ -42,7 +42,7 @@
     (unless (or (url? path) (file-exists? path))
       (throw (cat "No such file: " path))))
   
-  (define (load-picture name p &key (subrect :rect #f))
+  (define (draw-picture name p &key (subrect :rect #f))
     (let [[path (make-path "Graphics" name)]]
       (check-file path)
       (if subrect
@@ -61,15 +61,15 @@
     (call-5l-prim 'input r size forecolor backcolor)
     (engine-var '_modal_input_text))
 
-  (define-syntax with-drawing-context
+  (define-syntax with-dc
     (syntax-rules ()
-      [(with-drawing-context dc body ...)
+      [(with-dc dc body ...)
        (dynamic-wind
            (lambda () (call-5l-prim 'DcPush (node-full-name dc)))
            (lambda () body ...)
            (lambda () (call-5l-prim 'DcPop (node-full-name dc))))]))
 
-  (define (drawing-context-rect)
+  (define (dc-rect)
     (call-5l-prim 'DcRect))
 
   (define (color-at p)

@@ -48,10 +48,10 @@
 
   (defmethod (draw-graphic (pict <picture>) offset)
     (if (picture-rect pict)
-        (load-picture (picture-path pict) 
+        (draw-picture (picture-path pict) 
                       (offset-point offset (picture-offset pict))
                       :rect (picture-rect pict))
-        (load-picture (picture-path pict)
+        (draw-picture (picture-path pict)
                       (offset-point offset (picture-offset pict)))))
 
   ;;; XXX: Offset is being ignored. Need to figure out if we should just 

@@ -17,15 +17,61 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		13
+#define VERSION_REV_BIG		14
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.13 (Development)"
+#define VERSION_STRING		"Tamale 0.0.14 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.55  2004/01/13 21:10:46  emk
+ 0.0.14 - 13 Jan 2004 - emk
+
+ Vastly improved web browser integration, including the ability to embed
+ Internet Explorer using wxIE.
+
+ Scripting API changes:
+
+   * HTML-related commands replaced with BROWSER-related commands.  See
+     tamale.ss for details.
+   * LOAD-PICTURE -> DRAW-PICTURE
+   * WITH-DRAWING-CONTEXT -> WITH-DC
+   * DRAWING-CONTEXT-RECT -> DC-RECT
+   * PROP-BY-NAME -> PROP*
+   * @-BY-NAME -> @*
+   * SEND-BY-NAME replaced by more flexible SEND*
+   * New syntax for relative pathnames: (@ relpath) -> @relpath
+   * Added a MEASURE-PICTURE command.
+   * Added an OFFSET-RECT command.
+   * New MOUSE-GRABBED-BY? function.
+   * New ENABLED? property on %BASIC-BUTTON%.
+   * Support for (ON SETUP-FINISHED () ...) handlers.
+   * New event types: BROWSER-NAVIGATE, BROWSER-PAGE-CHANGED,
+     STATUS-TEXT-CHANGED, PROGRESS-CHANGED, UPDATE-UI, BROWSER-TITLE-CHANGED.
+
+ Other engine changes:
+
+   * Added BrowserElement class to represent all web-browser-like elements.
+     This includes foward/back/stop and set of standard events.
+   * Added BrowserElementWx class to wrap the built-in wxHtmlWindow class.
+   * Added BrowserElementIE class to wrap the wxIEHtmlWin class.
+   * Support for vetoing events.
+   * Added support for passing floating-point numbers to TCallbacks.
+   * Modified PaintStage to only repaint the modified parts of the screen.
+     This makes REFRESH slightly less likely to overdraw Widgets on the
+     stage, but it does not fix the problem entirely.
+   * Various bugfixes to wxIE library.
+   * Added a function to convert DirtyLists to wxRegions.
+   * Added support for opening pages in existing browser widgets from scripts.
+   * Added basic support for forward, back, reload and stop buttons.
+   * Added support for enabling and disabling forward/back/reload/stop buttons.
+   * Fixed bugs which occurred when CLEAR-SCREEN and FILL-BOX were applied
+     to transparent overlays with opaque colors.
+   * Fixed bug which occurred when PNGs with 1-bit transparency were drawn
+     onto transparent overlays.
+
  Revision 1.54  2004/01/06 19:23:06  emk
  0.0.13 - 6 Jan 2004 - emk
 

@@ -59,16 +59,16 @@ void DrawingArea::Clear() {
 }
 
 void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
-	if (inColor.IsCompletelyOpaque()) {
+	if (mPixmap.HasAlpha()) {
+		wxAlphaPixelData data(mPixmap);
+		ClearOpt(data, inColor);
+	} else if (inColor.IsCompletelyOpaque()) {
 		wxMemoryDC dc;
 		dc.SelectObject(GetPixmap());
 		wxBrush brush(wxColor(inColor.red, inColor.green, inColor.blue),
 					  wxSOLID);
 		dc.SetBackground(brush);
 		dc.Clear();
-	} else if (mPixmap.HasAlpha()) {
-		wxAlphaPixelData data(mPixmap);
-		ClearOpt(data, inColor);
 	} else {
 		THROW("Cannot clear opaque overlay with transparent color.");
 	}
@@ -95,7 +95,10 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 void DrawingArea::FillBox(const wxRect &inBounds,
 						  const GraphicsTools::Color &inColor)
 {
-	if (inColor.IsCompletelyOpaque()) {
+	if (mPixmap.HasAlpha()) {
+		wxAlphaPixelData data(mPixmap);
+		FillBoxOpt(data, inBounds, inColor);
+	} else if (inColor.IsCompletelyOpaque()) {
 		wxColor color = GraphicsToolsToWxColor(inColor);
 		wxMemoryDC dc;
 		dc.SelectObject(GetPixmap());
@@ -104,9 +107,6 @@ void DrawingArea::FillBox(const wxRect &inBounds,
 		dc.SetPen(*wxTRANSPARENT_PEN);
 		dc.DrawRectangle(inBounds.x, inBounds.y,
 						 inBounds.width, inBounds.height);
-	}  else if (mPixmap.HasAlpha()) {
-		wxAlphaPixelData data(mPixmap);
-		FillBoxOpt(data, inBounds, inColor);
 	} else {
 		wxNativePixelData data(mPixmap);
 		FillBoxOpt(data, inBounds, inColor);

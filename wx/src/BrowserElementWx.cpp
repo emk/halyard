@@ -36,9 +36,14 @@ CustomWxHtmlWindow::CustomWxHtmlWindow(wxWindow *inParent,
 
 bool CustomWxHtmlWindow::LoadPage(const wxString& inLocation) {
     bool loaded = wxHtmlWindow::LoadPage(inLocation);
-    if (loaded)
+    if (loaded) {
         // We can't use inLocation here, because it may be relative.
-        mElement->GetDispatcher()->DoEventBrowserPageChanged(GetOpenedPage());
+        EventDispatcher *dispatcher = mElement->GetDispatcher();
+        dispatcher->DoEventBrowserPageChanged(GetOpenedPage());
+        dispatcher->DoEventBrowserTitleChanged(GetOpenedPageTitle());
+        dispatcher->DoEventUpdateUI("back");
+        dispatcher->DoEventUpdateUI("forward");
+    }
     return loaded;
 }
 
