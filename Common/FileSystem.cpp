@@ -134,7 +134,7 @@ std::string Path::GetExtension() const
 	if (dotpos == std::string::npos)
 		return std::string("");
 	std::string extension = mPath.substr(dotpos + 1);
-	extension = MakeStringLowercase(extension);
+	extension = FIVEL_NS MakeStringLowercase(extension);
 	return extension;
 }
 

@@ -19,4 +19,4 @@ extern std::string MakeStringLowercase(std::string inString);
 
 END_NAMESPACE_FIVEL
 
-#endif TTemplateUtils_H
+#endif // TTemplateUtils_H

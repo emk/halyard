@@ -2,6 +2,7 @@
 
 #include <iostream.h>
 #include <fstream.h>
+#include <stdio.h>
 
 #include "TDeveloperPrefs.h"
 #include "TLogger.h"
@@ -32,9 +33,15 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 	char		errString[256];		// used to print error message
 
 	// Open the file
+	bool could_open = false;
 	std::string filename = inPrefsFile.ToNativePathString();
-	prefsFile.open(filename.c_str(), ios::in | ios::nocreate);
-	if (prefsFile.fail())
+	if (inPrefsFile.DoesExist())
+	{
+		prefsFile.open(filename.c_str(), ios::in);
+		if (!prefsFile.fail())
+			could_open = true;
+	}
+	if (!could_open)
 	{
 		gDebugLog.Log("Could not open user preferences file \"%s\", using defaults.", filename.c_str());
 		gVariableManager.SetString("_debug", "0");

@@ -5,7 +5,7 @@
 
 USING_NAMESPACE_FIVEL
 
-std::string MakeStringLowercase(std::string inString)
+std::string FIVEL_NS MakeStringLowercase(std::string inString)
 {
     std::transform(inString.begin(), inString.end(), inString.begin(),
 		   tolower);

@@ -47,7 +47,7 @@ enum PrefValue {
 	DEBUG_LOG_ON = 1,
 
 	REDOSCRIPT_OFF = 0,
-	REDOSCRIPT_ON = 1,
+	REDOSCRIPT_ON = 1
 };
 
 //////////

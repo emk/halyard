@@ -46,6 +46,7 @@
 #include "TIndex.h"
 #include "CCursor.h"
 #include "TParser.h"
+#include "TStartup.h"
 #include "TVersion.h"
 
 //
@@ -208,12 +209,8 @@ CMac5LApp::CMac5LApp()
 	// Initialize the modules.
 	gModMan = new CModuleManager;
 
-	// Open our log files.
-#ifdef DEBUG
-	TLogger::OpenStandardLogs(true);
-#else
-	TLogger::OpenStandardLogs(false);
-#endif
+	// Initialize our portable Common library.
+	InitializeCommonCode();
 
 	// Register our top-level forms.
 	TParser::RegisterIndexManager("card", &gCardManager);
@@ -925,6 +922,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.20.6.1  2002/06/13 14:11:40  emk
+Basic fixes to make updated Common library build on the Macintosh.
+
 Revision 1.20  2002/05/15 11:05:27  emk
 3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
 Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

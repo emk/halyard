@@ -4,9 +4,9 @@
 #include "TDeveloperPrefs.h"
 #include "TLogger.h"
 
-BEGIN_NAMESPACE_FIVEL
+USING_NAMESPACE_FIVEL
 
-void InitializeCommonCode()
+void FIVEL_NS InitializeCommonCode()
 {
     // Parse our developer preferences, if we have any.
     gDeveloperPrefs.ParsePrefs();
