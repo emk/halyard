@@ -1,5 +1,10 @@
 FiveL for Win32 Release Notes
 
+3.1.1, Thursday, January 24, 2002, 2:02 PM
+
+	Fixed bug (#531) in -D command-line option causing
+	system registry read error.
+
 3.1.0, Wednesday, January 23, 2002, 1:54 PM
 
 	Only a single instance of the FiveL executable may run.

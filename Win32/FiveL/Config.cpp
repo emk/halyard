@@ -195,7 +195,8 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 							keyString += argBuf;
 							if (Reg.SetKey(keyString, FALSE))
 							{
-								if (Reg.ReadString("", m_InstallDir))
+								// Get the install dir from the registry key
+								if (Reg.ReadString("", m_InstallDir) == false)
 								{
 									//gLog.Error("Error: Reading key for -D option in system registry");
 									AlertMsg("Error reading system registry key for -D option", true);
@@ -682,6 +683,10 @@ TString ConfigManager::GetAudioPath(TString &inName)
  
 /*
  $Log$
+ Revision 1.3  2002/01/24 19:22:41  tvw
+ Fixed bug (#531) in -D command-line option causing
+ system registry read error.
+
  Revision 1.2  2002/01/23 20:39:20  tvw
  A group of changes to support a new stable build.
 

@@ -85,7 +85,7 @@ public:
 	// [in/out] str - the string read from the registry will be placed here
 	// [out] return - true if success, false otherwise
 	//
-	bool	ReadString(TString keyName, TString str);
+	bool	ReadString(TString keyName, TString &str);
 
 public:
 

@@ -37,7 +37,7 @@ static void GetDay(char *inStr, int inDay);
 
 
 // Makes a message box to alert the user
-void AlertMsg(char *msg, bool isError)
+void AlertMsg(const char *msg, bool isError)
 {
 	uint32		alertType;
 
@@ -378,6 +378,10 @@ int32 VolIsMounted(char *inCDPath, TString &inVolName)
 
 /*
  $Log$
+ Revision 1.3  2002/01/24 19:22:41  tvw
+ Fixed bug (#531) in -D command-line option causing
+ system registry read error.
+
  Revision 1.2  2002/01/23 20:39:20  tvw
  A group of changes to support a new stable build.
 

@@ -16,17 +16,21 @@
 
 #define MAJOR_NUM		3
 #define MINOR_NUM		01
-#define REV_BIG			00
+#define REV_BIG			01
 #define REV_SMALL		00
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.1.0"
+#define VERSION_STRING	"5L for Win32 3.1.1"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3  2002/01/24 19:22:41  tvw
+ Fixed bug (#531) in -D command-line option causing
+ system registry read error.
+
  Revision 1.2  2002/01/23 20:39:20  tvw
  A group of changes to support a new stable build.
 

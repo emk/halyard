@@ -166,7 +166,7 @@ bool LRegistry::SetKey(TString strKey, bool bCreate)
 //
 //	ReadString - read the string value from a specified value name associated with a registry key
 //
-bool LRegistry::ReadString(TString keyName, TString str)
+bool LRegistry::ReadString(TString keyName, TString &str)
 {
 	DWORD dwType = REG_SZ;
 	DWORD dwSize = 255;
