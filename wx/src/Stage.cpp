@@ -1162,10 +1162,11 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         mFrame->SetStatusText(str);
     }
 
-	// XXX - We should send a mouse-moved event here, not an idle event,
-	// but we're just testing potential performance.
-	//if (ShouldSendEvents())
-	//	GetEventDispatcher()->DoEventIdle();
+	if (ShouldSendEvents())
+	{
+		EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
+		disp->DoEventMouseMoved(inEvent);
+	}
 }
 
 void Stage::OnEraseBackground(wxEraseEvent &inEvent)

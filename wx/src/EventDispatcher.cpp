@@ -157,3 +157,11 @@ bool EventDispatcher::DoEventIdle(wxIdleEvent &inEvent)
 	return EventCleanup();	
 }
 
+bool EventDispatcher::DoEventMouseMoved(wxMouseEvent &inEvent)
+{
+	if (!sEnableExpensiveEvents)
+		return false;
+	
+	return DoSimpleMouseEvent("mouse-moved", inEvent.GetPosition());
+}
+	

@@ -68,6 +68,11 @@ public:
 	// Dispatch an idle event.
 	//
 	bool DoEventIdle(wxIdleEvent &inEvent);
+	
+	//////////
+	// Dispatch a mouse move event.
+	//
+	bool DoEventMouseMoved(wxMouseEvent &inEvent);
 };
 
 #endif // EventDispatcher_H

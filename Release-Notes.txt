@@ -13,6 +13,7 @@ CVS - emk, brian
   * ON handlers may now return a value
   * Scheme elements don't need to have corresponding C++ elements
   * More or less everything can have an idle handler now
+  * Added a MOUSE-MOVED event.
 
 0.0.6 - 4 June 2003 - emk, brian
 
