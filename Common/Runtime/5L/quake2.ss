@@ -1,6 +1,7 @@
 (module quake2 (lib "5L.ss" "5L")
 
-  (provide quake2-launch quake2-shown? quake2-show quake2-hide
+  (provide quake2-driver set-quake2-driver!
+           quake2-launch quake2-shown? quake2-show quake2-hide
            quake2-command quake2-background-load-command
            quake2-should-run-in-background?
            set-quake2-should-run-in-background?!
@@ -11,9 +12,16 @@
            %quake2-level% %quake2-level-run%)
 
   (define *quake2-initialized?* #f)
+  (define *quake2-driver* 'soft)
 
+  (define (quake2-driver)
+    *quake2-driver*)
+
+  (define (set-quake2-driver! val)
+    (set! *quake2-driver* val))
+  
   (define (quake2-launch game)
-    (call-5l-prim 'Quake2Init game)
+    (call-5l-prim 'Quake2Init game *quake2-driver*)
     (set! *quake2-initialized?* #t))
 
   (define (quake2-shown?)
