@@ -366,6 +366,13 @@ public:
 	///
 	void RequestReloadScript(const char *inGotoCardName);
 
+    //////////
+    /// Returns true if and only if the interpreter has begun.  We may
+    /// not have a current valid interpreter, of course, but we have
+    /// loaded a program at least once.
+    ///
+    bool InterpreterHasBegun();
+
 	//////////
 	/// Returns true if and only if the previous attempt to load a 
 	/// script failed.  See RetryLoadScript.

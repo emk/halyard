@@ -21,14 +21,70 @@
 // @END_LICENSE
 
 #include "TamaleHeaders.h"
+#include <wx/file.h>
 #include <wx/stc/stc.h>
+#include "AppGlobals.h"
 #include "ScriptEditor.h"
+#include "DocNotebook.h"
+#include "BufferSpan.h"
+#include "dlg/FindDlg.h"
 #include "FiveLApp.h"
 
 // Only so we can find our parent window.
 #include "StageFrame.h"
 
+
 USING_NAMESPACE_FIVEL
+
+/* TODO
+
+Soon:
+
+/ Search selection only
+/ Find selection
+
+/ Search state vs multiple buffer issues (mostly)
+/ Undo on newly-loaded file should not erase text 
+
+/ Goto line
+
+/ Dirty marks
+/ Save, save as
+/ Revert
+/ Save on close
+/ Fix StageFrame::OnClose and OnExit to save files in script editor, too
+/ Save on reload
+  Reload on change
+
+  Fully implement square braces
+  Highlight keywords
+  Indent keywords intelligently
+
+  Indent head forms of macros by 4 spaces
+  Indent certain macros like functions: AND, OR, PROVIDE?
+
+  Fix brace balancing to handle multiple brace types
+
+/ Fix deletion of last tab
+/ Fix window title bar to show file name
+  Fix accelerator for Replace All
+
+Next:
+
+  Indexer based:
+    Meta-dot (aka "go to definition")
+    Buffer index
+    Function argument tooltips
+
+*/
+
+
+namespace {
+    wxString kSchemeWildcards(
+        "Tamale scripts (*.ss)|*.ss|"
+        "All Scheme scripts (*.ss; *.scm)|*.ss;*.scm|"
+        "All files|*");
+}
 
 
 //=========================================================================
@@ -36,14 +92,45 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 
 class ScriptTextCtrl : public wxStyledTextCtrl {
-    enum { MARGIN_FOLD = 2 };
+    enum {
+        /// The number of the margin where we put our fold widgets.
+        MARGIN_FOLD = 2
+    };
+
+    enum {
+        /// The location where we started our last search.
+        SPAN_SEARCH_START,
+        /// The text we found with the last find command.
+        SPAN_FOUND_TEXT,
+        /// The area within which to search.
+        SPAN_SEARCH_LIMITS
+    };
 
     typedef std::vector<FIVEL_NS TScriptIdentifier> IdentifierList;
 
-    IdentifierList mIdentifiers;
+    /// A range of locations to search.  This is split into two
+    /// parts to accomodate wrap.
+    struct SearchRange {
+        int start1, end1;
+        int start2, end2;
 
+        SearchRange(int s1 = wxSTC_INVALID_POSITION,
+                    int e1 = wxSTC_INVALID_POSITION,
+                    int s2 = wxSTC_INVALID_POSITION,
+                    int e2 = wxSTC_INVALID_POSITION)
+            : start1(s1), end1(e1), start2(s2), end2(e2) {}
+    };
+
+    IdentifierList mIdentifiers;
+    BufferSpanTable mSpans;
+
+    bool mReplaceStateUseRegex;
+    wxString mReplaceStateText;
+    
 public:    
-    ScriptTextCtrl(wxWindow *parent);
+    ScriptTextCtrl(wxWindow *parent, wxWindowID id = -1);
+
+    void SetStatusText(const wxString &text);
 
     bool IsBraceAt(int pos);
     bool IsBraceStyle(int style);
@@ -56,10 +143,13 @@ public:
     std::string GetKeywords();
     IdentifierList GetCompletions(const std::string &partial);
 
+    void OnModified(wxStyledTextEvent &event);
     void OnMarginClick(wxStyledTextEvent &event);
     void OnCharAdded(wxStyledTextEvent &event);
     void OnUpdateTextUI(wxStyledTextEvent &event);
     void OnKeyDown(wxKeyEvent &event);
+
+    void OnUpdateUiAlwaysOn(wxUpdateUIEvent &event);
 
     void OnUndo(wxCommandEvent &event);
     void OnUpdateUiUndo(wxUpdateUIEvent &event);
@@ -72,7 +162,30 @@ public:
     void OnUpdateUiPaste(wxUpdateUIEvent &event);
     void OnClear(wxCommandEvent &event);
     void OnSelectAll(wxCommandEvent &event);
-    void OnUpdateUiAlwaysOn(wxUpdateUIEvent &event);
+
+    void OnFind(wxCommandEvent &event);
+    void OnFindAgain(wxCommandEvent &event);
+    void OnUpdateUiFindAgain(wxUpdateUIEvent &event);
+    void OnFindSelection(wxCommandEvent &event);
+    void OnUpdateUiFindSelection(wxUpdateUIEvent &event);
+    void OnReplace(wxCommandEvent &event);
+    void OnReplaceAndFindAgain(wxCommandEvent &event);
+    void OnReplaceAll(wxCommandEvent &event);
+    void OnUpdateUiReplace(wxUpdateUIEvent &event);
+    void OnGotoLine(wxCommandEvent &event);
+
+    void EnsureSelectionVisible();
+    void SetSelectionAndEnsureVisible(int start, int end);
+    void PutCursorAtTopOfSelection();
+    void PutCursorAtBottomOfSelection();
+    void InitializeFindState();
+    void GetSearchLimits(int &start, int &end);
+    SearchRange GetFindSearchRange(bool find_again = false);
+    SearchRange GetReplaceAllSearchRange(bool after_original_start_ok);
+    bool DoFind(const SearchRange &range, bool interactive = true);
+    bool CanReplace();
+    void DoReplace(bool interactive = true);
+    void DoReplaceAll();
 
     void AutoCompleteIdentifier();
     void IndentSelection();
@@ -89,6 +202,7 @@ public:
 };
 
 BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
+    EVT_STC_MODIFIED(-1, ScriptTextCtrl::OnModified)
     EVT_STC_MARGINCLICK(-1, ScriptTextCtrl::OnMarginClick)
     EVT_STC_CHARADDED(-1, ScriptTextCtrl::OnCharAdded)
     EVT_STC_UPDATEUI(-1, ScriptTextCtrl::OnUpdateTextUI)
@@ -109,10 +223,29 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
     EVT_UPDATE_UI(wxID_CLEAR, ScriptTextCtrl::OnUpdateUiCutCopyClear)
     EVT_MENU(wxID_SELECTALL, ScriptTextCtrl::OnSelectAll)
     EVT_UPDATE_UI(wxID_SELECTALL, ScriptTextCtrl::OnUpdateUiAlwaysOn)
+
+    // Search menu.
+    EVT_MENU(wxID_FIND, ScriptTextCtrl::OnFind)
+    EVT_UPDATE_UI(wxID_FIND, ScriptTextCtrl::OnUpdateUiAlwaysOn)
+    EVT_MENU(FIVEL_FIND_AGAIN, ScriptTextCtrl::OnFindAgain)
+    EVT_UPDATE_UI(FIVEL_FIND_AGAIN, ScriptTextCtrl::OnUpdateUiFindAgain)
+    EVT_MENU(FIVEL_FIND_SELECTION, ScriptTextCtrl::OnFindSelection)
+    EVT_UPDATE_UI(FIVEL_FIND_SELECTION,
+                  ScriptTextCtrl::OnUpdateUiFindSelection)
+    EVT_MENU(wxID_REPLACE, ScriptTextCtrl::OnReplace)
+    EVT_UPDATE_UI(wxID_REPLACE, ScriptTextCtrl::OnUpdateUiReplace)
+    EVT_MENU(FIVEL_REPLACE_AND_FIND_AGAIN,
+             ScriptTextCtrl::OnReplaceAndFindAgain)
+    EVT_UPDATE_UI(FIVEL_REPLACE_AND_FIND_AGAIN,
+                  ScriptTextCtrl::OnUpdateUiReplace)
+    EVT_MENU(wxID_REPLACE_ALL, ScriptTextCtrl::OnReplaceAll)
+    EVT_UPDATE_UI(wxID_REPLACE_ALL, ScriptTextCtrl::OnUpdateUiFindAgain)
+    EVT_MENU(FIVEL_GOTO_LINE, ScriptTextCtrl::OnGotoLine)
+    EVT_UPDATE_UI(FIVEL_GOTO_LINE, ScriptTextCtrl::OnUpdateUiAlwaysOn)
 END_EVENT_TABLE()
 
-ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent)
-    : wxStyledTextCtrl(parent, -1)
+ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id)
+    : wxStyledTextCtrl(parent, id)
 {
     // If possible, fetch an identifier list.
     if (TInterpreter::HaveInstance())
@@ -126,6 +259,14 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent)
     SetEdgeColour(*wxRED);
     SetEdgeColumn(79);
     AutoCompSetTypeSeparator(')'); // Safe for Scheme.
+
+    // Set up parameters affecting EnsureVisibleEnforcePolicy.  This
+    // makes sure search results, etc., are on screen.
+    SetVisiblePolicy(wxSTC_CARET_SLOP, 10);
+
+    // Let Scintilla know which modification events we want.
+    SetModEventMask(GetModEventMask()
+                    | wxSTC_MOD_INSERTTEXT | wxSTC_MOD_DELETETEXT);
 
     // Set up default style attributes and copy them to all styles.
     StyleSetFont(wxSTC_STYLE_DEFAULT,
@@ -164,6 +305,18 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent)
 
     // Keywords.
     SetKeyWords(0, GetKeywords().c_str());
+}
+
+void ScriptTextCtrl::SetStatusText(const wxString &text) {
+    // Walk up our containing hierarchy, looking for a wxFrame object.
+    wxFrame *frame = NULL;
+    for (wxWindow *window = GetParent();
+         window && !(frame = wxDynamicCast(window, wxFrame));
+         window = window->GetParent())
+        ;
+
+    // If we found a frame, show our status text.
+    frame->SetStatusText(text);
 }
 
 bool ScriptTextCtrl::IsBraceAt(int pos) {
@@ -258,6 +411,25 @@ ScriptTextCtrl::GetCompletions(const std::string &partial) {
     return result;
 }
 
+void ScriptTextCtrl::OnModified(wxStyledTextEvent &event) {
+    int mod_type = event.GetModificationType();
+
+    // Clear our status text on modifications.
+    /// \todo Clear status text sooner?
+    if (mod_type & (wxSTC_MOD_INSERTTEXT|wxSTC_MOD_DELETETEXT))
+        SetStatusText("");
+
+    // If inserts and deletes come in the same event, we're in trouble.
+    ASSERT(!((mod_type & wxSTC_MOD_INSERTTEXT) &&
+             (mod_type & wxSTC_MOD_DELETETEXT)));
+    
+    // Maintain our list of floating spans as text is inserted and removed.
+    if (mod_type & wxSTC_MOD_INSERTTEXT)
+        mSpans.ProcessInsertion(event.GetPosition(), event.GetLength());
+    else if (mod_type & wxSTC_MOD_DELETETEXT)
+        mSpans.ProcessDeletion(event.GetPosition(), event.GetLength());
+}
+
 void ScriptTextCtrl::OnMarginClick(wxStyledTextEvent &event) {
     if (event.GetMargin() == MARGIN_FOLD) {
         int line = LineFromPosition(event.GetPosition());
@@ -309,15 +481,31 @@ void ScriptTextCtrl::OnUpdateTextUI(wxStyledTextEvent &event) {
 }
 
 void ScriptTextCtrl::OnKeyDown(wxKeyEvent &event) {
-    // Handle TAB ourselves.
     if (event.GetKeyCode() == WXK_TAB && !AutoCompActive() &&
         !event.ControlDown() && !event.AltDown() &&
-        !event.MetaDown() && !event.ShiftDown())
-    {
+        !event.MetaDown() && !event.ShiftDown()) {
+
+        // Handle TAB ourselves, before Scintilla sees it.
         IndentSelection();
+    } else if (event.GetKeyCode() == '+' &&
+               event.ControlDown() && !event.AltDown() &&
+               !event.MetaDown() && !event.ShiftDown()) {
+        // HACK - Under Windows, a keypress of Ctrl-= gets sent as Ctrl-+,
+        // causing our Ctrl-= accelerator to fail.  Apply a cluestick of
+        // dubious origins.
+        /// \todo Move this code up to ScriptEditor class?
+        wxUpdateUIEvent update(wxID_REPLACE);
+        if (ProcessEvent(update) && update.GetEnabled()) {            
+            wxCommandEvent command(wxEVT_COMMAND_MENU_SELECTED, wxID_REPLACE);
+            ProcessEvent(command);
+        }
     } else {
         event.Skip();
     }
+}
+
+void ScriptTextCtrl::OnUpdateUiAlwaysOn(wxUpdateUIEvent &event) {
+    event.Enable(true);
 }
 
 void ScriptTextCtrl::OnUndo(wxCommandEvent &event) {
@@ -366,8 +554,295 @@ void ScriptTextCtrl::OnSelectAll(wxCommandEvent &event) {
     SelectAll();
 }
 
-void ScriptTextCtrl::OnUpdateUiAlwaysOn(wxUpdateUIEvent &event) {
-    event.Enable(true);
+void ScriptTextCtrl::OnFind(wxCommandEvent &event) {
+    FindDlg dlg(this, GetSelectionStart() != GetSelectionEnd());
+    
+    int button = dlg.ShowModal();
+    if (button != wxID_CANCEL) {
+        // Set up some basic search parameters.
+        InitializeFindState();
+        
+        // Run an appropriate search depending on which button was clicked.
+        if (button == XRCID("DLG_FIND")) {
+            DoFind(GetFindSearchRange());
+        } else if (button == XRCID("DLG_REPLACE")) {
+            if (DoFind(GetFindSearchRange()))
+                DoReplace();
+        } else if (button == XRCID("DLG_REPLACE_ALL")) {
+            DoReplaceAll();
+        } else if (button == XRCID("DLG_DONT_FIND")) {
+            // Do nothing.
+        }
+    }
+}
+
+void ScriptTextCtrl::OnFindAgain(wxCommandEvent &event) {
+    DoFind(GetFindSearchRange(true));
+}
+
+void ScriptTextCtrl::OnUpdateUiFindAgain(wxUpdateUIEvent &event) {
+    event.Enable(FindDlg::GetSearchText() != "");
+}
+
+void ScriptTextCtrl::OnFindSelection(wxCommandEvent &event) {
+    PutCursorAtBottomOfSelection();
+    FindDlg::SetUseRegex(false);
+    FindDlg::SetSearchText(GetSelectedText());
+    FindDlg::SetSearchArea(FindDlg::CURRENT_SCRIPT);
+    InitializeFindState();
+    DoFind(GetFindSearchRange());
+}
+
+void ScriptTextCtrl::OnUpdateUiFindSelection(wxUpdateUIEvent &event) {
+    event.Enable(GetSelectionStart() != GetSelectionEnd());
+}
+
+void ScriptTextCtrl::OnReplace(wxCommandEvent &event) {
+    DoReplace();
+}
+
+void ScriptTextCtrl::OnReplaceAndFindAgain(wxCommandEvent &event) {
+    DoReplace();
+    DoFind(GetFindSearchRange(true));
+}
+
+void ScriptTextCtrl::OnReplaceAll(wxCommandEvent &event) {
+    DoReplaceAll();
+}
+
+void ScriptTextCtrl::OnUpdateUiReplace(wxUpdateUIEvent &event) {
+    event.Enable(CanReplace());
+}
+
+void ScriptTextCtrl::OnGotoLine(wxCommandEvent &event) {
+    wxTextEntryDialog dlg(this, "Go to Line", "Line:");
+    if (dlg.ShowModal() == wxID_OK) {
+        wxString lineStr = dlg.GetValue();
+        long line;
+        if (lineStr.ToLong(&line)
+            && 0 < line && line <= GetLineCount())
+        {
+            GotoLine(line-1);
+            EnsureVisibleEnforcePolicy(line-1);
+        } else {
+            ::wxBell();
+            SetStatusText("No such line.");
+        }
+    }
+}
+
+void ScriptTextCtrl::EnsureSelectionVisible() {
+    int start_line = LineFromPosition(GetSelectionStart());
+    int end_line = LineFromPosition(GetSelectionEnd());
+    for (int i = start_line; i <= end_line; i++)
+        EnsureVisible(i);
+    EnsureVisibleEnforcePolicy(start_line);
+}
+
+void ScriptTextCtrl::SetSelectionAndEnsureVisible(int start, int end) {
+    SetSelectionStart(start);
+    SetSelectionEnd(end);
+    EnsureSelectionVisible();
+}
+
+/// Make sure the cursor is at the top of the selection, not the bottom.
+/// This is needed for searching within the current selection.
+void ScriptTextCtrl::PutCursorAtTopOfSelection() {
+    int start = GetSelectionStart();
+    int end = GetSelectionEnd();
+    SetAnchor(end);
+    SetCurrentPos(start);
+}
+
+/// Make sure the cursor is at the bottom of the selection, not the top.
+/// This is needed for searching for the current selection.
+void ScriptTextCtrl::PutCursorAtBottomOfSelection() {
+    int start = GetSelectionStart();
+    int end = GetSelectionEnd();
+    SetAnchor(start);
+    SetCurrentPos(end);
+}
+
+void ScriptTextCtrl::InitializeFindState()
+{
+    // Set up some basic search parameters.
+    if (FindDlg::GetSearchArea() == FindDlg::SELECTION_ONLY) {
+        mSpans.SetSpan(BufferSpan(SPAN_SEARCH_LIMITS,
+                                  GetSelectionStart(),
+                                  GetSelectionEnd()));
+        mSpans.SetSpan(BufferSpan(SPAN_SEARCH_START,
+                                  GetSelectionStart()));
+        // The cursor could be at either end of the selection.
+        // We want it at the top.
+        PutCursorAtTopOfSelection();
+    } else {
+        mSpans.DeleteSpanIfExists(SPAN_SEARCH_LIMITS);
+        if (FindDlg::GetStartAtTop())
+            mSpans.SetSpan(BufferSpan(SPAN_SEARCH_START, 0));
+        else
+            mSpans.SetSpan(BufferSpan(SPAN_SEARCH_START,
+                                      GetCurrentPos()));
+    }
+}
+
+void ScriptTextCtrl::GetSearchLimits(int &start, int &end) {
+    const BufferSpan *span = mSpans.FindSpan(SPAN_SEARCH_LIMITS);
+    if (FindDlg::GetSearchArea() != FindDlg::SELECTION_ONLY
+        || !span
+        || span->GetStatus() == BufferSpan::CLOBBERED)
+    {
+        start = 0;
+        end = GetTextLength();
+    }  else {
+        start = span->GetBeginPos();
+        end = span->GetEndPos();
+    }
+}
+
+ScriptTextCtrl::SearchRange
+ScriptTextCtrl::GetFindSearchRange(bool find_again) {
+    int start_limit, end_limit, start;
+    GetSearchLimits(start_limit, end_limit);
+    if (find_again)
+        start = GetCurrentPos();
+    else
+        start = mSpans.GetSpan(SPAN_SEARCH_START)->GetBeginPos();
+    return SearchRange(start, end_limit, start_limit, start);
+}
+
+ScriptTextCtrl::SearchRange
+ScriptTextCtrl::GetReplaceAllSearchRange(bool after_original_start_ok) {
+    int start_limit, end_limit;
+    GetSearchLimits(start_limit, end_limit);
+    int original_start = mSpans.GetSpan(SPAN_SEARCH_START)->GetBeginPos();
+    int start = GetCurrentPos();
+
+    if (start < original_start) {
+        // We're approaching our original start point from behind.
+        return SearchRange(start, original_start);
+    } else if (!after_original_start_ok) {
+        // We're after the original start point, and it's not OK to be here.
+        // Bail now before we start looping.
+        return SearchRange();
+    } else {
+        // We're on or after the original start point, and it's OK to be
+        // here.  Search normally.
+        return SearchRange(start, end_limit, start_limit, original_start);
+    }
+}
+
+bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
+    // Figure out our Find flags.
+    int flags = 0;
+    if (FindDlg::GetCaseSensitive())
+        flags |= wxSTC_FIND_MATCHCASE;
+    if (FindDlg::GetMatchEntireWords())
+        flags |= wxSTC_FIND_WHOLEWORD;
+    if (FindDlg::GetUseRegex())
+        flags |= wxSTC_FIND_REGEXP|wxSTC_FIND_POSIX;
+
+    // Run the Find command.
+    wxString text = FindDlg::GetSearchText();
+	int match_start = wxSTC_INVALID_POSITION,
+        match_end = wxSTC_INVALID_POSITION;
+    if (range.start1 != wxSTC_INVALID_POSITION)
+        FindText(range.start1, range.end1, text, flags,
+                 &match_start, &match_end);
+
+    // Wrap around, if that's what we need to do.
+    if (match_start == wxSTC_INVALID_POSITION &&
+        range.start2 != wxSTC_INVALID_POSITION &&
+        FindDlg::GetWrapAround())
+    {
+        FindText(range.start2, range.end2, text, flags,
+                 &match_start, &match_end);
+    }
+
+    // Either highlight what we found, or beep annoyingly.
+    if (match_start == wxSTC_INVALID_POSITION) {
+        mSpans.DeleteSpanIfExists(SPAN_FOUND_TEXT);
+        if (interactive) {
+            SetStatusText("Not found.");
+            ::wxBell();
+        }
+        return false;
+    } else {
+        // Remember what we found, so we can replace it.  This gives
+        // us some hope of surviving changes to global search state in
+        // other buffers.
+        mSpans.SetSpan(BufferSpan(SPAN_FOUND_TEXT, match_start, match_end));
+        mReplaceStateUseRegex = FindDlg::GetUseRegex();
+        mReplaceStateText = FindDlg::GetReplaceText();
+
+        if (interactive)
+            SetSelectionAndEnsureVisible(match_start, match_end);
+        return true;
+    }
+}
+
+bool ScriptTextCtrl::CanReplace() {
+    /// \bug Handle changes of search text in other buffers.
+    const BufferSpan *found = mSpans.FindSpan(SPAN_FOUND_TEXT);
+    return (found
+            && found->GetStatus() == BufferSpan::UNCHANGED
+            && found->GetBeginPos() == GetSelectionStart()
+            && found->GetEndPos() == GetSelectionEnd()
+            && FindDlg::GetSearchText() != "");
+}
+
+/// Replace the selected text.  We assume that a find has just been
+/// performed, and that the selection marks the result of the Find.
+void ScriptTextCtrl::DoReplace(bool interactive) {
+    // If this is an interactive search, we'd better have met our usual
+    // replacement conditions.  Non-interactive searches don't set up
+    // the selection, so CanReplace() doesn't apply to them.
+    ASSERT(!interactive || CanReplace());
+
+    // Set our replace target to the most recently found text.
+    const BufferSpan *found = mSpans.GetSpan(SPAN_FOUND_TEXT);
+    SetTargetStart(found->GetBeginPos());
+    SetTargetEnd(found->GetEndPos());
+
+    // Do the replacement.
+    if (mReplaceStateUseRegex) {
+        ReplaceTargetRE(mReplaceStateText);
+    } else {
+        ReplaceTarget(mReplaceStateText);
+    }
+
+    SetSelection(GetTargetStart(), GetTargetEnd());
+    if (interactive)
+        EnsureSelectionVisible();
+}
+
+/// Replace all instances of the selected text.
+void ScriptTextCtrl::DoReplaceAll() {
+    BeginUndoAction();
+
+    // Replace all instances of the search text.
+    size_t count = 0;
+    bool after_original_start_ok = true;
+    while (DoFind(GetReplaceAllSearchRange(after_original_start_ok), false)) {
+        // Infinite loop protection: After we've replaced something before
+        // the official start point, we can't go beyond it again.
+        int original_start = mSpans.GetSpan(SPAN_SEARCH_START)->GetBeginPos();
+        if (GetSelectionStart() < original_start)
+            after_original_start_ok = false;
+
+        // Do the replacement.
+        DoReplace(false);
+        count++;
+    }
+
+    EndUndoAction();
+    
+    // Show our final replacement.
+    EnsureSelectionVisible();
+
+    // Tell the user how many copies we replaced.
+    wxString str;
+    str.Printf("%d occurences replaced.", count);
+    SetStatusText(str);
 }
 
 void ScriptTextCtrl::AutoCompleteIdentifier() {
@@ -553,516 +1028,189 @@ int ScriptTextCtrl::GetBaseIndentFromPosition(int inPos) {
     return (inPos - line_start);
 }
 
-
 //=========================================================================
-//  NotebookBar
+//  ScriptDoc Definition & Methods
 //=========================================================================
 
-class NotebookBar : public wxWindow {
+class ScriptDoc : public ScriptTextCtrl, public DocNotebookTab {
 public:
-    NotebookBar(wxWindow *parent);
+    ScriptDoc(DocNotebook *parent, wxWindowID id = -1);
+    ScriptDoc(DocNotebook *parent, wxWindowID id,
+              const wxString &path);
+
+    virtual wxWindow *GetDocumentWindow() { return this; }
+
+protected:
+    virtual bool SaveDocument(bool force);
 
 private:
-    enum {
-        TOP_PAD = 4,
-        TAB_START = TOP_PAD / 2,
-        BOTTOM_PAD = 2,
-        SIDE_PAD = 4,
+    void SetTitleAndPath(const wxString &fullPath);
 
-        BUTTON_INSIDE_PAD = 2,
-        BUTTON_GRAPHIC_SIZE = 9,
-        BUTTON_SIZE = BUTTON_GRAPHIC_SIZE + BUTTON_INSIDE_PAD*2,
-    };
+    void WriteDocument();
+    void ReadDocument();
 
-    enum ButtonId {
-        BUTTON_NONE = -1,
-        BUTTON_LEFT = 0,
-        BUTTON_RIGHT = 1,
-        BUTTON_CLOSE = 2,
-        BUTTON_COUNT = 3
-    };
+    bool DoSaveAs(const wxString &dialogTitle,
+                  const wxString &defaultDir,
+                  const wxString &defaultName);
 
-    enum ButtonState {
-        STATE_DISABLED,
-        STATE_ENABLED,
-        STATE_PRELIGHTED,
-        STATE_CLICKED
-    };
+    void OnSave(wxCommandEvent &event);
+    void OnUpdateUiSave(wxUpdateUIEvent &event);
+    void OnSaveAs(wxCommandEvent &event);
+    void OnUpdateUiSaveAs(wxUpdateUIEvent &event);
+    void OnRevert(wxCommandEvent &event);
+    void OnUpdateUiRevert(wxUpdateUIEvent &event);
 
-    enum GuiColor {
-        SELECTED_TEXT,
-        SELECTED_BACKGROUND,
-        SELECTED_HIGHLIGHT,
-        SELECTED_SHADOW,
-        UNSELECTED_TEXT,
-        UNSELECTED_BACKGROUND,
-        UNSELECTED_DIVIDER
-    };
+    void OnSavePointReached(wxStyledTextEvent &event);
+    void OnSavePointLeft(wxStyledTextEvent &event);
 
-    struct Tab {
-        wxString label;
-        wxCoord rightEdge;
-
-        Tab(const wxString &label_) : label(label_), rightEdge(0) {}
-    };
-
-    std::vector<Tab> mTabs;
-    size_t mCurrentTab;
-    wxCoord mScrollAmount;
-    ButtonState mButtonStates[BUTTON_COUNT];
-    ButtonId mGrabbedButton;
-    wxLongLong mNextRepeatTime;
-
-    unsigned char Lighten(unsigned char value, double fraction);
-    wxColor GetGuiColor(GuiColor color);
-    wxFont GetGuiFont(bool bold);
-    wxCoord UpdateBarHeight();
-
-    void OnPaint(wxPaintEvent &event);
-    void OnLeftDown(wxMouseEvent &event);
-    void OnLeftUp(wxMouseEvent &event);
-    void OnIdle(wxIdleEvent &event);
-    void OnMouseMove(wxMouseEvent &event);
-    void OnSize(wxSizeEvent &event);
-
-    void DoButtonPressed(ButtonId buttonId);
-    void DoButtonHeld(ButtonId buttonId);
-    void DoButtonReleased(ButtonId buttonId);
-
-    void SetButtonState(ButtonId buttonId, ButtonState state,
-                        bool redraw = true);
-    void SetButtonStateIfNotDisabled(ButtonId buttonId, ButtonState state,
-                                     bool redraw = true);
-    void EnableButton(ButtonId buttonId, bool enable, bool redraw = true);
-    bool SafeToRunCommandsForButton(ButtonId buttonId);
-    void DrawButton(wxDC &dc, ButtonId buttonId);
-    wxBitmap GetButtonBitmap(ButtonId buttonId);
-    wxRect GetButtonRect(ButtonId buttonId);
-    ButtonId GetButtonForPoint(const wxPoint &p);
-
-    wxCoord GetTabLimit();
-    void ScrollTabs(wxCoord pixels);
-    
     DECLARE_EVENT_TABLE();
 };
 
-BEGIN_EVENT_TABLE(NotebookBar, wxWindow)
-    EVT_PAINT(NotebookBar::OnPaint)
-    EVT_LEFT_DOWN(NotebookBar::OnLeftDown)
-    EVT_LEFT_DCLICK(NotebookBar::OnLeftDown)
-    EVT_LEFT_UP(NotebookBar::OnLeftUp)
-    EVT_IDLE(NotebookBar::OnIdle)
-    EVT_MOTION(NotebookBar::OnMouseMove)
-    EVT_SIZE(NotebookBar::OnSize)
+BEGIN_EVENT_TABLE(ScriptDoc, ScriptTextCtrl)
+    EVT_MENU(wxID_SAVE, ScriptDoc::OnSave)
+    EVT_UPDATE_UI(wxID_SAVE, ScriptDoc::OnUpdateUiSave)
+    EVT_MENU(wxID_SAVEAS, ScriptDoc::OnSaveAs)
+    EVT_UPDATE_UI(wxID_SAVEAS, ScriptDoc::OnUpdateUiSaveAs)
+    EVT_MENU(wxID_REVERT, ScriptDoc::OnRevert)
+    EVT_UPDATE_UI(wxID_REVERT, ScriptDoc::OnUpdateUiRevert)
+
+    EVT_STC_SAVEPOINTREACHED(-1, ScriptDoc::OnSavePointReached)
+    EVT_STC_SAVEPOINTLEFT(-1, ScriptDoc::OnSavePointLeft)
 END_EVENT_TABLE()
 
-NotebookBar::NotebookBar(wxWindow *parent)
-    : wxWindow(parent, -1)
+ScriptDoc::ScriptDoc(DocNotebook *parent, wxWindowID id)
+    : ScriptTextCtrl(parent, id), DocNotebookTab(parent)
 {
-    UpdateBarHeight();
-    mTabs.push_back(Tab("Untitled"));
-    mTabs.push_back(Tab("Untitled 2"));
-    mTabs.push_back(Tab("Untitled 3"));
-    for (size_t i = 0; i < 15; i++)
-        mTabs.push_back(Tab("Untitled N"));
-    mCurrentTab = 1;
-    mScrollAmount = 0;
-    mButtonStates[BUTTON_LEFT] = STATE_DISABLED;
-    mButtonStates[BUTTON_RIGHT] = STATE_DISABLED;
-    mButtonStates[BUTTON_CLOSE] = STATE_ENABLED;
-    mGrabbedButton = BUTTON_NONE;
+    SetDocumentTitle(parent->GetNextUntitledDocumentName());
 }
 
-unsigned char NotebookBar::Lighten(unsigned char value, double fraction) {
-    return value + (255 - value)*fraction;
-}
-
-wxColor NotebookBar::GetGuiColor(GuiColor color) {
-    wxColor temp;
-    switch (color) {
-        case SELECTED_TEXT:
-            return wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT);
-        case SELECTED_BACKGROUND:
-            return wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
-        case SELECTED_HIGHLIGHT:
-            //return wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT);
-            return *wxWHITE;
-        case SELECTED_SHADOW:
-            //return wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
-            return *wxBLACK;
-        case UNSELECTED_TEXT:
-            temp = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT);
-            return wxColor(Lighten(temp.Red(), 0.35),
-                           Lighten(temp.Green(), 0.35),
-                           Lighten(temp.Blue(), 0.35));
-        case UNSELECTED_DIVIDER:
-            temp = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT);
-            return wxColor(Lighten(temp.Red(), 0.5),
-                           Lighten(temp.Green(), 0.5),
-                           Lighten(temp.Blue(), 0.5));
-        case UNSELECTED_BACKGROUND:
-            {
-                temp = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
-                int red_green = temp.Red()/2 + temp.Green()/2;
-                return wxColor(Lighten(red_green, 0.6),
-                               Lighten(red_green, 0.6),
-                               Lighten(temp.Blue(), 0.3));
-            }
-        default:
-            ASSERT(0);
-            return *wxBLACK;
-    }
-}
-
-wxFont NotebookBar::GetGuiFont(bool bold) {
-    wxFont f = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
-    if (bold) {
-        // We have to duplicate this font manually to avoid stomping the
-        // refcounted system version.  Bleh.
-        f = wxFont(f.GetPointSize(), f.GetFamily(), f.GetStyle(), wxBOLD,
-                   f.GetUnderlined(), f.GetFaceName(), f.GetEncoding());
-    }
-    return f;
-}
-
-wxCoord NotebookBar::UpdateBarHeight() {
-    wxCoord width, height;
-    {
-        wxClientDC dc(this);
-        dc.SetFont(GetGuiFont(false));
-        dc.GetTextExtent("W", &width, &height);        
-    }
-    wxCoord padded = TOP_PAD + height + BOTTOM_PAD;
-    SetSizeHints(-1, padded, -1, padded);
-    if (GetSize().GetHeight() != padded)
-        SetSize(GetSize().GetWidth(), padded);
-    return padded;
-}
-
-void NotebookBar::OnPaint(wxPaintEvent &event) {
-    // Get the correct height for our bar.
-    wxCoord height = UpdateBarHeight();
-
-    // Begin refresh painting.
-    wxPaintDC dc(this);
-
-    // Clear the background.
-    dc.SetBackground(GetGuiColor(UNSELECTED_BACKGROUND));
-    dc.Clear();
-
-    // Clip our tab drawing area for drawing tabs.
-    dc.SetClippingRegion(wxPoint(0, 0), wxSize(GetTabLimit(), height));
-
-    // Draw our tabs.
-    wxCoord space_used = mScrollAmount;
-    for (size_t i = 0; i < mTabs.size(); i++) {
-        // Choose our basic drawing parameters.
-        if (i == mCurrentTab) {
-            dc.SetFont(GetGuiFont(true));
-            dc.SetTextBackground(GetGuiColor(SELECTED_BACKGROUND));
-            dc.SetTextForeground(GetGuiColor(SELECTED_TEXT));
-        } else {
-            dc.SetFont(GetGuiFont(false));
-            dc.SetTextBackground(GetGuiColor(UNSELECTED_BACKGROUND));
-            dc.SetTextForeground(GetGuiColor(UNSELECTED_TEXT));
-        }
-
-        // Calculate the width of our tab.
-        wxCoord text_width;
-        dc.GetTextExtent(mTabs[i].label, &text_width, NULL);
-        wxCoord tab_width = text_width + SIDE_PAD*2;
-
-        // Draw an optional background & top for the selected tab.
-        if (i == mCurrentTab) {
-            dc.SetBrush(wxBrush(GetGuiColor(SELECTED_BACKGROUND), wxSOLID));
-            dc.SetPen(*wxTRANSPARENT_PEN);
-            dc.DrawRectangle(space_used, TAB_START, tab_width,
-                             height - TAB_START);
-            dc.SetPen(wxPen(GetGuiColor(SELECTED_HIGHLIGHT), 1, wxSOLID));
-            dc.DrawLine(space_used, TAB_START-1, space_used+tab_width,
-                        TAB_START-1);
-        }
-
-        // Draw in the actual text.
-        dc.DrawText(mTabs[i].label, space_used + SIDE_PAD, TOP_PAD);
-        space_used += tab_width;
-
-        // Draw a divider.
-        wxColor div_color;
-        wxCoord div_bottom;
-        if (i == mCurrentTab) {
-            div_color = GetGuiColor(SELECTED_SHADOW);
-            div_bottom = height;
-        } else if (i+1 == mCurrentTab) {
-            div_color = GetGuiColor(SELECTED_HIGHLIGHT);
-            div_bottom = height;
-        } else {
-            div_color = GetGuiColor(UNSELECTED_DIVIDER);
-            div_bottom = height - BOTTOM_PAD;
-        }        
-        dc.SetPen(wxPen(div_color, 1, wxSOLID));
-        dc.DrawLine(space_used, TAB_START, space_used, div_bottom);
-        ++space_used;
-        
-        // Update the rightmost extent of this tab (for hit testing).
-        mTabs[i].rightEdge = space_used;        
-    }
-
-    // Turn off clipping.
-    dc.DestroyClippingRegion();
-
-    // Enable and disable our scrolling buttons as needed.
-    EnableButton(BUTTON_LEFT, (mScrollAmount < 0), false);
-    EnableButton(BUTTON_RIGHT, (space_used > GetTabLimit()), false);
-
-    // Draw our buttons.
-    for (size_t i = 0; i < BUTTON_COUNT; i++)
-        DrawButton(dc, static_cast<ButtonId>(i));
-}
-
-void NotebookBar::OnLeftDown(wxMouseEvent &event) {
-    wxASSERT(mGrabbedButton == BUTTON_NONE);
-    wxPoint click = event.GetPosition();
-
-    // See if the click is in a button.
-    ButtonId button = GetButtonForPoint(click);
-    if (button != BUTTON_NONE) {
-        CaptureMouse();
-        mGrabbedButton = button;
-        SetButtonStateIfNotDisabled(button, STATE_CLICKED);
-        DoButtonPressed(button);
-        ::wxWakeUpIdle();
-        mNextRepeatTime = ::wxGetLocalTimeMillis() + 200;
-        return;
-    }
-
-    // See if the click is in a tab.
-    if (click.x < GetTabLimit()) {
-        for (size_t i = 0; i < mTabs.size(); i++) {
-            if (click.x < mTabs[i].rightEdge) {
-                mCurrentTab = i;
-                Refresh();
-                return;
-            }
-        }
-    }
-}
-
-void NotebookBar::OnLeftUp(wxMouseEvent &event) {
-    if (mGrabbedButton != BUTTON_NONE) {
-        wxPoint click = event.GetPosition();
-        ButtonId button = GetButtonForPoint(click);
-        ButtonId grabbed = mGrabbedButton;
-
-        // Release the mouse.
-        mGrabbedButton = BUTTON_NONE;
-        ReleaseMouse();
-
-        // If we're over a button, prelight it.
-        if (button != BUTTON_NONE)
-            SetButtonStateIfNotDisabled(button, STATE_PRELIGHTED);
-
-        if (button == grabbed) {
-            // We're over the grabbed button, so call the appropriate
-            // action now.
-            DoButtonReleased(button);
-        } else {
-            // We're *not* over the grabbed button, so mark it as released.
-            SetButtonStateIfNotDisabled(grabbed, STATE_ENABLED);
-        }
-    }
-}
-
-void NotebookBar::OnIdle(wxIdleEvent &event) {
-    // Issue repeating commands for buttons which are held down.
-    if (mGrabbedButton != BUTTON_NONE) {
-        event.RequestMore();
-        if (::wxGetLocalTimeMillis() > mNextRepeatTime) {
-            ButtonId button =
-                GetButtonForPoint(ScreenToClient(::wxGetMousePosition()));
-            if (button == mGrabbedButton) {
-                DoButtonHeld(button);
-                mNextRepeatTime = ::wxGetLocalTimeMillis() + 100;
-            }
-        }
-    }
-}
-
-void NotebookBar::OnMouseMove(wxMouseEvent &event) {
-    // Prelight buttons.
-    ButtonId current = GetButtonForPoint(event.GetPosition());
-    for (size_t i = 0; i < BUTTON_COUNT; i++) {
-        if (mButtonStates[i] != STATE_DISABLED) {
-            ButtonState new_state;
-            if (current == i && mGrabbedButton == current)
-                new_state = STATE_CLICKED;
-            else if (current == i && mGrabbedButton == BUTTON_NONE)
-                new_state = STATE_PRELIGHTED;
-            else
-                new_state = STATE_ENABLED;
-            SetButtonStateIfNotDisabled(static_cast<ButtonId>(i), new_state);
-        }
-    }
-}
-
-void NotebookBar::OnSize(wxSizeEvent &event) {
-    Refresh();
-}
-
-void NotebookBar::DoButtonPressed(ButtonId buttonId) {
-    if (!SafeToRunCommandsForButton(buttonId))
-        return;
-    switch (buttonId) {
-        case BUTTON_LEFT: ScrollTabs(100); break;
-        case BUTTON_RIGHT: ScrollTabs(-100); break;
-    }
-}
-
-void NotebookBar::DoButtonHeld(ButtonId buttonId) {
-    if (!SafeToRunCommandsForButton(buttonId))
-        return;
-    switch (buttonId) {
-        case BUTTON_LEFT: ScrollTabs(30); break;
-        case BUTTON_RIGHT: ScrollTabs(-30); break;
-    }
-}
-
-void NotebookBar::DoButtonReleased(ButtonId buttonId) {
-    if (!SafeToRunCommandsForButton(buttonId))
-        return;
-    if (buttonId == BUTTON_CLOSE) {
-            mTabs.erase(mTabs.begin()+mCurrentTab);
-            if (mCurrentTab >= mTabs.size())
-                mCurrentTab = mTabs.size()-1;
-            Refresh();
-    }
-}
-
-/// Set the state of the specified button, redrawing it if requested.
-void NotebookBar::SetButtonState(ButtonId buttonId, ButtonState state,
-                                 bool redraw)
+ScriptDoc::ScriptDoc(DocNotebook *parent, wxWindowID id,
+                     const wxString &path)
+    : ScriptTextCtrl(parent, id), DocNotebookTab(parent)
 {
-    mButtonStates[buttonId] = state;
-    if (redraw) {
-        wxClientDC dc(this);
-        DrawButton(dc, buttonId);
-    }
+    SetTitleAndPath(path);
+    ReadDocument();
 }
 
-/// Only set the button state if the button is not disabled.  We call this
-/// to avoid accidentally re-enabling buttons.
-void NotebookBar::SetButtonStateIfNotDisabled(ButtonId buttonId,
-                                              ButtonState state,
-                                              bool redraw)
-{
-    if (mButtonStates[buttonId] != STATE_DISABLED)
-        SetButtonState(buttonId, state, redraw);
+void ScriptDoc::SetTitleAndPath(const wxString &fullPath) {
+    SetDocumentPath(fullPath);
+
+    // Use the (short) filename as the document name.
+    SetDocumentTitle(wxFileName(fullPath).GetFullName());
 }
 
-/// Enable or disable the specified button.  If the button is already
-/// enabled, don't change the enabled/prelighted/clicked state.
-void NotebookBar::EnableButton(ButtonId buttonId, bool enable,
-                               bool redraw)
-{
-    if (enable) {
-        if (mButtonStates[buttonId] == STATE_DISABLED)
-            SetButtonState(buttonId, STATE_ENABLED, redraw);
+void ScriptDoc::WriteDocument() {
+    wxString path(GetDocumentPath());
+    wxFile file(path, wxFile::write);
+    if (!file.IsOpened())
+        THROW(("Error opening file: "+path).mb_str());
+    wxString text(GetText());
+    if (!file.Write(text))
+        THROW(("Error writing from file: "+path).mb_str());
+    /// \todo How does wxWindows deal with errors returned
+    /// from close()?  These usually indicate that a previous
+    /// write failed.
+
+    // Set a save point so Scintilla knows that the document isn't dirty.
+    SetSavePoint();
+}
+
+void ScriptDoc::ReadDocument() {
+    // Read the data into our buffer.  (We can probably do this with
+    // less copying if we work at it.)
+    wxString path(GetDocumentPath());
+    wxFile file(path);
+    if (!file.IsOpened())
+        THROW(("Error opening file: "+path).mb_str());
+    off_t length = file.Length();
+    std::vector<char> data(length);
+    if (file.Read(&data[0], length) != length)
+        THROW(("Error reading from file: "+path).mb_str());
+    SetText(wxString(&data[0], length));
+
+    // Don't let the user undo document setup.
+    EmptyUndoBuffer();
+
+    // Mark the document as saved.
+    SetSavePoint();
+}
+
+bool ScriptDoc::SaveDocument(bool force) {
+    if (GetDocumentPath() != "") {
+        WriteDocument();
+        return true;
     } else {
-        SetButtonState(buttonId, STATE_DISABLED, redraw);
+        if (force) {
+            /// \todo Not quite sure what to do here.  Generate a temporary
+            /// file name?  Do something else?
+            gLog.Log("Forced to discard unsaved, untitled document.");
+            return true;
+        } else {
+            FileSystem::Path path(FileSystem::GetScriptsDirectory());
+            return DoSaveAs("Save File", path.ToNativePathString().c_str(),"");
+        }
     }
 }
 
-bool NotebookBar::SafeToRunCommandsForButton(ButtonId buttonId) {
-    return (mTabs.size() > 0 && mButtonStates[buttonId] != STATE_DISABLED);
-}
-
-void NotebookBar::DrawButton(wxDC &dc, ButtonId buttonId) {
-    wxASSERT(dc.Ok());
-    wxRect r = GetButtonRect(buttonId);
-    dc.BeginDrawing();
-
-    // Draw the button's icon.
-    dc.SetTextForeground(GetGuiColor(UNSELECTED_TEXT));
-    dc.SetTextBackground(GetGuiColor(UNSELECTED_BACKGROUND));
-    wxBitmap bitmap = GetButtonBitmap(buttonId);
-    dc.DrawBitmap(bitmap,
-                  r.GetLeft() + BUTTON_INSIDE_PAD,
-                  r.GetTop() + BUTTON_INSIDE_PAD);
-
-    // Draw the button's border.
-    wxColor topleft, bottomright;
-    switch (mButtonStates[buttonId]) {
-        case STATE_PRELIGHTED:
-            topleft = GetGuiColor(UNSELECTED_DIVIDER);
-            bottomright = GetGuiColor(SELECTED_SHADOW);
-            break;
-        case STATE_CLICKED:
-            topleft = GetGuiColor(SELECTED_SHADOW);
-            bottomright = GetGuiColor(UNSELECTED_DIVIDER);
-            break;
-        default:
-            topleft = GetGuiColor(UNSELECTED_BACKGROUND);
-            bottomright = GetGuiColor(UNSELECTED_BACKGROUND);
+bool ScriptDoc::DoSaveAs(const wxString &dialogTitle,
+                         const wxString &defaultDir,
+                         const wxString &defaultName)
+{
+    wxFileDialog dlg(this, dialogTitle, defaultDir,
+                     defaultName, kSchemeWildcards,
+                     wxSAVE|wxOVERWRITE_PROMPT);
+    if (dlg.ShowModal() == wxID_OK) {
+        SetTitleAndPath(dlg.GetPath());
+        WriteDocument();
+        return true;
     }
-    dc.SetPen(wxPen(topleft, 1, wxSOLID));
-    dc.DrawLine(r.GetLeft(), r.GetTop(), r.GetRight()+1, r.GetTop());
-    dc.DrawLine(r.GetLeft(), r.GetTop(), r.GetLeft(), r.GetBottom()+1);
-    dc.SetPen(wxPen(bottomright, 1, wxSOLID));
-    dc.DrawLine(r.GetLeft()+1, r.GetBottom(), r.GetRight()+1, r.GetBottom());
-    dc.DrawLine(r.GetRight(), r.GetTop()+1, r.GetRight(), r.GetBottom());
+    return false;
+}
+                         
 
-    dc.EndDrawing();
+void ScriptDoc::OnSave(wxCommandEvent &event) {
+    SaveDocument(false);
 }
 
-wxBitmap NotebookBar::GetButtonBitmap(ButtonId buttonId) {
-    switch (buttonId) {
-        case BUTTON_LEFT:
-            if (mButtonStates[buttonId] != STATE_DISABLED)
-                return wxBITMAP(tab_left_full);
-            else
-                return wxBITMAP(tab_left_empty);
-        case BUTTON_RIGHT:
-            if (mButtonStates[buttonId] != STATE_DISABLED)
-                return wxBITMAP(tab_right_full);
-            else
-                return wxBITMAP(tab_right_empty);
-        case BUTTON_CLOSE:
-            return wxBITMAP(tab_close);
-        default:
-            ASSERT(0);
-            return wxBitmap();
+void ScriptDoc::OnUpdateUiSave(wxUpdateUIEvent &event) {
+    event.Enable(GetDocumentDirty() || GetDocumentPath() == "");
+}
+
+void ScriptDoc::OnSaveAs(wxCommandEvent &event) {
+    wxFileName path(GetDocumentPath());
+    if (path == "") {
+        FileSystem::Path path(FileSystem::GetScriptsDirectory());
+        DoSaveAs("Save File As", path.ToNativePathString().c_str(), "");
+    } else {
+        DoSaveAs("Save File As", path.GetPath(), path.GetFullName());
     }
 }
 
-wxRect NotebookBar::GetButtonRect(ButtonId buttonId) {
-    wxSize sz = GetSize();
-    wxCoord right_limit = sz.GetWidth() - SIDE_PAD;
-    return wxRect(wxPoint(right_limit - (3-buttonId)*BUTTON_SIZE,
-                          (sz.GetHeight() - BUTTON_SIZE) / 2),
-                  wxSize(BUTTON_SIZE, BUTTON_SIZE));
+void ScriptDoc::OnUpdateUiSaveAs(wxUpdateUIEvent &event) {
+    event.Enable(true);
 }
 
-NotebookBar::ButtonId NotebookBar::GetButtonForPoint(const wxPoint &p) {
-    for (size_t i = 0; i < BUTTON_COUNT; i++)
-        if (GetButtonRect(static_cast<ButtonId>(i)).Inside(p))
-            return static_cast<ButtonId>(i);
-    return BUTTON_NONE;
+void ScriptDoc::OnRevert(wxCommandEvent &event) {
+    wxMessageDialog dlg(this, "Discard changes and revert to saved version?",
+                        "Revert", wxYES_NO|wxNO_DEFAULT);
+    if (dlg.ShowModal() == wxID_YES)
+        ReadDocument();
 }
 
-wxCoord NotebookBar::GetTabLimit() {
-    wxRect r = GetButtonRect(static_cast<ButtonId>(0));
-    return (r.GetLeft() - SIDE_PAD);
+void ScriptDoc::OnUpdateUiRevert(wxUpdateUIEvent &event) {
+    event.Enable(GetDocumentDirty() && GetDocumentPath() != "");    
 }
 
-void NotebookBar::ScrollTabs(wxCoord pixels) {
-    wxCoord tab_length = -mScrollAmount + mTabs[mTabs.size()-1].rightEdge;
-    wxCoord min_scroll = GetTabLimit() - tab_length;
-    mScrollAmount += pixels;
-    if (mScrollAmount < min_scroll)
-        mScrollAmount = min_scroll;
-    if (mScrollAmount > 0)
-        mScrollAmount = 0;
-    Refresh();
+/// Called when Scintilla's editing/undo/redo reach a point where
+/// the associated document matches what's on disk.
+void ScriptDoc::OnSavePointReached(wxStyledTextEvent &event) {
+    SetDocumentDirty(false);
+}
+
+/// Called when Scintilla's editing/undo/redo reach a point where
+/// the associated document doesn't match what's on disk.
+void ScriptDoc::OnSavePointLeft(wxStyledTextEvent &event) {
+    SetDocumentDirty(true);
 }
 
 
@@ -1073,6 +1221,16 @@ void NotebookBar::ScrollTabs(wxCoord pixels) {
 ScriptEditor *ScriptEditor::sFrame = NULL;
 
 BEGIN_EVENT_TABLE(ScriptEditor, wxFrame)
+    EVT_CLOSE(ScriptEditor::OnClose)
+
+    EVT_MENU(wxID_NEW, ScriptEditor::OnNew)
+    EVT_MENU(wxID_OPEN, ScriptEditor::OnOpen)
+    EVT_UPDATE_UI(wxID_SAVE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_SAVEAS, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_REVERT, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_CLOSE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_CLOSE_WINDOW, ScriptEditor::DisableUiItem)
+
     EVT_UPDATE_UI(wxID_UNDO, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REDO, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_CUT, ScriptEditor::DisableUiItem)
@@ -1080,6 +1238,15 @@ BEGIN_EVENT_TABLE(ScriptEditor, wxFrame)
     EVT_UPDATE_UI(wxID_PASTE, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_CLEAR, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_SELECTALL, ScriptEditor::DisableUiItem)
+
+	EVT_UPDATE_UI(wxID_FIND, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_FIND_AGAIN, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_FIND_SELECTION, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_FIND_IN_NEXT_FILE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_REPLACE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_REPLACE_ALL, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_REPLACE_AND_FIND_AGAIN, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(FIVEL_GOTO_LINE, ScriptEditor::DisableUiItem)
 END_EVENT_TABLE()
 
 void ScriptEditor::MaybeCreateFrame() {
@@ -1093,9 +1260,26 @@ void ScriptEditor::EditScripts() {
     MaybeCreateFrame();
 }
 
+bool ScriptEditor::SaveAllForReloadScript() {
+    if (sFrame) {
+        DocNotebook *notebook = sFrame->mNotebook;
+        return notebook->MaybeSaveAll(true, "Reload Scripts",
+                                      "Save \"%s\" before reloading?");
+    } else {
+        return true;
+    }
+}
+
+bool ScriptEditor::ProcessEventIfExists(wxEvent &event) {
+    if (!sFrame)
+        return false;
+    else
+        return sFrame->ProcessEvent(event);
+}
+
 ScriptEditor::ScriptEditor()
     : wxFrame(wxGetApp().GetStageFrame(), -1,
-              "Untitled - " + wxGetApp().GetAppName(),
+              "Script Editor - " + wxGetApp().GetAppName(),
               wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE)
 {
     // Set up the static variable pointing to this frame.
@@ -1110,6 +1294,24 @@ ScriptEditor::ScriptEditor()
 
     // Set up our File menu.
     wxMenu *file_menu = new wxMenu();
+    file_menu->Append(wxID_NEW, "&New\tCtrl+N", "Create a new file.");
+    file_menu->Append(wxID_OPEN, "&Open...\tCtrl+O",
+                      "Open an existing file.");
+    file_menu->Append(wxID_SAVE, "&Save\tCtrl+S", "Save the current file.");
+    file_menu->Append(wxID_SAVEAS, "&Save &As...",
+                      "Save the current file under a new name.");
+    file_menu->Append(wxID_REVERT, "&Revert",
+                      "Revert to the previously saved version of this file.");
+    file_menu->AppendSeparator();
+    file_menu->Append(wxID_CLOSE, "&Close Tab\tCtrl+W",
+                      "Close the current tab.");
+    file_menu->Append(FIVEL_CLOSE_WINDOW, "Close &Window\tCtrl+Shift+W",
+                      "Close the window (including all tabs).");
+    file_menu->AppendSeparator();
+    file_menu->Append(FIVEL_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
+                      "Reload the currently executing Tamale scripts.");
+    file_menu->AppendSeparator();
+    file_menu->Append(FIVEL_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
 
     // Set up our Edit menu.
     wxMenu *edit_menu = new wxMenu();
@@ -1121,17 +1323,38 @@ ScriptEditor::ScriptEditor()
     edit_menu->Append(wxID_CUT, "Cu&t\tCtrl+X",
                       "Delete the selection and put it onto the clipboard.");
     edit_menu->Append(wxID_COPY, "&Copy\tCtrl+C",
-                      "Delete the selection and put it onto the clipboard.");
+                      "Copy the selection to the clipboard.");
     edit_menu->Append(wxID_PASTE, "&Paste\tCtrl+V",
-                      "Delete the selection and put it onto the clipboard.");
+                      "Paste the contents of the clipboard.");
     edit_menu->Append(wxID_CLEAR, "&Delete",
-                      "Delete the selection and put it onto the clipboard.");
+                      "Delete the selection.");
     edit_menu->AppendSeparator();
     edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A",
-                      "Delete the selection and put it onto the clipboard.");
+                      "Select the entire document.");
 
     // Set up our Search menu.
     wxMenu *search_menu = new wxMenu();
+    search_menu->Append(wxID_FIND, "&Find...\tCtrl+F",
+                        "Grand Unified Find and Replace Dialog.");
+    search_menu->AppendSeparator();
+    search_menu->Append(FIVEL_FIND_AGAIN, "Find A&gain\tCtrl+G",
+                        "Find the next occurrance of the search string.");
+    search_menu->Append(FIVEL_FIND_SELECTION, "Find &Selection\tCtrl+H",
+                        "Find the selected text.");
+    search_menu->Append(FIVEL_FIND_IN_NEXT_FILE, "Find in &Next File",
+                        "Find the search string in the next file.");
+    search_menu->AppendSeparator();
+    search_menu->Append(wxID_REPLACE, "&Replace\tCtrl+=",
+                        "Replace the selected text.");
+    search_menu->Append(wxID_REPLACE_ALL, "Replace &All\tCtrl+Alt+=",
+                        "Replace all occurances of the search string.");
+    search_menu->Append(FIVEL_REPLACE_AND_FIND_AGAIN,
+                        "Re&place and Find Again\tCtrl+T",
+                        ("Replace the selected text and find the next "
+                         "occurance."));
+    search_menu->AppendSeparator();
+    search_menu->Append(FIVEL_GOTO_LINE, "Go to &Line...\tCtrl+J",
+                        "Go to a specific line number.");
 
     // Set up our Window menu.
     wxMenu *window_menu = new wxMenu();
@@ -1144,22 +1367,32 @@ ScriptEditor::ScriptEditor()
     menu_bar->Append(window_menu, "&Window");
     SetMenuBar(menu_bar);
 
-    // Create a notebook bar (does nothing for now).
-    NotebookBar *bar = new NotebookBar(this);
+    // Create a document notebook, delegate menu events to it, and put
+    // it in charge of our title bar.
+    mNotebook = new DocNotebook(this);
+    mDelegator.SetDelegate(mNotebook);
+    mNotebook->SetFrameToTitle(this);
 
-    // Create a single editor control for now--we'll make this fancy later.
-    mEditor = new ScriptTextCtrl(this);
-    mDelegator.SetDelegate(mEditor);
-
-    // Create a sizer to handle window layout.
+    // Create a sizer to handle window layout.  This doesn't do much for
+    // now, but we'll add more window cruft later.
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(bar, 0 /* don't stretch */, wxGROW, 0);
-    sizer->Add(mEditor, 1 /* stretch */, wxGROW, 0);
+    sizer->Add(mNotebook, 1 /* stretch */, wxGROW, 0);
     SetSizer(sizer);
     sizer->SetSizeHints(this);
+    Layout();
 
     // Set an appropriate default window size.
     SetSize(wxSize(900, 650));
+
+    // If we have a Tamale program already, open up the start script.
+    if (TInterpreterManager::HaveInstance() &&
+        TInterpreterManager::GetInstance()->InterpreterHasBegun())
+    {
+        FileSystem::Path start_script =
+            FileSystem::GetScriptsDirectory().AddComponent("start.ss");
+        wxString filename = start_script.ToNativePathString().c_str();
+        OpenDocument(filename);
+    }
 }
 
 ScriptEditor::~ScriptEditor() {
@@ -1175,15 +1408,49 @@ bool ScriptEditor::ProcessEvent(wxEvent& event) {
         return wxFrame::ProcessEvent(event);
 }
 
-void ScriptEditor::DoNewScript() {
+void ScriptEditor::OpenDocument(const wxString &path) {
+    // If the document is already open, show it.
+    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
+        if (mNotebook->GetDocument(i)->GetDocumentPath() == path) {
+            mNotebook->SelectDocument(i);
+            return;
+        }
+    }
     
+    // Otherwise, open the new document.
+    mNotebook->AddDocument(new ScriptDoc(mNotebook, -1, path));
 }
 
-void ScriptEditor::DoOpenScript() {
-    
+void ScriptEditor::OnClose(wxCloseEvent &event) {
+    if (!mNotebook->MaybeSaveAll(event.CanVeto(), "Close Window",
+                                 "Save \"%s\" before closing?"))
+    {
+        ASSERT(event.CanVeto());
+        event.Veto();
+    } else {
+        Destroy();
+    }
+}
+
+void ScriptEditor::OnNew(wxCommandEvent &event) {
+    mNotebook->AddDocument(new ScriptDoc(mNotebook));
+}
+
+void ScriptEditor::OnOpen(wxCommandEvent &event) {
+    wxString dir =
+        FileSystem::GetScriptsDirectory().ToNativePathString().c_str();
+    wxFileDialog dlg(this, "Open File", dir,
+                     /// \todo Remove wxHIDE_READONLY and implement?
+                     "", kSchemeWildcards,
+                     wxOPEN|wxHIDE_READONLY|wxMULTIPLE);
+    if (dlg.ShowModal() == wxID_OK) {
+        wxArrayString paths;
+        dlg.GetPaths(paths);
+        for (size_t i = 0; i < paths.GetCount(); i++)
+            OpenDocument(paths[i]);
+    }
 }
 
 void ScriptEditor::DisableUiItem(wxUpdateUIEvent &event) {
     event.Enable(false);
 }
-

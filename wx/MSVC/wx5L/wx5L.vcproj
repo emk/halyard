@@ -81,7 +81,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="../../../Common,../../../libs/freetype2/include,../../../libs/boost,../../../libs/wxWindows/include,../../../libs/wxWindows/contrib/include,../../../libs/wxWindows/lib/msw,../../../libs/quake2/wx,../../../libs/wxIE,../../../libs/portaudio/pa_common,../../../libs/libivorbisdec"
+				AdditionalIncludeDirectories="../../../Common,../../../libs/freetype2/include,../../../libs/boost,&quot;$(WXWIN)/include&quot;,&quot;$(WXWIN)/contrib/include&quot;,&quot;$(WXWIN)/lib/msw&quot;,../../../libs/quake2/wx,../../../libs/wxIE,../../../libs/portaudio/pa_common,../../../libs/libivorbisdec"
 				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS,WINVER=0x400,_MT,wxUSE_GUI=1,IML_Q2_EXTENSIONS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -159,6 +159,9 @@
 				RelativePath="..\..\src\BrowserElementWx.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\BufferSpan.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\CommonWxConv.cpp">
 			</File>
 			<File
@@ -166,6 +169,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\DirtyList.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\DocNotebook.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\DrawingArea.cpp">
@@ -184,6 +190,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\FancyStatusBar.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\dlg\FindDlg.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\FiveLApp.cpp">
@@ -349,6 +358,9 @@
 				RelativePath="..\..\src\BrowserElementWx.h">
 			</File>
 			<File
+				RelativePath="..\..\src\BufferSpan.h">
+			</File>
+			<File
 				RelativePath="..\..\src\CommonWxConv.h">
 			</File>
 			<File
@@ -356,6 +368,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\DirtyList.h">
+			</File>
+			<File
+				RelativePath="..\..\src\DocNotebook.h">
 			</File>
 			<File
 				RelativePath="..\..\src\DrawingArea.h">
@@ -377,6 +392,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\FancyStatusBar.h">
+			</File>
+			<File
+				RelativePath="..\..\src\dlg\FindDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\src\FiveLApp.h">
@@ -589,7 +607,7 @@
 					Name="Release|Win32">
 					<Tool
 						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="..\..\..\libs\wxWindows\include;..\..\src;$(NoInherit)"/>
+						AdditionalIncludeDirectories="&quot;$(WXWIN)\include&quot;;..\..\src;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 		</Filter>

@@ -563,7 +563,9 @@ void StageFrame::OnExit(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiNewProgram(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(mDocument == NULL);
+	//inEvent.Enable(mDocument == NULL);
+    /// \todo Turn "new program" back on when it works better.
+    inEvent.Enable(false);
 }
 
 void StageFrame::OnNewProgram(wxCommandEvent &inEvent)
@@ -604,6 +606,11 @@ void StageFrame::OnReloadScripts(wxCommandEvent &inEvent)
 {
     if (TInterpreterManager::HaveInstance())
     {
+        // Save our documents and focus our stage.
+        if (!ScriptEditor::SaveAllForReloadScript())
+            return;
+        mStage->SetFocus();
+
         TInterpreterManager *manager = TInterpreterManager::GetInstance();
         if (manager->FailedToLoad())
         {
@@ -829,6 +836,10 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
 	// with the screen in an awkward resized mode.
 	if (IsFullScreen())
 		ShowFullScreen(false);
+
+    // Ask the script editor whether it wants to close.
+    if (ScriptEditor::ProcessEventIfExists(inEvent) && inEvent.GetVeto())
+        return;
 
 	// Ask the user to save any unsaved documents.
 	if (mDocument && mDocument->IsDirty())

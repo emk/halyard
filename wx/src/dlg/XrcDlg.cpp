@@ -29,5 +29,8 @@ END_EVENT_TABLE()
 XrcDlg::XrcDlg(wxWindow *inParent, const wxString &inResourceName)
 {
 	wxTheXmlResource->LoadDialog(this, inParent, inResourceName);
+
+    // This seems to help...
+    Layout();
 }
 

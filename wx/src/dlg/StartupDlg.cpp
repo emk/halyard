@@ -51,6 +51,9 @@ StartupDlg::StartupDlg(wxWindow *inParent)
     mRadioOpen->SetFocus();
 	mRadioOpen->SetValue(true);
 
+    /// \todo Turn "new program" back on when it works better.
+    mRadioNew->Disable();
+
 	// TODO - Implement the recent documents list.
 	mRadioRecent->Disable();
 	mRecentList->Disable();

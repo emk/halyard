@@ -180,6 +180,10 @@ void TInterpreterManager::RequestReloadScript(const char *inGotoCardName)
 	mInitialCardName = inGotoCardName;
 }
 
+bool TInterpreterManager::InterpreterHasBegun() {
+    return mScriptIsBegun;
+}
+
 bool TInterpreterManager::FailedToLoad()
 {
 	return mLoadScriptFailed;

@@ -26,17 +26,19 @@
 #include "TInterpreter.h"
 #include "EventDelegator.h"
 
-class ScriptTextCtrl;
+class DocNotebook;
 
 class ScriptEditor : public wxFrame {
     static ScriptEditor *sFrame;
     static void MaybeCreateFrame();
 
-    ScriptTextCtrl *mEditor;
+    DocNotebook *mNotebook;
     EventDelegator mDelegator;
 
 public:
     static void EditScripts();
+    static bool SaveAllForReloadScript();
+    static bool ProcessEventIfExists(wxEvent &event);
 
     ScriptEditor();
     ~ScriptEditor();
@@ -44,9 +46,11 @@ public:
     virtual bool ProcessEvent(wxEvent& event);
 
 private:
-    void DoNewScript();
-    void DoOpenScript();
+    void OpenDocument(const wxString &path);
 
+    void OnClose(wxCloseEvent &event);
+    void OnNew(wxCommandEvent &event);
+    void OnOpen(wxCommandEvent &event);
     void DisableUiItem(wxUpdateUIEvent &event);
 
     DECLARE_EVENT_TABLE();

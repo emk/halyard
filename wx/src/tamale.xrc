@@ -1,164 +1,325 @@
-<?xml version="1.0" ?>
-<resource>
-  <object class="wxDialog" name="DLG_STARTUP">
-    <title>Select a Program</title>
-    <centered>1</centered>
-    <object class="wxBoxSizer">
-      <orient>wxVERTICAL</orient>
-      <object class="sizeritem">
-        <object class="wxRadioButton" name="DLG_STARTUP_NEW">
-          <label>Create a &amp;new program.</label>
-        </object>
-        <flag>wxALL</flag>
-        <border>10</border>
-      </object>
-      <object class="sizeritem">
-        <object class="wxRadioButton" name="DLG_STARTUP_OPEN">
-          <label>&amp;Open an existing program.</label>
-        </object>
-        <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
-        <border>10</border>
-      </object>
-      <object class="sizeritem">
-        <object class="wxRadioButton" name="DLG_STARTUP_RECENT">
-          <label>Open a &amp;recent program:</label>
-        </object>
-        <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
-        <border>10</border>
-      </object>
-      <object class="sizeritem">
-        <object class="wxListBox" name="DLG_STARTUP_LIST">
-          <content/>
-          <size>300, 100</size>
-          <style>wxLB_ALWAYS_SB</style>
-        </object>
-        <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
-        <border>10</border>
-      </object>
-      <object class="sizeritem">
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<resource version="2.3.0.1" xmlns="http://www.wxwidgets.org/wxxrc">
+    <object class="wxDialog" name="DLG_STARTUP">
+        <style></style>
+        <exstyle>wxWS_EX_BLOCK_EVENTS</exstyle>
+        <size>-1,-1</size>
+        <title>Select a Program</title>
+        <centered>1</centered>
         <object class="wxBoxSizer">
-          <orient>wxHORIZONTAL</orient>
-          <object class="sizeritem">
-            <object class="wxButton" name="wxID_OK">
-              <label>OK</label>
-              <default>1</default>
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+                <flag>wxALIGN_LEFT|wxALL</flag>
+                <border>10</border>
+                <object class="wxRadioButton" name="DLG_STARTUP_NEW">
+                    <size>-1,-1</size>
+                    <style></style>
+                    <label>Create a &amp;new program.</label>
+                    <value>0</value>
+                </object>
             </object>
-            <flag>wxRIGHT</flag>
-            <border>10</border>
-          </object>
-          <object class="sizeritem">
-            <object class="wxButton" name="wxID_CANCEL">
-              <label>Cancel</label>
+            <object class="sizeritem">
+                <flag>wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+                <border>10</border>
+                <object class="wxRadioButton" name="DLG_STARTUP_OPEN">
+                    <size>-1,-1</size>
+                    <style></style>
+                    <label>&amp;Open an existing program.</label>
+                    <value>0</value>
+                </object>
             </object>
-          </object>
+            <object class="sizeritem">
+                <flag>wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+                <border>10</border>
+                <object class="wxRadioButton" name="DLG_STARTUP_RECENT">
+                    <size>-1,-1</size>
+                    <style></style>
+                    <label>Open a &amp;recent program:</label>
+                    <value>0</value>
+                </object>
+            </object>
+            <object class="sizeritem">
+                <flag>wxGROW|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+                <border>10</border>
+                <object class="wxListBox" name="DLG_STARTUP_LIST">
+                    <size>300,100</size>
+                    <style>wxLB_ALWAYS_SB</style>
+                </object>
+            </object>
+            <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+                <border>10</border>
+                <object class="wxBoxSizer">
+                    <orient>wxHORIZONTAL</orient>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_TOP|wxRIGHT</flag>
+                        <border>10</border>
+                        <object class="wxButton" name="wxID_OK">
+                            <size>-1,-1</size>
+                            <style></style>
+                            <label>OK</label>
+                            <default>1</default>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="wxID_CANCEL">
+                            <size>-1,-1</size>
+                            <style></style>
+                            <label>Cancel</label>
+                        </object>
+                    </object>
+                </object>
+            </object>
         </object>
-        <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxALIGN_RIGHT</flag>
-        <border>10</border>
-      </object>
     </object>
-    <style></style>
-  </object>
-  <object class="wxDialog" name="PROP_PROGRAM">
-    <title>Program Properties</title>
-    <centered>1</centered>
-    <object class="wxBoxSizer">
-      <orient>wxVERTICAL</orient>
-      <object class="sizeritem">
-        <object class="wxFlexGridSizer">
-          <cols>2</cols>
-          <rows>2</rows>
-          <object class="sizeritem">
-            <object class="wxStaticText">
-              <label>Program name:</label>
+    <object class="wxDialog" name="DLG_FIND_REPLACE">
+        <style>wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL</style>
+        <exstyle>wxWS_EX_BLOCK_EVENTS</exstyle>
+        <size>400,300</size>
+        <title>Find &amp; Replace</title>
+        <centered>1</centered>
+        <object class="wxBoxSizer">
+            <orient>wxHORIZONTAL</orient>
+            <object class="sizeritem">
+                <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                <border>10</border>
+                <object class="wxBoxSizer">
+                    <orient>wxVERTICAL</orient>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                        <border>5</border>
+                        <object class="wxBoxSizer">
+                            <orient>wxHORIZONTAL</orient>
+                            <object class="sizeritem">
+                                <flag>wxALIGN_CENTER_VERTICAL|wxADJUST_MINSIZE</flag>
+                                <border>5</border>
+                                <object class="wxStaticText" name="wxID_STATIC">
+                                    <size>-1,-1</size>
+                                    <style></style>
+                                    <label>Search for:</label>
+                                </object>
+                            </object>
+                            <object class="sizeritem">
+                                <flag>wxALIGN_CENTER_VERTICAL|wxLEFT</flag>
+                                <border>40</border>
+                                <object class="wxCheckBox" name="DLG_USE_REGEX">
+                                    <size>-1,-1</size>
+                                    <tooltip>Use simple POSIX-like regular expressions (experts only).</tooltip>
+                                    <style></style>
+                                    <label>Use (Simple) Re&amp;gular Expressions</label>
+                                    <checked>0</checked>
+                                </object>
+                            </object>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                        <border>10</border>
+                        <object class="wxTextCtrl" name="DLG_SEARCH_TEXT">
+                            <size>350,75</size>
+                            <style>wxTE_MULTILINE|wxTE_RICH</style>
+                            <value></value>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                        <border>15</border>
+                        <object class="wxBoxSizer">
+                            <orient>wxHORIZONTAL</orient>
+                            <object class="sizeritem">
+                                <flag>wxALIGN_TOP</flag>
+                                <border>5</border>
+                                <object class="wxBoxSizer">
+                                    <orient>wxVERTICAL</orient>
+                                    <object class="sizeritem">
+                                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                                        <border>5</border>
+                                        <object class="wxCheckBox" name="DLG_START_AT_TOP">
+                                            <size>-1,-1</size>
+                                            <style></style>
+                                            <label>Start at &amp;Top</label>
+                                            <checked>0</checked>
+                                        </object>
+                                    </object>
+                                    <object class="sizeritem">
+                                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                                        <border>5</border>
+                                        <object class="wxCheckBox" name="DLG_WRAP_AROUND">
+                                            <size>-1,-1</size>
+                                            <style></style>
+                                            <label>&amp;Wrap Around</label>
+                                            <checked>0</checked>
+                                        </object>
+                                    </object>
+                                    <object class="sizeritem">
+                                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                                        <border>5</border>
+                                        <object class="wxCheckBox" name="DLG_SEARCH_BACKWARDS">
+                                            <size>-1,-1</size>
+                                            <style></style>
+                                            <label>Search &amp;Backwards</label>
+                                            <checked>0</checked>
+                                        </object>
+                                    </object>
+                                    <object class="sizeritem">
+                                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                                        <border>5</border>
+                                        <object class="wxCheckBox" name="DLG_CASE_SENSITIVE">
+                                            <size>-1,-1</size>
+                                            <style></style>
+                                            <label>&amp;Case Sensitive</label>
+                                            <checked>0</checked>
+                                        </object>
+                                    </object>
+                                    <object class="sizeritem">
+                                        <flag>wxALIGN_LEFT</flag>
+                                        <border>5</border>
+                                        <object class="wxCheckBox" name="DLG_MATCH_ENTIRE_WORDS">
+                                            <size>-1,-1</size>
+                                            <style></style>
+                                            <label>Match &amp;Entire Words</label>
+                                            <checked>0</checked>
+                                        </object>
+                                    </object>
+                                </object>
+                            </object>
+                            <object class="sizeritem">
+                                <flag>wxALIGN_CENTER_VERTICAL|wxLEFT</flag>
+                                <border>40</border>
+                                <object class="wxStaticBoxSizer" name="wxID_ANY">
+                                    <orient>wxVERTICAL</orient>
+                                    <label>Search</label>
+                                    <object class="sizeritem">
+                                        <flag>wxALIGN_LEFT|wxALL</flag>
+                                        <border>5</border>
+                                        <object class="wxRadioButton" name="DLG_SEARCH_CURRENT_SCRIPT">
+                                            <size>-1,-1</size>
+                                            <style></style>
+                                            <label>Current &amp;Script</label>
+                                            <value>0</value>
+                                        </object>
+                                    </object>
+                                    <object class="sizeritem">
+                                        <flag>wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+                                        <border>5</border>
+                                        <object class="wxRadioButton" name="DLG_SEARCH_ALL_SCRIPTS">
+                                            <size>-1,-1</size>
+                                            <style></style>
+                                            <label>&amp;All Scripts</label>
+                                            <value>0</value>
+                                        </object>
+                                    </object>
+                                    <object class="sizeritem">
+                                        <flag>wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+                                        <border>5</border>
+                                        <object class="wxRadioButton" name="DLG_SEARCH_SELECTION_ONLY">
+                                            <size>-1,-1</size>
+                                            <style></style>
+                                            <label>Selection &amp;Only</label>
+                                            <value>0</value>
+                                        </object>
+                                    </object>
+                                </object>
+                            </object>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                        <border>5</border>
+                        <object class="wxBoxSizer">
+                            <orient>wxHORIZONTAL</orient>
+                            <object class="sizeritem">
+                                <flag>wxALIGN_CENTER_VERTICAL|wxADJUST_MINSIZE</flag>
+                                <border>5</border>
+                                <object class="wxStaticText" name="wxID_STATIC">
+                                    <size>-1,-1</size>
+                                    <style></style>
+                                    <label>Replace with:</label>
+                                </object>
+                            </object>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_LEFT|wxBOTTOM</flag>
+                        <border>10</border>
+                        <object class="wxTextCtrl" name="DLG_REPLACE_TEXT">
+                            <size>350,75</size>
+                            <style>wxTE_MULTILINE|wxTE_RICH</style>
+                            <value></value>
+                        </object>
+                    </object>
+                </object>
             </object>
-            <flag>wxALIGN_CENTRE_VERTICAL</flag>
-          </object>
-          <object class="sizeritem">
-            <object class="wxTextCtrl" name="PROP_PROGRAM_NAME"/>
-            <flag>wxEXPAND</flag>
-          </object>
-          <vgap>10</vgap>
-          <hgap>10</hgap>
-          <object class="sizeritem">
-            <object class="wxStaticText">
-              <label>Stage size:</label>
+            <object class="sizeritem">
+                <flag>wxALIGN_TOP|wxALL</flag>
+                <border>10</border>
+                <object class="wxBoxSizer">
+                    <orient>wxVERTICAL</orient>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
+                        <border>10</border>
+                        <object class="wxButton" name="DLG_FIND">
+                            <size>-1,-1</size>
+                            <tooltip>Find the first occurance of the search string.</tooltip>
+                            <style></style>
+                            <label>&amp;Find</label>
+                            <default>1</default>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
+                        <border>20</border>
+                        <object class="wxButton" name="DLG_FIND_ALL">
+                            <size>-1,-1</size>
+                            <tooltip>Find all occurances of the search string.</tooltip>
+                            <style></style>
+                            <label>Fi&amp;nd All</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
+                        <border>10</border>
+                        <object class="wxButton" name="DLG_REPLACE">
+                            <size>-1,-1</size>
+                            <tooltip>Replace the first occurance of the search string.</tooltip>
+                            <style></style>
+                            <label>&amp;Replace</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
+                        <border>20</border>
+                        <object class="wxButton" name="DLG_REPLACE_ALL">
+                            <size>-1,-1</size>
+                            <tooltip>Replace all occurances of the search string.</tooltip>
+                            <style></style>
+                            <label>Re&amp;place All</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_HORIZONTAL|wxBOTTOM</flag>
+                        <border>10</border>
+                        <object class="wxButton" name="DLG_DONT_FIND">
+                            <size>-1,-1</size>
+                            <tooltip>Exit the dialog without finding anything, but remember the current settings.</tooltip>
+                            <style></style>
+                            <label>&amp;Don't Find</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_HORIZONTAL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="wxID_CANCEL">
+                            <size>-1,-1</size>
+                            <tooltip>Exit the dialog, and discard any changes.</tooltip>
+                            <style></style>
+                            <label>Cancel</label>
+                        </object>
+                    </object>
+                </object>
             </object>
-            <flag>wxALIGN_CENTRE_VERTICAL</flag>
-          </object>
-          <object class="sizeritem">
-            <object class="wxChoice" name="PROP_PROGRAM_STAGE_SIZE">
-              <content>
-                <item>640x480</item>
-                <item>800x600</item>
-                <item>1024x768</item>
-              </content>
-              <style></style>
-            </object>
-          </object>
-          <object class="sizeritem">
-            <object class="wxStaticText">
-              <label>Copyright:</label>
-            </object>
-            <flag>wxALIGN_CENTRE_VERTICAL</flag>
-          </object>
-          <object class="sizeritem">
-            <object class="wxTextCtrl" name="PROP_PROGRAM_COPYRIGHT"/>
-            <flag>wxGROW</flag>
-          </object>
-          <object class="sizeritem">
-            <object class="wxStaticText">
-              <label>Version:</label>
-            </object>
-            <flag>wxALIGN_CENTRE_VERTICAL</flag>
-          </object>
-          <object class="sizeritem">
-            <object class="wxTextCtrl" name="PROP_PROGRAM_VERSION"/>
-            <flag>wxEXPAND</flag>
-          </object>
-          <object class="sizeritem">
-            <object class="wxStaticText">
-              <label>Comments:</label>
-            </object>
-          </object>
-          <object class="sizeritem">
-            <object class="wxTextCtrl" name="PROP_PROGRAM_COMMENTS">
-              <size>300, 200</size>
-              <style>wxTE_MULTILINE</style>
-            </object>
-          </object>
         </object>
-        <flag>wxALL|wxEXPAND</flag>
-        <border>10</border>
-      </object>
-      <object class="sizeritem">
-        <object class="wxFlexGridSizer">
-          <cols>4</cols>
-          <hgap>10</hgap>
-          <object class="sizeritem">
-            <object class="wxButton" name="wxID_OK">
-              <label>OK</label>
-              <default>1</default>
-            </object>
-          </object>
-          <object class="sizeritem">
-            <object class="wxButton" name="wxID_CANCEL">
-              <label>Cancel</label>
-            </object>
-          </object>
-          <object class="sizeritem">
-            <object class="wxButton" name="wxID_APPLY">
-              <label>Apply</label>
-            </object>
-          </object>
-          <object class="sizeritem">
-            <object class="wxButton" name="wxID_HELP">
-              <label>Help</label>
-            </object>
-          </object>
-        </object>
-        <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxALIGN_RIGHT</flag>
-        <border>10</border>
-      </object>
     </object>
-  </object>
 </resource>

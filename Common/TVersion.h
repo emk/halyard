@@ -22,15 +22,51 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		29
+#define VERSION_REV_BIG		30
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.29 (Development)"
+#define VERSION_STRING		"Tamale 0.0.30 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.72  2004/07/30 20:01:01  emk
+ 0.0.30 - 30 July 2004 - emk
+
+ We have a new wxWidgets version:
+
+   * Updated Tamale for latest CVS version of wxWidgets.
+   * Worked around radio-button defaut selection bug.
+   * Fixed assertion failure caused by latest wxWidgets.
+
+ ...and a new text editor:
+
+   * Added an editor widget based on wxStyledTextCtrl (i.e. Scintilla).
+   * Started using FiveL namespace on Windows.
+   * Added support for Scheme-style indentation.
+   * Implemented a tabbed-document control.
+   * Simple File, Edit and Search menus work.
+   * Saving, opening and reloading work faily well.
+
+ ...and some other stuff:
+
+   * Small bug-fix to alpha-channel box outline code--stop drawing
+     over the same area twice.
+
+ 0.0.29 - 02 June 2004 - emk, brian
+
+   * Moved most of overlay support into quake2/client, except for
+     actual drawing/conversion code.
+   * Added a broken stub implementation of GL overlays.  This might
+     actually work on some hardware, but seems to have driver issues
+     on my laptop.
+   * Added alpha channel support for horizontal lines, vertical lines
+     and outlined boxes.  These should also now be drawn in identical
+     locations regardless of graphics card and OS version.
+   * Added clear-prefs!, clear-user-prefs!, and clear-global-prefs!, to
+     support automatically clearing an entire preference file.
+
  Revision 1.71  2004/06/08 15:58:37  emk
  0.0.29 - emk, brian
 
