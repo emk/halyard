@@ -369,10 +369,20 @@
 
   (define (node-bind-property-values! node template)
     (foreach [decl (template-prop-decls template)]
+      (hash-table-put! (node-allowed-values node)
+                       (template-prop-decl-name decl)
+                       #t)
       (node-maybe-default-property! node decl))
     (let [[bindings ((template-bindings-eval-fn template) node)]]
       (foreach [[k v] bindings]
         (node-bind-value! node k v))))
+
+  (define (node-check-for-unexpected-properties node)
+    (define allowed (node-allowed-values node))
+    (foreach [[name value] (node-values node)]
+      (unless (hash-table-get allowed name (lambda () #f))
+        (error (cat "Unexpected property '" name "' on: "
+                    (node-full-name node))))))
 
   (define (prop* node name)
     ;; This function controls how we search for property bindings.  If
@@ -553,6 +563,8 @@
     (elements :type <list> :initvalue '())
     (has-expensive-handlers? :type <boolean> :initvalue #f)
     (handlers :type <hash-table> :initializer (lambda () (make-hash-table)))
+    (allowed-values :type <hash-table>
+                    :initializer (lambda () (make-hash-table)))
     (values   :type <hash-table> :initializer (lambda () (make-hash-table)))
     )
 
@@ -582,6 +594,7 @@
   (define (clear-node-state! node)
     (set! (node-has-expensive-handlers? node) #f)
     (set! (node-handlers node) (make-hash-table))
+    (set! (node-allowed-values node) (make-hash-table))
     (set! (node-values node) (make-hash-table)))
 
   (defgeneric (register-node (node <node>)))
@@ -961,6 +974,8 @@
         (recurse (template-extends template))
         ;; Pass NODE to the init-fn so SELF refers to the right thing.
         ((template-init-fn template) node)))
+    ;; Make sure all the properties of this node were declared somewhere.
+    (node-check-for-unexpected-properties node)
     ;; Let the node know all initialization functions have been run.
     ;; (This allows "two-phase" construction, where templates can effectively
     ;; send messages to subtemplates.)

@@ -334,7 +334,8 @@
     (create %edit-box-element% :name name :rect r :text text
             :font-size font-size :multiline? multiline?))
 
-  (define-element-template %invisible-element% [] (%element% :at (point 0 0)))
+  (define-element-template %invisible-element% [] (%element% ;;:at (point 0 0)
+                                                             ))
 
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
