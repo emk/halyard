@@ -8,6 +8,8 @@
 #include "FileSystem.h"
 #include "TPrimitives.h"
 #include "DrawingArea.h"
+#include "TStateDB.h"
+#include "BinMsgConv.h"
 
 using FileSystem::GetBaseDirectory;
 
@@ -123,6 +125,19 @@ void Quake2Engine::HandleCommand()
 			args.push_back(CommandArgv(i).mb_str());
 		callback->Run(args);
 	}
+}
+
+void Quake2Engine::HandleBinMsg(unsigned char *buffer, size_t size)
+{
+    BEGIN_EXCEPTION_TRAPPER() {
+        BinMsg msg(buffer, size);
+        TValueList args(msg.GetArgs());
+        if (msg.GetName() == "state") {
+            if (args.size() != 2)
+                THROW("Malformed 'state' message");
+            gStateDB.Set("/quake2/" + std::string(args[0]), args[1]);
+        }    
+    } END_EXCEPTION_TRAPPER();
 }
 
 void Quake2Engine::Initialize(const std::string &inGame)

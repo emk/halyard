@@ -16,6 +16,8 @@ CVS - kwasi, djin, emk
     listener system instead; it's happy.
   * Wrote serialization code for binmsg protocol.
   * Wrote deserialization code for binmsg protocol.
+  * Implemented binmsg support in stock gamex86.dll, client, wxquake2
+    and Tamale.
   * Added countdown template in scheme
 
 0.0.18 - 15 February 2004 - emk

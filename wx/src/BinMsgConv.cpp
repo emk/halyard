@@ -1,14 +1,67 @@
 // -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 
 #include "TamaleHeaders.h"
-
-extern "C" {
-#include "../libs/quake2/game/binmsg.h"
-};
+#include "BinMsgConv.h"
 
 USING_NAMESPACE_FIVEL
 
 REGISTER_TEST_CASE_FILE(BinMsg);
+
+
+//=========================================================================
+//  BinMsg Methods
+//=========================================================================
+
+static void CHK(binmsg_bool result) {
+    if (!result)
+        THROW("Error parsing binmsg");
+}
+
+BinMsg::BinMsg(binmsg_byte *buffer, size_t size) {
+    CHK(binmsg_parse(&mMessage, buffer, size));
+    mArgs = ConvArray(&mMessage.args);
+}
+    
+TValue BinMsg::ConvArray(binmsg_array *inArray) {
+    TValueList result;
+    for (size_t i = 0; i < inArray->size; i++)
+        result.push_back(ConvNext(inArray));
+    return result;
+}
+
+TValue BinMsg::ConvNext(binmsg_array *inArray) {
+    binmsg_type type;
+    binmsg_get_next_type(inArray, &type);
+    switch (type) {
+        case BINMSG_INT_TYPE:
+            binmsg_int i;
+            CHK(binmsg_get_int(inArray, &i));
+            return i;
+
+        case BINMSG_FLOAT_TYPE:
+            binmsg_float f;
+            CHK(binmsg_get_float(inArray, &f));
+            return f;
+
+        case BINMSG_STRING_TYPE:
+            binmsg_string s;
+            CHK(binmsg_get_string(inArray, &s));
+            return s;
+
+        case BINMSG_BOOL_TYPE:
+            binmsg_bool b;
+            CHK(binmsg_get_bool(inArray, &b));
+            return b ? true : false;
+
+        case BINMSG_ARRAY_TYPE:
+            binmsg_array a;
+            CHK(binmsg_get_array(inArray, &a));
+            return ConvArray(&a);
+            
+        default:
+            THROW("Unknown binmsg data type");
+    }
+}
 
 
 //=========================================================================

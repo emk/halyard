@@ -95,6 +95,7 @@ public:
 
 protected:
 	virtual void HandleCommand();
+    virtual void HandleBinMsg(unsigned char *buffer, size_t size);
 };
 
 #endif // CONFIG_HAVE_QUAKE2

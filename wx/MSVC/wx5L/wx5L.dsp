@@ -106,7 +106,7 @@ SOURCE=..\..\src\AudioStreamElement.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\BinMsg.cpp
+SOURCE=..\..\src\BinMsgConv.cpp
 # End Source File
 # Begin Source File
 
@@ -302,6 +302,10 @@ SOURCE=..\..\src\AudioStream.h
 # Begin Source File
 
 SOURCE=..\..\src\AudioStreamElement.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\BinMsgConv.h
 # End Source File
 # Begin Source File
 
