@@ -44,6 +44,7 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
+	REGISTER_5L_PRIMITIVE(RegisterCard);
     REGISTER_5L_PRIMITIVE(Screen);
     REGISTER_5L_PRIMITIVE(SetWindowTitle);
 	REGISTER_5L_PRIMITIVE(TextAA);
@@ -291,6 +292,13 @@ DEFINE_5L_PRIMITIVE(Movie)
 					 path.c_str(), 0, style);
 }
 
+DEFINE_5L_PRIMITIVE(RegisterCard)
+{
+	std::string name;
+	inArgs >> SymbolName(name);
+	wxGetApp().GetStage()->RegisterCard(name.c_str());
+}
+
 /*---------------------------------------------------------------
     (SCREEN COLOR)
 
@@ -312,7 +320,7 @@ DEFINE_5L_PRIMITIVE(SetWindowTitle)
 {
     std::string title;
     inArgs >> title;
-    wxGetApp().GetStageFrame()->SetTitle(title.c_str());
+    wxGetApp().GetStage()->SetProgramName(title.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(TextAA)

@@ -2,6 +2,9 @@
 
 #include <wx/wx.h>
 #include <wx/dcraw.h>
+#include <wx/treectrl.h>
+#include <wx/laywin.h>
+#include <wx/config.h>
 
 #include "TCommon.h"
 #include "TInterpreter.h"
@@ -35,34 +38,51 @@ USING_NAMESPACE_FIVEL
 //  This class implements the wxWindow *behind* the stage.  It has few
 //  duties other than (1) being black and (2) keeping the stage centered.
 
-class StageBackground : public wxWindow
+class StageBackground : public wxSashLayoutWindow
 {
 	DECLARE_EVENT_TABLE();
 
+	StageFrame *mStageFrame;
 	bool mHaveStage;
 
 	void OnSize(wxSizeEvent& event);
 
 public:
 	StageBackground(StageFrame *inStageFrame);
+	void UpdateColor();
 	void CenterStage(Stage *inStage);
 };
 
-BEGIN_EVENT_TABLE(StageBackground, wxWindow)
+BEGIN_EVENT_TABLE(StageBackground, wxSashLayoutWindow)
     EVT_SIZE(StageBackground::OnSize)
 END_EVENT_TABLE()
 
 StageBackground::StageBackground(StageFrame *inStageFrame)
-	: wxWindow(inStageFrame, -1, wxDefaultPosition, wxDefaultSize),
-	  mHaveStage(false)
+	: wxSashLayoutWindow(inStageFrame, -1, wxDefaultPosition, wxDefaultSize,
+						 wxNO_BORDER),
+	  mStageFrame(inStageFrame), mHaveStage(false)
 {
-    SetBackgroundColour(STAGE_BACKGROUND_COLOR);
+	if (mStageFrame->IsFullScreen())
+		SetBackgroundColour(STAGE_BACKGROUND_COLOR);
+	else
+		SetBackgroundColour(STAGE_BACKGROUND_COLOR_NEUTRAL);
 }
 
-void StageBackground::OnSize(wxSizeEvent& event)
+void StageBackground::OnSize(wxSizeEvent &WXUNUSED(event))
 {
     if (GetAutoLayout())
         Layout();
+}
+
+void StageBackground::UpdateColor()
+{
+	// We're called immediately *before* toggling ShowFullScreen,
+	// so we need to set our background color to what we want it
+	// to be *after* the call.  So this test is backwards...
+	if (!mStageFrame->IsFullScreen())
+		SetBackgroundColour(STAGE_BACKGROUND_COLOR);
+	else
+		SetBackgroundColour(STAGE_BACKGROUND_COLOR_NEUTRAL);
 }
 
 void StageBackground::CenterStage(Stage *inStage)
@@ -77,6 +97,155 @@ void StageBackground::CenterStage(Stage *inStage)
     v_sizer->Add(h_sizer, 1 /* stretch */, wxALIGN_CENTER, 0);
     h_sizer->Add(inStage, 0 /* no stretch */, wxALIGN_CENTER, 0);
     SetSizer(v_sizer);
+}
+
+
+//=========================================================================
+//  ProgramTree
+//=========================================================================
+
+#include <map>
+
+class ProgramTreeCtrl : public wxTreeCtrl
+{
+	DECLARE_EVENT_TABLE()
+
+public:
+	ProgramTreeCtrl(wxWindow *inParent, int id);
+
+private:
+	void OnMouseDClick(wxMouseEvent& event);
+};	
+
+class ProgramTree : public wxSashLayoutWindow
+{
+	DECLARE_EVENT_TABLE()
+
+	typedef std::map<std::string,wxTreeItemId> ItemMap;
+
+	wxTreeCtrl *mTree;
+
+	wxTreeItemId mRootID;
+	wxTreeItemId mCardsID;
+	wxTreeItemId mBackgroundsID;
+
+	ItemMap mCardMap;
+
+	bool mHaveLastHighlightedItem;
+	wxTreeItemId mLastHighlightedItem;
+
+	enum {
+		MINIMUM_WIDTH = 150
+	};
+
+public:
+	ProgramTree(StageFrame *inStageFrame, int inID);
+
+    //////////
+    // Regiter a newly-loaded card with the program tree.
+    //
+    void RegisterCard(const wxString &inName);
+
+	//////////
+	// Set the name of the currently executing program.
+	//
+	void SetProgramName(const wxString &inName);
+
+	//////////
+	// Set the default width which will be used when laying out this window.
+	//
+	void SetDefaultWidth(int inWidth);
+
+	//////////
+	// Notify the program tree that script is being reloaded.
+	//
+    void NotifyScriptReload();
+
+    //////////
+    // Notify the program tree that the interpreter has moved to a new card.
+    //
+    void NotifyEnterCard();
+};
+
+BEGIN_EVENT_TABLE(ProgramTreeCtrl, wxTreeCtrl)
+    EVT_LEFT_DCLICK(ProgramTreeCtrl::OnMouseDClick)
+END_EVENT_TABLE()
+
+ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent, int id)
+	: wxTreeCtrl(inParent, id)
+{
+}
+
+void ProgramTreeCtrl::OnMouseDClick(wxMouseEvent& event)
+{
+    wxTreeItemId id = HitTest(event.GetPosition());
+    if (id)
+        ::wxLogError("Clicked on: " + GetItemText(id));
+}
+
+BEGIN_EVENT_TABLE(ProgramTree, wxSashLayoutWindow)
+END_EVENT_TABLE()
+
+ProgramTree::ProgramTree(StageFrame *inStageFrame, int inID)
+	: wxSashLayoutWindow(inStageFrame, inID),
+	  mHaveLastHighlightedItem(false)
+{
+	// Set up our tree control.
+	mTree = new ProgramTreeCtrl(this, FIVEL_PROGRAM_TREE_CTRL);
+	mRootID = mTree->AddRoot("Program");
+	mCardsID = mTree->AppendItem(mRootID, "Cards");
+	mBackgroundsID = mTree->AppendItem(mRootID, "Backgrounds");
+
+	// Set our minimum sash width.
+	SetMinimumSizeX(MINIMUM_WIDTH);
+    SetDefaultWidth(MINIMUM_WIDTH);
+}
+
+void ProgramTree::RegisterCard(const wxString &inName)
+{
+	// Check to make sure we don't already have a card by this name.
+	wxASSERT(mCardMap.find(inName.mb_str()) == mCardMap.end());
+
+	// Insert the card into our tree.
+	wxTreeItemId id = mTree->AppendItem(mCardsID, inName);
+
+	// Record the card in our map.
+	mCardMap.insert(ItemMap::value_type(inName.mb_str(), id));
+}
+
+void ProgramTree::SetProgramName(const wxString &inName)
+{
+	mTree->SetItemText(mRootID, "Program '" + inName + "'");
+}
+
+void ProgramTree::SetDefaultWidth(int inWidth)
+{
+	SetDefaultSize(wxSize(inWidth, 0 /* unused */));
+}
+
+void ProgramTree::NotifyScriptReload()
+{
+	mCardMap.clear();
+	mTree->SetItemText(mRootID, "Program");
+	mTree->CollapseAndReset(mCardsID);
+	mTree->CollapseAndReset(mBackgroundsID);
+}
+
+void ProgramTree::NotifyEnterCard()
+{
+	// Look up the ID corresponding to this card.
+	ASSERT(TInterpreter::HaveInstance());
+	std::string card = TInterpreter::GetInstance()->CurCardName();
+	ItemMap::iterator found = mCardMap.find(card);
+	wxASSERT(found != mCardMap.end());
+
+	// Move the highlighting to the appropriate card.
+	if (mHaveLastHighlightedItem)
+		mTree->SetItemBold(mLastHighlightedItem, FALSE);
+	mTree->SetItemBold(found->second);
+	mHaveLastHighlightedItem = true;
+	mLastHighlightedItem = found->second;
+	mTree->EnsureVisible(found->second);
 }
 
 
@@ -101,13 +270,16 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_DISPLAY_BORDERS, StageFrame::OnDisplayBorders)
     EVT_UPDATE_UI(FIVEL_JUMP_CARD, StageFrame::UpdateUiJumpCard)
     EVT_MENU(FIVEL_JUMP_CARD, StageFrame::OnJumpCard)
+    EVT_SASH_DRAGGED(FIVEL_PROGRAM_TREE, StageFrame::OnSashDrag)
+	EVT_SIZE(StageFrame::OnSize)
     EVT_CLOSE(StageFrame::OnClose)
 END_EVENT_TABLE()
 
 StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     : wxFrame((wxFrame*) NULL, -1, inTitle,
-              wxDefaultPosition, wxDefaultSize,
-              wxMINIMIZE_BOX|wxSYSTEM_MENU|wxCAPTION)
+              LoadFramePosition(), wxDefaultSize,
+			  wxDEFAULT_FRAME_STYLE),
+	  mHaveLoadedFrameLayout(false)
 {
     // Set up useful logging.
     mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
@@ -124,13 +296,19 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     // fraction of a second to show that object.
     SetBackgroundColour(STAGE_FRAME_COLOR);
 
+	// Create a sash window holding a tree widget.
+	mProgramTree = new ProgramTree(this, FIVEL_PROGRAM_TREE);
+	mProgramTree->SetOrientation(wxLAYOUT_VERTICAL);
+	mProgramTree->SetAlignment(wxLAYOUT_LEFT);
+	mProgramTree->SetSashVisible(wxSASH_RIGHT, TRUE);
+
     // Create a background panel to surround our stage with.  This keeps
     // life simple.
-    StageBackground *background = new StageBackground(this);
+    mBackground = new StageBackground(this);
 
     // Create a stage object to scribble on, and center it.
-    mStage = new Stage(background, this, inSize);
-	background->CenterStage(mStage);
+    mStage = new Stage(mBackground, this, inSize);
+	mBackground->CenterStage(mStage);
 
     // Set up our File menu.
     mFileMenu = new wxMenu();
@@ -206,8 +384,101 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     CreateStatusBar(1, 0);
 
     // Resize the "client area" of the window (the part that's left over
-    // after menus, status bars, etc.) to hold the stage.
-    SetClientSize(inSize);
+    // after menus, status bars, etc.) to hold the stage and the program
+	// tree.
+    SetClientSize(wxSize(inSize.GetWidth() + mProgramTree->GetMinimumSizeX(),
+						 inSize.GetHeight()));
+
+	// Don't allow the window to get any smaller.
+	// XXX - This probably isn't a reliable way to do this.
+	wxSize min_size = GetSize();
+	SetSizeHints(min_size.GetWidth(), min_size.GetHeight());
+
+	// Re-load our saved frame layout.  We can't do this until after
+	// our setup is completed.
+	LoadFrameLayout();
+}
+
+wxPoint StageFrame::LoadFramePosition()
+{
+	// TODO - Sanity-check position.
+	long pos_x, pos_y;
+	wxConfigBase *config = wxConfigBase::Get();
+	if (config->Read("/Layout/Default/StageFrame/Left", &pos_x) &&
+		config->Read("/Layout/Default/StageFrame/Top", &pos_y))
+		return wxPoint(pos_x, pos_y);
+	else
+		return wxDefaultPosition;
+}
+
+void StageFrame::LoadFrameLayout()
+{
+	// Get our default values.
+	wxSize sz = GetClientSize();
+	long is_maximized = IsMaximized();
+	long sz_client_width = sz.GetWidth();
+	long sz_client_height = sz.GetHeight();
+	long program_tree_width;
+
+	// Load values from our config file.
+	wxConfigBase *config = wxConfigBase::Get();
+	config->Read("/Layout/Default/StageFrame/IsMaximized", &is_maximized);
+	config->Read("/Layout/Default/StageFrame/ClientWidth", &sz_client_width);
+	config->Read("/Layout/Default/StageFrame/ClientHeight", &sz_client_height);
+	config->Read("/Layout/Default/StageFrame/ProgramTreeWidth",
+				 &program_tree_width);
+
+	// Restore our non-maximized layout first.  We restore the
+	// ProgramTree width before anything else, so it will get appropriately
+	// adjusted by the frame resize events.
+	// NOTE - We'll only make the window larger, never smaller, because
+	// we assume that GetClientSize is currently the minimum allowable.
+	mProgramTree->SetDefaultWidth(program_tree_width);
+	wxSize new_size = GetClientSize();
+	if (sz_client_width >= new_size.GetWidth() &&
+		sz_client_height >= new_size.GetHeight())
+		new_size = wxSize(sz_client_width, sz_client_height);
+	SetClientSize(new_size);
+
+	// If necessary, maximize our window.
+	if (is_maximized)
+		Maximize(TRUE);
+
+	// It's now safe to resave these values.
+	mHaveLoadedFrameLayout = true;
+}
+
+void StageFrame::MaybeSaveFrameLayout()
+{
+	// Don't save the frame layout if we haven't loaded it yet, or if we're
+	// in full-screen mode (which has an automatically-chosen layout).
+	if (!mHaveLoadedFrameLayout || IsFullScreen())
+		return;
+
+	wxConfigBase *config = wxConfigBase::Get();
+	config->Write("/Layout/Default/StageFrame/IsMaximized",
+				  IsMaximized() ? 1 : 0);
+	if (!IsMaximized())
+	{
+		// Only save the window position if we aren't maximized.
+		wxPoint pos = GetPosition();
+		wxSize sz = GetClientSize();
+		config->Write("/Layout/Default/StageFrame/Left", pos.x);
+		config->Write("/Layout/Default/StageFrame/Top", pos.y);
+		config->Write("/Layout/Default/StageFrame/ClientWidth", sz.GetWidth());
+		config->Write("/Layout/Default/StageFrame/ClientHeight",
+					  sz.GetHeight());
+	}
+	config->Write("/Layout/Default/StageFrame/ProgramTreeWidth",
+				  mProgramTree->GetSize().GetWidth());
+}
+
+bool StageFrame::ShowFullScreen(bool show, long style)
+{
+	mProgramTree->Show(!show);
+	mBackground->UpdateColor();
+	bool result = wxFrame::ShowFullScreen(show, style);
+	return result;
 }
 
 void StageFrame::OnExit(wxCommandEvent &inEvent)
@@ -342,8 +613,49 @@ void StageFrame::OnJumpCard(wxCommandEvent &inEvent)
 	}
 }
 
+void StageFrame::OnSashDrag(wxSashEvent &inEvent)
+{
+    if (inEvent.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE)
+        return;
+    if (inEvent.GetId() != FIVEL_PROGRAM_TREE)
+		return;
+
+	mProgramTree->SetDefaultWidth(inEvent.GetDragRect().width);
+
+    wxLayoutAlgorithm layout;
+    layout.LayoutFrame(this, mBackground);
+	MaybeSaveFrameLayout();
+}
+
+void StageFrame::OnSize(wxSizeEvent &WXUNUSED(inEvent))
+{
+	// Make sure no sash window can be expanded to obscure parts of our
+	// stage.  We need to do this whenever the window geometry changes.
+	wxSize client_size = GetClientSize();
+	wxSize stage_size = GetStage()->GetStageSize();
+	wxCoord available_space = client_size.GetWidth() - stage_size.GetWidth();
+	if (available_space > 0)
+	{
+		// XXX - If available_space <= 0, then our window still hasn't
+		// been resized to hold the stage, and we shouldn't call
+		// SetDefaultSize unless we want weird things to happen.
+		if (mProgramTree->GetSize().GetWidth() > available_space)
+			mProgramTree->SetDefaultWidth(available_space);
+		mProgramTree->SetMaximumSizeX(available_space);
+	}
+
+	// Ask wxLayoutAlgorithm to do smart resizing, taking our various
+	// subwindows and constraints into account.
+    wxLayoutAlgorithm layout;
+    layout.LayoutFrame(this, mBackground);
+	MaybeSaveFrameLayout();
+}
+
 void StageFrame::OnClose(wxCloseEvent &inEvent)
 {
+	// Save our layout one last time.
+	MaybeSaveFrameLayout();
+
     // If we've got an interpreter manager, we'll need to ask it to
     // shut down the application.
     if (TInterpreterManager::HaveInstance())
@@ -399,9 +711,21 @@ Stage::~Stage()
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
 }
 
+void Stage::RegisterCard(const wxString &inName)
+{
+	mFrame->GetProgramTree()->RegisterCard(inName);
+}
+
+void Stage::SetProgramName(const wxString &inName)
+{
+	mFrame->SetTitle(inName);
+	mFrame->GetProgramTree()->SetProgramName(inName);
+}
+
 void Stage::NotifyEnterCard()
 {
 	mFrame->GetLocationBox()->NotifyEnterCard();
+	mFrame->GetProgramTree()->NotifyEnterCard();
 }
 
 void Stage::NotifyExitCard()
@@ -413,6 +737,7 @@ void Stage::NotifyExitCard()
 
 void Stage::NotifyScriptReload()
 {
+	mFrame->GetProgramTree()->NotifyScriptReload();
     NotifyExitCard();
 	gStyleSheetManager.RemoveAll();
 

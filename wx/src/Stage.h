@@ -14,9 +14,12 @@
 class Stage;
 class Element;
 class LocationBox;
+class ProgramTree;
 class ToolWindow;
 class TQTMovie;
 class MovieElement;
+class StageBackground;
+class wxSashEvent;
 
 // See ToolWindow.h.
 enum ToolWindowID {
@@ -51,6 +54,22 @@ class StageFrame : public wxFrame
     //
     Stage *mStage;
 
+	//////////
+	// The frame surrounding our stage.  This is just empty space.
+	//
+	StageBackground *mBackground;
+
+	//////////
+	// A window which displays a tree of all the interesting information
+	// in our program.
+	//
+	ProgramTree *mProgramTree;
+
+	//////////
+	// The drop-down box which allows us to jump between cards.
+	//
+	LocationBox *mLocationBox;
+
     // Menus, etc.
     wxMenuBar *mMenuBar;
     wxMenu *mFileMenu;
@@ -60,9 +79,26 @@ class StageFrame : public wxFrame
     wxMenu *mHelpMenu;
 
 	//////////
-	// The drop-down box which allows us to jump between cards.
+	// Have we re-loaded our layout?
 	//
-	LocationBox *mLocationBox;
+	bool mHaveLoadedFrameLayout;
+
+	//////////
+	// We need to load this layout information *before* we load anything
+	// else, because there's no portable way to change it once the window
+	// is created.
+	//
+	static wxPoint LoadFramePosition();
+
+	//////////
+	// Load the layout for the current frame.
+	//
+	void LoadFrameLayout();
+
+	//////////
+	// Save the layout for the current frame if it's safe to do so.
+	//
+	void MaybeSaveFrameLayout();
 
 public:
     //////////
@@ -83,6 +119,11 @@ public:
     //
     LocationBox *GetLocationBox() { return mLocationBox; }
 
+    //////////
+    // Get the program tree attached to this frame.
+    //
+    ProgramTree *GetProgramTree() { return mProgramTree; }
+
 	//////////
 	// Notify the StageFrame that the specified tool window is being
 	// destroyed.  This should only be called by the tool window
@@ -90,10 +131,17 @@ public:
 	//
 	void DetachToolWindow(ToolWindowID inTool) { mToolWindows[inTool] = NULL; }
 
+	//////////
+	// Override wxFrame's ShowFullScreen method so we can hide some
+	// distracting visual clutter.
+	//
+    virtual bool ShowFullScreen(bool show, long style = wxFULLSCREEN_ALL);
+
+private:
+	// Lots of menu and toolbar event handlers.
     void OnExit(wxCommandEvent &inEvent);
     void OnReloadScript(wxCommandEvent &inEvent);
     void OnAbout(wxCommandEvent &inEvent);
-
     void OnShowLog(wxCommandEvent &inEvent);
     void OnShowListener(wxCommandEvent &inEvent);
     void OnShowTimecoder(wxCommandEvent &inEvent);
@@ -107,6 +155,19 @@ public:
     void OnDisplayBorders(wxCommandEvent &inEvent);
     void UpdateUiJumpCard(wxUpdateUIEvent &inEvent);
     void OnJumpCard(wxCommandEvent &inEvent);
+
+	//////////
+	// "Sashes" are narrow bars between subwindows in frame.  When
+	// a sash in the main window is dragged, it generates an event
+	// which we process here.
+	//
+	void OnSashDrag(wxSashEvent &inEvent);
+
+    //////////
+	// We provide an OnSize handler so we can handle window resizing
+	// gracefully.
+	//
+	void OnSize(wxSizeEvent &inEvent);
 
     //////////
     // We provide an OnClose event handler so we can notify the application
@@ -249,6 +310,21 @@ public:
 	// by wxWindows.
 	//
     ~Stage();
+
+	//////////
+	// Get the size of our stage.
+	//
+	wxSize GetStageSize() const { return mStageSize; }
+
+    //////////
+    // Register a newly-loaded card with the stage frame.
+    //
+    void RegisterCard(const wxString &inName);
+
+	//////////
+	// Set the name of the program we're running.
+	//
+	void SetProgramName(const wxString &inName);
 
     //////////
     // Notify the stage that the interpreter has moved to a new card.
