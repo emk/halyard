@@ -64,106 +64,6 @@ ConfigManager::~ConfigManager()
 {
 }
 
-// Use defaults for user preferences
-void ConfigManager::UseDefaultPrefs()
-{
-	for (int i=0; i<PREFS_SIZE; i++)
-		userPrefs[i] = 0;
-}
-
-// Parses user preferences file
-void ConfigManager::ParsePrefs(TString absoluteFilename)
-{
-	ifstream	prefsFile;			// user preferences
-	bool		errFlag = false;	// error flag
-	char		errString[256];		// used to print error message
-
-	// Open the file
-	prefsFile.open(absoluteFilename, ios::in | ios::nocreate);
-	if (prefsFile.fail())
-	{
-		gDebugLog.Log("Could not open user preferences file \"%s\", using defaults.", absoluteFilename.GetString());
-		gVariableManager.SetString("_debug", "0");
-		UseDefaultPrefs();
-		return;	
-	}
-	
-	// _debug is set in the presence of 5L.prefs
-	gVariableManager.SetString("_debug", "1");
-	
-	// Parse the file
-	while (!prefsFile.eof()) 
-	{
-		TString key, 
-				value;
-		char	lineBuf[128];
-
-		prefsFile.getline(lineBuf, 128, '\n');
-		if (GetPrefsKeyValue(lineBuf, key, value))
-		{
-			if (key.Equal("db_type", false)) 
-			{
-				if (value.Equal("encrypted", false))
-					userPrefs[DB_TYPE] = DB_TYPE_ENCRYPTED;
-				else if (value.Equal("clear", false))
-					userPrefs[DB_TYPE] = DB_TYPE_CLEAR;
-				else
-					errFlag = true;	
-			}
-			else if (key.Equal("db_writes", false)) 
-			{
-				if (value.Equal("exit", false))
-					userPrefs[DB_WRITES] = DB_WRITES_EXIT;
-				else if (value.Equal("close", false))
-					userPrefs[DB_WRITES] = DB_WRITES_CLOSE;
-				else if (value.Equal("write", false))
-					userPrefs[DB_WRITES] = DB_WRITES_WRITE;			
-			}
-			else if (key.Equal("mode", false)) 
-			{
-				if (value.Equal("fullscreen", false))
-					userPrefs[MODE] = MODE_FULLSCREEN;
-				else if (value.Equal("window", false))
-					userPrefs[MODE] = MODE_WINDOW;
-			}
-			else if (key.Equal("multiple_instances", false))
-			{
-				if (value.Equal("no"))
-					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_NO;
-				else if (value.Equal("yes"))
-					userPrefs[MULTIPLE_INSTANCES] = MULTIPLE_INSTANCES_YES;
-			}
-			else if (key.Equal("redoscript", false))
-			{
-				if (value.Equal("off", false))
-					userPrefs[REDOSCRIPT] = REDOSCRIPT_OFF;
-				else if (value.Equal("on", false))
-					userPrefs[REDOSCRIPT] = REDOSCRIPT_ON;
-			}
-			else if (key.Equal("debug_log", false))
-			{
-				if (value.Equal("off", false))
-					userPrefs[DEBUG_LOG] = DEBUG_LOG_OFF;
-				else if (value.Equal("on", false))
-					userPrefs[DEBUG_LOG] = DEBUG_LOG_ON;
-			}
-			else
-			{
-				errFlag = true;
-				sprintf(errString, "Unknown option in user preferences file \"%s\", reverting to defaults", key.GetString());
-			}
-		}
-	}
-	prefsFile.close();
-
-	if (errFlag)
-	{
-		AlertMsg(errString, false);
-		UseDefaultPrefs();
-		return;
-	}
-}
-
 //
 //	Init - Process the command line and read the config file.
 //
@@ -432,11 +332,6 @@ bool ConfigManager::Init(LPSTR inCmdLine)
 		}
 		userProfile.close();
 	}
-
-	// Parse the user preferences file
-	TString prefsFilename = m_InstallDir;
-	prefsFilename += USER_PREFS_FILE;
-	ParsePrefs(prefsFilename);
 
     // now try to read the config file to get information about
     // other scripts in the title
@@ -747,46 +642,18 @@ TString ConfigManager::GetAudioPath(TString &inName)
 //
 //	return (have_CD);
 //}
-
-//////////////////////////////////////////////////////////////////////////
-///////////////////////////// Private ////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
-bool	ConfigManager::GetPrefsKeyValue(char *line, TString &key, TString &value)
-{	
-	int pos1, pos2;
-
-	TString sLine = line;
-	sLine.LTrim();
-
-	key = "";
-	value = "";
-
-	// First check for comment chars
-	if (sLine.StartsWith("#") || sLine.StartsWith(";") || sLine.StartsWith("//"))
-		return false;
-
-	// Parse the key
-	if ((pos1 = sLine.Find(' ')) < 0)
-		return false;
-	key = sLine.Mid(0, pos1);
-
-	// Parse the value
-	pos2 = sLine.Find('"', pos1);					// set pos2 to 1st quote
-	pos1 = sLine.Find('"', pos2 + 1);				// set pos1 to 2nd quote
-	if (pos2 < 0 || pos1 < 0)
-		return false;
-	value = sLine.Mid(pos2 + 1, pos1 - pos2 - 1);  
-
-	// Make sure a key and value are not empty 
-	if (key.IsEmpty() || value.IsEmpty())
-		return false;
-	
-	return true;
-}
  
 /*
  $Log$
+ Revision 1.6.8.1  2002/06/05 07:05:30  emk
+ Began isolating the 5L-language-specific code in Win5L:
+
+   * Created a TInterpreter class, which will eventually become the
+     interface to all language-related features.
+   * Moved ssharp's developer preference support out of Config.{h,cpp}
+     (which are tighly tied to the language) and into TDeveloperPrefs.{h,cpp},
+     where they will be isolated and easy to port to other platforms.
+
  Revision 1.6  2002/03/05 10:25:41  tvw
  Added new option to 5L.prefs to optionally allow multiple
  instances of 5L to run.

@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 
+#include "TDeveloperPrefs.h"
 #include "LFileBundle.h"
 #include "Globals.h"
 #include <time.h>
@@ -52,7 +53,7 @@ bool LFileBundle::Init()
 	gDebugLog.Log("CryptFile test time = %ld millis", endTime - startTime);
 	*/
 
-	isEncrypted = (gConfigManager.GetUserPref(DB_TYPE) == DB_TYPE_ENCRYPTED);
+	isEncrypted = (gDeveloperPrefs.GetPref(DB_TYPE) == DB_TYPE_ENCRYPTED);
 	
 	// Construct bundleFilename
 	const char *dataDir = gConfigManager.DataPath();
@@ -65,7 +66,7 @@ bool LFileBundle::Init()
 	currentUser = gConfigManager.DLSUser();
 
 	cache.SetMinResize(STRING_MIN_RESIZE);
-	cacheWriteFreq = gConfigManager.GetUserPref(DB_WRITES);
+	cacheWriteFreq = gDeveloperPrefs.GetPref(DB_WRITES);
 
     // Open and Read the Bundle into cache
 	if (!OpenAndReadBundle())

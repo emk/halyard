@@ -26,7 +26,7 @@ int main (int argc, char **argv)
 {
 	try
 	{
-		FIVEL_NS TLogger::OpenStandardLogs(true);
+		FIVEL_NS InitializeCommonCode();
 
 		test_TString();
 		test_TStream();

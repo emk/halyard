@@ -28,6 +28,7 @@ libfivel_a_SOURCES = \
 	THeader.h \
 	TIndex.cpp \
 	TIndex.h \
+	TInterpreter.h \
 	TLogger.cpp \
 	TLogger.h \
 	TObject.cpp \

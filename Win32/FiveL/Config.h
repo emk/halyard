@@ -12,41 +12,10 @@
 #if !defined (_Config_h_)
 #define _Config_h_
 
-#define DLS_USER_PROFILE "user.profile"
-#define USER_PREFS_FILE "5L.prefs"
-
-// Size and Indices for user preferences 
-#define PREFS_SIZE	5
-
-#define DB_TYPE				0
-#define DB_WRITES			1
-#define MODE				2
-#define MULTIPLE_INSTANCES	3
-#define DEBUG_LOG			4
-#define REDOSCRIPT			5
-
-// Options for the above user preferences (first option is default)
-#define DB_TYPE_ENCRYPTED		0
-#define DB_TYPE_CLEAR			1
-
-#define DB_WRITES_EXIT			0
-#define DB_WRITES_CLOSE			1
-#define DB_WRITES_WRITE			2
-
-#define MODE_FULLSCREEN			0
-#define MODE_WINDOW				1
-
-#define MULTIPLE_INSTANCES_NO	0
-#define MULTIPLE_INSTANCES_YES	1
-
-#define DEBUG_LOG_OFF			0
-#define DEBUG_LOG_ON			1
-
-#define REDOSCRIPT_OFF			0
-#define REDOSCRIPT_ON			1
-
 #include "TCommon.h"
 #include "TString.h"
+
+#define DLS_USER_PROFILE "user.profile"
 
 /*-----------------------------------------------------------------
 
@@ -110,27 +79,6 @@ class ConfigManager : public TObject
 		// Empty Destructor.
 		//
 		~ConfigManager();
-			
-		//////////
-		// Use default user preferences.
-		//
-		void		UseDefaultPrefs();
-		
-		//////////
-		// Parse user preferences file
-		//
-		// [in] absoluteFilename - filename including directory info
-		//
-		void		ParsePrefs(TString absoluteFilename);
-
-		//////////
-		// Get a user preference.
-		// 
-		// [in] thePref - the preference to get (defined by constants in header file)
-		// [out] return - the value of this preference (defined by constants in header file)
-		//
-		int			GetUserPref(int thePref)
-				{ return userPrefs[thePref]; }
 
 		//////////
 		// Process the command line args and read the config file.
@@ -339,27 +287,21 @@ class ConfigManager : public TObject
 		// Config array.
 		//
 		Config		*m_Configs;
-
-		//////////
-		// User preferences.
-		//
-		int			userPrefs[PREFS_SIZE];
-
-		//////////
-		// Parses a single line in the user preferences file.
-		//
-		// [in] line - a line from the input file
-		// [in/out] key - the key parsed from this line
-		// [in/out] value - the value parsed from this line
-		// [out] return - true a key and value were parsed, false otherwise
-		//
-		bool		GetPrefsKeyValue(char *line, TString &key, TString &value); 
 };
 
 #endif // _Config_h_
 
 /*
  $Log$
+ Revision 1.4.8.1  2002/06/05 07:05:30  emk
+ Began isolating the 5L-language-specific code in Win5L:
+
+   * Created a TInterpreter class, which will eventually become the
+     interface to all language-related features.
+   * Moved ssharp's developer preference support out of Config.{h,cpp}
+     (which are tighly tied to the language) and into TDeveloperPrefs.{h,cpp},
+     where they will be isolated and easy to port to other platforms.
+
  Revision 1.4  2002/03/05 10:25:41  tvw
  Added new option to 5L.prefs to optionally allow multiple
  instances of 5L to run.

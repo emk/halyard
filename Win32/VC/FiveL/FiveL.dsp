@@ -355,6 +355,10 @@ SOURCE=..\..\FiveL\SysInfo.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\FiveL\TWin5LInterpreter.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\FiveL\Video.h
 # End Source File
 # Begin Source File

@@ -23,6 +23,7 @@
 
 #include "TCommon.h" 
 
+#include "TDeveloperPrefs.h"
 #include "Card.h"
 #include "LUtil.h"
 #include "LDiskUtils.h"
@@ -1912,7 +1913,7 @@ void Card::DoRead()
 void Card::DoReDoScript()
 {
 	// make sure redoscript functionality is enabled
-	if (gConfigManager.GetUserPref(REDOSCRIPT) == REDOSCRIPT_OFF)
+	if (gDeveloperPrefs.GetPref(REDOSCRIPT) == REDOSCRIPT_OFF)
 		return;
 	
 	TString		theCard;
@@ -2683,7 +2684,7 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 	//  when redoscript functionality is enabled, read the script into memory so that 
 	//	the file can be changed without invalidating the index information
-	if (gConfigManager.GetUserPref(REDOSCRIPT) == REDOSCRIPT_ON)
+	if (gDeveloperPrefs.GetPref(REDOSCRIPT) == REDOSCRIPT_ON)
 		newCard->SetScript();
 
     Add(newCard); 
@@ -2695,6 +2696,15 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.6.2.1  2002/06/05 07:05:30  emk
+ Began isolating the 5L-language-specific code in Win5L:
+
+   * Created a TInterpreter class, which will eventually become the
+     interface to all language-related features.
+   * Moved ssharp's developer preference support out of Config.{h,cpp}
+     (which are tighly tied to the language) and into TDeveloperPrefs.{h,cpp},
+     where they will be isolated and easy to port to other platforms.
+
  Revision 1.6  2002/05/29 13:58:17  emk
  3.3.4 - Fixed various crash-on-exit problems (including those in TBTree,
  TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code

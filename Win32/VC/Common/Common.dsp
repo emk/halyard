@@ -113,6 +113,10 @@ SOURCE=..\..\..\Common\TDateUtil.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TDeveloperPrefs.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TEncoding.cpp
 # End Source File
 # Begin Source File
@@ -146,6 +150,10 @@ SOURCE=..\..\..\Common\TPoint.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\TRect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TStartup.cpp
 # End Source File
 # Begin Source File
 
@@ -209,6 +217,10 @@ SOURCE=..\..\..\Common\TDateUtil.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\TDeveloperPrefs.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TEncoding.h
 # End Source File
 # Begin Source File
@@ -222,6 +234,10 @@ SOURCE=..\..\..\Common\THeader.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TIndex.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TInterpreter.h
 # End Source File
 # Begin Source File
 
@@ -246,6 +262,10 @@ SOURCE=..\..\..\Common\TPoint.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\TRect.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\TStartup.h
 # End Source File
 # Begin Source File
 

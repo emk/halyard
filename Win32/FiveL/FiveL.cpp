@@ -19,6 +19,8 @@
 #include "resource.h"
 #include "Debug.h"
 
+#include "TStartup.h"
+#include "TDeveloperPrefs.h"
 #include "LUtil.h"
 #include "TIndex.h"
 #include "Header.h"
@@ -159,6 +161,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	LoadString(hInstance, IDC_FIVEL, szWindowClass, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_FIVEL_CHILD, szChildClass, MAX_LOADSTRING);
 
+	// Initialize the Common library.
+	InitializeCommonCode();
+
 	// Process the command line, configuration file, and user prefs.
 	if (not gConfigManager.Init(lpCmdLine))
 		return (false);
@@ -170,10 +175,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// Make system checks.
 	if (not CheckSystem())
 		return (false);	
-
-	// Initialize our standard log files.
-	bool want_debug_log = (gConfigManager.GetUserPref(DEBUG_LOG) == DEBUG_LOG_ON);
-	TLogger::OpenStandardLogs(want_debug_log);
 
 	// Register our top-level forms.
 	TParser::RegisterIndexManager("card", &gCardManager);
@@ -268,7 +269,7 @@ bool InitApplication(HINSTANCE hInstance)
 	wcex.hbrBackground	= NULL;
 	wcex.lpszClassName	= szWindowClass;
 
-	if (gConfigManager.GetUserPref(MODE) == MODE_WINDOW)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_WINDOW)
 	{
 		wcex.hIcon			= LoadIcon(hInstance, (LPCTSTR)IDI_FIVEL);
 		wcex.lpszMenuName	= (LPCSTR)IDC_FIVEL;
@@ -320,7 +321,7 @@ bool InitApplication(HINSTANCE hInstance)
 bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     // first make sure we are the only instance running
-	if (gConfigManager.GetUserPref(MULTIPLE_INSTANCES) == MULTIPLE_INSTANCES_NO)
+	if (gDeveloperPrefs.GetPref(MULTIPLE_INSTANCES) == MULTIPLE_INSTANCES_NO)
 	{
 		if (g_SingleInstanceObj.IsAnotherInstanceRunning())
 			return FALSE;
@@ -383,7 +384,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 	::EnterMovies();				// Initialize QuickTime
 		
 	// Create and show app window:    
-	if (gConfigManager.GetUserPref(MODE) == MODE_WINDOW)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_WINDOW)
 	{ 
 		if ((gHorizRes > 650) and (gVertRes > 500))
 		{
@@ -434,7 +435,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return (false);
 	}
 
-	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
 		SetWindowPos(hWnd, /*HWND_TOP*/ HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
 	else
 		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
@@ -442,7 +443,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
     gCursorManager.ChangeCursor(NO_CURSOR);
 
 	// black full-screen background. Doesn't look good with blueramp.
-	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
 	{
 		AdjustWindowRect(&cRectgl, WS_POPUP, false); // find window size based on desired client area (Rectgl)
 
@@ -471,7 +472,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow)
     ::ShowWindow(hWnd, SW_SHOW);
     ::UpdateWindow(hWnd);
 
-	if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+	if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
 	{	
 		// set our cursor position to be the center of our virtual screen
 		cursorPos.x = gHorizRes/2;
@@ -638,7 +639,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 
 				// go back to restricting cursor movement
-				if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)	
+				if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)	
 					gCursorManager.ClipCursor(&gScreenRect);
     			
     			// make sure we have a cursor
@@ -660,7 +661,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
  
 				// stop restricting cursor movement
-				if (gConfigManager.GetUserPref(MODE) == MODE_FULLSCREEN)
+				if (gDeveloperPrefs.GetPref(MODE) == MODE_FULLSCREEN)
 					gCursorManager.ClipCursor(NULL);
 
 				// set the cursor to something normal
@@ -1224,6 +1225,15 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.6.6.1  2002/06/05 07:05:30  emk
+ Began isolating the 5L-language-specific code in Win5L:
+
+   * Created a TInterpreter class, which will eventually become the
+     interface to all language-related features.
+   * Moved ssharp's developer preference support out of Config.{h,cpp}
+     (which are tighly tied to the language) and into TDeveloperPrefs.{h,cpp},
+     where they will be isolated and easy to port to other platforms.
+
  Revision 1.6  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
