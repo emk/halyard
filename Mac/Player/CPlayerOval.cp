@@ -66,8 +66,7 @@ CPlayerOval::DrawSelf()
 	if (mFill)
 	{
 		::PenMode(patCopy);
-		::PaintRect(&mBounds);
-		//::FillOval( &mBounds, &qd.black );
+		::FillOval( &mBounds, &qd.black);
 	}
 	else
 		::FrameOval( &mBounds );
