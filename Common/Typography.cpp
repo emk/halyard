@@ -651,6 +651,11 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inFileName)
 			(mStyleName == "Demi" || mStyleName == "Demi Oblique"))
 			mIsBold = true;
 
+		// There are no non-italic Chancery fonts in our collection, so
+		// treat Chancery as regular.
+		if (mFamilyName == "URW Chancery L" && mStyleName == "Medium Italic")
+			mIsItalic = false;
+
 		// Figure out the font's size.
 		if (FT_IS_SCALABLE(face))
 			mSize = kAnySize;
@@ -781,7 +786,7 @@ Face FamilyDatabase::FaceSizeGroup::GetFace(int inSize)
 	// If we *still* don't have a face, give up.  If we were feeling
 	// very ambitious, we could look for the nearest size and use that.
 	if (found == mAvailableFaces.end())
-		throw Error("Can't scale bitmap fonts");
+		throw Error("No matching font (did you try to scale a bitmap font?)");
 
 	// Open the face, remember it, and return it.
 	Face face = found->second.OpenFace(inSize);
