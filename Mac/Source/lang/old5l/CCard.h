@@ -77,6 +77,9 @@ class CCard : public CIndex
     protected:
 
         int16   Evaluate(CStream& conditional);
+		
+		// utility methods
+		void    UpdateSpecialVariablesForGraphic(KRect bounds);
 
         void    DoAdd();
         // new audio commands
