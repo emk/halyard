@@ -1,14 +1,16 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.45 - 15 Dec 2004 - emk
 
-  * Updated LICENSE.txt file to include latest information.
+  * Updated LICENSE.txt file to include latest information (bug #1724).
+  * Added support for Alt-Tab out of full-screen mode (bug #1726).
+  * Added code to hide and show the taskbar (bug #1726).
   * Added the function MARK-UNPROCESSED-EVENTS-AS-STALE! for manually
     marking all queued events as stale.  This is helpful if the user
     is repeated clicking on something or pressing a key waiting for
     a slow task to happen.  This function doesn't need to be called
     from event handlers, which always mark all unprocessed events
-    as stale.
+    as stale (bug #1731).
   * Check to make sure the engine has the primitive WakeUpIfNecessary
     before calling it.  (This is what I get for not running the full
     test suites.)
@@ -18,7 +20,7 @@ CVS - emk
   * The engine now gives a useful error message if exceptions occur
     in FiveLApp::MainLoop.  This fixes the mystery exception Robinson
     was seeing when the engine was launched with a bogus startup
-    directory.
+    directory (bug #1853).
 
 0.0.44 - 13 Dec 2004 - emk
 
