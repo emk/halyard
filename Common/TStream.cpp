@@ -27,6 +27,7 @@
 #include "TCommon.h"
 #include "TLogger.h"
 #include "TStream.h"
+#include "TVariable.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -44,13 +45,6 @@ const char P_OPEN = '(';
 const char P_CLOSE = ')';
 const char SLASH = '\\';
 const char COMMENT = '#';       //Changed MAR 31
-
-TStream::VariableLookupFunction TStream::sVariableLookupFunction = NULL;
-
-void TStream::SetVariableLookupFuction(VariableLookupFunction inFunction)
-{
-	sVariableLookupFunction = inFunction;
-}
 
 
 /************************
@@ -160,8 +154,6 @@ int TStream::more(void)
 //
 void TStream::reset(void)
 {
-	ASSERT(sVariableLookupFunction != NULL);
-
     pos = 0;
     char ch = m_String[pos];
     
@@ -357,7 +349,7 @@ TString TStream::copystr(uint32 startPos, uint32 numChars)
             //  Append the variable contents to the result string.
             //
             vname = original.Mid(base, curpos - base);
-			result += (*sVariableLookupFunction)(vname);
+			result += gVariableManager.GetString(vname);
             
             //  Bump up the base.
             //
@@ -373,7 +365,7 @@ TString TStream::copystr(uint32 startPos, uint32 numChars)
         result += original.Mid(base, curpos - base);
 
     if (DEREF) 
-		result = (*sVariableLookupFunction)(result);
+		result = gVariableManager.GetString(result);
 		
     return (result);
 }

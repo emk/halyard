@@ -39,22 +39,6 @@ class TStream : public TString
 {
 public:
 	//////////
-	// A function which knows how to translate variable names into values.
-	// 
-	// [in] inVarname - The name of the variable to look up.
-	// [out] return - The value of the variable.
-	//
-	typedef TString (*VariableLookupFunction)(const TString &inVarName);
-
-	//////////
-	// Set the function which will be used to look up variable values.
-	// (We use this callback to break the dependencies between TStream--
-	// a simple, portable class--and the various VariableManager classes,
-	// which are complicated, non-portable, and have lots of dependencies.)
-	//
-	static void SetVariableLookupFuction(VariableLookupFunction inFunction);
-
-	//////////
 	// Constructor.
 	//
 	TStream();
@@ -246,11 +230,6 @@ public:
 	
 protected:
 	//////////
-	// The function which we'll use to look up our variables.
-	//
-	static VariableLookupFunction sVariableLookupFunction;
-
-	//////////
 	// Current positon.
 	//
 	unsigned int    pos;
@@ -291,6 +270,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.1.4.2  2002/04/23 11:28:57  emk
+ Now that the variable manager has been merged, TStream no longer needs a callback function to look up variables in a portable fashion.
+
  Revision 1.1.4.1  2002/04/19 11:20:13  emk
  Start of the heavy typography merging work.  I'm doing this on a branch
  so I don't cause problems for any of the other developers.

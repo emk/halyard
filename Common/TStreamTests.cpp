@@ -2,6 +2,7 @@
 
 #include "TStream.h"
 #include "ImlUnit.h"
+#include "TVariable.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -23,14 +24,6 @@ static TStream& sample_callback(TStream &stream)
 	return stream;
 }
 
-static TString get_variable(const TString &inVarName)
-{
-	if (inVarName == "myVar")
-		return TString("Hello World");
-	else
-		return TString("0");
-}
-
 
 //=========================================================================
 //  test_TStream
@@ -38,8 +31,6 @@ static TString get_variable(const TString &inVarName)
 
 void test_TStream (void) 
 {	
-	TStream::SetVariableLookupFuction(&get_variable);
-
 	// A simple test.
 	TStream s1 = "abc \t def (ghi jkl mno) pqr";
 	TEST(s1.curchar() == 'a');
@@ -127,6 +118,7 @@ void test_TStream (void)
 	TEST(temp == "1\\)2\\)3\\)");
 	
 	// Test variable interpolation.
+	gVariableManager.SetString("myVar", "Hello World");
 	s1 = "\\$myVar$  \\\\$myVar$";
 	s1 >> temp;
 	TEST(temp == "\\$myVar0");
