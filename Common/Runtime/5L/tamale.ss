@@ -515,6 +515,7 @@
   (define (unfade &key (ms 500))
     (refresh :transition 'fromblack :ms ms))
 
+  ;;Save and Restore graphics deprecated, but are still being used by Widgets.ss
   (define (save-graphics &key (bounds $screen-rect))
     (call-5l-prim 'savegraphics bounds))
   
@@ -602,7 +603,7 @@
 
   (define (symcat . args)
     (string->symbol (apply cat args)))
-
+  
   ;;-----------------------------------------------------------------------
   ;;  State DB Debugging Support
   ;;-----------------------------------------------------------------------

@@ -358,5 +358,19 @@
     (on mouse-moved (event)
       (when (and (mouse-grabbed?) grabbed-by-me?)
         (send self get-end-and-draw active-color event))))
+  
+  
+  ;;;These are overlay functions combining defining and creation.
+  ;;;box-overlay: name of the box, the four numbers representing end points, and the color
+  ;;;text-overlay: name of the box, the four numbers representing end points, color, and text
+  ;;;full-screen-overlay: thunk, creates a transparent, full-screen overlay
+  (define (create-box-overlay name x1 y1 x2 y2 color)
+    (define-element-template name []
+                             (%zone% :overlay? #t :alpha? #t)
+        (with-dc self
+                 (draw-box (dc-rect) color))
+        )
+    (create name :shape (rect x1 y1 x2 y2))
+    )
              
   )  
