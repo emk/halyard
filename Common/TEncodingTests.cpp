@@ -1,8 +1,9 @@
-#define WANT_FIVEL_TEST_INTERFACES 1
+// -*- Mode: C++; tab-width: 4; -*-
 
-#include <iostream.h>
+#include <iostream>
 #include <string.h>
 
+#include "TCommon.h"
 #include "ImlUnit.h"
 #include "TEncoding.h"
 
@@ -74,14 +75,14 @@ static EncodingTest encoding_tests[] = {
 //=========================================================================
 
 // We install this error reporting function when we don't expect errors.
-static void DontWantErrors (const char *inBadString,
+static void DontWantErrors (const std::string &inBadString,
 							size_t inBadPos,
 							const char *inErrMsg)
 {
     // We only run this code if an unexpected error occurs while
 	// transforming text.
-	cout << endl << "ENCODING ERROR: {{" << inErrMsg << "}} at "
-		 << inBadPos << " in {{" << inBadString << "}}." << endl;
+	std::cout << std::endl << "ENCODING ERROR: {{" << inErrMsg << "}} at "
+			  << inBadPos << " in {{" << inBadString << "}}." << std::endl;
     TEST(false);
 }
 
@@ -101,12 +102,11 @@ static void TestErrorOccurred (int inAtPos)
 }
 
 // We install this error reporting function when we don't expect errors.
-static void DoWantErrors (const char *inBadString,
+static void DoWantErrors (const std::string &inBadString,
 						  size_t inBadPos,
 						  const char *inErrMsg)
 {
-    TEST(inBadString != NULL);
-    TEST(inBadPos >= 0 && inBadPos < strlen(inBadString));
+    TEST(inBadPos >= 0 && inBadPos < inBadString.length());
     TEST(inErrMsg != NULL);
     gErrorOccurred = true;
     gErrorPosition = inBadPos;
@@ -126,7 +126,7 @@ void test_TEncoding (void)
 		 encoding_index < kEncodingCount;
 		 encoding_index++)
     {
-		TEncoding e1(encodings[encoding_index], DontWantErrors);
+		TEncoding<char> e1(encodings[encoding_index], DontWantErrors);
 		TEST(e1.GetEncodingName() == encodings[encoding_index]);
 		TEST(e1.TransformString("Hello!") == "Hello!");
 		
@@ -176,7 +176,7 @@ void test_TEncoding (void)
 		TEST(e1.EncodeEntities("xyz&amp;abc") == "xyz&abc");
 		
 		// Test error-reporting for malformed and unknown entities.
-		TEncoding e2(encodings[encoding_index], DoWantErrors);
+		TEncoding<char> e2(encodings[encoding_index], DoWantErrors);
 		TEST(e2.EncodeEntities("&amp") == "&amp");
 		TestErrorOccurred(0);
 		TEST(e2.EncodeEntities("abc&amp;&amp ") == "abc&&amp ");
