@@ -26,16 +26,16 @@
 	   (rename percent <percent>) (rename make-percent percent)
 	   percent? percent-value)
   
-  (define-struct point (x y))
+  (define-struct point (x y) (make-inspector))
 
-  (define-struct rect (left top right bottom))
+  (define-struct rect (left top right bottom) (make-inspector))
 
-  (define-struct color (red green blue alpha))
+  (define-struct color (red green blue alpha) (make-inspector))
 
   (define (make-color-opt-alpha r g b &opt (a 0))
     (make-color r g b a))
 
-  (define-struct percent (value))
+  (define-struct percent (value) (make-inspector))
   
 
   ;;=======================================================================
@@ -293,7 +293,7 @@
   (define *%kernel-current-card* #f)
   (define *%kernel-previous-card* #f)
   
-  (define-struct %kernel-card (name thunk))
+  (define-struct %kernel-card (name thunk) (make-inspector))
   
   (define *%kernel-card-table* (make-hash-table))
   
