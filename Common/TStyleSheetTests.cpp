@@ -33,8 +33,8 @@ void test_TStyleSheet(void)
     // Set up a style.
     TStyleSheet *style1 = dynamic_cast<TStyleSheet*>(node);
     StyledText text1 = style1->MakeStyledText(" foo |bar| ^baz^ @wub@ || "
-											  "|foo@bar@|");
-    TEST(*text1.GetText() == L"foo bar baz wub  foobar");
+											  "|foo@bar@| \\n\\t\\^\\@\\|\\\\");
+    TEST(*text1.GetText() == L" foo bar baz wub  foobar \n\t^@|\\");
 
     // Build something to compare it against.
     Typography::Style base_style("Times", 12);
@@ -48,17 +48,17 @@ void test_TStyleSheet(void)
     highlight_style.SetShadowColor(Color(0x00, 0xFF, 0x00, 0x80));
         
     // Make sure each of our ranges is correct.
-    test_style(text1, 0, 4, base_style);
-    test_style(text1, 4, 7,
+    test_style(text1, 0, 5, base_style);
+    test_style(text1, 5, 8,
 			   Typography::Style(base_style).ToggleFaceStyle(kItalicFaceStyle));
-    test_style(text1, 7, 8, base_style);
-    test_style(text1, 8, 11, highlight_style);
-    test_style(text1, 11, 12, base_style);
-    test_style(text1, 12, 15,
+    test_style(text1, 8, 9, base_style);
+    test_style(text1, 9, 10, highlight_style);
+    test_style(text1, 12, 13, base_style);
+    test_style(text1, 13, 16,
 			   Typography::Style(base_style).ToggleFaceStyle(kBoldFaceStyle));
-    test_style(text1, 15, 17, base_style);
-    test_style(text1, 17, 20,
+    test_style(text1, 16, 18, base_style);
+    test_style(text1, 18, 21,
 			   Typography::Style(base_style).ToggleFaceStyle(kItalicFaceStyle));
-    test_style(text1, 20, 23,
+    test_style(text1, 21, 24,
 			   Typography::Style(base_style).ToggleFaceStyle(kBoldItalicFaceStyle));
 }

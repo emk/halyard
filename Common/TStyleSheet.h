@@ -39,7 +39,9 @@ public:
 		
 	//////////
 	// Convert a 5L-format string into a StyledText object, using the
-	// data stored in this style.
+	// data stored in this style.  This is a pretty nasty formatting
+	// system, and it handles a lot of escapes which should be processed
+	// by TStream instead.
 	//
 	Typography::StyledText MakeStyledText(const std::string& inText);
 	

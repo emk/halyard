@@ -90,14 +90,9 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
     Typography::Style style(base_style);
     StyledText text(style);
 	
-    // XXX - Skip leading whitespace (to preserve backwards compatibility).
-	// This should probably go away, or happen in a much higher layer.
-    std::string::const_iterator cp = inText.begin();
-    while (cp < inText.end() && *cp == ' ')
-		++cp;
-	
     // Process each character.
     bool is_hightlight = false;
+    std::string::const_iterator cp = inText.begin();
     for (; cp < inText.end(); ++cp)
     {
 		switch (*cp)
@@ -128,8 +123,43 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 				style.ToggleFaceStyle(Typography::kBoldFaceStyle);
 				text.ChangeStyle(style);
 				break;
+			
+			
+			case '\\': // Escape sequence
+				if (++cp == inText.end())
+					throw TException("Incomplete escape sequence in \"" +
+									 inText + "\"");
+				switch (*cp)
+				{
+					case 'n':
+						text.AppendText('\n');
+						break;
+						
+					case 't':
+						text.AppendText('\t');
+						break;
+						
+					case '^':
+					case '|':
+					case '_':
+					case '@':
+					case ' ':
+					case '(':
+					case ')':
+					case '\\':
+					case '$':
+					case '#':
+						text.AppendText(*cp);
+						break;
+						
+					default:
+						text.AppendText('\\');
+						text.AppendText(*cp);
+						gDebugLog.Caution("Unrecognized escape \\%c", *cp);
+					
+				}
+				break;
 				
-            // TODO - We're still missing a lot of features from Header.cpp.
 			default: // Regular character.
 				text.AppendText(*cp);
 		}

@@ -124,6 +124,11 @@ void test_TStream (void)
 	TEST(temp == "\\$myVar0");
 	s1 >> temp;
 	TEST(temp == "\\\\Hello World");
+	s1 = "\\$ \\$";
+	s1 >> temp;
+	TEST(temp == "\\$");
+	s1 >> temp;
+	TEST(temp == "\\$");
 	
 	// TODO - Test open, close, discard
 	// TODO - Test scanopen, scanclose, discard (different from above)
