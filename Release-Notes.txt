@@ -1,5 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Moved most of overlay support into quake2/client, except for
+    actual drawing/conversion code.
+  * Added a broken stub implementation of GL overlays.  This might
+    actually work on some hardware, but seems to have driver issues
+    on my laptop.
+
 0.0.28 - 21 May 2004 - emk
 
 Re-enabled OpenGL drivers and implemented reticle support.  (Overlays do
