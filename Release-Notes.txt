@@ -4,6 +4,7 @@ CVS - kwasi, djin, emk
 
   * Added code to detect infinite cycles in TStateDB changes.
   * Added tamale-tags.sh script for Emacs users.
+  * Added new quake console trigger commad to activate targets.
 
 0.0.18 - 15 February 2004 - emk
 

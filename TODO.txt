@@ -39,7 +39,7 @@ X                                    (lambda (get) (whatever (get '/foo))))
       Activate reticules (acts as trigger)
       Looking at reticulates (acts as trigger)
       Looking at entities (acts as trigger)
-    Trigger Quake 2 targets from Scheme
+/   Trigger Quake 2 targets from Scheme
     Reimplement meters in Scheme
 /     Allow elements to be attached to sequences
 /       Don't allow elements to be attached to inactive nodes
