@@ -842,12 +842,16 @@ void CPlayerView::DrawPixmap(GraphicsTools::Point inPoint,
 	begin.x = Max(0, Min(gworld_width, begin.x));
 	begin.y = Max(0, Min(gworld_height, begin.y));
 	begin = begin - inPoint;
-	ASSERT(begin.x >= 0 && begin.y >= 0);
 	Point end = inPoint + Point(inPixmap.width, inPixmap.height);
 	end.x = Max(0, Min(gworld_width, end.x));
 	end.y = Max(0, Min(gworld_height, end.y));
 	end = end - inPoint;
-	ASSERT(end.x <= inPixmap.width && end.y <= inPixmap.height);
+	
+	// Do some sanity checks on our clipping boundaries.
+	ASSERT(begin.x == end.x || // No drawing
+		   (0 <= begin.x && begin.x < end.x && end.x <= inPixmap.width));
+	ASSERT(begin.y == end.y || // No drawing
+		   (0 <= begin.y && begin.y < end.y && end.y <= inPixmap.height));
 	
 	// Figure out where in memory to begin drawing the first row.
 	unsigned char *mac_base_addr =
