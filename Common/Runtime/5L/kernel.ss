@@ -499,29 +499,30 @@
   ;;  program).
 
   (define (%kernel-run)
-    (with-errors-blocked (non-fatal-error)
+    (with-errors-blocked (fatal-error)
       (label exit-interpreter
         (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
           (let ((jump-card #f))
             (let loop ()
               (label exit-to-top
-                (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
-                  (idle)
-                  (cond
-                   [jump-card
-                    (%kernel-run-card (%kernel-find-card jump-card))]
-                   [#t
-                    ;; Highly optimized do-nothing loop. :-)  This
-                    ;; is a GC optimization designed to prevent the
-                    ;; interpreter from allocating memory like a crazed
-                    ;; maniac while the user's doing nothing.  If we
-                    ;; removed this block, we'd have to perform a lot
-                    ;; of LABEL and FLUID-LET statements, which are
-                    ;; extremely expensive in quantities of 1,000.
-                    (let idle-loop ()
-                      (unless (eq? *%kernel-state* 'JUMPING)
-                        (idle)
-                        (idle-loop)))])))
+                (with-errors-blocked (non-fatal-error)
+                  (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
+                    (idle)
+                    (cond
+                     [jump-card
+                      (%kernel-run-card (%kernel-find-card jump-card))]
+                     [#t
+                      ;; Highly optimized do-nothing loop. :-)  This
+                      ;; is a GC optimization designed to prevent the
+                      ;; interpreter from allocating memory like a crazed
+                      ;; maniac while the user's doing nothing.  If we
+                      ;; removed this block, we'd have to perform a lot
+                      ;; of LABEL and FLUID-LET statements, which are
+                      ;; extremely expensive in quantities of 1,000.
+                      (let idle-loop ()
+                        (unless (eq? *%kernel-state* 'JUMPING)
+                          (idle)
+                          (idle-loop)))]))))
               (set! jump-card #f)
               (when (eq? *%kernel-state* 'JUMPING)
                 (set! jump-card *%kernel-jump-card*))
