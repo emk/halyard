@@ -23,15 +23,18 @@
   Respond gracefully to errors in idle handlers
   ON should highlight method name in emacs
 
+  Rename 'foo::ptr' in TestCase to better represent smart-pointer nature?
+  
+
 / Event Handling
 /   Nice features
 /     Returning values from event handlers?
 /     Send idle events to everything
 
     Areas in need of major refactoring
+      Can we combine node-handlers and node-values?
       Deletion of elements is a mess.  Fix.
       NODE-HAS-EXPENSIVE-HANDLERS? is currently a bit tricky
-      Can we combine node-handlers and node-values?
       Can we combine @ and node-values?
 /     Use FOREACH in kernel
       Look for other syntactic patterns
