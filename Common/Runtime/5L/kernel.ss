@@ -649,7 +649,7 @@
   ;;  Events
   ;;-----------------------------------------------------------------------
 
-  (provide on send
+  (provide on send-by-name send
            <event> event?
            <idle-event> idle-event?
            <char-event> char-event? event-character event-modifiers
@@ -714,7 +714,7 @@
                                     args)))
           (hash-table-put! table name handler))))
 
-  (define (send node name . args)
+  (define (send-by-name node name . args)
     ;; Pass a message to the specified node, and return the result.
     (let [[handled? #t]]
       (let recurse [[node node]]
@@ -729,6 +729,11 @@
                     (apply handler call-next-handler args))
                   (call-next-handler)))))
       handled?))
+
+  (define-syntax send
+    (syntax-rules ()
+      [(send node name . args)
+       (send-by-name node 'name . args)]))
 
   (defclass <event> ())
   (defclass <idle-event> (<event>))
@@ -745,7 +750,7 @@
     (let [[event (case name
                    [[idle] (make <idle-event>)]
                    [[char] (make <char-event>
-                             :character (car args)
+                             :character (string-ref (car args) 0)
                              :modifiers (cadr args))]
                    [[mouse-down]
                     (make <mouse-event>
@@ -756,7 +761,7 @@
                       :position (make-point (car args) (cadr args)))]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
-      (set! (engine-var '_pass) (not (send node name event)))))
+      (set! (engine-var '_pass) (not (send-by-name node name event)))))
 
   (define (dispatch-event-to-current-card name . args)
     (when (current-card)
@@ -789,7 +794,7 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide prop)
+  (provide prop-by-name prop)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
@@ -842,7 +847,7 @@
         (node-maybe-default-property! node (car decls))
         (loop (cdr decls)))))
 
-  (define (prop node name)
+  (define (prop-by-name node name)
     ;; This function controls how we search for property bindings.  If
     ;; you want to change search behavior, here's the place to do it.
     (let [[value (hash-table-get (node-values node)
@@ -850,6 +855,11 @@
       (if (not (eq? value $no-such-key))
           value
           (error "Unable to find template property" name))))
+
+  (define-syntax prop
+    (syntax-rules ()
+      [(prop node name)
+       (prop-by-name node 'name)]))
 
   (define (bindings->hash-table bindings)
     ;; Turns a keyword argument list into a hash table.
@@ -895,9 +905,9 @@
               (map (lambda (prop-stx)
                      (syntax-case prop-stx ()
                        [(name . rest)
-                        (syntax/loc prop-stx [name (prop self 'name)])]
+                        (syntax/loc prop-stx [name (prop self name)])]
                        [name
-                        (syntax/loc prop-stx [name (prop self 'name)])]))
+                        (syntax/loc prop-stx [name (prop self name)])]))
                    (syntax->list prop-decls-stx)))))
 
          ;; We introduce a number of "capture" variables in BODY.  These
