@@ -105,6 +105,10 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 
     // Create our base style for non-highlighted text.
     Typography::Style base_style(mFontName, mSize);
+	std::list<std::string> backups;
+	backups.push_back("Standard Symbols L");
+	backups.push_back("Dingbats");
+	base_style.SetBackupFamilies(backups);
     base_style.SetColor(mColor);
     base_style.SetShadowColor(mShadowColor);
     base_style.SetLeading(mLeading);
