@@ -91,6 +91,18 @@
         (string-append (value->string (car values)) (apply cat (cdr values)))
         ""))
 
+  ;; Already provided by Swindle, I think.
+  ;;(define (keyword? value)
+  ;;  (and (symbol? value)
+  ;;       (let [[str (symbol->string value)]]
+  ;;         (and (> 0 (string-length str))
+  ;;              (eq? (string-ref str 0) #\:)))))
+
+  (define (keyword-name value)
+    (assert (keyword? value))
+    (let [[str (symbol->string value)]]
+      (string->symbol (substring str 1 (string-length str)))))
+
   (define-syntax label
     (syntax-rules ()
       [(label name body ...)
@@ -172,7 +184,7 @@
                     (idle)
                     (cond
                      [jump-card
-                      (%kernel-run-card (find-card jump-card))]
+                      (run-card (find-card jump-card))]
                      [#t
                       ;; Highly optimized do-nothing loop. :-)  This
                       ;; is a GC optimization designed to prevent the
@@ -622,6 +634,70 @@
   ;;=======================================================================
 
   ;;-----------------------------------------------------------------------
+  ;;  Templates
+  ;;-----------------------------------------------------------------------
+  
+  ;; This object is distinct from every other object, so we use it as
+  ;; a unique value.
+  (define $no-default (list 'no 'default))
+
+  (defclass <template-parameter> ()
+    (name      :type <symbol>)
+    (type      :type <class>       :initvalue <object>)
+    (label     :type <string>      :initvalue "")
+    (default   :type <object>      :initvalue $no-default))
+
+  (defclass <template> ()
+    (group      :type <symbol>     :initvalue 'none)
+    (extends                       :initvalue #f)
+    (parameters :type <list>       :initvalue '())
+    (bindings   :type <hash-table> :initvalue (make-hash-table))
+    (init-thunk :type <function>   :initvalue (lambda () #f)))
+
+  (defmethod (initialize (template <template>) initargs)
+    (call-next-method)
+    (assert (or (not (template-extends template))
+                (eq? (template-group template)
+                     (template-group (template-extends template))))))
+
+  (define (bindings->hash-table bindings)
+    ;; Turns a keyword argument list into a hash table.
+    (let [[result (make-hash-table)]]
+      (let recursive [[b bindings]]
+        (cond
+         [(null? b)
+          #f]
+         [(null? (cdr b))
+          (error "Bindings list contains an odd number of values:" bindings)]
+         [(not (keyword? (car b)))
+          (error "Expected keyword in bindings list, found:" (car b) bindings)]
+         [else
+          (hash-table-put! result (keyword-name (car b)) (cadr b))
+          (recursive (cddr b))]))
+      result))
+  
+  (define-syntax define-template
+    (syntax-rules (:extends)
+      [(define-template name group (:extends extended bindings ...)
+         (parameters ...) body ...)
+       (define name (make <template>
+                      :group      group
+                      :extends    extended
+                      :bindings   (bindings->hash-table (list bindings ...))
+                      :parameters (expand-parameters parameters ...)
+                      :init-thunk (lambda () (begin/var body ...))))]
+      [(define-template name group (bindings ...) rest ...)
+       (define-template name group (:extends #f bindings ...) rest ...)]))
+
+  (define-syntax define-template-definer
+    (syntax-rules ()
+      [(define-template-definer definer-name group)
+       (define-syntax definer-name
+         (syntax-rules ()
+           [(definer-name name . rest)
+            (define-template name 'group . rest)]))]))
+
+  ;;-----------------------------------------------------------------------
   ;;  Nodes
   ;;-----------------------------------------------------------------------
   ;;  A program is (among other things) a tree of nodes.  The root node
@@ -629,10 +705,10 @@
 
   (provide <node> node? node-name node-full-name node-parent find-node @)
 
-  (defclass <node> ()
+  (defclass <node> (<template>)
     name
-    parent                              
-    init-thunk                    ; Will be used for more than cards later.
+    parent
+    (handlers :type <hash-table> :initvalue (make-hash-table))
     )
 
   (defmethod (initialize (node <node>) initargs)
@@ -650,7 +726,9 @@
 
   (define *node-table* (make-hash-table))
 
-  (define (register-node node)
+  (defgeneric (register-node (node <node>)))
+
+  (defmethod (register-node (node <node>))
     (let [[name (node-full-name node)]]
       (when (hash-table-get *node-table* name (lambda () #f))
         (error (cat "Duplicate copies of node " node)))
@@ -701,6 +779,34 @@
               (values parent
                       (string->symbol (cadddr matches))))]))))
 
+  (define-syntax define-node
+    (syntax-rules (:extends)
+      [(define-node name group node-class (:extends extended bindings ...)
+         body ...)
+       (begin
+         (define name
+           (with-values [parent local-name] (analyze-node-name 'name)
+             (make node-class
+               :group      'group
+               :extends    extended
+               :bindings   (bindings->hash-table (list bindings ...))
+               :init-thunk (lambda () (begin/var body ...))
+               :parent     parent
+               :name       local-name)))
+         (register-node name))]
+      [(define-node name group node-class (bindings ...) body ...)
+       (define-node name group node-class (:extends #f bindings ...) body ...)]
+      [(define-node name group node-class)
+       (define-node name group node-class (:extends #f))]))
+
+  (define-syntax define-node-definer
+    (syntax-rules ()
+      [(define-node-definer definer-name group node-class)
+       (define-syntax definer-name
+         (syntax-rules ()
+           [(definer-name name . rest)
+            (define-node name group node-class . rest)]))]))
+
   ;;-----------------------------------------------------------------------
   ;;  Groups
   ;;-----------------------------------------------------------------------
@@ -709,7 +815,7 @@
   (provide <group> group? group-children)
 
   (defclass <group> (<node>)
-    children)
+    (children :type <list> :initvalue '()))
 
   (defgeneric (group-add-child! (group <group>) (child <node>)))
 
@@ -717,7 +823,6 @@
     (set! (group-children group)
           (append (group-children group) (list child))))
     
-
   ;;-----------------------------------------------------------------------
   ;;  Jumpable
   ;;-----------------------------------------------------------------------
@@ -736,13 +841,13 @@
   ;;  By default, groups of cards are not assumed to be in any particular
   ;;  linear order, at least for purposes of program navigation.
 
-  (provide $root-node)
+  (provide $root-node define-group-template group)
 
   (define (card-or-card-group? node)
     (or (card? node) (card-group? node)))
 
   (defclass <card-group> (<group>)
-    active?)
+    (active? :type <boolean> :initvalue #f))
 
   (defgeneric (card-group-find-next (group <card-group>) (child <jumpable>)))
   (defgeneric (card-group-find-prev (group <card-group>) (child <jumpable>)))
@@ -759,13 +864,17 @@
 
   (define $root-node
     (make <card-group>
-      :name |/| :parent #f :active? #t :init-thunk #f
-      :children '()))
-  
+      :name |/| :parent #f :active? #t))
+
+  (define-template-definer define-group-template <card-group>)
+  (define-node-definer group <card-group> <card-group>)
+
   ;;-----------------------------------------------------------------------
   ;;  Sequences of Cards
   ;;-----------------------------------------------------------------------
   ;;  Like groups, but ordered.
+
+  (provide sequence)
 
   (defclass <card-sequence> (<jumpable> <card-group>))
 
@@ -794,12 +903,15 @@
           (candidate-func)
           (search (cdr children) (lambda () (car children))))))
 
+  (define-node-definer sequence <card-group> <card-sequence>)
+
   ;;-----------------------------------------------------------------------
   ;;  Cards
   ;;-----------------------------------------------------------------------
   ;;  More functions are defined in the next section below.
 
-  (provide <card> card? card-next card-prev jump-next jump-prev)
+  (provide <card> card? card-next card-prev jump-next jump-prev
+           define-card-template card)
 
   (defclass <card>          (<jumpable> <group>))
 
@@ -822,18 +934,175 @@
   (define (jump-next) (jump-helper card-next "after"))
   (define (jump-prev) (jump-helper card-prev "before"))
 
+  (defmethod (register-node (c <card>))
+    (call-next-method)
+    (%kernel-register-card c))
+
+  (define-template-definer define-card-template <card>)
+  (define-node-definer card <card> <card>)
+
   ;;-----------------------------------------------------------------------
-  ;; Elements (currently unused)
+  ;; Elements
   ;;-----------------------------------------------------------------------
 
-  ;;(defclass <element>       (<node>))
+  (provide <element> element? define-element-template element create)
+
+  (defclass <element>       (<node>)
+    (temporary? :type <boolean> :initvalue #f))
+
+  (define-template-definer define-element-template <element>)
+  (define-node-definer element <element> <element>)
+  
+  (define (create template &key (name (gensym)) &rest-keys bindings)
+    ;; Temporarily create an <element> node belonging to the current card,
+    ;; using 'template' as our template.  This node will be deleted when we
+    ;; leave the card.
+    ;;
+    ;; Someday I expect this to be handled by a transactional rollback of the
+    ;; C++ document model.  But this will simulate things well enough for
+    ;; now, I think.
+    (assert (current-card))
+    (assert (eq? (template-group template) '<element>))
+    (let [[e (make <element>
+               :group      'element
+               :extends    template
+               :bindings   (bindings->hash-table bindings)
+               :parent     (current-card)
+               :name       name
+               :temporary? #t)]]
+      ((template-init-thunk e))
+      e))
+
+  ;;=======================================================================
+  ;;  Changing Cards
+  ;;=======================================================================
+
+  ;; We call these function whenever we enter or exit a node.  They never
+  ;; recurse up or down the node hierarchy; that work is done by other
+  ;; functions below.
+  (defgeneric (exit-node (node <node>)))
+  (defgeneric (enter-node (node <node>)))
+
+  (defmethod (exit-node (node <node>))
+    ;; Clear our handler list.
+    (set! (node-handlers node) (make-hash-table)))
+
+  (defmethod (enter-node (node <node>))
+    ;; TODO - Make sure all our template parameters are bound.
+    ;; Initialize our templates one at a time.
+    (let recurse [[template node]]
+      (when template
+        (recurse (template-extends template))
+        ((template-init-thunk template)))))
+
+  (defmethod (exit-node (group <card-group>))
+    (set! (card-group-active? group) #f)
+    (call-next-method))
+
+  (defmethod (enter-node (group <card-group>))
+    (call-next-method)
+    (set! (card-group-active? group) #t))
+
+  (defmethod (exit-node (card <card>))
+    ;; We have some extra hooks and primitives to call here.
+    (call-hook-functions *exit-card-hook* card)
+    (when (have-5l-prim? 'notifyexitcard)
+      (call-5l-prim 'notifyexitcard))
+    (call-next-method))
+
+  (defmethod (enter-node (card <card>))
+    ;; We have some extra hooks and primitives to call here.
+    (when (have-5l-prim? 'notifyentercard)
+      (call-5l-prim 'notifyentercard))
+    (call-hook-functions *enter-card-hook* card)
+    (call-next-method)
+    (call-hook-functions *card-body-finished-hook* card))
+
+  (define (find-active-parent new-card)
+    ;; Walk back up the node hierarchy from new-card until we find the
+    ;; nearest active parent.  The root node is always active, so this
+    ;; recursive call terminates.
+    (let recurse [[group (node-parent new-card)]]
+      (if (card-group-active? group)
+          group
+          (recurse (node-parent group)))))
+
+  (define (exit-card-group-recursively group stop-before)
+    ;; Recursively exit nested card groups starting with 'group', but
+    ;; ending before 'stop-before'.
+    (let recurse [[group group]]
+      (unless (eq? group stop-before)
+        (enter-node group)
+        (recurse (node-parent group)))))
+
+  (define (enter-card-group-recursively group)
+    ;; Recursively enter nested card groups until we have a chain of
+    ;; active groups from the root to 'group'.
+    (let recurse  [[group group]]
+      (unless (card-group-active? group)
+        (recurse (node-parent group))
+        (exit-node group))))
+
+  (define (exit-card old-card new-card)
+    ;; Exit all our child elements.
+    (let loop [[children (group-children old-card)]]
+      (unless (null? children)
+        (exit-node (car children))
+        (loop (cdr children))))
+    ;; TODO - Delete temporary elements.
+    ;; Exit old-card.
+    (exit-node old-card)
+    ;; Exit as many enclosing card groups as necessary.
+    (exit-card-group-recursively (node-parent old-card)
+                                 (find-active-parent new-card)))
+
+  (define (enter-card new-card)
+    ;; Clear our handler list.  We also do this in exit-node; this
+    ;; invocation is basically defensive, in case something went
+    ;; wrong during the node exiting process.
+    (set! (node-handlers node) (make-hash-table))
+    ;; Enter as many enclosing card groups as necessary.
+    (enter-card-group-recursively (node-parent new-card))
+    ;; Enter all our child elements.  Notice we do this first, so
+    ;; all the elements are available by the time we run the card body.
+    ;; Unfortunately, this means that "new element" events generated
+    ;; during element initialization can't be caught by the card.
+    ;; Weird, but this is what the users voted for.
+    (let loop [[children (group-children new-card)]]
+      (unless (null? children)
+        (enter-node (car children))
+        (loop (cdr children))))
+    ;; Enter new-card.
+    (enter-node new-card))
+
+  (define (run-card card)
+    (%kernel-clear-timeout)
+
+    ;; Finish exiting our previous card.
+    (when *%kernel-current-card*
+      (exit-card *%kernel-current-card* card))
+
+    ;; Reset the origin to 0,0.
+    (call-5l-prim 'resetorigin)
+
+    ;; Update our global variables.
+    (set! *%kernel-previous-card* *%kernel-current-card*)
+    (set! *%kernel-current-card* card)
+
+    ;; Actually run the card.
+    (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
+    (with-errors-blocked (non-fatal-error)
+      (enter-card card)
+      (refresh)))
 
 
   ;;=======================================================================
   ;;  Cards
   ;;=======================================================================
+  ;;  Older support code for cards.  Some of this should probably be
+  ;;  refactored to an appropriate place above.
 
-  (provide card-exists? find-card current-card card-name group sequence card)
+  (provide card-exists? find-card current-card card-name)
 
   ;; TODO - A different meaning of "previous" from the one above.  Rename.
   (define *%kernel-current-card* #f)
@@ -844,7 +1113,7 @@
   ;;(define-struct %kernel-card (name thunk) (make-inspector))
   (define %kernel-card? card?)
   (define %kernel-card-name node-full-name)
-  (define %kernel-card-thunk node-init-thunk)
+  (define %kernel-card-thunk template-init-thunk)
 
   ;; TODO - Redundant with *node-table*.  Remove.
   (define *%kernel-card-table* (make-hash-table))
@@ -863,30 +1132,6 @@
                         (lambda () #f))
         #t
         #f))
-  
-  (define (%kernel-run-card card)
-    (%kernel-clear-timeout)
-
-    ;; Finish exiting our previous card.
-    (when *%kernel-current-card*
-      (call-hook-functions *exit-card-hook* *%kernel-current-card*)
-      (when (have-5l-prim? 'notifyexitcard)
-        (call-5l-prim 'notifyexitcard)))
-
-    ;; Update our global variables.
-    (set! *%kernel-previous-card* *%kernel-current-card*)
-    (set! *%kernel-current-card* card)
-    (when (have-5l-prim? 'notifyentercard)
-      (call-5l-prim 'notifyentercard))
-
-    ;; Actually run the card.
-    (debug-log (cat "Begin card: <" (%kernel-card-name card) ">"))
-    (call-hook-functions *enter-card-hook* *%kernel-current-card*)
-    (with-errors-blocked (non-fatal-error)
-      (call-5l-prim 'resetorigin)
-      ((%kernel-card-thunk card))
-      (call-hook-functions *card-body-finished-hook* card)
-      (refresh)))
 
   (define (find-card card-or-name)
     (cond
@@ -915,44 +1160,5 @@
       card-or-name]
      [#t
       (throw (cat "Not a card: " card-or-name))]))
-
-  (define-syntax define-node
-    (syntax-rules ()
-      [(define-node name [parent local-name] init-expr)
-       (begin
-         (define name
-           (with-values [parent local-name] (analyze-node-name 'name)
-             init-expr))
-         (register-node name))]))
-
-  (define-syntax group
-    (syntax-rules ()
-      [(group name)
-       (define-node name [parent local-name]
-         (make <card-group>
-           :parent parent
-           :name local-name
-           :children '()))]))
-
-  (define-syntax sequence
-    (syntax-rules ()
-      [(group name)
-       (define-node name [parent local-name]
-         (make <card-sequence>
-           :parent parent
-           :name local-name
-           :children '()))]))
-
-  (define-syntax card
-    (syntax-rules ()
-      [(card name body ...)
-       (begin
-         (define-node name [parent local-name]
-           (make <card>
-             :parent parent
-             :name local-name
-             :init-thunk (lambda () (begin/var body ...))
-             :children '()))
-         (%kernel-register-card name))]))
 
   ) ; end module

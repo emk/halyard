@@ -57,7 +57,7 @@
              (identifier? (car elem))
              (let [[id (car elem)]]
                (or (module-identifier=? id #'define)
-		   (module-identifier=? id #'define/var)
+                   (module-identifier=? id #'define/var)
                    (module-identifier=? id #'define-syntax)
                    (module-identifier=? id #'define-values)
                    (module-identifier=? id #'define-syntaxes)
@@ -96,7 +96,7 @@
                 (let* [[before (reverse! elements)]
                        [clause
                         (syntax-case (car body) (define define/var
-						 define-values)
+                                                 define-values)
                           [(define (name . args) . function-body)
                            #`([name]
                               (begin
@@ -137,6 +137,9 @@
                                #,@(reverse! elements))))))
 
     (syntax-case stx ()
+      [(begin/var)
+       ;; Unlike regular Scheme, we allow empty bodies.
+       (quasisyntax/loc stx #f)]
       [(begin/var . body-stx)
        (let [[body (syntax->list #'body-stx)]]
          ;; Decide whether mzscheme should handle this, or whether we
