@@ -729,6 +729,42 @@
   (define (interpolate-int fraction val1 val2)
     (number->integer (+ val1 (* fraction (- val2 val1)))))
   
+  ;;; Given x(0), x(1), dx/dt(0), and dx/dt(1), fit a cubic polynomial to
+  ;;; those four constraints and evaluate it.
+  (define (eval-cubic-1d-spline x0 x1 dx/dt0 dx/dt1 t)
+    ;; The equation for this spline was determined using the following
+    ;; commands in Maxima, a GPL'd version of MacSyma.  (Below, xp(t) is
+    ;; dx/dt at t.)
+    ;;
+    ;;   x(t) := a*t^3 + b*t^2 + c*t + d;
+    ;;   define(xp(t), diff(x(t),t));
+    ;;   solve([x(0)=x0,x(1)=x1,xp(0)=xp0,xp(1)=xp1],[a,b,c,d]);
+    ;;
+    ;; Maxima reported the following result:
+    ;;
+    ;;   a = xp1 + xp0 - 2 x1 + 2 x0
+    ;;   b = - xp1 - 2 xp0 + 3 x1 - 3 x0
+    ;;   c = xp0
+    ;;   d = x0
+    (let [[a (+ (* 2 x0) (* -2 x1) dx/dt0 dx/dt1)]
+          [b (+ (* -3 x0) (* 3 x1) (* -2 dx/dt0) (* -1 dx/dt1))]
+          [c dx/dt0]
+          [d x0]]
+      (+ (* a (expt t 3)) (* b (expt t 2)) (* c t) d)))
+
+  ;;; Apply a simple-minded transform to FRACTION, making it start and stop
+  ;;; either slowly or quickly, as specified.
+  (define (ease-in/out fraction ease-in? ease-out?)
+    (cond
+     [(and ease-in? ease-out?)
+      (eval-cubic-1d-spline 0 1 0 0 fraction)]
+     [ease-in?
+      (eval-cubic-1d-spline 0 1 0 1 fraction)]
+     [ease-out?
+      (eval-cubic-1d-spline 0 1 1 0 fraction)]
+     [#t
+      fraction]))
+  
   ;;; This function creates a simple DRAW-FUNC for use with ANIMATE.  The
   ;;; resulting function moves OBJs from the point FROM to the point TO
   ;;; over the duration of the animation.
@@ -741,15 +777,16 @@
 
   ;;; Call DRAW-FUNC with numbers from 0.0 to 1.0 over the course
   ;;; MILLISECONDS.
-  (define (animate milliseconds draw-func &key ease-out? ease-in?)
+  (define (animate milliseconds draw-func &key ease-in? ease-out?)
     (define start-time (current-milliseconds))
     (define end-time (+ start-time milliseconds))
     (draw-func 0.0)
     (let loop []
       (let [[current-time (current-milliseconds)]]
         (when (< current-time end-time)
-          (let [[elapsed-time (- current-time start-time)]]
-            (draw-func (/ (* 1.0 elapsed-time) milliseconds))
+          (let* [[elapsed-time (- current-time start-time)]
+                 [fraction (/ (* 1.0 elapsed-time) milliseconds)]]
+            (draw-func (ease-in/out fraction ease-in? ease-out?))
             (idle)
             (loop)))))
     (draw-func 1.0))
