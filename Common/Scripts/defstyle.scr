@@ -1,0 +1,6 @@
+(defstyle S1
+	(Times) 12 right 0xFFFFFF00 0x00FF0000 -1
+	2 0x00000080 0x00FF0080)
+
+# Used by ../fonttools/fontspeed to measure typical text drawing perfomance.
+(defstyle fontspeedStyle (Nimbus Roman No9 L) 12 left 0xF0F0F000 0xFFFF0000)
