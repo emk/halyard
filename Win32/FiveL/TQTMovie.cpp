@@ -176,6 +176,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 
 void TQTMovie::Idle() throw ()
 {
+	// Keep event-loop processing simple for our callers.
 	if (IsBroken())
 		return;
 
@@ -213,10 +214,9 @@ void TQTMovie::ProcessAsyncLoad()
 	
 	// We don't advance to the next stage until the movie is playable.
 	// Note there are other states beyond kMovieLoadStatePlayable
-	// (kMovieLoadStatePlaythoughOK, kMovieLoadStateComplete), and those
+	// (kMovieLoadStatePlaythroughOK, kMovieLoadStateComplete), and those
 	// are also good for our purposes.
-	// TODO - WHYMANUAL
-	if (load_state >= kMovieLoadStatePlayable)
+	if (load_state >= kMovieLoadStatePlaythroughOK)
 		AsyncLoadComplete();
 }
 
@@ -233,13 +233,13 @@ void TQTMovie::AsyncLoadComplete()
 	// Mark ourselves as ready to go.
 	UpdateMovieState(MOVIE_READY);
 	if (mShouldStartWhenReady == true)
-		Start();
+		Start(mOptions, mPosition);
 }
 
-void TQTMovie::StartWhenReady()
+void TQTMovie::StartWhenReady(PlaybackOptions inOptions, Point inPosition)
 {
 	if (mState == MOVIE_READY)
-		Start();
+		Start(inOptions, inPosition);
 	else
 	{
 		// We can't just busy-loop on Idle until mState == MOVIE_READY,
@@ -247,21 +247,48 @@ void TQTMovie::StartWhenReady()
 		// not all of our callbacks get run unless we go back to the
 		// Windows event loop.
 		mShouldStartWhenReady = true;
+		mOptions = inOptions;
+		mPosition = inPosition;
 	}
 }
 
-void TQTMovie::Start()
+void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 {
 	ASSERT(mState == MOVIE_READY);
 
+	// Store our options so other routines can find them.
+	mOptions = inOptions;
+	mPosition = inPosition;
+
 	// The movie should be done flashing (and drawing in awkward places),
-	// so attach it to the correct port.
-	::SetMovieGWorld(mMovie, mPort, NULL);
-	CHECK_MAC_ERROR(::GetMoviesError());
+	// so we should attach it to the correct port (if it has any graphics
+	// we care about).
+	if (!(mOptions & kAudioOnly))
+	{
+		::SetMovieGWorld(mMovie, mPort, NULL);
+		CHECK_MAC_ERROR(::GetMoviesError());
+	}
 		
+	// Figure out where to put our movie on the screen.  (We hope enough
+	// of our movie is loaded by now to calculate the box accurately!)
+	// TODO - Should this take the controller itself into account?  And if
+	// so, how?
+	Rect bounds;
+	::GetMovieBox(mMovie, &bounds);
+	ASSERT(bounds.left == 0 && bounds.top == 0);
+	if (mOptions & kCenterMovie)
+		::MacOffsetRect(&bounds,
+						mPosition.h - (bounds.right / 2),
+						mPosition.v - (bounds.bottom / 2));
+	else
+		::MacOffsetRect(&bounds, mPosition.h, mPosition.v);
+
+	// Pick an appropriate set of controller options.
+	long controller_flags = mcTopLeftMovie;
+	if (!(mOptions & kEnableMovieController))
+		controller_flags |= mcNotVisible;
+
 	// Attach a movie controller to our movie.
-	Rect bounds = {120, 160, 640, 480};
-	long controller_flags = mcTopLeftMovie | mcNotVisible;
 	mMovieController = ::NewMovieController(mMovie, &bounds, controller_flags);
 	CHECK_MAC_ERROR(::GetMoviesError());
 	
@@ -271,15 +298,28 @@ void TQTMovie::Start()
 												  &ActionFilterCallback,
 												  refcon));
 
+	// If interaction is enabled, pass keyboard events to the movie.
+	if (mOptions & kEnableInteraction)
+		CHECK_MAC_ERROR(::MCDoAction(mMovieController,
+									 mcActionSetKeysEnabled,
+									 reinterpret_cast<void*>(true)));
+
+	// Handle our other controller options.
+	if (mOptions & kLoopMovie)
+		CHECK_MAC_ERROR(::MCDoAction(mMovieController,
+									 mcActionSetLooping,
+									 reinterpret_cast<void*>(true)));
+	if (mOptions & kPlayEveryFrame)
+		CHECK_MAC_ERROR(::MCDoAction(mMovieController,
+									 mcActionSetPlayEveryFrame,
+									 reinterpret_cast<void*>(true)));
+
 	// Figure out our preferred playback rate.  We used to store this
 	// in a member variable, but it's *much* safer to ask for it just
 	// before you use it.
 	Fixed rate = ::GetMoviePreferredRate(mMovie);
 	
-	// Start the movie.  I tried doing this with mcActionPrerollAndPlay,
-	// mcActionPlay and mcActionAutoPlay (whatever that is), and the
-	// movie wouldn't play reliably.  Now I just call Resume, which
-	// does some semi-naughty things, but *everything works*.
+	// Start the movie.
 	UpdateMovieState(MOVIE_STARTED);
 	CHECK_MAC_ERROR(::MCDoAction(mMovieController,
 								 mcActionPrerollAndPlay,
@@ -294,6 +334,69 @@ void TQTMovie::Start()
 TQTMovie::~TQTMovie() throw ()
 {
 	ReleaseResources();
+}
+
+bool TQTMovie::IsDone() throw ()
+{
+	if (mState == MOVIE_BROKEN)
+		return true;
+	else if (mState < MOVIE_STARTED)
+		return false;
+	else if (mOptions & kLoopMovie)
+		return false;
+	else
+	{
+		// Get the current time in the movie.  As Yijin discovered, we
+		// can't use ::IsMovieDone on streaming movies--it doesn't know how
+		// to recognize the existance of anything beyond what's already
+		// been loaded.
+		TimeValue current_time = ::GetMovieTime(mMovie, NULL);
+		// XXX - I don't seriously expect this error to occur, and I don't
+		// want to have to catch it.
+		//CHECK_MAC_ERROR(::GetMoviesError());
+
+		// Get the movie's duration.
+		// Unknown/indefinite duration is supposedly represented as
+		// a duration of 0x7FFFFFF (yes, there really are *six* Fs in that
+		// number).  This can occur for (1) partially loaded movies and
+		// (2) live streaming broadcasts without a duration.
+		TimeValue duration = ::GetMovieDuration(mMovie);
+		// XXX - I don't seriously expect this error to occur, and I don't
+		// want to have to catch it.
+		//CHECK_MAC_ERROR(::GetMoviesError());
+
+		return duration <= current_time;
+	}
+}
+
+bool TQTMovie::IsPaused()
+{
+	ASSERT(mState == MOVIE_STARTED);
+	long flags;
+	CHECK_MAC_ERROR(::MCGetControllerInfo(mMovieController, &flags));
+	return flags & mcInfoIsPlaying ? false : true;
+}
+
+void TQTMovie::Pause()
+{
+	ASSERT(mState == MOVIE_STARTED);
+	if (!IsPaused())
+	{
+		::StopMovie(mMovie);
+		CHECK_MAC_ERROR(::GetMoviesError());
+		CHECK_MAC_ERROR(::MCMovieChanged(mMovieController, mMovie));
+	}
+}
+
+void TQTMovie::Unpause()
+{
+	ASSERT(mState == MOVIE_STARTED);
+	if (IsPaused())
+	{
+		::StartMovie(mMovie);
+		CHECK_MAC_ERROR(::GetMoviesError());
+		CHECK_MAC_ERROR(::MCMovieChanged(mMovieController, mMovie));
+	}
 }
 
 bool TQTMovie::HandleMovieEvent(HWND hWnd, UINT message,
@@ -341,61 +444,6 @@ void TQTMovie::Redraw(HWND hWnd)
 	WindowPtr mac_window =
 		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
 	::MCDraw(mMovieController, mac_window);
-}
-
-bool TQTMovie::IsDone()
-{
-	if (mState == MOVIE_BROKEN)
-		return true;
-	else if (mState < MOVIE_STARTED)
-		return false;
-	else
-	{
-		// Get the current time in the movie.  As Yijin discovered, we
-		// can't use ::IsMovieDone on streaming movies--it doesn't know how
-		// to recognize the existance of anything beyond what's already
-		// been loaded.
-		TimeValue current_time = ::GetMovieTime(mMovie, NULL);
-
-		// Get the movie's duration.
-		// Unknown/indefinite duration is supposedly represented as
-		// a duration of 0x7FFFFFF (yes, there really are *six* Fs in that
-		// number).  This can occur for (1) partially loaded movies and
-		// (2) live streaming broadcasts without a duration.
-		TimeValue duration = ::GetMovieDuration(mMovie);
-
-		return duration <= current_time;
-	}
-}
-
-bool TQTMovie::IsPaused()
-{
-	ASSERT(mState == MOVIE_STARTED);
-	long flags;
-	CHECK_MAC_ERROR(::MCGetControllerInfo(mMovieController, &flags));
-	return flags & mcInfoIsPlaying ? false : true;
-}
-
-void TQTMovie::Pause()
-{
-	ASSERT(mState == MOVIE_STARTED);
-	if (!IsPaused())
-	{
-		::StopMovie(mMovie);
-		CHECK_MAC_ERROR(::GetMoviesError());
-		CHECK_MAC_ERROR(::MCMovieChanged(mMovieController, mMovie));
-	}
-}
-
-void TQTMovie::Resume()
-{
-	ASSERT(mState == MOVIE_STARTED);
-	if (IsPaused())
-	{
-		::StartMovie(mMovie);
-		CHECK_MAC_ERROR(::GetMoviesError());
-		CHECK_MAC_ERROR(::MCMovieChanged(mMovieController, mMovie));
-	}
 }
 
 void TQTMovie::UpdateMovieState(MovieState inNewState)
@@ -449,10 +497,13 @@ bool TQTMovie::ActionFilter(short inAction, void* inParams)
 			break;
 
 		case mcActionMovieClick:
-			// Devour mouse clicks using the trick recommended by
-			// Inside Macintosh.
-			EventRecord* evt = reinterpret_cast<EventRecord*>(inParams);
-			evt->what = nullEvent;
+			if (!(mOptions & kEnableInteraction))
+			{
+				// Devour mouse clicks using the trick recommended by
+				// Inside Macintosh.
+				EventRecord* evt = reinterpret_cast<EventRecord*>(inParams);
+				evt->what = nullEvent;
+			}
 			break;
 	}
 

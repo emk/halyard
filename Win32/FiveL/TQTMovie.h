@@ -102,6 +102,17 @@ public:
 	static void PrepareWindowForMovies(HWND inWindow);
 	static CGrafPtr GetPortFromHWND(HWND inWindow);
 
+	typedef unsigned long PlaybackOptions;
+	enum /* PlaybackOptions */ {
+		kDefaultOptions = 0,
+		kCenterMovie = 1,
+		kAudioOnly = 2,
+		kEnableMovieController = 4,
+		kEnableInteraction = 8,
+		kPlayEveryFrame = 16,
+		kLoopMovie = 32
+	};
+
 private:
 	//////////
 	// We use non-blocking versions of all our QuickTime calls in an
@@ -155,32 +166,123 @@ private:
 	//
 	bool mShouldStartWhenReady;
 
-public:
-	enum {
-		kCenterMovie = 1,
-		kAudioOnly = 2,
-		kEnableMovieController = 4,
-		kEnableInteraction = 8,
-		kShowEveryFrame = 16
-	};
+	//////////
+	// Our playback options.
+	//
+	PlaybackOptions mOptions;
 
+	//////////
+	// Where we should draw our movie.
+	//
+	Point mPosition;
+
+public:
+	//////////
+	// Create a new movie object, and begin the preloading process.
+	//
+	// [in] inPort -      The Macintosh GrafPort which will eventually
+	//                    be used to display the movie.  Windows systems
+	//                    can use PrepareWindowForMovies and
+	//                    GetPortFromHWND to get a value for this parameter.
+	// [in] inMoviePath - The URL or local filename of the movie.
+	//
 	TQTMovie(CGrafPtr inPort, const std::string &inMoviePath);
+
+	//////////
+	// Stop movie playback, and release all resources.
+	//
 	virtual ~TQTMovie() throw ();
 
+	//////////
+	// Allow QuickTime some time to process this movie.  QuickTime
+	// need these periodic idle calls to get work done (but feel free
+	// to call HandleMovieEvent below, instead).
+	// 
 	void Idle() throw ();
+
+	//////////
+	// Tell QuickTime to start the movie as soon as it's playable.  This
+	// could be immediately, or in several seconds.
+	//
+	// [in] inOptions -   PlaybackOptions value to control playback.
+	// [in] inPosition -  The location at which we should draw the movie.
+	//                    This is either the upper-left corner, or the
+	//                    center (if kCenterMovie is specified).
+	//
+	void StartWhenReady(PlaybackOptions inOptions, Point inPosition);
+
+	//////////
+	// Tell QuickTime to start the movie immediately.  Don't call this
+	// unless IsReady returns true!  (Arguments are the same as the
+	// arguments to StartWhenReady.)
+	//
+	void Start(PlaybackOptions inOptions, Point inPosition);
+
+	//////////
+	// Did a problem occur either loading or playing this movie?  If
+	// this function returns true, the object is essentially scrap.
+	//
+	bool IsBroken() throw () { return mState == MOVIE_BROKEN; }
+
+	//////////
+	// Is the movie ready to play?
+	// 
+	bool IsReady() throw () { return mState == MOVIE_READY; }
+
+	//////////
+	// Has the movie been started?
+	//
+	bool IsStarted() throw () { return mState == MOVIE_STARTED; }
+
+	//////////
+	// Is the movie done playing?
+	//
+	bool IsDone() throw ();
+
+	//////////
+	// Has the movie been paused?  Don't call this function
+	// unless IsStated returns true.
+	//
+	bool IsPaused();
+
+	//////////
+	// Pause the movie, if it isn't paused.  Don't call this function
+	// unless IsStated returns true.  It's safe to call this on a
+	// paused movie.
+	//
+	void Pause();
+
+	//////////
+	// Unpause the movie, if it's paused.  Don't call this function
+	// unless IsStated returns true.  It's safe to call this on an
+	// unpaused movie.
+	//
+	void Unpause();
+
+	//////////
+	// Allow the TQTMovie object first crack at processing window
+	// events.  If Windows is generating idle messages for your
+	// window, you can call this instead of 
+	//
+	// [out] return - Theoretically, if this value is true,
+	//                your application should assume that QuickTime
+	//                took care of this event.  At least for update
+	//                events, though, you'll need to process them
+	//                anyway, and it doesn't hurt to process other
+	//                kinds of events either.  Experimentation needed!
+	//
 	bool HandleMovieEvent(HWND hWnd, UINT message, WPARAM wParam,
 						  LPARAM lParam) throw ();
+
+	//////////
+	// Notify the movie that the window has been redrawn.  If you
+	// don't call this, the Sorenson 2 codec will often fail to
+	// display video.  It's safe to call this function on broken
+	// or unready movies (so you don't need to overcomplicate your
+	// event loop).
+	//
 	void Redraw(HWND hWnd) throw ();
 
-	bool IsBroken() throw () { return mState == MOVIE_BROKEN; }
-	bool IsStarted() throw () { return mState == MOVIE_STARTED; }
-	bool IsDone();
-
-	void StartWhenReady();
-	void Start();
-	bool IsPaused();
-	void Pause();
-	void Resume();
 
 protected:
 	virtual bool ActionFilter(short inAction, void* inParams);
