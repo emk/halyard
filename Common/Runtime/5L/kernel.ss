@@ -401,7 +401,8 @@
       (if (hash-table-get *%kernel-card-table* name (lambda () #f))
           (non-fatal-error (cat "Duplicate card: " name))
           (begin
-            (call-5l-prim 'RegisterCard name)
+            (if (have-5l-prim? 'RegisterCard)
+                (call-5l-prim 'RegisterCard name))
             (hash-table-put! *%kernel-card-table* name card)))))
 
   (define (card-exists? card-name)
