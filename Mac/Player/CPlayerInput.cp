@@ -64,7 +64,7 @@ CPlayerInput::CPlayerInput(
 		CHeader				*theHeader = NULL;
 		TextTraitsH			tthand;
 		
-		theHeader = (CHeader *) gHeaderManager.Find(inStyle);
+		theHeader = (CHeader *) gHeaderManager.Find(inStyle.GetString());
 		if (theHeader != NULL)
 		{
 			tthand = (TextTraitsH) ::Get1Resource('Txtr', 1000);

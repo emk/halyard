@@ -167,8 +167,8 @@ TCallback *TMac5LCallback::MakeCallback(const TString &inCmd)
 TMac5LInterpreterManager::TMac5LInterpreterManager(
 	TInterpreter::SystemIdleProc inIdleProc)
 	: TInterpreterManager(inIdleProc),
-	  mDefStyleProcessor("defstyle")
-	  //, mHeaderProcessor("header")
+	  mDefStyleProcessor("defstyle"),
+	  mHeaderProcessor("header")
 {
 	// Register our 5L-only interpreter primitives.
 	Register5LPrimitives();
@@ -180,8 +180,7 @@ TMac5LInterpreterManager::TMac5LInterpreterManager(
 	// Register our top-level forms.
 	TParser::RegisterTlfProcessor("card", &gCardManager);
 	TParser::RegisterTlfProcessor("macrodef", &gMacroManager);
-	TParser::RegisterTlfProcessor("header", &gHeaderManager);
-	//TParser::RegisterTlfProcessor("header", &mHeaderProcessor);
+	TParser::RegisterTlfProcessor("header", &mHeaderProcessor);
 	TParser::RegisterTlfProcessor("defstyle", &mDefStyleProcessor);
 }
 

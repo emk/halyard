@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 /*********************
 
     CHeader MANAGER
@@ -19,45 +20,24 @@ CHeaderManager FIVEL_NS gHeaderManager;
 //
 //  Let Index ancestor construct based on these values.
 //
-CHeader::CHeader(TIndexFile *inIndex, const char *inName /* = NULL */, 
-				int32 inStart /* = 0 */, int32 inEnd /* = 0 */) :
-    		TIndex(inIndex, inName, inStart, inEnd)
+CHeader::CHeader(TArgumentList &inArgs)
 {
     mAlignment = AlignLeft;
     mColor = mHighlightColor = mShadowColor = 0;
     mShadow = 0;
-}
-
-CHeader::~CHeader()
-{
-}
-
-
-/***********************************************************************
- * Function: CHeader::ParseScript
- *
- *  Parameter (null)
- * Return:
- *
- * Comments:
- *      Once we get the CHeader data read into memory, parse it and fill
- *  the CHeader fields. Then we can ditch the original data. Colors are
- * checked to match InfoWindows standards (EGA + MIC restrictions...)
- ***********************************************************************/
-void CHeader::ParseScript(void)
-{
 
     TString     align, fontname;
     int16		offset;				// new parameter
 
-    // (CHeader HNAME FONTNAME...
+    // HNAME FONTNAME...
     //
-    m_Script >> open >> discard >> discard >> fontname;
-   
+    inArgs >> mName >> fontname;
+	mName = MakeStringLowercase(mName);
+
     GetFont(fontname); 	
     
     //  ...ALIGNMENT COLOR HIGHCOLOR...
-    m_Script >> align >> mColor >> mHighlightColor; 
+    inArgs >> align >> mColor >> mHighlightColor; 
     align.MakeLower();
    
     if (align == (char *) "center")
@@ -67,17 +47,23 @@ void CHeader::ParseScript(void)
     else
         mAlignment = AlignLeft;
 
-    //  ...SHADOW SHADCOLOR OFFSET) - the offset is ignored for now, it is used on Windows
+    //  ...SHADOW SHADCOLOR OFFSET - the offset is ignored for now, it is used on Windows
     //									to help with text alignment
-    if (m_Script.more())
-        m_Script >> mShadow >> mShadowColor;
+    if (inArgs.HasMoreArguments())
+        inArgs >> mShadow >> mShadowColor;
         
-    if (m_Script.more())
-    	m_Script >> offset;
-        
-    m_Script >> close;
-     
-    FlushScript();
+    if (inArgs.HasMoreArguments())
+    	inArgs >> offset;
+
+    if (inArgs.HasMoreArguments()) 
+    {
+        inArgs >> mShadowHighlightColor;
+    }
+}
+
+CHeader::~CHeader()
+{
+
 }
 
 //
@@ -157,28 +143,39 @@ void CHeader::GetFont(const char *inName)
 
 *****************************/
 
-/***********************************************************************
- * Function: CHeaderManager::ProcessTopLevelForm
- *
- *  Parameter name
- *  Parameter start         (see Index class)
- *  Parameter end
- * Return:
- *
- * Comments:
- *  Create a new CHeader Index
- ***********************************************************************/
-void CHeaderManager::ProcessTopLevelForm(TIndexFile *inFile, const char *inName, 
-		int32 inStart, int32 inEnd)
+CHeader *CHeaderManager::Find(const std::string &inName)
 {
-    CHeader  *newHeader;
-    
-    newHeader = new CHeader(inFile, inName, inStart, inEnd);
-    
-    if (newHeader->SetScript())
-    {
-    	newHeader->ParseScript(); 
-    	
-    	Add(newHeader);
-    }
+	std::string name = MakeStringLowercase(inName);
+	std::map<std::string,CHeader*>::iterator found = mHeaderMap.find(name);
+	if (found != mHeaderMap.end())
+		return found->second;
+	else
+		return NULL;
+}
+
+void CHeaderManager::AddHeader(TArgumentList &inArgs)
+{
+	// Create the header and get the name.
+	std::auto_ptr<CHeader> head = std::auto_ptr<CHeader>(new CHeader(inArgs));
+	std::string name = head->GetName();
+
+	// Check for an exiting header with the same name.
+	if (Find(name))
+	{
+		gLog.Error("Can't redefine header <%s>.", name.c_str());
+		return;
+	}
+
+	// Insert the new stylesheet in our map.
+	mHeaderMap.insert(std::pair<std::string,CHeader*>(name,
+													  head.release()));
+}
+
+void CHeaderManager::RemoveAll()
+{
+	// Delete the individual stylesheets and empty the map.
+	std::map<std::string,CHeader*>::iterator iter = mHeaderMap.begin();
+	for (; iter != mHeaderMap.end(); ++iter)
+		delete iter->second;
+	mHeaderMap.clear();	
 }

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 /***************************************
 
     Header class. Knows how to draw
@@ -10,20 +11,22 @@
 #define _H_CHEADER
 
 #include "THeader.h"
-
-#include "TIndex.h"
+#include "TPrimitives.h"
+#include <boost/utility.hpp>
 
 BEGIN_NAMESPACE_FIVEL
 
-class CHeader : public TIndex 
+class CHeader
 {
     protected:
 
+		std::string		mName;
 		Alignment   	mAlignment;
         int16         	mColor;
         int16         	mHighlightColor;
         int16         	mShadow;
         int16         	mShadowColor;
+        int16         	mShadowHighlightColor;
         int16         	mHilite;
         int16			mUnderline;
 
@@ -34,12 +37,10 @@ class CHeader : public TIndex
 		
     public:
 
-        				CHeader(TIndexFile *inFile, const char *inName = NULL, 
-        						int32 inStart = 0, int32 inEnd = 0);
+        				CHeader(TArgumentList &inArgs);
 						~CHeader();
 						
-        virtual void 	ParseScript(void);
-        
+		std::string		GetName()               { return mName; }
         int16			GetFontFamily(void) 	{ return (mFontFamily); }
         int16			GetHeight(void)			{ return (mHeight); }
         Alignment		GetAlignment(void)		{ return (mAlignment); }
@@ -53,14 +54,31 @@ class CHeader : public TIndex
 		void			GetFont(const char *inName);
 };
 
-class CHeaderManager : public TIndexManager 
+class CHeaderManager : boost::noncopyable
 {
-	public:
-	
-		virtual void 	ProcessTopLevelForm(TIndexFile *inFile, const char *inName, int32 inStart, int32 inEnd);
+	std::map<std::string,CHeader*> mHeaderMap;
+
+public:
+	virtual ~CHeaderManager() { RemoveAll(); }
+
+	//////////
+	// Return the specified header, or NULL.
+	//
+	CHeader *Find(const std::string &inName);
+
+	//////////
+	// Create a new header using the supplied parameters.
+	//
+	void AddHeader(TArgumentList &inArgs);
+
+	//////////
+	// Remove all the headers from this object.
+	//
+	void RemoveAll();
 };
 
 extern CHeaderManager gHeaderManager;
 
 END_NAMESPACE_FIVEL
-#endif
+
+#endif // _H_CHEADER

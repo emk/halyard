@@ -1,6 +1,16 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-3.5.5 - 1 Oct 2002 - emk
+3.5.6 - 3 Oct 2002 - emk
+
+  * Refactored CHeader in the same fashion as Header and TStyleSheet,
+    which should allow headers (and therefore input) to be used from
+    Scheme.  This may also fix a redoscript problem in old5l.
+  * Merged "cursor during video" fix from 3.4.2.
+  * Built new Windows engines with the MzScheme 202 code.  You'll
+    need to get the newest version of the appropriate libmzsch and
+    libmzgc DLLs.
+
+3.5.5 - 2 Oct 2002 - emk
 
 Preliminary MzScheme support for Macintosh engine.  DO NOT BUILD THE
 NON-CARBON POWERPC BUILD!  WHEN RUN UNDER OS X'S OS 9 EMULATOR, IT WILL

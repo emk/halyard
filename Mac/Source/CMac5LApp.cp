@@ -43,6 +43,7 @@
 #include "TStartup.h"
 #include "TVersion.h"
 #include "lang/old5l/TMac5LInterpreter.h"
+#include "CHeader.h"
 #include "TStyleSheet.h"
 #include "TMacPrimitives.h"
 #include "TQTPrimitives.h"
@@ -573,6 +574,7 @@ void CMac5LApp::ReDoScript(const char *curCard)
 	gDebugLog.Log("Killing everything for redoscript");
 	
 	gStyleSheetManager.RemoveAll();
+	gHeaderManager.RemoveAll();
 
 	// XXX - Does this potentially destroy an object in our call chain?
 	if (!gHaveLegacyInterpreterManager)
@@ -718,6 +720,17 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.25  2002/10/03 19:53:14  emk
+3.5.6 - 3 Oct 2002 - emk
+
+  * Refactored CHeader in the same fashion as Header and TStyleSheet,
+    which should allow headers (and therefore input) to be used from
+    Scheme.  This may also fix a redoscript problem in old5l.
+  * Merged "cursor during video" fix from 3.4.2.
+  * Built new Windows engines with the MzScheme 202 code.  You'll
+    need to get the newest version of the appropriate libmzsch and
+    libmzgc DLLs.
+
 Revision 1.24  2002/10/03 02:47:00  emk
 3.5.5 - 1 Oct 2002 - emk
 

@@ -71,6 +71,7 @@ void FIVEL_NS RegisterMacPrimitives()
 #endif
     REGISTER_5L_PRIMITIVE(EjectDisc);
     REGISTER_5L_PRIMITIVE(Fade);
+	REGISTER_5L_PRIMITIVE(Header);
     REGISTER_5L_PRIMITIVE(Highlight);
     REGISTER_5L_PRIMITIVE(Hidemouse);
     REGISTER_5L_PRIMITIVE(Input);
@@ -632,6 +633,19 @@ DEFINE_5L_PRIMITIVE(Fade)
 		DoGFade(false, steps, true);
     else
         gLog.Caution("Fade in or out, but don't fade %s", (const char *) direction);
+}
+
+/*---------------------------------------------------------
+    (HEADER name ...)
+
+    Create a new "header" (a kind of stylesheet) using the
+    old header system.  See CHeader for details of the
+    arguments, etc.
+-----------------------------------------------------------*/
+
+DEFINE_5L_PRIMITIVE(Header)
+{
+	gHeaderManager.AddHeader(inArgs);
 }
 
 /*---------------------------------------------------------

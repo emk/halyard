@@ -87,7 +87,7 @@ public:
 class TMac5LInterpreterManager : public TInterpreterManager
 {
 	TPrimitiveTlfProcessor mDefStyleProcessor;
-	//TPrimitiveTlfProcessor mHeaderProcessor;
+	TPrimitiveTlfProcessor mHeaderProcessor;
 
 public:
 	//////////
