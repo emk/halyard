@@ -19,106 +19,7 @@
 #include "MovieElement.h"
 #include "Listener.h"
 #include "Timecoder.h"
-
-
-//=========================================================================
-//  LocationBox
-//=========================================================================
-//  A specialized combobox that works more-or-less like the "Location"
-//  box in a web browser's tool bar.
-
-class LocationBox : public wxComboBox
-{
-public:
-	LocationBox(wxToolBar *inParent);
-	
-	void NotifyEnterCard();
-
-	void RegisterCard(const wxString &inCardName);
-	void TryJump(const wxString &inCardName);
-
-	void UpdateUiLocationBox(wxUpdateUIEvent &inEvent);
-	void OnChar(wxKeyEvent &inEvent);
-	void OnComboBoxSelected(wxCommandEvent &inEvent);
-
-	//////////
-	// Call this function to focus the location box and prepare for the
-	// user to enter a card name.
-	//
-	void Prompt();
-
-	DECLARE_EVENT_TABLE();
-};
-
-BEGIN_EVENT_TABLE(LocationBox, wxComboBox)
-    EVT_UPDATE_UI(FIVEL_LOCATION_BOX, LocationBox::UpdateUiLocationBox)
-	EVT_CHAR(LocationBox::OnChar)
-	EVT_COMBOBOX(FIVEL_LOCATION_BOX, LocationBox::OnComboBoxSelected)
-END_EVENT_TABLE()
-
-LocationBox::LocationBox(wxToolBar *inParent)
-	: wxComboBox(inParent, FIVEL_LOCATION_BOX, "",
-				 wxDefaultPosition, wxSize(200, -1),
-				 0, NULL, wxWANTS_CHARS|wxCB_DROPDOWN|wxCB_SORT)
-{
-
-}
-
-void LocationBox::NotifyEnterCard()
-{
-	ASSERT(TInterpreter::HaveInstance());
-	std::string card = TInterpreter::GetInstance()->CurCardName();
-	SetValue(card.c_str());
-	RegisterCard(card.c_str());
-}
-
-void LocationBox::RegisterCard(const wxString &inCardName)
-{
-	// Update our drop-down list of cards.
-	if (FindString(inCardName) == -1)
-		Append(inCardName);	
-}
-
-void LocationBox::TryJump(const wxString &inCardName)
-{
-    if (TInterpreter::HaveInstance())
-	{
-		TInterpreter *interp = TInterpreter::GetInstance();
-		if (interp->IsValidCard(inCardName))
-		{
-			// Add the specified card to our list and jump to it.
-			RegisterCard(inCardName);
-			interp->JumpToCardByName(inCardName);
-		}
-		else
-		{
-			wxLogError("The card \"" + inCardName + "\" does not exist.");
-		}
-	}
-}
-
-void LocationBox::UpdateUiLocationBox(wxUpdateUIEvent &inEvent)
-{
-	inEvent.Enable(TInterpreter::HaveInstance());
-}
-
-void LocationBox::OnChar(wxKeyEvent &inEvent)
-{
-	if (inEvent.GetKeyCode() == WXK_RETURN)
-		TryJump(GetValue());
-	else
-		inEvent.Skip();
-}
-
-void LocationBox::OnComboBoxSelected(wxCommandEvent &inEvent)
-{
-	TryJump(inEvent.GetString());
-}
-
-void LocationBox::Prompt()
-{
-	SetFocus();
-}
+#include "LocationBox.h"
 
 
 //=========================================================================
@@ -194,12 +95,15 @@ StageFrame::StageFrame(const wxChar *inTitle, wxSize inSize)
     mCardMenu->Append(FIVEL_JUMP_CARD, "&Jump to Card...\tCtrl+J",
                       "Jump to a specified card by name.");
 
-    // Set up our View menu.
+    // Set up our View menu.  Only include the "Full Screen" item on
+	// platforms where it's likely to work.
     mViewMenu = new wxMenu();
+#if CONFIG_ENABLE_FULL_SCREEN
     mViewMenu->AppendCheckItem(FIVEL_FULL_SCREEN,
                                "&Full Screen\tCtrl+F",
                                "Use a full screen window.");
     mViewMenu->AppendSeparator();
+#endif // CONFIG_ENABLE_FULL_SCREEN
     mViewMenu->AppendCheckItem(FIVEL_DISPLAY_XY, "Display Cursor &XY",
                                "Display the cursor's XY position.");
     mViewMenu->AppendCheckItem(FIVEL_DISPLAY_GRID, "Display &Grid\tCtrl+G",

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/fs_inet.h>
@@ -5,10 +6,10 @@
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
 
-#ifndef FIVEL_NO_MOVIES
-#include "TQTMovie.h"
-#endif // FIVEL_NO_MOVIES
-
+#include "AppConfig.h"
+#if CONFIG_HAVE_QUICKTIME
+#	include "TQTMovie.h"
+#endif // CONFIG_HAVE_QUICKTIME
 #include "AppGlobals.h"
 #include "FiveLApp.h"
 #include "Log5L.h"
@@ -35,8 +36,8 @@ void FiveLApp::IdleProc()
     // call it multiple times.
     while (wxGetApp().Pending() || wxGetApp().ProcessIdle())
     {
-	if (wxGetApp().Pending())
-	    wxGetApp().Dispatch();
+        if (wxGetApp().Pending())
+            wxGetApp().Dispatch();
     }
 }
 
@@ -58,10 +59,10 @@ bool FiveLApp::OnInit()
     //wxLog::AddTraceMask(wxTRACE_Messages);
     //wxLog::SetTraceMask(wxTraceMessages);
 
-#ifndef FIVEL_NO_MOVIES
+#if CONFIG_HAVE_QUICKTIME
     // Start up QuickTime.
     TQTMovie::InitializeMovies();
-#endif // FIVEL_NO_MOVIES
+#endif // CONFIG_HAVE_QUICKTIME
 
     // Initialize some optional wxWindows features.
     ::wxInitAllImageHandlers();
@@ -78,9 +79,9 @@ int FiveLApp::OnExit()
 {
     // Shut down QuickTime.  wxWindows guarantees to have destroyed
     // all windows and frames by this point.
-#ifndef FIVEL_NO_MOVIES
+#if CONFIG_HAVE_QUICKTIME
     TQTMovie::ShutDownMovies();
-#endif // FIVEL_NO_MOVIES
+#endif // CONFIG_HAVE_QUICKTIME
 
     // XXX - Undocumented return value, trying 0 for now.
     return 0;
@@ -101,14 +102,14 @@ int FiveLApp::MainLoop()
         // Run our own event loop.
         SetExitOnFrameDelete(FALSE);
         mHaveOwnEventLoop = true;
-	IdleProc();
+        IdleProc();
         manager->Run();
         delete manager;
         manager = NULL;
     }
     else
     {
-	wxLogError("Could not find a \"Runtime\" directory.");
+        wxLogError("Could not find a \"Runtime\" directory.");
 
         // Run the built-in main loop instead.
         return wxApp::MainLoop();

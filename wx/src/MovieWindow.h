@@ -70,11 +70,11 @@ public:
 
 // Define MovieWindowNative to map to an appropriate movie window class.
 // This is essentially a low-budget MovieWindow "factory" pattern.
-#ifdef FIVEL_NO_MOVIES
-#   define MovieWindowNative MovieWindow
-#else // !defined FIVEL_NO_MOVIES
+#if CONFIG_HAVE_QUICKTIME
 #   include "MovieWindowQT.h"
 #   define MovieWindowNative MovieWindowQT
-#endif // !defined FIVEL_NO_MOVIES
+#else // !CONFIG_HAVE_QUICKTIME
+#   define MovieWindowNative MovieWindow
+#endif // !CONFIG_HAVE_QUICKTIME
 
 #endif // MovieWindow_H

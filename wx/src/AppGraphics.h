@@ -3,9 +3,10 @@
 #ifndef AppGraphics_H
 #define AppGraphics_H
 
+#include "AppConfig.h"
 
 // We get our graphics from XPM files on non-Windows systems.
-#ifndef __WXMSW__
+#if CONFIG_USE_XPMS
 
 typedef char *xpm_graphic_t[];
 
@@ -17,6 +18,6 @@ extern xpm_graphic_t tb_grid_xpm;
 extern xpm_graphic_t tb_reload_xpm;
 extern xpm_graphic_t tb_xy_xpm;
 
-#endif // __WXMSW__
+#endif // CONFIG_USE_XPMS
 
 #endif // AppGraphics_H

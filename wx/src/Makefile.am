@@ -1,6 +1,5 @@
 
 CXXFLAGS = @CXXFLAGS@ -Wall -Werror \
-	-DFIVEL_NO_MOVIES \
 	`../../libs/wxWindows/wx-config --cxxflags` \
 	-I ../../libs/wxWindows/include \
 	-I ../../libs/wxWindows/lib/wx/include/gtk-2.3 \
@@ -12,6 +11,7 @@ CXXFLAGS = @CXXFLAGS@ -Wall -Werror \
 noinst_PROGRAMS = wx5L
 
 wx5L_SOURCES = \
+	AppConfig.h \
 	AppGlobals.h \
 	AppGraphics.cpp \
 	AppGraphics.h \
@@ -21,6 +21,8 @@ wx5L_SOURCES = \
 	FiveLApp.h \
 	Listener.cpp \
 	Listener.h \
+	LocationBox.cpp \
+	LocationBox.h \
 	Log5L.cpp \
 	Log5L.h \
 	MovieElement.cpp \
