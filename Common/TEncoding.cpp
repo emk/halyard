@@ -193,13 +193,17 @@ static EntityMapping<wchar_t> UnicodeEntityMapping[] = {
 //  Once the 'text' command goes away, we can simplify this class
 //  ruthlessly.
 
+// Create an empty template function, and specialize it for char
+// and wchar_t.  The 'tag' argument is unused, but is required for
+// some C++ compilers to select the right version of the template.
+// Pass it in as '(char) 0' or '(wchar_t) 0'.
 template <class CharT>
 static const EntityMapping<CharT> *
-find_mapping(const std::string& inEncoding);
+find_mapping(const std::string& inEncoding, CharT tag);
 
 template <>
 static const EntityMapping<char> *
-find_mapping(const std::string& inEncoding)
+find_mapping(const std::string& inEncoding, char tag)
 {
 	if (inEncoding == "ISO-8859-1")
 		return &IsoLatin1EntityMapping[0];
@@ -213,7 +217,7 @@ find_mapping(const std::string& inEncoding)
 
 template <>
 static const EntityMapping<wchar_t> *
-find_mapping(const std::string& inEncoding)
+find_mapping(const std::string& inEncoding, wchar_t tag)
 {
 	if (inEncoding == "UTF-16")
 		return &UnicodeEntityMapping[0];
@@ -237,7 +241,7 @@ TEncoding<CharT>::TEncoding (const std::string& inEncodingName,
 							 ErrorLoggingFunc inErrorLoggingFunc)
 	: mEncodingName(inEncodingName), mErrorLoggingFunc(inErrorLoggingFunc)
 {
-	mEntityMapping = find_mapping<CharT>(inEncodingName);
+	mEntityMapping = find_mapping<CharT>(inEncodingName, (CharT) 0);
 	if (mEntityMapping == NULL)
 		gLog.FatalError("Unknown character set %s", inEncodingName.c_str());
 }
@@ -250,7 +254,7 @@ TEncoding<CharT>::TEncoding (const std::string& inEncodingName,
 //  ASCII text into ISO entities.
 
 template<class CharT>
-TEncoding<CharT>::string_type
+typename TEncoding<CharT>::string_type
 TEncoding<CharT>::FixSpecials (const string_type& inString) const
 {
     string_type result;
@@ -280,7 +284,7 @@ TEncoding<CharT>::FixSpecials (const string_type& inString) const
 }
 
 template<class CharT>
-TEncoding<CharT>::string_type
+typename TEncoding<CharT>::string_type
 TEncoding<CharT>::FixQuotes (const string_type& inString) const
 {
     string_type result;
@@ -326,7 +330,7 @@ TEncoding<CharT>::FixQuotes (const string_type& inString) const
 }
 
 template<class CharT>
-TEncoding<CharT>::string_type
+typename TEncoding<CharT>::string_type
 TEncoding<CharT>::EncodeEntities (const string_type& inString) const
 {
     string_type result;
@@ -387,7 +391,7 @@ TEncoding<CharT>::EncodeEntities (const string_type& inString) const
 }
 
 template<class CharT>
-TEncoding<CharT>::string_type
+typename TEncoding<CharT>::string_type
 TEncoding<CharT>::TransformString (const string_type& inString) const
 {
 	return EncodeEntities(FixQuotes(FixSpecials(inString)));
@@ -399,6 +403,6 @@ TEncoding<CharT>::TransformString (const string_type& inString) const
 //=========================================================================
 //  We need to instantiate our templates manually.
 
-template TEncoding<char>;
-template TEncoding<wchar_t>;
+template class TEncoding<char>;
+template class TEncoding<wchar_t>;
 

@@ -17,14 +17,23 @@
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	03
 #define VERSION_REV_BIG		02
-#define VERSION_REV_SMALL	01
+#define VERSION_REV_SMALL	02
 
-#define VERSION_STRING	"5L 3.3.2.1 (Development, FiveL_3_2_2_emk_typography_merge)"
+#define VERSION_STRING	"5L 3.3.2.2 (Development, FiveL_3_2_2_emk_typography_merge)"
 #define SHORT_NAME		"5L"
 
 
 /*
  $Log$
+ Revision 1.9.2.3  2002/04/26 08:51:21  emk
+ 3.3.2.2 - First experimental engine with (textaa ...) and (defstyle ...) commands.
+
+ Changes:
+
+   - Ported new TEncoding template class to the Mac.
+
+   - Updated TStyleSheet to provide bug-for-bug compatibility with the way backslashed escaped sequences are processed.
+
  Revision 1.9.2.2  2002/04/23 11:29:47  emk
  Prepended "VERSION_" to the version-related preprocessor defines, because this way is (1) nicer and (2) matches the Mac engine's preprocessor defines.
 

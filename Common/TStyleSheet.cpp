@@ -3,6 +3,7 @@
 #include "TStyleSheet.h"
 #include "TVariable.h"
 #include "TLogger.h"
+#include "TEncoding.h"
 
 #include <ctype.h>
 
@@ -54,14 +55,18 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
     mShadowColor = Color(0, 0, 0, 0);
     mHighlightShadowColor = mHighlightColor;
 	
-    // ...LEADING... [ []]])
+    // ...LEADING...
     if (stream.more())
 		stream >> mLeading;
 	
-    // ...SHADOWOFFSET SHADOWCOLOR...
+    // ...SHADOWOFFSET...
     if (stream.more())
-		stream >> mShadowOffset >> mShadowColor;
+		stream >> mShadowOffset;
 	
+    // ...SHADOWCOLOR...
+    if (stream.more())
+		stream >> mShadowColor;
+
     // ...SHADOWHIGHCOLOR...
     if (stream.more())
 		stream >> mHighlightShadowColor;
@@ -73,8 +78,22 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
     FlushScript();
 }
 
+static void LogEncodingErrors (const std::wstring &inBadString, size_t inBadPos,
+							   const char *inErrMsg)
+{
+	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
+		inErrMsg, inBadPos,
+		std::string(inBadString.begin(), inBadString.end()).c_str());
+}
+	
 Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 {
+	// Convert 7-bit to 8-bit code.
+	// See the notes about TEncoding; it desperately needs refactoring.
+	TEncoding<wchar_t> encoding("UTF-16", &LogEncodingErrors);
+	std::wstring expanded(inText.begin(), inText.end());
+	std::wstring encoded = encoding.TransformString(expanded);
+
     // Create our base style for non-highlighted text.
     Typography::Style base_style(mFontName, mSize);
     base_style.SetColor(mColor);
@@ -92,8 +111,8 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 	
     // Process each character.
     bool is_hightlight = false;
-    std::string::const_iterator cp = inText.begin();
-    for (; cp < inText.end(); ++cp)
+    std::wstring::const_iterator cp = encoded.begin();
+    for (; cp < encoded.end(); ++cp)
     {
 		switch (*cp)
 		{
@@ -126,7 +145,7 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 			
 			
 			case '\\': // Escape sequence
-				if (++cp == inText.end())
+				if (++cp == encoded.end())
 					throw TException("Incomplete escape sequence in \"" +
 									 inText + "\"");
 				switch (*cp)
@@ -153,9 +172,22 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 						break;
 						
 					default:
-						text.AppendText('\\');
+						// XXX - This is really, unbelievably heinous.
+						// CStream does not remove its escape sequences
+						// from the strings it gives us, so we need to
+						// remove those escape sequences ourselves.
+						// Unfortunately, to preserve bug-for-bug
+						// compatibility, we must do it *after* we
+						// encode our entities into 16-bit characters.
+						// Net result: "\&amp;" becomes "\&" during
+						// entity expansion!  So we can't print the backslash
+						// or issue warnings for unknown escape sequences
+						// because virtually any character could legitimately
+						// appear after '\'.
+						
+						//text.AppendText('\\');
 						text.AppendText(*cp);
-						gDebugLog.Caution("Unrecognized escape \\%c", *cp);
+						//gDebugLog.Caution("Unrecognized escape \\%c", *cp);
 					
 				}
 				break;
