@@ -515,6 +515,7 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
 	{
 		if (!inPath.DoesExist() || !inPath.IsDirectory())
 		{
+			FIVEL_NS
 			gLog.FatalError("5L was unable to open the directory \"%s\".  "
 							"Please make sure 5L is running in the correct "
 							"directory, and that all source files are "
@@ -526,6 +527,7 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
 	{	
 		if (!inPath.DoesExist() || !inPath.IsRegularFile())
 		{
+			FIVEL_NS
 			gLog.FatalError("5L was unable to open the file \"%s\".  "
 							"Please make sure 5L is running in the correct "
 							"directory, and that all source files are "
