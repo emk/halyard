@@ -9,6 +9,11 @@ using GraphicsTools::Color;
 
 REGISTER_TEST_CASE_FILE(TSchemeConv);
 
+
+//=========================================================================
+//  TValueToScheme
+//=========================================================================
+
 static Scheme_Object *MakeSchemeList(const TValueList &inList) {
 	Scheme_Object *result = scheme_null;
 
@@ -73,6 +78,62 @@ Scheme_Object *TValueToScheme(TValue inVal) {
 	return scheme_null;
 }
 
+
+//=========================================================================
+//  SchemeToTValue
+//=========================================================================
+
+/*
+static TPoint SchemeToTPoint(Scheme_Object *inVal) {
+	
+	return TPoint(TSchemeInterpreter::GetInt32Member("point-x", inVal),
+				  TSchemeInterpreter::GetInt32Member("point-y", inVal));
+}
+
+
+static TValue SchemeStructToTValue(Scheme_Object *inVal) {
+	// Our first test is for a point
+	Scheme_Object *b = TSchemeInterpreter::CallScheme("point?", 1, &inVal);
+	if (SCHEME_TRUEP(b))
+		return TValue(SchemeToTPoint(inVal));
+
+	return TValue();
+
+}
+*/
+
+TValue SchemeToTValue(Scheme_Object *inVal) {
+	Scheme_Type type = SCHEME_TYPE(inVal);
+	
+	switch (type)
+	{
+		case scheme_string_type:
+			return TValue(std::string(SCHEME_STR_VAL(inVal), 
+									  SCHEME_STRLEN_VAL(inVal)));
+
+		case scheme_symbol_type:
+			return TValue(std::string(SCHEME_SYM_VAL(inVal)));
+
+		case scheme_double_type:
+			return TValue(scheme_real_to_double(inVal));
+
+		case scheme_true_type:
+			return TValue(true);
+
+		case scheme_false_type:
+			return TValue(false);
+
+//		case scheme_structure_type:
+//			return SchemeStructToTValue(inVal);
+									  
+		default:
+			THROW("Unhandled Scheme Object conversion");
+	}
+
+	ASSERT(false);  // We should never get here.
+	return TValue();
+}
+
 //=========================================================================
 //  Tests
 //=========================================================================
@@ -101,7 +162,7 @@ void CHECK_TVALUE_CONV(TValue inVal, const Scheme_Object *inResult) {
 	CHECK_SCHEME_EQUALS(TValueToScheme(inVal), inResult);
 }
 
-BEGIN_TEST_CASE(TestTSchemeConv, TestCase) {
+BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
 	CHECK_EQ(SchemeEquals(scheme_make_string("foo"),
 						  scheme_make_string("foo")),
 			 true);
@@ -154,8 +215,54 @@ BEGIN_TEST_CASE(TestTSchemeConv, TestCase) {
 	// percent
 	CHECK_TVALUE_CONV(TPercent(72.0), 
 					  TSchemeInterpreter::MakeSchemePercent(TPercent(72.0)));
+} END_TEST_CASE(TestTValueToScheme);
 
-} END_TEST_CASE(TestTSchemeConv);
+
+void CHECK_SCHEME_CONV(Scheme_Object *inVal, const TValue inResult) {
+	CHECK_EQ(SchemeToTValue(inVal), inResult);
+}
+
+
+BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
+/*
+    enum Type {
+        TYPE_NULL,      // No value.
+/       TYPE_STRING,    // Regular string.
+/       TYPE_SYMBOL,    // A symbol, as in Scheme.
+        TYPE_LONG,      // A 32-bit signed integer.
+        TYPE_ULONG,     // A 32-bit unsigned integer.
+/       TYPE_DOUBLE,    // A floating point number.
+/       TYPE_BOOLEAN,   // A boolean value.
+        TYPE_POINT,     // A point.
+        TYPE_RECT,      // A rectangle, right-bottom exclusive.
+        TYPE_COLOR,     // An RGB color.
+        TYPE_LIST,      // A list of TValues
+        TYPE_POLYGON,   // A TPolygon
+        TYPE_CALLBACK,  // A scripting language callback
+        TYPE_PERCENT    // A TPercent
+*/
+
+	// We will not be converting scheme_nulls to TNulls
+	
+	// Simple types
+	CHECK_SCHEME_CONV(scheme_make_string("hello"), TValue("hello"));
+    CHECK_SCHEME_CONV(scheme_intern_symbol("foo"), 
+					  TValue("foo"));
+	// Long
+	// ULong
+	CHECK_SCHEME_CONV(scheme_make_double(32.0), 
+					  TValue(32.0));
+	CHECK_SCHEME_CONV(scheme_true, TValue(true));
+	CHECK_SCHEME_CONV(scheme_false, TValue(false));
+	
+	// More complex types
+	//CHECK_EQ(SchemeToTValue(TSchemeInterpreter::MakeSchemePoint(TPoint(0, 1))),
+	//TValue(TPoint(0, 1)));
+	
+	//Scheme_Object *obj = TSchemeInterpreter::MakeSchemePoint(TPoint(0, 1));
+    //CHECK_EQ(SchemeStructToTValue(obj), TValue(TPoint(0, 1)));
+	
+} END_TEST_CASE(TestSchemeToTValue);
 
 #endif // BUILD_TEST_CASES
 

@@ -207,7 +207,7 @@ public:
 // relative to some base or (2) absolute values of the form "4".
 // Call it as:
 //   int result;
-//   stream >> ValueOrPercent(10, result);
+//   stream >> ValueOrPercent(10, &result);
 // When passed 20%, this will return 2.  When passed "4", this
 // will return "4".
 //

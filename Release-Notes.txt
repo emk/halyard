@@ -22,6 +22,7 @@ CVS - emk, kwasi, djin
     replaced them with much simpler TValueList code.
   * Re-arranged headers a bit, and added new files to CommonHeaders.h.
   * Removed all redundant includes of TValue.h and GraphicsTools.h.
+  , Still working on getting the SchemeToTValue conversions.
 
 0.0.14 - 13 Jan 2004 - emk
 
