@@ -11,7 +11,8 @@
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to center-text html edit-box movie
-           wait tc draw-line draw-box draw-box-outline inset-rect timeout current-card-name)
+           wait tc draw-line draw-box draw-box-outline inset-rect timeout
+           current-card-name fade unfade)
 
   (define (load-picture name p &key (subrect :rect #f))
     (let [[path (build-path (current-directory) "Graphics" name)]]
@@ -125,5 +126,11 @@
 
   (define (current-card-name)
     (card-name (current-card)))
+
+  (define (fade)
+    (call-5l-prim 'fade))
+
+  (define (unfade)
+    (call-5l-prim 'unfade))
 
   )

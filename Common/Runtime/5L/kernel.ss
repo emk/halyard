@@ -94,8 +94,8 @@
   (define-syntax label
     (syntax-rules ()
       [(label name body ...)
-       (call-with-current-continuation (lambda (name)
-                                         (begin/var body ...)))]))
+       (call-with-escape-continuation (lambda (name)
+                                        (begin/var body ...)))]))
 
   (define (call-with-errors-blocked report-func thunk)
     (let* ((result (with-handlers ([void (lambda (exn) (cons #f exn))])

@@ -4,8 +4,8 @@
            quake2-float set-quake2-float! quake2-string set-quake2-string!
            quake2-print quake2-print-line quake2-register-command)
 
-  (define (quake2-launch)
-    (call-5l-prim 'Quake2Init)
+  (define (quake2-launch game)
+    (call-5l-prim 'Quake2Init game)
     (quake2-show))
 
   (define (quake2-shown?)
