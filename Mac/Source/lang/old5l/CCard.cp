@@ -516,6 +516,12 @@ int16 CCard::Evaluate(TStream& conditional)
 	        }
 		}
 
+		gDebugLog.Log("if clause: (%s %s %s) -> %s",
+					  origStr1.GetString(),
+					  origOp.GetString(),
+					  origStr2.GetString(),
+					  localRes ? "true" : "false");
+
         switch (mode) 
 		{
             case FirstTime:
@@ -563,11 +569,7 @@ int16 CCard::Evaluate(TStream& conditional)
     }
 
 end:    
-	if (globalRes)
-		gDebugLog.Log("if (%s %s %s) -> true", origStr1.GetString(), origOp.GetString(), origStr2.GetString());
-	else
-		gDebugLog.Log("if (%s %s %s) -> false", origStr1.GetString(), origOp.GetString(), origStr2.GetString());
-		
+	gDebugLog.Log("if: -> %s", globalRes ? "true" : "false");
     return (globalRes);
 }
 
@@ -1055,9 +1057,10 @@ void CCard::DoButtpcx()
 	if (not theHeaderName.IsEmpty())
 		theHeadName = theHeaderName.GetString();
 
-	gDebugLog.Log("buttpcx: <%s>, X<%d>, Y<%d>, header <%s>, text <%s>",
-			(const char *) picname, buttLoc.X(), buttLoc.Y(), (const char *) theHeadName, 
-			(const char *) Text);
+	gDebugLog.Log("buttpcx: <%s>, <L T R B> %d %d %d %d, header <%s>, text <%s>",
+			(const char *) picname,
+			bounds.Left(), bounds.Top(), bounds.Right(), bounds.Bottom(),
+			(const char *) theHeadName, (const char *) Text);
 	
 	UpdateSpecialVariablesForGraphic(bounds);
 
@@ -1727,7 +1730,7 @@ void CCard::DoMacro(TString &name)
     local = 0;
     vnum = 0;
     
-    gDebugLog.Log("Macro variables follow: ");
+    TString arg_string = "Macro arguments:";
     while (m_Script.more()) 
 	{
         //  Variables are named 1, 2, 3...
@@ -1735,7 +1738,8 @@ void CCard::DoMacro(TString &name)
         vname = ++vnum;
         m_Script >> contents;
 
-		gDebugLog.Log("$%d = %s;", vnum, contents.GetString());
+		arg_string += (TString(" ") + TString::IntToString(vnum) +
+					   TString(": <") + contents + TString(">"));
         temp = new TVariable(vname, contents);
 
         if (local == 0) 
@@ -1743,6 +1747,8 @@ void CCard::DoMacro(TString &name)
         else 
 			local->Add(temp);
     }
+    if (vnum > 0)
+		gDebugLog.Log("%s", arg_string.GetString());
 
     //
     //  Save old local tree and set current local tree to ours.
@@ -2743,7 +2749,11 @@ void CCard::DoWait()
     if (m_Script.more()) 
 		m_Script >> frame;
 
-	gDebugLog.Log("wait: %ld", frame);
+	if (frame)
+		gDebugLog.Log("wait: %ld", frame);
+	else
+		gDebugLog.Log("wait: to end");
+	
 
 	// have to check if we are playing something first to be sure
 	//		WakeCard will actually do something and we sould pause

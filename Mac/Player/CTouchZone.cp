@@ -65,7 +65,7 @@ CTouchZone::CTouchZone(
 	const char 		*text, 
 	const CursorType cursor,		// = HAND_CURSOR
 	const char 		*stylesheet)	// = NULL
-	: mStyleSheet(stylesheet), mBounds(inBounds), mText(text)
+	: mStyleSheet(stylesheet), mTextBounds(inBounds), mText(text)
 {
 	mNormalTouch = false;
 	
@@ -81,6 +81,7 @@ void CTouchZone::SetupZone(	TRect 			&inBounds, 	// Button rect
 							TPoint 			&loc, 		// Pic offset??
 							const CursorType cursor)	// cursor
 {
+	mBounds = inBounds;
 	Rect	macBounds = inBounds.GetRect();
 	//Point	macLoc = loc.GetPoint();
 	
@@ -88,9 +89,6 @@ void CTouchZone::SetupZone(	TRect 			&inBounds, 	// Button rect
 	ResizeFrameTo(macBounds.right - macBounds.left, macBounds.bottom - macBounds.top, false);
 	PutInside(gPlayerView, false);
 	PlaceInSuperFrameAt(macBounds.left, macBounds.top, false);
-
-	gDebugLog.Log("SetupZone: <L T R B> %d %d %d %d",
-		macBounds.left, macBounds.top, macBounds.right, macBounds.bottom);
 
 	// Skanky hack to set pane ID
 	PP::LArray &paneList = gPlayerView->GetSubPanes();
@@ -154,7 +152,7 @@ CTouchZone::FinishCreateSelf()
     	dl -= fontHeight;
     	dl /= 2;
 
-		mBounds.Offset(TPoint(0, dl));
+		mTextBounds.Offset(TPoint(0, dl));
 	
 		// Get the offscreen gworld from the card view, and draw into it.
 		CGWorld *theGWorld = gPlayerView->GetGWorld();
@@ -168,7 +166,7 @@ CTouchZone::FinishCreateSelf()
 			mPicture->Draw(mPictLoc, macGWorld, true);
 		}
 	
-		gStyleSheetManager.DoText(mStyleSheet, mBounds, mText, gPlayerView);
+		gStyleSheetManager.DoText(mStyleSheet, mTextBounds, mText, gPlayerView);
 	
 		theGWorld->EndDrawing();
 	}
@@ -226,7 +224,7 @@ CTouchZone::HotSpotAction(
 		
 		// If we have a style sheet, then we're a buttpcx and should draw some text.
 		if (mStyleSheet != "")
-			gStyleSheetManager.DoText(mStyleSheet, mBounds, mText, gPlayerView);
+			gStyleSheetManager.DoText(mStyleSheet, mTextBounds, mText, gPlayerView);
 	}
 }
 
@@ -252,7 +250,9 @@ CTouchZone::HotSpotResult(
 	//if (clickSound != NULL)
 	//	SndPlay(nil, (SndListResource **) clickSound, false);
 
-	gDebugLog.Log("hit touchzone: running callback");
+	gDebugLog.Log("hit touchzone: <L T R B> %d %d %d %d, running callback",
+				  mBounds.Left(), mBounds.Top(),
+				  mBounds.Right(), mBounds.Bottom());
 
 	// cbo - suspend event processing while we are executing this callback
 	gPlayerView->ProcessEvents(false);

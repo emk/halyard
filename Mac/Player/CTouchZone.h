@@ -57,6 +57,7 @@ class CTouchZone : public PP::LButton, public PP::LCommander, public PP::LMouseT
 		CursorType	GetCursor(void) { return (mCursor); }
 		
 	private:
+		TRect		mBounds;
 		TCallback	*mCallback;
 		TPoint       mPictLoc;
 		CPicture	*mPicture;		// pict & hilite pict that we use in the touchzone
@@ -65,7 +66,7 @@ class CTouchZone : public PP::LButton, public PP::LCommander, public PP::LMouseT
 		
 		// Used for drawing text.
 		TString		mStyleSheet;
-		TRect		mBounds;
+		TRect		mTextBounds;
 		TString		mText;
 		
 	protected:

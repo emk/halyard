@@ -621,6 +621,7 @@ class TString : public TObject
 		//
 		static bool IsSnprintfError(int inSnprintfRetval, int inBufferSize);
 
+public:
 		//////////
 		// Convert a double to a char string.
 		//
@@ -652,6 +653,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.5.6.1  2002/06/19 18:28:47  emk
+ 3.3.4.10 - Debug log message improvements on the Mac.
+
  Revision 1.5  2002/05/15 11:05:17  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography
