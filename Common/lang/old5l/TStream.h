@@ -260,9 +260,47 @@ public:
     bool            inEscape(void);
 };
 
+//////////
+// An input manipulator which calls 'scanopen' on the underlying
+// stream.  Call it as:
+//   stream >> open;
+//
 inline TStream& open(TStream &src) { src.scanopen(); return src; }
+
+//////////
+// An input manipulator which calls 'scanclose' on the underlying
+// stream.  Call it as:
+//   stream >> close;
+//
 inline TStream& close(TStream &src) { src.scanclose(); return src; }
+
+//////////
+// An input manipulator which calls 'discard' on the underlying
+// stream.  Call it as:
+//   stream >> discard;
+//
 inline TStream& discard(TStream &src) { src.discard(); return src; }
+
+//////////
+// An input manipulator which parses either (1) percentage values
+// of the form "(pcent 20)" or (2) absolute values of the form "4".
+// Call it as:
+//   int result;
+//   stream >> ValueOrPercent(10, result);
+// When passed "(pcent 20)", this will return 2.  When passed "4", this
+// will return "4".
+//
+class ValueOrPercent
+{
+	int32 mBaseValue;
+	int32 *mOutputValue;
+
+public:
+	ValueOrPercent(int32 baseValue, int32 *outputValue)
+		: mBaseValue(baseValue), mOutputValue(outputValue) {}
+
+	friend TStream &operator>>(TStream &, ValueOrPercent &);
+};
 
 END_NAMESPACE_FIVEL
 
@@ -270,6 +308,11 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.1.4.3  2002/05/01 11:34:02  emk
+ Added support for passing a "(pcent ...)" argument to "defstyle" to
+ specify leading as a percentage of the base font size (and cleaned up
+ a few minor test suite issues).
+
  Revision 1.1.4.2  2002/04/23 11:28:57  emk
  Now that the variable manager has been merged, TStream no longer needs a callback function to look up variables in a portable fashion.
 

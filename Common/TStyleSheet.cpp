@@ -1,5 +1,6 @@
 // -*- Mode: C++; tab-width: 4; -*-
 
+#include "TCommon.h"
 #include "TStyleSheet.h"
 #include "TVariable.h"
 #include "TLogger.h"
@@ -54,7 +55,7 @@ TStyleSheet::TStyleSheet(TIndexFile *inFile, const char *inName,
 	
     // ...LEADING...
     if (stream.more())
-		stream >> mLeading;
+		stream >> ValueOrPercent(mSize, &mLeading);
 	else
 		mLeading = 0;
 	

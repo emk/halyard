@@ -38,6 +38,10 @@ void test_TStyleSheet(void)
 
     // Build something to compare it against.
     Typography::Style base_style("Times", 12);
+	std::list<std::string> backups;
+	backups.push_back("Standard Symbols L");
+	backups.push_back("Dingbats");
+	base_style.SetBackupFamilies(backups);	
 	base_style.SetFaceStyle(kShadowFaceStyle);
     base_style.SetLeading(-1);
 	base_style.SetShadowOffset(2);

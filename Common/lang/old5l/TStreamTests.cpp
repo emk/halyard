@@ -101,7 +101,7 @@ void test_TStream (void)
 	TEST(temp7.X() == 4);
 	TEST(temp7.Y() == 5);
 	
-	// TODO - Really tricky, nasty escaping tests.
+	// Really tricky, nasty escaping tests.
 	s1 = "abc\\(";
 	s1 >> temp;
 	TEST(temp == "abc\\(");
@@ -130,8 +130,8 @@ void test_TStream (void)
 	s1 >> temp;
 	TEST(temp == "\\$");
 	
-	// TODO - Test open, close, discard
-	// TODO - Test scanopen, scanclose, discard (different from above)
+	// Test open, close, discard
+	// Test scanopen, scanclose, discard (different from above)
 	s1 = "abc def (jkl\\)) mno \\(p (a \\( () )a";
 	startpos = s1.GetPos();
 	open(s1);
@@ -152,8 +152,23 @@ void test_TStream (void)
 	s1.discard();
 	TEST(s1.copystr(startpos, s1.GetPos() - startpos) == "a");
 	
+	// Test input of percentages.
+	s1 = "3 4 (pcent 10) (pcent 20) (pcent 15) (pcent -15)";
+	int32 result;
+	s1 >> ValueOrPercent(10, &result);
+	TEST(result == 3);
+	s1 >> ValueOrPercent(20, &result);
+	TEST(result == 4);
+	s1 >> ValueOrPercent(10, &result);
+	TEST(result == 1);
+	s1 >> ValueOrPercent(20, &result);
+	TEST(result == 4);
+	s1 >> ValueOrPercent(10, &result);
+	TEST(result == 2);
+	s1 >> ValueOrPercent(10, &result);
+	TEST(result == -2);
 	
-	// TODO - Test inEscape briefly (thorough testing in above tricky
+	// Test inEscape briefly (thorough testing in above tricky
 	// escape cases)
 	s1 = "\\\\ \\((\\\\(";
 	TEST(!s1.inEscape(0));

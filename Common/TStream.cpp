@@ -644,3 +644,40 @@ bool TStream::inEscape(void)
 {
 	return inEscape(GetPos());
 }
+
+// An I/O manipulator support function.  See the header for interface
+// details, or a good iostream tutorial for more information on
+// how manipulator objects work.
+#define PERCENT_COMMAND_PREFIX ("pcent ")
+TStream &FIVEL_NS operator>>(TStream &inStream, ValueOrPercent &inVoP)
+{
+	// Read in our argument.
+	std::string argument;
+	inStream >> argument;
+	TStream arg_stream(argument.c_str());
+
+	// See if it appears to be a "(pcent ...)" command.
+	int prefix_len = strlen(PERCENT_COMMAND_PREFIX);
+	if (argument.length() > prefix_len &&
+		argument.substr(0, prefix_len) == PERCENT_COMMAND_PREFIX)
+	{
+		// Read a percentage command.
+		int32 percentage;
+		arg_stream >> discard >> percentage;
+
+		// Calculate the value and round it.
+		double value = (inVoP.mBaseValue * percentage) / 100.0;
+		if (value < 0)
+			value -= 0.5;
+		else
+			value += 0.5;
+		*inVoP.mOutputValue = static_cast<int>(value);
+	}
+	else
+	{
+		// Read a simple value.
+		arg_stream >> *inVoP.mOutputValue;
+	}
+
+	return inStream;
+}
