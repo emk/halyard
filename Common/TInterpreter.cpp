@@ -68,6 +68,7 @@ TReloadNotified::~TReloadNotified() {
 TInterpreterManager *TInterpreterManager::sInstance = NULL;
 bool TInterpreterManager::sHaveAlreadyCreatedSingleton = false;
 std::vector<TReloadNotified*> TInterpreterManager::sReloadNotifiedObjects;
+bool TInterpreterManager::sIsInRuntimeMode = false;
 
 TInterpreterManager::TInterpreterManager(
 	TInterpreter::SystemIdleProc inIdleProc)
@@ -128,10 +129,9 @@ void TInterpreterManager::Run()
 				// Always quit for non-load errors.
 				mDone = true; 
 			}
-			else if (mLoadScriptFailed &&
-					 gDeveloperPrefs.GetPref(REDOSCRIPT) == REDOSCRIPT_OFF)
+			else if (mLoadScriptFailed && IsInRuntimeMode())
 			{
-				// Only quit for load errors if we don't have "redoscript".
+				// Only quit for load errors if we're in runtime mode.
 				mDone = true;
 			}
 		}
@@ -243,4 +243,11 @@ void TInterpreterManager::NotifyReloadScriptSucceeded() {
         (*i)->NotifyReloadScriptSucceeded();
 }
 
+void TInterpreterManager::SetRuntimeMode(bool inIsInRuntimeMode) {
+    sIsInRuntimeMode = inIsInRuntimeMode;
+}
+
+bool TInterpreterManager::IsInRuntimeMode() {
+    return sIsInRuntimeMode;
+}
 

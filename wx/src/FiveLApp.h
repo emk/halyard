@@ -29,6 +29,11 @@ class Stage;
 /// Our main application object.
 class FiveLApp : public wxApp
 {
+    //////////
+    /// The name of the script we were passed on the command-line.
+    ///
+    wxString mArgScript;
+
 	//////////
 	/// Do we have our own, custom event loop?  Or should we use wxWindows'
 	/// event loop?

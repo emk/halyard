@@ -322,6 +322,7 @@ class TInterpreterManager : boost::noncopyable
 	static TInterpreterManager *sInstance;
 	static bool sHaveAlreadyCreatedSingleton;
     static std::vector<TReloadNotified*> sReloadNotifiedObjects;
+    static bool sIsInRuntimeMode;
 
 	//////////
 	/// We call this procedure to yield time to the system.
@@ -451,10 +452,22 @@ public:
     ///
     static void AddReloadNotified(TReloadNotified *obj);
 
-    /////////
+    //////////
     /// Requent an end to reload notifications for this object.
     ///
     static void RemoveReloadNotified(TReloadNotified *obj);
+
+    //////////
+    /// Set whether the engine is in standalone runtime mode, or is
+    /// a full-fledged editor.
+    ///
+    static void SetRuntimeMode(bool inIsInRuntimeMode);
+
+    //////////
+    /// Is the engine in standalone runtime mode, or is it a full-fledged
+    /// editor?
+    ///
+    static bool IsInRuntimeMode();
 
 protected:
 	//////////

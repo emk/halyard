@@ -196,6 +196,14 @@ bool FiveLApp::OnInit() {
     wxXmlResource::Get()->InitAllHandlers();
     InitXmlResource();
     
+    // Parse our command-line arguments.
+    if (argc == 2) {
+        TInterpreterManager::SetRuntimeMode(true);
+        mArgScript = argv[1];
+    } else {
+        TInterpreterManager::SetRuntimeMode(false);
+    }
+
     // Create and display our stage frame.
     //mStageFrame = new StageFrame(wxSize(640, 480));
     mStageFrame = new StageFrame(wxSize(800, 600));
@@ -203,7 +211,10 @@ bool FiveLApp::OnInit() {
     // Enable this to go to full-screen mode *almost* immediately.
     // TODO - You'll see the standard window for a small fraction of a
     // second.  Fixing this will require tweaking wxWindows.
-    //mStageFrame->ShowFullScreen(TRUE);
+    // TODO - Well, the behavior looks slightly better with the current
+    // version of wxWidgets.  We'll probably need to tweak this some more.
+    if (TInterpreterManager::IsInRuntimeMode())
+        mStageFrame->ShowFullScreen(TRUE);
     SetTopWindow(mStageFrame);
 
     END_EXCEPTION_TRAPPER(ReportFatalException);
@@ -253,8 +264,7 @@ namespace {
     };
 };
 
-int FiveLApp::MainLoop()
-{
+int FiveLApp::MainLoop() {
 	// WARNING - No Scheme function may ever be called above this
     // point on the stack!
     FIVEL_SET_STACK_BASE();
@@ -267,10 +277,14 @@ int FiveLApp::MainLoop()
     TInterpreterManager *manager =
 		GetSchemeInterpreterManager(&FiveLApp::IdleProc);
 
-	// Prompt for a program to open.  We can't do this until the
-	// TInterpreterManager is loaded.  (We need to do this inside
-	// a block to make sure the object is destroyed quickly.)
-	{
+    // Check to see if we have any command-line arguments.
+    if (TInterpreterManager::IsInRuntimeMode()) {
+        // Open the specified document directly.
+        mStageFrame->OpenDocument(mArgScript);
+    } else {
+        // Prompt for a program to open.  We can't do this until the
+        // TInterpreterManager is loaded.  (We need to do this inside
+        // a block to make sure the dialog is destroyed quickly.)
 		StartupDlg startup_dialog(mStageFrame);
 		startup_dialog.ShowModal();
 	}

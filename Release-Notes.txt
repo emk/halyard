@@ -29,6 +29,11 @@ CVS - emk
     now deletes all elements and any StateDB listeners registered by the
     script.
   * The error dialog no longer floats over all other windows (bug #1829).
+  * Basic runtime mode implemented.  This supports launching directly to
+    full-screen mode with a specified script, and disabling editing options
+    if 5L.prefs is missing (bug #1726).  As noted in the bug, a number of
+    other issues remain, and we'll have to deal with them before declaring
+    the runtime mode perfect.
 
 0.0.42 - 06 Dec 2004 - emk
 

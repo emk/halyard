@@ -38,6 +38,7 @@ enum PrefName {
 	MULTIPLE_INSTANCES,
 	DEBUG_LOG,
 	REDOSCRIPT,
+    DEVTOOLS,
 
 	// The total number of preferences we have (C++ will assign
 	// a value equal to the index of the last option above plus one).
@@ -65,7 +66,10 @@ enum PrefValue {
 	DEBUG_LOG_ON = 1,
 
 	REDOSCRIPT_OFF = 0,
-	REDOSCRIPT_ON = 1
+	REDOSCRIPT_ON = 1,
+
+    DEVTOOLS_DISABLED = 0,
+    DEVTOOLS_ENABLED = 1
 };
 
 //////////

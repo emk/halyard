@@ -29,6 +29,7 @@
 #include "TInterpreter.h"
 #include "doc/Document.h"
 #include "doc/TamaleProgram.h"
+#include "TDeveloperPrefs.h"
 
 #include "AppConfig.h"
 #include "AppGlobals.h"
@@ -139,14 +140,20 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_OPEN_PROGRAM, StageFrame::OnOpenProgram)
     EVT_UPDATE_UI(FIVEL_SAVE_PROGRAM, StageFrame::UpdateUiSaveProgram)
     EVT_MENU(FIVEL_SAVE_PROGRAM, StageFrame::OnSaveProgram)
+    EVT_UPDATE_UI(FIVEL_EDIT_SCRIPTS, StageFrame::UpdateUiDevTool)
     EVT_MENU(FIVEL_EDIT_SCRIPTS, StageFrame::OnEditScripts)
     EVT_UPDATE_UI(FIVEL_RELOAD_SCRIPTS, StageFrame::OnUpdateUiReloadScripts)
     EVT_MENU(FIVEL_RELOAD_SCRIPTS, StageFrame::OnReloadScripts)
+    EVT_UPDATE_UI(FIVEL_RUN_TESTS, StageFrame::UpdateUiDevTool)
     EVT_MENU(FIVEL_RUN_TESTS, StageFrame::OnRunTests)
 
+    EVT_UPDATE_UI(FIVEL_ABOUT, StageFrame::UpdateUiDevTool)
     EVT_MENU(FIVEL_ABOUT, StageFrame::OnAbout)
+    EVT_UPDATE_UI(FIVEL_SHOW_LOG, StageFrame::UpdateUiDevTool)
     EVT_MENU(FIVEL_SHOW_LOG, StageFrame::OnShowLog)
+    EVT_UPDATE_UI(FIVEL_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
     EVT_MENU(FIVEL_SHOW_LISTENER, StageFrame::OnShowListener)
+    EVT_UPDATE_UI(FIVEL_SHOW_TIMECODER, StageFrame::UpdateUiDevTool)
     EVT_MENU(FIVEL_SHOW_TIMECODER, StageFrame::OnShowTimecoder)
     EVT_UPDATE_UI(FIVEL_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
     EVT_MENU(FIVEL_FULL_SCREEN, StageFrame::OnFullScreen)
@@ -324,6 +331,15 @@ StageFrame::StageFrame(wxSize inSize)
 
 	// Calculate this once at startup.
 	FindBestFullScreenVideoMode();
+
+    // We need to call the manually, because if we're in runtime mode, the
+    // menu bar will never be shown, and no wxUpdateUiEvent will ever be
+    // sent, leaving all our menu items enabled.
+    //
+    // TODO - We probably need to do this before every accelerator lookup,
+    // or at least we would, if the available menu items ever changed in
+    // Runtime mode.
+    UpdateWindowUI(wxUPDATE_UI_RECURSE);
 }
 
 #if !wxUSE_DISPLAY
@@ -568,16 +584,19 @@ void StageFrame::OpenDocument()
         // care about the file itself--it's just a known file within a valid
         // Tamale program directory.
 		wxString dir = dlg.GetDirectory();
-		mDocument = new Document(dir.mb_str(), Document::OPEN);
+        OpenDocument(dir);
 
         // We want the full path here--not just the directory--to save
         // typing the next time the user opens this document.
 		config->Write("/Recent/DocPath", dlg.GetPath());
-
-		SetObject(mDocument->GetTamaleProgram());
-		mProgramTree->RegisterDocument(mDocument);
-		mStage->Show();
 	}
+}
+
+void StageFrame::OpenDocument(const wxString &inDirPath) {
+    mDocument = new Document(inDirPath.mb_str(), Document::OPEN);
+    SetObject(mDocument->GetTamaleProgram());
+    mProgramTree->RegisterDocument(mDocument);
+    mStage->Show();
 }
 
 void StageFrame::ObjectChanged()
@@ -590,6 +609,15 @@ void StageFrame::ObjectChanged()
 void StageFrame::ObjectDeleted()
 {
 	SetTitle(wxGetApp().GetAppName());
+}
+
+bool StageFrame::AreDevToolsAvailable() {
+    return (!TInterpreterManager::IsInRuntimeMode()
+            || gDeveloperPrefs.GetPref(DEVTOOLS) == DEVTOOLS_ENABLED);
+}
+
+void StageFrame::UpdateUiDevTool(wxUpdateUIEvent &inEvent) {
+    inEvent.Enable(AreDevToolsAvailable());
 }
 
 void StageFrame::OnExit(wxCommandEvent &inEvent)
@@ -613,7 +641,7 @@ void StageFrame::OnNewProgram(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiOpenProgram(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(mDocument == NULL);
+	inEvent.Enable(AreDevToolsAvailable() && mDocument == NULL);
 }
 
 void StageFrame::OnOpenProgram(wxCommandEvent &inEvent)
@@ -625,7 +653,8 @@ void StageFrame::OnOpenProgram(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiSaveProgram(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(mDocument != NULL && mDocument->IsDirty());
+	inEvent.Enable(AreDevToolsAvailable() &&
+                   mDocument != NULL && mDocument->IsDirty());
 }
 
 void StageFrame::OnSaveProgram(wxCommandEvent &inEvent)
@@ -642,7 +671,8 @@ void StageFrame::OnUpdateUiReloadScripts(wxUpdateUIEvent &inEvent)
 {
     if (TInterpreterManager::HaveInstance()) {
         TInterpreterManager *manager = TInterpreterManager::GetInstance();
-        inEvent.Enable(manager->InterpreterHasBegun());
+        inEvent.Enable(AreDevToolsAvailable() &&
+                       manager->InterpreterHasBegun());
     } else {
         inEvent.Enable(false);
     }
@@ -716,14 +746,20 @@ void StageFrame::OnShowTimecoder(wxCommandEvent &inEvent)
 void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent)
 {
     inEvent.Check(IsFullScreen());
+    inEvent.Enable(AreDevToolsAvailable());
 }
 
 void StageFrame::OnFullScreen(wxCommandEvent &inEvent)
 {
-    if (IsFullScreen())
+    if (IsFullScreen()) {
+        // If we leave full-screen mode, make sure runtime mode is turned
+        // off, too.  This can happen if we boot into runtime mode but
+        // have devtools enabled, and a developer wants to turn the
+        // runtime back into an editor for debugging.
+        if (TInterpreterManager::IsInRuntimeMode())
+            TInterpreterManager::SetRuntimeMode(false);
         ShowFullScreen(FALSE);
-    else
-    {
+    } else {
         ShowFullScreen(TRUE);
         // TODO - WXBUG - We need to raise above the Windows dock more
         // quickly.
@@ -733,6 +769,7 @@ void StageFrame::OnFullScreen(wxCommandEvent &inEvent)
 void StageFrame::UpdateUiDisplayXy(wxUpdateUIEvent &inEvent)
 {
     inEvent.Check(mStage->IsDisplayingXy());
+    inEvent.Enable(AreDevToolsAvailable());
 }
 
 void StageFrame::OnDisplayXy(wxCommandEvent &inEvent)
@@ -743,6 +780,7 @@ void StageFrame::OnDisplayXy(wxCommandEvent &inEvent)
 void StageFrame::UpdateUiDisplayGrid(wxUpdateUIEvent &inEvent)
 {
     inEvent.Check(mStage->IsDisplayingGrid());
+    inEvent.Enable(AreDevToolsAvailable());
 }
 
 void StageFrame::OnDisplayGrid(wxCommandEvent &inEvent)
@@ -753,6 +791,7 @@ void StageFrame::OnDisplayGrid(wxCommandEvent &inEvent)
 void StageFrame::UpdateUiDisplayBorders(wxUpdateUIEvent &inEvent)
 {
     inEvent.Check(mStage->IsDisplayingBorders());
+    inEvent.Enable(AreDevToolsAvailable());
 }
 
 void StageFrame::OnDisplayBorders(wxCommandEvent &inEvent)
@@ -762,7 +801,7 @@ void StageFrame::OnDisplayBorders(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiProperties(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(mDocument != NULL);
+	inEvent.Enable(AreDevToolsAvailable() && mDocument != NULL);
 }
 
 void StageFrame::OnProperties(wxCommandEvent &inEvent)
@@ -773,7 +812,7 @@ void StageFrame::OnProperties(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiInsertBackground(wxUpdateUIEvent &inEvent)
 {
-	inEvent.Enable(mDocument != NULL);
+	inEvent.Enable(AreDevToolsAvailable() && mDocument != NULL);
 }
 
 void StageFrame::OnInsertBackground(wxCommandEvent &inEvent)
@@ -783,7 +822,9 @@ void StageFrame::OnInsertBackground(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiEditMode(wxUpdateUIEvent &inEvent)
 {
-	if (mDocument != NULL && mStage->IsScriptInitialized())
+	if (AreDevToolsAvailable() &&
+        mDocument != NULL &&
+        mStage->IsScriptInitialized())
 	{
 		inEvent.Enable(TRUE);
 		if (mStage->IsInEditMode())
@@ -804,7 +845,7 @@ void StageFrame::OnEditMode(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
 {
-    inEvent.Enable(mStage->CanJump());
+    inEvent.Enable(AreDevToolsAvailable() && mStage->CanJump());
 }
 
 void StageFrame::OnJumpCard(wxCommandEvent &inEvent)

@@ -205,6 +205,11 @@ public:
 	///
 	void OpenDocument();
 
+    //////////
+    /// Given a directory name, open up the document it contains.
+    ///
+	void OpenDocument(const wxString &inDirPath);
+
 	//////////
 	/// We listen to the Document object so we can update the frame
 	/// title.
@@ -218,7 +223,10 @@ public:
 	void ObjectDeleted();
 
 private:
+    bool AreDevToolsAvailable();
+
 	// Lots of menu and toolbar event handlers.
+    void UpdateUiDevTool(wxUpdateUIEvent &inEvent);
     void OnExit(wxCommandEvent &inEvent);
     void UpdateUiNewProgram(wxUpdateUIEvent &inEvent);
     void OnNewProgram(wxCommandEvent &inEvent);

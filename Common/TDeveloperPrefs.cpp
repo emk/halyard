@@ -88,11 +88,11 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 			 if (StringIComp(key, "db_type")) 
 			 {
 			     if (StringIComp(value, "encrypted"))
-					  userPrefs[DB_TYPE] = DB_TYPE_ENCRYPTED;
+                     userPrefs[DB_TYPE] = DB_TYPE_ENCRYPTED;
 				 else if (StringIComp(value, "clear"))
-					  userPrefs[DB_TYPE] = DB_TYPE_CLEAR;
+                     userPrefs[DB_TYPE] = DB_TYPE_CLEAR;
 				 else
-					errFlag = true;	
+                     errFlag = true;	
 			}
 			else if (StringIComp(key, "db_writes")) 
 			{
@@ -130,6 +130,13 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 					userPrefs[DEBUG_LOG] = DEBUG_LOG_OFF;
 				else if (StringIComp(value, "on"))
 					userPrefs[DEBUG_LOG] = DEBUG_LOG_ON;
+			}
+			else if (StringIComp(key, "devtools"))
+			{
+				if (StringIComp(value, "disabled"))
+					userPrefs[DEVTOOLS] = DEVTOOLS_DISABLED;
+				else if (StringIComp(value, "enabled"))
+					userPrefs[DEVTOOLS] = DEVTOOLS_ENABLED;
 			}
 			else
 			{
