@@ -1007,7 +1007,8 @@
   ;;  A program is (among other things) a tree of nodes.  The root node
   ;;  contains <card>s and <card-groups>.  <card>s contain <element>s.
 
-  (provide <node> node? node-name node-full-name node-parent find-node @)
+  (provide <node> node? node-name node-full-name node-parent find-node @
+           find-element-full-name)
 
   (defclass <node> (<template>)
     name
@@ -1070,7 +1071,7 @@
 
   (define (@-helper name)
     (if (current-card)
-        (find-node-relative (node-parent (current-card)) name)
+        (find-node-relative (current-card) name)
         (error (cat "Can't write (@ " name ") outside of a card"))))    
 
   (define-syntax @
@@ -1078,6 +1079,13 @@
     (syntax-rules ()
       [(@ name)
        (@-helper 'name)]))
+
+  (define (find-element-full-name node-or-sym)
+    ;; Backwards compatibility glue for code which refers to elements
+    ;; by name.  Used by functions such as WAIT.
+    (node-full-name (if (node? node-or-sym)
+                        node-or-sym
+                        (find-node-relative (current-card) node-or-sym))))
 
   (define (analyze-node-name name)
     ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
@@ -1317,7 +1325,7 @@
             (let recurse [[children (group-children card)]]
               (cond
                [(null? children) '()]
-               [(eq-with-gensym-hack? name (node-name (car children)))
+               [(eq-with-gensym-hack? name (node-full-name (car children)))
                 ;; Delete this node, and exclude it from the new child list.
                 (if (element-temporary? (car children))
                     (begin

@@ -48,10 +48,10 @@
        [polygon :default #f :label "Polygon"]]
       (:template %element%)
     (if polygon
-        (call-5l-prim 'zone (node-name self) polygon
+        (call-5l-prim 'zone (node-full-name self) polygon
                       (make-node-event-dispatcher self) cursor)
-        (call-5l-prim 'zone (node-name self) (rect->polygon 
-                                              (prop self rect))
+        (call-5l-prim 'zone (node-full-name self) (rect->polygon 
+                                                   (prop self rect))
                       (make-node-event-dispatcher self) cursor)))
 
   (define-element-template %simple-zone% [action] (:template %zone%)
@@ -98,8 +98,8 @@
                 :cursor cursor 
                 :action action)))
   
-  (define (set-zone-cursor! name cursor)
-    (call-5l-prim 'SetZoneCursor name cursor))
+  (define (set-zone-cursor! elem-or-name cursor)
+    (call-5l-prim 'SetZoneCursor (find-element-full-name elem-or-name) cursor))
 
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
     (let [[path (make-path "Graphics" (cat "cursors/" filename))]]
@@ -118,19 +118,20 @@
            [lst (map string->number (regexp-split " " str))]]
       (point (car lst) (cadr lst))))
 
-  (define (delete-element name)
-    (delete-elements (list name)))
+  (define (delete-element elem-or-name name)
+    (delete-elements (list (find-element-full-name elem-or-name))))
   
-  (define (delete-elements &opt (names '()))
-    (apply call-5l-prim 'deleteelements names))
+  (define (delete-elements &opt (elems-or-names '()))
+    (apply call-5l-prim 'deleteelements
+           (map find-element-full-name elems-or-names)))
 
   (define (grab-mouse elem)
     (assert (instance-of? elem <element>))
-    (call-5l-prim 'MouseGrab (node-name elem)))
+    (call-5l-prim 'MouseGrab (node-full-name elem)))
 
   (define (ungrab-mouse elem)
     (assert (instance-of? elem <element>))
-    (call-5l-prim 'MouseUngrab (node-name elem)))
+    (call-5l-prim 'MouseUngrab (node-full-name elem)))
 
   (define (mouse-grabbed?)
     (call-5l-prim 'MouseIsGrabbed))
@@ -191,7 +192,7 @@
   (define-element-template %html-element%
       [[location :type <string> :label "Location"]]
       (:template %element%)
-    (call-5l-prim 'html (node-name self) (prop self rect)
+    (call-5l-prim 'html (node-full-name self) (prop self rect)
                   ;; TODO - Support actual URL's.
                   (build-path (current-directory) location)))
 
@@ -201,7 +202,7 @@
   (define-element-template %edit-box-element%
       [[text :type <string> :label "Initial text"]]
       (:template %element%)
-    (call-5l-prim 'editbox (node-name self) (prop self rect) text))
+    (call-5l-prim 'editbox (node-full-name self) (prop self rect) text))
 
   (define (edit-box name r text)
     (create %edit-box-element% :name name :rect r :text text))
@@ -209,7 +210,7 @@
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
       (:template %element%)
-    (call-5l-prim 'AudioStreamGeiger (node-name self)
+    (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                   (build-path (current-directory) "Media" location)))
 
   (define (geiger-audio name location)
@@ -221,7 +222,7 @@
   (define-element-template %sine-wave-element%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
       (:template %element%)
-    (call-5l-prim 'AudioStreamSine (node-name self) frequency))
+    (call-5l-prim 'AudioStreamSine (node-full-name self) frequency))
 
   (define (sine-wave name frequency)
     (create %sine-wave-element% :name name :frequency frequency))
@@ -231,7 +232,7 @@
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (:template %element%)
-    (call-5l-prim 'AudioStreamVorbis (node-name self)
+    (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                   (build-path (current-directory) "Media" location)
                   (* 1024 buffer) loop?))
   
@@ -248,7 +249,7 @@
     (let [[path (make-path "Media" location)]]
       (unless (file-exists? path)
         (throw (cat "No such movie: " path)))
-      (call-5l-prim 'movie (node-name self) (prop self rect)
+      (call-5l-prim 'movie (node-full-name self) (prop self rect)
                     path
                     controller? audio-only? loop? interaction?)))
   
@@ -263,19 +264,20 @@
 
   ;; Note: these functions may not be happy if the underlying movie code
   ;; doesn't like to be paused.
-  (define (movie-pause name)
-    (call-5l-prim 'moviepause name))
+  (define (movie-pause elem-or-name)
+    (call-5l-prim 'moviepause (find-element-full-name elem-or-name)))
 
-  (define (movie-resume name)
-    (call-5l-prim 'movieresume name))
+  (define (movie-resume elem-or-name)
+    (call-5l-prim 'movieresume (find-element-full-name elem-or-name)))
   
-  (define (set-media-volume! name channel volume)
-    (call-5l-prim 'MediaSetVolume name channel volume))
+  (define (set-media-volume! elem-or-name channel volume)
+    (call-5l-prim 'MediaSetVolume (find-element-full-name elem-or-name)
+                  channel volume))
 
-  (define (wait name &key frame)
+  (define (wait elem-or-name &key frame)
     (if frame
-        (call-5l-prim 'wait name frame)
-        (call-5l-prim 'wait name)))
+        (call-5l-prim 'wait (find-element-full-name elem-or-name) frame)
+        (call-5l-prim 'wait (find-element-full-name elem-or-name))))
   
   (define (tc arg1 &opt arg2 arg3)
     (cond
