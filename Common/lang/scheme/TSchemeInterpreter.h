@@ -6,47 +6,10 @@
 #include "TInterpreter.h"
 #include "TPrimitives.h"
 #include "FileSystem.h"
-#include "scheme.h"
+#include "TSchemePtr.h"
+#include "TSchemeCallback.h"
 
 BEGIN_NAMESPACE_FIVEL
-
-
-//////////
-// A smart-pointer class which can point to a Scheme object and prevent
-// it from being garbage-collected.  You must use this class to point to
-// a Scheme_Object stored anywhere except the stack (which the Scheme GC
-// automatically scans for us).  So global and heap objects *must* use
-// this class to refer to anything in the Scheme heap.
-//
-template <class Type>
-class TSchemePtr
-{
-	Type *mPtr;
-	
-	void Set(Type *inPtr)
-	{
-		if (mPtr == inPtr)
-			return;
-		if (mPtr)
-			scheme_gc_ptr_ok(mPtr);
-		mPtr = inPtr;
-		if (inPtr)
-			scheme_dont_gc_ptr(mPtr);
-	}
-
-public:
-	TSchemePtr() : mPtr(NULL) {}
-	TSchemePtr(Type *inPtr) : mPtr(NULL) { Set(inPtr); }
-	TSchemePtr(const TSchemePtr &inSchemePtr) : mPtr(NULL)
-		{ Set(inSchemePtr.mPtr); }
-	operator Type*() { return mPtr; }
-	operator const Type*() const { return mPtr; }
-	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
-	TSchemePtr<Type> &operator=(const TSchemePtr &inPtr)
-		{ Set(inSchemePtr.mPtr); return *this; }
-    bool operator<(const TSchemePtr<Type> &inRight) const
-        { return mPtr < inRight.mPtr; }
-};
 
 
 //////////
@@ -159,71 +122,6 @@ public:
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
 };
-
-//////////
-// A C++ wrapper which builds lists of arguments to pass to callbacks.
-//
-class TSchemeCallbackArgumentList : public TCallbackArgumentList
-{
-	//////////
-	// The first time this argument list is passed to a callback,
-	// we freeze the argument list and REVERSE! it destructively.
-	//
-	bool mIsFrozen;
-	
-	//////////
-	// The list of arguments we'll pass to the next invocation of Run(),
-	// stored in reverse order.
-	//
-	TSchemePtr<Scheme_Object> mArguments;
-
-	//////////
-	// We use this variable to store partially constructed lists (in
-	// reverse order) between calls to BeginListArg and EndListArg.
-	//
-	TSchemePtr<Scheme_Object> mListArgument;
-
-	//////////
-	// Internal function to add a single argument.
-	//
-	void AddArg(Scheme_Object *inArg);
-
-public:
-	TSchemeCallbackArgumentList();
-
-	// For documentation of these virtual methods, see TInterpreter.h.
-	virtual void AddStringArg(const std::string &inArg);
-	virtual void AddSymbolArg(const std::string &inArg);
-	virtual void AddInt32Arg(int inArg);
-	virtual void AddDoubleArg(double inArg);
-	virtual void AddBoolArg(bool inArg);
-	virtual void BeginListArg();
-	virtual void EndListArg();
-
-	Scheme_Object *GetArgs();
-};
-
-//////////
-// A C++ wrapper for a zero-argument Scheme callback function (a "thunk").
-//
-class TSchemeCallback : public TCallback
-{
-	//////////
-	// Our callback object.  Note that we need to use a TSchemePtr to
-	// prevent mCallback from being garbage-collected, because we're
-	// a heap-based object.
-	//
-	TSchemePtr<Scheme_Object> mCallback;
-
-public:
-	TSchemeCallback(Scheme_Object *inCallback) : mCallback(inCallback) {}
-
-	// For documentation of these virtual methods, see TInterpreter.h.
-	virtual TCallbackArgumentList *MakeArgumentList();
-	virtual void Run(TCallbackArgumentList *inArguments = NULL);
-	virtual std::string PrintableRepresentation() { return "#<thunk>"; }
-};
-
 
 //////////
 // A list of Scheme values, for use by the argument-parsing system.  This

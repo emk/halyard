@@ -42,6 +42,7 @@ extern void test_TPolygon (void);
 REFERENCE_TEST_CASE_FILE(TestCase);
 REFERENCE_TEST_CASE_FILE(TTemplateUtils);
 REFERENCE_TEST_CASE_FILE(TValue);
+REFERENCE_TEST_CASE_FILE(TSchemeConv);
 
 DEFINE_5L_PRIMITIVE(test) {
 	std::string info;
