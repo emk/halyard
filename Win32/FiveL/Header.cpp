@@ -235,7 +235,7 @@ end:
 	\w		Newline (windows only)
     \*      Literals. Examples include \(, \), \$, \;, \`, \', \\
     ^       Hilite toggle.
-    _       Underline toggle.
+    |       Underline toggle.
     `,'     Single smart quotes. (ASCII 212, 213)
     ``, ''  Double smart quotes. (ASCII 210, 211)
 
@@ -284,7 +284,7 @@ int Header::GetLineLength(char *s, long *index, long tLen, int maxWidth)
                 done = true;
 
             case '^':           //  Hilite char. Ignore.
-            case '_':           //  Underline char. Ignore.
+            case '|':           //  Underline char. Ignore.
                 pos++;  
                 ch = 0;         //  Set to 0 so we don't count its width
                 break;
@@ -405,7 +405,7 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	// See if we don't have anything special to do.
 	//
 	if (not (strstr(s, "^")		// no hilite
-		or (strstr(s, "_"))		// no underline
+		or (strstr(s, "|"))		// no underline
 		or (strstr(s, "\\"))	// no special characters
 		or (strstr(s, "@"))))	// no bold
 	{
@@ -481,7 +481,7 @@ int Header::DrawLine(TPoint &loc, const char *s, long a, long b)
 	                
 	                break;
 	
-	            case '_':
+	            case '|':
 	                a++;
 	                fUnderline = !fUnderline;
 	                ch = 0; 
@@ -692,6 +692,12 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.1.2.1  2002/02/26 14:29:30  tvw
+ Bugs #497 and #613
+
+ Quick fix to change the delimiter for underlining text.
+ The pipe character ('|') is now used for underlining.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

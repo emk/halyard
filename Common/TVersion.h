@@ -17,16 +17,22 @@
 #define MAJOR_NUM		3
 #define MINOR_NUM		02
 #define REV_BIG			00
-#define REV_SMALL		00
+#define REV_SMALL		01
 
 #define BUILD_NUM		1
 
-#define VERSION_STRING	"5L for Win32 3.2.0"
+#define VERSION_STRING	"5L for Win32 3.2.0.1"
 #define SHORT_NAME		"5L"	
 
 
 /*
  $Log$
+ Revision 1.3.2.2  2002/02/26 14:29:30  tvw
+ Bugs #497 and #613
+
+ Quick fix to change the delimiter for underlining text.
+ The pipe character ('|') is now used for underlining.
+
  Revision 1.3.2.1  2002/02/19 10:20:23  tvw
  Stable build v3.2.0 (based on v3.1.1)
 
