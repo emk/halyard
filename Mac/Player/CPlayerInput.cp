@@ -3,6 +3,7 @@
    ================================================================================= */
 
 #include "THeader.h"
+#include "MacCarbonGlue.h"
 
 #include <iostream>
 #include <Palettes.h>
@@ -210,7 +211,7 @@ Boolean CPlayerInput::HandleKeyPress(
 					bounds.Set(macBounds);
 					
 	   				new CPlayerText(mStyle, bounds, (char *)theString, 0, 0);
-	   				::InvalRect(&macBounds);
+	   				InvalPortRect(&macBounds);
 					
 					// Nuke the TE field
 					delete theInputThing;

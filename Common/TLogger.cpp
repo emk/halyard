@@ -273,15 +273,15 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 	// suites.
 	if (s_ToolboxIsInitialized)
 	{
-		c2pstr(m_LogBuffer);
+		::CopyCStringToPascal(m_LogBuffer, (StringPtr) m_LogBuffer);
 	
-		::ParamText((const uint8 *) m_LogBuffer, NULL, NULL, NULL);
+		::ParamText((StringPtr) m_LogBuffer, NULL, NULL, NULL);
 		if (isError)
     		(void) ::StopAlert(2001, nil);
     	else
     		(void) ::CautionAlert(2001, nil);
     
-    	p2cstr((unsigned char *) m_LogBuffer);
+    	::CopyPascalStringToC((StringPtr) m_LogBuffer, m_LogBuffer);
 	}
 	else
 	{
@@ -368,6 +368,68 @@ void FiveLCheckAssertion(int inTest, const char *inDescription,
 
 /*
  $Log$
+ Revision 1.5.4.1  2002/06/15 01:06:32  emk
+ 3.3.4.7 - Carbonization of Mac build, support for running non-Carbonized build
+ in MacOS X's OS 9 emulator, and basic support for 5L.prefs on the Mac.  The
+ Carbon build isn't yet ready for prime time--see BugHunt for details--but it
+ is good enough to use for engine development.
+
+ * Language changes
+
+   - CHECKDISC is gone; use CHECKVOL instead.
+   - EJECT is disabled in the Carbon build, because Carbon has no way to
+     identify CD drives reliably.  EJECT still works in the regular build.
+   - Gamma fades are ignored in the Carbon build.
+   - KEYBINDs must now be accessed with the Command key only--not Option.
+
+ * Things to test
+
+ Please be hugely brutal to 5L; this is a big update.
+
+   - 8-bit systems, palettes, ORIGIN, EJECT on the non-Carbon build.
+
+ * Internal changes
+
+   - TException class (and all subclasses) now take a __FILE__ and __LINE__
+     parameter.  This is ugly, but it allows me to debug 5L exceptions even
+     without a working debugger (under the OS 9 emulator, for example).
+   - FileSystem::Path::(DoesExist|IsRegularFile|IsDirectory) now rely on
+     native MacOS File Manager calls instead of the broken MSL stat()
+     function (which fails in the OS 9 emulator).
+   - The ImlUnit test harness flushes its output more often.
+   - Many data structure accessors (and such functions as c2pstr) have been
+     replaced by their Carbon equivalents.
+   - We now use PowerPlant accessors to get at the QuickDraw globals.
+   - We now use PowerPlant calls in place of ValidRect and InvalRect.
+   - Some very nasty code which set the palettes of our offscreen GWorlds
+     has been removed (offscreen GWorlds have CLUTs, not palettes!).
+     The various drawing commands now use gPaletteManager to map indexes
+     to RGBColor values, and RGBForeColor to set the color--no more calls
+     to ::PmForeColor on offscreen GWorlds, thank you!
+   - The CMenuUtil code (which used low-memory system globals to hide
+     and show the menu bar) has been removed entirely and replaced by
+     calls to HideMenuBar and ShowMenuBar (which are present in 8.5 and
+     Carbon).  This is much simpler, nicer, more portable and safer.
+   - A bunch of code which had been disabled with #ifdefs has been
+     removed entirely.  This mostly related to palettes and an obsolete
+     version of the fade code which used GWorlds.
+   - Code which used ROM-based KCHR resources to map option keys back to
+     their unmodified key caps has been removed.  This means KEYBINDs
+     can only be accessed using the Command key.
+   - We assume Carbon systems always support the HFS file system (duh).
+   - We use PowerPlant glue to access either StandardFile or Navigation
+     Services, under OS 8/9 and Carbon, respectively.
+   - Some old subroutines in CModuleManager appeared to have been
+     snarfed from More Files, an old Mac utility library.  These have
+     been moved into MoreFiles.{h,cpp}.
+
+ * Known Carbon Problems
+
+ Fades, ejecting CD-ROMs and playing QuickTime movies are all broken in
+ the Carbon build.  Douglas has found a problem with ORIGIN.  It looks
+ like we should continue to ship the OS 9 build for use with MacOS X,
+ at least for next few months.
+
  Revision 1.5  2002/05/29 09:38:53  emk
  Fixes for various "crash on exit" bugs in 5L.
 

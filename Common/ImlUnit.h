@@ -38,7 +38,7 @@ extern int tests_finished (void);
 	do { \
 		total_tests++; \
 		if ((statement)) { \
-			std::cout << "."; \
+			std::cout << "." << std::flush; \
 		} else { \
 			test_failure(__FILE__, __LINE__, "expected", #statement); \
 		} \
@@ -54,7 +54,7 @@ extern int tests_finished (void);
 		} catch (ETYPE &e) { \
 			/* We're OK. */ \
 			(void) e; /* Avoid compiler warning. */ \
-			std::cout << "."; \
+			std::cout << "." << std::flush; \
 		} catch (...) { \
 			test_failure(__FILE__, __LINE__, "exception wasn't", #ETYPE); \
 		} \

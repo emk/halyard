@@ -510,10 +510,12 @@ CText::SetupStyle(SInt32 sIdx, Boolean shadow)
 		if (theStyle.mLen != 0)					// if style has length 0, do nothing 
 		{
 			// If we're drawing the shadow, set the color to the shadow color.
+			RGBColor color;
 			if (shadow)
-				::PmForeColor(mShadColor);
+				color = gPaletteManager.GetColor(mShadColor);
 			else
-				::PmForeColor(theStyle.mColor);
+				color = gPaletteManager.GetColor(theStyle.mColor);
+			::RGBForeColor(&color);	
 			SInt16 textStyle = 0;				
 	
 			if (theStyle.mUnderline)			
@@ -732,10 +734,12 @@ CText::DrawSimpleText(Boolean highlight)
 	else
 		::TextFace(0);
 	
+	RGBColor color;
 	if (highlight)
-		::PmForeColor(mHiColor);
+		color = gPaletteManager.GetColor(mHiColor);
 	else
-		::PmForeColor(mBaseColor);
+		color = gPaletteManager.GetColor(mBaseColor);
+	::RGBForeColor(&color);	
 				
 	PP::UTextDrawing::DrawWithJustification((char *) mText, strlen((char *) mText), mDrawRect, mJust);
 }

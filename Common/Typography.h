@@ -122,9 +122,10 @@ namespace Typography {
 	//
 	class Error : public FIVEL_NS TException {
 	public:
-		explicit Error(int inErrorCode);
-		explicit Error(const std::string &inErrorMessage)
-			: TException(inErrorMessage) {}
+		explicit Error(const char *inFile, int inLine, int inErrorCode);
+		explicit Error(const char *inFile, int inLine,
+					   const std::string &inErrorMessage)
+			: TException(inFile, inLine, inErrorMessage) {}
 		
 		virtual const char *GetClassName() const
 		    { return "Typography::Error"; }
@@ -133,8 +134,9 @@ namespace Typography {
 		// Check the result of a FreeType function and throw an error
 		// if necessary.
 		//
-		static void CheckResult(int inResultCode)
-			{ if (inResultCode) throw Error(inResultCode); }
+		static void CheckResult(const char *inFile, int inLine,
+								int inResultCode)
+			{ if (inResultCode) throw Error(inFile, inLine, inResultCode); }
 	};
 
 	//////////

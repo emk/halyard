@@ -20,6 +20,7 @@
 
 #include "THeader.h"
 
+#include <UStandardDialogs.h>
 #include <Palettes.h>
 
 #include <iostream.h>
@@ -35,7 +36,6 @@
 #include "CBackWindow.h"
 
 #include "gamma.h"
-#include "CMenuUtil.h"
 
 #include "CCard.h"
 #include "CMacroManager.h"
@@ -70,8 +70,6 @@ bool				gHideMenuBar = true;		// to hide menu bar
 bool				gPrintDebug = false;		// normally off
 #endif
 bool				gDoShiftScript = false;		// by default, start from beginning
-
-CMenuUtil			gMenuUtil;
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -119,7 +117,11 @@ int FiveL::FiveLmain()
 									//   blocks to allocate
 	
 									// Initialize standard Toolbox managers
+#if TARGET_API_MAC_CARBON
+	UQDGlobals::InitializeToolbox();
+#else
 	UQDGlobals::InitializeToolbox(&qd);
+#endif
 	TLogger::MarkToolboxAsInitialized();
 	
 	new LGrowZone(20000);			// Install a GrowZone function to catch
@@ -240,23 +242,11 @@ CMac5LApp::CMac5LApp()
 #endif
 	
 	// Set our global window pointer.
-	gWindow = (WindowPtr) mDisplayWindow->GetMacPort();
+	gWindow = ::GetWindowFromPort(mDisplayWindow->GetMacPort());
 		
 	// Make this a subcommander of the main window.
 	gPlayerView = (CPlayerView *) mDisplayWindow->FindPaneByID(210);
 				
-	// cbo_fix - if we really need this, figure out a new way to do it
-	// Set the window's default palette
-	//CTabHandle	theCTabHand;
-	//theCTabHand = ::GetCTable(128);
-	
-	//if (theCTabHand != nil)
-	//{
-	//	DoNewPalette(theCTabHand);
-	//	gPlayerView->DoNewPalette(theCTabHand);
-	//	CheckPalette();
-	//}
-	// cbo_fix - this should be the equivalent of the above stuff
 	gPaletteManager.Init();
 		
 	gCursorManager.Init();
@@ -279,7 +269,7 @@ CMac5LApp::CMac5LApp()
 	{
 		centerOnScreen = false;
 	
-		screenBounds.top += ::LMGetMBarHeight() + 50;
+		screenBounds.top += ::GetMBarHeight() + 50;
 		screenBounds.left = 50;
 		screenBounds.right = screenBounds.left + 640;
 		screenBounds.bottom = screenBounds.top + 480;
@@ -301,7 +291,9 @@ CMac5LApp::CMac5LApp()
 //		SetResAttrs(clickSound, resLocked);
 	
 	if (gHideMenuBar)
-		gMenuUtil.HideMenuBar();
+		::HideMenuBar();
+	else
+		::ShowMenuBar();
 
 	mDisplayWindow->Show();
 
@@ -475,7 +467,7 @@ void CMac5LApp::CleanUp(void)
 void CMac5LApp::EventResume(const EventRecord& inMacEvent)
 {
 	if (gHideMenuBar)
-		gMenuUtil.HideMenuBar();
+		::HideMenuBar();
 	LApplication::EventResume(inMacEvent);	
 }
 
@@ -486,7 +478,7 @@ void CMac5LApp::EventResume(const EventRecord& inMacEvent)
 void CMac5LApp::EventSuspend(const EventRecord& inMacEvent)		
 {
  
-	gMenuUtil.ShowMenuBar();
+	::ShowMenuBar();
 	LApplication::EventSuspend(inMacEvent);
 }
 
@@ -500,8 +492,8 @@ Boolean CMac5LApp::AttemptQuitSelf(SInt32 /* inSaveOption */)
 	
 	mScriptRunning = false;
 	
-	DoGFade(true, 0, false);			// make sure we aren't faded out
-	gMenuUtil.ShowMenuBar();	// make sure we have the menu
+	DoGFade(true, 0, false);	// make sure we aren't faded out
+	::ShowMenuBar();			// make sure we have the menu
 	::ShowCursor();				// make sure the cursor is still there
 		
 	// cbo_debug
@@ -516,20 +508,12 @@ Boolean CMac5LApp::AttemptQuitSelf(SInt32 /* inSaveOption */)
 //
 bool CMac5LApp::GetScriptFile(FSSpec *scriptSpec)
 {
-	StandardFileReply	sfReply;
-	SFTypeList			sfTypes;
-	
-	sfTypes[0] = 'TEXT';
-	sfTypes[1] = 0;
-	
-	StandardGetFile(NULL, 1, sfTypes, &sfReply);
-	
-	if (sfReply.sfGood)
-	{
-		*scriptSpec = sfReply.sfFile;
-		return (TRUE);
-	}
-	return (FALSE); 
+	// XXX - This *should* be the way to call this under Carbon and/or
+	// the regular MacOS, but it hasn't been tested.
+	if (PP_StandardDialogs::AskOpenOneFile('TEXT', *scriptSpec))
+		return TRUE;
+	else
+		return FALSE;
 }
 
 //
@@ -563,103 +547,6 @@ bool  CMac5LApp::OpenScript(const TString &inScriptName)
 	
 	return (retValue);
 }
-
-#ifdef OLD_PALETTE_STUFF
-void CMac5LApp::NewColorTable(CPalette *inPal, bool inGraphics)
-{
-	CPalette		*theOldPal;
-	CTabHandle		theCTab;
-			
-	if (inGraphics)
-	{
-		// if we are trying to set the palette to what it already is
-		// don't do anything
-		if (inPal == mGraphicsPal)
-			return;
-			
-		theOldPal = mGraphicsPal;
-		mGraphicsPal = inPal;
-	}	
-	else
-	{
-		theOldPal = mMoviePal;
-		mMoviePal = inPal;
-	}
-	
-	theCTab = inPal->GetCTab();
-	
-	DoNewPalette(theCTab);
-	
-	if (inGraphics)
-		gPlayerView->DoNewPalette(theCTab);
-	else
-		CheckPalette();			// do it now - we are going to show a movie
-	
-	if (theOldPal != nil)
-		theOldPal->Purge();		// clear it from memory (unless it is locked)
-}
-		
-void CMac5LApp::DoNewPalette(CTabHandle inCTab)
-{
-	PaletteHandle	thePalHand;
-	PaletteHandle	theOldPalHand;
-
-	// now make the new palette
-	//thePalHand = ::NewPalette(256, inCTab,  pmTolerant + pmExplicit, 0);
-	thePalHand = ::NewPalette((**inCTab).ctSize+1, inCTab, pmTolerant + pmExplicit, 0);
-	
-	theOldPalHand = ::GetPalette(gWindow);
-	
-	::NSetPalette(gWindow, thePalHand, pmNoUpdates);	// was pmAllUpdates
-	
-	mHaveNewPal = true;
-	mCurPal = thePalHand;
-	
-	if (theOldPalHand != nil)
-		::DisposePalette(theOldPalHand);
-}
-
-void CMac5LApp::CheckPalette(void)
-{		
-	if (mHaveNewPal)
-	{
-		mHaveNewPal = false;
-		::ActivatePalette(gWindow);
-	}
-}
-	
-//
-//	RestorePalette
-//
-void CMac5LApp::RestorePalette(void)
-{
-	CTabHandle		theCTab;
-	
-	if (mGraphicsPal != NULL)
-	{
-		//gDebugLog.Log("restoring graphics palette to <%s>", mGraphicsPal->key.GetString());
-
-		theCTab = mGraphicsPal->GetCTab();
-
-		if (theCTab == NULL)
-		{
-			//gDebugLog.Log("trying to restore palette, got dodo");
-			mGraphicsPal->Load();		// reload the palette
-			theCTab = mGraphicsPal->GetCTab();
-			
-			if (theCTab == NULL)
-			{
-			//	gDebugLog.Log("still trying to restore, couldn't get graphics palette");
-				return;
-			}
-		}
-
-		DoNewPalette(theCTab);
-
-		CheckPalette();				// will always be faded out for this
-	}
-}
-#endif // OLD_PALETTE_STUFF
 
 #ifdef DEBUG
 
@@ -922,6 +809,68 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.20.6.2  2002/06/15 01:06:55  emk
+3.3.4.7 - Carbonization of Mac build, support for running non-Carbonized build
+in MacOS X's OS 9 emulator, and basic support for 5L.prefs on the Mac.  The
+Carbon build isn't yet ready for prime time--see BugHunt for details--but it
+is good enough to use for engine development.
+
+* Language changes
+
+  - CHECKDISC is gone; use CHECKVOL instead.
+  - EJECT is disabled in the Carbon build, because Carbon has no way to
+    identify CD drives reliably.  EJECT still works in the regular build.
+  - Gamma fades are ignored in the Carbon build.
+  - KEYBINDs must now be accessed with the Command key only--not Option.
+
+* Things to test
+
+Please be hugely brutal to 5L; this is a big update.
+
+  - 8-bit systems, palettes, ORIGIN, EJECT on the non-Carbon build.
+
+* Internal changes
+
+  - TException class (and all subclasses) now take a __FILE__ and __LINE__
+    parameter.  This is ugly, but it allows me to debug 5L exceptions even
+    without a working debugger (under the OS 9 emulator, for example).
+  - FileSystem::Path::(DoesExist|IsRegularFile|IsDirectory) now rely on
+    native MacOS File Manager calls instead of the broken MSL stat()
+    function (which fails in the OS 9 emulator).
+  - The ImlUnit test harness flushes its output more often.
+  - Many data structure accessors (and such functions as c2pstr) have been
+    replaced by their Carbon equivalents.
+  - We now use PowerPlant accessors to get at the QuickDraw globals.
+  - We now use PowerPlant calls in place of ValidRect and InvalRect.
+  - Some very nasty code which set the palettes of our offscreen GWorlds
+    has been removed (offscreen GWorlds have CLUTs, not palettes!).
+    The various drawing commands now use gPaletteManager to map indexes
+    to RGBColor values, and RGBForeColor to set the color--no more calls
+    to ::PmForeColor on offscreen GWorlds, thank you!
+  - The CMenuUtil code (which used low-memory system globals to hide
+    and show the menu bar) has been removed entirely and replaced by
+    calls to HideMenuBar and ShowMenuBar (which are present in 8.5 and
+    Carbon).  This is much simpler, nicer, more portable and safer.
+  - A bunch of code which had been disabled with #ifdefs has been
+    removed entirely.  This mostly related to palettes and an obsolete
+    version of the fade code which used GWorlds.
+  - Code which used ROM-based KCHR resources to map option keys back to
+    their unmodified key caps has been removed.  This means KEYBINDs
+    can only be accessed using the Command key.
+  - We assume Carbon systems always support the HFS file system (duh).
+  - We use PowerPlant glue to access either StandardFile or Navigation
+    Services, under OS 8/9 and Carbon, respectively.
+  - Some old subroutines in CModuleManager appeared to have been
+    snarfed from More Files, an old Mac utility library.  These have
+    been moved into MoreFiles.{h,cpp}.
+
+* Known Carbon Problems
+
+Fades, ejecting CD-ROMs and playing QuickTime movies are all broken in
+the Carbon build.  Douglas has found a problem with ORIGIN.  It looks
+like we should continue to ship the OS 9 build for use with MacOS X,
+at least for next few months.
+
 Revision 1.20.6.1  2002/06/13 14:11:40  emk
 Basic fixes to make updated Common library build on the Macintosh.
 

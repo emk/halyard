@@ -31,7 +31,8 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, int16 &out)
     int32 temp;
     temp = args.GetInt32Arg();
     if (temp < MIN_INT16 || MAX_INT16 < temp)
-	throw TException("Can't represent value as 16-bit integer");
+	throw TException(__FILE__, __LINE__,
+					 "Can't represent value as 16-bit integer");
     out = temp;
     return args;
 }
@@ -122,7 +123,8 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
     // Find the primitive.
     std::map<std::string,void*>::iterator found = mPrimitiveMap.find(inName);
     if (found == mPrimitiveMap.end())
-		throw TException("Tried to call non-existant primitive");
+		throw TException(__FILE__, __LINE__,
+						 "Tried to call non-existant primitive");
     PrimitiveFunc primitive = static_cast<PrimitiveFunc>(found->second);
     
     // Call it.

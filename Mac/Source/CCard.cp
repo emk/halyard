@@ -46,8 +46,6 @@
 
 #include <UInternetConfig.h>
 
-#include "CMenuUtil.h"
-
 USING_NAMESPACE_FIVEL
 
 /**************
@@ -259,7 +257,6 @@ void CCard::DoCommand(void)
     else if (opword == (char *)"blueramp") DoBlueramp();
     else if (opword == (char *)"box") DoBox();
     else if (opword == (char *)"buttpcx") DoButtpcx();
-    else if (opword == (char *)"checkdisc") DoCheckDisc();
     else if (opword.Equal("checkvol")) DoCheckVol();
     else if (opword == (char *)"close") DoClose();
     else if (opword == (char *)"ctouch") DoCTouch();
@@ -908,7 +905,7 @@ void CCard::DoBrowse()
     	// However, this doesn't work. Internet explorer's menu bar will be screwed up 
     	// if Internet Explorer was not previously running. 
     	// Therefore we need to show the menu bar here, before we call PP_ICLaunchURL. 
-    	gMenuUtil.ShowMenuBar();
+    	::ShowMenuBar();
         PP::UInternetConfig::PP_ICLaunchURL("\p", (char *) theURL.GetString(), endSel, &startSel, &endSel);
     	
     }
@@ -997,76 +994,6 @@ void CCard::DoButtpcx()
 	
 	// cbo_test - try this
 	//gPlayerView->AdjustMyCursor();
-}
-
-//
-//	CheckDisc - Check the CD. If the correct CD is in the drive, do nothing (fall through).
-//		If the wrong CD is in there, jump to the wrong_disc card, if no CD is in the drive
-//		jump to the no_disc card.
-//
-//		(checkdisc volume_name wrong_disc no_disc)
-//
-void CCard::DoCheckDisc()
-{
-	TString		vol_name;
-	TString		wrong_disc;			// where to jump if wrong disc 
-	TString		no_disc;			// where to jump if no disc
-	TString		jump_card;			// which one of these two to jump to
-	int32		check_disc;
-	bool		do_jump = FALSE;
-	
-	m_Script >> vol_name >> wrong_disc >> no_disc;
-	
-	gDebugLog.Log("checkdisc: <%s>, if fail <%s>", 
-		vol_name.GetString(), wrong_disc.GetString());
-
-	// turn vol_name into a volume name
-	vol_name += ":";
-	
-	check_disc = gVariableManager.GetLong("_NoCheckDisc");
-	if (check_disc == 0)
-	{
-		// first just see if the volume is already mounted
-		if (gModMan->VolMounted(vol_name))
-		{
-			// nothing else to do
-			gDebugLog.Log("Volume is already mounted (might not be a CD)");			
-		}
-		else if (gModMan->CDInDrive())
-		{
-			if (not gModMan->VolMounted(vol_name))
-			{
-				gDebugLog.Log("Wrong disc in CD player");
-				jump_card = wrong_disc;
-				do_jump = TRUE;
-			}
-		}
-		else
-		{
-			gDebugLog.Log("No disc in CD player");
-			jump_card = no_disc;
-			do_jump = TRUE;
-		}	
-
-		// if we found the disc we were looking for, set the 
-		// current CD so it will find movies
-		if (not do_jump)
-		{			
-			gDebugLog.Log("Disc found, setting current CD to <%s>", vol_name.GetString());
-			gModMan->SetCurCD(vol_name);
-		}
-	}
-	else
-		gDebugLog.Log("_NoCheckDisc is true, no jumping");
-	
-	if (do_jump)
-	{
-		gPlayerView->ProcessEvents(false);	// stop processing keys and touch zones
-	
-    	gCardManager.JumpToCardByName((const char *) jump_card, false);
-    
-    	gPlayerView->Draw(nil);				// refresh the screen so see everything before jumping		
-	}	
 }
 
 //
@@ -1234,7 +1161,10 @@ void CCard::DoDiv()
 //
 void CCard::DoEjectDisc()
 {
+#if CALL_NOT_IN_CARBON
 	gModMan->EjectCD();
+#endif // CALL_NOT_IN_CARBON
+
 	gDebugLog.Log("Ejecting disk");
 }
 

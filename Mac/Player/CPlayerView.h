@@ -106,9 +106,6 @@ class  CPlayerView
 			
 		CGWorld			*mGWorld;
 		CGWorld			*mBlippoWorld;
-#ifdef DEBUG_5L_LATER
-		CGWorld			*mFadeWorld;
-#endif
 		
 		void			ExecuteSelf(PP::MessageT /* inMessage */, void *ioParam);
 		

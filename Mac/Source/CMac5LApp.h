@@ -44,19 +44,7 @@ class	CMac5LApp : public PP::LApplication
 		void				CheckMemory(void);
 		void				MaxMemory(void);
 		void				DumpMemory(void);
-		
-
-//		void				SetPalette(PaletteHandle inPalHand, bool inActivateNow);
-		
-//		void				NewColorTable(CPalette *inPal, bool inGraphics);
-		
-//		void				DoNewPalette(CTabHandle inCTab);
-//		void				RestorePalette(void);
-//		CTabHandle			GetCTab(void) { return (mGraphicsPal->GetCTab()); }
-//		void				CheckPalette(void);
-//		bool				HaveNewPal(void)
-//					{ return (mHaveNewPal); }
-		
+				
 		Boolean				AttemptQuitSelf(SInt32 inSaveOption);
 		virtual void		HandleAppleEvent(
 								const AppleEvent	&inAppleEvent,

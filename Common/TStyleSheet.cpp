@@ -164,7 +164,8 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 			
 			case '\\': // Escape sequence
 				if (++cp == encoded.end())
-					throw TException("Incomplete escape sequence in \"" +
+					throw TException(__FILE__, __LINE__,
+									 "Incomplete escape sequence in \"" +
 									 inText + "\"");
 				switch (*cp)
 				{

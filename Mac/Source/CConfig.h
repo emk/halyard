@@ -40,9 +40,12 @@ class	CConfig
 			
 			
 			Boolean 		MAGestaltAttribute(OSType itsAttr, short itsBit);
+
+#if !TARGET_API_MAC_CARBON
 			short 			NumToolboxTraps(void);
 			Boolean			TrapExists(short theTrap);
 			TrapType 		GetTrapType(short theTrap);
+#endif
 };
 		
 extern CConfig *theConfig;

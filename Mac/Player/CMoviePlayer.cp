@@ -187,7 +187,7 @@ void CMoviePlayer::Kill(void)
 			::RGBForeColor(&rgbBlack);
 			::PenMode(patCopy);
 			::PaintRect(&theFrame);
-			::ValidRect(&theFrame);			// so don't get update
+			gPlayerView->ValidPortRect(&theFrame);	// so don't get update
 		}
 		else
 			gPlayerView->Draw(nil);			// get the offscreen buffer back on the screen

@@ -21,9 +21,10 @@ namespace FileSystem {
 	//
 	class Error : public FIVEL_NS TException {
 	public:
-		Error(int inErrorCode);
-		Error(const std::string &inErrorMessage)
-			: TException(inErrorMessage) {}
+		Error(const char *inErrorFile, int inErrorLine, int inErrorCode);
+		Error(const char *inErrorFile, int inErrorLine,
+			  const std::string &inErrorMessage)
+			: TException(inErrorFile, inErrorLine, inErrorMessage) {}
 		
 		virtual const char *GetClassName() const
 		    { return "FileSystem::Error"; }

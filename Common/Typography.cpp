@@ -19,12 +19,14 @@ inline Distance round_266 (FT_Pos in266Measurement)
 	return (in266Measurement + 32) >> 6;
 }
 
+#define CHECK_RESULT(RESULT) Error::CheckResult(__FILE__, __LINE__, RESULT)
 
 //=========================================================================
 //	Typography::Error Methods
 //=========================================================================
 
-Error::Error(int inErrorCode)
+Error::Error(const char* inFile, int inLine, int inErrorCode)
+	: TException(inFile, inLine)
 {
 	SetErrorCode(inErrorCode);
 	SetErrorMessage("(no error strings, yet--try fterrors.h)");
@@ -39,12 +41,12 @@ Library *Library::sLibrary = NULL;
 
 Library::Library()
 {
-	Error::CheckResult(FT_Init_FreeType(&mLibrary));
+	CHECK_RESULT(FT_Init_FreeType(&mLibrary));
 }
 
 Library::~Library()
 {
-	Error::CheckResult(FT_Done_FreeType(mLibrary));
+	CHECK_RESULT(FT_Done_FreeType(mLibrary));
 }
 
 Library *Library::GetLibrary()
@@ -459,7 +461,7 @@ Face::FaceRep::FaceRep(FT_Face inFace)
 
 Face::FaceRep::~FaceRep()
 {
-	Error::CheckResult(FT_Done_Face(mFace));
+	CHECK_RESULT(FT_Done_Face(mFace));
 
 	// Delete our cached glyph objects.
 	std::map<GlyphIndex,Glyph*>::iterator cursor = mGlyphCache.begin();
@@ -477,8 +479,8 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 	// Until our FaceRep is successfully constructed, we're in charge
 	// of calling FT_Done_Face on this data.
 	FT_Face face;
-	Error::CheckResult(FT_New_Face(*Library::GetLibrary(),
-								   inFontFile, 0, &face));
+	CHECK_RESULT(FT_New_Face(*Library::GetLibrary(),
+							 inFontFile, 0, &face));
 
 	// Allocate a new FaceRep structure.  This takes ownership
 	// of the face object.  Until the constructor exits successfully,
@@ -498,10 +500,10 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 	{
 		// Attach our metrics, if we have any.
 		if (inMetricsFile)
-			Error::CheckResult(FT_Attach_File(face, inMetricsFile));
+			CHECK_RESULT(FT_Attach_File(face, inMetricsFile));
 		
 		// Attempt to set a Unicode charmap.
-		Error::CheckResult(FT_Select_Charmap(face, ft_encoding_unicode));
+		CHECK_RESULT(FT_Select_Charmap(face, ft_encoding_unicode));
 		
 		// Check to see if our font is either (1) scalable or (2) available
 		// in the specified point size.	 We never attempt to scale bitmap
@@ -518,12 +520,12 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
 				}
 			}
 			if (!found_size)
-				throw Error("Cannot scale bitmap font");
+				throw Error(__FILE__, __LINE__, "Cannot scale bitmap font");
 		}
 		
 		// Set the size of our font.
-		Error::CheckResult(FT_Set_Char_Size(face, inSize*64, inSize*64,
-											72, 72));
+		CHECK_RESULT(FT_Set_Char_Size(face, inSize*64, inSize*64,
+									  72, 72));
 
 		// Set various font properties that we'll need later.
 		// (Manual conversion to true, false to avoid MSVC++ warning.
@@ -575,8 +577,8 @@ Glyph *Face::GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex)
 	else
 	{
 		// Load and cache a new glyph.
-		Error::CheckResult(FT_Load_Glyph(mFaceRep->mFace, inGlyphIndex,
-										 FT_LOAD_RENDER));
+		CHECK_RESULT(FT_Load_Glyph(mFaceRep->mFace, inGlyphIndex,
+								   FT_LOAD_RENDER));
 		Glyph *glyph = new Glyph(mFaceRep->mFace->glyph);
 		mFaceRep->mGlyphCache.insert(std::pair<GlyphIndex,Glyph*>(inGlyphIndex,
 																  glyph));
@@ -599,9 +601,9 @@ Vector Face::GetKerning(CharCode inPreviousChar,
 	if (mHasKerning && previous_glyph && current_glyph)
 	{	
 		// If we actually have kerning data, use it.
-		Error::CheckResult(FT_Get_Kerning(mFaceRep->mFace,
-										  previous_glyph, current_glyph,
-										  ft_kerning_default, &delta));
+		CHECK_RESULT(FT_Get_Kerning(mFaceRep->mFace,
+									previous_glyph, current_glyph,
+									ft_kerning_default, &delta));
 	}
 	else
 	{
@@ -1091,7 +1093,8 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 	{
 		--seg.end;
 		if (seg.begin == seg.end)
-			throw Error("Trying to break line in the middle of a character");
+			throw Error(__FILE__, __LINE__,
+						"Trying to break line in the middle of a character");
 	} while (MeasureSegment(NULL, &seg, true) > GetLineLength());
 	ASSERT(seg.end != ioRemaining->end);
 	
@@ -1169,8 +1172,8 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inFileName)
 	FT_Face face;
 	std::string path =
 		FileSystem::GetFontFilePath(mFileName).ToNativePathString();
-	Error::CheckResult(FT_New_Face(*Library::GetLibrary(),
-								   path.c_str(), 0, &face));
+	CHECK_RESULT(FT_New_Face(*Library::GetLibrary(),
+							 path.c_str(), 0, &face));
 				
 	try
 	{
@@ -1213,7 +1216,7 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inFileName)
 
 			// If we didn't find any sizes, get cranky.
 			if (!found_size)
-				throw Error(FT_Err_Invalid_File_Format);
+				throw Error(__FILE__, __LINE__, FT_Err_Invalid_File_Format);
 		}
 	}
 	catch (...)
@@ -1221,7 +1224,7 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inFileName)
 		FT_Done_Face(face);
 		throw;
 	}
-	Error::CheckResult(FT_Done_Face(face));
+	CHECK_RESULT(FT_Done_Face(face));
 }
 
 Face FamilyDatabase::AvailableFace::OpenFace(int inSize) const
@@ -1247,13 +1250,13 @@ void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in)
 	int version;
 	in >> filetype >> vers_label >> version >> std::ws;
 	if (!in || filetype != "facecache" || vers_label != "vers" || version != 1)
-		throw Error("Incorrectly formatted face cache");
+		throw Error(__FILE__, __LINE__, "Incorrectly formatted face cache");
 	
 	// Discard our human-readable comment line.
 	std::string junk;
 	std::getline(in, junk);
 	if (!in)
-		throw Error("Error reading face cache");
+		throw Error(__FILE__, __LINE__, "Error reading face cache");
 }
 
 void FamilyDatabase::AvailableFace::WriteSerializationHeader(std::ostream &out)
@@ -1274,7 +1277,8 @@ FamilyDatabase::AvailableFace::AvailableFace(std::istream &in)
 	std::getline(in, is_bold, '|');
 	std::getline(in, is_italic);
 	if (!in)
-		throw Error("Error reading entry from face cache");
+		throw Error(__FILE__, __LINE__,
+					"Error reading entry from face cache");
 
 	// Needed so eof() will return true after last record.
 	// XXX - Will cause problems if font names begin with spaces.
@@ -1304,7 +1308,8 @@ FamilyDatabase::FaceSizeGroup::AddAvailableFace(const AvailableFace &inFace)
 {
 	int size = inFace.GetSize();
 	if (mAvailableFaces.find(size) != mAvailableFaces.end())
-		throw Error("Tried to add duplicate font to font database");
+		throw Error(__FILE__, __LINE__,
+					"Tried to add duplicate font to font database");
 	mAvailableFaces.insert(std::pair<int,AvailableFace>(size, inFace));
 }
 
@@ -1324,7 +1329,8 @@ Face FamilyDatabase::FaceSizeGroup::GetFace(int inSize)
 	// If we *still* don't have a face, give up.  If we were feeling
 	// very ambitious, we could look for the nearest size and use that.
 	if (found == mAvailableFaces.end())
-		throw Error("No matching font (did you try to scale a bitmap font?)");
+		throw Error(__FILE__, __LINE__,
+					"No matching font (did you try to scale a bitmap font?)");
 
 	// Open the face, remember it, and return it.
 	Face face = found->second.OpenFace(inSize);
@@ -1393,7 +1399,8 @@ Face FamilyDatabase::Family::GetFace(FaceStyle inStyle, int inSize)
 
 		default:
 			// Illegal style codes!
-			throw Error("Unknown font style codes, giving up");
+			throw Error(__FILE__, __LINE__,
+						"Unknown font style codes, giving up");
 	}
 	ASSERT(false);
 	return *(Face*) NULL; // This code should NEVER get run.
@@ -1453,7 +1460,8 @@ Face FamilyDatabase::GetFace(const std::string &inFamilyName,
 	if (found != mFamilyMap.end())
 		return found->second.GetFace(inStyle, inSize);
 	else
-		throw Error("Unknown font family \"" + inFamilyName + "\"");
+		throw Error(__FILE__, __LINE__,
+					"Unknown font family \"" + inFamilyName + "\"");
 
 	ASSERT(false);
 	return *(Face *) NULL; // Never run.

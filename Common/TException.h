@@ -15,7 +15,10 @@ BEGIN_NAMESPACE_FIVEL
 // catching this directly; catch something like std::exception
 // instead.
 // 
-class TException : public std::runtime_error {
+class TException : public std::runtime_error
+{
+	std::string mErrorFile;
+	int mErrorLine;
 	std::string mErrorMessage;
 	int mErrorCode;
 	std::string mWhatCache;
@@ -25,7 +28,11 @@ protected:
 	// Constructor for use by subclasses.  You can call this, then set up
 	// the member variables with SetErrorCode and SetErrorMessage.
 	//
-	TException() : std::runtime_error(""), mErrorCode(kNoErrorCode) {}
+	TException(const char *inErrorFile, int inErrorLine)
+		: std::runtime_error(""),
+		  mErrorFile(inErrorFile),
+		  mErrorLine(inErrorLine),
+		  mErrorCode(kNoErrorCode) {}
 
 	//////////
 	// Set the error code associated with this exception.
@@ -53,9 +60,13 @@ public:
 	// [in] inErrorMessage - The error message to display.
 	// [in] inErrorCode - The code associated with this error, if any.
 	//
-	TException(const std::string &inErrorMessage,
+	TException(const char *inErrorFile, int inErrorLine,
+			   const std::string &inErrorMessage,
 			   int inErrorCode = kNoErrorCode)
-		: std::runtime_error(""), mErrorMessage(inErrorMessage),
+		: std::runtime_error(""),
+		  mErrorFile(inErrorFile),
+		  mErrorLine(inErrorLine),
+		  mErrorMessage(inErrorMessage),
 		  mErrorCode(inErrorCode) {}
 
 	//////////

@@ -216,14 +216,14 @@ CTouchZone::HotSpotAction(
 			// given for "normal" touch zones highlighting has a non-highlight
 			// version
 			if (not inCurrInside)
-				mPicture->Draw(mPictLoc, (CGrafPort *) gPlayerView->GetMacPort(), true);
+				mPicture->Draw(mPictLoc, (CGrafPtr) gPlayerView->GetMacPort(), true);
 			else
 			{
 				CPicture *hilitePict = NULL;
 				
 				hilitePict = mPicture->GetHilitePicture();
 				if (hilitePict != NULL)
-					hilitePict->Draw(mPictLoc, (CGrafPort *) gPlayerView->GetMacPort(), true);
+					hilitePict->Draw(mPictLoc, (CGrafPtr) gPlayerView->GetMacPort(), true);
 			}
 		}
 		

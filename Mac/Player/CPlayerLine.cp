@@ -66,7 +66,8 @@ CPlayerLine::DrawSelf()
 	
 	// Set the pen state for color, width. Get the rgb color from
 	// the color index.
-	::PmForeColor(mColorIdx);	
+	RGBColor color = gPaletteManager.GetColor(mColorIdx);
+	::RGBForeColor(&color);	
 	::PenSize(mLineWidth, mLineWidth);
 	
 	::MoveTo(mLineFrame.left, mLineFrame.top);

@@ -98,7 +98,6 @@ class CCard : public TIndex
         void    DoBox();
         void    DoBrowse();
         void  	DoButtpcx();
-		void    DoCheckDisc();
 		void	DoCheckVol();
         void    DoClose();
         void    DoCTouch(); 
