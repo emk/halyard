@@ -40,6 +40,7 @@
 #include "CCard.h"
 #include "CMacroManager.h"
 #include "CHeader.h"
+#include "TStyleSheet.h"
 #include "TVariable.h"
 #include "CFiles.h"
 #include "TIndex.h"
@@ -212,6 +213,7 @@ CMac5LApp::CMac5LApp()
 	TParser::RegisterIndexManager("card", &gCardManager);
 	TParser::RegisterIndexManager("macrodef", &gMacroManager);
 	TParser::RegisterIndexManager("header", &gHeaderManager);
+	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
 
 	// Register our platform-specific special variables.
 	gVariableManager.RegisterSpecialVariable("_system",
@@ -447,6 +449,7 @@ void CMac5LApp::StartUp(void)
 void CMac5LApp::CleanUp(void)
 {
 	gHeaderManager.RemoveAll();			// toss all headers
+	gStyleSheetManager.RemoveAll();		// toss all style sheets
 	gMacroManager.RemoveAll();			// toss all macros
 	gCardManager.RemoveAll();			// toss all cards
 	gVariableManager.RemoveAll();		// toss all variables
@@ -678,6 +681,7 @@ void CMac5LApp::ReDoScript(const char *curCard)
 	// don't kill the variable tree as we want the variables to have their current values
 	//
 	gHeaderManager.RemoveAll();
+	gStyleSheetManager.RemoveAll();
 	gMacroManager.RemoveAll();
 	gCardManager.RemoveAll();
 	gIndexFileManager.RemoveAll();
@@ -812,6 +816,7 @@ bool CMac5LApp::OpenScriptAgain(const TString &inScriptName, const char *jumpCar
 	{
 		// error in the script, toss all cards headers and macros
 		gHeaderManager.RemoveAll();
+		gStyleSheetManager.RemoveAll();
 		gMacroManager.RemoveAll();
 		gCardManager.RemoveAll();
 		gIndexFileManager.RemoveAll();
@@ -915,6 +920,9 @@ void CMac5LApp::SetGlobals(void)
 
 /* 
 $Log$
+Revision 1.18.2.4  2002/04/25 11:34:25  emk
+Added a (defstyle ...) top-level form, and a (textaa ...) command for drawing anti-aliased text.
+
 Revision 1.18.2.3  2002/04/24 04:34:53  emk
 Added static member functions to CCard, FFiles, CMac5LApp to implement various 5L special variables that depend on unmerged and/or non-portable code.
 

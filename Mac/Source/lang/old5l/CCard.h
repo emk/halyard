@@ -159,6 +159,7 @@ class CCard : public TIndex
 		void	DoStill();
         void    DoSub();
         void    DoText();
+        void	DoTextAA();
         void    DoTimeout();
         void    DoTouch();
         void    DoUnblippo();

@@ -35,6 +35,9 @@
 #include "CTouchZone.h"
 #include "CModule.h"
 #include "TDateUtil.h"
+#include "GraphicsTools.h"
+#include "TStyleSheet.h"
+#include "TException.h"
 
 #include "gamma.h"
 
@@ -320,6 +323,7 @@ void CCard::DoCommand(void)
     else if (opword == (char *)"still") DoStill();
     else if (opword == (char *)"sub") DoSub();
     else if (opword == (char *)"text") DoText();
+    else if (opword == (char *)"textaa") DoTextAA();
     else if (opword == (char *)"timeout") DoTimeout();
     else if (opword == (char *)"touch") DoTouch();
     else if (opword == (char *)"unblippo") DoUnblippo();
@@ -2638,6 +2642,44 @@ void CCard::DoText()
 		delete textPtr;
 }
 
+/*--------------------------------------------------------------
+    (TEXTNEW STYLESHEET LEFT TOP RIGHT BOTTOM TEXTSTRING)
+
+    Display the given textstring, using the given header style,
+    within the given rect. Note that the bottom of the rectangle
+    is elastic... it will actually be as much or as little as
+    necessary to display all the text.
+----------------------------------------------------------------*/
+void CCard::DoTextAA()
+{
+	TRect		bounds;
+	std::string style, text;
+
+    m_Script >> style >> bounds >> text;
+
+    AdjustRect(&bounds);
+	gDebugLog.Log("textaa: style <%s>, text <%s>",
+				  style.c_str(), text.c_str());
+
+	try
+	{
+		gStyleSheetManager.Draw(style, text,
+								GraphicsTools::Point(bounds.Left(),
+													 bounds.Top()),
+								bounds.Right() - bounds.Left(),
+								gPlayerView);
+	}
+	catch (std::exception &error)
+	{
+		gDebugLog.Error("ERROR: %s", error.what());
+	}
+	catch (...)
+	{
+		gDebugLog.Error("ERROR: Unknown exception");
+	}
+}
+        
+        
 /*-----------------------------------------------------------
     (TIMEOUT DELAY CARD)
 
