@@ -2,9 +2,9 @@
 //	MacUtils.h
 //
 
-#include "KCommon.h"
-#include "KString.h"
+#include "TCommon.h"
+#include "TString.h"
 
-bool 	PathToFSSpec(KString &inPath, FSSpec *inSpec);
-KString	NameFromFSSpec(FSSpec *inSpec);
-KString	PathFromFSSpec(FSSpec *inSpec);
+bool 			PathToFSSpec(FiveL::TString &inPath, FSSpec *inSpec);
+FiveL::TString	NameFromFSSpec(FSSpec *inSpec);
+FiveL::TString	PathFromFSSpec(FSSpec *inSpec);

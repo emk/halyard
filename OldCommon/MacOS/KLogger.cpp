@@ -14,10 +14,10 @@
 // KLogger.cpp : 
 //
 
-#include "KHeader.h"
+#include "THeader.h"
 
 #include "KLogger.h"
-#include "KString.h"
+#include "TString.h"
 
 #include <string.h>
 #include <stdarg.h>
@@ -26,6 +26,8 @@
 
 #ifdef MACOS
 #include "MacUtils.h"
+
+USING_NAMESPACE_FIVEL
 
 #ifdef DEBUG
 	const long	FILE_CREATOR = FOUR_CHAR_CODE('R*ch');
@@ -137,7 +139,7 @@ void KLogger::Init(const char *Name, bool OpenFile /* = true */)
 		Init(pathBuf, Name, OpenFile);
 #endif
 #ifdef MACOS
-	KString		path = ":";		// start from current directory by default
+	TString		path = ":";		// start from current directory by default
 	
 	Init(path.GetString(), Name, OpenFile);
 #endif	
@@ -329,6 +331,13 @@ void KLogger::XFormBuffer(void)
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 17:12:43  hamon
+ Added support for compiler's namespaces.
+
+Made changes to reflect change in common files names (i.e. references to KString, KRect, etc changed to TString, TRect, etc).
+
+Changes by Elizabeth, okayed by Eric.
+
  Revision 1.1  2000/05/11 12:59:44  chuck
  v 2.01 b1
 

@@ -19,16 +19,18 @@
 
 #include <fstream>
 
-#include "KCommon.h"
-#include "KObject.h"
-#include "KString.h"
+#include "TCommon.h"
+#include "TObject.h"
+#include "TString.h"
+
+BEGIN_NAMESPACE_FIVEL
 
 #define LOG_NONE		0x00000000
 #define LOG_ALL			0xFFFFFFFF
 
 #define LOG_BUFFER_SIZE	10240
 
-class KLogger : public KObject
+class KLogger : public TObject
 {
 public:
 			KLogger();
@@ -50,7 +52,7 @@ public:
 
 protected:
 	std::ofstream	m_Log;
-	KString		m_FileName;
+	TString		m_FileName;
 	char		m_LogBuffer[LOG_BUFFER_SIZE];
 	bool		m_LogOpen;
 	bool		m_OpenFailed;
@@ -74,10 +76,19 @@ protected:
 	}
 };
 
+END_NAMESPACE_FIVEL
+
 #endif // _KLogger_h_
 
 /*
  $Log$
+ Revision 1.2  2002/03/04 17:12:44  hamon
+ Added support for compiler's namespaces.
+
+Made changes to reflect change in common files names (i.e. references to KString, KRect, etc changed to TString, TRect, etc).
+
+Changes by Elizabeth, okayed by Eric.
+
  Revision 1.1  2000/05/11 12:59:44  chuck
  v 2.01 b1
 

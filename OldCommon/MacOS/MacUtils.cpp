@@ -6,7 +6,9 @@
 
 #include <string.h>
 
-bool PathToFSSpec(KString &inPath, FSSpec *inSpec)
+USING_NAMESPACE_FIVEL
+
+bool PathToFSSpec(TString &inPath, FSSpec *inSpec)
 {
 	Str255		thePath;
 	OSErr		err;
@@ -21,9 +23,9 @@ bool PathToFSSpec(KString &inPath, FSSpec *inSpec)
 	return (retValue);
 }
 
-KString NameFromFSSpec(FSSpec *inSpec)
+TString NameFromFSSpec(FSSpec *inSpec)
 {
-	KString		retStr;
+	TString		retStr;
 	int32		nameLen;
 	
 	if (inSpec == NULL)
@@ -36,9 +38,9 @@ KString NameFromFSSpec(FSSpec *inSpec)
 	return (retStr);
 }
 
-KString PathFromFSSpec(FSSpec *inSpec)
+TString PathFromFSSpec(FSSpec *inSpec)
 {
-	KString		retPath;
+	TString		retPath;
 	CInfoPBRec	pbRec;
 	Str255		dirName;
 	OSErr		err;
@@ -67,8 +69,8 @@ KString PathFromFSSpec(FSSpec *inSpec)
 		err = PBGetCatInfo(&pbRec, false);
 		if (err == noErr)
 		{
-			KString		tmpStr;
-			KString		tmpStr2;
+			TString		tmpStr;
+			TString		tmpStr2;
 			
 			p2cstr(dirName);
 			tmpStr = (const char *) &dirName[0];
