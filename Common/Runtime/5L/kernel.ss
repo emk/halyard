@@ -781,7 +781,7 @@
                     (make <mouse-event>
                       :position (make-point (car args) (cadr args))
                       :double-click? (caddr args))]
-                   [[mouse-up mouse-enter mouse-leave]
+                   [[mouse-up mouse-enter mouse-leave mouse-moved]
                     (make <mouse-event>
                       :position (make-point (car args) (cadr args)))]
                    [else

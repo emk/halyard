@@ -2,7 +2,7 @@
   (require (lib "tamale.ss" "5L"))
   (require (lib "shapes.ss" "5L"))
   (provide %simple-toggle% %fancy-toggle% %toggle-base% %rect-drawing%
-           %text-box% %slider%
+           %text-box% %slider% getter setter
            <graphic> make-graphic graphic? draw-graphic
            <picture> make-picture picture? picture-path picture-rect
                      picture-offset
@@ -251,13 +251,20 @@
   (define (clamp value min-val max-val)
     (max min-val (min max-val value)))
 
+  (define-syntax getter
+    (syntax-rules ()
+      [(_ x) (fn () x)]))
+
+  (define-syntax setter
+    (syntax-rules ()
+      [(_ x) (fn (value) (set! x value))]))
+  
   (define-element-template %slider%
       [rectangle min-value max-value 
-       [update-function :default #f]
-       init-value]
+       [getter :type <function>]
+       [setter :type <function>]]
       (:template %zone% :shape rectangle)
     
-    (define value init-value)
     (define grabbed-by-me? #f)
     
     (define left-x (rect-left rectangle))
@@ -269,12 +276,12 @@
       (+ left-x (/ (- val min-value) scale)))
     (define (curr-fill-rect)
       (rect (rect-left rectangle) (rect-top rectangle)
-            (value->x value) (rect-bottom rectangle)))
+            (value->x (getter)) (rect-bottom rectangle)))
     (define (curr-empty-rect)
-      (rect (value->x value) (rect-top rectangle)
+      (rect (value->x (getter)) (rect-top rectangle)
             (rect-right rectangle) (rect-bottom rectangle)))
     (define (set-value-from-point! pt)
-      (set! value (clamp (x->value (point-x pt)) min-value max-value)))
+      (setter (clamp (x->value (point-x pt)) min-value max-value)))
     
     (on draw (style)
       (draw-box (curr-fill-rect)
@@ -305,9 +312,9 @@
     (on mouse-leave (event)
       (unless grabbed-by-me? 
         (send self draw 'normal)))
-    (on idle (event)
+    (on mouse-moved (event)
       (when (and grabbed-by-me? (mouse-grabbed?))
-        (set-value-from-point! (mouse-position))
+        (set-value-from-point! (event-position event))
         (send self draw 'active))))
     
   (define (points->rect p1 p2)
@@ -335,8 +342,8 @@
     
     (draw-box-outline my-bounds (color #x00 #x00 #x00) border) 
     
-    (on get-end-and-draw (my-color)
-      (let ((pos (mouse-position)))
+    (on get-end-and-draw (my-color event)
+      (let ((pos (event-position event)))
         (set! end-point (point (clamp (point-x pos) 
                                       (rect-left my-bounds)
                                       (rect-right my-bounds))
@@ -359,10 +366,10 @@
       (when (mouse-grabbed?)
         (ungrab-mouse self)
         (set! grabbed-by-me? #f)
-        (send self get-end-and-draw drawn-color)))
-    (on idle (event)
+        (send self get-end-and-draw drawn-color event)))
+    (on mouse-moved (event)
       (when (and (mouse-grabbed?) grabbed-by-me?)
-        (send self get-end-and-draw active-color))))
+        (send self get-end-and-draw active-color event))))
 
 
 
