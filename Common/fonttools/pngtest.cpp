@@ -29,6 +29,19 @@ FamilyDatabase *gFonts;
 #define SYMBOL_FACE ("Standard Symbols L")
 #define DINGBAT_FACE ("Dingbats")
 
+void show_with_style_info(const wchar_t *inText,
+			  const StyleInformation &inStyleInfo,
+			  Point inPos, Distance inLength,
+			  Justification inJustification)
+{
+    // Draw our text.
+    size_t len = wcslen(inText);
+    StyledTextSpan span(StyledCharIterator(inText, inStyleInfo.begin()),
+			StyledCharIterator(inText + len, inStyleInfo.end()));
+    TextRenderingEngine engine(span, inPos, inLength, inJustification, gImage);
+    engine.RenderText();
+}
+
 void show(const wchar_t *inText, const Style &inStyle,
 	  Point inPos, Distance inLength, Justification inJustification)
 {
@@ -38,10 +51,7 @@ void show(const wchar_t *inText, const Style &inStyle,
     styleInfo.EndStyleAt(len);
 
     // Draw our text.
-    StyledTextSpan span(StyledCharIterator(inText, styleInfo.begin()),
-			StyledCharIterator(inText + len, styleInfo.end()));
-    TextRenderingEngine engine(span, inPos, inLength, inJustification, gImage);
-    engine.RenderText();
+    show_with_style_info(inText, styleInfo, inPos, inLength, inJustification);
 }
 
 int main (int argc, char **argv) {
@@ -87,8 +97,29 @@ int main (int argc, char **argv) {
 		 Point(10, 100 + fi * 20), 360, kLeftJustification);
 	}
 
-	show(L"Font Drawing Demo (Fun, Fun!)", Style(baseStyle).SetSize(30),
-	     Point(10, 300), 360, kCenterJustification);
+	// Do an elaborate, multi-styled paragraph.
+	const wchar_t *para = (L"Ms. Matthews' case raises several "
+			       "interesting questions.  RGB color is cool.  "
+			       "We like several cheeses! T.");
+	Style para_style(baseStyle);
+	para_style.SetSize(14);
+	Style bold_italic_para_style(para_style);
+	bold_italic_para_style.SetFaceStyle(kBoldItalicFaceStyle);
+	StyleInformation styleInfo(para_style);
+	styleInfo.ChangeStyleAt(34, bold_italic_para_style);
+	styleInfo.ChangeStyleAt(45, para_style);
+	styleInfo.ChangeStyleAt(58,
+				Style(para_style).SetColor(Color(255, 0, 0)));
+	styleInfo.ChangeStyleAt(59,
+				Style(para_style).SetColor(Color(0, 255, 0)));
+	styleInfo.ChangeStyleAt(60,
+				Style(para_style).SetColor(Color(0, 0, 255)));
+	styleInfo.ChangeStyleAt(61, para_style);
+	styleInfo.ChangeStyleAt(wcslen(para)-1,
+				Style(para_style).SetColor(Color(255, 0, 0)));
+	styleInfo.EndStyleAt(wcslen(para));
+	show_with_style_info(para, styleInfo, Point(10, 300), 360,
+			     kLeftJustification);
 
 	wchar_t symbols[5];
 	symbols[0] = 0x2206;
