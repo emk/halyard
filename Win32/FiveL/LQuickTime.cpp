@@ -210,7 +210,7 @@ void LQuickTime::Kill(void)
 	if (mSync)
 	{
 		mSync = false;
-		gCardManager.WakeUp();
+		TInterpreter::GetInstance()->WakeUp();
 	}
 
 	if (not Playing())
@@ -252,7 +252,7 @@ void LQuickTime::Cleanup(void)
 	mWaitOffset = 0;
 
 //	if (mSync)
-//		gCardManager.WakeUp();
+//		TInterpreter::GetInstance()->WakeUp();
 
 	mSync = false;
 	mNapTime = 0;
@@ -452,7 +452,7 @@ LQTError LQuickTime::DoPreroll(TString &inMoviePath, bool inAudioOnly, bool inFi
 					if (mSync)
 					{
 						mSync = false;
-						gCardManager.WakeUp();
+						TInterpreter::GetInstance()->WakeUp();
 					}
 
 					return (LQT_PreloadError);
@@ -508,7 +508,7 @@ LQTError LQuickTime::Preroll(TString &inMoviePath, bool inAudioOnly, int32 inTen
 	{
 		mSync = true;
 
-		gCardManager.Pause();
+		TInterpreter::GetInstance()->Pause();
 	}
 
 	if (inTenths > 0)
@@ -878,7 +878,7 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 			if (mSync)
 			{
 				mSync = false;
-				gCardManager.WakeUp();
+				TInterpreter::GetInstance()->WakeUp();
 			}
 
 			mPrerollError = LQT_NoFile;
@@ -907,7 +907,7 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 				if (mSync)
 				{
 					mSync = false;
-					gCardManager.WakeUp();
+					TInterpreter::GetInstance()->WakeUp();
 				}
 
 				return;
@@ -949,7 +949,7 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 					if (mSync)
 					{
 						mSync = false;
-						gCardManager.WakeUp();
+						TInterpreter::GetInstance()->WakeUp();
 					}
 
 					return;
@@ -1050,7 +1050,7 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 			// wake up the card manager
 			mSync = false;
 			gDebugLog.Log("QuickTime: DoLoadStep, done loading, resume card execution");
-			gCardManager.WakeUp();
+			TInterpreter::GetInstance()->WakeUp();
 		}
 
 		// see if we need to set a nap now
@@ -1070,7 +1070,7 @@ void LQuickTime::DoLoadStep(bool inFinish /* = false */)
 						tenths);
 					gCursorManager.CheckCursor();
 					gView->Draw();
-					gCardManager.Nap(tenths);
+					TInterpreter::GetInstance()->Nap(tenths);
 				}
 			}
 		}
@@ -1123,6 +1123,15 @@ bool LQuickTime::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.4.6.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.4  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

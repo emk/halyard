@@ -237,8 +237,22 @@ class HeaderManager : public TIndexManager
 
 #endif // _Header_h_
 
+//////////
+// Global Header Manager
+//
+extern HeaderManager gHeaderManager;
+
 /*
  $Log$
+ Revision 1.5.2.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.5  2002/05/29 13:58:17  emk
  3.3.4 - Fixed various crash-on-exit problems (including those in TBTree,
  TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code

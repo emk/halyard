@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -25,6 +26,7 @@
 
 #include "TDeveloperPrefs.h"
 #include "Card.h"
+#include "Macro.h"
 #include "LUtil.h"
 #include "LDiskUtils.h"
 #include "Globals.h"
@@ -34,9 +36,12 @@
 #include "LHttp.h"
 #include "FileSystem.h"
 #include "TStyleSheet.h"
+#include "TWin5LInterpreter.h"
 
 using FileSystem::GetDataFilePath;
 using FileSystem::Path;
+
+CardManager gCardManager;
 
 //  Card - Constructor. Cards have a default origin of (0, 0)
 //
@@ -706,16 +711,16 @@ void Card::DoButtpcx()
 
 	gStyleSheetManager.DoText(HeaderName, bounds1, Text, gView);
 
+	// Build our callback.
+	TCallback *callback;
 	if (not setvar.IsEmpty())
-    {       		//If there's a second command...
-        z = new LTouchZone(bounds, theCommand, cursor, thePicture, 
-			buttLoc, (const char *) Text, HeaderName, setvar);
-    }
-    else  
-    {             	//No second command included...
-        z = new LTouchZone(bounds, theCommand, cursor, thePicture, 
-			buttLoc, (const char *) Text, HeaderName);
-    }
+		callback = new TWin5LTouchZoneCallback(setvar, theCommand);
+	else
+		callback = new TWin5LTouchZoneCallback(theCommand);
+
+	// Install our touchzone.
+	z = new LTouchZone(bounds, callback, cursor, thePicture, 
+					   buttLoc, (const char *) Text, HeaderName);
     gTouchZoneManager.Add(z);
     
 	gCursorManager.CheckCursor();
@@ -1181,7 +1186,15 @@ void Card::DoKeybind()
     else
     	theChar = keyEquiv(0);
   
-	gCommandKeyManager.AddCommandKey(theChar, theCard);
+	if (theCard)
+	{
+		TCallback *callback = new TWin5LCardCallback(theCard->Name());
+		gCommandKeyManager.AddCommandKey(theChar, callback);
+	}
+	else
+	{	
+		gCommandKeyManager.RemoveCommandKey(theChar);
+	}
 }
 
 /*--------------------------------------------------------------
@@ -2226,7 +2239,7 @@ void Card::DoTouch()
     char        ch_sep;
     TRect       bounds;
     TPoint      loc;
-    TString     theCommand, SecondCommand;
+    TString     theCommand, theSetCommand;
     TString     cmdText, scmdText;
     TString     picname;
     LPicture    *thePicture = 0, *hiPicture = 0;
@@ -2277,14 +2290,19 @@ void Card::DoTouch()
         ch_sep = m_Script.curchar();
         if (ch_sep == '(')  
         {
-            m_Script >> SecondCommand;
+            m_Script >> theSetCommand;
             scmdText = "(";
-            scmdText += SecondCommand;
+            scmdText += theSetCommand;
             scmdText += ")";
-            theZone = new LTouchZone(bounds, theCommand, cursor, thePicture, loc, scmdText);
+			
+			TCallback *callback =
+				new TWin5LTouchZoneCallback(scmdText, theCommand);
+            theZone = new LTouchZone(bounds, callback, cursor,
+									 thePicture, loc);
             gTouchZoneManager.Add(theZone);
             return;
         }
+
         m_Script >> picname;
         thePicture = gPictureManager.GetPicture(picname);
         picname += "H";
@@ -2298,7 +2316,8 @@ void Card::DoTouch()
 			loc = thePicture->GetOrigin();
     }
 
-    theZone = new LTouchZone(bounds, theCommand, cursor, thePicture, loc);
+	TCallback *callback = new TWin5LTouchZoneCallback(theCommand);
+    theZone = new LTouchZone(bounds, callback, cursor, thePicture, loc);
     gTouchZoneManager.Add(theZone);
     
     gCursorManager.CheckCursor();
@@ -2686,6 +2705,15 @@ void CardManager::MakeNewIndex(TIndexFile *inFile, const char *inName,
 
 /*
  $Log$
+ Revision 1.6.2.3  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.6.2.2  2002/06/05 08:50:52  emk
  A small detour - Moved responsibility for script, palette and data directories
  from Config.{h,cpp} to FileSystem.{h,cpp}.

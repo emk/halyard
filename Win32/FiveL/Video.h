@@ -19,11 +19,12 @@
 
 #include "TCommon.h"
 #include "TObject.h"
+#include "TArray.h"
 #include "TString.h"
 #include "TRect.h"
 #include "TPoint.h"
 
-#include "Card.h"
+#include "TInterpreter.h"
 #include "LQuickTime.h"
 //#include "LQuickTime2.h"
 
@@ -363,6 +364,15 @@ class VideoManager : public TObject
 
 /*
  $Log$
+ Revision 1.1.10.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -78,14 +78,14 @@ void Video::Idle(void)
 			if (m_QT.AtWaitPoint())
 			{
 				m_WakeCard = false;
-				gCardManager.WakeUp();
+				TInterpreter::GetInstance()->WakeUp();
 			}
 		}
 	}
 	else if (m_WakeCard)
 	{
 		m_WakeCard = false;
-		gCardManager.WakeUp();
+		TInterpreter::GetInstance()->WakeUp();
 	}
 }
 
@@ -104,7 +104,7 @@ void Video::Wait(int32 inWaitFrame)
 	m_WakeCard = true;	
 	m_QT.SetWaitPoint(inWaitFrame);
 
-	gCardManager.Pause();
+	TInterpreter::GetInstance()->Pause();
 } 				
 	
 //
@@ -235,7 +235,7 @@ void Video::Kill(void)
  
   	if (m_WakeCard)
   	{
-  		gCardManager.WakeUp();
+  		TInterpreter::GetInstance()->WakeUp();
   		m_WakeCard = false;
   	}
  	
@@ -696,6 +696,15 @@ bool VideoManager::HandleEvent(HWND inWind, UINT inMessage,
 
 /*
  $Log$
+ Revision 1.3.6.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.3  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

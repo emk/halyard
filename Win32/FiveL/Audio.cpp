@@ -343,7 +343,7 @@ void AudioManager::Idle(void)
 					gDebugLog.Log("AudioManager: Idle - normal end of wait clip, wake card");
 
 					// this is the clip we are waiting on
-					gCardManager.WakeUp();
+					TInterpreter::GetInstance()->WakeUp();
 					
 					m_WaitClip = NULL;
 					m_WaitTime = 0;
@@ -363,7 +363,7 @@ void AudioManager::Idle(void)
 		if (m_WaitClip->AtWaitPoint())
 		{
 			gDebugLog.Log("AudioManager: Idle - at wait frame, wake card");
-			gCardManager.WakeUp();
+			TInterpreter::GetInstance()->WakeUp();
 			
 			m_WaitClip = NULL;
 			m_WaitTime = 0;
@@ -535,7 +535,7 @@ void AudioManager::Kill(int32 inFadeTime, bool inLoops)
 	if (m_WaitClip != NULL)
 	{
 		gDebugLog.Log("AudioManager: Kill - wake card");
-		gCardManager.WakeUp();
+		TInterpreter::GetInstance()->WakeUp();
 		
 		m_WaitClip = NULL;
 		m_WaitTime = 0;
@@ -618,7 +618,7 @@ void AudioManager::Wait(int32 inWaitFrame)
 		gDebugLog.Log("AudioManager: Wait for frame <%ld>", inWaitFrame);
 
 		m_WaitClip->Wait(inWaitFrame);
-		gCardManager.Pause();
+		TInterpreter::GetInstance()->Pause();
 	}
 }
 
@@ -794,6 +794,15 @@ bool AudioManager::HandleEvent(HWND /*inWind*/, UINT /*inMessage*/,
 
 /*
  $Log$
+ Revision 1.3.6.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.3  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -33,11 +34,12 @@
 //  Initialize the touch zone. If no location point is given, use
 //  the picture's.
 //
-LTouchZone::LTouchZone(TRect &r, TString &cmd, CursorType inCursor, 
+// used for touchzone
+LTouchZone::LTouchZone(TRect &r, TCallback *callback, CursorType inCursor, 
 					   LPicture *pict, TPoint &loc) : TObject()
 {
     itsBounds = r;
-    itsCommand = cmd;
+    itsCallback = callback;
     itsPict = pict;
  	cursor = inCursor;
 
@@ -48,28 +50,12 @@ LTouchZone::LTouchZone(TRect &r, TString &cmd, CursorType inCursor,
 }
 
 // used for buttpcx
-LTouchZone::LTouchZone(TRect &r, TString &cmd, CursorType inCursor, 
-					   LPicture *pict, TPoint &loc, const char *text) : TObject()
-{
-    itsBounds = r;
-    itsCommand = cmd;
-    itsPict = pict;
-	itsText = text;
-	cursor = inCursor;
- 
-    if ((loc.X() == 0) and (loc.Y() == 0) and (pict != NULL))
-		itsPictLoc = pict->GetOrigin();
-    else
-        itsPictLoc = loc;
-}
-
-// used for buttpcx
-LTouchZone::LTouchZone(TRect &r, TString &cmd, CursorType inCursor, 
+LTouchZone::LTouchZone(TRect &r, TCallback *callback, CursorType inCursor, 
 					   LPicture *pict, TPoint &loc, const char *text, 
 					   TString &header) : TObject()
 {
     itsBounds = r;
-    itsCommand = cmd;
+    itsCallback = callback;
     itsPict = pict;
     itsText = text;
     headerText = header;
@@ -80,39 +66,10 @@ LTouchZone::LTouchZone(TRect &r, TString &cmd, CursorType inCursor,
     else
         itsPictLoc = loc;
 }
-
-// used for buttpcx
-LTouchZone::LTouchZone(TRect &r, TString &cmd, CursorType inCursor, 
-					   LPicture *pict, TPoint &loc, const char *text, TString &header, 
-					   TString &secCmd) : TObject()
-{
-    itsBounds = r;
-    itsCommand = cmd;
-    itsPict = pict;
-    itsText = text;
-    headerText = header;
-    secondCommand = secCmd;
-	cursor = inCursor;
-
-    if ((loc.X() == 0) and (loc.Y() == 0) and (pict != NULL))
-		itsPictLoc = pict->GetOrigin();
-    else
-        itsPictLoc = loc;
-}
-
-LTouchZone::LTouchZone(TRect &r, TString &cmd, CursorType inCursor, 
-					   LPicture *pict, TPoint &loc, TString &secCmd) : TObject()
-{
-    itsBounds = r;
-    itsCommand = cmd;
-    itsPict = NULL;
-    secondCommand = secCmd;
-	cursor = inCursor;
-}
-
 
 LTouchZone::~LTouchZone()
 {
+	delete itsCallback;
 }    
 
 char LTouchZone::FirstChar()
@@ -123,18 +80,18 @@ char LTouchZone::FirstChar()
 }
 
 /***********************************************************************
- * Function: LTouchZone::DoCommand
+ * Function: LTouchZone::DoCallback
  *
  *  Parameter (null)
  * Return:
  *
  * Comments:
- *  Execute the touch zone's single or double command.
+ *  Execute the touch zone's callback.
  *  Hilite the associated picture if there is one, and same with TEXT, if any.
  *  Hilite picture always matted and always drawn directly to
  *  the screen.
  ***********************************************************************/
-void LTouchZone::DoCommand()
+void LTouchZone::DoCallback()
 {
     TString     header;
     TString     temp;
@@ -176,16 +133,8 @@ void LTouchZone::DoCommand()
         	itsPict->Hilite(itsPictLoc, true); 
     }
 
-    if (not secondCommand.IsEmpty())
-    {
-		gDebugLog.Log("TouchZone hit: second command <%s>", secondCommand.GetString());
-    	gCardManager.OneCommand(secondCommand);
-    }
-    
-	gDebugLog.Log("TouchZone hit: command <%s>", itsCommand.GetString());
-    gCardManager.OneCommand(itsCommand);
-    
-    gView->Draw();		// the command executed might have changed something
+	itsCallback->Run();	// run the callback
+    gView->Draw();		// the callback executed might have changed something
 }
 
 //
@@ -297,6 +246,15 @@ LTouchZone *LTouchZoneManager::GetTouchZone(WPARAM wParam)
 
 /*
  $Log$
+ Revision 1.4.6.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.4  2002/05/15 11:05:33  emk
  3.3.3 - Merged in changes from FiveL_3_3_2_emk_typography_merge branch.
  Synopsis: The Common code is now up to 20Kloc, anti-aliased typography

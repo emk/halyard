@@ -111,7 +111,7 @@ void InputManager::Start(TString &inVariable, TString &inStyle,
 	    
     m_InInput = true;   
     
-   	gCardManager.Pause();
+	TInterpreter::GetInstance()->Pause();
 }
 
 //
@@ -162,7 +162,7 @@ void InputManager::KeyDown(char inKey)
 
 			// done with input
 			gVariableManager.SetString(m_Variable.GetString(), m_Buffer);
-			gCardManager.WakeUp();
+			TInterpreter::GetInstance()->WakeUp();
 			gView->DirtyRect(&m_Bounds);
 			gHeaderManager.DoText(m_Style.GetString(), m_Bounds, m_Buffer, 0, 0);
 			gView->Draw();
@@ -295,6 +295,15 @@ bool InputManager::IsLegalInputChar(char inKey)
 
 /*
  $Log$
+ Revision 1.2.8.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.2  2002/02/19 12:35:12  tvw
  Bugs #494 and #495 are addressed in this update.
 

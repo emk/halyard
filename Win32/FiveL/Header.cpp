@@ -24,6 +24,8 @@
 #include "Globals.h"
 #include "TEncoding.h"
 
+HeaderManager gHeaderManager;
+
 static const char *INCR_Y_NAME = "_incr_y";
 static const char *INCR_X_NAME = "_incr_x";
 
@@ -712,6 +714,15 @@ int HeaderManager::Height(const char* header)
 
 /*
  $Log$
+ Revision 1.6.2.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.6  2002/05/29 13:58:17  emk
  3.3.4 - Fixed various crash-on-exit problems (including those in TBTree,
  TIndex and TLogger::FatalError), and reverted the Win32 _INCR_Y code

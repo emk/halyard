@@ -1,3 +1,4 @@
+// -*- Mode: C++; tab-width: 4; -*-
 //////////////////////////////////////////////////////////////////////////////
 //
 //   (c) Copyright 1999, Trustees of Dartmouth College, All rights reserved.
@@ -17,6 +18,7 @@
 #include "TRect.h"
 #include "TPoint.h"
 #include "TString.h"
+#include "TInterpreter.h"
 #include "LPicture.h"
 #include "LCursor.h"
 
@@ -25,8 +27,8 @@
 CLASS
     LTouchZone
 
-	Represents a mouseable touch zone, which fires off a command
-	(or two) when the touch zone is activated.  Touch zones are rectangular
+	Represents a mouseable touch zone, which fires off a callback when
+	the touch zone is activated.  Touch zones are rectangular
 	and contain an LPicture and optionally text within the touch zone region.
 
 AUTHOR
@@ -37,68 +39,35 @@ class LTouchZone : public TObject
 {
     public:
         //////////
-		// Constructor.  Initialize the touch zone. 
+		// Touchzone constructor.  Initialize the touch zone. 
 		//
 		// [in] r - rectangular region that is mouseable
-		// [in] cmd - 5L command to execute when the touch zone is selected
+		// [in] callback - callback to run when the touch zone is selected
+		// We assume ownership of this object, and delete it when we're done.
 		// [in] inCursor - CursorType for the cursor when over the touch zone
 		// [in] pict - an LPicture to be displayed for the touch zone
 		// [in] loc - top-left screen location where pict should be placed
 		//
-		LTouchZone(TRect &r, TString &cmd, CursorType inCursor, LPicture *pict, TPoint &loc);
+		LTouchZone(TRect &r, TCallback *callback, CursorType inCursor,
+				   LPicture *pict, TPoint &loc);
         
 		//////////
-		// Constructor.  Initialize the touch zone. 
+		// Buttpcx constructor.  Initialize the touch zone. 
 		//
 		// [in] r - rectangular region that is mouseable
-		// [in] cmd - 5L command to execute when the touch zone is selected
-		// [in] inCursor - CursorType for the cursor when over the touch zone
-		// [in] pict - an LPicture to be displayed for the touch zone
-		// [in] loc - top-left screen location where pict should be placed
-		// [in] text - text to draw in the touch zone
-		//
-		LTouchZone(TRect &r, TString &cmd, CursorType inCursor, LPicture *pict, TPoint &loc, const char *text);
-        
-		//////////
-		// Constructor.  Initialize the touch zone. 
-		//
-		// [in] r - rectangular region that is mouseable
-		// [in] cmd - 5L command to execute when the touch zone is selected
-		// [in] inCursor - CursorType for the cursor when over the touch zone
-		// [in] pict - an LPicture to be displayed for the touch zone
-		// [in] loc - top-left screen location where pict should be placed
-		// [in] SecondCmd - a second command executed after cmd
-		//
-		LTouchZone(TRect &r, TString &cmd, CursorType inCursor, LPicture *pict, TPoint &loc, TString &SecondCmd);
-        
-		//////////
-		// Constructor.  Initialize the touch zone. 
-		//
-		// [in] r - rectangular region that is mouseable
-		// [in] cmd - 5L command to execute when the touch zone is selected
+		// [in] callback - callback to run when the touch zone is selected
+		// We assume ownership of this object, and delete it when we're done.
 		// [in] inCursor - CursorType for the cursor when over the touch zone
 		// [in] pict - an LPicture to be displayed for the touch zone
 		// [in] loc - top-left screen location where pict should be placed
 		// [in] text - text to draw in the touch zone
 		// [in] header - header to use to draw text
 		//
-		LTouchZone(TRect &r, TString &cmd, CursorType inCursor, LPicture *pict, TPoint &loc, const char *text, TString &header);
+		LTouchZone(TRect &r, TCallback *callback, CursorType inCursor,
+				   LPicture *pict, TPoint &loc,
+				   const char *text, TString &header);
         
-		//////////
-		// Constructor.  Initialize the touch zone. 
-		//
-		// [in] r - rectangular region that is mouseable
-		// [in] cmd - 5L command to execute when the touch zone is selected
-		// [in] inCursor - CursorType for the cursor when over the touch zone
-		// [in] pict - an LPicture to be displayed for the touch zone
-		// [in] loc - top-left screen location where pict should be placed
-		// [in] text - text to draw in the touch zone
-		// [in] header - header to use to draw text
-		// [in] secCmd - a second command executed after cmd
-		//
-		LTouchZone(TRect &r, TString &cmd, CursorType inCursor, LPicture *pict, TPoint &loc, const char *text, TString &header, TString &secCmd);
-        
-		//////////
+	    //////////
 		// Destructor.
 		//
 		virtual ~LTouchZone();
@@ -113,12 +82,14 @@ class LTouchZone : public TObject
 		int			Hit(TPoint &where) { return itsBounds.Contains(where); }
         
 		//////////
-		// Execute the touch zone's single or double command.
-		// Highlight the associated picture if there is one, and same with TEXT, 
-		// if any.<br>
-		// Note: Highlighted picture drawn directly to screen (not offscreen buf)
+		// Execute the touch zone's callback.
+		// Highlight the associated picture if there is one, and same with
+		// TEXT, if any.
 		//
-		void		DoCommand();
+		// Note: Highlighted picture drawn directly to screen (not offscreen
+		// buffer).
+		//
+		void		DoCallback();
         
 		//////////
 		// Get the associated picture.
@@ -149,7 +120,7 @@ class LTouchZone : public TObject
 		bool		HasText() { return (not itsText.IsEmpty()); }
 		
 		//////////
-		// Get the CursorType to be displayed when mousing over this touch zone. 
+		// Get the CursorType to be displayed when mousing over this touchzone 
 		//
 		// [out] return - the CursorType displayed on mouse over
 		//
@@ -174,9 +145,9 @@ class LTouchZone : public TObject
 		LPicture    *itsPict;
         
 		//////////
-		// Command associated with the touchzone.
+		// Callback associated with the touchzone.
 		//
-		TString     itsCommand;
+		TCallback	*itsCallback;
         
 		//////////
 		// Top-Left corner of picture location.
@@ -191,13 +162,8 @@ class LTouchZone : public TObject
 		//////////
 		// Header used for the text.
 		//
-		TString     headerText;     //
+		TString     headerText;
         
-		//////////
-		// Second command associated with the touchzone (if any).
-		//
-		TString     secondCommand;  //for second command support.
-		
 		//////////
 		// Cursor displayed when over the touchzone.
 		//
@@ -272,6 +238,15 @@ class LTouchZoneManager : public TArray
 
 /*
  $Log$
+ Revision 1.1.10.1  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.1  2001/09/24 15:11:01  tvw
  FiveL v3.00 Build 10
 

@@ -25,7 +25,6 @@
 #include "LUtil.h"
 #include "TIndex.h"
 #include "Header.h"
-#include "Macro.h"
 #include "Graphics.h"
 #include "TVariable.h"
 #include "Video.h"
@@ -48,6 +47,7 @@
 #include "SingleInstance.h"
 #include "TParser.h"
 #include "TStyleSheet.h"
+#include "TWin5LInterpreter.h"
 
 #if defined USE_BUNDLE
 	#include "LFileBundle.h"
@@ -85,10 +85,8 @@ TRect				gScreenRect;	// our virtual screen rect (in screen coordinates)
 int					gHorizRes;
 int					gVertRes;
 
+TWin5LInterpreter   *gWin5LInterpreter;
 View				*gView = NULL;
-CardManager         gCardManager;
-MacroManager        gMacroManager;
-HeaderManager       gHeaderManager;
 LTouchZoneManager	gTouchZoneManager;     
 SysInfo				gSysInfo; 
 LCursorManager		gCursorManager; 
@@ -177,12 +175,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if (not CheckSystem())
 		return (false);	
 
-	// Register our top-level forms.
-	TParser::RegisterIndexManager("card", &gCardManager);
-	TParser::RegisterIndexManager("macrodef", &gMacroManager);
-	TParser::RegisterIndexManager("header", &gHeaderManager);
-	TParser::RegisterIndexManager("defstyle", &gStyleSheetManager);
-
 	// Register our platform-specific special variables.
 	gVariableManager.RegisterSpecialVariable("_system",
 		&ReadSpecialVariable_system);
@@ -211,6 +203,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	gView->BlackScreen();
 
+	// Initialize the interpreter.
+	gWin5LInterpreter = new TWin5LInterpreter();
+
 	// read in the script 
 	if (not gIndexFileManager.NewIndex(gConfigManager.CurScript()))
 	{
@@ -229,7 +224,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	gDebugLog.Log("Resolution: %d x %d", gHorizRes, gVertRes);
 
 	// jump to the start card
-	gCardManager.JumpToCardByName("start"); 
+	TInterpreter::GetInstance()->JumpToCardByName("start"); 
             
 	// start our idle loop timer
 	StartTimer();
@@ -680,7 +675,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if (gInFront)
 				{
-					gCardManager.Idle();
+					TInterpreter::GetInstance()->Idle();
 					gVideoManager.Idle();
 					gAudioManager.Idle();
 				}
@@ -703,10 +698,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				// on our initial login screens.)
 				gInputManager.KeyDown(VK_RETURN);
 			}
-            else if (not gCardManager.Napping())
+            else if (not TInterpreter::GetInstance()->Napping())
             {  
                 if (theZone = gTouchZoneManager.GetTouchZone(cursorPos))  
-					theZone->DoCommand();
+					theZone->DoCallback();
             }
             break;   
         
@@ -715,10 +710,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         	if ((char) wParam == '.')
         	{
 				gDebugLog.Log("Hit Alt-period");
-	        	if (gCardManager.Napping())
+	        	if (TInterpreter::GetInstance()->Napping())
 				{
 					gDebugLog.Log("Escape from Nap");
-					gCardManager.KillNap();
+					TInterpreter::GetInstance()->KillNap();
 				}
 				if (gVideoManager.Playing())
 				{
@@ -744,12 +739,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     if (gAudioManager.Playing())
                     	gAudioManager.Kill(0, false); 
                     	
-                    gCardManager.JumpToCard(theKey->GetCard());
+                    theKey->GetCallback()->Run();
             	}
             	// q - quit
             	else if ((char) wParam == 'q')	
                 { 
-                	gCardManager.Pause();		// no more command execution
+                	TInterpreter::GetInstance()->Pause();		// no more command execution
                 	
 		            ::PostQuitMessage(0);
                 }
@@ -795,14 +790,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     if (gAudioManager.Playing())
                     	gAudioManager.Kill(0, false); 
                     	
-                    gCardManager.JumpToCard(theKey->GetCard());
+                    theKey->GetCallback()->Run();
                 }
                 else 	// do normal escape key actions
                 {
-        			if (gCardManager.Napping())
+        			if (TInterpreter::GetInstance()->Napping())
 					{
 						gDebugLog.Log("Escape from Nap");
-						gCardManager.KillNap();
+						TInterpreter::GetInstance()->KillNap();
 					}
 					if (gVideoManager.Playing())
 					{
@@ -826,7 +821,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	        	theZone = gTouchZoneManager.GetTouchZone(wParam);
 	                  
 	            if (theZone != NULL)
-					theZone->DoCommand(); 
+					theZone->DoCallback(); 
 			}
             break;
 
@@ -856,7 +851,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
    // cbo_test - try to improve performance
 	if (gInFront)
 	{
-		//gCardManager.Idle();
+		//TInterpreter::GetInstance()->Idle();
 		gVideoManager.Idle();
 		gAudioManager.Idle();
 	}
@@ -913,7 +908,7 @@ LRESULT CALLBACK ChildWndProc (HWND hwnd, UINT message, UINT wParam, LPARAM lPar
 //
 //	CleanUp - Clean everything up.
 //
-void CleanUp(void)
+void CleanUp(bool inWillExit)
 {
 	gDebugLog.Log("CleanUp: tossing everything"); 
 	DumpStats();
@@ -923,19 +918,21 @@ void CleanUp(void)
 			
 	//if (gAudioManager.Playing())
 		gAudioManager.Kill(0, true);
-			
-	gCardManager.Pause();		
-	gCardManager.RemoveAll();
-	gMacroManager.RemoveAll();
-	gHeaderManager.RemoveAll();
-	gStyleSheetManager.RemoveAll();
+
+	// Shut down our interpreter.
+	// TODO - This conditional smells funny.  Refactor it.
+	if (inWillExit)
+		delete gWin5LInterpreter;
+	else
+		gWin5LInterpreter->CleanupIndexes();
+
+	// Clean up our other resources.
 	gVariableManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
 	gCommandKeyManager.RemoveAll();	
 	gPictureManager.RemoveAll();
 	gPaletteManager.RemoveAll();
 	gFontManager.RemoveAll();
-	gIndexFileManager.RemoveAll();
 	
 	DumpStats();
 }
@@ -948,7 +945,7 @@ void ShutDown(bool Toss /* = true */)
 	gDebugLog.Log("ShutDown");
 
 	if (Toss)
-		CleanUp(); 
+		CleanUp(true); 
 	
     gView->BlackScreen();
         
@@ -1032,13 +1029,9 @@ void ReDoScript(TString &inCardName)
 	if (gAudioManager.Playing())
 		gAudioManager.Kill();
 
-	gCardManager.Pause();
-	gCardManager.RemoveAll();
-	gMacroManager.RemoveAll();
-	gHeaderManager.RemoveAll();
-	gStyleSheetManager.RemoveAll();
 	gTouchZoneManager.RemoveAll();
-	gIndexFileManager.RemoveAll();
+
+	gWin5LInterpreter->CleanupIndexes();
 
 	// NOTE - if we implement loadscript then we will have to open up
 	//	all files here that were open before
@@ -1046,10 +1039,10 @@ void ReDoScript(TString &inCardName)
 	// now try to open up the same script file
 	if (gIndexFileManager.NewIndex(gConfigManager.CurScript()))
 	{
-		// Fix Key bindings
-		gCommandKeyManager.RebuildKeyBindings();
+		// (We don't need to rebuild our key bindings any more because
+		// they now remain valid across a reload.)
 
-		gCardManager.JumpToCardByName(inCardName.GetString());
+		gWin5LInterpreter->JumpToCardByName(inCardName.GetString());
 	}
 	else
 		ShutDown(false);
@@ -1077,7 +1070,7 @@ void SwitchScripts(int32 inScript)
 
 		gCursorManager.ChangeCursor(NO_CURSOR);
 		
-		CleanUp();
+		CleanUp(false);
 		
 		gDebugLog.Log("SwitchScript: start script <%s>", gConfigManager.CurScript());
 
@@ -1097,7 +1090,7 @@ void SwitchScripts(int32 inScript)
 
 		// now try to start the new script
 		if (gIndexFileManager.NewIndex(gConfigManager.CurScript()))
-			gCardManager.JumpToCardByName("start"); 
+			TInterpreter::GetInstance()->JumpToCardByName("start"); 
 		else
     		ShutDown(true);
 	}
@@ -1200,12 +1193,12 @@ static TString ReadSpecialVariable_system()
 
 static TString ReadSpecialVariable_curcard()
 {
-	return gCardManager.CurCardName();
+	return TInterpreter::GetInstance()->CurCardName();
 }
 
 static TString ReadSpecialVariable_prevcard()
 {
-	return gCardManager.PrevCardName();
+	return TInterpreter::GetInstance()->PrevCardName();
 }
 
 static TString ReadSpecialVariable_eof()
@@ -1226,6 +1219,15 @@ static TString ReadSpecialVariable_eof()
 
 /*
  $Log$
+ Revision 1.6.6.3  2002/06/06 05:47:30  emk
+ 3.3.4.1 - Began refactoring the Win5L interpreter to live behind an
+ abstract interface.
+
+   * Strictly limited the files which include Card.h and Macro.h.
+   * Added TWin5LInterpreter class.
+   * Made as much code as possible use the TInterpreter interface.
+   * Fixed a few miscellaneous build warnings.
+
  Revision 1.6.6.2  2002/06/05 08:50:52  emk
  A small detour - Moved responsibility for script, palette and data directories
  from Config.{h,cpp} to FileSystem.{h,cpp}.
