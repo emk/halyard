@@ -2,6 +2,11 @@ FiveL for Win32 Release Notes
 
 3.2.3, Unreleased
 
+    *** DO NOT MAKE NEW RELEASE BINARIES WITHOUT TALKING TO ERIC.  The
+	version numbering system is changing so that the Mac and Windows
+	engines will have the same version number.  You can check in
+	code like usual, of course.  Thank you. ***
+
 	(1) Added new option to 5L.prefs to optionally allow multiple
 	instances of 5L to run.
 
@@ -16,6 +21,8 @@ FiveL for Win32 Release Notes
     (4) Added support for smart quotes, m-dashes, ellipses and HTML entities.
 	Everywhere that '\&' appears in a script, it needs to be replaced with
 	'\&amp;'.
+
+    (5) Ongoing work on native typography using FreeType 2.
 
 3.2.2, Wednesday, February 27, 2002, 1:12 PM
 

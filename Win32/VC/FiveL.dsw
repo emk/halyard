@@ -11,6 +11,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name freetype
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -82,6 +85,18 @@ Package=<4>
 ###############################################################################
 
 Project: "ImlUnit"=.\ImlUnit\ImlUnit.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "freetype"=..\..\Common\freetype2\builds\win32\visualc\freetype.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
