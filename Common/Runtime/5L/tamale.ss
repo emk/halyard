@@ -99,7 +99,7 @@
                 :action action)))
   
   (define (set-zone-cursor! elem-or-name cursor)
-    (call-5l-prim 'SetZoneCursor (find-element-full-name elem-or-name) cursor))
+    (call-5l-prim 'SetZoneCursor (elem-or-name-hack elem-or-name) cursor))
 
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
     (let [[path (make-path "Graphics" (cat "cursors/" filename))]]
@@ -119,11 +119,11 @@
       (point (car lst) (cadr lst))))
 
   (define (delete-element elem-or-name name)
-    (delete-elements (list (find-element-full-name elem-or-name))))
+    (delete-elements (list (elem-or-name-hack elem-or-name))))
   
   (define (delete-elements &opt (elems-or-names '()))
     (apply call-5l-prim 'deleteelements
-           (map find-element-full-name elems-or-names)))
+           (map elem-or-name-hack elems-or-names)))
 
   (define (grab-mouse elem)
     (assert (instance-of? elem <element>))
@@ -265,19 +265,19 @@
   ;; Note: these functions may not be happy if the underlying movie code
   ;; doesn't like to be paused.
   (define (movie-pause elem-or-name)
-    (call-5l-prim 'moviepause (find-element-full-name elem-or-name)))
+    (call-5l-prim 'moviepause (elem-or-name-hack elem-or-name)))
 
   (define (movie-resume elem-or-name)
-    (call-5l-prim 'movieresume (find-element-full-name elem-or-name)))
+    (call-5l-prim 'movieresume (elem-or-name-hack elem-or-name)))
   
   (define (set-media-volume! elem-or-name channel volume)
-    (call-5l-prim 'MediaSetVolume (find-element-full-name elem-or-name)
+    (call-5l-prim 'MediaSetVolume (elem-or-name-hack elem-or-name)
                   channel volume))
 
   (define (wait elem-or-name &key frame)
     (if frame
-        (call-5l-prim 'wait (find-element-full-name elem-or-name) frame)
-        (call-5l-prim 'wait (find-element-full-name elem-or-name))))
+        (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame)
+        (call-5l-prim 'wait (elem-or-name-hack elem-or-name))))
   
   (define (tc arg1 &opt arg2 arg3)
     (cond

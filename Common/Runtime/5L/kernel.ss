@@ -1008,7 +1008,7 @@
   ;;  contains <card>s and <card-groups>.  <card>s contain <element>s.
 
   (provide <node> node? node-name node-full-name node-parent find-node @
-           find-element-full-name)
+           elem-or-name-hack)
 
   (defclass <node> (<template>)
     name
@@ -1080,12 +1080,17 @@
       [(@ name)
        (@-helper 'name)]))
 
-  (define (find-element-full-name node-or-sym)
+  (define (elem-or-name-hack elem-or-name)
     ;; Backwards compatibility glue for code which refers to elements
     ;; by name.  Used by functions such as WAIT.
-    (node-full-name (if (node? node-or-sym)
-                        node-or-sym
-                        (find-node-relative (current-card) node-or-sym))))
+    (assert (or (instance-of? elem-or-name <element>)
+                (instance-of? elem-or-name <symbol>)))
+    (node-full-name (if (element? elem-or-name)
+                        elem-or-name
+                        (begin
+                          (debug-caution (cat "Change '" elem-or-name
+                                              " to (@ " elem-or-name ")"))
+                          (find-node-relative (current-card) elem-or-name)))))
 
   (define (analyze-node-name name)
     ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
