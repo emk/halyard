@@ -55,6 +55,9 @@ TCOMMON MACRO DEFINITIONS
 	#define Min(x, y)   ((x) < (y) ? (x) : (y))<br>
 	#define Absolute(x) (((x) > 0)? (x): ((x) * -1))<br>
 
+	#define TESTABLE_PRIVATE   private
+	#define TESTABLE_PROTECTED protected
+
 AUTHOR
     Chuck Officer<br>
 
@@ -94,6 +97,16 @@ AUTHOR
 #define Min(x, y)   ((x) < (y) ? (x) : (y))
 #define Absolute(x) (((x) > 0)? (x): ((x) * -1))
 
+// Allow our test suites to access some private and protected methods.
+// At the top of a test file, write '#define WANT_FIVEL_TEST_INTERFACES 1'.
+#ifdef WANT_FIVEL_TEST_INTERFACES
+#	define TESTABLE_PRIVATE    public
+#	define TESTABLE_PROTECTED  public
+#else
+#	define TESTABLE_PRIVATE    private
+#	define TESTABLE_PROTECTED  protected
+#endif
+
 BEGIN_NAMESPACE_FIVEL
 
 //////////
@@ -119,6 +132,9 @@ END_NAMESPACE_FIVEL
 
 /*
  $Log$
+ Revision 1.4  2002/03/08 13:33:41  emk
+ Support for testing private and protected class interfaces.
+
  Revision 1.3  2002/03/04 15:15:57  hamon
  Added support for compiler's namespaces. Namespaces are only enabled on macintosh.
 
