@@ -29,10 +29,12 @@
 USING_NAMESPACE_FIVEL
 
 Overlay::Overlay(Stage *inStage, const wxString &inName,
-		 const wxRect &inBounds, FIVEL_NS TCallbackPtr inDispatch,
-		 wxCursor &inCursor, bool inHasAlpha)
+                 const wxRect &inBounds, FIVEL_NS TCallbackPtr inDispatch,
+                 wxCursor &inCursor, bool inHasAlpha,
+                 bool inAreTransparentAreasClickable)
     : LightweightElement(inStage, inName, inDispatch, inCursor),
-      mDrawingArea(inStage, inBounds, inHasAlpha)
+      mDrawingArea(inStage, inBounds, inHasAlpha),
+      mAreTransparentAreasClickable(inAreTransparentAreasClickable)
 {
 }
 
@@ -46,8 +48,9 @@ bool Overlay::IsPointInElement(const wxPoint &inPoint) {
     if (!bounds.Inside(inPoint)) {
 		// Outside our bounding box.
 		return false; 
-	} else if (!mDrawingArea.HasAlpha()) {
-		// We're opaque, so we only need to check the bounding box.
+	} else if (!mDrawingArea.HasAlpha() || mAreTransparentAreasClickable) {
+		// We're either opaque or our transparent areas are clickable, so
+		// we only need to check the bounding box.
 		return true;
 	} else {
 		// We have an alpha channel.  We only consider points to be inside

@@ -33,11 +33,12 @@
 class Overlay : public LightweightElement
 {
 	DrawingArea mDrawingArea;
+    bool mAreTransparentAreasClickable;
 	
 public:
 	Overlay(Stage *inStage, const wxString &inName, const wxRect &inBounds,
 			FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor,
-			bool inHasAlpha);
+			bool inHasAlpha, bool inAreTransparentAreasClickable = false);
 
     virtual void Show(bool inShow);
 	virtual bool IsPointInElement(const wxPoint &inPoint);

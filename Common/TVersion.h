@@ -22,15 +22,30 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		33
+#define VERSION_REV_BIG		34
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.33 (Development)"
+#define VERSION_STRING		"Tamale 0.0.34 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.75  2004/09/07 18:36:22  emk
+ 0.0.34 - 07 Sep 2004 - emk
+
+   * More refactoring of DocNotebook in preparation for window splitting.
+   * Added qtcheck project.  This is a DLL for use with InnoSetup; it
+     allows installers to access the current QuickTime version, and the
+     version of any QuickTime components.
+   * The runtime now checks for different media locations automatically.
+   * Added debug-var.ss for debugging local variables.
+   * Fixed assertion failure in script editor.
+   * Fixed debug build of qtcheck.
+   * Added support for changing the font size in the script editor.
+   * Added a :CLICKABLE-WHERE-TRANSPARENT? parameter to overlays, which
+     makes them accept mouse-clicks even in completely transparent areas.
+
  Revision 1.74  2004/08/27 21:01:28  emk
  0.0.33 - 27 Aug 2004 - emk, madhura
 

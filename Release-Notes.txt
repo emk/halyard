@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.34 - 07 Sep 2004 - emk
 
   * More refactoring of DocNotebook in preparation for window splitting.
   * Added qtcheck project.  This is a DLL for use with InnoSetup; it
@@ -11,6 +11,8 @@ CVS - emk
   * Fixed assertion failure in script editor.
   * Fixed debug build of qtcheck.
   * Added support for changing the font size in the script editor.
+  * Added a :CLICKABLE-WHERE-TRANSPARENT? parameter to overlays, which
+    makes them accept mouse-clicks even in completely transparent areas.
 
 0.0.33 - 27 Aug 2004 - emk, madhura
 

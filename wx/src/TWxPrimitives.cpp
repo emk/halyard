@@ -686,13 +686,14 @@ DEFINE_5L_PRIMITIVE(Overlay) {
 	std::string name, cursor;
 	TRect bounds;
 	TCallbackPtr dispatcher;
-	bool is_trans;
+	bool is_trans, are_trans_areas_clickable;
 	
-	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor >> is_trans;
+	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor >> is_trans
+           >> are_trans_areas_clickable;
 	new Overlay(wxGetApp().GetStage(), name.c_str(), TToWxRect(bounds),
 				dispatcher,
 				wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor),
-				is_trans);
+				is_trans, are_trans_areas_clickable);
 }
 
 DEFINE_5L_PRIMITIVE(OverlayAnimated) {
