@@ -1,0 +1,10 @@
+.deps
+Makefile
+Makefile.in
+aclocal.m4
+autoscan.log
+config.cache
+config.log
+config.status
+configure
+TestAll
