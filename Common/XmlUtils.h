@@ -61,6 +61,9 @@ public:
 	string name();
 	string attribute(const char *inName);
 
+	// Get the contents of a text-only node.
+	string text();
+
 	// Get an "only child".  Raise an error if more than one child is
 	// present.
 	xml_node only_child();

@@ -72,9 +72,28 @@ void Change::FreeResources()
 
 
 //=========================================================================
-//  ValueDatum Implementation
+//  Datum Methods
 //=========================================================================
 
+Datum *Datum::CreateFromXML(xml_node inNode)
+{
+	std::string name  = inNode.name();
+	if (name == "int")
+		return new IntegerDatum(boost::lexical_cast<long>(inNode.text()));
+	else if (name == "str")
+		return new StringDatum(inNode.text());
+	else if (name == "map")
+		return new MapDatum();
+	else if (name == "list")
+		return new ListDatum();
+	else
+		THROW("Unsupported XML element type");
+}
+
+
+//=========================================================================
+//  ValueDatum Implementation
+//=========================================================================
 
 void IntegerDatum::Write(xml_node inParent)
 {
@@ -340,7 +359,10 @@ void MapDatum::Fill(xml_node inNode)
 		xml_node node = *i;
 		XML_CHECK_NAME(node, "item");
 		std::string key = node.attribute("key");
-		//xml_node value = node.only_child();
+		xml_node value_node = node.only_child();
+		Datum *value = CreateFromXML(value_node);
+		Set(key, value);
+		value->Fill(value_node);
 	}
 }
 
@@ -438,6 +460,18 @@ void ListDatum::Write(xml_node inParent)
 	DatumVector::iterator i = mVector.begin();
 	for (; i != mVector.end(); ++i)
 		(*i)->Write(node);
+}
+
+void ListDatum::Fill(xml_node inNode)
+{
+	xml_node::iterator i = inNode.begin();
+	for (; i != inNode.end(); ++i)
+	{
+		xml_node node = *i;
+		Datum *value = CreateFromXML(node);
+		Insert(mVector.size(), value);
+		value->Fill(node);
+	}
 }
 
 Datum *ListDatum::DoGet(ConstKeyType &inKey)

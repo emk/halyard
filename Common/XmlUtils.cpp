@@ -99,7 +99,25 @@ xml_node::string xml_node::attribute(const char *inName)
 {
 	xmlChar *attr = xmlGetProp(mNode, to_utf8(inName));
 	CHECK(attr, "Missing expected XML attribute");
-	return string(to_ascii(attr));
+	string result(to_ascii(attr));
+	xmlFree(attr);
+	return result;
+}
+
+xml_node::string xml_node::text()
+{
+	// Extract the text, expanding entities.
+	// TODO - Check for element content (which is ignored by
+	// xmlNodeListGetString at the moment).
+	xmlChar *text = xmlNodeListGetString(mNode->doc, mNode->children, 1);
+	if (text == NULL)
+		return "";
+	else
+	{
+		string result(to_ascii(text));
+		xmlFree(text);
+		return result;
+	}
 }
 
 xml_node xml_node::new_child(const char *inName)
@@ -109,7 +127,8 @@ xml_node xml_node::new_child(const char *inName)
 
 xml_node xml_node::new_child(const char *inName, const std::string &inData)
 {
-	return xmlNewChild(mNode, NULL, to_utf8(inName), to_utf8(inData.c_str()));
+	return xmlNewTextChild(mNode, NULL, to_utf8(inName),
+						   to_utf8(inData.c_str()));
 }
 
 void xml_node::set_attribute(const char *inName, const std::string &inValue)

@@ -120,6 +120,8 @@ namespace DataStore {
 	protected:
 		Datum(Type inType) : mType(inType) {}
 
+		static Datum *CreateFromXML(xml_node inNode);
+
 	public:
 		virtual ~Datum() {}
 
@@ -129,6 +131,11 @@ namespace DataStore {
 		// into a container, which will call RegisterWithStore.
 		//
 		virtual void RegisterWithStore(Store *inStore) {}
+
+		//////////
+		// Fill in any children of the datum using the specified XML node.
+		//
+		virtual void Fill(xml_node inNode) {}
 
 		//////////
 		// Write a Datum to the specified file.
@@ -331,6 +338,7 @@ namespace DataStore {
 		ListDatum() : CollectionDatum<size_t>(ListType) {}
 
 		virtual void Write(xml_node inParent);
+		void Fill(xml_node inNode);
 
 		template <class D>
 		void Insert(ConstKeyType &inKey, D *inValue)

@@ -205,6 +205,8 @@ void test_DataStore (void)
 	std::auto_ptr<Store> store2(Store::Read("store.xml"));
 	TEST(store2->CanUndo() == false);
 	TEST(store2->CanRedo() == false);
+
+	store2->Write("store2.xml");
 	//TEST(root->GetValue<IntegerDatum>("test int") == 10);
 	//TEST(root->GetValue<StringDatum>("test string") == "foo");
 }
