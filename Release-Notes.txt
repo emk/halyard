@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+3.4.2 - 28 Sep 2002 - emk
+
+  * Fixed bug where cursor was visible during movie playback.  This bug
+    was introduced when the movie controller patches were added.
+
 3.4.1 - 14 Aug 2002 - emk
 
 Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I

@@ -17,15 +17,18 @@
 
 #define VERSION_MAJOR_NUM	3
 #define VERSION_MINOR_NUM	4
-#define VERSION_REV_BIG		1
+#define VERSION_REV_BIG		2
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"5L 3.4.1"
+#define VERSION_STRING		"5L 3.4.2"
 #define SHORT_NAME			"5L"
 
 
 /*
  $Log$
+ Revision 1.30.2.2  2002/09/26 15:53:41  emk
+ 3.4.2 - Fix cursor display during movies.
+
  Revision 1.30.2.1  2002/08/14 20:24:49  emk
  Language bugfixes/enhancements/changes for HIV Prevention Counseling.  I
  removed some deeply-buried bugs in TStream and elsewhere, so please test
