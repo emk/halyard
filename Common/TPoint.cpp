@@ -16,7 +16,6 @@
 //
 
 #include "CommonHeaders.h"
-#include "THeader.h"
 #include "TPoint.h"
 
 USING_NAMESPACE_FIVEL
@@ -73,6 +72,24 @@ void TPoint::Offset(TPoint &inPt)
 
 /*
  $Log$
+ Revision 1.6  2004/02/09 19:53:28  emk
+ 0.0.16 - kwasi, djin, emk
+
+   * Cleaned up a whole bunch of legacy code that can be much simpler now
+     that we have TValue.
+   * Removed TObject, TArray and TBTree because they have overstayed their
+     welcome by about a decade.
+   * Cleaned up settyped.
+   * Added output operator for TValue containing TNull().
+   * Added input operator for extracting from a TArgumentList into
+     a TValue.
+   * Fixed TRect argument order (finally!).
+   * Deleted TString and TURL.
+   * Added TStateDB class.
+   * Added preliminary support for running Quake 2 in the background.
+   * Added support for showing and hiding elements in both Tamale and Quake 2.
+   * Deleted tons of old code which wasn't doing anything any more.
+
  Revision 1.5  2003/06/13 10:57:30  emk
  Further use of precompiled headers; pruning of various inappropriate
  includes.

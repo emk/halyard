@@ -9,14 +9,15 @@
 
 DrawingArea::DrawingArea(Stage *inStage, int inWidth, int inHeight,
 						 bool inHasAlpha)
-	: mStage(inStage), mBounds(wxPoint(0, 0), wxSize(inWidth, inHeight))
+	: mStage(inStage), mBounds(wxPoint(0, 0), wxSize(inWidth, inHeight)),
+      mIsShown(true)
 {
 	InitializePixmap(inHasAlpha);
 }
 
 DrawingArea::DrawingArea(Stage *inStage, const wxRect &inBounds,
 						 bool inHasAlpha)
-	: mStage(inStage), mBounds(inBounds)
+	: mStage(inStage), mBounds(inBounds), mIsShown(true)
 {
 	InitializePixmap(inHasAlpha);
 }
@@ -80,6 +81,15 @@ void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
 void DrawingArea::InvalidateDrawingArea(bool inHasPixmapChanged) {
     InvalidateRect(wxRect(0, 0, mBounds.GetWidth(), mBounds.GetHeight()),
                    0, inHasPixmapChanged);
+}
+
+void DrawingArea::Show(bool inShow) {
+    if (inShow != mIsShown) {
+        mIsShown = inShow;
+        if (mQuake2Overlay)
+            mQuake2Overlay->Show(inShow);
+        InvalidateDrawingArea(false);
+    }
 }
 
 void DrawingArea::MoveTo(const wxPoint &inPoint) {
@@ -233,7 +243,7 @@ GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
 }
 
 void DrawingArea::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
-	if (inClipRect.Intersects(mBounds)) {
+	if (mIsShown && inClipRect.Intersects(mBounds)) {
 		// Figure out how much of inClipRect actually applies to us.
 		wxRect clip(inClipRect);
 		clip.Intersect(mBounds);

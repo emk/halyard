@@ -16,6 +16,11 @@ Overlay::Overlay(Stage *inStage, const wxString &inName,
 {
 }
 
+void Overlay::Show(bool inShow) {
+    mDrawingArea.Show(inShow);
+    LightweightElement::Show(inShow);
+}
+
 bool Overlay::IsPointInElement(const wxPoint &inPoint) {
 	wxRect bounds = mDrawingArea.GetBounds();
     if (!bounds.Inside(inPoint)) {

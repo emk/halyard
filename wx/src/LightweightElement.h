@@ -20,11 +20,15 @@
 class LightweightElement : public Element {
     EventDispatcher *mDispatcher;
     wxCursor mCursor;
+    bool mIsShown;
 	
 public:
 	LightweightElement(Stage *inStage, const wxString &inName,
 					   FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor);
 	~LightweightElement();
+
+	virtual bool IsShown() { return mIsShown; }
+	virtual void Show(bool inShow);
 
 	virtual bool IsLightWeight() { return true; }
 

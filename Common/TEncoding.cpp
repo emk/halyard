@@ -20,7 +20,6 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "THeader.h"
 #include "TEncoding.h"
 #include "TUtilities.h"
 

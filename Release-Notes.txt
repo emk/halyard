@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - kwasi, djin
+0.0.16 - kwasi, djin, emk
 
   * Cleaned up a whole bunch of legacy code that can be much simpler now
     that we have TValue.
@@ -13,6 +13,9 @@ CVS - kwasi, djin
   * Fixed TRect argument order (finally!).
   * Deleted TString and TURL.
   * Added TStateDB class.
+  * Added preliminary support for running Quake 2 in the background.
+  * Added support for showing and hiding elements in both Tamale and Quake 2.
+  * Deleted tons of old code which wasn't doing anything any more.
 
 0.0.15 - 30 Jan 2004 - emk, kwasi, djin
 

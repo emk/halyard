@@ -11,6 +11,7 @@ class DrawingArea : public GraphicsTools::Image {
     Stage *mStage;
 	wxRect mBounds;
     wxBitmap mPixmap;
+    bool mIsShown;
     boost::shared_ptr<wxQuake2Overlay> mQuake2Overlay;
 
 	void InitializePixmap(bool inHasAlpha);
@@ -44,6 +45,11 @@ public:
     wxBitmap &GetPixmap() { return mPixmap; }
 	wxRect GetBounds() { return mBounds; }
 	bool HasAlpha() { return mPixmap.HasAlpha(); }
+
+    //////////
+    // Show or hide this drawing area.
+    //
+    void Show(bool inShow);
 
     //////////
     // Relocate this drawing area to the specified location.

@@ -282,10 +282,6 @@ SOURCE=..\..\..\Common\TException.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\THeader.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\Common\TInterpreter.h
 # End Source File
 # Begin Source File

@@ -15,7 +15,6 @@
 //
 
 #include "CommonHeaders.h"
-#include "THeader.h"
 #include "TRect.h"
 
 USING_NAMESPACE_FIVEL
@@ -103,6 +102,24 @@ void TRect::Offset(const TPoint &inPt)
 
 /*
  $Log$
+ Revision 1.9  2004/02/09 19:53:28  emk
+ 0.0.16 - kwasi, djin, emk
+
+   * Cleaned up a whole bunch of legacy code that can be much simpler now
+     that we have TValue.
+   * Removed TObject, TArray and TBTree because they have overstayed their
+     welcome by about a decade.
+   * Cleaned up settyped.
+   * Added output operator for TValue containing TNull().
+   * Added input operator for extracting from a TArgumentList into
+     a TValue.
+   * Fixed TRect argument order (finally!).
+   * Deleted TString and TURL.
+   * Added TStateDB class.
+   * Added preliminary support for running Quake 2 in the background.
+   * Added support for showing and hiding elements in both Tamale and Quake 2.
+   * Deleted tons of old code which wasn't doing anything any more.
+
  Revision 1.8  2004/02/05 22:11:15  kwasi
    * Fixed TRect argument order (finally!).
    * Deleted TString and TURL.

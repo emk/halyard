@@ -32,6 +32,8 @@ void FIVEL_NS RegisterQuake2Primitives()
 	REGISTER_5L_PRIMITIVE(Quake2IsShown);
 	REGISTER_5L_PRIMITIVE(Quake2Show);
 	REGISTER_5L_PRIMITIVE(Quake2Hide);
+    REGISTER_5L_PRIMITIVE(Quake2SetShouldRunInBackground);
+    REGISTER_5L_PRIMITIVE(Quake2GetShouldRunInBackground);
 	REGISTER_5L_PRIMITIVE(Quake2SetStringVar);
 	REGISTER_5L_PRIMITIVE(Quake2GetStringVar);
 	REGISTER_5L_PRIMITIVE(Quake2SetFloatVar);
@@ -113,6 +115,22 @@ DEFINE_5L_PRIMITIVE(Quake2Hide)
 {
 	REQUIRE_QUAKE2_INITIALIZATION;
 	Quake2Engine::GetInstance()->Hide();
+}
+
+DEFINE_5L_PRIMITIVE(Quake2SetShouldRunInBackground)
+{
+    bool run;
+    inArgs >> run;
+
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine::GetInstance()->RunGameInBackground(run);
+}
+
+DEFINE_5L_PRIMITIVE(Quake2GetShouldRunInBackground)
+{
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine *engine = Quake2Engine::GetInstance();
+    ::SetPrimitiveResult(engine->ShouldRunGameInBackground());
 }
 
 DEFINE_5L_PRIMITIVE(Quake2SetStringVar)

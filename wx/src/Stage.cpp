@@ -795,7 +795,8 @@ Element *Stage::FindLightWeightElement(const wxPoint &inPoint)
 	Element *result = NULL;
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); i++)
-		if ((*i)->IsLightWeight() && (*i)->IsPointInElement(inPoint))
+		if ((*i)->IsLightWeight() && (*i)->IsShown() &&
+            (*i)->IsPointInElement(inPoint))
 			result = *i;
 	return result;
 }

@@ -17,15 +17,33 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		15
+#define VERSION_REV_BIG		16
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.15 (Development)"
+#define VERSION_STRING		"Tamale 0.0.16 (Development)"
 #define SHORT_NAME			"Tamale"
 
 
 /*
  $Log$
+ Revision 1.57  2004/02/09 19:53:28  emk
+ 0.0.16 - kwasi, djin, emk
+
+   * Cleaned up a whole bunch of legacy code that can be much simpler now
+     that we have TValue.
+   * Removed TObject, TArray and TBTree because they have overstayed their
+     welcome by about a decade.
+   * Cleaned up settyped.
+   * Added output operator for TValue containing TNull().
+   * Added input operator for extracting from a TArgumentList into
+     a TValue.
+   * Fixed TRect argument order (finally!).
+   * Deleted TString and TURL.
+   * Added TStateDB class.
+   * Added preliminary support for running Quake 2 in the background.
+   * Added support for showing and hiding elements in both Tamale and Quake 2.
+   * Deleted tons of old code which wasn't doing anything any more.
+
  Revision 1.56  2004/01/31 00:21:42  emk
  0.0.15 - 30 Jan 2004 - emk, kwasi, djin
 

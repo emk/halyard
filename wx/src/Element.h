@@ -31,6 +31,11 @@ class Element
 	//
 	wxString mName;
 
+    //////////
+    // Throw an error saying inOperationName is not allowed.
+    //
+    void OperationNotSupported(const char *inOperationName);
+
 public:
 	//////////
 	// Create a new Element and attach it to the specified stage.
@@ -60,6 +65,11 @@ public:
 	// Return true if the element is shown on the screen.
 	//
 	virtual bool IsShown() { return true; }
+
+	//////////
+	// Show or hide the widget.
+	//
+	virtual void Show(bool inShow);
 
 	//////////
 	// Does this element need to receive events from the Stage?

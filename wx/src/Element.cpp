@@ -19,6 +19,21 @@ Element::Element(Stage *inStage, const wxString &inName)
 	mStage->AddElement(this);
 }
 
+void Element::OperationNotSupported(const char *inOperationName) {
+    std::string op(inOperationName);
+    std::string name(mName.mb_str());
+    THROW("Cannot " + op + " element: " + name);
+}
+
 void Element::MoveTo(const wxPoint &inPoint) {
-    THROW("Cannot move this kind of element");
+    OperationNotSupported("move");
+}
+
+void Element::Show(bool inShow) {
+    if (inShow != IsShown()) {
+        if (inShow)
+            OperationNotSupported("show");
+        else
+            OperationNotSupported("hide");
+    }
 }

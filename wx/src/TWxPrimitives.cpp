@@ -68,6 +68,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(DrawLine);
 	REGISTER_5L_PRIMITIVE(EditBox);
 	REGISTER_5L_PRIMITIVE(ElementExists);
+	REGISTER_5L_PRIMITIVE(ElementIsShown);
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
@@ -354,7 +355,7 @@ DEFINE_5L_PRIMITIVE(ElementExists) {
 DEFINE_5L_PRIMITIVE(ElementIsShown) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(Widget, element, name.c_str());
+	FIND_ELEMENT(Element, element, name.c_str());
 	::SetPrimitiveResult(element->IsShown());
 }
 
@@ -362,7 +363,7 @@ DEFINE_5L_PRIMITIVE(ElementSetShown) {
 	std::string name;
 	bool show;
 	inArgs >> SymbolName(name) >> show;
-	FIND_ELEMENT(Widget, element, name.c_str());
+	FIND_ELEMENT(Element, element, name.c_str());
 	element->Show(show);
 	// TODO - Override MovieElement::Show for unshowable movies.
 }
