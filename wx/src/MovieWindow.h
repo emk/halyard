@@ -68,6 +68,18 @@ public:
 	// movies, looping movies, etc.
     //
     virtual bool IsDone();
+
+	//////////
+	// Pause the movie.
+	// Note: these methods may not be happy if the underlying movie code 
+	// does not like to be paused.
+	//
+	virtual void Pause();
+
+	//////////
+	// Resume the movie
+	//
+	virtual void Resume();
 };
 
 // Define MovieWindowNative to map to an appropriate movie window class.

@@ -104,6 +104,18 @@ bool MovieWindowQT::IsDone()
 		return mMovie->IsDone();
 }
 
+void MovieWindowQT::Pause()
+{
+	if (mMovie->IsStarted())
+		mMovie->Pause();
+}
+
+void MovieWindowQT::Resume()
+{
+	if (mMovie->IsStarted())
+		mMovie->Unpause();
+}
+
 void MovieWindowQT::OnEraseBackground(wxEraseEvent &inEvent)
 {
 	if (mMovie && mMovie->IsStarted())

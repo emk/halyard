@@ -14,7 +14,7 @@
            clear-screen rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
-           move-rect-center-to center-text html edit-box movie
+           move-rect-center-to center-text html edit-box movie pause resume
            wait tc draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade)
 
@@ -126,6 +126,14 @@
       (call-5l-prim 'movie name r
                     path
                     controller? audio-only? loop? interaction?)))
+
+  ;; Note: these functions may not be happy if the underlying movie code
+  ;; doesn't like to be paused.
+  (define (pause name)
+    (call-5l-prim 'pause name))
+
+  (define (resume name)
+    (call-5l-prim 'resume name))
   
   (define (wait name &key frame)
     (if frame

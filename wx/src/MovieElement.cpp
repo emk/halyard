@@ -26,3 +26,13 @@ bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 	else
 		return mMovieWindow->IsDone() || (mMovieWindow->GetFrame() >= inFrame);
 }
+
+void MovieElement::Pause()
+{
+	mMovieWindow->Pause();
+}
+
+void MovieElement::Resume()
+{
+	mMovieWindow->Resume();
+}

@@ -21,6 +21,11 @@ public:
 				 long inWindowStyle, MovieWindowStyle inMovieWindowStyle);
 
     bool HasReachedFrame(MovieFrame inFrame);
+
+	// Note: these methods may not be happy if the underlying movie code 
+	// does not like to be paused.
+	void Pause();
+	void Resume();
 };
 
 #endif // MovieElement_H

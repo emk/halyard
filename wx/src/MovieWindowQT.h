@@ -56,6 +56,18 @@ public:
     //
     virtual bool IsDone();
 
+	//////////
+	// Pause the movie
+	// Note: these methods may not be happy if the underlying movie code 
+	// does not like to be paused.
+	//
+	virtual void Pause();
+
+	//////////
+	// Resume the movie
+	//
+	virtual void Resume();
+
 	void OnEraseBackground(wxEraseEvent &inEvent);
 
 	//////////

@@ -46,3 +46,13 @@ bool MovieWindow::IsDone()
 {
 	return true;
 }
+
+void MovieWindow::Pause()
+{
+	return;
+}
+
+void MovieWindow::Resume()
+{
+	return;
+}
