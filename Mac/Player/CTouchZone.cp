@@ -38,15 +38,15 @@ CTouchZone::CTouchZone(
 	Rect 			&inBounds, 	// Button rect
 	CString 		&cmd, 		// Command text
 	CPicture		*inPict,	// Default picture
-//	char			*pict, 		// Default pic name
 	Point 			&loc, 		// Pic offset??
-	const CString	&secCmd)	// optional second command
+	const CursorType cursor,	// cursor (= HAND_CURSOR)
+	const CString	&secCmd)	// optional second command (= NULL)
 {
 	mNormalTouch = true;
 
 	StartIdling();
 	
-	SetupZone(inBounds, cmd, inPict, loc, secCmd);
+	SetupZone(inBounds, cmd, inPict, loc, secCmd, cursor);
 	LButton::FinishCreate();
 }
 
@@ -62,18 +62,18 @@ CTouchZone::CTouchZone(
 	Rect 			&inBounds, 
 	CString 		&cmd, 
 	CPicture		*inPict,
-//	char 			*pict, 
 	Point	 		&loc, 
 	char 			*text, 
-	const char 		*header, 
-	const CString 	&secCmd)
+	const CursorType cursor,		// = HAND_CURSOR
+	const char 		*header, 		// = NULL
+	const CString 	&secCmd)		// = NULL
 	: CText(header, inBounds, text)
 {
 	mNormalTouch = false;
 	
 	StartIdling();
 	
-	SetupZone(inBounds, cmd, inPict, loc, secCmd);
+	SetupZone(inBounds, cmd, inPict, loc, secCmd, cursor);
 	LButton::FinishCreate();
 }
 
@@ -82,7 +82,8 @@ void CTouchZone::SetupZone(	Rect 			&inBounds, 	// Button rect
 							CPicture		*inPict,	// Default picture
 //							char			*pict, 		// Default pic name
 							Point 			&loc, 		// Pic offset??
-							const CString	&secCmd)	// optional second command
+							const CString	&secCmd,	// optional second command
+							const CursorType cursor)	// cursor
 {
 	// Set the frame size, the pane's superview, and position within the superview.
 	ResizeFrameTo(inBounds.right - inBounds.left, inBounds.bottom - inBounds.top, false);
@@ -96,6 +97,7 @@ void CTouchZone::SetupZone(	Rect 			&inBounds, 	// Button rect
 	// Set private data members
     mCommand = cmd;
     mSecondCommand = secCmd;
+    mCursor = cursor;
 
 	// Set picture location (if specified)
     if (inPict != nil)
@@ -273,8 +275,7 @@ CTouchZone::HotSpotResult(
 void
 CTouchZone::MouseEnter(Point /* inPortPtr */, const EventRecord& /* inMacEvent */)
 {
-	if (gHandCursor != NULL)
-		::SetCursor(*gHandCursor);
+	gCursorManager.CheckCursor;
 }
 
 //
@@ -283,7 +284,7 @@ CTouchZone::MouseEnter(Point /* inPortPtr */, const EventRecord& /* inMacEvent *
 void
 CTouchZone::MouseLeave()
 {
-	::SetCursor(&UQDGlobals::GetQDGlobals()->arrow);
+	gCursorManager.CheckCursor();
 }
 
 //
@@ -293,8 +294,5 @@ CTouchZone::MouseLeave()
 void
 CTouchZone::MouseWithin(Point /* inPortPt */, const EventRecord& /* inMacEvent */)
 {
-	if (gHandCursor != NULL)
-	{
-		::SetCursor(*gHandCursor);
-	}
+	gCursorManager.ChangeCursor(mCursor);
 }

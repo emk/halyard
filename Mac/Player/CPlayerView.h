@@ -122,8 +122,6 @@ class  CPlayerView : public LView, public LAttachment, public LMouseTracker
 		Point			mCursorPos;
 		bool			mPauseFromKey;
 		bool			mMoviePaused;
-		bool			mShowMouse;
-		bool			mShowingCursor;
 };
 
 // sCardKey

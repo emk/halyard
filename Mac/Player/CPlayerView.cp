@@ -16,6 +16,7 @@
 #include "CPicture.h"
 #include "CMenuUtil.h"
 #include "CVariable.h"
+#include "CMenuUtil.h"
 #include "gamma.h"
 //#include "CGWorld.h"
 //#include <UGworld.h>
@@ -34,7 +35,7 @@ extern bool gInFront;
 
 // externals
 extern bool 		gFadedIn;
-extern CursHandle	gHandCursor;
+extern bool			gHideMenuBar;
 
 // 
 //	CPlayerView - create a CPlayerView pane from a PPob resource
@@ -92,8 +93,6 @@ CPlayerView::CPlayerView(LStream  *inStream) : LView(inStream), LAttachment(msg_
 	mProcessTZones = false;
 	mPauseFromKey = false;
 	mMoviePaused = false;
-	mShowMouse = true;
-	mShowingCursor = true;
 
 	// Init the list of style elements
 	mKeyBinds = new LArray(sizeof(sCardKey));
@@ -144,7 +143,10 @@ void CPlayerView::Activate(void)
 	if (not mActive)
 	{
 		LView::Activate();
-		
+
+		if (gHideMenuBar)
+			gMenuUtil.HideMenuBar();
+					
 		mActive = true;
 		mPauseFromKey = false;
 		mMoviePaused = false;
@@ -484,29 +486,26 @@ CPlayerView::AdjustCursor(
 	Point				inPortPt,
 	const EventRecord	&/* inMacEvent */)
 {
-	mCursorPos = inPortPt;
-	
+	gCursorManager.SetCursorPos(inPortPt);
 	AdjustMyCursor();
 }
 
 void 
 CPlayerView::MouseEnter(Point inPortPt, const EventRecord &/* inMacEvent */)
 {
-	mCursorPos = inPortPt;
+	gCursorManager.SetCursorPos(inPortPt);
 }
 
 void 
 CPlayerView::MouseLeave(Point inPortPt, const EventRecord &/* inMacEvent */)
 {
-	mCursorPos = inPortPt;
+	gCursorManager.SetCursorPos(inPortPt);
 }
 
 void
 CPlayerView::MouseWithin(Point inPortPt, const EventRecord &/* inMacEvent */)
 {
-	mCursorPos = inPortPt;
-	
-	//AdjustMyCursor();
+	gCursorManager.SetCursorPos(inPortPt);
 }
 
 //
@@ -514,77 +513,7 @@ CPlayerView::MouseWithin(Point inPortPt, const EventRecord &/* inMacEvent */)
 //
 void CPlayerView::AdjustMyCursor(void)
 {
-
-	LArray &paneList = GetSubPanes();
-
-#ifndef DEBUG_5L
-	
-	if ((not mShowMouse)				// global mouse thing
-	or (gMovieManager.MoviePlaying()) 	// no cursor during movie playback
-	or (paneList.GetCount() == 0)		// no tzones, no cursor
-	or (not gFadedIn))					// no cursor action when faded
-	{
-		// shouldn't be showing the mouse
-		if (mShowingCursor)
-		{
-			mShowingCursor = false;
-			::HideCursor();
-		}
-	}
-	else
-	{
-		// should be showing the mouse
-		if (not mShowingCursor)
-		{
-			if ((OverTZone()) and (gHandCursor != NULL))
-			{
-				::SetCursor(*gHandCursor);
-			}	
-			else
-			{
-				::SetCursor(&UQDGlobals::GetQDGlobals()->arrow);
-			}
-			mShowingCursor = true;
-			::ShowCursor();
-		}
-	}
-#else
-	// in debug mode make sure it turns into an arrow when a movie is 
-	// playing or there aren't any defined touchzones
-	if (gFadedIn)
-	{
-		if (not mShowingCursor)
-		{
-			if ((OverTZone()) and (gHandCursor != NULL))
-			{
-				// cbo_debug
-				prinfo("OverTZone: true, set to hand");
-				
-				::SetCursor(*gHandCursor);
-			}	
-			else
-			{
-				::SetCursor(&UQDGlobals::GetQDGlobals()->arrow);
-			}
-			
-			mShowingCursor = true;
-			::ShowCursor();
-		}
-		else if ((gMovieManager.MoviePlaying()) 	// no cursor during movie playback
-		or (paneList.GetCount() == 0))
-		{
-			::SetCursor(&UQDGlobals::GetQDGlobals()->arrow);
-		}
-	}
-	else
-	{
-		if (mShowingCursor)
-		{
-			mShowingCursor = false;
-			::HideCursor();
-		}
-	}
-#endif
+	gCursorManager.CheckCursor();
 }
 
 #ifdef DEBUG_5L
@@ -616,28 +545,6 @@ void CPlayerView::ShowTZones(void)
 }
 #endif
 
-//
-//	OverTZone - Return true if the cursor is over a touch zone, false
-//		otherwise.
-//
-bool CPlayerView::OverTZone(void)
-{
-	LArray			&paneList = GetSubPanes();
-	LArrayIterator	iterator(paneList, LArrayIterator::from_Start);
-	CTouchZone		*theButt;
-	
-	while (iterator.Next(&theButt))
-	{
-		Rect	frameRect;
-		
-		theButt->CalcLocalFrameRect(frameRect);
-		
-		if (::PtInRect(mCursorPos, &frameRect))
-			return (true);
-	}
-	
-	return (false);
-}
 	
 //
 //	CTouch - Clear the first touch zones that matches the input parameters. 
@@ -685,7 +592,10 @@ void CPlayerView::CTouch(void)
 //
 void CPlayerView::ShowMouse(bool inShowIt)
 {
-	mShowMouse = inShowIt;
+	if (inShowIt)
+		gCursorManager.ShowCursor();
+	else
+		gCursorManager.HideCursor();
 }				
 
 //

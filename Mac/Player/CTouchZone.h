@@ -19,6 +19,7 @@
 #include "CText.h"
 #include "CString.h"
 #include "CPicture.h"
+#include "CCursor.h"
 
 #include <LMouseTracker.h>
 
@@ -28,10 +29,12 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		enum { class_ID = 'PlTz' };	// Class ID - needs to be unique & not all lower-case
 	
 		// Standard constructor
-		CTouchZone(Rect &r, CString &cmd, CPicture *inPict, Point &loc, const CString &SecondCmd = nil);
+		CTouchZone(Rect &r, CString &cmd, CPicture *inPict, Point &loc, 
+					const CursorType = HAND_CURSOR, const CString &SecondCmd = nil);
 	
 		// This constructor is used for the 'Buttpcx' command
 		CTouchZone(Rect &r, CString &cmd, CPicture *inPict, Point &loc, char *text,
+					const CursorType = HAND_CURSOR,
 					const char *header = nil, const CString &secCmd = nil);
 					
 		// Destructor
@@ -45,6 +48,7 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		virtual void	HotSpotResult(Int16	inHotSpot);
 		virtual void	HotSpotAction(Int16, Boolean, Boolean);
 		char		FirstChar(void) { return ((mText != nil) ? *mText: 0); }
+		CursorType	GetCursor(void) { return (mCursor); }
 		
 	private:
 		CString     mCommand;
@@ -52,9 +56,11 @@ class CTouchZone : public LButton, public LCommander, public CText, public LMous
 		Point       mPictLoc;
 		CPicture	*mPicture;		// pict & hilite pict that we use in the touchzone
 		bool		mNormalTouch;	// to distinguish touchzones from buttpcx's
+		CursorType	mCursor;
 		
 	protected:
-		void			SetupZone(Rect &r, CString &cmd, CPicture *inPict, Point &loc, const CString &SecondCmd = nil);
+		void			SetupZone(Rect &r, CString &cmd, CPicture *inPict, Point &loc, 
+								const CString &SecondCmd = nil, const CursorType cursor = HAND_CURSOR);
 		
 		
 	

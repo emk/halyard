@@ -3,7 +3,7 @@
 //		(c) Copyright 1999, Trustees of Dartmouth College. All rights reserved
 //			Interactive Media Lab, Dartmouth Medical School
 //
-//			$Autho$
+//			$Author$
 //			$Date$
 //			$Revision$
 //
@@ -15,6 +15,8 @@
 //	CBackWindow.h
 //
 //
+
+#pragma once
 
 class CBackWindow : public LWindow
 {
@@ -36,6 +38,9 @@ class CBackWindow : public LWindow
 
 /* 
 $Log$
+Revision 1.2  1999/10/22 20:42:27  chuck
+New cursor management
+
 Revision 1.1  1999/10/21 17:19:17  chuck
 Initial revisioni
 

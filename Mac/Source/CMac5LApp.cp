@@ -47,6 +47,7 @@
 #include "CFiles.h"
 #include "CPrefs.h"
 #include "CIndex.h"
+#include "CCursor.h"
 
 // cbo_debug - take this out when don't need anymore
 //#include <profiler.h>
@@ -78,11 +79,11 @@ CMacroManager		gMacroManager;
 CHeaderManager		gHeaderManager;
 CVariableManager	gVariableManager;
 CMenuUtil			gMenuUtil;
+CCursorManager		gCursorManager;
 
 CPlayerView			*gPlayerView;
 CMoviePlayer		gMovieManager;
 WindowPtr			gWindow;
-CursHandle			gHandCursor = NULL;
 
 CMac5LApp			*gTheApp;
 
@@ -96,10 +97,10 @@ int main()
 {
 									// Set Debugging options
 #ifdef DEBUG_5L
-	SetDebugThrow_(debugAction_Nothing);
-	SetDebugSignal_(debugAction_Nothing);
-	//SetDebugThrow_(debugAction_SourceDebugger);
-	//SetDebugSignal_(debugAction_SourceDebugger);
+	//SetDebugThrow_(debugAction_Nothing);
+	//SetDebugSignal_(debugAction_Nothing);
+	SetDebugThrow_(debugAction_SourceDebugger);
+	SetDebugSignal_(debugAction_SourceDebugger);
 #else
 	SetDebugThrow_(debugAction_Nothing);
 	SetDebugSignal_(debugAction_Nothing);
@@ -223,8 +224,9 @@ CMac5LApp::CMac5LApp()
 		CheckPalette();
 	}
 	
-	// Get the hand cursor for touch zones.
-	gHandCursor = ::GetCursor(128);
+	gCursorManager.Init();
+	gCursorManager.ChangeCursor(ARROW_CURSOR);
+	gCursorManager.ShowCursor();
 		
 	// Set our sleep time.
 	mSleepTime = 0;
@@ -817,6 +819,9 @@ bool CMac5LApp::OpenScriptAgain(FSSpec *scriptSpec, char *jumpCard)
 
 /* 
 $Log$
+Revision 1.6  1999/10/22 20:42:27  chuck
+New cursor management
+
 Revision 1.5  1999/10/21 17:21:05  chuck
 Mac5L 2.00 b3
 

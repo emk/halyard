@@ -818,9 +818,16 @@ void CCard::DoButtpcx()
     CPicture    *thePicture = nil;
     CString     theHeaderName, picname, theCommand, cmdText, Text, scmdText;
     CString     secondCommand;
+    CString		cursorType;
+    CursorType	cursor = HAND_CURSOR;
 
     script >> picname >> buttLoc >> theHeaderName >> Text >> cmdText;
 
+	if (script.more())
+		script >>	cursorType;
+		
+	cursor = gCursorManager.FindCursor(cursorType);
+	
    	scmdText = "";
     if (script.more())  
 	{
@@ -858,7 +865,8 @@ void CCard::DoButtpcx()
 #endif
 		
 	if (thePicture != NULL)
-		new CTouchZone(macBounds, theCommand, thePicture, macLoc, Text, theHeadName, scmdText);
+		new CTouchZone(macBounds, theCommand, thePicture, macLoc, Text, cursor, 
+				theHeadName, scmdText);
 	
 	// cbo_test - try this
 	//gPlayerView->AdjustMyCursor();
@@ -2387,7 +2395,7 @@ void CCard::DoTimeout()
 }
 
 /*--------------------------------------------------------------
-    (TOUCH LEFT TOP RIGHT BOTTOM CARD <PICT <X Y>>)
+    (TOUCH LEFT TOP RIGHT BOTTOM CARD CURSOR <PICT <X Y>>)
 
     Create a touch zone bounded by the given rectangle. Touching
     this touch zone will make the program go to card CARD. If a
@@ -2407,6 +2415,8 @@ void CCard::DoTouch()
     CString     theCommand, SecondCommand;
     CString     cmdText, scmdText;
     CString     picname;
+    CString		cursorType;
+    CursorType	cursor = HAND_CURSOR;
 
     script >> bounds >> cmdText;
 
@@ -2420,7 +2430,12 @@ void CCard::DoTouch()
 
     AdjustRect(&bounds);
     bounds.MakeMacRect(&macBounds);
-    
+
+	if (script.more())
+		script >> cursorType;
+
+	cursor = gCursorManager.FindCursor(cursorType);
+			    
     if (script.more()) 
     {
         ch_sep = script.curchar();
@@ -2452,7 +2467,7 @@ void CCard::DoTouch()
     if (not picname.empty())
     	thePicture = GetPicture(picname.GetString(), true);
     
-    new CTouchZone(macBounds, theCommand, thePicture, macLoc, scmdText);
+    new CTouchZone(macBounds, theCommand, thePicture, macLoc, cursor, scmdText);
     
    // gPlayerView->AdjustMyCursor();
 }
