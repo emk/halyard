@@ -1013,18 +1013,25 @@ void Stage::OnEraseBackground(wxEraseEvent &inEvent)
     // Ignore this event to prevent flicker--we don't need to erase,
     // because we redraw everything from the offscreen buffer.  We may need
     // to override more of these events elsewhere.
+
+	// TODO - Sometimes parts of the frame don't get repainted.  Could we
+	// somehow indirectly be responsible?
 }
 
 void Stage::OnPaint(wxPaintEvent &inEvent)
 {
 	wxLogTrace(TRACE_STAGE_DRAWING, "Painting stage.");
 
-    // Set up our drawing contexts.
+    // Set up our drawing context, and paint the screen.
     wxPaintDC screen_dc(this);
-    
+    PaintStage(screen_dc);
+}
+
+void Stage::PaintStage(wxDC &inDC)
+{
     // Blit our offscreen pixmap to the screen.
     // TODO - Could we optimize drawing by only blitting dirty regions?
-	screen_dc.DrawBitmap(mOffscreenPixmap, 0, 0, false);
+	inDC.DrawBitmap(mOffscreenPixmap, 0, 0, false);
 
     // If necessary, draw the grid.
     if (mIsDisplayingGrid)
@@ -1035,32 +1042,32 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
         int large_spacing = small_spacing * 10;
 
         // Draw the minor divisions of the grid.
-        screen_dc.SetPen(*wxLIGHT_GREY_PEN);
+        inDC.SetPen(*wxLIGHT_GREY_PEN);
         for (int x = 0; x < width; x += small_spacing)
             if (x % large_spacing)
-                screen_dc.DrawLine(x, 0, x, height);
+                inDC.DrawLine(x, 0, x, height);
         for (int y = 0; y < width; y += small_spacing)
             if (y % large_spacing)
-                screen_dc.DrawLine(0, y, width, y);
+                inDC.DrawLine(0, y, width, y);
 
         // Draw the major divisions of the grid.
-        screen_dc.SetPen(*wxGREEN_PEN);
+        inDC.SetPen(*wxGREEN_PEN);
         for (int x2 = 0; x2 < width; x2 += large_spacing)
-            screen_dc.DrawLine(x2, 0, x2, height);
+            inDC.DrawLine(x2, 0, x2, height);
         for (int y2 = 0; y2 < width; y2 += large_spacing)
-            screen_dc.DrawLine(0, y2, width, y2);
+            inDC.DrawLine(0, y2, width, y2);
     }
 
 	// If necessary, draw the borders.
 	if (mIsDisplayingBorders)
 	{
 		if (mTextCtrl->IsShown())
-			DrawElementBorder(screen_dc, mTextCtrl->GetRect());
+			DrawElementBorder(inDC, mTextCtrl->GetRect());
 
 		ElementCollection::iterator i = mElements.begin();
 		for (; i != mElements.end(); i++)
 			if ((*i)->IsShown())
-				DrawElementBorder(screen_dc, (*i)->GetRect());
+				DrawElementBorder(inDC, (*i)->GetRect());
 	}
 }
 
@@ -1129,6 +1136,14 @@ void Stage::OnLeftDown(wxMouseEvent &inEvent)
 	else
 		// Restore focus to the stage.
 	    SetFocus();
+}
+
+void Stage::ValidateStage()
+{
+	// XXX - We can't actually *do* this using wxWindows, so we're
+	// repainting the screen too often.  To fix this, we'll need to manage
+	// dirty regions in mOffscreenPixmap manually, or do something else
+	// to complicate things.
 }
 
 void Stage::InvalidateStage()
@@ -1315,6 +1330,23 @@ void Stage::Unfade()
 	for (int i = 0; i <= 256; i += 16)
 		ShowFadeStep(i);
 	gDebugLog.Log("Unfade: 16 frames in %ld milliseconds", watch.Time());
+}
+
+void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
+{
+	// If we're supposed to run a transiton, do so now.
+	if (inTransition != "none" && inMilliseconds > 0)
+	{
+		// TODO - Run transiton.
+	}
+
+	// Draw our offscreen buffer to the screen, and mark that portion of
+	// the screen as updated.
+	{
+		wxClientDC dc(this);
+		PaintStage(dc);
+	}
+	ValidateStage();
 }
 
 void Stage::AddElement(Element *inElement)

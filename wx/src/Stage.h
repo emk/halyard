@@ -22,6 +22,7 @@ class wxSashEvent;
 class EventDispatcher;
 class ImageCache;
 class CursorManager;
+class TransitionManager;
 
 // See ToolWindow.h.
 enum ToolWindowID {
@@ -280,6 +281,12 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	CursorManager *mCursorManager;
 
 	//////////
+	// Our transition manager.  This maps transition names to transitions,
+	// and applies them.
+	//
+	TransitionManager *mTransitionManager;
+
+	//////////
 	// Our text-entry control.  Will not be visible unless the user
 	// is entering something.
 	//
@@ -331,6 +338,16 @@ class Stage : public wxWindow, public GraphicsTools::Image
 	// Invalidate the specified rectangle.
 	//
 	void InvalidateRect(const wxRect &inRect);
+
+	//////////
+	// Validate the entire stage--i.e., mark it as having been redrawn.
+	//
+	void ValidateStage();
+
+	//////////
+	// Repaint the stage.
+	//
+	void PaintStage(wxDC &inDC);
 
     //////////
     // Draw a border for the specified rectangle.
@@ -652,6 +669,15 @@ public:
 	// Unfade the stage from black.
 	//
 	void Unfade();
+
+	//////////
+	// Refresh the screen using the specified effect.
+	//
+	// [in] inTransition - The name of the transition to use, or "none".
+	// [in] inMilliseconds - The desired duration of the transition.
+	//
+	void RefreshStage(const std::string &inTransition,
+					  int inMilliseconds);
 
 	//////////
 	// Add a Element to this Stage.  This should only be called

@@ -56,6 +56,7 @@ void FIVEL_NS RegisterWxPrimitives()
 	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
+	REGISTER_5L_PRIMITIVE(Refresh);
 	REGISTER_5L_PRIMITIVE(RegisterCard);
 	REGISTER_5L_PRIMITIVE(RegisterCursor);
 	REGISTER_5L_PRIMITIVE(RegisterEventDispatcher);
@@ -414,6 +415,14 @@ DEFINE_5L_PRIMITIVE(MovieResume)
 	FIND_ELEMENT(MovieElement, movie, name.c_str());
 
 	movie->Resume();
+}
+
+DEFINE_5L_PRIMITIVE(Refresh)
+{
+	std::string transition;
+	int32 milliseconds;
+	inArgs >> SymbolName(transition) >> milliseconds;
+	wxGetApp().GetStage()->RefreshStage(transition, milliseconds);
 }
 
 DEFINE_5L_PRIMITIVE(RegisterCard)
