@@ -13,6 +13,7 @@
            %zone% %simple-zone% zone
            %animated-graphic% register-cursor mouse-position
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
+           local->card
            delete-element delete-elements
            clear-screen point-in-poly?
            offset-rect offset-shape
