@@ -587,7 +587,7 @@
   ;;  contains <card>s and <card-groups>.  <card-group>s contain <card>s
   ;; and other <card-group>s.  Any node may contain <element>s.
 
-  (provide <node> node? node-name node-full-name node-parent
+  (provide <node> node? node-name node-full-name extends-template? node-parent
            node-elements find-node @* @ elem-or-name-hack)
 
   (defclass <node> (<template>)
@@ -617,6 +617,16 @@
                              "/" (node-name node)))
         (node-name node))))
 
+  (define (extends-template? node template)
+    (let recurse [[extends node]]
+      (cond
+        [(not extends)
+         #f]
+        [(eq? extends template)
+         #t]
+        [else
+         (recurse (template-extends node))])))
+  
   (define (check-for-duplicate-nodes node-list node)
     (let recurse [[node-list node-list]]
       (cond

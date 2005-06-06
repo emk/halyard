@@ -679,23 +679,27 @@
                                                       "/" name))))))
   
   (define-element-template %basic-button%
-      [[action :type <function> :label "Click action"]
+      [[action :type <function> :label "Click action" :default (callback)]
        [enabled? :type <boolean> :label "Enabled?" :default #t]]
-      (%zone%)
+      (%zone% :wants-cursor? enabled?)
 
     (define mouse-in-button? #f)
-    (define (do-draw refresh?)
+    (on draw ()
       (send self draw-button 
             (cond [(not enabled?) 'disabled]
                   [(not mouse-in-button?) 'normal]
                   [(mouse-grabbed-by? self) 'pressed]
-                  [#t 'active]))
+                  [#t 'active])))
+    (define (do-draw refresh?)
+      (send self draw)
       (when refresh?
         (refresh)))
     
     (on prop-change (name value prev veto)
       (case name
-        [[enabled?] (do-draw #f)]
+        [[enabled?]
+         (set! (prop self wants-cursor?) enabled?) 
+         (do-draw #f)]
         [else (call-next-handler)]))
 
     (on setup-finished ()
@@ -708,9 +712,8 @@
       (set! mouse-in-button? #f)
       (do-draw #t))
     (on mouse-down (event)
-      (when enabled?
-        (grab-mouse self)
-        (do-draw #t)))
+      (grab-mouse self)
+      (do-draw #t))
     (on mouse-up (event)
       (define was-grabbed? #f)
       (when (mouse-grabbed-by? self)
@@ -718,7 +721,9 @@
         (ungrab-mouse self))
       (do-draw #t)
       (when (and mouse-in-button? was-grabbed?)
-        ((prop self action))))
+        (send self button-clicked event)))
+    (on button-clicked (event)
+      ((prop self action)))
     )
 
   ;;; Get the version of a QuickTime component, given the four-letter,
