@@ -17,7 +17,7 @@
            delete-element delete-elements
            clear-screen point-in-poly?
            offset-rect offset-shape
-           rect-horizontal-center rect-vertical-center
+           copy-rect rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to point-in-rect? center-text 
@@ -303,6 +303,10 @@
                                        (polygon-vertices s)))]
      [else
       (error (cat "Don't know how to offset " s))]))
+
+  (define (copy-rect r)
+    (rect (rect-left r) (rect-top r)
+          (rect-right r) (rect-bottom r)))  
 
   (define (rect-horizontal-center r)
     (+ (rect-left r) (round (/ (- (rect-right r) (rect-left r)) 2))))
