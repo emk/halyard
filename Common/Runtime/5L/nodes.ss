@@ -625,7 +625,7 @@
         [(eq? extends template)
          #t]
         [else
-         (recurse (template-extends node))])))
+         (recurse (template-extends extends))])))
   
   (define (check-for-duplicate-nodes node-list node)
     (let recurse [[node-list node-list]]
