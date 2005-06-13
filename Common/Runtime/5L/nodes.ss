@@ -133,7 +133,7 @@
           stx
           (register-event-handler node 'name
                                   (lambda (call-next-handler . args)
-                                    . body))))]))
+                                    (begin/var . body)))))]))
 
   (define-syntax on
     ;; This gets lexically overridden by expand-init-fn to refer
