@@ -36,5 +36,3 @@
              (point (rect-right r) (rect-top r))
              (point (rect-right r) (rect-bottom r))
              (point (rect-left r) (rect-bottom r)))))
-
-

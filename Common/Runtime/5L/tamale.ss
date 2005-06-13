@@ -304,36 +304,6 @@
      [else
       (error (cat "Don't know how to offset " s))]))
 
-  (define (copy-rect r)
-    (rect (rect-left r) (rect-top r)
-          (rect-right r) (rect-bottom r)))  
-
-  (define (rect-horizontal-center r)
-    (+ (rect-left r) (round (/ (- (rect-right r) (rect-left r)) 2))))
-  
-  (define (rect-vertical-center r)
-    (+ (rect-top r) (round (/ (- (rect-bottom r) (rect-top r)) 2))))
-  
-  (define (rect-center r)
-    (point (rect-horizontal-center r) (rect-vertical-center r)))
-  
-  (define (move-rect-left-to r h)
-    (rect h (rect-top r) (+ h (rect-width r)) (rect-bottom r)))
-
-  (define (move-rect-top-to r v)
-    (rect (rect-left r) v (rect-right r) (+ v (rect-height r))))
-
-  (define (move-rect-horizontal-center-to r x)
-    (move-rect-left-to r (- x (round (/ (rect-width r) 2)))))
-
-  (define (move-rect-vertical-center-to r y)
-    (move-rect-top-to r (- y (round (/ (rect-height r) 2)))))
-
-  (define (move-rect-center-to r p)
-    (move-rect-horizontal-center-to (move-rect-vertical-center-to r
-                                                                  (point-y p))
-                                    (point-x p)))
-
   (define (point-in-rect? p r)
     (and (<= (rect-left r) (point-x p))
          (<  (point-x p)   (rect-right r))

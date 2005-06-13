@@ -537,8 +537,59 @@
 
 (card script-editor-db-tests ()
   (call-5l-prim 'TestScriptEditorDB)
+  (jump layout))
+
+
+;;=========================================================================
+;;  Layout
+;;=========================================================================
+
+(card layout ()
+
+  ;; Test <layout> defaults.
+  (define layout (make <layout>))
+  (test (layout? layout))
+  (test (eq? (layout-hspace layout) 0))
+  (test (eq? (layout-vspace layout) 0))
+  (test (eq? (layout-box-shape layout) #f))
+
+  (define (test-box box left top right bottom)
+    (test (equals? box (rect left top right bottom))))
+
+  (define (test-shape-used w h)
+    ;;(print "SHAPE: ")
+    ;;(print w)
+    ;;(print h)
+    ;;(print (layout-shape-used layout))
+    ;;(newline)
+    (test (equals? (layout-shape-used layout) (rect 0 0 w h))))
+
+  ;; Test basic layout.
+  (set! layout (make <layout>
+                 :hspace 7 :vspace 5
+                 :box-shape (rect 0 0 13 11)))
+  (test (eq? (layout-hspace layout) 7))
+  (test (eq? (layout-vspace layout) 5))
+  (test (equals? (layout-box-shape layout) (rect 0 0 13 11)))
+  (test-box (add-box! layout)
+            0 0 13 11)
+  (test-shape-used 13 11)
+  (test-box (add-box! layout :width 19)
+            0 (+ 11 5) 19 (+ 11 5 11))
+  (test-shape-used 19 (+ 11 5 11))
+  (test-box (add-box! layout :height 17)
+            0 (+ 11 5 11 5) 13 (+ 11 5 11 5 17))
+  (test-shape-used 19 (+ 11 5 11 5 17))
+  (next-column! layout)
+  (test-shape-used 19 (+ 11 5 11 5 17))
+  (test-box (add-box! layout)
+            (+ 19 7) 0 (+ 19 7 13) 11)
+  (test-shape-used (+ 19 7 13) (+ 11 5 11 5 17))
+  (test-box (add-box! layout :shape (rect 0 0 23 500))
+            (+ 19 7) (+ 11 5) (+ 19 7 23) (+ 11 5 500))
+  (test-shape-used (+ 19 7 23) (+ 11 5 500))
+
   (jump done))
 
 (card done ()
   (exit-script))
-

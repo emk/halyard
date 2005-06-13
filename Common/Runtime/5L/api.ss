@@ -5,6 +5,9 @@
 
   (require (lib "shapes.ss" "5L"))
   (provide (all-from (lib "shapes.ss" "5L")))
+  
+  (require (lib "layout.ss" "5L"))
+  (provide (all-from (lib "layout.ss" "5L")))
 
 
   ;;=======================================================================
@@ -265,68 +268,6 @@
          "."
          (substring str split-pos (string-length str))))
     
-
-  ;;;======================================================================
-  ;;;  Geometric Primitives
-  ;;;======================================================================
-
-  (provide point-offset point-difference rect-offset
-           rect-width rect-height rect-left-top rect-left-bottom
-           rect-right-top rect-right-bottom)
-
-  ;;; Move a point by the specified amount.
-  ;;;
-  ;;; @param POINT p The point to move.  Not modified.
-  ;;; @param POINT by The offset by which to move the point.
-  ;;; @return POINT The moved point.
-  (define (point-offset p by)
-    (point (+ (point-x p) (point-x by))
-           (+ (point-y p) (point-y by))))
-
-  ;;; Subtract p2 from p1.
-  ;;;
-  ;;; @param POINT p1 A point.
-  ;;; @param POINT p2 The point to subtract.
-  ;;; @return POINT The result of the subtraction.
-  (define (point-difference p1 p2)
-    (point (- (point-x p1) (point-x p2))
-           (- (point-y p1) (point-y p2))))
-
-  ;;; Move a rectangle by the specified amount.
-  ;;;
-  ;;; @param POINT r The rectangle to move.  Not modified.
-  ;;; @param POINT by The offset by which to move the rectangle.
-  ;;; @return POINT The moved rectangle.
-  (define (rect-offset r by)
-    (rect (+ (rect-left r) (point-x by))
-          (+ (rect-top r) (point-y by))
-          (+ (rect-right r) (point-x by))
-          (+ (rect-bottom r) (point-y by))))
-
-  ;;; @return INTEGER The width of the rectangle.
-  (define (rect-width r)
-    (- (rect-right r) (rect-left r)))
-  
-  ;;; @return INTEGER The height of the rectangle.
-  (define (rect-height r)
-    (- (rect-bottom r) (rect-top r)))
-  
-  ;;; @return POINT The left top corner of the rectangle.
-  (define (rect-left-top r)
-    (point (rect-left r) (rect-top r)))
-  
-  ;;; @return POINT The left bottom corner of the rectangle.
-  (define (rect-left-bottom r)
-    (point (rect-left r) (rect-bottom r)))
-  
-  ;;; @return POINT The right top corner of the rectangle.
-  (define (rect-right-top r)
-    (point (rect-right r) (rect-top r)))
-  
-  ;;; @return POINT The right bottom corner of the rectangle.
-  (define (rect-right-bottom r)
-    (point (rect-right r) (rect-bottom r)))
-
 
   ;;;======================================================================
   ;;;  Origin
