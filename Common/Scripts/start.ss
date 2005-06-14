@@ -588,6 +588,11 @@
   (test-box (add-box! layout :shape (rect 0 0 23 500))
             (+ 19 7) (+ 11 5) (+ 19 7 23) (+ 11 5 500))
   (test-shape-used (+ 19 7 23) (+ 11 5 500))
+  
+  ;; Test convencience functions.
+  (set! layout (make <layout> :vspace 5 :box-shape (rect 0 0 40 10)))
+  (test (equals? (next-box-at! layout :width 50) (point 0 0)))
+  (test (equals? (current-box-shape layout) (rect 0 0 50 10)))
 
   (jump done))
 
