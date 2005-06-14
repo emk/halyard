@@ -591,8 +591,8 @@
   
   ;; Test convencience functions.
   (set! layout (make <layout> :vspace 5 :box-shape (rect 0 0 40 10)))
-  (test (equals? (next-box-at! layout :width 50) (point 0 0)))
-  (test (equals? (current-box-shape layout) (rect 0 0 50 10)))
+  (test (equals? (layout-next-box-at! layout :width 50) (point 0 0)))
+  (test (equals? (layout-current-box-shape layout) (rect 0 0 50 10)))
 
   (jump done))
 

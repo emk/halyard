@@ -3,7 +3,7 @@
 
   (provide <layout> layout? layout-hspace layout-vspace layout-box-shape
            layout-width-used layout-height-used layout-shape-used
-           add-box! next-box-at! current-box-shape next-column!)
+           add-box! layout-next-box-at! layout-current-box-shape next-column!)
   
   ;;; A class that can preform simple layout of rectangles, with optional
   ;;; spacing between.
@@ -61,14 +61,14 @@
   ;;; Add a new box to the layout, and return the upper-left corner.
   ;;; You'll typically follow this up with a call to CURRENT-BOX-SHAPE.
   ;;;
-  ;;; @see current-box-shape
-  (define (next-box-at! layout &key width height shape &rest keys)
+  ;;; @see layout-current-box-shape
+  (define (layout-next-box-at! layout &key width height shape &rest keys)
     (rect-left-top (apply add-box! layout keys)))
   
   ;;; Get the shape of the box most recently added to the layout.
   ;;;
-  ;;; @see next-box-at!
-  (define (current-box-shape layout)
+  ;;; @see layout-next-box-at!
+  (define (layout-current-box-shape layout)
     (define r (layout-current-box layout))
     (rect 0 0 (rect-width r) (rect-height r)))
 
