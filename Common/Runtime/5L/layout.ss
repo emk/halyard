@@ -3,7 +3,9 @@
 
   (provide <layout> layout? layout-hspace layout-vspace layout-box-shape
            layout-width-used layout-height-used layout-shape-used
-           add-box! layout-next-box-at! layout-current-box-shape next-column!)
+           add-box! layout-next-box-at! layout-current-box-shape next-column!
+           layout-nth-box layout-nth-box-at layout-nth-box-shape
+           layout-box-count)
   
   ;;; A class that can preform simple layout of rectangles, with optional
   ;;; spacing between.
@@ -15,6 +17,7 @@
     [next-box-at :initializer (lambda () (point 0 0))]
     [width-used :initvalue 0]
     [height-used :initvalue 0]
+    [boxes :initvalue '()]
     [current-box :initvalue #f])
 
   ;;; The shape currently used by all boxes in this layout.
@@ -32,6 +35,9 @@
 
   (define (add-hspace! layout &opt [hspace (layout-hspace layout)])
     (inc! (point-x (layout-next-box-at layout)) hspace))
+
+  (define (box-shape r)
+    (rect 0 0 (rect-width r) (rect-height r)))
 
   (define (mark-point-as-used! layout p)
     (set! (layout-width-used layout)
@@ -55,6 +61,8 @@
     (add-vspace! layout)
 
     ;; Return our box.
+    (set! (layout-boxes layout)
+          (append! (layout-boxes layout) (list box)))
     (set! (layout-current-box layout) box)
     box)
 
@@ -69,13 +77,29 @@
   ;;;
   ;;; @see layout-next-box-at!
   (define (layout-current-box-shape layout)
-    (define r (layout-current-box layout))
-    (rect 0 0 (rect-width r) (rect-height r)))
+    (box-shape (layout-current-box layout)))
 
   ;;; Start adding boxes to the next column.
   (define (next-column! layout)
     (set! (layout-next-box-at layout)
           (point (layout-width-used layout) 0))
     (add-hspace! layout))
+
+  ;;; Get the nth box added to this layout, counting from 0.
+  (define (layout-nth-box layout index)
+    (nth (layout-boxes layout) index))
+
+  ;;; Get the left-top corner of the nth box added to this layout, counting
+  ;;; from 0.
+  (define (layout-nth-box-at layout index)
+    (rect-left-top (layout-nth-box layout index)))
+
+  ;;; Get the shape of the nth box added to this layout, counting from 0.
+  (define (layout-nth-box-shape layout index)
+    (box-shape (layout-nth-box layout index)))
+
+  ;;; Get the number of boxes added to this layout so far.
+  (define (layout-box-count layout)
+    (length (layout-boxes layout)))
 
   )

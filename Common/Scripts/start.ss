@@ -589,6 +589,12 @@
             (+ 19 7) (+ 11 5) (+ 19 7 23) (+ 11 5 500))
   (test-shape-used (+ 19 7 23) (+ 11 5 500))
   
+  ;; Test box history.
+  (test (equals? (layout-nth-box layout 1) (rect 0 (+ 11 5) 19 (+ 11 5 11))))
+  (test (equals? (layout-nth-box-at layout 1) (point 0 (+ 11 5))))
+  (test (equals? (layout-nth-box-shape layout 1) (rect 0 0 19 11)))
+  (test (= (layout-box-count layout) 5))
+
   ;; Test convencience functions.
   (set! layout (make <layout> :vspace 5 :box-shape (rect 0 0 40 10)))
   (test (equals? (layout-next-box-at! layout :width 50) (point 0 0)))
