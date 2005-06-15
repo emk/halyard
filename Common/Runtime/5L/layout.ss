@@ -25,10 +25,14 @@
     (rect 0 0 (layout-width-used layout) (layout-height-used layout)))
 
   (define (layout-box-width layout)
-    (rect-width (layout-box-shape layout)))
+    (if (layout-box-shape layout)
+      (rect-width (layout-box-shape layout))
+      #f))
 
   (define (layout-box-height layout)
-    (rect-height (layout-box-shape layout)))
+    (if (layout-box-shape layout)
+      (rect-height (layout-box-shape layout))
+      #f))
 
   (define (add-vspace! layout &opt [vspace (layout-vspace layout)])
     (inc! (point-y (layout-next-box-at layout)) vspace))
