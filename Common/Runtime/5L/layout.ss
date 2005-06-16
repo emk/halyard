@@ -2,8 +2,10 @@
   (require (lib "types.ss" "5L"))
 
   (provide <layout> layout? layout-hspace layout-vspace layout-box-shape
+           layout-next-box-at
            layout-width-used layout-height-used layout-shape-used
-           add-box! layout-next-box-at! layout-current-box-shape next-column!
+           add-box! layout-next-box-at! layout-current-box
+           layout-current-box-shape next-column!
            layout-nth-box layout-nth-box-at layout-nth-box-shape
            layout-box-count)
   
@@ -49,7 +51,6 @@
     (set! (layout-height-used layout)
           (max (layout-height-used layout) (point-y p))))
 
-
   ;;; Add a new box to the layout.
   (define (add-box! layout
                     &key
@@ -72,6 +73,8 @@
 
   ;;; Add a new box to the layout, and return the upper-left corner.
   ;;; You'll typically follow this up with a call to CURRENT-BOX-SHAPE.
+  ;;;
+  ;;; XXX Very bad name--fix this.
   ;;;
   ;;; @see layout-current-box-shape
   (define (layout-next-box-at! layout &key width height shape &rest keys)

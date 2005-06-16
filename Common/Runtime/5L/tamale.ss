@@ -85,7 +85,7 @@
       [(with-dc dc body ...)
        (dynamic-wind
            (lambda () (call-5l-prim 'DcPush (node-full-name dc)))
-           (lambda () body ...)
+           (lambda () (begin/var body ...))
            (lambda () (call-5l-prim 'DcPop (node-full-name dc))))]))
   (define-syntax-indent with-dc 1)
 
