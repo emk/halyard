@@ -235,8 +235,14 @@ void ScriptEditorDB::PurgeDataForDeletedFiles() {
     strings::iterator i = relpaths.begin();
     for (; i != relpaths.end(); ++i) {
         fs::path path(RootPath() / *i);
-        if (!fs::exists(path)) 
+        if (!fs::exists(path)) {
             DeleteAnyFileData(*i);
+
+            // Notify any listeners that this file has been deleted.
+            std::vector<IListener*>::iterator i2 = mListeners.begin();
+            for (; i2 != mListeners.end(); ++i2)
+                (*i2)->FileDeleted(*i); 
+        }
     }
 }
 
@@ -362,14 +368,20 @@ void ScriptEditorDB::BeginProcessingFile(const std::string &relpath) {
     mDB->executenonquery("INSERT INTO file VALUES ('%q', %lld)",
                         relpath.c_str(), modtime);
 
-    // Remember the ID for this file.
+    // Remember the ID & relpath for this file.
     mIsProcessingFile = true;
     mProcessingFileId = mDB->insertid();
+    mProcessingFileRelPath = relpath;
 }
 
 void ScriptEditorDB::EndProcessingFile() {
     ASSERT(mIsProcessingFile);
     mIsProcessingFile = false;
+
+    // Notify any listeners that this file has been processed.
+    std::vector<IListener*>::iterator i = mListeners.begin();
+    for (; i != mListeners.end(); ++i)
+        (*i)->FileChanged(mProcessingFileRelPath); 
 }
 
 /// For each unprocessed file in the specified directory tree (with the
@@ -418,24 +430,37 @@ void ScriptEditorDB::InsertHelp(const std::string &name,
 }
 
 ScriptEditorDB::Definitions
-ScriptEditorDB::FindDefinitions(const std::string &name) {
-    Definitions result;
-    
-    // Look up the definition in the database.
-    sqlite3::reader r =
-        mDB->executereader("SELECT path,name,type,line FROM file,def"
-                           "  WHERE file.rowid = file_id AND name = '%q'",
-                           name.c_str());
-
+ScriptEditorDB::ReadDefinitions(sqlite3::reader &r) {
     // Add each row returned by the query to our result.
+    Definitions result;
     while (r.read()) {
         Definition d(r.getstring(0), r.getstring(1),
                      static_cast<TScriptIdentifier::Type>(r.getint32(2)),
                      r.getint32(3));
         result.push_back(d);
     }
-
     return result;
+}
+
+ScriptEditorDB::Definitions
+ScriptEditorDB::FindDefinitions(const std::string &name) {
+    // Look up the definition in the database.
+    sqlite3::reader r =
+        mDB->executereader("SELECT path,name,type,line FROM file,def"
+                           "  WHERE file.rowid = file_id AND name = '%q'",
+                           name.c_str());
+    return ReadDefinitions(r);
+}
+
+ScriptEditorDB::Definitions
+ScriptEditorDB::FindDefinitionsInFile(const std::string &relpath) {
+    // Look up the definition in the database.
+    sqlite3::reader r =
+        mDB->executereader("SELECT path,name,type,line FROM file,def"
+                           "  WHERE file.rowid = file_id AND path = '%q'"
+                           "  ORDER BY line",
+                           relpath.c_str());
+    return ReadDefinitions(r);
 }
 
 ScriptEditorDB::strings ScriptEditorDB::FindHelp(const std::string &name) {
@@ -451,6 +476,34 @@ ScriptEditorDB::strings ScriptEditorDB::FindHelp(const std::string &name) {
         result.push_back(r.getstring(0));
     
     return result;
+}
+
+void ScriptEditorDB::AddListener(IListener *inListener) {
+    // Adapted from Model::RegisterView, because the template grik was
+    // too ugly to refactor.
+    if (std::count(mListeners.begin(), mListeners.end(), inListener) == 0)
+		mListeners.push_back(inListener);
+
+    // Extract a list of all the files in the database.
+    sqlite3::reader r = mDB->executereader("SELECT path FROM file");
+    std::vector<std::string> files;
+    while (r.read())
+        files.push_back(r.getstring(0));
+    r.close();
+
+    // Send FileChanged messages for each file in the database.
+	for (std::vector<std::string>::iterator i = files.begin();
+		 i != files.end(); ++i)
+        inListener->FileChanged(*i);
+}
+
+void ScriptEditorDB::RemoveListener(IListener *inListener) {
+    // Adapted from Model::RegisterView, because the template grik was
+    // too ugly to refactor.
+	std::vector<IListener*>::iterator found =
+		std::find(mListeners.begin(), mListeners.end(), inListener);
+	if (found != mListeners.end())
+        mListeners.erase(found);
 }
 
 

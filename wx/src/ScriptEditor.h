@@ -25,10 +25,11 @@
 
 #include "TInterpreter.h"
 #include "EventDelegator.h"
+#include "SashFrame.h"
 
 class DocNotebook;
 
-class ScriptEditor : public wxFrame {
+class ScriptEditor : public SashFrame {
     static ScriptEditor *sFrame;
     static void MaybeCreateFrame();
 

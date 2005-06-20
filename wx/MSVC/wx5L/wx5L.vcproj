@@ -278,6 +278,9 @@
 				RelativePath="..\..\src\Quake2Engine.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\SashFrame.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\ScriptEditor.cpp">
 			</File>
 			<File
@@ -339,6 +342,9 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\TamaleTreeCtrl.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\TestHarness.cpp">
@@ -534,6 +540,9 @@
 				RelativePath="..\..\src\Quake2Engine.h">
 			</File>
 			<File
+				RelativePath="..\..\src\SashFrame.h">
+			</File>
+			<File
 				RelativePath="..\..\src\ScriptEditor.h">
 			</File>
 			<File
@@ -559,6 +568,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\TamaleHeaders.h">
+			</File>
+			<File
+				RelativePath="..\..\src\TamaleTreeCtrl.h">
 			</File>
 			<File
 				RelativePath="..\..\src\TestHarness.h">

@@ -4,6 +4,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
   * Moved many RECT and POINT functions into types.ss.
   * Added <LAYOUT> class to lay out boxes on a screen.
   * Other minor Runtime tweaks.
+  * Added script/definition tree to left of ScriptEditor.
 
 0.0.46 - 4 Feb 2005 - tryon, emk, naomi
 

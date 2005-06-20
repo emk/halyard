@@ -25,6 +25,7 @@
 
 #include <wx/display.h>
 #include "ModelView.h"
+#include "SashFrame.h"
 
 BEGIN_NAMESPACE_FIVEL
 class Document;
@@ -51,7 +52,7 @@ enum ToolWindowID {
 //////////
 /// Our main window--the "frame" around our stage.
 ///
-class StageFrame : public wxFrame, public model::View
+class StageFrame : public SashFrame, public model::View
 {
 	//////////
 	/// Our associated document object.
@@ -288,6 +289,9 @@ public:
     bool MSWTranslateMessage(WXMSG* pMsg);
 
 #endif // FIVEL_PLATFORM_WIN32
+
+protected:
+    void UpdateSashLayout();
 
 private:
     bool AreDevToolsAvailable();

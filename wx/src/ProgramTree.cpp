@@ -23,7 +23,6 @@
 #include "TamaleHeaders.h"
 #include <wx/treectrl.h>
 #include <wx/laywin.h>
-#include <wx/imaglist.h>
 #include <wx/dnd.h>
 
 #include "TInterpreter.h"
@@ -33,6 +32,7 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "StageFrame.h"
+#include "TamaleTreeCtrl.h"
 #include "ProgramTree.h"
 #include "Model.h"
 #include "ModelView.h"
@@ -50,81 +50,11 @@ class ProgramTreeItemData;
 //=========================================================================
 
 /// Tree widget showing structure of Tamale script.
-class ProgramTreeCtrl : public wxTreeCtrl
+class ProgramTreeCtrl : public TamaleTreeCtrl
 {
-	DECLARE_EVENT_TABLE()
-
-	ProgramTreeItemData *mDragItemData;
-
-	ProgramTreeItemData *GetProgramTreeItemData(wxTreeItemId inId);
-	ProgramTreeItemData *GetProgramTreeItemData(wxMouseEvent &inEvent);
-	ProgramTreeItemData *GetProgramTreeItemData(wxTreeEvent &inEvent);
-
 public:
 	ProgramTreeCtrl(wxWindow *inParent);
-
-	//////////
-	/// Any of these icons may be used by nodes in the ProgramTree.
-	///
-	enum {
-		ICON_CARD,
-		ICON_DOCUMENT,
-		ICON_FOLDER_CLOSED,
-		ICON_FOLDER_OPEN
-	};
-
-public:
-	void SetIcon(wxTreeItemId id, int closed_icon, int open_icon);
-
-private:
-	void BuildIconList();
-
-	void OnLeftDClick(wxMouseEvent& event);
-	void OnRightDown(wxMouseEvent& event);
-	void OnBeginLabelEdit(wxTreeEvent &event);
-	void OnEndLabelEdit(wxTreeEvent &event);
-	void OnBeginDrag(wxTreeEvent& event);
-	void OnEndDrag(wxTreeEvent& event);
-	void OnMouseMoved(wxMouseEvent& event);
 };	
-
-
-//=========================================================================
-//  ProgramTreeItemData
-//=========================================================================
-
-///  This class respresents a "smart" node in our ProgramTreeCtrl.  Most
-///  node-specific events will be passed to a subclass of
-///  ProgramTreeItemData by our event handlers.
-class ProgramTreeItemData : public wxTreeItemData
-{
-	ProgramTreeCtrl *mTreeCtrl;
-
-public:
-	ProgramTreeItemData(ProgramTreeCtrl *inTreeCtrl);
-	ProgramTreeCtrl *GetTree() { return mTreeCtrl; }
-
-	virtual void OnLeftDClick(wxMouseEvent& event) {}
-	virtual void OnRightDown(wxMouseEvent& event) {}
-	virtual void OnBeginLabelEdit(wxTreeEvent &event);
-	virtual void OnEndLabelEdit(wxTreeEvent &event) {}
-
-	virtual bool CanBeDragged() { return false; }
-	virtual bool CanAcceptDrag(ProgramTreeItemData *inItem) { return false; }
-	virtual void DragDone(ProgramTreeItemData *inItem) {}
-};
-
-ProgramTreeItemData::ProgramTreeItemData(ProgramTreeCtrl *inTreeCtrl)
-	: mTreeCtrl(inTreeCtrl)
-{
-	ASSERT(mTreeCtrl != NULL);
-}
-
-void ProgramTreeItemData::OnBeginLabelEdit(wxTreeEvent &event)
-{
-	// By default, do not allow nodes in our tree to be renamed.
-	event.Veto();
-}
 
 
 //=========================================================================
@@ -132,11 +62,11 @@ void ProgramTreeItemData::OnBeginLabelEdit(wxTreeEvent &event)
 //=========================================================================
 
 /// An object in our ProgramTreeCtrl which listens to our Document model.
-class ViewItemData : public ProgramTreeItemData, public model::View
+class ViewItemData : public TamaleTreeItemData, public model::View
 {
 public:
 	ViewItemData(ProgramTreeCtrl *inTreeCtrl)
-		: ProgramTreeItemData(inTreeCtrl) {}	
+		: TamaleTreeItemData(inTreeCtrl) {}	
 };
 
 
@@ -145,14 +75,14 @@ public:
 //=========================================================================
 
 /// Sequences of cards can be nested within each other.
-class SequenceItemData : public ProgramTreeItemData
+class SequenceItemData : public TamaleTreeItemData
 {
 public:
 	SequenceItemData(ProgramTreeCtrl *inTreeCtrl);
 };
 
 SequenceItemData::SequenceItemData(ProgramTreeCtrl *inTreeCtrl)
-	: ProgramTreeItemData(inTreeCtrl)
+	: TamaleTreeItemData(inTreeCtrl)
 {
 }
 
@@ -162,7 +92,7 @@ SequenceItemData::SequenceItemData(ProgramTreeCtrl *inTreeCtrl)
 //=========================================================================
 
 /// Representation of a card in our ProgramTreeCtrl.
-class CardItemData : public ProgramTreeItemData
+class CardItemData : public TamaleTreeItemData
 {
 	wxString mCardName;
 
@@ -173,7 +103,7 @@ public:
 
 CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl,
 						   const wxString &inCardName)
-	: ProgramTreeItemData(inTreeCtrl), mCardName(inCardName)
+	: TamaleTreeItemData(inTreeCtrl), mCardName(inCardName)
 {
 }
 
@@ -200,8 +130,8 @@ public:
 	virtual void OnEndLabelEdit(wxTreeEvent &event);
 
 	virtual bool CanBeDragged() { return true; }
-	virtual bool CanAcceptDrag(ProgramTreeItemData *inItem);
-	virtual void DragDone(ProgramTreeItemData *inItem);
+	virtual bool CanAcceptDrag(TamaleTreeItemData *inItem);
+	virtual void DragDone(TamaleTreeItemData *inItem);
 
 	virtual void ObjectChanged();
 	virtual void ObjectDeleted();
@@ -218,12 +148,12 @@ void BackgroundItemData::OnEndLabelEdit(wxTreeEvent &event)
 		GetObject()->SetString("name", event.GetLabel().mb_str());
 }
 
-bool BackgroundItemData::CanAcceptDrag(ProgramTreeItemData *inItem)
+bool BackgroundItemData::CanAcceptDrag(TamaleTreeItemData *inItem)
 {
 	return dynamic_cast<BackgroundItemData*>(inItem) ? true : false;
 }
 
-void BackgroundItemData::DragDone(ProgramTreeItemData *inItem)
+void BackgroundItemData::DragDone(TamaleTreeItemData *inItem)
 {
 	BackgroundItemData *source = dynamic_cast<BackgroundItemData*>(inItem);
 	wxASSERT(source);
@@ -290,9 +220,9 @@ void BackgroundListItemData::ObjectChanged()
 	ObjectVector view_items, model_items, lcs;
 
 	// Extract the Objects from the Views in our tree.
-	ProgramTreeCtrl *tree = GetTree();
+	ProgramTreeCtrl *tree = dynamic_cast<ProgramTreeCtrl*>(GetTree());
 	wxTreeItemId id = GetId();
-	long cookie;
+	wxTreeItemIdValue cookie;
 	for (id = tree->GetFirstChild(GetId(), cookie); id;
 		 id = tree->GetNextChild(GetId(), cookie))
 		view_items.push_back(GetItemObject(id));
@@ -411,153 +341,14 @@ void TamaleProgramItemData::ObjectDeleted()
 
 
 //=========================================================================
-//  ProgramTreeDropTarget
-//=========================================================================
-
-/*
-class ProgramTreeDropTarget : public wxTextDropTarget
-{
-	ProgramTreeCtrl *mTree;
-
-public:
-	ProgramTreeDropTarget(ProgramTreeCtrl *inTree) : mTree(inTree) {}
-
-	virtual bool OnDropText(int x, int y, const wxString &data);
-};
-
-bool ProgramTreeDropTarget::OnDropText(int x, int y, const wxString &data)
-{
-	wxLogError("Dropped " + data + ".");
-	return TRUE; // Don't veto the operation.
-}
-*/
-
-
-//=========================================================================
 //  ProgramTreeCtrl
 //=========================================================================
 
-BEGIN_EVENT_TABLE(ProgramTreeCtrl, wxTreeCtrl)
-    EVT_LEFT_DCLICK(ProgramTreeCtrl::OnLeftDClick)
-    EVT_RIGHT_DOWN(ProgramTreeCtrl::OnRightDown)
-	EVT_TREE_BEGIN_LABEL_EDIT(FIVEL_PROGRAM_TREE_CTRL,
-							  ProgramTreeCtrl::OnBeginLabelEdit)
-	EVT_TREE_END_LABEL_EDIT(FIVEL_PROGRAM_TREE_CTRL,
-							ProgramTreeCtrl::OnEndLabelEdit)
-	EVT_TREE_BEGIN_DRAG(FIVEL_PROGRAM_TREE_CTRL,
-						ProgramTreeCtrl::OnBeginDrag)
-	EVT_TREE_END_DRAG(FIVEL_PROGRAM_TREE_CTRL,
-					  ProgramTreeCtrl::OnEndDrag)
-    EVT_MOTION(ProgramTreeCtrl::OnMouseMoved)
-END_EVENT_TABLE()
-
 ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent)
-	: wxTreeCtrl(inParent, FIVEL_PROGRAM_TREE_CTRL,
-				 wxDefaultPosition, wxDefaultSize,
-				 wxTR_DEFAULT_STYLE|wxTR_EDIT_LABELS),
-	  mDragItemData(NULL)
+	: TamaleTreeCtrl(inParent, FIVEL_PROGRAM_TREE_CTRL,
+                     wxDefaultPosition, wxDefaultSize,
+                     wxTR_DEFAULT_STYLE|wxTR_EDIT_LABELS)
 {
-	BuildIconList();
-}
-
-void ProgramTreeCtrl::SetIcon(wxTreeItemId id, int closed_icon, int open_icon)
-{
-	SetItemImage(id, closed_icon, wxTreeItemIcon_Normal);
-	SetItemImage(id, closed_icon, wxTreeItemIcon_Selected);
-	SetItemImage(id, open_icon, wxTreeItemIcon_Expanded);
-	SetItemImage(id, open_icon, wxTreeItemIcon_SelectedExpanded);
-}
-
-void ProgramTreeCtrl::BuildIconList()
-{
-	// This should match the enumeration of icons in our class
-	// declaration.
-	wxImageList *images = new wxImageList(16, 16, TRUE);
-	images->Add(wxICON(ic_card));
-	images->Add(wxICON(ic_document));
-	images->Add(wxICON(ic_folder_closed));
-	images->Add(wxICON(ic_folder_open));
-	AssignImageList(images);
-}
-
-ProgramTreeItemData *
-ProgramTreeCtrl::GetProgramTreeItemData(wxTreeItemId inId)
-{
-	return dynamic_cast<ProgramTreeItemData*>(GetItemData(inId));
-}
-
-ProgramTreeItemData *
-ProgramTreeCtrl::GetProgramTreeItemData(wxMouseEvent &inEvent)
-{
-    wxTreeItemId id = HitTest(inEvent.GetPosition());
-	return id ? GetProgramTreeItemData(id) : NULL;
-}
-
-ProgramTreeItemData *
-ProgramTreeCtrl::GetProgramTreeItemData(wxTreeEvent &inEvent)
-{
-	return GetProgramTreeItemData(inEvent.GetItem());
-}
-
-void ProgramTreeCtrl::OnLeftDClick(wxMouseEvent& event)
-{
-	ProgramTreeItemData *data = GetProgramTreeItemData(event);
-	if (data)
-		data->OnLeftDClick(event);
-}
-
-void ProgramTreeCtrl::OnRightDown(wxMouseEvent& event)
-{
-	ProgramTreeItemData *data = GetProgramTreeItemData(event);
-	if (data)
-		data->OnRightDown(event);
-}
-
-void ProgramTreeCtrl::OnBeginLabelEdit(wxTreeEvent &event)
-{
-	ProgramTreeItemData *data = GetProgramTreeItemData(event);
-	if (data)
-		data->OnBeginLabelEdit(event);	
-}
-
-void ProgramTreeCtrl::OnEndLabelEdit(wxTreeEvent &event)
-{
-	ProgramTreeItemData *data = GetProgramTreeItemData(event);
-	if (data)
-		data->OnEndLabelEdit(event);	
-}
-
-void ProgramTreeCtrl::OnBeginDrag(wxTreeEvent& event)
-{
-	ProgramTreeItemData *data = GetProgramTreeItemData(event);
-	if (data && data->CanBeDragged())
-	{
-		event.Allow();
-		mDragItemData = data;
-	}
-}
-
-void ProgramTreeCtrl::OnEndDrag(wxTreeEvent& event)
-{
-	ProgramTreeItemData *data = GetProgramTreeItemData(event);
-	if (data && data->CanAcceptDrag(mDragItemData))
-		data->DragDone(mDragItemData);
-	mDragItemData = NULL;
-}
-
-void ProgramTreeCtrl::OnMouseMoved(wxMouseEvent& event)
-{
-	if (!mDragItemData)
-		SetCursor(*wxSTANDARD_CURSOR);
-	else
-	{
-		ProgramTreeItemData *data = GetProgramTreeItemData(event);
-		if (data && data != mDragItemData &&
-			data->CanAcceptDrag(mDragItemData))
-			SetCursor(*wxSTANDARD_CURSOR);
-		else
-			SetCursor(wxCursor(wxCURSOR_NO_ENTRY));
-	}
 }
 
 

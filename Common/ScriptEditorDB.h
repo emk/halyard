@@ -27,6 +27,7 @@
 
 namespace sqlite3 {
     class connection;
+    class reader;
 };
 
 BEGIN_NAMESPACE_FIVEL
@@ -58,13 +59,22 @@ public:
     /// A list of strings.
     typedef std::vector<std::string> strings;
 
+    // Listens for changes made to the ScriptEditorDB.
+    class IListener {
+    public:
+        virtual void FileChanged(const std::string &relpath) = 0;
+        virtual void FileDeleted(const std::string &relpath) = 0;
+    };
+    
 private:
     typedef std::map<std::string,time_t> ModTimeMap;
 
     shared_ptr<sqlite3::connection> mDB;
     bool mIsProcessingFile;
     __int64 mProcessingFileId;
+    std::string mProcessingFileRelPath;
     bool mIsInTransaction;
+    std::vector<IListener*> mListeners;
 
     void EnsureCorrectSchema();
 
@@ -93,6 +103,8 @@ protected:
 
     virtual void ProcessFileInternal(const std::string &relpath);
 
+    Definitions ReadDefinitions(sqlite3::reader &r);
+
 public:
     ScriptEditorDB(const std::string &relpath);
     ~ScriptEditorDB();
@@ -116,7 +128,14 @@ public:
     void InsertHelp(const std::string &name, const std::string &help);
 
     Definitions FindDefinitions(const std::string &name);
+    Definitions FindDefinitionsInFile(const std::string &relpath);
     strings FindHelp(const std::string &name);
+
+    /// Add a new listner to the ScriptEditorDB (if it isn't already there).
+    void AddListener(IListener *inListener);
+
+    /// Remove a listener from the ScriptEditorDB if it exists.
+    void RemoveListener(IListener *inListener);
 };
 
 END_NAMESPACE_FIVEL

@@ -134,7 +134,7 @@ void StageBackground::CenterStage(Stage *inStage)
 //  StageFrame Methods
 //=========================================================================
 
-BEGIN_EVENT_TABLE(StageFrame, wxFrame)
+BEGIN_EVENT_TABLE(StageFrame, SashFrame)
     EVT_MENU(FIVEL_EXIT, StageFrame::OnExit)
 
     EVT_UPDATE_UI(FIVEL_NEW_PROGRAM, StageFrame::UpdateUiNewProgram)
@@ -182,15 +182,14 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(FIVEL_STOP_MOVIES, StageFrame::OnStopMovies)
 
     EVT_ACTIVATE(StageFrame::OnActivate)
-    EVT_SASH_DRAGGED(FIVEL_PROGRAM_TREE, StageFrame::OnSashDrag)
 	EVT_SIZE(StageFrame::OnSize)
     EVT_CLOSE(StageFrame::OnClose)
 END_EVENT_TABLE()
 
 StageFrame::StageFrame(wxSize inSize)
-    : wxFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
-              LoadFramePosition(), wxDefaultSize,
-			  wxDEFAULT_FRAME_STYLE),
+    : SashFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
+                LoadFramePosition(), wxDefaultSize,
+                wxDEFAULT_FRAME_STYLE),
 	  mDocument(NULL),
 	  mHaveLoadedFrameLayout(false),
       mAreFullScreenOptionsActive(false)
@@ -219,6 +218,7 @@ StageFrame::StageFrame(wxSize inSize)
     // Create a background panel to surround our stage with.  This keeps
     // life simple.
     mBackground = new StageBackground(this);
+    SetMainWindow(mBackground);
 
     // Create a stage object to scribble on, and center it.
     mStage = new Stage(mBackground, this, inSize);
@@ -715,6 +715,12 @@ bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
 
 #endif // FIVEL_PLATFORM_WIN32
 
+void StageFrame::UpdateSashLayout() {
+    // Call our superclass, and save our frame layout if appropriate.
+    SashFrame::UpdateSashLayout();
+    MaybeSaveFrameLayout();
+}
+
 bool StageFrame::AreDevToolsAvailable() {
     return (!TInterpreterManager::IsInRuntimeMode()
             || gDeveloperPrefs.GetPref(DEVTOOLS) == DEVTOOLS_ENABLED);
@@ -1000,21 +1006,7 @@ void StageFrame::OnActivate(wxActivateEvent &inEvent) {
     UpdateVideoMode(IsFullScreen(), IsIconized());
 }
 
-void StageFrame::OnSashDrag(wxSashEvent &inEvent)
-{
-    if (inEvent.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE)
-        return;
-    if (inEvent.GetId() != FIVEL_PROGRAM_TREE)
-		return;
-
-	mProgramTree->SetDefaultWidth(inEvent.GetDragRect().width);
-
-    wxLayoutAlgorithm layout;
-    layout.LayoutFrame(this, mBackground);
-	MaybeSaveFrameLayout();
-}
-
-void StageFrame::OnSize(wxSizeEvent &WXUNUSED(inEvent))
+void StageFrame::OnSize(wxSizeEvent &inEvent)
 {
 	// Make sure no sash window can be expanded to obscure parts of our
 	// stage.  We need to do this whenever the window geometry changes.
@@ -1031,11 +1023,8 @@ void StageFrame::OnSize(wxSizeEvent &WXUNUSED(inEvent))
 		mProgramTree->SetMaximumSizeX(available_space);
 	}
 
-	// Ask wxLayoutAlgorithm to do smart resizing, taking our various
-	// subwindows and constraints into account.
-    wxLayoutAlgorithm layout;
-    layout.LayoutFrame(this, mBackground);
-	MaybeSaveFrameLayout();
+    // Let our parent class call the layout algorithm for us.
+    inEvent.Skip();
 }
 
 void StageFrame::OnClose(wxCloseEvent &inEvent)

@@ -24,6 +24,8 @@
 #include <wx/file.h>
 #include <wx/stc/stc.h>
 #include <wx/config.h>
+#include <wx/laywin.h>
+#include "TTemplateUtils.h"
 #include "ScriptEditorDB.h"
 #include "AppGlobals.h"
 #include "ScriptEditor.h"
@@ -31,6 +33,7 @@
 #include "BufferSpan.h"
 #include "dlg/FindDlg.h"
 #include "dlg/MetaDotDlg.h"
+#include "TamaleTreeCtrl.h"
 #include "FiveLApp.h"
 
 // Only so we can find our parent window.
@@ -1633,12 +1636,162 @@ void ScriptDoc::OnSavePointLeft(wxStyledTextEvent &event) {
 
 
 //=========================================================================
+//  DefinitionTreeItemData Methods
+//=========================================================================
+
+class DefinitionTreeItemData : public TamaleTreeItemData {
+    ScriptEditorDB::Definition mDefinition;
+
+public:
+    DefinitionTreeItemData(TamaleTreeCtrl *inTreeCtrl,
+                           ScriptEditorDB::Definition inDefinition);
+
+    void OnLeftDClick(wxMouseEvent& event);
+};
+
+DefinitionTreeItemData::
+DefinitionTreeItemData(TamaleTreeCtrl *inTreeCtrl,
+                       ScriptEditorDB::Definition inDefinition)
+    : TamaleTreeItemData(inTreeCtrl), mDefinition(inDefinition)
+{
+}
+
+void DefinitionTreeItemData::OnLeftDClick(wxMouseEvent& event) {
+    ScriptEditor::OpenDocument(mDefinition.GetNativePath().c_str(),
+                               mDefinition.line_number);
+}
+
+
+//=========================================================================
+//  ScriptTree Methods
+//=========================================================================
+
+class ScriptTree : public TamaleTreeCtrl, private ScriptEditorDB::IListener {
+    typedef std::map<std::string,wxTreeItemId> ItemMap;
+    ItemMap mItemMap;
+
+public:
+    ScriptTree(wxWindow *parent);
+    ~ScriptTree();
+
+private:    
+    void FileChanged(const std::string &relpath);
+    void FileDeleted(const std::string &relpath);
+
+    wxTreeItemId FindItem(const std::string &relpath,
+                          bool shouldCreate = false,
+                          bool isDirectory = false);
+    wxTreeItemId InsertItemAlphabetically(wxTreeItemId parent,
+                                          const std::string name);
+};
+
+ScriptTree::ScriptTree(wxWindow *parent)
+    : TamaleTreeCtrl(parent, -1, wxDefaultPosition, wxDefaultSize,
+                     wxTR_HIDE_ROOT|wxTR_LINES_AT_ROOT|wxTR_HAS_BUTTONS)
+{
+    AddRoot("Program");
+
+    // TODO Handle delayed TInterpreterManager load correctly.
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    if (db)
+        db->AddListener(this);
+}
+
+ScriptTree::~ScriptTree() {
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    if (db)
+        db->RemoveListener(this);
+}
+
+void ScriptTree::FileChanged(const std::string &relpath) {
+    // Find the item corresponding to this file, creating it if necessary.
+    wxTreeItemId item = FindItem(relpath, true, false);
+
+    // Get the definitions for this file.
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    ASSERT(db);
+    ScriptEditorDB::Definitions defs = db->FindDefinitionsInFile(relpath);
+
+    // Delete any existing definitions, and add our new ones. 
+    DeleteChildren(item);
+    ScriptEditorDB::Definitions::iterator i = defs.begin();
+    for (; i != defs.end(); ++i) {
+        wxTreeItemId new_id = AppendItem(item, i->name.c_str());
+        SetItemData(new_id, new DefinitionTreeItemData(this, *i));
+    }
+}
+
+void ScriptTree::FileDeleted(const std::string &relpath) {
+    wxTreeItemId item = FindItem(relpath);
+    if (item.IsOk())
+        Delete(item);
+}
+
+wxTreeItemId ScriptTree::FindItem(const std::string &relpath,
+                                  bool shouldCreate,
+                                  bool isDirectory)
+{
+    ItemMap::iterator found = mItemMap.find(relpath);
+    if (found != mItemMap.end()) {
+        return found->second;
+    } else if (shouldCreate) {
+        // Figure out where to put the item.
+        std::string::size_type slash = relpath.rfind('/');
+        wxTreeItemId parent_id;
+        std::string name;
+        if (slash == std::string::npos) {
+            name = relpath;
+            parent_id = GetRootItem();
+        } else {
+            std::string dir(relpath, 0, slash);
+            name = std::string(relpath, slash+1, std::string::npos);
+            parent_id = FindItem(dir, true, true);
+        }
+
+        // Add the item to the GUI.
+        wxTreeItemId item_id =
+            InsertItemAlphabetically(parent_id, name.c_str());
+        if (isDirectory)
+            SetIcon(item_id, ICON_FOLDER_CLOSED, ICON_FOLDER_OPEN);
+        else
+            SetIcon(item_id, ICON_DOCUMENT, ICON_DOCUMENT);
+
+        // Remember the item id and return it.
+        mItemMap.insert(ItemMap::value_type(relpath, item_id));
+        return item_id;
+    } else {
+        return wxTreeItemId();
+    }
+}
+
+wxTreeItemId ScriptTree::InsertItemAlphabetically(wxTreeItemId parent,
+                                                  const std::string name)
+{
+    // Look for an item to insert before.
+    wxTreeItemIdValue cookie;
+    wxTreeItemId existing_id = GetFirstChild(parent, cookie);
+    size_t existing_index = 0;
+    while (existing_id.IsOk()) {
+        std::string existing_name(GetItemText(existing_id).mb_str());
+        if (MakeStringLowercase(name) < MakeStringLowercase(existing_name))
+            return InsertItem(parent, existing_index, name.c_str());
+        
+        existing_id = GetNextChild(parent, cookie);
+        ++existing_index;
+    }
+
+    // OK, there's no place to insert it, so toss it at the end.
+    return AppendItem(parent, name.c_str());
+}
+
+
+//=========================================================================
 //  ScriptEditor Methods
 //=========================================================================
 
 ScriptEditor *ScriptEditor::sFrame = NULL;
 
-BEGIN_EVENT_TABLE(ScriptEditor, wxFrame)
+BEGIN_EVENT_TABLE(ScriptEditor, SashFrame)
     EVT_ACTIVATE(ScriptEditor::OnActivate)
     EVT_CLOSE(ScriptEditor::OnClose)
 
@@ -1715,9 +1868,9 @@ void ScriptEditor::ShowDefinition(const wxString &identifier) {
 }
 
 ScriptEditor::ScriptEditor()
-    : wxFrame(wxGetApp().GetStageFrame(), -1,
-              "Script Editor - " + wxGetApp().GetAppName(),
-              wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE),
+    : SashFrame(wxGetApp().GetStageFrame(), -1,
+                "Script Editor - " + wxGetApp().GetAppName(),
+                wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE),
       mProcessingActivateEvent(false)
 {
     // Set up the static variable pointing to this frame.
@@ -1855,22 +2008,33 @@ ScriptEditor::ScriptEditor()
                 "Decrease Text Size");
     tb->Realize();
 
+    SetBackgroundColour(*wxGREEN);
+
+    // Create a wxSashLayoutWindow to hold our tree widget.
+    wxSashLayoutWindow *tree_container =
+        new wxSashLayoutWindow(this, -1);
+	tree_container->SetOrientation(wxLAYOUT_VERTICAL);
+	tree_container->SetAlignment(wxLAYOUT_LEFT);
+	tree_container->SetSashVisible(wxSASH_RIGHT, TRUE);
+	tree_container->SetDefaultSize(wxSize(150, 0 /* unused */));
+
+    // Create our tree widget.
+    wxTreeCtrl *tree = new ScriptTree(tree_container);
+
+    // Create a wxSashLayoutWindow to hold our notebook widget.
+    wxSashLayoutWindow *notebook_container =
+        new wxSashLayoutWindow(this, -1);
+    notebook_container->SetBackgroundColour(*wxRED);
+    SetMainWindow(notebook_container);
+
     // Create a document notebook, delegate menu events to it, and put
     // it in charge of our title bar.
-    mNotebook = new DocNotebook(this);
+    mNotebook = new DocNotebook(notebook_container);
     mDelegator.SetDelegate(mNotebook);
     mNotebook->SetFrameToTitle(this);
 
-    // Create a sizer to handle window layout.  This doesn't do much for
-    // now, but we'll add more window cruft later.
-    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(mNotebook, 1 /* stretch */, wxGROW, 0);
-    SetSizer(sizer);
-    sizer->SetSizeHints(this);
-    Layout();
-
     // Set an appropriate default window size.
-    SetSize(wxSize(900, 650));
+    SetSize(wxSize(950, 650));
 
     // If we have a Tamale program already, open up the start script.
     if (TInterpreterManager::HaveInstance() &&
