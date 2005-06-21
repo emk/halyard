@@ -619,6 +619,12 @@
 				RelativePath="..\..\src\ic_card.ico">
 			</File>
 			<File
+				RelativePath="..\..\src\ic_class.ico">
+			</File>
+			<File
+				RelativePath="..\..\src\ic_constant.ico">
+			</File>
+			<File
 				RelativePath="..\..\src\ic_document.ico">
 			</File>
 			<File
@@ -631,13 +637,31 @@
 				RelativePath="..\..\src\ic_folder_open.ico">
 			</File>
 			<File
+				RelativePath="..\..\src\ic_function.ico">
+			</File>
+			<File
+				RelativePath="..\..\src\ic_keyword.ico">
+			</File>
+			<File
 				RelativePath="..\..\src\ic_listener.ico">
+			</File>
+			<File
+				RelativePath="..\..\src\ic_script.ico">
 			</File>
 			<File
 				RelativePath="..\..\src\ic_scripts.ico">
 			</File>
 			<File
+				RelativePath="..\..\src\ic_template.ico">
+			</File>
+			<File
 				RelativePath="..\..\src\ic_timecoder.ico">
+			</File>
+			<File
+				RelativePath="..\..\src\ic_unknown.ico">
+			</File>
+			<File
+				RelativePath="..\..\src\ic_variable.ico">
 			</File>
 			<File
 				RelativePath="..\..\src\left_cur.cur">

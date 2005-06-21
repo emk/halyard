@@ -51,6 +51,8 @@ TamaleTreeCtrl::TamaleTreeCtrl(wxWindow *inParent, wxWindowID inId,
 
 void TamaleTreeCtrl::SetIcon(wxTreeItemId id, int closed_icon, int open_icon)
 {
+    if (open_icon = -1)
+        open_icon = closed_icon;
     SetItemImage(id, closed_icon, wxTreeItemIcon_Normal);
     SetItemImage(id, closed_icon, wxTreeItemIcon_Selected);
     SetItemImage(id, open_icon, wxTreeItemIcon_Expanded);
@@ -66,6 +68,17 @@ void TamaleTreeCtrl::BuildIconList()
     images->Add(wxICON(ic_document));
     images->Add(wxICON(ic_folder_closed));
     images->Add(wxICON(ic_folder_open));
+    images->Add(wxICON(ic_script));
+    images->Add(wxICON(ic_keyword));
+    images->Add(wxICON(ic_function));
+    images->Add(wxICON(ic_variable));
+    images->Add(wxICON(ic_constant));
+    images->Add(wxICON(ic_class));
+    images->Add(wxICON(ic_template));
+    images->Add(wxICON(ic_folder_closed)); //images->Add(wxICON(ic_group));
+    images->Add(wxICON(ic_folder_closed)); //images->Add(wxICON(ic_sequence));
+    images->Add(wxICON(ic_unknown));       //images->Add(wxICON(ic_element));
+    images->Add(wxICON(ic_unknown));
     AssignImageList(images);
 }
 
@@ -93,6 +106,8 @@ void TamaleTreeCtrl::OnLeftDClick(wxMouseEvent& event)
 	TamaleTreeItemData *data = GetTamaleTreeItemData(event);
 	if (data)
 		data->OnLeftDClick(event);
+    else
+        event.Skip();
 }
 
 void TamaleTreeCtrl::OnRightDown(wxMouseEvent& event)

@@ -167,20 +167,20 @@ void FindDlg::OnButton(wxCommandEvent &event) {
 /// Set a registry key.
 void FindDlg::SetKey(const wxString &key, bool value) {
 	wxConfigBase *config = wxConfigBase::Get();
-    config->Write("Search/" + key, value);
+    config->Write("/Search/" + key, value);
 }
 
 /// Set a registry key.
 void FindDlg::SetKey(const wxString &key, const wxString &value) {
 	wxConfigBase *config = wxConfigBase::Get();
-    config->Write("Search/" + key, value);    
+    config->Write("/Search/" + key, value);    
 }
 
 /// Get a registry key.
 bool FindDlg::GetKeyBool(const wxString &key) {
 	wxConfigBase *config = wxConfigBase::Get();
     bool result;
-    config->Read("Search/" + key, &result, false);
+    config->Read("/Search/" + key, &result, false);
     return result;
 }
 
@@ -188,21 +188,21 @@ bool FindDlg::GetKeyBool(const wxString &key) {
 wxString FindDlg::GetKeyString(const wxString &key) {
 	wxConfigBase *config = wxConfigBase::Get();
     wxString result;
-    config->Read("Search/" + key, &result, "");
+    config->Read("/Search/" + key, &result, "");
     return result;    
 }
 
 /// Set our search area.
 void FindDlg::SetSearchArea(SearchArea area) {
 	wxConfigBase *config = wxConfigBase::Get();
-    config->Write("Search/SearchArea", static_cast<int>(area));
+    config->Write("/Search/SearchArea", static_cast<int>(area));
 }
 
 /// Get our search area.
 FindDlg::SearchArea FindDlg::GetSearchArea() {
 	wxConfigBase *config = wxConfigBase::Get();
     int regval;
-    config->Read("Search/SearchArea", &regval, CURRENT_SCRIPT);
+    config->Read("/Search/SearchArea", &regval, CURRENT_SCRIPT);
     switch (regval) {
         case CURRENT_SCRIPT:
         case ALL_SCRIPTS:

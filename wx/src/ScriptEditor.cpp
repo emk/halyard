@@ -91,9 +91,16 @@ Soon:
 Next:
 
   Indexer based:
-    Meta-dot (aka "go to definition")
+/   Meta-dot (aka "go to definition")
+/   Function argument tooltips
     Buffer index
-    Function argument tooltips
+/     Fix "Editor opened before program" problems
+/     Double-click on file opens file
+/     Highlight & go to currently open file
+      Better behavior when jumping to identifier
+
+Cosmetic:
+  Unhighlight name of last file closed
 
 Sometime:
 
@@ -1097,6 +1104,9 @@ void ScriptTextCtrl::GotoLineEnsureVisible(int line) {
     SetVisiblePolicy(wxSTC_VISIBLE_STRICT|wxSTC_VISIBLE_SLOP, 10);
     EnsureVisibleEnforcePolicy(line);
     SetVisiblePolicy(wxSTC_VISIBLE_SLOP, 10);
+
+    // Make sure this window is focused.
+    SetFocus();
 }
 
 wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd)
@@ -1387,6 +1397,8 @@ private:
 
     void SetTitleAndPath(const wxString &fullPath);
 
+    void NotifySelected();
+
     bool OkToSaveChanges();
     void UpdateSavePointModTime();
     void WriteDocument();
@@ -1440,6 +1452,11 @@ void ScriptDoc::SetTitleAndPath(const wxString &fullPath) {
 
     // Use the (short) filename as the document name.
     SetDocumentTitle(wxFileName(fullPath).GetFullName());
+}
+
+void ScriptDoc::NotifySelected() {
+    // Let the ScriptTree know we're the active tab.
+    ScriptEditor::HighlightFile(GetDocumentPath());
 }
 
 void ScriptDoc::OfferToReloadIfChanged() {
@@ -1588,7 +1605,6 @@ bool ScriptDoc::DoSaveAs(const wxString &dialogTitle,
     return false;
 }
                          
-
 void ScriptDoc::OnSave(wxCommandEvent &event) {
     SaveDocument(false);
 }
@@ -1636,6 +1652,29 @@ void ScriptDoc::OnSavePointLeft(wxStyledTextEvent &event) {
 
 
 //=========================================================================
+//  FileTreeItemData Methods
+//=========================================================================
+
+class FileTreeItemData : public TamaleTreeItemData {
+    std::string mPath;
+    
+public:
+    FileTreeItemData(TamaleTreeCtrl *inTreeCtrl, const std::string &inPath);
+    void OnLeftDClick(wxMouseEvent& event);
+};
+
+FileTreeItemData::FileTreeItemData(TamaleTreeCtrl *inTreeCtrl,
+                                   const std::string &inPath)
+    : TamaleTreeItemData(inTreeCtrl), mPath(inPath)
+{
+}
+
+void FileTreeItemData::OnLeftDClick(wxMouseEvent& event) {
+	ScriptEditor::OpenDocument(mPath.c_str());
+}
+
+
+//=========================================================================
 //  DefinitionTreeItemData Methods
 //=========================================================================
 
@@ -1645,7 +1684,6 @@ class DefinitionTreeItemData : public TamaleTreeItemData {
 public:
     DefinitionTreeItemData(TamaleTreeCtrl *inTreeCtrl,
                            ScriptEditorDB::Definition inDefinition);
-
     void OnLeftDClick(wxMouseEvent& event);
 };
 
@@ -1666,18 +1704,29 @@ void DefinitionTreeItemData::OnLeftDClick(wxMouseEvent& event) {
 //  ScriptTree Methods
 //=========================================================================
 
-class ScriptTree : public TamaleTreeCtrl, private ScriptEditorDB::IListener {
+class ScriptTree : public TamaleTreeCtrl, private ScriptEditorDB::IListener,
+                   private TReloadNotified
+{
     typedef std::map<std::string,wxTreeItemId> ItemMap;
     ItemMap mItemMap;
+    bool mRegisteredWithDB;
+    wxTreeItemId mLastHighlightedItem;
 
 public:
     ScriptTree(wxWindow *parent);
     ~ScriptTree();
 
+    /// Attempt to highlight the tree node corresponding to the specified
+    /// path.  May not succeed.
+    void HighlightFile(const wxString &path);
+
 private:    
+    void NotifyReloadScriptSucceeded();
+
     void FileChanged(const std::string &relpath);
     void FileDeleted(const std::string &relpath);
 
+    int ChooseDefinitionIcon(const ScriptEditorDB::Definition &def);
     wxTreeItemId FindItem(const std::string &relpath,
                           bool shouldCreate = false,
                           bool isDirectory = false);
@@ -1687,29 +1736,77 @@ private:
 
 ScriptTree::ScriptTree(wxWindow *parent)
     : TamaleTreeCtrl(parent, -1, wxDefaultPosition, wxDefaultSize,
-                     wxTR_HIDE_ROOT|wxTR_LINES_AT_ROOT|wxTR_HAS_BUTTONS)
+                     wxTR_HIDE_ROOT|wxTR_LINES_AT_ROOT|wxTR_HAS_BUTTONS),
+      mRegisteredWithDB(false)
 {
     AddRoot("Program");
 
-    // TODO Handle delayed TInterpreterManager load correctly.
-    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
-    if (db)
-        db->AddListener(this);
+    // If we have a ScriptEditorDB, then send ourselves a
+    // NotifyReloadScriptSucceeded message to trigger our initial setup.
+    if (TInterpreterManager::GetScriptEditorDB())
+        NotifyReloadScriptSucceeded();
 }
 
 ScriptTree::~ScriptTree() {
-    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
-    if (db)
+    if (mRegisteredWithDB) {
+        ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+        ASSERT(db);
         db->RemoveListener(this);
+    }
+}
+
+void ScriptTree::NotifyReloadScriptSucceeded() {
+    if (!mRegisteredWithDB) {
+        mRegisteredWithDB = true;
+        ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+        ASSERT(db);
+        db->AddListener(this);
+    }   
+}
+
+// TODO Refactor code shared with ProgramTree into TamaleTreeCtrl?
+void ScriptTree::HighlightFile(const wxString &path) {
+    // Try to find the new item to highlight.
+    wxTreeItemId new_item;
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    if (db) {
+        std::string relpath(db->NativeToRelPath(path.mb_str()));
+        if (relpath != "")
+            new_item = FindItem(relpath);
+    }
+
+    // If there's nothing to change, bail out now.
+    if (mLastHighlightedItem == new_item)
+        return;
+
+    // Unhighlight previously highlighted item.
+    if (mLastHighlightedItem.IsOk())
+        SetItemBold(mLastHighlightedItem, false);
+        
+    // Highlight the new item.
+    if (new_item.IsOk()) {
+        SetItemBold(new_item, true);
+        // Only do scrolling and selection stuff if we're not already
+        // inside one of new_item's children.
+        wxTreeItemId selected = GetSelection();
+        if (!selected.IsOk() || GetItemParent(selected) != new_item) {
+            SelectItem(new_item);
+            EnsureVisible(new_item);
+        }            
+    }
+    mLastHighlightedItem = new_item;
 }
 
 void ScriptTree::FileChanged(const std::string &relpath) {
-    // Find the item corresponding to this file, creating it if necessary.
-    wxTreeItemId item = FindItem(relpath, true, false);
-
-    // Get the definitions for this file.
     ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
     ASSERT(db);
+
+    // Find the item corresponding to this file, creating it if necessary.
+    wxTreeItemId item = FindItem(relpath, true, false);
+    SetItemData(item,
+                new FileTreeItemData(this, db->RelPathToNative(relpath)));
+
+    // Get the definitions for this file.
     ScriptEditorDB::Definitions defs = db->FindDefinitionsInFile(relpath);
 
     // Delete any existing definitions, and add our new ones. 
@@ -1717,6 +1814,7 @@ void ScriptTree::FileChanged(const std::string &relpath) {
     ScriptEditorDB::Definitions::iterator i = defs.begin();
     for (; i != defs.end(); ++i) {
         wxTreeItemId new_id = AppendItem(item, i->name.c_str());
+        SetIcon(new_id, ChooseDefinitionIcon(*i));
         SetItemData(new_id, new DefinitionTreeItemData(this, *i));
     }
 }
@@ -1725,6 +1823,25 @@ void ScriptTree::FileDeleted(const std::string &relpath) {
     wxTreeItemId item = FindItem(relpath);
     if (item.IsOk())
         Delete(item);
+}
+
+int ScriptTree::ChooseDefinitionIcon(const ScriptEditorDB::Definition &def) {
+    switch (def.type) {
+        case TScriptIdentifier::KEYWORD: return ICON_KEYWORD;
+        case TScriptIdentifier::FUNCTION: return ICON_FUNCTION;
+        case TScriptIdentifier::VARIABLE: return ICON_VARIABLE;
+        case TScriptIdentifier::CONSTANT: return ICON_CONSTANT;
+        case TScriptIdentifier::CLASS: return ICON_CLASS;
+        case TScriptIdentifier::TEMPLATE: return ICON_TEMPLATE;
+        case TScriptIdentifier::GROUP: return ICON_GROUP;
+        case TScriptIdentifier::SEQUENCE: return ICON_SEQUENCE;
+        case TScriptIdentifier::CARD: return ICON_CARD;
+        case TScriptIdentifier::ELEMENT: return ICON_ELEMENT;
+
+        case TScriptIdentifier::UNKNOWN:
+        default:
+            return ICON_UNKNOWN;
+    }
 }
 
 wxTreeItemId ScriptTree::FindItem(const std::string &relpath,
@@ -1754,7 +1871,7 @@ wxTreeItemId ScriptTree::FindItem(const std::string &relpath,
         if (isDirectory)
             SetIcon(item_id, ICON_FOLDER_CLOSED, ICON_FOLDER_OPEN);
         else
-            SetIcon(item_id, ICON_DOCUMENT, ICON_DOCUMENT);
+            SetIcon(item_id, ICON_SCRIPT, ICON_SCRIPT);
 
         // Remember the item id and return it.
         mItemMap.insert(ItemMap::value_type(relpath, item_id));
@@ -1867,10 +1984,16 @@ void ScriptEditor::ShowDefinition(const wxString &identifier) {
     sFrame->ShowDefinitionInternal(identifier);
 }
 
+void ScriptEditor::HighlightFile(const wxString &path) {
+    ASSERT(sFrame);
+    sFrame->HighlightFileInternal(path);
+}
+
 ScriptEditor::ScriptEditor()
     : SashFrame(wxGetApp().GetStageFrame(), -1,
                 "Script Editor - " + wxGetApp().GetAppName(),
-                wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE),
+                "ScriptEditor", wxDefaultSize, wxDEFAULT_FRAME_STYLE),
+      mTreeContainer(NULL), mTree(NULL), mNotebook(NULL),
       mProcessingActivateEvent(false)
 {
     // Set up the static variable pointing to this frame.
@@ -2008,23 +2131,20 @@ ScriptEditor::ScriptEditor()
                 "Decrease Text Size");
     tb->Realize();
 
-    SetBackgroundColour(*wxGREEN);
-
     // Create a wxSashLayoutWindow to hold our tree widget.
-    wxSashLayoutWindow *tree_container =
-        new wxSashLayoutWindow(this, -1);
-	tree_container->SetOrientation(wxLAYOUT_VERTICAL);
-	tree_container->SetAlignment(wxLAYOUT_LEFT);
-	tree_container->SetSashVisible(wxSASH_RIGHT, TRUE);
-	tree_container->SetDefaultSize(wxSize(150, 0 /* unused */));
+    mTreeContainer = new wxSashLayoutWindow(this, -1);
+	mTreeContainer->SetOrientation(wxLAYOUT_VERTICAL);
+	mTreeContainer->SetAlignment(wxLAYOUT_LEFT);
+	mTreeContainer->SetSashVisible(wxSASH_RIGHT, TRUE);
+    mTreeContainer->SetMinimumSizeX(150);
+	mTreeContainer->SetDefaultSize(wxSize(150, 0 /* unused */));
 
     // Create our tree widget.
-    wxTreeCtrl *tree = new ScriptTree(tree_container);
+    mTree = new ScriptTree(mTreeContainer);
 
     // Create a wxSashLayoutWindow to hold our notebook widget.
     wxSashLayoutWindow *notebook_container =
         new wxSashLayoutWindow(this, -1);
-    notebook_container->SetBackgroundColour(*wxRED);
     SetMainWindow(notebook_container);
 
     // Create a document notebook, delegate menu events to it, and put
@@ -2033,8 +2153,9 @@ ScriptEditor::ScriptEditor()
     mDelegator.SetDelegate(mNotebook);
     mNotebook->SetFrameToTitle(this);
 
-    // Set an appropriate default window size.
+    // Set an appropriate default window size and load our frame layout.
     SetSize(wxSize(950, 650));
+    LoadFrameLayout();
 
     // If we have a Tamale program already, open up the start script.
     if (TInterpreterManager::HaveInstance() &&
@@ -2050,6 +2171,19 @@ ScriptEditor::ScriptEditor()
 ScriptEditor::~ScriptEditor() {
     ASSERT(sFrame);
     sFrame = NULL;
+}
+
+void ScriptEditor::LoadSashLayout(wxConfigBase *inConfig) {
+    long minimum = mTreeContainer->GetMinimumSizeX();
+    long script_tree_width = minimum;
+	inConfig->Read("ScriptTreeWidth", &script_tree_width);
+    if (script_tree_width < minimum)
+        script_tree_width = minimum;
+	mTreeContainer->SetDefaultSize(wxSize(script_tree_width, 0 /*unused*/));
+}
+
+void ScriptEditor::SaveSashLayout(wxConfigBase *inConfig) {
+	inConfig->Write("ScriptTreeWidth", mTreeContainer->GetSize().GetWidth());
 }
 
 bool ScriptEditor::ProcessEvent(wxEvent& event) {
@@ -2125,6 +2259,10 @@ void ScriptEditor::ShowDefinitionInternal(const wxString &identifier) {
             OpenDocument(def.GetNativePath().c_str(), def.line_number);
         }
     }
+}
+
+void ScriptEditor::HighlightFileInternal(const wxString &path) {
+    mTree->HighlightFile(path);
 }
 
 void ScriptEditor::OnActivate(wxActivateEvent &event) {

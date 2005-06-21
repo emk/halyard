@@ -22,19 +22,24 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		46
+#define VERSION_REV_BIG		47
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.46 (Development)"
+#define VERSION_STRING		"Tamale 0.0.47 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
 	"Tamale multimedia engine"
 #define TAMALE_COPYRIGHT_NOTICE \
-	"Copyright 1993-2004 Trustees of Dartmouth College. All rights reserved."
+	"Copyright 1993-2005 Trustees of Dartmouth College. All rights reserved."
 
 /*
  $Log$
+ Revision 1.88  2005/06/21 18:51:41  emk
+   * Added icons for new script/definition tree.
+   * Clicking on folders jumps to definition
+   * Refactored layout-saving code from StageFrame to SashFrame.
+
  Revision 1.87  2005/02/04 21:44:44  emk
  0.0.46 - 4 Feb 2005 - tryon, emk, naomi
 

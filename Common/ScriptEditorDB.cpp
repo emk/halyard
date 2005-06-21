@@ -215,6 +215,37 @@ void ScriptEditorDB::EnsureCorrectSchema() {
     }
 }
 
+/// Convert a relative path to a native OS path.
+std::string ScriptEditorDB::RelPathToNative(const std::string &relpath) {
+    return (RootPath()/relpath).native_file_string().c_str();
+}
+
+/// Convert a native OS path to a relative path.  Returns the empty string
+/// if the conversion fails.
+std::string ScriptEditorDB::NativeToRelPath(const std::string &native) {
+    fs::path root_path(RootPath());
+    fs::path native_path(native, fs::native);
+    std::string relpath;
+    
+    // Strip successive leaves off of native_path until it either
+    // matches root_path or has nothing left to strip.
+    while (root_path.string() != native_path.string() && !native_path.empty())
+    {
+        std::string leaf = native_path.leaf();
+        native_path = native_path.branch_path();
+        if (relpath.empty())
+            relpath = leaf;
+        else
+            relpath = leaf + "/" + relpath;
+    }
+
+    // If we're in the right directory, tear off a 
+    if (root_path.string() == native_path.string())
+        return relpath;
+    else
+        return "";
+}
+
 /// The primary interface for updating the database.  This will generally
 /// be overriden by subclasses.
 void ScriptEditorDB::UpdateDatabase() {
@@ -483,6 +514,8 @@ void ScriptEditorDB::AddListener(IListener *inListener) {
     // too ugly to refactor.
     if (std::count(mListeners.begin(), mListeners.end(), inListener) == 0)
 		mListeners.push_back(inListener);
+
+    StTransaction transaction(this);
 
     // Extract a list of all the files in the database.
     sqlite3::reader r = mDB->executereader("SELECT path FROM file");

@@ -44,7 +44,18 @@ public:
         ICON_CARD,
         ICON_DOCUMENT,
         ICON_FOLDER_CLOSED,
-        ICON_FOLDER_OPEN
+        ICON_FOLDER_OPEN,
+        ICON_SCRIPT,
+        ICON_KEYWORD,
+        ICON_FUNCTION,
+        ICON_VARIABLE,
+        ICON_CONSTANT,
+        ICON_CLASS,
+        ICON_TEMPLATE,
+        ICON_GROUP,
+        ICON_SEQUENCE,
+        ICON_ELEMENT,
+        ICON_UNKNOWN
     };
 
     /// Create a new TamaleTreeCtrl.
@@ -56,7 +67,7 @@ public:
 
 
     /// Set the icon of the specified wxTreeItemId.
-    void SetIcon(wxTreeItemId id, int closed_icon, int open_icon);
+    void SetIcon(wxTreeItemId id, int closed_icon, int open_icon = -1);
 
 private:
 	void BuildIconList();

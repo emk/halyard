@@ -159,6 +159,7 @@ void DocNotebook::SelectDocument(size_t index) {
     wxASSERT(0 <= index && index < GetDocumentCount());
     mBar->SetCurrentTab(index);
     SetCurrentDoc(GetCurrentDocument()->GetDocumentWindow());
+    GetCurrentDocument()->NotifySelected();
 }
 
 /// Select the specified document.

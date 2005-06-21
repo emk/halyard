@@ -1,10 +1,15 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.47 - 21 June 2005 - emk
+
   * Added STYLESHEET function to create new stylesheets on the fly.
   * Moved many RECT and POINT functions into types.ss.
   * Added <LAYOUT> class to lay out boxes on a screen.
   * Other minor Runtime tweaks.
   * Added script/definition tree to left of ScriptEditor.
+  * Added icons for new script/definition tree.
+  * Smart 
+  * Refactored layout-saving code from StageFrame to SashFrame.
 
 0.0.46 - 4 Feb 2005 - tryon, emk, naomi
 

@@ -115,11 +115,6 @@ class StageFrame : public SashFrame, public model::View
 	///
 	wxSize mMinimumFrameSize;
 
-	//////////
-	/// Have we re-loaded our layout?
-	///
-	bool mHaveLoadedFrameLayout;
-
 #if wxUSE_DISPLAY
 
 	//////////
@@ -136,30 +131,8 @@ class StageFrame : public SashFrame, public model::View
 
 #endif // wxUSE_DISPLAY
 
-    //////////
-    /// Returns true iff inRect is entirely on one of the system's
-    /// displays.  Used for trying to put windows in the same place they
-    /// were the last time they were closed, but only if that's a
-    /// reasonably sane thing to do.
-    ///
-    static bool IsRectOnDisplay(const wxRect &inRect);
-
-	//////////
-	/// We need to load this layout information *before* we load anything
-	/// else, because there's no portable way to change it once the window
-	/// is created.
-	///
-	static wxPoint LoadFramePosition();
-
-	//////////
-	/// Load the layout for the current frame.
-	///
-	void LoadFrameLayout();
-
-	//////////
-	/// Save the layout for the current frame if it's safe to do so.
-	///
-	void MaybeSaveFrameLayout();
+    void LoadSashLayout(wxConfigBase *inConfig);
+    void SaveSashLayout(wxConfigBase *inConfig);
 
 	//////////
 	/// Calculate the best video mode to use for full-screen displays.
@@ -289,9 +262,6 @@ public:
     bool MSWTranslateMessage(WXMSG* pMsg);
 
 #endif // FIVEL_PLATFORM_WIN32
-
-protected:
-    void UpdateSashLayout();
 
 private:
     bool AreDevToolsAvailable();

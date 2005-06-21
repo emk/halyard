@@ -188,10 +188,9 @@ END_EVENT_TABLE()
 
 StageFrame::StageFrame(wxSize inSize)
     : SashFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
-                LoadFramePosition(), wxDefaultSize,
+                "StageFrame", wxDefaultSize,
                 wxDEFAULT_FRAME_STYLE),
 	  mDocument(NULL),
-	  mHaveLoadedFrameLayout(false),
       mAreFullScreenOptionsActive(false)
 {
     // Set up useful logging.
@@ -345,103 +344,14 @@ StageFrame::StageFrame(wxSize inSize)
 	FindBestFullScreenVideoMode();
 }
 
-#if !wxUSE_DISPLAY
-
-bool StageFrame::IsRectOnDisplay(const wxRect &inRect) {
-    /// \TODO See if there's a way to get rough display bounds even if
-    /// the required class is missing.
-    return true;
-}
-
-#else // wxUSE_DISPLAY
-
-bool StageFrame::IsRectOnDisplay(const wxRect &inRect) {
-    size_t count = wxDisplay::GetCount();
-    for (size_t i = 0; i < count; i++) {
-        wxRect display(wxDisplay(i).GetGeometry());
-        if (display.GetLeft() <= inRect.GetLeft()
-            && inRect.GetRight() <= display.GetRight()
-            && display.GetTop() <= inRect.GetTop()
-            && inRect.GetBottom() <= display.GetBottom())
-            return true;
-    }
-    return false;
-}
-
-#endif // wxUSE_DISPLAY
-
-wxPoint StageFrame::LoadFramePosition()
-{
-	long pos_x, pos_y;
-	wxConfigBase *config = wxConfigBase::Get();
-	if (config->Read("/Layout/Default/StageFrame/Left", &pos_x) &&
-		config->Read("/Layout/Default/StageFrame/Top", &pos_y) &&
-        IsRectOnDisplay(wxRect(pos_x, pos_y, 100, 100)))
-		return wxPoint(pos_x, pos_y);
-	else
-		return wxDefaultPosition;
-}
-
-void StageFrame::LoadFrameLayout()
-{
-	// Get our default values.
-	wxSize sz = GetClientSize();
-	long is_maximized = IsMaximized();
-	long sz_client_width = sz.GetWidth();
-	long sz_client_height = sz.GetHeight();
+void StageFrame::LoadSashLayout(wxConfigBase *inConfig) {
 	long program_tree_width = mProgramTree->GetMinimumSizeX();
-
-	// Load values from our config file.
-	wxConfigBase *config = wxConfigBase::Get();
-	config->Read("/Layout/Default/StageFrame/IsMaximized", &is_maximized);
-	config->Read("/Layout/Default/StageFrame/ClientWidth", &sz_client_width);
-	config->Read("/Layout/Default/StageFrame/ClientHeight", &sz_client_height);
-	config->Read("/Layout/Default/StageFrame/ProgramTreeWidth",
-				 &program_tree_width);
-
-	// Restore our non-maximized layout first.  We restore the
-	// ProgramTree width before anything else, so it will get appropriately
-	// adjusted by the frame resize events.
-	// NOTE - We'll only make the window larger, never smaller, because
-	// we assume that GetClientSize is currently the minimum allowable.
+	inConfig->Read("ProgramTreeWidth", &program_tree_width);
 	mProgramTree->SetDefaultWidth(program_tree_width);
-	wxSize new_size = GetClientSize();
-	if (sz_client_width >= new_size.GetWidth() &&
-		sz_client_height >= new_size.GetHeight())
-		new_size = wxSize(sz_client_width, sz_client_height);
-	SetClientSize(new_size);
-
-	// If necessary, maximize our window.
-	if (is_maximized)
-		Maximize(TRUE);
-
-	// It's now safe to resave these values.
-	mHaveLoadedFrameLayout = true;
 }
 
-void StageFrame::MaybeSaveFrameLayout()
-{
-	// Don't save the frame layout if we haven't loaded it yet, or if we're
-	// in full-screen mode (which has an automatically-chosen layout).
-	if (!mHaveLoadedFrameLayout || IsFullScreen())
-		return;
-
-	wxConfigBase *config = wxConfigBase::Get();
-	config->Write("/Layout/Default/StageFrame/IsMaximized",
-				  IsMaximized() ? 1 : 0);
-	if (!IsMaximized())
-	{
-		// Only save the window position if we aren't maximized.
-		wxPoint pos = GetPosition();
-		wxSize sz = GetClientSize();
-		config->Write("/Layout/Default/StageFrame/Left", pos.x);
-		config->Write("/Layout/Default/StageFrame/Top", pos.y);
-		config->Write("/Layout/Default/StageFrame/ClientWidth", sz.GetWidth());
-		config->Write("/Layout/Default/StageFrame/ClientHeight",
-					  sz.GetHeight());
-	}
-	config->Write("/Layout/Default/StageFrame/ProgramTreeWidth",
-				  mProgramTree->GetSize().GetWidth());
+void StageFrame::SaveSashLayout(wxConfigBase *inConfig) {
+	inConfig->Write("ProgramTreeWidth", mProgramTree->GetSize().GetWidth());
 }
 
 #if !wxUSE_DISPLAY
@@ -714,12 +624,6 @@ bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
 }
 
 #endif // FIVEL_PLATFORM_WIN32
-
-void StageFrame::UpdateSashLayout() {
-    // Call our superclass, and save our frame layout if appropriate.
-    SashFrame::UpdateSashLayout();
-    MaybeSaveFrameLayout();
-}
 
 bool StageFrame::AreDevToolsAvailable() {
     return (!TInterpreterManager::IsInRuntimeMode()

@@ -126,6 +126,8 @@ protected:
     bool MaybeSave(bool canVeto, const wxString &title,
                    const wxString &prompt);
 
+    virtual void NotifySelected() {}
+
 public:
     wxString GetDocumentTitle() const;
     wxString GetDocumentPath() const;

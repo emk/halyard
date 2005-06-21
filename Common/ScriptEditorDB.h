@@ -109,6 +109,9 @@ public:
     ScriptEditorDB(const std::string &relpath);
     ~ScriptEditorDB();
 
+    std::string NativeToRelPath(const std::string &relpath);
+    std::string RelPathToNative(const std::string &native);
+
     virtual void UpdateDatabase();
 
     void PurgeDataForDeletedFiles();

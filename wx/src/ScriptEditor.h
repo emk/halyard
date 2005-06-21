@@ -27,12 +27,16 @@
 #include "EventDelegator.h"
 #include "SashFrame.h"
 
+class wxSashLayoutWindow;
+class ScriptTree;
 class DocNotebook;
 
 class ScriptEditor : public SashFrame {
     static ScriptEditor *sFrame;
     static void MaybeCreateFrame();
 
+    wxSashLayoutWindow *mTreeContainer;
+    ScriptTree *mTree;
     DocNotebook *mNotebook;
     EventDelegator mDelegator;
     bool mProcessingActivateEvent;
@@ -43,6 +47,7 @@ public:
     static bool ProcessEventIfExists(wxEvent &event);
     static void OpenDocument(const wxString &path, int line = 1);
     static void ShowDefinition(const wxString &identifier);
+    static void HighlightFile(const wxString &path);
 
     ScriptEditor();
     ~ScriptEditor();
@@ -54,8 +59,12 @@ public:
     void ChangeTextSize(int delta);
 
 private:
+    void LoadSashLayout(wxConfigBase *inConfig);
+    void SaveSashLayout(wxConfigBase *inConfig);
+
     void OpenDocumentInternal(const wxString &path, int line = 1);
     void ShowDefinitionInternal(const wxString &identifier);
+    void HighlightFileInternal(const wxString &path);
 
     void OnActivate(wxActivateEvent &event);
     void OnClose(wxCloseEvent &event);
