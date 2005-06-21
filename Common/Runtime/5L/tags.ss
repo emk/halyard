@@ -28,6 +28,18 @@
       [anything-else
        #f]))
   
+  (define (variable-type stx)
+    (let [[name (syntax-object->datum stx)]]
+      (if (symbol? name)
+          (let [[str (symbol->string name)]]
+            (if (> (string-length str) 0)
+                (let [[letter (string-ref str 0)]]
+                  (if (equal? letter #\$)
+                      'constant
+                      'variable))
+                'variable))
+          'variable)))
+
   (define (process-definition stx)
     (case (form-name stx)
       [[module]
@@ -46,19 +58,21 @@
           (maybe-insert-def #'name 'function)
           (maybe-insert-help #'name (syntax-object->datum #'(name . args)))]
          [(define name . body)
-          (maybe-insert-def #'name 'variable)]
+          (maybe-insert-def #'name (variable-type #'name))]
          [anything-else #f])]
       [[define-syntax]
        (syntax-case stx ()
          [(define-syntax (name stx) . body)
-          (maybe-insert-def #'name 'keyword)]
+          (maybe-insert-def #'name 'syntax)]
          [(define-syntax name . body)
-          (maybe-insert-def #'name 'keyword)]
+          (maybe-insert-def #'name 'syntax)]
          [anything-else #f])]
-      [[card]
+      [[card sequence group element]
        (syntax-case stx ()
-         [(card name args . body)
-          (maybe-insert-def #'name 'card)]
+         [(_ name)
+          (maybe-insert-def #'name (form-name stx))]
+         [(_ name args . body)
+          (maybe-insert-def #'name (form-name stx))]
          [anything-else #f])]
       [[define-group-template define-card-template define-element-template]
        (syntax-case stx ()
@@ -69,7 +83,7 @@
        (syntax-case stx ()
          [(define-stylesheet name . body)
           (maybe-insert-help #'name (syntax-object->datum stx))
-          (maybe-insert-def #'name 'variable)]
+          (maybe-insert-def #'name 'constant)]
          [anything-else #f])]
       [[defclass]
        (syntax-case stx ()
