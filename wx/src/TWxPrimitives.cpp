@@ -212,9 +212,10 @@ DEFINE_5L_PRIMITIVE(ActiveXPropSet) {
 
 DEFINE_5L_PRIMITIVE(AudioStreamGeiger) {
 	std::string name, path;
-	inArgs >> SymbolName(name) >> path;
-	R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-                             new GeigerAudioStream(path.c_str())));
+    double volume;
+	inArgs >> SymbolName(name) >> path >> volume;
+    R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+                             new GeigerAudioStream(path.c_str(), volume)));
 }
 
 DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps) {
@@ -233,20 +234,24 @@ DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps) {
 
 DEFINE_5L_PRIMITIVE(AudioStreamSine) {
 	std::string name;
+    double volume;
 	uint32 frequency;
-	inArgs >> name >> frequency;
-	R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-                             new SineAudioStream(frequency)));
+	inArgs >> name >> volume >> frequency;
+    R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+                             new SineAudioStream(frequency, volume)));
 }
 
 DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
 	std::string name, path;
+    double volume;
 	uint32 buffer_size;
 	bool should_loop;
-	inArgs >> name >> path >> buffer_size >> should_loop;
-	R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-                             new VorbisAudioStream(path.c_str(), buffer_size,
-                                                   should_loop)));
+	inArgs >> name >> path >> volume >> buffer_size >> should_loop;
+    R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+                             new VorbisAudioStream(path.c_str(),
+                                                   buffer_size,
+                                                   should_loop,
+                                                   volume)));
 }
 
 DEFINE_5L_PRIMITIVE(Browser) {
@@ -450,14 +455,16 @@ DEFINE_5L_PRIMITIVE(EnableExpensiveEvents) {
 
 DEFINE_5L_PRIMITIVE(GeigerSynth) {
 	std::string name, state_path, chirp_location, loop_location;
-	double loop_cps;
+	double loop_cps, volume;
 	uint32 buffer_size;
 
-	inArgs >> name >> SymbolName(state_path) >> chirp_location >> buffer_size;
+	inArgs >> name >> SymbolName(state_path) >> chirp_location
+           >> volume >> buffer_size;
 
     GeigerSynthElement *element =
         R(new GeigerSynthElement(wxGetApp().GetStage(), name.c_str(),
-                                 state_path, chirp_location.c_str(), 1000));
+                                 state_path, chirp_location.c_str(), 1000,
+                                 volume));
 
 	while (inArgs.HasMoreArguments()) {
 		inArgs >> loop_cps >> loop_location;
@@ -655,10 +662,11 @@ DEFINE_5L_PRIMITIVE(Movie) {
 	std::string name, path;
     TCallbackPtr dispatcher;
 	TRect bounds;
+    double volume;
 	bool controller, audio_only, loop, interaction;
 
-	inArgs >> SymbolName(name) >> dispatcher >> bounds >> path >> controller
-		   >> audio_only >> loop >> interaction;
+	inArgs >> SymbolName(name) >> dispatcher >> bounds >> path >> volume
+           >> controller >> audio_only >> loop >> interaction;
 
 	MovieWindowStyle style = 0;
 	if (controller)
@@ -670,8 +678,8 @@ DEFINE_5L_PRIMITIVE(Movie) {
 	if (interaction)
 		style |= MOVIE_INTERACTION;
 
-	R(new MovieElement(wxGetApp().GetStage(), name.c_str(), dispatcher,
-                       TToWxRect(bounds), path.c_str(), 0, style));
+    R(new MovieElement(wxGetApp().GetStage(), name.c_str(), dispatcher,
+                       TToWxRect(bounds), path.c_str(), 0, style, volume));
 }
 
 // Note: these primitives may not be happy if the underlying movie code 

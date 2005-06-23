@@ -28,11 +28,13 @@
 GeigerSynthElement::GeigerSynthElement(Stage *inStage, const wxString &inName,
                                        const std::string &inStatePath,
                                        const char *inChirpLocation,
-                                       size_t inBufferSize)
+                                       size_t inBufferSize,
+                                       double inVolume)
     : InvisibleElement(inStage, inName),
       mStatePath(inStatePath),
-      mGeigerAudioStream(new GeigerAudioStream(inChirpLocation)),
-      mCurrentLoopCps(0), mBufferSize(inBufferSize)
+      mGeigerAudioStream(new GeigerAudioStream(inChirpLocation, inVolume)),
+      mCurrentLoopCps(0), mBufferSize(inBufferSize),
+      mInitialVolume(inVolume)
 {
     NotifyStateChanged();
 }
@@ -45,7 +47,8 @@ void GeigerSynthElement::AddLoop(double inLoopCps, const char *inLoopLocation)
 {
     VorbisAudioStreamPtr stream(new VorbisAudioStream(inLoopLocation,
                                                       mBufferSize,
-                                                      true));
+                                                      true,
+                                                      mInitialVolume));
     mLoopStreams.insert(LoopMap::value_type(inLoopCps, stream));
 }
 

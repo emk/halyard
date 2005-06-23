@@ -65,7 +65,7 @@ public:
 	/// Create a new AudioStream.  You must call Start() afterwards if
 	/// you want to play any audio.
 	///
-	AudioStream(Format inFormat);
+	AudioStream(Format inFormat, float inVolume = 1.0f);
 
 	//////////
 	/// Destroy an AudioStream.  The stream must be stopped before
@@ -203,8 +203,8 @@ class SineAudioStream : public AudioStream
 	int mFrequency;
 
 public:
-	SineAudioStream(int inFrequency)
-		: AudioStream(FLOAT32_STREAM), mFrequency(inFrequency) {}
+	SineAudioStream(int inFrequency, float inVolume = 1.0f)
+		: AudioStream(FLOAT32_STREAM, inVolume), mFrequency(inFrequency) {}
 
     virtual bool IsLooping() { return true; }
 

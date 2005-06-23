@@ -42,7 +42,8 @@ public:
     MovieElement(Stage *inStage, const wxString &inName,
                  FIVEL_NS TCallbackPtr inDispatcher,
 				 const wxRect &inBounds, const wxString &inLocation,
-				 long inWindowStyle, MovieWindowStyle inMovieWindowStyle);
+				 long inWindowStyle, MovieWindowStyle inMovieWindowStyle,
+                 float inVolume = 1.0f);
 
 	virtual bool HasVisibleRepresentation();
     virtual bool WantsCursor() const;

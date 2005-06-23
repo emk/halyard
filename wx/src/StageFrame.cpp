@@ -729,7 +729,7 @@ void StageFrame::OnAbout(wxCommandEvent &inEvent)
 {
     wxMessageDialog about(this,
                           VERSION_STRING "\n"
-                          "Copyright 1993-2004 The Trustees of Dartmouth College.  All rights reserved.",
+                          TAMALE_COPYRIGHT_NOTICE,
                           "About Tamale", wxOK);
     about.ShowModal();
 }

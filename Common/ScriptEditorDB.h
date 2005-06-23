@@ -78,6 +78,10 @@ private:
 
     void EnsureCorrectSchema();
 
+    strings GetAllFilePaths();
+    void FixBrokenDatabaseEntries();
+    void DeleteAnyFileDataAndNotifyListeners(const std::string &relpath);    
+
     void FetchModTimesFromDatabase(ModTimeMap &outMap);
     void ScanTreeInternal(const std::string &relpath,
                           const std::string &extension,

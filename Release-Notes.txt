@@ -1,5 +1,17 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Fixed About box to use correct #define to get versions.
+  * Fixed missing icon bugs for Listener and other windows.
+  * Hacked ScriptEditorDB to attempt to clean up duplicate file
+    entries with different case, i.e., "R1.ss" and "r1.ss".  This
+    code is a bit kludgy because it tries to avoid expensive and
+    complicated file I/O.
+  * Added :VOLUME parameter to all media elements.
+  * Fixed QuickTime SET-MEDIA-VOLUME! and :VOLUME support to
+    actually work.  (The original code was simply broken.)
+
 0.0.47 - 21 June 2005 - emk
 
   * Added STYLESHEET function to create new stylesheets on the fly.
@@ -8,7 +20,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
   * Other minor Runtime tweaks.
   * Added script/definition tree to left of ScriptEditor.
   * Added icons for new script/definition tree.
-  * Smart 
+  * Clicking on folders jumps to definition.
   * Refactored layout-saving code from StageFrame to SashFrame.
 
 0.0.46 - 4 Feb 2005 - tryon, emk, naomi

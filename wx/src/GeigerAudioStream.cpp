@@ -34,8 +34,8 @@ USING_NAMESPACE_FIVEL
 //  GeigerAudioStream Methods
 //=========================================================================
 
-GeigerAudioStream::GeigerAudioStream(const char *inFileName)
-    : AudioStream(FLOAT32_STREAM)
+GeigerAudioStream::GeigerAudioStream(const char *inFileName, float inVolume)
+    : AudioStream(FLOAT32_STREAM, inVolume)
 {
 	// Read our data from the file.
     VorbisFile file(inFileName, SAMPLES_PER_SECOND, GetChannelCount());

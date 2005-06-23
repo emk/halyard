@@ -33,8 +33,9 @@ USING_NAMESPACE_FIVEL
 
 VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 									 size_t inBufferSize,
-									 bool inShouldLoop)
-	: AudioStream(INT16_PCM_STREAM),
+									 bool inShouldLoop,
+                                     float inVolume)
+	: AudioStream(INT16_PCM_STREAM, inVolume),
 	  mFileName(inFileName), mShouldLoop(inShouldLoop),
 	  // Pad the buffer with an extra frame which we'll never use.
 	  // See IsBufferFull() for details.

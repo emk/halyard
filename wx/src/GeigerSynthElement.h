@@ -47,6 +47,7 @@ class GeigerSynthElement : public InvisibleElement, public IMediaElement,
     LoopMap mLoopStreams;
     double mCurrentLoopCps;
     size_t mBufferSize;
+    double mInitialVolume;
 
     void SetChirpsPerSecond(double inCPS);
 
@@ -54,7 +55,8 @@ public:
 	GeigerSynthElement(Stage *inStage, const wxString &inName,
                        const std::string &inStatePath,
                        const char *inChirpLocation,
-                       size_t inBufferSize);
+                       size_t inBufferSize,
+                       double inVolume = 1.0);
     ~GeigerSynthElement();
 
     void AddLoop(double inLoopCps, const char *inLoopLocation);

@@ -29,13 +29,15 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
 						   const wxRect &inBounds,
 						   const wxString &inLocation,
 						   long inWindowStyle,
-						   MovieWindowStyle inMovieWindowStyle)
+						   MovieWindowStyle inMovieWindowStyle,
+                           float inVolume)
     : Widget(inStage, inName, inDispatcher), mMovieWindow(NULL),
 	  mEndPlaybackWasCalled(false), mHaveSentMediaFinishedEvent(false)
 {
     mMovieWindow = new MovieWindowNative(inStage, -1, inBounds.GetPosition(),
 										 inBounds.GetSize(), inWindowStyle,
 										 inMovieWindowStyle);
+    mMovieWindow->SetVolume("all", inVolume);
 	mMovieWindow->SetMovie(inLocation);
 	InitializeWidgetWindow(mMovieWindow);
 }

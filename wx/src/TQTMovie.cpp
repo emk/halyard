@@ -138,7 +138,8 @@ CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
 
 TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     : mPort(inPort), mState(MOVIE_UNINITIALIZED),
-	  mMovie(NULL), mMovieController(NULL), mShouldStartWhenReady(false),
+	  mMovie(NULL), mMovieController(NULL),
+      mVolume(1.0f), mShouldStartWhenReady(false),
       mTimeoutStarted(false), mTimeoutDisabled(false),
       mTimeoutBase(0), mLastSeenTimeValue(0)
 {
@@ -368,6 +369,9 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	if (mOptions & kPlayEveryFrame)
 		DoAction(mcActionSetPlayEveryFrame, reinterpret_cast<void*>(true));
 
+    // Now that we have a controller, we can finally set the volume.
+    SetMovieVolume(mVolume);
+
 	// Figure out our preferred playback rate.  We used to store this
 	// in a member variable, but it's *much* safer to ask for it just
 	// before you use it.
@@ -455,12 +459,25 @@ TimeValue TQTMovie::GetMovieTime()
 	return current_time;
 }
 
-void TQTMovie::SetMovieVolume(short inVolume)
+void TQTMovie::SetMovieVolume(float inVolume)
 {
-	if (mMovieController)
-		DoAction(mcActionSetVolume, reinterpret_cast<void*>(inVolume));
-	else
-		/* XXX - Implement */;
+    // Store the volume.  We'll need this later if we don't have an
+    // mMovieController yet.
+    mVolume = inVolume;
+	if (mMovieController) {
+        // Movie volume is allegedly a 16-bit fixed point number with the
+        // lower 8 bits determining the fraction, the upper 8 bits
+        // determining the integer part, and a value between -1.0 and 1.0,
+        // where negative volumes are muted.  However, investigation reveals
+        // that newly-created movies have a typical volume of 255, *not*
+        // 256, so that's what we multiply by.
+		//
+		// Also, the documentation claims that we're supposed to pass
+		// in a pointer to 'volume', but that doesn't work.  Instead, we
+		// need to pass in 'volume' itself.
+        SInt16 volume = static_cast<SInt16>(inVolume * 255);
+		DoAction(mcActionSetVolume, reinterpret_cast<void*>(volume));
+    }
 }
 
 TimeScale TQTMovie::GetTimeScale()

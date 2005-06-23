@@ -51,11 +51,11 @@ static inline float note_amplitude(PaTimestamp sample, int cycles_per_second)
 //  AudioStream Methods
 //=========================================================================
 
-AudioStream::AudioStream(Format inFormat)
+AudioStream::AudioStream(Format inFormat, float inVolume)
 	: mIsRunning(false)
 {
 	for (int i = 0; i < MAX_CHANNELS; i++)
-		mChannelVolumes[i] = 1.0f;
+		mChannelVolumes[i] = inVolume;
 
 	mFormat = (inFormat == INT16_PCM_STREAM) ? paInt16 : paFloat32;
 	PaError err = Pa_OpenDefaultStream(&mStream,
@@ -106,7 +106,7 @@ void AudioStream::ApplyChannelVolumes(void *ioOutputBuffer,
 	if (mFormat == paInt16)
 	{
 		int16 *buffer = (int16 *) ioOutputBuffer;
-		for (int i = 0; i < inFramesPerBuffer; i++)
+		for (unsigned long i = 0; i < inFramesPerBuffer; i++)
 		{
 			*buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
 			*buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
@@ -115,7 +115,7 @@ void AudioStream::ApplyChannelVolumes(void *ioOutputBuffer,
 	else if (mFormat == paFloat32)
 	{
 		float *buffer = (float *) ioOutputBuffer;
-		for (int i = 0; i < inFramesPerBuffer; i++)
+		for (unsigned long i = 0; i < inFramesPerBuffer; i++)
 		{
 			*buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
 			*buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
@@ -262,7 +262,7 @@ bool SineAudioStream::FillBuffer(void *outBuffer,
 {
 	float *buffer = (float *) outBuffer;
 	PaTimestamp time = inTime;
-	for (int i = 0; i < inFrames; i++)
+	for (unsigned long i = 0; i < inFrames; i++)
 	{
 		float sample = note_amplitude(time++, mFrequency) * 0.5;
 		*buffer++ = sample;

@@ -1821,8 +1821,14 @@ void ScriptTree::FileChanged(const std::string &relpath) {
 
 void ScriptTree::FileDeleted(const std::string &relpath) {
     wxTreeItemId item = FindItem(relpath);
-    if (item.IsOk())
+    if (item.IsOk()) {
         Delete(item);
+
+        // Get rid of our mItemMap entry, too.
+        ItemMap::iterator found = mItemMap.find(relpath);
+        ASSERT(found != mItemMap.end());
+        mItemMap.erase(found);
+    }
 }
 
 int ScriptTree::ChooseDefinitionIcon(const ScriptEditorDB::Definition &def) {

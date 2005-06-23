@@ -249,31 +249,80 @@ std::string ScriptEditorDB::NativeToRelPath(const std::string &native) {
 /// The primary interface for updating the database.  This will generally
 /// be overriden by subclasses.
 void ScriptEditorDB::UpdateDatabase() {
+    FixBrokenDatabaseEntries();
     PurgeDataForDeletedFiles();
 }
 
-/// Remove all database entries derived from files which have been
-/// deleted.
-void ScriptEditorDB::PurgeDataForDeletedFiles() {
+/// Return the relpath to each file in our database.
+ScriptEditorDB::strings ScriptEditorDB::GetAllFilePaths() {
     // Get the relpaths for all files in the database.
     sqlite3::reader r = mDB->executereader("SELECT path FROM file");
     strings relpaths;
     while (r.read())
         relpaths.push_back(r.getstring(0));
     r.close();
+    return relpaths;
+}
+
+// Slow, ugly comparison functions for use by FixBrokenDatabaseEntries.  We
+// really shouldn't call MakeStringLowercase each time.
+namespace {
+    bool icase_less(const std::string &a, const std::string &b) {
+        return (MakeStringLowercase(a) < MakeStringLowercase(b));
+    }
+
+    bool icase_equal_to(const std::string &a, const std::string &b) {
+        return (MakeStringLowercase(a) == MakeStringLowercase(b));
+    }
+};
+
+/// This function is used to clean up after the mess created when someone
+/// renames 'R1.ss' to 'r1.ss' on a case-insensitive file system.  This
+/// function is a nasty kludge, and we should really be able to detect
+/// these better elsewhere.  At least we don't do any file I/O to detect
+/// duplicates (even a very slow memory-only function will outperform even
+/// the most optimized function that touches a disk).
+///
+/// This function doesn't actually catch duplicates until the first update
+/// *after* the duplicates are created, so it's definitely a half-baked
+/// measure.
+///
+/// PORTABILITY - Do not run on case-sensitive file systems (such as Unix).
+void ScriptEditorDB::FixBrokenDatabaseEntries() {
+    // Get all the paths in our database, and sort them case-insensitively.
+    strings relpaths = GetAllFilePaths();
+    std::sort(relpaths.begin(), relpaths.end(), icase_less);
+
+    // Look for duplicate entries, and delete them.
+    strings::iterator r_begin = relpaths.begin();
+    while (r_begin != relpaths.end()) {
+        // Extend r_end until [r_begin,r_end) contains a complete set
+        // of duplicates.
+        strings::iterator r_end = r_begin + 1;
+        while (r_end != relpaths.end() && icase_equal_to(*r_begin, *r_end))
+            ++r_end;
+
+        // If [r_begin,r_end) contains more than one item, delete them all.
+        if ((r_end - r_begin) > 1)
+            for (strings::iterator i = r_begin; i != r_end; ++i)
+                DeleteAnyFileDataAndNotifyListeners(*i);
+
+        // Skip to the end of our set of duplicates.
+        r_begin = r_end;
+    }
+}
+
+/// Remove all database entries derived from files which have been
+/// deleted.
+void ScriptEditorDB::PurgeDataForDeletedFiles() {
+    strings relpaths = GetAllFilePaths();
 
     // If a given path no longer points to a file, purge any related data.
     strings::iterator i = relpaths.begin();
     for (; i != relpaths.end(); ++i) {
         fs::path path(RootPath() / *i);
-        if (!fs::exists(path)) {
-            DeleteAnyFileData(*i);
-
-            // Notify any listeners that this file has been deleted.
-            std::vector<IListener*>::iterator i2 = mListeners.begin();
-            for (; i2 != mListeners.end(); ++i2)
-                (*i2)->FileDeleted(*i); 
-        }
+        if (!fs::exists(path))
+            DeleteAnyFileDataAndNotifyListeners(*i);
     }
 }
 
@@ -334,6 +383,19 @@ ScriptEditorDB::strings ScriptEditorDB::ScanTree(const std::string &relpath,
     transaction.Commit();
 
     return result;
+}
+
+/// Delete all the old data associated with the file, if any, and notify
+/// ScriptEditorDB listeners that the file is gone.
+void
+ScriptEditorDB::DeleteAnyFileDataAndNotifyListeners(const std::string &relpath)
+{
+    DeleteAnyFileData(relpath);
+    
+    // Notify any listeners that this file has been deleted.
+    std::vector<IListener*>::iterator i = mListeners.begin();
+    for (; i != mListeners.end(); ++i)
+        (*i)->FileDeleted(relpath); 
 }
 
 /// Delete all the old data associated with the file, if any.

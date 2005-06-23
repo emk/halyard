@@ -182,6 +182,11 @@ private:
     ///
     MovieController mMovieController;
 
+    //////////
+    /// The volume of our movie, represented as a number from 0.0 to 1.0.
+    ///
+    float mVolume;
+
 	//////////
 	/// Should we start this movie immediately once it's ready to
 	/// play?
@@ -312,7 +317,7 @@ public:
     bool IsLooping() { return mOptions & kLoopMovie ? true : false; }
 
 	TimeValue GetMovieTime();
-	void SetMovieVolume(short inVolume);
+	void SetMovieVolume(float inVolume);
 	TimeScale GetTimeScale();
 	TimeValue GetDuration();
 	void ThrowIfBroken();

@@ -144,11 +144,8 @@ void MovieWindowQT::SetVolume(const std::string &inChannel, double inVolume) {
     float volume = inVolume;
     if (volume < 0.0)
         volume = 0.0;
-    if (volume > 1.0)
-        volume = 1.0;
-
     if (mMovie)
-        mMovie->SetMovieVolume(volume * MAX_INT16);
+        mMovie->SetMovieVolume(volume);
 }
 
 void MovieWindowQT::OnEraseBackground(wxEraseEvent &inEvent)

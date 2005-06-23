@@ -55,7 +55,7 @@ class GeigerAudioStream : public AudioStream
 							unsigned long inFrames);
 
 public:
-    GeigerAudioStream(const char *inFileName);
+    GeigerAudioStream(const char *inFileName, float inVolume = 1.0f);
     ~GeigerAudioStream();
     
     void SetChirpsPerSecond(float inChirpsPerSecond)
