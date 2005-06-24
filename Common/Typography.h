@@ -1045,7 +1045,7 @@ namespace Typography {
 		///                       previous character.  On output,
 		///                       the value of 'inCurrent'.
 		/// \param inCurrent  The character to process.
-		/// \param inPosition  (in/out) On input, the position at which to position
+		/// \param ioPosition  (in/out) On input, the position at which to position
 		///                       and/or draw the character.  On output,
 		///                       the position for the next character.
 		///                       The 'y' position will not be changed.
@@ -1055,6 +1055,7 @@ namespace Typography {
 		void ProcessCharacter(StyledText::value_type *ioPrevious,
 							  StyledText::value_type inCurrent,
 							  Point *ioPosition,
+							  Distance *ioRightBound,
 							  bool inShouldDraw);
 
 	protected:

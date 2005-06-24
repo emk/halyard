@@ -1106,10 +1106,12 @@ void TextRenderingEngine::DrawGreyMap(Point inPosition,
 void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 										   StyledText::value_type inCurrent,
 										   Point *ioPosition,
+										   Distance *ioRightBound,
 										   bool inShouldDraw)
 {
 	// Remember our previous position.
 	Point previous_position = *ioPosition;
+	Distance previous_right_bound = *ioRightBound;
 
 	// Do our kerning.
 	Vector delta = AbstractFace::Kern(*ioPrevious, inCurrent);
@@ -1132,9 +1134,22 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 		DrawGreyMap(loc, glyph->GetGreyMap(), inCurrent.style->GetColor());
 	}
 
+	// Advance our right edge. This is the sum of the kerned origin, the 
+	// bearingX (which is the distance from the origin to the left edge of 
+	// the glyph) and the width of the glyph. If this doesn't work, we'll 
+	// probably just need to use the size of the greymap. 
+	Distance new_right_bound = ioPosition->x 
+		                         + round_266(glyph->GetMetrics()->horiBearingX 
+			                                   + glyph->GetMetrics()->width);
+
+	// Make sure our new right bound is actually to the right of the old 
+	// right bound. 
+	*ioRightBound = max(new_right_bound, *ioRightBound);
+
 	// Advance our cursor.
 	ioPosition->x += round_266(glyph->GetAdvance().x);
 	ASSERT(glyph->GetAdvance().y == 0);
+
 
 	// Update our previous char.
 	*ioPrevious = inCurrent;
@@ -1169,19 +1184,34 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 
 	// Measure the segment.
 	Point total(0, 0);
+	Distance right_bound = 0;
 	StyledText::const_iterator cp = inSegment->begin;
 	for (; cp != inSegment->end; ++cp)
-		ProcessCharacter(&previous, *cp, &total, false);
+		ProcessCharacter(&previous, *cp, &total, &right_bound, false);
 
 	// If necessary, add a trailing hyphen.
 	if (inAtEndOfLine && inSegment->needsHyphenAtEndOfLine)
 	{
 		StyledText::value_type current(L'-', previous.style);
-		ProcessCharacter(&previous, current, &total, false);
+		ProcessCharacter(&previous, current, &total, &right_bound, false);
 	}
 		
 	ASSERT(total.x >= 0);
-	return total.x;
+	ASSERT(right_bound >= 0);
+	// We think this is correct right now, but if something breaks
+	// with respect to text measurement, line breaking, or anything
+	// related, this may be the culprit. The reason this can return
+	// two different values is that the way it is called, by
+	// RenderText, it has two different behaviors. In one case,
+	// RenderText is trying to see if a box will fit on the current
+	// line. In that case, we're testing to see if it will fit at the
+	// end of the line, so we care about whether it spills over the
+	// bounding box, and thus we care about the absolute right
+	// extent. In the other case, we've already measured to see if it
+	// fits on the line, and now we need to find out how much space it
+	// takes up on the current line. That means we want to get the
+	// advancement along the baseline, which is what total.x tracks.
+	return inAtEndOfLine ? right_bound : total.x;
 }
 
 void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
@@ -1237,6 +1267,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	Distance line_left_bound = mLineStart.x + inHorizontalOffset;
 	Point cursor = mLineStart;
 	cursor.x += inHorizontalOffset;
+	Distance line_right_bound = line_left_bound;
 
 	// Draw each character.
 	StyledText::value_type previous(kNoSuchCharacter, NULL);
@@ -1245,14 +1276,14 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	{
 		for (StyledText::const_iterator cp = iter2->begin;
 			 cp != iter2->end; ++cp)
-			ProcessCharacter(&previous, *cp, &cursor, true);
+			ProcessCharacter(&previous, *cp, &cursor, &line_right_bound, true);
 	}
 
 	// Draw a trailing hyphen if we need one.
 	if (!inLine->empty() && inLine->back().needsHyphenAtEndOfLine)
 	{
 		StyledText::value_type current(L'-', previous.style);
-		ProcessCharacter(&previous, current, &cursor, true);
+		ProcessCharacter(&previous, current, &cursor, &line_right_bound, true);
 	}
 
 	// We have valid bounds now.
@@ -1262,11 +1293,9 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	if (line_left_bound < mLeftBound)
 		mLeftBound = line_left_bound;
 
-	// Update our maximum right bound.  (This may be slightly wrong
-	// in the presence of letters which kern entirely within the
-	// previous letter.)
-	if (cursor.x > mRightBound)
-		mRightBound = cursor.x;
+	// Update our maximum right bound.
+	if (line_right_bound > mRightBound)
+		mRightBound = line_right_bound;
 
 	// Calculate an approximate bottom bound.
 	// TODO - This doesn't take oversized characters into account,

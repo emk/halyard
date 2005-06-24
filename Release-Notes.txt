@@ -1,7 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
-
+CVS - emk, brian
+    
+  * Fixed the bug which caused italic text to be cut off at the end of
+    a line (bug #1955).
   * Fixed About box to use correct #define to get versions.
   * Fixed missing icon bugs for Listener and other windows.
   * Hacked ScriptEditorDB to attempt to clean up duplicate file
