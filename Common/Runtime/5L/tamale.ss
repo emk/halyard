@@ -127,6 +127,14 @@
   (define-element-template %invisible-element% []
       (%element% :at (point 0 0) :shown? #f))
 
+  (define-element-template %audio-element%
+      [[volume       :type <number> :default 1.0 :label "Volume (0.0 to 1.0)"]]
+      (%invisible-element%)
+    ;; I'd like put a ON PROP-CHANGE handler here for audio volume, but
+    ;; it's not quite so easy, because there may be multiple channels to
+    ;; content with. Ugh. See SET-MEDIA-VOLUME!.
+    )
+
   (define-element-template %widget%
       [[rect :type <rect> :label "Rectangle"]]
       (%element% :at (rect-left-top rect)))
@@ -421,12 +429,13 @@
 
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
-      (%invisible-element%)
+      (%audio-element%)
     (call-5l-prim 'AudioStreamGeiger (node-full-name self)
-                  (build-path (current-directory) "Media" location)))
+                  (build-path (current-directory) "Media" location)
+                  (prop self volume)))
 
-  (define (geiger-audio name location)
-    (create %geiger-audio% :name name :location location))
+  (define (geiger-audio name location &key (volume 1.0))
+    (create %geiger-audio% :name name :location location :volume volume))
 
   (define (set-geiger-audio-counts-per-second! elem-or-name counts)
     (call-5l-prim 'AudioStreamGeigerSetCps (elem-or-name-hack elem-or-name)
@@ -434,9 +443,11 @@
 
   (define-element-template %geiger-synth%
       [state-path chirp loops]
-      (%invisible-element%)
+      (%audio-element%)
     (apply call-5l-prim 'GeigerSynth (node-full-name self) state-path
-           (build-path (current-directory) "Media" chirp) (* 512 1024)
+           (build-path (current-directory) "Media" chirp)
+           (prop self volume)
+           (* 512 1024)
            (map (fn (item)
                   (if (string? item)
                       (build-path (current-directory) "Media" item)
@@ -450,23 +461,26 @@
 
   (define-element-template %sine-wave-element%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
-      (%invisible-element%)
-    (call-5l-prim 'AudioStreamSine (node-full-name self) frequency))
+      (%audio-element%)
+    (call-5l-prim 'AudioStreamSine (node-full-name self)
+                  (prop self volume) frequency))
 
-  (define (sine-wave name frequency)
-    (create %sine-wave-element% :name name :frequency frequency))
+  (define (sine-wave name frequency &key (volume 1.0))
+    (create %sine-wave-element%
+            :name name :frequency frequency :volume volume))
 
   (define-element-template %vorbis-audio%
       [[location :type <string>  :label "Location"]
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
-      (%invisible-element%)
+      (%audio-element%)
     (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                   (build-path (current-directory) "Media" location)
-                  (* 1024 buffer) loop?))
+                  (prop self volume) (* 1024 buffer) loop?))
   
-  (define (vorbis-audio name location &key (loop? #f))
-    (create %vorbis-audio% :name name :location location :loop? loop?))
+  (define (vorbis-audio name location &key (loop? #f) (volume 1.0))
+    (create %vorbis-audio%
+            :name name :location location :loop? loop? :volume volume))
 
   (define *cd-media-directory* #f)
 
@@ -523,6 +537,7 @@
 
   (define-element-template %movie-element%
       [[location     :type <string>  :label "Location"]
+       [volume       :type <number>  :label "Volume (0.0 to 1.0)" :default 1.0]
        [controller?  :type <boolean> :label "Has movie controller" :default #f]
        [audio-only?  :type <boolean> :label "Audio only"        :default #f]
        [loop?        :type <boolean> :label "Loop movie"        :default #f]
@@ -533,13 +548,14 @@
       (call-5l-prim 'movie (node-full-name self)
                     (make-node-event-dispatcher self)
                     (parent->card self (prop self rect))
-                    path
+                    path volume
                     controller? audio-only? loop? interaction?)))
 
   (define (movie name r location
-                 &key controller? audio-only? loop? interaction?)
+                 &key (volume 1.0) controller? audio-only? loop? interaction?)
     (create %movie-element%
             :name name :rect r :location location
+            :volume volume
             :controller? controller? 
             :audio-only? audio-only?
             :loop? loop?
