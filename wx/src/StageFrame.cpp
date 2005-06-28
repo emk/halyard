@@ -191,7 +191,8 @@ StageFrame::StageFrame(wxSize inSize)
                 "StageFrame", wxDefaultSize,
                 wxDEFAULT_FRAME_STYLE),
 	  mDocument(NULL),
-      mAreFullScreenOptionsActive(false)
+      mAreFullScreenOptionsActive(false),
+      mCurrentFullScreenDisplayId(wxNOT_FOUND)
 {
     // Set up useful logging.
     mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
@@ -339,9 +340,6 @@ StageFrame::StageFrame(wxSize inSize)
 	// Re-load our saved frame layout.  We can't do this until after
 	// our setup is completed.
 	LoadFrameLayout();
-
-	// Calculate this once at startup.
-	FindBestFullScreenVideoMode();
 }
 
 void StageFrame::LoadSashLayout(wxConfigBase *inConfig) {
@@ -362,10 +360,42 @@ void StageFrame::ResetVideoMode() {}
 
 void StageFrame::FindBestFullScreenVideoMode()
 {
+    // Get the number of the current display. 
+    //
+    // XXX - I'm not sure that wxWidgets' underlying toplevel.cpp resize
+    // code (in ShowFullScreen) does something reasonable when the display
+    // is wxNOT_FOUND.
+    int current = wxDisplay::GetFromWindow(this);
+    if (current == wxNOT_FOUND) {
+        gLog.Caution("Can't find display for stage window, assuming primary");
+        current = 0;
+    }
+
+    // If we've already analyzed this display, we don't need to do it again.
+    if (mCurrentFullScreenDisplayId == current)
+        return;
+    mCurrentFullScreenDisplayId = current;
+
 	// TODO - DirectX support is broken in wxWindows.  A fair bit of work
 	// is required to fix it.  For now, leave it alone.
 	//wxDisplay::UseDirectX(true);
-	wxDisplay display;
+	wxDisplay display(mCurrentFullScreenDisplayId);
+
+    // Calculate the aspect ratio.  We don't use this yet, but we may
+    // in the future, so we'll just log it for now.
+    wxRect current_geom(display.GetGeometry());
+    float aspect = 1.0*current_geom.GetWidth()/current_geom.GetHeight();
+    gDebugLog.Log("Current screen aspect ratio: %.2f", aspect);
+
+    // Check for old-style multihead support, where two monitors appear as
+    // one double-wide monitor with an 8:3 aspect ratio.  We always want to
+    // pick a 4:3 mode on such monitors, which will deactivate the second
+    // screen instead of splitting us between both.  Of course, if there's
+    // more than one display, we have to assume any funny-shaped monitors
+    // really are funny-shaped.  And we don't try to be clever about
+    // multiple joined 3:4 monitors or other oddities; it's too much work.
+    if ((aspect > (8.0/3.0)*0.95) && wxDisplay::GetCount() == 1)
+        gDebugLog.Log("Looks like two monitors combined into one display");
 
 	// Search for the most promising mode.
 	wxArrayVideoModes modes = display.GetModes();
@@ -374,8 +404,9 @@ void StageFrame::FindBestFullScreenVideoMode()
 	for (size_t i = 0; i < modes.GetCount(); i++)
 	{
 		wxVideoMode &mode = modes[i];
-		gDebugLog.Log("Found mode: %dx%d, %d bit, %d Hz",
-					  mode.w, mode.h, mode.bpp, mode.refresh);
+		gDebugLog.Log("Found mode: %dx%d, %d bit, %d Hz (aspect %.2f)",
+					  mode.w, mode.h, mode.bpp, mode.refresh,
+                      1.0*mode.w/mode.h);
 
 		// See if the video mode is good enough to display our content.
 		if (mode.bpp >= 24 &&
@@ -388,7 +419,6 @@ void StageFrame::FindBestFullScreenVideoMode()
 			{
 				mFullScreenVideoMode = mode;
 			}
-			
 		}
 	}
 
@@ -411,12 +441,13 @@ void StageFrame::FindBestFullScreenVideoMode()
 }
 
 void StageFrame::SetFullScreenVideoMode() {
+    FindBestFullScreenVideoMode();
     ComputeResizePrefName();
 	if (mFullScreenVideoMode != wxDefaultVideoMode) {
         bool should_confirm;
         if (ShouldResizeScreen(should_confirm)) {
             // Resize the screen.
-            wxDisplay display;
+            wxDisplay display(mCurrentFullScreenDisplayId);
             display.ChangeMode(mFullScreenVideoMode);
 
             // Make sure the user actually likes the new mode.
@@ -431,7 +462,7 @@ void StageFrame::ResetVideoMode()
 {
 	if (mFullScreenVideoMode != wxDefaultVideoMode)
 	{
-		wxDisplay display;
+		wxDisplay display(mCurrentFullScreenDisplayId);
 		display.ResetMode();
 	}		
 }
@@ -449,6 +480,10 @@ void StageFrame::ComputeResizePrefName() {
         wxString geometry;
         geometry.sprintf("%dx%d", r.GetWidth(), r.GetHeight());
         mResizePrefName += geometry;
+
+        // Mark the current display in our list.
+        if (i == mCurrentFullScreenDisplayId)
+            mResizePrefName += "*";
     }
     mResizePrefName = "/Resize/" + mResizePrefName;
 }

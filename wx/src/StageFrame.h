@@ -115,6 +115,13 @@ class StageFrame : public SashFrame, public model::View
 	///
 	wxSize mMinimumFrameSize;
 
+    //////////
+    /// The wxDisplay ID number of the screen we intend to use for
+    /// full-screen mode.  We update this shortly before switching
+    /// into full-screen mode.
+    ///
+    int mCurrentFullScreenDisplayId;
+
 #if wxUSE_DISPLAY
 
 	//////////
