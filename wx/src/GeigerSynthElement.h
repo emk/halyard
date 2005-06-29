@@ -40,10 +40,11 @@ class GeigerSynthElement : public InvisibleElement, public IMediaElement,
                            public TStateListener
 {
     typedef shared_ptr<VorbisAudioStream> VorbisAudioStreamPtr;
+    typedef shared_ptr<GeigerAudioStream> GeigerAudioStreamPtr;
     typedef std::map<double,VorbisAudioStreamPtr> LoopMap;
 
     std::string mStatePath;
-    shared_ptr<GeigerAudioStream> mGeigerAudioStream;
+    GeigerAudioStreamPtr mGeigerAudioStream;
     LoopMap mLoopStreams;
     double mCurrentLoopCps;
     size_t mBufferSize;

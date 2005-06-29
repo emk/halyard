@@ -53,11 +53,14 @@ VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 	InitializeFile();
 
 	// Fill our buffer.
+    // TODO Eventually move this code to the background thread.
 	Idle();
+
+    // Allow background thread to start calling Idle().
+    InitializationDone();
 }
 
-VorbisAudioStream::~VorbisAudioStream()
-{
+void VorbisAudioStream::LogFinalStreamInfo() {
 	gDebugLog.Log("Stopped Vorbis stream, %d samples underrun",
 				  mUnderrunCount);
 }

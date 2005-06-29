@@ -30,6 +30,10 @@
 /// AudioStreams are used for continuous, real-time playback of custom
 /// audio.
 ///
+/// AudioStream relies on two background threads--one to call FillBuffer(),
+/// and one to call Idle().  See the description of each function for
+/// more details.
+///
 class AudioStream
 {
 public:
@@ -46,6 +50,19 @@ public:
 	};
 
 private:
+    /// Execution state for an AudioStream.
+    enum State {
+        /// This is the initial state for each thread.  An INITIALIZING
+        /// stream does not receive automatic Idle() calls.
+        INITIALIZING,
+        /// An INITIALIZED stream will receive automatic Idle() calls.
+        INITIALIZED,
+        /// A DELETING stream no longer receives Idle calls, and will
+        /// be deleted automatically sometime soon.
+        DELETING
+    };  
+
+    State mStreamState;
 	PortAudioStream *mStream;
 	PaSampleFormat mFormat;
 	bool mIsRunning;
@@ -57,6 +74,8 @@ private:
 							 PaTimestamp inOutTime,
 							 void *inUserData);
 
+    void SetStreamState(State state);
+    State GetStreamState() const;
 	void ApplyChannelVolumes(void *ioOutputBuffer,
 							 unsigned long inFramesPerBuffer);
 
@@ -70,8 +89,17 @@ public:
 	//////////
 	/// Destroy an AudioStream.  The stream must be stopped before
 	/// destroying it.
+    ///
+    /// Because this is called from the application thread, it may destroy
+    /// resources used by FillBuffer()--which is shut down by Stop()--but
+    /// NOT resources used by Idle(), which is shut down asynchronously.
+    ///
+    /// Resources needed by Idle() should be destroyed in the destructor.
+    ///
+    /// TODO You might as well destroy resources needed by FillBuffer()
+    /// in the destructor as well.
 	///
-	virtual ~AudioStream();
+	virtual void Delete();
 
 	//////////
 	/// How many audio channels does this stream have?
@@ -139,6 +167,22 @@ public:
 
 protected:
     //////////
+    /// This is called automatically from a background thread, and SHOULD
+    /// NOT BE CALLED DIRECTLY.  Use Delete() instead.
+    ///
+    /// Because this is called from the background thread, it may delete
+    /// resources needed by Idle().
+    ///
+	virtual ~AudioStream();
+
+    //////////
+    /// Change thread state from INITIALIZING to INITIALIZED.  This must
+    /// be called at the end of each subclass's constructor, and will
+    /// cause the background thread to start sending Idle() messages.
+    /// 
+    void InitializationDone();
+
+    //////////
     /// Get the number of samples played.  The default implementation
     /// reports solely the number of raw samples actually played, but
     /// subclasses may attempt to fudge this number to account for
@@ -147,9 +191,12 @@ protected:
     virtual double GetSamplesPlayed() const;
 
 	//////////
-	/// Our callback function.  This code runs in a separate thread (or
-	/// perhaps at interrupt level), and isn't allowed to do much of
-	/// anything besides filling the buffer.
+	/// Our callback function.  This code runs in a separate PortAudio
+	/// thread (or perhaps at interrupt level), and isn't allowed to do
+	/// much of anything besides filling the buffer.
+    ///
+    /// FillBuffer() is called periodically after you call Start() until
+    /// the time you call Stop().
 	///
 	/// \param outBuffer  (out) 2*inFrames values in the specified
 	///	                 format, representing left and right channels (I'm
@@ -167,18 +214,33 @@ protected:
 	/// Give some non-interrupt processing time to the stream.  This
 	/// gets called automatically.  Don't spend *too* long in this method;
 	/// there may be other media streams playing, and they need time, too.
+    ///
+    /// Idle() is called from a background thread, starting any time after
+    /// you call InitializationDone() and ending some time *after* you call
+    /// Delete().  This means you can do disk I/O and other things not
+    /// allowed in FillBuffer, but you still have to think about thread
+    /// safety a bit.
 	///
 	virtual void Idle() {}
 
+    //////////
+    /// Log any useful information about this stream.  This is called once,
+    /// after the last call to FillBuffer() but possibly before (or during)
+    /// the last call to Idle().
+    ///
+    virtual void LogFinalStreamInfo() {}
+
 private: // static stuff
-	friend class AudioStreamTimer;
+	friend class AudioStreamThread;
 
 	typedef std::list<AudioStream*> AudioStreamList;
 	
-	static AudioStreamTimer *sTimer;
+	static AudioStreamThread *sThread;
+    static wxCriticalSection sCriticalSection;
 	static AudioStreamList sStreams;
 
     static void IdleAllStreams();
+    static bool StreamsAreRunning();
 	static void RegisterStream(AudioStream *inStream);
 	static void UnregisterStream(AudioStream *inStream);
 
@@ -203,8 +265,7 @@ class SineAudioStream : public AudioStream
 	int mFrequency;
 
 public:
-	SineAudioStream(int inFrequency, float inVolume = 1.0f)
-		: AudioStream(FLOAT32_STREAM, inVolume), mFrequency(inFrequency) {}
+	SineAudioStream(int inFrequency, float inVolume = 1.0f);
 
     virtual bool IsLooping() { return true; }
 

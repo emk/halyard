@@ -82,7 +82,7 @@ class VorbisAudioStream : public AudioStream
 public:
 	VorbisAudioStream(const char *inFileName, size_t inBufferSize,
 					  bool inShouldLoop, float inVolume = 1.0f);
-	~VorbisAudioStream();
+    virtual void LogFinalStreamInfo();
 
     virtual bool IsDone() const;
     virtual bool IsLooping() { return mShouldLoop; }

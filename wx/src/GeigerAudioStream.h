@@ -57,6 +57,7 @@ class GeigerAudioStream : public AudioStream
 public:
     GeigerAudioStream(const char *inFileName, float inVolume = 1.0f);
     ~GeigerAudioStream();
+    virtual void LogFinalStreamInfo();
     
     void SetChirpsPerSecond(float inChirpsPerSecond)
 		{ mChirpsPerSecond = inChirpsPerSecond; }

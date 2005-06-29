@@ -2,6 +2,8 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk, brian
     
+  * Converted AudioStream to use a background thread instead of a 
+    timer (bug #1716, partial).
   * Added logging code to report screen aspect ratios and suspected
     "merged" monitors (bug #1934, partial).
   * Fixed the bug which caused italic text to be cut off at the end of

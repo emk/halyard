@@ -60,15 +60,21 @@ GeigerAudioStream::GeigerAudioStream(const char *inFileName, float inVolume)
 	mChirpsPlayed = 0;
 	mFrameEndTime = 0;
 	mClipCount = 0;
+
+    InitializationDone();
 }
 
 GeigerAudioStream::~GeigerAudioStream()
 {
+    // Allow this to be deleted in our background thread.
+	delete [] mChirpBegin;
+}
+
+void GeigerAudioStream::LogFinalStreamInfo() {
 	gDebugLog.Log("Played %d geiger counts in %.1f seconds, %d samples "
 				  "clipped",
 				  mChirpsPlayed, mFrameEndTime / SAMPLES_PER_SECOND,
 				  mClipCount);
-	delete [] mChirpBegin;
 }
 
 void GeigerAudioStream::ZeroBuffer(float *outBuffer, unsigned long inFrames)

@@ -21,6 +21,7 @@
 // @END_LICENSE
 
 #include "TamaleHeaders.h"
+#include <boost/mem_fn.hpp>
 #include "GeigerSynthElement.h"
 #include "GeigerAudioStream.h"
 #include "VorbisAudioStream.h"
@@ -32,10 +33,14 @@ GeigerSynthElement::GeigerSynthElement(Stage *inStage, const wxString &inName,
                                        double inVolume)
     : InvisibleElement(inStage, inName),
       mStatePath(inStatePath),
-      mGeigerAudioStream(new GeigerAudioStream(inChirpLocation, inVolume)),
       mCurrentLoopCps(0), mBufferSize(inBufferSize),
       mInitialVolume(inVolume)
 {
+    // We need to pass a custom cleanup function to shared_ptr because we're
+    // not allowed to simply 'delete' AudioStream elements.
+    mGeigerAudioStream =
+        GeigerAudioStreamPtr(new GeigerAudioStream(inChirpLocation, inVolume),
+                             boost::mem_fn(&GeigerAudioStream::Delete));
     NotifyStateChanged();
 }
 
@@ -45,10 +50,13 @@ GeigerSynthElement::~GeigerSynthElement() {
 
 void GeigerSynthElement::AddLoop(double inLoopCps, const char *inLoopLocation)
 {
+    // We need to pass a custom cleanup function to shared_ptr because we're
+    // not allowed to simply 'delete' AudioStream elements.
     VorbisAudioStreamPtr stream(new VorbisAudioStream(inLoopLocation,
                                                       mBufferSize,
                                                       true,
-                                                      mInitialVolume));
+                                                      mInitialVolume),
+                                boost::mem_fn(&VorbisAudioStream::Delete));
     mLoopStreams.insert(LoopMap::value_type(inLoopCps, stream));
 }
 

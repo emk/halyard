@@ -41,7 +41,7 @@ AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
 AudioStreamElement::~AudioStreamElement()
 {
     mStream->Stop();
-    delete mStream;
+    mStream->Delete();
 }
 
 bool AudioStreamElement::HasReachedFrame(MovieFrame inFrame) {
