@@ -4,6 +4,7 @@
            ;; by pref and set-pref!.
            read-data
            write-data
+           user-has-saved-data?  ;determine if a given user-id has stored data
 
            pref
            set-pref!
@@ -24,6 +25,10 @@
            )
 
   (define *tables* (make-hash-table 'equal))
+  
+  ;; Determine if a "user-id.dat" file exists for a given user-id.
+  (define (user-has-saved-data? user-id)
+    (file-exists? (build-path "Data" (cat user-id ".dat"))))
   
   (define (find-table table-name)
     (unless (hash-table-has-key? *tables* table-name)
