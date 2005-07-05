@@ -85,6 +85,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(BrowserReload);
 	REGISTER_5L_PRIMITIVE(BrowserStop);
 	REGISTER_5L_PRIMITIVE(ColorAt);
+	REGISTER_5L_PRIMITIVE(CopyStringToClipboard);
 	REGISTER_5L_PRIMITIVE(DcPop);
 	REGISTER_5L_PRIMITIVE(DcPush);
 	REGISTER_5L_PRIMITIVE(DcRect);
@@ -337,6 +338,14 @@ DEFINE_5L_PRIMITIVE(ColorAt) {
 	TPoint at;
 	inArgs >> at;
 	::SetPrimitiveResult(GetCurrentDrawingArea()->GetPixel(at.X(), at.Y()));
+}
+
+DEFINE_5L_PRIMITIVE(CopyStringToClipboard) {
+	// This primitive is to allow people to write developer tools in scheme.
+	// It isn't actually a necessary part of the API. 
+	std::string string;
+	inArgs >> string;
+	wxGetApp().GetStage()->CopyStringToClipboard(string.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(DcPop) {

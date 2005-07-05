@@ -562,6 +562,13 @@ public:
 	void Screenshot(const wxString &inFilename);
 
 	//////////
+	/// Copy a string to the clipboard.
+	///
+	/// \param inString  The string to copy.
+	///
+	void CopyStringToClipboard(const wxString &inString);
+
+	//////////
 	/// Display a modal text input box.
 	///
 	/// \param inBounds  The box to use for text input.

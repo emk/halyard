@@ -33,6 +33,7 @@
            wait tc 
            nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade opacity save-graphics restore-graphics
+           copy-string-to-clipboard
            ensure-dir-exists screenshot element-exists? 
            delete-element-if-exists
            %basic-button%
@@ -628,6 +629,10 @@
   
   (define (restore-graphics &key (bounds $screen-rect))
     (call-5l-prim 'restoregraphics bounds))
+        
+  ;; Copy a string to the clip board
+  (define (copy-string-to-clipboard string)
+    (call-5l-prim 'copystringtoclipboard string))
 
   (define (three-char-print n)
     (cond 

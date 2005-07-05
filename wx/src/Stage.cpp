@@ -745,14 +745,19 @@ void Stage::OnRightDown(wxMouseEvent &inEvent)
 		}
 		mCopiedPoints.push_back(pos);
 
-		// Copy our string to the clipboard.  This code snippet comes from
-		// the wxWindows manual.
-		if (wxTheClipboard->Open())
-		{
-			wxTheClipboard->SetData(new wxTextDataObject(str));
-			wxTheClipboard->Close();
-			mFrame->SetStatusText(wxString("Copied: ") + str);
-		}
+		CopyStringToClipboard(str);
+	}
+}
+
+void Stage::CopyStringToClipboard(const wxString &inString)
+{
+	// Copy our string to the clipboard.  This code snippet comes from
+	// the wxWindows manual.
+	if (wxTheClipboard->Open())
+	{
+		wxTheClipboard->SetData(new wxTextDataObject(inString));
+		wxTheClipboard->Close();
+		mFrame->SetStatusText(wxString("Copied: ") + inString);
 	}
 }
 
