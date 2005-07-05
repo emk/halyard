@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		47
+#define VERSION_REV_BIG		48
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.47 (Development)"
+#define VERSION_STRING		"Tamale 0.0.48 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -35,6 +35,37 @@
 
 /*
  $Log$
+ Revision 1.89  2005/07/05 16:39:28  emk
+ 0.0.48 - 5 July 2005 - emk, brian
+
+   * Added COPY-STRING-TO-CLIPBOARD function for use by developer tool
+     libraries.
+   * Fixed bug in AudioStream::StreamsAreRunning().
+   * Converted AudioStream to use a background thread instead of a
+     timer (bug #1716, partial).
+   * AudioStream now does initial Idle() in backround, which should
+     make it possible to start audio without clobbering 3D performance.
+     Some clean-up still required (bug #1716, partial).
+   * AudioStream threading code cleanup finished (bug #1716).  The
+     BACKGROUND_START_AFTER_PRELOAD code is still in place, but turned off.
+     If testing doesn't reveal any stuttering at the start of audio
+     playback, we'll delete it and simplify the audio classes considerably.
+   * Fixed bug where PortAudio would sometimes fail to shut down a stream
+     properly.
+   * Added logging code to report screen aspect ratios and suspected
+     "merged" monitors (bug #1934, partial).
+   * Fixed the bug which caused italic text to be cut off at the end of
+     a line (bug #1955).
+   * Fixed About box to use correct #define to get versions.
+   * Fixed missing icon bugs for Listener and other windows.
+   * Hacked ScriptEditorDB to attempt to clean up duplicate file
+     entries with different case, i.e., "R1.ss" and "r1.ss".  This
+     code is a bit kludgy because it tries to avoid expensive and
+     complicated file I/O.
+   * Added :VOLUME parameter to all media elements.
+   * Fixed QuickTime SET-MEDIA-VOLUME! and :VOLUME support to
+     actually work.  (The original code was simply broken.)
+
  Revision 1.88  2005/06/21 18:51:41  emk
    * Added icons for new script/definition tree.
    * Clicking on folders jumps to definition

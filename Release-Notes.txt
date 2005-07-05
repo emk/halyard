@@ -1,9 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.48 - 5 July 2005 - emk, brian
     
   * Added COPY-STRING-TO-CLIPBOARD function for use by developer tool
     libraries.
+  * Fixed bug in AudioStream::StreamsAreRunning().
   * Converted AudioStream to use a background thread instead of a 
     timer (bug #1716, partial).
   * AudioStream now does initial Idle() in backround, which should

@@ -105,6 +105,8 @@ wxThread::ExitCode AudioStreamThread::Entry() {
 		if (!TestDestroy())
 			SleepUntilWakeupOrTimeout();
     }
+	// This should be true during any normal shutdown, but I'm not sure
+	// about the more exotic abnormal shutdowns.
     ASSERT(!AudioStream::StreamsAreRunning());
 	return 0;
 }
@@ -497,7 +499,7 @@ void AudioStream::UnregisterStream(AudioStream *inStream) {
 
 bool AudioStream::StreamsAreRunning() {
     wxCriticalSectionLocker lock(sCriticalSection);
-    return sStreams.empty();
+    return !sStreams.empty();
 }
 
 void AudioStream::WaitUntilUnregistrationFinished() {
