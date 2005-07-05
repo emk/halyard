@@ -52,10 +52,6 @@ VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 
 	InitializeFile();
 
-	// Fill our buffer.
-    // TODO Eventually move this code to the background thread.
-	Idle();
-
     // Allow background thread to start calling Idle().
     InitializationDone();
 }

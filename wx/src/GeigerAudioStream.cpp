@@ -66,7 +66,7 @@ GeigerAudioStream::GeigerAudioStream(const char *inFileName, float inVolume)
 
 GeigerAudioStream::~GeigerAudioStream()
 {
-    // Allow this to be deleted in our background thread.
+    // We're called from the foreground thread, thankfully enough.
 	delete [] mChirpBegin;
 }
 

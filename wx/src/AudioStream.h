@@ -50,13 +50,32 @@ public:
 	};
 
 private:
+    enum {
+        // Set this variable to 1 to delay calls to Pa_StartStream until
+        // after we've actually buffered some data.  Doing so is highly
+        // desirable--it prevents underruns during stream startup--but it
+        // requires us to make PortAudio calls from a background thread,
+        // which causes weird crashes during application shutdown.
+        //
+        // XXX - Decide which way we're going to live with, and delete
+        // the other code path.
+        BACKGROUND_START_AFTER_PRELOAD = 0
+    };
+
     /// Execution state for an AudioStream.
     enum State {
         /// This is the initial state for each thread.  An INITIALIZING
         /// stream does not receive automatic Idle() calls.
         INITIALIZING,
-        /// An INITIALIZED stream will receive automatic Idle() calls.
-        INITIALIZED,
+        /// A PRELOADING stream is buffering enough data to start playback
+        /// for the first time.  It receives one call to Idle(), and then
+        /// becomes an ACTIVE stream automatically. It's possible to
+        /// Start() a preloading stream, but audio playback may not actually
+        /// start until the stream is ACTIVE (depending on the value of
+        /// BACKGROUND_START_AFTER_PRELOAD).
+        PRELOADING,
+        /// An ACTIVE stream will receive automatic Idle() calls.
+        ACTIVE,
         /// A DELETING stream no longer receives Idle calls, and will
         /// be deleted automatically sometime soon.
         DELETING
@@ -65,8 +84,17 @@ private:
     State mStreamState;
 	PortAudioStream *mStream;
 	PaSampleFormat mFormat;
-	bool mIsRunning;
 	float mChannelVolumes[MAX_CHANNELS];
+
+    /// Is the stream currently running?  This is true if Start() has
+    /// been called more recently than Stop().  If mIsRunning is true
+    /// *and* mStreamState is PRELOADING, then the stream is "officially"
+    /// running, though no actual audio will play until Preload() calls
+    /// StartIfStartDelayedByPreload().
+    ///
+    /// This member variable is volatile so we don't need a critical
+    /// section to read it.
+	volatile bool mIsRunning;
 
 	static int AudioCallback(void *inInputBuffer,
 							 void *outOutputBuffer,
@@ -76,8 +104,30 @@ private:
 
     void SetStreamState(State state);
     State GetStreamState() const;
+    bool IsStreamStatePreloadingOrDeleting() const;
+    bool IsStreamStatePreloadingOrActive() const;
 	void ApplyChannelVolumes(void *ioOutputBuffer,
 							 unsigned long inFramesPerBuffer);
+
+    //////////
+    /// An internal version of the Start() function, called by Start()
+    /// and StartIfStartDelayedByPreload().
+    ///
+    /// Make sure you're holding sCriticalSection before you enter this
+    /// function!
+    ///
+    void StartInternal(bool isInBackground);
+
+    //////////
+    /// If a previous call to Start() was supposed to start audio
+    /// playing, but was unable to do so because the stream was
+    /// PRELOADING, then perform the actual start.  Called at the
+    /// end of Preload().
+    ///
+    /// Make sure you're holding sCriticalSection before you enter this
+    /// function!
+    ///
+    void StartIfStartDelayedByPreload();
 
 public:
 	//////////
@@ -89,17 +139,8 @@ public:
 	//////////
 	/// Destroy an AudioStream.  The stream must be stopped before
 	/// destroying it.
-    ///
-    /// Because this is called from the application thread, it may destroy
-    /// resources used by FillBuffer()--which is shut down by Stop()--but
-    /// NOT resources used by Idle(), which is shut down asynchronously.
-    ///
-    /// Resources needed by Idle() should be destroyed in the destructor.
-    ///
-    /// TODO You might as well destroy resources needed by FillBuffer()
-    /// in the destructor as well.
 	///
-	virtual void Delete();
+	void Delete();
 
 	//////////
 	/// How many audio channels does this stream have?
@@ -167,20 +208,28 @@ public:
 
 protected:
     //////////
-    /// This is called automatically from a background thread, and SHOULD
-    /// NOT BE CALLED DIRECTLY.  Use Delete() instead.
+    /// This destructor SHOULD NOT BE CALLED DIRECTLY.  Use Delete()
+    /// instead.
     ///
-    /// Because this is called from the background thread, it may delete
-    /// resources needed by Idle().
+    /// Destructors are now called from the foreground thread.  We used
+    /// to call them from the background thread, but it lead to too many
+    /// thread-safety headaches.
     ///
 	virtual ~AudioStream();
 
     //////////
-    /// Change thread state from INITIALIZING to INITIALIZED.  This must
-    /// be called at the end of each subclass's constructor, and will
-    /// cause the background thread to start sending Idle() messages.
+    /// Change thread state from INITIALIZING to PRELOADING.  This must be
+    /// called at the end of each subclass's constructor, and will cause
+    /// the background thread to start sending Preload() and Idle()
+    /// messages.
     /// 
     void InitializationDone();
+
+    //////////
+    /// Makes the first call to Idle(), and changes state from INITIALIZING
+    /// to PRELOADING.  Called automatically from the background thread.
+    ///
+    void Preload();
 
     //////////
     /// Get the number of samples played.  The default implementation
@@ -237,6 +286,7 @@ private: // static stuff
 	
 	static AudioStreamThread *sThread;
     static wxCriticalSection sCriticalSection;
+    static wxCriticalSection sPortAudioCriticalSection;
 	static AudioStreamList sStreams;
 
     static void IdleAllStreams();

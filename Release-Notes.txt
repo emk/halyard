@@ -4,6 +4,9 @@ CVS - emk, brian
     
   * Converted AudioStream to use a background thread instead of a 
     timer (bug #1716, partial).
+  * AudioStream now does initial Idle() in backround, which should
+    make it possible to start audio without clobbering 3D performance.
+    Some clean-up still required (bug #1716, partial).
   * Fixed bug where PortAudio would sometimes fail to shut down a stream
     properly.
   * Added logging code to report screen aspect ratios and suspected
