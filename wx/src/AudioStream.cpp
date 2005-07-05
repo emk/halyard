@@ -58,15 +58,6 @@ class AudioStreamThread : public wxThread {
     wxMutex mSleepMutex;
     wxCondition mSleepCondition;
 
-    // These should arguably be static members of AudioStream, but
-    // I'm not sure whether it's safe to make them global variables
-    // initialized at startup time.  This is the next best place to
-    // put them.
-    //
-    // TODO - Try to move these into AudioStream.
-    wxMutex mUnregisterMutex;
-    wxCondition mUnregisterCondition;
-
     void SleepUntilWakeupOrTimeout();
 
 public:
@@ -77,10 +68,6 @@ public:
 	AudioStreamThread();
     void WakeUp();
 
-    wxMutex &GetUnregisterMutex();
-    void WaitUntilUnregistrationFinished();
-    void UnregistrationFinished();
-
 	virtual ExitCode Entry();
 };
 
@@ -88,7 +75,7 @@ AudioStreamThread::AudioStreamThread()
     // We want a detached thread so wxThead::Delete will automatically
     // delete this thread object when we're shutting down.
     : wxThread(wxTHREAD_DETACHED),
-      mSleepCondition(mSleepMutex), mUnregisterCondition(mUnregisterMutex)
+      mSleepCondition(mSleepMutex)
 {
 }
 
@@ -106,26 +93,6 @@ void AudioStreamThread::SleepUntilWakeupOrTimeout() {
     // TIMER_INTERVAL expires or someone calls WakeUp().
     wxMutexLocker lock(mSleepMutex);
     mSleepCondition.WaitTimeout(TIMER_INTERVAL);
-}
-
-/// Called from the foreground thread: This mutex should be locked before
-/// calling WaitUntilUnregistrationFinished(), and unlocked afterwards.
-wxMutex &AudioStreamThread::GetUnregisterMutex() {
-    return mUnregisterMutex;
-}
-
-/// Called from the foreground thread: Wait() for the background thread
-/// to call UnregistrationFinished().  The call to Wait() automically unlocks
-/// mUnregisterMutex *while* waiting, and locks it afterwards.
-void AudioStreamThread::WaitUntilUnregistrationFinished() {
-    mUnregisterCondition.Wait();
-}
-
-/// Called from this thread: Wait until the foreground thread calls
-/// WaitUntilUnregistrationFinished(), if it hasn't already, and wake it up.
-void AudioStreamThread::UnregistrationFinished() {
-    wxMutexLocker lock(mUnregisterMutex);
-    mUnregisterCondition.Signal();
 }
 
 wxThread::ExitCode AudioStreamThread::Entry() {
@@ -179,11 +146,11 @@ wxThread::ExitCode AudioStreamThread::Entry() {
 //      up from its normal TIMER_INTERVAL naps, when we have something
 //      we want it to handle immediately.  We don't maintain strict
 //      synchronization on this condition; it's just an optimization.
-//    - mUnregisterCondition: The background thread signals this condition
+//    - sUnregisterCondition: The background thread signals this condition
 //      when it has finished unregistering a stream and the foreground
 //      thread can wake up and delete the stream object.
 //
-//  We use sCriticalSection, mSleepCondition and mUnregisterCondition to
+//  We use sCriticalSection, mSleepCondition and sUnregisterCondition to
 //  synchronize between (1) and (3).  We haven't tried using any wxWidgets
 //  functions to synchronize with (2), and we don't know if they'd
 //  work--instead, we rely on carefully-designed circular buffers in our
@@ -252,13 +219,7 @@ void AudioStream::Preload() {
 void AudioStream::Delete() {
     ASSERT(IsStreamStatePreloadingOrActive());
 	ASSERT(!mIsRunning);
-
-    {
-        // TODO - Refactor this into a support function, and
-        // the copy in Stop(), too.
-        wxCriticalSectionLocker lock(sPortAudioCriticalSection);
-        ASSERT(!Pa_StreamActive(mStream));
-    }
+    ASSERT(!IsPortAudioStreamRunning());
 
     // Before we can actually delete this object, we need to make sure
     // the background thread is done with this object.
@@ -266,7 +227,7 @@ void AudioStream::Delete() {
         // Lock mUnregisterMutex *before* notifying the background thread,
         // just it case the background thread finishes the deletion before
         // we call WaitUntilUnregistrationFinished().
-        wxMutexLocker lock(sThread->GetUnregisterMutex());
+        wxMutexLocker lock(sUnregisterMutex);
 
         // Ask the background thread to stop sending us Preload() and
         // Idle() messages and to call UnregisterStream().
@@ -276,7 +237,7 @@ void AudioStream::Delete() {
         SetStreamState(DELETING);
 
         // Wait until the background thread actually deletes us.
-        sThread->WaitUntilUnregistrationFinished();
+        WaitUntilUnregistrationFinished();
     }
 
     // Allow our subclasses to log any final stream-related data.
@@ -323,6 +284,17 @@ bool AudioStream::IsStreamStatePreloadingOrActive() const {
     // state transitions while we're doing the check.
     wxCriticalSectionLocker lock(sCriticalSection);
     return (mStreamState == PRELOADING) || (mStreamState == ACTIVE);
+}
+
+bool AudioStream::IsPortAudioStreamRunning() const {
+    wxCriticalSectionLocker lock3(sPortAudioCriticalSection);
+    PaError err = Pa_StreamActive(mStream);
+    if (err < 0) {
+        gLog.Caution("Error checking status of audio stream");
+        return false;
+    } else {
+        return err ? true : false;
+    }
 }
 
 int AudioStream::AudioCallback(void *inInputBuffer,
@@ -472,9 +444,7 @@ void AudioStream::Stop() {
 		Pa_StopStream(mStream);
 		mIsRunning = false;
 	}
- 
-    wxCriticalSectionLocker lock3(sPortAudioCriticalSection);
-    ASSERT(!Pa_StreamActive(mStream));
+    ASSERT(!IsPortAudioStreamRunning());
 }
 
 
@@ -485,6 +455,8 @@ void AudioStream::Stop() {
 AudioStreamThread *AudioStream::sThread = NULL;
 wxCriticalSection AudioStream::sCriticalSection;
 wxCriticalSection AudioStream::sPortAudioCriticalSection;
+wxMutex AudioStream::sUnregisterMutex;
+wxCondition AudioStream::sUnregisterCondition(AudioStream::sUnregisterMutex);
 AudioStream::AudioStreamList AudioStream::sStreams;
 
 void AudioStream::InitializeStreams() {
@@ -526,6 +498,15 @@ void AudioStream::UnregisterStream(AudioStream *inStream) {
 bool AudioStream::StreamsAreRunning() {
     wxCriticalSectionLocker lock(sCriticalSection);
     return sStreams.empty();
+}
+
+void AudioStream::WaitUntilUnregistrationFinished() {
+    sUnregisterCondition.Wait();
+}
+
+void AudioStream::UnregistrationFinished() {
+    wxMutexLocker lock(sUnregisterMutex);
+    sUnregisterCondition.Signal();
 }
 
 // Called from background thread.
@@ -576,7 +557,7 @@ void AudioStream::IdleAllStreams() {
                 // We handle unregistration here, so nobody else can can
                 // unregister a stream we're working on.
                 UnregisterStream(*i);
-                sThread->UnregistrationFinished();
+                UnregistrationFinished();
                 break;
                 
             default:

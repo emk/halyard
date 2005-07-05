@@ -81,7 +81,7 @@ private:
         DELETING
     };  
 
-    State mStreamState;
+    volatile State mStreamState;
 	PortAudioStream *mStream;
 	PaSampleFormat mFormat;
 	float mChannelVolumes[MAX_CHANNELS];
@@ -106,6 +106,8 @@ private:
     State GetStreamState() const;
     bool IsStreamStatePreloadingOrDeleting() const;
     bool IsStreamStatePreloadingOrActive() const;
+    /// Is our underlying PortAudio object currently playing audio?
+    bool IsPortAudioStreamRunning() const;
 	void ApplyChannelVolumes(void *ioOutputBuffer,
 							 unsigned long inFramesPerBuffer);
 
@@ -287,12 +289,32 @@ private: // static stuff
 	static AudioStreamThread *sThread;
     static wxCriticalSection sCriticalSection;
     static wxCriticalSection sPortAudioCriticalSection;
+    static wxMutex sUnregisterMutex;
+    static wxCondition sUnregisterCondition;
+    /// XXX - I don't whether this needs to be volatile or not.  I'd
+    /// make it volatile just to be safe, but the STL doesn't like
+    /// volatile std::list objects.
 	static AudioStreamList sStreams;
 
     static void IdleAllStreams();
     static bool StreamsAreRunning();
 	static void RegisterStream(AudioStream *inStream);
 	static void UnregisterStream(AudioStream *inStream);
+
+    //////////
+    /// Called from the foreground thread: Wait() for the background thread
+    /// to call UnregistrationFinished().  The call to Wait() automically
+    /// unlocks mUnregisterMutex *while* waiting, and locks it afterwards.
+    /// You must lock sUnregisterMutex before calling this function!
+    ///
+    static void WaitUntilUnregistrationFinished();
+
+    //////////
+    /// Called from this thread: Wait until the foreground thread calls
+    /// WaitUntilUnregistrationFinished(), if it hasn't already, and wake
+    /// it up.
+    ///
+    static void UnregistrationFinished();
 
 public: // static stuff
     //////////
