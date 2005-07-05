@@ -4,6 +4,8 @@ CVS - emk, brian
     
   * Converted AudioStream to use a background thread instead of a 
     timer (bug #1716, partial).
+  * Fixed bug where PortAudio would sometimes fail to shut down a stream
+    properly.
   * Added logging code to report screen aspect ratios and suspected
     "merged" monitors (bug #1934, partial).
   * Fixed the bug which caused italic text to be cut off at the end of
