@@ -99,6 +99,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
+    REGISTER_5L_PRIMITIVE(Heartbeat);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
@@ -480,6 +481,10 @@ DEFINE_5L_PRIMITIVE(GeigerSynth) {
         element->AddLoop(loop_cps, loop_location.c_str());
 	}
     element->DoneAddingLoops();
+}
+
+DEFINE_5L_PRIMITIVE(Heartbeat) {
+    wxGetApp().Heartbeat();
 }
 
 DEFINE_5L_PRIMITIVE(Input) {

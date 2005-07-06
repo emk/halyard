@@ -25,6 +25,18 @@
     (dynamic-require '(lib "cm.ss" "mzlib")
                      'make-compilation-manager-load/use-compiled-handler))
   
+  ;; A suitable function to use with CURRENT-LOAD/USE-COMPILED.  This
+  ;; handles automatic compilation of *.zo files for us.
+  (define compile-zo (make-compilation-manager-load/use-compiled-handler))
+
+  ;; Wrap COMPILE-ZO with two calls to HEARTBEAT, just to let the operating
+  ;; system know we're still alive during really long loads.
+  (define (compile-zo-with-heartbeat file-path expected-module-name)
+    (%call-5l-prim 'heartbeat)
+    (let [[result (compile-zo file-path expected-module-name)]]
+      (%call-5l-prim 'heartbeat)
+      result))
+
   ;;; The default namespace into which this script was loaded.  We don't
   ;;; use it to run much except this code.
   (define *original-namespace* #f)
@@ -74,8 +86,7 @@
         (namespace-require '(lib "bootstrap-env.ss" "5L"))
 
         ;; Ask MzScheme to transparently compile modules to *.zo files.
-        (current-load/use-compiled
-         (make-compilation-manager-load/use-compiled-handler))
+        (current-load/use-compiled compile-zo-with-heartbeat)
 
         ;; Manually load the kernel into our new namespace.  We need
         ;; to call (load/use-compiled ...) instead of (require ...),

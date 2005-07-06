@@ -78,6 +78,14 @@ class FiveLApp : public wxApp
 public:
     FiveLApp();
 
+    //////////
+    /// Notify the system that this application is still alive.  This
+    /// should prevent "Not Responding" timeouts on Windows.  (Normally
+    /// you can accomplish the same result by calling Idle, but that
+    /// will also process events, which this function doesn't do.)
+    ///
+    void Heartbeat();
+
 	//////////
 	/// We perform normal application initialization in OnInit. 
 	///

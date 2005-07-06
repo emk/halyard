@@ -1,5 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Fixed buggy call to Sys_Error in qoverlay.cpp (bug #1989, partial)
+    and increased the maximum number of overlays (bug #1897).
+  * Fixed "Not Responding" timeout during initial startup on slow machines
+    by calling ::PeekMessage before and after every *.zo compilation
+    (bug #1898).
+
 0.0.48 - 5 July 2005 - emk, brian
     
   * Added COPY-STRING-TO-CLIPBOARD function for use by developer tool

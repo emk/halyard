@@ -65,6 +65,12 @@ FiveLApp::FiveLApp()
     // happen in FiveLApp::OnInit, below.
 }
 
+void FiveLApp::Heartbeat() {
+    // This should internally call the Windows function ::PeekMessage,
+    // which is sufficient to mark our application as alive.
+    (void) Pending();
+}
+
 void FiveLApp::IdleProc(bool inBlock)
 {
 	if (!wxGetApp().GetStage()->IsIdleAllowed())
