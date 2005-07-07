@@ -475,9 +475,10 @@
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (%audio-element%)
-    (call-5l-prim 'AudioStreamVorbis (node-full-name self)
-                  (build-path (current-directory) "Media" location)
-                  (prop self volume) (* 1024 buffer) loop?))
+    (let [[path (build-path (current-directory) "Media" location)]]
+      (check-file path)
+      (call-5l-prim 'AudioStreamVorbis (node-full-name self) path
+                    (prop self volume) (* 1024 buffer) loop?)))
   
   (define (vorbis-audio name location &key (loop? #f) (volume 1.0))
     (create %vorbis-audio%
