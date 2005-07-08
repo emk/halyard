@@ -83,17 +83,39 @@ void test_TPolygon (void)
 
 	intersect2.Offset(TPoint(-1, -1));
 
+	TEST(convex.Origin() == TPoint(1, 1));
+	TEST(concave.Origin() == TPoint(1, 1));
+	TEST(intersect.Origin() == TPoint(0, 1));
+	TEST(rect.Origin() == TPoint(10, 10));
+
 	TEST(convex.Bounds() == TRect(1, 1, 4, 4));
 	TEST(concave.Bounds() == TRect(1, 1, 4, 3));
 	TEST(intersect.Bounds() == TRect(0, 1, 9, 5));
 	TEST(rect.Bounds() == TRect(10, 10, 20, 20));
+	
 	TEST(convex.Vertices() == convex_pts);
 	TEST(concave.Vertices() == concave_pts);
 	TEST(intersect.Vertices() == intersect_pts);
 	TEST(rect.Vertices() == rect_pts);
 
+	TEST(intersect2.Origin() == intersect.Origin());
 	TEST(intersect2.Bounds() == intersect.Bounds());
 	TEST(intersect2 == intersect);
+
+	convex.MoveTo(TPoint(5, 5));
+	concave.MoveTo(TPoint(5, 5));
+	intersect.MoveTo(TPoint(5, 5));
+	rect.MoveTo(TPoint(5, 5));
+
+	TEST(convex.Bounds() == TRect(5, 5, 8, 8));
+	TEST(concave.Bounds() == TRect(5, 5, 8, 7));
+	TEST(intersect.Bounds() == TRect(5, 5, 14, 9));
+	TEST(rect.Bounds() == TRect(5, 5, 15, 15));
+
+	convex.MoveTo(TPoint(1, 1));
+	concave.MoveTo(TPoint(1, 1));
+	intersect.MoveTo(TPoint(0, 1));
+	rect.MoveTo(TPoint(10, 10));
 
 	TEST(convex.Contains(TPoint(2, 2)));
 	TEST(!convex.Contains(TPoint(0, 2)));

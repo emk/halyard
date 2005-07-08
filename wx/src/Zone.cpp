@@ -39,6 +39,10 @@ bool Zone::IsPointInElement(const wxPoint &inPoint)
     return mPolygon.Contains(WxToTPoint(inPoint));
 }
 
+void Zone::MoveTo(const wxPoint &inPoint) {
+    mPolygon.MoveTo(WxToTPoint(inPoint));
+}
+
 void Zone::DrawElementBorder(wxDC &inDC)
 {
 	std::vector<TPoint> pts = mPolygon.Vertices();

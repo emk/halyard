@@ -39,7 +39,7 @@ public:
 		 FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor);
 
 	virtual bool IsPointInElement(const wxPoint &inPoint);
-
+    virtual void MoveTo(const wxPoint &inPoint);
 	virtual void DrawElementBorder(wxDC &inDC);
 };
 

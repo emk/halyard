@@ -48,6 +48,11 @@ public:
 	/// \param inPt  The point to check.
 	/// 
 	bool Contains(TPoint &inPt);
+
+	/////////
+	/// Get the origin of the polygon. 
+	/// 
+	TPoint Origin() const;
 	
 	//////////
 	/// Offset the polygon.
@@ -55,6 +60,13 @@ public:
 	/// \param inPt  Point to be used as the offset.
 	/// 
 	void Offset(const TPoint &inPt);
+
+	//////////
+	/// Move the polygon to a given point. 
+	///
+	/// \param inOrigin  The new origin to move the polygon to.
+	/// 
+	void MoveTo(const TPoint &inOrigin);
 
 	//////////
 	/// Get a rectangle which completely contains the polygon.

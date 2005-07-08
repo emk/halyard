@@ -166,6 +166,17 @@ void TPolygon::Offset(const TPoint &inPt)
 	mBounds.Offset(inPt);
 }
 
+void TPolygon::MoveTo(const TPoint &inOrigin)
+{
+	TPoint offsetDelta(inOrigin.X() - Origin().X(), inOrigin.Y() - Origin().Y());
+	Offset(offsetDelta);
+}
+
+TPoint TPolygon::Origin() const
+{ 
+	return TPoint(mBounds.Left(), mBounds.Top()); 
+}
+
 bool TPolygon::operator==(const TPolygon &inPoly) const
 {
 	return mVertices == inPoly.Vertices();

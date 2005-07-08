@@ -1,7 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, brian
 
+  * Added MoveTo and Origin to TPolygon, and allowed Zone elements to
+    be moved. Runtime support for this will be added later. 
   * Fixed exception-handling bug in TSchemeInterpreter::Call5LPrim
     which corrupted C++ exception-handling state.  We *think* this
     should cure several of our most annoying hard-to-reproduce bugs
