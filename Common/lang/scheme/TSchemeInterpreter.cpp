@@ -31,6 +31,14 @@ static const char *CALL_5L_PRIM = "%call-5l-prim";
 #define UNIMPLEMENTED \
 	throw TException(__FILE__, __LINE__, "Scheme: Not yet implemented")
 
+namespace {
+    /// Like strncpy, but terminates strings which don't fit in 'out'.
+    void strncpy_terminated(char *out, const char *in, size_t max) {
+        strncpy(out, in, max);
+        out[max-1] = '\0';
+    }
+};
+
 
 //=========================================================================
 //	Scheme Primitives
@@ -233,77 +241,92 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
 Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 											  Scheme_Object **inArgv)
 {
+    // We need to be very careful here, because mixing scheme_signal_error
+    // with C++ exceptions will subtly corrupt the C++ exception-handling
+    // runtime, and the errors will show up once in every few days of
+    // Tamale use (bug #1691, bug #1762, etc) on Win32 systems, at least
+    // when compiling with MSVC++.Net.  In particular, the following code
+    // is illegal:
+    //
+    //   scheme_signal_error("dying immediately");
+    //   try {
+    //   } catch (std::exception &) {
+    //   }
+    //   return scheme_false;
+    //
+    // If you disassemble the current function, you should *not* see a line
+    // in the function prologue which looks anything like:
+    //
+    //   005F7595 push offset __ehhandler$?Call5LPrim@TSchemeInterpreter@ \
+    //                        FiveL@@CAPAUScheme_Object@@HPAPAU3@@Z (7FD260h)
+    //
+    // If you see that, you've allowed a 'try' block or a stack-based object
+    // with a destructor to sneak into this function.  That stuff *must* go
+    // in Call5LPrimInternal below, *not* here.
+
 	ASSERT(sScriptEnv != NULL);
 
 	// The interpreter checks the arity for us, but we need to check the
-	// argument types.  The various error-reporting functions call
-	// scheme_longjmp, to implement non-local exits in C.  We need to be
-	// careful about exceptions and scheme_longjmp; there's no guarantee
-	// that they play nicely together.
+	// argument types.
 	ASSERT(inArgc >= 1);
 	if (!SCHEME_SYMBOLP(inArgv[0]))
 		scheme_wrong_type(CALL_5L_PRIM, "symbol", 0, inArgc, inArgv);
 	const char *prim_name = SCHEME_SYM_VAL(inArgv[0]);
 
-	if (!gPrimitiveManager.DoesPrimitiveExist(prim_name))
-		scheme_signal_error("Unknown 5L primitive: %V", inArgv[0]);
+    // Dispatch the primitive call to the routine which is allowed to throw
+    // and catch C++ exceptions.
+    Scheme_Object *result = NULL;
+    char error_message[1024];
+    if (Call5LPrimInternal(prim_name, inArgc-1, inArgv+1, &result,
+                           error_message, sizeof(error_message))) {
+        ASSERT(result);
+        return result;
+    } else {
+        // We have an error, so let's turn into a Scheme exception, now
+        // that we're safely away from any 'try/catch' blocks.
+        ASSERT(!result);
+        ASSERT(strlen(error_message) < sizeof(error_message));
+        scheme_signal_error("%s: %s", prim_name, error_message);
 
-	// We need these to get information back out of our try block.
-	bool have_error = false;
-	std::string error, errormsg;
+        ASSERT(false); // Should not get here.
+        return scheme_false;
+    }
+                           
+}
 
-	// WARNING - Don't signal any Scheme errors from inside this try block.
-	// (I don't know whether it's portable to call scheme_longjmp from
-	// inside a try block.)  It's OK to signal Scheme errors in our catch
-	// blocks, AFAIK.
-	try
-	{
-		// Clear our error-handling variables.
-		gVariableManager.MakeNull(FIVEL_ERROR_CODE_VAR);
-		gVariableManager.MakeNull(FIVEL_ERROR_MSG_VAR);
-
+bool TSchemeInterpreter::Call5LPrimInternal(const char *inPrimName,
+                                            int inArgc, Scheme_Object **inArgv,
+                                            Scheme_Object **outResult,
+                                            char *outErrorMessage,
+                                            size_t inErrorMessageMaxLength)
+{
+    // This function may *not* call scheme_signal_error, scheme_wrong_type,
+    // or anything else which causes a non-local PLT exit.  See Call5LPrim
+    // for more details.
+    const char *error_message = NULL;
+	try {
 		// Marshal our argument list and call the primitive.
 		TValueList inList;
-		for (int i=0; i < (inArgc - 1); i++) 
-			inList.push_back(SchemeToTValue((inArgv + 1)[i]));
-	
+		for (int i=0; i < inArgc; i++) 
+			inList.push_back(SchemeToTValue(inArgv[i]));	
 		TArgumentList arg_list(inList);
-		gPrimitiveManager.CallPrimitive(prim_name, arg_list);
+		gPrimitiveManager.CallPrimitive(inPrimName, arg_list);
 
-		// Make sure all our arguments were used.
-		if (arg_list.HasMoreArguments())
-			throw TException(__FILE__, __LINE__, "Too many arguments");
-		
-		// Get our various result variables here (inside the try block),
-		// and save them until we're allowed to raise Scheme errors
-		// (outside the try block).
-		if (!gVariableManager.IsNull(FIVEL_ERROR_CODE_VAR))
-		{
-			have_error = true;
-			error = gVariableManager.Get(FIVEL_ERROR_CODE_VAR);
-			errormsg = gVariableManager.Get(FIVEL_ERROR_MSG_VAR);
-		}
-		else
-		{
-			return TValueToScheme(gVariableManager.Get("_result"));
-		}
+        // Get our result, and return it.
+        *outResult = TValueToScheme(gVariableManager.Get("_result"));
+        return true;
+	} catch (std::exception &e) {
+        strncpy_terminated(outErrorMessage, e.what(), inErrorMessageMaxLength);
+        return false;    
+	} catch (...) {
+        // This shouldn't happen--we shouldn't be throwing any exceptions
+        // which aren't a subclass of std::exception, and Win32 structured
+        // exceptions (e.g., segfaults) should be caught by the crash
+        // reporting library.
+        strncpy_terminated(outErrorMessage, "Unknown 5L engine error",
+                           inErrorMessageMaxLength);
+        return false;
 	}
-	catch (std::exception &e)
-	{
-		scheme_signal_error("%s: 5L engine error: %s", prim_name, e.what());
-	}
-	catch (...)
-	{
-		scheme_signal_error("%s: Unknown 5L engine error", prim_name);
-	}
-
-	// Do a non-local exit if the primitive returned an error.
-	if (have_error)
-		scheme_signal_error("%s: %s: %s", prim_name,
-							error.c_str(), errormsg.c_str());
-
-	ASSERT(false); // Should not get here.
-	return scheme_false;
 }
 
 Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
@@ -313,6 +336,22 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 												Scheme_Object **inArgv)
 {
 	Scheme_Object *result = scheme_false;
+
+    // Look up the function to call.  (Note that scheme_module_bucket will
+    // look up names in the module's *internal* namespace, not its official
+    // export namespace.)
+    //
+    // We do this before calling scheme_setjmp because FindBucket may use
+    // some C++ exception-handling machiney (in the STL) and we want to
+    // make sure we're still unambiguously in a C++ context when we call
+    // it.
+    //
+    // We might need to be even more paranoid here--see the notes in
+    // Call5LPrim for an idea of how evil combining setjmp/longjmp and
+    // try/catch/throw can be--but I can't find anything suspicious in the
+    // disassembly of this function, so I'm going to leave it fow now.
+    Scheme_Bucket *bucket = FindBucket(inEnv, inModule, inFuncName);
+    ASSERT(bucket != NULL);
 
 	// Save our jump buffer.
 	mz_jmp_buf save;
@@ -331,11 +370,7 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 	}
 	else
 	{
-		// Call the function.  Note that scheme_module_bucket will look
-		// up names in the module's *internal* namespace, not its official
-		// export namespace.
-        Scheme_Bucket *bucket = FindBucket(inEnv, inModule, inFuncName);
-		ASSERT(bucket != NULL);
+		// Call the function.  
 		Scheme_Object *f = static_cast<Scheme_Object*>(bucket->val);
 		if (f)
 			result = scheme_apply(f, inArgc, inArgv);

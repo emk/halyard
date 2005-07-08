@@ -147,15 +147,12 @@ void FIVEL_NS RegisterWxPrimitives() {
 #define FIND_ELEMENT(TYPE, VAR, NAME) \
 	ElementPtr VAR##_temp = wxGetApp().GetStage()->FindElement(NAME); \
 	if (!VAR##_temp) { \
-		::SetPrimitiveError("noelement", "The element does not exist."); \
-		return; \
+		THROW("The element does not exist."); \
 	} \
 	shared_ptr<TYPE> VAR = \
         shared_ptr<TYPE>(VAR##_temp, dynamic_cast_tag()); \
 	if (!VAR) { \
-		::SetPrimitiveError("wrongelementtype", \
-			                "The element is not of type " #TYPE); \
-		return; \
+		THROW("The element is not of type " #TYPE); \
 	}
 
 static DrawingArea *GetCurrentDrawingArea() {
@@ -174,10 +171,7 @@ static E *R(E *elem) {
 #define CHECK_SUSPEND_OK(PRIMNAME) \
     do { \
         if (!TInterpreter::GetInstance()->CanSuspend()) { \
-            ::SetPrimitiveError("nosuspend", \
-                                "You cannot call " PRIMNAME \
-                                " from inside a callback."); \
-            return; \
+            THROW("You cannot call " PRIMNAME " from inside a callback."); \
         } \
     } while (0)
 
@@ -230,8 +224,7 @@ DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps) {
 	if (stream)
 		stream->SetChirpsPerSecond(cps);
 	else
-		::SetPrimitiveError("notgeiger",
-							"Audio stream was not a geiger stream.");
+		THROW("Audio stream was not a geiger stream.");
 }
 
 DEFINE_5L_PRIMITIVE(AudioStreamSine) {
@@ -520,10 +513,8 @@ static void draw_picture(const std::string &inName, TPoint inLoc,
 {
 	// Load our image.
 	wxBitmap bitmap(load_picture(inName));
-	if (!bitmap.Ok()) {
-		::SetPrimitiveError("noimage", "Can't load the specified image");
-		return;
-	}
+	if (!bitmap.Ok())
+		THROW("Can't load the specified image");
 
 	// If we were given a sub-rectangle, try to extract it.
 	if (inRect) {
@@ -534,9 +525,7 @@ static void draw_picture(const std::string &inName, TPoint inLoc,
 			rect.GetWidth() > bitmap.GetWidth() ||
 			rect.GetHeight() > bitmap.GetHeight())
 		{
-			::SetPrimitiveError("outofbounds",
-								"Sub-rectangle does not fit inside image");
-			return;
+			THROW("Sub-rectangle does not fit inside image");
 		}
 		bitmap = bitmap.GetSubBitmap(rect);
 		inLoc.SetX(inLoc.X() + rect.GetX());
@@ -563,15 +552,8 @@ DEFINE_5L_PRIMITIVE(Loadpic) {
 
 	// Process flags.
 	// XXX - We're just throwing them away for now.
-	if (inArgs.HasMoreArguments()) {
-		std::string junk;
-		while (inArgs.HasMoreArguments())
-			inArgs >> junk;
-
-		::SetPrimitiveError("unimplemented",
-							"loadpic flags are not implemented");
-		return;
-	}
+	if (inArgs.HasMoreArguments())
+		THROW("loadpic flags are not implemented");
 
 	// Do the dirty work.
 	draw_picture(picname, loc);
@@ -595,7 +577,7 @@ DEFINE_5L_PRIMITIVE(MeasurePic) {
     inArgs >> picname;
     wxBitmap pic(load_picture(picname));
     if (!pic.Ok()) {
-		::SetPrimitiveError("noimage", "Can't load the specified image");
+		THROW("Can't load the specified image");
     } else {
         wxRect r(wxRect(0, 0, pic.GetWidth(), pic.GetHeight()));
         ::SetPrimitiveResult(WxToTRect(r));

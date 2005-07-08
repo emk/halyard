@@ -67,8 +67,7 @@ void FIVEL_NS RegisterQuake2Primitives()
 
 #define REQUIRE_QUAKE2_INITIALIZATION \
 	if (!Quake2Engine::IsInitialized()) { \
-		::SetPrimitiveError("noquake", "Quake 2 is not initialized."); \
-		return; \
+		THROW("Quake 2 is not initialized."); \
 	}
 
 DEFINE_5L_PRIMITIVE(Quake2Init)

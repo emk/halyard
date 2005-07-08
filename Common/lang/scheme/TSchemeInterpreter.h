@@ -102,7 +102,17 @@ class TSchemeInterpreter : public TInterpreter
                                      Scheme_Object *inModule,
                                      const char *inFuncName);
 
+    /// Call a primitive function.  This function may only use PLT-style
+    /// error handling, *not* C++ exceptions.
 	static Scheme_Object *Call5LPrim(int inArgc, Scheme_Object **inArgv);
+    /// This function may only use C++ exceptions, *not* PLT-style error
+    /// handling.
+    static bool
+    TSchemeInterpreter::Call5LPrimInternal(const char *inPrimName,
+                                           int inArgc, Scheme_Object **inArgv,
+                                           Scheme_Object **outResult,
+                                           char *outErrorMessage,
+                                           size_t inErrorMessageMaxLength);
 
 public:
 	TSchemeInterpreter(Scheme_Env *inGlobalEnv);

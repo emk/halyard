@@ -381,23 +381,7 @@ inline void SetPrimitiveResult(const TValue &inVariable)
 	gVariableManager.Set("_result", inVariable);
 }
 
-#define FIVEL_ERROR_CODE_VAR ("_errorcode")
-#define FIVEL_ERROR_MSG_VAR  ("_errormsg")
 #define FIVEL_SKIP_LOGGING_VAR ("_skip_logging")
-
-//////////
-/// Set the global error value.  Interpreter modules which support
-/// exceptions will probably want to check this and throw an exception.
-///
-/// \param inValue  The boolean value to return.
-///
-inline void SetPrimitiveError(const char *inErrorName,
-							  const char *inErrorMessage)
-{
-	gVariableManager.Set(FIVEL_ERROR_CODE_VAR, inErrorName);
-	gVariableManager.Set(FIVEL_ERROR_MSG_VAR, inErrorMessage);
-	gDebugLog.Log("PRIMITIVE ERROR: %s: %s", inErrorName, inErrorMessage);
-}
 
 //////////
 /// Tell the primitive manager not to log the primitive call currently

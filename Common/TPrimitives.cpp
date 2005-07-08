@@ -335,7 +335,7 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 		mPrimitiveMap.find(inName);
     if (found == mPrimitiveMap.end())
 		throw TException(__FILE__, __LINE__,
-						 "Tried to call non-existant primitive");
+						 ("Unknown primitive: " + inName).c_str());
     PrimitiveFunc primitive = found->second;
 
 	// Ask the TArgumentList to log all the parameters it returns.
@@ -361,4 +361,8 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 						  call_info.c_str(), out.str().c_str());
 		}
 	}
+
+    // Make sure all our arguments were used.
+    if (inArgs.HasMoreArguments())
+        throw TException(__FILE__, __LINE__, "Too many arguments");
 }
