@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		48
+#define VERSION_REV_BIG		49
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.48 (Development)"
+#define VERSION_STRING		"Tamale 0.0.49 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -35,6 +35,23 @@
 
 /*
  $Log$
+ Revision 1.90  2005/07/08 17:25:44  emk
+ 0.0.49 - 8 July 2005 - emk, brian
+
+   * Added MoveTo and Origin to TPolygon, and allowed Zone elements to
+     be moved. Runtime support for this will be added later.
+   * Fixed exception-handling bug in TSchemeInterpreter::Call5LPrim
+     which corrupted C++ exception-handling state.  We *think* this
+     should cure several of our most annoying hard-to-reproduce bugs
+     (bug #1691, bug #1762, believed fixed).
+   * Fixed test-suite failure introduced by HEARTBEAT function.
+   * Fixed buggy call to Sys_Error in qoverlay.cpp (bug #1989, partial)
+     and increased the maximum number of overlays (bug #1897).
+   * Fixed "Not Responding" timeout during initial startup on slow machines
+     by calling ::PeekMessage before and after every *.zo compilation
+     (bug #1898).
+   * Give reasonable errors for missing Vorbis files (bug #1993).
+
  Revision 1.89  2005/07/05 16:39:28  emk
  0.0.48 - 5 July 2005 - emk, brian
 

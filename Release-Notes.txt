@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.49 - 8 July 2005 - emk, brian
 
   * Added MoveTo and Origin to TPolygon, and allowed Zone elements to
     be moved. Runtime support for this will be added later. 
