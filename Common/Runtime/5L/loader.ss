@@ -18,6 +18,11 @@
    (list (build-path (current-directory) "Runtime")
          (build-path (current-directory) "Scripts")))
   
+  ;; Notify the operating system that we're still alive, and haven't hung.
+  (define (heartbeat)
+    (when (%call-5l-prim 'haveprimitive 'heartbeat)
+      (%call-5l-prim 'heartbeat)))
+
   ;; Import a function the hard way.  We can't just (require ...) this
   ;; module because we don't set up the collection paths until its
   ;; too late to help.
@@ -32,9 +37,9 @@
   ;; Wrap COMPILE-ZO with two calls to HEARTBEAT, just to let the operating
   ;; system know we're still alive during really long loads.
   (define (compile-zo-with-heartbeat file-path expected-module-name)
-    (%call-5l-prim 'heartbeat)
+    (heartbeat)
     (let [[result (compile-zo file-path expected-module-name)]]
-      (%call-5l-prim 'heartbeat)
+      (heartbeat)
       result))
 
   ;;; The default namespace into which this script was loaded.  We don't
