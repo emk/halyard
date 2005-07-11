@@ -191,6 +191,7 @@ static EntityMapping<wchar_t> UnicodeEntityMapping[] = {
 	{L"egrave", WCHAR_1(0x00E8)}, // E with grave accent.
 	{L"nbsp",   WCHAR_1(0x00A0)}, // Non-breaking space.
 	{L"shy",    WCHAR_1(0x00AD)}, // Soft hyphen.
+    {L"deg",    WCHAR_1(0x00B0)}, // Degree sign.
 	{L"radic",  WCHAR_1(0x221A)}, // Square root.
 	{L"check",  WCHAR_1(0x2713)}, // Check mark.
 	{L"cross",  WCHAR_1(0x2717)}, // Ballot X.
