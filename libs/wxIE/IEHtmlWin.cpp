@@ -117,7 +117,7 @@ public:
 	{
 		if (prepend.size() > 0)
 		{
-			int n = min(prepend.size(), cb);
+			int n = min(prepend.size(), static_cast<size_t>(cb));
 			prepend.copy((char *) pv, n);
 			prepend = prepend.substr(n);
 			if (pcbRead)

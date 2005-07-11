@@ -123,7 +123,7 @@ wxBitmap ImageCache::GetBitmap(wxString inPath)
     // XXX - Work around bug with drawing of masked images to 32-bit
     // wxBitmaps by converting all masks to alpha channels.
     if (image.HasMask())
-        image.ConvertMaskToAlpha();
+        image.InitAlpha();
     // We MUST use an explicit bit depth here, because wxWindows gets
     // confused about mask colors when using DDBs instead of DIBs.
     // Symptom: all colors equivalent to 24-bit mask color using a 16-bit
