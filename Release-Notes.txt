@@ -1,7 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-0.0.50 - 12 July 2005 - emk
+0.0.50 - 12 July 2005 - emk, brian
 
+  * Fixed bug in which compiled .zo files weren't being recompiled. 
+  * Added runtime support for moving all %zone% elements. When
+    creating a zone, AT will be set to the origin of the shape, and
+    SHAPE will be moved to have a (0,0) origin, so that when you
+    offset SHAPE by AT you get the actual shape on the screen.
   * Added &deg; character (bug #2000).
   * Upgraded our included wxWidgets to 2.6.1, and modified some engine
     code to use new wxWidgets APIs (bug #1712, partial).  We also
