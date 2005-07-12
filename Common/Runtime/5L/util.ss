@@ -101,11 +101,13 @@
             (member? item (cdr list)))))
   
   (define (value->string value)
-    (if (string? value)
-        value
-        (let ((str-port (open-output-string)))
-          (write value str-port)
-          (get-output-string str-port))))
+    (cond 
+      ((string? value) value)
+      ((object? value) (object->string value))
+      (else
+       (let ((str-port (open-output-string)))
+         (write value str-port)
+         (get-output-string str-port)))))
   
   (define (cat . values)
     (if (not (null? values))

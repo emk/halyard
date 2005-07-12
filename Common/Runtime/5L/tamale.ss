@@ -152,17 +152,14 @@
        [%nocreate? :type <boolean> :default #f
                    :label "Set to true if subclass creates in engine"]]
       (%element%)
-
-    ;; Deal with our bizarre arguments.
-    (define origin-rect?
-      (and (rect? shape)
-           (equals? (rect-left-top shape) (point 0 0))))
-    (unless (or (equals? at (point 0 0)) origin-rect?)
-      (error "Cannot specify AT unless SHAPE is a rectangle at 0,0: "
-             (node-full-name self)))
-    (define real-shape (offset-shape shape at))
-    (define movable? (and overlay? origin-rect?))
-
+    
+    ;; This variable will disable passing prop change events to %ELEMENT%
+    ;; while we're initializing out AT and SHAPE paremeters. If we didn't
+    ;; do that, element would try and pass our changes to AT to the underlying
+    ;; object, which hasn't been created yet. See below for why we need to muck
+    ;; with AT during element creation. 
+    (define initializing-origin? #t)
+    
     ;; Let the engine know whether we want a cursor.
     (define (set-wants-cursor! value)
       (call-5l-prim 'WantsCursorSet (node-full-name self)
@@ -178,13 +175,50 @@
     (on prop-change (name value prev veto)
       (case name
         [[cursor] (set-element-cursor! self value)]
-        [[at]
-         (unless movable?
-           (veto (cat "Can't move element: " (node-full-name self))))
-         (call-next-handler)]
+        [[at shape]
+         (unless initializing-origin? 
+           ;; We want to not pass these messages to our parent classes until 
+           ;; we're done mucking with AT and SHAPE ourselves. 
+           (call-next-handler))]
         [[wants-cursor?]
          (set-wants-cursor! value)]
         [else (call-next-handler)]))
+    
+    ;; The way we want zones to work is that AT represents the origin of a
+    ;; zone, and the actual shape on the screen is SHAPE offset by AT. The 
+    ;; problem is that this is very inconvenient for scripters, and doesn't
+    ;; match the basic zone interface that we've always given them, which is 
+    ;; that they just pass in the pre-offset shape on the screen. In order to 
+    ;; deal with this, we normalize the parameters we are passed so that AT
+    ;; represents the origin of the object and SHAPE is the shape relative to
+    ;; AT. We do this as follows.
+    (define the-origin (shape-origin shape))
+    ;; 1. Check to make sure we don't have both AT and SHAPE away from the 
+    ;;    origin.
+    (unless (or (equals? at (point 0 0))
+                (equals? the-origin (point 0 0)))
+      (error "Cannot specify AT unless SHAPE has its origin at 0,0: "
+             (node-full-name self)))
+    (define real-shape
+      (if (equals? the-origin (point 0 0))
+        ;; 2. If the origin of our SHAPE parameter is (0,0), then we'll leave
+        ;;    SHAPE and AT alone, and just pass to our underlying object our 
+        ;;    REAL-SHAPE, which is our SHAPE offset by our AT.
+        (offset-shape shape at)
+        ;; 3. If our AT parameter is (0,0), then we want to move our AT to the 
+        ;;    origin of our shape, and then move the shape such that its origin
+        ;;    is (0,0). REAL-SHAPE will be our original shape. 
+        (let ((orig-shape shape))
+          (set! at the-origin)
+          (set! shape (offset-shape orig-shape 
+                                    (point
+                                     (- (point-x the-origin))
+                                     (- (point-y the-origin)))))
+          orig-shape)))
+    ;; We're done mucking around with our AT parameter, so we can now allow 
+    ;; prop change messages for AT to go to propagate to our parent classes. 
+    (set! initializing-origin? #f)
+    
     (cond
      [%nocreate?
       #f]

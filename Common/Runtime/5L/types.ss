@@ -23,9 +23,9 @@
            <percent> (rename make-percent percent) percent? percent-value
            
            <polygon> polygon polygon? 
-           polygon-vertices set-polygon-vertices!
+           polygon-vertices polygon-bounds
 
-           <shape> shape?
+           <shape> shape? shape-origin
 
            <realtime-state-db-listener> realtime-state-db-listener?
            realtime-state-db-listener-getter-name
@@ -54,10 +54,15 @@
   (make-equals?-compare-class+slots <point>)
 
   (defclass <shape> ())
+  
+  (defgeneric (shape-origin (shape <shape>)))
 
   (defclass <rect> (<shape>)
     left top right bottom
     :printer simple-printer)
+  
+  (defmethod (shape-origin (shape <rect>))
+    (rect-left-top shape))
 
   (make-equals?-compare-class+slots <rect>)
 
@@ -98,14 +103,35 @@
     (display ")" port))
 
   (defclass <polygon> (<shape>)
-    vertices
+    vertices bounds
     :printer polygon-printer)
+  
+  (defmethod (shape-origin (shape <polygon>))
+    (rect-left-top (polygon-bounds shape)))
 
   (make-equals?-compare-class+slots <polygon>)
 
   (define (polygon &rest args)
-    (make-polygon args))
-
+    (make-polygon args (calculate-polygon-bounds args)))
+  
+  (define (calculate-polygon-bounds verts)
+    (if (null? verts)
+      (make-rect 0 0 0 0)
+      (foldl (lambda (point bounds)
+               (let ((px (point-x point))
+                     (py (point-y point))
+                     (minx (rect-left bounds))
+                     (miny (rect-top bounds))
+                     (maxx (rect-right bounds))
+                     (maxy (rect-bottom bounds)))
+                 (make-rect (min px minx)
+                            (min py miny)
+                            (max px maxx)
+                            (max py maxy))))
+             (make-rect (point-x (first verts)) (point-y (first verts))
+                        (point-x (first verts)) (point-y (first verts)))
+             (rest verts))))
+ 
   (defclass <realtime-state-db-listener> ()
     getter-name bindings code)
 
