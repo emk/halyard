@@ -79,7 +79,7 @@ BEGIN_EVENT_TABLE(Stage, wxWindow)
 END_EVENT_TABLE()
 
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
-    : wxWindow(inParent, -1, wxDefaultPosition, inStageSize),
+    : wxWindow(), // Must use empty constructor; see below.
       mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
 	  mCompositingPixmap(inStageSize.GetWidth(),
 						 inStageSize.GetHeight(), 24),
@@ -90,6 +90,14 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mIsBeingDestroyed(false)
 {
+    // Set up our class options, *then* call Create(), to avoid early
+    // repainting of this window with the wrong options.  (Theoretically,
+    // if we set wxBG_STYLE_CUSTOM, we don't need to override
+    // EVT_ERASE_BACKGROUND and throw away the message.)
+    SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+    SetBackgroundColour(STAGE_COLOR);
+    Create(inParent, -1, wxDefaultPosition, inStageSize);
+
 	mBackgroundDrawingArea = 
 		std::auto_ptr<DrawingArea>(new DrawingArea(this,
 												   inStageSize.GetWidth(),
@@ -97,8 +105,6 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 												   false));
 	mDrawingContextStack =
 		std::auto_ptr<DrawingContextStack>(new DrawingContextStack(this));
-	
-    SetBackgroundColour(STAGE_COLOR);
     GetBackgroundDrawingArea()->Clear();
     
 	mLastIdleEvent = ::wxGetLocalTimeMillis();

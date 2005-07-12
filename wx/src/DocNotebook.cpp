@@ -132,7 +132,10 @@ void DocNotebook::SetFrameToTitle(wxFrame *frame) {
 
 /// Add a new document to the notebook.
 void DocNotebook::AddDocument(DocNotebookTab *doc) {
-    doc->GetDocumentWindow()->Hide();
+    // New document windows should be created with a Hide(), Create(...)
+    // sequence to prevent them from being drawn before we can lay them
+    // out.  Yes, this is obnoxious.
+    ASSERT(!doc->GetDocumentWindow()->IsShown());
     wxASSERT(doc->GetDocumentWindow()->GetParent() == this);
     mDocs.push_back(doc);
     SelectDocument(GetDocumentCount()-1);
@@ -290,7 +293,7 @@ DocNotebookTab::DocNotebookTab(DocNotebook *parent)
     : mParent(parent), mBar(NULL),
       mDocumentTitle("<no title>"), mDocumentDirty(false),
       mTabRightEdge(0)
-{    
+{
 }
 
 void DocNotebookTab::ReportChanges() {

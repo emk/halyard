@@ -321,8 +321,13 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
 END_EVENT_TABLE()
 
 ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id, int font_size)
-    : wxStyledTextCtrl(parent, id)
+    : wxStyledTextCtrl() // We need to use the empty constructor; see below.
 {
+    // Set up our class options, *then* call Create(), to avoid early
+    // repainting of this window with the wrong options.
+    Hide();
+    Create(parent, id);
+
     // Set up some basic text editing parameters.
     SetTabWidth(4);
     SetUseTabs(false);

@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		49
+#define VERSION_REV_BIG		50
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.49 (Development)"
+#define VERSION_STRING		"Tamale 0.0.50 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -35,6 +35,23 @@
 
 /*
  $Log$
+ Revision 1.91  2005/07/12 17:10:12  emk
+ 0.0.50 - 12 July 2005 - emk
+
+   * Added &deg; character (bug #2000).
+   * Upgraded our included wxWidgets to 2.6.1, and modified some engine
+     code to use new wxWidgets APIs (bug #1712, partial).  We also
+     reapplied the following patches which had been backed out before
+     the upgrade:
+       - wx.rc: Build dependency hack.
+       - stc: Lots of local LISP-mode tweaking.
+       - evtloop: Hacked in *another* set of event loop hooks.
+   * Fixed bugs introduced by LexLisp.cpp merge (bug #2004, bug #2005).
+   * Fixed QuickTime black-rectangle bug introduced by wx 2.6.1 (bug #2007),
+     and cleaned up other problems caused by calling wxWindow::Create()
+     automatically before setting up object options.
+   * Fixed custom build step broken by wx 2.6.1.
+
  Revision 1.90  2005/07/08 17:25:44  emk
  0.0.49 - 8 July 2005 - emk, brian
 

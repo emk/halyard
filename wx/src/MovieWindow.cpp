@@ -31,9 +31,15 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
 						 long inWindowStyle,
 						 MovieWindowStyle inMovieWindowStyle,
 						 const wxString &inName)
-    : wxWindow(inParent, inID, inPos, inSize, inWindowStyle, inName),
+    : wxWindow(), // Must use empty constructor; see below.
       mMovieWindowStyle(inMovieWindowStyle)
 {
+    // Turn off background repainting completely.  (Theoretically, if we do
+    // this here, we don't need to override EVT_ERASE_BACKGROUND and throw
+    // away the message.)  We must call this *before* Create(...), because
+    // MSW will draw the window immediately upon creation.
+    SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+
     // Set a more-appropriate default background color for a movie.
     SetBackgroundColour(MOVIE_WINDOW_COLOR);
 
@@ -41,6 +47,8 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
 	if (mMovieWindowStyle & MOVIE_AUDIO_ONLY)
 		Hide();
 
+    // Create() our actual window *after* all our options are set up.
+    Create(inParent, inID, inPos, inSize, inWindowStyle, inName);
 	wxLogTrace(TRACE_STAGE_DRAWING, "Created movie window.");
 }
 
