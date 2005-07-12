@@ -30,17 +30,25 @@
     (dynamic-require '(lib "cm.ss" "mzlib")
                      'make-compilation-manager-load/use-compiled-handler))
   
-  ;; A suitable function to use with CURRENT-LOAD/USE-COMPILED.  This
-  ;; handles automatic compilation of *.zo files for us.
-  (define compile-zo (make-compilation-manager-load/use-compiled-handler))
-
-  ;; Wrap COMPILE-ZO with two calls to HEARTBEAT, just to let the operating
-  ;; system know we're still alive during really long loads.
-  (define (compile-zo-with-heartbeat file-path expected-module-name)
-    (heartbeat)
-    (let [[result (compile-zo file-path expected-module-name)]]
+  ;; There's some sort of context dependence that makes it so we can't just 
+  ;; define COMPILE-ZO-WITH-HEARTBEAT out here, probably due to some paths 
+  ;; not being set up that MAKE-COMPILATION-MANAGER-LOAD/USE-COMPILED-HANDLER
+  ;; uses, so instead we just wrap this all in a function that will return our
+  ;; COMPILE-ZO-WITH-HEARTBEAT function, and call it at the appropriate time.
+  (define (make-compile-zo-with-heartbeat)
+    ;; A suitable function to use with CURRENT-LOAD/USE-COMPILED.  This
+    ;; handles automatic compilation of *.zo files for us.
+    (define compile-zo (make-compilation-manager-load/use-compiled-handler))
+    
+    ;; Wrap COMPILE-ZO with two calls to HEARTBEAT, just to let the operating
+    ;; system know we're still alive during really long loads.
+    (define (compile-zo-with-heartbeat file-path expected-module-name)
       (heartbeat)
-      result))
+      (let [[result (compile-zo file-path expected-module-name)]]
+        (heartbeat)
+        result))
+    
+    compile-zo-with-heartbeat)
 
   ;;; The default namespace into which this script was loaded.  We don't
   ;;; use it to run much except this code.
@@ -91,7 +99,7 @@
         (namespace-require '(lib "bootstrap-env.ss" "5L"))
 
         ;; Ask MzScheme to transparently compile modules to *.zo files.
-        (current-load/use-compiled compile-zo-with-heartbeat)
+        (current-load/use-compiled (make-compile-zo-with-heartbeat))
 
         ;; Manually load the kernel into our new namespace.  We need
         ;; to call (load/use-compiled ...) instead of (require ...),
