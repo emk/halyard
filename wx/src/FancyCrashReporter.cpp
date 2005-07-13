@@ -34,7 +34,7 @@
 USING_NAMESPACE_FIVEL
 
 // The URL of our crash report submission form.
-#define URL "http://iml2.hitchcock.org/intranet/crashes/wxtest/action"
+#define URL "http://iml2.hitchcock.org/intranet/crashes/upload/action/27"
 
 
 //=========================================================================
