@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		50
+#define VERSION_REV_BIG		51
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.50 (Development)"
+#define VERSION_STRING		"Tamale 0.0.51 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -35,6 +35,14 @@
 
 /*
  $Log$
+ Revision 1.92  2005/07/13 20:44:55  emk
+ 0.0.51 - 13 July 2005 - emk
+
+   * Replaced CrashRpt with wxDebugReport.  Not all features are
+     implemented yet; this is a work in progress (bug #1712, partial).
+   * Added code to submit debug reports to the server (bug #1712, partial).
+   * Fixed bug which caused wxDebugReport to generate invalid XML.
+
  Revision 1.91  2005/07/12 17:10:12  emk
  0.0.50 - 12 July 2005 - emk
 

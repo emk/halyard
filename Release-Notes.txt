@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.51 - 13 July 2005 - emk
 
   * Replaced CrashRpt with wxDebugReport.  Not all features are
     implemented yet; this is a work in progress (bug #1712, partial).
