@@ -30,6 +30,7 @@
 #include "TDeveloperPrefs.h"
 
 #include "AppConfig.h"
+#include "FancyCrashReporter.h"
 #if CONFIG_HAVE_QUICKTIME
 #	include "TQTMovie.h"
 #   include "TQTPrimitives.h"
@@ -51,6 +52,11 @@
 extern void InitXmlResource();
 
 USING_NAMESPACE_FIVEL
+
+
+//=========================================================================
+//  FiveLApp Methods
+//=========================================================================
 
 IMPLEMENT_APP(FiveLApp)
 
@@ -145,6 +151,11 @@ void FiveLApp::OnUnhandledException() {
     ReportFatalException();
 }
 
+void FiveLApp::OnFatalException() {
+    // We're dead.
+    CrashReporter::GetInstance()->CrashNow();
+}
+
 bool FiveLApp::OnInit() {
     // All code in this routine should be protected by an
     // exception-trapping block of some sort, because wxWidgets has weak
@@ -159,7 +170,7 @@ bool FiveLApp::OnInit() {
     SetAppName("Tamale");
     
     // Get the 5L runtime going.
-    ::InitializeCommonCode();
+    ::InitializeCommonCode(new FancyCrashReporter());
     mLogsAreInitialized = true;
     ::RegisterWxPrimitives();
 #if CONFIG_HAVE_QUAKE2

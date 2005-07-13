@@ -107,7 +107,7 @@ void TLogger::Init(const FileSystem::Path &inLogFile,
 
         if (m_LogOpen) {
             CrashReporter::GetInstance()->AddDiagnosticFile(m_FileName,
-                                                            "Log file");
+                                                            "log file");
             if (m_Append)
             {
                 // put welcome line

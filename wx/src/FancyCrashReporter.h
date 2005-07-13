@@ -20,33 +20,30 @@
 //
 // @END_LICENSE
 
-#ifndef CrashReporter_H
-#define CrashReporter_H
+#ifndef FancyCrashReporter_H
+#define FancyCrashReporter_H
 
-BEGIN_NAMESPACE_FIVEL
+#include "CrashReporter.h"
 
-/// Handles automatic crash reporting, if available on a given platform.
-/// Applications will typically subclass this class to provide more
-/// sophisticated crash reporting--by default, we just call abort().
-class CrashReporter {
-    static CrashReporter *sInstance;
+/// Subclass our standard crash reporting class and make it use
+/// wxDebugReport.
+class FancyCrashReporter : public FIVEL_NS CrashReporter {
+    struct FileInfo {
+        wxString path;
+        wxString description;
+        FileInfo(const wxString &_path, const wxString &_description)
+            : path(_path), description(_description) {}
+    };
 
-protected:
-    static void InternalAssertionFailure();
+    typedef std::vector<FileInfo> FileInfoVector;
+    FileInfoVector mFileInfo;
 
 public:
-    CrashReporter();
-    virtual ~CrashReporter() {}
-
-    virtual void BeginInterceptingCrashes();
-    virtual void AddDiagnosticFile(const std::string &inFileName,
-                                   const std::string &inDescription);
-    virtual void CrashNow(const char *inReason = NULL);
-
-    static void InitializeCrashReporting(CrashReporter *inReporter);
-    static CrashReporter *GetInstance();
+    FancyCrashReporter() {}
+    void BeginInterceptingCrashes();
+    void AddDiagnosticFile(const std::string &inFileName,
+                           const std::string &inDescription);
+    void CrashNow(const char *inReason);
 };
 
-END_NAMESPACE_FIVEL
-
-#endif // CrashReporter_H
+#endif // FancyCrashReporter_H

@@ -71,7 +71,7 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 	
     // We might as well include our preferences in crash dumps, too.
     CrashReporter::GetInstance()->AddDiagnosticFile(filename.c_str(),
-                                                    "Developer preferences");
+                                                    "developer preferences");
 
 	// _debug is set in the presence of 5L.prefs
 	gVariableManager.Set("_debug", "1");

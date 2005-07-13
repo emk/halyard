@@ -29,10 +29,10 @@
 
 USING_NAMESPACE_FIVEL
 
-void FIVEL_NS InitializeCommonCode()
+void FIVEL_NS InitializeCommonCode(CrashReporter *inReporter)
 {
     // Initialize our CrashReporter.
-    CrashReporter::InitializeCrashReporting();
+    CrashReporter::InitializeCrashReporting(inReporter);
 
     // Parse our developer preferences, if we have any.
     gDeveloperPrefs.ParsePrefs();

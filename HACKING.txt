@@ -70,16 +70,6 @@ Building Win32 5L
     Executable files:
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Tools
 
-  To build the crash reporter, you'll need to download the Windows Template
-  Library from msdn.microsoft.com and set up an include path for its
-  directories (see above).
-
-  To debug crash reports immediately, you can add a "Debug" button to
-  the CrashReporter by setting the following registry key to a DWORD
-  value of "1":
-
-    HKEY_CURRENT_USER\Software\Carruth\CrashRpt\EnableDebug
-
   Click on "Solution Explorer", right-click on "wx5L", and
   select "Properties" > "Configuration: Debug" > "Debugging"  >
   "Action".  Set "Working Directory" to $5LTEST_DIR (the actual path,

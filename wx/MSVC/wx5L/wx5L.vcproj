@@ -202,6 +202,9 @@
 				RelativePath="..\..\src\EventDispatcher.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\FancyCrashReporter.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\FancyStatusBar.cpp">
 			</File>
 			<File
@@ -475,6 +478,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\EventDispatcher.h">
+			</File>
+			<File
+				RelativePath="..\..\src\FancyCrashReporter.h">
 			</File>
 			<File
 				RelativePath="..\..\src\FancyStatusBar.h">

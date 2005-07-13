@@ -39,12 +39,14 @@
 
 BEGIN_NAMESPACE_FIVEL
 
+class CrashReporter;
+
 //////////
 /// Initialize the various modules of the Common/ library.
 /// If you want to call FileSystem::SetBaseDirectory, do it
 /// before calling this function.
 ///
-extern void InitializeCommonCode();
+extern void InitializeCommonCode(CrashReporter *inReporter);
 
 //////////
 /// Create a Scheme interpreter manager.

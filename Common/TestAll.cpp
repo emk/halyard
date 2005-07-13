@@ -27,6 +27,7 @@
 
 // We need to call some module initialization functions.
 #include "TStartup.h"
+#include "CrashReporter.h"
 
 // We declare some testing-related primitives for the interpreter.
 #include "TPrimitives.h"
@@ -154,7 +155,7 @@ int main(int argc, char **argv) {
 		should_wait = true;
 
 	try {
-		FIVEL_NS InitializeCommonCode();
+		FIVEL_NS InitializeCommonCode(new CrashReporter());
 		std::cout << "Old-Style ImlUnit Tests" << std::endl;
 		run_imlunit_tests();
 		std::cout << std::endl << "New-Style TestCase Tests" << std::endl;

@@ -73,7 +73,7 @@ class FiveLApp : public wxApp
     /// Report a fatal exception to whatever layer of error-handling
     /// machinery is prepared to receive it.
     ///
-    void ReportFatalException();
+    void ReportFatalException();    
 
 public:
     FiveLApp();
@@ -100,9 +100,17 @@ public:
     /// wxWidgets calls this function if any exceptions appear to
     /// be otherwise unhandled. Because this function doesn't get
     /// any information about the underlying exception, it can't
-    /// give a particularly information message.
+    /// give a particularly informative message.
     ///
     virtual void OnUnhandledException();
+
+    //////////
+    /// wxWidgets calls this function if a fatal signal (Unix) or
+    /// structured exception (Windows) occurs.  These errors are extremely
+    /// nasty--they include segfaults and such--and we will immediately
+    /// begin engine shutdown.
+    ///
+    virtual void OnFatalException();
 
 	//////////
     /// We attempt to replace the standard main loop with one that

@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Replaced CrashRpt with wxDebugReport.  Not all features are
+    implemented yet; this is a work in progress (bug #1712, partial).
+
 0.0.50 - 12 July 2005 - emk, brian
 
   * Fixed bug in which compiled .zo files weren't being recompiled. 
