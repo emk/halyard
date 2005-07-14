@@ -39,6 +39,7 @@
            %basic-button%
            quicktime-component-version
            mark-unprocessed-events-as-stale!
+           register-debug-report-file!
            number->integer interpolate-int make-object-mover animate
            state-db-debug state-db-seconds state-db-milliseconds
            update-state-db! inc-state-db! inc-state-db-if-true!)
@@ -764,6 +765,16 @@
 
   (define (mark-unprocessed-events-as-stale!)
     (call-5l-prim 'MarkUnprocessedEventsAsStale))
+
+  ;;; Register a file to be included in any debug (i.e., crash) reports
+  ;;; generated for either the script or the engine itself.
+  ;;;
+  ;;; The description should be a short lowercase string.  Don't bother
+  ;;; to capitalize the first word, or your description will look funny
+  ;;; in the list of descriptions.
+  (define (register-debug-report-file! file description)
+    (let [[path (make-path-from-abstract (current-directory) file)]]
+      (call-5l-prim 'DebugReportAddFile path description)))
 
   
   ;;-----------------------------------------------------------------------
