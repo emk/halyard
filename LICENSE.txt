@@ -48,6 +48,7 @@ We use the following libraries under the wxWidgets Library License:
   * wxWidgets
   * wxActiveX and wxIE
     (see note at http://members.optusnet.com.au/~blackpaw1/wxactivex.html)
+  * wxHyperLink (by Otto Wyss)
 
 *===== Boehm GC License
 

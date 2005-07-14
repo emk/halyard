@@ -1,0 +1,156 @@
+<HTML>
+<head><title>wxHyperLink</title></head>
+
+<BODY BGCOLOR=#FFFFFF>
+<FONT FACE="Arial, Lucida, Helvetica">
+<A NAME="wxhyperlink"></A>
+
+<H2>wxHyperLink</H2>
+<P>
+This class contains a static text element which links to an URL. Clicking on
+the URL activates the standard browser (via mimetype) and opens the URL. No 
+checks on the URL is done.<P>
+<B>Derived from</B><P>
+wxStaticText<P>
+<B>Include files</B><P>
+&lt;wx/hyperlink.h&gt;<P>
+<A HREF="#wxhyperlinkconstr">wxHyperLink::wxHyperLink</A><BR>
+<A HREF="#wxhyperlinkgethovercursor">wxHyperLink::GetHoverCursor</A><BR>
+<A HREF="#wxhyperlinksethovercursor">wxHyperLink::SetHoverCursor</A><BR>
+<A HREF="#wxhyperlinkgetmarkedcolour">wxHyperLink::GetMarkedColour</A><BR>
+<A HREF="#wxhyperlinksetmarkedcolour">wxHyperLink::SetMarkedColour</A><BR>
+<A HREF="#wxhyperlinkgetnormalcolour">wxHyperLink::GetNormalColour</A><BR>
+<A HREF="#wxhyperlinksetnormalcolour">wxHyperLink::SetNormalColour</A><BR>
+<A HREF="#wxhyperlinkgetvisitedcolour">wxHyperLink::GetVisitedColour</A><BR>
+<A HREF="#wxhyperlinksetvisitedcolour">wxHyperLink::SetVisitedColour</A><BR>
+<A HREF="#wxhyperlinkgeturl">wxHyperLink::GetURL</A><BR>
+<A HREF="#wxhyperlinkseturl">wxHyperLink::SetURL</A><BR>
+<P>
+
+<HR>
+<A NAME="wxhyperlinkconstr"></A>
+<H3>wxHyperLink::wxHyperLink</H3>
+<P>
+<B></B> <B>wxHyperLink</B>()<P>
+Default constructor.<P>
+<B></B> <B>wxHyperLink</B>(<B>wxWindow*</B><I> parent</I>, <B>wxWindowID</B><I> id = -1</I>,
+<B>const wxPoint&amp;</B><I> pos = wxDefaultPosition</I>, <B>const wxSize&amp;</B><I> size = wxDefaultSize</I>,
+<B>long</B><I> style</I>, <B>const wxString&amp; </B><I>name = "hyperlink"</I>)<P>
+Constructor, creating and showing a hyperlink. Parameters see Create.<P>
+
+<B></B> <B>Create</B>(<B>wxWindow*</B><I> parent</I>, <B>wxWindowID</B><I> id = -1</I>,
+<B>const wxPoint&amp;</B><I> pos = wxDefaultPosition</I>, <B>const wxSize&amp;</B><I> size = wxDefaultSize</I>,
+<B>long</B><I> style</I>, <B>const wxString&amp; </B><I>name = "hyperlink"</I>)<P>
+Creating and showing a hyperlink.<P>
+<B>Parameters</B><P>
+<I>parent</I><UL><UL>
+Parent window. Must not be NULL.</UL></UL>
+<P>
+<I>id</I><UL><UL>
+Window identifier. A value of -1 indicates a default value.</UL></UL>
+<P>
+<I>pos</I><UL><UL>
+Window position.</UL></UL>
+<P>
+<I>size</I><UL><UL>
+Window size. If the default size (-1, -1) is specified then the window is sized
+appropriately.</UL></UL>
+<P>
+<I>style</I><UL><UL>
+Window style. See wxWindow.</UL></UL>
+<P>
+<I>name</I><UL><UL>
+Window name.</UL></UL>
+<P>
+
+
+<HR>
+<A NAME="wxhyperlinkgethovercursor"></A>
+<H3>wxHyperLink::GetHoverCursor</H3>
+<P>
+<B>wxCursor</B> <B>GetHoverCursor</B>() <B>const</B><P>
+Returns the hover cursor image.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinksethovercursor">SetHoverCursor</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinksethovercursor"></A>
+<H3>wxHyperLink::SetHoverCursor</H3>
+<P>
+<B>void</B> <B>SetHoverCursor</B>(<B>wxCursor</B><I> cursor</I>)<P>
+Sets the hover cursor image.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinkgethovercursor">GetHoverCursor</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinkgetmarkedcolour"></A>
+<H3>wxHyperLink::GetMarkedColour</H3>
+<P>
+<B>wxColour</B> <B>GetMarkedColour</B>() <B>const</B><P>
+Returns the marked colour.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinksetmarkedcolour">SetMarkedColour</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinksetmarkedcolour"></A>
+<H3>wxHyperLink::SetMarkedColour</H3>
+<P>
+<B>void</B> <B>SetMarkedColour</B>(<B>wxColour</B><I> colour</I>)<P>
+Sets the marked colour.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinkgetmarkedcolour">GetMarkedColour</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinkgetnormalcolour"></A>
+<H3>wxHyperLink::GetNormalColour</H3>
+<P>
+<B>wxColour</B> <B>GetNormalColour</B>() <B>const</B><P>
+Returns the normal colour.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinksetnormalcolour">SetNormalColour</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinksetnormalcolour"></A>
+<H3>wxHyperLink::SetNormalColour</H3>
+<P>
+<B>void</B> <B>SetNormalColour</B>(<B>wxColour</B><I> colour</I>)<P>
+Sets the normal colour.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinkgetnormalcolour">GetNormalColour</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinkgetvisitedcolour"></A>
+<H3>wxHyperLink::GetVisitedColour</H3>
+<P>
+<B>wxColour</B> <B>GetVisitedColour</B>() <B>const</B><P>
+Returns the visited colour.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinksetvisitedcolour">SetVisitedColour</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinksetvisitedcolour"></A>
+<H3>wxHyperLink::SetVisitedColour</H3>
+<P>
+<B>void</B> <B>SetVisitedColour</B>(<B>wxColour</B><I> colour</I>)<P>
+Sets the visited colour.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinkgetvisitedcolour">GetVisitedColour</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinkgeturl"></A>
+<H3>wxHyperLink::GetURL</H3>
+<P>
+<B>wxString</B> <B>GetURL</B>() <B>const</B><P>
+Returns the URL.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinkseturl">SetURL</A>.<P>
+
+
+<HR>
+<A NAME="wxhyperlinkseturl"></A>
+<H3>wxHyperLink::SetURL</H3>
+<P>
+<B>void</B> <B>SetURL</B>(<B>wxString&amp;</B><I> url</I>)<P>
+Sets the URL.<P>
+See also <A HREF="manual_wxhyperlink.html#wxhyperlinkgeturl">GetURL</A>.<P>
+
+</FONT></BODY></HTML>
