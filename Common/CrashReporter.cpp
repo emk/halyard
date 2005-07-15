@@ -40,6 +40,11 @@ CrashReporter::CrashReporter() {
 void CrashReporter::BeginInterceptingCrashes() {
 }
 
+/// Register a script document with the CrashReporter.  This is
+/// used to get the script debug report URL and the script name.
+void CrashReporter::RegisterDocument(Document *inDocument) {
+}
+
 /// Register the specified file for inclusion in any crash reports.
 /// Typically used for log files, which can be really helpful.
 void CrashReporter::AddDiagnosticFile(const std::string &inFileName,
@@ -47,11 +52,16 @@ void CrashReporter::AddDiagnosticFile(const std::string &inFileName,
 {
 }
 
-/// Crash immediately, with the specified reason.  Typically used
-/// to implement assertion failures.
+/// Called every time the current card changes.
+/// @param inCardName The card name, or an empty string if no card.
+void CrashReporter::SetCurrentCard(const std::string &inCardName) {
+}
+
+/// Crash immediately, with an optional reason.
 ///
 /// @param inReason NULL for segfaults, an informative string for asserts.
-void CrashReporter::CrashNow(const char *inReason) {
+/// @param inType Was this crash caused by the application or a script?
+void CrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // This will generate *some* sort of crash under most operating
     // systems.
     abort();

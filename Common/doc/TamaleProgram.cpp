@@ -48,6 +48,15 @@ void TamaleProgram::Initialize()
 
 	Set("cards", new List());
 	Set("backgrounds", new List());
+
+    // Add any new fields in the migration code, not in Initialize(), so we
+    // can just go ahead and migrate objects to the latest version.
+    Migrate();
+}
+
+void TamaleProgram::Migrate() {
+    if (!DoFind("dbgreporturl"))
+        SetString("dbgreporturl", "");
 }
 
 List *TamaleProgram::GetBackgrounds()
@@ -69,4 +78,9 @@ std::string TamaleProgram::GetName() {
 /// This copyright notice is displayed on the splash screen.
 std::string TamaleProgram::GetCopyright() {
     return GetString("copyright");
+}
+
+/// The URL to which we should submit debug reports about script errors.
+std::string TamaleProgram::GetDebugReportURL() {
+    return GetString("dbgreporturl");
 }

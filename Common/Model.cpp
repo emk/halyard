@@ -394,6 +394,9 @@ void Object::Fill(xml_node inNode)
 		Set(key, value);
 		value->Fill(node);
 	}
+
+    // Do any necessary migration.
+    Migrate();
 }
 
 void Object::RegisterView(View *inView)
@@ -647,7 +650,16 @@ Model::Model(const ModelFormat &inCurrentFormat,
 			  "XML file is in a newer, unsupported format");
 		CHECK(file_format.GetVersion() >= inEarliestFormat,
 			  "XML file is in a older, unsupported format");
-		mFormat = file_format;
+        
+        if (mFormat.GetVersion() != file_format.GetVersion()) {
+            // To preserve the current format, we could do this:
+            //mFormat = file_format;
+            
+            // We're going to migrate the file.  Note that version
+            // migration *doesn't* set the dirty bit!
+            gLog.Log("Migrating from file version %d to %d",
+                     file_format.GetVersion(), mFormat.GetVersion());
+        }
 
 		// Get our top-level object and fill it out.
 		CHECK(root.attribute("type") == "object" &&

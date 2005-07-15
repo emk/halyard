@@ -215,7 +215,7 @@ private:
     //////////
     /// Crash the engine with a fatal error.
     ///
-    void        CrashNow();
+    void        CrashNow(CrashType inType);
 
 	//////////
 	/// Should a log message with a given mask be logged?

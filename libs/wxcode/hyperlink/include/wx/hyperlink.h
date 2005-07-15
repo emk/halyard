@@ -96,6 +96,8 @@ private:
     wxColour m_VisitedColour;
     wxColour m_BackgroundColour;
 
+public:
+    // Made public by emk @ IML on 14 Jul 2005.
     //! execute according to mimetype
     void ExecuteLink (const wxString &link);
 

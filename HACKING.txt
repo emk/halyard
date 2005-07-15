@@ -485,3 +485,134 @@ to worry about it.
 $ for F in `grep "^Binary files" /cygdrive/c/src/wx-revert-to-vendor.diff | sed
  's|^[^/]*/||' | sed 's| and .*||'`; do mv /cygdrive/c/src/wxWidgets/$F $F; don
 e
+
+Upgrading wxWidgets
+-------------------
+
+Get your copies of wxWidgets from anonymous CVS, *not* the tarballs or
+zipped sources.  The tarballs are missing many files which are present in
+CVS (including MSVC project files), and there's no practical way to find
+them all except in a CVS copy of wxWidgets.  No, the wxMSW installer won't
+work either--it's missing *other* files.
+
+Upgrading wxWidgets is officially a pain in the neck, and typically takes
+several days.  Here's my working outline from the 2.5.x -> 2.6.1 upgrade.
+It should give you some sort of idea about what you're getting into.
+
+  Steps
+    Get it building
+      Download 2.6.1
+        MUST get from anonCVS, not tarball, if we want MSVC++ project files
+      Extract patches we made to 2.5
+        9 local patches found
+      Back out patches as necessary
+      Delete added project and setup.h files we'll need to regenerate
+      Check line endings of 'cvs export' and new code
+        Both appear to be DOS
+        Let's hope it does the right thing
+      Make a list of files deleted by upstream maintainers
+        The list is huge so we don't keep a copy here
+      Import 2.6.1 to vendor branch
+      Resolve any import conflicts
+        C libs/wxWidgets/contrib/include/wx/stc/stc.h
+        C libs/wxWidgets/contrib/src/stc/gen_iface.py
+        C libs/wxWidgets/contrib/src/stc/stc.cpp
+        C libs/wxWidgets/include/wx/evtloop.h
+        C libs/wxWidgets/include/wx/image.h
+          Ooops, we were merged after all!
+        C libs/wxWidgets/include/wx/msw/wx.rc
+        C libs/wxWidgets/src/common/image.cpp
+          Ooops, we were merged after all!
+        C libs/wxWidgets/src/msw/bitmap.cpp
+        C libs/wxWidgets/src/msw/dc.cpp
+          Ooops, we were merged after all!
+        C libs/wxWidgets/src/msw/dib.cpp
+        C libs/wxWidgets/src/msw/evtloop.cpp
+        C libs/wxWidgets/src/msw/textctrl.cpp
+        C libs/wxWidgets/src/msw/window.cpp
+      Make sure that 'cvs import' deleted files deleted by upstream maintainers
+      Regenerate project and setup.h files we deleted
+      Build Tamale
+      Reapply local patches
+      Add files to CVS
+      Apply wxWidgets-2.6.1-Patch01.zip bugfixes to local tree
+        I put them on the vendor branch; it was pretty tricky but worked
+    Look for bugs
+      Full-screen mode is broken
+        Just a corrupt build
+      Window backgrounds get erased when they shouldn't
+        Examples
+          ScriptEditor
+            When opening a new document, it shows up first as a small
+              subwindow, then resizes
+          QuickTime
+            Are we displaying the QT window as a blank black rectangle
+              earlier than we used to?
+        Must set up all object options *before* Create() gets called
+          Create now draw objects immediately!
+      Stupid flickering in DocNotebook tabs when opening new window
+        Reported to the bug tracker
+    Document process
+  Analysis details
+    Analyze patches from 2.5
+      Back out completely
+        wxWidgets-2.5-bitmap.diff
+          Alpha premul moved to dib.cpp
+          Multiple small bugfixes
+          ALL CHANGES MERGED IN 2.6
+        wxWidgets-2.5-dib.diff
+          Alpha premul happens *here* now
+          ALL CHANGES MERGED IN 2.6
+        wxWidgets-2.5-image-bugfix.diff
+          delete -> free bugfix
+          MERGED IN 2.6
+      Merged by upstream, but we didn't notice them the first time around
+        wxWidgets-2.5-dc.diff
+          Alpha blending fixes
+          NOT IN 2.6
+        wxWidgets-2.5-image-convertmask.diff
+          ConvertMaskToAlpha function
+          NOT IN 2.6
+      Leave in place during merge
+        wxWidgets-2.5-textctrl.diff
+          Tab-order bugfix
+          NOT IN 2.6
+        wxWidgets-2.5-window.diff
+          Support for using PERIOD key as part of a menu accelerator?
+          NOT IN 2.6
+      Back out and reapply after merge
+        wxWidgets-2.5-evtloop.diff
+          Broke out prologoue and cleanup of main event loop so we can
+            override it safely
+          NOT IN 2.6
+          This code needs to be rewritten, preserving only the API (the
+            internals have changed)
+        wxWidgets-2.5-wxrc.diff
+          Workaround for MSVC++ "project always dirty" bug
+          NOT IN 2.6
+          Small changes to nearby code
+          Is this still necessary?
+        wxWidgets-2.5-stc.diff
+          Bugfixes
+          Improved LISP support (including some hacks of local interest only)
+          NOT IN 2.6 - Messy hand merge required
+          Look for local problems in LexLisp.cxx--the API has changed
+          May have actually fixed string lexing bugs
+    Files we added to 2.5
+      Project files
+        build/msw/wx_wxexpat.vcproj
+        contrib/build/stc/stc.vcproj
+        contrib/build/xrc/xrc.vcproj
+        contrib/utils/wxrc/wxrc.vcproj
+        src/wxWindows.vcproj
+        src/jpeg/jpeg.vcproj
+        src/png/png.vcproj
+        src/regex/regex.vcproj
+        src/tiff/tiff.vcproj
+        src/zlib/zlib.vcproj
+      Setup headers
+        include/wx/setup.h
+        include/wx/msw/setup.h
+
+And while you're at it, don't forget to set wxUSE_DISPLAY to 1 if you want
+screen-resizing support.

@@ -30,6 +30,7 @@
 #include "TInterpreter.h"
 #include "TStyleSheet.h"
 #include "TVersion.h"
+#include "CrashReporter.h"
 #include "doc/Document.h"
 #include "doc/TamaleProgram.h"
 
@@ -312,6 +313,7 @@ void Stage::NotifyEnterCard(const wxString &inName)
 	mLastCard = inName;
 	mFrame->GetLocationBox()->NotifyEnterCard(inName);
 	mFrame->GetProgramTree()->NotifyEnterCard(inName);
+    CrashReporter::GetInstance()->SetCurrentCard(inName.mb_str());
 
     // If the script is waiting on a media element, end the wait now.
     if (mWaitElement)

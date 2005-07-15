@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/include;../../../libs/freetype2/include;../../../libs/boost;&quot;$(WXWIN)/include&quot;;&quot;$(WXWIN)/contrib/include&quot;;&quot;$(WXWIN)/lib/mswd&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec"
+				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/include;../../../libs/freetype2/include;../../../libs/boost;&quot;$(WXWIN)/include&quot;;&quot;$(WXWIN)/contrib/include&quot;;&quot;$(WXWIN)/lib/mswd&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec"
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,WINVER=0x400,_MT,wxUSE_GUI=1,__WXDEBUG__,WXDEBUG=1,__WXWINDOWS__,REF_HARD_LINKED,IML_Q2_EXTENSIONS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
@@ -83,7 +83,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/include;../../../libs/freetype2/include;../../../libs/boost;&quot;$(WXWIN)/include&quot;;&quot;$(WXWIN)/contrib/include&quot;;&quot;$(WXWIN)/lib/msw&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec"
+				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/include;../../../libs/freetype2/include;../../../libs/boost;&quot;$(WXWIN)/include&quot;;&quot;$(WXWIN)/contrib/include&quot;;&quot;$(WXWIN)/lib/msw&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec"
 				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS,WINVER=0x400,_MT,wxUSE_GUI=1,IML_Q2_EXTENSIONS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -788,6 +788,28 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="Other Files"
+			Filter="">
+			<File
+				RelativePath="..\..\..\libs\wxcode\hyperlink\src\hyperlink.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\wxcode\hyperlink\include\wx\hyperlink.h">
 			</File>
 		</Filter>
 	</Files>

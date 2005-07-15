@@ -25,16 +25,19 @@
 #include <wx/debugrpt.h>
 #include <wx/sstream.h>
 
-#ifdef __WXMSW__
+#ifdef FIVEL_PLATFORM_WIN32
+#include <windows.h>
 #include <wx/msw/registry.h>
-#endif // __WXMSW__
+#endif // FIVEL_PLATFORM_WIN32
 
+#include "TVersion.h"
+#include "doc/Document.h"
+#include "doc/TamaleProgram.h"
+#include "FiveLApp.h"
+#include "Stage.h"
 #include "FancyCrashReporter.h"
 
 USING_NAMESPACE_FIVEL
-
-// The URL of our crash report submission form.
-#define URL "http://iml2.hitchcock.org/intranet/crashes/upload/action/27"
 
 
 //=========================================================================
@@ -43,24 +46,32 @@ USING_NAMESPACE_FIVEL
 
 /// Subclass the wxDebugReportUpload so we can add extra information.
 class FancyDebugReport : public wxDebugReportUpload {
+    FancyCrashReporter *mReporter;
     const char *mReason;
-
+    
+    void AddAppInfo(wxXmlNode *nodeRoot);
     void GetXmlNodeText(wxString &outText, wxXmlNode *node);
 
 public:
-    FancyDebugReport(const char *inReason);
+    FancyDebugReport(FancyCrashReporter *inReporter,
+                     const char *inReportUrl,
+                     const char *inReason);
 
     Context GetContext() const;
+    void AddScreenshot();
     void AddRegistryData();
 
 protected:
+    virtual bool DoAddSystemInfo(wxXmlNode *nodeSystemInfo);
     virtual void DoAddCustomContext(wxXmlNode *nodeRoot);
     virtual bool OnServerReply(const wxArrayString& reply);
 };
 
-FancyDebugReport::FancyDebugReport(const char *inReason)
-    : wxDebugReportUpload(URL, "report:file", "action"),
-      mReason(inReason)
+FancyDebugReport::FancyDebugReport(FancyCrashReporter *inReporter,
+                                   const char *inReportUrl,
+                                   const char *inReason)
+    : wxDebugReportUpload(inReportUrl, "report:file", "action"),
+      mReporter(inReporter), mReason(inReason)
 {
 }
 
@@ -70,13 +81,25 @@ wxDebugReport::Context FancyDebugReport::GetContext() const {
     return mReason ? Context_Current : Context_Exception;
 }
 
-#ifndef __WXMSW__
+/// Ask the Stage to take a screenshot of whatever would be displayed by
+/// the next update.  This probably isn't safe to do after a real
+/// crash--the Stage might be broken.
+void FancyDebugReport::AddScreenshot() {
+    wxFileName path(GetDirectory(), "stage.png");
+    wxGetApp().GetStage()->Screenshot(path.GetFullPath());
+    AddFile(path.GetFullName(), "script graphics");
+}
+
+#ifndef FIVEL_PLATFORM_WIN32
 
 /// This function does nothing except on Windows.
-/// PORTABILITY - Should we implement a generic version of this function?
+/// PORTABILITY - Should we implement a generic version of these functions?
 void FancyDebugReport::AddRegistryData() {}
+bool DoAddSystemInfo(wxXmlNode *nodeSystemInfo) {
+    return wxDebugReportUpload::DoAddSystemInfo(nodeSystemInfo);
+}
 
-#else // defined(__WXMSW__)
+#else // defined(FIVEL_PLATFORM_WIN32)
 
 /// Dump our registry data and add it to the debug report.
 void FancyDebugReport::AddRegistryData() {
@@ -91,7 +114,51 @@ void FancyDebugReport::AddRegistryData() {
     AddFile(path.GetFullName(), "application preferences");
 }
 
-#endif // defined(__WXMSW__)
+/// Add our processor information, which wxWidgets doesn't provide in
+/// a portable fashion.
+bool FancyDebugReport::DoAddSystemInfo(wxXmlNode *nodeSystemInfo) {
+    wxDebugReportUpload::DoAddSystemInfo(nodeSystemInfo);
+
+    SYSTEM_INFO info;
+    ::GetSystemInfo(&info);
+
+    wxString processors, processorLevel, processorRevision;
+    processors << info.dwNumberOfProcessors;
+    processorLevel << info.wProcessorLevel;
+    processorRevision << info.wProcessorRevision;
+
+    wxString architecture;
+    switch (info.wProcessorArchitecture) {
+        case PROCESSOR_ARCHITECTURE_INTEL: architecture = "Intel"; break;
+        case PROCESSOR_ARCHITECTURE_IA64:  architecture = "IA64";  break;
+        case PROCESSOR_ARCHITECTURE_AMD64: architecture = "AMD64"; break;
+        default: architecture = "unknown";
+    }
+
+    nodeSystemInfo->AddProperty("processors", processors);
+    nodeSystemInfo->AddProperty("architecture", architecture);
+    nodeSystemInfo->AddProperty("processorLevel", processorLevel);
+    nodeSystemInfo->AddProperty("processorRevision", processorRevision);
+    return true;
+}
+
+#endif // defined(FIVEL_PLATFORM_WIN32)
+
+/// Add application-specific information to the debug report.
+void FancyDebugReport::AddAppInfo(wxXmlNode *nodeRoot) {
+    wxXmlNode *app = new wxXmlNode(wxXML_ELEMENT_NODE, "application");
+    nodeRoot->AddChild(app);
+    app->AddProperty("version", VERSION_STRING);
+    app->AddProperty("buildDate", BUILD_TIMESTAMP);
+    app->AddProperty("scriptName", mReporter->GetScriptName());
+    app->AddProperty("scriptVersion", mReporter->GetScriptVersion());
+    app->AddProperty("currentCard", mReporter->GetCurrentCard());
+    app->AddProperty("recentCard", mReporter->GetRecentCard());
+    
+    wxDateTime now(wxDateTime::Now());
+    wxString formatted(now.FormatISODate() + " " + now.FormatISOTime());
+    app->AddProperty("crashDate", formatted);
+}
 
 /// Add extra information to our XML crash report.
 void FancyDebugReport::DoAddCustomContext(wxXmlNode *nodeRoot) {
@@ -103,6 +170,9 @@ void FancyDebugReport::DoAddCustomContext(wxXmlNode *nodeRoot) {
         nodeRoot->AddChild(assertion);
         assertion->AddProperty("reason", mReason);
     }
+
+    // Add any other information we have lying around.
+    AddAppInfo(nodeRoot);
 }
 
 /// Get all the text recursively contained within this node.
@@ -176,6 +246,23 @@ void FancyCrashReporter::BeginInterceptingCrashes() {
     ::wxHandleFatalExceptions();
 }
 
+void FancyCrashReporter::RegisterDocument(FIVEL_NS Document *inDocument) {
+    // Register ourselves as a ModelView of the program object.
+    SetObject(inDocument->GetTamaleProgram());    
+}
+
+void FancyCrashReporter::ObjectChanged() {
+    // Cache some useful information locally.
+    mScriptName = GetObject()->GetString("name");
+    mScriptVersion = GetObject()->GetString("version");
+    mScriptReportUrl = GetObject()->GetString("dbgreporturl");
+}
+
+void FancyCrashReporter::ObjectDeleted() {
+    // We don't actually need to clear our cached values; they're still more
+    // informative than the empty string.
+}
+
 void FancyCrashReporter::AddDiagnosticFile(const std::string &inFileName,
                                            const std::string &inDescription)
 {
@@ -188,9 +275,27 @@ void FancyCrashReporter::AddDiagnosticFile(const std::string &inFileName,
     mFileInfo.push_back(FileInfo(path.GetFullPath(), inDescription.c_str()));
 }
 
-void FancyCrashReporter::CrashNow(const char *inReason) {
+void FancyCrashReporter::SetCurrentCard(const std::string &inCardName) {
+    if (mCurrentCard != "" && mCurrentCard != mRecentCard)
+        mRecentCard = mCurrentCard;    
+    mCurrentCard = inCardName;
+}
+
+const char *FancyCrashReporter::GetReportUrl(FIVEL_NS CrashType inType) {
+    if (inType == SCRIPT_CRASH)
+        return GetScriptReportUrl();
+    else
+        return CRASH_REPORT_URL;
+}
+
+void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
+    // If we're handling a script crash, and the script didn't specify
+    // a report URL, exit immediately.
+    if (inType == SCRIPT_CRASH && mScriptReportUrl == "")
+        ::exit(1);
+
     // Generate our debug report.
-    FancyDebugReport report(inReason);
+    FancyDebugReport report(this, GetReportUrl(inType), inReason);
     report.AddAll(report.GetContext());
 
     // Add any useful files to the report.
@@ -200,6 +305,11 @@ void FancyCrashReporter::CrashNow(const char *inReason) {
 
     // Add our registry keys.
     report.AddRegistryData();
+
+    // Add a screenshot, but only if we're processing a script crash.
+    // (After real crashes, this probably would fail anyway.)
+    if (inType == SCRIPT_CRASH)
+        report.AddScreenshot();
 
     // Ask the user whether they want to submit this bug report, and if
     // so, process it.

@@ -40,7 +40,7 @@ Source: ..\Win32\Bin\wxref_gl.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\wxref_soft.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\dbghelp.dll; DestDir: {app}
 Source: ..\Win32\Bin\zlib.dll; DestDir: {app}
-Source: ..\Win32\Bin\CrashRpt.dll; DestDir: {app}
+Source: ..\Win32\Bin\curl.exe; DestDir: {app}
 Source: ..\Release-Notes.txt; DestDir: {app}; Components: release
 Source: ..\LICENSE.txt; DestDir: {app}; Components: release
 Source: ..\wx\MSVC\wx5L\5L.prefs; DestDir: {app}

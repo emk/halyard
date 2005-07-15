@@ -23,11 +23,12 @@
 #ifndef FancyCrashReporter_H
 #define FancyCrashReporter_H
 
+#include "ModelView.h"
 #include "CrashReporter.h"
 
 /// Subclass our standard crash reporting class and make it use
 /// wxDebugReport.
-class FancyCrashReporter : public FIVEL_NS CrashReporter {
+class FancyCrashReporter : public FIVEL_NS CrashReporter, public model::View {
     struct FileInfo {
         wxString path;
         wxString description;
@@ -37,13 +38,30 @@ class FancyCrashReporter : public FIVEL_NS CrashReporter {
 
     typedef std::vector<FileInfo> FileInfoVector;
     FileInfoVector mFileInfo;
+    std::string mScriptName;
+    std::string mScriptVersion;
+    std::string mScriptReportUrl;
+    std::string mCurrentCard;
+    std::string mRecentCard;
+
+    const char *GetReportUrl(FIVEL_NS CrashType inType);
 
 public:
     FancyCrashReporter() {}
     void BeginInterceptingCrashes();
+	void RegisterDocument(FIVEL_NS Document *inDocument);
+    void ObjectChanged();
+    void ObjectDeleted();
     void AddDiagnosticFile(const std::string &inFileName,
                            const std::string &inDescription);
-    void CrashNow(const char *inReason);
+    void SetCurrentCard(const std::string &inCardName);
+    void CrashNow(const char *inReason, FIVEL_NS CrashType inType);
+
+    const char *GetScriptName() const { return mScriptName.c_str(); }
+    const char *GetScriptVersion() const  { return mScriptVersion.c_str(); }
+    const char *GetScriptReportUrl() const { return mScriptReportUrl.c_str(); }
+    const char *GetCurrentCard() const { return mCurrentCard.c_str(); }
+    const char *GetRecentCard() const { return mRecentCard.c_str(); }
 };
 
 #endif // FancyCrashReporter_H

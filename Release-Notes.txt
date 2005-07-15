@@ -1,5 +1,25 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.52 - 14 July 2005 - emk
+
+  * Made HEARTBEAT a non-logging primitive.
+  * Reset wxUSE_DISPLAY to 1 to re-enable full-screen mode after upgrade.
+  * Major crash reporter enhancements (bug #1712, partial).
+    - Crash reports for scripts go to a separate web site.
+    - Reports include script name and version.
+    - Reports include the current and previous card names.
+    - Reports include a build timestamp and crash timestamp.
+    - Script crash reports include a screenshot!
+    - Reports include processor information.
+    - REGISTER-DEBUG-REPORT-FILE! can be used to include extra files
+      in the crash report, as requested by scripters.
+  * Bumped data.tam file version and implemented simple format migration.
+  * Added wxHyperLink class from wxcode.sf.net for future use.
+  * Made wxHyperLink::ExecuteLink public.
+  * Updated installer for new crash reporter.
+  * Made some fixes to nightly build script.
+  * Documented wxWidgets upgrade procedure.
+
 0.0.51 - 13 July 2005 - emk
 
   * Replaced CrashRpt with wxDebugReport.  Not all features are

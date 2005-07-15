@@ -157,7 +157,7 @@ void TLogger::Error(const char *Format, ...)
 	LogBuffer(ERROR_HEADER);
 	AlertBuffer(true);
     if (TInterpreterManager::IsInRuntimeMode())
-        CrashNow();
+        CrashNow(SCRIPT_CRASH);
 }
 
 void TLogger::Caution(const char *Format, ...)
@@ -182,12 +182,12 @@ void TLogger::FatalError(const char *Format, ...)
 	AlertBuffer(true);
     if (m_LogOpen)
         LogBuffer(FATAL_HEADER);
-    CrashNow();
+    CrashNow(APPLICATION_CRASH);
 }
 
-void TLogger::CrashNow() {
+void TLogger::CrashNow(CrashType inType) {
     PrepareToExit();
-    CrashReporter::GetInstance()->CrashNow(m_LogBuffer);
+    CrashReporter::GetInstance()->CrashNow(m_LogBuffer, inType);
     // We shouldn't get here, but just in case.
 	abort();
 }

@@ -25,6 +25,17 @@
 
 BEGIN_NAMESPACE_FIVEL
 
+/// Crashes can be associated with either the application or the script
+/// we're running.  This enumeration is defined here beacause it is
+/// exception-related, and so it may be used without pulling in all of
+/// CrashReporter.
+///
+/// @see CrashReporter
+enum CrashType {
+    APPLICATION_CRASH,
+    SCRIPT_CRASH
+};
+
 //////////
 /// A handy exception class for use in 5L code.  Don't bother
 /// catching this directly; catch something like std::exception

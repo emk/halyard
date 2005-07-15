@@ -29,6 +29,7 @@
 
 // Needed to implement the primitives.
 #include "TCommonPrimitives.h"
+#include "CrashReporter.h"
 #include "AppConfig.h"
 #include "TStyleSheet.h"
 #include "FiveLApp.h"
@@ -89,6 +90,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(DcPop);
 	REGISTER_5L_PRIMITIVE(DcPush);
 	REGISTER_5L_PRIMITIVE(DcRect);
+    REGISTER_5L_PRIMITIVE(DebugReportAddFile);
     REGISTER_5L_PRIMITIVE(DeleteElements);
 	REGISTER_5L_PRIMITIVE(DrawBoxFill);
 	REGISTER_5L_PRIMITIVE(DrawBoxOutline);
@@ -361,6 +363,13 @@ DEFINE_5L_PRIMITIVE(DcRect) {
 	::SetPrimitiveResult(WxToTRect(wxRect(0, 0, bounds.width, bounds.height)));
 }
 
+DEFINE_5L_PRIMITIVE(DebugReportAddFile) {
+    std::string name;
+    std::string description;
+    inArgs >> name >> description;
+    CrashReporter::GetInstance()->AddDiagnosticFile(name, description);
+}
+
 DEFINE_5L_PRIMITIVE(DeleteElements) {
 	if (!inArgs.HasMoreArguments()) {
 		wxGetApp().GetStage()->DeleteElements();
@@ -477,6 +486,7 @@ DEFINE_5L_PRIMITIVE(GeigerSynth) {
 }
 
 DEFINE_5L_PRIMITIVE(Heartbeat) {
+	::SkipPrimitiveLogging();
     wxGetApp().Heartbeat();
 }
 

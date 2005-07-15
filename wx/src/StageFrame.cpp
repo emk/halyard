@@ -29,6 +29,7 @@
 #include "TInterpreter.h"
 #include "doc/Document.h"
 #include "doc/TamaleProgram.h"
+#include "CrashReporter.h"
 #include "TDeveloperPrefs.h"
 
 #include "AppConfig.h"
@@ -592,6 +593,7 @@ void StageFrame::NewDocument()
 
 		SetObject(mDocument->GetTamaleProgram());
 		mProgramTree->RegisterDocument(mDocument);
+        CrashReporter::GetInstance()->RegisterDocument(mDocument);
 		mStage->Show();
 	}
 }
@@ -627,6 +629,7 @@ void StageFrame::OpenDocument(const wxString &inDirPath) {
     mDocument = new Document(inDirPath.mb_str(), Document::OPEN);
     SetObject(mDocument->GetTamaleProgram());
     mProgramTree->RegisterDocument(mDocument);
+    CrashReporter::GetInstance()->RegisterDocument(mDocument);
     mStage->MaybeShowSplashScreen();
     mStage->Show();
 }

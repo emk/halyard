@@ -39,6 +39,10 @@ public:
 
     std::string GetName();
     std::string GetCopyright();
+    std::string GetDebugReportURL();
+
+protected:
+    void Migrate();
 };
 
 END_NAMESPACE_FIVEL

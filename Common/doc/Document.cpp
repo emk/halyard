@@ -68,9 +68,11 @@ END_MODEL_CLASSES()
 //=========================================================================
 //  Document Format
 //=========================================================================
+//  Format 0: Original format.
+//  Format 1: Added dbgreporturl to TamaleProgram.
 
 enum {
-    CURRENT_FORMAT = 0,
+    CURRENT_FORMAT = 1,
     COMPATIBLE_BACK_TO = 0,
     EARLIEST_READABLE = 0
 };

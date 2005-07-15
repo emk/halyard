@@ -380,6 +380,11 @@ namespace model {
 		virtual void NotifyDeleted();
 		virtual void NotifyUndeleted();
 
+        //////////
+        /// Add any new fields to this object, if they don't already exist.
+        ///
+        virtual void Migrate() {}
+
 	public:
 		~Object();
 

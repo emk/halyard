@@ -25,6 +25,8 @@
 
 BEGIN_NAMESPACE_FIVEL
 
+class Document;
+
 /// Handles automatic crash reporting, if available on a given platform.
 /// Applications will typically subclass this class to provide more
 /// sophisticated crash reporting--by default, we just call abort().
@@ -39,9 +41,12 @@ public:
     virtual ~CrashReporter() {}
 
     virtual void BeginInterceptingCrashes();
+	virtual void RegisterDocument(Document *inDocument);
     virtual void AddDiagnosticFile(const std::string &inFileName,
                                    const std::string &inDescription);
-    virtual void CrashNow(const char *inReason = NULL);
+    virtual void SetCurrentCard(const std::string &inCardName);
+    virtual void CrashNow(const char *inReason = NULL,
+                          CrashType inType = APPLICATION_CRASH);
 
     static void InitializeCrashReporting(CrashReporter *inReporter);
     static CrashReporter *GetInstance();

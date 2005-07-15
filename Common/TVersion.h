@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		51
+#define VERSION_REV_BIG		52
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.51 (Development)"
+#define VERSION_STRING		"Tamale 0.0.52 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -33,8 +33,37 @@
 #define TAMALE_COPYRIGHT_NOTICE \
 	"Copyright 1993-2005 Trustees of Dartmouth College. All rights reserved."
 
+/// The date at which the files including TVersion.h were built.  This will
+/// work right as long as you change the version number for official builds.
+#define BUILD_TIMESTAMP (__DATE__ " " __TIME__)
+
+/// The URL of our crash report submission form.
+#define CRASH_REPORT_URL \
+    "http://iml2.hitchcock.org/intranet/crashes/upload/action/27"
+
 /*
  $Log$
+ Revision 1.93  2005/07/15 12:44:35  emk
+ 0.0.52 - 14 July 2005 - emk
+
+   * Made HEARTBEAT a non-logging primitive.
+   * Reset wxUSE_DISPLAY to 1 to re-enable full-screen mode after upgrade.
+   * Major crash reporter enhancements (bug #1712, partial).
+     - Crash reports for scripts go to a separate web site.
+     - Reports include script name and version.
+     - Reports include the current and previous card names.
+     - Reports include a build timestamp and crash timestamp.
+     - Script crash reports include a screenshot!
+     - Reports include processor information.
+     - REGISTER-DEBUG-REPORT-FILE! can be used to include extra files
+       in the crash report, as requested by scripters.
+   * Bumped data.tam file version and implemented simple format migration.
+   * Added wxHyperLink class from wxcode.sf.net for future use.
+   * Made wxHyperLink::ExecuteLink public.
+   * Updated installer for new crash reporter.
+   * Made some fixes to nightly build script.
+   * Documented wxWidgets upgrade procedure.
+
  Revision 1.92  2005/07/13 20:44:55  emk
  0.0.51 - 13 July 2005 - emk
 
