@@ -304,7 +304,16 @@
     (define (sym->type sym)
       (with-handlers [[exn:variable? (lambda (exn) 'variable)] ;; unbound var
                       [exn:syntax? (lambda (exn) 'syntax)]]    ;; a macro
-        (let [[val (namespace-variable-value sym)]]
+        ;; We should only have to pass one argument to 
+        ;; NAMESPACE-VARIABLE-VALUE, since the second argument is optional 
+        ;; and defaults to #t. There's a bug in PLT's implementation, however,
+        ;; that causes it to read junk data off the stack if you don't pass 
+        ;; a second argument in, which is usually a true value (since most 
+        ;; values are considered by scheme to be true), but can occasionally
+        ;; become false, which leads to it always throwing exn:variable 
+        ;; on imported names and syntax. In order to work around this, we 
+        ;; can just pass #t in, and let the PLT maintainers sort out the bug. 
+        (let [[val (namespace-variable-value sym #t)]]
           (cond
            [(function? val) 'function]
            [#t 'variable]))))

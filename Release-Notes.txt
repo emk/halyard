@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+cvs - brian
+
+  * Fixed the occasionally broken indentation and highlighting of
+    special forms (bug #2033).
+
 0.0.52 - 14 July 2005 - emk
 
   * Made HEARTBEAT a non-logging primitive.
