@@ -15,6 +15,11 @@ cvs - brian, emk
   * If the Stage loses its mouse grab unexpectedly, it now attempts
     to do something reasonable (bug #2032).
   * Nightly build scripts have been fixed.
+  * Added support for automatically generated make-classname
+    functions, class predicates, slot getters and setters to tags.ss
+    (bug #1972).
+  * Added support for defining new syntax taggers to tags.ss (bug
+    #1972).
 
 0.0.52 - 14 July 2005 - emk
 

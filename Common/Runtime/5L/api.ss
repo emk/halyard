@@ -23,7 +23,7 @@
 
   ;; Make sure this gets loaded.  It will register itself with the kernel.
   (require (lib "tags.ss" "5L"))
-  
+  (provide (all-from (lib "tags.ss" "5L")))
   
   ;;;======================================================================
   ;;;  Useful Syntax
