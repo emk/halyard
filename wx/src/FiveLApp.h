@@ -112,6 +112,12 @@ public:
     ///
     virtual void OnFatalException();
 
+    //////////
+    /// Called whenever an assertion occurs in wxWidgets.
+    ///
+    virtual void OnAssert(const wxChar *file, int line, const wxChar *cond,
+                          const wxChar *msg);
+
 	//////////
     /// We attempt to replace the standard main loop with one that
 	/// calls TInterpreterManager::Run.

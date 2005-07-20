@@ -64,6 +64,7 @@ void CrashReporter::SetCurrentCard(const std::string &inCardName) {
 void CrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // This will generate *some* sort of crash under most operating
     // systems.
+    // PORTABILITY - Should we print an error message if we have one?
     abort();
 }
 
@@ -73,6 +74,7 @@ void CrashReporter::CrashNow(const char *inReason, CrashType inType) {
 void CrashReporter::InternalAssertionFailure() {
     // This will generate *some* sort of crash under most operating
     // systems.
+    // PORTABILITY - Should we print an error message?
     abort();
 }
 
@@ -93,4 +95,9 @@ CrashReporter *CrashReporter::GetInstance() {
     if (!sInstance)
         InternalAssertionFailure();
     return sInstance;
+}
+
+/// Return true if and only if we have a crash reporter.
+bool CrashReporter::HaveInstance() {
+    return (sInstance != NULL);
 }

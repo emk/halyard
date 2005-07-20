@@ -232,6 +232,13 @@ private:
 	}
 
 public:
+    //////////
+    /// Display an alert dialog containing 'message'.  This function
+    /// is safe to call from inside error-handling machinery--it doesn't
+    /// use assertions or report errors.
+    ///
+    static void SafeAlert(bool isError, const char *message);
+
 	//////////
 	/// Open up all the log files which will be required by our program.
 	///

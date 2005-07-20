@@ -77,6 +77,7 @@ BEGIN_EVENT_TABLE(Stage, wxWindow)
 	EVT_LEFT_UP(Stage::OnLeftUp)
 	EVT_RIGHT_DOWN(Stage::OnRightDown)
 	EVT_RIGHT_DCLICK(Stage::OnRightDown)
+    EVT_MOUSE_CAPTURE_CHANGED(Stage::OnMouseCaptureChanged)
 END_EVENT_TABLE()
 
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
@@ -755,6 +756,24 @@ void Stage::OnRightDown(wxMouseEvent &inEvent)
 
 		CopyStringToClipboard(str);
 	}
+}
+
+void Stage::OnMouseCaptureChanged(wxMouseCaptureChangedEvent &inEvent) {
+    // According to the manual: "An mouse capture changed event is sent to
+    // a window that loses its mouse capture."  Theoretically, this means
+    // that we should *never* receive this event to notify us that we
+    // *regained* a mouse capture.  However, there's a stack of mouse
+    // captures in wxWidgets, and the event name is suspiciously
+    // ambiguous, so we're going to check.
+    ASSERT(inEvent.GetCapturedWindow() != this);
+
+    // Clear the grabbed element.  Note that this code will be run whenever
+    // we lose the mouse grab (at least on Windows, where this event is
+    // implemented), even if it's because MouseUngrab called ReleaseMouse
+    // directly.  So this may be redudant 99% of the time on windows.  But
+    // the other 1% of the time, it happens because somebody popped up an
+    // error window while the mouse was grabbed.
+	mGrabbedElement = ElementPtr();
 }
 
 void Stage::CopyStringToClipboard(const wxString &inString)

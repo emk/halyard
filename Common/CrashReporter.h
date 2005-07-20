@@ -50,6 +50,7 @@ public:
 
     static void InitializeCrashReporting(CrashReporter *inReporter);
     static CrashReporter *GetInstance();
+    static bool HaveInstance();
 };
 
 END_NAMESPACE_FIVEL

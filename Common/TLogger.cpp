@@ -258,8 +258,13 @@ void TLogger::LogBuffer(const char *Header)
 	}
 }
 
+void TLogger::AlertBuffer(bool isError /* = false */)
+{
+    SafeAlert(isError, m_LogBuffer);
+}
+
 //
-//	AlertBuffer - Display an alert.
+//	SafeAlert - Display an alert.
 //
 //  THIS ROUTINE MAY NOT USE 'ASSERT' OR 'FatalError', BECAUSE IS CALLED
 //  BY THE ERROR-LOGGING CODE!
@@ -268,7 +273,7 @@ void TLogger::LogBuffer(const char *Header)
 
 #include <windows.h>
 
-void TLogger::AlertBuffer(bool isError /* = false */)
+void TLogger::SafeAlert(bool isError, const char *message)
 {
 	PrepareToDisplayError();
 
@@ -278,7 +283,7 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 	else
 		alertType |= MB_ICONINFORMATION;
 
-	::MessageBox(NULL, m_LogBuffer, NULL, alertType);
+	::MessageBox(NULL, message, NULL, alertType);
 }
 
 #elif FIVEL_PLATFORM_MACINTOSH
@@ -286,7 +291,7 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 #include <Dialogs.h>
 #include <TextUtils.h>
 
-void TLogger::AlertBuffer(bool isError /* = false */)
+void TLogger::SafeAlert(bool isError, const char *message)
 {
 	PrepareToDisplayError();
 
@@ -296,15 +301,18 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 	// suites.
 	if (s_ToolboxIsInitialized)
 	{
-		::CopyCStringToPascal(m_LogBuffer, (StringPtr) m_LogBuffer);
+        // PORTABILITY - This code with 'message' will no longer
+        // work, because 'message' is now read-only.  This will
+        // need to be fixed when we next try the Mac port.
+		::CopyCStringToPascal(message, (StringPtr) message);
 	
-		::ParamText((StringPtr) m_LogBuffer, NULL, NULL, NULL);
+		::ParamText((StringPtr) message, NULL, NULL, NULL);
 		if (isError)
     		(void) ::StopAlert(2001, nil);
     	else
     		(void) ::CautionAlert(2001, nil);
     
-    	::CopyPascalStringToC((StringPtr) m_LogBuffer, m_LogBuffer);
+    	::CopyPascalStringToC((StringPtr) message, message);
 	}
 	else
 	{
@@ -313,13 +321,13 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 			std::cerr << "ERROR: ";
 		else
 			std::cerr << "INFO: ";
-		std::cerr << m_LogBuffer << std::endl;
+		std::cerr << message << std::endl;
 	}
 }
 
 #elif FIVEL_PLATFORM_OTHER
 
-void TLogger::AlertBuffer(bool isError /* = false */)
+void TLogger::SafeAlert(bool isError, const char *message);
 {
 	PrepareToDisplayError();
 
@@ -328,7 +336,7 @@ void TLogger::AlertBuffer(bool isError /* = false */)
 		std::cerr << "ERROR: ";
 	else
 		std::cerr << "INFO: ";
-	std::cerr << m_LogBuffer << std::endl;
+	std::cerr << message << std::endl;
 }
 
 #endif

@@ -156,6 +156,28 @@ void FiveLApp::OnFatalException() {
     CrashReporter::GetInstance()->CrashNow();
 }
 
+void FiveLApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
+                        const wxChar *msg)
+{
+    if (!CrashReporter::HaveInstance()) {
+        // We don't have a crash reporter yet, so let wxWidgets handle
+        // this error.
+        wxApp::OnAssert(file, line, cond, msg);
+    } else {
+        // We have a crash report, so don't even bother to pop up a dialog
+        // before crashing.  We *do* append this to our application log
+        // just in case the assertion actually occurred in the crash
+        // reporter--at least we'll record it somewhere.
+        wxString message;
+        message << "Assertion: ";
+        if (msg)
+            message << msg << ": ";
+        message << cond << " (at " << file << ":" << line << ")";
+        gLog.Log("wxWidgets %s", message.mb_str());
+        CrashReporter::GetInstance()->CrashNow(message.mb_str());
+    }
+}
+
 bool FiveLApp::OnInit() {
     // All code in this routine should be protected by an
     // exception-trapping block of some sort, because wxWidgets has weak

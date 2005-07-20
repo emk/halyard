@@ -482,6 +482,11 @@ public:
     void OnRightDown(wxMouseEvent &inEvent);
 
     //////////
+    /// Handle unexpected loss of mouse grab.
+    ///
+    void OnMouseCaptureChanged(wxMouseCaptureChangedEvent &inEvent);
+
+    //////////
     /// Are we currently displaying the XY co-ordinates of the cursor?
     ///
     bool IsDisplayingXy() { return mIsDisplayingXy; }

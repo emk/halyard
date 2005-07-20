@@ -22,6 +22,12 @@
 
 #include "TamaleHeaders.h"
 
+// We need snprintf.
+#include <stdio.h>
+#ifdef FIVEL_PLATFORM_WIN32
+#define snprintf _snprintf
+#endif // FIVEL_PLATFORM_WIN32
+
 #include <wx/debugrpt.h>
 #include <wx/sstream.h>
 
@@ -288,7 +294,34 @@ const char *FancyCrashReporter::GetReportUrl(FIVEL_NS CrashType inType) {
         return CRASH_REPORT_URL;
 }
 
+/// OK, we only get called if the *crash reporter* has itself crashed.
+/// Report this error as safely as we can, without relying on wxWidgets
+/// or any of our regular library functions. Yuck.
+void FancyCrashReporter::ReportCrashInCrashRepoter(const char *inReason) {
+    // Figure out what error message to display.
+    const char *message = inReason ? inReason : "The application crashed.";
+
+    // Format a nice, human-readble error message, and make sure it's
+    // NULL-terminated.
+    char buffer[1024];
+    snprintf(buffer, sizeof(buffer), "An error occured while trying "
+             "to report a previous error:\n\n  %s\n\n"
+             "Please report this if you know how.",
+             message);
+    buffer[sizeof(buffer)-1] = '\0';
+
+    // Display the error *very carefully* and abort.
+    TLogger::SafeAlert(true, buffer);
+    ::abort();
+}
+
 void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
+    // If we're already processing a crash, then something we called died
+    // on its own.  So presumably it isn't safe to run our usual code here.
+    if (mIsProcessingCrash)
+        ReportCrashInCrashRepoter(inReason);
+    mIsProcessingCrash = true;
+
     // If we're handling a script crash, and the script didn't specify
     // a report URL, exit immediately.
     if (inType == SCRIPT_CRASH && mScriptReportUrl == "")

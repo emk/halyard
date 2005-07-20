@@ -1,9 +1,20 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-cvs - brian
+cvs - brian, emk
 
   * Fixed the occasionally broken indentation and highlighting of
     special forms (bug #2033).
+  * Crash reporter bugfixes (bug #2032):
+    - The crash reporter no longer fails if it the stack contains
+      a corrupt wxString instance.  This is a patch pulled from
+      upstream wxWidgets CVS and applied by hand.
+    - If the crash reporter itself crashes, we attempt to just pop
+      up a simple error dialog and exit.
+    - We now catch wxWidget assertion failures and feed them to
+      the crash reporter.
+  * If the Stage loses its mouse grab unexpectedly, it now attempts
+    to do something reasonable (bug #2032).
+  * Nightly build scripts have been fixed.
 
 0.0.52 - 14 July 2005 - emk
 

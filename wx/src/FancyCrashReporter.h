@@ -43,11 +43,13 @@ class FancyCrashReporter : public FIVEL_NS CrashReporter, public model::View {
     std::string mScriptReportUrl;
     std::string mCurrentCard;
     std::string mRecentCard;
+    bool mIsProcessingCrash;
 
     const char *GetReportUrl(FIVEL_NS CrashType inType);
+    void ReportCrashInCrashRepoter(const char *inReason);
 
 public:
-    FancyCrashReporter() {}
+    FancyCrashReporter() : mIsProcessingCrash(false) {}
     void BeginInterceptingCrashes();
 	void RegisterDocument(FIVEL_NS Document *inDocument);
     void ObjectChanged();
