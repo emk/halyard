@@ -112,11 +112,13 @@ public:
     ///
     virtual void OnFatalException();
 
+#ifdef __WXDEBUG__
     //////////
     /// Called whenever an assertion occurs in wxWidgets.
     ///
     virtual void OnAssert(const wxChar *file, int line, const wxChar *cond,
                           const wxChar *msg);
+#endif // __WXDEBUG__
 
 	//////////
     /// We attempt to replace the standard main loop with one that

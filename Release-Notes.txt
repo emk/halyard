@@ -20,6 +20,8 @@ cvs - brian, emk
     (bug #1972).
   * Added support for defining new syntax taggers to tags.ss (bug
     #1972).
+  * We no longer override OnAssert in the Release build (where it
+    doesn't exist, anyway).
 
 0.0.52 - 14 July 2005 - emk
 

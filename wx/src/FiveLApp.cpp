@@ -156,6 +156,8 @@ void FiveLApp::OnFatalException() {
     CrashReporter::GetInstance()->CrashNow();
 }
 
+#ifdef __WXDEBUG__
+
 void FiveLApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
                         const wxChar *msg)
 {
@@ -177,6 +179,8 @@ void FiveLApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
         CrashReporter::GetInstance()->CrashNow(message.mb_str());
     }
 }
+
+#endif // __WXDEBUG__
 
 bool FiveLApp::OnInit() {
     // All code in this routine should be protected by an
