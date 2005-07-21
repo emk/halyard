@@ -12,6 +12,8 @@
 
            user-id
            set-user-id!
+           ;; set-user-id! and register the datafile for the crash reporter
+           set-user-id-and-register-for-debug!
            
            global-pref
            set-global-pref!
@@ -25,10 +27,16 @@
            )
 
   (define *tables* (make-hash-table 'equal))
+  (define $datafile-base-path "Data")
+  
+  ;; given a user-id, returns the full file path of the corresponding data file
+  (define (datafile-path id)
+    (ensure-dir-exists $datafile-base-path)
+    (build-path $datafile-base-path (cat id ".dat")))
   
   ;; Determine if a "user-id.dat" file exists for a given user-id.
   (define (user-has-saved-data? user-id)
-    (file-exists? (build-path "Data" (cat user-id ".dat"))))
+    (file-exists? (datafile-path user-id)))
   
   (define (find-table table-name)
     (unless (hash-table-has-key? *tables* table-name)
@@ -40,7 +48,7 @@
     (hash-table-get (find-table table) key (lambda () default)))
 
   (define (maybe-read-data-from-file table)
-    (define file-with-path (build-path "Data" (cat table ".dat")))
+    (define file-with-path (datafile-path table))
     (define the-table (make-hash-table 'equal))
     (when (file-exists? file-with-path)
       (let ((file-port (open-input-file file-with-path)))
@@ -62,10 +70,7 @@
     (flush-data table))
 
   (define (flush-data table)
-    (define path "Data")
-    (define dir (ensure-dir-exists path))
-    (define filename (cat table ".dat"))
-    (define file-with-path (build-path dir filename))
+    (define file-with-path (datafile-path table))
     (define file-port (open-output-file file-with-path 'replace))
     (define the-table (find-table table))
     (hash-table-for-each the-table (lambda (key value)
@@ -90,6 +95,12 @@
         (error "Cannot access per-user prefs before setting user-id")))
   (define (set-user-id! value)
     (set! *user-id* value))
+  
+  ;; set-user-id! and also register the user's datafile to be included when
+  ;; crash reports are generated.
+  (define (set-user-id-and-register-for-debug! value)
+    (set-user-id! value)
+    (register-debug-report-file! (datafile-path value) "Userpref data file"))
 
   (define (user-pref key &key (default #f))
     (pref (user-id) key default))
