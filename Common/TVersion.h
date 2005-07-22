@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		52
+#define VERSION_REV_BIG		53
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.52 (Development)"
+#define VERSION_STRING		"Tamale 0.0.53 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,33 @@
 
 /*
  $Log$
+ Revision 1.94  2005/07/22 14:02:40  emk
+ 0.0.53 - 22 July 2005 - brian, emk
+
+   * Fixed the occasionally broken indentation and highlighting of
+     special forms (bug #2033).
+   * Crash reporter bugfixes (bug #2032):
+     - The crash reporter no longer fails if it the stack contains
+       a corrupt wxString instance.  This is a patch pulled from
+       upstream wxWidgets CVS and applied by hand.
+     - If the crash reporter itself crashes, we attempt to just pop
+       up a simple error dialog and exit.
+     - We now catch wxWidget assertion failures and feed them to
+       the crash reporter.
+   * If the Stage loses its mouse grab unexpectedly, it now attempts
+     to do something reasonable (bug #2032).
+   * Nightly build scripts have been fixed.
+   * Added support for automatically generated make-classname
+     functions, class predicates, slot getters and setters to tags.ss
+     (bug #1972).
+   * Added support for defining new syntax taggers to tags.ss (bug
+     #1972).
+   * We no longer override OnAssert in the Release build (where it
+     doesn't exist, anyway).
+   * Added a IML_Q2_TOTAL_CONVERSION preprocessor macro which can be
+     used to remove Quake 2's dependence on certain files.  This only
+     includes files which can't be easily replaced by dummy files (bug #1688).
+
  Revision 1.93  2005/07/15 12:44:35  emk
  0.0.52 - 14 July 2005 - emk
 
