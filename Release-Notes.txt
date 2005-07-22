@@ -1,5 +1,14 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Added FREEZE command which can be called from the Quake 2 console to
+    freeze/unfreeze the player in place instantly.  Without arguments,
+    FREEZE toggles the current state, but you can also pass in an explicit
+    ON or OFF argument.  For odd technical reasons, you can't crouch while
+    frozen.  This feature requires a new engine as well as a new
+    gamex86.dll for best results (bug #1817, partial).
+
 0.0.53 - 22 July 2005 - brian, emk
 
   * Fixed the occasionally broken indentation and highlighting of
