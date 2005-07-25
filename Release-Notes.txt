@@ -8,6 +8,11 @@ CVS - emk
     ON or OFF argument.  For odd technical reasons, you can't crouch while
     frozen.  This feature requires a new engine as well as a new
     gamex86.dll for best results (bug #1817, partial).
+  * Added FREEZES and REGION_NAME fields to FUNC_WALL objects in Quake 2.
+    When the player hits a wall with a FREEZES field, the player is
+    immediately frozen as though they had issued a "FREEZE ON" command.
+    When the player hits a wall with a REGION_NAME field, the state-db key
+    /quake2/hit-wall?/wallname is set to #t (bug #1817, partial).    
 
 0.0.53 - 22 July 2005 - brian, emk
 
