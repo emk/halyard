@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		53
+#define VERSION_REV_BIG		54
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.53 (Development)"
+#define VERSION_STRING		"Tamale 0.0.54 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,24 @@
 
 /*
  $Log$
+ Revision 1.95  2005/07/26 17:16:37  emk
+ 0.0.54 - 26 July 2005 - emk
+
+   * Added FREEZE command which can be called from the Quake 2 console to
+     freeze/unfreeze the player in place instantly.  Without arguments,
+     FREEZE toggles the current state, but you can also pass in an explicit
+     ON or OFF argument.  For odd technical reasons, you can't crouch while
+     frozen.  This feature requires a new engine as well as a new
+     gamex86.dll for best results (bug #1817, partial).
+   * Added FREEZES and REGION_NAME fields to FUNC_WALL objects in Quake 2.
+     When the player hits a wall with a FREEZES field, the player is
+     immediately frozen as though they had issued a "FREEZE ON" command.
+     When the player hits a wall with a REGION_NAME field, the state-db key
+     /quake2/hit-wall?/wallname is set to #t (bug #1817, partial).
+   * Added explicit "ON" and "OFF" arguments to the "GOD" and "NOTARGET"
+     commands in Quake 2.  As with the new FREEZE command, the optional
+     arguments will also surpress console output (bug #1769, partial).
+
  Revision 1.94  2005/07/22 14:02:40  emk
  0.0.53 - 22 July 2005 - brian, emk
 

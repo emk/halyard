@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.54 - 26 July 2005 - emk
 
   * Added FREEZE command which can be called from the Quake 2 console to
     freeze/unfreeze the player in place instantly.  Without arguments,
