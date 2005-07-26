@@ -13,6 +13,9 @@ CVS - emk
     immediately frozen as though they had issued a "FREEZE ON" command.
     When the player hits a wall with a REGION_NAME field, the state-db key
     /quake2/hit-wall?/wallname is set to #t (bug #1817, partial).    
+  * Added explicit "ON" and "OFF" arguments to the "GOD" and "NOTARGET"
+    commands in Quake 2.  As with the new FREEZE command, the optional
+    arguments will also surpress console output (bug #1769, partial).
 
 0.0.53 - 22 July 2005 - brian, emk
 
