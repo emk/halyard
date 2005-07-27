@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.55 - 27 July 2005 - emk
 
   * Added NOPUSH flag for FUNC_DOOR objects in Quake.  This flag should
     make doors "polite"--they won't push you, they won't damage you,

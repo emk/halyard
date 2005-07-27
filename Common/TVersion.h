@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		54
+#define VERSION_REV_BIG		55
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.54 (Development)"
+#define VERSION_STRING		"Tamale 0.0.55 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,15 @@
 
 /*
  $Log$
+ Revision 1.96  2005/07/27 19:16:37  emk
+ 0.0.55 - 27 July 2005 - emk
+
+   * Added NOPUSH flag for FUNC_DOOR objects in Quake.  This flag should
+     make doors "polite"--they won't push you, they won't damage you,
+     and they'll snap open instantly if they hit you.  And if the doors
+     snap open, they won't mess up the trigger's toggle state (bug #1769).
+   * We now send MEDIA-FINISHED events for Vorbis audio streams (bug #2052).
+
  Revision 1.95  2005/07/26 17:16:37  emk
  0.0.54 - 26 July 2005 - emk
 
