@@ -32,7 +32,7 @@
 ///
 /// TODO - Make a typedef for Frame counts.
 ///
-class MovieElement : public Widget, public IMediaElement
+class MovieElement : public Widget, public MediaElement
 {
     MovieWindow *mMovieWindow;
 	bool mEndPlaybackWasCalled;

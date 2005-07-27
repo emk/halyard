@@ -32,8 +32,10 @@
 ///
 class InvisibleElement : public Element {
 public:
-	InvisibleElement(Stage *inStage, const wxString &inName)
-        : Element(inStage, inName) {}
+	InvisibleElement(Stage *inStage, const wxString &inName,
+                     FIVEL_NS TCallbackPtr inDispatcher =
+                         FIVEL_NS TCallbackPtr())
+        : Element(inStage, inName, inDispatcher) {}
 
     virtual wxRect GetRect() { return wxRect(0, 0, 0, 0); }
     virtual bool HasVisibleRepresentation() { return false; }

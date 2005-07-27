@@ -33,19 +33,21 @@ class AudioStream;
 /// A widget represents a full-fledged wxWindow object hanging around on
 /// our stage.  It does its own event processing.
 ///
-class AudioStreamElement : public InvisibleElement, public IMediaElement
+class AudioStreamElement : public InvisibleElement, public MediaElement
 {
 	AudioStream *mStream;
     bool mEndPlaybackWasCalled;
 
 public:
 	AudioStreamElement(Stage *inStage, const wxString &inName,
-					   AudioStream *inStream);
+					   AudioStream *inStream,
+                       FIVEL_NS TCallbackPtr inDispatcher);
 	virtual ~AudioStreamElement();
 
 	AudioStream *GetAudioStream() { return mStream; }
 
     virtual bool HasReachedFrame(MovieFrame inFrame);
+    virtual void Idle();
     virtual bool IsLooping();
 	virtual void EndPlayback();
     virtual void Pause();

@@ -211,9 +211,11 @@ DEFINE_5L_PRIMITIVE(ActiveXPropSet) {
 DEFINE_5L_PRIMITIVE(AudioStreamGeiger) {
 	std::string name, path;
     double volume;
-	inArgs >> SymbolName(name) >> path >> volume;
+	TCallbackPtr dispatcher;
+	inArgs >> SymbolName(name) >> dispatcher >> path >> volume;
     R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-                             new GeigerAudioStream(path.c_str(), volume)));
+                             new GeigerAudioStream(path.c_str(), volume),
+							 dispatcher));
 }
 
 DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps) {
@@ -233,9 +235,11 @@ DEFINE_5L_PRIMITIVE(AudioStreamSine) {
 	std::string name;
     double volume;
 	uint32 frequency;
-	inArgs >> name >> volume >> frequency;
+	TCallbackPtr dispatcher;	
+	inArgs >> SymbolName(name) >> dispatcher >> volume >> frequency;
     R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
-                             new SineAudioStream(frequency, volume)));
+                             new SineAudioStream(frequency, volume),
+							 dispatcher));
 }
 
 DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
@@ -243,12 +247,15 @@ DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
     double volume;
 	uint32 buffer_size;
 	bool should_loop;
-	inArgs >> name >> path >> volume >> buffer_size >> should_loop;
+	TCallbackPtr dispatcher;
+	inArgs >> SymbolName(name) >> dispatcher >> path >> volume >> buffer_size
+		   >> should_loop;
     R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
                              new VorbisAudioStream(path.c_str(),
                                                    buffer_size,
                                                    should_loop,
-                                                   volume)));
+                                                   volume),
+							 dispatcher));
 }
 
 DEFINE_5L_PRIMITIVE(Browser) {
@@ -629,7 +636,7 @@ DEFINE_5L_PRIMITIVE(MediaSetVolume) {
 	std::string name, channel_name;
 	double volume;
 	inArgs >> SymbolName(name) >> SymbolName(channel_name) >> volume;
-	FIND_ELEMENT(IMediaElement, stream, name.c_str());
+	FIND_ELEMENT(MediaElement, stream, name.c_str());
 	stream->SetVolume(channel_name, volume);
 }
 
@@ -695,7 +702,7 @@ DEFINE_5L_PRIMITIVE(MoviePause) {
 	
 	inArgs >> SymbolName(name);
 
-	FIND_ELEMENT(IMediaElement, movie, name.c_str());
+	FIND_ELEMENT(MediaElement, movie, name.c_str());
 
 	movie->Pause();
 }
@@ -705,7 +712,7 @@ DEFINE_5L_PRIMITIVE(MovieResume) {
 	
 	inArgs >> SymbolName(name);
 
-	FIND_ELEMENT(IMediaElement, movie, name.c_str());
+	FIND_ELEMENT(MediaElement, movie, name.c_str());
 
 	movie->Resume();
 }

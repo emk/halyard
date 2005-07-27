@@ -254,6 +254,9 @@
 				RelativePath="..\..\src\Log5L.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\MediaElement.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\dlg\MetaDotDlg.cpp">
 			</File>
 			<File

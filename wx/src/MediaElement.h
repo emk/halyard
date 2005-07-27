@@ -29,11 +29,21 @@
 /// An abstract interface for elements which play media streams.  This
 /// is used as a mixin class.
 ///
-class IMediaElement
+class MediaElement
 {
+    bool mHaveSentMediaFinishedEvent;
+
+protected:
+    //////////
+    /// If the media is finished, send a media-finished event to this
+    /// element.  This will need to be called by the element's Idle()
+    /// method.
+    ///
+    virtual void CheckWhetherMediaFinished();
+
 public:
-    IMediaElement() {} 
-	virtual ~IMediaElement() {}
+    MediaElement() : mHaveSentMediaFinishedEvent(false) {}
+	virtual ~MediaElement() {}
 
     //////////
     /// Return true if the movie has reached the specified frame (or the

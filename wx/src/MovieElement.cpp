@@ -64,12 +64,8 @@ bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 		return mMovieWindow->IsDone() || (mMovieWindow->GetFrame() >= inFrame);
 }
 
-void MovieElement::Idle()
-{
-    if (!mHaveSentMediaFinishedEvent && HasReachedFrame(LAST_FRAME)) {
-        mHaveSentMediaFinishedEvent = true;
-        GetEventDispatcher()->DoEventMediaFinished();
-    }
+void MovieElement::Idle() {
+    CheckWhetherMediaFinished();
 }
 
 bool MovieElement::IsLooping()

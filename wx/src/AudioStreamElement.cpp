@@ -31,8 +31,9 @@
 //=========================================================================
 
 AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
-									   AudioStream *inStream)
-    : InvisibleElement(inStage, inName), mStream(inStream),
+									   AudioStream *inStream,
+                                       FIVEL_NS TCallbackPtr inDispatcher)
+    : InvisibleElement(inStage, inName, inDispatcher), mStream(inStream),
       mEndPlaybackWasCalled(false)
 {
     mStream->Start();
@@ -53,6 +54,10 @@ bool AudioStreamElement::HasReachedFrame(MovieFrame inFrame) {
 	else
 		return (mStream->IsDone() ||
                 (mStream->GetTime() * FRAMES_PER_SECOND >= inFrame));
+}
+
+void AudioStreamElement::Idle() {
+    CheckWhetherMediaFinished();
 }
 
 bool AudioStreamElement::IsLooping()

@@ -908,7 +908,7 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 		gDebugLog.Caution("wait: Element %s does not exist", name);
 		return false;
 	}
-	IMediaElementPtr media = IMediaElementPtr(*i, dynamic_cast_tag());
+	MediaElementPtr media = MediaElementPtr(*i, dynamic_cast_tag());
 	if (!media)
 	{
 		gDebugLog.Caution("wait: Element %s is not a media element", name);
@@ -933,7 +933,7 @@ void Stage::EndWait()
 {
 	gDebugLog.Log("wait: Waking up.");
 	ASSERT(mWaitElement.get());
-	mWaitElement = IMediaElementPtr();
+	mWaitElement = MediaElementPtr();
 	mWaitFrame = 0;
     mNeedToWakeUp = true;
 }
@@ -1041,7 +1041,7 @@ void Stage::DestroyElement(ElementPtr inElement)
 		MouseUngrab(mGrabbedElement);
 	if (inElement == mCurrentElement)
 		mCurrentElement = ElementPtr();
-    IMediaElementPtr as_media(inElement, dynamic_cast_tag());
+    MediaElementPtr as_media(inElement, dynamic_cast_tag());
 	if (as_media && as_media == mWaitElement)
 		EndWait();
 
@@ -1081,7 +1081,7 @@ bool Stage::IsMediaPlaying()
 {
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); ++i)
-		if (IMediaElementPtr(*i, dynamic_cast_tag()))
+		if (MediaElementPtr(*i, dynamic_cast_tag()))
 			return true;
 	return false;
 }
@@ -1090,7 +1090,7 @@ void Stage::EndMediaElements()
 {
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); ++i) {
-		IMediaElementPtr elem = IMediaElementPtr(*i, dynamic_cast_tag());
+		MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
 		if (elem && !elem->IsLooping()) {
 			gDebugLog.Log("Manually ending media: %s",
 						  (*i)->GetName().mb_str());

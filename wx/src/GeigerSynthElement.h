@@ -36,7 +36,7 @@ class VorbisAudioStream;
 /// A GeigerSynthElement manages a number of separate audio streams to
 /// acheive a complete Geiger-counter-like effect.
 ///
-class GeigerSynthElement : public InvisibleElement, public IMediaElement,
+class GeigerSynthElement : public InvisibleElement, public MediaElement,
                            public TStateListener
 {
     typedef shared_ptr<VorbisAudioStream> VorbisAudioStreamPtr;
@@ -66,7 +66,7 @@ public:
     virtual void NotifyStateChanged();
 
     /// \todo Clean this up once HasReachedFrame logic is factored
-    /// into IMediaElement.
+    /// into MediaElement.
     virtual bool HasReachedFrame(MovieFrame inFrame) { return true; }
     virtual bool IsLooping() { return true; }
 	virtual void EndPlayback();
