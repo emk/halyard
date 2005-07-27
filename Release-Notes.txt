@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Added NOPUSH flag for FUNC_DOOR objects in Quake.  This flag should
+    make doors "polite"--they won't push you, they won't damage you,
+    and they'll snap open instantly if they hit you.  And if the doors
+    snap open, they won't mess up the trigger's toggle state (bug #1769).
+
 0.0.54 - 26 July 2005 - emk
 
   * Added FREEZE command which can be called from the Quake 2 console to
