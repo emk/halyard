@@ -467,6 +467,7 @@
       [[location :type <string> :label "Location"]]
       (%audio-element%)
     (call-5l-prim 'AudioStreamGeiger (node-full-name self)
+                  (make-node-event-dispatcher self)
                   (build-path (current-directory) "Media" location)
                   (prop self volume)))
 
@@ -499,6 +500,7 @@
       [[frequency :type <integer> :label "Frequency (Hz)"]]
       (%audio-element%)
     (call-5l-prim 'AudioStreamSine (node-full-name self)
+                  (make-node-event-dispatcher self)
                   (prop self volume) frequency))
 
   (define (sine-wave name frequency &key (volume 1.0))
@@ -512,7 +514,8 @@
       (%audio-element%)
     (let [[path (build-path (current-directory) "Media" location)]]
       (check-file path)
-      (call-5l-prim 'AudioStreamVorbis (node-full-name self) path
+      (call-5l-prim 'AudioStreamVorbis (node-full-name self)
+                    (make-node-event-dispatcher self) path
                     (prop self volume) (* 1024 buffer) loop?)))
   
   (define (vorbis-audio name location &key (loop? #f) (volume 1.0))
