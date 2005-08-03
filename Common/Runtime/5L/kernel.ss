@@ -356,7 +356,7 @@
   ;;
   ;;  Callbacks are slightly special, however--see the code for details.
   
-  (provide call-at-safe-time)
+  (provide call-at-safe-time executing-deferred-safe-time-callbacks?)
 
   ;; The most important global state variables.
   (define *%kernel-running-callback?* #f)
@@ -446,6 +446,9 @@
               (cons thunk *%kernel-deferred-thunk-queue*)))
     #f)
     
+  (define (executing-deferred-safe-time-callbacks?)
+    *%kernel-running-deferred-thunks?*)
+  
   (define (%kernel-check-deferred)
     ;; If the interpreter has stopped, cancel any deferred thunks.  (See
     ;; call-at-safe-time.)  This function won't call any deferred thunks
