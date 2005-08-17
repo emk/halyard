@@ -15,12 +15,12 @@
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
            local->card
            delete-element delete-elements
-           clear-screen point-in-poly?
+           clear-screen point-in-shape? point-in-rect? point-in-poly?
            offset-rect offset-shape
            copy-rect rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
-           move-rect-center-to point-in-rect? center-text 
+           move-rect-center-to center-text 
            %activex% activex-prop set-activex-prop!
            %flash-card%
            %browser% %edit-box-element% %movie-element%
@@ -329,10 +329,22 @@
 
   (define (clear-screen c)
     (call-5l-prim 'screen c))
-  
-  (define (point-in-poly? p poly)
-    (call-5l-prim 'PolygonContains poly p))
 
+  (defgeneric (point-in-shape? (p <point>) (shape <shape>)))
+  
+  (defmethod (point-in-shape? (p <point>) (r <rect>))
+    (and (<= (rect-left r) (point-x p))
+         (<  (point-x p)   (rect-right r))
+         (<= (rect-top r)  (point-y p))
+         (<  (point-y p)   (rect-bottom r))))
+
+  (defmethod (point-in-shape? (p <point>) (poly <polygon>))
+    (call-5l-prim 'PolygonContains poly p))
+        
+  ;; XXX - Backwards compatibility glue.
+  (define point-in-rect? point-in-shape?)
+  (define point-in-poly? point-in-shape?)
+        
   (define (offset-rect r p)
     (rect (+ (rect-left r) (point-x p))
           (+ (rect-top r) (point-y p))
@@ -347,12 +359,6 @@
                                        (polygon-vertices s)))]
      [else
       (error (cat "Don't know how to offset " s))]))
-
-  (define (point-in-rect? p r)
-    (and (<= (rect-left r) (point-x p))
-         (<  (point-x p)   (rect-right r))
-         (<= (rect-top r)  (point-y p))
-         (<  (point-y p)   (rect-bottom r))))
 
   (define (center-text stylesheet box msg &key (axis 'both))
     (define bounds (measure-text stylesheet msg :max-width (rect-width box)))
