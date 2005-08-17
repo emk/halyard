@@ -69,6 +69,13 @@ void Overlay::DrawElementBorder(wxDC &inDC) {
     inDC.DrawRectangle(mDrawingArea.GetBounds());
 }
 
+void Overlay::SetInDragLayer(bool inDragLayer) {
+    if (inDragLayer != IsInDragLayer()) {
+        LightweightElement::SetInDragLayer(inDragLayer);
+        mDrawingArea.InvalidateCompositing();
+    }
+}
+
 void Overlay::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
     mDrawingArea.CompositeInto(inDC, inClipRect);
 }

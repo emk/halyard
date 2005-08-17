@@ -45,6 +45,7 @@ public:
     virtual void MoveTo(const wxPoint &inPoint);
 	virtual void DrawElementBorder(wxDC &inDC);
 	virtual DrawingArea *GetDrawingArea() { return &mDrawingArea; }
+    virtual void SetInDragLayer(bool inDragLayer);
 	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect);
 };
 

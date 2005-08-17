@@ -99,6 +99,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(ElementExists);
 	REGISTER_5L_PRIMITIVE(ElementIsShown);
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
+	REGISTER_5L_PRIMITIVE(ElementSetInDragLayer);
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
     REGISTER_5L_PRIMITIVE(Heartbeat);
@@ -464,6 +465,14 @@ DEFINE_5L_PRIMITIVE(ElementSetShown) {
 	FIND_ELEMENT(Element, element, name.c_str());
 	element->Show(show);
 	// TODO - Override MovieElement::Show for unshowable movies.
+}
+
+DEFINE_5L_PRIMITIVE(ElementSetInDragLayer) {
+	std::string name;
+	bool in_drag_layer;
+	inArgs >> SymbolName(name) >> in_drag_layer;
+	FIND_ELEMENT(LightweightElement, element, name.c_str());
+	element->SetInDragLayer(in_drag_layer);
 }
 
 DEFINE_5L_PRIMITIVE(EnableExpensiveEvents) {

@@ -42,6 +42,7 @@ class LightweightElement : public Element {
     wxCursor mCursor;
     bool mIsShown;
     bool mWantsCursor;
+    bool mIsInDragLayer;
 	
 public:
 	LightweightElement(Stage *inStage, const wxString &inName,
@@ -56,6 +57,9 @@ public:
 
 	virtual wxCursor GetCursor() { return mCursor; }
 	virtual void SetCursor(wxCursor &inCursor) { mCursor = inCursor; }
+
+    virtual bool IsInDragLayer() const;
+    virtual void SetInDragLayer(bool inDragLayer);
 };
 
 #endif // LightweightElement_H

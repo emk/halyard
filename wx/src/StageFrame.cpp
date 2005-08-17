@@ -636,9 +636,16 @@ void StageFrame::OpenDocument(const wxString &inDirPath) {
 
 void StageFrame::ObjectChanged()
 {
-	SetTitle(wxString(GetObject()->GetString("name").c_str()) +
-			 " - " + wxGetApp().GetAppName() + " - [" +
-			 wxString(mDocument->GetSavePath().c_str()) + "]");
+    if (TInterpreterManager::IsInRuntimeMode()) {
+        // If we're in runtime mode, only show the name of the script.
+        SetTitle(GetObject()->GetString("name").c_str());
+    } else {
+        // If we're in edit mode, show the name of the application and
+        // the path of the document, too.
+        SetTitle(wxString(GetObject()->GetString("name").c_str()) +
+                 " - " + wxGetApp().GetAppName() + " - [" +
+                 wxString(mDocument->GetSavePath().c_str()) + "]");
+    }
 }
 
 void StageFrame::ObjectDeleted()

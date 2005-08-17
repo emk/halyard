@@ -148,6 +148,13 @@ public:
 	///
 	virtual DrawingArea *GetDrawingArea() { return NULL; }
 
+    //////////
+    /// Certain elements can be temporarily raised into the "drag layer",
+    /// which is above other LightweightElements (e.g., zones and
+    /// overlays) but below Widgets (e.g., QuickTime movies).
+    ///
+    virtual bool IsInDragLayer() const { return false; }
+
 	//////////
 	/// Composite our data into the specified DC.
 	///

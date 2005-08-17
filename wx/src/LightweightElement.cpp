@@ -29,7 +29,7 @@ LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
 									   FIVEL_NS TCallbackPtr inDispatch,
 									   wxCursor &inCursor)
     : Element(inStage, inName, inDispatch), mCursor(inCursor), mIsShown(true),
-      mWantsCursor(false)
+      mWantsCursor(false), mIsInDragLayer(false)
 {
 }
 
@@ -39,4 +39,12 @@ void LightweightElement::Show(bool inShow) {
         mIsShown = inShow;
         GetStage()->NotifyElementsChanged();
     }
+}
+
+bool LightweightElement::IsInDragLayer() const {
+    return mIsInDragLayer;
+}
+
+void LightweightElement::SetInDragLayer(bool inDragLayer) {
+    mIsInDragLayer = inDragLayer;
 }

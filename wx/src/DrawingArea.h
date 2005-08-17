@@ -77,6 +77,11 @@ public:
     void MoveTo(const wxPoint &inPoint);
 
     //////////
+    /// Add this drawing area's bounding box to the dirty list.
+    ///
+    void InvalidateCompositing() { InvalidateDrawingArea(false); }
+
+    //////////
     /// Clear the drawing area to the default color.
     ///
     void Clear();

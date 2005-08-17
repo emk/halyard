@@ -1,5 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Don't show "Tamale" in application name when in Runtime mode
+    (bug #1728, partial).
+  * Added POINT-IN-SHAPE? (bug #2086).
+  * Added support for floating zones in a separate layer when dragging
+    them (bug #2085).
+
 0.0.55 - 27 July 2005 - emk
 
   * Added NOPUSH flag for FUNC_DOOR objects in Quake.  This flag should

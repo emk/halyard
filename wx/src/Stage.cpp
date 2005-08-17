@@ -146,9 +146,18 @@ wxBitmap &Stage::GetCompositingPixmap() {
 		wxLogTrace(TRACE_STAGE_DRAWING, "Begin compositing.");
 		for (; dirty_i != mRectsToComposite.end(); ++dirty_i) {
 			GetBackgroundDrawingArea()->CompositeInto(dc, *dirty_i);
-			ElementCollection::iterator elem_i = mElements.begin();
-			for (; elem_i != mElements.end(); ++elem_i)
-				(*elem_i)->CompositeInto(dc, *dirty_i);
+
+            // Composite elements in two passes: regular elements first,
+            // and then elements in the drag layer.
+			ElementCollection::iterator elem_begin = mElements.begin();
+            ElementCollection::iterator elem_end = mElements.end();
+            ElementCollection::iterator elem_i;
+			for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
+                if (!(*elem_i)->IsInDragLayer())
+                    (*elem_i)->CompositeInto(dc, *dirty_i);
+			for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
+                if ((*elem_i)->IsInDragLayer())
+                    (*elem_i)->CompositeInto(dc, *dirty_i);
 		}
 		wxLogTrace(TRACE_STAGE_DRAWING, "End compositing.");
 		mRectsToComposite.clear();
