@@ -150,6 +150,7 @@
        [wants-cursor? :default 'auto :label "Wants cursor?"]
        [clickable-where-transparent? :type <boolean> :default #f
                                      :label "Clickable where transparent?"]
+       [dragging? :type <boolean> :default #f :label "In drag layer?"]
        [%nocreate? :type <boolean> :default #f
                    :label "Set to true if subclass creates in engine"]]
       (%element%)
@@ -167,11 +168,19 @@
                     (case value
                       [[#f auto] #f]
                       [[#t] #t])))
+
+    ;; Let the engine know whether we're currently dragging this object.
+    (define (set-in-drag-layer?! value)
+      ;; TODO - Remove have-5l-prim? check once engine is updated.
+      (when (have-5l-prim? 'ElementSetInDragLayer)
+        (call-5l-prim 'ElementSetInDragLayer (node-full-name self) value)))
+
     (on setup-finished ()
       (call-next-handler)
       ;; We need to postpone this until the underlying engine object
       ;; is created.
-      (set-wants-cursor! wants-cursor?))
+      (set-wants-cursor! wants-cursor?)
+      (set-in-drag-layer?! dragging?))
     
     (on prop-change (name value prev veto)
       (case name
@@ -183,6 +192,8 @@
            (call-next-handler))]
         [[wants-cursor?]
          (set-wants-cursor! value)]
+        [[dragging?]
+         (set-in-drag-layer?! value)]
         [else (call-next-handler)]))
     
     ;; The way we want zones to work is that AT represents the origin of a
