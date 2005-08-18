@@ -312,6 +312,13 @@ public:
 	wxSize GetStageSize() const { return mStageSize; }
 
     //////////
+    /// Load a special-purpose graphic associated with our currently running
+    /// Tamale script. Such graphics currently include script icons and
+    /// the splash screens.
+    ///
+    wxBitmap GetScriptGraphic(const std::string &inName);
+
+    //////////
     /// If we can, show a splash screen for the loading program.  This is
     /// called shortly before showing the stage, and well before loading
     /// the actual script.

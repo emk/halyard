@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		55
+#define VERSION_REV_BIG		56
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.55 (Development)"
+#define VERSION_STRING		"Tamale 0.0.56 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,15 @@
 
 /*
  $Log$
+ Revision 1.97  2005/08/18 16:50:21  emk
+ 0.0.56 - 18 Aug 2005 - emk
+
+   * Don't show "Tamale" in application name when in runtime mode (bug #1728).
+   * Display script icons when in runtime mode (bug #1728).
+   * Added POINT-IN-SHAPE? (bug #2086).
+   * Added support for floating zones in a separate layer when dragging
+     them (bug #2085).
+
  Revision 1.96  2005/07/27 19:16:37  emk
  0.0.55 - 27 July 2005 - emk
 

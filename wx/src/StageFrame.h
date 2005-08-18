@@ -186,6 +186,13 @@ class StageFrame : public SashFrame, public model::View
     ///
     void UpdateVideoMode(bool inIsFullScreen, bool inIsIconized);
 
+    //////////
+    /// Try to load an icon with the specified name into our bundle. If
+    /// we succeed, set ioHaveIcon to true.
+    ///
+    void LoadIcon(const std::string &inName, wxIconBundle &ioIcons,
+                  bool &ioHaveIcon);
+
 public:
     //////////
     /// Create and display a new stage frame.

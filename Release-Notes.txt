@@ -1,9 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.56 - 18 Aug 2005 - emk
 
-  * Don't show "Tamale" in application name when in Runtime mode
-    (bug #1728, partial).
+  * Don't show "Tamale" in application name when in runtime mode (bug #1728).
+  * Display script icons when in runtime mode (bug #1728).
   * Added POINT-IN-SHAPE? (bug #2086).
   * Added support for floating zones in a separate layer when dragging
     them (bug #2085).

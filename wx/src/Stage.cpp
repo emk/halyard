@@ -173,19 +173,23 @@ DrawingArea *Stage::GetCurrentDrawingArea() {
 	return mDrawingContextStack->GetCurrentDrawingArea();
 }
 
+wxBitmap Stage::GetScriptGraphic(const std::string &inName) {
+    FileSystem::Path path =
+        FileSystem::GetBaseDirectory().AddComponent(inName);
+    if (!path.DoesExist() || !path.IsRegularFile())
+        return wxBitmap();
+    std::string native_path = path.ToNativePathString();
+    return GetImageCache()->GetBitmap(native_path.c_str());
+}
+
 void Stage::MaybeShowSplashScreen() {
     // TODO - We assume the bitmap is 800x450 pixels, and we lay out
     // this screen using hard-coded co-ordinates.
 
     // If we have a screenshot.png file, draw it onto the stage.
-    FileSystem::Path path =
-        FileSystem::GetBaseDirectory().AddComponent("splash.png");
-    if (path.DoesExist() && path.IsRegularFile()) {
-        std::string native_path = path.ToNativePathString();
-        wxBitmap bitmap = GetImageCache()->GetBitmap(native_path.c_str());
-
+    wxBitmap bitmap = GetScriptGraphic("splash.png");
+    if (bitmap.Ok())
         mBackgroundDrawingArea->DrawBitmap(bitmap, 0, 60);
-    }
 
     // Get our copyright strings.
     TamaleProgram *prog = mFrame->GetDocument()->GetTamaleProgram();

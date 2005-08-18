@@ -634,11 +634,34 @@ void StageFrame::OpenDocument(const wxString &inDirPath) {
     mStage->Show();
 }
 
+void StageFrame::LoadIcon(const std::string &inName, wxIconBundle &ioIcons,
+                          bool &ioHaveIcon)
+{
+    wxBitmap bitmap = mStage->GetScriptGraphic(inName);
+    if (bitmap.Ok()) {
+        wxIcon icon;
+        icon.CopyFromBitmap(bitmap);
+        ioIcons.AddIcon(icon);
+        ioHaveIcon = true;
+    }
+}
+
 void StageFrame::ObjectChanged()
 {
+    // Load our icons, if we have any.
+    wxIconBundle icons;
+    bool have_icon = false;
+    LoadIcon("icon32.png", icons, have_icon);
+    LoadIcon("icon16.png", icons, have_icon);
+    if (have_icon)
+        SetIcons(icons);
+
+    // Update our application name.
     if (TInterpreterManager::IsInRuntimeMode()) {
-        // If we're in runtime mode, only show the name of the script.
-        SetTitle(GetObject()->GetString("name").c_str());
+        // If we're in runtime mode, only show the name of the script in
+        // the task bar, and change our application name appropriately.
+        wxGetApp().SetAppName(GetObject()->GetString("name").c_str());
+        SetTitle(wxGetApp().GetAppName());
     } else {
         // If we're in edit mode, show the name of the application and
         // the path of the document, too.
@@ -650,7 +673,12 @@ void StageFrame::ObjectChanged()
 
 void StageFrame::ObjectDeleted()
 {
-	SetTitle(wxGetApp().GetAppName());
+    // Only reset our name and icon if we're not in runtime mode--there's
+    // no point revealing our real application name or icon to the user.
+    if (!TInterpreterManager::IsInRuntimeMode()) {
+        SetTitle(wxGetApp().GetAppName());
+        SetIcon(wxICON(ic_5L));
+    }
 }
 
 #ifdef FIVEL_PLATFORM_WIN32
