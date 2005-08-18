@@ -171,9 +171,7 @@
 
     ;; Let the engine know whether we're currently dragging this object.
     (define (set-in-drag-layer?! value)
-      ;; TODO - Remove have-5l-prim? check once engine is updated.
-      (when (have-5l-prim? 'ElementSetInDragLayer)
-        (call-5l-prim 'ElementSetInDragLayer (node-full-name self) value)))
+      (call-5l-prim 'ElementSetInDragLayer (node-full-name self) value))
 
     (on setup-finished ()
       (call-next-handler)
