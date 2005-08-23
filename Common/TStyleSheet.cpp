@@ -132,9 +132,9 @@ static void LogEncodingErrors (const std::wstring &inBadStr, size_t inBadPos,
 
 Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 {
-	// Convert 7-bit to 8-bit code.
-	// See the notes about TEncoding; it desperately needs refactoring.
-	TEncoding<wchar_t> encoding("UTF-16", &LogEncodingErrors);
+	// Convert 7-bit to 16-bit code.
+	// See the notes about TEncoding; it needs refactoring.
+	TEncoding encoding(&LogEncodingErrors);
 	std::wstring expanded =
 		ConstructString<wchar_t,std::string::const_iterator>(inText.begin(),
 															 inText.end());

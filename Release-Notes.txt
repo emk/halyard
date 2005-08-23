@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Added support for many new named entities, including &alpha;, &beta;,
+    and &gamma; (for discussing radiation).
+  * Added support for numeric entities (e.g., &#8225; for double-dagger).
+  * Removed lots of legacy code for non-Unicode encodings.
+
 0.0.56 - 18 Aug 2005 - emk
 
   * Don't show "Tamale" in application name when in runtime mode (bug #1728).
