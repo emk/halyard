@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		56
+#define VERSION_REV_BIG		57
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.56 (Development)"
+#define VERSION_STRING		"Tamale 0.0.57 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,14 @@
 
 /*
  $Log$
+ Revision 1.98  2005/08/23 17:37:15  emk
+ 0.0.57 - 23 Aug 2005 - emk
+
+   * Added support for many new named entities, including &alpha;, &beta;,
+     and &gamma; (for discussing radiation).
+   * Added support for numeric entities (e.g., &#8225; for double-dagger).
+   * Removed lots of legacy code for non-Unicode encodings.
+
  Revision 1.97  2005/08/18 16:50:21  emk
  0.0.56 - 18 Aug 2005 - emk
 
