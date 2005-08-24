@@ -100,6 +100,7 @@ static EntityMapping UnicodeEntityMapping[] = {
     {L"beta",   WCHAR(0x03B2)}, // Lowercase greek beta.
     {L"gamma",  WCHAR(0x03B3)}, // Lowercase greek gamma.
 	{L"delta",  WCHAR(0x03B4)}, // Lowercase greek delta.
+    {L"lambda", WCHAR(0x03BB)}, // Lowercase greek lambda.
     {L"pi",     WCHAR(0x03C0)}, // Lowercase greek pi.
     {L"infin",  WCHAR(0x221E)}, // Infinity.
     {L"ne",     WCHAR(0x2260)}, // Not equal sign.

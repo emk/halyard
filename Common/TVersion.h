@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		57
+#define VERSION_REV_BIG		58
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.57 (Development)"
+#define VERSION_STRING		"Tamale 0.0.58 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,13 @@
 
 /*
  $Log$
+ Revision 1.99  2005/08/24 16:50:34  emk
+ 0.0.58 - 24 Aug 2005 - emk
+
+   * Fixed crashes when overlays were partially obscured by the edge
+     of the viewport in Quake 2 (bug #2099).
+   * Added HTML entity &lambda; (just for fun).
+
  Revision 1.98  2005/08/23 17:37:15  emk
  0.0.57 - 23 Aug 2005 - emk
 

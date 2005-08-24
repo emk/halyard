@@ -1,5 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.0.58 - 24 Aug 2005 - emk
+
+  * Fixed crashes when overlays were partially obscured by the edge
+    of the viewport in Quake 2 (bug #2099).
+  * Added HTML entity &lambda; (just for fun).
+
 0.0.57 - 23 Aug 2005 - emk
 
   * Added support for many new named entities, including &alpha;, &beta;,
