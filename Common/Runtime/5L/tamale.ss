@@ -641,6 +641,8 @@
      [arg2 (+ (* arg1 30) arg2)]
      [else arg1]))
   
+  ;; XXX - Reimplement this function or get rid of it; the current
+  ;; implementation is *horrible*.
   (define (nap tenths)
     (call-5l-prim 'nap tenths))
 
@@ -660,6 +662,8 @@
           (- (rect-right r) pixels)
           (- (rect-bottom r) pixels)))
   
+  ;; XXX - The implementation of this function is exceedingly ugly,
+  ;; and I'm not even sure it works.
   (define (timeout seconds card)
     (call-5l-prim 'timeout seconds (card-name card)))
 
