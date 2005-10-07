@@ -138,6 +138,7 @@ CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
 
 TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     : mPort(inPort), mState(MOVIE_UNINITIALIZED),
+      mCanGetMovieProperties(false),
 	  mMovie(NULL), mMovieController(NULL),
       mVolume(1.0f), mShouldStartWhenReady(false),
       mTimeoutStarted(false), mTimeoutDisabled(false),
@@ -150,10 +151,21 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 	bool have_refnum = false;
 	short refnum;
 
+    // Record the time we started loading data.  We'll use this in various
+    // calculations which need to estimate the load speed.
+    mMovieOpenTime = ::time(NULL);
+    //gDebugLog.Log("Starting %s at %d.", inMoviePath.c_str(), mMovieOpenTime);
+
 	// We pass these flags to all the various NewMovieFrom... functions.
 	// newMovieAsyncOK tells QuickTime to immediately return an
 	// empty movie, and to load our data in the background.
-	short load_flags = newMovieActive | newMovieAsyncOK;
+    //
+    // XXX - newMovieAsyncOK is necessary for asynchronous background
+    // loading of movies.  Unfortunately, it makes certain audio and
+    // video clips take vastly longer to reach kMovieLoadStatePlayable
+    // for no obvious reason.  For now, I'm disabling it, and breaking
+    // preloading.
+	short load_flags = newMovieActive /*| newMovieAsyncOK*/;
 	
     try
     {
@@ -237,7 +249,14 @@ void TQTMovie::Idle() throw ()
 		if (mMovieController)
 			CHECK_MAC_ERROR(::MCIdle(mMovieController));
 		else
-			::MoviesTask(mMovie, 0);
+            // Give MoviesTask up to 1000 milliseconds to process movies
+            // (normally, we'd pass in 0, which means to give every movie
+            // exactly one timeslice).  This code is from the
+            // network-streaming-robustified version of TQTMovie, and we
+            // don't know how it affects animation responsiveness and other
+            // script-based tasks.  But if I recall correctly, this did
+            // improve streaming performance in QT 6 for some clips.
+			::MoviesTask(mMovie, 1000);
 
 		// See if we need to finish an asynchronous load.
 		if (mState == MOVIE_INCOMPLETE)
@@ -256,10 +275,18 @@ void TQTMovie::ProcessAsyncLoad()
 {
 	ASSERT(mState == MOVIE_INCOMPLETE);
 
+    // XXX - Give QuickTime plenty of idles to get this movie off the
+    // ground.  This seems to be necessary if we want to avoid inexplicable
+    // startup delays on some movies.  (This is merged from the
+    // stream-robustified version of TQTMovie.  I haven't checked to see
+    // whether it is still needed.)
+    for (int i = 0; i < 100; i++)
+        ::MoviesTask(mMovie, 0);
+
 	// Inside Macintosh says this function is expensive, and that
 	// we shouldn't call it more than every 1/4 second or so.  For
 	// now, we'll call it constantly, and see if that causes problems.
-	long load_state = ::GetMovieLoadState(mMovie);
+	long load_state = GetMovieLoadState();
 
 	// Check for loading errors.  We don't really know if GetMoviesError
 	// returns the correct error value, so we'll just take a guess.
@@ -267,10 +294,7 @@ void TQTMovie::ProcessAsyncLoad()
 		throw TMacError(__FILE__, __LINE__, ::GetMoviesError());
 	
 	// We don't advance to the next stage until the movie is playable.
-	// Note there are other states beyond kMovieLoadStatePlayable
-	// (kMovieLoadStatePlaythroughOK, kMovieLoadStateComplete), and those
-	// are also good for our purposes.
-	if (load_state >= kMovieLoadStatePlaythroughOK)
+    if (SafeToStart(load_state))
 		AsyncLoadComplete();
 }
 
@@ -382,6 +406,36 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
 }
 
+long TQTMovie::GetMovieLoadState() {
+	// Inside Macintosh says this function is expensive, and that
+	// we shouldn't call it more than every 1/4 second or so.  For
+	// now, we'll call it constantly, and see if that causes problems.
+	long load_state = ::GetMovieLoadState(mMovie);
+    if (load_state >= kMovieLoadStatePlayable)
+        mCanGetMovieProperties = true;
+    return load_state;
+}
+
+bool TQTMovie::SafeToStart(long inLoadState) {
+    // Currently known values for inLoadState, in order:
+    //
+    //   kMovieLoadStateError         - the movie is broken
+    //   kMovieLoadStateLoading       - the movie can't be started
+    //   kMovieLoadStatePlayable      - the movie could be started
+    //   kMovieLoadStatePlaythroughOK - the movie is expected to play
+    //                                  through to the end without stalling
+    //   kMovieLoadStateComplete      - the entire movie is loaded
+    //
+    // Apple Computer, Inc., reserves the right to insert more load states
+    // in between the existing ones, so always use '>=' or '<=' to test.
+    if (inLoadState >= kMovieLoadStatePlaythroughOK) {
+        // QuickTime thinks the movie will play through to the end.
+        return true;
+    }
+
+    return false;
+}
+
 
 //=========================================================================
 // Regular TQTMovie Methods
@@ -411,11 +465,8 @@ bool TQTMovie::IsDone() throw ()
 		// want to have to catch it.
 		//CHECK_MAC_ERROR(::GetMoviesError());
 
-		// Get the movie's duration.
-		// Unknown/indefinite duration is supposedly represented as
-		// a duration of 0x7FFFFFF (yes, there really are *six* Fs in that
-		// number).  This can occur for (1) partially loaded movies and
-		// (2) live streaming broadcasts without a duration.
+		// Get the movie's duration.  Unknown/indefinite duration is
+		// represented as INDEFINITE_DURATION, a very large number.
 		TimeValue duration = ::GetMovieDuration(mMovie);
 		// XXX - I don't seriously expect this error to occur, and I don't
 		// want to have to catch it.
@@ -453,7 +504,7 @@ void TQTMovie::Unpause()
 
 TimeValue TQTMovie::GetMovieTime()
 {
-	ASSERT(mState == MOVIE_STARTED);
+	ASSERT(CanGetMovieProperties());
 	TimeValue current_time = ::GetMovieTime(mMovie, NULL);
 	CHECK_MAC_ERROR(::GetMoviesError());
 	return current_time;
@@ -482,7 +533,7 @@ void TQTMovie::SetMovieVolume(float inVolume)
 
 TimeScale TQTMovie::GetTimeScale()
 {
-	ASSERT(mState == MOVIE_STARTED);
+	ASSERT(CanGetMovieProperties());
 	TimeScale scale = ::GetMovieTimeScale(mMovie);
 	CHECK_MAC_ERROR(::GetMoviesError());
 	return scale;
@@ -490,10 +541,18 @@ TimeScale TQTMovie::GetTimeScale()
 
 TimeValue TQTMovie::GetDuration()
 {
-	ASSERT(mState == MOVIE_STARTED);
+	ASSERT(CanGetMovieProperties());
 	TimeValue duration = ::GetMovieDuration(mMovie);
 	CHECK_MAC_ERROR(::GetMoviesError());
 	return duration;	
+}
+
+TimeValue TQTMovie::GetMaxLoadedTimeInMovie()
+{
+	ASSERT(CanGetMovieProperties());
+    TimeValue max_loaded;
+    CHECK_MAC_ERROR(::GetMaxLoadedTimeInMovie(mMovie, &max_loaded));
+    return max_loaded;
 }
 
 void TQTMovie::ThrowIfBroken()
