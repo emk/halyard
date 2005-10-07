@@ -47,7 +47,10 @@ Widget::~Widget()
 {
     // XXX - Is this actually safe to do?  We might be called when we are
     // removed from the stage, or when the stage is destroyed.
-    mWindow->Destroy();
+	//
+	// We only destroy the window if it's been created.
+	if (mWindow)
+		mWindow->Destroy();
 }
 
 void Widget::InitializeWidgetWindow(wxWindow *inWindow)
