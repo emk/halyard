@@ -37,13 +37,15 @@ CGrafPtr TQTMovie::sDummyGWorld = NULL;
 // TMacError Methods
 //=========================================================================
 
-TMacError::TMacError(const char *inFile, int inLine, OSErr inErrorCode)
+TMacError::TMacError(const char *inFile, int inLine,
+                     ComponentResult inErrorCode)
     : std::runtime_error("MacOS error"),
       mFile(inFile), mLine(inLine), mErrorCode(inErrorCode)
 {
 }
 
-void TMacError::Check(const char *inFile, int inLine, OSErr inErrorCode)
+void TMacError::Check(const char *inFile, int inLine,
+                      ComponentResult inErrorCode)
 {
     if (inErrorCode != noErr)
 		throw TMacError(inFile, inLine, inErrorCode);
@@ -129,6 +131,12 @@ CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
 	return reinterpret_cast<CGrafPtr>(::GetNativeWindowPort(inWindow));
 }
 
+bool TQTMovie::IsRemoteMoviePath(const std::string &inMoviePath) {
+    return (inMoviePath.find("http:") == 0 ||
+            inMoviePath.find("rtsp:") == 0 ||
+            inMoviePath.find("ftp:") == 0);
+}
+
 
 //=========================================================================
 // TQTMovie Asynchronous Startup Methods
@@ -171,9 +179,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     {
 		// Determine whether we're processing a URL or a local file
 		// name, and load the movie accordingly.
-		if (inMoviePath.find("http:") == 0 ||
-			inMoviePath.find("rtsp:") == 0 ||
-			inMoviePath.find("ftp:") == 0)
+		if (IsRemoteMoviePath(inMoviePath))
 		{
 			// Copy inMoviePath into a handle.
 			url_handle = ::NewHandle(inMoviePath.length() + 1);
@@ -218,7 +224,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 
 		// NEXT: Our Idle method will call ProcessAsyncLoad repeatedly.
 	}
-    catch (...)
+	catch (std::exception &)
     {
 		// We failed, so clean up everything.
 		UpdateMovieState(MOVIE_BROKEN);
@@ -562,12 +568,16 @@ void TQTMovie::ThrowIfBroken()
 		throw TMacError(__FILE__, __LINE__, noErr);
 }
 
-int TQTMovie::GetTimeoutEllapsed() {
+unsigned int TQTMovie::GetTimeoutEllapsed() {
     // Under certain circumstances, we always return a timeout of 0.
     if (!mTimeoutStarted) {
         return 0; // The timeout hasn't been started yet.
     } else if (mTimeoutDisabled) {
         return 0; // We've disabled the timeout.  A total kludge.
+    } else if (mOptions & (kEnableMovieController|kEnableInteraction)) {
+        return 0; // This movie is potentially under user control.
+    } else if (IsDone()) {
+        return 0; // The movie has finished playing.
     } else if (IsBroken()) {
         return 0; // The movie is broken, so no timeout.
     }

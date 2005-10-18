@@ -495,6 +495,9 @@ void Stage::IdleElements() {
 
 void Stage::OnIdle(wxIdleEvent &inEvent)
 {
+	if (mIsBeingDestroyed)
+		return;
+
     // Check our displayed cursor, because the return value of
     // ShouldShowCursor() might have changed.
     UpdateDisplayedCursor();
@@ -532,6 +535,11 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 
 void Stage::OnMouseMove(wxMouseEvent &inEvent)
 {
+	// This function occasionally gets called when destroying
+	// broken QuickTime movies.
+	if (mIsBeingDestroyed)
+		return;
+
 	// Do any mouse-moved processing for our Elements.
 	UpdateCurrentElementAndCursor();
     if (mIsDisplayingXy)
@@ -580,6 +588,9 @@ void Stage::OnEraseBackground(wxEraseEvent &inEvent)
 
 void Stage::OnPaint(wxPaintEvent &inEvent)
 {
+	if (mIsBeingDestroyed)
+		return;
+
 	wxLogTrace(TRACE_STAGE_DRAWING, "Painting stage.");
 
     // Set up our drawing context, and paint the screen.

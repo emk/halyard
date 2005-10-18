@@ -89,6 +89,21 @@ public:
     virtual bool WantsCursor() const;
 
     //////////
+    /// Returns true if the movie is being streamed over a network.
+    ///
+    virtual bool IsRemoteMovie() { return false; }
+
+    //////////
+    /// Returns true if the movie had an error of some sort.
+    ///
+    virtual bool IsBroken() { return false; }
+
+    //////////
+    /// Returns true if the movie has timed out.
+    ///
+    virtual bool HasTimedOut() { return false; }
+
+    //////////
     /// Returns true if the movie is looping.
     ///
     virtual bool IsLooping() { return false; }
@@ -115,6 +130,13 @@ public:
     /// Set the movie's volume.
     ///
 	virtual void SetVolume(const std::string &inChannel, double inVolume);
+
+    //////////
+    /// Set the number of seconds which can pass without inactivity
+    /// without causing a timeout.  This generally affects only networked
+    /// movies.
+    ///
+	virtual void SetTimeout(unsigned int timeout) {}
 };
 
 // Define MovieWindowNative to map to an appropriate movie window class.

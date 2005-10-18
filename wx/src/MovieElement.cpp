@@ -24,6 +24,8 @@
 #include "MovieElement.h"
 #include "MovieWindow.h"
 
+USING_NAMESPACE_FIVEL
+
 MovieElement::MovieElement(Stage *inStage, const wxString &inName,
                            FIVEL_NS TCallbackPtr inDispatcher,
 						   const wxRect &inBounds,
@@ -32,13 +34,22 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
 						   MovieWindowStyle inMovieWindowStyle,
                            float inVolume)
     : Widget(inStage, inName, inDispatcher), mMovieWindow(NULL),
-	  mEndPlaybackWasCalled(false), mHaveSentMediaFinishedEvent(false)
+	  mEndPlaybackWasCalled(false), mHaveSentMediaErrorEvent(false),
+      mHaveSentMediaTimeoutEvent(false)
 {
     mMovieWindow = new MovieWindowNative(inStage, -1, inBounds.GetPosition(),
 										 inBounds.GetSize(), inWindowStyle,
 										 inMovieWindowStyle);
     mMovieWindow->SetVolume("all", inVolume);
-	mMovieWindow->SetMovie(inLocation);
+	try {
+        mMovieWindow->SetMovie(inLocation);
+    } catch (std::exception &e) {
+        // Log this exception.  We'll report it in our Idle() method,
+        // because many movie errors occur after playback has started, so
+        // it's more consistent to handle this one that way.
+        gLog.Log("Movie error: %s for %s", e.what(),
+                 inLocation.mb_str());
+    }
 	InitializeWidgetWindow(mMovieWindow);
 }
 
@@ -66,6 +77,25 @@ bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 
 void MovieElement::Idle() {
     CheckWhetherMediaFinished();
+
+    // Handle any errors.
+    if (mMovieWindow->IsBroken()) {
+        if (!mHaveSentMediaErrorEvent) {
+            mHaveSentMediaErrorEvent = true;
+            if (mMovieWindow->IsRemoteMovie())
+                GetEventDispatcher()->DoEventMediaNetworkError();
+            else
+                GetEventDispatcher()->DoEventMediaLocalError();
+        }
+    }
+
+    // See if our movie has timed out.
+    if (mMovieWindow->HasTimedOut()) {
+        if (!mHaveSentMediaTimeoutEvent) {
+            mHaveSentMediaTimeoutEvent = true;
+            GetEventDispatcher()->DoEventMediaNetworkTimeout();
+        }
+    }
 }
 
 bool MovieElement::IsLooping()
@@ -92,4 +122,8 @@ void MovieElement::Resume()
 void MovieElement::SetVolume(const std::string &inChannel, double inVolume)
 {
     mMovieWindow->SetVolume(inChannel, inVolume);
+}
+
+void MovieElement::SetTimeout(unsigned int timeout) {
+    mMovieWindow->SetTimeout(timeout);
 }

@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		58
+#define VERSION_REV_BIG		59
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.58 (Development)"
+#define VERSION_STRING		"Tamale 0.0.59 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,18 @@
 
 /*
  $Log$
+ Revision 1.100  2005/10/18 11:36:46  emk
+ 0.0.59 - 18 Oct 2005 - emk
+
+   * Merged more-robust QuickTime networking support from the 3.4 branch.
+   * Fixed rare crashing bug in Widget (bug #2230, #1714).
+   * Fixed crashes in EXIT-SCRIPT.
+   * Hooked up basic error-handling for QuickTime network problems (bug #1714).
+   * Added %MOVIE-ELEMENT% handlers for USER-EXIT-REQUEST,
+     MEDIA-NETWORK-TIMEOUT, MEDIA-NETWORK-ERROR, MEDIA-LOCAL-ERROR,
+     SET-TIMEOUT! and END-PLAYBACK.
+   * Added NATIVE-DIALOG function.
+
  Revision 1.99  2005/08/24 16:50:34  emk
  0.0.58 - 24 Aug 2005 - emk
 

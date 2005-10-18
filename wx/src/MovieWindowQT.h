@@ -33,6 +33,14 @@ class MovieWindowQT : public MovieWindow
 {
     WXHWND mHWND;
     TQTMovie *mMovie;
+    bool mCouldNotConstructMovie;
+    bool mIsRemote;
+    unsigned int mTimeout;
+
+    enum {
+        // By default, allow playback to stall for 40 seconds.
+        DEFAULT_TIMEOUT = 40
+    };
 
 	//////////
 	/// Delete any movie attached to this object.
@@ -71,6 +79,21 @@ public:
     virtual MovieFrame GetFrame();
 
     //////////
+    /// Returns true if the movie is being streamed over a network.
+    ///
+    virtual bool IsRemoteMovie();
+
+    //////////
+    /// Returns true if the movie had an error of some sort.
+    ///
+    virtual bool IsBroken();
+
+    //////////
+    /// Returns true if the movie has timed out.
+    ///
+    virtual bool HasTimedOut();
+
+    //////////
     /// Returns true if the movie is looping.
     ///
     virtual bool IsLooping();
@@ -97,6 +120,15 @@ public:
     /// Set the movie's volume.
     ///
 	virtual void SetVolume(const std::string &inChannel, double inVolume);
+
+    //////////
+    /// Set the number of seconds which can pass without inactivity
+    /// without causing a timeout.  This generally affects only networked
+    /// movies.  (There's a fair bit of intelligence in how timeouts
+    /// are calculated. Typically, any playback activity resets the timeout,
+    /// and playing with the movie controller turns it off for good.)
+    ///
+    virtual void SetTimeout(unsigned int timeout);
 
 	void OnEraseBackground(wxEraseEvent &inEvent);
 

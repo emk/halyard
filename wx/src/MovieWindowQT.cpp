@@ -46,7 +46,8 @@ MovieWindowQT::MovieWindowQT(wxWindow *inParent, wxWindowID inID,
 							 const wxString &inName)
     : MovieWindow(inParent, inID, inPos, inSize, inWindowStyle,
 				  inMovieWindowStyle, inName),
-      mMovie(NULL)
+      mMovie(NULL), mCouldNotConstructMovie(false), mIsRemote(false),
+      mTimeout(DEFAULT_TIMEOUT)
 {
     // Prepare this window for use with QuickTime.
     // TODO - PORTING - This code is Windows-specific.
@@ -70,16 +71,27 @@ void MovieWindowQT::CleanUpMovie()
 		delete mMovie;
 		mMovie = NULL;
     }
+
+    // Reset status flags when movie is cleaned up.
+    mCouldNotConstructMovie = false;
+    mIsRemote = false;
 }
 
 void MovieWindowQT::SetMovie(const wxString &inName)
 {
     ASSERT(inName != "");
 
-    // Detach any old movie, and attach the new one.
+    // Detach any old movie, determine if the new one will be remote, and
+    // try to attach it.  The TQTMovie constructor may throw an exception.
     CleanUpMovie();
-    mMovie = new TQTMovie(TQTMovie::GetPortFromHWND((HWND) mHWND),
-						  (const char *) inName);
+    mIsRemote = TQTMovie::IsRemoteMoviePath((const char *) inName);
+    try {
+        mMovie = new TQTMovie(TQTMovie::GetPortFromHWND((HWND) mHWND),
+                              (const char *) inName);
+    } catch (std::exception &) {
+        mCouldNotConstructMovie = true;
+        throw;
+    }
 
 	// Figure out what playback options we want.
 	MovieWindowStyle style = GetMovieWindowStyle();
@@ -93,8 +105,9 @@ void MovieWindowQT::SetMovie(const wxString &inName)
 	if (style & MOVIE_INTERACTION)
 		opt |= TQTMovie::kEnableInteraction;
 
-    // Set the movie to play as soon as it can.
-    // TODO - We'll change this to better integrate with pre-rolling.
+    // Tell the movie to play whenever it feels ready.  (Once upon a time,
+    // this comment suggested, "We'll change this to better integrate with
+    // pre-rolling," but I'm not sure how relevant that notion is today.)
     Point p;
     p.h = p.v = 0;
     mMovie->StartWhenReady(opt, p);
@@ -115,6 +128,19 @@ MovieFrame MovieWindowQT::GetFrame()
 	}
 }
 
+bool MovieWindowQT::IsRemoteMovie() {
+    return mIsRemote;
+}
+
+bool MovieWindowQT::IsBroken() {
+    return mCouldNotConstructMovie || (mMovie && mMovie->IsBroken());
+}
+
+bool MovieWindowQT::HasTimedOut() {
+    // Check the timeout.
+    return (mMovie && mTimeout && mMovie->GetTimeoutEllapsed() > mTimeout);
+}
+
 bool MovieWindowQT::IsLooping()
 {
     return mMovie && mMovie->IsLooping();
@@ -130,13 +156,13 @@ bool MovieWindowQT::IsDone()
 
 void MovieWindowQT::Pause()
 {
-	if (mMovie->IsStarted())
+	if (mMovie && mMovie->IsStarted())
 		mMovie->Pause();
 }
 
 void MovieWindowQT::Resume()
 {
-	if (mMovie->IsStarted())
+	if (mMovie && mMovie->IsStarted())
 		mMovie->Unpause();
 }
 
@@ -146,6 +172,10 @@ void MovieWindowQT::SetVolume(const std::string &inChannel, double inVolume) {
         volume = 0.0;
     if (mMovie)
         mMovie->SetMovieVolume(volume);
+}
+
+void MovieWindowQT::SetTimeout(unsigned int timeout) {
+    mTimeout = timeout;
 }
 
 void MovieWindowQT::OnEraseBackground(wxEraseEvent &inEvent)
@@ -171,7 +201,7 @@ void MovieWindowQT::OnPaint(wxPaintEvent &inEvent)
 
 void MovieWindowQT::OnIdle(wxIdleEvent &inEvent)
 {
-	if (mMovie)
+	if (mMovie) 
 		mMovie->Idle();
 }
 

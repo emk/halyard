@@ -121,7 +121,10 @@
     (error msg))
   
   (define (exit-script)
-    (call-5l-prim 'schemeexit))
+    ;; Call the appropriate exit primitive.
+    (if (have-5l-prim? 'tamaleexit)
+        (call-5l-prim 'tamaleexit)
+        (call-5l-prim 'schemeexit)))
   
   (define (check-whether-jump-allowed)
     (when *running-on-exit-handler-for-node*

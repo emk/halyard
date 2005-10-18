@@ -56,18 +56,20 @@ class TMacError : public std::runtime_error
 {
 	std::string mFile;
 	int mLine;
-	OSErr mErrorCode;
+	ComponentResult mErrorCode;
 
 public:
 	//////////
-	/// Create a Macintosh exception from an OSErr.
+	/// Create a Macintosh exception from a ComponentResult, which is
+    /// apparently the slightly larger version of the OSErr type.
 	///
-	TMacError(const char *inFile, int inLine, OSErr inErrorCode);
+	TMacError(const char *inFile, int inLine, ComponentResult inErrorCode);
 	
 	//////////
 	/// If inErrCode does not equal noErr, raise an error.
 	///
-	static void Check(const char *inFile, int inLine, OSErr inErrorCode);
+	static void Check(const char *inFile, int inLine,
+                      ComponentResult inErrorCode);
 };
 
 //////////
@@ -123,6 +125,11 @@ public:
 	static void RegisterWindowForMovies(HWND inWindow);
 	static void UnregisterWindowForMovies(HWND inWindow);
 	static CGrafPtr GetPortFromHWND(HWND inWindow);
+
+    //////////
+    /// Does the specified path belong to a remote, streaming movie?
+    ///
+    static bool IsRemoteMoviePath(const std::string &inMoviePath);
 
 	typedef unsigned long PlaybackOptions;
 	enum /* PlaybackOptions */ {
@@ -349,7 +356,7 @@ public:
     /// How much time has ellapsed towards a timeout?  (We don't actually
     /// worry about how long the timeout is; that's our caller's job.)
     ///
-    int GetTimeoutEllapsed();
+    unsigned int GetTimeoutEllapsed();
 
 	//////////
 	/// Fill out a Win32 MSG object based on the parameters to this

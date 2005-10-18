@@ -41,6 +41,7 @@ class EventDispatcher : boost::noncopyable, public FIVEL_NS TReloadNotified
     void CheckForVeto(bool &outWasVetoed);
 
     bool IsEventStale(const wxEvent &event);
+	bool DoSimpleEvent(const char *inType);
 	bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition,
                             bool inIsStale = false);
 
@@ -144,6 +145,21 @@ public:
     /// Dispatch a MediaFinished event.
     ///
     bool DoEventMediaFinished();
+
+    //////////
+    /// Dispatch a MediaLocalError event.
+    ///
+    bool DoEventMediaLocalError();
+
+    //////////
+    /// Dispatch a MediaNeworkError event.
+    ///
+    bool DoEventMediaNetworkError();
+
+    //////////
+    /// Dispatch a MediaNeworkTimeout event.
+    ///
+    bool DoEventMediaNetworkTimeout();
     
 private:
     static wxLongLong PlatformGetEventTimestamp(const wxEvent &event);

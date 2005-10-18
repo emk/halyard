@@ -137,6 +137,16 @@ bool EventDispatcher::DoEventLeftDown(wxMouseEvent &inEvent,
 	return EventCleanup();
 }
 
+bool EventDispatcher::DoSimpleEvent(const char *inType) {
+    if (!EventSetup())
+		return false;
+
+	TValueList args;
+    args.push_back(TSymbol(inType));
+    mDispatcher->Run(args);
+	return EventCleanup();
+}
+
 bool EventDispatcher::DoSimpleMouseEvent(const char *inType,
 										 wxPoint inPosition,
                                          bool inIsStale)
@@ -280,15 +290,20 @@ bool EventDispatcher::DoEventProgressChanged(bool inIsActive,
 	return EventCleanup();
 }
 
-bool EventDispatcher::DoEventMediaFinished()
-{
-    if (!EventSetup())
-		return false;
+bool EventDispatcher::DoEventMediaFinished() {
+    return DoSimpleEvent("media-finished");
+}
 
-	TValueList args;
-    args.push_back(TSymbol("media-finished"));
-    mDispatcher->Run(args);
-	return EventCleanup();
+bool EventDispatcher::DoEventMediaLocalError() {
+    return DoSimpleEvent("media-local-error");
+}
+
+bool EventDispatcher::DoEventMediaNetworkError() {
+    return DoSimpleEvent("media-network-error");
+}
+
+bool EventDispatcher::DoEventMediaNetworkTimeout() {
+    return DoSimpleEvent("media-network-timeout");
 }
 
 

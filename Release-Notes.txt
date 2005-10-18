@@ -1,8 +1,15 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+0.0.59 - 18 Oct 2005 - emk
 
   * Merged more-robust QuickTime networking support from the 3.4 branch.
+  * Fixed rare crashing bug in Widget (bug #2230, #1714).
+  * Fixed crashes in EXIT-SCRIPT.
+  * Hooked up basic error-handling for QuickTime network problems (bug #1714).
+  * Added %MOVIE-ELEMENT% handlers for USER-EXIT-REQUEST,
+    MEDIA-NETWORK-TIMEOUT, MEDIA-NETWORK-ERROR, MEDIA-LOCAL-ERROR,
+    SET-TIMEOUT! and END-PLAYBACK.
+  * Added NATIVE-DIALOG function.
 
 0.0.58 - 24 Aug 2005 - emk
 

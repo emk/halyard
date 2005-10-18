@@ -36,7 +36,8 @@ class MovieElement : public Widget, public MediaElement
 {
     MovieWindow *mMovieWindow;
 	bool mEndPlaybackWasCalled;
-    bool mHaveSentMediaFinishedEvent;
+    bool mHaveSentMediaErrorEvent;
+    bool mHaveSentMediaTimeoutEvent;
 
 public:
     MovieElement(Stage *inStage, const wxString &inName,
@@ -52,13 +53,14 @@ public:
 
     virtual void Idle();
 
-	// Note: these methods may not be happy if the underlying movie code 
-	// does not like to be paused.
+	// Note: Some of these methods may not be happy if the underlying movie
+	// code does not like to be paused.
     virtual bool IsLooping();
 	virtual void EndPlayback();
 	virtual void Pause();
 	virtual void Resume();
 	virtual void SetVolume(const std::string &inChannel, double inVolume);
+	virtual void SetTimeout(unsigned int timeout);
 };
 
 #endif // MovieElement_H

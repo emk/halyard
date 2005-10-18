@@ -118,7 +118,7 @@
            <browser-navigate-event> browser-navigate-event?
            <progress-changed-event> event-progress-done? event-progress-value
            make-node-event-dispatcher ; semi-private
-           <media-finished-event>
+           <media-event> <media-finished-event>
            )
 
   (define-syntax (expand-on stx)
@@ -256,7 +256,8 @@
     ;; value is 0.0 to 1.0, inclusive.
     (value :accessor event-progress-value))
 
-  (defclass <media-finished-event> (<event>))
+  (defclass <media-event> (<event>))
+  (defclass <media-finished-event> (<media-event>))
 
   (define (veto-event! event)
     (set! (event-vetoed? event) #t))
@@ -301,6 +302,9 @@
                       :value (cadr args))]
                    [[media-finished]
                     (make <media-finished-event>)]
+                   [[media-local-error media-network-error
+                                       media-network-timeout]
+                    (make <media-event>)]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
       (define (no-handler)

@@ -30,7 +30,7 @@
            media-is-installed? media-cd-is-available? search-for-media-cd
            set-media-base-url! movie 
            movie-pause movie-resume set-media-volume!
-           wait tc 
+           wait tc native-dialog
            nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade opacity save-graphics restore-graphics
            copy-string-to-clipboard
@@ -483,7 +483,7 @@
       (%audio-element%)
     (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                   (make-node-event-dispatcher self)
-                  (build-path (current-directory) "Media" location)
+                  (build-path (current-directory) "LocalMedia" location)
                   (prop self volume)))
 
   (define (geiger-audio name location &key (volume 1.0))
@@ -497,12 +497,12 @@
       [state-path chirp loops]
       (%audio-element%)
     (apply call-5l-prim 'GeigerSynth (node-full-name self) state-path
-           (build-path (current-directory) "Media" chirp)
+           (build-path (current-directory) "LocalMedia" chirp)
            (prop self volume)
            (* 512 1024)
            (map (fn (item)
                   (if (string? item)
-                      (build-path (current-directory) "Media" item)
+                      (build-path (current-directory) "LocalMedia" item)
                       item))
                 loops)))
 
@@ -527,7 +527,7 @@
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (%audio-element%)
-    (let [[path (build-path (current-directory) "Media" location)]]
+    (let [[path (build-path (current-directory) "LocalMedia" location)]]
       (check-file path)
       (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                     (make-node-event-dispatcher self) path
@@ -566,7 +566,8 @@
 
   (define (media-path location)
     ;; Create some of the paths we'll check.
-    (define hd-path (make-path "Media" location))
+    (define hd-path-1 (make-path "LocalMedia" location))
+    (define hd-path-2 (make-path "Media" location))
     (define cd-path
       (if (media-cd-is-available?)
           (make-path-from-abstract *cd-media-directory* location)
@@ -577,8 +578,10 @@
      [(url? location)
       location]
      ;; Otherwise, first check our media directory for the file.
-     [(file-exists? hd-path)
-      hd-path]
+     [(file-exists? hd-path-1)
+      hd-path-1]
+     [(file-exists? hd-path-2)
+      hd-path-2]
      ;; Then check the CD, if we have one.
      [(and cd-path (file-exists? cd-path))
       cd-path]
@@ -598,6 +601,50 @@
        [loop?        :type <boolean> :label "Loop movie"        :default #f]
        [interaction? :type <boolean> :label "Allow interaction" :default #f]]
       (%widget% :shown? (or (not audio-only?) controller?))
+    (define (err title msg)
+      (define result
+        (native-dialog title msg
+                       "&Skip Movie" "E&xit Program"))
+      (if (= result 1)
+          (send self end-playback)
+          (send self user-exit-request)))      
+    (define (network-problem type)
+      (err (cat "Network Movie " type)
+           (cat type " loading movie.  You may want to order "
+                "a CD version\nof this program; see the "
+                "README.")))
+
+    ;;; Called when the user asks to exit the script because of movie
+    ;;; errors.  If you want fancier behavior, you'll need to override this
+    ;;; handler.
+    (on user-exit-request ()
+      (exit-script))
+
+    ;;; Called when a network timeout occurs for a streaming movie.  Override
+    ;;; if you want different behavior.
+    (on media-network-timeout (event)
+      (network-problem "Timeout"))
+    ;;; Called when a network error occurs for a streaming movie.  Override
+    ;;; if you want different behavior.
+    (on media-network-error (event)
+      (network-problem "Error"))
+    ;;; Called when a local error occurs for a movie.  Override if you want
+    ;;; different behavior.
+    (on media-local-error (event)
+      (error (cat "Error playing movie (" location ")")))
+
+    ;;; Set the timeout for this movie, in seconds.  A timeout of 0
+    ;;; turns off timeout handling.  (Timeouts are actually pretty
+    ;;; sophisticated internally; this is the nominal length of time
+    ;;; the user will be asked to wait without *something* happening.
+    ;;; The controller bar turns off timeouts.)
+    (on set-timeout! (seconds)
+      (call-5l-prim 'MovieSetTimeout (node-full-name self) seconds))
+    ;;; End playback of this movie. From the perspective of the WAIT
+    ;;; function, this movie will skip immediately to the end of playback.
+    (on end-playback ()
+      (call-5l-prim 'movieendplayback (node-full-name self)))
+
     (let [[path (media-path location)]]
       (check-file path)
       (call-5l-prim 'movie (node-full-name self)
@@ -641,6 +688,13 @@
      [arg2 (+ (* arg1 30) arg2)]
      [else arg1]))
   
+  ;;; Displays a native OS dialog, and returns the number of the button
+  ;;; clicked. DO NOT USE FOR OK/CANCEL DIALOGS: The cancel button won't
+  ;;; get the proper keybindings. Button 1 is the default button.
+  (define (native-dialog title text
+                         &opt [button1 ""] [button2 ""] [button3 ""])
+    (call-5l-prim 'dialog title text button1 button2 button3))
+
   ;; XXX - Reimplement this function or get rid of it; the current
   ;; implementation is *horrible*.
   (define (nap tenths)

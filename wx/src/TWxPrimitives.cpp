@@ -33,6 +33,7 @@
 #include "AppConfig.h"
 #include "TStyleSheet.h"
 #include "FiveLApp.h"
+#include "StageFrame.h"
 #include "Stage.h"
 #include "DrawingArea.h"
 #include "Zone.h"
@@ -55,6 +56,7 @@
 #include "BrowserElementIE.h"
 #include "ActiveXElement.h"
 #include "TStateDB.h"
+#include "dlg/MultiButtonDlg.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -92,6 +94,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(DcRect);
     REGISTER_5L_PRIMITIVE(DebugReportAddFile);
     REGISTER_5L_PRIMITIVE(DeleteElements);
+    REGISTER_5L_PRIMITIVE(Dialog);
 	REGISTER_5L_PRIMITIVE(DrawBoxFill);
 	REGISTER_5L_PRIMITIVE(DrawBoxOutline);
 	REGISTER_5L_PRIMITIVE(DrawLine);
@@ -115,8 +118,10 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(MousePosition);
 	REGISTER_5L_PRIMITIVE(MouseUngrab);
 	REGISTER_5L_PRIMITIVE(Movie);
+	REGISTER_5L_PRIMITIVE(MovieEndPlayback);
 	REGISTER_5L_PRIMITIVE(MoviePause);
 	REGISTER_5L_PRIMITIVE(MovieResume);
+	REGISTER_5L_PRIMITIVE(MovieSetTimeout);
     REGISTER_5L_PRIMITIVE(MoveElementTo);
 	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
@@ -133,6 +138,7 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(Screen);
     REGISTER_5L_PRIMITIVE(SetImageCacheSize);
     REGISTER_5L_PRIMITIVE(SetZoneCursor);
+    REGISTER_5L_PRIMITIVE(TamaleExit);
 	REGISTER_5L_PRIMITIVE(TextAA);
 	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Wait);
@@ -392,6 +398,19 @@ DEFINE_5L_PRIMITIVE(DeleteElements) {
 								  name.c_str());
 		}
 	}
+}
+
+DEFINE_5L_PRIMITIVE(Dialog) {
+    std::string title, message, button1, button2, button3;
+    inArgs >> title >> message >> button1;
+    if (inArgs.HasMoreArguments())
+        inArgs >> button2;
+    if (inArgs.HasMoreArguments())
+        inArgs >> button3;
+    MultiButtonDlg dlg(wxGetApp().GetStage(),
+                       title.c_str(), message.c_str(), button1.c_str(),
+                       button2.c_str(), button3.c_str());
+    ::SetPrimitiveResult(dlg.ShowModal());
 }
 
 DEFINE_5L_PRIMITIVE(DrawBoxFill) {
@@ -704,26 +723,35 @@ DEFINE_5L_PRIMITIVE(Movie) {
                        TToWxRect(bounds), path.c_str(), 0, style, volume));
 }
 
+DEFINE_5L_PRIMITIVE(MovieEndPlayback) {
+	std::string name;
+	inArgs >> SymbolName(name);
+	FIND_ELEMENT(MediaElement, movie, name.c_str());
+    movie->EndPlayback();
+}
+
 // Note: these primitives may not be happy if the underlying movie code 
 // does not like to be paused.
 DEFINE_5L_PRIMITIVE(MoviePause) {
 	std::string name;
-	
 	inArgs >> SymbolName(name);
-
 	FIND_ELEMENT(MediaElement, movie, name.c_str());
-
 	movie->Pause();
 }
 
 DEFINE_5L_PRIMITIVE(MovieResume) {
 	std::string name;
-	
 	inArgs >> SymbolName(name);
-
 	FIND_ELEMENT(MediaElement, movie, name.c_str());
-
 	movie->Resume();
+}
+
+DEFINE_5L_PRIMITIVE(MovieSetTimeout) {
+    std::string name;
+    uint32 timeout;
+	inArgs >> SymbolName(name) >> timeout;
+	FIND_ELEMENT(MovieElement, movie, name.c_str());
+    movie->SetTimeout(timeout);
 }
 
 DEFINE_5L_PRIMITIVE(MoveElementTo) {
@@ -833,6 +861,11 @@ DEFINE_5L_PRIMITIVE(SetZoneCursor) {
 	FIND_ELEMENT(LightweightElement, elem, name.c_str());
 	CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
 	elem->SetCursor(manager->FindCursor(cursor));
+}
+
+DEFINE_5L_PRIMITIVE(TamaleExit) {
+    // Force shutdown.
+    wxGetApp().GetStageFrame()->Close(TRUE);
 }
 
 DEFINE_5L_PRIMITIVE(TextAA) {

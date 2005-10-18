@@ -269,6 +269,9 @@
 				RelativePath="..\..\src\MovieWindowQT.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\dlg\MultiButtonDlg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\Overlay.cpp">
 			</File>
 			<File
@@ -532,6 +535,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\MovieWindowQT.h">
+			</File>
+			<File
+				RelativePath="..\..\src\dlg\MultiButtonDlg.h">
 			</File>
 			<File
 				RelativePath="..\..\src\Overlay.h">
