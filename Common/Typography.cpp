@@ -1643,7 +1643,8 @@ Face FamilyDatabase::GetFace(const std::string &inFamilyName,
 void FamilyDatabase::ReadFromFontDirectory()
 {
 	// If a cache file exists, attempt to read from it.
-	FileSystem::Path cachePath = FileSystem::GetFontFilePath("cache.dat");
+	FileSystem::Path cachePath =
+		FileSystem::GetScriptDataDirectory().AddComponent("fntcache.dat");
 	if (cachePath.DoesExist() && cachePath.IsRegularFile())
 	{
 		std::ifstream cache(cachePath.ToNativePathString().c_str());

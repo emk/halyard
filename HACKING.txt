@@ -127,6 +127,7 @@ What Lives Where
   libs/freetype2/     - 3rd-party font engine
   libs/plt/           - MzScheme interpreter, etc.
   libs/wxWidgets/     - Portable GUI library
+  libs/...            - Lots of other stuff
 
   Common/             - Shared, portable code
   Common/Runtime/5L/  - Scheme language runtime support
@@ -137,20 +138,13 @@ What Lives Where
 
   Win32/              - Win32 engine
   Win32/Bin/          - Win32 binaries
-  Win32/VC/           - Win32 Visual C++ projects and workspaces
-  Win32/DibLib/       - Microsoft code for manipulating bitmaps
-  Win32/FiveL/        - Win32 5L source
-  Win32/CryptTool/    - A tool for encrypting scripts
 
   Mac/                - Mac OS 9 and Carbon engine
   Mac/Bin/            - Mac binaries
-  Mac/Source/         - Mac 5L core engine
-  Mac/Player/         - Mac 5L graphics layer 
-  Mac/Resources/      - MacOS and PowerPlant resources
-  Mac/Utility/        - Third-party utility routines
 
   wx/                 - Preliminary (portable?) front-end based on wxWidgets
   wx/MSVC             - MSVC project files
+  wx/gui              - DialogBlocks source files for dialogs
   wx/src              - Source code to new front end
 
 Important Classes & Modules
@@ -158,9 +152,6 @@ Important Classes & Modules
 
   * TCommon.h, TPlatform.h
     - Lots of defines and portability stuff.
-
-  * TString, TBTree, TBNode, TArray
-    - Basic data structures.  Try to use the STL in new code instead.
 
   * TPoint, TRect
     - Fairly featureful points and rectangles.
@@ -177,9 +168,6 @@ Important Classes & Modules
     - Use exceptions for error-handling in new code.
     - Not all old code is exception-safe, so be careful.
   
-  * ImlUnit
-    - A very simple testing library inspired by the various XP tools.
-
   * TLogger
     - The logging and error-reporting subsystem.
     - Use this if you need to abort the program, or show errors to the user.
@@ -192,54 +180,26 @@ Important Classes & Modules
     - Manages interpreters and implements script reloading.
     - Subclass this to add a new language.
 
-  * TPrimitives, TCommonPrimitives, TMacPrimitives, TWinPrimitives, etc.
+  * TPrimitives, TCommonPrimitives, TWxPrimitives, etc.
     - Implementations of the actual 5L commands.
-
-  * TIndex, TParser, TStream, C?Card, C?Macro,
-  * T5LPrimitives, T{Win,Mac}5LInterpreter
-    - The nasty old 5L interpreter.
-
-  * {C,L}Resource and subclasses
-    - A simple memory-management architecture for loading and purging
-      various resources, including graphics, cursors and OS fonts.
 
   * TStartup
     - Initializes the Common library.
 
-  * CryptStream
-    - Encrypted I/O.
-    - Lots of assertion failures & problem code.
-    - This may be deprecated in the foreseeable future.
+  * FiveLApp
+    - wxWidgets application class
 
-  * Audio, Video, LQuickTime
-    - Windows audio/video playback system.
+  * StageFrame
+    - Our main GUI frame
 
-  * Graphics
-    - Old windows drawing routines.
+  * Stage
+    - The actual spot we display content
 
-  * Header, LFont, CHeader, CText
-    - Older, non-portable font routines.
+  * Element
+    - Superclass of independent objects which appear on stage
 
-  * {C,L}Files, LFileBundle
-    - 5L file I/O code.
-    - LFileBundle has assertion failures and other problems.
-
-  * {C,L}TouchZone
-    - Buttons and touchzones.  Pretty ugly.
-
-  * CConfig, CModule, Config
-    - Managing multiple scripts, media sets.
-    - Finding audio/video resources.
-
-  * CPlayerView (Mac), LView (Win)
-    - The actual 5L "drawing area", as it appears on screen.
-
-  * CMac5LApp (Mac), FiveL.cpp (Win)
-    - The 5L startup code.
-
-  We are slowly merging the Macintosh and Windows code into a portable
-  engine.  This process began in early 2002, and has produced more than
-  20,000 lines of merged code as of this summer.
+  We have merged the old Macintosh and Windows code into a portable
+  engine based on wxWidgets.  This process began in early 2002.
 
 Coding Conventions
 ------------------

@@ -124,7 +124,8 @@ void TLogger::Init(const FileSystem::Path &inLogFile,
 void TLogger::Init(const char *Name, bool OpenFile /* = true */,
 				   bool Append /* = false */)
 {	
-	Init(FileSystem::GetBaseDirectory().AddComponent(Name), OpenFile, Append);
+	Init(FileSystem::GetAppDataDirectory().AddComponent(Name),
+         OpenFile, Append);
 }
 
 void TLogger::Log(int32 Mask, const char *Format, ...)

@@ -182,6 +182,28 @@ namespace FileSystem {
 	///
 	Path GetBaseDirectory();
 
+    //////////
+    /// Set the directory to use for log files and other application
+    /// data.
+    ///
+    void SetAppDataDirectory(const std::string &inDirectory);
+
+    //////////
+    /// Set the directory to use for log files and other application
+    /// data.
+    ///
+    Path GetAppDataDirectory();
+
+    //////////
+    /// Set the name of the script we're currently running.
+    ///
+    void SetScriptName(const std::string &inName);
+
+    //////////
+    /// Get the directory which we should use to store per-script data.
+    ///
+    Path GetScriptDataDirectory();
+
 	//////////
 	/// Get the directory 5L uses to store fonts.  (Eventually there
 	/// will be more of these functions, and we might combine them

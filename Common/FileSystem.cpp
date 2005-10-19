@@ -548,6 +548,8 @@ Path Path::NativePath(const std::string &inPath)
 
 // THREAD - Global variable.
 static Path gCurrentBaseDirectory = Path();
+static Path gAppDataDirectory = Path();
+static std::string gScriptName = "";
 
 Path FileSystem::SetBaseDirectory(const Path &inDirectory)
 {
@@ -567,6 +569,26 @@ Path FileSystem::SetBaseDirectory(const std::string &inDirectory)
 Path FileSystem::GetBaseDirectory()
 {
 	return gCurrentBaseDirectory;	
+}
+
+void FileSystem::SetAppDataDirectory(const std::string &inDirectory) {
+    Path data = Path::NativePath(inDirectory);
+	CHECK(data.IsDirectory(),
+		  ("\'" + inDirectory + "\' is not a valid directory").c_str());
+	gAppDataDirectory = data;
+}
+
+Path FileSystem::GetAppDataDirectory() {
+    return gAppDataDirectory;
+}
+
+void FileSystem::SetScriptName(const std::string &inName) {
+    gScriptName = inName;
+}
+
+Path FileSystem::GetScriptDataDirectory() {
+    ASSERT(gScriptName != "");
+    return FileSystem::GetAppDataDirectory().AddComponent(gScriptName);
 }
 
 

@@ -25,6 +25,8 @@
 #include <wx/fs_inet.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/evtloop.h>
+#include <wx/sysopt.h>
+#include <wx/stdpaths.h>
 
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
@@ -195,6 +197,24 @@ bool FiveLApp::OnInit() {
     // Name our application.
     SetAppName("Tamale");
     
+    // Turn off default use of wxCLIP_CHILDREN.  While wxCLIP_CHILDREN
+    // is a very nice feature, we currently rely on Stage repaints
+    // overwriting MovieWindowQT objects to make them "transparent"
+    // until the movie starts playing.  Yes, this is hackish behavior,
+    // but right now, we're tuned for it.
+    wxSystemOptions::SetOption("msw.window.no-clip-children", 1);
+
+    // Figure out where we can store log files and such.
+    wxString dir(wxStandardPaths::Get().GetUserDataDir());
+    if (!::wxDirExists(dir) && !::wxMkdir(dir)) {
+        // We need to use this error dialog routine because we haven't
+        // initialized our logging subsystem yet, and we can't call
+        // gLog.FatalError(...).
+        ErrorDialog("Cannot Create Directory", "Unable to create " + dir);
+        return false;
+    }
+    FileSystem::SetAppDataDirectory(dir.mb_str());
+
     // Get the 5L runtime going.
     ::InitializeCommonCode(new FancyCrashReporter());
     mLogsAreInitialized = true;

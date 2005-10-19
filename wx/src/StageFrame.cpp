@@ -656,23 +656,38 @@ void StageFrame::ObjectChanged()
     if (have_icon)
         SetIcons(icons);
 
+    // Get the name of the script we're running.
+    std::string script_name = GetObject()->GetString("name").c_str();
+
+    // Tell our FileSystem module the script name, and make sure that
+    // we actually have a script data directory.
+    // TODO - Creating the directory should be handled by FileSystem,
+    // but it doesn't know how, and can't see wxMkdir.
+    FileSystem::SetScriptName(script_name);
+    wxString script_data_dir =
+        FileSystem::GetScriptDataDirectory().ToNativePathString().c_str();
+    if (!::wxDirExists(script_data_dir) && !::wxMkdir(script_data_dir))
+        gLog.FatalError(("Can't create " + script_data_dir).mb_str());
+
     // Update our application name.
     if (TInterpreterManager::IsInRuntimeMode()) {
         // If we're in runtime mode, only show the name of the script in
         // the task bar, and change our application name appropriately.
-        wxGetApp().SetAppName(GetObject()->GetString("name").c_str());
+        wxGetApp().SetAppName(script_name.c_str());
         SetTitle(wxGetApp().GetAppName());
     } else {
         // If we're in edit mode, show the name of the application and
         // the path of the document, too.
-        SetTitle(wxString(GetObject()->GetString("name").c_str()) +
-                 " - " + wxGetApp().GetAppName() + " - [" +
+        SetTitle(wxString(script_name.c_str()) +
+			     " - " + wxGetApp().GetAppName() + " - [" +
                  wxString(mDocument->GetSavePath().c_str()) + "]");
     }
 }
 
 void StageFrame::ObjectDeleted()
 {
+    FileSystem::SetScriptName("");
+
     // Only reset our name and icon if we're not in runtime mode--there's
     // no point revealing our real application name or icon to the user.
     if (!TInterpreterManager::IsInRuntimeMode()) {

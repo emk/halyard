@@ -1,5 +1,16 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Turned off wxCLIP_CHILDREN to allow our QuickTime playback code
+    to work the way it did before wxWidgets 2.6.0 (bug #2014).
+  * Log files are now stored in
+    C:\Documents and Settings\<User>\Application Data\Tamale (bug #1847).
+  * User data files are stored in subdirectories of the log directory
+    (bug #1847).
+  * Fonts/cache.dat is now Application Data\Tamale\<Script>\fntcache.dat
+    (bug #1847).
+
 0.0.59 - 18 Oct 2005 - emk
 
   * Merged more-robust QuickTime networking support from the 3.4 branch.
