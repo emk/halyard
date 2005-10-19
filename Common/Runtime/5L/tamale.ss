@@ -34,7 +34,8 @@
            nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade opacity save-graphics restore-graphics
            copy-string-to-clipboard
-           ensure-dir-exists screenshot element-exists? 
+           script-user-data-directory ensure-dir-exists
+           screenshot element-exists? 
            delete-element-if-exists
            %basic-button%
            quicktime-component-version
@@ -754,12 +755,19 @@
      ((> n -1) (format "00~a" n))
      (else "000")))
 
+  ;;; Returns a path to the directory which should be used to store any
+  ;;; script data files.
+  (define (script-user-data-directory)
+    (call-5l-prim 'DataPath))
+
+  ;; XXX - This is not a well-designed function; it can only create
+  ;; directories in a folder that's typically write-only (d'oh).
   (define (ensure-dir-exists name)
     (define dir (build-path (current-directory) name))
     (when (not (directory-exists? dir))
       (make-directory dir))
-    dir)
-  
+    dir)  
+
   (define (screenshot)
     (define dir (ensure-dir-exists "Screenshots"))
     (call-5l-prim 
@@ -849,7 +857,10 @@
   ;;; to capitalize the first word, or your description will look funny
   ;;; in the list of descriptions.
   (define (register-debug-report-file! file description)
-    (let [[path (make-path-from-abstract (current-directory) file)]]
+    ;; TODO - This is an ugly hack to support absolute path names.
+    (let [[path (if (absolute-path? file)
+                    file
+                    (make-path-from-abstract (current-directory) file))]]
       (call-5l-prim 'DebugReportAddFile path description)))
 
   

@@ -27,12 +27,10 @@
            )
 
   (define *tables* (make-hash-table 'equal))
-  (define $datafile-base-path "Data")
   
   ;; given a user-id, returns the full file path of the corresponding data file
   (define (datafile-path id)
-    (ensure-dir-exists $datafile-base-path)
-    (build-path $datafile-base-path (cat id ".dat")))
+    (build-path (script-user-data-directory) (cat id ".dat")))
   
   ;; Determine if a "user-id.dat" file exists for a given user-id.
   (define (user-has-saved-data? user-id)
