@@ -342,6 +342,18 @@ Checking in Your Changes to 5L
 
   9) Check in 5Ltest, too, if you've made any changes.
 
+  Here's a typical checkin command:
+
+  $ cvs update Common/Runtime/
+  $ cvs commit Release-Notes.txt Common/ wx/ Win32/Bin/Tamale{,_d}.{exe,pdb}
+  $ rm -r Common/Runtime/{mzlib,xml,syntax,net}
+  $ cvs tag Tamale_0_0_60
+  $ cvs update Common/Runtime/
+
+  The weird song-and-dance with the Common/Runtime directory is to work
+  around a set of four symlinks *between* different parts of the repository
+  which break the CVS tag command.  This is gross and should be fixed.
+
 Updating the Version Number
 ---------------------------
 

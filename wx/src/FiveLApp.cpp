@@ -81,7 +81,7 @@ void FiveLApp::Heartbeat() {
 
 void FiveLApp::IdleProc(bool inBlock)
 {
-	if (!wxGetApp().GetStage()->IsIdleAllowed())
+	if (wxGetApp().HaveStage() && !wxGetApp().GetStage()->IsIdleAllowed())
 		THROW("Tried to call (idle) at an unsafe time");
 
 	// Constraints:
@@ -265,11 +265,15 @@ bool FiveLApp::OnInit() {
     InitXmlResource();
     
     // Parse our command-line arguments.
-    if (argc == 2) {
-        TInterpreterManager::SetRuntimeMode(true);
-        mArgScript = argv[1];
-    } else {
-        TInterpreterManager::SetRuntimeMode(false);
+	size_t ac; char **av;
+    for (ac = argc-1, av = argv+1; ac > 0; --ac, ++av) {   
+        if (ac >= 2 && av[0] == std::string("-e")) {
+            TInterpreterManager::SetInitialCommand(av[1]);
+            --ac, ++av;
+        } else {
+            TInterpreterManager::SetRuntimeMode(true);
+            mArgScript = av[0];
+        }
     }
 
     // Make sure we restore the taskbar, etc., before exiting with
@@ -344,6 +348,8 @@ int FiveLApp::MainLoop() {
     // point on the stack!
     FIVEL_SET_STACK_BASE();
 
+    bool error = false;
+
     BEGIN_EXCEPTION_TRAPPER();
 
     // Create a wxEventLoop object to process events.  This became
@@ -371,6 +377,7 @@ int FiveLApp::MainLoop() {
 	mHaveOwnEventLoop = true;
 	IdleProc(false);
 	manager->Run();
+    error = manager->ExitedWithError();
 	delete manager;
 	manager = NULL;
 
@@ -381,9 +388,11 @@ int FiveLApp::MainLoop() {
 
     END_EXCEPTION_TRAPPER(ReportFatalException);
 
-    // XXX - Is this good enough?  This return value is platform-specific,
-    // and it's not always 0.
-    return 0;
+    // Return our application's exit code.  This function is documented as
+    // returning zero, but the exit code is really passed onto OnRun, the
+    // return value of which is documented to be the application's exit
+    // code.
+    return error ? 1 : 0;
 }
 
 void FiveLApp::ExitMainLoop()

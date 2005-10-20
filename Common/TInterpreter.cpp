@@ -69,6 +69,8 @@ TInterpreterManager *TInterpreterManager::sInstance = NULL;
 bool TInterpreterManager::sHaveAlreadyCreatedSingleton = false;
 std::vector<TReloadNotified*> TInterpreterManager::sReloadNotifiedObjects;
 bool TInterpreterManager::sIsInRuntimeMode = false;
+bool TInterpreterManager::sHaveInitialCommand = false;
+std::string TInterpreterManager::sInitialCommand;
 
 TInterpreterManager::TInterpreterManager(
 	TInterpreter::SystemIdleProc inIdleProc)
@@ -82,6 +84,7 @@ TInterpreterManager::TInterpreterManager(
 	mSystemIdleProc = inIdleProc;
 	mInterpreter = NULL;
 	mDone = false;
+	mExitedWithError = false;
 	mScriptIsBegun = false;
 	mLoadScriptFailed = false;
 	ResetInitialCardName();
@@ -124,15 +127,12 @@ void TInterpreterManager::Run()
 		// Handle any errors.
 		if (caught_error)
 		{
-			if (!mLoadScriptFailed)
+            // Always quit for non-load errors, but only quit for load
+            // errors if we're in runtime mode.
+			if (!mLoadScriptFailed || (mLoadScriptFailed && IsInRuntimeMode()))
 			{
-				// Always quit for non-load errors.
 				mDone = true; 
-			}
-			else if (mLoadScriptFailed && IsInRuntimeMode())
-			{
-				// Only quit for load errors if we're in runtime mode.
-				mDone = true;
+                mExitedWithError = true;
 			}
 		}
 	}
@@ -152,9 +152,21 @@ void TInterpreterManager::LoadAndRunScript()
 		// appropriate card.
 		mInterpreter = MakeInterpreter();
         NotifyReloadScriptSucceeded();
+
+        // Run our initial command, if we have one.
+        if (sHaveInitialCommand) {
+            sHaveInitialCommand = false;
+            if (sIsInRuntimeMode) {
+                std::string result;
+                if (!mInterpreter->Eval(sInitialCommand, result))
+                    THROW(result.c_str());
+            }
+        }
+
+		// Ask our interpreter to jump to the appropriate card.
         if (!mInterpreter->IsValidCard(mInitialCardName.c_str()))
             ResetInitialCardName();
-		mInterpreter->JumpToCardByName(mInitialCardName.c_str());
+        mInterpreter->JumpToCardByName(mInitialCardName.c_str());
 
 		// Reset any special variables.
 		ResetInitialCardName();
@@ -170,7 +182,9 @@ void TInterpreterManager::LoadAndRunScript()
 	// Run the interpreter until it has finished.
 	try
 	{
-		mInterpreter->Run(mSystemIdleProc);
+		// The mDone flag may have been set by mInitialCommand code.
+		if (!mDone)
+			mInterpreter->Run(mSystemIdleProc);
 	}
 	catch (...)
 	{
@@ -256,5 +270,10 @@ void TInterpreterManager::SetRuntimeMode(bool inIsInRuntimeMode) {
 
 bool TInterpreterManager::IsInRuntimeMode() {
     return sIsInRuntimeMode;
+}
+
+void TInterpreterManager::SetInitialCommand(const std::string &inCommand) {
+    sHaveInitialCommand = true;
+    sInitialCommand = inCommand;
 }
 

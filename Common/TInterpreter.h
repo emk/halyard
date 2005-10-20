@@ -327,6 +327,8 @@ class TInterpreterManager : boost::noncopyable
 	static bool sHaveAlreadyCreatedSingleton;
     static std::vector<TReloadNotified*> sReloadNotifiedObjects;
     static bool sIsInRuntimeMode;
+    static bool sHaveInitialCommand;
+    static std::string sInitialCommand;
 
 	//////////
 	/// We call this procedure to yield time to the system.
@@ -348,6 +350,11 @@ class TInterpreterManager : boost::noncopyable
 	/// Should we exit our top-level event loop?
 	///
 	bool mDone;
+
+	//////////
+	/// Did the script exit with an error?
+	///
+	bool mExitedWithError;
 
 	//////////
 	/// Did our last attempt to load a script fail?  If so, we'll want
@@ -429,6 +436,12 @@ public:
 	///
 	bool FailedToLoad();
 
+    //////////
+    /// Returns true if and only if the TInterpreterManager exited because
+    /// of an error.
+    ///
+    bool ExitedWithError() { return mExitedWithError; }
+
 	//////////
 	/// If FailedToReload() is true, then the GUI can call this function
 	/// to retry the last ReloadScript command.  This allows the user
@@ -480,6 +493,12 @@ public:
     /// a full-fledged editor.
     ///
     static void SetRuntimeMode(bool inIsInRuntimeMode);
+
+    //////////
+    /// Set a command to run (instead of jumping to the start card)
+    /// when the interpreter starts up.
+    ///
+    static void SetInitialCommand(const std::string &inCommand);
 
     //////////
     /// Is the engine in standalone runtime mode, or is it a full-fledged

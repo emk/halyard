@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		59
+#define VERSION_REV_BIG		60
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.59 (Development)"
+#define VERSION_STRING		"Tamale 0.0.60 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,20 @@
 
 /*
  $Log$
+ Revision 1.101  2005/10/20 13:42:45  emk
+ 0.0.60 - 20 Oct 2005 - emk
+
+   * Turned off wxCLIP_CHILDREN to allow our QuickTime playback code
+     to work the way it did before wxWidgets 2.6.0 (bug #2014).
+   * Log files are now stored in
+     C:\Documents and Settings\<User>\Application Data\Tamale (bug #1847).
+   * User data files are stored in subdirectories of the log directory
+     (bug #1847).
+   * Fonts/cache.dat is now Application Data\Tamale\<Script>\fntcache.dat
+     (bug #1847).
+   * Screen-saver is disabled when in full-screen mode or playing video
+     (bug #2175).
+
  Revision 1.100  2005/10/18 11:36:46  emk
  0.0.59 - 18 Oct 2005 - emk
 
