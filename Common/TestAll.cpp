@@ -154,6 +154,8 @@ int main(int argc, char **argv) {
 	if (argc == 2 && std::string(argv[1]) == "--wait")
 		should_wait = true;
 
+	FileSystem::SetScriptName("Test");
+
 	try {
 		FIVEL_NS InitializeCommonCode(new CrashReporter());
 		std::cout << "Old-Style ImlUnit Tests" << std::endl;

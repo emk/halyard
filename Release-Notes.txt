@@ -10,6 +10,8 @@ CVS - emk
     (bug #1847).
   * Fonts/cache.dat is now Application Data\Tamale\<Script>\fntcache.dat
     (bug #1847).
+  * Screen-saver is disabled when in full-screen mode or playing video
+    (bug #2175).
 
 0.0.59 - 18 Oct 2005 - emk
 

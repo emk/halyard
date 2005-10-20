@@ -193,6 +193,11 @@ class StageFrame : public SashFrame, public model::View
     void LoadIcon(const std::string &inName, wxIconBundle &ioIcons,
                   bool &ioHaveIcon);
 
+    //////////
+    /// Return true if the screensaver should be disabled.
+    ///
+    bool ShouldDisableScreenSaver();
+
 public:
     //////////
     /// Create and display a new stage frame.
@@ -274,6 +279,13 @@ public:
     /// straight into full-screen mode without ever showing a menu bar.
     ///
     bool MSWTranslateMessage(WXMSG* pMsg);
+
+    //////////
+    /// We override this function so we can detect attempts to activate
+    /// the screensaver.
+    ///
+    WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
+
 
 #endif // FIVEL_PLATFORM_WIN32
 

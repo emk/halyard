@@ -537,7 +537,7 @@ bool StageFrame::ShowFullScreen(bool show, long style)
 		SetSizeHints(mMinimumFrameSize.GetWidth(),
 					 mMinimumFrameSize.GetHeight());
 	}
-	bool result = wxFrame::ShowFullScreen(show, style);
+	bool result = SashFrame::ShowFullScreen(show, style);
 	if (show)
 	{
 		// Set our size hints to exactly the stage size, so we can
@@ -552,7 +552,7 @@ bool StageFrame::ShowFullScreen(bool show, long style)
 void StageFrame::Iconize(bool iconize) {
     if (iconize)
         UpdateVideoMode(IsFullScreen(), iconize);
-    wxFrame::Iconize(iconize);
+    SashFrame::Iconize(iconize);
     if (!iconize)
         UpdateVideoMode(IsFullScreen(), iconize);
 }
@@ -696,6 +696,11 @@ void StageFrame::ObjectDeleted()
     }
 }
 
+bool StageFrame::ShouldDisableScreenSaver() {
+    // Feel free to change this to any reasonable behavior.
+    return IsFullScreen() || mStage->IsMediaPlaying();
+}
+
 #ifdef FIVEL_PLATFORM_WIN32
 
 bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
@@ -708,7 +713,21 @@ bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
     // assertion failures.
     if (TInterpreterManager::IsInRuntimeMode())
         UpdateWindowUI();
-    return wxFrame::MSWTranslateMessage(pMsg);
+    return SashFrame::MSWTranslateMessage(pMsg);
+}
+
+WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
+                                    WXLPARAM lParam)
+{
+    // Intercept attempts to turn on the screen-saver, and disable them
+    // if that's what we want.  This isn't terribly well-documented
+    // (except for Delphi programmers, for some reason), but it appears
+    // to work fine as is.
+    if (message == WM_SYSCOMMAND && wParam == SC_SCREENSAVE) {
+        if (ShouldDisableScreenSaver())
+            return -1;
+    }
+    return SashFrame::MSWWindowProc(message, wParam, lParam);
 }
 
 #endif // FIVEL_PLATFORM_WIN32

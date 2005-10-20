@@ -1104,9 +1104,11 @@ void Stage::DeleteElements()
 bool Stage::IsMediaPlaying()
 {
 	ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); ++i)
-		if (MediaElementPtr(*i, dynamic_cast_tag()))
+	for (; i != mElements.end(); ++i) {
+		MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
+		if (elem && !elem->IsLooping())
 			return true;
+    }
 	return false;
 }
 
