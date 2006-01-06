@@ -297,6 +297,7 @@
 
 (card g1/s1/c3 ()
   (test (eq? *last-card* g1/s1/s2/c1))
+  (test (eq? 'g1/s1/s2/c2 (card-name (card-prev))))
   (set! *last-card* g1/s1/c3)
   (jump (@ s2/c2)))
 

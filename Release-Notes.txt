@@ -1,5 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Modified CARD-PREV to find the previous *card*, not just the previous
+    *sequence*, in order to make "back" buttons in do the right thing
+    in nested sequences (bug #2315).
+
 0.0.60 - 20 Oct 2005 - emk
 
   * Turned off wxCLIP_CHILDREN to allow our QuickTime playback code

@@ -767,6 +767,17 @@
               (define-node name group node-class . rest)]))
          (define-syntax-indent definer-name 2))]))
 
+  ;; Must be overriden for all instantiable subclasses of <jumpable>.
+  (defgeneric (find-first-card (node <node>)))
+  (defmethod (find-first-card (node <node>))
+    #f)                       
+
+  ;; Must be overriden for all instantiable subclasses of <jumpable>.
+  (defgeneric (find-last-card (node <node>)))
+  (defmethod (find-last-card (node <node>))
+    #f)
+
+
   ;;-----------------------------------------------------------------------
   ;;  Group Member
   ;;-----------------------------------------------------------------------
@@ -838,16 +849,26 @@
                     " because it contains no cards."))
         (jump (car (group-members target)))))
 
+  (defmethod (find-first-card (sequence <card-sequence>))
+    (find-first-card (first (group-members sequence))))
+
+  (defmethod (find-last-card (sequence <card-sequence>))
+    (find-last-card (last (group-members sequence))))
+
   (defmethod (card-group-find-next (group <card-sequence>) (member <jumpable>))
     ;; Find the node *after* member.
     (let [[remainder (memq member (group-members group))]]
       (%assert (not (null? remainder)))
       (if (null? (cdr remainder))
           (card-group-find-next (node-parent group) group)
-          (cadr remainder))))
+          ;; Walk recursively through any sequences to find the first card.
+          (find-first-card (cadr remainder)))))
 
   (defmethod (card-group-find-prev (group <card-sequence>) (member <jumpable>))
-    ;; Find the node *before* member.
+    ;; Find the node *before* member.  Notice the two (2!) lambdas in this
+    ;; function, which are used to implement a form of lazy evaluation:
+    ;; They keep track of how to find the node we want, assuming the
+    ;; current current node is MEMBER (which is one past the node we want).
     (let search [[members (group-members group)]
                  [candidate-func 
                   (lambda ()
@@ -855,7 +876,12 @@
       (%assert (not (null? members)))
       (if (eq? (car members) member)
           (candidate-func)
-          (search (cdr members) (lambda () (car members))))))
+          (search (cdr members)
+                  (lambda ()
+                    ;; This is our actual base case: It's called when we've
+                    ;; located MEMBER, and it recursively looks for the last
+                    ;; card in the node *before* MEMBER.  Got it?
+                    (find-last-card (car members)))))))
 
   (define-node-definer sequence <card-group> <card-sequence>)
 
@@ -871,6 +897,12 @@
 
   (defmethod (jump (target <card>))
     (engine-jump-to-card *engine* target))
+
+  (defmethod (find-first-card (c <card>))
+    c)
+
+  (defmethod (find-last-card (c <card>))
+    c)
 
   (define (card-next)
     (card-group-find-next (node-parent (current-card)) (current-card)))
