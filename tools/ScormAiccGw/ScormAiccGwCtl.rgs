@@ -1,0 +1,34 @@
+HKCR
+{
+	ScormAiccGw.ScormAiccGwCtl.1 = s 'ScormAiccGwCtl Class'
+	{
+		CLSID = s '{8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835}'
+	}
+	ScormAiccGw.ScormAiccGwCtl = s 'ScormAiccGwCtl Class'
+	{
+		CLSID = s '{8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835}'
+		CurVer = s 'ScormAiccGw.ScormAiccGwCtl.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835} = s 'ScormAiccGwCtl Class'
+		{
+			ProgID = s 'ScormAiccGw.ScormAiccGwCtl.1'
+			VersionIndependentProgID = s 'ScormAiccGw.ScormAiccGwCtl'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			ForceRemove 'Control'
+			ForceRemove 'Insertable'
+			ForceRemove 'ToolboxBitmap32' = s '%MODULE%, 101'
+			'MiscStatus' = s '0'
+			{
+			    '1' = s '132497'
+			}
+			'TypeLib' = s '{AC5E8105-BB92-43D2-A9EA-2F13011C6953}'
+			'Version' = s '1.0'
+		}
+	}
+}

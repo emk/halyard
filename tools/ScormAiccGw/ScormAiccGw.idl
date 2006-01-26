@@ -1,0 +1,57 @@
+// ScormAiccGw.idl : IDL source for ScormAiccGw.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ScormAiccGw.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+#include "olectl.h"
+	
+
+	[
+		object,
+		uuid(508517E7-B65D-4708-8635-6AB33630FE38),
+		dual,
+		helpstring("IScormAiccGwCtl Interface"),
+		pointer_default(unique)
+	]
+	interface IScormAiccGwCtl : IDispatch
+	{
+		[id(1), helpstring("method isCourseInstalled")] HRESULT isCourseInstalled([in] BSTR sCourseGuid, [out, retval] BOOL *pbSuccess);
+		[id(3), helpstring("method launchCourse")] HRESULT launchCourse([in] BSTR sCourseGUID, [in] BSTR sParams);
+		[id(4), helpstring("method onIdle")] HRESULT onIdle();
+		[id(5), helpstring("method GetFileContent")] HRESULT GetFileContent([in] unsigned int nID, [out,retval] BSTR *psContent);
+	};
+
+[
+	uuid(AC5E8105-BB92-43D2-A9EA-2F13011C6953),
+	version(1.0),
+	helpstring("ScormAiccGw 1.0 Type Library")
+]
+library SCORMAICCGWLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(F44C829D-A4E8-4026-A52C-37FACA2132CD),
+		helpstring("_IScormAiccGwCtlEvents Interface")
+	]
+	dispinterface _IScormAiccGwCtlEvents
+	{
+		properties:
+		methods:
+		[id(1), helpstring("method AppTerminated")] void AppTerminated();
+	};
+
+	[
+		uuid(8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835),
+		helpstring("ScormAiccGwCtl Class")
+	]
+	coclass ScormAiccGwCtl
+	{
+		[default] interface IScormAiccGwCtl;
+		[default, source] dispinterface _IScormAiccGwCtlEvents;
+	};
+};
