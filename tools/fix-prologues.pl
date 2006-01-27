@@ -16,7 +16,7 @@ __EOD__
 
 my $copyright_and_license = <<'__EOD__';
 Tamale - Multimedia authoring and playback system
-Copyright 1993-2004 Trustees of Dartmouth College
+Copyright 1993-2005 Trustees of Dartmouth College
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
