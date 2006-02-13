@@ -39,7 +39,7 @@ function errorHandler(message, url, line)
 window.onerror = errorHandler;
 </SCRIPT>
 
-<SCRIPT LANGUAGE=javascript FOR=mycontrol EVENT=AppTerminated>
+<SCRIPT LANGUAGE=javascript FOR=mycontrol EVENT=OnAppTerminated>
 <!--
    display ("Course terminated")
    var finish = mycontrol.GetFileContent(0); // contents of finish file

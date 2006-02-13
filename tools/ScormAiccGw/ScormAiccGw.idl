@@ -42,7 +42,7 @@ library SCORMAICCGWLib
 	{
 		properties:
 		methods:
-		[id(1), helpstring("method AppTerminated")] void AppTerminated();
+		[id(1), helpstring("method OnAppTerminated")] void OnAppTerminated();
 	};
 
 	[

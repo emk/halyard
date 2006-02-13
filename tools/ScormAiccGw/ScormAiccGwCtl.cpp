@@ -108,6 +108,7 @@ BOOL CScormAiccGwCtl::OpenKeyForGUID (BSTR sCourseGuid)
    
 	USES_CONVERSION;                       // for conversions of CComBSTR objs
    CComBSTR sSubkey = SUBKEY_PREFIX;
+   // SECURITY: Validate GUID format!!!
    sSubkey += sCourseGuid;
    return (RegOpenKeyEx (HKEY_LOCAL_MACHINE, 
                          OLE2T(sSubkey), 0, KEY_QUERY_VALUE, &m_hKey) 
@@ -314,7 +315,7 @@ STDMETHODIMP CScormAiccGwCtl::onIdle()
    if (m_hProcess &&                      // if course was running last check
       !isMyCourseRunning())               //    but now it's stopped
    {
-      Fire_AppTerminated();               // fire an event for the client
+      Fire_OnAppTerminated();             // fire an event for the client
    }
 	return S_OK;
 }

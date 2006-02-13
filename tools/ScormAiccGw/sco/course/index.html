@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <title>Sample Windows Course</title>
+    <script type="text/javascript" src="prototype.js"></script>
+    <script type="text/javascript" src="scorm-gateway.js"></script>
+    <script type="text/javascript">
+      var courseGuid = '00000000-DEAD-BEEF-0000-000000000000';
+      // A GUID for a non-existant course, to check error-handling.
+      //var courseGuid = '00000000-DEAD-BEAD-1111-000000000000';
+      window.onerror = function (message, url, line) {
+          alert(message);
+          // TODO - Shut down ScormGateway support completely.
+      };
+    </script>
+  </head>
+  <body onload="ScormGateway.initialize(courseGuid)"
+        onunload="ScormGateway.finish()">
+    <h1>Sample Windows Course</h1>
+
+    <noscript>JavaScript is required to access this course.  Please enable
+    JavaScript, or talk to your system administrator.</noscript>
+
+    <div id="controlMissing" style="display:none">
+      <p>To run this course through the LMS, you must have Internet
+      Explorer 6.0, and you must install our ActiveX control.</p>
+    </div>
+
+    <div id="courseMissing" style="display:none">
+      <p>To run this course, you must first download and install it.
+      Consult your system administrator for details.</p>
+    </div>
+
+    <div id="courseReady" style="display:none">
+      <p>Click below to launch the course.</p>
+      
+      <form onsubmit="ScormGateway.launch(); return false;">
+        <input type="submit" value="Begin Course" />
+      </form>
+    </div>
+
+    <div id="courseRunning" style="display:none">
+      <p>The course has been launched.</p>
+    </div>
+
+    <div id="courseDone" style="display:none">
+      <p>Done with the course!</p>
+    </div>
+
+    <!-- IE Workaround: This event handler can't be easily bound from -->
+    <!-- JavaScript, so do it manually. -->
+    <script lanaguage='javascript' for='_gateway' event='OnAppTerminated'>
+      // TODO - Make sure this code is ignored in other browsers.
+      ScormGateway.onAppTerminated();
+    </script>
+  </body>
+</html>

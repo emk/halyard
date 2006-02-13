@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This is a Reload version 2.0.2 SCORM 1.2 Content Package document-->
+<!--Spawned from the Reload Content Package Generator - http://www.reload.ac.uk-->
+<manifest xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2" xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2" identifier="MANIFEST-5EEBBCCE-7A7A-493A-9185-207690C1777D" xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <organizations default="ORG-46E329E4-0622-6736-19FA-870618A18E70">
+    <organization identifier="ORG-46E329E4-0622-6736-19FA-870618A18E70" structure="hierarchical">
+      <title>Organization</title>
+      <item identifier="ITEM-626EC197-2823-3F81-4EEB-E9247CEA9869" isvisible="true" identifierref="RES-B48FED2B-0666-AF2E-CDE5-D1C1BAFE6B12">
+        <title>Sample Windows Course</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="RES-B48FED2B-0666-AF2E-CDE5-D1C1BAFE6B12" type="webcontent" adlcp:scormtype="sco" href="course/index.html">
+      <file href="course/index.html" />
+    </resource>
+  </resources>
+</manifest>
+
