@@ -6,7 +6,7 @@ class CProxy_IScormAiccGwCtlEvents : public IConnectionPointImpl<T, &DIID__IScor
 {
 	//Warning this class may be recreated by the wizard.
 public:
-	VOID Fire_OnAppTerminated()
+	VOID Fire_AppTerminated()
 	{
 		T* pT = static_cast<T*>(this);
 		int nConnectionIndex;

@@ -112,7 +112,7 @@ IDR_SCORMAICCGWCTL      REGISTRY DISCARDABLE    "ScormAiccGwCtl.rgs"
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_PROJNAME            "ScormAiccGw"
+    IDS_PROJNAME            "*p"
 END
 
 #endif    // English (U.S.) resources

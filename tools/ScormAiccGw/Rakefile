@@ -1,0 +1,22 @@
+
+# Covnert a Cygwin Ruby path to native Windows format.
+def convert_path_to_windows path
+  path.gsub(%r{^/cygdrive/(\w)/}, "\\1:/").gsub('/', "\\")
+end
+
+desc "Load registry keys for fake_course"
+task :initialize_registry do
+  guid = '00000000-BEEF-DEAD-0000-000000000000'
+  keys = <<EOD
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\\SOFTWARE\\ScormAiccBridge\\#{guid}]
+"Working dir"=#{convert_path_to_windows(Dir.pwd+"/fake_course").inspect}
+"App name"="ruby"
+"Cmd line"="fake_course.rb"
+EOD
+  File.open('temp.reg', 'w') {|f| f.write(keys) }
+  # See http://www.robvanderwoude.com/index.html
+  sh 'regedit', '/s', 'temp.reg'
+  File.delete('temp.reg')
+end

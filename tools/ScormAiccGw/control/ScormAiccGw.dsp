@@ -304,6 +304,10 @@ SOURCE=.\Resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ScormAiccGw.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ScormAiccGwCP.h
 # End Source File
 # Begin Source File
@@ -323,18 +327,6 @@ SOURCE=.\StdAfx.h
 SOURCE=.\ScormAiccGwCtl.rgs
 # End Source File
 # End Group
-# Begin Group "spec"
-
-# PROP Default_Filter ".txt"
-# Begin Source File
-
-SOURCE="..\spec\draft interface spec.txt"
-# End Source File
-# Begin Source File
-
-SOURCE="..\spec\scorm-phase-1.txt"
-# End Source File
-# End Group
 # Begin Group "test"
 
 # PROP Default_Filter ""
@@ -342,10 +334,14 @@ SOURCE="..\spec\scorm-phase-1.txt"
 
 SOURCE=.\ScormAiccGwCtl.htm
 # End Source File
+# End Group
 # Begin Source File
 
-SOURCE=.\timeout.html
+SOURCE=.\ScormAiccGw.tlb
 # End Source File
-# End Group
+# Begin Source File
+
+SOURCE=.\todo.txt
+# End Source File
 # End Target
 # End Project

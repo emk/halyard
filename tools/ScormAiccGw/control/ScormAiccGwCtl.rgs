@@ -25,7 +25,7 @@ HKCR
 			ForceRemove 'ToolboxBitmap32' = s '%MODULE%, 101'
 			'MiscStatus' = s '0'
 			{
-			    '1' = s '132497'
+			    '1' = s '131473'
 			}
 			'TypeLib' = s '{AC5E8105-BB92-43D2-A9EA-2F13011C6953}'
 			'Version' = s '1.0'

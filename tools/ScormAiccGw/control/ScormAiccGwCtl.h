@@ -8,26 +8,6 @@
 #include "ScormAiccGwCP.h"
 
 #define SAFE_TO_SCRIPT  1
-#define HIDDEN_WINDOW   0
-
-#if HIDDEN_WINDOW          // hidden window
-class CScormAiccGwCtl;
-
-class CHiddenWindow : public CWindowImpl<CHiddenWindow>
-{
-
-   BEGIN_MSG_MAP(CHiddenWindow)	
-      MESSAGE_HANDLER(WM_TIMER, OnTimer)
-   END_MSG_MAP()
-
-public:
-   CHiddenWindow(CScormAiccGwCtl* pCtl) : m_pCtl(pCtl)	{ ; }
-
-private:
-   CScormAiccGwCtl* m_pCtl;
-	LRESULT OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-};
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CScormAiccGwCtl
@@ -44,23 +24,22 @@ class ATL_NO_VTABLE CScormAiccGwCtl :
 	public ISupportErrorInfo,
 	public IConnectionPointContainerImpl<CScormAiccGwCtl>,
 	public IPersistStorageImpl<CScormAiccGwCtl>,
+	public IPersistPropertyBagImpl<CScormAiccGwCtl>,
 	public ISpecifyPropertyPagesImpl<CScormAiccGwCtl>,
 	public IQuickActivateImpl<CScormAiccGwCtl>,
 	public IDataObjectImpl<CScormAiccGwCtl>,
 	public IProvideClassInfo2Impl<&CLSID_ScormAiccGwCtl, &DIID__IScormAiccGwCtlEvents, &LIBID_SCORMAICCGWLib>,
 	public IPropertyNotifySinkCP<CScormAiccGwCtl>,
 #if SAFE_TO_SCRIPT
-   public IObjectSafetyImpl<CScormAiccGwCtl, INTERFACESAFE_FOR_UNTRUSTED_CALLER>,
+   public IObjectSafetyImpl<CScormAiccGwCtl, INTERFACESAFE_FOR_UNTRUSTED_CALLER | INTERFACESAFE_FOR_UNTRUSTED_DATA>,
 #endif
 	public CComCoClass<CScormAiccGwCtl, &CLSID_ScormAiccGwCtl>,
 	public CProxy_IScormAiccGwCtlEvents< CScormAiccGwCtl >
 {
 public:
-#if HIDDEN_WINDOW                      // hidden window
-   CScormAiccGwCtl() : m_wndHidden(this), m_hProcess(NULL) { ; }
-#else
-   CScormAiccGwCtl() : m_hProcess(NULL) { ; }
-#endif
+	CContainedWindow m_ctlButton;
+
+	CScormAiccGwCtl();
 
 DECLARE_REGISTRY_RESOURCEID(IDR_SCORMAICCGWCTL)
 
@@ -91,12 +70,15 @@ BEGIN_COM_MAP(CScormAiccGwCtl)
    COM_INTERFACE_ENTRY(IObjectSafety)
 #endif
 	COM_INTERFACE_ENTRY(IProvideClassInfo2)
+	COM_INTERFACE_ENTRY(IPersistPropertyBag)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
 BEGIN_PROP_MAP(CScormAiccGwCtl)
 	PROP_DATA_ENTRY("_cx", m_sizeExtent.cx, VT_UI4)
 	PROP_DATA_ENTRY("_cy", m_sizeExtent.cy, VT_UI4)
+	PROP_ENTRY("CourseGUID", 1, CLSID_NULL)
+	PROP_ENTRY("CourseParams", 2, CLSID_NULL)
 END_PROP_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CScormAiccGwCtl)
@@ -108,11 +90,25 @@ BEGIN_CONNECTION_POINT_MAP(CScormAiccGwCtl)
 END_CONNECTION_POINT_MAP()
 
 BEGIN_MSG_MAP(CScormAiccGwCtl)
-   MESSAGE_HANDLER(WM_TIMER, OnTimer)
+	MESSAGE_HANDLER(WM_CREATE, OnCreate)
+	MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 	CHAIN_MSG_MAP(CComControl<CScormAiccGwCtl>)
-	DEFAULT_REFLECTION_HANDLER()
+ALT_MSG_MAP(1)                   
+   // alternate message map
+   // This maps messages from contained window,
+   // i.e. the button, to the parent control's
+   // maessage handlers
+	MESSAGE_HANDLER(WM_LBUTTONDOWN, OnClicked)
+	MESSAGE_HANDLER(WM_TIMER, OnTimer)
 END_MSG_MAP()
 
+
+	LRESULT OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
+                    BOOL& /*bHandled*/);
+	STDMETHOD(SetObjectRects)(LPCRECT prcPos,LPCRECT prcClip);
+	LRESULT OnClicked(UINT /*uMsg*/, WPARAM /*wParam*/, 
+                     LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
@@ -131,38 +127,33 @@ private:
                  Performance,
                  Invalid };
 
-   BOOL OpenKeyForGUID (BSTR sCourseGuid);
+   BOOL OpenKeyForGUID();
    void CloseKeyForGUID() { RegCloseKey(m_hKey); }
    BOOL isMyCourseRunning();
+   BOOL CreateTempDir();
+   BOOL DestroyTempDir();
 
-#if HIDDEN_WINDOW                      // hidden window
-	//
-   // These next two members exist to allow us
-   // to handle messages with a "hidden" window"
-   //
-   CHiddenWindow m_wndHidden;       // contained hidden window object
-	HWND m_hHidden;                  // handle of the hidden window
-
-	UINT	m_uintTimer;
-#endif
-
-   BSTR m_sCourseGUID;              // GUID for course
+   CComBSTR m_sCourseGUID;          // GUID for course
+   CComBSTR m_sCourseParams;        // params for course
    HKEY m_hKey;                     // handle of registry key
    TCHAR m_szAppName[_MAX_PATH];    // application name
    TCHAR m_szCmdLine[_MAX_PATH];    // command line
    TCHAR m_szWrkDir[_MAX_PATH];     // working directory
+   TCHAR m_szTmpDir[_MAX_PATH];     // temporary directory
+   TCHAR m_szButtonLab[_MAX_PATH];  // button label
    HANDLE m_hProcess;               // handle of launched process
+   UINT m_nTimer;                   // timer ID
 
 // IScormAiccGwCtl
 public:
+	STDMETHOD(get_CourseParams)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_CourseParams)(/*[in]*/ BSTR newVal);
+	STDMETHOD(get_CourseGUID)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_CourseGUID)(/*[in]*/ BSTR newVal);
+	STDMETHOD(isCourseInstalled)(/*[out, retval]*/ BOOL *pbSuccess);
 	STDMETHOD(GetFileContent)(/* [in] */ unsigned int nID, 
                              /*[out,retval]*/ BSTR *psContent);
-	STDMETHOD(onIdle)();
-	STDMETHOD(isCourseInstalled)(/*[in]*/ BSTR sCourseGuid, 
-                                /*[out, retval]*/ BOOL *pbSuccess);
-	STDMETHOD(launchCourse)(/*[in]*/ BSTR sCourseGUID, /*[in]*/ BSTR sParams);
 
-	HRESULT OnDraw(ATL_DRAWINFO& di);  
    HRESULT FinalConstruct();
    void FinalRelease();
 	LRESULT OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);

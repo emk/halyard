@@ -4,6 +4,8 @@
 </HEAD>
 <BODY>
 
+<h1>Demo of course launching and termination event firing</h1>
+
 <TABLE BORDER=0>
     <TR><TD>
 	<FORM NAME="text_form">
@@ -20,7 +22,11 @@
     </TD></TR>
 </TABLE>
 
-<OBJECT ID="mycontrol" CLASSID="CLSID:8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835"></OBJECT>
+<OBJECT ID="mycontrol" WIDTH=240 HEIGHT=60
+        CLASSID="CLSID:8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835">
+        <PARAM NAME = CourseGUID VALUE = "00000000-DEAD-BEEF-0000-000000000000">
+        <PARAM NAME = CourseParams VALUE = "SSB's contents of param.cmi (init)">
+        </OBJECT>
 
 <SCRIPT language=JavaScript>	// make this the first script block on the page
 
@@ -39,7 +45,7 @@ function errorHandler(message, url, line)
 window.onerror = errorHandler;
 </SCRIPT>
 
-<SCRIPT LANGUAGE=javascript FOR=mycontrol EVENT=OnAppTerminated>
+<SCRIPT LANGUAGE=javascript FOR=mycontrol EVENT=AppTerminated>
 <!--
    display ("Course terminated")
    var finish = mycontrol.GetFileContent(0); // contents of finish file
@@ -48,48 +54,17 @@ window.onerror = errorHandler;
    var inter = mycontrol.GetFileContent(3);  // contents of interactions file
    var paths = mycontrol.GetFileContent(4);  // contents of paths file
    var perf = mycontrol.GetFileContent(5);   // contents of performance file
+   display (perf)
 //-->
 </SCRIPT>
 
 
-    <script type="text/javascript">
-
-// Run _callback_ every so many _milliseconds_
-function runPeriodically(callback, milliseconds) {
-    function runCallbackAndReschedule() {
-        callback();
-        setTimeout(runCallbackAndReschedule, milliseconds);
-    }
-    runCallbackAndReschedule();
-}
-
-// timer handler
-function myCallback() {
-    mycontrol.onIdle();
-}
-
-// Start the timer running.
-function startTimer() {
-    runPeriodically(myCallback, 1000);
-}
-
-    </script>
-
-
-<h1>Demo of course launching and termination event firing</h1>
-
 <SCRIPT LANGUAGE=javascript>
 <!--
-   var guid = "00000000-DEAD-BEEF-0000-000000000000";
-   var params = "SSB's contents of param.cmi";
-   if (!mycontrol.IsCourseInstalled(guid))
+   if (!mycontrol.IsCourseInstalled())
       display ("Course not installed");
-   else
-   {
-      mycontrol.launchCourse (guid, params);
-      startTimer();
-      display ("Course launched");
-   }
+   else 
+      mycontrol.CourseParams = "SSB's contents of param.cmi (scripted)"
 //-->
 </SCRIPT>
 

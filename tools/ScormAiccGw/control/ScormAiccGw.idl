@@ -18,10 +18,12 @@ import "ocidl.idl";
 	]
 	interface IScormAiccGwCtl : IDispatch
 	{
-		[id(1), helpstring("method isCourseInstalled")] HRESULT isCourseInstalled([in] BSTR sCourseGuid, [out, retval] BOOL *pbSuccess);
-		[id(3), helpstring("method launchCourse")] HRESULT launchCourse([in] BSTR sCourseGUID, [in] BSTR sParams);
-		[id(4), helpstring("method onIdle")] HRESULT onIdle();
-		[id(5), helpstring("method GetFileContent")] HRESULT GetFileContent([in] unsigned int nID, [out,retval] BSTR *psContent);
+		[propget, id(1), helpstring("property CourseGUID")] HRESULT CourseGUID([out, retval] BSTR *pVal);
+		[propput, id(1), helpstring("property CourseGUID")] HRESULT CourseGUID([in] BSTR newVal);
+		[propget, id(2), helpstring("property CourseParams")] HRESULT CourseParams([out, retval] BSTR *pVal);
+		[propput, id(2), helpstring("property CourseParams")] HRESULT CourseParams([in] BSTR newVal);
+		[id(3), helpstring("method isCourseInstalled")] HRESULT isCourseInstalled([out, retval] BOOL *pbSuccess);
+		[id(4), helpstring("method GetFileContent")] HRESULT GetFileContent([in] unsigned int nID, [out,retval] BSTR *psContent);
 	};
 
 [
@@ -42,7 +44,7 @@ library SCORMAICCGWLib
 	{
 		properties:
 		methods:
-		[id(1), helpstring("method OnAppTerminated")] void OnAppTerminated();
+		[id(1), helpstring("method AppTerminated")] void AppTerminated();
 	};
 
 	[
