@@ -1,11 +1,19 @@
+#==========================================================================
+#  Tasks
+#==========================================================================
 
-# Covnert a Cygwin Ruby path to native Windows format.
-def convert_path_to_windows path
-  path.gsub(%r{^/cygdrive/(\w)/}, "\\1:/").gsub('/', "\\")
+desc "Set up the control for testing."
+task :setup => [:register_control, :initialize_registry]
+
+desc "Register the ActiveX control."
+task :register_control do
+  # This pops up a dialog box that the user must confirm.
+  sh 'regsvr32', 'control/Debug/ScormAiccGw.dll'
 end
 
 desc "Load registry keys for fake_course"
 task :initialize_registry do
+  tmp_name = 'temp.reg'
   guid = '00000000-BEEF-DEAD-0000-000000000000'
   keys = <<EOD
 Windows Registry Editor Version 5.00
@@ -15,8 +23,19 @@ Windows Registry Editor Version 5.00
 "App name"="ruby"
 "Cmd line"="fake_course.rb"
 EOD
-  File.open('temp.reg', 'w') {|f| f.write(keys) }
+  tmp_name = 'temp.reg'
+  File.open(tmp_name, 'w') {|f| f.write(keys) }
   # See http://www.robvanderwoude.com/index.html
-  sh 'regedit', '/s', 'temp.reg'
-  File.delete('temp.reg')
+  sh 'regedit', '/s', tmp_name
+  File.delete(tmp_name)
 end
+
+#==========================================================================
+#  Utilities
+#==========================================================================
+
+# Covnert a Cygwin Ruby path to native Windows format.
+def convert_path_to_windows path
+  path.gsub(%r{^/cygdrive/(\w)/}, "\\1:/").gsub('/', "\\")
+end
+
