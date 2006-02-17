@@ -12,7 +12,7 @@ Directory Layout
   TODO.txt     - List of things to do.
   Rakefile     - Like a makefile, but based on Rake.
   control/     - The source code for our ActiveX control.
-  packing/     - Tools for making our control automatically downloadble.
+  packaging/   - Tools for making our control automatically downloadble.
   fake_course/ - A fake course for use by the test harness.
   sco/         - A skeleton for a SCO-based course using this control.
                  Currently very incomplete.
@@ -23,6 +23,11 @@ Getting Started
 First, you'll need Cygwin:
 
   http://www.cygwin.com/
+
+Make sure your Cygwin installation uses DOS line endings, not Unix ones!
+If this is inccorectly configured, you may have problems with *.dsw and
+*.dsp files, and you may need to uninstall and reinstall Cygwin to fix
+them.
 
 At a minimum, you'll need to install the Cygwin packages related to Ruby.
 If any other packages are required, please edit this file to mention them.
