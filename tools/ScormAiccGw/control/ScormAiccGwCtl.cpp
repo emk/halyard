@@ -152,7 +152,8 @@ LRESULT CScormAiccGwCtl::OnCreate (UINT /*uMsg*/, WPARAM /*wParam*/,
       CComBSTR sButtonLab = "Launch ";
       CComBSTR sTemp = szLabel;
       sButtonLab += sTemp;
-      m_ctlButton.SetWindowText (OLE2T(sButtonLab));
+      lstrcpy (m_szButtonLab, OLE2T(sButtonLab));
+      m_ctlButton.SetWindowText (m_szButtonLab);
    }
 
    //
@@ -210,21 +211,17 @@ LRESULT CScormAiccGwCtl::OnCreate (UINT /*uMsg*/, WPARAM /*wParam*/,
 
    CloseKeyForGUID();                           // close the registry key
 
-   m_ctlButton.EnableWindow (TRUE);            // enable button
+   m_ctlButton.EnableWindow (TRUE);             // enable button
    m_ctlButton.ShowWindow (SW_SHOW);
 
 	return 0;
 
 }
 
-STDMETHODIMP CScormAiccGwCtl::SetObjectRects (LPCRECT prcPos,LPCRECT prcClip)
+STDMETHODIMP CScormAiccGwCtl::SetObjectRects (LPCRECT /*prcPos*/,
+                                              LPCRECT /*prcClip*/)
 {
-	IOleInPlaceObjectWindowlessImpl<CScormAiccGwCtl>::SetObjectRects(prcPos, prcClip);
-	int cx, cy;
-	cx = prcPos->right - prcPos->left;
-	cy = prcPos->bottom - prcPos->top;
-	::SetWindowPos (m_ctlButton.m_hWnd, NULL, 0,
-		             0, cx, cy, SWP_NOZORDER | SWP_NOACTIVATE);
+   SizeToLabel();                // size contained button window to text label
 	return S_OK;
 }
 
@@ -478,6 +475,24 @@ BOOL CScormAiccGwCtl::DestroyTempDir()
    return RemoveDirectory (m_szTmpDir);
 
 }
+
+//
+// This private function automatically resizes the 
+// contained button to fit the label 
+//
+void CScormAiccGwCtl::SizeToLabel()
+{
+
+   HDC hDC = m_ctlButton.GetDC();
+   SIZE BtnSize;                          // height & width in logical units
+   ::GetTextExtentPoint32 (hDC, m_szButtonLab, lstrlen (m_szButtonLab), &BtnSize);
+   int BtnWidth = static_cast <int> (1.3 * BtnSize.cx);
+   int BtnHeight = static_cast <int> (BtnWidth/4);
+   m_ctlButton.SetWindowPos (NULL, 0, 0, BtnWidth, BtnHeight,
+                             SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
+
+}
+
 
 
 ////////////////////////////////////////////////

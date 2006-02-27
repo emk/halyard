@@ -37,8 +37,6 @@ class ATL_NO_VTABLE CScormAiccGwCtl :
 	public CProxy_IScormAiccGwCtlEvents< CScormAiccGwCtl >
 {
 public:
-	CContainedWindow m_ctlButton;
-
 	CScormAiccGwCtl();
 
 DECLARE_REGISTRY_RESOURCEID(IDR_SCORMAICCGWCTL)
@@ -132,7 +130,9 @@ private:
    BOOL isMyCourseRunning();
    BOOL CreateTempDir();
    BOOL DestroyTempDir();
+   void SizeToLabel();
 
+	CContainedWindow m_ctlButton;
    CComBSTR m_sCourseGUID;          // GUID for course
    CComBSTR m_sCourseParams;        // params for course
    HKEY m_hKey;                     // handle of registry key
