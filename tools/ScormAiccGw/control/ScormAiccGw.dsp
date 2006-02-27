@@ -332,16 +332,8 @@ SOURCE=.\ScormAiccGwCtl.rgs
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\ScormAiccGwCtl.htm
+SOURCE=.\test\ScormAiccGwCtl.htm
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\ScormAiccGw.tlb
-# End Source File
-# Begin Source File
-
-SOURCE=.\todo.txt
-# End Source File
 # End Target
 # End Project
