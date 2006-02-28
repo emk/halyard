@@ -1,0 +1,15 @@
+; INF file for ScormAiccGw.dll
+[version] 
+; version signature do not remove
+signature="$CHICAGO$"
+AdvancedINF=2.0  
+
+[Add.Code]
+ScormAiccGw.dll=ScormAiccGw.dll
+
+[ScormAiccGw.dll]
+file-win32-x86=thiscab
+clsid={8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835} 
+FileVersion=1,0,0,1 
+RegisterServer=yes  
+; end of INF file
