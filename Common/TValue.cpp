@@ -256,7 +256,7 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
     CHECK_THROWN(std::exception, v1.GetType());
 
     // Check Null.
-    TValue value(TNull());
+	TValue value(TNull::TNull());
     CHECK_EQ(value.IsInitialized(), true);
     CHECK_EQ(value.GetType(), TValue::TYPE_NULL);
     CHECK_EQ(value, TValue(TNull()));
@@ -320,7 +320,8 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
     CHECK_TVALUE_GET(list1);
 
     // Conversion operator sanity checks.
-    CHECK_THROWN(std::exception, double(TValue()));
+	double foo;
+	CHECK_THROWN(std::exception, foo = double(TValue()));
     CHECK_THROWN(std::exception, double(TValue("foo")));
 
     // operator== special cases

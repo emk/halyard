@@ -69,13 +69,13 @@ public:
     int GetIndentHint() const { return mIndentHint; }
 
     /// Return true if two identifiers are equal.  (For use with STL.)
-    operator==(const TScriptIdentifier &right) const {
+    bool operator==(const TScriptIdentifier &right) const {
         return mName == right.mName;
     }
 
     /// Return true if the first identifier is less than the second.  (For
     /// use with STL.)
-    operator<(const TScriptIdentifier &right) const {
+    bool operator<(const TScriptIdentifier &right) const {
         return mName < right.mName;
     }
 };

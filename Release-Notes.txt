@@ -1,7 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, brian
 
+  * Fixed up code so we can compile under Visual Studio .NET 2005, and
+    updated HACKING.txt to include instructions for how to set up
+    VS.NET 2005.
   * Modified CARD-PREV to find the previous *card*, not just the previous
     *sequence*, in order to make "back" buttons in do the right thing
     in nested sequences (bug #2315).

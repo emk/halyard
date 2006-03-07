@@ -997,7 +997,7 @@ wxVariant& wxActiveXEvent::operator[] (wxString name)
 
     wxString err = "wxActiveXEvent::operator[] invalid name <" + name + ">";
     err += "\r\nValid Names = :\r\n";
-    for (i = 0; i < m_params.GetCount(); i++)
+    for (int i = 0; i < m_params.GetCount(); i++)
     {
         err += m_params[i].GetName();
         err += "\r\n";
@@ -1497,7 +1497,7 @@ wxVariant wxActiveX::CallMethod(wxString name, wxVariant args[], int nargs)
             vargs[nargs - i - 1].vt = func.params[i].vt;
 
         // put data
-        for (i = 0; i < nargs; i++)
+        for (int i = 0; i < nargs; i++)
             VariantToMSWVariant(args[i], vargs[nargs - i - 1]);
     };
 

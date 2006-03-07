@@ -48,19 +48,23 @@ Building Win32 5L
   Using the System control panel, set the environment variable WXWIN to
   $5L_DIR/libs/wxWidgets.
 
-  Install Visual C++.NET off of the MSDN subscription, after making sure we
-  have enough licenses.  Make sure you have everything related to C++
-  development or media libraries (including ActiveX).  Also, you probably
-  want to download the latest Service Pack.
+  Install Visual C++.NET off of the MSDN subscription, after making
+  sure we have enough licenses.  Make sure you have everything related
+  to C++ development or media libraries (including ActiveX).  Also,
+  you probably want to download the latest Service Pack. Right now we
+  are using Visual Studio .NET 2002, but we are in the process of
+  moving to Visual Studio .NET 2005. If you're on VS.NET 2005, you will
+  need to install the DirectX SDK, because certain libraries have been 
+  moved out of the platform SDK into DirectX. 
 
   Next, download and install the QuickTime 6 SDK.  This can be found at
   developer.apple.com (under Tools > QuickTime > QuickTime 6 SDK).  Unzip
   it in C:\sdk (or anywhere else you like, but then you'll have to adapt the
   instructions below). Make sure QuickTime is installed as well. 
 
-  Open up $5L_DIR\FiveL.sln. Select Tools > Options > Projects > VC++
-  Directories, and add the follow directories to the following
-  categories:
+  Open up $5L_DIR\5L.sln. Select Tools > Options > Projects and
+  Solutions > VC++ Directories, and add the follow directories to the
+  following categories:
 
     Include files:
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\CIncludes
@@ -71,15 +75,17 @@ Building Win32 5L
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Tools
 
   Click on "Solution Explorer", right-click on "wx5L", and
-  select "Properties" > "Configuration: Debug" > "Debugging"  >
-  "Action".  Set "Working Directory" to $5LTEST_DIR (the actual path,
+  select "Properties" > "Configuration: Debug" > "Debugging".  
+  Set "Working Directory" to $5LTEST_DIR (the actual path,
   not the variable name!).  Select "Configuration: Release" and
   set "Working Directory" to the same value.  Now you'll automatically
   run 5Ltest when you ask Visual Studio to launch your program.
 
   Using a similar process, set the working directories for both versions
   of "CommonTest" to $5L_DIR/Common.  The test suites won't run without
-  this step.
+  this step. Also add "--wait" to the command arguments of CommonTest, in 
+  both the debug and release builds, so you can see the results of the test
+  suites. 
 
   You may also need to look at $5L_DIR/libs/quake2/README-WX.txt. It
   will explain how to set up MSVC with the assembler support to build
