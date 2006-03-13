@@ -211,12 +211,43 @@
           (maybe-insert-def #'name (variable-type #'name))]
          [anything-else #f])))
                        
-  (define-syntax-taggers (define-syntax defsyntax defsyntax*)
-    [(_ (name stx) . body)
-     'syntax name #f]
-    [(_ name . body)
-     'syntax name #f])
+  (define-syntax-taggers* (define-syntax define-syntax* defsyntax defsyntax*)
+    (lambda (stx)
+      (syntax-case stx ()
+        [(_ name (syntax-rules literals [(pat-name . pat-body) template] ...))
+         ;; This is a guard expression, to determine if we should match this 
+         ;; rule. This is basically a substitute for adding syntax-rules to the
+         ;; literals list of the syntax-case, because our syntax object comes 
+         ;; from read-syntax, which doesn't have any lexical informations, so
+         ;; literal matching doesn't work (see 12.2 in the MzSchem manual and 
+         ;; 4.3.2 in R5RS for details).
+         (eq? 'syntax-rules (syntax-object->datum #'syntax-rules))
+         (begin 
+           (maybe-insert-def #'name 'syntax)
+           (foreach (pattern (syntax->list #'((name . pat-body) ...)))
+             (maybe-insert-help #'name 
+                                (syntax-object->datum pattern))))]
+        [(_ (name stx) . body)
+         (maybe-insert-def #'name 'syntax)]
+        [(_ name . body) 
+         (maybe-insert-def #'name 'syntax)])))
+  
+  (define-syntax-tagger* (define-syntaxes stx)
+    (syntax-case stx ()
+      [(_ (name ...) . body)
+       ;; Most of the time these are all on the same line. In that case we
+       ;; don't know what order they'll show up in on the sidebar, but it 
+       ;; seems that it's the reverse of the order we put them into the 
+       ;; database, so we'll put them in in backwards order to get it to 
+       ;; come out right. 
+       (foreach [def (reverse (syntax->list #'(name ...)))]
+         (maybe-insert-def def 'function))]
+      [anything-else #f]))
         
+  (define-syntax-tagger make-provide-syntax 
+    [(_ base provider) 
+     'syntax provider #f])
+  
   (define-syntax-taggers (defsubst defsubst*)
     [(_ (name . args) rewrite)
      'syntax name (name . args)])
