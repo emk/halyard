@@ -58,7 +58,8 @@
            run-tests run-test-method
            define-test-case-helper define-test-case with-captured-variable
            assert-equal assert-macro-expansion 
-           make-test-report)
+           make-test-report 
+           fixture-dir)
   
   ;;; Data about a single failed test case.
   (defclass <test-failure> ()
@@ -230,4 +231,6 @@
         (syntax-object->datum (expand-once #'source)))]))
   (define-syntax-indent assert-macro-expansion function)
   
+  (define (fixture-dir name)
+    (build-path (current-directory) "Runtime" "5L" (cat name "-fixtures")))
   )
