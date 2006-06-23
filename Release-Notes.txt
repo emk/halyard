@@ -8,6 +8,7 @@ CVS - emk, brian
   * Modified CARD-PREV to find the previous *card*, not just the previous
     *sequence*, in order to make "back" buttons in do the right thing
     in nested sequences (bug #2315).
+  * Added HIDE-CURSOR-UNTIL-MOUSE-MOVED! function (#2467).
 
 0.0.60 - 20 Oct 2005 - emk
 

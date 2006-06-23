@@ -175,6 +175,11 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	MovieFrame mWaitFrame;
 
     //////////
+    /// Should we hide the cursor until the user moves the mouse?
+    ///
+    bool mShouldHideCursorUntilMouseMoved;
+
+    //////////
     /// Are we displaying the XY co-ordinates of the cursor?
     ///
     bool mIsDisplayingXy;
@@ -347,6 +352,15 @@ public:
 	/// IsScriptInitialized() returns true.
 	///
 	bool IsInEditMode();
+
+    //////////
+    /// Hide the cursor until the user moves the mouse.  Overrides all
+    /// other cursor display logic.  Typically called by scripts at the
+    /// start of movie playback to keep the cursor from obscuring movie
+    /// details, even when there's interactive stuff elsewhere on the
+    /// screen.
+    ///
+    void HideCursorUntilMouseMoved();
 
 	//////////
 	/// Should we display a cursor?

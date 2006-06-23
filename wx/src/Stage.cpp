@@ -89,6 +89,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 						   inStageSize.GetHeight(), 24),
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
 	  mTextCtrl(NULL), mNeedToWakeUp(false),
+      mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mIsBeingDestroyed(false)
 {
@@ -263,10 +264,16 @@ bool Stage::IsInEditMode()
 	return TInterpreter::GetInstance()->IsStopped();
 }
 
+void Stage::HideCursorUntilMouseMoved() {
+    mShouldHideCursorUntilMouseMoved = true;
+}
+
 bool Stage::ShouldShowCursor() {
     ASSERT(!mIsBeingDestroyed);
 
     // Handle the easy cases first.
+    if (mShouldHideCursorUntilMouseMoved)
+        return false;
     if (!IsScriptInitialized()
         || !mFrame->IsFullScreen()
         || mIsDisplayingXy
@@ -541,6 +548,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
 		return;
 
 	// Do any mouse-moved processing for our Elements.
+    mShouldHideCursorUntilMouseMoved = false;
 	UpdateCurrentElementAndCursor();
     if (mIsDisplayingXy)
     {

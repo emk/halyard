@@ -106,6 +106,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(ElementSetInDragLayer);
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
+    REGISTER_5L_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_5L_PRIMITIVE(Heartbeat);
 	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(Loadpic);
@@ -526,6 +527,10 @@ DEFINE_5L_PRIMITIVE(GeigerSynth) {
         element->AddLoop(loop_cps, loop_location.c_str());
 	}
     element->DoneAddingLoops();
+}
+
+DEFINE_5L_PRIMITIVE(HideCursorUntilMouseMoved) {
+    wxGetApp().GetStage()->HideCursorUntilMouseMoved();
 }
 
 DEFINE_5L_PRIMITIVE(Heartbeat) {
