@@ -11,7 +11,8 @@
            set-image-cache-size! modal-input with-dc
            dc-rect color-at %element% %invisible-element%
            %zone% %simple-zone% zone
-           %animated-graphic% register-cursor mouse-position
+           %animated-graphic% register-cursor hide-cursor-until-mouse-moved!
+           mouse-position
            grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
            local->card
            delete-element delete-elements
@@ -301,6 +302,9 @@
     (let [[path (make-path "Graphics" (cat "cursors/" filename))]]
       (check-file path)
       (call-5l-prim 'RegisterCursor sym path hotspot)))
+
+  (define (hide-cursor-until-mouse-moved!)
+    (call-5l-prim 'HideCursorUntilMouseMoved))
 
   (define (mouse-position)
     ;; XXX - This keeps returning exciting results even if we're in the
