@@ -17,11 +17,65 @@
   (current-library-collection-paths
    (list (build-path (current-directory) "Runtime")
          (build-path (current-directory) "Scripts")))
+
+  ;;===== Primitive functions =====
   
+  ;; Call the specified engine primitive if it exists.
+  (define (maybe-call-5l-prim name . args)    
+    (when (%call-5l-prim 'haveprimitive name)
+      (apply %call-5l-prim name args)))
+
   ;; Notify the operating system that we're still alive, and haven't hung.
   (define (heartbeat)
-    (when (%call-5l-prim 'haveprimitive 'heartbeat)
-      (%call-5l-prim 'heartbeat)))
+    (maybe-call-5l-prim 'heartbeat))
+
+  ;; Load a splash screen at the standard location, assuming it exists.
+  (define (maybe-load-splash path)
+    (maybe-call-5l-prim 'MaybeLoadSplash path))
+
+  ;; Force a screen update.
+  (define (refresh)
+    (maybe-call-5l-prim 'refresh 'none 0))
+
+  ;; Let the engine know we've loaded a file.
+  (define (notify-file-loaded)
+    (maybe-call-5l-prim 'NotifyFileLoaded))
+
+  ;; Let the engine know we've loaded all the files we plan to load.
+  (define (notify-script-loaded)
+    (maybe-call-5l-prim 'NotifyScriptLoaded))
+
+  ;; Draw the progress bar for the current status of our load.
+  (define (draw-load-progress)
+    (maybe-call-5l-prim 'DrawLoadProgress))
+
+  ;;===== Splash screen management =====
+
+  ;; The time we started loading the script.
+  (define *load-start-time* #f)
+
+  ;; Do we need to display a second splash screen at the appropriate
+  ;; moment?
+  (define *showing-first-splash-screen?* #t)
+
+  ;; Keep track of when we started to load the program, and which
+  ;; splash-screen we're showing.
+  (define (initialize-splash-screen!)
+    (set! *load-start-time* (current-milliseconds))
+    (set! *showing-first-splash-screen?* #t))
+  
+  ;; Make any necessary updates to the splash screen.
+  (define (update-splash-screen!)
+    (notify-file-loaded)
+    (when (and *showing-first-splash-screen?*
+               (> (current-milliseconds) (+ *load-start-time* 2000)))
+      (set! *showing-first-splash-screen?* #f)
+      (maybe-load-splash "splash2.png"))
+    (unless *showing-first-splash-screen?*
+      (draw-load-progress))
+    (refresh))
+
+  ;;===== Loader =====
 
   ;; Import a function the hard way.  We can't just (require ...) this
   ;; module because we don't set up the collection paths until its
@@ -46,6 +100,7 @@
       (heartbeat)
       (let [[result (compile-zo file-path expected-module-name)]]
         (heartbeat)
+        (update-splash-screen!)
         result))
     
     compile-zo-with-heartbeat)
@@ -92,6 +147,7 @@
       (with-handlers [[void (lambda (exn)
                               (string-append "Error while loading <" filename
                                              ">: " (exn-message exn)))]]
+        (initialize-splash-screen!)
 
         ;; First, we install enough of a namespace to parse 'module'.
         ;; We'll need this in just a second when we call load/use-compiled.
@@ -125,6 +181,7 @@
         ;; Load the user's actual script into our new namespace.
         (set! filename (build-path (current-directory) "Scripts" "start.ss"))
         (load/use-compiled filename)
+        (notify-script-loaded)
         #f)))
 
   ) ; end module

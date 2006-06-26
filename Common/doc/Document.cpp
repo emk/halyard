@@ -70,9 +70,10 @@ END_MODEL_CLASSES()
 //=========================================================================
 //  Format 0: Original format.
 //  Format 1: Added dbgreporturl to TamaleProgram.
+//  Format 2: Added sourcefilecount to TamaleProgram.
 
 enum {
-    CURRENT_FORMAT = 1,
+    CURRENT_FORMAT = 2,
     COMPATIBLE_BACK_TO = 0,
     EARLIEST_READABLE = 0
 };
@@ -126,7 +127,9 @@ Document::Document(const std::string &inDirectory)
 	std::string data_file = SetBaseAndGetFilePath(inDirectory);
 	CheckStructure();
     SaveAs(data_file.c_str());
-	TInterpreterManager::GetInstance()->BeginScript();
+    TInterpreterManager *manager = TInterpreterManager::GetInstance();
+    manager->RegisterDocument(this);
+	manager->BeginScript();
 }
 
 Document::Document(const std::string &inDirectory, Flag inOpen)
@@ -134,7 +137,9 @@ Document::Document(const std::string &inDirectory, Flag inOpen)
 			SetBaseAndGetFilePath(inDirectory).c_str())
 {
 	CheckStructure();
-	TInterpreterManager::GetInstance()->BeginScript();    
+    TInterpreterManager *manager = TInterpreterManager::GetInstance();
+    manager->RegisterDocument(this);
+	manager->BeginScript();    
 }
 
 Document::~Document()

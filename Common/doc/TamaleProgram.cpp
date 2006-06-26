@@ -57,6 +57,8 @@ void TamaleProgram::Initialize()
 void TamaleProgram::Migrate() {
     if (!DoFind("dbgreporturl"))
         SetString("dbgreporturl", "");
+    if (!DoFind("sourcefilecount"))
+        SetInteger("sourcefilecount", 1);
 }
 
 List *TamaleProgram::GetBackgrounds()
@@ -83,4 +85,19 @@ std::string TamaleProgram::GetCopyright() {
 /// The URL to which we should submit debug reports about script errors.
 std::string TamaleProgram::GetDebugReportURL() {
     return GetString("dbgreporturl");
+}
+
+/// The number of source files we believe will be loaded at script startup.
+/// Used to implement our progress bar.
+int TamaleProgram::GetSourceFileCount() {
+    return GetInteger("sourcefilecount");
+}
+
+/// Set the number of source files we believe will be loaded at script
+/// startup.
+void TamaleProgram::SetSourceFileCount(int count) {
+    // TODO - Checking for "do nothing" calls to set should be a general
+    // feature of Model, and not just a one-off for this specific case.
+    if (GetInteger("sourcefilecount") != count)
+        SetInteger("sourcefilecount", count);
 }

@@ -187,10 +187,8 @@ void Stage::MaybeShowSplashScreen() {
     // TODO - We assume the bitmap is 800x450 pixels, and we lay out
     // this screen using hard-coded co-ordinates.
 
-    // If we have a screenshot.png file, draw it onto the stage.
-    wxBitmap bitmap = GetScriptGraphic("splash.png");
-    if (bitmap.Ok())
-        mBackgroundDrawingArea->DrawBitmap(bitmap, 0, 60);
+    // If we have a splash.png file, draw it onto the stage.
+    MaybeDrawSplashGraphic("splash.png");
 
     // Get our copyright strings.
     TamaleProgram *prog = mFrame->GetDocument()->GetTamaleProgram();
@@ -214,6 +212,33 @@ void Stage::MaybeShowSplashScreen() {
     dc.DrawText(script_copyright.c_str(), 5, 515);
     dc.DrawText(tamale_copyright.c_str(), 5, 530);
     InvalidateRect(wxRect(0, 500, 800, 100));
+}
+
+void Stage::MaybeDrawSplashGraphic(const std::string &inName) {
+    // TODO - We assume the bitmap is 800x450 pixels, and we lay out
+    // this screen using hard-coded co-ordinates.
+    wxBitmap bitmap = GetScriptGraphic(inName);
+    if (bitmap.Ok())
+        mBackgroundDrawingArea->DrawBitmap(bitmap, 0, 60);
+}
+
+void Stage::DrawLoadProgress() {
+    // TODO - We lay out this screen using hard-coded co-ordinates.
+    const int y_pos       = 459;
+    const int x_begin     = 290;
+    const int x_space_end = 510;
+    const int x_space     = x_space_end - x_begin;
+
+    // Figure out how much of our bar to actually draw.
+    double frac = TInterpreter::GetInstance()->GetLoadProgress();
+    int x_end = x_begin + x_space * frac;
+    
+    // Load our image, and use it to draw the progress bar.
+    wxBitmap bitmap = GetScriptGraphic("progress.png");
+    if (bitmap.Ok()) {
+        for (int x = x_begin; x < x_end; ++x)
+            mBackgroundDrawingArea->DrawBitmap(bitmap, x, y_pos);
+    }
 }
 
 bool Stage::IsIdleAllowed() const {

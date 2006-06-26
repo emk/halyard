@@ -50,10 +50,13 @@ public:
 
 IMPLEMENT_MODEL_CLASS(Card);
 
-BEGIN_MODEL_CLASSES()
-	REGISTER_MODEL_CLASS(TestData)
-	REGISTER_MODEL_CLASS(Card)
-END_MODEL_CLASSES()
+// There's no need to register these since we use them in this file,
+// and if we do register them, it will conflict with the ones we use for
+// the real program (unless somebody fixes BEGIN_MODEL_CLASSES).
+//BEGIN_MODEL_CLASSES()
+//	REGISTER_MODEL_CLASS(TestData)
+//	REGISTER_MODEL_CLASS(Card)
+//END_MODEL_CLASSES()
 
 
 //=========================================================================

@@ -330,6 +330,17 @@ public:
     ///
     void MaybeShowSplashScreen();
 
+    //////////
+    /// Draw the specified splash-screen graphic, if available.
+    ///
+    void MaybeDrawSplashGraphic(const std::string &inName);
+
+    //////////
+    /// Draw a progress bar on the Stage showing how much of the script
+    /// has been loaded.
+    ///
+    void DrawLoadProgress();
+
 	//////////
 	/// Should the script be allowed to idle right now?
 	///

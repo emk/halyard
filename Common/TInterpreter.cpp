@@ -24,6 +24,8 @@
 
 #include "TInterpreter.h"
 #include "TDeveloperPrefs.h"
+#include "doc/Document.h"
+#include "doc/TamaleProgram.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -34,14 +36,45 @@ USING_NAMESPACE_FIVEL
 TInterpreter *TInterpreter::sInstance = NULL;
 
 TInterpreter::TInterpreter()
+    : mSourceFilesLoaded(0), mSourceFilesExpected(0)
+
 {
     ASSERT(sInstance == NULL);
     sInstance = this;
+
+    // If we have a document (i.e., we're not running the test suites),
+    // then load in the expected number of source files.
+    Document *doc = TInterpreterManager::GetInstance()->GetDocument();
+    if (doc)
+        mSourceFilesExpected = doc->GetTamaleProgram()->GetSourceFileCount();
 }
 
 TInterpreter::~TInterpreter()
 {
     sInstance = NULL;
+}
+
+void TInterpreter::NotifyFileLoaded() {
+    ++mSourceFilesLoaded;
+    if (mSourceFilesLoaded > mSourceFilesExpected)
+        mSourceFilesExpected = mSourceFilesLoaded;
+}
+
+void TInterpreter::NotifyScriptLoaded() {
+    mSourceFilesExpected = mSourceFilesLoaded;
+
+    // If we have a document (i.e., we're not running the test suites),
+    // and we're not in runtime mode, then update our source file count.
+    Document *doc = TInterpreterManager::GetInstance()->GetDocument();
+    if (doc && !TInterpreterManager::GetInstance()->IsInRuntimeMode())
+        doc->GetTamaleProgram()->SetSourceFileCount(mSourceFilesExpected);
+}
+
+double TInterpreter::GetLoadProgress() {
+    if (mSourceFilesExpected == 0)
+        return 0.0;
+    else
+        return (1.0 * mSourceFilesLoaded) / mSourceFilesExpected;
 }
 
 
@@ -71,6 +104,8 @@ std::vector<TReloadNotified*> TInterpreterManager::sReloadNotifiedObjects;
 bool TInterpreterManager::sIsInRuntimeMode = false;
 bool TInterpreterManager::sHaveInitialCommand = false;
 std::string TInterpreterManager::sInitialCommand;
+Document *TInterpreterManager::sDocument = NULL;
+
 
 TInterpreterManager::TInterpreterManager(
 	TInterpreter::SystemIdleProc inIdleProc)

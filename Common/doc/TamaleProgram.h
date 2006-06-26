@@ -40,6 +40,8 @@ public:
     std::string GetName();
     std::string GetCopyright();
     std::string GetDebugReportURL();
+    int GetSourceFileCount();
+    void SetSourceFileCount(int count);
 
 protected:
     void Migrate();

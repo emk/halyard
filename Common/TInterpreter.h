@@ -27,6 +27,7 @@ BEGIN_NAMESPACE_FIVEL
 
 class TValue;
 class ScriptEditorDB;
+class Document;
 
 //////////
 /// An identifier which might appear in a script.  Used to inform the editor
@@ -254,6 +255,24 @@ public:
     /// Fetch a list of known identifiers from the interpreter.
     ///
 	virtual std::vector<TScriptIdentifier> GetKnownIdentifiers() = 0;
+
+    //////////
+    /// Called when a file is loaded at application startup.  Used to
+    /// implement a progress bar.
+    ///
+    void NotifyFileLoaded();
+
+    //////////
+    /// Called when a file is loaded at application startup.  Used to
+    /// implement a progress bar.
+    ///
+    void NotifyScriptLoaded();
+
+    //////////
+    /// Get the fraction of startup files loaded.  Returns a number between
+    /// 0.0 and 1.0, inclusive.  Used to implement a progress bar.
+    ///
+    double GetLoadProgress();
 	
 	//////////
 	/// Do we have a single, global instance of this class?
@@ -266,6 +285,9 @@ public:
 	static TInterpreter *GetInstance() { ASSERT(sInstance); return sInstance; }
 
 private:
+    int mSourceFilesLoaded;
+    int mSourceFilesExpected;
+
 	static TInterpreter *sInstance;
 };
 
@@ -329,6 +351,7 @@ class TInterpreterManager : boost::noncopyable
     static bool sIsInRuntimeMode;
     static bool sHaveInitialCommand;
     static std::string sInitialCommand;
+    static Document *sDocument;
 
 	//////////
 	/// We call this procedure to yield time to the system.
@@ -390,6 +413,18 @@ public:
 	/// application quits.
 	///
 	void Run();
+
+    //////////
+    /// Inform the interpreter of the current Document.  Used so we can
+    /// save the total number of files loaded.
+    ///
+    void RegisterDocument(Document *inDocument) { sDocument = inDocument; }
+
+    //////////
+    /// Get the document object associated with this TInterpreterManager,
+    /// or NULL if no document has been loaded yet.
+    ///
+    Document *GetDocument() const { return sDocument; }
 
 	//////////
 	/// Call this function to start the script running.  This step is

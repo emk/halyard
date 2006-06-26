@@ -9,6 +9,7 @@ CVS - emk, brian
     *sequence*, in order to make "back" buttons in do the right thing
     in nested sequences (bug #2315).
   * Added HIDE-CURSOR-UNTIL-MOUSE-MOVED! function (#2467).
+  * Preliminary splash-screen progress bar support (#2856).
 
 0.0.60 - 20 Oct 2005 - emk
 

@@ -99,6 +99,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(DrawBoxFill);
 	REGISTER_5L_PRIMITIVE(DrawBoxOutline);
 	REGISTER_5L_PRIMITIVE(DrawLine);
+    REGISTER_5L_PRIMITIVE(DrawLoadProgress);
 	REGISTER_5L_PRIMITIVE(EditBox);
 	REGISTER_5L_PRIMITIVE(ElementExists);
 	REGISTER_5L_PRIMITIVE(ElementIsShown);
@@ -112,6 +113,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
     REGISTER_5L_PRIMITIVE(MarkUnprocessedEventsAsStale);
+    REGISTER_5L_PRIMITIVE(MaybeLoadSplash);
     REGISTER_5L_PRIMITIVE(MeasurePic);
 	REGISTER_5L_PRIMITIVE(MediaSetVolume);
 	REGISTER_5L_PRIMITIVE(MouseGrab);
@@ -451,6 +453,10 @@ DEFINE_5L_PRIMITIVE(DrawLine) {
 
 }
 
+DEFINE_5L_PRIMITIVE(DrawLoadProgress) {
+    wxGetApp().GetStage()->DrawLoadProgress();
+}
+
 DEFINE_5L_PRIMITIVE(EditBox) {
 	std::string name, text;
 	TRect bounds;
@@ -628,6 +634,12 @@ DEFINE_5L_PRIMITIVE(Loadsubpic) {
 
 DEFINE_5L_PRIMITIVE(MarkUnprocessedEventsAsStale) {
     EventDispatcher::UpdateMaxStaleTime();
+}
+
+DEFINE_5L_PRIMITIVE(MaybeLoadSplash) {
+    std::string picname;
+    inArgs >> picname;
+	wxGetApp().GetStage()->MaybeDrawSplashGraphic(picname.c_str());
 }
 
 DEFINE_5L_PRIMITIVE(MeasurePic) {

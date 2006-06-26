@@ -51,6 +51,8 @@ void FIVEL_NS RegisterCommonPrimitives()
 	REGISTER_5L_PRIMITIVE(VariableInitialized);
 	REGISTER_5L_PRIMITIVE(DefStyle);
 	REGISTER_5L_PRIMITIVE(MeasureTextAA);
+    REGISTER_5L_PRIMITIVE(NotifyFileLoaded);
+    REGISTER_5L_PRIMITIVE(NotifyScriptLoaded);
     REGISTER_5L_PRIMITIVE(StateDbSet);
     REGISTER_5L_PRIMITIVE(StateDbGet);
     REGISTER_5L_PRIMITIVE(StateDbRegisterListener);
@@ -339,6 +341,14 @@ DEFINE_5L_PRIMITIVE(MeasureTextAA)
 	gStyleSheetManager.Draw(style, text,
 							GraphicsTools::Point(0, 0),
 							max_width, NULL);
+}
+
+DEFINE_5L_PRIMITIVE(NotifyFileLoaded) {
+    TInterpreter::GetInstance()->NotifyFileLoaded();
+}
+
+DEFINE_5L_PRIMITIVE(NotifyScriptLoaded) {
+    TInterpreter::GetInstance()->NotifyScriptLoaded();    
 }
 
 DEFINE_5L_PRIMITIVE(StateDbSet) {
