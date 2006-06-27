@@ -35,23 +35,19 @@ void Log5L::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
 {
     const char *label = "MESSAGE";
     bool log = true;
-    bool high_priority = false;
 
     switch (inLevel)
     {
 		case wxLOG_FatalError:
 			label = "FATAL ERROR";
-			high_priority = true;
             break;
 			
         case wxLOG_Error:
 			label = "ERROR";
-			high_priority = true;
             break;
 			
         case wxLOG_Warning:
 			label = "WARNING";
-			high_priority = true;
             break;
 			
         case wxLOG_Info:
@@ -83,8 +79,26 @@ void Log5L::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
 				   localtime(&inTimeStamp));
 
 		// Print our log message to the appropriate logs.
-		gDebugLog.Log("WX %s: %s [%s]", label, inMsg, buffer);
-		if (high_priority)
-			gLog.Log("WX %s: %s [%s]", label, inMsg, buffer);
+		switch (inLevel) 
+		{ 
+			case wxLOG_FatalError:
+				gDebugLog.FatalError("WX %s: %s [%s]", label, inMsg, buffer);
+				gLog.FatalError("WX %s: %s [%s]", label, inMsg, buffer);
+				break;
+
+		    case wxLOG_Error:
+				gDebugLog.Error("WX %s: %s [%s]", label, inMsg, buffer);
+				gLog.Error("WX %s: %s [%s]", label, inMsg, buffer);
+				break;
+
+		    case wxLOG_Warning:
+				gDebugLog.Caution("WX %s: %s [%s]", label, inMsg, buffer);
+				gLog.Caution("WX %s: %s [%s]", label, inMsg, buffer);
+				break;
+				
+		    default:
+				gDebugLog.Log("WX %s: %s [%s]", label, inMsg, buffer);
+				break;
+		}
     }
 }

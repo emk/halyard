@@ -48,6 +48,7 @@
 #	include "TQuake2Primitives.h"
 #endif // CONFIG_HAVE_QUAKE2
 #include "AudioStream.h"
+#include "Downloader.h"
 #include "Stage.h"
 
 // Provided by auto-generated resources.cpp file.
@@ -223,11 +224,10 @@ bool FiveLApp::OnInit() {
     ::RegisterQuake2Primitives();
 #endif // CONFIG_HAVE_QUAKE2
     
-    // Send copies of all wxWindows logging messages to our traditional 5L
+    // Send all wxWindows logging messages to our traditional 5L
     // logs.  This gives us a single copy of everything.
     // TODO - How do we clean up these resources?
-    wxLog::SetActiveTarget(new wxLogGui());
-    new wxLogChain(new Log5L());
+    wxLog::SetActiveTarget(new Log5L());
     
     // Configure some useful trace masks for debugging the application.
     // Comment these out to disable a particular kind of tracing.
@@ -360,6 +360,8 @@ int FiveLApp::MainLoop() {
     TInterpreterManager *manager =
 		GetSchemeInterpreterManager(&FiveLApp::IdleProc);
 
+	Downloader *downloader = new Downloader();
+
     // Check to see if we have any command-line arguments.
     if (TInterpreterManager::IsInRuntimeMode()) {
         // Open the specified document directly.
@@ -378,6 +380,8 @@ int FiveLApp::MainLoop() {
 	IdleProc(false);
 	manager->Run();
     error = manager->ExitedWithError();
+	delete downloader;
+	downloader = NULL;
 	delete manager;
 	manager = NULL;
 

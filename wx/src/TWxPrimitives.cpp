@@ -57,6 +57,7 @@
 #include "ActiveXElement.h"
 #include "TStateDB.h"
 #include "dlg/MultiButtonDlg.h"
+#include "Downloader.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -96,6 +97,7 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(DebugReportAddFile);
     REGISTER_5L_PRIMITIVE(DeleteElements);
     REGISTER_5L_PRIMITIVE(Dialog);
+	REGISTER_5L_PRIMITIVE(Download);
 	REGISTER_5L_PRIMITIVE(DrawBoxFill);
 	REGISTER_5L_PRIMITIVE(DrawBoxOutline);
 	REGISTER_5L_PRIMITIVE(DrawLine);
@@ -422,6 +424,13 @@ DEFINE_5L_PRIMITIVE(Dialog) {
                        title.c_str(), message.c_str(), button1.c_str(),
                        button2.c_str(), button3.c_str());
     ::SetPrimitiveResult(dlg.ShowModal());
+}
+
+DEFINE_5L_PRIMITIVE(Download) {
+	std::string URL, file;
+	inArgs >> URL >> file;
+
+	::SetPrimitiveResult(Downloader::GetInstance()->Get(URL, file));
 }
 
 DEFINE_5L_PRIMITIVE(DrawBoxFill) {

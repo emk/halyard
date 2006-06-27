@@ -2,6 +2,11 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 CVS - emk, brian
 
+  * Created Downloader class, for downloading a file specified by a
+    URL to the local disk.
+  * Changed error handling of wxWidgets errors to make better use of 
+    the TLogger class and not use the default error handlers. 
+  * Moved DoIdle from TSchemeInterpreter to TInterpreter.
   * Fixed up code so we can compile under Visual Studio .NET 2005, and
     updated HACKING.txt to include instructions for how to set up
     VS.NET 2005.

@@ -274,6 +274,14 @@ public:
     ///
     double GetLoadProgress();
 	
+	/////////
+	/// Run the system idle procedure.
+	/// 
+	/// \param block  Should the idle procedure block until all events are 
+	///               processed, or only process a few events? 
+	///
+	virtual void DoIdle(bool block) = 0;
+
 	//////////
 	/// Do we have a single, global instance of this class?
 	///

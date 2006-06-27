@@ -118,6 +118,7 @@ public:
 	TSchemeInterpreter(Scheme_Env *inGlobalEnv);
 	virtual ~TSchemeInterpreter();
 
+	// TODO - factor entirely into TInterpreter.
 	void DoIdle(bool block) {
 		ASSERT(sSystemIdleProc);
 		(*sSystemIdleProc)(block);

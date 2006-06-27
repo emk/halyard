@@ -52,12 +52,12 @@ DEFINE_5L_PRIMITIVE(SchemeExit)
 	TInterpreterManager::GetInstance()->RequestQuitApplication();
 }
 
+// TODO - Rename to Idle and move to TCommonPrimitives.cpp
 DEFINE_5L_PRIMITIVE(SchemeIdle)
 {
 	// Recover our Scheme interpreter.
-	TSchemeInterpreter *scheme_interp =
-		dynamic_cast<TSchemeInterpreter*>(TSchemeInterpreter::GetInstance());
-	ASSERT(scheme_interp);
+	TInterpreter *interp = TInterpreter::GetInstance();
+	ASSERT(interp);
 
 	// Should our idle loop block until any events are received from 
 	// the user?
@@ -66,7 +66,7 @@ DEFINE_5L_PRIMITIVE(SchemeIdle)
 	inArgs >> block;
 
 	// Call our stored idle procedure and let the GUI run for a bit.
-	scheme_interp->DoIdle(block);
+	interp->DoIdle(block);
 
 	// Logging this primitive would only clutter the debug log.  We need
 	// to do this *after* calling DoIdle, so that it doesn't get
