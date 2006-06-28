@@ -170,12 +170,13 @@
     (let loop [[alist '()]]
       (let [[line (read-line)]]
         (cond
-          ((eof-object? line) alist)
-          ((= (string-length line) 0) 
+          ((eof-object? line) alist) ; TODO - should be an error
+          ((= (string-length line) 0)
            (cons (list "MANIFEST" (parse-opened-manifest)) alist))
           (else (let [[m (regexp-match r line)]]
                   (if m
-                    (loop (cons (cdr m) alist)))))))))
+                    (loop (cons (cdr m) alist))
+                    (error "Couldn't parse release specification."))))))))
   
   ;;========================================================================
   
