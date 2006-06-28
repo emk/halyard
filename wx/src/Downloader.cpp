@@ -28,47 +28,63 @@
 USING_NAMESPACE_FIVEL
 
 Download::Download(const std::string &url, const std::string &file, 
-				   cURLpp::Easy *request) 
+				   CURL *request) 
 : m_out(file.c_str()), m_url(url), m_request(request), m_shouldCancel(false) { 
 }
 
-size_t Download::WriteToFile(char* ptr, size_t size, size_t nmemb) {
-	m_out.Write(ptr, size*nmemb);
-	return m_out.LastWrite();
+// TODO - add exception handler? 
+size_t WriteToFile(char* ptr, size_t size, size_t nmemb, void *data) {
+	Download *dl = (Download *) data;
+	dl->m_out.Write(ptr, size*nmemb);
+	return dl->m_out.LastWrite();
 }
 
-int Download::ProgressCallback(double dltotal, double dlnow, 
-							   double ultotal, double ulnow) {
-    if (m_shouldCancel) 
+int ProgressCallback(void *data, double dltotal, double dlnow, 
+					 double ultotal, double ulnow) {
+	Download *dl = (Download *) data; 
+
+    if (dl->m_shouldCancel) 
 		return 1;
-	TInterpreter::GetInstance()->DoIdle(false);
+	// Make sure any exceptions get caught here, because they can mess with 
+	// cURL. Just die if an exception happens. 
+	// TODO - should we change this to just cancelling the download on 
+	// an exception? Or cancel the download, store the exception, and 
+	// throw it again once we're outside of a cURL callback? 
+	try {
+		TInterpreter::GetInstance()->DoIdle(false);
+	} catch (std::exception &e) {
+		gLog.FatalError("Unexpected internal error: %s", e.what()); 
+	} catch (...) {
+		gLog.FatalError("Unexpected, unknown internal error.");
+	}
 	return 0;
+}
+
+#define RETURN_ON_ERROR(EXPR)     \
+{                                 \
+    CURLcode error_code = (EXPR); \
+    if (error_code != CURLE_OK) { \
+	    gDebugLog.Log("cURL error (%d): %s", error_code, error_buffer); \
+        return false;             \
+    }                             \
 }
 
 bool Download::Perform() {
 	if (!m_out.Ok()) {
 		return false;
 	}
+	char error_buffer[CURL_ERROR_SIZE];
 	
-	try {
-		m_request->setOpt(cURLpp::Options::Url(m_url));
-		
-		cURLpp::Types::WriteFunctionFunctor 
-			functor(this, &Download::WriteToFile);
-		m_request->setOpt(cURLpp::Options::WriteFunction(functor));
-		
-		cURLpp::Types::ProgressFunctionFunctor 
-			progress(this, &Download::ProgressCallback);
-		m_request->setOpt(cURLpp::Options::ProgressFunction(progress));
+	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_URL, m_url.c_str()));
 
-		m_request->perform();
-	} catch (cURLpp::RuntimeError &e) {
-		gDebugLog.Log("cURL runtime error: %s\n", e.what());
-		return false;
-	} catch (cURLpp::LogicError &e) {
-		gDebugLog.Error("cURL logic error: %s\n", e.what());
-		return false;
-	}
+	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_WRITEFUNCTION, 
+									 &WriteToFile));
+	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_WRITEDATA, this));
+	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_PROGRESSFUNCTION, 
+									 &ProgressCallback));
+	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_PROGRESSDATA, this));
+	
+	RETURN_ON_ERROR(curl_easy_perform(m_request));
 
 	return true;
 }
@@ -86,14 +102,18 @@ Downloader::Downloader() {
 	ASSERT(s_instance == NULL);
 	s_instance = this;
 
-	m_request.setOpt(cURLpp::Options::NoProgress(false));
+	curl_global_init(CURL_GLOBAL_ALL);
+
+	m_request = curl_easy_init();
+
+	curl_easy_setopt(m_request, CURLOPT_NOPROGRESS, 0);
 	m_currentDownload = NULL;
 }
 
 Downloader::~Downloader() { }
 
 bool Downloader::Get(const std::string &URL, const std::string &file) {
-	Download d(URL, file, &m_request);
+	Download d(URL, file, m_request);
 	m_currentDownload = &d;
 	bool result = d.Perform();
 	m_currentDownload = NULL;

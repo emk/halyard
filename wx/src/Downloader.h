@@ -22,26 +22,25 @@
 
 #ifndef Downloader_H
 #define Downloader_H
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
+#include <curl/curl.h>
 #include <wx/wfstream.h>
 
 class Download {
 public:
 	Download(const std::string &url, const std::string &file, 
-			 cURLpp::Easy *request);
+			 CURL *request);
 	bool Perform();
 	void Cancel();
 protected:
 	wxFileOutputStream m_out;
-	cURLpp::Easy *m_request;
+	CURL *m_request;
 	std::string m_url;
 	bool m_shouldCancel;
-
-	size_t WriteToFile(char* ptr, size_t size, size_t nmemb);
-	int ProgressCallback(double dltotal, double dlnow, 
-						 double ultotal, double ulnow);
+	
+	friend size_t WriteToFile(char* ptr, size_t size, size_t nmemb, 
+							  void *data);
+	friend int ProgressCallback(void *data, double dltotal, double dlnow, 
+								double ultotal, double ulnow);
 };
 
 class Downloader
@@ -74,8 +73,7 @@ protected:
 	static Downloader *s_instance;
 	static bool s_haveAlreadyCreatedSingleton;
 
-	cURLpp::Easy m_request;
-	cURLpp::Cleanup m_cleaner;
+	CURL * m_request;
 	Download * m_currentDownload;
 };
 
