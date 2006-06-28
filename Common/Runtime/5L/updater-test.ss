@@ -98,31 +98,76 @@
       (assert-file-equals "bad!" (build-path (test-directory self) "temp1"))
       (assert-file-equals "noname" 
                           (build-path (test-directory self) "temp2"))))
-
+  
+  (define-test-case <downloader-test> ()
+      [[test-directory #f]
+       [downloader #f]
+       [url-prefix #f]]
+    (setup
+      (set! (test-directory self) (ensure-dir-exists "DownloadTest"))
+      (set! (downloader self)
+            (make <downloader> :directory (test-directory self)))
+      (set! (url-prefix self) 
+            (cat "file:///" (fixture-dir "updater") "/downloader/")))
+    (teardown
+      (delete-directory-recursive (test-directory self)))
+    (test "downloader should write files."
+      (download (downloader self) (cat (url-prefix self) "test"))
+      (download (downloader self) (cat (url-prefix self) "bar") :file "foobar")
+      (assert-file-equals "test\n"
+                          (build-path (test-directory self) "test"))
+      (assert-file-equals "foo\nbar\n"
+                          (build-path (test-directory self) "foobar"))))
+  
+  (define-test-case <parsing-test> ()
+      [[base-directory (build-path (fixture-dir "updater") "base")]]
+    (test "Parsing manifests."
+      (assert-equal 
+       `((,null-digest 0 "bar.txt")
+         (,null-digest 0 "foo.txt"))
+       (parse-manifest (build-path (base-directory self) "MANIFEST.base")))
+      (assert-equal 
+       `((,null-digest 0 "sub/baz.txt")
+         (,null-digest 0 "sub/foo.txt"))
+       (parse-manifest (build-path (base-directory self) "MANIFEST.sub"))))
+    (test "Parsing .spec files."
+      (assert-set-equal 
+       '(("Update-URL" "http://www.example.com/updates/")
+         ("Build" "base")
+         ("MANIFEST" (("142b5a7005ee1b9dc5f1cc2ec329acd0ad3cc9f6"
+                       110 "MANIFEST.sub")
+                      ("82b90fb155029800cd45f08d32df240d672dfd5b"
+                       102 "MANIFEST.base"))))
+       (parse-spec-file (build-path (base-directory self) "release.spec")))))
+  
   (define null-digest "da39a3ee5e6b4b0d3255bfef95601890afd80709")
   (define foo-digest "855426068ee8939df6bce2c2c4b1e7346532a133")
   
-  ;; TODO - macroize, move to tamale-unit, maybe make more efficient. 
+  ;; TODO - macroize?, move to tamale-unit
   (define (assert-set-equal a b)
     (foreach (item a)
-      (assert (member? item b)))
+      (unless (member? item b)
+        (error (cat "Couldn't find " item " in " b))))
     (foreach (item b)
-      (assert (member? item a))))
+      (unless (member? item a)
+        (error (cat "Couldn't find " item " in " a)))))
   
-  (define (setup-mock-root-directory dir update-dir)
-    (define mock-downloader
-      (mock-downloader-from-dir 
-       update-dir
-       :prefix "test://update.com/" 
-       :download-dir (build-path dir "Temp")))
-    (add-urls-from-manifests mock-downloader "test://update.com/" update-dir)
-    (set-update-downloader! mock-downloader)
-    (set-update-root-directory! dir))
+;  (define (setup-mock-root-directory dir update-dir)
+;    (define mock-downloader
+;      (mock-downloader-from-dir 
+;       update-dir
+;       :prefix "test://update.com/" 
+;       :download-dir (build-path dir "Temp")))
+;    (add-urls-from-manifests mock-downloader "test://update.com/" update-dir)
+;    (set-update-downloader! mock-downloader)
+;    (set-update-root-directory! dir))
   
+  ;; TODO - add test case for update spec file having new URL. 
   (define-test-case <updater-test> () 
       [[test-directory #f]
        [base-directory #f]
-       [update-directory #f]]
+       [update-directory #f]
+       [url-prefix #f]]
     (setup 
       (set! (test-directory self) (ensure-dir-exists "UpdaterTest"))
       (set! (base-directory self)
@@ -132,43 +177,57 @@
       (set! (update-directory self)
             (copy-recursive 
              (build-path (fixture-dir "updater") "update")
-             (test-directory self))))
+             (test-directory self)))
+      (set! (url-prefix self) 
+            (cat "file:///" (fixture-dir "updater") "/update-server/")))
     (teardown 
       (delete-directory-recursive (test-directory self))
-      (set-update-downloader! #f)
-      (set-update-root-directory! #f))
-    (test "Parsing manifests."
-      (assert-equal 
-       `((,null-digest "bar.txt")
-         (,null-digest "foo.txt"))
-       (parse-manifest (build-path (base-directory self) "MANIFEST.base")))
-      (assert-equal 
-       `((,null-digest "sub/baz.txt")
-         (,null-digest "sub/foo.txt"))
-       (parse-manifest (build-path (base-directory self) "MANIFEST.sub"))))
+      (clear-updater!))
     (test "diff-manifests should work."
-      (define manifest-a '(("123" "foo.txt")
-                           ("456" "bar.txt")
-                           ("ABC" "sub/thing.txt")))
-      (define manifest-b '(("125" "foo.txt")
-                           ("456" "bar.txt")
-                           ("ABC" "sub/thing.txt")
-                           ("DEF" "sub/zot.txt")))
+      (define manifest-a '(("123" 0 "foo.txt")
+                           ("456" 1 "bar.txt")
+                           ("ABC" 2 "sub/thing.txt")))
+      (define manifest-b '(("125" 2 "foo.txt")
+                           ("456" 1 "bar.txt")
+                           ("ABC" 2 "sub/thing.txt")
+                           ("DEF" 3 "sub/zot.txt")))
       (assert-set-equal '() (diff-manifests manifest-a manifest-a))
-      (assert-set-equal '(("125" "foo.txt") ("DEF" "sub/zot.txt")) 
+      (assert-set-equal '(("125" 2 "foo.txt") ("DEF" 3 "sub/zot.txt")) 
                         (diff-manifests manifest-a manifest-b)))
-    (test "Checking for updates, update should be available."
-      (setup-mock-root-directory (base-directory self) (update-directory self))
-      (assert (check-for-update "test://update.com/")))
-    (test "Checking for update, update should not be available."
-      (setup-mock-root-directory 
-       (update-directory self) (update-directory self))
-      (assert (not (check-for-update "test://update.com/"))))
+    (test "Automatic update should be possible." 
+      (init-updater! :root-directory (base-directory self))
+      (assert (auto-update-possible?)))
+    (test "Checking for staging update, update should be available."
+      (init-updater! :root-directory (base-directory self) :staging? #t)
+      (set-updater-url! (url-prefix self))
+      (assert (check-for-update))
+      (assert (not (null? (get-manifest-diffs)))))
+    (test "Checking for staging update, update should not be available."
+      (init-updater! :root-directory (update-directory self) :staging? #t)
+      (set-updater-url! (url-prefix self))
+      (assert (not (check-for-update)))
+      (assert-equal '() (get-manifest-diffs)))
+    (test "Checking for regular update, update should not be available."
+      (init-updater! :root-directory (base-directory self))
+      (set-updater-url! (url-prefix self))
+      (assert (not (check-for-update)))
+      (assert-equal '() (get-manifest-diffs)))
+    (test "Checking for downgrade, update should be available."
+      (init-updater! :root-directory (update-directory self))
+      (set-updater-url! (url-prefix self))
+      (assert (check-for-update))
+      (assert (not (null? (get-manifest-diffs)))))
     (test "Downloading files for update."
-      (setup-mock-root-directory (base-directory self) (update-directory self))
+      (init-updater! :root-directory (base-directory self) :staging? #t)
+      (set-updater-url! (url-prefix self))
+      (assert (check-for-update))
       (define download-dir (build-path (base-directory self) "Temp"))
-      (download-update "test://update.com/" (fn (a b) #f))
-      (assert-set-equal `("MANIFEST.base" "MANIFEST.sub" 
+      (download-update (fn (a b) #f))
+      ;; TODO - this is actually not optimal, since we already have a file 
+      ;; that hashes to null-digest on our machine. A future optimization 
+      ;; may simply copy any files we know we have, instead of downloading 
+      ;; them. This would be a big win if we did a reorg of media.
+      (assert-set-equal `("MANIFEST.base" "MANIFEST.sub" "release.spec"
                           ,foo-digest ,null-digest)
                         (directory-list download-dir))
       (assert-file-equals "foo\r\n" (build-path download-dir foo-digest))
@@ -177,5 +236,6 @@
   
   (card updater-test
       (%test-suite%
-       :tests (list <filesystem-test> <mock-downloader-test> <updater-test>)))
+       :tests (list <filesystem-test> <mock-downloader-test> <downloader-test>
+                    <parsing-test> <updater-test>)))
   )

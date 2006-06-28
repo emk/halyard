@@ -55,8 +55,9 @@
   
   ;;===========================================================================
   
-  (provide <mock-downloader> add-mock-url download mock-downloader-from-dir
-           parse-manifest add-urls-from-manifests)
+  (provide <downloader> <mock-downloader> add-mock-url download 
+           mock-downloader-from-dir
+           parse-manifest add-urls-from-manifests parse-spec-file)
   
   (defclass <downloader> ()
     directory)
@@ -73,7 +74,8 @@
     downloader)
   
   (define manifest-digest first)
-  (define manifest-file second)
+  (define manifest-size second)
+  (define manifest-file third)
   (define build-url cat)
   
   (define (add-urls-from-manifests downloader prefix dir)
@@ -82,8 +84,6 @@
        downloader 
        (build-url prefix (manifest-digest file))
        (read-string-from-file (build-path dir (manifest-file file))))))
-  
-  read-string-avail!
   
   (define (add-mock-urls-recursive downloader url path)
     (cond 
@@ -99,6 +99,8 @@
   ;; and so could be used to overwrite arbitrary files. Basic sanitation is 
   ;; done to prevent basic directory traversal attacks, but there may be other 
   ;; attacks possible.
+  ;; TODO - should change this to a positive match (like [A-Za-z0-9._-]) 
+  ;; instead of a negative match. 
   (define (last-component url)
     (let [[results (regexp-match (regexp "/([^/\\\\]+)(#|$)") url)]]
       (if results
@@ -115,119 +117,242 @@
              0
              (directory-list dir)))
     (cat "temp" (1+ max-num)))
-           
+         
+  (defgeneric download-file (downloader url file))
   
-  (define (download mock-downloader url &key (file #f))
-    (define path 
-      (build-path 
-       (downloader-directory mock-downloader)  
-       (or file (last-component url)
-           (next-temp-file-in-dir (downloader-directory mock-downloader)))))
+  (defmethod download-file ((downloader <mock-downloader>) url file)
     (with-output-to-file 
-     path
+     file
      (thunk 
-       (define content (assoc url (mock-downloader-files mock-downloader)))
+       (define content (assoc url (mock-downloader-files downloader)))
        (if content
          (display (cdr content))
          (error (cat "URL not found: " url))))))
   
+  (defmethod download-file ((downloader <downloader>) url file)
+    (call-5l-prim 'Download url file))
+  
+  (define (download downloader url &key (file #f))
+    (define path 
+      (build-path 
+       (downloader-directory downloader)  
+       (or file (last-component url)
+           (next-temp-file-in-dir (downloader-directory downloader)))))
+    (download-file downloader url path))
+  
   (define (parse-manifest path)
-    (define r (regexp "^([0-9a-fA-F]*) +(.*)$"))
     (with-input-from-file 
      path
-     (thunk 
-       (let loop [[l '()]]
-         (let [[line (read-line)]]
-           (if (eof-object? line)
-             (reverse l)
-             (loop (cons (cdr (regexp-match r line)) l))))))))
-         
+     (thunk
+       (parse-opened-manifest))))
+  
+  (define (parse-opened-manifest)
+    (define r (regexp "^([0-9a-fA-F]*) ([0-9]+) (.+)$"))
+    (let loop [[l '()]]
+      (let [[line (read-line)]]
+        (if (eof-object? line)
+          (reverse l)
+          (let [[m (regexp-match r line)]]
+            (if m
+              (loop (cons (list (second m) ; The hash
+                                (string->number (third m)) ; The size
+                                (fourth m)) ; The filename
+                          l))))))))
+  
+  (define (parse-spec-file path)
+    (with-input-from-file
+     path
+     (thunk
+       (parse-opened-spec-file))))
+  
+  (define (parse-opened-spec-file)
+    (define r (regexp "^([a-zA-Z0-9-]*): *(.*)$"))
+    (let loop [[alist '()]]
+      (let [[line (read-line)]]
+        (cond
+          ((eof-object? line) alist)
+          ((= (string-length line) 0) 
+           (cons (list "MANIFEST" (parse-opened-manifest)) alist))
+          (else (let [[m (regexp-match r line)]]
+                  (if m
+                    (loop (cons (cdr m) alist)))))))))
+  
   ;;========================================================================
   
   (provide auto-update-possible?
            check-for-update
            download-update
            apply-update
-           set-update-downloader!
-           set-update-root-directory!)
+           init-updater! 
+           clear-updater!)
   
-  ;; For now, this just checks if we can write to the root directory. In the 
-  ;; future, we might want to check if the network is up, too, or check 
-  ;; recursively that all files and directories are writeable. 
-  (define auto-update-possible? root-directory-writeable?)
+  (define (spec-file-get alist key)
+    (define entry (assoc key alist))
+    (unless entry (error "Corrupt .spec file" key alist))
+    (second entry))
   
-  (define *update-downloader* #f)
-  (define *update-root-directory* #f)
+  (define (auto-update-possible?) 
+    (and (dir-writeable? (updater-root-directory *updater*))
+         (file-exists? 
+          (build-path (updater-root-directory *updater*) "release.spec"))))
   
-  (define (set-update-downloader! val) (set! *update-downloader* val))
-  (define (set-update-root-directory! val) (set! *update-root-directory* val))
+  (defclass <spec> ()
+    url build meta-manifest)
   
-  (define (create-and-set-download-dir! downloader)
-    (define dir (build-path *update-root-directory* "Temp"))
-    (unless (directory-exists? dir)
+  (define (read-spec file)
+    (define raw (parse-spec-file file))
+    (make <spec> 
+          :url (spec-file-get raw "Update-URL")
+          :build (spec-file-get raw "Build")
+          :meta-manifest (spec-file-get raw "MANIFEST")))
+  
+  (defclass <updater> () 
+    root-directory downloader staging? base-spec update-spec url-prefix)
+  
+  (define *updater* #f)
+  
+  (define (ensure-dir-exists-absolute dir)
+    (when (not (directory-exists? dir))
       (make-directory dir))
-    (set! (downloader-directory downloader) dir)
     dir)
   
-  (defclass <update> ()
-    manifest-hash size user-info)
+  ;; TODO - work out dependencies between auto-update-possible and 
+  ;; init-updater!, so I can make sure that updates are possible when 
+  ;; I do init. 
+  (define (init-updater! &key (root-directory #f) (staging? #f))
+    (define root-dir (or root-directory (current-directory)))
+    (define download-dir 
+      (ensure-dir-exists-absolute (build-path root-dir "Temp")))
+    (define spec (read-spec (build-path root-dir "release.spec")))
+    (set! *updater* 
+          (make <updater> 
+                 :root-directory root-dir
+                 :staging? staging?
+                 :downloader (make <downloader> :directory download-dir)
+                 :base-spec spec
+                 :url-prefix (spec-url spec))))
+  
+  (define (downloaded-file name)
+    (build-path (downloader-directory (updater-downloader *updater*)) name))
+  
+  (define (register-update-spec file)        
+    (define spec (read-spec file))
+    ;; We change our URL to the one from the spec file we download, so we can
+    ;; do simple redirects. 
+    ;; TODO - reenable, once I find a better way to force a URL for unit
+    ;; testing.
+    ; (set! (updater-url-prefix *updater*) (spec-url spec))
+    (set! (updater-update-spec *updater*) spec))
+  
+  (define (clear-updater!) (set! *updater* #f))
+  
+  (provide set-updater-url!)
+  (define (set-updater-url! url) (set! (updater-url-prefix *updater*) url))
+  
+;  (define *update-downloader* #f)
+;  (define *update-root-directory* #f)
+  
+;  (define (set-update-downloader! val) (set! *update-downloader* val))
+;  (define (set-update-root-directory! val) (set! *update-root-directory* val))
+  
+;  (define (create-and-set-download-dir! downloader)
+;    (define dir (build-path *update-root-directory* "Temp"))
+;    (unless (directory-exists? dir)
+;      (make-directory dir))
+;    (set! (downloader-directory downloader) dir)
+;    dir)
   
   (define (get-manifest-names dir)
     (define r (regexp "^MANIFEST\\..*$"))
     (filter (fn (file) (regexp-match r file)) (directory-list dir)))
   
-  (define (file-hash-from-manifests manifest)
+  (define (file-hash-from-manifest manifest)
     (define hash (make-hash-table 'equal))
-    (add-files-from-manifest hash manifest)
-    hash)
-  
-  (define (add-files-from-manifest hash manifest)
     (foreach (line manifest)
-      (hash-table-put! hash (second line) (first line))))
+      (hash-table-put! hash (manifest-file line) line))
+    hash)
   
   (provide diff-manifests)
   
-  (define (diff-manifests base-manifests update-manifests)
-    (define base-files (file-hash-from-manifests base-manifests))
-    (define update-files (file-hash-from-manifests update-manifests))
+  ;; TODO - complain if hashes match but sizes differ
+  (define (diff-manifests base-manifest update-manifest)
+    (define base-files (file-hash-from-manifest base-manifest))
+    (define update-files (file-hash-from-manifest update-manifest))
     (define diff '())
-    (foreach ((file hash) update-files)
-      (unless (equal? (hash-table-get base-files file (thunk #f)) hash)
-        (push! (list hash file) diff)))
+    (foreach ((name info) update-files)
+      (unless (equal? (hash-table-get base-files name (thunk #f)) info)
+        (push! info diff)))
     diff)
   
   (define (parse-manifests-in-dir dir)
     (define manifests (get-manifest-names dir))
     (foldl append '() 
            (map (fn (file) (parse-manifest (build-path dir file))) manifests)))
+
+  (define (manifest-url-prefix)
+    (build-url (updater-url-prefix *updater*) 
+               "manifests/" 
+               (spec-build (updater-update-spec *updater*))
+               "/"))
   
-  ;; TODO - check if diffs already exist. Should be optional, so we can force
-  ;; a new download if we're doing check-for-update.
-  (define (get-update-diffs url)
-    (define download-dir (create-and-set-download-dir! *update-downloader*))
-    (define base-manifests (get-manifest-names *update-root-directory*))
+  ;; TODO - check if diffs already exist. 
+  ;; TODO - should only get manifests that differ in the spec file.
+  (provide get-manifest-diffs)
+  (define (get-manifest-diffs)
+    (define url (manifest-url-prefix))
+    (define root-dir (updater-root-directory *updater*))
+    (define download-dir (downloader-directory (updater-downloader *updater*)))
+    (define base-manifests (get-manifest-names root-dir))
     (foreach (manifest base-manifests)
       ;; TODO - Deal with failures, deal with time issues.
-      (download *update-downloader* (cat url manifest)))
-    (diff-manifests (parse-manifests-in-dir *update-root-directory*)
+      (download (updater-downloader *updater*) (build-url url manifest)))
+    (diff-manifests (parse-manifests-in-dir root-dir)
                     (parse-manifests-in-dir download-dir)))
   
+  (define (download-update-spec)
+    (define url (cat (updater-url-prefix *updater*)
+                     (if (updater-staging? *updater*)
+                       "staging.spec"
+                       "release.spec")))
+    (download (updater-downloader *updater*) url :file "release.spec")
+    (assert (file-exists? (downloaded-file "release.spec")))
+    (register-update-spec (downloaded-file "release.spec")))
+  
   ;; Check to see if an update is available. Returns #t if one is.
-  (define (check-for-update url)
-    (not (eq? (get-update-diffs url) '())))
-  (require (lib "tamale-unit.ss" "5L"))
-  ;; Downloads a particular update. Takes a URL to download from, and 
-  ;; a progress indicator callback. The progress indicator callback will take 
-  ;; two arguments, a percentage and a string that indicates what is 
-  ;; currently happening. 
-  (define (download-update url progress)
-    (define diffs (get-update-diffs url))
+  ;; XXX - should only do diffs of manifests that we actually have present 
+  ;; on this computer. If media has changed, and we have a web install,
+  ;; we don't need to do an update. 
+  (define (check-for-update)
+    (download-update-spec)
+    (not (eq? '() (diff-manifests 
+                   (spec-meta-manifest (updater-base-spec *updater*))
+                   (spec-meta-manifest (updater-update-spec *updater*))))))
+  
+  ;; Check the size of the update. This requires downloading the manifests, 
+  ;; which are large. This should only be done once we have verified that 
+  ;; updates are, indeed, available.
+  ;; XXX - write this 
+  (define (update-size)
+    (define diffs (get-manifest-diffs))
+    #f
+    )
+  
+  ;; Downloads a particular update. Takes a progress indicator callback. The 
+  ;; progress indicator callback will take two arguments, a percentage and a 
+  ;; string that indicates what is currently happening. 
+  ;; TODO - implement progress indicator
+  ;; TODO - download file with temp name at first, then rename
+  ;; TODO - throw error if downloads fail (including wrong contents; how do 
+  ;;        we check that? should we hash it, or rely on the size?)
+  (define (download-update progress)
+    (define diffs (get-manifest-diffs))
     (foreach (file diffs)
       (unless (file-exists? 
-               (build-path 
-                *update-root-directory* "Temp" (manifest-digest file)))
-        (download *update-downloader* 
-                  (build-url url (manifest-digest file))))))
+               (downloaded-file (manifest-digest file)))
+        (download (updater-downloader *updater*) 
+                  (build-url (updater-url-prefix *updater*)
+                             "pool/"
+                             (manifest-digest file))))))
   
   ;; Applies a given update. Will launch an updater, pass it the information 
   ;; needed to apply the update, and quit the program so the updater can do 
