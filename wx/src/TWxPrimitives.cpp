@@ -88,6 +88,7 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(BrowserLoadPage);
 	REGISTER_5L_PRIMITIVE(BrowserReload);
 	REGISTER_5L_PRIMITIVE(BrowserStop);
+	REGISTER_5L_PRIMITIVE(CancelDownload);
 	REGISTER_5L_PRIMITIVE(ColorAt);
 	REGISTER_5L_PRIMITIVE(CopyStringToClipboard);
 	REGISTER_5L_PRIMITIVE(DataPath);
@@ -348,6 +349,10 @@ DEFINE_5L_PRIMITIVE(BrowserStop) {
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->Stop());
+}
+
+DEFINE_5L_PRIMITIVE(CancelDownload) {
+	Downloader::GetInstance()->CancelDownload();
 }
 
 DEFINE_5L_PRIMITIVE(ColorAt) {
