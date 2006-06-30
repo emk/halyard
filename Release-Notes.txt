@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.61 - 30 Jun 2006 - emk, brian
 
   * Created Downloader class, for downloading a file specified by a
     URL to the local disk.

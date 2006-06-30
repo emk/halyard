@@ -22,10 +22,10 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		60
+#define VERSION_REV_BIG		61
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.60 (Development)"
+#define VERSION_STRING		"Tamale 0.0.61 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
@@ -43,6 +43,23 @@
 
 /*
  $Log$
+ Revision 1.102  2006/06/30 19:10:37  emk
+ 0.0.61 - 30 Jun 2006 - emk, brian
+
+   * Created Downloader class, for downloading a file specified by a
+     URL to the local disk.
+   * Changed error handling of wxWidgets errors to make better use of
+     the TLogger class and not use the default error handlers.
+   * Moved DoIdle from TSchemeInterpreter to TInterpreter.
+   * Fixed up code so we can compile under Visual Studio .NET 2005, and
+     updated HACKING.txt to include instructions for how to set up
+     VS.NET 2005.
+   * Modified CARD-PREV to find the previous *card*, not just the previous
+     *sequence*, in order to make "back" buttons in do the right thing
+     in nested sequences (bug #2315).
+   * Added HIDE-CURSOR-UNTIL-MOUSE-MOVED! function (#2467).
+   * Preliminary splash-screen progress bar support (#2856).
+
  Revision 1.101  2005/10/20 13:42:45  emk
  0.0.60 - 20 Oct 2005 - emk
 

@@ -181,7 +181,9 @@
         ;; Load the user's actual script into our new namespace.
         (set! filename (build-path (current-directory) "Scripts" "start.ss"))
         (load/use-compiled filename)
-        (notify-script-loaded)
+        ;; XXX - Disabled until we can determine why the number of files
+        ;; loaded goes up after a "reload script".
+        ;;(notify-script-loaded)
         #f)))
 
   ) ; end module
