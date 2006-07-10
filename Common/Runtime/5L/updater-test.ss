@@ -152,16 +152,6 @@
       (unless (member? item a)
         (error (cat "Couldn't find " item " in " a)))))
   
-;  (define (setup-mock-root-directory dir update-dir)
-;    (define mock-downloader
-;      (mock-downloader-from-dir 
-;       update-dir
-;       :prefix "test://update.com/" 
-;       :download-dir (build-path dir "Temp")))
-;    (add-urls-from-manifests mock-downloader "test://update.com/" update-dir)
-;    (set-update-downloader! mock-downloader)
-;    (set-update-root-directory! dir))
-  
   ;; TODO - add test case for update spec file having new URL. 
   (define-test-case <updater-test> () 
       [[test-directory #f]

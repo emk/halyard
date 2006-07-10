@@ -55,9 +55,8 @@
   
   ;;===========================================================================
   
-  (provide <downloader> <mock-downloader> add-mock-url download 
-           mock-downloader-from-dir
-           parse-manifest add-urls-from-manifests parse-spec-file)
+  (provide <downloader> <mock-downloader> add-mock-url download cancel-download
+           parse-manifest parse-spec-file)
   
   (defclass <downloader> ()
     directory)
@@ -68,39 +67,17 @@
   (define (add-mock-url mock-downloader url file)
     (push! (cons url file) (mock-downloader-files mock-downloader)))
   
-  (define (mock-downloader-from-dir dir &key prefix download-dir)
-    (define downloader (make <mock-downloader> :directory download-dir))
-    (add-mock-urls-recursive downloader prefix dir)
-    downloader)
-  
   (define manifest-digest first)
   (define manifest-size second)
   (define manifest-file third)
   (define build-url cat)
-  
-  (define (add-urls-from-manifests downloader prefix dir)
-    (foreach (file (parse-manifests-in-dir dir))
-      (add-mock-url 
-       downloader 
-       (build-url prefix (manifest-digest file))
-       (read-string-from-file (build-path dir (manifest-file file))))))
-  
-  (define (add-mock-urls-recursive downloader url path)
-    (cond 
-      [(link-exists? path) #f] 
-      [(directory-exists? path) 
-       (foreach [file (directory-list path)]
-         (add-mock-urls-recursive
-          downloader (cat url file) (build-path path file)))]
-      [(file-exists? path) (add-mock-url downloader url
-                                         (read-string-from-file path))]))
 
   ;; SECURITY WARNING - URLs parsed by last-component are not fully sanitized, 
   ;; and so could be used to overwrite arbitrary files. Basic sanitation is 
   ;; done to prevent basic directory traversal attacks, but there may be other 
   ;; attacks possible.
   ;; TODO - should change this to a positive match (like [A-Za-z0-9._-]) 
-  ;; instead of a negative match. 
+  ;; instead of a negative match (anything but / or \). 
   (define (last-component url)
     (let [[results (regexp-match (regexp "/([^/\\\\]+)(#|$)") url)]]
       (if results
@@ -131,6 +108,9 @@
   
   (defmethod download-file ((downloader <downloader>) url file)
     (call-5l-prim 'Download url file))
+  
+  (define (cancel-download) 
+    (call-5l-prim 'CancelDownload))
   
   (define (download downloader url &key (file #f))
     (define path 
@@ -341,8 +321,8 @@
   ;; Downloads a particular update. Takes a progress indicator callback. The 
   ;; progress indicator callback will take two arguments, a percentage and a 
   ;; string that indicates what is currently happening. 
-  ;; TODO - implement progress indicator
   ;; TODO - download file with temp name at first, then rename
+  ;; TODO - implement progress indicator
   ;; TODO - throw error if downloads fail (including wrong contents; how do 
   ;;        we check that? should we hash it, or rely on the size?)
   (define (download-update progress)
