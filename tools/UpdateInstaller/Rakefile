@@ -1,0 +1,17 @@
+task :default => :test
+
+task :test => :build do
+  ruby "update_installer_test.rb"
+end
+
+task :build do
+  devenv "UpdateInstaller.vcproj", :build, "Release"
+end
+
+task :clean do
+  devenv "UpdateInstaller.vcproj", :clean, "Release"
+end
+
+def devenv project, action, configuration
+  sh "devenv.com", project, "/#{action}", configuration
+end
