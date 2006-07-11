@@ -20,11 +20,32 @@
 //
 // @END_LICENSE
 
-//#include <iostream>
-#include <stdio.h>
+#define BOOST_AUTO_TEST_MAIN
+#include <boost/test/auto_unit_test.hpp>
 
-int main(int argc, char **argv) {
-	//std::cout << "Hello, world!" << std::endl;
-	printf("Hello, world!");
-	return 0;
+#include <vector>
+#include <string>
+#include "Manifest.h"
+
+#define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRY) \
+    do { \
+        Manifest::Entry _e(ENTRY); \
+        BOOST_CHECK((DIGEST) == _e.digest()); \
+        BOOST_CHECK((SIZE) == _e.size()); \
+        BOOST_CHECK((PATH) == _e.path()); \
+    } while(0)
+
+BOOST_AUTO_UNIT_TEST(test_parse_diff) {
+    Manifest diff("Updates/temp/MANIFEST-DIFF");
+    BOOST_CHECK(3 == diff.entries().size());
+    CHECK_ENTRY("855426068ee8939df6bce2c2c4b1e7346532a133", 5, "sub/foo.txt",
+                diff.entries()[0]);
+    CHECK_ENTRY("da39a3ee5e6b4b0d3255bfef95601890afd80709", 0, "sub/quux.txt",
+                diff.entries()[1]);
+    CHECK_ENTRY("855426068ee8939df6bce2c2c4b1e7346532a133", 5, "foo.txt",
+                diff.entries()[2]);
+}
+
+BOOST_AUTO_UNIT_TEST(test_parse_spec) {
+    // Up next...
 }

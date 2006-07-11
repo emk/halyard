@@ -1,11 +1,19 @@
+require 'fileutils'
+
 task :default => :test
 
 task :test => :build do
-  ruby "update_installer_test.rb"
+  FileUtils.cd "fixture" do
+    sh "../test/Debug/UpdateInstallerTest.exe"
+    ruby "../update_installer_test.rb"
+  end
 end
 
 task :build do
   devenv "UpdateInstaller.vcproj", :build, "Release"
+  FileUtils.cd "test" do
+    devenv "UpdateInstallerTest.vcproj", :build, "Debug"
+  end
 end
 
 task :clean do

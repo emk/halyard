@@ -20,11 +20,35 @@
 //
 // @END_LICENSE
 
-//#include <iostream>
-#include <stdio.h>
+#ifndef Manifest_H
+#define Manifest_H
 
-int main(int argc, char **argv) {
-	//std::cout << "Hello, world!" << std::endl;
-	printf("Hello, world!");
-	return 0;
-}
+class Manifest {
+public:
+    class Entry {
+    public:
+        Entry(const std::string &inDigest, size_t inSize,
+              const std::string &inPath)
+            : mDigest(inDigest), mSize(inSize), mPath(inPath) {}
+
+        std::string digest() const { return mDigest; }
+        size_t size() const { return mSize; }
+        std::string path() const { return mPath; }
+
+    private:
+        std::string mDigest, mPath;
+        size_t mSize;
+    };
+
+    typedef std::vector<Entry> EntryVector;
+
+    Manifest(const std::string &path);
+    EntryVector &entries() { return mEntries; }
+
+private:
+    EntryVector mEntries;
+
+    std::string read_file(const std::string &path);
+};
+
+#endif Manifest_H
