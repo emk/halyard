@@ -15,7 +15,18 @@
            <null-graphic> make-null-graphic null-graphic?
            <widget-states> make-widget-states widget-states?
            element-exists?)
-
+  
+  
+  ;; ///////////////////////////////////////////////////////////////////////
+  ;;                    THIS LIBRARY IS DEPRECATED.
+  ;;      DO NOT USE IN VTRA OR ANY OTHER FUTURE PROJECTS.  NO, REALLY!
+  ;;
+  ;;   (This code may be refactored into other libraries at some point
+  ;;    in the future, but for now, don't use it.)  
+  ;;
+  ;;    -- Robinson
+  ;; ///////////////////////////////////////////////////////////////////////
+        
 
   ;;; =====================================================================
   ;;; Graphics utilities
