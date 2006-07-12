@@ -101,7 +101,7 @@
     (register-debug-report-file! (datafile-path value) "Userpref data file"))
 
   (define (user-pref key &key (default #f))
-    (pref (user-id) key default))
+    (pref (user-id) key :default default))
   (define (set-user-pref! key value)
     (set-pref! (user-id) key value))
   (define (clear-user-prefs!)
