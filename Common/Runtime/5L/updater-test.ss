@@ -71,6 +71,8 @@
            (cat "Expected <" str "> in file <" file ">, got <" contents ">"))))
       (error (cat "File <" file "> does not exist"))))
   
+  ;; NOTE - this is dead code. It's just here until I refactor the 
+  ;; sanitization tests out. 
   (define-test-case <mock-downloader-test> () 
       [[test-directory #f]
        [downloader #f]]
@@ -105,15 +107,14 @@
        [url-prefix #f]]
     (setup
       (set! (test-directory self) (ensure-dir-exists "DownloadTest"))
-      (set! (downloader self)
-            (make <downloader> :directory (test-directory self)))
       (set! (url-prefix self) 
             (cat "file:///" (fixture-dir "updater") "/downloader/")))
     (teardown
       (delete-directory-recursive (test-directory self)))
     (test "downloader should write files."
-      (download (downloader self) (cat (url-prefix self) "test"))
-      (download (downloader self) (cat (url-prefix self) "bar") :file "foobar")
+      (download (cat (url-prefix self) "test") (test-directory self))
+      (download (cat (url-prefix self) "bar") (test-directory self) 
+                :name "foobar")
       (assert-file-equals "test\n"
                           (build-path (test-directory self) "test"))
       (assert-file-equals "foo\nbar\n"
@@ -211,21 +212,47 @@
       (init-updater! :root-directory (base-directory self) :staging? #t)
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
-      (define download-dir (build-path (base-directory self) "Temp"))
+      (define download-dir (build-path (base-directory self) "Updates"))
       (download-update (fn (a b) #f))
+      (assert-set-equal '("release.spec" "manifests" "pool" "temp") 
+                        (directory-list download-dir))
       ;; TODO - this is actually not optimal, since we already have a file 
       ;; that hashes to null-digest on our machine. A future optimization 
       ;; may simply copy any files we know we have, instead of downloading 
       ;; them. This would be a big win if we did a reorg of media.
-      (assert-set-equal `("MANIFEST.base" "MANIFEST.sub" "release.spec"
-                          ,foo-digest ,null-digest)
-                        (directory-list download-dir))
-      (assert-file-equals "foo\r\n" (build-path download-dir foo-digest))
-      (assert-file-equals "" (build-path download-dir null-digest)))
+      (assert-set-equal (list foo-digest null-digest)
+                        (directory-list (build-path download-dir "pool")))
+      (assert-set-equal '("MANIFEST-DIFF") 
+                        (directory-list (build-path download-dir "temp")))
+      ;; TODO - test contents of MANIFEST-DIFF
+      (assert-set-equal '("update") 
+                        (directory-list (build-path download-dir "manifests")))
+      (assert-set-equal '("MANIFEST.base" "MANIFEST.sub")
+                        (directory-list 
+                         (build-path download-dir "manifests" "Update")))
+      (assert-file-equals "foo\r\n" 
+                          (build-path download-dir "pool" foo-digest))
+      (assert-file-equals "" (build-path download-dir "pool" null-digest)))
     )
+  
+    
+  ;; For testing the installer:
+  (provide create-installer-fixture)
+  (define (create-installer-fixture)
+    (define fix-dir (ensure-dir-exists "InstallerFixture"))
+    (define base-dir (copy-recursive 
+                      (build-path (fixture-dir "updater") "base") 
+                      fix-dir))
+    (define url-prefix 
+      (cat "file:///" (fixture-dir "updater") "/update-server/"))
+    (init-updater! :root-directory base-dir :staging? #t)
+    (set-updater-url! url-prefix)
+    (assert (auto-update-possible?))
+    (assert (check-for-update))
+    (download-update (fn (a b) #f)))
   
   (card updater-test
       (%test-suite%
-       :tests (list <filesystem-test> <mock-downloader-test> <downloader-test>
-                    <parsing-test> <updater-test>)))
+       :tests (list <filesystem-test> <downloader-test> <parsing-test> 
+                    <updater-test>)))
   )

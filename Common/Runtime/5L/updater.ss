@@ -82,7 +82,7 @@
     (let [[results (regexp-match (regexp "/([^/\\\\]+)(#|$)") url)]]
       (if results
         (second results)
-        results)))
+        #f)))
   
   (define (next-temp-file-in-dir dir)
     (define max-num
@@ -94,31 +94,20 @@
              0
              (directory-list dir)))
     (cat "temp" (1+ max-num)))
-         
-  (defgeneric download-file (downloader url file))
   
-  (defmethod download-file ((downloader <mock-downloader>) url file)
-    (with-output-to-file 
-     file
-     (thunk 
-       (define content (assoc url (mock-downloader-files downloader)))
-       (if content
-         (display (cdr content))
-         (error (cat "URL not found: " url))))))
-  
-  (defmethod download-file ((downloader <downloader>) url file)
+  (define (download-file url file)
     (call-5l-prim 'Download url file))
   
   (define (cancel-download) 
     (call-5l-prim 'CancelDownload))
   
-  (define (download downloader url &key (file #f))
+  (define (download url dir &key (name #f))
     (define path 
       (build-path 
-       (downloader-directory downloader)  
-       (or file (last-component url)
-           (next-temp-file-in-dir (downloader-directory downloader)))))
-    (download-file downloader url path))
+       dir 
+       (or name (last-component url)
+           (next-temp-file-in-dir dir))))
+    (download-file url path))
   
   (define (parse-manifest path)
     (with-input-from-file 
@@ -188,7 +177,7 @@
           :meta-manifest (spec-file-get raw "MANIFEST")))
   
   (defclass <updater> () 
-    root-directory downloader staging? base-spec update-spec url-prefix)
+    root-directory update-dir staging? base-spec update-spec url-prefix)
   
   (define *updater* #f)
   
@@ -202,20 +191,34 @@
   ;; I do init. 
   (define (init-updater! &key (root-directory #f) (staging? #f))
     (define root-dir (or root-directory (current-directory)))
-    (define download-dir 
-      (ensure-dir-exists-absolute (build-path root-dir "Temp")))
+    (define update-dir 
+      (ensure-dir-exists-absolute (build-path root-dir "Updates")))
     (define spec (read-spec (build-path root-dir "release.spec")))
     (set! *updater* 
           (make <updater> 
-                 :root-directory root-dir
-                 :staging? staging?
-                 :downloader (make <downloader> :directory download-dir)
-                 :base-spec spec
-                 :url-prefix (spec-url spec))))
+                :root-directory root-dir
+                :staging? staging?
+                :update-dir update-dir
+                :base-spec spec
+                :url-prefix (spec-url spec)))
+    (ensure-dir-exists-absolute (temp-dir))
+    (ensure-dir-exists-absolute (pool-dir))
+    (ensure-dir-exists-absolute (special-dir "manifests")))
   
-  (define (downloaded-file name)
-    (build-path (downloader-directory (updater-downloader *updater*)) name))
+  (define (special-dir &rest components)
+    (apply build-path (updater-update-dir *updater*) components))
+  (define (update-dir &rest components)
+    (apply special-dir components))
+  (define (temp-dir &rest components)
+    (apply special-dir "temp" components))
+  (define (manifest-dir build &rest components)
+    (apply special-dir "manifests" build components))
+  (define (pool-dir &rest components)
+    (apply special-dir "pool" components))
   
+  (define (update-build)
+    (spec-build (updater-update-spec *updater*)))
+
   (define (register-update-spec file)        
     (define spec (read-spec file))
     ;; We change our URL to the one from the spec file we download, so we can
@@ -229,19 +232,6 @@
   
   (provide set-updater-url!)
   (define (set-updater-url! url) (set! (updater-url-prefix *updater*) url))
-  
-;  (define *update-downloader* #f)
-;  (define *update-root-directory* #f)
-  
-;  (define (set-update-downloader! val) (set! *update-downloader* val))
-;  (define (set-update-root-directory! val) (set! *update-root-directory* val))
-  
-;  (define (create-and-set-download-dir! downloader)
-;    (define dir (build-path *update-root-directory* "Temp"))
-;    (unless (directory-exists? dir)
-;      (make-directory dir))
-;    (set! (downloader-directory downloader) dir)
-;    dir)
   
   (define (get-manifest-names dir)
     (define r (regexp "^MANIFEST\\..*$"))
@@ -273,31 +263,43 @@
   (define (manifest-url-prefix)
     (build-url (updater-url-prefix *updater*) 
                "manifests/" 
-               (spec-build (updater-update-spec *updater*))
+               (update-build)
                "/"))
   
+  ;; TODO - write diffs to temp/MANIFEST-DIFF
   ;; TODO - check if diffs already exist. 
   ;; TODO - should only get manifests that differ in the spec file.
   (provide get-manifest-diffs)
   (define (get-manifest-diffs)
     (define url (manifest-url-prefix))
     (define root-dir (updater-root-directory *updater*))
-    (define download-dir (downloader-directory (updater-downloader *updater*)))
+    (define download-dir (manifest-dir (update-build)))
+    (ensure-dir-exists-absolute download-dir)
     (define base-manifests (get-manifest-names root-dir))
     (foreach (manifest base-manifests)
       ;; TODO - Deal with failures, deal with time issues.
-      (download (updater-downloader *updater*) (build-url url manifest)))
-    (diff-manifests (parse-manifests-in-dir root-dir)
-                    (parse-manifests-in-dir download-dir)))
+      (download (build-url url manifest) download-dir))
+    (define diffs (diff-manifests (parse-manifests-in-dir root-dir)
+                                  (parse-manifests-in-dir download-dir)))
+    (write-diffs-to-file (temp-dir "MANIFEST-DIFF") diffs)
+    diffs)
+  
+  (define (write-diffs-to-file file diffs)
+    (with-output-to-file 
+     file
+     (thunk 
+       (foreach (entry diffs)
+         (display (cat (manifest-digest entry) " " (manifest-size entry) " " 
+                       (manifest-file entry) "\n"))))))
   
   (define (download-update-spec)
     (define url (cat (updater-url-prefix *updater*)
                      (if (updater-staging? *updater*)
                        "staging.spec"
                        "release.spec")))
-    (download (updater-downloader *updater*) url :file "release.spec")
-    (assert (file-exists? (downloaded-file "release.spec")))
-    (register-update-spec (downloaded-file "release.spec")))
+    (download url (update-dir) :name "release.spec")
+    (assert (file-exists? (update-dir "release.spec")))
+    (register-update-spec (update-dir "release.spec")))
   
   ;; Check to see if an update is available. Returns #t if one is.
   ;; XXX - should only do diffs of manifests that we actually have present 
@@ -329,16 +331,15 @@
     (define diffs (get-manifest-diffs))
     (foreach (file diffs)
       (unless (file-exists? 
-               (downloaded-file (manifest-digest file)))
-        (download (updater-downloader *updater*) 
-                  (build-url (updater-url-prefix *updater*)
+               (pool-dir (manifest-digest file)))
+        (download (build-url (updater-url-prefix *updater*)
                              "pool/"
-                             (manifest-digest file))))))
+                             (manifest-digest file))
+                  (pool-dir)))))
   
   ;; Applies a given update. Will launch an updater, pass it the information 
   ;; needed to apply the update, and quit the program so the updater can do 
   ;; its work. 
   (define (apply-update update)
     #f)
-  
   )

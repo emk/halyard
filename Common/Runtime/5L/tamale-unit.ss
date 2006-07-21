@@ -17,6 +17,23 @@
     :base $tamale-unit-passed-style
     :color (color #xC0 #x00 #x00))
   
+  (define (escaped-char c)
+    (if (or 
+         (eq? c #\^)
+         (eq? c #\@)
+         (eq? c #\|)
+         (eq? c #\\))
+      (string #\\ c)
+      (string c)))
+  
+  (define (escape-text-styles str)
+    (let loop ((i 0) (ret ""))
+      (if (< i (string-length str))
+        (let ((c (string-ref str i)))
+          (loop (+ i 1) 
+                (string-append ret (escaped-char c))))
+        ret)))                 
+  
   ;;; Display a test report on the current card.
   (define (report-test-results report)
     (define (draw-result style text)
@@ -29,8 +46,12 @@
                    (apply string-append
                           (map (fn (failure)
                                  (string-append
-                                  "^@" (test-failure-title failure) "@^\n"
-                                  (test-failure-message failure) "\n\n"))
+                                  "^@" (escape-text-styles 
+                                        (test-failure-title failure))
+                                  "@^\n"
+                                  (escape-text-styles 
+                                   (test-failure-message failure))
+                                  "\n\n"))
                                (test-report-failures report)))))))
   
   ;;; Display the results of a set of tests on a card.
