@@ -14,7 +14,7 @@ end
 desc "Load registry keys for fake_course"
 task :initialize_registry do
   tmp_name = 'temp.reg'
-  guid = '00000000-BEEF-DEAD-0000-000000000000'
+  guid = '00000000-BEAD-DEED-0000-000000000000'
   keys = <<EOD
 Windows Registry Editor Version 5.00
 
@@ -22,6 +22,7 @@ Windows Registry Editor Version 5.00
 "Working dir"=#{convert_path_to_windows(Dir.pwd+"/fake_course").inspect}
 "App name"="ruby"
 "Cmd line"="fake_course.rb"
+"Button label"="Fake Course"
 EOD
   tmp_name = 'temp.reg'
   File.open(tmp_name, 'w') {|f| f.write(keys) }

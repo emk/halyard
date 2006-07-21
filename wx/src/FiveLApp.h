@@ -52,6 +52,11 @@ class FiveLApp : public wxApp
 	///
 	StageFrame *mStageFrame;
 
+    //////////
+    /// Are we planning to launch the UpdateInstaller before we exit?
+    ///
+    bool mShouldLaunchUpdateInstaller; 
+
 	//////////
 	/// This procedure is called periodically by the script interpreter
 	/// to give time to the GUI.
@@ -75,6 +80,11 @@ class FiveLApp : public wxApp
     ///
     void ReportFatalException();    
 
+    //////////
+    /// Launch the UpdateInstaller shortly before the program exits.
+    ///
+    void LaunchUpdateInstaller();
+
 public:
     FiveLApp();
 
@@ -86,6 +96,11 @@ public:
     ///
     void Heartbeat();
 
+    //////////
+    /// Tell the application to run the UpdateInstaller when it exits.
+    ///
+    void LaunchUpdateInstallerBeforeExiting();
+    
 	//////////
 	/// We perform normal application initialization in OnInit. 
 	///

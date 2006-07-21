@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 7.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScormAiccGw", "ScormAiccGw.vcproj", "{9E736972-92C4-41ED-AD49-AED2A6C386CC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScormAiccGw", "ScormAiccGw.vcproj", "{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
@@ -13,18 +13,18 @@ Global
 	GlobalSection(ProjectDependencies) = postSolution
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Debug.ActiveCfg = Debug|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Debug.Build.0 = Debug|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Release MinDependency.ActiveCfg = Release MinDependency|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Release MinDependency.Build.0 = Release MinDependency|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Release MinSize.ActiveCfg = Release MinSize|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Release MinSize.Build.0 = Release MinSize|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Unicode Debug.ActiveCfg = Unicode Debug|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Unicode Debug.Build.0 = Unicode Debug|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Unicode Release MinDependency.ActiveCfg = Unicode Release MinDependency|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Unicode Release MinDependency.Build.0 = Unicode Release MinDependency|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Unicode Release MinSize.ActiveCfg = Unicode Release MinSize|Win32
-		{9E736972-92C4-41ED-AD49-AED2A6C386CC}.Unicode Release MinSize.Build.0 = Unicode Release MinSize|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Debug.ActiveCfg = Debug|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Debug.Build.0 = Debug|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Release MinDependency.ActiveCfg = Release MinDependency|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Release MinDependency.Build.0 = Release MinDependency|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Release MinSize.ActiveCfg = Release MinSize|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Release MinSize.Build.0 = Release MinSize|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Unicode Debug.ActiveCfg = Unicode Debug|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Unicode Debug.Build.0 = Unicode Debug|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Unicode Release MinDependency.ActiveCfg = Unicode Release MinDependency|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Unicode Release MinDependency.Build.0 = Unicode Release MinDependency|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Unicode Release MinSize.ActiveCfg = Unicode Release MinSize|Win32
+		{5599400D-CEC7-48C8-824C-DBC41EA1D4E5}.Unicode Release MinSize.Build.0 = Unicode Release MinSize|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

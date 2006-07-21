@@ -570,15 +570,9 @@ echo Warning : Cannot register Unicode DLL on Windows 95
 			Name="test"
 			Filter="">
 			<File
-				RelativePath=".\ScormAiccGwCtl.htm">
+				RelativePath=".\test\ScormAiccGwCtl.htm">
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ScormAiccGw.tlb">
-		</File>
-		<File
-			RelativePath=".\todo.txt">
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

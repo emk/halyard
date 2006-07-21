@@ -21,7 +21,7 @@ const char* PERFFILE_NAME = "perf.cmi";
 /////////////////////////////////////////////////////////////////////////////
 // CScormAiccGwCtl
 
-CScormAiccGwCtl::CScormAiccGwCtl() : m_ctlButton(_T("Button"), this, 1)
+CScormAiccGwCtl::CScormAiccGwCtl()
 {
 	m_szTmpDir[0] = 0;
    m_bWindowOnly = TRUE;
@@ -112,11 +112,11 @@ LRESULT CScormAiccGwCtl::OnCreate (UINT /*uMsg*/, WPARAM /*wParam*/,
    // Create the button window
    //
    RECT rc;
-	GetWindowRect(&rc);
-	rc.right -= rc.left;
-	rc.bottom -= rc.top;
-	rc.top = rc.left = 0;
-	m_ctlButton.Create(m_hWnd, rc);
+   GetWindowRect(&rc);
+   rc.right -= rc.left;
+   rc.bottom -= rc.top;
+   rc.top = rc.left = 0;
+   m_ctlButton.Create(_T("Button"), this, 1, m_hWnd, rc);
    m_ctlButton.EnableWindow (FALSE);      // disable until init complete
    m_ctlButton.ShowWindow (SW_HIDE);
 
@@ -590,8 +590,8 @@ LRESULT CScormAiccGwCtl::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
    if (m_hProcess &&                      // if course was running last check
       !isMyCourseRunning())               //    but now it's stopped
    {
+      m_ctlButton.KillTimer(m_nTimer);    // stop the timer (must be done before event)
       Fire_AppTerminated();               // fire an event for the client
-      m_ctlButton.KillTimer(m_nTimer);    // stop the timer
    }
 	bHandled=TRUE;
 	return 0;

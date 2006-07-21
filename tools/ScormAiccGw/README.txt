@@ -57,3 +57,11 @@ For more information on Rake and Ruby, see:
 
   http://docs.rubyrake.org/  (documentation for Rake)
   http://www.ruby-doc.org/   (the Programming Ruby book is especially good)
+
+Debugging
+---------
+
+See this site for instructions on debugging ActiveX controls:
+
+  http://support.microsoft.com/kb/q167715/
+

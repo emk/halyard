@@ -68,7 +68,8 @@ BEGIN_EVENT_TABLE(FiveLApp, wxApp)
 END_EVENT_TABLE()
 
 FiveLApp::FiveLApp()
-    : mHaveOwnEventLoop(false), mLogsAreInitialized(false), mStageFrame(NULL)
+    : mHaveOwnEventLoop(false), mLogsAreInitialized(false), mStageFrame(NULL),
+      mShouldLaunchUpdateInstaller(false)
 {
     // Do nothing here but set up instance variables.  Real work should
     // happen in FiveLApp::OnInit, below.
@@ -78,6 +79,18 @@ void FiveLApp::Heartbeat() {
     // This should internally call the Windows function ::PeekMessage,
     // which is sufficient to mark our application as alive.
     (void) Pending();
+}
+
+void FiveLApp::LaunchUpdateInstallerBeforeExiting() {
+    mShouldLaunchUpdateInstaller = true;
+}
+
+void FiveLApp::LaunchUpdateInstaller() {
+    // PORTABILITY - We need to make the UpdateInstaller work elsewhere.
+    // XXX - Extract application exe name from wxWidgets?
+    FileSystem::Path base(FileSystem::GetBaseDirectory());
+    FileSystem::Path path(base.AddComponent("UpdateInstaller"));
+    wxExecute(path.ToNativePathString().c_str(), wxEXEC_ASYNC);
 }
 
 void FiveLApp::IdleProc(bool inBlock)
@@ -314,6 +327,10 @@ int FiveLApp::OnExit() {
 #endif // CONFIG_HAVE_QUICKTIME
     
     END_EXCEPTION_TRAPPER(ReportFatalException);
+
+    // Launch the UpdateInstaller if we've been asked to do so.
+    if (mShouldLaunchUpdateInstaller)
+        LaunchUpdateInstaller();
 
     // XXX - Undocumented return value, trying 0 for now.
     return 0;

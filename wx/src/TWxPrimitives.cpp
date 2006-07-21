@@ -113,6 +113,7 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_5L_PRIMITIVE(Heartbeat);
 	REGISTER_5L_PRIMITIVE(Input);
+	REGISTER_5L_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
     REGISTER_5L_PRIMITIVE(MarkUnprocessedEventsAsStale);
@@ -620,6 +621,10 @@ static void draw_picture(const std::string &inName, TPoint inLoc,
 					   inLoc.Y() + bitmap.GetHeight()));
 					   
 	UpdateSpecialVariablesForGraphic(bounds);	
+}
+
+DEFINE_5L_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
+    wxGetApp().LaunchUpdateInstallerBeforeExiting();
 }
 
 DEFINE_5L_PRIMITIVE(Loadpic) {

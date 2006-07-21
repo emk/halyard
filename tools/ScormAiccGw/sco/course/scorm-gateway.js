@@ -21,16 +21,19 @@ var ScormGateway = {
         }
 
         // Set up our ActiveX control.
-        controlGuid = 'CLSID:8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835';
-        this._gateway = document.createElement('object');
-        this._gateway.id = '_gateway';
-        //this._gateway.style = 'display: none;';
-        this._gateway.classid = controlGuid;
-        document.appendChild(this._gateway);
+        //var controlGuid = 'CLSID:8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835';
+        //this._gateway = document.createElement('object');
+        //this._gateway.id = '_gateway';
+        //this._gateway.width = 240;
+        //this._gateway.height = 60;
+        //this._gateway.classid = controlGuid;
+        //$('launchButtonContainer').appendChild(this._gateway);
+        //this._gateway.CourseGUID = this._guid
+        this._gateway = $('_gateway');
 
         // Make sure our course is installed.
         try {
-            if (!this._gateway.isCourseInstalled(this.guid)) {
+            if (!this._gateway.isCourseInstalled()) {
                 this._setState('courseMissing');
                 return;
             }
@@ -39,7 +42,7 @@ var ScormGateway = {
             this._setState('controlMissing');
             return;            
         }
-
+        
         // Connect to the LMS.
         // TODO - Ultimately, how should we handle a missing LMS?
         this.API = this._findAPI(window);
@@ -50,6 +53,9 @@ var ScormGateway = {
         }
 
         this._setState('courseReady');
+
+        var obj = this;
+        setTimeout(function () { obj._setState('courseDone'); }, 20000);
     },
 
     // Shut down the SCORM gateway.  Generally called from
@@ -75,7 +81,9 @@ var ScormGateway = {
 
     // Called from our onAppTerminated event handler.
     onAppTerminated: function () {
-        this._setState('courseDone');
+        //this._setState('courseDone');
+        //var obj = this;
+        //setTimeout(function () { obj._setState('courseDone'); }, 10000);
         // TODO - Need to shut down LMS once course is done.
     },
 

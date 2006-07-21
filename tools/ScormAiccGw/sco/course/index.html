@@ -4,8 +4,7 @@
     <script type="text/javascript" src="prototype.js"></script>
     <script type="text/javascript" src="scorm-gateway.js"></script>
     <script type="text/javascript">
-      var courseGuid = '00000000-DEAD-BEEF-0000-000000000000';
-      //var courseGuid = '00000000-BEEF-DEAD-0000-000000000000';
+      var courseGuid = '00000000-BEAD-DEED-0000-000000000000';
       // A GUID for a non-existant course, to check error-handling.
       //var courseGuid = '00000000-DEAD-BEAD-1111-000000000000';
       window.onerror = function (message, url, line) {
@@ -34,9 +33,13 @@
     <div id="courseReady" style="display:none">
       <p>Click below to launch the course.</p>
       
-      <form onsubmit="ScormGateway.launch(); return false;">
-        <input type="submit" value="Begin Course" />
-      </form>
+      <object id="_gateway" width="240" height="60"
+              classid="CLSID:8B4E4F9B-E7D0-4DFF-82AC-D92E06E4B835">
+          <param name="CourseGUID"
+                 value="00000000-BEAD-DEED-0000-000000000000" />
+          <param name="CourseParams"
+                 value="SSB's contents of param.cmi (init)" />
+      </object>
     </div>
 
     <div id="courseRunning" style="display:none">
@@ -50,7 +53,7 @@
     <!-- IE Workaround: This event handler can't be easily bound from -->
     <!-- JavaScript, so do it manually. -->
     <script lanaguage='javascript' for='_gateway' event='AppTerminated'>
-      alert("Terminated.");
+      //alert("Terminated.");
       // TODO - Make sure this code is ignored in other browsers.
       ScormGateway.onAppTerminated();
     </script>
