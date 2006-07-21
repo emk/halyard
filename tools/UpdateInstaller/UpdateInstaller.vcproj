@@ -19,6 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\libs\boost"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -63,6 +64,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="TRUE"
+				AdditionalIncludeDirectories="..\..\libs\boost"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
@@ -103,16 +105,44 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
+				RelativePath="src\Manifest.cpp">
+			</File>
+			<File
+				RelativePath="src\UpdateInstaller.cpp">
+			</File>
+			<File
 				RelativePath="src\main.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
+			<File
+				RelativePath="src\Manifest.h">
+			</File>
+			<File
+				RelativePath="src\UpdateInstaller.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+		</Filter>
+		<Filter
+			Name="Boost Source Files"
+			Filter="">
+			<File
+				RelativePath="..\..\libs\boost\libs\filesystem\src\convenience.cpp">
+			</File>
+			<File
+				RelativePath="..\..\libs\boost\libs\filesystem\src\exception.cpp">
+			</File>
+			<File
+				RelativePath="..\..\libs\boost\libs\filesystem\src\operations_posix_windows.cpp">
+			</File>
+			<File
+				RelativePath="..\..\libs\boost\libs\filesystem\src\path_posix_windows.cpp">
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

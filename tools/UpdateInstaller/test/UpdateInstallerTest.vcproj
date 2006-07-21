@@ -108,6 +108,9 @@
 				RelativePath="..\src\Manifest.cpp">
 			</File>
 			<File
+				RelativePath="..\src\UpdateInstaller.cpp">
+			</File>
+			<File
 				RelativePath="test.cpp">
 			</File>
 		</Filter>
@@ -123,7 +126,19 @@
 			Name="Boost Source Files"
 			Filter="">
 			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\convenience.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\exception.cpp">
+			</File>
+			<File
 				RelativePath="..\..\..\libs\boost\libs\test\src\execution_monitor.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\operations_posix_windows.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\path_posix_windows.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\libs\boost\libs\test\src\supplied_log_formatters.cpp">
