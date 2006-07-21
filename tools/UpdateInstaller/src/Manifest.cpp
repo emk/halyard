@@ -20,22 +20,33 @@
 //
 // @END_LICENSE
 
+#define BOOST_FILESYSTEM_SOURCE
+
 #include <stdio.h>
 #include <vector>
 #include <string>
+#include "boost/filesystem/path.hpp"
 #include "Manifest.h"
 
 enum { BLOCK_SIZE = /*4096*/ 10 };
 
 enum ParseState { DIGEST, SIZE, PATH };
 
-Manifest::Manifest(const std::string &path) {
+Manifest::Manifest(const boost::filesystem::path &path) {
     std::string data = read_file(path);
 
+	init(data);
+}
+
+Manifest::Manifest(const std::string &contents) {
+	init(contents);
+}
+
+void Manifest::init(const std::string &contents) {
     std::string digest_buf, size_buf, path_buf;
     ParseState state = DIGEST;
-    std::string::iterator iter = data.begin();
-    for (; iter != data.end(); ++iter) {
+    std::string::const_iterator iter = contents.begin();
+    for (; iter != contents.end(); ++iter) {
         switch (state) {
         case DIGEST:
             if (*iter == ' ')
@@ -65,8 +76,8 @@ Manifest::Manifest(const std::string &path) {
     }
 }
 
-std::string Manifest::read_file(const std::string &path) {
-    FILE *in = fopen(path.c_str(), "rb");
+std::string read_file(const boost::filesystem::path &path) {
+    FILE *in = fopen(path.native_file_string().c_str(), "rb");
     if (in == NULL)
         throw std::exception("Cannot open manifest file");
     std::string buffer;
@@ -82,4 +93,61 @@ std::string Manifest::read_file(const std::string &path) {
     if (ferror(in))
         throw std::exception("Error closing manifest file");
     return buffer;
+}
+
+SpecFile::SpecFile(const boost::filesystem::path &path) 
+	: mContents(read_file(path)), mHeader(parseHeader()), 
+	  mUrl(mHeader["Update-URL"]), mBuild(mHeader["Build"]), 
+	  mManifest(mContents) 
+{ }
+
+enum HeaderParseState { NEWLINE, KEY, VALUE };
+
+SpecFile::StringMap SpecFile::parseHeader() {
+	HeaderParseState state = NEWLINE;
+	std::string key_buf, val_buf;
+	StringMap ret;
+
+	std::string::iterator iter = mContents.begin();
+	for (; iter != mContents.end(); ++iter) {
+		switch(state) {
+		case NEWLINE: 
+			if (*iter == '\n') {
+				// We have a blank line, so we're done with the header
+				mContents = std::string(++iter, mContents.end());
+				return ret;
+			} else { 
+				key_buf += *iter;
+				state = KEY;
+			}
+			break;
+		case KEY:
+			if (*iter == ':') {
+				// check if we have ": "
+				if (++iter == mContents.end()) {
+					mContents = "";
+					return ret;
+				} else if (*iter = ' ') {
+					state = VALUE;
+				} else {
+					key_buf += ':';
+					key_buf += *iter;
+				}
+			} else {
+				key_buf += *iter;
+			}
+			break;
+		case VALUE:
+			if (*iter == '\n') {
+				ret[key_buf] = val_buf;
+				key_buf = val_buf = "";
+				state = NEWLINE;
+			} else {
+				val_buf += *iter;
+			}
+		}
+	}
+
+	mContents = "";
+	return ret;
 }

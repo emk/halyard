@@ -23,6 +23,18 @@
 #ifndef Manifest_H
 #define Manifest_H
 
+#include <vector>
+#include <string>
+#include <map>
+
+namespace boost {
+	namespace filesystem {
+		class path;
+	}
+}
+
+std::string read_file(const boost::filesystem::path &path);
+
 class Manifest {
 public:
     class Entry {
@@ -42,13 +54,34 @@ public:
 
     typedef std::vector<Entry> EntryVector;
 
-    Manifest(const std::string &path);
-    EntryVector &entries() { return mEntries; }
+    Manifest(const boost::filesystem::path &path);
+	Manifest(const std::string &contents);
+    const EntryVector &entries() const { return mEntries; }
 
 private:
     EntryVector mEntries;
 
-    std::string read_file(const std::string &path);
+	void init(const std::string &contents);
+};
+
+class SpecFile {
+public: 
+	SpecFile(const boost::filesystem::path &path);
+
+	std::string url() const { return mUrl; }
+	std::string build() const { return mBuild; }
+	const Manifest &manifest() const { return mManifest; }
+
+private:
+	typedef std::map<std::string, std::string> StringMap;
+
+	// Parse the header, leaving mContents with just the manifest
+	StringMap parseHeader();
+	
+	std::string mContents;
+	StringMap mHeader;
+	std::string mUrl, mBuild;
+	Manifest mManifest;
 };
 
 #endif Manifest_H

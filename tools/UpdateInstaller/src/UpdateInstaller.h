@@ -23,28 +23,15 @@
 #ifndef UpdateInstaller_H
 #define UpdateInstaller_H
 
-#include "boost/filesystem/operation.hpp"
-
-using boost::filesystem;
-
-class ManifestEntry {
-public: 
-	std::string hash;
-	int size;
-	path filename;
-
-	ManifestEntry(std::string inHash, int inSize, path inFilename) 
-		: hash(inHash), size(inSize), filename(inFilename) {};
+namespace boost {
+	namespace filesystem {
+		class path;
+	}
 }
 
-class UpdateInstaller {
-public:
-	UpdateInstaller(path update_dir, path root_dir);
-	void install();
+void install_update(const boost::filesystem::path &root_path);
+void ensure_dir_exists(const boost::filesystem::path &dir);
+void copy_overwriting(const boost::filesystem::path &src, 
+					  const boost::filesystem::path &dst);
 
-protected:
-	path update_dir, root_dir;
-	
-	std::vector<ManifestEntry> manifest_diff;
-}
 #endif // UpdateInstaler_H

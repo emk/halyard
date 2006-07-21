@@ -20,11 +20,32 @@
 //
 // @END_LICENSE
 
-//#include <iostream>
+#define BOOST_FILESYSTEM_SOURCE
+
 #include <stdio.h>
+#include "boost/filesystem/path.hpp"
+
+#include "UpdateInstaller.h"
+
+using namespace boost::filesystem;
 
 int main(int argc, char **argv) {
-	//std::cout << "Hello, world!" << std::endl;
-	printf("Hello, world!");
+	if (argc != 2) {
+		printf("Usage: UpdateInstaller path\n");
+		exit(1);
+	}
+
+	try {
+		install_update(path(argv[1]));
+	} catch (std::exception &e) {
+		printf("Error: %s\n", e.what());
+		exit(1);
+	} catch (...) {
+		printf("Unknown error.\n");
+		exit(1);
+	}
+
+	printf("Update installed successfully!");
 	return 0;
 }
+

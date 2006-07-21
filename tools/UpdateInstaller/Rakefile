@@ -3,10 +3,8 @@ require 'fileutils'
 task :default => :test
 
 task :test => :build do
-  FileUtils.cd "fixture" do
-    sh "../test/Debug/UpdateInstallerTest.exe"
-    ruby "../update_installer_test.rb"
-  end
+  in_fixture_copy { sh "../test/Debug/UpdateInstallerTest.exe" }
+  in_fixture_copy { ruby "../update_installer_test.rb" }
 end
 
 task :build do
@@ -22,4 +20,12 @@ end
 
 def devenv project, action, configuration
   sh "devenv.com", project, "/#{action}", configuration
+end
+
+def in_fixture_copy
+  FileUtils.cp_r "fixture", "fixture-temp"
+  FileUtils.cd "fixture-temp" do 
+    yield
+  end
+  FileUtils.rm_rf "fixture-temp"
 end

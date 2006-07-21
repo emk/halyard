@@ -23,9 +23,14 @@
 #define BOOST_AUTO_TEST_MAIN
 #include <boost/test/auto_unit_test.hpp>
 
+#define BOOST_FILESYSTEM_SOURCE
+#include "boost/filesystem/path.hpp"
+
 #include <vector>
 #include <string>
 #include "Manifest.h"
+
+using boost::filesystem::path;
 
 #define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRY) \
     do { \
@@ -36,7 +41,7 @@
     } while(0)
 
 BOOST_AUTO_UNIT_TEST(test_parse_diff) {
-    Manifest diff("Updates/temp/MANIFEST-DIFF");
+    Manifest diff(path("Updates/temp/MANIFEST-DIFF"));
     BOOST_CHECK(3 == diff.entries().size());
     CHECK_ENTRY("855426068ee8939df6bce2c2c4b1e7346532a133", 5, "sub/foo.txt",
                 diff.entries()[0]);
@@ -47,5 +52,8 @@ BOOST_AUTO_UNIT_TEST(test_parse_diff) {
 }
 
 BOOST_AUTO_UNIT_TEST(test_parse_spec) {
-    // Up next...
+	SpecFile spec(path("Updates/release.spec"));
+	BOOST_CHECK("http://www.example.com/updates/" == spec.url());
+	BOOST_CHECK("update" == spec.build());
+	BOOST_CHECK(2 == spec.manifest().entries().size());
 }

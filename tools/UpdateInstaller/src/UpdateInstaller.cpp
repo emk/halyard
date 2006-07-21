@@ -20,25 +20,56 @@
 //
 // @END_LICENSE
 
-#include <string.h>
-#include <iostream.h>
+#define BOOST_FILESYSTEM_SOURCE
+
+#include <string>
+#include <vector>
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
 
 #include "UpdateInstaller.h"
+#include "Manifest.h"
 
-int main(int argc, char ** argv) {
-	if (argc != 3) {
-		cerr << "Incorrect number of parameters: " << argc - 1 << endl;
-		cerr << "Usage:" << endl << "UpdateInstaller update_directory root_directory" << endl;
-		exit(1);
-	} 
+using namespace boost::filesystem;
 
-	path update_dir(argv[1], native);
-	path root_dir(argv[2], native);
+void install_update(const path &root_path) {
+	Manifest diff(root_path / "Updates/temp/MANIFEST-DIFF");
 
-	UpdatedInstaller inst(update_dir, root_dir);
-	inst.install();
+	Manifest::EntryVector::const_iterator iter = diff.entries().begin();
+	for (; iter != diff.entries().end(); ++iter) {
+		path src_path = root_path / "Updates/pool" / iter->digest();
+		path dst_path = root_path / iter->path();
+		
+		ensure_dir_exists(dst_path / "..");
+
+		copy_overwriting(src_path, dst_path);
+	}
+
+	SpecFile spec(root_path / "Updates/release.spec");
+	iter = spec.manifest().entries().begin();
+	for(; iter != spec.manifest().entries().end(); ++iter) {
+		path src_path = root_path / "Updates/manifests" / spec.build() 
+			/ iter->path();
+		path dst_path = root_path / iter->path();
+		
+		copy_overwriting(src_path, dst_path);
+	}
+
+	copy_overwriting(root_path / "Updates/release.spec", "release.spec");
 }
 
-UpdateInstaller::UpdateInstaller(path update_dir, path root_dir) {
+void ensure_dir_exists(const path &dir) {
+	path curr;
 	
+	for (path::iterator iter = dir.begin(); iter != dir.end(); ++iter) {
+		curr = curr / *iter;
+		if (!exists(curr)) 
+			create_directory(curr);
+	}
+}
+
+void copy_overwriting(const path &src, const path &dst) {
+	if (exists(dst)) 
+		remove(dst);
+	copy_file(src, dst);
 }
