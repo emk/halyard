@@ -3,6 +3,8 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 CVS - emk, brian
 
   * Added placeholder code for launching the UpdateInstaller.
+  * Added watchdir/unwatchdir to Quake 2 to support detecting when the
+    user looks in a specified direction (#2893).
 
 0.0.61 - 30 Jun 2006 - emk, brian
 
