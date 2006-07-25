@@ -28,6 +28,10 @@ History
 Checking 5L Out of CVS
 ----------------------
 
+  WARNING: The CVS-related portions of this document are obsolete since our
+  move to Subversion.  Until they're updated, please ask an active
+  developer what our current policies are.
+
   CVS server: imlcvs.dartmouth.edu
   CVS root:   /usr/local/cvsroot
 
@@ -395,6 +399,16 @@ Ancient Versions
   You can find this engine in CVS as FiveL_3_1_1_Stabilization and
   Mac5L_202_Stable.  Release notes are in Win32/ReleaseNotes.txt and
   Mac/ReleaseNotes.
+
+
+Upgrading PLT
+-------------
+
+Four libraries (mzlib, net, syntax, xml) from lib/plt/collects need to be
+aliased at Common/Runtime.  When updating lib/plt, be sure to 'svn rm' the
+copies at Common/Runtime and use 'svn cp' to copy the updated versions
+over.  (If you're using a client with really fancy branching support, you
+could always use a star-merge instead.)
 
 libxml2 Hacks
 -------------
