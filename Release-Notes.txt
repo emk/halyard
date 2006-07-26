@@ -5,6 +5,8 @@ CVS - emk, brian
   * Added placeholder code for launching the UpdateInstaller.
   * Added watchdir/unwatchdir to Quake 2 to support detecting when the
     user looks in a specified direction (#2893).
+  * Suppress splash-screen on reload so scripters can visually see the
+    change from the old version of a card to the new one (#2921).
 
 0.0.61 - 30 Jun 2006 - emk, brian
 
