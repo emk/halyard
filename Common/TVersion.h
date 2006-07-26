@@ -22,16 +22,16 @@
 
 #define VERSION_MAJOR_NUM	0
 #define VERSION_MINOR_NUM	0
-#define VERSION_REV_BIG		61
+#define VERSION_REV_BIG		62
 #define VERSION_REV_SMALL	0
 
-#define VERSION_STRING		"Tamale 0.0.61 (Development)"
+#define VERSION_STRING		"Tamale 0.0.62 (Development)"
 #define SHORT_NAME			"Tamale"
 
 #define TAMALE_COPYRIGHT_NAME \
 	"Tamale multimedia engine"
 #define TAMALE_COPYRIGHT_NOTICE \
-	"Copyright 1993-2005 Trustees of Dartmouth College. All rights reserved."
+	"Copyright 1993-2006 Trustees of Dartmouth College. All rights reserved."
 
 /// The date at which the files including TVersion.h were built.  This will
 /// work right as long as you change the version number for official builds.

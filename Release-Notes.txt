@@ -1,6 +1,8 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.62 - 26 July 2006 - emk, brian
+
+Internal release for UpdateInstaller testing.
 
   * Added placeholder code for launching the UpdateInstaller.
   * Added watchdir/unwatchdir to Quake 2 to support detecting when the
