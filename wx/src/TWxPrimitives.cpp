@@ -137,6 +137,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(Overlay);
 	REGISTER_5L_PRIMITIVE(OverlayAnimated);
 	REGISTER_5L_PRIMITIVE(Refresh);
+	REGISTER_5L_PRIMITIVE(RefreshSplashScreen);
 	REGISTER_5L_PRIMITIVE(SaveGraphics);
 	REGISTER_5L_PRIMITIVE(RestoreGraphics);
 	REGISTER_5L_PRIMITIVE(Screenshot);
@@ -811,6 +812,10 @@ DEFINE_5L_PRIMITIVE(Refresh) {
 	int32 milliseconds;
 	inArgs >> SymbolName(transition) >> milliseconds;
 	wxGetApp().GetStage()->RefreshStage(transition, milliseconds);
+}
+
+DEFINE_5L_PRIMITIVE(RefreshSplashScreen) {
+    wxGetApp().GetStage()->RefreshSplashScreen();
 }
 
 DEFINE_5L_PRIMITIVE(Overlay) {

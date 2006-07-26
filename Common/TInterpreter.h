@@ -357,6 +357,7 @@ class TInterpreterManager : boost::noncopyable
 	static bool sHaveAlreadyCreatedSingleton;
     static std::vector<TReloadNotified*> sReloadNotifiedObjects;
     static bool sIsInRuntimeMode;
+    static bool sIsFirstLoad;
     static bool sHaveInitialCommand;
     static std::string sInitialCommand;
     static Document *sDocument;
@@ -548,6 +549,11 @@ public:
     /// editor?
     ///
     static bool IsInRuntimeMode();
+
+    //////////
+    /// Should we supress any splash screens, progress bars, etc.?
+    ///
+    static bool ShouldSuppressSplashScreen();
 
 protected:
 	//////////

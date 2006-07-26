@@ -34,8 +34,8 @@
     (maybe-call-5l-prim 'MaybeLoadSplash path))
 
   ;; Force a screen update.
-  (define (refresh)
-    (maybe-call-5l-prim 'refresh 'none 0))
+  (define (refresh-splash-screen)
+    (maybe-call-5l-prim 'refreshsplashscreen))
 
   ;; Let the engine know we've loaded a file.
   (define (notify-file-loaded)
@@ -73,7 +73,7 @@
       (maybe-load-splash "splash2.png"))
     (unless *showing-first-splash-screen?*
       (draw-load-progress))
-    (refresh))
+    (refresh-splash-screen))
 
   ;;===== Loader =====
 
@@ -181,9 +181,11 @@
         ;; Load the user's actual script into our new namespace.
         (set! filename (build-path (current-directory) "Scripts" "start.ss"))
         (load/use-compiled filename)
-        ;; XXX - Disabled until we can determine why the number of files
-        ;; loaded goes up after a "reload script".
-        ;;(notify-script-loaded)
+        ;; (XXX - Disabled until we can determine why the number of files
+        ;; loaded goes up after a "reload script".)
+        ;; XXX- Re-enabled because we currently suppress all splash-screen
+        ;; code after a "reload script".
+        (notify-script-loaded)
         #f)))
 
   ) ; end module

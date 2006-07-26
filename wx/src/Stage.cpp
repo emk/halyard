@@ -184,6 +184,9 @@ wxBitmap Stage::GetScriptGraphic(const std::string &inName) {
 }
 
 void Stage::MaybeShowSplashScreen() {
+    if (TInterpreterManager::ShouldSuppressSplashScreen())
+        return;
+
     // TODO - We assume the bitmap is 800x450 pixels, and we lay out
     // this screen using hard-coded co-ordinates.
 
@@ -215,6 +218,9 @@ void Stage::MaybeShowSplashScreen() {
 }
 
 void Stage::MaybeDrawSplashGraphic(const std::string &inName) {
+    if (TInterpreterManager::ShouldSuppressSplashScreen())
+        return;
+
     // TODO - We assume the bitmap is 800x450 pixels, and we lay out
     // this screen using hard-coded co-ordinates.
     wxBitmap bitmap = GetScriptGraphic(inName);
@@ -223,6 +229,9 @@ void Stage::MaybeDrawSplashGraphic(const std::string &inName) {
 }
 
 void Stage::DrawLoadProgress() {
+    if (TInterpreterManager::ShouldSuppressSplashScreen())
+        return;
+
     // TODO - We lay out this screen using hard-coded co-ordinates.
     const int y_pos       = 459;
     const int x_begin     = 290;
@@ -239,6 +248,15 @@ void Stage::DrawLoadProgress() {
         for (int x = x_begin; x < x_end; ++x)
             mBackgroundDrawingArea->DrawBitmap(bitmap, x, y_pos);
     }
+}
+
+void Stage::RefreshSplashScreen() {
+    // This is just a quick hack so that we don't repaint the stage when
+    // scripters are running in development mode, and they want to visually
+    // compare the before-and-after-refresh views of the stage.
+    if (TInterpreterManager::ShouldSuppressSplashScreen())
+        return;
+    RefreshStage("none", 0);
 }
 
 bool Stage::IsIdleAllowed() const {

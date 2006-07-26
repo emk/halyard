@@ -341,6 +341,12 @@ public:
     ///
     void DrawLoadProgress();
 
+    //////////
+    /// Similar to Refresh, but does nothing if we're not showing a splash
+    /// screen.
+    ///
+    void RefreshSplashScreen();
+
 	//////////
 	/// Should the script be allowed to idle right now?
 	///

@@ -55,12 +55,22 @@ TInterpreter::~TInterpreter()
 }
 
 void TInterpreter::NotifyFileLoaded() {
+    // For now, suppress calculation of splash-screen related data when
+    // we're not showing the splash screen.
+    if (TInterpreterManager::ShouldSuppressSplashScreen())
+        return;
+
     ++mSourceFilesLoaded;
     if (mSourceFilesLoaded > mSourceFilesExpected)
         mSourceFilesExpected = mSourceFilesLoaded;
 }
 
 void TInterpreter::NotifyScriptLoaded() {
+    // For now, suppress calculation of splash-screen related data when
+    // we're not showing the splash screen.
+    if (TInterpreterManager::ShouldSuppressSplashScreen())
+        return;
+
     mSourceFilesExpected = mSourceFilesLoaded;
 
     // If we have a document (i.e., we're not running the test suites),
@@ -102,6 +112,7 @@ TInterpreterManager *TInterpreterManager::sInstance = NULL;
 bool TInterpreterManager::sHaveAlreadyCreatedSingleton = false;
 std::vector<TReloadNotified*> TInterpreterManager::sReloadNotifiedObjects;
 bool TInterpreterManager::sIsInRuntimeMode = false;
+bool TInterpreterManager::sIsFirstLoad = true;
 bool TInterpreterManager::sHaveInitialCommand = false;
 std::string TInterpreterManager::sInitialCommand;
 Document *TInterpreterManager::sDocument = NULL;
@@ -244,6 +255,7 @@ void TInterpreterManager::RequestReloadScript(const char *inGotoCardName)
 	ASSERT(mInterpreter);
 	mInterpreter->KillInterpreter();
 	mInitialCardName = inGotoCardName;
+    sIsFirstLoad = false;
 }
 
 bool TInterpreterManager::InterpreterHasBegun() {
@@ -305,6 +317,14 @@ void TInterpreterManager::SetRuntimeMode(bool inIsInRuntimeMode) {
 
 bool TInterpreterManager::IsInRuntimeMode() {
     return sIsInRuntimeMode;
+}
+
+bool TInterpreterManager::ShouldSuppressSplashScreen() {
+    // Current policy: Suppress splash screen after first load, so people
+    // working in developer mode can see the old stage layout transform
+    // directly into the new stage layout when reloading is done.  I'm told
+    // this makes it easier to adjust alignments.
+    return !sIsFirstLoad;
 }
 
 void TInterpreterManager::SetInitialCommand(const std::string &inCommand) {
