@@ -364,6 +364,26 @@ Checking in Your Changes to 5L
   around a set of four symlinks *between* different parts of the repository
   which break the CVS tag command.  This is gross and should be fixed.
 
+Copying an Engine Build into a Script
+-------------------------------------
+
+Right now, official engine builds are stored in Subversion, and can be
+copied directly into scripts using repository copies.  Here's how a
+released engine and supporting files were copied into tamale_test:
+
+  BASE=svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/5L/trunk
+  svn cp $BASE/Common/Runtime .
+  svn cp $BASE/Common/Fonts .
+  for F in `(cd ../5L/Win32/Bin; ls -1 *.dll *.pdb Tamale*.exe)`; do
+    svn cp $BASE/Win32/Bin/$F .
+  done
+  # Test it...
+  svn commit -m "Updated to engine 0.0.x."
+
+To update an existing set of copied engine binaries and supporting files,
+it will probably be necessary to do something with 'svn rm'.  But we
+haven't tried that yet.
+
 Updating the Version Number
 ---------------------------
 
