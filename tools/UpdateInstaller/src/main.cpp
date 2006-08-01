@@ -48,13 +48,14 @@ int main(int argc, char **argv) {
 	}
 
 	if (argc > 2) {
+		/* PORTABILITY - needs to be factored to work on platforms other than
+		 Windows. */
 		CommandLine cl(argc-2, argv+2);
 		STARTUPINFO si;
 		ZeroMemory( &si, sizeof(si));
 		si.cb = sizeof(si);
 		PROCESS_INFORMATION pi;
 		LPSTR command = _strdup(cl.WindowsQuotedString().c_str());
-		printf("Executing external command: %s\n", command);
 		BOOL ret = CreateProcess(NULL, /* Application name */
 								 command, /* Command line */ 
 								 NULL, /* Process attributes */
@@ -70,10 +71,8 @@ int main(int argc, char **argv) {
 				   cl.WindowsQuotedString().c_str());
 			exit(1);
 		}
-		printf("Executed command\n");
 	}
 
-	printf("Update installed successfully!");
 	return 0;
 }
 

@@ -26,6 +26,10 @@
 #include <string>
 #include <vector>
 
+/* PORTABILITY - needs to be factored to work on platforms other than Windows. 
+   Should add a NullTerminatedArray method to return an argv array in the 
+   format wxWidgets uses for wxExecute, which can be used on Unix-like 
+   platforms. */
 class CommandLine {
 public:
 	CommandLine(int argc, char **argv);
