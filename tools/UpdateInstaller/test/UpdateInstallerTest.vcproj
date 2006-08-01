@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src;..\..\..\libs\boost"
+				AdditionalIncludeDirectories="..\src;..\..\..\libs\boost;..\..\..\Common"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -64,7 +64,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="..\src;..\..\..\libs\boost"
+				AdditionalIncludeDirectories="..\src;..\..\..\libs\boost;..\..\..\Common"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
@@ -104,6 +104,9 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
+			<File
+				RelativePath="..\..\..\Common\CommandLine.cpp">
+			</File>
 			<File
 				RelativePath="..\src\Manifest.cpp">
 			</File>
