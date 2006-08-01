@@ -351,6 +351,7 @@
   ;; Applies a given update. Will launch an updater, pass it the information 
   ;; needed to apply the update, and quit the program so the updater can do 
   ;; its work. 
-  (define (apply-update update)
-    #f)
+  (define (apply-update)
+    (call-5l-prim 'LaunchUpdateInstallerBeforeExiting)
+    (exit-script))
   )
