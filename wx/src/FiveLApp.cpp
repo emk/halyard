@@ -50,6 +50,7 @@
 #include "AudioStream.h"
 #include "Downloader.h"
 #include "Stage.h"
+#include "CommandLine.h"
 
 // Provided by auto-generated resources.cpp file.
 extern void InitXmlResource();
@@ -89,8 +90,15 @@ void FiveLApp::LaunchUpdateInstaller() {
     // PORTABILITY - We need to make the UpdateInstaller work elsewhere.
     // XXX - Extract application exe name from wxWidgets?
     FileSystem::Path base(FileSystem::GetBaseDirectory());
-    FileSystem::Path path(base.AddComponent("UpdateInstaller"));
-    wxExecute(path.ToNativePathString().c_str(), wxEXEC_ASYNC);
+    FileSystem::Path updater(base.AddComponent("UpdateInstaller"));
+	FileSystem::Path tamale(base.AddComponent("Tamale"));
+	std::vector<std::string> clItems;
+	clItems.push_back(updater.ToNativePathString());
+	clItems.push_back(base.ToNativePathString());
+	clItems.push_back(tamale.ToNativePathString());
+	clItems.push_back(base.ToNativePathString());
+	CommandLine cl(clItems);
+    wxExecute(cl.WindowsQuotedString().c_str(), wxEXEC_ASYNC);
 }
 
 void FiveLApp::IdleProc(bool inBlock)

@@ -23,15 +23,17 @@
 #define BOOST_FILESYSTEM_SOURCE
 
 #include <stdio.h>
+#include <windows.h>
 #include "boost/filesystem/path.hpp"
 
+#include "CommandLine.h"
 #include "UpdateInstaller.h"
 
 using namespace boost::filesystem;
 
 int main(int argc, char **argv) {
-	if (argc != 2) {
-		printf("Usage: UpdateInstaller path\n");
+	if (argc < 2) {
+		printf("Usage: UpdateInstaller path [command ...]\n");
 		exit(1);
 	}
 
@@ -43,6 +45,32 @@ int main(int argc, char **argv) {
 	} catch (...) {
 		printf("Unknown error.\n");
 		exit(1);
+	}
+
+	if (argc > 2) {
+		CommandLine cl(argc-2, argv+2);
+		STARTUPINFO si;
+		ZeroMemory( &si, sizeof(si));
+		si.cb = sizeof(si);
+		PROCESS_INFORMATION pi;
+		LPSTR command = _strdup(cl.WindowsQuotedString().c_str());
+		printf("Executing external command: %s\n", command);
+		BOOL ret = CreateProcess(NULL, /* Application name */
+								 command, /* Command line */ 
+								 NULL, /* Process attributes */
+								 NULL, /* Thread attributes */
+								 FALSE, /* Inherit handles? */
+								 0, /* Creation Flags */
+								 NULL, /* Environment */
+								 NULL, /* Current directory */
+								 &si, /* Startup info */
+								 &pi); /* Process info */
+		if (!ret) {
+			printf("Error: Couldn't launch external process: %s\n",
+				   cl.WindowsQuotedString().c_str());
+			exit(1);
+		}
+		printf("Executed command\n");
 	}
 
 	printf("Update installed successfully!");

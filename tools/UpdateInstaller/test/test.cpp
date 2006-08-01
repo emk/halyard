@@ -29,6 +29,7 @@
 #include <vector>
 #include <string>
 #include "Manifest.h"
+#include "CommandLine.h"
 
 using boost::filesystem::path;
 
@@ -56,4 +57,20 @@ BOOST_AUTO_UNIT_TEST(test_parse_spec) {
 	BOOST_CHECK("http://www.example.com/updates/" == spec.url());
 	BOOST_CHECK("update" == spec.build());
 	BOOST_CHECK(2 == spec.manifest().entries().size());
+}
+
+BOOST_AUTO_UNIT_TEST(test_windows_command_line_quoting) {
+	char *test[5] = { "C:\\Program Files\\foo.exe",
+					  "Something with spaces",
+					  "Something\" with\" quotes",
+					  "Something with \\\" backslash quotes",
+					  "Big\\\" old\" mix \\of \\\\\" stuff" };
+					  
+	CommandLine cl(5, test); 
+	BOOST_CHECK_EQUAL(std::string("\"C:\\Program Files\\foo.exe\" ") 
+					  + "\"Something with spaces\" " 
+					  + "\"Something\\\" with\\\" quotes\" " 
+					  + "\"Something with \\\\\\\" backslash quotes\" " 
+					  + "\"Big\\\\\\\" old\\\" mix \\of \\\\\\\\\\\" stuff\"",
+					  cl.WindowsQuotedString());
 }

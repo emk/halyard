@@ -23,6 +23,7 @@ def devenv project, action, configuration
 end
 
 def in_fixture_copy
+  FileUtils.rm_rf "fixture-temp"
   FileUtils.cp_r "fixture", "fixture-temp"
   FileUtils.cd "fixture-temp" do 
     yield
