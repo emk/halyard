@@ -2,6 +2,8 @@
   (require (lib "tamale-unit.ss" "5L"))
   (require (lib "updater.ss" "5L"))
   
+  (define vc-exclude (list (regexp "\\.svn$")))
+  
   (define (create-test-file dir name)
     (with-output-to-file (build-path dir name)
       (thunk (display name) (newline))))
@@ -53,10 +55,11 @@
     (test "copy-recursive should copy correct files."
       (define copy-dir (build-path (test-directory self) "Copy"))
       (define inner-copy-dir (build-path copy-dir "Inner"))
-      (copy-recursive (outer-directory self) copy-dir)
+      (copy-recursive-excluding (list (regexp "Deleted")) 
+                                (outer-directory self) copy-dir)
       (assert (directory-exists? copy-dir))
       (assert (directory-exists? inner-copy-dir))
-      (assert (file-exists? (build-path copy-dir "Deleted")))
+      (assert (not (file-exists? (build-path copy-dir "Deleted"))))
       (assert (file-exists? (build-path inner-copy-dir "File1")))
       (assert (file-exists? (build-path inner-copy-dir "File2")))))
   
@@ -162,11 +165,11 @@
     (setup 
       (set! (test-directory self) (ensure-dir-exists "UpdaterTest"))
       (set! (base-directory self)
-            (copy-recursive 
+            (copy-recursive-excluding vc-exclude 
              (build-path (fixture-dir "updater") "base") 
              (test-directory self)))
       (set! (update-directory self)
-            (copy-recursive 
+            (copy-recursive-excluding vc-exclude 
              (build-path (fixture-dir "updater") "update")
              (test-directory self)))
       (set! (url-prefix self) 
@@ -240,7 +243,7 @@
   (provide create-installer-fixture)
   (define (create-installer-fixture)
     (define fix-dir (ensure-dir-exists "InstallerFixture"))
-    (define base-dir (copy-recursive 
+    (define base-dir (copy-recursive-excluding vc-exclude 
                       (build-path (fixture-dir "updater") "base") 
                       fix-dir))
     (define url-prefix 

@@ -4,7 +4,7 @@
   ;; TODO - these should probably be factored out into some sort of file-utils
   ;; library.
   (provide dir-writeable? root-directory-writeable? delete-directory-recursive 
-           copy-recursive read-string-from-file)
+           copy-recursive copy-recursive-excluding read-string-from-file)
   
   ;; TODO - should probably be moved to tamale.ss, and used in 
   ;; ensure-dir-exists. Also, is current-directory really the right way
@@ -33,15 +33,26 @@
   ;; indirecting through them, and will not overwrite an existing directory 
   ;; but instead will copy into it. 
   (define (copy-recursive src dest)
+    (copy-recursive-excluding '() src dest))
+  
+  (define (extract-filename path)
+    (let-values [[(base name must-be-dir?) (split-path path)]]
+      name))
+  
+  (define (copy-recursive-excluding exclude src dest)
     (if (directory-exists? dest)
-      (copy-recursive src (build-path dest (strip-base src)))
+      (copy-recursive-excluding exclude src (build-path dest (strip-base src)))
       (begin
         (cond 
+          [(ormap (fn (re) (regexp-match re src)) exclude) 
+           #t]
           [(link-exists? src) (copy-file src dest)]
           [(directory-exists? src)
            (make-directory dest)
            (foreach [file (directory-list src)]
-             (copy-recursive (build-path src file) (build-path dest file)))]
+             (copy-recursive-excluding exclude 
+                                       (build-path src file) 
+                                       (build-path dest file)))]
           [(file-exists? src) (copy-file src dest)])
         dest)))
   
