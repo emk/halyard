@@ -1,9 +1,9 @@
 Tamale - Multimedia authoring and playback system
-Copyright 1993-2004 Trustees of Dartmouth College
+Copyright 1993-2006 Trustees of Dartmouth College
 
 The different components of Tamale are distributed under a variety of
-licenses.  For your convenience, the Tamale distribution also includes a
-number of third-party libraries with copyrights and licenses of their own.
+licenses.  Tamale also includes a number of third-party libraries with
+copyrights and licenses of their own.
 
 Tamale is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -23,8 +23,8 @@ Here is a summary of licenses used in the Tamale distribution:
   3) All code which is not copyright by the Trustees of Dartmouth College
      is covered by the license specified by the copyright holder.  Many of
      these licenses have been reproduced below for your convenience.  The
-     official copies of these licenses can be found elsewhere in the
-     distribution.
+     official copies of these licenses--and other licenses not reproduced
+     below--can be found in the source code distribution.
 
 *===== Third-Party Libraries
 
@@ -35,7 +35,7 @@ the GNU General Public License (the "GPL").
 
 We use the following third-party libraries under the terms of the GPL:
 
-  * Freetype 2 (dual-licensed)
+  * Freetype 2 (also available under other licenses)
   * Quake 2
 
 We use the following third-party libraries under the terms of the GNU
@@ -49,6 +49,10 @@ We use the following libraries under the wxWidgets Library License:
   * wxActiveX and wxIE
     (see note at http://members.optusnet.com.au/~blackpaw1/wxactivex.html)
   * wxHyperLink (by Otto Wyss)
+
+Many of these third-party libraries contain smaller components with their
+own licensing terms (totaling more than 1500 distinct copyright notices).
+For details, please consult the source distribution.
 
 *===== Boehm GC License
 
@@ -129,6 +133,132 @@ SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
 FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+*===== Catharon Open Source License
+
+This license applies to the FreeType autohinting library.
+
+                  The Catharon Open Source LICENSE
+                    ----------------------------
+
+                            2000-Jul-04
+
+          Copyright (C) 2000 by Catharon Productions, Inc.
+
+
+
+Introduction
+============
+
+  This  license  applies to  source  files  distributed by  Catharon
+  Productions,  Inc.  in  several  archive packages.   This  license
+  applies  to all files  found in  such packages  which do  not fall
+  under their own explicit license.
+
+  This  license   was  inspired  by  the  BSD,   Artistic,  and  IJG
+  (Independent JPEG  Group) licenses, which  all encourage inclusion
+  and  use of  free  software in  commercial  and freeware  products
+  alike.  As a consequence, its main points are that:
+
+    o We  don't promise that  this software works.  However,  we are
+      interested in any kind of bug reports. (`as is' distribution)
+
+    o You can  use this software for whatever you  want, in parts or
+      full form, without having to pay us. (`royalty-free' usage)
+
+    o You may not pretend that  you wrote this software.  If you use
+      it, or  only parts of it,  in a program,  you must acknowledge
+      somewhere  in  your  documentation  that  you  have  used  the
+      Catharon Code. (`credits')
+
+  We  specifically  permit  and  encourage  the  inclusion  of  this
+  software, with  or without modifications,  in commercial products.
+  We disclaim  all warranties  covering the packages  distributed by
+  Catharon  Productions, Inc.  and  assume no  liability related  to
+  their use.
+
+
+Legal Terms
+===========
+
+0. Definitions
+--------------
+
+  Throughout this license,  the terms `Catharon Package', `package',
+  and  `Catharon  Code'  refer   to  the  set  of  files  originally
+  distributed by Catharon Productions, Inc.
+
+  `You' refers to  the licensee, or person using  the project, where
+  `using' is a generic term including compiling the project's source
+  code as  well as linking it  to form a  `program' or `executable'.
+  This  program  is referred  to  as `a  program  using  one of  the
+  Catharon Packages'.
+
+  This  license applies  to all  files distributed  in  the original
+  Catharon  Package(s),  including  all  source code,  binaries  and
+  documentation,  unless  otherwise  stated   in  the  file  in  its
+  original, unmodified form as  distributed in the original archive.
+  If you are  unsure whether or not a particular  file is covered by
+  this license, you must contact us to verify this.
+
+  The  Catharon   Packages  are  copyright  (C)   2000  by  Catharon
+  Productions, Inc.  All rights reserved except as specified below.
+
+1. No Warranty
+--------------
+
+  THE CATHARON PACKAGES ARE PROVIDED `AS IS' WITHOUT WARRANTY OF ANY
+  KIND, EITHER  EXPRESS OR IMPLIED,  INCLUDING, BUT NOT  LIMITED TO,
+  WARRANTIES  OF  MERCHANTABILITY   AND  FITNESS  FOR  A  PARTICULAR
+  PURPOSE.  IN NO EVENT WILL ANY OF THE AUTHORS OR COPYRIGHT HOLDERS
+  BE LIABLE FOR ANY DAMAGES CAUSED BY THE USE OF OR THE INABILITY TO
+  USE THE CATHARON PACKAGE.
+
+2. Redistribution
+-----------------
+
+  This  license  grants  a  worldwide, royalty-free,  perpetual  and
+  irrevocable right  and license to use,  execute, perform, compile,
+  display,  copy,   create  derivative  works   of,  distribute  and
+  sublicense the  Catharon Packages (in both source  and object code
+  forms)  and  derivative works  thereof  for  any  purpose; and  to
+  authorize others  to exercise  some or all  of the  rights granted
+  herein, subject to the following conditions:
+
+    o Redistribution  of source code  must retain this  license file
+      (`license.txt') unaltered; any additions, deletions or changes
+      to   the  original   files  must   be  clearly   indicated  in
+      accompanying  documentation.   The  copyright notices  of  the
+      unaltered, original  files must be preserved in  all copies of
+      source files.
+
+    o Redistribution  in binary form must provide  a disclaimer that
+      states  that the  software is  based in  part on  the  work of
+      Catharon Productions, Inc. in the distribution documentation.
+
+  These conditions  apply to any  software derived from or  based on
+  the Catharon Packages, not just  the unmodified files.  If you use
+  our work, you  must acknowledge us.  However, no  fee need be paid
+  to us.
+
+3. Advertising
+--------------
+
+  Neither Catharon Productions, Inc.  and contributors nor you shall
+  use  the  name  of  the  other  for  commercial,  advertising,  or
+  promotional purposes without specific prior written permission.
+
+  We suggest, but do not  require, that you use the following phrase
+  to refer to this software in your documentation: 'this software is
+  based in part on the Catharon Typography Project'.
+
+  As  you have  not signed  this license,  you are  not  required to
+  accept  it.  However,  as  the Catharon  Packages are  copyrighted
+  material, only  this license, or  another one contracted  with the
+  authors, grants you  the right to use, distribute,  and modify it.
+  Therefore,  by  using,  distributing,  or modifying  the  Catharon
+  Packages,  you indicate  that you  understand and  accept  all the
+  terms of this license.
 
 *===== cURL License
 
