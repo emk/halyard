@@ -1,5 +1,14 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk, brian
+
+  * #2894: Made it possible to slide along walls in Quake 2 at a
+    lower-than-normal walking speed.  This makes invisible guidewalls much
+    more effective when moving at a "realistic" pace.  There seems to
+    be a slight asymmetry in wall friction, which worries me slightly,
+    but this is a minimally invasive fix for the problem.
+  * More updater changes from Brian.
+
 0.0.62 - 26 July 2006 - emk, brian
 
 Internal release for UpdateInstaller testing.
