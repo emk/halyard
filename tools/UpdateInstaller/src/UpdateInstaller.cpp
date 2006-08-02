@@ -26,13 +26,14 @@
 #include <vector>
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
+#include "boost/filesystem/convenience.hpp"
 
 #include "UpdateInstaller.h"
 #include "Manifest.h"
 
 using namespace boost::filesystem;
 
-void install_update(const path &root_path) {
+UpdateInstaller::UpdateInstaller(const path &root_path) {
 	Manifest diff(root_path / "Updates/temp/MANIFEST-DIFF");
 
 	Manifest::EntryVector::const_iterator iter = diff.entries().begin();
@@ -40,9 +41,7 @@ void install_update(const path &root_path) {
 		path src_path = root_path / "Updates/pool" / iter->digest();
 		path dst_path = root_path / iter->path();
 		
-		ensure_dir_exists(dst_path / "..");
-
-		copy_overwriting(src_path, dst_path);
+		mCopies.push_back(CopySpec(src_path, dst_path));
 	}
 
 	SpecFile spec(root_path / "Updates/release.spec");
@@ -52,23 +51,31 @@ void install_update(const path &root_path) {
 			/ iter->path();
 		path dst_path = root_path / iter->path();
 		
-		copy_overwriting(src_path, dst_path);
+		mCopies.push_back(CopySpec(src_path, dst_path));
 	}
 
-	copy_overwriting(root_path / "Updates/release.spec", "release.spec");
+	mCopies.push_back(CopySpec(root_path / "Updates/release.spec", 
+							   root_path / "release.spec"));
 }
 
-void ensure_dir_exists(const path &dir) {
-	path curr;
-	
-	for (path::iterator iter = dir.begin(); iter != dir.end(); ++iter) {
-		curr = curr / *iter;
-		if (!exists(curr)) 
-			create_directory(curr);
+bool UpdateInstaller::IsUpdatePossible() {
+	std::vector<CopySpec>::const_iterator iter = mCopies.begin();
+	for (; iter != mCopies.end(); ++iter) {
+		if (!exists(iter->source)) 
+			return false;
+	}
+	return true;
+}
+
+void UpdateInstaller::InstallUpdate() {
+	std::vector<CopySpec>::const_iterator iter = mCopies.begin();
+	for (; iter != mCopies.end(); ++iter) {
+		create_directories(iter->dest / "..");
+		CopyOverwriting(iter->source, iter->dest);
 	}
 }
 
-void copy_overwriting(const path &src, const path &dst) {
+void UpdateInstaller::CopyOverwriting(const path &src, const path &dst) {
 	if (exists(dst)) 
 		remove(dst);
 	copy_file(src, dst);

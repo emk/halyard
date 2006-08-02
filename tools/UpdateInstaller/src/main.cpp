@@ -31,22 +31,7 @@
 
 using namespace boost::filesystem;
 
-int main(int argc, char **argv) {
-	if (argc < 2) {
-		printf("Usage: UpdateInstaller path [command ...]\n");
-		exit(1);
-	}
-
-	try {
-		install_update(path(argv[1]));
-	} catch (std::exception &e) {
-		printf("Error: %s\n", e.what());
-		exit(1);
-	} catch (...) {
-		printf("Unknown error.\n");
-		exit(1);
-	}
-
+void LaunchProgram(int argc, char **argv) {
 	if (argc > 2) {
 		/* PORTABILITY - needs to be factored to work on platforms other than
 		 Windows. */
@@ -71,7 +56,33 @@ int main(int argc, char **argv) {
 				   cl.WindowsQuotedString().c_str());
 			exit(1);
 		}
+	}	
+}
+
+int main(int argc, char **argv) {
+	if (argc < 2) {
+		printf("Usage: UpdateInstaller path [command ...]\n");
+		exit(1);
 	}
+
+	try {
+		UpdateInstaller installer = UpdateInstaller(path(argv[1]));
+		if (!installer.IsUpdatePossible()) {
+			// If we determine, safely, that updating is impossible, we should
+			// just relaunch the program. 
+			LaunchProgram(argc, argv);
+			exit(1);
+		}
+		installer.InstallUpdate();
+	} catch (std::exception &e) {
+		printf("Error: %s\n", e.what());
+		exit(1);
+	} catch (...) {
+		printf("Unknown error.\n");
+		exit(1);
+	}
+
+	LaunchProgram(argc, argv);
 
 	return 0;
 }

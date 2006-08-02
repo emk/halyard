@@ -23,15 +23,26 @@
 #ifndef UpdateInstaller_H
 #define UpdateInstaller_H
 
-namespace boost {
-	namespace filesystem {
-		class path;
-	}
-}
+#include "boost/filesystem/path.hpp"
 
-void install_update(const boost::filesystem::path &root_path);
-void ensure_dir_exists(const boost::filesystem::path &dir);
-void copy_overwriting(const boost::filesystem::path &src, 
-					  const boost::filesystem::path &dst);
+using namespace boost::filesystem;
+
+class UpdateInstaller {
+public:
+	UpdateInstaller(const path &root_path);
+	
+	bool IsUpdatePossible();
+	void InstallUpdate();
+
+private:
+	struct CopySpec {
+		CopySpec(path inSource, path inDest) 
+			: source(inSource), dest(inDest) { }
+		path source, dest;
+	};
+	std::vector<CopySpec> mCopies;
+
+	void CopyOverwriting(const path &src, const path &dst);
+};
 
 #endif // UpdateInstaler_H

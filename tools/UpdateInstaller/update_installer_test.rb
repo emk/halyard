@@ -22,6 +22,17 @@ class UpdateInstallerTest < Test::Unit::TestCase
                        "MANIFEST.sub")
   end
 
+  def test_failed_install
+    FileUtils.mv("Updates/pool/855426068ee8939df6bce2c2c4b1e7346532a133",
+                 "Updates/pool/temp")
+    assert !system(EXE_PATH, ".")
+    assert_file_equals "", "foo.txt"
+    assert_file_equals "", "sub/foo.txt"
+    assert !File.exists?("sub/quux.txt")
+    FileUtils.mv("Updates/pool/temp",
+                 "Updates/pool/855426068ee8939df6bce2c2c4b1e7346532a133")
+  end
+
   def assert_exists file
     assert File.exists?(file), "#{file} does not exist"
   end

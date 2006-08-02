@@ -25,11 +25,13 @@
 
 #define BOOST_FILESYSTEM_SOURCE
 #include "boost/filesystem/path.hpp"
+#include "boost/filesystem/operations.hpp"
 
 #include <vector>
 #include <string>
 #include "Manifest.h"
 #include "CommandLine.h"
+#include "UpdateInstaller.h"
 
 using boost::filesystem::path;
 
@@ -73,4 +75,16 @@ BOOST_AUTO_UNIT_TEST(test_windows_command_line_quoting) {
 					  + "\"Something with \\\\\\\" backslash quotes\" " 
 					  + "\"Big\\\\\\\" old\\\" mix \\of \\\\\\\\\\\" stuff\"",
 					  cl.WindowsQuotedString());
+}
+
+BOOST_AUTO_UNIT_TEST(test_is_update_possible) {
+	UpdateInstaller installer = UpdateInstaller(path("."));
+	
+	rename(path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"), 
+		   path("Updates/pool/temp"));
+	BOOST_CHECK(!installer.IsUpdatePossible());
+	
+	rename(path("Updates/pool/temp"),
+		   path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"));
+	BOOST_CHECK(installer.IsUpdatePossible());
 }
