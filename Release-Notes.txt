@@ -8,6 +8,7 @@ CVS - emk, brian
     be a slight asymmetry in wall friction, which worries me slightly,
     but this is a minimally invasive fix for the problem.
   * More updater changes from Brian.
+  * Updated copyright messages for 2006 release.
 
 0.0.62 - 26 July 2006 - emk, brian
 

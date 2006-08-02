@@ -2,7 +2,7 @@
 // @BEGIN_LICENSE
 //
 // Tamale - Multimedia authoring and playback system
-// Copyright 1993-2004 Trustees of Dartmouth College
+// Copyright 1993-2006 Trustees of Dartmouth College
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
