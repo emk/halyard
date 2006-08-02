@@ -359,29 +359,6 @@ Checking in Your Changes to 5L
   $ svn commit # ...with appropriate arguments
   $ rake tag AS=0.0.60
 
-Copying an Engine Build into a Script
--------------------------------------
-
-Note: This should be automated with a Rake task in the various projects
-which use the engine soon.
-
-Right now, official engine builds are stored in Subversion, and can be
-copied directly into scripts using repository copies.  Here's how a
-released engine and supporting files were copied into tamale_test:
-
-  BASE=svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/5L/trunk
-  svn cp $BASE/Common/Runtime .
-  svn cp $BASE/Common/Fonts .
-  for F in `(cd ../5L/Win32/Bin; ls -1 *.dll *.pdb Tamale*.exe)`; do
-    svn cp $BASE/Win32/Bin/$F .
-  done
-  # Test it...
-  svn commit -m "Updated to engine 0.0.x."
-
-To update an existing set of copied engine binaries and supporting files,
-it will probably be necessary to do something with 'svn rm'.  But we
-haven't tried that yet.
-
 Updating the Version Number
 ---------------------------
 
@@ -398,6 +375,20 @@ Updating the Version Number
      year.  The lawyers like this to be correct.  You might also want to
      take a look at tools/fix-prologues.pl.
 
+Copying an Engine Build into a Script
+-------------------------------------
+
+  Consult the Rakefile of any recent project for the latest Subversion
+  gymnastics.  Basically, you need to replace the script's copy of the
+  Runtime directory, the Fonts directory, and any *.exe and *.dll files
+  found in Win32/Bin.
+
+  The process looks something like this:
+
+  $ rake rm_engine_dirs_and_commit
+  $ rake update_engine TO=0.0.60
+  # Smoke test...
+  $ svn commit # ...appropriate arguments...
 
 Ancient Versions
 ----------------
@@ -410,7 +401,6 @@ Ancient Versions
   You can find this engine in CVS as FiveL_3_1_1_Stabilization and
   Mac5L_202_Stable.  Release notes are in Win32/ReleaseNotes.txt and
   Mac/ReleaseNotes.
-
 
 Upgrading PLT
 -------------
