@@ -277,23 +277,23 @@
                (update-build)
                "/"))
   
-  ;; TODO - write diffs to temp/MANIFEST-DIFF
-  ;; TODO - check if diffs already exist. 
   ;; TODO - should only get manifests that differ in the spec file.
   (provide get-manifest-diffs)
   (define (get-manifest-diffs)
-    (define url (manifest-url-prefix))
-    (define root-dir (updater-root-directory *updater*))
-    (define download-dir (manifest-dir (update-build)))
-    (ensure-dir-exists-absolute download-dir)
-    (define base-manifests (get-manifest-names root-dir))
-    (foreach (manifest base-manifests)
-      ;; TODO - Deal with failures, deal with time issues.
-      (download (build-url url manifest) download-dir))
-    (define diffs (diff-manifests (parse-manifests-in-dir root-dir)
-                                  (parse-manifests-in-dir download-dir)))
-    (write-diffs-to-file (temp-dir "MANIFEST-DIFF") diffs)
-    diffs)
+    (if (file-exists? (temp-dir "MANIFEST-DIFF"))
+      (parse-manifest (temp-dir "MANIFEST-DIFF"))
+      (begin/var 
+        (define root-dir (updater-root-directory *updater*))
+        (define download-dir (manifest-dir (update-build)))
+        (ensure-dir-exists-absolute download-dir)
+        (define base-manifests (get-manifest-names root-dir))
+        (foreach (manifest base-manifests)
+          ;; TODO - Deal with failures, deal with time issues.
+          (download (build-url (manifest-url-prefix) manifest) download-dir))
+        (define diffs (diff-manifests (parse-manifests-in-dir root-dir)
+                                      (parse-manifests-in-dir download-dir)))
+        (write-diffs-to-file (temp-dir "MANIFEST-DIFF") diffs)
+        diffs)))
   
   (define (write-diffs-to-file file diffs)
     (with-output-to-file 
@@ -348,10 +348,16 @@
                              (manifest-digest file))
                   (pool-dir)))))
   
-  ;; Applies a given update. Will launch an updater, pass it the information 
-  ;; needed to apply the update, and quit the program so the updater can do 
-  ;; its work. 
+  ;; Applies a given update. Copies the update installer into place, launches 
+  ;; it, passes it the information needed to apply the update, and quits the 
+  ;; program so the installer can do its work. 
+  ;; PORTABILITY - should work on non-Windows systems
   (define (apply-update)
+    (define diffs (get-manifest-diffs))
+    (foreach (entry diffs)
+      (if (equal? (manifest-file entry) "UpdateInstaller.exe")
+        (copy-file (build-path (pool-dir) (manifest-digest entry)) 
+                   (build-path (current-directory) (manifest-file entry)))))
     (call-5l-prim 'LaunchUpdateInstallerBeforeExiting)
     (exit-script))
   )
