@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.0.63 - 2 Aug 2006 - emk, brian
 
   * #2894: Made it possible to slide along walls in Quake 2 at a
     lower-than-normal walking speed.  This makes invisible guidewalls much
@@ -11,6 +11,7 @@ CVS - emk, brian
   * Updated copyright messages for 2006 release.
   * Added Rakefile to clean, build and test the engine.  This is the first
     of many steps towards improving our project automation.
+  * Centralized version-number handling in TVersion.h.
 
 0.0.62 - 26 July 2006 - emk, brian
 

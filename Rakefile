@@ -78,3 +78,13 @@ task :build => task_names(:build)
 
 desc "Run unit tests for all configurations"
 task :test => task_names(:test)
+
+desc "Tag the current HEAD revision (rake tag AS=0.0.63)"
+task :tag do |t|
+  # This will fail if the tag contents are weird enough.
+  tag = ENV['AS']
+  tag =~ /^\S+$/ or raise "Invalid tag <#{tag}>"
+  SVN_URL = 'svn+ssh://orson.hitchcock.org/var/lib/svn/main/public/5L'
+  msg = "Tagging trunk as #{tag}"
+  sh "svn cp -m '#{msg}' -r HEAD #{SVN_URL}/trunk #{SVN_URL}/tags/#{tag}"
+end

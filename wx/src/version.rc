@@ -1,0 +1,41 @@
+// Do not edit using GUI!  It will overwrite our preprocessor macros.
+
+#include "resource.h"
+#include "TVersion.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION VERSION_COMMAS
+ PRODUCTVERSION VERSION_COMMAS
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Interactive Media Lab, Dartmouth Medical School!"
+            VALUE "FileVersion", VERSION_COMMAS_STRING
+            VALUE "InternalName", SHORT_NAME
+            VALUE "LegalCopyright", TAMALE_COPYRIGHT_NOTICE
+            VALUE "OriginalFilename", SHORT_NAME ".exe"
+            VALUE "ProductName", SHORT_NAME
+            VALUE "ProductVersion", VERSION_COMMAS_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

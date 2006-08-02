@@ -319,53 +319,51 @@ Checking in Your Changes to 5L
   1) Decide whether you want to update the 5L version number.  If so, see
      the instructions below.
 
-  2) Build your test suite (in all configurations).  Run each version, and
-     make sure it prints "OK".  Don't skip this step; it catches about half
-     of the impossible-to-find-and-really-vicious bugs.
+  2) Run 'rake'.  This will build all versions of the application and run
+     the test suites.  (If you're planning to make a release build, you
+     should probably run 'rake clean test' instead.)
 
-  3) Build 5L (in all configurations).  Run each version, and look at all
-     the relevant 5Ltest cards.  Again, don't skip this step; it catches
-     about half the *dumb* bugs.
+  3) Run the debug and release versions of the application, and look at any
+     relevant tamale_test cards.
 
   4) If you're using Windows, MAKE SURE YOU SAVE YOUR WORKSPACE, or else
-     CVS won't know about any changes.
+     Subversion won't know about any changes.
 
-  5) Make sure you've issued all the necessary "cvs add" and "cvs remove"
-     commands.  Read your CVS diffs.
+  5) Make sure you've issued all the necessary "svn add" and "svn remove"
+     commands.  Read your Subversion diffs.
 
   6) Update $5L_DIR/Release-Notes.txt.  If you're not creating a new
-     version number, just use "CVS" as a placeholder instead.
+     version number, just use "HEAD" as a placeholder instead.
 
   7) Check in your changes.  If you haven't assigned a new version number,
      try to avoid checking in the contents of Mac/Bin or Win32/Bin.  If you
      *have* assigned a version number, you MUST check in the contents of
      those directories.
 
-     Write a good CVS comment.  It should be useful, informative and
+     Write a good Subversion comment.  It should be useful, informative and
      reasonably detailed.  It should generally use complete sentences and
      good grammar.  You're writing for posterity.
 
   8) If you've assigned a version number to your changes, tag the entire
-     $5L_DIR tree AFTER checking it in.  The tag for 5L 3.3.9 would be
-     "FiveL_3_3_9".  DO NOT FORGET THIS STEP OR PEOPLE WILL GET VERY GRUMPY
+     $5L_DIR tree AFTER checking it in.  The Rakefile can do this for you;
+     see below.  DO NOT FORGET THIS STEP OR PEOPLE WILL GET VERY GRUMPY
      AND SAY BAD THINGS ABOUT YOU MANY YEARS FROM NOW.
 
-  9) Check in 5Ltest, too, if you've made any changes.
+  9) Check in tamale_test, too, if you've made any changes.
 
   Here's a typical checkin command:
 
-  $ cvs update Common/Runtime/
-  $ cvs commit Release-Notes.txt Common/ wx/ Win32/Bin/Tamale{,_d}.{exe,pdb}
-  $ rm -r Common/Runtime/{mzlib,xml,syntax,net}
-  $ cvs tag Tamale_0_0_60
-  $ cvs update Common/Runtime/
-
-  The weird song-and-dance with the Common/Runtime directory is to work
-  around a set of four symlinks *between* different parts of the repository
-  which break the CVS tag command.  This is gross and should be fixed.
+  $ svn update
+  $ rake clean test
+  # Smoke-test GUI by hand
+  $ svn commit # ...with appropriate arguments
+  $ rake tag AS=0.0.60
 
 Copying an Engine Build into a Script
 -------------------------------------
+
+Note: This should be automated with a Rake task in the various projects
+which use the engine soon.
 
 Right now, official engine builds are stored in Subversion, and can be
 copied directly into scripts using repository copies.  Here's how a
@@ -393,20 +391,13 @@ Updating the Version Number
   after the revision, if somebody is working on a CVS branch).  X, Y, and Z
   count up from 0: 0, 1, 2, ..., 9, 10, 11, etc.
 
-  1) Update Common/TVersion.h.
+  1) Update Common/TVersion.h.  The version appears in two places.
 
-  2) Windows: Click on "ResourceView", "FiveL resources", "Version",
-     "VS_VERSION_INFO", and update 3 occurances of the version number.  The
-     other 2 will update automatically.  While there, check the copyright
+  2) While there, check the copyright
      date; it should be of the form "1993-YYYY", where YYYY is the current
-     year.  The lawyers like this to be correct.
+     year.  The lawyers like this to be correct.  You might also want to
+     take a look at tools/fix-prologues.pl.
 
-  3) Macintosh: Open up Mac5L-Version.r in ResEdit, and update the two 'vers'
-     resources.  If you have more than 3 version components (e.g.,
-     "3.2.1.3"), then you'll only be able to enter the first 3, and no
-     version component may be greater than 9 (you can, of course, enter the
-     full version in the free-form text fields).  Again, check the
-     copyright.
 
 Ancient Versions
 ----------------

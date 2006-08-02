@@ -67,7 +67,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(WXWIN)\include;..\..\src"/>
+				AdditionalIncludeDirectories="$(WXWIN)\include;..\..\src;..\..\..\Common"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -130,7 +130,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(WXWIN)\include;..\..\src"/>
+				AdditionalIncludeDirectories="$(WXWIN)\include;..\..\src;..\..\..\Common"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
