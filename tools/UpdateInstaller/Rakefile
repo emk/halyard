@@ -1,4 +1,5 @@
 require 'fileutils'
+require '../visual_studio_dot_net'
 
 task :default => :test
 
@@ -8,18 +9,14 @@ task :test => :build do
 end
 
 task :build do
-  devenv "UpdateInstaller.vcproj", :build, "Release"
+  VisualStudioDotNet.build "UpdateInstaller.vcproj", "Release"
   FileUtils.cd "test" do
-    devenv "UpdateInstallerTest.vcproj", :build, "Debug"
+    VisualStudioDotNet.build "UpdateInstallerTest.vcproj", "Debug"
   end
 end
 
 task :clean do
-  devenv "UpdateInstaller.vcproj", :clean, "Release"
-end
-
-def devenv project, action, configuration
-  sh "devenv.com", project, "/#{action}", configuration
+  VisualStudioDotNet.clean "UpdateInstaller.vcproj", "Release"
 end
 
 def in_fixture_copy

@@ -9,6 +9,8 @@ CVS - emk, brian
     but this is a minimally invasive fix for the problem.
   * More updater changes from Brian.
   * Updated copyright messages for 2006 release.
+  * Added Rakefile to clean, build and test the engine.  This is the first
+    of many steps towards improving our project automation.
 
 0.0.62 - 26 July 2006 - emk, brian
 
