@@ -3,7 +3,7 @@ require 'fileutils'
 require 'pathname'
 
 class UpdateInstallerTest < Test::Unit::TestCase
-  EXE_PATH="../Release/UpdateInstaller.exe"
+  EXE_PATH="../../../Win32/Bin/UpdateInstaller.exe"
 
   def test_exe_exists
     assert_exists EXE_PATH
