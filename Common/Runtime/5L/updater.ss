@@ -213,6 +213,8 @@
                 :base-spec spec
                 :url-prefix (spec-url spec)))
     (ensure-dir-exists-absolute (temp-dir))
+    (if (file-exists? (temp-dir "MANIFEST-DIFF"))
+        (delete-file (temp-dir "MANIFEST-DIFF")))
     (ensure-dir-exists-absolute (pool-dir))
     (ensure-dir-exists-absolute (special-dir "manifests")))
   
