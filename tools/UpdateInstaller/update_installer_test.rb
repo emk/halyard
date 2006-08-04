@@ -5,6 +5,10 @@ require 'pathname'
 class UpdateInstallerTest < Test::Unit::TestCase
   EXE_PATH="../../../Win32/Bin/UpdateInstaller.exe"
 
+  def setup
+    FileUtils.rm_f "Updates/temp/log"
+  end
+
   def test_exe_exists
     assert_exists EXE_PATH
   end
@@ -20,6 +24,11 @@ class UpdateInstallerTest < Test::Unit::TestCase
                        "MANIFEST.base")
     assert_files_equal("Updates/manifests/update/MANIFEST.sub", 
                        "MANIFEST.sub")
+    assert_file_equals <<EOF, "Updates/temp/log"
+Checking if install is possible.\r
+Install is possible; beginning install.\r
+Update installed successfully. Relaunching.\r
+EOF
   end
 
   def test_failed_install
@@ -31,6 +40,10 @@ class UpdateInstallerTest < Test::Unit::TestCase
     assert !File.exists?("sub/quux.txt")
     FileUtils.mv("Updates/pool/temp",
                  "Updates/pool/855426068ee8939df6bce2c2c4b1e7346532a133")
+    assert_file_equals <<EOF, "Updates/temp/log"
+Checking if install is possible.\r
+Update is impossible; relaunching.\r
+EOF
   end
 
   def assert_exists file

@@ -108,6 +108,9 @@
 				RelativePath="..\..\Common\CommandLine.cpp">
 			</File>
 			<File
+				RelativePath="src\LogFile.cpp">
+			</File>
+			<File
 				RelativePath="src\Manifest.cpp">
 			</File>
 			<File
@@ -120,6 +123,9 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
+			<File
+				RelativePath="src\LogFile.h">
+			</File>
 			<File
 				RelativePath="src\Manifest.h">
 			</File>

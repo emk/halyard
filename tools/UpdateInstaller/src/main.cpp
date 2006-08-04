@@ -25,11 +25,14 @@
 #include <stdio.h>
 #include <windows.h>
 #include "boost/filesystem/path.hpp"
+#include "boost/format.hpp"
 
 #include "CommandLine.h"
 #include "UpdateInstaller.h"
+#include "LogFile.h"
 
 using namespace boost::filesystem;
+using boost::format;
 
 void LaunchProgram(int argc, char **argv) {
 	if (argc > 2) {
@@ -64,24 +67,30 @@ int main(int argc, char **argv) {
 		printf("Usage: UpdateInstaller path [command ...]\n");
 		exit(1);
 	}
+	
+	LogFile logger(path(argv[1]) / "Updates" / "temp" / "log");
 
 	try {
+		logger.Log("Checking if install is possible.");
 		UpdateInstaller installer = UpdateInstaller(path(argv[1]));
 		if (!installer.IsUpdatePossible()) {
 			// If we determine, safely, that updating is impossible, we should
 			// just relaunch the program. 
+			logger.Log("Update is impossible; relaunching.");
 			LaunchProgram(argc, argv);
 			exit(1);
 		}
+		logger.Log("Install is possible; beginning install.");
 		installer.InstallUpdate();
 	} catch (std::exception &e) {
-		printf("Error: %s\n", e.what());
+		logger.Log(format("Error: %s") % e.what());
 		exit(1);
 	} catch (...) {
-		printf("Unknown error.\n");
+		logger.Log("Unknown error.");
 		exit(1);
 	}
 
+	logger.Log("Update installed successfully. Relaunching.");
 	LaunchProgram(argc, argv);
 
 	return 0;
