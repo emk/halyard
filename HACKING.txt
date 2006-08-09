@@ -260,22 +260,8 @@ Coding Conventions
     local_variable
     PREPROCESSOR_MACRO
 
-  Class and method comments should obey this rather odd format:
-
-    //////////
-    // Munge the input variables, as described on page 12 of the
-	// Really Nifty Multimedia Programming Book.
-	//
-	// [in] inItemCount - The number of items to munge.
-	// [in/out] ioItems - The items to munge.
-	// [out] outMungedItemCount - The number of items munged.
-    // [out] return - The number of munging passes required.
-	// 
-    int MungeItems(int inItemCount, Item *ioItems, int *outMungedItemCount);
-
-  There was once some freeware, non-distributable tool which could turn
-  these into nice web pages.  Somebody should probably write an open source
-  version. :-)
+  Class and method comments should obey Doxygen conventions and match
+  the surrounding code.
 
   Code is 79 columns wide or less!
 
@@ -283,8 +269,8 @@ Testing Your Changes
 --------------------
 
   We have two test suites: "TestAll", which is a fully-automated, low-level
-  test suite (as advocated by the eXtreme Programming folks), and "5Ltest",
-  an interactive, high-level test script written in 5L.
+  test suite (as advocated by the eXtreme Programming folks), and
+  "tamale_test", an interactive, high-level test script written in 5L.
 
   * Updating "TestAll"  
 
@@ -365,7 +351,7 @@ Updating the Version Number
   5L uses Linux-style version numbers.  That means versions have the form
   "X.Y.Z", where X is the "major version", Y is the "minor version" and "Z"
   is the "revision".  (Actually, there will sometimes be an extra number
-  after the revision, if somebody is working on a CVS branch).  X, Y, and Z
+  after the revision, if somebody is working on a branch).  X, Y, and Z
   count up from 0: 0, 1, 2, ..., 9, 10, 11, etc.
 
   1) Update Common/TVersion.h.  The version appears in two places.
@@ -398,7 +384,7 @@ Ancient Versions
   Also, this engine exists in entirely separate Windows and Macintosh
   versions, with no shared code.
 
-  You can find this engine in CVS as FiveL_3_1_1_Stabilization and
+  You can find this engine in Subversion as FiveL_3_1_1_Stabilization and
   Mac5L_202_Stable.  Release notes are in Win32/ReleaseNotes.txt and
   Mac/ReleaseNotes.
 
