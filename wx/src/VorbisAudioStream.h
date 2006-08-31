@@ -27,6 +27,54 @@
 
 class VorbisFile;
 
+/// Intuitive "volatile" variables which work correctly in a
+/// multi-processor environment.  (Regular C++ volatiles only affect the
+/// behavior of a single CPU, and they don't do anything useful on an SMP
+/// system, surprisingly enough.)
+///
+/// The semantics of IntuitiveVolatile are based on Java 1.5 volatiles as
+/// described in JSR-133.  I've adopted the terminology from "The JSR-133
+/// Cookbook", which you can find here:
+///
+///   http://gee.cs.oswego.edu/dl/jmm/cookbook.html
+///
+/// This class implements a version of "volatile" that works the way you
+/// might expect in the presence of multiple CPUs.
+///
+/// PORTABILITY - There's a pretty good chance this class works on current
+/// and near-future CPUs.  But it's worth keeping an eye on this class, and
+/// not doing anything tricky with it--such as using it to store values
+/// bigger than the native word size.
+template <typename T>
+class IntuitiveVolatile {
+    volatile T mValue;
+
+    /// Make sure that any preceding stores are completed before any
+    /// following stores, from the perspective of other CPUs.
+    void StoreStoreBarrier() const { FullBarrier(); }
+
+    /// Make sure that any preceding stores are completed before any
+    /// following loads, from the perspective of other CPUs.
+    void StoreLoadBarrier() const { FullBarrier(); }
+
+    /// Make sure that any preceding loads are completed before any
+    /// following loads or stores, from the perspective of other CPUs.
+    void LoadLoadAndLoadStoreBarriers() const { FullBarrier(); }
+
+    /// The most expensive (and most conservative) form of barrier.
+    void FullBarrier() const;
+
+public:
+    /// Create and initialize a new IntuitiveVolatile object.
+    IntuitiveVolatile(T inValue) : mValue(inValue) {}
+
+    /// Read the value stored in this object.
+    T read() const;
+
+    /// Write a new value to this object.
+    void write(T inValue);
+};
+
 /// An AudioStream which reads from a VorbisFile.
 class VorbisAudioStream : public AudioStream
 {
@@ -35,9 +83,9 @@ class VorbisAudioStream : public AudioStream
 	shared_ptr<VorbisFile> mFile;
 	shared_array<int16> mBuffer;
 	size_t mBufferSize;
-	volatile size_t mDataBegin;
-	volatile size_t mDataEnd;
-	volatile bool mDoneWithFile;
+	IntuitiveVolatile<size_t> mDataBegin;
+	IntuitiveVolatile<size_t> mDataEnd;
+	IntuitiveVolatile<bool> mDoneWithFile;
     /// \todo Big enough data type?
     size_t mSamplesLoaded;
     /// \todo Big enough data type?

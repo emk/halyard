@@ -1,5 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+CVS - emk
+
+  * Replaced "volatile" with "IntuitiveVolatile" in multithreaded code,
+    in an effort to prevent race conditions on a future version of the
+    x86 architecture (and possibly the current version).
+
 0.0.63 - 2 Aug 2006 - emk, brian
 
   * #2894: Made it possible to slide along walls in Quake 2 at a
