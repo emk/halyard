@@ -87,10 +87,14 @@ void IntuitiveVolatile<T>::write(T inValue) {
 //=========================================================================
 //  VorbisAudioStream Methods
 //=========================================================================
-//  This class is based on a "circular buffer". The basic idea: We have a
-//  single wraparound buffer (with one extra frame's worth of unused
-//  storage, so we can tell the different between an empty buffer and a
-//  full one), and two threads which access it.
+//  Because FillBuffer is called from an unknown (and possibly weird)
+//  multithreaded context, this class does not use semaphores, critical
+//  sections, or any other high-level synchronization mechanisms.  Instead,
+//  we use a "circular buffer".
+//
+//  The basic idea: We have a single wraparound buffer (with one extra
+//  frame's worth of unused storage, so we can tell the different between
+//  an empty buffer and a full one), and two threads which access it.
 //
 //  1) The producer thread, which reads data from disk and stores it in
 //     the buffer.  Only the producer thread can move mDataEnd forward,
@@ -109,9 +113,6 @@ void IntuitiveVolatile<T>::write(T inValue) {
 //  The volatile variables have been replaced with an IntuitiveVolatile
 //  type that implements Java 1.5 JSR-133 "volatile" semantics, which
 //  should do something much more useful.
-//
-//  We can't use regular semaphores here, because portaudio doesn't specify
-//  which kinds of semaphores may safely be used with it.
 
 VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 									 size_t inBufferSize,
