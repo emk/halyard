@@ -68,11 +68,11 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	
-	LogFile logger(path(argv[1]) / "Updates" / "temp" / "log");
-
+	LogFile logger(path(argv[1], native) / "Updates" / "temp" / "log");
+		
 	try {
 		logger.Log("Checking if install is possible.");
-		UpdateInstaller installer = UpdateInstaller(path(argv[1]));
+		UpdateInstaller installer = UpdateInstaller(path(argv[1], native));
 		if (!installer.IsUpdatePossible()) {
 			// If we determine, safely, that updating is impossible, we should
 			// just relaunch the program. 
