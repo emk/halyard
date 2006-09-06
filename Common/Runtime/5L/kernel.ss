@@ -31,7 +31,8 @@
   ;;=======================================================================
   
   (provide *enter-card-hook* *exit-card-hook*
-           *card-body-finished-hook* *before-draw-hook*)
+           *card-body-finished-hook* *before-draw-hook*
+           *dangerous-exit-script-hook*)
 
   ;; Called before running each card.
   (define *enter-card-hook* (make-hook 'enter-card))
@@ -45,6 +46,16 @@
 
   ;; Called before *most* screen redraws.
   (define *before-draw-hook* (make-hook 'before-draw))
+
+  ;; Called immediately before the engine exits or a script is reloaded.
+  ;; This is marked as "dangerous" because the engine no longer has a stage
+  ;; object, and many primitives will crash the engine when called.  The
+  ;; node hierarchy should be relatively intact, and Scheme I/O should
+  ;; still be available.
+  ;;
+  ;; This hook is meant to be used to save user state, etc., shortly
+  ;; before full shutdown, and may be replaced with a more robust API later.
+  (define *dangerous-exit-script-hook* (make-hook 'dangerous-exit-script))
 
 
   ;;=======================================================================
@@ -202,7 +213,14 @@
               (%kernel-maybe-clear-state)
               (loop)))))
       (%kernel-maybe-clear-state)
-      (%kernel-clear-timeout)))
+      (%kernel-clear-timeout)
+      (notify-exit-script)))
+
+  (define (notify-exit-script)
+    (with-errors-blocked (non-fatal-error)
+      (define current-node-or-false (engine-current-group-member *engine*))
+      (call-hook-functions *dangerous-exit-script-hook*
+                           current-node-or-false)))
 
   (define (%kernel-kill-interpreter)
     (%kernel-set-state 'INTERPRETER-KILLED))

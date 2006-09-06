@@ -33,7 +33,7 @@
   ;;=======================================================================
 
   (provide *engine* set-engine! <engine> root-node
-           engine-current-card engine-last-card
+           engine-current-card engine-current-group-member engine-last-card
            set-engine-event-handled?!
            set-engine-event-vetoed?!
            engine-jump-to-card

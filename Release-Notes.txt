@@ -8,6 +8,8 @@ CVS - emk
   * #1875, #2305, #3005: Deiconization bugs (and related crashes during
     screen resizing) fixed.  This fix, unlike the first, seems to cover
     all the edge cases I could reproduce.
+  * #2958: Added a hook to detect engine-trigged shutdowns, etc., so
+    programs have an opportunity to save prefs, section timing data, etc.
 
 0.0.63 - 2 Aug 2006 - emk, brian
 
