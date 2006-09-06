@@ -5,6 +5,9 @@ CVS - emk
   * Replaced "volatile" with "IntuitiveVolatile" in multithreaded code,
     in an effort to prevent race conditions on a future version of the
     x86 architecture (and possibly the current version).
+  * Initial work on fixing (de)iconization bugs.  The bug fixes
+    are still incomplete, but they're better than what we had before
+    (bug #1875, bug #2305).
 
 0.0.63 - 2 Aug 2006 - emk, brian
 

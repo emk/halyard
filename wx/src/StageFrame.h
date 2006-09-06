@@ -138,6 +138,11 @@ class StageFrame : public SashFrame, public model::View
 
 #endif // wxUSE_DISPLAY
 
+	//////////
+	/// Used to prevent endless recursion if we pop up a dialog in OnActivate.
+	///
+	bool mInOnActivate;
+
     void LoadSashLayout(wxConfigBase *inConfig);
     void SaveSashLayout(wxConfigBase *inConfig);
 

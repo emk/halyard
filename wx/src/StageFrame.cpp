@@ -193,7 +193,8 @@ StageFrame::StageFrame(wxSize inSize)
                 wxDEFAULT_FRAME_STYLE),
 	  mDocument(NULL),
       mAreFullScreenOptionsActive(false),
-      mCurrentFullScreenDisplayId(wxNOT_FOUND)
+      mCurrentFullScreenDisplayId(wxNOT_FOUND),
+	  mInOnActivate(false)
 {
     // Set up useful logging.
     mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
@@ -1014,7 +1015,16 @@ void StageFrame::OnActivate(wxActivateEvent &inEvent) {
     // We need to call UpdateVideoMode when the window activates, because
     // StageFrame::Iconize won't always get called when we're directly
     // de-iconized by Windows.
-    UpdateVideoMode(IsFullScreen(), IsIconized());
+	if (!mInOnActivate) {
+		mInOnActivate = true;
+		try {
+			UpdateVideoMode(IsFullScreen(), IsIconized());
+			mInOnActivate = false;
+		} catch (std::exception &) {
+			mInOnActivate = false;
+			throw;
+		}
+	}
 }
 
 void StageFrame::OnSize(wxSizeEvent &inEvent)
