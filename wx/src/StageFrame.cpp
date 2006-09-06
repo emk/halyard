@@ -194,7 +194,7 @@ StageFrame::StageFrame(wxSize inSize)
 	  mDocument(NULL),
       mAreFullScreenOptionsActive(false),
       mCurrentFullScreenDisplayId(wxNOT_FOUND),
-	  mInOnActivate(false)
+	  mIsUpdatingVideoMode(false)
 {
     // Set up useful logging.
     mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
@@ -559,6 +559,14 @@ void StageFrame::Iconize(bool iconize) {
 }
 
 void StageFrame::UpdateVideoMode(bool inIsFullScreen, bool inIsIconized) {
+	// If we've been called recursively, bail now.
+	if (mIsUpdatingVideoMode)
+		return;
+
+	// Set up a flag so we can detect recursive calls.
+	StValueRestorer<bool> saved_value(mIsUpdatingVideoMode);
+	mIsUpdatingVideoMode = true;
+
     bool want_full_screen_options = (inIsFullScreen && !inIsIconized);   
     if (want_full_screen_options != mAreFullScreenOptionsActive) {
         if (want_full_screen_options) {
@@ -1015,16 +1023,7 @@ void StageFrame::OnActivate(wxActivateEvent &inEvent) {
     // We need to call UpdateVideoMode when the window activates, because
     // StageFrame::Iconize won't always get called when we're directly
     // de-iconized by Windows.
-	if (!mInOnActivate) {
-		mInOnActivate = true;
-		try {
-			UpdateVideoMode(IsFullScreen(), IsIconized());
-			mInOnActivate = false;
-		} catch (std::exception &) {
-			mInOnActivate = false;
-			throw;
-		}
-	}
+	UpdateVideoMode(IsFullScreen(), IsIconized());
 }
 
 void StageFrame::OnSize(wxSizeEvent &inEvent)

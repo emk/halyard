@@ -141,7 +141,7 @@ class StageFrame : public SashFrame, public model::View
 	//////////
 	/// Used to prevent endless recursion if we pop up a dialog in OnActivate.
 	///
-	bool mInOnActivate;
+	bool mIsUpdatingVideoMode;
 
     void LoadSashLayout(wxConfigBase *inConfig);
     void SaveSashLayout(wxConfigBase *inConfig);
