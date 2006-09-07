@@ -350,6 +350,10 @@
                              (manifest-digest file))
                   (pool-dir)))))
   
+  (define (copy-file-force src dest)
+    (delete-file dest)
+    (copy-file src dest))
+
   ;; Applies a given update. Copies the update installer into place, launches 
   ;; it, passes it the information needed to apply the update, and quits the 
   ;; program so the installer can do its work. 
@@ -357,9 +361,10 @@
   (define (apply-update)
     (define diffs (get-manifest-diffs))
     (foreach (entry diffs)
-      (if (equal? (manifest-file entry) "UpdateInstaller.exe")
-        (copy-file (build-path (pool-dir) (manifest-digest entry)) 
-                   (build-path (current-directory) (manifest-file entry)))))
+      (when (equal? (manifest-file entry) "UpdateInstaller.exe")
+        (copy-file-force (build-path (pool-dir) (manifest-digest entry)) 
+                         (build-path (updater-root-directory *updater*) 
+                                     "UpdateInstaller.exe"))))
     (call-5l-prim 'LaunchUpdateInstallerBeforeExiting)
     (exit-script))
   )
