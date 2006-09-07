@@ -42,7 +42,7 @@ UpdateInstaller::UpdateInstaller(const path &root_path) {
 		path dst_path = root_path / iter->path();
 		
 		// TODO - add test case for this exception
-		if (dst_path.string() != "UpdateInstaller.exe") {
+		if (iter->path() != "UpdateInstaller.exe") {
 			mCopies.push_back(CopySpec(src_path, dst_path));
 		}
 	}
