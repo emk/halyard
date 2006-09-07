@@ -10,6 +10,10 @@ CVS - emk
     all the edge cases I could reproduce.
   * #2958: Added a hook to detect engine-trigged shutdowns, etc., so
     programs have an opportunity to save prefs, section timing data, etc.
+  * #1875: Partial fixes for background "cursor theft".  These seem to
+    work very well in full-screen mode, but still have issues in developer
+    mode, thanks to some interesting behavior with
+    wxTopLevelWindow::IsActive and wxWindow::SetFocus.
 
 0.0.63 - 2 Aug 2006 - emk, brian
 
