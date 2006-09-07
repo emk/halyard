@@ -41,7 +41,10 @@ UpdateInstaller::UpdateInstaller(const path &root_path) {
 		path src_path = root_path / "Updates/pool" / iter->digest();
 		path dst_path = root_path / iter->path();
 		
-		mCopies.push_back(CopySpec(src_path, dst_path));
+		// TODO - add test case for this exception
+		if (dst_path.string() != "UpdateInstaller.exe") {
+			mCopies.push_back(CopySpec(src_path, dst_path));
+		}
 	}
 
 	SpecFile spec(root_path / "Updates/release.spec");
