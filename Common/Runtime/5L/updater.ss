@@ -172,10 +172,10 @@
     (unless entry (error "Corrupt .spec file" key alist))
     (second entry))
   
-  (define (auto-update-possible?) 
-    (and (dir-writeable? (updater-root-directory *updater*))
+  (define (auto-update-possible? dir) 
+    (and (dir-writeable? dir)
          (file-exists? 
-          (build-path (updater-root-directory *updater*) "release.spec"))))
+          (build-path dir "release.spec"))))
   
   (defclass <spec> ()
     url build meta-manifest)

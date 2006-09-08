@@ -189,29 +189,34 @@
       (assert-set-equal '(("125" 2 "foo.txt") ("DEF" 3 "sub/zot.txt")) 
                         (diff-manifests manifest-a manifest-b)))
     (test "Automatic update should be possible." 
-      (init-updater! :root-directory (base-directory self))
-      (assert (auto-update-possible?)))
+      (assert (auto-update-possible? (base-directory self)))
+      (init-updater! :root-directory (base-directory self)))
     (test "Checking for staging update, update should be available."
+      (assert (auto-update-possible? (base-directory self)))
       (init-updater! :root-directory (base-directory self) :staging? #t)
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
       (assert (not (null? (get-manifest-diffs)))))
     (test "Checking for staging update, update should not be available."
+      (assert (auto-update-possible? (update-directory self)))
       (init-updater! :root-directory (update-directory self) :staging? #t)
       (set-updater-url! (url-prefix self))
       (assert (not (check-for-update)))
       (assert-equal '() (get-manifest-diffs)))
     (test "Checking for regular update, update should not be available."
+      (assert (auto-update-possible? (base-directory self)))
       (init-updater! :root-directory (base-directory self))
       (set-updater-url! (url-prefix self))
       (assert (not (check-for-update)))
       (assert-equal '() (get-manifest-diffs)))
     (test "Checking for downgrade, update should be available."
+      (assert (auto-update-possible? (update-directory self)))
       (init-updater! :root-directory (update-directory self))
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
       (assert (not (null? (get-manifest-diffs)))))
     (test "Downloading files for update."
+      (assert (auto-update-possible? (base-directory self)))
       (init-updater! :root-directory (base-directory self) :staging? #t)
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
