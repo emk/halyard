@@ -1,7 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk
+CVS - emk, brian
 
+  * Fixed bug in UpdateInstaller.exe that prevented it from working with 
+    Windows pathnames.
+  * Fixed UpdateInstaller.exe to not try and replace itself as it was running.
+  * Made downloader honor redirects (max of 10 redirects).
   * Replaced "volatile" with "IntuitiveVolatile" in multithreaded code,
     in an effort to prevent race conditions on a future version of the
     x86 architecture (and possibly the current version).

@@ -83,6 +83,8 @@ bool Download::Perform() {
 	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_PROGRESSFUNCTION, 
 									 &ProgressCallback));
 	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_PROGRESSDATA, this));
+	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_FOLLOWLOCATION, 1));
+	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_MAXREDIRS, 10));
 	
 	RETURN_ON_ERROR(curl_easy_perform(m_request));
 
