@@ -21,22 +21,22 @@
 // @END_LICENSE
 
 #define VERSION_MAJOR_NUM          0
-#define VERSION_MINOR_NUM          0
-#define VERSION_REV_BIG            63
+#define VERSION_MINOR_NUM          2
+#define VERSION_REV_BIG            0
 #define VERSION_REV_SMALL          0
 
-// For various unfortunate processor reasons, we need a duplicate copy
+// For various unfortunate preprocessor reasons, we need a duplicate copy
 // in string format.
 #define VERSION_MAJOR_NUM_STRING   "0"
-#define VERSION_MINOR_NUM_STRING   "0"
-#define VERSION_REV_BIG_STRING     "63"
+#define VERSION_MINOR_NUM_STRING   "2"
+#define VERSION_REV_BIG_STRING     "0"
 #define VERSION_REV_SMALL_STRING   "0"
 
 #define SHORT_NAME          "Tamale"
 #define VERSION_STRING \
     SHORT_NAME " " VERSION_MAJOR_NUM_STRING "." \
     VERSION_MINOR_NUM_STRING "." VERSION_REV_BIG_STRING "." \
-    VERSION_REV_SMALL_STRING " (Development)"
+    VERSION_REV_SMALL_STRING // " (Development)"
 
 // Needed for Windows resource files.
 #define VERSION_COMMAS \

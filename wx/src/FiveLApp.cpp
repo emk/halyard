@@ -446,7 +446,9 @@ Stage *FiveLApp::GetStage()
 
 void FiveLApp::OnActivateApp(wxActivateEvent &event) {
     // If we're being deactivated, and we have a full-screen window,
-    // iconize it so the user can see the desktop.
+    // iconize it so the user can see the desktop.  Note that we also need
+    // to deiconize the StageFrame here (in at least some cases) to prevent
+    // a bug where the user can't deiconize the window.
 	if (mStageFrame && mStageFrame->IsFullScreen())
 		mStageFrame->Iconize(!event.GetActive());
 }

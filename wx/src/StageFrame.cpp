@@ -244,7 +244,7 @@ StageFrame::StageFrame(wxSize inSize)
     mFileMenu->Append(FIVEL_RUN_TESTS, "Run &Tests\tCtrl+T",
                       "Run test cases for Tamale and/or current script.");
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(FIVEL_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
+    mFileMenu->Append(FIVEL_EXIT, "E&xit", "Exit the application.");
 
     // Set up our Card menu.
     mCardMenu = new wxMenu();

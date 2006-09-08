@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-CVS - emk, brian
+0.2.0 - 9 Sep 2006 - emk, brian
 
   * Fixed bug in UpdateInstaller.exe that prevented it from working with 
     Windows pathnames.
@@ -18,6 +18,10 @@ CVS - emk, brian
     work very well in full-screen mode, but still have issues in developer
     mode, thanks to some interesting behavior with
     wxTopLevelWindow::IsActive and wxWindow::SetFocus.
+  * Removed "Control-Q" accelerator for quiting, because it wasn't a
+    standard Windows accelerator, and because (like the still-remaining
+    Alt-F4) it didn't go through EXIT-SCRIPT.
+  * Added some comments with more information about recent bugs.
 
 0.0.63 - 2 Aug 2006 - emk, brian
 
