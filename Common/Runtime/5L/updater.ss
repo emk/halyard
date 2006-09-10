@@ -118,7 +118,8 @@
        dir 
        (or name (last-component url)
            (next-temp-file-in-dir dir))))
-    (download-file url path))
+    (unless (download-file url path)
+      (error (cat "Couldn't download " url " to " path))))
   
   (define (parse-manifest path)
     (with-input-from-file 
@@ -336,10 +337,8 @@
   ;; Downloads a particular update. Takes a progress indicator callback. The 
   ;; progress indicator callback will take two arguments, a percentage and a 
   ;; string that indicates what is currently happening. 
-  ;; TODO - download file with temp name at first, then rename
   ;; TODO - implement progress indicator
-  ;; TODO - throw error if downloads fail (including wrong contents; how do 
-  ;;        we check that? should we hash it, or rely on the size?)
+  ;; TODO - unit test errors
   (define (download-update progress)
     (define diffs (get-manifest-diffs))
     (foreach (file diffs)
@@ -348,7 +347,14 @@
         (download (build-url (updater-url-prefix *updater*)
                              "pool/"
                              (manifest-digest file))
-                  (pool-dir)))))
+                  (temp-dir) :name "download.tmp")
+        ;; TODO - if we ever implement a SHA-1 sum in the engine, we should
+        ;; do a SHA-1 sum here, rather than just checking the file size. 
+        (if (= (file-size (temp-dir "download.tmp")) (manifest-size file))
+          (rename-file-or-directory (temp-dir "download.tmp") 
+                                    (pool-dir (manifest-digest file)))
+          (error (cat "File was corrupted during download: " 
+                      (manifest-file file)))))))
   
   (define (copy-file-force src dest)
     (delete-file dest)
