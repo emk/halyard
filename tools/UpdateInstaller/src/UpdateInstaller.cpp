@@ -47,14 +47,16 @@ UpdateInstaller::UpdateInstaller(const path &root_path) {
 		}
 	}
 
+	// TODO - add test case for subset of manifests installed
 	SpecFile spec(root_path / "Updates/release.spec");
-	iter = spec.manifest().entries().begin();
-	for(; iter != spec.manifest().entries().end(); ++iter) {
-		path src_path = root_path / "Updates/manifests" / spec.build() 
-			/ iter->path();
-		path dst_path = root_path / iter->path();
-		
-		mCopies.push_back(CopySpec(src_path, dst_path));
+	directory_iterator dir_iter(root_path);
+	for(; dir_iter != directory_iterator(); ++dir_iter) {
+		if (dir_iter->leaf().substr(0, 9) == "MANIFEST.") {
+			path src_path = root_path / "Updates/manifests" / spec.build() 
+				/ dir_iter->leaf();
+			
+			mCopies.push_back(CopySpec(src_path, *dir_iter));
+		}
 	}
 
 	mCopies.push_back(CopySpec(root_path / "Updates/release.spec", 
@@ -64,8 +66,9 @@ UpdateInstaller::UpdateInstaller(const path &root_path) {
 bool UpdateInstaller::IsUpdatePossible() {
 	std::vector<CopySpec>::const_iterator iter = mCopies.begin();
 	for (; iter != mCopies.end(); ++iter) {
-		if (!exists(iter->source)) 
+		if (!exists(iter->source)) {
 			return false;
+		}
 	}
 	return true;
 }
