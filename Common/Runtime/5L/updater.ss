@@ -357,7 +357,8 @@
                       (manifest-file file)))))))
   
   (define (copy-file-force src dest)
-    (delete-file dest)
+    (if (file-exists? dest)
+        (delete-file dest))
     (copy-file src dest))
 
   ;; Applies a given update. Copies the update installer into place, launches 
