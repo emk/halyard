@@ -166,7 +166,8 @@
            download-update
            apply-update
            init-updater! 
-           clear-updater!)
+           clear-updater!
+           update-size)
   
   (define (spec-file-get alist key)
     (define entry (assoc key alist))
@@ -331,8 +332,14 @@
   ;; XXX - write this 
   (define (update-size)
     (define diffs (get-manifest-diffs))
-    #f
-    )
+    (define counted '())
+    (foldl (fn (entry total) 
+             (if (member? (manifest-digest entry) counted)
+               total
+               (begin 
+                 (set! counted (cons (manifest-digest entry) counted))
+                 (+ total (manifest-size entry)))))
+             0 diffs))
   
   ;; Downloads a particular update. Takes a progress indicator callback. The 
   ;; progress indicator callback will take two arguments, a percentage and a 

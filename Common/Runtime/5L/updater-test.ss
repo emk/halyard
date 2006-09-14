@@ -196,7 +196,8 @@
       (init-updater! :root-directory (base-directory self) :staging? #t)
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
-      (assert (not (null? (get-manifest-diffs)))))
+      (assert (not (null? (get-manifest-diffs))))
+      (assert-equal 5 (update-size)))
     (test "Checking for staging update, update should not be available."
       (assert (auto-update-possible? (update-directory self)))
       (init-updater! :root-directory (update-directory self) :staging? #t)
@@ -214,7 +215,8 @@
       (init-updater! :root-directory (update-directory self))
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
-      (assert (not (null? (get-manifest-diffs)))))
+      (assert (not (null? (get-manifest-diffs))))
+      (assert-equal 0 (update-size)))
     (test "Downloading files for update."
       (assert (auto-update-possible? (base-directory self)))
       (init-updater! :root-directory (base-directory self) :staging? #t)
