@@ -501,7 +501,7 @@ void TQTMovie::Pause()
 void TQTMovie::Unpause()
 {
 	ASSERT(mState == MOVIE_STARTED);
-	if (IsPaused())
+	if (IsPaused() && !IsDone())
 	{
 		Fixed rate = ::GetMoviePreferredRate(mMovie);
 		DoAction(mcActionPlay, reinterpret_cast<void*>(rate));
