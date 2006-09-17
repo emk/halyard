@@ -84,7 +84,7 @@
 				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib qtmlclient.lib"
 				OutputFile="$(OutDir)/preinstaller.exe"
 				LinkIncremental="1"
-				IgnoreDefaultLibraryNames="libcmt"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"

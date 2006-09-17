@@ -1,10 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+0.2.1 - 17 Sep 2006 - emk, brian
 
   * #3162: MOVIE-RESUME will no longer cause a finished movie to loop.
   * #3042: Quake 2 console access now turned off by default.  To restore,
     run the command (quake2-command "bind ` toggleconsole").
+  * Changes to UpdateInstaller and related code.
 
 0.2.0 - 9 Sep 2006 - emk, brian
 
