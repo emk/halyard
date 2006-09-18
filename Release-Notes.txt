@@ -4,6 +4,8 @@ SVN - emk
 
   * #2930: Preinstaller now implements all the tricky behaviors we'll need,
     but it's still ugly and incomplete.
+    - Added support for exiting pre-installer once application installer
+      is launched.
 
 0.2.1 - 17 Sep 2006 - emk, brian
 

@@ -35,8 +35,8 @@ private:
     wxButton *mQTButton;
     wxButton *mAppButton;
 
-    void OnTimer(wxTimerEvent& event);
     void OnInstallQuickTime(wxCommandEvent& event);
+    void OnTimer(wxTimerEvent& event);
     void OnInstallApplication(wxCommandEvent& event);
 
     DECLARE_EVENT_TABLE()

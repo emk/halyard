@@ -43,7 +43,8 @@ BEGIN_EVENT_TABLE(GuideFrame, wxFrame)
 END_EVENT_TABLE()
 
 GuideFrame::GuideFrame()
-    : wxFrame((wxFrame *)NULL, -1, "Install Program",
+    : wxFrame((wxFrame *)NULL, -1,
+              wxGetApp().GetApplicationName(),
               wxDefaultPosition, wxDefaultSize,
               wxCLOSE_BOX|wxSYSTEM_MENU|wxCAPTION|wxRESIZE_BORDER)
 {   
@@ -87,6 +88,21 @@ GuideFrame::GuideFrame()
     CenterOnScreen();
 }
 
+/// When the user clicks on "Install QuickTime", disable the button, launch
+/// the installer, and start our background timer.
+void GuideFrame::OnInstallQuickTime(wxCommandEvent& event) {
+    mQTButton->Disable();
+    wxGetApp().LaunchQuickTimeInstaller();
+
+    // Send a timer event periodically.  We don't want to do this too
+    // often, because checking the QuickTime version is fairly expensive.
+    mTimer.Start(3000, wxTIMER_CONTINUOUS);
+}
+
+/// Periodically check the current QuickTime version.  When we appear to
+/// have a correct version of QuickTime installed, then it the QuickTime
+/// installer is *almost* through running, and we can enable our "Install
+/// App" button and disable the timer.
 void GuideFrame::OnTimer(wxTimerEvent& event) {
     if (wxGetApp().HaveAppropriateQuickTimeVersion()) {
         mAppButton->Enable();
@@ -101,17 +117,9 @@ void GuideFrame::OnTimer(wxTimerEvent& event) {
     }
 }
 
-void GuideFrame::OnInstallQuickTime(wxCommandEvent& event) {
-    mQTButton->Disable();
-    wxGetApp().LaunchQuickTimeInstaller();
-
-    // Send a timer event periodically.  We don't want to do this too
-    // often, because checking the QuickTime version is fairly expensive.
-    mTimer.Start(3000, wxTIMER_CONTINUOUS);
-}
-
+/// Launch our application installer and exit this program.
 void GuideFrame::OnInstallApplication(wxCommandEvent& event) {
+    mAppButton->Disable();
     wxGetApp().LaunchApplicationInstaller();
-
-    // TODO - Disable button and exit program.
+    Close();
 }
