@@ -31,10 +31,33 @@ public:
     GuideFrame();
     
 private:
-    wxTimer mTimer;
-    wxButton *mQTButton;
-    wxButton *mAppButton;
+    // Represents a button that can have a check-mark next to it.
+    struct CheckableButton {
+        wxStaticBitmap *bitmap;
+        wxButton *button;
 
+        CheckableButton() : bitmap(NULL), button(NULL) {}
+        CheckableButton(wxStaticBitmap *inBitmap, wxButton *inButton)
+            : bitmap(inBitmap), button(inButton) {}
+    };
+
+    wxTimer mTimer;
+
+    wxFont mTitleFont;
+    wxFont mStepHeadingFont;
+
+    wxBitmap mBlankBitmap;
+    wxBitmap mArrowBitmap;
+    wxBitmap mCheckBitmap;
+
+    wxWindow *mBackground;
+    wxSizer *mMainColumn;
+    CheckableButton mQTButton;
+    CheckableButton mAppButton;
+
+    void CreateStepHeading(int number, const wxString &heading);
+    CheckableButton CreateStepButton(int id, const wxString &name);
+    
     void OnInstallQuickTime(wxCommandEvent& event);
     void OnTimer(wxTimerEvent& event);
     void OnInstallApplication(wxCommandEvent& event);

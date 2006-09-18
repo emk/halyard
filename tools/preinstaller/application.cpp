@@ -36,6 +36,9 @@ IMPLEMENT_APP(Application)
 #define QUICKTIME_INSTALLER_NAME "QuickTimeInstaller.exe"
 #define APPLICATION_INSTALLER_NAME "VTRA Setup.exe"
 #define MINIMUM_QUICKTIME_VERSION 0x06508000
+#define WELCOME_MESSAGE \
+    "Welcome to the Virtual Terrorism\n" \
+    "Response Academy Setup Wizard"
 
 bool Application::OnInit() {
     wxApp::OnInit();
@@ -99,6 +102,12 @@ wxString Application::GetQuickTimeInstallerName() {
 
 wxString Application::GetApplicationInstallerName() {
     return APPLICATION_INSTALLER_NAME;
+}
+
+/// Stupid hack to work around lack of wxStaticText::Wrap in versions of
+/// wxWidgets prior to 2.6.2: Hard-code a pre-wrapped weclome message.
+wxString Application::GetWelcomeMessage() {
+    return WELCOME_MESSAGE;
 }
 
 /// Launch an executable with no arguments in the current directory.

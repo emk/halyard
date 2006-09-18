@@ -2,12 +2,13 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 SVN - emk
 
-  * #2930: Preinstaller now implements all the tricky behaviors we'll need,
-    but it's still ugly and incomplete.
-    - Added support for exiting pre-installer once application installer
-      is launched.
-    - Renamed "preinstaller.exe" to "autorun.exe".
-    - Quit preinstaller correctly if we bypass the main window.
+  * #2930: Implemented a "preinstaller" which can be used as an
+    autorun.exe.  The preinstaller walks the user through installing
+    QuickTime, which is helpful, since the latest version of the QuickTime
+    installer is both (a) asynchronous once launched and (b) legally
+    unmodifiable under the standard distribution agreement.  For now, the
+    "preinstaller" is hard-coded for use with our latest project, but it
+    should be easy to parameterize for other projects.
 
 0.2.1 - 17 Sep 2006 - emk, brian
 

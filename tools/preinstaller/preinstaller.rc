@@ -50,6 +50,24 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+wxDEFAULT_FRAME         ICON                    "autorun.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+BLANK                   BITMAP                  "blank.bmp"
+ARROW                   BITMAP                  "arrow.bmp"
+CHECK                   BITMAP                  "check.bmp"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

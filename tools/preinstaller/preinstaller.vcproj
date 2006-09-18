@@ -170,6 +170,18 @@
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
+				RelativePath="arrow.bmp">
+			</File>
+			<File
+				RelativePath="autorun.ico">
+			</File>
+			<File
+				RelativePath="blank.bmp">
+			</File>
+			<File
+				RelativePath="check.bmp">
+			</File>
+			<File
 				RelativePath="preinstaller.rc">
 			</File>
 		</Filter>

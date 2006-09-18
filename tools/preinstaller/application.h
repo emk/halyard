@@ -42,6 +42,8 @@ public:
     wxString GetQuickTimeInstallerName();
     wxString GetApplicationInstallerName();
 
+    wxString GetWelcomeMessage();
+
 private:
     void LaunchAsync(const wxString &path);
 };

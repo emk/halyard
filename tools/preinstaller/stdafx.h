@@ -6,6 +6,7 @@
 #pragma once
 
 #include <wx/wx.h>
+#include <wx/bitmap.h>
 #include <QTML.h>
 #include <Gestalt.h>
 
