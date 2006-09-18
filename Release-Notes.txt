@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * #2930: Preinstaller now implements all the tricky behaviors we'll need,
+    but it's still ugly and incomplete.
+
 0.2.1 - 17 Sep 2006 - emk, brian
 
   * #3162: MOVIE-RESUME will no longer cause a finished movie to loop.

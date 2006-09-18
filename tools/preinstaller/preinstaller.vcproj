@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(WXWIN)/include"
+				AdditionalIncludeDirectories="&quot;$(WXWIN)/include&quot;;../../Common"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -66,7 +66,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="$(WXWIN)/include"
+				AdditionalIncludeDirectories="&quot;$(WXWIN)/include&quot;;../../Common"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -111,7 +111,25 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
-				RelativePath="preinstaller.cpp">
+				RelativePath="..\..\Common\CommandLine.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="application.cpp">
+			</File>
+			<File
+				RelativePath="guide_frame.cpp">
 			</File>
 			<File
 				RelativePath="stdafx.cpp">
@@ -132,6 +150,15 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
+			<File
+				RelativePath="..\..\Common\CommandLine.h">
+			</File>
+			<File
+				RelativePath="application.h">
+			</File>
+			<File
+				RelativePath="guide_frame.h">
+			</File>
 			<File
 				RelativePath="resource.h">
 			</File>
