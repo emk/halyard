@@ -44,13 +44,14 @@ bool Application::OnInit() {
     // preinstaller entirely.
     if (HaveAppropriateQuickTimeVersion()) {
         LaunchApplicationInstaller();
+        return FALSE;
     } else {
         // Otherwise, display our window.
         wxFrame *frame = new GuideFrame();
         frame->Show(TRUE);
         SetTopWindow(frame);
+        return TRUE;
     }
-    return TRUE;
 } 
 
 /// Do we have a new enough version of QuickTime?  Don't call this function

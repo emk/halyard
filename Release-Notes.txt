@@ -7,6 +7,7 @@ SVN - emk
     - Added support for exiting pre-installer once application installer
       is launched.
     - Renamed "preinstaller.exe" to "autorun.exe".
+    - Quit preinstaller correctly if we bypass the main window.
 
 0.2.1 - 17 Sep 2006 - emk, brian
 
