@@ -33,7 +33,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib qtmlclient.lib"
-				OutputFile="$(OutDir)/preinstaller.exe"
+				OutputFile="../../Win32/Bin/autorun_d.exe"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="libcmt"
 				GenerateDebugInformation="TRUE"
@@ -82,7 +82,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib qtmlclient.lib"
-				OutputFile="$(OutDir)/preinstaller.exe"
+				OutputFile="../../Win32/Bin/autorun.exe"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
