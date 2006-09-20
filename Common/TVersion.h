@@ -56,7 +56,7 @@
 
 /// The URL of our crash report submission form.
 #define CRASH_REPORT_URL \
-    "http://iml2.hitchcock.org/intranet/crashes/upload/action/27"
+    "http://iml.dartmouth.edu/intranet/crashes/upload/action/27"
 
 // There used to be a CVS $Log$ comment here, but it got mostly merged
 // into Release-Notes.txt.  For fine-grained logging, please use the
