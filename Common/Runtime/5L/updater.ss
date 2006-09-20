@@ -13,8 +13,14 @@
     (dir-writeable? (current-directory)))
   
   (define (dir-writeable? dir)
-    (memq 'write (file-or-directory-permissions dir)))
-  
+    (define path
+      (build-path dir (cat "TEMP_PERMISSION_TEST_" (random 1000000000))))
+    (with-handlers [[exn:i/o:filesystem? (lambda (exn) #f)]]
+      (define test (open-output-file path))
+      (close-output-port test)
+      (delete-file path)
+      #t))
+      
   (define (delete-directory-recursive path)
     (cond 
       [(link-exists? path) (delete-file path)]
