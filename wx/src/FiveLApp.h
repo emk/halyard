@@ -32,6 +32,12 @@ class FiveLApp : public wxApp
     DECLARE_EVENT_TABLE();
 
     //////////
+    /// Set to true when we are in the middle of a crash and we don't want
+    /// to try to do anything complicated.
+    ///
+    static bool sHandlingFatalError;
+
+    //////////
     /// The name of the script we were passed on the command-line.
     ///
     wxString mArgScript;
@@ -62,6 +68,11 @@ class FiveLApp : public wxApp
 	/// to give time to the GUI.
 	///
     static void IdleProc(bool inBlock);
+
+    //////////
+    /// Do any cleanup we need to do before we crash.
+    ///
+    static void PrepareForCrash();
 
     //////////
     /// Display a generic error dialog.

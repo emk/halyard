@@ -9,6 +9,10 @@ SVN - emk
     unmodifiable under the standard distribution agreement.  For now, the
     "preinstaller" is hard-coded for use with our latest project, but it
     should be easy to parameterize for other projects.
+  * #3467: Applied a band-aid to the crash-handling logic so that it will
+    generally restore the system task bar for all but the worst crashes.
+    We could benefit from more work in this area, but a more complete fix
+    would destabilize the engine.
 
 0.2.1 - 17 Sep 2006 - emk, brian
 

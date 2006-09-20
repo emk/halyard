@@ -62,6 +62,8 @@ USING_NAMESPACE_FIVEL
 //  FiveLApp Methods
 //=========================================================================
 
+bool FiveLApp::sHandlingFatalError = false;
+
 IMPLEMENT_APP(FiveLApp)
 
 BEGIN_EVENT_TABLE(FiveLApp, wxApp)
@@ -148,6 +150,11 @@ void FiveLApp::IdleProc(bool inBlock)
 	}
 }
 
+void FiveLApp::PrepareForCrash() {
+    sHandlingFatalError = true;
+    ShowSystemWindows();
+}
+
 void FiveLApp::ErrorDialog(const char* inTitle, const char *inMessage) {
     wxMessageDialog dlg(NULL, inMessage, inTitle, wxOK|wxICON_ERROR);
     dlg.ShowModal();
@@ -176,7 +183,9 @@ void FiveLApp::OnUnhandledException() {
 }
 
 void FiveLApp::OnFatalException() {
-    // We're dead.
+    // We're dead.  I'd like to call ReportFatalException here (it does
+    // better cleanup), but I haven't thought through the consequences.
+    // So I'm leaving this alone.
     CrashReporter::GetInstance()->CrashNow();
 }
 
@@ -185,11 +194,7 @@ void FiveLApp::OnFatalException() {
 void FiveLApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
                         const wxChar *msg)
 {
-    if (!CrashReporter::HaveInstance()) {
-        // We don't have a crash reporter yet, so let wxWidgets handle
-        // this error.
-        wxApp::OnAssert(file, line, cond, msg);
-    } else {
+    if (mLogsAreInitialized) {
         // We have a crash report, so don't even bother to pop up a dialog
         // before crashing.  We *do* append this to our application log
         // just in case the assertion actually occurred in the crash
@@ -199,8 +204,10 @@ void FiveLApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
         if (msg)
             message << msg << ": ";
         message << cond << " (at " << file << ":" << line << ")";
-        gLog.Log("wxWidgets %s", message.mb_str());
-        CrashReporter::GetInstance()->CrashNow(message.mb_str());
+        gLog.FatalError("wxWidgets %s", message.mb_str());
+    } else {
+        // We don't have a logger yet, so let wxWidgets handle this error.
+        wxApp::OnAssert(file, line, cond, msg);
     }
 }
 
@@ -299,7 +306,7 @@ bool FiveLApp::OnInit() {
 
     // Make sure we restore the taskbar, etc., before exiting with
     // an error message.
-    TLogger::RegisterExitPrepFunction(&ShowSystemWindows);
+    TLogger::RegisterExitPrepFunction(&PrepareForCrash);
 
     // Create and display our stage frame.
     //mStageFrame = new StageFrame(wxSize(640, 480));
@@ -445,6 +452,18 @@ Stage *FiveLApp::GetStage()
 }
 
 void FiveLApp::OnActivateApp(wxActivateEvent &event) {
+    // XXX - If we're dealing with a fatal error, and the window tries to
+    // maximize, ignore this event completely, so our window stops
+    // deiconizing while trying to run the crash reporter, causing all
+    // sorts of headaches.  This code should become unncessary when we
+    // upgrade to the latest version of wxWidgets 2.6.x, which prevents
+    // events from being processed while the crash reporter is displayed.
+    //
+    // This is a band-aid because we don't want to make a more systematic
+    // and disruptive fix this close to a ship date.
+    if (sHandlingFatalError && event.GetActive())
+        return;
+
     // If we're being deactivated, and we have a full-screen window,
     // iconize it so the user can see the desktop.  Note that we also need
     // to deiconize the StageFrame here (in at least some cases) to prevent
