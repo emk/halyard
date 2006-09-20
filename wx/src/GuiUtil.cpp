@@ -34,10 +34,25 @@ void HideSystemWindows() {
     // BUG - This doesn't actually make sense if the taskbar isn't on our
     // monitor, but that's a pretty rare configuration.
     ::ShowWindow(::FindWindow("Shell_TrayWnd", NULL), SW_HIDE);
+
+    // Disable the screen saver while we're in full-screen mode.  There's
+    // also related code in FiveLApp.cpp that tried to do the same thing,
+    // but it doesn't work for password-protected screen savers.  This
+    // does.  In theory, we should only need this fix, and not the one if
+    // FiveLApp.cpp, but we're in low-disruption mode before a major
+    // release.
+    ::SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, FALSE, 0,
+                           SPIF_SENDWININICHANGE);
 }
 
 void ShowSystemWindows() {
     ::ShowWindow(::FindWindow("Shell_TrayWnd", NULL), SW_SHOW);
+    
+    // Re-enable the screen saver.  Fortunately, this doesn't appear to
+    // turn the screen saver on if the user has turned it off in the
+    // display properties.
+    ::SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, TRUE, 0,
+                           SPIF_SENDWININICHANGE);
 }
 
 #else // !FIVEL_PLATFORM_WIN32

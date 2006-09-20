@@ -14,6 +14,8 @@ SVN - emk
     We could benefit from more work in this area, but a more complete fix
     would destabilize the engine.
   * #3466: Send crashes to a different server by default.
+  * #3461: Disable screen saver a bit more thoroughly in full-screen mode,
+    even if the user has a password protected screen saver turned on.
 
 0.2.1 - 17 Sep 2006 - emk, brian
 

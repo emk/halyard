@@ -732,6 +732,12 @@ WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
     // if that's what we want.  This isn't terribly well-documented
     // (except for Delphi programmers, for some reason), but it appears
     // to work fine as is.
+    // 
+    // TODO - Note that this only works if the user hasn't turned on
+    // password protected screen savers, which require a heavier-weight
+    // fix.  See GuiUtil.cpp.  The only purpose served by this code at the
+    // moment is to disable some screensavers in development mode while
+    // video is playing.
     if (message == WM_SYSCOMMAND && wParam == SC_SCREENSAVE) {
         if (ShouldDisableScreenSaver())
             return -1;
