@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+0.2.2 - 20 Sep 2006 - emk, brian
 
   * #2930: Implemented a "preinstaller" which can be used as an
     autorun.exe.  The preinstaller walks the user through installing
@@ -16,6 +16,7 @@ SVN - emk
   * #3466: Send crashes to a different server by default.
   * #3461: Disable screen saver a bit more thoroughly in full-screen mode,
     even if the user has a password protected screen saver turned on.
+  * The update installer now correctly detects unwritable directories.
 
 0.2.1 - 17 Sep 2006 - emk, brian
 
