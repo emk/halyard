@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk, brian
+
+  * #3503: The preinstaller now confirms quit requests with the user, and
+    shows an "Installing..." label when running the QuickTime installer.
+    This should help prevent problems during the long pause while the
+    QuickTime installer launches.
+
 0.2.2 - 20 Sep 2006 - emk, brian
 
   * #2930: Implemented a "preinstaller" which can be used as an

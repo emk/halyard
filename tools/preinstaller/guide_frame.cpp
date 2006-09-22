@@ -41,8 +41,9 @@ enum {
 
 BEGIN_EVENT_TABLE(GuideFrame, wxFrame)
     EVT_BUTTON(ID_InstallQuickTime, GuideFrame::OnInstallQuickTime)
-    EVT_BUTTON(ID_InstallApplication, GuideFrame::OnInstallApplication)
     EVT_TIMER(ID_Timer, GuideFrame::OnTimer)
+    EVT_BUTTON(ID_InstallApplication, GuideFrame::OnInstallApplication)
+    EVT_CLOSE(GuideFrame::OnClose)
 END_EVENT_TABLE()
 
 GuideFrame::GuideFrame()
@@ -152,8 +153,12 @@ GuideFrame::CreateStepButton(int id, const wxString &name) {
     wxButton* button = new wxButton(mBackground, id, "Install " + name);
     sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL);
 
+    // Create a place to put progress messages.
+    wxStaticText *message = new wxStaticText(mBackground, -1, "");
+    sizer->Add(message, 0, wxLEFT|wxALIGN_CENTER_VERTICAL, LITTLE_SPACE);
+
     // Return our bitmap and button pointers.
-    return CheckableButton(bitmap, button);
+    return CheckableButton(bitmap, button, message);
 }
 
 
@@ -161,6 +166,7 @@ GuideFrame::CreateStepButton(int id, const wxString &name) {
 /// the installer, and start our background timer.
 void GuideFrame::OnInstallQuickTime(wxCommandEvent& event) {
     mQTButton.button->Disable();
+    mQTButton.message->SetLabel("Installing...");
     wxGetApp().LaunchQuickTimeInstaller();
 
     // Send a timer event periodically.  We don't want to do this too
@@ -175,6 +181,7 @@ void GuideFrame::OnInstallQuickTime(wxCommandEvent& event) {
 void GuideFrame::OnTimer(wxTimerEvent& event) {
     if (wxGetApp().HaveAppropriateQuickTimeVersion()) {
         mQTButton.bitmap->SetBitmap(mCheckBitmap);
+        mQTButton.message->SetLabel("");
         mAppButton.bitmap->SetBitmap(mArrowBitmap);
         mAppButton.button->Enable();
         mTimer.Stop();
@@ -192,4 +199,24 @@ void GuideFrame::OnInstallApplication(wxCommandEvent& event) {
     mAppButton.button->Disable();
     wxGetApp().LaunchApplicationInstaller();
     Close();
+}
+
+/// If appropriate, ask the user if they really want to quit.
+void GuideFrame::OnClose(wxCloseEvent &event) {
+    // Only warn the user if we're allowed to veto this event.
+    if (event.CanVeto()) {
+        // Warn the user.
+        wxString msg("Exit without installing " +
+                     wxGetApp().GetApplicationName() + "?");
+        wxMessageDialog dialog(this, msg, "Exit Setup",
+                               wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
+        if (dialog.ShowModal() == wxID_NO) {
+            // They don't want to exit, so veto the event.
+            event.Veto();
+            return;
+        }
+    }
+
+    // If we reach here, destroy our frame and quit.
+    Destroy();
 }

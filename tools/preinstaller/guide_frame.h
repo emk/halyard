@@ -35,10 +35,12 @@ private:
     struct CheckableButton {
         wxStaticBitmap *bitmap;
         wxButton *button;
+        wxStaticText *message;
 
-        CheckableButton() : bitmap(NULL), button(NULL) {}
-        CheckableButton(wxStaticBitmap *inBitmap, wxButton *inButton)
-            : bitmap(inBitmap), button(inButton) {}
+        CheckableButton() : bitmap(NULL), button(NULL), message(NULL) {}
+        CheckableButton(wxStaticBitmap *inBitmap, wxButton *inButton,
+                        wxStaticText *inMessage)
+            : bitmap(inBitmap), button(inButton), message(inMessage) {}
     };
 
     wxTimer mTimer;
@@ -61,6 +63,7 @@ private:
     void OnInstallQuickTime(wxCommandEvent& event);
     void OnTimer(wxTimerEvent& event);
     void OnInstallApplication(wxCommandEvent& event);
+    void OnClose(wxCloseEvent &inEvent);
 
     DECLARE_EVENT_TABLE()
 };
