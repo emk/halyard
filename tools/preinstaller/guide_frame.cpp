@@ -42,6 +42,7 @@ enum {
 BEGIN_EVENT_TABLE(GuideFrame, wxFrame)
     EVT_BUTTON(ID_InstallQuickTime, GuideFrame::OnInstallQuickTime)
     EVT_TIMER(ID_Timer, GuideFrame::OnTimer)
+    EVT_ACTIVATE(GuideFrame::OnActivate)
     EVT_BUTTON(ID_InstallApplication, GuideFrame::OnInstallApplication)
     EVT_CLOSE(GuideFrame::OnClose)
 END_EVENT_TABLE()
@@ -51,6 +52,8 @@ GuideFrame::GuideFrame()
               "Setup - " + wxGetApp().GetApplicationName(),
               wxDefaultPosition, wxDefaultSize,
               wxCLOSE_BOX|wxSYSTEM_MENU|wxCAPTION),
+      mInForeground(true), // Arbitrary value--will be updated later.
+      mShouldCheckQuickTimeVersionWhenInForeground(false),
       mTitleFont(14, wxSWISS, wxNORMAL, wxNORMAL),
       mStepHeadingFont(8, wxSWISS, wxNORMAL, wxBOLD),
       mBlankBitmap(wxBITMAP(BLANK)), mArrowBitmap(wxBITMAP(ARROW)),
@@ -169,22 +172,63 @@ void GuideFrame::OnInstallQuickTime(wxCommandEvent& event) {
     mQTButton.message->SetLabel("Installing...");
     wxGetApp().LaunchQuickTimeInstaller();
 
+    // We want to start checking the QuickTime version.
+    mShouldCheckQuickTimeVersionWhenInForeground = true;
+
     // Send a timer event periodically.  We don't want to do this too
     // often, because checking the QuickTime version is fairly expensive.
     mTimer.Start(3000, wxTIMER_CONTINUOUS);
 }
 
-/// Periodically check the current QuickTime version.  When we appear to
-/// have a correct version of QuickTime installed, then it the QuickTime
-/// installer is *almost* through running, and we can enable our "Install
-/// App" button and disable the timer.
+/// Periodically check the current QuickTime version.
 void GuideFrame::OnTimer(wxTimerEvent& event) {
+    wxASSERT(mShouldCheckQuickTimeVersionWhenInForeground);
+
+    // XXX - Only check the QuickTime version when we're in the foreground.
+    // If we check the QuickTime version while we're in the background, it
+    // greatly increases the odds that the QuickTime installer will notice
+    // us, and try to force us to quit!
+    //
+    // We'd like to have a less ugly workaround, but so far, all the known
+    // fixes for this bug have a *lot* of moving parts.  We're going to go
+    // with this approach, which should at least prevent most QT <6.5 users
+    // from having to run the installer twice.
+    if (mInForeground)
+        CheckQuickTimeVersion();
+}
+
+// Keep track of whether we're in the foreground or the background (so we
+// know whether to enable our timer-based checks), and check the QuickTime
+// version when we get switched into the foreground.
+void GuideFrame::OnActivate(wxActivateEvent& event) {
+    if (event.GetActive()) {
+        mInForeground = true;
+        if (mShouldCheckQuickTimeVersionWhenInForeground) {
+            // Repaint the window immediately, so the user sees something
+            // useful while we check the QuickTime version.
+            ForceImmediateRedraw();
+            CheckQuickTimeVersion();
+        }
+    } else {
+        mInForeground = false;
+    }
+}
+
+/// Check the QuickTime version.  When we appear to have a correct version
+/// of QuickTime installed, then the QuickTime installer is *almost*
+/// through running, and we can enable our "Install App" button and disable
+/// the timer.
+void GuideFrame::CheckQuickTimeVersion() {
+    wxASSERT(mShouldCheckQuickTimeVersionWhenInForeground);
+    wxASSERT(mInForeground);
+
     if (wxGetApp().HaveAppropriateQuickTimeVersion()) {
         mQTButton.bitmap->SetBitmap(mCheckBitmap);
         mQTButton.message->SetLabel("");
         mAppButton.bitmap->SetBitmap(mArrowBitmap);
         mAppButton.button->Enable();
         mTimer.Stop();
+        mShouldCheckQuickTimeVersionWhenInForeground = false;
     }
 
     if (SHOW_DEBUGGING) {
@@ -198,7 +242,7 @@ void GuideFrame::OnTimer(wxTimerEvent& event) {
 void GuideFrame::OnInstallApplication(wxCommandEvent& event) {
     mAppButton.button->Disable();
     wxGetApp().LaunchApplicationInstaller();
-    Close();
+    Destroy(); // Bypass the checks in OnClose().
 }
 
 /// If appropriate, ask the user if they really want to quit.
@@ -219,4 +263,12 @@ void GuideFrame::OnClose(wxCloseEvent &event) {
 
     // If we reach here, destroy our frame and quit.
     Destroy();
+}
+
+void GuideFrame::ForceImmediateRedraw() {
+    // According to the manual, this sequence of calls will first
+    // invalidate the entire window (thanks to Refresh) and then redraw it
+    // immediately (thanks to Update).
+    Refresh();
+    Update();
 }

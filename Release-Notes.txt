@@ -6,6 +6,12 @@ SVN - emk, brian
     shows an "Installing..." label when running the QuickTime installer.
     This should help prevent problems during the long pause while the
     QuickTime installer launches.
+  * #3503: Fixed silly bug when preinstaller showed the "confirm exit"
+    window when quiting itself normally.
+  * #3510: We no longer poll for the installed QuickTime version when
+    our preinstaller window is in the background, to prevent the QuickTime
+    installer from trying to quit our preinstaller because it "uses
+    QuickTime."
 
 0.2.2 - 20 Sep 2006 - emk, brian
 

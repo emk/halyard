@@ -43,6 +43,13 @@ private:
             : bitmap(inBitmap), button(inButton), message(inMessage) {}
     };
 
+    /// True if our application is in the foreground.
+    bool mInForeground;
+
+    // True if we should be checking the QuickTime when we're in the
+    // foreground.
+    bool mShouldCheckQuickTimeVersionWhenInForeground;
+
     wxTimer mTimer;
 
     wxFont mTitleFont;
@@ -62,8 +69,11 @@ private:
     
     void OnInstallQuickTime(wxCommandEvent& event);
     void OnTimer(wxTimerEvent& event);
+    void OnActivate(wxActivateEvent& event);
+    void CheckQuickTimeVersion();
     void OnInstallApplication(wxCommandEvent& event);
     void OnClose(wxCloseEvent &inEvent);
+    void ForceImmediateRedraw();
 
     DECLARE_EVENT_TABLE()
 };
