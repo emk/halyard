@@ -25,10 +25,14 @@
 
 #define BOOST_FILESYSTEM_SOURCE
 #include "boost/filesystem/path.hpp"
+#include "boost/filesystem/convenience.hpp"
 
 #include "LogFile.h"
 
+using namespace boost::filesystem;
+
 LogFile::LogFile(const path &file) : mLogFile(NULL) {
+  create_directories(file.branch_path());
   mLogFile = fopen(file.native_file_string().c_str(), "a+");
   if (mLogFile == NULL) {
     throw new std::runtime_error("Couldn't open log file: " 
