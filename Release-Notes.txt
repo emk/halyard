@@ -12,6 +12,9 @@ SVN - emk, brian
     our preinstaller window is in the background, to prevent the QuickTime
     installer from trying to quit our preinstaller because it "uses
     QuickTime."
+  * #3168: UpdateInstaller now has do-nothing "--uninstall" option, which
+    will allow us to improve our uninstall options in the future.  This
+    is a "add it now or never" hook.
 
 0.2.2 - 20 Sep 2006 - emk, brian
 

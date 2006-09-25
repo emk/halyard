@@ -66,7 +66,18 @@ int main(int argc, char **argv) {
 	if (argc < 2) {
 		printf("Usage: UpdateInstaller path [command ...]\n");
 		exit(1);
-	}
+	} 
+
+    if (strcmp(argv[1], "--uninstall") == 0) {
+        if (argc < 3) { 
+            printf("Usage: UpdateInstaller --uninstall path\n");
+            exit(1);
+        } else {
+            LogFile logger(path(argv[2], native) / "Updates" / "temp" / "log");
+            logger.Log("Uninstall completed.");
+            exit(0);
+        }
+    } 
 	
 	LogFile logger(path(argv[1], native) / "Updates" / "temp" / "log");
 		

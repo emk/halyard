@@ -46,6 +46,13 @@ Update is impossible; relaunching.\r
 EOF
   end
 
+  def test_uninstall_does_nothing
+    assert system(EXE_PATH, "--uninstall", ".")
+    assert_file_equals <<EOF, "Updates/temp/log"
+Uninstall completed.\r
+EOF
+  end
+
   def assert_exists file
     assert File.exists?(file), "#{file} does not exist"
   end
