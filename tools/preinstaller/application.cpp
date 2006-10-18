@@ -30,27 +30,20 @@
 
 IMPLEMENT_APP(Application)
 
-// TODO - We should read this from a configuration from a file, but we need
-// to get this program working ASAP.  We can generalize it later.
-#define APPLICATION_NAME "Virtual Terrorism Response Academy"
-#define QUICKTIME_INSTALLER_NAME "QuickTimeInstaller.exe"
-#define APPLICATION_INSTALLER_NAME "VTRA Setup.exe"
-#define MINIMUM_QUICKTIME_VERSION 0x06508000
-#define WELCOME_MESSAGE \
-    "Welcome to the Virtual Terrorism\n" \
-    "Response Academy Setup Wizard"
-
 bool Application::OnInit() {
     wxApp::OnInit();
 
     // If we have a new enough version of QuickTime, bypass the
     // preinstaller entirely.
-    if (HaveAppropriateQuickTimeVersion()) {
+    QuickTimeInstallStatus qtstatus = GetQuickTimeInstallStatus();
+    if (qtstatus == QUICKTIME_OK) {
         LaunchApplicationInstaller();
         return FALSE;
     } else {
-        // Otherwise, display our window.
-        wxFrame *frame = new GuideFrame();
+        // Otherwise, display our window.  If QuickTime is too old, ask
+        // GuideFrame to display a warning dialog about upgrading QuickTime
+        // Pro.
+        wxFrame *frame = new GuideFrame(qtstatus == QUICKTIME_TOO_OLD);
         frame->Show(TRUE);
         SetTopWindow(frame);
         return TRUE;
@@ -59,8 +52,14 @@ bool Application::OnInit() {
 
 /// Do we have a new enough version of QuickTime?  Don't call this function
 /// too often; it's fairly slow.
-bool Application::HaveAppropriateQuickTimeVersion() {
-    return QuickTimeVersion() >= MINIMUM_QUICKTIME_VERSION;
+Application::QuickTimeInstallStatus Application::GetQuickTimeInstallStatus() {
+    long version = QuickTimeVersion();
+    if (version == 0)
+        return QUICKTIME_NOT_INSTALLED;
+    else if (version < MINIMUM_QUICKTIME_VERSION)
+        return QUICKTIME_TOO_OLD;
+    else
+        return QUICKTIME_OK;
 }
 
 /// Get the installed version of QuickTime.  This function may take
@@ -85,7 +84,10 @@ long Application::QuickTimeVersion() {
 }
 
 void Application::LaunchQuickTimeInstaller() {
-    LaunchAsync(GetQuickTimeInstallerName());
+    // We spoke to Apple licensing (see bug #3581 for name, e-mail and
+    // contact details), and they clarified that it's OK to run the
+    // QuickTime installer in passive mode.
+    LaunchAsync(GetQuickTimeInstallerName(), "/passive");
 }
 
 void Application::LaunchApplicationInstaller() {
@@ -111,9 +113,12 @@ wxString Application::GetWelcomeMessage() {
 }
 
 /// Launch an executable with no arguments in the current directory.
-void Application::LaunchAsync(const wxString &path) {
+void Application::LaunchAsync(const wxString &path, const wxString &flag) {
     std::vector<std::string> args;
     args.push_back(path.mb_str());
     CommandLine cl(args);
-    wxExecute(cl.WindowsQuotedString().c_str(), wxEXEC_ASYNC);    
+    std::string cmd_line(cl.WindowsQuotedString());
+    if (flag != "")
+        cmd_line += " " + flag; // We don't want to quote this.
+    wxExecute(cmd_line.c_str(), wxEXEC_ASYNC);    
 }

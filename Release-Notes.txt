@@ -17,6 +17,8 @@ SVN - emk, brian
     is a "add it now or never" hook.
   * #3168: "UpdateInstaller --uninstall ." can now create the directories
     required for its log file.
+  * #3581: Modified how preinstaller launches QuickTime installer, and
+    added a dialog box warning QuickTime Pro users.
 
 0.2.2 - 20 Sep 2006 - emk, brian
 

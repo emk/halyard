@@ -28,7 +28,7 @@
 
 class GuideFrame : public wxFrame {
 public: 
-    GuideFrame();
+    GuideFrame(bool shouldWarnAboutProLicense);
     
 private:
     // Represents a button that can have a check-mark next to it.
@@ -42,6 +42,10 @@ private:
                         wxStaticText *inMessage)
             : bitmap(inBitmap), button(inButton), message(inMessage) {}
     };
+
+    /// True if we need to warn the user about a possible loss of QuickTime
+    /// Pro license.
+    bool mShouldWarnAboutProLicense;
 
     /// True if our application is in the foreground.
     bool mInForeground;
@@ -66,7 +70,8 @@ private:
 
     void CreateStepHeading(int number, const wxString &heading);
     CheckableButton CreateStepButton(int id, const wxString &name);
-    
+
+    bool ConfirmLossOfQuickTimeProOK();
     void OnInstallQuickTime(wxCommandEvent& event);
     void OnTimer(wxTimerEvent& event);
     void OnActivate(wxActivateEvent& event);

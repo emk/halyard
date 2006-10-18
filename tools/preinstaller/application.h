@@ -32,7 +32,13 @@ protected:
     virtual bool OnInit();
 
 public:
-    bool HaveAppropriateQuickTimeVersion();
+    enum QuickTimeInstallStatus {
+        QUICKTIME_NOT_INSTALLED,
+        QUICKTIME_TOO_OLD,
+        QUICKTIME_OK
+    };
+
+    QuickTimeInstallStatus GetQuickTimeInstallStatus();
     long QuickTimeVersion();
 
     void LaunchQuickTimeInstaller();
@@ -45,10 +51,21 @@ public:
     wxString GetWelcomeMessage();
 
 private:
-    void LaunchAsync(const wxString &path);
+    void LaunchAsync(const wxString &path, const wxString &flag = "");
 };
 
 /// Declare a 'wxGetApp()' method.
 DECLARE_APP(Application)
+
+// TODO - We should read this from a configuration from a file, but we need
+// to get this program working ASAP.  We can generalize it later.
+#define APPLICATION_NAME "Virtual Terrorism Response Academy"
+#define QUICKTIME_INSTALLER_NAME "QuickTimeInstaller.exe"
+#define APPLICATION_INSTALLER_NAME "VTRA Setup.exe"
+#define MINIMUM_QUICKTIME_VERSION 0x06508000
+#define WELCOME_MESSAGE \
+    "Welcome to the Virtual Terrorism\n" \
+    "Response Academy Setup Wizard"
+#define QUICKTIME_MAJOR_VERSION "7"
 
 #endif // !defined(APPLICATION_H)

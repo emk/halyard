@@ -47,11 +47,12 @@ BEGIN_EVENT_TABLE(GuideFrame, wxFrame)
     EVT_CLOSE(GuideFrame::OnClose)
 END_EVENT_TABLE()
 
-GuideFrame::GuideFrame()
+GuideFrame::GuideFrame(bool shouldWarnAboutProLicense)
     : wxFrame((wxFrame *)NULL, -1,
               "Setup - " + wxGetApp().GetApplicationName(),
               wxDefaultPosition, wxDefaultSize,
               wxCLOSE_BOX|wxSYSTEM_MENU|wxCAPTION),
+      mShouldWarnAboutProLicense(shouldWarnAboutProLicense),
       mInForeground(true), // Arbitrary value--will be updated later.
       mShouldCheckQuickTimeVersionWhenInForeground(false),
       mTitleFont(14, wxSWISS, wxNORMAL, wxNORMAL),
@@ -164,10 +165,29 @@ GuideFrame::CreateStepButton(int id, const wxString &name) {
     return CheckableButton(bitmap, button, message);
 }
 
+static const char *kUpgradeWarning =
+"Important notice for QuickTime Pro users:\n\n"
+"Upgrading to QuickTime " QUICKTIME_MAJOR_VERSION " will disable any\n"
+"QuickTime Pro functionality in earlier\n"
+"versions of QuickTime. To reenable Pro\n"
+"features, you will need to purchase a new\n"
+"QuickTime Pro key from Apple Computer,\n"
+"Inc.  Continue installing?";
+
+bool GuideFrame::ConfirmLossOfQuickTimeProOK() {
+    wxMessageDialog dialog(this, kUpgradeWarning, "QuickTime Pro Notice",
+                           wxYES_NO | wxYES_DEFAULT | wxICON_WARNING);
+    return (dialog.ShowModal() == wxID_YES);
+}
 
 /// When the user clicks on "Install QuickTime", disable the button, launch
 /// the installer, and start our background timer.
 void GuideFrame::OnInstallQuickTime(wxCommandEvent& event) {
+    if (mShouldWarnAboutProLicense && !ConfirmLossOfQuickTimeProOK()) {
+        Destroy();
+        return;
+    }
+
     mQTButton.button->Disable();
     mQTButton.message->SetLabel("Installing...");
     wxGetApp().LaunchQuickTimeInstaller();
@@ -222,7 +242,7 @@ void GuideFrame::CheckQuickTimeVersion() {
     wxASSERT(mShouldCheckQuickTimeVersionWhenInForeground);
     wxASSERT(mInForeground);
 
-    if (wxGetApp().HaveAppropriateQuickTimeVersion()) {
+    if (wxGetApp().GetQuickTimeInstallStatus() == Application::QUICKTIME_OK) {
         mQTButton.bitmap->SetBitmap(mCheckBitmap);
         mQTButton.message->SetLabel("");
         mAppButton.bitmap->SetBitmap(mArrowBitmap);
