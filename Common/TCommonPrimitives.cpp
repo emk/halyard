@@ -202,6 +202,8 @@ DEFINE_5L_PRIMITIVE(Log)
 		log->Error("%s", msg.c_str());
 	else if (level == "fatalerror")
 		log->FatalError("%s", msg.c_str());
+	else if (level == "environmenterror")
+		log->EnvironmentError("%s", msg.c_str());
 	else
 	{
 		gLog.Error("Unknown logging level: %s", level.c_str());

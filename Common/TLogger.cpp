@@ -186,6 +186,15 @@ void TLogger::FatalError(const char *Format, ...)
     CrashNow(APPLICATION_CRASH);
 }
 
+void TLogger::EnvironmentError(const char *Format, ...)
+{
+    // Format and display our message, and exit without submitting
+    // a crash report.
+    FormatMsg(Format);
+    AlertBuffer(true);
+    exit(1);
+}
+
 void TLogger::CrashNow(CrashType inType) {
     PrepareToExit();
     CrashReporter::GetInstance()->CrashNow(m_LogBuffer, inType);

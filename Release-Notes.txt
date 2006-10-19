@@ -21,6 +21,8 @@ SVN - emk, brian
     added a dialog box warning QuickTime Pro users.
   * #1760, #3591: Fixed crash that occurred when drawing to DrawingArea
     objects with an area of zero.
+  * #3576, #3508: Added a "fatal error without crash report" routine for
+    use in fixing these two bugs (and others).
 
 0.2.2 - 20 Sep 2006 - emk, brian
 

@@ -156,6 +156,8 @@ void FiveLApp::PrepareForCrash() {
 }
 
 void FiveLApp::ErrorDialog(const char* inTitle, const char *inMessage) {
+    // TODO: Several of the callers of this function should be
+    // calling the new TLogger::EnvironmentError instead.
     wxMessageDialog dlg(NULL, inMessage, inTitle, wxOK|wxICON_ERROR);
     dlg.ShowModal();
 }
