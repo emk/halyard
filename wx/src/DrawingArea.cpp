@@ -49,6 +49,14 @@ DrawingArea::~DrawingArea() {
     InvalidateDrawingArea(false);
 }
 
+bool DrawingArea::HasAreaOfZero() const {
+    // wxRawBitmap will return invalid iterators when used with pixmaps of
+    // area 0.  So before calling any wxRawBitmap functions (or any routine
+    // named *Opt), call this function and immediately give up if it
+    // returns false.
+	return (mBounds.GetWidth() == 0 || mBounds.GetHeight() == 0);
+}
+
 void DrawingArea::InitializePixmap(bool inHasAlpha) {
 	mPixmap.Create(mBounds.GetWidth(), mBounds.GetHeight(),
 				   inHasAlpha ? 32 : 24);
@@ -62,6 +70,11 @@ void DrawingArea::InitializePixmap(bool inHasAlpha) {
 
 void DrawingArea::InitializeQuake2Overlay()
 {
+    // If the pixmap has area zero, then we don't have any valid data to
+    // pass to Quake anyway.
+    if (HasAreaOfZero())
+        return;
+
     int format;
     unsigned char *data;
     int stride;
@@ -133,7 +146,9 @@ void DrawingArea::Clear() {
 }
 
 void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
-	if (mPixmap.HasAlpha()) {
+	if (HasAreaOfZero()) {
+        // Do nothing.
+    } else if (mPixmap.HasAlpha()) {
 		wxAlphaPixelData data(mPixmap);
 		ClearOpt(data, inColor);
 	} else if (inColor.IsCompletelyOpaque()) {
@@ -169,7 +184,9 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
     }
 
     // Do the actual drawing.
-    if (mPixmap.HasAlpha()) {
+	if (HasAreaOfZero()) {
+        // Do nothing.
+    } else if (mPixmap.HasAlpha()) {
         if (is_straight) {       
             wxAlphaPixelData data(mPixmap);
             FillBoxOpt(data, bounds, inColor);
@@ -204,7 +221,9 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 void DrawingArea::FillBox(const wxRect &inBounds,
 						  const GraphicsTools::Color &inColor)
 {
-	if (mPixmap.HasAlpha()) {
+    if (HasAreaOfZero()) {
+        // Do nothing.
+    } else if (mPixmap.HasAlpha()) {
 		wxAlphaPixelData data(mPixmap);
 		FillBoxOpt(data, inBounds, inColor);
 	} else if (inColor.IsCompletelyOpaque()) {
@@ -241,7 +260,9 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
 void DrawingArea::DrawPixMap(GraphicsTools::Point inPoint,
 							 GraphicsTools::PixMap &inPixMap)
 {
-	if (mPixmap.HasAlpha()) {
+    if (HasAreaOfZero()) {
+        // Do nothing.
+    } else if (mPixmap.HasAlpha()) {
 		wxAlphaPixelData data(mPixmap);
 		DrawPixMapOpt(data, inPoint, inPixMap);
 	} else {

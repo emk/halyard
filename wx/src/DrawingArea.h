@@ -34,7 +34,21 @@ class DrawingArea : public GraphicsTools::Image {
     bool mIsShown;
     shared_ptr<wxQuake2Overlay> mQuake2Overlay;
 
+    //////////
+    /// Returns true if this DrawingArea has an area of zero.
+    ///
+    bool HasAreaOfZero() const;
+
+    //////////
+    /// Initialize our underlying pixmap.
+    ///
 	void InitializePixmap(bool inHasAlpha);
+
+    ///////////
+    /// Initialize the Quake 2 overlay object associated with this drawing
+    /// area.  We'll only call this function if we are floating this
+    /// DrawingArea over Quake 2.
+    ///
     void InitializeQuake2Overlay();
 
 	//////////

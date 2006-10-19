@@ -19,6 +19,8 @@ SVN - emk, brian
     required for its log file.
   * #3581: Modified how preinstaller launches QuickTime installer, and
     added a dialog box warning QuickTime Pro users.
+  * #1760, #3591: Fixed crash that occurred when drawing to DrawingArea
+    objects with an area of zero.
 
 0.2.2 - 20 Sep 2006 - emk, brian
 
