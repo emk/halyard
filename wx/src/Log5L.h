@@ -30,8 +30,25 @@
 ///
 class Log5L : public wxLog
 {
+    bool mShouldSilentlyLogNonFatalErrors;
+
 public:
 	Log5L();
+
+    //////////
+    /// Call this function to prevent the display of any further wxWidgets
+    /// errors to the user.  This is needed when processing crash reports,
+    /// because if the wxWidgets crash reporter encounters any non-fatal
+    /// errors during the submission process, it will send them to us for
+    /// logging, and we don't want them to loop back into the crash
+    /// reporter.
+    ///
+    /// Note that calling this function changes error-handling policy:
+    /// Errors which were displayed to the user (and which were potentially
+    /// fatal if we were in runtime mode), are just silently logged after
+    /// this function is called.
+    ///
+    void SilentlyLogNonFatalErrors();
 	
 	virtual void DoLog(wxLogLevel inLevel, const wxChar *inMsg,
 					   time_t inTimeStamp);

@@ -63,6 +63,7 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 
 bool FiveLApp::sHandlingFatalError = false;
+Log5L *FiveLApp::sLog5L = NULL;
 
 IMPLEMENT_APP(FiveLApp)
 
@@ -152,6 +153,8 @@ void FiveLApp::IdleProc(bool inBlock)
 
 void FiveLApp::PrepareForCrash() {
     sHandlingFatalError = true;
+    if (sLog5L)
+        sLog5L->SilentlyLogNonFatalErrors();
     ShowSystemWindows();
 }
 
@@ -257,7 +260,8 @@ bool FiveLApp::OnInit() {
     // Send all wxWindows logging messages to our traditional 5L
     // logs.  This gives us a single copy of everything.
     // TODO - How do we clean up these resources?
-    wxLog::SetActiveTarget(new Log5L());
+    sLog5L = new Log5L();
+    wxLog::SetActiveTarget(sLog5L);
     
     // Configure some useful trace masks for debugging the application.
     // Comment these out to disable a particular kind of tracing.

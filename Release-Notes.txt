@@ -23,6 +23,11 @@ SVN - emk, brian
     objects with an area of zero.
   * #3576, #3508: Added a "fatal error without crash report" routine for
     use in fixing these two bugs (and others).
+  * #1712: Once a crash has been detected, supress further display of
+    wxWidgets-originated error messages, and just log them.  This prevents
+    several common non-fatal error conditions in the crash reporter (no
+    network, misconfigured server, etc.) from looping back into the crash
+    reporter.
 
 0.2.2 - 20 Sep 2006 - emk, brian
 

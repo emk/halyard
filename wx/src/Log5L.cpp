@@ -26,10 +26,17 @@
 USING_NAMESPACE_FIVEL
 
 Log5L::Log5L()
+    : mShouldSilentlyLogNonFatalErrors(false)
+
 {
 	gDebugLog.Log("WX INITIALIZING: Sending wx log messages to 5L logs.");
 }
-	
+
+void Log5L::SilentlyLogNonFatalErrors()
+{
+    mShouldSilentlyLogNonFatalErrors = true;
+}
+
 void Log5L::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
 				  time_t inTimeStamp)
 {
@@ -87,8 +94,13 @@ void Log5L::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
 				break;
 
 		    case wxLOG_Error:
-				gDebugLog.Error("WX %s: %s [%s]", label, inMsg, buffer);
-				gLog.Error("WX %s: %s [%s]", label, inMsg, buffer);
+                if (mShouldSilentlyLogNonFatalErrors) {
+                    gDebugLog.Log("WX %s: %s [%s]", label, inMsg, buffer);
+                    gLog.Log("WX %s: %s [%s]", label, inMsg, buffer);
+                } else {
+                    gDebugLog.Error("WX %s: %s [%s]", label, inMsg, buffer);
+                    gLog.Error("WX %s: %s [%s]", label, inMsg, buffer);
+                }
 				break;
 
 		    case wxLOG_Warning:

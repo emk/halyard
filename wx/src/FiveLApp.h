@@ -25,6 +25,7 @@
 
 class StageFrame;
 class Stage;
+class Log5L;
 
 /// Our main application object.
 class FiveLApp : public wxApp
@@ -36,6 +37,12 @@ class FiveLApp : public wxApp
     /// to try to do anything complicated.
     ///
     static bool sHandlingFatalError;
+
+    //////////
+    /// Our custom logger which redirects wxWidget errors to our own
+    /// logging subsystem.
+    ///
+    static Log5L *sLog5L;
 
     //////////
     /// The name of the script we were passed on the command-line.
