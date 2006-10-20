@@ -109,10 +109,12 @@ void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
 	r.Inflate(inInflate);
     r.Intersect(wxRect(wxPoint(0, 0),
                        mBounds.GetSize()));
-    if (inHasPixmapChanged && mQuake2Overlay)
-        mQuake2Overlay->DirtyRect(r);
-	r.Offset(mBounds.GetPosition());
-	mStage->InvalidateRect(r);
+	if (!r.IsEmpty()) {
+        if (inHasPixmapChanged && mQuake2Overlay)
+            mQuake2Overlay->DirtyRect(r);
+	    r.Offset(mBounds.GetPosition());
+	    mStage->InvalidateRect(r);
+	}
 }
 
 void DrawingArea::InvalidateDrawingArea(bool inHasPixmapChanged) {

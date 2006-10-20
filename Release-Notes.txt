@@ -28,6 +28,10 @@ SVN - emk, brian
     several common non-fatal error conditions in the crash reporter (no
     network, misconfigured server, etc.) from looping back into the crash
     reporter.
+  * #3612: Fixed bug which caused engine redraws to occur even when the
+    drawing calls had been fully clipped.  This should prevent flicker
+    in a few places that use heavyweight (i.e., native GUI) elements near
+    overlays.
 
 0.2.2 - 20 Sep 2006 - emk, brian
 
