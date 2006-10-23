@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, brian
+0.2.3 - 23 Oct 2003 - emk, brian
 
   * #3503: The preinstaller now confirms quit requests with the user, and
     shows an "Installing..." label when running the QuickTime installer.
@@ -32,6 +32,12 @@ SVN - emk, brian
     drawing calls had been fully clipped.  This should prevent flicker
     in a few places that use heavyweight (i.e., native GUI) elements near
     overlays.
+  * #3167: Added basic support for progress bar in the updater. This
+    updates once per file downloaded.
+  * #3508: Add error checking to scheme file loader that will allow it to
+    detect the case when a limited user tries to run the program before an
+    administrator has run it, and displays a nice error message prompting
+    the user about what to do.
 
 0.2.2 - 20 Sep 2006 - emk, brian
 
