@@ -49,6 +49,9 @@
   (define (draw-load-progress)
     (maybe-call-5l-prim 'DrawLoadProgress))
 
+  (define (environment-error message)
+    (%call-5l-prim 'log '5L message 'environmenterror))
+
   ;;===== Splash screen management =====
 
   ;; The time we started loading the script.
@@ -94,14 +97,21 @@
     ;; handles automatic compilation of *.zo files for us.
     (define compile-zo (make-compilation-manager-load/use-compiled-handler))
     
+    (define error-string 
+      (string-append "This program must be run once from an administrative\n"
+                     "account before you can use it. Please ask your\n"
+                     "system administrator for assistance."))
+
     ;; Wrap COMPILE-ZO with two calls to HEARTBEAT, just to let the operating
     ;; system know we're still alive during really long loads.
     (define (compile-zo-with-heartbeat file-path expected-module-name)
-      (heartbeat)
-      (let [[result (compile-zo file-path expected-module-name)]]
+      (with-handlers 
+         [[exn:i/o:filesystem? (lambda (x) (environment-error error-string))]]
         (heartbeat)
-        (update-splash-screen!)
-        result))
+        (let [[result (compile-zo file-path expected-module-name)]]
+          (heartbeat)
+          (update-splash-screen!)
+          result)))
     
     compile-zo-with-heartbeat)
 
