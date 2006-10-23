@@ -223,7 +223,10 @@
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
       (define download-dir (build-path (base-directory self) "Updates"))
-      (download-update (fn (a b) #f))
+      (define callback-args '())
+          
+      (download-update (fn (a b) (push! (list a b) callback-args)))
+          
       (assert-set-equal '("release.spec" "manifests" "pool" "temp") 
                         (directory-list download-dir))
       ;; TODO - this is actually not optimal, since we already have a file 
@@ -242,7 +245,11 @@
                          (build-path download-dir "manifests" "Update")))
       (assert-file-equals "foo\r\n" 
                           (build-path download-dir "pool" foo-digest))
-      (assert-file-equals "" (build-path download-dir "pool" null-digest)))
+      (assert-file-equals "" (build-path download-dir "pool" null-digest))
+      (assert-set-equal '((0 "sub/foo.txt") 
+                          (1 "sub/foo.txt") 
+                          (1 "sub/quux.txt")
+                          (1 "sub/quux.txt")) callback-args))
     )
   
     

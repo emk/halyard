@@ -335,7 +335,8 @@
   ;; Check the size of the update. This requires downloading the manifests, 
   ;; which are large. This should only be done once we have verified that 
   ;; updates are, indeed, available.
-  ;; XXX - write this 
+  ;; XXX - this isn't actually used, and is wrong. The size calculated by 
+  ;;       download-update is more accurate.
   (define (update-size)
     (define diffs (get-manifest-diffs))
     (define counted '())
@@ -354,20 +355,36 @@
   ;; TODO - unit test errors
   (define (download-update progress)
     (define diffs (get-manifest-diffs))
-    (foreach (file diffs)
-      (unless (file-exists? 
-               (pool-dir (manifest-digest file)))
-        (download (build-url (updater-url-prefix *updater*)
-                             "pool/"
-                             (manifest-digest file))
-                  (temp-dir) :name "download.tmp")
-        ;; TODO - if we ever implement a SHA-1 sum in the engine, we should
-        ;; do a SHA-1 sum here, rather than just checking the file size. 
-        (if (= (file-size (temp-dir "download.tmp")) (manifest-size file))
-          (rename-file-or-directory (temp-dir "download.tmp") 
-                                    (pool-dir (manifest-digest file)))
-          (error (cat "File was corrupted during download: " 
-                      (manifest-file file)))))))
+    (define seen (make-hash-table 'equal))
+    (define download-files 
+      (filter (fn (file) 
+                (define not-seen? 
+                  (not (or (file-exists? (pool-dir (manifest-digest file)))
+                           (hash-table-get 
+                            seen (manifest-digest file) (fn () #f)))))
+                (hash-table-put! seen (manifest-digest file) #t)
+                not-seen?)
+              diffs))
+    (define total-size (foldl + 0 (map manifest-size download-files)))
+    (define current-size 0)
+    (define (report-progress file) 
+      (progress (if (= total-size 0) 1 (/ current-size total-size)) 
+                (manifest-file file)))
+    (foreach (file download-files)
+      (report-progress file)
+      (download (build-url (updater-url-prefix *updater*)
+                           "pool/"
+                           (manifest-digest file))
+                (temp-dir) :name "download.tmp")
+      (inc! current-size (manifest-size file))
+      (report-progress file)
+      ;; TODO - if we ever implement a SHA-1 sum in the engine, we should
+      ;; do a SHA-1 sum here, rather than just checking the file size. 
+      (if (= (file-size (temp-dir "download.tmp")) (manifest-size file))
+        (rename-file-or-directory (temp-dir "download.tmp") 
+                                  (pool-dir (manifest-digest file)))
+        (error (cat "File was corrupted during download: " 
+                    (manifest-file file))))))
   
   (define (copy-file-force src dest)
     (if (file-exists? dest)
