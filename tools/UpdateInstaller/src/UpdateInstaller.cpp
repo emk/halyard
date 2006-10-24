@@ -76,7 +76,7 @@ bool UpdateInstaller::IsUpdatePossible() {
 void UpdateInstaller::InstallUpdate() {
 	std::vector<CopySpec>::const_iterator iter = mCopies.begin();
 	for (; iter != mCopies.end(); ++iter) {
-		create_directories(iter->dest / "..");
+		create_directories(iter->dest.branch_path());
 		CopyOverwriting(iter->source, iter->dest);
 	}
 }

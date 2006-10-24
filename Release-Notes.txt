@@ -1,6 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-0.2.3 - 23 Oct 2003 - emk, brian
+SVN - brian
+
+  * #3647: Fixed update installer to build parent directories for
+    new files correctly.
+
+0.2.3 - 23 Oct 2006 - emk, brian
 
   * #3503: The preinstaller now confirms quit requests with the user, and
     shows an "Installing..." label when running the QuickTime installer.
