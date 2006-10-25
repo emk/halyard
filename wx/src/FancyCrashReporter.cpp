@@ -341,8 +341,11 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
 
     // Add a screenshot, but only if we're processing a script crash.
     // (After real crashes, this probably would fail anyway.)
-    if (inType == SCRIPT_CRASH)
-        report.AddScreenshot();
+    //
+    // Disabled because it adds substantially to the size of the crash
+    // report.
+    //if (inType == SCRIPT_CRASH)
+    //    report.AddScreenshot();
 
     // Ask the user whether they want to submit this bug report, and if
     // so, process it.

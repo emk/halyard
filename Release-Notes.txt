@@ -4,6 +4,8 @@ SVN - brian
 
   * #3647: Fixed update installer to build parent directories for
     new files correctly.
+  * #3683: Removed PNG of stage from script crash reports--it made the
+    crash reports too big, and we hadn't used it much.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 
