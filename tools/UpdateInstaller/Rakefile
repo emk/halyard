@@ -5,7 +5,7 @@ task :default => :test
 
 task :test => :build do
   in_fixture_copy { sh "../test/Debug/UpdateInstallerTest.exe" }
-  in_fixture_copy { ruby "../update_installer_test.rb" }
+  ruby "update_installer_test.rb"
 end
 
 task :build do

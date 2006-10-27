@@ -6,6 +6,10 @@ SVN - brian
     new files correctly.
   * #3683: Removed PNG of stage from script crash reports--it made the
     crash reports too big, and we hadn't used it much.
+  * #3691: The update installer now checks if it can write to the
+    destination paths before copying files, and will keep trying for
+    10 seconds if it cannot write to a file, in case it is run before
+    the engine has fully quit.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 

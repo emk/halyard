@@ -24,6 +24,7 @@
 
 #include <string>
 #include <vector>
+#include <windows.h>
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/convenience.hpp"
@@ -64,9 +65,9 @@ UpdateInstaller::UpdateInstaller(const path &root_path) {
 }
 
 bool UpdateInstaller::IsUpdatePossible() {
-	std::vector<CopySpec>::const_iterator iter = mCopies.begin();
-	for (; iter != mCopies.end(); ++iter) {
-		if (!exists(iter->source)) {
+	std::vector<CopySpec>::const_iterator copy = mCopies.begin();
+	for (; copy != mCopies.end(); ++copy) {
+		if (!copy->IsCopyPossible()) {
 			return false;
 		}
 	}
@@ -74,15 +75,37 @@ bool UpdateInstaller::IsUpdatePossible() {
 }
 
 void UpdateInstaller::InstallUpdate() {
-	std::vector<CopySpec>::const_iterator iter = mCopies.begin();
-	for (; iter != mCopies.end(); ++iter) {
-		create_directories(iter->dest.branch_path());
-		CopyOverwriting(iter->source, iter->dest);
+	std::vector<CopySpec>::const_iterator copy = mCopies.begin();
+	for (; copy != mCopies.end(); ++copy) {
+		create_directories(copy->dest.branch_path());
+		copy->CopyOverwriting();
 	}
 }
 
-void UpdateInstaller::CopyOverwriting(const path &src, const path &dst) {
-	if (exists(dst)) 
-		remove(dst);
-	copy_file(src, dst);
+bool UpdateInstaller::CopySpec::IsCopyPossible() const {
+	return exists(source) & IsWriteable(dest);
+}
+
+void UpdateInstaller::CopySpec::CopyOverwriting() const {
+	if (exists(dest)) 
+		remove(dest);
+	copy_file(source, dest);
+}
+
+bool IsWriteable(const path &name) {
+	if (exists(name)) {
+		// If we can't open the file, keep trying every 1/5th of a second
+		// for 10 seconds.
+		for (int i = 0; i < 50; i++) {
+			FILE *file = fopen(name.native_file_string().c_str(), "a");
+			if (file != NULL) {
+				fclose(file);
+				return true;
+			}
+			Sleep(200);
+		}
+		return false;
+	}
+
+	return true;
 }

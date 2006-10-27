@@ -39,10 +39,13 @@ private:
 		CopySpec(path inSource, path inDest) 
 			: source(inSource), dest(inDest) { }
 		path source, dest;
+
+		bool IsCopyPossible() const;
+		void CopyOverwriting() const;
 	};
 	std::vector<CopySpec> mCopies;
-
-	void CopyOverwriting(const path &src, const path &dst);
 };
+
+bool IsWriteable(const path &file);
 
 #endif // UpdateInstaler_H
