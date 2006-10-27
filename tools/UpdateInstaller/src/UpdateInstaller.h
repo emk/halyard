@@ -46,6 +46,4 @@ private:
 	std::vector<CopySpec> mCopies;
 };
 
-bool IsWriteable(const path &file);
-
 #endif // UpdateInstaler_H

@@ -20,6 +20,9 @@ class UpdateInstallerTest < Test::Unit::TestCase
   end
 
   def test_install
+    download_mtime = 
+      File.mtime("Updates/pool/855426068ee8939df6bce2c2c4b1e7346532a133")
+    sleep 2
     assert system(EXE_PATH, ".")
     assert_exists "sub/quux.txt"
     assert_file_equals "", "sub/quux.txt"
@@ -35,6 +38,7 @@ Checking if install is possible.\r
 Install is possible; beginning install.\r
 Update installed successfully. Relaunching.\r
 EOF
+    assert_operator download_mtime, :<, File.mtime("foo.txt")
   end
 
   def assert_fails_gracefully

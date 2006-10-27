@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <windows.h>
+#include <sys/utime.h>
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/convenience.hpp"
@@ -33,6 +34,9 @@
 #include "Manifest.h"
 
 using namespace boost::filesystem;
+
+static bool IsWriteable(const path &name);
+static void TouchFile(const path &name);
 
 UpdateInstaller::UpdateInstaller(const path &root_path) {
 	Manifest diff(root_path / "Updates/temp/MANIFEST-DIFF");
@@ -90,6 +94,7 @@ void UpdateInstaller::CopySpec::CopyOverwriting() const {
 	if (exists(dest)) 
 		remove(dest);
 	copy_file(source, dest);
+	TouchFile(dest);
 }
 
 bool IsWriteable(const path &name) {
@@ -108,4 +113,8 @@ bool IsWriteable(const path &name) {
 	}
 
 	return true;
+}
+
+void TouchFile(const path &name) {
+	utime(name.native_file_string().c_str(), NULL);
 }
