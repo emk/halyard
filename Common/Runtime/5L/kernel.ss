@@ -356,7 +356,7 @@
   ;;
   ;;  Callbacks are slightly special, however--see the code for details.
   
-  (provide call-at-safe-time executing-deferred-safe-time-callbacks?)
+  (provide run-deferred executing-deferred-safe-time-callbacks?)
 
   ;; The most important global state variables.
   (define *%kernel-running-callback?* #f)
@@ -367,7 +367,11 @@
   (define *%kernel-jump-card* #f)
 
   ;; Deferred thunks are used to implement (deferred-callback () ...).
-  ;; See call-at-safe-time for details.
+  ;; See run-deferred for details.
+  (defclass <deferred-action> ()
+    parent
+    thunk)
+
   (define *%kernel-running-deferred-thunks?* #f)
   (define *%kernel-deferred-thunk-queue* '())
   
@@ -413,22 +417,24 @@
     (%assert (not (eq? *%kernel-state* 'PAUSED)))
     (%assert (eq? *%kernel-state* 'NORMAL)))
 
-  (define (call-at-safe-time thunk)
+  (define (run-deferred thunk &key (parent (current-card)))
     ;; This can be used to defer calls to WAIT, IDLE and other blocking
-    ;; functions that can't be called from a callback.
-    ;;
-    ;; TODO - What should happen to this queue when we switch cards?
-    ;; TODO - What should we name this function and DEFERRED-CALLBACK?
+    ;; functions that can't be called from a callback.  Note that because a
+    ;; thunk is not an element, we don't honor WITH-DEFAULT-ELEMENT-PARENT.
     (set! *%kernel-deferred-thunk-queue*
-          (cons thunk *%kernel-deferred-thunk-queue*))
+          (cons (make-deferred-action parent thunk)
+                *%kernel-deferred-thunk-queue*))
     #f)
     
   (define (executing-deferred-safe-time-callbacks?)
     *%kernel-running-deferred-thunks?*)
   
+  (define (all-but-last lst)
+    (reverse (cdr (reverse lst))))
+
   (define (%kernel-check-deferred)
     ;; If the interpreter has stopped, cancel any deferred thunks.  (See
-    ;; call-at-safe-time.)  This function won't call any deferred thunks
+    ;; run-deferred.)  This function won't call any deferred thunks
     ;; unless it is safe to do so.
     (when (%kernel-stopped?)
       (set! *%kernel-deferred-thunk-queue* '()))   
@@ -437,32 +443,20 @@
     (%kernel-assert-safe-to-run-deferred-thunks)
 
     ;; Run any deferred thunks.
-    (unless (null? *%kernel-deferred-thunk-queue*)
+    (while (not (null? *%kernel-deferred-thunk-queue*))
+      (define item (last *%kernel-deferred-thunk-queue*))
+      (set! *%kernel-deferred-thunk-queue*
+            (all-but-last *%kernel-deferred-thunk-queue*))
 
-      ;; Make a copy of the old queue and clear the global variable
-      ;; (which may be updated behind our backs).
-      (let [[items (reverse *%kernel-deferred-thunk-queue*)]]
-        (set! *%kernel-deferred-thunk-queue* '())
+      (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
+        ((deferred-action-thunk item)))))
 
-        ;; Run every thunk in the queue, in order.
-        (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
-          (let [[remaining items]]
-            (dynamic-wind
-             (lambda () #f)
-             (lambda ()
-               (let loop [[items items]]
-                 (unless (null? items)
-                   (set! remaining (cdr items))
-                   ((car items))
-                   (loop remaining))))
-             (lambda ()
-               (set! *%kernel-deferred-thunk-queue*
-                     (append *%kernel-deferred-thunk-queue*
-                             (reverse remaining))))))))
-
-      ;; Check to see if any new items appeared in the queue while we
-      ;; were running the first batch.
-      (%kernel-check-deferred)))
+  (define (%kernel-cancel-deferred-thunks-for parent)
+    ;; Only keep those thunks which aren't associated with PARENT.
+    (set! *%kernel-deferred-thunk-queue*
+          (filter (lambda (d)
+                    (not (eq? parent (deferred-action-parent d))))
+                  *%kernel-deferred-thunk-queue*)))
 
   (define (%kernel-clear-state)
     ;; This is the version that we want to call from most places to get the
@@ -595,9 +589,9 @@
     (when (have-5l-prim? 'deleteelements)
       (call-5l-prim 'deleteelements (node-full-name elem))))
 
-  (defmethod (engine-state-db-unregister-listeners (engine <real-engine>)
-                                                   (node <node>))
-    (call-5l-prim 'StateDbUnregisterListeners (node-full-name node)))
+  (defmethod (engine-exit-node (engine <real-engine>) (node <node>))
+    (call-5l-prim 'StateDbUnregisterListeners (node-full-name node))
+    (%kernel-cancel-deferred-thunks-for node))
 
   (set-engine! (make <real-engine>))
 

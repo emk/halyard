@@ -17,6 +17,12 @@ SVN - brian, emk
     TIMEOUT entirely (pending reimplementation).  These were not especially
     nice bits of code, because they predated much of the modern engine's
     design.
+  * #3784: Replaced CALL-AT-SAFE-TIME with RUN-DEFERRED (thus affecting
+    DEFERRED-CALLBACK).  Callbacks are now postponed until *after* the card
+    body has run completely.  We've also fixed a bug that could cause
+    deferred code to be lost if *other* deferred code called JUMP, and
+    provided a way to automatically clean up deferred callbacks when
+    exiting a card or a sequence.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 

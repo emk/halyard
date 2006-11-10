@@ -42,7 +42,7 @@
            engine-notify-enter-card engine-notify-exit-card
            engine-notify-card-body-finished
            engine-delete-element
-           engine-state-db-unregister-listeners)
+           engine-exit-node)
 
   (defclass <engine> ()
     (root-node
@@ -94,8 +94,7 @@
   (defgeneric (engine-notify-card-body-finished (engine <engine>)
                                                 (card <card>)))
   (defgeneric (engine-delete-element (engine <engine>) (elem <element>)))
-  (defgeneric (engine-state-db-unregister-listeners (engine <engine>)
-                                                    (node <node>)))
+  (defgeneric (engine-exit-node (engine <engine>) (node <node>)))
 
 
   ;;=======================================================================
@@ -1040,7 +1039,7 @@
     (foreach [elem (node-elements node)]
       (delete-element-internal elem))
     ;; Unregister our state-db listeners, if we have any.
-    (engine-state-db-unregister-listeners *engine* node)
+    (engine-exit-node *engine* node)
     ;; Run any exit handler.
     (run-on-exit-handler node)
     ;; Mark this node as no longer running, so nobody tries to call ON

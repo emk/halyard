@@ -31,7 +31,7 @@
            media-is-installed? media-cd-is-available? search-for-media-cd
            set-media-base-url! movie 
            movie-pause movie-resume set-media-volume!
-           wait tc native-dialog
+           wait tc native-dialog sleep-milliseconds
            nap draw-line draw-box draw-box-outline inset-rect
            current-card-name fade unfade opacity save-graphics restore-graphics
            copy-string-to-clipboard
@@ -699,6 +699,13 @@
   (define (native-dialog title text
                          &opt [button1 ""] [button2 ""] [button3 ""])
     (call-5l-prim 'dialog title text button1 button2 button3))
+
+  (define (sleep-milliseconds milliseconds)
+    (define end-time (+ milliseconds (current-milliseconds)))
+    (let repeat-delay []
+      (idle)
+      (when (> end-time (current-milliseconds))
+        (repeat-delay))))    
 
   (define (nap tenths)
     (sleep-milliseconds (* 100 tenths)))
