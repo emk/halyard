@@ -131,7 +131,6 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(MovieResume);
 	REGISTER_5L_PRIMITIVE(MovieSetTimeout);
     REGISTER_5L_PRIMITIVE(MoveElementTo);
-	REGISTER_5L_PRIMITIVE(Nap);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
 	REGISTER_5L_PRIMITIVE(Overlay);
@@ -149,7 +148,6 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(SetZoneCursor);
     REGISTER_5L_PRIMITIVE(TamaleExit);
 	REGISTER_5L_PRIMITIVE(TextAA);
-	REGISTER_5L_PRIMITIVE(Timeout);
     REGISTER_5L_PRIMITIVE(Wait);
     REGISTER_5L_PRIMITIVE(WakeUpIfNecessary);
     REGISTER_5L_PRIMITIVE(WantsCursorGet);
@@ -688,23 +686,6 @@ DEFINE_5L_PRIMITIVE(NotifyExitCard) {
 	::SkipPrimitiveLogging();
 }
 
-/*------------------------------------------------
-    (NAP TIME)
-
-    Pause execution for TIME tenths of seconds.
-    The user can abort a long nap via the ESC key.
---------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Nap) {
-    int32    tenths;
-
-    inArgs >> tenths;
-
-    //gCursorManager.CheckCursor();
-    //gView->Draw();
-    CHECK_SUSPEND_OK("NAP");
-    TInterpreter::GetInstance()->Nap(tenths);
-}
-
 DEFINE_5L_PRIMITIVE(MediaSetVolume) {
 	std::string name, channel_name;
 	double volume;
@@ -929,21 +910,6 @@ DEFINE_5L_PRIMITIVE(TextAA) {
 												 bounds.Top()),
 							bounds.Right() - bounds.Left(),
 							GetCurrentDrawingArea());
-}
-
-/*-----------------------------------------------------------
-    (TIMEOUT DELAY CARD)
-
-    If the user doesn't respond in DELAY seconds, jump to the
-    given card.
--------------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Timeout) {
-	std::string cardName;
-    int32     	secs;
-
-    inArgs >> secs >> SymbolName(cardName);
-    CHECK_SUSPEND_OK("TIMEOUT");
-    TInterpreter::GetInstance()->Timeout(cardName.c_str(), secs);
 }
 
 DEFINE_5L_PRIMITIVE(Wait) {

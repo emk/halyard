@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - brian
+SVN - brian, emk
 
   * #3647: Fixed update installer to build parent directories for
     new files correctly.
@@ -13,6 +13,10 @@ SVN - brian
   * #3692: Update installer now touches each file that it installs,
     so PLT (and any other tools that care) will have appropriately 
     up-to-date timestamps on all files. 
+  * #3783: Replaced NAP with a much simpler implementation, and removed
+    TIMEOUT entirely (pending reimplementation).  These were not especially
+    nice bits of code, because they predated much of the modern engine's
+    design.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 

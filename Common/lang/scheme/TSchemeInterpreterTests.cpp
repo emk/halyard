@@ -102,23 +102,6 @@ DEFINE_5L_PRIMITIVE(TestCallbackArgs)
 	callback->Run(args);
 }
 
-DEFINE_5L_PRIMITIVE(TestTimeout)
-{
-	int32 seconds;
-	std::string card;
-	inArgs >> seconds >> card;
-	TInterpreter::GetInstance()->Timeout(card.c_str(), seconds);
-}
-
-DEFINE_5L_PRIMITIVE(TestNap)
-{
-	int32 tenths;
-	inArgs >> tenths;
-	TEST(!TInterpreter::GetInstance()->Napping());
-	TInterpreter::GetInstance()->Nap(tenths);
-	TEST(TInterpreter::GetInstance()->Napping());
-}
-
 DEFINE_5L_PRIMITIVE(TestScriptEditorDB)
 {
     // Get our script editor database.
@@ -167,8 +150,6 @@ void FIVEL_NS RegisterSchemeTestPrimitives()
 	REGISTER_5L_PRIMITIVE(TestPause);
 	REGISTER_5L_PRIMITIVE(TestCallback);
 	REGISTER_5L_PRIMITIVE(TestCallbackArgs);
-	REGISTER_5L_PRIMITIVE(TestTimeout);
-	REGISTER_5L_PRIMITIVE(TestNap);
     REGISTER_5L_PRIMITIVE(TestScriptEditorDB);
 
 	string_test_values[0] = "";

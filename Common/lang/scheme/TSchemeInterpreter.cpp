@@ -500,32 +500,6 @@ bool TSchemeInterpreter::Paused(void)
 	return SCHEME_FALSEP(o) ? false : true;
 }
 
-void TSchemeInterpreter::Timeout(const char *inName, int32 inTime)
-{
-	Scheme_Object *args[2];
-	args[0] = scheme_make_string(inName);
-	args[1] = scheme_make_integer_value(inTime);
-	(void) CallScheme("%kernel-timeout", 2, args);
-}
-
-void TSchemeInterpreter::Nap(int32 inTime)
-{
-	Scheme_Object *args[1];
-	args[0] = scheme_make_integer_value(inTime);
-	(void) CallScheme("%kernel-nap", 1, args);
-}
-
-bool TSchemeInterpreter::Napping(void)
-{
-	Scheme_Object *o = CallSchemeSimple("%kernel-napping?");
-	return SCHEME_FALSEP(o) ? false : true;
-}
-
-void TSchemeInterpreter::KillNap(void)
-{
-    (void) CallSchemeSimple("%kernel-kill-nap");
-}
-
 void TSchemeInterpreter::KillCurrentCard(void)
 {
     (void) CallSchemeSimple("%kernel-kill-current-card");

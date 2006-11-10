@@ -148,10 +148,6 @@ public:
 	virtual void Pause(void);
 	virtual void WakeUp(void);
 	virtual bool Paused(void);
-	virtual void Timeout(const char *inName, int32 inTime);
-	virtual void Nap(int32 inTime);
-	virtual bool Napping(void);
-	virtual void KillNap(void);
 	virtual void KillCurrentCard(void);
 	virtual void JumpToCardByName(const char *inName);
 	virtual std::string CurCardName(void);
