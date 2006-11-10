@@ -114,6 +114,10 @@
   (define (idle)
     (%idle #f))
   
+  (define (%kernel-idle-and-check-deferred)
+    (idle)
+    (%kernel-check-deferred))
+
   (define (engine-var name)
     (call-5l-prim 'get (if (string? name) (string->symbol name) name)))
   
@@ -204,7 +208,7 @@
                         (unless (eq? *%kernel-state* 'JUMPING)
                           (if (%kernel-stopped?)
                               (blocking-idle)
-                              (idle))
+                              (%kernel-idle-and-check-deferred))
                           (idle-loop)))]))))
               (set! jump-card #f)
               (when (eq? *%kernel-state* 'JUMPING)
@@ -400,22 +404,23 @@
       (when (have-5l-prim? 'WakeUpIfNecessary)
         (%call-5l-prim 'WakeUpIfNecessary))))
 
-  (define (%kernel-safe-to-run-deferred-thunks?)
-    ;; Would now be a good time to run deferred thunks?  Wait until
-    ;; nothing exciting is happening.  See call-at-safe-time.
-    (and (not *%kernel-running-callback?*)
-         (not *%kernel-running-deferred-thunks?*)
-         (not *running-on-exit-handler-for-node*)
-         (member? *%kernel-state* '(NORMAL PAUSED))))
+  (define (%kernel-assert-safe-to-run-deferred-thunks)
+    ;; Here's a whole list of things that should be true if we're about
+    ;; to run a deferred-callback.
+    (%assert (not *%kernel-running-callback?*))
+    (%assert (not *%kernel-running-deferred-thunks?*))
+    (%assert (not *running-on-exit-handler-for-node*))
+    (%assert (not (eq? *%kernel-state* 'PAUSED)))
+    (%assert (eq? *%kernel-state* 'NORMAL)))
 
   (define (call-at-safe-time thunk)
-    ;; Make sure we run 'thunk' at the earliest safe time, but not
-    ;; in a callback.  This can be used to defer calls to video, input,
-    ;; and other functions which can't be called from a callback.
-    (if (%kernel-safe-to-run-deferred-thunks?)
-        (thunk)
-        (set! *%kernel-deferred-thunk-queue*
-              (cons thunk *%kernel-deferred-thunk-queue*)))
+    ;; This can be used to defer calls to WAIT, IDLE and other blocking
+    ;; functions that can't be called from a callback.
+    ;;
+    ;; TODO - What should happen to this queue when we switch cards?
+    ;; TODO - What should we name this function and DEFERRED-CALLBACK?
+    (set! *%kernel-deferred-thunk-queue*
+          (cons thunk *%kernel-deferred-thunk-queue*))
     #f)
     
   (define (executing-deferred-safe-time-callbacks?)
@@ -428,9 +433,11 @@
     (when (%kernel-stopped?)
       (set! *%kernel-deferred-thunk-queue* '()))   
 
+    ;; Is is even safe to be running deferred thunks right now?
+    (%kernel-assert-safe-to-run-deferred-thunks)
+
     ;; Run any deferred thunks.
-    (unless (or (null? *%kernel-deferred-thunk-queue*)
-                (not (%kernel-safe-to-run-deferred-thunks?)))
+    (unless (null? *%kernel-deferred-thunk-queue*)
 
       ;; Make a copy of the old queue and clear the global variable
       ;; (which may be updated behind our backs).
@@ -439,8 +446,19 @@
 
         ;; Run every thunk in the queue, in order.
         (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
-          (foreach [item items]
-            (item))))
+          (let [[remaining items]]
+            (dynamic-wind
+             (lambda () #f)
+             (lambda ()
+               (let loop [[items items]]
+                 (unless (null? items)
+                   (set! remaining (cdr items))
+                   ((car items))
+                   (loop remaining))))
+             (lambda ()
+               (set! *%kernel-deferred-thunk-queue*
+                     (append *%kernel-deferred-thunk-queue*
+                             (reverse remaining))))))))
 
       ;; Check to see if any new items appeared in the queue while we
       ;; were running the first batch.
@@ -496,21 +514,13 @@
   (define (%kernel-check-state)
     ;; This function is called immediately after returning from any
     ;; primitive call (including idle).  It's job is to check flags set by
-    ;; the engine, handle any deferred callbacks, and generally bring the
-    ;; Scheme world back into sync with everybody else.
+    ;; the engine, and generally bring the Scheme world back into sync with
+    ;; everybody else.
     ;; 
-    ;; Since this is called after idle, it needs to be *extremely*
-    ;; careful about allocating memory.  See %kernel-run for more
-    ;; discussion about consing in the idle loop (hint: it's bad).
+    ;; Since this is called after idle, it needs to be *extremely* careful
+    ;; about allocating memory.  See %kernel-run for more discussion about
+    ;; consing in the idle loop (hint: it's bad).
     (%kernel-wake-up-if-necessary)  ; Should be the first thing we do.
-    (%kernel-check-deferred)        ; Should be the second thing we do.
-    ;; XXX - I'm no longer convinced that we should call
-    ;; %KERNEL-CHECK-DEFERRED before dealing with the value of
-    ;; *%KERNEL-STATE* (below), because it sometimes allows jumps to get
-    ;; lost, and other bits of weirdness.  But I'm not willing to redesign
-    ;; this very tricky and important routine without a lot of thought,
-    ;; particularly during a relatively stable period of engine
-    ;; development.  Feel free to revisit this later.
     (case *%kernel-state*
       [[NORMAL STOPPED]
        #f]
