@@ -331,6 +331,13 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     FancyDebugReport report(this, GetReportUrl(inType), inReason);
     report.AddAll(report.GetContext());
 
+    // Open up any logs we haven't opened yet, and as a side effect, write
+    // the most recent entries in those logs to disk.  (TLogger maintains
+    // an internal history of recent writes to unopened logs.)  We need to
+    // do this before checking mFileInfo, below, because it may add new
+    // files to our report.
+    TLogger::OpenRemainingLogsForCrash();
+
     // Add any useful files to the report.
     FileInfoVector::iterator i = mFileInfo.begin();
     for (; i != mFileInfo.end(); ++i)

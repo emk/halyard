@@ -46,11 +46,13 @@ bool TLogger::s_ToolboxIsInitialized = false;
 #define ERROR_HEADER	"Error: "
 #define CAUTION_HEADER	"Caution: "
 
+#define MAX_RECENT_ENTRIES (100)
+
 #ifdef HAVE__VSNPRINTF
 #	define vsnprintf _vsnprintf
 #endif
 
-#define FormatMsg(Format)	\
+#define FORMAT_MSG(Format)	\
 	va_list	argPtr;			\
 	va_start(argPtr, (Format));		\
 	vsnprintf(m_LogBuffer, LOG_BUFFER_SIZE, (Format), argPtr);	\
@@ -60,7 +62,6 @@ bool TLogger::s_ToolboxIsInitialized = false;
 // Standard logs.
 TLogger FIVEL_NS gLog;
 TLogger FIVEL_NS gDebugLog;
-TLogger FIVEL_NS gMissingMediaLog;
 
 TLogger::TLogger()
 { 
@@ -114,6 +115,13 @@ void TLogger::Init(const FileSystem::Path &inLogFile,
                 m_Log << std::endl;
                 TimeStamp();
             }
+
+            // Write out any log entries that we've accumulated in memory.
+            std::deque<std::string>::iterator iter = m_RecentEntries.begin();
+            for (; iter != m_RecentEntries.end(); ++iter)
+                m_Log << *iter << std::endl;
+            m_Log << std::flush;
+            m_RecentEntries.clear();
         }
 	}
 }
@@ -130,46 +138,34 @@ void TLogger::Init(const char *Name, bool OpenFile /* = true */,
 
 void TLogger::Log(int32 Mask, const char *Format, ...)
 {
-	if (!m_LogOpen)
-		return;
-
 	if (not ShouldLog(Mask))
 		return;
 
-	FormatMsg(Format);
+	FORMAT_MSG(Format);
 	LogBuffer(NULL);	
 }
 
 void TLogger::Log(const char *Format, ...)
 {
-	if (!m_LogOpen)
-		return;
-
-	FormatMsg(Format);
+	FORMAT_MSG(Format);
 	LogBuffer(NULL);
 }
 
 void TLogger::Error(const char *Format, ...)
 {
-	if (!m_LogOpen)
-		return;
-
-	FormatMsg(Format);
-	LogBuffer(ERROR_HEADER);
+	FORMAT_MSG(Format);
 	AlertBuffer(true);
+	LogBuffer(ERROR_HEADER);
     if (TInterpreterManager::IsInRuntimeMode())
         CrashNow(SCRIPT_CRASH);
 }
 
 void TLogger::Caution(const char *Format, ...)
 {
-	if (!m_LogOpen)
-		return;
-
-	FormatMsg(Format);
-	LogBuffer(CAUTION_HEADER);
+	FORMAT_MSG(Format);
 	if (m_CautionAlert)
 		AlertBuffer(false);
+	LogBuffer(CAUTION_HEADER);
 }
 
 void TLogger::FatalError(const char *Format, ...)
@@ -179,10 +175,9 @@ void TLogger::FatalError(const char *Format, ...)
 	// call back into FatalError, whereas LogBuffer
 	// relies on a lot of subsystems which might
 	// somehow fail.
-	FormatMsg(Format);
+	FORMAT_MSG(Format);
 	AlertBuffer(true);
-    if (m_LogOpen)
-        LogBuffer(FATAL_HEADER);
+    LogBuffer(FATAL_HEADER);
     CrashNow(APPLICATION_CRASH);
 }
 
@@ -190,7 +185,7 @@ void TLogger::EnvironmentError(const char *Format, ...)
 {
     // Format and display our message, and exit without submitting
     // a crash report.
-    FormatMsg(Format);
+    FORMAT_MSG(Format);
     AlertBuffer(true);
     exit(1);
 }
@@ -202,43 +197,13 @@ void TLogger::CrashNow(CrashType inType) {
 	abort();
 }
 
-//
-//	CheckLog - Check that the log is open, if it isn't and 
-//		we haven't failed at opening it once then try to open
-//		it again.
-//
-/*
-bool TLogger::CheckLog()
+void TLogger::AddToRecentEntries(const std::string &str)
 {
-	if (m_LogOpen)
-		return (true);
-
-	if (m_OpenFailed)
-		return (false);
-
-	if (m_FileName.IsEmpty())
-		return (false);
-
-	// else try and open it
-	if (m_Append)
-		m_Log.open(m_FileName.GetString(), std::ios::out | std::ios::app);
-	else
-		m_Log.open(m_FileName.GetString(), std::ios::out);
-	if (m_Log.fail())
-		m_OpenFailed = true;
-	else
-		m_LogOpen = true;
-
-	if (m_LogOpen and m_Append)
-	{
-		// put welcome line
-		m_Log << std::endl;
-		TimeStamp();
-	}
-
-	return (m_LogOpen);
+    if (m_RecentEntries.size() == MAX_RECENT_ENTRIES)
+        m_RecentEntries.pop_front();
+    m_RecentEntries.push_back(str);
 }
-*/
+
 
 //
 //	LogBuffer - 
@@ -259,13 +224,18 @@ void TLogger::LogBuffer(const char *Header)
 	}
 #endif // FIVEL_PLATFORM_*
 
-	if (m_LogOpen)
-	{
-		if (Header != NULL)
-			m_Log << Header;
+    // Build our complete log message.
+    std::string msg;
+    if (Header != NULL)
+        msg = Header;
+    msg += m_LogBuffer;
 
-		m_Log << m_LogBuffer << std::endl << std::flush;
-	}
+	if (m_LogOpen)
+        // If our log file is open, write our message to it.
+        m_Log << msg << std::endl << std::flush;
+    else
+        // Otherwise, record our log message in m_RecentEntries.
+        AddToRecentEntries(msg);
 }
 
 void TLogger::AlertBuffer(bool isError /* = false */)
@@ -371,15 +341,18 @@ void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 	gLog.Init(SHORT_NAME, true, true);
 	gLog.Log("%s", VERSION_STRING);
 
-	// Initialize the missing media file.
-	gMissingMediaLog.Init("MissingMedia", false, true);
-
 	if (inShouldOpenDebugLog)
 	{
 		// Initialize the debug log.
 		gDebugLog.Init("Debug");
 		gDebugLog.Log("%s", VERSION_STRING);
 	}	
+}
+
+void TLogger::OpenRemainingLogsForCrash()
+{
+    if (!gDebugLog.m_LogOpen)
+        gDebugLog.Init("DebugRecent");
 }
 
 void TLogger::PrepareToDisplayError()

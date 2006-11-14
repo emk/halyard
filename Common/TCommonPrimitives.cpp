@@ -166,7 +166,7 @@ DEFINE_5L_PRIMITIVE(HavePrimitive)
 // (Log file:STRING msg:STRING [level:STRING = "log"])
 //-------------------------------------------------------------------------
 // Logs the second argument to the file specified by the first.
-// Available logs: debug, 5L, MissingMedia.  Available log levels:
+// Available logs: debug, 5L.  Available log levels:
 // fatalerror, error, caution, log.
 
 DEFINE_5L_PRIMITIVE(Log)
@@ -188,8 +188,6 @@ DEFINE_5L_PRIMITIVE(Log)
 		log = &gLog;
 	else if (log_name == "debug")
 		log = &gDebugLog;
-	else if (log_name == "missingmedia")
-		log = &gMissingMediaLog;
 	else
 		gLog.Caution("No such log file: %s", log_name.c_str());
 

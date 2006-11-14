@@ -157,6 +157,11 @@ private:
 	/// Log buffer
 	///
 	char		m_LogBuffer[LOG_BUFFER_SIZE];
+
+    //////////
+    /// The most recent lines written to our log file.
+    ///
+    std::deque<std::string> m_RecentEntries;
 	
 	//////////
 	/// Has the log file been opened for writing?
@@ -203,10 +208,11 @@ private:
 	static bool	s_ToolboxIsInitialized;
 #endif
 
-	// Deprecated
-	//
-	//bool		CheckLog();
-	
+    //////////
+    /// Add a string to our m_RecentEntries list.
+    ///
+    void        AddToRecentEntries(const std::string &str);
+
 	//////////
 	/// Write the contents of m_LogBuffer to the log file.
 	///
@@ -255,6 +261,12 @@ public:
 	///
 	static void OpenStandardLogs(bool inOpenDebugLog = false);
 
+    //////////
+    /// Open up any logs which weren't opened by OpenStandardLogs, and
+    /// write the contents of m_RecentEntries to disk.
+    ///
+    static void OpenRemainingLogsForCrash();
+
 	//////////
     /// We may need to unfade the screen or perform other cleanup
     /// before displaying an error.  This method will call any
@@ -301,12 +313,6 @@ extern TLogger gLog;
 /// exists on a developer's system.
 ///
 extern TLogger gDebugLog;
-
-//////////
-/// This log is used to log missing media items.  This file typically exists
-/// on a normal user's system *if* some media is unavailable.
-///
-extern TLogger gMissingMediaLog;
 
 END_NAMESPACE_FIVEL
 
