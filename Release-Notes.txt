@@ -28,6 +28,8 @@ SVN - brian, emk
   * #3798: Removed support for modal text input, which should be
     implemented using regular input elements.
   * #3786: Added support for skipping to the end of a Vorbis stream.
+  * #3789: Events and deferred thunks are now visible in Debug.log, but
+    the installation of ON handlers is no longer recorded.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 

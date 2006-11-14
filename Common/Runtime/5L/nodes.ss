@@ -143,8 +143,6 @@
   (define-syntax-indent on 2)
 
   (define (register-event-handler node name handler)
-    (debug-log (cat "Registering handler: " name " in " (node-full-name node)))
-
     ;; Complain if this node is theoretically inactive.
     (unless (node-running? node)
       (error (cat "Cannot add handler '" name "' to inactive node "
@@ -269,6 +267,7 @@
     (event-vetoed? event))
 
   (define (dispatch-event-to-node node name args)
+    (debug-log (cat (node-full-name node) ": " name " event: " args))
     (let [[unhandled? #f]
           [event (case name
                    [[update-ui]

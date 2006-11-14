@@ -449,7 +449,9 @@
             (all-but-last *%kernel-deferred-thunk-queue*))
 
       (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
-        ((deferred-action-thunk item)))))
+        (debug-log "Running deferred thunk.")
+        ((deferred-action-thunk item))
+        (debug-log "Finished running deferred thunk."))))
 
   (define (%kernel-cancel-deferred-thunks-for parent)
     ;; Only keep those thunks which aren't associated with PARENT.
