@@ -23,6 +23,8 @@ SVN - brian, emk
     deferred code to be lost if *other* deferred code called JUMP, and
     provided a way to automatically clean up deferred callbacks when
     exiting a card or a sequence.
+  * #3798: Removed support for "backgrounds" from the GUI.  Since this
+    support didn't actually do anything, we don't particularly need it.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 

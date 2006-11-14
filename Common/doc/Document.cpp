@@ -26,7 +26,6 @@
 
 #include "Document.h"
 #include "TamaleProgram.h"
-#include "Background.h"
 
 USING_NAMESPACE_FIVEL
 using namespace model;
@@ -61,7 +60,6 @@ using FileSystem::Path;
 
 BEGIN_MODEL_CLASSES()
 	REGISTER_MODEL_CLASS(TamaleProgram)
-	REGISTER_MODEL_CLASS(Background)
 END_MODEL_CLASSES()
 
 

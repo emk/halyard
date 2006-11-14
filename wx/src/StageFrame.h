@@ -324,8 +324,6 @@ private:
     void OnDisplayBorders(wxCommandEvent &inEvent);
     void UpdateUiProperties(wxUpdateUIEvent &inEvent);
     void OnProperties(wxCommandEvent &inEvent);
-    void UpdateUiInsertBackground(wxUpdateUIEvent &inEvent);
-    void OnInsertBackground(wxCommandEvent &inEvent);
     void UpdateUiEditMode(wxUpdateUIEvent &inEvent);
     void OnEditMode(wxCommandEvent &inEvent);
     void UpdateUiEditCardScript(wxUpdateUIEvent &inEvent);
