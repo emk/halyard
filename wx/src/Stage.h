@@ -131,12 +131,6 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	TransitionManager *mTransitionManager;
 
 	//////////
-	/// Our text-entry control.  Will not be visible unless the user
-	/// is entering something.
-	///
-	wxTextCtrl *mTextCtrl;
-    
-	//////////
     /// The cursor that we're (nominally) displaying for the stage right
     /// now, if we're actually displaying a cursor.
     ///
@@ -231,11 +225,6 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     /// Draw a border for the specified element.
     ///
     void DrawElementBorder(wxDC &inDC, ElementPtr inElement);
-
-	//////////
-	/// Draw a border for the text input control, if it exists.
-	/// 
-	void Stage::DrawTextBorder(wxDC &inDC);
 
 	//////////
 	/// End an active Wait().
@@ -495,11 +484,6 @@ public:
     void OnChar(wxKeyEvent &inEvent);
 
     //////////
-    /// Intercept ENTER in a text field.
-    ///
-    void OnTextEnter(wxCommandEvent &inEvent);
-
-    //////////
     /// Handle a mouse-down event.
     ///
     void OnLeftDown(wxMouseEvent &inEvent);
@@ -610,26 +594,6 @@ public:
 	/// \param inString  The string to copy.
 	///
 	void CopyStringToClipboard(const wxString &inString);
-
-	//////////
-	/// Display a modal text input box.
-	///
-	/// \param inBounds  The box to use for text input.
-	/// \param inTextSize  The input text size, in points.
-	/// \param inForeColor  The color of the text.
-	/// \param inBackColor  The color of the background.
-	///
-	void ModalTextInput(const wxRect &inBounds,
-						const int inTextSize,
-						const wxColour &inForeColor,
-						const wxColour &inBackColor);
-
-	//////////
-	/// Finish using the box created by ModalTextInput.
-	///
-	/// \return  The text entered by the user.
-	///
-	wxString FinishModalTextInput();
 
 	//////////
 	/// Suspend the interpreter until the named movie reaches the specified

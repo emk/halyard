@@ -71,7 +71,6 @@ BEGIN_EVENT_TABLE(Stage, wxWindow)
     EVT_ERASE_BACKGROUND(Stage::OnEraseBackground)
     EVT_PAINT(Stage::OnPaint)
     EVT_CHAR(Stage::OnChar)
-    EVT_TEXT_ENTER(FIVEL_TEXT_ENTRY, Stage::OnTextEnter)
 	EVT_LEFT_DOWN(Stage::OnLeftDown)
 	EVT_LEFT_DCLICK(Stage::OnLeftDClick)
 	EVT_LEFT_UP(Stage::OnLeftUp)
@@ -88,7 +87,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
 	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
-	  mTextCtrl(NULL), mNeedToWakeUp(false),
+	  mNeedToWakeUp(false),
       mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mIsBeingDestroyed(false)
@@ -116,11 +115,6 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	mCursorManager = new CursorManager();
 	mTransitionManager = new TransitionManager();
 	
-    mTextCtrl =
-        new wxTextCtrl(this, FIVEL_TEXT_ENTRY, "", wxDefaultPosition,
-                       wxDefaultSize, wxNO_BORDER | wxTE_PROCESS_ENTER);
-    mTextCtrl->Hide();
-
     // Initialize the clock.
     UpdateClock();
 
@@ -321,8 +315,7 @@ bool Stage::ShouldShowCursor() {
         || !mFrame->IsFullScreen()
         || mIsDisplayingXy
         || IsInEditMode()
-        || mGrabbedElement
-        || mTextCtrl->IsShown())
+        || mGrabbedElement)
         return true;
 
     // See if any of our elements want a cursor.
@@ -386,8 +379,7 @@ void Stage::NotifyEnterCard(const wxString &inName)
 
 void Stage::NotifyExitCard()
 {
-    if (mTextCtrl->IsShown())
-        mTextCtrl->Hide();
+    // Do nothing.
 }
 
 void Stage::NotifyReloadScriptStarting()
@@ -691,8 +683,6 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
 	// If necessary, draw the borders.
 	if (mIsDisplayingBorders)
 	{
-		DrawTextBorder(inDC);
-
 		ElementCollection::iterator i = mElements.begin();
 		for (; i != mElements.end(); i++)
 			if ((*i)->IsShown())
@@ -714,21 +704,6 @@ void Stage::DrawElementBorder(wxDC &inDC, ElementPtr inElement)
 	inElement->DrawElementBorder(inDC);
 }
 
-void Stage::DrawTextBorder(wxDC &inDC)
-{
-	if (mTextCtrl->IsShown())
-	{
-		inDC.SetPen(*wxRED_PEN);
-		inDC.SetBrush(*wxTRANSPARENT_BRUSH);
-		
-		// Draw the border *outside* our rectangle.
-		wxRect r = mTextCtrl->GetRect();
-		r.Inflate(1);
-		inDC.DrawRectangle(r.x, r.y, r.width, r.height);
-	}
-}
-
-
 void Stage::OnChar(wxKeyEvent &inEvent)
 {
 	// NOTE - We handle this event here, but the stage isn't always
@@ -745,27 +720,6 @@ void Stage::OnChar(wxKeyEvent &inEvent)
 		if (!dispatcher->DoEventChar(inEvent))
 			inEvent.Skip();
 	}
-}
-
-void Stage::OnTextEnter(wxCommandEvent &inEvent)
-{
-    // Get the text.
-    wxString text = FinishModalTextInput();
-    
-    // Set up a drawing context.
-    wxMemoryDC dc;
-    dc.SelectObject(GetBackgroundPixmap());
-    
-    // Prepare to draw the text.
-    dc.SetTextForeground(mTextCtrl->GetForegroundColour());
-    dc.SetTextBackground(mTextCtrl->GetBackgroundColour());
-    dc.SetFont(mTextCtrl->GetFont());
-
-    // Draw the text.
-    // PORTING - These offsets are unreliable and platform-specific.
-    wxPoint pos = mTextCtrl->GetPosition();
-    dc.DrawText(text, pos.x + 5, pos.y);
-    InvalidateRect(mTextCtrl->GetRect());
 }
 
 void Stage::OnLeftDown(wxMouseEvent &inEvent)
@@ -925,42 +879,6 @@ void Stage::Screenshot(const wxString &inFilename)
 {
 	wxImage image = GetCompositingPixmap().ConvertToImage();
 	image.SaveFile(inFilename, wxBITMAP_TYPE_PNG);
-}
-
-void Stage::ModalTextInput(const wxRect &inBounds,
-                           const int inTextSize,
-                           const wxColour &inForeColor,
-                           const wxColour &inBackColor)
-{
-    ASSERT(!mTextCtrl->IsShown());
-
-    // Update our control to have the right properties and show it.
-    mTextCtrl->SetValue("");
-    wxFont font(inTextSize, wxROMAN, wxNORMAL, wxNORMAL);
-    mTextCtrl->SetFont(font);
-    mTextCtrl->SetForegroundColour(inForeColor);
-    mTextCtrl->SetBackgroundColour(inBackColor);
-    mTextCtrl->SetSize(inBounds);
-    mTextCtrl->Show();
-    mTextCtrl->SetFocus();
-	NotifyElementsChanged();
-
-	InterpreterSleep();
-}
-
-wxString Stage::FinishModalTextInput()
-{
-    ASSERT(mTextCtrl->IsShown());
-
-	InterpreterWakeUp();
-
-	// Store our result somewhere useful.
-	gVariableManager.Set("_modal_input_text", mTextCtrl->GetValue().c_str());
-
-    // Hide our text control and get the text.
-    mTextCtrl->Hide();
-	NotifyElementsChanged();
-    return mTextCtrl->GetValue();
 }
 
 bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)

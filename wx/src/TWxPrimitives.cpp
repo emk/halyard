@@ -112,7 +112,6 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
     REGISTER_5L_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_5L_PRIMITIVE(Heartbeat);
-	REGISTER_5L_PRIMITIVE(Input);
 	REGISTER_5L_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
 	REGISTER_5L_PRIMITIVE(Loadpic);
 	REGISTER_5L_PRIMITIVE(Loadsubpic);
@@ -556,18 +555,6 @@ DEFINE_5L_PRIMITIVE(HideCursorUntilMouseMoved) {
 DEFINE_5L_PRIMITIVE(Heartbeat) {
 	::SkipPrimitiveLogging();
     wxGetApp().Heartbeat();
-}
-
-DEFINE_5L_PRIMITIVE(Input) {
-	TRect bounds;
-	uint32 size;
-	Color fore, back;
-
-	inArgs >> bounds >> size >> fore >> back;
-    CHECK_SUSPEND_OK("ModalTextInput");    
-	wxGetApp().GetStage()->ModalTextInput(TToWxRect(bounds), size,
-										  GraphicsToolsToWxColor(fore),
-										  GraphicsToolsToWxColor(back));
 }
 
 
