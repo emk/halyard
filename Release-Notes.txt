@@ -27,6 +27,7 @@ SVN - brian, emk
     support didn't actually do anything, we don't particularly need it.
   * #3798: Removed support for modal text input, which should be
     implemented using regular input elements.
+  * #3786: Added support for skipping to the end of a Vorbis stream.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 

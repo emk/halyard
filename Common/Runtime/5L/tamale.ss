@@ -8,7 +8,7 @@
   (require (lib "api.ss" "5L"))
 
   (provide make-path-from-abstract draw-picture measure-picture
-           set-image-cache-size! modal-input with-dc
+           set-image-cache-size! with-dc
            dc-rect color-at %element% %invisible-element%
            %zone% %simple-zone% zone
            %animated-graphic% register-cursor hide-cursor-until-mouse-moved!
@@ -79,10 +79,6 @@
 
   (define (set-image-cache-size! bytes)
     (call-5l-prim 'SetImageCacheSize bytes))
-
-  (define (modal-input r size forecolor backcolor)
-    (call-5l-prim 'input r size forecolor backcolor)
-    (engine-var '_modal_input_text))
 
   (define-syntax with-dc
     (syntax-rules ()
@@ -532,6 +528,10 @@
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (%audio-element%)
+    ;;; End playback of this movie. From the perspective of the WAIT
+    ;;; function, this movie will skip immediately to the end of playback.
+    (on end-playback ()
+      (call-5l-prim 'movieendplayback (node-full-name self)))
     (let [[path (build-path (current-directory) "LocalMedia" location)]]
       (check-file path)
       (call-5l-prim 'AudioStreamVorbis (node-full-name self)
