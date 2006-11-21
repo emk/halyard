@@ -24,6 +24,8 @@
 #define _TCommon_h_
 
 #include "TPlatform.h"
+#include "TWarnings.h"
+
 
 ///////////////////////////////////////////////////////////////////////////
 /// \defgroup macros TCommon Macro Definitions

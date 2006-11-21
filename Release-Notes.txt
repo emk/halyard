@@ -35,6 +35,10 @@ SVN - brian, emk
     disk.  Also, other cleanup of TLogger.
   * Switched to Visual Studio 2005 for official Windows build.
   * Removed preinstaller from build, because we don't currently need it.
+  * Dealt with various warnings introduced by Visual Studio 2005, at
+    the Common and 5L project levels.  There's a lot more warning work
+    still to go.  This particular change included updading boost's
+    visualc.hpp configuration header to the latest version.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 
