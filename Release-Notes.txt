@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - brian, emk
+0.3.0 - 21 Nov 2006 - brian, emk
 
   * #3647: Fixed update installer to build parent directories for
     new files correctly.
