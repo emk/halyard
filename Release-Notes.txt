@@ -34,6 +34,7 @@ SVN - brian, emk
     list of recent log entries.  If a crash occurs, write the entries to
     disk.  Also, other cleanup of TLogger.
   * Switched to Visual Studio 2005 for official Windows build.
+  * Removed preinstaller from build, because we don't currently need it.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 
