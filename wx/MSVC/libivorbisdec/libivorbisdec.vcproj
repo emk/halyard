@@ -1,198 +1,292 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="8.00"
 	Name="libivorbisdec"
-	SccProjectName=""
-	SccLocalPath="">
+	ProjectGUID="{A3BAB39A-7392-4503-8327-90E965A39B1B}"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="../../../libs/libivorbisdec"
 				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,_WIN32,inline=__inline,LITTLE_ENDIAN=1,BIG_ENDIAN=2,BYTE_ORDER=LITTLE_ENDIAN"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="1"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/libivorbisdec.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\Debug\libivorbisdec.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=".\Debug\libivorbisdec.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,_WIN32,inline=__inline,LITTLE_ENDIAN=1,BIG_ENDIAN=2,BYTE_ORDER=LITTLE_ENDIAN"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Release/libivorbisdec.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\Release\libivorbisdec.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=".\Release\libivorbisdec.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\bitwise.c">
+				RelativePath="..\..\..\libs\libivorbisdec\bitwise.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\block.c">
+				RelativePath="..\..\..\libs\libivorbisdec\block.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\codebook.c">
+				RelativePath="..\..\..\libs\libivorbisdec\codebook.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\floor0.c">
+				RelativePath="..\..\..\libs\libivorbisdec\floor0.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\floor1.c">
+				RelativePath="..\..\..\libs\libivorbisdec\floor1.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\framing.c">
+				RelativePath="..\..\..\libs\libivorbisdec\framing.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\info.c">
+				RelativePath="..\..\..\libs\libivorbisdec\info.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\mapping0.c">
+				RelativePath="..\..\..\libs\libivorbisdec\mapping0.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\mdct.c">
+				RelativePath="..\..\..\libs\libivorbisdec\mdct.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\registry.c">
+				RelativePath="..\..\..\libs\libivorbisdec\registry.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\res012.c">
+				RelativePath="..\..\..\libs\libivorbisdec\res012.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\sharedbook.c">
+				RelativePath="..\..\..\libs\libivorbisdec\sharedbook.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\synthesis.c">
+				RelativePath="..\..\..\libs\libivorbisdec\synthesis.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\vorbisfile.c">
+				RelativePath="..\..\..\libs\libivorbisdec\vorbisfile.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\window.c">
+				RelativePath="..\..\..\libs\libivorbisdec\window.c"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl">
+			Filter="h;hpp;hxx;hm;inl"
+			>
 			<File
-				RelativePath="..\..\src\VorbisFile.h">
+				RelativePath="..\..\..\libs\libivorbisdec\backends.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\backends.h">
+				RelativePath="..\..\..\libs\libivorbisdec\codebook.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\codebook.h">
+				RelativePath="..\..\..\libs\libivorbisdec\codec_internal.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\codec_internal.h">
+				RelativePath="..\..\..\libs\libivorbisdec\ivorbisfile.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\ivorbisfile.h">
+				RelativePath="..\..\..\libs\libivorbisdec\lsp_lookup.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\lsp_lookup.h">
+				RelativePath="..\..\..\libs\libivorbisdec\mdct.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\mdct.h">
+				RelativePath="..\..\..\libs\libivorbisdec\mdct_lookup.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\mdct_lookup.h">
+				RelativePath="..\..\..\libs\libivorbisdec\misc.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\misc.h">
+				RelativePath="..\..\..\libs\libivorbisdec\ogg.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\ogg.h">
+				RelativePath="..\..\..\libs\libivorbisdec\os.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\os.h">
+				RelativePath="..\..\..\libs\libivorbisdec\registry.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\registry.h">
+				RelativePath="..\..\src\VorbisFile.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\window.h">
+				RelativePath="..\..\..\libs\libivorbisdec\window.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\libivorbisdec\window_lookup.h">
+				RelativePath="..\..\..\libs\libivorbisdec\window_lookup.h"
+				>
 			</File>
 		</Filter>
 	</Files>

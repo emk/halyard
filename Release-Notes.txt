@@ -33,6 +33,7 @@ SVN - brian, emk
   * #3791: If Debug.log is not created at startup, maintain an internal
     list of recent log entries.  If a crash occurs, write the entries to
     disk.  Also, other cleanup of TLogger.
+  * Switched to Visual Studio 2005 for official Windows build.
 
 0.2.3 - 23 Oct 2006 - emk, brian
 
