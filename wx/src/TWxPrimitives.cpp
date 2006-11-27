@@ -136,8 +136,6 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(OverlayAnimated);
 	REGISTER_5L_PRIMITIVE(Refresh);
 	REGISTER_5L_PRIMITIVE(RefreshSplashScreen);
-	REGISTER_5L_PRIMITIVE(SaveGraphics);
-	REGISTER_5L_PRIMITIVE(RestoreGraphics);
 	REGISTER_5L_PRIMITIVE(Screenshot);
 	REGISTER_5L_PRIMITIVE(RegisterCard);
 	REGISTER_5L_PRIMITIVE(RegisterCursor);
@@ -815,18 +813,6 @@ DEFINE_5L_PRIMITIVE(OverlayAnimated) {
                           is_trans, state_path, TValueList(graphics)));
 }
 
-DEFINE_5L_PRIMITIVE(SaveGraphics) {
-	TRect bounds;
-	inArgs >> bounds;
-	wxGetApp().GetStage()->SaveGraphics(TToWxRect(bounds));
-}
-
-DEFINE_5L_PRIMITIVE(RestoreGraphics) {
-	TRect bounds;
-	inArgs >> bounds;
-	wxGetApp().GetStage()->RestoreGraphics(TToWxRect(bounds));
-}
-
 DEFINE_5L_PRIMITIVE(Screenshot) {
 	std::string filename;
 	inArgs >> filename;
@@ -890,7 +876,6 @@ DEFINE_5L_PRIMITIVE(TextAA) {
 	std::string style, text;
 
     inArgs >> SymbolName(style) >> bounds >> text;
-    gOrigin.AdjustRect(&bounds);
 
 	gStyleSheetManager.Draw(style, text,
 							GraphicsTools::Point(bounds.Left(),

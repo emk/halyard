@@ -31,8 +31,6 @@
 
 USING_NAMESPACE_FIVEL
 
-Origin FIVEL_NS gOrigin;
-
 
 //=========================================================================
 //  RegisterCommonPrimitives
@@ -44,8 +42,6 @@ void FIVEL_NS RegisterCommonPrimitives()
 	REGISTER_5L_PRIMITIVE(HavePrimitive);
 	REGISTER_5L_PRIMITIVE(Log);
 	REGISTER_5L_PRIMITIVE(PolygonContains);
-	REGISTER_5L_PRIMITIVE(Origin);
-	REGISTER_5L_PRIMITIVE(ResetOrigin);
 	REGISTER_5L_PRIMITIVE(SetTyped);
 	REGISTER_5L_PRIMITIVE(Get);
 	REGISTER_5L_PRIMITIVE(VariableInitialized);
@@ -67,7 +63,6 @@ void FIVEL_NS RegisterCommonPrimitives()
 void FIVEL_NS UpdateSpecialVariablesForGraphic(const TRect &bounds)
 {
 	TPoint p(bounds.Right(), bounds.Bottom());
-	gOrigin.UnadjustPoint(&p);
 	gVariableManager.Set("_Graphic_X", (int32) p.X());
 	gVariableManager.Set("_Graphic_Y", (int32) p.Y());
 }
@@ -75,70 +70,8 @@ void FIVEL_NS UpdateSpecialVariablesForGraphic(const TRect &bounds)
 void FIVEL_NS UpdateSpecialVariablesForText(const TPoint &bottomLeft)
 {
 	TPoint p = bottomLeft;
-	gOrigin.UnadjustPoint(&p);
 	gVariableManager.Set("_INCR_X", (int32) p.X());
 	gVariableManager.Set("_INCR_Y", (int32) p.Y());
-}
-
-
-//=========================================================================
-//  Origin Methods
-//=========================================================================
-
-void Origin::AdjustRect(TRect *r)
-{
-	TRect orig = *r;
-	r->Offset(mOrigin);
-
-	// We log this here because it's too annoying to integrate directly
-	// into TArgumentList.
-	if (!(orig == *r))
-		gDebugLog.Log("Adjusting: (rect %d %d %d %d) to (rect %d %d %d %d)",
-					  orig.Left(), orig.Top(), orig.Right(), orig.Bottom(),
-					  r->Left(), r->Top(), r->Right(), r->Bottom());
-}
-
-void Origin::AdjustPoint(TPoint *pt)
-{
-	TPoint orig = *pt;
-	pt->Offset(mOrigin);
-
-	// We log this here because it's too annoying to integrate directly
-	// into TArgumentList.
-	if (!(orig == *pt))
-		gDebugLog.Log("Adjusting: (pt %d %d) to (pt %d %d)",
-					  orig.X(), orig.Y(), pt->X(), pt->Y());
-}
-
-void Origin::UnadjustPoint(TPoint *pt)
-{
-	pt->OffsetX(-mOrigin.X());
-	pt->OffsetY(-mOrigin.Y());
-}
-
-TPoint Origin::GetOrigin()
-{
-	return mOrigin;
-}
-
-void Origin::SetOrigin(TPoint &loc)
-{
-    mOrigin = loc;
-	gVariableManager.Set("_originx", mOrigin.X());
-	gVariableManager.Set("_originy", mOrigin.Y());
-}
-
-void Origin::SetOrigin(int16 inX, int16 inY)
-{
-	TPoint newOrigin(inX, inY);
-	SetOrigin(newOrigin);
-}
-
-void Origin::OffsetOrigin(TPoint &delta)
-{
-	TPoint newOrigin(mOrigin);
-	newOrigin.Offset(delta);
-	SetOrigin(newOrigin);
 }
 
 
@@ -211,26 +144,6 @@ DEFINE_5L_PRIMITIVE(Log)
 
 
 //-------------------------------------------------------------------------
-// (ORIGIN DX DY)
-//-------------------------------------------------------------------------
-// Move the local coordinates for this particular card (or macro) by 
-// the delta values given. This change is an offset from whatever the 
-// current coordinates are. There is no way to set the absolute 
-// coordinates for a macro or card!
-
-DEFINE_5L_PRIMITIVE(Origin)
-{
-    TPoint   delta;
-
-    inArgs >> delta;
-
-    gOrigin.OffsetOrigin(delta);
-    
-	TPoint origin = gOrigin.GetOrigin();
-    gDebugLog.Log("Origin set to <X Y> %d %d", origin.X(), origin.Y());
-}
-
-//-------------------------------------------------------------------------
 // (PolygonContains poly pt)
 //-------------------------------------------------------------------------
 // Determines if pt lies within poly
@@ -244,22 +157,6 @@ DEFINE_5L_PRIMITIVE(PolygonContains)
 	inArgs >> poly >> pt;
 	::SetPrimitiveResult(poly.Contains(pt));
 }
-
-//-------------------------------------------------------------------------
-// (ResetOrigin [DX DY])
-//-------------------------------------------------------------------------
-// Reset the origin or set it to something new.
-
-DEFINE_5L_PRIMITIVE(ResetOrigin)
-{
-	TPoint		newOrigin(0, 0);
-
-	if (inArgs.HasMoreArguments())
-		inArgs >> newOrigin;
-
-	gOrigin.SetOrigin(newOrigin);
-}
-
 
 //-------------------------------------------------------------------------
 // (SetTyped VARIABLE TYPE [NEWVALUE])
@@ -338,9 +235,11 @@ DEFINE_5L_PRIMITIVE(MeasureTextAA)
 	uint32 max_width;
 
 	inArgs >> SymbolName(style) >> text >> max_width;
-	gStyleSheetManager.Draw(style, text,
-							GraphicsTools::Point(0, 0),
-							max_width, NULL);
+	TRect bounds = gStyleSheetManager.Draw(style, text,
+                                           GraphicsTools::Point(0, 0),
+                                           max_width, NULL);
+    
+    ::SetPrimitiveResult(bounds);
 }
 
 DEFINE_5L_PRIMITIVE(NotifyFileLoaded) {

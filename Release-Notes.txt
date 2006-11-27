@@ -5,6 +5,9 @@ SVN - emk
   * #3806: The engine now uses 1-3% of the CPU while idling, and 6-20% when
     playing QuickTime, instead of 100% (at least as measured on my machine).
     This fix depends on #3783, the NAP and TIMEOUT fix.
+  * #3810: Massive cleanup of Runtime directory, including reorganization
+    and deprecation.  See Runtime/5L/deprecated.ss for a list of renamed
+    and removed functions.
 
 0.3.0 - 21 Nov 2006 - brian, emk
 

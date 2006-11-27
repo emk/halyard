@@ -5,9 +5,6 @@
 
   (require (lib "shapes.ss" "5L"))
   (provide (all-from (lib "shapes.ss" "5L")))
-  
-  (require (lib "layout.ss" "5L"))
-  (provide (all-from (lib "layout.ss" "5L")))
 
 
   ;;=======================================================================
@@ -141,88 +138,13 @@
 
 
   ;;;======================================================================
-  ;;;  Standard Engine Variables
+  ;;;  Useful Constants
   ;;;======================================================================
-  ;;;  The 5L engine exports a variety of special-purpose variables.
-  ;;;
-  ;;;  @xref define-engine-variable
 
-  (provide *text-x* *text-y* *graphic-x* *graphic-y*
-           text-position set-text-position! with-saved-text-position
-           graphic-position set-graphic-position! with-saved-graphic-position
-           $screen-rect *stylesheet-list*)
-
-  ;;; The maximum horizontal position of the last text drawn.
-  (define-engine-variable *text-x*    _INCR_X     0)
-
-  ;;; The maximum vertical position of the last text drawn.
-  (define-engine-variable *text-y*    _INCR_Y     0)
-
-  ;;; The maximum horizontal position of the last graphic shown.
-  (define-engine-variable *graphic-x* _Graphic_X  0)
-
-  ;;; The maximum vertical position of the last graphic shown.
-  (define-engine-variable *graphic-y* _Graphic_Y  0)
-
-  ;;; @return POINT The point (point *text-x* *text-y*).
-  ;;; @xref *text-x* *text-y* 
-  (define (text-position)
-    (point *text-x* *text-y*))
-
-  ;;; Set *text-x* and *text-y* to the specified point.
-  ;;; @param POINT p The new value to use.
-  ;;; @xref *text-x* *text-y* 
-  (define (set-text-position! p)
-    (set! *text-x* (point-x p))
-    (set! *text-y* (point-y p)))
-
-  ;;; @return POINT The point (point *graphic-x* *graphic-y*).
-  ;;; @xref *graphic-x* *graphic-y* 
-  (define (graphic-position)
-    (point *graphic-x* *graphic-y*))
-
-  ;;; Set *graphic-x* and *graphic-y* to the specified point.
-  ;;; @param POINT p The new value to use.
-  ;;; @xref *graphic-x* *graphic-y* 
-  (define (set-graphic-position! p)
-    (set! *graphic-x* (point-x p))
-    (set! *graphic-y* (point-y p)))
-
-  ;;; Save (text-position) while executing a body, and restore it
-  ;;; afterwards.
-  ;;;
-  ;;; @syntax (with-saved-text-position body ...)
-  ;;; @xref text-position
-  (define-syntax with-saved-text-position
-    (syntax-rules ()
-      [(with-saved-text-position body ...)
-       (let [[saved #f]]
-         (dynamic-wind
-             (lambda () (set! saved (text-position)))
-             (lambda () (begin/var body ...))
-             (lambda () (set! (text-position) saved))))]))
-  (define-syntax-indent with-saved-text-position 0)
-
-  ;;; Save (graphic-position) while executing a body, and restore it
-  ;;; afterwards.
-  ;;;
-  ;;; @syntax (with-saved-graphic-position body ...)
-  ;;; @xref graphic-position
-  (define-syntax with-saved-graphic-position
-    (syntax-rules ()
-      [(with-saved-graphic-position body ...)
-       (let [[saved #f]]
-         (dynamic-wind
-             (lambda () (set! saved (graphic-position)))
-             (lambda () (begin/var body ...))
-             (lambda () (set! (graphic-position) saved))))]))  
-  (define-syntax-indent with-saved-graphic-position 0)
+  (provide $screen-rect)
 
   ;;; @type RECT The screen rectangle, in global co-ordinates.
   (define $screen-rect (rect 0 0 800 600))
-
-  ;;; Holds a list of all registered stylesheets
-  (define *stylesheet-list* (list))
 
 
   ;;;======================================================================
@@ -250,66 +172,6 @@
          (substring str 0 split-pos)
          "."
          (substring str split-pos (string-length str))))
-    
-
-  ;;;======================================================================
-  ;;;  Origin
-  ;;;======================================================================
-  ;;;  5L supports a moveable graphics origin.  All drawing commands
-  ;;;  take place relative to the current origin.
-
-  (provide origin set-origin! offset-origin with-offset-origin)
-
-  ;;; Get the current origin.
-  ;;;
-  ;;; @return POINT The current origin, in absolute global co-ordinates.
-  ;;; @legacy _originx _originy
-  (define (origin)
-    (point (engine-var '_originx)
-           (engine-var '_originy)))
-
-  ;;; Set the current origin to the specified absolute global co-ordinates,
-  ;;; and update all the engine's position-related variables appropriately.
-  ;;; (You probably want to call offset-origin instead of this function.)
-  ;;;
-  ;;; @param POINT p The new origin, in absolute global co-ordinates.
-  ;;; @xref offset-origin
-  ;;; @legacy ResetOrigin
-  (define (set-origin! p)
-    (let* [[old (origin)]
-           [delta (point-difference p old)]]
-      (call-5l-prim 'resetorigin p)
-      (set! (text-position) (point-offset (text-position) delta))
-      (set! (graphic-position) (point-offset (graphic-position) delta))))
-  
-  ;;; Move the origin relative to its current position.
-  ;;;
-  ;;; @param POINT by The relative position to move the origin to.
-  ;;; @xref set-origin!
-  ;;; @legacy Origin
-  (define (offset-origin by)
-    ;; Just call set-origin! to save ourselves the trouble of messing
-    ;; around with all the variables again.
-    (set! (origin) (point-offset (origin) by)))
-
-  ;;; Run a body of code with an origin offset relative to its current
-  ;;; position.
-  ;;;
-  ;;; @syntax (WITH-OFFSET-ORIGIN by body ...)
-  ;;; @param POINT by The relative offset for the origin.
-  ;;; @param BODY body The code to run.
-  ;;; @xref offset-origin
-  ;;; @legacy Origin ResetOrigin
-  (define-syntax with-offset-origin
-    (syntax-rules ()
-      [(with-offset-origin by body ...)
-       (let* [[old (origin)]
-              [new (point-offset old by)]]
-         (dynamic-wind
-             (lambda () (set! (origin) new))
-             (lambda () (begin/var body ...))
-             (lambda () (set! (origin) old))))]))
-  (define-syntax-indent with-offset-origin 1)
 
 
   ;;;======================================================================
@@ -317,7 +179,7 @@
   ;;;======================================================================
   ;;;  5L text drawing uses stylesheets.
   
-  (provide (rename register-style stylesheet)
+  (provide *stylesheet-list* (rename register-style stylesheet)
            stylesheet? stylesheet-name stylesheet-long-name stylesheet-family
            stylesheet-size stylesheet-flags
            stylesheet-justification stylesheet-color
@@ -325,6 +187,9 @@
            stylesheet-shadow-offset stylesheet-shadow-color
            stylesheet-highlight-shadow-color
            define-stylesheet measure-text draw-text)
+
+  ;;; Holds a list of all registered stylesheets.  
+  (define *stylesheet-list* (list))
 
   (define-struct stylesheet
     (name long-name family size flags justification
@@ -486,12 +351,10 @@
   ;;; @xref draw-text
   (define (measure-text style msg
                         &key (max-width (rect-width $screen-rect)))
+    ;;; XXX - Note that we stomp the "saved-text-position" used by
+    ;;; deprecated.ss.
     ;;; XXX - We can't measure anything but left-aligned text accurately.
-    (with-saved-text-position
-      (call-5l-prim 'measuretextaa (stylesheet-long-name style) msg max-width)
-      (rect 0 0
-            (engine-var '_text_width)
-            (engine-var '_text_height))))
+    (call-5l-prim 'measuretextaa (stylesheet-long-name style) msg max-width))
 
 
   ;;;======================================================================

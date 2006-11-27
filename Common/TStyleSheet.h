@@ -90,10 +90,10 @@ public:
 	///                     TextRendering engine is destroyed.  May be
 	///                     NULL if we only want to measure the text.
 	///
-	void Draw(const std::string& inText,
-			  GraphicsTools::Point inPosition,
-			  GraphicsTools::Distance inLineLength,
-			  GraphicsTools::Image *inImage);
+	TRect Draw(const std::string& inText,
+               GraphicsTools::Point inPosition,
+               GraphicsTools::Distance inLineLength,
+               GraphicsTools::Image *inImage);
 
 	//////////
 	/// Get the height of a single line of text drawn in this style.
@@ -139,19 +139,11 @@ public:
 	///                     TextRendering engine is destroyed.  May be
 	///                     NULL if we only want to measure the text.
 	///
-	void Draw(const std::string &inStyleSheet,
-			  const std::string &inText,
-			  GraphicsTools::Point inPosition,
-			  GraphicsTools::Distance inLineLength,
-			  GraphicsTools::Image *inImage);
-
-	//////////
-	/// Compatibility function.  This call works like the above,
-	/// but takes arguments in the same order as the old Win32
-	/// Header class.  It makes the code prettier.
-	///
-	void DoText(const char *inStyleSheet, TRect inRect,
-				const char *inText, GraphicsTools::Image *inImage);
+	TRect Draw(const std::string &inStyleSheet,
+               const std::string &inText,
+               GraphicsTools::Point inPosition,
+               GraphicsTools::Distance inLineLength,
+               GraphicsTools::Image *inImage);
 
 	//////////
 	/// Compatibility function.  Get the height of the first line of

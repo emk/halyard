@@ -86,7 +86,6 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 						 inStageSize.GetHeight(), 24),
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
-	  mSavePixmap(inStageSize.GetWidth(), inStageSize.GetHeight(), 24),
 	  mNeedToWakeUp(false),
       mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
@@ -862,25 +861,6 @@ void Stage::InvalidateRect(const wxRect &inRect)
         mRectsToRefresh.MergeRect(inRect);
         Refresh(FALSE, &inRect);
     }
-}
-
-void Stage::SaveGraphics(const wxRect &inBounds)
-{
-	wxMemoryDC srcDC, dstDC;
-	srcDC.SelectObject(GetBackgroundPixmap());
-	dstDC.SelectObject(mSavePixmap);
-	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
-			   &srcDC, inBounds.x, inBounds.y);
-}
-
-void Stage::RestoreGraphics(const wxRect &inBounds)
-{
-	wxMemoryDC srcDC, dstDC;
-	srcDC.SelectObject(mSavePixmap);
-	dstDC.SelectObject(GetBackgroundPixmap());
-	dstDC.Blit(inBounds.x, inBounds.y, inBounds.width, inBounds.height,
-			   &srcDC, inBounds.x, inBounds.y);
-	InvalidateRect(inBounds);
 }
 
 void Stage::Screenshot(const wxString &inFilename)

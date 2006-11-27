@@ -7,48 +7,19 @@
 (module tamale (lib "lispish.ss" "5L")
   (require (lib "api.ss" "5L"))
 
-  (provide make-path-from-abstract draw-picture measure-picture
-           set-image-cache-size! with-dc
-           dc-rect color-at %element% %invisible-element%
-           %zone% %simple-zone% zone
-           %animated-graphic% register-cursor hide-cursor-until-mouse-moved!
-           mouse-position
-           grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?
-           local->card
-           delete-element delete-elements
-           clear-screen point-in-shape? point-in-rect? point-in-poly?
-           offset-rect offset-shape
-           copy-rect rect-horizontal-center rect-vertical-center
-           rect-center move-rect-left-to move-rect-top-to
-           move-rect-horizontal-center-to move-rect-vertical-center-to
-           move-rect-center-to center-text 
-           %activex% activex-prop set-activex-prop!
-           %flash-card%
-           %browser% %edit-box-element% %movie-element%
-           browser edit-box %vorbis-audio% vorbis-audio
-           geiger-audio set-geiger-audio-counts-per-second!
-           %geiger-synth% geiger-synth sine-wave
-           media-is-installed? media-cd-is-available? search-for-media-cd
-           set-media-base-url! movie 
-           movie-pause movie-resume set-media-volume!
-           wait tc native-dialog sleep-milliseconds
-           nap draw-line draw-box draw-box-outline inset-rect
-           current-card-name fade unfade opacity save-graphics restore-graphics
-           copy-string-to-clipboard
-           script-user-data-directory ensure-dir-exists
-           screenshot element-exists? 
-           delete-element-if-exists
-           %basic-button%
-           quicktime-component-version
-           mark-unprocessed-events-as-stale!
-           register-debug-report-file!
-           number->integer interpolate-int make-object-mover animate
-           state-db-debug state-db-seconds state-db-milliseconds
-           update-state-db! inc-state-db! inc-state-db-if-true!)
+
+  ;;;======================================================================
+  ;;;  File and Path Functions
+  ;;;======================================================================
+  ;;;  Most of these are only used internally, in this file.
+
+  (provide make-path-from-abstract ensure-dir-exists)
 
   (define (url? path)
-    (regexp-match "^(http|ftp|rtsp):" path))
+    (regexp-match "^(http|ftp|rtsp|file):" path))
 
+  ;;; Given a path of the form "foo/bar.baz", convert it to a native OS
+  ;;; path string.
   (define (make-path-from-abstract . args)
     (define reversed (reverse! args))
     (define abstract-component (car reversed))
@@ -56,6 +27,9 @@
     (apply build-path (append! regular-components
                                (regexp-split "/" abstract-component))))
 
+  ;;; Build a path for accessing a script resource.  If PATH is a URL, it
+  ;;; is returned unchanged.  Otherwise, assume that PATH is an abstract
+  ;;; path relative to SUBDIR, and pass it to MAKE-PATH-FROM-ABSTRACT.
   (define (make-path subdir path)
     (if (url? path)
         path
@@ -65,6 +39,26 @@
     (unless (or (url? path) (file-exists? path))
       (throw (cat "No such file: " path))))
   
+  ;; XXX - This is not a well-designed function; it can only create
+  ;; directories in a folder that's typically write-only (d'oh).
+  (define (ensure-dir-exists name)
+    (define dir (build-path (current-directory) name))
+    (when (not (directory-exists? dir))
+      (make-directory dir))
+    dir)
+
+
+  ;;;======================================================================
+  ;;;  Drawing Functions
+  ;;;======================================================================
+
+  (provide draw-picture measure-picture
+           set-image-cache-size! with-dc
+           dc-rect color-at clear-dc center-text
+           draw-line draw-box draw-box-outline)
+
+  ;;; Draw a picture loaded from NAME at location P in the current DC.  You
+  ;;; may optionally specify a sub-rectangle of the picture to draw.
   (define (draw-picture name p &key (subrect :rect #f))
     (let [[path (make-path "Graphics" name)]]
       (check-file path)
@@ -72,14 +66,23 @@
           (call-5l-prim 'loadsubpic path p subrect)
           (call-5l-prim 'loadpic path p))))
   
+  ;;; Return a rectangle located at 0,0 large enough to hold the picture
+  ;;; specified by NAME.
   (define (measure-picture name)
     (let [[path (make-path "Graphics" name)]]
       (check-file path)
       (call-5l-prim 'MeasurePic path)))
 
+  ;;; Specify how many bytes may be used by the engine to cache
+  ;;; recently-used images.
   (define (set-image-cache-size! bytes)
     (call-5l-prim 'SetImageCacheSize bytes))
 
+  ;;; Perform a set of drawing calls in the specified overlay.
+  ;;;
+  ;;; @syntax (with-dc dc body ...)
+  ;;; @param NODE dc The overlay to draw into.
+  ;;; @param BODY body The drawing code.
   (define-syntax with-dc
     (syntax-rules ()
       [(with-dc dc body ...)
@@ -89,24 +92,79 @@
            (lambda () (call-5l-prim 'DcPop (node-full-name dc))))]))
   (define-syntax-indent with-dc 1)
 
+  ;;; Get the bounding rectangle of the current DC.
   (define (dc-rect)
     (call-5l-prim 'DcRect))
 
+  ;;; Get the color at the specified point.
   (define (color-at p)
     (call-5l-prim 'ColorAt p))
 
+  ;;; Clear the current DC to color C.
+  (define (clear-dc c)
+    (call-5l-prim 'screen c))
+
+  ;;; Like DRAW-TEXT, but center the text within BOX.
+  (define (center-text stylesheet box msg &key (axis 'both))
+    (define bounds (measure-text stylesheet msg :max-width (rect-width box)))
+    (define r
+      (case axis
+        [[both]
+         (move-rect-center-to bounds (rect-center box))]
+        [[y]
+         (move-rect-left-to
+          (move-rect-vertical-center-to bounds (rect-vertical-center box))
+          (rect-left box))]
+        [[x]
+         (move-rect-top-to
+          (move-rect-horizontal-center-to bounds (rect-horizontal-center box))
+          (rect-top box))]
+        [else
+         (throw (cat "center-text: Unknown centering axis: " axis))]))
+    (draw-text stylesheet r msg))
+
+  ;;; Draw a line between two points using the specified color and width.
+  (define (draw-line from to c width)
+    (call-5l-prim 'drawline from to c width))
+
+  ;;; Draw a filled box in the specified color.
+  (define (draw-box r c)
+    (call-5l-prim 'drawboxfill r c))
+
+  ;;; Draw the outline of a box, with the specified color and line width.
+  (define (draw-box-outline r c width)
+    (call-5l-prim 'drawboxoutline r c width))
+  
+
+  ;;;======================================================================
+  ;;;  Core Element Support
+  ;;;======================================================================
+
+  (provide local->card %element% %invisible-element% %zone%
+           %clickable-zone% clickable-zone
+           delete-element delete-elements
+           element-exists? delete-element-if-exists)
+
+  ;;; Convert the co-ordinates of a point or shape X into card
+  ;;; co-ordinates.  We do this do that elements attached to elements
+  ;;; can interpret AT, RECT and similar parameters relative to their
+  ;;; parent elements.
   (define (local->card node x)
-    ;; Convert the co-ordinates of a point or shape X into card
-    ;; co-ordinates.  We do this do that elements attached to elements
-    ;; can interpret AT, RECT and similar parameters relative to their
-    ;; parent elements.
     (if (element? node)
-        (local->card (node-parent node) (offset-shape x (prop node at)))
+        (local->card (node-parent node) (offset-by-point x (prop node at)))
         x))
 
   (define (parent->card node x)
     (local->card (node-parent node) x))
 
+  (define (update-element-position elem)
+    ;; Don't make me public.
+    (call-5l-prim 'MoveElementTo (node-full-name elem)
+                  (parent->card elem (prop elem at)))
+    (foreach [e (node-elements elem)]
+      (update-element-position e)))
+
+  ;;; The abstract superclass of all elements.
   (define-element-template %element%
       [[at :type <point> :label "Position"]
        [shown? :type <boolean> :label "Shown?" :default #t]]
@@ -124,21 +182,19 @@
       ;; probably add a SHOWN? parameter to every object creation primitive.
       (set! (element-shown? self) shown?)))
 
+  ;;; The abstract superclass of all elements which have no on-screen
+  ;;; representation.
   (define-element-template %invisible-element% []
       (%element% :at (point 0 0) :shown? #f))
 
-  (define-element-template %audio-element%
-      [[volume       :type <number> :default 1.0 :label "Volume (0.0 to 1.0)"]]
-      (%invisible-element%)
-    ;; I'd like put a ON PROP-CHANGE handler here for audio volume, but
-    ;; it's not quite so easy, because there may be multiple channels to
-    ;; content with. Ugh. See SET-MEDIA-VOLUME!.
-    )
-
+  ;;; The superclass of all native GUI elements which can be displayed
+  ;;; on the stage.
   (define-element-template %widget%
       [[rect :type <rect> :label "Rectangle"]]
       (%element% :at (rect-left-top rect)))
 
+  ;;; A %zone% is a lightweight element (i.e., implemented by the engine,
+  ;;; not by the OS), optionally with an associated drawing overlay.
   (define-element-template %zone%
       [[at :new-default (point 0 0)]
        [shape :type <shape> :label "Shape"]
@@ -212,16 +268,16 @@
         ;; 2. If the origin of our SHAPE parameter is (0,0), then we'll leave
         ;;    SHAPE and AT alone, and just pass to our underlying object our 
         ;;    REAL-SHAPE, which is our SHAPE offset by our AT.
-        (offset-shape shape at)
+        (offset-by-point shape at)
         ;; 3. If our AT parameter is (0,0), then we want to move our AT to the 
         ;;    origin of our shape, and then move the shape such that its origin
         ;;    is (0,0). REAL-SHAPE will be our original shape. 
         (let ((orig-shape shape))
           (set! at the-origin)
-          (set! shape (offset-shape orig-shape 
-                                    (point
-                                     (- (point-x the-origin))
-                                     (- (point-y the-origin)))))
+          (set! shape (offset-by-point orig-shape 
+                                       (point
+                                        (- (point-x the-origin))
+                                        (- (point-y the-origin)))))
           orig-shape)))
     ;; We're done mucking around with our AT parameter, so we can now allow 
     ;; prop change messages for AT to go to propagate to our parent classes. 
@@ -240,6 +296,70 @@
                     (parent->card self (as <polygon> real-shape))
                     (make-node-event-dispatcher self) cursor)]))
 
+  ;;; A %clickable-zone% will run the specified ACTION when the user clicks on
+  ;;; it.
+  (define-element-template %clickable-zone% [action] (%zone%)
+    (on prop-change (name value prev veto)
+      (case name
+        [[action] (void)]
+        [else (call-next-handler)]))
+    (on mouse-down (event)
+      (action)))
+
+  ;;; Create a %clickable-zone%.
+  (define (clickable-zone name shape action
+                       &key (cursor 'hand) (overlay? #f) (alpha? #f))
+    (create %clickable-zone%
+            :name name 
+            :shape shape
+            :cursor cursor
+            :action action
+            :overlay? overlay?
+            :alpha? alpha?))
+  
+  (define (element-exists-in-engine? elem)
+    (call-5l-prim 'ElementExists (node-full-name elem)))
+
+  (define (set-element-shown?! elem show?)
+    ;; Not all subclasses of %element% actually have a corresponding
+    ;; engine object.
+    (when (element-exists-in-engine? elem)
+      (call-5l-prim 'ElementSetShown (node-full-name elem) show?)))
+
+  ;;; Delete the specified element.
+  (define (delete-element elem-or-name)
+    ;; TODO - Get rid of elem-or-name-hack, and rename
+    ;; delete-element-internal to delete-element.
+    (delete-element-internal (find-node (elem-or-name-hack elem-or-name))))
+  
+  ;;; Delete the specified elements.
+  (define (delete-elements
+           &opt (elems-or-names (node-elements (current-card))))
+    (foreach [elem elems-or-names]
+      (delete-element elem)))
+
+  ;;; Return true if and only if the specified element exists.  The keyword
+  ;;; argument :PARENT can be used to search for elements somewhere other
+  ;;; than the current DEFAULT-ELEMENT-PARENT.
+  (define (element-exists? name &key (parent (default-element-parent)))
+    (and (memq name (map node-name (node-elements parent)))
+         #t))
+
+  ;;; If an element with the specified name and parent exists, delete it.
+  ;;; Otherwise, do nothing.
+  (define (delete-element-if-exists name
+                                    &key (parent (default-element-parent)))
+    (when (element-exists? name :parent parent)
+      (delete-element (find-node (string->symbol (cat (node-full-name parent)
+                                                      "/" name))))))
+  
+
+  ;;;======================================================================
+  ;;;  Animated Graphic Elements
+  ;;;======================================================================
+
+  (provide %animated-graphic%)
+
   (define (animated-graphic-shape graphics)
     (define max-width 0)
     (define max-height 0)
@@ -251,6 +371,8 @@
         (set! max-height (rect-height bounds))))
     (rect 0 0 max-width max-height))
 
+  ;;; An animated graphic is a specialized overlay that can be animated
+  ;;; under state-db control.  See the C++ source for details.
   (define-element-template %animated-graphic%
       [[state-path :type <string> :label "State DB Key Path"]
        [graphics :type <list> :label "Graphics to display"]]
@@ -265,129 +387,71 @@
                   (prop self alpha?) state-path
                   (map (fn (p) (make-path "Graphics" p)) graphics)))
 
-  (define-element-template %simple-zone% [action] (%zone%)
-    (on prop-change (name value prev veto)
-      (case name
-        [[action] (void)]
-        [else (call-next-handler)]))
-    (on mouse-down (event)
-      (action)))
 
-  (define (zone name shape action
-                &key (cursor 'hand) (overlay? #f) (alpha? #f))
-    (create %simple-zone%
-            :name name 
-            :shape shape
-            :cursor cursor
-            :action action
-            :overlay? overlay?
-            :alpha? alpha?))
-  
-  (define (update-element-position elem)
-    ;; Don't make me public.
-    (call-5l-prim 'MoveElementTo (node-full-name elem)
-                  (parent->card elem (prop elem at)))
-    (foreach [e (node-elements elem)]
-      (update-element-position e)))
+  ;;;======================================================================
+  ;;;  Mouse and Cursor Support
+  ;;;======================================================================
+
+  (provide register-cursor hide-cursor-until-mouse-moved! mouse-position
+           grab-mouse ungrab-mouse mouse-grabbed? mouse-grabbed-by?)
 
   (define (set-element-cursor! elem cursor)
     ;; Don't make me public.
     (call-5l-prim 'SetZoneCursor (node-full-name elem) cursor))
 
+  ;;; Register the graphic in FILENAME with the engine as a cursor named
+  ;;; SYM.  If the hotspot is not in the default location, it should be
+  ;;; specified explicitly.
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
     (let [[path (make-path "Graphics" (cat "cursors/" filename))]]
       (check-file path)
       (call-5l-prim 'RegisterCursor sym path hotspot)))
 
+  ;;; Hide the cursor until the next time the mouse moves.  Only works in
+  ;;; full-screen mode, and only if the underlying system allows it.
   (define (hide-cursor-until-mouse-moved!)
     (call-5l-prim 'HideCursorUntilMouseMoved))
 
+  ;;; Get the current position of the mouse.
   (define (mouse-position)
     ;; XXX - This keeps returning exciting results even if we're in the
     ;; background.  Yuck.
     (call-5l-prim 'MousePosition))
 
-  (define (set-element-shown?! elem show?)
-    ;; Not all subclasses of %element% actually have a corresponding
-    ;; engine object.
-    (when (element-exists-in-engine? elem)
-      (call-5l-prim 'ElementSetShown (node-full-name elem) show?)))
-
-  (define (delete-element elem-or-name)
-    ;; TODO - Get rid of elem-or-name-hack, and rename
-    ;; delete-element-internal to delete-element.
-    (delete-element-internal (find-node (elem-or-name-hack elem-or-name))))
-  
-  (define (delete-elements
-           &opt (elems-or-names (node-elements (current-card))))
-    (foreach [elem elems-or-names]
-      (delete-element elem)))
-
+  ;;; Redirect all mouse events to ELEM until further notice.  For more
+  ;;; information on how mouse grabbing works, consult the documentation
+  ;;; for the wxWidgets GUI library (or any other GUI library--it tends to
+  ;;; be very similar).
+  ;;;
+  ;;; @see ungrab-mouse mouse-grabbed? mouse-grabbed-by?
   (define (grab-mouse elem)
     (assert (instance-of? elem <element>))
     (call-5l-prim 'MouseGrab (node-full-name elem)))
 
+  ;;; Ungrab the mouse, which must be currently grabbed by ELEM.
+  ;;; @see grab-mouse
   (define (ungrab-mouse elem)
     (assert (instance-of? elem <element>))
     (call-5l-prim 'MouseUngrab (node-full-name elem)))
 
+  ;;; Is the mouse currently grabbed?
+  ;;; @see grab-mouse
   (define (mouse-grabbed?)
     (call-5l-prim 'MouseIsGrabbed))
   
+  ;;; Is the mouse currently grabbed by ELEM?
+  ;;; @see grab-mouse
   (define (mouse-grabbed-by? elem)
     (call-5l-prim 'MouseIsGrabbedBy (node-full-name elem)))
 
-  (define (clear-screen c)
-    (call-5l-prim 'screen c))
 
-  (defgeneric (point-in-shape? (p <point>) (shape <shape>)))
-  
-  (defmethod (point-in-shape? (p <point>) (r <rect>))
-    (and (<= (rect-left r) (point-x p))
-         (<  (point-x p)   (rect-right r))
-         (<= (rect-top r)  (point-y p))
-         (<  (point-y p)   (rect-bottom r))))
+  ;;;======================================================================
+  ;;;  ActiveX and Flash
+  ;;;======================================================================
 
-  (defmethod (point-in-shape? (p <point>) (poly <polygon>))
-    (call-5l-prim 'PolygonContains poly p))
-        
-  ;; XXX - Backwards compatibility glue.
-  (define point-in-rect? point-in-shape?)
-  (define point-in-poly? point-in-shape?)
-        
-  (define (offset-rect r p)
-    (rect (+ (rect-left r) (point-x p))
-          (+ (rect-top r) (point-y p))
-          (+ (rect-right r) (point-x p))
-          (+ (rect-bottom r) (point-y p))))
+  (provide %activex% activex-prop set-activex-prop! %flash-card%)
 
-  (define (offset-shape s p)
-    (cond
-     [(point? s) (point-offset s p)]
-     [(rect? s) (offset-rect s p)]
-     [(polygon? s) (apply polygon (map (fn (v) (point-offset v p))
-                                       (polygon-vertices s)))]
-     [else
-      (error (cat "Don't know how to offset " s))]))
-
-  (define (center-text stylesheet box msg &key (axis 'both))
-    (define bounds (measure-text stylesheet msg :max-width (rect-width box)))
-    (define r
-      (case axis
-        [[both]
-         (move-rect-center-to bounds (rect-center box))]
-        [[y]
-         (move-rect-left-to
-          (move-rect-vertical-center-to bounds (rect-vertical-center box))
-          (rect-left box))]
-        [[x]
-         (move-rect-top-to
-          (move-rect-horizontal-center-to bounds (rect-horizontal-center box))
-          (rect-top box))]
-        [else
-         (throw (cat "center-text: Unknown centering axis: " axis))]))
-    (draw-text stylesheet r msg))
-
+  ;;; A native ActiveX element.  Consult the C++ source for documentation.
   (define-element-template %activex%
       [[activex-id :type <string>]]
       (%widget%)
@@ -396,12 +460,18 @@
                   (parent->card self (prop self rect))
                   activex-id))
 
+  ;;; Get a property of an ActiveX element.
   (define (activex-prop elem prop)
     (call-5l-prim 'ActiveXPropGet (node-full-name elem) prop))
 
+  ;;; Set a property of an ActiveX element.
   (define (set-activex-prop! elem prop value)
     (call-5l-prim 'ActiveXPropSet (node-full-name elem) prop value))
 
+  ;;; Show a Macromedia Flash movie scaled to fit the current card.
+  ;;; Requires that the user have an appropriate version of Flash
+  ;;; installed.  Macromedia reserves the right to break this interface in
+  ;;; future versions of Flash.
   (define-card-template %flash-card%
       [[location :type <string> :label "Location"]]
       ()
@@ -413,17 +483,29 @@
     (set! (activex-prop flash "movie")
           (build-path (current-directory) "Flash" location)))
   
+
+  ;;;======================================================================
+  ;;;  Web Browser Support
+  ;;;======================================================================
+
+  (provide %browser% browser)
+
+  ;;; A web browser element.
   (define-element-template %browser%
       [[location :type <string> :label "Location" :default "about:blank"]
        [fallback? :type <boolean> :label "Use primitive fallback web browser?"
                   :default #f]]
       (%widget%)
 
+    ;;; Load the specified page in the web browser.  Can be pointed
+    ;;; to either the local HTML folder or to a URL.
     (on load-page (page)
       (let [[path (make-path "HTML" page)]]
         (check-file path)
         (call-5l-prim 'BrowserLoadPage (node-full-name self) path)))
 
+    ;;; Return true if and only if COMMAND should be enabled.  Supported
+    ;;; values are: BACK, FORWARD, RELOAD and STOP.
     (on command-enabled? (command)
       (case command
         [[back]
@@ -437,12 +519,16 @@
         [else
          (call-next-handler)]))
 
+    ;;; Go back to the previous page.
     (on back ()
       (call-5l-prim 'BrowserBack (node-full-name self)))
+    ;;; Go forward.
     (on forward ()
       (call-5l-prim 'BrowserForward (node-full-name self)))
+    ;;; Reload the currently displayed page.
     (on reload ()
       (call-5l-prim 'BrowserReload (node-full-name self)))
+    ;;; Stop loading the currently displayed page.
     (on stop ()
       (call-5l-prim 'BrowserStop (node-full-name self)))
 
@@ -463,9 +549,18 @@
                   fallback?)
     (send self load-page location))
 
+  ;;; Create a new %browser% object.
   (define (browser name r location)
     (create %browser% :name name :rect r :location location))
 
+
+  ;;;======================================================================
+  ;;;  Text Editing
+  ;;;======================================================================
+
+  (provide %edit-box-element% edit-box)
+
+  ;;; A native GUI edit box.
   (define-element-template %edit-box-element%
       [[text :type <string> :label "Initial text"]
        [font-size :type <integer> :label "Font size"]
@@ -475,9 +570,70 @@
                   (parent->card self (prop self rect)) text
                   font-size multiline?))
 
+  ;;; Create an %edit-box-element%.
   (define (edit-box name r text &key (font-size 9) (multiline? #f))
     (create %edit-box-element% :name name :rect r :text text
             :font-size font-size :multiline? multiline?))
+
+  
+  ;;;======================================================================
+  ;;;  Generic Media Support
+  ;;;======================================================================
+
+  (provide media-pause media-resume set-media-volume! wait tc)
+
+  ;;; The superclass of all _pure_ audio elements.
+  ;;; @see %movie-element%
+  (define-element-template %audio-element%
+      [[volume       :type <number> :default 1.0 :label "Volume (0.0 to 1.0)"]]
+      (%invisible-element%)
+    ;; I'd like put a ON PROP-CHANGE handler here for audio volume, but
+    ;; it's not quite so easy, because there may be multiple channels to
+    ;; content with. Ugh. See SET-MEDIA-VOLUME!.
+    )
+
+  ;;; Pause a movie.
+  (define (media-pause elem-or-name)
+    ;; Note: these functions may not be happy if the underlying movie
+    ;; code doesn't like to be paused.
+    (call-5l-prim 'moviepause (elem-or-name-hack elem-or-name)))
+
+  ;;; Resume a movie.
+  (define (media-resume elem-or-name)
+    (call-5l-prim 'movieresume (elem-or-name-hack elem-or-name)))
+  
+  ;;; Set the volume of a media element.  Channels may be LEFT, RIGHT, ALL,
+  ;;; or something else depending on the exact type of media being played.
+  ;;; Volume ranges from 0.0 to 1.0.
+  (define (set-media-volume! elem-or-name channel volume)
+    (call-5l-prim 'MediaSetVolume (elem-or-name-hack elem-or-name)
+                  channel volume))
+
+  ;;; Pause script execution until the end of the specified media element,
+  ;;; or until a specific frame is reached.
+  (define (wait elem-or-name &key frame)
+    (when (or (not (symbol? elem-or-name)) (element-exists? elem-or-name))
+      (if frame
+          (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame)
+          (call-5l-prim 'wait (elem-or-name-hack elem-or-name)))))
+  
+  ;;; Convert an industry-standard timecode to frames.  The engine has a
+  ;;; single, nominal frame-rate of 30 frames per second, regardless of
+  ;;; the underlying media's frame rate.
+  (define (tc arg1 &opt arg2 arg3)
+    (cond
+     [arg3 (+ (* (+ (* arg1 60) arg2) 30) arg3)]
+     [arg2 (+ (* arg1 30) arg2)]
+     [else arg1]))
+  
+
+  ;;;======================================================================
+  ;;;  Audio Synthesis Elements
+  ;;;======================================================================
+  ;;;  These are very specialized, and aren't expected to be used much.
+  
+  (provide geiger-audio set-geiger-audio-counts-per-second!
+           %geiger-synth% geiger-synth sine-wave)
 
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
@@ -512,6 +668,7 @@
             :name name :state-path state-path
             :chirp chirp :loops loops))
 
+  ;;; Plays a pure sine-wave tone.
   (define-element-template %sine-wave-element%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
       (%audio-element%)
@@ -519,10 +676,22 @@
                   (make-node-event-dispatcher self)
                   (prop self volume) frequency))
 
+  ;;; Create a %sine-wave-element%.
   (define (sine-wave name frequency &key (volume 1.0))
     (create %sine-wave-element%
             :name name :frequency frequency :volume volume))
 
+
+  ;;;======================================================================
+  ;;;  Vorbis Audio
+  ;;;======================================================================
+  ;;;  Vorbis audio streams.  These are most useful for foley and for
+  ;;;  background audio which should continue playing even if the engine is
+  ;;;  otherwise occupied.
+  
+  (provide %vorbis-audio% vorbis-audio)
+
+  ;;; Plays an Ogg Vorbis audio stream.
   (define-element-template %vorbis-audio%
       [[location :type <string>  :label "Location"]
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
@@ -538,15 +707,27 @@
                     (make-node-event-dispatcher self) path
                     (prop self volume) (* 1024 buffer) loop?)))
   
+  ;;; Create a %vorbis-audio% element.
   (define (vorbis-audio name location &key (loop? #f) (volume 1.0))
     (create %vorbis-audio%
             :name name :location location :loop? loop? :volume volume))
 
+
+  ;;;======================================================================
+  ;;;  Streaming Media Support
+  ;;;======================================================================
+  ;;;  For now, these functions generally only work with %MOVIE-ELEMENT%.
+
+  (provide media-is-installed? media-cd-is-available? search-for-media-cd
+           set-media-base-url!)
+
   (define *cd-media-directory* #f)
 
+  ;;; Return true if and only if we have a local media directory.
   (define (media-is-installed?)
     (directory-exists? (build-path (current-directory) "Media")))
 
+  ;;; Return true if and only if we have media available on CD.
   (define (media-cd-is-available?)
     (and *cd-media-directory* #t))
 
@@ -566,9 +747,13 @@
 
   (define *media-base-url* #f)
 
+  ;;; Set the base URL at which the program's media can be found for
+  ;;; streaming.
   (define (set-media-base-url! url)
     (set! *media-base-url* url))
 
+  ;;; Given an abstract media path, return a native path or a URL pointing
+  ;;; to that particular file.
   (define (media-path location)
     ;; Create some of the paths we'll check.
     (define hd-path-1 (make-path "LocalMedia" location))
@@ -598,6 +783,14 @@
      [#t
       (error (cat "Cannot find file " location))]))
 
+
+  ;;;======================================================================
+  ;;;  Movie Elements
+  ;;;======================================================================
+  
+  (provide %movie-element% movie)
+
+  ;;; A movie.
   (define-element-template %movie-element%
       [[location     :type <string>  :label "Location"]
        [volume       :type <number>  :label "Volume (0.0 to 1.0)" :default 1.0]
@@ -658,6 +851,7 @@
                     path volume
                     controller? audio-only? loop? interaction?)))
 
+  ;;; Create a %movie-element%.
   (define (movie name r location
                  &key (volume 1.0) controller? audio-only? loop? interaction?)
     (create %movie-element%
@@ -668,209 +862,12 @@
             :loop? loop?
             :interaction? interaction?))
 
-  ;; Note: these functions may not be happy if the underlying movie code
-  ;; doesn't like to be paused.
-  (define (movie-pause elem-or-name)
-    (call-5l-prim 'moviepause (elem-or-name-hack elem-or-name)))
-
-  (define (movie-resume elem-or-name)
-    (call-5l-prim 'movieresume (elem-or-name-hack elem-or-name)))
   
-  (define (set-media-volume! elem-or-name channel volume)
-    (call-5l-prim 'MediaSetVolume (elem-or-name-hack elem-or-name)
-                  channel volume))
+  ;;;======================================================================
+  ;;;  General Animation Support
+  ;;;======================================================================
 
-  (define (wait elem-or-name &key frame)
-    (when (or (not (symbol? elem-or-name)) (element-exists? elem-or-name))
-      (if frame
-          (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame)
-          (call-5l-prim 'wait (elem-or-name-hack elem-or-name)))))
-  
-  ;; what is 'tc' short for?
-  (define (tc arg1 &opt arg2 arg3)
-    (cond
-     [arg3 (+ (* (+ (* arg1 60) arg2) 30) arg3)]
-     [arg2 (+ (* arg1 30) arg2)]
-     [else arg1]))
-  
-  ;;; Displays a native OS dialog, and returns the number of the button
-  ;;; clicked. DO NOT USE FOR OK/CANCEL DIALOGS: The cancel button won't
-  ;;; get the proper keybindings. Button 1 is the default button.
-  (define (native-dialog title text
-                         &opt [button1 ""] [button2 ""] [button3 ""])
-    (call-5l-prim 'dialog title text button1 button2 button3))
-
-  (define (sleep-milliseconds milliseconds)
-    (define end-time (+ milliseconds (current-milliseconds)))
-    (let repeat-delay []
-      (idle)
-      (when (> end-time (current-milliseconds))
-        (repeat-delay))))    
-
-  (define (nap tenths)
-    (sleep-milliseconds (* 100 tenths)))
-
-  (define (draw-line from to c width)
-    (call-5l-prim 'drawline from to c width))
-
-  (define (draw-box r c)
-    (call-5l-prim 'drawboxfill r c))
-
-  (define (draw-box-outline r c width)
-    (call-5l-prim 'drawboxoutline r c width))
-  
-  (define (inset-rect r pixels)
-    ;; TODO - Rename foo-offset to offset-foo.
-    (rect (+ (rect-left r) pixels)
-          (+ (rect-top r) pixels)
-          (- (rect-right r) pixels)
-          (- (rect-bottom r) pixels)))
-  
-  (define (current-card-name)
-    (card-name (current-card)))
-
-  (define (fade &key (ms 500))
-    (clear-screen (color 0 0 0))
-    (refresh :transition 'toblack :ms ms))
-
-  (define (unfade &key (ms 500))
-    (refresh :transition 'fromblack :ms ms))
-
-  (define (opacity initial-color opacity-value)
-    (color (color-red initial-color) (color-green initial-color) (color-blue initial-color) opacity-value)
-    )
-
-  ;;Save and Restore graphics deprecated, but are still being used by Widgets.ss
-  (define (save-graphics &key (bounds $screen-rect))
-    (call-5l-prim 'savegraphics bounds))
-  
-  (define (restore-graphics &key (bounds $screen-rect))
-    (call-5l-prim 'restoregraphics bounds))
-        
-  ;; Copy a string to the clip board
-  (define (copy-string-to-clipboard string)
-    (call-5l-prim 'copystringtoclipboard string))
-
-  (define (three-char-print n)
-    (cond 
-     ((> n 999) "000")
-     ((> n 99) (format "~a" n))
-     ((> n 9) (format "0~a" n))
-     ((> n -1) (format "00~a" n))
-     (else "000")))
-
-  ;;; Returns a path to the directory which should be used to store any
-  ;;; script data files.
-  (define (script-user-data-directory)
-    (call-5l-prim 'DataPath))
-
-  ;; XXX - This is not a well-designed function; it can only create
-  ;; directories in a folder that's typically write-only (d'oh).
-  (define (ensure-dir-exists name)
-    (define dir (build-path (current-directory) name))
-    (when (not (directory-exists? dir))
-      (make-directory dir))
-    dir)  
-
-  (define (screenshot)
-    (define dir (ensure-dir-exists "Screenshots"))
-    (call-5l-prim 
-     'screenshot 
-     (let loop ((count 0))
-       (define path (build-path dir (cat (three-char-print count) ".png")))
-       (cond
-        ((= count 1000) path)
-        ((or (file-exists? path) (directory-exists? path))
-         (loop (+ count 1)))
-        (else path)))))
-
-  (define (element-exists? name &key (parent (default-element-parent)))
-    (and (memq name (map node-name (node-elements parent)))
-         #t))
-
-  (define (element-exists-in-engine? elem)
-    (call-5l-prim 'ElementExists (node-full-name elem)))
-    
-  (define (delete-element-if-exists name
-                                    &key (parent (default-element-parent)))
-    (when (element-exists? name :parent parent)
-      (delete-element (find-node (string->symbol (cat (node-full-name parent)
-                                                      "/" name))))))
-  
-  (define-element-template %basic-button%
-      [[action :type <function> :label "Click action" :default (callback)]
-       [enabled? :type <boolean> :label "Enabled?" :default #t]]
-      (%zone% :wants-cursor? enabled?)
-
-    (define mouse-in-button? #f)
-    (on draw ()
-      (send self draw-button 
-            (cond [(not enabled?) 'disabled]
-                  [(not mouse-in-button?) 'normal]
-                  [(mouse-grabbed-by? self) 'pressed]
-                  [#t 'active])))
-    (define (do-draw refresh?)
-      (send self draw)
-      (when refresh?
-        (refresh)))
-    
-    (on prop-change (name value prev veto)
-      (case name
-        [[enabled?]
-         (set! (prop self wants-cursor?) enabled?) 
-         (do-draw #f)]
-        [else (call-next-handler)]))
-
-    (on setup-finished ()
-      (call-next-handler)
-      (do-draw #f))
-    (on mouse-enter (event)
-      (set! mouse-in-button? #t)
-      (do-draw #t))
-    (on mouse-leave (event)
-      (set! mouse-in-button? #f)
-      (do-draw #t))
-    (on mouse-down (event)
-      (grab-mouse self)
-      (do-draw #t))
-    (on mouse-up (event)
-      (define was-grabbed? #f)
-      (when (mouse-grabbed-by? self)
-        (set! was-grabbed? #t)
-        (ungrab-mouse self))
-      (do-draw #t)
-      (when (and mouse-in-button? was-grabbed?)
-        (send self button-clicked event)))
-    (on button-clicked (event)
-      ((prop self action)))
-    )
-
-  ;;; Get the version of a QuickTime component, given the four-letter,
-  ;;; case-sensitive type and subtype strings. Returns 0 if the component
-  ;;; is not installed.
-  (define (quicktime-component-version type subtype)
-    (call-5l-prim 'QTComponentVersion type subtype))
-
-  (define (mark-unprocessed-events-as-stale!)
-    (call-5l-prim 'MarkUnprocessedEventsAsStale))
-
-  ;;; Register a file to be included in any debug (i.e., crash) reports
-  ;;; generated for either the script or the engine itself.
-  ;;;
-  ;;; The description should be a short lowercase string.  Don't bother
-  ;;; to capitalize the first word, or your description will look funny
-  ;;; in the list of descriptions.
-  (define (register-debug-report-file! file description)
-    ;; TODO - This is an ugly hack to support absolute path names.
-    (let [[path (if (absolute-path? file)
-                    file
-                    (make-path-from-abstract (current-directory) file))]]
-      (call-5l-prim 'DebugReportAddFile path description)))
-
-  
-  ;;-----------------------------------------------------------------------
-  ;;  Animation
-  ;;-----------------------------------------------------------------------
+  (provide number->integer interpolate-int make-object-mover animate)
 
   ;;; Convert any number to an integer.  Typically needed for use with
   ;;; ANIMATE.
@@ -945,17 +942,19 @@
     (draw-func 1.0))
   
   
-  ;;-----------------------------------------------------------------------
-  ;;  State DB Debugging Support
-  ;;-----------------------------------------------------------------------
-  ;;  Here's a nasty little hack for reading the state database from
-  ;;  outside an element.  Calling this from anywhere but the listener
-  ;;  is definitely a bug.
+  ;;;======================================================================
+  ;;;  State DB Debugging Support
+  ;;;======================================================================
+
+  (provide state-db-debug)
 
   (define-element-template %state-db-debugger% [path report-fn] ()
     (define-state-db-listener (debug state-db)
       (report-fn (state-db path))))
-    
+  
+  ;;; Here's a nasty little hack for reading the state database from
+  ;;; outside an element.  Calling this from anywhere but the listener is
+  ;;; definitely a bug.
   (define (state-db-debug path)
     (define result #f)
     (define (set-result! value)
@@ -969,30 +968,38 @@
     result)
 
   
-  ;;-----------------------------------------------------------------------
-  ;;  State DB Time Support
-  ;;-----------------------------------------------------------------------
-  ;;  The state-db's /system/clock/seconds and /system/clock/milliseconds
-  ;;  values do not use the same units as CURRENT-MILLISECONDS.
-  ;;
+  ;;;======================================================================
+  ;;;  State DB Time Support
+  ;;;======================================================================
+  ;;;  The state-db's /system/clock/seconds and /system/clock/milliseconds
+  ;;;  values do not use the same units as CURRENT-MILLISECONDS.
+
+  (provide state-db-seconds state-db-milliseconds)
+
   ;;  XXX - THESE SHOULD NOT USE STATE-DB-DEBUG!!! It's extremely slow.
   ;;  Ask one of the C++ programmers to add primitives which fetch
   ;;  these values.
   
+  ;;; Get the current time in seconds, as recorded by the state-db.
   (define (state-db-seconds)
     (state-db-debug '/system/clock/seconds))
 
+  ;;; Get the current time in miliseconds, as recorded by the state-db.
   (define (state-db-milliseconds)
     (state-db-debug '/system/clock/milliseconds))
 
   
-  ;;-----------------------------------------------------------------------
-  ;;  State DB Update Support
-  ;;-----------------------------------------------------------------------
+  ;;;======================================================================
+  ;;;  State DB Update Support
+  ;;;======================================================================
+
+  (provide update-state-db! inc-state-db! inc-state-db-if-true!)
+
   ;;  XXX - THIS SHOULD NOT USE STATE-DB-DEBUG!!! It's extremely slow.
   ;;  Ask one of the C++ programmers to add a primitive to do this.
   
-  ;;; Apply FUNC 
+  ;;; Apply FUNC to the current value stored at PATH, and replace it with
+  ;;; the return value.
   (define (update-state-db! path func)
     (set! (state-db path) (func (state-db-debug path)))
     #f) ; Make absolutely certain we don't return the value we updated.
@@ -1013,4 +1020,129 @@
                         (if value
                             (+ value amount)
                             value))))
+
+
+  ;;;======================================================================
+  ;;;  Miscellaneous
+  ;;;======================================================================
+  
+  (provide native-dialog sleep-milliseconds nap
+           copy-string-to-clipboard
+           script-user-data-directory
+           %basic-button%
+           quicktime-component-version
+           mark-unprocessed-events-as-stale!
+           register-debug-report-file!)
+
+  ;;; Displays a native OS dialog, and returns the number of the button
+  ;;; clicked. DO NOT USE FOR OK/CANCEL DIALOGS: The cancel button won't
+  ;;; get the proper keybindings. Button 1 is the default button.
+  (define (native-dialog title text
+                         &opt [button1 ""] [button2 ""] [button3 ""])
+    (call-5l-prim 'dialog title text button1 button2 button3))
+
+  ;;; Delay for the specified number of milliseconds.  Calls IDLE, so
+  ;;; events will be processed and the screen will be repainted.
+  (define (sleep-milliseconds milliseconds)
+    (define end-time (+ milliseconds (current-milliseconds)))
+    (let repeat-delay []
+      (idle)
+      (when (> end-time (current-milliseconds))
+        (repeat-delay))))    
+
+  ;;; Sleep for the specified number of tenths of seconds.
+  (define (nap tenths)
+    (sleep-milliseconds (* 100 tenths)))
+
+  ;;; Copy a string to the OS clipboard.  Used mostly by developer tools.
+  (define (copy-string-to-clipboard string)
+    (call-5l-prim 'copystringtoclipboard string))
+
+  ;;; Returns a path to the directory which should be used to store any
+  ;;; script data files.
+  (define (script-user-data-directory)
+    (call-5l-prim 'DataPath))
+
+  ;;; An abstract superclass which implements typical GUI button behavior.
+  (define-element-template %basic-button%
+      [[action :type <function> :label "Click action" :default (callback)]
+       [enabled? :type <boolean> :label "Enabled?" :default #t]]
+      (%zone% :wants-cursor? enabled?)
+
+    ;;; Draw the button in the specified state.  Valid states are DISABLED,
+    ;;; NORMAL, PRESSED and ACTIVE.  Must be overridden by subclasses.
+    (on draw-button (state)
+      (error "draw-button must be overridden"))
+
+    (define mouse-in-button? #f)
+    (on draw ()
+      (send self draw-button 
+            (cond [(not enabled?) 'disabled]
+                  [(not mouse-in-button?) 'normal]
+                  [(mouse-grabbed-by? self) 'pressed]
+                  [#t 'active])))
+    (define (do-draw refresh?)
+      (send self draw)
+      (when refresh?
+        (refresh)))
+    
+    (on prop-change (name value prev veto)
+      (case name
+        [[enabled?]
+         (set! (prop self wants-cursor?) enabled?) 
+         (do-draw #f)]
+        [else (call-next-handler)]))
+
+    (on setup-finished ()
+      (call-next-handler)
+      (do-draw #f))
+    (on mouse-enter (event)
+      (set! mouse-in-button? #t)
+      (do-draw #t))
+    (on mouse-leave (event)
+      (set! mouse-in-button? #f)
+      (do-draw #t))
+    (on mouse-down (event)
+      (grab-mouse self)
+      (do-draw #t))
+    (on mouse-up (event)
+      (define was-grabbed? #f)
+      (when (mouse-grabbed-by? self)
+        (set! was-grabbed? #t)
+        (ungrab-mouse self))
+      (do-draw #t)
+      (when (and mouse-in-button? was-grabbed?)
+        (send self button-clicked event)))
+    (on button-clicked (event)
+      ((prop self action)))
+    )
+
+  ;;; Get the version of a QuickTime component, given the four-letter,
+  ;;; case-sensitive type and subtype strings. Returns 0 if the component
+  ;;; is not installed.
+  (define (quicktime-component-version type subtype)
+    (call-5l-prim 'QTComponentVersion type subtype))
+
+  ;;; Mark all events which were posted at or before this time--but which
+  ;;; have yet to be processed--as stale.  These events can be later
+  ;;; identified using EVENT-STALE?.  They will otherwise be processed in
+  ;;; the normal fashion.
+  ;;;
+  ;;; @see event-stale?
+  (define (mark-unprocessed-events-as-stale!)
+    (call-5l-prim 'MarkUnprocessedEventsAsStale))
+
+  ;;; Register a file to be included in any debug (i.e., crash) reports
+  ;;; generated for either the script or the engine itself.
+  ;;;
+  ;;; The description should be a short lowercase string.  Don't bother
+  ;;; to capitalize the first word, or your description will look funny
+  ;;; in the list of descriptions.
+  (define (register-debug-report-file! file description)
+    ;; TODO - This is an ugly hack to support absolute path names.
+    (let [[path (if (absolute-path? file)
+                    file
+                    (make-path-from-abstract (current-directory) file))]]
+      (call-5l-prim 'DebugReportAddFile path description)))
+
   )

@@ -111,6 +111,8 @@
   (define (blocking-idle)
     (%idle #t))
 
+  ;;; Hand over control to the operating system, and process any
+  ;;; outstanding events.
   (define (idle)
     (%idle #f))
   
@@ -139,6 +141,7 @@
     (non-fatal-error msg)
     (error msg))
   
+  ;;; Exit the currently-running script.
   (define (exit-script)
     ;; Call the appropriate exit primitive.
     (if (have-5l-prim? 'tamaleexit)
@@ -160,6 +163,9 @@
           (%kernel-set-state 'JUMPING)
           (%kernel-check-state))))
 
+  ;;; Show the results of all drawing calls made since the last screen
+  ;;; update.  (The screen is only updated after calls to IDLE, REFRESH,
+  ;;; WAIT, and similar functions.)
   (define (refresh &key (transition 'none) (ms 500))
     ;; Refresh the screen by blitting dirty areas of our offscreen buffer
     ;; to the display.
@@ -421,10 +427,10 @@
     (%assert (not (eq? *%kernel-state* 'PAUSED)))
     (%assert (eq? *%kernel-state* 'NORMAL)))
 
+  ;;; This can be used to defer calls to WAIT, IDLE and other blocking
+  ;;; functions that can't be called from a callback.  Note that because a
+  ;;; thunk is not an element, we don't honor WITH-DEFAULT-ELEMENT-PARENT.
   (define (run-deferred thunk &key (parent (current-card)))
-    ;; This can be used to defer calls to WAIT, IDLE and other blocking
-    ;; functions that can't be called from a callback.  Note that because a
-    ;; thunk is not an element, we don't honor WITH-DEFAULT-ELEMENT-PARENT.
     (set! *%kernel-deferred-thunk-queue*
           (cons (make-deferred-action parent thunk)
                 *%kernel-deferred-thunk-queue*))
@@ -572,7 +578,6 @@
       (call-5l-prim 'EnableExpensiveEvents enable?)))
 
   (defmethod (engine-notify-enter-card (engine <real-engine>) (card <card>))
-    (call-5l-prim 'resetorigin)
     (when (have-5l-prim? 'notifyentercard)
       (call-5l-prim 'notifyentercard (node-full-name card)))
     (call-hook-functions *enter-card-hook* card))

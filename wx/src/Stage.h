@@ -104,11 +104,6 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     wxBitmap mOffscreenFadePixmap;
 
 	//////////
-	/// A bitmap for saving and restoring graphics
-	/// 
-	wxBitmap mSavePixmap;
-
-	//////////
 	/// We try to rate-limit our idle events to prevent performance
 	/// problems with the Scheme garbage collector (the event dispatching
 	/// system allocates some memory to process events).
@@ -573,21 +568,6 @@ public:
 	///
 	DrawingArea *GetBackgroundDrawingArea()
 		{ return mBackgroundDrawingArea.get(); }
-
-	//////////
-	/// Save a portion of the current offscreen buffer to our save
-	/// buffer.
-	/// 
-	/// \param inBounds  The rectangle defining the portion to save.
-	///
-	void SaveGraphics(const wxRect &inBounds);
-
-	//////////
-	/// Restore a portion of the save buffer to our offscreen buffer.
-	///
-	/// \param inBounds  The rectangle defining the portion to restore.
-	///
-	void RestoreGraphics(const wxRect &inBounds);
 
 	//////////
 	/// Save a screenshot to the specified file

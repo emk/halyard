@@ -58,7 +58,7 @@
   (define-card-template %test-suite%
       [tests]
       ()
-    (clear-screen (color #xFF #xFF #xFF))
+    (clear-dc (color #xFF #xFF #xFF))
     (let [[report (make-test-report)]]
       (foreach [test-class tests]
          (run-tests test-class report))

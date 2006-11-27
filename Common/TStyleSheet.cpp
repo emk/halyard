@@ -238,10 +238,10 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 	return text;
 }
 
-void TStyleSheet::Draw(const std::string& inText,
-					   GraphicsTools::Point inPosition,
-					   GraphicsTools::Distance inLineLength,
-					   GraphicsTools::Image *inImage)
+TRect TStyleSheet::Draw(const std::string& inText,
+                        GraphicsTools::Point inPosition,
+                        GraphicsTools::Distance inLineLength,
+                        GraphicsTools::Image *inImage)
 {
 	StyledText text = MakeStyledText(inText);
 	TextRenderingEngine engine(text, inPosition, inLineLength,
@@ -250,10 +250,10 @@ void TStyleSheet::Draw(const std::string& inText,
 	UpdateSpecialVariablesForText(TPoint(engine.GetRightBound(),
 										 engine.GetBottomBound()));
 
-	// TODO - Should these be classified as special variables?
-	// They're really just return values for use with MeasureTextAA.
-	gVariableManager.Set("_text_width", engine.GetTextWidth());
-	gVariableManager.Set("_text_height", engine.GetTextHeight());
+    // Return the bounding box of the text we drew.
+    GraphicsTools::Distance left, top, right, bottom;
+    engine.GetTextBounds(left, top, right, bottom);
+    return TRect(left, top, right, bottom);
 }
 
 int TStyleSheet::GetLineHeight()
@@ -307,29 +307,20 @@ void TStyleSheetManager::RemoveAll()
 	mStyleSheetMap.clear();
 }
 
-void TStyleSheetManager::Draw(const std::string &inStyleSheet,
-							  const std::string& inText,
-							  GraphicsTools::Point inPosition,
-							  GraphicsTools::Distance inLineLength,
-							  GraphicsTools::Image *inImage)
+TRect TStyleSheetManager::Draw(const std::string &inStyleSheet,
+                               const std::string& inText,
+                               GraphicsTools::Point inPosition,
+                               GraphicsTools::Distance inLineLength,
+                               GraphicsTools::Image *inImage)
 {
 	TStyleSheet *style_sheet = Find(inStyleSheet);
 	if (!style_sheet)
 	{
-		gDebugLog.Caution("Tried to draw text using non-existant style "
-						  "sheet <%s>", inStyleSheet.c_str());
-		return;
+		gLog.Error("Tried to draw text using non-existant style "
+				   "sheet <%s>", inStyleSheet.c_str());
+		return TRect(0, 0, 0, 0);
 	}
-	style_sheet->Draw(inText, inPosition, inLineLength, inImage);
-}
-
-void TStyleSheetManager::DoText(const char *inStyleSheet, TRect inRect,
-								const char *inText,
-								GraphicsTools::Image *inImage)
-{
-	Draw(inStyleSheet, inText, GraphicsTools::Point(inRect.Left(),
-													inRect.Top()),
-		 inRect.Right() - inRect.Left(), inImage);
+	return style_sheet->Draw(inText, inPosition, inLineLength, inImage);
 }
 
 int TStyleSheetManager::GetLineHeight(const char *inStyleSheet)

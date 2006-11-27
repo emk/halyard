@@ -996,6 +996,12 @@ namespace Typography {
 							Justification inJustification,
 							Image *inImage);
 
+        //////////
+        /// Get the drawing bounds from the last call to RenderText. 
+        ///
+        void GetTextBounds(Distance &outLeft, Distance &outTop,
+                           Distance &outRight, Distance &outBottom) const;
+
 		//////////
 		/// After a call to 'RenderText', get the width of the text.  This
 		/// can be used with a NULL image to measure text.

@@ -1090,6 +1090,18 @@ TextRenderingEngine::TextRenderingEngine(const StyledText &inText,
 	
 }
 
+void TextRenderingEngine::GetTextBounds(Distance &outLeft,
+                                        Distance &outTop,
+                                        Distance &outRight,
+                                        Distance &outBottom) const
+{
+    ASSERT(mHaveBounds);
+    outLeft   = mLeftBound;
+    outTop    = mTopBound;
+    outRight  = mRightBound;
+    outBottom = mBottomBound;
+}
+
 void TextRenderingEngine::DrawGreyMap(Point inPosition,
 									  const GreyMap *inGreyMap,
 									  Color inColor)
