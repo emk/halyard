@@ -1,5 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * #3806: The engine now uses 1-3% of the CPU while idling, and 6-20% when
+    playing QuickTime, instead of 100% (at least as measured on my machine).
+    This fix depends on #3783, the NAP and TIMEOUT fix.
+
 0.3.0 - 21 Nov 2006 - brian, emk
 
   * #3647: Fixed update installer to build parent directories for
@@ -38,7 +44,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
   * Dealt with various warnings introduced by Visual Studio 2005, at
     the Common and 5L project levels.  There's a lot more warning work
     still to go.  This particular change included updading boost's
-    visualc.hpp configuration header to the latest version.
+    visualc.hpp configuration header to the latest version.  
 
 0.2.3 - 23 Oct 2006 - emk, brian
 

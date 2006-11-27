@@ -106,7 +106,7 @@ public:
 	//////////
 	/// Dispatch an idle event.
 	///
-	bool DoEventIdle(wxIdleEvent &inEvent);
+	bool DoEventIdle();
 	
 	//////////
 	/// Dispatch a mouse move event.

@@ -207,7 +207,7 @@ bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
 	return EventCleanup();
 }
 
-bool EventDispatcher::DoEventIdle(wxIdleEvent &inEvent)
+bool EventDispatcher::DoEventIdle()
 {
 	if (!sEnableExpensiveEvents)
 		return false;

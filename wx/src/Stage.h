@@ -54,6 +54,14 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     StageFrame *mFrame;
 
     //////////
+    /// This timer sends us periodic events, which we pass to Element
+    /// objects and our script as "idle" events.  We can't use wxIdleEvent
+    /// for this, because it offers no way to control the frequency with
+    /// which events are sent.
+    ///
+    wxTimer mTimer;
+
+    //////////
     /// The size of our drawing stage.
     ///
     wxSize mStageSize;
@@ -451,7 +459,7 @@ public:
 	
     //////////
     /// Send an idle message to any elements on the stage.  (This is one
-    /// of many functions called by OnIdle, and you probably won't need
+    /// of many functions called by OnTimer, and you probably won't need
     /// to call it directly.)
     ///
     /// \todo Make this function and On* functions private or protected.
@@ -461,7 +469,7 @@ public:
     //////////
     /// Do our idle-time processing.
     ///
-    void OnIdle(wxIdleEvent &inEvent);
+    void OnTimer(wxTimerEvent &inEvent);
 
     //////////
     /// Trap mouse movement events so we can do various useful things.

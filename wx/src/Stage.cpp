@@ -56,7 +56,7 @@
 #	include "Quake2Engine.h"
 #endif // CONFIG_HAVE_QUAKE2
 
-#define IDLE_INTERVAL (33) // milliseconds
+#define IDLE_INTERVAL (1000.0/FRAMES_PER_SECOND) // milliseconds
 
 USING_NAMESPACE_FIVEL
 
@@ -66,7 +66,7 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 
 BEGIN_EVENT_TABLE(Stage, wxWindow)
-	EVT_IDLE(Stage::OnIdle)
+	EVT_TIMER(FIVEL_STAGE_TIMER, Stage::OnTimer)
     EVT_MOTION(Stage::OnMouseMove)
     EVT_ERASE_BACKGROUND(Stage::OnEraseBackground)
     EVT_PAINT(Stage::OnPaint)
@@ -100,6 +100,9 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     SetBackgroundColour(STAGE_COLOR);
     Create(inParent, -1, wxDefaultPosition, inStageSize);
 
+    // Set the owner of our mTimer object.
+    mTimer.SetOwner(this, FIVEL_STAGE_TIMER);
+
 	mBackgroundDrawingArea = 
 		std::auto_ptr<DrawingArea>(new DrawingArea(this,
 												   inStageSize.GetWidth(),
@@ -118,12 +121,18 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     // Initialize the clock.
     UpdateClock();
 
+    // Send a timer event periodically.  Right now, we send two timer
+    // events per IDLE_INTERVAL, in an effort to get half-frame accuracy
+    // for waking up from a WAIT.
+    mTimer.Start(IDLE_INTERVAL / 2, wxTIMER_CONTINUOUS);
+
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage created.");
 }
 
 Stage::~Stage()
 {
 	mIsBeingDestroyed = true;
+    mTimer.Stop();
 	DeleteElements();
 	delete mImageCache;
 	delete mCursorManager;
@@ -535,10 +544,9 @@ void Stage::IdleElements() {
         (*i)->Idle();
 }
 
-void Stage::OnIdle(wxIdleEvent &inEvent)
+void Stage::OnTimer(wxTimerEvent& inEvent)
 {
-	if (mIsBeingDestroyed)
-		return;
+	ASSERT(!mIsBeingDestroyed);
 
     // Check our displayed cursor, because the return value of
     // ShouldShowCursor() might have changed.
@@ -571,7 +579,7 @@ void Stage::OnIdle(wxIdleEvent &inEvent)
 		// of the elements.  Idle event processing is handled differently
 		// from most other events; we let the scripting language work
 		// out the details.
-		GetEventDispatcher()->DoEventIdle(inEvent);
+		GetEventDispatcher()->DoEventIdle();
 	}
 }
 

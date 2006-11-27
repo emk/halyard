@@ -115,7 +115,11 @@
     (%idle #f))
   
   (define (%kernel-idle-and-check-deferred)
-    (idle)
+    ;; We use either a regular or a blocking idle, depending on whether we
+    ;; have something to do afterwards.
+    (if (null? *%kernel-deferred-thunk-queue*)
+      (blocking-idle)
+      (idle))
     (%kernel-check-deferred))
 
   (define (engine-var name)
@@ -524,8 +528,8 @@
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
       [[PAUSED]
-       (%call-5l-prim 'schemeidle #f)
-       (%kernel-check-state)]       ; Tail-call self without consing.
+       (%call-5l-prim 'schemeidle #t) ; Similar to blocking-idle.
+       (%kernel-check-state)]         ; Tail-call self without consing.
       [[JUMPING]
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
