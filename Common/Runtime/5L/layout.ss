@@ -1,5 +1,6 @@
 (module layout (lib "lispish.ss" "5L")
   (require (lib "types.ss" "5L"))
+  (require (lib "shapes.ss" "5L"))
 
   (provide <layout> layout? layout-hspace layout-vspace layout-box-shape
            layout-next-box-at
@@ -58,7 +59,7 @@
                     [height (layout-box-height layout)]
                     [shape (rect 0 0 width height)])
 
-    (define box (rect-offset shape (layout-next-box-at layout)))
+    (define box (offset-rect shape (layout-next-box-at layout)))
     (mark-point-as-used! layout (rect-right-bottom box))
 
     ;; Update the location of our next box.

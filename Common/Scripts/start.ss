@@ -529,6 +529,8 @@
 ;;  Layout
 ;;=========================================================================
 
+(require (lib "layout.ss" "5L"))
+
 (card layout ()
 
   ;; Test <layout> defaults.

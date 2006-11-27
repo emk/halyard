@@ -2,7 +2,7 @@
   ;; Things which have been removed entirely:
   ;;
   ;;   origin set-origin! offset-origin with-offset-origin
-  ;;   opacity ensure-dir-exists
+  ;;   opacity
   ;;
   ;; Things which have been removed, but which can be handled by a simple
   ;; search & replace:
