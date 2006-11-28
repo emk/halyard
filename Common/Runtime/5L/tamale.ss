@@ -9,6 +9,34 @@
 
 
   ;;;======================================================================
+  ;;;  Enabling Deprecated Features at Runtime
+  ;;;======================================================================
+  ;;;  Most of our deprecated features are provided by deprecated.ss, but
+  ;;;  a few can only be enabled at runtime.
+
+  (provide enable-deprecated-features!)
+
+  (define *deprecated-features-enabled?* #f)
+  
+  ;;; Turn on various deprecated features.
+  (define (enable-deprecated-features!)
+    (set! *deprecated-features-enabled?* #t))
+
+  ;; Backwards compatibility glue for code which refers to elements by
+  ;; name.  Used by functions such as WAIT.
+  (define (elem-or-name-hack elem-or-name)
+    (if (and (symbol? elem-or-name)
+             *deprecated-features-enabled?*)
+        (begin
+          (debug-caution (cat "Change '" elem-or-name
+                              " to (@ " elem-or-name ")"))
+          (@* elem-or-name))
+        (begin
+          (assert (element? elem-or-name))
+          elem-or-name)))
+
+
+  ;;;======================================================================
   ;;;  File and Path Functions
   ;;;======================================================================
   ;;;  Most of these are only used internally, in this file.

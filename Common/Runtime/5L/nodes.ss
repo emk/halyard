@@ -590,7 +590,7 @@
   ;; and other <card-group>s.  Any node may contain <element>s.
 
   (provide <node> node? node-name node-full-name extends-template? node-parent
-           node-elements find-node @* @ elem-or-name-hack)
+           node-elements find-node @* @)
 
   (defclass <node> (<template>)
     (name :type <symbol>)
@@ -701,18 +701,6 @@
       [(@ name)
        (@* 'name)]))
   (define-syntax-indent @ function)
-
-  (define (elem-or-name-hack elem-or-name)
-    ;; Backwards compatibility glue for code which refers to elements
-    ;; by name.  Used by functions such as WAIT.
-    (assert (or (instance-of? elem-or-name <element>)
-                (instance-of? elem-or-name <symbol>)))
-    (node-full-name (if (element? elem-or-name)
-                        elem-or-name
-                        (begin
-                          (debug-caution (cat "Change '" elem-or-name
-                                              " to (@ " elem-or-name ")"))
-                          (@* elem-or-name)))))
 
   (define (analyze-node-name name)
     ;; Given a name of the form '/', 'foo' or 'bar/baz', return the

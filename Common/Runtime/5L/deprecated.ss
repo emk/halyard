@@ -28,6 +28,12 @@
   ;;   set-media-volume! -> set-volume!
   ;;   set-geiger-audio-counts-per-second! -> set-counts-per-second!
   ;;
+  ;; The following functions still exist, but no longer allow elements to
+  ;; be specified by symbols (unless ENABLE-DEPRECATED-FEATURES! has been
+  ;; called):
+  ;;
+  ;;   delete-element delete-elements wait
+  ;;
   ;; Files which are no longer included in the standard API, but which
   ;; are still available:
   ;;
