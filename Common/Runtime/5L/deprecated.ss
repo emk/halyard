@@ -2,7 +2,7 @@
   ;; Things which have been removed entirely:
   ;;
   ;;   origin set-origin! offset-origin with-offset-origin
-  ;;   opacity
+  ;;   opacity timeout
   ;;
   ;; Things which have been removed, but which can be handled by a simple
   ;; search & replace:
@@ -13,9 +13,20 @@
   ;;   point-in-poly? -> point-in-shape?
   ;;   offset-shape -> offset-by-point
   ;;   %simple-zone% -> %clickable-zone%
-  ;;   zone -> clickable-zone
+  ;;   zone -> clickable-zone  [* see below]
   ;;   clear-screen -> clear-dc
   ;;   current-card-name -> (node-full-name (current-card))
+  ;;   %edit-box-element% -> %edit-box%
+  ;;   %sine-wave-element% -> %sine-wave%
+  ;;   %movie-element% -> %movie%
+  ;;
+  ;; The following functions used to take an element name as their first
+  ;; argument.  This has been replaced by an optional keyword parameter
+  ;; :NAME.  The function GEIGER-SYNTH used to have a &REST parameter; this
+  ;; is now an ordinary list, followed by keyword arguments.
+  ;;
+  ;;   clickable-zone browser edit-box geiger-audio geiger-synth
+  ;;   sine-wave vorbis-audio movie
   ;;
   ;; The following functions have been replaced with ON handlers, and may
   ;; be accessed using SEND.  In most cases, this means that element
@@ -43,6 +54,10 @@
   ;;
   ;; Calling MEASURE-TEXT invalidates your *text-x* and *text-y* values.
   ;; Wrap it in (WITH-SAVED-TEXT-POSITION ...) to preserve the old behavior.
+  ;;
+  ;; CALL-AT-SAFE-TIME has been replaced by RUN-DEFERRED, which has subtly
+  ;; different semantics (see the docs).  This change also affects
+  ;; DEFERRED-CALLBACK, of course.
 
 
   ;;;======================================================================

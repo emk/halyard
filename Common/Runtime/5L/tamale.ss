@@ -337,8 +337,9 @@
       (action)))
 
   ;;; Create a %clickable-zone%.
-  (define (clickable-zone name shape action
-                       &key (cursor 'hand) (overlay? #f) (alpha? #f))
+  (define (clickable-zone shape action
+                          &key (name (gensym)) (cursor 'hand)
+                          (overlay? #f) (alpha? #f))
     (create %clickable-zone%
             :name name 
             :shape shape
@@ -584,7 +585,7 @@
     (send self load-page location))
 
   ;;; Create a new %browser% object.
-  (define (browser name r location)
+  (define (browser r location &key (name (gensym)))
     (create %browser% :name name :rect r :location location))
 
 
@@ -592,10 +593,10 @@
   ;;;  Text Editing
   ;;;======================================================================
 
-  (provide %edit-box-element% edit-box)
+  (provide %edit-box% edit-box)
 
   ;;; A native GUI edit box.
-  (define-element-template %edit-box-element%
+  (define-element-template %edit-box%
       [[text :type <string> :label "Initial text"]
        [font-size :type <integer> :label "Font size"]
        [multiline? :type <boolean> :label "Allow multiple lines?"]]
@@ -604,9 +605,9 @@
                   (parent->card self (prop self rect)) text
                   font-size multiline?))
 
-  ;;; Create an %edit-box-element%.
-  (define (edit-box name r text &key (font-size 9) (multiline? #f))
-    (create %edit-box-element% :name name :rect r :text text
+  ;;; Create an %edit-box%.
+  (define (edit-box r text &key (name (gensym)) (font-size 9) (multiline? #f))
+    (create %edit-box% :name name :rect r :text text
             :font-size font-size :multiline? multiline?))
 
   
@@ -626,9 +627,9 @@
   (define (media-resume elem)
     (call-5l-prim 'movieresume (node-full-name elem)))
   
-  ;;; (Internal use only.)  End playback of a media element. From the
-  ;;; perspective of the WAIT function, the media element will skip
-  ;;; immediately to the end of playback.
+  ;; (Internal use only.)  End playback of a media element. From the
+  ;; perspective of the WAIT function, the media element will skip
+  ;; immediately to the end of playback.
   (define (media-end-playback elem)
     (call-5l-prim 'movieendplayback (node-full-name elem)))
 
@@ -639,13 +640,13 @@
     (call-5l-prim 'MediaSetVolume (node-full-name elem) channel volume))  
            
   ;;; The superclass of all audio-only elements.
-  ;;; @see %movie-element%
+  ;;; @see %movie%
   (define-element-template %audio-element%
       [[volume       :type <number> :default 1.0 :label "Volume (0.0 to 1.0)"]]
       (%invisible-element%)
 
     ;; BEGIN DUPLICATE CODE - Because we don't have multiple inheritence,
-    ;; the API below is shared with %movie-element%.
+    ;; the API below is shared with %movie%.
 
     ;;; Pause playback.
     (on pause ()
@@ -698,7 +699,8 @@
   ;;;======================================================================
   ;;;  These are very specialized, and aren't expected to be used much.
   
-  (provide geiger-audio %geiger-synth% geiger-synth sine-wave)
+  (provide %geiger-audio% geiger-audio %geiger-synth% geiger-synth
+           %sine-wave% sine-wave)
 
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
@@ -710,7 +712,7 @@
                   (build-path (current-directory) "LocalMedia" location)
                   (prop self volume)))
 
-  (define (geiger-audio name location &key (volume 1.0))
+  (define (geiger-audio location &key (name (gensym)) (volume 1.0))
     (create %geiger-audio% :name name :location location :volume volume))
 
   (define-element-template %geiger-synth%
@@ -726,22 +728,22 @@
                       item))
                 loops)))
 
-  (define (geiger-synth name state-path chirp . loops)
+  (define (geiger-synth state-path chirp loops &key (name (gensym)))
     (create %geiger-synth%
             :name name :state-path state-path
             :chirp chirp :loops loops))
 
   ;;; Plays a pure sine-wave tone.
-  (define-element-template %sine-wave-element%
+  (define-element-template %sine-wave%
       [[frequency :type <integer> :label "Frequency (Hz)"]]
       (%audio-element%)
     (call-5l-prim 'AudioStreamSine (node-full-name self)
                   (make-node-event-dispatcher self)
                   (prop self volume) frequency))
 
-  ;;; Create a %sine-wave-element%.
-  (define (sine-wave name frequency &key (volume 1.0))
-    (create %sine-wave-element%
+  ;;; Create a %sine-wave%.
+  (define (sine-wave frequency &key (name (gensym)) (volume 1.0))
+    (create %sine-wave%
             :name name :frequency frequency :volume volume))
 
 
@@ -767,7 +769,8 @@
                     (prop self volume) (* 1024 buffer) loop?)))
   
   ;;; Create a %vorbis-audio% element.
-  (define (vorbis-audio name location &key (loop? #f) (volume 1.0))
+  (define (vorbis-audio location
+                        &key (name (gensym)) (loop? #f) (volume 1.0))
     (create %vorbis-audio%
             :name name :location location :loop? loop? :volume volume))
 
@@ -775,7 +778,7 @@
   ;;;======================================================================
   ;;;  Streaming Media Support
   ;;;======================================================================
-  ;;;  For now, these functions generally only work with %MOVIE-ELEMENT%.
+  ;;;  For now, these functions generally only work with %MOVIE%.
 
   (provide media-is-installed? media-cd-is-available? search-for-media-cd
            set-media-base-url!)
@@ -847,10 +850,10 @@
   ;;;  Movie Elements
   ;;;======================================================================
   
-  (provide %movie-element% movie)
+  (provide %movie% movie)
 
   ;;; A movie.
-  (define-element-template %movie-element%
+  (define-element-template %movie%
       [[location     :type <string>  :label "Location"]
        [volume       :type <number>  :label "Volume (0.0 to 1.0)" :default 1.0]
        [controller?  :type <boolean> :label "Has movie controller" :default #f]
@@ -930,10 +933,11 @@
                     path volume
                     controller? audio-only? loop? interaction?)))
 
-  ;;; Create a %movie-element%.
-  (define (movie name r location
-                 &key (volume 1.0) controller? audio-only? loop? interaction?)
-    (create %movie-element%
+  ;;; Create a %movie%.
+  (define (movie r location
+                 &key (name (gensym)) (volume 1.0)
+                 controller? audio-only? loop? interaction?)
+    (create %movie%
             :name name :rect r :location location
             :volume volume
             :controller? controller? 

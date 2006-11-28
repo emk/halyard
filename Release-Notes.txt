@@ -13,6 +13,12 @@ SVN - emk
   * #3809: The functions WAIT, DELETE-ELEMENT and DELETE-ELEMENTS no longer
     accept symbols in place of actual elements.  (To get the old behavior,
     call ENABLE-DEPRECATED-FEATURES! at script load time.)
+  * #3810: More API cleanup in tamale.ss.  Most element templates no longer
+    have "-element%" in their names (except for abstract templates near the
+    top of the hierarchy), and the NAME argument for most element creation
+    helpers has been made a keyword argument (finally).  ddc and brian both
+    seemed to think this change was plausible; let's see how it works in
+    practice.
 
 0.3.1 - 27 Nov 2006 - emk
 
