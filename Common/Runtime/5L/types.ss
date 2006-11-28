@@ -26,11 +26,6 @@
            polygon-vertices polygon-bounds
 
            <shape> shape?
-
-           <realtime-state-db-listener> realtime-state-db-listener?
-           realtime-state-db-listener-getter-name
-           realtime-state-db-listener-bindings
-           realtime-state-db-listener-code
            )
   
   (define (bare-class-name class)
@@ -136,17 +131,4 @@
                         (point-x (first verts)) (point-y (first verts)))
              (rest verts))))
  
-
-  ;;;======================================================================
-  ;;;  State DB Real-time Support
-  ;;;======================================================================
-
-  ;;; Interface to an incompletely implemented state-db listener system.
-  ;;; This was intended to allow us to write state-db listeners that never
-  ;;; allocated memory, and therefore ran in deterministic time.  Not
-  ;;; completely implemented, and we should probably remove it--regular
-  ;;; listeners seem to perform fine in practice.
-  (defclass <realtime-state-db-listener> ()
-    getter-name bindings code)
-
   )

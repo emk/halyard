@@ -303,10 +303,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeRtCallback.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\Common\lang\scheme\TSchemeScriptEditorDB.cpp"
 				>
 			</File>
@@ -461,10 +457,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\lang\scheme\TSchemePtr.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeRtCallback.h"
 				>
 			</File>
 			<File

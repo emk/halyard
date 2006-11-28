@@ -23,7 +23,6 @@
 #include "CommonHeaders.h"
 #include "TSchemeInterpreter.h"
 #include "TSchemeConv.h"
-#include "TSchemeRtCallback.h"
 
 USING_NAMESPACE_FIVEL
 using GraphicsTools::Color;
@@ -230,21 +229,6 @@ static TValue SchemeToTPercent(Scheme_Object *inVal) {
 	return TValue(TPercent(SchemeGetRealMember("percent-value", inVal)));
 }
 
-static TValue SchemeToRtCallback(Scheme_Object *inVal) {
-    Scheme_Object *getter =
-        SchemeGetMember("realtime-state-db-listener-getter-name", inVal);
-    Scheme_Object *bindings =
-        SchemeGetMember("realtime-state-db-listener-bindings", inVal);
-    Scheme_Object *code =
-        SchemeGetMember("realtime-state-db-listener-code", inVal);
-
-    TSchemeRtCallback *ptr =
-        new TSchemeRtCallback(TSymbol(SchemeToTValue(getter)).GetName(),
-                              SchemeToTValue(bindings),
-                              SchemeToTValue(code));
-    return TCallbackPtr(ptr);
-}
-
 /// TypeInfo encapsulates the name of a Scheme predicate to check
 /// the type of a Scheme object, and the conversion function to 
 /// convert the Scheme object into a TValue if the predicate
@@ -262,7 +246,6 @@ static TypeInfo gTypeInfo[] = {
 	{"color?", &SchemeToColor},
 	{"polygon?", &SchemeToTPolygon},
 	{"percent?", &SchemeToTPercent},
-    {"realtime-state-db-listener?", &SchemeToRtCallback},
 	{NULL, NULL}
 };
 

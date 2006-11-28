@@ -372,19 +372,14 @@
   ;;;  immediately.  The engine will keep track of the data accessed, and
   ;;;  re-run the listener whenever any of that data changes.
   ;;;
-  ;;;  A listener is a special kind of function.  You can create a
-  ;;;  listener using DEFINE-STATE-DB-LISTENER, DEFINE-STATE-DB-LISTENER/RT,
-  ;;;  STATE-DB-FN, or STATE-DB-FN/RT.  The RT versions are implemented in
-  ;;;  a special, non-consing subset of Scheme which should not cause
-  ;;;  the garbage collector to be invoked.
+  ;;;  A listener is a special kind of function.  You can create a listener
+  ;;;  using DEFINE-STATE-DB-LISTENER or STATE-DB-FN.
   ;;;
   ;;;  This is an advanced language feature, and simple Tamale programs
   ;;;  will almost never need to use it.
 
   (provide set-state-db! register-state-db-fn!
-           state-db-fn state-db-fn/rt
-           define-state-db-fn define-state-db-fn/rt
-           define-state-db-listener define-state-db-listener/rt)
+           state-db-fn define-state-db-fn define-state-db-listener)
   
   ;;; Set the specified key in the state database.
   ;;;
@@ -419,36 +414,6 @@
        (make-state-db-fn (fn (state-db) . body))]))
   (define-syntax-indent state-db-fn 1)
 
-  ;;; Create a function suitable for passing to REGISTER-STATE-DB-FN!.
-  ;;; This function is written in a special, non-consing dialect of Scheme.
-  ;;;
-  ;;; @syntax (STATE-DB-FN/RT (state-db) [binding ...] body ...)
-  ;;; @param FUNCTION state-db A function which will fetch data from the
-  ;;;   state database.
-  ;;; @param NAME binding A name from the enclosing lexical scope which
-  ;;;   should be made available within the body.  Note that STATE-DB-FN/RT
-  ;;;   will immediate create a read-only copy of the original binding; the
-  ;;;   code body will not see any future updates from Scheme.
-  ;;; @param BODY body The code to run.  For more documentation on the
-  ;;;   subset of Scheme supported here, consult the engine source code
-  ;;;   or experiment.
-  (define-syntax (state-db-fn/rt stx)
-    (define (expand-binding binding-stx)
-      (unless (symbol? (syntax-object->datum binding-stx))
-        (error "state-db-fn/rt binding must be symbol"))
-      (quasisyntax/loc binding-stx (list '#,binding-stx #,binding-stx)))
-    (define (expand-bindings bindings-stx)
-      (map expand-binding (syntax->list bindings-stx)))
-    (syntax-case stx ()
-      [(state-db-fn/rt (state-db) bindings . body)
-       (quasisyntax/loc
-        stx
-        (make <realtime-state-db-listener>
-          :getter-name 'state-db
-          :bindings (list #,@(expand-bindings #'bindings))
-          :code 'body))]))
-  (define-syntax-indent state-db-fn/rt 2)
-
   ;;; Equivalent to (define name (state-db-fn (state-db) ...)).
   ;;;
   ;;; @syntax (define-state-db-fn (name state-db) . body)
@@ -458,15 +423,6 @@
        (define name (state-db-fn (state-db) . body))]))
   (define-syntax-indent define-state-db-fn 1)
   
-  ;;; Equivalent to (define name (state-db-fn/rt (state-db) ...)).
-  ;;;
-  ;;; @syntax (define-state-db-fn (name state-db) . body)
-  (define-syntax define-state-db-fn/rt
-    (syntax-rules ()
-      [(define-state-db-fn/rt (name state-db) . body)
-       (define name (state-db-fn/rt (state-db) . body))]))
-  (define-syntax-indent define-state-db-fn/rt 1)
-
   ;;; Combines the features of REGISTER-STATE-DB-FN! and STATE-DB-FN.
   ;;;
   ;;; @syntax (DEFINE-STATE-DB-LISTENER (name state-db) body ...)
@@ -485,14 +441,4 @@
         (register-state-db-fn! #,(datum->syntax-object #'name 'self) value))]))
   (define-syntax-indent define-state-db-listener 1)
   
-  ;;; Combines the features of REGISTER-STATE-DB-FN! and STATE-DB-FN/RT.
-  ;;;
-  ;;; @syntax (DEFINE-STATE-DB-LISTENER (name state-db) [binding ...] body ...)
-  (define-syntax define-state-db-listener/rt
-    (syntax-rules ()
-      [(define-state-db-listener/rt (name state-db) bindings . body)
-       (define-state-db-listener name
-         (state-db-fn/rt (state-db) bindings . body))]))
-  (define-syntax-indent define-state-db-listener/rt 2)
-
   ) ; end module

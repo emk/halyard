@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * #3807: Removed minimal support for "real time" (i.e., non-consing)
+    state-db listeners, since we didn't actually need it in our last major
+    project, and there's no need to keep an extra Scheme interpreter
+    hanging around for no good reason.
+
 0.3.1 - 27 Nov 2006 - emk
 
   * #3806: The engine now uses 1-3% of the CPU while idling, and 6-20% when
