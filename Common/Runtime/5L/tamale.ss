@@ -41,6 +41,8 @@
   
   ;; XXX - This is not a well-designed function; it can only create
   ;; directories in a folder that's typically write-only (d'oh).
+  ;; XXX - This function does not follow our naming convention, and is
+  ;; only exported for use by the updater.
   (define (ensure-dir-exists name)
     (define dir (build-path (current-directory) name))
     (when (not (directory-exists? dir))
@@ -412,7 +414,9 @@
   (define (hide-cursor-until-mouse-moved!)
     (call-5l-prim 'HideCursorUntilMouseMoved))
 
-  ;;; Get the current position of the mouse.
+  ;;; Get the current position of the mouse.  This function is almost
+  ;;; certainly the wrong function to use; see the mouse-moved events
+  ;;; instead.
   (define (mouse-position)
     ;; XXX - This keeps returning exciting results even if we're in the
     ;; background.  Yuck.
@@ -449,29 +453,31 @@
   ;;;  ActiveX and Flash
   ;;;======================================================================
 
-  (provide %activex% activex-prop set-activex-prop! %flash-card%)
+  (provide %activex% %flash-card%)
 
   ;;; A native ActiveX element.  Consult the C++ source for documentation.
   (define-element-template %activex%
       [[activex-id :type <string>]]
       (%widget%)
+
+    ;;; Get a property of an ActiveX element.
+    (on activex-prop (name)
+      (call-5l-prim 'ActiveXPropGet (node-full-name self) name))
+
+    ;;; Set a property of an ActiveX element.
+    (on set-activex-prop! (name value)
+      (call-5l-prim 'ActiveXPropSet (node-full-name self) name value))
+
     (call-5l-prim 'ActiveX (node-full-name self) 
                   (make-node-event-dispatcher self)
                   (parent->card self (prop self rect))
                   activex-id))
 
-  ;;; Get a property of an ActiveX element.
-  (define (activex-prop elem prop)
-    (call-5l-prim 'ActiveXPropGet (node-full-name elem) prop))
-
-  ;;; Set a property of an ActiveX element.
-  (define (set-activex-prop! elem prop value)
-    (call-5l-prim 'ActiveXPropSet (node-full-name elem) prop value))
-
   ;;; Show a Macromedia Flash movie scaled to fit the current card.
   ;;; Requires that the user have an appropriate version of Flash
   ;;; installed.  Macromedia reserves the right to break this interface in
-  ;;; future versions of Flash.
+  ;;; future versions of Flash, so this is more for demo purposes than
+  ;;; anything else.
   (define-card-template %flash-card%
       [[location :type <string> :label "Location"]]
       ()
@@ -480,7 +486,7 @@
               :name 'flash
               :rect $screen-rect
               :activex-id "ShockwaveFlash.ShockwaveFlash"))
-    (set! (activex-prop flash "movie")
+    (send flash set-activex-prop! "movie"
           (build-path (current-directory) "Flash" location)))
   
 
@@ -580,34 +586,66 @@
   ;;;  Generic Media Support
   ;;;======================================================================
 
-  (provide media-pause media-resume set-media-volume! wait tc)
+  (provide wait tc)
 
-  ;;; The superclass of all _pure_ audio elements.
+  ;; (Internal use only.)  Pause a media element.
+  (define (media-pause elem)
+    ;; Note: these functions may not be happy if the underlying movie
+    ;; code doesn't like to be paused.
+    (call-5l-prim 'moviepause (node-full-name elem)))
+
+  ;; (Internal use only.)  Resume a media element.
+  (define (media-resume elem)
+    (call-5l-prim 'movieresume (node-full-name elem)))
+  
+  ;;; (Internal use only.)  End playback of a media element. From the
+  ;;; perspective of the WAIT function, the media element will skip
+  ;;; immediately to the end of playback.
+  (define (media-end-playback elem)
+    (call-5l-prim 'movieendplayback (node-full-name elem)))
+
+  ;; (Internal use only.)  Set the volume of a media element.  Channels may
+  ;; be LEFT, RIGHT, ALL, or something else depending on the exact type of
+  ;; media being played.  Volume ranges from 0.0 to 1.0.
+  (define (set-media-volume! elem channel volume)
+    (call-5l-prim 'MediaSetVolume (node-full-name elem) channel volume))  
+           
+  ;;; The superclass of all audio-only elements.
   ;;; @see %movie-element%
   (define-element-template %audio-element%
       [[volume       :type <number> :default 1.0 :label "Volume (0.0 to 1.0)"]]
       (%invisible-element%)
+
+    ;; BEGIN DUPLICATE CODE - Because we don't have multiple inheritence,
+    ;; the API below is shared with %movie-element%.
+
+    ;;; Pause playback.
+    (on pause ()
+      (media-pause self))
+
+    ;;; Resume playback.
+    (on resume ()
+      (media-resume self))
+
+    ;;; End playback. From the perspective of the WAIT function, this media
+    ;;; element will skip immediately to the end of playback.
+    (on end-playback ()
+      (media-end-playback self))
+    (on end-playback ()
+      (media-end-playback self))
+
+    ;;; Set the volume of a media element.  Channels may be LEFT, RIGHT,
+    ;;; ALL, or something else depending on the exact type of media being
+    ;;; played.  Volume ranges from 0.0 to 1.0.
+    (on set-volume! (channel volume)
+      (set-media-volume! self channel volume))
+
+    ;; END DUPLICATE CODE
+
     ;; I'd like put a ON PROP-CHANGE handler here for audio volume, but
     ;; it's not quite so easy, because there may be multiple channels to
-    ;; content with. Ugh. See SET-MEDIA-VOLUME!.
+    ;; contend with. Ugh.
     )
-
-  ;;; Pause a movie.
-  (define (media-pause elem-or-name)
-    ;; Note: these functions may not be happy if the underlying movie
-    ;; code doesn't like to be paused.
-    (call-5l-prim 'moviepause (elem-or-name-hack elem-or-name)))
-
-  ;;; Resume a movie.
-  (define (media-resume elem-or-name)
-    (call-5l-prim 'movieresume (elem-or-name-hack elem-or-name)))
-  
-  ;;; Set the volume of a media element.  Channels may be LEFT, RIGHT, ALL,
-  ;;; or something else depending on the exact type of media being played.
-  ;;; Volume ranges from 0.0 to 1.0.
-  (define (set-media-volume! elem-or-name channel volume)
-    (call-5l-prim 'MediaSetVolume (elem-or-name-hack elem-or-name)
-                  channel volume))
 
   ;;; Pause script execution until the end of the specified media element,
   ;;; or until a specific frame is reached.
@@ -632,12 +670,13 @@
   ;;;======================================================================
   ;;;  These are very specialized, and aren't expected to be used much.
   
-  (provide geiger-audio set-geiger-audio-counts-per-second!
-           %geiger-synth% geiger-synth sine-wave)
+  (provide geiger-audio %geiger-synth% geiger-synth sine-wave)
 
   (define-element-template %geiger-audio%
       [[location :type <string> :label "Location"]]
       (%audio-element%)
+    (on set-counts-per-second! (counts)
+      (call-5l-prim 'AudioStreamGeigerSetCps (node-full-name self) counts))
     (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                   (make-node-event-dispatcher self)
                   (build-path (current-directory) "LocalMedia" location)
@@ -645,10 +684,6 @@
 
   (define (geiger-audio name location &key (volume 1.0))
     (create %geiger-audio% :name name :location location :volume volume))
-
-  (define (set-geiger-audio-counts-per-second! elem-or-name counts)
-    (call-5l-prim 'AudioStreamGeigerSetCps (elem-or-name-hack elem-or-name)
-                  counts))
 
   (define-element-template %geiger-synth%
       [state-path chirp loops]
@@ -697,10 +732,6 @@
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (%audio-element%)
-    ;;; End playback of this movie. From the perspective of the WAIT
-    ;;; function, this movie will skip immediately to the end of playback.
-    (on end-playback ()
-      (call-5l-prim 'movieendplayback (node-full-name self)))
     (let [[path (build-path (current-directory) "LocalMedia" location)]]
       (check-file path)
       (call-5l-prim 'AudioStreamVorbis (node-full-name self)
@@ -838,10 +869,30 @@
     ;;; The controller bar turns off timeouts.)
     (on set-timeout! (seconds)
       (call-5l-prim 'MovieSetTimeout (node-full-name self) seconds))
-    ;;; End playback of this movie. From the perspective of the WAIT
-    ;;; function, this movie will skip immediately to the end of playback.
+
+    ;; BEGIN DUPLICATE CODE - Because we don't have multiple inheritence,
+    ;; the API below is shared with %media-element%.
+
+    ;;; Pause playback.
+    (on pause ()
+      (media-pause self))
+
+    ;;; Resume playback.
+    (on resume ()
+      (media-resume self))
+
+    ;;; End playback. From the perspective of the WAIT function, this media
+    ;;; element will skip immediately to the end of playback.
     (on end-playback ()
-      (call-5l-prim 'movieendplayback (node-full-name self)))
+      (media-end-playback self))
+
+    ;;; Set the volume of a media element.  Channels may be LEFT, RIGHT,
+    ;;; ALL, or something else depending on the exact type of media being
+    ;;; played.  Volume ranges from 0.0 to 1.0.
+    (on set-volume! (channel volume)
+      (set-media-volume! self channel volume))
+
+    ;; END DUPLICATE CODE
 
     (let [[path (media-path location)]]
       (check-file path)

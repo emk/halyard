@@ -16,8 +16,17 @@
   ;;   zone -> clickable-zone
   ;;   clear-screen -> clear-dc
   ;;   current-card-name -> (node-full-name (current-card))
-  ;;   movie-pause -> media-pause
-  ;;   movie-resume -> media-resume
+  ;;
+  ;; The following functions have been replaced with ON handlers, and may
+  ;; be accessed using SEND.  In most cases, this means that element
+  ;; references of the form 'FOO are no longer supported; use @FOO instead.
+  ;;
+  ;;   activex-prop -> activex-prop
+  ;;   set-activex-prop! -> set-activex-prop!
+  ;;   movie-pause -> pause
+  ;;   movie-resume -> resume
+  ;;   set-media-volume! -> set-volume!
+  ;;   set-geiger-audio-counts-per-second! -> set-counts-per-second!
   ;;
   ;; Files which are no longer included in the standard API, but which
   ;; are still available:

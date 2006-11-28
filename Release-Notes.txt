@@ -4,8 +4,12 @@ SVN - emk
 
   * #3807: Removed minimal support for "real time" (i.e., non-consing)
     state-db listeners, since we didn't actually need it in our last major
-    project, and there's no need to keep an extra Scheme interpreter
-    hanging around for no good reason.
+    project (which made aggressive use of the state-db), and there's no
+    need to keep an extra Scheme interpreter hanging around for no good
+    reason.
+  * #3808: Replaced several top-level functions with ON handlers, in an
+    effort to make our API more object-oriented.  See deprecated.ss for the
+    full list.
 
 0.3.1 - 27 Nov 2006 - emk
 
