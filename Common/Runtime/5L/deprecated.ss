@@ -34,6 +34,8 @@
   ;;
   ;;   delete-element delete-elements wait
   ;;
+  ;; This also means that you can no longer wait on non-existant elements.
+  ;;
   ;; Files which are no longer included in the standard API, but which
   ;; are still available:
   ;;

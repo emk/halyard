@@ -360,7 +360,7 @@
   (define (delete-element elem-or-name)
     ;; TODO - Get rid of elem-or-name-hack, and rename
     ;; delete-element-internal to delete-element.
-    (delete-element-internal (find-node (elem-or-name-hack elem-or-name))))
+    (delete-element-internal (elem-or-name-hack elem-or-name)))
   
   ;;; Delete the specified elements.
   (define (delete-elements
@@ -678,10 +678,10 @@
   ;;; Pause script execution until the end of the specified media element,
   ;;; or until a specific frame is reached.
   (define (wait elem-or-name &key frame)
-    (when (or (not (symbol? elem-or-name)) (element-exists? elem-or-name))
-      (if frame
-          (call-5l-prim 'wait (elem-or-name-hack elem-or-name) frame)
-          (call-5l-prim 'wait (elem-or-name-hack elem-or-name)))))
+    (define name (node-full-name (elem-or-name-hack elem-or-name)))
+    (if frame
+        (call-5l-prim 'wait name frame)
+        (call-5l-prim 'wait name)))
   
   ;;; Convert an industry-standard timecode to frames.  The engine has a
   ;;; single, nominal frame-rate of 30 frames per second, regardless of
