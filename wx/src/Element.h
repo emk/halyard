@@ -25,6 +25,7 @@
 
 #include "EventDispatcher.h"
 
+class wxAccessible;
 class Stage;
 class DrawingArea;
 
@@ -163,6 +164,12 @@ public:
 	///                   which we're updating.
 	///
 	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect) {}
+
+    //////////
+    /// Get the accessibility information for this element, or NULL, if
+    /// it has no accessibility information.
+    ///
+    virtual wxAccessible *GetAccessible() { return NULL; }
 };
 
 #endif // Element_H

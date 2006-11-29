@@ -101,6 +101,11 @@ public:
 	/// Draw an outline around the widget.
 	///
 	virtual void DrawElementBorder(wxDC &inDC);
+
+    //////////
+    /// Get the accessibility information for this element.
+    ///    
+    virtual wxAccessible *GetAccessible();
 };
 
 #endif // Widget_H

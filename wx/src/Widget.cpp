@@ -100,3 +100,8 @@ void Widget::DrawElementBorder(wxDC &inDC)
 	r.Inflate(1);
 	inDC.DrawRectangle(r.x, r.y, r.width, r.height);
 }
+
+wxAccessible *Widget::GetAccessible()
+{
+    return mWindow->GetAccessible();
+}

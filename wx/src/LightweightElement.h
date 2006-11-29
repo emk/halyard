@@ -27,6 +27,8 @@
 #include "Element.h"
 #include "TStateDB.h"
 
+class wxAccessible;
+
 
 //////////
 /// A lightweight element is basically a "virtual widget" on our stage.  It
@@ -43,6 +45,7 @@ class LightweightElement : public Element {
     bool mIsShown;
     bool mWantsCursor;
     bool mIsInDragLayer;
+    shared_ptr<wxAccessible> mAccessible;
 	
 public:
 	LightweightElement(Stage *inStage, const wxString &inName,
@@ -60,6 +63,8 @@ public:
 
     virtual bool IsInDragLayer() const;
     virtual void SetInDragLayer(bool inDragLayer);
+
+    virtual wxAccessible *GetAccessible() { return mAccessible.get(); }
 };
 
 #endif // LightweightElement_H

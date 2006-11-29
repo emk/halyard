@@ -19,6 +19,9 @@ SVN - emk
     helpers has been made a keyword argument (finally).  ddc and brian both
     seemed to think this change was plausible; let's see how it works in
     practice.
+  * #3792: Added very preliminary accessibility support.  We now expose
+    all the elements on the Stage via wxAccessible (and thus MSAA),
+    although we don't yet provide any useful information about them.
 
 0.3.1 - 27 Nov 2006 - emk
 

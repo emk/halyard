@@ -691,6 +691,17 @@ public:
 	///
 	bool ShouldSendMouseEventsToElement(ElementPtr inElement);
 
+    //////////
+    /// Get the number of accessible children of the Stage.
+    ///
+    int GetAccessibleChildCount() { return mElements.size(); }
+
+    //////////
+    /// Get the specified accessible child of the Stage.  Uses a zero-based
+    /// index, unlike the corresponding wxWidgets API.
+    ///
+    ElementPtr GetAccessibleChild(size_t i) { return mElements[i]; }
+
     DECLARE_EVENT_TABLE();
 };
 

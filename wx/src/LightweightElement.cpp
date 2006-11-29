@@ -21,9 +21,16 @@
 // @END_LICENSE
 
 #include "TamaleHeaders.h"
+
+#include <wx/access.h>
+
 #include "LightweightElement.h"
+#include "LightweightAccessible.h"
 #include "EventDispatcher.h"
 #include "Stage.h"
+
+USING_NAMESPACE_FIVEL
+
 
 LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
 									   FIVEL_NS TCallbackPtr inDispatch,
@@ -31,6 +38,7 @@ LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
     : Element(inStage, inName, inDispatch), mCursor(inCursor), mIsShown(true),
       mWantsCursor(false), mIsInDragLayer(false)
 {
+	mAccessible = shared_ptr<wxAccessible>(new LightweightAccessible(this));
 }
 
 void LightweightElement::Show(bool inShow) {

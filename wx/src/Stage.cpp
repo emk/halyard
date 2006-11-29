@@ -39,6 +39,7 @@
 #include "AppGraphics.h"
 #include "FiveLApp.h"
 #include "Stage.h"
+#include "StageAccessible.h"
 #include "StageFrame.h"
 #include "ProgramTree.h"
 #include "Element.h"
@@ -116,6 +117,9 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	mImageCache = new ImageCache();
 	mCursorManager = new CursorManager();
 	mTransitionManager = new TransitionManager();
+
+    // Install our custom accessibility handler.
+    SetAccessible(new StageAccessible(this));
 	
     // Initialize the clock.
     UpdateClock();
