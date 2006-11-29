@@ -330,13 +330,13 @@
 
   ;;; Draw a string of text.
   ;;;
-  ;;; @param STYLESHEET style The stylesheet to use.
   ;;; @param RECT r The recentangle in which to draw the text.
   ;;;   The text may extend below the bottom of this box if necessary.
+  ;;; @param STYLESHEET style The stylesheet to use.
   ;;; @param STRING text The text to draw.
   ;;; @xref measure-text text-position *text-x* *text-y*
   ;;; @legacy text textaa
-  (define (draw-text style r text)
+  (define (draw-text r style text)
     ;; XXX - textaa uses an idiosyncratic formating language.
     (call-5l-prim 'textaa (stylesheet-long-name style) r text))
   
@@ -346,15 +346,13 @@
   ;;; @param STRING text The text to measure.
   ;;; @key STRING max-width The maximum horizontal space which may be used
   ;;;   for laying out the text.  Defaults to the screen width.
-  ;;; @return RECT A rectangle large enough to hold the text, with an
-  ;;;   an origin at 0,0.
   ;;; @xref draw-text
-  (define (measure-text style msg
+  (define (measure-text style text
                         &key (max-width (rect-width $screen-rect)))
     ;;; XXX - Note that we stomp the "saved-text-position" used by
     ;;; deprecated.ss.
     ;;; XXX - We can't measure anything but left-aligned text accurately.
-    (call-5l-prim 'measuretextaa (stylesheet-long-name style) msg max-width))
+    (call-5l-prim 'measuretextaa (stylesheet-long-name style) text max-width))
 
 
   ;;;======================================================================

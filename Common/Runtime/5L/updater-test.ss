@@ -13,11 +13,11 @@
        [outer-directory #f]
        [inner-directory #f]]
     (setup
-      (set! (test-directory self) (ensure-dir-exists "UpdateTest"))
+      (set! (test-directory self) (ensure-directory-exists "UpdateTest"))
       (set! (outer-directory self) 
-            (ensure-dir-exists (build-path "UpdateTest" "Outer")))
+            (ensure-directory-exists (build-path "UpdateTest" "Outer")))
       (set! (inner-directory self) 
-            (ensure-dir-exists (build-path "UpdateTest" "Outer" "Inner")))
+            (ensure-directory-exists (build-path "UpdateTest" "Outer" "Inner")))
       (create-test-file (outer-directory self) "Deleted")
       (create-test-file (inner-directory self) "File1")
       (create-test-file (inner-directory self) "File2"))
@@ -80,7 +80,7 @@
       [[test-directory #f]
        [downloader #f]]
     (setup 
-      (set! (test-directory self) (ensure-dir-exists "MockTest"))
+      (set! (test-directory self) (ensure-directory-exists "MockTest"))
       (set! (downloader self) 
             (make <mock-downloader> :directory (test-directory self)))
       (add-mock-url (downloader self) "test://foo.com/bar" "foo\nbar\n")
@@ -109,7 +109,7 @@
        [downloader #f]
        [url-prefix #f]]
     (setup
-      (set! (test-directory self) (ensure-dir-exists "DownloadTest"))
+      (set! (test-directory self) (ensure-directory-exists "DownloadTest"))
       (set! (url-prefix self) 
             (cat "file:///" (fixture-dir "updater") "/downloader/")))
     (teardown
@@ -163,7 +163,7 @@
        [update-directory #f]
        [url-prefix #f]]
     (setup 
-      (set! (test-directory self) (ensure-dir-exists "UpdaterTest"))
+      (set! (test-directory self) (ensure-directory-exists "UpdaterTest"))
       (set! (base-directory self)
             (copy-recursive-excluding vc-exclude 
              (build-path (fixture-dir "updater") "base") 
@@ -256,7 +256,7 @@
   ;; For testing the installer:
   (provide create-installer-fixture)
   (define (create-installer-fixture)
-    (define fix-dir (ensure-dir-exists "InstallerFixture"))
+    (define fix-dir (ensure-directory-exists "InstallerFixture"))
     (define base-dir (copy-recursive-excluding vc-exclude 
                       (build-path (fixture-dir "updater") "base") 
                       fix-dir))

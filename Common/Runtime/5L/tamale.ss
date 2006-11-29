@@ -41,14 +41,14 @@
   ;;;======================================================================
   ;;;  Most of these are only used internally, in this file.
 
-  (provide make-path-from-abstract ensure-dir-exists)
+  (provide abstract-path->native-path ensure-directory-exists)
 
   (define (url? path)
     (regexp-match "^(http|ftp|rtsp|file):" path))
 
   ;;; Given a path of the form "foo/bar.baz", convert it to a native OS
   ;;; path string.
-  (define (make-path-from-abstract . args)
+  (define (abstract-path->native-path . args)
     (define reversed (reverse! args))
     (define abstract-component (car reversed))
     (define regular-components (reverse! (cdr reversed)))
@@ -57,21 +57,21 @@
 
   ;;; Build a path for accessing a script resource.  If PATH is a URL, it
   ;;; is returned unchanged.  Otherwise, assume that PATH is an abstract
-  ;;; path relative to SUBDIR, and pass it to MAKE-PATH-FROM-ABSTRACT.
-  (define (make-path subdir path)
+  ;;; path relative to SUBDIR, and pass it to ABSTRACT-PATH->NATIVE-PATH.
+  (define (make-native-path subdir path)
     (if (url? path)
         path
-        (make-path-from-abstract (current-directory) subdir path)))
+        (abstract-path->native-path (current-directory) subdir path)))
 
   (define (check-file path)
     (unless (or (url? path) (file-exists? path))
       (throw (cat "No such file: " path))))
   
   ;; XXX - This is not a well-designed function; it can only create
-  ;; directories in a folder that's typically write-only (d'oh).
-  ;; XXX - This function does not follow our naming convention, and is
-  ;; only exported for use by the updater.
-  (define (ensure-dir-exists name)
+  ;; directories in a folder that's typically write-only (d'oh).  This
+  ;; function is only useful for the updater (which only runs if it
+  ;; has write privileges) and for developer tools.
+  (define (ensure-directory-exists name)
     (define dir (build-path (current-directory) name))
     (when (not (directory-exists? dir))
       (make-directory dir))
@@ -79,107 +79,26 @@
 
 
   ;;;======================================================================
-  ;;;  Drawing Functions
-  ;;;======================================================================
-
-  (provide draw-picture measure-picture
-           set-image-cache-size! with-dc
-           dc-rect color-at clear-dc center-text
-           draw-line draw-box draw-box-outline)
-
-  ;;; Draw a picture loaded from NAME at location P in the current DC.  You
-  ;;; may optionally specify a sub-rectangle of the picture to draw.
-  (define (draw-picture name p &key (subrect :rect #f))
-    (let [[path (make-path "Graphics" name)]]
-      (check-file path)
-      (if subrect
-          (call-5l-prim 'loadsubpic path p subrect)
-          (call-5l-prim 'loadpic path p))))
-  
-  ;;; Return a rectangle located at 0,0 large enough to hold the picture
-  ;;; specified by NAME.
-  (define (measure-picture name)
-    (let [[path (make-path "Graphics" name)]]
-      (check-file path)
-      (call-5l-prim 'MeasurePic path)))
-
-  ;;; Specify how many bytes may be used by the engine to cache
-  ;;; recently-used images.
-  (define (set-image-cache-size! bytes)
-    (call-5l-prim 'SetImageCacheSize bytes))
-
-  ;;; Perform a set of drawing calls in the specified overlay.
-  ;;;
-  ;;; @syntax (with-dc dc body ...)
-  ;;; @param NODE dc The overlay to draw into.
-  ;;; @param BODY body The drawing code.
-  (define-syntax with-dc
-    (syntax-rules ()
-      [(with-dc dc body ...)
-       (dynamic-wind
-           (lambda () (call-5l-prim 'DcPush (node-full-name dc)))
-           (lambda () (begin/var body ...))
-           (lambda () (call-5l-prim 'DcPop (node-full-name dc))))]))
-  (define-syntax-indent with-dc 1)
-
-  ;;; Get the bounding rectangle of the current DC.
-  (define (dc-rect)
-    (call-5l-prim 'DcRect))
-
-  ;;; Get the color at the specified point.
-  (define (color-at p)
-    (call-5l-prim 'ColorAt p))
-
-  ;;; Clear the current DC to color C.
-  (define (clear-dc c)
-    (call-5l-prim 'screen c))
-
-  ;;; Like DRAW-TEXT, but center the text within BOX.
-  (define (center-text stylesheet box msg &key (axis 'both))
-    (define bounds (measure-text stylesheet msg :max-width (rect-width box)))
-    (define r
-      (case axis
-        [[both]
-         (move-rect-center-to bounds (rect-center box))]
-        [[y]
-         (move-rect-left-to
-          (move-rect-vertical-center-to bounds (rect-vertical-center box))
-          (rect-left box))]
-        [[x]
-         (move-rect-top-to
-          (move-rect-horizontal-center-to bounds (rect-horizontal-center box))
-          (rect-top box))]
-        [else
-         (throw (cat "center-text: Unknown centering axis: " axis))]))
-    (draw-text stylesheet r msg))
-
-  ;;; Draw a line between two points using the specified color and width.
-  (define (draw-line from to c width)
-    (call-5l-prim 'drawline from to c width))
-
-  ;;; Draw a filled box in the specified color.
-  (define (draw-box r c)
-    (call-5l-prim 'drawboxfill r c))
-
-  ;;; Draw the outline of a box, with the specified color and line width.
-  (define (draw-box-outline r c width)
-    (call-5l-prim 'drawboxoutline r c width))
-  
-
-  ;;;======================================================================
   ;;;  Core Element Support
   ;;;======================================================================
 
-  (provide local->card %element% %invisible-element% %zone%
-           %clickable-zone% clickable-zone
+  (provide local->card %element% %invisible-element% %custom-element%
+           %box% box %clickable-zone% clickable-zone
            delete-element delete-elements
            element-exists? delete-element-if-exists)
 
+  (define $black (color 0 0 0))
+  (define $transparent (color 0 0 0 0))
+  
+  (define (transparent? c)
+    (equals? c $transparent))
+  
   ;;; Convert the co-ordinates of a point or shape X into card
   ;;; co-ordinates.  We do this do that elements attached to elements
   ;;; can interpret AT, RECT and similar parameters relative to their
   ;;; parent elements.
   (define (local->card node x)
+    ;; TODO - Should we rename this function?
     (if (element? node)
         (local->card (node-parent node) (offset-by-point x (prop node at)))
         x))
@@ -223,13 +142,14 @@
       [[rect :type <rect> :label "Rectangle"]]
       (%element% :at (rect-left-top rect)))
 
-  ;;; A %zone% is a lightweight element (i.e., implemented by the engine,
-  ;;; not by the OS), optionally with an associated drawing overlay.
-  (define-element-template %zone%
+  ;;; A %custom-element% is a lightweight element (i.e., implemented by the
+  ;;; engine, not by the OS), optionally with an associated drawing
+  ;;; overlay.
+  (define-element-template %custom-element%
       [[at :new-default (point 0 0)]
        [shape :type <shape> :label "Shape"]
        [cursor :type <symbol> :default 'hand :label "Cursor"]
-       [overlay? :type <boolean> :default #f :label "Has overlay?"]
+       [overlay? :type <boolean> :default #t :label "Has overlay?"]
        [alpha? :type <boolean> :default #f :label "Overlay transparent?"]
        [wants-cursor? :default 'auto :label "Wants cursor?"]
        [clickable-where-transparent? :type <boolean> :default #f
@@ -262,8 +182,37 @@
       ;; We need to postpone this until the underlying engine object
       ;; is created.
       (set-wants-cursor! wants-cursor?)
-      (set-in-drag-layer?! dragging?))
+      (set-in-drag-layer?! dragging?)
+      (send self invalidate))
+
+    ;;; Invalidate the contents of this %custom-element% (perhaps because
+    ;;; of a property change).  Makes sure that DRAW gets called before the
+    ;;; next screen update.
+    (on invalidate ()
+      (when overlay?
+        (with-dc self
+          (send self erase-background)
+          (send self draw))))
     
+    ;; All overlays are erased by the engine at creation time, so we can
+    ;; skip the first call to ERASE-BACKGROUND.  Yes, this is a performance
+    ;; hack.
+    (define erased-by-engine? #t)
+    
+    ;;; Erases the background of an overlay in preperation for a redraw.
+    ;;; If you know that your DRAW handler overwrites the entire overlay,
+    ;;; you can override this function and have it do nothing.
+    (on erase-background ()
+      (unless erased-by-engine?
+        (clear-dc (if alpha? $transparent $black)))
+      (set! erased-by-engine? #f))
+
+    ;;; Draw this element, based on current property values.  Does not
+    ;;; actually update the user-visible screen until the next REFRESH or
+    ;;; blocking function.
+    (on draw ()
+      #f)
+
     (on prop-change (name value prev veto)
       (case name
         [[cursor] (set-element-cursor! self value)]
@@ -278,14 +227,14 @@
          (set-in-drag-layer?! value)]
         [else (call-next-handler)]))
     
-    ;; The way we want zones to work is that AT represents the origin of a
-    ;; zone, and the actual shape on the screen is SHAPE offset by AT. The 
-    ;; problem is that this is very inconvenient for scripters, and doesn't
-    ;; match the basic zone interface that we've always given them, which is 
-    ;; that they just pass in the pre-offset shape on the screen. In order to 
-    ;; deal with this, we normalize the parameters we are passed so that AT
-    ;; represents the origin of the object and SHAPE is the shape relative to
-    ;; AT. We do this as follows.
+    ;; The way we want custom elements to work is that AT represents the
+    ;; origin of a custom element, and the actual shape on the screen is
+    ;; SHAPE offset by AT. The problem is that this is very inconvenient
+    ;; for scripters, and doesn't match the basic zone interface that we've
+    ;; always given them, which is that they just pass in the pre-offset
+    ;; shape on the screen. In order to deal with this, we normalize the
+    ;; parameters we are passed so that AT represents the origin of the
+    ;; object and SHAPE is the shape relative to AT. We do this as follows.
     (define the-origin (shape-origin shape))
     ;; 1. Check to make sure we don't have both AT and SHAPE away from the 
     ;;    origin.
@@ -325,10 +274,24 @@
       (call-5l-prim 'zone (node-full-name self)
                     (parent->card self (as <polygon> real-shape))
                     (make-node-event-dispatcher self) cursor)]))
+  
+  ;;; A box is a generic, invisible container element.  It exists only
+  ;;; to be the parent of other elements.
+  (define-element-template %box%
+      []
+      (%custom-element% :overlay? #f)
+    #f)
+
+  ;;; Create a %box% element.
+  (define (box shape &key (name (gensym)))
+    (create %box% :name name :shape shape))
 
   ;;; A %clickable-zone% will run the specified ACTION when the user clicks on
   ;;; it.
-  (define-element-template %clickable-zone% [action] (%zone%)
+  (define-element-template %clickable-zone%
+      [[action :label "Action"]
+       [overlay? :new-default #f]]
+      (%custom-element%)
     (on prop-change (name value prev veto)
       (case name
         [[action] (void)]
@@ -386,6 +349,156 @@
   
 
   ;;;======================================================================
+  ;;;  Drawing Functions
+  ;;;======================================================================
+  ;;;  Most of these functions have a corresponding element, below.
+
+  (provide draw-graphic measure-graphic
+           set-image-cache-size! with-dc
+           dc-rect color-at clear-dc
+           draw-line draw-rectangle draw-rectangle-outline)
+
+  ;;; Draw a graphic loaded from PATH at point P in the current DC.  You
+  ;;; may optionally specify a sub-rectangle of the graphic to draw.
+  (define (draw-graphic p path &key (subrect :rect #f))
+    (let [[native (make-native-path "Graphics" path)]]
+      (check-file native)
+      (if subrect
+          (call-5l-prim 'loadsubpic native p subrect)
+          (call-5l-prim 'loadpic native p))))
+  
+  ;;; Return a rectangle located at 0,0 large enough to hold the graphic
+  ;;; specified by NAME.
+  (define (measure-graphic path)
+    (let [[native (make-native-path "Graphics" path)]]
+      (check-file native)
+      (call-5l-prim 'MeasurePic native)))
+
+  ;;; Specify how many bytes may be used by the engine to cache
+  ;;; recently-used images.
+  (define (set-image-cache-size! bytes)
+    (call-5l-prim 'SetImageCacheSize bytes))
+
+  ;;; Perform a set of drawing calls in the specified overlay.
+  ;;;
+  ;;; @syntax (with-dc dc body ...)
+  ;;; @param NODE dc The overlay to draw into.
+  ;;; @param BODY body The drawing code.
+  (define-syntax with-dc
+    (syntax-rules ()
+      [(with-dc dc body ...)
+       (dynamic-wind
+           (lambda () (call-5l-prim 'DcPush (node-full-name dc)))
+           (lambda () (begin/var body ...))
+           (lambda () (call-5l-prim 'DcPop (node-full-name dc))))]))
+  (define-syntax-indent with-dc 1)
+
+  ;;; Get the bounding rectangle of the current DC.
+  (define (dc-rect)
+    (call-5l-prim 'DcRect))
+
+  ;;; Get the color at the specified point.
+  (define (color-at p)
+    (call-5l-prim 'ColorAt p))
+
+  ;;; Clear the current DC to color C.
+  (define (clear-dc c)
+    (call-5l-prim 'screen c))
+
+  ;;; Draw a line between two points using the specified color and width.
+  (define (draw-line from to c width)
+    (call-5l-prim 'drawline from to c width))
+
+  ;;; Draw a filled rectangle in the specified color.
+  (define (draw-rectangle r c)
+    (call-5l-prim 'drawboxfill r c))
+
+  ;;; Draw the outline of a rectangle, with the specified color and line width.
+  (define (draw-rectangle-outline r c width)
+    (call-5l-prim 'drawboxoutline r c width))
+
+  
+  ;;;======================================================================
+  ;;;  Graphic Elements
+  ;;;======================================================================
+  ;;;  These templates each correspond to a drawing function, and should
+  ;;;  generally produce visually identical output.
+  ;;;
+  ;;;  These templates are expected to get more complex.  In particular,
+  ;;;  most of them will get keyword arguments to support accessibility,
+  ;;;  and most of their properties will become settable.
+
+  (provide %text-box% text-box %text% text
+           %graphic% graphic
+           %rectangle% rectangle rectangle-outline)
+  
+  ;;; A static text element with a specified bounding rectangle.
+  (define-element-template %text-box%
+      [[style :label "Style"]
+       [text :type <string> :label "Text"]]
+      (%custom-element% :alpha? #t)
+    (on draw ()
+      (draw-text (dc-rect) style text)))
+  
+  ;;; Create a new %text% element.
+  (define (text-box style r text &key (name (gensym)))
+    (create %text-box% :name name :shape r :style style :text text))
+  
+  ;;; A text element just large enough to fit the specified text.
+  (define-element-template %text%
+      [style text
+       [max-width :label "Max width" :default (rect-width $screen-rect)]]
+      (%text-box% :shape (measure-text style text :max-width max-width))
+    #f)
+  
+  ;;; Create a new %fitted-text% element.
+  (define (text style p text &key (name (gensym))
+                (max-width (rect-width $screen-rect)))
+    (create %text%
+            :name name :at p :max-width max-width :style style :text text))
+  
+  ;;; A simple graphic.  For now, you must specify the :ALPHA? value you
+  ;;; want; the engine can't compute a reasonable value automatically.
+  (define-element-template %graphic%
+      [[path :type <string> :label "Path"]]
+      (%custom-element% :shape (measure-graphic path))
+    ;; TODO - Optimize erase-background once we can update the graphic.
+    (on draw ()
+      (draw-graphic (point 0 0) (prop self path))))
+  
+  ;;; Create a new %graphic%.
+  (define (graphic p path &key (name (gensym)) (alpha? #f))
+    (create %graphic% :name name :at p :alpha? alpha? :path path))
+  
+  ;;; A rectangular element, filled with a single color.
+  (define-element-template %rectangle%
+      [[color :type <color> :label "Color" :default $transparent]
+       [outline-width :type <integer> :label "Outline width" :default 1]
+       [outline-color :type <color> :label "Outline color"
+                      :default $transparent]]
+      (%custom-element% :alpha? #t)
+    ;; TODO - Optimize erase-background once we can update our properties.
+    (on draw ()
+      (unless (transparent? color)
+        (draw-rectangle (dc-rect) color))
+      (unless (transparent? outline-color)
+        (draw-rectangle-outline (dc-rect) outline-color outline-width))))
+  
+  ;;; Create a new %rectangle%.
+  (define (rectangle r c &key (name (gensym))
+               (outline-width 1) (outline-color $transparent))
+    (create %rectangle%
+            :name name :shape r :color c
+            :outline-width outline-width :outline-color outline-color))
+  
+  ;;; Create a new %rectangle% with an outline and a transparent center.
+  (define (rectangle-outline r c width &key (name (gensym)))
+    (create %rectangle%
+            :name name :shape r :color $transparent
+            :outline-width width :outline-color c))
+  
+
+  ;;;======================================================================
   ;;;  Animated Graphic Elements
   ;;;======================================================================
 
@@ -395,7 +508,7 @@
     (define max-width 0)
     (define max-height 0)
     (foreach [graphic graphics]
-      (define bounds (measure-picture graphic))
+      (define bounds (measure-graphic graphic))
       (when (> (rect-width bounds) max-width)
         (set! max-width (rect-width bounds)))
       (when (> (rect-height bounds) max-height)
@@ -407,16 +520,15 @@
   (define-element-template %animated-graphic%
       [[state-path :type <string> :label "State DB Key Path"]
        [graphics :type <list> :label "Graphics to display"]]
-      (%zone%
+      (%custom-element%
        :shape (animated-graphic-shape graphics)
-       :overlay? #t
        :%nocreate? #t)
     (call-5l-prim 'OverlayAnimated (node-full-name self)
                   (parent->card self
                                 (offset-rect (prop self shape) (prop self at)))
                   (make-node-event-dispatcher self) (prop self cursor)
                   (prop self alpha?) state-path
-                  (map (fn (p) (make-path "Graphics" p)) graphics)))
+                  (map (fn (p) (make-native-path "Graphics" p)) graphics)))
 
 
   ;;;======================================================================
@@ -431,12 +543,12 @@
     (call-5l-prim 'SetZoneCursor (node-full-name elem) cursor))
 
   ;;; Register the graphic in FILENAME with the engine as a cursor named
-  ;;; SYM.  If the hotspot is not in the default location, it should be
+  ;;; SYM.  If the hotspot is not in the default path, it should be
   ;;; specified explicitly.
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
-    (let [[path (make-path "Graphics" (cat "cursors/" filename))]]
-      (check-file path)
-      (call-5l-prim 'RegisterCursor sym path hotspot)))
+    (let [[native (make-native-path "Graphics" (cat "cursors/" filename))]]
+      (check-file native)
+      (call-5l-prim 'RegisterCursor sym native hotspot)))
 
   ;;; Hide the cursor until the next time the mouse moves.  Only works in
   ;;; full-screen mode, and only if the underlying system allows it.
@@ -508,7 +620,7 @@
   ;;; future versions of Flash, so this is more for demo purposes than
   ;;; anything else.
   (define-card-template %flash-card%
-      [[location :type <string> :label "Location"]]
+      [[path :type <string> :label "Path"]]
       ()
     (define flash
       (create %activex%
@@ -516,7 +628,7 @@
               :rect $screen-rect
               :activex-id "ShockwaveFlash.ShockwaveFlash"))
     (send flash set-activex-prop! "movie"
-          (build-path (current-directory) "Flash" location)))
+          (build-path (current-directory) "Flash" path)))
   
 
   ;;;======================================================================
@@ -527,7 +639,7 @@
 
   ;;; A web browser element.
   (define-element-template %browser%
-      [[location :type <string> :label "Location" :default "about:blank"]
+      [[path :type <string> :label "Path" :default "about:blank"]
        [fallback? :type <boolean> :label "Use primitive fallback web browser?"
                   :default #f]]
       (%widget%)
@@ -535,9 +647,11 @@
     ;;; Load the specified page in the web browser.  Can be pointed
     ;;; to either the local HTML folder or to a URL.
     (on load-page (page)
-      (let [[path (make-path "HTML" page)]]
-        (check-file path)
-        (call-5l-prim 'BrowserLoadPage (node-full-name self) path)))
+      ;; TODO - This function should be replaced by a settable location
+      ;; property.
+      (let [[native (make-native-path "HTML" page)]]
+        (check-file native)
+        (call-5l-prim 'BrowserLoadPage (node-full-name self) native)))
 
     ;;; Return true if and only if COMMAND should be enabled.  Supported
     ;;; values are: BACK, FORWARD, RELOAD and STOP.
@@ -582,11 +696,11 @@
                   (make-node-event-dispatcher self)
                   (parent->card self (prop self rect))
                   fallback?)
-    (send self load-page location))
+    (send self load-page path))
 
   ;;; Create a new %browser% object.
-  (define (browser r location &key (name (gensym)))
-    (create %browser% :name name :rect r :location location))
+  (define (browser r path &key (name (gensym)))
+    (create %browser% :name name :rect r :path path))
 
 
   ;;;======================================================================
@@ -703,17 +817,17 @@
            %sine-wave% sine-wave)
 
   (define-element-template %geiger-audio%
-      [[location :type <string> :label "Location"]]
+      [[path :type <string> :label "Path"]]
       (%audio-element%)
     (on set-counts-per-second! (counts)
       (call-5l-prim 'AudioStreamGeigerSetCps (node-full-name self) counts))
     (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                   (make-node-event-dispatcher self)
-                  (build-path (current-directory) "LocalMedia" location)
+                  (build-path (current-directory) "LocalMedia" path)
                   (prop self volume)))
 
-  (define (geiger-audio location &key (name (gensym)) (volume 1.0))
-    (create %geiger-audio% :name name :location location :volume volume))
+  (define (geiger-audio path &key (name (gensym)) (volume 1.0))
+    (create %geiger-audio% :name name :path path :volume volume))
 
   (define-element-template %geiger-synth%
       [state-path chirp loops]
@@ -758,21 +872,21 @@
 
   ;;; Plays an Ogg Vorbis audio stream.
   (define-element-template %vorbis-audio%
-      [[location :type <string>  :label "Location"]
+      [[path :type <string>  :label "Path"]
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (%audio-element%)
-    (let [[path (build-path (current-directory) "LocalMedia" location)]]
+    (let [[path (build-path (current-directory) "LocalMedia" path)]]
       (check-file path)
       (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                     (make-node-event-dispatcher self) path
                     (prop self volume) (* 1024 buffer) loop?)))
   
   ;;; Create a %vorbis-audio% element.
-  (define (vorbis-audio location
+  (define (vorbis-audio path
                         &key (name (gensym)) (loop? #f) (volume 1.0))
     (create %vorbis-audio%
-            :name name :location location :loop? loop? :volume volume))
+            :name name :path path :loop? loop? :volume volume))
 
 
   ;;;======================================================================
@@ -802,7 +916,7 @@
     (label return
       (foreach [drive (filesystem-root-list)]
         (define candidate (build-path drive "Media"))
-        (define file (make-path-from-abstract candidate pathname))
+        (define file (abstract-path->native-path candidate pathname))
         (when (file-exists? file)
           (set! *cd-media-directory* candidate)
           (return)))))
@@ -816,19 +930,19 @@
 
   ;;; Given an abstract media path, return a native path or a URL pointing
   ;;; to that particular file.
-  (define (media-path location)
+  (define (media-path path)
     ;; Create some of the paths we'll check.
-    (define hd-path-1 (make-path "LocalMedia" location))
-    (define hd-path-2 (make-path "Media" location))
+    (define hd-path-1 (make-native-path "LocalMedia" path))
+    (define hd-path-2 (make-native-path "Media" path))
     (define cd-path
       (if (media-cd-is-available?)
-          (make-path-from-abstract *cd-media-directory* location)
+          (abstract-path->native-path *cd-media-directory* path)
           #f))
 
     (cond
      ;; Pass explicit URLs straight through.
-     [(url? location)
-      location]
+     [(url? path)
+      path]
      ;; Otherwise, first check our media directory for the file.
      [(file-exists? hd-path-1)
       hd-path-1]
@@ -840,10 +954,10 @@
      ;; If all else fails, and we've been told about a server, assume our
      ;; media is there.
      [*media-base-url*
-      (cat *media-base-url* "/" location)]
+      (cat *media-base-url* "/" path)]
      ;; OK, we give up.
      [#t
-      (error (cat "Cannot find file " location))]))
+      (error (cat "Cannot find file " path))]))
 
 
   ;;;======================================================================
@@ -854,7 +968,7 @@
 
   ;;; A movie.
   (define-element-template %movie%
-      [[location     :type <string>  :label "Location"]
+      [[path     :type <string>  :label "Path"]
        [volume       :type <number>  :label "Volume (0.0 to 1.0)" :default 1.0]
        [controller?  :type <boolean> :label "Has movie controller" :default #f]
        [audio-only?  :type <boolean> :label "Audio only"        :default #f]
@@ -891,7 +1005,7 @@
     ;;; Called when a local error occurs for a movie.  Override if you want
     ;;; different behavior.
     (on media-local-error (event)
-      (error (cat "Error playing movie (" location ")")))
+      (error (cat "Error playing movie (" path ")")))
 
     ;;; Set the timeout for this movie, in seconds.  A timeout of 0
     ;;; turns off timeout handling.  (Timeouts are actually pretty
@@ -925,7 +1039,7 @@
 
     ;; END DUPLICATE CODE
 
-    (let [[path (media-path location)]]
+    (let [[path (media-path path)]]
       (check-file path)
       (call-5l-prim 'movie (node-full-name self)
                     (make-node-event-dispatcher self)
@@ -934,11 +1048,11 @@
                     controller? audio-only? loop? interaction?)))
 
   ;;; Create a %movie%.
-  (define (movie r location
+  (define (movie r path
                  &key (name (gensym)) (volume 1.0)
                  controller? audio-only? loop? interaction?)
     (create %movie%
-            :name name :rect r :location location
+            :name name :rect r :path path
             :volume volume
             :controller? controller? 
             :audio-only? audio-only?
@@ -1150,7 +1264,7 @@
   (define-element-template %basic-button%
       [[action :type <function> :label "Click action" :default (callback)]
        [enabled? :type <boolean> :label "Enabled?" :default #t]]
-      (%zone% :wants-cursor? enabled?)
+      (%custom-element% :wants-cursor? enabled?)
 
     ;;; Draw the button in the specified state.  Valid states are DISABLED,
     ;;; NORMAL, PRESSED and ACTIVE.  Must be overridden by subclasses.
@@ -1165,7 +1279,7 @@
                   [(mouse-grabbed-by? self) 'pressed]
                   [#t 'active])))
     (define (do-draw refresh?)
-      (send self draw)
+      (send self invalidate)
       (when refresh?
         (refresh)))
     
@@ -1176,9 +1290,6 @@
          (do-draw #f)]
         [else (call-next-handler)]))
 
-    (on setup-finished ()
-      (call-next-handler)
-      (do-draw #f))
     (on mouse-enter (event)
       (set! mouse-in-button? #t)
       (do-draw #t))
@@ -1225,7 +1336,7 @@
     ;; TODO - This is an ugly hack to support absolute path names.
     (let [[path (if (absolute-path? file)
                     file
-                    (make-path-from-abstract (current-directory) file))]]
+                    (abstract-path->native-path (current-directory) file))]]
       (call-5l-prim 'DebugReportAddFile path description)))
 
   )

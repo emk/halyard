@@ -7,7 +7,7 @@
            copy-recursive copy-recursive-excluding read-string-from-file)
   
   ;; TODO - should probably be moved to tamale.ss, and used in 
-  ;; ensure-dir-exists. Also, is current-directory really the right way
+  ;; ensure-directory-exists. Also, is current-directory really the right way
   ;; to get the root directory? 
   (define (root-directory-writeable?)
     (dir-writeable? (current-directory)))

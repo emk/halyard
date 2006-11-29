@@ -18,7 +18,8 @@
   ;; Export the normal Swindle language, minus a few specific features
   ;; we override below.  We also omit 'while', because we have our
   ;; own definition later on.
-  (provide (all-from-except (lib "swindle.ss" "swindle") while defclass))
+  (provide (all-from-except (lib "swindle.ss" "swindle")
+                            while defclass box unbox))
   
   ;; Here are some additional LISP-like features we provide.
   (provide define-symbol-macro let-symbol-macro)

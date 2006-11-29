@@ -19,14 +19,33 @@
   ;;   %edit-box-element% -> %edit-box%
   ;;   %sine-wave-element% -> %sine-wave%
   ;;   %movie-element% -> %movie%
+  ;;   make-path-from-abstract -> abstract-path->native-path
+  ;;   ensure-dir-exists -> ensure-directory-exists
+  ;;   measure-picture -> measure-graphic
+  ;;   draw-box -> draw-rectangle
+  ;;   draw-box-outline -> draw-rectangle-outline
   ;;
   ;; The following functions used to take an element name as their first
   ;; argument.  This has been replaced by an optional keyword parameter
-  ;; :NAME.  The function GEIGER-SYNTH used to have a &REST parameter; this
-  ;; is now an ordinary list, followed by keyword arguments.
+  ;; :NAME.
   ;;
-  ;;   clickable-zone browser edit-box geiger-audio geiger-synth
+  ;;   clickable-zone browser edit-box geiger-audio
   ;;   sine-wave vorbis-audio movie
+  ;;
+  ;; The following functions have had parameter changes:
+  ;;
+  ;;   geiger-synth                  (&rest parameter now regular parameter)
+  ;;   draw-picture -> draw-graphic  (point is now first)
+  ;;   draw-text                     (rect is now first)
+  ;;
+  ;; The following templates used to take a :LOCATION parameter.  This has
+  ;; been replaced in each case with a :PATH parameter:
+  ;;
+  ;;   %flash-card% %browser% %geiger-audio% %movie%
+  ;;
+  ;; The %ZONE% template has been replaced by a %CUSTOM-ELEMENT% template
+  ;; and a %BOX% template.  Note that :OVERLAY? defaults to #t for
+  ;; %CUSTOM-ELEMENT%, not the old value of #f.
   ;;
   ;; The following functions have been replaced with ON handlers, and may
   ;; be accessed using SEND.  In most cases, this means that element
@@ -58,13 +77,18 @@
   ;; CALL-AT-SAFE-TIME has been replaced by RUN-DEFERRED, which has subtly
   ;; different semantics (see the docs).  This change also affects
   ;; DEFERRED-CALLBACK, of course.
+  ;;
+  ;; All templates with their own DC must be converted to use ON DRAW
+  ;; instead of a bare WITH-DC call.  This can be easy or hard, depending
+  ;; on circumstances.  This also means that WITH-DC can be removed from
+  ;; DRAW-BUTTON handlers.
 
 
   ;;;======================================================================
   ;;;  Transitions and Screenshots
   ;;;======================================================================
 
-  (provide fade unfade screenshot)
+  (provide fade unfade screenshot center-text)
 
   ;;; Fade the screen to black.  Calls REFRESH.
   (define (fade &key (ms 500))
@@ -86,7 +110,7 @@
        ((> n -1) (format "00~a" n))
        (else "000")))
 
-    (define dir (ensure-dir-exists "Screenshots"))
+    (define dir (ensure-directory-exists "Screenshots"))
     (call-5l-prim 
      'screenshot 
      (let loop ((count 0))
@@ -97,6 +121,25 @@
          (loop (+ count 1)))
         (else path)))))
 
+  ;; Like DRAW-TEXT, but center the text within BOX.
+  ;; This function is deprecated for the moment.
+  (define (center-text stylesheet box msg &key (axis 'both))
+    (define bounds (measure-text stylesheet msg :max-width (rect-width box)))
+    (define r
+      (case axis
+        [[both]
+         (move-rect-center-to bounds (rect-center box))]
+        [[y]
+         (move-rect-left-to
+          (move-rect-vertical-center-to bounds (rect-vertical-center box))
+          (rect-left box))]
+        [[x]
+         (move-rect-top-to
+          (move-rect-horizontal-center-to bounds (rect-horizontal-center box))
+          (rect-top box))]
+        [else
+         (throw (cat "center-text: Unknown centering axis: " axis))]))
+    (draw-text r stylesheet msg))
 
 
   ;;;======================================================================

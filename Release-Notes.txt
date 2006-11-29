@@ -22,6 +22,15 @@ SVN - emk
   * #3792: Added very preliminary accessibility support.  We now expose
     all the elements on the Stage via wxAccessible (and thus MSAA),
     although we don't yet provide any useful information about them.
+  * #3813: Added %BOX%, %TEXT-BOX%, %GRAPHIC% and %RECTANGLE% elements (and
+    corresponding helper functions).  These should be used in place of the
+    regular drawing calls to help make 508 support easier (and to help
+    ease our migration to a future GUI editor).
+  * #3810: More API cleanup in tamale.ss.  Renamed *-PICTURE to *-GRAPHIC,
+    changed the argument order of DRAW-TEXT and DRAW-GRAPHIC, renamed
+    %ZONE% to %CUSTOM-ELEMENT%, and rewrote templates to support ON
+    handlers for DRAW, ERASE-BACKGROUND, and INVALIDATE (which will help us
+    to support a future screen editor).
 
 0.3.1 - 27 Nov 2006 - emk
 

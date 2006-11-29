@@ -37,12 +37,12 @@
   ;;; Display a test report on the current card.
   (define (report-test-results report)
     (define (draw-result style text)
-      (draw-text style (rect 100 100 700 175) text))
+      (draw-text (rect 100 100 700 175) style text))
     (if (test-report-success? report)
       (draw-result $tamale-unit-passed-style "OK")
       (begin
         (draw-result $tamale-unit-failed-style "FAILED")
-        (draw-text $tamale-unit-style (rect 100 175 700 500)
+        (draw-text (rect 100 175 700 500) $tamale-unit-style
                    (apply string-append
                           (map (fn (failure)
                                  (string-append
