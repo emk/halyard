@@ -366,7 +366,13 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	// so, how?
 	Rect bounds;
 	::GetMovieBox(mMovie, &bounds);
-	ASSERT(bounds.left == 0 && bounds.top == 0);
+    // According to MacTech, the bounds rectangle may be offset from 0,0
+    // for unspecified reasons.  I've only ever seen this happen for
+    // QuickTime movies with text tracks.  MacTech suggests we just correct
+    // for the offset and go about our business.
+    //
+    // http://www.mactech.com/articles/mactech/Vol.15/15.12/Dec99GettingStarted/index.html
+    ::MacOffsetRect(&bounds, -bounds.left, -bounds.top);
 	if (mOptions & kCenterMovie)
 		::MacOffsetRect(&bounds,
 						mPosition.h - (bounds.right / 2),
