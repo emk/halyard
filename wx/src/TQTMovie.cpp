@@ -359,6 +359,12 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 		::SetMovieGWorld(mMovie, mPort, NULL);
 		CHECK_MAC_ERROR(::GetMoviesError());
 	}
+
+    // If we've been asked to use the text track as captions, do that
+    // before computing the movie bounds (since disabling the text track
+    // may make the movie smaller).
+    if (mOptions & kUseTextTrackAsCaptions)
+        DivertTextTrackToCaptions();
 		
 	// Figure out where to put our movie on the screen.  (We hope enough
 	// of our movie is loaded by now to calculate the box accurately!)
@@ -369,9 +375,8 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
     // According to MacTech, the bounds rectangle may be offset from 0,0
     // for unspecified reasons.  I've only ever seen this happen for
     // QuickTime movies with text tracks.  MacTech suggests we just correct
-    // for the offset and go about our business.
-    //
-    // http://www.mactech.com/articles/mactech/Vol.15/15.12/Dec99GettingStarted/index.html
+    // for the offset and go about our business: <http://www.mactech.com/
+    // articles/mactech/Vol.15/15.12/Dec99GettingStarted/index.html>.
     ::MacOffsetRect(&bounds, -bounds.left, -bounds.top);
 	if (mOptions & kCenterMovie)
 		::MacOffsetRect(&bounds,
@@ -416,6 +421,33 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	// Start the movie.
 	UpdateMovieState(MOVIE_STARTED);
 	DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
+}
+
+void TQTMovie::DivertTextTrackToCaptions() {
+    // Fetch the first text track associated with our movie.
+    // http://developer.apple.com/technotes/tn/tn1087.html
+    Track track = ::GetMovieIndTrackType(mMovie, 1, TextMediaType,
+                                         movieTrackMediaType);
+	CHECK_MAC_ERROR(::GetMoviesError());
+    if (!track)
+        return;
+
+    // Get the media handler for our text track.
+    MediaHandler handler = ::GetMediaHandler(GetTrackMedia(track));
+    CHECK_MAC_ERROR(::GetMoviesError());
+    ASSERT(handler);
+
+    // Hide the text track by setting its dimensions to 0.  We could just
+    // disable the track, but then we wouldn't get any events from it.
+    //
+    // TODO - Is this really the best solution?  I haven't been able to
+    // find any other example code which does this.
+    ::SetTrackDimensions(track, 0, 0);
+
+    // Install our caption callback.
+    long refcon = reinterpret_cast<long>(this);
+    ::TextMediaSetTextProc(handler, &CaptionCallback, refcon);
+    CHECK_MAC_ERROR(::GetMoviesError());
 }
 
 long TQTMovie::GetMovieLoadState() {
@@ -611,6 +643,15 @@ void TQTMovie::UpdateTimeout(bool inStart) {
     }
 }
 
+bool TQTMovie::GetNextCaption(std::string &outCaption)
+{
+    if (mCaptionsToDisplay.empty())
+        return false;
+    outCaption = mCaptionsToDisplay.front();
+	mCaptionsToDisplay.pop_front();
+    return true;
+}
+
 void TQTMovie::FillOutMSG(HWND inHWND, UINT inMessage, WPARAM inWParam,
 						  LPARAM inLParam, MSG *outMessage)
 {
@@ -755,6 +796,12 @@ bool TQTMovie::ActionFilter(short inAction, void* inParams)
 	return false;
 }
 
+void TQTMovie::Caption(const std::string &inText)
+{
+    // Queue the caption.
+    mCaptionsToDisplay.push_back(inText);
+}
+
 
 //=========================================================================
 //  TQTMovie Static Callbacks
@@ -763,27 +810,57 @@ bool TQTMovie::ActionFilter(short inAction, void* inParams)
 //  to throw any exceptions.  In general, they catch the offending
 //  exception, and mark the movie as broken.
 
+#define BEGIN_QT_CALLBACK() \
+    TQTMovie *movie = reinterpret_cast<TQTMovie*>(inRefCon); \
+    if (!movie->IsBroken()) { \
+        try {
+
+#define END_QT_CALLBACK(RESULT_IF_FAILED) \
+        } catch (...) { \
+			/* If something throws an exception, scrap our movie. */ \
+			movie->UpdateMovieState(MOVIE_BROKEN); \
+            return (RESULT_IF_FAILED); \
+        } \
+    }
+
 Boolean TQTMovie::ActionFilterCallback(MovieController inController,
 									   short inAction, void *inParams,
 									   long inRefCon)
 	throw ()
 {
-	TQTMovie *movie = reinterpret_cast<TQTMovie*>(inRefCon);
-	bool result = false;
-	if (!movie->IsBroken())
-	{
-		try
-		{
-			// Try to run our object's action filter.
-			result = movie->ActionFilter(inAction, inParams);
-		}
-		catch (...)
-		{
-			// If something throws an exception, scrap our movie.
-			movie->UpdateMovieState(MOVIE_BROKEN);
-			result = false;
-		}
-	}
-	return result;
+	bool result;
+    BEGIN_QT_CALLBACK();
+
+    // Try to run our object's action filter.
+    result = movie->ActionFilter(inAction, inParams);
+
+    END_QT_CALLBACK(false);
+    return result;
 }
 
+OSErr TQTMovie::CaptionCallback(Handle inText, Movie inMovie,
+                                short *inDisplayFlag, long inRefCon) throw ()
+{
+    BEGIN_QT_CALLBACK();
+
+    // Extract our actual caption.  This is a little tricky, and Apple
+    // doesn't document the details, but there's a good explanation in
+    // MacTech about how to get this data:
+    // http://www.mactech.com/articles/develop/issue_20/20quicktime.html
+    // However, we also need to swap the byte order, as shown here:
+    // http://developer.apple.com/samplecode/qttext.win/listing11.html
+	size_t text_length = EndianU16_BtoN(*reinterpret_cast<short*>(*inText));
+    char *text_data = reinterpret_cast<char*>(*inText + sizeof(short));
+    std::string text(text_data, text_data + text_length);
+
+    // The caption strings usually seem to end in a carriage return, which
+    // we have no use for.  If it's there, we remove it.
+    if (text.size() > 0 && text[text.size() - 1] == '\r')
+        text.resize(text.size() - 1);
+
+    // Try to run our object's caption routine.
+    movie->Caption(text);
+
+    END_QT_CALLBACK(noErr);
+    return noErr;
+}

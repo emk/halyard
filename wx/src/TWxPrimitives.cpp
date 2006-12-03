@@ -715,10 +715,11 @@ DEFINE_5L_PRIMITIVE(Movie) {
     TCallbackPtr dispatcher;
 	TRect bounds;
     double volume;
-	bool controller, audio_only, loop, interaction;
+	bool controller, audio_only, loop, interaction, report_captions;
 
 	inArgs >> SymbolName(name) >> dispatcher >> bounds >> path >> volume
-           >> controller >> audio_only >> loop >> interaction;
+           >> controller >> audio_only >> loop >> interaction
+           >> report_captions;
 
 	MovieWindowStyle style = 0;
 	if (controller)
@@ -729,6 +730,8 @@ DEFINE_5L_PRIMITIVE(Movie) {
 		style |= MOVIE_LOOP;
 	if (interaction)
 		style |= MOVIE_INTERACTION;
+	if (report_captions)
+		style |= MOVIE_REPORT_CAPTIONS;
 
     R(new MovieElement(wxGetApp().GetStage(), name.c_str(), dispatcher,
                        TToWxRect(bounds), path.c_str(), 0, style, volume));

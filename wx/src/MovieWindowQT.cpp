@@ -104,6 +104,8 @@ void MovieWindowQT::SetMovie(const wxString &inName)
 		opt |= TQTMovie::kLoopMovie;
 	if (style & MOVIE_INTERACTION)
 		opt |= TQTMovie::kEnableInteraction;
+    if (style & MOVIE_REPORT_CAPTIONS)
+        opt |= TQTMovie::kUseTextTrackAsCaptions;
 
     // Tell the movie to play whenever it feels ready.  (Once upon a time,
     // this comment suggested, "We'll change this to better integrate with
@@ -139,6 +141,10 @@ bool MovieWindowQT::IsBroken() {
 bool MovieWindowQT::HasTimedOut() {
     // Check the timeout.
     return (mMovie && mTimeout && mMovie->GetTimeoutEllapsed() > mTimeout);
+}
+
+bool MovieWindowQT::GetNextCaption(std::string &outCaption) {
+    return mMovie && mMovie->GetNextCaption(outCaption);
 }
 
 bool MovieWindowQT::IsLooping()

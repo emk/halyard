@@ -89,6 +89,11 @@ void MovieElement::Idle() {
         }
     }
 
+    // Retrieve and display any captions.
+    std::string caption;
+    while (mMovieWindow->GetNextCaption(caption))
+        GetEventDispatcher()->DoEventMediaCaption(caption);
+
     // See if our movie has timed out.
     if (mMovieWindow->HasTimedOut()) {
         if (!mHaveSentMediaTimeoutEvent) {

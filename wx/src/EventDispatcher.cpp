@@ -306,6 +306,19 @@ bool EventDispatcher::DoEventMediaNetworkTimeout() {
     return DoSimpleEvent("media-network-timeout");
 }
 
+bool EventDispatcher::DoEventMediaCaption(const std::string &caption) {
+    if (!EventSetup())
+        return false;
+    
+	TValueList args;
+    args.push_back(TSymbol("media-caption"));
+    args.push_back(caption);
+    mDispatcher->Run(args);
+    
+	return EventCleanup();    
+}
+
+
 
 //=========================================================================
 // Platform-Specific Methods

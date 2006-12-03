@@ -94,6 +94,12 @@ public:
     virtual bool HasTimedOut();
 
     //////////
+    /// Get the next caption to be displayed, if any.  Captions should
+    /// be displayed as soon as they become available.
+    ///
+    virtual bool GetNextCaption(std::string &outCaption);
+
+    //////////
     /// Returns true if the movie is looping.
     ///
     virtual bool IsLooping();

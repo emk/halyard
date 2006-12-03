@@ -437,11 +437,16 @@
       [[style :label "Style"]
        [text :type <string> :label "Text"]]
       (%custom-element% :alpha? #t)
+    (on prop-change (name value prev veto)
+      (case name
+        [[style text]
+         (send self invalidate)]
+        [else (call-next-handler)]))
     (on draw ()
       (draw-text (dc-rect) style text)))
   
   ;;; Create a new %text% element.
-  (define (text-box style r text &key (name (gensym)))
+  (define (text-box r style text &key (name (gensym)))
     (create %text-box% :name name :shape r :style style :text text))
   
   ;;; A text element just large enough to fit the specified text.
@@ -449,6 +454,8 @@
       [style text
        [max-width :label "Max width" :default (rect-width $screen-rect)]]
       (%text-box% :shape (measure-text style text :max-width max-width))
+    ;; TODO - Implement prop-change correctly once we can resize an
+    ;; overlay.  For now, we pass it through to %text-box%, which is wrong.
     #f)
   
   ;;; Create a new %fitted-text% element.
@@ -973,7 +980,9 @@
        [controller?  :type <boolean> :label "Has movie controller" :default #f]
        [audio-only?  :type <boolean> :label "Audio only"        :default #f]
        [loop?        :type <boolean> :label "Loop movie"        :default #f]
-       [interaction? :type <boolean> :label "Allow interaction" :default #f]]
+       [interaction? :type <boolean> :label "Allow interaction" :default #f]
+       [report-captions? :type <boolean> :label "Report captions?"
+                         :default #t]]
       (%widget% :shown? (or (not audio-only?) controller?))
     (define (err title msg)
       (define result
@@ -1045,12 +1054,14 @@
                     (make-node-event-dispatcher self)
                     (parent->card self (prop self rect))
                     path volume
-                    controller? audio-only? loop? interaction?)))
+                    controller? audio-only? loop? interaction?
+                    report-captions?)))
 
   ;;; Create a %movie%.
   (define (movie r path
                  &key (name (gensym)) (volume 1.0)
-                 controller? audio-only? loop? interaction?)
+                 controller? audio-only? loop? interaction?
+                 (report-captions? #t))
     (create %movie%
             :name name :rect r :path path
             :volume volume

@@ -26,6 +26,7 @@
 #include <windows.h>
 
 #include <string>
+#include <deque>
 #include <stdexcept>
 #include <time.h>
 
@@ -139,7 +140,8 @@ public:
 		kEnableMovieController = 4,
 		kEnableInteraction = 8,
 		kPlayEveryFrame = 16,
-		kLoopMovie = 32
+		kLoopMovie = 32,
+        kUseTextTrackAsCaptions = 64
 	};
 
 private:
@@ -253,6 +255,12 @@ private:
     ///
     TimeValue mLastSeenTimeValue;
 
+    //////////
+    /// Captions which have been reported by QuickTime, but which have
+    /// yet to be displayed.
+    ///
+    std::deque<std::string> mCaptionsToDisplay;
+
 public:
 	//////////
 	/// Create a new movie object, and begin the preloading process.
@@ -358,6 +366,13 @@ public:
     ///
     unsigned int GetTimeoutEllapsed();
 
+    //////////
+    /// Get the next available caption, or return false if no captions are
+    /// available.  Captions should be displayed as soon as they are
+    /// available.
+    ///
+    bool GetNextCaption(std::string &outCaption);
+
 	//////////
 	/// Fill out a Win32 MSG object based on the parameters to this
 	/// function and the per-thread message state.
@@ -415,10 +430,12 @@ public:
 
 protected:
 	virtual bool ActionFilter(short inAction, void* inParams);
+    virtual void Caption(const std::string &inText);
 
 private:
 	void ProcessAsyncLoad();
 	void AsyncLoadComplete();
+    void DivertTextTrackToCaptions();
     long GetMovieLoadState();
     bool SafeToStart(long inLoadState);
 	
@@ -462,6 +479,13 @@ private:
 	static Boolean ActionFilterCallback(MovieController inController,
 										short inAction, void *inParams,
 										long inRefCon) throw ();
+
+    //////////
+    /// We use this function to receive notifications of text track display
+    /// events, so that we can implement custom caption processing.
+    ///
+    static OSErr CaptionCallback(Handle inText, Movie inMovie,
+                                 short *inDisplayFlag, long inRefCon) throw ();
 };
 
 //END_NAMESPACE_FIVEL

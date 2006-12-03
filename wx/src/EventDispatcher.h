@@ -160,6 +160,11 @@ public:
     /// Dispatch a MediaNeworkTimeout event.
     ///
     bool DoEventMediaNetworkTimeout();
+
+    //////////
+    /// Dispatch a MediaCaption event.
+    ///
+    bool DoEventMediaCaption(const std::string &caption);
     
 private:
     static wxLongLong PlatformGetEventTimestamp(const wxEvent &event);

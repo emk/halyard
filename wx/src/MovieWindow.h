@@ -32,7 +32,8 @@ enum /* MovieWindowStyle */ {
 	MOVIE_CONTROLLER = 1,
 	MOVIE_LOOP = 2,
 	MOVIE_AUDIO_ONLY = 4,
-	MOVIE_INTERACTION = 8
+	MOVIE_INTERACTION = 8,
+	MOVIE_REPORT_CAPTIONS = 16
 };
 
 //////////
@@ -102,6 +103,12 @@ public:
     /// Returns true if the movie has timed out.
     ///
     virtual bool HasTimedOut() { return false; }
+
+    //////////
+    /// Get the next caption to be displayed, if any.  Captions should
+    /// be displayed as soon as they become available.
+    ///
+    virtual bool GetNextCaption(std::string &outCaption) { return false; }
 
     //////////
     /// Returns true if the movie is looping.

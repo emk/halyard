@@ -118,6 +118,7 @@
            <progress-changed-event> event-progress-done? event-progress-value
            make-node-event-dispatcher ; semi-private
            <media-event> <media-finished-event>
+           <media-caption-event> event-caption
            )
 
   (define-syntax (expand-on stx)
@@ -255,6 +256,8 @@
 
   (defclass <media-event> (<event>))
   (defclass <media-finished-event> (<media-event>))
+  (defclass <media-caption-event> (<media-event>)
+    (caption :accessor event-caption))
 
   (define (veto-event! event)
     (set! (event-vetoed? event) #t))
@@ -303,6 +306,8 @@
                    [[media-local-error media-network-error
                                        media-network-timeout]
                     (make <media-event>)]
+                   [[media-caption]
+                    (make <media-caption-event> :caption (car args))]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
       (define (no-handler)
