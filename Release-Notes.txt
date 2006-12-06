@@ -1,10 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+SVN - emk, tryon
 
   * #3792: Added support for QuickTime movies with a ::GetMovieBox that is
     offset from 0,0.  MacTech says that this can happen, and I'm seeing it
     in QuickTime movies with a text track, which we need for captions.
+  * #3828: Nodes.ss now provides <CARD-GROUP>, CARD-GROUP?, <CARD-SEQUENCE>,
+    CARD-SEQUENCE?.
 
 0.3.2 - 29 Nov 2006 - emk
 

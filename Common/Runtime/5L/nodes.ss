@@ -794,7 +794,7 @@
   ;;  By default, groups of cards are not assumed to be in any particular
   ;;  linear order, at least for purposes of program navigation.
 
-  (provide define-group-template group group-members)
+  (provide define-group-template group <card-group> group-members card-group?)
 
   (define (card-or-card-group? node)
     (or (card? node) (card-group? node)))
@@ -830,7 +830,7 @@
   ;;-----------------------------------------------------------------------
   ;;  Like groups, but ordered.
 
-  (provide sequence)
+  (provide sequence <card-sequence> card-sequence?)
 
   (defclass <card-sequence> (<jumpable> <card-group>))
 
