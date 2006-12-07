@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, tryon
+0.3.3 - 7 Dec 2006 - emk, tryon
  
   * #3792: Added support for QuickTime movies with a ::GetMovieBox that is
     offset from 0,0.  MacTech says that this can happen, and I'm seeing it
