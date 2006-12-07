@@ -255,10 +255,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TEncoding.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\Common\TestCase.cpp"
 				>
 			</File>
@@ -324,6 +320,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\TTemplateUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TTextConv.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TTextTransform.cpp"
 				>
 			</File>
 			<File
@@ -404,10 +408,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TEncoding.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\Common\TestCase.h"
 				>
 			</File>
@@ -480,7 +480,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TUtilities.h"
+				RelativePath="..\..\..\Common\TTextConv.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TTextTransform.h"
 				>
 			</File>
 			<File

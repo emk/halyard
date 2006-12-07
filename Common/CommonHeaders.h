@@ -64,3 +64,4 @@ using boost::scoped_array;
 #include "TTemplateUtils.h"
 #include "TLogger.h"
 #include "TestCase.h"
+#include "TTextConv.h"

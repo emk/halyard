@@ -212,10 +212,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TEncodingTests.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\Common\TestAll.cpp"
 				>
 			</File>
@@ -229,6 +225,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\TStyleSheetTests.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TTextTransformTests.cpp"
 				>
 			</File>
 			<File

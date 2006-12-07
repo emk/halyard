@@ -1,12 +1,23 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
 SVN - emk, tryon
-
+ 
   * #3792: Added support for QuickTime movies with a ::GetMovieBox that is
     offset from 0,0.  MacTech says that this can happen, and I'm seeing it
     in QuickTime movies with a text track, which we need for captions.
+  * #3792: Added support for MEDIA-CAPTION events.  By default, we make the
+    first QuickTime text track invisible, and report the captions to the
+    script as they arrive using MEDIA-CAPTION events.  (It's possible to
+    override this behavior, of course, and display the text track
+    normally.)
+  * #3810: Added support for changing the style and text of a %TEXT-BOX%,
+    and fixed TEXT-BOX to have the same argument order as other
+    functions. These changes make TEXT-BOX elements usable for captioning.
   * #3828: Nodes.ss now provides <CARD-GROUP>, CARD-GROUP?, <CARD-SEQUENCE>,
     CARD-SEQUENCE?.
+  * #3812: Changed text formatting language from legacy punctuation system
+    to regular XML.  Supported tags include: I, EM, CITE, B, STRONG, U,
+    and the non-standard H ("highlight").
 
 0.3.2 - 29 Nov 2006 - emk
 

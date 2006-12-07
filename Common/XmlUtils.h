@@ -88,7 +88,23 @@ public:
 	string name();
 	string attribute(const char *inName);
 
-	// Get the contents of a text-only node.
+    // Returns true if this node is an element.
+    bool is_element_node();
+
+    // Returns true if this node is a text node, an entity ref, or
+    // something else which represents plain text content.
+    bool is_content_node();
+
+    // Return the content of this node as a Unicode string.  Works on
+    // any node which returns true for is_content_node.
+    //
+    // TODO - Yes, this is a silly duplicate of text(), but with slightly
+    // different semantics.  We'll need to clean up the clients of this
+    // class someday, once we have better Unicode support.
+    utf16_string content();
+
+	// Get the contents of an element node which contains only text.
+    // @see content
 	string text();
 
 	// Get an "only child".  Raise an error if more than one child is

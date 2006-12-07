@@ -22,20 +22,97 @@
 
 #include "CommonHeaders.h"
 #include "TStyleSheet.h"
-#include "TEncoding.h"
-#include "TUtilities.h"
+#include "TTextTransform.h"
 #include "TCommonPrimitives.h"
+#include "XmlUtils.h"
 
 #include <string>
 #include <memory>
 
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+
 USING_NAMESPACE_FIVEL
 
 using GraphicsTools::Color;
+using Typography::Style;
 using Typography::StyledText;
 using Typography::TextRenderingEngine;
 
 TStyleSheetManager FIVEL_NS gStyleSheetManager;
+
+
+//=========================================================================
+//  Standard Entities
+//=========================================================================
+//  These are the named entities which we pass to our XML parser.  There's
+//  no particular rhyme or reason to the this list--it includes a few
+//  characters which are needed by various internal routines, and a list
+//  of common entities which we've found handy.
+//
+//  Feel free to add more, but we'd like to keep this list to a few
+//  hundred, tops.
+
+const char *STANDARD_ENTITIES =
+// Standard ASCII entities.  Needed to bypass automatic smart quotes, etc.
+"<!ENTITY apos   \"'\">\n"
+"<!ENTITY hyphen '-'>\n"
+"<!ENTITY period '.'>\n"
+
+// Internally-referenced entities.  Used as output for smart-quotes, etc.
+"<!ENTITY mdash  '&#x2014;'>\n"
+"<!ENTITY lsquo  '&#x2018;'>\n"
+"<!ENTITY rsquo  '&#x2019;'>\n"
+"<!ENTITY ldquo  '&#x201C;'>\n"
+"<!ENTITY rdquo  '&#x201D;'>\n"
+"<!ENTITY hellip '&#x2026;'>\n"
+
+// Other entities.  Here's a nice table of HTML entity names:
+//   http://www.cs.tut.fi/~jkorpela/html/guide/entities.html
+"<!ENTITY copy   '&#x00A9;'>\n"
+"<!ENTITY reg    '&#x00AE;'>\n"
+"<!ENTITY trade  '&#x2122;'>\n"
+"<!ENTITY bull   '&#x2022;'>\n"
+"<!ENTITY sect   '&#x00A7;'>\n"
+"<!ENTITY ndash  '&#x2013;'>\n"
+"<!ENTITY dagger '&#x2020;'>\n"
+"<!ENTITY micro  '&#x00B5;'>\n"
+"<!ENTITY para   '&#x00B6;'>\n"
+"<!ENTITY eacute '&#x00E9;'>\n"
+"<!ENTITY Ccedil '&#x00C7;'>\n"
+"<!ENTITY ccedil '&#x00E7;'>\n"
+"<!ENTITY egrave '&#x00E8;'>\n" // E with grave accent.
+"<!ENTITY nbsp   '&#x00A0;'>\n" // Non-breaking space.
+"<!ENTITY shy    '&#x00AD;'>\n" // Soft hyphen.
+"<!ENTITY deg    '&#x00B0;'>\n" // Degree sign.
+"<!ENTITY radic  '&#x221A;'>\n" // Square root.
+"<!ENTITY check  '&#x2713;'>\n" // Check mark (may not have font support).
+"<!ENTITY cross  '&#x2717;'>\n" // Ballot X (may not have font support).
+"<!ENTITY Delta  '&#x2206;'>\n" // Unicode INCREMENT character.
+"<!ENTITY alpha  '&#x03B1;'>\n" // Lowercase greek alpha.
+"<!ENTITY beta   '&#x03B2;'>\n" // Lowercase greek beta.
+"<!ENTITY gamma  '&#x03B3;'>\n" // Lowercase greek gamma.
+"<!ENTITY delta  '&#x03B4;'>\n" // Lowercase greek delta.
+"<!ENTITY lambda '&#x03BB;'>\n" // Lowercase greek lambda.
+"<!ENTITY pi     '&#x03C0;'>\n" // Lowercase greek pi.
+"<!ENTITY infin  '&#x221E;'>\n" // Infinity.
+"<!ENTITY ne     '&#x2260;'>\n" // Not equal sign.
+"<!ENTITY AElig  '&#x00C6;'>\n" // AE ligature.
+"<!ENTITY aelig  '&#x00E6;'>\n" // ae ligature.
+"<!ENTITY OElig  '&#x0152;'>\n" // OE ligature.
+"<!ENTITY oelig  '&#x0153;'>\n" // oe ligature.
+"<!ENTITY sup1   '&#x00B9;'>\n" // Superscript 1.
+"<!ENTITY sup2   '&#x00B2;'>\n" // Superscript 2.
+"<!ENTITY sup3   '&#x00B3;'>\n" // Superscript 3.
+"<!ENTITY frac14 '&#x00BC;'>\n" // 1/4.
+"<!ENTITY frac12 '&#x00BD;'>\n" // 1/2.
+"<!ENTITY frac34 '&#x00BE;'>\n" // 3/4.
+"<!ENTITY plusmn '&#x00B1;'>\n" // +-
+"<!ENTITY there4 '&#x2234;'>\n" // "Therefore" (three-dot triangle).
+"<!ENTITY times  '&#x00D7;'>\n" // Multiplication.
+"<!ENTITY divide '&#x00F7;'>\n" // Division.
+"<!ENTITY euro   '&#x8364;'>\n" // Euro (may not have font support).
+;
 
 
 //=========================================================================
@@ -120,122 +197,102 @@ Typography::Style TStyleSheet::GetBaseStyle()
 	return base_style;
 }
 
-static void LogEncodingErrors (const std::wstring &inBadStr, size_t inBadPos,
-							   const char *inErrMsg)
-{
-	std::string bad_string =
-		ConstructString<char,std::wstring::const_iterator>(inBadStr.begin(),
-														   inBadStr.end());
-	gLog.Caution("ENCODING WARNING: %s at position %d in string <<%s>>.",
-				 inErrMsg, inBadPos, bad_string.c_str());
-}
-
 Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 {
-	// Convert 7-bit to 16-bit code.
-	// See the notes about TEncoding; it needs refactoring.
-	TEncoding encoding(&LogEncodingErrors);
-	std::wstring expanded =
-		ConstructString<wchar_t,std::string::const_iterator>(inText.begin(),
-															 inText.end());
-	std::wstring encoded = encoding.TransformString(expanded);
+	// Convert string to Unicode, and handle smart quotes, em-dashes, etc.
+	utf8_string expanded = utf8_from_multibyte(inText);
+	utf8_string xformed = TTextTransform::TransformString(expanded);
 
-    // Create a styled text object.
+    // Build a plausible-looking XML document.
+    utf8_string doc_src =
+        "<?xml version='1.0' encoding='utf-8' ?>\n"
+		"<!DOCTYPE text [\n" + utf8_string(STANDARD_ENTITIES) + "]>\n"
+        "<text>" + xformed + "</text>";
+
+    // Create a styled text object, and initialize our stack of active text
+    // styles.  Note that we never pop this first element.
 	Typography::Style base_style = GetBaseStyle();
-    Typography::Style style = base_style;
-    StyledText text(style);
-	
-    // Process each character.
-    bool is_hightlight = false;
-    std::wstring::const_iterator cp = encoded.begin();
-    for (; cp < encoded.end(); ++cp)
-    {
-		switch (*cp)
-		{
-			case '^': // Highlight
-				if (is_hightlight)
-				{
-					style.SetColor(mColor);
-					style.SetShadowColor(mShadowColor);
-				}
-				else
-				{
-					style.SetColor(mHighlightColor);
-					style.SetShadowColor(mHighlightShadowColor);
-				}
-				is_hightlight = !is_hightlight;
-				text.ChangeStyle(style);
-				break;
-				
-			case '|': // Underline
-				// TODO - Change from italic to underline once
-				// underline works.
-				style.ToggleFaceStyle(Typography::kItalicFaceStyle);
-				text.ChangeStyle(style);
-				break;
-				
-			case '@': // Bold
-				style.ToggleFaceStyle(Typography::kBoldFaceStyle);
-				text.ChangeStyle(style);
-				break;
-			
-			
-			case '\\': // Escape sequence
-				if (++cp == encoded.end())
-					throw TException(__FILE__, __LINE__,
-									 "Incomplete escape sequence in \"" +
-									 inText + "\"");
-				switch (*cp)
-				{
-					case 'n':
-						text.AppendText('\n');
-						break;
-						
-					case 't':
-						text.AppendText('\t');
-						break;
-						
-					case '^':
-					case '|':
-					case '_':
-					case '@':
-					case ' ':
-					case '(':
-					case ')':
-					case '\\':
-					case '$':
-					case '#':
-						text.AppendText(*cp);
-						break;
-						
-					default:
-						// XXX - This is really, unbelievably heinous.
-						// CStream does not remove its escape sequences
-						// from the strings it gives us, so we need to
-						// remove those escape sequences ourselves.
-						// Unfortunately, to preserve bug-for-bug
-						// compatibility, we must do it *after* we
-						// encode our entities into 16-bit characters.
-						// Net result: "\&amp;" becomes "\&" during
-						// entity expansion!  So we can't print the backslash
-						// or issue warnings for unknown escape sequences
-						// because virtually any character could legitimately
-						// appear after '\'.
-						
-						//text.AppendText('\\');
-						text.AppendText(*cp);
-						//gDebugLog.Caution("Unrecognized escape \\%c", *cp);
-					
-				}
-				break;
-				
-			default: // Regular character.
-				text.AppendText(*cp);
-		}
-    }
-	
+    StyledText text(base_style);
+    std::vector<Style> style_stack;
+    style_stack.push_back(base_style);
+
+    // Parse our XML document.
+    xmlDocPtr doc = xmlParseMemory(&doc_src[0], doc_src.size());
+	try {
+        CHECK(doc, "Can't parse text: {{" + inText + "}}");
+
+		// Get the root element.
+		xmlNodePtr root_node = xmlDocGetRootElement(doc);
+		CHECK(root_node, "No document root in XML file");
+		xml_node root(root_node);
+        ASSERT(root.name() == "text");
+        
+        // Turn the root's child nodes into a styled text string.
+        ProcessNodeChildren(root, style_stack, text);
+    } catch (...) {
+		if (doc)
+			xmlFreeDoc(doc);
+		throw;
+	}
+	xmlFreeDoc(doc);
+
+    // Finish constructing our styled text and return it.
+    ASSERT(style_stack.size() == 1);
 	text.EndConstruction();
 	return text;
+}
+
+void TStyleSheet::ProcessNodeChildren(xml_node &inNode,
+                                      std::vector<Style> &ioStyleStack,
+                                      StyledText &outText)
+{
+    xml_node::iterator i = inNode.begin_mixed();
+	for (; i != inNode.end_mixed(); ++i)
+        ProcessNode(*i, ioStyleStack, outText);
+}
+
+void TStyleSheet::ProcessNode(xml_node &inNode,
+                              std::vector<Style> &ioStyleStack,
+                              StyledText &outText)
+{
+    if (inNode.is_content_node()) {
+        outText.AppendText(inNode.content());
+    } else if (inNode.is_element_node()) {
+        // Update our style based on the information in this element.
+        Style style = ioStyleStack.back();
+        std::string name(inNode.name());
+        if (name == "i" || name == "em" || name == "cite") {
+            // TODO - Do we want to use ToggleFaceStyle or SetFaceStyle?
+            style.ToggleFaceStyle(Typography::kItalicFaceStyle);
+        } else if (name == "b" || name == "strong") {
+            style.SetFaceStyle(style.GetFaceStyle() |
+                               Typography::kBoldFaceStyle);
+        } else if (name == "u") {
+            style.SetFaceStyle(style.GetFaceStyle() |
+                               Typography::kUnderlineFaceStyle);
+        } else if (name == "h") {
+            // Our "highlight" tag.  Our content authors like to use a a
+            // colored highlight for a number of different purposes, so
+            // we're including a non-standard tag which does just that.
+            style.SetColor(mHighlightColor);
+            style.SetShadowColor(mHighlightShadowColor);
+        } else {
+            THROW("Unsupported text element: " + name);
+        }
+
+        // Install our new style.
+        outText.ChangeStyle(style);
+        ioStyleStack.push_back(style);
+
+        // Recursively process our child nodes.
+        ProcessNodeChildren(inNode, ioStyleStack, outText);
+
+        // Restore our previous text style.
+        ioStyleStack.pop_back();
+        outText.ChangeStyle(ioStyleStack.back());
+    } else {
+        THROW("Unexpected XML node type in text");
+    }
 }
 
 TRect TStyleSheet::Draw(const std::string& inText,

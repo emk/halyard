@@ -108,9 +108,9 @@ void test_TStyleSheet(void)
 
     // Set up a style.
     StyledText text1 =
-		style1->MakeStyledText(" foo |bar| ^baz^ @wub@ || "
-							   "|foo@bar@| \\n\\t\\^\\@\\|\\\\");
-    TEST(*text1.GetText() == L" foo bar baz wub  foobar \n\t^@|\\");
+		style1->MakeStyledText(" foo <u>bar</u> <h>baz</h> <b>wub</b> <i></i> "
+							   "<i>foo<b>bar</b></i> &lt;&gt;&amp;");
+    TEST(*text1.GetText() == L" foo bar baz wub  foobar <>&");
 
     // Build something to compare it against.
     Typography::Style base_style("Times", 12);
@@ -130,7 +130,7 @@ void test_TStyleSheet(void)
     // Make sure each of our ranges is correct.
     test_style(text1, 0, 5, base_style);
     test_style(text1, 5, 8,
-			   Typography::Style(base_style).ToggleFaceStyle(kItalicFaceStyle));
+			   Typography::Style(base_style).ToggleFaceStyle(kUnderlineFaceStyle));
     test_style(text1, 8, 9, base_style);
     test_style(text1, 9, 10, highlight_style);
     test_style(text1, 12, 13, base_style);

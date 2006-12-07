@@ -1068,7 +1068,8 @@
             :controller? controller? 
             :audio-only? audio-only?
             :loop? loop?
-            :interaction? interaction?))
+            :interaction? interaction?
+            :report-captions? report-captions?))
 
   
   ;;;======================================================================
@@ -1234,13 +1235,23 @@
   ;;;  Miscellaneous
   ;;;======================================================================
   
-  (provide native-dialog sleep-milliseconds nap
+  (provide string->xml native-dialog sleep-milliseconds nap
            copy-string-to-clipboard
            script-user-data-directory
            %basic-button%
            quicktime-component-version
            mark-unprocessed-events-as-stale!
            register-debug-report-file!)
+
+  (define $amp-regexp (regexp "&"))
+  (define $lt-regexp (regexp "<"))
+
+  ;;; Escape any XML meta-characters in a string.  Use this if you want
+  ;;; to have text be formatted unchanged.
+  (define (string->xml str)
+    (regexp-replace* $lt-regexp
+                     (regexp-replace* $amp-regexp str "&amp;")
+                     "&lt;"))
 
   ;;; Displays a native OS dialog, and returns the number of the button
   ;;; clicked. DO NOT USE FOR OK/CANCEL DIALOGS: The cancel button won't

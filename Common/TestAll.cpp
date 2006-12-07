@@ -50,7 +50,7 @@ USING_NAMESPACE_FIVEL
 // most likely be replaced with static constructor tricks as I continue to
 // C++-ify the testing API.
 //extern void test_TString (void);
-extern void test_TEncoding (void);
+extern void test_TTextTransform (void);
 extern void test_FileSystem (void);
 extern void test_Model(void);
 extern void test_Typography (void);
@@ -66,6 +66,7 @@ REFERENCE_TEST_CASE_FILE(TSchemeConv);
 REFERENCE_TEST_CASE_FILE(TVariableManager);
 REFERENCE_TEST_CASE_FILE(TStateDB);
 REFERENCE_TEST_CASE_FILE(ScriptEditorDB);
+REFERENCE_TEST_CASE_FILE(TTextConv);
 
 DEFINE_5L_PRIMITIVE(test) {
 	std::string info;
@@ -80,7 +81,7 @@ void FIVEL_NS RegisterTestPrimitives() {
 
 static void run_imlunit_tests() {
 	RegisterTestPrimitives();
-	test_TEncoding();
+	test_TTextTransform();
 	test_FileSystem();
 	test_Model();
 	test_Typography();

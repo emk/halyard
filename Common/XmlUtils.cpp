@@ -138,9 +138,30 @@ xml_node::string xml_node::attribute(const char *inName)
 {
 	xmlChar *attr = xmlGetProp(mNode, to_utf8(inName));
 	CHECK(attr, "Missing expected XML attribute");
-	string result(to_ascii(attr));
+	string result(to_ascii(attr)); // XXX - Will leak attr if fails.
 	xmlFree(attr);
 	return result;
+}
+
+bool xml_node::is_element_node()
+{
+    return (mNode->type == XML_ELEMENT_NODE);
+}
+
+bool xml_node::is_content_node()
+{
+    return (mNode->type == XML_TEXT_NODE ||
+            mNode->type == XML_ENTITY_REF_NODE);
+}
+
+utf16_string xml_node::content()
+{
+    xmlChar *str = xmlNodeGetContent(mNode);
+    CHECK(str, "Expected XML node to have content");
+    // XXX - Will leak str if fails.
+    utf16_string result(utf16_from_utf8(reinterpret_cast<char*>(str)));
+    xmlFree(str);
+    return result;
 }
 
 xml_node::string xml_node::text()
@@ -153,6 +174,7 @@ xml_node::string xml_node::text()
 		return "";
 	else
 	{
+        // XXX - Will leak text if fails.
 		string result(to_ascii(text));
 		xmlFree(text);
 		return result;
