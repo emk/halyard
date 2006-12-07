@@ -1250,8 +1250,8 @@
   ;;; to have text be formatted unchanged.
   (define (string->xml str)
     (regexp-replace* $lt-regexp
-                     (regexp-replace* $amp-regexp str "&amp;")
-                     "&lt;"))
+                     (regexp-replace* $amp-regexp str "\\&amp;")
+                     "\\&lt;"))
 
   ;;; Displays a native OS dialog, and returns the number of the button
   ;;; clicked. DO NOT USE FOR OK/CANCEL DIALOGS: The cancel button won't
