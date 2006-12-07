@@ -459,7 +459,7 @@
     #f)
   
   ;;; Create a new %fitted-text% element.
-  (define (text style p text &key (name (gensym))
+  (define (text p style text &key (name (gensym))
                 (max-width (rect-width $screen-rect)))
     (create %text%
             :name name :at p :max-width max-width :style style :text text))

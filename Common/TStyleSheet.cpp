@@ -268,6 +268,8 @@ void TStyleSheet::ProcessNode(xml_node &inNode,
             style.SetFaceStyle(style.GetFaceStyle() |
                                Typography::kBoldFaceStyle);
         } else if (name == "u") {
+            // TODO - I don't actually think the Typography library
+            // implements this fully.
             style.SetFaceStyle(style.GetFaceStyle() |
                                Typography::kUnderlineFaceStyle);
         } else if (name == "h") {
