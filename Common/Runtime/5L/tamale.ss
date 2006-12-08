@@ -126,6 +126,9 @@
          (set! (element-shown? self) value)]
         [else
          (call-next-handler)]))
+    ;;; Return the bounding box of this element, or #f if it has no bounds.
+    (on bounds ()
+      #f)
     (on setup-finished ()
       ;; TODO - This is technically too late to set this value, and we should
       ;; probably add a SHOWN? parameter to every object creation primitive.
@@ -140,7 +143,9 @@
   ;;; on the stage.
   (define-element-template %widget%
       [[rect :type <rect> :label "Rectangle"]]
-      (%element% :at (rect-left-top rect)))
+      (%element% :at (rect-left-top rect))
+    (on bounds ()
+      rect))
 
   ;;; A %custom-element% is a lightweight element (i.e., implemented by the
   ;;; engine, not by the OS), optionally with an associated drawing
@@ -176,6 +181,9 @@
     ;; Let the engine know whether we're currently dragging this object.
     (define (set-in-drag-layer?! value)
       (call-5l-prim 'ElementSetInDragLayer (node-full-name self) value))
+
+    (on bounds ()
+      (bounds (offset-by-point (prop self shape) (prop self at))))
 
     (on setup-finished ()
       (call-next-handler)
@@ -283,8 +291,8 @@
     #f)
 
   ;;; Create a %box% element.
-  (define (box shape &key (name (gensym)))
-    (create %box% :name name :shape shape))
+  (define (box shape &key (name (gensym)) (parent (default-element-parent)))
+    (create %box% :name name :parent parent :shape shape))
 
   ;;; A %clickable-zone% will run the specified ACTION when the user clicks on
   ;;; it.
@@ -302,9 +310,11 @@
   ;;; Create a %clickable-zone%.
   (define (clickable-zone shape action
                           &key (name (gensym)) (cursor 'hand)
-                          (overlay? #f) (alpha? #f))
+                          (overlay? #f) (alpha? #f)
+                          (parent (default-element-parent)))
     (create %clickable-zone%
-            :name name 
+            :name name
+            :parent parent
             :shape shape
             :cursor cursor
             :action action
@@ -446,8 +456,11 @@
       (draw-text (dc-rect) style text)))
   
   ;;; Create a new %text% element.
-  (define (text-box r style text &key (name (gensym)))
-    (create %text-box% :name name :shape r :style style :text text))
+  (define (text-box r style text
+                    &key (name (gensym)) (parent (default-element-parent)))
+    (create %text-box%
+            :name name :parent parent
+            :shape r :style style :text text))
   
   ;;; A text element just large enough to fit the specified text.
   (define-element-template %text%
@@ -459,10 +472,12 @@
     #f)
   
   ;;; Create a new %fitted-text% element.
-  (define (text p style text &key (name (gensym))
+  (define (text p style text
+                &key (name (gensym)) (parent (default-element-parent))
                 (max-width (rect-width $screen-rect)))
     (create %text%
-            :name name :at p :max-width max-width :style style :text text))
+            :name name :parent parent
+            :at p :max-width max-width :style style :text text))
   
   ;;; A simple graphic.  For now, you must specify the :ALPHA? value you
   ;;; want; the engine can't compute a reasonable value automatically.
@@ -474,8 +489,12 @@
       (draw-graphic (point 0 0) (prop self path))))
   
   ;;; Create a new %graphic%.
-  (define (graphic p path &key (name (gensym)) (alpha? #f))
-    (create %graphic% :name name :at p :alpha? alpha? :path path))
+  (define (graphic p path
+                   &key (name (gensym)) (alpha? #f)
+                   (parent (default-element-parent)))
+    (create %graphic%
+            :name name :parent parent
+            :at p :alpha? alpha? :path path))
   
   ;;; A rectangular element, filled with a single color.
   (define-element-template %rectangle%
@@ -492,16 +511,19 @@
         (draw-rectangle-outline (dc-rect) outline-color outline-width))))
   
   ;;; Create a new %rectangle%.
-  (define (rectangle r c &key (name (gensym))
-               (outline-width 1) (outline-color $transparent))
+  (define (rectangle r c
+                     &key (name (gensym)) (parent (default-element-parent))
+                     (outline-width 1) (outline-color $transparent))
     (create %rectangle%
-            :name name :shape r :color c
+            :name name :parent parent :shape r :color c
             :outline-width outline-width :outline-color outline-color))
   
   ;;; Create a new %rectangle% with an outline and a transparent center.
-  (define (rectangle-outline r c width &key (name (gensym)))
+  (define (rectangle-outline r c width
+                             &key (name (gensym))
+                             (parent (default-element-parent)))
     (create %rectangle%
-            :name name :shape r :color $transparent
+            :name name :parent parent :shape r :color $transparent
             :outline-width width :outline-color c))
   
 
@@ -706,8 +728,9 @@
     (send self load-page path))
 
   ;;; Create a new %browser% object.
-  (define (browser r path &key (name (gensym)))
-    (create %browser% :name name :rect r :path path))
+  (define (browser r path
+                   &key (name (gensym)) (parent (default-element-parent)))
+    (create %browser% :name name :parent parent :rect r :path path))
 
 
   ;;;======================================================================
@@ -727,8 +750,10 @@
                   font-size multiline?))
 
   ;;; Create an %edit-box%.
-  (define (edit-box r text &key (name (gensym)) (font-size 9) (multiline? #f))
-    (create %edit-box% :name name :rect r :text text
+  (define (edit-box r text
+                    &key (name (gensym)) (font-size 9) (multiline? #f)
+                    (parent (default-element-parent)))
+    (create %edit-box% :name name :parent parent :rect r :text text
             :font-size font-size :multiline? multiline?))
 
   
@@ -833,8 +858,10 @@
                   (build-path (current-directory) "LocalMedia" path)
                   (prop self volume)))
 
-  (define (geiger-audio path &key (name (gensym)) (volume 1.0))
-    (create %geiger-audio% :name name :path path :volume volume))
+  (define (geiger-audio path &key (name (gensym)) (volume 1.0)
+                        (parent (default-element-parent)))
+    (create %geiger-audio%
+            :name name :parent parent :path path :volume volume))
 
   (define-element-template %geiger-synth%
       [state-path chirp loops]
@@ -849,9 +876,10 @@
                       item))
                 loops)))
 
-  (define (geiger-synth state-path chirp loops &key (name (gensym)))
+  (define (geiger-synth state-path chirp loops
+                        &key (name (gensym)) (parent (default-element-parent)))
     (create %geiger-synth%
-            :name name :state-path state-path
+            :name name :parent parent :state-path state-path
             :chirp chirp :loops loops))
 
   ;;; Plays a pure sine-wave tone.
@@ -863,9 +891,11 @@
                   (prop self volume) frequency))
 
   ;;; Create a %sine-wave%.
-  (define (sine-wave frequency &key (name (gensym)) (volume 1.0))
+  (define (sine-wave frequency
+                     &key (name (gensym)) (parent (default-element-parent))
+                     (volume 1.0))
     (create %sine-wave%
-            :name name :frequency frequency :volume volume))
+            :name name :parent parent :frequency frequency :volume volume))
 
 
   ;;;======================================================================
@@ -891,9 +921,10 @@
   
   ;;; Create a %vorbis-audio% element.
   (define (vorbis-audio path
-                        &key (name (gensym)) (loop? #f) (volume 1.0))
+                        &key (name (gensym)) (parent (default-element-parent))
+                        (loop? #f) (volume 1.0))
     (create %vorbis-audio%
-            :name name :path path :loop? loop? :volume volume))
+            :name name :parent parent :path path :loop? loop? :volume volume))
 
 
   ;;;======================================================================
@@ -1061,9 +1092,9 @@
   (define (movie r path
                  &key (name (gensym)) (volume 1.0)
                  controller? audio-only? loop? interaction?
-                 (report-captions? #t))
+                 (report-captions? #t) (parent (default-element-parent)))
     (create %movie%
-            :name name :rect r :path path
+            :name name :parent parent :rect r :path path
             :volume volume
             :controller? controller? 
             :audio-only? audio-only?

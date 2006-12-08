@@ -1,5 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * Fixed bug in STRING->XML.
+  * Added ON BOUNDS handler to %element% and subclasses.
+  * Added :PARENT argument to element creation helper functions.
+
 0.3.3 - 7 Dec 2006 - emk, tryon
  
   * #3792: Added support for QuickTime movies with a ::GetMovieBox that is
