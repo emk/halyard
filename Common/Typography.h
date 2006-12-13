@@ -855,6 +855,37 @@ namespace Typography {
 		bool NextElement(LineSegment *outSegment);
 	};
 
+    //////////
+    /// We use BoundingBox objects to calculate the bounding box for a
+    /// collection of characters or lines.  A BoundingBox object has no
+    /// initial value.
+    class BoundingBox {
+        bool mHasValue;
+        Distance mLeft, mTop, mRight, mBottom;
+
+    public:
+        BoundingBox() : mHasValue(false) {}
+
+        //////////
+        /// Does this BoundingBox have an actual value yet?
+        bool HasValue() const { return mHasValue; }
+
+        Distance GetLeft() const { return mLeft; }
+        Distance GetTop() const { return mTop; }
+        Distance GetRight() const { return mRight; }
+        Distance GetBottom() const { return mBottom; }
+
+        //////////
+        /// Enlarge the bounding box to contain the specified rectangle.
+        void ExpandToInclude(Distance inLeft, Distance inTop,
+                             Distance inRight, Distance inBottom);
+
+        //////////
+        /// Does this BoundingBox contain pixels not contained by the
+        /// other specified BoundingBox?
+        bool ExtendsBeyond(const BoundingBox &other) const;
+    };
+
 	//////////
 	/// Display-independent code to transform text into a multi-line
 	/// paragraph.
@@ -934,9 +965,11 @@ namespace Typography {
 		///
 		/// \param inLine  A list of segments to display.
 		/// \param inHorizontalOffset  The distance to indent this line.
+		/// \param inLineLength  The calculated length of this line.
 		///
 		virtual void RenderLine(std::deque<LineSegment> *inLine,
-								Distance inHorizontalOffset) = 0;
+								Distance inHorizontalOffset,
+                                Distance inLineLength) = 0;
 
 	public:
 		//////////
@@ -968,11 +1001,8 @@ namespace Typography {
 		Image *mImage;
 		bool mIsFirstLine;
 		Point mLineStart;
-		bool mHaveBounds;
-		Distance mLeftBound;
-		Distance mTopBound;
-		Distance mRightBound;
-		Distance mBottomBound;
+        BoundingBox mComputedBounds;
+        BoundingBox mDrawnBounds;
 
 	public:
 		//////////
@@ -999,28 +1029,28 @@ namespace Typography {
         //////////
         /// Get the drawing bounds from the last call to RenderText. 
         ///
-        void GetTextBounds(Distance &outLeft, Distance &outTop,
-                           Distance &outRight, Distance &outBottom) const;
+        BoundingBox GetBounds() const
+            { ASSERT(mComputedBounds.HasValue()); return mComputedBounds; }
 
 		//////////
 		/// After a call to 'RenderText', get the width of the text.  This
 		/// can be used with a NULL image to measure text.
 		///
 		Distance GetTextWidth() const
-			{ return mHaveBounds ? mRightBound - mLeftBound : 0; }
+            { return GetBounds().GetRight() - GetBounds().GetLeft(); }
 
 		//////////
 		/// After a call to 'RenderText', get the height of the text.  This
 		/// can be used with a NULL image to measure text.
 		///
 		Distance GetTextHeight() const
-			{ return mHaveBounds ? mBottomBound - mTopBound : 0; }
+            { return GetBounds().GetBottom() - GetBounds().GetTop(); }
 
 		//////////
 		/// After a call to 'RenderText', get the rightmost coordinate
 		/// of any letter drawn.
 		///
-		Distance GetRightBound() const { return mRightBound; }
+		Distance GetRightBound() const { return GetBounds().GetRight(); }
 
 		//////////
 		/// After a call to 'RenderText', get an approximate bottommost
@@ -1028,7 +1058,7 @@ namespace Typography {
 		/// 'g' on the last line drawn.  Note that there may be no characters
 		/// on this last line if the text ends in "\n".
 		/// 
-		Distance GetBottomBound() const { return mBottomBound; }
+		Distance GetBottomBound() const { return GetBounds().GetBottom(); }
 
 	private:
 		//////////
@@ -1041,7 +1071,7 @@ namespace Typography {
 		void DrawGreyMap(Point inPosition,
 						 const GreyMap *inGreyMap,
 						 Color inColor);
-		
+        
 		//////////
 		/// Process a single character.
 		///
@@ -1073,7 +1103,8 @@ namespace Typography {
 									LineSegment *outExtracted);
 
 		virtual void RenderLine(std::deque<LineSegment> *inLine,
-			                    Distance inHorizontalOffset);
+			                    Distance inHorizontalOffset,
+                                Distance inLineLength);
     };
 
 	//////////

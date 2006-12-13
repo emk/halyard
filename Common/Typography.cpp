@@ -951,6 +951,54 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 
 
 //=========================================================================
+//	Typography::BoundingBox Methods
+//=========================================================================
+
+void BoundingBox::ExpandToInclude(Distance inLeft, Distance inTop,
+                                  Distance inRight, Distance inBottom)
+{
+    if (mHasValue)
+    {
+        if (inLeft < mLeft)
+            mLeft = inLeft;
+        if (inTop < mTop)
+            mTop = inTop;
+        if (inRight > mRight)
+            mRight = inRight;
+        if (inBottom > mBottom)
+            mBottom = inBottom;
+    }
+    else
+    {
+        mHasValue = true;
+        mLeft = inLeft;
+        mTop = inTop;
+        mRight = inRight;
+        mBottom = inBottom;
+    }
+    ASSERT(mLeft <= mRight);
+    ASSERT(mTop <= mBottom);
+}
+
+bool BoundingBox::ExtendsBeyond(const BoundingBox &other) const
+{
+    if (!mHasValue)
+        // We have no value, so we can't extend beyond anything.
+        return false;
+    else if (!other.mHasValue)
+        // We have a value but the other doesn't, so we extend beyond it.
+        return true;
+    else if (other.mLeft <= mLeft && mRight <= other.mRight &&
+             other.mTop <= mTop && mBottom <= other.mBottom)
+        // All our pixels fall within the other box.
+        return false;
+    else
+        // Some of our pixels are outside the other box.
+        return true;
+}
+
+
+//=========================================================================
 //	Typography::GenericTextRenderingEngine Methods
 //=========================================================================
 
@@ -1007,7 +1055,7 @@ RenderAndResetLine(std::deque<LineSegment> *ioLine)
 	Distance offset = CalculateHorizontalOffset(space_used);
 
 	// Render the line and empty our deque for the next line.
-	RenderLine(ioLine, offset);
+	RenderLine(ioLine, offset, space_used);
 	ioLine->clear();
 }
 
@@ -1080,32 +1128,20 @@ TextRenderingEngine::TextRenderingEngine(const StyledText &inText,
 										 Image *inImage)
 	: GenericTextRenderingEngine(inText, inLineLength, inJustification),
 	  mImage(inImage), mIsFirstLine(true),
-	  mLineStart(inPosition),
-	  mHaveBounds(false),
-	  mLeftBound(inPosition.x + inLineLength),
-	  mTopBound(inPosition.y),
-	  mRightBound(inPosition.x),
-	  mBottomBound(inPosition.y)
+	  mLineStart(inPosition)
 {
 	
-}
-
-void TextRenderingEngine::GetTextBounds(Distance &outLeft,
-                                        Distance &outTop,
-                                        Distance &outRight,
-                                        Distance &outBottom) const
-{
-    ASSERT(mHaveBounds);
-    outLeft   = mLeftBound;
-    outTop    = mTopBound;
-    outRight  = mRightBound;
-    outBottom = mBottomBound;
 }
 
 void TextRenderingEngine::DrawGreyMap(Point inPosition,
 									  const GreyMap *inGreyMap,
 									  Color inColor)
 {
+    // Record the actual BoundingBox of the letter.
+    mDrawnBounds.ExpandToInclude(inPosition.x, inPosition.y,
+                                 inPosition.x + inGreyMap->width,
+                                 inPosition.y + inGreyMap->height);
+
 	// If we have a destination image, draw to it.
 	if (mImage)
 	{
@@ -1257,7 +1293,8 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 }
 
 void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
-									 Distance inHorizontalOffset)
+									 Distance inHorizontalOffset,
+                                     Distance inLineLength)
 {
 	// Calculate an appropriate height for this line.
 	Distance line_height = GetDefaultStyle()->GetLineHeight(mIsFirstLine);
@@ -1274,6 +1311,11 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		}
 	}
 
+    // Calculate an approximate descender for this line.
+	// TODO - This doesn't take oversized characters into account,
+	// which may have lower base-lines than regular characters.
+    Distance line_descender_length = GetDefaultStyle()->GetDescender();
+
 	// Figure out where to start drawing text.
 	mLineStart.y += line_height;
 	Distance line_left_bound = mLineStart.x + inHorizontalOffset;
@@ -1281,6 +1323,16 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	cursor.x += inHorizontalOffset;
 	Distance line_right_bound = line_left_bound;
 
+    // Update our official BoundingBox.  Notice that we use the
+    // inLineLength value that we get from the line-breaking code, not the
+    // value that we compute below, because we want to return a value that
+    // produces identical line-breaking results if used to draw this text
+    // again (and not necessarily the tightest visual fit).
+    mComputedBounds.ExpandToInclude(line_left_bound,
+		                            mLineStart.y - line_height,
+                                    line_left_bound + inLineLength,
+                                    mLineStart.y + line_descender_length);
+    
 	// Draw each character.
 	StyledText::value_type previous(kNoSuchCharacter, NULL);
 	for (std::deque<LineSegment>::iterator iter2 = inLine->begin();
@@ -1297,25 +1349,16 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		StyledText::value_type current(L'-', previous.style);
 		ProcessCharacter(&previous, current, &cursor, &line_right_bound, true);
 	}
-
-	// We have valid bounds now.
-	mHaveBounds = true;
-
-	// Update our minimum left bound.
-	if (line_left_bound < mLeftBound)
-		mLeftBound = line_left_bound;
-
-	// Update our maximum right bound.
-	if (line_right_bound > mRightBound)
-		mRightBound = line_right_bound;
-
-	// Calculate an approximate bottom bound.
-	// TODO - This doesn't take oversized characters into account,
-	// which may have lower base-lines than regular characters.
-	mBottomBound = mLineStart.y + GetDefaultStyle()->GetDescender();
 	
 	// Update our drawing state for the next line.
 	mIsFirstLine = false;
+
+    // Make sure that our computed bounds are large enough to actually
+    // contain the glyphs we've drawn.  For now, this is a hard assertion,
+    // because we're fine-tuning the algorithm and we want crash reports if
+    // we've overlooked any cases.  Depending on what we ultimately discover,
+    // we may or may not turn this off in the future.
+    //ASSERT(!mDrawnBounds.ExtendsBeyond(mComputedBounds));
 }
 
 

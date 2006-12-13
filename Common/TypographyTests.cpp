@@ -293,6 +293,43 @@ static void test_Typography_LineSegment (void)
 
 
 //=========================================================================
+//	Bounding Box Tests
+//=========================================================================
+
+#define TEST_BOUNDING_BOX(BOX,LEFT,TOP,RIGHT,BOTTOM) \
+    TEST((BOX).GetLeft()   == (LEFT)); \
+    TEST((BOX).GetTop()    == (TOP)); \
+    TEST((BOX).GetRight()  == (RIGHT)); \
+    TEST((BOX).GetBottom() == (BOTTOM))
+
+static void test_Typography_BoundingBox (void) 
+{
+    BoundingBox box, box2;
+    TEST(box.HasValue() == false);
+    TEST(!box2.ExtendsBeyond(box));
+    TEST(!box.ExtendsBeyond(box2));
+    
+    // Expand the bounding box several times.
+    box.ExpandToInclude(10, 20, 100, 200);
+    TEST_BOUNDING_BOX(box, 10, 20, 100, 200);
+    box.ExpandToInclude(5, 15, 105, 195);
+    TEST_BOUNDING_BOX(box, 5, 15, 105, 200);
+    box.ExpandToInclude(15, 25, 95, 205);
+    TEST_BOUNDING_BOX(box, 5, 15, 105, 205);
+    
+    // More containment tests.
+    TEST(!box2.ExtendsBeyond(box));
+    TEST(box.ExtendsBeyond(box2));
+    box2.ExpandToInclude(10, 20, 100, 200);
+    TEST(!box2.ExtendsBeyond(box));
+    box2.ExpandToInclude(5, 15, 105, 205);
+    TEST(!box2.ExtendsBeyond(box));
+    box2.ExpandToInclude(5, 15, 105, 206);
+    TEST(!box.ExtendsBeyond(box));    
+}
+
+
+//=========================================================================
 //	GenericTextRenderingEngine Tests
 //=========================================================================
 //	We subclass the GenericTextRenderingEngine with a rendering engine
@@ -322,7 +359,8 @@ protected:
 	virtual void ExtractOneLine(LineSegment *ioRemaining,
 								LineSegment *outExtracted);
 	virtual void RenderLine(std::deque<LineSegment> *inLine,
-							Distance inHorizontalOffset);
+							Distance inHorizontalOffset,
+                            Distance inLineLength);
 };
 
 // Since nobody seems to print wchar_t strings correctly,
@@ -383,7 +421,8 @@ void TestTextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 }
 
 void TestTextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
-										 Distance inHorizontalOffset)
+										 Distance inHorizontalOffset,
+                                         Distance inLineLength)
 {
 	for (Distance i = 0; i < inHorizontalOffset; i++)
 		mRenderedText += L' ';
@@ -582,6 +621,7 @@ void test_Typography (void)
 	test_Typography_Style();
 	test_Typography_StyledText();
 	test_Typography_LineSegment();
-	test_Typography_GenericTextRenderingEngine();
-	test_Typography_FamilyDatabase();
+    test_Typography_BoundingBox();
+    test_Typography_GenericTextRenderingEngine();
+    test_Typography_FamilyDatabase();
 }

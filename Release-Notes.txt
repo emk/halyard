@@ -5,6 +5,10 @@ SVN - emk
   * Fixed bug in STRING->XML.
   * Added ON BOUNDS handler to %element% and subclasses.
   * Added :PARENT argument to element creation helper functions.
+  * #2493: Fixed MEASURE-TEXT to return a bounding box based on the line
+    width calculated by the line-breaking algorithm, not by the drawing
+    algorithm.  This should guarantee that MEASURE-TEXT and DRAW-TEXT
+    agree about where the line breaks should go.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

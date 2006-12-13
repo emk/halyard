@@ -310,9 +310,9 @@ TRect TStyleSheet::Draw(const std::string& inText,
 										 engine.GetBottomBound()));
 
     // Return the bounding box of the text we drew.
-    GraphicsTools::Distance left, top, right, bottom;
-    engine.GetTextBounds(left, top, right, bottom);
-    return TRect(left, top, right, bottom);
+    Typography::BoundingBox bounds = engine.GetBounds();
+    return TRect(bounds.GetLeft(), bounds.GetTop(),
+                 bounds.GetRight(), bounds.GetBottom());
 }
 
 int TStyleSheet::GetLineHeight()

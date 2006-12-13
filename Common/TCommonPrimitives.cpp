@@ -238,8 +238,12 @@ DEFINE_5L_PRIMITIVE(MeasureTextAA)
 	TRect bounds = gStyleSheetManager.Draw(style, text,
                                            GraphicsTools::Point(0, 0),
                                            max_width, NULL);
+    ASSERT(bounds.Top() == 0);
+    ASSERT(bounds.Left() >= 0);
     
-    ::SetPrimitiveResult(bounds);
+    // Relocate bounds to 0,0, so that we do the right thing when measuring
+    // centered text--namely, measure the just the needed width.
+    ::SetPrimitiveResult(TRect(0, 0, bounds.Width(), bounds.Height()));
 }
 
 DEFINE_5L_PRIMITIVE(NotifyFileLoaded) {
