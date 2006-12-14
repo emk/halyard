@@ -318,7 +318,8 @@ TRect TStyleSheet::Draw(const std::string& inText,
 int TStyleSheet::GetLineHeight()
 {
 	// Return the height of the first line.
-	return GetBaseStyle().GetLineHeight(true);
+	StyledText::value_type dummy(L' ', &GetBaseStyle());
+	return dummy.GetLineHeight(true);
 }
 
 

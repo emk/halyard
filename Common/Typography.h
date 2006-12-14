@@ -327,8 +327,6 @@ namespace Typography {
 		AbstractFace *GetFace() const;
 		bool          GetIsUnderlined() const;
 		bool          GetIsShadowed() const;
-		Distance      GetLineHeight(bool isFirstLine = false) const;
-		Distance      GetDescender() const;
 	};
 
 	//////////
@@ -424,6 +422,30 @@ namespace Typography {
 			///  Create a new styled text object with no contents.
 			///
 			value_type() : value(kNoSuchCharacter), style(NULL) {}
+
+            //////////
+            ///  Get the minimum line height that will work for this
+            ///  character.  Based on GetNominalAscender, which means that
+            ///  most characters will return the same value.
+            ///
+            Distance GetLineHeight(bool isFirstLine = false) const;
+
+            //////////
+            ///  Get the ascender height to use for this letter.  This
+            ///  will, in general, be the same for most letters, because we
+            ///  return the maximum of the letter's actual ascender and the
+            ///  face's standard ascender.  In general, the only letters
+            ///  which will return a larger-than-usual value are integral
+            ///  signs and other overhigh letters.
+            ///
+            Distance GetNominalAscender() const;
+
+            //////////
+            ///  Get the descender height for this letter.  Like
+            ///  GetNominalAscender, most letters will return a standard
+            ///  value.
+            ///
+            Distance GetNominalDescender() const;
 		};
 
 		//////////
@@ -1093,6 +1115,12 @@ namespace Typography {
 							  Point *ioPosition,
 							  Distance *ioRightBound,
 							  bool inShouldDraw);
+
+        //////////
+        /// Make sure that mDrawnBounds falls entirely within
+        /// mComputedBounds.
+        ///
+        void CheckBoundingBoxes() const;
 
 	protected:
 		virtual Distance MeasureSegment(LineSegment *inPrevious,

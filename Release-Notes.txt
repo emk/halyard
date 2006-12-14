@@ -9,7 +9,10 @@ SVN - emk
     width calculated by the line-breaking algorithm, not by the drawing
     algorithm.  This should guarantee that MEASURE-TEXT and DRAW-TEXT
     agree about where the line breaks should go.
-  * #2078: Changed ascender calculation to consider more letters.
+  * #2078: Changed ascender and descender calculation to consider more
+    letters.  Also added fallback code to catch overlong ascenders and
+    descenders, such as the ones which may appear on the integral sign
+    (U+222B).
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

@@ -335,6 +335,12 @@ Typography::Style &Style::SetLeading(Distance inLeading)
 
 Typography::Style &Style::SetShadowOffset(Distance inOffset)
 {
+    // We're too lazy to fully implement negative shadow offsets
+    // (particularly with regard to bounding box calculations), so we
+    // disallow them for now.
+    if (inOffset < 0)
+        throw Error(__FILE__, __LINE__, "Cannot have negative shadow offset");
+
 	Grab();
 	mRep->mShadowOffset = inOffset;
 	return *this;
@@ -385,26 +391,6 @@ bool Style::GetIsUnderlined() const
 bool Style::GetIsShadowed() const
 {
 	return (mRep->mFaceStyle & kShadowFaceStyle) ? true : false;
-}
-
-Distance Style::GetLineHeight(bool isFirstLine /*= false*/) const
-{
-	if (isFirstLine)
-	{
-		// We don't need any inter-line spacing for the first line.
-		return GetFace()->GetAscender();
-	}
-	else
-	{
-		// We need to use the full interline spacing for lines after
-		// the first, and we need to adjust the leading.
-		return GetFace()->GetLineHeight() + GetLeading();
-	}
-}
-
-Distance Style::GetDescender() const
-{
-	return GetFace()->GetDescender();
 }
 
 
@@ -492,6 +478,46 @@ const Typography::Style *StyledText::GetStyleAt(size_t inOffset) const
 	// Return our result.
 	ASSERT(result->first <= inOffset);
 	return &result->second;
+}
+
+
+//=========================================================================
+//	Typography::StyledText::value_type Methods
+//=========================================================================
+
+Distance StyledText::value_type::GetLineHeight(bool isFirstLine) const
+{
+    Distance ascender = GetNominalAscender();
+	if (isFirstLine)
+	{
+		// We don't need any inter-line spacing for the first line.
+		return ascender;
+	}
+	else
+	{
+		// We need to use the full interline spacing for lines after
+		// the first, and we need to adjust the leading.  Note that if
+        // the ascender requires extra room, we'll bump the line height
+        // up until it fits.
+        Distance interline_spacing =
+            style->GetFace()->GetLineHeight() + style->GetLeading();
+		return max(ascender, interline_spacing);
+	}
+}
+
+Distance StyledText::value_type::GetNominalAscender() const
+{
+    Glyph *glyph = style->GetFace()->GetGlyph(value);
+    Distance glyph_ascender = round_266(glyph->GetMetrics()->horiBearingY);
+    return max(glyph_ascender, style->GetFace()->GetAscender());
+}
+
+Distance StyledText::value_type::GetNominalDescender() const
+{
+    Glyph *glyph = style->GetFace()->GetGlyph(value);
+    Distance glyph_descender = round_266(glyph->GetMetrics()->height -
+                                         glyph->GetMetrics()->horiBearingY);
+    return max(glyph_descender, style->GetFace()->GetDescender());
 }
 
 
@@ -731,7 +757,7 @@ Distance Face::GetAscender()
     // commonly-used characters in the font.  We're not interested in
     // "overhigh" characters such as integral signs; those are better
     // handled by adjusting the inter-line spacing.
-    const char *candidates = "MTCl";
+    const char *candidates = "MTCl1";
     Distance result = 0;
     for (const char *cp = candidates; *cp; cp++)
     {
@@ -756,21 +782,30 @@ Distance Face::GetAscender()
 
 Distance Face::GetDescender()
 {
-	// For descenders, we measure the letter 'g', for the reasons discussed
-	// above.  (We may want to tweak this code a bit.)
-	GlyphIndex index = GetGlyphIndex('g');
-	if (index)
-	{
-		Glyph *glyph = GetGlyphFromGlyphIndex(index);
-		return round_266(glyph->GetMetrics()->height -
-						 glyph->GetMetrics()->horiBearingY);
+	// For descenders, we measure a variety of letters, for the reasons
+	// discussed above.
+    const char *candidates = "gpqyj7";
+    Distance result = 0;
+    for (const char *cp = candidates; *cp; cp++)
+    {
+        GlyphIndex index = GetGlyphIndex(*cp);
+        if (index)
+        {
+            Glyph *glyph = GetGlyphFromGlyphIndex(index);
+            Distance dsc = round_266(glyph->GetMetrics()->height -
+                                     glyph->GetMetrics()->horiBearingY);
+            result = max(dsc, result);
+        }
 	}
-	else
+
+	if (result == 0)
 	{
-		// We don't have an 'g' in this font, so use the approximate
-		// maximum descender.
-		return round_266(mFaceRep->mFace->size->metrics.descender);
+		// We don't have any of the candidate characters in this font, so
+		// use the approximate maximum descender.
+		result = round_266(mFaceRep->mFace->size->metrics.descender);
 	}
+
+    return result;
 }
 
 Distance Face::GetLineHeight()
@@ -1301,8 +1336,13 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 									 Distance inHorizontalOffset,
                                      Distance inLineLength)
 {
-	// Calculate an appropriate height for this line.
-	Distance line_height = GetDefaultStyle()->GetLineHeight(mIsFirstLine);
+	// Figure out how far above and below the baseline our characters will
+    // stretch.  This allows us to deal with mixed-sized text, and a few
+    // oversized characters (such as the integral sign) which need custom
+    // line spacing.
+    StyledText::value_type dummy(L' ', GetDefaultStyle());
+	Distance line_height = dummy.GetLineHeight(mIsFirstLine);
+    Distance line_descender = dummy.GetNominalDescender();
 	for (std::deque<LineSegment>::iterator iter1 = inLine->begin();
 		 iter1 < inLine->end(); ++iter1)
 	{
@@ -1310,16 +1350,17 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 			 cp != iter1->end; ++cp)
 		{
 			// Increase the line height if we have any oversized characters.
-			Distance current_height = cp->style->GetLineHeight(mIsFirstLine);
+			Distance current_height = cp->GetLineHeight(mIsFirstLine);
 			if (current_height > line_height)
 				line_height = current_height;
+
+            // Increase the line descender if we have any oversized
+            // descenders.
+            Distance current_descender = cp->GetNominalDescender();
+            if (current_descender > line_descender)
+                line_descender = current_descender;
 		}
 	}
-
-    // Calculate an approximate descender for this line.
-	// TODO - This doesn't take oversized characters into account,
-	// which may have lower base-lines than regular characters.
-    Distance line_descender_length = GetDefaultStyle()->GetDescender();
 
 	// Figure out where to start drawing text.
 	mLineStart.y += line_height;
@@ -1336,7 +1377,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
     mComputedBounds.ExpandToInclude(line_left_bound,
 		                            mLineStart.y - line_height,
                                     line_left_bound + inLineLength,
-                                    mLineStart.y + line_descender_length);
+                                    mLineStart.y + line_descender);
     
 	// Draw each character.
 	StyledText::value_type previous(kNoSuchCharacter, NULL);
@@ -1347,10 +1388,8 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 			 cp != iter2->end; ++cp)
         {
 			ProcessCharacter(&previous, *cp, &cursor, &line_right_bound, true);
-            //if (mDrawnBounds.HasValue())
-            //    ASSERT(mDrawnBounds.GetTop() >= mComputedBounds.GetTop());
+            CheckBoundingBoxes();
         }
-
 	}
 
 	// Draw a trailing hyphen if we need one.
@@ -1360,18 +1399,29 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		ProcessCharacter(&previous, current, &cursor, &line_right_bound, true);
 	}
 
+    // TODO - Eventually, we want to refactor CheckBoundingBoxes to be
+    // inlined right here, and nowhere else.
+    CheckBoundingBoxes();
+	
+	// Update our drawing state for the next line.
+	mIsFirstLine = false;
+}
+
+void TextRenderingEngine::CheckBoundingBoxes() const
+{
     // Make sure that our computed bounds are large enough to actually
     // contain the glyphs we've drawn.  For now, this is a hard assertion,
     // because we're fine-tuning the algorithm and we want crash reports if
     // we've overlooked any cases.  Depending on what we ultimately discover,
     // we may or may not turn this off in the future.
     //ASSERT(!mDrawnBounds.ExtendsBeyond(mComputedBounds));
-    //if (mDrawnBounds.HasValue())
-    //    ASSERT(mDrawnBounds.GetTop() >= mComputedBounds.GetTop());
-	
-	// Update our drawing state for the next line.
-	mIsFirstLine = false;
+    if (mDrawnBounds.HasValue())
+    {
+        ASSERT(mComputedBounds.GetTop() <= mDrawnBounds.GetTop());
+        ASSERT(mDrawnBounds.GetBottom() <= mComputedBounds.GetBottom());
+    }
 }
+
 
 
 //=========================================================================
