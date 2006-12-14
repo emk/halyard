@@ -13,6 +13,12 @@ SVN - emk
     letters.  Also added fallback code to catch overlong ascenders and
     descenders, such as the ones which may appear on the integral sign
     (U+222B).
+  * Modified Typography library to use std::vector instead of std::deque.
+  * #2493: Fixed bug where we'd sometimes clip a single pixel off the
+    the left-most edge of the text.  We do this by indenting all text
+    by enough pixels to handle the smallest negative left bearing of any
+    character in the text.  This may cause left-edge alignment problems
+    under certain circumstances, but not by more than a pixel.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

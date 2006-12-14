@@ -520,6 +520,16 @@ Distance StyledText::value_type::GetNominalDescender() const
     return max(glyph_descender, style->GetFace()->GetDescender());
 }
 
+Distance StyledText::value_type::GetLeftBearing() const
+{
+    // TODO - Should we calculate a left bearing for the face, like with do
+    // with GetNominalAscender, etc.?  This would get us better-aligned
+    // left-hand edges in vertically-aligned text blocks drawn in separate
+    // calls to the TextRenderingEngine.
+    Glyph *glyph = style->GetFace()->GetGlyph(value);
+    return round_266(glyph->GetMetrics()->horiBearingX);
+}
+
 
 //=========================================================================
 //	Typography::AbstractFace Methods
@@ -876,7 +886,7 @@ void FaceStack::SearchForCharacter(CharCode inCharCode,
 								   GlyphIndex *outGlyphIndex)
 {
 	// Search for the first font which has a glyph for our char code.
-	for (std::deque<Face>::iterator iter = mFaceStack.begin();
+	for (std::vector<Face>::iterator iter = mFaceStack.begin();
 		 iter < mFaceStack.end(); iter++)
 	{
 		*outFace = &*iter;
@@ -1045,7 +1055,7 @@ bool BoundingBox::ExtendsBeyond(const BoundingBox &other) const
 // A miscellaneous local helper function to get either a pointer
 // to the last element of a deque, or NULL if no such element exists.
 template <class C>
-static C* back_or_null(std::deque<C> &d)
+static C* back_or_null(std::vector<C> &d)
 {
 	if (d.empty())
 		return NULL;
@@ -1057,7 +1067,8 @@ GenericTextRenderingEngine::
 GenericTextRenderingEngine(const StyledText &inText,
 						   Distance inLineLength,
 						   Justification inJustification)
-	: mIterator(inText),
+	: mText(inText),
+      mIterator(inText),
 	  mDefaultStyle(inText.GetDefaultStyle()),
 	  mLineLength(inLineLength),
 	  mJustification(inJustification)
@@ -1071,18 +1082,20 @@ CalculateHorizontalOffset(Distance inSpaceUsed)
 {
 	ASSERT(inSpaceUsed <= GetLineLength());
 	Distance remaining = GetLineLength() - inSpaceUsed;
+    Distance offset;
 	switch (GetJustification())
 	{
-		case kLeftJustification:   return 0;
-		case kCenterJustification: return remaining / 2;
-		case kRightJustification:  return remaining;
+		case kLeftJustification:   offset = 0; break;
+		case kCenterJustification: offset = remaining / 2; break;
+		case kRightJustification:  offset = remaining; break;
+        default: ASSERT(false);
+
 	}
-	ASSERT(false);
-	return 0;	 
+	return offset;
 }
 
 void GenericTextRenderingEngine::
-RenderAndResetLine(std::deque<LineSegment> *ioLine)
+RenderAndResetLine(std::vector<LineSegment> *ioLine)
 {
 	// Discard trailing whitespace segments.
 	while (!ioLine->empty() && ioLine->back().discardAtEndOfLine)
@@ -1102,15 +1115,19 @@ RenderAndResetLine(std::deque<LineSegment> *ioLine)
 void GenericTextRenderingEngine::RenderText()
 {
 	LineSegment seg;
-	std::deque<LineSegment> current_line;
+	std::vector<LineSegment> current_line;
 	
-	Distance space_used = 0;
+    // If any of our letters extend to the left of their origins, indent
+    // all text by that amount, to guarantee that all letters get drawn.
+    mInitialIndent = -GetMinimumLeftBearing(mText);
+
+	Distance space_used = mInitialIndent;
 	while (mIterator.NextElement(&seg)) {
 		
 		// Handle line breaks.
 		if (seg.isLineBreak) {
 			RenderAndResetLine(&current_line);
-			space_used = 0;
+			space_used = mInitialIndent;
 			continue;
 		}
 		
@@ -1118,11 +1135,12 @@ void GenericTextRenderingEngine::RenderText()
 		// line, then start a new line.
 		Distance needed =
 			MeasureSegment(back_or_null(current_line), &seg, true);
-		if (needed > (GetLineLength() - space_used) && space_used > 0)
+		if (needed > (GetLineLength() - space_used) &&
+            space_used > mInitialIndent)
 		{
 			// Render what we've got.
 			RenderAndResetLine(&current_line);
-			space_used = 0;
+			space_used = mInitialIndent;
 
 			// Our segment didn't fit on the current line
 			// AND it disappears at the end of a line.
@@ -1135,12 +1153,12 @@ void GenericTextRenderingEngine::RenderText()
 		// This is an ugly wart, and it isn't merged well into the
 		// overall algorithm.  But isolating this ugly wart seems to
 		// keep the rest of the code clean.
-		while (needed > GetLineLength())
+		while (needed > GetUsableLineLength())
 		{
-			ASSERT(space_used == 0 && current_line.empty());
+			ASSERT(space_used == mInitialIndent && current_line.empty());
 			LineSegment extracted;
 			ExtractOneLine(&seg, &extracted);
-			extracted.userDistanceData =
+			extracted.userDistanceData = mInitialIndent +
 				MeasureSegment(back_or_null(current_line), &extracted, true);
 			current_line.push_back(extracted);
 			RenderAndResetLine(&current_line);
@@ -1256,6 +1274,16 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 	}
 }
 
+Distance
+TextRenderingEngine::GetMinimumLeftBearing(const StyledText &inText) const
+{
+    Distance result = 0;
+    StyledText::const_iterator cp = inText.begin();
+	for (; cp != inText.end(); ++cp)
+        result = min(result, cp->GetLeftBearing());
+    return result;
+}
+
 Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 											 LineSegment *inSegment,
 											 bool inAtEndOfLine)
@@ -1322,7 +1350,7 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 		if (seg.begin == seg.end)
 			throw Error(__FILE__, __LINE__,
 						"Trying to break line in the middle of a character");
-	} while (MeasureSegment(NULL, &seg, true) > GetLineLength());
+	} while (MeasureSegment(NULL, &seg, true) > GetUsableLineLength());
 	ASSERT(seg.end != ioRemaining->end);
 	
 	// Update our line segments.
@@ -1332,7 +1360,7 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 	ioRemaining->begin = seg.end;
 }
 
-void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
+void TextRenderingEngine::RenderLine(std::vector<LineSegment> *inLine,
 									 Distance inHorizontalOffset,
                                      Distance inLineLength)
 {
@@ -1343,7 +1371,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
     StyledText::value_type dummy(L' ', GetDefaultStyle());
 	Distance line_height = dummy.GetLineHeight(mIsFirstLine);
     Distance line_descender = dummy.GetNominalDescender();
-	for (std::deque<LineSegment>::iterator iter1 = inLine->begin();
+	for (std::vector<LineSegment>::iterator iter1 = inLine->begin();
 		 iter1 < inLine->end(); ++iter1)
 	{
 		for (StyledText::const_iterator cp = iter1->begin;
@@ -1366,7 +1394,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	mLineStart.y += line_height;
 	Distance line_left_bound = mLineStart.x + inHorizontalOffset;
 	Point cursor = mLineStart;
-	cursor.x += inHorizontalOffset;
+	cursor.x += inHorizontalOffset + GetInitialIndent();
 	Distance line_right_bound = line_left_bound;
 
     // Update our official BoundingBox.  Notice that we use the
@@ -1381,7 +1409,7 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
     
 	// Draw each character.
 	StyledText::value_type previous(kNoSuchCharacter, NULL);
-	for (std::deque<LineSegment>::iterator iter2 = inLine->begin();
+	for (std::vector<LineSegment>::iterator iter2 = inLine->begin();
 		 iter2 < inLine->end(); ++iter2)
 	{
 		for (StyledText::const_iterator cp = iter2->begin;
@@ -1417,8 +1445,9 @@ void TextRenderingEngine::CheckBoundingBoxes() const
     //ASSERT(!mDrawnBounds.ExtendsBeyond(mComputedBounds));
     if (mDrawnBounds.HasValue())
     {
-        ASSERT(mComputedBounds.GetTop() <= mDrawnBounds.GetTop());
-        ASSERT(mDrawnBounds.GetBottom() <= mComputedBounds.GetBottom());
+        //ASSERT(mComputedBounds.GetTop() <= mDrawnBounds.GetTop());
+        //ASSERT(mDrawnBounds.GetBottom() <= mComputedBounds.GetBottom());
+        //ASSERT(mComputedBounds.GetLeft() <= mDrawnBounds.GetLeft());
     }
 }
 

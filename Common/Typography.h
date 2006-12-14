@@ -446,6 +446,15 @@ namespace Typography {
             ///  value.
             ///
             Distance GetNominalDescender() const;
+
+            //////////
+            ///  Get the left bearing for this character.  This is the
+            ///  distance between the character's origin and the first
+            ///  actual pixel.  Will be negative if the character extends
+            ///  to the left of the origin (this occassionally happens due
+            ///  to hinting).
+            ///
+            Distance GetLeftBearing() const;
 		};
 
 		//////////
@@ -741,7 +750,7 @@ namespace Typography {
 	/// All faces in a a stack must be the same size.
 	///
 	class FaceStack : public AbstractFace {
-		std::deque<Face> mFaceStack;
+		std::vector<Face> mFaceStack;
 
 	public:
 		explicit FaceStack(const Face &inPrimaryFace);
@@ -925,10 +934,12 @@ namespace Typography {
 	///
 	class GenericTextRenderingEngine {
 	private:
+        const StyledText &mText;
 		LineSegmentIterator mIterator;
 		const Style *mDefaultStyle;
 		Distance mLineLength;
 		Justification mJustification;
+        Distance mInitialIndent;
 
 	protected:
 		//////////
@@ -947,7 +958,17 @@ namespace Typography {
 		
 		const Style *GetDefaultStyle() { return mDefaultStyle; }
 		Distance GetLineLength() { return mLineLength; }
+        Distance GetUsableLineLength() { return mLineLength - mInitialIndent; }
+        Distance GetInitialIndent() { return mInitialIndent; }
 		Justification GetJustification() { return mJustification; }
+
+		//////////
+		///  Determine the minimum left bearing of the letters in our text.
+		///  This function will return 0 if all the bearings are
+		///  non-negative.
+		///
+		virtual Distance GetMinimumLeftBearing(const StyledText &inText) const
+            = 0;
 
 		//////////
 		/// Subclasses must override this method to provide measurements
@@ -989,7 +1010,7 @@ namespace Typography {
 		/// \param inHorizontalOffset  The distance to indent this line.
 		/// \param inLineLength  The calculated length of this line.
 		///
-		virtual void RenderLine(std::deque<LineSegment> *inLine,
+		virtual void RenderLine(std::vector<LineSegment> *inLine,
 								Distance inHorizontalOffset,
                                 Distance inLineLength) = 0;
 
@@ -1008,7 +1029,7 @@ namespace Typography {
 		//////////
 		/// Internal routine which calculates justification, calls
 		/// RenderLine, and removes all the segments from ioLine.
-		void RenderAndResetLine(std::deque<LineSegment> *ioLine);
+		void RenderAndResetLine(std::vector<LineSegment> *ioLine);
 	};
 
 	//////////
@@ -1123,6 +1144,8 @@ namespace Typography {
         void CheckBoundingBoxes() const;
 
 	protected:
+		virtual Distance GetMinimumLeftBearing(const StyledText &inText) const;
+
 		virtual Distance MeasureSegment(LineSegment *inPrevious,
 										LineSegment *inSegment,
 										bool inAtEndOfLine);
@@ -1130,7 +1153,7 @@ namespace Typography {
 		virtual void ExtractOneLine(LineSegment *ioRemaining,
 									LineSegment *outExtracted);
 
-		virtual void RenderLine(std::deque<LineSegment> *inLine,
+		virtual void RenderLine(std::vector<LineSegment> *inLine,
 			                    Distance inHorizontalOffset,
                                 Distance inLineLength);
     };

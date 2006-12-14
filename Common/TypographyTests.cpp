@@ -341,24 +341,32 @@ static void test_Typography_BoundingBox (void)
 class TestTextRenderingEngine : public GenericTextRenderingEngine
 {
 private:
+    Distance mMinBearing;
 	std::basic_string<wchar_t> mRenderedText;
 
 public:
 	TestTextRenderingEngine(const StyledText &inText,
 							Distance inLineLength,
-							Justification inJustification)
-		: GenericTextRenderingEngine(inText, inLineLength,
-									 inJustification) {}
+							Justification inJustification,
+                            Distance inMinBearing)
+		: GenericTextRenderingEngine(inText,
+                                     // Add in enough extra space for our
+                                     // bearing.
+                                     inLineLength - inMinBearing,
+									 inJustification),
+          mMinBearing(inMinBearing) {}
 	
 	void Test(const wchar_t *result);
 	
 protected:
+    virtual Distance GetMinimumLeftBearing(const StyledText &inText) const;
+
 	virtual Distance MeasureSegment(LineSegment *inPrevious,
 									LineSegment *inSegment,
 									bool inAtEndOfLine);
 	virtual void ExtractOneLine(LineSegment *ioRemaining,
 								LineSegment *outExtracted);
-	virtual void RenderLine(std::deque<LineSegment> *inLine,
+	virtual void RenderLine(std::vector<LineSegment> *inLine,
 							Distance inHorizontalOffset,
                             Distance inLineLength);
 };
@@ -393,6 +401,12 @@ void TestTextRenderingEngine::Test (const wchar_t *result)
 	TEST(mRenderedText == result);
 }
 
+Distance
+TestTextRenderingEngine::GetMinimumLeftBearing(const StyledText &inText) const
+{
+    return mMinBearing;
+}
+
 Distance TestTextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
 												 LineSegment *inSegment,
 												 bool inAtEndOfLine)
@@ -413,14 +427,14 @@ void TestTextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 	TEST(outExtracted != NULL);
 
 	StyledText::const_iterator new_end =
-		ioRemaining->begin + (GetLineLength() - 1);
+		ioRemaining->begin + (GetUsableLineLength() - 1);
 	outExtracted->SetLineSegment(ioRemaining->begin, new_end,
 								 false, false, true);
 	TEST(outExtracted->end != ioRemaining->end);
 	ioRemaining->begin = outExtracted->end;	
 }
 
-void TestTextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
+void TestTextRenderingEngine::RenderLine(std::vector<LineSegment> *inLine,
 										 Distance inHorizontalOffset,
                                          Distance inLineLength)
 {
@@ -429,7 +443,7 @@ void TestTextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	mRenderedText += L'|';
 	
 	// Render each segment.
-	for (std::deque<LineSegment>::iterator iter = inLine->begin();
+	for (std::vector<LineSegment>::iterator iter = inLine->begin();
 		 iter < inLine->end(); iter++)
 	{
 		LineSegment seg = *iter;
@@ -446,7 +460,8 @@ void TestTextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 }
 
 void rendering_test(const wchar_t *in, Distance width,
-					Justification justification, const wchar_t *out)
+					Justification justification, Distance min_bearing,
+                    const wchar_t *out)
 {
 	// Insert various special characters which we can't reliably
 	// escape with some C compilers.
@@ -457,14 +472,26 @@ void rendering_test(const wchar_t *in, Distance width,
 
 	// Set up the rest of our parameters and call the engine.
 	const StyledText *text = make_text(s);
-	TestTextRenderingEngine e(*text, width, justification);
+	TestTextRenderingEngine e(*text, width, justification, min_bearing);
 	e.Test(out);
 	delete text;
 }
 
-#define RTEST_L(in,width,out) rendering_test(in,width,kLeftJustification,out)
-#define RTEST_C(in,width,out) rendering_test(in,width,kCenterJustification,out)
-#define RTEST_R(in,width,out) rendering_test(in,width,kRightJustification,out)
+// We use a minimum bearing on all our left-aligned test cases, to make
+// sure that we handle line-breaking, etc., correctly in the presence of a
+// non-zero bearing.  (The TestTextRenderingEngine takes care of adjusting
+// 'width' appropriately for us.)  But we don't test non-zero bearings for
+// centered and right-aligned text, because the RenderLine implementation
+// above isn't smart enough to do the right thing.
+//
+// TODO - Unfortunately, this means we don't have any real test cases for
+// non-zero bearings and how they affect centered text.
+#define RTEST_L(in,width,out) \
+    rendering_test(in,width,kLeftJustification,-2,out)
+#define RTEST_C(in,width,out) \
+    rendering_test(in,width,kCenterJustification,0,out)
+#define RTEST_R(in,width,out) \
+    rendering_test(in,width,kRightJustification,0,out)
 
 static void test_Typography_GenericTextRenderingEngine (void) 
 {
