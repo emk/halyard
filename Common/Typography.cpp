@@ -726,27 +726,32 @@ Distance Face::GetAscender()
 	// baseline).  Just to add insult to injury, the FreeType 2 reference
 	// manual says the ascender value doesn't take kerning into account,
 	// and might be off by as much as a pixel.
-	//
-	// Instead, we choose to measure the height of the capital letter 'M'.
-	// This is a good choice for two reasons:
-	//   1) The *width* of the character 'M' is used to measure em-dashes,
-	//      em-spaces, and other values.  So there's a precedent for looking
-	//      at the letter 'M' to get special values.
-	//   2) The letter 'M' typically has flat, horizontal serifs.  Letters
-	//      such as 'T' sometimes have vertical serifs; we want to extend
-	//      these above the top-line, and not include them in the height.
-	GlyphIndex em_index = GetGlyphIndex('M');
-	if (em_index)
-	{
-		Glyph *em_glyph = GetGlyphFromGlyphIndex(em_index);
-		return round_266(em_glyph->GetMetrics()->horiBearingY);
-	}
-	else
-	{
-		// We don't have an 'M' in this font, so use the approximate height
-		// of the tallest character.
-		return round_266(mFaceRep->mFace->size->metrics.ascender);
-	}
+    //
+    // We want to compute a height which is greater than or equal to the
+    // commonly-used characters in the font.  We're not interested in
+    // "overhigh" characters such as integral signs; those are better
+    // handled by adjusting the inter-line spacing.
+    const char *candidates = "MTCl";
+    Distance result = 0;
+    for (const char *cp = candidates; *cp; cp++)
+    {
+        GlyphIndex index = GetGlyphIndex(*cp);
+        if (index)
+        {
+            Glyph *glyph = GetGlyphFromGlyphIndex(index);
+            Distance asc = round_266(glyph->GetMetrics()->horiBearingY);
+            result = max(asc, result);
+        }
+    }
+
+    if (result == 0)
+    {
+		// We don't have any candidate characters in this font, so use the
+		// approximate height of the tallest character.
+		result = round_266(mFaceRep->mFace->size->metrics.ascender);
+    }
+
+    return result;
 }
 
 Distance Face::GetDescender()
@@ -1340,7 +1345,12 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 	{
 		for (StyledText::const_iterator cp = iter2->begin;
 			 cp != iter2->end; ++cp)
+        {
 			ProcessCharacter(&previous, *cp, &cursor, &line_right_bound, true);
+            //if (mDrawnBounds.HasValue())
+            //    ASSERT(mDrawnBounds.GetTop() >= mComputedBounds.GetTop());
+        }
+
 	}
 
 	// Draw a trailing hyphen if we need one.
@@ -1349,9 +1359,6 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
 		StyledText::value_type current(L'-', previous.style);
 		ProcessCharacter(&previous, current, &cursor, &line_right_bound, true);
 	}
-	
-	// Update our drawing state for the next line.
-	mIsFirstLine = false;
 
     // Make sure that our computed bounds are large enough to actually
     // contain the glyphs we've drawn.  For now, this is a hard assertion,
@@ -1359,6 +1366,11 @@ void TextRenderingEngine::RenderLine(std::deque<LineSegment> *inLine,
     // we've overlooked any cases.  Depending on what we ultimately discover,
     // we may or may not turn this off in the future.
     //ASSERT(!mDrawnBounds.ExtendsBeyond(mComputedBounds));
+    //if (mDrawnBounds.HasValue())
+    //    ASSERT(mDrawnBounds.GetTop() >= mComputedBounds.GetTop());
+	
+	// Update our drawing state for the next line.
+	mIsFirstLine = false;
 }
 
 
