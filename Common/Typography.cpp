@@ -1246,7 +1246,7 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 	// bearingX (which is the distance from the origin to the left edge of 
 	// the glyph) and the width of the glyph. If this doesn't work, we'll 
 	// probably just need to use the size of the greymap. 
-    Distance right_shadow = inCurrent.style->GetShadowOffset();
+    Distance right_shadow = max(0, inCurrent.style->GetShadowOffset());
 	Distance new_right_bound = ioPosition->x 
 		                         + round_266(glyph->GetMetrics()->horiBearingX 
 			                                   + glyph->GetMetrics()->width)
