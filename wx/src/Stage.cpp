@@ -182,7 +182,7 @@ DrawingArea *Stage::GetCurrentDrawingArea() {
 
 wxBitmap Stage::GetScriptGraphic(const std::string &inName) {
     FileSystem::Path path =
-        FileSystem::GetBaseDirectory().AddComponent(inName);
+        FileSystem::GetScriptGraphicFilePath(inName);
     if (!path.DoesExist() || !path.IsRegularFile())
         return wxBitmap();
     std::string native_path = path.ToNativePathString();

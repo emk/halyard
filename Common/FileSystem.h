@@ -244,6 +244,26 @@ namespace FileSystem {
 	    { return GetRuntimeDirectory().AddComponent(inRuntimeFileName); }
 
 	//////////
+	/// Get the directory which contains graphics.
+    //
+	inline Path GetGraphicDirectory()
+	    { return GetBaseDirectory().AddComponent("Graphics"); }
+
+	//////////
+	/// Get the directory which contains script graphics--ones which we
+	/// will use as chrome for various parts of the engine UI,
+	/// including the icon and the splash screen.
+    //
+	inline Path GetScriptGraphicDirectory()
+	    { return GetGraphicDirectory().AddComponent("script"); }
+
+	//////////
+	/// Get the path to a "script" graphic.  See GetScriptGraphicDirectory.
+	///
+	inline Path GetScriptGraphicFilePath(const std::string &inFileName)
+	    { return GetScriptGraphicDirectory().AddComponent(inFileName); }
+
+	//////////
 	/// Get the directory 5L uses to store user data.
 	///
 	inline Path GetDataDirectory()
