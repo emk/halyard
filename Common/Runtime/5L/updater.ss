@@ -73,7 +73,7 @@
   ;;===========================================================================
   
   (provide <downloader> <mock-downloader> add-mock-url download cancel-download
-           parse-manifest parse-spec-file)
+           parse-manifest parse-spec-file program-release-id)
   
   (defclass <downloader> ()
     directory)
@@ -164,6 +164,15 @@
                   (if m
                     (loop (cons (cdr m) alist))
                     (error "Couldn't parse release specification."))))))))
+
+  ;;; Return the ID of this program release as a string, or #f if this
+  ;;; isn't an official release.
+  (define (program-release-id)
+    (define spec-file (build-path (current-directory) "release.spec"))
+    (if (file-exists? spec-file)
+        (second (assoc "Build" (parse-spec-file spec-file)))
+        #f))
+
   
   ;;========================================================================
   
