@@ -19,6 +19,10 @@ SVN - emk
     by enough pixels to handle the smallest negative left bearing of any
     character in the text.  This may cause left-edge alignment problems
     under certain circumstances, but not by more than a pixel.
+  * #2061: Fixed DRAW-TEXT and MEASURE-TEXT to include drop shadows when
+    calculating line lengths and bounding boxes.  From now on, any drawn
+    text which falls outside the bounding box returned by MEASURE-TEXT
+    will automatically cause an assertion failure.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

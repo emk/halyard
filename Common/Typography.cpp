@@ -112,6 +112,7 @@ Library *Library::GetLibrary()
 	return sLibrary;
 }
 
+
 //=========================================================================
 //	Typography::Glyph Methods
 //=========================================================================
@@ -517,7 +518,8 @@ Distance StyledText::value_type::GetNominalDescender() const
     Glyph *glyph = style->GetFace()->GetGlyph(value);
     Distance glyph_descender = round_266(glyph->GetMetrics()->height -
                                          glyph->GetMetrics()->horiBearingY);
-    return max(glyph_descender, style->GetFace()->GetDescender());
+    Distance base = max(glyph_descender, style->GetFace()->GetDescender());
+    return base + max(0, style->GetShadowOffset());
 }
 
 Distance StyledText::value_type::GetLeftBearing() const
@@ -1244,9 +1246,11 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 	// bearingX (which is the distance from the origin to the left edge of 
 	// the glyph) and the width of the glyph. If this doesn't work, we'll 
 	// probably just need to use the size of the greymap. 
+    Distance right_shadow = inCurrent.style->GetShadowOffset();
 	Distance new_right_bound = ioPosition->x 
 		                         + round_266(glyph->GetMetrics()->horiBearingX 
-			                                   + glyph->GetMetrics()->width);
+			                                   + glyph->GetMetrics()->width)
+                                 + right_shadow;
 
 	// Make sure our new right bound is actually to the right of the old 
 	// right bound. 
@@ -1414,10 +1418,7 @@ void TextRenderingEngine::RenderLine(std::vector<LineSegment> *inLine,
 	{
 		for (StyledText::const_iterator cp = iter2->begin;
 			 cp != iter2->end; ++cp)
-        {
 			ProcessCharacter(&previous, *cp, &cursor, &line_right_bound, true);
-            CheckBoundingBoxes();
-        }
 	}
 
 	// Draw a trailing hyphen if we need one.
@@ -1427,30 +1428,16 @@ void TextRenderingEngine::RenderLine(std::vector<LineSegment> *inLine,
 		ProcessCharacter(&previous, current, &cursor, &line_right_bound, true);
 	}
 
-    // TODO - Eventually, we want to refactor CheckBoundingBoxes to be
-    // inlined right here, and nowhere else.
-    CheckBoundingBoxes();
-	
-	// Update our drawing state for the next line.
-	mIsFirstLine = false;
-}
-
-void TextRenderingEngine::CheckBoundingBoxes() const
-{
     // Make sure that our computed bounds are large enough to actually
     // contain the glyphs we've drawn.  For now, this is a hard assertion,
     // because we're fine-tuning the algorithm and we want crash reports if
     // we've overlooked any cases.  Depending on what we ultimately discover,
     // we may or may not turn this off in the future.
-    //ASSERT(!mDrawnBounds.ExtendsBeyond(mComputedBounds));
-    if (mDrawnBounds.HasValue())
-    {
-        //ASSERT(mComputedBounds.GetTop() <= mDrawnBounds.GetTop());
-        //ASSERT(mDrawnBounds.GetBottom() <= mComputedBounds.GetBottom());
-        //ASSERT(mComputedBounds.GetLeft() <= mDrawnBounds.GetLeft());
-    }
+    ASSERT(!mDrawnBounds.ExtendsBeyond(mComputedBounds));
+	
+	// Update our drawing state for the next line.
+	mIsFirstLine = false;
 }
-
 
 
 //=========================================================================

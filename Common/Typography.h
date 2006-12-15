@@ -1137,12 +1137,6 @@ namespace Typography {
 							  Distance *ioRightBound,
 							  bool inShouldDraw);
 
-        //////////
-        /// Make sure that mDrawnBounds falls entirely within
-        /// mComputedBounds.
-        ///
-        void CheckBoundingBoxes() const;
-
 	protected:
 		virtual Distance GetMinimumLeftBearing(const StyledText &inText) const;
 
