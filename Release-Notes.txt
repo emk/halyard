@@ -25,6 +25,10 @@ SVN - emk
     will automatically cause an assertion failure.
   * #3818: Added PROGRAM-RELEASE-ID function (in the updater module)
     which can be used to get the release ID of a Tamale script.
+  * #3829: Moved all top-level *.png graphics used by the engine (splash
+    screens, progress bars, etc.) to the Graphics/script directory.
+  * Added new MOVE-RECT-RIGHT-TO, MOVE-RECT-BOTTOM-TO, and
+    MOVE-RECT-LEFT-TOP-TO functions to shapes.ss.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

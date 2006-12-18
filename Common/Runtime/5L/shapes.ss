@@ -17,6 +17,8 @@
 
            copy-rect rect-horizontal-center rect-vertical-center
            rect-center move-rect-left-to move-rect-top-to
+           move-rect-right-to move-rect-bottom-to
+           move-rect-left-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
            move-rect-center-to
 
@@ -101,6 +103,21 @@
   ;;; with the top edge at V.
   (define (move-rect-top-to r v)
     (rect (rect-left r) v (rect-right r) (+ v (rect-height r))))
+
+  ;;; Create a new rect with the same size and vertical position as R,
+  ;;; with the right edge at H.
+  (define (move-rect-right-to r h)
+    (rect (- h (rect-width r)) (rect-top r) h (rect-bottom r)))
+
+  ;;; Create a new rect with the same size and horizontal position as R,
+  ;;; with the bottom edge at V.
+  (define (move-rect-bottom-to r v)
+    (rect (rect-left r) (- (rect-height r) v) (rect-right r) v))
+
+  ;;; Create a new rect with the same size as R, with its left-top corner
+  ;;; at P.
+  (define (move-rect-left-top-to r p)
+    (move-rect-left-to (move-rect-top-to r (point-y p)) (point-x p)))
 
   ;;; Create a new rect with the same size and vertical position as R, with
   ;;; the horizontal center at X.
