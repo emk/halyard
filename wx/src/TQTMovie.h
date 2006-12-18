@@ -215,6 +215,11 @@ private:
 	///
 	bool mShouldStartWhenReady;
 
+    //////////
+    /// Should we start this movie in paused mode?
+    ///
+    bool mShouldPauseWhenStarted;
+
 	//////////
 	/// Our playback options.
 	///

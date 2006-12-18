@@ -20,6 +20,8 @@
 //
 // @END_LICENSE
 
+#define _CRT_SECURE_NO_DEPRECATE (1)
+
 #include <QTML.h>
 #include "TQTMovie.h"
 
@@ -149,6 +151,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
       mCanGetMovieProperties(false),
 	  mMovie(NULL), mMovieController(NULL),
       mVolume(1.0f), mShouldStartWhenReady(false),
+      mShouldPauseWhenStarted(false),
       mTimeoutStarted(false), mTimeoutDisabled(false),
       mTimeoutBase(0), mLastSeenTimeValue(0)
 {
@@ -420,7 +423,8 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	
 	// Start the movie.
 	UpdateMovieState(MOVIE_STARTED);
-	DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
+    if (!mShouldPauseWhenStarted)
+        DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
 }
 
 void TQTMovie::DivertTextTrackToCaptions() {
@@ -522,28 +526,52 @@ bool TQTMovie::IsDone() throw ()
 
 bool TQTMovie::IsPaused()
 {
-	ASSERT(mState == MOVIE_STARTED);
-	long flags;
-	CHECK_MAC_ERROR(::MCGetControllerInfo(mMovieController, &flags));
-	return flags & mcInfoIsPlaying ? false : true;
+    if (mState == MOVIE_BROKEN)
+        return true;
+    else if (mState < MOVIE_STARTED)
+        return mShouldPauseWhenStarted;
+    else
+    {
+        ASSERT(mState == MOVIE_STARTED);
+        long flags;
+        CHECK_MAC_ERROR(::MCGetControllerInfo(mMovieController, &flags));
+        return flags & mcInfoIsPlaying ? false : true;
+    }
 }
 
 void TQTMovie::Pause()
 {
-	ASSERT(mState == MOVIE_STARTED);
-    mTimeoutDisabled = true; // XXX - Massive kludge, see comment for variable.
-	if (!IsPaused())
-		DoAction(mcActionPlay, reinterpret_cast<void*>(0));
+    if (mState == MOVIE_BROKEN)
+        return;
+
+    // XXX - Massive kludge, see comment for variable.
+    mTimeoutDisabled = true;
+    if (mState < MOVIE_STARTED)
+        mShouldPauseWhenStarted = true;
+    else
+    {
+        ASSERT(mState == MOVIE_STARTED);        
+        if (!IsPaused())
+            DoAction(mcActionPlay, reinterpret_cast<void*>(0));
+    }
 }
 
 void TQTMovie::Unpause()
 {
-	ASSERT(mState == MOVIE_STARTED);
-	if (IsPaused() && !IsDone())
-	{
-		Fixed rate = ::GetMoviePreferredRate(mMovie);
-		DoAction(mcActionPlay, reinterpret_cast<void*>(rate));
-	}
+    if (mState == MOVIE_BROKEN)
+        return;
+
+    if (mState < MOVIE_STARTED)
+        mShouldPauseWhenStarted = false;
+    else
+    {
+        ASSERT(mState == MOVIE_STARTED);        
+        if (IsPaused() && !IsDone())
+        {
+            Fixed rate = ::GetMoviePreferredRate(mMovie);
+            DoAction(mcActionPlay, reinterpret_cast<void*>(rate));
+        }
+    }
 }
 
 TimeValue TQTMovie::GetMovieTime()

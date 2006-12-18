@@ -162,14 +162,14 @@ bool MovieWindowQT::IsDone()
 
 void MovieWindowQT::Pause()
 {
-	if (mMovie && mMovie->IsStarted())
-		mMovie->Pause();
+    if (mMovie)
+        mMovie->Pause();
 }
 
 void MovieWindowQT::Resume()
 {
-	if (mMovie && mMovie->IsStarted())
-		mMovie->Unpause();
+    if (mMovie)
+        mMovie->Unpause();
 }
 
 void MovieWindowQT::SetVolume(const std::string &inChannel, double inVolume) {

@@ -29,6 +29,8 @@ SVN - emk
     screens, progress bars, etc.) to the Graphics/script directory.
   * Added new MOVE-RECT-RIGHT-TO, MOVE-RECT-BOTTOM-TO, and
     MOVE-RECT-LEFT-TOP-TO functions to shapes.ss.
+  * #3166: Creating a movie element and pausing it immediately should now
+    work.  Please report any remaining pause-related bugs.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  
