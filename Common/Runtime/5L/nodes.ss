@@ -707,6 +707,11 @@
        (@* 'name)]))
   (define-syntax-indent @ function)
 
+  (define (check-node-name name)
+    (unless (regexp-match "^[a-z][-_a-z0-9]*$" (symbol->string name))
+      (error (cat "Bad node name: " name ". Must begin with a letter, and "
+                  "contain only letters, numbers, hyphens and underscores."))))
+
   (define (analyze-node-name name)
     ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
     ;; node's parent and the "local" portion of the name (excluding the
@@ -734,6 +739,7 @@
        (begin
          (define name
            (with-values [[parent local-name] (analyze-node-name 'name)]
+             (check-node-name local-name)
              (make node-class
                :group      'group
                :extends    extended
@@ -966,6 +972,7 @@
     (unless (node-running? parent)
       (error (cat "Cannot CREATE child on inactive node "
                   (node-full-name parent))))
+    (check-node-name name)
     (assert (eq? (template-group template) '<element>))
     (let [[e (make <element>
                :group      '<element>
