@@ -292,6 +292,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\EditBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\Element.cpp"
 				>
 			</File>
@@ -673,6 +677,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\DrawingContextStack.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\EditBox.h"
 				>
 			</File>
 			<File

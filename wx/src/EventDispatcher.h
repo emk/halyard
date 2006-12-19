@@ -114,6 +114,11 @@ public:
 	bool DoEventMouseMoved(wxMouseEvent &inEvent);
 
     //////////
+    /// Dispatch a TextEnter event.
+    ///
+    bool DoEventTextEnter(wxCommandEvent &inEvent);
+
+    //////////
     /// Dispatch a BrowserNavigate event.  This occurs before loading a new
     /// page, and it may be vetoed.
     ///

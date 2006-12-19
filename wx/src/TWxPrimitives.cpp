@@ -55,6 +55,7 @@
 #include "BrowserElementWx.h"
 #include "BrowserElementIE.h"
 #include "ActiveXElement.h"
+#include "EditBox.h"
 #include "TStateDB.h"
 #include "dlg/MultiButtonDlg.h"
 #include "Downloader.h"
@@ -104,6 +105,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(DrawLine);
     REGISTER_5L_PRIMITIVE(DrawLoadProgress);
 	REGISTER_5L_PRIMITIVE(EditBox);
+	REGISTER_5L_PRIMITIVE(EditBoxGetValue);
 	REGISTER_5L_PRIMITIVE(ElementExists);
 	REGISTER_5L_PRIMITIVE(ElementIsShown);
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
@@ -470,21 +472,24 @@ DEFINE_5L_PRIMITIVE(DrawLoadProgress) {
 
 DEFINE_5L_PRIMITIVE(EditBox) {
 	std::string name, text;
+    TCallbackPtr dispatcher;
 	TRect bounds;
-    bool multiline;
     uint32 text_sz;
+    bool multiline, send_enter_event;
 
-	inArgs >> SymbolName(name) >> bounds >> text >> text_sz >> multiline;
+	inArgs >> SymbolName(name) >> dispatcher >> bounds >> text >> text_sz
+           >> multiline >> send_enter_event;
 
-    // text_sz is not used right now, because wxTE_RICH has some problems.
-    long style = wxSIMPLE_BORDER /*| wxTE_RICH*/;
-    if (multiline)
-        style |= wxTE_MULTILINE;
+    R(new EditBox(wxGetApp().GetStage(), name.c_str(), dispatcher,
+                  TToWxRect(bounds), text.c_str(), text_sz, multiline,
+                  send_enter_event));
+}
 
-	wxTextCtrl *edit =
-		new wxTextCtrl(wxGetApp().GetStage(), -1, text.c_str(),
-					   GetPos(bounds), GetSize(bounds), style);
-	R(new Widget(wxGetApp().GetStage(), name.c_str(), edit));
+DEFINE_5L_PRIMITIVE(EditBoxGetValue) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(EditBox, elem, name.c_str());
+    ::SetPrimitiveResult(elem->GetValue().mb_str());
 }
 
 DEFINE_5L_PRIMITIVE(ElementExists) {

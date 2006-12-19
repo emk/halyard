@@ -228,7 +228,12 @@ bool EventDispatcher::DoEventMouseMoved(wxMouseEvent &inEvent)
 	
 	return DoSimpleMouseEvent("mouse-moved", inEvent.GetPosition());
 }
-	
+
+bool EventDispatcher::DoEventTextEnter(wxCommandEvent &inEvent)
+{
+    return DoSimpleEvent("text-enter");
+}
+
 bool EventDispatcher::DoEventBrowserNavigate(const wxString &inUrl,
                                              bool &outWasVetoed)
 {

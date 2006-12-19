@@ -26,8 +26,6 @@
 #include "Widget.h"
 #include "TInterpreter.h"
 
-class EventDispatcher;
-
 //////////
 /// A browser element displays a web browser of some sort.
 ///

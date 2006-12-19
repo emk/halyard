@@ -32,6 +32,10 @@ SVN - emk
   * #3166: Creating a movie element and pausing it immediately should now
     work.  Please report any remaining pause-related bugs.
   * #2096: We now sanity-check the names of cards, elements and other nodes.
+  * #3811: %EDIT-BOX% is actually a useful class now.  It supports
+    specifying the text size, detecting enter events, and retrieving the
+    text typed by the user.  This should make %EDIT-BOX% an acceptable
+    replacement for the old INPUT command.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

@@ -741,20 +741,26 @@
 
   ;;; A native GUI edit box.
   (define-element-template %edit-box%
-      [[text :type <string> :label "Initial text"]
-       [font-size :type <integer> :label "Font size"]
-       [multiline? :type <boolean> :label "Allow multiple lines?"]]
+      [[text :type <string> :label "Initial text" :default ""]
+       [font-size :type <integer> :label "Font size" :default 9]
+       [multiline? :type <boolean> :label "Allow multiple lines?" :default #f]
+       [send-enter-event? :type <boolean> :default #t]]
       (%widget%)
-    (call-5l-prim 'editbox (node-full-name self)
+    (on text ()
+      (call-5l-prim 'EditBoxGetValue (node-full-name self)))
+    (call-5l-prim 'EditBox (node-full-name self)
+                  (make-node-event-dispatcher self)
                   (parent->card self (prop self rect)) text
-                  font-size multiline?))
+                  font-size multiline? send-enter-event?))
 
   ;;; Create an %edit-box%.
   (define (edit-box r text
-                    &key (name (gensym)) (font-size 9) (multiline? #f)
+                    &key (name (gensym)) (font-size 9)
+                    (multiline? #f) (send-enter-event? #t)
                     (parent (default-element-parent)))
     (create %edit-box% :name name :parent parent :rect r :text text
-            :font-size font-size :multiline? multiline?))
+            :font-size font-size :multiline? multiline?
+            :send-enter-event? send-enter-event?))
 
   
   ;;;======================================================================
