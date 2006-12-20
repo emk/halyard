@@ -36,6 +36,8 @@ SVN - emk
     specifying the text size, detecting enter events, and retrieving the
     text typed by the user.  This should make %EDIT-BOX% an acceptable
     replacement for the old INPUT command.
+  * #3834: Added OPEN-IN-BROWSER command, which opens a URL in an external
+    web browser.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

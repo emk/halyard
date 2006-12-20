@@ -134,6 +134,7 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(MoveElementTo);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
+    REGISTER_5L_PRIMITIVE(OpenInBrowser);
 	REGISTER_5L_PRIMITIVE(Overlay);
 	REGISTER_5L_PRIMITIVE(OverlayAnimated);
 	REGISTER_5L_PRIMITIVE(Refresh);
@@ -790,6 +791,12 @@ DEFINE_5L_PRIMITIVE(Refresh) {
 
 DEFINE_5L_PRIMITIVE(RefreshSplashScreen) {
     wxGetApp().GetStage()->RefreshSplashScreen();
+}
+
+DEFINE_5L_PRIMITIVE(OpenInBrowser) {
+    std::string url;
+    inArgs >> url;
+    ::SetPrimitiveResult(::wxLaunchDefaultBrowser(url.c_str()));
 }
 
 DEFINE_5L_PRIMITIVE(Overlay) {

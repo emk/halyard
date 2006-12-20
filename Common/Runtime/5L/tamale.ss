@@ -1273,7 +1273,7 @@
   ;;;======================================================================
   
   (provide string->xml native-dialog sleep-milliseconds nap
-           copy-string-to-clipboard
+           copy-string-to-clipboard open-in-browser
            script-user-data-directory
            %basic-button%
            quicktime-component-version
@@ -1313,6 +1313,14 @@
   ;;; Copy a string to the OS clipboard.  Used mostly by developer tools.
   (define (copy-string-to-clipboard string)
     (call-5l-prim 'copystringtoclipboard string))
+
+  ;;; Open a URL in the user's default browser.  Returns true if the
+  ;;; browser is launched successfully, or false if something obvious goes
+  ;;; wrong.  Note that this will minimize the currently running program
+  ;;; (if we're in full-screen mode), and that many users may have trouble
+  ;;; figuring out to get back once they're done browsing.
+  (define (open-in-browser url)
+    (call-5l-prim 'OpenInBrowser url))
 
   ;;; Returns a path to the directory which should be used to store any
   ;;; script data files.
