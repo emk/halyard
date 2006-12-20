@@ -393,14 +393,49 @@ Ancient Versions
   Mac5L_202_Stable.  Release notes are in Win32/ReleaseNotes.txt and
   Mac/ReleaseNotes.
 
+Vendor Branches in Subversion
+-----------------------------
+
+  Vendor branches & tags go into the /vendor directory in
+  Subversion. Read up on vendor branches in Chapter 7 of the
+  Subversion book. Currently the only one migrated over to the proper
+  structure in Subversion is PLT; all other vendor branches still
+  exist in the form that the CVS to Subversion migration left them.
+
+  There should be a script somewhere (maybe online, I can't find it in
+  the TortoiseSVN distribution) called svn_load_dirs.pl that does what
+  needs to be done to upgrade a vendor branch to a new version. Check 
+  the Subversion book for more information on how to use it.
+
 Upgrading PLT
 -------------
 
-Four libraries (mzlib, net, syntax, xml) from lib/plt/collects need to be
-aliased at Common/Runtime.  When updating lib/plt, be sure to 'svn rm' the
-copies at Common/Runtime and use 'svn cp' to copy the updated versions
-over.  (If you're using a client with really fancy branching support, you
-could always use a star-merge instead.)
+  Get the appropriately tagged version of PLT from the PLT Subversion
+  server. You should probably do an svn export so you won't get any of
+  the .svn directories. For example:
+
+    svn export http://svn.plt-scheme.org/plt/tags/v360 plt
+
+  Once you have that, follow the vendor branch procedure to import it
+  to vendor/plt/current, tag it, and then merge that tag into
+  5L/libs/plt.
+
+  Ten libraries (listed below) from libs/plt/collects need to be
+  aliased at Common/Runtime.  When updating libs/plt, be sure to 'svn
+  rm' the copies at Common/Runtime and use 'svn cp' to copy the
+  updated versions over.  (If you're using a client with really fancy
+  branching support, you could always use a star-merge instead.)
+
+    compiler
+	config
+	mzlib
+	net
+	planet
+	setup
+	srfi
+	swindle
+	syntax
+	xml
 
 libxml2 Hacks
 -------------
@@ -433,42 +468,9 @@ changes to each of the non-DLL targets:
 Unix Command Line Magic for Doing CVS Merges
 ----------------------------------------
 
-Handy CVS hacking notes.  WARNING: DON'T RUN ANY OF THESE COMMANDS UNTIL
-YOU UNDERSTAND *EXACTLY* WHAT THEY DO.  IN DETAIL.  AND WHY THEY DO IT.
-
-Remove all CVS directories from a tree:
-
-  find . \( -name CVS -type d \) -exec rm -r {} \; -prune
-
-Replace all files containing conflicts with fresh copies from a current
-directory: 
-
-  cvs -n update > conflicts.txt
-  for F in `cat conflicts.txt | grep 'C' | sed 's/^. //'`; do mv ../wxWidgets/$
-F $F; done
-
-In the following snippet, wxWidgets-HEAD is an exported version of HEAD,
-and wxWidgets is the latest version of wxWidgets, minus CVS directories.
-We're computing a list of "interesting" differences (hence -x and -I).
-We're trying to revert HEAD to match the vendor branch.
-
-$ diff -ur --unidirectional-new-file -x .cvsignore -I "\\\$\\(Revision\\|Id\\|H
-eader\\|Date\\):" -I "^ * " wxWidgets-HEAD/ wxWidgets > wx-revert-to-vendor.dif
-f
-
-Remove any files which should be removed from HEAD:
-
-$ grep "^Only in" /cygdrive/c/src/wx-revert-to-vendor.diff | sed "s/^Only in wx
-Windows-HEAD\\/\\(: \\)*//" | sed "s/: /\\//" | xargs cvs remove -f -R
-
-Try to overwrite binary files which differed from their vendor versions.
-This didn't actually seem to do anything--the files all appeared to be
-unchanged, and CVS claimed it couldn't create some of them.  I'm not going
-to worry about it.
-
-$ for F in `grep "^Binary files" /cygdrive/c/src/wx-revert-to-vendor.diff | sed
- 's|^[^/]*/||' | sed 's| and .*||'`; do mv /cygdrive/c/src/wxWidgets/$F $F; don
-e
+This section is obsolete. Check the Subversion history for what used
+to be here, if you end up having a need to do this. Hopefully,
+svn_load_dirs.pl should do what these snippets used to.
 
 Upgrading wxWidgets
 -------------------

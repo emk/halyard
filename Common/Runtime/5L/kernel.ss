@@ -87,7 +87,7 @@
       result))
   
   (define (have-5l-prim? name)
-    (%call-5l-prim 'haveprimitive name))
+    (%call-5l-prim 'HavePrimitive name))
 
   (define (value->boolean val)
     ;; XXX - Coerce a Scheme value to an explicit boolean value.  This
@@ -105,7 +105,7 @@
     ;; We call %call-5l-prim directly to avoid using rest arguments or
     ;; 'apply', both of which cons (which we don't want to happen in the
     ;; idle loop.)
-    (%call-5l-prim 'schemeidle blocking?)
+    (%call-5l-prim 'SchemeIdle blocking?)
     (%kernel-check-state))
 
   (define (blocking-idle)
@@ -125,13 +125,13 @@
     (%kernel-check-deferred))
 
   (define (engine-var name)
-    (call-5l-prim 'get (if (string? name) (string->symbol name) name)))
+    (call-5l-prim 'Get (if (string? name) (string->symbol name) name)))
   
   (define (set-engine-var! name value)
     ;; Set an engine variable.  This is a pain, because we have to play
     ;; along with the engine's lame type system.
     (let [[namesym (if (string? name) (string->symbol name) name)]]
-      (call-5l-prim 'settyped namesym value)))
+      (call-5l-prim 'SetTyped namesym value)))
 
   (define (engine-var-exists? name)
     (call-5l-prim 'VariableInitialized name))
@@ -144,9 +144,9 @@
   ;;; Exit the currently-running script.
   (define (exit-script)
     ;; Call the appropriate exit primitive.
-    (if (have-5l-prim? 'tamaleexit)
-        (call-5l-prim 'tamaleexit)
-        (call-5l-prim 'schemeexit)))
+    (if (have-5l-prim? 'TamaleExit)
+        (call-5l-prim 'TamaleExit)
+        (call-5l-prim 'SchemeExit)))
   
   (define (check-whether-jump-allowed)
     (when *running-on-exit-handler-for-node*
@@ -155,8 +155,8 @@
 
   (define (jump-to-card card)
     (check-whether-jump-allowed)
-    (if (have-5l-prim? 'jump)
-        (call-5l-prim 'jump (card-name card))
+    (if (have-5l-prim? 'Jump)
+        (call-5l-prim 'Jump (card-name card))
         (begin
           ;; If we don't have a JUMP primitive, fake it by hand.
           (set! *%kernel-jump-card* card)
@@ -170,8 +170,8 @@
     ;; Refresh the screen by blitting dirty areas of our offscreen buffer
     ;; to the display.
     (call-hook-functions *before-draw-hook*)
-    (if (have-5l-prim? 'refresh)
-        (call-5l-prim 'refresh transition ms)))
+    (if (have-5l-prim? 'Refresh)
+        (call-5l-prim 'Refresh transition ms)))
 
 
   ;;=======================================================================
@@ -314,8 +314,9 @@
   ;;; will help).
   (define (%kernel-get-identifiers)
     (define (sym->type sym)
-      (with-handlers [[exn:variable? (lambda (exn) 'variable)] ;; unbound var
-                      [exn:syntax? (lambda (exn) 'syntax)]]    ;; a macro
+      (with-handlers [[exn:fail:contract:variable? 
+                       (lambda (exn) 'variable)] ;; unbound var
+                      [exn:fail:syntax? (lambda (exn) 'syntax)]]    ;; a macro
         ;; We should only have to pass one argument to 
         ;; NAMESPACE-VARIABLE-VALUE, since the second argument is optional 
         ;; and defaults to #t. There's a bug in PLT's implementation, however,
@@ -534,7 +535,7 @@
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
       [[PAUSED]
-       (%call-5l-prim 'schemeidle #t) ; Similar to blocking-idle.
+       (%call-5l-prim 'SchemeIdle #t) ; Similar to blocking-idle.
        (%kernel-check-state)]         ; Tail-call self without consing.
       [[JUMPING]
        (when *%kernel-exit-to-top-func*
@@ -578,14 +579,14 @@
       (call-5l-prim 'EnableExpensiveEvents enable?)))
 
   (defmethod (engine-notify-enter-card (engine <real-engine>) (card <card>))
-    (when (have-5l-prim? 'notifyentercard)
-      (call-5l-prim 'notifyentercard (node-full-name card)))
+    (when (have-5l-prim? 'NotifyEnterCard)
+      (call-5l-prim 'NotifyEnterCard (node-full-name card)))
     (call-hook-functions *enter-card-hook* card))
 
   (defmethod (engine-notify-exit-card (engine <real-engine>) (card <card>))
     (call-hook-functions *exit-card-hook* card)
-    (when (have-5l-prim? 'notifyexitcard)
-      (call-5l-prim 'notifyexitcard (node-full-name card))))
+    (when (have-5l-prim? 'NotifyExitCard)
+      (call-5l-prim 'NotifyExitCard (node-full-name card))))
 
   (defmethod (engine-notify-card-body-finished (eng <real-engine>)
                                                (card <card>))
@@ -597,8 +598,8 @@
     ;; A little placeholder to make deletion work the same way in Tamale
     ;; and in Common test.
     ;; TODO - Remove when cleaning up element deletion.
-    (when (have-5l-prim? 'deleteelements)
-      (call-5l-prim 'deleteelements (node-full-name elem))))
+    (when (have-5l-prim? 'DeleteElements)
+      (call-5l-prim 'DeleteElements (node-full-name elem))))
 
   (defmethod (engine-exit-node (engine <real-engine>) (node <node>))
     (call-5l-prim 'StateDbUnregisterListeners (node-full-name node))
@@ -627,8 +628,7 @@
   
   (define (%kernel-extract-definitions relative-file-path)
     (with-errors-blocked (fatal-error)
-      (define path (apply build-path (current-directory)
-                          (regexp-split "/" relative-file-path)))
+      (define path (build-path (current-directory) relative-file-path))
       (%assert *extract-definitions-fn*)
       ;; We want to ignore errors here (unless we're debugging tags.ss),
       ;; because *EXTRACT-DEFINITIONS-FN* regularly blows up when

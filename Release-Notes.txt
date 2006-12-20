@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+SVN - emk, brian
 
   * Fixed bug in STRING->XML.
   * Added ON BOUNDS handler to %element% and subclasses.
@@ -38,6 +38,10 @@ SVN - emk
     replacement for the old INPUT command.
   * #3834: Added OPEN-IN-BROWSER command, which opens a URL in an external
     web browser.
+  * #3832: Upgraded to PLT Scheme v360.  This makes Scheme case
+    sensitive, and adds preliminary backtrace support.  Backtraces are
+    written to Debug.log.  See deprecated.ss for more notes on the
+    upgrade.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

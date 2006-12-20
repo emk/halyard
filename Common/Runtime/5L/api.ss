@@ -1,4 +1,4 @@
-(module API (lib "lispish.ss" "5L")
+(module api (lib "lispish.ss" "5L")
 
   (require (lib "kernel.ss" "5L"))
   (provide (all-from (lib "kernel.ss" "5L")))
@@ -211,7 +211,7 @@
 
   ;; Helper: Given a stylesheet, register a corresponding defstyle.
   (define (register-defstyle sheet)
-    (call-5l-prim 'defstyle
+    (call-5l-prim 'DefStyle
                   (stylesheet-long-name sheet)
                   (stylesheet-family sheet)
                   (stylesheet-size sheet)
@@ -337,8 +337,8 @@
   ;;; @xref measure-text text-position *text-x* *text-y*
   ;;; @legacy text textaa
   (define (draw-text r style text)
-    ;; XXX - textaa uses an idiosyncratic formating language.
-    (call-5l-prim 'textaa (stylesheet-long-name style) r text))
+    ;; XXX - TextAA uses an idiosyncratic formating language.
+    (call-5l-prim 'TextAA (stylesheet-long-name style) r text))
   
   ;;; Measure a string of text.
   ;;;
@@ -352,7 +352,7 @@
     ;;; XXX - Note that we stomp the "saved-text-position" used by
     ;;; deprecated.ss.
     ;;; XXX - We can't measure anything but left-aligned text accurately.
-    (call-5l-prim 'measuretextaa (stylesheet-long-name style) text max-width))
+    (call-5l-prim 'MeasureTextAA (stylesheet-long-name style) text max-width))
 
 
   ;;;======================================================================

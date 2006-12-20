@@ -1,4 +1,4 @@
-(module tamale-unit (lib "5L.ss" "5L")
+(module tamale-unit (lib "5l.ss" "5L")
   (provide %test-suite%)
   
   (define-stylesheet $tamale-unit-style
@@ -158,7 +158,7 @@
   ;;; Run a single test case method, handling setup, teardown and reporting.
   (define (run-test-method test-case-instance report)
     (define test-method (test-case-test-method test-case-instance))
-    (with-handlers [[not-break-exn?
+    (with-handlers [[exn:fail?
                      (fn (exn) 
                        (report-failure! report test-case-instance exn))]]
       (dynamic-wind

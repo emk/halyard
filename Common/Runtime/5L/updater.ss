@@ -1,4 +1,4 @@
-(module updater (lib "5L.ss" "5L")
+(module updater (lib "5l.ss" "5L")
   (require (lib "tamale.ss" "5L"))
 
   ;; TODO - these should probably be factored out into some sort of file-utils
@@ -15,7 +15,7 @@
   (define (dir-writeable? dir)
     (define path
       (build-path dir (cat "TEMP_PERMISSION_TEST_" (random 1000000000))))
-    (with-handlers [[exn:i/o:filesystem? (lambda (exn) #f)]]
+    (with-handlers [[exn:fail:filesystem? (lambda (exn) #f)]]
       (define test (open-output-file path))
       (close-output-port test)
       (delete-file path)
@@ -50,7 +50,7 @@
       (copy-recursive-excluding exclude src (build-path dest (strip-base src)))
       (begin
         (cond 
-          [(ormap (fn (re) (regexp-match re src)) exclude) 
+          [(ormap (fn (re) (regexp-match re (path->string src))) exclude) 
            #t]
           [(link-exists? src) (copy-file src dest)]
           [(directory-exists? src)
@@ -265,7 +265,8 @@
   
   (define (get-manifest-names dir)
     (define r (regexp "^MANIFEST\\..*$"))
-    (filter (fn (file) (regexp-match r file)) (directory-list dir)))
+    (filter (fn (file) (regexp-match r file))
+            (map path->string (directory-list dir))))
   
   (define (file-hash-from-manifest manifest)
     (define hash (make-hash-table 'equal))

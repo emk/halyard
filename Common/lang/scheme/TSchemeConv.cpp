@@ -52,7 +52,7 @@ Scheme_Object *FIVEL_NS TValueToScheme(TValue inVal) {
 			return scheme_void;
 
 		case TValue::TYPE_STRING:
-			return scheme_make_string(std::string(inVal).c_str());
+			return scheme_make_utf8_string(std::string(inVal).c_str());
 			
 		case TValue::TYPE_SYMBOL:
 			return scheme_intern_symbol(TSymbol(inVal).GetName().c_str());
@@ -275,10 +275,17 @@ TValue FIVEL_NS SchemeToTValue(Scheme_Object *inVal) {
    	    case scheme_void_type:
 			return TValue(TNull());
 
-	    case scheme_string_type:
-			return TValue(std::string(SCHEME_STR_VAL(inVal), 
-									  SCHEME_STRLEN_VAL(inVal)));
+	    case scheme_char_string_type:
+			return SchemeToTValue(scheme_char_string_to_byte_string(inVal));
 
+	    case scheme_byte_string_type:
+			return TValue(std::string(SCHEME_BYTE_STR_VAL(inVal), 
+									  SCHEME_BYTE_STRLEN_VAL(inVal)));
+
+	    case scheme_path_type:
+			return TValue(std::string(SCHEME_PATH_VAL(inVal), 
+									  SCHEME_PATH_LEN(inVal)));
+			
 		case scheme_symbol_type:
 			return TValue(TSymbol(std::string(SCHEME_SYM_VAL(inVal))));
 
@@ -340,20 +347,19 @@ static bool SchemeEquals(const Scheme_Object *inObj1,
     CheckFuncHelper(__FILE__, __LINE__, "SchemeEquals", #expr1, #expr2, \
                     SchemeEquals, expr1, expr2)
 
-void CHECK_TVALUE_CONV(TValue inVal, const Scheme_Object *inResult) {
-	CHECK_SCHEME_EQUALS(TValueToScheme(inVal), inResult);
-}
+#define CHECK_TVALUE_CONV(inVal, inResult) \
+    CHECK_SCHEME_EQUALS(TValueToScheme(inVal), (inResult));
 
 BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
-	CHECK_EQ(SchemeEquals(scheme_make_string("foo"),
-						  scheme_make_string("foo")),
+	CHECK_EQ(SchemeEquals(scheme_make_utf8_string("foo"),
+						  scheme_make_utf8_string("foo")),
 			 true);
-	CHECK_EQ(SchemeEquals(scheme_make_string("foo"),
-						  scheme_make_string("bar")),
+	CHECK_EQ(SchemeEquals(scheme_make_utf8_string("foo"),
+						  scheme_make_utf8_string("bar")),
 			 false);
 
 	// Test simple types.
-	CHECK_TVALUE_CONV("Hello", scheme_make_string("Hello"));
+	CHECK_TVALUE_CONV("Hello", scheme_make_utf8_string("Hello"));
 	CHECK_TVALUE_CONV(TSymbol("foo"), scheme_intern_symbol("foo"));
 	CHECK_TVALUE_CONV(MAX_INT32, scheme_make_integer_value(MAX_INT32));
 	CHECK_TVALUE_CONV(MIN_INT32, scheme_make_integer_value(MIN_INT32));
@@ -377,7 +383,7 @@ BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
 	list.push_back("foo");
 	Scheme_Object *result =
 		scheme_make_pair(scheme_make_integer_value(1),
-						 scheme_make_pair(scheme_make_string("foo"),
+						 scheme_make_pair(scheme_make_utf8_string("foo"),
 										  scheme_null));
 	CHECK_TVALUE_CONV(list, result);
 
@@ -407,7 +413,8 @@ BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 	
 	// Simple types
 	CHECK_SCHEME_CONV(scheme_void, TValue(TNull()));
-	CHECK_SCHEME_CONV(scheme_make_string("hello"), TValue("hello"));
+	CHECK_SCHEME_CONV(scheme_make_utf8_string("hello"), TValue("hello"));
+	CHECK_SCHEME_CONV(scheme_make_path("foo"), TValue("foo"));
     CHECK_SCHEME_CONV(scheme_intern_symbol("foo"), 
 					  TValue(TSymbol("foo")));
 	CHECK_SCHEME_CONV(scheme_make_integer_value(MAX_INT32),
@@ -439,7 +446,7 @@ BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 	list.push_back("foo");
 	Scheme_Object *result =
 		scheme_make_pair(scheme_make_integer_value(1),
-						 scheme_make_pair(scheme_make_string("foo"),
+						 scheme_make_pair(scheme_make_utf8_string("foo"),
 										  scheme_null));
 	CHECK_SCHEME_CONV(result, list);
 

@@ -52,8 +52,9 @@
     (define reversed (reverse! args))
     (define abstract-component (car reversed))
     (define regular-components (reverse! (cdr reversed)))
-    (apply build-path (append! regular-components
-                               (regexp-split "/" abstract-component))))
+    (path->string (apply build-path 
+                         (append! regular-components
+                                  (regexp-split "/" abstract-component)))))
 
   ;;; Build a path for accessing a script resource.  If PATH is a URL, it
   ;;; is returned unchanged.  Otherwise, assume that PATH is an abstract
@@ -274,12 +275,12 @@
      [%nocreate?
       #f]
      [overlay?
-      (call-5l-prim 'overlay (node-full-name self)
+      (call-5l-prim 'Overlay (node-full-name self)
                     (parent->card self real-shape)
                     (make-node-event-dispatcher self) cursor alpha?
                     clickable-where-transparent?)]
      [else
-      (call-5l-prim 'zone (node-full-name self)
+      (call-5l-prim 'Zone (node-full-name self)
                     (parent->card self (as <polygon> real-shape))
                     (make-node-event-dispatcher self) cursor)]))
   
@@ -374,8 +375,8 @@
     (let [[native (make-native-path "Graphics" path)]]
       (check-file native)
       (if subrect
-          (call-5l-prim 'loadsubpic native p subrect)
-          (call-5l-prim 'loadpic native p))))
+          (call-5l-prim 'LoadSubPic native p subrect)
+          (call-5l-prim 'LoadPic native p))))
   
   ;;; Return a rectangle located at 0,0 large enough to hold the graphic
   ;;; specified by NAME.
@@ -413,19 +414,19 @@
 
   ;;; Clear the current DC to color C.
   (define (clear-dc c)
-    (call-5l-prim 'screen c))
+    (call-5l-prim 'Screen c))
 
   ;;; Draw a line between two points using the specified color and width.
   (define (draw-line from to c width)
-    (call-5l-prim 'drawline from to c width))
+    (call-5l-prim 'DrawLine from to c width))
 
   ;;; Draw a filled rectangle in the specified color.
   (define (draw-rectangle r c)
-    (call-5l-prim 'drawboxfill r c))
+    (call-5l-prim 'DrawBoxFill r c))
 
   ;;; Draw the outline of a rectangle, with the specified color and line width.
   (define (draw-rectangle-outline r c width)
-    (call-5l-prim 'drawboxoutline r c width))
+    (call-5l-prim 'DrawBoxOutline r c width))
 
   
   ;;;======================================================================
@@ -773,17 +774,17 @@
   (define (media-pause elem)
     ;; Note: these functions may not be happy if the underlying movie
     ;; code doesn't like to be paused.
-    (call-5l-prim 'moviepause (node-full-name elem)))
+    (call-5l-prim 'MoviePause (node-full-name elem)))
 
   ;; (Internal use only.)  Resume a media element.
   (define (media-resume elem)
-    (call-5l-prim 'movieresume (node-full-name elem)))
+    (call-5l-prim 'MovieResume (node-full-name elem)))
   
   ;; (Internal use only.)  End playback of a media element. From the
   ;; perspective of the WAIT function, the media element will skip
   ;; immediately to the end of playback.
   (define (media-end-playback elem)
-    (call-5l-prim 'movieendplayback (node-full-name elem)))
+    (call-5l-prim 'MovieEndPlayback (node-full-name elem)))
 
   ;; (Internal use only.)  Set the volume of a media element.  Channels may
   ;; be LEFT, RIGHT, ALL, or something else depending on the exact type of
@@ -833,8 +834,8 @@
   (define (wait elem-or-name &key frame)
     (define name (node-full-name (elem-or-name-hack elem-or-name)))
     (if frame
-        (call-5l-prim 'wait name frame)
-        (call-5l-prim 'wait name)))
+        (call-5l-prim 'Wait name frame)
+        (call-5l-prim 'Wait name)))
   
   ;;; Convert an industry-standard timecode to frames.  The engine has a
   ;;; single, nominal frame-rate of 30 frames per second, regardless of
@@ -919,7 +920,7 @@
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (%audio-element%)
-    (let [[path (build-path (current-directory) "LocalMedia" path)]]
+    (let [[path (make-native-path "LocalMedia" path)]]
       (check-file path)
       (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                     (make-node-event-dispatcher self) path
@@ -1087,7 +1088,7 @@
 
     (let [[path (media-path path)]]
       (check-file path)
-      (call-5l-prim 'movie (node-full-name self)
+      (call-5l-prim 'Movie (node-full-name self)
                     (make-node-event-dispatcher self)
                     (parent->card self (prop self rect))
                     path volume
@@ -1295,7 +1296,7 @@
   ;;; get the proper keybindings. Button 1 is the default button.
   (define (native-dialog title text
                          &opt [button1 ""] [button2 ""] [button3 ""])
-    (call-5l-prim 'dialog title text button1 button2 button3))
+    (call-5l-prim 'Dialog title text button1 button2 button3))
 
   ;;; Delay for the specified number of milliseconds.  Calls IDLE, so
   ;;; events will be processed and the screen will be repainted.
@@ -1312,7 +1313,7 @@
 
   ;;; Copy a string to the OS clipboard.  Used mostly by developer tools.
   (define (copy-string-to-clipboard string)
-    (call-5l-prim 'copystringtoclipboard string))
+    (call-5l-prim 'CopyStringToClipboard string))
 
   ;;; Open a URL in the user's default browser.  Returns true if the
   ;;; browser is launched successfully, or false if something obvious goes

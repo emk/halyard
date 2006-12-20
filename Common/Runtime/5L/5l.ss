@@ -5,7 +5,7 @@
 ;;  special syntax.  Everything in this directory could probably stand
 ;;  a good refactoring; it's been accumulating cruft for a while.
 
-(module 5L (lib "lispish.ss" "5L")
+(module 5l (lib "lispish.ss" "5L")
 
   ;; We want to export most of lispish, but override a few definitions
   ;; locally to get some decidedly non-Scheme behavior.
@@ -91,6 +91,6 @@
 
       [(_ . varname)
        ;; Fallback case--use our existing version of #%top.
-       #'(#%top . varname)]))
+       (syntax/loc stx (#%top . varname))]))
 
   )

@@ -82,6 +82,30 @@
   ;; instead of a bare WITH-DC call.  This can be easy or hard, depending
   ;; on circumstances.  This also means that WITH-DC can be removed from
   ;; DRAW-BUTTON handlers.
+  ;;
+  ;; Scheme is now case-sensitive.  This affects anyone still using
+  ;; uppercase identifiers.  We should probably convert everything to
+  ;; lowercase.  In particular, it is now forbbidden for nodes to have
+  ;; uppercase characters in their names.
+  ;;
+  ;; Strings are now Unicode. This shouldn't make much of a difference
+  ;; for most people, but if you want to use them as an array of
+  ;; bytes, you'll have to start using byte-strings. See the PLT
+  ;; manual for details.
+  ;;
+  ;; Because paths are not Unicode, but instead a platform-defined
+  ;; encoding, paths are no longer strings. This means BUILD-PATH now
+  ;; returns a path abstract data type instead of a string, and it
+  ;; can't be used in place of a string. Almost all functions that
+  ;; take a path also take a string, so using strings should still
+  ;; work in most cases. See the PLT manual for further details.
+  ;; 
+  ;; For referring to graphics, media, and so on, we're using our own
+  ;; abstract paths, which could refer to either local or http based
+  ;; media, which is represented by a string separated with forward
+  ;; slashes ("/"). This means that you shouldn't use BUILD-PATH to
+  ;; construct arguments for Tamale primitives; instead, just use CAT
+  ;; to construct a slash-separated string.
 
 
   ;;;======================================================================
@@ -112,7 +136,7 @@
 
     (define dir (ensure-directory-exists "Screenshots"))
     (call-5l-prim 
-     'screenshot 
+     'Screenshot 
      (let loop ((count 0))
        (define path (build-path dir (cat (three-char-print count) ".png")))
        (cond

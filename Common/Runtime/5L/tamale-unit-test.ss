@@ -1,4 +1,4 @@
-(module tamale-unit-test (lib "5L.ss" "5L")
+(module tamale-unit-test (lib "5l.ss" "5L")
   (require (lib "tamale-unit.ss" "5L"))
   
   (define (make-and-run-nth-test test-case-class n report)

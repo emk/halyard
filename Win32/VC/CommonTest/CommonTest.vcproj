@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\Common,..\..\..\libs\freetype2\include,..\..\..\libs\plt\include,..\..\..\libs\boost,..\..\..\libs\crypto"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\boost;..\..\..\libs\crypto;..\..\..\libs\plt\src\worksp"
 				PreprocessorDefinitions="WIN32,NDEBUG,_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -133,7 +133,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\Common,..\..\..\libs\freetype2\include,..\..\..\libs\plt\include,..\..\..\libs\boost,..\..\..\libs\crypto"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\boost;..\..\..\libs\crypto;..\..\..\libs\plt\src\worksp"
 				PreprocessorDefinitions="WIN32,_DEBUG,_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"

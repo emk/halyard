@@ -347,7 +347,7 @@ extern TPrimitiveManager gPrimitiveManager;
 	} while (0)
 
 #define REGISTER_5L_PRIMITIVE(NAME) \
-	REGISTER_5L_PRIMITIVE_WITH_NAME(MakeStringLowercase(#NAME), NAME)
+	REGISTER_5L_PRIMITIVE_WITH_NAME(#NAME, NAME)
 
 //////////
 /// Use this macro in place of a function prototype when implementing a

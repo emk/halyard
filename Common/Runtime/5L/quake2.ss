@@ -1,4 +1,4 @@
-(module quake2 (lib "5L.ss" "5L")
+(module quake2 (lib "5l.ss" "5L")
 
   (provide quake2-driver set-quake2-driver!
            quake2-launch quake2-shown? quake2-show quake2-hide

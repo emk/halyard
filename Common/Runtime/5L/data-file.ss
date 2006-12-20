@@ -1,4 +1,4 @@
-(module data-file (lib "5L.ss" "5L")
+(module data-file (lib "5l.ss" "5L")
   (require (lib "tamale.ss" "5L"))
   (provide ;; TODO - Remove these two functions from API.  They are obsoleted
            ;; by pref and set-pref!.

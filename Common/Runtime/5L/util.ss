@@ -19,33 +19,33 @@
   ;;; Write a message to 5L.log.  This log is always present on a user's
   ;;; system, and is never deleted, so use this function sparingly.
   (define (5l-log msg)
-    (%call-5l-prim 'log '5L msg 'log))
+    (%call-5l-prim 'Log '5L msg 'log))
   
   ;;; Write a message to Debug.log, which is only present on developer
   ;;; systems (though the last hundred lines are always available in a
   ;;; crash report).  This is a very high-volume log, so feel free to be
   ;;; verbose.
   (define (debug-log msg)
-    (%call-5l-prim 'log 'Debug msg 'log))
+    (%call-5l-prim 'Log 'Debug msg 'log))
   
   ;;; Print a "Caution" message to 5L.log.  This should be used for very
   ;;; serious warnings only--see the note about 5L.log on 5L-LOG.
   (define (caution msg)
-    (%call-5l-prim 'log '5L msg 'caution))
+    (%call-5l-prim 'Log '5L msg 'caution))
   
   ;;; Print a "Caution" message to Debug.log.  High-volume output is OK.
   (define (debug-caution msg)
-    (%call-5l-prim 'log 'Debug msg 'caution))
+    (%call-5l-prim 'Log 'Debug msg 'caution))
   
   ;;; Show a non-fatal error dialog in developer mode, or quit the engine
   ;;; and send a crash report in runtime mode.
   (define (non-fatal-error msg)
-    (%call-5l-prim 'log '5L msg 'error))
+    (%call-5l-prim 'Log '5L msg 'error))
   
   ;;; Show a fatal error and quit the engine, regardless of mode.  Sends
   ;;; a crash report.
   (define (fatal-error msg)
-    (%call-5l-prim 'log '5L msg 'fatalerror))
+    (%call-5l-prim 'Log '5L msg 'fatalerror))
   
 
   ;;=======================================================================
@@ -182,6 +182,21 @@
                                         (begin/var body ...)))]))
   (define-syntax-indent label 1)
 
+  (define (format-trace exn)
+    (let loop ((str "") (traces (continuation-mark-set->context 
+                                 (exn-continuation-marks exn))))
+      (if (null? traces)
+          str
+          (loop (cat str "\n" (format-trace-line (car traces))) 
+                (cdr traces)))))
+
+  (define (format-trace-line line)
+    (cat (car line) " " 
+         (if (srcloc? (cdr line))
+           (cat (srcloc-source (cdr line)) "@" (srcloc-line (cdr line)) ":" 
+                (srcloc-column (cdr line)))
+           #f)))
+
   ;;; Call THUNK, and if an error occurs, pass it to REPORT-FUNC.
   (define (call-with-errors-blocked report-func thunk)
     (let* ((result (with-handlers ([void (lambda (exn) (cons #f exn))])
@@ -191,6 +206,11 @@
       (if good?
           exn-or-value
           (begin
+            ;; Print the backtrace to the debug log, but don't throw
+            ;; an exception if there are any errors in the printing
+            ;; process.
+            (with-handlers [[void (lambda (exn) #f)]]
+              (debug-log (format-trace exn-or-value)))
             (report-func (exn-message exn-or-value))
             #f))))
 

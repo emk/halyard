@@ -36,8 +36,8 @@
     (string->symbol (cat prefix sym)))
   (let loop [[i 0] [values values]]
     (unless (null? values)
-      (call-5l-prim (prefix-symbol "set_wanted_" type) i)
-      (call-5l-prim (prefix-symbol "test_check_" type) (car values))
+      (call-5l-prim (prefix-symbol "Set_Wanted_" type) i)
+      (call-5l-prim (prefix-symbol "Test_Check_" type) (car values))
       (loop (+ i 1) (cdr values)))))
 
 (test-arg-type 'string '("" "hello"))
@@ -88,7 +88,7 @@
 (define *after-callback-flag* #f)
 
 (define (test-callback code)
-  (call-5l-prim 'testcallback code))
+  (call-5l-prim 'TestCallback code))
 
 (card test-callbacks ()
   ;; Test a simple callback.
@@ -114,15 +114,15 @@
     (test (equal? h "hello"))
     (test (equal? w 'world))
     (test (equal? l (list "foo" 'bar))))
-  (call-5l-prim 'testcallbackargs f)
+  (call-5l-prim 'TestCallbackArgs f)
   (jump test-stop))
 
 (card test-stop ()
-  (call-5l-prim 'teststop (card-name test-pause))
+  (call-5l-prim 'TestStop (card-name test-pause))
   (test #f))
 
 (card test-pause ()
-  (call-5l-prim 'testpause)
+  (call-5l-prim 'TestPause)
   (jump advanced-language-test-cases))
 
 

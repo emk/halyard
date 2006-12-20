@@ -124,8 +124,10 @@ void TSchemeInterpreterManager::BeginScript()
 	// expect to receive from GetBaseDirectory.
 	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
 	if (base != ".")
-		scheme_set_param(scheme_config, MZCONFIG_CURRENT_DIRECTORY,
-						 scheme_make_string(base.c_str()));
+		scheme_set_param(scheme_current_config(), MZCONFIG_CURRENT_DIRECTORY,
+						 scheme_make_path(base.c_str()));
+
+	scheme_set_collects_path(scheme_make_path(FileSystem::GetRuntimeDirectory().ToNativePathString().c_str()));
 
 	// Install our system loader.
 	FileSystem::Path fivel_collection =
@@ -184,15 +186,16 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 	sScriptEnv = NULL;
 	CallSchemeEx(sGlobalEnv, sLoaderModule, "new-script-environment",
 				 0, &args);
-	sScriptEnv = scheme_get_env(scheme_config);
+	sScriptEnv = scheme_get_env(scheme_current_config());
 
 	// Load our kernel and script.
 	Scheme_Object *result = 
 		CallSchemeEx(sGlobalEnv, sLoaderModule, "load-script", 0, &args);
 	if (!SCHEME_FALSEP(result))
 	{
-		ASSERT(SCHEME_STRINGP(result));
-		throw TException(__FILE__, __LINE__, SCHEME_STR_VAL(result));
+		ASSERT(SCHEME_CHAR_STRINGP(result));
+		Scheme_Object *byte_str = scheme_char_string_to_byte_string(result);
+		throw TException(__FILE__, __LINE__, SCHEME_BYTE_STR_VAL(byte_str));
 	}
 }
 
@@ -206,11 +209,11 @@ TSchemeInterpreter::~TSchemeInterpreter()
 void TSchemeInterpreter::InitializeModuleNames()
 {
 	sLoaderModule = scheme_intern_symbol("5L-Loader");
-	Scheme_Object *tail = scheme_make_pair(scheme_make_string("5L"),
+	Scheme_Object *tail = scheme_make_pair(scheme_make_utf8_string("5L"),
 										   scheme_null);
 	sKernelModule =
 		scheme_make_pair(scheme_intern_symbol("lib"),
-						 scheme_make_pair(scheme_make_string("kernel.ss"),
+						 scheme_make_pair(scheme_make_utf8_string("kernel.ss"),
 										  tail));
 }
 
@@ -509,30 +512,30 @@ void TSchemeInterpreter::JumpToCardByName(const char *inName)
 {
 	ASSERT(!IsStopped()); // Stopped cards must be resumed by Go().
 	Scheme_Object *args[1];
-	args[0] = scheme_make_string(inName);
+	args[0] = scheme_make_utf8_string(inName);
 	(void) CallScheme("%kernel-jump-to-card-by-name", 1, args);
 }
 
 std::string TSchemeInterpreter::CurCardName(void)
 {
 	Scheme_Object *o = CallSchemeSimple("%kernel-current-card-name");
-	if (!SCHEME_STRINGP(o))
+	if (!SCHEME_CHAR_STRINGP(o))
 		gLog.FatalError("Current card name must be string");
-	return SCHEME_STR_VAL(o);
+	return SCHEME_BYTE_STR_VAL(scheme_char_string_to_byte_string(o));
 }
 
 std::string TSchemeInterpreter::PrevCardName(void)
 {
 	Scheme_Object *o = CallSchemeSimple("%kernel-previous-card-name");
-	if (!SCHEME_STRINGP(o))
+	if (!SCHEME_CHAR_STRINGP(o))
 		gLog.FatalError("Previous card name must be string");
-	return SCHEME_STR_VAL(o);
+	return SCHEME_BYTE_STR_VAL(scheme_char_string_to_byte_string(o));
 }
 
 bool TSchemeInterpreter::IsValidCard(const char *inCardName)
 {
 	Scheme_Object *args[1];
-	args[0] = scheme_make_string(inCardName);
+	args[0] = scheme_make_utf8_string(inCardName);
 	Scheme_Object *o = CallScheme("%kernel-valid-card?", 1, args);
 	return SCHEME_FALSEP(o) ? false : true;
 }
@@ -541,13 +544,14 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 							  std::string &outResultText)
 {
 	Scheme_Object *args[1];
-	args[0] = scheme_make_string(inExpression.c_str());
+	args[0] = scheme_make_utf8_string(inExpression.c_str());
 	Scheme_Object *o = CallScheme("%kernel-eval", 1, args);
 	if (!SCHEME_PAIRP(o) ||
 		!SCHEME_BOOLP(SCHEME_CAR(o)) ||
-		!SCHEME_STRINGP(SCHEME_CDR(o)))
+		!SCHEME_CHAR_STRINGP(SCHEME_CDR(o)))
 		gLog.FatalError("Unexpected result from %kernel-eval");
-	outResultText = SCHEME_STR_VAL(SCHEME_CDR(o));
+	Scheme_Object *byte_str = scheme_char_string_to_byte_string(SCHEME_CDR(o));
+	outResultText = SCHEME_BYTE_STR_VAL(byte_str);
 	return SCHEME_FALSEP(SCHEME_CAR(o)) ? false : true;
 }
 

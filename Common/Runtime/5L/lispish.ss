@@ -35,6 +35,24 @@
       ((_ args ...) (defclass args ... 
                       :auto #t
                       :printer #t))))
+
+  ;; Set up Swindle's EQUALS? to work properly on lists. By default,
+  ;; Swindle just uses EQUAL? to compare anything for which EQUALS? is
+  ;; not defined on. This is fine for strings, symbols, numbers, and
+  ;; so on, but causes problems when you have lists that contain
+  ;; objects for which EQUALS? has been overridden.
+  ;;
+  ;; Taken from code kwasi added to swindle/extra.ss
+  ;;
+  ;; TODO - We should probably do something similar for vectors.
+  (defmethod (equals? (x <list>) (y <list>))
+    (cond ((and (null? x) (null? y))
+           #t)
+          ((or (null? x) (null? y))
+           #f)
+          (else
+           (and (equals? (car x) (car y))
+                (equals? (cdr x) (cdr y))))))
   
   
   ;;----------------------------------------------------------------------

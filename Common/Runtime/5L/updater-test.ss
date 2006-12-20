@@ -1,4 +1,4 @@
-(module updater-test (lib "5L.ss" "5L")
+(module updater-test (lib "5l.ss" "5L")
   (require (lib "tamale-unit.ss" "5L"))
   (require (lib "updater.ss" "5L"))
   
@@ -111,7 +111,8 @@
     (setup
       (set! (test-directory self) (ensure-directory-exists "DownloadTest"))
       (set! (url-prefix self) 
-            (cat "file:///" (fixture-dir "updater") "/downloader/")))
+            (cat "file:///" (path->string (fixture-dir "updater")) 
+                 "/downloader/")))
     (teardown
       (delete-directory-recursive (test-directory self)))
     (test "downloader should write files."
@@ -173,7 +174,8 @@
              (build-path (fixture-dir "updater") "update")
              (test-directory self)))
       (set! (url-prefix self) 
-            (cat "file:///" (fixture-dir "updater") "/update-server/")))
+            (cat "file:///" (path->string (fixture-dir "updater")) 
+                 "/update-server/")))
     (teardown 
       (delete-directory-recursive (test-directory self))
       (clear-updater!))
@@ -228,26 +230,38 @@
       (download-update (fn (a b) (push! (list a b) callback-args)))
           
       (assert-set-equal '("release.spec" "manifests" "pool" "temp") 
-                        (directory-list download-dir))
+                        (map path->string (directory-list download-dir)))
       ;; TODO - this is actually not optimal, since we already have a file 
       ;; that hashes to null-digest on our machine. A future optimization 
       ;; may simply copy any files we know we have, instead of downloading 
       ;; them. This would be a big win if we did a reorg of media.
-      (assert-set-equal (list foo-digest null-digest)
-                        (directory-list (build-path download-dir "pool")))
-      (assert-set-equal '("MANIFEST-DIFF") 
-                        (directory-list (build-path download-dir "temp")))
+      (assert-set-equal 
+       (list foo-digest null-digest)
+       (map path->string 
+            (directory-list (build-path download-dir "pool"))))
+      (assert-set-equal 
+       '("MANIFEST-DIFF") 
+       (map path->string
+            (directory-list (build-path download-dir "temp"))))
       ;; TODO - test contents of MANIFEST-DIFF
-      (assert-set-equal '("update") 
-                        (directory-list (build-path download-dir "manifests")))
+      (assert-set-equal 
+       '("update") 
+       (map path->string 
+            (directory-list (build-path download-dir "manifests"))))
       (assert-set-equal '("MANIFEST.base" "MANIFEST.sub")
-                        (directory-list 
-                         (build-path download-dir "manifests" "Update")))
+                        (map path->string
+                             (directory-list 
+                              (build-path download-dir "manifests" "Update"))))
       (assert-file-equals "foo\r\n" 
                           (build-path download-dir "pool" foo-digest))
       (assert-file-equals "" (build-path download-dir "pool" null-digest))
-      (assert-set-equal '((0 "sub/foo.txt") 
-                          (1 "sub/foo.txt") 
+          
+      ;; XXX - this is an unstable test. Because there are two files that 
+      ;; are being updated to "foo\r\n", we might be reporting either one
+      ;; of them as the one we download. Also, we might be doing this in 
+      ;; either order.
+      (assert-set-equal '((0 "foo.txt") 
+                          (1 "foo.txt") 
                           (1 "sub/quux.txt")
                           (1 "sub/quux.txt")) callback-args))
     )

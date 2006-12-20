@@ -22,12 +22,12 @@
   
   ;; Call the specified engine primitive if it exists.
   (define (maybe-call-5l-prim name . args)    
-    (when (%call-5l-prim 'haveprimitive name)
+    (when (%call-5l-prim 'HavePrimitive name)
       (apply %call-5l-prim name args)))
 
   ;; Notify the operating system that we're still alive, and haven't hung.
   (define (heartbeat)
-    (maybe-call-5l-prim 'heartbeat))
+    (maybe-call-5l-prim 'Heartbeat))
 
   ;; Load a splash screen at the standard location, assuming it exists.
   (define (maybe-load-splash path)
@@ -35,7 +35,7 @@
 
   ;; Force a screen update.
   (define (refresh-splash-screen)
-    (maybe-call-5l-prim 'refreshsplashscreen))
+    (maybe-call-5l-prim 'RefreshSplashScreen))
 
   ;; Let the engine know we've loaded a file.
   (define (notify-file-loaded)
@@ -50,7 +50,7 @@
     (maybe-call-5l-prim 'DrawLoadProgress))
 
   (define (environment-error message)
-    (%call-5l-prim 'log '5L message 'environmenterror))
+    (%call-5l-prim 'Log '5L message 'environmenterror))
 
   ;;===== Splash screen management =====
 
@@ -106,7 +106,7 @@
     ;; system know we're still alive during really long loads.
     (define (compile-zo-with-heartbeat file-path expected-module-name)
       (with-handlers 
-         [[exn:i/o:filesystem? (lambda (x) (environment-error error-string))]]
+         [[exn:fail:filesystem? (lambda (x) (environment-error error-string))]]
         (heartbeat)
         (let [[result (compile-zo file-path expected-module-name)]]
           (heartbeat)
@@ -155,10 +155,11 @@
     ;; meaningfully.
     (let ((filename "none"))
       (with-handlers [[void (lambda (exn)
-                              (string-append "Error while loading <" filename
+                              (string-append "Error while loading <" 
+                                             filename
                                              ">: " (exn-message exn)))]]
         (initialize-splash-screen!)
-
+        
         ;; First, we install enough of a namespace to parse 'module'.
         ;; We'll need this in just a second when we call load/use-compiled.
         (set! filename "bootstrap-env.ss")
@@ -166,7 +167,7 @@
 
         ;; Ask MzScheme to transparently compile modules to *.zo files.
         (current-load/use-compiled (make-compile-zo-with-heartbeat))
-
+        
         ;; Manually load the kernel into our new namespace.  We need
         ;; to call (load/use-compiled ...) instead of (require ...),
         ;; because we want the kernel registered under its official
@@ -189,8 +190,8 @@
         (namespace-require '(lib "5l.ss" "5L"))
       
         ;; Load the user's actual script into our new namespace.
-        (set! filename (build-path (current-directory) "Scripts" "start.ss"))
-        (load/use-compiled filename)
+        (set! filename "start.ss")
+        (load/use-compiled (build-path (current-directory) "Scripts" "start.ss"))
         ;; (XXX - Disabled until we can determine why the number of files
         ;; loaded goes up after a "reload script".)
         ;; XXX- Re-enabled because we currently suppress all splash-screen
