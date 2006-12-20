@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, brian
+0.3.4 - 20 Dec 2006 - emk, brian
 
   * Fixed bug in STRING->XML.
   * Added ON BOUNDS handler to %element% and subclasses.
