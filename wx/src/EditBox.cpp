@@ -75,7 +75,11 @@ EditBox::EditBox(Stage *inStage, const wxString &inName,
     long style = wxSIMPLE_BORDER; /* ...or wxNO_BORDER. */
     if (inIsMultiline)
         style |= wxTE_MULTILINE;
-    if (inEnterIsEvent)
+    // TODO - Enter processing in multiline controls needs some work.  It's
+    // on by default (not only do we not need to pass wxTE_PROCESS_ENTER,
+    // but wxWidgets will actually crash if we do), but that's probably not
+    // what we want.
+    if (inEnterIsEvent && !inIsMultiline)
         style |= wxTE_PROCESS_ENTER;
 
     // Create the actual control.
