@@ -225,11 +225,21 @@
     (on prop-change (name value prev veto)
       (case name
         [[cursor] (set-element-cursor! self value)]
-        [[at shape]
-         (unless initializing-origin? 
-           ;; We want to not pass these messages to our parent classes until 
-           ;; we're done mucking with AT and SHAPE ourselves. 
+        ;; Until we're done mucking with AT and SHAPE, we want to allow all
+        ;; changes but not tell anyone else about them.
+        [[at]
+         (unless initializing-origin?
            (call-next-handler))]
+        [[shape]
+         (unless initializing-origin?
+           ;; Our shape must always have an origin of zero.
+           (assert (equals? (point 0 0) (rect-left-top (bounds value))))
+           (if overlay?
+             (call-5l-prim 'OverlaySetShape (node-full-name self) value)
+             (call-5l-prim 'ZoneSetShape (node-full-name self)
+                           (offset-by-point (as <polygon> value)
+                                            (prop self at))))
+           (send self invalidate))]
         [[wants-cursor?]
          (set-wants-cursor! value)]
         [[dragging?]

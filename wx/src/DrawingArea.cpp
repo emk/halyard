@@ -122,6 +122,25 @@ void DrawingArea::InvalidateDrawingArea(bool inHasPixmapChanged) {
                    0, inHasPixmapChanged);
 }
 
+void DrawingArea::SetSize(const wxSize &inSize) {
+    // If we have a Quake 2 overlay, get rid of it.
+    if (mQuake2Overlay)
+        mQuake2Overlay = shared_ptr<wxQuake2Overlay>();
+
+    // Invalidate the rectangle covered by our original size.
+    InvalidateDrawingArea(false);
+    
+    // Update our size.
+    mBounds = wxRect(mBounds.GetPosition(), inSize);
+
+    // Allocate a new, empty pixmap.  This will invalidate the rectangle
+    // covered by the new size, and reallocate our Quake 2 overlay if we're
+    // supposed to have one.
+    bool alpha = mPixmap.HasAlpha();
+    mPixmap = wxBitmap();
+    InitializePixmap(alpha);
+}
+
 void DrawingArea::Show(bool inShow) {
     if (inShow != mIsShown) {
         mIsShown = inShow;

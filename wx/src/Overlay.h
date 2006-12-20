@@ -47,6 +47,9 @@ public:
 	virtual DrawingArea *GetDrawingArea() { return &mDrawingArea; }
     virtual void SetInDragLayer(bool inDragLayer);
 	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect);
+
+    /// Set the size of this overlay.  Erases all contents.
+    void SetSize(const wxSize &inSize);
 };
 
 #endif // Overlay_H

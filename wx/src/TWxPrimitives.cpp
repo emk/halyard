@@ -136,6 +136,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
     REGISTER_5L_PRIMITIVE(OpenInBrowser);
 	REGISTER_5L_PRIMITIVE(Overlay);
+	REGISTER_5L_PRIMITIVE(OverlaySetShape);
 	REGISTER_5L_PRIMITIVE(OverlayAnimated);
 	REGISTER_5L_PRIMITIVE(Refresh);
 	REGISTER_5L_PRIMITIVE(RefreshSplashScreen);
@@ -153,6 +154,7 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(WantsCursorGet);
     REGISTER_5L_PRIMITIVE(WantsCursorSet);
     REGISTER_5L_PRIMITIVE(Zone);
+    REGISTER_5L_PRIMITIVE(ZoneSetShape);
 }
 
 
@@ -813,6 +815,15 @@ DEFINE_5L_PRIMITIVE(Overlay) {
                   is_trans, are_trans_areas_clickable));
 }
 
+DEFINE_5L_PRIMITIVE(OverlaySetShape) {
+    std::string name;
+    TRect bounds;
+    inArgs >> SymbolName(name) >> bounds;
+    FIND_ELEMENT(Overlay, elem, name.c_str());
+    elem->SetSize(TToWxRect(bounds).GetSize());
+    wxGetApp().GetStage()->NotifyElementsChanged();
+}
+
 DEFINE_5L_PRIMITIVE(OverlayAnimated) {
 	std::string name, cursor, state_path;
 	TRect bounds;
@@ -948,4 +959,13 @@ DEFINE_5L_PRIMITIVE(Zone) {
 	inArgs >> SymbolName(name) >> poly >> dispatcher >> cursor;
 	R(new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher,
                wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor)));
+}
+
+DEFINE_5L_PRIMITIVE(ZoneSetShape) {
+    std::string name;
+    TPolygon bounds;
+    inArgs >> SymbolName(name) >> bounds;
+    FIND_ELEMENT(Zone, elem, name.c_str());
+    elem->SetShape(bounds);
+    wxGetApp().GetStage()->NotifyElementsChanged();
 }

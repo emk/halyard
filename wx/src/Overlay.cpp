@@ -79,3 +79,7 @@ void Overlay::SetInDragLayer(bool inDragLayer) {
 void Overlay::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
     mDrawingArea.CompositeInto(inDC, inClipRect);
 }
+
+void Overlay::SetSize(const wxSize &inSize) {
+    mDrawingArea.SetSize(inSize);
+}

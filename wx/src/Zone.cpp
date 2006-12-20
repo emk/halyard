@@ -34,8 +34,7 @@ Zone::Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
 {
 }
 
-bool Zone::IsPointInElement(const wxPoint &inPoint)
-{
+bool Zone::IsPointInElement(const wxPoint &inPoint) {
     return mPolygon.Contains(WxToTPoint(inPoint));
 }
 
@@ -43,19 +42,21 @@ void Zone::MoveTo(const wxPoint &inPoint) {
     mPolygon.MoveTo(WxToTPoint(inPoint));
 }
 
-void Zone::DrawElementBorder(wxDC &inDC)
-{
+void Zone::DrawElementBorder(wxDC &inDC) {
 	std::vector<TPoint> pts = mPolygon.Vertices();
 	std::vector<TPoint>::iterator i;
 	TPoint begin, end;
 
 	// TODO - this should be implemented by an iterator over the edges!
 	// Implement that iterator!
-	for (i = pts.begin(); i != pts.end(); ++i)
-	{
+	for (i = pts.begin(); i != pts.end(); ++i) {
 		begin = *i;
 		end = (i+1) == pts.end() ? *(pts.begin()) : *(i+1);
 		
 		inDC.DrawLine(begin.X(), begin.Y(), end.X(), end.Y());
 	}
+}
+
+void Zone::SetShape(const FIVEL_NS TPolygon &inPoly) {
+    mPolygon = inPoly;
 }

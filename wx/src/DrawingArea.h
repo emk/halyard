@@ -76,6 +76,9 @@ public:
 	DrawingArea(Stage *inStage, const wxRect &inBounds, bool inHasAlpha);
     ~DrawingArea();
     
+    /// Set the size of this DrawingArea.  Erases all contents.
+    void SetSize(const wxSize &inSize);
+
     wxBitmap &GetPixmap() { return mPixmap; }
 	wxRect GetBounds() { return mBounds; }
 	bool HasAlpha() { return mPixmap.HasAlpha(); }

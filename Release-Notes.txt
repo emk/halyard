@@ -42,6 +42,10 @@ SVN - emk, brian
     sensitive, and adds preliminary backtrace support.  Backtraces are
     written to Debug.log.  See deprecated.ss for more notes on the
     upgrade.
+  * #3830: Made %CUSTOM-ELEMENT% instances resizable--SHAPE is now a
+    settable property.  Note that changing the shape of a custom element
+    will clear the associated overlay, which isn't any problem for code
+    using the new ON DRAW interface.
 
 0.3.3 - 7 Dec 2006 - emk, tryon
  

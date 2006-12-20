@@ -35,12 +35,16 @@ class Zone : public LightweightElement
 	FIVEL_NS TPolygon mPolygon;
 	
 public:
-	Zone(Stage *inStage, const wxString &inName, const FIVEL_NS TPolygon &inPoly,
+	Zone(Stage *inStage, const wxString &inName,
+         const FIVEL_NS TPolygon &inPoly,
 		 FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor);
 
 	virtual bool IsPointInElement(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);
 	virtual void DrawElementBorder(wxDC &inDC);
+
+    /// Set the shape of this zone.
+    virtual void SetShape(const FIVEL_NS TPolygon &inPoly);
 };
 
 #endif // Zone_H
