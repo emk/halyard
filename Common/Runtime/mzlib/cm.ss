@@ -295,11 +295,6 @@
                     [(not (member (car modes) (use-compiled-file-paths)))
                      (trace-printf "skipping:  ~a compiled-paths ~s" path (use-compiled-file-paths))
                      (default-handler path mod-name)]
-                    [(not (eq? compilation-manager-load-handler (current-load/use-compiled)))
-                     (trace-printf "skipping:  ~a current-load/use-compiled changed ~s" 
-                                   path
-                                   (current-load/use-compiled))
-                     (default-handler path mod-name)]
                     [(not (eq? orig-eval (current-eval)))
                      (trace-printf "skipping:  ~a orig-eval ~s current-eval ~s" 
                                    path orig-eval 

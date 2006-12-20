@@ -123,12 +123,16 @@ void TSchemeInterpreterManager::BeginScript()
 	// so we check for ".", which is the only non-absolute path we
 	// expect to receive from GetBaseDirectory.
 	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
-	if (base != ".")
-		scheme_set_param(scheme_current_config(), MZCONFIG_CURRENT_DIRECTORY,
-						 scheme_make_path(base.c_str()));
+	ASSERT(base != ".");
+	scheme_set_param(scheme_current_config(), MZCONFIG_CURRENT_DIRECTORY,
+					 scheme_make_path(base.c_str()));
 
-	scheme_set_collects_path(scheme_make_path(FileSystem::GetRuntimeDirectory().ToNativePathString().c_str()));
-
+	// We need to set the "collects" path to our runtime directory to
+	// work around various bugs in the new compiled-module loader.
+	std::string runtime =
+		FileSystem::GetRuntimeDirectory().ToNativePathString();
+	scheme_set_collects_path(scheme_make_path(runtime.c_str()));
+	
 	// Install our system loader.
 	FileSystem::Path fivel_collection =
 		FileSystem::GetRuntimeDirectory().AddComponent("5L");

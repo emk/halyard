@@ -20,6 +20,14 @@
 //
 // @END_LICENSE
 
+#define _CRT_SECURE_NO_DEPRECATE (1)
+
+// See ScriptEditorDB.cpp for details on boost headers (sob).
+#define BOOST_ALL_NO_LIB 1
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+#undef BOOST_ALL_NO_LIB
+
 #include "CommonHeaders.h"
 #include "TTemplateUtils.h"
 
@@ -139,18 +147,21 @@ static OSErr PathToFSSpec(const char *inPath, FSSpec *inSpec)
 #if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
 
 Path::Path()
-	: mPath(".")
+	: mPath(boost::filesystem::current_path().native_directory_string())
 {
 	// All done!
 }
 
 Path::Path(const std::string &inPath)
-	: mPath(std::string(".") + PATH_SEPARATOR + inPath)
+	: mPath(boost::filesystem::current_path().native_directory_string() +
+	        PATH_SEPARATOR + inPath)
 {
 	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
 }
 
 #elif FIVEL_PLATFORM_MACINTOSH
+
+#error "Need to convert : to full path."
 
 Path::Path()
 	: mPath(":")

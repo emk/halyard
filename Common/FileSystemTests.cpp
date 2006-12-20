@@ -33,21 +33,23 @@ extern void test_FileSystem (void);
 
 void test_FileSystem (void)
 {
+	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
+
 #if FIVEL_PLATFORM_WIN32
 
 	// Test conversion to native path strings.
-	TEST(Path().ToNativePathString() == ".");
-	TEST(Path().AddComponent("foo").ToNativePathString() == ".\\foo");
-	TEST(Path().AddParentComponent().ToNativePathString() == ".\\..");
+	TEST(Path().ToNativePathString() == base);
+	TEST(Path().AddComponent("foo").ToNativePathString() == base+"\\foo");
+	TEST(Path().AddParentComponent().ToNativePathString() == base+"\\..");
 	TEST(Path().AddParentComponent().AddComponent("f").ToNativePathString() ==
-		 ".\\..\\f");
-	TEST(Path("foo").ToNativePathString() == ".\\foo");
-	TEST(GetBaseDirectory().ToNativePathString() == ".");
-	TEST(GetFontDirectory().ToNativePathString() == ".\\Fonts");
+		 base+"\\..\\f");
+	TEST(Path("foo").ToNativePathString() == base+"\\foo");
+	TEST(GetBaseDirectory().ToNativePathString() == base);
+	TEST(GetFontDirectory().ToNativePathString() == base+"\\Fonts");
 	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
-		 ".\\Fonts\\README.txt");
+		 base+"\\Fonts\\README.txt");
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
-		 == ".\\f\\..\\g");
+		 == base+"\\f\\..\\g");
 
 #elif FIVEL_PLATFORM_MACINTOSH
 
@@ -71,18 +73,18 @@ void test_FileSystem (void)
 #elif FIVEL_PLATFORM_OTHER
 	
 	// Test conversion to native path strings.
-	TEST(Path().ToNativePathString() == ".");
-	TEST(Path().AddComponent("foo").ToNativePathString() == "./foo");
-	TEST(Path().AddParentComponent().ToNativePathString() == "./..");
+	TEST(Path().ToNativePathString() == base);
+	TEST(Path().AddComponent("foo").ToNativePathString() == base+"/foo");
+	TEST(Path().AddParentComponent().ToNativePathString() == base+"/..");
 	TEST(Path().AddParentComponent().AddComponent("f").ToNativePathString() ==
-		 "./../f");
-	TEST(Path("foo").ToNativePathString() == "./foo");
-	TEST(GetBaseDirectory().ToNativePathString() == ".");
-	TEST(GetFontDirectory().ToNativePathString() == "./Fonts");
+		 base+"/../f");
+	TEST(Path("foo").ToNativePathString() == base+"/foo");
+	TEST(GetBaseDirectory().ToNativePathString() == base);
+	TEST(GetFontDirectory().ToNativePathString() == base+"/Fonts");
 	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
-		 "./Fonts/README.txt");
+		 base+"/Fonts/README.txt");
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
-	     == "./f/../g");
+	     == base+"/f/../g");
 
 #else
 #	error "Unknown platform."
