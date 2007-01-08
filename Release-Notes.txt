@@ -1,5 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk, brian
+
+  * #2856: Fixed the slow-loading bug which caused each reload to take
+    O(MN), where M is the number of modules in the program, and N is the
+    number of loads since first startup. This was caused by sloppy
+    installation of our custom compiled-zo handler.
+  * Updated tamale.el to handle proposed object syntax.
+
 0.3.4 - 20 Dec 2006 - emk, brian
 
   * Fixed bug in STRING->XML.

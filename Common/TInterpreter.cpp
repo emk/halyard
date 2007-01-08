@@ -55,22 +55,12 @@ TInterpreter::~TInterpreter()
 }
 
 void TInterpreter::NotifyFileLoaded() {
-    // For now, suppress calculation of splash-screen related data when
-    // we're not showing the splash screen.
-    if (TInterpreterManager::ShouldSuppressSplashScreen())
-        return;
-
     ++mSourceFilesLoaded;
     if (mSourceFilesLoaded > mSourceFilesExpected)
         mSourceFilesExpected = mSourceFilesLoaded;
 }
 
 void TInterpreter::NotifyScriptLoaded() {
-    // For now, suppress calculation of splash-screen related data when
-    // we're not showing the splash screen.
-    if (TInterpreterManager::ShouldSuppressSplashScreen())
-        return;
-
     mSourceFilesExpected = mSourceFilesLoaded;
 
     // If we have a document (i.e., we're not running the test suites),

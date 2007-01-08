@@ -134,13 +134,14 @@
     
     ;; Create a new, independent namespace and make it the default for all
     ;; code loaded into this thread.
-    (set! *script-namespace* (make-namespace 'empty))
+    (set! *script-namespace* (make-namespace 'initial))
+    ;;(set! *script-namespace* (make-namespace 'empty))
     (current-namespace *script-namespace*)
     
     ;; Alias some basic runtime support modules into our new namespace.  This
     ;; tehcnically means that these modules are shared between the original
     ;; namespace and the script namespace, which is fairly weird.
-    (namespace-attach-module *original-namespace* 'mzscheme)
+    ;;(namespace-attach-module *original-namespace* 'mzscheme)
     (namespace-attach-module *original-namespace* '#%fivel-engine)
     #f)
 
@@ -166,37 +167,45 @@
         (namespace-require '(lib "bootstrap-env.ss" "5L"))
 
         ;; Ask MzScheme to transparently compile modules to *.zo files.
-        (current-load/use-compiled (make-compile-zo-with-heartbeat))
+        ;; It's very important that we install this using PARAMETERIZE, and
+        ;; not as a global value, because future calls to
+        ;; MAKE-COMPILATION-MANAGER-LOAD/USE-COMPILED-HANDLER will wrap
+        ;; whatever they find in this parameter, and we don't want to wind
+        ;; up with nested compilation managers (a subtle performance
+        ;; killer!).
+        (parameterize [[current-load/use-compiled
+                        (make-compile-zo-with-heartbeat)]]
         
-        ;; Manually load the kernel into our new namespace.  We need
-        ;; to call (load/use-compiled ...) instead of (require ...),
-        ;; because we want the kernel registered under its official
-        ;; module name (so the engine can easily grovel around inside it)
-        ;; but not imported into our namespace (which is the job of the
-        ;; 5L language module).
-        (set! filename "kernel.ss")
-        (namespace-require '(lib "kernel.ss" "5L"))
-        ;;(load/use-compiled (build-path (current-directory)
-        ;;                               "Runtime" "5L"
-        ;;                               "kernel.ss"))
-      
-        ;; Provide a reasonable default language for writing scripts.  We
-        ;; need to set up both the transformer environment (which is used
-        ;; only by code in macro expanders) and the regular environment
-        ;; (which is used by normal program code).
-        (set! filename "lispish.ss")
-        (namespace-transformer-require '(lib "lispish.ss" "5L"))
-        (set! filename "5l.ss")
-        (namespace-require '(lib "5l.ss" "5L"))
-      
-        ;; Load the user's actual script into our new namespace.
-        (set! filename "start.ss")
-        (load/use-compiled (build-path (current-directory) "Scripts" "start.ss"))
-        ;; (XXX - Disabled until we can determine why the number of files
-        ;; loaded goes up after a "reload script".)
-        ;; XXX- Re-enabled because we currently suppress all splash-screen
-        ;; code after a "reload script".
-        (notify-script-loaded)
-        #f)))
+          ;; Manually load the kernel into our new namespace.  We need to
+          ;; call (load/use-compiled ...) instead of (require ...), because
+          ;; we want the kernel registered under its official module name
+          ;; (so the engine can easily grovel around inside it) but not
+          ;; imported into our namespace (which is the job of the 5L
+          ;; language module).
+          (set! filename "kernel.ss")
+          (namespace-require '(lib "kernel.ss" "5L"))
+          ;;(load/use-compiled (build-path (current-directory)
+          ;;                               "Runtime" "5L"
+          ;;                               "kernel.ss"))
+          
+          ;; Provide a reasonable default language for writing scripts.  We
+          ;; need to set up both the transformer environment (which is used
+          ;; only by code in macro expanders) and the regular environment
+          ;; (which is used by normal program code).
+          (set! filename "lispish.ss")
+          (namespace-transformer-require '(lib "lispish.ss" "5L"))
+          (set! filename "5l.ss")
+          (namespace-require '(lib "5l.ss" "5L"))
+          
+          ;; Load the user's actual script into our new namespace.
+          (set! filename "start.ss")
+          (load/use-compiled (build-path (current-directory)
+                                         "Scripts" "start.ss"))
+          ;; (XXX - Disabled until we can determine why the number of files
+          ;; loaded goes up after a "reload script".)
+          ;; XXX- Re-enabled because we currently suppress all splash-screen
+          ;; code after a "reload script".
+          (notify-script-loaded)
+          #f))))
 
   ) ; end module

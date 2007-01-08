@@ -125,14 +125,23 @@ Tamale is a language for card-based interactive multimedia programming."
 	       "require" "set!" "and" "or" "module" "on" "send" "prop"
                "state-db-fn" "state-db-fn/rt" "match-let" "with-syntax"
                "define-goal" "define-goal*"
-               "with-errors-blocked") t)
+               "with-errors-blocked" "test" "begin-for-syntax" "def"
+               "with-instance" "with-handlers" "parameterize") t)
 	"\\>") 1)
 
       ;; Magic variables.
       (cons "\\<\\(self\\)\\>" 1)
 
+      ;; Method invocation.
+      (list "\\<\\(\\.\\sw+\\)\\>"
+            '(1 font-lock-function-name-face))
+
+      ;; Class names.
+      (list "\\<\\(%[^% ()]+%\\)\\>"
+            '(1 font-lock-function-name-face))
+
       ;; Relative pathnames.
-      (list "\\s-\\(@\\sw+\\)"
+      (list "\\<\\(@\\sw+\\)\\>"
             ;; (The extra ' in front of tamale-relative-path-face is needed
             ;; in Emacs 21 for some horrible, evil, and inexplicable
             ;; reason.)
@@ -214,6 +223,12 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'with-errors-blocked 'scheme-indent-function 1)
 (put 'define-goal-condition 'scheme-indent-function 1)
 (put 'define-goal-condition 'scheme-indent-function 2)
+(put 'test 'scheme-indent-function 1)
+(put 'begin-for-syntax 'scheme-indent-function 0)
+(put 'def 'scheme-indent-function 1)
+(put 'with-instance 'scheme-indent-function 1)
+(put 'with-handlers 'scheme-indent-function 1)
+(put 'parameterize 'scheme-indent-function 1)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -510,7 +525,7 @@ See define-abbrev for more information."
   ;; Code to set up font-lock mode (borrowed from scheme.el).
   (setq font-lock-defaults
         '(tamale-font-lock-keywords
-          nil t (("+-*/.<>=!?$%_&~^:" . "w")) beginning-of-defun
+          nil t (("+-*/.<>=!?$@%_&~^:" . "w")) beginning-of-defun
           (font-lock-mark-block-function . mark-defun)))
 
   ;; Brutally discourage tabs, especially 8-space tabs.
