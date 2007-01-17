@@ -61,7 +61,7 @@
            setup-test teardown-test add-test-method!
            run-tests run-test-method
            define-test-case-helper define-test-case with-captured-variable
-           assert-equal assert-macro-expansion 
+           assert-equal assert-macro-expansion assert-raises
            make-test-report 
            fixture-dir)
   
@@ -234,7 +234,17 @@
         'expansion
         (syntax-object->datum (expand-once #'source)))]))
   (define-syntax-indent assert-macro-expansion function)
-  
+
+  ;;; Assert that CODE raises an exception matching PREDICATE.
+  (define-syntax assert-raises
+    (syntax-rules ()
+      [(_ predicate code)
+       (unless (with-handlers [[predicate (lambda (exn) #t)]]
+                 code
+                 #f)
+         (error (cat "Expected " 'code " to raise " 'predicate)))]))
+  (define-syntax-indent assert-raises 1)
+
   (define (fixture-dir name)
     (build-path (current-directory) "Runtime" "5L" (cat name "-fixtures")))
   )
