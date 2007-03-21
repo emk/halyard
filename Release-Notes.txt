@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, brian
+0.3.5 - 21 March 2007 - emk, brian
 
   * #2856: Fixed the slow-loading bug which caused each reload to take
     O(MN), where M is the number of modules in the program, and N is the
