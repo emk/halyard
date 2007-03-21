@@ -118,6 +118,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(LoadPic);
 	REGISTER_5L_PRIMITIVE(LoadSubPic);
     REGISTER_5L_PRIMITIVE(MarkUnprocessedEventsAsStale);
+	REGISTER_5L_PRIMITIVE(Mask);
     REGISTER_5L_PRIMITIVE(MaybeLoadSplash);
     REGISTER_5L_PRIMITIVE(MeasurePic);
 	REGISTER_5L_PRIMITIVE(MediaSetVolume);
@@ -192,6 +193,8 @@ static E *R(E *elem) {
             THROW("You cannot call " PRIMNAME " from inside a callback."); \
         } \
     } while (0)
+
+static wxBitmap load_picture(const std::string &inName);
 
 
 //=========================================================================
@@ -645,6 +648,15 @@ DEFINE_5L_PRIMITIVE(LoadSubPic) {
 
 DEFINE_5L_PRIMITIVE(MarkUnprocessedEventsAsStale) {
     EventDispatcher::UpdateMaxStaleTime();
+}
+
+DEFINE_5L_PRIMITIVE(Mask) {
+    std::string	path;
+    TPoint		loc;
+
+	inArgs >> path >> loc;
+    wxBitmap mask = load_picture(path.c_str());
+	GetCurrentDrawingArea()->Mask(mask, loc.X(), loc.Y());
 }
 
 DEFINE_5L_PRIMITIVE(MaybeLoadSplash) {

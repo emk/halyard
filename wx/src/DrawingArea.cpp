@@ -306,6 +306,25 @@ void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
                           inBitmap.GetHeight()));
 }
 
+void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)
+{
+    if (HasAreaOfZero() ||
+        inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
+    {
+        // One or both bitmaps has an area of 0, so do nothing.
+    } else if (mPixmap.HasAlpha() && inMask.HasAlpha()) {
+        // Both bitmaps have alpha channels, so call our helper routine.
+        // It's safe to cast away const, because the mask won't be
+        // modified.
+		wxAlphaPixelData data(mPixmap);
+		wxAlphaPixelData mask(const_cast<wxBitmap &>(inMask));
+		MaskOpt(data, mask, inX, inY);
+    } else {
+        THROW("Mask graphic and drawing area must both have alpha channels");
+    }
+    InvalidateRect(wxRect(inX, inY, inMask.GetWidth(), inMask.GetHeight()));
+}
+
 void DrawingArea::DrawDCContents(wxDC &inDC)
 {
 	wxMemoryDC dc;

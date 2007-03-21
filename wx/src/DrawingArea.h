@@ -149,6 +149,19 @@ public:
     void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
 					bool inTransparent = true);
 
+    //////////
+    /// Use the alpha channel of a bitmap to selectively mask parts of the
+    /// DrawingArea.  Completely opaque parts of the "mask" bitmap will be
+    /// left unchanged in the DrawingArea, while completely transparent
+    /// parts of the mask will be erased from the DrawingArea.
+    /// Transparency values in between will have a proportional effect.
+    ///
+    /// \param inMask  The bitmap to use a mask.
+    /// \param inX The X coordinate to erase at.
+    /// \param inY The Y coordinate to erase at.
+    ///
+    void Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY);
+
 	//////////
 	/// Blit the contents of the specified DC to our offscreen buffer.
 	/// If the blit fails, fill the offscreen buffer with black.

@@ -43,4 +43,9 @@ extern
 void ClearOpt(wxAlphaPixelData &inDstData,
 			  const GraphicsTools::Color &inColor);
 
+extern
+void MaskOpt(wxAlphaPixelData &inDstData,
+             wxAlphaPixelData &inMaskData,
+             wxCoord inX, wxCoord inY);
+
 #endif // DrawingAreaOpt_H

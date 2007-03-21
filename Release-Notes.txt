@@ -7,6 +7,8 @@ SVN - emk, brian
     number of loads since first startup. This was caused by sloppy
     installation of our custom compiled-zo handler.
   * Updated tamale.el to handle proposed object syntax.
+  * Adding support for MASK operation.
+  * Added :SHOWN? flags to as much of the API as possible.
 
 0.3.4 - 20 Dec 2006 - emk, brian
 

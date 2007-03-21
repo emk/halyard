@@ -302,8 +302,9 @@
     #f)
 
   ;;; Create a %box% element.
-  (define (box shape &key (name (gensym)) (parent (default-element-parent)))
-    (create %box% :name name :parent parent :shape shape))
+  (define (box shape &key (name (gensym)) (parent (default-element-parent))
+               (shown? #t))
+    (create %box% :name name :parent parent :shown? shown? :shape shape))
 
   ;;; A %clickable-zone% will run the specified ACTION when the user clicks on
   ;;; it.
@@ -322,10 +323,12 @@
   (define (clickable-zone shape action
                           &key (name (gensym)) (cursor 'hand)
                           (overlay? #f) (alpha? #f)
-                          (parent (default-element-parent)))
+                          (parent (default-element-parent))
+                          (shown? #t))
     (create %clickable-zone%
             :name name
             :parent parent
+            :shown? shown?
             :shape shape
             :cursor cursor
             :action action
@@ -374,7 +377,7 @@
   ;;;======================================================================
   ;;;  Most of these functions have a corresponding element, below.
 
-  (provide draw-graphic measure-graphic
+  (provide draw-graphic measure-graphic mask
            set-image-cache-size! with-dc
            dc-rect color-at clear-dc
            draw-line draw-rectangle draw-rectangle-outline)
@@ -394,6 +397,22 @@
     (let [[native (make-native-path "Graphics" path)]]
       (check-file native)
       (call-5l-prim 'MeasurePic native)))
+
+  ;;; Destructively apply a mask to a DC with an alpha channel.  Areas of
+  ;;; the DC corresponding to completely opaque areas of the mask will be
+  ;;; left alone (as will areas outside the bounds of the mask).  Areas of
+  ;;; the DC corresponding to completely transparent areas of the mask will
+  ;;; be erased.  The color of the mask is ignored, but for forwards
+  ;;; compatibility, please set it to white.
+  ;;;
+  ;;; (Note that a mask is basically an eraser with the alpha
+  ;;; channel inverted.  But doing this way around allows more efficient
+  ;;; implementations under a wide variety of graphics APIs, including
+  ;;; Windows and Cairo.)
+  (define (mask p path)
+    (let [[native (make-native-path "Graphics" path)]]
+      (check-file native)
+      (call-5l-prim 'Mask native p))) 
 
   ;;; Specify how many bytes may be used by the engine to cache
   ;;; recently-used images.
@@ -468,9 +487,10 @@
   
   ;;; Create a new %text% element.
   (define (text-box r style text
-                    &key (name (gensym)) (parent (default-element-parent)))
+                    &key (name (gensym)) (parent (default-element-parent))
+                    (shown? #t))
     (create %text-box%
-            :name name :parent parent
+            :name name :parent parent :shown? shown?
             :shape r :style style :text text))
   
   ;;; A text element just large enough to fit the specified text.
@@ -485,9 +505,9 @@
   ;;; Create a new %fitted-text% element.
   (define (text p style text
                 &key (name (gensym)) (parent (default-element-parent))
-                (max-width (rect-width $screen-rect)))
+                (shown? #t) (max-width (rect-width $screen-rect)))
     (create %text%
-            :name name :parent parent
+            :name name :parent parent :shown? shown?
             :at p :max-width max-width :style style :text text))
   
   ;;; A simple graphic.  For now, you must specify the :ALPHA? value you
@@ -502,9 +522,9 @@
   ;;; Create a new %graphic%.
   (define (graphic p path
                    &key (name (gensym)) (alpha? #f)
-                   (parent (default-element-parent)))
+                   (parent (default-element-parent)) (shown? #t))
     (create %graphic%
-            :name name :parent parent
+            :name name :parent parent :shown? shown?
             :at p :alpha? alpha? :path path))
   
   ;;; A rectangular element, filled with a single color.
@@ -524,18 +544,19 @@
   ;;; Create a new %rectangle%.
   (define (rectangle r c
                      &key (name (gensym)) (parent (default-element-parent))
-                     (outline-width 1) (outline-color $transparent))
+                     (shown? #t) (outline-width 1)
+                     (outline-color $transparent))
     (create %rectangle%
-            :name name :parent parent :shape r :color c
+            :name name :parent parent :shown? shown? :shape r :color c
             :outline-width outline-width :outline-color outline-color))
   
   ;;; Create a new %rectangle% with an outline and a transparent center.
   (define (rectangle-outline r c width
-                             &key (name (gensym))
+                             &key (name (gensym)) (shown? #t)
                              (parent (default-element-parent)))
     (create %rectangle%
-            :name name :parent parent :shape r :color $transparent
-            :outline-width width :outline-color c))
+            :name name :parent parent :shown? shown? :shape r
+            :color $transparent :outline-width width :outline-color c))
   
 
   ;;;======================================================================
@@ -740,8 +761,10 @@
 
   ;;; Create a new %browser% object.
   (define (browser r path
-                   &key (name (gensym)) (parent (default-element-parent)))
-    (create %browser% :name name :parent parent :rect r :path path))
+                   &key (name (gensym)) (parent (default-element-parent))
+                   (shown? #t))
+    (create %browser% :name name :parent parent :shown? shown?
+            :rect r :path path))
 
 
   ;;;======================================================================
@@ -768,9 +791,9 @@
   (define (edit-box r text
                     &key (name (gensym)) (font-size 9)
                     (multiline? #f) (send-enter-event? #t)
-                    (parent (default-element-parent)))
-    (create %edit-box% :name name :parent parent :rect r :text text
-            :font-size font-size :multiline? multiline?
+                    (parent (default-element-parent)) (shown? #t))
+    (create %edit-box% :name name :parent parent :shown? shown? :rect r
+            :text text :font-size font-size :multiline? multiline?
             :send-enter-event? send-enter-event?))
 
   
