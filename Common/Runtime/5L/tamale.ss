@@ -576,10 +576,20 @@
         (set! max-height (rect-height bounds))))
     (rect 0 0 max-width max-height))
 
-  ;;; An animated graphic is a specialized overlay that can be animated
-  ;;; under state-db control.  See the C++ source for details.
+  ;;; An animated graphic is a specialized overlay that can be
+  ;;; animated under state-db control.  In order to use it, create an
+  ;;; %animated-graphic% passing in the list of graphics you would
+  ;;; like to change between to :GRAPHICS, and the state DB path you
+  ;;; would like to use to control the graphic to :STATE-PATH.  Also,
+  ;;; create the following state DB keys, and set them in order to
+  ;;; control the animation:
+  ;;;
+  ;;; <state-path>/index   Set this to the index within the GRAPHICS list
+  ;;;                      that you want to be displayed.
+  ;;; <state-path>/x       These do some sort of movement, not documented
+  ;;; <state-path>/y       at the moment. For now, set them both to 0 
   (define-element-template %animated-graphic%
-      [[state-path :type <string> :label "State DB Key Path"]
+      [[state-path :type <symbol> :label "State DB Key Path"]
        [graphics :type <list> :label "Graphics to display"]]
       (%custom-element%
        :shape (animated-graphic-shape graphics)

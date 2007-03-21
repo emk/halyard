@@ -9,6 +9,10 @@ SVN - emk, brian
   * Updated tamale.el to handle proposed object syntax.
   * Adding support for MASK operation.
   * Added :SHOWN? flags to as much of the API as possible.
+  * #3841: Added a debug-log statement when we encounter an error loading a 
+    file.  The program still quits, but now you can see the actual error 
+    by looking at the debug log instead of having to experiement to find it.
+  * Added preliminary documentation to the %ANIMATED-GRAPHIC% template.
 
 0.3.4 - 20 Dec 2006 - emk, brian
 

@@ -49,8 +49,14 @@
   (define (draw-load-progress)
     (maybe-call-5l-prim 'DrawLoadProgress))
 
+  ;; Throw an error that displays a message in a dialog box and then takes
+  ;; down the engine without submitting a crash report.
   (define (environment-error message)
     (%call-5l-prim 'Log '5L message 'environmenterror))
+
+  ;; Write a line to the debug log.
+  (define (debug-log msg)
+    (%call-5l-prim 'Log 'Debug msg 'log))
 
   ;;===== Splash screen management =====
 
@@ -106,7 +112,9 @@
     ;; system know we're still alive during really long loads.
     (define (compile-zo-with-heartbeat file-path expected-module-name)
       (with-handlers 
-         [[exn:fail:filesystem? (lambda (x) (environment-error error-string))]]
+         [[exn:fail:filesystem? (lambda (x)
+                                  (debug-log (exn-message x))
+                                  (environment-error error-string))]]
         (heartbeat)
         (let [[result (compile-zo file-path expected-module-name)]]
           (heartbeat)
