@@ -1,9 +1,18 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+SVN - emk, brian
 
   * Moved drag.ss and q-and-a.ss into Runtime/5L directory.
   * Added ON PROP-CHANGE handlers for %TEXT%.
+  * Ported various animation functions up from iml libs, and
+    refactored as combinator library. See Runtime/5L/tamale-doc.txt
+    for details on how to use the new library.
+  * Added AFTER animation combinator, for performing animations in
+    sequence.
+  * Ported various shape manipulation functions from iml libs to
+    Runtime/5L. 
+  * Wrote documentation for animation, which can be found in 
+    Runtime/5L/tamale-doc.txt.
 
 0.3.5 - 21 March 2007 - emk, brian
 

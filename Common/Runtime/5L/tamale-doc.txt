@@ -1,0 +1,387 @@
+Tamale API Documentation
+========================
+
+Animation API
+-------------
+
+Tamale includes a basic animation API. You construct an animation using a
+variety of functions, such as SLIDE, RESHAPE, TRANSFORM, and PLAY, which 
+can be combined using SEQUENTIALLY and AFTER. In order to play an animation, 
+you call ANIMATE, passing in a time and an animation. ANIMATE will run the 
+given animation for a given span of time.
+
+### Basic Animations
+
+The simplest form of animation is a slide. To slide an element from
+one point to another on the screen, you would do the following:
+
+    (animate 1000 (slide @elem (point 200 300)))
+
+This can be broken down into two compoenents. `(animate 1000 ...)`
+says to run this animation for a duration of 1 second (1000
+milliseconds). You can run any given animation for any length of time
+that you want, allowing you to speed up and slow down the animation. 
+
+The actual animation itself is constructed with `(slide @elem (point
+200 300))`. This says to slide the element `@elem` at a constant speed
+from its current location to `(point 100 200)`. Because it is moving
+at a constant speet, it may start and stop rather abruptly; see the
+EASE-IN/OUT functions below for how to make it accelerate and
+decelerate smoothly.
+
+Another basic form of animation is RESHAPE. This changes an elements
+shape to a given rectangle, leaving it in the same place as it was
+before. Because this is so frequently used at the same time as moving
+it, there is a combined animation TRANSFORM that changes the shape and
+location at the same time.
+
+    (animate 1000 (transform @outline (rect 150 200 450 300)))
+
+You can also animate a sequence of images loaded from disk. In order
+to do this, you must create a SPRITE element and load the sequence of
+images into it. You can then animate it using a PLAY animation.
+
+    (sprite (point 250 350) (file-list "sprite-frame-" (range 100 200) ".png")
+            :name 'sprite :alpha? #t)
+    (animate 1000 (play @sprite :reverse? #t))
+
+You can animate just about any property or variable using the
+INTERPOLATE animation. This is a special syntax that takes as a first
+argument any variable or property reference that can be read and SET!,
+and is of a type that can be interpolated using INTERPOLATE-VALUE
+(<INTEGER>, <FLOAT>, <POINT>, <RECT> & <COLOR>), and as a second
+argument the destination value that you would like to animate it to.
+
+    (animate 1000 (interpolate (prop @rect outline-color) $color-red))
+    (animate 1000 (interpolate (state-db '/foo/bar/baz) 42))
+
+It turns out that SLIDE and RESHAPE are just implented in terms of
+INTERPOLATE. You can create your own wrappers around INTERPOLATE for your
+own abbreviations if you find yourself interpolating certain types of 
+properties frequently.
+
+    (define (slide elem dest) (interpolate (prop elem at) dest))
+    (define (reshape elem final) (interpolate (prop elem shape) final))
+
+### Combined Animations
+
+You can build up more complicated animations from simpler ones. For
+example, if you want the above slide to stop and start more smoothly,
+you can pass the animation to EASE-IN/OUT:
+
+    (animate 1000 (ease-in/out (slide @elem (point 200 300))))
+
+This will move `@elem` to the same place as the earlier example, but
+this time it will accelerate and decelerate smoothly, making the
+animation look more natural. If you want to just accelerate or just
+decelerate the animation, you can use EASE-IN or EASE-OUT.
+
+You can further create more complex animations by running two
+animations at the same time. To do this, use SIMULTANEOUSLY.
+
+    (animate 1000 
+      (simultaneously 
+        (slide @text-1 (point 200 300))
+        (slide @text-2 (point 200 350))))
+
+As a convenience, ANIMATE automatically runs all animations passed to
+it simultaneously, so the example above is equivalent to the following.
+
+    (animate 1000
+      (slide @text-1 (point 200 300))
+      (slide @text-2 (point 200 350)))
+
+SIMULTANEOUSLY is also built into the EASE-IN/OUT functions, allowing
+you to accelerate and decelerate multiple animations at
+once. 
+
+    (animate 1000
+      (ease-in
+        (slide @text-1 (point 200 300))
+        (slide @text-2 (point 200 350))))
+
+SIMULTANEOUSLY is used to implement the TRANSFORM command, described
+earlier, to combine SLIDE and RESHAPE. You can use it to create your
+own abbreviations for more complicated animations in a similar manner.
+
+    (define (transform elem final)
+      (simultaneously
+        (slide elem (rect-origin final))
+        (reshape elem (normalize-obj final))))
+
+In addition to performing two animations at the same time, you may
+want to perform one after the other. While you could do this by using
+two ANIMATE commands one right after the other, this doesn't work if
+you want the sequence of two animations to happen at the same time a
+third animation is happening. To combine two or more animations so
+they happen one after the other, you use the AFTER command.
+
+    (animate 1000
+      (after
+        0.0 (slide @foo (point 550 590))
+        0.5 (slide @bar (point 0 590))))
+
+This says that we would like to perform two animations, one after the
+other. The first one will start at time 0.0 and stop at time
+0.5. Because the animations themselves don't have a time associated
+with them, and only get their running time when we actually animate
+them using ANIMATE, we use numbers between 0.0 and 1.0 to represent
+where we are in the animation, where 0.0 is the beginning and 1.0 is
+the end. After each number, we list the animation that will run
+between that time and the time listed next. We can combine this with
+SIMULTANEOUSLY for a variety of effects, and we can manipulate the
+times to allow certain portions of the animation to run faster or
+slower.
+
+This example will spend the first 3/10ths of a second moving @foo to
+the lower right of the screen while turning it red, and then the next
+7/10ths of a second moving it back to the upper left.
+
+    (animate 1000
+      (after 
+        0.0 (simultaneously
+              (slide @foo (point 500 590))
+              (interpolate (prop foo @color) $color-red))
+        0.3 (slide @foo (point 0 60))))
+
+This example will fly a sprite around the screen along a rectangular
+path while playing its given graphic sequence. The sprite will not
+move at a constant speed, because it is spending a constant amount of
+time on each segment of the path, while the paths differ in length.
+
+    (sprite (point 100 100) (file-list "sprite-frame-" (range 100 200) ".png")
+            :name 'sprite :alpha? #t)
+    (animate 1000 
+      (play @sprite)
+      (after
+        0.0 (slide @sprite (point 600 100))
+        0.25 (slide @sprite (point 600 400))
+        0.5 (slide @sprite (point 100 400))
+        0.75 (slide @sprite (point 100 100))))
+
+Within a call to AFTER, if you have two animations listed at the same
+time, the first one will happen instantaneously and the second one
+will happen during the time between that time and the next. The
+following example will slide @foo smoothly to the first point, then
+jump it instantly to the second point, and then slide it smoothly to
+the third point.
+
+    (animate 1000
+      (after
+        0.0 (slide @foo (point 200 60))
+        0.5 (slide @foo (point 400 60))
+        0.5 (slide @foo (point 400 550))))
+
+If you would like to end an animation before the entire animation ends,
+or would like to pause in between two parts of an animation, you can
+call DO-NOTHING. As a convenience, a call to DO-NOTHING is
+automatically added to AFTER animations that start after 0.0, or that
+end with a time and no following animation.
+
+    (animate 5000
+      (slide @sprite (point 60 250))
+      (after
+        0.2 (play @sprite)
+        0.4 (do-nothing)
+        0.6 (play @sprite :reverse? #t)
+        0.8))
+
+During an animation sequence, you may want to do some sort of one-time
+effect, such as showing or hiding an element, changing some text, or
+something similar. You can wrap any arbitrary Scheme code, that
+executes instantly (basically, it's safe to run from a normal callback
+instead of a deferred callback), within ONCE, and that code will be
+called once when that animation starts, and then do nothing for the
+rest of the animation. This can be handy within an AFTER sequence, in
+which you want to change something part way through.
+
+    (animate 1000
+      (after
+        0.0 (slide @slider (point 300 500))
+        0.5 (once (hide @blinker))
+        0.5 (slide @slider (point 500 300))
+        1.0 (once (show @blinker))))
+
+### Hints And Tips
+
+TODO: Flesh this section out a bit if there are common tips that we
+come up with which will help people use the animation framework.
+
+There are a few functions that will be helpful in setting up
+animations, that aren't strictly part of the animation API. These
+include CENTER-OBJ-IN-OBJ, OFFSET-BY-POINT, and FILE-LIST. See the API
+documentation for these functions for more information.
+
+### Limitations And Caveats
+
+The animation system cannot handle every imaginable type of animaiton;
+it can only do several things that we have found useful, and a few
+thing that naturally fit into the existing framework. Furthermore,
+there are some performance issues when animating large numbers of
+elements at once, or animating large, partially transparent elements
+over the whole screen. This section will describe the limitations and
+caveats, along with workarounds if they're necessary.
+
+The animation framework has no notion of absolute time, until you pass
+an animation into ANIMATE to actually run it. This means that you need
+to always specify times normalized times, from 0.0 to 1.0, and then
+scale the time uwing the milliseconds parameter to ANIMATE. This is
+something that could be fixed, but would require fairly large
+architectural changes to the animation framework, where certain types
+of animation functions dealt with actual millisecons, and certain
+types dealt with normalized values (between 0.0 and 1.0), along with
+the appropriate automatic and implicit conversions. This means it
+would add complication, so we're sticking with the simpler, cleaner
+version for now.
+
+The parameters to most animation primitives are executed at the time
+the animation is constructed; that is, at the beginning of the
+animation (in most cases). This means that you cannot setup a
+complicated animation where the value of one parameter depends on the
+value another parameter has changed to part way through the
+animation. In the following example, @bar will be moved to where ever
+@foo was initially, not where it ended up. Any other way of doing this
+wouldn't really make sense, so this isn't something that could be
+fixed, just something to watch out for.
+
+    (after 
+      0.0 (slide @foo (point 100 200))
+      0.5 (slide @bar (prop @foo at)))
+
+We do not currently have the ability to move an object at constant
+speed over a complex path, without tweaking AFTER values by hand. For
+example, if you SLIDE an element along a zigzag path where each
+segment has a different length, but divide the time up evenly, the
+element will speed up and slow down. We also don't have the ability to
+move an element along a smoothly curving path, we can currently only
+move elements in straight lines. These features could easily be
+integrated into the current framework, they just haven't been written
+since we haven't needed them.
+
+Performance is something to watch carefully when creating
+animations. Moving one or two elements should be able to work fine on
+almost all systems, but animating two dozen elements at once that fly
+all over the screen and resize while Quicktime is playing will
+probably play at unnacceptable low frame rates on even the fastest
+machines. Here are some hints for getting the best performance out of
+animations, and for making complex animations perform better. 
+
+* Animate as few elements as possible at any one time. These days, we
+  frequently have deeply nested groups of elements, and might have
+  several child elements attached to a parent element, all of which
+  move when the parent is moved. If you need to animate this, and
+  experience performance problems, see if you can turn this into just
+  one element, wheree everything is drawn into its DC, and animate
+  that element.  
+
+* Have animations cover as little of the screen as possible. The more
+  of the screen the animation covers, the more work the engine has to
+  do to perform the animation. It's OK if the animation moves across
+  the screen, while only covering a small portion at any given time,
+  such as a small element moving all around on the screen, but as soon
+  as there are either a lot of small elements that cover the whole
+  screen, or one big element that covers most of the screen, it may
+  cause slowdowns.
+
+* Watch out for element resizes. These are fairly inefficient, so you
+  should try not to do too many at once, or not to do them at the same
+  time as other animations. We may work on optimizing them further in
+  the future, but for now be aware that they are probably the slowest
+  type of animation primitive.
+
+* If you suspect that a given part of an animation is causing
+  slowness, you can wrap it in IMMEDIATELY or FINALLY. This will cause
+  that animation to only occur at the first or last frame, and so not
+  add to the overhead of the entire animation. This can make it easy
+  to enable or disable certain parts of an animation while still
+  having it end up in the same state.
+
+* Make sure that any of your elements that don't need to be overlays
+  (that is, they are invisible) are not overlays. By default,
+  %CUSTOM-ELEMENT% is an overlay, so if you want something that is
+  invisible, you might want to use or extend %BOX%. Also, make sure
+  that if you don't need transparent overlays (`:alpha? #t`), your
+  overlays aren't set as being transparent. All %RECT% elements are
+  transparent overlays by defauly, so watch out for them.
+
+### Creating New Animation Primitives
+
+Before creating a new animation primitive, check to see if you can
+create the animation you want by combining existing animations. You
+can create a function that takes parameters and returns an animation
+based on those parameters. There are a few examples in the built in
+set of primitives (which actually aren't primitive, but are
+constructed from other primitives), such as SLIDE, RESHAPE, TRANSFORM,
+INITIALLY and FINALLY. For a more complicated example, imagine you
+wanted to shuffle the positions of a set of elements, so each one went
+to the position the next one used to be in.
+
+    (define (rotate l)
+      (append (cdr l) (list (car l))))
+    
+    (define (shuffle &rest elems)
+      (apply simultaneously 
+             (map (fn (a b) (slide a (prop b at)))
+                  (rotate elems))))
+    
+    (animate 1000 
+      (shuffle @foo @bar @baz @quux @zot))
+
+If you come across an animation that you can't do by combining exising
+animation primitives, you'll need to write your own. An animation
+primitive is fairly simple; all it really is (in a simplified view of
+the world) is a function that takes a normalized time (that is, a
+number between 0 and 1), and sets the state of the world to the state
+it should be at that time. For instance, under this simplified model,
+SLIDE could be written as follows (though it's actually written as a
+wrapper around INTERPOLATE).
+
+    (define (slide elem dest)
+      (define start (prop elem at))
+      (fn (t)
+        (set! (prop elem at) (interpolate-value start dest t))))
+
+This simplification doesn't work for animations run in sequence via
+AFTER, however. If you called the function above for each of the
+following slides, the `start` variable would be the same for each of
+the slides, which would mean the element would snap back to its
+starting location and then slide from there on the second slide.
+
+    (after
+      0.0 (slide @foo (point 100 200))
+      0.5 (slide @foo (point 200 300)))
+
+Instead of the simple version, we represent an animation as a thunk
+that returns the simple animation function described above; that is, a
+function which takes no arguments, known within Tamale as a CALLBACK,
+that returns a function that takes one argument, a time between 0 and
+1, which actually performs the animation. For instance, if SLIDE were
+not implemented in terms of INTERPOLATE, it would be implemented as
+follows.
+
+    (define (slide elem dest)
+      (callback
+        (define start (prop elem at))
+        (fn (x)
+          (set! (prop elem at) (interpolate-value start dest t)))))
+
+When AFTER runs its individual animations, it calls the first
+CALLBACK, then runs the returned animation function over the
+appropriate time interval. Once that is done, it calls the second
+CALLBACK, and then runs its returned animation over the second
+interval, and so on.
+
+In order for this all to work predictably, there need to be a few
+guarantees. The guarantees that are preserved when calling any
+animation function are as follows:
+
+* Each CALLBACK will be called exactly once, at a time at or after its
+  animation is supposed to begin.
+* Each animation function returned by an animation CALLBACK will be
+  called at least once, with value 1.0.
+
+Thus, if something needs to happen exactly once before the animation
+begins, you can put it inside the callback before returning the
+animation function. If the animation has a postcondition, make sure it
+happens in the animation function when the time value equals 1.0.
+
