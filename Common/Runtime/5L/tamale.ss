@@ -498,9 +498,17 @@
       [style text
        [max-width :label "Max width" :default (rect-width $screen-rect)]]
       (%text-box% :shape (measure-text style text :max-width max-width))
-    ;; TODO - Implement prop-change correctly once we can resize an
-    ;; overlay.  For now, we pass it through to %text-box%, which is wrong.
-    #f)
+    (on prop-change (name value prev veto)
+      (define (update-shape!)
+        (set! (prop self shape)
+              (measure-text style text :max-width max-width)))
+      (case name
+        [[style text]
+         (update-shape!)
+         (call-next-handler)]
+        [[max-width]
+         (update-shape!)]
+        [else (call-next-handler)])))
   
   ;;; Create a new %fitted-text% element.
   (define (text p style text
