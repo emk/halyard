@@ -222,10 +222,15 @@ elements at once, or animating large, partially transparent elements
 over the whole screen. This section will describe the limitations and
 caveats, along with workarounds if they're necessary.
 
+Animations cannot be run during an event callback, they can only be
+called at an idle time. This means that if you want to start an
+animation in response to a button click or other event, you must use a
+DEFERRED-CALLBACK or RUN-DEFERRED.
+
 The animation framework has no notion of absolute time, until you pass
 an animation into ANIMATE to actually run it. This means that you need
 to always specify times normalized times, from 0.0 to 1.0, and then
-scale the time uwing the milliseconds parameter to ANIMATE. This is
+scale the time using the milliseconds parameter to ANIMATE. This is
 something that could be fixed, but would require fairly large
 architectural changes to the animation framework, where certain types
 of animation functions dealt with actual millisecons, and certain

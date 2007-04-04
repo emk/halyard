@@ -542,6 +542,10 @@
        [outline-color :type <color> :label "Outline color"
                       :default $transparent]]
       (%custom-element% :alpha? #t)
+    (on prop-change (name value prev veto)
+      (case name
+        [[color outline-width outline-color] (send self invalidate)]
+        [else (call-next-handler)]))
     ;; TODO - Optimize erase-background once we can update our properties.
     (on draw ()
       (unless (transparent? color)
@@ -568,7 +572,7 @@
   
 
   ;;;======================================================================
-  ;;;  Animated Graphic Elements
+  ;;;  Animated Graphic Elements (deprecated)
   ;;;======================================================================
 
   (provide %animated-graphic%)
@@ -608,6 +612,31 @@
                   (make-node-event-dispatcher self) (prop self cursor)
                   (prop self alpha?) state-path
                   (map (fn (p) (make-native-path "Graphics" p)) graphics)))
+
+
+  ;;;======================================================================
+  ;;;  Sprites
+  ;;;======================================================================
+
+  (provide %sprite% sprite)
+  
+  (define-element-template %sprite%
+      [[frames :type <list> :label "List of image files"]
+       [frame :type <integer> :label "Index of current frame" :default 0]]
+      (%custom-element% :shape (animated-graphic-shape frames))
+    (on prop-change (name value prev veto)
+      (case name
+        [[frame] (send self invalidate)]
+        [else (call-next-handler)]))
+    (on draw ()
+      (draw-graphic (point 0 0) (list-ref frames frame))))
+
+  (define (sprite at frames 
+                  &key (name (gensym)) (alpha? #f)
+                  (parent (default-element-parent)) (shown? #t))
+    (create %sprite% 
+            :at at :frames frames :name name :alpha? alpha? 
+            :parent parent :shown? shown?))
 
 
   ;;;======================================================================
@@ -1194,8 +1223,30 @@
                                      (rect-left-top (bounds moving-obj))))
     (offset-by-point moving-obj offset))
 
-  (provide number->integer interpolate-int slide reshape transform
-           simultaneously after animate)
+  ;;; Helpful functions for listing the frames of an animation.
+  (provide range strings zero-pad)
+
+  ;;; Return a list of numbers from START to END, inclusive, increasing by 
+  ;;; STEP.
+  (define (range start end &opt (step 1))
+    (define (range-internal start)
+      (cond 
+        ((> start end) '())
+        ((= start end) (list end))
+        (else (cons start (range-internal (+ start step))))))
+    (range-internal start))
+
+  (define (strings prefix lst suffix)
+    (map (fn (x) (cat prefix x suffix))
+         lst))
+
+  (define (zero-pad n x)
+    (define str (cat x))
+    (cat (make-string (- n (string-length str)) #\0) str))
+
+  (provide number->integer interpolate-int slide reshape transform play
+           simultaneously after animate interpolate ease-in ease-out
+           ease-in/out do-nothing)
 
   ;;; Convert any number to an integer.  Typically needed for use with
   ;;; ANIMATE.
@@ -1302,6 +1353,11 @@
   (define (reshape elem final-rect)
     (interpolate (prop elem shape) final-rect))
 
+  ;;; Returns an animator that plays through the frames of a %SPRITE%.
+  (define (play sprite &key (reverse? #f))
+    (interpolate (prop sprite frame) 
+                 (if reverse? 0 (- (length (prop sprite frames)) 1))))
+
   ;;; Return an animator that changes the rect for an element to a given rect 
   ;;; (both shape and position).
   (define (transform elem new-rect)
@@ -1335,7 +1391,7 @@
         (append (list 0.0 (do-nothing)) lst)))
     (define (pad-end lst)
       (if (odd? (length lst))
-        (append lst (do-nothing))
+        (append lst (list (do-nothing)))
         lst))
     (define (split lst)
       (let loop [[result (cons '() '())] [lst lst]]
