@@ -14,6 +14,8 @@ SVN - emk, brian
   * Wrote documentation for animation, which can be found in 
     Runtime/5L/tamale-doc.txt.
   * Added ON PROP-CHANGE handlers for %RECTANGLE%.
+  * Cleaned up newly-added shape-manipulation functions.  Still more
+    cleanup and refactoring of animation features will be needed.
 
 0.3.5 - 21 March 2007 - emk, brian
 

@@ -125,8 +125,7 @@
       (run-deferred
        (callback
          (with-dragging-disabled self
-           (animate ms (make-object-mover self point)
-                    :ease-out? #t :ease-in? #t)))))
+           (animate ms (ease-in/out (slide self point)))))))
     (on go-home ()
       (send self go-to-point home-point))
 

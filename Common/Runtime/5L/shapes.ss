@@ -16,11 +16,13 @@
            rect-right-top rect-right-bottom
 
            copy-rect rect-horizontal-center rect-vertical-center
-           rect-center move-rect-left-to move-rect-top-to
+           rect-center shape-center
+           move-rect-left-to move-rect-top-to
            move-rect-right-to move-rect-bottom-to
            move-rect-left-top-to
            move-rect-horizontal-center-to move-rect-vertical-center-to
-           move-rect-center-to
+           move-rect-center-to move-shape-left-top-to center-shape-on
+           shape-at?
 
            point-in-shape? offset-by-point inset-rect shape-origin bounds)
 
@@ -94,6 +96,10 @@
   (define (rect-center r)
     (point (rect-horizontal-center r) (rect-vertical-center r)))
   
+  ;;; Return the center point of the bounding box of SHAPE.
+  (define (shape-center obj)
+    (rect-center (bounds obj)))
+
   ;;; Create a new rect with the same size and vertical position as R, with
   ;;; the left edge at H.
   (define (move-rect-left-to r h)
@@ -135,6 +141,23 @@
                                                                   (point-y p))
                                     (point-x p)))
   
+  ;;; Move the left-top corner of the bounding box of SHAPE to the
+  ;;; specified point, returning the moved shape.
+  (define (move-shape-left-top-to obj p)
+    (offset-by-point obj (point-difference p (shape-origin obj))))
+
+  ;;; Center SHAPE relative to ON-SHAPE, returning the centered shape.
+  (define (center-shape-on shape on-shape)
+    (define new-bounds (move-rect-center-to (bounds shape) 
+                                            (shape-center on-shape)))
+    (define offset (point-difference (rect-left-top new-bounds)
+                                     (rect-left-top (bounds shape))))
+    (offset-by-point shape offset))
+
+  ;;; Return #t if SHAPE is located at the specified point.
+  (define (shape-at? shape p)
+    (assert (equals? p (rect-left-top (bounds shape)))))
+
   ;;; Return true if P falls inside SHAPE.
   (defgeneric (point-in-shape? (p <point>) (shape <shape>)))
   

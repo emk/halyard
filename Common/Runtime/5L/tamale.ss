@@ -599,7 +599,9 @@
   ;;; <state-path>/index   Set this to the index within the GRAPHICS list
   ;;;                      that you want to be displayed.
   ;;; <state-path>/x       These do some sort of movement, not documented
-  ;;; <state-path>/y       at the moment. For now, set them both to 0 
+  ;;; <state-path>/y       at the moment. For now, set them both to 0
+  ;;;
+  ;;; DEPRECATED: Please use %sprite% instead.
   (define-element-template %animated-graphic%
       [[state-path :type <symbol> :label "State DB Key Path"]
        [graphics :type <list> :label "Graphics to display"]]
@@ -617,6 +619,7 @@
   ;;;======================================================================
   ;;;  Sprites
   ;;;======================================================================
+  ;;;  This is a replacement for %animated-graphic%.
 
   (provide %sprite% sprite)
   
@@ -1194,35 +1197,6 @@
   ;;;  General Animation Support
   ;;;======================================================================
 
-  ;;; TODO - this stuff should probably be cleaned up and put in shapes.ss
-  (provide at-origin? normalize-obj center-of center-obj-on-obj)
-
-  ;;; Return #t if this shape is located at the origin.
-  (define (at-origin? shape)
-    (assert (equals? (point 0 0) (rect-left-top (bounds shape)))))
-
-  ;;; Given: POINT or SHAPE
-  ;;; Return: The object normalized (i.e. Moved back to the origin)
-  (define (normalize-obj obj)
-    (define origin (if (point? obj) obj (shape-origin obj)))
-    (offset-by-point obj (point (- (point-x origin)) (- (point-y origin)))))
-
-  ;;; Given: POINT or SHAPE
-  ;;; Return: the center-point of the object passed in
-  (define (center-of obj)
-    (if (point? obj) 
-        obj
-        (rect-center (bounds obj))))
-
-  ;;; Given: SHAPE a, SHAPE b
-  ;;; Centers 'a' relative to the center of 'b'.
-  (define (center-obj-on-obj moving-obj base-obj)
-    (define new-bounds (move-rect-center-to (bounds moving-obj) 
-                                            (center-of base-obj)))
-    (define offset (point-difference (rect-left-top new-bounds)
-                                     (rect-left-top (bounds moving-obj))))
-    (offset-by-point moving-obj offset))
-
   ;;; Helpful functions for listing the frames of an animation.
   (provide range strings zero-pad)
 
@@ -1363,7 +1337,7 @@
   (define (transform elem new-rect)
     (simultaneously 
       (slide elem (shape-origin new-rect))
-      (reshape elem (normalize-obj new-rect))))
+      (reshape elem (move-shape-left-top-to new-rect (point 0 0)))))
 
   ;;; Create a function that will invoke multiple animations simultaneously
   ;;; (when it is called).
