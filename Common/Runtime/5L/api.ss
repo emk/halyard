@@ -6,6 +6,9 @@
   (require (lib "shapes.ss" "5L"))
   (provide (all-from (lib "shapes.ss" "5L")))
 
+  (require (lib "interpolate.ss" "5L"))
+  (provide (all-from (lib "interpolate.ss" "5L")))
+
 
   ;;=======================================================================
   ;;  Support Modules

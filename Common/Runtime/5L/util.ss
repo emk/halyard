@@ -86,7 +86,7 @@
 
   (provide foreach while member? value->string cat symcat keyword-name
            hash-table-has-key?
-           label with-errors-blocked with-values)
+           label with-errors-blocked with-values curry)
 
   ;;; Run a body once for each item in a list.
   ;;;
@@ -230,4 +230,11 @@
        (call-with-values (lambda () expr) (lambda values body ...))]))
   (define-syntax-indent with-values 1)
   
+  ;;; A Dylan-style "curry", not be confused with Haskell's version.
+  ;;; Returns a new function, with the first arguments of F filled in with
+  ;;; values from ARGS1.
+  (define (curry f . args1)
+    (lambda args2
+      (apply f (append args1 args2))))
+
   )

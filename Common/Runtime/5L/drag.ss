@@ -1,4 +1,6 @@
 (module drag (lib "5l.ss" "5L")
+  (require (lib "animate.ss" "5L"))
+
   (provide %simple-draggable-object% %draggable-object% %drag-target% 
            point-in-element?)
   

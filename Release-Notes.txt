@@ -16,6 +16,15 @@ SVN - emk, brian
   * Added ON PROP-CHANGE handlers for %RECTANGLE%.
   * Cleaned up newly-added shape-manipulation functions.  Still more
     cleanup and refactoring of animation features will be needed.
+  * Modified %BASIC-BUTTON% to suppress immediate redraws on MOUSE-ENTER
+    and MOUSE-LEAVE events.  This fixes a number of problems with premature
+    screen updates.
+  * Added ELEM-MAP and ELEM-MAP-2, which allow mapping over our built-in
+    "collection" types. ELEM-MAP, in particular, is equivalent to Haskell's
+    FMAP.
+  * Added a Dylan-style CURRY function (not to be confused with Haskell's
+    CURRY function).
+  * Moved animator code to animate.ss.
 
 0.3.5 - 21 March 2007 - emk, brian
 
