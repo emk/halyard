@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, brian
+0.3.6 - 17 Apr 2007 - emk, brian
 
   * Moved drag.ss and q-and-a.ss into Runtime/5L directory.
   * Added ON PROP-CHANGE handlers for %TEXT%.
