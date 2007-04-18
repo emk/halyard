@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, brian
+0.3.7 - 18 Apr 2007 - emk, brian
 
   * Renamed STRINGS -> PREFIX-AND-SUFFIX, PLAY -> PLAY-SPRITE and
     TRANSFORM -> SLIDE-AND-RESHAPE.
