@@ -7,7 +7,7 @@
   ;;  change.
 
   ;; Helpful functions for listing the frames of an animation.
-  (provide range strings zero-pad)
+  (provide range prefix-and-suffix zero-pad)
 
   ;; Return a list of numbers from START to END, inclusive, increasing by
   ;; STEP.
@@ -19,7 +19,7 @@
         (else (cons start (range-internal (+ start step))))))
     (range-internal start))
 
-  (define (strings prefix lst suffix)
+  (define (prefix-and-suffix prefix lst suffix)
     (map (fn (x) (cat prefix x suffix))
          lst))
 
@@ -33,12 +33,12 @@
   ;;;======================================================================
   ;;;  TODO - Some API details, especially names, may change slightly.
 
-  (provide slide reshape transform play
-           simultaneously after animate interpolate ease-in ease-out
-           ease-in/out do-nothing)
+  (provide ease-in ease-out ease-in/out
+           interpolate play-sprite slide reshape slide-and-reshape
+           simultaneously do-nothing after animate)
 
-  ;;; Given x(0), x(1), dx/dt(0), and dx/dt(1), fit a cubic polynomial to
-  ;;; those four constraints and evaluate it.
+  ;; Given x(0), x(1), dx/dt(0), and dx/dt(1), fit a cubic polynomial to
+  ;; those four constraints and evaluate it.
   (define (eval-cubic-1d-spline x0 x1 dx/dt0 dx/dt1 t)
     ;; The equation for this spline was determined using the following
     ;; commands in Maxima, a GPL'd version of MacSyma.  (Below, xp(t) is
@@ -60,16 +60,23 @@
           [d x0]]
       (+ (* a (expt t 3)) (* b (expt t 2)) (* c t) d)))
 
-  (define (ease-fn x0 x1 dx/dt0 dx/dt1)
-    (fn (anim-thunk)
-      (callback
-        (define draw-func (anim-thunk))
-        (fn (fraction)
-          (draw-func (eval-cubic-1d-spline x0 x1 dx/dt0 dx/dt1 fraction))))))
+  (define (ease-anim anim x0 x1 dx/dt0 dx/dt1)
+    (callback
+      (define draw-func (anim))
+      (fn (fraction)
+        (draw-func (eval-cubic-1d-spline x0 x1 dx/dt0 dx/dt1 fraction)))))
 
-  (define ease-in (ease-fn 0 1 0 1))
-  (define ease-out (ease-fn 0 1 1 0))
-  (define ease-in/out (ease-fn 0 1 0 0))
+  ;;; Begin ANIM gradually.
+  (define (ease-in anim) (ease-anim anim 0 1 0 1))
+  (define-syntax-indent ease-in 0)
+
+  ;;; End ANIM gradually.
+  (define (ease-out anim) (ease-anim anim 0 1 1 0))
+  (define-syntax-indent ease-out 0)
+
+  ;;; Begin and end ANIM gradually.
+  (define (ease-in/out anim) (ease-anim anim 0 1 0 0))
+  (define-syntax-indent ease-in/out 0)
 
   ;;; Creates an animator that interpolates a given expression (which can 
   ;;; be read and SET!) from its initial value.
@@ -89,6 +96,11 @@
            (fn (fraction)
              (set! var (interpolate-value fraction start end)))))]))
   
+  ;;; Returns an animator that plays through the frames of a %SPRITE%.
+  (define (play-sprite sprite &key (reverse? #f))
+    (interpolate (prop sprite frame) 
+                 (if reverse? 0 (- (length (prop sprite frames)) 1))))
+
   ;;; This function creates a simple DRAW-FUNC for use with ANIMATE.  The
   ;;; resulting function moves OBJs from the point FROM to the point TO
   ;;; over the duration of the animation.
@@ -100,14 +112,9 @@
   (define (reshape elem final-rect)
     (interpolate (prop elem shape) final-rect))
 
-  ;;; Returns an animator that plays through the frames of a %SPRITE%.
-  (define (play sprite &key (reverse? #f))
-    (interpolate (prop sprite frame) 
-                 (if reverse? 0 (- (length (prop sprite frames)) 1))))
-
   ;;; Return an animator that changes the rect for an element to a given rect 
   ;;; (both shape and position).
-  (define (transform elem new-rect)
+  (define (slide-and-reshape elem new-rect)
     (simultaneously 
       (slide elem (shape-origin new-rect))
       (reshape elem (move-shape-left-top-to new-rect (point 0 0)))))
@@ -120,34 +127,32 @@
       (fn (fraction)
         (foreach [f draw-funcs]
           (f fraction)))))
+  (define-syntax-indent simultaneously 0)
 
+  ;;; An animation which does nothing at all.  Most useful with AFTER.
   (define (do-nothing)
     (callback
       (fn (fraction)
         #f)))
 
-  ;;; Play animations in sequence, each one starting at a given fraction.
-  (define (after &rest args)
+  ;; Internal support for AFTER macro.
+  (define (after-helper &rest args)
     ;; A whole bunch of helper functions for implementing AFTER. All
     ;; of he helper functions that don't close over the state of the
     ;; animation are defined here; the ones that do close over the
     ;; state are defined in the animation thunk.
     (define (add-zero lst)
-      (if (= (car lst) 0.0)
+      (if (= (caar lst) 0.0)
         lst
-        (append (list 0.0 (do-nothing)) lst)))
-    (define (pad-end lst)
-      (if (odd? (length lst))
-        (append lst (list (do-nothing)))
-        lst))
-    (define (split lst)
-      (let loop [[result (cons '() '())] [lst lst]]
+        (append (list (cons 0.0 (do-nothing))) lst)))
+    (define (split lst) ; [(a,b)] -> ([a],[b])
+      (let loop [[times '()] [anims '()] [lst lst]]
         (cond
-         [(null? lst) (cons (reverse (car result)) (reverse (cdr result)))]
-         [(null? (cdr lst)) (error (cat "Bad argument list: " args))]
-         [else (loop (cons (cons (car lst) (car result)) 
-                           (cons (cadr lst) (cdr result)))
-                     (cddr lst))])))
+         [(null? lst)
+          (cons (reverse times) (reverse anims))]
+         [else (loop (cons (caar lst) times)
+                     (cons (cdar lst) anims)
+                     (cdr lst))])))
     ;; TODO - this is confusing, comment it.
     (define (index-for-time start-times time)
       (let loop [[c 0] [times start-times]]
@@ -164,7 +169,7 @@
     (callback
       (define last-index 0)
       (define anim-fns '())
-      (define split-list (split (pad-end (add-zero args))))
+      (define split-list (split (add-zero args)))
       ;; We add an extra 1.0 to the times list to make all of the time
       ;; range calculations easier (so they can just treat this 1.0 as
       ;; the end of the range, instead of having a special case).
@@ -198,6 +203,13 @@
                    (loop (+ n 1)))))
         (set! last-index index))))
 
+  ;;; Play animations in sequence, each one starting at a given fraction.
+  (define-syntax after
+    (syntax-rules ()
+      [(_ [frac anim ...] ...)
+       (after-helper (cons frac (simultaneously anim ...)) ...)]))
+  (define-syntax-indent after 0)
+
   ;;; Call DRAW-FUNC with numbers from 0.0 to 1.0 over the course
   ;;; MILLISECONDS.
   (define (animate milliseconds &rest anim-thunks)
@@ -214,5 +226,6 @@
             (idle)
             (loop)))))
     (draw-func 1.0))
+  (define-syntax-indent animate 1)
   
   )

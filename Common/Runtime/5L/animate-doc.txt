@@ -5,10 +5,10 @@ Animation API
 -------------
 
 Tamale includes a basic animation API. You construct an animation using a
-variety of functions, such as SLIDE, RESHAPE, TRANSFORM, and PLAY, which 
-can be combined using SEQUENTIALLY and AFTER. In order to play an animation, 
-you call ANIMATE, passing in a time and an animation. ANIMATE will run the 
-given animation for a given span of time.
+variety of functions, such as SLIDE, RESHAPE, SLIDE-AND-RESHAPE, and
+PLAY-SPRITE, which can be combined using SEQUENTIALLY and AFTER. In order
+to play an animation, you call ANIMATE, passing in a time and an
+animation. ANIMATE will run the given animation for a given span of time.
 
 ### Basic Animations
 
@@ -32,18 +32,18 @@ decelerate smoothly.
 Another basic form of animation is RESHAPE. This changes an elements
 shape to a given rectangle, leaving it in the same place as it was
 before. Because this is so frequently used at the same time as moving
-it, there is a combined animation TRANSFORM that changes the shape and
+it, there is a combined animation SLIDE-AND-RESHAPE that changes the shape and
 location at the same time.
 
-    (animate 1000 (transform @outline (rect 150 200 450 300)))
+    (animate 1000 (slide-and-reshape @outline (rect 150 200 450 300)))
 
 You can also animate a sequence of images loaded from disk. In order
 to do this, you must create a SPRITE element and load the sequence of
-images into it. You can then animate it using a PLAY animation.
+images into it. You can then animate it using a PLAY-SPRITE animation.
 
     (sprite (point 250 350) (file-list "sprite-frame-" (range 100 200) ".png")
             :name 'sprite :alpha? #t)
-    (animate 1000 (play @sprite :reverse? #t))
+    (animate 1000 (play-sprite @sprite :reverse? #t))
 
 You can animate just about any property or variable using the
 INTERPOLATE animation. This is a special syntax that takes as a first
@@ -100,11 +100,11 @@ once.
         (slide @text-1 (point 200 300))
         (slide @text-2 (point 200 350))))
 
-SIMULTANEOUSLY is used to implement the TRANSFORM command, described
+SIMULTANEOUSLY is used to implement the SLIDE-AND-RESHAPE command, described
 earlier, to combine SLIDE and RESHAPE. You can use it to create your
 own abbreviations for more complicated animations in a similar manner.
 
-    (define (transform elem final)
+    (define (slide-and-reshape elem final)
       (simultaneously
         (slide elem (rect-origin final))
         (reshape elem (normalize-obj final))))
@@ -118,8 +118,8 @@ they happen one after the other, you use the AFTER command.
 
     (animate 1000
       (after
-        0.0 (slide @foo (point 550 590))
-        0.5 (slide @bar (point 0 590))))
+        [0.0 (slide @foo (point 550 590))]
+        [0.5 (slide @bar (point 0 590)))])
 
 This says that we would like to perform two animations, one after the
 other. The first one will start at time 0.0 and stop at time
@@ -128,8 +128,7 @@ with them, and only get their running time when we actually animate
 them using ANIMATE, we use numbers between 0.0 and 1.0 to represent
 where we are in the animation, where 0.0 is the beginning and 1.0 is
 the end. After each number, we list the animation that will run
-between that time and the time listed next. We can combine this with
-SIMULTANEOUSLY for a variety of effects, and we can manipulate the
+between that time and the time listed next. We can manipulate the
 times to allow certain portions of the animation to run faster or
 slower.
 
@@ -139,10 +138,9 @@ the lower right of the screen while turning it red, and then the next
 
     (animate 1000
       (after 
-        0.0 (simultaneously
-              (slide @foo (point 500 590))
-              (interpolate (prop foo @color) $color-red))
-        0.3 (slide @foo (point 0 60))))
+        [0.0 (slide @foo (point 500 590))
+             (interpolate (prop foo @color) $color-red)]
+        [0.3 (slide @foo (point 0 60))]))
 
 This example will fly a sprite around the screen along a rectangular
 path while playing its given graphic sequence. The sprite will not
@@ -152,12 +150,12 @@ time on each segment of the path, while the paths differ in length.
     (sprite (point 100 100) (file-list "sprite-frame-" (range 100 200) ".png")
             :name 'sprite :alpha? #t)
     (animate 1000 
-      (play @sprite)
+      (play-sprite @sprite)
       (after
-        0.0 (slide @sprite (point 600 100))
-        0.25 (slide @sprite (point 600 400))
-        0.5 (slide @sprite (point 100 400))
-        0.75 (slide @sprite (point 100 100))))
+        [0.0  (slide @sprite (point 600 100))]
+        [0.25 (slide @sprite (point 600 400))]
+        [0.5  (slide @sprite (point 100 400))]
+        [0.75 (slide @sprite (point 100 100))]))
 
 Within a call to AFTER, if you have two animations listed at the same
 time, the first one will happen instantaneously and the second one
@@ -168,9 +166,9 @@ the third point.
 
     (animate 1000
       (after
-        0.0 (slide @foo (point 200 60))
-        0.5 (slide @foo (point 400 60))
-        0.5 (slide @foo (point 400 550))))
+        [0.0 (slide @foo (point 200 60))]
+        [0.5 (slide @foo (point 400 60))]
+        [0.5 (slide @foo (point 400 550))]))
 
 If you would like to end an animation before the entire animation ends,
 or would like to pause in between two parts of an animation, you can
@@ -181,10 +179,10 @@ end with a time and no following animation.
     (animate 5000
       (slide @sprite (point 60 250))
       (after
-        0.2 (play @sprite)
-        0.4 (do-nothing)
-        0.6 (play @sprite :reverse? #t)
-        0.8))
+        [0.2 (play-sprite @sprite)]
+        [0.4 (do-nothing)]
+        [0.6 (play-sprite @sprite :reverse? #t)]
+        [0.8]))
 
 During an animation sequence, you may want to do some sort of one-time
 effect, such as showing or hiding an element, changing some text, or
@@ -197,10 +195,10 @@ which you want to change something part way through.
 
     (animate 1000
       (after
-        0.0 (slide @slider (point 300 500))
-        0.5 (once (hide @blinker))
-        0.5 (slide @slider (point 500 300))
-        1.0 (once (show @blinker))))
+        [0.0 (slide @slider (point 300 500))]
+        [0.5 (once (hide @blinker))]
+        [0.5 (slide @slider (point 500 300))]
+        [1.0 (once (show @blinker))]))
 
 ### Hints And Tips
 
@@ -250,8 +248,8 @@ wouldn't really make sense, so this isn't something that could be
 fixed, just something to watch out for.
 
     (after 
-      0.0 (slide @foo (point 100 200))
-      0.5 (slide @bar (prop @foo at)))
+      [0.0 (slide @foo (point 100 200))]
+      [0.5 (slide @bar (prop @foo at))])
 
 We do not currently have the ability to move an object at constant
 speed over a complex path, without tweaking AFTER values by hand. For
@@ -316,7 +314,7 @@ create the animation you want by combining existing animations. You
 can create a function that takes parameters and returns an animation
 based on those parameters. There are a few examples in the built in
 set of primitives (which actually aren't primitive, but are
-constructed from other primitives), such as SLIDE, RESHAPE, TRANSFORM,
+constructed from other primitives), such as SLIDE, RESHAPE, SLIDE-AND-RESHAPE,
 INITIALLY and FINALLY. For a more complicated example, imagine you
 wanted to shuffle the positions of a set of elements, so each one went
 to the position the next one used to be in.
@@ -327,7 +325,7 @@ to the position the next one used to be in.
     (define (shuffle &rest elems)
       (apply simultaneously 
              (map (fn (a b) (slide a (prop b at)))
-                  (rotate elems))))
+                  (rotate elems)))) ; XXX - Buggy.
     
     (animate 1000 
       (shuffle @foo @bar @baz @quux @zot))

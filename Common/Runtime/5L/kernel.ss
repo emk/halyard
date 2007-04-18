@@ -328,7 +328,10 @@
         ;; can just pass #t in, and let the PLT maintainers sort out the bug. 
         (let [[val (namespace-variable-value sym #t)]]
           (cond
-           [(function? val) 'function]
+           [(function? val)
+            (if (treat-as-syntax? sym)
+              'syntax
+              'function)]
            [#t 'variable]))))
     (define (sym->record sym)
       (list sym (sym->type sym) (syntax-indent sym)))

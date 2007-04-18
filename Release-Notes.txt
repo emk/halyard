@@ -1,5 +1,17 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk, brian
+
+  * Renamed STRINGS -> PREFIX-AND-SUFFIX, PLAY -> PLAY-SPRITE and
+    TRANSFORM -> SLIDE-AND-RESHAPE.
+  * Turned AFTER into a macro and added some braces to the syntax.
+  * Added support for highlighting and indenting functions as though
+    they were syntax, using DEFINE-SYNTAX-INDENT.  This may slightly
+    slow down opening files in the editor; please report any serious
+    degradations in performance.
+  * Improved syntax-highlighting and indentation of animations in both
+    the integrated editor and in Emacs.
+
 0.3.6 - 17 Apr 2007 - emk, brian
 
   * Moved drag.ss and q-and-a.ss into Runtime/5L directory.

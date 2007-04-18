@@ -1,6 +1,6 @@
 (module indent (lib "lispish.ss" "5L")
   
-  (provide define-syntax-indent syntax-indent)
+  (provide define-syntax-indent syntax-indent treat-as-syntax?)
 
   (define *indent-table* (make-hash-table))
 
@@ -13,7 +13,11 @@
 
   (define (syntax-indent name)
     (hash-table-get *indent-table* name (lambda () 0)))
-  
+
+  (define (treat-as-syntax? name)
+    (and (hash-table-get *indent-table* name (lambda () #f))
+         #t))
+
   ;; Scheme R5RS.
   (define-syntax-indent quote function)
   (define-syntax-indent lambda 1)
