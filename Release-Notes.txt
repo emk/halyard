@@ -7,6 +7,7 @@ SVN - emk, brian
     their current values, so that QUANTIZE actually results in a
     performance improvement in typical cases.
   * Fixed divide-by-zero bug in AFTER.
+  * Fixed bug which caused file load counts in data.tam to drift by 1.
 
 0.3.7 - 18 Apr 2007 - emk, brian
 

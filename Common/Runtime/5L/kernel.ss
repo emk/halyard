@@ -3,6 +3,11 @@
   ;; Import %call-5l-prim from the engine.
   (require #%fivel-engine)
 
+  ;; XXX - This gets automatically loaded sometimes, but not always.  In an
+  ;; effort to keep our progress bar's "files to load" count correct, we
+  ;; always load this whether or not it is needed.
+  (require (lib "cm-ctime.ss" "mzlib" "private"))
+
   ;; Get begin/var, and re-export it.
   (require (lib "begin-var.ss" "5L"))
   (provide begin/var)

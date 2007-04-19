@@ -116,6 +116,7 @@
                                   (debug-log (exn-message x))
                                   (environment-error error-string))]]
         (heartbeat)
+        ;;(debug-log (string-append "Loading: " (path->string file-path)))
         (let [[result (compile-zo file-path expected-module-name)]]
           (heartbeat)
           (update-splash-screen!)
