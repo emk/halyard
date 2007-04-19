@@ -1,5 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk, brian
+
+  * Implemented IMMEDIATELY, FINALLY and QUANTIZE for improving animation
+    performance.  Also tweaked INTERPOLATE to avoid setting properties to
+    their current values, so that QUANTIZE actually results in a
+    performance improvement in typical cases.
+  * Fixed divide-by-zero bug in AFTER.
+
 0.3.7 - 18 Apr 2007 - emk, brian
 
   * Renamed STRINGS -> PREFIX-AND-SUFFIX, PLAY -> PLAY-SPRITE and

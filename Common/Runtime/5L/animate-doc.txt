@@ -297,7 +297,9 @@ animations, and for making complex animations perform better.
   that animation to only occur at the first or last frame, and so not
   add to the overhead of the entire animation. This can make it easy
   to enable or disable certain parts of an animation while still
-  having it end up in the same state.
+  having it end up in the same state.  Alternatively, you can increase
+  the performance of an animation with a slow sub-animation by applying
+  QUANTIZE to the sub-animation.
 
 * Make sure that any of your elements that don't need to be overlays
   (that is, they are invisible) are not overlays. By default,
@@ -325,7 +327,8 @@ to the position the next one used to be in.
     (define (shuffle &rest elems)
       (apply simultaneously 
              (map (fn (a b) (slide a (prop b at)))
-                  (rotate elems)))) ; XXX - Buggy.
+                  elems
+                  (rotate elems))))
     
     (animate 1000 
       (shuffle @foo @bar @baz @quux @zot))
@@ -351,8 +354,8 @@ the slides, which would mean the element would snap back to its
 starting location and then slide from there on the second slide.
 
     (after
-      0.0 (slide @foo (point 100 200))
-      0.5 (slide @foo (point 200 300)))
+      [0.0 (slide @foo (point 100 200))]
+      [0.5 (slide @foo (point 200 300))])
 
 Instead of the simple version, we represent an animation as a thunk
 that returns the simple animation function described above; that is, a

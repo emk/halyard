@@ -35,7 +35,8 @@
 
   (provide ease-in ease-out ease-in/out
            interpolate play-sprite slide reshape slide-and-reshape
-           simultaneously do-nothing after animate)
+           simultaneously do-nothing after immediately finally quantize 
+           animate)
 
   ;; Given x(0), x(1), dx/dt(0), and dx/dt(1), fit a cubic polynomial to
   ;; those four constraints and evaluate it.
@@ -60,22 +61,22 @@
           [d x0]]
       (+ (* a (expt t 3)) (* b (expt t 2)) (* c t) d)))
 
-  (define (ease-anim anim x0 x1 dx/dt0 dx/dt1)
-    (callback
-      (define draw-func (anim))
+  (define (ease-anim anims x0 x1 dx/dt0 dx/dt1)
+    (fn ()
+      (define draw-func ((apply simultaneously anims)))
       (fn (fraction)
         (draw-func (eval-cubic-1d-spline x0 x1 dx/dt0 dx/dt1 fraction)))))
 
-  ;;; Begin ANIM gradually.
-  (define (ease-in anim) (ease-anim anim 0 1 0 1))
+  ;;; Begin ANIMS gradually.
+  (define (ease-in &rest anims) (ease-anim anims 0 1 0 1))
   (define-syntax-indent ease-in 0)
 
-  ;;; End ANIM gradually.
-  (define (ease-out anim) (ease-anim anim 0 1 1 0))
+  ;;; End ANIMS gradually.
+  (define (ease-out &rest anims) (ease-anim anims 0 1 1 0))
   (define-syntax-indent ease-out 0)
 
-  ;;; Begin and end ANIM gradually.
-  (define (ease-in/out anim) (ease-anim anim 0 1 0 0))
+  ;;; Begin and end ANIMS gradually.
+  (define (ease-in/out &rest anims) (ease-anim anims 0 1 0 0))
   (define-syntax-indent ease-in/out 0)
 
   ;;; Creates an animator that interpolates a given expression (which can 
@@ -86,15 +87,18 @@
   (define-syntax interpolate
     (syntax-rules ()
       [(_ var final) 
-       ;; Wrapped in a let so the samantics match that of all other
+       ;; Wrapped in a let so the semantics match that of all other
        ;; animators, which is that the FINAL value is evaluated at the
        ;; time the animator is constructed, since they are just
        ;; functions.
        (let [[end final]]
-         (callback
+         (fn ()
            (define start var)
            (fn (fraction)
-             (set! var (interpolate-value fraction start end)))))]))
+             (define old var)
+             (define new (interpolate-value fraction start end))
+             (unless (equals? new old)
+               (set! var new)))))]))
   
   ;;; Returns an animator that plays through the frames of a %SPRITE%.
   (define (play-sprite sprite &key (reverse? #f))
@@ -122,7 +126,7 @@
   ;;; Create a function that will invoke multiple animations simultaneously
   ;;; (when it is called).
   (define (simultaneously &rest anim-thunks)
-    (callback 
+    (fn ()
       (define draw-funcs (map (fn (x) (x)) anim-thunks))
       (fn (fraction)
         (foreach [f draw-funcs]
@@ -131,7 +135,7 @@
 
   ;;; An animation which does nothing at all.  Most useful with AFTER.
   (define (do-nothing)
-    (callback
+    (fn ()
       (fn (fraction)
         #f)))
 
@@ -165,8 +169,10 @@
          [else (loop (+ c 1) (cdr times))])))
     (define (scaled-time start end time)
       (assert (<= start time end))
-      (/ (- time start) (- end start)))
-    (callback
+      (if (= start end)
+          1.0
+          (/ (- time start) (- end start))))
+    (fn ()
       (define last-index 0)
       (define anim-fns '())
       (define split-list (split (add-zero args)))
@@ -210,12 +216,37 @@
        (after-helper (cons frac (simultaneously anim ...)) ...)]))
   (define-syntax-indent after 0)
 
-  ;;; Call DRAW-FUNC with numbers from 0.0 to 1.0 over the course
-  ;;; MILLISECONDS.
-  (define (animate milliseconds &rest anim-thunks)
+  ;;; Create a new animation that runs ANIMS instantly, at the beginning
+  ;;; of the animation, and does nothing for the remainder.
+  (define (immediately &rest anims)
+    (after 
+      [0.0 (apply simultaneously anims)]
+      [0.0]))
+  (define-syntax-indent immediately 0)
+
+  ;;; Create a new animation that does nothing for the entire period of 
+  ;;; the animation, and then runs ANIMS instantly at the end
+  (define (finally &rest anims)
+    (after 
+      [1.0 (apply simultaneously anims)]))
+  (define-syntax-indent finally 0)
+
+  ;;; For performance reasons, limit ANIMS to occur in approximately STEPS
+  ;;; discrete steps.
+  (define (quantize steps &rest anims)
+    (fn ()
+      (define draw-func ((apply simultaneously anims)))
+      (fn (frac)
+        (if (= frac 1.0)
+          (draw-func 1.0) ; Pass 1.0 exactly, without rounding errors.
+          (draw-func (/ (round (* steps frac)) steps))))))
+  (define-syntax-indent quantize 1)
+
+  ;;; Run ANIMS over the course of MILLISECONDS.
+  (define (animate milliseconds &rest anims)
     (define start-time (current-milliseconds))
     (define end-time (+ start-time milliseconds))
-    (define draw-func ((apply simultaneously anim-thunks)))
+    (define draw-func ((apply simultaneously anims)))
     (draw-func 0.0)
     (let loop []
       (let [[current-time (current-milliseconds)]]
