@@ -23,7 +23,7 @@ PLANNED FEATURES:
   
   (define actions '())
   
-  (define (start)
+  (define (start*)
 
     (make-directory* (PLANET-DIR))
     (make-directory* (CACHE-DIR))
@@ -265,4 +265,4 @@ PLANNED FEATURES:
                    (lambda (e) 
                      (fprintf (current-error-port) "~a\n" (exn-message e))
                      (exit 1))])
-    (start)))
+    (start*)))

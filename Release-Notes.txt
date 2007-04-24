@@ -8,6 +8,8 @@ SVN - emk, brian
     performance improvement in typical cases.
   * Fixed divide-by-zero bug in AFTER.
   * Fixed bug which caused file load counts in data.tam to drift by 1.
+  * Renamed START in Common/planet/planet.ss to START* to avoid
+    conflict on M-. on start card.
 
 0.3.7 - 18 Apr 2007 - emk, brian
 
