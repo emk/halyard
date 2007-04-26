@@ -65,7 +65,7 @@ CursorManager::~CursorManager()
 	// Do nothing.
 }
 
-wxCursor CursorManager::FindCursor(const std::string inName)
+CursorPtr CursorManager::FindCursor(const std::string inName)
 {
 	CursorMap::iterator found = mCursors.find(inName);
 	if (found != mCursors.end())
@@ -73,7 +73,7 @@ wxCursor CursorManager::FindCursor(const std::string inName)
 	else
 	{
 		gLog.Error("Cursor not registered: %s", inName.c_str());
-		return wxCursor(wxCURSOR_HAND);
+		return Cursor::System(wxCURSOR_HAND);
 	}
 }
 
@@ -89,7 +89,7 @@ void CursorManager::RegisterCursor(const std::string inName,
 	}
 	
 	// Insert the new cursor.
-	mCursors.insert(CursorMap::value_type(inName, inCursor));
+	mCursors.insert(CursorMap::value_type(inName, Cursor::System(inCursor)));
 }
  
 void CursorManager::RegisterImageCursor(const std::string inName,

@@ -39,6 +39,11 @@ class CursorManager;
 class TransitionManager;
 class DrawingArea;
 
+BEGIN_NAMESPACE_FIVEL
+class Cursor;
+typedef shared_ptr<Cursor> CursorPtr;
+END_NAMESPACE_FIVEL
+
 /// The window where all actual script output and interaction occurs.
 class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 {
@@ -137,7 +142,11 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     /// The cursor that we're (nominally) displaying for the stage right
     /// now, if we're actually displaying a cursor.
     ///
-    wxCursor mCurrentCursor;
+    FIVEL_NS CursorPtr mDesiredCursor;
+
+    //////////
+    /// The cursor we're *actually* displaying right now.
+    FIVEL_NS CursorPtr mActualCursor;
 
 	//////////
 	/// Our currently active elements.
@@ -267,10 +276,10 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	void LeaveElement(ElementPtr inElement, wxPoint &inPosition);
 
     //////////
-    /// Actually update the current cursor to match mCurrentCursor
+    /// Actually update the current cursor to match mDesiredCursor
     /// and the result of ShouldShowCursor().  You generally want to
     /// call UpdateCurrentElementAndCursor instead, which will actually
-    /// detect when mCurrentCursor need to be changed.
+    /// detect when mDesiredCursor needs to be changed.
     ///
     void UpdateDisplayedCursor();
 

@@ -41,7 +41,7 @@ class wxAccessible;
 /// event-handling system we're using.
 ///
 class LightweightElement : public Element {
-    wxCursor mCursor;
+    std::string mCursorName;
     bool mIsShown;
     bool mWantsCursor;
     bool mIsInDragLayer;
@@ -49,7 +49,8 @@ class LightweightElement : public Element {
 	
 public:
 	LightweightElement(Stage *inStage, const wxString &inName,
-					   FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor);
+					   FIVEL_NS TCallbackPtr inDispatch,
+                       const std::string &inCursorName);
 
 	virtual bool IsShown() { return mIsShown; }
 	virtual void Show(bool inShow);
@@ -58,8 +59,9 @@ public:
     void SetWantsCursor(bool wantsCursor) { mWantsCursor = wantsCursor; }
 	virtual bool IsLightWeight() { return true; }
 
-	virtual wxCursor GetCursor() { return mCursor; }
-	virtual void SetCursor(wxCursor &inCursor) { mCursor = inCursor; }
+	virtual std::string GetCursorName() { return mCursorName; }
+	virtual void SetCursorName(const std::string &inCursorName)
+        { mCursorName = inCursorName; }
 
     virtual bool IsInDragLayer() const;
     virtual void SetInDragLayer(bool inDragLayer);

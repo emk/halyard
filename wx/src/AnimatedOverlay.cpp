@@ -35,11 +35,12 @@ USING_NAMESPACE_FIVEL
 AnimatedOverlay::AnimatedOverlay(Stage *inStage, const wxString &inName,
 								 const wxRect &inBounds, 
 								 FIVEL_NS TCallbackPtr inDispatch,
-								 wxCursor &inCursor,
+								 const std::string &inCursorName,
                                  bool inHasAlpha,
-                                 std::string &inStatePath, 
+                                 const std::string &inStatePath, 
 								 TValueList graphics)
-     : Overlay(inStage, inName, inBounds, inDispatch, inCursor, inHasAlpha),
+     : Overlay(inStage, inName, inBounds, inDispatch, inCursorName,
+               inHasAlpha),
        mBasePosition(inBounds.GetPosition()), mCurrentOffset(0, 0),
        mStatePath(inStatePath)
 {

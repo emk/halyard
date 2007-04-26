@@ -23,10 +23,12 @@
 #if !defined (CursorManager_H)
 #define CursorManager_H
 
+#include "Cursor.h"
+
 /// Centralized manager class for cursor resources.
 class CursorManager
 {
-    typedef std::map<std::string,wxCursor> CursorMap;
+    typedef std::map<std::string,FIVEL_NS CursorPtr> CursorMap;
 
     CursorMap mCursors;
 
@@ -34,7 +36,7 @@ public:
     CursorManager();
     virtual ~CursorManager();
 
-    wxCursor FindCursor(const std::string inName);
+    FIVEL_NS CursorPtr FindCursor(const std::string inName);
 
     void RegisterCursor(const std::string inName, wxCursor &inCursor);
     void RegisterImageCursor(const std::string inName,

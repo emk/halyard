@@ -34,9 +34,9 @@ USING_NAMESPACE_FIVEL
 
 LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
 									   FIVEL_NS TCallbackPtr inDispatch,
-									   wxCursor &inCursor)
-    : Element(inStage, inName, inDispatch), mCursor(inCursor), mIsShown(true),
-      mWantsCursor(false), mIsInDragLayer(false)
+                                       const std::string &inCursorName)
+    : Element(inStage, inName, inDispatch), mCursorName(inCursorName),
+      mIsShown(true), mWantsCursor(false), mIsInDragLayer(false)
 {
 	mAccessible = shared_ptr<wxAccessible>(new LightweightAccessible(this));
 }

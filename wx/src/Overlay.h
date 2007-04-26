@@ -37,7 +37,7 @@ class Overlay : public LightweightElement
 	
 public:
 	Overlay(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-			FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor,
+			FIVEL_NS TCallbackPtr inDispatch, const std::string &inCursorName,
 			bool inHasAlpha, bool inAreTransparentAreasClickable = false);
 
     virtual void Show(bool inShow);

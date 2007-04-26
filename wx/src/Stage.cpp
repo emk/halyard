@@ -446,13 +446,15 @@ void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 	if (!mGrabbedElement && (!obj || obj != mCurrentElement))
 	{
 		if (mIsDisplayingXy)
-			mCurrentCursor = *wxCROSS_CURSOR;
+			mDesiredCursor = Cursor::System(*wxCROSS_CURSOR);
 		else
 		{
-			if (obj)
-				mCurrentCursor = obj->GetCursor();
-			else
-				mCurrentCursor = wxNullCursor;
+			if (obj) {
+                std::string name = obj->GetCursorName();
+				mDesiredCursor = mCursorManager->FindCursor(name);
+            } else {
+				mDesiredCursor = Cursor::System(wxNullCursor);
+            }
 		}
 	}
 
@@ -477,11 +479,16 @@ void Stage::UpdateCurrentElementAndCursor()
 }
 
 void Stage::UpdateDisplayedCursor() {
-    wxCursor desired_cursor(mCurrentCursor);
+    CursorPtr cursor(mDesiredCursor);
     if (!ShouldShowCursor())
-        desired_cursor = wxCursor(wxCURSOR_BLANK);
-    if (GetCursor() != desired_cursor)
-        SetCursor(desired_cursor);
+        cursor = Cursor::System(wxCURSOR_BLANK);
+    if (mActualCursor != cursor) {
+        if (cursor == CursorPtr())
+            SetCursor(wxNullCursor);
+        else
+            cursor->SetStageCursor();
+        mActualCursor = cursor;
+    }
 }
 
 void Stage::UpdateClock() {
@@ -1029,6 +1036,9 @@ void Stage::DestroyElement(ElementPtr inElement)
     MediaElementPtr as_media(inElement, dynamic_cast_tag());
 	if (as_media && as_media == mWaitElement)
 		EndWait();
+    // TODO - Handle case where inElement is current cursor.  This should
+    // be the only element-based cursor which is referred to outside of the
+    // CursorManager.
 
 	// We don't have to destroy the object explicity, because the
 	// ElementPtr smart-pointer class will take care of that for us.

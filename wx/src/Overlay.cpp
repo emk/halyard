@@ -30,9 +30,9 @@ USING_NAMESPACE_FIVEL
 
 Overlay::Overlay(Stage *inStage, const wxString &inName,
                  const wxRect &inBounds, FIVEL_NS TCallbackPtr inDispatch,
-                 wxCursor &inCursor, bool inHasAlpha,
+                 const std::string &inCursorName, bool inHasAlpha,
                  bool inAreTransparentAreasClickable)
-    : LightweightElement(inStage, inName, inDispatch, inCursor),
+    : LightweightElement(inStage, inName, inDispatch, inCursorName),
       mDrawingArea(inStage, inBounds, inHasAlpha),
       mAreTransparentAreasClickable(inAreTransparentAreasClickable)
 {

@@ -268,6 +268,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\Cursor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CursorManager.cpp"
 				>
 			</File>
@@ -649,6 +653,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CommonWxConv.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\Cursor.h"
 				>
 			</File>
 			<File

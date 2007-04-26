@@ -28,8 +28,8 @@
 USING_NAMESPACE_FIVEL
 
 Zone::Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
-		   FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor)
-    : LightweightElement(inStage, inName, inDispatch, inCursor),
+		   FIVEL_NS TCallbackPtr inDispatch, const std::string &inCursorName)
+    : LightweightElement(inStage, inName, inDispatch, inCursorName),
 	  mPolygon(inPoly)
 {
 }

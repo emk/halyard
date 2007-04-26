@@ -10,6 +10,11 @@ SVN - emk, brian
   * Fixed bug which caused file load counts in data.tam to drift by 1.
   * Renamed START in Common/planet/planet.ss to START* to avoid
     conflict on M-. on start card.
+  * First part of support for element-based cursors:
+    - Created an abstract Cursor class to wrap cursors.
+    - Modified elements to refer to cursors by name, not by keeping
+      copies of the objects.
+    - Modified Stage to deal with new cursor interface.
 
 0.3.7 - 18 Apr 2007 - emk, brian
 

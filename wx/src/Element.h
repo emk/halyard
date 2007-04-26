@@ -135,9 +135,11 @@ public:
     virtual void MoveTo(const wxPoint &inPoint);
 	
 	//////////
-	/// Get an appropriate cursor for this object.
+	/// Get an appropriate cursor for this object.  We use the cursor name,
+    /// not the actual Cursor, so that we don't hold onto an illegal
+    /// CursorPtr reference.  See the Cursor documentation for details.
 	///
-	virtual wxCursor GetCursor() { return wxCursor(wxCURSOR_HAND); }
+	virtual std::string GetCursorName() { return "hand"; }
 
 	/////////
 	/// Draw the element to the specified DC

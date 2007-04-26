@@ -37,7 +37,7 @@ class Zone : public LightweightElement
 public:
 	Zone(Stage *inStage, const wxString &inName,
          const FIVEL_NS TPolygon &inPoly,
-		 FIVEL_NS TCallbackPtr inDispatch, wxCursor &inCursor);
+		 FIVEL_NS TCallbackPtr inDispatch, const std::string &inCursorName);
 
 	virtual bool IsPointInElement(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);

@@ -105,6 +105,9 @@ void DrawingArea::InitializeQuake2Overlay()
 void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
                                  bool inHasPixmapChanged)
 {
+    // TODO - We can probably get away with less invalidation if this
+    // DrawingArea isn't shown, but keep a careful eye on the Quake
+    // overlays.
 	wxRect r(inRect);
 	r.Inflate(inInflate);
     r.Intersect(wxRect(wxPoint(0, 0),

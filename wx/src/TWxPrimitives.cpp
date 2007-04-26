@@ -823,8 +823,7 @@ DEFINE_5L_PRIMITIVE(Overlay) {
            >> are_trans_areas_clickable;
     Stage *stage = wxGetApp().GetStage();
 	R(new Overlay(stage, name.c_str(), TToWxRect(bounds), dispatcher,
-                  stage->GetCursorManager()->FindCursor(cursor),
-                  is_trans, are_trans_areas_clickable));
+                  cursor, is_trans, are_trans_areas_clickable));
 }
 
 DEFINE_5L_PRIMITIVE(OverlaySetShape) {
@@ -847,8 +846,7 @@ DEFINE_5L_PRIMITIVE(OverlayAnimated) {
            >> is_trans >> SymbolName(state_path) >> graphics;
     Stage *stage = wxGetApp().GetStage();
 	R(new AnimatedOverlay(stage, name.c_str(), TToWxRect(bounds), dispatcher, 
-                          stage->GetCursorManager()->FindCursor(cursor),
-                          is_trans, state_path, TValueList(graphics)));
+                          cursor, is_trans, state_path, TValueList(graphics)));
 }
 
 DEFINE_5L_PRIMITIVE(Screenshot) {
@@ -901,7 +899,7 @@ DEFINE_5L_PRIMITIVE(SetZoneCursor) {
 
 	FIND_ELEMENT(LightweightElement, elem, name.c_str());
 	CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
-	elem->SetCursor(manager->FindCursor(cursor));
+	elem->SetCursorName(cursor);
 }
 
 DEFINE_5L_PRIMITIVE(TamaleExit) {
@@ -969,8 +967,7 @@ DEFINE_5L_PRIMITIVE(Zone) {
 	TCallbackPtr dispatcher;
 	
 	inArgs >> SymbolName(name) >> poly >> dispatcher >> cursor;
-	R(new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher,
-               wxGetApp().GetStage()->GetCursorManager()->FindCursor(cursor)));
+	R(new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher, cursor));
 }
 
 DEFINE_5L_PRIMITIVE(ZoneSetShape) {

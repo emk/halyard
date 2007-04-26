@@ -44,9 +44,9 @@ public:
 	AnimatedOverlay(Stage *inStage, const wxString &inName, 
                     const wxRect &inBounds, 
                     FIVEL_NS TCallbackPtr inDispatch,
-                    wxCursor &inCursor,
+                    const std::string &inCursorName,
                     bool inHasAlpha,
-                    std::string &inStatePath, 
+                    const std::string &inStatePath, 
                     FIVEL_NS TValueList graphics);
 
     virtual void MoveTo(const wxPoint &inPoint);
