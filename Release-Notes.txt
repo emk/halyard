@@ -17,6 +17,10 @@ SVN - emk, brian
     - Modified Stage to deal with new cursor interface.
     - Added CursorElement class (a subclass of Overlay).
     - Added %CURSOR-ELEMENT% template in Scheme.
+    - Made Cursor ownership protocol explicit, and stop using smart
+      pointers to manage cursors.  The smart pointers were hiding quite a
+      few ways to lose, and it's better to get all the tricky bits out in
+      the daylight.
 
 0.3.7 - 18 Apr 2007 - emk, brian
 

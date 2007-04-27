@@ -27,10 +27,11 @@
 
 class CursorElement;
 
-/// Centralized manager class for cursor resources.
+/// Centralized manager class for cursor resources.  See the notes in
+/// Cursor.h on the ownership of Cursor pointers.
 class CursorManager
 {
-    typedef std::map<std::string,FIVEL_NS CursorPtr> CursorMap;
+    typedef std::map<std::string,FIVEL_NS Cursor *> CursorMap;
 
     CursorMap mCursors;
 
@@ -38,10 +39,10 @@ public:
     CursorManager();
     virtual ~CursorManager();
 
-    FIVEL_NS CursorPtr FindCursor(const std::string inName);
+    FIVEL_NS Cursor *FindCursor(const std::string inName);
 
     void RegisterCursor(const std::string &inName,
-                        FIVEL_NS CursorPtr inCursor);
+                        FIVEL_NS Cursor *inCursor);
     void RegisterCursor(const std::string &inName, wxCursor &inCursor);
     void RegisterImageCursor(const std::string &inName,
 							 const std::string &inPath,
@@ -49,9 +50,9 @@ public:
 							 int inHotSpotY = -1);
 
     void RegisterElementCursor(const std::string &inName,
-                          shared_ptr<CursorElement> inCursor);
+                               CursorElement *inCursor);
     void UnregisterElementCursor(const std::string &inName,
-                            CursorElement *inCursor);
+                                 CursorElement *inCursor);
 };
 
 #endif // CursorManager_H

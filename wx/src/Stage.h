@@ -41,7 +41,6 @@ class DrawingArea;
 
 BEGIN_NAMESPACE_FIVEL
 class Cursor;
-typedef shared_ptr<Cursor> CursorPtr;
 END_NAMESPACE_FIVEL
 
 /// The window where all actual script output and interaction occurs.
@@ -140,13 +139,16 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 
 	//////////
     /// The cursor that we're (nominally) displaying for the stage right
-    /// now, if we're actually displaying a cursor.
+    /// now, if we're actually displaying a cursor.  See the notes in
+    /// Cursor.h about cursor-pointer ownership.
     ///
-    FIVEL_NS CursorPtr mDesiredCursor;
+    FIVEL_NS Cursor *mDesiredCursor;
 
     //////////
-    /// The cursor we're *actually* displaying right now.
-    FIVEL_NS CursorPtr mActualCursor;
+    /// The cursor we're *actually* displaying right now.  See the notes in
+    /// Cursor.h about cursor-pointer ownership.
+    ///
+    FIVEL_NS Cursor *mActualCursor;
 
 	//////////
 	/// Our currently active elements.

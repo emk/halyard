@@ -395,15 +395,8 @@ DEFINE_5L_PRIMITIVE(CursorElement) {
 
     // Lots of pointer casting fun: We need an ElementPtr and a CursorPtr
     // which both point to this same object.  Watch the steps carefully...
-    shared_ptr<CursorElement> elem(
-        new CursorElement(stage, name.c_str(), TToWxRect(bounds), dispatcher,
-                          is_trans, cursor_reg_name));
-    register_elem(elem);
-    
-    // Tell the elem to register itself (passing it a copy of the smart
-    // pointer that it will need).
-    // TODO - Ick.
-    elem->Register(wxGetApp().GetStage()->GetCursorManager(), elem);
+    R(new CursorElement(stage, name.c_str(), TToWxRect(bounds), dispatcher,
+                        is_trans, cursor_reg_name));
 }
 
 DEFINE_5L_PRIMITIVE(DataPath) {

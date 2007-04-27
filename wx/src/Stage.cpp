@@ -88,7 +88,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 						 inStageSize.GetHeight(), 24),
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
-	  mNeedToWakeUp(false),
+	  mDesiredCursor(NULL), mActualCursor(NULL), mNeedToWakeUp(false),
       mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mIsBeingDestroyed(false)
@@ -449,14 +449,14 @@ void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 	if (!mGrabbedElement && (!obj || obj != mCurrentElement))
 	{
 		if (mIsDisplayingXy)
-			mDesiredCursor = Cursor::System(*wxCROSS_CURSOR);
+			mDesiredCursor = mCursorManager->FindCursor("cross");
 		else
 		{
 			if (obj) {
                 std::string name = obj->GetCursorName();
 				mDesiredCursor = mCursorManager->FindCursor(name);
             } else {
-				mDesiredCursor = Cursor::System(wxNullCursor);
+				mDesiredCursor = mCursorManager->FindCursor("arrow");
             }
 		}
 	}
@@ -481,7 +481,7 @@ void Stage::UpdateCurrentElementAndCursor() {
 }
 
 void Stage::UpdateDisplayedCursor() {
-    CursorPtr cursor(mDesiredCursor);
+    Cursor *cursor(mDesiredCursor);
     if (!ShouldShowCursor())
         cursor = mCursorManager->FindCursor("blank");
 
@@ -501,7 +501,7 @@ void Stage::UpdateDisplayedCursor() {
 void Stage::ReplaceDisplayedCursorWithDefault() {
     // TODO - Default element cursor is "hand" here, in Element.h
     // and in CursorManager.cpp.  Refactor to one place.
-    CursorPtr cursor(mCursorManager->FindCursor("hand"));
+    Cursor *cursor(mCursorManager->FindCursor("hand"));
     mDesiredCursor = cursor;
 
     // Calling ShouldShowCursor will crash if our Stage is being destoyed.
@@ -1074,10 +1074,11 @@ void Stage::DestroyElement(ElementPtr inElement)
     if (as_cursor_elem) {
         as_cursor_elem->Unregister(mCursorManager);
 
-        if (as_cursor_elem == mDesiredCursor)
+        Cursor *as_cursor(static_cast<Cursor*>(as_cursor_elem.get()));
+        if (as_cursor == mDesiredCursor)
             ReplaceDisplayedCursorWithDefault();
-        ASSERT(as_cursor_elem != mDesiredCursor);
-        ASSERT(as_cursor_elem != mActualCursor);
+        ASSERT(as_cursor != mDesiredCursor);
+        ASSERT(as_cursor != mActualCursor);
     }
 
 	// We don't have to destroy the object explicity, because the

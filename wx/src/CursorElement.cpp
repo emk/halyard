@@ -35,36 +35,38 @@ CursorElement::CursorElement(Stage *inStage, const wxString &inName,
                              bool inHasAlpha,
                              const std::string &inCursorRegName)
     : Overlay(inStage, inName, inBounds, inDispatch, "blank", inHasAlpha),
-      mCursorRegName(inCursorRegName)
+      mIsRegistered(false), mCursorRegName(inCursorRegName)
 {
+    // Register this element with the CursorManager.
+    CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
+    manager->RegisterElementCursor(mCursorRegName, this);
+    mIsRegistered = true;
 }
 
 CursorElement::~CursorElement() {
-}
-
-void CursorElement::Register(CursorManager *inManager,
-                             shared_ptr<CursorElement> inSharedPtr)
-{
-    ASSERT(inSharedPtr.get() == this);
-    inManager->RegisterElementCursor(mCursorRegName, inSharedPtr);
+    ASSERT(!mIsRegistered);
 }
 
 void CursorElement::Unregister(CursorManager *inManager) {
-    // We need to do this if we ever want our destructor to be called.
+    ASSERT(mIsRegistered);
     inManager->UnregisterElementCursor(mCursorRegName, this);
+    mIsRegistered = false;
 }
 
 void CursorElement::SetStageCursor(const wxPoint &point) {
+    ASSERT(mIsRegistered);
     SetStageCursorTo(wxCursor(wxCURSOR_BLANK));
     GetEventDispatcher()->DoEventCursorMoved(point);
     GetEventDispatcher()->DoEventCursorShown();
 }
 
 void CursorElement::MoveCursor(const wxPoint &point) {
+    ASSERT(mIsRegistered);
     GetEventDispatcher()->DoEventCursorMoved(point);
 	wxGetApp().GetStage()->RefreshStage("none", 0);
 }
 
 void CursorElement::UnsetStageCursor() {
+    ASSERT(mIsRegistered);
     GetEventDispatcher()->DoEventCursorHidden();
 }

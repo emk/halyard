@@ -34,14 +34,6 @@ void Cursor::SetStageCursorTo(wxCursor &cursor) {
         wxGetApp().GetStage()->SetCursor(cursor);
 }
 
-CursorPtr Cursor::System(wxCursor inCursor) {
-    return CursorPtr(new SystemCursor(inCursor));
-}
-
-CursorPtr Cursor::System(int inCursorId) {
-    return System(wxCursor(inCursorId));
-}
-
 void SystemCursor::SetStageCursor(const wxPoint &point) {
     SetStageCursorTo(mCursor);
 }

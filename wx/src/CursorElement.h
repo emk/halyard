@@ -31,6 +31,7 @@ class CursorManager;
 /// A overlay is the simplest form of lightweight element.
 class CursorElement : public Overlay, public FIVEL_NS Cursor
 {
+    bool mIsRegistered;
     std::string mCursorRegName;
 
 public:
@@ -40,13 +41,12 @@ public:
                   const std::string &inCursorRegistrationName);
     virtual ~CursorElement();
 
-    /// Register this element with the CursorManager.
-    void Register(CursorManager *inManager,
-                  shared_ptr<CursorElement> inSharedPtr);
-
-    /// Unregister this element with the CursorManager.
+    /// Unregister this element with the CursorManager.  The CursorManager
+    /// is passed into this function, because we may not be able to get it
+    /// through the Stage API if the Stage is already being destroyed.
     void Unregister(CursorManager *inManager);
 
+    virtual bool IsOwnedByCursorManager() { return false; }
     virtual void SetStageCursor(const wxPoint &point);
     virtual void MoveCursor(const wxPoint &point);
     virtual void UnsetStageCursor();

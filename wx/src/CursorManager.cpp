@@ -63,10 +63,18 @@ CursorManager::CursorManager()
 
 CursorManager::~CursorManager()
 {
-	// Do nothing.
+    CursorMap::iterator iter = mCursors.begin();
+    for (; iter != mCursors.end(); ++iter) {
+        // All remaining cursors should be owned by us.  Delete them, but
+        // be reasonably paranoid about it.
+        Cursor *cursor = iter->second;
+        ASSERT(cursor->IsOwnedByCursorManager());
+        if (cursor->IsOwnedByCursorManager())
+            delete cursor;
+    }
 }
 
-CursorPtr CursorManager::FindCursor(const std::string inName)
+Cursor *CursorManager::FindCursor(const std::string inName)
 {
 	CursorMap::iterator found = mCursors.find(inName);
 	if (found != mCursors.end())
@@ -74,12 +82,12 @@ CursorPtr CursorManager::FindCursor(const std::string inName)
 	else
 	{
 		gLog.Error("Cursor not registered: %s", inName.c_str());
-		return Cursor::System(wxCURSOR_HAND);
+        return FindCursor("hand");
 	}
 }
 
 void CursorManager::RegisterCursor(const std::string &inName, 
-                                   CursorPtr inCursor) 
+                                   Cursor *inCursor) 
 {
 	// Delete any existing cursor with this name.
 	CursorMap::iterator found = mCursors.find(inName);
@@ -96,9 +104,9 @@ void CursorManager::RegisterCursor(const std::string &inName,
 void CursorManager::RegisterCursor(const std::string &inName,
 								   wxCursor &inCursor)
 {
-    RegisterCursor(inName, Cursor::System(inCursor));
+    RegisterCursor(inName, new SystemCursor(wxCursor(inCursor)));
 }
- 
+
 void CursorManager::RegisterImageCursor(const std::string &inName,
 										const std::string &inPath,
 										int inHotSpotX,
@@ -128,9 +136,9 @@ void CursorManager::RegisterImageCursor(const std::string &inName,
 }
 
 void CursorManager::RegisterElementCursor(const std::string &inName,
-                                          shared_ptr<CursorElement> inCursor)
+                                          CursorElement *inCursor)
 {
-	RegisterCursor(inName, boost::static_pointer_cast<Cursor>(inCursor));
+	RegisterCursor(inName, inCursor);
 }
 
 void CursorManager::UnregisterElementCursor(const std::string &inName,
@@ -138,7 +146,7 @@ void CursorManager::UnregisterElementCursor(const std::string &inName,
 {
 	CursorMap::iterator found = mCursors.find(inName);
 	if (found != mCursors.end()) {
-        if (found->second.get() != static_cast<Cursor*>(inCursor))
+        if (found->second != static_cast<Cursor*>(inCursor))
             gLog.FatalError("Trying to delete cursor <%s>, but it's not "
                             "the cursor we expected", inName.c_str());
         RegisterCursor(inName, wxCursor(wxCURSOR_HAND));
