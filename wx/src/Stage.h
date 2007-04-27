@@ -283,6 +283,13 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     ///
     void UpdateDisplayedCursor();
 
+    //////////
+    /// Called when the currently displayed cursor is being destroyed,
+    /// and needs to be replaced by something reasonable.  See also
+    /// UpdateDisplayedCursor for related code.
+    ///
+    void ReplaceDisplayedCursorWithDefault();
+
 	//////////
 	/// Figure out which element we're inside, and figure out what cursor
 	/// we should be displaying now.

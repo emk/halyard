@@ -27,6 +27,13 @@
 
 USING_NAMESPACE_FIVEL
 
+void Cursor::SetStageCursorTo(wxCursor &cursor) {
+    // If we haven't already started destroying the Stage, change the
+    // cursor.
+    if (wxGetApp().HaveStage())
+        wxGetApp().GetStage()->SetCursor(cursor);
+}
+
 CursorPtr Cursor::System(wxCursor inCursor) {
     return CursorPtr(new SystemCursor(inCursor));
 }
@@ -35,6 +42,6 @@ CursorPtr Cursor::System(int inCursorId) {
     return System(wxCursor(inCursorId));
 }
 
-void SystemCursor::SetStageCursor() {
-    wxGetApp().GetStage()->SetCursor(mCursor);
+void SystemCursor::SetStageCursor(const wxPoint &point) {
+    SetStageCursorTo(mCursor);
 }

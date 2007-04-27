@@ -572,6 +572,54 @@
   
 
   ;;;======================================================================
+  ;;;  Using elements as cursors
+  ;;;======================================================================
+
+  (provide %cursor-element%)
+  
+  ;;; An overlay element which can be used as a cursor.  The NODE-NAME of
+  ;;; this object will be used as the cursor's name.
+  (define-element-template %cursor-element%
+      [[hotspot :type <point> :label "Cursor hotspot" :default (point 0 0)]
+       [alpha? :new-default #t]]
+      (%custom-element%
+       :overlay? #t :at (point 0 0)
+       :shown? #f :%nocreate? #t
+       :wants-cursor? #f)
+
+    ;;; Called when the cursor is moved.  This will be called once before
+    ;;; CURSOR-SHOWN is called, and then repeatedly between the call the
+    ;;; CURSOR-SHOWN and the matching call to CURSOR-HIDDEN.
+    ;;;
+    ;;; There is no need for this to call REFRESH, since it's called
+    ;;; automatically by the engine whenever it is safe to do so.
+    (on cursor-moved (event)
+      (set! (prop self at)
+            (point-difference (event-position event) hotspot)))
+
+    ;;; Called when the cursor is shown on the screen.
+    (on cursor-shown (event)
+      (set! (prop self shown?) #t)
+      ;; TODO - Putting this cursor in the drag layer isn't quite
+      ;; adequate.  Ideally, we'd add a whole new layer for cursors, above
+      ;; the drag layer, but that will require adding more complexity in
+      ;; the compositing routines.
+      (set! (prop self dragging?) #t))
+
+    ;;; Called when the cursor is hidden (but not when an active cursor is
+    ;;; destroyed).
+    (on cursor-hidden (event)
+      (set! (prop self shown?) #f)
+      (set! (prop self dragging?) #f))
+
+    (call-5l-prim 'CursorElement (node-full-name self)
+                  (parent->card self
+                                (offset-rect (prop self shape) (prop self at)))
+                  (make-node-event-dispatcher self)
+                  (prop self alpha?) (node-name self)))
+
+
+  ;;;======================================================================
   ;;;  Animated Graphic Elements (deprecated)
   ;;;======================================================================
 

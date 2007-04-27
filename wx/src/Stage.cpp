@@ -48,6 +48,7 @@
 #include "EventDispatcher.h"
 #include "ImageCache.h"
 #include "CursorManager.h"
+#include "CursorElement.h"
 #include "TStateListenerManager.h"
 #include "Transition.h"
 #include "DrawingArea.h"
@@ -137,8 +138,10 @@ Stage::~Stage()
 	mIsBeingDestroyed = true;
     mTimer.Stop();
 	DeleteElements();
+
+    // Destory various resources *after* all elements.
 	delete mImageCache;
-	delete mCursorManager;
+	delete mCursorManager; 
 	delete mEventDispatcher;
 	delete mTransitionManager;
 	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
@@ -473,22 +476,42 @@ void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 	}
 }
 
-void Stage::UpdateCurrentElementAndCursor()
-{
+void Stage::UpdateCurrentElementAndCursor() {
 	UpdateCurrentElementAndCursor(ScreenToClient(::wxGetMousePosition()));
 }
 
 void Stage::UpdateDisplayedCursor() {
     CursorPtr cursor(mDesiredCursor);
     if (!ShouldShowCursor())
-        cursor = Cursor::System(wxCURSOR_BLANK);
+        cursor = mCursorManager->FindCursor("blank");
+
     if (mActualCursor != cursor) {
-        if (cursor == CursorPtr())
+        if (mActualCursor)
+            mActualCursor->UnsetStageCursor();
+
+        if (cursor) {
+            cursor->SetStageCursor(::wxGetMousePosition());
+        } else {
             SetCursor(wxNullCursor);
-        else
-            cursor->SetStageCursor();
+        }
         mActualCursor = cursor;
     }
+}
+
+void Stage::ReplaceDisplayedCursorWithDefault() {
+    // TODO - Default element cursor is "hand" here, in Element.h
+    // and in CursorManager.cpp.  Refactor to one place.
+    CursorPtr cursor(mCursorManager->FindCursor("hand"));
+    mDesiredCursor = cursor;
+
+    // Calling ShouldShowCursor will crash if our Stage is being destoyed.
+    if (!mIsBeingDestroyed && !ShouldShowCursor())
+        cursor = mCursorManager->FindCursor("blank");
+
+    // We can't call UnsetStageCursor here, because we don't want to give
+    // the user's script code the chance to call us re-entrantly.
+    cursor->SetStageCursor(::wxGetMousePosition());
+    mActualCursor = cursor;
 }
 
 void Stage::UpdateClock() {
@@ -603,6 +626,12 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
 	// Do any mouse-moved processing for our Elements.
     mShouldHideCursorUntilMouseMoved = false;
 	UpdateCurrentElementAndCursor();
+
+    // Notify our cursor of its new location.
+    if (mActualCursor)
+        mActualCursor->MoveCursor(inEvent.GetPosition());
+
+    // If we're displaying XY co-ordinates for the cursor, update them now.
     if (mIsDisplayingXy)
     {
         wxClientDC dc(this);
@@ -1036,9 +1065,20 @@ void Stage::DestroyElement(ElementPtr inElement)
     MediaElementPtr as_media(inElement, dynamic_cast_tag());
 	if (as_media && as_media == mWaitElement)
 		EndWait();
-    // TODO - Handle case where inElement is current cursor.  This should
-    // be the only element-based cursor which is referred to outside of the
-    // CursorManager.
+
+    // If the element we're deleting is a CursorElement, then we need to
+    // tell it to unregister itself, and then update the cursor we're
+    // displaying in case it has changed.  This takes care of
+    // mDesiredCursor and mActualCursor.
+    shared_ptr<CursorElement> as_cursor_elem(inElement, dynamic_cast_tag());
+    if (as_cursor_elem) {
+        as_cursor_elem->Unregister(mCursorManager);
+
+        if (as_cursor_elem == mDesiredCursor)
+            ReplaceDisplayedCursorWithDefault();
+        ASSERT(as_cursor_elem != mDesiredCursor);
+        ASSERT(as_cursor_elem != mActualCursor);
+    }
 
 	// We don't have to destroy the object explicity, because the
 	// ElementPtr smart-pointer class will take care of that for us.

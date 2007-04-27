@@ -170,6 +170,21 @@ public:
     /// Dispatch a MediaCaption event.
     ///
     bool DoEventMediaCaption(const std::string &caption);
+
+    //////////
+    /// Dispatch a CursorMoved event.
+    ///
+    bool DoEventCursorMoved(const wxPoint &point);
+
+    //////////
+    /// Dispatch a CursorShown event.
+    ///
+    bool DoEventCursorShown();
+
+    //////////
+    /// Dispatch a CursorHidden event.
+    ///
+    bool DoEventCursorHidden();
     
 private:
     static wxLongLong PlatformGetEventTimestamp(const wxEvent &event);

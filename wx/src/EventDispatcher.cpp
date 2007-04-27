@@ -323,6 +323,17 @@ bool EventDispatcher::DoEventMediaCaption(const std::string &caption) {
 	return EventCleanup();    
 }
 
+bool EventDispatcher::DoEventCursorMoved(const wxPoint &point) {
+	return DoSimpleMouseEvent("cursor-moved", point);
+}
+
+bool EventDispatcher::DoEventCursorShown() {
+    return DoSimpleEvent("cursor-shown");
+}
+
+bool EventDispatcher::DoEventCursorHidden() {
+    return DoSimpleEvent("cursor-hidden");
+}
 
 
 //=========================================================================

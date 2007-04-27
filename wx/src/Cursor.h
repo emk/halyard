@@ -39,18 +39,25 @@ typedef shared_ptr<Cursor> CursorPtr;
 ///
 /// SystemCursor objects can be created and stored anywhere.
 class Cursor : boost::noncopyable {
+protected:
+    /// Set the cursor of the stage to the specified cursor (if possible).
+    void SetStageCursorTo(wxCursor &cursor);
+
 public:
     /// Destroy a cursor object.  This is virtual so that 'delete' can find
     /// our subclass destructors.
     virtual ~Cursor() {}
 
-    /// Called to notify the cursor that the mouse has moved.  This is
-    /// called once immediately before SetCurrentCursor(), and then
-    /// repeatedly until UnsetCurrentCursor is called.
-    virtual void MouseMovedTo(const wxPoint &point) {}
-
     /// Make this cursor the current cursor.
-    virtual void SetStageCursor() = 0;
+    virtual void SetStageCursor(const wxPoint &point) = 0;
+
+    /// Called to notify the cursor that the mouse has moved.  This is
+    /// only called between calls to SetStageCursor and UnsetStageCursor.
+    ///
+    /// This function is only be called when processing OS events, so it's
+    /// possible to trigger a screen refresh without prematurely displaying
+    /// partially-created elements.
+    virtual void MoveCursor(const wxPoint &point) {}
 
     /// Called when changing from this cursor to a different one.
     virtual void UnsetStageCursor() {}
@@ -69,7 +76,7 @@ class SystemCursor : public Cursor {
 public:
     /// Create a SystemCursor from a wxCursor.
     SystemCursor(wxCursor cursor) : mCursor(cursor) {}
-    virtual void SetStageCursor();
+    virtual void SetStageCursor(const wxPoint &point);
 };
 
 END_NAMESPACE_FIVEL

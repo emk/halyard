@@ -24,6 +24,7 @@
 #include <wx/image.h>
 
 #include "CursorManager.h"
+#include "CursorElement.h" // Needed for static_cast<Cursor*> below.
 
 USING_NAMESPACE_FIVEL
 
@@ -77,8 +78,8 @@ CursorPtr CursorManager::FindCursor(const std::string inName)
 	}
 }
 
-void CursorManager::RegisterCursor(const std::string inName,
-								   wxCursor &inCursor)
+void CursorManager::RegisterCursor(const std::string &inName, 
+                                   CursorPtr inCursor) 
 {
 	// Delete any existing cursor with this name.
 	CursorMap::iterator found = mCursors.find(inName);
@@ -89,11 +90,17 @@ void CursorManager::RegisterCursor(const std::string inName,
 	}
 	
 	// Insert the new cursor.
-	mCursors.insert(CursorMap::value_type(inName, Cursor::System(inCursor)));
+	mCursors.insert(CursorMap::value_type(inName, inCursor));
+}
+
+void CursorManager::RegisterCursor(const std::string &inName,
+								   wxCursor &inCursor)
+{
+    RegisterCursor(inName, Cursor::System(inCursor));
 }
  
-void CursorManager::RegisterImageCursor(const std::string inName,
-										const std::string inPath,
+void CursorManager::RegisterImageCursor(const std::string &inName,
+										const std::string &inPath,
 										int inHotSpotX,
 										int inHotSpotY)
 {
@@ -118,4 +125,25 @@ void CursorManager::RegisterImageCursor(const std::string inName,
 	// Register the cursor.
 	wxCursor cursor(image);
 	RegisterCursor(inName, cursor);
+}
+
+void CursorManager::RegisterElementCursor(const std::string &inName,
+                                          shared_ptr<CursorElement> inCursor)
+{
+	RegisterCursor(inName, boost::static_pointer_cast<Cursor>(inCursor));
+}
+
+void CursorManager::UnregisterElementCursor(const std::string &inName,
+                                            CursorElement *inCursor) 
+{
+	CursorMap::iterator found = mCursors.find(inName);
+	if (found != mCursors.end()) {
+        if (found->second.get() != static_cast<Cursor*>(inCursor))
+            gLog.FatalError("Trying to delete cursor <%s>, but it's not "
+                            "the cursor we expected", inName.c_str());
+        RegisterCursor(inName, wxCursor(wxCURSOR_HAND));
+    } else {
+        gLog.FatalError("Trying to delete cursor <%s>, but it's not actually "
+                        "registered", inName.c_str());
+    }
 }

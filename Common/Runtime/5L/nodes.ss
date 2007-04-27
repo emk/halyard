@@ -261,6 +261,8 @@
   (defclass <media-caption-event> (<media-event>)
     (caption :accessor event-caption))
 
+  (defclass <cursor-event> (<event>))
+
   (define (veto-event! event)
     (set! (event-vetoed? event) #t))
 
@@ -312,6 +314,12 @@
                     (make <media-event>)]
                    [[media-caption]
                     (make <media-caption-event> :caption (car args))]
+                   [[cursor-moved]
+                    (make <mouse-event>
+                      :position (point (car args) (cadr args))
+                      :stale? (cadr args))]
+                   [[cursor-shown cursor-hidden]
+                    (make <cursor-event>)]
                    [else
                     (non-fatal-error (cat "Unsupported event type: " name))])]]
       (define (no-handler)

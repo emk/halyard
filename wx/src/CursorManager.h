@@ -25,6 +25,8 @@
 
 #include "Cursor.h"
 
+class CursorElement;
+
 /// Centralized manager class for cursor resources.
 class CursorManager
 {
@@ -38,11 +40,18 @@ public:
 
     FIVEL_NS CursorPtr FindCursor(const std::string inName);
 
-    void RegisterCursor(const std::string inName, wxCursor &inCursor);
-    void RegisterImageCursor(const std::string inName,
-							 const std::string inPath,
+    void RegisterCursor(const std::string &inName,
+                        FIVEL_NS CursorPtr inCursor);
+    void RegisterCursor(const std::string &inName, wxCursor &inCursor);
+    void RegisterImageCursor(const std::string &inName,
+							 const std::string &inPath,
 							 int inHotSpotX = -1,
 							 int inHotSpotY = -1);
+
+    void RegisterElementCursor(const std::string &inName,
+                          shared_ptr<CursorElement> inCursor);
+    void UnregisterElementCursor(const std::string &inName,
+                            CursorElement *inCursor);
 };
 
 #endif // CursorManager_H

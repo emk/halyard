@@ -46,6 +46,7 @@
 #include "EventDispatcher.h"
 #include "ImageCache.h"
 #include "CursorManager.h"
+#include "CursorElement.h"
 #include "AudioStream.h"
 #include "GeigerAudioStream.h"
 #include "VorbisAudioStream.h"
@@ -92,6 +93,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(CancelDownload);
 	REGISTER_5L_PRIMITIVE(ColorAt);
 	REGISTER_5L_PRIMITIVE(CopyStringToClipboard);
+    REGISTER_5L_PRIMITIVE(CursorElement);
 	REGISTER_5L_PRIMITIVE(DataPath);
 	REGISTER_5L_PRIMITIVE(DcPop);
 	REGISTER_5L_PRIMITIVE(DcPush);
@@ -182,8 +184,15 @@ static DrawingArea *GetCurrentDrawingArea() {
 // in Element::Element because it's dangerous to create smart-pointers to
 // objects which are not yet fully created.
 template <typename E>
+static void register_elem(shared_ptr<E> elem_ptr) {
+    Stage *stage = wxGetApp().GetStage();
+    stage->AddElement(boost::static_pointer_cast<Element>(elem_ptr));
+}
+
+// A wrapper around register_elem which creates the necessary shared_ptr.
+template <typename E>
 static E *R(E *elem) {
-    wxGetApp().GetStage()->AddElement(ElementPtr(elem));
+    register_elem(ElementPtr(elem));
     return elem;
 }
 
@@ -372,6 +381,29 @@ DEFINE_5L_PRIMITIVE(CopyStringToClipboard) {
 	std::string string;
 	inArgs >> string;
 	wxGetApp().GetStage()->CopyStringToClipboard(string.c_str());
+}
+
+DEFINE_5L_PRIMITIVE(CursorElement) {
+	std::string name, cursor_reg_name;
+	TRect bounds;
+	TCallbackPtr dispatcher;
+	bool is_trans;
+	
+	inArgs >> SymbolName(name) >> bounds >> dispatcher >> is_trans
+           >> SymbolName(cursor_reg_name);
+    Stage *stage = wxGetApp().GetStage();
+
+    // Lots of pointer casting fun: We need an ElementPtr and a CursorPtr
+    // which both point to this same object.  Watch the steps carefully...
+    shared_ptr<CursorElement> elem(
+        new CursorElement(stage, name.c_str(), TToWxRect(bounds), dispatcher,
+                          is_trans, cursor_reg_name));
+    register_elem(elem);
+    
+    // Tell the elem to register itself (passing it a copy of the smart
+    // pointer that it will need).
+    // TODO - Ick.
+    elem->Register(wxGetApp().GetStage()->GetCursorManager(), elem);
 }
 
 DEFINE_5L_PRIMITIVE(DataPath) {
@@ -898,7 +930,6 @@ DEFINE_5L_PRIMITIVE(SetZoneCursor) {
 	inArgs >> SymbolName(name) >> SymbolName(cursor);
 
 	FIND_ELEMENT(LightweightElement, elem, name.c_str());
-	CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
 	elem->SetCursorName(cursor);
 }
 
