@@ -141,6 +141,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(Overlay);
 	REGISTER_5L_PRIMITIVE(OverlaySetShape);
 	REGISTER_5L_PRIMITIVE(OverlayAnimated);
+    REGISTER_5L_PRIMITIVE(RaiseToTop);
 	REGISTER_5L_PRIMITIVE(Refresh);
 	REGISTER_5L_PRIMITIVE(RefreshSplashScreen);
 	REGISTER_5L_PRIMITIVE(Screenshot);
@@ -819,6 +820,13 @@ DEFINE_5L_PRIMITIVE(MoveElementTo) {
 	inArgs >> SymbolName(name) >> p;
     FIND_ELEMENT(Element, elem, name.c_str());
     elem->MoveTo(TToWxPoint(p));
+}
+
+DEFINE_5L_PRIMITIVE(RaiseToTop) {
+	std::string name;
+	inArgs >> SymbolName(name);
+    FIND_ELEMENT(Element, elem, name.c_str());
+    wxGetApp().GetStage()->RaiseToTop(elem);
 }
 
 DEFINE_5L_PRIMITIVE(Refresh) {

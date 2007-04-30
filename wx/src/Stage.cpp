@@ -268,6 +268,23 @@ void Stage::RefreshSplashScreen() {
     RefreshStage("none", 0);
 }
 
+void Stage::RaiseToTop(ElementPtr inElem) {
+    // Move inElem to the end of our elements list.
+    ElementCollection::iterator found =
+        std::find(mElements.begin(), mElements.end(), inElem);
+    ASSERT(found != mElements.end());
+    mElements.erase(found);
+    mElements.push_back(inElem);
+
+    // If there's a DrawingArea attached to this element, we're going to
+    // have to recomposite it (in case it has moved above or below another
+    // element).  Note that this won't actually do anything if the Element
+    // is being displayed over Quake 2.  See also Overlay::SetInDragLayer.
+	DrawingArea *drawing_area = inElem->GetDrawingArea();
+    if (drawing_area)
+        drawing_area->InvalidateCompositing();
+}
+
 bool Stage::IsIdleAllowed() const {
 	// Don't allow idling when we've got drawing contexts pushed.
 	return mDrawingContextStack->IsEmpty();

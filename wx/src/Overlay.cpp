@@ -70,6 +70,8 @@ void Overlay::DrawElementBorder(wxDC &inDC) {
 }
 
 void Overlay::SetInDragLayer(bool inDragLayer) {
+    // Note that this won't actually do anything if the Element is being
+    // displayed over Quake 2.  See also Stage::RaiseToTop.
     if (inDragLayer != IsInDragLayer()) {
         LightweightElement::SetInDragLayer(inDragLayer);
         mDrawingArea.InvalidateCompositing();

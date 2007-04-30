@@ -133,7 +133,15 @@
     (on setup-finished ()
       ;; TODO - This is technically too late to set this value, and we should
       ;; probably add a SHOWN? parameter to every object creation primitive.
-      (set! (element-shown? self) shown?)))
+      (set! (element-shown? self) shown?))
+
+    ;;; Raise this element above its siblings.
+    (on raise-to-top ()
+      ;; TODO - Rearrange element order in Scheme, too?
+      (call-5l-prim 'RaiseToTop (node-full-name self))
+      (define elems (node-elements self))
+      (foreach [elem elems]
+        (send elem raise-to-top))))
 
   ;;; The abstract superclass of all elements which have no on-screen
   ;;; representation.

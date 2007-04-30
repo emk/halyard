@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * #3961: Added RAISE-TO-TOP method to %ELEMENT%.
+
 0.3.8 - 27 April 2007 - emk, brian
 
   * Implemented IMMEDIATELY, FINALLY and QUANTIZE for improving animation

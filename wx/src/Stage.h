@@ -357,6 +357,12 @@ public:
     ///
     void RefreshSplashScreen();
 
+    //////////
+    /// Raise an element to the top of our current list of elements.
+    /// Takes O(N) time, and is used primarily by hackish z-order fixes.
+    ///
+    void RaiseToTop(ElementPtr inElem);
+
 	//////////
 	/// Should the script be allowed to idle right now?
 	///
