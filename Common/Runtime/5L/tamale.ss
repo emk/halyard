@@ -136,12 +136,24 @@
       (set! (element-shown? self) shown?))
 
     ;;; Raise this element above its siblings.
-    (on raise-to-top ()
+    (on raise-to-top! ()
       ;; TODO - Rearrange element order in Scheme, too?
       (call-5l-prim 'RaiseToTop (node-full-name self))
       (define elems (node-elements self))
       (foreach [elem elems]
-        (send elem raise-to-top))))
+        (send elem raise-to-top)))
+
+    ;;; Center this element on its parent.
+    (on center-on-parent! ()
+      (define parent (node-parent self))
+      (define parent-shape
+        ;; TODO - There should be a SHAPE method on all (visible?) nodes.
+        (if (element? parent)
+            (prop parent shape)
+            $screen-rect))
+      (define desired-shape (center-shape-on (prop self shape) parent-shape))
+      (set! (prop self at) (rect-left-top (bounds desired-shape))))
+    )
 
   ;;; The abstract superclass of all elements which have no on-screen
   ;;; representation.

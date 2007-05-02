@@ -2,7 +2,8 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 SVN - emk
 
-  * #3961: Added RAISE-TO-TOP method to %ELEMENT%.
+  * #3961: Added RAISE-TO-TOP! method to %ELEMENT%.
+  * Added CENTER-ON-PARENT! method to %ELEMENT%.
 
 0.3.8 - 27 April 2007 - emk, brian
 
