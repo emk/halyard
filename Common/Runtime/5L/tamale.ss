@@ -141,7 +141,7 @@
       (call-5l-prim 'RaiseToTop (node-full-name self))
       (define elems (node-elements self))
       (foreach [elem elems]
-        (send elem raise-to-top)))
+        (send elem raise-to-top!)))
 
     ;;; Center this element on its parent.
     (on center-on-parent! ()
