@@ -167,7 +167,7 @@ namespace FileSystem {
 	//////////
 	/// Set the base directory for the application.  Defaults to
 	/// the current working directory.  Used by GetFontDirectory,
-	/// GetFontFilePath, etc.
+	/// ResolveFontPath, etc.
 	///
 	Path SetBaseDirectory(const Path &inDirectory);
 
@@ -213,11 +213,15 @@ namespace FileSystem {
 	    { return GetBaseDirectory().AddComponent("Fonts"); }
 
 	//////////
-	/// Given a file name, return a path pointing to a file with
-	/// that name in the font directory.
+	/// We refer to fonts (and directories containing fonts) using
+	/// Unix-style relative paths.  The "Fonts" directory is represented as
+	/// "", a directory within it is represented as "dirname", and a file
+	/// /// within the directory is represented as "dirname/font.tff".
+	/// This /// slightly odd interface is a placeholder to allow recursive
+	/// font directory scanning *before* we finish migrating fully to
+	/// boost::filesystem.
 	///
-	inline Path GetFontFilePath(const std::string &inFontFileName)
-	    { return GetFontDirectory().AddComponent(inFontFileName); }
+	Path ResolveFontPath(const std::string &inRelPath);
 
 	//////////
 	/// Get the directory 5L uses to store scripts.

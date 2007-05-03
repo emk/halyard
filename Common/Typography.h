@@ -1192,7 +1192,8 @@ namespace Typography {
 		/// This is the lowest level of data storage in the FamilyDatabase.
 		///
 		class AvailableFace {
-			std::string mFileName;
+            // A relative path name (in Unix format) for this face.
+			std::string mRelPath;
 			
 			int         mSize;
 			std::string mFamilyName;
@@ -1207,7 +1208,7 @@ namespace Typography {
 			/// directory (this is so we don't have to portably serialize
 			/// FileSystem::Path objects to the cache, which would by icky).
 			///
-			explicit AvailableFace(const std::string &inFileName);
+			explicit AvailableFace(const std::string &inRelPath);
 			
 			int         GetSize() const { return mSize; }
 			std::string GetFamilyName() const { return mFamilyName; }
@@ -1325,6 +1326,11 @@ namespace Typography {
 		/// Load all the fonts in the application's Font directory.
 		///
 		void ReadFromFontDirectory();
+
+		//////////
+		/// Scan the specified path, looking for fonts to load.
+		///
+		void ScanForFonts(const std::string &rel_path);
 
 		//////////
 		/// Read in available font information from a font cache.

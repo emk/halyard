@@ -574,7 +574,7 @@ static void test_Typography_FamilyDatabase (void)
 	// Delete the cache file.
 	try
 	{
-		FileSystem::GetFontFilePath("cache.dat").RemoveFile();
+		FileSystem::ResolveFontPath("fontcache.dat").RemoveFile();
 	}
 	catch (FileSystem::Error)
 	{

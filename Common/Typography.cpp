@@ -1444,13 +1444,13 @@ void TextRenderingEngine::RenderLine(std::vector<LineSegment> *inLine,
 //	Typography::FamilyDatabase::AvailableFace Methods
 //=========================================================================
 
-FamilyDatabase::AvailableFace::AvailableFace(const std::string &inFileName)
-	: mFileName(inFileName)
+FamilyDatabase::AvailableFace::AvailableFace(const std::string &inRelPath)
+	: mRelPath(inRelPath)
 {
 	// Open up our face file.
 	FT_Face face;
 	std::string path =
-		FileSystem::GetFontFilePath(mFileName).ToNativePathString();
+		FileSystem::ResolveFontPath(inRelPath).ToNativePathString();
 	CHECK_RESULT(FT_New_Face(*Library::GetLibrary(),
 							 path.c_str(), 0, &face));
 				
@@ -1510,7 +1510,7 @@ Face FamilyDatabase::AvailableFace::OpenFace(int inSize) const
 	ASSERT(inSize != kAnySize && inSize > 0);
 	ASSERT(mSize == kAnySize || mSize == inSize);
 
-	FileSystem::Path path = FileSystem::GetFontFilePath(mFileName);
+	FileSystem::Path path = FileSystem::ResolveFontPath(mRelPath);
 	std::string file = path.ToNativePathString();
 	FileSystem::Path metrics_path = path.ReplaceExtension("afm");
 	std::string metrics_file = metrics_path.ToNativePathString();
@@ -1527,7 +1527,7 @@ void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in)
 	std::string filetype, vers_label;
 	int version;
 	in >> filetype >> vers_label >> version >> std::ws;
-	if (!in || filetype != "facecache" || vers_label != "vers" || version != 1)
+	if (!in || filetype != "facecache" || vers_label != "vers" || version != 2)
 		throw Error(__FILE__, __LINE__, "Incorrectly formatted face cache");
 	
 	// Discard our human-readable comment line.
@@ -1539,7 +1539,7 @@ void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in)
 
 void FamilyDatabase::AvailableFace::WriteSerializationHeader(std::ostream &out)
 {
-	out << "facecache vers 1" << std::endl
+	out << "facecache vers 2" << std::endl
 		<< "FILE|FAMILY|STYLE|SIZE|IS BOLD|IS ITALIC"
 		<< std::endl;
 }
@@ -1548,7 +1548,7 @@ FamilyDatabase::AvailableFace::AvailableFace(std::istream &in)
 {
 	// Read in our individual fields.
 	std::string has_metrics, size, is_bold, is_italic;
-	std::getline(in, mFileName, '|');
+	std::getline(in, mRelPath, '|');
 	std::getline(in, mFamilyName, '|');
 	std::getline(in, mStyleName, '|');
 	std::getline(in, size, '|');
@@ -1572,7 +1572,7 @@ FamilyDatabase::AvailableFace::AvailableFace(std::istream &in)
 void FamilyDatabase::AvailableFace::Serialize(std::ostream &out) const
 {
 	// XXX - This will fail if any of our strings contain '|'.
-	out << mFileName << '|' << mFamilyName << '|' << mStyleName << '|'
+	out << mRelPath << '|' << mFamilyName << '|' << mStyleName << '|'
 		<< mSize << '|' << mIsBold << '|' << mIsItalic << std::endl;
 }
 
@@ -1777,7 +1777,7 @@ void FamilyDatabase::ReadFromFontDirectory()
 {
 	// If a cache file exists, attempt to read from it.
 	FileSystem::Path cachePath =
-		FileSystem::GetScriptDataDirectory().AddComponent("fntcache.dat");
+		FileSystem::GetScriptDataDirectory().AddComponent("fontcache.dat");
 	if (cachePath.DoesExist() && cachePath.IsRegularFile())
 	{
 		std::ifstream cache(cachePath.ToNativePathString().c_str());
@@ -1785,20 +1785,8 @@ void FamilyDatabase::ReadFromFontDirectory()
 		return;
 	}
 
-	// Otherwise, open all the fonts in the font directory.
-	FileSystem::Path fontdir = FileSystem::GetFontDirectory();
-	std::list<std::string> entries = fontdir.GetDirectoryEntries();
-	for (std::list<std::string>::iterator iter = entries.begin();
-		 iter != entries.end(); iter++)
-	{
-		FileSystem::Path file = fontdir.AddComponent(*iter);
-		if (file.IsRegularFile() && IsFontFile(file))
-		{
-			// Load the face using FreeType, and add it to our database.
-			AvailableFace face(*iter);
-			AddAvailableFace(face);
-		}
-	}
+	// Otherwise, open all the fonts in the font directory, recursively.
+    ScanForFonts("");
 
 	// Attempt to write out a new cache file.
 	try
@@ -1811,6 +1799,30 @@ void FamilyDatabase::ReadFromFontDirectory()
 		// Just ignore the exception.
 		// TODO - Try logging a warning?
 	}
+}
+
+void FamilyDatabase::ScanForFonts(const std::string &rel_path)
+{
+    FileSystem::Path path(FileSystem::ResolveFontPath(rel_path));
+    if (path.IsRegularFile() && IsFontFile(path)) {
+        // Load the face using FreeType, and add it to our database.
+        AvailableFace face(rel_path);
+        AddAvailableFace(face);
+    } else if (path.IsDirectory()) {
+        // Scan the directory recursively.
+        std::list<std::string> entries = path.GetDirectoryEntries();
+        std::list<std::string>::iterator iter = entries.begin();
+        for (; iter != entries.end(); iter++) {
+            // Make sure we skip invisible files, version control
+            // byproducts, and anything else beginning with ".".
+            if (iter->length() > 0 && (*iter)[0] != '.') {
+                std::string dir_path(rel_path);
+                if (dir_path != "")
+                    dir_path = dir_path + "/";
+                ScanForFonts(dir_path + *iter);
+            }
+        }
+    }
 }
 
 void FamilyDatabase::ReadFromCache(std::istream &in)

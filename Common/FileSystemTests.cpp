@@ -46,8 +46,12 @@ void test_FileSystem (void)
 	TEST(Path("foo").ToNativePathString() == base+"\\foo");
 	TEST(GetBaseDirectory().ToNativePathString() == base);
 	TEST(GetFontDirectory().ToNativePathString() == base+"\\Fonts");
-	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
+	TEST(ResolveFontPath("").ToNativePathString() == base+"\\Fonts");
+	TEST(ResolveFontPath("README.txt").ToNativePathString() ==
 		 base+"\\Fonts\\README.txt");
+	TEST(ResolveFontPath("nested/README.txt").ToNativePathString() ==
+		 base+"\\Fonts\\nested\\README.txt");
+
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
 		 == base+"\\f\\..\\g");
 
@@ -62,6 +66,7 @@ void test_FileSystem (void)
 	TEST(Path("foo").ToNativePathString() == ":foo");
 	TEST(GetBaseDirectory().ToNativePathString() == ":");
 	TEST(GetFontDirectory().ToNativePathString() == ":Fonts");
+#error "Some ResolveFontPath test cases not ported to this platform."
 	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
 		 ":Fonts:README.txt");
 //	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
@@ -81,6 +86,7 @@ void test_FileSystem (void)
 	TEST(Path("foo").ToNativePathString() == base+"/foo");
 	TEST(GetBaseDirectory().ToNativePathString() == base);
 	TEST(GetFontDirectory().ToNativePathString() == base+"/Fonts");
+#error "Some ResolveFontPath test cases not ported to this platform."
 	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
 		 base+"/Fonts/README.txt");
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()

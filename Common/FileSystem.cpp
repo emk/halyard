@@ -59,6 +59,7 @@
 
 USING_NAMESPACE_FIVEL
 using namespace FileSystem;
+namespace fs = boost::filesystem;
 
 
 //=========================================================================
@@ -147,13 +148,13 @@ static OSErr PathToFSSpec(const char *inPath, FSSpec *inSpec)
 #if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
 
 Path::Path()
-	: mPath(boost::filesystem::current_path().native_directory_string())
+	: mPath(fs::current_path().native_directory_string())
 {
 	// All done!
 }
 
 Path::Path(const std::string &inPath)
-	: mPath(boost::filesystem::current_path().native_directory_string() +
+	: mPath(fs::current_path().native_directory_string() +
 	        PATH_SEPARATOR + inPath)
 {
 	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
@@ -600,6 +601,18 @@ void FileSystem::SetScriptName(const std::string &inName) {
 Path FileSystem::GetScriptDataDirectory() {
     ASSERT(gScriptName != "");
     return FileSystem::GetAppDataDirectory().AddComponent(gScriptName);
+}
+
+Path FileSystem::ResolveFontPath(const std::string &inRelPath) {
+    fs::path fontdir(FileSystem::GetFontDirectory().ToNativePathString(),
+                     fs::native);
+    fs::path relpath((inRelPath == "") ? "." : inRelPath);
+    fs::path resolved(fs::complete(relpath, fontdir));
+
+    // TODO - This always calls native_file_string, even when it should call
+    // native_directory_string.  Since we're not running on VMS (or
+    // something even more outlandish), this shouldn't give us any problems.
+    return Path::NativePath(resolved.native_file_string());
 }
 
 
