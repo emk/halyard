@@ -25,26 +25,18 @@ History
   One of the most prolific programmers in the late 90s and early 2000 was
   Chuck Officer.
 
-Checking 5L Out of CVS
+Checking 5L Out of SVN
 ----------------------
 
-  WARNING: The CVS-related portions of this document are obsolete since our
-  move to Subversion.  Until they're updated, please ask an active
-  developer what our current policies are.
-
-  CVS server: imlcvs.dartmouth.edu
-  CVS root:   /usr/local/cvsroot
-
-  Check out the modules "5L", "5Ltest_wx".  These correspond to the
-  full paths "iml/FiveL/Release", "iml/iml_programs/5Ltest_wx" (you'll
-  need to know these to use CVSweb).  Make sure your CVS client uses
-  the native end-of-line convetion; this can be a problem under MacOS
-  X and some versions of Cygwin/W2K.  Also make sure that CVS clients
-  don't check out files out ready-only; this will tend to break the
-  engine.
+  Check out the following from Subversion (see instructions elswhere
+  for setting up Subversion):
+  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/5L/trunk
+  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/programs/tamale_test/trunk
+  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/tools
+  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/buildscript/trunk
 
   In the instructions that follow, we'll assume your copy of the 5L source
-  tree is in $5L_DIR and your copy of 5Ltest_wx is in $5LTEST_DIR.
+  tree is in $5L_DIR and your copy of tamale_test is in $5LTEST_DIR.
 
 Building Win32 5L
 -----------------
@@ -52,22 +44,25 @@ Building Win32 5L
   Using the System control panel, set the environment variable WXWIN to
   $5L_DIR/libs/wxWidgets.
 
-  Install Visual C++.NET off of the MSDN subscription, after making
-  sure we have enough licenses.  Make sure you have everything related
-  to C++ development or media libraries (including ActiveX).  Also,
-  you probably want to download the latest Service Pack. Right now we
-  are using Visual Studio .NET 2002, but we are in the process of
-  moving to Visual Studio .NET 2005.
+  Install Visual C++.NET 2005 off of the Microsoft Campus Agreement.
+  Make sure you have everyting related to C++ development, but you can
+  turn off all other parts of Visual Studio (like SQL server, C#, and
+  all that junk).
 
-  If you're on VS.NET 2005, you will need to install the DirectX _9_ SDK,
-  because certain libraries have been moved out of the platform SDK into
-  DirectX.  More recent versions of the DirectX SDK are incompatible with
-  Windows 2000.
+  You will need to install the DirectX _9_ SDK, because certain
+  libraries have been moved out of the platform SDK into DirectX.
+  More recent versions of the DirectX SDK are incompatible with
+  Windows 2000. You can find the DirectX 9 SDK in Subversion, at
+  tools/build/dx9sdk.exe. Install it into C:\sdk\dx9\.
 
-  Next, download and install the QuickTime 6 SDK.  This can be found at
-  developer.apple.com (under Tools > QuickTime > QuickTime 6 SDK).  Unzip
-  it in C:\sdk (or anywhere else you like, but then you'll have to adapt the
-  instructions below). Make sure QuickTime is installed as well. 
+  Next, download and install the QuickTime 6 SDK.  This can be found
+  on Apple's FTP site, at
+  <ftp://ftp.apple.com/developer/Development_Kits/QT6SDK_Win.zip>, and
+  if not there, it's under tools/build/QT6SDK_Win.zip.  Unzip it in
+  C:\sdk (or anywhere else you like, but then you'll have to adapt the
+  instructions below). Make sure QuickTime is installed as well,
+  including the VP3 codec. The best way to install the VP3 codec is to
+  run the installer of one of our existing programs, such as VTRA.
 
   Open up $5L_DIR\5L.sln. Select Tools > Options > Projects and
   Solutions > VC++ Directories, and add the follow directories to the
@@ -77,7 +72,7 @@ Building Win32 5L
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\CIncludes
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\ComponentIncludes
       C:\sdk\dx9\Include
-    Libraries:
+    Library files:
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Libraries
       C:\sdk\dx9\Lib
     Executable files:
@@ -117,6 +112,16 @@ Building Win32 5L
   as StartUp Project". Make sure the appropriate configuration is
   selected, debug or release. You'll need to run each of them before
   each check in.
+
+Rake
+----
+
+  In order to build released version of the engine, install new
+  engines in a program directory, and have an easier time of testing
+  Runtime changes, you'll need to install ruby and Rake. Install ruby
+  from Cygwin, install RubyGems from <http://rubygems.org/>, set your
+  RUBYOPT environment variable to rubygems, and run 'gem install
+  rake'.
 
 Building Macintosh 5L
 ---------------------
@@ -291,12 +296,14 @@ Testing Your Changes
   Hook your test cases into TestAll.cpp.  You can figure out how to
   do this by looking at the source.
 
-  * Updating "5Ltest"
+  * Updating "tamale_test"
 
-  Unfortunately, "TestAll" still can't test lots of things: primitives,
-  graphics, platform-specific code, etc.  In these cases, add one or
-  more new cards to $5LTEST_DIR/Scripts/5Ltest.scr and hook them into the
-  main menu.
+  Unfortunately, "TestAll" still can't test lots of things:
+  primitives, graphics, platform-specific code, etc.  In these cases,
+  add one or more new cards to tamale_test and hook them into the main
+  menu.  In order to test changes you've made to the Runtime
+  directory, make those changes in $5L_DIR, and then run 'rake
+  copy_runtime' in the $5LTEST_DIR.
 
   Be sure to include a good description of how to use your test card!
   Anybody at IML should be able to read instructions on the screen and
