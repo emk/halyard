@@ -604,10 +604,17 @@ void StageFrame::OpenDocument()
                      "", "", "Tamale program (data.tam)|data.tam",
                      wxOPEN|wxHIDE_READONLY);
 
-    // Set the dialog's default path to last file opened, if any.
+    // Set the dialog's default path to the current working directory,
+    // if it appears to be a program (contains a data.tam
+    // file).  Otherwise, try defaulting to the last opened program.
 	wxConfigBase *config = wxConfigBase::Get();
 	wxString recent;
-	if (config->Read("/Recent/DocPath", &recent))
+    FileSystem::Path data_file = 
+        FileSystem::GetBaseDirectory().AddComponent("data.tam");
+    
+    if (data_file.DoesExist()) 
+        dlg.SetPath(data_file.ToNativePathString().c_str());
+	else if (config->Read("/Recent/DocPath", &recent))
 		dlg.SetPath(recent);
 
 	if (dlg.ShowModal() == wxID_OK)
