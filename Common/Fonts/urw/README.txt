@@ -1,0 +1,74 @@
+Name:
+    URW PostScript Fonts
+Description:
+    Clones of standard Adobe PostScript fonts by URW donated to 
+    the GhostScript project.
+Source: 
+    Debian package (text/gsfonts)
+License: 
+    GPL (see individual font files for notice)
+    http://packages.debian.org/changelogs/pool/main/g/gsfonts/
+           gsfonts_8.14+v8.11+urw-0.2/gsfonts.copyright
+
+a010013l.afm
+a010013l.pfb
+a010015l.afm
+a010015l.pfb
+a010033l.afm
+a010033l.pfb
+a010035l.afm
+a010035l.pfb
+b018012l.afm
+b018012l.pfb
+b018015l.afm
+b018015l.pfb
+b018032l.afm
+b018032l.pfb
+b018035l.afm
+b018035l.pfb
+c059013l.afm
+c059013l.pfb
+c059016l.afm
+c059016l.pfb
+c059033l.afm
+c059033l.pfb
+c059036l.afm
+c059036l.pfb
+d050000l.afm
+d050000l.pfb
+n019003l.afm
+n019003l.pfb
+n019004l.afm
+n019004l.pfb
+n019023l.afm
+n019023l.pfb
+n019024l.afm
+n019024l.pfb
+n021003l.afm
+n021003l.pfb
+n021004l.afm
+n021004l.pfb
+n021023l.afm
+n021023l.pfb
+n021024l.afm
+n021024l.pfb
+n022003l.afm
+n022003l.pfb
+n022004l.afm
+n022004l.pfb
+n022023l.afm
+n022023l.pfb
+n022024l.afm
+n022024l.pfb
+p052003l.afm
+p052003l.pfb
+p052004l.afm
+p052004l.pfb
+p052023l.afm
+p052023l.pfb
+p052024l.afm
+p052024l.pfb
+s050000l.afm
+s050000l.pfb
+z003034l.afm
+z003034l.pfb

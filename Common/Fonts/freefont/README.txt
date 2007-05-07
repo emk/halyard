@@ -1,0 +1,43 @@
+Name:
+    Freefont - FreeMono, FreeSans, & FreeSerif
+Description:
+    TrueType Fonts from the Free Software Foundation.
+Source:
+    Debian package (x11/ttf-freefont)
+License:     
+       ( From http://packages.debian.org/changelogs/pool/main/t/ttf-freefont/ )
+       (             ttf-freefont_20060501cvs-10/ttf-freefont.copyright       )
+
+    Freefont is a collection of free Universal Character Set outline fonts.
+    Copyright (C) 2002 Free Software Foundation.
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2, or (at your option)
+    any later version.
+
+    This program is distributed in the hope that it will be useful,   
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License 
+    along with this program; if not, write to the Free Software 
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 
+    02110-1301, USA.
+    
+    On Debian GNU/Linux systems, the complete text of the GNU General
+    Public License can be found in `/usr/share/common-licenses/GPL'.
+    
+FreeMono.ttf
+FreeMonoBold.ttf
+FreeMonoBoldOblique.ttf
+FreeMonoOblique.ttf
+FreeSans.ttf
+FreeSansBold.ttf
+FreeSansBoldOblique.ttf
+FreeSansOblique.ttf
+FreeSerif.ttf
+FreeSerifBold.ttf
+FreeSerifBoldItalic.ttf
+FreeSerifItalic.ttf

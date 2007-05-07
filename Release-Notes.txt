@@ -1,12 +1,15 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - brian, emk
+SVN - brian, emk, tryon
 
   * Made Tamale default to opening the program in the current directory, if
     one exists, otherwise falling back to the last opened project as
     before.
   * Allowed fonts to be organized into subdirectories, because we'll soon
     be adding a large number of GPL'd fonts.
+  * Major overhaul of Fonts directory with many new fonts.  All of
+    these fonts are from Debian.  See the appropriate directories for
+    licensing information.
 
 0.3.9 - 1 May 2007 - emk
 
