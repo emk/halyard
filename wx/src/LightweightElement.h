@@ -60,8 +60,7 @@ public:
 	virtual bool IsLightWeight() { return true; }
 
 	virtual std::string GetCursorName() { return mCursorName; }
-	virtual void SetCursorName(const std::string &inCursorName)
-        { mCursorName = inCursorName; }
+	virtual void SetCursorName(const std::string &inCursorName);
 
     virtual bool IsInDragLayer() const;
     virtual void SetInDragLayer(bool inDragLayer);

@@ -41,10 +41,16 @@ public:
                   const std::string &inCursorRegistrationName);
     virtual ~CursorElement();
 
+    /// Register this cursor with the cursor manager.  This must be called 
+    /// separately from the constructer, because when this object is being 
+    /// constructed, it hasn't yet been registered with the stage, which 
+    /// means that it it not yet valid to be a cursor.
+    void RegisterWithCursorManager();
+
     /// Unregister this element with the CursorManager.  The CursorManager
     /// is passed into this function, because we may not be able to get it
     /// through the Stage API if the Stage is already being destroyed.
-    void Unregister(CursorManager *inManager);
+    void UnregisterWithCursorManager(CursorManager *inManager);
 
     virtual bool IsOwnedByCursorManager() { return false; }
     virtual void SetStageCursor(const wxPoint &point);

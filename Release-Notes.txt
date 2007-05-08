@@ -10,6 +10,14 @@ SVN - brian, emk, tryon
   * Major overhaul of Fonts directory with many new fonts.  All of
     these fonts are from Debian.  See the appropriate directories for
     licensing information.
+  * #3969: Fixed bug where the displayed cursor wouldn't update if a
+    the mouse was over an element while its cursor was changing.
+  * #3968: Fixed a bug where a cursor would initially display in the
+    wrong position, because its coordinates weren't translated from
+    screen to stage coordinates.
+  * #3970: Fixed a bug where the engine would crash if you created a
+    cursor element with the name of the currently active cursor.
+  * Added FIT-TO-CHILDREN! method to %CUSTOM-ELEMENT%.
 
 0.3.9 - 1 May 2007 - emk
 

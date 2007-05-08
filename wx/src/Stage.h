@@ -278,6 +278,12 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	void LeaveElement(ElementPtr inElement, wxPoint &inPosition);
 
     //////////
+    /// Get the current mouse position, relative to the origin of the
+    /// stage.
+    ///
+    wxPoint CurrentMousePosition();
+
+    //////////
     /// Actually update the current cursor to match mDesiredCursor
     /// and the result of ShouldShowCursor().  You generally want to
     /// call UpdateCurrentElementAndCursor instead, which will actually

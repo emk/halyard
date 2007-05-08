@@ -454,16 +454,26 @@ void Stage::LeaveElement(ElementPtr inElement, wxPoint &inPosition)
     }
 }
 
+wxPoint Stage::CurrentMousePosition() {
+    return ScreenToClient(::wxGetMousePosition());
+}
+
 void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 {
-	// Find which element we're in.
-	wxPoint pos = ScreenToClient(::wxGetMousePosition());
-	ElementPtr obj = FindLightWeightElement(pos);
+    // Performance Note: UpdateCurrentElementAndCursor() is called
+    // very often (on every mouse move, plus other places). There are
+    // two potentially expensive things it does; it does a linear
+    // search of all elements on the screen, and it does a log(n)
+    // search of all registered cursors. If it becomes too slow, 
+    // check to see if either of those can be optimized.
+
+    // Find which element we're in.
+	ElementPtr obj = FindLightWeightElement(inPosition);
 
 	// Change the cursor, if necessary.  I haven't refactored this
 	// into EnterElement/LeaveElement yet because of how we handle
 	// mIsDisplayingXy.  Feel free to improve.
-	if (!mGrabbedElement && (!obj || obj != mCurrentElement))
+	if (!mGrabbedElement)
 	{
 		if (mIsDisplayingXy)
 			mDesiredCursor = mCursorManager->FindCursor("cross");
@@ -494,7 +504,7 @@ void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
 }
 
 void Stage::UpdateCurrentElementAndCursor() {
-	UpdateCurrentElementAndCursor(ScreenToClient(::wxGetMousePosition()));
+	UpdateCurrentElementAndCursor(CurrentMousePosition());
 }
 
 void Stage::UpdateDisplayedCursor() {
@@ -507,7 +517,7 @@ void Stage::UpdateDisplayedCursor() {
             mActualCursor->UnsetStageCursor();
 
         if (cursor) {
-            cursor->SetStageCursor(::wxGetMousePosition());
+            cursor->SetStageCursor(CurrentMousePosition());
         } else {
             SetCursor(wxNullCursor);
         }
@@ -527,7 +537,7 @@ void Stage::ReplaceDisplayedCursorWithDefault() {
 
     // We can't call UnsetStageCursor here, because we don't want to give
     // the user's script code the chance to call us re-entrantly.
-    cursor->SetStageCursor(::wxGetMousePosition());
+    cursor->SetStageCursor(CurrentMousePosition());
     mActualCursor = cursor;
 }
 
@@ -1089,7 +1099,7 @@ void Stage::DestroyElement(ElementPtr inElement)
     // mDesiredCursor and mActualCursor.
     shared_ptr<CursorElement> as_cursor_elem(inElement, dynamic_cast_tag());
     if (as_cursor_elem) {
-        as_cursor_elem->Unregister(mCursorManager);
+        as_cursor_elem->UnregisterWithCursorManager(mCursorManager);
 
         Cursor *as_cursor(static_cast<Cursor*>(as_cursor_elem.get()));
         if (as_cursor == mDesiredCursor)

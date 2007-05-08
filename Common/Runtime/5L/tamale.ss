@@ -266,6 +266,23 @@
          (set-in-drag-layer?! value)]
         [else (call-next-handler)]))
     
+    ;;; Resize this element to fit exactly all of its childrent, plus
+    ;;; PADDING pixels on the edge.  If PADDING is non-zero, then
+    ;;; offset all children by PADDING on both axes.
+    (on fit-to-children! (&opt (padding 0))
+      (define max-x 0)
+      (define max-y 0)
+      (foreach (child (node-elements self))
+        (define r (send child bounds))
+        (set! max-x (max max-x (rect-right r)))
+        (set! max-y (max max-y (rect-bottom r)))
+        (unless (= padding 0)
+          (set! (prop child at) (elem-map (fn (x) (+ x padding)) 
+                                          (prop child at)))))
+      (set! (prop self shape) (rect 0 0 
+                                    (+ (* 2 padding) max-x) 
+                                    (+ (* 2 padding) max-y))))
+    
     ;; The way we want custom elements to work is that AT represents the
     ;; origin of a custom element, and the actual shape on the screen is
     ;; SHAPE offset by AT. The problem is that this is very inconvenient

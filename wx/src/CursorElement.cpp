@@ -37,17 +37,27 @@ CursorElement::CursorElement(Stage *inStage, const wxString &inName,
     : Overlay(inStage, inName, inBounds, inDispatch, "blank", inHasAlpha),
       mIsRegistered(false), mCursorRegName(inCursorRegName)
 {
-    // Register this element with the CursorManager.
-    CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
-    manager->RegisterElementCursor(mCursorRegName, this);
-    mIsRegistered = true;
 }
 
 CursorElement::~CursorElement() {
     ASSERT(!mIsRegistered);
 }
 
-void CursorElement::Unregister(CursorManager *inManager) {
+void CursorElement::RegisterWithCursorManager() {
+    ASSERT(!mIsRegistered);
+    // Register this element with the CursorManager.
+    CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
+    manager->RegisterElementCursor(mCursorRegName, this);
+    mIsRegistered = true;
+    // TODO - We may need to add a Stage::NotifyElementsChanged() call
+    // here (or in the cursor manager), because we really should be
+    // updating the current cursor as soon as we successfully register
+    // a cursor.  It seems to work as is, but if you run into a bug in
+    // which newly created cursors are not used soon enough, you may
+    // need to change this.
+}
+
+void CursorElement::UnregisterWithCursorManager(CursorManager *inManager) {
     ASSERT(mIsRegistered);
     inManager->UnregisterElementCursor(mCursorRegName, this);
     mIsRegistered = false;

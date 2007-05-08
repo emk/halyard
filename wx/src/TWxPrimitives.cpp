@@ -394,10 +394,11 @@ DEFINE_5L_PRIMITIVE(CursorElement) {
            >> SymbolName(cursor_reg_name);
     Stage *stage = wxGetApp().GetStage();
 
-    // Lots of pointer casting fun: We need an ElementPtr and a CursorPtr
-    // which both point to this same object.  Watch the steps carefully...
-    R(new CursorElement(stage, name.c_str(), TToWxRect(bounds), dispatcher,
-                        is_trans, cursor_reg_name));
+    CursorElement *cursor = new CursorElement(stage, name.c_str(), 
+                                              TToWxRect(bounds), dispatcher,
+                                              is_trans, cursor_reg_name);
+    R(cursor);
+    cursor->RegisterWithCursorManager();
 }
 
 DEFINE_5L_PRIMITIVE(DataPath) {
