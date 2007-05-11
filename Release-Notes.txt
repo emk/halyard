@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - brian, emk, tryon
+0.3.10 - 8 May 2007 - brian, emk, tryon
 
   * Made Tamale default to opening the program in the current directory, if
     one exists, otherwise falling back to the last opened project as

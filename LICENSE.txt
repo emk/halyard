@@ -1418,7 +1418,8 @@ SOFTWARE.
 *===== Fonts
 
 The Common/Fonts directory (or the Fonts directory of a Tamale-based
-program) contains additional licenses for the included fonts.
+program) contains additional licenses for the included fonts.  See also the
+Common/FontsDisabled directory.
 
 *===== Other Licenses
 
