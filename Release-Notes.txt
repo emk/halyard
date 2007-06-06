@@ -1,5 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - 6 June 2007 - emk
+
+  * Upgraded to FreeType 2.3.4.
+
 0.3.10 - 8 May 2007 - brian, emk, tryon
 
   * Made Tamale default to opening the program in the current directory, if
