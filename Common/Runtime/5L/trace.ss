@@ -3,7 +3,7 @@
 ;;=========================================================================
 ;;  Handy code by Brian Campbell, with some later hacking by Eric Kidd.
 
-(module trace (lib "lispish.ss" "5L")
+(module trace (lib "language.ss" "5L")
   (require (lib "begin-var.ss" "5L"))
   
   (provide with-tracing

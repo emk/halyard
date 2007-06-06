@@ -1,4 +1,4 @@
-(module kernel (lib "lispish.ss" "5L")
+(module kernel (lib "language.ss" "5L")
 
   ;; Import %call-5l-prim from the engine.
   (require #%fivel-engine)
@@ -463,14 +463,14 @@
 
     ;; Run any deferred thunks.
     (while (not (null? *%kernel-deferred-thunk-queue*))
-      (define item (last *%kernel-deferred-thunk-queue*))
-      (set! *%kernel-deferred-thunk-queue*
-            (all-but-last *%kernel-deferred-thunk-queue*))
-
-      (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
-        (debug-log "Running deferred thunk.")
-        ((deferred-action-thunk item))
-        (debug-log "Finished running deferred thunk."))))
+      (let [[item (last *%kernel-deferred-thunk-queue*)]]
+        (set! *%kernel-deferred-thunk-queue*
+              (all-but-last *%kernel-deferred-thunk-queue*))
+        
+        (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
+          (debug-log "Running deferred thunk.")
+          ((deferred-action-thunk item))
+          (debug-log "Finished running deferred thunk.")))))
 
   (define (%kernel-cancel-deferred-thunks-for parent)
     ;; Only keep those thunks which aren't associated with PARENT.

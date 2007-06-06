@@ -1,4 +1,4 @@
-(module util (lib "lispish.ss" "5L")
+(module util (lib "swindle.ss" "swindle")
 
   (require (lib "begin-var.ss" "5L"))
   (require (lib "indent.ss" "5L"))
@@ -84,7 +84,7 @@
   ;;  Utility Functions
   ;;=======================================================================
 
-  (provide foreach while member? value->string cat symcat keyword-name
+  (provide foreach member? value->string cat symcat keyword-name
            hash-table-has-key?
            label with-errors-blocked with-values curry)
 
@@ -105,23 +105,6 @@
              (begin/var body ...))
            (loop (cdr remaining))))]))
   (define-syntax-indent foreach 1)
-
-  ;;; Run a body of code until a condition is met.
-  ;;;
-  ;;; @syntax (while condition body ...)
-  ;;; @param EXPRESSION condition The condition to evaluate each time through
-  ;;;   the loop.  This is tested before entering the loop for the first
-  ;;;   time, so it's possible to skip the while loop entirely.
-  ;;; @param BODY body The code to run.
-  (define-syntax while
-    (syntax-rules ()
-      [(while cond body ...)
-       (when cond
-         (let loop []
-           (begin/var body ...)
-           (when cond
-             (loop))))]))
-  (define-syntax-indent while 0)
 
   ;;; Return #f if and only if ITEM appears in LIST.  Uses EQUAL? to
   ;;; perform the comparison.

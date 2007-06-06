@@ -1,4 +1,4 @@
-(module nodes (lib "lispish.ss" "5L")
+(module nodes (lib "language.ss" "5L")
 
   ;; Various support code and declarations refactored out of the kernel.
   (require (lib "types.ss" "5L"))

@@ -13,16 +13,27 @@
 ;;
 ;;  Eric Kidd <eric.kidd@pobox.com>
 
-(module lispish (lib "swindle.ss" "swindle")
+(module language (lib "swindle.ss" "swindle")
   
+
+  ;;---------------------------------------------------------------------- 
+  ;; Swindle Features
+  ;;----------------------------------------------------------------------
+  ;; This gets us keyword arguments, and support for CLOS-like objects.
+  ;; We're trying to phase the CLOS-like stuff out in favor of the
+  ;; Ruby-style objects, as defined in the next section.
+
   ;; Export the normal Swindle language, minus a few specific features
-  ;; we override below.  We also omit 'while', because we have our
-  ;; own definition later on.
+  ;; we override below.
   (provide (all-from-except (lib "swindle.ss" "swindle")
-                            while defclass box unbox))
-  
-  ;; Here are some additional LISP-like features we provide.
-  (provide define-symbol-macro let-symbol-macro)
+                            defclass box unbox
+                            ;; We replace these so ruby-objects.ss can
+                            ;; implement a custom syntax for method
+                            ;; dispatch.
+                            #%app set!
+                            ;; We get this from Swindle, but we want the
+                            ;; version from ruby-objects.ss.
+                            method))
   
   ;; Set up Swindle to have a reasonable behavior for defclass. We're
   ;; trying to be as much like Dylan as possible, except also defining
@@ -55,6 +66,19 @@
                 (equals? (cdr x) (cdr y))))))
   
   
+  ;;---------------------------------------------------------------------- 
+  ;; Ruby/SmallTalk-style Features
+  ;;---------------------------------------------------------------------- 
+
+  (require (lib "ruby-objects.ss" "5L"))
+  (provide (all-from-except (lib "ruby-objects.ss" "5L")
+                            app~ set!~))
+
+  (provide (rename method~ method)
+           (rename app~ #%app)
+           (rename set!~ set!))
+
+
   ;;----------------------------------------------------------------------
   ;; Symbol Macros and Generalized Setters
   ;;----------------------------------------------------------------------
@@ -68,6 +92,8 @@
   ;; This allows library developers to create fancy kinds of variables--
   ;; in particular, "smart" variables that transparently update values
   ;; stored outside of Scheme.
+
+  (provide define-symbol-macro let-symbol-macro)
   
   (define-syntax-set (define-symbol-macro let-symbol-macro)
     

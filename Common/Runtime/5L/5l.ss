@@ -5,11 +5,11 @@
 ;;  special syntax.  Everything in this directory could probably stand
 ;;  a good refactoring; it's been accumulating cruft for a while.
 
-(module 5l (lib "lispish.ss" "5L")
+(module 5l (lib "language.ss" "5L")
 
   ;; We want to export most of lispish, but override a few definitions
   ;; locally to get some decidedly non-Scheme behavior.
-  (provide (all-from-except (lib "lispish.ss" "5L")
+  (provide (all-from-except (lib "language.ss" "5L")
                             ;; We replace this.
                             #%top
                             ;; begin/var hacks (see below).

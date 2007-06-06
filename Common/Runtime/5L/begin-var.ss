@@ -31,7 +31,7 @@
 ;;  XXX - There is a deep architectural problem with making BEGIN/VAR a
 ;;  replacement for BEGIN.
 
-(module begin-var (lib "lispish.ss" "5L")
+(module begin-var (lib "swindle.ss" "swindle")
   
   (provide define/var begin/var)
   

@@ -1,4 +1,4 @@
-(module tags (lib "lispish.ss" "5L")
+(module tags (lib "language.ss" "5L")
         
   (require (lib "kernel.ss" "5L"))
         

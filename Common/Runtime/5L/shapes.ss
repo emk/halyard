@@ -2,7 +2,7 @@
 ;;  Miscellaneous Point & Shape Manipulation Routines
 ;;=========================================================================
 
-(module shapes (lib "lispish.ss" "5L")
+(module shapes (lib "language.ss" "5L")
   (require (lib "util.ss" "5L"))
   (require (lib "types.ss" "5L"))
   (require (lib "kernel.ss" "5L"))

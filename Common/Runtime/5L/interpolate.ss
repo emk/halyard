@@ -1,4 +1,4 @@
-(module interpolate (lib "lispish.ss" "5L")
+(module interpolate (lib "language.ss" "5L")
   (require (lib "util.ss" "5L"))
   (require (lib "types.ss" "5L"))
 

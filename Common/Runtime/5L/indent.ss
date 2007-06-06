@@ -1,4 +1,4 @@
-(module indent (lib "lispish.ss" "5L")
+(module indent (lib "swindle.ss" "swindle")
   
   (provide define-syntax-indent syntax-indent treat-as-syntax?)
 

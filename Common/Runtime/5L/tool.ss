@@ -71,7 +71,7 @@
       (define lispish-language%
 	(class module-based-language%
 	  (define/override (get-transformer-module)
-	    '(lib "lispish.ss" "5L"))
+	    '(lib "language.ss" "5L"))
 	  (super-instantiate ())))
 
       ;; The 5L language requires some tricky, pre-execution setup to match
@@ -127,7 +127,7 @@
 	;; Install our lispish language.
 	(register-language
 	 (instantiate (wrap-language lispish-language%) ()
-           (module '(lib "lispish.ss" "5L"))
+           (module '(lib "language.ss" "5L"))
 	   (language-numbers (get-numbers 2))
 	   (language-position
 	    (get-position "LISPish (MzScheme plus LISP-like extensions)"))

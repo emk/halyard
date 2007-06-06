@@ -4,7 +4,7 @@
 ;;  This is a collection of loosely documented and poorly-organized Tamale
 ;;  primitives, all subject to change at a moment's notice.
 
-(module tamale (lib "lispish.ss" "5L")
+(module tamale (lib "language.ss" "5L")
   (require (lib "api.ss" "5L"))
 
 

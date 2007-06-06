@@ -201,8 +201,8 @@
           ;; need to set up both the transformer environment (which is used
           ;; only by code in macro expanders) and the regular environment
           ;; (which is used by normal program code).
-          (set! filename "lispish.ss")
-          (namespace-transformer-require '(lib "lispish.ss" "5L"))
+          (set! filename "language.ss")
+          (namespace-transformer-require '(lib "language.ss" "5L"))
           (set! filename "5l.ss")
           (namespace-require '(lib "5l.ss" "5L"))
           

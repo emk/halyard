@@ -1,4 +1,4 @@
-(module api (lib "lispish.ss" "5L")
+(module api (lib "language.ss" "5L")
 
   (require (lib "kernel.ss" "5L"))
   (provide (all-from (lib "kernel.ss" "5L")))

@@ -1,4 +1,4 @@
-(module lispish-test (lib "lispish.ss" "5L")
+(module lispish-test (lib "language.ss" "5L")
   
   ;; Traditional functions.
   (define (t1) 'ok)
