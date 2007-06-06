@@ -22,14 +22,14 @@
 
 #define VERSION_MAJOR_NUM          0
 #define VERSION_MINOR_NUM          3
-#define VERSION_REV_BIG            10
+#define VERSION_REV_BIG            11
 #define VERSION_REV_SMALL          0
 
 // For various unfortunate preprocessor reasons, we need a duplicate copy
 // in string format.
 #define VERSION_MAJOR_NUM_STRING   "0"
 #define VERSION_MINOR_NUM_STRING   "3"
-#define VERSION_REV_BIG_STRING     "10"
+#define VERSION_REV_BIG_STRING     "11"
 #define VERSION_REV_SMALL_STRING   "0"
 
 #define SHORT_NAME          "Tamale"
@@ -48,7 +48,7 @@
 #define TAMALE_COPYRIGHT_NAME \
     SHORT_NAME " multimedia engine"
 #define TAMALE_COPYRIGHT_NOTICE \
-    "Copyright 1993-2006 Trustees of Dartmouth College. All rights reserved."
+    "Copyright 1993-2007 Trustees of Dartmouth College. All rights reserved."
 
 /// The date at which the files including TVersion.h were built.  This will
 /// work right as long as you change the version number for official builds.

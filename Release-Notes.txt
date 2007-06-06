@@ -1,15 +1,19 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - 6 June 2007 - emk
+0.3.11 - 6 June 2007 - emk
 
   * Upgraded to FreeType 2.3.4.
+    - Disabled dejavu-serif-condensed, dejavu-sans-condensed and
+      dejavu-sans-light, because the new FreeType now maps them to the base
+      font name plus style bits.
   * Merged in ruby-objects.ss code from tamale_test.
     - Renamed lispish.ss -> language.ss.
     - Empty function calls with no function and no arguments are no longer
       legal.  Neither () nor [] may appear in ordinary runnable code.
     - The rarely-used WHILE macro no longer supports internal DEFINE
       forms, because it has been reverted to the Swindle version.
-    - A bunch of low-library dependencies in Runtime have been shuffled.
+    - A bunch of low-level library dependencies in Runtime have been
+      shuffled.
 
 0.3.10 - 8 May 2007 - brian, emk, tryon
 
