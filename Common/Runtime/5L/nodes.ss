@@ -13,6 +13,9 @@
   (require-for-syntax (lib "capture.ss" "5L"))
   (require (lib "indent.ss" "5L"))
 
+  ;; Our shiny new node path system.
+  (require (lib "paths.ss" "5L"))
+
 
   ;;=======================================================================
   ;;  Stuff Callable by the Kernel
