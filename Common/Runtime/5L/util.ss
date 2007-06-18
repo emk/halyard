@@ -86,7 +86,7 @@
 
   (provide foreach member? value->string cat symcat keyword-name
            hash-table-has-key?
-           label with-errors-blocked with-values curry)
+           label format-trace with-errors-blocked with-values curry)
 
   ;;; Run a body once for each item in a list.
   ;;;
@@ -165,6 +165,7 @@
                                         (begin/var body ...)))]))
   (define-syntax-indent label 1)
 
+  ;;; Attempt to format a nice backtrace.
   (define (format-trace exn)
     (let loop ((str "") (traces (continuation-mark-set->context 
                                  (exn-continuation-marks exn))))

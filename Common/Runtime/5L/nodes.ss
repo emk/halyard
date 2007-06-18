@@ -612,7 +612,7 @@
   (provide <node> node? node-name node-full-name extends-template? node-parent
            node-elements find-node @* @)
 
-  (defclass <node> (<template>)
+  (define-node-class <node> (<template>)
     (name :type <symbol>)
     parent
     (running? :type <boolean> :initvalue #f)
@@ -795,7 +795,7 @@
   ;;-----------------------------------------------------------------------
   ;;  A <group-member> may be stored in a <card-group>.
 
-  (defclass <group-member> (<node>))
+  (define-node-class <group-member> (<node>))
 
   ;;-----------------------------------------------------------------------
   ;;  Jumpable
@@ -805,7 +805,7 @@
 
   (provide <jumpable> jumpable?)
 
-  (defclass <jumpable> (<node>))
+  (define-node-class <jumpable> (<node>))
 
   (defgeneric (jump (target <jumpable>)))
 
@@ -820,9 +820,12 @@
   (define (card-or-card-group? node)
     (or (card? node) (card-group? node)))
 
-  (defclass <card-group> (<group-member>)
-    (members :accessor group-members :type <list> :initvalue '())
+  (define-node-class <card-group> (<group-member>)
+    (members :type <list> :initvalue '())
     (active? :type <boolean> :initvalue #f))
+
+  (define group-members card-group-members)
+  (define set-group-members! set-card-group-members!)
 
   (define (group-add-member! group member)
     ;; We need to check for duplicates before adding or we violate
@@ -853,7 +856,7 @@
 
   (provide sequence <card-sequence> card-sequence?)
 
-  (defclass <card-sequence> (<jumpable> <card-group>))
+  (define-node-class <card-sequence> (<jumpable> <card-group>))
 
   (defmethod (jump (target <card-sequence>))
     (if (null? (group-members target))
@@ -905,7 +908,7 @@
   (provide <card> card? card-next card-prev jump-next jump-prev
            define-card-template card)
 
-  (defclass <card>          (<jumpable> <group-member>))
+  (define-node-class <card> (<jumpable> <group-member>))
 
   (defmethod (jump (target <card>))
     (engine-jump-to-card *engine* target))
@@ -947,7 +950,7 @@
            default-element-parent call-with-default-element-parent
            with-default-element-parent create)
 
-  (defclass <element>       (<node>)
+  (define-node-class <element> (<node>)
     (temporary? :type <boolean> :initvalue #f))
 
   (define-template-definer define-element-template <element>)
