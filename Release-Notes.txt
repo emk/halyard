@@ -6,6 +6,10 @@ SVN - emk
     - Copied over %node-path% class from tamale_test staging area.
     - Added ugly DEFINE-NODE-CLASS wrapper to help ease transition.
     - Added instance predicate support to DEFINE-NODE-CLASS.
+    - @* now takes a string as an argument, and no longer supports
+      :IF-NOT-FOUND.  If you need the latter, see %NODE-PATH% RESOLVE-PATH.
+    - @* now returns a %NODE-PATH% (and not an element).  This node path
+      may be used more or less everywhere an element could be used.
 
 0.3.11 - 6 June 2007 - emk
 

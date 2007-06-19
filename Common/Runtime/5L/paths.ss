@@ -15,7 +15,7 @@
 
   ;; Our public API.  We temporarily rename the path constructor function
   ;; to prevent a collision with nodes.ss.
-  (provide %node-path% (rename @* make-node-path))
+  (provide %node-path% node-path? @*)
 
   ;;; A path in our node hierarchy.  Can represent either nested node
   ;;; classes, or nested nodes themselves.
@@ -54,6 +54,10 @@
           (find-node-internal (base .root) components)))
     |#
     )
+
+  ;;; Is OBJ a node path?
+  (define (node-path? obj)
+    (and (ruby-object? obj) (obj .instance-of? %node-path%)))
 
   ;;; Run code at both syntax expansion time and runtime.
   (define-syntax begin-for-syntax-and-runtime
@@ -112,8 +116,7 @@
          ;;                      (debug-log (format-trace exn))
          ;;                      (non-fatal-error (exn-message exn)))]]
          ;;(non-fatal-error (cat "Called " name ": " path-or-node " " ar gs))
-         (if (and (ruby-object? path-or-node)
-                  (path-or-node .instance-of? %node-path%))
+         (if (node-path? path-or-node)
              ;; .resolve-path is provided in nodes.ss.
              (apply wrapped (path-or-node .resolve-path) args)
              (apply wrapped path-or-node args)))]))

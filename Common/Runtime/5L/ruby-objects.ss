@@ -3,7 +3,7 @@
   (require (lib "util.ss" "5L"))
   (require (lib "begin-var.ss" "5L"))
 
-  (provide ruby-object? define-class %class% %object% method~ def
+  (provide <ruby-object> ruby-object? define-class %class% %object% method~ def
            with-instance attr attr-value attr-default)
 
   (defclass <ruby-object> ()

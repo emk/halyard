@@ -709,17 +709,28 @@
                [found (find-node candidate)]]
           (or found (find-node-relative (node-parent base) name)))))
 
-  (define (@* name &key (if-not-found
-                         (lambda ()
-                           (error (cat "Can't find relative path: @" name)))))
-    (or (find-node-relative (current-group-member) name)
-        (if-not-found)))
+  ;; We need to add some methods to %node-path%.
+  (with-instance %node-path%
+    ;;; Resolve a path.
+    (def (resolve-path
+          &key (if-not-found
+                (lambda ()
+                  (error (cat "Can't find relative path: " self)))))
+      (or (find-node-relative (current-group-member) (.to-symbol))
+          (if-not-found)))
+    )
+
+  ;; TODO - Placeholder method until we migrate <jumpable> to the new
+  ;; object model.
+  (defmethod (jump (path <ruby-object>))
+    (jump (path .resolve-path)))
 
   (define-syntax @
     ;; Syntactic sugar for find-node-relative.
     (syntax-rules ()
       [(@ name)
-       (@* 'name)]))
+       ;; TODO - Make our caller pass us a string instead.
+       (@* (symbol->string 'name))]))
   (define-syntax-indent @ function)
 
   (define (check-node-name name)
@@ -807,7 +818,9 @@
 
   (define-node-class <jumpable> (<node>))
 
-  (defgeneric (jump (target <jumpable>)))
+  ;; This used to be restricted to <jumpable>, but we needed to support
+  ;; %NODE-PATH%.
+  ;;(defgeneric (jump (target <jumpable>)))
 
   ;;-----------------------------------------------------------------------
   ;;  Groups of Cards
@@ -1012,30 +1025,35 @@
     (equal? (symbol->string sym1) (symbol->string sym2)))
 
   (define (delete-element-internal elem)
-    ;; We're the master node deletion routine--C++ is no longer in charge.
-    ;; TODO - We're called repeatedly as nodes get deleted, resulting
-    ;; in an O(n^2) time to delete n nodes.  Not good, but we can live with
-    ;; it for the moment.
-    (let [[parent (node-parent elem)]]
-      (set! (node-elements parent)
-            (let recurse [[elements (node-elements parent)]]
-              (cond
-               [(null? elements) '()]
-               [(eq? elem (car elements))
-                ;; Delete this node, and exclude it from the new element list.
-                (if (element-temporary? (car elements))
-                    (begin
-                      (exit-node (car elements))
-                      (unregister-node (car elements)))
-                    (debug-caution
-                     (cat "Can't fully delete non-temporary element "
-                          (node-full-name elem)
-                          " in this version of the engine")))
-                (engine-delete-element *engine* elem)
-                (recurse (cdr elements))]
-               [else
-                ;; Keep this node.
-                (cons (car elements) (recurse (cdr elements)))])))))
+    (if (node-path? elem)
+        ;; If we've got a node path, resolve it first so we can use EQ? to
+        ;; compare it against existing nodes.
+        (delete-element-internal (elem .resolve-path))
+        ;; We're the master node deletion routine--C++ is no longer in charge.
+        ;; TODO - We're called repeatedly as nodes get deleted, resulting
+        ;; in an O(n^2) time to delete n nodes.  Not good, but we can live with
+        ;; it for the moment.
+        (let [[parent (node-parent elem)]]
+          (set! (node-elements parent)
+                (let recurse [[elements (node-elements parent)]]
+                  (cond
+                   [(null? elements) '()]
+                   [(eq? elem (car elements))
+                    ;; Delete this node, and exclude it from the new
+                    ;; element list.
+                    (if (element-temporary? (car elements))
+                        (begin
+                          (exit-node (car elements))
+                          (unregister-node (car elements)))
+                        (debug-caution
+                         (cat "Can't fully delete non-temporary element "
+                              (node-full-name elem)
+                              " in this version of the engine")))
+                    (engine-delete-element *engine* elem)
+                    (recurse (cdr elements))]
+                   [else
+                    ;; Keep this node.
+                    (cons (car elements) (recurse (cdr elements)))]))))))
   
 
   ;;=======================================================================
