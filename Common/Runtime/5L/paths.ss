@@ -168,8 +168,15 @@
               (quasisyntax/loc
                stx
                (begin
-                 (defclass name supers #,@(map renamed-slot
-                                               (syntax-e #'slots)))
+                 (defclass name supers
+                   #,@(map renamed-slot (syntax-e #'slots))
+                   :auto #f :autopred #f :automaker #t
+                   :autoaccessors #t :autoinitargs #t)
+                 (define-path-or-node-function
+                   #,(datum->syntax-object stx
+                      (symcat (strip-class-brackets
+                               (syntax-object->datum #'name)) '?))
+                   (lambda (obj) (instance-of? obj name)))
                  #,@(map (lambda (slot-stx) (slot-wrapper slot-stx #'name))
                          (syntax-e #'slots))))])]]
       ;;(non-fatal-error (cat (syntax-object->datum result)))

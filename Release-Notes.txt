@@ -5,6 +5,7 @@ SVN - emk
   * Integrating new path system.
     - Copied over %node-path% class from tamale_test staging area.
     - Added ugly DEFINE-NODE-CLASS wrapper to help ease transition.
+    - Added instance predicate support to DEFINE-NODE-CLASS.
 
 0.3.11 - 6 June 2007 - emk
 
