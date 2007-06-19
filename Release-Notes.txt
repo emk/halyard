@@ -10,6 +10,10 @@ SVN - emk
       :IF-NOT-FOUND.  If you need the latter, see %NODE-PATH% RESOLVE-PATH.
     - @* now returns a %NODE-PATH% (and not an element).  This node path
       may be used more or less everywhere an element could be used.
+    - Added RESOLVE function, which will turn paths into nodes and pass
+      nodes unchanged.  Use this to resolve paths that might be used
+      in inner loops or other performance-critical code.
+    - Fixed performance regressions in animator library.
 
 0.3.11 - 6 June 2007 - emk
 

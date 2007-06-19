@@ -610,7 +610,7 @@
   ;; and other <card-group>s.  Any node may contain <element>s.
 
   (provide <node> node? node-name node-full-name extends-template? node-parent
-           node-elements find-node @* @)
+           node-elements find-node resolve @* @)
 
   (define-node-class <node> (<template>)
     (name :type <symbol>)
@@ -708,6 +708,12 @@
                [candidate (string->symbol (cat base-name "/" name))]
                [found (find-node candidate)]]
           (or found (find-node-relative (node-parent base) name)))))
+
+  ;;; Given either a %node-path% or a node, return a node.
+  (define (resolve path-or-node)
+    (if (node-path? path-or-node)
+        (path-or-node .resolve-path)
+        path-or-node))
 
   ;; We need to add some methods to %node-path%.
   (with-instance %node-path%

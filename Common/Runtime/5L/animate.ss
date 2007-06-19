@@ -99,22 +99,30 @@
              (define new (interpolate-value fraction start end))
              (unless (equals? new old)
                (set! var new)))))]))
+
+  ;;; Similar to (interpolate (prop obj prop-name final)), but considerably
+  ;;; faster, because it resolves object paths once up front.
+  (define-syntax interpolate-prop
+    (syntax-rules ()
+      [(_ obj prop-name final)
+       (let [[obj (resolve obj)]]
+         (interpolate (prop obj prop-name) final))]))
   
   ;;; Returns an animator that plays through the frames of a %SPRITE%.
   (define (play-sprite sprite &key (reverse? #f))
-    (interpolate (prop sprite frame) 
-                 (if reverse? 0 (- (length (prop sprite frames)) 1))))
+    (interpolate-prop sprite frame
+                      (if reverse? 0 (- (length (prop sprite frames)) 1))))
 
   ;;; This function creates a simple DRAW-FUNC for use with ANIMATE.  The
   ;;; resulting function moves OBJs from the point FROM to the point TO
   ;;; over the duration of the animation.
   (define (slide elem to)
-    (interpolate (prop elem at) to))
+    (interpolate-prop elem at to))
 
   ;;; Return an animator that resizes an element to a given rect.  Mostly 
   ;;; useful for changing the size of a rectangle or rectangle-outline element.
   (define (reshape elem final-rect)
-    (interpolate (prop elem shape) final-rect))
+    (interpolate-prop elem shape final-rect))
 
   ;;; Return an animator that changes the rect for an element to a given rect 
   ;;; (both shape and position).
