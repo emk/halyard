@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+SVN - emk, brian
 
   * Integrating new path system.
     - Copied over %node-path% class from tamale_test staging area.
@@ -14,6 +14,21 @@ SVN - emk
       nodes unchanged.  Use this to resolve paths that might be used
       in inner loops or other performance-critical code.
     - Fixed performance regressions in animator library.
+  * Porting nodes.ss to new object system
+    - Removed ELEMENT special form.
+    - Groups and sequences are now distinct parts of the class hierarchy.
+      This may require rare code changes.
+    - Added MAKE-RUBY-INSTANCE-OF?-PREDICATE function.
+    - Fixed major bug in SEND%.
+    - Added dubious .AUTO-DEFAULT-ATTR method.
+    - Ported nodes.ss from Swindle to Ruby objects.  The changes are huge
+      and the new code is ugly and slow.  In fact, we're basically
+      emulating the old object system by kludgy metaclass programming on
+      top of the new one.  More changes planned very soon.
+      - Removed DEFINE-NODE-CLASS macro.
+      - Major performance regression on features/mask/light in tamale_test.
+      - Moderate performance regression on features/animation.
+      - CommonTest test suite is currently broken.
 
 0.3.11 - 6 June 2007 - emk
 

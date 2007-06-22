@@ -49,7 +49,7 @@
 
   (defclass <engine> ()
     (root-node
-     :initializer (lambda () (make <card-group>
+     :initializer (lambda () (%card-group% .new
                                :name '|/| :parent #f :active? #t
                                :running? #t)))
     (node-table :initializer make-hash-table)
@@ -76,7 +76,7 @@
 
   (define (engine-current-card engine)
     (let [[result (engine-current-group-member *engine*)]]
-      (if (instance-of? result <card>)
+      (if (card? result)
           result
           #f)))
   
@@ -88,16 +88,15 @@
   
   (defgeneric (set-engine-event-handled?! (eng <engine>) (handled? <boolean>)))
   (defgeneric (set-engine-event-vetoed?! (eng <engine>) (vetoed? <boolean>)))
-  (defgeneric (engine-jump-to-card (engine <engine>) (target <card>)))
-  (defgeneric (engine-register-card (engine <engine>) (card <card>)))
+  (defgeneric (engine-jump-to-card (engine <engine>) target))
+  (defgeneric (engine-register-card (engine <engine>) card))
   (defgeneric (engine-enable-expensive-events (engine <engine>)
                                               (enable? <boolean>)))
-  (defgeneric (engine-notify-exit-card (engine <engine>) (card <card>)))
-  (defgeneric (engine-notify-enter-card (engine <engine>) (card <card>)))
-  (defgeneric (engine-notify-card-body-finished (engine <engine>)
-                                                (card <card>)))
-  (defgeneric (engine-delete-element (engine <engine>) (elem <element>)))
-  (defgeneric (engine-exit-node (engine <engine>) (node <node>)))
+  (defgeneric (engine-notify-exit-card (engine <engine>) card))
+  (defgeneric (engine-notify-enter-card (engine <engine>) card))
+  (defgeneric (engine-notify-card-body-finished (engine <engine>) card))
+  (defgeneric (engine-delete-element (engine <engine>) elem))
+  (defgeneric (engine-exit-node (engine <engine>) node))
 
 
   ;;=======================================================================
@@ -153,8 +152,8 @@
                   (node-full-name node))))
 
     ;; Keep track of whether we're handling expensive events.  We call
-    ;; ENABLE-EXPENSIVE-EVENTS here, which is sufficient for <card> and
-    ;; <element> nodes.  But since <card-group>s and <card-sequence>s stay
+    ;; ENABLE-EXPENSIVE-EVENTS here, which is sufficient for %card% and
+    ;; %element% nodes.  But since %card-group%s and %card-sequence%s stay
     ;; alive longer than a single card, we need to set
     ;; NODE-HAS-EXPENSIVE-HANDLERS?, which is used by
     ;; MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD (on behalf of RUN-CARD) to do
@@ -386,20 +385,60 @@
     (label     :type <string>      :initvalue "")
     (default                       :initvalue $no-default))
 
-  (defclass <template> ()
-    (group      :type <symbol>     :initvalue 'none)
-    (extends                       :initvalue #f)
-    (prop-decls :type <list>       :initvalue '())
-    (bindings-eval-fn :type <function>)
-    (init-fn :type <function>   :initvalue (lambda (node) #f)))
+  (define-class %node% ()
+    (with-instance (.class)
+      ;; "Property" declarations--these are our older version of slots.  This
+      ;; needs to be writable because we initialize it with SET!.
+      (.auto-default-attr 'prop-decls (method () '()) :writable? #t)
 
-  (defmethod (initialize (template <template>) initargs)
-    (call-next-method)
-    ;; Make sure templates only extend other templates in their own group.
-    (assert (or (not (template-extends template))
-                (eq? (template-group template)
-                     (template-group (template-extends template))))))
+      ;; When run, this function returns key/value pairs used to initialize
+      ;; the object.
+      (.auto-default-attr 'bindings-eval-fn
+         (method () (lambda (self) (make-hash-table)))
+         :writable? #t)
 
+      ;; This function contains the initializer "body" of a declaration.
+      (.auto-default-attr 'init-fn
+         (method () (lambda (self) (void)))
+         :writable? #t)
+
+      ;; Corresponds roughly to our old EXTENDS-TEMPLATE function.  This
+      ;; allows us to build a hierarchy of fake "classes", which starts
+      ;; with an _instance_ of a subclass of %NODE%, goes up through that
+      ;; instance's class, and then follows superclass links up to %NODE%.
+      (def (extends-template)
+        (if (eq? self %node%)
+            #f
+            (.superclass)))
+      )
+
+    ;; These definitions are needed by DEFINE-NODE and CREATE, allowing
+    ;; them to treat instances a little bit like classes.  See above.
+    (attr prop-decls '())
+    (attr bindings-eval-fn
+          (lambda (self) (error "bindings-eval-fn not specified (#2)")))
+    (attr init-fn (lambda (node) (void)))
+    (def (extends-template)
+      (.class))
+
+    (def (bind-property-values!)
+      ;; TODO - template -> class
+      (let recurse [[template self]]
+        (when template
+          ;; We bind property values on the way in, and run init-fns
+          ;; on the way out.
+          (node-bind-property-values! self template)
+          (recurse (template .extends-template))
+          ;; Pass NODE to the init-fn so SELF refers to the right thing.
+          ((template-init-fn template) self))))
+    
+    )
+
+  ;; TODO - Get rid of these wrappers
+  (define (template-prop-decls t) (t .prop-decls)) ; Internal only
+  (define (template-bindings-eval-fn t) (t .bindings-eval-fn)) ; 
+  (define (template-init-fn t) (t .init-fn))
+  
   (define (node-bind-value! node name value)
     (if (node-has-value? node name)
         (error (cat "Duplicate property " name " on node "
@@ -578,58 +617,162 @@
 
   (define-syntax define-template
     (syntax-rules ()
-      [(define-template group name prop-decls
-                              (extended . bindings)
-         . body)
-       (define name (make <template>
-                      :group      group
-                      :extends    extended
-                      :bindings-eval-fn (expand-bindings-eval-fn prop-decls 
-                                                                 . bindings)
-                      :prop-decls (expand-prop-decls . prop-decls)
-                      :init-fn    (expand-init-fn prop-decls . body)))]
-      [(define-template group name prop-decls bindings . body)
-       (define-template group name prop-decls (#f . bindings)
-         . body)]))
+      [(define-template name prop-decls (extended . bindings) . body)
+       (define-class name (extended)
+         (set! (.bindings-eval-fn) 
+               (expand-bindings-eval-fn prop-decls . bindings))
+         (set! (.prop-decls) (expand-prop-decls . prop-decls))
+         (set! (.init-fn) (expand-init-fn prop-decls . body)))]))
 
+  ;; TODO - Backwards compatibility glue that should go away.
   (define-syntax define-template-definer
     (syntax-rules ()
-      [(define-template-definer definer-name group)
+      [(define-template-definer definer-name default-superclass)
        (begin
          (define-syntax definer-name
            (syntax-rules ()
-             [(definer-name . rest)
-              (define-template 'group . rest)]))
+             [(definer-name name prop-decls () . body)
+              (define-template name prop-decls (default-superclass) . body)]
+             [(definer-name name . rest)
+              (define-template name . rest)]))
          (define-syntax-indent definer-name 3))]))
+
+  (define-syntax define-node
+    (syntax-rules ()
+      [(define-node name (extended bindings ...)
+         body ...)
+       (begin
+         (define name
+           (with-values [[parent local-name] (analyze-node-name 'name)]
+             (check-node-name local-name)
+             (extended .new
+               :bindings-eval-fn (expand-bindings-eval-fn [] bindings ...)
+               :init-fn (expand-init-fn () body ...)
+               :parent parent
+               :name local-name)))
+         (register-node name))]))
+
+  (define-syntax define-node-definer
+    (syntax-rules ()
+      ;; TODO - Should we check that any supplied superclass is actually
+      ;; a subclass of DEFAULT-SUPERCLASS?
+      [(define-node-definer definer-name default-superclass)
+       (begin
+         (define-syntax definer-name
+           (syntax-rules ()
+             [(definer-name name)
+              (define-node name (default-superclass))]
+             [(definer-name name () . body)
+              (define-node name (default-superclass) . body)]
+             [(definer-name name . rest)
+              (define-node name . rest)]))
+         (define-syntax-indent definer-name 2))]))
+
+  (define (create template
+                  &key (name (gensym)) (parent (default-element-parent))
+                  &rest-keys bindings)
+    ;; Temporarily create an %element% node belonging to the current card,
+    ;; using 'template' as our template.  This node will be deleted when we
+    ;; leave the card.
+    ;;
+    ;; Someday I expect this to be handled by a transactional rollback of the
+    ;; C++ document model.  But this will simulate things well enough for
+    ;; now, I think.
+    (define (bindings-eval-fn self)
+      (bindings->hash-table bindings))
+    (unless parent
+      (error "Can't create element without a parent node"))
+    (unless (node-running? parent)
+      (error (cat "Cannot CREATE child on inactive node "
+                  (node-full-name parent))))
+    (check-node-name name)
+    ;; TODO - Update this check to the new system?
+    ;; (assert (eq? (template-group template) '%element%))
+    (let [[e (template .new
+               :bindings-eval-fn bindings-eval-fn
+               :parent     parent
+               :name       name
+               :temporary? #t)]]
+      (register-node e)
+      (enter-node e)
+      e))
 
   ;;-----------------------------------------------------------------------
   ;;  Nodes
   ;;-----------------------------------------------------------------------
   ;;  A program is (among other things) a tree of nodes.  The root node
-  ;;  contains <card>s and <card-groups>.  <card-group>s contain <card>s
-  ;; and other <card-group>s.  Any node may contain <element>s.
+  ;;  contains %card%s and %card-group%s.  %card-group%s contain %card%s
+  ;;  and other %card-group%s.  Any node may contain %element%s.
 
-  (provide <node> node? node-name node-full-name extends-template? node-parent
+  (provide %node% node? node-name node-full-name extends-template? node-parent
            node-elements find-node resolve @* @)
 
-  (define-node-class <node> (<template>)
-    (name :type <symbol>)
-    parent
-    (running? :type <boolean> :initvalue #f)
-    (elements :type <list> :initvalue '())
-    (has-expensive-handlers? :type <boolean> :initvalue #f)
-    (handlers :type <hash-table> :initializer (lambda () (make-hash-table)))
-    (allowed-values :type <hash-table>
-                    :initializer (lambda () (make-hash-table)))
-    (values   :type <hash-table> :initializer (lambda () (make-hash-table)))
+  (with-instance %node%
+    (attr name :type <symbol>)
+    (attr parent)
+    (attr running? #f :type <boolean> :writable? #t)
+    (attr elements '() :type <list> :writable? #t)
+    (attr has-expensive-handlers? #f :type <boolean> :writable? #t)
+    (attr handlers (make-hash-table) :type <hash-table> :writable? #t)
+    (attr allowed-values (make-hash-table) :type <hash-table> :writable? #t)
+    (attr values (make-hash-table) :type <hash-table> :writable? #t)
+
+    (def (initialize &rest keys)
+      (super)
+      (when (node-parent self)
+        (if (element? self)
+            (node-add-element! (node-parent self) self)
+            (group-add-member! (node-parent self) self))))
+
+    (def (to-string)
+      (cat "#<" (node-full-name self) ">"))
+
+    (def (children)
+      (node-elements self))
+
+    (def (register)
+      (let [[name (node-full-name self)]]
+        (when (hash-table-get (node-table) self (lambda () #f))
+          (error (cat "Duplicate copies of node " (node-full-name self))))
+        (hash-table-put! (node-table) name self)))
+    
+    ;; Corresponds to the old %jumpable% class.
+    ;; TODO - Decide if we want a general .implements-interface? method.
+    (def (jumpable?)
+      #f)
+
+    ;; Must be overriden by all jumpable nodes.
+    (def (find-first-card)
+      #f)
+
+    ;; Must be overriden by all jumpable nodes.
+    (def (find-last-card)
+      #f)
     )
 
-  (defmethod (initialize (node <node>) initargs)
-    (call-next-method)
-    (when (node-parent node)
-      (if (element? node)
-          (node-add-element! (node-parent node) node)
-          (group-add-member! (node-parent node) node))))
+  ;; TODO - Get rid of these wrapper functions.
+  ;; TODO - Some setters will be needed.
+  (define node? (make-ruby-instance-of?-predicate %node%))
+  (define (node-name node) (node .name))
+  (define (node-parent node) (node .parent))
+  (define (node-running? node) (node .running?))
+  (define (set-node-running?! node val) (set! (node .running?) val))
+  (define (node-elements node) (node .elements))
+  (define (set-node-elements! node val) (set! (node .elements) val))
+  (define (node-has-expensive-handlers? node) (node .has-expensive-handlers?))
+  (define (set-node-has-expensive-handlers?! node val)
+    (set! (node .has-expensive-handlers?) val))
+  (define (node-handlers node) (node .handlers))
+  (define (set-node-handlers! node val) (set! (node .handlers) val))
+  (define (node-allowed-values node) (node .allowed-values))
+  (define (set-node-allowed-values! node val)
+    (set! (node .allowed-values) val))
+  (define (node-values node) (node .values))
+  (define (set-node-values! node val) (set! (node .values) val))
+  (define (node-children node) (node .children))
+  (define (register-node node) (node .register))
+  (define (find-first-card node) (node .find-first-card))
+  (define (find-last-card node) (node .find-last-card))
 
   (define (node-full-name node)
     ;; Join together local names with "/" characters.
@@ -640,14 +783,9 @@
         (node-name node))))
 
   (define (extends-template? node template)
-    (let recurse [[extends node]]
-      (cond
-        [(not extends)
-         #f]
-        [(eq? extends template)
-         #t]
-        [else
-         (recurse (template-extends extends))])))
+    (if (node .subclass-of? %class%)
+        (node .subclass-of? template)
+        (node .instance-of? template)))
   
   (define (check-for-duplicate-nodes node-list node)
     (let recurse [[node-list node-list]]
@@ -666,30 +804,18 @@
     (set! (node-elements node)
           (append (node-elements node) (list elem))))
 
-  (defgeneric (node-children (node <node>)))
-  (defmethod (node-children (node <node>))
-    (node-elements node))
-
   (define (clear-node-state! node)
     (set! (node-has-expensive-handlers? node) #f)
     (set! (node-handlers node) (make-hash-table))
     (set! (node-allowed-values node) (make-hash-table))
     (set! (node-values node) (make-hash-table)))
 
-  (defgeneric (register-node (node <node>)))
-
-  (defmethod (register-node (node <node>))
-    (let [[name (node-full-name node)]]
-      (when (hash-table-get (node-table) name (lambda () #f))
-        (error (cat "Duplicate copies of node " (node-full-name node))))
-      (hash-table-put! (node-table) name node)))
-
   (define (unregister-node node)
-    ;; This is only used to delete temporary <element> nodes, simulating
+    ;; This is only used to delete temporary %element% nodes, simulating
     ;; end-of-card rollback.
     (let [[name (node-full-name node)]]
-      (%assert (and (instance-of? node <element>)
-                   (element-temporary? node)))
+      (%assert (and (element? node)
+                    (element-temporary? node)))
       (%assert (eq? (hash-table-get (node-table) name (lambda () #f)) node))
       (hash-table-remove! (node-table) name)))
 
@@ -717,6 +843,17 @@
 
   ;; We need to add some methods to %node-path%.
   (with-instance %node-path%
+    ;;; Redirect any method calls we don't understand to our associated node.
+    (def (method-missing name . args)
+      ((.resolve-path) .send name args))
+
+    ;; XXX - Nasty hack since we haven't decided what to do about interfaces
+    ;; yet.  This will need more thought.
+    ;; TODO - Decide if we want a general .implements-interface? method.
+    (def (instance-of? klass)
+      (or (super)
+          ((.resolve-path) .instance-of? klass)))
+
     ;;; Resolve a path.
     (def (resolve-path
           &key (if-not-found
@@ -725,11 +862,6 @@
       (or (find-node-relative (current-group-member) (.to-symbol))
           (if-not-found)))
     )
-
-  ;; TODO - Placeholder method until we migrate <jumpable> to the new
-  ;; object model.
-  (defmethod (jump (path <ruby-object>))
-    (jump (path .resolve-path)))
 
   (define-syntax @
     ;; Syntactic sugar for find-node-relative.
@@ -764,69 +896,24 @@
               (values parent
                       (string->symbol (cadddr matches))))]))))
 
-  (define-syntax define-node
-    (syntax-rules ()
-      [(define-node name group node-class (extended bindings ...)
-         body ...)
-       (begin
-         (define name
-           (with-values [[parent local-name] (analyze-node-name 'name)]
-             (check-node-name local-name)
-             (make node-class
-               :group      'group
-               :extends    extended
-               :bindings-eval-fn (expand-bindings-eval-fn [] bindings ...)
-               :init-fn    (expand-init-fn () body ...)
-               :parent     parent
-               :name       local-name)))
-         (register-node name))]
-      [(define-node name group node-class (bindings ...) body ...)
-       (define-node name group node-class (#f bindings ...)
-         body ...)]
-      [(define-node name group node-class)
-       (define-node name group node-class (#f))]))
-
-  (define-syntax define-node-definer
-    (syntax-rules ()
-      [(define-node-definer definer-name group node-class)
-       (begin
-         (define-syntax definer-name
-           (syntax-rules ()
-             [(definer-name name . rest)
-              (define-node name group node-class . rest)]))
-         (define-syntax-indent definer-name 2))]))
-
-  ;; Must be overriden for all instantiable subclasses of <jumpable>.
-  (defgeneric (find-first-card (node <node>)))
-  (defmethod (find-first-card (node <node>))
-    #f)                       
-
-  ;; Must be overriden for all instantiable subclasses of <jumpable>.
-  (defgeneric (find-last-card (node <node>)))
-  (defmethod (find-last-card (node <node>))
-    #f)
-
 
   ;;-----------------------------------------------------------------------
   ;;  Group Member
   ;;-----------------------------------------------------------------------
-  ;;  A <group-member> may be stored in a <card-group>.
+  ;;  A %group-member% may be stored in a %card-group%.
 
-  (define-node-class <group-member> (<node>))
+  (define-class %group-member% (%node%))
 
   ;;-----------------------------------------------------------------------
   ;;  Jumpable
   ;;-----------------------------------------------------------------------
-  ;;  The abstract superclass of all nodes which support 'jump'.  In
-  ;;  general, these are either cards or <card-sequence>s.
+  ;;  This used to be an abstract superclass for jumpable objects  In
+  ;;  general, these are either cards or %card-sequence%s.
 
-  (provide <jumpable> jumpable?)
-
-  (define-node-class <jumpable> (<node>))
-
-  ;; This used to be restricted to <jumpable>, but we needed to support
-  ;; %NODE-PATH%.
-  ;;(defgeneric (jump (target <jumpable>)))
+  ;; TODO - Get rid of wrapper.
+  (define (jumpable? node)
+    (and (ruby-object? node) (node .jumpable?)))
+  (define (jump node) (node .jump))
 
   ;;-----------------------------------------------------------------------
   ;;  Groups of Cards
@@ -834,14 +921,35 @@
   ;;  By default, groups of cards are not assumed to be in any particular
   ;;  linear order, at least for purposes of program navigation.
 
-  (provide define-group-template group <card-group> group-members card-group?)
+  (provide define-group-template group %card-group% group-members card-group?)
 
   (define (card-or-card-group? node)
     (or (card? node) (card-group? node)))
 
-  (define-node-class <card-group> (<group-member>)
-    (members :type <list> :initvalue '())
-    (active? :type <boolean> :initvalue #f))
+  (define-class %card-group% (%group-member%)
+    (attr members '() :type <list> :writable? #t)
+    (attr active? #f :type <boolean> :writable? #t)
+
+    (def (children)
+      (append (.members) (super)))
+
+    (def (find-next member)
+      (assert (member .jumpable?))
+      #f)
+
+    (def (find-prev member)
+      (assert (member .jumpable?))
+      #f)
+    )
+
+  ;; TODO - Eliminate these wrappers.
+  (define card-group? (make-ruby-instance-of?-predicate %card-group%))
+  (define (card-group-members grp) (grp .members))
+  (define (set-card-group-members! grp val) (set! (grp .members) val))
+  (define (card-group-active? grp) (grp .active?))
+  (define (set-card-group-active?! grp val) (set! (grp .active?) val))
+  (define (card-group-find-next grp member) (grp .find-next member))
+  (define (card-group-find-prev grp member) (grp .find-prev member))
 
   (define group-members card-group-members)
   (define set-group-members! set-card-group-members!)
@@ -853,90 +961,94 @@
     (set! (group-members group)
           (append (group-members group) (list member))))
 
-  (defmethod (node-children (group <card-group>))
-    (append (group-members group) (call-next-method)))
-
-  (defgeneric (card-group-find-next (group <card-group>) (member <jumpable>)))
-  (defgeneric (card-group-find-prev (group <card-group>) (member <jumpable>)))
-
-  (defmethod (card-group-find-next (group <card-group>) (member <jumpable>))
-    #f)
-
-  (defmethod (card-group-find-prev (group <card-group>) (member <jumpable>))
-    #f)
-
-  (define-template-definer define-group-template <card-group>)
-  (define-node-definer group <card-group> <card-group>)
+  (define-template-definer define-group-template %card-group%)
+  (define-node-definer group %card-group%)
 
   ;;-----------------------------------------------------------------------
   ;;  Sequences of Cards
   ;;-----------------------------------------------------------------------
   ;;  Like groups, but ordered.
 
-  (provide sequence <card-sequence> card-sequence?)
+  (provide sequence %card-sequence% card-sequence? define-sequence-template)
 
-  (define-node-class <card-sequence> (<jumpable> <card-group>))
+  (define-class %card-sequence% (%card-group%)
+    (def (jumpable?) #t)
 
-  (defmethod (jump (target <card-sequence>))
-    (if (null? (group-members target))
-        (error (cat "Can't jump to sequence " (node-full-name target)
-                    " because it contains no cards."))
-        (jump (car (group-members target)))))
+    (def (jump)
+      (if (null? (group-members self))
+          (error (cat "Can't jump to sequence " (node-full-name self)
+                      " because it contains no cards."))
+          (jump (car (group-members self)))))
 
-  (defmethod (find-first-card (sequence <card-sequence>))
-    (find-first-card (first (group-members sequence))))
+    (def (find-next member)
+      (assert (member .jumpable?))
+      ;; Find the node *after* member.
+      (let [[remainder (memq member (group-members self))]]
+        (%assert (not (null? remainder)))
+        (if (null? (cdr remainder))
+            (card-group-find-next (node-parent self) self)
+            ;; Walk recursively through any sequences to find the first card.
+            (find-first-card (cadr remainder)))))
 
-  (defmethod (find-last-card (sequence <card-sequence>))
-    (find-last-card (last (group-members sequence))))
+    (def (find-prev member)
+      (assert (member .jumpable?))
+      ;; Find the node *before* member.  Notice the two (2!) lambdas in
+      ;; this function, which are used to implement a form of lazy
+      ;; evaluation: They keep track of how to find the node we want,
+      ;; assuming the current current node is MEMBER (which is one past the
+      ;; node we want).
+      (let search [[members (group-members self)]
+                   [candidate-func 
+                    (lambda ()
+                      (card-group-find-prev (node-parent self) self))]]
+        (%assert (not (null? members)))
+        (if (eq? (car members) member)
+            (candidate-func)
+            (search (cdr members)
+                    (lambda ()
+                      ;; This is our actual base case: It's called when we've
+                      ;; located MEMBER, and it recursively looks for the last
+                      ;; card in the node *before* MEMBER.  Got it?
+                      (find-last-card (car members)))))))
 
-  (defmethod (card-group-find-next (group <card-sequence>) (member <jumpable>))
-    ;; Find the node *after* member.
-    (let [[remainder (memq member (group-members group))]]
-      (%assert (not (null? remainder)))
-      (if (null? (cdr remainder))
-          (card-group-find-next (node-parent group) group)
-          ;; Walk recursively through any sequences to find the first card.
-          (find-first-card (cadr remainder)))))
+    (def (find-first-card)
+      (find-first-card (first (group-members self))))
 
-  (defmethod (card-group-find-prev (group <card-sequence>) (member <jumpable>))
-    ;; Find the node *before* member.  Notice the two (2!) lambdas in this
-    ;; function, which are used to implement a form of lazy evaluation:
-    ;; They keep track of how to find the node we want, assuming the
-    ;; current current node is MEMBER (which is one past the node we want).
-    (let search [[members (group-members group)]
-                 [candidate-func 
-                  (lambda ()
-                    (card-group-find-prev (node-parent group) group))]]
-      (%assert (not (null? members)))
-      (if (eq? (car members) member)
-          (candidate-func)
-          (search (cdr members)
-                  (lambda ()
-                    ;; This is our actual base case: It's called when we've
-                    ;; located MEMBER, and it recursively looks for the last
-                    ;; card in the node *before* MEMBER.  Got it?
-                    (find-last-card (car members)))))))
+    (def (find-last-card)
+      (find-last-card (last (group-members self))))
+    )
 
-  (define-node-definer sequence <card-group> <card-sequence>)
+  ;; TODO - Get rid of wrapper functions.
+  (define card-sequence? (make-ruby-instance-of?-predicate %card-sequence%))
+
+  (define-template-definer define-sequence-template %card-sequence%)
+  (define-node-definer sequence %card-sequence%)
 
   ;;-----------------------------------------------------------------------
   ;;  Cards
   ;;-----------------------------------------------------------------------
   ;;  More functions are defined in the next section below.
 
-  (provide <card> card? card-next card-prev jump-next jump-prev
+  (provide %card% card? card-next card-prev jump-next jump-prev
            define-card-template card)
 
-  (define-node-class <card> (<jumpable> <group-member>))
+  (define-class %card% (%group-member%)
+    (def (register)
+      (super)
+      (engine-register-card *engine* self))
 
-  (defmethod (jump (target <card>))
-    (engine-jump-to-card *engine* target))
+    (def (jumpable?) #t)
 
-  (defmethod (find-first-card (c <card>))
-    c)
+    (def (jump)
+      (engine-jump-to-card *engine* self))
+    
+    (def (find-first-card) self)
+    (def (find-last-card) self)
 
-  (defmethod (find-last-card (c <card>))
-    c)
+    )
+
+  ;; TODO - Get rid of wrapper functions.  
+  (define card? (make-ruby-instance-of?-predicate %card%))
 
   (define (card-next)
     (card-group-find-next (node-parent (current-card)) (current-card)))
@@ -954,26 +1066,28 @@
   (define (jump-next) (jump-helper card-next "after"))
   (define (jump-prev) (jump-helper card-prev "before"))
 
-  (defmethod (register-node (c <card>))
-    (call-next-method)
-    (engine-register-card *engine* c))
-
-  (define-template-definer define-card-template <card>)
-  (define-node-definer card <card> <card>)
+  (define-template-definer define-card-template %card%)
+  (define-node-definer card %card%)
 
   ;;-----------------------------------------------------------------------
   ;; Elements
   ;;-----------------------------------------------------------------------
 
-  (provide <element> element? define-element-template element
+  (provide element? define-element-template ; %element%
            default-element-parent call-with-default-element-parent
            with-default-element-parent create)
 
-  (define-node-class <element> (<node>)
-    (temporary? :type <boolean> :initvalue #f))
+  ;; TODO - Merge this element class with one in tamale.ss.  Should we
+  ;; rename this one until we do?
+  (define-class %element% (%node%)
+    (attr temporary? #f :type <boolean>))
 
-  (define-template-definer define-element-template <element>)
-  (define-node-definer element <element> <element>)
+  ;; TODO - Get rid of wrapper functions.  
+  (define element? (make-ruby-instance-of?-predicate %element%))
+  (define (element-temporary? elem) (elem .temporary?))
+
+  (define-template-definer define-element-template %element%)
+  ;;(define-node-definer element %element% %element%)
   
   (define (default-element-parent)
     (or (engine-default-element-parent *engine*)
@@ -991,36 +1105,6 @@
       [(with-default-element-parent node . body)
        (call-with-default-element-parent node (lambda () . body))]))
   (define-syntax-indent with-default-element-parent 1)
-
-  (define (create template
-                  &key (name (gensym)) (parent (default-element-parent))
-                  &rest-keys bindings)
-    ;; Temporarily create an <element> node belonging to the current card,
-    ;; using 'template' as our template.  This node will be deleted when we
-    ;; leave the card.
-    ;;
-    ;; Someday I expect this to be handled by a transactional rollback of the
-    ;; C++ document model.  But this will simulate things well enough for
-    ;; now, I think.
-    (define (bindings-eval-fn self)
-      (bindings->hash-table bindings))
-    (unless parent
-      (error "Can't create element without a parent node"))
-    (unless (node-running? parent)
-      (error (cat "Cannot CREATE child on inactive node "
-                  (node-full-name parent))))
-    (check-node-name name)
-    (assert (eq? (template-group template) '<element>))
-    (let [[e (make <element>
-               :group      '<element>
-               :extends    template
-               :bindings-eval-fn bindings-eval-fn
-               :parent     parent
-               :name       name
-               :temporary? #t)]]
-      (register-node e)
-      (enter-node e)
-      e))
 
   (define (eq-with-gensym-hack? sym1 sym2)
     ;; STUPID BUG - We name anonymous elements with gensyms, for
@@ -1065,87 +1149,89 @@
   ;;=======================================================================
   ;;  Changing Cards
   ;;=======================================================================
+  ;;  We call these function whenever we enter or exit a node.  They never
+  ;;  recurse up or down the node hierarchy; that work is done by other
+  ;;  functions below.
 
-  ;; We call these function whenever we enter or exit a node.  They never
-  ;; recurse up or down the node hierarchy; that work is done by other
-  ;; functions below.
-  (defgeneric (exit-node (node <node>)))
-  (defgeneric (enter-node (node <node>)))
+  ;; TODO - Get rid of wrappers.
+  (define (exit-node node) (node .exit-node))
+  (define (enter-node node) (node .enter-node))
 
-  (defmethod (exit-node (node <node>))
-    ;; Exit all our child elements.
-    ;; TRICKY - We call into the engine to do element deletion safely.
-    ;; We work with a copy of (NODE-ELEMENTS NODE) the original
-    ;; will be modified as we run.
-    (foreach [elem (node-elements node)]
-      (delete-element-internal elem))
-    ;; Unregister our state-db listeners, if we have any.
-    (engine-exit-node *engine* node)
-    ;; Run any exit handler.
-    (run-on-exit-handler node)
-    ;; Mark this node as no longer running, so nobody tries to call ON
-    ;; or CREATE on it.
-    (%assert (node-running? node))
-    (set! (node-running? node) #f)
-    ;; Clear our handler list.
-    (clear-node-state! node))
+  (with-instance %node%
+    (def (exit-node)
+      ;; Exit all our child elements.
+      ;; TRICKY - We call into the engine to do element deletion safely.
+      ;; We work with a copy of (NODE-ELEMENTS SELF) the original
+      ;; will be modified as we run.
+      (foreach [elem (node-elements self)]
+        (delete-element-internal elem))
+      ;; Unregister our state-db listeners, if we have any.
+      (engine-exit-node *engine* self)
+      ;; Run any exit handler.
+      (run-on-exit-handler self)
+      ;; Mark this node as no longer running, so nobody tries to call ON
+      ;; or CREATE on it.
+      (%assert (node-running? self))
+      (set! (node-running? self) #f)
+      ;; Clear our handler list.
+      (clear-node-state! self))
 
-  (defmethod (enter-node (node <node>))
-    ;; TODO - Make sure all our template properties are bound.
-    ;; Mark this node as running so we can add event handlers and CREATE
-    ;; children.
-    (%assert (not (node-running? node)))
-    (set! (node-running? node) #t)
-    ;; Enter all our child elements.  Notice we do this first, so
-    ;; all the elements are available by the time we run the node body.
-    ;; Unfortunately, this means that "new element" events generated
-    ;; during element initialization can't be caught by the node.
-    ;; Weird, but this is what the users voted for.
-    (foreach [elem (node-elements node)]
-      (enter-node elem))
-    ;; Initialize our templates one at a time.
-    (let recurse [[template node]]
-      (when template
-        ;; We bind property values on the way in, and run init-fns
-        ;; on the way out.
-        (node-bind-property-values! node template)
-        (recurse (template-extends template))
-        ;; Pass NODE to the init-fn so SELF refers to the right thing.
-        ((template-init-fn template) node)))
-    ;; Make sure all the properties of this node were declared somewhere.
-    (node-check-for-unexpected-properties node)
-    ;; Let the node know all initialization functions have been run.
-    ;; (This allows "two-phase" construction, where templates can effectively
-    ;; send messages to subtemplates.)
-    (send/nonrecursive* (lambda () #f) node 'setup-finished))
+    (def (enter-node)
+      ;; TODO - Make sure all our template properties are bound.
+      ;; Mark this node as running so we can add event handlers and CREATE
+      ;; children.
+      (%assert (not (node-running? self)))
+      (set! (node-running? self) #t)
+      ;; Enter all our child elements.  Notice we do this first, so
+      ;; all the elements are available by the time we run the node body.
+      ;; Unfortunately, this means that "new element" events generated
+      ;; during element initialization can't be caught by the node.
+      ;; Weird, but this is what the users voted for.
+      (foreach [elem (node-elements self)]
+        (enter-node elem))
+      ;; Initialize our templates one at a time.
+      (self .bind-property-values!)
+      ;; Make sure all the properties of this node were declared somewhere.
+      (node-check-for-unexpected-properties self)
+      ;; Let the node know all initialization functions have been run.
+      ;; (This allows "two-phase" construction, where templates can effectively
+      ;; send messages to subtemplates.)
+      (send/nonrecursive* (lambda () #f) self 'setup-finished))
+    )
 
-  (defmethod (exit-node (group <group-member>))
-    (call-next-method)
-    ;; Reset our current group member.
-    (set! (engine-current-group-member *engine*) (node-parent group)))
+  (with-instance %group-member%
+    (def (exit-node)
+      (super)
+      ;; Reset our current group member.
+      (set! (engine-current-group-member *engine*) (node-parent self)))
+    
+    (def (enter-node)
+      ;; Set our current group member.
+      (set! (engine-current-group-member *engine*) self)
+      (super))
+    )
 
-  (defmethod (enter-node (group <group-member>))
-    ;; Set our current group member.
-    (set! (engine-current-group-member *engine*) group)
-    (call-next-method))
+  (with-instance %card-group%
+    (def (exit-node)
+      (set! (card-group-active? self) #f)
+      (super))
+    
+    (def (enter-node)
+      (super)
+      (set! (card-group-active? self) #t))
+    )
 
-  (defmethod (exit-node (group <card-group>))
-    (set! (card-group-active? group) #f)
-    (call-next-method))
-
-  (defmethod (enter-node (group <card-group>))
-    (call-next-method)
-    (set! (card-group-active? group) #t))
-
-  (defmethod (exit-node (card <card>))
-    (engine-notify-exit-card *engine* card)
-    (set! (engine-last-card *engine*) card)
-    (call-next-method))
-
-  (defmethod (enter-node (card <card>))
-    (engine-notify-enter-card *engine* card)
-    (call-next-method)
-    (engine-notify-card-body-finished *engine* card))
+  (with-instance %card%
+    (def (exit-node)
+      (engine-notify-exit-card *engine* self)
+      (set! (engine-last-card *engine*) self)
+      (super))
+    
+    (def (enter-node)
+      (engine-notify-enter-card *engine* self)
+      (super)
+      (engine-notify-card-body-finished *engine* self))
+    )
 
   (define (find-active-parent node)
     ;; Walk back up the node hierarchy from node until we find the
@@ -1209,7 +1295,7 @@
     (let [[old-node (engine-current-group-member *engine*)]]
       (when old-node
         ;; If old-node is a card, exit it.
-        (when (instance-of? old-node <card>)
+        (when (card? old-node)
           (exit-node old-node))
         ;; Exit as many enclosing card groups as necessary, stopping with
         ;; the nearest group which contains NEW-CARD.

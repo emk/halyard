@@ -766,13 +766,13 @@
   ;;;
   ;;; @see ungrab-mouse mouse-grabbed? mouse-grabbed-by?
   (define (grab-mouse elem)
-    (assert (instance-of? elem <element>))
+    (assert (element? elem))
     (call-5l-prim 'MouseGrab (node-full-name elem)))
 
   ;;; Ungrab the mouse, which must be currently grabbed by ELEM.
   ;;; @see grab-mouse
   (define (ungrab-mouse elem)
-    (assert (instance-of? elem <element>))
+    (assert (element? elem))
     (call-5l-prim 'MouseUngrab (node-full-name elem)))
 
   ;;; Is the mouse currently grabbed?

@@ -3,7 +3,8 @@
   (require (lib "util.ss" "5L"))
   (require (lib "begin-var.ss" "5L"))
 
-  (provide <ruby-object> ruby-object? define-class %class% %object% method~ def
+  (provide <ruby-object> ruby-object? make-ruby-instance-of?-predicate
+           define-class %class% %object% method~ def
            with-instance attr attr-value attr-default)
 
   (defclass <ruby-object> ()
@@ -13,6 +14,13 @@
     ;; finished?
     [initialized? :initvalue #f]
     :auto #t :printer #f)
+
+  ;;; Return a function which returns #t if and only if OBJ is an instance
+  ;;; of KLASS.
+  (define (make-ruby-instance-of?-predicate klass)
+    (lambda (obj)
+      (and (ruby-object? obj)
+           (app~ obj .instance-of? klass))))
 
   ;; We really need some error-checking for this.
   (define (ruby-object-class obj)
@@ -32,7 +40,9 @@
     :auto #t :printer #t)
 
   (define (slot% object name)
-    (hash-table-get (ruby-object-slots object) name))
+    (hash-table-get (ruby-object-slots object) name
+                    (lambda ()
+                      (error (cat "Can't find slot <" name "> on " object)))))
 
   (define (set-slot%! object name value)
     (hash-table-put! (ruby-object-slots object) name value))
@@ -103,16 +113,22 @@
 
   (define (send% object method . args)
     (define (send-to-class klass)
-      (let [[implementation 
-             (let recurse [[klass klass]]
-               (if (not klass)
-                   (method~ args
-                     (apply send% self 'method-missing method args))
-                   (hash-table-get
-                    (ruby-class-methods klass) method
-                    (lambda () (recurse (ruby-class-superclass klass))))))]]
+      (with-values
+          [[found-klass implementation]
+           (let recurse [[klass klass]]
+             (if (not klass)
+                 ;; Case 1: Searched everywhere, no method.
+                 (values #f (method~ args
+                              (apply send% self 'method-missing method args)))
+                 (let [[found (hash-table-get (ruby-class-methods klass) method
+                                              (lambda () #f))]]
+                   (if found
+                       ;; Case 2: Found it.
+                       (values klass found)
+                       ;; Case 3: Recurse and try our superclass.
+                       (recurse (ruby-class-superclass klass))))))]
         (apply implementation object 
-               (lambda () (send-to-class (ruby-class-superclass klass)))
+               (lambda () (send-to-class (ruby-class-superclass found-klass)))
                args)))
     (send-to-class (ruby-object-class object)))
 
@@ -338,6 +354,31 @@
               (if (or writable? (not (app~ .initialized?)))
                 (set! (slot name) val)
                 (error (cat "Read-only attr: " name))))))
+    ;;; Hackish support for attribute defaults on already-initialized
+    ;;; objects (generally instances of %class%).  An example of why this
+    ;;; is necessary:
+    ;;;
+    ;;;   (define-class %foo%)
+    ;;;     (with-instance (.class) (.auto-default-attr bar (method () 2)))
+    ;;;     (.bar))
+    ;;;
+    ;;; Here, we want to add an attribute to %foo%'s metaclass, and use
+    ;;; it right away.  But %foo% has already been initialized, so our
+    ;;; attribute default is normally ignored.  Our fix: Define a new
+    ;;; getter method that handles the defaulting when needed.  A better
+    ;;; fix would be to allow our initialization protocol to run
+    ;;; incrementally.
+    (def (auto-default-attr name default 
+                            &key (writable? #f) (mandatory? #t))
+      ;; Set up our regular attr stuff.
+      (app~ .attr name
+            :default default :writable? writable? :mandatory? mandatory?)
+      ;; Clobber previous method with this name.
+      (app~ .define-method name
+            (method~ ()
+              (unless (has-slot%? self name)
+                (set! (slot% self name) (instance-exec self default)))
+              (slot% self name))))
     ;;; Attribute initializers for this class.
     (def (attr-initializers)
       ;; Implemented as a method, so we don't have to worry about making it
@@ -364,6 +405,7 @@
     (def (new &rest args)
       (define obj (make <ruby-object> :klass self))
       (apply send% obj 'initialize args)
+      (assert (not (ruby-object-initialized? obj)))
       (set! (ruby-object-initialized? obj) #t)
       obj)
     (def (to-string)

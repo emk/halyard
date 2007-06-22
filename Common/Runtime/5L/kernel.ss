@@ -572,10 +572,10 @@
   (defmethod (set-engine-engine-var! (eng <real-engine>) (name <symbol>) value)
     (set-engine-var! name value))
 
-  (defmethod (engine-jump-to-card (eng <real-engine>) (target <card>))
+  (defmethod (engine-jump-to-card (eng <real-engine>) target)
     (jump-to-card target))
 
-  (defmethod (engine-register-card (eng <real-engine>) (card <card>))
+  (defmethod (engine-register-card (eng <real-engine>) card)
     (%kernel-register-card card))
 
   (defmethod (engine-enable-expensive-events (engine <real-engine>)
@@ -586,30 +586,28 @@
     (when (have-5l-prim? 'EnableExpensiveEvents)
       (call-5l-prim 'EnableExpensiveEvents enable?)))
 
-  (defmethod (engine-notify-enter-card (engine <real-engine>) (card <card>))
+  (defmethod (engine-notify-enter-card (engine <real-engine>) card)
     (when (have-5l-prim? 'NotifyEnterCard)
       (call-5l-prim 'NotifyEnterCard (node-full-name card)))
     (call-hook-functions *enter-card-hook* card))
 
-  (defmethod (engine-notify-exit-card (engine <real-engine>) (card <card>))
+  (defmethod (engine-notify-exit-card (engine <real-engine>) card)
     (call-hook-functions *exit-card-hook* card)
     (when (have-5l-prim? 'NotifyExitCard)
       (call-5l-prim 'NotifyExitCard (node-full-name card))))
 
-  (defmethod (engine-notify-card-body-finished (eng <real-engine>)
-                                               (card <card>))
+  (defmethod (engine-notify-card-body-finished (eng <real-engine>) card)
     (call-hook-functions *card-body-finished-hook*)
     (refresh))
 
-  (defmethod (engine-delete-element (engine <real-engine>)
-                                    (elem <element>))
+  (defmethod (engine-delete-element (engine <real-engine>) elem)
     ;; A little placeholder to make deletion work the same way in Tamale
     ;; and in Common test.
     ;; TODO - Remove when cleaning up element deletion.
     (when (have-5l-prim? 'DeleteElements)
       (call-5l-prim 'DeleteElements (node-full-name elem))))
 
-  (defmethod (engine-exit-node (engine <real-engine>) (node <node>))
+  (defmethod (engine-exit-node (engine <real-engine>) node)
     (call-5l-prim 'StateDbUnregisterListeners (node-full-name node))
     (%kernel-cancel-deferred-thunks-for node))
 
@@ -670,7 +668,7 @@
       card-or-name]
      [(symbol? card-or-name)
       (let [[node (find-node card-or-name)]]
-        (if (and node (instance-of? node <card>))
+        (if (and node (card? node))
             node
             (not-found)))]
      [(string? card-or-name)
