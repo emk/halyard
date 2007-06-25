@@ -1,20 +1,4 @@
-/ Search and replace <> to %% for node classes
-/ Replace MAKE with NEW, wherever needed
-/ Deal with <ENGINE> API generic functions
-/ Fix proxying for %NODE-PATH%, including jump method
-/ Fix everyone who looks up the template associated with a node
-/   EXTENDS-TEMPLATE?
-/   %NODE% ENTER-NODE - tricky fix
-
-/ DEFINE-NODE-DEFINER
-/ CREATE
-/ Merge old %node% into upgraded %template% replacement
-/ Add predicates
-/ Add WRITABLE? and setter wrappers
-/ Get rid of DEFINE-NODE-CLASS macro
-/ Attempt to make all this actually run
-
-  Fix CommonTest test suite
+/ Fix CommonTest test suite
   Port PROP code to run on top of ATTR
   Port kernel and event APIs to new object system
   Refactor as much as possible in nodes.ss to be simpler

@@ -253,8 +253,8 @@
   (test (eq? *last-card* g1/start))
   (test (not (card-prev)))
   (test (eq? 'g1/s1/c2 (card-name (card-next))))
-  (test (eq? g1/s1/c2 (@ c2)))
-  (test (eq? g1/s1/c2 (@ s1/c2)))
+  (test (eq? g1/s1/c2 ((@ c2) .resolve-path)))
+  (test (eq? g1/s1/c2 ((@ s1/c2) .resolve-path)))
   (set! *last-card* g1/s1/c1)
   (jump (@ c2)))
 
