@@ -29,6 +29,7 @@ SVN - emk, brian
       - Major performance regression on features/mask/light in tamale_test.
       - Moderate performance regression on features/animation.
       - CommonTest test suite is currently broken.
+    - Replaced <engine> with %engine%.
 
 0.3.11 - 6 June 2007 - emk
 

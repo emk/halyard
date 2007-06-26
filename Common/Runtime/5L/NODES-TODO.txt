@@ -1,6 +1,7 @@
 / Fix CommonTest test suite
   Port PROP code to run on top of ATTR
-  Port kernel and event APIs to new object system
+/ Port kernel APIs to new object system
+  Port event APIs to new object system
   Refactor as much as possible in nodes.ss to be simpler
   Take care of TODO items
 

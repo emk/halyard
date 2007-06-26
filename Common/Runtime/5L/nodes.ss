@@ -35,27 +35,39 @@
   ;;  Engine Interface
   ;;=======================================================================
 
-  (provide *engine* set-engine! <engine> root-node
-           engine-current-card engine-current-group-member engine-last-card
-           set-engine-event-handled?!
-           set-engine-event-vetoed?!
-           engine-jump-to-card
-           engine-register-card
-           engine-enable-expensive-events
-           engine-notify-enter-card engine-notify-exit-card
-           engine-notify-card-body-finished
-           engine-delete-element
-           engine-exit-node)
+  (provide *engine* set-engine! %engine% root-node)
 
-  (defclass <engine> ()
-    (root-node
-     :initializer (lambda () (%card-group% .new
-                               :name '|/| :parent #f :active? #t
-                               :running? #t)))
-    (node-table :initializer make-hash-table)
-    (default-element-parent :initvalue #f)
-    (current-group-member :initvalue #f)
-    (last-card :initvalue #f))
+  (define-class %engine% ()
+    (attr root-node
+      (%card-group% .new
+        :name '|/| :parent #f :active? #t
+        :running? #t))
+    (attr node-table (make-hash-table))
+    (attr default-element-parent #f :writable? #t)
+    (attr current-group-member #f :writable? #t)
+    (attr last-card #f :writable? #t)
+
+    (def (current-card)
+      (let [[result (.current-group-member)]]
+        (if (card? result)
+            result
+            #f)))
+
+    ;; Private helper funciton.
+    (define (must-override)
+      (error "Must override %engine% method"))
+
+    (def (set-event-handled?! handled?) (must-override))
+    (def (set-event-vetoed?! vetoed?) (must-override))
+    (def (jump-to-card target) (must-override))
+    (def (register-card card) (must-override))
+    (def (enable-expensive-events enable?) (must-override))
+    (def (notify-exit-card card) (must-override))
+    (def (notify-enter-card card) (must-override))
+    (def (notify-card-body-finished card) (must-override))
+    (def (delete-element elem) (must-override))
+    (def (exit-node node) (must-override))
+    )
 
   (define *engine* #f)
 
@@ -63,42 +75,24 @@
     (set! *engine* engine))
 
   (define (root-node)
-    (engine-root-node *engine*))
+    (*engine* .root-node))
 
   (define (node-table)
-    (engine-node-table *engine*))
+    (*engine* .node-table))
 
   (define (current-group-member)
-    (let [[result (engine-current-group-member *engine*)]]
+    (let [[result (*engine* .current-group-member)]]
       (unless result
         (error "Can't get current group member during script startup"))
       result))
 
-  (define (engine-current-card engine)
-    (let [[result (engine-current-group-member *engine*)]]
-      (if (card? result)
-          result
-          #f)))
-  
   (define (current-card)
-    (let [[result (engine-current-card *engine*)]]
+    (let [[result (*engine* .current-card)]]
       (unless result
         (error "Can't get current card when no card is active"))
       result))
   
-  (defgeneric (set-engine-event-handled?! (eng <engine>) (handled? <boolean>)))
-  (defgeneric (set-engine-event-vetoed?! (eng <engine>) (vetoed? <boolean>)))
-  (defgeneric (engine-jump-to-card (engine <engine>) target))
-  (defgeneric (engine-register-card (engine <engine>) card))
-  (defgeneric (engine-enable-expensive-events (engine <engine>)
-                                              (enable? <boolean>)))
-  (defgeneric (engine-notify-exit-card (engine <engine>) card))
-  (defgeneric (engine-notify-enter-card (engine <engine>) card))
-  (defgeneric (engine-notify-card-body-finished (engine <engine>) card))
-  (defgeneric (engine-delete-element (engine <engine>) elem))
-  (defgeneric (engine-exit-node (engine <engine>) node))
-
-
+  
   ;;=======================================================================
   ;;  Object Model
   ;;=======================================================================
@@ -160,7 +154,7 @@
     ;; the rest of our bookkeeping.
     (when (expensive-event? name)
       (set! (node-has-expensive-handlers? node) #t)
-      (engine-enable-expensive-events *engine* #t))
+      (*engine* .enable-expensive-events #t))
 
     ;; If we're registering a handler for a mouse event, and the node
     ;; appears to care, let it know.
@@ -327,8 +321,8 @@
       (define (no-handler)
         (set! unhandled? #t))
       (send/recursive* no-handler node name event)
-      (set! (engine-event-vetoed? *engine*) (was-vetoed? event))
-      (set! (engine-event-handled? *engine*) (not unhandled?))))
+      (set! (*engine* .event-vetoed?) (was-vetoed? event))
+      (set! (*engine* .event-handled?) (not unhandled?))))
 
   (define (dispatch-idle-event-to-active-nodes)
     (define event (make <idle-event>))
@@ -344,7 +338,7 @@
         (loop (node-parent node)))))
 
   (define (dispatch-event-to-current-group-member name . args)
-    (when (engine-current-group-member *engine*)
+    (when (*engine* .current-group-member)
       (if (eq? name 'idle)
           (dispatch-idle-event-to-active-nodes)
           (dispatch-event-to-node (current-group-member) name args))))
@@ -1035,12 +1029,12 @@
   (define-class %card% (%group-member%)
     (def (register)
       (super)
-      (engine-register-card *engine* self))
+      (*engine* .register-card self))
 
     (def (jumpable?) #t)
 
     (def (jump)
-      (engine-jump-to-card *engine* self))
+      (*engine* .jump-to-card self))
     
     (def (find-first-card) self)
     (def (find-last-card) self)
@@ -1090,15 +1084,15 @@
   ;;(define-node-definer element %element% %element%)
   
   (define (default-element-parent)
-    (or (engine-default-element-parent *engine*)
+    (or (*engine* .default-element-parent)
         (current-card)))
 
   (define (call-with-default-element-parent node thunk)
-    (let [[old (engine-default-element-parent *engine*)]]
+    (let [[old (*engine* .default-element-parent)]]
       (dynamic-wind
-          (lambda () (set! (engine-default-element-parent *engine*) node))
+          (lambda () (set! (*engine* .default-element-parent) node))
           thunk
-          (lambda () (set! (engine-default-element-parent *engine*) old)))))
+          (lambda () (set! (*engine* .default-element-parent) old)))))
 
   (define-syntax with-default-element-parent
     (syntax-rules ()
@@ -1139,7 +1133,7 @@
                          (cat "Can't fully delete non-temporary element "
                               (node-full-name elem)
                               " in this version of the engine")))
-                    (engine-delete-element *engine* elem)
+                    (*engine* .delete-element elem)
                     (recurse (cdr elements))]
                    [else
                     ;; Keep this node.
@@ -1166,7 +1160,7 @@
       (foreach [elem (node-elements self)]
         (delete-element-internal elem))
       ;; Unregister our state-db listeners, if we have any.
-      (engine-exit-node *engine* self)
+      (*engine* .exit-node self)
       ;; Run any exit handler.
       (run-on-exit-handler self)
       ;; Mark this node as no longer running, so nobody tries to call ON
@@ -1203,11 +1197,11 @@
     (def (exit-node)
       (super)
       ;; Reset our current group member.
-      (set! (engine-current-group-member *engine*) (node-parent self)))
+      (set! (*engine* .current-group-member) (node-parent self)))
     
     (def (enter-node)
       ;; Set our current group member.
-      (set! (engine-current-group-member *engine*) self)
+      (set! (*engine* .current-group-member) self)
       (super))
     )
 
@@ -1223,14 +1217,14 @@
 
   (with-instance %card%
     (def (exit-node)
-      (engine-notify-exit-card *engine* self)
-      (set! (engine-last-card *engine*) self)
+      (*engine* .notify-exit-card self)
+      (set! (*engine* .last-card) self)
       (super))
     
     (def (enter-node)
-      (engine-notify-enter-card *engine* self)
+      (*engine* .notify-enter-card self)
       (super)
-      (engine-notify-card-body-finished *engine* self))
+      (*engine* .notify-card-body-finished self))
     )
 
   (define (find-active-parent node)
@@ -1288,11 +1282,11 @@
           (if (node-or-elements-have-expensive-handlers? node)
               (set! enable? #t)
               (recurse (node-parent node)))))
-      (engine-enable-expensive-events *engine* enable?)))
+      (*engine* .enable-expensive-events enable?)))
 
   (define (run-card new-card)
     ;; Finish exiting whatever we're in.
-    (let [[old-node (engine-current-group-member *engine*)]]
+    (let [[old-node (*engine* .current-group-member)]]
       (when old-node
         ;; If old-node is a card, exit it.
         (when (card? old-node)

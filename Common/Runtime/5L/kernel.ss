@@ -236,7 +236,7 @@
 
   (define (notify-exit-script)
     (with-errors-blocked (non-fatal-error)
-      (define current-node-or-false (engine-current-group-member *engine*))
+      (define current-node-or-false (*engine* .current-group-member))
       (call-hook-functions *dangerous-exit-script-hook*
                            current-node-or-false)))
 
@@ -279,13 +279,13 @@
     (%kernel-set-state 'JUMPING))
 
   (define (%kernel-current-card-name)
-    (if (engine-current-card *engine*)
-        (value->string (node-full-name (engine-current-card *engine*)))
+    (if (*engine* .current-card)
+        (value->string (node-full-name (*engine* .current-card)))
         ""))
 
   (define (%kernel-previous-card-name)
-    (if (engine-last-card *engine*)
-        (value->string (node-full-name (engine-last-card *engine*)))
+    (if (*engine* .last-card)
+        (value->string (node-full-name (*engine* .last-card)))
         ""))
 
   (define (%kernel-valid-card? card-name)
@@ -561,57 +561,53 @@
   ;;  Node/Engine Interface
   ;;=======================================================================
 
-  (defclass <real-engine> (<engine>))
-
-  (defmethod (set-engine-event-handled?! (eng <engine>) (handled? <boolean>))
-    (set! (engine-engine-var *engine* '_pass) (not handled?)))
-
-  (defmethod (set-engine-event-vetoed?! (eng <engine>) (vetoed? <boolean>))
-    (set! (engine-engine-var *engine* '_veto) vetoed?))
-
-  (defmethod (set-engine-engine-var! (eng <real-engine>) (name <symbol>) value)
-    (set-engine-var! name value))
-
-  (defmethod (engine-jump-to-card (eng <real-engine>) target)
-    (jump-to-card target))
-
-  (defmethod (engine-register-card (eng <real-engine>) card)
-    (%kernel-register-card card))
-
-  (defmethod (engine-enable-expensive-events (engine <real-engine>)
-                                             (enable? <boolean>))
-    (enable-expensive-events enable?))
-
   (define (enable-expensive-events enable?)
     (when (have-5l-prim? 'EnableExpensiveEvents)
       (call-5l-prim 'EnableExpensiveEvents enable?)))
 
-  (defmethod (engine-notify-enter-card (engine <real-engine>) card)
-    (when (have-5l-prim? 'NotifyEnterCard)
-      (call-5l-prim 'NotifyEnterCard (node-full-name card)))
-    (call-hook-functions *enter-card-hook* card))
+  (define-class %real-engine% (%engine%)
+    (def (set-event-handled?! handled?)
+      (set! (engine-var '_pass) (not handled?)))
 
-  (defmethod (engine-notify-exit-card (engine <real-engine>) card)
-    (call-hook-functions *exit-card-hook* card)
-    (when (have-5l-prim? 'NotifyExitCard)
-      (call-5l-prim 'NotifyExitCard (node-full-name card))))
+    (def (set-event-vetoed?! vetoed?)
+      (set! (engine-var '_veto) vetoed?))
 
-  (defmethod (engine-notify-card-body-finished (eng <real-engine>) card)
-    (call-hook-functions *card-body-finished-hook*)
-    (refresh))
+    (def (jump-to-card target)
+      (jump-to-card target))
 
-  (defmethod (engine-delete-element (engine <real-engine>) elem)
-    ;; A little placeholder to make deletion work the same way in Tamale
-    ;; and in Common test.
-    ;; TODO - Remove when cleaning up element deletion.
-    (when (have-5l-prim? 'DeleteElements)
-      (call-5l-prim 'DeleteElements (node-full-name elem))))
+    (def (register-card card)
+      (%kernel-register-card card))
 
-  (defmethod (engine-exit-node (engine <real-engine>) node)
-    (call-5l-prim 'StateDbUnregisterListeners (node-full-name node))
-    (%kernel-cancel-deferred-thunks-for node))
+    (def (enable-expensive-events enable?)
+      (enable-expensive-events enable?))
 
-  (set-engine! (make <real-engine>))
+    (def (notify-enter-card card)
+      (when (have-5l-prim? 'NotifyEnterCard)
+        (call-5l-prim 'NotifyEnterCard (node-full-name card)))
+      (call-hook-functions *enter-card-hook* card))
+
+    (def (notify-exit-card card)
+      (call-hook-functions *exit-card-hook* card)
+      (when (have-5l-prim? 'NotifyExitCard)
+        (call-5l-prim 'NotifyExitCard (node-full-name card))))
+    
+    (def (notify-card-body-finished card)
+      (call-hook-functions *card-body-finished-hook*)
+      (refresh))
+    
+    (def (delete-element elem)
+      ;; A little placeholder to make deletion work the same way in Tamale
+      ;; and in Common test.
+      ;; TODO - Remove when cleaning up element deletion.
+      (when (have-5l-prim? 'DeleteElements)
+        (call-5l-prim 'DeleteElements (node-full-name elem))))
+
+    (def (exit-node node)
+      (call-5l-prim 'StateDbUnregisterListeners (node-full-name node))
+      (%kernel-cancel-deferred-thunks-for node))
+    )
+
+  (set-engine! (%real-engine% .new))
 
   ;; Set up our event handling machinery.
   (enable-expensive-events #f)
