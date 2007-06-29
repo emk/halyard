@@ -30,6 +30,8 @@ SVN - emk, brian
       - Moderate performance regression on features/animation.
       - CommonTest test suite is currently broken.
     - Replaced <engine> with %engine%.
+  * Improvements to new object model
+    - Added :type argument to ATTR.
 
 0.3.11 - 6 June 2007 - emk
 

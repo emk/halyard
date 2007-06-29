@@ -342,7 +342,7 @@
     (def (define-class-method name meth)
       (app~ (app~ .class) .define-method name meth))
     ;;; Create a new attribute on this class.
-    (def (attr name &key default (writable? #f) (mandatory? #t))
+    (def (attr name &key default (writable? #f) (mandatory? #t) (type #f))
       (when default
         (app~ .attr-initializer name default #t))
       (when mandatory?
@@ -351,9 +351,14 @@
             (method~ () (slot name)))
       (app~ .define-method (symcat "set-" name "!")
             (method~ (val)
-              (if (or writable? (not (app~ .initialized?)))
-                (set! (slot name) val)
-                (error (cat "Read-only attr: " name))))))
+              (cond
+               [(and (not writable?) (app~ .initialized?))
+                (error (cat "Read-only attr: " name))]
+               [(and type (not (instance-of? val type)))
+                (error (cat "Attr " name " has type " type ", tried to assign "
+                            val))]
+               [#t
+                (set! (slot name) val)]))))
     ;;; Hackish support for attribute defaults on already-initialized
     ;;; objects (generally instances of %class%).  An example of why this
     ;;; is necessary:
