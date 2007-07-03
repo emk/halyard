@@ -41,7 +41,7 @@
 
 (module capture mzscheme
 
-  (provide make-capture-var make-capture-var/ellipsis)
+  (provide make-capture-var make-capture-var/ellipsis make-self)
 
   (define (make-capture-var stx name)
     (datum->syntax-object stx name))
@@ -57,4 +57,9 @@
                               stx)
                           name))
 
+  ;; Creates a SELF variable that will be bound in the same lexical
+  ;; context as CONTEXT.
+  (define (make-self context)
+    (make-capture-var/ellipsis context 'self))
+  
   )

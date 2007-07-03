@@ -32,6 +32,8 @@ SVN - emk, brian
     - Replaced <engine> with %engine%.
   * Improvements to new object model
     - Added :type argument to ATTR.
+  * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
+    (ROOT-NODE) ...).
 
 0.3.11 - 6 June 2007 - emk
 

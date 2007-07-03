@@ -117,27 +117,20 @@
            <media-caption-event> event-caption
            )
 
-  (define-syntax (expand-on stx)
+  (define-syntax (on stx)
     (syntax-case stx ()
-      [(expand-on node name args . body)
+      [(_ name args . body)
        ;; Create a capture variable NEXT-HANDLER which will be visible in
        ;; BODY.  It's exceptionally evil to capture using BODY's context
        ;; instead of EXPAND-ON's context, but that's what we want.
-       (with-syntax [[call-next-handler
+       (with-syntax [[self (make-self #'body)]
+                     [call-next-handler
                       (make-capture-var/ellipsis #'body 'call-next-handler)]]
          (quasisyntax/loc
           stx
-          (register-event-handler node 'name
+          (register-event-handler self 'name
                                   (lambda (call-next-handler . args)
                                     (begin/var . body)))))]))
-
-  (define-syntax on
-    ;; This gets lexically overridden by expand-init-fn to refer
-    ;; to nodes other than (root-node).
-    (syntax-rules ()
-      [(on . rest)
-       (expand-on (root-node) . rest)]))
-  (define-syntax-indent on 2)
 
   (define (register-event-handler node name handler)
     ;; Complain if this node is theoretically inactive.
@@ -585,25 +578,20 @@
 
   (define-syntax (expand-init-fn stx)
     (syntax-case stx ()
-      [(expand-init-fn prop-decls . body)
-         
+      [(_ prop-decls . body)
        ;; We introduce a number of "capture" variables in BODY.  These
        ;; will be bound automagically within BODY without further
        ;; declaration.  See the PLT203 mzscheme manual for details.
-       (with-syntax [[self (make-capture-var/ellipsis #'body 'self)]
-                     [on   (make-capture-var/ellipsis #'body 'on)]]
+       (with-syntax [[self (make-self #'body)]]
          (quasisyntax/loc
           stx
           (expand-fn-with-self-and-prop-names self prop-decls
-            (let-syntax [[on (syntax-rules ()
-                               [(_ . rest)
-                                (expand-on self . rest)])]]
-              (begin/var . body)))))]))
+            (begin/var . body))))]))
   
   (define-syntax (expand-bindings-eval-fn stx)
     (syntax-case stx ()
-      [(expand-bindings-eval-fn prop-decls . bindings)
-       (with-syntax [[self (make-capture-var/ellipsis #'body 'self)]]
+      [(_ prop-decls . bindings)
+       (with-syntax [[self (make-self #'body)]]
          (quasisyntax/loc
           stx
           (expand-fn-with-self-and-prop-names self prop-decls

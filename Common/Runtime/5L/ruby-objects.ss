@@ -106,11 +106,6 @@
                      [super (make-capture-var/ellipsis #'body 'super)]]
          (syntax/loc stx (lambda (self super . args) (begin/var . body))))]))
 
-  ;; Creates a SELF variable that will be bound in the same lexical
-  ;; context as CONTEXT.
-  (define-for-syntax (make-self context)
-    (datum->syntax-object context 'self))
-
   (define (send% object method . args)
     (define (send-to-class klass)
       (with-values
