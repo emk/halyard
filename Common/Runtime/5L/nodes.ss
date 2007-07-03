@@ -1141,13 +1141,9 @@
       ;; children.
       (%assert (not (node-running? self)))
       (set! (node-running? self) #t)
-      ;; Enter all our child elements.  Notice we do this first, so
-      ;; all the elements are available by the time we run the node body.
-      ;; Unfortunately, this means that "new element" events generated
-      ;; during element initialization can't be caught by the node.
-      ;; Weird, but this is what the users voted for.
-      (foreach [elem (node-elements self)]
-        (enter-node elem))
+      ;; Because we haven't been running, we shouldn't have any child
+      ;; elements yet.
+      (%assert (null? (node-elements self))
       ;; Initialize our templates one at a time.
       (self .bind-property-values!)
       ;; Make sure all the properties of this node were declared somewhere.
