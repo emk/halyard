@@ -662,8 +662,7 @@
     (let [[e (template .new
                :bindings-eval-fn bindings-eval-fn
                :parent     parent
-               :name       name
-               :temporary? #t)]]
+               :name       name)]]
       (register-node e)
       (enter-node e)
       e))
@@ -781,12 +780,9 @@
     (set! (node-allowed-values node) (make-hash-table))
     (set! (node-values node) (make-hash-table)))
 
-  (define (unregister-node node)
-    ;; This is only used to delete temporary %element% nodes, simulating
-    ;; end-of-card rollback.
+  (define (unregister-element node)
     (let [[name (node-full-name node)]]
-      (%assert (and (element? node)
-                    (element-temporary? node)))
+      (%assert (element? node))
       (%assert (eq? (hash-table-get (node-table) name (lambda () #f)) node))
       (hash-table-remove! (node-table) name)))
 
@@ -1050,12 +1046,10 @@
 
   ;; TODO - Merge this element class with one in tamale.ss.  Should we
   ;; rename this one until we do?
-  (define-class %element% (%node%)
-    (attr temporary? #f :type <boolean>))
+  (define-class %element% (%node%))
 
   ;; TODO - Get rid of wrapper functions.  
   (define element? (make-ruby-instance-of?-predicate %element%))
-  (define (element-temporary? elem) (elem .temporary?))
 
   (define-template-definer define-element-template %element%)
   ;;(define-node-definer element %element% %element%)
@@ -1102,14 +1096,8 @@
                    [(eq? elem (car elements))
                     ;; Delete this node, and exclude it from the new
                     ;; element list.
-                    (if (element-temporary? (car elements))
-                        (begin
-                          (exit-node (car elements))
-                          (unregister-node (car elements)))
-                        (debug-caution
-                         (cat "Can't fully delete non-temporary element "
-                              (node-full-name elem)
-                              " in this version of the engine")))
+                    (exit-node (car elements))
+                    (unregister-element (car elements))
                     (*engine* .delete-element elem)
                     (recurse (cdr elements))]
                    [else

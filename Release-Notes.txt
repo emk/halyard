@@ -30,6 +30,7 @@ SVN - emk, brian
       - Moderate performance regression on features/animation.
       - CommonTest test suite is currently broken.
     - Replaced <engine> with %engine%.
+    - Removed remaining support for non-temporary element silliness.
   * Improvements to new object model
     - Added :type argument to ATTR.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
