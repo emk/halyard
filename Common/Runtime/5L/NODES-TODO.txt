@@ -1,8 +1,9 @@
 / Fix CommonTest test suite
   Port PROP code to run on top of ATTR
 /   Add type support to ruby-objects.ss
-    Review attr-value and attr-default
+/   Review attr-value and attr-default
     Rip our <node-prop-decl> and replace with attr/attr-default calls
+    Fix non-global ON to not be such an ugly horror
 / Port kernel APIs to new object system
   Port event APIs to new object system
   Move ruby-object tests from experiments.ss to somewhere more useful
@@ -12,3 +13,6 @@
   Performance
     Major performance regression on features/mask/light in tamale_test
     Moderate performance regression on features/animation
+
+  Better version of .SEND/APPLY for object methods?
+

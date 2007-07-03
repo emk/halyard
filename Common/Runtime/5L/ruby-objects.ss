@@ -5,7 +5,7 @@
 
   (provide <ruby-object> ruby-object? make-ruby-instance-of?-predicate
            define-class %class% %object% method~ def
-           with-instance attr attr-value attr-default)
+           instance-exec with-instance attr attr-value attr-default)
 
   (defclass <ruby-object> ()
     klass
