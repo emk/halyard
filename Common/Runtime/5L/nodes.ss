@@ -547,25 +547,25 @@
 
   (define-syntax (expand-fn-with-self-and-prop-names stx)
     (syntax-case stx ()
-      [(expand-fn-with-self-and-prop-names self prop-decls . body)
-       (begin
+      ;; CTX is the syntax context in which to create SELF.
+      [(_ ctx prop-decls . body)
+       (with-syntax [[self (make-self #'ctx)]]
 
          ;; Bind each template property NAME to a call to (prop self
          ;; 'name), so it's convenient to access from with the init-fn.
          ;; We don't need to use capture variables for this, because
          ;; the programmer supplied the names--which means they're already
          ;; in the right context.
-         (define (make-prop-bindings self-stx prop-decls-stx)
-           (with-syntax [[self self-stx]]
-             (datum->syntax-object
-              stx
-              (map (lambda (prop-stx)
-                     (syntax-case prop-stx ()
-                       [(name . rest)
-                        (syntax/loc prop-stx [name (prop self name)])]
-                       [name
-                        (syntax/loc prop-stx [name (prop self name)])]))
-                   (syntax->list prop-decls-stx)))))
+         (define (make-prop-bindings prop-decls-stx)
+           (datum->syntax-object
+            stx
+            (map (lambda (prop-stx)
+                   (syntax-case prop-stx ()
+                     [(name . rest)
+                      (syntax/loc prop-stx [name (prop self name)])]
+                     [name
+                      (syntax/loc prop-stx [name (prop self name)])]))
+                 (syntax->list prop-decls-stx))))
 
          ;; We introduce a number of "capture" variables in BODY.  These
          ;; will be bound automagically within BODY without further
@@ -573,29 +573,19 @@
          (quasisyntax/loc
           stx
           (lambda (self)
-            (letsubst #,(make-prop-bindings #'self #'prop-decls)
+            (letsubst #,(make-prop-bindings #'prop-decls)
               (begin/var . body)))))]))
 
-  (define-syntax (expand-init-fn stx)
-    (syntax-case stx ()
+  (define-syntax expand-init-fn
+    (syntax-rules ()
       [(_ prop-decls . body)
-       ;; We introduce a number of "capture" variables in BODY.  These
-       ;; will be bound automagically within BODY without further
-       ;; declaration.  See the PLT203 mzscheme manual for details.
-       (with-syntax [[self (make-self #'body)]]
-         (quasisyntax/loc
-          stx
-          (expand-fn-with-self-and-prop-names self prop-decls
-            (begin/var . body))))]))
+       (expand-fn-with-self-and-prop-names body prop-decls . body)]))
   
-  (define-syntax (expand-bindings-eval-fn stx)
-    (syntax-case stx ()
+  (define-syntax expand-bindings-eval-fn
+    (syntax-rules ()
       [(_ prop-decls . bindings)
-       (with-syntax [[self (make-self #'body)]]
-         (quasisyntax/loc
-          stx
-          (expand-fn-with-self-and-prop-names self prop-decls
-            (bindings->hash-table (list . bindings)))))]))
+       (expand-fn-with-self-and-prop-names bindings prop-decls
+        (bindings->hash-table (list . bindings)))]))
 
   (define-syntax define-template
     (syntax-rules ()
@@ -621,15 +611,14 @@
 
   (define-syntax define-node
     (syntax-rules ()
-      [(define-node name (extended bindings ...)
-         body ...)
+      [(define-node name (extended . bindings) . body)
        (begin
          (define name
            (with-values [[parent local-name] (analyze-node-name 'name)]
              (check-node-name local-name)
              (extended .new
-               :bindings-eval-fn (expand-bindings-eval-fn [] bindings ...)
-               :init-fn (expand-init-fn () body ...)
+               :bindings-eval-fn (expand-bindings-eval-fn [] . bindings)
+               :init-fn (expand-init-fn [] . body)
                :parent parent
                :name local-name)))
          (register-node name))]))
