@@ -72,7 +72,7 @@
 
   (require (lib "ruby-objects.ss" "5L"))
   (provide (all-from-except (lib "ruby-objects.ss" "5L")
-                            app~ set!~))
+                            method~ app~ set!~))
 
   (provide (rename method~ method)
            (rename app~ #%app)

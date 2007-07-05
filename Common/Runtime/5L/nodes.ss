@@ -678,14 +678,48 @@
            node-elements find-node resolve @* @)
 
   (with-instance %node%
-    (attr name :type <symbol>)
-    (attr parent)
-    (attr running? #f :type <boolean> :writable? #t)
-    (attr elements '() :type <list> :writable? #t)
-    (attr has-expensive-handlers? #f :type <boolean> :writable? #t)
-    (attr handlers (make-hash-table) :type <hash-table> :writable? #t)
-    (attr allowed-values (make-hash-table) :type <hash-table> :writable? #t)
-    (attr values (make-hash-table) :type <hash-table> :writable? #t)
+    (with-instance (.class)
+      (def (running-attr namex 
+                         &key default (writable? #f) 
+                         (mandatory? #t) (type #f))
+        (when default
+          (.attr-initializer namex default #t))
+        (when mandatory?
+          (.mandatory-attr namex))
+        (.define-method namex
+          (method ()
+            (assert (.running?))
+            (slot namex)))
+        (.define-method (symcat "set-" namex "!")
+          (method (val)
+            (assert (or (not (.initialized?)) (.running?)))
+            (cond
+             [(and (not writable?) (.initialized?))
+              (error (cat "Read-only attr: " namex))]
+             [(and type (not (instance-of? val type)))
+              (error (cat "Attr " namex " has type " type ", tried to assign "
+                          val))]
+             [#t
+              (let [[result (set! (slot namex) val)]]
+                (assert (eq? (slot namex) val))
+                result)])))))
+
+    (attr name :type <symbol>) ; *BOTH
+    (attr parent)              ; *BOTH
+    (attr running? #f :type <boolean> :writable? #t) ; *BOTH
+
+    (.running-attr 'elements 
+                   :default (method () '()) :type <list> :writable? #t)
+    (.running-attr 'has-expensive-handlers? 
+                   :default (method () #f) :type <boolean> :writable? #t)
+    (.running-attr 'handlers 
+                   :default (method () (make-hash-table)) :type <hash-table> 
+                   :writable? #t) 
+    (.running-attr 'allowed-values :default (method () (make-hash-table))
+                   :type <hash-table> :writable? #t) 
+    (.running-attr 'values 
+                   :default (method () (make-hash-table)) :type <hash-table> 
+                   :writable? #t)
 
     (def (initialize &rest keys)
       (super)
@@ -789,6 +823,7 @@
   (define (find-node name)
     (hash-table-get (node-table) name (lambda () #f)))
 
+  ;; *BOTH
   (define (find-node-relative base name)
     ;; Treat 'name' as a relative path.  If 'name' can be found relative
     ;; to 'base', return it.  If not, try the parent of base if it
@@ -1128,12 +1163,12 @@
       (*engine* .exit-node self)
       ;; Run any exit handler.
       (run-on-exit-handler self)
+      ;; Clear our handler list.
+      (clear-node-state! self)
       ;; Mark this node as no longer running, so nobody tries to call ON
       ;; or CREATE on it.
       (%assert (node-running? self))
-      (set! (node-running? self) #f)
-      ;; Clear our handler list.
-      (clear-node-state! self))
+      (set! (node-running? self) #f))
 
     (def (enter-node)
       ;; TODO - Make sure all our template properties are bound.
@@ -1143,7 +1178,7 @@
       (set! (node-running? self) #t)
       ;; Because we haven't been running, we shouldn't have any child
       ;; elements yet.
-      (%assert (null? (node-elements self))
+      (%assert (null? (node-elements self)))
       ;; Initialize our templates one at a time.
       (self .bind-property-values!)
       ;; Make sure all the properties of this node were declared somewhere.
@@ -1249,6 +1284,7 @@
     ;; Finish exiting whatever we're in.
     (let [[old-node (*engine* .current-group-member)]]
       (when old-node
+        (%assert (old-node .running?))
         ;; If old-node is a card, exit it.
         (when (card? old-node)
           (exit-node old-node))
@@ -1258,7 +1294,7 @@
                                      (find-active-parent new-card))))
     
     ;; Update our expensive event state.
-    (maybe-enable-expensive-events-for-card new-card)
+    (maybe-enable-expensive-events-for-card (find-active-parent new-card))
     
     ;; Actually run the card.
     (debug-log (cat "Begin card: <" (node-full-name new-card) ">"))

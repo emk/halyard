@@ -1,13 +1,21 @@
 * = "see patch we dumped earlier"
 
-/ Fix CommonTest test suite
+  Make phantom nodes classes & running nodes instances
+    Identify all the core APIs that work on nodes
+      
+    Split into versions for running and non-running nodes, with assertions
+    Encapsulate the transition points in functions
+    Fix call sites
+    Make it all run + commit
+
+    Replace ASSERT with %ASSERT as needed
+    Deal with node init protocol
+    Add a second system for looking up nodes
+    Create nodes when they're run, destroy when they're done
+
   Port PROP code to run on top of ATTR
-/   Add type support to ruby-objects.ss
-/   Review attr-value and attr-default
-/   Fix non-global ON to not be such an ugly horror
-    Further definer macro cleanup
+/   Further definer macro cleanup
     Rip our <node-prop-decl> and replace with attr/attr-default calls
-/ Port kernel APIs to new object system
   Port event APIs to new object system
   Move ruby-object tests from experiments.ss to somewhere more useful
   Refactor as much as possible in nodes.ss to be simpler
@@ -19,3 +27,9 @@
 
   Better version of .SEND/APPLY for object methods?
 
+  Get test cases for SET! SLOT from ruby-nodes.ss
+X Figure out why KEYWORD? doesn't work in nodes.ss macro expansion - it's fine
+  Why did we go into an infinite loop when accessing .RUNNING before it was
+    initialized?
+  Browser demo card dies on URLs or page titles containing unquoted & or <
+  Why START, and not just INDEX?

@@ -1,6 +1,7 @@
 (module ruby-objects (lib "swindle.ss" "swindle")
   (require-for-syntax (lib "capture.ss" "5L"))
   (require (lib "util.ss" "5L"))
+  (require-for-syntax (lib "util.ss" "5L"))
   (require (lib "begin-var.ss" "5L"))
 
   (provide <ruby-object> ruby-object? make-ruby-instance-of?-predicate
@@ -552,7 +553,7 @@
       [(_ function . args)
        (syntax/loc stx (function . args))]))
 
-  ;; Getter macro for SLOT.  See also HACKED-SET!, which special-cases the
+  ;; Getter macro for SLOT.  See also SET!~, which special-cases the
   ;; setter version.
   (define-syntax (slot stx)
     (syntax-case stx ()
