@@ -820,53 +820,62 @@
       (%assert (eq? (hash-table-get (node-table) name (lambda () #f)) node))
       (hash-table-remove! (node-table) name)))
 
-  (define (find-node name)
-    (hash-table-get (node-table) name (lambda () #f)))
+  (define (find-node name desired-running-state)
+    (define found (hash-table-get (node-table) name (lambda () #f)))
+    (assert (or (not found)
+                (eq? desired-running-state 'any)
+                (eq? desired-running-state (found .running?))))
+    found)
 
   ;; *BOTH
-  (define (find-node-relative base name)
+  (define (find-node-relative base name running?)
     ;; Treat 'name' as a relative path.  If 'name' can be found relative
     ;; to 'base', return it.  If not, try the parent of base if it
     ;; exists.  If all fails, return #f.
     (unless base
       (error (cat "Can't find relative path '@" name "' outside of a card")))
     (if (eq? base (root-node))
-        (find-node name)
+        (find-node name running?)
         (let* [[base-name (node-full-name base)]
                [candidate (string->symbol (cat base-name "/" name))]
-               [found (find-node candidate)]]
-          (or found (find-node-relative (node-parent base) name)))))
+               [found (find-node candidate running?)]]
+          (or found (find-node-relative (node-parent base) name running?)))))
 
   ;;; Given either a %node-path% or a node, return a node.
-  (define (resolve path-or-node)
+  ;;; *RUNNING
+  (define (resolve path-or-node &key (running? #t))
     (if (node-path? path-or-node)
-        (path-or-node .resolve-path)
+        (path-or-node .resolve-path :running? running?)
         path-or-node))
 
   ;; We need to add some methods to %node-path%.
   (with-instance %node-path%
     ;;; Redirect any method calls we don't understand to our associated node.
+    ;;; *RUNNING
     (def (method-missing name . args)
       ((.resolve-path) .send name args))
 
     ;; XXX - Nasty hack since we haven't decided what to do about interfaces
     ;; yet.  This will need more thought.
     ;; TODO - Decide if we want a general .implements-interface? method.
+    ;; *RUNNING (maybe *BOTH, if needed)
     (def (instance-of? klass)
       (or (super)
           ((.resolve-path) .instance-of? klass)))
 
     ;;; Resolve a path.
+    ;;; *BOTH
     (def (resolve-path
-          &key (if-not-found
+          &key (running? #t)
+               (if-not-found
                 (lambda ()
                   (error (cat "Can't find relative path: " self)))))
-      (or (find-node-relative (current-group-member) (.to-symbol))
+      (or (find-node-relative (current-group-member) (.to-symbol) running?)
           (if-not-found)))
     )
 
   (define-syntax @
-    ;; Syntactic sugar for find-node-relative.
+    ;; Syntactic sugar for creating a path.
     (syntax-rules ()
       [(@ name)
        ;; TODO - Make our caller pass us a string instead.
@@ -892,7 +901,7 @@
            [(not (cadr matches))
             (values (root-node) name)]
            [else
-            (let [[parent (find-node (string->symbol (caddr matches)))]]
+            (let [[parent (find-node (string->symbol (caddr matches)) #f)]]
               (unless parent
                 (error (cat "Parent of " name " does not exist.")))
               (values parent
@@ -914,8 +923,9 @@
 
   ;; TODO - Get rid of wrapper.
   (define (jumpable? node)
-    (and (ruby-object? node) (node .jumpable?)))
-  (define (jump node) (node .jump))
+    (and (ruby-object? node) ((resolve node :running? #f) .jumpable?)))
+  (define (jump node)
+    ((resolve node :running? #f) .jump))
 
   ;;-----------------------------------------------------------------------
   ;;  Groups of Cards

@@ -406,7 +406,7 @@
                                     &key (parent (default-element-parent)))
     (when (element-exists? name :parent parent)
       (delete-element (find-node (string->symbol (cat (node-full-name parent)
-                                                      "/" name))))))
+                                                      "/" name)) #t))))
   
 
   ;;;======================================================================

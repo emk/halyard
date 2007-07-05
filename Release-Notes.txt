@@ -32,6 +32,11 @@ SVN - emk, brian
     - Replaced <engine> with %engine%.
     - Removed remaining support for non-temporary element silliness.
     - Made sure that certain functions could only be called on running nodes.
+    - FIND-NODE now takes an argument that specifies whether the node found
+      is expected to be running or not (or whether we don't care).  This
+      API will change again soon.
+    - Other node-finding functions also distinguish between running and
+      non-running nodes.
   * Improvements to new object model
     - Added :type argument to ATTR.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
