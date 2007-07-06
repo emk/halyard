@@ -663,7 +663,7 @@
      [(card? card-or-name)
       card-or-name]
      [(symbol? card-or-name)
-      (let [[node (find-node card-or-name 'any)]]
+      (let [[node (find-node card-or-name #f)]]
         (if (and node (card? node))
             node
             (not-found)))]

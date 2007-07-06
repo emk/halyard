@@ -30,6 +30,7 @@ SVN - emk, brian
       - Moderate performance regression on features/animation.
       - CommonTest test suite is currently broken.
     - Replaced <engine> with %engine%.
+  * Don't instantiate nodes until they're actually run
     - Removed remaining support for non-temporary element silliness.
     - Made sure that certain functions could only be called on running nodes.
     - FIND-NODE now takes an argument that specifies whether the node found
@@ -41,6 +42,8 @@ SVN - emk, brian
       their features into various other places.
     - Redesigned RUN-CARD to have fewer dubious dependencies on the rest
       of nodes.ss in preparation for the class/instance split.
+    - FIND-NODE now searches either a static node table or a running node
+      table, depending on the value of its argument.
   * Improvements to new object model
     - Added :type argument to ATTR.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE

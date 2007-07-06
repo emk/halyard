@@ -41,7 +41,8 @@
     (attr root-node
       (%card-group% .new
         :name '|/| :parent #f :state 'ACTIVE))
-    (attr node-table (make-hash-table))
+    (attr static-node-table (make-hash-table))
+    (attr running-node-table (make-hash-table))
     (attr default-element-parent #f :writable? #t)
     (attr current-group-member #f :writable? #t)
     (attr last-card #f :writable? #t)
@@ -75,9 +76,6 @@
 
   (define (root-node)
     (*engine* .root-node))
-
-  (define (node-table)
-    (*engine* .node-table))
 
   (define (current-group-member)
     (let [[result (*engine* .current-group-member)]]
@@ -626,7 +624,7 @@
                :init-fn (expand-init-fn [] . body)
                :parent parent
                :name local-name)))
-         (register-node name))]))
+         (name .register-in-static-node-table))]))
 
   (define-syntax define-node-definer
     (syntax-rules ()
@@ -668,7 +666,6 @@
                :bindings-eval-fn bindings-eval-fn
                :parent     parent
                :name       name)]]
-      (register-node e)
       (enter-node e)
       e))
 
@@ -746,12 +743,26 @@
     (def (children)
       (node-elements self))
 
-    (def (register)
+    (def (register-in table)
       (let [[name (node-full-name self)]]
-        (when (hash-table-get (node-table) self (lambda () #f))
-          (error (cat "Duplicate copies of node " (node-full-name self))))
-        (hash-table-put! (node-table) name self)))
-    
+        (when (hash-table-has-key? table name)
+          (error (cat "Duplicate copies of node " name)))
+        (hash-table-put! table name self)))
+
+    (def (register-in-static-node-table)
+      (.register-in (*engine* .static-node-table)))
+
+    (def (register-in-running-node-table)
+      (.register-in (*engine* .running-node-table)))
+
+    (def (unregister-from table)
+      (let [[name (node-full-name self)]]
+        (%assert (hash-table-has-key? table name))
+        (hash-table-remove! table name)))
+
+    (def (unregister-from-running-node-table)
+      (.unregister-from (*engine* .running-node-table)))
+
     ;; Corresponds to the old %jumpable% class.
     ;; TODO - Decide if we want a general .implements-interface? method.
     (def (jumpable?)
@@ -786,7 +797,6 @@
   (define (node-values node) (node .values))
   (define (set-node-values! node val) (set! (node .values) val))
   (define (node-children node) (node .children))
-  (define (register-node node) (node .register))
   (define (find-first-card node) (node .find-first-card))
   (define (find-last-card node) (node .find-last-card))
 
@@ -826,19 +836,12 @@
     (set! (node-allowed-values node) (make-hash-table))
     (set! (node-values node) (make-hash-table)))
 
-  (define (unregister-element node)
-    (let [[name (node-full-name node)]]
-      (%assert (element? node))
-      (%assert (eq? (hash-table-get (node-table) name (lambda () #f)) node))
-      (hash-table-remove! (node-table) name)))
-
-  (define (find-node name desired-running-state)
-    (define found (hash-table-get (node-table) name (lambda () #f)))
-    (assert (or (not found)
-                (eq? desired-running-state 'any)
-                (eq? desired-running-state (found .running?))))
-    found)
-
+  (define (find-node name running?)
+    (define table (if running? 
+                    (*engine* .running-node-table) 
+                    (*engine* .static-node-table)))
+    (hash-table-get table name (lambda () #f)))
+      
   (define (find-node-relative base name running?)
     ;; Treat 'name' as a relative path.  If 'name' can be found relative
     ;; to 'base', return it.  If not, try the parent of base if it
@@ -1050,10 +1053,10 @@
            define-card-template card)
 
   (define-class %card% (%group-member%)
-    (def (register)
+    (def (register-in-static-node-table)
       (super)
       (*engine* .register-card self))
-
+    
     (def (jumpable?) #t)
 
     (def (jump)
@@ -1147,7 +1150,6 @@
                     ;; Delete this node, and exclude it from the new
                     ;; element list.
                     (exit-node (car elements))
-                    (unregister-element (car elements))
                     (*engine* .delete-element elem)
                     (recurse (cdr elements))]
                    [else
@@ -1173,6 +1175,8 @@
       ;; children.
       (%assert (eq? (.state) 'INACTIVE))
       (set! (.state) 'ENTERING)
+      ;; Register this node in the table of running nodes.
+      (.register-in-running-node-table)
       ;; Because we haven't been running, we shouldn't have any child
       ;; elements yet.
       (%assert (null? (node-elements self)))
@@ -1210,6 +1214,8 @@
       (run-on-exit-handler self)
       ;; Clear our handler list.
       (clear-node-state! self)
+      ;; Unregister from the running node table.
+      (.unregister-from-running-node-table)
       ;; Mark this node as no longer active, so nobody tries to call ON
       ;; or CREATE on it.
       (set! (.state) 'INACTIVE))
@@ -1280,7 +1286,7 @@
               (or (node-or-elements-have-expensive-handlers? (car elements))
                   (recurse (cdr elements)))))))
   
-  (define (maybe-enable-expensive-events-for-card card) ; TODO - Rename.
+  (define (maybe-enable-expensive-events-for-node node)
     ;; REGISTER-EVENT-HANDLER attempts to turn on expensive events whenever
     ;; a matching handler is installed.  But we need to reset the
     ;; expensive event state when changing cards.  This means we need
@@ -1288,7 +1294,7 @@
     ;;
     ;; TODO - We could think of much better ways of handling this, I think.
     (let [[enable? #f]]
-      (let recurse [[node card]]
+      (let recurse [[node node]]
         (when node
           (if (node-or-elements-have-expensive-handlers? node)
               (set! enable? #t)
@@ -1336,7 +1342,7 @@
       (exit-node-recursively old-node trunk-node))
 
     ;; Update our expensive event state.
-    (maybe-enable-expensive-events-for-card trunk-node)
+    (maybe-enable-expensive-events-for-node trunk-node)
 
     ;; Actually run the card.
     (debug-log (cat "Begin card: <" (node-full-name new-card) ">"))

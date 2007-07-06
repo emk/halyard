@@ -1,14 +1,8 @@
 * = "see patch we dumped earlier"
 
   Make phantom nodes classes & running nodes instances
-/   Encapsulate the transition points in functions
-/   Make it all run + commit
-/   Deal with node init protocol
-/   Refactor RUN-CARD until it is sensible
-/     Remove duplicate processing for groups, cards
-
-    Rename MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD
-    Split hash table used by FIND-NODE into running/non-running versions
+/   Rename MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD
+/   Split hash table used by FIND-NODE into running/non-running versions
     Create nodes when they're run, destroy when they're done
 
     Replace ASSERT with %ASSERT as needed 
