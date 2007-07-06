@@ -4,6 +4,22 @@
 /   Rename MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD
 /   Split hash table used by FIND-NODE into running/non-running versions
     Create nodes when they're run, destroy when they're done
+      ATTR on metaclasses won't default correctly
+      Fix root node & callers
+        NODE-FULL-NAME FIND-NODE-RELATIVE ANALYZE-NODE-NAME
+        ENTER-NODE-RECURSIVELY EXIT-NODE-RECURSIVELY
+      Fix DEFINE-NODE
+        Becomes much like DEFINE-TEMPLATE
+        INIT-FN can be removed from class and left only in metaclass
+      Update CREATE as needed
+        Need to deal with BINDINGS-EVAL-FN
+      Update ENTER-NODE and EXIT-NODE
+        Call sites allocate and deallocate instances
+      Nuke STATE junk as much as we can
+        Nuke everything related to ACTIVE?
+        The running assertions can all come out
+
+    STATIC-NODE or NODE-CLASS?
 
     Replace ASSERT with %ASSERT as needed 
 
