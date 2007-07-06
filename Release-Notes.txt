@@ -41,6 +41,8 @@ SVN - emk, brian
     - Added :type argument to ATTR.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
     (ROOT-NODE) ...).
+  * Turned on optimization for PNG/bitmap/image subsystems in wxWidgets,
+    even in debug builds.
 
 0.3.11 - 6 June 2007 - emk
 

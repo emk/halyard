@@ -1,11 +1,11 @@
 * = "see patch we dumped earlier"
 
   Make phantom nodes classes & running nodes instances
-    Identify all the core APIs that work on nodes
+/   Identify all the core APIs that work on nodes
 /     Fix node finding functions to know what kind of nodes to look for
 /     Fix JUMP, which is excessively special
-      What to do about functions marked *BOTH?
-    Split into versions for running and non-running nodes, with assertions
+/     What to do about functions marked *BOTH?
+/   Split into versions for running and non-running nodes, with assertions
     Encapsulate the transition points in functions
     Fix call sites
     Make it all run + commit

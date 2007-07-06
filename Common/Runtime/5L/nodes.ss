@@ -417,7 +417,9 @@
           (node-bind-property-values! self template)
           (recurse (template .extends-template))
           ;; Pass NODE to the init-fn so SELF refers to the right thing.
-          ((template-init-fn template) self))))
+          ((template-init-fn template) self)))
+      ;; Make sure all the properties of this node were declared somewhere.
+      (node-check-for-unexpected-properties self))
     
     )
 
@@ -704,9 +706,9 @@
                 (assert (eq? (slot namex) val))
                 result)])))))
 
-    (attr name :type <symbol>) ; *BOTH
-    (attr parent)              ; *BOTH
-    (attr running? #f :type <boolean> :writable? #t) ; *BOTH
+    (attr name :type <symbol>)
+    (attr parent)
+    (attr running? #f :type <boolean> :writable? #t)
 
     (.running-attr 'elements 
                    :default (method () '()) :type <list> :writable? #t)
@@ -827,7 +829,6 @@
                 (eq? desired-running-state (found .running?))))
     found)
 
-  ;; *BOTH
   (define (find-node-relative base name running?)
     ;; Treat 'name' as a relative path.  If 'name' can be found relative
     ;; to 'base', return it.  If not, try the parent of base if it
@@ -842,7 +843,6 @@
           (or found (find-node-relative (node-parent base) name running?)))))
 
   ;;; Given either a %node-path% or a node, return a node.
-  ;;; *RUNNING
   (define (resolve path-or-node &key (running? #t))
     (if (node-path? path-or-node)
         (path-or-node .resolve-path :running? running?)
@@ -851,20 +851,17 @@
   ;; We need to add some methods to %node-path%.
   (with-instance %node-path%
     ;;; Redirect any method calls we don't understand to our associated node.
-    ;;; *RUNNING
     (def (method-missing name . args)
       ((.resolve-path) .send name args))
 
     ;; XXX - Nasty hack since we haven't decided what to do about interfaces
     ;; yet.  This will need more thought.
     ;; TODO - Decide if we want a general .implements-interface? method.
-    ;; *RUNNING (maybe *BOTH, if needed)
     (def (instance-of? klass)
       (or (super)
           ((.resolve-path) .instance-of? klass)))
 
     ;;; Resolve a path.
-    ;;; *BOTH
     (def (resolve-path
           &key (running? #t)
                (if-not-found
@@ -1162,6 +1159,22 @@
   (define (enter-node node) (node .enter-node))
 
   (with-instance %node%
+    (def (enter-node)
+      ;; TODO - Make sure all our template properties are bound.
+      ;; Mark this node as running so we can add event handlers and CREATE
+      ;; children.
+      (%assert (not (node-running? self)))
+      (set! (node-running? self) #t)
+      ;; Because we haven't been running, we shouldn't have any child
+      ;; elements yet.
+      (%assert (null? (node-elements self)))
+      ;; Initialize our templates one at a time.
+      (self .bind-property-values!)
+      ;; Let the node know all initialization functions have been run.
+      ;; (This allows "two-phase" construction, where templates can effectively
+      ;; send messages to subtemplates.)
+      (send/nonrecursive* (lambda () #f) self 'setup-finished))
+
     (def (exit-node)
       ;; Exit all our child elements.
       ;; TRICKY - We call into the engine to do element deletion safely.
@@ -1179,59 +1192,73 @@
       ;; or CREATE on it.
       (%assert (node-running? self))
       (set! (node-running? self) #f))
-
-    (def (enter-node)
-      ;; TODO - Make sure all our template properties are bound.
-      ;; Mark this node as running so we can add event handlers and CREATE
-      ;; children.
-      (%assert (not (node-running? self)))
-      (set! (node-running? self) #t)
-      ;; Because we haven't been running, we shouldn't have any child
-      ;; elements yet.
-      (%assert (null? (node-elements self)))
-      ;; Initialize our templates one at a time.
-      (self .bind-property-values!)
-      ;; Make sure all the properties of this node were declared somewhere.
-      (node-check-for-unexpected-properties self)
-      ;; Let the node know all initialization functions have been run.
-      ;; (This allows "two-phase" construction, where templates can effectively
-      ;; send messages to subtemplates.)
-      (send/nonrecursive* (lambda () #f) self 'setup-finished))
     )
 
   (with-instance %group-member%
+    (def (enter-node)
+      ;; Set our current group member.
+      (set! (*engine* .current-group-member) self) ; FIXME
+      (super))
+
     (def (exit-node)
       (super)
       ;; Reset our current group member.
-      (set! (*engine* .current-group-member) (node-parent self)))
-    
-    (def (enter-node)
-      ;; Set our current group member.
-      (set! (*engine* .current-group-member) self)
-      (super))
+      (set! (*engine* .current-group-member) (node-parent self))) ; FIXME    
     )
 
   (with-instance %card-group%
-    (def (exit-node)
-      (set! (card-group-active? self) #f)
-      (super))
-    
     (def (enter-node)
       (super)
       (set! (card-group-active? self) #t))
+
+    (def (exit-node)
+      (set! (card-group-active? self) #f)
+      (super))    
     )
 
   (with-instance %card%
+    (def (enter-node)
+      (*engine* .notify-enter-card self) ; FIXME
+      (super)
+      (*engine* .notify-card-body-finished self))
+
     (def (exit-node)
       (*engine* .notify-exit-card self)
       (set! (*engine* .last-card) self)
       (super))
-    
-    (def (enter-node)
-      (*engine* .notify-enter-card self)
-      (super)
-      (*engine* .notify-card-body-finished self))
     )
+
+  ;; * Things we know
+  ;;
+  ;; .CURRENT-GROUP-MEMBER is the most-nested group member that we've
+  ;; tried to enter.
+  ;;
+  ;; .ACTIVE? is true for any %CARD-GROUP% that has been fully set up.  A
+  ;; node may be the .CURRENT-GROUP-MEMBER but not .ACTIVE?, either if it
+  ;; is still being set up or if setup previously failed.
+  ;;
+  ;; * Eliminating the overridden versions of ENTER-NODE/EXIT-NODE.
+  ;;
+  ;; Most of the FIXME handlers above are related to RUN-CARD (the rest are
+  ;; hooks called before and after certain events).
+  ;;
+  ;; Give the hooks corresponding member functions, and have the default
+  ;; implementation call the hook.
+  ;;
+  ;; .ACTIVE? -> .FULLY-CREATED? (and make general part of node protocol,
+  ;; with assertions in places like our calls to ON EXIT).
+  ;;
+  ;; Move *ENGINE* .CURRENT-GROUP-MEMBER updates into helper functions of
+  ;; RUN-CARD.
+  ;;
+  ;; * Notes on RUN-CARD
+  ;;
+  ;; If entering a node (group?) fails, we may still call ON EXIT on it.
+  ;; This is not really a good idea.
+  ;;
+  ;; Jumping to the current card should exit and enter it, but leave its
+  ;; parent alone.
+
 
   (define (find-active-parent node)
     ;; Walk back up the node hierarchy from node until we find the
@@ -1317,7 +1344,7 @@
 
   (define *running-on-exit-handler-for-node* #f)
 
-  (define (run-on-exit-handler node)
+  (define (run-on-exit-handler node) ; FIXME - heh.
     ;; This is pretty simple--just send an EXIT message.  But we need to
     ;; trap any JUMP calls and quit immediately, because actually allowing
     ;; the jump will hopeless corrupt the data structures in this file.
