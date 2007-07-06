@@ -1251,41 +1251,26 @@
   (define (set-current-group-member! group-member)
     (set! (*engine* .current-group-member) group-member))
 
-  (define (find-active-parent node)
-    ;; Walk back up the node hierarchy from node until we find the
-    ;; nearest active parent group.  The root node is always active, so
-    ;; this recursive call terminates.
-    (if (and (card-group? node) (card-group-active? node))
-        node
-        (find-active-parent (node-parent node))))
-
-  (define (find-group card-or-group)
-    ;; Walk back up our node hierarchy looking for the first group
-    ;; we find.
-    (if (card-group? card-or-group)
-        card-or-group
-        (find-group (node-parent card-or-group))))
-
-  (define (exit-card-group-recursively group stop-before)
-    ;; Recursively exit nested card groups starting with 'group', but
-    ;; ending before 'stop-before'.
-    (let recurse [[group group]]
-      (unless (eq? group stop-before)
-        (%assert (node-parent group))
-        (exit-node group)
-        (set-current-group-member! (node-parent group))
-        (recurse (node-parent group)))))
-
-  (define (enter-card-group-recursively group)
-    ;; Recursively enter nested card groups until we have a chain of
-    ;; active groups from the root to 'group'.
-    (let recurse [[group group]]
-      (unless (card-group-active? group)
-        (%assert (node-parent group))
-        (recurse (node-parent group))
-        (set-current-group-member! group)
-        (enter-node group))))
+  ;; Recursively enter nested nodes starting with a child of 'trunk-node',
+  ;; and ending with 'node'.
+  (define (enter-node-recursively node trunk-node)
+    (unless (eq? node trunk-node)
+      ;; We should never need to enter the root node.
+      (%assert (not (eq? node (root-node)))) 
+      (enter-node-recursively (node-parent node) trunk-node)
+      (set-current-group-member! node)
+      (enter-node node)))
   
+  ;; Recursively exit nested nodes starting with 'node', but ending before
+  ;; 'trunk-node'.
+  (define (exit-node-recursively node trunk-node)
+    (unless (eq? node trunk-node)
+      ;; We should never exit the root node.
+      (%assert (not (eq? node (root-node))))
+      (exit-node node)
+      (set-current-group-member! (node-parent node))
+      (exit-node-recursively (node-parent node) trunk-node)))
+
   (define (node-or-elements-have-expensive-handlers? node)
     ;; See if NODE or any of its elements have expensive handlers.
     (or (node-has-expensive-handlers? node)
@@ -1295,7 +1280,7 @@
               (or (node-or-elements-have-expensive-handlers? (car elements))
                   (recurse (cdr elements)))))))
   
-  (define (maybe-enable-expensive-events-for-card card)
+  (define (maybe-enable-expensive-events-for-card card) ; TODO - Rename.
     ;; REGISTER-EVENT-HANDLER attempts to turn on expensive events whenever
     ;; a matching handler is installed.  But we need to reset the
     ;; expensive event state when changing cards.  This means we need
@@ -1310,32 +1295,53 @@
               (recurse (node-parent node)))))
       (*engine* .enable-expensive-events enable?)))
 
+
+  ;; Find the common "trunk" shared by the nodes OLD and NEW.  If OLD is #f
+  ;; or the root node, this returns the root node.  Otherwise, this will
+  ;; never return OLD (the closest it will come is (NODE-PARENT OLD)).
+  (define (find-trunk-node old new)
+    (cond
+     [(or (not old) (eq? old (root-node)))
+      (root-node)]
+     [else
+      (let [[old-nodes (make-hash-table)]]
+        ;; Make a table of our old node's ancestors.  We really don't want
+        ;; the old node itself in this table, because even if we're going
+        ;; right back to it, we want to leave first.
+        (let recurse [[node (node-parent old)]]
+          (when node
+            (hash-table-put! old-nodes node #t)
+            (recurse (node-parent node))))
+        
+        ;; Walk up from new node until we hit something in our table.  We
+        ;; know that OLD-NODES only contains groups, and that NEW is a card,
+        ;; so we can optimize this code by starting with (NODE-PARENT NEW).
+        ;; This recursion will always end, because OLD-NODES will contain
+        ;; the root node.
+        (%assert (card? new))
+        (let recurse [[node (node-parent new)]]
+          (if (hash-table-get old-nodes node (lambda () #f))
+              node
+              (recurse (node-parent node)))))]))
+  
   (define (run-card new-card)
+    ;; The node we're leaving.
+    (define old-node (*engine* .current-group-member))
+    ;; The node we're going to leave running.
+    (define trunk-node (find-trunk-node old-node new-card))
+
     ;; Finish exiting whatever we're in.
-    (let [[old-node (*engine* .current-group-member)]]
-      (when old-node
-        (%assert (old-node .running?))
-        ;; If old-node is a card, exit it.
-        (when (card? old-node)
-          (exit-node old-node)
-          (set-current-group-member! (node-parent old-node)))
-        ;; Exit as many enclosing card groups as necessary, stopping with
-        ;; the nearest group which contains NEW-CARD.
-        (exit-card-group-recursively (find-group old-node)
-                                     (find-active-parent new-card))))
-    
+    (when old-node
+      (%assert (old-node .running?))
+      (exit-node-recursively old-node trunk-node))
+
     ;; Update our expensive event state.
-    (maybe-enable-expensive-events-for-card (find-active-parent new-card))
-    
+    (maybe-enable-expensive-events-for-card trunk-node)
+
     ;; Actually run the card.
     (debug-log (cat "Begin card: <" (node-full-name new-card) ">"))
     (with-errors-blocked (non-fatal-error)
-      ;; Enter any enclosing card groups which we haven't entered yet.
-      (enter-card-group-recursively (node-parent new-card))
-      ;; Enter our card.
-      (set-current-group-member! new-card)
-      (enter-node new-card)))
-    
+      (enter-node-recursively new-card trunk-node)))
 
   (define *running-on-exit-handler-for-node* #f)
 

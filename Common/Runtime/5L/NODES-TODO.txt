@@ -1,23 +1,19 @@
 * = "see patch we dumped earlier"
 
   Make phantom nodes classes & running nodes instances
-/   Identify all the core APIs that work on nodes
-/     Fix node finding functions to know what kind of nodes to look for
-/     Fix JUMP, which is excessively special
-/     What to do about functions marked *BOTH?
-/   Split into versions for running and non-running nodes, with assertions
-    Encapsulate the transition points in functions
-    Fix call sites
-    Make it all run + commit
+/   Encapsulate the transition points in functions
+/   Make it all run + commit
+/   Deal with node init protocol
+/   Refactor RUN-CARD until it is sensible
+/     Remove duplicate processing for groups, cards
 
-    Replace ASSERT with %ASSERT as needed 
-    Decide what to do about RUN-CARD
-    Deal with node init protocol
-    Add a second system for looking up nodes
+    Rename MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD
+    Split hash table used by FIND-NODE into running/non-running versions
     Create nodes when they're run, destroy when they're done
 
+    Replace ASSERT with %ASSERT as needed 
+
   Port PROP code to run on top of ATTR
-/   Further definer macro cleanup
     Rip our <node-prop-decl> and replace with attr/attr-default calls
   Port event APIs to new object system
   Move ruby-object tests from experiments.ss to somewhere more useful
@@ -31,7 +27,6 @@
   Better version of .SEND/APPLY for object methods?
 
   Get test cases for SET! SLOT from ruby-nodes.ss
-X Figure out why KEYWORD? doesn't work in nodes.ss macro expansion - it's fine
   Why did we go into an infinite loop when accessing .RUNNING before it was
     initialized?
   Browser demo card dies on URLs or page titles containing unquoted & or <
