@@ -37,6 +37,8 @@ SVN - emk, brian
       API will change again soon.
     - Other node-finding functions also distinguish between running and
       non-running nodes.
+    - Removed overridden versions of ENTER-NODE and EXIT-NODE, moving
+      their features into various other places.
   * Improvements to new object model
     - Added :type argument to ATTR.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE

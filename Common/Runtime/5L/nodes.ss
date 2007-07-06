@@ -40,8 +40,7 @@
   (define-class %engine% ()
     (attr root-node
       (%card-group% .new
-        :name '|/| :parent #f :active? #t
-        :running? #t))
+        :name '|/| :parent #f :state 'ACTIVE))
     (attr node-table (make-hash-table))
     (attr default-element-parent #f :writable? #t)
     (attr current-group-member #f :writable? #t)
@@ -409,18 +408,22 @@
       (.class))
 
     (def (bind-property-values!)
-      ;; TODO - template -> class
       (let recurse [[template self]]
         (when template
           ;; We bind property values on the way in, and run init-fns
           ;; on the way out.
           (node-bind-property-values! self template)
-          (recurse (template .extends-template))
-          ;; Pass NODE to the init-fn so SELF refers to the right thing.
-          ((template-init-fn template) self)))
+          (recurse (template .extends-template))))
       ;; Make sure all the properties of this node were declared somewhere.
       (node-check-for-unexpected-properties self))
     
+    (def (run-init-fns)
+      (let recurse [[template self]]
+        (when template
+          (recurse (template .extends-template))
+          ;; Pass NODE to the init-fn so SELF refers to the right thing.
+          ((template-init-fn template) self))))
+
     )
 
   ;; TODO - Get rid of these wrappers
@@ -708,7 +711,8 @@
 
     (attr name :type <symbol>)
     (attr parent)
-    (attr running? #f :type <boolean> :writable? #t)
+    ;; May be INACTIVE, ENTERING, ACTIVE, EXITING
+    (attr state 'INACTIVE :type <symbol> :writable? #t)
 
     (.running-attr 'elements 
                    :default (method () '()) :type <list> :writable? #t)
@@ -723,12 +727,18 @@
                    :default (method () (make-hash-table)) :type <hash-table> 
                    :writable? #t)
 
-    (def (initialize &rest keys)
+   (def (initialize &rest keys)
       (super)
       (when (node-parent self)
         (if (element? self)
             (node-add-element! (node-parent self) self)
             (group-add-member! (node-parent self) self))))
+
+    (def (running?)
+      (and (memq (.state) '(ENTERING ACTIVE EXITING)) #t))
+
+    (def (active?)
+      (eq? (.state) 'ACTIVE))
 
     (def (to-string)
       (cat "#<" (node-full-name self) ">"))
@@ -937,7 +947,6 @@
 
   (define-class %card-group% (%group-member%)
     (attr members '() :type <list> :writable? #t)
-    (attr active? #f :type <boolean> :writable? #t)
 
     (def (children)
       (append (.members) (super)))
@@ -956,7 +965,6 @@
   (define (card-group-members grp) (grp .members))
   (define (set-card-group-members! grp val) (set! (grp .members) val))
   (define (card-group-active? grp) (grp .active?))
-  (define (set-card-group-active?! grp val) (set! (grp .active?) val))
   (define (card-group-find-next grp member) (grp .find-next member))
   (define (card-group-find-prev grp member) (grp .find-prev member))
 
@@ -1163,19 +1171,33 @@
       ;; TODO - Make sure all our template properties are bound.
       ;; Mark this node as running so we can add event handlers and CREATE
       ;; children.
-      (%assert (not (node-running? self)))
-      (set! (node-running? self) #t)
+      (%assert (eq? (.state) 'INACTIVE))
+      (set! (.state) 'ENTERING)
       ;; Because we haven't been running, we shouldn't have any child
       ;; elements yet.
       (%assert (null? (node-elements self)))
       ;; Initialize our templates one at a time.
-      (self .bind-property-values!)
+      (.bind-property-values!)
+      ;; Let the world know that we're starting to run this node.
+      (.notify-enter)
+      ;; Run our body functions.  This may take quite a while, play media,
+      ;; and so on--this is where "card" bodies actually get run.
+      (.run-init-fns)
       ;; Let the node know all initialization functions have been run.
       ;; (This allows "two-phase" construction, where templates can effectively
       ;; send messages to subtemplates.)
-      (send/nonrecursive* (lambda () #f) self 'setup-finished))
+      (send/nonrecursive* (lambda () #f) self 'setup-finished)
+      (.notify-body-finished)
+      (set! (.state) 'ACTIVE))
+
+    (def (notify-enter))
+    (def (notify-body-finished))
+    (def (notify-exit))
 
     (def (exit-node)
+      (%assert (memq (.state) '(ENTERING ACTIVE)))
+      (set! (.state) 'EXITING)
+      (.notify-exit)
       ;; Exit all our child elements.
       ;; TRICKY - We call into the engine to do element deletion safely.
       ;; We work with a copy of (NODE-ELEMENTS SELF) the original
@@ -1188,44 +1210,21 @@
       (run-on-exit-handler self)
       ;; Clear our handler list.
       (clear-node-state! self)
-      ;; Mark this node as no longer running, so nobody tries to call ON
+      ;; Mark this node as no longer active, so nobody tries to call ON
       ;; or CREATE on it.
-      (%assert (node-running? self))
-      (set! (node-running? self) #f))
-    )
-
-  (with-instance %group-member%
-    (def (enter-node)
-      ;; Set our current group member.
-      (set! (*engine* .current-group-member) self) ; FIXME
-      (super))
-
-    (def (exit-node)
-      (super)
-      ;; Reset our current group member.
-      (set! (*engine* .current-group-member) (node-parent self))) ; FIXME    
-    )
-
-  (with-instance %card-group%
-    (def (enter-node)
-      (super)
-      (set! (card-group-active? self) #t))
-
-    (def (exit-node)
-      (set! (card-group-active? self) #f)
-      (super))    
+      (set! (.state) 'INACTIVE))
     )
 
   (with-instance %card%
-    (def (enter-node)
-      (*engine* .notify-enter-card self) ; FIXME
-      (super)
+    (def (notify-enter)
+      (*engine* .notify-enter-card self))
+
+    (def (notify-body-finished)
       (*engine* .notify-card-body-finished self))
 
-    (def (exit-node)
+    (def (notify-exit)
       (*engine* .notify-exit-card self)
-      (set! (*engine* .last-card) self)
-      (super))
+      (set! (*engine* .last-card) self))
     )
 
   ;; * Things we know
@@ -1237,20 +1236,6 @@
   ;; node may be the .CURRENT-GROUP-MEMBER but not .ACTIVE?, either if it
   ;; is still being set up or if setup previously failed.
   ;;
-  ;; * Eliminating the overridden versions of ENTER-NODE/EXIT-NODE.
-  ;;
-  ;; Most of the FIXME handlers above are related to RUN-CARD (the rest are
-  ;; hooks called before and after certain events).
-  ;;
-  ;; Give the hooks corresponding member functions, and have the default
-  ;; implementation call the hook.
-  ;;
-  ;; .ACTIVE? -> .FULLY-CREATED? (and make general part of node protocol,
-  ;; with assertions in places like our calls to ON EXIT).
-  ;;
-  ;; Move *ENGINE* .CURRENT-GROUP-MEMBER updates into helper functions of
-  ;; RUN-CARD.
-  ;;
   ;; * Notes on RUN-CARD
   ;;
   ;; If entering a node (group?) fails, we may still call ON EXIT on it.
@@ -1258,7 +1243,13 @@
   ;;
   ;; Jumping to the current card should exit and enter it, but leave its
   ;; parent alone.
+  ;;
+  ;; Cleanup:
+  ;;   Merge group & card code
 
+  ;;; Set our current group member.
+  (define (set-current-group-member! group-member)
+    (set! (*engine* .current-group-member) group-member))
 
   (define (find-active-parent node)
     ;; Walk back up the node hierarchy from node until we find the
@@ -1282,6 +1273,7 @@
       (unless (eq? group stop-before)
         (%assert (node-parent group))
         (exit-node group)
+        (set-current-group-member! (node-parent group))
         (recurse (node-parent group)))))
 
   (define (enter-card-group-recursively group)
@@ -1291,6 +1283,7 @@
       (unless (card-group-active? group)
         (%assert (node-parent group))
         (recurse (node-parent group))
+        (set-current-group-member! group)
         (enter-node group))))
   
   (define (node-or-elements-have-expensive-handlers? node)
@@ -1324,7 +1317,8 @@
         (%assert (old-node .running?))
         ;; If old-node is a card, exit it.
         (when (card? old-node)
-          (exit-node old-node))
+          (exit-node old-node)
+          (set-current-group-member! (node-parent old-node)))
         ;; Exit as many enclosing card groups as necessary, stopping with
         ;; the nearest group which contains NEW-CARD.
         (exit-card-group-recursively (find-group old-node)
@@ -1339,6 +1333,7 @@
       ;; Enter any enclosing card groups which we haven't entered yet.
       (enter-card-group-recursively (node-parent new-card))
       ;; Enter our card.
+      (set-current-group-member! new-card)
       (enter-node new-card)))
     
 
