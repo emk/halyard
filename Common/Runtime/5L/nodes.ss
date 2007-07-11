@@ -373,18 +373,14 @@
     (with-instance (.class)
       ;; "Property" declarations--these are our older version of slots.  This
       ;; needs to be writable because we initialize it with SET!.
-      (.auto-default-attr 'prop-decls (method () '()) :writable? #t)
+      (attr prop-decls '() :writable? #t)
 
       ;; When run, this function returns key/value pairs used to initialize
       ;; the object.
-      (.auto-default-attr 'bindings-eval-fn
-         (method () (lambda (self) (make-hash-table)))
-         :writable? #t)
+      (attr bindings-eval-fn (lambda (self) (make-hash-table)) :writable? #t)
 
       ;; This function contains the initializer "body" of a declaration.
-      (.auto-default-attr 'init-fn
-         (method () (lambda (self) (void)))
-         :writable? #t)
+      (attr init-fn (lambda (self) (void)) :writable? #t)
 
       ;; Corresponds roughly to our old EXTENDS-TEMPLATE function.  This
       ;; allows us to build a hierarchy of fake "classes", which starts

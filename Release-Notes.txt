@@ -44,6 +44,8 @@ SVN - emk, brian
       of nodes.ss in preparation for the class/instance split.
     - FIND-NODE now searches either a static node table or a running node
       table, depending on the value of its argument.
+    - Replaced .AUTO-DEFAULT-ATTR with support for transparently defaulting
+      ATTRs defined on classes after those classes are initialized.
   * Improvements to new object model
     - Added :type argument to ATTR.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE

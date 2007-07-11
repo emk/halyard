@@ -4,7 +4,7 @@
 /   Rename MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD
 /   Split hash table used by FIND-NODE into running/non-running versions
     Create nodes when they're run, destroy when they're done
-      ATTR on metaclasses won't default correctly
+/     ATTR on metaclasses won't default correctly
       Fix root node & callers
         NODE-FULL-NAME FIND-NODE-RELATIVE ANALYZE-NODE-NAME
         ENTER-NODE-RECURSIVELY EXIT-NODE-RECURSIVELY

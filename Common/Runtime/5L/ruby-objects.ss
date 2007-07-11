@@ -308,6 +308,18 @@
         (lambda (key value)
           (send% self (symcat "set-" key "!") value)))
       (void))
+
+    (with-instance (app~ .class)
+      ;;; Create a new attribute on this class.  This method applies to
+      ;;; ordinary instances, and overrides the version of ATTR defined by
+      ;;; CLASS.
+      (def (attr name &key default (writable? #f) (mandatory? #t) (type #f))
+        (super)
+        ;; On ordinary objects, default values are never supplied by getter
+        ;; methods, only by the initialization protocol.
+        (app~ .define-method name 
+              (method~ () (slot name))))
+      )
     )
 
   ;;; Now that our printing machinery is all set up, it should be safe to
@@ -343,8 +355,31 @@
         (app~ .attr-initializer name default #t))
       (when mandatory?
         (app~ .mandatory-attr name))
-      (app~ .define-method name 
-            (method~ () (slot name)))
+      ;; Hackish support for attribute defaults on
+      ;; already-initialized objects (generally instances of
+      ;; %class%).  An example of why this is necessary:
+      ;;
+      ;;   (define-class %foo%)
+      ;;     (with-instance (.class) (attr bar (method () 2)))
+      ;;     (.bar))
+      ;;
+      ;; Here, we want to add an attribute to %foo%'s metaclass, and
+      ;; use it right away.  But %foo% has already been initialized,
+      ;; so our attribute default is normally ignored.  Our fix:
+      ;; Define a new getter method that handles the defaulting when
+      ;; needed.  A better fix would be to allow our initialization
+      ;; protocol to run incrementally.
+      ;;
+      ;; This getter method is only used for attributes on classes.  For
+      ;; attributes on regular objects, this will be replaced by the ATTR
+      ;; method on (%OBJECT% .CLASS), which overrides this method.  We use
+      ;; this method to make class ATTRs default sensibly, even if they
+      ;; were added after initialization.
+      (app~ .define-method name
+            (method~ ()
+              (when (and (not (has-slot%? self name)) default)
+                (set! (slot name) (instance-exec self default)))
+              (slot name)))
       (app~ .define-method (symcat "set-" name "!")
             (method~ (val)
               (cond
@@ -355,31 +390,6 @@
                             val))]
                [#t
                 (set! (slot name) val)]))))
-    ;;; Hackish support for attribute defaults on already-initialized
-    ;;; objects (generally instances of %class%).  An example of why this
-    ;;; is necessary:
-    ;;;
-    ;;;   (define-class %foo%)
-    ;;;     (with-instance (.class) (.auto-default-attr bar (method () 2)))
-    ;;;     (.bar))
-    ;;;
-    ;;; Here, we want to add an attribute to %foo%'s metaclass, and use
-    ;;; it right away.  But %foo% has already been initialized, so our
-    ;;; attribute default is normally ignored.  Our fix: Define a new
-    ;;; getter method that handles the defaulting when needed.  A better
-    ;;; fix would be to allow our initialization protocol to run
-    ;;; incrementally.
-    (def (auto-default-attr name default 
-                            &key (writable? #f) (mandatory? #t))
-      ;; Set up our regular attr stuff.
-      (app~ .attr name
-            :default default :writable? writable? :mandatory? mandatory?)
-      ;; Clobber previous method with this name.
-      (app~ .define-method name
-            (method~ ()
-              (unless (has-slot%? self name)
-                (set! (slot% self name) (instance-exec self default)))
-              (slot% self name))))
     ;;; Attribute initializers for this class.
     (def (attr-initializers)
       ;; Implemented as a method, so we don't have to worry about making it
