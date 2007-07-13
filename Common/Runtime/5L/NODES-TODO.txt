@@ -8,18 +8,27 @@
 /     Fix root node & callers
 /       NODE-FULL-NAME FIND-NODE-RELATIVE ANALYZE-NODE-NAME
 /       ENTER-NODE-RECURSIVELY EXIT-NODE-RECURSIVELY
-      Fix DEFINE-NODE
-        Becomes much like DEFINE-TEMPLATE
-        INIT-FN can be removed from class and left only in metaclass
-      Update CREATE as needed
-        Need to deal with BINDINGS-EVAL-FN
-      Update ENTER-NODE and EXIT-NODE
-        Call sites allocate and deallocate instances
-      Nuke STATE junk as much as we can
-        Nuke everything related to ACTIVE?
-        The running assertions can all come out
+/     Correctly instantiate root node
+/     Fix DEFINE-NODE
+/       Becomes much like DEFINE-TEMPLATE
+/       INIT-FN can be removed from class and left only in metaclass
+/     Update CREATE as needed
+/       Need to deal with BINDINGS-EVAL-FN
+/     Nuke STATE junk as much as we can
+X       Nuke everything related to ACTIVE? - Not yet.
+/       The running assertions can all come out
+/     Update ENTER-NODE and EXIT-NODE
+/       Call sites allocate and deallocate instances
+/     Fix BINDINGS junk in CREATE, again (back out diffs with svn?)
+/     Get it to compile
+      Check it in
+      Sort out hygiene problems in DEFINE-NODE
+      Clean up MAKE-NODE-TYPE-PREDICATE
+      Do we really need separate %ROOT-NODE% class?  Probably.
 
     STATIC-NODE or NODE-CLASS?
+      Make names distinct globally
+    Clean up .SEND API
 
     Replace ASSERT with %ASSERT as needed 
 

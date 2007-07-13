@@ -47,7 +47,11 @@ SVN - emk, brian
     - Replaced .AUTO-DEFAULT-ATTR with support for transparently defaulting
       ATTRs defined on classes after those classes are initialized.
     - Split ROOT-NODE into RUNNING-ROOT-NODE and STATIC-ROOT-NODE.
-  * Improvements to new object model
+    - Modified DEFINE-NODE, CREATE, RUN-CARD, ENTER-NODE and EXIT-NODE to
+      treat declared nodes as classes and instantiate them when they're run.
+    - Removed now useless NODE-CHILDREN from API.  Use .ELEMENTS or
+      .MEMBERS instead.
+   * Improvements to new object model
     - Added :type argument to ATTR.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
     (ROOT-NODE) ...).
