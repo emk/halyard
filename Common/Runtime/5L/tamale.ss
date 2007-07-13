@@ -1297,7 +1297,7 @@
       (set! result value))
     (define elem
       (create %state-db-debugger%
-              :parent (root-node)
+              :parent (running-root-node)
               :path path
               :report-fn set-result!))
     (delete-element elem)

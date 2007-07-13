@@ -35,12 +35,12 @@
   ;;  Engine Interface
   ;;=======================================================================
 
-  (provide *engine* set-engine! %engine% root-node)
+  (provide *engine* set-engine! %engine% static-root-node running-root-node)
 
   (define-class %engine% ()
-    (attr root-node
-      (%card-group% .new
-        :name '|/| :parent #f :state 'ACTIVE))
+    (attr static-root-node
+          (%card-group% .new :name '|/| :parent #f :state 'ACTIVE))
+    (attr running-root-node (.static-root-node))
     (attr static-node-table (make-hash-table))
     (attr running-node-table (make-hash-table))
     (attr default-element-parent #f :writable? #t)
@@ -74,8 +74,14 @@
   (define (set-engine! engine)
     (set! *engine* engine))
 
-  (define (root-node)
-    (*engine* .root-node))
+  (define (static-root-node)
+    (*engine* .static-root-node))
+
+  (define (running-root-node)
+    (*engine* .running-root-node))
+
+  (define (root-node? node)
+    (eq? (node .parent) #f))
 
   (define (current-group-member)
     (let [[result (*engine* .current-group-member)]]
@@ -799,7 +805,7 @@
   (define (node-full-name node)
     ;; Join together local names with "/" characters.
     (let [[parent (node-parent node)]]
-      (if (and parent (not (eq? parent (root-node))))
+      (if (and parent (not (root-node? parent)))
         (string->symbol (cat (node-full-name (node-parent node))
                              "/" (node-name node)))
         (node-name node))))
@@ -844,7 +850,7 @@
     ;; exists.  If all fails, return #f.
     (unless base
       (error (cat "Can't find relative path '@" name "' outside of a card")))
-    (if (eq? base (root-node))
+    (if (root-node? base)
         (find-node name running?)
         (let* [[base-name (node-full-name base)]
                [candidate (string->symbol (cat base-name "/" name))]
@@ -905,7 +911,7 @@
            [(not matches)
             (error (cat "Illegal node name: " name))]
            [(not (cadr matches))
-            (values (root-node) name)]
+            (values (static-root-node) name)]
            [else
             (let [[parent (find-node (string->symbol (caddr matches)) #f)]]
               (unless parent
@@ -1258,7 +1264,7 @@
   (define (enter-node-recursively node trunk-node)
     (unless (eq? node trunk-node)
       ;; We should never need to enter the root node.
-      (%assert (not (eq? node (root-node)))) 
+      (%assert (not (root-node? node)))
       (enter-node-recursively (node-parent node) trunk-node)
       (set-current-group-member! node)
       (enter-node node)))
@@ -1268,7 +1274,7 @@
   (define (exit-node-recursively node trunk-node)
     (unless (eq? node trunk-node)
       ;; We should never exit the root node.
-      (%assert (not (eq? node (root-node))))
+      (%assert (not (root-node? node)))
       (exit-node node)
       (set-current-group-member! (node-parent node))
       (exit-node-recursively (node-parent node) trunk-node)))
@@ -1303,8 +1309,8 @@
   ;; never return OLD (the closest it will come is (NODE-PARENT OLD)).
   (define (find-trunk-node old new)
     (cond
-     [(or (not old) (eq? old (root-node)))
-      (root-node)]
+     [(or (not old) (eq? old (static-root-node)))
+      (static-root-node)]
      [else
       (let [[old-nodes (make-hash-table)]]
         ;; Make a table of our old node's ancestors.  We really don't want
