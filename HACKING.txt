@@ -4,16 +4,24 @@ Table of Contents
 -----------------
 
   * History
-  * Checking 5L Out of CVS
+  * Checking 5L Out of SVN
   * Building Win32 5L
+  * Rake
   * Building Macintosh 5L
+  * Source Documentation
   * What Lives Where
   * Important Classes & Modules
-  * Testing Your Changes
   * Coding Conventions
+  * Testing Your Changes
   * Checking in Your Changes to 5L
   * Updating the Version Number
+  * Copying an Engine Build into a Script
   * Ancient Versions
+  * Vendor Branches in Subversion
+  * Upgrading PLT
+  * libxml2 Hacks
+  * Unix Command Line Magic for Doing CVS Merges
+  * Upgrading wxWidgets
 
 History
 -------
@@ -42,7 +50,7 @@ Building Win32 5L
 -----------------
 
   Using the System control panel, set the environment variable WXWIN to
-  $5L_DIR/libs/wxWidgets.
+  $5L_DIR\libs\wxWidgets.
 
   Install Visual C++.NET 2005 off of the Microsoft Campus Agreement.
   Make sure you have everyting related to C++ development, but you can
@@ -102,7 +110,12 @@ Building Win32 5L
   button or right facing triangle). If you want to build a component
   without running it, you can select "Build <component>" from the
   build menu, or add the build button to your toolbar by right
-  clicking on the toolbar and selecting "Build". 
+  clicking on the toolbar and selecting "Build".  
+
+  If you are going to be running tamale_test, you will probably have
+  to go into the tamale_test directory in Cygwin, and run 'rake
+  copy_runtime' to make sure that the runtime directory in tamale_test
+  matches the SVN version of the engine.
 
   To build the release version, select "Release" from the "Solution
   Configurations" popup on your toolbar and follow the same steps as

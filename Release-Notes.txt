@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, brian
+SVN - emk, brian, tryon
 
   * Integrating new path system.
     - Copied over %node-path% class from tamale_test staging area.
@@ -57,6 +57,7 @@ SVN - emk, brian
     (ROOT-NODE) ...).
   * Turned on optimization for PNG/bitmap/image subsystems in wxWidgets,
     even in debug builds.
+  * Updating HACKING.txt instructions.
 
 0.3.11 - 6 June 2007 - emk
 
