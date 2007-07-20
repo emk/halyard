@@ -5,6 +5,7 @@
   (provide (all-from (lib "types.ss" "5L")))
   (require (lib "util.ss" "5L"))
   (provide (all-from (lib "util.ss" "5L")))
+  (require-for-syntax (lib "util.ss" "5L"))
 
   ;; Get begin/var.
   (require (lib "begin-var.ss" "5L"))
@@ -154,7 +155,6 @@
     ;; TODO - This is a bit more informal than our EXPENSIVE-EVENT?
     ;; handling; perhaps we should unify the two?
     (when (and (mouse-event-name? name)
-               (node-has-value? node 'wants-cursor?)
                (eq? (prop node wants-cursor?) 'auto))
       (set! (prop node wants-cursor?) #t))
 
@@ -365,149 +365,78 @@
   (define $no-default (list 'no 'default))
   (define $no-such-key (list 'no 'such 'key))
 
-  (defclass <template-prop-decl> ()
-    (name      :type <symbol>)
-    (type      :type <class>       :initvalue <object>)
-    (label     :type <string>      :initvalue "")
-    (default                       :initvalue $no-default))
-
   (define-class %node% ()
     (with-instance (.class)
-      ;; "Property" declarations--these are our older version of slots.  This
-      ;; needs to be writable because we initialize it with SET!.
-      (attr prop-decls '() :writable? #t)
+      ;; Override ATTR and add backwards-compatibility wrapper for old
+      ;; ON PROP-CHANGE protocol.
+      (def (attr name &key (label #f) (type #f) (writable? #f) &rest keys)
+        (super)
+        (unless writable?
+          (.define-method (symcat "set-" name "!")
+            (method (value)
+              ;; TODO - Can we refactor out code shared with ruby-objects.ss?
+              (when (and type (not (instance-of? value type)))
+                (error (cat "Attr " name " has type " type
+                            ", tried to assign " value)))
+              (if (not (.initialized?))
+                (set! (slot name) value)
+                (.send '%maybe-set-property! (list name value)))))))
 
-      ;; When run, this function returns key/value pairs used to initialize
-      ;; the object.
-      (attr bindings-eval-fn (lambda (self) (make-hash-table)) :writable? #t)
-
-      ;; This function contains the initializer "body" of a declaration.
-      (attr init-fn (lambda (self) (void)) :writable? #t)
-
-      ;; Corresponds roughly to our old EXTENDS-TEMPLATE function.  This
-      ;; allows us to build a hierarchy of fake "classes", which starts
-      ;; with an _instance_ of a subclass of %NODE%, goes up through that
-      ;; instance's class, and then follows superclass links up to %NODE%.
-      (def (extends-template)
-        (if (eq? self %node%)
-            #f
-            (.superclass)))
+      ;; Backwards-compatibility glue for old :DEFAULT semantics.
+      (def (attr/glue name &key (default $no-default) &rest-keys keys)
+        (if (eq? default $no-default)
+          (.send 'attr (list* name keys))
+          (.send 'attr (list* name :default (method () default) keys))))
       )
 
-    ;; These definitions are needed by DEFINE-NODE and CREATE, allowing
-    ;; them to treat instances a little bit like classes.  See above.  This
-    ;; is gradually going away.
-    (attr prop-decls '())
-    (attr bindings-eval-fn (lambda (self) (make-hash-table)))
-    (def (extends-template)
-      (.class))
+    ;;; Run the "body" function of this node, where elements are created,
+    ;;; media is played, etc.
+    (def (run-body)
+      (void))
 
-    (def (bind-property-values!)
-      (let recurse [[template self]]
-        (when template
-          ;; We bind property values on the way in, and run init-fns
-          ;; on the way out.
-          (node-bind-property-values! self template)
-          (recurse (template .extends-template))))
-      ;; Make sure all the properties of this node were declared somewhere.
-      (node-check-for-unexpected-properties self))
-    
-    (def (run-init-fns)
-      (let recurse [[template (self .class)]]
-        (when template
-          (recurse (template .extends-template))
-          ;; Pass NODE to the init-fn so SELF refers to the right thing.
-          ((template-init-fn template) self))))
-
-    )
-
-  ;; TODO - Get rid of these wrappers
-  (define (template-prop-decls t) (t .prop-decls)) ; Internal only
-  (define (template-bindings-eval-fn t) (t .bindings-eval-fn)) ; 
-  (define (template-init-fn t) (t .init-fn))
-  
-  (define (node-bind-value! node name value)
-    (if (node-has-value? node name)
-        (error (cat "Duplicate property " name " on node "
-                    (node-full-name node)))
-        (hash-table-put! (node-values node) name value)))
-
-  (define (node-has-value? node name)
-    (not (eq? (hash-table-get (node-values node) name
-                              (lambda () $no-such-key))
-              $no-such-key)))
-
-  (define (node-maybe-default-property! node prop-decl)
-    (unless (node-has-value? node (template-prop-decl-name prop-decl))
-      (node-bind-value! node
-                        (template-prop-decl-name prop-decl)
-                        (template-prop-decl-default prop-decl))))
-
-  (define (node-bind-property-values! node template)
-    (foreach [decl (template-prop-decls template)]
-      (hash-table-put! (node-allowed-values node)
-                       (template-prop-decl-name decl)
-                       #t)
-      (node-maybe-default-property! node decl))
-    (let [[bindings ((template-bindings-eval-fn template) node)]]
-      (foreach [[k v] bindings]
-        (node-bind-value! node k v))))
-
-  (define (node-check-for-unexpected-properties node)
-    (define allowed (node-allowed-values node))
-    (foreach [[name value] (node-values node)]
-      (unless (hash-table-get allowed name (lambda () #f))
-        (error (cat "Unexpected property '" name "' on: "
-                    (node-full-name node))))))
+    ;;; Backwards-compatibility glue for the old ON PROP-CHANGE protocol.
+    (def (%maybe-set-property! name value)
+      ;; We allow the scriptor to set properties on a node.  However, we
+      ;; must notify the node of the change.  The node may choose to veto
+      ;; the change--in which case, we undo the change.
+      (define (veto &opt reason)
+        (define msg (cat "Cannot set property '" name "' on node '"
+                         (node-full-name self) "'"))
+        (if reason
+            (error (cat msg ": " reason))
+            (error msg)))
+      (define (no-handler)
+        (veto "Property is read-only."))
+      (let [[accepted? #f]
+            [previous #f]]
+        (dynamic-wind
+            (lambda ()
+              ;; Store our previous property value, and set the
+              ;; new one.
+              (set! previous (slot name))
+              (set! (slot name) value))
+            (lambda ()
+              ;; Notify the node that the property has changed.
+              ;; If the node vetos the change, send/nonrecursive*
+              ;; will raise an error, and we'll never set
+              ;; accepted? to #t.
+              (send/nonrecursive* no-handler self 'prop-change name
+                                  value previous veto)
+              (set! accepted? #t))
+            (lambda ()
+              ;; If we didn't accept the change, revert it.
+              (unless accepted?
+                (set! (slot name) previous))))))
+      )
 
   (define (prop* node name)
-    ;; This function controls how we search for property bindings.  If
-    ;; you want to change search behavior, here's the place to do it.
-    (let [[value (hash-table-get (node-values node)
-                                 name (lambda () $no-such-key))]]
-      (cond
-       [(eq? value $no-such-key)
-        (error (cat "No property named '" name "' on: "
-                    (node-full-name node)))]
-       [(eq? value $no-default)
-        (error (cat "No value for property '" name "' on: "
-                    (node-full-name node)))]
-       [else
-        value])))
+    (node .send name '()))
 
   (define (set-prop*! node name value)
-    ;; We allow the scriptor to set properties on a node.  However, we
-    ;; must notify the node of the change.  The node may choose to veto
-    ;; the change--in which case, we undo the change.
-    (define (veto &opt reason)
-      (define msg (cat "Cannot set property '" name "' on node '"
-                       (node-full-name node) "'"))
-      (if reason
-          (error (cat msg ": " reason))
-          (error msg)))
-    (define (no-handler)
-      (veto "Property is read-only."))
-    (unless (node-has-value? node name)
-      (veto "Property does not exist."))
-    (let [[accepted? #f]
-          [table (node-values node)]
-          [previous #f]]
-      (dynamic-wind
-          (lambda ()
-            ;; Store our previous property value, and set the new one.
-            (set! previous (hash-table-get table name (lambda () #f)))
-            (hash-table-put! table name value))
-          (lambda ()
-            ;; Notify the node that the property has changed.  If the node
-            ;; vetos the change, send/nonrecursive* will raise an error, and
-            ;; we'll never set accepted? to #t.
-            (send/nonrecursive* no-handler node 'prop-change name value
-                                previous veto)
-            (set! accepted? #t))
-          (lambda ()
-            ;; If we didn't accept the change, revert it.
-            (unless accepted?
-              (hash-table-put! table name previous))))))
+    ;; TODO - Performance?
+    (node .send
+          (string->symbol (string-append "set-" (symbol->string name) "!"))
+          (list value)))
 
   (define-syntax prop
     (syntax-rules ()
@@ -515,47 +444,31 @@
        (prop* node 'name)]))
   (define-syntax-indent prop function)
 
-  (define (bindings->hash-table bindings)
-    ;; Turns a keyword argument list into a hash table.
-    (let [[result (make-hash-table)]]
-      (let recursive [[b bindings]]
-        (cond
-         [(null? b)
-          #f]
-         [(null? (cdr b))
-          (error "Bindings list contains an odd number of values:" bindings)]
-         [(not (keyword? (car b)))
-          (error "Expected keyword in bindings list, found:" (car b) bindings)]
-         [else
-          (hash-table-put! result (keyword-name (car b)) (cadr b))
-          (recursive (cddr b))]))
-      result))
-
   (define-syntax expand-prop-decls
     (syntax-rules (:new-default)
-      [(expand-prop-decls)
-       '()]
-      [(expand-prop-decls (name :new-default default) rest ...)
-       (cons (make <template-prop-decl> :name 'name :default default)
-             (expand-prop-decls rest ...))]
-      [(expand-prop-decls (name keywords ...) rest ...)
-       (cons (make <template-prop-decl> :name 'name keywords ...)
-             (expand-prop-decls rest ...))]
-      [(expand-prop-decls name rest ...)
-       (cons (make <template-prop-decl> :name 'name)
-             (expand-prop-decls rest ...))]))
+      [(expand-prop-decls self)
+       (void)]
+      [(expand-prop-decls self (name :new-default default) rest ...)
+       (begin (self .attr-initializer 'name (method () default) #t)
+              (expand-prop-decls self rest ...))]
+      [(expand-prop-decls self (name keywords ...) rest ...)
+       (begin (self .attr/glue 'name keywords ...)
+              (expand-prop-decls self rest ...))]
+      [(expand-prop-decls self name rest ...)
+       (begin (self .attr 'name)
+              (expand-prop-decls self rest ...))]))
 
-  (define-syntax (expand-fn-with-self-and-prop-names stx)
+  (define-syntax (expand-method-with-prop-names stx)
     (syntax-case stx ()
       ;; CTX is the syntax context in which to create SELF.
       [(_ ctx prop-decls . body)
-       (with-syntax [[self (make-self #'ctx)]]
+       (with-syntax [[self (make-self #'ctx)]
+                     [super (make-capture-var/ellipsis #'ctx 'super)]]
 
          ;; Bind each template property NAME to a call to (prop self
-         ;; 'name), so it's convenient to access from with the init-fn.
-         ;; We don't need to use capture variables for this, because
-         ;; the programmer supplied the names--which means they're already
-         ;; in the right context.
+         ;; 'name), so it's convenient to access.  We don't need to use
+         ;; capture variables for this, because the programmer supplied the
+         ;; names--which means they're already in the right context.
          (define (make-prop-bindings prop-decls-stx)
            (datum->syntax-object
             stx
@@ -572,34 +485,40 @@
          ;; declaration.  See the PLT203 mzscheme manual for details.
          (quasisyntax/loc
           stx
-          (lambda (self)
+          (lambda (self super)
             (letsubst #,(make-prop-bindings #'prop-decls)
               (begin/var . body)))))]))
 
-  (define-syntax expand-init-fn
+  (define-syntax expand-run-body
     (syntax-rules ()
       [(_ prop-decls . body)
-       (expand-fn-with-self-and-prop-names body prop-decls . body)]))
+       (method ()
+         (super)
+         (instance-exec self
+          (expand-method-with-prop-names body prop-decls . body)))]))
   
-  (define-syntax expand-bindings-eval-fn
+  (define-syntax expand-bindings
     (syntax-rules ()
-      [(_ prop-decls . bindings)
-       (expand-fn-with-self-and-prop-names bindings prop-decls
-        (bindings->hash-table (list . bindings)))]))
+      [(_ self prop-decls)
+       (void)]
+      [(_ self prop-decls keyword value . rest)
+       (begin (self .attr-initializer (keyword-name keyword)
+                    (expand-method-with-prop-names keyword prop-decls value)
+                    #f)
+              (expand-bindings self prop-decls . rest))]))
 
   (define-syntax define-template
     (syntax-rules ()
-      [(define-template name prop-decls (extended . bindings) . body)
+      [(_ name prop-decls (extended . bindings) . body)
        (define-class name (extended)
-         (set! (.bindings-eval-fn) 
-               (expand-bindings-eval-fn prop-decls . bindings))
-         (set! (.prop-decls) (expand-prop-decls . prop-decls))
-         (set! (.init-fn) (expand-init-fn prop-decls . body)))]))
+         (expand-prop-decls name . prop-decls)
+         (expand-bindings name prop-decls . bindings)
+         (.define-method 'run-body (expand-run-body prop-decls . body)))]))
 
   ;; TODO - Backwards compatibility glue that should go away.
   (define-syntax define-template-definer
     (syntax-rules ()
-      [(define-template-definer definer-name default-superclass)
+      [(_ definer-name default-superclass)
        (begin
          (define-syntax definer-name
            (syntax-rules ()
@@ -620,9 +539,9 @@
              (check-node-name local-name)
              (set! (name .name) local-name)
              (set! (name .parent) parent)
-             (set! (name .bindings-eval-fn)
-                   (expand-bindings-eval-fn [] . bindings))
-             (set! (name .init-fn) (expand-init-fn [] . body))))
+             (expand-bindings name [] . bindings)
+             (.define-method 'run-body (expand-run-body [] . body))
+             ))
          (name .register))]))
 
   (define-syntax define-node-definer
@@ -646,17 +565,15 @@
                   &rest-keys bindings)
     ;; Create an instance of KLASS attached to PARENT. This element will be
     ;; deleted when we leave the card.
-    (define (bindings-eval-fn self)
-      (bindings->hash-table bindings))
     (unless (klass .subclass-of? %element%)
       (error (cat "Can only CREATE subclasses of %ELEMENT%, not " klass)))
     (unless parent
       (error "Can't create element without a parent node"))
     (check-node-name name)
-    (let [[inst (klass .new
-                  :bindings-eval-fn bindings-eval-fn
-                  :parent     parent
-                  :name       name)]]
+    (let [[inst (klass .send 'new
+                  (list* :parent     parent
+                         :name       name
+                         bindings))]]
       (enter-node inst)
       inst))
 
@@ -701,8 +618,9 @@
     (attr elements '() :type <list> :writable? #t)
     (attr has-expensive-handlers?  #f :type <boolean> :writable? #t)
     (attr handlers (make-hash-table) :type <hash-table> :writable? #t) 
-    (attr allowed-values (make-hash-table) :type <hash-table> :writable? #t) 
-    (attr values (make-hash-table) :type <hash-table> :writable? #t)
+
+    ;; Attributes shared by all nodes.
+    (attr wants-cursor? #f :label "Wants cursor?")
 
     (def (active?)
       (eq? (.state) 'ACTIVE))
@@ -765,11 +683,6 @@
     (set! (node .has-expensive-handlers?) val))
   (define (node-handlers node) (node .handlers))
   (define (set-node-handlers! node val) (set! (node .handlers) val))
-  (define (node-allowed-values node) (node .allowed-values))
-  (define (set-node-allowed-values! node val)
-    (set! (node .allowed-values) val))
-  (define (node-values node) (node .values))
-  (define (set-node-values! node val) (set! (node .values) val))
   (define (find-first-card node) (node .find-first-card))
   (define (find-last-card node) (node .find-last-card))
 
@@ -802,12 +715,6 @@
     (check-for-duplicate-nodes (node-elements node) elem)
     (set! (node-elements node)
           (append (node-elements node) (list elem))))
-
-  (define (clear-node-state! node)
-    (set! (node-has-expensive-handlers? node) #f)
-    (set! (node-handlers node) (make-hash-table))
-    (set! (node-allowed-values node) (make-hash-table))
-    (set! (node-values node) (make-hash-table)))
 
   (define (find-node name running?)
     (define table (if running? 
@@ -1173,13 +1080,11 @@
       ;; Because we haven't been running, we shouldn't have any child
       ;; elements yet.
       (%assert (null? (node-elements self)))
-      ;; Initialize our templates one at a time.
-      (.bind-property-values!)
       ;; Let the world know that we're starting to run this node.
       (.notify-enter)
-      ;; Run our body functions.  This may take quite a while, play media,
+      ;; Run our body function.  This may take quite a while, play media,
       ;; and so on--this is where "card" bodies actually get run.
-      (.run-init-fns)
+      (.run-body)
       ;; Let the node know all initialization functions have been run.
       ;; (This allows "two-phase" construction, where templates can effectively
       ;; send messages to subtemplates.)
@@ -1205,8 +1110,6 @@
       (*engine* .exit-node self)
       ;; Run any exit handler.
       (run-on-exit-handler self)
-      ;; Clear our handler list.
-      (clear-node-state! self)
       ;; Unregister from the running node table.
       (.unregister)
       ;; Mark this node as no longer active, so nobody tries to call ON
@@ -1361,5 +1264,5 @@
           (unless exited-safely?
             (fatal-error (cat "Cannot JUMP in (on exit () ...) handler for "
                               (node-full-name node)))))))
-  
+
   )

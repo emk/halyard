@@ -51,7 +51,8 @@ SVN - emk, brian, tryon
       treat declared nodes as classes and instantiate them when they're run.
     - Removed now useless NODE-CHILDREN from API.  Use .ELEMENTS or
       .MEMBERS instead.
-   * Improvements to new object model
+  * Replaced old PROP implementation with ordinary ATTR members.
+  * Improvements to new object model
     - Added :type argument to ATTR.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
     (ROOT-NODE) ...).

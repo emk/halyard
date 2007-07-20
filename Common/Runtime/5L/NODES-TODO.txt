@@ -1,39 +1,21 @@
 * = "see patch we dumped earlier"
 
-  Make phantom nodes classes & running nodes instances
-/   Rename MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD
-/   Split hash table used by FIND-NODE into running/non-running versions
-    Create nodes when they're run, destroy when they're done
-/     ATTR on metaclasses won't default correctly
-/     Fix root node & callers
-/       NODE-FULL-NAME FIND-NODE-RELATIVE ANALYZE-NODE-NAME
-/       ENTER-NODE-RECURSIVELY EXIT-NODE-RECURSIVELY
-/     Correctly instantiate root node
-/     Fix DEFINE-NODE
-/       Becomes much like DEFINE-TEMPLATE
-/       INIT-FN can be removed from class and left only in metaclass
-/     Update CREATE as needed
-/       Need to deal with BINDINGS-EVAL-FN
-/     Nuke STATE junk as much as we can
-X       Nuke everything related to ACTIVE? - Not yet.
-/       The running assertions can all come out
-/     Update ENTER-NODE and EXIT-NODE
-/       Call sites allocate and deallocate instances
-/     Fix BINDINGS junk in CREATE, again (back out diffs with svn?)
-/     Get it to compile
-      Check it in
-      Sort out hygiene problems in DEFINE-NODE
-      Clean up MAKE-NODE-TYPE-PREDICATE
-      Do we really need separate %ROOT-NODE% class?  Probably.
+/ Make phantom nodes classes & running nodes instances
+/   Replace PROP implementation with regular object properties
 
-    STATIC-NODE or NODE-CLASS?
-      Make names distinct globally
-    Clean up .SEND API
+/   Create nodes when they're run, destroy when they're done
+/     Sort out hygiene problems in DEFINE-NODE
+/     Clean up MAKE-NODE-TYPE-PREDICATE
+/     Do we really need separate %ROOT-NODE% class?  Probably.
 
-    Replace ASSERT with %ASSERT as needed 
+  STATIC-NODE or NODE-CLASS?
+    Make names distinct globally
+  Clean up .SEND API
+  Replace ASSERT with %ASSERT as needed 
 
-  Port PROP code to run on top of ATTR
-    Rip our <node-prop-decl> and replace with attr/attr-default calls
+/ Port PROP code to run on top of ATTR
+/   Rip our <node-prop-decl> and replace with attr/attr-default calls
+  Better error message if we call SUPER with no SUPER
   Port event APIs to new object system
   Move ruby-object tests from experiments.ss to somewhere more useful
   Refactor as much as possible in nodes.ss to be simpler

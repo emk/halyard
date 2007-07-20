@@ -177,7 +177,7 @@
        [cursor :type <symbol> :default 'hand :label "Cursor"]
        [overlay? :type <boolean> :default #t :label "Has overlay?"]
        [alpha? :type <boolean> :default #f :label "Overlay transparent?"]
-       [wants-cursor? :default 'auto :label "Wants cursor?"]
+       [wants-cursor? :new-default 'auto]
        [clickable-where-transparent? :type <boolean> :default #f
                                      :label "Clickable where transparent?"]
        [dragging? :type <boolean> :default #f :label "In drag layer?"]
