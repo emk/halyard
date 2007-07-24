@@ -202,3 +202,24 @@ void xml_node::set_attribute(const char *inName, const std::string &inValue)
 {
 	xmlSetProp(mNode, to_utf8(inName), to_utf8(inValue.c_str()));
 }
+
+
+//=========================================================================
+//  xml_doc Methods
+//=========================================================================
+
+xml_doc::xml_doc(const std::string &file) {
+    mDoc = xmlParseFile(file.c_str());
+    CHECK(mDoc, "Failed to load XML file");
+}
+ 
+xml_doc::~xml_doc() {
+    ASSERT(mDoc);
+    xmlFreeDoc(mDoc);
+}
+
+xml_node xml_doc::root() {
+	xmlNodePtr root_node = xmlDocGetRootElement(mDoc);
+	CHECK(root_node, "No document root in XML file");
+	return xml_node(root_node);
+}

@@ -60,6 +60,7 @@ extern void test_TVectorDiff (void);
 extern void test_TPolygon (void);
 
 REFERENCE_TEST_CASE_FILE(TestCase);
+REFERENCE_TEST_CASE_FILE(CaptionList);
 REFERENCE_TEST_CASE_FILE(TTemplateUtils);
 REFERENCE_TEST_CASE_FILE(TValue);
 REFERENCE_TEST_CASE_FILE(TSchemeConv);

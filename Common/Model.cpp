@@ -628,53 +628,38 @@ Model::Model(const ModelFormat &inCurrentFormat,
 
 	Initialize();
 
-	// Open the XML file.
-	xmlDocPtr doc = xmlParseFile(inPath.c_str());
-	try
-	{
-		CHECK(doc, "Failed to load XML file");
+	// Open the XML file and get the root node.
+    xml_doc doc(inPath.c_str());
+    xml_node root(doc.root());
 
-		// Get the root element.
-		xmlNodePtr root_node = xmlDocGetRootElement(doc);
-		CHECK(root_node, "No document root in XML file");
-		xml_node root(root_node);
-
-		// Check the format and version.
-		ModelFormat file_format
-			(root.name(),
-			 boost::lexical_cast<Version>(root.attribute("version")),
-			 boost::lexical_cast<Version>(root.attribute("backto")));
-		CHECK(file_format.GetName() == mFormat.GetName(),
-			  "XML file contains the wrong type of data");
-		CHECK(mFormat.GetVersion() >= file_format.GetCompatibleBackTo(),
-			  "XML file is in a newer, unsupported format");
-		CHECK(file_format.GetVersion() >= inEarliestFormat,
-			  "XML file is in a older, unsupported format");
+    // Check the format and version.
+    ModelFormat file_format
+        (root.name(),
+         boost::lexical_cast<Version>(root.attribute("version")),
+         boost::lexical_cast<Version>(root.attribute("backto")));
+    CHECK(file_format.GetName() == mFormat.GetName(),
+          "XML file contains the wrong type of data");
+    CHECK(mFormat.GetVersion() >= file_format.GetCompatibleBackTo(),
+          "XML file is in a newer, unsupported format");
+    CHECK(file_format.GetVersion() >= inEarliestFormat,
+          "XML file is in a older, unsupported format");
+    
+    if (mFormat.GetVersion() != file_format.GetVersion()) {
+        // To preserve the current format, we could do this:
+        //mFormat = file_format;
         
-        if (mFormat.GetVersion() != file_format.GetVersion()) {
-            // To preserve the current format, we could do this:
-            //mFormat = file_format;
-            
-            // We're going to migrate the file.  Note that version
-            // migration *doesn't* set the dirty bit!
-            gLog.Log("Migrating from file version %d to %d",
-                     file_format.GetVersion(), mFormat.GetVersion());
-        }
+        // We're going to migrate the file.  Note that version
+        // migration *doesn't* set the dirty bit!
+        gLog.Log("Migrating from file version %d to %d",
+                 file_format.GetVersion(), mFormat.GetVersion());
+    }
+    
+    // Get our top-level object and fill it out.
+    CHECK(root.attribute("type") == "object" &&
+          root.attribute("class") == mFormat.GetName(),
+          "Root object in XML document have type 'object'");
+    mRoot->Fill(root);
 
-		// Get our top-level object and fill it out.
-		CHECK(root.attribute("type") == "object" &&
-			  root.attribute("class") == mFormat.GetName(),
-			  "Root object in XML document have type 'object'");
-		mRoot->Fill(root);
-	}
-	catch (...)
-	{
-		if (doc)
-			xmlFreeDoc(doc);
-		throw;
-	}
-
-	xmlFreeDoc(doc);
 	ClearUndoList();
 	ClearDirty();
 }

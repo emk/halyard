@@ -1,0 +1,12 @@
+<!-- Test caption file -->
+<!-- TODO: do we have a <br/> parser in our output libraries? -->
+<captions>
+  <caption at="00:00:01.00">SPEAKER 1: There are lots of things to
+do in this program.</caption>
+
+  <caption at="00:00:03.25">SPEAKER 2: Let's get started!</caption>
+
+  <caption at="01:02:06.00">SPEAKER 1: We begin with an
+overview of the clinic and
+the available rooms.</caption>
+</captions>

@@ -26,6 +26,7 @@
 #define XmlUtils_H
 
 struct _xmlNode;
+struct _xmlDoc;
 
 BEGIN_NAMESPACE_FIVEL
 
@@ -132,6 +133,20 @@ inline bool operator!=(const xml_node::iterator &inLeft,
 {
 	return inLeft.mNode != inRight.mNode;
 }
+
+/// An XML document.
+class xml_doc : boost::noncopyable {
+    typedef struct _xmlDoc *doc_ptr;
+    typedef const doc_ptr const_doc_ptr;
+
+    doc_ptr mDoc;
+    
+public:
+    xml_doc(const std::string &file);
+    ~xml_doc();
+
+    xml_node root();
+};
 
 END_NAMESPACE_FIVEL
 

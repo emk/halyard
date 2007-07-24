@@ -54,11 +54,15 @@ SVN - emk, brian, tryon
   * Replaced old PROP implementation with ordinary ATTR members.
   * Improvements to new object model
     - Added :type argument to ATTR.
+  * Performance tuning
+    - Turned on optimization for PNG/bitmap/image subsystems in wxWidgets,
+      even in debug builds.
+    - Turned on optimizer for mzscheme, even in debug builds.
   * Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
     (ROOT-NODE) ...).
-  * Turned on optimization for PNG/bitmap/image subsystems in wxWidgets,
-    even in debug builds.
   * Updating HACKING.txt instructions.
+  * Support for external captions.
+    - Added CaptionList class with a basic parser.
 
 0.3.11 - 6 June 2007 - emk
 
