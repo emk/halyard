@@ -181,6 +181,18 @@ xml_node::string xml_node::text()
 	}
 }
 
+xml_node::string xml_node::contentAsXml() {
+    xmlBufferPtr buf = xmlBufferCreate();
+    CHECK(buf, "Could not allocate XML buffer");
+
+    for (iterator i = begin_mixed(); i != end_mixed(); ++i)
+        xmlNodeDump(buf, mNode->doc, (*i).mNode, 0, 0);
+    
+    string result(to_ascii(buf->content));
+    xmlBufferFree(buf);
+    return result;
+}
+
 void xml_node::append_text(const std::string &inText)
 {
 	CHECK(xmlAddChild(mNode, xmlNewText(to_utf8(inText.c_str()))),

@@ -63,6 +63,7 @@ SVN - emk, brian, tryon
   * Updating HACKING.txt instructions.
   * Support for external captions.
     - Added CaptionList class with a basic parser.
+    - Added support for embedded XML in captions.
 
 0.3.11 - 6 June 2007 - emk
 

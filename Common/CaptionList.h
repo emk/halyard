@@ -36,7 +36,11 @@ public:
     Caption() : mTime(-1) {}
     Caption(double time, const std::string &text) : mTime(time), mText(text) {}
     
+    /// Return the time at which this caption should appear, in seconds.
     double time() const { return mTime; }
+
+    /// Return the text of this caption.  The is an XML fragment, possibly
+    /// containing things like "&lt;" and "text with <i>emphasis</i>".
     std::string text() const { return mText; }
 };
 

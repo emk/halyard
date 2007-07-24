@@ -108,6 +108,10 @@ public:
     // @see content
 	string text();
 
+    // Extract the child elements and text of this node as XML.
+    // @see text
+    string contentAsXml();
+
 	// Get an "only child".  Raise an error if more than one child is
 	// present.
 	xml_node only_child();

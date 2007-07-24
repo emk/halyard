@@ -55,7 +55,7 @@ CaptionList::CaptionList(const std::string &file)
         double seconds = atof(&at_str[6]);
         double time = 3600 * hours + 60 * minutes + seconds;
 
-        mList.push_back(Caption(time, (*i).text()));
+        mList.push_back(Caption(time, (*i).contentAsXml()));
         mTimeIndexMap[time] = mList.size()-1;
     }
 }
@@ -107,6 +107,10 @@ BEGIN_TEST_CASE(TestCaptionList, TestCase) {
     CHECK_EQ(1*3600+2*60+6, caps[2].time());
     CHECK_EQ("SPEAKER 1: We begin with an\noverview of the clinic and\n"
              "the available rooms.", caps[2].text());
+
+    // Embedded XML in captions.
+    CHECK_EQ("SPEAKER 1: There are <i>lots</i> of things to\n"
+             "do in this program. &amp;&lt;", caps[0].text());
 
     // Fetching captions as the movie plays.
     Caption cap;
