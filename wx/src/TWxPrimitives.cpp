@@ -123,6 +123,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(Mask);
     REGISTER_5L_PRIMITIVE(MaybeLoadSplash);
     REGISTER_5L_PRIMITIVE(MeasurePic);
+	REGISTER_5L_PRIMITIVE(MediaAttachCaptionFile);
 	REGISTER_5L_PRIMITIVE(MediaSetVolume);
 	REGISTER_5L_PRIMITIVE(MouseGrab);
 	REGISTER_5L_PRIMITIVE(MouseIsGrabbed);
@@ -718,12 +719,19 @@ DEFINE_5L_PRIMITIVE(NotifyExitCard) {
 	::SkipPrimitiveLogging();
 }
 
+DEFINE_5L_PRIMITIVE(MediaAttachCaptionFile) {
+	std::string name, caption_file;
+	inArgs >> SymbolName(name) >> caption_file;
+	FIND_ELEMENT(MediaElement, media, name.c_str());
+    media->AttachCaptionFile(caption_file);
+}
+
 DEFINE_5L_PRIMITIVE(MediaSetVolume) {
 	std::string name, channel_name;
 	double volume;
 	inArgs >> SymbolName(name) >> SymbolName(channel_name) >> volume;
-	FIND_ELEMENT(MediaElement, stream, name.c_str());
-	stream->SetVolume(channel_name, volume);
+	FIND_ELEMENT(MediaElement, media, name.c_str());
+	media->SetVolume(channel_name, volume);
 }
 
 DEFINE_5L_PRIMITIVE(MouseGrab) {

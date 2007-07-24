@@ -960,6 +960,17 @@
   (define (set-media-volume! elem channel volume)
     (call-5l-prim 'MediaSetVolume (node-full-name elem) channel volume))  
            
+  ;; (Internal use only.)  If we can find an appropriate caption file, then
+  ;; attach it to a media element.  We assume that captions live in
+  ;; LocalMedia, because we can't load them from over the network (which we
+  ;; might need to do with things normally stored in Media).  If this is a
+  ;; problem for you, you may want to encode your captions as a track in
+  ;; the media itself.
+  (define (media-maybe-attach-caption-file! elem path)
+    (let [[native (make-native-path "LocalMedia" (cat path ".capt"))]]
+      (when (and (not (url? native)) (file-exists? native))
+        (call-5l-prim 'MediaAttachCaptionFile (node-full-name elem) native))))
+
   ;;; The superclass of all audio-only elements.
   ;;; @see %movie%
   (define-element-template %audio-element%
@@ -1088,6 +1099,8 @@
        [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (%audio-element%)
+    (on setup-finished ()
+      (media-maybe-attach-caption-file! self path))
     (let [[path (make-native-path "LocalMedia" path)]]
       (check-file path)
       (call-5l-prim 'AudioStreamVorbis (node-full-name self)
@@ -1253,6 +1266,9 @@
       (set-media-volume! self channel volume))
 
     ;; END DUPLICATE CODE
+
+    (on setup-finished ()
+      (media-maybe-attach-caption-file! self path))
 
     (let [[path (media-path path)]]
       (check-file path)

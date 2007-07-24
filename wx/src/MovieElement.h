@@ -49,6 +49,7 @@ public:
 	virtual bool HasVisibleRepresentation();
     virtual bool WantsCursor() const;
 
+    virtual MovieFrame CurrentFrame();
     virtual bool HasReachedFrame(MovieFrame inFrame);
 
     virtual void Idle();

@@ -25,25 +25,45 @@
 
 #include "AppGlobals.h"
 
+BEGIN_NAMESPACE_FIVEL
+class CaptionList;
+END_NAMESPACE_FIVEL
+
 //////////
-/// An abstract interface for elements which play media streams.  This
-/// is used as a mixin class.
+/// An interface for elements which play media streams.  This is used as a
+/// mixin class.
 ///
 class MediaElement
 {
     bool mHaveSentMediaFinishedEvent;
+    shared_ptr<FIVEL_NS CaptionList> mCaptions;
 
 protected:
     //////////
+    /// Do any idle-time processing needed by a media element, and send any
+    /// events that we need to send.
+    ///
     /// If the media is finished, send a media-finished event to this
     /// element.  This will need to be called by the element's Idle()
     /// method.
     ///
-    virtual void CheckWhetherMediaFinished();
+    virtual void MediaElementIdle();
 
 public:
     MediaElement() : mHaveSentMediaFinishedEvent(false) {}
 	virtual ~MediaElement() {}
+
+    //////////
+    /// Attach a caption file to this movie.
+    ///
+    void AttachCaptionFile(const std::string &inCaptionFile);
+
+    //////////
+    /// Return the current frame of the MediaElement.  May return
+    /// LAST_FRAME if the movie is done (or broken) and we can't calculate
+    /// a more specific end value.
+    ///
+    virtual MovieFrame CurrentFrame() = 0;
 
     //////////
     /// Return true if the movie has reached the specified frame (or the

@@ -65,6 +65,13 @@ bool MovieElement::WantsCursor() const {
     return mMovieWindow->WantsCursor();
 }
 
+MovieFrame MovieElement::CurrentFrame() {
+    if (mEndPlaybackWasCalled || mMovieWindow->IsDone())
+        return LAST_FRAME;
+    else
+        return mMovieWindow->GetFrame();
+}
+
 bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 {
 	if (mEndPlaybackWasCalled)
@@ -76,7 +83,7 @@ bool MovieElement::HasReachedFrame(MovieFrame inFrame)
 }
 
 void MovieElement::Idle() {
-    CheckWhetherMediaFinished();
+    MediaElementIdle();
 
     // Handle any errors.
     if (mMovieWindow->IsBroken()) {

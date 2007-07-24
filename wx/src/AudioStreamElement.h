@@ -46,6 +46,7 @@ public:
 
 	AudioStream *GetAudioStream() { return mStream; }
 
+    virtual MovieFrame CurrentFrame();
     virtual bool HasReachedFrame(MovieFrame inFrame);
     virtual void Idle();
     virtual bool IsLooping();

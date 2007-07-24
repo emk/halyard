@@ -21,25 +21,39 @@
 // @END_LICENSE
 
 #include "TamaleHeaders.h"
+#include "CaptionList.h"
 #include "Element.h"
 #include "MediaElement.h"
 
-void MediaElement::CheckWhetherMediaFinished() {
+USING_NAMESPACE_FIVEL
+
+void MediaElement::AttachCaptionFile(const std::string &inCaptionFile) {
+    mCaptions = shared_ptr<CaptionList>(new CaptionList(inCaptionFile));
+}
+
+void MediaElement::MediaElementIdle() {
+    // We know this class is always mixed into the Element hierarchy, so
+    // get a pointer to Element that we can use to access our event
+    // dispatcher.
+    //
+    // In theory, we should use C++ virtual inheritence to make
+    // MediaElement a subclass of Element, but then classes like
+    // MovieElement would inherit from Element along two different routes.
+    // This doesn't work unless we use virtual inheritence, and virtual
+    // inheritence is notoriously broken (go see Google).  So we're just
+    // going to hack it.
+    Element *thisAsElement = dynamic_cast<Element*>(this);
+    ASSERT(thisAsElement);
+
+    // See if we have any captions to display, and if so, send an event.
+    double current_time = CurrentFrame() / FRAMES_PER_SECOND;
+    Caption cap;
+    if (mCaptions && mCaptions->getCaptionIfChanged(current_time, cap))
+        thisAsElement->GetEventDispatcher()->DoEventMediaCaption(cap.text());
+
+    // If we've reached the end of the movie, send a MediaFinished event.
     if (!mHaveSentMediaFinishedEvent && HasReachedFrame(LAST_FRAME)) {
         mHaveSentMediaFinishedEvent = true;
-
-        // We know this class is always mixed into the Element hierarchy,
-        // so get a pointer to Element that we can use to access our
-        // event dispatcher.
-        //
-        // In theory, we should use C++ virtual inheritence to make
-        // MediaElement a subclass of Element, but then classes like
-        // MovieElement would inherit from Element along two different
-        // routes.  This doesn't work unless we use virtual inheritence,
-        // and virtual inheritence is notoriously broken (go see Google).
-        // So we're just going to hack it.
-        Element *thisAsElement = dynamic_cast<Element*>(this);
-        ASSERT(thisAsElement);
 
         // Send the actual event.
         thisAsElement->GetEventDispatcher()->DoEventMediaFinished();

@@ -45,6 +45,10 @@ AudioStreamElement::~AudioStreamElement()
     mStream->Delete();
 }
 
+MovieFrame AudioStreamElement::CurrentFrame() {
+    return mStream->GetTime() * FRAMES_PER_SECOND;
+}
+
 bool AudioStreamElement::HasReachedFrame(MovieFrame inFrame) {
     /// \todo Refactor out code shared with MovieElement.
     if (mEndPlaybackWasCalled)
@@ -52,12 +56,11 @@ bool AudioStreamElement::HasReachedFrame(MovieFrame inFrame) {
 	else if (inFrame == LAST_FRAME)
 		return mStream->IsDone();
 	else
-		return (mStream->IsDone() ||
-                (mStream->GetTime() * FRAMES_PER_SECOND >= inFrame));
+		return (mStream->IsDone() || (CurrentFrame() >= inFrame));
 }
 
 void AudioStreamElement::Idle() {
-    CheckWhetherMediaFinished();
+    MediaElementIdle();
 }
 
 bool AudioStreamElement::IsLooping()

@@ -64,6 +64,7 @@ SVN - emk, brian, tryon
   * Support for external captions.
     - Added CaptionList class with a basic parser.
     - Added support for embedded XML in captions.
+    - Integrated external caption support with MediaElement and Scheme API.
 
 0.3.11 - 6 June 2007 - emk
 
