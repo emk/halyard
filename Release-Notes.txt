@@ -65,6 +65,8 @@ SVN - emk, brian, tryon
     - Added CaptionList class with a basic parser.
     - Added support for embedded XML in captions.
     - Integrated external caption support with MediaElement and Scheme API.
+    - Cleaned up MediaElement API.
+    - Made sure CALL-NEXT-HANDLER is called everywhere it is needed.
 
 0.3.11 - 6 June 2007 - emk
 

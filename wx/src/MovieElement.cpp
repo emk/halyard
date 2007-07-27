@@ -34,7 +34,7 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
 						   MovieWindowStyle inMovieWindowStyle,
                            float inVolume)
     : Widget(inStage, inName, inDispatcher), mMovieWindow(NULL),
-	  mEndPlaybackWasCalled(false), mHaveSentMediaErrorEvent(false),
+	  mHaveSentMediaErrorEvent(false),
       mHaveSentMediaTimeoutEvent(false)
 {
     mMovieWindow = new MovieWindowNative(inStage, -1, inBounds.GetPosition(),
@@ -65,21 +65,15 @@ bool MovieElement::WantsCursor() const {
     return mMovieWindow->WantsCursor();
 }
 
+bool MovieElement::IsDone() {
+    return mMovieWindow->IsDone();
+}
+
 MovieFrame MovieElement::CurrentFrame() {
-    if (mEndPlaybackWasCalled || mMovieWindow->IsDone())
+    if (mMovieWindow->IsDone())
         return LAST_FRAME;
     else
         return mMovieWindow->GetFrame();
-}
-
-bool MovieElement::HasReachedFrame(MovieFrame inFrame)
-{
-	if (mEndPlaybackWasCalled)
-		return true;
-	else if (inFrame == LAST_FRAME)
-		return mMovieWindow->IsDone();
-	else
-		return mMovieWindow->IsDone() || (mMovieWindow->GetFrame() >= inFrame);
 }
 
 void MovieElement::Idle() {
@@ -117,8 +111,8 @@ bool MovieElement::IsLooping()
 
 void MovieElement::EndPlayback()
 {
+    MediaElement::EndPlayback();
 	mMovieWindow->Pause();
-	mEndPlaybackWasCalled = true;
 }
 
 void MovieElement::Pause()

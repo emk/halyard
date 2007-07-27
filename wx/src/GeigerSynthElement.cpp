@@ -73,6 +73,10 @@ void GeigerSynthElement::NotifyStateChanged() {
     SetChirpsPerSecond(cps);
 }
 
+bool GeigerSynthElement::IsDone() {
+    return mGeigerAudioStream->IsDone();
+}
+
 MovieFrame GeigerSynthElement::CurrentFrame() {
     return mGeigerAudioStream->GetTime() * FRAMES_PER_SECOND;
 }
@@ -83,6 +87,7 @@ void GeigerSynthElement::Idle() {
 
 void GeigerSynthElement::EndPlayback()
 {
+    MediaElement::EndPlayback();
     mGeigerAudioStream->Stop();
 }
 

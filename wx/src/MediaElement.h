@@ -35,6 +35,7 @@ END_NAMESPACE_FIVEL
 ///
 class MediaElement
 {
+    bool mEndPlaybackWasCalled;
     bool mHaveSentMediaFinishedEvent;
     shared_ptr<FIVEL_NS CaptionList> mCaptions;
 
@@ -49,8 +50,24 @@ protected:
     ///
     virtual void MediaElementIdle();
 
+    //////////
+    /// Return true if playback has finished, according to the underlying
+    /// media layer.  Note that this function is only intended to be
+    /// called by MediaElement methods, and then only after they've
+    /// checked mEndPlaybackWasCalled.
+    ///
+    virtual bool IsDone() = 0;
+    
+    //////////
+    /// Return the current frame of the MediaElement.  May return
+    /// LAST_FRAME if the movie is done (or broken) and we can't calculate
+    /// a more specific end value.  You generally shouldn't bother calling
+    /// this if IsDone returns true.
+    ///
+    virtual MovieFrame CurrentFrame() = 0;
+
 public:
-    MediaElement() : mHaveSentMediaFinishedEvent(false) {}
+    MediaElement();
 	virtual ~MediaElement() {}
 
     //////////
@@ -59,18 +76,11 @@ public:
     void AttachCaptionFile(const std::string &inCaptionFile);
 
     //////////
-    /// Return the current frame of the MediaElement.  May return
-    /// LAST_FRAME if the movie is done (or broken) and we can't calculate
-    /// a more specific end value.
-    ///
-    virtual MovieFrame CurrentFrame() = 0;
-
-    //////////
     /// Return true if the movie has reached the specified frame (or the
     /// movie is done).  If inFrame is LAST_FRAME, then return true only
     /// when the movie reaches the end.
     ///
-    virtual bool HasReachedFrame(MovieFrame inFrame) = 0;
+    bool HasReachedFrame(MovieFrame inFrame);
 
     //////////
     /// Returns true if the media is looping.
@@ -78,10 +88,11 @@ public:
     virtual bool IsLooping() = 0;
 
 	//////////
-	/// Cease playback, and make sure all future calls to
-	/// HasReachedFrame() return true.
+	/// Cease playback, and make sure all future calls to HasReachedFrame()
+	/// return true.  If you override this, be sure /// to call
+	/// MediaElement::EndPlayback().
 	///
-	virtual void EndPlayback() = 0;
+	virtual void EndPlayback();
 
     //////////
     /// Pause the media stream.

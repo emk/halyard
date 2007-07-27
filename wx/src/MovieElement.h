@@ -39,6 +39,10 @@ class MovieElement : public Widget, public MediaElement
     bool mHaveSentMediaErrorEvent;
     bool mHaveSentMediaTimeoutEvent;
 
+protected:
+    virtual bool IsDone();
+    virtual MovieFrame CurrentFrame();
+
 public:
     MovieElement(Stage *inStage, const wxString &inName,
                  FIVEL_NS TCallbackPtr inDispatcher,
@@ -48,9 +52,6 @@ public:
 
 	virtual bool HasVisibleRepresentation();
     virtual bool WantsCursor() const;
-
-    virtual MovieFrame CurrentFrame();
-    virtual bool HasReachedFrame(MovieFrame inFrame);
 
     virtual void Idle();
 

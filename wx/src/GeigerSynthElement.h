@@ -52,6 +52,10 @@ class GeigerSynthElement : public InvisibleElement, public MediaElement,
 
     void SetChirpsPerSecond(double inCPS);
 
+protected:
+    virtual bool IsDone();
+    virtual MovieFrame CurrentFrame();
+
 public:
 	GeigerSynthElement(Stage *inStage, const wxString &inName,
                        const std::string &inStatePath,
@@ -65,10 +69,6 @@ public:
     
     virtual void NotifyStateChanged();
 
-    virtual MovieFrame CurrentFrame();
-    /// \todo Clean this up once HasReachedFrame logic is factored
-    /// into MediaElement.
-    virtual bool HasReachedFrame(MovieFrame inFrame) { return true; }
     virtual void Idle();
     virtual bool IsLooping() { return true; }
 	virtual void EndPlayback();

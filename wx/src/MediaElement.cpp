@@ -27,8 +27,27 @@
 
 USING_NAMESPACE_FIVEL
 
+MediaElement::MediaElement()
+    : mEndPlaybackWasCalled(false), mHaveSentMediaFinishedEvent(false)
+{
+    // Do nothing.
+}
+
 void MediaElement::AttachCaptionFile(const std::string &inCaptionFile) {
     mCaptions = shared_ptr<CaptionList>(new CaptionList(inCaptionFile));
+}
+
+void MediaElement::EndPlayback() {
+	mEndPlaybackWasCalled = true;
+}
+
+bool MediaElement::HasReachedFrame(MovieFrame inFrame) {
+	if (mEndPlaybackWasCalled)
+		return true;
+	else if (inFrame == LAST_FRAME)
+		return IsDone();
+	else
+		return IsDone() || (CurrentFrame() >= inFrame);
 }
 
 void MediaElement::MediaElementIdle() {
@@ -45,8 +64,17 @@ void MediaElement::MediaElementIdle() {
     Element *thisAsElement = dynamic_cast<Element*>(this);
     ASSERT(thisAsElement);
 
+    // Decide what frame we're on.  If we're finished with playback, assume
+    // that we're on LAST_FRAME.
+    // TODO - Code duplication with HasReachedFrame.
+    MovieFrame current_frame;
+    if (mEndPlaybackWasCalled || IsDone())
+        current_frame = LAST_FRAME;
+    else
+        current_frame = CurrentFrame();
+
     // See if we have any captions to display, and if so, send an event.
-    double current_time = CurrentFrame() / FRAMES_PER_SECOND;
+    double current_time = current_frame / FRAMES_PER_SECOND;
     Caption cap;
     if (mCaptions && mCaptions->getCaptionIfChanged(current_time, cap))
         thisAsElement->GetEventDispatcher()->DoEventMediaCaption(cap.text());

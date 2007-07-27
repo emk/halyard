@@ -1100,6 +1100,7 @@
        [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
       (%audio-element%)
     (on setup-finished ()
+      (call-next-handler)
       (media-maybe-attach-caption-file! self path))
     (let [[path (make-native-path "LocalMedia" path)]]
       (check-file path)
@@ -1268,6 +1269,7 @@
     ;; END DUPLICATE CODE
 
     (on setup-finished ()
+      (call-next-handler)
       (media-maybe-attach-caption-file! self path))
 
     (let [[path (media-path path)]]
