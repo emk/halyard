@@ -227,7 +227,8 @@
   (test (equal? (k5) '(#f ())))
   (test (equal? (k5 :x 2) '(2 (:x 2))))
   (test (equal? (k5 :y 1 :x 2) '(2 (:y 1 :x 2))))
-  (jump g1/start))
+  (jump g1/start)
+  )
 
 
 ;;=========================================================================
@@ -243,7 +244,7 @@
 (card g1/start ()
   (test (eq? *last-group* g1))
   (set! *last-card* g1/start)
-  (jump (@ s1)))
+  (jump @s1))
 
 (sequence g1/s1 ()
   (set! *last-group* g1/s1))
@@ -253,10 +254,10 @@
   (test (eq? *last-card* g1/start))
   (test (not (card-prev)))
   (test (eq? 'g1/s1/c2 (card-name (card-next))))
-  (test (eq? g1/s1/c2 ((@ c2) .resolve-path)))
-  (test (eq? g1/s1/c2 ((@ s1/c2) .resolve-path)))
+  (test (eq? g1/s1/c2 (@c2 .resolve-path :running? #f)))
+  (test (eq? g1/s1/c2 (@s1/c2 .resolve-path :running? #f)))
   (set! *last-card* g1/s1/c1)
-  (jump (@ c2)))
+  (jump @c2))
 
 (card g1/s1/c2 ()
   (test (eq? *last-card* g1/s1/c1))
@@ -272,18 +273,18 @@
   (test (eq? *last-card* g1/s1/c2))
   (test (eq? 'g1/s1/c2 (card-name (card-prev))))
   (set! *last-card* g1/s1/s2/c1)
-  (jump (@ c3)))
+  (jump @c3))
 
 (card g1/s1/s2/c2 () ; We jump here out of order!
   (test (eq? *last-card* g1/s1/c3))
   (set! *last-card* g1/s1/s2/c2)
-  (jump (@ c4)))
+  (jump @c4))
 
 (card g1/s1/c3 ()
   (test (eq? *last-card* g1/s1/s2/c1))
   (test (eq? 'g1/s1/s2/c2 (card-name (card-prev))))
   (set! *last-card* g1/s1/c3)
-  (jump (@ s2/c2)))
+  (jump @s2/c2))
 
 (card g1/s1/c4 ()
   (test (eq? *last-card* g1/s1/s2/c2))
@@ -358,11 +359,6 @@
   (define e (create %sample-element% :name 'sample :test-str "test string"))
   (test *ttvar3*)
   (test (eq? (node-full-name e) 'template-tests-3/sample))
-  (jump template-tests-4))
-
-(card template-tests-4 ()
-  ;; Make sure temporary elements get deleted when we exit the card.
-  (test (null? (node-elements template-tests-3)))
   (jump template-tests-5))
 
 (define-card-template %card-template-3% [] ()

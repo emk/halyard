@@ -51,6 +51,7 @@ SVN - emk, brian, tryon
       treat declared nodes as classes and instantiate them when they're run.
     - Removed now useless NODE-CHILDREN from API.  Use .ELEMENTS or
       .MEMBERS instead.
+    - Fixed bugs in .RESOLVE-PATH, CARD-PREV, CARD-NEXT and related methods.
   * Replaced old PROP implementation with ordinary ATTR members.
   * Improvements to new object model
     - Added :type argument to ATTR.

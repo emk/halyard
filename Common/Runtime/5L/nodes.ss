@@ -89,11 +89,17 @@
         (error "Can't get current group member during script startup"))
       result))
 
+  (define (current-static-group-member)
+    ((current-group-member) .static-node))
+
   (define (current-card)
     (let [[result (*engine* .current-card)]]
       (unless result
         (error "Can't get current card when no card is active"))
       result))
+
+  (define (current-static-card)
+    ((current-card) .static-node))
   
   
   ;;=======================================================================
@@ -643,6 +649,11 @@
           (cat "#<class " (node-full-name self) ">")
           (super)))
 
+      ;;; Returns #t if this node is part of the hierarchy of named nodes,
+      ;;; and can be run directly.
+      (def (can-be-run?)
+        (and (.name) #t))
+
       (def (register)
         (.register-in (*engine* .static-node-table)))
       
@@ -760,7 +771,10 @@
                (if-not-found
                 (lambda ()
                   (error (cat "Can't find relative path: " self)))))
-      (or (find-node-relative (current-group-member) (.to-symbol) running?)
+      (or (find-node-relative (if running?
+                                  (current-group-member)
+                                  (current-static-group-member))
+                              (.to-symbol) running?)
           (if-not-found)))
     )
 
@@ -805,10 +819,17 @@
 
   (define-class %group-member% (%node%)
     (with-instance (.class)
-      (def (initialize &rest keys)
+      (def (register)
         (super)
         (when (node-parent self)
-          (group-add-member! (node-parent self) self)))))
+          (group-add-member! (node-parent self) self))))
+
+    ;;; Return the static version of this node.
+    (def (static-node)
+      (define result (.class))
+      (%assert (result .can-be-run?))
+      result)
+    )
 
   ;;-----------------------------------------------------------------------
   ;;  Jumpable
@@ -969,10 +990,12 @@
   (define card? (make-node-type-predicate %card%))
 
   (define (card-next)
-    (card-group-find-next (node-parent (current-card)) (current-card)))
+    (define static (current-static-card))
+    (card-group-find-next (node-parent static) static))
 
   (define (card-prev)
-    (card-group-find-prev (node-parent (current-card)) (current-card)))
+    (define static (current-static-card))
+    (card-group-find-prev (node-parent static) static))
 
   (define (jump-helper find-card str)
     (let [[c (find-card)]]
