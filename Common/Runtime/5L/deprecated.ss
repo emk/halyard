@@ -2,7 +2,7 @@
   ;; Things which have been removed entirely:
   ;;
   ;;   origin set-origin! offset-origin with-offset-origin
-  ;;   opacity timeout
+  ;;   opacity timeout element
   ;;
   ;; Things which have been removed, but which can be handled by a simple
   ;; search & replace:
@@ -106,7 +106,37 @@
   ;; slashes ("/"). This means that you shouldn't use BUILD-PATH to
   ;; construct arguments for Tamale primitives; instead, just use CAT
   ;; to construct a slash-separated string.
-
+  ;;
+  ;; * New node system
+  ;;
+  ;; @* now takes a string as argument, not a symbol.  Similarly, the FIND-NODE
+  ;; API has changed (not that anybody should be using it).
+  ;;
+  ;; @ and @* now return proxies, not real nodes.  If you encounter
+  ;; performance issues calling methods on proxies, you can turn a proxy
+  ;; into a node using RESOLVE.  Also note that these functions now
+  ;; distinguish between static and running nodes--"static" nodes
+  ;; correspond to the old, non-running phantom nodes, and "running" nodes
+  ;; include the current card, its parents, and any running elements.
+  ;;
+  ;; Similarly, ROOT-NODE has now been split into STATIC-ROOT-NODE and
+  ;; RUNNING-ROOT-NODE.  These both return real nodes, not proxies.
+  ;;
+  ;; The node class hierarchy has been ported from Swindle to the new
+  ;; object system, and some of the inheritence details have changed.  This
+  ;; means that generic functions can no longer dispatch on node types, and
+  ;; that typecheck-style code may need to be updated.
+  ;;
+  ;; Removed now useless NODE-CHILDREN from API.  Use .ELEMENTS or .MEMBERS
+  ;; instead.
+  ;;
+  ;; Instead of writing (prop @foo title), new code should ideally write
+  ;; (@foo .title).  This also works with SET!.
+  ;;
+  ;; The :TYPE of template properties is now enforced.
+  ;;
+  ;; Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
+  ;; (STATIC-ROOT-NODE) ...).
 
   ;;;======================================================================
   ;;;  Transitions and Screenshots
