@@ -2,6 +2,7 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 SVN - emk, brian, tryon
 
+
   * Integrating new path system.
     - Copied over %node-path% class from tamale_test staging area.
     - Added ugly DEFINE-NODE-CLASS wrapper to help ease transition.

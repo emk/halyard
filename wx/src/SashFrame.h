@@ -59,6 +59,10 @@ private:
 	static wxPoint LoadFramePosition(const wxString &inFrameName);
 
 protected:
+    /// Get a configuration object with its path set to the appropriate
+    /// value for this frame.
+    wxConfigBase *GetConfigForFrame();
+
 	/// Load the layout for the current frame.
 	void LoadFrameLayout();
 
