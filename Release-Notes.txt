@@ -2,7 +2,6 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 
 SVN - emk, brian, tryon
 
-
   * Integrating new path system.
     - Copied over %node-path% class from tamale_test staging area.
     - Added ugly DEFINE-NODE-CLASS wrapper to help ease transition.
@@ -69,6 +68,9 @@ SVN - emk, brian, tryon
     - Integrated external caption support with MediaElement and Scheme API.
     - Cleaned up MediaElement API.
     - Made sure CALL-NEXT-HANDLER is called everywhere it is needed.
+  * Small refactoring in SashFrame.
+  * Added a *NODE-DEFINED-HOOK* for backwards compatibility with a branch
+    of 0.3.11 (which we haven't made yet).
 
 0.3.11 - 6 June 2007 - emk
 

@@ -6,6 +6,7 @@
   (require (lib "util.ss" "5L"))
   (provide (all-from (lib "util.ss" "5L")))
   (require-for-syntax (lib "util.ss" "5L"))
+  (require (lib "hook.ss" "5L"))
 
   ;; Get begin/var.
   (require (lib "begin-var.ss" "5L"))
@@ -364,7 +365,7 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide prop* set-prop*! prop)
+  (provide prop* set-prop*! prop *node-defined-hook*)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
@@ -534,6 +535,9 @@
               (define-template name . rest)]))
          (define-syntax-indent definer-name 3))]))
 
+  ;; Called when a node is defined.
+  (define *node-defined-hook* (make-hook 'node-defined-hook))
+
   (define-syntax define-node
     (syntax-rules ()
       [(define-node name (extended . bindings) . body)
@@ -548,7 +552,8 @@
              (expand-bindings name [] . bindings)
              (.define-method 'run-body (expand-run-body [] . body))
              ))
-         (name .register))]))
+         (name .register)
+         (call-hook-functions *node-defined-hook* name))]))
 
   (define-syntax define-node-definer
     (syntax-rules ()
