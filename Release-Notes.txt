@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, brian, tryon
+0.3.12 - 30 Aug 2007 - emk, brian, tryon
 
   * Integrating new path system.
     - Copied over %node-path% class from tamale_test staging area.
@@ -74,10 +74,18 @@ SVN - emk, brian, tryon
   * Removed old PrevCardName function (which wasn't being used anymore).
   * Exported LAST-CARD-VISISTED to prevent people from messing with *engine*.
   * Fixed bug in EXTENDS-TEMPLATE?.
-  * Added FIND-RUNNING-NODE and FIND-STATIC-NODE as public versions of FIND-NODE.
+  * Added FIND-RUNNING-NODE and FIND-STATIC-NODE as public versions of
+    FIND-NODE.
   * Added JUMP-CURRENT and better error handling for attempts to jump to a
     running node.
   * Exported RUBY-CLASS?.
+  * Better error handling if the engine attempts to access a node of the
+    wrong type.
+  * Renamed %NODE% .STATE to %NODE% .NODE-STATE to prevent name collisions
+    with template properties named STATE.
+  * Fixed bug in DELETE-ELEMENT-INTERNAL which left deleted nodes visible
+    in their parent's .ELEMENTS lists.
+  * Removed ENTER-NODE and EXIT-NODE wrapper functions.
 
 0.3.11 - 6 June 2007 - emk
 
