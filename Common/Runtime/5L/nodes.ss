@@ -591,7 +591,7 @@
                   (list* :parent     parent
                          :name       name
                          bindings))]]
-      (enter-node inst)
+      (inst .enter-node)
       inst))
 
   ;;-----------------------------------------------------------------------
@@ -631,7 +631,7 @@
     (attr parent)
 
     ;; May be ENTERING, ACTIVE, EXITING, EXITED.
-    (attr state 'ENTERING :type <symbol> :writable? #t)
+    (attr node-state 'ENTERING :type <symbol> :writable? #t)
 
     (attr elements '() :type <list> :writable? #t)
     (attr has-expensive-handlers?  #f :type <boolean> :writable? #t)
@@ -641,7 +641,7 @@
     (attr wants-cursor? #f :label "Wants cursor?")
 
     (def (active?)
-      (eq? (.state) 'ACTIVE))
+      (eq? (.node-state) 'ACTIVE))
 
     (def (to-string)
       (cat "#<inst " (node-full-name self) ">"))
@@ -1107,20 +1107,15 @@
         ;; TODO - We're called repeatedly as nodes get deleted, resulting
         ;; in an O(n^2) time to delete n nodes.  Not good, but we can live with
         ;; it for the moment.
-        (let [[parent (node-parent elem)]]
-          (set! (node-elements parent)
-                (let recurse [[elements (node-elements parent)]]
-                  (cond
-                   [(null? elements) '()]
-                   [(eq? elem (car elements))
-                    ;; Delete this node, and exclude it from the new
-                    ;; element list.
-                    (exit-node (car elements))
-                    (*engine* .delete-element elem)
-                    (recurse (cdr elements))]
-                   [else
-                    ;; Keep this node.
-                    (cons (car elements) (recurse (cdr elements)))]))))))
+        (let [[parent (elem .parent)]]
+          ;; Remove the node from its parent's NODE-ELEMENTS first, to
+          ;; reduce the odds that a script can find the node mid-deletion.
+          (set! (parent .elements)
+                (filter (lambda (e) (not (eq? elem e)))
+                        (parent .elements)))
+          ;; Now it's safe to delete the node.
+          (elem .exit-node)
+          (*engine* .delete-element elem))))
   
 
   ;;=======================================================================
@@ -1130,16 +1125,12 @@
   ;;  recurse up or down the node hierarchy; that work is done by other
   ;;  functions below.
 
-  ;; TODO - Get rid of wrappers.
-  (define (exit-node node) (node .exit-node))
-  (define (enter-node node) (node .enter-node))
-
   (with-instance %node%
     (def (enter-node)
       ;; TODO - Make sure all our template properties are bound.
       ;; Mark this node as running so we can add event handlers and CREATE
       ;; elements.
-      (%assert (eq? (.state) 'ENTERING))
+      (%assert (eq? (.node-state) 'ENTERING))
       ;; Register this node in the table of running nodes.
       (.register)
       ;; Because we haven't been running, we shouldn't have any child
@@ -1155,15 +1146,15 @@
       ;; send messages to subtemplates.)
       (send/nonrecursive* (lambda () #f) self 'setup-finished)
       (.notify-body-finished)
-      (set! (.state) 'ACTIVE))
+      (set! (.node-state) 'ACTIVE))
 
     (def (notify-enter))
     (def (notify-body-finished))
     (def (notify-exit))
 
     (def (exit-node)
-      (%assert (memq (.state) '(ENTERING ACTIVE)))
-      (set! (.state) 'EXITING)
+      (%assert (memq (.node-state) '(ENTERING ACTIVE)))
+      (set! (.node-state) 'EXITING)
       (.notify-exit)
       ;; Exit all our child elements.
       ;; TRICKY - We call into the engine to do element deletion safely.
@@ -1179,7 +1170,7 @@
       (.unregister)
       ;; Mark this node as no longer active, so nobody tries to call ON
       ;; or CREATE on it.
-      (set! (.state) 'EXITED))
+      (set! (.node-state) 'EXITED))
     )
 
   (with-instance %card%
@@ -1226,7 +1217,7 @@
                          :parent (current-group-member)
                          :name (node-class .name))]]
         (set-current-group-member! node-inst)
-        (enter-node node-inst))))
+        (node-inst .enter-node))))
   
   ;; Recursively exit nested nodes starting with 'node', but ending before
   ;; 'trunk-node'.
@@ -1234,7 +1225,7 @@
     (unless (eq? (node-inst .class) trunk-node-class)
       ;; We should never exit the root node.
       (%assert (not (root-node? node-inst)))
-      (exit-node node-inst)
+      (node-inst .exit-node)
       (set-current-group-member! (node-parent node-inst))
       (exit-node-recursively (node-parent node-inst) trunk-node-class)))
 

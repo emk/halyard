@@ -170,12 +170,12 @@ void FIVEL_NS RegisterWxPrimitives() {
 #define FIND_ELEMENT(TYPE, VAR, NAME) \
 	ElementPtr VAR##_temp = wxGetApp().GetStage()->FindElement(NAME); \
 	if (!VAR##_temp) { \
-		THROW("The element does not exist."); \
+		THROW("The element " + std::string(NAME) + " does not exist."); \
 	} \
 	shared_ptr<TYPE> VAR = \
         shared_ptr<TYPE>(VAR##_temp, dynamic_cast_tag()); \
 	if (!VAR) { \
-		THROW("The element is not of type " #TYPE); \
+		THROW("The element " + std::string(NAME) + " is not of type " #TYPE); \
 	}
 
 static DrawingArea *GetCurrentDrawingArea() {
