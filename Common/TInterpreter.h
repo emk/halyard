@@ -193,14 +193,7 @@ public:
 	/// \return  the name of the current card.
 	///
 	virtual std::string CurCardName(void) = 0;
-        
-	//////////
-	/// Get name of the previous Card.
-	///
-	/// \return  the name of the previous card.
-	///
-	virtual std::string PrevCardName(void) = 0;
-	
+    	
 	//////////
 	/// Determine whether a card with the given name exists.
 	///

@@ -283,11 +283,6 @@
         (value->string (node-full-name (*engine* .current-card)))
         ""))
 
-  (define (%kernel-previous-card-name)
-    (if (*engine* .last-card)
-        (value->string (node-full-name (*engine* .last-card)))
-        ""))
-
   (define (%kernel-valid-card? card-name)
     (card-exists? card-name))
 

@@ -5,7 +5,7 @@
   (require (lib "begin-var.ss" "5L"))
 
   (provide <ruby-object> ruby-object? make-ruby-instance-of?-predicate
-           define-class %class% %object% method~ def
+           ruby-class? define-class %class% %object% method~ def
            instance-exec with-instance attr attr-value attr-default)
 
   (defclass <ruby-object> ()

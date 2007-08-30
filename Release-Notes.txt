@@ -71,6 +71,13 @@ SVN - emk, brian, tryon
   * Small refactoring in SashFrame.
   * Added a *NODE-DEFINED-HOOK* for backwards compatibility with a branch
     of 0.3.11 (which we haven't made yet).
+  * Removed old PrevCardName function (which wasn't being used anymore).
+  * Exported LAST-CARD-VISISTED to prevent people from messing with *engine*.
+  * Fixed bug in EXTENDS-TEMPLATE?.
+  * Added FIND-RUNNING-NODE and FIND-STATIC-NODE as public versions of FIND-NODE.
+  * Added JUMP-CURRENT and better error handling for attempts to jump to a
+    running node.
+  * Exported RUBY-CLASS?.
 
 0.3.11 - 6 June 2007 - emk
 

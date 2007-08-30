@@ -127,6 +127,11 @@
   ;; means that generic functions can no longer dispatch on node types, and
   ;; that typecheck-style code may need to be updated.
   ;;
+  ;; As a result, <group> and <sequence> have been renamed to %card-group% and 
+  ;; %card-sequence%, respectively.  The old GROUP and SEQUENCE macros are
+  ;; now equivalent, and the distinction between groups and sequences is now
+  ;; a matter of inheritance.
+  ;;
   ;; Removed now useless NODE-CHILDREN from API.  Use .ELEMENTS or .MEMBERS
   ;; instead.
   ;;
@@ -136,7 +141,7 @@
   ;; The :TYPE of template properties is now enforced.
   ;;
   ;; Top-level ON handlers must now be wrapped with the form (WITH-INSTANCE
-  ;; (STATIC-ROOT-NODE) ...).
+  ;; (RUNNING-ROOT-NODE) ...).
 
   ;;;======================================================================
   ;;;  Transitions and Screenshots

@@ -17,8 +17,8 @@
 
   ;; Our shiny new node path system.
   (require (lib "paths.ss" "5L"))
-
-
+  (provide %node-path% node-path?)
+  
   ;;=======================================================================
   ;;  Stuff Callable by the Kernel
   ;;=======================================================================
@@ -32,7 +32,10 @@
            current-card
            *running-on-exit-handler-for-node*)
 
-
+  ;; XXX - This, along with the other provides here, needs to be
+  ;; refactored into the right place...
+  (provide last-card-visited)
+  
   ;;=======================================================================
   ;;  Engine Interface
   ;;=======================================================================
@@ -46,7 +49,7 @@
     (attr running-node-table (make-hash-table))
     (attr default-element-parent #f :writable? #t)
     (attr current-group-member (.running-root-node) :writable? #t)
-    (attr last-card #f :writable? #t)
+    (attr last-card-visited #f :writable? #t)
 
     (def (current-card)
       (let [[result (.current-group-member)]]
@@ -101,6 +104,9 @@
 
   (define (current-static-card)
     ((current-card) .static-node))
+  
+  (define (last-card-visited)
+    (*engine* .last-card-visited))
   
   
   ;;=======================================================================
@@ -596,7 +602,8 @@
   ;;  and other %card-group%s.  Any node may contain %element%s.
 
   (provide %node% node? node-name node-full-name extends-template? node-parent
-           node-elements find-node resolve @* @)
+           node-elements find-node find-running-node find-static-node
+           resolve @* @)
 
   (define (add-shared-node-members! inst)
     (with-instance inst
@@ -702,7 +709,22 @@
   (define (find-first-card node) (node .find-first-card))
   (define (find-last-card node) (node .find-last-card))
 
-  (define (node-full-name node)
+  (define (node-full-name node-or-path)
+    ;; XXX - Resolve either a running or a static node here, depending
+    ;; on what we find.  This is an odd special case that really only
+    ;; affects NODE-FULL-NAME, because it's one of the few non-trivial
+    ;; functions which can be called on either static or running nodes,
+    ;; and possibly the only one that really cares about the difference.
+    (define node (if (node-path? node-or-path)
+                   (node-or-path .resolve-path
+                     :running? #t
+                     :if-not-found 
+                     (lambda ()
+                       (non-fatal-error
+                        (cat "NODE-FULL-NAME called on static node "
+                             node-full-name))
+                       (node-or-path .resolve-path :running? #f)))
+                   node-or-path))
     ;; Join together local names with "/" characters.
     (let [[parent (node-parent node)]]
       (if (and parent (not (root-node? parent)))
@@ -711,7 +733,7 @@
         (node-name node))))
 
   (define (extends-template? node template)
-    (if (node .subclass-of? %class%)
+    (if (ruby-class? node)
         (node .subclass-of? template)
         (node .instance-of? template)))
   
@@ -732,12 +754,21 @@
     (set! (node-elements node)
           (append (node-elements node) (list elem))))
 
+  ;; This is an internal API that should probably not be used by script code.
   (define (find-node name running?)
     (define table (if running? 
                     (*engine* .running-node-table) 
                     (*engine* .static-node-table)))
     (hash-table-get table name (lambda () #f)))
-      
+
+  ;;; Look up a running node by name.
+  (define (find-running-node name-as-string)
+    (find-node (string->symbol name-as-string) #t))
+  
+  ;;; Look up a static node by name.
+  (define (find-static-node name-as-string)
+    (find-node (string->symbol name-as-string) #f))
+  
   (define (find-node-relative base name running?)
     ;; Treat 'name' as a relative path.  If 'name' can be found relative
     ;; to 'base', return it.  If not, try the parent of base if it
@@ -971,7 +1002,7 @@
   ;;-----------------------------------------------------------------------
   ;;  More functions are defined in the next section below.
 
-  (provide %card% card? card-next card-prev jump-next jump-prev
+  (provide %card% card? card-next card-prev jump-next jump-prev jump-current
            define-card-template card)
 
   (define-class %card% (%group-member%)
@@ -989,6 +1020,10 @@
       (def (find-last-card) self)
       )
 
+    ;; This is a fairly easy mistake to make.
+    (def (jump)
+      (error (cat "Cannot jump to running card " self ", jump to static "
+                  "counterpart " (self .class) " instead.")))
     )
 
   ;; TODO - Get rid of wrapper functions.  
@@ -1011,7 +1046,9 @@
       
   (define (jump-next) (jump-helper card-next "after"))
   (define (jump-prev) (jump-helper card-prev "before"))
-
+  (define (jump-current)
+    (jump (current-static-card)))
+  
   (define-template-definer define-card-template %card%)
   (define-node-definer card %card%)
 
@@ -1154,7 +1191,7 @@
 
     (def (notify-exit)
       (*engine* .notify-exit-card self)
-      (set! (*engine* .last-card) self))
+      (set! (*engine* .last-card-visited) (self .static-node)))
     )
 
   ;; * Things we know

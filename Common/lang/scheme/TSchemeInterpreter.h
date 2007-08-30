@@ -151,7 +151,6 @@ public:
 	virtual void KillCurrentCard(void);
 	virtual void JumpToCardByName(const char *inName);
 	virtual std::string CurCardName(void);
-	virtual std::string PrevCardName(void);
 	virtual bool IsValidCard(const char *inCardName);
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);

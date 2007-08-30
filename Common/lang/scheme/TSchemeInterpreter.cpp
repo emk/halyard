@@ -528,14 +528,6 @@ std::string TSchemeInterpreter::CurCardName(void)
 	return SCHEME_BYTE_STR_VAL(scheme_char_string_to_byte_string(o));
 }
 
-std::string TSchemeInterpreter::PrevCardName(void)
-{
-	Scheme_Object *o = CallSchemeSimple("%kernel-previous-card-name");
-	if (!SCHEME_CHAR_STRINGP(o))
-		gLog.FatalError("Previous card name must be string");
-	return SCHEME_BYTE_STR_VAL(scheme_char_string_to_byte_string(o));
-}
-
 bool TSchemeInterpreter::IsValidCard(const char *inCardName)
 {
 	Scheme_Object *args[1];
