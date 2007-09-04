@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.3.13 - 4 Sep 2007 - emk
+
+  * Added a cache to speed up method dispatch.
+  * Better labeling for backtrace in logs.
+
 0.3.12 - 30 Aug 2007 - emk, brian, tryon
 
   * Integrating new path system.

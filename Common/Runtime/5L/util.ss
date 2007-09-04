@@ -194,7 +194,8 @@
             ;; an exception if there are any errors in the printing
             ;; process.
             (with-handlers [[void (lambda (exn) #f)]]
-              (debug-log (format-trace exn-or-value)))
+              (debug-log (cat "Backtrace: " (exn-message exn-or-value) "\n"
+                              (format-trace exn-or-value))))
             (report-func (exn-message exn-or-value))
             #f))))
 

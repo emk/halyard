@@ -27,12 +27,18 @@
   (define (ruby-object-class obj)
     (if (ruby-object? obj)
         (ruby-object-klass obj)
-        (error (cat "Expected an object, got: " obj))))
+        (error (cat "Not a Ruby-style object: " obj))))
+
+  ;; Every time the return value of APPLICABLE-METHODS might change (for
+  ;; any set of arguments), this number must be incremented.
+  (define *generation-id* 1)
 
   (defclass <ruby-class> (<ruby-object>)
     name
     superclass
     [methods :initializer (lambda () (make-hash-table))]
+    [cached-methods-generation-id :initializer (lambda () 0)]
+    [cached-methods :initializer (lambda () (make-hash-table))]
     :auto #t :printer #f
     )
 
@@ -57,6 +63,7 @@
         default))
 
   (define (add-method! object name method)
+    (inc! *generation-id*)
     (hash-table-put! (ruby-class-methods object) name method))
 
   (define-syntax define-class
@@ -107,6 +114,63 @@
                      [super (make-capture-var/ellipsis #'body 'super)]]
          (syntax/loc stx (lambda (self super . args) (begin/var . body))))]))
 
+  ;; Walk up the class hierarchy, making a list of all methods with a given
+  ;; name.  The methods are sorted from most-specific to least-specific.
+  ;; See the comment on *GENERATION-ID*--there are some non-trivial
+  ;; correctness constraints here.
+  ;;
+  ;; TODO - Rely on methods that have already been cached.
+  (define (applicable-methods klass method-name)
+    (define (recurse)
+      (applicable-methods (ruby-class-superclass klass) method-name))
+    (if (not klass)
+      '()
+      (let [[method (hash-table-get (ruby-class-methods klass) method-name
+                                    (lambda () #f))]]
+        (if method
+          (cons method (recurse))
+          (recurse)))))
+
+  ;; The front-end half of method dispatch.  This function handles method
+  ;; caching, and then passes control to CALL-WITH-METHOD-LIST.
+  (define (send% object method-name . args)
+    ;; Fetch various information about the class we're dispatching to.
+    (define klass (ruby-object-class object))
+
+    ;; If the method cache isn't up-to-date, clear it.
+    (define generation-id (ruby-class-cached-methods-generation-id klass))
+    (unless (= generation-id *generation-id*)
+      (%assert (< generation-id *generation-id*))
+      (set! (ruby-class-cached-methods klass) (make-hash-table))
+      (set! (ruby-class-cached-methods-generation-id klass) *generation-id*))
+
+    ;; Look up the cached method list.  If we don't have it, create it.
+    (let* [[cached-methods (ruby-class-cached-methods klass)]
+           [methods (hash-table-get cached-methods method-name
+                                    (lambda () #f))]]
+      (unless methods
+        (set! methods (applicable-methods klass method-name))
+        (hash-table-put! cached-methods method-name methods))
+
+      ;; Make the actual method call.
+      (call-with-method-list object methods method-name args)))
+
+  ;; The back-end half of method dispatch.  This function takes a
+  ;; precomputed list of methods to call, and when that list is exhausted,
+  ;; hands further work to METHOD-MISSING.
+  (define (call-with-method-list object methods method-name args)
+    (if (null? methods)
+      ;; No more methods to call, so dispatch this to method-missing.
+      (apply send% object 'method-missing method-name args)
+      ;; Call the first method in the list, and give an implementation of
+      ;; SUPER.
+      (apply (car methods) object
+             (lambda ()
+               (call-with-method-list object (cdr methods) method-name args))
+             args)))
+
+  #| TODO - Remove this code.  This only remains for performance-comparison
+     purposes.
   (define (send% object method . args)
     (define (send-to-class klass)
       (with-values
@@ -127,6 +191,7 @@
                (lambda () (send-to-class (ruby-class-superclass found-klass)))
                args)))
     (send-to-class (ruby-object-class object)))
+  |#
 
   (define (instance-exec object method . args)
     (apply method object 
@@ -219,10 +284,12 @@
   ;; weaving on its own, so go take a look.
   (define-class %object% (#f))
 
-  ;; %CLASS%, STEP 3: Finish setting up %class%.
+  ;; %CLASS%, STEP 3: Finish setting up %class%.  Note that because we
+  ;; reshuffle the class hierarchy, we need to dump all our method caches.
   (set! (PH (ruby-class-superclass %class%)) %object%)
   (set! (PH (ruby-class-superclass metaclass-for-%class%))
         (ruby-object-klass %object%))
+  (inc! *generation-id*)
 
   ;; %CLASS%, STEP 4: Make sure DEF will work properly (we need it below).
   ;; (There's no point in trying to install .DEFINE-METHOD before all
