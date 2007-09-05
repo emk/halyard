@@ -472,7 +472,7 @@
               (cond
                [(and (not writable?) (app~ .initialized?))
                 (error (cat "Read-only attr: " name))]
-               [(and type (not (instance-of? val type)))
+               [(and type (not (instance-of?~ val type)))
                 (error (cat "Attr " name " has type " type ", tried to assign "
                             val))]
                [#t
@@ -546,8 +546,58 @@
         (error (cat "." name " should have no arguments in initializer")))
       (hash-table-get (slot 'hash) name
                       (lambda () (keyword-not-found name)))))
-
-
+  
+  
+  ;;=======================================================================
+  ;;  "Universal" Class Functions
+  ;;=======================================================================
+  ;; We currently have two different object models (RUBY and SWINDLE), but
+  ;; both use the same syntax to refer to classes and instances. To help
+  ;; avoid confusion, we have "universal" functions that can operate on
+  ;; objects and classes from either system.
+  
+  (provide swindle-object? swindle-class? swindle-instance-of?
+           swindle-subclass? object?~ class?~
+           instance-of?~ subclass?~)
+  
+  ;;; Provide swindle-specific versions of the class functions.
+  (define swindle-object? object?)
+  (define swindle-class? class?)
+  (define swindle-instance-of? instance-of?)
+  (define swindle-subclass? subclass?)
+  
+  ;;; Is the given value a swindle or ruby object?
+  (define (object?~ value)
+    (or (ruby-object? value)
+        (swindle-object? value)))
+  
+  ;;; Is the given value a swindle or ruby class?
+  (define (class?~ value)
+    (or (ruby-class? value)
+        (swindle-class? value)))
+  
+  ;;; Given an object and a class, determine if the object is an instance
+  ;;; of the given class.
+  (define (instance-of?~ obj class)
+    (cond
+     [(and (ruby-object? obj)
+           (ruby-class? class))
+      (app~ obj .instance-of? class)]
+     [else
+      (instance-of? obj class)]))
+  
+  
+  ;;; Given two classes, determine if one is a subclass of the other.
+  (define (subclass?~ c1 c2)
+    (cond
+     [(and (ruby-class? c1) (ruby-class? c2))
+      (app~ c1 .subclass-of? c2)]
+     [(and (swindle-class? c1) (swindle-class? c2))
+      (swindle-subclass? c1 c2)]
+     [else
+      #f]))
+  
+  
   ;;=======================================================================
   ;;  Utility Functions
   ;;=======================================================================

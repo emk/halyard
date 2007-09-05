@@ -1,12 +1,17 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+SVN - emk, tryon
 
   * Major performance improvement: Ported ruby-objects.ss to use
     DEFINE-STRUCT instead of Swindle's DEFCLASS.  This way, we implement
     our featureful-but-slow object system using the limited-but-fast struct
     support in PLT (instead of relying on Eli's own featureful-but-slow
     object system).
+  * Class functions OBJECT? CLASS? INSTANCE-OF? SUBCLASS? now work on both
+    Ruby and Swindle objects/classes.  The old functions are available as 
+    SWINDLE-OBJECT? SWINDLE-CLASS? SWINDLE-INSTANCE-OF? SWINDLE-SUBCLASS?.
+  * ATTR and node properties now support passing Ruby types to :TYPE.
+  * Better print output for backtrace code.
 
 0.3.13 - 4 Sep 2007 - emk
 

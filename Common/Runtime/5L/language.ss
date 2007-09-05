@@ -33,7 +33,7 @@
                             #%app set!
                             ;; We get this from Swindle, but we want the
                             ;; version from ruby-objects.ss.
-                            method))
+                            method object? class? instance-of? subclass?))
   
   ;; Set up Swindle to have a reasonable behavior for defclass. We're
   ;; trying to be as much like Dylan as possible, except also defining
@@ -76,8 +76,12 @@
 
   (provide (rename method~ method)
            (rename app~ #%app)
-           (rename set!~ set!))
-
+           (rename set!~ set!)
+           (rename object?~ object?)
+           (rename class?~ class?)
+           (rename instance-of?~ instance-of?)
+           (rename subclass?~ subclass?))
+  
 
   ;;----------------------------------------------------------------------
   ;; Symbol Macros and Generalized Setters
