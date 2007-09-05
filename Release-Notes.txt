@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, tryon
+0.3.14 - 5 Sep 2007 - emk, tryon
 
   * Major performance improvement: Ported ruby-objects.ss to use
     DEFINE-STRUCT instead of Swindle's DEFCLASS.  This way, we implement
