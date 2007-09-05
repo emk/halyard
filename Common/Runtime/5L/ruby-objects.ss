@@ -1,20 +1,40 @@
 (module ruby-objects (lib "swindle.ss" "swindle")
+  (require (lib "struct.ss")) ; For DEFINE-STRUCT/PROPERTIES.
   (require-for-syntax (lib "capture.ss" "5L"))
   (require (lib "util.ss" "5L"))
   (require-for-syntax (lib "util.ss" "5L"))
   (require (lib "begin-var.ss" "5L"))
 
-  (provide <ruby-object> ruby-object? make-ruby-instance-of?-predicate
+  (provide ruby-object? make-ruby-instance-of?-predicate
            ruby-class? define-class %class% %object% method~ def
            instance-exec with-instance attr attr-value attr-default)
 
-  (defclass <ruby-object> ()
-    klass
-    [slots :initializer (lambda () (make-hash-table))]
-    ;; Has the initialization protocol (if any) for this object been
-    ;; finished?
-    [initialized? :initvalue #f]
-    :auto #t :printer #f)
+  ;; This will be overridden later on, once we have .TO-STRING set up
+  ;; properly.
+  (define *ruby-object-printer* #f)
+     
+  ;; Print an object.  Note that we substitute a simple print routine until
+  ;; the real one gets installed.
+  (define (print-ruby-object obj port write?)
+    (if *ruby-object-printer*
+      (*ruby-object-printer* obj port write?)
+      (write-string (cat "#<" (ruby-object-klass obj) " ???>") port)))
+
+  ;; Internal implementation of Ruby objects.  We use
+  ;; DEFINE-STRUCT/PROPERTIES here because it's faster than relying on
+  ;; Swindle, but still allows us to define a custom write routine.
+  (define-struct/properties ruby-object
+    [klass
+     slots
+     ;; Has the initialization protocol (if any) for this object been
+     ;; finished?
+     initialized?]
+    [[prop:custom-write print-ruby-object]])
+
+  (define (new-ruby-object klass)
+    (make-ruby-object klass
+                      (make-hash-table)  ; slots
+                      #f))               ; initialized?
 
   ;;; Return a function which returns #t if and only if OBJ is an instance
   ;;; of KLASS.
@@ -33,18 +53,23 @@
   ;; any set of arguments), this number must be incremented.
   (define *generation-id* 1)
 
-  (defclass <ruby-class> (<ruby-object>)
-    name
-    superclass
-    [methods :initializer (lambda () (make-hash-table))]
-    [cached-methods-generation-id :initializer (lambda () 0)]
-    [cached-methods :initializer (lambda () (make-hash-table))]
-    :auto #t :printer #f
-    )
+  (define-struct (ruby-class ruby-object)
+    [name
+     superclass
+     methods
+     cached-methods-generation-id
+     cached-methods])
 
-  (defclass <initializer> ()
-    name method ignorable? skippable?
-    :auto #t :printer #t)
+  (define (new-ruby-class &key klass (initialized? #f) name superclass)
+    (make-ruby-class klass
+                     (make-hash-table)   ; slots
+                     initialized? name superclass
+                     (make-hash-table)   ; methods
+                     0                   ; cached-methods-generation-id
+                     (make-hash-table))) ; cached-methods
+
+  (define-struct initializer
+    [name method ignorable? skippable?])
 
   (define (slot% object name)
     (hash-table-get (ruby-object-slots object) name
@@ -76,21 +101,21 @@
          ;; since we only support instance methods, we need to make KLASS an
          ;; instance of a "metaclass".  Metaclasses are themselves classes.
          (define metaclass
-           (make <ruby-class>
-             :name (symcat "metaclass:" 'klass)
-             :klass %class%
+           (new-ruby-class
+             :name (symcat "metaclass:" 'klass)   ; name
+             :klass %class%                       ; klass
              ;; The initialization protocol doesn't apply to metaclasses.
-             :inititialized? #t
+             :initialized? #t
              ;; The metaclass of %object% inherits from %class%.  Other
              ;; metaclasses inherit from SUPER's metaclass, so that class
              ;; methods are visible on a class and all its subclasses.  For
              ;; a full picture of what's going on here, see
              ;; ruby-objects.png.
-             :superclass (if super 
+             :superclass (if super
                            (ruby-object-class super)
                            %class%)))
          (define klass
-           (make <ruby-class>
+           (new-ruby-class
              :name 'klass
              :klass metaclass
              :superclass super))
@@ -265,7 +290,7 @@
 
   ;; %CLASS%, STEP 1: Build %class%.
   (define %class%
-    (make <ruby-class>
+    (new-ruby-class
       :name '%class%
       :klass (PH)              ; metaclass-for-%class%
       :inititialized? #t
@@ -273,7 +298,7 @@
 
   ;; %CLASS%, STEP 2: Build a metaclass for %class%, and install it.
   (define metaclass-for-%class%
-    (make <ruby-class>
+    (new-ruby-class
       :name 'metaclass:%class%
       :klass %class%
       :inititialized? #t
@@ -390,16 +415,11 @@
     )
 
   ;;; Now that our printing machinery is all set up, it should be safe to
-  ;;; let Swindle know about it.  If we install this any earlier, we won't
+  ;;; let Scheme know about it.  If we install this any earlier, we won't
   ;;; be able to format errors without crashing.
-  (defmethod (print-object [object <ruby-object>] esc? port)
-    (display (app~ object .to-string) port))
-
-  ;; XXX - We need to duplicate this for each swindle class we override
-  ;; PRINT-OBJECT on.  I'm not quite sure why--should setting :printer #f
-  ;; be enough to make this go away?
-  (defmethod (print-object [object <ruby-class>] esc? port)
-    (display (app~ object .to-string) port))
+  (define (real-print-ruby-object obj port write?)
+    (write-string (app~ obj .to-string) port))
+  (set! *ruby-object-printer* real-print-ruby-object)
 
   (with-instance %class%
     ;;; Return the superclass of this class.
@@ -481,7 +501,7 @@
       (set! (slot 'mandatory-attrs) (cons name (app~ .mandatory-attrs))))
     ;;; Create a new object of this class.
     (def (new &rest args)
-      (define obj (make <ruby-object> :klass self))
+      (define obj (new-ruby-object self))
       (apply send% obj 'initialize args)
       (assert (not (ruby-object-initialized? obj)))
       (set! (ruby-object-initialized? obj) #t)

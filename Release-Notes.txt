@@ -1,5 +1,13 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * Major performance improvement: Ported ruby-objects.ss to use
+    DEFINE-STRUCT instead of Swindle's DEFCLASS.  This way, we implement
+    our featureful-but-slow object system using the limited-but-fast struct
+    support in PLT (instead of relying on Eli's own featureful-but-slow
+    object system).
+
 0.3.13 - 4 Sep 2007 - emk
 
   * Added a cache to speed up method dispatch.
