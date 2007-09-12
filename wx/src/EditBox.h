@@ -31,6 +31,9 @@ class wxTextCtrl;
 class EditBox : public Widget {
     wxTextCtrl *mControl;
 
+    // Map our position values to wxWidgets position values.
+    long TranslatePosition(long pos);
+
 public:
     /// Create a new edit box.  inSize is the text size, in points, and
     /// inEnterIsEvent, if true, will cause presses of the Enter key to be
@@ -42,6 +45,15 @@ public:
 
     /// Get the current value of the text box.
     wxString GetValue() const;
+
+    /// Update the text in the text box.
+    void SetValue(const wxString &inValue);
+
+    /// Set the insertion point for this edit box.
+    void SetInsertionPoint(long pos);
+
+    /// Set the insertion point for this edit box.
+    void SetSelection(long begin, long end);
 };    
 
 #endif // EditBox_H

@@ -43,8 +43,7 @@ Widget::Widget(Stage *inStage, const wxString &inName, wxWindow *inWindow)
     InitializeWidgetWindow(inWindow);
 }
 
-Widget::~Widget()
-{
+Widget::~Widget() {
     // XXX - Is this actually safe to do?  We might be called when we are
     // removed from the stage, or when the stage is destroyed.
 	//
@@ -53,21 +52,18 @@ Widget::~Widget()
 		mWindow->Destroy();
 }
 
-void Widget::InitializeWidgetWindow(wxWindow *inWindow)
-{
+void Widget::InitializeWidgetWindow(wxWindow *inWindow) {
 	ASSERT(mWindow == NULL);
 	ASSERT(inWindow != NULL);
 	mWindow = inWindow;
 }
 
-wxRect Widget::GetRect()
-{
+wxRect Widget::GetRect() {
 	ASSERT(mWindow != NULL);
 	return mWindow->GetRect();
 }
 
-void Widget::Show(bool inShow)
-{
+void Widget::Show(bool inShow) {
 	// If we're not changing anything, quit now.
 	if (inShow == IsShown())
 		return;
@@ -87,21 +83,23 @@ void Widget::Show(bool inShow)
 	GetStage()->NotifyElementsChanged();
 }
 
-bool Widget::IsShown()
-{
+bool Widget::IsShown() {
 	ASSERT(mWindow != NULL);
 	return mWindow->IsShown();
 }
 
-void Widget::DrawElementBorder(wxDC &inDC)
-{
+void Widget::DrawElementBorder(wxDC &inDC) {
 	// Draw the border *outside* our rectangle.
 	wxRect r = this->GetRect();
 	r.Inflate(1);
 	inDC.DrawRectangle(r.x, r.y, r.width, r.height);
 }
 
-wxAccessible *Widget::GetAccessible()
-{
+void Widget::SetFocus() {
+    // This should work for most subclasses.
+    mWindow->SetFocus();
+}
+
+wxAccessible *Widget::GetAccessible() {
     return mWindow->GetAccessible();
 }

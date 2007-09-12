@@ -242,7 +242,7 @@
     (position :accessor event-position)
     (double-click? :accessor event-double-click? :initvalue #f))
 
-  (defclass <text-enter-event> (<event>))
+  (defclass <edit-box-event> (<event>))
 
   (defclass <url-event> (<event>)
     (url :accessor event-url))
@@ -294,8 +294,8 @@
                     (make <mouse-event>
                       :position (point (car args) (cadr args))
                       :stale? (cadr args))]
-                   [[text-enter]
-                    (make <text-enter-event>)]
+                   [[text-changed text-enter]
+                    (make <edit-box-event>)]
                    [[browser-navigate]
                     (make <browser-navigate-event> :url (car args))]
                    [[browser-page-changed]
@@ -722,7 +722,7 @@
                      (lambda ()
                        (non-fatal-error
                         (cat "NODE-FULL-NAME called on static node "
-                             node-full-name))
+                             node-or-path))
                        (node-or-path .resolve-path :running? #f)))
                    node-or-path))
     ;; Join together local names with "/" characters.

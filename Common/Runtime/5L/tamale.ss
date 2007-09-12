@@ -166,7 +166,9 @@
       [[rect :type <rect> :label "Rectangle"]]
       (%element% :at (rect-left-top rect))
     (on bounds ()
-      rect))
+      rect)
+    (on focus ()
+      (call-5l-prim 'Focus (node-full-name self))))
 
   ;;; A %custom-element% is a lightweight element (i.e., implemented by the
   ;;; engine, not by the OS), optionally with an associated drawing
@@ -915,8 +917,22 @@
        [multiline? :type <boolean> :label "Allow multiple lines?" :default #f]
        [send-enter-event? :type <boolean> :default #t]]
       (%widget%)
+    ;;; Return the text from this edit box.
     (on text ()
       (call-5l-prim 'EditBoxGetValue (node-full-name self)))
+    ;;; Set the text in this edit box.
+    (on set-text! (value)
+      (call-5l-prim 'EditBoxSetValue (node-full-name self) value))
+    ;;; Move the insertion point to the specificed location.  Indices start
+    ;;; at 0, and an index of -1 specifies "after the last character".
+    (on set-insertion-point! (index)
+      (send self focus)
+      (call-5l-prim 'EditBoxSetInsertionPoint (node-full-name self) index))
+    ;;; Set the selection.  Indices are the same as SET-INSERTION-POINT!.
+    (on set-selection! (start end)
+      (send self focus)
+      (call-5l-prim 'EditBoxSetSelection (node-full-name self) start end))
+
     (call-5l-prim 'EditBox (node-full-name self)
                   (make-node-event-dispatcher self)
                   (parent->card self (prop self rect)) text

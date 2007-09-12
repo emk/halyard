@@ -229,6 +229,11 @@ bool EventDispatcher::DoEventMouseMoved(wxMouseEvent &inEvent)
 	return DoSimpleMouseEvent("mouse-moved", inEvent.GetPosition());
 }
 
+bool EventDispatcher::DoEventTextChanged(wxCommandEvent &inEvent)
+{
+    return DoSimpleEvent("text-changed");
+}
+
 bool EventDispatcher::DoEventTextEnter(wxCommandEvent &inEvent)
 {
     return DoSimpleEvent("text-enter");

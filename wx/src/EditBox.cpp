@@ -32,6 +32,7 @@
 class CustomTextCtrl : public wxTextCtrl {
     EditBox *mElement;
 
+    void OnText(wxCommandEvent &inEvent);
     void OnTextEnter(wxCommandEvent &inEvent);
 
 public:
@@ -43,6 +44,7 @@ public:
 };
 
 BEGIN_EVENT_TABLE(CustomTextCtrl, wxTextCtrl)
+    EVT_TEXT(-1, CustomTextCtrl::OnText)
     EVT_TEXT_ENTER(-1, CustomTextCtrl::OnTextEnter)
 END_EVENT_TABLE()
 
@@ -54,6 +56,10 @@ CustomTextCtrl::CustomTextCtrl(wxWindow *inParent, const wxString &inValue,
       mElement(inElement)
 {
     // Do nothing.
+}
+
+void CustomTextCtrl::OnText(wxCommandEvent &inEvent) {
+    mElement->GetEventDispatcher()->DoEventTextChanged(inEvent);
 }
 
 void CustomTextCtrl::OnTextEnter(wxCommandEvent &inEvent) {
@@ -90,11 +96,31 @@ EditBox::EditBox(Stage *inStage, const wxString &inName,
     mControl->SetFont(font);
     //mControl->SetForegroundColour(...);
     //mControl->SetBackgroundColour(...);
-    mControl->SetFocus();
 
     InitializeWidgetWindow(mControl);
 }
 
 wxString EditBox::GetValue() const {
     return mControl->GetValue();
+}
+
+void EditBox::SetValue(const wxString &inValue) {
+    mControl->SetValue(inValue);
+}
+
+long EditBox::TranslatePosition(long pos) {
+    // OK, the "-1 means end" convention is a bit arbitrary, but it's
+    // supported by many scripting languages for array access.
+    if (pos == -1)
+        return mControl->GetLastPosition();
+    else
+        return pos;
+}
+
+void EditBox::SetInsertionPoint(long pos) {
+    mControl->SetInsertionPoint(TranslatePosition(pos));
+}
+
+void EditBox::SetSelection(long begin, long end) {
+    mControl->SetSelection(TranslatePosition(begin), TranslatePosition(end));
 }

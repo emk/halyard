@@ -1,5 +1,14 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * %EDIT-BOX% no longer focuses automatically.
+  * All heavyweight elements (edit boxes, QuickTime movies, etc.) now have
+    an ON FOCUS handler.  This has been tested with %EDIT-BOX%.
+  * New %EDIT-BOX% handlers: SET-TEXT!, SET-INSERTION-POINT!, SET-FOCUS!.
+  * %EDIT-BOX% now receives ON TEXT-CHANGED events.  These will be
+    triggered whenever the contents of the edit box change.
+
 0.3.14 - 5 Sep 2007 - emk, tryon
 
   * Major performance improvement: Ported ruby-objects.ss to use

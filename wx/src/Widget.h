@@ -102,6 +102,11 @@ public:
 	///
 	virtual void DrawElementBorder(wxDC &inDC);
 
+	//////////
+	/// Pass the keyboard focus to this element.
+	///
+	virtual void SetFocus();
+
     //////////
     /// Get the accessibility information for this element.
     ///    

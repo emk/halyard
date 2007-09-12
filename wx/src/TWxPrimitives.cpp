@@ -108,11 +108,15 @@ void FIVEL_NS RegisterWxPrimitives() {
     REGISTER_5L_PRIMITIVE(DrawLoadProgress);
 	REGISTER_5L_PRIMITIVE(EditBox);
 	REGISTER_5L_PRIMITIVE(EditBoxGetValue);
+	REGISTER_5L_PRIMITIVE(EditBoxSetValue);
+	REGISTER_5L_PRIMITIVE(EditBoxSetInsertionPoint);
+	REGISTER_5L_PRIMITIVE(EditBoxSetSelection);
 	REGISTER_5L_PRIMITIVE(ElementExists);
 	REGISTER_5L_PRIMITIVE(ElementIsShown);
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
 	REGISTER_5L_PRIMITIVE(ElementSetInDragLayer);
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
+    REGISTER_5L_PRIMITIVE(Focus);
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
     REGISTER_5L_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_5L_PRIMITIVE(Heartbeat);
@@ -526,6 +530,29 @@ DEFINE_5L_PRIMITIVE(EditBoxGetValue) {
     ::SetPrimitiveResult(elem->GetValue().mb_str());
 }
 
+DEFINE_5L_PRIMITIVE(EditBoxSetValue) {
+    std::string name, value;
+    inArgs >> SymbolName(name) >> value;
+    FIND_ELEMENT(EditBox, elem, name.c_str());
+    elem->SetValue(value.c_str());
+}
+
+DEFINE_5L_PRIMITIVE(EditBoxSetInsertionPoint) {
+    std::string name;
+    int32 pos;
+    inArgs >> SymbolName(name) >> pos;
+    FIND_ELEMENT(EditBox, elem, name.c_str());
+    elem->SetInsertionPoint(pos);
+}
+
+DEFINE_5L_PRIMITIVE(EditBoxSetSelection) {
+    std::string name;
+    int32 begin, end;
+    inArgs >> SymbolName(name) >> begin >> end;
+    FIND_ELEMENT(EditBox, elem, name.c_str());
+    elem->SetSelection(begin, end);
+}
+
 DEFINE_5L_PRIMITIVE(ElementExists) {
 	std::string name;
 	inArgs >> SymbolName(name);
@@ -563,6 +590,13 @@ DEFINE_5L_PRIMITIVE(EnableExpensiveEvents) {
 	bool enable;
 	inArgs >> enable;
 	EventDispatcher::EnableExpensiveEvents(enable);
+}
+
+DEFINE_5L_PRIMITIVE(Focus) {
+	std::string name;
+	inArgs >> SymbolName(name);
+	FIND_ELEMENT(Widget, element, name.c_str());
+    element->SetFocus();
 }
 
 DEFINE_5L_PRIMITIVE(GeigerSynth) {

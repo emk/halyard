@@ -114,6 +114,11 @@ public:
 	bool DoEventMouseMoved(wxMouseEvent &inEvent);
 
     //////////
+    /// Dispatch a TextChanged event.
+    ///
+    bool DoEventTextChanged(wxCommandEvent &inEvent);
+
+    //////////
     /// Dispatch a TextEnter event.
     ///
     bool DoEventTextEnter(wxCommandEvent &inEvent);
