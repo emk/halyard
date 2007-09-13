@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+SVN - emk, tryon
 
   * %EDIT-BOX% no longer focuses automatically.
   * All heavyweight elements (edit boxes, QuickTime movies, etc.) now have
@@ -8,6 +8,7 @@ SVN - emk
   * New %EDIT-BOX% handlers: SET-TEXT!, SET-INSERTION-POINT!, SET-FOCUS!.
   * %EDIT-BOX% now receives ON TEXT-CHANGED events.  These will be
     triggered whenever the contents of the edit box change.
+  * #1707: Adding better error-handling if CREATE is passed a non-symbol.
 
 0.3.14 - 5 Sep 2007 - emk, tryon
 

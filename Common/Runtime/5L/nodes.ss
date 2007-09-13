@@ -586,6 +586,8 @@
       (error (cat "Can only CREATE subclasses of %ELEMENT%, not " klass)))
     (unless parent
       (error "Can't create element without a parent node"))
+    (unless (symbol? name)
+      (error (cat "create " klass ": name must be a <symbol>; given " name)))
     (check-node-name name)
     (let [[inst (klass .send 'new
                   (list* :parent     parent
