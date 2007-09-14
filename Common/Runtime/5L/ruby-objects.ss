@@ -194,30 +194,6 @@
                (call-with-method-list object (cdr methods) method-name args))
              args)))
 
-  #| TODO - Remove this code.  This only remains for performance-comparison
-     purposes.
-  (define (send% object method . args)
-    (define (send-to-class klass)
-      (with-values
-          [[found-klass implementation]
-           (let recurse [[klass klass]]
-             (if (not klass)
-                 ;; Case 1: Searched everywhere, no method.
-                 (values #f (method~ args
-                              (apply send% self 'method-missing method args)))
-                 (let [[found (hash-table-get (ruby-class-methods klass) method
-                                              (lambda () #f))]]
-                   (if found
-                       ;; Case 2: Found it.
-                       (values klass found)
-                       ;; Case 3: Recurse and try our superclass.
-                       (recurse (ruby-class-superclass klass))))))]
-        (apply implementation object 
-               (lambda () (send-to-class (ruby-class-superclass found-klass)))
-               args)))
-    (send-to-class (ruby-object-class object)))
-  |#
-
   (define (instance-exec object method . args)
     (apply method object 
            (lambda () (error "Cannot call super using instance-exec"))
