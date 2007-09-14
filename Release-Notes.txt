@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, tryon
+0.3.15 - 14 Sep 2007 - emk, tryon
 
   * %EDIT-BOX% no longer focuses automatically.
   * All heavyweight elements (edit boxes, QuickTime movies, etc.) now have

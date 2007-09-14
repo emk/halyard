@@ -165,8 +165,10 @@
   (define-element-template %widget%
       [[rect :type <rect> :label "Rectangle"]]
       (%element% :at (rect-left-top rect))
+    ;;; Return the bounding rectangle for this element.
     (on bounds ()
       rect)
+    ;;; Set the keyboard focus to this element.
     (on focus ()
       (call-5l-prim 'Focus (node-full-name self))))
 
