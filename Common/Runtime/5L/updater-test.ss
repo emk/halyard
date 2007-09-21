@@ -127,11 +127,11 @@
   (define-test-case <parsing-test> ()
       [[base-directory (build-path (fixture-dir "updater") "base")]]
     (test "Parsing manifests."
-      (assert-equal 
+      (assert-equals 
        `((,null-digest 0 "bar.txt")
          (,null-digest 0 "foo.txt"))
        (parse-manifest (build-path (base-directory self) "MANIFEST.base")))
-      (assert-equal 
+      (assert-equals 
        `((,null-digest 0 "sub/baz.txt")
          (,null-digest 0 "sub/foo.txt"))
        (parse-manifest (build-path (base-directory self) "MANIFEST.sub"))))
@@ -199,26 +199,26 @@
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
       (assert (not (null? (get-manifest-diffs))))
-      (assert-equal 5 (update-size)))
+      (assert-equals 5 (update-size)))
     (test "Checking for staging update, update should not be available."
       (assert (auto-update-possible? (update-directory self)))
       (init-updater! :root-directory (update-directory self) :staging? #t)
       (set-updater-url! (url-prefix self))
       (assert (not (check-for-update)))
-      (assert-equal '() (get-manifest-diffs)))
+      (assert-equals '() (get-manifest-diffs)))
     (test "Checking for regular update, update should not be available."
       (assert (auto-update-possible? (base-directory self)))
       (init-updater! :root-directory (base-directory self))
       (set-updater-url! (url-prefix self))
       (assert (not (check-for-update)))
-      (assert-equal '() (get-manifest-diffs)))
+      (assert-equals '() (get-manifest-diffs)))
     (test "Checking for downgrade, update should be available."
       (assert (auto-update-possible? (update-directory self)))
       (init-updater! :root-directory (update-directory self))
       (set-updater-url! (url-prefix self))
       (assert (check-for-update))
       (assert (not (null? (get-manifest-diffs))))
-      (assert-equal 0 (update-size)))
+      (assert-equals 0 (update-size)))
     (test "Downloading files for update."
       (assert (auto-update-possible? (base-directory self)))
       (init-updater! :root-directory (base-directory self) :staging? #t)

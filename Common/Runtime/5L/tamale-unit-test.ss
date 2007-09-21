@@ -8,7 +8,7 @@
     test)
   
   (define (make-and-run-first-test test-case-class report)
-    (assert-equal 1 (length (test-case-test-methods test-case-class)))
+    (assert-equals 1 (length (test-case-test-methods test-case-class)))
     (make-and-run-nth-test test-case-class 0 report))
   
   (define-test-case <was-run-inner> ()
@@ -65,7 +65,7 @@
         (define test
           (make-and-run-first-test <teardown-invoked-if-test-fails-inner>
                                    report))
-        (assert-equal #f (test-report-success? report))
+        (assert-equals #f (test-report-success? report))
         (assert (was-run? test))
         (assert (teardown-invoked? test)))))
   
@@ -84,7 +84,7 @@
       (let [[report (make-test-report)]]
         (define (assert-test-method-titles titles test-case-class)
           (define methods (test-case-test-methods test-case-class))
-          (assert-equal titles (map (fn (meth) (test-method-title meth))
+          (assert-equals titles (map (fn (meth) (test-method-title meth))
                                     (reverse methods))))
         (assert-test-method-titles '("Blah.") <test-methods-inner-1>)
         (assert-test-method-titles '("Different blah." "Frobozz.")
@@ -92,7 +92,7 @@
         
         (set! *test-methods-inner-2-method-count* 0)
         (run-tests <test-methods-inner-2> report)
-        (assert-equal 2 *test-methods-inner-2-method-count*)
+        (assert-equals 2 *test-methods-inner-2-method-count*)
         )))
   
   (define-test-case <test-report-inner> () []
@@ -104,14 +104,14 @@
     (test "Test report should include successes and failures."
       (let [[report (make-test-report)]]
         (run-tests <test-report-inner> report)
-        (assert-equal 3 (test-report-run-count report))
-        (assert-equal 1 (test-report-success-count report))
-        (assert-equal 2 (test-report-failure-count report))
+        (assert-equals 3 (test-report-run-count report))
+        (assert-equals 1 (test-report-success-count report))
+        (assert-equals 2 (test-report-failure-count report))
         (define failures (test-report-failures report))
-        (assert-equal '("#2" "#3")
-                      (sort (map test-failure-title failures) string<?))
-        (assert-equal '("Failed #2" "Failed #3")
-                      (sort (map test-failure-message failures) string<?))
+        (assert-equals '("#2" "#3")
+                       (sort (map test-failure-title failures) string<?))
+        (assert-equals '("Failed #2" "Failed #3")
+                       (sort (map test-failure-message failures) string<?))
         )))
   
   ;; TODO - Reuse throughout.
@@ -137,7 +137,7 @@
         (define (assert-events-for-nth events n)
           (define test
             (make-and-run-nth-test <inheritance-inner-2> n report))
-          (assert-equal events (reverse (test-events test))))
+          (assert-equals events (reverse (test-events test))))
         (assert-events-for-nth '(setup test-a teardown) 0)
         (assert-events-for-nth '(setup test-b teardown) 1))))
   

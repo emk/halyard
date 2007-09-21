@@ -3,6 +3,11 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 SVN - tryon
   * #3954: Adding checks to prevent %custom-element%s from having a 
     negative-sized shape.
+  * In ON-PROP-CHANGE, the veto function message now includes the vetoed value.
+  * ASSERT-EQUAL changed to ASSERT-EQUALS; now uses EQUALS? internally.
+  * Card template %TEST-SUITE% now displays the name of the current card.
+  * #3954: Making the %CUSTOM-ELEMENT% shape-checking even better.
+  * #4105: Correcting 'with' -> 'without' typo.
 
 0.3.15 - 14 Sep 2007 - emk, tryon
 

@@ -250,10 +250,6 @@
       (define r (bounds s))
       (or (> 0 (rect-height r))
           (> 0 (rect-width r))))
-    (define (check-for-negative-shape s)
-      (when (negative-shape? s)
-        (error (cat "%custom-element%: " (node-full-name self)
-                    " may not have a negative-sized shape: " s "."))))
     
     (on prop-change (name value prev veto)
       (case name
@@ -265,7 +261,8 @@
            (call-next-handler))]
         [[shape]
          ;; Make sure that this element is not SET! to a negative-sized shape.
-         (check-for-negative-shape value)
+         (when (negative-shape? value)
+           (veto "%custom-element% shape must have non-negative size."))
          
          (unless initializing-origin?
            ;; Our shape must always have an origin of zero.
@@ -300,7 +297,10 @@
                                     (+ (* 2 padding) max-y))))
     
     ;;; Make sure that this element has a non-negative initial shape.
-    (check-for-negative-shape shape)
+    (when (negative-shape? shape)
+      (set! (.shape) (rect 0 0 0 0))
+      (error (cat "%custom-element%: " (node-full-name self)
+                  " may not have a negative-sized shape: " shape ".")))
     
     ;; The way we want custom elements to work is that AT represents the
     ;; origin of a custom element, and the actual shape on the screen is

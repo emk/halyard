@@ -31,7 +31,7 @@
            )
   
   (define (bare-class-name class)
-    ;; Get a class's name with the extra <>.
+    ;; Get a class's name without the extra <>.
     (define name (symbol->string (class-name class)))
     (substring name 1 (- (string-length name) 1)))
 

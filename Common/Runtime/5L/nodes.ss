@@ -414,7 +414,7 @@
       ;; the change--in which case, we undo the change.
       (define (veto &opt reason)
         (define msg (cat "Cannot set property '" name "' on node '"
-                         (node-full-name self) "'"))
+                         (node-full-name self) "' to " value))
         (if reason
             (error (cat msg ": " reason))
             (error msg)))
