@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - tryon, emk
+0.3.16 - 21 Sep 2007 - tryon, emk
 
   * #3954: Adding checks to prevent %custom-element%s from having a 
     negative-sized shape.
