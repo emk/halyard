@@ -300,6 +300,10 @@ bool EventDispatcher::DoEventProgressChanged(bool inIsActive,
 	return EventCleanup();
 }
 
+bool EventDispatcher::DoEventPlaybackTimer() {
+    return DoSimpleEvent("playback-timer");
+}
+
 bool EventDispatcher::DoEventMediaFinished() {
     return DoSimpleEvent("media-finished");
 }

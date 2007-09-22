@@ -1034,6 +1034,14 @@
     (on set-volume! (channel volume)
       (set-media-volume! self channel volume))
 
+    ;;; When FRAME is reached, send an PLAYBACK-TIMER event.
+    (on set-playback-timer! (frame)
+      (call-5l-prim 'MovieSetPlaybackTimer (node-full-name self) frame))
+
+    ;;; Clear an exiting playback timer.
+    (on clear-playback-timer! ()
+      (call-5l-prim 'MovieClearPlaybackTimer (node-full-name self)))
+
     ;; END DUPLICATE CODE
 
     ;; I'd like put a ON PROP-CHANGE handler here for audio volume, but
@@ -1298,6 +1306,14 @@
     ;;; played.  Volume ranges from 0.0 to 1.0.
     (on set-volume! (channel volume)
       (set-media-volume! self channel volume))
+
+    ;;; When FRAME is reached, send an PLAYBACK-TIMER event.
+    (on set-playback-timer! (frame)
+      (call-5l-prim 'MovieSetPlaybackTimer (node-full-name self) frame))
+
+    ;;; Clear an exiting playback timer.
+    (on clear-playback-timer! ()
+      (call-5l-prim 'MovieClearPlaybackTimer (node-full-name self)))
 
     ;; END DUPLICATE CODE
 

@@ -311,7 +311,7 @@
                    [[media-finished]
                     (make <media-finished-event>)]
                    [[media-local-error media-network-error
-                                       media-network-timeout]
+                     media-network-timeout playback-timer]
                     (make <media-event>)]
                    [[media-caption]
                     (make <media-caption-event> :caption (car args))]

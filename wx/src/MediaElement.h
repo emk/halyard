@@ -39,6 +39,11 @@ class MediaElement
     bool mHaveSentMediaFinishedEvent;
     shared_ptr<FIVEL_NS CaptionList> mCaptions;
 
+    bool mHasPlaybackTimer;
+    MovieFrame mTriggerPlaybackTimerAt;
+
+    Element *GetThisAsElement();
+
 protected:
     //////////
     /// Do any idle-time processing needed by a media element, and send any
@@ -118,6 +123,24 @@ public:
     ///                 normal volume.
     ///
 	virtual void SetVolume(const std::string &inChannel, double inVolume) = 0;
+
+
+    //////////
+    /// Set up a playback timer which we be triggered at the specified
+    /// time.  LAST_FRAME may be used here.  When the timer is triggered,
+    /// it will send an event to the EventDispatcher for this element.
+    /// Each playback timer will trigger exactly once unless cleared (or
+    /// set to trigger at an invalid frame).
+    ///
+    /// It is an error to overwrite an existing playback timer.
+    ///
+    virtual void SetPlaybackTimer(MovieFrame inFrame);
+
+    //////////
+    /// Clear any playback timer which may have been installed for this
+    /// element.  Does nothing if no playback timer is active.
+    ///
+    virtual void ClearPlaybackTimer();
 };
 
 #endif // MediaElement_H

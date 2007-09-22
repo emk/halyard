@@ -152,6 +152,11 @@ public:
     bool DoEventProgressChanged(bool inIsActive, double inPortionCompleted);
 
     //////////
+    /// Dispatch a PlaybackTimer event.
+    ///
+    bool DoEventPlaybackTimer();
+
+    //////////
     /// Dispatch a MediaFinished event.
     ///
     bool DoEventMediaFinished();

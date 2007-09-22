@@ -139,6 +139,8 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(MoviePause);
 	REGISTER_5L_PRIMITIVE(MovieResume);
 	REGISTER_5L_PRIMITIVE(MovieSetTimeout);
+    REGISTER_5L_PRIMITIVE(MovieSetPlaybackTimer);
+    REGISTER_5L_PRIMITIVE(MovieClearPlaybackTimer);
     REGISTER_5L_PRIMITIVE(MoveElementTo);
 	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
 	REGISTER_5L_PRIMITIVE(NotifyExitCard);
@@ -855,6 +857,22 @@ DEFINE_5L_PRIMITIVE(MovieSetTimeout) {
 	inArgs >> SymbolName(name) >> timeout;
 	FIND_ELEMENT(MovieElement, movie, name.c_str());
     movie->SetTimeout(timeout);
+}
+
+DEFINE_5L_PRIMITIVE(MovieSetPlaybackTimer) {
+    std::string name;
+    int32 frame;
+    inArgs >> SymbolName(name) >> frame;
+    FIND_ELEMENT(MediaElement, movie, name.c_str());
+    movie->SetPlaybackTimer(frame);
+}
+
+DEFINE_5L_PRIMITIVE(MovieClearPlaybackTimer) {
+    std::string name;
+    int32 frame;
+    inArgs >> SymbolName(name);
+    FIND_ELEMENT(MediaElement, movie, name.c_str());
+    movie->ClearPlaybackTimer();
 }
 
 DEFINE_5L_PRIMITIVE(MoveElementTo) {

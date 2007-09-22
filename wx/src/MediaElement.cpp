@@ -28,9 +28,26 @@
 USING_NAMESPACE_FIVEL
 
 MediaElement::MediaElement()
-    : mEndPlaybackWasCalled(false), mHaveSentMediaFinishedEvent(false)
+    : mEndPlaybackWasCalled(false), mHaveSentMediaFinishedEvent(false),
+      mHasPlaybackTimer(false)
 {
     // Do nothing.
+}
+
+Element *MediaElement::GetThisAsElement() {
+    // We know this class is always mixed into the Element hierarchy, so
+    // get a pointer to Element that we can use to access our event
+    // dispatcher.
+    //
+    // In theory, we should use C++ virtual inheritence to make
+    // MediaElement a subclass of Element, but then classes like
+    // MovieElement would inherit from Element along two different routes.
+    // This doesn't work unless we use virtual inheritence, and virtual
+    // inheritence is notoriously broken (go see Google).  So we're just
+    // going to hack it.
+    Element *thisAsElement = dynamic_cast<Element*>(this);
+    ASSERT(thisAsElement);
+    return thisAsElement;
 }
 
 void MediaElement::AttachCaptionFile(const std::string &inCaptionFile) {
@@ -51,18 +68,7 @@ bool MediaElement::HasReachedFrame(MovieFrame inFrame) {
 }
 
 void MediaElement::MediaElementIdle() {
-    // We know this class is always mixed into the Element hierarchy, so
-    // get a pointer to Element that we can use to access our event
-    // dispatcher.
-    //
-    // In theory, we should use C++ virtual inheritence to make
-    // MediaElement a subclass of Element, but then classes like
-    // MovieElement would inherit from Element along two different routes.
-    // This doesn't work unless we use virtual inheritence, and virtual
-    // inheritence is notoriously broken (go see Google).  So we're just
-    // going to hack it.
-    Element *thisAsElement = dynamic_cast<Element*>(this);
-    ASSERT(thisAsElement);
+    Element *thisAsElement = GetThisAsElement();
 
     // Decide what frame we're on.  If we're finished with playback, assume
     // that we're on LAST_FRAME.
@@ -86,4 +92,26 @@ void MediaElement::MediaElementIdle() {
         // Send the actual event.
         thisAsElement->GetEventDispatcher()->DoEventMediaFinished();
     }
+
+    // Check up on our playback timer, if we have one.
+    if (mHasPlaybackTimer && HasReachedFrame(mTriggerPlaybackTimerAt)) {
+        mHasPlaybackTimer = false;
+        thisAsElement->GetEventDispatcher()->DoEventPlaybackTimer();
+    }
+}
+
+void MediaElement::SetPlaybackTimer(MovieFrame inFrame) {
+    if (mHasPlaybackTimer) {
+        Element *thisAsElement = GetThisAsElement();
+        THROW("Cannot set playback timer on " +
+              std::string(thisAsElement->GetName().mb_str()) +
+              " a second time unless it is cleared first.");
+    }
+
+    mHasPlaybackTimer = true;
+    mTriggerPlaybackTimerAt = inFrame;
+}
+
+void MediaElement::ClearPlaybackTimer() {
+    mHasPlaybackTimer = false;
 }
