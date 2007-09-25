@@ -717,16 +717,18 @@
     ;; affects NODE-FULL-NAME, because it's one of the few non-trivial
     ;; functions which can be called on either static or running nodes,
     ;; and possibly the only one that really cares about the difference.
-    (define node (if (node-path? node-or-path)
-                   (node-or-path .resolve-path
-                     :running? #t
-                     :if-not-found 
-                     (lambda ()
-                       (non-fatal-error
-                        (cat "NODE-FULL-NAME called on static node "
-                             node-or-path))
-                       (node-or-path .resolve-path :running? #f)))
-                   node-or-path))
+    (define (not-found-fn)
+      (error (cat "Cannot find " node-or-path "; "
+                  "If referring to a static node, please resolve it first.")))
+    (define node 
+      (cond
+       [(node-path? node-or-path)
+        (node-or-path .resolve-path :running? #t :if-not-found not-found-fn)]
+       [(node? node-or-path)
+        node-or-path]
+       [else
+        (error (cat "node-full-name: expecting node or node-path, given " 
+                    node-or-path "."))]))
     ;; Join together local names with "/" characters.
     (let [[parent (node-parent node)]]
       (if (and parent (not (root-node? parent)))

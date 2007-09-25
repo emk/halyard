@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - tryon
+  * Adding better error-handling to NODE-FULL-NAME.
+  * Adding assertion ASSERT-RAISES-MESSAGE
+  * #3954: Change made to report incorrect rect value in %CUSTOM-ELEMENT%.
+
 0.3.16 - 21 Sep 2007 - tryon, emk
 
   * #3954: Adding checks to prevent %custom-element%s from having a 

@@ -298,9 +298,11 @@
     
     ;;; Make sure that this element has a non-negative initial shape.
     (when (negative-shape? shape)
-      (set! (.shape) (rect 0 0 0 0))
-      (error (cat "%custom-element%: " (node-full-name self)
-                  " may not have a negative-sized shape: " shape ".")))
+      (let [[original-shape shape]]
+        (set! (.shape) (rect 0 0 0 0))
+        (error (cat "%custom-element%: " (node-full-name self)
+                    " may not have a negative-sized shape: " 
+                    original-shape "."))))
     
     ;; The way we want custom elements to work is that AT represents the
     ;; origin of a custom element, and the actual shape on the screen is

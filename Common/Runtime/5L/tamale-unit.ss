@@ -69,7 +69,8 @@
            setup-test teardown-test add-test-method!
            run-tests run-test-method
            define-test-case-helper define-test-case with-captured-variable
-           assert-equals assert-macro-expansion assert-raises
+           assert-equals assert-macro-expansion assert-raises 
+           assert-raises-message
            make-test-report 
            fixture-dir)
   
@@ -252,7 +253,38 @@
                  #f)
          (error (cat "Expected " 'code " to raise " 'predicate)))]))
   (define-syntax-indent assert-raises 1)
-
+  
+  ;;; Assert that CODE raises an exception matching PREDICATE with exception
+  ;;; message matching MSG.
+  ;;; NOTE: this assertion only catches exceptions of type exn:fail.
+  (define-syntax assert-raises-message
+    (syntax-rules ()
+      [(_ predicate msg code)
+       (let* [[exn #f]
+              [result         
+               (with-handlers [[exn:fail? (lambda (e) (set! exn e))]]
+                              code
+                              #f)]
+              [error-out
+               (lambda (text)
+                 (error (cat "Expected " 'code " to raise " 'predicate 
+                             " with message '" msg "'; " text)))]]
+         (cond
+          ;; If there is no exception:
+          [(not result)
+           (error-out "No error was raised.")]
+          ;; If there is an incorrect exception, or if there is the correct 
+          ;; exception, but with an incorrect message:
+          [(or (not (predicate exn))
+               (not (equals? (exn-message exn) msg)))
+           (error-out (cat "Got exception " exn " with message '" 
+                           (exn-message exn) "' instead."))]
+          ;; If there is the correct exception, with the correct message, we
+          ;; succeed:
+          [else
+           #t]))]))
+  (define-syntax-indent assert-raises-message 1)
+  
   (define (fixture-dir name)
     (build-path (current-directory) "Runtime" "5L" (cat name "-fixtures")))
   )
