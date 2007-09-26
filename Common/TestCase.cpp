@@ -235,6 +235,30 @@ BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownTest, TestCase) {
 TEST_FAILING_TEST_CASE(FailCheckThrownTest, TestFailed,
 					   "Expected an exception: 2 + 2");
 
+// *** Make sure CHECK_THROWN_MESSAGE blocks exceptions.
+BEGIN_UNREGISTERED_TEST_CASE(PassCheckThrownMessageTest, BootstrapTestCase) {
+    CHECK_THROWN_MESSAGE(std::exception, "substring",
+                         throw std::exception("Should contain substring."));
+    mTestPassed = true;
+} END_UNREGISTERED_TEST_CASE(PassCheckThrownMessageTest);
+TEST_BOOTSTRAP_TEST_CASE(PassCheckThrownMessageTest);
+
+// *** Make sure CHECK_THROWN_MESSAGE fails if the message is wrong.
+BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownMessageValueTest, TestCase) {
+    CHECK_THROWN_MESSAGE(std::exception, "substring",
+                         throw std::exception("Other message"));
+} END_UNREGISTERED_TEST_CASE(FailCheckThrownMessageValueTest);
+TEST_FAILING_TEST_CASE(FailCheckThrownMessageValueTest, TestFailed,
+					   "Expected exception message to contain "
+                       "<substring>, but got <Other message>");
+
+// *** Make sure CHECK_THROWN_MESSAGE fails if no exception occurs.
+BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownMessageTest, TestCase) {
+	CHECK_THROWN_MESSAGE(std::exception, "2 + 2", 2 + 2);
+} END_UNREGISTERED_TEST_CASE(FailCheckThrownMessageTest);
+TEST_FAILING_TEST_CASE(FailCheckThrownMessageTest, TestFailed,
+					   "Expected an exception: 2 + 2");
+
 // *** Make sure CHECK_THROWN fails if the wrong exception occurs.
 BEGIN_UNREGISTERED_TEST_CASE(CheckThrownChecksTypeTest, TestCase) {
 	CHECK_THROWN(TestFailed, THROW("unexpected exception type"));

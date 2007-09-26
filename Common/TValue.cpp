@@ -110,17 +110,17 @@ TValue::TValue(const TValueList &inValue)
 TValue::TValue(const TCallbackPtr &inValue)
     : mPtr(new TemplateImpl<TCallbackPtr>(inValue)) {}
 
-TValue::operator TNull() const { TNull r; return Get(r); }
-TValue::operator std::string() const { std::string r; return Get(r); }
-TValue::operator TSymbol() const { TSymbol r; return Get(r); }
-TValue::operator bool() const { bool r; return Get(r); }
-TValue::operator TPoint() const { TPoint r; return Get(r); }
-TValue::operator TRect() const { TRect r; return Get(r); }
+TValue::operator TNull() const { TNull r; return Get(r, "a null value"); }
+TValue::operator std::string() const { std::string r; return Get(r, "a string"); }
+TValue::operator TSymbol() const { TSymbol r; return Get(r, "a symbol"); }
+TValue::operator bool() const { bool r; return Get(r, "a Boolean value"); }
+TValue::operator TPoint() const { TPoint r; return Get(r, "a point"); }
+TValue::operator TRect() const { TRect r; return Get(r, "a rectangle"); }
 TValue::operator GraphicsTools::Color() const
-	{ GraphicsTools::Color r; return Get(r); }
-TValue::operator const TValueList &() const { TValueList r; return Get(r); }
-TValue::operator TPolygon() const { TPolygon r; return Get(r); }
-TValue::operator TPercent() const { TPercent r; return Get(r); }
+	{ GraphicsTools::Color r; return Get(r, "a color"); }
+TValue::operator const TValueList &() const { TValueList r; return Get(r, "a list"); }
+TValue::operator TPolygon() const { TPolygon r; return Get(r, "a polygon"); }
+TValue::operator TPercent() const { TPercent r; return Get(r, "a percent"); }
 
 TValue::operator int32() const { 
 	int32 r; 
@@ -128,12 +128,13 @@ TValue::operator int32() const {
 	// but only if the unint32 is less than MAX_INT32.
 	if (GetType() == TYPE_ULONG) {
 		uint32 rUInt;
-		rUInt = Get(rUInt); 
+		rUInt = Get(rUInt, "<SHOULD NOT HAPPEN: int32>"); 
 		if (rUInt <= MAX_INT32)
 			return rUInt;
-		THROW("Type mismatch fetching TValue"); 
+		THROW("Expected a signed 32-bit integer, got <" + 
+              ToDisplayValue() + ">");
 	}
-	return Get(r); 
+	return Get(r, "a signed 32-bit integer");
 }
 
 TValue::operator uint32() const { 
@@ -142,12 +143,13 @@ TValue::operator uint32() const {
 	// but only if the int32 is non-negative.
 	if (GetType() == TValue::TYPE_LONG) {
 		int32 rInt;
-		rInt = Get(rInt); 
+		rInt = Get(rInt, "<SHOULD NOT HAPPEN: uint32>");
 		if (rInt >= 0)
 			return rInt;
-		THROW("Type mismatch fetching TValue"); 
+		THROW("Expected an unsigned 32-bit integer, got <" + 
+              ToDisplayValue() + ">");
 	}
-	return Get(r); 
+	return Get(r, "an unsigned 32-bit integer");
 }
 
 TValue::operator double() const {
@@ -156,18 +158,24 @@ TValue::operator double() const {
 	// or a unint32.
 	if (GetType() == TValue::TYPE_LONG) {
 		int32 rInt;
-		return Get(rInt);
+		return Get(rInt, "<SHOULD NOT HAPPEN: double>");
 	}
 	if (GetType() == TValue::TYPE_ULONG) {
 		uint32 rUInt;
-		return Get(rUInt);
+		return Get(rUInt, "<SHOULD NOT HAPPEN: double>");
 	}
-	return Get(r); 
+	return Get(r, "a floating-point number");
+}
+
+std::string TValue::ToDisplayValue() const {
+    std::ostringstream out;
+    out << *this;
+    return out.str();
 }
 
 TCallbackPtr TValue::GetCallbackPtr() {
 	TCallbackPtr ptr;
-	return Get(ptr);
+	return Get(ptr, "a callback");
 }
 
 TValue::Type TValue::GetType() const {
@@ -344,5 +352,19 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
 	CHECK_EQ(double(TValue(-1)), -1.0); 
 	
 } END_TEST_CASE(TestTValue);
+
+BEGIN_TEST_CASE(TestTValueTypeChecks, TestCase) {
+    CHECK_THROWN_MESSAGE(std::exception, "Expected a string, got <32>",
+                         std::string(TValue(32)));
+    CHECK_THROWN_MESSAGE(std::exception, "Expected a symbol, got <hello>",
+                         TSymbol(TValue("hello")));
+    CHECK_THROWN_MESSAGE(std::exception,
+                         "Expected a signed 32-bit integer, got <2147483648>",
+                         int32(TValue(2147483648)));
+    CHECK_THROWN_MESSAGE(std::exception,
+                         "Expected an unsigned 32-bit integer, got <-1>",
+                         uint32(TValue(-1)));
+    
+} END_TEST_CASE(TestTValueTypeChecks);
 
 #endif // BUILD_TEST_CASES

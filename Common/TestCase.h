@@ -280,6 +280,25 @@ inline std::ostream &operator<<(std::ostream &out, TestRegistry::iterator i) {
     } while (0)
 
 //////////
+/// Like CHECK_THROWN, but also require the exception to contain the
+/// substring MESSAGE.
+///
+#define CHECK_THROWN_MESSAGE(TYPE, MESSAGE, CODE) \
+    do { \
+        bool caught_exception = false; \
+        try { \
+            CODE; \
+        } catch (TYPE &e) { \
+            caught_exception = true; \
+            if (std::string(e.what()).find(MESSAGE) == std::string::npos) \
+                FAIL_TEST("Expected exception message to contain <" MESSAGE \
+                          ">, but got <" + std::string(e.what()) + ">"); \
+        } \
+        if (!caught_exception) \
+            FAIL_TEST("Expected an exception: " ## #CODE); \
+    } while (0)
+
+//////////
 /// Create a function NAME to help test OP.  OP must be a binary operator,
 /// and its arguments must support operator<<.  This is macro, because
 /// MSVC doesn't like overloaded operators as template parameters.  It

@@ -262,13 +262,20 @@ private:
     /// determine what type we want to bind to T.
     ///
     template <typename T>
-    inline const T &Get(T &outVal) const {
+    inline const T &Get(T &outVal, const char *inExpectedTypeName) const {
         const TemplateImpl<T> *impl =
             dynamic_cast<const TemplateImpl<T> *>(mPtr.get());
         if (!impl)
-            THROW("Type mismatch fetching TValue");
+            THROW("Expected " + std::string(inExpectedTypeName) +
+                  ", got <" + ToDisplayValue() + ">");
         return impl->mValue;
     }
+
+    //////////
+    /// Return a string representing this TValue (used for error reporting,
+    /// etc.).
+    ///
+    std::string ToDisplayValue() const;
 
 public:
     /// Create an uninitialized TValue.
