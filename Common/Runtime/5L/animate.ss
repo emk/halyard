@@ -262,7 +262,13 @@
           (let* [[elapsed-time (- current-time start-time)]
                  [fraction (/ (* 1.0 elapsed-time) milliseconds)]]
             (draw-func fraction)
+            ;; We call IDLE, then REFRESH.  The IDLE makes sure that any
+            ;; movies and the OS have a chance to do whatever they want,
+            ;; and the REFRESH makes sure that we update the screen for
+            ;; each frame, even if the OS is slow about sending repaint
+            ;; events.
             (idle)
+            (refresh)
             (loop)))))
     (draw-func 1.0))
   (define-syntax-indent animate 1)

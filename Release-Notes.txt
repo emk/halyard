@@ -8,6 +8,8 @@ SVN - tryon, emk
   * Added CHECK_THROWN_MESSAGE to TestCase.cpp.
   * Added better error-handling to TValue so that primitives will throw
     much more descriptive error messages.
+  * Added REFRESH to ANIMATE, to eliminate stuttering caused by Windows'
+    failure to send repaint events in a timely fashion.
 
 0.3.16 - 21 Sep 2007 - tryon, emk
 
