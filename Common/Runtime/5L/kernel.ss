@@ -72,7 +72,7 @@
   ;;  in the 5L-API module.
   
   (provide call-5l-prim have-5l-prim? value->boolean idle blocking-idle
-           engine-var set-engine-var! engine-var-exists?  throw 
+           engine-var set-engine-var! engine-var-exists?
            exit-script refresh)
 
   ;; C++ can't handle very large or small integers.  Here are the
@@ -141,7 +141,8 @@
   (define (engine-var-exists? name)
     (call-5l-prim 'VariableInitialized name))
   
-  (define (throw msg)
+  ;; TODO - replace most calls to this function with calls to ERROR.
+  (define (error-with-extra-dialog msg)
     ;; TODO - More elaborate error support.
     (non-fatal-error msg)
     (error msg))
@@ -401,7 +402,8 @@
   
   (define (%kernel-die-if-callback name)
     (if *%kernel-running-callback?*
-        (throw (cat "Cannot call " name " from within callback."))))
+        (error-with-extra-dialog (cat "Cannot call " name 
+                                      " from within callback."))))
 
   (define (%kernel-wake-up-if-necessary)
     ;; We may need to finish waking up from any WAIT calls which were
@@ -653,7 +655,8 @@
   (define (find-card card-or-name
                      &opt (not-found
                            (lambda ()
-                             (throw (cat "Unknown card: " card-or-name)))))
+                             (error-with-extra-dialog (cat "Unknown card: " 
+                                                           card-or-name)))))
     (cond
      [(card? card-or-name)
       card-or-name]
@@ -665,7 +668,7 @@
      [(string? card-or-name)
       (find-card (string->symbol card-or-name) not-found)]
      [#t
-      (throw (cat "Not a card: " card-or-name))]))
+      (error-with-extra-dialog (cat "Not a card: " card-or-name))]))
 
   (define (card-exists? name)
     (define result #t)
@@ -681,6 +684,6 @@
      [(string? card-or-name)
       card-or-name]
      [#t
-      (throw (cat "Not a card: " card-or-name))]))
+      (error-with-extra-dialog (cat "Not a card: " card-or-name))]))
 
   ) ; end module

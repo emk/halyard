@@ -6,6 +6,8 @@ SVN - tryon
   * Adding form TEST-ELEMENTS to unit-testing framework.
   * The %BROWSER% element now has a SET!able location property.
   * CHECK-FILE now calls ERROR rather than THROW.
+  * #4406: THROW replaced with ERROR everywhere except kernel.ss, where it 
+    has been renamed ERROR-WITH-EXTRA-DIALOG.
   
 0.3.18 - 01 Oct 2007 - emk
 

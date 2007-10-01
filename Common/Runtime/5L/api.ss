@@ -210,7 +210,7 @@
      [(equal? flags '(bold italic)) 'bi]
      [(equal? flags '(italic bold)) 'bi]
      [else
-      (throw (cat "Unknown stylesheet flags: " flags))]))
+      (error (cat "Unknown stylesheet flags: " flags))]))
 
   ;; Helper: Given a stylesheet, register a corresponding defstyle.
   (define (register-defstyle sheet)

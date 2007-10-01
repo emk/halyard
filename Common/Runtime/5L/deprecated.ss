@@ -197,7 +197,7 @@
           (move-rect-horizontal-center-to bounds (rect-horizontal-center box))
           (rect-top box))]
         [else
-         (throw (cat "center-text: Unknown centering axis: " axis))]))
+         (error (cat "center-text: Unknown centering axis: " axis))]))
     (draw-text r stylesheet msg))
 
 
