@@ -85,18 +85,18 @@ void MediaElement::MediaElementIdle() {
     if (mCaptions && mCaptions->getCaptionIfChanged(current_time, cap))
         thisAsElement->GetEventDispatcher()->DoEventMediaCaption(cap.text());
 
+    // Check up on our playback timer, if we have one.
+    if (mHasPlaybackTimer && HasReachedFrame(mTriggerPlaybackTimerAt)) {
+        mHasPlaybackTimer = false;
+        thisAsElement->GetEventDispatcher()->DoEventPlaybackTimer();
+    }
+
     // If we've reached the end of the movie, send a MediaFinished event.
     if (!mHaveSentMediaFinishedEvent && HasReachedFrame(LAST_FRAME)) {
         mHaveSentMediaFinishedEvent = true;
 
         // Send the actual event.
         thisAsElement->GetEventDispatcher()->DoEventMediaFinished();
-    }
-
-    // Check up on our playback timer, if we have one.
-    if (mHasPlaybackTimer && HasReachedFrame(mTriggerPlaybackTimerAt)) {
-        mHasPlaybackTimer = false;
-        thisAsElement->GetEventDispatcher()->DoEventPlaybackTimer();
     }
 }
 
