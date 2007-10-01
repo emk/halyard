@@ -1,12 +1,19 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - tryon
+  * Removing tabs from tamale.el. Updating indentation for new functions.
+  * Adding syntax WITH-TEMPORARY-PARENT
+  * Adding form TEST-ELEMENTS to unit-testing framework.
+  * The %BROWSER% element now has a SET!able location property.
+  * CHECK-FILE now calls ERROR rather than THROW.
+  
 0.3.18 - 01 Oct 2007 - emk
 
   * Re-ordered PLAYBACK-TIMER and MEDIA-FINISHED events so that the
     media-finished event always comes later.  This appears to prevent
     crashes in elements that call delete in MEDIA-FINISHED, though there
     may still be related problems.
-
+    
 0.3.17 - 28 Sep 2007 - tryon, emk
 
   * Adding better error-handling to NODE-FULL-NAME.

@@ -164,6 +164,26 @@
     (foreach [meth (test-case-test-methods test-case-class)]
       (run-test-method (make test-case-class :test-method meth) report)))
   
+  (define (call-with-temporary-parent thunk)
+    (let [[elem #f]]
+      (dynamic-wind
+          (lambda ()
+            (set! elem (create %box% 
+                               :at (point 0 0) 
+                               :shape $screen-rect
+                               :name 'temporary-parent)))
+          (lambda ()
+            (with-default-element-parent elem
+              (thunk)))
+          (lambda ()
+            (delete-element elem)))))
+  
+  (define-syntax with-temporary-parent
+    (syntax-rules ()
+      [(_ body ...)
+       (call-with-temporary-parent (lambda () body ...))]))
+  (define-syntax-indent with-temporary-parent 0)
+
   ;;; Run a single test case method, handling setup, teardown and reporting.
   (define (run-test-method test-case-instance report)
     (define test-method (test-case-test-method test-case-instance))
@@ -171,11 +191,11 @@
                      (fn (exn) 
                        (report-failure! report test-case-instance exn))]]
       (dynamic-wind
-       (fn () (setup-test test-case-instance))
-       (fn ()
-         ((test-method-function test-method) test-case-instance)
-         (report-success! report))
-       (fn () (teardown-test test-case-instance)))))
+          (fn () (setup-test test-case-instance))
+          (fn ()
+            ((test-method-function test-method) test-case-instance)
+            (report-success! report))
+          (fn () (teardown-test test-case-instance)))))
   
   ;;; Define a subclass of <test-case> with setup and teardown functions,
   ;;; and zero or more test cases.
@@ -206,7 +226,7 @@
   
   ;;; Expand a SETUP, TEARDOWN, or TEST form.
   (define-syntax define-test-case-helper
-    (syntax-rules (setup teardown test)
+    (syntax-rules (setup teardown test-elements test)
       [(_ class (setup body ...))
        (defmethod (setup-test (self class))
          (call-next-method)
@@ -215,6 +235,11 @@
        (defmethod (teardown-test (self class))
          (with-captured-variable [self self] body ...)
          (call-next-method))]
+      [(_ class (test-elements title body ...))
+       (add-test-method! class title
+                         (fn (self)
+                           (with-temporary-parent
+                             (with-captured-variable [self self] body ...))))]
       [(_ class (test title body ...))
        (add-test-method! class title 
                          (fn (self)
@@ -222,6 +247,7 @@
   (define-syntax-indent define-test-case-helper 1)
   (define-syntax-indent setup 0)
   (define-syntax-indent teardown 0)
+  (define-syntax-indent test-elements 1)
   (define-syntax-indent test 1)
   
   ;;; Assert that an expression returns the expected value.

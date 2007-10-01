@@ -41,10 +41,10 @@
   ;;;======================================================================
   ;;;  Most of these are only used internally, in this file.
 
-  (provide abstract-path->native-path ensure-directory-exists)
+  (provide abstract-path->native-path make-native-path ensure-directory-exists)
 
   (define (url? path)
-    (regexp-match "^(http|ftp|rtsp|file):" path))
+    (regexp-match "^(http|ftp|rtsp|file|gopher|about):" path))
 
   ;;; Given a path of the form "foo/bar.baz", convert it to a native OS
   ;;; path string.
@@ -66,7 +66,7 @@
 
   (define (check-file path)
     (unless (or (url? path) (file-exists? path))
-      (throw (cat "No such file: " path))))
+      (error (cat "No such file: " path))))
   
   ;; XXX - This is not a well-designed function; it can only create
   ;; directories in a folder that's typically write-only (d'oh).  This
@@ -857,19 +857,32 @@
   ;;; A web browser element.
   (define-element-template %browser%
       [[path :type <string> :label "Path" :default "about:blank"]
+       ;;; WARNING: The fallback browser is not very good, and only
+       ;;; tends to work under carefully controlled circumstances.  In
+       ;;; particular, it tends to deal with errors by popping up ugly
+       ;;; WX error dialogs at the user.  It's probably suitable for
+       ;;; online help, but not much else.  Try to avoid using it if
+       ;;; you have any choice.
        [fallback? :type <boolean> :label "Use primitive fallback web browser?"
                   :default #f]]
       (%widget%)
-
+    
+    (on load-path-internal ()
+      (define native (make-native-path "HTML" path))
+      (check-file native)
+      (call-5l-prim 'BrowserLoadPage (node-full-name self) native))
+    
+    (on prop-change (name value prev veto)
+      (case name
+        [[path]
+         (send self load-path-internal)]
+        [else (call-next-handler)]))
+    
     ;;; Load the specified page in the web browser.  Can be pointed
     ;;; to either the local HTML folder or to a URL.
     (on load-page (page)
-      ;; TODO - This function should be replaced by a settable location
-      ;; property.
-      (let [[native (make-native-path "HTML" page)]]
-        (check-file native)
-        (call-5l-prim 'BrowserLoadPage (node-full-name self) native)))
-
+      (set! path page))
+    
     ;;; Return true if and only if COMMAND should be enabled.  Supported
     ;;; values are: BACK, FORWARD, RELOAD and STOP.
     (on command-enabled? (command)

@@ -33,8 +33,8 @@
 ;;;
 ;;;     ;; associate "*.ss" files with the Tamale-mode bindings.
 ;;;     (setq auto-mode-alist
-;;;	      (append '(("\\.ss\\'" . tamale-mode))
-;;;		      auto-mode-alist))
+;;;           (append '(("\\.ss\\'" . tamale-mode))
+;;;                   auto-mode-alist))
 ;;;
 ;;;
 ;;; You're set!
@@ -116,19 +116,20 @@ Tamale is a language for card-based interactive multimedia programming."
       ;; Control structures.
       (cons
        (concat
-	"(" (regexp-opt
-	     '("fn" "callback" "deferred-callback" "while" "when" "unless"
-	       "with-dc" "with-saved-text-position"
-	       "with-saved-graphic-position" "with-offset-origin"
-	       "with-default-element-parent"
-	       "with-timeout-override"
-	       "require" "set!" "and" "or" "module" "on" "send" "prop"
+        "(" (regexp-opt
+             '("fn" "callback" "deferred-callback" "while" "when" "unless"
+               "with-dc" "with-saved-text-position"
+               "with-saved-graphic-position" "with-offset-origin"
+               "with-default-element-parent"
+               "with-timeout-override"
+               "require" "set!" "and" "or" "module" "on" "send" "prop"
                "state-db-fn" "state-db-fn/rt" "match-let" "with-syntax"
                "define-goal" "define-goal*"
-               "with-errors-blocked" "test" "begin-for-syntax" "def"
+               "with-errors-blocked" "test" "test-elements"
+               "begin-for-syntax" "def"
                "with-instance" "with-handlers" "parameterize"
-               "animate" "interpolate" "after" "method") t)
-	"\\>") 1)
+               "animate" "interpolate" "after" "method" "with-handlers") t)
+        "\\>") 1)
 
       ;; Magic variables.
       (cons "\\<\\(self\\)\\>" 1)
@@ -154,19 +155,19 @@ Tamale is a language for card-based interactive multimedia programming."
       (list "(\\(define\\(\\sw+\\)\\)\\> *\\([[(]?\\)\\(\\sw+\\)\\>"
             '(1 font-lock-keyword-face)
             '(4 (cond
-		 ((match-beginning 3) 'font-lock-function-name-face)
-		 ((equal (match-beginning 2) "define-struct")
-		  'font-lock-type-face)
-		 (t 'font-lock-variable-name-face))))
+                 ((match-beginning 3) 'font-lock-function-name-face)
+                 ((equal (match-beginning 2) "define-struct")
+                  'font-lock-type-face)
+                 (t 'font-lock-variable-name-face))))
       
       ;; Cards.
       (list "(\\(\\(test-\\)?\\(group\\|sequence\\|card\\|element\\)\\)\\> *\\(\\sw+\\)\\>"
-	    '(1 font-lock-keyword-face)
+            '(1 font-lock-keyword-face)
             '(4 font-lock-function-name-face))
       
       ;; Loops.
       (list "(\\(for\\(each\\)?\\)\\> *[[(] *\\(\\sw+\\)\\>"
-	    '(1 font-lock-keyword-face)
+            '(1 font-lock-keyword-face)
             '(3 font-lock-variable-name-face))
 
       ;; Literal tabs, which make a non-portable mess of the source.
@@ -225,6 +226,7 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'define-goal-condition 'scheme-indent-function 1)
 (put 'define-goal-condition 'scheme-indent-function 2)
 (put 'test 'scheme-indent-function 1)
+(put 'test-elements 'scheme-indent-function 1)
 (put 'begin-for-syntax 'scheme-indent-function 0)
 (put 'def 'scheme-indent-function 1)
 (put 'with-instance 'scheme-indent-function 1)
@@ -240,6 +242,7 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'finally 'scheme-indent-function 0)
 (put 'quantize 'scheme-indent-function 1)
 (put 'method 'scheme-indent-function 1)
+(put 'with-handlers 'scheme-indent-function 1)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -255,13 +258,13 @@ Tamale is a language for card-based interactive multimedia programming."
 (defun tamale-struct-commands (struct-name &rest members)
   `((,(intern (concat struct-name "?")) obj => bool)
      ,@(mapcar #'(lambda (m)
-		   `(,(intern (concat struct-name "-" m))
-		     ,(intern struct-name) => ,(intern m)))
-	       members)
+                   `(,(intern (concat struct-name "-" m))
+                     ,(intern struct-name) => ,(intern m)))
+               members)
      ,@(mapcar #'(lambda (m)
-		   `(,(intern (concat "set-" struct-name "-" m "!"))
-		     ,(intern struct-name) ,(intern m)))
-	       members)))
+                   `(,(intern (concat "set-" struct-name "-" m "!"))
+                     ,(intern struct-name) ,(intern m)))
+               members)))
 
 (defconst tamale-functions
   `(;; From kernel.ss.
@@ -362,17 +365,17 @@ Tamale is a language for card-based interactive multimedia programming."
 (defun tamale-command-group (cmd start)
   ;; Return the entries in CMD between START and the next special symbol.
   (let* ((specials '(&opt &key &rest &body =>))
-	 (result '())
-	 (scan-start #'(lambda (l)
-			 (if l
-			     (if (eq (car l) start)
-				 (cdr l)
-			       (funcall scan-start (cdr l)))
-			   '())))
-	 (extract-result #'(lambda (l)
-			     (when (and l (not (memq (car l) specials)))
-			       (push (car l) result)
-			       (funcall extract-result (cdr l))))))
+         (result '())
+         (scan-start #'(lambda (l)
+                         (if l
+                             (if (eq (car l) start)
+                                 (cdr l)
+                               (funcall scan-start (cdr l)))
+                           '())))
+         (extract-result #'(lambda (l)
+                             (when (and l (not (memq (car l) specials)))
+                               (push (car l) result)
+                               (funcall extract-result (cdr l))))))
     (funcall extract-result (funcall scan-start cmd))
     (reverse result)))
 
@@ -411,33 +414,33 @@ Tamale is a language for card-based interactive multimedia programming."
 (defun tamale-command-help-message (cmd)
   "Return a help string for CMD."
   (let ((pretty #'(lambda (sep items)
-		    (if (not items)
-			""
-		      (apply #'concat sep
-			     (mapcar
-			      #'(lambda (i)
-				  (let ((name (symbol-name i)))
-				    (if (equal (elt name 0) ?&)
-					(concat " " name)
-					(concat " " (upcase name)))))
-			      items))))))
+                    (if (not items)
+                        ""
+                      (apply #'concat sep
+                             (mapcar
+                              #'(lambda (i)
+                                  (let ((name (symbol-name i)))
+                                    (if (equal (elt name 0) ?&)
+                                        (concat " " name)
+                                        (concat " " (upcase name)))))
+                              items))))))
     (if (tamale-command-macro-p cmd)
-	(concat "(" (symbol-name (tamale-command-name cmd))
-		(funcall pretty "" (tamale-command-macro-pattern cmd)) ")")
+        (concat "(" (symbol-name (tamale-command-name cmd))
+                (funcall pretty "" (tamale-command-macro-pattern cmd)) ")")
       (concat "(" (symbol-name (tamale-command-name cmd))
-	      (funcall pretty "" (tamale-command-args cmd))
-	      (funcall pretty " &opt" (tamale-command-opt-args cmd))
-	      (funcall pretty " &rest" (tamale-command-rest-args cmd))
-	      (funcall pretty " &key" (tamale-command-key-args cmd)) ")"
-	      (funcall pretty " =>" (tamale-command-results cmd))))))
+              (funcall pretty "" (tamale-command-args cmd))
+              (funcall pretty " &opt" (tamale-command-opt-args cmd))
+              (funcall pretty " &rest" (tamale-command-rest-args cmd))
+              (funcall pretty " &key" (tamale-command-key-args cmd)) ")"
+              (funcall pretty " =>" (tamale-command-results cmd))))))
 
 (defun tamale-current-function-name ()
   "Get the name of the current function."
   (save-excursion
     ;; Search back to start of the current function.
     (condition-case nil
-	(while t
-	  (backward-sexp))
+        (while t
+          (backward-sexp))
       (error nil)) 
     (let* ((start (point))
            (execute-this (skip-chars-forward tamale-id-chars))
@@ -451,20 +454,20 @@ Tamale is a language for card-based interactive multimedia programming."
   (save-excursion
     (skip-chars-backward tamale-id-chars)
     (let* ((name (intern (tamale-current-function-name)))
-	   (cmd (tamale-command-find name)))
+           (cmd (tamale-command-find name)))
       (if cmd
-	  (message "%s" (tamale-command-help-message cmd))
-	(message "Unknown Tamale command: %s" name)))))
+          (message "%s" (tamale-command-help-message cmd))
+        (message "Unknown Tamale command: %s" name)))))
 
 (defvar tamale-function-name-history-list '())
 
 (defun tamale-read-function-name (prompt)
   (completing-read prompt
-		   (mapcar #'(lambda (cmd)
-			       (cons (symbol-name (tamale-command-name cmd))
-				     nil))
-			   tamale-functions)
-		   nil t nil 'tamale-function-name-history-list))
+                   (mapcar #'(lambda (cmd)
+                               (cons (symbol-name (tamale-command-name cmd))
+                                     nil))
+                           tamale-functions)
+                   nil t nil 'tamale-function-name-history-list))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -479,9 +482,9 @@ See define-abbrev for more information."
   (define-abbrev tamale-mode-abbrev-table name expansion hook count))
 
 (tempo-define-template "draw-box-rect"
-		       '("draw-box (rect " (p . "Left: ") " "
-			 (p . "Top: ") " " (p . "Right: ") " "
-			 (p . "Bottom: ") ") " (p . "Color: ") ")"))
+                       '("draw-box (rect " (p . "Left: ") " "
+                         (p . "Top: ") " " (p . "Right: ") " "
+                         (p . "Bottom: ") ") " (p . "Color: ") ")"))
 
 (define-tamale-abbrev "dbr" "" 'tempo-template-draw-box-rect)
 
@@ -491,22 +494,22 @@ See define-abbrev for more information."
   (let ((name (tamale-read-function-name "Insert function: ")))
     (unless (equal name "")
       (let ((cmd (tamale-command-find (intern name))))
-	(if (tamale-command-macro-p cmd)
-	    (error "Insertion of Tamale macros isn't implemented")
-	  ;; Generate a template on the fly and insert it.  Why not?
-	  (tempo-define-template
-	   (concat "tamale-" name)
-	   `("(" ,name
-	     ,@(mapcar #'(lambda (a)
-			   (let ((name (upcase-initials (symbol-name a))))
-			     `(l " " (p . ,(concat name ": ")))))
-		       (tamale-command-args cmd))
-	     ")" >) nil)
-	  (tempo-insert-template (intern
-				  (concat "tempo-template-tamale-" name))
-				 nil)
-	  (message "%s" (tamale-command-help-message cmd))
-	  )))))
+        (if (tamale-command-macro-p cmd)
+            (error "Insertion of Tamale macros isn't implemented")
+          ;; Generate a template on the fly and insert it.  Why not?
+          (tempo-define-template
+           (concat "tamale-" name)
+           `("(" ,name
+             ,@(mapcar #'(lambda (a)
+                           (let ((name (upcase-initials (symbol-name a))))
+                             `(l " " (p . ,(concat name ": ")))))
+                       (tamale-command-args cmd))
+             ")" >) nil)
+          (tempo-insert-template (intern
+                                  (concat "tempo-template-tamale-" name))
+                                 nil)
+          (message "%s" (tamale-command-help-message cmd))
+          )))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -557,7 +560,7 @@ See define-abbrev for more information."
   (set (make-local-variable 'imenu-case-fold-search) t)
   (setq imenu-generic-expression tamale-imenu-generic-expression)
   (set (make-local-variable 'imenu-syntax-alist)
-	'(("+-*/.<>=?!$%_&~^:" . "w")))
+        '(("+-*/.<>=?!$%_&~^:" . "w")))
 
   ;; Install an "Index" menu.
   (imenu-add-menubar-index)
