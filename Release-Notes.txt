@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+0.3.18 - 01 Oct 2007 - emk
+
+  * Re-ordered PLAYBACK-TIMER and MEDIA-FINISHED events so that the
+    media-finished event always comes later.  This appears to prevent
+    crashes in elements that call delete in MEDIA-FINISHED, though there
+    may still be related problems.
+
 0.3.17 - 28 Sep 2007 - tryon, emk
 
   * Adding better error-handling to NODE-FULL-NAME.
@@ -10,10 +17,6 @@ When possible, please include bug numbers in the form "(bug #NNN)".
     much more descriptive error messages.
   * Added REFRESH to ANIMATE, to eliminate stuttering caused by Windows'
     failure to send repaint events in a timely fashion.
-  * Re-ordered PLAYBACK-TIMER and MEDIA-FINISHED events so that the
-    media-finished event always comes later.  This appears to prevent
-    crashes in elements that call delete in MEDIA-FINISHED, though there
-    may still be related problems.
 
 0.3.16 - 21 Sep 2007 - tryon, emk
 
