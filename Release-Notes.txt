@@ -8,6 +8,7 @@ SVN - tryon
   * CHECK-FILE now calls ERROR rather than THROW.
   * #4406: THROW replaced with ERROR everywhere except kernel.ss, where it 
     has been renamed ERROR-WITH-EXTRA-DIALOG.
+  * #4418: Making the PATH property on %GRAPHIC% settable.
   
 0.3.18 - 01 Oct 2007 - emk
 

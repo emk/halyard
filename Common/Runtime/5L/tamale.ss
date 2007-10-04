@@ -581,6 +581,15 @@
   (define-element-template %graphic%
       [[path :type <string> :label "Path"]]
       (%custom-element% :shape (measure-graphic path))
+    (define (update-shape)
+      (set! (.shape) (measure-graphic path)))
+    (on prop-change (name value prev veto)
+      (case name
+        [[path]
+         (update-shape)
+         (send self invalidate)]
+        [else (call-next-handler)]))
+    
     ;; TODO - Optimize erase-background once we can update the graphic.
     (on draw ()
       (draw-graphic (point 0 0) (prop self path))))
