@@ -9,6 +9,8 @@ SVN - tryon
   * #4406: THROW replaced with ERROR everywhere except kernel.ss, where it 
     has been renamed ERROR-WITH-EXTRA-DIALOG.
   * #4418: Making the PATH property on %GRAPHIC% settable.
+  * Adding a more descriptive error message to %CLASS%.DEFINE-MESSAGE.
+  * ASSERT-RAISES-MESSAGE now matches against a regexp instead of a string.
   
 0.3.18 - 01 Oct 2007 - emk
 

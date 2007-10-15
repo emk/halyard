@@ -447,10 +447,10 @@
             (method~ (val)
               (cond
                [(and (not writable?) (app~ .initialized?))
-                (error (cat "Read-only attr: " name))]
+                (error (cat "Read-only attr: " name " on " self))]
                [(and type (not (instance-of?~ val type)))
-                (error (cat "Attr " name " has type " type ", tried to assign "
-                            val))]
+                (error (cat "Attr " name " of " self " has type " type 
+                            ", tried to assign " val))]
                [#t
                 (set! (slot name) val)]))))
     ;;; Attribute initializers for this class.

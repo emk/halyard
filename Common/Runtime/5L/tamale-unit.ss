@@ -281,11 +281,11 @@
   (define-syntax-indent assert-raises 1)
   
   ;;; Assert that CODE raises an exception matching PREDICATE with exception
-  ;;; message matching MSG.
+  ;;; message matching MSG-REGEXP.
   ;;; NOTE: this assertion only catches exceptions of type exn:fail.
   (define-syntax assert-raises-message
     (syntax-rules ()
-      [(_ predicate msg code)
+      [(_ predicate msg-regexp code)
        (let* [[exn #f]
               [result         
                (with-handlers [[exn:fail? (lambda (e) (set! exn e))]]
@@ -294,17 +294,22 @@
               [error-out
                (lambda (text)
                  (error (cat "Expected " 'code " to raise " 'predicate 
-                             " with message '" msg "'; " text)))]]
+                             " with message matching '" msg-regexp "'; "
+                             text)))]
+              [exn-and-message
+               (lambda ()
+                 (cat "Got exception " exn " with message '" 
+                      (exn-message exn) "' instead."))]]
          (cond
           ;; If there is no exception:
           [(not result)
            (error-out "No error was raised.")]
-          ;; If there is an incorrect exception, or if there is the correct 
-          ;; exception, but with an incorrect message:
-          [(or (not (predicate exn))
-               (not (equals? (exn-message exn) msg)))
-           (error-out (cat "Got exception " exn " with message '" 
-                           (exn-message exn) "' instead."))]
+          ;; If there is an incorrect exception
+          [(not (predicate exn))
+           (error-out (cat "Incorrect exception! " (exn-and-message)))]
+          ;; If there is the correct exception, but with an incorrect message
+          [(not (regexp-match msg-regexp (exn-message exn)))
+           (error-out (cat "Incorrect message! " (exn-and-message)))]
           ;; If there is the correct exception, with the correct message, we
           ;; succeed:
           [else
