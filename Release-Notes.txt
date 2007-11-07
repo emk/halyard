@@ -1,6 +1,15 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - tryon
+SVN - tryon, emk
+
+IMPORTANT: You must manually delete all compiled/ directories when
+upgrading to this engine--we had to modify PLT's startup.ss, which breaks
+anything compiled under the old version of startup.ss.
+
+  * Support for trusting precompiled *.zo files (for use with installer on
+    Vista systems).  To use, make sure your *.zo files are fully
+    up-to-date, and create an empty file named "TRUST-PRECOMPILED" in the
+    top-level of your program directory.
   * Removing tabs from tamale.el. Updating indentation for new functions.
   * Adding syntax WITH-TEMPORARY-PARENT
   * Adding form TEST-ELEMENTS to unit-testing framework.

@@ -103,18 +103,13 @@
     ;; handles automatic compilation of *.zo files for us.
     (define compile-zo (make-compilation-manager-load/use-compiled-handler))
     
-    (define error-string 
-      (string-append "This program must be run once from an administrative\n"
-                     "account before you can use it. Please ask your\n"
-                     "system administrator for assistance."))
-
     ;; Wrap COMPILE-ZO with two calls to HEARTBEAT, just to let the operating
     ;; system know we're still alive during really long loads.
     (define (compile-zo-with-heartbeat file-path expected-module-name)
       (with-handlers 
          [[exn:fail:filesystem? (lambda (x)
                                   (debug-log (exn-message x))
-                                  (environment-error error-string))]]
+                                  (environment-error (exn-message x)))]]
         (heartbeat)
         ;;(debug-log (string-append "Loading: " (path->string file-path)))
         (let [[result (compile-zo file-path expected-module-name)]]
@@ -160,10 +155,16 @@
   ;;;
   ;;; @return #f if the load succeeds, or an error string.
   (define (load-script)
-    
-    ;; Set up an error-handling context so we can report load-time errors
-    ;; meaningfully.
-    (let ((filename "none"))
+
+    ;; Decide whether or not we should always trust (and use) compiled *.zo
+    ;; files.  This will generally only be true if our code was installed
+    ;; by a prepackaged installer.
+    (let [[always-trust-precompiled?
+           (file-exists? (build-path (current-directory) "TRUST-PRECOMPILED"))]
+          [filename "none"]]
+
+      ;; Set up an error-handling context so we can report load-time errors
+      ;; meaningfully.
       (with-handlers [[void (lambda (exn)
                               (string-append "Error while loading <" 
                                              filename
@@ -175,15 +176,35 @@
         (set! filename "bootstrap-env.ss")
         (namespace-require '(lib "bootstrap-env.ss" "5L"))
 
-        ;; Ask MzScheme to transparently compile modules to *.zo files.
-        ;; It's very important that we install this using PARAMETERIZE, and
-        ;; not as a global value, because future calls to
+        ;; If we're running in regular development mode, we want MzScheme
+        ;; to transparently compile modules to *.zo files, and recompile
+        ;; them whenever necessary.  But if we're running as part of an
+        ;; installed program, we have known-good *.zo files (and we may not
+        ;; have the privileges needed to overwrite them anyway).  This is
+        ;; particularly a problem under Vista, with the new UAC restrictions
+        ;; on the "Program Files" directory.
+        ;;
+        ;; So we check for the presence of TRUST-PRECOMPILED.  If this file
+        ;; is absent, we install our custom compilation manager and
+        ;; recompile *.zo files as needed.  If this file is absent, we just
+        ;; use the default compilation manager, and instruct it to always
+        ;; load *.zo files blindly whenever they're present.
+        ;;
+        ;; It's very important that we install CURRENT-LOAD/USE-COMPILED
+        ;; using a dynamically-scoped PARAMETERIZE, and not as a global
+        ;; value, because future calls to
         ;; MAKE-COMPILATION-MANAGER-LOAD/USE-COMPILED-HANDLER will wrap
         ;; whatever they find in this parameter, and we don't want to wind
         ;; up with nested compilation managers (a subtle performance
         ;; killer!).
-        (parameterize [[current-load/use-compiled
-                        (make-compile-zo-with-heartbeat)]]
+        (parameterize [[always-treat-zo-and-so-as-newer
+                        always-trust-precompiled?]
+                       [current-load/use-compiled
+                        (if always-trust-precompiled?
+                            ;; Load *.zo files blindly if they exist.
+                            (current-load/use-compiled)
+                            ;; Recompile *.zo files on demand.
+                            (make-compile-zo-with-heartbeat))]]
         
           ;; Manually load the kernel into our new namespace.  We need to
           ;; call (load/use-compiled ...) instead of (require ...), because
