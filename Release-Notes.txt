@@ -6,10 +6,6 @@ IMPORTANT: You must manually delete all compiled/ directories when
 upgrading to this engine--we had to modify PLT's startup.ss, which breaks
 anything compiled under the old version of startup.ss.
 
-  * Support for trusting precompiled *.zo files (for use with installer on
-    Vista systems).  To use, make sure your *.zo files are fully
-    up-to-date, and create an empty file named "TRUST-PRECOMPILED" in the
-    top-level of your program directory.
   * Removing tabs from tamale.el. Updating indentation for new functions.
   * Adding syntax WITH-TEMPORARY-PARENT
   * Adding form TEST-ELEMENTS to unit-testing framework.
@@ -20,7 +16,30 @@ anything compiled under the old version of startup.ss.
   * #4418: Making the PATH property on %GRAPHIC% settable.
   * Adding a more descriptive error message to %CLASS%.DEFINE-MESSAGE.
   * ASSERT-RAISES-MESSAGE now matches against a regexp instead of a string.
-  
+
+Better Vista support:
+
+  * Support for trusting precompiled *.zo files (for use with installer on
+    Vista systems).  To use, make sure your *.zo files are fully
+    up-to-date, and create an empty file named "TRUST-PRECOMPILED" in the
+    top-level of your program directory.
+ 
+NOT YET TESTED:
+
+  * Added a manifest to UpdateInstaller, with requireAdministrator flag
+    set.
+  * Added a CommandLine::ExecAsync function which calls ShellExececute
+    internally, so that we can use UAC privilege escalation.
+  * Removed all the DIR-WRITABLE? code. It appears to be unwise to believe
+    the return values on Vista, so I'm not going to leave it around to
+    tempt people.
+  * Moved the Updates directory into the user's script data directory,
+    where the user is guaranteed to have write privileges.
+  * We no longer attempt to copy UpdateInstaller.exe directly into program
+    files, because we're not guaranteed to have sufficient privileges.
+    Instead, we make a copy in a staging area, and let it copy itself in
+    once it has obtained the necessary privileges.
+
 0.3.18 - 01 Oct 2007 - emk
 
   * Re-ordered PLAYBACK-TIMER and MEDIA-FINISHED events so that the

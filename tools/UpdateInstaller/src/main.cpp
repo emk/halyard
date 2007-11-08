@@ -35,26 +35,13 @@ using namespace boost::filesystem;
 using boost::format;
 
 void LaunchProgram(int argc, char **argv) {
-	if (argc > 2) {
+	if (argc > 3) {
 		/* PORTABILITY - needs to be factored to work on platforms other than
-		 Windows. */
-		CommandLine cl(argc-2, argv+2);
-		STARTUPINFO si;
-		ZeroMemory( &si, sizeof(si));
-		si.cb = sizeof(si);
-		PROCESS_INFORMATION pi;
-		LPSTR command = _strdup(cl.WindowsQuotedString().c_str());
-		BOOL ret = CreateProcess(NULL, /* Application name */
-								 command, /* Command line */ 
-								 NULL, /* Process attributes */
-								 NULL, /* Thread attributes */
-								 FALSE, /* Inherit handles? */
-								 0, /* Creation Flags */
-								 NULL, /* Environment */
-								 NULL, /* Current directory */
-								 &si, /* Startup info */
-								 &pi); /* Process info */
-		if (!ret) {
+           Windows. */
+        /* TODO - Do we need to do something special to drop Vista UAC
+           privileges when running the application? */
+		CommandLine cl(argc-4, argv+4);
+        if (!CommandLine::ExecAsync(argv[3], cl)) {
 			printf("Error: Couldn't launch external process: %s\n",
 				   cl.WindowsQuotedString().c_str());
 			exit(1);
@@ -63,8 +50,8 @@ void LaunchProgram(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-	if (argc < 2) {
-		printf("Usage: UpdateInstaller path [command ...]\n");
+	if (argc < 3) {
+		printf("Usage: UpdateInstaller srcpath dstpath [command ...]\n");
 		exit(1);
 	} 
 
@@ -83,7 +70,8 @@ int main(int argc, char **argv) {
 		
 	try {
 		logger.Log("Checking if install is possible.");
-		UpdateInstaller installer = UpdateInstaller(path(argv[1], native));
+		UpdateInstaller installer = UpdateInstaller(path(argv[1], native),
+                                                    path(argv[2], native));
 		if (!installer.IsUpdatePossible()) {
 			// If we determine, safely, that updating is impossible, we should
 			// just relaunch the program. 

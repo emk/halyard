@@ -78,7 +78,7 @@ BOOST_AUTO_UNIT_TEST(test_windows_command_line_quoting) {
 }
 
 BOOST_AUTO_UNIT_TEST(test_is_update_possible) {
-	UpdateInstaller installer = UpdateInstaller(path("."));
+	UpdateInstaller installer = UpdateInstaller(path("."), path("."));
 	
 	rename(path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"), 
 		   path("Updates/pool/temp"));

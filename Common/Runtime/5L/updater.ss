@@ -3,24 +3,9 @@
 
   ;; TODO - these should probably be factored out into some sort of file-utils
   ;; library.
-  (provide dir-writeable? root-directory-writeable? delete-directory-recursive 
-           copy-recursive copy-recursive-excluding read-string-from-file)
+  (provide delete-directory-recursive copy-recursive copy-recursive-excluding
+           read-string-from-file)
   
-  ;; TODO - should probably be moved to tamale.ss, and used in 
-  ;; ensure-directory-exists. Also, is current-directory really the right way
-  ;; to get the root directory? 
-  (define (root-directory-writeable?)
-    (dir-writeable? (current-directory)))
-  
-  (define (dir-writeable? dir)
-    (define path
-      (build-path dir (cat "TEMP_PERMISSION_TEST_" (random 1000000000))))
-    (with-handlers [[exn:fail:filesystem? (lambda (exn) #f)]]
-      (define test (open-output-file path))
-      (close-output-port test)
-      (delete-file path)
-      #t))
-      
   (define (delete-directory-recursive path)
     (cond 
       [(link-exists? path) (delete-file path)]
@@ -190,9 +175,7 @@
     (second entry))
   
   (define (auto-update-possible? dir) 
-    (and (dir-writeable? dir)
-         (file-exists? 
-          (build-path dir "release.spec"))))
+    (file-exists? (build-path dir "release.spec")))
   
   (defclass <spec> ()
     url build meta-manifest)
@@ -217,10 +200,16 @@
   ;; TODO - work out dependencies between auto-update-possible and 
   ;; init-updater!, so I can make sure that updates are possible when 
   ;; I do init. 
+  ;;
+  ;; The :ROOT-DIRECTORY argument is really only useful for running test
+  ;; suites.  Note that we put Updates/ in the SCRIPT-USER-DATA-DIRECTORY,
+  ;; because that's one of the few places we're guaranteed to have write
+  ;; privileges under Windows Vista.
   (define (init-updater! &key (root-directory #f) (staging? #f))
     (define root-dir (or root-directory (current-directory)))
+    (define user-data-dir (or root-directory (script-user-data-directory)))
     (define update-dir 
-      (ensure-dir-exists-absolute (build-path root-dir "Updates")))
+      (ensure-dir-exists-absolute (build-path user-data-dir "Updates")))
     (define spec (read-spec (build-path root-dir "release.spec")))
     (set! *updater* 
           (make <updater> 
@@ -406,12 +395,28 @@
   ;; program so the installer can do its work. 
   ;; PORTABILITY - should work on non-Windows systems
   (define (apply-update)
+    (define updater-exe-path
+      (build-path (updater-update-dir *updater*) "UpdateInstaller.exe"))
+
+    ;; If we have a new update installer, make a copy with the correct name
+    ;; in UPDATER-UPDATE-DIR.  We used to just go ahead and install it into
+    ;; its final location, but that won't work under Vista, because we can't
+    ;; escalate to administrator privileges until we spawn a new process.
+    (define found-updater? #f)
     (define diffs (get-manifest-diffs))
     (foreach (entry diffs)
       (when (equal? (manifest-file entry) "UpdateInstaller.exe")
         (copy-file-force (build-path (pool-dir) (manifest-digest entry)) 
-                         (build-path (updater-root-directory *updater*) 
-                                     "UpdateInstaller.exe"))))
+                         updater-exe-path)
+        (set! found-updater? #t)))
+
+    ;; If we don't have a new update installer, copy the old one into our
+    ;; Updates directory.  This way, it's always in a constant location.
+    (unless found-updater?
+      (copy-file-force (build-path (updater-root-directory *updater*) 
+                                   "UpdateInstaller.exe")
+                       updater-exe-path))
+
     (call-5l-prim 'LaunchUpdateInstallerBeforeExiting)
     (exit-script))
   )
