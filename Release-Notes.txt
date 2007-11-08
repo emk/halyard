@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - tryon, emk
+0.3.19 - tryon, emk
 
 IMPORTANT: You must manually delete all compiled/ directories when
 upgrading to this engine--we had to modify PLT's startup.ss, which breaks

@@ -91,7 +91,9 @@ bool CommandLine::ExecAsync(const std::string &inProgram,
         ::ShellExecute(NULL, "open", inProgram.c_str(),
                        inArgs.WindowsQuotedString().c_str(), NULL, 1);
 
-    // Result codes of less than 32 are errors.
+    // Result codes of less than 32 are errors.  See
+    // http://blogs.msdn.com/oldnewthing/archive/2006/11/08/1035971.aspx
+    // for the gory details of this return value.
     return (result >= HINSTANCE(32));
 }
 
