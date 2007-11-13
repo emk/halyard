@@ -120,6 +120,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
     REGISTER_5L_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_5L_PRIMITIVE(Heartbeat);
+    REGISTER_5L_PRIMITIVE(IsVistaOrNewer);
 	REGISTER_5L_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
 	REGISTER_5L_PRIMITIVE(LoadPic);
 	REGISTER_5L_PRIMITIVE(LoadSubPic);
@@ -630,8 +631,14 @@ DEFINE_5L_PRIMITIVE(Heartbeat) {
     wxGetApp().Heartbeat();
 }
 
+DEFINE_5L_PRIMITIVE(IsVistaOrNewer) {
+    // Return true if we're running Windows Vista or newer.  We need to
+    // know this so that the updater can deal with the new security model.
+    int major, minor;
+    int family = ::wxGetOsVersion(&major, &minor);
+    ::SetPrimitiveResult(family == wxWINDOWS_NT && major >= 6);
+}
 
-//  
 
 /*---------------------------------------------------------------------
     (LOADPIC PICTURE X Y <FLAGS...>)

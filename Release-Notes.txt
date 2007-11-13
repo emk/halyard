@@ -1,5 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * Do not attempt to run updater from restricted pre-Vista accounts, but
+    do always run it on Vista.  Added back old DIR-WRITABLE? function as
+    UNSAFE-DIRECTORY-WRITEABLE?, with a warning message to be very careful
+    about using it only on non-Vista systems.
+
 0.3.19 - tryon, emk
 
 IMPORTANT: You must manually delete all compiled/ directories when
