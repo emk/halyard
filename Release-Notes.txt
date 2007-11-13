@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+0.3.20 - 13 Nov 2007 - emk
 
   * Do not attempt to run updater from restricted pre-Vista accounts, but
     do always run it on Vista.  Added back old DIR-WRITABLE? function as
