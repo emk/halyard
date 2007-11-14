@@ -1,9 +1,11 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+0.4.0 - 14 Nov 2007 - emk
 
   * Added support for signing the *.exe and *.dll files produced by the
     build process.
+  * Removed "(Development)" flag from version number.  This is now
+    a release engine.
 
 0.3.20 - 13 Nov 2007 - emk
 
