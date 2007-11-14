@@ -1,5 +1,6 @@
 # Build support.  Run 'rake --tasks' for instructions.  -*- Ruby -*-
 require 'tools/visual_studio_dot_net'
+require 'tools/code_signing'
 require 'fileutils'
 
 #==========================================================================
@@ -87,4 +88,13 @@ task :tag do |t|
   SVN_URL = 'svn+ssh://orson.hitchcock.org/var/lib/svn/main/public/5L'
   msg = "Tagging trunk as #{tag}"
   sh "svn cp -m '#{msg}' -r HEAD #{SVN_URL}/trunk #{SVN_URL}/tags/#{tag}"
+end
+
+desc "Sign *.exe and *.dll files (USB key required)"
+CodeSigning::Task.new do |t|
+  t.files = Dir['Win32/Bin/*.exe'] + Dir['Win32/Bin/*.dll']
+  t.description['Win32/Bin/UpdateInstaller.exe'] = "Update Installer"
+  t.default_description = "Tamale multimedia engine"
+  t.description_url = "http://iml.dartmouth.edu/tamale/"
+  t.key_file = 'iml_authenticode_key'
 end

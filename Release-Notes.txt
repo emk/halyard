@@ -1,5 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
+SVN - emk
+
+  * Added support for signing the *.exe and *.dll files produced by the
+    build process.
+
 0.3.20 - 13 Nov 2007 - emk
 
   * Do not attempt to run updater from restricted pre-Vista accounts, but
