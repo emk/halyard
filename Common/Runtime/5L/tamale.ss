@@ -222,7 +222,14 @@
     ;;; of a property change).  Makes sure that DRAW gets called before the
     ;;; next screen update.
     (on invalidate ()
-      (when overlay?
+      ;; XXX - See bug #4779.  We have a problem with MOUSE-ENTER and
+      ;; MOUSE-LEAVE being sent at non-idle times, which triggers
+      ;; inappropriate screen redraws.  This is especially problematic when
+      ;; an element is currently being deleted.  The NODE-STATE check below
+      ;; is an ugly workaround--it prevents most well-written
+      ;; mouse-enter/mouse-leave handlers from actually drawing anything.
+      ;; This is (hopefully) a low-impact workaround on the stable branch.
+      (when (and overlay? (memq (.node-state) '(ENTERING ACTIVE)))
         (with-dc self
           (send self erase-background)
           (send self draw))))
