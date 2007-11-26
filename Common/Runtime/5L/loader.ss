@@ -93,6 +93,29 @@
     (dynamic-require '(lib "cm.ss" "mzlib")
                      'make-compilation-manager-load/use-compiled-handler))
   
+  ;; When loading Scheme files, we need to do two things: (1) Call the
+  ;; HEARTBEAT function, so that the operating systems knows we're still
+  ;; alive, and (2) call UPDATE-SPLASH-SCREEN!, so that user knows that
+  ;; we're still alive.  So we take our regular loader (specified by the
+  ;; parameter LOAD/USE-COMPILED), and return a new function which wraps it
+  ;; in the appropriate magic.
+  (define (wrap-load/use-compiled-with-heartbeat load/use-compiled)
+    ;; Return a LOAD/USE-COMPILED handler.
+    (lambda (file-path expected-module-name)
+      (with-handlers 
+         [[exn:fail:filesystem? (lambda (x)
+                                  (debug-log (exn-message x))
+                                  (environment-error (exn-message x)))]]
+        ;; We call HEARTBEAT twice, before and after, just to be on the
+        ;; safe side.  We may have had a really specific reason for this,
+        ;; but if so, I don't remember it.
+        (heartbeat)
+        ;;(debug-log (string-append "Loading: " (path->string file-path)))
+        (let [[result (load/use-compiled file-path expected-module-name)]]
+          (heartbeat)
+          (update-splash-screen!)
+          result))))
+
   ;; There's some sort of context dependence that makes it so we can't just 
   ;; define COMPILE-ZO-WITH-HEARTBEAT out here, probably due to some paths 
   ;; not being set up that MAKE-COMPILATION-MANAGER-LOAD/USE-COMPILED-HANDLER
@@ -102,22 +125,12 @@
     ;; A suitable function to use with CURRENT-LOAD/USE-COMPILED.  This
     ;; handles automatic compilation of *.zo files for us.
     (define compile-zo (make-compilation-manager-load/use-compiled-handler))
-    
-    ;; Wrap COMPILE-ZO with two calls to HEARTBEAT, just to let the operating
-    ;; system know we're still alive during really long loads.
-    (define (compile-zo-with-heartbeat file-path expected-module-name)
-      (with-handlers 
-         [[exn:fail:filesystem? (lambda (x)
-                                  (debug-log (exn-message x))
-                                  (environment-error (exn-message x)))]]
-        (heartbeat)
-        ;;(debug-log (string-append "Loading: " (path->string file-path)))
-        (let [[result (compile-zo file-path expected-module-name)]]
-          (heartbeat)
-          (update-splash-screen!)
-          result)))
-    
-    compile-zo-with-heartbeat)
+    (wrap-load/use-compiled-with-heartbeat compile-zo))
+
+  ;; We use this loader function when we don't want to even *think* about
+  ;; recompiling *.zo files.
+  (define (make-load-with-heartbeat)
+    (wrap-load/use-compiled-with-heartbeat (current-load/use-compiled)))
 
   ;;; The default namespace into which this script was loaded.  We don't
   ;;; use it to run much except this code.
@@ -202,7 +215,7 @@
                        [current-load/use-compiled
                         (if always-trust-precompiled?
                             ;; Load *.zo files blindly if they exist.
-                            (current-load/use-compiled)
+                            (make-load-with-heartbeat)
                             ;; Recompile *.zo files on demand.
                             (make-compile-zo-with-heartbeat))]]
         

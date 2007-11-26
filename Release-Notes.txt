@@ -4,6 +4,10 @@ SVN - emk
 
   * Workaround for inappropriate calls to mouse-enter/mouse-leave: Don't
     try to redraw custom elements that don't exist (bug #4779).
+  * Restored loading progress bar when TRUST-PRECOMPILED is present (bug
+    ID: 875).
+  * Added preliminary TortiseSVN bug tracker integration (svn properties
+    only).
 
 0.4.0 - 14 Nov 2007 - emk
 
