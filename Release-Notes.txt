@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk
+SVN - emk, brian
 
   * Workaround for inappropriate calls to mouse-enter/mouse-leave: Don't
     try to redraw custom elements that don't exist (bug #4779).
@@ -8,6 +8,8 @@ SVN - emk
     ID: 875).
   * Added preliminary TortiseSVN bug tracker integration (svn properties
     only).
+  * Fix reading in of data files that are corrupted so we don't crash the
+    program and we still parse any valid lines after the corrupted line.
 
 0.4.0 - 14 Nov 2007 - emk
 
