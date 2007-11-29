@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="UpdateInstallerTest"
 	ProjectGUID="{8626B0C9-754F-46FE-8550-DEC65D300AE6}"
+	RootNamespace="UpdateInstallerTest"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
