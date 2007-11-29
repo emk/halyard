@@ -32,8 +32,17 @@
 #include "Manifest.h"
 #include "CommandLine.h"
 #include "UpdateInstaller.h"
+#include "Interface.h"
 
 using boost::filesystem::path;
+
+void UpdateProgressRange(size_t step_count) {
+	// Do nothing.
+}
+
+void UpdateProgress(size_t steps_completed) {
+	// Do nothing.
+}
 
 #define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRY) \
     do { \

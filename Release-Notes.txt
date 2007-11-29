@@ -14,6 +14,8 @@ SVN - emk, brian
     Win32 program.  There is still more work to be done here--the progress
     bar and error dialogs aren't hooked up yet--but it passes all our test
     suites (bug id: 876).
+  * Hooked up progress bar and error dialogs in UpdaterInstaller
+    (bug id: 876).
 
 0.4.0 - 14 Nov 2007 - emk
 

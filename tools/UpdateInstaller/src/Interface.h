@@ -27,7 +27,8 @@
 #define Interface_H
 
 // These functions are defined by our platform-specific GUI layer.
-extern void UpdateProgess(size_t step_count, size_t steps_completed);
+extern void UpdateProgressRange(size_t step_count);
+extern void UpdateProgress(size_t steps_completed);
 extern void ReportError(const char *message);
 
 // This function is defined in main.cpp.

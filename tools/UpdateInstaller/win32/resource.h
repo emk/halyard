@@ -9,6 +9,7 @@
 #define IDI_UPDATEINSTALLER             107
 #define IDR_MAINFRAME                   128
 #define IDC_PROGRESS1                   1000
+#define IDC_PROGRESS                    1000
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

@@ -41,6 +41,7 @@
 
 /// Our progress dialog.
 static HWND gDialog;
+static HWND gProgressBar;
 
 // Forward declarations.
 static INT_PTR CALLBACK ProgressDialogCallback(HWND, UINT, WPARAM, LPARAM);
@@ -73,6 +74,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     ::ShowWindow(gDialog, nCmdShow);
     ::UpdateWindow(gDialog);
 
+    // Look up our progress bar control.
+    gProgressBar = ::GetDlgItem(gDialog, IDC_PROGRESS);
+    if (!gProgressBar)
+        ReportWindowsError();
+
     // Break our command-line into an ordinary argv array.  Note that
     // CommandLineToArgvW is only available for Unicode characters, not for
     // Windows ANSI or MBCS strings, so we need to compile this program in
@@ -101,12 +107,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     return 0;
 }
 
-/// Update the progress bar, and process any pending Windows events.
-void UpdateProgess(size_t step_count, size_t steps_completed) {
-	UNREFERENCED_PARAMETER(step_count);
-	UNREFERENCED_PARAMETER(steps_completed);
+/// Set the number of steps required to complete the progress bar.
+void UpdateProgressRange(size_t step_count) {
+    ::SendMessage(gProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, step_count));
+}
 
-    // TODO - Update progress bar.
+/// Update the progress bar, and process any pending Windows events.
+void UpdateProgress(size_t steps_completed) {
+    // Update the progress bar.
+    ::SendMessage(gProgressBar, PBM_SETPOS, steps_completed, 0);
 
     // Process any messages in our queue, but don't block--we want to
     // return to our caller as soon as our Windows event processing is
