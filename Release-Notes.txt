@@ -1,6 +1,6 @@
 When possible, please include bug numbers in the form "(bug #NNN)".
 
-SVN - emk, brian
+0.4.1 - 30 Nov 2007 - emk, brian
 
   * Workaround for inappropriate calls to mouse-enter/mouse-leave: Don't
     try to redraw custom elements that don't exist (bug #4779).
@@ -28,7 +28,6 @@ SVN - emk, brian
     attempts to load the script, and gives a nice error message.  This
     won't help if the engine is corrupted by an update, but it will help
     with broken scripts and users who relaunch the engine too quickly.
-
 
 0.4.0 - 14 Nov 2007 - emk
 
