@@ -24,6 +24,7 @@ class UpdateInstallerTest < Test::Unit::TestCase
       File.mtime("Updates/pool/855426068ee8939df6bce2c2c4b1e7346532a133")
     sleep 2
     assert system(EXE_PATH, ".", ".")
+    assert !File.exists?("UPDATE.LCK")
     assert_exists "sub/quux.txt"
     assert_file_equals "", "sub/quux.txt"
     assert_file_equals "foo\r\n", "foo.txt"
@@ -62,8 +63,10 @@ EOF
     assert_fails_gracefully 
   end
 
-  def test_uninstall_does_nothing
+  def test_uninstall_removes_lock_file
+    File.open("UPDATE.LCK", 'w') {|f| }
     assert system(EXE_PATH, "--uninstall", ".")
+    assert !File.exists?("UPDATE.LCK")
     assert_file_equals <<EOF, "Updates/temp/log"
 Uninstall completed.\r
 EOF

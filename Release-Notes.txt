@@ -22,6 +22,8 @@ SVN - emk, brian
     (bug id: 876).
   * Bug ID: 949. Include release.spec and updater log (if they exist) in
     crash reports.
+  * Bug ID: 949. UpdateInstaller now uses lock file when modifying the
+    destination directory.
 
 0.4.0 - 14 Nov 2007 - emk
 

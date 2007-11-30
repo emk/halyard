@@ -34,6 +34,8 @@ public:
 	bool IsUpdatePossible();
 	void InstallUpdate();
 
+    static void DeleteLockFileForUninstall(const path &root);
+
 private:
 	struct CopySpec {
 		CopySpec(path inSource, path inDest) 
@@ -43,7 +45,11 @@ private:
 		bool IsCopyPossible() const;
 		void CopyOverwriting() const;
 	};
+    path mDestRoot;
 	std::vector<CopySpec> mCopies;
+
+    void LockDestinationDirectory();
+    void UnlockDestinationDirectory();
 };
 
 #endif // UpdateInstaler_H

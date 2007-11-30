@@ -36,10 +36,13 @@
 
 using namespace boost::filesystem;
 
+static const char LOCK_NAME[] = "UPDATE.LCK";
 static bool IsWriteable(const path &name);
 static void TouchFile(const path &name);
 
-UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root) {
+UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
+    : mDestRoot(dst_root)
+{
 	Manifest diff(src_root / "Updates/temp/MANIFEST-DIFF");
 
 	Manifest::EntryVector::const_iterator iter = diff.entries().begin();
@@ -76,6 +79,8 @@ bool UpdateInstaller::IsUpdatePossible() {
 }
 
 void UpdateInstaller::InstallUpdate() {
+    LockDestinationDirectory();
+
     size_t total = mCopies.size();
     UpdateProgressRange(total);
 	std::vector<CopySpec>::const_iterator copy = mCopies.begin();
@@ -85,6 +90,48 @@ void UpdateInstaller::InstallUpdate() {
 		copy->CopyOverwriting();
 	}
     UpdateProgress(total);
+
+    UnlockDestinationDirectory();
+}
+
+/// This function is called at uninstallation time to clean up any leftover
+/// lock files.  Without this, a failed update would make it effectively
+/// impossible for ordinary users to uninstall and reinstall the program.
+void UpdateInstaller::DeleteLockFileForUninstall(const path &root) {
+    path lock(root / LOCK_NAME);
+    if (exists(lock))
+        remove(lock);
+}
+
+/// Lock our destination directory.  This function actually contains a race
+/// condition, because we don't make use of automatic create/open
+/// operations.  But in practice, this is a sufficient level of robustness
+/// for dealing with the failure modes we've observed so far.  For the
+/// moment, we see this lock more as an advisory lock to improve the UI
+/// than a correctness lock.
+void UpdateInstaller::LockDestinationDirectory() {
+    // If we have an existing lock, complain.
+    path lock(mDestRoot / LOCK_NAME);
+    if (exists(lock))
+        throw std::exception("Destination directory locked by "
+                             "previous update.");
+
+    // Create the new lock file.  Race condition: If we go to sleep right
+    // here, somebody else could create a lock file in between our check
+    // above and the code below.
+    FILE *f = fopen(lock.native_file_string().c_str(), "w");
+    if (!f)
+        throw std::exception("Can't create lock file.");
+    fclose(f);
+}
+
+/// Unlock the destination directory.
+void UpdateInstaller::UnlockDestinationDirectory() {
+    path lock(mDestRoot / LOCK_NAME);
+    if (!exists(lock))
+        throw std::exception("Destination directory was unlocked "
+                             "unexpectedly.");
+    remove(lock);
 }
 
 bool UpdateInstaller::CopySpec::IsCopyPossible() const {
