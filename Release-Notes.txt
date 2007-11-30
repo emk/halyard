@@ -20,10 +20,15 @@ SVN - emk, brian
     the application under Vista (bug id: 877).
   * Fixed new UpdateInstaller project to statically link against C runtime
     (bug id: 876).
-  * Bug ID: 949. Include release.spec and updater log (if they exist) in
+  * Bug ID: 949.  Include release.spec and updater log (if they exist) in
     crash reports.
-  * Bug ID: 949. UpdateInstaller now uses lock file when modifying the
+  * Bug ID: 949.  UpdateInstaller now uses lock file when modifying the
     destination directory.
+  * Bug ID: 949.  The engine now checks for the updater lock file before it
+    attempts to load the script, and gives a nice error message.  This
+    won't help if the engine is corrupted by an update, but it will help
+    with broken scripts and users who relaunch the engine too quickly.
+
 
 0.4.0 - 14 Nov 2007 - emk
 
