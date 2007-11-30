@@ -19,7 +19,9 @@ SVN - emk, brian
   * For security and correctness reasons, the udpater no longer relaunches
     the application under Vista (bug id: 877).
   * Fixed new UpdateInstaller project to statically link against C runtime
-    (bug id: 877).
+    (bug id: 876).
+  * Bug ID: 949. Include release.spec and updater log (if they exist) in
+    crash reports.
 
 0.4.0 - 14 Nov 2007 - emk
 

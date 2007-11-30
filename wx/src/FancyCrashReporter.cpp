@@ -39,11 +39,13 @@
 #include "TVersion.h"
 #include "doc/Document.h"
 #include "doc/TamaleProgram.h"
+#include "FileSystem.h"
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "FancyCrashReporter.h"
 
 USING_NAMESPACE_FIVEL
+namespace FS = FileSystem;
 
 
 //=========================================================================
@@ -254,7 +256,23 @@ void FancyCrashReporter::BeginInterceptingCrashes() {
 
 void FancyCrashReporter::RegisterDocument(FIVEL_NS Document *inDocument) {
     // Register ourselves as a ModelView of the program object.
-    SetObject(inDocument->GetTamaleProgram());    
+    SetObject(inDocument->GetTamaleProgram());
+
+    // Try to register various document-related files with the crash
+    // reporter.  We start with our spec file, which (if it exists) contains
+    // version information.
+    FS::Path spec(FS::GetBaseDirectory().AddComponent("release.spec"));
+    if (spec.DoesExist())
+        AddDiagnosticFile(spec.ToNativePathString(), "Version information");
+
+    // We then try to find our UpdaterInstaller log, which is helpful for
+    // debugging update-related crashes.  Right now, this appears to get
+    // deleted if the updater is working correctly.
+    FS::Path data_dir(FS::GetScriptDataDirectory());
+    FS::Path temp_dir(data_dir.AddComponent("Updates").AddComponent("temp"));
+    FS::Path update_log(temp_dir.AddComponent("log"));
+    if (update_log.DoesExist())
+        AddDiagnosticFile(update_log.ToNativePathString(), "Update log");
 }
 
 void FancyCrashReporter::ObjectChanged() {
