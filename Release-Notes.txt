@@ -16,6 +16,8 @@ SVN - emk, brian
     suites (bug id: 876).
   * Hooked up progress bar and error dialogs in UpdaterInstaller
     (bug id: 876).
+  * For security and correctness reasons, the udpater no longer relaunches
+    the application under Vista (bug id: 877).
 
 0.4.0 - 14 Nov 2007 - emk
 

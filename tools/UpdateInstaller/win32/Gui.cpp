@@ -191,6 +191,29 @@ void ReportErrorInternal(LPTSTR message) {
     ::abort();
 }
 
+/// Is it safe to relaunch the application automatically after updating it?
+/// Returns false on Vista systems, where the updater is running with
+/// elevated privileges that we can't easily drop (and under certain
+/// conditions, we may actually be running in a different user account!).
+bool IsSafeToRelaunchAutomatically() {
+    // This is closely inspired by the version-checking code in
+    // http://www.tweak-uac.com/programming/VistaTools.cxx .  But really,
+    // there's only one way to do this.
+    OSVERSIONINFO info;
+    info.dwOSVersionInfoSize = sizeof(info);
+    if (!::GetVersionEx(&info))
+        ReportWindowsError();    
+    return !(info.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+             info.dwMajorVersion >= 6);
+}
+
+/// Pop up a dialog asking the user to relaunch the program.
+void AskUserToRelaunch() {
+    ::MessageBox(NULL, (_T("Your program has been successfully updated,\n")
+                        _T("and you may now run it again.")),
+                 NULL, MB_TASKMODAL | MB_OK | MB_ICONINFORMATION);
+}
+
 // Convert an LPCSTR to an LPCWSTR (stored in a std::wstring).  This
 // function can be slightly lossy under certain circumstances, so it's
 // really only appropriate for output displayed to the user.  Note that we

@@ -30,16 +30,23 @@
 #include "CommandLine.h"
 #include "UpdateInstaller.h"
 #include "LogFile.h"
+#include "Interface.h"
 
 using namespace boost::filesystem;
 using boost::format;
 
 void LaunchProgram(size_t argc, const char **argv) {
 	if (argc > 3) {
-		/* PORTABILITY - needs to be factored to work on platforms other than
-           Windows. */
-        /* TODO - Do we need to do something special to drop Vista UAC
-           privileges when running the application? */
+        // If we're running on Vista, we'll have elevated privileges, and
+        // possibly by running in a different user account.  So if it seems
+        // advisable, we ask the user to relaunch the program for us.
+        if (!IsSafeToRelaunchAutomatically()) {
+            AskUserToRelaunch();
+            return;
+        }
+
+		// PORTABILITY - needs to be factored to work on platforms other
+        // than Windows.
 		CommandLine cl(argc-4, const_cast<char**>(argv+4));
         if (!CommandLine::ExecAsync(argv[3], cl)) {
 			printf("Error: Couldn't launch external process: %s\n",
