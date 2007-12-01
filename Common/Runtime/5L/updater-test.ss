@@ -274,21 +274,24 @@
       (assert (auto-update-possible? (base-directory self)))
       (init-updater! :root-directory (base-directory self) :staging? #t)
       (set-updater-url! (update-server-url "update-server-bad-sig"))
-      (assert-raises exn:fail? (check-for-update)))
+      (assert-raises updater-security-error?
+                     (check-for-update)))
 
-    ;;(test "Update should fail if manifest has been modified"
-    ;;  (assert (auto-update-possible? (base-directory self)))
-    ;;  (init-updater! :root-directory (base-directory self) :staging? #t)
-    ;;  (set-updater-url! (update-server-url "update-server-bad-manifest"))
-    ;;  (assert (check-for-update))
-    ;;  (assert-raises exn:fail? (download-update (fn (a b) (void)))))
+    (test "Update should fail if manifest has been modified"
+      (assert (auto-update-possible? (base-directory self)))
+      (init-updater! :root-directory (base-directory self) :staging? #t)
+      (set-updater-url! (update-server-url "update-server-bad-manifest"))
+      (assert (check-for-update))
+      (assert-raises updater-security-error?
+                     (download-update (fn (a b) (void)))))
 
     ;;(test "Update should fail if file has been modified"
     ;;  (assert (auto-update-possible? (base-directory self)))
     ;;  (init-updater! :root-directory (base-directory self) :staging? #t)
     ;;  (set-updater-url! (update-server-url "update-server-bad-manifest"))
     ;;  (assert (check-for-update))
-    ;;  (assert-raises exn:fail? (download-update (fn (a b) (void)))))
+    ;;  (assert-raises updater-security-error?
+    ;;                 (download-update (fn (a b) (void)))))
 
     )
   

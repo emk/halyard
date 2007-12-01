@@ -10,6 +10,7 @@ SVN - emk
     http://xyssl.org/code/source/sha1/ .
   * Bug ID: 878.  Added SHA1-FILE function in updater.ss.
   * Bug ID: 878.  Check signature on downloaded release.spec.
+  * Bug ID: 878.  Check integrity of MANIFEST.* files.
 
 0.4.1 - 30 Nov 2007 - emk, brian
 
