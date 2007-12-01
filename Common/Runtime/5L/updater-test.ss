@@ -158,7 +158,11 @@
     (foreach (item b)
       (unless (member? item a)
         (error (cat "Couldn't find " item " in " a)))))
-  
+
+  ;; Construct a URL to one of our fake update servers.
+  (define (update-server-url name)
+    (cat "file:///" (path->string (fixture-dir "updater")) "/" name "/"))
+
   ;; TODO - add test case for update spec file having new URL. 
   (define-test-case <updater-test> () 
       [[test-directory #f]
@@ -175,9 +179,7 @@
             (copy-recursive-excluding vc-exclude 
              (build-path (fixture-dir "updater") "update")
              (test-directory self)))
-      (set! (url-prefix self) 
-            (cat "file:///" (path->string (fixture-dir "updater")) 
-                 "/update-server/")))
+      (set! (url-prefix self) (update-server-url "update-server")))
     (teardown 
       (delete-directory-recursive (test-directory self))
       (clear-updater!))
@@ -231,7 +233,8 @@
           
       (download-update (fn (a b) (push! (list a b) callback-args)))
           
-      (assert-set-equal '("release.spec" "manifests" "pool" "temp") 
+      (assert-set-equal '("release.spec" "release.spec.sig"
+                          "manifests" "pool" "temp")
                         (map path->string (directory-list download-dir)))
       ;; TODO - this is actually not optimal, since we already have a file 
       ;; that hashes to null-digest on our machine. A future optimization 
@@ -266,6 +269,27 @@
                           (1 "foo.txt") 
                           (1 "sub/quux.txt")
                           (1 "sub/quux.txt")) callback-args))
+
+    (test "Updater should check signature on *.spec file"
+      (assert (auto-update-possible? (base-directory self)))
+      (init-updater! :root-directory (base-directory self) :staging? #t)
+      (set-updater-url! (update-server-url "update-server-bad-sig"))
+      (assert-raises exn:fail? (check-for-update)))
+
+    ;;(test "Update should fail if manifest has been modified"
+    ;;  (assert (auto-update-possible? (base-directory self)))
+    ;;  (init-updater! :root-directory (base-directory self) :staging? #t)
+    ;;  (set-updater-url! (update-server-url "update-server-bad-manifest"))
+    ;;  (assert (check-for-update))
+    ;;  (assert-raises exn:fail? (download-update (fn (a b) (void)))))
+
+    ;;(test "Update should fail if file has been modified"
+    ;;  (assert (auto-update-possible? (base-directory self)))
+    ;;  (init-updater! :root-directory (base-directory self) :staging? #t)
+    ;;  (set-updater-url! (update-server-url "update-server-bad-manifest"))
+    ;;  (assert (check-for-update))
+    ;;  (assert-raises exn:fail? (download-update (fn (a b) (void)))))
+
     )
   
   (define (sig-dir)
