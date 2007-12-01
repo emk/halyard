@@ -3,6 +3,8 @@ When possible, please include bug numbers in the form "(bug #NNN)".
 SVN - emk
 
   * Bug ID: 876.  Fixed caption on "Update Installed" window.
+  * Bug ID: 878.  Added GPG-SIGNATURE-VALID? function which calls out to
+    a gpgv.exe file to perform signature validation.
 
 0.4.1 - 30 Nov 2007 - emk, brian
 

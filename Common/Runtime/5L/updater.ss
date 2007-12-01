@@ -76,6 +76,36 @@
                 (loop (string-append str last) (read-string 100)))))))
   
   ;;===========================================================================
+
+  (provide gpg-signature-valid?)
+
+  ;;; Verify the GPG signature of a file.  TRUSTED-KEYS-DIR should contain
+  ;;; a keyring named "trustedkeys.gpg", specifying what public keys should
+  ;;; be used to verify the signature.  SIGNATURE should be the path to the
+  ;;; detached digital signature, and FILE should be the path of the signed
+  ;;; file.
+  ;;;
+  ;;; Note that this function expects to find a copy of gpgv in
+  ;;; (CURRENT-DIRECTORY).
+  (define (gpg-signature-valid? trusted-keys-dir signature file)
+    (with-values
+        [[proc stdout stdin stderr]
+         ;; PORTABILITY - Windows requires the full name gpgv.exe here.
+         (subprocess #f #f #f (build-path (current-directory) "gpgv.exe")
+                     "--homedir" (path->string trusted-keys-dir)
+                     (path->string signature)
+                     (path->string file))]
+      (dynamic-wind
+       (fn () (void))
+       (fn ()
+         (subprocess-wait proc)
+         (= (subprocess-status proc) 0))
+       (fn ()
+         (close-input-port stdout)
+         (close-output-port stdin)
+         (close-input-port stderr)))))
+
+  ;;===========================================================================
   
   (provide <downloader> <mock-downloader> add-mock-url download cancel-download
            parse-manifest parse-spec-file program-release-id)
