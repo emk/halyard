@@ -1,7 +1,9 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "Bug ID:" for new FogBugz bugs.
 
-SVN - emk
+0.4.2 - 1 Dec 2007 - emk
+
+Preliminary support for digital signatures in the updater.
 
   * Bug ID: 876.  Fixed caption on "Update Installed" window.
   * Bug ID: 878.  Added GPG-SIGNATURE-VALID? function which calls out to

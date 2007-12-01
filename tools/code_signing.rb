@@ -122,7 +122,7 @@ module CodeSigning
 
         # Loop over each file we need to sign.
         for file in @files
-          puts "Singing #{file}"
+          puts "Signing #{file}"
           description = @description[file] || @default_description
           CodeSigning::sign_file(file, :key_file => key_path,
                                  :password => password,
