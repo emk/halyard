@@ -45,6 +45,7 @@ We use the following third-party libraries under the terms of the GNU
 Lesser General Public License:
 
   * PLT Scheme
+  * libs/sha1
 
 We use the following libraries under the wxWidgets Library License:
 

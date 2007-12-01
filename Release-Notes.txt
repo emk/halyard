@@ -5,6 +5,8 @@ SVN - emk
   * Bug ID: 876.  Fixed caption on "Update Installed" window.
   * Bug ID: 878.  Added GPG-SIGNATURE-VALID? function which calls out to
     a gpgv.exe file to perform signature validation.
+  * Bug ID: 878.  Added SHA1 library from
+    http://xyssl.org/code/source/sha1/ .
 
 0.4.1 - 30 Nov 2007 - emk, brian
 
