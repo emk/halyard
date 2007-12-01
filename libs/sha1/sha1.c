@@ -23,11 +23,7 @@
  *  http://www.itl.nist.gov/fipspubs/fip180-1.htm
  */
 
-#include "xyssl/config.h"
-
-#if defined(XYSSL_SHA1_C)
-
-#include "xyssl/sha1.h"
+#include "sha1.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -490,7 +486,5 @@ int sha1_self_test( int verbose )
 
     return( 0 );
 }
-
-#endif
 
 #endif

@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="Common"
 	ProjectGUID="{09D9D9F2-3933-419C-ACA6-8731BF0A4686}"
+	RootNamespace="Common"
 	>
 	<Platforms>
 		<Platform
@@ -41,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,LIBXML_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -117,7 +118,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1"
 				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -648,6 +649,29 @@
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="sha1 Files"
+			>
+			<File
+				RelativePath="..\..\..\libs\sha1\sha1.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="3"
+						BasicRuntimeChecks="0"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\sha1\sha1.h"
+				>
 			</File>
 		</Filter>
 	</Files>
