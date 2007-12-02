@@ -67,10 +67,15 @@ EOF
     File.open("UPDATE.LCK", 'w') {|f| }
     assert system(EXE_PATH, "--uninstall", ".")
     assert !File.exists?("UPDATE.LCK")
-    assert_file_equals <<EOF, "Updates/temp/log"
-Uninstall completed.\r
-EOF
+    assert !File.exists?("Updates/temp/log")
   end
+
+  # This test case passes, but only with manual interaction.  For
+  # simplicity, I've disabled it for now.  Feel free to re-enable.
+  #def test_should_not_install_to_directory_without_release_spec
+  #  FileUtils.rm "release.spec"
+  #  assert !system(EXE_PATH, ".", ".")
+  #end
 
   def assert_exists file
     assert File.exists?(file), "#{file} does not exist"

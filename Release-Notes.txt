@@ -3,10 +3,11 @@ BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
 SVN - emk
 
-  * F#876: Made DOWNLOAD-VERIFIED have the same overwrite behavior
+  * F#878: Made DOWNLOAD-VERIFIED have the same overwrite behavior
     as DOWNLOAD, to fix a bug where an aborted update would prevent future
     updates from running.
   * F#889: Disabled logging in UpdateInstaller.exe during uninstallation.
+  * F#1002: UpdateInstaller checks for bogus target directory.
 
 0.4.2 - 1 Dec 2007 - emk
 
