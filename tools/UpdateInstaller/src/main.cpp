@@ -35,13 +35,13 @@
 using namespace boost::filesystem;
 using boost::format;
 
-void LaunchProgram(size_t argc, const char **argv) {
+void LaunchProgram(bool update_succeeded, size_t argc, const char **argv) {
 	if (argc > 3) {
         // If we're running on Vista, we'll have elevated privileges, and
         // possibly by running in a different user account.  So if it seems
         // advisable, we ask the user to relaunch the program for us.
         if (!IsSafeToRelaunchAutomatically()) {
-            AskUserToRelaunch();
+            AskUserToRelaunch(update_succeeded);
             return;
         }
 
@@ -90,7 +90,7 @@ void UpdaterMain(size_t argc, const char **argv) {
             // TODO - On Vista, this will show a dialog claiming the update
             // was successful.
 			logger.Log("Update is impossible; relaunching.");
-			LaunchProgram(argc, argv);
+			LaunchProgram(false, argc, argv);
 			exit(1);
 		}
 		logger.Log("Install is possible; beginning install.");
@@ -102,6 +102,6 @@ void UpdaterMain(size_t argc, const char **argv) {
 	}
 
 	logger.Log("Update installed successfully. Relaunching.");
-	LaunchProgram(argc, argv);
+	LaunchProgram(true, argc, argv);
 }
 

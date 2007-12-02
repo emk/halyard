@@ -14,6 +14,7 @@ SVN - emk
     updater to use it.  This will keep us from storing huge files in a
     user's roaming profile.
   * F#1028: Added engine version number to update installer.
+  * F#1026: Show a more appropriate message dialog if the update fails.
 
 0.4.2 - 1 Dec 2007 - emk
 
