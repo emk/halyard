@@ -677,13 +677,15 @@ void StageFrame::ObjectChanged()
         SetIcons(icons);
 
     // Get the name of the script we're running.
-    std::string script_name = GetObject()->GetString("name").c_str();
+	TamaleProgram *prog = dynamic_cast<TamaleProgram*>(GetObject());
+    std::string script_name = prog->GetName();
+    std::string data_dir = prog->GetDataDirectoryName();
 
     // Tell our FileSystem module the script name, and make sure that
     // we actually have a script data directory.
     // TODO - Creating the directory should be handled by FileSystem,
     // but it doesn't know how, and can't see wxMkdir.
-    FileSystem::SetScriptName(script_name);
+    FileSystem::SetScriptDataDirectoryName(data_dir);
     wxString script_data_dir =
         FileSystem::GetScriptDataDirectory().ToNativePathString().c_str();
     if (!::wxDirExists(script_data_dir) && !::wxMkdir(script_data_dir))
@@ -706,7 +708,7 @@ void StageFrame::ObjectChanged()
 
 void StageFrame::ObjectDeleted()
 {
-    FileSystem::SetScriptName("");
+    FileSystem::SetScriptDataDirectoryName("");
 
     // Only reset our name and icon if we're not in runtime mode--there's
     // no point revealing our real application name or icon to the user.

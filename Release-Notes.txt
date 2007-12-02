@@ -8,6 +8,8 @@ SVN - emk
     updates from running.
   * F#889: Disabled logging in UpdateInstaller.exe during uninstallation.
   * F#1002: UpdateInstaller checks for bogus target directory.
+  * F#879: Support for changing the official name of the program without
+    changing the name of the directory where it stores preferences.
 
 0.4.2 - 1 Dec 2007 - emk
 

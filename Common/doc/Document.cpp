@@ -69,9 +69,10 @@ END_MODEL_CLASSES()
 //  Format 0: Original format.
 //  Format 1: Added dbgreporturl to TamaleProgram.
 //  Format 2: Added sourcefilecount to TamaleProgram.
+//  Format 3: Added datadirname to TamaleProgram.
 
 enum {
-    CURRENT_FORMAT = 2,
+    CURRENT_FORMAT = 3,
     COMPATIBLE_BACK_TO = 0,
     EARLIEST_READABLE = 0
 };

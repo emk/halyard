@@ -58,6 +58,8 @@ void TamaleProgram::Migrate() {
         SetString("dbgreporturl", "");
     if (!DoFind("sourcefilecount"))
         SetInteger("sourcefilecount", 1);
+    if (!DoFind("datadirname"))
+        SetString("datadirname", "");
 }
 
 /// This script name is displayed on the splash screen.
@@ -68,6 +70,15 @@ std::string TamaleProgram::GetName() {
 /// This copyright notice is displayed on the splash screen.
 std::string TamaleProgram::GetCopyright() {
     return GetString("copyright");
+}
+
+/// This script name is displayed on the splash screen.
+std::string TamaleProgram::GetDataDirectoryName() {
+    std::string datadirname(GetString("datadirname"));
+    if (!datadirname.empty())
+        return datadirname;
+    else
+        return GetString("name");
 }
 
 /// The URL to which we should submit debug reports about script errors.
