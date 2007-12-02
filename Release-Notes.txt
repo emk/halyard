@@ -1,51 +1,50 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
-BugHunt bugs, and of the form "Bug ID:" for new FogBugz bugs.
+BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
 SVN - emk
 
-  * Bug ID: 876.  Made DOWNLOAD-VERIFIED have the same overwrite behavior
+  * F#876: Made DOWNLOAD-VERIFIED have the same overwrite behavior
     as DOWNLOAD, to fix a bug where an aborted update would prevent future
     updates from running.
+  * F#889: Disabled logging in UpdateInstaller.exe during uninstallation.
 
 0.4.2 - 1 Dec 2007 - emk
 
 Preliminary support for digital signatures in the updater.
 
-  * Bug ID: 876.  Fixed caption on "Update Installed" window.
-  * Bug ID: 878.  Added GPG-SIGNATURE-VALID? function which calls out to
+  * F#876: Fixed caption on "Update Installed" window.
+  * F#878: Added GPG-SIGNATURE-VALID? function which calls out to
     a gpgv.exe file to perform signature validation.
-  * Bug ID: 878.  Added SHA1 library from
+  * F#878: Added SHA1 library from
     http://xyssl.org/code/source/sha1/ .
-  * Bug ID: 878.  Added SHA1-FILE function in updater.ss.
-  * Bug ID: 878.  Check signature on downloaded release.spec.
-  * Bug ID: 878.  Check integrity of MANIFEST.* files.
-  * Bug ID: 878.  Check integrity of content files in update.
+  * F#878: Added SHA1-FILE function in updater.ss.
+  * F#878: Check signature on downloaded release.spec.
+  * F#878: Check integrity of MANIFEST.* files.
+  * F#878: Check integrity of content files in update.
 
 0.4.1 - 30 Nov 2007 - emk, brian
 
-  * Workaround for inappropriate calls to mouse-enter/mouse-leave: Don't
-    try to redraw custom elements that don't exist (bug #4779).
-  * Restored loading progress bar when TRUST-PRECOMPILED is present (bug
-    ID: 875).
+  * #4779: Workaround for inappropriate calls to mouse-enter/mouse-leave:
+    Don't try to redraw custom elements that don't exist.
+  * F#857: Restored loading progress bar when TRUST-PRECOMPILED is present.
   * Added preliminary TortiseSVN bug tracker integration (svn properties
     only).
   * Fix reading in of data files that are corrupted so we don't crash the
     program and we still parse any valid lines after the corrupted line.
-  * Converted UpdaterInstaller from command-line program to standalone
+  * F#876: Converted UpdaterInstaller from command-line program to standalone
     Win32 program.  There is still more work to be done here--the progress
     bar and error dialogs aren't hooked up yet--but it passes all our test
-    suites (Bug ID: 876).
-  * Hooked up progress bar and error dialogs in UpdaterInstaller
-    (Bug ID: 876).
-  * For security and correctness reasons, the udpater no longer relaunches
-    the application under Vista (bug id: 877).
-  * Fixed new UpdateInstaller project to statically link against C runtime
-    (Bug ID: 876).
-  * Bug ID: 949.  Include release.spec and updater log (if they exist) in
+    suites.
+  * F#876: Hooked up progress bar and error dialogs in UpdaterInstaller.
+  * F#877: For security and correctness reasons, the udpater no longer
+    relaunches the application under Vista.
+  * F#876: Fixed new UpdateInstaller project to statically link against C
+    runtime.
+  * F#949: Include release.spec and updater log (if they exist) in
     crash reports.
-  * Bug ID: 949.  UpdateInstaller now uses lock file when modifying the
+  * F#949: UpdateInstaller now uses lock file when modifying the
     destination directory.
-  * Bug ID: 949.  The engine now checks for the updater lock file before it
+  * F#949: The engine now checks for the updater lock file before it
     attempts to load the script, and gives a nice error message.  This
     won't help if the engine is corrupted by an update, but it will help
     with broken scripts and users who relaunch the engine too quickly.
