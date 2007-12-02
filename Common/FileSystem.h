@@ -189,10 +189,24 @@ namespace FileSystem {
     void SetAppDataDirectory(const std::string &inDirectory);
 
     //////////
-    /// Set the directory to use for log files and other application
+    /// Get the directory to use for log files and other application
     /// data.
     ///
     Path GetAppDataDirectory();
+
+    //////////
+    /// Set the directory to use for large, machine-specific files which
+    /// change.  This is different from the AppDataDirectory largely
+    /// because we don't want to store huge files in people's roaming
+    /// Windows profiles.
+    ///
+    void SetAppLocalDataDirectory(const std::string &inDirectory);
+
+    //////////
+    /// Get the directory to use for large, machine-specific files which
+    /// change.
+    ///
+    Path GetAppLocalDataDirectory();
 
     //////////
     /// Set the name of the data directories we'll use for this script.
@@ -205,6 +219,12 @@ namespace FileSystem {
     /// Get the directory which we should use to store per-script data.
     ///
     Path GetScriptDataDirectory();
+
+    //////////
+    /// Get the directory which we should use to store large, per-script,
+    /// per-machine data, such as files downloaded by the updater.
+    ///
+    Path GetScriptLocalDataDirectory();
 
 	//////////
 	/// Get the directory 5L uses to store fonts.  (Eventually there

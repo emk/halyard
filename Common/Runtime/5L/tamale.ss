@@ -1463,6 +1463,7 @@
   (provide string->xml native-dialog sleep-milliseconds nap
            copy-string-to-clipboard open-in-browser
            script-user-data-directory
+           script-user-local-data-directory
            %basic-button%
            quicktime-component-version
            mark-unprocessed-events-as-stale!
@@ -1511,9 +1512,22 @@
     (call-5l-prim 'OpenInBrowser url))
 
   ;;; Returns a path to the directory which should be used to store any
-  ;;; script data files.
+  ;;; user-specific script data files.  Under Windows, this directory may
+  ;;; actually get copied between login sessions on different machines, so
+  ;;; it would be rude to store huge files here.  See
+  ;;; SCRIPT-USER-LOCAL-DATA-DIRECTORY instead for big files.
   (define (script-user-data-directory)
     (call-5l-prim 'DataPath))
+
+  ;;; Returns a path to the directory which should be used to store any
+  ;;; user-and-machine-specific script data files.  
+  (define (script-user-local-data-directory)
+    (define dir (call-5l-prim 'DataPathLocal))
+    ;; We may actually have to create this one; the engine doesn't
+    ;; necessarily do it for us.
+    (unless (directory-exists? dir)
+      (make-directory dir))
+    dir)
 
   ;;; An abstract superclass which implements typical GUI button behavior.
   (define-element-template %basic-button%

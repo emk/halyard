@@ -95,6 +95,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(CopyStringToClipboard);
     REGISTER_5L_PRIMITIVE(CursorElement);
 	REGISTER_5L_PRIMITIVE(DataPath);
+	REGISTER_5L_PRIMITIVE(DataPathLocal);
 	REGISTER_5L_PRIMITIVE(DcPop);
 	REGISTER_5L_PRIMITIVE(DcPush);
 	REGISTER_5L_PRIMITIVE(DcRect);
@@ -413,6 +414,11 @@ DEFINE_5L_PRIMITIVE(DataPath) {
     // By the time we get here, our application name will actually be
     // our script name.
     FileSystem::Path dir = FileSystem::GetScriptDataDirectory();
+    ::SetPrimitiveResult(dir.ToNativePathString());
+}
+
+DEFINE_5L_PRIMITIVE(DataPathLocal) {
+    FileSystem::Path dir = FileSystem::GetScriptLocalDataDirectory();
     ::SetPrimitiveResult(dir.ToNativePathString());
 }
 
