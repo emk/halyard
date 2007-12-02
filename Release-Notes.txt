@@ -1,6 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "Bug ID:" for new FogBugz bugs.
 
+SVN - emk
+
+  * Bug ID: 876.  Made DOWNLOAD-VERIFIED have the same overwrite behavior
+    as DOWNLOAD, to fix a bug where an aborted update would prevent future
+    updates from running.
+
 0.4.2 - 1 Dec 2007 - emk
 
 Preliminary support for digital signatures in the updater.

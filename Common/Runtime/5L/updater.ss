@@ -212,7 +212,10 @@
     (unless (equals? sha1 temp-sha1)
       (security-error url))
 
-    ;; OK, the file is good, so move it to its final location.
+    ;; OK, the file is good, so move it to its final location.  We delete
+    ;; any existing file for compatibility with DOWNLOAD.
+    (when (file-exists? path)
+      (delete-file path))
     (rename-file-or-directory temp-path path))
 
   (define (parse-manifest path)
