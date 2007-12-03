@@ -1,7 +1,7 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
-SVN - emk
+0.4.4 - 3 Dec 2007 - emk
 
   * F#1108: Fixed UpdateInstaller to launch from correct directory.
 
