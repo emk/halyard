@@ -267,7 +267,8 @@ void FancyCrashReporter::RegisterDocument(FIVEL_NS Document *inDocument) {
 
     // We then try to find our UpdaterInstaller log, which is helpful for
     // debugging update-related crashes.
-    FS::Path data_dir(FS::GetScriptDataDirectory());
+    // TODO - This path logic is duplicated in FiveL.cpp and UpdateInstaller.
+    FS::Path data_dir(FS::GetScriptLocalDataDirectory());
     FS::Path temp_dir(data_dir.AddComponent("Updates").AddComponent("temp"));
     FS::Path update_log(temp_dir.AddComponent("log"));
     if (update_log.DoesExist())
