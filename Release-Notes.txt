@@ -1,7 +1,16 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+SVN - emk
+
+  * F#1107: The UpdateInstaller now tries to cope with locked source files
+    during the update.  This is an attempt to work around some
+    occasionally-seen problems on Vista.
+
 0.4.5 - 5 Dec 2007 - emk
+
+Making this release earlier than planned, mostly so that I have new *.exe
+and *.dll files to help debug the updater problems in F#1107.
 
   * F#888: Include correct updater log in crash report.  In general,
     the patch for F#888 was pretty broken.

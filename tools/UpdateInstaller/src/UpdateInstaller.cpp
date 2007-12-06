@@ -29,6 +29,7 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 #include "boost/filesystem/convenience.hpp"
+#include "boost/filesystem/exception.hpp"
 
 #include "UpdateInstaller.h"
 #include "Manifest.h"
@@ -38,6 +39,7 @@ using namespace boost::filesystem;
 
 static const char LOCK_NAME[] = "UPDATE.LCK";
 static bool IsWriteable(const path &name);
+static void CopyFileWithRetries(const path &source, const path &dest);
 static void TouchFile(const path &name);
 
 UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
@@ -141,13 +143,18 @@ void UpdateInstaller::UnlockDestinationDirectory() {
 }
 
 bool UpdateInstaller::CopySpec::IsCopyPossible() const {
-	return exists(source) & IsWriteable(dest);
+    // Bug #1107: We've been having trouble with mysterious locks on our
+    // source files, on at least one machine.  In an effort to avoid this,
+    // we're experimentally adding a "IsWriteable(source)" to this
+    // condition, in hopes of detecting any such locks early enough to
+    // abort.
+	return exists(source) & IsWriteable(source) && IsWriteable(dest);
 }
 
 void UpdateInstaller::CopySpec::CopyOverwriting() const {
 	if (exists(dest)) 
 		remove(dest);
-	copy_file(source, dest);
+	CopyFileWithRetries(source, dest);
 	TouchFile(dest);
 }
 
@@ -167,6 +174,34 @@ bool IsWriteable(const path &name) {
 	}
 
 	return true;
+}
+
+/// Copy a file, retrying several times if the copy fails.
+void CopyFileWithRetries(const path &source, const path &dest) {
+    // Bug #1107: We've been having trouble with mysterious locks on our
+    // source files, on at least one machine.  In an effort to avoid this,
+    // we try to copy files to their final destination repeatedly before
+    // giving up.
+    //
+    // Since a failed copy_file will leave the program in an unusable and
+    // corrupted state, we try several times before giving up, just in case
+    // any failures are transient.  Note that we use a 1-based loop here
+    // for clarity in the 'catch' statement.
+    size_t max_retries = 5;
+    bool succeeded = false;
+    for (size_t i = 1; !succeeded && i <= max_retries; ++i) {
+        try {
+            copy_file(source, dest);
+            succeeded = true;
+        } catch (filesystem_error &) {
+            // If we've exhausted our last retry, then rethrow this error.
+            // Otherwise, sleep and try again.
+            if (i == max_retries)
+                throw;
+            else
+                Sleep(500);
+        }
+    }
 }
 
 void TouchFile(const path &name) {
