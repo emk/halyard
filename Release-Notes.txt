@@ -1,7 +1,7 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
-SVN - emk
+0.4.6 - 6 Dec 2007 - emk
 
   * F#1107: The UpdateInstaller now tries to cope with locked source files
     during the update.  This is an attempt to work around some
