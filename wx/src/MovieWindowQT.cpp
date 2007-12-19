@@ -130,6 +130,10 @@ MovieFrame MovieWindowQT::GetFrame()
 	}
 }
 
+bool MovieWindowQT::IsReadyToHandleOwnDrawing() const {
+    return (mMovie && mMovie->IsReadyToHandleOwnDrawing());
+}
+
 bool MovieWindowQT::IsRemoteMovie() {
     return mIsRemote;
 }

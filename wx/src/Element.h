@@ -168,6 +168,21 @@ public:
 	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect) {}
 
     //////////
+    /// When we redraw the Stage, we want to exclude certain elements
+    /// (generally Widgets) from the redraw.  This helps prevent accidental
+    /// redraws *over* playing movies or native OS widgets, which is
+    /// helpful, because such redraws are generally very ugly.
+    ///
+    /// Note that this function will only be called if IsShown returns
+    /// true.
+    ///
+    /// \param ioRegion The current clipping region.  Use Subtract to remove
+    ///    areas that shouldn't be drawn.
+    /// \return Return true if clipping was applied, and false if ioRegion
+    ///    was left alone.
+    virtual bool ApplyClippingToStage(wxRegion &ioRegion) { return false; }
+
+    //////////
     /// Get the accessibility information for this element, or NULL, if
     /// it has no accessibility information.
     ///

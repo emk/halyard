@@ -54,6 +54,7 @@ public:
     virtual bool WantsCursor() const;
 
     virtual void Idle();
+    virtual bool ApplyClippingToStage(wxRegion &ioRegion);
 
 	// Note: Some of these methods may not be happy if the underlying movie
 	// code does not like to be paused.

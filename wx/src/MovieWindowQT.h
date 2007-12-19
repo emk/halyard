@@ -82,6 +82,12 @@ public:
     /// Returns true if the movie is being streamed over a network.
     ///
     virtual bool IsRemoteMovie();
+    
+    //////////
+    /// Returns true if this movie has loaded enough data to make
+    /// intelligent decisions about what to paint on the screen.
+    ///
+    virtual bool IsReadyToHandleOwnDrawing() const;
 
     //////////
     /// Returns true if the movie had an error of some sort.

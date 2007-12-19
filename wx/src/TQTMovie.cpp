@@ -359,6 +359,8 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	// we care about).
 	if (!(mOptions & kAudioOnly))
 	{
+        // See IsReadyToHandleOwnDrawing(), below, which needs to start
+        // returning true as soon as we set up our new GWorld.
 		::SetMovieGWorld(mMovie, mPort, NULL);
 		CHECK_MAC_ERROR(::GetMoviesError());
 	}
@@ -425,6 +427,18 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
 	UpdateMovieState(MOVIE_STARTED);
     if (!mShouldPauseWhenStarted)
         DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
+}
+
+bool TQTMovie::IsReadyToHandleOwnDrawing() const {
+    // Until we have actual movie data, it's better to let the Stage handle
+    // any drawing calls, because it knows what background lies beneath our
+    // movie.
+    //
+    // We're ready to handle our own drawing as soon as we make our final
+    // call to SetMovieGWorld.  This currently happens in Start(...),
+    // above, so we take advantage of Start()'s transition from MOVIE_READY
+    // to MOVIE_STARTED to detect the correct time to return true.
+    return IsStarted();
 }
 
 void TQTMovie::DivertTextTrackToCaptions() {

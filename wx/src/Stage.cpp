@@ -97,6 +97,10 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     // repainting of this window with the wrong options.  (Theoretically,
     // if we set wxBG_STYLE_CUSTOM, we don't need to override
     // EVT_ERASE_BACKGROUND and throw away the message.)
+    //
+    // Note that we *can't* use use wxCLIP_CHILDREN here, because some of
+    // our children (in particular, movies) *need* to be overdrawn until
+    // they're ready to draw themselves.
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetBackgroundColour(STAGE_COLOR);
     Create(inParent, -1, wxDefaultPosition, inStageSize);
@@ -717,6 +721,27 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
 
 void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
 {
+    // Clip our heavyweight elements, so that we don't attempt to redraw
+    // the stage over movies or edit boxes.  Note that we don't use
+    // wxCLIP_CHILDREN here, because some of our children (particularly
+    // movies) *need* to be overdrawn until they're ready to draw
+    // themselves.
+    bool need_clipping = false;
+    wxRegion clip_to(wxRect(wxPoint(0, 0), GetSize()));
+    ElementCollection::iterator i = mElements.begin();
+	for (; i != mElements.end(); ++i)
+        if ((*i)->IsShown() && (*i)->ApplyClippingToStage(clip_to))
+            need_clipping = true;
+
+    // If we actually made any changes to our clipping region, apply it.
+    // The SetClippingRegion function actually calculates the intersection
+    // of the old clipping region and the new one, and uses _that_.
+    // (Remember, we get a new wxDC every time we need to repaint, and the
+    // operating system may attempt to set up a reasonable clipping region
+    // for us.)
+    if (need_clipping)
+        inDC.SetClippingRegion(clip_to);
+
     // Blit our offscreen pixmap to the screen.
     {
         wxMemoryDC srcDC;
@@ -1020,8 +1045,6 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 
 	// Draw our offscreen buffer to the screen, and mark that portion of
 	// the screen as updated.
-    // XXX - This may overwrite any Widget objects on our stage.  We need
-    // to use something like wxCLIP_CHILDREN if we can find it.
 	{
 		wxClientDC client_dc(this);
 		PaintStage(client_dc, mRectsToRefresh);

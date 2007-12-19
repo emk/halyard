@@ -1,6 +1,12 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+SVN - emk, brian
+
+  * F#1145: We added support for clipping around movies and other
+    heavyweight elements during Stage redraws.  We still haven't fixed the
+    transition code in Stage::RefreshStage, which needs a similar fix.
+
 0.4.6 - 6 Dec 2007 - emk
 
   * F#1107: The UpdateInstaller now tries to cope with locked source files

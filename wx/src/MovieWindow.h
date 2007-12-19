@@ -95,6 +95,12 @@ public:
     virtual bool IsRemoteMovie() { return false; }
 
     //////////
+    /// Returns true if this movie has loaded enough data to make
+    /// intelligent decisions about what to paint on the screen.
+    ///
+    virtual bool IsReadyToHandleOwnDrawing() const { return true; }
+
+    //////////
     /// Returns true if the movie had an error of some sort.
     ///
     virtual bool IsBroken() { return false; }

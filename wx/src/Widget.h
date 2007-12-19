@@ -108,6 +108,12 @@ public:
 	virtual void SetFocus();
 
     //////////
+    /// Remove the bounding rectangle of this widget from ioRegion, and
+    /// return true to show that we made a change.
+    ///
+    virtual bool ApplyClippingToStage(wxRegion &ioRegion);
+
+    //////////
     /// Get the accessibility information for this element.
     ///    
     virtual wxAccessible *GetAccessible();

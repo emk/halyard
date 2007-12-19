@@ -100,6 +100,13 @@ void Widget::SetFocus() {
     mWindow->SetFocus();
 }
 
+bool Widget::ApplyClippingToStage(wxRegion &ioRegion) {
+    ASSERT(IsShown());
+    if (!ioRegion.Subtract(this->GetRect()))
+        gLog.FatalError("Cannot update clipping region");
+    return true;
+}
+
 wxAccessible *Widget::GetAccessible() {
     return mWindow->GetAccessible();
 }

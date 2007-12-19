@@ -104,6 +104,26 @@ void MovieElement::Idle() {
     }
 }
 
+bool MovieElement::ApplyClippingToStage(wxRegion &ioRegion) {
+    // If mMovieWindow has already loaded some actual movie data, then it
+    // knows what to paint on the screen.  If not, then we actually want
+    // Stage::PaintStage to draw *over* this element, as if it wasn't even
+    // here.
+    //
+    // Our goal is to have a seamless transition from the stage background
+    // color/graphic to the playing movie, without any intermediate
+    // repaints caused by an movie widget with no movie data (and hence, no
+    // clue about what it should actually paint).
+    //
+    // Yes, this is a particularly nasty attempt to hand-simulate a
+    // transparent wxWindow.  And this is also why the Stage can't just use
+    // wxCLIP_CHILDEN--sometimes, certain children *want* to be overdrawn.
+    if (mMovieWindow->IsReadyToHandleOwnDrawing())
+        return Widget::ApplyClippingToStage(ioRegion);
+    else
+        return false;
+}
+
 bool MovieElement::IsLooping()
 {
     return mMovieWindow->IsLooping();

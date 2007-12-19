@@ -308,21 +308,30 @@ public:
 	///
 	void Start(PlaybackOptions inOptions, Point inPosition);
 
+    //////////
+    /// Until we actually load some movie data, we don't know what kind of
+    /// background we should paint underneath our movie--white? black? a
+    /// graphic?--so it's better to let other, more knowledgable subsystems
+    /// handle repainting for us.  But once we have movie data, we want to
+    /// handle all our own drawing.
+    ///
+    bool IsReadyToHandleOwnDrawing() const;
+
 	//////////
 	/// Did a problem occur either loading or playing this movie?  If
 	/// this function returns true, the object is essentially scrap.
 	///
-	bool IsBroken() throw () { return mState == MOVIE_BROKEN; }
+	bool IsBroken() const throw () { return mState == MOVIE_BROKEN; }
 
 	//////////
 	/// Is the movie ready to play?
 	/// 
-	bool IsReady() throw () { return mState == MOVIE_READY; }
+	bool IsReady() const throw () { return mState == MOVIE_READY; }
 
 	//////////
 	/// Has the movie been started?
 	///
-	bool IsStarted() throw () { return mState == MOVIE_STARTED; }
+	bool IsStarted() const throw () { return mState == MOVIE_STARTED; }
 
 	//////////
 	/// Is the movie done playing?
