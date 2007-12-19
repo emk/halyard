@@ -231,6 +231,12 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	void ValidateStage();
 
 	//////////
+	/// Set up clipping regions on a DC to make sure that we don't try
+	/// to overdraw any heavyweight elements.
+	///
+	void ClipElementsThatDrawThemselves(wxDC &inDC);
+
+	//////////
 	/// Repaint the stage.
 	///
 	void PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion);

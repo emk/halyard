@@ -719,7 +719,7 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
     PaintStage(screen_dc, GetUpdateRegion());
 }
 
-void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
+void Stage::ClipElementsThatDrawThemselves(wxDC &inDC) 
 {
     // Clip our heavyweight elements, so that we don't attempt to redraw
     // the stage over movies or edit boxes.  Note that we don't use
@@ -741,6 +741,12 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
     // for us.)
     if (need_clipping)
         inDC.SetClippingRegion(clip_to);
+}
+
+void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
+{
+	// Make sure we don't overdraw any heavyweight elements.
+	ClipElementsThatDrawThemselves(inDC);
 
     // Blit our offscreen pixmap to the screen.
     {
@@ -1018,6 +1024,7 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 	{
 		// Attempt to get a copy of whatever is on the screen.
 		wxClientDC client_dc(this);
+
 		wxBitmap before(mStageSize.GetWidth(), mStageSize.GetHeight(), 24);
 		bool have_before;
 		{
@@ -1035,6 +1042,9 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
             // Calculate a single dirty rectangle for the transition.
             wxRect dirty = mRectsToRefresh.GetBounds();
             dirty.Intersect(wxRect(wxPoint(0, 0), mStageSize));
+
+			// Make sure we don't overdraw any heavyweight elements.
+			ClipElementsThatDrawThemselves(client_dc);
 
             // Run the transition itself.
 			TransitionResources r(client_dc, before, GetCompositingPixmap(),

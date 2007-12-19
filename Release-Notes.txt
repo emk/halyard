@@ -4,8 +4,7 @@ BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 SVN - emk, brian
 
   * F#1145: We added support for clipping around movies and other
-    heavyweight elements during Stage redraws.  We still haven't fixed the
-    transition code in Stage::RefreshStage, which needs a similar fix.
+    heavyweight elements during Stage redraws, and during transitions.
 
 0.4.6 - 6 Dec 2007 - emk
 
