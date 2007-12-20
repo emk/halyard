@@ -1,7 +1,7 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
-SVN - emk, brian
+0.4.7 - 20 Dec 2007 - emk, brian
 
   * F#1145: We added support for clipping around movies and other
     heavyweight elements during Stage redraws, and during transitions.
