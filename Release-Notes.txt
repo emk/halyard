@@ -5,6 +5,9 @@ SVN - emk, brian
 
   * F#1145: We added support for clipping around movies and other
     heavyweight elements during Stage redraws, and during transitions.
+  * F#940: Turn on wxCLIP_CHILDREN for StageBackground so we don't 
+    redraw the background color before redrawing the screen, which 
+    causes black flashes in full screen mode.
 
 0.4.6 - 6 Dec 2007 - emk
 

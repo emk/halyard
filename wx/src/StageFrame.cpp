@@ -82,9 +82,16 @@ END_EVENT_TABLE()
 
 StageBackground::StageBackground(StageFrame *inStageFrame)
 	: wxSashLayoutWindow(inStageFrame, -1, wxDefaultPosition, wxDefaultSize,
-						 wxNO_BORDER),
+						 wxNO_BORDER | wxCLIP_CHILDREN),
 	  mStageFrame(inStageFrame), mStage(NULL)
 {
+    // PORTABILITY: We setup wxCLIP_CHILDREN to avoid having our
+    // background color drawn on the screen before our Stage and
+    // QuickTime movies manage to redraw.  According to the wxWidgets
+    // manual, wxCLIP_CHILDREN only works on Windows, though there is
+    // some evidence that certain other platforms support it as well.
+    // If we do a port to another platform, we'll need to revisit these
+    // clipping issues.
 	if (mStageFrame->IsFullScreen())
 		SetBackgroundColour(STAGE_BACKGROUND_COLOR);
 	else
