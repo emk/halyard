@@ -613,7 +613,7 @@ DEFINE_5L_PRIMITIVE(GeigerSynth) {
 	double loop_cps, volume;
 	uint32 buffer_size;
 
-	inArgs >> name >> SymbolName(state_path) >> chirp_location
+	inArgs >> SymbolName(name) >> SymbolName(state_path) >> chirp_location
            >> volume >> buffer_size;
 
     GeigerSynthElement *element =
@@ -756,14 +756,14 @@ DEFINE_5L_PRIMITIVE(MeasurePic) {
 
 DEFINE_5L_PRIMITIVE(NotifyEnterCard) {
 	std::string name;
-	inArgs >> name;
+	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->NotifyEnterCard(name.c_str());
 	::SkipPrimitiveLogging();
 }
 
 DEFINE_5L_PRIMITIVE(NotifyExitCard) {
 	std::string name;
-	inArgs >> name;
+	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->NotifyExitCard();
 	::SkipPrimitiveLogging();
 }
@@ -926,8 +926,8 @@ DEFINE_5L_PRIMITIVE(Overlay) {
 	TCallbackPtr dispatcher;
 	bool is_trans, are_trans_areas_clickable;
 	
-	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor >> is_trans
-           >> are_trans_areas_clickable;
+	inArgs >> SymbolName(name) >> bounds >> dispatcher >> SymbolName(cursor)
+           >> is_trans >> are_trans_areas_clickable;
     Stage *stage = wxGetApp().GetStage();
 	R(new Overlay(stage, name.c_str(), TToWxRect(bounds), dispatcher,
                   cursor, is_trans, are_trans_areas_clickable));
@@ -949,7 +949,7 @@ DEFINE_5L_PRIMITIVE(OverlayAnimated) {
     bool is_trans;
 	TValue graphics;
 	
-	inArgs >> SymbolName(name) >> bounds >> dispatcher >> cursor
+	inArgs >> SymbolName(name) >> bounds >> dispatcher >> SymbolName(cursor)
            >> is_trans >> SymbolName(state_path) >> graphics;
     Stage *stage = wxGetApp().GetStage();
 	R(new AnimatedOverlay(stage, name.c_str(), TToWxRect(bounds), dispatcher, 
@@ -1072,7 +1072,7 @@ DEFINE_5L_PRIMITIVE(Zone) {
 	TPolygon poly;
 	TCallbackPtr dispatcher;
 	
-	inArgs >> SymbolName(name) >> poly >> dispatcher >> cursor;
+	inArgs >> SymbolName(name) >> poly >> dispatcher >> SymbolName(cursor);
 	R(new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher, cursor));
 }
 

@@ -62,14 +62,6 @@ std::string TArgumentList::EndLog()
 
 std::string TArgumentList::GetStringArg() {
 	TValue arg = GetNextArg(); 
-
-	if(arg.GetType() == TValue::TYPE_SYMBOL) {
-		gDebugLog.Caution("Symbol '%s passed as string argument.",
-						  TSymbol(arg).GetName().c_str());
-		
-		return TSymbol(arg).GetName();
-	}
-	
 	return std::string(arg);
 }
 
