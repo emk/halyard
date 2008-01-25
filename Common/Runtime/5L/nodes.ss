@@ -646,6 +646,7 @@
       (eq? (.node-state) 'ACTIVE))
 
     (def (to-string)
+      (check-for-initialization self 'to-string)
       (cat "#<inst " (node-full-name self) ">"))
 
     (def (register)

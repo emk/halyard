@@ -18,6 +18,9 @@
   (define (print-ruby-object obj port write?)
     (if *ruby-object-printer*
       (*ruby-object-printer* obj port write?)
+      ;; TODO - I'm not sure that it's always safe to try to CAT the return
+      ;; value of ruby-object-class at this code--it might recurse
+      ;; infinitely depending on where we are in the bootstrap process.
       (write-string (cat "#<" (ruby-object-klass obj) " ???>") port)))
 
   ;; Internal implementation of Ruby objects.  We use
@@ -305,6 +308,18 @@
   ;;  Standard Methods
   ;;=======================================================================
 
+  (provide check-for-initialization safe-to-string)
+
+  ;;; Check that OBJ is properly initialized.  METHOD-NAME should be the
+  ;;; name of our called.
+  (define (check-for-initialization obj method-name)
+    (unless (app~ obj .initialized?)
+      (let [[msg (cat "Called " method-name " on uninitialized object")]]
+        ;; If we're in an inifinitely-recursive error loop, NON-FATAL-ERROR
+        ;; will at least make sure we see an error dialog.
+        (non-fatal-error msg)
+        (error msg))))
+    
   (with-instance %object%
     ;;; The class of this object.
     (def (class)
@@ -327,6 +342,7 @@
     ;;; Return a string that should be used as the print representation of
     ;;; this object.
     (def (to-string)
+      (check-for-initialization self 'to-string)
       (cat "#<" (ruby-class-name (app~ .class)) ">"))
     ;;; Initialize a newly-created instance.
     (def (initialize &rest keys)
@@ -390,11 +406,33 @@
       )
     )
 
+  ;;; We frequently call .to-string from error-handling code.  So if
+  ;;; .to-string fails, there's a real danger of infinitely recursive
+  ;;; errors.  This, in turn, leads to stack overflow.  The SAFE-TO-STRING
+  ;;; function attempts to avoid all known error cases.  See case 963 for
+  ;;; an example of why we need this.
+  (define (safe-to-string obj)
+    (define (class-name)
+      ;; Brian is feeling very paranoid here.
+      (if (and (ruby-object? obj)
+               (ruby-class? (ruby-object-klass obj)))
+        (ruby-class-name (ruby-object-klass obj))
+        "not-a-well-formed-ruby-object???"))
+    (with-handlers [[exn:fail?
+                     (lambda (exn)
+                       (cat "#<" (class-name) " (to-string error: "
+                            (exn-message exn) ")>"))]]
+      (cond
+       [(not (app~ obj .initialized?))
+        (cat "#<" (class-name) " uninitialized>")]
+       [else
+        (app~ obj .to-string)])))
+
   ;;; Now that our printing machinery is all set up, it should be safe to
   ;;; let Scheme know about it.  If we install this any earlier, we won't
   ;;; be able to format errors without crashing.
   (define (real-print-ruby-object obj port write?)
-    (write-string (app~ obj .to-string) port))
+    (write-string (safe-to-string obj) port))
   (set! *ruby-object-printer* real-print-ruby-object)
 
   (with-instance %class%
@@ -483,6 +521,7 @@
       (set! (ruby-object-initialized? obj) #t)
       obj)
     (def (to-string)
+      (check-for-initialization self 'to-string)
       (cat (ruby-class-name self)))
 
     ;;; And now, for our metaclass.

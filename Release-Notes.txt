@@ -1,11 +1,14 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
-SVN - tryon
+SVN - tryon, emk, brian
 
   * F#1341: Cleaning up caution statements to Debug.log by correcting types on
     several primitives.  String arguments passed in as symbols will now throw
     an error.
+  * F#963: Fixed infinite-recursion in to-string when reporting an
+    "unexpected node property initializer" message.  Also added some other
+    protective code.
 
 0.4.7 - 20 Dec 2007 - emk, brian
 
