@@ -9,6 +9,8 @@ SVN - tryon, emk, brian
   * F#963: Fixed infinite-recursion in to-string when reporting an
     "unexpected node property initializer" message.  Also added some other
     protective code.
+  * F#1390: Implemented .SEAL-METHOD! and .UNSEAL-METHOD!, which are used
+    to prevent accidental overriding of PROP values.
 
 0.4.7 - 20 Dec 2007 - emk, brian
 

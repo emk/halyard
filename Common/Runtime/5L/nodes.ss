@@ -385,6 +385,8 @@
       (def (attr name &key (label #f) (type #f) (writable? #f) &rest keys)
         (super)
         (unless writable?
+          ;;; See bug 2116.
+          (.unseal-method! (symcat "set-" name "!"))
           (.define-method (symcat "set-" name "!")
             (method (value)
               ;; TODO - Can we refactor out code shared with ruby-objects.ss?
@@ -393,7 +395,8 @@
                             ", tried to assign " value)))
               (if (not (.initialized?))
                 (set! (slot name) value)
-                (.send '%maybe-set-property! (list name value)))))))
+                (.send '%maybe-set-property! (list name value)))))
+          (.seal-method! (symcat "set-" name "!"))))
 
       ;; Backwards-compatibility glue for old :DEFAULT semantics.
       (def (attr/glue name &key (default $no-default) &rest-keys keys)

@@ -560,13 +560,14 @@
   
   ;;; A text element just large enough to fit the specified text.
   (define-element-template %text%
-      [style text
-       [max-width :label "Max width" :default (rect-width $screen-rect)]]
-      (%text-box% :shape (measure-text style text :max-width max-width))
+      [[max-width :label "Max width" :default (rect-width $screen-rect)]]
+      (%text-box% :shape (measure-text (prop self style) (prop self text)
+                  :max-width max-width))
     (on prop-change (name value prev veto)
       (define (update-shape!)
         (set! (prop self shape)
-              (measure-text style text :max-width max-width)))
+              (measure-text (prop self style) (prop self text)
+                            :max-width max-width)))
       (case name
         [[style text]
          (update-shape!)

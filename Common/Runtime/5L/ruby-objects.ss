@@ -61,7 +61,8 @@
      superclass
      methods
      cached-methods-generation-id
-     cached-methods])
+     cached-methods
+     method-seal-table])
 
   (define (new-ruby-class &key klass (initialized? #f) name superclass)
     (make-ruby-class klass
@@ -69,7 +70,8 @@
                      initialized? name superclass
                      (make-hash-table)   ; methods
                      0                   ; cached-methods-generation-id
-                     (make-hash-table))) ; cached-methods
+                     (make-hash-table)   ; cached-methods
+                     (make-hash-table))) ; method-seal-table
 
   (define-struct initializer
     [name method ignorable? skippable?])
@@ -90,7 +92,21 @@
         (slot% object name)
         default))
 
+  (define (method-sealed? klass method-name)
+    (if (not klass)
+      #f
+      (hash-table-get (ruby-class-method-seal-table klass) method-name
+                      (lambda ()
+                        (method-sealed? (ruby-class-superclass klass)
+                                        method-name)))))
+
+  (define (set-method-sealed?! klass method-name value)
+    (hash-table-put! (ruby-class-method-seal-table klass) method-name value))
+  
   (define (add-method! object name method)
+    (when (method-sealed? object name)
+      (error (cat "Cannot override ." name " on " object
+                  " without unsealing it")))
     (inc! *generation-id*)
     (hash-table-put! (ruby-class-methods object) name method))
 
@@ -401,8 +417,14 @@
         (super)
         ;; On ordinary objects, default values are never supplied by getter
         ;; methods, only by the initialization protocol.
+        ;;
+        ;; TODO - Why do we need to define this method incorrectly in super
+        ;; and clobber it manually?  ATTR should have flags to not define
+        ;; either the getter or setter as desired.  See bug 2116.
+        (app~ .unseal-method! name)
         (app~ .define-method name 
-              (method~ () (slot name))))
+              (method~ () (slot name)))
+        (app~ .seal-method! name))
       )
     )
 
@@ -481,16 +503,19 @@
               (when (and (not (has-slot%? self name)) default)
                 (set! (slot name) (instance-exec self default)))
               (slot name)))
-      (app~ .define-method (symcat "set-" name "!")
-            (method~ (val)
-              (cond
-               [(and (not writable?) (app~ .initialized?))
-                (error (cat "Read-only attr: " name " on " self))]
-               [(and type (not (instance-of?~ val type)))
-                (error (cat "Attr " name " of " self " has type " type 
-                            ", tried to assign " val))]
-               [#t
-                (set! (slot name) val)]))))
+      (app~ .seal-method! name)
+      (let [[setter-name (symcat "set-" name "!")]]
+        (app~ .define-method setter-name
+              (method~ (val)
+                (cond
+                 [(and (not writable?) (app~ .initialized?))
+                  (error (cat "Read-only attr: " name " on " self))]
+                 [(and type (not (instance-of?~ val type)))
+                  (error (cat "Attr " name " of " self " has type " type 
+                              ", tried to assign " val))]
+                 [#t
+                  (set! (slot name) val)])))
+        (app~ .seal-method! setter-name)))
     ;;; Attribute initializers for this class.
     (def (attr-initializers)
       ;; Implemented as a method, so we don't have to worry about making it
@@ -513,6 +538,24 @@
     ;;; initialization.
     (def (mandatory-attr name)
       (set! (slot 'mandatory-attrs) (cons name (app~ .mandatory-attrs))))
+
+    ;;; Seal a method, and prevent it from being accidentally overridden by
+    ;;; subclasses.  To reverse, call UNSEAL-METHOD!.
+    (def (seal-method! name)
+      (set! (method-sealed? self name) #t))
+
+    ;;; Unseal a method, allowing to be overridden by the current class and
+    ;;; any subclasses.  To reverse, call SEAL-METHOD!.
+    (def (unseal-method! name)
+      (set! (method-sealed? self name) #f))
+
+    ;;; A sealed method cannot be overridden.  Note that overriding this
+    ;;; method doesn't affect the underlying tests performed by the object
+    ;;; model itself--this method is just a public interface to an internal
+    ;;; function.
+    (def (method-sealed? name)
+      (method-sealed? self name))
+
     ;;; Create a new object of this class.
     (def (new &rest args)
       (define obj (new-ruby-object self))
