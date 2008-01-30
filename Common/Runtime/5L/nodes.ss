@@ -380,13 +380,17 @@
 
   (define-class %node% ()
     (with-instance (.class)
-      ;; Override ATTR and add backwards-compatibility wrapper for old
-      ;; ON PROP-CHANGE protocol.
-      (def (attr name &key (label #f) (type #f) (writable? #f) &rest keys)
-        (super)
-        (unless writable?
-          ;;; See bug 2116.
-          (.unseal-method! (symcat "set-" name "!"))
+      ;;; Accept a :label argument (in addition to all the usual ones for
+      ;;; ATTR), and ignore it.  This is theoretically a human-readable
+      ;;; name for an attribute which we hope someday to use in the GUI.
+      (def (attr name &key (label #f) &rest keys)
+        (super))
+
+      ;;; Override ATTR-SETTER and add backwards-compatibility wrapper for
+      ;;; old ON PROP-CHANGE protocol.
+      (def (attr-setter name &key (writable? #f) (type #f))
+        (if writable?
+          (super)
           (.define-method (symcat "set-" name "!")
             (method (value)
               ;; TODO - Can we refactor out code shared with ruby-objects.ss?
@@ -395,8 +399,7 @@
                             ", tried to assign " value)))
               (if (not (.initialized?))
                 (set! (slot name) value)
-                (.send '%maybe-set-property! (list name value)))))
-          (.seal-method! (symcat "set-" name "!"))))
+                (.send '%maybe-set-property! (list name value)))))))
 
       ;; Backwards-compatibility glue for old :DEFAULT semantics.
       (def (attr/glue name &key (default $no-default) &rest-keys keys)

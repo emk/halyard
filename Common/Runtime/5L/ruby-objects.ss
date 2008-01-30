@@ -410,21 +410,14 @@
       (void))
 
     (with-instance (app~ .class)
-      ;;; Create a new attribute on this class.  This method applies to
-      ;;; ordinary instances, and overrides the version of ATTR defined by
-      ;;; CLASS.
-      (def (attr name &key default (writable? #f) (mandatory? #t) (type #f))
-        (super)
+      ;;; Create a getter.  This behavior is used for ordinary objects, and
+      ;;; it overrides the more general (and ickier) behavior needed for
+      ;;; getters on classes.
+      (def (attr-getter name &key default)
         ;; On ordinary objects, default values are never supplied by getter
         ;; methods, only by the initialization protocol.
-        ;;
-        ;; TODO - Why do we need to define this method incorrectly in super
-        ;; and clobber it manually?  ATTR should have flags to not define
-        ;; either the getter or setter as desired.  See bug 2116.
-        (app~ .unseal-method! name)
         (app~ .define-method name 
-              (method~ () (slot name)))
-        (app~ .seal-method! name))
+              (method~ () (slot name))))
       )
     )
 
@@ -473,49 +466,59 @@
     (def (define-class-method name meth)
       (app~ (app~ .class) .define-method name meth))
     ;;; Create a new attribute on this class.
-    (def (attr name &key default (writable? #f) (mandatory? #t) (type #f))
+    (def (attr name &key default (writable? #f) (mandatory? #t) (type #f)
+               (getter? #t) (setter? #t))
       (when default
         (app~ .attr-initializer name default #t))
       (when mandatory?
         (app~ .mandatory-attr name))
-      ;; Hackish support for attribute defaults on
-      ;; already-initialized objects (generally instances of
-      ;; %class%).  An example of why this is necessary:
+      (when getter?
+        (app~ .attr-getter name :default default)
+        (app~ .seal-method! name))
+      (when setter?
+        (app~ .attr-setter name :writable? writable? :type type)
+        (app~ .seal-method! (symcat "set-" name "!"))))
+    ;;; Create just the getter for an attribute, without setting up the
+    ;;; normal initialization protocol or anything else (except for the
+    ;;; hackish default magic needed in a few special cases).
+    (def (attr-getter name &key default)
+      ;; Hackish support for attribute defaults on already-initialized
+      ;; objects (generally instances of %class%).  An example of why
+      ;; this is necessary:
       ;;
       ;;   (define-class %foo%)
       ;;     (with-instance (.class) (attr bar (method () 2)))
       ;;     (.bar))
       ;;
-      ;; Here, we want to add an attribute to %foo%'s metaclass, and
-      ;; use it right away.  But %foo% has already been initialized,
-      ;; so our attribute default is normally ignored.  Our fix:
-      ;; Define a new getter method that handles the defaulting when
-      ;; needed.  A better fix would be to allow our initialization
-      ;; protocol to run incrementally.
+      ;; Here, we want to add an attribute to %foo%'s metaclass, and use
+      ;; it right away.  But %foo% has already been initialized, so our
+      ;; attribute default is normally ignored.  Our fix: Define a new
+      ;; getter method that handles the defaulting when needed.  A better
+      ;; fix would be to allow our initialization protocol to run
+      ;; incrementally.
       ;;
       ;; This getter method is only used for attributes on classes.  For
-      ;; attributes on regular objects, this will be replaced by the ATTR
-      ;; method on (%OBJECT% .CLASS), which overrides this method.  We use
-      ;; this method to make class ATTRs default sensibly, even if they
-      ;; were added after initialization.
+      ;; attributes on regular objects, this will be created by the
+      ;; ATTR-GETTER method on (%OBJECT% .CLASS), which overrides this
+      ;; method.  We use this method to make class ATTRs default sensibly,
+      ;; even if they were added after initialization.
       (app~ .define-method name
             (method~ ()
               (when (and (not (has-slot%? self name)) default)
                 (set! (slot name) (instance-exec self default)))
-              (slot name)))
-      (app~ .seal-method! name)
-      (let [[setter-name (symcat "set-" name "!")]]
-        (app~ .define-method setter-name
-              (method~ (val)
-                (cond
-                 [(and (not writable?) (app~ .initialized?))
-                  (error (cat "Read-only attr: " name " on " self))]
-                 [(and type (not (instance-of?~ val type)))
-                  (error (cat "Attr " name " of " self " has type " type 
-                              ", tried to assign " val))]
-                 [#t
-                  (set! (slot name) val)])))
-        (app~ .seal-method! setter-name)))
+              (slot name))))
+    ;;; Create just the setter for an attribute.
+    (def (attr-setter name &key (writable? #f) (type #f))
+      (app~ .define-method (symcat "set-" name "!")
+            (method~ (val)
+              (cond
+               [(and (not writable?) (app~ .initialized?))
+                (error (cat "Read-only attr: " name " on " self))]
+               [(and type (not (instance-of?~ val type)))
+                (error (cat "Attr " name " of " self " has type " type 
+                            ", tried to assign " val))]
+               [#t
+                (set! (slot name) val)]))))
     ;;; Attribute initializers for this class.
     (def (attr-initializers)
       ;; Implemented as a method, so we don't have to worry about making it

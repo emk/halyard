@@ -10,7 +10,9 @@ SVN - tryon, emk, brian
     "unexpected node property initializer" message.  Also added some other
     protective code.
   * F#1390: Implemented .SEAL-METHOD! and .UNSEAL-METHOD!, which are used
-    to prevent accidental overriding of PROP values.
+    to prevent accidental overriding of ATTRs.
+  * F#2116: Refactored ATTR so that we can override getter and setter
+    behavior without messing around with unsealing/resealing.
 
 0.4.7 - 20 Dec 2007 - emk, brian
 
