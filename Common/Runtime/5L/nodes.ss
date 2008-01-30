@@ -393,10 +393,7 @@
           (super)
           (.define-method (symcat "set-" name "!")
             (method (value)
-              ;; TODO - Can we refactor out code shared with ruby-objects.ss?
-              (when (and type (not (instance-of? value type)))
-                (error (cat "Attr " name " has type " type
-                            ", tried to assign " value)))
+              (check-setter-type self name type value)
               (if (not (.initialized?))
                 (set! (slot name) value)
                 (.send '%maybe-set-property! (list name value)))))))

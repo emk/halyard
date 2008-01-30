@@ -13,6 +13,8 @@ SVN - tryon, emk, brian
     to prevent accidental overriding of ATTRs.
   * F#2116: Refactored ATTR so that we can override getter and setter
     behavior without messing around with unsealing/resealing.
+  * F#1402: Factored out various checks from the standard setter method so
+    they can be reused more easily.
 
 0.4.7 - 20 Dec 2007 - emk, brian
 

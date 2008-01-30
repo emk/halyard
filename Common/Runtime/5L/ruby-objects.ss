@@ -324,10 +324,11 @@
   ;;  Standard Methods
   ;;=======================================================================
 
-  (provide check-for-initialization safe-to-string)
+  (provide check-for-initialization check-setter-writability
+           check-setter-type safe-to-string)
 
   ;;; Check that OBJ is properly initialized.  METHOD-NAME should be the
-  ;;; name of our called.
+  ;;; name of our caller.
   (define (check-for-initialization obj method-name)
     (unless (app~ obj .initialized?)
       (let [[msg (cat "Called " method-name " on uninitialized object")]]
@@ -335,7 +336,18 @@
         ;; will at least make sure we see an error dialog.
         (non-fatal-error msg)
         (error msg))))
-    
+ 
+  ;;; The standard writability check for ATTR setters.
+  (define (check-setter-writability obj name writable?)
+    (when (and (not writable?) (app~ obj .initialized?))
+      (error (cat "Read-only attr: " name " on " obj))))
+
+  ;;; The standard type check for ATTR setters.
+  (define (check-setter-type obj name type val)
+    (when (and type (not (instance-of?~ val type)))
+      (error (cat "Attr " name " of " obj " has type " type 
+                  ", tried to assign " val))))
+   
   (with-instance %object%
     ;;; The class of this object.
     (def (class)
@@ -511,14 +523,9 @@
     (def (attr-setter name &key (writable? #f) (type #f))
       (app~ .define-method (symcat "set-" name "!")
             (method~ (val)
-              (cond
-               [(and (not writable?) (app~ .initialized?))
-                (error (cat "Read-only attr: " name " on " self))]
-               [(and type (not (instance-of?~ val type)))
-                (error (cat "Attr " name " of " self " has type " type 
-                            ", tried to assign " val))]
-               [#t
-                (set! (slot name) val)]))))
+              (check-setter-writability self name writable?)
+              (check-setter-type self name type val)
+              (set! (slot name) val))))
     ;;; Attribute initializers for this class.
     (def (attr-initializers)
       ;; Implemented as a method, so we don't have to worry about making it
