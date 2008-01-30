@@ -158,6 +158,15 @@
                      [super (make-capture-var/ellipsis #'body 'super)]]
          (syntax/loc stx (lambda (self super . args) (begin/var . body))))]))
 
+  (define (instances-respond-to?% klass method-name)
+    (if (not klass)
+      #f
+      (hash-table-get (ruby-class-methods klass) method-name 
+                      (lambda () 
+                        (instances-respond-to?% 
+                         (ruby-class-superclass klass)
+                         method-name)))))
+
   ;; Walk up the class hierarchy, making a list of all methods with a given
   ;; name.  The methods are sorted from most-specific to least-specific.
   ;; See the comment on *GENERATION-ID*--there are some non-trivial
@@ -337,6 +346,12 @@
         (non-fatal-error msg)
         (error msg))))
  
+  ;;; Check that method-name is not defined by klass.
+  (define (check-method-not-defined klass method-name)
+    (when (app~ klass .instances-respond-to? method-name)
+      (error (cat "Tried to define attr ." method-name " on " klass
+                  ", but it already exists"))))
+
   ;;; The standard writability check for ATTR setters.
   (define (check-setter-writability obj name writable?)
     (when (and (not writable?) (app~ obj .initialized?))
@@ -367,6 +382,11 @@
     (def (method-missing name . args)
       ;; METHOD-MISSING must exist for message dispatch to work.
       (error (cat "Method " name " does not exist on " self)))
+    ;;; Does this class respond the method NAME?  If you override
+    ;;; method-missing, you probably also want to override this (or
+    ;;; INSTANCES-RESPOND-TO?).
+    (def (responds-to? name)
+      (app~ (app~ .class) .instances-respond-to? name))
     ;;; Return a string that should be used as the print representation of
     ;;; this object.
     (def (to-string)
@@ -477,6 +497,9 @@
     ;;; instance method on this class's metaclass.)
     (def (define-class-method name meth)
       (app~ (app~ .class) .define-method name meth))
+    ;;; Do instances of this class respond to the given method name?
+    (def (instances-respond-to? name)
+      (instances-respond-to?% self name))
     ;;; Create a new attribute on this class.
     (def (attr name &key default (writable? #f) (mandatory? #t) (type #f)
                (getter? #t) (setter? #t))
@@ -485,11 +508,14 @@
       (when mandatory?
         (app~ .mandatory-attr name))
       (when getter?
+        (check-method-not-defined self name)
         (app~ .attr-getter name :default default)
         (app~ .seal-method! name))
       (when setter?
-        (app~ .attr-setter name :writable? writable? :type type)
-        (app~ .seal-method! (symcat "set-" name "!"))))
+        (let [[setter-name (symcat "set-" name "!")]]
+          (check-method-not-defined self setter-name)
+          (app~ .attr-setter name :writable? writable? :type type)
+          (app~ .seal-method! setter-name))))
     ;;; Create just the getter for an attribute, without setting up the
     ;;; normal initialization protocol or anything else (except for the
     ;;; hackish default magic needed in a few special cases).

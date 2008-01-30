@@ -15,6 +15,8 @@ SVN - tryon, emk, brian
     behavior without messing around with unsealing/resealing.
   * F#1402: Factored out various checks from the standard setter method so
     they can be reused more easily.
+  * F#1390: Made ATTR raise an error if it will clobber any methods that are 
+    already defined.
 
 0.4.7 - 20 Dec 2007 - emk, brian
 
