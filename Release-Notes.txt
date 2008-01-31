@@ -17,6 +17,7 @@ SVN - tryon, emk, brian
     they can be reused more easily.
   * F#1390: Made ATTR raise an error if it will clobber any methods that are 
     already defined.
+  * F#1390: Do not allow ON handlers to be defined twice at the same level.
 
 0.4.7 - 20 Dec 2007 - emk, brian
 

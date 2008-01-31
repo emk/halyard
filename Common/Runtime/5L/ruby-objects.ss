@@ -107,6 +107,8 @@
     (when (method-sealed? object name)
       (error (cat "Cannot override ." name " on " object
                   " without unsealing it")))
+    (when (hash-table-has-key? (ruby-class-methods object) name)
+      (error (cat "Cannot define ." name " twice on " object)))
     (inc! *generation-id*)
     (hash-table-put! (ruby-class-methods object) name method))
 
