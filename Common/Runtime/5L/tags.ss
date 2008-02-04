@@ -404,4 +404,15 @@
             (process-definition stx)
             (recurse (next)))))))
 
+  ;; This will allow meta-. to work on ruby-style classes.  This only
+  ;; extracts the most basic information to allow meta-. on the class
+  ;; name itself; methods, attrs, help strings, etc will need more
+  ;; work later. See the bugs filed against the Editor in FogBugz.
+  ;;
+  ;; This is here rather than in ruby-objects.ss, because requiring
+  ;; tags.ss from ruby-objects.ss would cause circular dependencies.
+  (define-syntax-tagger define-class
+    [(_ name super . body) 
+     'class name #f])
+
   (set-extract-definitions-fn! extract-definitions))
