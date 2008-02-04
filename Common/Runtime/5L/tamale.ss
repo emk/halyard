@@ -83,10 +83,10 @@
   ;;;  Core Element Support
   ;;;======================================================================
 
-  (provide local->card %element% %invisible-element% %custom-element%
+  (provide local->card #|%element% %invisible-element% %custom-element%
            %box% box %clickable-zone% clickable-zone
            delete-element delete-elements
-           element-exists? delete-element-if-exists)
+           element-exists? delete-element-if-exists |#)
 
   (define $black (color 0 0 0))
   (define $transparent (color 0 0 0 0))
@@ -114,6 +114,7 @@
     (foreach [e (node-elements elem)]
       (update-element-position e)))
 
+  #|
   ;;; The abstract superclass of all elements.
   (define-element-template %element%
       [[at :type <point> :label "Position"]
@@ -435,7 +436,7 @@
     (when (element-exists? name :parent parent)
       (delete-element (find-node (string->symbol (cat (node-full-name parent)
                                                       "/" name)) #t))))
-  
+  |#
 
   ;;;======================================================================
   ;;;  Drawing Functions
@@ -533,6 +534,7 @@
   ;;;  most of them will get keyword arguments to support accessibility,
   ;;;  and most of their properties will become settable.
 
+  #|
   (provide %text-box% text-box %text% text
            %graphic% graphic
            %rectangle% rectangle rectangle-outline)
@@ -763,7 +765,7 @@
     (create %sprite% 
             :at at :frames frames :name name :alpha? alpha? 
             :parent parent :shown? shown?))
-
+  |#
 
   ;;;======================================================================
   ;;;  Mouse and Cursor Support
@@ -828,6 +830,7 @@
   ;;;  ActiveX and Flash
   ;;;======================================================================
 
+  #|
   (provide %activex% %flash-card%)
 
   ;;; A native ActiveX element.  Consult the C++ source for documentation.
@@ -1455,7 +1458,7 @@
                         (if value
                             (+ value amount)
                             value))))
-
+  |#
 
   ;;;======================================================================
   ;;;  Miscellaneous
@@ -1465,7 +1468,7 @@
            copy-string-to-clipboard open-in-browser
            script-user-data-directory
            script-user-local-data-directory
-           %basic-button%
+           #|%basic-button%|#
            quicktime-component-version
            mark-unprocessed-events-as-stale!
            register-debug-report-file!)
@@ -1530,6 +1533,7 @@
       (make-directory dir))
     dir)
 
+  #|
   ;;; An abstract superclass which implements typical GUI button behavior.
   (define-element-template %basic-button%
       [[action :type <function> :label "Click action" :default (callback)]
@@ -1580,6 +1584,7 @@
     (on button-clicked (event)
       ((prop self action)))
     )
+  |#
 
   ;;; Get the version of a QuickTime component, given the four-letter,
   ;;; case-sensitive type and subtype strings. Returns 0 if the component

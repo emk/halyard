@@ -740,6 +740,8 @@
                              "/" (node-name node)))
         (node-name node))))
 
+  ;;; TODO - This really ought to go away.  It's backwards-compatibility
+  ;;; glue, and it doesn't respect duck typing.
   (define (extends-template? node template)
     (if (ruby-class? node)
         (node .subclass-of? template)
