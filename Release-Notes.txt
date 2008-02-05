@@ -20,6 +20,30 @@ SVN - tryon, emk, brian
   * F#1390: Do not allow ON handlers to be defined twice at the same level.
   * F#1980: Add meta-. support for ruby-style classes.
 
+Massive restructuring on the node system, to take much better advantage of
+ruby-style classes (F#928):
+
+  * Removed DEFINE-ELEMENT-TEMPLATE, DEFINE-CARD-TEMPLATE, etc, in favor
+    of just DEFINE-CLASS.
+  * Changed syntax of CARD, GROUP, SEQUENCE, etc., to be a thin wrapper
+    over DEFINE-CLASS.
+  * Removed CREATE in favor of .NEW.
+  * Removed ON in favor of DEF, including:
+    - Add support for automagic registration of expensive events and mouse
+      events on DEF.
+    - DEF handlers do not propagate by default!  Only predefined events
+      continue to mimic the old behavior.
+    - ON PROP-CHANGE has been removed, in favor of ordinary setter
+      attributes.
+  * IDLE events no longer take a (useless) parameter.
+  * Removed various forms of SEND and PROP.
+  * Split the existing node "run body" phase into separate SETUP and RUN
+    phases.  The former creates child elements, etc., and the later does
+    things like playing movies that we would not actually want to happen in
+    a future GUI editor.
+  * It is now mandatory, when overriding SETUP, SETUP-FINISHED, RUN, and
+    EXIT, to call (SUPER).  This is enforced by the runtime.
+
 0.4.7 - 20 Dec 2007 - emk, brian
 
   * F#1145: We added support for clipping around movies and other

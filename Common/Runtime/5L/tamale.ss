@@ -101,7 +101,7 @@
   (define (local->card node x)
     ;; TODO - Should we rename this function?
     (if (element? node)
-        (local->card (node-parent node) (offset-by-point x (prop node at)))
+        (local->card (node-parent node) (offset-by-point x (node .at)))
         x))
 
   (define (parent->card node x)
@@ -110,7 +110,7 @@
   (define (update-element-position elem)
     ;; Don't make me public.
     (call-5l-prim 'MoveElementTo (node-full-name elem)
-                  (parent->card elem (prop elem at)))
+                  (parent->card elem (elem .at)))
     (foreach [e (node-elements elem)]
       (update-element-position e)))
 
@@ -150,10 +150,10 @@
       (define parent-shape
         ;; TODO - There should be a SHAPE method on all (visible?) nodes.
         (if (element? parent)
-            (prop parent shape)
+            (parent .shape)
             $screen-rect))
-      (define desired-shape (center-shape-on (prop self shape) parent-shape))
-      (set! (prop self at) (rect-left-top (bounds desired-shape))))
+      (define desired-shape (center-shape-on (.shape) parent-shape))
+      (set! (.at) (rect-left-top (bounds desired-shape))))
     )
 
   ;;; The abstract superclass of all elements which have no on-screen
@@ -209,7 +209,7 @@
       (call-5l-prim 'ElementSetInDragLayer (node-full-name self) value))
 
     (on bounds ()
-      (bounds (offset-by-point (prop self shape) (prop self at))))
+      (bounds (offset-by-point (.shape) (.at))))
 
     (on setup-finished ()
       (call-next-handler)
@@ -279,7 +279,7 @@
              (call-5l-prim 'OverlaySetShape (node-full-name self) value)
              (call-5l-prim 'ZoneSetShape (node-full-name self)
                            (offset-by-point (as <polygon> value)
-                                            (prop self at))))
+                                            (.at))))
            (send self invalidate))]
         [[wants-cursor?]
          (set-wants-cursor! value)]
@@ -298,11 +298,11 @@
         (set! max-x (max max-x (rect-right r)))
         (set! max-y (max max-y (rect-bottom r)))
         (unless (= padding 0)
-          (set! (prop child at) (elem-map (fn (x) (+ x padding)) 
-                                          (prop child at)))))
-      (set! (prop self shape) (rect 0 0 
-                                    (+ (* 2 padding) max-x) 
-                                    (+ (* 2 padding) max-y))))
+          (set! (child .at) (elem-map (fn (x) (+ x padding)) 
+                                          (child .at)))))
+      (set! (.shape) (rect 0 0 
+                           (+ (* 2 padding) max-x) 
+                           (+ (* 2 padding) max-y))))
     
     ;;; Make sure that this element has a non-negative initial shape.
     (when (negative-shape? shape)
@@ -563,12 +563,12 @@
   ;;; A text element just large enough to fit the specified text.
   (define-element-template %text%
       [[max-width :label "Max width" :default (rect-width $screen-rect)]]
-      (%text-box% :shape (measure-text (prop self style) (prop self text)
+      (%text-box% :shape (measure-text (.style) (.text)
                   :max-width max-width))
     (on prop-change (name value prev veto)
       (define (update-shape!)
-        (set! (prop self shape)
-              (measure-text (prop self style) (prop self text)
+        (set! (.shape)
+              (measure-text (.style) (.text)
                             :max-width max-width)))
       (case name
         [[style text]
@@ -602,7 +602,7 @@
     
     ;; TODO - Optimize erase-background once we can update the graphic.
     (on draw ()
-      (draw-graphic (point 0 0) (prop self path))))
+      (draw-graphic (point 0 0) (.path))))
   
   ;;; Create a new %graphic%.
   (define (graphic p path
@@ -671,29 +671,29 @@
     ;;; There is no need for this to call REFRESH, since it's called
     ;;; automatically by the engine whenever it is safe to do so.
     (on cursor-moved (event)
-      (set! (prop self at)
+      (set! (.at)
             (point-difference (event-position event) hotspot)))
 
     ;;; Called when the cursor is shown on the screen.
     (on cursor-shown (event)
-      (set! (prop self shown?) #t)
+      (set! (.shown?) #t)
       ;; TODO - Putting this cursor in the drag layer isn't quite
       ;; adequate.  Ideally, we'd add a whole new layer for cursors, above
       ;; the drag layer, but that will require adding more complexity in
       ;; the compositing routines.
-      (set! (prop self dragging?) #t))
+      (set! (.dragging?) #t))
 
     ;;; Called when the cursor is hidden (but not when an active cursor is
     ;;; destroyed).
     (on cursor-hidden (event)
-      (set! (prop self shown?) #f)
-      (set! (prop self dragging?) #f))
+      (set! (.shown?) #f)
+      (set! (.dragging?) #f))
 
     (call-5l-prim 'CursorElement (node-full-name self)
                   (parent->card self
-                                (offset-rect (prop self shape) (prop self at)))
+                                (offset-rect (.shape) (.at)))
                   (make-node-event-dispatcher self)
-                  (prop self alpha?) (node-name self)))
+                  (.alpha?) (node-name self)))
 
 
   ;;;======================================================================
@@ -735,9 +735,9 @@
        :%nocreate? #t)
     (call-5l-prim 'OverlayAnimated (node-full-name self)
                   (parent->card self
-                                (offset-rect (prop self shape) (prop self at)))
-                  (make-node-event-dispatcher self) (prop self cursor)
-                  (prop self alpha?) state-path
+                                (offset-rect (.shape) (.at)))
+                  (make-node-event-dispatcher self) (.cursor)
+                  (.alpha?) state-path
                   (map (fn (p) (make-native-path "Graphics" p)) graphics)))
 
 
@@ -848,7 +848,7 @@
 
     (call-5l-prim 'ActiveX (node-full-name self) 
                   (make-node-event-dispatcher self)
-                  (parent->card self (prop self rect))
+                  (parent->card self (.rect))
                   activex-id))
 
   ;;; Show a Macromedia Flash movie scaled to fit the current card.
@@ -944,7 +944,7 @@
 
     (call-5l-prim 'Browser (node-full-name self) 
                   (make-node-event-dispatcher self)
-                  (parent->card self (prop self rect))
+                  (parent->card self (.rect))
                   fallback?)
     (send self load-page path))
 
@@ -987,7 +987,7 @@
 
     (call-5l-prim 'EditBox (node-full-name self)
                   (make-node-event-dispatcher self)
-                  (parent->card self (prop self rect)) text
+                  (parent->card self (.rect)) text
                   font-size multiline? send-enter-event?))
 
   ;;; Create an %edit-box%.
@@ -1118,7 +1118,7 @@
     (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                   (make-node-event-dispatcher self)
                   (build-path (current-directory) "LocalMedia" path)
-                  (prop self volume)))
+                  (.volume)))
 
   (define (geiger-audio path &key (name (gensym)) (volume 1.0)
                         (parent (default-element-parent)))
@@ -1130,7 +1130,7 @@
       (%audio-element%)
     (apply call-5l-prim 'GeigerSynth (node-full-name self) state-path
            (build-path (current-directory) "LocalMedia" chirp)
-           (prop self volume)
+           (.volume)
            (* 512 1024)
            (map (fn (item)
                   (if (string? item)
@@ -1150,7 +1150,7 @@
       (%audio-element%)
     (call-5l-prim 'AudioStreamSine (node-full-name self)
                   (make-node-event-dispatcher self)
-                  (prop self volume) frequency))
+                  (.volume) frequency))
 
   ;;; Create a %sine-wave%.
   (define (sine-wave frequency
@@ -1182,7 +1182,7 @@
       (check-file path)
       (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                     (make-node-event-dispatcher self) path
-                    (prop self volume) (* 1024 buffer) loop?)))
+                    (.volume) (* 1024 buffer) loop?)))
   
   ;;; Create a %vorbis-audio% element.
   (define (vorbis-audio path
@@ -1360,7 +1360,7 @@
       (check-file path)
       (call-5l-prim 'Movie (node-full-name self)
                     (make-node-event-dispatcher self)
-                    (parent->card self (prop self rect))
+                    (parent->card self (.rect))
                     path volume
                     controller? audio-only? loop? interaction?
                     report-captions?)))
@@ -1560,7 +1560,7 @@
     (on prop-change (name value prev veto)
       (case name
         [[enabled?]
-         (set! (prop self wants-cursor?) enabled?) 
+         (set! (.wants-cursor?) enabled?) 
          (do-draw #f)]
         [else (call-next-handler)]))
 
@@ -1582,7 +1582,7 @@
       (when (and mouse-in-button? was-grabbed?)
         (send self button-clicked event)))
     (on button-clicked (event)
-      ((prop self action)))
+      ((.action)))
     )
   |#
 

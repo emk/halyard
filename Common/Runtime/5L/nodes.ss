@@ -117,10 +117,8 @@
   ;;  Events
   ;;-----------------------------------------------------------------------
 
-  (provide on send send*
-           <event> event? event-stale?
+  (provide <event> event? event-stale?
            <vetoable-event> veto-event! event-vetoed?
-           <idle-event> idle-event?
            <update-ui-event> update-ui-event? event-command
            <char-event> char-event? event-character event-modifiers
            <mouse-event> mouse-event? event-position event-double-click?
@@ -133,103 +131,12 @@
            <media-caption-event> event-caption
            )
 
-  (define-syntax (on stx)
-    (syntax-case stx ()
-      [(_ name args . body)
-       ;; Create a capture variable NEXT-HANDLER which will be visible in
-       ;; BODY.  It's exceptionally evil to capture using BODY's context
-       ;; instead of EXPAND-ON's context, but that's what we want.
-       (with-syntax [[self (make-self #'body)]
-                     [call-next-handler
-                      (make-capture-var/ellipsis #'body 'call-next-handler)]]
-         (quasisyntax/loc
-          stx
-          (register-event-handler self 'name
-                                  (lambda (call-next-handler . args)
-                                    (begin/var . body)))))]))
-
-  (define (register-event-handler node name handler)
-    (%assert (node .instance-of? %node%))
-
-    ;; Keep track of whether we're handling expensive events.  We call
-    ;; ENABLE-EXPENSIVE-EVENTS here, which is sufficient for %card% and
-    ;; %element% nodes.  But since %card-group%s and %card-sequence%s stay
-    ;; alive longer than a single card, we need to set
-    ;; NODE-HAS-EXPENSIVE-HANDLERS?, which is used by
-    ;; MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD (on behalf of RUN-CARD) to do
-    ;; the rest of our bookkeeping.
-    (when (expensive-event? name)
-      (set! (node-has-expensive-handlers? node) #t)
-      (*engine* .enable-expensive-events #t))
-
-    ;; If we're registering a handler for a mouse event, and the node
-    ;; appears to care, let it know.
-    ;;
-    ;; TODO - This is a bit more informal than our EXPENSIVE-EVENT?
-    ;; handling; perhaps we should unify the two?
-    (when (and (mouse-event-name? name)
-               (eq? (prop node wants-cursor?) 'auto))
-      (set! (prop node wants-cursor?) #t))
-
-    ;; Update our handler table.
-    (let* [[table (node-handlers node)]
-           [old-handler (hash-table-get table name (lambda () #f))]]
-      (if old-handler
-          (hash-table-put! table name
-                           ;; This is tricky--we need to replace the old
-                           ;; handler with our new one.  To do this, we
-                           ;; create a glue function to Do The Right Thing
-                           ;; with the NEXT-HANDLER argument.
-                           ;;
-                           ;; TODO - We don't catch duplicate handlers
-                           ;; within a single node or template (or at the
-                           ;; top level).  This would be a Good Thing<tm>
-                           ;; to do correctly.
-                           (lambda (call-next-handler . args)
-                             (apply handler
-                                    (lambda ()
-                                      (apply old-handler
-                                             call-next-handler args))
-                                    args)))
-          (hash-table-put! table name handler))))
-
-  (define (send/nonrecursive* call-next-handler node name . args)
-    (let [[handler (hash-table-get (node-handlers node) name (lambda () #f))]]
-      (if handler
-          (apply handler call-next-handler args)
-          (call-next-handler))))
-
-  (define (send/recursive* call-next-handler node name . args)
-    (let recurse [[node node]]
-      (if (not node)
-          (call-next-handler)
-          (let [[new-call-next-handler
-                 (lambda () (recurse (node-parent node)))]]
-            (apply send/nonrecursive* new-call-next-handler node name args)))))
-
-  (define (send* node name
-                 &key (arguments '()) (recursive? #t) (ignorable? #f))
-    (define (error-handler)
-      (error (cat "No handler for " name " on " (node-full-name node))))
-    (define (ignore-handler)
-      #f)
-    (apply (if recursive? send/recursive* send/nonrecursive*)
-           (if ignorable? ignore-handler error-handler)
-           node name arguments))
-
-  (define-syntax send
-    (syntax-rules ()
-      [(send node name . args)
-       (send* node 'name :arguments (list . args))]))
-  (define-syntax-indent send 2)
-
   (defclass <event> ()
-    (stale? :accessor event-stale? :initvalue #f))
+    (handled? :accessor event-handled? :initvalue #t)
+    (stale?   :accessor event-stale?   :initvalue #f))
 
   (defclass <vetoable-event> (<event>)
     (vetoed? :accessor event-vetoed? :initvalue #f))
-
-  (defclass <idle-event> (<event>))
 
   (defclass <update-ui-event> (<event>)
     (command :accessor event-command))
@@ -274,85 +181,27 @@
   (defmethod (was-vetoed? (event <vetoable-event>))
     (event-vetoed? event))
 
-  (define (dispatch-event-to-node node name args)
-    (debug-log (cat (node-full-name node) ": " name " event: " args))
-    (let [[unhandled? #f]
-          [event (case name
-                   [[update-ui]
-                    (make <update-ui-event> :command (car args))]
-                   [[char]
-                    (make <char-event>
-                      :character (string-ref (car args) 0)
-                      :modifiers (cadr args)
-                      :stale? (caddr args))]
-                   [[mouse-down]
-                    (make <mouse-event>
-                      :position (point (car args) (cadr args))
-                      :double-click? (caddr args)
-                      :stale? (cadddr args))]
-                   [[mouse-up mouse-enter mouse-leave mouse-moved]
-                    (make <mouse-event>
-                      :position (point (car args) (cadr args))
-                      :stale? (cadr args))]
-                   [[text-changed text-enter]
-                    (make <edit-box-event>)]
-                   [[browser-navigate]
-                    (make <browser-navigate-event> :url (car args))]
-                   [[browser-page-changed]
-                    (make <url-event> :url (car args))]
-                   [[browser-title-changed]
-                    (make <text-event> :text (car args))]
-                   [[status-text-changed]
-                    (make <text-event> :text (car args))]
-                   [[progress-changed]
-                    (make <progress-changed-event>
-                      :done? (car args)
-                      :value (cadr args))]
-                   [[media-finished]
-                    (make <media-finished-event>)]
-                   [[media-local-error media-network-error
-                     media-network-timeout playback-timer]
-                    (make <media-event>)]
-                   [[media-caption]
-                    (make <media-caption-event> :caption (car args))]
-                   [[cursor-moved]
-                    (make <mouse-event>
-                      :position (point (car args) (cadr args))
-                      :stale? (cadr args))]
-                   [[cursor-shown cursor-hidden]
-                    (make <cursor-event>)]
-                   [else
-                    (non-fatal-error (cat "Unsupported event type: " name))])]]
-      (define (no-handler)
-        (set! unhandled? #t))
-      (send/recursive* no-handler node name event)
-      (set! (*engine* .event-vetoed?) (was-vetoed? event))
-      (set! (*engine* .event-handled?) (not unhandled?))))
-
   (define (dispatch-idle-event-to-active-nodes)
-    (define event (make <idle-event>))
-    (define (no-handler)
-      (void))
-    (define (send-idle node)
-      (send/nonrecursive* no-handler node 'idle event))
+    ;; TODO - This code is wrong, because it does not propagate idle events
+    ;; to elements parented to other elements.  See case 2316.
     (let loop [[node (current-group-member)]]
       (when node
-        (send-idle node)
+        (node .idle)
         (foreach [elem (node-elements node)]
-          (send-idle elem))
+          (elem .idle))
         (loop (node-parent node)))))
 
   (define (dispatch-event-to-current-group-member name . args)
     (when (*engine* .current-group-member)
       (if (eq? name 'idle)
           (dispatch-idle-event-to-active-nodes)
-          (dispatch-event-to-node (current-group-member) name args))))
+          ((current-group-member) .dispatch-event-to-node name args))))
 
   (define (make-node-event-dispatcher node)
     (lambda (name . args)
-      (dispatch-event-to-node node name args)))
+      (node .dispatch-event-to-node name args)))
 
-  (define (expensive-event? name)
+  (define (expensive-event-name? name)
     ;; Some events are sent almost constantly, and cause us to allocate
     ;; memory too quickly.  This causes a performance loss.  To avoid
     ;; this performance loss, we only enable the sending of these events
@@ -371,7 +220,7 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide prop* set-prop*! prop *node-defined-hook*)
+  (provide *node-defined-hook*)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
@@ -380,176 +229,191 @@
 
   (define-class %node% ()
     (with-instance (.class)
+
       ;;; Accept a :label argument (in addition to all the usual ones for
       ;;; ATTR), and ignore it.  This is theoretically a human-readable
       ;;; name for an attribute which we hope someday to use in the GUI.
       (def (attr name &key (label #f) &rest keys)
         (super))
 
-      ;;; Override ATTR-SETTER and add backwards-compatibility wrapper for
-      ;;; old ON PROP-CHANGE protocol.
-      (def (attr-setter name &key (writable? #f) (type #f))
-        (if writable?
-          (super)
-          (.define-method (symcat "set-" name "!")
-            (method (value)
-              (check-setter-type self name type value)
-              (if (not (.initialized?))
-                (set! (slot name) value)
-                (.send '%maybe-set-property! (list name value)))))))
+      ;; A helper method which walks up the class hierarchy and sees if a
+      ;; given method ever returns true.  This has the same short-circuit
+      ;; semantics as OR.
+      (def (recursive-or-of-method name stop-at-class)
+        (or (.send name '())
+            (if (eq? self stop-at-class)
+              #f
+              ((.superclass) .recursive-or-of-method name stop-at-class))))
 
-      ;; Backwards-compatibility glue for old :DEFAULT semantics.
-      (def (attr/glue name &key (default $no-default) &rest-keys keys)
-        (if (eq? default $no-default)
-          (.send 'attr (list* name keys))
-          (.send 'attr (list* name :default (method () default) keys))))
+      ;; Does this class define any methods for handling expensive events?
+      (attr defines-expensive-event-methods? #f)
+
+      ;; Does this class or any of its superclasses define methods for
+      ;; handling expensive events?
+      (def (has-expensive-event-methods?)
+        (.recursive-or-of-method 'defines-expensive-event-methods? self))
+
+      ;; Does this class define any methods for handling mouse events?
+      (attr defines-mouse-event-methods? #f)
+
+      ;; Does this class or any of its superclasses define methods for
+      ;; handling mouse events?
+      (def (has-mouse-event-methods?)
+        (.recursive-or-of-method 'defines-mouse-event-methods? self))
+      
+      (def (define-method name impl)
+        (super)
+        ;; If we define methods corresponding to certain types of events,
+        ;; record that information in our class.  Note that we ignore the
+        ;; default handlers declared on %node% itself, because they don't
+        ;; actually do anything.
+        (unless (eq? self %node%)
+          (when (expensive-event-name? name)
+            (set! (.defines-expensive-event-methods?) #t))
+          (when (mouse-event-name? name)
+            (set! (.defines-mouse-event-methods?) #t))))
+
+      ;;; Automatically propopagate all events in the list NAMES to their
+      ;;; parent nodes.
+      (def (propagate-events names)
+        (foreach [name names]
+          (.define-method name
+           (method (event)
+             (if (not (.parent))
+               (set! (event-handled? event) #f)
+               ((.parent) .send 'name (list event)))))))
+
+      ;;; Define a (basically) null method which sets a flag when it
+      ;;; gets called.  This flag can be checked later to make sure that
+      ;;; nobody forgot to call (SUPER).
+      (def (define-method-with-mandatory-super name)
+        (.attr (symcat "called-" name "?")
+               :default (method () #f) :writable? #t)
+        (.define-method name
+          (method ()
+            (.send (symcat "set-called-" name "?!") '(#t))
+            (void))))
       )
 
-    ;;; Run the "body" function of this node, where elements are created,
-    ;;; media is played, etc.
-    (def (run-body)
+    (def (initialize &rest keys)
+      (super)
+      ;; Deal with any class-level flags we set up in .DEFINE-METHOD.
+      (when ((.class) .has-expensive-event-methods?)
+        ;; Keep track of whether we're handling expensive events.  We call
+        ;; ENABLE-EXPENSIVE-EVENTS here, which is sufficient for %card% and
+        ;; %element% nodes.  But since %card-group%s and %card-sequence%s
+        ;; stay alive longer than a single card, we need to set
+        ;; NODE-HAS-EXPENSIVE-EVENT-METHODS?, which is used by
+        ;; MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD (on behalf of RUN-CARD)
+        ;; to do the rest of our bookkeeping.
+        (set! (.has-expensive-event-methods?) #t)
+        (*engine* .enable-expensive-events #t))
+      (when (and (eq? (.wants-cursor?) 'auto)
+                 ((.class) .has-mouse-events-methods?))
+        (set! (.wants-cursor?) #t)))
+
+    ;; Call a "mandatory method" (see DEFINE-METHOD-WITH-MANDATORY-SUPER),
+    ;; and make sure that (SUPER) was called by any methods which override
+    ;; it.
+    (def (call-method-with-mandatory-super name)
+      (.send name '())
+      (unless (.send (symcat "called-" name "?") '())
+        (error (cat "Called " self " ." name
+                    ", but someone forgot to call SUPER"))))
+
+    ;;; Create any child elements, and do one-time initialization.  We
+    ;;; assume that .SETUP will be called in both normal runtime mode, and
+    ;;; in editing mode (assuming we ever get a GUI editor).
+    (.define-method-with-mandatory-super 'setup)
+
+    ;;; A few parent classes in our system need to run small fragments
+    ;;; of code *after* child classes finish their setup.  For now, we'll
+    ;;; rely on .SETUP-FINSIHED to handle these cases.
+    ;;; TODO - Can we get rid of .SETUP-FINISHED in our new system?
+    (.define-method-with-mandatory-super 'setup-finished)
+
+    ;;; Run the main body of this node.  This really only makes sense for 
+    ;;; %GROUP-MEMBER%s, and we may remove it from elements in the future. 
+    (.define-method-with-mandatory-super 'run)
+
+    ;;; This method is called as a node is being exited (jumped away from 
+    ;;; or deleted).
+    (.define-method-with-mandatory-super 'exit)
+
+    ;;; Override this method, and it will be called many times a second.
+    ;;; Tends to have a negative impact on heap size, and thus garbage
+    ;;; collector performance.
+    (def (idle)
       (void))
 
-    ;;; Backwards-compatibility glue for the old ON PROP-CHANGE protocol.
-    (def (%maybe-set-property! name value)
-      ;; We allow the scriptor to set properties on a node.  However, we
-      ;; must notify the node of the change.  The node may choose to veto
-      ;; the change--in which case, we undo the change.
-      (define (veto &opt reason)
-        (define msg (cat "Cannot set property '" name "' on node '"
-                         (node-full-name self) "' to " value))
-        (if reason
-            (error (cat msg ": " reason))
-            (error msg)))
-      (define (no-handler)
-        (veto "Property is read-only."))
-      (let [[accepted? #f]
-            [previous #f]]
-        (dynamic-wind
-            (lambda ()
-              ;; Store our previous property value, and set the
-              ;; new one.
-              (set! previous (slot name))
-              (set! (slot name) value))
-            (lambda ()
-              ;; Notify the node that the property has changed.
-              ;; If the node vetos the change, send/nonrecursive*
-              ;; will raise an error, and we'll never set
-              ;; accepted? to #t.
-              (send/nonrecursive* no-handler self 'prop-change name
-                                  value previous veto)
-              (set! accepted? #t))
-            (lambda ()
-              ;; If we didn't accept the change, revert it.
-              (unless accepted?
-                (set! (slot name) previous))))))
-      )
+    (.propagate-events
+     '(update-ui char mouse-down mouse-up mouse-enter mouse-leave mouse-moved
+       text-changed text-enter browser-navigate browser-page-changed
+       browser-title-changed status-text-changed progress-changed
+       media-finished media-local-error media-network-error
+       media-network-timeout playback-timer media-caption cursor-moved
+       cursor-shown cursor-hidden))
 
-  (define (prop* node name)
-    (node .send name '()))
-
-  (define (set-prop*! node name value)
-    ;; TODO - Performance?
-    (node .send
-          (string->symbol (string-append "set-" (symbol->string name) "!"))
-          (list value)))
-
-  (define-syntax prop
-    (syntax-rules ()
-      [(prop node name)
-       (prop* node 'name)]))
-  (define-syntax-indent prop function)
-
-  (define-syntax expand-prop-decls
-    (syntax-rules (:new-default)
-      [(expand-prop-decls self)
-       (void)]
-      [(expand-prop-decls self (name :new-default default) rest ...)
-       (begin (self .attr-initializer 'name (method () default) #t)
-              (expand-prop-decls self rest ...))]
-      [(expand-prop-decls self (name keywords ...) rest ...)
-       (begin (self .attr/glue 'name keywords ...)
-              (expand-prop-decls self rest ...))]
-      [(expand-prop-decls self name rest ...)
-       (begin (self .attr 'name)
-              (expand-prop-decls self rest ...))]))
-
-  (define-syntax (expand-method-with-prop-names stx)
-    (syntax-case stx ()
-      ;; CTX is the syntax context in which to create SELF.
-      [(_ ctx prop-decls . body)
-       (with-syntax [[self (make-self #'ctx)]
-                     [super (make-capture-var/ellipsis #'ctx 'super)]]
-
-         ;; Bind each template property NAME to a call to (prop self
-         ;; 'name), so it's convenient to access.  We don't need to use
-         ;; capture variables for this, because the programmer supplied the
-         ;; names--which means they're already in the right context.
-         (define (make-prop-bindings prop-decls-stx)
-           (datum->syntax-object
-            stx
-            (map (lambda (prop-stx)
-                   (syntax-case prop-stx ()
-                     [(name . rest)
-                      (syntax/loc prop-stx [name (prop self name)])]
-                     [name
-                      (syntax/loc prop-stx [name (prop self name)])]))
-                 (syntax->list prop-decls-stx))))
-
-         ;; We introduce a number of "capture" variables in BODY.  These
-         ;; will be bound automagically within BODY without further
-         ;; declaration.  See the PLT203 mzscheme manual for details.
-         (quasisyntax/loc
-          stx
-          (lambda (self super)
-            (letsubst #,(make-prop-bindings #'prop-decls)
-              (begin/var . body)))))]))
-
-  (define-syntax expand-run-body
-    (syntax-rules ()
-      [(_ prop-decls . body)
-       (method ()
-         (super)
-         (instance-exec self
-          (expand-method-with-prop-names body prop-decls . body)))]))
-  
-  (define-syntax expand-bindings
-    (syntax-rules ()
-      [(_ self prop-decls)
-       (void)]
-      [(_ self prop-decls keyword value . rest)
-       (begin (self .attr-initializer (keyword-name keyword)
-                    (expand-method-with-prop-names keyword prop-decls value)
-                    #f)
-              (expand-bindings self prop-decls . rest))]))
-
-  (define-syntax define-template
-    (syntax-rules ()
-      [(_ name prop-decls (extended . bindings) . body)
-       (define-class name (extended)
-         (expand-prop-decls name . prop-decls)
-         (expand-bindings name prop-decls . bindings)
-         (.define-method 'run-body (expand-run-body prop-decls . body)))]))
-
-  ;; TODO - Backwards compatibility glue that should go away.
-  (define-syntax define-template-definer
-    (syntax-rules ()
-      [(_ definer-name default-superclass)
-       (begin
-         (define-syntax definer-name
-           (syntax-rules ()
-             [(definer-name name prop-decls () . body)
-              (define-template name prop-decls (default-superclass) . body)]
-             [(definer-name name . rest)
-              (define-template name . rest)]))
-         (define-syntax-indent definer-name 3))]))
+    (def (dispatch-event-to-node name args)
+      (debug-log (cat (node-full-name self) ": " name " event: " args))
+      (define event
+        (case name
+          [[update-ui]
+           (make <update-ui-event> :command (car args))]
+          [[char]
+           (make <char-event>
+             :character (string-ref (car args) 0)
+             :modifiers (cadr args)
+             :stale? (caddr args))]
+          [[mouse-down]
+           (make <mouse-event>
+             :position (point (car args) (cadr args))
+             :double-click? (caddr args)
+             :stale? (cadddr args))]
+          [[mouse-up mouse-enter mouse-leave mouse-moved]
+           (make <mouse-event>
+             :position (point (car args) (cadr args))
+             :stale? (cadr args))]
+          [[text-changed text-enter]
+           (make <edit-box-event>)]
+          [[browser-navigate]
+           (make <browser-navigate-event> :url (car args))]
+          [[browser-page-changed]
+           (make <url-event> :url (car args))]
+          [[browser-title-changed]
+           (make <text-event> :text (car args))]
+          [[status-text-changed]
+           (make <text-event> :text (car args))]
+          [[progress-changed]
+           (make <progress-changed-event>
+             :done? (car args)
+             :value (cadr args))]
+          [[media-finished]
+           (make <media-finished-event>)]
+          [[media-local-error media-network-error
+                              media-network-timeout playback-timer]
+           (make <media-event>)]
+          [[media-caption]
+           (make <media-caption-event> :caption (car args))]
+          [[cursor-moved]
+           (make <mouse-event>
+             :position (point (car args) (cadr args))
+             :stale? (cadr args))]
+          [[cursor-shown cursor-hidden]
+           (make <cursor-event>)]
+          [else
+           (non-fatal-error (cat "Unsupported event type: " name))]))
+      (.send name (list event))
+      (set! (*engine* .event-vetoed?) (was-vetoed? event))
+      (set! (*engine* .event-handled?) (event-handled? event)))
+    )
 
   ;; Called when a node is defined.
   (define *node-defined-hook* (make-hook 'node-defined-hook))
 
   (define-syntax define-node
     (syntax-rules ()
-      [(define-node name (extended . bindings) . body)
+      [(define-node name (extended) . body)
        (begin
          (define-class name (extended)
            ;; HACK - Hygiene problems with SELF, so we use the explicit name
@@ -557,17 +421,17 @@
            (with-values [[parent local-name] (analyze-node-name 'name)]
              (check-node-name local-name)
              (set! (name .name) local-name)
-             (set! (name .parent) parent)
-             (expand-bindings name [] . bindings)
-             (.define-method 'run-body (expand-run-body [] . body))
-             ))
+             (set! (name .parent) parent))
+           ;; This WITH-INSTANCE exists only to make sure that SELF gets
+           ;; rebound in a way that's visible to BODY.  Yay hygienic macros.
+           (with-instance name . body))
          (name .register)
          (call-hook-functions *node-defined-hook* name))]))
 
   (define-syntax define-node-definer
     (syntax-rules ()
-      ;; TODO - Should we check that any supplied superclass is actually
-      ;; a subclass of DEFAULT-SUPERCLASS?
+      ;; TODO - We should check that any supplied superclass is actually
+      ;; a subclass of DEFAULT-SUPERCLASS.
       [(define-node-definer definer-name default-superclass)
        (begin
          (define-syntax definer-name
@@ -580,24 +444,6 @@
               (define-node name . rest)]))
          (define-syntax-indent definer-name 2))]))
 
-  (define (create klass
-                  &key (name (gensym)) (parent (default-element-parent))
-                  &rest-keys bindings)
-    ;; Create an instance of KLASS attached to PARENT. This element will be
-    ;; deleted when we leave the card.
-    (unless (klass .subclass-of? %element%)
-      (error (cat "Can only CREATE subclasses of %ELEMENT%, not " klass)))
-    (unless parent
-      (error "Can't create element without a parent node"))
-    (unless (symbol? name)
-      (error (cat "create " klass ": name must be a <symbol>; given " name)))
-    (check-node-name name)
-    (let [[inst (klass .send 'new
-                  (list* :parent     parent
-                         :name       name
-                         bindings))]]
-      (inst .enter-node)
-      inst))
 
   ;;-----------------------------------------------------------------------
   ;;  Nodes
@@ -639,8 +485,7 @@
     (attr node-state 'ENTERING :type <symbol> :writable? #t)
 
     (attr elements '() :type <list> :writable? #t)
-    (attr has-expensive-handlers?  #f :type <boolean> :writable? #t)
-    (attr handlers (make-hash-table) :type <hash-table> :writable? #t) 
+    (attr has-expensive-event-methods?  #f :type <boolean> :writable? #t)
 
     ;; Attributes shared by all nodes.
     (attr wants-cursor? #f :label "Wants cursor?")
@@ -668,7 +513,9 @@
           (super)))
 
       ;;; Returns #t if this node is part of the hierarchy of named nodes,
-      ;;; and can be run directly.
+      ;;; and can be run directly.  TODO - We may want to name this better.
+      ;;; It corresponds to things defined by DEFINE-NODE, and not by
+      ;;; ordinary DEFINE-CLASS.
       (def (can-be-run?)
         (and (.name) #t))
 
@@ -707,9 +554,9 @@
   (define (node-parent node) (node .parent))
   (define (node-elements node) (node .elements))
   (define (set-node-elements! node val) (set! (node .elements) val))
-  (define (node-has-expensive-handlers? node) (node .has-expensive-handlers?))
-  (define (set-node-has-expensive-handlers?! node val)
-    (set! (node .has-expensive-handlers?) val))
+  (define (node-has-expensive-event-methods? node) (node .has-expensive-event-methods?))
+  (define (set-node-has-expensive-event-methods?! node val)
+    (set! (node .has-expensive-event-methods?) val))
   (define (node-handlers node) (node .handlers))
   (define (set-node-handlers! node val) (set! (node .handlers) val))
   (define (find-first-card node) (node .find-first-card))
@@ -741,7 +588,8 @@
         (node-name node))))
 
   ;;; TODO - This really ought to go away.  It's backwards-compatibility
-  ;;; glue, and it doesn't respect duck typing.
+  ;;; glue, and it doesn't respect duck typing.  See case 2320 and case
+  ;;; 2319.
   (define (extends-template? node template)
     (if (ruby-class? node)
         (node .subclass-of? template)
@@ -760,6 +608,7 @@
   (define (node-add-element! node elem)
     ;; We need to check for duplicates before adding or we violate
     ;; some pretty obvious invariants.
+    ;; TODO - Why don't we call this for nodes other than elements?
     (check-for-duplicate-nodes (node-elements node) elem)
     (set! (node-elements node)
           (append (node-elements node) (list elem))))
@@ -880,7 +729,7 @@
   ;;-----------------------------------------------------------------------
   ;;  Jumpable
   ;;-----------------------------------------------------------------------
-  ;;  This used to be an abstract superclass for jumpable objects  In
+  ;;  This used to be an abstract superclass for jumpable objects.  In
   ;;  general, these are either cards or %card-sequence%s.
 
   ;; TODO - Get rid of wrapper.
@@ -895,7 +744,7 @@
   ;;  By default, groups of cards are not assumed to be in any particular
   ;;  linear order, at least for purposes of program navigation.
 
-  (provide define-group-template group %card-group% group-members card-group?)
+  (provide group %card-group% group-members card-group?)
 
   (define (card-or-card-group? node)
     (or (card? node) (card-group? node)))
@@ -932,7 +781,6 @@
     (set! (group-members group)
           (append (group-members group) (list member))))
 
-  (define-template-definer define-group-template %card-group%)
   (define-node-definer group %card-group%)
 
   ;;-----------------------------------------------------------------------
@@ -949,7 +797,7 @@
   ;;-----------------------------------------------------------------------
   ;;  Like groups, but ordered.
 
-  (provide sequence %card-sequence% card-sequence? define-sequence-template)
+  (provide sequence %card-sequence% card-sequence?)
 
   (define-class %card-sequence% (%card-group%)
     (with-instance (.class)
@@ -1004,7 +852,6 @@
   ;; TODO - Get rid of wrapper functions.
   (define card-sequence? (make-node-type-predicate %card-sequence%))
 
-  (define-template-definer define-sequence-template %card-sequence%)
   (define-node-definer sequence %card-sequence%)
 
   ;;-----------------------------------------------------------------------
@@ -1013,7 +860,7 @@
   ;;  More functions are defined in the next section below.
 
   (provide %card% card? card-next card-prev jump-next jump-prev jump-current
-           define-card-template card)
+           card)
 
   (define-class %card% (%group-member%)
     (with-instance (.class)
@@ -1059,28 +906,39 @@
   (define (jump-current)
     (jump (current-static-card)))
   
-  (define-template-definer define-card-template %card%)
   (define-node-definer card %card%)
 
   ;;-----------------------------------------------------------------------
   ;; Elements
   ;;-----------------------------------------------------------------------
 
-  (provide element? define-element-template ; %element%
+  (provide element? ; %element%
            default-element-parent call-with-default-element-parent
-           with-default-element-parent create)
+           with-default-element-parent)
 
   ;; TODO - Merge this element class with one in tamale.ss.  Should we
   ;; rename this one until we do?
   (define-class %element% (%node%)
+    (attr-default name (gensym))
+    (attr-default parent (default-element-parent))
+
     (def (initialize &rest keys)
       (super)
-      (node-add-element! (node-parent self) self)))
+      (unless (.parent)
+        (error (cat (.class) " .new: Can't create '" (.name)
+                    " without a parent node")))
+      (unless (symbol? (.name))
+        (error (cat (.class) " .new: name must be a symbol; given " (.name))))
+      (check-node-name (.name))
+      (node-add-element! (.parent) self)
+      (.enter-node))
+    )
 
   ;; TODO - Get rid of wrapper functions.  
   (define element? (make-node-type-predicate %element%))
 
-  (define-template-definer define-element-template %element%)
+  ;; We really don't want this.  I'm leaving it commented out, with a
+  ;; warning, so nobody puts it back without a lot of hard design thinking.
   ;;(define-node-definer element %element% %element%)
   
   (define (default-element-parent)
@@ -1137,8 +995,8 @@
 
   (with-instance %node%
     (def (enter-node)
-      ;; TODO - Make sure all our template properties are bound.
-      ;; Mark this node as running so we can add event handlers and CREATE
+      ;; TODO - Make sure all our template properties are bound.  Mark this
+      ;; node as running so we can add event handlers and call .NEW on
       ;; elements.
       (%assert (eq? (.node-state) 'ENTERING))
       ;; Register this node in the table of running nodes.
@@ -1148,16 +1006,24 @@
       (%assert (null? (node-elements self)))
       ;; Let the world know that we're starting to run this node.
       (.notify-enter)
-      ;; Run our body function.  This may take quite a while, play media,
-      ;; and so on--this is where "card" bodies actually get run.
-      (.run-body)
+      ;; Do initial setup, and create any child elements.
+      (.call-method-with-mandatory-super 'setup)
       ;; Let the node know all initialization functions have been run.
       ;; (This allows "two-phase" construction, where templates can effectively
       ;; send messages to subtemplates.)
-      (send/nonrecursive* (lambda () #f) self 'setup-finished)
+      (.call-method-with-mandatory-super 'setup-finished)
+      ;; Run our body function.  This may take quite a while, play media,
+      ;; and so on--this is where "card" bodies actually get run.
+      (.call-method-with-mandatory-super 'run)
+      ;; Let the hook system know that we've finished card body.  This is
+      ;; theoretically useful for various sorts of "card completed" systems
+      ;; and possibly for automated testing.
       (.notify-body-finished)
       (set! (.node-state) 'ACTIVE))
 
+    ;; XXX - These are actually internal functions for overring by
+    ;; nodes.ss.  If you want public access to them, it will probably be
+    ;; necessary to actually tidy this stuff up.
     (def (notify-enter))
     (def (notify-body-finished))
     (def (notify-exit))
@@ -1178,8 +1044,8 @@
       (run-on-exit-handler self)
       ;; Unregister from the running node table.
       (.unregister)
-      ;; Mark this node as no longer active, so nobody tries to call ON
-      ;; or CREATE on it.
+      ;; Mark this node as no longer active.  This can be checked by
+      ;; assertions, if that helps anybody.
       (set! (.node-state) 'EXITED))
     )
 
@@ -1241,7 +1107,7 @@
 
   (define (node-or-elements-have-expensive-handlers? node)
     ;; See if NODE or any of its elements have expensive handlers.
-    (or (node-has-expensive-handlers? node)
+    (or (node-has-expensive-event-methods? node)
         (let recurse [[elements (node-elements node)]]
           (if (null? elements)
               #f
@@ -1312,7 +1178,7 @@
 
   (define *running-on-exit-handler-for-node* #f)
 
-  (define (run-on-exit-handler node) ; FIXME - heh.
+  (define (run-on-exit-handler node)
     ;; This is pretty simple--just send an EXIT message.  But we need to
     ;; trap any JUMP calls and quit immediately, because actually allowing
     ;; the jump will hopeless corrupt the data structures in this file.
@@ -1324,7 +1190,7 @@
           (fluid-let [[*running-on-exit-handler-for-node* node]]
             (%assert *running-on-exit-handler-for-node*)
             (with-errors-blocked (non-fatal-error)
-              (send/nonrecursive* (lambda () #f) node 'exit))
+              (node .call-method-with-mandatory-super 'exit))
             (set! exited-safely? #t)))
         (lambda ()
           (unless exited-safely?
