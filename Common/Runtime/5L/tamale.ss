@@ -1048,6 +1048,38 @@
       (when (and (not (url? native)) (file-exists? native))
         (call-5l-prim 'MediaAttachCaptionFile (node-full-name elem) native))))
 
+  (define (add-common-media-methods! klass)
+    (with-instance klass
+      ;;; Pause playback.
+      (def (pause)
+        (media-pause self))
+      
+      ;;; Resume playback.
+      (def (resume)
+        (media-resume self))
+      
+      ;;; End playback. From the perspective of the WAIT function, this
+      ;;; media element will skip immediately to the end of playback.
+      (def (end-playback)
+        (media-end-playback self))
+
+      ;;; Set the volume of a media element.  Channels may be LEFT, RIGHT,
+      ;;; ALL, or something else depending on the exact type of media being
+      ;;; played.  Volume ranges from 0.0 to 1.0.
+      (def (set-channel-volume! channel volume)
+        ;; TODO - We should make (set! (.volume) n) map to a call to (set!
+        ;; (.channel-volume 'all) n).
+        (set-media-volume! self channel volume))
+
+      ;;; When FRAME is reached, send an PLAYBACK-TIMER event.
+      (def (set-playback-timer! frame)
+        (call-5l-prim 'MovieSetPlaybackTimer (node-full-name self) frame))
+      
+      ;;; Clear an exiting playback timer.
+      (def (clear-playback-timer!)
+        (call-5l-prim 'MovieClearPlaybackTimer (node-full-name self)))
+      ))
+
   #|
   ;;; The superclass of all audio-only elements.
   ;;; @see %movie%
@@ -1293,6 +1325,9 @@
 
     (attr-default shown? (or (not (.audio-only?)) (.controller?)))
 
+    ;; Mix in pause, resume, and other common media-related methods.
+    (add-common-media-methods! self)
+
     ;;; Report a problem with the movie, and ask the user what to do.
     (def (movie-problem title msg)
       (define result
@@ -1337,40 +1372,6 @@
     ;;; The controller bar turns off timeouts.)
     (def (set-timeout! seconds)
       (call-5l-prim 'MovieSetTimeout (node-full-name self) seconds))
-
-    ;; BEGIN DUPLICATE CODE - Because we don't have multiple inheritence,
-    ;; the API below is shared with %media-element%.
-
-    ;;; Pause playback.
-    (def (pause)
-      (media-pause self))
-
-    ;;; Resume playback.
-    (def (resume)
-      (media-resume self))
-
-    ;;; End playback. From the perspective of the WAIT function, this media
-    ;;; element will skip immediately to the end of playback.
-    (def (end-playback)
-      (media-end-playback self))
-
-    ;;; Set the volume of a media element.  Channels may be LEFT, RIGHT,
-    ;;; ALL, or something else depending on the exact type of media being
-    ;;; played.  Volume ranges from 0.0 to 1.0.
-    (def (set-channel-volume! channel volume)
-      ;; TODO - We should make (set! (.volume) n) map to a call to (set!
-      ;; (.channel-volume 'all) n).
-      (set-media-volume! self channel volume))
-
-    ;;; When FRAME is reached, send an PLAYBACK-TIMER event.
-    (def (set-playback-timer! frame)
-      (call-5l-prim 'MovieSetPlaybackTimer (node-full-name self) frame))
-
-    ;;; Clear an exiting playback timer.
-    (def (clear-playback-timer!)
-      (call-5l-prim 'MovieClearPlaybackTimer (node-full-name self)))
-
-    ;; END DUPLICATE CODE
 
     (def (setup)
       (super)
