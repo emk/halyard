@@ -14,17 +14,17 @@
   ;; Make a moveable object -- one that can be dragged around the screen
   ;;  using the mouse.
   (define-element-template %simple-draggable-object%
-      [[bounds :type <rect> :default $screen-rect
-               :label "Boundary for region of motion"]
+      [[drag-bounds :type <rect> :default $screen-rect
+                    :label "Boundary for region of motion"]
        [float-when-dragging? :type <boolean> :default #t
                              :label "Float above other items when dragging"]]
       (%custom-element%)
-    (define max-x (- (rect-right bounds) 
+    (define max-x (- (rect-right (.drag-bounds)) 
                      (rect-width (prop self shape))))
-    (define max-y (- (rect-bottom bounds) 
+    (define max-y (- (rect-bottom (.drag-bounds)) 
                      (rect-height (prop self shape))))
-    (define min-x (rect-left bounds))
-    (define min-y (rect-top bounds))
+    (define min-x (rect-left (.drag-bounds)))
+    (define min-y (rect-top (.drag-bounds)))
     (define offset-x 0)
     (define offset-y 0)
     (define (apply-drag-offset p)

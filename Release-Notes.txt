@@ -43,8 +43,17 @@ ruby-style classes (F#928):
     a future GUI editor.
   * It is now mandatory, when overriding SETUP, SETUP-FINISHED, RUN, and
     EXIT, to call (SUPER).  This is enforced by the runtime.
+  * Changed %nocreate protocol on %custom-element%.  See the source.
+  * The :SHAPE argument of %CUSTOM-ELEMENT% _must_ have an origin of 0,0.
+    If you want the old behavior, use :BOUNDS instead.
+  * Added new (SHAPE width height) function which calls (RECT 0 0 width
+    height), for use with :SHAPE initializers (just to keep the code clean).
   * Renamed:
-    - SET-VOLUME! -> .SET-CHANNEL-VOLUME! on %movie%
+    - ON SET-VOLUME! -> .SET-CHANNEL-VOLUME! on %movie%
+    - POLYGON-BOUNDS -> POLYGON-BOUNDING-BOX
+    - BOUNDS -> BOUNDING-BOX
+    - ON BOUNDS -> .BOUNDING-BOX on %element%
+    - .BOUNDS -> .DRAG-BOUNDS on %simple-draggable-object%
 
 0.4.7 - 20 Dec 2007 - emk, brian
 

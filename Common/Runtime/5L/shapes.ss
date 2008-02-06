@@ -24,7 +24,8 @@
            move-rect-center-to move-shape-left-top-to center-shape-on
            shape-at?
 
-           point-in-shape? offset-by-point inset-rect shape-origin bounds)
+           point-in-shape? offset-by-point inset-rect shape-origin
+           bounding-box)
 
   ;;; Move a point by the specified amount.
   ;;;
@@ -98,7 +99,7 @@
   
   ;;; Return the center point of the bounding box of SHAPE.
   (define (shape-center obj)
-    (rect-center (bounds obj)))
+    (rect-center (bounding-box obj)))
 
   ;;; Create a new rect with the same size and vertical position as R, with
   ;;; the left edge at H.
@@ -148,15 +149,15 @@
 
   ;;; Center SHAPE relative to ON-SHAPE, returning the centered shape.
   (define (center-shape-on shape on-shape)
-    (define new-bounds (move-rect-center-to (bounds shape) 
+    (define new-bounds (move-rect-center-to (bounding-box shape) 
                                             (shape-center on-shape)))
     (define offset (point-difference (rect-left-top new-bounds)
-                                     (rect-left-top (bounds shape))))
+                                     (rect-left-top (bounding-box shape))))
     (offset-by-point shape offset))
 
   ;;; Return #t if SHAPE is located at the specified point.
   (define (shape-at? shape p)
-    (assert (equals? p (rect-left-top (bounds shape)))))
+    (assert (equals? p (rect-left-top (bounding-box shape)))))
 
   ;;; Return true if P falls inside SHAPE.
   (defgeneric (point-in-shape? (p <point>) (shape <shape>)))
@@ -197,15 +198,15 @@
     (rect-left-top shape))
 
   (defmethod (shape-origin (shape <polygon>))
-    (rect-left-top (polygon-bounds shape)))
+    (rect-left-top (polygon-bounding-box shape)))
 
   ;;; Calculate the bounding rectangle of SHAPE.
-  (defgeneric (bounds (shape <shape>)))
+  (defgeneric (bounding-box (shape <shape>)))
 
-  (defmethod (bounds (shape <rect>))
+  (defmethod (bounding-box (shape <rect>))
     shape)
   
-  (defmethod (bounds (shape <polygon>))
+  (defmethod (bounding-box (shape <polygon>))
     (define pts (polygon-vertices shape))
     (if (null? pts)
         (rect 0 0 0 0)

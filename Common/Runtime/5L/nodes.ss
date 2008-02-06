@@ -246,7 +246,7 @@
               ((.superclass) .recursive-or-of-method name stop-at-class))))
 
       ;; Does this class define any methods for handling expensive events?
-      (attr defines-expensive-event-methods? #f)
+      (attr defines-expensive-event-methods? #f :writable? #t)
 
       ;; Does this class or any of its superclasses define methods for
       ;; handling expensive events?
@@ -254,7 +254,7 @@
         (.recursive-or-of-method 'defines-expensive-event-methods? self))
 
       ;; Does this class define any methods for handling mouse events?
-      (attr defines-mouse-event-methods? #f)
+      (attr defines-mouse-event-methods? #f :writable? #t)
 
       ;; Does this class or any of its superclasses define methods for
       ;; handling mouse events?
@@ -309,7 +309,7 @@
         (set! (.has-expensive-event-methods?) #t)
         (*engine* .enable-expensive-events #t))
       (when (and (eq? (.wants-cursor?) 'auto)
-                 ((.class) .has-mouse-events-methods?))
+                 ((.class) .has-mouse-event-methods?))
         (set! (.wants-cursor?) #t)))
 
     ;; Call a "mandatory method" (see DEFINE-METHOD-WITH-MANDATORY-SUPER),
@@ -931,8 +931,20 @@
       (unless (symbol? (.name))
         (error (cat (.class) " .new: name must be a symbol; given " (.name))))
       (check-node-name (.name))
-      (node-add-element! (.parent) self)
-      (.enter-node))
+      (node-add-element! (.parent) self))
+
+    (with-instance (.class)
+      ;;; We call .enter-node on elements as soon as we create them (unlike
+      ;;; cards, which handle this in a slightly different way).  It's
+      ;;; important that we don't call .enter node until _after_
+      ;;; ruby-object-initialized? is set to #f by the default .new method,
+      ;;; or else .setup and .run will appear to be running inside the
+      ;;; constructor.  So we can't put this code in .initialize!
+      (def (new &rest keys)
+        (define elem (super))
+        (elem .enter-node)
+        elem))
+      
     )
 
   ;; TODO - Get rid of wrapper functions.  

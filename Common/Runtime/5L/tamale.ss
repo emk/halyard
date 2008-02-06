@@ -83,10 +83,10 @@
   ;;;  Core Element Support
   ;;;======================================================================
 
-  (provide local->card %element% %invisible-element% #|%custom-element%
-           %box% box %clickable-zone% clickable-zone
+  (provide local->card %element% %invisible-element% %custom-element%
+           #|%box% box|# %clickable-zone% clickable-zone
            delete-element delete-elements
-           element-exists? delete-element-if-exists |#)
+           element-exists? delete-element-if-exists)
 
   (define $black (color 0 0 0))
   (define $transparent (color 0 0 0 0))
@@ -125,8 +125,9 @@
     (attr shown? #t :type <boolean> :label "Shown?"
           :after-set (method () (set! (element-shown? self) (.shown?))))
 
-    ;;; Return the bounding box of this element, or #f if it has no bounds.
-    (def (bounds)
+    ;;; Return the bounding box of this element, or #f if it has no
+    ;;; bounding-box.
+    (def (bounding-box)
       #f)
 
     (def (setup-finished)
@@ -152,7 +153,7 @@
             (parent .shape)
             $screen-rect))
       (define desired-shape (center-shape-on (.shape) parent-shape))
-      (set! (.at) (rect-left-top (bounds desired-shape))))
+      (set! (.at) (rect-left-top (bounding-box desired-shape))))
     )
 
   ;;; The abstract superclass of all elements which have no on-screen
@@ -170,64 +171,144 @@
     (attr-value at (rect-left-top (.rect)))
 
     ;;; Return the bounding rectangle for this element.
-    (def (bounds)
+    (def (bounding-box)
       (.rect))
 
     ;;; Set the keyboard focus to this element.
     (def (focus)
       (call-5l-prim 'Focus (node-full-name self))))
 
-  #|
+  ;; Let the engine know whether we want a cursor.  Note that the engine
+  ;; knows nothing about 'auto, so we need to map it to #f manually.
+  (define (set-wants-cursor! elem value)
+    (call-5l-prim 'WantsCursorSet (node-full-name elem)
+                  (case value
+                    [[#f auto] #f]
+                    [[#t] #t])))
+
+  ;; Let the engine know whether we're currently dragging this object.
+  (define (set-in-drag-layer?! elem value)
+    (call-5l-prim 'ElementSetInDragLayer (node-full-name elem) value))
+  
+  ;; Does S posses either negative width or negative height?
+  (define (negative-shape? s)
+    (define r (bounding-box s))
+    (or (> 0 (rect-height r))
+        (> 0 (rect-width r))))
+
   ;;; A %custom-element% is a lightweight element (i.e., implemented by the
   ;;; engine, not by the OS), optionally with an associated drawing
   ;;; overlay.
-  (define-element-template %custom-element%
-      [[at :new-default (point 0 0)]
-       [shape :type <shape> :label "Shape"]
-       [cursor :type <symbol> :default 'hand :label "Cursor"]
-       [overlay? :type <boolean> :default #t :label "Has overlay?"]
-       [alpha? :type <boolean> :default #f :label "Overlay transparent?"]
-       [wants-cursor? :new-default 'auto]
-       [clickable-where-transparent? :type <boolean> :default #f
-                                     :label "Clickable where transparent?"]
-       [dragging? :type <boolean> :default #f :label "In drag layer?"]
-       [%nocreate? :type <boolean> :default #f
-                   :label "Set to true if subclass creates in engine"]]
-      (%element%)
+  ;;;
+  ;;; Normally, %custom-element% is created by specifying :at and :shape.
+  ;;; In this case (shape-origin shape) must return (point 0 0).  For
+  ;;; example:
+  ;;;
+  ;;;   :at (point 10 10) :shape (rect 0 0 100 100)
+  ;;;
+  ;;; ...or, more colloquially:
+  ;;;
+  ;;;   :at (point 10 10) :shape (shape 100 100)
+  ;;;
+  ;;; If you want to use a shape with non-zero origin, you can instead
+  ;;; write:
+  ;;;
+  ;;;   :bounds (rect 10 10 110 110)
+  (define-class %custom-element% (%element%)
+
+    (with-instance (.class)
+      ;;; Ignore the presence of initializer keyword ":name".  This is so
+      ;;; other attrs can be initialized from this keyword, without ever
+      ;;; needing to have a corresponding slot[1].  Note that this could be
+      ;;; refactored into ruby-objects.ss if anybody else needs to use it.
+      ;;;
+      ;;; [1] See %initializer-keywords% in ruby-objects.ss for details of
+      ;;; the strange phantom objects we use during initialization.
+      (def (ignore-initializer name)
+        (define setter-name (symcat "set-" name "!"))
+        (.define-method setter-name
+          (method (value)
+            (if (.initialized?)
+                (error (cat self " ." setter-name " may only be called "
+                            "during initialization"))
+                ;; Just ignore any initializers for this attr.
+                (void)))))
+      )
+
+    ;; Support code for at/shape/bounds initializers.  We use .bounds to
+    ;; provide default values for .at and .shape, and then we just throw it
+    ;; away without actually storing it anywhere.
+    (attr-default at (shape-origin (.bounds)))
+    (attr shape
+          (offset-by-point (.bounds) (elem-map - (shape-origin (.bounds))))
+          :type <shape> :label "Shape")
+    (.ignore-initializer 'bounds)
+    (def (bounds)
+      (offset-by-point (.shape) (.at)))
+
+    ;; Change our default :wants-cursor? value from #f to the magic 'auto,
+    ;; which is used in conjunction with some .define-method magic in
+    ;; nodes.ss to set .wants-cursor? to #t whenever a mouse handler is
+    ;; defined by one of our subclasses.
+    (attr-default wants-cursor? 'auto)
+
+    (attr cursor     'hand :type <symbol>  :label "Cursor")
+    (attr overlay?   #t    :type <boolean> :label "Has overlay?")
+    (attr alpha?     #f    :type <boolean> :label "Overlay transparent?")
+    (attr dragging?  #f    :type <boolean> :label "In drag layer?")
+    (attr clickable-where-transparent? #f
+          :type <boolean> :label "Clickable where transparent?")
+
+    (def (initialize &rest keys)
+      (super)
+      
+      ;; All overlays are erased by the engine at creation time, so we can
+      ;; skip the first call to ERASE-BACKGROUND.  Yes, this is a
+      ;; performance hack.
+      (set! (slot 'erased-by-engine?) #t)
+
+      ;;; Make sure that this element has a non-negative initial shape.
+      ;;; TODO - Move into set-shape!.
+      (when (negative-shape? (.shape))
+        (let [[original-shape (.shape)]]
+          (set! (.shape) (rect 0 0 0 0))
+          (error (cat "%custom-element%: " (node-full-name self)
+                      " may not have a negative-sized shape: " 
+                      original-shape "."))))
+      )
     
-    ;; This variable will disable passing prop change events to %ELEMENT%
-    ;; while we're initializing out AT and SHAPE paremeters. If we didn't
-    ;; do that, element would try and pass our changes to AT to the underlying
-    ;; object, which hasn't been created yet. See below for why we need to muck
-    ;; with AT during element creation. 
-    (define initializing-origin? #t)
-    
-    ;; Let the engine know whether we want a cursor.
-    (define (set-wants-cursor! value)
-      (call-5l-prim 'WantsCursorSet (node-full-name self)
-                    (case value
-                      [[#f auto] #f]
-                      [[#t] #t])))
+    (def (setup)
+      (super)
+      (.create-engine-element))
 
-    ;; Let the engine know whether we're currently dragging this object.
-    (define (set-in-drag-layer?! value)
-      (call-5l-prim 'ElementSetInDragLayer (node-full-name self) value))
+    ;;; Various subclasses of %custom-element% may need to override
+    ;;; .create-engine-element if they have some sort of specialized C++
+    ;;; implementation.
+    (def (create-engine-element)
+      (if (.overlay?)
+        (call-5l-prim 'Overlay (node-full-name self)
+                      (parent->card self (.bounds))
+                      (make-node-event-dispatcher self) (.cursor) (.alpha?)
+                      (.clickable-where-transparent?))
+        (call-5l-prim 'Zone (node-full-name self)
+                      (parent->card self (as <polygon> (.bounds)))
+                      (make-node-event-dispatcher self) (.cursor))))
 
-    (on bounds ()
-      (bounds (offset-by-point (.shape) (.at))))
-
-    (on setup-finished ()
-      (call-next-handler)
+    (def (setup-finished)
+      (super)
       ;; We need to postpone this until the underlying engine object
-      ;; is created.
-      (set-wants-cursor! wants-cursor?)
-      (set-in-drag-layer?! dragging?)
-      (send self invalidate))
+      ;; is created.  This is tied into the ugly %nocreate% stuff.
+      (set-wants-cursor! self (.wants-cursor?))
+      (set-in-drag-layer?! self (.dragging?))
+      (.invalidate))
+
+    (def (bounding-box)
+      (bounding-box (.bounds)))
 
     ;;; Invalidate the contents of this %custom-element% (perhaps because
     ;;; of a property change).  Makes sure that DRAW gets called before the
     ;;; next screen update.
-    (on invalidate ()
+    (def (invalidate)
       ;; XXX - See bug #4779.  We have a problem with MOUSE-ENTER and
       ;; MOUSE-LEAVE being sent at non-idle times, which triggers
       ;; inappropriate screen redraws.  This is especially problematic when
@@ -235,35 +316,28 @@
       ;; is an ugly workaround--it prevents most well-written
       ;; mouse-enter/mouse-leave handlers from actually drawing anything.
       ;; This is (hopefully) a low-impact workaround on the stable branch.
-      (when (and overlay? (memq (.node-state) '(ENTERING ACTIVE)))
+      (when (and (.overlay?) (memq (.node-state) '(ENTERING ACTIVE)))
         (with-dc self
-          (send self erase-background)
-          (send self draw))))
-    
-    ;; All overlays are erased by the engine at creation time, so we can
-    ;; skip the first call to ERASE-BACKGROUND.  Yes, this is a performance
-    ;; hack.
-    (define erased-by-engine? #t)
+          (.erase-background)
+          (.draw))))
     
     ;;; Erases the background of an overlay in preperation for a redraw.
     ;;; If you know that your DRAW handler overwrites the entire overlay,
     ;;; you can override this function and have it do nothing.
-    (on erase-background ()
-      (unless erased-by-engine?
-        (clear-dc (if alpha? $transparent $black)))
-      (set! erased-by-engine? #f))
+    (def (erase-background)
+      (unless (slot 'erased-by-engine?)
+        (clear-dc (if (.alpha?) $transparent $black)))
+      (set! (slot 'erased-by-engine?) #f))
 
     ;;; Draw this element, based on current property values.  Does not
     ;;; actually update the user-visible screen until the next REFRESH or
     ;;; blocking function.
-    (on draw ()
-      #f)
+    (def (draw)
+      (void))
     
-    (define (negative-shape? s)
-      (define r (bounds s))
-      (or (> 0 (rect-height r))
-          (> 0 (rect-width r))))
-    
+    #| XXX - This needs to be ported to the new system. (Which hasn't been
+       designed yet.  But hey--not our problem yet.)
+
     (on prop-change (name value prev veto)
       (case name
         [[cursor] (set-element-cursor! self value)]
@@ -279,27 +353,27 @@
          
          (unless initializing-origin?
            ;; Our shape must always have an origin of zero.
-           (assert (equals? (point 0 0) (rect-left-top (bounds value))))
-           (if overlay?
+           (assert (equals? (point 0 0) (shape-origin value)))
+           (if (.overlay?)
              (call-5l-prim 'OverlaySetShape (node-full-name self) value)
              (call-5l-prim 'ZoneSetShape (node-full-name self)
-                           (offset-by-point (as <polygon> value)
-                                            (.at))))
-           (send self invalidate))]
+                           (offset-by-point (as <polygon> value) (.at))))
+           (.invalidate))]
         [[wants-cursor?]
-         (set-wants-cursor! value)]
+         (set-wants-cursor! self value)]
         [[dragging?]
-         (set-in-drag-layer?! value)]
+         (set-in-drag-layer?! self value)]
         [else (call-next-handler)]))
+    |#
     
     ;;; Resize this element to fit exactly all of its childrent, plus
     ;;; PADDING pixels on the edge.  If PADDING is non-zero, then
     ;;; offset all children by PADDING on both axes.
-    (on fit-to-children! (&opt (padding 0))
+    (def (fit-to-children! &opt (padding 0))
       (define max-x 0)
       (define max-y 0)
-      (foreach (child (node-elements self))
-        (define r (send child bounds))
+      (foreach [child (node-elements self)]
+        (define r (child .bounding-box))
         (set! max-x (max max-x (rect-right r)))
         (set! max-y (max max-y (rect-bottom r)))
         (unless (= padding 0)
@@ -308,63 +382,9 @@
       (set! (.shape) (rect 0 0 
                            (+ (* 2 padding) max-x) 
                            (+ (* 2 padding) max-y))))
-    
-    ;;; Make sure that this element has a non-negative initial shape.
-    (when (negative-shape? shape)
-      (let [[original-shape shape]]
-        (set! (.shape) (rect 0 0 0 0))
-        (error (cat "%custom-element%: " (node-full-name self)
-                    " may not have a negative-sized shape: " 
-                    original-shape "."))))
-    
-    ;; The way we want custom elements to work is that AT represents the
-    ;; origin of a custom element, and the actual shape on the screen is
-    ;; SHAPE offset by AT. The problem is that this is very inconvenient
-    ;; for scripters, and doesn't match the basic zone interface that we've
-    ;; always given them, which is that they just pass in the pre-offset
-    ;; shape on the screen. In order to deal with this, we normalize the
-    ;; parameters we are passed so that AT represents the origin of the
-    ;; object and SHAPE is the shape relative to AT. We do this as follows.
-    (define the-origin (shape-origin shape))
-    ;; 1. Check to make sure we don't have both AT and SHAPE away from the 
-    ;;    origin.
-    (unless (or (equals? at (point 0 0))
-                (equals? the-origin (point 0 0)))
-      (error "Cannot specify AT unless SHAPE has its origin at 0,0: "
-             (node-full-name self)))
-    (define real-shape
-      (if (equals? the-origin (point 0 0))
-        ;; 2. If the origin of our SHAPE parameter is (0,0), then we'll leave
-        ;;    SHAPE and AT alone, and just pass to our underlying object our 
-        ;;    REAL-SHAPE, which is our SHAPE offset by our AT.
-        (offset-by-point shape at)
-        ;; 3. If our AT parameter is (0,0), then we want to move our AT to the 
-        ;;    origin of our shape, and then move the shape such that its origin
-        ;;    is (0,0). REAL-SHAPE will be our original shape. 
-        (let ((orig-shape shape))
-          (set! at the-origin)
-          (set! shape (offset-by-point orig-shape 
-                                       (point
-                                        (- (point-x the-origin))
-                                        (- (point-y the-origin)))))
-          orig-shape)))
-    ;; We're done mucking around with our AT parameter, so we can now allow 
-    ;; prop change messages for AT to go to propagate to our parent classes. 
-    (set! initializing-origin? #f)
-    
-    (cond
-     [%nocreate?
-      #f]
-     [overlay?
-      (call-5l-prim 'Overlay (node-full-name self)
-                    (parent->card self real-shape)
-                    (make-node-event-dispatcher self) cursor alpha?
-                    clickable-where-transparent?)]
-     [else
-      (call-5l-prim 'Zone (node-full-name self)
-                    (parent->card self (as <polygon> real-shape))
-                    (make-node-event-dispatcher self) cursor)]))
+    )
   
+  #|
   ;;; A box is a generic, invisible container element.  It exists only
   ;;; to be the parent of other elements.
   (define-element-template %box%
@@ -376,36 +396,32 @@
   (define (box shape &key (name (gensym)) (parent (default-element-parent))
                (shown? #t))
     (create %box% :name name :parent parent :shown? shown? :shape shape))
+  |#
 
   ;;; A %clickable-zone% will run the specified ACTION when the user clicks on
   ;;; it.
-  (define-element-template %clickable-zone%
-      [[action :label "Action"]
-       [overlay? :new-default #f]]
-      (%custom-element%)
-    (on prop-change (name value prev veto)
-      (case name
-        [[action] (void)]
-        [else (call-next-handler)]))
-    (on mouse-down (event)
-      (action)))
+  (define-class %clickable-zone% (%custom-element%)
+    (attr action :label "Action" :writable? #t)
+    (attr-default overlay? #f)
+
+    (def (mouse-down event)
+      ((.action))))
 
   ;;; Create a %clickable-zone%.
-  (define (clickable-zone shape action
+  (define (clickable-zone bounds action
                           &key (name (gensym)) (cursor 'hand)
                           (overlay? #f) (alpha? #f)
                           (parent (default-element-parent))
                           (shown? #t))
-    (create %clickable-zone%
-            :name name
-            :parent parent
-            :shown? shown?
-            :shape shape
-            :cursor cursor
-            :action action
-            :overlay? overlay?
-            :alpha? alpha?))
-  |#
+    (%clickable-zone% .new
+      :name name
+      :parent parent
+      :shown? shown?
+      :bounds bounds
+      :cursor cursor
+      :action action
+      :overlay? overlay?
+      :alpha? alpha?))
   
   (define (element-exists-in-engine? elem)
     (call-5l-prim 'ElementExists (node-full-name elem)))
@@ -416,7 +432,6 @@
     (when (element-exists-in-engine? elem)
       (call-5l-prim 'ElementSetShown (node-full-name elem) show?)))
 
-  #|
   ;;; Delete the specified element.
   (define (delete-element elem-or-name)
     ;; TODO - Get rid of elem-or-name-hack, and rename
@@ -443,7 +458,7 @@
     (when (element-exists? name :parent parent)
       (delete-element (find-node (string->symbol (cat (node-full-name parent)
                                                       "/" name)) #t))))
-  |#
+
 
   ;;;======================================================================
   ;;;  Drawing Functions
@@ -554,7 +569,7 @@
     (on prop-change (name value prev veto)
       (case name
         [[style text]
-         (send self invalidate)]
+         (.invalidate)]
         [else (call-next-handler)]))
     (on draw ()
       (draw-text (dc-rect) style text)))
@@ -604,7 +619,7 @@
       (case name
         [[path]
          (update-shape)
-         (send self invalidate)]
+         (.invalidate)]
         [else (call-next-handler)]))
     
     ;; TODO - Optimize erase-background once we can update the graphic.
@@ -628,7 +643,7 @@
       (%custom-element% :alpha? #t)
     (on prop-change (name value prev veto)
       (case name
-        [[color outline-width outline-color] (send self invalidate)]
+        [[color outline-width outline-color] (.invalidate)]
         [else (call-next-handler)]))
     ;; TODO - Optimize erase-background once we can update our properties.
     (on draw ()
@@ -733,7 +748,9 @@
   ;;; <state-path>/x       These do some sort of movement, not documented
   ;;; <state-path>/y       at the moment. For now, set them both to 0
   ;;;
-  ;;; DEPRECATED: Please use %sprite% instead.
+  ;;; DEPRECATED: For normal code, please use %sprite% instead.  This
+  ;;; class is primarily intended for use with Quake 2 overlays and the
+  ;;; state-db.
   (define-element-template %animated-graphic%
       [[state-path :type <symbol> :label "State DB Key Path"]
        [graphics :type <list> :label "Graphics to display"]]
@@ -761,7 +778,7 @@
       (%custom-element% :shape (animated-graphic-shape frames))
     (on prop-change (name value prev veto)
       (case name
-        [[frame] (send self invalidate)]
+        [[frame] (.invalidate)]
         [else (call-next-handler)]))
     (on draw ()
       (draw-graphic (point 0 0) (list-ref frames frame))))
@@ -871,7 +888,7 @@
               :name 'flash
               :rect $screen-rect
               :activex-id "ShockwaveFlash.ShockwaveFlash"))
-    (send flash set-activex-prop! "movie"
+    (flash .set-activex-prop! "movie"
           (build-path (current-directory) "Flash" path)))
   
 
@@ -902,7 +919,7 @@
     (on prop-change (name value prev veto)
       (case name
         [[path]
-         (send self load-path-internal)]
+         (.load-path-internal)]
         [else (call-next-handler)]))
     
     ;;; Load the specified page in the web browser.  Can be pointed
@@ -953,7 +970,7 @@
                   (make-node-event-dispatcher self)
                   (parent->card self (.rect))
                   fallback?)
-    (send self load-page path))
+    (.load-page path))
 
   ;;; Create a new %browser% object.
   (define (browser r path
@@ -985,11 +1002,11 @@
     ;;; Move the insertion point to the specificed location.  Indices start
     ;;; at 0, and an index of -1 specifies "after the last character".
     (on set-insertion-point! (index)
-      (send self focus)
+      (.focus)
       (call-5l-prim 'EditBoxSetInsertionPoint (node-full-name self) index))
     ;;; Set the selection.  Indices are the same as SET-INSERTION-POINT!.
     (on set-selection! (start end)
-      (send self focus)
+      (.focus)
       (call-5l-prim 'EditBoxSetSelection (node-full-name self) start end))
 
     (call-5l-prim 'EditBox (node-full-name self)
@@ -1533,13 +1550,13 @@
 
     (define mouse-in-button? #f)
     (on draw ()
-      (send self draw-button 
+      (.draw-button 
             (cond [(not enabled?) 'disabled]
                   [(not mouse-in-button?) 'normal]
                   [(mouse-grabbed-by? self) 'pressed]
                   [#t 'active])))
     (define (do-draw refresh?)
-      (send self invalidate)
+      (.invalidate)
       (when refresh?
         (refresh)))
     
@@ -1566,7 +1583,7 @@
         (ungrab-mouse self))
       (do-draw #t)
       (when (and mouse-in-button? was-grabbed?)
-        (send self button-clicked event)))
+        (.button-clicked event)))
     (on button-clicked (event)
       ((.action)))
     )

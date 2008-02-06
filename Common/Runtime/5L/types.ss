@@ -16,6 +16,7 @@
            <rect> (rename make-rect rect) rect?
            rect-left set-rect-left! rect-top set-rect-top!
            rect-right set-rect-right! rect-bottom set-rect-bottom!
+           shape
 
            <color> (rename make-color-opt-alpha color) color?
            color-red set-color-red! color-green set-color-green!
@@ -25,7 +26,7 @@
            <percent> (rename make-percent percent) percent? percent-value
            
            <polygon> polygon polygon? 
-           polygon-vertices polygon-bounds
+           polygon-vertices polygon-bounding-box
 
            <shape> shape?
            )
@@ -98,6 +99,12 @@
                (f (rect-right  r1) (rect-right  r2))
                (f (rect-bottom r1) (rect-bottom r2))))
 
+  ;;; Create a rectangle at 0,0 with the specified WIDTH and HEIGHT.  This
+  ;;; is generally used in conjunction with %custom-element%'s :shape
+  ;;; parameter, which requires a shape with a 0,0 offset.
+  (define (shape width height)
+    (make-rect 0 0 width height))
+
 
   ;;=======================================================================
   ;;  Colors
@@ -169,16 +176,16 @@
 
   ;;; A closed polygon.
   (defclass <polygon> (<shape>)
-    vertices bounds
+    vertices bounding-box
     :printer polygon-printer)
   
   (make-equals?-compare-class+slots <polygon>)
 
   ;;; Create a new polygon.
   (define (polygon &rest args)
-    (make-polygon args (calculate-polygon-bounds args)))
+    (make-polygon args (calculate-polygon-bounding-box args)))
   
-  (define (calculate-polygon-bounds verts)
+  (define (calculate-polygon-bounding-box verts)
     (if (null? verts)
       (make-rect 0 0 0 0)
       (foldl (lambda (point bounds)
