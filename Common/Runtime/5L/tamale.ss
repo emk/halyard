@@ -83,7 +83,7 @@
   ;;;  Core Element Support
   ;;;======================================================================
 
-  (provide local->card #|%element% %invisible-element% %custom-element%
+  (provide local->card %element% #|%invisible-element% %custom-element%
            %box% box %clickable-zone% clickable-zone
            delete-element delete-elements
            element-exists? delete-element-if-exists |#)
@@ -114,38 +114,37 @@
     (foreach [e (node-elements elem)]
       (update-element-position e)))
 
-  #|
-  ;;; The abstract superclass of all elements.
-  (define-element-template %element%
-      [[at :type <point> :label "Position"]
-       [shown? :type <boolean> :label "Shown?" :default #t]]
-      ()
-    (on prop-change (name value prev veto)
-      (case name
-        [[at]
-         (update-element-position self)]
-        [[shown?]
-         (set! (element-shown? self) value)]
-        [else
-         (call-next-handler)]))
+  ;;; The abstract superclass of all elements.  The other half of this
+  ;;; definition appears in nodes.ss.
+  (with-instance %element%
+    ;; XXX - after-set not implemented!
+    ;; XXX - Code for updating (.at) conflicts with code in %widget% and
+    ;; elsewhere, which computes (.at) from (.rect).  See case 2353.
+    (attr at :type <point> :label "Position"
+          :after-set (method () (update-element-position self)))
+    (attr shown? #t :type <boolean> :label "Shown?"
+          :after-set (method () (set! (element-shown? self) (.shown?))))
+
     ;;; Return the bounding box of this element, or #f if it has no bounds.
-    (on bounds ()
+    (def (bounds)
       #f)
-    (on setup-finished ()
+
+    (def (setup-finished)
+      (super)
       ;; TODO - This is technically too late to set this value, and we should
       ;; probably add a SHOWN? parameter to every object creation primitive.
-      (set! (element-shown? self) shown?))
+      (set! (element-shown? self) (.shown?)))
 
     ;;; Raise this element above its siblings.
-    (on raise-to-top! ()
+    (def (raise-to-top!)
       ;; TODO - Rearrange element order in Scheme, too?
       (call-5l-prim 'RaiseToTop (node-full-name self))
       (define elems (node-elements self))
       (foreach [elem elems]
-        (send elem raise-to-top!)))
+        (elem .raise-to-top!)))
 
     ;;; Center this element on its parent.
-    (on center-on-parent! ()
+    (def (center-on-parent!)
       (define parent (node-parent self))
       (define parent-shape
         ;; TODO - There should be a SHAPE method on all (visible?) nodes.
@@ -156,23 +155,30 @@
       (set! (.at) (rect-left-top (bounds desired-shape))))
     )
 
+  #|
   ;;; The abstract superclass of all elements which have no on-screen
   ;;; representation.
   (define-element-template %invisible-element% []
       (%element% :at (point 0 0) :shown? #f))
+  |#
 
   ;;; The superclass of all native GUI elements which can be displayed
   ;;; on the stage.
-  (define-element-template %widget%
-      [[rect :type <rect> :label "Rectangle"]]
-      (%element% :at (rect-left-top rect))
+  (define-class %widget% (%element%)
+    ;; XXX - It's possible for users to call (set! (widget .at) ...), but
+    ;; doing so will fail to upate the rect.  See case 2353.
+    (attr rect :type <rect> :label "Rectangle")
+    (attr-value at (rect-left-top (.rect)))
+
     ;;; Return the bounding rectangle for this element.
-    (on bounds ()
-      rect)
+    (def (bounds)
+      (.rect))
+
     ;;; Set the keyboard focus to this element.
-    (on focus ()
+    (def (focus)
       (call-5l-prim 'Focus (node-full-name self))))
 
+  #|
   ;;; A %custom-element% is a lightweight element (i.e., implemented by the
   ;;; engine, not by the OS), optionally with an associated drawing
   ;;; overlay.
@@ -400,6 +406,7 @@
             :action action
             :overlay? overlay?
             :alpha? alpha?))
+  |#
   
   (define (element-exists-in-engine? elem)
     (call-5l-prim 'ElementExists (node-full-name elem)))
@@ -410,6 +417,7 @@
     (when (element-exists-in-engine? elem)
       (call-5l-prim 'ElementSetShown (node-full-name elem) show?)))
 
+  #|
   ;;; Delete the specified element.
   (define (delete-element elem-or-name)
     ;; TODO - Get rid of elem-or-name-hack, and rename
@@ -1003,6 +1011,7 @@
   ;;;======================================================================
   ;;;  Generic Media Support
   ;;;======================================================================
+  |#
 
   (provide wait tc)
 
@@ -1039,6 +1048,7 @@
       (when (and (not (url? native)) (file-exists? native))
         (call-5l-prim 'MediaAttachCaptionFile (node-full-name elem) native))))
 
+  #|
   ;;; The superclass of all audio-only elements.
   ;;; @see %movie%
   (define-element-template %audio-element%
@@ -1083,6 +1093,7 @@
     ;; it's not quite so easy, because there may be multiple channels to
     ;; contend with. Ugh.
     )
+  |#
 
   ;;; Pause script execution until the end of the specified media element,
   ;;; or until a specific frame is reached.
@@ -1101,7 +1112,8 @@
      [arg2 (+ (* arg1 30) arg2)]
      [else arg1]))
   
-
+  
+  #|
   ;;;======================================================================
   ;;;  Audio Synthesis Elements
   ;;;======================================================================
@@ -1190,7 +1202,7 @@
                         (loop? #f) (volume 1.0))
     (create %vorbis-audio%
             :name name :parent parent :path path :loop? loop? :volume volume))
-
+  |#
 
   ;;;======================================================================
   ;;;  Streaming Media Support
@@ -1266,120 +1278,132 @@
   ;;;======================================================================
   ;;;  Movie Elements
   ;;;======================================================================
-  
+
   (provide %movie% movie)
 
   ;;; A movie.
-  (define-element-template %movie%
-      [[path     :type <string>  :label "Path"]
-       [volume       :type <number>  :label "Volume (0.0 to 1.0)" :default 1.0]
-       [controller?  :type <boolean> :label "Has movie controller" :default #f]
-       [audio-only?  :type <boolean> :label "Audio only"        :default #f]
-       [loop?        :type <boolean> :label "Loop movie"        :default #f]
-       [interaction? :type <boolean> :label "Allow interaction" :default #f]
-       [report-captions? :type <boolean> :label "Report captions?"
-                         :default #t]]
-      (%widget% :shown? (or (not audio-only?) controller?))
-    (define (err title msg)
+  (define-class %movie% (%widget%)
+    (attr path                :type <string>  :label "Path")
+    (attr volume 1.0          :type <number>  :label "Volume (0.0 to 1.0)")
+    (attr controller? #f      :type <boolean> :label "Has controller")
+    (attr audio-only? #f      :type <boolean> :label "Audio only")
+    (attr loop?       #f      :type <boolean> :label "Loop movie")
+    (attr interaction? #f     :type <boolean> :label "Allow interaction")
+    (attr report-captions? #t :type <boolean> :label "Report captions?")
+
+    (attr-default shown? (or (not (.audio-only?)) (.controller?)))
+
+    ;;; Report a problem with the movie, and ask the user what to do.
+    (def (movie-problem title msg)
       (define result
         (native-dialog title msg
                        "&Skip Movie" "E&xit Program"))
       (if (= result 1)
-          (send self end-playback)
-          (send self user-exit-request)))      
-    (define (network-problem type)
-      (err (cat "Network Movie " type)
-           (cat type " loading movie.  You may want to order "
-                "a CD version\nof this program; see the "
-                "README.")))
+          (.end-playback)
+          (.user-exit-request)))
+
+    ;;; Report a problem with the network, and ask the user what to do.
+    (def (network-problem type)
+      (.movie-problem (cat "Network Movie " type)
+                      (cat type " loading movie.  You may want to order "
+                           "a CD version\nof this program; see the "
+                           "README.")))
 
     ;;; Called when the user asks to exit the script because of movie
     ;;; errors.  If you want fancier behavior, you'll need to override this
     ;;; handler.
-    (on user-exit-request ()
+    (def (user-exit-request)
       (exit-script))
 
     ;;; Called when a network timeout occurs for a streaming movie.  Override
     ;;; if you want different behavior.
-    (on media-network-timeout (event)
-      (network-problem "Timeout"))
+    (def (media-network-timeout event)
+      (.network-problem "Timeout"))
+
     ;;; Called when a network error occurs for a streaming movie.  Override
     ;;; if you want different behavior.
-    (on media-network-error (event)
-      (network-problem "Error"))
+    (def (media-network-error event)
+      (.network-problem "Error"))
+
     ;;; Called when a local error occurs for a movie.  Override if you want
     ;;; different behavior.
-    (on media-local-error (event)
-      (error (cat "Error playing movie (" path ")")))
+    (def (media-local-error event)
+      (error (cat "Error playing movie (" (.path) ")")))
 
     ;;; Set the timeout for this movie, in seconds.  A timeout of 0
     ;;; turns off timeout handling.  (Timeouts are actually pretty
     ;;; sophisticated internally; this is the nominal length of time
     ;;; the user will be asked to wait without *something* happening.
     ;;; The controller bar turns off timeouts.)
-    (on set-timeout! (seconds)
+    (def (set-timeout! seconds)
       (call-5l-prim 'MovieSetTimeout (node-full-name self) seconds))
 
     ;; BEGIN DUPLICATE CODE - Because we don't have multiple inheritence,
     ;; the API below is shared with %media-element%.
 
     ;;; Pause playback.
-    (on pause ()
+    (def (pause)
       (media-pause self))
 
     ;;; Resume playback.
-    (on resume ()
+    (def (resume)
       (media-resume self))
 
     ;;; End playback. From the perspective of the WAIT function, this media
     ;;; element will skip immediately to the end of playback.
-    (on end-playback ()
+    (def (end-playback)
       (media-end-playback self))
 
     ;;; Set the volume of a media element.  Channels may be LEFT, RIGHT,
     ;;; ALL, or something else depending on the exact type of media being
     ;;; played.  Volume ranges from 0.0 to 1.0.
-    (on set-volume! (channel volume)
+    (def (set-channel-volume! channel volume)
+      ;; TODO - We should make (set! (.volume) n) map to a call to (set!
+      ;; (.channel-volume 'all) n).
       (set-media-volume! self channel volume))
 
     ;;; When FRAME is reached, send an PLAYBACK-TIMER event.
-    (on set-playback-timer! (frame)
+    (def (set-playback-timer! frame)
       (call-5l-prim 'MovieSetPlaybackTimer (node-full-name self) frame))
 
     ;;; Clear an exiting playback timer.
-    (on clear-playback-timer! ()
+    (def (clear-playback-timer!)
       (call-5l-prim 'MovieClearPlaybackTimer (node-full-name self)))
 
     ;; END DUPLICATE CODE
 
-    (on setup-finished ()
-      (call-next-handler)
-      (media-maybe-attach-caption-file! self path))
-
-    (let [[path (media-path path)]]
+    (def (setup)
+      (super)
+      (define path (media-path (.path)))
       (check-file path)
       (call-5l-prim 'Movie (node-full-name self)
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
-                    path volume
-                    controller? audio-only? loop? interaction?
-                    report-captions?)))
+                    path (.volume)
+                    (.controller?) (.audio-only?) (.loop?) (.interaction?)
+                    (.report-captions?)))
+
+    (def (setup-finished)
+      (super)
+      (media-maybe-attach-caption-file! self (.path)))
+
+    )
 
   ;;; Create a %movie%.
   (define (movie r path
                  &key (name (gensym)) (volume 1.0)
                  controller? audio-only? loop? interaction?
                  (report-captions? #t) (parent (default-element-parent)))
-    (create %movie%
-            :name name :parent parent :rect r :path path
-            :volume volume
-            :controller? controller? 
-            :audio-only? audio-only?
-            :loop? loop?
-            :interaction? interaction?
-            :report-captions? report-captions?))
+    (%movie% .new :name name :parent parent :rect r :path path
+                  :volume volume
+                  :controller? controller? 
+                  :audio-only? audio-only?
+                  :loop? loop?
+                  :interaction? interaction?
+                  :report-captions? report-captions?))
 
-  
+
+  #|
   ;;;======================================================================
   ;;;  State DB Debugging Support
   ;;;======================================================================

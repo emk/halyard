@@ -43,6 +43,8 @@ ruby-style classes (F#928):
     a future GUI editor.
   * It is now mandatory, when overriding SETUP, SETUP-FINISHED, RUN, and
     EXIT, to call (SUPER).  This is enforced by the runtime.
+  * Renamed:
+    - SET-VOLUME! -> .SET-CHANNEL-VOLUME! on %movie%
 
 0.4.7 - 20 Dec 2007 - emk, brian
 

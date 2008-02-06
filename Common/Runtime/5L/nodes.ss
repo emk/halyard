@@ -281,7 +281,7 @@
            (method (event)
              (if (not (.parent))
                (set! (event-handled? event) #f)
-               ((.parent) .send 'name (list event)))))))
+               ((.parent) .send name (list event)))))))
 
       ;;; Define a (basically) null method which sets a flag when it
       ;;; gets called.  This flag can be checked later to make sure that
@@ -912,12 +912,13 @@
   ;; Elements
   ;;-----------------------------------------------------------------------
 
-  (provide element? ; %element%
+  (provide element? %element%
            default-element-parent call-with-default-element-parent
            with-default-element-parent)
 
-  ;; TODO - Merge this element class with one in tamale.ss.  Should we
-  ;; rename this one until we do?
+  ;; The rest of this definition lives in tamale.ss.
+  ;; TODO - Do we need to think about the division of responsibilities
+  ;; here?
   (define-class %element% (%node%)
     (attr-default name (gensym))
     (attr-default parent (default-element-parent))
