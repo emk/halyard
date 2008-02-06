@@ -83,7 +83,7 @@
   ;;;  Core Element Support
   ;;;======================================================================
 
-  (provide local->card %element% #|%invisible-element% %custom-element%
+  (provide local->card %element% %invisible-element% #|%custom-element%
            %box% box %clickable-zone% clickable-zone
            delete-element delete-elements
            element-exists? delete-element-if-exists |#)
@@ -155,12 +155,11 @@
       (set! (.at) (rect-left-top (bounds desired-shape))))
     )
 
-  #|
   ;;; The abstract superclass of all elements which have no on-screen
   ;;; representation.
-  (define-element-template %invisible-element% []
-      (%element% :at (point 0 0) :shown? #f))
-  |#
+  (define-class %invisible-element% (%element%)
+    (attr-value at (point 0 0)) 
+    (attr-value shown? #f))
 
   ;;; The superclass of all native GUI elements which can be displayed
   ;;; on the stage.
@@ -1080,52 +1079,11 @@
         (call-5l-prim 'MovieClearPlaybackTimer (node-full-name self)))
       ))
 
-  #|
   ;;; The superclass of all audio-only elements.
   ;;; @see %movie%
-  (define-element-template %audio-element%
-      [[volume       :type <number> :default 1.0 :label "Volume (0.0 to 1.0)"]]
-      (%invisible-element%)
-
-    ;; BEGIN DUPLICATE CODE - Because we don't have multiple inheritence,
-    ;; the API below is shared with %movie%.
-
-    ;;; Pause playback.
-    (on pause ()
-      (media-pause self))
-
-    ;;; Resume playback.
-    (on resume ()
-      (media-resume self))
-
-    ;;; End playback. From the perspective of the WAIT function, this media
-    ;;; element will skip immediately to the end of playback.
-    (on end-playback ()
-      (media-end-playback self))
-    (on end-playback ()
-      (media-end-playback self))
-
-    ;;; Set the volume of a media element.  Channels may be LEFT, RIGHT,
-    ;;; ALL, or something else depending on the exact type of media being
-    ;;; played.  Volume ranges from 0.0 to 1.0.
-    (on set-volume! (channel volume)
-      (set-media-volume! self channel volume))
-
-    ;;; When FRAME is reached, send an PLAYBACK-TIMER event.
-    (on set-playback-timer! (frame)
-      (call-5l-prim 'MovieSetPlaybackTimer (node-full-name self) frame))
-
-    ;;; Clear an exiting playback timer.
-    (on clear-playback-timer! ()
-      (call-5l-prim 'MovieClearPlaybackTimer (node-full-name self)))
-
-    ;; END DUPLICATE CODE
-
-    ;; I'd like put a ON PROP-CHANGE handler here for audio volume, but
-    ;; it's not quite so easy, because there may be multiple channels to
-    ;; contend with. Ugh.
-    )
-  |#
+  (define-class %audio-element% (%invisible-element%)
+    (attr volume 1.0 :type <number> :label "Volume (0.0 to 1.0)")      
+    (add-common-media-methods! self))
 
   ;;; Pause script execution until the end of the specified media element,
   ;;; or until a specific frame is reached.
@@ -1210,31 +1168,34 @@
   ;;;  Vorbis audio streams.  These are most useful for foley and for
   ;;;  background audio which should continue playing even if the engine is
   ;;;  otherwise occupied.
-  
+  |#
   (provide %vorbis-audio% vorbis-audio)
 
   ;;; Plays an Ogg Vorbis audio stream.
-  (define-element-template %vorbis-audio%
-      [[path :type <string>  :label "Path"]
-       [buffer   :type <integer> :label "Buffer Size (K)" :default 512]
-       [loop?    :type <boolean> :label "Loop this clip?" :default #f]]
-      (%audio-element%)
-    (on setup-finished ()
-      (call-next-handler)
-      (media-maybe-attach-caption-file! self path))
-    (let [[path (make-native-path "LocalMedia" path)]]
-      (check-file path)
-      (call-5l-prim 'AudioStreamVorbis (node-full-name self)
-                    (make-node-event-dispatcher self) path
-                    (.volume) (* 1024 buffer) loop?)))
+  (define-class %vorbis-audio% (%audio-element%)
+    (attr path       :type <string>  :label "Path")
+    (attr buffer 512 :type <integer> :label "Buffer Size (K)")
+    (attr loop?  #f  :type <boolean> :label "Loop this clip?")
+
+    (def (setup-finished)
+      (super)
+      (media-maybe-attach-caption-file! self (.path)))
+    
+    (def (setup)
+      (super)
+      (let [[path (make-native-path "LocalMedia" (.path))]]
+        (check-file path)
+        (call-5l-prim 'AudioStreamVorbis (node-full-name self)
+                      (make-node-event-dispatcher self) path
+                      (.volume) (* 1024 (.buffer)) (.loop?)))))
   
   ;;; Create a %vorbis-audio% element.
   (define (vorbis-audio path
                         &key (name (gensym)) (parent (default-element-parent))
                         (loop? #f) (volume 1.0))
-    (create %vorbis-audio%
-            :name name :parent parent :path path :loop? loop? :volume volume))
-  |#
+    (%vorbis-audio% .new :name name :parent parent :path path 
+                         :loop? loop? :volume volume))
+  
 
   ;;;======================================================================
   ;;;  Streaming Media Support
