@@ -117,14 +117,17 @@
   ;;; The abstract superclass of all elements.  The other half of this
   ;;; definition appears in nodes.ss.
   (with-instance %element%
-    ;; <<<<< SETTERS >>>>>
-    ;; XXX - after-set not implemented!
     ;; XXX - Code for updating (.at) conflicts with code in %widget% and
     ;; elsewhere, which computes (.at) from (.rect).  See case 2353.
-    (attr at :type <point> :label "Position"
-          :after-set (method () (update-element-position self)))
-    (attr shown? #t :type <boolean> :label "Shown?"
-          :after-set (method () (set! (element-shown? self) (.shown?))))
+    (attr at :type <point> :label "Position" :writable? #t)
+    (advise after (set-at! value)
+      (when (.initialized?)
+        (update-element-position self)))
+
+    (attr shown? #t :type <boolean> :label "Shown?" :writable? #t)
+    (advise after (set-shown?! value)
+      (when (.initialized?)
+        (set! (element-shown? self) (.shown?))))
 
     ;;; Return the bounding box of this element, or #f if it has no
     ;;; bounding-box.
@@ -242,7 +245,7 @@
     (attr-default at (shape-origin (.bounds)))
     (attr shape
           (offset-by-point (.bounds) (elem-map - (shape-origin (.bounds))))
-          :type <shape> :label "Shape")
+          :type <shape> :label "Shape" :writable? #t)
     (.ignore-initializer 'bounds)
     (def (bounds)
       (offset-by-point (.shape) (.at)))
@@ -253,13 +256,41 @@
     ;; defined by one of our subclasses.
     (attr-default wants-cursor? 'auto)
 
-    ;; <<<<< SETTERS >>>>>
-    (attr cursor     'hand :type <symbol>  :label "Cursor")
+    (attr cursor     'hand :type <symbol>  :label "Cursor" :writable? #t)
     (attr overlay?   #t    :type <boolean> :label "Has overlay?")
     (attr alpha?     #f    :type <boolean> :label "Overlay transparent?")
-    (attr dragging?  #f    :type <boolean> :label "In drag layer?")
+    (attr dragging?  #f    :type <boolean> :label "In drag layer?" 
+                           :writable? #t)
     (attr clickable-where-transparent? #f
           :type <boolean> :label "Clickable where transparent?")
+
+    (advise after (set-cursor! value)
+      (when (.initialized?)
+        (set-element-cursor! self value)))
+    (advise after (set-wants-cursor?! value)
+      (when (.initialized?)
+        (set-wants-cursor! self value)))
+    (advise after (set-dragging?! value)
+      (when (.initialized?)
+        (set-in-drag-layer?! self value)))
+
+    (advise before (set-shape! value)
+      (define (err reason)
+        (error (cat self " .set-shape! " value ": " reason)))
+      (cond
+       [(not (shape? value))
+        (err "not actually a shape")]
+       [(negative-shape? value)
+        (err "has negative size")]
+       [(not (equals? (point 0 0) (shape-origin value)))
+        (err "has non-zero origin")]))
+    (advise after (set-shape! value)
+      (when (.initialized?)
+        (if (.overlay?)
+          (call-5l-prim 'OverlaySetShape (node-full-name self) value)
+          (call-5l-prim 'ZoneSetShape (node-full-name self)
+                        (offset-by-point (as <polygon> value) (.at))))
+        (.invalidate)))
 
     (def (initialize &rest keys)
       (super)
@@ -336,38 +367,7 @@
     ;;; blocking function.
     (def (draw)
       (void))
-    
-    #| XXX - This needs to be ported to the new system. (Which hasn't been
-       designed yet.  But hey--not our problem yet.)
-
-    (on prop-change (name value prev veto)
-      (case name
-        [[cursor] (set-element-cursor! self value)]
-        ;; Until we're done mucking with AT and SHAPE, we want to allow all
-        ;; changes but not tell anyone else about them.
-        [[at]
-         (unless initializing-origin?
-           (call-next-handler))]
-        [[shape]
-         ;; Make sure that this element is not SET! to a negative-sized shape.
-         (when (negative-shape? value)
-           (veto "%custom-element% shape must have non-negative size."))
-         
-         (unless initializing-origin?
-           ;; Our shape must always have an origin of zero.
-           (assert (equals? (point 0 0) (shape-origin value)))
-           (if (.overlay?)
-             (call-5l-prim 'OverlaySetShape (node-full-name self) value)
-             (call-5l-prim 'ZoneSetShape (node-full-name self)
-                           (offset-by-point (as <polygon> value) (.at))))
-           (.invalidate))]
-        [[wants-cursor?]
-         (set-wants-cursor! self value)]
-        [[dragging?]
-         (set-in-drag-layer?! self value)]
-        [else (call-next-handler)]))
-    |#
-    
+        
     ;;; Resize this element to fit exactly all of its childrent, plus
     ;;; PADDING pixels on the edge.  If PADDING is non-zero, then
     ;;; offset all children by PADDING on both axes.
@@ -1081,7 +1081,6 @@
       ;;; ALL, or something else depending on the exact type of media being
       ;;; played.  Volume ranges from 0.0 to 1.0.
       (def (set-channel-volume! channel volume)
-        ;; <<<<< SETTERS >>>>>
         ;; TODO - We should make (set! (.volume) n) map to a call to (set!
         ;; (.channel-volume 'all) n).
         (set-media-volume! self channel volume))

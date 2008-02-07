@@ -488,7 +488,7 @@
     (attr has-expensive-event-methods?  #f :type <boolean> :writable? #t)
 
     ;; Attributes shared by all nodes.
-    (attr wants-cursor? #f :label "Wants cursor?")
+    (attr wants-cursor? #f :label "Wants cursor?" :writable? #t)
 
     (def (active?)
       (eq? (.node-state) 'ACTIVE))
