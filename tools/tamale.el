@@ -130,7 +130,7 @@ Tamale is a language for card-based interactive multimedia programming."
                "with-instance" "with-handlers" "parameterize"
                "animate" "interpolate" "after" "method" "with-handlers"
                "method" "on" "advise" "attr" "attr-value" "attr-default"
-               "syntax-case" "syntax/loc" "quasisyntax/loc") t)
+               "syntax-case" "syntax/loc" "quasisyntax/loc" "foreach") t)
         "\\>") 1)
 
       ;; Magic variables.

@@ -554,58 +554,60 @@
   ;;;  most of them will get keyword arguments to support accessibility,
   ;;;  and most of their properties will become settable.
 
-  #|
   (provide %text-box% text-box %text% text
-           %graphic% graphic
-           %rectangle% rectangle rectangle-outline)
+           #|%graphic% graphic
+           %rectangle% rectangle rectangle-outline|#)
   
   ;;; A static text element with a specified bounding rectangle.
-  (define-element-template %text-box%
-      [[style :label "Style"]
-       [text :type <string> :label "Text"]]
-      (%custom-element% :alpha? #t)
-    (on prop-change (name value prev veto)
-      (case name
-        [[style text]
-         (.invalidate)]
-        [else (call-next-handler)]))
-    (on draw ()
-      (draw-text (dc-rect) style text)))
+  (define-class %text-box% (%custom-element%)
+    (attr style :label "Style" :writable? #t)
+    (attr text :type <string> :label "Text" :writable? #t)
+    (attr-default alpha? #t)
+ 
+    (advise after (set-style! value)
+      (when (.initialized?)
+        (.invalidate)))
+    (advise after (set-text! value)
+      (when (.initialized?)
+        (.invalidate)))
+
+    (def (draw)
+      (draw-text (dc-rect) (.style) (.text))))
   
-  ;;; Create a new %text% element.
-  (define (text-box r style text
+  ;;; Create a new %text-box% element.
+  (define (text-box bounds style text
                     &key (name (gensym)) (parent (default-element-parent))
                     (shown? #t))
-    (create %text-box%
-            :name name :parent parent :shown? shown?
-            :shape r :style style :text text))
+    (%text-box% .new :name name :parent parent :shown? shown?
+                     :bounds bounds :style style :text text))
   
   ;;; A text element just large enough to fit the specified text.
-  (define-element-template %text%
-      [[max-width :label "Max width" :default (rect-width $screen-rect)]]
-      (%text-box% :shape (measure-text (.style) (.text)
-                  :max-width max-width))
-    (on prop-change (name value prev veto)
-      (define (update-shape!)
-        (set! (.shape)
-              (measure-text (.style) (.text)
-                            :max-width max-width)))
-      (case name
-        [[style text]
-         (update-shape!)
-         (call-next-handler)]
-        [[max-width]
-         (update-shape!)]
-        [else (call-next-handler)])))
+  (define-class %text% (%text-box%)
+    ;; TODO - The default max-width is rather silly.
+    (attr max-width :label "Max width" :default (rect-width $screen-rect))
+
+    ;; TODO - Wouldn't it be nice to handle property dependencies
+    ;; automatically?  I could have written this in a less technical style,
+    ;; but I'm trying to figure out what a general-case solution to these
+    ;; problems is.
+    (attr-value shape (measure-text (.style) (.text) :max-width (.max-width)))
+    (def (%recalculate-shape!)
+      (set! (.shape) (measure-text (.style) (.text) :max-width (.max-width))))
+    (foreach [setter '(set-style! set-text! set-max-width!)]
+      (.advise-method 'after setter
+                      (method (value)
+                        (when (.initialized?)
+                          (.%recalculate-shape!)))))
+    )
   
   ;;; Create a new %fitted-text% element.
   (define (text p style text
                 &key (name (gensym)) (parent (default-element-parent))
                 (shown? #t) (max-width (rect-width $screen-rect)))
-    (create %text%
-            :name name :parent parent :shown? shown?
-            :at p :max-width max-width :style style :text text))
+    (%text% .new :name name :parent parent :shown? shown?
+                 :at p :max-width max-width :style style :text text))
   
+  #|
   ;;; A simple graphic.  For now, you must specify the :ALPHA? value you
   ;;; want; the engine can't compute a reasonable value automatically.
   (define-element-template %graphic%
