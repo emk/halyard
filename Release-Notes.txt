@@ -48,6 +48,12 @@ ruby-style classes (F#928):
     If you want the old behavior, use :BOUNDS instead.
   * Added new (SHAPE width height) function which calls (RECT 0 0 width
     height), for use with :SHAPE initializers (just to keep the code clean).
+  * Added ADVISE special form, which works in a fashion similar to Lisp's
+    DEFADVICE, but for object methods in ruby-objects.ss.
+  * F#2368: Turned report-test-results into an object method so it can
+    be overridden by code that wants to know whether the tests succeeded.
+  * Updated tamale.el to syntax highlight and indent the new object model
+    reasonably well.
   * Renamed:
     - ON SET-VOLUME! -> .SET-CHANNEL-VOLUME! on %movie%
     - POLYGON-BOUNDS -> POLYGON-BOUNDING-BOX

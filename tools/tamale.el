@@ -128,11 +128,13 @@ Tamale is a language for card-based interactive multimedia programming."
                "with-errors-blocked" "test" "test-elements"
                "begin-for-syntax" "def"
                "with-instance" "with-handlers" "parameterize"
-               "animate" "interpolate" "after" "method" "with-handlers") t)
+               "animate" "interpolate" "after" "method" "with-handlers"
+               "method" "on" "advise" "attr" "attr-value" "attr-default"
+               "syntax-case" "syntax/loc" "quasisyntax/loc") t)
         "\\>") 1)
 
       ;; Magic variables.
-      (cons "\\<\\(self\\)\\>" 1)
+      (cons "\\<\\(self\\|super\\|after\\|before\\|around\\)\\>" 1)
 
       ;; Method invocation.
       (list "\\<\\(\\.\\sw+\\)\\>"
@@ -193,7 +195,7 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'sequence 'scheme-indent-function 2)
 (put 'card 'scheme-indent-function 2)
 (put 'element 'scheme-indent-function 2)
-(put 'on 'scheme-indent-function 2)
+(put 'on 'scheme-indent-function 1)
 (put 'state-db-fn 'scheme-indent-function 1)
 (put 'state-db-fn/rt 'scheme-indent-function 2)
 (put 'define-state-db-listener 'scheme-indent-function 1)
@@ -243,6 +245,9 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'quantize 'scheme-indent-function 1)
 (put 'method 'scheme-indent-function 1)
 (put 'with-handlers 'scheme-indent-function 1)
+(put 'advise 'scheme-indent-function 2)
+(put 'syntax/loc 'scheme-indent-function 1)
+(put 'quasisyntax/loc 'scheme-indent-function 1)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

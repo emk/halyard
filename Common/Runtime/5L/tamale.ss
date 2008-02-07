@@ -84,7 +84,7 @@
   ;;;======================================================================
 
   (provide local->card %element% %invisible-element% %custom-element%
-           #|%box% box|# %clickable-zone% clickable-zone
+           %box% box %clickable-zone% clickable-zone
            delete-element delete-elements
            element-exists? delete-element-if-exists)
 
@@ -117,6 +117,7 @@
   ;;; The abstract superclass of all elements.  The other half of this
   ;;; definition appears in nodes.ss.
   (with-instance %element%
+    ;; <<<<< SETTERS >>>>>
     ;; XXX - after-set not implemented!
     ;; XXX - Code for updating (.at) conflicts with code in %widget% and
     ;; elsewhere, which computes (.at) from (.rect).  See case 2353.
@@ -252,6 +253,7 @@
     ;; defined by one of our subclasses.
     (attr-default wants-cursor? 'auto)
 
+    ;; <<<<< SETTERS >>>>>
     (attr cursor     'hand :type <symbol>  :label "Cursor")
     (attr overlay?   #t    :type <boolean> :label "Has overlay?")
     (attr alpha?     #f    :type <boolean> :label "Overlay transparent?")
@@ -384,19 +386,15 @@
                            (+ (* 2 padding) max-y))))
     )
   
-  #|
   ;;; A box is a generic, invisible container element.  It exists only
   ;;; to be the parent of other elements.
-  (define-element-template %box%
-      []
-      (%custom-element% :overlay? #f)
-    #f)
+  (define-class %box% (%custom-element%)
+    (attr-value overlay? #f))
 
   ;;; Create a %box% element.
-  (define (box shape &key (name (gensym)) (parent (default-element-parent))
+  (define (box bounds &key (name (gensym)) (parent (default-element-parent))
                (shown? #t))
-    (create %box% :name name :parent parent :shown? shown? :shape shape))
-  |#
+    (%box% .new :name name :parent parent :shown? shown? :bounds bounds))
 
   ;;; A %clickable-zone% will run the specified ACTION when the user clicks on
   ;;; it.
@@ -1083,6 +1081,7 @@
       ;;; ALL, or something else depending on the exact type of media being
       ;;; played.  Volume ranges from 0.0 to 1.0.
       (def (set-channel-volume! channel volume)
+        ;; <<<<< SETTERS >>>>>
         ;; TODO - We should make (set! (.volume) n) map to a call to (set!
         ;; (.channel-volume 'all) n).
         (set-media-volume! self channel volume))

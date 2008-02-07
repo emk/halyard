@@ -21,40 +21,45 @@
     :base $tamale-unit-passed-style
     :color (color #xC0 #x00 #x00))
   
-  ;;; Display a test report on the current card.
-  (define (report-test-results report)
-    (define (draw-result style text)
-      (draw-text (rect 100 100 700 175) style text))
-    (if (test-report-success? report)
-      (draw-result $tamale-unit-passed-style "OK")
-      (begin
-        (draw-result $tamale-unit-failed-style "FAILED")
-        (draw-text (rect 100 175 700 500) $tamale-unit-style
-                   (apply string-append
-                          (map (fn (failure)
-                                 (string-append
-                                  "<h><b>" (string->xml 
-                                        (test-failure-title failure))
-                                  "</b></h>\n"
-                                  (string->xml 
-                                   (test-failure-message failure))
-                                  "\n\n"))
-                               (test-report-failures report)))))))
-  
   ;;; Display the results of a set of tests on a card.
-  (define-card-template %test-suite%
-      [tests]
-      ()
-    (clear-dc (color #xFF #xFF #xFF))
-    ;; Draw a title on the card (making it easier to tell when each test-suite
-    ;; card is loaded).
-    (draw-text (rect 30 30 800 100) $tamale-unit-title-style
-               (cat "Card: " (node-full-name self)))
-    (let [[report (make-test-report)]]
-      (foreach [test-class tests]
-         (run-tests test-class report))
-      (report-test-results report)))
-  
+  (define-class %test-suite% (%card%)
+    (attr tests)
+
+    (def (setup)
+      (super)
+      (clear-dc (color #xFF #xFF #xFF))
+      ;; Draw a title on the card (making it easier to tell when each
+      ;; test-suite card is loaded).
+      (draw-text (rect 30 30 800 100) $tamale-unit-title-style
+                 (cat "Card: " (node-full-name self))))
+
+    (def (run)
+      (super)
+      (let [[report (make-test-report)]]
+        (foreach [test-class (.tests)]
+          (run-tests test-class report))
+        (.report-test-results report)))
+
+    (def (report-test-results report)
+      (define (draw-result style text)
+      (draw-text (rect 100 100 700 175) style text))
+      (if (test-report-success? report)
+          (draw-result $tamale-unit-passed-style "OK")
+          (begin
+            (draw-result $tamale-unit-failed-style "FAILED")
+            (draw-text (rect 100 175 700 500) $tamale-unit-style
+                       (apply string-append
+                              (map (fn (failure)
+                                     (string-append
+                                      "<h><b>" (string->xml 
+                                                (test-failure-title failure))
+                                      "</b></h>\n"
+                                      (string->xml 
+                                       (test-failure-message failure))
+                                      "\n\n"))
+                                   (test-report-failures report)))))))
+    )
+
   ;;========================================================================
 
   (require-for-syntax (lib "capture.ss" "5L"))
@@ -168,10 +173,9 @@
     (let [[elem #f]]
       (dynamic-wind
           (lambda ()
-            (set! elem (create %box% 
-                               :at (point 0 0) 
-                               :shape $screen-rect
-                               :name 'temporary-parent)))
+            (set! elem (%box% .new :at (point 0 0) 
+                                   :shape $screen-rect
+                                   :name 'temporary-parent)))
           (lambda ()
             (with-default-element-parent elem
               (thunk)))

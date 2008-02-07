@@ -7,7 +7,7 @@
 
   (provide ruby-object? make-ruby-instance-of?-predicate
            ruby-class? define-class %class% %object% method~ def
-           instance-exec with-instance attr attr-value attr-default)
+           instance-exec with-instance attr attr-value attr-default advise)
 
   ;; This will be overridden later on, once we have .TO-STRING set up
   ;; properly.
@@ -111,6 +111,26 @@
       (error (cat "Cannot define ." name " twice on " object)))
     (inc! *generation-id*)
     (hash-table-put! (ruby-class-methods object) name method))
+
+  (define (advise-method! object combination name meth)
+    (define original
+      (hash-table-get (ruby-class-methods object) name
+                      (lambda () (method~ args (super)))))
+    (define new-method 
+      (case combination
+        [[before] 
+         (method~ args
+           (apply instance-exec self meth args)
+           (apply original self super args))]
+        [[after] 
+         (method~ args
+           (let [[result (apply original self super args)]]
+             (apply instance-exec self meth args)
+             result))]
+        [else (error "advise-method!: '" combination " is not a valid advice "
+                     "combination.")]))
+    (inc! *generation-id*)
+    (hash-table-put! (ruby-class-methods object) name new-method))
 
   (define-syntax define-class
     (syntax-rules ()
@@ -238,29 +258,26 @@
   (define-syntax (def stx)
     (syntax-case stx ()
       [(_ (name . args) . body)
-       (quasisyntax/loc
-        stx
-        (app~ #,(make-self #'name) .define-method 'name
-              (method~ args . body)))]))
-
+       (quasisyntax/loc stx
+         (app~ #,(make-self #'name) .define-method 'name
+               (method~ args . body)))]))
+  
   (define-syntax (attr stx)
     (syntax-case stx ()
       [(_ name default . args)
        (not (keyword? (syntax-object->datum #'default)))
        (syntax/loc stx (attr name :default (method~ () default) . args))]
       [(_ name . args) 
-       (quasisyntax/loc
-        stx
-        (app~ #,(make-self #'name) .attr 'name . args))]))
+       (quasisyntax/loc stx
+         (app~ #,(make-self #'name) .attr 'name . args))]))
 
   (define-syntax (attr-initializer stx)
     (syntax-case stx ()
       [(_ name value ignorable? arg ...)
-       (quasisyntax/loc
-        stx
-        (app~ #,(make-self #'name) .attr-initializer 'name
-              (method~ () value) ignorable? arg ...))]))
-
+       (quasisyntax/loc stx
+         (app~ #,(make-self #'name) .attr-initializer 'name
+               (method~ () value) ignorable? arg ...))]))
+  
   ;;; Specify the value to use for an attribute.
   (define-syntax attr-value
     (syntax-rules ()
@@ -272,6 +289,15 @@
     (syntax-rules ()
       [(_ name value arg ...)
        (attr-initializer name value #t arg ...)]))
+
+  ;;; Wrap a method NAME with a bit of invisible extra code.  This is based
+  ;;; on Lisp's DEFADVICE macro.
+  (define-syntax (advise stx)
+    (syntax-case stx ()
+      [(_ combination (name arg ...) body ...)
+       (quasisyntax/loc stx
+         (app~ #,(make-self #'name) .advise-method 'combination 'name
+               (method~ (arg ...) body ...)))]))
 
 
   ;;=======================================================================
@@ -502,6 +528,10 @@
     ;;; Do instances of this class respond to the given method name?
     (def (instances-respond-to? name)
       (instances-respond-to?% self name))
+    ;;; Attach a snippet of code to an existing function.  See the
+    ;;; ADVISE macro for documentation.
+    (def (advise-method combination name meth)
+      (advise-method! self combination name meth))
     ;;; Create a new attribute on this class.
     (def (attr name &key default (writable? #f) (mandatory? #t) (type #f)
                (getter? #t) (setter? #t))
