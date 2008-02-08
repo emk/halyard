@@ -56,6 +56,11 @@ ruby-style classes (F#928):
     reasonably well.
   * Added AFTER-UPDATING macro which can be used to run a snippet of code
     whenever any one of several slots change.
+  * Refactored event-handling code from nodes.ss to events.ss.
+  * Added %node% .PROPAGATE function which can be used to set up event-like
+    propagation.
+  * Removed:
+    - LOAD-PATH-INTERNAL on %browser%
   * Renamed:
     - ON SET-VOLUME! -> .SET-CHANNEL-VOLUME! on %movie%
     - POLYGON-BOUNDS -> POLYGON-BOUNDING-BOX

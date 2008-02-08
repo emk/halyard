@@ -209,27 +209,32 @@
   ;; The front-end half of method dispatch.  This function handles method
   ;; caching, and then passes control to CALL-WITH-METHOD-LIST.
   (define (send% object method-name . args)
+    ;; This is a fairly common error, so give a good message.
+    (unless (ruby-object? object)
+      (error (cat "Cannot send ." method-name " to " object
+                  ", because it is not a Ruby-style object.")))
+
     ;; Fetch various information about the class we're dispatching to.
-    (define klass (ruby-object-class object))
+    (let [[klass (ruby-object-klass object)]]
 
-    ;; If the method cache isn't up-to-date, clear it.
-    (define generation-id (ruby-class-cached-methods-generation-id klass))
-    (unless (= generation-id *generation-id*)
-      (%assert (< generation-id *generation-id*))
-      (set! (ruby-class-cached-methods klass) (make-hash-table))
-      (set! (ruby-class-cached-methods-generation-id klass) *generation-id*))
-
-    ;; Look up the cached method list.  If we don't have it, create it.
-    (let* [[cached-methods (ruby-class-cached-methods klass)]
-           [methods (hash-table-get cached-methods method-name
-                                    (lambda () #f))]]
-      (unless methods
-        (set! methods (applicable-methods klass method-name))
-        (hash-table-put! cached-methods method-name methods))
-
-      ;; Make the actual method call.
-      (call-with-method-list object methods method-name args)))
-
+      ;; If the method cache isn't up-to-date, clear it.
+      (define generation-id (ruby-class-cached-methods-generation-id klass))
+      (unless (= generation-id *generation-id*)
+        (%assert (< generation-id *generation-id*))
+        (set! (ruby-class-cached-methods klass) (make-hash-table))
+        (set! (ruby-class-cached-methods-generation-id klass) *generation-id*))
+      
+      ;; Look up the cached method list.  If we don't have it, create it.
+      (let* [[cached-methods (ruby-class-cached-methods klass)]
+             [methods (hash-table-get cached-methods method-name
+                                      (lambda () #f))]]
+        (unless methods
+          (set! methods (applicable-methods klass method-name))
+          (hash-table-put! cached-methods method-name methods))
+        
+        ;; Make the actual method call.
+        (call-with-method-list object methods method-name args))))
+    
   ;; The back-end half of method dispatch.  This function takes a
   ;; precomputed list of methods to call, and when that list is exhausted,
   ;; hands further work to METHOD-MISSING.

@@ -27,7 +27,6 @@
 
   (provide run-card jump
            delete-element-internal
-           dispatch-event-to-current-group-member
            current-group-member
            current-card
            *running-on-exit-handler-for-node*)
@@ -114,109 +113,6 @@
   ;;=======================================================================
 
   ;;-----------------------------------------------------------------------
-  ;;  Events
-  ;;-----------------------------------------------------------------------
-
-  (provide <event> event? event-stale?
-           <vetoable-event> veto-event! event-vetoed?
-           <update-ui-event> update-ui-event? event-command
-           <char-event> char-event? event-character event-modifiers
-           <mouse-event> mouse-event? event-position event-double-click?
-           <url-event> url-event? event-url
-           <text-event> text-event? event-text
-           <browser-navigate-event> browser-navigate-event?
-           <progress-changed-event> event-progress-done? event-progress-value
-           make-node-event-dispatcher ; semi-private
-           <media-event> <media-finished-event>
-           <media-caption-event> event-caption
-           )
-
-  (defclass <event> ()
-    (handled? :accessor event-handled? :initvalue #t)
-    (stale?   :accessor event-stale?   :initvalue #f))
-
-  (defclass <vetoable-event> (<event>)
-    (vetoed? :accessor event-vetoed? :initvalue #f))
-
-  (defclass <update-ui-event> (<event>)
-    (command :accessor event-command))
-
-  (defclass <char-event> (<event>)
-    (character :accessor event-character)
-    (modifiers :accessor event-modifiers))
-
-  (defclass <mouse-event> (<event>)
-    (position :accessor event-position)
-    (double-click? :accessor event-double-click? :initvalue #f))
-
-  (defclass <edit-box-event> (<event>))
-
-  (defclass <url-event> (<event>)
-    (url :accessor event-url))
-
-  (defclass <text-event> (<event>)
-    (text :accessor event-text))
-
-  (defclass <browser-navigate-event> (<url-event> <vetoable-event>))
-
-  (defclass <progress-changed-event> (<event>)
-    (done? :accessor event-progress-done?)
-    ;; value is 0.0 to 1.0, inclusive.
-    (value :accessor event-progress-value))
-
-  (defclass <media-event> (<event>))
-  (defclass <media-finished-event> (<media-event>))
-  (defclass <media-caption-event> (<media-event>)
-    (caption :accessor event-caption))
-
-  (defclass <cursor-event> (<event>))
-
-  (define (veto-event! event)
-    (set! (event-vetoed? event) #t))
-
-  ;; A local helper.
-  (defgeneric (was-vetoed? (event <event>)))
-  (defmethod (was-vetoed? (event <event>))
-    #f)
-  (defmethod (was-vetoed? (event <vetoable-event>))
-    (event-vetoed? event))
-
-  (define (dispatch-idle-event-to-active-nodes)
-    ;; TODO - This code is wrong, because it does not propagate idle events
-    ;; to elements parented to other elements.  See case 2316.
-    (let loop [[node (current-group-member)]]
-      (when node
-        (node .idle)
-        (foreach [elem (node-elements node)]
-          (elem .idle))
-        (loop (node-parent node)))))
-
-  (define (dispatch-event-to-current-group-member name . args)
-    (when (*engine* .current-group-member)
-      (if (eq? name 'idle)
-          (dispatch-idle-event-to-active-nodes)
-          ((current-group-member) .dispatch-event-to-node name args))))
-
-  (define (make-node-event-dispatcher node)
-    (lambda (name . args)
-      (node .dispatch-event-to-node name args)))
-
-  (define (expensive-event-name? name)
-    ;; Some events are sent almost constantly, and cause us to allocate
-    ;; memory too quickly.  This causes a performance loss.  To avoid
-    ;; this performance loss, we only enable the sending of these events
-    ;; if we believe there is a handler to receive them.
-    (case name
-      [[idle mouse-moved] #t]
-      [else #f]))
-
-  (define (mouse-event-name? name)
-    (case name
-      [[mouse-moved mouse-down mouse-up mouse-enter mouse-leave] #t]
-      [else #f]))
-
-
-  ;;-----------------------------------------------------------------------
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
@@ -236,53 +132,31 @@
       (def (attr name &key (label #f) &rest keys)
         (super))
 
-      ;; A helper method which walks up the class hierarchy and sees if a
-      ;; given method ever returns true.  This has the same short-circuit
-      ;; semantics as OR.
-      (def (recursive-or-of-method name stop-at-class)
-        (or (.send name '())
-            (if (eq? self stop-at-class)
-              #f
-              ((.superclass) .recursive-or-of-method name stop-at-class))))
-
-      ;; Does this class define any methods for handling expensive events?
-      (attr defines-expensive-event-methods? #f :writable? #t)
-
-      ;; Does this class or any of its superclasses define methods for
-      ;; handling expensive events?
-      (def (has-expensive-event-methods?)
-        (.recursive-or-of-method 'defines-expensive-event-methods? self))
-
-      ;; Does this class define any methods for handling mouse events?
-      (attr defines-mouse-event-methods? #f :writable? #t)
-
-      ;; Does this class or any of its superclasses define methods for
-      ;; handling mouse events?
-      (def (has-mouse-event-methods?)
-        (.recursive-or-of-method 'defines-mouse-event-methods? self))
+      ;;; If the method NAME is not handled by a given object,
+      ;;; automatically pass it to our parent object.  If the message tries
+      ;;; to propagate out of the root object, raise an error.  To prevent
+      ;;; the error, you can either provide a last-resort handler on the
+      ;;; root node:
+      ;;;
+      ;;;   (with-instance (static-root-node)
+      ;;;     (def (my-handler)
+      ;;;       (do-last-resort-behavior)))
+      ;;;
+      ;;; ...or pass a METHOD to :if-not-handled.
+      ;;;
+      ;;; TODO - We may rename this to .always-propagate and add a separate
+      ;;; .propagate method that doesn't require pre-declaring the
+      ;;; propagation.
+      (def (propagate name &key if-not-handled)
+        (%node% .define-method name
+         (method args
+           (if (.parent)
+             ((.parent) .send name args)
+             (if if-not-handled
+               (apply instance-exec self if-not-handled args)
+               (error (cat "." name " propagated to root node without "
+                           "being handled")))))))
       
-      (def (define-method name impl)
-        (super)
-        ;; If we define methods corresponding to certain types of events,
-        ;; record that information in our class.  Note that we ignore the
-        ;; default handlers declared on %node% itself, because they don't
-        ;; actually do anything.
-        (unless (eq? self %node%)
-          (when (expensive-event-name? name)
-            (set! (.defines-expensive-event-methods?) #t))
-          (when (mouse-event-name? name)
-            (set! (.defines-mouse-event-methods?) #t))))
-
-      ;;; Automatically propopagate all events in the list NAMES to their
-      ;;; parent nodes.
-      (def (propagate-events names)
-        (foreach [name names]
-          (.define-method name
-           (method (event)
-             (if (not (.parent))
-               (set! (event-handled? event) #f)
-               ((.parent) .send name (list event)))))))
-
       ;;; Define a (basically) null method which sets a flag when it
       ;;; gets called.  This flag can be checked later to make sure that
       ;;; nobody forgot to call (SUPER).
@@ -294,23 +168,6 @@
             (.send (symcat "set-called-" name "?!") '(#t))
             (void))))
       )
-
-    (def (initialize &rest keys)
-      (super)
-      ;; Deal with any class-level flags we set up in .DEFINE-METHOD.
-      (when ((.class) .has-expensive-event-methods?)
-        ;; Keep track of whether we're handling expensive events.  We call
-        ;; ENABLE-EXPENSIVE-EVENTS here, which is sufficient for %card% and
-        ;; %element% nodes.  But since %card-group%s and %card-sequence%s
-        ;; stay alive longer than a single card, we need to set
-        ;; NODE-HAS-EXPENSIVE-EVENT-METHODS?, which is used by
-        ;; MAYBE-ENABLE-EXPENSIVE-EVENTS-FOR-CARD (on behalf of RUN-CARD)
-        ;; to do the rest of our bookkeeping.
-        (set! (.has-expensive-event-methods?) #t)
-        (*engine* .enable-expensive-events #t))
-      (when (and (eq? (.wants-cursor?) 'auto)
-                 ((.class) .has-mouse-event-methods?))
-        (set! (.wants-cursor?) #t)))
 
     ;; Call a "mandatory method" (see DEFINE-METHOD-WITH-MANDATORY-SUPER),
     ;; and make sure that (SUPER) was called by any methods which override
@@ -339,73 +196,6 @@
     ;;; This method is called as a node is being exited (jumped away from 
     ;;; or deleted).
     (.define-method-with-mandatory-super 'exit)
-
-    ;;; Override this method, and it will be called many times a second.
-    ;;; Tends to have a negative impact on heap size, and thus garbage
-    ;;; collector performance.
-    (def (idle)
-      (void))
-
-    (.propagate-events
-     '(update-ui char mouse-down mouse-up mouse-enter mouse-leave mouse-moved
-       text-changed text-enter browser-navigate browser-page-changed
-       browser-title-changed status-text-changed progress-changed
-       media-finished media-local-error media-network-error
-       media-network-timeout playback-timer media-caption cursor-moved
-       cursor-shown cursor-hidden))
-
-    (def (dispatch-event-to-node name args)
-      (debug-log (cat (node-full-name self) ": " name " event: " args))
-      (define event
-        (case name
-          [[update-ui]
-           (make <update-ui-event> :command (car args))]
-          [[char]
-           (make <char-event>
-             :character (string-ref (car args) 0)
-             :modifiers (cadr args)
-             :stale? (caddr args))]
-          [[mouse-down]
-           (make <mouse-event>
-             :position (point (car args) (cadr args))
-             :double-click? (caddr args)
-             :stale? (cadddr args))]
-          [[mouse-up mouse-enter mouse-leave mouse-moved]
-           (make <mouse-event>
-             :position (point (car args) (cadr args))
-             :stale? (cadr args))]
-          [[text-changed text-enter]
-           (make <edit-box-event>)]
-          [[browser-navigate]
-           (make <browser-navigate-event> :url (car args))]
-          [[browser-page-changed]
-           (make <url-event> :url (car args))]
-          [[browser-title-changed]
-           (make <text-event> :text (car args))]
-          [[status-text-changed]
-           (make <text-event> :text (car args))]
-          [[progress-changed]
-           (make <progress-changed-event>
-             :done? (car args)
-             :value (cadr args))]
-          [[media-finished]
-           (make <media-finished-event>)]
-          [[media-local-error media-network-error
-                              media-network-timeout playback-timer]
-           (make <media-event>)]
-          [[media-caption]
-           (make <media-caption-event> :caption (car args))]
-          [[cursor-moved]
-           (make <mouse-event>
-             :position (point (car args) (cadr args))
-             :stale? (cadr args))]
-          [[cursor-shown cursor-hidden]
-           (make <cursor-event>)]
-          [else
-           (non-fatal-error (cat "Unsupported event type: " name))]))
-      (.send name (list event))
-      (set! (*engine* .event-vetoed?) (was-vetoed? event))
-      (set! (*engine* .event-handled?) (event-handled? event)))
     )
 
   ;; Called when a node is defined.
@@ -485,9 +275,12 @@
     (attr node-state 'ENTERING :type <symbol> :writable? #t)
 
     (attr elements '() :type <list> :writable? #t)
-    (attr has-expensive-event-methods?  #f :type <boolean> :writable? #t)
 
     ;; Attributes shared by all nodes.
+    ;;
+    ;; TODO - The whole wants-cursor? system is fairly strange, because it
+    ;; really only applies to elements (at least right now), and yet we
+    ;; declare this variable for all nodes.
     (attr wants-cursor? #f :label "Wants cursor?" :writable? #t)
 
     (def (active?)
@@ -554,11 +347,6 @@
   (define (node-parent node) (node .parent))
   (define (node-elements node) (node .elements))
   (define (set-node-elements! node val) (set! (node .elements) val))
-  (define (node-has-expensive-event-methods? node) (node .has-expensive-event-methods?))
-  (define (set-node-has-expensive-event-methods?! node val)
-    (set! (node .has-expensive-event-methods?) val))
-  (define (node-handlers node) (node .handlers))
-  (define (set-node-handlers! node val) (set! (node .handlers) val))
   (define (find-first-card node) (node .find-first-card))
   (define (find-last-card node) (node .find-last-card))
 
@@ -787,6 +575,8 @@
   ;;  The root node
   ;;-----------------------------------------------------------------------
 
+  (provide %root-node%)
+
   (define-class %root-node% (%card-group%)
     (set! (.name) '|/|)
     (attr-value name (%root-node% .name)) ; Copy class name attr to instance.
@@ -1009,8 +799,7 @@
   (with-instance %node%
     (def (enter-node)
       ;; TODO - Make sure all our template properties are bound.  Mark this
-      ;; node as running so we can add event handlers and call .NEW on
-      ;; elements.
+      ;; node as running so we can call .NEW on elements.
       (%assert (eq? (.node-state) 'ENTERING))
       ;; Register this node in the table of running nodes.
       (.register)
@@ -1040,6 +829,10 @@
     (def (notify-enter))
     (def (notify-body-finished))
     (def (notify-exit))
+    (def (notify-reached-trunk)
+      ;; This function actually exists so that events.ss can attach a hook
+      ;; here using ADVISE AFTER.
+      )
 
     (def (exit-node)
       (%assert (memq (.node-state) '(ENTERING ACTIVE)))
@@ -1118,30 +911,6 @@
       (set-current-group-member! (node-parent node-inst))
       (exit-node-recursively (node-parent node-inst) trunk-node-class)))
 
-  (define (node-or-elements-have-expensive-handlers? node)
-    ;; See if NODE or any of its elements have expensive handlers.
-    (or (node-has-expensive-event-methods? node)
-        (let recurse [[elements (node-elements node)]]
-          (if (null? elements)
-              #f
-              (or (node-or-elements-have-expensive-handlers? (car elements))
-                  (recurse (cdr elements)))))))
-  
-  (define (maybe-enable-expensive-events-for-node node)
-    ;; REGISTER-EVENT-HANDLER attempts to turn on expensive events whenever
-    ;; a matching handler is installed.  But we need to reset the
-    ;; expensive event state when changing cards.  This means we need
-    ;; to pay close attention to any nodes which live longer than a card.
-    ;;
-    ;; TODO - We could think of much better ways of handling this, I think.
-    (let [[enable? #f]]
-      (let recurse [[node node]]
-        (when node
-          (if (node-or-elements-have-expensive-handlers? node)
-              (set! enable? #t)
-              (recurse (node-parent node)))))
-      (*engine* .enable-expensive-events enable?)))
-
   ;; Find the common "trunk" shared by the nodes OLD and NEW.  If OLD is
   ;; the root node, this returns the root node.  Otherwise, this will never
   ;; return OLD (the closest it will come is (NODE-PARENT OLD)).
@@ -1181,8 +950,10 @@
     (exit-node-recursively old-node-inst trunk-node-class)
     (let [[trunk-node-inst (*engine* .current-group-member)]]
 
-      ;; Update our expensive event state.
-      (maybe-enable-expensive-events-for-node trunk-node-inst)
+      ;; We've gone down one branch, and we're ready to up another.  But
+      ;; send an internal message here so it can be hooked by events.ss, which
+      ;; needs to update the expensive event state.
+      (trunk-node-inst .notify-reached-trunk)
 
       ;; Actually run the card.
       (debug-log (cat "Begin card: <" (node-full-name new-card-class) ">"))

@@ -552,8 +552,8 @@
   ;;;  and most of their properties will become settable.
 
   (provide %text-box% text-box %text% text
-           #|%graphic% graphic
-           %rectangle% rectangle rectangle-outline|#)
+           %graphic% graphic
+           %rectangle% rectangle rectangle-outline)
   
   ;;; A static text element with a specified bounding rectangle.
   (define-class %text-box% (%custom-element%)
@@ -577,7 +577,8 @@
   ;;; A text element just large enough to fit the specified text.
   (define-class %text% (%text-box%)
     ;; TODO - The default max-width is rather silly.
-    (attr max-width :label "Max width" :default (rect-width $screen-rect))
+    (attr max-width :label "Max width" :default (rect-width $screen-rect)
+                    :writable? #t)
 
     ;; TODO - Wouldn't it be nice to handle property dependencies
     ;; automatically?
@@ -593,67 +594,64 @@
     (%text% .new :name name :parent parent :shown? shown?
                  :at p :max-width max-width :style style :text text))
   
-  #|
+  
   ;;; A simple graphic.  For now, you must specify the :ALPHA? value you
   ;;; want; the engine can't compute a reasonable value automatically.
-  (define-element-template %graphic%
-      [[path :type <string> :label "Path"]]
-      (%custom-element% :shape (measure-graphic path))
-    (define (update-shape)
-      (set! (.shape) (measure-graphic path)))
-    (on prop-change (name value prev veto)
-      (case name
-        [[path]
-         (update-shape)
-         (.invalidate)]
-        [else (call-next-handler)]))
-    
-    ;; TODO - Optimize erase-background once we can update the graphic.
-    (on draw ()
+  (define-class %graphic% (%custom-element%)
+    (attr path :type <string> :label "Path" :writable? #t)
+
+    (attr-value shape (measure-graphic (.path)))
+    (after-updating path
+      (set! (.shape) (measure-graphic (.path)))
+      (.invalidate))
+
+    ;; TODO - Optimize erase-background now that we can update the graphic.
+    (def (draw)
       (draw-graphic (point 0 0) (.path))))
   
   ;;; Create a new %graphic%.
   (define (graphic p path
                    &key (name (gensym)) (alpha? #f)
                    (parent (default-element-parent)) (shown? #t))
-    (create %graphic%
-            :name name :parent parent :shown? shown?
-            :at p :alpha? alpha? :path path))
+    (%graphic% .new :name name :parent parent :shown? shown?
+                    :at p :alpha? alpha? :path path))
   
   ;;; A rectangular element, filled with a single color.
-  (define-element-template %rectangle%
-      [[color :type <color> :label "Color" :default $transparent]
-       [outline-width :type <integer> :label "Outline width" :default 1]
-       [outline-color :type <color> :label "Outline color"
-                      :default $transparent]]
-      (%custom-element% :alpha? #t)
-    (on prop-change (name value prev veto)
-      (case name
-        [[color outline-width outline-color] (.invalidate)]
-        [else (call-next-handler)]))
-    ;; TODO - Optimize erase-background once we can update our properties.
-    (on draw ()
-      (unless (transparent? color)
-        (draw-rectangle (dc-rect) color))
-      (unless (transparent? outline-color)
-        (draw-rectangle-outline (dc-rect) outline-color outline-width))))
+  (define-class %rectangle% (%custom-element%)
+    (attr color         $transparent :type <color>   :label "Color"
+                                     :writable? #t)
+    (attr outline-width 1            :type <integer> :label "Outline width"
+                                     :writable? #t)
+    (attr outline-color $transparent :type <color>   :label "Outline color"
+                                     :writable? #t)
+    (attr-default alpha? #t)
+
+    (after-updating [color outline-width outline-color] 
+      (.invalidate))
+
+    ;; TODO - Optimize erase-background now that we can update our properties.
+    (def (draw)
+      (unless (transparent? (.color))
+        (draw-rectangle (dc-rect) (.color)))
+      (unless (transparent? (.outline-color))
+        (draw-rectangle-outline (dc-rect) (.outline-color) (.outline-width)))))
   
   ;;; Create a new %rectangle%.
   (define (rectangle r c
                      &key (name (gensym)) (parent (default-element-parent))
                      (shown? #t) (outline-width 1)
                      (outline-color $transparent))
-    (create %rectangle%
-            :name name :parent parent :shown? shown? :shape r :color c
-            :outline-width outline-width :outline-color outline-color))
+    (%rectangle% .new :name name :parent parent :shown? shown? :bounds r 
+                      :color c :outline-width outline-width 
+                      :outline-color outline-color))
   
   ;;; Create a new %rectangle% with an outline and a transparent center.
   (define (rectangle-outline r c width
                              &key (name (gensym)) (shown? #t)
                              (parent (default-element-parent)))
-    (create %rectangle%
-            :name name :parent parent :shown? shown? :shape r
-            :color $transparent :outline-width width :outline-color c))
+    (%rectangle% .new :name name :parent parent :shown? shown? :bounds r
+                      :color $transparent :outline-width width 
+                      :outline-color c))
   
 
   ;;;======================================================================
@@ -664,26 +662,37 @@
   
   ;;; An overlay element which can be used as a cursor.  The NODE-NAME of
   ;;; this object will be used as the cursor's name.
-  (define-element-template %cursor-element%
-      [[hotspot :type <point> :label "Cursor hotspot" :default (point 0 0)]
-       [alpha? :new-default #t]]
-      (%custom-element%
-       :overlay? #t :at (point 0 0)
-       :shown? #f :%nocreate? #t
-       :wants-cursor? #f)
+  (define-class %cursor-element% (%custom-element%)
+    (attr hotspot (point 0 0) :type <point> :label "Cursor hotspot")
+    (attr-default alpha? #t)
 
+    ;; Most of these really do need to be hard-coded, and some of them
+    ;; shouldn't even be settable.
+    ;; TODO - Can we enforce a better policy here?
+    (attr-value overlay? #t)
+    (attr-value at (point 0 0))
+    (attr-value shown? #f)
+    (attr-value wants-cursor? #f)
+
+    (def (create-engine-element)
+      (call-5l-prim 'CursorElement (node-full-name self)
+                    (parent->card self
+                                  (offset-rect (.shape) (.at)))
+                    (make-node-event-dispatcher self)
+                    (.alpha?) (node-name self)))
+    
     ;;; Called when the cursor is moved.  This will be called once before
     ;;; CURSOR-SHOWN is called, and then repeatedly between the call the
     ;;; CURSOR-SHOWN and the matching call to CURSOR-HIDDEN.
     ;;;
     ;;; There is no need for this to call REFRESH, since it's called
     ;;; automatically by the engine whenever it is safe to do so.
-    (on cursor-moved (event)
+    (def (cursor-moved event)
       (set! (.at)
-            (point-difference (event-position event) hotspot)))
+            (point-difference (event-position event) (.hotspot))))
 
     ;;; Called when the cursor is shown on the screen.
-    (on cursor-shown (event)
+    (def (cursor-shown event)
       (set! (.shown?) #t)
       ;; TODO - Putting this cursor in the drag layer isn't quite
       ;; adequate.  Ideally, we'd add a whole new layer for cursors, above
@@ -693,15 +702,10 @@
 
     ;;; Called when the cursor is hidden (but not when an active cursor is
     ;;; destroyed).
-    (on cursor-hidden (event)
+    (def (cursor-hidden event)
       (set! (.shown?) #f)
       (set! (.dragging?) #f))
-
-    (call-5l-prim 'CursorElement (node-full-name self)
-                  (parent->card self
-                                (offset-rect (.shape) (.at)))
-                  (make-node-event-dispatcher self)
-                  (.alpha?) (node-name self)))
+    )
 
 
   ;;;======================================================================
@@ -737,18 +741,20 @@
   ;;; DEPRECATED: For normal code, please use %sprite% instead.  This
   ;;; class is primarily intended for use with Quake 2 overlays and the
   ;;; state-db.
-  (define-element-template %animated-graphic%
-      [[state-path :type <symbol> :label "State DB Key Path"]
-       [graphics :type <list> :label "Graphics to display"]]
-      (%custom-element%
-       :shape (animated-graphic-shape graphics)
-       :%nocreate? #t)
-    (call-5l-prim 'OverlayAnimated (node-full-name self)
-                  (parent->card self
-                                (offset-rect (.shape) (.at)))
-                  (make-node-event-dispatcher self) (.cursor)
-                  (.alpha?) state-path
-                  (map (fn (p) (make-native-path "Graphics" p)) graphics)))
+  (define-class %animated-graphic% (%custom-element%)
+    (attr state-path :type <symbol> :label "State DB Key Path")
+    (attr graphics   :type <list>   :label "Graphics to display")
+    (attr-value shape (animated-graphic-shape (.graphics)))
+
+    (def (create-engine-element)
+      (call-5l-prim 'OverlayAnimated (node-full-name self)
+                    (parent->card self
+                                  (offset-rect (.shape) (.at)))
+                    (make-node-event-dispatcher self) (.cursor)
+                    (.alpha?) (.state-path)
+                    (map (fn (p) (make-native-path "Graphics" p))
+                         (.graphics))))
+    )
 
 
   ;;;======================================================================
@@ -758,24 +764,25 @@
 
   (provide %sprite% sprite)
   
-  (define-element-template %sprite%
-      [[frames :type <list> :label "List of image files"]
-       [frame :type <integer> :label "Index of current frame" :default 0]]
-      (%custom-element% :shape (animated-graphic-shape frames))
-    (on prop-change (name value prev veto)
-      (case name
-        [[frame] (.invalidate)]
-        [else (call-next-handler)]))
-    (on draw ()
-      (draw-graphic (point 0 0) (list-ref frames frame))))
+  (define-class %sprite% (%custom-element%)
+    (attr frames   :type <list>    :label "List of image files")
+    (attr frame  0 :type <integer> :label "Index of current frame"
+                   :writable? #t)
+
+    (attr-value shape (animated-graphic-shape (.frames)))
+
+    (after-updating frame
+      (.invalidate))
+
+    (def (draw)
+      (draw-graphic (point 0 0) (list-ref (.frames) (.frame)))))
 
   (define (sprite at frames 
                   &key (name (gensym)) (alpha? #f)
                   (parent (default-element-parent)) (shown? #t))
-    (create %sprite% 
-            :at at :frames frames :name name :alpha? alpha? 
-            :parent parent :shown? shown?))
-  |#
+    (%sprite% .new :at at :frames frames :name name :alpha? alpha? 
+                   :parent parent :shown? shown?))
+
 
   ;;;======================================================================
   ;;;  Mouse and Cursor Support
@@ -840,42 +847,48 @@
   ;;;  ActiveX and Flash
   ;;;======================================================================
 
-  #|
+  
   (provide %activex% %flash-card%)
 
   ;;; A native ActiveX element.  Consult the C++ source for documentation.
-  (define-element-template %activex%
-      [[activex-id :type <string>]]
-      (%widget%)
+  (define-class %activex% (%widget%)
+    (attr activex-id :type <string>)
+
+    ;; TODO - We really ought to have some way to map ActiveX properties to
+    ;; normal-looking getters and setters.
 
     ;;; Get a property of an ActiveX element.
-    (on activex-prop (name)
+    (def (activex-prop name)
       (call-5l-prim 'ActiveXPropGet (node-full-name self) name))
 
     ;;; Set a property of an ActiveX element.
-    (on set-activex-prop! (name value)
+    (def (set-activex-prop! name value)
       (call-5l-prim 'ActiveXPropSet (node-full-name self) name value))
 
-    (call-5l-prim 'ActiveX (node-full-name self) 
-                  (make-node-event-dispatcher self)
-                  (parent->card self (.rect))
-                  activex-id))
+    (def (setup)
+      (super)
+      (call-5l-prim 'ActiveX (node-full-name self) 
+                    (make-node-event-dispatcher self)
+                    (parent->card self (.rect))
+                    (.activex-id))))
 
   ;;; Show a Macromedia Flash movie scaled to fit the current card.
   ;;; Requires that the user have an appropriate version of Flash
   ;;; installed.  Macromedia reserves the right to break this interface in
   ;;; future versions of Flash, so this is more for demo purposes than
   ;;; anything else.
-  (define-card-template %flash-card%
-      [[path :type <string> :label "Path"]]
-      ()
-    (define flash
-      (create %activex%
-              :name 'flash
-              :rect $screen-rect
-              :activex-id "ShockwaveFlash.ShockwaveFlash"))
-    (flash .set-activex-prop! "movie"
-          (build-path (current-directory) "Flash" path)))
+  (define-class %flash-card% (%card%)
+    (attr path :type <string> :label "Path")
+    
+    ;; TODO - Once we have local element declarations, we need to heavily
+    ;; redesign this card.
+    (def (run)
+      (super)
+      (define flash
+        (%activex% .new :name 'flash :rect $screen-rect
+                        :activex-id "ShockwaveFlash.ShockwaveFlash"))
+      (flash .set-activex-prop! "movie"
+             (build-path (current-directory) "Flash" (.path)))))
   
 
   ;;;======================================================================
@@ -885,37 +898,31 @@
   (provide %browser% browser)
 
   ;;; A web browser element.
-  (define-element-template %browser%
-      [[path :type <string> :label "Path" :default "about:blank"]
-       ;;; WARNING: The fallback browser is not very good, and only
-       ;;; tends to work under carefully controlled circumstances.  In
-       ;;; particular, it tends to deal with errors by popping up ugly
-       ;;; WX error dialogs at the user.  It's probably suitable for
-       ;;; online help, but not much else.  Try to avoid using it if
-       ;;; you have any choice.
-       [fallback? :type <boolean> :label "Use primitive fallback web browser?"
-                  :default #f]]
-      (%widget%)
+  (define-class %browser% (%widget%)
+    (attr path :type <string> :label "Path" :default "about:blank" 
+               :writable? #t)
+    ;;; WARNING: The fallback browser is not very good, and only
+    ;;; tends to work under carefully controlled circumstances.  In
+    ;;; particular, it tends to deal with errors by popping up ugly
+    ;;; WX error dialogs at the user.  It's probably suitable for
+    ;;; online help, but not much else.  Try to avoid using it if
+    ;;; you have any choice.
+    (attr fallback? #f :type <boolean> 
+                       :label "Use primitive fallback web browser?")
     
-    (on load-path-internal ()
-      (define native (make-native-path "HTML" path))
+    (after-updating path
+      (define native (make-native-path "HTML" (.path)))
       (check-file native)
       (call-5l-prim 'BrowserLoadPage (node-full-name self) native))
-    
-    (on prop-change (name value prev veto)
-      (case name
-        [[path]
-         (.load-path-internal)]
-        [else (call-next-handler)]))
-    
+
     ;;; Load the specified page in the web browser.  Can be pointed
     ;;; to either the local HTML folder or to a URL.
-    (on load-page (page)
-      (set! path page))
+    (def (load-page page)
+      (set! (.path) page))
     
     ;;; Return true if and only if COMMAND should be enabled.  Supported
     ;;; values are: BACK, FORWARD, RELOAD and STOP.
-    (on command-enabled? (command)
+    (def (command-enabled? command)
       (case command
         [[back]
          (call-5l-prim 'BrowserCanBack (node-full-name self))]
@@ -926,44 +933,46 @@
         [[stop]
          (call-5l-prim 'BrowserCanStop (node-full-name self))]
         [else
-         (call-next-handler)]))
+         (super)]))
+    (.propagate 'command-enabled?)
 
     ;;; Go back to the previous page.
-    (on back ()
+    (def (back)
       (call-5l-prim 'BrowserBack (node-full-name self)))
     ;;; Go forward.
-    (on forward ()
+    (def (forward)
       (call-5l-prim 'BrowserForward (node-full-name self)))
     ;;; Reload the currently displayed page.
-    (on reload ()
+    (def (reload)
       (call-5l-prim 'BrowserReload (node-full-name self)))
     ;;; Stop loading the currently displayed page.
-    (on stop ()
+    (def (stop)
       (call-5l-prim 'BrowserStop (node-full-name self)))
 
-    (on setup-finished ()
+    (def (setup)
+      (call-5l-prim 'Browser (node-full-name self) 
+                    (make-node-event-dispatcher self)
+                    (parent->card self (.rect))
+                    (.fallback?))
+      (.load-page (.path)))
+
+    (def (setup-finished)
+      (super)
       (define (update-command command)
-        (send* self 'update-ui
-               :ignorable? #t
-               :arguments (list (make <update-ui-event> :command command))))
-      (call-next-handler)
+        (.update-ui (make <update-ui-event> :command command)))
       (update-command 'back)
       (update-command 'forward)
       (update-command 'reload)
       (update-command 'stop))
 
-    (call-5l-prim 'Browser (node-full-name self) 
-                  (make-node-event-dispatcher self)
-                  (parent->card self (.rect))
-                  fallback?)
-    (.load-page path))
+    )
 
   ;;; Create a new %browser% object.
   (define (browser r path
                    &key (name (gensym)) (parent (default-element-parent))
                    (shown? #t))
-    (create %browser% :name name :parent parent :shown? shown?
-            :rect r :path path))
+    (%browser% .new :name name :parent parent :shown? shown?
+                    :rect r :path path))
 
 
   ;;;======================================================================
@@ -973,47 +982,54 @@
   (provide %edit-box% edit-box)
 
   ;;; A native GUI edit box.
-  (define-element-template %edit-box%
-      [[text :type <string> :label "Initial text" :default ""]
-       [font-size :type <integer> :label "Font size" :default 9]
-       [multiline? :type <boolean> :label "Allow multiple lines?" :default #f]
-       [send-enter-event? :type <boolean> :default #t]]
-      (%widget%)
+  (define-class %edit-box% (%widget%)
+    (attr font-size 9 :type <integer> :label "Font size")
+    (attr multiline? #f :type <boolean> :label "Allow multiple lines?")
+    (attr send-enter-event? #t :type <boolean>)
+      
+    ;; TODO - We need some way to declare the :label field that corresponds
+    ;; to this "virtual attr".
+    (attr-default text "")
+
     ;;; Return the text from this edit box.
-    (on text ()
+    (def (text)
       (call-5l-prim 'EditBoxGetValue (node-full-name self)))
+
     ;;; Set the text in this edit box.
-    (on set-text! (value)
+    (def (set-text! value)
       (call-5l-prim 'EditBoxSetValue (node-full-name self) value))
+    
     ;;; Move the insertion point to the specificed location.  Indices start
     ;;; at 0, and an index of -1 specifies "after the last character".
-    (on set-insertion-point! (index)
+    (def (set-insertion-point! index)
       (.focus)
       (call-5l-prim 'EditBoxSetInsertionPoint (node-full-name self) index))
     ;;; Set the selection.  Indices are the same as SET-INSERTION-POINT!.
-    (on set-selection! (start end)
+    (def (set-selection! start end)
       (.focus)
       (call-5l-prim 'EditBoxSetSelection (node-full-name self) start end))
 
-    (call-5l-prim 'EditBox (node-full-name self)
-                  (make-node-event-dispatcher self)
-                  (parent->card self (.rect)) text
-                  font-size multiline? send-enter-event?))
+    (def (setup)
+      (super)
+      (call-5l-prim 'EditBox (node-full-name self)
+                    (make-node-event-dispatcher self)
+                    (parent->card self (.rect)) (.text)
+                    (.font-size) (.multiline?) (.send-enter-event?)))
+    )
 
   ;;; Create an %edit-box%.
   (define (edit-box r text
                     &key (name (gensym)) (font-size 9)
                     (multiline? #f) (send-enter-event? #t)
                     (parent (default-element-parent)) (shown? #t))
-    (create %edit-box% :name name :parent parent :shown? shown? :rect r
-            :text text :font-size font-size :multiline? multiline?
-            :send-enter-event? send-enter-event?))
+    (%edit-box% .new :name name :parent parent :shown? shown? :rect r
+                     :text text :font-size font-size :multiline? multiline?
+                     :send-enter-event? send-enter-event?))
 
   
   ;;;======================================================================
   ;;;  Generic Media Support
   ;;;======================================================================
-  |#
 
   (provide wait tc)
 

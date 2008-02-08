@@ -24,6 +24,8 @@
   (provide (all-from (lib "util.ss" "5L")))
   (require (lib "nodes.ss" "5L"))
   (provide (all-from (lib "nodes.ss" "5L")))
+  (require (lib "events.ss" "5L"))
+  (provide (all-from (lib "events.ss" "5L")))
   (require (lib "indent.ss" "5L"))
   (provide (all-from (lib "indent.ss" "5L")))
 
