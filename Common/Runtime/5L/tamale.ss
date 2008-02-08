@@ -1122,7 +1122,6 @@
      [else arg1]))
   
   
-  #|
   ;;;======================================================================
   ;;;  Audio Synthesis Elements
   ;;;======================================================================
@@ -1131,54 +1130,60 @@
   (provide %geiger-audio% geiger-audio %geiger-synth% geiger-synth
            %sine-wave% sine-wave)
 
-  (define-element-template %geiger-audio%
-      [[path :type <string> :label "Path"]]
-      (%audio-element%)
-    (on set-counts-per-second! (counts)
+  (define-class %geiger-audio% (%audio-element%)
+    (attr path :type <string> :label "Path")
+      
+    (def (set-counts-per-second! counts)
       (call-5l-prim 'AudioStreamGeigerSetCps (node-full-name self) counts))
-    (call-5l-prim 'AudioStreamGeiger (node-full-name self)
-                  (make-node-event-dispatcher self)
-                  (build-path (current-directory) "LocalMedia" path)
-                  (.volume)))
+    
+    (def (setup)
+      (super)
+      (call-5l-prim 'AudioStreamGeiger (node-full-name self)
+                    (make-node-event-dispatcher self)
+                    (build-path (current-directory) "LocalMedia" (.path))
+                    (.volume))))
 
   (define (geiger-audio path &key (name (gensym)) (volume 1.0)
                         (parent (default-element-parent)))
-    (create %geiger-audio%
-            :name name :parent parent :path path :volume volume))
+    (%geiger-audio% .new :name name :parent parent :path path :volume volume))
 
-  (define-element-template %geiger-synth%
-      [state-path chirp loops]
-      (%audio-element%)
-    (apply call-5l-prim 'GeigerSynth (node-full-name self) state-path
-           (build-path (current-directory) "LocalMedia" chirp)
-           (.volume)
-           (* 512 1024)
-           (map (fn (item)
-                  (if (string? item)
-                      (build-path (current-directory) "LocalMedia" item)
-                      item))
-                loops)))
+  (define-class %geiger-synth% (%audio-element%)
+    (attr state-path) 
+    (attr chirp) 
+    (attr loops)
+    
+    (def (setup)
+      (super)
+      (apply call-5l-prim 'GeigerSynth (node-full-name self) (.state-path)
+             (build-path (current-directory) "LocalMedia" (.chirp))
+             (.volume)
+             (* 512 1024)
+             (map (fn (item)
+                    (if (string? item)
+                        (build-path (current-directory) "LocalMedia" item)
+                        item))
+                  (.loops)))))
 
   (define (geiger-synth state-path chirp loops
                         &key (name (gensym)) (parent (default-element-parent)))
-    (create %geiger-synth%
-            :name name :parent parent :state-path state-path
-            :chirp chirp :loops loops))
+    (%geiger-synth% .new :name name :parent parent :state-path state-path
+                         :chirp chirp :loops loops))
 
   ;;; Plays a pure sine-wave tone.
-  (define-element-template %sine-wave%
-      [[frequency :type <integer> :label "Frequency (Hz)"]]
-      (%audio-element%)
-    (call-5l-prim 'AudioStreamSine (node-full-name self)
-                  (make-node-event-dispatcher self)
-                  (.volume) frequency))
+  (define-class %sine-wave% (%audio-element%)
+    (attr frequency :type <integer> :label "Frequency (Hz)")
+      
+    (def (setup)
+      (call-5l-prim 'AudioStreamSine (node-full-name self)
+                    (make-node-event-dispatcher self)
+                    (.volume) (.frequency))))
 
   ;;; Create a %sine-wave%.
   (define (sine-wave frequency
                      &key (name (gensym)) (parent (default-element-parent))
                      (volume 1.0))
-    (create %sine-wave%
-            :name name :parent parent :frequency frequency :volume volume))
+    (%sine-wave% .new :name name :parent parent :frequency frequency 
+                      :volume volume))
 
 
   ;;;======================================================================
@@ -1187,7 +1192,7 @@
   ;;;  Vorbis audio streams.  These are most useful for foley and for
   ;;;  background audio which should continue playing even if the engine is
   ;;;  otherwise occupied.
-  |#
+  
   (provide %vorbis-audio% vorbis-audio)
 
   ;;; Plays an Ogg Vorbis audio stream.
@@ -1384,16 +1389,19 @@
                   :report-captions? report-captions?))
 
 
-  #|
   ;;;======================================================================
   ;;;  State DB Debugging Support
   ;;;======================================================================
 
   (provide state-db-debug)
 
-  (define-element-template %state-db-debugger% [path report-fn] ()
-    (define-state-db-listener (debug state-db)
-      (report-fn (state-db path))))
+  (define-class %state-db-debugger%  (%invisible-element%)
+    (attr path)
+    (attr report-fn)
+
+    (def (setup)
+      (define-state-db-listener (debug state-db)
+        ((.report-fn) (state-db (.path))))))
   
   ;;; Here's a nasty little hack for reading the state database from
   ;;; outside an element.  Calling this from anywhere but the listener is
@@ -1403,10 +1411,9 @@
     (define (set-result! value)
       (set! result value))
     (define elem
-      (create %state-db-debugger%
-              :parent (running-root-node)
-              :path path
-              :report-fn set-result!))
+      (%state-db-debugger% .new :parent (running-root-node)
+                                :path path
+                                :report-fn set-result!))
     (delete-element elem)
     result)
 
@@ -1463,7 +1470,7 @@
                         (if value
                             (+ value amount)
                             value))))
-  |#
+  
 
   ;;;======================================================================
   ;;;  Miscellaneous
@@ -1473,7 +1480,7 @@
            copy-string-to-clipboard open-in-browser
            script-user-data-directory
            script-user-local-data-directory
-           #|%basic-button%|#
+           %basic-button%
            quicktime-component-version
            mark-unprocessed-events-as-stale!
            register-debug-report-file!)
@@ -1538,58 +1545,57 @@
       (make-directory dir))
     dir)
 
-  #|
   ;;; An abstract superclass which implements typical GUI button behavior.
-  (define-element-template %basic-button%
-      [[action :type <function> :label "Click action" :default (callback)]
-       [enabled? :type <boolean> :label "Enabled?" :default #t]]
-      (%custom-element% :wants-cursor? enabled?)
+  (define-class %basic-button% (%custom-element%)
+    (attr action   (callback) :type <function> :label "On click" :writable? #t)
+    (attr enabled? #t         :type <boolean> :label "Enabled?"  :writable? #t)
+  
+    (attr-value wants-cursor? (.enabled?))
+    (after-updating enabled?
+      (set! (.wants-cursor?) (.enabled?))
+      (.invalidate))
+
+    (def (initialize &rest args)
+      (set! (slot 'mouse-in-button?) #f))
+      
+    (def (button-state)
+      (cond [(not (.enabled?))              'disabled]
+            [(not (slot 'mouse-in-button?)) 'normal]
+            [(mouse-grabbed-by? self)       'pressed]
+            [#t                             'active]))
+
+    (def (draw)
+      (.draw-button (.button-state)))
 
     ;;; Draw the button in the specified state.  Valid states are DISABLED,
     ;;; NORMAL, PRESSED and ACTIVE.  Must be overridden by subclasses.
-    (on draw-button (state)
+    ;;; TODO - This method should go away (case 2421).
+    (def (draw-button state)
       (error "draw-button must be overridden"))
 
-    (define mouse-in-button? #f)
-    (on draw ()
-      (.draw-button 
-            (cond [(not enabled?) 'disabled]
-                  [(not mouse-in-button?) 'normal]
-                  [(mouse-grabbed-by? self) 'pressed]
-                  [#t 'active])))
-    (define (do-draw refresh?)
-      (.invalidate)
-      (when refresh?
-        (refresh)))
-    
-    (on prop-change (name value prev veto)
-      (case name
-        [[enabled?]
-         (set! (.wants-cursor?) enabled?) 
-         (do-draw #f)]
-        [else (call-next-handler)]))
-
-    (on mouse-enter (event)
-      (set! mouse-in-button? #t)
-      (do-draw #f))
-    (on mouse-leave (event)
-      (set! mouse-in-button? #f)
-      (do-draw #f))
-    (on mouse-down (event)
+    (def (mouse-enter event)
+      (set! (slot 'mouse-in-button?) #t)
+      (.invalidate))
+    (def (mouse-leave event)
+      (set! (slot 'mouse-in-button?) #f)
+      (.invalidate))
+    (def (mouse-down event)
       (grab-mouse self)
-      (do-draw #t))
-    (on mouse-up (event)
+      (.invalidate)
+      (refresh))
+    (def (mouse-up event)
       (define was-grabbed? #f)
       (when (mouse-grabbed-by? self)
         (set! was-grabbed? #t)
         (ungrab-mouse self))
-      (do-draw #t)
-      (when (and mouse-in-button? was-grabbed?)
+      (.invalidate)
+      (refresh)
+      (when (and (slot 'mouse-in-button?) was-grabbed?)
         (.button-clicked event)))
-    (on button-clicked (event)
+
+    (def (button-clicked event)
       ((.action)))
     )
-  |#
 
   ;;; Get the version of a QuickTime component, given the four-letter,
   ;;; case-sensitive type and subtype strings. Returns 0 if the component

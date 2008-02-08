@@ -59,6 +59,8 @@ ruby-style classes (F#928):
   * Refactored event-handling code from nodes.ss to events.ss.
   * Added %node% .PROPAGATE function which can be used to set up event-like
     propagation.
+  * Added %basic-button% .BUTTON-STATE, which returns the state symbol
+    needed by .DRAW.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:
