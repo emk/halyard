@@ -54,6 +54,8 @@ ruby-style classes (F#928):
     be overridden by code that wants to know whether the tests succeeded.
   * Updated tamale.el to syntax highlight and indent the new object model
     reasonably well.
+  * Added AFTER-UPDATING macro which can be used to run a snippet of code
+    whenever any one of several slots change.
   * Renamed:
     - ON SET-VOLUME! -> .SET-CHANNEL-VOLUME! on %movie%
     - POLYGON-BOUNDS -> POLYGON-BOUNDING-BOX

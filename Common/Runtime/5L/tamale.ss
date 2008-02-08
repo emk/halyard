@@ -7,6 +7,9 @@
 (module tamale (lib "language.ss" "5L")
   (require (lib "api.ss" "5L"))
 
+  (require (lib "after-updating.ss" "5L"))
+  (provide (all-from (lib "after-updating.ss" "5L")))
+  
 
   ;;;======================================================================
   ;;;  Enabling Deprecated Features at Runtime
@@ -120,14 +123,12 @@
     ;; XXX - Code for updating (.at) conflicts with code in %widget% and
     ;; elsewhere, which computes (.at) from (.rect).  See case 2353.
     (attr at :type <point> :label "Position" :writable? #t)
-    (advise after (set-at! value)
-      (when (.initialized?)
-        (update-element-position self)))
+    (after-updating at
+      (update-element-position self))
 
     (attr shown? #t :type <boolean> :label "Shown?" :writable? #t)
-    (advise after (set-shown?! value)
-      (when (.initialized?)
-        (set! (element-shown? self) (.shown?))))
+    (after-updating shown?!
+      (set! (element-shown? self) (.shown?)))
 
     ;;; Return the bounding box of this element, or #f if it has no
     ;;; bounding-box.
@@ -264,15 +265,12 @@
     (attr clickable-where-transparent? #f
           :type <boolean> :label "Clickable where transparent?")
 
-    (advise after (set-cursor! value)
-      (when (.initialized?)
-        (set-element-cursor! self value)))
-    (advise after (set-wants-cursor?! value)
-      (when (.initialized?)
-        (set-wants-cursor! self value)))
-    (advise after (set-dragging?! value)
-      (when (.initialized?)
-        (set-in-drag-layer?! self value)))
+    (after-updating cursor
+      (set-element-cursor! self (.cursor)))
+    (after-updating wants-cursor?
+      (set-wants-cursor! self (.wants-cursor?)))
+    (after-updating dragging?
+      (set-in-drag-layer?! self (.dragging?)))
 
     (advise before (set-shape! value)
       (define (err reason)
@@ -284,13 +282,12 @@
         (err "has negative size")]
        [(not (equals? (point 0 0) (shape-origin value)))
         (err "has non-zero origin")]))
-    (advise after (set-shape! value)
-      (when (.initialized?)
-        (if (.overlay?)
-          (call-5l-prim 'OverlaySetShape (node-full-name self) value)
-          (call-5l-prim 'ZoneSetShape (node-full-name self)
-                        (offset-by-point (as <polygon> value) (.at))))
-        (.invalidate)))
+    (after-updating shape
+      (if (.overlay?)
+        (call-5l-prim 'OverlaySetShape (node-full-name self) (.shape))
+        (call-5l-prim 'ZoneSetShape (node-full-name self)
+                      (offset-by-point (as <polygon> (.shape)) (.at))))
+      (.invalidate))
 
     (def (initialize &rest keys)
       (super)
@@ -564,12 +561,8 @@
     (attr text :type <string> :label "Text" :writable? #t)
     (attr-default alpha? #t)
  
-    (advise after (set-style! value)
-      (when (.initialized?)
-        (.invalidate)))
-    (advise after (set-text! value)
-      (when (.initialized?)
-        (.invalidate)))
+    (after-updating [style text]
+      (.invalidate))
 
     (def (draw)
       (draw-text (dc-rect) (.style) (.text))))
@@ -587,17 +580,10 @@
     (attr max-width :label "Max width" :default (rect-width $screen-rect))
 
     ;; TODO - Wouldn't it be nice to handle property dependencies
-    ;; automatically?  I could have written this in a less technical style,
-    ;; but I'm trying to figure out what a general-case solution to these
-    ;; problems is.
+    ;; automatically?
     (attr-value shape (measure-text (.style) (.text) :max-width (.max-width)))
-    (def (%recalculate-shape!)
+    (after-updating [style text max-width]
       (set! (.shape) (measure-text (.style) (.text) :max-width (.max-width))))
-    (foreach [setter '(set-style! set-text! set-max-width!)]
-      (.advise-method 'after setter
-                      (method (value)
-                        (when (.initialized?)
-                          (.%recalculate-shape!)))))
     )
   
   ;;; Create a new %fitted-text% element.
