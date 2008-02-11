@@ -116,12 +116,27 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide *node-defined-hook*)
+  (provide setup run *node-defined-hook*)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
   (define $no-default (list 'no 'default))
   (define $no-such-key (list 'no 'such 'key))
+
+  (define-syntax define-def-and-super-abbrev
+    (syntax-rules ()
+      [(_ name)
+       (define-syntax (name stx)
+         (syntax-case stx ()
+           [(_ . body)
+            (quasisyntax/loc stx
+              (#,(make-self #'body) .define-method 'name
+               (method ()
+                 (super)
+                 (instance-exec self (method () . body)))))]))]))
+
+  (define-def-and-super-abbrev setup)
+  (define-def-and-super-abbrev run)
 
   (define-class %node% ()
     (with-instance (.class)

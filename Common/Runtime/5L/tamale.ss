@@ -307,8 +307,7 @@
                       original-shape "."))))
       )
     
-    (def (setup)
-      (super)
+    (setup
       (.create-engine-element))
 
     ;;; Various subclasses of %custom-element% may need to override
@@ -865,8 +864,7 @@
     (def (set-activex-prop! name value)
       (call-5l-prim 'ActiveXPropSet (node-full-name self) name value))
 
-    (def (setup)
-      (super)
+    (setup
       (call-5l-prim 'ActiveX (node-full-name self) 
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
@@ -882,8 +880,7 @@
     
     ;; TODO - Once we have local element declarations, we need to heavily
     ;; redesign this card.
-    (def (run)
-      (super)
+    (run
       (define flash
         (%activex% .new :name 'flash :rect $screen-rect
                         :activex-id "ShockwaveFlash.ShockwaveFlash"))
@@ -949,7 +946,7 @@
     (def (stop)
       (call-5l-prim 'BrowserStop (node-full-name self)))
 
-    (def (setup)
+    (setup
       (call-5l-prim 'Browser (node-full-name self) 
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
@@ -1009,8 +1006,7 @@
       (.focus)
       (call-5l-prim 'EditBoxSetSelection (node-full-name self) start end))
 
-    (def (setup)
-      (super)
+    (setup
       (call-5l-prim 'EditBox (node-full-name self)
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect)) (.text)
@@ -1136,8 +1132,7 @@
     (def (set-counts-per-second! counts)
       (call-5l-prim 'AudioStreamGeigerSetCps (node-full-name self) counts))
     
-    (def (setup)
-      (super)
+    (setup
       (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                     (make-node-event-dispatcher self)
                     (build-path (current-directory) "LocalMedia" (.path))
@@ -1152,8 +1147,7 @@
     (attr chirp) 
     (attr loops)
     
-    (def (setup)
-      (super)
+    (setup
       (apply call-5l-prim 'GeigerSynth (node-full-name self) (.state-path)
              (build-path (current-directory) "LocalMedia" (.chirp))
              (.volume)
@@ -1173,8 +1167,7 @@
   (define-class %sine-wave% (%audio-element%)
     (attr frequency :type <integer> :label "Frequency (Hz)")
       
-    (def (setup)
-      (super)
+    (setup
       (call-5l-prim 'AudioStreamSine (node-full-name self)
                     (make-node-event-dispatcher self)
                     (.volume) (.frequency))))
@@ -1206,8 +1199,7 @@
       (super)
       (media-maybe-attach-caption-file! self (.path)))
     
-    (def (setup)
-      (super)
+    (setup
       (let [[path (make-native-path "LocalMedia" (.path))]]
         (check-file path)
         (call-5l-prim 'AudioStreamVorbis (node-full-name self)
@@ -1359,8 +1351,7 @@
     (def (set-timeout! seconds)
       (call-5l-prim 'MovieSetTimeout (node-full-name self) seconds))
 
-    (def (setup)
-      (super)
+    (setup
       (define path (media-path (.path)))
       (check-file path)
       (call-5l-prim 'Movie (node-full-name self)
@@ -1400,7 +1391,7 @@
     (attr path)
     (attr report-fn)
 
-    (def (setup)
+    (setup
       (define-state-db-listener (debug state-db)
         ((.report-fn) (state-db (.path))))))
   

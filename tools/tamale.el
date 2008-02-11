@@ -132,7 +132,7 @@ Tamale is a language for card-based interactive multimedia programming."
                "method" "on" "advise" "attr" "attr-value" "attr-default"
                "syntax-case" "syntax/loc" "quasisyntax/loc" "foreach"
                "provide" "lib" "all-from" "after-updating" "defclass"
-               "defmethod" "defgeneric") t)
+               "defmethod" "defgeneric" "setup" "run") t)
         "\\>") 1)
 
       ;; Magic variables.
@@ -251,6 +251,8 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'syntax/loc 'scheme-indent-function 1)
 (put 'quasisyntax/loc 'scheme-indent-function 1)
 (put 'after-updating 'scheme-indent-function 1)
+(put 'setup 'scheme-indent-function 0)
+(put 'run 'scheme-indent-function 0)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
