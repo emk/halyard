@@ -127,7 +127,7 @@
       (update-element-position self))
 
     (attr shown? #t :type <boolean> :label "Shown?" :writable? #t)
-    (after-updating shown?!
+    (after-updating shown?
       (set! (element-shown? self) (.shown?)))
 
     ;;; Return the bounding box of this element, or #f if it has no
@@ -1174,6 +1174,7 @@
     (attr frequency :type <integer> :label "Frequency (Hz)")
       
     (def (setup)
+      (super)
       (call-5l-prim 'AudioStreamSine (node-full-name self)
                     (make-node-event-dispatcher self)
                     (.volume) (.frequency))))
@@ -1556,6 +1557,7 @@
       (.invalidate))
 
     (def (initialize &rest args)
+      (super)
       (set! (slot 'mouse-in-button?) #f))
       
     (def (button-state)
