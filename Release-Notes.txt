@@ -61,6 +61,11 @@ ruby-style classes (F#928):
     propagation.
   * Added %basic-button% .BUTTON-STATE, which returns the state symbol
     needed by .DRAW.
+  * Added macros SETUP and RUN to abbreviate the common DEFs.  These macros
+    also include SUPER, to prevent the common error of leaving it out.
+  * F#2517: Made SAFE-TO-STRING and %node% .INITIALIZE more robust in the
+    presence of INITIALIZE methods which forget to call SUPER.
+  * Added HAS-SLOT? macro for use within Ruby-style objects.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:

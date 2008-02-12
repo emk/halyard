@@ -182,6 +182,23 @@
           (method ()
             (.send (symcat "set-called-" name "?!") '(#t))
             (void))))
+
+      (def (new &rest keys)
+        (define obj (super))
+        ;; Check to make sure that somebody actually set up all our slots
+        ;; properly.  We check NAME because we know it should always be
+        ;; there, but PARENT or any of several other slots would work as
+        ;; well.  Note that we can't use CALL-METHOD-WITH-MANDATORY-SUPER
+        ;; or anything like that because we don't have enough machinery set
+        ;; up if nobody called .INITIALIZE.
+        (unless (with-instance obj (has-slot? 'name))
+          ;; Make sure we don't include OBJ anywhere in this error string,
+          ;; becaue it's lying about being initialized, and will generally
+          ;; make .to-string very sad.
+          (error (cat "Called .initialize on " self
+                      ", but someone forgot to call SUPER")))
+        obj)
+
       )
 
     ;; Call a "mandatory method" (see DEFINE-METHOD-WITH-MANDATORY-SUPER),

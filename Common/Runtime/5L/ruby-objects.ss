@@ -223,6 +223,10 @@
         (%assert (< generation-id *generation-id*))
         (set! (ruby-class-cached-methods klass) (make-hash-table))
         (set! (ruby-class-cached-methods-generation-id klass) *generation-id*))
+
+      ;; Uncomment this code to log a complete call chain.
+      ;;(debug-log (cat "Calling ." method-name " on "
+      ;;                (ruby-class-name klass)))
       
       ;; Look up the cached method list.  If we don't have it, create it.
       (let* [[cached-methods (ruby-class-cached-methods klass)]
@@ -486,6 +490,8 @@
       )
     )
 
+  (define *safe-to-string-stack* '())
+
   ;;; We frequently call .to-string from error-handling code.  So if
   ;;; .to-string fails, there's a real danger of infinitely recursive
   ;;; errors.  This, in turn, leads to stack overflow.  The SAFE-TO-STRING
@@ -503,10 +509,19 @@
                        (cat "#<" (class-name) " (to-string error: "
                             (exn-message exn) ")>"))]]
       (cond
+       ;; If .to-string fails, it often results in somebody trying to call
+       ;; .to-string *again* in order to print an error message.  That can
+       ;; cause infinite loops that we can't catch with WITH-HANDLERS
+       ;; above.  See case 2517.  This also protects against attempts to
+       ;; print circular data structures.
+       [(memq obj *safe-to-string-stack*)
+        (cat "#<" (class-name) " (recursive to-string)>")]
        [(not (app~ obj .initialized?))
         (cat "#<" (class-name) " uninitialized>")]
        [else
-        (app~ obj .to-string)])))
+        (fluid-let [[*safe-to-string-stack*
+                     (cons obj *safe-to-string-stack*)]]
+          (app~ obj .to-string))])))
 
   ;;; Now that our printing machinery is all set up, it should be safe to
   ;;; let Scheme know about it.  If we install this any earlier, we won't
@@ -780,7 +795,7 @@
   ;;  scope--by not exporting SLOT%, etc., which work for any object, we
   ;;  make object slots semi-private.
 
-  (provide app~ slot set!~)
+  (provide app~ has-slot? slot set!~)
 
   ;; These definitions are visible from within DEFINE-SYNTAX forms.
   (begin-for-syntax
@@ -830,6 +845,14 @@
       ;; Regular function call.
       [(_ function . args)
        (syntax/loc stx (function . args))]))
+
+  ;; Getter macro for HAS-SLOT?.
+  (define-syntax (has-slot? stx)
+    (syntax-case stx ()
+      [(_ name)
+       (quasisyntax/loc
+        stx
+        (has-slot%? #,(make-self #'name) name))]))
 
   ;; Getter macro for SLOT.  See also SET!~, which special-cases the
   ;; setter version.
