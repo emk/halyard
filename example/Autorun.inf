@@ -1,0 +1,5 @@
+[autorun]
+open=Tamale_Test_Setup.exe
+label=Tamale Test
+icon=application.ico,0
+

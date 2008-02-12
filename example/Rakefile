@@ -1,0 +1,107 @@
+# Build support for VTRA.  Run 'rake --tasks' for instructions.  -*- Ruby -*-
+
+ENGINE_SVN_URL = 'svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/5L'
+
+task :default => :build
+
+desc 'Build VTRA.  Does nothing, at least for now.'
+task :build
+
+PBM_ICON_FILES=%w(icon16.pnm icon16.pgm icon32.pnm icon32.pgm).map do |name|
+  "Graphics/script/#{name}"
+end
+
+desc 'Update the Windows icons file.'
+task :icon => 'Graphics/script/application.ico'
+
+file 'Graphics/script/application.ico' => PBM_ICON_FILES do |t|
+  srcs = PBM_ICON_FILES.join(' ')
+  sh "ppmtowinicon -andpgms -truetransparent #{srcs} > #{t.name}"
+end
+
+# Create a PNM file from a PNG.  Contains the image data.
+rule '.pnm' => '.png' do |t|
+  sh "pngtopnm #{t.source} > #{t.name}"
+end
+
+# Create a PGM file from a PNG.  Contains the mask.
+rule '.pgm' => '.png' do |t|
+  sh "pngtopnm -alpha #{t.source} > #{t.name}"
+end
+
+desc 'Remove Fonts and Runtime and commit'
+task :rm_engine_dirs_and_commit do |t|
+  dirs = %w(Runtime Fonts)
+  dirs.each do |dir|
+    sh "svn", "rm", "--force", dir
+  end
+  sh "svn", "commit", "-m", "<<removing for engine update>>", *dirs
+end
+
+desc 'Update engine version (rake update_engine [TO=0.0.63])'
+task :update_engine do |t|
+  if File.exists?("Runtime") || File.exists?("Fonts")
+    raise "Run 'rake rm_engine_dirs_and_commit' first."
+  end
+
+  # Decide where to fetch our engines from.
+  if ENV.has_key?('TO')
+    tag = ENV['TO']
+    tag =~ /^\S+$/ or raise "Invalid engine tag: TO=<#{tag}>"
+    tag_url = "#{ENGINE_SVN_URL}/tags/#{tag}"
+  else
+    tag_url = "#{ENGINE_SVN_URL}/trunk"
+  end
+
+  # Replace our binary files with the latest versions.
+  bin_url = "#{tag_url}/Win32/Bin"
+  svn_ls(bin_url, /\.(exe|dll|pdb)$/).each do |file|
+    svn_cp_f "#{bin_url}/#{file}", file
+  end
+
+  # Take care of the Runtime and Fonts directory, too.  If this fails with
+  # strange permission errors, you might want to try turning off your
+  # anti-virus software, particularly if it's Symantec Antivirus.
+  #
+  # TODO - We might want to consider using svn:externals for the
+  # directories, even though it doesn't work for the files.  But I don't
+  # know all the tradeoffs of that.
+  svn_cp_f "#{tag_url}/Common/Fonts", "Fonts"
+  svn_cp_f "#{tag_url}/Common/Runtime", "Runtime"
+end
+
+desc 'Copy Runtime directory from ../5L'
+task :copy_runtime do
+  rm_rf 'Runtime/5L'
+  cp_r '../5L/Common/Runtime/5L', 'Runtime'
+  rm_rf 'Runtime/5L/compiled'
+end
+
+
+#==========================================================================
+#  Subversion Support
+#==========================================================================
+
+# Return a list of all the files at _url_ matching _pattern_.
+def svn_ls url, pattern
+  path = "engine-file-list.tmp"
+  sh "svn ls #{url} > #{path}"
+  result = []
+  File.read(path).each_line do |line|
+    line.chomp!
+    next unless line =~ pattern
+    result << line
+  end
+  rm path
+  result
+end
+
+# Copy from _src_ (a Subversion URL) to _dst_ (a working copy path),
+# removing anything already at _dst_.
+def svn_cp_f src, dst
+  if File.exists?(dst)
+    sh "svn", "rm", "--force", dst
+    #sh "rm", "-rf", dst # Not needed, since we handle directories elsewhere.
+  end
+  sh "svn", "cp", src, dst
+end

@@ -1,0 +1,18 @@
+/ Remove explicit :default parameter from ATTR
+  Initialization
+/   Specifying the value for a keyword
+/     Inheriting
+/     Errors
+/   Specifying a new default for a keyword
+/   Computing defaults & keywords based on previously determined values
+/     Basic implementation
+/      Shouldn't we need to declare it when failure is OK? 
+/   Read-only slots
+/   Classify keywords as mandatory, optional, and not allowed? Also ignored?
+  Get rest of TODO list from ruby-nodes.ss (top of file, and scattered)
+
+
+  Skippable vs ignorable?  Need better names.
+  :writable? -> :settable?
+  :mandatory? (oh, just reconsider each of the keywords)
+  attr-{...} -> keyword-{...} for mandatory, initializers?
