@@ -19,6 +19,8 @@ SVN - tryon, emk, brian
     already defined.
   * F#1390: Do not allow ON handlers to be defined twice at the same level.
   * F#1980: Add meta-. support for ruby-style classes.
+  * F#2518: Moved tamale_test into 5L/test.  Note that this means we'll
+    need to update various 'rake copy_runtime' targets in other projects.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

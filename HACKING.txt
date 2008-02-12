@@ -87,13 +87,13 @@ Building Win32 5L
 
   Click on "Solution Explorer", right-click on "wx5L", and
   select "Properties" > "Configuration: Debug" > "Debugging".  
-  Set "Working Directory" to $5L_DIR/example (the actual path,
+  Set "Working Directory" to $5L_DIR/test (the actual path,
   not the variable name!).  Select "Configuration: Release" and
   set "Working Directory" to the same value.  Now you'll automatically
   run tamale_test when you ask Visual Studio to launch your program.
 
   Using a similar process, set the working directories for both versions
-  of "CommonTest" to $5L_DIR/example.  The test suites won't run without
+  of "CommonTest" to $5L_DIR/test.  The test suites won't run without
   this step. Also add "--wait" to the command arguments of CommonTest, in 
   both the debug and release builds, so you can see the results of the test
   suites. 
@@ -158,9 +158,9 @@ What Lives Where
   Common/Scripts/     - Test scripts
   Common/fonttools/   - Font-related programs (some are Linux-only)
 
-  example/Runtime/5L/ - Scheme language runtime support
-  example/Runtime/*/  - Other MzScheme-derived runtime goodies
-  example/Fonts/      - Unix-style fonts for FreeType 2
+  test/Runtime/5L/    - Scheme language runtime support
+  test/Runtime/*/     - Other MzScheme-derived runtime goodies
+  test/Fonts/         - Unix-style fonts for FreeType 2
 
   Win32/              - Win32 engine
   Win32/Bin/          - Win32 binaries
@@ -286,7 +286,7 @@ Testing Your Changes
 
   We have two test suites: "TestAll", which is a fully-automated, low-level
   test suite (as advocated by the eXtreme Programming folks), and
-  "example", an interactive, high-level test script written in 5L.
+  "5L/test", an interactive, high-level test script written in 5L.
 
   * Updating "TestAll"  
 
@@ -302,13 +302,13 @@ Testing Your Changes
   Hook your test cases into TestAll.cpp.  You can figure out how to
   do this by looking at the source.
 
-  * Updating "example"
+  * Updating 5L/test
 
   Unfortunately, "TestAll" still can't test lots of things:
   primitives, graphics, platform-specific code, etc.  In these cases,
-  add one or more new cards to 5L/example and hook them into the main
+  add one or more new cards to 5L/test and hook them into the main
   menu.  In order to test changes you've made to the Runtime
-  directory, make those changes in $5L_DIR/example
+  directory, make those changes in $5L_DIR/test
 
   Be sure to include a good description of how to use your test card!
   Anybody at IML should be able to read instructions on the screen and
@@ -327,7 +327,7 @@ Checking in Your Changes to 5L
      should probably run 'rake clean test' instead.)
 
   3) Run the debug and release versions of the application, and look at any
-     relevant 5L/example cards.
+     relevant 5L/test cards.
 
   4) If you're using Windows, MAKE SURE YOU SAVE YOUR WORKSPACE, or else
      Subversion won't know about any changes.

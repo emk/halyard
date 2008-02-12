@@ -50,7 +50,7 @@ class Configuration
     
     desc "Run unit tests for #{name} configuration"
     task task_name(:test) => task_name(:build) do |t|
-      FileUtils.cd("example") { sh "../Win32/Bin/CommonTest#{suffix}" }
+      FileUtils.cd("test") { sh "../Win32/Bin/CommonTest#{suffix}" }
     end
   end
 end
