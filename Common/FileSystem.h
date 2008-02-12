@@ -245,11 +245,23 @@ namespace FileSystem {
 	///
 	Path ResolveFontPath(const std::string &inRelPath);
 
+    //////////
+    /// Set the name of the scripts directory that we're loading from.
+    /// This is used by the test suites to load scripts from "TestScripts"
+    /// instead of the usual "Scripts" directory.
+    ///
+    void SetScriptsDirectoryName(const std::string &inName);
+
+    //////////
+    /// Get the name of the scripts directory that we're loading from.
+    /// Please call GetScriptsDirectory instead if at all possible.
+    ///
+    std::string GetScriptsDirectoryName();
+
 	//////////
 	/// Get the directory 5L uses to store scripts.
 	///
-	inline Path GetScriptsDirectory()
-	    { return GetBaseDirectory().AddComponent("Scripts"); }
+	Path GetScriptsDirectory();
 
 	//////////
 	/// Get the path to a specific script file.

@@ -624,7 +624,7 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     CHECK_EQ(fs::is_directory(db_path), false);
 
     // Process a file.
-    db.BeginProcessingFile("Scripts/indexed.ss");
+    db.BeginProcessingFile("TestScripts/indexed.ss");
     db.InsertDefinition("foo", TScriptIdentifier::FUNCTION, 19);
     db.InsertHelp("foo", "(foo x)");
     db.InsertHelp("foo", "(foo y)");
@@ -633,7 +633,7 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     db.EndProcessingFile();
 
     // Process another file.
-    db.BeginProcessingFile("Scripts/indexed2.ss");
+    db.BeginProcessingFile("TestScripts/indexed2.ss");
     db.InsertDefinition("baz", TScriptIdentifier::FUNCTION, 43);
     db.EndProcessingFile();
     
@@ -646,7 +646,7 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     // Look up the data we entered.
     ScriptEditorDB::Definitions foo_defs = db.FindDefinitions("foo");
     CHECK_EQ(foo_defs.size(), 1);
-    CHECK_DEF(foo_defs[0], "Scripts/indexed.ss", "foo",
+    CHECK_DEF(foo_defs[0], "TestScripts/indexed.ss", "foo",
               TScriptIdentifier::FUNCTION, 19);
 
     std::vector<std::string> foo_help(db.FindHelp("foo"));
@@ -656,47 +656,47 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
 
     ScriptEditorDB::Definitions bar_defs = db.FindDefinitions("bar");
     CHECK_EQ(bar_defs.size(), 2);
-    CHECK_DEF(bar_defs[0], "Scripts/indexed.ss", "bar",
+    CHECK_DEF(bar_defs[0], "TestScripts/indexed.ss", "bar",
               TScriptIdentifier::VARIABLE, 20);
-    CHECK_DEF(bar_defs[1], "Scripts/indexed.ss", "bar",
+    CHECK_DEF(bar_defs[1], "TestScripts/indexed.ss", "bar",
               TScriptIdentifier::FUNCTION, 21);
 
     ScriptEditorDB::Definitions baz_defs = db.FindDefinitions("baz");
     CHECK_EQ(baz_defs.size(), 1);
-    CHECK_DEF(baz_defs[0], "Scripts/indexed2.ss", "baz",
+    CHECK_DEF(baz_defs[0], "TestScripts/indexed2.ss", "baz",
               TScriptIdentifier::FUNCTION, 43);
     
     // This file has just been processed.
-    CHECK_EQ(db.NeedsProcessing("Scripts/indexed.ss"), false);
+    CHECK_EQ(db.NeedsProcessing("TestScripts/indexed.ss"), false);
 
     // Files which don't appear in the database need to be processed...
-    db.DeleteAnyFileData("Scripts/indexed3.ss");
-    CHECK_THROWN(std::exception, db.NeedsProcessing("Scripts/nosuch.ss"));
-    CHECK_EQ(db.NeedsProcessing("Scripts/indexed3.ss"), true);
+    db.DeleteAnyFileData("TestScripts/indexed3.ss");
+    CHECK_THROWN(std::exception, db.NeedsProcessing("TestScripts/nosuch.ss"));
+    CHECK_EQ(db.NeedsProcessing("TestScripts/indexed3.ss"), true);
 
     // ...but after we process them, they're good.
-    db.BeginProcessingFile("Scripts/indexed3.ss");
+    db.BeginProcessingFile("TestScripts/indexed3.ss");
     db.EndProcessingFile();
-    CHECK_EQ(db.NeedsProcessing("Scripts/indexed3.ss"), false);
+    CHECK_EQ(db.NeedsProcessing("TestScripts/indexed3.ss"), false);
 
     // If the file is modified, it should once again need processing.
-    fs::path index3_path(RootPath()/"Scripts/indexed3.ss");
+    fs::path index3_path(RootPath()/"TestScripts/indexed3.ss");
     fs::last_write_time(index3_path, std::time_t());
-    CHECK_EQ(db.NeedsProcessing("Scripts/indexed3.ss"), true);
+    CHECK_EQ(db.NeedsProcessing("TestScripts/indexed3.ss"), true);
 
     // Scan a tree and look for unprocessed files.
     std::vector<std::string> unprocessed =
-        db.ScanTree("Scripts/scantest", ".ss");
+        db.ScanTree("TestScripts/scantest", ".ss");
     std::sort(unprocessed.begin(), unprocessed.end());
     CHECK_EQ(unprocessed.size(), 3);
-    CHECK_EQ(unprocessed[0], "Scripts/scantest/a.ss");
-    CHECK_EQ(unprocessed[1], "Scripts/scantest/b.ss");
-    CHECK_EQ(unprocessed[2], "Scripts/scantest/subdir/c.ss");
+    CHECK_EQ(unprocessed[0], "TestScripts/scantest/a.ss");
+    CHECK_EQ(unprocessed[1], "TestScripts/scantest/b.ss");
+    CHECK_EQ(unprocessed[2], "TestScripts/scantest/subdir/c.ss");
 
     // Make sure that ScanTree doesn't find processed files.
-    unprocessed = db.ScanTree("Scripts", ".ss");
+    unprocessed = db.ScanTree("TestScripts", ".ss");
     CHECK_EQ(std::find(unprocessed.begin(), unprocessed.end(),
-                       "Scripts/indexed.ss") == unprocessed.end(),
+                       "TestScripts/indexed.ss") == unprocessed.end(),
              true);
     
 } END_TEST_CASE(TestScriptEditorDB);

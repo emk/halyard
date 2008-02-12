@@ -100,10 +100,10 @@ void Document::CheckStructure()
 	CheckDirectory(runtime);
 	CheckDirectory(runtime.AddComponent("5L"));
 	CheckFile(runtime.AddComponent("5L").AddComponent("loader.ss"));
-	CheckDirectory(base.AddComponent("Fonts"));
-	CheckDirectory(base.AddComponent("Scripts"));
-	CheckFile(base.AddComponent("Scripts").AddComponent("start.ss"));
-	CheckDirectory(base.AddComponent("Graphics"));
+	CheckDirectory(FileSystem::GetFontDirectory());
+	CheckDirectory(FileSystem::GetScriptsDirectory());
+	CheckFile(FileSystem::GetScriptFilePath("start.ss"));
+	CheckDirectory(FileSystem::GetGraphicDirectory());
 }
 
 void Document::CheckDirectory(Path inPath)

@@ -12,8 +12,11 @@
 
   (require #%fivel-engine)
 
-  ;; Make sure the "Runtime" and "Script" directories get searched for
-  ;; collections of support modules.
+  ;; Make sure the "Runtime" and "Scripts" directories get searched for
+  ;; collections of support modules.  Note that if SCRIPTS-DIRECTORY-NAME
+  ;; is not equal to "Scripts", we don't attempt to honor that when
+  ;; searching for libraries, because we don't have enough engine state set
+  ;; up at the top level of this file to run %call-5l-prim.
   (current-library-collection-paths
    (list (build-path (current-directory) "Runtime")
          (build-path (current-directory) "Scripts")))
@@ -49,6 +52,10 @@
   (define (draw-load-progress)
     (maybe-call-5l-prim 'DrawLoadProgress))
 
+  ;; Get the official directory we should be loading scripts from.
+  (define (scripts-directory-name)
+    (%call-5l-prim 'ScriptsDirectoryName))
+  
   ;; Throw an error that displays a message in a dialog box and then takes
   ;; down the engine without submitting a crash report.
   (define (environment-error message)
@@ -243,7 +250,7 @@
           ;; Load the user's actual script into our new namespace.
           (set! filename "start.ss")
           (load/use-compiled (build-path (current-directory)
-                                         "Scripts" "start.ss"))
+                                         (scripts-directory-name) "start.ss"))
           ;; (XXX - Disabled until we can determine why the number of files
           ;; loaded goes up after a "reload script".)
           ;; XXX- Re-enabled because we currently suppress all splash-screen

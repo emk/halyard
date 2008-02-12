@@ -123,9 +123,9 @@ void test_FileSystem (void)
 	TEST(Path("nosuch").DoesExist() == false);
 	TEST_EXCEPTION(Path("nosuch").IsRegularFile(), Error);
 	TEST_EXCEPTION(Path("nosuch").IsDirectory(), Error);
-	TEST(Path("FileSystemTests.cpp").DoesExist() == true);
-	TEST(Path("FileSystemTests.cpp").IsRegularFile() == true);
-	TEST(Path("FileSystemTests.cpp").IsDirectory() == false);
+	TEST(Path("data.tam").DoesExist() == true);
+	TEST(Path("data.tam").IsRegularFile() == true);
+	TEST(Path("data.tam").IsDirectory() == false);
 	TEST(GetFontDirectory().DoesExist() == true);
 	TEST(GetFontDirectory().IsRegularFile() == false);
 	TEST(GetFontDirectory().IsDirectory() == true);
@@ -200,7 +200,7 @@ void test_FileSystem (void)
 	// Do some tricky path manipulation.
 #if !FIVEL_PLATFORM_MACINTOSH
 	Path tricky = GetFontDirectory().AddParentComponent();
-	TEST(tricky.AddComponent("FileSystemTests.cpp").DoesExist());
+	TEST(tricky.AddComponent("data.tam").DoesExist());
 #else
 #pragma ANSI_strict off
 #warning "Macintosh path manipulation still has problems."

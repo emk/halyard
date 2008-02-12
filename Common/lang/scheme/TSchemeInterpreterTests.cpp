@@ -62,7 +62,7 @@ static void TestIdleFunc(bool inBlock)
 DEFINE_5L_PRIMITIVE(TestStop)
 {
 	std::string next_card;
-	inArgs >> next_card;
+	inArgs >> SymbolName(next_card);
 
 	TEST(!TInterpreter::GetInstance()->IsStopped());
 	TInterpreter::GetInstance()->Stop();

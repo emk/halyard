@@ -39,12 +39,11 @@ Checking 5L Out of SVN
   Check out the following from Subversion (see instructions elswhere
   for setting up Subversion):
   svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/5L/trunk
-  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/programs/tamale_test/trunk
   svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/tools
   svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/buildscript/trunk
 
   In the instructions that follow, we'll assume your copy of the 5L source
-  tree is in $5L_DIR and your copy of tamale_test is in $5LTEST_DIR.
+  tree is in $5L_DIR.
 
 Building Win32 5L
 -----------------
@@ -88,13 +87,13 @@ Building Win32 5L
 
   Click on "Solution Explorer", right-click on "wx5L", and
   select "Properties" > "Configuration: Debug" > "Debugging".  
-  Set "Working Directory" to $5LTEST_DIR (the actual path,
+  Set "Working Directory" to $5L_DIR/example (the actual path,
   not the variable name!).  Select "Configuration: Release" and
   set "Working Directory" to the same value.  Now you'll automatically
-  run 5Ltest when you ask Visual Studio to launch your program.
+  run tamale_test when you ask Visual Studio to launch your program.
 
   Using a similar process, set the working directories for both versions
-  of "CommonTest" to $5L_DIR/Common.  The test suites won't run without
+  of "CommonTest" to $5L_DIR/example.  The test suites won't run without
   this step. Also add "--wait" to the command arguments of CommonTest, in 
   both the debug and release builds, so you can see the results of the test
   suites. 
@@ -112,11 +111,6 @@ Building Win32 5L
   build menu, or add the build button to your toolbar by right
   clicking on the toolbar and selecting "Build".  
 
-  If you are going to be running tamale_test, you will probably have
-  to go into the tamale_test directory in Cygwin, and run 'rake
-  copy_runtime' to make sure that the runtime directory in tamale_test
-  matches the SVN version of the engine.
-
   To build the release version, select "Release" from the "Solution
   Configurations" popup on your toolbar and follow the same steps as
   above.
@@ -129,12 +123,10 @@ Building Win32 5L
 Rake
 ----
 
-  In order to build released version of the engine, install new
-  engines in a program directory, and have an easier time of testing
-  Runtime changes, you'll need to install ruby and Rake. Install ruby
-  from Cygwin, install RubyGems from <http://rubygems.org/>, set your
-  RUBYOPT environment variable to rubygems, and run 'gem install
-  rake'.
+  In order to build released version of the engine or install new engines
+  in a program directory, you'll need to install ruby and Rake. Install
+  ruby from Cygwin, install RubyGems from <http://rubygems.org/>, set your
+  RUBYOPT environment variable to rubygems, and run 'gem install rake'.
 
 Building Macintosh 5L
 ---------------------
@@ -163,11 +155,12 @@ What Lives Where
   libs/...            - Lots of other stuff
 
   Common/             - Shared, portable code
-  Common/Runtime/5L/  - Scheme language runtime support
-  Common/Runtime/*/   - Other MzScheme-derived runtime goodies
   Common/Scripts/     - Test scripts
-  Common/Fonts/       - Unix-style fonts for FreeType 2
   Common/fonttools/   - Font-related programs (some are Linux-only)
+
+  example/Runtime/5L/ - Scheme language runtime support
+  example/Runtime/*/  - Other MzScheme-derived runtime goodies
+  example/Fonts/      - Unix-style fonts for FreeType 2
 
   Win32/              - Win32 engine
   Win32/Bin/          - Win32 binaries
@@ -293,7 +286,7 @@ Testing Your Changes
 
   We have two test suites: "TestAll", which is a fully-automated, low-level
   test suite (as advocated by the eXtreme Programming folks), and
-  "tamale_test", an interactive, high-level test script written in 5L.
+  "example", an interactive, high-level test script written in 5L.
 
   * Updating "TestAll"  
 
@@ -309,14 +302,13 @@ Testing Your Changes
   Hook your test cases into TestAll.cpp.  You can figure out how to
   do this by looking at the source.
 
-  * Updating "tamale_test"
+  * Updating "example"
 
   Unfortunately, "TestAll" still can't test lots of things:
   primitives, graphics, platform-specific code, etc.  In these cases,
-  add one or more new cards to tamale_test and hook them into the main
+  add one or more new cards to 5L/example and hook them into the main
   menu.  In order to test changes you've made to the Runtime
-  directory, make those changes in $5L_DIR, and then run 'rake
-  copy_runtime' in the $5LTEST_DIR.
+  directory, make those changes in $5L_DIR/example
 
   Be sure to include a good description of how to use your test card!
   Anybody at IML should be able to read instructions on the screen and
@@ -335,7 +327,7 @@ Checking in Your Changes to 5L
      should probably run 'rake clean test' instead.)
 
   3) Run the debug and release versions of the application, and look at any
-     relevant tamale_test cards.
+     relevant 5L/example cards.
 
   4) If you're using Windows, MAKE SURE YOU SAVE YOUR WORKSPACE, or else
      Subversion won't know about any changes.
@@ -359,8 +351,6 @@ Checking in Your Changes to 5L
      $5L_DIR tree AFTER checking it in.  The Rakefile can do this for you;
      see below.  DO NOT FORGET THIS STEP OR PEOPLE WILL GET VERY GRUMPY
      AND SAY BAD THINGS ABOUT YOU MANY YEARS FROM NOW.
-
-  9) Check in tamale_test, too, if you've made any changes.
 
   Here's a typical checkin command:
 

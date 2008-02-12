@@ -77,7 +77,7 @@ void TSchemeScriptEditorDB::UpdateDatabase() {
         
         ScriptEditorDB::UpdateDatabase();
         ProcessTree("Runtime", ".ss");
-        ProcessTree("Scripts", ".ss");
+        ProcessTree(FileSystem::GetScriptsDirectoryName(), ".ss");
         
         transaction.Commit();
     }

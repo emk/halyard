@@ -51,6 +51,7 @@ void FIVEL_NS RegisterCommonPrimitives()
 	REGISTER_5L_PRIMITIVE(MeasureTextAA);
     REGISTER_5L_PRIMITIVE(NotifyFileLoaded);
     REGISTER_5L_PRIMITIVE(NotifyScriptLoaded);
+    REGISTER_5L_PRIMITIVE(ScriptsDirectoryName);
     REGISTER_5L_PRIMITIVE(Sha1File);
     REGISTER_5L_PRIMITIVE(StateDbSet);
     REGISTER_5L_PRIMITIVE(StateDbGet);
@@ -297,6 +298,10 @@ DEFINE_5L_PRIMITIVE(NotifyFileLoaded) {
 
 DEFINE_5L_PRIMITIVE(NotifyScriptLoaded) {
     TInterpreter::GetInstance()->NotifyScriptLoaded();    
+}
+
+DEFINE_5L_PRIMITIVE(ScriptsDirectoryName) {
+    ::SetPrimitiveResult(FileSystem::GetScriptsDirectoryName());
 }
 
 DEFINE_5L_PRIMITIVE(Sha1File) {
