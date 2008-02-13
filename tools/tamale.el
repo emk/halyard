@@ -129,7 +129,7 @@ Tamale is a language for card-based interactive multimedia programming."
                "begin-for-syntax" "def"
                "with-instance" "with-handlers" "parameterize"
                "animate" "interpolate" "after" "method" "with-handlers"
-               "method" "on" "advise" "attr" "attr-value" "attr-default"
+               "method" "on" "advise" "attr" "value" "default"
                "syntax-case" "syntax/loc" "quasisyntax/loc" "foreach"
                "provide" "lib" "all-from" "after-updating" "defclass"
                "defmethod" "defgeneric" "setup" "run") t)
@@ -165,7 +165,7 @@ Tamale is a language for card-based interactive multimedia programming."
                  (t 'font-lock-variable-name-face))))
       
       ;; Cards.
-      (list "(\\(\\(test-\\)?\\(group\\|sequence\\|card\\|element\\)\\)\\> *\\(\\sw+\\)\\>"
+      (list "(\\(\\(test-\\)?\\(group\\|sequence\\|card\\|elem\\)\\)\\> *\\(\\sw+\\)\\>"
             '(1 font-lock-keyword-face)
             '(4 font-lock-function-name-face))
       
@@ -196,7 +196,7 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'group 'scheme-indent-function 2)
 (put 'sequence 'scheme-indent-function 2)
 (put 'card 'scheme-indent-function 2)
-(put 'element 'scheme-indent-function 2)
+(put 'elem 'scheme-indent-function 2)
 (put 'on 'scheme-indent-function 1)
 (put 'state-db-fn 'scheme-indent-function 1)
 (put 'state-db-fn/rt 'scheme-indent-function 2)
