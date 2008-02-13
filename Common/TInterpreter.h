@@ -300,6 +300,7 @@ public:
     virtual ~TReloadNotified();
     virtual void NotifyReloadScriptStarting() {}
     virtual void NotifyReloadScriptSucceeded() {}
+    virtual void NotifyReloadScriptFailed() {}
 };
 
 
@@ -545,6 +546,11 @@ private:
     /// Let everybody know we're succeeded in reloading the script.
     ///
     void NotifyReloadScriptSucceeded();
+
+    //////////
+    /// Let everybody know we've failed to reload the script.
+    ///
+    void NotifyReloadScriptFailed();
 };
 
 END_NAMESPACE_FIVEL

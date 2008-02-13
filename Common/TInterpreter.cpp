@@ -212,6 +212,7 @@ void TInterpreterManager::LoadAndRunScript()
 		// Tell our main loop that the interpreter object couldn't be
 		// opened properly.
 		mLoadScriptFailed = true;
+        NotifyReloadScriptFailed();
 		throw;
 	}
 	
@@ -299,6 +300,13 @@ void TInterpreterManager::NotifyReloadScriptSucceeded() {
     std::vector<TReloadNotified*>::iterator i = sReloadNotifiedObjects.begin();
     for (; i != sReloadNotifiedObjects.end(); ++i)
         (*i)->NotifyReloadScriptSucceeded();
+}
+
+void TInterpreterManager::NotifyReloadScriptFailed() {
+    std::vector<TReloadNotified*>::iterator i = sReloadNotifiedObjects.begin();
+    for (; i != sReloadNotifiedObjects.end(); ++i)
+        (*i)->NotifyReloadScriptFailed();
+
 }
 
 void TInterpreterManager::SetRuntimeMode(bool inIsInRuntimeMode) {

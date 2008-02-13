@@ -858,8 +858,23 @@ void StageFrame::OnReloadScripts(wxCommandEvent &inEvent)
             manager->RequestReloadScript(interp->CurCardName().c_str());
         }
     }
-            
-    SetStatusText("Script reloaded.");
+}
+
+void StageFrame::NotifyReloadScriptStarting() {
+    SetStatusText("Reloading script.");
+    mReloadStopWatch.Start();
+
+}
+
+void StageFrame::NotifyReloadScriptSucceeded() {
+    wxString msg;
+    msg.Printf("Script reloaded (%.1f seconds).",
+               mReloadStopWatch.Time() / 1000.0);
+    SetStatusText(msg);
+}
+
+void StageFrame::NotifyReloadScriptFailed() {
+    SetStatusText("Could not reload script.");
 }
 
 void StageFrame::OnRunTests(wxCommandEvent &inEvent)

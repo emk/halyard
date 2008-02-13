@@ -23,6 +23,7 @@ SVN - tryon, emk, brian
     need to update various 'rake copy_runtime' targets in other projects.
   * Added support for iterating over assoc lists using
     (FOREACH [(CONS k v) alist] ...).
+  * Added a reload timer to the Tamale GUI.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

@@ -23,6 +23,7 @@
 #ifndef StageFrame_H
 #define StageFrame_H
 
+#include "TInterpreter.h"
 #include <wx/display.h>
 #include "ModelView.h"
 #include "SashFrame.h"
@@ -52,7 +53,9 @@ enum ToolWindowID {
 //////////
 /// Our main window--the "frame" around our stage.
 ///
-class StageFrame : public SashFrame, public model::View
+class StageFrame : public SashFrame,
+                   public FIVEL_NS TReloadNotified,
+                   public model::View
 {
 	//////////
 	/// Our associated document object.
@@ -100,6 +103,11 @@ class StageFrame : public SashFrame, public model::View
     wxMenu *mInsertMenu;
     wxMenu *mWindowMenu;
     wxMenu *mHelpMenu;
+
+    //////////
+    /// We use this clock to time how long a reload takes.
+    ///
+    wxStopWatch mReloadStopWatch;
 
     //////////
     /// Does UpdateVideoMode believe that our full-screen options are
@@ -268,6 +276,21 @@ public:
     /// Make sure that no update is currently underway.
     ///
     void CheckForUpdateLockFile();
+
+    //////////
+    /// Called to notify us that the script is being reloaded.
+    ///
+    void NotifyReloadScriptStarting();
+
+    //////////
+    /// Called to notify us that the script has been reloaded successfully.
+    ///
+    void NotifyReloadScriptSucceeded();
+
+    //////////
+    /// Called to notify us that the script has failed to reload.
+    ///
+    void NotifyReloadScriptFailed();
 
 	//////////
 	/// We listen to the Document object so we can update the frame
