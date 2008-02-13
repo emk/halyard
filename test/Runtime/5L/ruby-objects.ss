@@ -456,9 +456,13 @@
                                (lambda (exn) 
                                  (unless (initializer-skippable? init)
                                    (raise exn)))]]
+                (define init-method (initializer-method init))
+                (unless (function? init-method)
+                  (error (cat "Initializing " self " ." name
+                              ": :default requires a method as an argument, "
+                              "got " init-method)))
                 (hash-table-put! key-table name
-                                 (instance-exec key-obj
-                                                (initializer-method init))))]
+                                 (instance-exec key-obj init-method)))]
              [(initializer-ignorable? init)
               #f]
              [else

@@ -230,7 +230,7 @@
   (attr title :type <string>)
   (setup
     (black-background)
-    (draw-title (.title))))
+    (title (.title))))
 
 (define (draw-menu-item name y text card)
   (define r (move-rect-top-to (rect 0 0 800 100) y))
@@ -387,11 +387,11 @@
     (if (check-for-update) 
       (begin 
         (black-background)
-        (draw-title "An update is available. Would you like to download it?")
+        (title "An update is available. Would you like to download it?")
         (draw-menu-item 'install 80 "Install update" @download)
         (draw-menu-item 'skip 180 "Skip update" index))
       (begin 
-        (draw-title "No updates available at this time.")
+        (title "No updates available at this time.")
         (draw-menu-item 'continue 80 "Continue" index)))))
 
 (card updater/download ()
@@ -399,7 +399,7 @@
   (with-handlers [[exn:fail? updater-handler]]
     (define r (rect 0 80 640 180))
     
-    (draw-title "Downloading update")
+    (title "Downloading update")
     (draw-text r $menu-style "Cancel")
     (clickable-zone r (callback (cancel-download) (jump @index)))
     
@@ -408,7 +408,7 @@
 
 (card updater/install ()
   (black-background)
-  (draw-title (cat "Updates were successfully downloaded. Press Continue to "
+  (title (cat "Updates were successfully downloaded. Press Continue to "
                    "quit the program, install the updates, and restart the "
                    "program."))
   (draw-menu-item 'continue 80 "Continue" @apply))
@@ -418,7 +418,7 @@
 
 (card updater/error ()
   (black-background)
-  (draw-title 
+  (title 
    (cat "An error occured while checking for or trying to apply updates: "
         *error-message*))
   (draw-menu-item 'ok 80 "OK" index))

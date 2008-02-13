@@ -576,8 +576,8 @@
   ;;; A text element just large enough to fit the specified text.
   (define-class %text% (%text-box%)
     ;; TODO - The default max-width is rather silly.
-    (attr max-width :label "Max width" :default (rect-width $screen-rect)
-                    :writable? #t)
+    (attr max-width (rect-width $screen-rect) :label "Max width"
+          :writable? #t)
 
     ;; TODO - Wouldn't it be nice to handle property dependencies
     ;; automatically?

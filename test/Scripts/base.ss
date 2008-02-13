@@ -86,7 +86,7 @@
   ;;  Here are some simple global functions we'll use throughout the
   ;;  script.
   
-  (provide default-background black-background white-background draw-title)
+  (provide default-background black-background white-background)
 
   (define (default-background)
     (draw-graphic (point 0 0) "back.png"))
@@ -96,12 +96,22 @@
   
   (define (white-background)
     (clear-dc $color-white))
+
   
-  (define (draw-title title)
-    ;; TODO - No longer a drawing call, so rename.
-    (text (point 10 10) $title-style
-          (cat "<h>" (string->xml title) "</h>")
-          :name 'title))
+  ;;=======================================================================
+  ;;  Element Templates
+  ;;=======================================================================
+
+  (provide %title% title)
+
+  (define-class %title% (%text%)
+    (attr title)
+    (value at (point 10 10))
+    (value style $title-style)
+    (value text (cat "<h>" (string->xml (.title)) "</h>")))
+  
+  (define (title str)
+    (%title% .new :title str))
   
   
   ;;=======================================================================
@@ -112,9 +122,10 @@
 
   (define-class %test-card% (%card%)
     (attr title :type <string>)
+
     (def (setup)
       (super)
-      (draw-title (.title)))
+      (title (.title)))
     ;; TODO - Add button which jumps back to index.
     )
 
