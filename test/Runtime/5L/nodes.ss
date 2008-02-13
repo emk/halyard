@@ -237,7 +237,7 @@
     (syntax-rules ()
       [(_) '()]
       [(_ key value . rest)
-       (cons (cons (keyword-name key) (lambda () value))
+       (cons (cons (keyword-name key) (method () value))
              (thunked-alist<-bindings . rest))]))
 
   (define-syntax define-node
@@ -251,7 +251,8 @@
              (check-node-name local-name)
              (set! (name .name) local-name)
              (set! (name .parent) parent))
-           (name .values<-thunked-alist (thunked-alist<-bindings . bindings))
+           (name .values-with-instance-parent
+                 (thunked-alist<-bindings . bindings))
            ;; This WITH-INSTANCE exists only to make sure that SELF gets
            ;; rebound in a way that's visible to BODY.  Yay hygienic macros.
            (with-instance name . body))
@@ -355,12 +356,18 @@
       (def (register)
         (.register-in (*engine* .static-node-table)))
 
-      ;; Takes a list of pairs of names and thunks and turns each into the 
-      ;; equivalent of (VALUE name (thunk)).  This is for the keyword 
-      ;; argument lists in DEFINE-NODE.
-      (def (values<-thunked-alist alist)
-        (foreach [(cons name thunk) alist]
-          (.attr-initializer name (method () (thunk)) #f)))
+      ;; Takes a list of pairs of names and methods and turns each into the
+      ;; equivalent of:
+      ;;
+      ;;  (VALUE name (instance-exec (.parent) meth)). 
+      ;;
+      ;; This is for the keyword argument lists in DEFINE-NODE.
+      (def (values-with-instance-parent alist)
+        (foreach [(cons name meth) alist]
+          (.attr-initializer name
+                             (method ()
+                               (instance-exec (.parent) meth))
+                             #f)))
       
       ;; Corresponds to the old %jumpable% class.
       ;; TODO - Decide if we want a general .implements-interface? method.
