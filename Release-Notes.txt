@@ -21,6 +21,8 @@ SVN - tryon, emk, brian
   * F#1980: Add meta-. support for ruby-style classes.
   * F#2518: Moved tamale_test into 5L/test.  Note that this means we'll
     need to update various 'rake copy_runtime' targets in other projects.
+  * Added support for iterating over assoc lists using
+    (FOREACH [(CONS k v) alist] ...).
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):
@@ -68,6 +70,8 @@ ruby-style classes (F#928):
   * F#2517: Made SAFE-TO-STRING and %node% .INITIALIZE more robust in the
     presence of INITIALIZE methods which forget to call SUPER.
   * Added HAS-SLOT? macro for use within Ruby-style objects.
+  * Added support for passing ":foo"-style keyword initializers to CARD and
+    other macros, like before.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:

@@ -95,7 +95,11 @@
   ;;; @param LIST list The list from which to get the items.
   ;;; @param BODY body The code to run for each list item.
   (define-syntax foreach
-    (syntax-rules ()
+    (syntax-rules (cons)
+      [(foreach [(cons key value) alist] body ...)
+       (foreach [pair alist]
+         (let [[key (car pair)] [value (cdr pair)]]
+           (begin/var body ...)))]
       [(foreach [[key value] hash] body ...)
        (hash-table-for-each hash (lambda (key value) body ...))]
       [(foreach [name lst] body ...)

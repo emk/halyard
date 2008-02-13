@@ -233,9 +233,16 @@
   ;; Called when a node is defined.
   (define *node-defined-hook* (make-hook 'node-defined-hook))
 
+  (define-syntax thunked-alist<-bindings
+    (syntax-rules ()
+      [(_) '()]
+      [(_ key value . rest)
+       (cons (cons (keyword-name key) (lambda () value))
+             (thunked-alist<-bindings . rest))]))
+
   (define-syntax define-node
     (syntax-rules ()
-      [(define-node name (extended) . body)
+      [(define-node name (extended . bindings) . body)
        (begin
          (define-class name (extended)
            ;; HACK - Hygiene problems with SELF, so we use the explicit name
@@ -244,6 +251,7 @@
              (check-node-name local-name)
              (set! (name .name) local-name)
              (set! (name .parent) parent))
+           (name .values<-thunked-alist (thunked-alist<-bindings . bindings))
            ;; This WITH-INSTANCE exists only to make sure that SELF gets
            ;; rebound in a way that's visible to BODY.  Yay hygienic macros.
            (with-instance name . body))
@@ -346,6 +354,13 @@
 
       (def (register)
         (.register-in (*engine* .static-node-table)))
+
+      ;; Takes a list of pairs of names and thunks and turns each into the 
+      ;; equivalent of (VALUE name (thunk)).  This is for the keyword 
+      ;; argument lists in DEFINE-NODE.
+      (def (values<-thunked-alist alist)
+        (foreach [(cons name thunk) alist]
+          (.attr-initializer name (method () (thunk)) #f)))
       
       ;; Corresponds to the old %jumpable% class.
       ;; TODO - Decide if we want a general .implements-interface? method.

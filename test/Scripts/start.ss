@@ -239,8 +239,7 @@
 
 ;; The index card is based on our %simple-card% template.  Notice how
 ;; we specify the title.
-(card index (%simple-card%)
-  (value title "Tamale Features (updated)")
+(card index (%simple-card% :title "Tamale Features (updated)")
   (setup
     (draw-menu-item 'controls 80 "Controls" @features/controls)
     (draw-menu-item 'movies 180 "More Movies" @media/qt/movies)
@@ -248,6 +247,7 @@
     (text (point 10 580) $title-style (or #| (program-release-id) |# 
                                           ""))
   ))
+
 
 #|
 ;;=========================================================================
