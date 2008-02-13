@@ -882,7 +882,6 @@ DEFINE_5L_PRIMITIVE(MovieSetPlaybackTimer) {
 
 DEFINE_5L_PRIMITIVE(MovieClearPlaybackTimer) {
     std::string name;
-    int32 frame;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(MediaElement, movie, name.c_str());
     movie->ClearPlaybackTimer();
