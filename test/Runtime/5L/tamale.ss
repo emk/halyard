@@ -164,8 +164,8 @@
   ;;; The abstract superclass of all elements which have no on-screen
   ;;; representation.
   (define-class %invisible-element% (%element%)
-    (attr-value at (point 0 0)) 
-    (attr-value shown? #f))
+    (value at (point 0 0)) 
+    (value shown? #f))
 
   ;;; The superclass of all native GUI elements which can be displayed
   ;;; on the stage.
@@ -173,7 +173,7 @@
     ;; XXX - It's possible for users to call (set! (widget .at) ...), but
     ;; doing so will fail to upate the rect.  See case 2353.
     (attr rect :type <rect> :label "Rectangle")
-    (attr-value at (rect-left-top (.rect)))
+    (value at (rect-left-top (.rect)))
 
     ;;; Return the bounding rectangle for this element.
     (def (bounding-box)
@@ -243,7 +243,7 @@
     ;; Support code for at/shape/bounds initializers.  We use .bounds to
     ;; provide default values for .at and .shape, and then we just throw it
     ;; away without actually storing it anywhere.
-    (attr-default at (shape-origin (.bounds)))
+    (default at (shape-origin (.bounds)))
     (attr shape
           (offset-by-point (.bounds) (elem-map - (shape-origin (.bounds))))
           :type <shape> :label "Shape" :writable? #t)
@@ -255,7 +255,7 @@
     ;; which is used in conjunction with some .define-method magic in
     ;; nodes.ss to set .wants-cursor? to #t whenever a mouse handler is
     ;; defined by one of our subclasses.
-    (attr-default wants-cursor? 'auto)
+    (default wants-cursor? 'auto)
 
     (attr cursor     'hand :type <symbol>  :label "Cursor" :writable? #t)
     (attr overlay?   #t    :type <boolean> :label "Has overlay?")
@@ -385,7 +385,7 @@
   ;;; A box is a generic, invisible container element.  It exists only
   ;;; to be the parent of other elements.
   (define-class %box% (%custom-element%)
-    (attr-value overlay? #f))
+    (value overlay? #f))
 
   ;;; Create a %box% element.
   (define (box bounds &key (name (gensym)) (parent (default-element-parent))
@@ -396,7 +396,7 @@
   ;;; it.
   (define-class %clickable-zone% (%custom-element%)
     (attr action :label "Action" :writable? #t)
-    (attr-default overlay? #f)
+    (default overlay? #f)
 
     (def (mouse-down event)
       ((.action))))
@@ -558,7 +558,7 @@
   (define-class %text-box% (%custom-element%)
     (attr style :label "Style" :writable? #t)
     (attr text :type <string> :label "Text" :writable? #t)
-    (attr-default alpha? #t)
+    (default alpha? #t)
  
     (after-updating [style text]
       (.invalidate))
@@ -581,7 +581,7 @@
 
     ;; TODO - Wouldn't it be nice to handle property dependencies
     ;; automatically?
-    (attr-value shape (measure-text (.style) (.text) :max-width (.max-width)))
+    (value shape (measure-text (.style) (.text) :max-width (.max-width)))
     (after-updating [style text max-width]
       (set! (.shape) (measure-text (.style) (.text) :max-width (.max-width))))
     )
@@ -599,7 +599,7 @@
   (define-class %graphic% (%custom-element%)
     (attr path :type <string> :label "Path" :writable? #t)
 
-    (attr-value shape (measure-graphic (.path)))
+    (value shape (measure-graphic (.path)))
     (after-updating path
       (set! (.shape) (measure-graphic (.path)))
       (.invalidate))
@@ -623,7 +623,7 @@
                                      :writable? #t)
     (attr outline-color $transparent :type <color>   :label "Outline color"
                                      :writable? #t)
-    (attr-default alpha? #t)
+    (default alpha? #t)
 
     (after-updating [color outline-width outline-color] 
       (.invalidate))
@@ -663,15 +663,15 @@
   ;;; this object will be used as the cursor's name.
   (define-class %cursor-element% (%custom-element%)
     (attr hotspot (point 0 0) :type <point> :label "Cursor hotspot")
-    (attr-default alpha? #t)
+    (default alpha? #t)
 
     ;; Most of these really do need to be hard-coded, and some of them
     ;; shouldn't even be settable.
     ;; TODO - Can we enforce a better policy here?
-    (attr-value overlay? #t)
-    (attr-value at (point 0 0))
-    (attr-value shown? #f)
-    (attr-value wants-cursor? #f)
+    (value overlay? #t)
+    (value at (point 0 0))
+    (value shown? #f)
+    (value wants-cursor? #f)
 
     (def (create-engine-element)
       (call-5l-prim 'CursorElement (node-full-name self)
@@ -743,7 +743,7 @@
   (define-class %animated-graphic% (%custom-element%)
     (attr state-path :type <symbol> :label "State DB Key Path")
     (attr graphics   :type <list>   :label "Graphics to display")
-    (attr-value shape (animated-graphic-shape (.graphics)))
+    (value shape (animated-graphic-shape (.graphics)))
 
     (def (create-engine-element)
       (call-5l-prim 'OverlayAnimated (node-full-name self)
@@ -768,7 +768,7 @@
     (attr frame  0 :type <integer> :label "Index of current frame"
                    :writable? #t)
 
-    (attr-value shape (animated-graphic-shape (.frames)))
+    (value shape (animated-graphic-shape (.frames)))
 
     (after-updating frame
       (.invalidate))
@@ -986,7 +986,7 @@
       
     ;; TODO - We need some way to declare the :label field that corresponds
     ;; to this "virtual attr".
-    (attr-default text "")
+    (default text "")
 
     ;;; Return the text from this edit box.
     (def (text)
@@ -1301,7 +1301,7 @@
     (attr interaction? #f     :type <boolean> :label "Allow interaction")
     (attr report-captions? #t :type <boolean> :label "Report captions?")
 
-    (attr-default shown? (or (not (.audio-only?)) (.controller?)))
+    (default shown? (or (not (.audio-only?)) (.controller?)))
 
     ;; Mix in pause, resume, and other common media-related methods.
     (add-common-media-methods! self)
@@ -1542,7 +1542,7 @@
     (attr action   (callback) :type <function> :label "On click" :writable? #t)
     (attr enabled? #t         :type <boolean> :label "Enabled?"  :writable? #t)
   
-    (attr-value wants-cursor? (.enabled?))
+    (value wants-cursor? (.enabled?))
     (after-updating enabled?
       (set! (.wants-cursor?) (.enabled?))
       (.invalidate))

@@ -7,7 +7,7 @@
 
   (provide ruby-object? make-ruby-instance-of?-predicate
            ruby-class? define-class %class% %object% method~ def
-           instance-exec with-instance attr attr-value attr-default advise)
+           instance-exec with-instance attr value default advise)
 
   ;; This will be overridden later on, once we have .TO-STRING set up
   ;; properly.
@@ -288,13 +288,13 @@
                (method~ () value) ignorable? arg ...))]))
   
   ;;; Specify the value to use for an attribute.
-  (define-syntax attr-value
+  (define-syntax value
     (syntax-rules ()
       [(_ name value arg ...)
        (attr-initializer name value #f arg ...)]))
 
   ;;; Specify the default to use for an attribute.
-  (define-syntax attr-default
+  (define-syntax default
     (syntax-rules ()
       [(_ name value arg ...)
        (attr-initializer name value #t arg ...)]))
@@ -676,7 +676,7 @@
             name)))
 
   ;; Internal: Used to implement method calls in attribute initializers of
-  ;; the form: (attr-value foo (.bar)).  This basically wraps a hash table
+  ;; the form: (value foo (.bar)).  This basically wraps a hash table
   ;; and makes it look like a read-only object.  We choose to store
   ;; partially-built key/value pairs in a hash table until we have computed
   ;; the entire set and we're ready to apply them to our object.

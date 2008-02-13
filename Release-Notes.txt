@@ -76,6 +76,8 @@ ruby-style classes (F#928):
     - BOUNDS -> BOUNDING-BOX
     - ON BOUNDS -> .BOUNDING-BOX on %element%
     - .BOUNDS -> .DRAG-BOUNDS on %simple-draggable-object%
+    - ATTR-VALUE -> VALUE
+    - ATTR-DEFAULT -> DEFAULT
 
 0.4.7 - 20 Dec 2007 - emk, brian
 

@@ -611,8 +611,8 @@
 
   (define-class %root-node% (%card-group%)
     (set! (.name) '|/|)
-    (attr-value name (%root-node% .name)) ; Copy class name attr to instance.
-    (attr-value parent #f))
+    (value name (%root-node% .name)) ; Copy class name attr to instance.
+    (value parent #f))
 
   ;;-----------------------------------------------------------------------
   ;;  Sequences of Cards
@@ -742,8 +742,8 @@
   ;; TODO - Do we need to think about the division of responsibilities
   ;; here?
   (define-class %element% (%node%)
-    (attr-default name (gensym))
-    (attr-default parent (default-element-parent))
+    (default name (gensym))
+    (default parent (default-element-parent))
 
     (def (initialize &rest keys)
       (super)

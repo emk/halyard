@@ -11,47 +11,15 @@
 ;;  We apologize for any temporary inconveniences.
 
 
-(define-class %colored-card% (%card%)
-  (attr color (color 0 0 0))
+(card custom-element-demo ()
   (setup
-    (clear-dc (.color))))
-
-(card blue-card (%colored-card%)
-  (attr-value color (color 0 0 255)))
-
-(card red-card (%colored-card%)
-  (attr-value color (color 255 0 0)))
-
-(define $default-movie-size (rect 0 0 384 288))
-
-(card duck-and-cover (%colored-card%)
-  (run
-    (define center (rect-center $screen-rect))
-    (define bounds (move-rect-center-to $default-movie-size center))
-    (movie bounds "duck_and_cover_intro_vp3_captioned.mov" :name 'movie)
-    )
-  )
-
-(card vorbis-demo (%colored-card%)
-  (run
-    (vorbis-audio "quackery.ogg" :name 'stream))
-  )
-
-(card custom-element-demo (%colored-card%)
-  (setup
+    (clear-dc (color 0 0 0))
     (clickable-zone (inset-rect $screen-rect 10)
                     (callback (jump duck-and-cover)))
     (%custom-element% .new :bounds (inset-rect $screen-rect 100) :name 'inner)
     (with-dc @inner
       (draw-graphic (point 0 0) "mask/blend-background.png"))
     )
-  )
-
-(card text-demo (%colored-card%)
-  (setup
-    (text (point 10 10) $title-style
-          (cat "<h>" (string->xml "Custom text element!") "</h>")
-          :name 'title))
   )
 
 (require (lib "tamale-unit.ss" "5L"))
@@ -143,7 +111,7 @@
   )
 
 (card advise-test (%test-suite%)
-  (attr-value tests (list <advise-test>)))
+  (value tests (list <advise-test>)))
 
 (define-class %initialize-without-super% (%custom-element%)
   (def (initialize &rest args)
@@ -157,7 +125,7 @@
                                        :shape (shape 200 300)))))
 
 (card initialize-without-super-test (%test-suite%)
-  (attr-value tests (list <initialize-without-super-test>)))
+  (value tests (list <initialize-without-super-test>)))
 
 
 #|
@@ -272,7 +240,7 @@
 ;; The index card is based on our %simple-card% template.  Notice how
 ;; we specify the title.
 (card index (%simple-card%)
-  (attr-value title "Tamale Features (updated)")
+  (value title "Tamale Features (updated)")
   (setup
     (draw-menu-item 'controls 80 "Controls" @features/controls)
     (draw-menu-item 'movies 180 "More Movies" @media/qt/movies)

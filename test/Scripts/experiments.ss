@@ -350,17 +350,17 @@
     (attr int-only 0 :type <integer>))
 
   (define-class %quux-1.1% (%quux-1%)
-    (attr-value a 2)
-    (attr-default b 20))
+    (value a 2)
+    (default b 20))
 
   (define-class %quux-1.1.1% (%quux-1.1%)
     (attr c 100)
     (attr d :mandatory? #f)
-    (attr-value b (+ (.c) (.d))  :skip-if-missing-values? #t))
+    (value b (+ (.c) (.d))  :skip-if-missing-values? #t))
   
   (define-class %quux-1.1.2% (%quux-1.1%)
     (attr d :mandatory? #f)
-    (attr-value b (.d)))
+    (value b (.d)))
 
   (define-class %quux-2% ()
     (attr a)) ; Must be specified.
@@ -372,29 +372,29 @@
       (define q (%quux-1% .new))
       (assert-equals 1 (q .a))
       (assert-equals 10 (q .b)))
-    (test "ATTR-VALUE should override the default value"
+    (test "VALUE should override the default value"
       (define q (%quux-1.1% .new))
       (assert-equals 2 (q .a)))
-    (test "ATTR-VALUE should be inherited by subclasses"
+    (test "VALUE should be inherited by subclasses"
       (define q (%quux-1.1.1% .new))
       (assert-equals 2 (q .a)))
-    (test "ATTR-VALUE should prevent the ATTR from being initialized with .NEW"
+    (test "VALUE should prevent the ATTR from being initialized with .NEW"
       (assert-raises exn:fail? (%quux-1.1% .new :a 3)))
-    (test "ATTR-DEFAULT should override the original default value"
+    (test "DEFAULT should override the original default value"
       (define q (%quux-1.1% .new))
       (assert-equals 20 (q .b)))
-    (test "ATTR-DEFAULT should be inherited by subclasses"
+    (test "DEFAULT should be inherited by subclasses"
       (define q (%quux-1.1.1% .new))
       (assert-equals 20 (q .b)))
-    (test "ATTR-DEFAULT should do nothing if the attribute was passed in"
+    (test "DEFAULT should do nothing if the attribute was passed in"
       (define q (%quux-1.1% .new :b 30))
       (assert-equals 30 (q .b)))
-    (test "ATTR-VALUE should be computable from other values"
+    (test "VALUE should be computable from other values"
       (define q (%quux-1.1.1% .new :d 1000))
       (assert-equals 1100 (q .b)))
-    (test "ATTR-VALUE should fail if it computes from a missing value"
+    (test "VALUE should fail if it computes from a missing value"
       (assert-raises exn:fail? (%quux-1.1.2% .new)))
-    (test "ATTR-VALUE should optionally be able to skip missing values"
+    (test "VALUE should optionally be able to skip missing values"
       (define q (%quux-1.1.1% .new))
       (assert-equals 20 (q .b)))
     (test "ATTR should support :WRITABLE?"

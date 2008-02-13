@@ -169,11 +169,11 @@
   ;;; files.  We'd obviously like something better than this.
   (define-class %text-button% (%basic-button%)
     (attr label :type <string>)
-    (attr-value shape 
-                      (move-rect-left-top-to 
-                       (inset-rect
-                        (measure-text $button-style (.label)) -7)
-                       (point 0 0)))
+    (value shape 
+           (move-rect-left-top-to 
+            (inset-rect
+             (measure-text $button-style (.label)) -7)
+            (point 0 0)))
     
     (def (draw-button style)
       (define base (color #x80 #x80 #x80))

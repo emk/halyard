@@ -45,18 +45,18 @@
   (sequence media/qt)
   
   (card media/qt/video-captions (%movie-card%)
-    (attr-value title "Video Captions")
-    (attr-value path "duck_and_cover_intro_vp3_captioned.mov"))
+    (value title "Video Captions")
+    (value path "duck_and_cover_intro_vp3_captioned.mov"))
 
   (card media/qt/external-video-captions (%movie-card%)
-    (attr-value title "External Video Captions")
-    (attr-value path "quackery_vp3.mov")
-    (attr-value controller? #t)
-    (attr-value movie-size $default-movie-and-controller-size))
+    (value title "External Video Captions")
+    (value path "quackery_vp3.mov")
+    (value controller? #t)
+    (value movie-size $default-movie-and-controller-size))
 
   (card media/qt/wait-test (%movie-card%) 
-    (attr-value title "Wait Test") 
-    (attr-value path "quackery_vp3.mov")
+    (value title "Wait Test") 
+    (value path "quackery_vp3.mov")
 
     (run
       (define (caption msg)
@@ -81,7 +81,7 @@
       (delete-element self)))
   
   (card media/qt/movies (%captioned-card%) 
-    (attr-value title "Multiple Movies")
+    (value title "Multiple Movies")
     
     (run
       (define rect1 (move-rect-top-to $default-movie-and-controller-size 50))
@@ -185,7 +185,7 @@
   (define-class %volume-control% (%custom-element%) 
     (attr stream) 
     (attr channel) 
-    (attr-value alpha? #t)
+    (value alpha? #t)
 
     ;; TODO - This is an internal slot. We should be using (slot
     ;; 'box-fill-limit) directly, but that's a pain.  We need to
@@ -248,29 +248,29 @@
   (sequence media/audiostream/vorbis)
 
   (card media/audiostream/vorbis/stereo (%audio-stream-card%)
-    (attr-value title "Vorbis Stereo\n(Looping)")
+    (value title "Vorbis Stereo\n(Looping)")
     (run
       (vorbis-audio "oggtest-stereo.ogg" :name 'stream :loop? #t)))
 
   (card media/audiostream/vorbis/mono (%audio-stream-card%)
-    (attr-value title "Vorbis Mono")
+    (value title "Vorbis Mono")
     (run
       (vorbis-audio "oggtest-mono.ogg" :name 'stream)))
 
   (card media/audiostream/vorbis/twobeeps (%audio-stream-card%)
-    (attr-value title "Vorbis Two Beeps\n(Broken)")
+    (value title "Vorbis Two Beeps\n(Broken)")
     (run
       (vorbis-audio "oggtest-twobeeps.ogg" :name 'stream)))
 
   (card media/audiostream/vorbis/long (%audio-stream-card%)
-    (attr-value title "Long Vorbis\n(FDA Advisory)")
+    (value title "Long Vorbis\n(FDA Advisory)")
     (run
       (vorbis-audio "quackery.ogg" :name 'stream)))
 
   (sequence media/audiostream/geiger)
 
   (card media/audiostream/geiger/synth (%audio-stream-card%)
-    (attr-value title "Geiger Counter")
+    (value title "Geiger Counter")
     (run
       (geiger-audio "oggtest-geiger-chirp.ogg" :name 'stream)
       (@stream .set-counts-per-second! 10.0)))
@@ -278,32 +278,32 @@
   (sequence media/audiostream/geiger/loop)
 
   (card media/audiostream/geiger/loop/rate-point8mrph (%audio-stream-card%)
-    (attr-value title "Ludlum 0.8 mRph")
+    (value title "Ludlum 0.8 mRph")
     (run
       (vorbis-audio "ludlum/lud-mod14c-00_8mRph.ogg" :name 'stream :loop? #t)))
 
   (card media/audiostream/geiger/loop/rate-2mrph (%audio-stream-card%)
-    (attr-value title "Ludlum 2 mRph")
+    (value title "Ludlum 2 mRph")
     (run
       (vorbis-audio "ludlum/lud-mod14c-02_0mRph.ogg" :name 'stream :loop? #t)))
 
   (card media/audiostream/geiger/loop/rate-5mrph (%audio-stream-card%)
-    (attr-value title "Ludlum 5 mRph")
+    (value title "Ludlum 5 mRph")
     (run
       (vorbis-audio "ludlum/lud-mod14c-05_0mRph.ogg" :name 'stream :loop? #t)))
 
   (card media/audiostream/geiger/loop/rate-10mrph (%audio-stream-card%) 
-    (attr-value title "Ludlum 10 mRph")
+    (value title "Ludlum 10 mRph")
     (run
       (vorbis-audio "ludlum/lud-mod14c-10_0mRph.ogg" :name 'stream :loop? #t)))
 
   (card media/audiostream/geiger/loop/rate-50mrph (%audio-stream-card%)
-    (attr-value title "Ludlum 50 mRph")
+    (value title "Ludlum 50 mRph")
     (run
       (vorbis-audio "ludlum/lud-mod14c-50_0mRph.ogg" :name 'stream :loop? #t)))
 
   (card media/audiostream/sine (%audio-stream-card%)
-    (attr-value title "440Hz Sine Wave\n(Synthesized)")
+    (value title "440Hz Sine Wave\n(Synthesized)")
     (run
       (sine-wave 440 :name 'stream)))
   
@@ -312,7 +312,7 @@
   ;;=======================================================================
 
   (card media/geiger-synth (%audio-stream-card%)
-    (attr-value title "Geiger Synth")
+    (value title "Geiger Synth")
     (run
       (set! (state-db '/synth/cps) 0.0)
       (%geiger-synth% .new

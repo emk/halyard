@@ -340,7 +340,7 @@
 (define-class %card-template-2% (%card-template-1%)
   (attr prop-c :type <string> :label "Prop C")
   (attr prop-d 20 :type <integer> :label "Prop D")
-  (attr-value prop-b 10)
+  (value prop-b 10)
 
   (run
     (test *ttvar1*)
@@ -350,8 +350,8 @@
     (set! *ttvar2* #t)))
 
 (card template-tests-1 (%card-template-2%)
-  (attr-value prop-a "foo")
-  (attr-value prop-c "bar")
+  (value prop-a "foo")
+  (value prop-c "bar")
 
   (run 
     (test *ttvar1*)
@@ -365,9 +365,9 @@
     (jump template-tests-2)))
 
 (card template-tests-2 (%card-template-2%)
-  (attr-value prop-a "baz")
-  (attr-value prop-c "moby")
-  (attr-value prop-d 30)
+  (value prop-a "baz")
+  (value prop-c "moby")
+  (value prop-d 30)
 
   (run
     (test *ttvar1*)
