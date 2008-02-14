@@ -213,7 +213,26 @@
     ;;; Create any child elements, and do one-time initialization.  We
     ;;; assume that .SETUP will be called in both normal runtime mode, and
     ;;; in editing mode (assuming we ever get a GUI editor).
-    (.define-method-with-mandatory-super 'setup)
+    ;;;
+    ;;; TODO - We are hand-rolling most of
+    ;;; define-method-with-mandatory-super here, so a little refactoring
+    ;;; couldn't hurt.
+    (attr called-setup? #f :writable? #t)
+    (def (setup)
+      (set! (.called-setup?) #t)
+      ;; Starting from %node%, walk down the class hierarchy and
+      ;; instantiate all our statically-declared elements.
+      (let recurse [[klass (.class)]]
+        (unless (eq? klass %node%)
+          (recurse (klass .superclass)))
+        (foreach [static-elem (klass .elements)]
+          ;; It is *very* important that we pass in :parent explicitly
+          ;; here, if we want the nested node syntax to support (.parent)
+          ;; in initializers.  This guarantees that (.parent) is
+          ;; immediately available on our %initializer-keywords% object,
+          ;; and not set by a (default ...) statement too late to do any
+          ;; good.
+          (static-elem .new :parent self :name (static-elem .name)))))
 
     ;;; A few parent classes in our system need to run small fragments
     ;;; of code *after* child classes finish their setup.  For now, we'll
@@ -240,30 +259,47 @@
        (cons (cons (keyword-name key) (method () value))
              (thunked-alist<-bindings . rest))]))
 
-  (define-syntax define-node
+  (define-syntax define-node-helper
     (syntax-rules ()
-      [(define-node name (extended . bindings) . body)
-       (begin
-         (define-class name (extended)
-           ;; HACK - Hygiene problems with SELF, so we use the explicit name
-           ;; everywhere.
-           (with-values [[parent local-name] (analyze-node-name 'name)]
-             (check-node-name local-name)
-             (set! (name .name) local-name)
-             (set! (name .parent) parent))
-           (name .values-with-instance-parent
-                 (thunked-alist<-bindings . bindings))
-           ;; This WITH-INSTANCE exists only to make sure that SELF gets
-           ;; rebound in a way that's visible to BODY.  Yay hygienic macros.
-           (with-instance name . body))
-         (name .register)
-         (call-hook-functions *node-defined-hook* name))]))
+      [(_ name (extended . bindings) . body)
+       (define-class name (extended)
+         ;; HACK - Hygiene problems with SELF, so we use the explicit
+         ;; name everywhere.
+         (name .process-static-node-name 'name)
+         (name .values-with-instance-parent
+               (thunked-alist<-bindings . bindings))
+         ;; This WITH-INSTANCE exists only to make sure that SELF gets
+         ;; rebound in a way that's visible to BODY.  Yay hygienic
+         ;; macros.
+         (with-instance name . body)
+         (name .register))]))
+
+  (define-syntax (define-node stx)
+    (syntax-case stx ()
+      ;; Some kinds of nodes may be lexically nested; others can't.  If
+      ;; we find a SELF variable in our surrounding lexical context, we
+      ;; pass it to register-with-lexical-parent and let the class sort
+      ;; it out.
+      [(_ name . rest)
+       ;; Do we see a SELF in our scope?
+       (identifier-binding (make-self #'name)) 
+       (quasisyntax/loc stx
+         ;; The LET here is intended to (a) give us a form that allows
+         ;; initial (begin (define ...) ...) forms, and (b) prevent the
+         ;; lexical name from escaping into the surrounding code.
+         (let []
+           (define-node-helper name . rest)
+           (name .register-with-lexical-parent #,(make-self #'name))))]
+      ;; We don't have SELF, so expand in the ordinary fashion.
+      [(_ name . rest)
+       (quasisyntax/loc stx
+         (define-node-helper name . rest))]))
 
   (define-syntax define-node-definer
     (syntax-rules ()
       ;; TODO - We should check that any supplied superclass is actually
       ;; a subclass of DEFAULT-SUPERCLASS.
-      [(define-node-definer definer-name default-superclass)
+      [(_ definer-name default-superclass)
        (begin
          (define-syntax definer-name
            (syntax-rules ()
@@ -340,6 +376,7 @@
     (with-instance (.class)
       (attr name #f :writable? #t)   ; May be #f if class not in hierarchy.
       (attr parent #f :writable? #t)
+      (attr elements '() :writable? #t)
 
       (def (to-string)
         (if (.name)
@@ -353,8 +390,24 @@
       (def (can-be-run?)
         (and (.name) #t))
 
+      ;; Given the name of a static node, set up the .NAME and .PARENT
+      ;; fields appropriately.
+      (def (process-static-node-name name)
+        (with-values [[parent local-name] (analyze-node-name name)]
+          (check-node-name local-name)
+          (set! (.name) local-name)
+          (set! (.parent) parent)))
+
       (def (register)
         (.register-in (*engine* .static-node-table)))
+
+      ;; Register this static element with its lexically-surrounding parent
+      ;; node, or raise an error if it can't be nested.
+      (def (register-with-lexical-parent parent)
+        (error (cat self " may not be nested within another node")))
+
+      (def (register-static-element elem)
+        (set! (.elements) (append (.elements) (list elem))))
 
       ;; Takes a list of pairs of names and methods and turns each into the
       ;; equivalent of:
@@ -553,13 +606,21 @@
   ;;  Group Member
   ;;-----------------------------------------------------------------------
   ;;  A %group-member% may be stored in a %card-group%.
+  ;;  TODO - Some of non-element-related code on %node% should move here.
 
   (define-class %group-member% (%node%)
     (with-instance (.class)
       (def (register)
         (super)
         (when (node-parent self)
-          (group-add-member! (node-parent self) self))))
+          (group-add-member! (node-parent self) self))
+        ;; TODO - We currently only call this for %group-member%s, and not
+        ;; for %element%s, because that's the way it used to work.  We
+        ;; might just want to update all this to a new hook system soon.
+        ;; Note that this hook gets called before
+        ;; .register-with-lexical-parent, if that's the sort of thing you
+        ;; care about.
+        (call-hook-functions *node-defined-hook* self)))
 
     ;;; Return the static version of this node.
     (def (static-node)
@@ -756,7 +817,7 @@
   ;; Elements
   ;;-----------------------------------------------------------------------
 
-  (provide element? %element%
+  (provide element? %element% elem
            default-element-parent call-with-default-element-parent
            with-default-element-parent)
 
@@ -787,16 +848,39 @@
       (def (new &rest keys)
         (define elem (super))
         (elem .enter-node)
-        elem))
+        elem)
+
+      (def (process-static-node-name name)
+        ;; We don't actually need to extract a .PARENT from NAME here,
+        ;; because elements aren't allowed to have compound names.  If we
+        ;; ever decide to allow a nesting syntax for CARD, etc., similar to
+        ;; that of ELEM, we would then modify %node% to do something
+        ;; similar.
+        (check-node-name name)
+        (set! (.name) name))
+
+      (def (regsiter)
+        ;; We don't need to register elements in the global table the same
+        ;; way we handle cards, etc.
+        (void))
+
+      ;; Register this static element with its lexically-surrounding parent
+      ;; node.  This is how nested ELEM forms find their containing
+      ;; classes.
+      (def (register-with-lexical-parent parent)
+        (%assert (.name))
+        (set! (.parent) parent)
+        (parent .register-static-element self))
+      )
       
     )
 
   ;; TODO - Get rid of wrapper functions.  
   (define element? (make-node-type-predicate %element%))
 
-  ;; We really don't want this.  I'm leaving it commented out, with a
-  ;; warning, so nobody puts it back without a lot of hard design thinking.
-  ;;(define-node-definer element %element% %element%)
+  ;; XXX - The default superclass here needs to be %custom-element%, but
+  ;; I don't want to drag that whole beast into this file.
+  (define-node-definer elem %element%)
   
   (define (default-element-parent)
     (or (*engine* .default-element-parent)
@@ -949,6 +1033,11 @@
       ;; We should never need to enter the root node.
       (%assert (not (root-node? node-class)))
       (enter-node-recursively (node-parent node-class) trunk-node-inst)
+      ;; It is *very* important that we pass in :parent explicitly here, if
+      ;; we want the nested node syntax to support (.parent) in
+      ;; initializers.  This guarantees that (.parent) is immediately
+      ;; available on our %initializer-keywords% object, and not set by a
+      ;; (default ...) statement too late to do any good.
       (let [[node-inst (node-class .new
                          :parent (current-group-member)
                          :name (node-class .name))]]

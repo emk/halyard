@@ -122,20 +122,17 @@
 
   (define-class %test-card% (%card%)
     (attr title :type <string>)
-
-    (def (setup)
-      (super)
-      (title (.title)))
+    
+    (elem title-elem (%title% :title (.title)))
     ;; TODO - Add button which jumps back to index.
     )
 
   (define-class %standard-test-card% (%test-card%)
-    (def (setup)
+    (setup
       (default-background)))
   
   (define-class %black-test-card% (%test-card%)
-    (def (setup)
-      (super)
+    (setup
       (black-background)))
   
 

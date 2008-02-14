@@ -222,16 +222,6 @@
     (debug-log "Hello, world!  IT'S ALIIIIVE!")
     (jump index)))
 
-;; To save typing, we can declare card templates.  These are sort of
-;; like HyperCard "backgrounds", or objects in a regular programming
-;; language.  They allow us to share code between many cards.
-;; This template has one property, "title", specifying the card's title.
-(define-class %simple-card% (%card%)
-  (attr title :type <string>)
-  (setup
-    (black-background)
-    (title (.title))))
-
 (define (draw-menu-item name y text card)
   (define r (move-rect-top-to (rect 0 0 800 100) y))
   (center-text $menu-style r text)
@@ -239,7 +229,7 @@
 
 ;; The index card is based on our %simple-card% template.  Notice how
 ;; we specify the title.
-(card index (%simple-card% :title "Tamale Features (updated)")
+(card index (%black-test-card% :title "Tamale Features (updated)")
   (setup
     (draw-menu-item 'controls 80 "Controls" @features/controls)
     (draw-menu-item 'movies 180 "More Movies" @media/qt/movies)
