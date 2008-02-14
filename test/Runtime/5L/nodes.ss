@@ -210,6 +210,16 @@
         (error (cat "Called " self " ." name
                     ", but someone forgot to call SUPER"))))
 
+    ;;; Create the actual C++ representation of this node.  This should be
+    ;;; overrridden by anything that needs to create a corresponding C++
+    ;;; object.
+    ;;;
+    ;;; Note that currently only elements have any sort of representation
+    ;;; in the C++ layer.  We'd like to fix this, so that the engine
+    ;;; actually knows about all nodes.
+    (def (create-engine-node)
+      (void))
+
     ;;; Create any child elements, and do one-time initialization.  We
     ;;; assume that .SETUP will be called in both normal runtime mode, and
     ;;; in editing mode (assuming we ever get a GUI editor).
@@ -962,6 +972,8 @@
       (%assert (null? (node-elements self)))
       ;; Let the world know that we're starting to run this node.
       (.notify-enter)
+      ;; If we have an associated engine node, create it now.
+      (.create-engine-node)
       ;; Do initial setup, and create any child elements.
       (.call-method-with-mandatory-super 'setup)
       ;; Let the node know all initialization functions have been run.

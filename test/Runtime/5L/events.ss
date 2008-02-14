@@ -120,7 +120,7 @@
       ;; Does this class or any of its superclasses define methods for
       ;; handling expensive events?
       (def (has-expensive-event-methods?)
-        (.recursive-or-of-method 'defines-expensive-event-methods? self))
+        (.recursive-or-of-method 'defines-expensive-event-methods? %node%))
 
       ;; Does this class define any methods for handling mouse events?
       (attr defines-mouse-event-methods? #f :writable? #t)
@@ -128,7 +128,7 @@
       ;; Does this class or any of its superclasses define methods for
       ;; handling mouse events?
       (def (has-mouse-event-methods?)
-        (.recursive-or-of-method 'defines-mouse-event-methods? self))
+        (.recursive-or-of-method 'defines-mouse-event-methods? %node%))
    
       (advise after (define-method name impl)
         ;; If we define methods corresponding to certain types of events,

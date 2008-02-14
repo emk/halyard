@@ -32,10 +32,6 @@
 
 ;;(require (lib "updater.ss" "5L"))
 
-;; As long as these functions still exist, we need to test them.  However,
-;; none of these functions should be used in new code.
-(require (lib "deprecated.ss" "5L"))
-
 (require "base.ss")
 ;;(require "countdown.ss")
 
@@ -82,23 +78,38 @@
     (debug-log "Hello, world!  IT'S ALIIIIVE!")
     (jump index)))
 
-(define (draw-menu-item name y text card)
-  (define r (move-rect-top-to (rect 0 0 800 100) y))
-  (center-text $menu-style r text)
-  (clickable-zone r (callback (jump card)) :name name))
+(define-class %menu-item% (%box%)
+  (attr y :type <integer>)
+  (attr text :type <string>)
+  (attr jump-to) ; TODO - Add :type specifier.  See case 1394.
+  
+  (value at (point 0 (.y)))
+  (value shape (shape 800 100))
+  (value clickable-where-transparent? #t)
+  
+  (elem label (%text% :at (point 0 0) :style $menu-style
+                      :text (.text) :max-width (rect-width (.shape)))
+    (setup
+      (.center-on-parent!)))
+
+  (def (mouse-down event)
+    (jump (.jump-to))))
 
 ;; The index card is based on our %simple-card% template.  Notice how
 ;; we specify the title.
 (card index (%black-test-card% :title "Tamale Features (updated)")
+  (elem controls
+      (%menu-item% :y 80 :text "Controls" :jump-to @features/controls))
+  (elem movies
+      (%menu-item% :y 180 :text "More Movies" :jump-to @media/qt/movies))
+  (elem release-id
+      (%text% :at (point 10 580) :style $title-style
+              :text (or #| (program-release-id) |# "")))
   (setup
     ;; TODO - Temporary test code; this will be tested elsewhere later.
     (set! (.title) "Nodes have local names")
-
-    (draw-menu-item 'controls 80 "Controls" @features/controls)
-    (draw-menu-item 'movies 180 "More Movies" @media/qt/movies)
-    (text (point 10 580) $title-style (or #| (program-release-id) |# 
-                                          ""))
-  ))
+    )
+  )
 
 (card custom-element-demo (%black-test-card% :title "Custom elements")
   (elem outer (%clickable-zone% :bounds (inset-rect $screen-rect 10)

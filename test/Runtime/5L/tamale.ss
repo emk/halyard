@@ -135,8 +135,7 @@
     (def (bounding-box)
       #f)
 
-    (def (setup-finished)
-      (super)
+    (setup
       ;; TODO - This is technically too late to set this value, and we should
       ;; probably add a SHOWN? parameter to every object creation primitive.
       (set! (element-shown? self) (.shown?)))
@@ -307,13 +306,7 @@
                       original-shape "."))))
       )
     
-    (setup
-      (.create-engine-element))
-
-    ;;; Various subclasses of %custom-element% may need to override
-    ;;; .create-engine-element if they have some sort of specialized C++
-    ;;; implementation.
-    (def (create-engine-element)
+    (def (create-engine-node)
       (if (.overlay?)
         (call-5l-prim 'Overlay (node-full-name self)
                       (parent->card self (.bounds))
@@ -323,10 +316,9 @@
                       (parent->card self (as <polygon> (.bounds)))
                       (make-node-event-dispatcher self) (.cursor))))
 
-    (def (setup-finished)
-      (super)
+    (setup
       ;; We need to postpone this until the underlying engine object
-      ;; is created.  This is tied into the ugly %nocreate% stuff.
+      ;; is created.
       (set-wants-cursor! self (.wants-cursor?))
       (set-in-drag-layer?! self (.dragging?))
       (.invalidate))
@@ -864,7 +856,7 @@
     (def (set-activex-prop! name value)
       (call-5l-prim 'ActiveXPropSet (node-full-name self) name value))
 
-    (setup
+    (def (create-engine-node)
       (call-5l-prim 'ActiveX (node-full-name self) 
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
@@ -946,7 +938,7 @@
     (def (stop)
       (call-5l-prim 'BrowserStop (node-full-name self)))
 
-    (setup
+    (def (create-engine-node)
       (call-5l-prim 'Browser (node-full-name self) 
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
@@ -955,6 +947,8 @@
 
     (def (setup-finished)
       (super)
+      ;; We don't update the UI until very late in the processing, giving
+      ;; everybody's SETUP a chance to complete.
       (define (update-command command)
         (.update-ui (make <update-ui-event> :command command)))
       (update-command 'back)
@@ -1006,7 +1000,7 @@
       (.focus)
       (call-5l-prim 'EditBoxSetSelection (node-full-name self) start end))
 
-    (setup
+    (def (create-engine-node)
       (call-5l-prim 'EditBox (node-full-name self)
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect)) (.text)
@@ -1132,7 +1126,7 @@
     (def (set-counts-per-second! counts)
       (call-5l-prim 'AudioStreamGeigerSetCps (node-full-name self) counts))
     
-    (setup
+    (def (create-engine-node)
       (call-5l-prim 'AudioStreamGeiger (node-full-name self)
                     (make-node-event-dispatcher self)
                     (build-path (current-directory) "LocalMedia" (.path))
@@ -1147,7 +1141,7 @@
     (attr chirp) 
     (attr loops)
     
-    (setup
+    (def (create-engine-node)
       (apply call-5l-prim 'GeigerSynth (node-full-name self) (.state-path)
              (build-path (current-directory) "LocalMedia" (.chirp))
              (.volume)
@@ -1167,7 +1161,7 @@
   (define-class %sine-wave% (%audio-element%)
     (attr frequency :type <integer> :label "Frequency (Hz)")
       
-    (setup
+    (def (create-engine-node)
       (call-5l-prim 'AudioStreamSine (node-full-name self)
                     (make-node-event-dispatcher self)
                     (.volume) (.frequency))))
@@ -1195,16 +1189,15 @@
     (attr buffer 512 :type <integer> :label "Buffer Size (K)")
     (attr loop?  #f  :type <boolean> :label "Loop this clip?")
 
-    (def (setup-finished)
-      (super)
-      (media-maybe-attach-caption-file! self (.path)))
-    
-    (setup
+    (def (create-engine-node)
       (let [[path (make-native-path "LocalMedia" (.path))]]
         (check-file path)
         (call-5l-prim 'AudioStreamVorbis (node-full-name self)
                       (make-node-event-dispatcher self) path
-                      (.volume) (* 1024 (.buffer)) (.loop?)))))
+                      (.volume) (* 1024 (.buffer)) (.loop?))))
+
+    (setup
+      (media-maybe-attach-caption-file! self (.path))))
   
   ;;; Create a %vorbis-audio% element.
   (define (vorbis-audio path
@@ -1351,7 +1344,7 @@
     (def (set-timeout! seconds)
       (call-5l-prim 'MovieSetTimeout (node-full-name self) seconds))
 
-    (setup
+    (def (create-engine-node)
       (define path (media-path (.path)))
       (check-file path)
       (call-5l-prim 'Movie (node-full-name self)
@@ -1361,10 +1354,8 @@
                     (.controller?) (.audio-only?) (.loop?) (.interaction?)
                     (.report-captions?)))
 
-    (def (setup-finished)
-      (super)
+    (setup
       (media-maybe-attach-caption-file! self (.path)))
-
     )
 
   ;;; Create a %movie%.
