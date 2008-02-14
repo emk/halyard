@@ -220,19 +220,7 @@
     (attr called-setup? #f :writable? #t)
     (def (setup)
       (set! (.called-setup?) #t)
-      ;; Starting from %node%, walk down the class hierarchy and
-      ;; instantiate all our statically-declared elements.
-      (let recurse [[klass (.class)]]
-        (unless (eq? klass %node%)
-          (recurse (klass .superclass)))
-        (foreach [static-elem (klass .elements)]
-          ;; It is *very* important that we pass in :parent explicitly
-          ;; here, if we want the nested node syntax to support (.parent)
-          ;; in initializers.  This guarantees that (.parent) is
-          ;; immediately available on our %initializer-keywords% object,
-          ;; and not set by a (default ...) statement too late to do any
-          ;; good.
-          (static-elem .new :parent self :name (static-elem .name)))))
+      (.instantiate-static-elements))
 
     ;;; A few parent classes in our system need to run small fragments
     ;;; of code *after* child classes finish their setup.  For now, we'll
@@ -247,6 +235,7 @@
     ;;; This method is called as a node is being exited (jumped away from 
     ;;; or deleted).
     (.define-method-with-mandatory-super 'exit)
+
     )
 
   ;; Called when a node is defined.
@@ -373,6 +362,23 @@
     (def (unregister)
       (.unregister-from (*engine* .running-node-table)))
 
+    ;; Instantiate all the static elements defined anywhere in our class
+    ;; hierarchy.
+    (def (instantiate-static-elements)
+      ;; Starting from %node%, walk down the class hierarchy and
+      ;; instantiate all our statically-declared elements.
+      (let recurse [[klass (.class)]]
+        (unless (eq? klass %node%)
+          (recurse (klass .superclass)))
+        (foreach [static-elem (klass .elements)]
+          ;; It is *very* important that we pass in :parent explicitly
+          ;; here, if we want the nested node syntax to support (.parent)
+          ;; in initializers.  This guarantees that (.parent) is
+          ;; immediately available on our %initializer-keywords% object,
+          ;; and not set by a (default ...) statement too late to do any
+          ;; good.
+          (static-elem .new :parent self :name (static-elem .name)))))
+
     (with-instance (.class)
       (attr name #f :writable? #t)   ; May be #f if class not in hierarchy.
       (attr parent #f :writable? #t)
@@ -406,8 +412,18 @@
       (def (register-with-lexical-parent parent)
         (error (cat self " may not be nested within another node")))
 
+      ;; Given an element class with a properly set-up name and parent,
+      ;; register it with this class so that it can be created at runtime
+      ;; by the default SETUP method.
       (def (register-static-element elem)
-        (set! (.elements) (append (.elements) (list elem))))
+        (%assert (elem .name))
+        (%assert (eq? self (elem .parent)))
+        ;; Add this element to our static child element list.
+        (set! (.elements) (append (.elements) (list elem)))
+        ;; Declare a helper method which can be called at runtime to find
+        ;; the running version of our child element.
+        (.define-method (elem .name) 
+          (method () (find-node-relative self (elem .name) #t))))
 
       ;; Takes a list of pairs of names and methods and turns each into the
       ;; equivalent of:

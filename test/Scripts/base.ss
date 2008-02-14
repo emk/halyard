@@ -105,10 +105,15 @@
   (provide %title% title)
 
   (define-class %title% (%text%)
-    (attr title)
+    (attr title :writable? #t)
     (value at (point 10 10))
     (value style $title-style)
-    (value text (cat "<h>" (string->xml (.title)) "</h>")))
+
+    ;; TODO - Wouldn't it be nice to handle property dependencies
+    ;; automatically?  See case 2353.
+    (value text (cat "<h>" (string->xml (.title)) "</h>"))
+    (after-updating title
+      (set! (.text) (cat "<h>" (string->xml (.title)) "</h>"))))
   
   (define (title str)
     (%title% .new :title str))
@@ -121,9 +126,14 @@
   (provide %test-card% %standard-test-card% %black-test-card%)
 
   (define-class %test-card% (%card%)
-    (attr title :type <string>)
+    (attr title :type <string> :writable? #t)
     
+    ;; TODO - Here's another kind of slightly different property
+    ;; dependency.  Hmm.  See case 2353.
     (elem title-elem (%title% :title (.title)))
+    (after-updating title
+      (set! ((.title-elem) .title) (.title)))
+
     ;; TODO - Add button which jumps back to index.
     )
 

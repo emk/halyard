@@ -231,6 +231,9 @@
 ;; we specify the title.
 (card index (%black-test-card% :title "Tamale Features (updated)")
   (setup
+    ;; TODO - Temporary test code; this will be tested elsewhere later.
+    (set! (.title) "Nodes have local names")
+
     (draw-menu-item 'controls 80 "Controls" @features/controls)
     (draw-menu-item 'movies 180 "More Movies" @media/qt/movies)
     (draw-menu-item 'about 280 "About" @bullets/about)

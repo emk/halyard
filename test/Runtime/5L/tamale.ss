@@ -580,7 +580,7 @@
           :writable? #t)
 
     ;; TODO - Wouldn't it be nice to handle property dependencies
-    ;; automatically?
+    ;; automatically?  See case 2353.
     (value shape (measure-text (.style) (.text) :max-width (.max-width)))
     (after-updating [style text max-width]
       (set! (.shape) (measure-text (.style) (.text) :max-width (.max-width))))
