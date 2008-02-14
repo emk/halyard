@@ -95,20 +95,21 @@
   (def (mouse-down event)
     (jump (.jump-to))))
 
-;; The index card is based on our %simple-card% template.  Notice how
-;; we specify the title.
+;; A little experiment: We could use the short-form names of element
+;; templates for macros, not creator functions.  See case 2619.
+(define-syntax menu-item
+  (syntax-rules ()
+    [(_ name (y text jump-to . keys) . body)
+     (elem name (%menu-item% :y y :text text :jump-to jump-to . keys)
+       . body)]))
+
+;; The index card is based on our %simple-card% template.
 (card index (%black-test-card% :title "Tamale Features (updated)")
-  (elem controls
-      (%menu-item% :y 80 :text "Controls" :jump-to @features/controls))
-  (elem movies
-      (%menu-item% :y 180 :text "More Movies" :jump-to @media/qt/movies))
+  (menu-item controls ( 80 "Controls"    @features/controls))
+  (menu-item movies   (180 "More Movies" @media/qt/movies))
   (elem release-id
       (%text% :at (point 10 580) :style $title-style
               :text (or #| (program-release-id) |# "")))
-  (setup
-    ;; TODO - Temporary test code; this will be tested elsewhere later.
-    (set! (.title) "Nodes have local names")
-    )
   )
 
 (card custom-element-demo (%black-test-card% :title "Custom elements")
