@@ -95,26 +95,29 @@
     ;; code unless you were up to something clever.
     (def (media-finished event)
       (delete-element self)))
+
   
   (card media/qt/movies (%captioned-card%) 
     (value title "Multiple Movies")
 
-    (run
-      (define rect1 (move-rect-top-to $default-movie-and-controller-size 50))
-      (define rect2 (move-rect-right-to rect1 (rect-right $screen-rect)))
-      
-      ;; Create our first movie and pause it.
-      (refresh)
-      (movie rect1 "duck_and_cover_intro_vp3_captioned.mov"
-             :name 'movie1 :controller? #t)
-      ;; TODO - Make this work.
-      (@movie1 .pause)
-      
-      ;; Create our buttons.
+    (define $rect1 (move-rect-top-to $default-movie-and-controller-size 50))
+    (define $rect2 (move-rect-right-to $rect1 (rect-right $screen-rect)))
 
-      (text-button (below @movie1 20) "Pause"
-                   (callback (@movie1 .pause))
-                   :name 'pause)
+    (elem movie1 (%movie%
+                  :rect $rect1
+                  :path "duck_and_cover_intro_vp3_captioned.mov"
+                  :controller? #t)
+      (setup
+        ;; Because we haven't fixed case 2359, we need to pause a movie
+        ;; manually right after we create it.
+        (.pause)))
+
+    (elem pause (%text-button% :at (below (.movie1) 20) :label "Pause")
+      (def (button-clicked event)
+        (((.parent) .movie1) .pause)))
+    
+    (run      
+      ;; Create our buttons.
       (text-button (to-the-right-of @pause 10) "Resume"
                    (callback (@movie1 .resume))
                    :name 'resume)
@@ -123,7 +126,7 @@
                      (set! (@show-2nd .enabled?) #f)
                      (refresh)
                      (%self-deleting-movie% .new
-                       :rect rect2
+                       :rect $rect2
                        :path "quackery_vp3.mov"))
                    :name 'show-2nd :shown? #f)
 
