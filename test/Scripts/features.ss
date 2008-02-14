@@ -107,7 +107,7 @@
   (define-stylesheet $browser-style :base $base-style :family "Times")
   
   (card features/browser ()
-    (default-background)
+    (draw-default-background)
     
     (define (draw-string r str)
       (draw-rectangle r $color-black)
@@ -250,7 +250,7 @@
     (center-text $transition-style $screen-rect msg))
 
   (define (show-trans msg trans)
-    (white-background)
+    (draw-white-background)
     (transition-text msg)
     (refresh :transition trans :ms 1000))
 
@@ -385,12 +385,12 @@
       (draw-graphic (point 0 0) "lens.png")))
 
   (card features/dragndrop ()
-    (white-background)
+    (draw-white-background)
     (center-text $audio-stream-style $screen-rect "Simple\nDrag and Drop")
     (create %movable-lens% :at (point 350 300)))
 
   (card features/geometric ()
-    (white-background)
+    (draw-white-background)
     (draw-line (point 10 10) (point 10 50) $color-black 1) 
     (draw-line (point 20 10) (point 20 50) $color-black 2) 
     (draw-line (point 30 10) (point 30 50) $color-black 3) 
