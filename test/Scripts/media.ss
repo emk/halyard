@@ -23,14 +23,14 @@
   
   ;;; Displays a movie or audio caption against a black background.
   (define-class %captioned-card% (%black-test-card%)
-    (setup
-      (text-box (rect 100 475 700 590) $caption-style "" :name 'caption))
+    (elem caption (%text-box% :bounds (rect 100 475 700 590)
+                              :style $caption-style :text ""))
     
     ;; Caption events are passed from media elements to their parents (like
     ;; all regular events), so we can intercept them at the card level and
     ;; redirect them to a location of our choice.
     (def (media-caption event)
-      (set! (@caption .text) (event-caption event))))
+      (set! ((.caption) .text) (event-caption event))))
 
   ;;; A card which displays a single movie.
   (define-class %movie-card% (%captioned-card%)
@@ -38,13 +38,15 @@
     (attr movie-size $default-movie-size)
     (attr controller? #f)
       
-    (run
-      ;; Figure out where we'll put our movie.
-      (define center (rect-center $screen-rect))
-      (define bounds (move-rect-center-to (.movie-size) center))
-    
-      ;; Create and run our movie.
-      (movie bounds (.path) :name 'movie :controller? (.controller?))))
+    ;;; Note that if we create movies with ELEM, they're going to start
+    ;;; playing almost immediately.  This only works if you want the movie
+    ;;; to start as soon as you display the card.  Otherwise, you need to
+    ;;; create the movie in RUN.
+    (elem movie (%movie%
+                 :path (.path) :controller? (.controller?)
+                 :rect (move-rect-center-to (.movie-size)
+                                            (rect-center $screen-rect))))
+    )
 
   (sequence media)
 
@@ -71,29 +73,32 @@
 
     (run
       (define (caption msg)
-        (set! (@caption .text) msg))
+        (set! ((.caption) .text) msg))
       
-      (wait @movie :frame (tc 3 00))
+      (wait (.movie) :frame (tc 3 00))
       (caption "Hi, Raymond!")
-      (wait @movie :frame (tc 5 0))
+      (wait (.movie) :frame (tc 5 0))
       (caption "We're listening...")
-      (wait @movie :frame (tc 8 0))
+      (wait (.movie) :frame (tc 8 0))
       (caption "")
-      (wait @movie :frame (tc 23 0))
+      (wait (.movie) :frame (tc 23 0))
       (caption "No Z-rays?  Gosh!")
-      (wait @movie :frame (tc 26 0))
+      (wait (.movie) :frame (tc 26 0))
       (caption "")
-      (wait @movie)
-      (delete-element @movie)
+      (wait (.movie))
+      (delete-element (.movie))
       (caption "The End.")))
   
   (define-class %self-deleting-movie% (%movie%)
+    ;; We need something to actually test media-finished and self deletion,
+    ;; so let's do this.  You probably wouldn't want to do this in regular
+    ;; code unless you were up to something clever.
     (def (media-finished event)
       (delete-element self)))
   
   (card media/qt/movies (%captioned-card%) 
     (value title "Multiple Movies")
-    
+
     (run
       (define rect1 (move-rect-top-to $default-movie-and-controller-size 50))
       (define rect2 (move-rect-right-to rect1 (rect-right $screen-rect)))
@@ -252,7 +257,7 @@
                 "" :name 'caption))
     
     (def (media-caption event)
-      (set! (@caption .text) (event-caption event)))
+      (set! ((.caption) .text) (event-caption event)))
     )
 
   (sequence media/audiostream)
