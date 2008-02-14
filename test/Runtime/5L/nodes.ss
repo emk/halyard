@@ -251,12 +251,17 @@
   ;; Called when a node is defined.
   (define *node-defined-hook* (make-hook 'node-defined-hook))
 
-  (define-syntax thunked-alist<-bindings
-    (syntax-rules ()
-      [(_) '()]
+  (define-syntax (thunked-alist<-bindings stx)
+    (syntax-case stx ()
+      [(_) (quasisyntax/loc stx '())]
       [(_ key value . rest)
-       (cons (cons (keyword-name key) (method () value))
-             (thunked-alist<-bindings . rest))]))
+       (and (keyword? (syntax-object->datum #'key))
+            (not (keyword? (syntax-object->datum #'value))))
+       (quasisyntax/loc stx
+         (cons (cons (keyword-name key) (method () value))
+               (thunked-alist<-bindings . rest)))]
+      [(_ . rest)
+       (raise-syntax-error 'define-node "Malformed keyword list" #'rest)]))
 
   (define-syntax define-node-helper
     (syntax-rules ()
@@ -885,7 +890,7 @@
         (check-node-name name)
         (set! (.name) name))
 
-      (def (regsiter)
+      (def (register)
         ;; We don't need to register elements in the global table the same
         ;; way we handle cards, etc.
         (void))

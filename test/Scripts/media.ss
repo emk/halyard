@@ -180,12 +180,12 @@
   ;;
   ;; NOTE: if this card DOES NOT work for you, then you might need to install
   ;;   the Xiph QuickTime plugin for Ogg Theora (see above).
-  (card media/ogg-theora/video-test ()
-    (run
-      (define video-shape (rect 0 0 640 480))
-      (movie (offset-rect video-shape (point 100 100))
-             "CougarAceListing24july2006.ogg")))
+  (card media/ogg-theora/video-test (%movie-card%
+                                     :title "Ogg Theora demo (codec required)"
+                                     :movie-size (shape 640 480)
+                                     :path "CougarAceListing24july2006.ogg"))
   
+
   ;;=======================================================================
   ;;  Audio Streams
   ;;=======================================================================
@@ -202,9 +202,12 @@
     (rect left top (+ left 10) (+ top 10)))
     
   (define-class %volume-control% (%custom-element%) 
-    (attr stream) 
     (attr channel) 
     (value alpha? #t)
+    (value shape (shape 12 45))
+
+    (def (stream)
+      ((.parent) .stream))
 
     ;; TODO - This is an internal slot. We should be using (slot
     ;; 'box-fill-limit) directly, but that's a pain.  We need to
@@ -233,31 +236,25 @@
           (.do-set-volume n))))
     )
 
-  (define (volume-control p stream channel)
-    (define x (point-x p))
-    (define y (point-y p))
-    (%volume-control% .new :bounds (rect x y (+ x 12) (+ y 45))
-                           :stream stream
-                           :channel channel))
+  ;; TODO - We used to format this like one of the transition test cards.
+  ;; Maybe we can factor out a common "big black text centered one a white
+  ;; screen" template and use it for both?
+  (define-class %audio-stream-card% (%white-test-card%)
+    (elem left (%volume-control%
+                :at (point (- (rect-right $screen-rect) 26)
+                           (- (rect-bottom $screen-rect) 46))
+                :channel 'left))
+    (elem right (%volume-control% :at (to-the-right-of (.left) 1)
+                                  :channel 'right))
 
-  (define-class %audio-stream-card% (%card%) 
-    (attr title)
-    
-    (setup
-      (draw-white-background)
-      (center-text $audio-stream-style $screen-rect (.title))
-      (define volume-location (point (- (rect-right $screen-rect) 26)
-                                     (- (rect-bottom $screen-rect) 46)))
-      (volume-control volume-location @stream 'left)
-      (volume-control (point (+ 13 (point-x volume-location))
-                             (point-y volume-location))
-                      @stream 'right)
-      
-      ;; We have captions for one of our Vorbis tracks.
-      (text-box (rect (rect-left $screen-rect) (- (rect-bottom $screen-rect) 100)
-                      (rect-right $screen-rect) (rect-width $screen-rect))
-                (stylesheet :base $caption-style :color $color-black)
-                "" :name 'caption))
+    (elem caption
+        (%text-box%
+         :bounds (rect (rect-left $screen-rect)
+                       (- (rect-bottom $screen-rect) 100)
+                       (rect-right $screen-rect)
+                       (rect-width $screen-rect))
+         :style (stylesheet :base $caption-style :color $color-black)
+         :text ""))
     
     (def (media-caption event)
       (set! ((.caption) .text) (event-caption event)))
@@ -266,65 +263,61 @@
   (sequence media/audiostream)
   (sequence media/audiostream/vorbis)
 
-  (card media/audiostream/vorbis/stereo (%audio-stream-card%)
-    (value title "Vorbis Stereo\n(Looping)")
-    (run
-      (vorbis-audio "oggtest-stereo.ogg" :name 'stream :loop? #t)))
+  (card media/audiostream/vorbis/stereo
+      (%audio-stream-card% :title "Vorbis Stereo\n(Looping)")
+    (elem stream (%vorbis-audio% :path "oggtest-stereo.ogg" :loop? #t)))
 
-  (card media/audiostream/vorbis/mono (%audio-stream-card%)
-    (value title "Vorbis Mono")
-    (run
-      (vorbis-audio "oggtest-mono.ogg" :name 'stream)))
+  (card media/audiostream/vorbis/mono 
+      (%audio-stream-card% :title "Vorbis Mono")
+    (elem stream (%vorbis-audio% :path "oggtest-mono.ogg")))
 
-  (card media/audiostream/vorbis/twobeeps (%audio-stream-card%)
-    (value title "Vorbis Two Beeps\n(Broken)")
-    (run
-      (vorbis-audio "oggtest-twobeeps.ogg" :name 'stream)))
+  (card media/audiostream/vorbis/twobeeps 
+      (%audio-stream-card% :title "Vorbis Two Beeps\n(Broken)")
+    (elem stream (%vorbis-audio% :path "oggtest-twobeeps.ogg")))
 
-  (card media/audiostream/vorbis/long (%audio-stream-card%)
-    (value title "Long Vorbis\n(FDA Advisory)")
-    (run
-      (vorbis-audio "quackery.ogg" :name 'stream)))
+  (card media/audiostream/vorbis/long 
+      (%audio-stream-card% :title "Long Vorbis\n(FDA Advisory)")
+    (elem stream (%vorbis-audio% :path "quackery.ogg")))
 
   (sequence media/audiostream/geiger)
 
-  (card media/audiostream/geiger/synth (%audio-stream-card%)
-    (value title "Geiger Counter")
-    (run
-      (geiger-audio "oggtest-geiger-chirp.ogg" :name 'stream)
-      (@stream .set-counts-per-second! 10.0)))
+  (card media/audiostream/geiger/synth 
+      (%audio-stream-card% :title "Geiger Counter")
+    (elem stream (%geiger-audio% :path "oggtest-geiger-chirp.ogg")
+      (setup
+        (.set-counts-per-second! 10.0))))
 
   (sequence media/audiostream/geiger/loop)
 
-  (card media/audiostream/geiger/loop/rate-point8mrph (%audio-stream-card%)
-    (value title "Ludlum 0.8 mRph")
-    (run
-      (vorbis-audio "ludlum/lud-mod14c-00_8mRph.ogg" :name 'stream :loop? #t)))
+  (card media/audiostream/geiger/loop/rate-point8mrph
+      (%audio-stream-card% :title "Ludlum 0.8 mRph")
+    (elem stream
+        (%vorbis-audio% :path "ludlum/lud-mod14c-00_8mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/geiger/loop/rate-2mrph (%audio-stream-card%)
-    (value title "Ludlum 2 mRph")
-    (run
-      (vorbis-audio "ludlum/lud-mod14c-02_0mRph.ogg" :name 'stream :loop? #t)))
+  (card media/audiostream/geiger/loop/rate-2mrph
+      (%audio-stream-card% :title "Ludlum 2 mRph")
+    (elem stream
+        (%vorbis-audio% :path "ludlum/lud-mod14c-02_0mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/geiger/loop/rate-5mrph (%audio-stream-card%)
-    (value title "Ludlum 5 mRph")
-    (run
-      (vorbis-audio "ludlum/lud-mod14c-05_0mRph.ogg" :name 'stream :loop? #t)))
+  (card media/audiostream/geiger/loop/rate-5mrph
+      (%audio-stream-card% :title "Ludlum 5 mRph")
+    (elem stream
+      (%vorbis-audio% :path "ludlum/lud-mod14c-05_0mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/geiger/loop/rate-10mrph (%audio-stream-card%) 
-    (value title "Ludlum 10 mRph")
-    (run
-      (vorbis-audio "ludlum/lud-mod14c-10_0mRph.ogg" :name 'stream :loop? #t)))
+  (card media/audiostream/geiger/loop/rate-10mrph
+      (%audio-stream-card% :title "Ludlum 10 mRph") 
+    (elem stream
+        (%vorbis-audio% :path "ludlum/lud-mod14c-10_0mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/geiger/loop/rate-50mrph (%audio-stream-card%)
-    (value title "Ludlum 50 mRph")
-    (run
-      (vorbis-audio "ludlum/lud-mod14c-50_0mRph.ogg" :name 'stream :loop? #t)))
+  (card media/audiostream/geiger/loop/rate-50mrph
+      (%audio-stream-card% :title "Ludlum 50 mRph")
+    (elem stream
+        (%vorbis-audio% :path "ludlum/lud-mod14c-50_0mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/sine (%audio-stream-card%)
-    (value title "440Hz Sine Wave\n(Synthesized)")
-    (run
-      (sine-wave 440 :name 'stream)))
+  (card media/audiostream/sine
+      (%audio-stream-card% :title "440Hz Sine Wave\n(Synthesized)")
+    (elem stream (%sine-wave% :frequency 440)))
+  
   
   ;;=======================================================================
   ;;  Complete Geiger Counter Synth
