@@ -86,15 +86,15 @@
   ;;  Here are some simple global functions we'll use throughout the
   ;;  script.
   
-  (provide default-background black-background white-background)
+  (provide draw-default-background draw-black-background draw-white-background)
 
-  (define (default-background)
+  (define (draw-default-background)
     (draw-graphic (point 0 0) "back.png"))
   
-  (define (black-background)
+  (define (draw-black-background)
     (clear-dc $color-black))
   
-  (define (white-background)
+  (define (draw-white-background)
     (clear-dc $color-white))
 
   
@@ -139,11 +139,11 @@
 
   (define-class %standard-test-card% (%test-card%)
     (setup
-      (default-background)))
+      (draw-default-background)))
   
   (define-class %black-test-card% (%test-card%)
     (setup
-      (black-background)))
+      (draw-black-background)))
   
 
   ;;=======================================================================

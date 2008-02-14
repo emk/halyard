@@ -11,17 +11,6 @@
 ;;  We apologize for any temporary inconveniences.
 
 
-(card custom-element-demo ()
-  (setup
-    (clear-dc (color 0 0 0))
-    (clickable-zone (inset-rect $screen-rect 10)
-                    (callback (jump duck-and-cover)))
-    (%custom-element% .new :bounds (inset-rect $screen-rect 100) :name 'inner)
-    (with-dc @inner
-      (draw-graphic (point 0 0) "mask/blend-background.png"))
-    )
-  )
-
 (require (lib "tamale-unit.ss" "5L"))
 
 (define-class %advised% ()
@@ -241,6 +230,13 @@
                                           ""))
   ))
 
+(card custom-element-demo (%black-test-card% :title "Custom elements")
+  (elem outer (%clickable-zone% :bounds (inset-rect $screen-rect 10)
+                                :action (callback (jump duck-and-cover))))
+  (elem inner (%custom-element% :bounds (inset-rect $screen-rect 100))
+    (def (draw)
+      (draw-graphic (point 0 0) "mask/blend-background.png")))
+  )
 
 #|
 ;;=========================================================================
@@ -288,12 +284,12 @@
   (draw-graphic (point 85 (+ *text-y* 16)) "dash_yellow.png")
   (draw-text (rect 100 (+ *text-y* 11) 580 420) $bullet-3 msg))
 
-(define (bullet-background)
+(define (draw-bullet-background)
   (draw-graphic (point 0 0) "back_02.png")
   )
 
 (card bullets/about ()
-  (bullet-background)
+  (draw-bullet-background)
   (banner "Ingredients for This Demo")
   (bullet2 "\"Common\" code from existing engine")
   (bullet3 "Scheme-based runtime")
@@ -307,7 +303,7 @@
   )
 
 (card bullets/features ()
-  (bullet-background)
+  (draw-bullet-background)
   (banner "Features")
   (bullet2 "QuickTime")
   (bullet3 "Movie controller")
@@ -323,7 +319,7 @@
   )
 
 (card bullets/missing ()
-  (bullet-background)
+  (draw-bullet-background)
   (banner "What's Needed If We Want to Use This Engine")
   (bullet2 "Integrate lots of code from Win32 engine")
   (bullet2 "Optimize low-level graphics (for text drawing)")
@@ -369,7 +365,7 @@
   (jump @error))
   
 (card updater/check ()
-  (black-background)
+  (draw-black-background)
   (unless (auto-update-possible? (current-directory))
     (set! *error-message* (cat "Automatic updates are not possible. Please "
                                "obtain an up to date copy of the installer "
@@ -379,7 +375,7 @@
     (init-updater!)
     (if (check-for-update) 
       (begin 
-        (black-background)
+        (draw-black-background)
         (title "An update is available. Would you like to download it?")
         (draw-menu-item 'install 80 "Install update" @download)
         (draw-menu-item 'skip 180 "Skip update" index))
@@ -388,7 +384,7 @@
         (draw-menu-item 'continue 80 "Continue" index)))))
 
 (card updater/download ()
-  (black-background)
+  (draw-black-background)
   (with-handlers [[exn:fail? updater-handler]]
     (define r (rect 0 80 640 180))
     
@@ -400,7 +396,7 @@
     (jump @install)))
 
 (card updater/install ()
-  (black-background)
+  (draw-black-background)
   (title (cat "Updates were successfully downloaded. Press Continue to "
                    "quit the program, install the updates, and restart the "
                    "program."))
@@ -410,7 +406,7 @@
   (apply-update))
 
 (card updater/error ()
-  (black-background)
+  (draw-black-background)
   (title 
    (cat "An error occured while checking for or trying to apply updates: "
         *error-message*))
@@ -422,7 +418,7 @@
 ;;=========================================================================
 
 (card test-countdown ()
-  (white-background)
+  (draw-white-background)
   (countdown 'countdown
              $screen-rect 
              (list 0 0 10) $transition-style
@@ -614,7 +610,7 @@
   )
 
 ;;(card on-exit ()
-;;  (black-background)
+;;  (draw-black-background)
 ;;  (on exit ()
 ;;    ;; This is so not allowed.
 ;;    (jump index)))

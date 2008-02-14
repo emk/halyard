@@ -118,7 +118,7 @@
   
   (card media/qt/missing/qtvr1 ()
     (setup
-      (white-background))
+      (draw-white-background))
     
     (run
       (movie (move-rect-center-to (rect 0 0 320 320)
@@ -128,7 +128,7 @@
   
   (card media/qt/missing/qtvr2 ()
     (setup
-      (white-background))
+      (draw-white-background))
     (run
       (movie (move-rect-center-to (rect 0 0 480 480)
                                   (rect-center $screen-rect))
@@ -225,7 +225,7 @@
     (attr title)
     
     (setup
-      (white-background)
+      (draw-white-background)
       (center-text $audio-stream-style $screen-rect (.title))
       (define volume-location (point (- (rect-right $screen-rect) 26)
                                      (- (rect-bottom $screen-rect) 46)))
