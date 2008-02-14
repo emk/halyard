@@ -115,44 +115,44 @@
     (elem pause (%text-button% :at (below (.movie1) 20) :label "Pause")
       (def (button-clicked event)
         (((.parent) .movie1) .pause)))
+
+    (elem resume (%text-button% :at (to-the-right-of (.pause) 10)
+                                :label "Resume")
+      (def (button-clicked event)
+        (((.parent) .movie1) .resume)))
+
+    (elem show-2nd (%text-button% :at (to-the-right-of (.resume) 10)
+                                  :label "Show Second Movie" :shown? #f)
+      (def (button-clicked event)
+        (set! (.enabled?) #f)
+        (%self-deleting-movie% .new :rect $rect2
+                                    :path "quackery_vp3.mov")))
     
     (run      
-      ;; Create our buttons.
-      (text-button (to-the-right-of @pause 10) "Resume"
-                   (callback (@movie1 .resume))
-                   :name 'resume)
-      (text-button (to-the-right-of @resume 10) "Show Second Movie"
-                   (callback
-                     (set! (@show-2nd .enabled?) #f)
-                     (refresh)
-                     (%self-deleting-movie% .new
-                       :rect $rect2
-                       :path "quackery_vp3.mov"))
-                   :name 'show-2nd :shown? #f)
-
-      (wait @movie1 :frame (tc 10 00))
-      (set! (@show-2nd .shown?) #t)))
+      (wait (.movie1) :frame (tc 10 00))
+      (set! ((.show-2nd) .shown?) #t)))
 
   (sequence media/qt/missing)
   
-  (card media/qt/missing/qtvr1 ()
-    (setup
-      (draw-white-background))
-    
-    (run
-      (movie (move-rect-center-to (rect 0 0 320 320)
-                                  (rect-center $screen-rect))
-             "powerbook17_jan2003_qtvr320.mov"
-             :interaction? #t)))
+  (define-class %qtvr-card% (%white-test-card%)
+    (attr movie-shape :type <rect>)
+    (attr path :type <string>)
+    (elem qtvr (%movie% :rect (move-rect-center-to (.movie-shape)
+                                                   (rect-center $screen-rect))
+                        :path (.path) :interaction? #t))
+    )
+                             
+
+  (card media/qt/missing/qtvr1 (%qtvr-card%
+                                :title "QTVR Demo #1 (media missing)"
+                                :movie-shape (shape 320 320)
+                                :path "powerbook17_jan2003_qtvr320.mov"))
+
+  (card media/qt/missing/qtvr2 (%qtvr-card%
+                                :title "QTVR Demo #2 (media missing)"
+                                :movie-shape (shape 480 480)
+                                :path "powerbook17_jan2003_qtvr480.mov"))
   
-  (card media/qt/missing/qtvr2 ()
-    (setup
-      (draw-white-background))
-    (run
-      (movie (move-rect-center-to (rect 0 0 480 480)
-                                  (rect-center $screen-rect))
-             "powerbook17_jan2003_qtvr480.mov"
-             :interaction? #t)))
   
   ;;=======================================================================
   ;;  Ogg Theora

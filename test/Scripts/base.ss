@@ -123,7 +123,8 @@
   ;;  Card Templates
   ;;=======================================================================
   
-  (provide %test-card% %standard-test-card% %black-test-card%)
+  (provide %test-card% %standard-test-card% %black-test-card%
+           %white-test-card%)
 
   (define-class %test-card% (%card%)
     (attr title :type <string> :writable? #t)
@@ -144,6 +145,10 @@
   (define-class %black-test-card% (%test-card%)
     (setup
       (draw-black-background)))
+
+  (define-class %white-test-card% (%test-card%)
+    (setup
+      (draw-white-background)))
   
 
   ;;=======================================================================
