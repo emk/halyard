@@ -83,6 +83,8 @@ ruby-style classes (F#928):
   * Replaced DRAW-BUTTON with DRAW + BUTTON-STATE combo on %basic-button%.
   * Added support for :COMMAND to %basic-button%.  Feel free to use either
     :COMMAND or CLICK as suits your fancy.
+  * F#2619: Added a DEFINE-NODE-HELPER function which abbreviates ELEM
+    forms and their keyword arguments.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:

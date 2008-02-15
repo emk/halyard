@@ -95,13 +95,9 @@
   (def (mouse-down event)
     (jump (.jump-to))))
 
-;; A little experiment: We could use the short-form names of element
-;; templates for macros, not creator functions.  See case 2619.
-(define-syntax menu-item
-  (syntax-rules ()
-    [(_ name (y text jump-to . keys) . body)
-     (elem name (%menu-item% :y y :text text :jump-to jump-to . keys)
-       . body)]))
+(require (lib "define-node-helper.ss" "5L"))
+
+(define-node-helper menu-item (y text jump-to) elem %menu-item%)
 
 ;; The index card is based on our %simple-card% template.
 (card index (%black-test-card% :title "Tamale Features (updated)")
