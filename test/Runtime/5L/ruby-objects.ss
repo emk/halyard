@@ -170,7 +170,7 @@
            (send% klass 'initialize))
          (set! (ruby-object-initialized? klass) #t)
          (with-instance klass . body)
-         (void))]))
+         klass)]))
 
   (define-syntax (method~ stx)
     (syntax-case stx ()

@@ -291,16 +291,22 @@
       ;; we find a SELF variable in our surrounding lexical context, we
       ;; pass it to register-with-lexical-parent and let the class sort
       ;; it out.
-      [(_ name . rest)
+      [(_ name bindings . body)
        ;; Do we see a SELF in our scope?
        (identifier-binding (make-self #'name)) 
        (quasisyntax/loc stx
-         ;; The LET here is intended to (a) give us a form that allows
-         ;; initial (begin (define ...) ...) forms, and (b) prevent the
-         ;; lexical name from escaping into the surrounding code.
-         (let []
-           (define-node-helper name . rest)
-           (name .register-with-lexical-parent #,(make-self #'name))))]
+         ;; The outermost LET allows us to hide NAME from
+         ;; everybody, so that we don't shadow uses of NAME in either
+         ;; our calling context or in our BODY.  This is also why we
+         ;; expand BODY using WITH-INSTANCE, and don't hand it over to
+         ;; DEFINE-NODE-HELPER.
+         ;;
+         ;; The inner LET [] here gives us a form that allows initial
+         ;; (begin (define ...) ...) forms, which are needed to expand
+         ;; DEFINE-CLASS.
+         (let [[name% (let [] (define-node-helper name bindings))]]
+           (with-instance name% . body)
+           (name% .register-with-lexical-parent #,(make-self #'name))))]
       ;; We don't have SELF, so expand in the ordinary fashion.
       [(_ name . rest)
        (quasisyntax/loc stx
