@@ -1,24 +1,32 @@
 (module features (lib "5l.ss" "5L")
-  (require (lib "drag.ss" "5L"))
-  (require (lib "q-and-a.ss" "5L"))
-  (require (lib "animate.ss" "5L"))
+  ;;(require (lib "drag.ss" "5L"))
+  ;;(require (lib "q-and-a.ss" "5L"))
+  ;;(require (lib "animate.ss" "5L"))
   (require (file "base.ss"))
-  (require (lib "deprecated.ss" "5L"))
+  ;;(require (lib "deprecated.ss" "5L"))
 
   (sequence features)
-
+  
   (card features/controls (%standard-test-card% :title "Controls")
-    (text (below @title 20) $text16 
-          "We have fairly straight-forward access to a variety of native controls for use in 5L programs.  In most cases, we can change the color and the borders.  In addition to the controls shown here, we can have list boxes and drop-down edit fields.  Except for the HTML control, most of these should be 508-compliant with minimal work."
-          :max-width 310)
-    (edit-box (rect 330 10 790 110) 
-              "Multiple, multi-line edit fields.  You should be able to tab between them, but I'm not sure that works.  Word wrap works fine."
-              :multiline? #t 
-              :font-size 18)
-    (edit-box (rect 330 120 790 220) "Hello!  Single-line.")
-    (browser (rect 10 230 790 590) "sample.html")
+    (elem description 
+        (%text% :at (below (.title-elem) 20)
+                :style $text16 
+                :text "We have fairly straight-forward access to a variety of native controls for use in 5L programs.  In most cases, we can change the color and the borders.  In addition to the controls shown here, we can have list boxes and drop-down edit fields.  Except for the HTML control, most of these should be 508-compliant with minimal work."
+                :max-width 310))
+    (elem multi-line
+        (%edit-box% :rect (rect 330 10 790 110) 
+                    :text "Multiple, multi-line edit fields.  You should be able to tab between them, but I'm not sure that works.  Word wrap works fine."
+                    :multiline? #t 
+                    :font-size 18))
+    (elem single-line
+        (%edit-box% :rect (rect 330 120 790 220)
+                    :text "Hello!  Single-line."))
+    (elem browser
+        (%browser% :rect (rect 10 230 790 590)
+                   :path "sample.html"))
     )
 
+  #|
   (card features/text-formatting
       (%standard-test-card% :title "Text Formatting")
     (text (point 10 100) $text16
@@ -976,4 +984,5 @@
          (quantize 3.2
            (slide @foo (point 0 0))
            (slide @bar (point 150 400)))))))
+  |#
   )

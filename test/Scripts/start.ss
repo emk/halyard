@@ -127,7 +127,7 @@
 
 (require (file "ruby-objects-test.ss"))
 (require (file "media.ss"))
-;;(require (file "features.ss"))
+(require (file "features.ss"))
 ;;(require (file "bugs.ss"))
 ;;(require (file "experiments.ss"))
 ;;(require "test-cases.ss")
@@ -333,76 +333,4 @@
     (draw-text (dc-rect) $q2-debug-style
                (state-db '/quake2/weapon))))
 
-
-;;=========================================================================
-;;  Login Screen
-;;=========================================================================
-
-(define-struct role (name x-position))
-
-(define *first-name* "")
-(define *last-name* "")
-
-(define *roles*
-  (list (make-role 'counselor 161)
-        (make-role 'nurse 175)
-        (make-role 'physician 189)
-        (make-role 'outreach 203)
-        (make-role 'other 217)))
-
-(define (role-zone role)
-  (define x (role-x-position role))
-  (define (show-login-question)
-    ;; XXX - Be careful about deleting the active zone!
-    (delete-elements
-     (map (fn (role) (@* (symbol->string (role-name role)))) *roles*))
-    (draw-graphic (point 450 x) "chksm.png")
-    (login-text (cat "Would you like to sign in as a new user,\n<i>"
-                     *first-name* " " *last-name* "</i>, or sign "
-                     "in again?"))
-    
-    (draw-graphic (point 153 299) "lmboxb.png")
-    (clickable-zone (rect 148 294 285 316) (callback (jump intro))
-                    :name 'newuser)
-    (draw-text (rect 177 297 298 316) $login-button-style "New Trainee")
-    
-    (draw-graphic (point 301 299) "lmboxb.png")
-    (clickable-zone (rect 296 294 440 316) (callback (jump login))
-                    :name 'again)
-    (draw-text (rect 322 297 445 316) $login-button-style
-               "Sign In Again"))
-  
-  (clickable-zone (rect 450 x 550 (+ x 11))
-                  (deferred-callback
-                    (show-login-question))
-                  :name (role-name role)))
-
-(define (login-text msg)
-  (draw-rectangle (rect 147 232 555 276) $color-paper)
-  (center-text $login-style (rect 147 232 555 276) msg))  
-
-(card login ()
-  (draw-graphic (point 0 0) "login5.png")
-  (login-text "Please type your <i>first</i> name and press ENTER.")
-  ;; TODO - Update to use new input subsystem.
-  (edit-box (rect 145 200 280 220) "" :name 'first-name :font-size 18)
-  (set! *first-name* #f)
-  (clickable-zone (rect 145 200 280 220) (callback (jump login))
-                  :name 'reenter)
-  (login-text "Please type your <i>last</i> name and press ENTER.")
-  (edit-box (rect 295 200 425 220) "" :name 'last-name :font-size 18)
-  (set! *last-name* #f)
-  ;;(delete-elements)
-  ;;(clickable-zone (rect 145 200 425 220) (callback (jump login))
-  ;;                :name 'reenter)
-  ;;(foreach [role *roles*]
-  ;;  (role-zone role))
-  ;;(login-text "Please indicate your <i>profession</i>.")
-  )
-
-;;(card on-exit ()
-;;  (draw-black-background)
-;;  (on exit ()
-;;    ;; This is so not allowed.
-;;    (jump index)))
 |#

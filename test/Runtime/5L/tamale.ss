@@ -984,11 +984,16 @@
 
     ;;; Return the text from this edit box.
     (def (text)
-      (call-5l-prim 'EditBoxGetValue (node-full-name self)))
+      (if (.initialized?)
+        (call-5l-prim 'EditBoxGetValue (node-full-name self))
+        (slot 'text)))
 
     ;;; Set the text in this edit box.
     (def (set-text! value)
-      (call-5l-prim 'EditBoxSetValue (node-full-name self) value))
+      (check-setter-type self 'text <string> value)
+      (if (.initialized?)
+        (call-5l-prim 'EditBoxSetValue (node-full-name self) value)
+        (set! (slot 'text) value)))
     
     ;;; Move the insertion point to the specificed location.  Indices start
     ;;; at 0, and an index of -1 specifies "after the last character".
@@ -1003,7 +1008,7 @@
     (def (create-engine-node)
       (call-5l-prim 'EditBox (node-full-name self)
                     (make-node-event-dispatcher self)
-                    (parent->card self (.rect)) (.text)
+                    (parent->card self (.rect)) (slot 'text)
                     (.font-size) (.multiline?) (.send-enter-event?)))
     )
 
