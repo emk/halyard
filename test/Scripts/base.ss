@@ -198,7 +198,8 @@
              (measure-text $button-style (.label)) -7)
             (point 0 0)))
     
-    (def (draw-button style)
+    (def (draw)
+      (define style (.button-state))
       (define base (color #x80 #x80 #x80))
       (define text-base $color-black)
       ;; Select the colors to use.

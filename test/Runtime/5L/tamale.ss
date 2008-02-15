@@ -1535,8 +1535,9 @@
 
   ;;; An abstract superclass which implements typical GUI button behavior.
   (define-class %basic-button% (%custom-element%)
-    (attr action   (callback) :type <function> :label "On click" :writable? #t)
-    (attr enabled? #t         :type <boolean> :label "Enabled?"  :writable? #t)
+    (attr command  #f :label "Command symbol" :writable? #t)
+    (attr action   #f :label "On click" :writable? #t)
+    (attr enabled? #t :type <boolean> :label "Enabled?" :writable? #t)
   
     (value wants-cursor? (.enabled?))
     (after-updating enabled?
@@ -1547,20 +1548,16 @@
       (super)
       (set! (slot 'mouse-in-button?) #f))
       
+    ;;; Valid states are DISABLED, NORMAL, PRESSED and ACTIVE.
     (def (button-state)
       (cond [(not (.enabled?))              'disabled]
             [(not (slot 'mouse-in-button?)) 'normal]
             [(mouse-grabbed-by? self)       'pressed]
             [#t                             'active]))
 
+    ;;; Draw the button in the state specified by .BUTTON-STATE.
     (def (draw)
-      (.draw-button (.button-state)))
-
-    ;;; Draw the button in the specified state.  Valid states are DISABLED,
-    ;;; NORMAL, PRESSED and ACTIVE.  Must be overridden by subclasses.
-    ;;; TODO - This method should go away (case 2421).
-    (def (draw-button state)
-      (error "draw-button must be overridden"))
+      (error (cat ".draw must be overridden on " self)))
 
     (def (mouse-enter event)
       (set! (slot 'mouse-in-button?) #t)
@@ -1580,10 +1577,19 @@
       (.invalidate)
       (refresh)
       (when (and (slot 'mouse-in-button?) was-grabbed?)
-        (.button-clicked event)))
+        (.click)))
 
-    (def (button-clicked event)
-      ((.action)))
+    (def (click)
+      (cond
+       [(and (.command) (.action))
+        (error (cat self " has both a :command and an :action!"))]
+       [(.command)
+        ;;(.propagate (.command))
+        ]
+       [(.action)
+        ((.action))]
+       [else
+        (error (cat "No :command, :action or DEF (CLICK) on " self))]))
     )
 
   ;;; Get the version of a QuickTime component, given the four-letter,

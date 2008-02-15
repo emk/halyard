@@ -113,17 +113,17 @@
         (.pause)))
 
     (elem pause (%text-button% :at (below (.movie1) 20) :label "Pause")
-      (def (button-clicked event)
+      (def (click)
         (((.parent) .movie1) .pause)))
 
     (elem resume (%text-button% :at (to-the-right-of (.pause) 10)
                                 :label "Resume")
-      (def (button-clicked event)
+      (def (click)
         (((.parent) .movie1) .resume)))
 
     (elem show-2nd (%text-button% :at (to-the-right-of (.resume) 10)
                                   :label "Show Second Movie" :shown? #f)
-      (def (button-clicked event)
+      (def (click)
         (set! (.enabled?) #f)
         (%self-deleting-movie% .new :rect $rect2
                                     :path "quackery_vp3.mov")))

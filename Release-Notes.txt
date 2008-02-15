@@ -78,6 +78,7 @@ ruby-style classes (F#928):
     to SETUP will be needed.
   * F#1392: ELEM now declares helper methods for accessing the elements it
     creates.
+  * Replaced DRAW-BUTTON with DRAW + BUTTON-STATE combo on %basic-button%.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:
@@ -88,6 +89,7 @@ ruby-style classes (F#928):
     - .BOUNDS -> .DRAG-BOUNDS on %simple-draggable-object%
     - ATTR-VALUE -> VALUE
     - ATTR-DEFAULT -> DEFAULT
+    - ON BUTTON-CLICKED (event) -> DEF (CLICK) on %basic-button%
 
 0.4.7 - 20 Dec 2007 - emk, brian
 

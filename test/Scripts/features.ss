@@ -77,25 +77,25 @@
     (elem set-text 
         (%text-button% :at (below (.edit2) 10)
                        :label "Set Text")
-      (def (button-clicked event)
+      (def (click)
         (set! (((.parent) .edit2) .text) "New Text")))
 
     (elem focus
         (%text-button% :at (below (.set-text) 10)
                        :label "Focus")
-      (def (button-clicked event)
+      (def (click)
         (((.parent) .edit2) .focus)))
 
     (elem set-point
         (%text-button% :at (below (.focus) 10)
                        :label "Set Insertion Point")
-      (def (button-clicked event)
+      (def (click)
         (set! (((.parent) .edit2) .insertion-point) -1)))
     
     (elem set-selection
         (%text-button% :at (below (.set-point) 10)
                        :label "Set Selection")
-      (def (button-clicked event)
+      (def (click)
         (((.parent) .edit2) .set-selection! 0 -1)))
 
     (run
