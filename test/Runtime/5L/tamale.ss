@@ -980,7 +980,7 @@
       
     ;; TODO - We need some way to declare the :label field that corresponds
     ;; to this "virtual attr".
-    (default text "")
+    (attr text "" :type <string> :getter? #f :setter? #f)
 
     ;;; Return the text from this edit box.
     (def (text)

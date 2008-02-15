@@ -26,68 +26,84 @@
                    :path "sample.html"))
     )
 
-  #|
+
   (card features/text-formatting
       (%standard-test-card% :title "Text Formatting")
-    (text (point 10 100) $text16
-          "We support <b>bold</b>, <i>italic</i> and <h>highlighted</h> text.  We automatically insert \"smart quotes\"--em-dashes--and ellipses...  We also support XML entities: &lt;&gt;&quot;&apos;&amp; &copy;&reg;&dagger;&micro;&gamma;&lambda;&sup3; &frac34;&plusmn;&there4;"
-          :max-width 780)
-    (text (point 10 200) $text16
-          (string->xml "<i>Escaped XML & other goodness</i>"))
+    (elem format-demo
+        (%text% :at (point 10 100) :style $text16
+                :text "We support <b>bold</b>, <i>italic</i> and <h>highlighted</h> text.  We automatically insert \"smart quotes\"--em-dashes--and ellipses...  We also support XML entities: &lt;&gt;&quot;&apos;&amp; &copy;&reg;&dagger;&micro;&gamma;&lambda;&sup3; &frac34;&plusmn;&there4;"
+                :max-width 780))
+    (elem escape-demo
+        (%text% :at (point 10 200) :style $text16
+                :text (string->xml "<i>Escaped XML & other goodness</i>")))
     )
 
-  (define-element-template %edit-box-demo%
-      [[update-display? :default #f]]
-      (%edit-box% :font-size 18)
-    ;; This gets run whenever our contents change (even if we change them
-    ;; with SET-TEXT!).
-    (on text-changed (event)
-      (when update-display?
-        (set! (@display .text) (string->xml (send @edit text)))))
-    ;; This gets run whenever the user presses Enter in a text box.
-    (on text-enter (event)
-      (when update-display?
-        (set! (@display2 .text) (string->xml (send @edit text)))))
-    )             
+  (define-class %edit-box-demo% (%edit-box%)
+    (default font-size 18))
 
+  (define-class %text-input-display% (%text-box%)
+    (value shape (rect 0 0 200 20))
+    (value style $caption-style)
+    (value text ""))
+  
   (card features/text-input
       (%standard-test-card% :title "Text Input")
 
     ;; Column 1.
-    (create %edit-box-demo%
-            :name 'edit
-            :rect (move-rect-left-top-to (rect 0 0 200 32) (below @title 20))
-            :text "Hello!"
-            :update-display? #t)
-    (text-box (move-rect-left-top-to (rect 0 0 200 20) (below @edit 10))
-              $caption-style "" :name 'display)
-    (text-box (move-rect-left-top-to (rect 0 0 200 20) (below @display 10))
-              $caption-style "" :name 'display2)
+    (elem edit
+        (%edit-box-demo%
+         :rect (move-rect-left-top-to (rect 0 0 200 32)
+                                      (below (.title-elem) 20))
+         :text "Hello!")
+      (def (update-display display)
+        (set! (display .text) (string->xml (.text))))
+      ;; This gets run whenever our contents change (even if we change them
+      ;; with SET-TEXT!).
+      (def (text-changed event)
+        (.update-display ((.parent) .display)))
+      ;; This gets run whenever the user presses Enter in a text box.
+      (def (text-enter event)
+        (.update-display ((.parent) .display2))))
+
+    (elem display (%text-input-display% :at (below (.edit) 10)))
+    (elem display2 (%text-input-display% :at (below (.display) 10)))
 
     ;; Column 2.
-    (create %edit-box-demo%
-            :name 'edit2
-            :rect (move-rect-left-top-to (rect 0 0 200 32)
-                                         (to-the-right-of @edit 20))
-            :text "")
-    (text-button (below @edit2 10) "Set Text"
-                 (callback (send @edit2 set-text! "New Text"))
-                 :name 'set-text)
-    (text-button (below @set-text 10) "Focus"
-                 (callback (send @edit2 focus))
-                 :name 'focus)
-    (text-button (below @focus 10) "Set Insertion Point"
-                 (callback (send @edit2 set-insertion-point! -1))
-                 :name 'set-point)
-    (text-button (below @set-point 10) "Set Selection"
-                 (callback (send @edit2 set-selection! 0 -1))
-                 :name 'set-selection)
+    (elem edit2 
+        (%edit-box-demo%
+         :rect (move-rect-left-top-to (rect 0 0 200 32)
+                                      (to-the-right-of (.edit) 20))))
 
-    ;; Focus the first edit box in the line.
-    (send @edit focus)
+    (elem set-text 
+        (%text-button% :at (below (.edit2) 10)
+                       :label "Set Text")
+      (def (button-clicked event)
+        (set! (((.parent) .edit2) .text) "New Text")))
+
+    (elem focus
+        (%text-button% :at (below (.set-text) 10)
+                       :label "Focus")
+      (def (button-clicked event)
+        (((.parent) .edit2) .focus)))
+
+    (elem set-point
+        (%text-button% :at (below (.focus) 10)
+                       :label "Set Insertion Point")
+      (def (button-clicked event)
+        (set! (((.parent) .edit2) .insertion-point) -1)))
+    
+    (elem set-selection
+        (%text-button% :at (below (.set-point) 10)
+                       :label "Set Selection")
+      (def (button-clicked event)
+        (((.parent) .edit2) .set-selection! 0 -1)))
+
+    (run
+      ;; Focus the first edit box in the line.
+      ((.edit) .focus))
     )
 
-  
+  #|
   ;;=======================================================================
   ;;  Browser
   ;;=======================================================================

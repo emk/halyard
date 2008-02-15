@@ -440,7 +440,8 @@
       ;; Create a proxy object that makes our hash table look like a real
       ;; object, so that initializer code can refer to attributes as
       ;; ".foo".
-      (define key-obj (app~ %initializer-keywords% .new key-table))
+      (define key-obj
+        (app~ %initializer-keywords% .new (app~ .class) key-table))
       ;; Walk up the class hierarchy, dealing with keywords as we go.
       (let loop [[klass (ruby-object-class self)]]
         (when klass
@@ -669,15 +670,15 @@
   
   ;; Create a subtype of exn:fail to represent an attempt to access a
   ;; non-existant keyword.
-  (define-struct (exn:fail:keyword-not-found exn:fail) (name))
+  (define-struct (exn:fail:keyword-not-found exn:fail) (class name))
 
   ;; Report the absence of an expected initializer keyword.
-  (define (keyword-not-found name)
+  (define (keyword-not-found klass name)
     (raise (make-exn:fail:keyword-not-found
             (string->immutable-string
-             (cat "Initializer keyword :" name " not specified"))
+             (cat klass ": Initializer keyword :" name " not specified"))
             (current-continuation-marks)
-            name)))
+            klass name)))
 
   ;; Internal: Used to implement method calls in attribute initializers of
   ;; the form: (value foo (.bar)).  This basically wraps a hash table
@@ -689,13 +690,15 @@
   ;; class is defined, you should be able to define any other classes you
   ;; want.
   (define-class %initializer-keywords% ()
-    (def (initialize hash)
+    (def (initialize klass hash)
+      (set! (slot 'class) klass)
       (set! (slot 'hash) hash))
     (def (method-missing name . args)
       (unless (null? args)
-        (error (cat "." name " should have no arguments in initializer")))
+        (error (cat (slot 'class) ": ." name
+                    " should have no arguments in initializer")))
       (hash-table-get (slot 'hash) name
-                      (lambda () (keyword-not-found name)))))
+                      (lambda () (keyword-not-found (slot 'class) name)))))
   
   
   ;;=======================================================================
