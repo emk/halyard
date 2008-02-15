@@ -23,8 +23,7 @@
   
   ;;; Displays a movie or audio caption against a black background.
   (define-class %captioned-card% (%black-test-card%)
-    (elem caption (%text-box% :bounds (rect 100 475 700 590)
-                              :style $caption-style :text ""))
+    (text-box caption ((rect 100 475 700 590) $caption-style ""))
     
     ;; Caption events are passed from media elements to their parents (like
     ;; all regular events), so we can intercept them at the card level and
@@ -42,10 +41,9 @@
     ;;; playing almost immediately.  This only works if you want the movie
     ;;; to start as soon as you display the card.  Otherwise, you need to
     ;;; create the movie in RUN.
-    (elem movie (%movie%
-                 :path (.path) :controller? (.controller?)
-                 :rect (move-rect-center-to (.movie-size)
-                                            (rect-center $screen-rect))))
+    (movie movie ((move-rect-center-to (.movie-size)
+                                       (rect-center $screen-rect))
+                  (.path) :controller? (.controller?)))
     )
 
   (sequence media)
@@ -103,27 +101,24 @@
     (define $rect1 (move-rect-top-to $default-movie-and-controller-size 50))
     (define $rect2 (move-rect-right-to $rect1 (rect-right $screen-rect)))
 
-    (elem movie1 (%movie%
-                  :rect $rect1
-                  :path "duck_and_cover_intro_vp3_captioned.mov"
-                  :controller? #t)
+    (movie movie1 ($rect1 "duck_and_cover_intro_vp3_captioned.mov"
+                   :controller? #t)
       (setup
         ;; Because we haven't fixed case 2359, we need to pause a movie
         ;; manually right after we create it.
         (.pause)))
 
-    (elem pause (%text-button% :at (below (.movie1) 20) :label "Pause"
-                               :command 'pause-movie1))
+    (text-button pause ((below (.movie1) 20) "Pause" :command 'pause-movie1))
     (def (pause-movie1)
       ((.movie1) .pause))
     
-    (elem resume (%text-button% :at (to-the-right-of (.pause) 10)
-                                :label "Resume" :command 'resume-movie1))
+    (text-button resume ((to-the-right-of (.pause) 10) "Resume"
+                         :command 'resume-movie1))
     (def (resume-movie1)
       ((.movie1) .resume))
 
-    (elem show-2nd (%text-button% :at (to-the-right-of (.resume) 10)
-                                  :label "Show Second Movie" :shown? #f)
+    (text-button show-2nd ((to-the-right-of (.resume) 10) "Show Second Movie"
+                           :shown? #f)
       ;; Let's override CLICK here, just to be different.
       (def (click)
         (set! (.enabled?) #f)
@@ -139,9 +134,9 @@
   (define-class %qtvr-card% (%white-test-card%)
     (attr movie-shape :type <rect>)
     (attr path :type <string>)
-    (elem qtvr (%movie% :rect (move-rect-center-to (.movie-shape)
-                                                   (rect-center $screen-rect))
-                        :path (.path) :interaction? #t))
+    (movie qtvr ((move-rect-center-to (.movie-shape)
+                                      (rect-center $screen-rect))
+                 (.path) :interaction? #t))
     )
                              
 
@@ -267,25 +262,25 @@
 
   (card media/audiostream/vorbis/stereo
       (%audio-stream-card% :title "Vorbis Stereo\n(Looping)")
-    (elem stream (%vorbis-audio% :path "oggtest-stereo.ogg" :loop? #t)))
+    (vorbis-audio stream ("oggtest-stereo.ogg" :loop? #t)))
 
   (card media/audiostream/vorbis/mono 
       (%audio-stream-card% :title "Vorbis Mono")
-    (elem stream (%vorbis-audio% :path "oggtest-mono.ogg")))
+    (vorbis-audio stream ("oggtest-mono.ogg")))
 
   (card media/audiostream/vorbis/twobeeps 
       (%audio-stream-card% :title "Vorbis Two Beeps\n(Broken)")
-    (elem stream (%vorbis-audio% :path "oggtest-twobeeps.ogg")))
+    (vorbis-audio stream ("oggtest-twobeeps.ogg")))
 
   (card media/audiostream/vorbis/long 
       (%audio-stream-card% :title "Long Vorbis\n(FDA Advisory)")
-    (elem stream (%vorbis-audio% :path "quackery.ogg")))
+    (vorbis-audio stream ("quackery.ogg")))
 
   (sequence media/audiostream/geiger)
 
   (card media/audiostream/geiger/synth 
       (%audio-stream-card% :title "Geiger Counter")
-    (elem stream (%geiger-audio% :path "oggtest-geiger-chirp.ogg")
+    (geiger-audio stream ("oggtest-geiger-chirp.ogg")
       (setup
         (.set-counts-per-second! 10.0))))
 
@@ -293,32 +288,27 @@
 
   (card media/audiostream/geiger/loop/rate-point8mrph
       (%audio-stream-card% :title "Ludlum 0.8 mRph")
-    (elem stream
-        (%vorbis-audio% :path "ludlum/lud-mod14c-00_8mRph.ogg" :loop? #t)))
+    (vorbis-audio stream ("ludlum/lud-mod14c-00_8mRph.ogg" :loop? #t)))
 
   (card media/audiostream/geiger/loop/rate-2mrph
       (%audio-stream-card% :title "Ludlum 2 mRph")
-    (elem stream
-        (%vorbis-audio% :path "ludlum/lud-mod14c-02_0mRph.ogg" :loop? #t)))
+    (vorbis-audio stream ("ludlum/lud-mod14c-02_0mRph.ogg" :loop? #t)))
 
   (card media/audiostream/geiger/loop/rate-5mrph
       (%audio-stream-card% :title "Ludlum 5 mRph")
-    (elem stream
-      (%vorbis-audio% :path "ludlum/lud-mod14c-05_0mRph.ogg" :loop? #t)))
+    (vorbis-audio stream ("ludlum/lud-mod14c-05_0mRph.ogg" :loop? #t)))
 
   (card media/audiostream/geiger/loop/rate-10mrph
       (%audio-stream-card% :title "Ludlum 10 mRph") 
-    (elem stream
-        (%vorbis-audio% :path "ludlum/lud-mod14c-10_0mRph.ogg" :loop? #t)))
+    (vorbis-audio stream ("ludlum/lud-mod14c-10_0mRph.ogg" :loop? #t)))
 
   (card media/audiostream/geiger/loop/rate-50mrph
       (%audio-stream-card% :title "Ludlum 50 mRph")
-    (elem stream
-        (%vorbis-audio% :path "ludlum/lud-mod14c-50_0mRph.ogg" :loop? #t)))
+    (vorbis-audio stream ("ludlum/lud-mod14c-50_0mRph.ogg" :loop? #t)))
 
   (card media/audiostream/sine
       (%audio-stream-card% :title "440Hz Sine Wave\n(Synthesized)")
-    (elem stream (%sine-wave% :frequency 440)))
+    (sine-wave stream (440)))
   
   
   ;;=======================================================================
@@ -327,6 +317,7 @@
 
   (card media/geiger-synth (%audio-stream-card%)
     (value title "Geiger Synth")
+    (def (stream) @stream)
     (run
       (set! (state-db '/synth/cps) 0.0)
       (%geiger-synth% .new

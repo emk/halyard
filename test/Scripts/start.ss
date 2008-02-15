@@ -87,8 +87,8 @@
   (value shape (shape 800 100))
   (value clickable-where-transparent? #t)
   
-  (elem label (%text% :at (point 0 0) :style $menu-style
-                      :text (.text) :max-width (rect-width (.shape)))
+  (text label ((point 0 0) $menu-style (.text)
+               :max-width (rect-width (.shape)))
     (setup
       (.center-on-parent!)))
 
@@ -101,14 +101,13 @@
 (card index (%black-test-card% :title "Tamale Features (updated)")
   (menu-item controls ( 80 "Controls"    @features/controls))
   (menu-item movies   (180 "More Movies" @media/qt/movies))
-  (elem release-id
-      (%text% :at (point 10 580) :style $title-style
-              :text (or #| (program-release-id) |# "")))
+  (text release-id
+      ((point 10 580) $title-style (or #| (program-release-id) |# "")))
   )
 
 (card custom-element-demo (%black-test-card% :title "Custom elements")
-  (elem outer (%clickable-zone% :bounds (inset-rect $screen-rect 10)
-                                :action (callback (jump @media/qt/movies))))
+  (clickable-zone outer ((inset-rect $screen-rect 10)
+                         (callback (jump @media/qt/movies))))
   (elem inner (%custom-element% :bounds (inset-rect $screen-rect 100))
     (def (draw)
       (draw-graphic (point 0 0) "mask/blend-background.png")))

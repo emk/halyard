@@ -165,7 +165,7 @@ Tamale is a language for card-based interactive multimedia programming."
                  (t 'font-lock-variable-name-face))))
       
       ;; Cards.
-      (list "(\\(\\(test-\\)?\\(group\\|sequence\\|card\\|elem\\)\\)\\> *\\(\\sw+\\)\\>"
+      (list "(\\(\\(test-\\)?\\(group\\|sequence\\|box\\|clickable-zone\\|text-box\\|text\\|graphic\\|rectangle\\|rectangle-outline\\|sprite\\|browser\\|edit-box\\|geiger-audio\\|sine-wave\\|vorbis-audio\\|movie\\|card\\|elem\\)\\)\\> *\\(\\sw+\\)\\>"
             '(1 font-lock-keyword-face)
             '(4 font-lock-function-name-face))
       
@@ -253,6 +253,20 @@ Tamale is a language for card-based interactive multimedia programming."
 (put 'after-updating 'scheme-indent-function 1)
 (put 'setup 'scheme-indent-function 0)
 (put 'run 'scheme-indent-function 0)
+(put 'box 'scheme-indent-function 2)
+(put 'clickable-zone 'scheme-indent-function 2)
+(put 'text-box 'scheme-indent-function 2)
+(put 'text 'scheme-indent-function 2)
+(put 'graphic 'scheme-indent-function 2)
+(put 'rectangle 'scheme-indent-function 2)
+(put 'rectangle-outline 'scheme-indent-function 2)
+(put 'sprite 'scheme-indent-function 2)
+(put 'browser 'scheme-indent-function 2)
+(put 'edit-box 'scheme-indent-function 2)
+(put 'geiger-audio 'scheme-indent-function 2)
+(put 'sine-wave 'scheme-indent-function 2)
+(put 'vorbis-audio 'scheme-indent-function 2)
+(put 'movie 'scheme-indent-function 2)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

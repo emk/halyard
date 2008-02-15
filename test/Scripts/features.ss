@@ -8,34 +8,29 @@
   (sequence features)
   
   (card features/controls (%standard-test-card% :title "Controls")
-    (elem description 
-        (%text% :at (below (.title-elem) 20)
-                :style $text16 
-                :text "We have fairly straight-forward access to a variety of native controls for use in 5L programs.  In most cases, we can change the color and the borders.  In addition to the controls shown here, we can have list boxes and drop-down edit fields.  Except for the HTML control, most of these should be 508-compliant with minimal work."
-                :max-width 310))
-    (elem multi-line
-        (%edit-box% :rect (rect 330 10 790 110) 
-                    :text "Multiple, multi-line edit fields.  You should be able to tab between them, but I'm not sure that works.  Word wrap works fine."
-                    :multiline? #t 
-                    :font-size 18))
-    (elem single-line
-        (%edit-box% :rect (rect 330 120 790 220)
-                    :text "Hello!  Single-line."))
-    (elem browser
-        (%browser% :rect (rect 10 230 790 590)
-                   :path "sample.html"))
+    (text description 
+        ((below (.title-elem) 20) $text16 
+         "We have fairly straight-forward access to a variety of native controls for use in 5L programs.  In most cases, we can change the color and the borders.  In addition to the controls shown here, we can have list boxes and drop-down edit fields.  Except for the HTML control, most of these should be 508-compliant with minimal work."
+         :max-width 310))
+    (edit-box multi-line
+        ((rect 330 10 790 110) 
+         "Multiple, multi-line edit fields.  You should be able to tab between them, but I'm not sure that works.  Word wrap works fine."
+         :multiline? #t 
+         :font-size 18))
+    (edit-box single-line
+        ((rect 330 120 790 220) "Hello!  Single-line."))
+    (browser browser ((rect 10 230 790 590) "sample.html"))
     )
-
 
   (card features/text-formatting
       (%standard-test-card% :title "Text Formatting")
-    (elem format-demo
-        (%text% :at (point 10 100) :style $text16
-                :text "We support <b>bold</b>, <i>italic</i> and <h>highlighted</h> text.  We automatically insert \"smart quotes\"--em-dashes--and ellipses...  We also support XML entities: &lt;&gt;&quot;&apos;&amp; &copy;&reg;&dagger;&micro;&gamma;&lambda;&sup3; &frac34;&plusmn;&there4;"
-                :max-width 780))
-    (elem escape-demo
-        (%text% :at (point 10 200) :style $text16
-                :text (string->xml "<i>Escaped XML & other goodness</i>")))
+    (text format-demo
+        ((point 10 100) $text16
+         "We support <b>bold</b>, <i>italic</i> and <h>highlighted</h> text.  We automatically insert \"smart quotes\"--em-dashes--and ellipses...  We also support XML entities: &lt;&gt;&quot;&apos;&amp; &copy;&reg;&dagger;&micro;&gamma;&lambda;&sup3; &frac34;&plusmn;&there4;"
+         :max-width 780))
+    (text escape-demo
+        ((point 10 200) $text16
+         (string->xml "<i>Escaped XML & other goodness</i>")))
     )
 
   (define-class %edit-box-demo% (%edit-box%)
@@ -80,23 +75,19 @@
     (def (set-text)
       (set! ((.edit2) .text) "New Text"))
 
-    (elem focus-button
-        (%text-button% :at (below (.set-text-button) 10) :label "Focus"
-                       :command 'focus))
+    (text-button focus-button
+        ((below (.set-text-button) 10) "Focus" :command 'focus))
     (def (focus)
       ((.edit2) .focus))
 
-    (elem set-point-button
-        (%text-button% :at (below (.focus-button) 10)
-                       :label "Set Insertion Point"
-                       :command 'set-point))
+    (text-button set-point-button
+        ((below (.focus-button) 10) "Set Insertion Point" :command 'set-point))
     (def (set-point)
       (set! ((.edit2) .insertion-point) -1))
     
-    (elem set-selection-button
-        (%text-button% :at (below (.set-point-button) 10)
-                       :label "Set Selection"
-                       :command 'set-selection))
+    (text-button set-selection-button
+        ((below (.set-point-button) 10) "Set Selection"
+         :command 'set-selection))
     (def (set-selection)
       ((.edit2) .set-selection! 0 -1))
 

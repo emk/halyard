@@ -226,9 +226,6 @@
                  (stylesheet :base $button-style :color text-color)
                  (.label))))
 
-  ;;; Create a new text button at the specified point.
-  (define (text-button p label action &key (name (gensym)) (shown? #t))
-    (%text-button% .new :name name :at p :shown? shown? :label label
-                        :action action))
+  (define-node-helper text-button (at label) %text-button%)
   
   )
