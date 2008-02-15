@@ -85,6 +85,10 @@ ruby-style classes (F#928):
     :COMMAND or CLICK as suits your fancy.
   * F#2619: Added a DEFINE-NODE-HELPER function which abbreviates ELEM
     forms and their keyword arguments.
+  * F#2619: Added %RECTANGLE-OUTLINE%.
+  * F#2619: Added element definition helpers: BOX, CLICKABLE-ZONE,
+    TEXT-BOX, TEXT, GRAPHIC, RECTANGLE, RECTANGLE-OUTLINE, SPRITE, BROWSER,
+    EDIT-BOX, GEIGER-AUDIO, SINE-WAVE, VORBIS-AUDIO and MOVIE.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:
@@ -96,6 +100,21 @@ ruby-style classes (F#928):
     - ATTR-VALUE -> VALUE
     - ATTR-DEFAULT -> DEFAULT
     - ON BUTTON-CLICKED (event) -> DEF (CLICK) on %basic-button%
+    - BOX -> NEW-BOX
+    - CLICKABLE-ZONE -> NEW-CLICKABLE-ZONE
+    - TEXT-BOX -> NEW-TEXT-BOX
+    - TEXT -> NEW-TEXT
+    - GRAPHIC -> NEW-GRAPHIC
+    - RECTANGLE -> NEW-RECTANGLE
+    - RECTANGLE-OUTLINE -> NEW-RECTANGLE-OUTLINE
+    - SPRITE -> NEW-SPRITE
+    - BROWSER -> NEW-BROWSER
+    - EDIT-BOX -> NEW-EDIT-BOX
+    - GEIGER-AUDIO -> NEW-GEIGER-AUDIO
+    - GEIGER-SYNTH -> NEW-GEIGER-SYNTH
+    - SINE-WAVE -> NEW-SINE-WAVE
+    - VORBIS-AUDIO -> NEW-VORBIS-AUDIO
+    - MOVIE -> NEW-MOVIE
 
 0.4.7 - 20 Dec 2007 - emk, brian
 

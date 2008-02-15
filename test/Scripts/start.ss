@@ -95,9 +95,7 @@
   (def (mouse-down event)
     (jump (.jump-to))))
 
-(require (lib "define-node-helper.ss" "5L"))
-
-(define-node-helper menu-item (y text jump-to) elem %menu-item%)
+(define-node-helper menu-item (y text jump-to) %menu-item%)
 
 ;; The index card is based on our %simple-card% template.
 (card index (%black-test-card% :title "Tamale Features (updated)")
@@ -110,7 +108,7 @@
 
 (card custom-element-demo (%black-test-card% :title "Custom elements")
   (elem outer (%clickable-zone% :bounds (inset-rect $screen-rect 10)
-                                :action (callback (jump duck-and-cover))))
+                                :action (callback (jump @media/qt/movies))))
   (elem inner (%custom-element% :bounds (inset-rect $screen-rect 100))
     (def (draw)
       (draw-graphic (point 0 0) "mask/blend-background.png")))

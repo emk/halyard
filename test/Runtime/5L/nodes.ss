@@ -116,7 +116,7 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide setup run *node-defined-hook*)
+  (provide setup run *node-defined-hook* define-node)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
@@ -270,7 +270,7 @@
       [(_ . rest)
        (raise-syntax-error 'define-node "Malformed keyword list" #'rest)]))
 
-  (define-syntax define-node-helper
+  (define-syntax define-node-internal
     (syntax-rules ()
       [(_ name (extended . bindings) . body)
        (define-class name (extended)
@@ -304,13 +304,13 @@
          ;; The inner LET [] here gives us a form that allows initial
          ;; (begin (define ...) ...) forms, which are needed to expand
          ;; DEFINE-CLASS.
-         (let [[name% (let [] (define-node-helper name bindings))]]
+         (let [[name% (let [] (define-node-internal name bindings))]]
            (with-instance name% . body)
            (name% .register-with-lexical-parent #,(make-self #'name))))]
       ;; We don't have SELF, so expand in the ordinary fashion.
       [(_ name . rest)
        (quasisyntax/loc stx
-         (define-node-helper name . rest))]))
+         (define-node-internal name . rest))]))
 
   (define-syntax define-node-definer
     (syntax-rules ()

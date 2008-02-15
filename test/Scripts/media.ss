@@ -8,8 +8,8 @@
   
   ;;; Live demo toy: Play some audio in the background.
   (define (start-ambient)
-    (movie (rect 0 0 0 0) "quackery_vp3_captioned.mov"
-           :name 'ambient :audio-only? #t :loop? #t))
+    (new-movie (rect 0 0 0 0) "quackery_vp3_captioned.mov"
+               :name 'ambient :audio-only? #t :loop? #t))
   
   ;;; Live demo toy: Kill our background audio.
   (define (kill-ambient)

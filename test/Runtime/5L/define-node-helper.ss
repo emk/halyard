@@ -6,7 +6,7 @@
 
   ;;; If you write:
   ;;;
-  ;;;   (define-node-helper menu-item (y text jump-to) elem %menu-item%)
+  ;;;   (define-node-helper menu-item (y text jump-to) %menu-item%)
   ;;;
   ;;; ..then the following:
   ;;;
@@ -18,6 +18,9 @@
   ;;;   (elem name (%menu-item% :y 80 :text "Hello" :jump-to @something
   ;;;                           :shown? #f)
   ;;;     (def (click) ...))
+  ;;;
+  ;;; (Well, it actually expands to DEFINE-NODE instead of ELEM, which
+  ;;; means use can use it for cards and other types of nodes as well.)
   ;;;
   ;;; TODO - This would all be much nicer if we had .ELEM, which we should
   ;;; probably think about implementing someday (assuming we decide to
@@ -36,12 +39,13 @@
                        (recurse (cdr names))))))))
     
     (syntax-case stx []
-      [(_ helper-name (args ...) type class)
+      [(_ helper-name (args ...) class)
        (quasisyntax/loc stx
          (define-syntax helper-name
            (syntax-rules ()
              [(_ name (args ... . keys) . body)
-              (type name (class #,@(names->keys+names #'(args ...)) . keys) 
+              (define-node name (class #,@(names->keys+names #'(args ...)) 
+                                       . keys) 
                 . body)])))]))
 
   )

@@ -9,6 +9,9 @@
 
   (require (lib "after-updating.ss" "5L"))
   (provide (all-from (lib "after-updating.ss" "5L")))
+
+  (require (lib "define-node-helper.ss" "5L"))
+  (provide (all-from (lib "define-node-helper.ss" "5L")))
   
 
   ;;;======================================================================
@@ -87,7 +90,7 @@
   ;;;======================================================================
 
   (provide local->card %element% %invisible-element% %custom-element%
-           %box% box %clickable-zone% clickable-zone
+           %box% box new-box %clickable-zone% clickable-zone new-clickable-zone
            delete-element delete-elements
            element-exists? delete-element-if-exists)
 
@@ -379,9 +382,13 @@
   (define-class %box% (%custom-element%)
     (value overlay? #f))
 
+  ;;; Declare a %box% element.
+  (define-node-helper box (bounds) %box%)
+
   ;;; Create a %box% element.
-  (define (box bounds &key (name (gensym)) (parent (default-element-parent))
-               (shown? #t))
+  (define (new-box bounds &key (name (gensym)) 
+                   (parent (default-element-parent))
+                   (shown? #t))
     (%box% .new :name name :parent parent :shown? shown? :bounds bounds))
 
   ;;; A %clickable-zone% will run the specified ACTION when the user clicks on
@@ -393,12 +400,15 @@
     (def (mouse-down event)
       ((.action))))
 
+  ;;; Declare a %clickable-zone% element.
+  (define-node-helper clickable-zone (bounds action) %clickable-zone%)
+
   ;;; Create a %clickable-zone%.
-  (define (clickable-zone bounds action
-                          &key (name (gensym)) (cursor 'hand)
-                          (overlay? #f) (alpha? #f)
-                          (parent (default-element-parent))
-                          (shown? #t))
+  (define (new-clickable-zone bounds action
+                              &key (name (gensym)) (cursor 'hand)
+                              (overlay? #f) (alpha? #f)
+                              (parent (default-element-parent))
+                              (shown? #t))
     (%clickable-zone% .new
       :name name
       :parent parent
@@ -542,9 +552,10 @@
   ;;;  most of them will get keyword arguments to support accessibility,
   ;;;  and most of their properties will become settable.
 
-  (provide %text-box% text-box %text% text
-           %graphic% graphic
-           %rectangle% rectangle rectangle-outline)
+  (provide %text-box% text-box new-text-box %text% text new-text
+           %graphic% graphic new-graphic
+           %rectangle% rectangle new-rectangle
+           %rectangle-outline% rectangle-outline new-rectangle-outline)
   
   ;;; A static text element with a specified bounding rectangle.
   (define-class %text-box% (%custom-element%)
@@ -558,10 +569,13 @@
     (def (draw)
       (draw-text (dc-rect) (.style) (.text))))
   
+  ;;; Declare a %text-box% element.
+  (define-node-helper text-box (bounds style text) %text-box%)
+
   ;;; Create a new %text-box% element.
-  (define (text-box bounds style text
-                    &key (name (gensym)) (parent (default-element-parent))
-                    (shown? #t))
+  (define (new-text-box bounds style text
+                        &key (name (gensym)) (parent (default-element-parent))
+                        (shown? #t))
     (%text-box% .new :name name :parent parent :shown? shown?
                      :bounds bounds :style style :text text))
   
@@ -578,10 +592,13 @@
       (set! (.shape) (measure-text (.style) (.text) :max-width (.max-width))))
     )
   
-  ;;; Create a new %fitted-text% element.
-  (define (text p style text
-                &key (name (gensym)) (parent (default-element-parent))
-                (shown? #t) (max-width (rect-width $screen-rect)))
+  ;;; Declare a %text% element.
+  (define-node-helper text (at style text) %text%)
+
+  ;;; Create a new %text% element.
+  (define (new-text p style text
+                    &key (name (gensym)) (parent (default-element-parent))
+                    (shown? #t) (max-width (rect-width $screen-rect)))
     (%text% .new :name name :parent parent :shown? shown?
                  :at p :max-width max-width :style style :text text))
   
@@ -600,10 +617,13 @@
     (def (draw)
       (draw-graphic (point 0 0) (.path))))
   
+  ;;; Declare a %graphic% element.
+  (define-node-helper graphic (at path) %graphic%)
+
   ;;; Create a new %graphic%.
-  (define (graphic p path
-                   &key (name (gensym)) (alpha? #f)
-                   (parent (default-element-parent)) (shown? #t))
+  (define (new-graphic p path
+                       &key (name (gensym)) (alpha? #f)
+                       (parent (default-element-parent)) (shown? #t))
     (%graphic% .new :name name :parent parent :shown? shown?
                     :at p :alpha? alpha? :path path))
   
@@ -627,22 +647,32 @@
       (unless (transparent? (.outline-color))
         (draw-rectangle-outline (dc-rect) (.outline-color) (.outline-width)))))
   
+  ;;; Declare a %rectangle% element.
+  (define-node-helper rectangle (bounds color) %rectangle%)
+
   ;;; Create a new %rectangle%.
-  (define (rectangle r c
-                     &key (name (gensym)) (parent (default-element-parent))
-                     (shown? #t) (outline-width 1)
-                     (outline-color $transparent))
+  (define (new-rectangle r c
+                         &key (name (gensym)) (parent (default-element-parent))
+                         (shown? #t) (outline-width 1)
+                         (outline-color $transparent))
     (%rectangle% .new :name name :parent parent :shown? shown? :bounds r 
                       :color c :outline-width outline-width 
                       :outline-color outline-color))
   
+  (define-class %rectangle-outline% (%rectangle%)
+    (value color $transparent))
+
+  ;;; Declare a %rectangle-outline% element.
+  (define-node-helper rectangle-outline (bounds color width) 
+    %rectangle-outline%)
+
   ;;; Create a new %rectangle% with an outline and a transparent center.
-  (define (rectangle-outline r c width
-                             &key (name (gensym)) (shown? #t)
-                             (parent (default-element-parent)))
-    (%rectangle% .new :name name :parent parent :shown? shown? :bounds r
-                      :color $transparent :outline-width width 
-                      :outline-color c))
+  (define (new-rectangle-outline r c width
+                                 &key (name (gensym)) (shown? #t)
+                                 (parent (default-element-parent)))
+    (%rectangle-outline% .new :name name :parent parent :shown? shown? 
+                              :bounds r :outline-width width 
+                              :outline-color c))
   
 
   ;;;======================================================================
@@ -753,7 +783,7 @@
   ;;;======================================================================
   ;;;  This is a replacement for %animated-graphic%.
 
-  (provide %sprite% sprite)
+  (provide %sprite% sprite new-sprite)
   
   (define-class %sprite% (%custom-element%)
     (attr frames   :type <list>    :label "List of image files")
@@ -768,9 +798,11 @@
     (def (draw)
       (draw-graphic (point 0 0) (list-ref (.frames) (.frame)))))
 
-  (define (sprite at frames 
-                  &key (name (gensym)) (alpha? #f)
-                  (parent (default-element-parent)) (shown? #t))
+  (define-node-helper sprite (at frames) %sprite%)
+
+  (define (new-sprite at frames 
+                      &key (name (gensym)) (alpha? #f)
+                      (parent (default-element-parent)) (shown? #t))
     (%sprite% .new :at at :frames frames :name name :alpha? alpha? 
                    :parent parent :shown? shown?))
 
@@ -884,7 +916,7 @@
   ;;;  Web Browser Support
   ;;;======================================================================
 
-  (provide %browser% browser)
+  (provide %browser% browser new-browser)
 
   ;;; A web browser element.
   (define-class %browser% (%widget%)
@@ -958,10 +990,13 @@
 
     )
 
+  ;;; Declare a %browser% object.
+  (define-node-helper browser (rect path) %browser%)
+
   ;;; Create a new %browser% object.
-  (define (browser r path
-                   &key (name (gensym)) (parent (default-element-parent))
-                   (shown? #t))
+  (define (new-browser r path
+                       &key (name (gensym)) (parent (default-element-parent))
+                       (shown? #t))
     (%browser% .new :name name :parent parent :shown? shown?
                     :rect r :path path))
 
@@ -970,7 +1005,7 @@
   ;;;  Text Editing
   ;;;======================================================================
 
-  (provide %edit-box% edit-box)
+  (provide %edit-box% edit-box new-edit-box)
 
   ;;; A native GUI edit box.
   (define-class %edit-box% (%widget%)
@@ -1012,11 +1047,14 @@
                     (.font-size) (.multiline?) (.send-enter-event?)))
     )
 
+  ;;; Declare a %edit-box% object.
+  (define-node-helper edit-box (rect text) %edit-box%)
+
   ;;; Create an %edit-box%.
-  (define (edit-box r text
-                    &key (name (gensym)) (font-size 9)
-                    (multiline? #f) (send-enter-event? #t)
-                    (parent (default-element-parent)) (shown? #t))
+  (define (new-edit-box r text
+                        &key (name (gensym)) (font-size 9)
+                        (multiline? #f) (send-enter-event? #t)
+                        (parent (default-element-parent)) (shown? #t))
     (%edit-box% .new :name name :parent parent :shown? shown? :rect r
                      :text text :font-size font-size :multiline? multiline?
                      :send-enter-event? send-enter-event?))
@@ -1122,8 +1160,9 @@
   ;;;======================================================================
   ;;;  These are very specialized, and aren't expected to be used much.
   
-  (provide %geiger-audio% geiger-audio %geiger-synth% geiger-synth
-           %sine-wave% sine-wave)
+  (provide %geiger-audio% geiger-audio new-geiger-audio
+           %geiger-synth% new-geiger-synth
+           %sine-wave% sine-wave new-sine-wave)
 
   (define-class %geiger-audio% (%audio-element%)
     (attr path :type <string> :label "Path")
@@ -1137,8 +1176,10 @@
                     (build-path (current-directory) "LocalMedia" (.path))
                     (.volume))))
 
-  (define (geiger-audio path &key (name (gensym)) (volume 1.0)
-                        (parent (default-element-parent)))
+  (define-node-helper geiger-audio (path) %geiger-audio%)
+
+  (define (new-geiger-audio path &key (name (gensym)) (volume 1.0)
+                            (parent (default-element-parent)))
     (%geiger-audio% .new :name name :parent parent :path path :volume volume))
 
   (define-class %geiger-synth% (%audio-element%)
@@ -1157,8 +1198,9 @@
                         item))
                   (.loops)))))
 
-  (define (geiger-synth state-path chirp loops
-                        &key (name (gensym)) (parent (default-element-parent)))
+  (define (new-geiger-synth state-path chirp loops
+                            &key (name (gensym))
+                            (parent (default-element-parent)))
     (%geiger-synth% .new :name name :parent parent :state-path state-path
                          :chirp chirp :loops loops))
 
@@ -1171,10 +1213,12 @@
                     (make-node-event-dispatcher self)
                     (.volume) (.frequency))))
 
+  (define-node-helper sine-wave (frequency) %sine-wave%)
+
   ;;; Create a %sine-wave%.
-  (define (sine-wave frequency
-                     &key (name (gensym)) (parent (default-element-parent))
-                     (volume 1.0))
+  (define (new-sine-wave frequency
+                         &key (name (gensym)) (parent (default-element-parent))
+                         (volume 1.0))
     (%sine-wave% .new :name name :parent parent :frequency frequency 
                       :volume volume))
 
@@ -1186,7 +1230,7 @@
   ;;;  background audio which should continue playing even if the engine is
   ;;;  otherwise occupied.
   
-  (provide %vorbis-audio% vorbis-audio)
+  (provide %vorbis-audio% vorbis-audio new-vorbis-audio)
 
   ;;; Plays an Ogg Vorbis audio stream.
   (define-class %vorbis-audio% (%audio-element%)
@@ -1204,10 +1248,13 @@
     (setup
       (media-maybe-attach-caption-file! self (.path))))
   
+  (define-node-helper vorbis-audio (path) %vorbis-audio%)
+
   ;;; Create a %vorbis-audio% element.
-  (define (vorbis-audio path
-                        &key (name (gensym)) (parent (default-element-parent))
-                        (loop? #f) (volume 1.0))
+  (define (new-vorbis-audio path
+                            &key (name (gensym))
+                            (parent (default-element-parent))
+                            (loop? #f) (volume 1.0))
     (%vorbis-audio% .new :name name :parent parent :path path 
                          :loop? loop? :volume volume))
   
@@ -1287,7 +1334,7 @@
   ;;;  Movie Elements
   ;;;======================================================================
 
-  (provide %movie% movie)
+  (provide %movie% movie new-movie)
 
   ;;; A movie.
   (define-class %movie% (%widget%)
@@ -1363,11 +1410,13 @@
       (media-maybe-attach-caption-file! self (.path)))
     )
 
+  (define-node-helper movie (rect path) %movie%)
+
   ;;; Create a %movie%.
-  (define (movie r path
-                 &key (name (gensym)) (volume 1.0)
-                 controller? audio-only? loop? interaction?
-                 (report-captions? #t) (parent (default-element-parent)))
+  (define (new-movie r path
+                     &key (name (gensym)) (volume 1.0)
+                     controller? audio-only? loop? interaction?
+                     (report-captions? #t) (parent (default-element-parent)))
     (%movie% .new :name name :parent parent :rect r :path path
                   :volume volume
                   :controller? controller? 
