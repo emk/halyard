@@ -74,29 +74,31 @@
          :rect (move-rect-left-top-to (rect 0 0 200 32)
                                       (to-the-right-of (.edit) 20))))
 
-    (elem set-text 
-        (%text-button% :at (below (.edit2) 10)
-                       :label "Set Text")
-      (def (click)
-        (set! (((.parent) .edit2) .text) "New Text")))
+    (elem set-text-button
+        (%text-button% :at (below (.edit2) 10) :label "Set Text"
+                       :command 'set-text))
+    (def (set-text)
+      (set! ((.edit2) .text) "New Text"))
 
-    (elem focus
-        (%text-button% :at (below (.set-text) 10)
-                       :label "Focus")
-      (def (click)
-        (((.parent) .edit2) .focus)))
+    (elem focus-button
+        (%text-button% :at (below (.set-text-button) 10) :label "Focus"
+                       :command 'focus))
+    (def (focus)
+      ((.edit2) .focus))
 
-    (elem set-point
-        (%text-button% :at (below (.focus) 10)
-                       :label "Set Insertion Point")
-      (def (click)
-        (set! (((.parent) .edit2) .insertion-point) -1)))
+    (elem set-point-button
+        (%text-button% :at (below (.focus-button) 10)
+                       :label "Set Insertion Point"
+                       :command 'set-point))
+    (def (set-point)
+      (set! ((.edit2) .insertion-point) -1))
     
-    (elem set-selection
-        (%text-button% :at (below (.set-point) 10)
-                       :label "Set Selection")
-      (def (click)
-        (((.parent) .edit2) .set-selection! 0 -1)))
+    (elem set-selection-button
+        (%text-button% :at (below (.set-point-button) 10)
+                       :label "Set Selection"
+                       :command 'set-selection))
+    (def (set-selection)
+      ((.edit2) .set-selection! 0 -1))
 
     (run
       ;; Focus the first edit box in the line.

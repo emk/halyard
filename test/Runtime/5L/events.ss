@@ -143,11 +143,11 @@
 
       ;;; Automatically propopagate all events in the list NAMES to their
       ;;; parent nodes.
-      (def (propagate-events names)
+      (def (always-propagate-events names)
         (foreach [name names]
-          (.propagate name
-                      :if-not-handled (method (event)
-                                        (set! (event-handled? event) #f)))))
+          (.always-propagate name
+            :if-not-handled (method (event)
+                              (set! (event-handled? event) #f)))))
         
       )
 
@@ -181,7 +181,7 @@
     (def (idle)
       (void))
 
-    (.propagate-events
+    (.always-propagate-events
      '(update-ui char mouse-down mouse-up mouse-enter mouse-leave mouse-moved
        text-changed text-enter browser-navigate browser-page-changed
        browser-title-changed status-text-changed progress-changed

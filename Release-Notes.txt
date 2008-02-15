@@ -62,8 +62,10 @@ ruby-style classes (F#928):
   * Added AFTER-UPDATING macro which can be used to run a snippet of code
     whenever any one of several slots change.
   * Refactored event-handling code from nodes.ss to events.ss.
-  * Added %node% .PROPAGATE function which can be used to set up event-like
-    propagation.
+  * Added %node% .ALWAYS-PROPAGATE function which can be used to set up
+    event-like propagation.
+  * Added %node% .PROPAGATE function which can propagate one-off
+    command-style messages without having to modify the methods on %node%.
   * Added %basic-button% .BUTTON-STATE, which returns the state symbol
     needed by .DRAW.
   * Added macros SETUP and RUN to abbreviate the common DEFs.  These macros
@@ -79,6 +81,8 @@ ruby-style classes (F#928):
   * F#1392: ELEM now declares helper methods for accessing the elements it
     creates.
   * Replaced DRAW-BUTTON with DRAW + BUTTON-STATE combo on %basic-button%.
+  * Added support for :COMMAND to %basic-button%.  Feel free to use either
+    :COMMAND or CLICK as suits your fancy.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:

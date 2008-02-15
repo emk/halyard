@@ -923,7 +923,7 @@
          (call-5l-prim 'BrowserCanStop (node-full-name self))]
         [else
          (super)]))
-    (.propagate 'command-enabled?)
+    (.always-propagate 'command-enabled?)
 
     ;;; Go back to the previous page.
     (def (back)
@@ -1584,8 +1584,7 @@
        [(and (.command) (.action))
         (error (cat self " has both a :command and an :action!"))]
        [(.command)
-        ;;(.propagate (.command))
-        ]
+        (.propagate (.command))]
        [(.action)
         ((.action))]
        [else

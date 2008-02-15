@@ -112,17 +112,19 @@
         ;; manually right after we create it.
         (.pause)))
 
-    (elem pause (%text-button% :at (below (.movie1) 20) :label "Pause")
-      (def (click)
-        (((.parent) .movie1) .pause)))
-
+    (elem pause (%text-button% :at (below (.movie1) 20) :label "Pause"
+                               :command 'pause-movie1))
+    (def (pause-movie1)
+      ((.movie1) .pause))
+    
     (elem resume (%text-button% :at (to-the-right-of (.pause) 10)
-                                :label "Resume")
-      (def (click)
-        (((.parent) .movie1) .resume)))
+                                :label "Resume" :command 'resume-movie1))
+    (def (resume-movie1)
+      ((.movie1) .resume))
 
     (elem show-2nd (%text-button% :at (to-the-right-of (.resume) 10)
                                   :label "Show Second Movie" :shown? #f)
+      ;; Let's override CLICK here, just to be different.
       (def (click)
         (set! (.enabled?) #f)
         (%self-deleting-movie% .new :rect $rect2

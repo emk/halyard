@@ -158,11 +158,7 @@
       ;;;       (do-last-resort-behavior)))
       ;;;
       ;;; ...or pass a METHOD to :if-not-handled.
-      ;;;
-      ;;; TODO - We may rename this to .always-propagate and add a separate
-      ;;; .propagate method that doesn't require pre-declaring the
-      ;;; propagation.
-      (def (propagate name &key if-not-handled)
+      (def (always-propagate name &key if-not-handled)
         (%node% .define-method name
          (method args
            (if (.parent)
@@ -200,6 +196,17 @@
         obj)
 
       )
+
+    ;;; Call method .name if it exists, otherwise propagate to our parent
+    ;;; recursively.
+    (def (propagate name &rest args)
+      (cond
+       [(.responds-to? name) 
+        (.send name args)]
+       [(root-node? self) 
+        (error (cat "." name " propagated to root node without "
+                    "being handled"))]
+       [else ((.parent) .send 'propagate (list* name args))]))
 
     ;; Call a "mandatory method" (see DEFINE-METHOD-WITH-MANDATORY-SUPER),
     ;; and make sure that (SUPER) was called by any methods which override
