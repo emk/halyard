@@ -301,29 +301,29 @@
   ;;=======================================================================
   ;;  Templates and Events
   ;;=======================================================================
-#|
+
   (define (point->boring-button-rectangle text)
     (offset-rect
      (inset-rect (measure-text $login-button-style text) -5)
      (point 5 5)))
 
-  (define-element-template %boring-button%
-      [text action]
-      (%custom-element%
-       :shape (point->boring-button-rectangle (string->xml text)))
-    (on draw ()
+  (define-class %boring-button% (%custom-element%)
+    (attr text) 
+    (attr action)
+    (value shape (point->boring-button-rectangle (string->xml (.text))))
+    
+    (def (draw)
       (draw-rectangle (dc-rect) $color-white)
       (draw-text (inset-rect (dc-rect) 5) $login-button-style
-                 (string->xml text)))
-    (on mouse-down (event)
-      (action)))
+                 (string->xml (.text))))
+    (def (mouse-down event)
+      ((.action))))
 
-  (define-element-template %click-me-button%
-      []
-      (%basic-button% :action (callback (jump @index)) :alpha? #t)
-    (on draw-button (style)
+  (define-class %click-me-button% (%basic-button%)    
+    (value action (callback (jump @index)) :alpha? #t)
+    (def (draw)
       (draw-graphic (point 0 0)
-                    (case style
+                    (case (.button-state)
                       [[normal]   "click-me-normal.png"]
                       [[active]   "click-me-active.png"]
                       [[pressed]  "click-me-pressed.png"]
@@ -332,20 +332,20 @@
 
   (card features/templates-events
       (%standard-test-card% :title "Templates & Events")
-    (create %boring-button%
-            :at (rect-center $screen-rect)
-            :text "Click Me"
-            :action (callback (jump @index)))
-    (create %click-me-button% :shape (rect 100 100 176 126))
-    (create %click-me-button% :shape (rect 100 130 176 156))
-    (create %click-me-button% :shape (rect 100 160 176 186))
-    (create %click-me-button% :shape (rect 100 190 176 216))
+    (elem boring-button (%boring-button%
+                         :at (rect-center $screen-rect)
+                         :text "Click Me"
+                         :action (callback (jump @index))))
+    (elem click-1 (%click-me-button% :bounds (rect 100 100 176 126)))
+    (elem click-2 (%click-me-button% :bounds (rect 100 130 176 156)))
+    (elem click-3 (%click-me-button% :bounds (rect 100 160 176 186)))
+    (elem click-4 (%click-me-button% :bounds (rect 100 190 176 216)))
     )
 
   ;;=======================================================================
   ;;  Widgets, zones, etc.
   ;;=======================================================================
-
+#|
   ;; Testing polygonal Zones.
   (card features/zones (%standard-test-card% :title "Clickable Zones")
     (clickable-zone (rect 5 5 5 5) (callback (jump @index)))
