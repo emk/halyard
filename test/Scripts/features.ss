@@ -238,24 +238,25 @@
                 "http://mirrors.creativecommons.org/reticulum_rex/cc.remixculture.101906.swf")
     ))
   
-  #|
+  
   ;;=======================================================================
   ;;  Transparency
   ;;=======================================================================
 
   (card features/transparency (%standard-test-card% :title "Tranparency")
-    (draw-graphic (point 0 0) "trans/aud_on.png") ; 1-bit mask
-    (draw-graphic (point 0 10) "trans/base.png") ; full alpha channel
-    (draw-graphic (point 0 0) "trans/funky.png") ; complicated transparency
-    (draw-graphic (point 0 0) "trans/grey.png") ; Simple 50% black
-    (draw-graphic (point 400 100) "trans/alphacorner.png") ; Test cases for bug
-    (draw-graphic (point 400 0) "trans/alphatop.png")
-    (draw-rectangle (rect 75 125 150 200) (color #x00 #xFF #xFF #x80))
-    (draw-rectangle (rect 100 150 175 225) (color #xFF #x00 #xFF #x80))
-    (draw-rectangle (rect 50 150 125 225) (color #xFF #xFF #x00 #x80))
-    (draw-rectangle (rect 200 200 300 300) ; This tests the default, which is 
-                    (color #x00 #xFF #x00)) ; fully opaque.
-    )
+    (setup 
+      (draw-graphic (point 0 0) "trans/aud_on.png") ; 1-bit mask
+      (draw-graphic (point 0 10) "trans/base.png") ; full alpha channel
+      (draw-graphic (point 0 0) "trans/funky.png") ; complicated transparency
+      (draw-graphic (point 0 0) "trans/grey.png") ; Simple 50% black
+      (draw-graphic (point 400 100) "trans/alphacorner.png") ; Test cases for bug
+      (draw-graphic (point 400 0) "trans/alphatop.png")
+      (draw-rectangle (rect 75 125 150 200) (color #x00 #xFF #xFF #x80))
+      (draw-rectangle (rect 100 150 175 225) (color #xFF #x00 #xFF #x80))
+      (draw-rectangle (rect 50 150 125 225) (color #xFF #xFF #x00 #x80))
+      (draw-rectangle (rect 200 200 300 300) ; This tests the default, which is 
+                      (color #x00 #xFF #x00)) ; fully opaque.
+    ))
 
 
   ;;=======================================================================
@@ -265,30 +266,42 @@
   (sequence features/transitions)
 
   (define (transition-text msg)
-    (center-text $transition-style $screen-rect msg))
+    (define t (new-text (point 0 0) $transition-style msg))
+    (t .center-on-parent!))
 
   (define (show-trans msg trans)
     (draw-white-background)
     (transition-text msg)
     (refresh :transition trans :ms 1000))
 
-  (card features/transitions/crossfade () (show-trans "Crossfade"  'crossfade))
-  (card features/transitions/wipeleft ()  (show-trans "Wipe Left"  'wipeleft))
-  (card features/transitions/wiperight () (show-trans "Wipe Right" 'wiperight))
-  (card features/transitions/wipeup ()    (show-trans "Wipe\nUp"   'wipeup))
-  (card features/transitions/wipedown ()  (show-trans "Wipe\nDown" 'wipedown))
-  (card features/transitions/pushleft ()  (show-trans "Push Left"  'pushleft))
-  (card features/transitions/pushright () (show-trans "Push Right" 'pushright))
-  (card features/transitions/pushup ()    (show-trans "Push\nUp"   'pushup))
-  (card features/transitions/pushdown ()  (show-trans "Push\nDown" 'pushdown))
-  (card features/transitions/toblack ()   (show-trans "To Black"   'toblack))
-  (card features/transitions/fromblack () (show-trans "From Black" 'fromblack))
+  (card features/transitions/crossfade () 
+    (run (show-trans "Crossfade"  'crossfade)))
+  (card features/transitions/wipeleft ()  
+    (run (show-trans "Wipe Left"  'wipeleft)))
+  (card features/transitions/wiperight () 
+    (run (show-trans "Wipe Right" 'wiperight)))
+  (card features/transitions/wipeup ()    
+    (run (show-trans "Wipe\nUp"   'wipeup)))
+  (card features/transitions/wipedown ()  
+    (run (show-trans "Wipe\nDown" 'wipedown)))
+  (card features/transitions/pushleft ()  
+    (run (show-trans "Push Left"  'pushleft)))
+  (card features/transitions/pushright () 
+    (run (show-trans "Push Right" 'pushright)))
+  (card features/transitions/pushup ()    
+    (run (show-trans "Push\nUp"   'pushup)))
+  (card features/transitions/pushdown ()  
+    (run (show-trans "Push\nDown" 'pushdown)))
+  (card features/transitions/toblack ()   
+    (run (show-trans "To Black"   'toblack)))
+  (card features/transitions/fromblack () 
+    (run (show-trans "From Black" 'fromblack)))
 
 
   ;;=======================================================================
   ;;  Templates and Events
   ;;=======================================================================
-
+#|
   (define (point->boring-button-rectangle text)
     (offset-rect
      (inset-rect (measure-text $login-button-style text) -5)
