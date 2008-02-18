@@ -537,30 +537,33 @@
                                     :cursor 'lens))
     )
 
-#|
+
   ;;=======================================================================
   ;;  Changing the Z-Order
   ;;=======================================================================
 
-  (define-element-template %self-raising-square%
-      [color label]
-      (%custom-element% :shape (rect 0 0 100 100))
-    (on draw ()
-      (clear-dc color))
-    (on mouse-down (event)
-      (send self raise-to-top!))
+  (define-class %self-raising-square% (%custom-element% )
+    (attr color) 
+    (attr label)
+    (value shape (rect 0 0 100 100))
+    
+    (def (draw)
+      (clear-dc (.color)))
+    (def (mouse-down event)
+      (self .raise-to-top!))
+    
     ;; This needs to be a child element.  We want to see if it gets raised
     ;; along with its parent.
-    (text (point 10 10) $title-style label :parent self))
+    (text text-elem ((point 10 10) $title-style (.label))))
 
   (card features/z-order
       (%standard-test-card% :title "Changing the Z-Order")
-    (create %self-raising-square%
-            :name 'a :at (point 200 200) :color (color 255 0 0) :label "A")
-    (create %self-raising-square%
-            :name 'b :at (point 250 250) :color (color 0 255 0) :label "B"))
+    (elem a (%self-raising-square%
+             :at (point 200 200) :color (color 255 0 0) :label "A"))
+    (elem b (%self-raising-square%
+             :at (point 250 250) :color (color 0 255 0) :label "B")))
 
-
+#|
   ;;=======================================================================
   ;;  Primitive Layout Support
   ;;=======================================================================
