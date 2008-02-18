@@ -695,7 +695,7 @@
     (value shown? #f)
     (value wants-cursor? #f)
 
-    (def (create-engine-element)
+    (def (create-engine-node)
       (call-5l-prim 'CursorElement (node-full-name self)
                     (parent->card self
                                   (offset-rect (.shape) (.at)))
@@ -767,7 +767,7 @@
     (attr graphics   :type <list>   :label "Graphics to display")
     (value shape (animated-graphic-shape (.graphics)))
 
-    (def (create-engine-element)
+    (def (create-engine-node)
       (call-5l-prim 'OverlayAnimated (node-full-name self)
                     (parent->card self
                                   (offset-rect (.shape) (.at)))

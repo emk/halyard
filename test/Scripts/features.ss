@@ -496,50 +496,48 @@
   ;;=======================================================================
   ;;  Custom cursors
   ;;=======================================================================
-#|
-  (define-element-template %cursor-test-rect%
-      []
-      (%rectangle% :shape (rect 100 100 300 500)
-                   :color $color-white
-                   :wants-cursor? #t
-                   :cursor 'lens)
-    (on mouse-down (event)
+
+  (define-class %cursor-test-rect% (%rectangle%)
+    (value bounds (rect 100 100 300 500))
+    (value color $color-white)
+    (value wants-cursor? #t)
+    (value cursor 'lens)
+    
+    (def (mouse-down event)
       (if (eq? (.cursor) 'lens)
         (set! (.cursor) 'hand)
         (set! (.cursor) 'lens))))
   
-  (define-element-template %deleting-test-rect%
-      []
-      (%rectangle% :shape (rect 400 100 600 500)
-                   :color $color-white
-                   :wants-cursor? #t
-                   :cursor 'lens)
-    (on mouse-down (event)
+  (define-class %deleting-test-rect% (%rectangle%)
+    (value bounds (rect 400 100 600 500))
+    (value color $color-white)
+    (value wants-cursor? #t)
+    (value cursor 'lens)
+    
+    (def (mouse-down event)
       (if (element-exists? 'lens)
         (delete-element @lens)
-        (create %lens-cursor% :name 'lens))))
+        (%lens-cursor% .new :name 'lens))))
   
-  (define-element-template %lens-cursor%
-      []
-      (%cursor-element%
-       :shape (measure-graphic "lens.png")
-       :hotspot (shape-center (measure-graphic "lens.png")))
-    (with-dc self
+  (define-class %lens-cursor% (%cursor-element%)
+    (value shape (measure-graphic "lens.png"))
+    (value hotspot (shape-center (measure-graphic "lens.png")))
+    
+    (def (draw)
       (draw-graphic (point 0 0) "lens.png")))
   
   (card features/cursor-elements
       (%standard-test-card% :title "Cursor Elements")
-    
-    (define lens-rect (measure-graphic "lens.png"))
-    (create %lens-cursor% :name 'lens)
+    (elem lens (%lens-cursor%))
 
-    (create %cursor-test-rect%)
-    (create %deleting-test-rect%)
+    (elem cursor-test (%cursor-test-rect%))
+    (elem delete-test (%deleting-test-rect%))
     
-    (create %click-me-button% :shape (rect 100 550 176 576) :cursor 'lens)
+    (elem button (%click-me-button% :bounds (rect 100 550 176 576) 
+                                    :cursor 'lens))
     )
 
-
+#|
   ;;=======================================================================
   ;;  Changing the Z-Order
   ;;=======================================================================
