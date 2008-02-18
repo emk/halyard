@@ -345,100 +345,105 @@
   ;;=======================================================================
   ;;  Widgets, zones, etc.
   ;;=======================================================================
-#|
+
   ;; Testing polygonal Zones.
   (card features/zones (%standard-test-card% :title "Clickable Zones")
-    (clickable-zone (rect 5 5 5 5) (callback (jump @index)))
-    (clickable-zone (rect 10 10 20 20) (callback (jump @index)))
-    (clickable-zone (rect 30 30 30 40) (callback (jump @index)))
-    (clickable-zone (rect 10 30 20 31) (callback (jump @index)))
-    (clickable-zone (polygon (point 200 200)
-                             (point 250 100)
-                             (point 300 200)) 
-                    (callback (jump @index)))
-    (clickable-zone (polygon (point 450 300)
-                             (point 450 0)
-                             (point 650 300)
-                             (point 350 150)
-                             (point 650 0))
-                    (callback (jump @index)))
+    (clickable-zone rect-1 ((rect 5 5 5 5) (callback (jump @index))))
+    (clickable-zone rect-2 ((rect 10 10 20 20) (callback (jump @index))))
+    (clickable-zone rect-3 ((rect 30 30 30 40) (callback (jump @index))))
+    (clickable-zone rect-4 ((rect 10 30 20 31) (callback (jump @index))))
+    (clickable-zone triangle ((polygon (point 200 200)
+                                       (point 250 100)
+                                       (point 300 200)) 
+                              (callback (jump @index))))
+    (clickable-zone star ((polygon (point 450 300)
+                                   (point 450 0)
+                                   (point 650 300)
+                                   (point 350 150)
+                                   (point 650 0))
+                          (callback (jump @index))))
     )
 
   (card features/overlays (%standard-test-card% :title "Overlays")
-    (clickable-zone (rect 10 10 500 100)
-                    (callback (delete-element @overlay1))
-                    :name 'overlay1 :overlay? #t)
-    (with-dc @overlay1
-      (clear-dc $color-white)
-      (center-text $login-button-style (dc-rect)
-                   "Overlay.  Click to delete."))
-    (clickable-zone (rect 10 100 135 225)
-                    (callback (delete-element @lens))
-                    :name 'lens :overlay? #t :alpha? #t)
-    (with-dc @lens
-      (draw-graphic (point 0 0) "lens.png")
-      )
-    (clickable-zone (rect 10 110 500 200)
-                    (callback (delete-element @overlay2))
-                    :name 'overlay2 :overlay? #t :alpha? #t)
-    (with-dc @overlay2
-      (clear-dc (color #x80 #x00 #x00 #x40))
-      (center-text $caption-style (rect 0 0 490 45) "Transparent overlay.")
-      (draw-graphic (point 330 -10) "lens.png")
-      (draw-rectangle (rect 400 0 490 90) (color #x00 #xFF #x00 #x30))
-      )
-    (draw-rectangle (rect 0 155 65 250) $color-white)
-    (center-text $caption-style (rect 10 155 500 200) "Covered text.")
-    )
+    (clickable-zone overlay1 ((rect 10 10 500 100)
+                              (callback (delete-element @overlay1))
+                              :overlay? #t)
+      (def (draw)
+        (clear-dc $color-white)
+        (draw-text (dc-rect) $login-button-style 
+                   "Overlay.  Click to delete.")))
+    
+    (clickable-zone lens ((rect 10 100 135 225)
+                          (callback (delete-element @lens))
+                          :overlay? #t :alpha? #t)
+      (def (draw) (draw-graphic (point 0 0) "lens.png")))
+    
+    (clickable-zone overlay2 ((rect 10 110 500 200)
+                              (callback (delete-element @overlay2))
+                              :overlay? #t :alpha? #t)
+      (def (draw)
+        (clear-dc (color #x80 #x00 #x00 #x40))
+        (draw-text (rect 0 0 490 45) $caption-style "Transparent overlay.")
+        (draw-graphic (point 330 -10) "lens.png")
+        (draw-rectangle (rect 400 0 490 90) (color #x00 #xFF #x00 #x30))))
+    
+    (setup
+      (draw-rectangle (rect 0 155 65 250) $color-white)
+      (draw-text (rect 10 155 500 200) $caption-style "Covered text.")))
 
   (define (movable-lens-shape p)
     (rect (point-x p) (point-y p) (+ 125 (point-x p)) (+ 125 (point-y p))))
 
-  (define-element-template %movable-lens%
-      []
-      (%custom-element% :alpha? #t :shape (measure-graphic "lens.png"))
-    (define offset-x 0)
-    (define offset-y 0)
-    (define (apply-drag-offset p)
-      (point (+ (point-x p) offset-x) (+ (point-y p) offset-y)))
-    (on mouse-down (event)
+  (require (lib "initialize-slot.ss" "5L"))
+  
+  (define-class %movable-lens% (%custom-element%)
+    (value alpha? #t) 
+    (value shape (measure-graphic "lens.png"))
+    
+    (.initialize-slot 'offset-x 0)
+    (.initialize-slot 'offset-y 0)
+    
+    (def (apply-drag-offset p)
+      (point (+ (point-x p) (slot 'offset-x)) (+ (point-y p) (slot 'offset-y))))
+    (def (mouse-down event)
       (define p (event-position event))
-      (set! offset-x (- (point-x (.at)) (point-x p)))
-      (set! offset-y (- (point-y (.at)) (point-y p)))
+      (set! (slot 'offset-x) (- (point-x (.at)) (point-x p)))
+      (set! (slot 'offset-y) (- (point-y (.at)) (point-y p)))
       (grab-mouse self))
-    (on mouse-moved (event)
+    (def (mouse-moved event)
       (when (mouse-grabbed-by? self)
-        (set! (.at) (apply-drag-offset (event-position event)))))
-    (on mouse-up (event)
+        (set! (.at) (.apply-drag-offset (event-position event)))))
+    (def (mouse-up event)
       (when (mouse-grabbed-by? self)
         (ungrab-mouse self)))
-    (on draw ()
+    (def (draw)
       (draw-graphic (point 0 0) "lens.png")))
 
   (card features/dragndrop ()
-    (draw-white-background)
-    (center-text $audio-stream-style $screen-rect "Simple\nDrag and Drop")
-    (create %movable-lens% :at (point 350 300)))
+    (text-box title ($screen-rect $audio-stream-style "Simple\nDrag and Drop"))
+    (elem lens (%movable-lens% :at (point 350 300)))
+    (setup 
+      (draw-white-background)))
 
   (card features/geometric ()
-    (draw-white-background)
-    (draw-line (point 10 10) (point 10 50) $color-black 1) 
-    (draw-line (point 20 10) (point 20 50) $color-black 2) 
-    (draw-line (point 30 10) (point 30 50) $color-black 3) 
-
-    (draw-line (point 10 60) (point 50 60) $color-black 1) 
-    (draw-line (point 10 70) (point 50 70) $color-black 2) 
-    (draw-line (point 10 80) (point 50 80) $color-black 3) 
-
-    (draw-rectangle-outline (rect 100 100 200 200) (color 0 0 0 128) 2)
-
+    (setup
+      (draw-white-background)
+      (draw-line (point 10 10) (point 10 50) $color-black 1) 
+      (draw-line (point 20 10) (point 20 50) $color-black 2) 
+      (draw-line (point 30 10) (point 30 50) $color-black 3) 
+      
+      (draw-line (point 10 60) (point 50 60) $color-black 1) 
+      (draw-line (point 10 70) (point 50 70) $color-black 2) 
+      (draw-line (point 10 80) (point 50 80) $color-black 3) 
+      
+      (draw-rectangle-outline (rect 100 100 200 200) (color 0 0 0 128) 2))
     )
 
 
   ;;=======================================================================
   ;;  Masking and Erasing
   ;;=======================================================================
-
+#|
   (define (graphic-center-offset path)
     (define bounds (measure-graphic path))
     (point (/ (rect-width bounds) -2) (/ (rect-height bounds) -2)))

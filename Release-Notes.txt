@@ -89,6 +89,8 @@ ruby-style classes (F#928):
   * F#2619: Added element definition helpers: BOX, CLICKABLE-ZONE,
     TEXT-BOX, TEXT, GRAPHIC, RECTANGLE, RECTANGLE-OUTLINE, SPRITE, BROWSER,
     EDIT-BOX, GEIGER-AUDIO, SINE-WAVE, VORBIS-AUDIO and MOVIE.
+  * Added .INITIALIZE-SLOT as a convenient way to set up initialization for
+    a bare slot.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:
