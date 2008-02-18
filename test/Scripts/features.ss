@@ -96,7 +96,7 @@
       ((.edit) .focus))
     )
 
-  #|
+  
   ;;=======================================================================
   ;;  Browser
   ;;=======================================================================
@@ -104,42 +104,44 @@
   (define (browser-toolbar-button-shape graphic-prefix)
     (measure-graphic (cat "browser/" graphic-prefix "-normal.png")))
   
-  (define-element-template %browser-toolbar-button%
-      [[graphic-prefix :type <symbol> :label "Base name for graphics"]]
-      (%basic-button%
-       :alpha? #t
-       :shape (browser-toolbar-button-shape graphic-prefix))
-    (on draw-button (style)
+  (define-class %browser-toolbar-button% (%basic-button%)
+    (attr graphic-prefix :type <symbol> :label "Base name for graphics")
+    (value alpha? #t)
+    (value shape (browser-toolbar-button-shape (.graphic-prefix)))
+    
+    (def (draw)
       (draw-graphic (point 0 0)
-                    (cat "browser/" graphic-prefix "-" style ".png")))
+                    (cat "browser/" (.graphic-prefix) "-" (.button-state) 
+                         ".png")))
     )
   
-  (define-element-template %browser-toolbar-command-button%
-      [command]
-      (%browser-toolbar-button%
-       :enabled? #f
-       :graphic-prefix command
-       :action (callback (send* @browser-elem command))))
+  (define-class %browser-toolbar-command-button% (%browser-toolbar-button%)
+    (attr browser-command :type <symbol>)
+      
+    (value enabled? #f)
+    (value graphic-prefix (.browser-command))
+    (value action (callback (@browser-elem .send (.browser-command) '()))))
   
   (define-stylesheet $browser-style :base $base-style :family "Times")
   
   (card features/browser ()
-    (draw-default-background)
+    (setup
+      (draw-default-background))
     
-    (define (draw-string r str)
+    (def (draw-string r str)
       (draw-rectangle r $color-black)
       (draw-text (inset-rect r 2) $browser-style (string->xml str)))
     
-    (define (draw-url url)
-      (draw-string (rect 0 50 800 70) url))
+    (def (draw-url url)
+      (.draw-string (rect 0 50 800 70) url))
     
-    (define (draw-title title)
-      (draw-string (rect 0 30 800 50) title))
+    (def (draw-title title)
+      (.draw-string (rect 0 30 800 50) title))
     
-    (define (draw-status-text msg)
-      (draw-string (rect 0 580 600 600) msg))
+    (def (draw-status-text msg)
+      (.draw-string (rect 0 580 600 600) msg))
     
-    (define (draw-progress-bar done? value)
+    (def (draw-progress-bar done? value)
       (define r (rect 600 580 800 600))
       (draw-rectangle r $color-black)
       (unless done?
@@ -149,64 +151,58 @@
                                 right (rect-bottom r))
                           (color #x0 #x0 #x80)))))
     
-    (on browser-navigate (event)
+    (def (browser-navigate event)
       (if (equal? (event-url event) "http://www.nowhere.org/")
-          (begin
-            (non-fatal-error (cat "Access to " (event-url event)
-                                  " is restricted.  Sorry!"))
-            (veto-event! event))
-          (call-next-handler)))
+        (begin
+          (non-fatal-error (cat "Access to " (event-url event)
+                                " is restricted.  Sorry!"))
+          (veto-event! event))
+        (super)))
     
-    (on browser-page-changed (event)
-      (draw-url (event-url event)))
+    (def (browser-page-changed event)
+      (.draw-url (event-url event)))
     
-    (on browser-title-changed (event)
-      (draw-title (event-text event)))
+    (def (browser-title-changed event)
+      (.draw-title (event-text event)))
     
-    (on status-text-changed (event)
-      (draw-status-text (event-text event)))
+    (def (status-text-changed event)
+      (.draw-status-text (event-text event)))
     
-    (on progress-changed (event)
-      (draw-progress-bar (event-progress-done? event)
-                         (event-progress-value event)))
+    (def (progress-changed event)
+      (.draw-progress-bar (event-progress-done? event)
+                          (event-progress-value event)))
     
-    (on update-ui (event)
+    (def (update-ui event)
       (define command (event-command event))
       (case command
         [[back forward reload stop]
          (set! ((@* (symbol->string command)) .enabled?)
-               (send @browser-elem command-enabled? command))]))
+               (@browser-elem .command-enabled? command))]))
     
-    (create %browser-toolbar-command-button%
-            :name 'back
-            :at (point 0 0)
-            :command 'back)
-    (create %browser-toolbar-command-button%
-            :name 'forward
-            :at (point 100 0)
-            :command 'forward)
-    (create %browser-toolbar-command-button%
-            :name 'reload
-            :at (point 200 0)
-            :command 'reload)
-    (create %browser-toolbar-command-button%
-            :name 'stop
-            :at (point 300 0)
-            :command 'stop)
-    (create %browser-toolbar-button%
-            :name 'home
-            :at (point 400 0)
-            :graphic-prefix 'home
-            :action (callback (send @browser-elem load-page "sample.html")))
+    (elem back (%browser-toolbar-command-button%
+                :at (point 0 0)
+                :browser-command 'back))
+    (elem forward (%browser-toolbar-command-button%
+                   :at (point 100 0)
+                   :browser-command 'forward))
+    (elem reload (%browser-toolbar-command-button%
+                  :at (point 200 0)
+                  :browser-command 'reload))
+    (elem stop (%browser-toolbar-command-button%
+                :at (point 300 0)
+                :browser-command 'stop))
+    (elem home (%browser-toolbar-button%
+                :at (point 400 0)
+                :graphic-prefix 'home
+                :action (callback (@browser-elem .load-page "sample.html"))))
     
-    (create %browser%
-            :name 'browser-elem
-            :rect (rect 0 70 800 580)
-            :path "sample.html"
-            :fallback? #f)
+    (elem browser-elem (%browser%
+                        :rect (rect 0 70 800 580)
+                        :path "sample.html"
+                        :fallback? #f))
     )
 
-
+  #|
   ;;=======================================================================
   ;;  External Browser
   ;;=======================================================================
