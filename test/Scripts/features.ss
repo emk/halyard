@@ -202,25 +202,29 @@
                         :fallback? #f))
     )
 
-  #|
+  
   ;;=======================================================================
   ;;  External Browser
   ;;=======================================================================
   
-  (card features/launch-browser
-      (%standard-test-card% :title "Launch Browser")
-    (text-button (below @title 20) "Open Default Browser"
-                 (callback
+  (card features/launch-browser (%standard-test-card% :title "Launch Browser")
+    (text-button open-button
+                 ((below (.title-elem) 20) 
+                  "Open Default Browser"
+                  :action
+                  (callback
                    (set! (@result .text)
                          (if (open-in-browser "http://iml.dartmouth.edu")
                              "Success."
-                             "Error opening URL.")))
-                 :name 'open-button)
-    (text-box (move-rect-left-top-to (rect 0 0 200 20) (below @open-button 10))
-              $caption-style "" :name 'result)
+                             "Error opening URL.")))))
+    (text-box result
+              ((move-rect-left-top-to (rect 0 0 200 20) 
+                                      (below (.open-button) 10))
+               $caption-style 
+               ""))
     )
 
-
+  #|
   ;;=======================================================================
   ;;  ActiveX
   ;;=======================================================================
