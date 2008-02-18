@@ -443,7 +443,7 @@
   ;;=======================================================================
   ;;  Masking and Erasing
   ;;=======================================================================
-#|
+
   (define (graphic-center-offset path)
     (define bounds (measure-graphic path))
     (point (/ (rect-width bounds) -2) (/ (rect-height bounds) -2)))
@@ -451,47 +451,52 @@
   (sequence features/mask)
 
   (card features/mask/light ()
-    (draw-graphic (point 0 0) "mask/blend-background.png")
-    (define light
-      (create %custom-element%
-              :at (point 0 0)
-              :shape (measure-graphic "mask/mask.png")
-              :alpha? #t))
-    (define offset (graphic-center-offset "mask/mask.png"))
-    (on mouse-moved (event)
-      (define at (offset-by-point (event-position event) offset))
-      (set! (light .at) at)
-      (with-dc light
-        (clear-dc (color 0 0 0 0))
-        (draw-graphic (point (- (point-x at)) (- (point-y at)))
+    (elem light (%custom-element%
+                 :at (point 0 0)
+                 :shape (measure-graphic "mask/mask.png")
+                 :alpha? #t)
+      (after-updating at (.invalidate))
+      (def (draw)
+        (draw-graphic (point (- (point-x (.at))) (- (point-y (.at))))
                       "mask/blend-foreground.png")
-        (mask (point 0 0) "mask/mask.png"))
-      (refresh)
-      )
+        (mask (point 0 0) "mask/mask.png")))
+      
+    (setup
+      (draw-graphic (point 0 0) "mask/blend-background.png"))
+      
+    (def (mouse-moved event)
+      (define offset (graphic-center-offset "mask/mask.png"))
+      (define at (offset-by-point (event-position event) offset))
+      (set! ((.light) .at) at)
+      (refresh))
     )
 
-  (define-element-template %erasable%
-      []
-      (%custom-element% :at (point 0 0) :shape $screen-rect :alpha? #t
-                        :clickable-where-transparent? #t)
-    (define offset (graphic-center-offset "mask/eraser.png"))
-    (on draw ()
+  (define-class %erasable% (%custom-element%)
+    (value at (point 0 0)) 
+    (value shape $screen-rect) 
+    (value alpha? #t)
+    (value clickable-where-transparent? #t)
+    
+    (def (draw)
       (clear-dc (color 0 0 0 48))
       (draw-graphic (point 0 0) "mask/blend-foreground.png"))
-    (on mouse-moved (event)
+    
+    (def (mouse-moved event)
+      (define offset (graphic-center-offset "mask/eraser.png"))
       (define at (offset-by-point (event-position event) offset))
       (with-dc self
         (mask at "mask/eraser.png"))))
 
   (card features/mask/eraser ()
-    (draw-graphic (point 0 0) "mask/blend-background.png")
-    (create %erasable%))
+    (elem erasable (%erasable%))
+    (setup
+      (draw-graphic (point 0 0) "mask/blend-background.png")))
 
 
   ;;=======================================================================
   ;;  Custom cursors
   ;;=======================================================================
-
+#|
   (define-element-template %cursor-test-rect%
       []
       (%rectangle% :shape (rect 100 100 300 500)
