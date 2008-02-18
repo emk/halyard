@@ -224,20 +224,21 @@
                ""))
     )
 
-  #|
+  
   ;;=======================================================================
   ;;  ActiveX
   ;;=======================================================================
   
   (card features/activex (%standard-test-card% :title "ActiveX")
-    (create %activex%
-            :name 'cartoon
-            :rect (rect 100 100 700 450)
-            :activex-id "ShockwaveFlash.ShockwaveFlash")
-    (send @cartoon set-activex-prop! "movie"
-          "http://www.markfiore.com/brawl.swf")
-    )
+    (elem cartoon (%activex%
+                   :rect (rect 100 100 700 450)
+                   :activex-id "ShockwaveFlash.ShockwaveFlash"))
+    (run
+      (@cartoon .set-activex-prop! "movie"
+                "http://mirrors.creativecommons.org/reticulum_rex/cc.remixculture.101906.swf")
+    ))
   
+  #|
   ;;=======================================================================
   ;;  Transparency
   ;;=======================================================================
