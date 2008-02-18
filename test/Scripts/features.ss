@@ -563,35 +563,35 @@
     (elem b (%self-raising-square%
              :at (point 250 250) :color (color 0 255 0) :label "B")))
 
-#|
+
   ;;=======================================================================
   ;;  Primitive Layout Support
   ;;=======================================================================
 
   (card features/primitive-layout
       (%standard-test-card% :title "Primitive Layout Support")
-    (define (square parent size color &opt (at (point 0 0)))
-      (create %rectangle%
-              :parent parent
-              :at at
-              :shape (rect 0 0 size size)
-              :color color))
-    (define outer (square (current-card) 200 (color 255 0 0)))
-    (define inner (square outer          100 (color 0 0 255)))
-    (send outer center-on-parent!)
-    (send inner center-on-parent!)
-    (box (rect 0 400 800 600) :name 'box)
-    (define background (square @box 100 (color 255 255 0)))
-    (define first  (square background 50 (color 0 255 0)))
-    (define second (square background 50 (color 255 0 0) (below first 10)))
-    (define third  (square background 50 (color 0 0 255) 
-                           (to-the-right-of first 10)))
-    (define fourth (square background 50 (color 255 0 255) (below third 10)))
-    (send background fit-to-children! 10)
-    (send background center-on-parent!)
+    (define (square size)
+      (shape size size))
+    (rectangle outer ((square 200) (color 255 0 0))
+      (setup (.center-on-parent!))
+      (rectangle inner ((square 100) (color 0 0 255))
+        (setup (.center-on-parent!))))
+
+    (box box ((rect 0 400 800 600))
+      (rectangle background ((square 100) (color 255 255 0))
+        (rectangle first  ((square 50) (color 0 255 0)))
+        (rectangle second ((square 50) (color 255 0 0) 
+                           :at (below (.first) 10)))
+        (rectangle third  ((square 50) (color 0 0 255) 
+                           :at (to-the-right-of (.first) 10)))
+        (rectangle fourth ((square 50) (color 255 0 255) 
+                           :at (below (.third) 10)))
+        (setup 
+          (.fit-to-children! 10)
+          (.center-on-parent!))))
     )
 
-
+#|
   ;;=======================================================================
   ;;  Resizing Elements
   ;;=======================================================================
