@@ -1,6 +1,7 @@
 (module define-node-helper (lib "language.ss" "5L")
   (require (lib "nodes.ss" "5L"))
   (require-for-syntax (lib "util.ss" "5L"))
+  (require (lib "tags.ss" "5L"))
 
   (provide define-node-helper)
 
@@ -47,5 +48,9 @@
               (define-node name (class #,@(names->keys+names #'(args ...)) 
                                        . keys) 
                 . body)])))]))
-
+  
+  (define-syntax-tagger define-node-helper
+    [(_ helper-name (args ...) class)
+     'syntax helper-name (helper-name name (args ... &rest keys) 
+                                      body (... ...))])
   )
