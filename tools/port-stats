@@ -31,7 +31,7 @@ class WordCount
   FileInfo = Struct.new :lines, :path
   class FileInfo
     def to_s
-      sprintf("%-5d %s", lines, path)
+      sprintf("%5d %s", lines, path)
     end
   end
 
@@ -59,7 +59,7 @@ class WordCount
 
   def to_s
     outlines = files.map {|f| f.to_s }
-    outlines << sprintf("%-5d total", total)
+    outlines << sprintf("%5d total", total)
     outlines.join("\n") + "\n"
   end
 end

@@ -407,6 +407,12 @@
           ;; good.
           (static-elem .new :parent self :name (static-elem .name)))))
 
+    ;;; Find a child element by name.
+    ;;; TODO - We may rename this; I added it to help Robinson port our
+    ;;; library code.
+    (def (find-elem name)
+      (find-node-relative self name #t))
+
     (with-instance (.class)
       (attr name #f :writable? #t)   ; May be #f if class not in hierarchy.
       (attr parent #f :writable? #t)

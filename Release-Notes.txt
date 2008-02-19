@@ -94,6 +94,8 @@ ruby-style classes (F#928):
   * Added .INITIALIZE-SLOT as a convenient way to set up initialization for
     a bare slot.
   * The %ANSWER% class now uses a standard DRAW method.
+  * Added FIND-ELEM to node to make it easier to find child elements that
+    are not created using ELEM.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:
