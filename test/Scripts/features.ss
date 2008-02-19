@@ -266,8 +266,7 @@
   (sequence features/transitions)
 
   (define (transition-text msg)
-    (define t (new-text (point 0 0) $transition-style msg))
-    (t .center-on-parent!))
+    (new-centered-text $transition-style msg))
 
   (define (show-trans msg trans)
     (draw-white-background)
@@ -420,7 +419,7 @@
       (draw-graphic (point 0 0) "lens.png")))
 
   (card features/dragndrop ()
-    (text-box title ($screen-rect $audio-stream-style "Simple\nDrag and Drop"))
+    (centered-text title ($audio-stream-style "Simple\nDrag and Drop"))
     (elem lens (%movable-lens% :at (point 350 300)))
     (setup 
       (draw-white-background)))
