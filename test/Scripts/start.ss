@@ -110,7 +110,7 @@
 (require (file "media.ss"))
 (require (file "features.ss"))
 (require (file "ruby-objects-test.ss"))
-;;(require (file "bugs.ss"))
+(require (file "bugs.ss"))
 (require (file "experiments.ss"))
 ;;(require "test-cases.ss")
 
