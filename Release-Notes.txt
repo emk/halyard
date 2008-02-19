@@ -24,6 +24,8 @@ SVN - tryon, emk, brian
   * Added support for iterating over assoc lists using
     (FOREACH [(CONS k v) alist] ...).
   * Added a reload timer to the Tamale GUI.
+  * F#2207: Fixed the ScriptEditorDB to not scan .svn, CVS or compiled
+    subdirectories of the source tree.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

@@ -1,3 +1,4 @@
+;; PORTED
 (module base (lib "5l.ss" "5L")
 
   (provide $color-black $color-white $color-paper $color-offwhite
