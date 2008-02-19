@@ -186,7 +186,7 @@
   ;;  Element Templates
   ;;=======================================================================
   
-  (provide %text-button% text-button)
+  (provide %text-button% text-button %centered-text% centered-text)
 
   ;;; A simple and ugly button which doesn't require loading any image
   ;;; files.  We'd obviously like something better than this.
@@ -228,4 +228,10 @@
 
   (define-node-helper text-button (at label) %text-button%)
   
+  (define-class %centered-text% (%text%)
+    (default at (point 0 0))
+    (setup
+      (.center-on-parent!)))
+  
+  (define-node-helper centered-text (style text) %centered-text%)
   )

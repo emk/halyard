@@ -644,7 +644,7 @@
                       :action (callback (.set-shapes! big-rect big-poly))))
     )
 
-#|
+
   ;;=======================================================================
   ;;  StateDB test cards
   ;;=======================================================================
@@ -654,42 +654,47 @@
     :color $color-highlight
     :size 24)
 
-  (define-element-template %state-db-zone%
-      []
-      (%custom-element% :shape $screen-rect :alpha? #t)
+  (define-class %state-db-zone% (%custom-element%)
+    (value bounds $screen-rect) 
+    (value alpha? #t)
  
-    (define center-x (/ (rect-width (dc-rect)) 2))
-    (define center-y (/ (rect-height (dc-rect)) 2))
+    (define center-x (/ (rect-width $screen-rect) 2))
+    (define center-y (/ (rect-height $screen-rect) 2))
 
-    (define height #f)
-    (define width #f)
+    (attr height 0 :writable? #t)
+    (attr width 0 :writable? #t)
 
-    ;; TODO - OK, this isn't really an optimal interface for elements which
-    ;; redraw under state-db control.
-    (define-state-db-listener [update-size state-db]
-      (set! height (state-db '/test/height))
-      (set! width  (state-db '/test/width))
-      (send self invalidate))
+    (setup 
+      ;; TODO - Should state-db listeners be registered on the static node 
+      ;; instead?
+      ;; TODO - OK, this isn't really an optimal interface for elements which
+      ;; redraw under state-db control.
+      (define-state-db-listener [update-size state-db]
+        (set! (.height) (state-db '/test/height))
+        (set! (.width)  (state-db '/test/width))
+        (.invalidate)))
 
-    (on draw ()
-      (let* [[x (- center-x (/ (* width 50) 2))]
-             [y (- center-y (/ (* height 50) 2))]
-             [r (rect x y (+ x (* width 50)) (+ y (* height 50)))]]
+    (def (draw)
+      (let* [[x (- center-x (/ (* (.width) 50) 2))]
+             [y (- center-y (/ (* (.height) 50) 2))]
+             [r (rect x y (+ x (* (.width) 50)) (+ y (* (.height) 50)))]]
         (draw-rectangle r (color 255 0 0 #x40))
         (draw-text (rect 300 10 500 100) $state-db-style 
-                   (cat "Area of rect " (* width height) " units"))))
+                   (cat "Area of rect " (* (.width) (.height)) " units"))))
     )
 
   (card features/state-db (%standard-test-card% :title "State DB")
-    (center-text $state-db-style (dc-rect)
-                 "Num = Width of rect\nAlt+Num = Height of rect")
-    
-    (set! (state-db '/test/width) 5)
-    (set! (state-db '/test/height) 5)
+    (centered-text legend ($state-db-style 
+                           "Num = Width of rect\nAlt+Num = Height of rect"))
+  
+    (def (initialize &rest keys)
+      (super)
+      (set! (state-db '/test/width) 5)
+      (set! (state-db '/test/height) 5))
 
-    (create %state-db-zone%)
+    (elem zone (%state-db-zone%))
 
-    (on char (event)
+    (def (char event)
       (let ((c (event-character event))
             (mods (event-modifiers event)))
         (cond
@@ -700,10 +705,10 @@
           ;; set width?     
           (set! (state-db '/test/width) (string->number (string c)))]
          [else
-          (call-next-handler)])))
+          (super)])))
     )
 
-
+#|
   ;;=======================================================================
   ;;  State DB Listeners
   ;;=======================================================================
