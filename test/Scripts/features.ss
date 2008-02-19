@@ -5,6 +5,9 @@
   (require (file "base.ss"))
   ;;(require (lib "deprecated.ss" "5L"))
 
+  ;; Experimental slot initializer library.
+  (require (lib "initialize-slot.ss" "5L"))
+  
   (sequence features)
   
   (card features/controls (%standard-test-card% :title "Controls")
@@ -301,7 +304,7 @@
   ;;  Templates and Events
   ;;=======================================================================
 
-  (define (point->boring-button-rectangle text)
+  (define (point->boring-button-shape text)
     (offset-rect
      (inset-rect (measure-text $login-button-style text) -5)
      (point 5 5)))
@@ -309,7 +312,7 @@
   (define-class %boring-button% (%custom-element%)
     (attr text) 
     (attr action)
-    (value shape (point->boring-button-rectangle (string->xml (.text))))
+    (value shape (point->boring-button-shape (string->xml (.text))))
     
     (def (draw)
       (draw-rectangle (dc-rect) $color-white)
@@ -393,8 +396,6 @@
   (define (movable-lens-shape p)
     (rect (point-x p) (point-y p) (+ 125 (point-x p)) (+ 125 (point-y p))))
 
-  (require (lib "initialize-slot.ss" "5L"))
-  
   (define-class %movable-lens% (%custom-element%)
     (value alpha? #t) 
     (value shape (measure-graphic "lens.png"))
@@ -603,27 +604,27 @@
       (%standard-test-card% :title "Resizing Elements")
 
     ;; Our standard shapes
-    (define small-rect (rect 0 0 100 100))
-    (define big-rect (rect 0 0 110 110))
-    (define small-poly (polygon (point 0 0) (point 100 100) (point 0 100)))
-    (define big-poly (polygon (point 0 0) (point 110 110) (point 0 110)))
+    (define $small-rect (rect 0 0 100 100))
+    (define $big-rect (rect 0 0 110 110))
+    (define $small-poly (polygon (point 0 0) (point 100 100) (point 0 100)))
+    (define $big-poly (polygon (point 0 0) (point 110 110) (point 0 110)))
 
     ;; Our elements.
     (elem opaque-overlay (%opaque-overlay%
                           :at (below (.title-elem) 20)
-                          :shape small-rect))
+                          :shape $small-rect))
     (elem transparent-overlay (%rectangle%
                                :at (to-the-right-of (.opaque-overlay) 20)
-                               :shape small-rect
+                               :shape $small-rect
                                :color (color #xFF #x00 #x00 #x80)))
     (elem square-zone (%custom-element%
                        :at (to-the-right-of (.transparent-overlay) 20)
-                       :shape small-rect
+                       :shape $small-rect
                        :overlay? #f
                        :cursor 'hand))
     (elem poly-zone (%custom-element%
                      :at (to-the-right-of (.square-zone) 20)
-                     :shape small-poly
+                     :shape $small-poly
                      :overlay? #f
                      :cursor 'hand))
 
@@ -637,10 +638,11 @@
     ;; Buttons to change element size.
     (text-button small ((below @opaque-overlay 20) 
                         "Small"
-                        :action (callback (.set-shapes! small-rect small-poly))))
+                        :action (callback
+                                  (.set-shapes! $small-rect $small-poly))))
     (text-button big ((to-the-right-of @small 10) 
                       "Big"
-                      :action (callback (.set-shapes! big-rect big-poly))))
+                      :action (callback (.set-shapes! $big-rect $big-poly))))
     )
 
 

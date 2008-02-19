@@ -87,10 +87,7 @@
   (value shape (shape 800 100))
   (value clickable-where-transparent? #t)
   
-  (text label ((point 0 0) $menu-style (.text)
-               :max-width (rect-width (.shape)))
-    (setup
-      (.center-on-parent!)))
+  (centered-text label ($menu-style (.text) :max-width (rect-width (.shape))))
 
   (def (mouse-down event)
     (jump (.jump-to))))
