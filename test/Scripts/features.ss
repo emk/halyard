@@ -591,13 +591,13 @@
           (.center-on-parent!))))
     )
 
-#|
+  
   ;;=======================================================================
   ;;  Resizing Elements
   ;;=======================================================================
   
-  (define-element-template %opaque-overlay% [] (%custom-element%)
-    (on draw ()
+  (define-class %opaque-overlay% (%custom-element%)
+    (def (draw)
       (clear-dc (color #xFF #x00 #x00))))
 
   (card features/resizing-elements
@@ -610,45 +610,41 @@
     (define big-poly (polygon (point 0 0) (point 110 110) (point 0 110)))
 
     ;; Our elements.
-    (create %opaque-overlay%
-            :name 'opaque-overlay
-            :at (below @title 20)
-            :shape small-rect)
-    (create %rectangle%
-            :name 'transparent-overlay
-            :at (to-the-right-of @opaque-overlay 20)
-            :shape small-rect
-            :color (color #xFF #x00 #x00 #x80))
-    (create %custom-element%
-            :name 'square-zone
-            :at (to-the-right-of @transparent-overlay 20)
-            :shape small-rect
-            :overlay? #f
-            :cursor 'hand)
-    (create %custom-element%
-            :name 'poly-zone
-            :at (to-the-right-of @square-zone 20)
-            :shape small-poly
-            :overlay? #f
-            :cursor 'hand)
+    (elem opaque-overlay (%opaque-overlay%
+                          :at (below (.title-elem) 20)
+                          :shape small-rect))
+    (elem transparent-overlay (%rectangle%
+                               :at (to-the-right-of (.opaque-overlay) 20)
+                               :shape small-rect
+                               :color (color #xFF #x00 #x00 #x80)))
+    (elem square-zone (%custom-element%
+                       :at (to-the-right-of (.transparent-overlay) 20)
+                       :shape small-rect
+                       :overlay? #f
+                       :cursor 'hand))
+    (elem poly-zone (%custom-element%
+                     :at (to-the-right-of (.square-zone) 20)
+                     :shape small-poly
+                     :overlay? #f
+                     :cursor 'hand))
 
     ;; Update all our elements to have the specified shapes.
-    (define (set-shapes! square-shape poly-shape)
-      (set! (@opaque-overlay .shape) square-shape)
-      (set! (@transparent-overlay .shape) square-shape)
-      (set! (@square-zone .shape) square-shape)
-      (set! (@poly-zone .shape) poly-shape))
+    (def (set-shapes! square-shape poly-shape)
+      (set! ((.opaque-overlay) .shape) square-shape)
+      (set! ((.transparent-overlay) .shape) square-shape)
+      (set! ((.square-zone) .shape) square-shape)
+      (set! ((.poly-zone) .shape) poly-shape))
       
     ;; Buttons to change element size.
-    (text-button (below @opaque-overlay 20) "Small"
-                 (callback (set-shapes! small-rect small-poly))
-                 :name 'small)
-    (text-button (to-the-right-of @small 10) "Big"
-                 (callback (set-shapes! big-rect big-poly))
-                 :name 'big)
+    (text-button small ((below @opaque-overlay 20) 
+                        "Small"
+                        :action (callback (.set-shapes! small-rect small-poly))))
+    (text-button big ((to-the-right-of @small 10) 
+                      "Big"
+                      :action (callback (.set-shapes! big-rect big-poly))))
     )
 
-
+#|
   ;;=======================================================================
   ;;  StateDB test cards
   ;;=======================================================================
