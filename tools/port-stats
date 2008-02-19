@@ -1,0 +1,84 @@
+#!/usr/bin/ruby
+# Display what percentage of *.ss files have "PORTED" in the first several
+# lines.
+
+require 'find'
+
+dir =
+  case ARGV.length
+  when 0 then "."
+  when 1 then ARGV[0]
+  else raise "Usage: port-stats [dir]"
+  end
+
+def ported? file
+  top = IO.read(file, 1024)
+  top =~ /PORTED/
+end
+
+PORTED = []
+UNPORTED = []
+Find.find dir do |file|
+  next unless file =~ /\.ss$/
+  if ported?(file)
+    PORTED << file
+  else
+    UNPORTED << file
+  end
+end
+
+class WordCount
+  FileInfo = Struct.new :lines, :path
+  class FileInfo
+    def to_s
+      sprintf("%-5d %s", lines, path)
+    end
+  end
+
+  attr :files
+
+  def initialize filenames
+    @files = []
+
+    args = filenames.map {|f| f.gsub(/ /, "\\ ") }.join(" ")
+    text = `wc -l #{args}`
+    text.each_line do |line|
+      line.chomp!
+      unless line =~ /^ *(\d+) +(.+)$/
+        raise "Malformed wc output: #{line}"
+      end
+      next if $2 == "total"
+      
+      files << FileInfo.new($1.to_i, $2)
+    end
+  end
+
+  def total
+    files.map {|f| f.lines }.inject(0) {|sum, value| sum + value}
+  end
+
+  def to_s
+    outlines = files.map {|f| f.to_s }
+    outlines << sprintf("%-5d total", total)
+    outlines.join("\n") + "\n"
+  end
+end
+
+puts ">> Ported"
+ported_wc = WordCount.new(PORTED.sort)
+puts ported_wc
+puts
+
+puts ">> Unported"
+unported_wc = WordCount.new(UNPORTED.sort)
+puts unported_wc
+puts
+
+def make_bar fraction, width
+  "+"*(fraction*width) + "-"*((1-fraction)*width)
+end
+
+total = ported_wc.total + unported_wc.total
+fraction = 1.0*ported_wc.total/total
+printf "%s %d%% of %d LOC \n", make_bar(fraction, 60), 100*fraction, total
+
