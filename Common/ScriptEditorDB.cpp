@@ -351,12 +351,14 @@ void ScriptEditorDB::ScanTreeInternal(const std::string &relpath,
     if (fs::symbolic_link_exists(path)) {
         // Don't follow symlinks.
     } else if (fs::is_directory(path)) {
-        // Recursively scan everything in this directory.
-        fs::directory_iterator i(path);
-        for (; i != fs::directory_iterator(); ++i) {
-            std::string child_relpath(relpath + "/" + i->leaf());
-            ScanTreeInternal(child_relpath, extension, modtimes,
-                             outFilesToProcess);
+        if (!ShouldSkipDirectory(relpath)) {
+            // Recursively scan everything in this directory.
+            fs::directory_iterator i(path);
+            for (; i != fs::directory_iterator(); ++i) {
+                std::string child_relpath(relpath + "/" + i->leaf());
+                ScanTreeInternal(child_relpath, extension, modtimes,
+                                 outFilesToProcess);
+            }
         }
     } else if (fs::extension(path) == extension) {
         // OK, this is probably a regular file, and it has the right
@@ -475,6 +477,15 @@ void ScriptEditorDB::EndProcessingFile() {
     std::vector<IListener*>::iterator i = mListeners.begin();
     for (; i != mListeners.end(); ++i)
         (*i)->FileChanged(mProcessingFileRelPath); 
+}
+
+bool ScriptEditorDB::ShouldSkipDirectory(const std::string &relpath) {
+    std::string dirname(fs::path(relpath, fs::no_check).leaf());
+    // TODO - Really, "compiled" is the responsibility of our Scheme-based
+    // subclass to deal with, but that's a lot of work right now.
+    if (dirname == ".svn" || dirname == "CVS" || dirname == "compiled")
+        return true;
+    return false;
 }
 
 /// For each unprocessed file in the specified directory tree (with the

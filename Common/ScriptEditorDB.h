@@ -126,6 +126,8 @@ public:
     void BeginProcessingFile(const std::string &relpath);
     void EndProcessingFile();
 
+    virtual bool ShouldSkipDirectory(const std::string &relpath);
+
     void ProcessTree(const std::string &relpath,
                      const std::string &extension);
 
