@@ -1,6 +1,6 @@
 ;; PORTED
 (module features (lib "5l.ss" "5L")
-  ;;(require (lib "drag.ss" "5L"))
+  (require (lib "drag.ss" "5L"))
   ;;(require (lib "q-and-a.ss" "5L"))
   (require (lib "animate.ss" "5L"))
   (require (file "base.ss"))
@@ -397,38 +397,38 @@
   (define (movable-lens-shape p)
     (rect (point-x p) (point-y p) (+ 125 (point-x p)) (+ 125 (point-y p))))
 
-  (define-class %movable-lens% (%custom-element%)
+  (define-class %movable-lens% (%draggable-object%)
     (value alpha? #t) 
     (value shape (measure-graphic "lens.png"))
-    
-    (.initialize-slot 'offset-x 0)
-    (.initialize-slot 'offset-y 0)
-    
-    (def (apply-drag-offset p)
-      (point (+ (point-x p) (slot 'offset-x)) (+ (point-y p) (slot 'offset-y))))
-    (def (mouse-down event)
-      (define p (event-position event))
-      (set! (slot 'offset-x) (- (point-x (.at)) (point-x p)))
-      (set! (slot 'offset-y) (- (point-y (.at)) (point-y p)))
-      (grab-mouse self))
-    (def (mouse-moved event)
-      (when (mouse-grabbed-by? self)
-        (set! (.at) (.apply-drag-offset (event-position event)))))
-    (def (mouse-up event)
-      (when (mouse-grabbed-by? self)
-        (ungrab-mouse self)))
     (def (draw)
       (draw-graphic (point 0 0) "lens.png")))
+  
+  (define-class %lens-box% (%drag-target%)
+    (value shape (shape 200 200))
 
-  (card features/dragndrop ()
-    (centered-text title ($audio-stream-style "Simple\nDrag and Drop"))
-    (elem lens (%movable-lens% :at (point 350 300)))
-    (setup 
-      (draw-white-background)))
+    (attr has-been-dragged-to? #f :writable? #t)
 
-  (card features/geometric ()
+    (centered-text note ($text16 "It works!" :shown? #f))
+    (after-updating has-been-dragged-to?
+      (set! ((.note) .shown?) (.has-been-dragged-to?)))
+
+    (def (draw)
+      (clear-dc $color-white)
+      (draw-rectangle-outline (dc-rect) $color-black 1))
+
+    (def (drag-allowed? event draggable)
+      #t)
+    (def (drag-succeeded event draggable)
+      (set! (.has-been-dragged-to?) #t))
+    )
+
+  (card features/dragndrop (%fancy-white-test-card%
+                            :title "Simple\nDrag and Drop")
+    (elem target (%lens-box% :at (point 10 10)))
+    (elem lens (%movable-lens% :home-point (point 350 300))))
+
+  (card features/geometric (%white-test-card% :title "Geometric primitives")
     (setup
-      (draw-white-background)
       (draw-line (point 10 10) (point 10 50) $color-black 1) 
       (draw-line (point 20 10) (point 20 50) $color-black 2) 
       (draw-line (point 30 10) (point 30 50) $color-black 3) 

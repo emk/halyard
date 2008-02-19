@@ -13,58 +13,61 @@
 
   ;; Make a moveable object -- one that can be dragged around the screen
   ;;  using the mouse.
-  (define-element-template %simple-draggable-object%
-      [[drag-bounds :type <rect> :default $screen-rect
-                    :label "Boundary for region of motion"]
-       [float-when-dragging? :type <boolean> :default #t
-                             :label "Float above other items when dragging"]]
-      (%custom-element%)
-    (define max-x (- (rect-right (.drag-bounds)) 
-                     (rect-width (prop self shape))))
-    (define max-y (- (rect-bottom (.drag-bounds)) 
-                     (rect-height (prop self shape))))
-    (define min-x (rect-left (.drag-bounds)))
-    (define min-y (rect-top (.drag-bounds)))
-    (define offset-x 0)
-    (define offset-y 0)
-    (define (apply-drag-offset p)
-      (let [[new-point (point (+ (point-x p) offset-x) 
-                              (+ (point-y p) offset-y))]]
-        (when (> min-x (point-x new-point))
-          (set! (point-x new-point) min-x))
-        (when (>=  (point-x new-point) max-x)
-          (set! (point-x new-point) max-x))
-        (when (> min-y  (point-y new-point))
-          (set! (point-y new-point) min-y))
-        (when (>=  (point-y new-point) max-y)
-          (set!  (point-y new-point) max-y))
+  (define-class %simple-draggable-object% (%custom-element%)
+    (attr drag-bounds $screen-rect :type <rect>
+          :label "Boundary for region of motion")
+    (attr float-when-dragging? #t :type <boolean>
+          :label "Float above other items when dragging")
+    
+    (setup
+      (set! (slot 'max-x)
+            (- (rect-right (.drag-bounds))
+               (rect-width (.shape))))
+      (set! (slot 'max-y)
+            (- (rect-bottom (.drag-bounds))
+               (rect-height (.shape))))
+      (set! (slot 'min-x) (rect-left (.drag-bounds)))
+      (set! (slot 'min-y) (rect-top (.drag-bounds)))
+      (set! (slot 'offset-x) 0)
+      (set! (slot 'offset-y) 0))
+
+    (def (%apply-drag-offset p)
+      (let [[new-point (point (+ (point-x p) (slot 'offset-x)) 
+                              (+ (point-y p) (slot 'offset-y)))]]
+        (when (> (slot 'min-x) (point-x new-point))
+          (set! (point-x new-point) (slot 'min-x)))
+        (when (>=  (point-x new-point) (slot 'max-x))
+          (set! (point-x new-point) (slot 'max-x)))
+        (when (> (slot 'min-y)  (point-y new-point))
+          (set! (point-y new-point) (slot 'min-y)))
+        (when (>=  (point-y new-point) (slot 'max-y))
+          (set!  (point-y new-point) (slot 'max-y)))
         new-point))
-    (define (move-shape p)      
-      (set! (prop self at) p))
-    (on mouse-down (event)
+
+    (def (mouse-down event)
       (define p (event-position event))
-      (define bounds (offset-by-point (prop self shape) (prop self at)))
+      (define bounds (offset-by-point (.shape) (.at)))
       (define at (point (rect-left bounds) 
                         (rect-top bounds)))
-      (set! offset-x (- (point-x at) (point-x p)))
-      (set! offset-y (- (point-y at) (point-y p)))
+      (set! (slot 'offset-x) (- (point-x at) (point-x p)))
+      (set! (slot 'offset-y) (- (point-y at) (point-y p)))
       (grab-mouse self)
-      (send self drag-started event))
-    (on mouse-moved (event)
+      (.drag-started event))
+    (def (mouse-moved event)
       (when (mouse-grabbed-by? self)
-        (move-shape (apply-drag-offset (event-position event)))))
-    (on mouse-up (event)
+        (set! (.at) (.%apply-drag-offset (event-position event)))))
+    (def (mouse-up event)
       (when (mouse-grabbed-by? self)
         (ungrab-mouse self)
-        (send self drag-finished event)))
+        (.drag-finished event)))
 
     ;; Functions to be overridden by subclasses.
-    (on drag-started (event)
-      (when float-when-dragging?
-        (set! (prop self dragging?) #t)))
-    (on drag-finished (event)
-      (when float-when-dragging?
-        (set! (prop self dragging?) #f))))
+    (def (drag-started event)
+      (when (.float-when-dragging?)
+        (set! (.dragging?) #t)))
+    (def (drag-finished event)
+      (when (.float-when-dragging?)
+        (set! (.dragging?) #f))))
 
 
   ;;=======================================================================
@@ -77,11 +80,11 @@
     (let [[wants-cursor? #f]]
       (dynamic-wind
        (fn ()
-         (set! wants-cursor? (prop obj wants-cursor?))
-         (set! (prop obj wants-cursor?) #f))
+         (set! wants-cursor? (obj .wants-cursor?))
+         (set! (obj .wants-cursor?) #f))
        thunk
        (fn ()
-         (set! (prop obj wants-cursor?) wants-cursor?)))))
+         (set! (obj .wants-cursor?) wants-cursor?)))))
 
   (define-syntax with-dragging-disabled
     (syntax-rules ()
@@ -91,50 +94,42 @@
   ;; TODO Is this really the best way to choose a drop target?
   ;; I think the Mac probably works this way...
   (define (point-in-element? p elem)
-    (define shape (offset-by-point (prop elem shape)
+    (define shape (offset-by-point (elem .shape)
                                    (local->card elem (point 0 0))))
     ;; TODO - We really need POINT->ELEMENT.
     (point-in-shape? p shape))
   
-  (define-element-template %draggable-object%
-      [[home-point :type <point> :label "Home Point"]]
-      (%simple-draggable-object% :at home-point)
+  (define-class %draggable-object% (%simple-draggable-object%)
+    (attr home-point :type <point> :label "Home Point" :writable? #t)
+    (value at (.home-point))
 
-    ;; Allow callers to (SET! (PROP ... HOME-POINT) ...).
-    (on prop-change (name value prev veto)
-      (case name
-        [[home-point]
-         #f]
-        [else
-         (call-next-handler)]))
-
-    (on drag-finished (event)
-      (call-next-handler)
+    (def (drag-finished event)
+      (super)
       (define p (event-position event))
       (let recurse [[targets *drag-targets*]]
         (cond
          [(null? targets)
-          (send self drag-failed event)]
+          (.drag-failed event)]
          [(and (point-in-element? p (car targets))
-               (send (car targets) drag-allowed? event self))
-          (send (car targets) drag-succeeded event self)
-          (send self drag-succeeded event (car targets))]
+               ((car targets) .drag-allowed? event self))
+          ((car targets) .drag-succeeded event self)
+          (.drag-succeeded event (car targets))]
          [#t
           (recurse (cdr targets))])))
 
     ;; Helpful public functions.
-    (on go-to-point (point &key (ms 100))
+    (def (go-to-point point &key (ms 100))
       (run-deferred
        (callback
          (with-dragging-disabled self
            (animate ms (ease-in/out (slide self point)))))))
-    (on go-home ()
-      (send self go-to-point home-point))
+    (def (go-home)
+      (.go-to-point (.home-point)))
 
     ;; Functions to be overridden by subclasses.
-    (on drag-failed (event)
-      (send self go-home))
-    (on drag-succeeded (event target)
+    (def (drag-failed event)
+      (.go-home))
+    (def (drag-succeeded event target)
       (void)))
 
 
@@ -148,16 +143,19 @@
 
   (define *drag-targets* '())
 
-  (define-element-template %drag-target% [] (%custom-element%)
-    ;; Add (and remove) ourselves from the list of active drag targets.
-    (set! *drag-targets* (append! *drag-targets* (list self)))
-    (on exit ()
+  (define-class %drag-target% (%custom-element%)
+    (setup
+      ;; Add ourselves to the list of active drag targets.
+      (set! *drag-targets* (append! *drag-targets* (list self))))
+
+    (def (exit)
+      (super)
       (set! *drag-targets* (remove self *drag-targets* eq?)))
 
     ;; Functions to be overridden by subclasses.
-    (on drag-allowed? (event draggable)
+    (def (drag-allowed? event draggable)
       #f)
-    (on drag-succeeded (event draggable)
+    (def (drag-succeeded event draggable)
       (void))
     )
 
