@@ -103,7 +103,7 @@
   ;;  Element Templates
   ;;=======================================================================
 
-  (provide %title% title)
+  (provide %title% new-title)
 
   (define-class %title% (%text%)
     (attr title :writable? #t)
@@ -116,8 +116,8 @@
     (after-updating title
       (set! (.text) (cat "<h>" (string->xml (.title)) "</h>"))))
   
-  (define (title str)
-    (%title% .new :title str))
+  (define (new-title str &key (name (gensym)))
+    (%title% .new :title str :name name))
   
   
   ;;=======================================================================
@@ -205,7 +205,7 @@
   ;;  Element Templates
   ;;=======================================================================
   
-  (provide %text-button% text-button)
+  (provide %text-button% text-button new-text-button)
 
   ;;; A simple and ugly button which doesn't require loading any image
   ;;; files.  We'd obviously like something better than this.
@@ -247,4 +247,7 @@
 
   (define-node-helper text-button (at label) %text-button%)
   
+  (define (new-text-button at label action &key (name (gensym)))
+    (%text-button% .new :at at :label label :action action :name name))
+
   )
