@@ -5,6 +5,7 @@
   (provide maybe-insert-def maybe-insert-help 
            define-syntax-tagger define-syntax-tagger*
            define-syntax-taggers define-syntax-taggers*
+           define-syntax-help
            (rename process-definition tagger-process-definition)
            form-name)
         
@@ -145,6 +146,19 @@
   (define-syntax-indent define-syntax-taggers 1)
   (define-syntax-indent define-syntax-tagger 1)
         
+  ;;; DEFINE-SYNTAX help can be used to provide a help string for a top-level
+  ;;; macros that expands using SYNTAX-CASE.  But it's useless to try and
+  ;;; generate this form in a macro expansion--use DEFINE-SYNTAX-TAGGER
+  ;;; directly instead.
+  (define-syntax define-syntax-help 
+    (syntax-rules ()
+      [(_ name help) (void)]))
+  (define-syntax-tagger* (define-syntax-help stx)
+    (syntax-case stx ()
+      [(_ name help) 
+       (maybe-insert-help #'name (syntax-object->datum #'help))]))
+  (define-syntax-indent define-syntax-help 1)
+  
   (define (insert-def name type line)
     (call-5l-prim 'ScriptEditorDBInsertDef name type line))
 

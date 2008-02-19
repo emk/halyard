@@ -1,7 +1,7 @@
 (module features (lib "5l.ss" "5L")
   ;;(require (lib "drag.ss" "5L"))
   ;;(require (lib "q-and-a.ss" "5L"))
-  ;;(require (lib "animate.ss" "5L"))
+  (require (lib "animate.ss" "5L"))
   (require (file "base.ss"))
   ;;(require (lib "deprecated.ss" "5L"))
 
@@ -840,7 +840,7 @@
 
   (card features/hooks (%standard-test-card% :title "Hooks")
     (centered-text note
-      ($text16 "If you can load the script, this card is OK."))
+        ($text16 "If you can load the script, this card is OK."))
     )
 
   (assert (eq? *last-node-defined* features/hooks))
@@ -880,156 +880,131 @@
     (def (idle)
       ((.flasher-2) .maybe-update-flasher)))
   
-  #|
   ;;=======================================================================
   ;;  Animation
   ;;=======================================================================
-
+  
   (sequence features/animation)
   
-  (define-element-template %example-button% 
-      [[text :type <string>]]
-      (%basic-button% :shape (rect 0 0 150 20))
-    (on draw-button (state)
-      (draw-rectangle-outline (dc-rect) $color-black 1)
-      (draw-rectangle (dc-rect) $color-white)
-      (draw-text (center-shape-on (measure-text $login-style text) (dc-rect))
-                 $login-style
-                 text)))
+  (define-class %example-animation% (%text-button%)
+    (def (click)
+      (run-deferred
+       (fn ()
+         ((current-card) .reset-elements)
+         (.play)
+         (nap 5)
+         ((current-card) .reset-elements))))
+    )
+
+  (provide example-animation)
+  (define-node-helper example-animation (at label) %example-animation%)
   
-  (define (example-button n text func)
-    (create %example-button% 
-            :at (point 20 (+ 40 (* n 25))) 
-            :text text
-            :action (deferred-callback 
-                      (send (current-card) setup-elements)
-                      (func)
-                      (nap 5)
-                      (send (current-card) setup-elements))))
-  
-  (define-card-template %animation-demo%
-      []
-      (%standard-test-card%)
-    (on setup-elements ()
+  (define-class %animation-demo% (%standard-test-card%)
+    (def (reset-elements)
       (map delete-element-if-exists '(rect foo bar sprite)) 
-      (rectangle (rect 400 50 500 150) (color 0 0 255) :name 'rect)
-      (text (point 400 160) $splash-style "Foo" :name 'foo)
-      (text (point 400 200) $splash-style "Bar" :name 'bar)
-      (sprite (point 400 240) 
-              (prefix-and-suffix "anim/lud03_gauge_" 
-                                 (map (fn (x) (zero-pad 2 x)) (range 0 20)) 
-                                 ".png")
-              :name 'sprite))
-    (send self setup-elements))
+      (new-rectangle (rect 400 50 500 150) (color 0 0 255) :name 'rect)
+      (new-text (point 400 160) $splash-style "Foo" :name 'foo)
+      (new-text (point 400 200) $splash-style "Bar" :name 'bar)
+      (new-sprite (point 400 240) 
+        (prefix-and-suffix "anim/lud03_gauge_" 
+                           (map (fn (x) (zero-pad 2 x)) (range 0 20)) 
+                           ".png")
+        :name 'sprite))
+    (setup
+      (.reset-elements)))
   
   (card features/animation/basic
       (%animation-demo% :title "Animations - Basic")
-    (example-button
-     0
-     "Slide"
-     (callback 
-       (animate 1000 (slide @rect (point 600 50)))))
-    (example-button
-     1
-     "Reshape"
-     (callback
-       (animate 1000 (reshape @rect (rect 0 0 100 200)))))
-    (example-button
-     2
-     "Slide &amp; Reshape"
-     (callback
-       (animate 1000 
-         (slide-and-reshape @rect (center-shape-on (rect 0 0 200 200) 
-                                                   (send @rect bounds))))))
-    (example-button
-     3
-     "Play"
-     (callback 
-       (animate 1000
-         (play-sprite @sprite))))
-    (example-button
-     4
-     "Interpolate"
-     (callback 
-       (animate 1000 
-         (interpolate (@rect .color) (color 255 0 0 0))))))
-     
+    
+    (example-animation slide ((below (.title-elem) 20) "Slide")
+      (def (play) 
+        (animate 1000 (slide @rect (point 600 50)))))
+    
+    (example-animation reshape ((below (.slide) 10) "Reshape")
+      (def (play)
+        (animate 1000 (reshape @rect (rect 0 0 100 200)))))
+    
+    (example-animation slide-and-reshape ((below (.reshape) 10) 
+                                          "Slide &amp; Reshape")
+      (def (play)
+        (animate 1000 
+          (slide-and-reshape @rect (center-shape-on (rect 0 0 200 200) 
+                                                    (@rect .bounds))))))
+    
+    (example-animation play ((below (.slide-and-reshape) 10) "Play")
+      (def (play)
+        (animate 1000
+          (play-sprite @sprite))))
+    
+    (example-animation interpolate ((below (.play) 10) "Interpolate")
+      (def (play) 
+        (animate 1000 
+          (interpolate (@rect .color) (color 255 0 0 0))))))
+  
+  
   (card features/animation/combined
       (%animation-demo% :title "Animations - Combined")
-    (example-button 
-     0
-     "Ease In/Out"
-     (callback 
-       (animate 1000
-         (ease-in/out
-           (slide @rect (point 600 50))
-           (slide @foo (point 500 50))))))
-    (example-button
-     1
-     "Simultaneously"
-     (callback
-       (animate 1000
-         (slide @foo (point 370 180))
-         (slide @bar (point 430 180)))))
-    (example-button
-     2
-     "After"
-     (callback
-       (animate 1000
-         (after
-           [0.0 (slide @foo (point 740 574))]
-           [0.5 (slide @bar (point 0 574))]))))
-    (example-button
-     3
-     "Nested"
-     (callback 
-       (animate 4000
-         (play-sprite @sprite)
-         (after
-           [0.0  (slide @sprite (point 600 100))]
-           [0.25 (slide @sprite (point 600 400))]
-           [0.5  (slide @sprite (point 100 400))]
-           [0.75 (slide @sprite (point 100 100))]))))
-    (example-button
-     4
-     "Instant"
-     (callback
-       (animate 2000
-         (after
-           [0.0 (slide @foo (point 200 60))]
-           [0.5 (slide @foo (point 400 60))]
-           [0.5 (slide @foo (point 400 550))]))))
-    (example-button
-     5
-     "Do Nothing"
-     (callback
-       (animate 5000
-         (slide @sprite (point 60 400))
-         (after
-           [0.2 (play-sprite @sprite)]
-           [0.4 (do-nothing)]
-           [0.6 (play-sprite @sprite :reverse? #t)]
-           [0.8]))))
-    (example-button
-     6
-     "Immediately &amp; Finally"
-     (callback
-       (animate 2000
-         (after
-           [0.0
-            (immediately (slide @sprite (point 0 0)))
-            (slide @foo (point 100 200))]
-           [0.5
-            (finally (slide @sprite (point 200 300)))
-            (slide @foo (point 200 100))]
-           [0.75]))))
-    (example-button
-     7
-     "Quantize"
-     (callback
+    (example-animation ease-in-out ((below (.title-elem) 20) "Ease In/Out")
+      (def (play)
+        (animate 1000
+          (ease-in/out
+            (slide @rect (point 600 50))
+            (slide @foo (point 500 50))))))
+    (example-animation simultaneously ((below (.ease-in-out) 10) 
+                                       "Simultaneously")
+      (def (play)
+        (animate 1000
+          (slide @foo (point 370 180))
+          (slide @bar (point 430 180)))))
+    (example-animation after ((below (.simultaneously) 10) "After")
+      (def (play)
+        (animate 1000
+          (after
+            [0.0 (slide @foo (point 740 574))]
+            [0.5 (slide @bar (point 0 574))]))))
+    (example-animation nested ((below (.after) 10) "Nested")
+      (def (play) 
+        (animate 4000
+          (play-sprite @sprite)
+          (after
+            [0.0  (slide @sprite (point 600 100))]
+            [0.25 (slide @sprite (point 600 400))]
+            [0.5  (slide @sprite (point 100 400))]
+            [0.75 (slide @sprite (point 100 100))]))))
+    (example-animation instant ((below (.nested) 10) "Instant")
+      (def (play)
+        (animate 2000
+          (after
+            [0.0 (slide @foo (point 200 60))]
+            [0.5 (slide @foo (point 400 60))]
+            [0.5 (slide @foo (point 400 550))]))))
+    (example-animation do-nothing ((below (.instant) 10) "Do Nothing")
+      (def (play)
+        (animate 5000
+          (slide @sprite (point 60 400))
+          (after
+            [0.2 (play-sprite @sprite)]
+            [0.4 (do-nothing)]
+            [0.6 (play-sprite @sprite :reverse? #t)]
+            [0.8]))))
+    (example-animation immediately-and-finally 
+        ((below (.do-nothing) 10) "Immediately &amp; Finally")
+      (def (play)
+        (animate 2000
+          (after
+            [0.0
+             (immediately (slide @sprite (point 0 0)))
+             (slide @foo (point 100 200))]
+            [0.5
+             (finally (slide @sprite (point 200 300)))
+             (slide @foo (point 200 100))]
+            [0.75]))))
+    (example-animation quantize 
+        ((below (.immediately-and-finally) 10) "Quantize")
+      (def (play)
        (animate 2000
          (quantize 3.2
            (slide @foo (point 0 0))
-           (slide @bar (point 150 400)))))))
-  |#
+           (slide @bar (point 150 400))))))
+    )
   )

@@ -2,6 +2,7 @@
   (require (lib "nodes.ss" "5L"))
   (require-for-syntax (lib "util.ss" "5L"))
   (require (lib "tags.ss" "5L"))
+  (require (lib "indent.ss" "5L"))
 
   (provide define-node-helper)
 
@@ -42,12 +43,17 @@
     (syntax-case stx []
       [(_ helper-name (args ...) class)
        (quasisyntax/loc stx
-         (define-syntax helper-name
-           (syntax-rules ()
-             [(_ name (args ... . keys) . body)
-              (define-node name (class #,@(names->keys+names #'(args ...)) 
-                                       . keys) 
-                . body)])))]))
+         (begin
+           (define-syntax helper-name
+             (syntax-rules ()
+               [(_ name (args ... . keys) . body)
+                (define-node name (class #,@(names->keys+names #'(args ...)) 
+                                    . keys) 
+                  . body)]))
+           (define-syntax-indent helper-name 2)))]))
+  
+  (define-syntax-help define-node-helper 
+    (define-node-helper helper-name (args ...) class))
   
   (define-syntax-tagger define-node-helper
     [(_ helper-name (args ...) class)

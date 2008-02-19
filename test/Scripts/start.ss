@@ -19,7 +19,7 @@
 
 ;; This file is only included here so that the syntax highlighter knows
 ;; about it.
-;;(require (lib "animate.ss" "5L"))
+(require (lib "animate.ss" "5L"))
 
 ;; If you want to access any Quake 2 features, you need to include this
 ;; module manually.
