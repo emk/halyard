@@ -102,24 +102,16 @@
       ((point 10 580) $title-style (or #| (program-release-id) |# "")))
   )
 
-(card custom-element-demo (%black-test-card% :title "Custom elements")
-  (clickable-zone outer ((inset-rect $screen-rect 10)
-                         (callback (jump @media/qt/movies))))
-  (elem inner (%custom-element% :bounds (inset-rect $screen-rect 100))
-    (def (draw)
-      (draw-graphic (point 0 0) "mask/blend-background.png")))
-  )
-
 
 ;;=========================================================================
 ;;  Other Files in This Script
 ;;=========================================================================
 
-(require (file "ruby-objects-test.ss"))
 (require (file "media.ss"))
 (require (file "features.ss"))
+(require (file "ruby-objects-test.ss"))
 ;;(require (file "bugs.ss"))
-;;(require (file "experiments.ss"))
+(require (file "experiments.ss"))
 ;;(require "test-cases.ss")
 
 ;; only for appropriate highlighting/indentation
