@@ -93,6 +93,7 @@ ruby-style classes (F#928):
     EDIT-BOX, GEIGER-AUDIO, SINE-WAVE, VORBIS-AUDIO and MOVIE.
   * Added .INITIALIZE-SLOT as a convenient way to set up initialization for
     a bare slot.
+  * The %ANSWER% class now uses a standard DRAW method.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
   * Renamed:
