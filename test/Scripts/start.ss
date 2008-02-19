@@ -111,7 +111,7 @@
 (require (file "ruby-objects-test.ss"))
 (require (file "bugs.ss"))
 (require (file "experiments.ss"))
-;;(require "test-cases.ss")
+(require (file "test-cases.ss"))
 
 ;; only for appropriate highlighting/indentation
 ;;(require (lib "tamale-unit.ss" "5L"))

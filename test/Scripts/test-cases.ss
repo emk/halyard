@@ -1,3 +1,6 @@
+;; PORTED
+;; Some unit tests, mostly written by Robinson.  These use the
+;; semi-supported TEST-ELEMENTS form. 
 (module test-cases (lib "5l.ss" "5L")
   (require (lib "tamale-unit.ss" "5L"))
   
@@ -7,11 +10,12 @@
   ;;  Helper Functions (to be factored-out later)
   ;;=======================================================================
   
+  (define $chars-that-must-be-quoted-for-regexp
+    (string->list "()*+?[]{}.^\\|"))
+
   ;;; Given a STRING str, quote any chars that are considered "special" by
   ;;; scheme regular expressions so that we can use 'str' as a simple string
   ;;; match.
-  (define $chars-that-must-be-quoted-for-regexp
-    (string->list "()*+?[]{}.^\\|"))
   (define (quote-for-regexp str)
     (define (quote-single-for-regexp c)
       (define s (string c))
@@ -28,58 +32,17 @@
   ;;  Element Syntax test cases
   ;;=======================================================================
   
-  (define-test-case <element-syntax-test> () []
-    (test-elements "Defining an element template should succeed."
-      (define-element-template %empty-template%
-          []
-          ()))
-    (test-elements "Defining an element template with variables and a parent template should succeed"
-      (define-element-template %template-with-stuff%
-          [one two three]
-          (%element%)))
-    (test-elements "Defining an element template with improper syntax should give a syntax error."
-      ;; XXXX - The Tamale-Unit framework needs to be extended to allow us to
-      ;; add "known bug" unit tests into the system.
-      ;; This DEFINE should raise a syntax error of some sort -- something like
-      ;; "Improper syntax for define-element-template on line 234:
-      ;;  (define-element-template %invalid-syntax-template%"
-      (define-element-template %invalid-syntax-template%
-          []
-          []
-        (%element%)))
-    (test-elements "Defining an element template with improper syntax should give a syntax error (2)."
-      (define maple-syrup "ding")
-      ;; XXX - this currently raises an 'unbound variable' error, but
-      ;; it really should be raising a syntax error.
-      ;; Actually, if maple-syrup is not defined, it gives an unbound variable
-      ;; error, but once it is defined it will give a struct:exn:fail:contract
-      ;; with 'procedure application: expected procedure, given: "ding"...'
-      (assert-raises-message exn:fail? 
-        ;;"unbound variable in module in: maple-syrup"
-        "procedure application: expected procedure, given: \"ding\""
-        ;; Testing
-        (define-element-template %invalid-syntax-template-2% []
-            [[maple-syrup :type <string> :default "foo"]]
-          (%element%))))
-    (test-elements "A element template will fail if it inherits from something other than another template."
-      (define foo 4)
-      (assert-raises-message exn:fail? "Not a Ruby-style object"
-        (define-element-template %not-derived-from-ruby-object-template%
-            []
-            (foo)))))
-  
   (define-test-case <element-test> () []
     (test-elements "Creating an element with an invalid parameter should fail"
-      (define-element-template %invalid-parameter-template%
-          []
-          ())
-      (assert-raises exn:fail? (create %invalid-parameter-template% 
-                                       :name 'foo :zarqan 1))))
+      (define-class %invalid-parameter-template% (%invisible-element%)
+        (assert-raises exn:fail? (%invalid-parameter-template% .new
+                                   :name 'foo :zarqan 1))))
+    )
   
   (card test-cases/element-test
       (%test-suite%
-       :tests (list <element-syntax-test>
-                    <element-test>)))
+       :tests (list <element-test>)))
+  
   
   ;;=======================================================================
   ;;  Custom Element test cases
@@ -90,14 +53,11 @@
   
   (define-test-case <custom-element-test> () []
     (test-elements "Creating a %custom-element%"
-      (create %custom-element%
-              :shape (rect 0 0 10 10)))
+      (%custom-element% .new :bounds (rect 0 0 10 10)))
     (test-elements "Setting the shape of a %custom-element%"
       (define new-shape (rect 0 0 5 5))
-      (define foo (create %custom-element%
-                          :shape (rect 0 0 10 10)))
+      (define foo (%custom-element% .new :bounds (rect 0 0 10 10)))
       (set! (foo .shape) new-shape)
-      
       ;; The shape should be correctly updated.
       (assert-equals new-shape (foo .shape)))
     (test-elements 
@@ -105,22 +65,13 @@
       (define original-shape (rect 10 10 0 0))
       (define elem-name 'foo-negative-shape-error)
       (define expected-error
-        (quote-for-regexp
-         (cat "%custom-element%: " (test-elements-full-name elem-name)
-              " may not have a negative-sized shape: "
-              original-shape ".")))
+        (quote-for-regexp (cat "has negative size")))
       
       (assert-raises-message exn:fail? expected-error
-        (create %custom-element%
-                :name elem-name
-                :shape original-shape))
-      ;; The element will be created, but should have zero size.
-      (assert-equals (rect 0 0 0 0) 
-                     (@temporary-parent/foo-negative-shape-error .shape)))
+        (%custom-element% .new :name elem-name :bounds original-shape)))
     (test-elements "SET!ing a %custom-element% to a negative-shape should fail"
       (define original-shape (rect 0 0 10 10))
-      (define foo (create %custom-element%
-                          :shape original-shape))
+      (define foo (%custom-element% .new :bounds original-shape))
       
       ;; This should raise a 'veto' exception (but I don't think we have 
       ;; specified such an exception type).
@@ -147,7 +98,7 @@
   
   (define-test-case <node-full-name-test> () []
     (test "node-full-name should succeed on a running node or node-path"
-          (define hyacinth (box (rect 0 0 10 10) :name 'rose))
+          (define hyacinth (new-box (rect 0 0 10 10) :name 'rose))
           (node-full-name hyacinth)
           (node-full-name @rose))
     (test "node-full-name should succeed on a static node"
@@ -188,55 +139,46 @@
   (card test-cases/next-test-card
       (%test-suite% :tests '()))
   
+  
   ;;=======================================================================
   ;;  Browser test cases
   ;;=======================================================================
   
-  (define-element-template %test-browser%
-      [[rect :new-default (rect 0 0 100 100)]]
-      (%browser%))
+  (define-class %test-browser% (%browser%)
+    (default rect (rect 0 0 100 100)))
   
   (define (browser-native-path path)
     (make-native-path "HTML" path))
   
   (define-test-case <browser-simple-test> () []
     (test-elements "The browser should load with default values"
-      (create %test-browser%))
+      (%test-browser% .new))
     (test-elements "The browser should load a local HTML page"
-      (create %test-browser%
-              :path "sample.html"))
+      (%test-browser% .new :path "sample.html"))
     (test-elements "The browser should load 'about:blank'"
-      (create %test-browser%
-              :path "about:blank"))
+      (%test-browser% .new :path "about:blank"))
     (test-elements 
         "The browser should fail to load a non-existent local HTML page"
       (define non-existent-file "foo-bar-not-here.html")
           (assert-raises-message exn:fail? 
             (quote-for-regexp
              (cat "No such file: " (browser-native-path non-existent-file)))
-            (create %test-browser%
-                    :path non-existent-file)))
+            (%test-browser% .new :path non-existent-file)))
     (test-elements "The browser should load a local HTML page using file:///"
-          (create %test-browser%
-                  :path "file:///sample.html"))
+          (%test-browser% .new :path "file:///sample.html"))
     (test-elements "The browser should load an external HTML page via http"
-          (create %test-browser%
-                  :path "http://www.google.com"))
+          (%test-browser% .new :path "http://www.google.com"))
     (test-elements "The browser should load an ftp site"
-          (create %test-browser%
-                  :path "ftp://ftp.dartmouth.edu/"))
+          (%test-browser% .new :path "ftp://ftp.dartmouth.edu/"))
     ;; This page doesn't throw a Tamale error, but IE doesn't seem to be able
     ;; to work with the gopher protocol.
     (test-elements "The browser should load a gopher site"
-          (create %test-browser%
-                  :path "gopher://home.jumpjet.info/"))
+          (%test-browser% .new :path "gopher://home.jumpjet.info/"))
     (test-elements 
      "The browser should load URLs with ampersands (&amp;) in them"
-          (create %test-browser%
-                  :path "http://www.google.com/&foo=bar"))
+          (%test-browser% .new :path "http://www.google.com/&foo=bar"))
     (test-elements "The browser should accept a zero-sized rect"
-          (create %test-browser%
-                  :rect (rect 0 0 0 0))))
+          (%test-browser% .new :rect (rect 0 0 0 0))))
   
   (card test-cases/native-browser-tests
       (%test-suite%
@@ -246,9 +188,7 @@
     ;;; NOTE: the default path of "about:blank" appears to hang the
     ;;; fallback browser.
     (test-elements "The fallback browser should load local files"
-      (create %test-browser%
-              :fallback? #t
-              :path "sample.html")))
+      (%test-browser% .new :fallback? #t :path "sample.html")))
   
   ;;; NOTE: 
   (card test-cases/integrated-browser-tests
@@ -261,18 +201,14 @@
   
   (define-test-case <graphic-element-test> () []
     (test-elements "Creating a non-alpha %graphic%"
-      (create %graphic%
-              :path "but40.png"))
+      (%graphic% .new :at (point 0 0) :path "but40.png"))
     (test-elements "Creating an alpha %graphic%"
-      (create %graphic%
-              :alpha? #t
-              :path "lbul.png"))
+      (%graphic% .new :at (point 0 0) :alpha? #t :path "lbul.png"))
     (test-elements "Setting the path should change graphic and shape"
       (define orig-graphic "but40.png")
       (define new-graphic "but70.png")
       (define new-graphic-shape (measure-graphic new-graphic))
-      (define foo (create %graphic%
-                          :path orig-graphic))
+      (define foo (%graphic% .new :at (point 0 0) :path orig-graphic))
       (set! (foo .path) new-graphic)
       
       ;; The path should be correctly updated.
