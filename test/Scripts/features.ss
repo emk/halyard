@@ -709,7 +709,6 @@
           (super)])))
     )
 
-#|
   ;;=======================================================================
   ;;  State DB Listeners
   ;;=======================================================================
@@ -717,19 +716,21 @@
   (card features/state-db-listeners
       (%standard-test-card% :title "State DB Listeners")
 
-    ;; This listener fires every time the clock ticks, and updates
-    ;; our blinker state.
-    (define-state-db-listener (blink state-db)
-      (set! (state-db '/blinker/on?)
-            (even? (state-db '/system/clock/seconds))))
-  
-    ;; This listener fires every time the blinker state changes, and redraws
-    ;; the screen.
-    (define-state-db-listener (draw state-db)
-      (draw-rectangle (rect 10 10 50 50)
-                      (if (state-db '/blinker/on?)
-                          (color 255 0 0)
-                          (color 255 255 255))))
+    (run
+      ;; This listener fires every time the clock ticks, and updates
+      ;; our blinker state.
+      (define-state-db-listener (blink state-db)
+        (set! (state-db '/blinker/on?)
+              (even? (state-db '/system/clock/seconds))))
+      
+      ;; This listener fires every time the blinker state changes, and redraws
+      ;; the screen.
+      (define-state-db-listener (draw state-db)
+        (draw-rectangle (rect 10 10 50 50)
+                        (if (state-db '/blinker/on?)
+                            (color 255 0 0)
+                            (color 255 255 255))))
+      )
   
     )
 
@@ -739,84 +740,89 @@
   
   (card features/animated-overlay (%standard-test-card%
                                    :title "Animated Overlay")
+
+    (centered-text instructions
+      ($state-db-style
+       (cat "space = Update needle\n'j' = Move down\n"
+            "'k' = Move up\n'h' = Move left\n" 
+            "'l' = Move right")))
   
-    (define motion-step 10)
-  
-    (define left-key #\h)
-    (define right-key #\l)
-    (define up-key #\k)
-    (define down-key #\j)
-    (define index-key #\space)
-  
-    (define (index->string n)
+    (def (index->string n)
       (if (< n 10)
           (cat "0" n)
           (cat n)))
   
     ;; generate a list of png files for the ludlum meter
-    (define (ludlum-png-files)
+    (def (ludlum-png-files)
       (let recurse [[index 0]]
         (if (<= index 20)
-            (cons (cat "anim/lud03_gauge_" (index->string index) ".png")
+            (cons (cat "anim/lud03_gauge_" (.index->string index) ".png")
                   (recurse (+ index 1)))
             '())))
 
-    (define max-index 20)
-    (define next-index 0)
-    (define (get-index)
-      (let [[result next-index]]
-        (set! next-index (modulo (+ next-index 1) (+ max-index 1)))
+    (attr max-index 20 :writable? #t)
+    (attr next-index 0 :writable? #t)
+    (def (get-index)
+      (let [[result (.next-index)]]
+        (set! (.next-index) (modulo (+ (.next-index) 1) (+ (.max-index) 1)))
         result))
 
-    (define offset-x 10)
-    (define max-x (- (rect-width $screen-rect) (+ 185 offset-x)))
-    (define current-x 0)
-    (define (get-x move)
-      (set! current-x (modulo (+ current-x move) (+ max-x 1)))
-      (+ offset-x current-x))
+    (define $original-offset-x 10)
+    (attr offset-x $original-offset-x :writable? #t)
+    (attr max-x (- (rect-width $screen-rect) (+ 185 $original-offset-x))
+      :writable? #t)
+    (attr current-x 0 :writable? #t)
+    (def (get-x move)
+      (set! (.current-x) (modulo (+ (.current-x) move) (+ (.max-x) 1)))
+      (+ (.offset-x) (.current-x)))
 
-    (define offset-y 10)
-    (define max-y (- (rect-height $screen-rect) (+ 108 offset-y)))
-    (define current-y 0)
-    (define (get-y move)
-      (set! current-y (modulo (+ current-y move) (+ max-y 1)))
-      (+ offset-y current-y))
+    (define $original-offset-y 10)
+    (attr offset-y $original-offset-y :writable? #t)
+    (attr max-y (- (rect-width $screen-rect) (+ 185 $original-offset-y))
+       :writable? #t)
+    (attr current-y 0 :writable? #t)
+    (def (get-y move)
+      (set! (.current-y) (modulo (+ (.current-y) move) (+ (.max-y) 1)))
+      (+ (.offset-y) (.current-y)))    
+
+    
+    (define $motion-step 10)
   
-    (set! (state-db '/animated-overlay/x) (get-x 0))
-    (set! (state-db '/animated-overlay/y) (get-y 0))
-    (set! (state-db '/animated-overlay/index) (get-index))
-  
-    (center-text $state-db-style (dc-rect)
-                 (cat "space = Update needle\n'j' = Move down\n"
-                      "'k' = Move up\n'h' = Move left\n" 
-                      "'l' = Move right"))
+    (define $left-key #\h)
+    (define $right-key #\l)
+    (define $up-key #\k)
+    (define $down-key #\j)
+    (define $index-key #\space)
 
-    (create %animated-graphic%
-            :name 'meter
-            :at (point 0 0)
-            :state-path '/animated-overlay
-            :graphics (ludlum-png-files))
-
-    (on char (event)
+    (def (char event)
       (let [[c (event-character event)]]
-        (cond [(equals? c index-key)
-               (set! (state-db '/animated-overlay/index) (get-index))]
-              [(equals? c up-key)
+        (cond [(equals? c $index-key)
+               (set! (state-db '/animated-overlay/index) (.get-index))]
+              [(equals? c $up-key)
                (set! (state-db '/animated-overlay/y)
-                     (get-y (- motion-step)))]
-              [(equals? c down-key)
+                     (.get-y (- $motion-step)))]
+              [(equals? c $down-key)
                (set! (state-db '/animated-overlay/y)
-                     (get-y motion-step))]
-              [(equals? c left-key)
+                     (.get-y $motion-step))]
+              [(equals? c $left-key)
                (set! (state-db '/animated-overlay/x)
-                     (get-x (- motion-step)))]
-              [(equals? c right-key)
+                     (.get-x (- $motion-step)))]
+              [(equals? c $right-key)
                (set! (state-db '/animated-overlay/x)
-                     (get-x motion-step))]
+                     (.get-x $motion-step))]
               [else
-               (call-next-handler)])))
+               (super)])))
 
-
+  
+    (run
+      (set! (state-db '/animated-overlay/x) (.get-x 0))
+      (set! (state-db '/animated-overlay/y) (.get-y 0))
+      (set! (state-db '/animated-overlay/index) (.get-index))
+      
+      (%animated-graphic% .new :name 'meter
+                               :at (point 0 0)
+                               :state-path '/animated-overlay
+                               :graphics (.ludlum-png-files)))
     )
 
   ;;=======================================================================
@@ -833,7 +839,8 @@
                         (set! *last-node-defined* node)))
 
   (card features/hooks (%standard-test-card% :title "Hooks")
-    ;; Nothing to do for now.
+    (centered-text note
+      ($text16 "If you can load the script, this card is OK."))
     )
 
   (assert (eq? *last-node-defined* features/hooks))
@@ -843,33 +850,37 @@
   ;;  Idle Events
   ;;=======================================================================
 
-  (defclass <flasher> ()
-    (on? :initvalue #f)
-    (last-updated :initializer current-seconds)
-    rect)
+  (define-class %flasher% (%custom-element%)
+    (value shape (shape 50 50))
+    
+    (attr on? #f :writable? #t)
+    (after-updating on? (.invalidate))
+    
+    (attr last-updated (current-seconds) :writable? #t)
+    
+    (def (draw)
+      (draw-rectangle (dc-rect) (color #x00 #x00 (if (.on?) #xFF #x00))))
+    
+    (def (maybe-update-flasher)
+      (define now (current-seconds))
+      (when (> now (.last-updated))
+        (set! (.last-updated) now)
+        (set! (.on?) (not (.on?))))))
 
-  (define (flasher-idle flasher)
-    (define now (current-seconds))
-    (define on? (flasher-on? flasher))
-    (when (> now (flasher-last-updated flasher))
-      (draw-rectangle (flasher-rect flasher)
-                      (color #x00 #x00 (if on? #xFF #x00)))
-      (set! (flasher-last-updated flasher) now)
-      (set! (flasher-on? flasher) (not on?))))
-
-  (define-element-template %flasher% [rect] ()
-    (define flasher (make <flasher> :rect rect))
-    (on idle (event)
-      (flasher-idle flasher)))
-
+  ;; Test IDLE handlers on both elements and cards.
   (card features/idle-events
       (%standard-test-card% :title "Idle Events (Two Flashing Lights)")
-    (create %flasher% :rect (rect 200 100 250 150))
-
-    (define flasher (make <flasher> :rect (rect 100 100 150 150)))
-    (on idle (event)
-      (flasher-idle flasher)))
-
+ 
+    (elem flasher-1 (%flasher% :at (point 200 100))
+      (def (idle)
+        (.maybe-update-flasher)))
+    
+    (elem flasher-2 (%flasher% :at (point 100 100)))
+ 
+    (def (idle)
+      ((.flasher-2) .maybe-update-flasher)))
+  
+  #|
   ;;=======================================================================
   ;;  Animation
   ;;=======================================================================
