@@ -237,7 +237,7 @@
   ;; TODO - We used to format this like one of the transition test cards.
   ;; Maybe we can factor out a common "big black text centered one a white
   ;; screen" template and use it for both?
-  (define-class %audio-stream-card% (%white-test-card%)
+  (define-class %audio-stream-card% (%fancy-white-test-card%)
     (elem left (%volume-control%
                 :at (point (- (rect-right $screen-rect) 26)
                            (- (rect-bottom $screen-rect) 46))

@@ -1,7 +1,7 @@
 ;; PORTED
 (module features (lib "5l.ss" "5L")
   (require (lib "drag.ss" "5L"))
-  ;;(require (lib "q-and-a.ss" "5L"))
+  (require (lib "q-and-a.ss" "5L"))
   (require (lib "animate.ss" "5L"))
   (require (file "base.ss"))
   ;;(require (lib "deprecated.ss" "5L"))
@@ -426,6 +426,42 @@
                             :title "Simple\nDrag and Drop")
     (elem target (%lens-box% :at (point 10 10)))
     (elem lens (%movable-lens% :home-point (point 350 300))))
+
+
+  (define-class %color-answer-box% (%answer%)
+    (attr color :type <color>)
+    (value shape (shape 100 100))
+
+    (def (draw)
+      (draw-rectangle (dc-rect) (.color))
+      (define border-color
+        (case (.answer-state)
+          [[correct]   (color 255 255 0)]
+          [[incorrect] (color 255 0 0)]
+          [[normal]    (color 0 0 0 0)]
+          [[active]    (color 128 128 128)]
+          [[pressed]   (color 0 0 0)]
+          [[disabled]  (color 128 128 128)]))
+      (draw-rectangle-outline (dc-rect) border-color 2))
+    )
+
+  (card features/q-and-a (%standard-test-card% :title "Which box is green?")
+    (elem question (%question% :at (below (.title-elem) 20)
+                               :bounds (shape 0 0) ; Will recalculate.
+                               :overlay? #f)
+      (elem green-box
+          (%color-answer-box% :at (point 0 0) :color (color 0 255 0)
+                              :correct? #t))
+      (elem blue-box
+          (%color-answer-box% :at (to-the-right-of (.green-box) 10)
+                              :color (color 0 0 255)))
+      (setup
+        (.fit-to-children!)))
+    (text result ((below (.question) 10) $text16 "Pick one."))
+    (def (correct-answer answer)
+      (set! ((.result) .text) "That's right!"))
+    (def (incorrect-answer answer)
+      (set! ((.result) .text) "Nope.")))
 
   (card features/geometric (%white-test-card% :title "Geometric primitives")
     (setup

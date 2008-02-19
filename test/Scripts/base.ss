@@ -125,7 +125,9 @@
   ;;=======================================================================
   
   (provide %test-card% %standard-test-card% %black-test-card%
-           %white-test-card%)
+           %white-test-card%
+           %centered-text% centered-text new-centered-text
+           %fancy-white-test-card%)
 
   (define-class %test-card% (%card%)
     (attr title :type <string> :writable? #t)
@@ -150,7 +152,23 @@
   (define-class %white-test-card% (%test-card%)
     (setup
       (draw-white-background)))
+
+  (define-class %centered-text% (%text%)
+    (default at (point 0 0))
+    (setup
+      (.center-on-parent!)))
+
+  (define-node-helper centered-text (style text) %centered-text%)
+
+  (define (new-centered-text style text)
+    (%centered-text% .new :style style :text text))
   
+  (define-class %fancy-white-test-card% (%card%)
+    (attr title :type <string>)
+    (centered-text title-elem ($audio-stream-style (.title)))
+    (setup
+      (draw-white-background)))
+
 
   ;;=======================================================================
   ;;  Primitive Layout
@@ -187,8 +205,7 @@
   ;;  Element Templates
   ;;=======================================================================
   
-  (provide %text-button% text-button
-           %centered-text% centered-text new-centered-text)
+  (provide %text-button% text-button)
 
   ;;; A simple and ugly button which doesn't require loading any image
   ;;; files.  We'd obviously like something better than this.
@@ -230,13 +247,4 @@
 
   (define-node-helper text-button (at label) %text-button%)
   
-  (define-class %centered-text% (%text%)
-    (default at (point 0 0))
-    (setup
-      (.center-on-parent!)))
-
-  (define-node-helper centered-text (style text) %centered-text%)
-
-  (define (new-centered-text style text)
-    (%centered-text% .new :style style :text text))
   )
