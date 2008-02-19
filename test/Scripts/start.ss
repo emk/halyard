@@ -33,7 +33,6 @@
 ;;(require (lib "updater.ss" "5L"))
 
 (require "base.ss")
-;;(require "countdown.ss")
 
 
 ;; Other non-Runtime files we'll be using appear further down in the script.
@@ -184,21 +183,6 @@
    (cat "An error occured while checking for or trying to apply updates: "
         *error-message*))
   (draw-menu-item 'ok 80 "OK" index))
-
-
-;;=========================================================================
-;;  countdown test card
-;;=========================================================================
-
-(card test-countdown ()
-  (draw-white-background)
-  (countdown 'countdown
-             $screen-rect 
-             (list 0 0 10) $transition-style
-             (callback 
-               (delete-element @countdown)
-               (center-text $transition-style (dc-rect) 
-                            "Your time is up!"))))
 
 
 ;;=========================================================================
