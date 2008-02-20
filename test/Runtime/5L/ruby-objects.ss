@@ -3,6 +3,7 @@
   (require-for-syntax (lib "capture.ss" "5L"))
   (require (lib "util.ss" "5L"))
   (require-for-syntax (lib "util.ss" "5L"))
+  (require-for-syntax (lib "syntax-util.ss" "5L"))
   (require (lib "begin-var.ss" "5L"))
 
   (provide ruby-object? make-ruby-instance-of?-predicate
@@ -132,45 +133,55 @@
     (inc! *generation-id*)
     (hash-table-put! (ruby-class-methods object) name new-method))
 
-  (define-syntax define-class
-    (syntax-rules ()
+  (define-syntax (define-class stx)
+    (syntax-case stx ()
       [(_ klass () . body)
-       (define-class klass (%object%) . body)]
+       (quasisyntax/loc stx
+         (define-class klass (%object%) . body))]
       [(_ klass (super) . body)
        (begin
-         ;; We want to be able to define "class" methods on KLASS.  But
-         ;; since we only support instance methods, we need to make KLASS an
-         ;; instance of a "metaclass".  Metaclasses are themselves classes.
-         (define metaclass
-           (new-ruby-class
-             :name (symcat "metaclass:" 'klass)   ; name
-             :klass %class%                       ; klass
-             ;; The initialization protocol doesn't apply to metaclasses.
-             :initialized? #t
-             ;; The metaclass of %object% inherits from %class%.  Other
-             ;; metaclasses inherit from SUPER's metaclass, so that class
-             ;; methods are visible on a class and all its subclasses.  For
-             ;; a full picture of what's going on here, see
-             ;; ruby-objects.png.
-             :superclass (if super
-                           (ruby-object-class super)
-                           %class%)))
-         (define klass
-           (new-ruby-class
-             :name 'klass
-             :klass metaclass
-             :superclass super))
-         ;; Call our initialize method to make sure any attribute
-         ;; initializers get run.  This allows classes to have slots,
-         ;; aiding metaprogrammers.  (%object% and %initializer-keywords%
-         ;; are declared before we can safely call initialize, so we skip
-         ;; this step for them.)
-         (unless (or (eq? 'klass '%object%)
-                     (eq? 'klass '%initializer-keywords%))
-           (send% klass 'initialize))
-         (set! (ruby-object-initialized? klass) #t)
-         (with-instance klass . body)
-         klass)]))
+         (check-syntax-is-symbol 'define-class #'klass
+                                 "Class name must be a symbol")
+         (unless (eq? '%object% (syntax-object->datum #'klass))
+           (check-syntax-is-symbol 'define-class #'super
+                                   "Superclass must be a symbol"))
+
+         (quasisyntax/loc stx
+           (begin
+             ;; We want to be able to define "class" methods on KLASS.  But
+             ;; since we only support instance methods, we need to make
+             ;; KLASS an instance of a "metaclass".  Metaclasses are
+             ;; themselves classes.
+             (define metaclass
+               (new-ruby-class
+                :name (symcat "metaclass:" 'klass)   ; name
+                :klass %class%                       ; klass
+                ;; The initialization protocol doesn't apply to metaclasses.
+                :initialized? #t
+                ;; The metaclass of %object% inherits from %class%.  Other
+                ;; metaclasses inherit from SUPER's metaclass, so that
+                ;; class methods are visible on a class and all its
+                ;; subclasses.  For a full picture of what's going on here,
+                ;; see ruby-objects.png.
+                :superclass (if super
+                                (ruby-object-class super)
+                                %class%)))
+             (define klass
+               (new-ruby-class
+                :name 'klass
+                :klass metaclass
+                :superclass super))
+             ;; Call our initialize method to make sure any attribute
+             ;; initializers get run.  This allows classes to have slots,
+             ;; aiding metaprogrammers.  (%object% and
+             ;; %initializer-keywords% are declared before we can safely
+             ;; call initialize, so we skip this step for them.)
+             (unless (or (eq? 'klass '%object%)
+                         (eq? 'klass '%initializer-keywords%))
+               (send% klass 'initialize))
+             (set! (ruby-object-initialized? klass) #t)
+             (with-instance klass . body)
+             klass)))]))
 
   (define-syntax (method~ stx)
     (syntax-case stx ()

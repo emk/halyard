@@ -6,6 +6,7 @@
   (require (lib "util.ss" "5L"))
   (provide (all-from (lib "util.ss" "5L")))
   (require-for-syntax (lib "util.ss" "5L"))
+  (require-for-syntax (lib "syntax-util.ss" "5L"))
   (require (lib "hook.ss" "5L"))
 
   ;; Get begin/var.
@@ -270,20 +271,25 @@
       [(_ . rest)
        (raise-syntax-error 'define-node "Malformed keyword list" #'rest)]))
 
-  (define-syntax define-node-internal
-    (syntax-rules ()
+  (define-syntax (define-node-internal stx)
+    (syntax-case stx ()
       [(_ name (extended . bindings) . body)
-       (define-class name (extended)
-         ;; HACK - Hygiene problems with SELF, so we use the explicit
-         ;; name everywhere.
-         (name .process-static-node-name 'name)
-         (name .values-with-instance-parent
-               (thunked-alist<-bindings . bindings))
-         ;; This WITH-INSTANCE exists only to make sure that SELF gets
-         ;; rebound in a way that's visible to BODY.  Yay hygienic
-         ;; macros.
-         (with-instance name . body)
-         (name .register))]))
+       (begin
+         (check-syntax-is-symbol 'define-node #'name "Name must be a symbol")
+         (check-syntax-is-symbol 'define-node #'extended
+                                 "Superclass must be a symbol")
+         (quasisyntax/loc stx
+           (define-class name (extended)
+             ;; HACK - Hygiene problems with SELF, so we use the explicit
+             ;; name everywhere.
+             (name .process-static-node-name 'name)
+             (name .values-with-instance-parent
+                   (thunked-alist<-bindings . bindings))
+             ;; This WITH-INSTANCE exists only to make sure that SELF gets
+             ;; rebound in a way that's visible to BODY.  Yay hygienic
+             ;; macros.
+             (with-instance name . body)
+             (name .register))))]))
 
   (define-syntax (define-node stx)
     (syntax-case stx ()
@@ -293,7 +299,7 @@
       ;; it out.
       [(_ name bindings . body)
        ;; Do we see a SELF in our scope?
-       (identifier-binding (make-self #'name)) 
+       (identifier-binding (make-self #'name))
        (quasisyntax/loc stx
          ;; The outermost LET allows us to hide NAME from
          ;; everybody, so that we don't shadow uses of NAME in either
