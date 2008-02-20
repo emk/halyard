@@ -40,16 +40,18 @@ class WordCount
   def initialize filenames
     @files = []
 
-    args = filenames.map {|f| f.gsub(/ /, "\\ ") }.join(" ")
-    text = `wc -l #{args}`
-    text.each_line do |line|
-      line.chomp!
-      unless line =~ /^ *(\d+) +(.+)$/
-        raise "Malformed wc output: #{line}"
+    unless filenames.empty?
+      args = filenames.map {|f| f.gsub(/ /, "\\ ") }.join(" ")
+      text = `wc -l #{args}`
+      text.each_line do |line|
+        line.chomp!
+        unless line =~ /^ *(\d+) +(.+)$/
+          raise "Malformed wc output: #{line}"
+        end
+        next if $2 == "total"
+        
+        files << FileInfo.new($1.to_i, $2)
       end
-      next if $2 == "total"
-      
-      files << FileInfo.new($1.to_i, $2)
     end
   end
 

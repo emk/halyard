@@ -1,3 +1,7 @@
+;; Quake 2 game engine interface.  Note that this code doesn't really use
+;; the new node system all that well--it's based on an older model of doing
+;; things, and hasn't been fully integrated into the newer parts of the
+;; engine.
 (module quake2 (lib "5l.ss" "5L")
 
   (provide quake2-driver set-quake2-driver!
@@ -92,48 +96,49 @@
         (jump (@* (substring card-name 1 (string-length card-name))))
         (jump (find-card card-name))))
   
-  (define-group-template %quake2-level%
-      [[game :type <string> :label "Game directory"]
-       [level :type <string> :label "Level name"]]
-      ()
+  (define-class %quake2-level% (%card-group%)
+    (attr game :type <string> :label "Game directory")
+    (attr level :type <string> :label "Level name")
 
-    ;; Make sure the necessary directories exist.
-    (foreach [dir (list game "baseq2")]
-      (unless (directory-exists? (build-path (current-directory) dir))
-        (error (cat "Missing Quake 2 game directory: " dir))))
+    (setup
+      ;; Make sure the necessary directories exist.
+      (foreach [dir (list (.game) "baseq2")]
+        (unless (directory-exists? (build-path (current-directory) dir))
+          (error (cat "Missing Quake 2 game directory: " dir))))
 
-    ;; Boot the Quake 2 game engine (if it hasn't been launched already).
-    (quake2-launch game)
-
-    ;; Initialize /quake2 state-db variables to plausible values.
-    (set! (state-db '/quake2/weapon) "none")
-    (set! (state-db '/quake2/rad/meter-flux) '())
-    (set! (state-db '/quake2/rad/body-dose) '(0.0 0.0 0.0 0.0 0.0))
-
-    ;; Define any universally useful console commands.
-    (define-quake2-command (jump card-name)
-      (quake2-jump-helper card-name))
+      ;; Boot the Quake 2 game engine (if it hasn't been launched already).
+      (quake2-launch (.game))
+      
+      ;; Initialize /quake2 state-db variables to plausible values.
+      (set! (state-db '/quake2/weapon) "none")
+      (set! (state-db '/quake2/rad/meter-flux) '())
+      (set! (state-db '/quake2/rad/body-dose) '(0.0 0.0 0.0 0.0 0.0))
+      
+      ;; Define any universally useful console commands.
+      (define-quake2-command (jump card-name)
+        (quake2-jump-helper card-name)))
   
     ;; Next, give the groups based on this template a chance to initialize.
     ;; Once they've done any extra initialization, *then* we can respond
     ;; to setup-finished and actually load the level.
-    (on setup-finished ()
-      (call-next-handler)
+    (def (setup-finished)
+      (super)
       (quake2-command "killserver")
-      (quake2-background-load-command (cat "map " level))
+      (quake2-background-load-command (cat "map " (.level)))
       (set! (quake2-should-run-in-background?) #t))
 
     ;; When exiting this group, shut down Quake 2.
-    (on exit ()
-      (call-next-handler)
+    (def (exit)
+      (super)
       (quake2-command "killserver")
       (set! (quake2-should-run-in-background?) #f))
     )
 
-  (define-card-template %quake2-level-run% [] ()
-    (quake2-show)
-    (on exit ()
-      (call-next-handler)
+  (define-class %quake2-level-run% (%card%)
+    (setup
+      (quake2-show))
+    (def (exit)
+      (super)
       (quake2-hide)))
 
   )
