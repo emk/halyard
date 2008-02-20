@@ -123,7 +123,7 @@ namespace {
 //  ScriptTextCtrl Definition & Methods
 //=========================================================================
 
-class ScriptTextCtrl : public wxStyledTextCtrl, public TReloadNotified {
+class ScriptTextCtrl : public wxStyledTextCtrl {
     enum {
         /// The margin where we put our line numbers.
         MARGIN_LINENUM = 0,
@@ -139,8 +139,6 @@ class ScriptTextCtrl : public wxStyledTextCtrl, public TReloadNotified {
         /// The area within which to search.
         SPAN_SEARCH_LIMITS
     };
-
-    typedef std::vector<FIVEL_NS TScriptIdentifier> IdentifierList;
 
     /// A range of locations to search.  This is split into two
     /// parts to accomodate wrap.
@@ -165,6 +163,7 @@ class ScriptTextCtrl : public wxStyledTextCtrl, public TReloadNotified {
 public:    
     ScriptTextCtrl(wxWindow *parent, wxWindowID id = -1, int font_size = 10);
     void GotoLineEnsureVisible(int line);
+    void UpdateIdentifierInformation();
 
 protected:
     void SetUpTextStyles(int size);
@@ -184,8 +183,6 @@ private:
     bool BracesMatch(char brace1, char brace2);
     int BetterBraceMatch(int pos);
 
-    void NotifyReloadScriptSucceeded();
-    void UpdateIdentifierInformation();
     std::string GetKeywords(TScriptIdentifier::Type type);
     IdentifierList GetCompletions(const std::string &partial);
 
@@ -527,14 +524,9 @@ int ScriptTextCtrl::BetterBraceMatch(int pos) {
     return wxSTC_INVALID_POSITION;
 }
 
-void ScriptTextCtrl::NotifyReloadScriptSucceeded() {
-    UpdateIdentifierInformation();
-}
-
 void ScriptTextCtrl::UpdateIdentifierInformation() {
-    // If possible, fetch an identifier list.
-    if (TInterpreter::HaveInstance())
-        mIdentifiers = TInterpreter::GetInstance()->GetKnownIdentifiers();
+    // Fetch the identifier list provided by the ScriptEditor.
+    mIdentifiers = ScriptEditor::GetIdentifiers();
 
     // Install keywords.
     SetKeyWords(0, GetKeywords(TScriptIdentifier::KEYWORD).c_str());
@@ -546,11 +538,6 @@ void ScriptTextCtrl::UpdateIdentifierInformation() {
 
     // Recolourize the document with new keywords.
     Colourise(0, GetTextLength());
-
-    // Try to update our definition database.
-    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
-    if (db)
-        db->UpdateDatabase();
 }
 
 std::string ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
@@ -566,8 +553,7 @@ std::string ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
     return result;
 }
 
-ScriptTextCtrl::IdentifierList
-ScriptTextCtrl::GetCompletions(const std::string &partial) {
+IdentifierList ScriptTextCtrl::GetCompletions(const std::string &partial) {
     IdentifierList result;
     IdentifierList::iterator i = mIdentifiers.begin();
     for (; i != mIdentifiers.end(); ++i) {
@@ -2000,6 +1986,11 @@ void ScriptEditor::HighlightFile(const wxString &path) {
     sFrame->HighlightFileInternal(path);
 }
 
+IdentifierList ScriptEditor::GetIdentifiers() {
+    ASSERT(sFrame);
+    return sFrame->mIdentifiers;
+}
+
 ScriptEditor::ScriptEditor()
     : SashFrame(wxGetApp().GetStageFrame(), -1,
                 "Script Editor - " + wxGetApp().GetAppName(),
@@ -2168,6 +2159,9 @@ ScriptEditor::ScriptEditor()
     SetSize(wxSize(950, 650));
     LoadFrameLayout();
 
+    // Update our identifier database for syntax highlighting and indentation
+    UpdateIdentifierInformation();
+
     // If we have a Tamale program already, open up the start script.
     if (TInterpreterManager::HaveInstance() &&
         TInterpreterManager::GetInstance()->InterpreterHasBegun())
@@ -2274,6 +2268,30 @@ void ScriptEditor::ShowDefinitionInternal(const wxString &identifier) {
 
 void ScriptEditor::HighlightFileInternal(const wxString &path) {
     mTree->HighlightFile(path);
+}
+
+void ScriptEditor::NotifyReloadScriptSucceeded() {
+    UpdateIdentifierInformation();
+}
+
+void ScriptEditor::UpdateIdentifierInformation() {
+    // If possible, fetch an identifier list.
+    if (TInterpreter::HaveInstance())
+        mIdentifiers = TInterpreter::GetInstance()->GetKnownIdentifiers();
+
+    // Try to update our definition database.
+    ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
+    if (db)
+        db->UpdateDatabase();
+    
+    // Now tell all of our tabs to update their syntax highlighting and 
+    // indentation information.
+    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
+        ScriptDoc *doc =
+            dynamic_cast<ScriptDoc*>(mNotebook->GetDocument(i));
+        ASSERT(doc);
+        doc->UpdateIdentifierInformation();
+    }
 }
 
 void ScriptEditor::OnActivate(wxActivateEvent &event) {

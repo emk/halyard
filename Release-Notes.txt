@@ -26,6 +26,11 @@ SVN - tryon, emk, brian
   * Added a reload timer to the Tamale GUI.
   * F#2207: Fixed the ScriptEditorDB to not scan .svn, CVS or compiled
     subdirectories of the source tree.
+  * F#2207: Fixed the ScriptEditor to update the ScriptEditorDB only 
+    once per reload, rather than once per reload per tab.  This also means
+    that when opening a new tab, it doesn't rescan, so opening new tabs
+    is faster.
+  * F#2207: Optimized ScriptEditorDB update scan.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

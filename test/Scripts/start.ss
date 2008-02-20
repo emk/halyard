@@ -25,7 +25,7 @@
 ;; about it.
 
 ;; We want this for a version number on the index card.
-;;(require (lib "updater.ss" "5L"))
+(require (lib "updater.ss" "5L"))
 
 ;; XXX - These modules are used in various cards below, but they're
 ;; probably obsolete and are expected to go away or at least be
@@ -96,7 +96,7 @@
   (menu-item controls ( 80 "Controls"    @features/controls))
   (menu-item movies   (180 "More Movies" @media/qt/movies))
   (text release-id
-      ((point 10 580) $title-style (or #| (program-release-id) |# "")))
+      ((point 10 580) $title-style (or (program-release-id) "")))
   )
 
 
