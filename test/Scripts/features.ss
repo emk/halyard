@@ -4,7 +4,6 @@
   (require (lib "q-and-a.ss" "5L"))
   (require (lib "animate.ss" "5L"))
   (require (file "base.ss"))
-  ;;(require (lib "deprecated.ss" "5L"))
 
   ;; Experimental slot initializer library.
   (require (lib "initialize-slot.ss" "5L"))

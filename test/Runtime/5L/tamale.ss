@@ -15,34 +15,6 @@
   
 
   ;;;======================================================================
-  ;;;  Enabling Deprecated Features at Runtime
-  ;;;======================================================================
-  ;;;  Most of our deprecated features are provided by deprecated.ss, but
-  ;;;  a few can only be enabled at runtime.
-
-  (provide enable-deprecated-features!)
-
-  (define *deprecated-features-enabled?* #f)
-  
-  ;;; Turn on various deprecated features.
-  (define (enable-deprecated-features!)
-    (set! *deprecated-features-enabled?* #t))
-
-  ;; Backwards compatibility glue for code which refers to elements by
-  ;; name.  Used by functions such as WAIT.
-  (define (elem-or-name-hack elem-or-name)
-    (if (and (symbol? elem-or-name)
-             *deprecated-features-enabled?*)
-        (begin
-          (debug-caution (cat "Change '" elem-or-name
-                              " to (@ " elem-or-name ")"))
-          (@* elem-or-name))
-        (begin
-          (assert (element? elem-or-name))
-          elem-or-name)))
-
-
-  ;;;======================================================================
   ;;;  File and Path Functions
   ;;;======================================================================
   ;;;  Most of these are only used internally, in this file.
@@ -428,12 +400,6 @@
     (when (element-exists-in-engine? elem)
       (call-5l-prim 'ElementSetShown (node-full-name elem) show?)))
 
-  ;;; Delete the specified element.
-  (define (delete-element elem-or-name)
-    ;; TODO - Get rid of elem-or-name-hack, and rename
-    ;; delete-element-internal to delete-element.
-    (delete-element-internal (elem-or-name-hack elem-or-name)))
-  
   ;;; Delete the specified elements.
   (define (delete-elements
            &opt (elems-or-names (node-elements (current-card))))
@@ -1138,8 +1104,8 @@
 
   ;;; Pause script execution until the end of the specified media element,
   ;;; or until a specific frame is reached.
-  (define (wait elem-or-name &key frame)
-    (define name (node-full-name (elem-or-name-hack elem-or-name)))
+  (define (wait elem &key frame)
+    (define name (node-full-name elem))
     (if frame
         (call-5l-prim 'Wait name frame)
         (call-5l-prim 'Wait name)))

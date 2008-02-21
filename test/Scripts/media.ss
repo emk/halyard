@@ -2,9 +2,6 @@
 (module media (lib "5l.ss" "5L")
   (require (file "base.ss"))
 
-  ;; Needed for CENTER-TEXT.
-  (require (lib "deprecated.ss" "5L"))
-
   (provide start-ambient kill-ambient)
   
   ;;; Live demo toy: Play some audio in the background.

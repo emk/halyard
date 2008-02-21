@@ -37,6 +37,7 @@ SVN - tryon, emk, brian
     longer needed since we added support for Vista.
   * F#1360: Deleted extra (IDLE) in %kernel-run that caused occasional
     bogus card repaints.
+  * F#2868: Removed ELEM-OR-NAME hack and deprecated.ss.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

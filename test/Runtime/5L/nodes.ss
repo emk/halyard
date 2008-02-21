@@ -27,7 +27,7 @@
   ;;  otherwise specified.
 
   (provide run-card jump
-           delete-element-internal
+           delete-element
            current-group-member
            current-card
            *running-on-exit-handler-for-node*)
@@ -955,11 +955,11 @@
     ;; But for now, this will allow the engine to limp along.
     (equal? (symbol->string sym1) (symbol->string sym2)))
 
-  (define (delete-element-internal elem)
+  (define (delete-element elem)
     (if (node-path? elem)
         ;; If we've got a node path, resolve it first so we can use EQ? to
         ;; compare it against existing nodes.
-        (delete-element-internal (elem .resolve-path))
+        (delete-element (elem .resolve-path))
         ;; We're the master node deletion routine--C++ is no longer in charge.
         ;; TODO - We're called repeatedly as nodes get deleted, resulting
         ;; in an O(n^2) time to delete n nodes.  Not good, but we can live with
@@ -1031,7 +1031,7 @@
       ;; We work with a copy of (NODE-ELEMENTS SELF) the original
       ;; will be modified as we run.
       (foreach [elem (node-elements self)]
-        (delete-element-internal elem))
+        (delete-element elem))
       ;; Unregister our state-db listeners, if we have any.
       (*engine* .exit-node self)
       ;; Run any exit handler.
