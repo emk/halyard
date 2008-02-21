@@ -71,17 +71,17 @@
       (define (caption msg)
         (set! ((.caption) .text) msg))
       
-      (wait (.movie) :frame (tc 3 00))
+      ((.movie) .wait (tc 3 00))
       (caption "Hi, Raymond!")
-      (wait (.movie) :frame (tc 5 0))
+      ((.movie) .wait (tc 5 0))
       (caption "We're listening...")
-      (wait (.movie) :frame (tc 8 0))
+      ((.movie) .wait (tc 8 0))
       (caption "")
-      (wait (.movie) :frame (tc 23 0))
+      ((.movie) .wait (tc 23 0))
       (caption "No Z-rays?  Gosh!")
-      (wait (.movie) :frame (tc 26 0))
+      ((.movie) .wait (tc 26 0))
       (caption "")
-      (wait (.movie))
+      ((.movie) .wait)
       (delete-element (.movie))
       (caption "The End.")))
   
@@ -124,7 +124,7 @@
                                     :path "quackery_vp3.mov")))
     
     (run      
-      (wait (.movie1) :frame (tc 10 00))
+      ((.movie1) .wait (tc 10 00))
       (set! ((.show-2nd) .shown?) #t)))
 
   (sequence media/qt/missing)

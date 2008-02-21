@@ -1066,6 +1066,16 @@
 
   (define (add-common-media-methods! klass)
     (with-instance klass
+      ;;; Wait until the end of the media stream, or until FRAME (if
+      ;;; specified).  Note that unlike the old, global WAIT function, this
+      ;;; doesn't take a keyword argument--everybody was always leaving
+      ;;; that keyword off.
+      (def (wait &opt (frame #f))
+        (define name (node-full-name self))
+        (if frame
+          (call-5l-prim 'Wait name frame)
+          (call-5l-prim 'Wait name)))
+
       ;;; Pause playback.
       (def (pause)
         (media-pause self))
@@ -1103,12 +1113,11 @@
     (add-common-media-methods! self))
 
   ;;; Pause script execution until the end of the specified media element,
-  ;;; or until a specific frame is reached.
+  ;;; or until a specific frame is reached.  This function mostly exists
+  ;;; for backwards compatibility; new code is welcome to use .WAIT
+  ;;; instead.
   (define (wait elem &key frame)
-    (define name (node-full-name elem))
-    (if frame
-        (call-5l-prim 'Wait name frame)
-        (call-5l-prim 'Wait name)))
+    (elem .wait frame))
   
   ;;; Convert an industry-standard timecode to frames.  The engine has a
   ;;; single, nominal frame-rate of 30 frames per second, regardless of
