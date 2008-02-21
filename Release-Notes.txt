@@ -35,6 +35,8 @@ SVN - tryon, emk, brian
     where Brian was fixing the restricted user account on XP support to
     give a more useful error (and hard-quit the engine). This code is no
     longer needed since we added support for Vista.
+  * F#1360: Deleted extra (IDLE) in %kernel-run that caused occasional
+    bogus card repaints.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

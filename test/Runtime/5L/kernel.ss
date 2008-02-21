@@ -210,7 +210,6 @@
               (label exit-to-top
                 (with-errors-blocked (non-fatal-error)
                   (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
-                    (idle)
                     (cond
                      [jump-card
                       (run-card (find-card jump-card))]
