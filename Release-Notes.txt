@@ -31,6 +31,10 @@ SVN - tryon, emk, brian
     that when opening a new tab, it doesn't rescan, so opening new tabs
     is faster.
   * F#2207: Optimized ScriptEditorDB update scan.
+  * F#2211: Removed ancient WITH-HANDLERS statement left over from r11673,
+    where Brian was fixing the restricted user account on XP support to
+    give a more useful error (and hard-quit the engine). This code is no
+    longer needed since we added support for Vista.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

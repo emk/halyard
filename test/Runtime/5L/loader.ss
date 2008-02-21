@@ -109,19 +109,15 @@
   (define (wrap-load/use-compiled-with-heartbeat load/use-compiled)
     ;; Return a LOAD/USE-COMPILED handler.
     (lambda (file-path expected-module-name)
-      (with-handlers 
-         [[exn:fail:filesystem? (lambda (x)
-                                  (debug-log (exn-message x))
-                                  (environment-error (exn-message x)))]]
-        ;; We call HEARTBEAT twice, before and after, just to be on the
-        ;; safe side.  We may have had a really specific reason for this,
-        ;; but if so, I don't remember it.
+      ;; We call HEARTBEAT twice, before and after, just to be on the
+      ;; safe side.  We may have had a really specific reason for this,
+      ;; but if so, I don't remember it.
+      (heartbeat)
+      ;;(debug-log (string-append "Loading: " (path->string file-path)))
+      (let [[result (load/use-compiled file-path expected-module-name)]]
         (heartbeat)
-        ;;(debug-log (string-append "Loading: " (path->string file-path)))
-        (let [[result (load/use-compiled file-path expected-module-name)]]
-          (heartbeat)
-          (update-splash-screen!)
-          result))))
+        (update-splash-screen!)
+        result)))
 
   ;; There's some sort of context dependence that makes it so we can't just 
   ;; define COMPILE-ZO-WITH-HEARTBEAT out here, probably due to some paths 
