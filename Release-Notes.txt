@@ -109,6 +109,7 @@ ruby-style classes (F#928):
     are not created using ELEM.
   * Removed:
     - LOAD-PATH-INTERNAL on %browser%
+    - F#2320: EXTENDS-TEMPLATE? backward compatibility glue
   * Renamed:
     - ON SET-VOLUME! -> .SET-CHANNEL-VOLUME! on %movie%
     - POLYGON-BOUNDS -> POLYGON-BOUNDING-BOX

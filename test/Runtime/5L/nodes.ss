@@ -342,7 +342,7 @@
   ;;  contains %card%s and %card-group%s.  %card-group%s contain %card%s
   ;;  and other %card-group%s.  Any node may contain %element%s.
 
-  (provide %node% node? node-name node-full-name extends-template? node-parent
+  (provide %node% node? node-name node-full-name node-parent
            node-elements find-node find-running-node find-static-node
            resolve @* @)
 
@@ -538,14 +538,6 @@
                              "/" (node-name node)))
         (node-name node))))
 
-  ;;; TODO - This really ought to go away.  It's backwards-compatibility
-  ;;; glue, and it doesn't respect duck typing.  See case 2320 and case
-  ;;; 2319.
-  (define (extends-template? node template)
-    (if (ruby-class? node)
-        (node .subclass-of? template)
-        (node .instance-of? template)))
-  
   (define (check-for-duplicate-nodes node-list node)
     (let recurse [[node-list node-list]]
       (cond

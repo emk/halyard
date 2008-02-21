@@ -9,7 +9,7 @@
     ;;; Get all the answers to this question.
     (def (get-answers)
       (filter (fn (elem)
-                (extends-template? elem %answer%))
+                (elem .instance-of? %answer%))
               (node-elements self)))
     
     ;;; Get all the correct answers to this question.
