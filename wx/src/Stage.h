@@ -183,6 +183,12 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
 	MovieFrame mWaitFrame;
 
     //////////
+    /// Have the elements on the stage changed since the last time we
+    /// processed events?
+    ///
+    bool mElementsHaveChanged;
+
+    //////////
     /// Should we hide the cursor until the user moves the mouse?
     ///
     bool mShouldHideCursorUntilMouseMoved;

@@ -89,6 +89,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
 	  mDesiredCursor(NULL), mActualCursor(NULL), mNeedToWakeUp(false),
+      mElementsHaveChanged(false),
       mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mIsBeingDestroyed(false)
@@ -429,17 +430,13 @@ void Stage::NotifyReloadScriptStarting()
 void Stage::NotifyElementsChanged()
 {
 	wxLogTrace(TRACE_STAGE_DRAWING, "Elements on stage have changed.");
-
-	// Don't do anything unless there's a good chance this window still
-	// exists in some sort of valid state.
-	// TODO - Is IsShown a good way to tell whether a window is still good?
-	if (IsShown() && !mIsBeingDestroyed)
-	{
-		// Update our element borders (if necessary) and fix our cursor.
-		if (mIsDisplayingBorders)
-			InvalidateScreen();
-		UpdateCurrentElementAndCursor();
-	}
+    // Notify our OnTimer method that the elements on the stage have
+    // changed, and that we will need to recalculate the current element.
+    // We can't do any of that work _here_, because recalculating the
+    // current element may generate mouse-enter/mouse-leave events, which
+    // we should only send at well-defined times (such as during event
+    // processing in OnTimer).
+    mElementsHaveChanged = true;
 }
 
 void Stage::EnterElement(ElementPtr inElement, wxPoint &inPosition)
@@ -611,6 +608,16 @@ void Stage::IdleElements() {
 void Stage::OnTimer(wxTimerEvent& inEvent)
 {
 	ASSERT(!mIsBeingDestroyed);
+
+    // If any elements have changed on the stage since we last encountered
+    // this loop, then we need to call UpdateCurrentElementAndCursor.
+	if (mElementsHaveChanged) {
+        mElementsHaveChanged = false;
+		// Update our element borders (if necessary) and fix our cursor.
+		if (mIsDisplayingBorders)
+			InvalidateScreen();
+		UpdateCurrentElementAndCursor();
+	}
 
     // Check our displayed cursor, because the return value of
     // ShouldShowCursor() might have changed.

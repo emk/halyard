@@ -38,6 +38,15 @@ SVN - tryon, emk, brian
   * F#1360: Deleted extra (IDLE) in %kernel-run that caused occasional
     bogus card repaints.
   * F#2868: Removed ELEM-OR-NAME hack and deprecated.ss.
+  * F#1909: Deprecated old WAIT function (with a :FRAME keyword argument)
+    in favor of new .WAIT function (with an optional FRAME argument).  This
+    makes it possible to create proxy objects wrapping a movie.
+  * F#979: MOUSE-ENTER and MOUSE-LEAVE are now sent only during event
+    processing, and not during element creating and deletion.  This is
+    accomplished by delaying the recalculation of the current element.
+    Note that this change may have programmer-visible consequences!
+    There's some risk here, because this is a far-reaching change, and
+    5L/test may not stress every possible corner case.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):
