@@ -2,6 +2,9 @@
   (require (lib "util.ss" "5L"))
   (require-for-syntax (lib "util.ss" "5L"))
 
+  (require (lib "nodes.ss" "5L"))
+  (require (lib "indent.ss" "5L"))
+
   ;; Get some string processing stuff from the SRFI libraries.
   (require (only (lib "13.ss" "srfi") string-tokenize string-join))
   (require-for-syntax (only (lib "13.ss" "srfi") string-tokenize string-join))
@@ -15,7 +18,7 @@
 
   ;; Our public API.  We temporarily rename the path constructor function
   ;; to prevent a collision with nodes.ss.
-  (provide %node-path% node-path? @*)
+  (provide %node-path% node-path? @* @ resolve)
 
   ;;; A path in our node hierarchy.  Can represent either nested node
   ;;; classes, or nested nodes themselves.
@@ -35,28 +38,61 @@
     (def (to-symbol)
       (string->symbol (.to-path-string)))
 
-    ;;; Resolve this path relative to BASE.
-    #| XXX - Disabled because we're not ready to integrate this yet.
-    (def (resolve base)
-      (define (find-node-internal base components)
-        (cond
-         [(empty? components) base]
-         [(eq? '|.| (car components))
-          (find-node-internal base (cdr components))]
-         [(eq? '|..| (car components))
-          (find-node-internal (base .parent) (cdr components))]
-         [else (find-node-internal (base .child (car components))
-                                   (cdr components))]))
-      (define components (slot 'components))
-      (if (and (not (null? components))
-               (eq? '|.| (car components)))
-          (find-node-internal base (cdr components))
-          (find-node-internal (base .root) components)))
-    |#
+    ;;; Redirect any method calls we don't understand to our associated node.
+    (def (method-missing name . args)
+      ((.resolve-path) .send name args))
+
+    ;; XXX - Nasty hack since we haven't decided what to do about interfaces
+    ;; yet.  This will need more thought.
+    ;; TODO - Decide if we want a general .implements-interface? method.
+    (def (instance-of? klass)
+      (or (super)
+          ((.resolve-path) .instance-of? klass)))
+
+    ;;; Get the full name of the running node corresponding to this path.
+    ;;; If you are interested in the static node, you'll need to resolve it
+    ;;; first.
+    (def (full-name)
+      (define (not-found-fn)
+        (error (cat "Cannot find " self "; "
+                    "If referring to a static node, please resolve it first.")))
+      ((.resolve-path :running? #t :if-not-found not-found-fn) .full-name))
+
+    (def (jump)
+      ;; When we jump, we want to resolve things to point to the static
+      ;; node.  Yeah, another ugly special case...
+      ((.resolve-path :running? #f) .jump))
+
+    ;;; Resolve a path.
+    (def (resolve-path
+          &key (running? #t)
+               (if-not-found
+                (lambda ()
+                  (error (cat "Can't find relative path: " self)))))
+      (unless (current-group-member)
+        (error (cat "Can't find relative path '@" (.to-symbol)
+                    "' outside of a card")))
+      (or (find-node-relative (if running?
+                                  (current-group-member)
+                                  ((current-group-member) .static-node))
+                              (.to-symbol) running?)
+          (if-not-found)))
+
+    ;;; Note that (delete-element @foo) will pass a .%delete message to
+    ;;; this %node-path%, which we must forward appropriately.
     )
 
   ;;; Is OBJ a node path?
   (define node-path? (make-ruby-instance-of?-predicate %node-path%))
+
+  ;; Treat 'name' as a relative path.  If 'name' can be found relative to
+  ;; 'base', return it.  If not, try the parent of base if it exists.  If
+  ;; all fails, return #f.
+  (define (find-node-relative base name running?)
+    (if base
+      (or (find-child-node base name running?)
+          (find-node-relative (node-parent base) name running?))
+      #f))
 
   ;;; Run code at both syntax expansion time and runtime.
   (define-syntax begin-for-syntax-and-runtime
@@ -94,4 +130,18 @@
   (define (@* path-string)
     (%node-path% .new :components (path-string->components path-string)))
 
+  (define-syntax @
+    ;; Syntactic sugar for creating a path.
+    (syntax-rules ()
+      [(@ name)
+       ;; TODO - Make our caller pass us a string instead.
+       (@* (symbol->string 'name))]))
+  (define-syntax-indent @ function)
+
+  ;;; Given either a %node-path% or a node, return a node.
+  (define (resolve path-or-node &key (running? #t))
+    (if (node-path? path-or-node)
+        (path-or-node .resolve-path :running? running?)
+        path-or-node))
+  
   )

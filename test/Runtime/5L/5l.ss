@@ -23,7 +23,13 @@
   ;; Load the engine-dependent, subject-to-change API.
   (require (lib "tamale.ss" "5L"))
   (provide (all-from (lib "tamale.ss" "5L")))
-  
+
+  ;; This is not a well-loved API, so we only include it fairly high up the
+  ;; stack to try to avoid having any undocumented internal depedencies on
+  ;; it.
+  (require (lib "paths.ss" "5L"))
+  (provide (all-from (lib "paths.ss" "5L")))
+
 
   ;;=======================================================================
   ;;  begin/var Hacks

@@ -16,9 +16,6 @@
   (require-for-syntax (lib "capture.ss" "5L"))
   (require (lib "indent.ss" "5L"))
 
-  ;; Our shiny new node path system.
-  (require (lib "paths.ss" "5L"))
-  (provide %node-path% node-path?)
   
   ;;=======================================================================
   ;;  Stuff Callable by the Kernel
@@ -92,9 +89,6 @@
       (unless result
         (error "Can't get current group member during script startup"))
       result))
-
-  (define (current-static-group-member)
-    ((current-group-member) .static-node))
 
   (define (current-card)
     (let [[result (*engine* .current-card)]]
@@ -344,7 +338,7 @@
 
   (provide %node% node? node-name node-full-name node-parent
            node-elements find-node find-running-node find-static-node
-           resolve @* @)
+           find-child-node)
 
   (define (add-shared-node-members! inst)
     (with-instance inst
@@ -423,7 +417,7 @@
     ;;; TODO - We may rename this; I added it to help Robinson port our
     ;;; library code.
     (def (find-elem name)
-      (find-node-relative self name #t))
+      (find-child-node self name #t))
 
     (with-instance (.class)
       (attr name #f :writable? #t)   ; May be #f if class not in hierarchy.
@@ -469,7 +463,7 @@
         ;; Declare a helper method which can be called at runtime to find
         ;; the running version of our child element.
         (.define-method (elem .name) 
-          (method () (find-node-relative self (elem .name) #t))))
+          (method () (find-child-node self (elem .name) #t))))
 
       ;; Takes a list of pairs of names and methods and turns each into the
       ;; equivalent of:
@@ -553,67 +547,14 @@
   (define (find-static-node name-as-string)
     (find-node (string->symbol name-as-string) #f))
   
-  (define (find-node-relative base name running?)
-    ;; Treat 'name' as a relative path.  If 'name' can be found relative
-    ;; to 'base', return it.  If not, try the parent of base if it
-    ;; exists.  If all fails, return #f.
-    (unless base
-      (error (cat "Can't find relative path '@" name "' outside of a card")))
+  ;; This is an internal function used for gluing together a base name and
+  ;; a node name, and doing a lookup.  The API is subject to change!
+  (define (find-child-node base name running?)
     (if (root-node? base)
-        (find-node name running?)
-        (let* [[base-name (base .full-name)]
-               [candidate (string->symbol (cat base-name "/" name))]
-               [found (find-node candidate running?)]]
-          (or found (find-node-relative (node-parent base) name running?)))))
-
-  ;;; Given either a %node-path% or a node, return a node.
-  (define (resolve path-or-node &key (running? #t))
-    (if (node-path? path-or-node)
-        (path-or-node .resolve-path :running? running?)
-        path-or-node))
-
-  ;; We need to add some methods to %node-path%.
-  (with-instance %node-path%
-    ;;; Redirect any method calls we don't understand to our associated node.
-    (def (method-missing name . args)
-      ((.resolve-path) .send name args))
-
-    ;; XXX - Nasty hack since we haven't decided what to do about interfaces
-    ;; yet.  This will need more thought.
-    ;; TODO - Decide if we want a general .implements-interface? method.
-    (def (instance-of? klass)
-      (or (super)
-          ((.resolve-path) .instance-of? klass)))
-
-    ;;; Get the full name of the running node corresponding to this path.
-    ;;; If you are interested in the static node, you'll need to resolve it
-    ;;; first.
-    (def (full-name)
-      (define (not-found-fn)
-        (error (cat "Cannot find " self "; "
-                    "If referring to a static node, please resolve it first.")))
-      ((.resolve-path :running? #t :if-not-found not-found-fn) .full-name))
-
-    ;;; Resolve a path.
-    (def (resolve-path
-          &key (running? #t)
-               (if-not-found
-                (lambda ()
-                  (error (cat "Can't find relative path: " self)))))
-      (or (find-node-relative (if running?
-                                  (current-group-member)
-                                  (current-static-group-member))
-                              (.to-symbol) running?)
-          (if-not-found)))
-    )
-
-  (define-syntax @
-    ;; Syntactic sugar for creating a path.
-    (syntax-rules ()
-      [(@ name)
-       ;; TODO - Make our caller pass us a string instead.
-       (@* (symbol->string 'name))]))
-  (define-syntax-indent @ function)
+      (find-node name running?)
+      (let* [[base-name (base .full-name)]
+             [candidate (string->symbol (cat base-name "/" name))]]
+        (find-node candidate running?))))
 
   (define (check-node-name name)
     (unless (regexp-match "^[a-z][-_a-z0-9]*$" (symbol->string name))
@@ -669,17 +610,15 @@
     )
 
   ;;-----------------------------------------------------------------------
-  ;;  Jumpable
+  ;;  Jumping
   ;;-----------------------------------------------------------------------
-  ;;  This used to be an abstract superclass for jumpable objects.  In
-  ;;  general, these are either cards or %card-sequence%s.
 
-  ;; TODO - Get rid of wrapper.
-  (define (jumpable? node)
-    (and (ruby-object? node) ((resolve node :running? #f) .jumpable?)))
+  ;;; Jump to the specified node.
   (define (jump node)
-    ((resolve node :running? #f) .jump))
+    ;; We keep this wrapper function around for nostalgia value.
+    (node .jump))
 
+  
   ;;-----------------------------------------------------------------------
   ;;  Groups of Cards
   ;;-----------------------------------------------------------------------
@@ -946,26 +885,28 @@
     ;; But for now, this will allow the engine to limp along.
     (equal? (symbol->string sym1) (symbol->string sym2)))
 
+  ;;; This is the official public API for deleting an element.
   (define (delete-element elem)
-    (if (node-path? elem)
-        ;; If we've got a node path, resolve it first so we can use EQ? to
-        ;; compare it against existing nodes.
-        (delete-element (elem .resolve-path))
-        ;; We're the master node deletion routine--C++ is no longer in charge.
-        ;; TODO - We're called repeatedly as nodes get deleted, resulting
-        ;; in an O(n^2) time to delete n nodes.  Not good, but we can live with
-        ;; it for the moment.
-        (let [[parent (elem .parent)]]
-          ;; Remove the node from its parent's NODE-ELEMENTS first, to
-          ;; reduce the odds that a script can find the node mid-deletion.
-          (set! (parent .elements)
-                (filter (lambda (e) (not (eq? elem e)))
-                        (parent .elements)))
-          ;; Now it's safe to delete the node.
-          (elem .exit-node)
-          (*engine* .delete-element elem))))
-  
+    (elem .%delete))
 
+  (with-instance %element%
+    (def (%delete)
+      ;; We're the master node deletion routine--C++ is no longer in
+      ;; charge.  TODO - We're called repeatedly as nodes get deleted,
+      ;; resulting in an O(N^2) time to delete N child nodes of a given
+      ;; parent node.  Not good, but we can live with it for the moment.
+      (let [[parent (.parent)]]
+        ;; Remove the node from its parent's NODE-ELEMENTS first, to
+        ;; reduce the odds that a script can find the node mid-deletion.
+        (set! (parent .elements)
+              (filter (lambda (e) (not (eq? self e)))
+                      (parent .elements)))
+        ;; Now it's safe to delete the node.
+        (.exit-node)
+        (*engine* .delete-element self)))
+    (.seal-method! '%delete))
+  
+  
   ;;=======================================================================
   ;;  Changing Cards
   ;;=======================================================================
