@@ -104,5 +104,22 @@
       (define style
         (stylesheet :base $style-bug-base :family "Nimbus Sans L" :size 16))
       (new-text (point 0 0) style "-T X" :parent @workspace)))
- 
+  
+  (card bugs/bug-f1360-jump-idle-problem 
+      (%bug-card% :bug-id "F1360" :status 'fixed
+                  :bug-title "Jumping from a card calls an extra idle"
+                  :instructions (cat "You should only see a blue rectangle, "
+                                     "then you should be jumped to the start "
+                                     "card."))
+    (setup
+      (new-rectangle (rect 0 0 200 150) (color #xff 0 0) :name 'first-rect 
+                     :parent @workspace)
+      (delete-element @workspace/first-rect)
+      (new-rectangle (rect 0 0 200 150) (color 0 0 #xff) :name 'second-rect
+                     :parent @workspace)
+      (nap 20)
+      (delete-element @workspace/second-rect)
+      (new-rectangle (rect 0 0 200 150) (color 0 #xff 0) :name 'third-rect
+                     :parent @workspace)
+      (jump @start)))
   )
