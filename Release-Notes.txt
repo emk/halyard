@@ -53,6 +53,11 @@ SVN - tryon, emk, brian
       specific key command sequences.
     - Backported a tab-handling fix from HEAD of wxWidgets.
   * F#2869: Deprecated NODE-FULL-NAME in favor of .FULL-NAME method.
+  * F#2869: Separated out the path code into paths.ss.
+  * F#2886: Fixed .FIND-ELEM and ELEM helper accessor to not use relative
+    searches when the elements can't be found.
+  * F#2901: Split off CARD-NEXT, CARD-PREV and %SEQUENCE% into a separate
+    file to make them easier to redesign and clean up.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

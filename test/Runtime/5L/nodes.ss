@@ -95,9 +95,6 @@
       (unless result
         (error "Can't get current card when no card is active"))
       result))
-
-  (define (current-static-card)
-    ((current-card) .static-node))
   
   (define (last-card-visited)
     (*engine* .last-card-visited))
@@ -111,7 +108,7 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide setup run *node-defined-hook* define-node)
+  (provide setup run *node-defined-hook* define-node define-node-definer)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
@@ -338,7 +335,7 @@
 
   (provide %node% node? node-name node-full-name node-parent
            node-elements find-node find-running-node find-static-node
-           find-child-node)
+           find-child-node make-node-type-predicate)
 
   (define (add-shared-node-members! inst)
     (with-instance inst
@@ -477,19 +474,6 @@
                              (method ()
                                (instance-exec (.parent) meth))
                              #f)))
-      
-      ;; Corresponds to the old %jumpable% class.
-      ;; TODO - Decide if we want a general .implements-interface? method.
-      (def (jumpable?)
-        #f)
-      
-      ;; Must be overriden by all jumpable nodes.
-      (def (find-first-card)
-        #f)
-      
-      ;; Must be overriden by all jumpable nodes.
-      (def (find-last-card)
-        #f)
       )
     )
 
@@ -510,8 +494,6 @@
   (define (node-parent node) (node .parent))
   (define (node-elements node) (node .elements))
   (define (set-node-elements! node val) (set! (node .elements) val))
-  (define (find-first-card node) (node .find-first-card))
-  (define (find-last-card node) (node .find-last-card))
   (define (node-full-name node-or-path) (node-or-path .full-name))
 
   (define (check-for-duplicate-nodes node-list node)
@@ -632,25 +614,13 @@
 
   (define-class %card-group% (%group-member%)
     (with-instance (.class)
-      (attr members '() :type <list> :writable? #t)
-      
-      (def (find-next member)
-        (assert (member .jumpable?))
-        #f)
-      
-      (def (find-prev member)
-        (assert (member .jumpable?))
-        #f)
-      )
-    )
+      (attr members '() :type <list> :writable? #t)))
 
   ;; TODO - Eliminate these wrappers.
   (define card-group? (make-node-type-predicate %card-group%))
   (define (card-group-members grp) (grp .members))
   (define (set-card-group-members! grp val) (set! (grp .members) val))
   (define (card-group-active? grp) (grp .active?))
-  (define (card-group-find-next grp member) (grp .find-next member))
-  (define (card-group-find-prev grp member) (grp .find-prev member))
 
   (define group-members card-group-members)
   (define set-group-members! set-card-group-members!)
@@ -676,74 +646,11 @@
     (value parent #f))
 
   ;;-----------------------------------------------------------------------
-  ;;  Sequences of Cards
-  ;;-----------------------------------------------------------------------
-  ;;  Like groups, but ordered.
-
-  (provide sequence %card-sequence% card-sequence?)
-
-  (define-class %card-sequence% (%card-group%)
-    (with-instance (.class)
-      (def (jumpable?) #t)
-      
-      (def (jump)
-        (if (null? (group-members self))
-            (error (cat "Can't jump to sequence " (.full-name)
-                        " because it contains no cards."))
-            (jump (car (group-members self)))))
-      
-      (def (find-next member)
-        (assert (member .jumpable?))
-        ;; Find the node *after* member.
-        (let [[remainder (memq member (group-members self))]]
-          (%assert (not (null? remainder)))
-          (if (null? (cdr remainder))
-              (card-group-find-next (node-parent self) self)
-              ;; Walk recursively through any sequences to find the first card.
-              (find-first-card (cadr remainder)))))
-      
-      (def (find-prev member)
-        (assert (member .jumpable?))
-        ;; Find the node *before* member.  Notice the two (2!) lambdas in
-        ;; this function, which are used to implement a form of lazy
-        ;; evaluation: They keep track of how to find the node we want,
-        ;; assuming the current current node is MEMBER (which is one past the
-        ;; node we want).
-        (let search [[members (group-members self)]
-                     [candidate-func 
-                      (lambda ()
-                        (card-group-find-prev (node-parent self) self))]]
-          (%assert (not (null? members)))
-          (if (eq? (car members) member)
-              (candidate-func)
-              (search (cdr members)
-                      (lambda ()
-                        ;; This is our actual base case: It's called when
-                        ;; we've located MEMBER, and it recursively looks
-                        ;; for the last card in the node *before* MEMBER.
-                        ;; Got it?
-                        (find-last-card (car members)))))))
-      
-      (def (find-first-card)
-      (find-first-card (first (group-members self))))
-      
-      (def (find-last-card)
-        (find-last-card (last (group-members self))))
-      )
-    )
-
-  ;; TODO - Get rid of wrapper functions.
-  (define card-sequence? (make-node-type-predicate %card-sequence%))
-
-  (define-node-definer sequence %card-sequence%)
-
-  ;;-----------------------------------------------------------------------
   ;;  Cards
   ;;-----------------------------------------------------------------------
   ;;  More functions are defined in the next section below.
 
-  (provide %card% card? card-next card-prev jump-next jump-prev jump-current
-           card)
+  (provide %card% card? card jump-current)
 
   (define-class %card% (%group-member%)
     (with-instance (.class)
@@ -751,13 +658,8 @@
         (super)
         (*engine* .register-card self))
       
-      (def (jumpable?) #t)
-      
       (def (jump)
         (*engine* .jump-to-card self))
-      
-      (def (find-first-card) self)
-      (def (find-last-card) self)
       )
 
     ;; This is a fairly easy mistake to make.
@@ -768,29 +670,13 @@
 
   ;; TODO - Get rid of wrapper functions.  
   (define card? (make-node-type-predicate %card%))
-
-  (define (card-next)
-    (define static (current-static-card))
-    (card-group-find-next (node-parent static) static))
-
-  (define (card-prev)
-    (define static (current-static-card))
-    (card-group-find-prev (node-parent static) static))
-
-  (define (jump-helper find-card str)
-    (let [[c (find-card)]]
-      (if c
-          (jump c)
-          (error (cat "No card " str " " ((current-card) .full-name)
-                      " in sequence.")))))
-      
-  (define (jump-next) (jump-helper card-next "after"))
-  (define (jump-prev) (jump-helper card-prev "before"))
-  (define (jump-current)
-    (jump (current-static-card)))
   
   (define-node-definer card %card%)
+  
+  (define (jump-current)
+    ((current-card) .static-node))
 
+  
   ;;-----------------------------------------------------------------------
   ;; Elements
   ;;-----------------------------------------------------------------------

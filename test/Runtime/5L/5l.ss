@@ -24,11 +24,13 @@
   (require (lib "tamale.ss" "5L"))
   (provide (all-from (lib "tamale.ss" "5L")))
 
-  ;; This is not a well-loved API, so we only include it fairly high up the
+  ;; These are not well-loved APIs, so we only include them fairly high up the
   ;; stack to try to avoid having any undocumented internal depedencies on
-  ;; it.
+  ;; them.
   (require (lib "paths.ss" "5L"))
   (provide (all-from (lib "paths.ss" "5L")))
+  (require (lib "card-sequence.ss" "5L"))
+  (provide (all-from (lib "card-sequence.ss" "5L")))
 
 
   ;;=======================================================================
