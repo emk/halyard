@@ -77,15 +77,21 @@
   (define (event-modifiers-and-character event)
     (append (event-modifiers event) (list (event-character event))))
   
+  ;; TODO - should this be moved into nodes.ss and made public?
+  (define (for-each-active-node func)
+    ;; Walk up our hierarchy of groups and sequences.
+    (let walk-up [[group-member (current-group-member)]]
+      (when group-member
+        ;; Walk down into each element within our current card, group, or 
+        ;; sequence.
+        (let walk-down [[node group-member]]
+          (func node)
+          (foreach [elem (node-elements node)]
+            (walk-down elem)))
+        (walk-up (node-parent group-member)))))
+  
   (define (dispatch-idle-event-to-active-nodes)
-    ;; TODO - This code is wrong, because it does not propagate idle events
-    ;; to elements parented to other elements.  See case 2316.
-    (let loop [[node (current-group-member)]]
-      (when node
-        (node .idle)
-        (foreach [elem (node-elements node)]
-          (elem .idle))
-        (loop (node-parent node)))))
+    (for-each-active-node (lambda (node) (node .idle))))
 
   (define (dispatch-event-to-current-group-member name . args)
     (when (*engine* .current-group-member)

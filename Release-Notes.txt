@@ -58,6 +58,8 @@ SVN - tryon, emk, brian
     searches when the elements can't be found.
   * F#2901: Split off CARD-NEXT, CARD-PREV and %SEQUENCE% into a separate
     file to make them easier to redesign and clean up.
+  * F#2316: Send .IDLE messages to all elements, even if they are nested 
+    within other elements.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

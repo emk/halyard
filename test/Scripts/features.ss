@@ -908,15 +908,20 @@
         (set! (.last-updated) now)
         (set! (.on?) (not (.on?))))))
 
-  ;; Test IDLE handlers on both elements and cards.
+  ;; Test IDLE handlers on elements, cards, and nested elements.
   (card features/idle-events
-      (%standard-test-card% :title "Idle Events (Two Flashing Lights)")
+      (%standard-test-card% :title "Idle Events (Three Flashing Lights)")
  
     (elem flasher-1 (%flasher% :at (point 200 100))
       (def (idle)
         (.maybe-update-flasher)))
     
     (elem flasher-2 (%flasher% :at (point 100 100)))
+    
+    (box layout ((rect 100 150 250 250))
+      (elem flasher-3 (%flasher% :at (point 0 0))
+        (setup (.center-on-parent!))
+        (def (idle) (.maybe-update-flasher))))
  
     (def (idle)
       ((.flasher-2) .maybe-update-flasher)))
