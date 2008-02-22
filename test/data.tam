@@ -9,6 +9,6 @@ Comments may be more than one line long.  Lines wrap correctly.  This text will 
   <datadirname type="str"></datadirname>
   <dbgreporturl type="str"></dbgreporturl>
   <name type="str">Tamale Test</name>
-  <sourcefilecount type="int">148</sourcefilecount>
+  <sourcefilecount type="int">149</sourcefilecount>
   <version type="str">0.1</version>
 </TamaleProgram>

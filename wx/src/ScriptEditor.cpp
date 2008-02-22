@@ -428,11 +428,11 @@ bool ScriptTextCtrl::IsBrace(char c) {
 }
 
 bool ScriptTextCtrl::IsOpenBrace(char c) {
-    return (c == '(' || c == '[' || c == '{' || c == '<');
+    return (c == '(' || c == '[' || c == '{');
 }
 
 bool ScriptTextCtrl::IsCloseBrace(char c) {
-    return (c == ')' || c == ']' || c == '}' || c == '>');
+    return (c == ')' || c == ']' || c == '}');
 }
 
 bool ScriptTextCtrl::IsIdentifierChar(char c) {

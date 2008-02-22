@@ -60,6 +60,7 @@ SVN - tryon, emk, brian
     file to make them easier to redesign and clean up.
   * F#2316: Send .IDLE messages to all elements, even if they are nested 
     within other elements.
+  * F#2202: Removed < and > from editor's list of brace characters.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):
