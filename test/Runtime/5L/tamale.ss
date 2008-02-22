@@ -995,6 +995,59 @@
         (call-5l-prim 'EditBoxSetValue (node-full-name self) value)
         (set! (slot 'text) value)))
     
+    (def (char event)
+      (define pressed (event-modifiers-and-character event))
+      (cond
+        [(and (equal? '(#\tab) pressed)
+              (.maybe-navigate-controls #t))
+         (void)]
+        [(and (equal? '(shift #\tab) pressed)
+              (.maybe-navigate-controls #f))
+         (void)]
+        [(.should-propagate-char-event? event)
+         ;; We've been told to propagate this character event, so do the usual
+         ;; thing here.
+         (super)]
+        [else
+         ;; Let wxWidgets decide what to do with this character event.        
+         (mark-event-as-not-handled! event)]))
+    
+    ;;; Do we want to propagate this character event to the card, sequence,
+    ;;; etc., for further processing (say, a Control-I command that jumps to
+    ;;; an index card), or do we want to let it be typed into the text field
+    ;;; _even if_ it would otherwise be interpreted as an accelerator?
+    ;;;
+    ;;; TODO - This is probably not really the right API, and it exists mostly
+    ;;; for making our current thought process clear.  Don't override this
+    ;;; without a compelling reason.
+    (def (should-propagate-char-event? event)
+      #f)
+    (.seal-method! 'should-propagate-char-event?)
+    
+    ;;; This function is called whenever the user presses Tab or Shift-Tab.
+    ;;; If the user pressed Tab, forward? will be #t, otherwise it will
+    ;;; be #f.  Return true if this Tab character was handled; return #f
+    ;;; to treat this like a normal tab character.
+    (def (maybe-navigate-controls forward?)
+      (define (do-nav maybe-control)
+        (when maybe-control
+          (maybe-control .focus))
+        #t)
+      (cond
+        [(.multiline?) #f]
+        [forward?      (do-nav (.next-control))]
+        [else          (do-nav (.prev-control))]))
+    
+    ;;; Return the next control in tab order, if any.  It's probably desirable
+    ;;; to override this method with something that can automatically compute
+    ;;; a tab order if you have more than two or three controls.
+    (def (next-control)
+      #f)
+    
+    ;;; Return the previous control in tab order, if any.
+    (def (prev-control)
+      #f)
+    
     ;;; Move the insertion point to the specificed location.  Indices start
     ;;; at 0, and an index of -1 specifies "after the last character".
     (def (set-insertion-point! index)

@@ -61,7 +61,10 @@
         (.update-display ((.parent) .display)))
       ;; This gets run whenever the user presses Enter in a text box.
       (def (text-enter event)
-        (.update-display ((.parent) .display2))))
+        (.update-display ((.parent) .display2)))
+      (def (next-control)
+        ((.parent) .edit2))
+      )
 
     (elem display (%text-input-display% :at (below (.edit) 10)))
     (elem display2 (%text-input-display% :at (below (.display) 10)))
@@ -70,7 +73,9 @@
     (elem edit2 
         (%edit-box-demo%
          :rect (move-rect-left-top-to (rect 0 0 200 32)
-                                      (to-the-right-of (.edit) 20))))
+                                      (to-the-right-of (.edit) 20)))
+      (def (prev-control)
+        ((.parent) .edit)))
 
     (elem set-text-button
         (%text-button% :at (below (.edit2) 10) :label "Set Text"

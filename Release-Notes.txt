@@ -47,6 +47,11 @@ SVN - tryon, emk, brian
     Note that this change may have programmer-visible consequences!
     There's some risk here, because this is a far-reaching change, and
     5L/test may not stress every possible corner case.
+  * F#1375: Added CHAR events to %edit-box%, and provided a very
+    primitive protocol for handling tab order.
+    - Added EVENT-MODIFIERS-AND-CHARACTER to make it easier to match
+      specific key command sequences.
+    - Backported a tab-handling fix from HEAD of wxWidgets.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

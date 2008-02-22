@@ -6,9 +6,11 @@
 
   ;; TODO - Port event classes from Swindle to ruby-object.ss.
   (provide <event> event? event-stale?
+           mark-event-as-not-handled!
            <vetoable-event> veto-event! event-vetoed?
            <update-ui-event> update-ui-event? event-command
            <char-event> char-event? event-character event-modifiers
+           event-modifiers-and-character
            <mouse-event> mouse-event? event-position event-double-click?
            <url-event> url-event? event-url
            <text-event> text-event? event-text
@@ -69,6 +71,12 @@
   (defmethod (was-vetoed? (event <vetoable-event>))
     (event-vetoed? event))
 
+  (define (mark-event-as-not-handled! event)
+    (set! (event-handled? event) #f))
+  
+  (define (event-modifiers-and-character event)
+    (append (event-modifiers event) (list (event-character event))))
+  
   (define (dispatch-idle-event-to-active-nodes)
     ;; TODO - This code is wrong, because it does not propagate idle events
     ;; to elements parented to other elements.  See case 2316.
@@ -147,7 +155,7 @@
         (foreach [name names]
           (.always-propagate name
             :if-not-handled (method (event)
-                              (set! (event-handled? event) #f)))))
+                              (mark-event-as-not-handled! event)))))
         
       )
 

@@ -32,6 +32,7 @@
 class CustomTextCtrl : public wxTextCtrl {
     EditBox *mElement;
 
+    void OnChar(wxKeyEvent &inEvent);
     void OnText(wxCommandEvent &inEvent);
     void OnTextEnter(wxCommandEvent &inEvent);
 
@@ -44,6 +45,7 @@ public:
 };
 
 BEGIN_EVENT_TABLE(CustomTextCtrl, wxTextCtrl)
+    EVT_CHAR(CustomTextCtrl::OnChar)
     EVT_TEXT(-1, CustomTextCtrl::OnText)
     EVT_TEXT_ENTER(-1, CustomTextCtrl::OnTextEnter)
 END_EVENT_TABLE()
@@ -56,6 +58,11 @@ CustomTextCtrl::CustomTextCtrl(wxWindow *inParent, const wxString &inValue,
       mElement(inElement)
 {
     // Do nothing.
+}
+
+void CustomTextCtrl::OnChar(wxKeyEvent &inEvent) {
+    if (!mElement->GetEventDispatcher()->DoEventChar(inEvent))
+        inEvent.Skip();
 }
 
 void CustomTextCtrl::OnText(wxCommandEvent &inEvent) {
@@ -77,8 +84,10 @@ EditBox::EditBox(Stage *inStage, const wxString &inName,
                  uint32 inSize, bool inIsMultiline, bool inEnterIsEvent)
     : Widget(inStage, inName, inDispatch)
 {
-    // Figure out what flags to use.
-    long style = wxSIMPLE_BORDER; /* ...or wxNO_BORDER. */
+    // Figure out what flags to use.  We always pass wxTE_PROCESS_TAB, because
+    // we're inside a wxFrame, not a wxDialog, and the default tab handling is
+    // therefore useless.  We'll let Scheme sort out what to do.
+    long style = wxTE_PROCESS_TAB | wxSIMPLE_BORDER; /* ...or wxNO_BORDER. */
     if (inIsMultiline)
         style |= wxTE_MULTILINE;
     // TODO - Enter processing in multiline controls needs some work.  It's
