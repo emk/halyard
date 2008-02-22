@@ -31,7 +31,7 @@
       ;; Draw a title on the card (making it easier to tell when each
       ;; test-suite card is loaded).
       (draw-text (rect 30 30 800 100) $tamale-unit-title-style
-                 (cat "Card: " (node-full-name self))))
+                 (cat "Card: " (.full-name))))
 
     (def (run)
       (super)

@@ -49,7 +49,7 @@
   ;;=======================================================================
 
   (define (test-elements-full-name node-name)
-    (cat (node-full-name (current-card)) "/temporary-parent/" node-name))
+    (cat ((current-card) .full-name) "/temporary-parent/" node-name))
   
   (define-test-case <custom-element-test> () []
     (test-elements "Creating a %custom-element%"
@@ -92,18 +92,16 @@
   (define-class %foo% ())
   
   (define (node-full-name-error item)
-    (quote-for-regexp 
-     (cat "node-full-name: expecting node or node-path, given " 
-          item ".")))
+    (quote-for-regexp "full-name"))
   
   (define-test-case <node-full-name-test> () []
     (test "node-full-name should succeed on a running node or node-path"
           (define hyacinth (new-box (rect 0 0 10 10) :name 'rose))
-          (node-full-name hyacinth)
-          (node-full-name @rose))
+          (hyacinth .full-name)
+          (@rose .full-name))
     (test "node-full-name should succeed on a static node"
           (define hyacinth (card-next))
-          (node-full-name hyacinth))
+          (hyacinth .full-name))
     (test "node-full-name should fail on a static node-path"
           (define hyacinth @next-test-card)
           (define rose @test-cases/foo/bar/baz/wonky)
@@ -111,25 +109,25 @@
             (cat "Cannot find " item "; "
                  "If referring to a static node, please resolve it first."))
           (assert-raises-message exn:fail? (nfn-static-error hyacinth)
-            (node-full-name hyacinth))
+            (hyacinth .full-name))
           (assert-raises-message exn:fail? (nfn-static-error rose)
-            (node-full-name rose)))
+            (rose .full-name)))
     (test "node-full-name should fail on a non-node ruby object"
           (define hyacinth (%foo% .new))
           (assert-raises-message exn:fail? (node-full-name-error hyacinth)
-            (node-full-name hyacinth)))
+            (hyacinth .full-name)))
     (test "node-full-name should fail on a swindle object"
           (define hyacinth (make-vector 1))
           (assert-raises-message exn:fail? (node-full-name-error hyacinth)
-            (node-full-name hyacinth)))
+            (hyacinth .full-name)))
     (test "node-full-name should fail on a string or integer"
           (define hyacinth "pretty flowers")
           (define rose 34)
           
           (assert-raises-message exn:fail? (node-full-name-error hyacinth) 
-            (node-full-name hyacinth))
+            (hyacinth .full-name))
           (assert-raises-message exn:fail? (node-full-name-error rose)
-            (node-full-name rose))))
+            (rose .full-name))))
   
   (card test-cases/node-test
       (%test-suite%

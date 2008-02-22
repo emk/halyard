@@ -349,15 +349,21 @@
   (define (add-shared-node-members! inst)
     (with-instance inst
       (def (register-in table)
-        (let [[name (node-full-name self)]]
+        (let [[name (.full-name)]]
           (when (hash-table-has-key? table name)
             (error (cat "Duplicate copies of node " name)))
           (hash-table-put! table name self)))
 
       (def (unregister-from table)
-        (let [[name (node-full-name self)]]
+        (let [[name (.full-name)]]
           (%assert (hash-table-has-key? table name))
           (hash-table-remove! table name)))
+      
+      (def (full-name)
+        (let [[parent (.parent)]]
+          (if (and parent (not (root-node? parent)))
+            (string->symbol (cat (parent .full-name) "/" (.name)))
+            (.name))))
       ))
       
 
@@ -388,7 +394,7 @@
 
     (def (to-string)
       (check-for-initialization self 'to-string)
-      (cat "#<inst " (node-full-name self) ">"))
+      (cat "#<inst " (.full-name) ">"))
 
     (def (register)
       (.register-in (*engine* .running-node-table)))
@@ -426,7 +432,7 @@
 
       (def (to-string)
         (if (.name)
-          (cat "#<class " (node-full-name self) ">")
+          (cat "#<class " (.full-name) ">")
           (super)))
 
       ;;; Returns #t if this node is part of the hierarchy of named nodes,
@@ -512,31 +518,7 @@
   (define (set-node-elements! node val) (set! (node .elements) val))
   (define (find-first-card node) (node .find-first-card))
   (define (find-last-card node) (node .find-last-card))
-
-  (define (node-full-name node-or-path)
-    ;; XXX - Resolve either a running or a static node here, depending
-    ;; on what we find.  This is an odd special case that really only
-    ;; affects NODE-FULL-NAME, because it's one of the few non-trivial
-    ;; functions which can be called on either static or running nodes,
-    ;; and possibly the only one that really cares about the difference.
-    (define (not-found-fn)
-      (error (cat "Cannot find " node-or-path "; "
-                  "If referring to a static node, please resolve it first.")))
-    (define node 
-      (cond
-       [(node-path? node-or-path)
-        (node-or-path .resolve-path :running? #t :if-not-found not-found-fn)]
-       [(node? node-or-path)
-        node-or-path]
-       [else
-        (error (cat "node-full-name: expecting node or node-path, given " 
-                    node-or-path "."))]))
-    ;; Join together local names with "/" characters.
-    (let [[parent (node-parent node)]]
-      (if (and parent (not (root-node? parent)))
-        (string->symbol (cat (node-full-name (node-parent node))
-                             "/" (node-name node)))
-        (node-name node))))
+  (define (node-full-name node-or-path) (node-or-path .full-name))
 
   (define (check-for-duplicate-nodes node-list node)
     (let recurse [[node-list node-list]]
@@ -544,7 +526,7 @@
        [(null? node-list)
         #f]
        [(eq? (node-name node) (node-name (car node-list)))
-        (error (cat "Duplicate node: " (node-full-name node)))]
+        (error (cat "Duplicate node: " (node .full-name)))]
        [#t
         (recurse (cdr node-list))])))
 
@@ -579,7 +561,7 @@
       (error (cat "Can't find relative path '@" name "' outside of a card")))
     (if (root-node? base)
         (find-node name running?)
-        (let* [[base-name (node-full-name base)]
+        (let* [[base-name (base .full-name)]
                [candidate (string->symbol (cat base-name "/" name))]
                [found (find-node candidate running?)]]
           (or found (find-node-relative (node-parent base) name running?)))))
@@ -602,6 +584,15 @@
     (def (instance-of? klass)
       (or (super)
           ((.resolve-path) .instance-of? klass)))
+
+    ;;; Get the full name of the running node corresponding to this path.
+    ;;; If you are interested in the static node, you'll need to resolve it
+    ;;; first.
+    (def (full-name)
+      (define (not-found-fn)
+        (error (cat "Cannot find " self "; "
+                    "If referring to a static node, please resolve it first.")))
+      ((.resolve-path :running? #t :if-not-found not-found-fn) .full-name))
 
     ;;; Resolve a path.
     (def (resolve-path
@@ -758,7 +749,7 @@
       
       (def (jump)
         (if (null? (group-members self))
-            (error (cat "Can't jump to sequence " (node-full-name self)
+            (error (cat "Can't jump to sequence " (.full-name)
                         " because it contains no cards."))
             (jump (car (group-members self)))))
       
@@ -833,7 +824,7 @@
     ;; This is a fairly easy mistake to make.
     (def (jump)
       (error (cat "Cannot jump to running card " self ", jump to static "
-                  "counterpart " (self .class) " instead.")))
+                  "counterpart " (.class) " instead.")))
     )
 
   ;; TODO - Get rid of wrapper functions.  
@@ -851,7 +842,7 @@
     (let [[c (find-card)]]
       (if c
           (jump c)
-          (error (cat "No card " str " " (node-full-name (current-card))
+          (error (cat "No card " str " " ((current-card) .full-name)
                       " in sequence.")))))
       
   (define (jump-next) (jump-helper card-next "after"))
@@ -1052,7 +1043,7 @@
 
     (def (notify-exit)
       (*engine* .notify-exit-card self)
-      (set! (*engine* .last-card-visited) (self .static-node)))
+      (set! (*engine* .last-card-visited) (.static-node)))
     )
 
   ;; * Things we know
@@ -1149,7 +1140,7 @@
       (trunk-node-inst .notify-reached-trunk)
 
       ;; Actually run the card.
-      (debug-log (cat "Begin card: <" (node-full-name new-card-class) ">"))
+      (debug-log (cat "Begin card: <" (new-card-class .full-name) ">"))
       (with-errors-blocked (non-fatal-error)
         (enter-node-recursively new-card-class trunk-node-inst))))
 
@@ -1172,6 +1163,6 @@
         (lambda ()
           (unless exited-safely?
             (fatal-error (cat "Cannot JUMP in (on exit () ...) handler for "
-                              (node-full-name node)))))))
+                              (node .full-name)))))))
 
   )

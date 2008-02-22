@@ -52,6 +52,7 @@ SVN - tryon, emk, brian
     - Added EVENT-MODIFIERS-AND-CHARACTER to make it easier to match
       specific key command sequences.
     - Backported a tab-handling fix from HEAD of wxWidgets.
+  * F#2869: Deprecated NODE-FULL-NAME in favor of .FULL-NAME method.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

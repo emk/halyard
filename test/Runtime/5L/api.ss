@@ -395,7 +395,7 @@
   ;;; @param NODE node The node to which this listener should be attached.
   ;;; @param LISTENER listener 
   (define (register-state-db-fn! node fn)
-    (call-5l-prim 'StateDbRegisterListener (node-full-name node) fn))
+    (call-5l-prim 'StateDbRegisterListener (node .full-name) fn))
 
   (define (make-state-db-fn f)
     (fn (listener-name listener-serial-number)

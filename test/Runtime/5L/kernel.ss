@@ -159,7 +159,7 @@
   (define (check-whether-jump-allowed)
     (when *running-on-exit-handler-for-node*
       (error (cat "Cannot JUMP in (on exit () ...) handler for node "
-                  (node-full-name *running-on-exit-handler-for-node*)))))
+                  (*running-on-exit-handler-for-node* .full-name)))))
 
   (define (jump-to-card card)
     (check-whether-jump-allowed)
@@ -282,7 +282,7 @@
 
   (define (%kernel-current-card-name)
     (if (*engine* .current-card)
-        (value->string (node-full-name (*engine* .current-card)))
+        (value->string ((*engine* .current-card) .full-name))
         ""))
 
   (define (%kernel-valid-card? card-name)
@@ -581,13 +581,13 @@
 
     (def (notify-enter-card card)
       (when (have-5l-prim? 'NotifyEnterCard)
-        (call-5l-prim 'NotifyEnterCard (node-full-name card)))
+        (call-5l-prim 'NotifyEnterCard (card .full-name)))
       (call-hook-functions *enter-card-hook* card))
 
     (def (notify-exit-card card)
       (call-hook-functions *exit-card-hook* card)
       (when (have-5l-prim? 'NotifyExitCard)
-        (call-5l-prim 'NotifyExitCard (node-full-name card))))
+        (call-5l-prim 'NotifyExitCard (card .full-name))))
     
     (def (notify-card-body-finished card)
       (call-hook-functions *card-body-finished-hook*)
@@ -598,10 +598,10 @@
       ;; and in Common test.
       ;; TODO - Remove when cleaning up element deletion.
       (when (have-5l-prim? 'DeleteElements)
-        (call-5l-prim 'DeleteElements (node-full-name elem))))
+        (call-5l-prim 'DeleteElements (elem .full-name))))
 
     (def (exit-node node)
-      (call-5l-prim 'StateDbUnregisterListeners (node-full-name node))
+      (call-5l-prim 'StateDbUnregisterListeners (node .full-name))
       (%kernel-cancel-deferred-thunks-for node))
     )
 
@@ -651,7 +651,7 @@
   
   (define (%kernel-register-card card)
     (when (have-5l-prim? 'RegisterCard)
-      (call-5l-prim 'RegisterCard (node-full-name card))))
+      (call-5l-prim 'RegisterCard (card .full-name))))
 
   (define (find-card card-or-name
                      &opt (not-found
@@ -679,7 +679,7 @@
   (define (card-name card-or-name)
     (cond
      [(card? card-or-name)
-      (node-full-name card-or-name)]
+      (card-or-name .full-name)]
      [(symbol? card-or-name)
       (symbol->string card-or-name)]
      [(string? card-or-name)

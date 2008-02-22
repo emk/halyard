@@ -87,7 +87,7 @@
 
   (define (update-element-position elem)
     ;; Don't make me public.
-    (call-5l-prim 'MoveElementTo (node-full-name elem)
+    (call-5l-prim 'MoveElementTo (elem .full-name)
                   (parent->card elem (elem .at)))
     (foreach [e (node-elements elem)]
       (update-element-position e)))
@@ -118,7 +118,7 @@
     ;;; Raise this element above its siblings.
     (def (raise-to-top!)
       ;; TODO - Rearrange element order in Scheme, too?
-      (call-5l-prim 'RaiseToTop (node-full-name self))
+      (call-5l-prim 'RaiseToTop (.full-name))
       (define elems (node-elements self))
       (foreach [elem elems]
         (elem .raise-to-top!)))
@@ -155,19 +155,19 @@
 
     ;;; Set the keyboard focus to this element.
     (def (focus)
-      (call-5l-prim 'Focus (node-full-name self))))
+      (call-5l-prim 'Focus (.full-name))))
 
   ;; Let the engine know whether we want a cursor.  Note that the engine
   ;; knows nothing about 'auto, so we need to map it to #f manually.
   (define (set-wants-cursor! elem value)
-    (call-5l-prim 'WantsCursorSet (node-full-name elem)
+    (call-5l-prim 'WantsCursorSet (elem .full-name)
                   (case value
                     [[#f auto] #f]
                     [[#t] #t])))
 
   ;; Let the engine know whether we're currently dragging this object.
   (define (set-in-drag-layer?! elem value)
-    (call-5l-prim 'ElementSetInDragLayer (node-full-name elem) value))
+    (call-5l-prim 'ElementSetInDragLayer (elem .full-name) value))
   
   ;; Does S posses either negative width or negative height?
   (define (negative-shape? s)
@@ -258,8 +258,8 @@
         (err "has non-zero origin")]))
     (after-updating shape
       (if (.overlay?)
-        (call-5l-prim 'OverlaySetShape (node-full-name self) (.shape))
-        (call-5l-prim 'ZoneSetShape (node-full-name self)
+        (call-5l-prim 'OverlaySetShape (.full-name) (.shape))
+        (call-5l-prim 'ZoneSetShape (.full-name)
                       (offset-by-point (as <polygon> (.shape)) (.at))))
       (.invalidate))
 
@@ -276,18 +276,18 @@
       (when (negative-shape? (.shape))
         (let [[original-shape (.shape)]]
           (set! (.shape) (rect 0 0 0 0))
-          (error (cat "%custom-element%: " (node-full-name self)
+          (error (cat "%custom-element%: " (.full-name)
                       " may not have a negative-sized shape: " 
                       original-shape "."))))
       )
     
     (def (create-engine-node)
       (if (.overlay?)
-        (call-5l-prim 'Overlay (node-full-name self)
+        (call-5l-prim 'Overlay (.full-name)
                       (parent->card self (.bounds))
                       (make-node-event-dispatcher self) (.cursor) (.alpha?)
                       (.clickable-where-transparent?))
-        (call-5l-prim 'Zone (node-full-name self)
+        (call-5l-prim 'Zone (.full-name)
                       (parent->card self (as <polygon> (.bounds)))
                       (make-node-event-dispatcher self) (.cursor))))
 
@@ -392,13 +392,13 @@
       :alpha? alpha?))
   
   (define (element-exists-in-engine? elem)
-    (call-5l-prim 'ElementExists (node-full-name elem)))
+    (call-5l-prim 'ElementExists (elem .full-name)))
 
   (define (set-element-shown?! elem show?)
     ;; Not all subclasses of %element% actually have a corresponding
     ;; engine object.
     (when (element-exists-in-engine? elem)
-      (call-5l-prim 'ElementSetShown (node-full-name elem) show?)))
+      (call-5l-prim 'ElementSetShown (elem .full-name) show?)))
 
   ;;; Delete the specified elements.
   (define (delete-elements
@@ -418,7 +418,7 @@
   (define (delete-element-if-exists name
                                     &key (parent (default-element-parent)))
     (when (element-exists? name :parent parent)
-      (delete-element (find-node (string->symbol (cat (node-full-name parent)
+      (delete-element (find-node (string->symbol (cat (parent .full-name)
                                                       "/" name)) #t))))
 
 
@@ -478,9 +478,9 @@
     (syntax-rules ()
       [(with-dc dc body ...)
        (dynamic-wind
-           (lambda () (call-5l-prim 'DcPush (node-full-name dc)))
+           (lambda () (call-5l-prim 'DcPush (dc .full-name)))
            (lambda () (begin/var body ...))
-           (lambda () (call-5l-prim 'DcPop (node-full-name dc))))]))
+           (lambda () (call-5l-prim 'DcPop (dc .full-name))))]))
   (define-syntax-indent with-dc 1)
 
   ;;; Get the bounding rectangle of the current DC.
@@ -662,7 +662,7 @@
     (value wants-cursor? #f)
 
     (def (create-engine-node)
-      (call-5l-prim 'CursorElement (node-full-name self)
+      (call-5l-prim 'CursorElement (.full-name)
                     (parent->card self
                                   (offset-rect (.shape) (.at)))
                     (make-node-event-dispatcher self)
@@ -734,7 +734,7 @@
     (value shape (animated-graphic-shape (.graphics)))
 
     (def (create-engine-node)
-      (call-5l-prim 'OverlayAnimated (node-full-name self)
+      (call-5l-prim 'OverlayAnimated (.full-name)
                     (parent->card self
                                   (offset-rect (.shape) (.at)))
                     (make-node-event-dispatcher self) (.cursor)
@@ -782,7 +782,7 @@
 
   (define (set-element-cursor! elem cursor)
     ;; Don't make me public.
-    (call-5l-prim 'SetZoneCursor (node-full-name elem) cursor))
+    (call-5l-prim 'SetZoneCursor (elem .full-name) cursor))
 
   ;;; Register the graphic in FILENAME with the engine as a cursor named
   ;;; SYM.  If the hotspot is not in the default path, it should be
@@ -813,13 +813,13 @@
   ;;; @see ungrab-mouse mouse-grabbed? mouse-grabbed-by?
   (define (grab-mouse elem)
     (assert (element? elem))
-    (call-5l-prim 'MouseGrab (node-full-name elem)))
+    (call-5l-prim 'MouseGrab (elem .full-name)))
 
   ;;; Ungrab the mouse, which must be currently grabbed by ELEM.
   ;;; @see grab-mouse
   (define (ungrab-mouse elem)
     (assert (element? elem))
-    (call-5l-prim 'MouseUngrab (node-full-name elem)))
+    (call-5l-prim 'MouseUngrab (elem .full-name)))
 
   ;;; Is the mouse currently grabbed?
   ;;; @see grab-mouse
@@ -829,7 +829,7 @@
   ;;; Is the mouse currently grabbed by ELEM?
   ;;; @see grab-mouse
   (define (mouse-grabbed-by? elem)
-    (call-5l-prim 'MouseIsGrabbedBy (node-full-name elem)))
+    (call-5l-prim 'MouseIsGrabbedBy (elem .full-name)))
 
 
   ;;;======================================================================
@@ -848,14 +848,14 @@
 
     ;;; Get a property of an ActiveX element.
     (def (activex-prop name)
-      (call-5l-prim 'ActiveXPropGet (node-full-name self) name))
+      (call-5l-prim 'ActiveXPropGet (.full-name) name))
 
     ;;; Set a property of an ActiveX element.
     (def (set-activex-prop! name value)
-      (call-5l-prim 'ActiveXPropSet (node-full-name self) name value))
+      (call-5l-prim 'ActiveXPropSet (.full-name) name value))
 
     (def (create-engine-node)
-      (call-5l-prim 'ActiveX (node-full-name self) 
+      (call-5l-prim 'ActiveX (.full-name) 
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
                     (.activex-id))))
@@ -899,7 +899,7 @@
     (after-updating path
       (define native (make-native-path "HTML" (.path)))
       (check-file native)
-      (call-5l-prim 'BrowserLoadPage (node-full-name self) native))
+      (call-5l-prim 'BrowserLoadPage (.full-name) native))
 
     ;;; Load the specified page in the web browser.  Can be pointed
     ;;; to either the local HTML folder or to a URL.
@@ -911,32 +911,32 @@
     (def (command-enabled? command)
       (case command
         [[back]
-         (call-5l-prim 'BrowserCanBack (node-full-name self))]
+         (call-5l-prim 'BrowserCanBack (.full-name))]
         [[forward]
-         (call-5l-prim 'BrowserCanForward (node-full-name self))]
+         (call-5l-prim 'BrowserCanForward (.full-name))]
         [[reload]
-         (call-5l-prim 'BrowserCanReload (node-full-name self))]
+         (call-5l-prim 'BrowserCanReload (.full-name))]
         [[stop]
-         (call-5l-prim 'BrowserCanStop (node-full-name self))]
+         (call-5l-prim 'BrowserCanStop (.full-name))]
         [else
          (super)]))
     (.always-propagate 'command-enabled?)
 
     ;;; Go back to the previous page.
     (def (back)
-      (call-5l-prim 'BrowserBack (node-full-name self)))
+      (call-5l-prim 'BrowserBack (.full-name)))
     ;;; Go forward.
     (def (forward)
-      (call-5l-prim 'BrowserForward (node-full-name self)))
+      (call-5l-prim 'BrowserForward (.full-name)))
     ;;; Reload the currently displayed page.
     (def (reload)
-      (call-5l-prim 'BrowserReload (node-full-name self)))
+      (call-5l-prim 'BrowserReload (.full-name)))
     ;;; Stop loading the currently displayed page.
     (def (stop)
-      (call-5l-prim 'BrowserStop (node-full-name self)))
+      (call-5l-prim 'BrowserStop (.full-name)))
 
     (def (create-engine-node)
-      (call-5l-prim 'Browser (node-full-name self) 
+      (call-5l-prim 'Browser (.full-name) 
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
                     (.fallback?))
@@ -985,14 +985,14 @@
     ;;; Return the text from this edit box.
     (def (text)
       (if (.initialized?)
-        (call-5l-prim 'EditBoxGetValue (node-full-name self))
+        (call-5l-prim 'EditBoxGetValue (.full-name))
         (slot 'text)))
 
     ;;; Set the text in this edit box.
     (def (set-text! value)
       (check-setter-type self 'text <string> value)
       (if (.initialized?)
-        (call-5l-prim 'EditBoxSetValue (node-full-name self) value)
+        (call-5l-prim 'EditBoxSetValue (.full-name) value)
         (set! (slot 'text) value)))
     
     (def (char event)
@@ -1052,14 +1052,14 @@
     ;;; at 0, and an index of -1 specifies "after the last character".
     (def (set-insertion-point! index)
       (.focus)
-      (call-5l-prim 'EditBoxSetInsertionPoint (node-full-name self) index))
+      (call-5l-prim 'EditBoxSetInsertionPoint (.full-name) index))
     ;;; Set the selection.  Indices are the same as SET-INSERTION-POINT!.
     (def (set-selection! start end)
       (.focus)
-      (call-5l-prim 'EditBoxSetSelection (node-full-name self) start end))
+      (call-5l-prim 'EditBoxSetSelection (.full-name) start end))
 
     (def (create-engine-node)
-      (call-5l-prim 'EditBox (node-full-name self)
+      (call-5l-prim 'EditBox (.full-name)
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect)) (slot 'text)
                     (.font-size) (.multiline?) (.send-enter-event?)))
@@ -1088,23 +1088,23 @@
   (define (media-pause elem)
     ;; Note: these functions may not be happy if the underlying movie
     ;; code doesn't like to be paused.
-    (call-5l-prim 'MoviePause (node-full-name elem)))
+    (call-5l-prim 'MoviePause (elem .full-name)))
 
   ;; (Internal use only.)  Resume a media element.
   (define (media-resume elem)
-    (call-5l-prim 'MovieResume (node-full-name elem)))
+    (call-5l-prim 'MovieResume (elem .full-name)))
   
   ;; (Internal use only.)  End playback of a media element. From the
   ;; perspective of the WAIT function, the media element will skip
   ;; immediately to the end of playback.
   (define (media-end-playback elem)
-    (call-5l-prim 'MovieEndPlayback (node-full-name elem)))
+    (call-5l-prim 'MovieEndPlayback (elem .full-name)))
 
   ;; (Internal use only.)  Set the volume of a media element.  Channels may
   ;; be LEFT, RIGHT, ALL, or something else depending on the exact type of
   ;; media being played.  Volume ranges from 0.0 to 1.0.
   (define (set-media-volume! elem channel volume)
-    (call-5l-prim 'MediaSetVolume (node-full-name elem) channel volume))  
+    (call-5l-prim 'MediaSetVolume (elem .full-name) channel volume))  
            
   ;; (Internal use only.)  If we can find an appropriate caption file, then
   ;; attach it to a media element.  We assume that captions live in
@@ -1115,7 +1115,7 @@
   (define (media-maybe-attach-caption-file! elem path)
     (let [[native (make-native-path "LocalMedia" (cat path ".capt"))]]
       (when (and (not (url? native)) (file-exists? native))
-        (call-5l-prim 'MediaAttachCaptionFile (node-full-name elem) native))))
+        (call-5l-prim 'MediaAttachCaptionFile (elem .full-name) native))))
 
   (define (add-common-media-methods! klass)
     (with-instance klass
@@ -1124,7 +1124,7 @@
       ;;; doesn't take a keyword argument--everybody was always leaving
       ;;; that keyword off.
       (def (wait &opt (frame #f))
-        (define name (node-full-name self))
+        (define name (.full-name))
         (if frame
           (call-5l-prim 'Wait name frame)
           (call-5l-prim 'Wait name)))
@@ -1152,11 +1152,11 @@
 
       ;;; When FRAME is reached, send an PLAYBACK-TIMER event.
       (def (set-playback-timer! frame)
-        (call-5l-prim 'MovieSetPlaybackTimer (node-full-name self) frame))
+        (call-5l-prim 'MovieSetPlaybackTimer (.full-name) frame))
       
       ;;; Clear an exiting playback timer.
       (def (clear-playback-timer!)
-        (call-5l-prim 'MovieClearPlaybackTimer (node-full-name self)))
+        (call-5l-prim 'MovieClearPlaybackTimer (.full-name)))
       ))
 
   ;;; The superclass of all audio-only elements.
@@ -1195,10 +1195,10 @@
     (attr path :type <string> :label "Path")
       
     (def (set-counts-per-second! counts)
-      (call-5l-prim 'AudioStreamGeigerSetCps (node-full-name self) counts))
+      (call-5l-prim 'AudioStreamGeigerSetCps (.full-name) counts))
     
     (def (create-engine-node)
-      (call-5l-prim 'AudioStreamGeiger (node-full-name self)
+      (call-5l-prim 'AudioStreamGeiger (.full-name)
                     (make-node-event-dispatcher self)
                     (build-path (current-directory) "LocalMedia" (.path))
                     (.volume))))
@@ -1215,7 +1215,7 @@
     (attr loops)
     
     (def (create-engine-node)
-      (apply call-5l-prim 'GeigerSynth (node-full-name self) (.state-path)
+      (apply call-5l-prim 'GeigerSynth (.full-name) (.state-path)
              (build-path (current-directory) "LocalMedia" (.chirp))
              (.volume)
              (* 512 1024)
@@ -1236,7 +1236,7 @@
     (attr frequency :type <integer> :label "Frequency (Hz)")
       
     (def (create-engine-node)
-      (call-5l-prim 'AudioStreamSine (node-full-name self)
+      (call-5l-prim 'AudioStreamSine (.full-name)
                     (make-node-event-dispatcher self)
                     (.volume) (.frequency))))
 
@@ -1268,7 +1268,7 @@
     (def (create-engine-node)
       (let [[path (make-native-path "LocalMedia" (.path))]]
         (check-file path)
-        (call-5l-prim 'AudioStreamVorbis (node-full-name self)
+        (call-5l-prim 'AudioStreamVorbis (.full-name)
                       (make-node-event-dispatcher self) path
                       (.volume) (* 1024 (.buffer)) (.loop?))))
 
@@ -1421,12 +1421,12 @@
     ;;; the user will be asked to wait without *something* happening.
     ;;; The controller bar turns off timeouts.)
     (def (set-timeout! seconds)
-      (call-5l-prim 'MovieSetTimeout (node-full-name self) seconds))
+      (call-5l-prim 'MovieSetTimeout (.full-name) seconds))
 
     (def (create-engine-node)
       (define path (media-path (.path)))
       (check-file path)
-      (call-5l-prim 'Movie (node-full-name self)
+      (call-5l-prim 'Movie (.full-name)
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
                     path (.volume)

@@ -198,7 +198,7 @@
        cursor-shown cursor-hidden))
 
     (def (dispatch-event-to-node name args)
-      (debug-log (cat (node-full-name self) ": " name " event: " args))
+      (debug-log (cat (.full-name) ": " name " event: " args))
       (define event
         (case name
           [[update-ui]
