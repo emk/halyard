@@ -250,6 +250,15 @@
         ;; Make the actual method call.
         (call-with-method-list object methods method-name args))))
     
+  (define (ruby-method-arity m)
+    (define arity (procedure-arity m))
+    (cond 
+      [(integer? arity) (- arity 2)]
+      [(arity-at-least? arity) (make-arity-at-least 
+                                (- (arity-at-least-value arity) 
+                                   2))]
+      [else (error (cat "Bad arity " arity " on method " m))]))
+  
   ;; The back-end half of method dispatch.  This function takes a
   ;; precomputed list of methods to call, and when that list is exhausted,
   ;; hands further work to METHOD-MISSING.
@@ -257,12 +266,22 @@
     (if (null? methods)
       ;; No more methods to call, so dispatch this to method-missing.
       (apply send% object 'method-missing method-name args)
-      ;; Call the first method in the list, and give an implementation of
-      ;; SUPER.
-      (apply (car methods) object
-             (lambda ()
-               (call-with-method-list object (cdr methods) method-name args))
-             args)))
+      (begin 
+        ;; Catch arity error before we try calling the method, so we can 
+        ;; provide an error message that makes more sense.
+        (unless (procedure-arity-includes? (car methods) (+ 2 (length args)))
+          (apply raise-arity-error 
+                 (symcat "Method " object " ." 
+                         (object-name (car methods)))
+                 (ruby-method-arity (car methods))
+                 args))
+        
+        ;; Call the first method in the list, and give an implementation of
+        ;; SUPER.
+        (apply (car methods) object
+               (lambda ()
+                 (call-with-method-list object (cdr methods) method-name args))
+               args))))
 
   (define (instance-exec object method . args)
     (apply method object 
@@ -280,7 +299,8 @@
       [(_ (name . args) . body)
        (quasisyntax/loc stx
          (app~ #,(make-self #'name) .define-method 'name
-               (method~ args . body)))]))
+               (let [[name (method~ args . body)]]
+                 name)))]))
   
   (define-syntax (attr stx)
     (syntax-case stx ()

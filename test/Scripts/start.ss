@@ -111,6 +111,7 @@
 (require (file "test-cases.ss"))
 (require (file "updater-example.ss"))
 (require (file "quake2-example.ss"))
+(require (file "performance.ss"))
 
 ;; Test cases from the standard library.
 (require (file "ruby-objects-test.ss"))

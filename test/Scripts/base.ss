@@ -155,6 +155,8 @@
 
   (define-class %centered-text% (%text%)
     (default at (point 0 0))
+    (after-updating shape
+      (.center-on-parent!))
     (setup
       (.center-on-parent!)))
 

@@ -511,4 +511,33 @@
   (card ruby-objects-test/initialize-without-super-test (%test-suite%)
     (value tests (list <initialize-without-super-test>)))
   
+  
+  ;;=======================================================================
+  ;;  Test for good error messages
+  ;;=======================================================================
+  
+  (define-class %error-message-test% ()
+    (def (one-arg bar)
+      (cat "hello " bar)))
+  
+  (define-test-case <error-message-test> () []
+    (test "Error messages should mention the method that failed"
+      (define test (%error-message-test% .new))
+      (assert-raises-message exn:fail?
+        "one-arg" 
+        (test .one-arg)))
+    (test "Error messages should mention user-visible arity, not internal"
+      (define test (%error-message-test% .new))
+      (assert-raises-message exn:fail?
+        "expects 1 argument, given 0" 
+        (test .one-arg)))
+    (test "Error messages should mention class name"
+      (define test (%error-message-test% .new))
+      (assert-raises-message exn:fail?
+        "%error-message-test%" 
+        (test .one-arg))))
+  
+  (card ruby-objects-test/error-message-test (%test-suite%)
+    (value tests (list <error-message-test>)))
+  
   )
