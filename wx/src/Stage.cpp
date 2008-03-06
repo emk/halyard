@@ -92,7 +92,8 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mElementsHaveChanged(false),
       mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
-      mIsDisplayingBorders(false), mIsBeingDestroyed(false)
+      mIsDisplayingBorders(false), mIsErrortraceCompileEnabled(false), 
+      mIsBeingDestroyed(false)
 {
     // Set up our class options, *then* call Create(), to avoid early
     // repainting of this window with the wrong options.  (Theoretically,

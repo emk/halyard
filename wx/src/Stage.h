@@ -207,6 +207,11 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     /// Are we displaying borders for the interactive elements.
     ///
     bool mIsDisplayingBorders;
+    
+    /////////
+    /// Should the next compile include error tracing?
+    /// 
+    bool mIsErrortraceCompileEnabled;
 
     //////////
     /// Is the stage being destroyed yet?
@@ -584,6 +589,17 @@ public:
     ///
     void ToggleDisplayBorders()
 		{ InvalidateScreen(); mIsDisplayingBorders = !mIsDisplayingBorders; }
+
+    //////////
+    /// Should the next compile include error tracing?
+    ///
+    bool IsErrortraceCompileEnabled() { return mIsErrortraceCompileEnabled; }
+
+    //////////
+    /// Toggle whether the next compile should include error tracing.
+    ///
+    void ToggleErrortraceCompile()
+		{ mIsErrortraceCompileEnabled = !mIsErrortraceCompileEnabled; }
 
 	//////////
 	/// Invalidate the entire stage.

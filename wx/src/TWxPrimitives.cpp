@@ -117,6 +117,7 @@ void FIVEL_NS RegisterWxPrimitives() {
 	REGISTER_5L_PRIMITIVE(ElementSetShown);
 	REGISTER_5L_PRIMITIVE(ElementSetInDragLayer);
 	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
+    REGISTER_5L_PRIMITIVE(ErrortraceCompileEnabled);
     REGISTER_5L_PRIMITIVE(Focus);
 	REGISTER_5L_PRIMITIVE(GeigerSynth);
     REGISTER_5L_PRIMITIVE(HideCursorUntilMouseMoved);
@@ -599,6 +600,10 @@ DEFINE_5L_PRIMITIVE(EnableExpensiveEvents) {
 	bool enable;
 	inArgs >> enable;
 	EventDispatcher::EnableExpensiveEvents(enable);
+}
+
+DEFINE_5L_PRIMITIVE(ErrortraceCompileEnabled) {
+    ::SetPrimitiveResult(wxGetApp().GetStage()->IsErrortraceCompileEnabled());
 }
 
 DEFINE_5L_PRIMITIVE(Focus) {

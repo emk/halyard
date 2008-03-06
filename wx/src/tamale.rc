@@ -76,6 +76,7 @@ TB_COPY                 BITMAP                  "tb_copy.bmp"
 TB_PASTE                BITMAP                  "tb_paste.bmp"
 TB_SIZEINC              BITMAP                  "tb_sizeinc.bmp"
 TB_SIZEDEC              BITMAP                  "tb_sizedec.bmp"
+TB_ERRORTRACE           BITMAP                  "tb_errortrace.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

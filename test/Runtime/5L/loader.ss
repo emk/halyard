@@ -55,6 +55,12 @@
   ;; Get the official directory we should be loading scripts from.
   (define (scripts-directory-name)
     (%call-5l-prim 'ScriptsDirectoryName))
+
+  ;; Should we be compiling our files using the errortrace instrumentation?
+  (define (errortrace-compile-enabled?)
+    (if (%call-5l-prim 'HavePrimitive 'ErrortraceCompileEnabled)
+      (%call-5l-prim 'ErrortraceCompileEnabled)
+      #f))
   
   ;; Throw an error that displays a message in a dialog box and then takes
   ;; down the engine without submitting a crash report.
@@ -222,6 +228,21 @@
                             ;; Recompile *.zo files on demand.
                             (make-compile-zo-with-heartbeat))]]
         
+          ;; Support for decent backtraces upon errors.  We pull in 
+          ;; the support from errortrace-lib.ss, and then manually enable
+          ;; errortrace if requested.  Note that we always require 
+          ;; errortrace-lib.ss so we will have stable file counts in 
+          ;; data.tam.
+          (set! filename "errortrace-lib.ss")
+          (namespace-require '(lib "errortrace-lib.ss" "errortrace"))
+          (when (errortrace-compile-enabled?)
+            ;; Re-implement the logic from errortrace.ss.
+            (current-compile (namespace-variable-value 
+                              'errortrace-compile-handler))
+            (use-compiled-file-paths (list (build-path "compiled" 
+                                                       "errortrace")
+                                           (build-path "compiled"))))
+
           ;; Manually load the kernel into our new namespace.  We need to
           ;; call (load/use-compiled ...) instead of (require ...), because
           ;; we want the kernel registered under its official module name

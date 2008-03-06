@@ -2,6 +2,7 @@
 
   (require (lib "begin-var.ss" "5L"))
   (require (lib "indent.ss" "5L"))
+  (require (lib "errortrace-lib.ss" "errortrace"))
 
 
   ;;=======================================================================
@@ -86,7 +87,7 @@
 
   (provide foreach member? value->string cat symcat keyword-name
            hash-table-has-key?
-           label format-trace with-errors-blocked with-values curry)
+           label with-errors-blocked with-values curry)
 
   ;;; Run a body once for each item in a list.
   ;;;
@@ -169,22 +170,6 @@
                                         (begin/var body ...)))]))
   (define-syntax-indent label 1)
 
-  ;;; Attempt to format a nice backtrace.
-  (define (format-trace exn)
-    (let loop ((str "") (traces (continuation-mark-set->context 
-                                 (exn-continuation-marks exn))))
-      (if (null? traces)
-          (cat str "\n Exception: " (exn-message exn))
-          (loop (cat str "\n  " (format-trace-line (car traces)))
-                (cdr traces)))))
-  
-  (define (format-trace-line line)
-    (cat (car line) " " 
-         (if (srcloc? (cdr line))
-           (cat (srcloc-source (cdr line)) "@" (srcloc-line (cdr line)) ":" 
-                (srcloc-column (cdr line)))
-           #f)))
-
   ;;; Call THUNK, and if an error occurs, pass it to REPORT-FUNC.
   (define (call-with-errors-blocked report-func thunk)
     (let* ((result (with-handlers ([void (lambda (exn) (cons #f exn))])
@@ -194,14 +179,16 @@
       (if good?
           exn-or-value
           (begin
-            (debug-log "Backtrace-begin")
             ;; Print the backtrace to the debug log, but don't throw
             ;; an exception if there are any errors in the printing
             ;; process.
             (with-handlers [[void (lambda (exn) #f)]]
+              (define strport (open-output-string))
+              (print-error-trace strport exn-or-value)
               (debug-log (cat "Backtrace: " (exn-message exn-or-value) "\n"
-                              (format-trace exn-or-value))))
-            (debug-log "Backtrace-end")
+                              "=============\n"
+                              (get-output-string strport)
+                              "=============")))
             (report-func (exn-message exn-or-value))
             #f))))
 

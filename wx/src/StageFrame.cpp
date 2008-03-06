@@ -174,6 +174,9 @@ BEGIN_EVENT_TABLE(StageFrame, SashFrame)
     EVT_MENU(FIVEL_DISPLAY_GRID, StageFrame::OnDisplayGrid)
     EVT_UPDATE_UI(FIVEL_DISPLAY_BORDERS, StageFrame::UpdateUiDisplayBorders)
     EVT_MENU(FIVEL_DISPLAY_BORDERS, StageFrame::OnDisplayBorders)
+    EVT_UPDATE_UI(FIVEL_ERRORTRACE_COMPILE, 
+                  StageFrame::UpdateUiErrortraceCompile)
+    EVT_MENU(FIVEL_ERRORTRACE_COMPILE, StageFrame::OnErrortraceCompile)
     EVT_UPDATE_UI(FIVEL_PROPERTIES, StageFrame::UpdateUiProperties)
     EVT_MENU(FIVEL_PROPERTIES, StageFrame::OnProperties)
     EVT_UPDATE_UI(FIVEL_EDIT_MODE, StageFrame::UpdateUiEditMode)
@@ -320,6 +323,11 @@ StageFrame::StageFrame(wxSize inSize)
     tb->AddCheckTool(FIVEL_DISPLAY_BORDERS,
                      "Display Borders", wxBITMAP(tb_borders),
                      wxNullBitmap, "Display Borders");
+    tb->AddCheckTool(FIVEL_ERRORTRACE_COMPILE,
+                     "Include Backtrace Information After Reload", 
+                     wxBITMAP(tb_errortrace),
+                     wxNullBitmap, 
+                     "Include Backtrace Information After Reload");
     tb->Realize();
         
     // Add a status bar.
@@ -968,6 +976,17 @@ void StageFrame::UpdateUiDisplayBorders(wxUpdateUIEvent &inEvent)
 void StageFrame::OnDisplayBorders(wxCommandEvent &inEvent)
 {
     mStage->ToggleDisplayBorders();
+}
+
+void StageFrame::UpdateUiErrortraceCompile(wxUpdateUIEvent &inEvent)
+{
+    inEvent.Check(mStage->IsErrortraceCompileEnabled());
+    inEvent.Enable(AreDevToolsAvailable());
+}
+
+void StageFrame::OnErrortraceCompile(wxCommandEvent &inEvent)
+{
+    mStage->ToggleErrortraceCompile();
 }
 
 void StageFrame::UpdateUiProperties(wxUpdateUIEvent &inEvent)

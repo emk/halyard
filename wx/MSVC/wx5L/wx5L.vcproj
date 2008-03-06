@@ -1017,6 +1017,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\tb_errortrace.bmp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\tb_grid.bmp"
 				>
 			</File>
