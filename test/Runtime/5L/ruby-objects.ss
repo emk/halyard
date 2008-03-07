@@ -271,8 +271,7 @@
         ;; provide an error message that makes more sense.
         (unless (procedure-arity-includes? (car methods) (+ 2 (length args)))
           (apply raise-arity-error 
-                 (symcat "Method " object " ." 
-                         (object-name (car methods)))
+                 (symcat "Method " object " ." method-name)
                  (ruby-method-arity (car methods))
                  args))
         

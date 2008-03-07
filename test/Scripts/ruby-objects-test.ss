@@ -517,8 +517,13 @@
   ;;=======================================================================
   
   (define-class %error-message-test% ()
+    (attr attribute 10 :writable? #t)
     (def (one-arg bar)
-      (cat "hello " bar)))
+      (cat "hello " bar))
+    (def (zero-arg)
+      "Zonk!")
+    (def (rest-args one two &rest rest)
+      (cat "The args are: " one two rest)))
   
   (define-test-case <error-message-test> () []
     (test "Error messages should mention the method that failed"
@@ -530,12 +535,29 @@
       (define test (%error-message-test% .new))
       (assert-raises-message exn:fail?
         "expects 1 argument, given 0" 
-        (test .one-arg)))
+        (test .one-arg))
+      (assert-raises-message exn:fail?
+        "expects no arguments, given 1"
+        (test .zero-arg 10))
+      (assert-raises-message exn:fail?
+        "expects at least 2 arguments, given 1"
+        (test .rest-args "hi"))
+      (assert-raises-message exn:fail?
+        "expects 1 argument, given 3"
+        (test .set-attribute! 'a 2 "foo"))
+      (assert-raises-message exn:fail?
+        "expects 1 argument, given 0"
+        (test .set-attribute!)))
     (test "Error messages should mention class name"
       (define test (%error-message-test% .new))
       (assert-raises-message exn:fail?
         "%error-message-test%" 
-        (test .one-arg))))
+        (test .one-arg)))
+    (test "Errors accessing attributes should mention attribute names"
+      (define test (%error-message-test% .new))
+      (assert-raises-message exn:fail?
+        "attribute"
+        (test .attribute 20))))
   
   (card ruby-objects-test/error-message-test (%test-suite%)
     (value tests (list <error-message-test>)))

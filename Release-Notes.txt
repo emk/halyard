@@ -68,6 +68,8 @@ SVN - tryon, emk, brian
     the developer interface.  There is a bug button that when
     selected, will cause the next reload to use the errortrace
     compiler.
+  * F#2993: Include method names of methods not defined with DEF in
+    arity errors.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):
