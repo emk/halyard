@@ -70,6 +70,9 @@ SVN - tryon, emk, brian
     compiler.
   * F#2993: Include method names of methods not defined with DEF in
     arity errors.
+  * F#2993: Include method names and appropriate arity error information
+    for methods that are called using INSTANCE-EXEC or modified using 
+    ADVISE.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

@@ -122,10 +122,10 @@
         [[before] 
          (method~ args
            (apply instance-exec self meth args)
-           (apply original self super args))]
+           (apply-method% name original self super args))]
         [[after] 
          (method~ args
-           (let [[result (apply original self super args)]]
+           (let [[result (apply-method% name original self super args)]]
              (apply instance-exec self meth args)
              result))]
         [else (error "advise-method!: '" combination " is not a valid advice "
@@ -249,7 +249,9 @@
         
         ;; Make the actual method call.
         (call-with-method-list object methods method-name args))))
-    
+
+  ;; Get user-visible arity of a method (2 less than the actual function 
+  ;; arity, since there are two hidden arguments, SELF and SUPER).
   (define (ruby-method-arity m)
     (define arity (procedure-arity m))
     (cond 
@@ -258,6 +260,23 @@
                                 (- (arity-at-least-value arity) 
                                    2))]
       [else (error (cat "Bad arity " arity " on method " m))]))
+
+  ;; Apply a method to an object, giving an appropriate arity error if 
+  ;; there is a mismatch.
+  (define (apply-method% method-name method object super args)
+    ;; Catch arity error before we try calling the method, so we can 
+    ;; provide an error message that makes more sense.
+    (unless (procedure-arity-includes? method (+ 2 (length args)))
+      (apply raise-arity-error 
+             (symcat "Method " object " ."
+                     ;; If we're passed in a name, use that.  Otherwise, 
+                     ;; use the inferred name that MzScheme gives to the
+                     ;; function. 
+                     (if method-name method-name (object-name method)))
+             (ruby-method-arity method)
+             args))
+    
+    (apply method object super args))
   
   ;; The back-end half of method dispatch.  This function takes a
   ;; precomputed list of methods to call, and when that list is exhausted,
@@ -266,26 +285,18 @@
     (if (null? methods)
       ;; No more methods to call, so dispatch this to method-missing.
       (apply send% object 'method-missing method-name args)
-      (begin 
-        ;; Catch arity error before we try calling the method, so we can 
-        ;; provide an error message that makes more sense.
-        (unless (procedure-arity-includes? (car methods) (+ 2 (length args)))
-          (apply raise-arity-error 
-                 (symcat "Method " object " ." method-name)
-                 (ruby-method-arity (car methods))
-                 args))
-        
-        ;; Call the first method in the list, and give an implementation of
-        ;; SUPER.
-        (apply (car methods) object
-               (lambda ()
-                 (call-with-method-list object (cdr methods) method-name args))
-               args))))
+      ;; Call the first method in the list, and give an implementation of
+      ;; SUPER.
+      (apply-method% method-name (car methods) object
+                     (lambda ()
+                       (call-with-method-list object (cdr methods) method-name 
+                                              args))
+                     args)))
 
   (define (instance-exec object method . args)
-    (apply method object 
-           (lambda () (error "Cannot call super using instance-exec"))
-           args))
+    (apply-method% #f method object 
+                   (lambda () (error "Cannot call super using instance-exec"))
+                   args))
 
   (define-syntax with-instance
     (syntax-rules ()
@@ -334,9 +345,17 @@
   (define-syntax (advise stx)
     (syntax-case stx ()
       [(_ combination (name arg ...) body ...)
-       (quasisyntax/loc stx
-         (app~ #,(make-self #'name) .advise-method 'combination 'name
-               (method~ (arg ...) body ...)))]))
+       ;; Hack to give the advise method a vaguely appropriate inferred name.
+       (let [[debugging-name 
+              (datum->syntax-object
+               #'name
+               (symcat (syntax-object->datum #'combination)
+                       " "
+                       (syntax-object->datum #'name)))]]
+         (quasisyntax/loc stx
+           (app~ #,(make-self #'name) .advise-method 'combination 'name
+                 (let [[#,debugging-name (method~ (arg ...) body ...)]]
+                   #,debugging-name))))]))
 
 
   ;;=======================================================================

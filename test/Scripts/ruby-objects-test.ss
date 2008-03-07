@@ -518,6 +518,15 @@
   
   (define-class %error-message-test% ()
     (attr attribute 10 :writable? #t)
+    (attr advised   20 :writable? #t)
+    (advise after (set-advised! x)
+      (when (.initialized?)
+        (set! (.attribute) (- (.advised) 10))))
+
+    (attr advised-before 30 :writable? #t)
+    (advise before (set-advised-before! x)
+      (void))
+
     (def (one-arg bar)
       (cat "hello " bar))
     (def (zero-arg)
@@ -557,7 +566,17 @@
       (define test (%error-message-test% .new))
       (assert-raises-message exn:fail?
         "attribute"
-        (test .attribute 20))))
+        (test .attribute 20)))
+    (test "Arity errors should report appropriate values in presense of ADVISE"
+      (define test (%error-message-test% .new))
+      (assert-raises-message exn:fail?
+        "expects 1 argument, given 2" 
+        (test .set-advised! 3 'foo)))
+    (test "Arity errors for advised methods should report method name"
+     (define test (%error-message-test% .new))
+     (assert-raises-message exn:fail?
+        "before set-advised-before!" 
+        (test .set-advised-before!))))
   
   (card ruby-objects-test/error-message-test (%test-suite%)
     (value tests (list <error-message-test>)))
