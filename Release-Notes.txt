@@ -63,6 +63,11 @@ SVN - tryon, emk, brian
   * F#2202: Removed < and > from editor's list of brace characters.
   * F#2993: Added better error reporting for bad number of arguments
     passed to a method.
+  * F#2830: Added backtrace support using PLT's errortrace library.
+    This slows the engine down considerably, so it is toggleable from
+    the developer interface.  There is a bug button that when
+    selected, will cause the next reload to use the errortrace
+    compiler.
 
 Massive restructuring on the node system, to take much better advantage of
 ruby-style classes (F#928):

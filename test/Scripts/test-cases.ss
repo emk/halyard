@@ -3,6 +3,7 @@
 ;; semi-supported TEST-ELEMENTS form. 
 (module test-cases (lib "5l.ss" "5L")
   (require (lib "tamale-unit.ss" "5L"))
+  (require (lib "errortrace-lib.ss" "errortrace"))
   
   (sequence test-cases)
 
@@ -218,4 +219,58 @@
       (%test-suite%
        :tests (list <graphic-element-test>)))
   
+  ;;=======================================================================
+  ;;  Errortrace test cases
+  ;;=======================================================================
+  
+  (define a #f)
+  (define method-error-test #f)
+  
+  (parameterize [[current-compile errortrace-compile-handler]
+                 [use-compiled-file-paths (list (build-path "compiled" 
+                                                       "errortrace")
+                                           (build-path "compiled"))]]
+    (set! a (dynamic-require '(file "errortrace-test.ss") 'a))
+    (set! method-error-test (dynamic-require '(file "errortrace-test.ss") 
+                                             'method-error-test)))
+
+  (define-syntax return-errortrace
+    (syntax-rules ()
+      [(_ expr) 
+       (with-handlers [[exn:fail? (fn (exn) 
+                                    (define port (open-output-string))
+                                    (print-error-trace port exn)
+                                    (get-output-string port))]]
+         expr)]))
+
+  (define-syntax assert-matches
+    (syntax-rules ()
+      [(_ regexp expr)
+       (let [[val expr]]
+         (unless (regexp-match regexp val)
+           (error (cat "Expected " 'expr " to match " regexp
+                       ", got " val " instead."))))]))
+  
+  (define-test-case <errortrace-test> () []
+    (test "Errotrace should include all stack frames"
+      (define trace (return-errortrace (a '())))
+      (assert-matches "\\(\\+ 1 n\\)" trace)
+      (assert-matches "\\(\\+ 1 \\(i n\\)\\)" trace)
+      (assert-matches "\\(\\+ 1 \\(h n\\)\\)" trace)
+      (assert-matches "\\(\\+ 1 \\(b n\\)\\)" trace))
+    (test "Errortrace should include correct line numbers"
+      (define trace (return-errortrace (a '())))
+      (assert-matches "errortrace-test\\.ss:13:4" trace)
+      (assert-matches "errortrace-test\\.ss:16:4" trace)
+      (assert-matches "errortrace-test\\.ss:37:4" trace))
+    (test "Errortrace should work for errors in methods"
+      (define trace (return-errortrace (method-error-test)))
+      (assert-matches "\\(send% t 'test-method \"hello!\"\\)" trace)
+      (assert-matches "\\(\\* \\(send% b 'test-me x\\) \\(send% self 'foo\\)\\)"
+                      trace)
+      (assert-matches "\\(\\+ \\(send% self 'bar\\) x\\)" trace)))
+
+  (card test-cases/errortrace-test
+      (%test-suite%
+       :tests (list <errortrace-test>)))
   )
