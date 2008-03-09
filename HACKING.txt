@@ -16,6 +16,7 @@ Table of Contents
   * Checking in Your Changes to 5L
   * Updating the Version Number
   * Copying an Engine Build into a Script
+  * Missing History
   * Ancient Versions
   * Vendor Branches in Subversion
   * Upgrading PLT
@@ -390,6 +391,48 @@ Copying an Engine Build into a Script
   $ rake update_engine TO=0.0.60
   # Smoke test...
   $ svn commit # ...appropriate arguments...
+
+Missing History
+---------------
+
+  While preparing the open source release (and setting up the git-svn
+  gateway), we did some significant history-editing of older revisions.
+  Specifically, files matching the following regexes were removed from
+  the Subversion repository using a custom version of svndumpfilter2:
+
+    \.exe$
+    \.dll$
+    \.mcp$
+    \.pdb$
+    \.xSYM$
+    \.tdt$
+    ^public/5L/tags/tamale_test/pre-template-card-syntax-change
+    Bin/Mac5L
+    blowfish
+    CryptStream
+    libs/CrashRpt
+    libs/netxx
+    Mac/Utility/CGWorld
+    Mac/Utility/CTextFileStream
+    Mac/Utility/CTimer
+    Mac/Utility/CTimerTask
+    Mac/Utility/LTask
+    Mac/Utility/UDeleteTaskQueue
+    Mac/Utility/gamma
+    Mac/Utility/MoreFiles
+    Mac/Utility/CKeyFilters
+    Mac/Utility/CPictDataFile
+    Mac/Utility/CSIOUXAttachment
+    Mac/Utility/CStack
+    Mac/Source/CModule
+    Win32/DibLib
+    Win32/Crypt
+    Win16
+
+  These files are still available in public/5L (and possibly
+  public/tamale), but only to internal users.  Many of the removals were
+  necessary to get the git repo size down to a manageable level, and most
+  of the rest were for copyright or export reasons.
 
 Ancient Versions
 ----------------
