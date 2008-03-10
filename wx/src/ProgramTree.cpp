@@ -37,7 +37,7 @@
 #include "Model.h"
 #include "ModelView.h"
 #include "doc/Document.h"
-#include "doc/TamaleProgram.h"
+#include "doc/UserProgram.h"
 #include "dlg/ProgramPropDlg.h"
 
 USING_NAMESPACE_FIVEL
@@ -216,7 +216,7 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 // {
 //     // Get our list of backgrounds.
 //     model::List *backgrounds =
-//         model::cast<TamaleProgram>(GetObject())->GetBackgrounds();
+//         model::cast<UserProgram>(GetObject())->GetBackgrounds();
 
 //     // This is messy--we need to update the tree's list of backgrounds to
 //     // match the list in our model without changing the contents of the
@@ -276,11 +276,11 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 
 
 //=========================================================================
-//  TamaleProgramMenu
+//  UserProgramMenu
 //=========================================================================
 
-/// Right-click menu for the TamaleProgramItemData in our ProgramTreeCtrl.
-class TamaleProgramMenu : public wxMenu
+/// Right-click menu for the UserProgramItemData in our ProgramTreeCtrl.
+class UserProgramMenu : public wxMenu
 {
 	DECLARE_EVENT_TABLE();
 
@@ -290,14 +290,14 @@ class TamaleProgramMenu : public wxMenu
     void OnProperties(wxCommandEvent &inEvent);	
 
 public:
-	TamaleProgramMenu(wxWindow *inParent, model::Object *inObject);
+	UserProgramMenu(wxWindow *inParent, model::Object *inObject);
 };
 
-BEGIN_EVENT_TABLE(TamaleProgramMenu, wxMenu)
-    EVT_MENU(FIVEL_PROPERTIES, TamaleProgramMenu::OnProperties)
+BEGIN_EVENT_TABLE(UserProgramMenu, wxMenu)
+    EVT_MENU(FIVEL_PROPERTIES, UserProgramMenu::OnProperties)
 END_EVENT_TABLE()
 
-TamaleProgramMenu::TamaleProgramMenu(wxWindow *inParent, model::Object *inObject)
+UserProgramMenu::UserProgramMenu(wxWindow *inParent, model::Object *inObject)
 {
 	mParent = inParent;
 	mObject = inObject;
@@ -305,7 +305,7 @@ TamaleProgramMenu::TamaleProgramMenu(wxWindow *inParent, model::Object *inObject
 		   "Edit the properties for this program.");
 }
 
-void TamaleProgramMenu::OnProperties(wxCommandEvent &inEvent)
+void UserProgramMenu::OnProperties(wxCommandEvent &inEvent)
 {
 	ProgramPropDlg prop_dlg(mParent, mObject);
 	prop_dlg.ShowModal();
@@ -313,14 +313,14 @@ void TamaleProgramMenu::OnProperties(wxCommandEvent &inEvent)
 
 
 //=========================================================================
-//  TamaleProgramItemData
+//  UserProgramItemData
 //=========================================================================
 
 /// Representation of the entire Tamale script in our ProgramTreeCtrl.
-class TamaleProgramItemData : public ViewItemData
+class UserProgramItemData : public ViewItemData
 {
 public:
-	TamaleProgramItemData(ProgramTreeCtrl *inTreeCtrl)
+	UserProgramItemData(ProgramTreeCtrl *inTreeCtrl)
 		: ViewItemData(inTreeCtrl) {}
 
 	virtual void OnRightDown(wxMouseEvent& event);
@@ -329,20 +329,20 @@ public:
 	virtual void ObjectDeleted();
 };
 
-void TamaleProgramItemData::OnRightDown(wxMouseEvent& event)
+void UserProgramItemData::OnRightDown(wxMouseEvent& event)
 {
-	TamaleProgramMenu popup(GetTree(), GetObject());
+	UserProgramMenu popup(GetTree(), GetObject());
 	GetTree()->PopupMenu(&popup, event.GetPosition());
 }
 
-void TamaleProgramItemData::ObjectChanged()
+void UserProgramItemData::ObjectChanged()
 {
 	wxASSERT(GetId());
 	wxString name(GetObject()->GetString("name").c_str());
 	GetTree()->SetItemText(GetId(), "Program '" + name + "'");
 }
 
-void TamaleProgramItemData::ObjectDeleted()
+void UserProgramItemData::ObjectDeleted()
 {
 }
 
@@ -385,7 +385,7 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 	mRootID = mTree->AddRoot("Program");
 	mTree->SetIcon(mRootID, ProgramTreeCtrl::ICON_DOCUMENT,
 				   ProgramTreeCtrl::ICON_DOCUMENT);
-	TamaleProgramItemData *item_data = new TamaleProgramItemData(mTree);
+	UserProgramItemData *item_data = new UserProgramItemData(mTree);
 	mTree->SetItemData(mRootID, item_data);
 	item_data->SetObject(inDocument->GetRoot());
 

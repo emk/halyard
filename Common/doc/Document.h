@@ -28,7 +28,7 @@
 
 BEGIN_NAMESPACE_FIVEL
 
-class TamaleProgram;
+class UserProgram;
 
 //////////
 /// This class represents a Tamale document.  It should have no dependencies
@@ -63,7 +63,7 @@ public:
 	//////////
 	/// A more-precisely-typed version of GetRoot.
 	///
-	FIVEL_NS TamaleProgram *GetTamaleProgram();
+	FIVEL_NS UserProgram *GetUserProgram();
 };
 
 END_NAMESPACE_FIVEL

@@ -20,17 +20,17 @@
 //
 // @END_LICENSE
 
-#ifndef TamaleProgram_H
-#define TamaleProgram_H
+#ifndef UserProgram_H
+#define UserProgram_H
 
 #include "Model.h"
 
 BEGIN_NAMESPACE_FIVEL
 
-/// Savable representation of a TamaleProgram.
-class TamaleProgram : public model::Object {
+/// Savable representation of a UserProgram.
+class UserProgram : public model::Object {
 public:
-	DECLARE_MODEL_CLASS(TamaleProgram);
+	DECLARE_MODEL_CLASS(UserProgram);
 	virtual void Initialize();
 
     std::string GetName();
@@ -46,4 +46,4 @@ protected:
 
 END_NAMESPACE_FIVEL
 
-#endif // TamaleProgram_H
+#endif // UserProgram_H

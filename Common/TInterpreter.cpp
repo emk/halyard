@@ -25,7 +25,7 @@
 #include "TInterpreter.h"
 #include "TDeveloperPrefs.h"
 #include "doc/Document.h"
-#include "doc/TamaleProgram.h"
+#include "doc/UserProgram.h"
 
 USING_NAMESPACE_FIVEL
 
@@ -46,7 +46,7 @@ TInterpreter::TInterpreter()
     // then load in the expected number of source files.
     Document *doc = TInterpreterManager::GetInstance()->GetDocument();
     if (doc)
-        mSourceFilesExpected = doc->GetTamaleProgram()->GetSourceFileCount();
+        mSourceFilesExpected = doc->GetUserProgram()->GetSourceFileCount();
 }
 
 TInterpreter::~TInterpreter()
@@ -67,7 +67,7 @@ void TInterpreter::NotifyScriptLoaded() {
     // and we're not in runtime mode, then update our source file count.
     Document *doc = TInterpreterManager::GetInstance()->GetDocument();
     if (doc && !TInterpreterManager::GetInstance()->IsInRuntimeMode())
-        doc->GetTamaleProgram()->SetSourceFileCount(mSourceFilesExpected);
+        doc->GetUserProgram()->SetSourceFileCount(mSourceFilesExpected);
 }
 
 double TInterpreter::GetLoadProgress() {

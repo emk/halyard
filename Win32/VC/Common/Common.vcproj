@@ -256,10 +256,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\doc\TamaleProgram.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\Common\TCommonPrimitives.cpp"
 				>
 			</File>
@@ -356,6 +352,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\Common\doc\UserProgram.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\Common\XmlUtils.cpp"
 				>
 			</File>
@@ -406,10 +406,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\ScriptEditorDB.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\Common\doc\TamaleProgram.h"
 				>
 			</File>
 			<File
@@ -522,6 +518,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\Typography.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\doc\UserProgram.h"
 				>
 			</File>
 			<File

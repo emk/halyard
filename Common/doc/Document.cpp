@@ -25,7 +25,7 @@
 #include "FileSystem.h"
 
 #include "Document.h"
-#include "TamaleProgram.h"
+#include "UserProgram.h"
 
 USING_NAMESPACE_FIVEL
 using namespace model;
@@ -59,7 +59,7 @@ using FileSystem::Path;
 //  for a longer explanation.
 
 BEGIN_MODEL_CLASSES()
-	REGISTER_MODEL_CLASS(TamaleProgram)
+	REGISTER_MODEL_CLASS(UserProgram)
 END_MODEL_CLASSES()
 
 
@@ -67,9 +67,9 @@ END_MODEL_CLASSES()
 //  Document Format
 //=========================================================================
 //  Format 0: Original format.
-//  Format 1: Added dbgreporturl to TamaleProgram.
-//  Format 2: Added sourcefilecount to TamaleProgram.
-//  Format 3: Added datadirname to TamaleProgram.
+//  Format 1: Added dbgreporturl to UserProgram.
+//  Format 2: Added sourcefilecount to UserProgram.
+//  Format 3: Added datadirname to UserProgram.
 
 enum {
     CURRENT_FORMAT = 3,
@@ -77,7 +77,7 @@ enum {
     EARLIEST_READABLE = 0
 };
 
-const static ModelFormat gTamaleFormat("TamaleProgram", CURRENT_FORMAT,
+const static ModelFormat gTamaleFormat("UserProgram", CURRENT_FORMAT,
 									   COMPATIBLE_BACK_TO);
 
 
@@ -146,7 +146,7 @@ Document::~Document()
     
 }
 
-TamaleProgram *Document::GetTamaleProgram()
+UserProgram *Document::GetUserProgram()
 {
-	return cast<TamaleProgram>(GetRoot());
+	return cast<UserProgram>(GetRoot());
 }

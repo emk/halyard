@@ -38,7 +38,7 @@
 
 #include "TVersion.h"
 #include "doc/Document.h"
-#include "doc/TamaleProgram.h"
+#include "doc/UserProgram.h"
 #include "FileSystem.h"
 #include "FiveLApp.h"
 #include "Stage.h"
@@ -256,7 +256,7 @@ void FancyCrashReporter::BeginInterceptingCrashes() {
 
 void FancyCrashReporter::RegisterDocument(FIVEL_NS Document *inDocument) {
     // Register ourselves as a ModelView of the program object.
-    SetObject(inDocument->GetTamaleProgram());
+    SetObject(inDocument->GetUserProgram());
 
     // Try to register various document-related files with the crash
     // reporter.  We start with our spec file, which (if it exists) contains

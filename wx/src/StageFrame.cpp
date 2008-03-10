@@ -28,7 +28,7 @@
 #include "TVersion.h"
 #include "TInterpreter.h"
 #include "doc/Document.h"
-#include "doc/TamaleProgram.h"
+#include "doc/UserProgram.h"
 #include "CrashReporter.h"
 #include "TDeveloperPrefs.h"
 
@@ -602,10 +602,10 @@ void StageFrame::NewDocument()
 		mDocument = new Document(file.mb_str());
 		config->Write("/Recent/DocPath", file);
 
-		ProgramPropDlg prop_dlg(this, mDocument->GetTamaleProgram());
+		ProgramPropDlg prop_dlg(this, mDocument->GetUserProgram());
 		prop_dlg.ShowModal();
 
-		SetObject(mDocument->GetTamaleProgram());
+		SetObject(mDocument->GetUserProgram());
 		mProgramTree->RegisterDocument(mDocument);
         CrashReporter::GetInstance()->RegisterDocument(mDocument);
 		mStage->Show();
@@ -648,7 +648,7 @@ void StageFrame::OpenDocument()
 
 void StageFrame::OpenDocument(const wxString &inDirPath) {
     mDocument = new Document(inDirPath.mb_str(), Document::OPEN);
-    SetObject(mDocument->GetTamaleProgram());
+    SetObject(mDocument->GetUserProgram());
     mProgramTree->RegisterDocument(mDocument);
     CrashReporter::GetInstance()->RegisterDocument(mDocument);
     CheckForUpdateLockFile(); // Needs to come after CrashReporter setup.
@@ -692,7 +692,7 @@ void StageFrame::ObjectChanged()
         SetIcons(icons);
 
     // Get the name of the script we're running.
-	TamaleProgram *prog = dynamic_cast<TamaleProgram*>(GetObject());
+	UserProgram *prog = dynamic_cast<UserProgram*>(GetObject());
     std::string script_name = prog->GetName();
     std::string data_dir = prog->GetDataDirectoryName();
 
@@ -996,7 +996,7 @@ void StageFrame::UpdateUiProperties(wxUpdateUIEvent &inEvent)
 
 void StageFrame::OnProperties(wxCommandEvent &inEvent)
 {
-	ProgramPropDlg prop_dlg(this, mDocument->GetTamaleProgram());
+	ProgramPropDlg prop_dlg(this, mDocument->GetUserProgram());
 	prop_dlg.ShowModal();
 }
 

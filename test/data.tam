@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TamaleProgram version="3" backto="0" type="object" class="TamaleProgram">
+<UserProgram version="3" backto="0" type="object" class="UserProgram">
   <backgrounds type="list"/>
   <cards type="list"/>
   <comments type="str">This is a simple little test script to prove everything works.
@@ -11,4 +11,4 @@ Comments may be more than one line long.  Lines wrap correctly.  This text will 
   <name type="str">Tamale Test</name>
   <sourcefilecount type="int">155</sourcefilecount>
   <version type="str">0.1</version>
-</TamaleProgram>
+</UserProgram>

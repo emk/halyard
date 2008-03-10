@@ -25,14 +25,14 @@
 #include <boost/lexical_cast.hpp>
 
 #include <ctime>
-#include "TamaleProgram.h"
+#include "UserProgram.h"
 
 USING_NAMESPACE_FIVEL
 using namespace model;
 
-IMPLEMENT_MODEL_CLASS(TamaleProgram);
+IMPLEMENT_MODEL_CLASS(UserProgram);
 
-void TamaleProgram::Initialize()
+void UserProgram::Initialize()
 {
 	time_t t = time(0);
 	std::string year =
@@ -53,7 +53,7 @@ void TamaleProgram::Initialize()
     Migrate();
 }
 
-void TamaleProgram::Migrate() {
+void UserProgram::Migrate() {
     if (!DoFind("dbgreporturl"))
         SetString("dbgreporturl", "");
     if (!DoFind("sourcefilecount"))
@@ -63,17 +63,17 @@ void TamaleProgram::Migrate() {
 }
 
 /// This script name is displayed on the splash screen.
-std::string TamaleProgram::GetName() {
+std::string UserProgram::GetName() {
     return GetString("name");
 }
 
 /// This copyright notice is displayed on the splash screen.
-std::string TamaleProgram::GetCopyright() {
+std::string UserProgram::GetCopyright() {
     return GetString("copyright");
 }
 
 /// This script name is displayed on the splash screen.
-std::string TamaleProgram::GetDataDirectoryName() {
+std::string UserProgram::GetDataDirectoryName() {
     std::string datadirname(GetString("datadirname"));
     if (!datadirname.empty())
         return datadirname;
@@ -82,19 +82,19 @@ std::string TamaleProgram::GetDataDirectoryName() {
 }
 
 /// The URL to which we should submit debug reports about script errors.
-std::string TamaleProgram::GetDebugReportURL() {
+std::string UserProgram::GetDebugReportURL() {
     return GetString("dbgreporturl");
 }
 
 /// The number of source files we believe will be loaded at script startup.
 /// Used to implement our progress bar.
-int TamaleProgram::GetSourceFileCount() {
+int UserProgram::GetSourceFileCount() {
     return GetInteger("sourcefilecount");
 }
 
 /// Set the number of source files we believe will be loaded at script
 /// startup.
-void TamaleProgram::SetSourceFileCount(int count) {
+void UserProgram::SetSourceFileCount(int count) {
     // TODO - Checking for "do nothing" calls to set should be a general
     // feature of Model, and not just a one-off for this specific case.
     if (GetInteger("sourcefilecount") != count)
