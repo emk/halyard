@@ -24,3 +24,5 @@ libs/quake2/ref_gl/Debug (wxWindows)
 libs/quake2/ref_gl/Release (wxWindows)
 libs/quake2/ref_soft/Release (wxWindows)
 wx/src/resources.cpp
+test/definitions.sqlite3
+test/test.sqlite3
