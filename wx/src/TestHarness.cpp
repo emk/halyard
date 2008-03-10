@@ -20,7 +20,7 @@
 //
 // @END_LICENSE
 
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 
 #include "FiveLApp.h"
 #include "TestHarness.h"

@@ -20,7 +20,7 @@
 //
 // @END_LICENSE
 
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include <wx/file.h>
 #include <wx/stc/stc.h>
 #include <wx/config.h>

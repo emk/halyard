@@ -21,7 +21,7 @@
 // @END_LICENSE
 
 // Needed for RegisterWxPrimitives.
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include <wx/image.h>
 
 #include "TPrimitives.h"

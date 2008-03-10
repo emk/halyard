@@ -20,7 +20,7 @@
 //
 // @END_LICENSE
 
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include "XrcDlg.h"
 
 BEGIN_EVENT_TABLE(XrcDlg, wxDialog)

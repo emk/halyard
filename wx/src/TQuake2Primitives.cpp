@@ -21,7 +21,7 @@
 // @END_LICENSE
 
 // Needed for RegisterQuake2Primitives.
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include "TPrimitives.h"
 #include "TQuake2Primitives.h"
 

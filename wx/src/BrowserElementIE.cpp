@@ -20,7 +20,7 @@
 //
 // @END_LICENSE
 
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include <IEHtmlWin.h>
 #include <exdispid.h>
 #include "BrowserElementIE.h"

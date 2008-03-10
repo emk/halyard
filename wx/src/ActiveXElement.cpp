@@ -20,7 +20,7 @@
 //
 // @END_LICENSE
 
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include "ActiveXElement.h"
 #include <wxactivex.h>
 #include "EventDispatcher.h"

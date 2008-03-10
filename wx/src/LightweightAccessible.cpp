@@ -20,7 +20,7 @@
 //
 // @END_LICENSE
 
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include "LightweightElement.h"
 #include "LightweightAccessible.h"
 #include "Stage.h"

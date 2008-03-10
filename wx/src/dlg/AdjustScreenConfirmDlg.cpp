@@ -20,7 +20,7 @@
 //
 // @END_LICENSE
 
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include "AdjustScreenConfirmDlg.h"
 
 using namespace Halyard;

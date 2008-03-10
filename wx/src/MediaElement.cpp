@@ -20,7 +20,7 @@
 //
 // @END_LICENSE
 
-#include "TamaleHeaders.h"
+#include "AppHeaders.h"
 #include "CaptionList.h"
 #include "Element.h"
 #include "MediaElement.h"

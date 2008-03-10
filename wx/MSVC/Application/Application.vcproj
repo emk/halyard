@@ -51,7 +51,7 @@
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="TamaleHeaders.h"
+				PrecompiledHeaderThrough="AppHeaders.h"
 				PrecompiledHeaderFile=".\Debug/Application.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
@@ -151,7 +151,7 @@
 				EnableFunctionLevelLinking="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="TamaleHeaders.h"
+				PrecompiledHeaderThrough="AppHeaders.h"
 				PrecompiledHeaderFile=".\Release/Application.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
@@ -503,7 +503,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\TamaleHeaders.cpp"
+				RelativePath="..\..\src\AppHeaders.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -840,7 +840,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\TamaleHeaders.h"
+				RelativePath="..\..\src\AppHeaders.h"
 				>
 			</File>
 			<File
