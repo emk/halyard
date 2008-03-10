@@ -28,7 +28,7 @@ BEGIN
             VALUE "CompanyName", "Interactive Media Lab, Dartmouth Medical School!"
             VALUE "FileVersion", VERSION_COMMAS_STRING
             VALUE "InternalName", SHORT_NAME
-            VALUE "LegalCopyright", TAMALE_COPYRIGHT_NOTICE
+            VALUE "LegalCopyright", HALYARD_COPYRIGHT_NOTICE
             VALUE "OriginalFilename", SHORT_NAME ".exe"
             VALUE "ProductName", SHORT_NAME
             VALUE "ProductVersion", VERSION_COMMAS_STRING

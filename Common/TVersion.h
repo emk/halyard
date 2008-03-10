@@ -32,7 +32,7 @@
 #define VERSION_REV_BIG_STRING     "7"
 #define VERSION_REV_SMALL_STRING   "0"
 
-#define SHORT_NAME          "Tamale"
+#define SHORT_NAME          "Halyard"
 #define VERSION_STRING \
     SHORT_NAME " " VERSION_MAJOR_NUM_STRING "." \
     VERSION_MINOR_NUM_STRING "." VERSION_REV_BIG_STRING "." \
@@ -45,9 +45,9 @@
     VERSION_MAJOR_NUM_STRING ", " VERSION_MINOR_NUM_STRING ", " \
     VERSION_REV_BIG_STRING ", " VERSION_REV_SMALL_STRING
 
-#define TAMALE_COPYRIGHT_NAME \
+#define HALYARD_COPYRIGHT_NAME \
     SHORT_NAME " multimedia engine"
-#define TAMALE_COPYRIGHT_NOTICE \
+#define HALYARD_COPYRIGHT_NOTICE \
     "Copyright 1993-2007 Trustees of Dartmouth College. All rights reserved."
 
 /// The date at which the files including TVersion.h were built.  This will

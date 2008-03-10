@@ -28,6 +28,7 @@
 #include <wx/sysopt.h>
 #include <wx/stdpaths.h>
 
+#include "TVersion.h"
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
 
@@ -236,7 +237,7 @@ bool FiveLApp::OnInit() {
     BEGIN_EXCEPTION_TRAPPER();
 
     // Name our application.
-    SetAppName("Tamale");
+    SetAppName(SHORT_NAME);
     
     // Turn off default use of wxCLIP_CHILDREN.  While wxCLIP_CHILDREN
     // is a very nice feature, we currently rely on Stage repaints

@@ -297,7 +297,7 @@ StageFrame::StageFrame(wxSize inSize)
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
     mHelpMenu->Append(FIVEL_ABOUT, "&About",
-                      "About the 5L multimedia system.");
+                      "About the Halyard multimedia system.");
 
     // Set up our menu bar.
     mMenuBar = new wxMenuBar();
@@ -894,8 +894,8 @@ void StageFrame::OnAbout(wxCommandEvent &inEvent)
 {
     wxMessageDialog about(this,
                           VERSION_STRING "\n"
-                          TAMALE_COPYRIGHT_NOTICE,
-                          "About Tamale", wxOK);
+                          HALYARD_COPYRIGHT_NOTICE,
+                          "About Halyard", wxOK);
     about.ShowModal();
 }
 

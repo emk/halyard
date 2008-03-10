@@ -8,7 +8,7 @@ Comments may be more than one line long.  Lines wrap correctly.  This text will 
   <copyright type="str">Copyright 2003 Trustees of Dartmouth College.  All rights reserved.</copyright>
   <datadirname type="str"></datadirname>
   <dbgreporturl type="str"></dbgreporturl>
-  <name type="str">Tamale Test</name>
+  <name type="str">Halyard Test</name>
   <sourcefilecount type="int">155</sourcefilecount>
   <version type="str">0.1</version>
 </UserProgram>
