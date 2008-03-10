@@ -143,51 +143,51 @@ void StageBackground::CenterStage(Stage *inStage)
 //=========================================================================
 
 BEGIN_EVENT_TABLE(StageFrame, SashFrame)
-    EVT_MENU(FIVEL_EXIT, StageFrame::OnExit)
+    EVT_MENU(HALYARD_EXIT, StageFrame::OnExit)
 
-    EVT_UPDATE_UI(FIVEL_NEW_PROGRAM, StageFrame::UpdateUiNewProgram)
-    EVT_MENU(FIVEL_NEW_PROGRAM, StageFrame::OnNewProgram)
-    EVT_UPDATE_UI(FIVEL_OPEN_PROGRAM, StageFrame::UpdateUiOpenProgram)
-    EVT_MENU(FIVEL_OPEN_PROGRAM, StageFrame::OnOpenProgram)
-    EVT_UPDATE_UI(FIVEL_SAVE_PROGRAM, StageFrame::UpdateUiSaveProgram)
-    EVT_MENU(FIVEL_SAVE_PROGRAM, StageFrame::OnSaveProgram)
-    EVT_UPDATE_UI(FIVEL_EDIT_SCRIPTS, StageFrame::UpdateUiDevTool)
-    EVT_MENU(FIVEL_EDIT_SCRIPTS, StageFrame::OnEditScripts)
-    EVT_UPDATE_UI(FIVEL_RELOAD_SCRIPTS, StageFrame::OnUpdateUiReloadScripts)
-    EVT_MENU(FIVEL_RELOAD_SCRIPTS, StageFrame::OnReloadScripts)
-    EVT_UPDATE_UI(FIVEL_RUN_TESTS, StageFrame::UpdateUiDevTool)
-    EVT_MENU(FIVEL_RUN_TESTS, StageFrame::OnRunTests)
+    EVT_UPDATE_UI(HALYARD_NEW_PROGRAM, StageFrame::UpdateUiNewProgram)
+    EVT_MENU(HALYARD_NEW_PROGRAM, StageFrame::OnNewProgram)
+    EVT_UPDATE_UI(HALYARD_OPEN_PROGRAM, StageFrame::UpdateUiOpenProgram)
+    EVT_MENU(HALYARD_OPEN_PROGRAM, StageFrame::OnOpenProgram)
+    EVT_UPDATE_UI(HALYARD_SAVE_PROGRAM, StageFrame::UpdateUiSaveProgram)
+    EVT_MENU(HALYARD_SAVE_PROGRAM, StageFrame::OnSaveProgram)
+    EVT_UPDATE_UI(HALYARD_EDIT_SCRIPTS, StageFrame::UpdateUiDevTool)
+    EVT_MENU(HALYARD_EDIT_SCRIPTS, StageFrame::OnEditScripts)
+    EVT_UPDATE_UI(HALYARD_RELOAD_SCRIPTS, StageFrame::OnUpdateUiReloadScripts)
+    EVT_MENU(HALYARD_RELOAD_SCRIPTS, StageFrame::OnReloadScripts)
+    EVT_UPDATE_UI(HALYARD_RUN_TESTS, StageFrame::UpdateUiDevTool)
+    EVT_MENU(HALYARD_RUN_TESTS, StageFrame::OnRunTests)
 
-    EVT_UPDATE_UI(FIVEL_ABOUT, StageFrame::UpdateUiDevTool)
-    EVT_MENU(FIVEL_ABOUT, StageFrame::OnAbout)
-    EVT_UPDATE_UI(FIVEL_SHOW_LOG, StageFrame::UpdateUiDevTool)
-    EVT_MENU(FIVEL_SHOW_LOG, StageFrame::OnShowLog)
-    EVT_UPDATE_UI(FIVEL_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
-    EVT_MENU(FIVEL_SHOW_LISTENER, StageFrame::OnShowListener)
-    EVT_UPDATE_UI(FIVEL_SHOW_TIMECODER, StageFrame::UpdateUiDevTool)
-    EVT_MENU(FIVEL_SHOW_TIMECODER, StageFrame::OnShowTimecoder)
-    EVT_UPDATE_UI(FIVEL_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
-    EVT_MENU(FIVEL_FULL_SCREEN, StageFrame::OnFullScreen)
-    EVT_UPDATE_UI(FIVEL_DISPLAY_XY, StageFrame::UpdateUiDisplayXy)
-    EVT_MENU(FIVEL_DISPLAY_XY, StageFrame::OnDisplayXy)
-    EVT_UPDATE_UI(FIVEL_DISPLAY_GRID, StageFrame::UpdateUiDisplayGrid)
-    EVT_MENU(FIVEL_DISPLAY_GRID, StageFrame::OnDisplayGrid)
-    EVT_UPDATE_UI(FIVEL_DISPLAY_BORDERS, StageFrame::UpdateUiDisplayBorders)
-    EVT_MENU(FIVEL_DISPLAY_BORDERS, StageFrame::OnDisplayBorders)
-    EVT_UPDATE_UI(FIVEL_ERRORTRACE_COMPILE, 
+    EVT_UPDATE_UI(HALYARD_ABOUT, StageFrame::UpdateUiDevTool)
+    EVT_MENU(HALYARD_ABOUT, StageFrame::OnAbout)
+    EVT_UPDATE_UI(HALYARD_SHOW_LOG, StageFrame::UpdateUiDevTool)
+    EVT_MENU(HALYARD_SHOW_LOG, StageFrame::OnShowLog)
+    EVT_UPDATE_UI(HALYARD_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
+    EVT_MENU(HALYARD_SHOW_LISTENER, StageFrame::OnShowListener)
+    EVT_UPDATE_UI(HALYARD_SHOW_TIMECODER, StageFrame::UpdateUiDevTool)
+    EVT_MENU(HALYARD_SHOW_TIMECODER, StageFrame::OnShowTimecoder)
+    EVT_UPDATE_UI(HALYARD_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
+    EVT_MENU(HALYARD_FULL_SCREEN, StageFrame::OnFullScreen)
+    EVT_UPDATE_UI(HALYARD_DISPLAY_XY, StageFrame::UpdateUiDisplayXy)
+    EVT_MENU(HALYARD_DISPLAY_XY, StageFrame::OnDisplayXy)
+    EVT_UPDATE_UI(HALYARD_DISPLAY_GRID, StageFrame::UpdateUiDisplayGrid)
+    EVT_MENU(HALYARD_DISPLAY_GRID, StageFrame::OnDisplayGrid)
+    EVT_UPDATE_UI(HALYARD_DISPLAY_BORDERS, StageFrame::UpdateUiDisplayBorders)
+    EVT_MENU(HALYARD_DISPLAY_BORDERS, StageFrame::OnDisplayBorders)
+    EVT_UPDATE_UI(HALYARD_ERRORTRACE_COMPILE, 
                   StageFrame::UpdateUiErrortraceCompile)
-    EVT_MENU(FIVEL_ERRORTRACE_COMPILE, StageFrame::OnErrortraceCompile)
-    EVT_UPDATE_UI(FIVEL_PROPERTIES, StageFrame::UpdateUiProperties)
-    EVT_MENU(FIVEL_PROPERTIES, StageFrame::OnProperties)
-    EVT_UPDATE_UI(FIVEL_EDIT_MODE, StageFrame::UpdateUiEditMode)
-    EVT_MENU(FIVEL_EDIT_MODE, StageFrame::OnEditMode)
-    EVT_UPDATE_UI(FIVEL_EDIT_CARD_SCRIPT,
+    EVT_MENU(HALYARD_ERRORTRACE_COMPILE, StageFrame::OnErrortraceCompile)
+    EVT_UPDATE_UI(HALYARD_PROPERTIES, StageFrame::UpdateUiProperties)
+    EVT_MENU(HALYARD_PROPERTIES, StageFrame::OnProperties)
+    EVT_UPDATE_UI(HALYARD_EDIT_MODE, StageFrame::UpdateUiEditMode)
+    EVT_MENU(HALYARD_EDIT_MODE, StageFrame::OnEditMode)
+    EVT_UPDATE_UI(HALYARD_EDIT_CARD_SCRIPT,
                   StageFrame::UpdateUiEditCardScript)
-    EVT_MENU(FIVEL_EDIT_CARD_SCRIPT, StageFrame::OnEditCardScript)
-    EVT_UPDATE_UI(FIVEL_JUMP_CARD, StageFrame::UpdateUiJumpCard)
-    EVT_MENU(FIVEL_JUMP_CARD, StageFrame::OnJumpCard)
-    EVT_UPDATE_UI(FIVEL_STOP_MOVIES, StageFrame::UpdateUiStopMovies)
-    EVT_MENU(FIVEL_STOP_MOVIES, StageFrame::OnStopMovies)
+    EVT_MENU(HALYARD_EDIT_CARD_SCRIPT, StageFrame::OnEditCardScript)
+    EVT_UPDATE_UI(HALYARD_JUMP_CARD, StageFrame::UpdateUiJumpCard)
+    EVT_MENU(HALYARD_JUMP_CARD, StageFrame::OnJumpCard)
+    EVT_UPDATE_UI(HALYARD_STOP_MOVIES, StageFrame::UpdateUiStopMovies)
+    EVT_MENU(HALYARD_STOP_MOVIES, StageFrame::OnStopMovies)
 
     EVT_ACTIVATE(StageFrame::OnActivate)
 	EVT_SIZE(StageFrame::OnSize)
@@ -219,7 +219,7 @@ StageFrame::StageFrame(wxSize inSize)
     SetBackgroundColour(STAGE_FRAME_COLOR);
 
 	// Create a sash window holding a tree widget.
-	mProgramTree = new ProgramTree(this, FIVEL_PROGRAM_TREE);
+	mProgramTree = new ProgramTree(this, HALYARD_PROGRAM_TREE);
 	mProgramTree->SetOrientation(wxLAYOUT_VERTICAL);
 	mProgramTree->SetAlignment(wxLAYOUT_LEFT);
 	mProgramTree->SetSashVisible(wxSASH_RIGHT, TRUE);
@@ -236,67 +236,67 @@ StageFrame::StageFrame(wxSize inSize)
 
     // Set up our File menu.
     mFileMenu = new wxMenu();
-    mFileMenu->Append(FIVEL_NEW_PROGRAM, "&New Program...\tCtrl+N",
+    mFileMenu->Append(HALYARD_NEW_PROGRAM, "&New Program...\tCtrl+N",
                       "Create a new Tamale program.");
-    mFileMenu->Append(FIVEL_OPEN_PROGRAM, "&Open Program...\tCtrl+O",
+    mFileMenu->Append(HALYARD_OPEN_PROGRAM, "&Open Program...\tCtrl+O",
                       "Open an existing Tamale program.");
-    mFileMenu->Append(FIVEL_SAVE_PROGRAM, "&Save Program\tCtrl+S",
+    mFileMenu->Append(HALYARD_SAVE_PROGRAM, "&Save Program\tCtrl+S",
                       "Save the current Tamale program.");
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(FIVEL_EDIT_SCRIPTS, "&Edit Scripts\tCtrl+E",
+    mFileMenu->Append(HALYARD_EDIT_SCRIPTS, "&Edit Scripts\tCtrl+E",
                       "Edit the Tamale script files for this program.");
-    mFileMenu->Append(FIVEL_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
+    mFileMenu->Append(HALYARD_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
                       "Reload the currently executing Tamale scripts.");
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(FIVEL_RUN_TESTS, "Run &Tests\tCtrl+T",
+    mFileMenu->Append(HALYARD_RUN_TESTS, "Run &Tests\tCtrl+T",
                       "Run test cases for Tamale and/or current script.");
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(FIVEL_EXIT, "E&xit", "Exit the application.");
+    mFileMenu->Append(HALYARD_EXIT, "E&xit", "Exit the application.");
 
     // Set up our Card menu.
     mCardMenu = new wxMenu();
-    mCardMenu->Append(FIVEL_EDIT_MODE, "&Edit Card\tCtrl+Space",
+    mCardMenu->Append(HALYARD_EDIT_MODE, "&Edit Card\tCtrl+Space",
                       "Enter or exit card-editing mode.");
-    mCardMenu->Append(FIVEL_EDIT_CARD_SCRIPT, "Edit Card Sc&ript\tAlt+.",
+    mCardMenu->Append(HALYARD_EDIT_CARD_SCRIPT, "Edit Card Sc&ript\tAlt+.",
                       "Edit this card's script.");
-    mCardMenu->Append(FIVEL_JUMP_CARD, "&Jump to Card...\tCtrl+J",
+    mCardMenu->Append(HALYARD_JUMP_CARD, "&Jump to Card...\tCtrl+J",
                       "Jump to a specified card by name.");
-    mCardMenu->Append(FIVEL_STOP_MOVIES, "&Stop Movies\tEsc",
+    mCardMenu->Append(HALYARD_STOP_MOVIES, "&Stop Movies\tEsc",
                       "Stop any playing movies.");
 
     // Set up our View menu.  Only include the "Full Screen" item on
 	// platforms where it's likely to work.
     mViewMenu = new wxMenu();
 #if CONFIG_ENABLE_FULL_SCREEN
-    mViewMenu->AppendCheckItem(FIVEL_FULL_SCREEN,
+    mViewMenu->AppendCheckItem(HALYARD_FULL_SCREEN,
                                "&Full Screen\tCtrl+F",
                                "Use a full screen window.");
     mViewMenu->AppendSeparator();
 #endif // CONFIG_ENABLE_FULL_SCREEN
-    mViewMenu->AppendCheckItem(FIVEL_DISPLAY_XY, "Display Cursor &XY",
+    mViewMenu->AppendCheckItem(HALYARD_DISPLAY_XY, "Display Cursor &XY",
                                "Display the cursor's XY position.");
-    mViewMenu->AppendCheckItem(FIVEL_DISPLAY_GRID, "Display &Grid\tCtrl+G",
+    mViewMenu->AppendCheckItem(HALYARD_DISPLAY_GRID, "Display &Grid\tCtrl+G",
                                "Display a grid over the card.");
-    mViewMenu->AppendCheckItem(FIVEL_DISPLAY_BORDERS,
+    mViewMenu->AppendCheckItem(HALYARD_DISPLAY_BORDERS,
                                "Display &Borders\tCtrl+B",
                                "Display the borders of interactive elements.");
     mViewMenu->AppendSeparator();
-	mViewMenu->Append(FIVEL_PROPERTIES,
+	mViewMenu->Append(HALYARD_PROPERTIES,
 					  "&Properties...\tAlt+Enter",
 					  "Edit the properties of the selected object.");
 
     // Set up our Window menu.
     mWindowMenu = new wxMenu();
-    mWindowMenu->Append(FIVEL_SHOW_LISTENER, "Show &Listener\tCtrl+L",
+    mWindowMenu->Append(HALYARD_SHOW_LISTENER, "Show &Listener\tCtrl+L",
                         "Show interactive script listener.");
-    mWindowMenu->Append(FIVEL_SHOW_TIMECODER, "Show &Timecoder\tCtrl+T",
+    mWindowMenu->Append(HALYARD_SHOW_TIMECODER, "Show &Timecoder\tCtrl+T",
                         "Show the movie timecoding utility.");
-    mWindowMenu->Append(FIVEL_SHOW_LOG, "Show &Debug Log",
+    mWindowMenu->Append(HALYARD_SHOW_LOG, "Show &Debug Log",
                         "Show application debug log window.");
 
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
-    mHelpMenu->Append(FIVEL_ABOUT, "&About",
+    mHelpMenu->Append(HALYARD_ABOUT, "&About",
                       "About the Halyard multimedia system.");
 
     // Set up our menu bar.
@@ -311,19 +311,19 @@ StageFrame::StageFrame(wxSize inSize)
     // Add a tool bar.
     CreateToolBar();
     wxToolBar *tb = GetToolBar();
-    tb->AddTool(FIVEL_RELOAD_SCRIPTS, "Reload", wxBITMAP(tb_reload),
+    tb->AddTool(HALYARD_RELOAD_SCRIPTS, "Reload", wxBITMAP(tb_reload),
                 "Reload Scripts");
 	mLocationBox = new LocationBox(tb);
 	tb->AddControl(mLocationBox);
     tb->AddSeparator();
-    tb->AddCheckTool(FIVEL_DISPLAY_XY, "Display XY", wxBITMAP(tb_xy),
+    tb->AddCheckTool(HALYARD_DISPLAY_XY, "Display XY", wxBITMAP(tb_xy),
                      wxNullBitmap, "Display Cursor XY");
-    tb->AddCheckTool(FIVEL_DISPLAY_GRID, "Display Grid", wxBITMAP(tb_grid),
+    tb->AddCheckTool(HALYARD_DISPLAY_GRID, "Display Grid", wxBITMAP(tb_grid),
                      wxNullBitmap, "Display Grid");
-    tb->AddCheckTool(FIVEL_DISPLAY_BORDERS,
+    tb->AddCheckTool(HALYARD_DISPLAY_BORDERS,
                      "Display Borders", wxBITMAP(tb_borders),
                      wxNullBitmap, "Display Borders");
-    tb->AddCheckTool(FIVEL_ERRORTRACE_COMPILE,
+    tb->AddCheckTool(HALYARD_ERRORTRACE_COMPILE,
                      "Include Backtrace Information After Reload", 
                      wxBITMAP(tb_errortrace),
                      wxNullBitmap, 

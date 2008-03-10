@@ -68,7 +68,7 @@ using namespace Halyard;
 //=========================================================================
 
 BEGIN_EVENT_TABLE(Stage, wxWindow)
-	EVT_TIMER(FIVEL_STAGE_TIMER, Stage::OnTimer)
+	EVT_TIMER(HALYARD_STAGE_TIMER, Stage::OnTimer)
     EVT_MOTION(Stage::OnMouseMove)
     EVT_ERASE_BACKGROUND(Stage::OnEraseBackground)
     EVT_PAINT(Stage::OnPaint)
@@ -108,7 +108,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     Create(inParent, -1, wxDefaultPosition, inStageSize);
 
     // Set the owner of our mTimer object.
-    mTimer.SetOwner(this, FIVEL_STAGE_TIMER);
+    mTimer.SetOwner(this, HALYARD_STAGE_TIMER);
 
 	mBackgroundDrawingArea = 
 		std::auto_ptr<DrawingArea>(new DrawingArea(this,

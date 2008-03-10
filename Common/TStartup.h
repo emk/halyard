@@ -31,7 +31,7 @@
 // huge areas of graphics card memory into our address space, causing Boehm
 // to run very... very... very... slowly.
 #include <scheme.h>
-#define FIVEL_SET_STACK_BASE() \
+#define HALYARD_SET_STACK_BASE() \
     do { \
         int dummy; \
         scheme_set_stack_base(&dummy, 1); \

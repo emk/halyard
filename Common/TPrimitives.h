@@ -381,7 +381,7 @@ inline void SetPrimitiveResult(const TValue &inVariable)
 	gVariableManager.Set("_result", inVariable);
 }
 
-#define FIVEL_SKIP_LOGGING_VAR ("_skip_logging")
+#define HALYARD_SKIP_LOGGING_VAR ("_skip_logging")
 
 //////////
 /// Tell the primitive manager not to log the primitive call currently
@@ -391,7 +391,7 @@ inline void SkipPrimitiveLogging()
 {
 	// We don't use an engine variable for any particular reason here--
 	// a global would work fine as well.
-	gVariableManager.Set(FIVEL_SKIP_LOGGING_VAR, true);
+	gVariableManager.Set(HALYARD_SKIP_LOGGING_VAR, true);
 }
 
 END_NAMESPACE_HALYARD

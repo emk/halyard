@@ -283,37 +283,37 @@ BEGIN_EVENT_TABLE(ScriptTextCtrl, wxStyledTextCtrl)
     EVT_UPDATE_UI(wxID_SELECTALL, ScriptTextCtrl::OnUpdateUiAlwaysOn)
 
     // View menu.
-    EVT_MENU(FIVEL_WRAP_LINES, ScriptTextCtrl::OnWrapLines)
-    EVT_UPDATE_UI(FIVEL_WRAP_LINES, ScriptTextCtrl::OnUpdateUiWrapLines)
-    EVT_MENU(FIVEL_SHOW_WHITESPACE, ScriptTextCtrl::OnShowWhitespace)
-    EVT_UPDATE_UI(FIVEL_SHOW_WHITESPACE,
+    EVT_MENU(HALYARD_WRAP_LINES, ScriptTextCtrl::OnWrapLines)
+    EVT_UPDATE_UI(HALYARD_WRAP_LINES, ScriptTextCtrl::OnUpdateUiWrapLines)
+    EVT_MENU(HALYARD_SHOW_WHITESPACE, ScriptTextCtrl::OnShowWhitespace)
+    EVT_UPDATE_UI(HALYARD_SHOW_WHITESPACE,
                   ScriptTextCtrl::OnUpdateUiShowWhitespace)
-    EVT_MENU(FIVEL_SHOW_LINENUMS, ScriptTextCtrl::OnShowLineNums)
-    EVT_UPDATE_UI(FIVEL_SHOW_LINENUMS,
+    EVT_MENU(HALYARD_SHOW_LINENUMS, ScriptTextCtrl::OnShowLineNums)
+    EVT_UPDATE_UI(HALYARD_SHOW_LINENUMS,
                   ScriptTextCtrl::OnUpdateUiShowLineNums)
-    EVT_MENU(FIVEL_EXPAND_ALL, ScriptTextCtrl::OnExpandAll)
-    EVT_UPDATE_UI(FIVEL_EXPAND_ALL, ScriptTextCtrl::OnUpdateUiAlwaysOn)
+    EVT_MENU(HALYARD_EXPAND_ALL, ScriptTextCtrl::OnExpandAll)
+    EVT_UPDATE_UI(HALYARD_EXPAND_ALL, ScriptTextCtrl::OnUpdateUiAlwaysOn)
 
     // Search menu.
     EVT_MENU(wxID_FIND, ScriptTextCtrl::OnFind)
     EVT_UPDATE_UI(wxID_FIND, ScriptTextCtrl::OnUpdateUiAlwaysOn)
-    EVT_MENU(FIVEL_FIND_AGAIN, ScriptTextCtrl::OnFindAgain)
-    EVT_UPDATE_UI(FIVEL_FIND_AGAIN, ScriptTextCtrl::OnUpdateUiFindAgain)
-    EVT_MENU(FIVEL_FIND_SELECTION, ScriptTextCtrl::OnFindSelection)
-    EVT_UPDATE_UI(FIVEL_FIND_SELECTION,
+    EVT_MENU(HALYARD_FIND_AGAIN, ScriptTextCtrl::OnFindAgain)
+    EVT_UPDATE_UI(HALYARD_FIND_AGAIN, ScriptTextCtrl::OnUpdateUiFindAgain)
+    EVT_MENU(HALYARD_FIND_SELECTION, ScriptTextCtrl::OnFindSelection)
+    EVT_UPDATE_UI(HALYARD_FIND_SELECTION,
                   ScriptTextCtrl::OnUpdateUiFindSelection)
     EVT_MENU(wxID_REPLACE, ScriptTextCtrl::OnReplace)
     EVT_UPDATE_UI(wxID_REPLACE, ScriptTextCtrl::OnUpdateUiReplace)
-    EVT_MENU(FIVEL_REPLACE_AND_FIND_AGAIN,
+    EVT_MENU(HALYARD_REPLACE_AND_FIND_AGAIN,
              ScriptTextCtrl::OnReplaceAndFindAgain)
-    EVT_UPDATE_UI(FIVEL_REPLACE_AND_FIND_AGAIN,
+    EVT_UPDATE_UI(HALYARD_REPLACE_AND_FIND_AGAIN,
                   ScriptTextCtrl::OnUpdateUiReplace)
     EVT_MENU(wxID_REPLACE_ALL, ScriptTextCtrl::OnReplaceAll)
     EVT_UPDATE_UI(wxID_REPLACE_ALL, ScriptTextCtrl::OnUpdateUiFindAgain)
-    EVT_MENU(FIVEL_GOTO_LINE, ScriptTextCtrl::OnGotoLine)
-    EVT_UPDATE_UI(FIVEL_GOTO_LINE, ScriptTextCtrl::OnUpdateUiAlwaysOn)
-    EVT_MENU(FIVEL_GOTO_DEFINITION, ScriptTextCtrl::OnGotoDefinition)
-    EVT_UPDATE_UI(FIVEL_GOTO_DEFINITION,
+    EVT_MENU(HALYARD_GOTO_LINE, ScriptTextCtrl::OnGotoLine)
+    EVT_UPDATE_UI(HALYARD_GOTO_LINE, ScriptTextCtrl::OnUpdateUiAlwaysOn)
+    EVT_MENU(HALYARD_GOTO_DEFINITION, ScriptTextCtrl::OnGotoDefinition)
+    EVT_UPDATE_UI(HALYARD_GOTO_DEFINITION,
                   ScriptTextCtrl::OnUpdateUiGotoDefinition)
 END_EVENT_TABLE()
 
@@ -1913,17 +1913,17 @@ BEGIN_EVENT_TABLE(ScriptEditor, SashFrame)
     EVT_MENU(wxID_OPEN, ScriptEditor::OnOpen)
     EVT_UPDATE_UI(wxID_SAVE, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_SAVEAS, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_SAVE_ALL, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_SAVE_ALL, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REVERT, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_CLOSE_TAB, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_CLOSE_TAB, ScriptEditor::DisableUiItem)
     EVT_MENU(wxID_CLOSE, ScriptEditor::OnCloseWindow)
 
-    EVT_UPDATE_UI(FIVEL_WRAP_LINES, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_SHOW_WHITESPACE, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_SHOW_LINENUMS, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_EXPAND_ALL, ScriptEditor::DisableUiItem)
-    EVT_MENU(FIVEL_TEXT_SIZE_INC, ScriptEditor::OnIncreaseTextSize)
-    EVT_MENU(FIVEL_TEXT_SIZE_DEC, ScriptEditor::OnDecreaseTextSize)
+    EVT_UPDATE_UI(HALYARD_WRAP_LINES, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_SHOW_WHITESPACE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_SHOW_LINENUMS, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_EXPAND_ALL, ScriptEditor::DisableUiItem)
+    EVT_MENU(HALYARD_TEXT_SIZE_INC, ScriptEditor::OnIncreaseTextSize)
+    EVT_MENU(HALYARD_TEXT_SIZE_DEC, ScriptEditor::OnDecreaseTextSize)
 
     EVT_UPDATE_UI(wxID_UNDO, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REDO, ScriptEditor::DisableUiItem)
@@ -1934,13 +1934,13 @@ BEGIN_EVENT_TABLE(ScriptEditor, SashFrame)
     EVT_UPDATE_UI(wxID_SELECTALL, ScriptEditor::DisableUiItem)
 
 	EVT_UPDATE_UI(wxID_FIND, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_FIND_AGAIN, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_FIND_SELECTION, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_FIND_IN_NEXT_FILE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_FIND_AGAIN, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_FIND_SELECTION, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_FIND_IN_NEXT_FILE, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REPLACE, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_REPLACE_ALL, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_REPLACE_AND_FIND_AGAIN, ScriptEditor::DisableUiItem)
-    EVT_UPDATE_UI(FIVEL_GOTO_LINE, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_REPLACE_AND_FIND_AGAIN, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(HALYARD_GOTO_LINE, ScriptEditor::DisableUiItem)
 END_EVENT_TABLE()
 
 void ScriptEditor::MaybeCreateFrame() {
@@ -2016,20 +2016,20 @@ ScriptEditor::ScriptEditor()
     file_menu->Append(wxID_SAVE, "&Save\tCtrl+S", "Save the current file.");
     file_menu->Append(wxID_SAVEAS, "&Save &As...",
                       "Save the current file under a new name.");
-    file_menu->Append(FIVEL_SAVE_ALL, "Save A&ll\tCtrl+Shift+S",
+    file_menu->Append(HALYARD_SAVE_ALL, "Save A&ll\tCtrl+Shift+S",
                       "Save all open files.");
     file_menu->Append(wxID_REVERT, "&Revert",
                       "Revert to the previously saved version of this file.");
     file_menu->AppendSeparator();
-    file_menu->Append(FIVEL_CLOSE_TAB, "&Close Tab\tCtrl+W",
+    file_menu->Append(HALYARD_CLOSE_TAB, "&Close Tab\tCtrl+W",
                       "Close the current tab.");
     file_menu->Append(wxID_CLOSE, "Close &Window\tCtrl+Shift+W",
                       "Close the window (including all tabs).");
     file_menu->AppendSeparator();
-    file_menu->Append(FIVEL_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
+    file_menu->Append(HALYARD_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
                       "Reload the currently executing Tamale scripts.");
     file_menu->AppendSeparator();
-    file_menu->Append(FIVEL_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
+    file_menu->Append(HALYARD_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
 
     // Set up our Edit menu.
     wxMenu *edit_menu = new wxMenu();
@@ -2052,19 +2052,19 @@ ScriptEditor::ScriptEditor()
 
     // Set up our View menu.
     wxMenu *view_menu = new wxMenu();
-    view_menu->AppendCheckItem(FIVEL_WRAP_LINES, "&Wrap Lines",
+    view_menu->AppendCheckItem(HALYARD_WRAP_LINES, "&Wrap Lines",
                                "Wrap long lines at the window edge.");
-    view_menu->AppendCheckItem(FIVEL_SHOW_WHITESPACE, "Show White&space",
+    view_menu->AppendCheckItem(HALYARD_SHOW_WHITESPACE, "Show White&space",
                                "View space and end-of-line characters.");
-    view_menu->AppendCheckItem(FIVEL_SHOW_LINENUMS, "Show Line &Numbers",
+    view_menu->AppendCheckItem(HALYARD_SHOW_LINENUMS, "Show Line &Numbers",
                                "View line numbers in the left margin.");
     view_menu->AppendSeparator();
-    view_menu->Append(FIVEL_EXPAND_ALL, "&Expand All",
+    view_menu->Append(HALYARD_EXPAND_ALL, "&Expand All",
                       "Expand all collapsed lines of code.");
     view_menu->AppendSeparator();
-    view_menu->Append(FIVEL_TEXT_SIZE_INC, "&Increase Text Size",
+    view_menu->Append(HALYARD_TEXT_SIZE_INC, "&Increase Text Size",
                       "Increase the size of displayed text.");
-    view_menu->Append(FIVEL_TEXT_SIZE_DEC, "&Decrease Text Size",
+    view_menu->Append(HALYARD_TEXT_SIZE_DEC, "&Decrease Text Size",
                       "Decrease the size of displayed text.");
 
     // Set up our Search menu.
@@ -2072,25 +2072,25 @@ ScriptEditor::ScriptEditor()
     search_menu->Append(wxID_FIND, "&Find...\tCtrl+F",
                         "Grand Unified Find and Replace Dialog.");
     search_menu->AppendSeparator();
-    search_menu->Append(FIVEL_FIND_AGAIN, "Find A&gain\tCtrl+G",
+    search_menu->Append(HALYARD_FIND_AGAIN, "Find A&gain\tCtrl+G",
                         "Find the next occurrance of the search string.");
-    search_menu->Append(FIVEL_FIND_SELECTION, "Find &Selection\tCtrl+H",
+    search_menu->Append(HALYARD_FIND_SELECTION, "Find &Selection\tCtrl+H",
                         "Find the selected text.");
-    search_menu->Append(FIVEL_FIND_IN_NEXT_FILE, "Find in &Next File",
+    search_menu->Append(HALYARD_FIND_IN_NEXT_FILE, "Find in &Next File",
                         "Find the search string in the next file.");
     search_menu->AppendSeparator();
     search_menu->Append(wxID_REPLACE, "&Replace\tCtrl+=",
                         "Replace the selected text.");
     search_menu->Append(wxID_REPLACE_ALL, "Replace &All\tCtrl+Shift+=",
                         "Replace all occurances of the search string.");
-    search_menu->Append(FIVEL_REPLACE_AND_FIND_AGAIN,
+    search_menu->Append(HALYARD_REPLACE_AND_FIND_AGAIN,
                         "Re&place and Find Again\tCtrl+T",
                         ("Replace the selected text and find the next "
                          "occurance."));
     search_menu->AppendSeparator();
-    search_menu->Append(FIVEL_GOTO_LINE, "Go to &Line...\tCtrl+J",
+    search_menu->Append(HALYARD_GOTO_LINE, "Go to &Line...\tCtrl+J",
                         "Go to a specific line number.");
-    search_menu->Append(FIVEL_GOTO_DEFINITION, "Go to &Definition\tAlt+.",
+    search_menu->Append(HALYARD_GOTO_DEFINITION, "Go to &Definition\tAlt+.",
                         "Look up the identifier under the cursor.");
 
     // Set up our Window menu.
@@ -2109,13 +2109,13 @@ ScriptEditor::ScriptEditor()
     // Create a tool bar.
     CreateToolBar();
     wxToolBar *tb = GetToolBar();
-    tb->AddTool(FIVEL_RELOAD_SCRIPTS, "Reload", wxBITMAP(tb_reload),
+    tb->AddTool(HALYARD_RELOAD_SCRIPTS, "Reload", wxBITMAP(tb_reload),
                 "Reload Scripts");
     tb->AddSeparator();
     tb->AddTool(wxID_NEW, "New", wxBITMAP(tb_new), "New File");
     tb->AddTool(wxID_OPEN, "Open", wxBITMAP(tb_open), "Open File");
     tb->AddTool(wxID_SAVE, "Save", wxBITMAP(tb_save), "Save File");
-    tb->AddTool(FIVEL_SAVE_ALL, "Save All", wxBITMAP(tb_saveall),
+    tb->AddTool(HALYARD_SAVE_ALL, "Save All", wxBITMAP(tb_saveall),
                 "Save All Files");
     tb->AddSeparator();
     tb->AddTool(wxID_CUT, "Cut", wxBITMAP(tb_cut), "Cut Text");
@@ -2125,11 +2125,11 @@ ScriptEditor::ScriptEditor()
     tb->AddTool(wxID_UNDO, "Undo", wxBITMAP(tb_undo), "Undo");
     tb->AddTool(wxID_REDO, "Redo", wxBITMAP(tb_redo), "Redo");
     tb->AddSeparator();
-    tb->AddCheckTool(FIVEL_WRAP_LINES, "Wrap", wxBITMAP(tb_wrap),
+    tb->AddCheckTool(HALYARD_WRAP_LINES, "Wrap", wxBITMAP(tb_wrap),
                      wxNullBitmap, "Wrap Lines");
-    tb->AddTool(FIVEL_TEXT_SIZE_INC, "Bigger text", wxBITMAP(tb_sizeinc),
+    tb->AddTool(HALYARD_TEXT_SIZE_INC, "Bigger text", wxBITMAP(tb_sizeinc),
                 "Increase Text Size");
-    tb->AddTool(FIVEL_TEXT_SIZE_DEC, "Smaller text", wxBITMAP(tb_sizedec),
+    tb->AddTool(HALYARD_TEXT_SIZE_DEC, "Smaller text", wxBITMAP(tb_sizedec),
                 "Decrease Text Size");
     tb->Realize();
 

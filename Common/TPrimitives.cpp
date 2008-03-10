@@ -335,14 +335,14 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 
 	// Clear the result value and logging flag.
 	gVariableManager.MakeNull("_result");
-	gVariableManager.MakeNull(FIVEL_SKIP_LOGGING_VAR);
+	gVariableManager.MakeNull(HALYARD_SKIP_LOGGING_VAR);
     
     // Call it.
     (*primitive)(inArgs);
 
 	// Extract the logged arguments and write them to the debug log.
 	std::string call_info = inArgs.EndLog();
-	if (gVariableManager.IsNull(FIVEL_SKIP_LOGGING_VAR))
+	if (gVariableManager.IsNull(HALYARD_SKIP_LOGGING_VAR))
 	{
 		if (gVariableManager.IsNull("_result")) {
 			gDebugLog.Log(">>> %s", call_info.c_str());

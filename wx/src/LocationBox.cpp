@@ -38,12 +38,12 @@ using namespace Halyard;
 //=========================================================================
 
 BEGIN_EVENT_TABLE(LocationBox, LOCATION_BOX_PARENT_CLASS)
-    EVT_UPDATE_UI(FIVEL_LOCATION_BOX, LocationBox::UpdateUiLocationBox)
+    EVT_UPDATE_UI(HALYARD_LOCATION_BOX, LocationBox::UpdateUiLocationBox)
 	EVT_CHAR(LocationBox::OnChar)
 
 // We only process this event if we're a ComboBox.
 #if CONFIG_LOCATION_BOX_IS_COMBO
-	EVT_COMBOBOX(FIVEL_LOCATION_BOX, LocationBox::OnComboBoxSelected)
+	EVT_COMBOBOX(HALYARD_LOCATION_BOX, LocationBox::OnComboBoxSelected)
 #endif
 
 END_EVENT_TABLE()
@@ -51,7 +51,7 @@ END_EVENT_TABLE()
 #if CONFIG_LOCATION_BOX_IS_COMBO
 
 LocationBox::LocationBox(wxToolBar *inParent)
-	: wxComboBox(inParent, FIVEL_LOCATION_BOX, "",
+	: wxComboBox(inParent, HALYARD_LOCATION_BOX, "",
 				 wxDefaultPosition, wxSize(200, -1),
 				 0, NULL, wxWANTS_CHARS|wxCB_DROPDOWN)
 {
@@ -60,7 +60,7 @@ LocationBox::LocationBox(wxToolBar *inParent)
 #else // !CONFIG_LOCATION_BOX_IS_COMBO
 
 LocationBox::LocationBox(wxToolBar *inParent)
-	: wxTextCtrl(inParent, FIVEL_LOCATION_BOX, "", wxDefaultPosition,
+	: wxTextCtrl(inParent, HALYARD_LOCATION_BOX, "", wxDefaultPosition,
 				 wxSize(200, -1), wxTE_PROCESS_ENTER)
 {
 }

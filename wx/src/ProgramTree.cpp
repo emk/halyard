@@ -294,14 +294,14 @@ public:
 };
 
 BEGIN_EVENT_TABLE(UserProgramMenu, wxMenu)
-    EVT_MENU(FIVEL_PROPERTIES, UserProgramMenu::OnProperties)
+    EVT_MENU(HALYARD_PROPERTIES, UserProgramMenu::OnProperties)
 END_EVENT_TABLE()
 
 UserProgramMenu::UserProgramMenu(wxWindow *inParent, model::Object *inObject)
 {
 	mParent = inParent;
 	mObject = inObject;
-	Append(FIVEL_PROPERTIES, "Properties...",
+	Append(HALYARD_PROPERTIES, "Properties...",
 		   "Edit the properties for this program.");
 }
 
@@ -352,7 +352,7 @@ void UserProgramItemData::ObjectDeleted()
 //=========================================================================
 
 ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent)
-	: CustomTreeCtrl(inParent, FIVEL_PROGRAM_TREE_CTRL,
+	: CustomTreeCtrl(inParent, HALYARD_PROGRAM_TREE_CTRL,
                      wxDefaultPosition, wxDefaultSize,
                      wxTR_DEFAULT_STYLE|wxTR_EDIT_LABELS)
 {

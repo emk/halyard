@@ -150,7 +150,7 @@ void prompt_done(bool should_wait) {
 }
 
 int main(int argc, char **argv) {
-	FIVEL_SET_STACK_BASE();
+	HALYARD_SET_STACK_BASE();
 
 	bool should_wait = false;
 	if (argc == 2 && std::string(argv[1]) == "--wait")

@@ -33,8 +33,8 @@ using namespace Halyard;
 
 BEGIN_EVENT_TABLE(Listener, ToolWindow)
     EVT_ACTIVATE(Listener::OnActivate)
-    EVT_UPDATE_UI(FIVEL_LISTENER_TEXT_ENTRY, Listener::UpdateUiInput)
-    EVT_TEXT_ENTER(FIVEL_LISTENER_TEXT_ENTRY, Listener::OnTextEnter)
+    EVT_UPDATE_UI(HALYARD_LISTENER_TEXT_ENTRY, Listener::UpdateUiInput)
+    EVT_TEXT_ENTER(HALYARD_LISTENER_TEXT_ENTRY, Listener::OnTextEnter)
 END_EVENT_TABLE()
 
 Listener::Listener(StageFrame *inStageFrame)
@@ -44,7 +44,7 @@ Listener::Listener(StageFrame *inStageFrame)
 							  wxDefaultSize,
 							  wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
 	// Use a history text control, so we can have a command history
-    mInput = new HistoryTextCtrl(this, FIVEL_LISTENER_TEXT_ENTRY, "",
+    mInput = new HistoryTextCtrl(this, HALYARD_LISTENER_TEXT_ENTRY, "",
 								 wxDefaultPosition, wxDefaultSize,
 								 wxTE_PROCESS_ENTER);
 

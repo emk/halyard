@@ -119,8 +119,8 @@ extern void FiveLCheckAssertion(int inTest, const char *inDescription,
 	DISABLE_COPY_AND_ASSIGN_TMPL(TYPE,TYPE)
 
 // Allow our test suites to access some private and protected methods.
-// At the top of a test file, write '#define WANT_FIVEL_TEST_INTERFACES 1'.
-#ifdef WANT_FIVEL_TEST_INTERFACES
+// At the top of a test file, write '#define WANT_HALYARD_TEST_INTERFACES 1'.
+#ifdef WANT_HALYARD_TEST_INTERFACES
 #	define TESTABLE_PRIVATE    public
 #	define TESTABLE_PROTECTED  public
 #else

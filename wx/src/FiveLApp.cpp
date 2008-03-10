@@ -402,7 +402,7 @@ namespace {
 int FiveLApp::MainLoop() {
 	// WARNING - No Scheme function may ever be called above this
     // point on the stack!
-    FIVEL_SET_STACK_BASE();
+    HALYARD_SET_STACK_BASE();
 
     bool error = false;
 
