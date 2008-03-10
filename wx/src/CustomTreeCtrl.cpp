@@ -22,24 +22,24 @@
 
 #include "AppHeaders.h"
 #include <wx/imaglist.h>
-#include "TamaleTreeCtrl.h"
+#include "CustomTreeCtrl.h"
 
 
 //=========================================================================
-//  TamaleTreeCtrl Methods
+//  CustomTreeCtrl Methods
 //=========================================================================
 
-BEGIN_EVENT_TABLE(TamaleTreeCtrl, wxTreeCtrl)
-    EVT_LEFT_DCLICK(TamaleTreeCtrl::OnLeftDClick)
-    EVT_RIGHT_DOWN(TamaleTreeCtrl::OnRightDown)
-	EVT_TREE_BEGIN_LABEL_EDIT(wxID_ANY, TamaleTreeCtrl::OnBeginLabelEdit)
-	EVT_TREE_END_LABEL_EDIT(wxID_ANY, TamaleTreeCtrl::OnEndLabelEdit)
-	EVT_TREE_BEGIN_DRAG(wxID_ANY, TamaleTreeCtrl::OnBeginDrag)
-	EVT_TREE_END_DRAG(wxID_ANY, TamaleTreeCtrl::OnEndDrag)
-    EVT_MOTION(TamaleTreeCtrl::OnMouseMoved)
+BEGIN_EVENT_TABLE(CustomTreeCtrl, wxTreeCtrl)
+    EVT_LEFT_DCLICK(CustomTreeCtrl::OnLeftDClick)
+    EVT_RIGHT_DOWN(CustomTreeCtrl::OnRightDown)
+	EVT_TREE_BEGIN_LABEL_EDIT(wxID_ANY, CustomTreeCtrl::OnBeginLabelEdit)
+	EVT_TREE_END_LABEL_EDIT(wxID_ANY, CustomTreeCtrl::OnEndLabelEdit)
+	EVT_TREE_BEGIN_DRAG(wxID_ANY, CustomTreeCtrl::OnBeginDrag)
+	EVT_TREE_END_DRAG(wxID_ANY, CustomTreeCtrl::OnEndDrag)
+    EVT_MOTION(CustomTreeCtrl::OnMouseMoved)
 END_EVENT_TABLE()
 
-TamaleTreeCtrl::TamaleTreeCtrl(wxWindow *inParent, wxWindowID inId,
+CustomTreeCtrl::CustomTreeCtrl(wxWindow *inParent, wxWindowID inId,
                                const wxPoint &inPos,
                                const wxSize &inSize,
                                long inStyle)
@@ -49,7 +49,7 @@ TamaleTreeCtrl::TamaleTreeCtrl(wxWindow *inParent, wxWindowID inId,
     BuildIconList();
 }
 
-void TamaleTreeCtrl::SetIcon(wxTreeItemId id, int closed_icon, int open_icon)
+void CustomTreeCtrl::SetIcon(wxTreeItemId id, int closed_icon, int open_icon)
 {
     if (open_icon = -1)
         open_icon = closed_icon;
@@ -59,7 +59,7 @@ void TamaleTreeCtrl::SetIcon(wxTreeItemId id, int closed_icon, int open_icon)
     SetItemImage(id, open_icon, wxTreeItemIcon_SelectedExpanded);
 }
 
-void TamaleTreeCtrl::BuildIconList()
+void CustomTreeCtrl::BuildIconList()
 {
     // This should match the enumeration of icons in our class
     // declaration.
@@ -82,58 +82,58 @@ void TamaleTreeCtrl::BuildIconList()
     AssignImageList(images);
 }
 
-TamaleTreeItemData *
-TamaleTreeCtrl::GetTamaleTreeItemData(wxTreeItemId inId)
+CustomTreeItemData *
+CustomTreeCtrl::GetCustomTreeItemData(wxTreeItemId inId)
 {
-	return dynamic_cast<TamaleTreeItemData*>(GetItemData(inId));
+	return dynamic_cast<CustomTreeItemData*>(GetItemData(inId));
 }
 
-TamaleTreeItemData *
-TamaleTreeCtrl::GetTamaleTreeItemData(wxMouseEvent &inEvent)
+CustomTreeItemData *
+CustomTreeCtrl::GetCustomTreeItemData(wxMouseEvent &inEvent)
 {
     wxTreeItemId id = HitTest(inEvent.GetPosition());
-	return id ? GetTamaleTreeItemData(id) : NULL;
+	return id ? GetCustomTreeItemData(id) : NULL;
 }
 
-TamaleTreeItemData *
-TamaleTreeCtrl::GetTamaleTreeItemData(wxTreeEvent &inEvent)
+CustomTreeItemData *
+CustomTreeCtrl::GetCustomTreeItemData(wxTreeEvent &inEvent)
 {
-	return GetTamaleTreeItemData(inEvent.GetItem());
+	return GetCustomTreeItemData(inEvent.GetItem());
 }
 
-void TamaleTreeCtrl::OnLeftDClick(wxMouseEvent& event)
+void CustomTreeCtrl::OnLeftDClick(wxMouseEvent& event)
 {
-	TamaleTreeItemData *data = GetTamaleTreeItemData(event);
+	CustomTreeItemData *data = GetCustomTreeItemData(event);
 	if (data)
 		data->OnLeftDClick(event);
     else
         event.Skip();
 }
 
-void TamaleTreeCtrl::OnRightDown(wxMouseEvent& event)
+void CustomTreeCtrl::OnRightDown(wxMouseEvent& event)
 {
-	TamaleTreeItemData *data = GetTamaleTreeItemData(event);
+	CustomTreeItemData *data = GetCustomTreeItemData(event);
 	if (data)
 		data->OnRightDown(event);
 }
 
-void TamaleTreeCtrl::OnBeginLabelEdit(wxTreeEvent &event)
+void CustomTreeCtrl::OnBeginLabelEdit(wxTreeEvent &event)
 {
-	TamaleTreeItemData *data = GetTamaleTreeItemData(event);
+	CustomTreeItemData *data = GetCustomTreeItemData(event);
 	if (data)
 		data->OnBeginLabelEdit(event);	
 }
 
-void TamaleTreeCtrl::OnEndLabelEdit(wxTreeEvent &event)
+void CustomTreeCtrl::OnEndLabelEdit(wxTreeEvent &event)
 {
-	TamaleTreeItemData *data = GetTamaleTreeItemData(event);
+	CustomTreeItemData *data = GetCustomTreeItemData(event);
 	if (data)
 		data->OnEndLabelEdit(event);	
 }
 
-void TamaleTreeCtrl::OnBeginDrag(wxTreeEvent& event)
+void CustomTreeCtrl::OnBeginDrag(wxTreeEvent& event)
 {
-	TamaleTreeItemData *data = GetTamaleTreeItemData(event);
+	CustomTreeItemData *data = GetCustomTreeItemData(event);
 	if (data && data->CanBeDragged())
 	{
 		event.Allow();
@@ -141,21 +141,21 @@ void TamaleTreeCtrl::OnBeginDrag(wxTreeEvent& event)
 	}
 }
 
-void TamaleTreeCtrl::OnEndDrag(wxTreeEvent& event)
+void CustomTreeCtrl::OnEndDrag(wxTreeEvent& event)
 {
-	TamaleTreeItemData *data = GetTamaleTreeItemData(event);
+	CustomTreeItemData *data = GetCustomTreeItemData(event);
 	if (data && data->CanAcceptDrag(mDragItemData))
 		data->DragDone(mDragItemData);
 	mDragItemData = NULL;
 }
 
-void TamaleTreeCtrl::OnMouseMoved(wxMouseEvent& event)
+void CustomTreeCtrl::OnMouseMoved(wxMouseEvent& event)
 {
 	if (!mDragItemData)
 		SetCursor(*wxSTANDARD_CURSOR);
 	else
 	{
-		TamaleTreeItemData *data = GetTamaleTreeItemData(event);
+		CustomTreeItemData *data = GetCustomTreeItemData(event);
 		if (data && data != mDragItemData &&
 			data->CanAcceptDrag(mDragItemData))
 			SetCursor(*wxSTANDARD_CURSOR);
@@ -166,16 +166,16 @@ void TamaleTreeCtrl::OnMouseMoved(wxMouseEvent& event)
 
 
 //=========================================================================
-//  TamaleTreeItemData Methods
+//  CustomTreeItemData Methods
 //=========================================================================
 
-TamaleTreeItemData::TamaleTreeItemData(TamaleTreeCtrl *inTreeCtrl)
+CustomTreeItemData::CustomTreeItemData(CustomTreeCtrl *inTreeCtrl)
 	: mTreeCtrl(inTreeCtrl)
 {
 	ASSERT(mTreeCtrl != NULL);
 }
 
-void TamaleTreeItemData::OnBeginLabelEdit(wxTreeEvent &event)
+void CustomTreeItemData::OnBeginLabelEdit(wxTreeEvent &event)
 {
 	// By default, do not allow nodes in our tree to be renamed.
 	event.Veto();

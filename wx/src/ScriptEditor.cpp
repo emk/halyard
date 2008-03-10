@@ -33,7 +33,7 @@
 #include "BufferSpan.h"
 #include "dlg/FindDlg.h"
 #include "dlg/MetaDotDlg.h"
-#include "TamaleTreeCtrl.h"
+#include "CustomTreeCtrl.h"
 #include "FiveLApp.h"
 
 // Only so we can find our parent window.
@@ -1646,17 +1646,17 @@ void ScriptDoc::OnSavePointLeft(wxStyledTextEvent &event) {
 //  FileTreeItemData Methods
 //=========================================================================
 
-class FileTreeItemData : public TamaleTreeItemData {
+class FileTreeItemData : public CustomTreeItemData {
     std::string mPath;
     
 public:
-    FileTreeItemData(TamaleTreeCtrl *inTreeCtrl, const std::string &inPath);
+    FileTreeItemData(CustomTreeCtrl *inTreeCtrl, const std::string &inPath);
     void OnLeftDClick(wxMouseEvent& event);
 };
 
-FileTreeItemData::FileTreeItemData(TamaleTreeCtrl *inTreeCtrl,
+FileTreeItemData::FileTreeItemData(CustomTreeCtrl *inTreeCtrl,
                                    const std::string &inPath)
-    : TamaleTreeItemData(inTreeCtrl), mPath(inPath)
+    : CustomTreeItemData(inTreeCtrl), mPath(inPath)
 {
 }
 
@@ -1669,19 +1669,19 @@ void FileTreeItemData::OnLeftDClick(wxMouseEvent& event) {
 //  DefinitionTreeItemData Methods
 //=========================================================================
 
-class DefinitionTreeItemData : public TamaleTreeItemData {
+class DefinitionTreeItemData : public CustomTreeItemData {
     ScriptEditorDB::Definition mDefinition;
 
 public:
-    DefinitionTreeItemData(TamaleTreeCtrl *inTreeCtrl,
+    DefinitionTreeItemData(CustomTreeCtrl *inTreeCtrl,
                            ScriptEditorDB::Definition inDefinition);
     void OnLeftDClick(wxMouseEvent& event);
 };
 
 DefinitionTreeItemData::
-DefinitionTreeItemData(TamaleTreeCtrl *inTreeCtrl,
+DefinitionTreeItemData(CustomTreeCtrl *inTreeCtrl,
                        ScriptEditorDB::Definition inDefinition)
-    : TamaleTreeItemData(inTreeCtrl), mDefinition(inDefinition)
+    : CustomTreeItemData(inTreeCtrl), mDefinition(inDefinition)
 {
 }
 
@@ -1695,7 +1695,7 @@ void DefinitionTreeItemData::OnLeftDClick(wxMouseEvent& event) {
 //  ScriptTree Methods
 //=========================================================================
 
-class ScriptTree : public TamaleTreeCtrl, private ScriptEditorDB::IListener,
+class ScriptTree : public CustomTreeCtrl, private ScriptEditorDB::IListener,
                    private TReloadNotified
 {
     typedef std::map<std::string,wxTreeItemId> ItemMap;
@@ -1726,7 +1726,7 @@ private:
 };
 
 ScriptTree::ScriptTree(wxWindow *parent)
-    : TamaleTreeCtrl(parent, -1, wxDefaultPosition, wxDefaultSize,
+    : CustomTreeCtrl(parent, -1, wxDefaultPosition, wxDefaultSize,
                      wxTR_HIDE_ROOT|wxTR_LINES_AT_ROOT|wxTR_HAS_BUTTONS),
       mRegisteredWithDB(false)
 {
@@ -1755,7 +1755,7 @@ void ScriptTree::NotifyReloadScriptSucceeded() {
     }   
 }
 
-// TODO Refactor code shared with ProgramTree into TamaleTreeCtrl?
+// TODO Refactor code shared with ProgramTree into CustomTreeCtrl?
 void ScriptTree::HighlightFile(const wxString &path) {
     // Try to find the new item to highlight.
     wxTreeItemId new_item;

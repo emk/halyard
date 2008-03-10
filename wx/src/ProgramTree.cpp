@@ -32,7 +32,7 @@
 #include "FiveLApp.h"
 #include "Stage.h"
 #include "StageFrame.h"
-#include "TamaleTreeCtrl.h"
+#include "CustomTreeCtrl.h"
 #include "ProgramTree.h"
 #include "Model.h"
 #include "ModelView.h"
@@ -50,7 +50,7 @@ class ProgramTreeItemData;
 //=========================================================================
 
 /// Tree widget showing structure of Tamale script.
-class ProgramTreeCtrl : public TamaleTreeCtrl
+class ProgramTreeCtrl : public CustomTreeCtrl
 {
 public:
 	ProgramTreeCtrl(wxWindow *inParent);
@@ -62,11 +62,11 @@ public:
 //=========================================================================
 
 /// An object in our ProgramTreeCtrl which listens to our Document model.
-class ViewItemData : public TamaleTreeItemData, public model::View
+class ViewItemData : public CustomTreeItemData, public model::View
 {
 public:
 	ViewItemData(ProgramTreeCtrl *inTreeCtrl)
-		: TamaleTreeItemData(inTreeCtrl) {}	
+		: CustomTreeItemData(inTreeCtrl) {}	
 };
 
 
@@ -75,14 +75,14 @@ public:
 //=========================================================================
 
 /// Sequences of cards can be nested within each other.
-class SequenceItemData : public TamaleTreeItemData
+class SequenceItemData : public CustomTreeItemData
 {
 public:
 	SequenceItemData(ProgramTreeCtrl *inTreeCtrl);
 };
 
 SequenceItemData::SequenceItemData(ProgramTreeCtrl *inTreeCtrl)
-	: TamaleTreeItemData(inTreeCtrl)
+	: CustomTreeItemData(inTreeCtrl)
 {
 }
 
@@ -92,7 +92,7 @@ SequenceItemData::SequenceItemData(ProgramTreeCtrl *inTreeCtrl)
 //=========================================================================
 
 /// Representation of a card in our ProgramTreeCtrl.
-class CardItemData : public TamaleTreeItemData
+class CardItemData : public CustomTreeItemData
 {
 	wxString mCardName;
 
@@ -103,7 +103,7 @@ public:
 
 CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl,
 						   const wxString &inCardName)
-	: TamaleTreeItemData(inTreeCtrl), mCardName(inCardName)
+	: CustomTreeItemData(inTreeCtrl), mCardName(inCardName)
 {
 }
 
@@ -137,8 +137,8 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 //     virtual void OnEndLabelEdit(wxTreeEvent &event);
 
 //     virtual bool CanBeDragged() { return true; }
-//     virtual bool CanAcceptDrag(TamaleTreeItemData *inItem);
-//     virtual void DragDone(TamaleTreeItemData *inItem);
+//     virtual bool CanAcceptDrag(CustomTreeItemData *inItem);
+//     virtual void DragDone(CustomTreeItemData *inItem);
 
 //     virtual void ObjectChanged();
 //     virtual void ObjectDeleted();
@@ -155,12 +155,12 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 //         GetObject()->SetString("name", event.GetLabel().mb_str());
 // }
 
-// bool BackgroundItemData::CanAcceptDrag(TamaleTreeItemData *inItem)
+// bool BackgroundItemData::CanAcceptDrag(CustomTreeItemData *inItem)
 // {
 //     return dynamic_cast<BackgroundItemData*>(inItem) ? true : false;
 // }
 
-// void BackgroundItemData::DragDone(TamaleTreeItemData *inItem)
+// void BackgroundItemData::DragDone(CustomTreeItemData *inItem)
 // {
 //     BackgroundItemData *source = dynamic_cast<BackgroundItemData*>(inItem);
 //     wxASSERT(source);
@@ -352,7 +352,7 @@ void UserProgramItemData::ObjectDeleted()
 //=========================================================================
 
 ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent)
-	: TamaleTreeCtrl(inParent, FIVEL_PROGRAM_TREE_CTRL,
+	: CustomTreeCtrl(inParent, FIVEL_PROGRAM_TREE_CTRL,
                      wxDefaultPosition, wxDefaultSize,
                      wxTR_DEFAULT_STYLE|wxTR_EDIT_LABELS)
 {

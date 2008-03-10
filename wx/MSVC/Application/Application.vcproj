@@ -523,7 +523,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\TamaleTreeCtrl.cpp"
+				RelativePath="..\..\src\CustomTreeCtrl.cpp"
 				>
 			</File>
 			<File
@@ -844,7 +844,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\TamaleTreeCtrl.h"
+				RelativePath="..\..\src\CustomTreeCtrl.h"
 				>
 			</File>
 			<File

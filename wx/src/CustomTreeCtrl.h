@@ -20,26 +20,26 @@
 //
 // @END_LICENSE
 
-#ifndef TamaleTreeCtrl_H
-#define TamaleTreeCtrl_H
+#ifndef CustomTreeCtrl_H
+#define CustomTreeCtrl_H
 
 #include <wx/treectrl.h>
 
-class TamaleTreeItemData;
+class CustomTreeItemData;
 
 /// Subclass of wxTreeCtrl shared between StageFrame and ScriptEditor.
-class TamaleTreeCtrl : public wxTreeCtrl
+class CustomTreeCtrl : public wxTreeCtrl
 {
 	DECLARE_EVENT_TABLE()
 
-	TamaleTreeItemData *mDragItemData;
+	CustomTreeItemData *mDragItemData;
 
-	TamaleTreeItemData *GetTamaleTreeItemData(wxTreeItemId inId);
-	TamaleTreeItemData *GetTamaleTreeItemData(wxMouseEvent &inEvent);
-	TamaleTreeItemData *GetTamaleTreeItemData(wxTreeEvent &inEvent);
+	CustomTreeItemData *GetCustomTreeItemData(wxTreeItemId inId);
+	CustomTreeItemData *GetCustomTreeItemData(wxMouseEvent &inEvent);
+	CustomTreeItemData *GetCustomTreeItemData(wxTreeEvent &inEvent);
 
 public:
-    /// Any of these icons may be used by nodes in the TamaleTree.
+    /// Any of these icons may be used by nodes in the CustomTree.
     enum {
         ICON_CARD,
         ICON_DOCUMENT,
@@ -58,8 +58,8 @@ public:
         ICON_UNKNOWN
     };
 
-    /// Create a new TamaleTreeCtrl.
-    TamaleTreeCtrl(wxWindow *inParent,
+    /// Create a new CustomTreeCtrl.
+    CustomTreeCtrl(wxWindow *inParent,
                    wxWindowID inId = wxID_ANY,
                    const wxPoint &inPos = wxDefaultPosition,
                    const wxSize &inSize = wxDefaultSize,
@@ -82,16 +82,16 @@ private:
 };
 
 
-///  This class respresents a "smart" node in our TamaleTreeCtrl.  Most
+///  This class respresents a "smart" node in our CustomTreeCtrl.  Most
 ///  node-specific events will be passed to a subclass of
-///  TamaleTreeItemData by our event handlers.
-class TamaleTreeItemData : public wxTreeItemData
+///  CustomTreeItemData by our event handlers.
+class CustomTreeItemData : public wxTreeItemData
 {
-	TamaleTreeCtrl *mTreeCtrl;
+	CustomTreeCtrl *mTreeCtrl;
 
 public:
-	TamaleTreeItemData(TamaleTreeCtrl *inTreeCtrl);
-	TamaleTreeCtrl *GetTree() { return mTreeCtrl; }
+	CustomTreeItemData(CustomTreeCtrl *inTreeCtrl);
+	CustomTreeCtrl *GetTree() { return mTreeCtrl; }
 
 	virtual void OnLeftDClick(wxMouseEvent& event) {}
 	virtual void OnRightDown(wxMouseEvent& event) {}
@@ -99,8 +99,8 @@ public:
 	virtual void OnEndLabelEdit(wxTreeEvent &event) {}
 
 	virtual bool CanBeDragged() { return false; }
-	virtual bool CanAcceptDrag(TamaleTreeItemData *inItem) { return false; }
-	virtual void DragDone(TamaleTreeItemData *inItem) {}
+	virtual bool CanAcceptDrag(CustomTreeItemData *inItem) { return false; }
+	virtual void DragDone(CustomTreeItemData *inItem) {}
 };
 
-#endif // TamaleTreeCtrl_H
+#endif // CustomTreeCtrl_H
