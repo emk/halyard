@@ -16,7 +16,7 @@
   ;; collections of support modules.  Note that if SCRIPTS-DIRECTORY-NAME
   ;; is not equal to "Scripts", we don't attempt to honor that when
   ;; searching for libraries, because we don't have enough engine state set
-  ;; up at the top level of this file to run %call-5l-prim.
+  ;; up at the top level of this file to run %call-prim.
   (current-library-collection-paths
    (list (build-path (current-directory) "Runtime")
          (build-path (current-directory) "Scripts")))
@@ -24,52 +24,52 @@
   ;;===== Primitive functions =====
   
   ;; Call the specified engine primitive if it exists.
-  (define (maybe-call-5l-prim name . args)    
-    (when (%call-5l-prim 'HavePrimitive name)
-      (apply %call-5l-prim name args)))
+  (define (maybe-call-prim name . args)    
+    (when (%call-prim 'HavePrimitive name)
+      (apply %call-prim name args)))
 
   ;; Notify the operating system that we're still alive, and haven't hung.
   (define (heartbeat)
-    (maybe-call-5l-prim 'Heartbeat))
+    (maybe-call-prim 'Heartbeat))
 
   ;; Load a splash screen at the standard location, assuming it exists.
   (define (maybe-load-splash path)
-    (maybe-call-5l-prim 'MaybeLoadSplash path))
+    (maybe-call-prim 'MaybeLoadSplash path))
 
   ;; Force a screen update.
   (define (refresh-splash-screen)
-    (maybe-call-5l-prim 'RefreshSplashScreen))
+    (maybe-call-prim 'RefreshSplashScreen))
 
   ;; Let the engine know we've loaded a file.
   (define (notify-file-loaded)
-    (maybe-call-5l-prim 'NotifyFileLoaded))
+    (maybe-call-prim 'NotifyFileLoaded))
 
   ;; Let the engine know we've loaded all the files we plan to load.
   (define (notify-script-loaded)
-    (maybe-call-5l-prim 'NotifyScriptLoaded))
+    (maybe-call-prim 'NotifyScriptLoaded))
 
   ;; Draw the progress bar for the current status of our load.
   (define (draw-load-progress)
-    (maybe-call-5l-prim 'DrawLoadProgress))
+    (maybe-call-prim 'DrawLoadProgress))
 
   ;; Get the official directory we should be loading scripts from.
   (define (scripts-directory-name)
-    (%call-5l-prim 'ScriptsDirectoryName))
+    (%call-prim 'ScriptsDirectoryName))
 
   ;; Should we be compiling our files using the errortrace instrumentation?
   (define (errortrace-compile-enabled?)
-    (if (%call-5l-prim 'HavePrimitive 'ErrortraceCompileEnabled)
-      (%call-5l-prim 'ErrortraceCompileEnabled)
+    (if (%call-prim 'HavePrimitive 'ErrortraceCompileEnabled)
+      (%call-prim 'ErrortraceCompileEnabled)
       #f))
   
   ;; Throw an error that displays a message in a dialog box and then takes
   ;; down the engine without submitting a crash report.
   (define (environment-error message)
-    (%call-5l-prim 'Log '5L message 'environmenterror))
+    (%call-prim 'Log '5L message 'environmenterror))
 
   ;; Write a line to the debug log.
   (define (debug-log msg)
-    (%call-5l-prim 'Log 'Debug msg 'log))
+    (%call-prim 'Log 'Debug msg 'log))
 
   ;;===== Splash screen management =====
 

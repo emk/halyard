@@ -1,6 +1,6 @@
 (module kernel (lib "language.ss" "5L")
 
-  ;; Import %call-5l-prim from the engine.
+  ;; Import %call-prim from the engine.
   (require #%fivel-engine)
 
   ;; XXX - This gets automatically loaded sometimes, but not always.  In an
@@ -73,7 +73,7 @@
   ;;  kernel's inner workings.  The rest of these functions can be found
   ;;  in the 5L-API module.
   
-  (provide call-5l-prim have-5l-prim? value->boolean idle blocking-idle
+  (provide call-prim have-prim? value->boolean idle blocking-idle
            engine-var set-engine-var! engine-var-exists?
            exit-script refresh)
 
@@ -84,17 +84,17 @@
   (define *32-bit-unsigned-min* 0)
   (define *32-bit-unsigned-max* 4294967295)
 
-  (define (call-5l-prim . args)
-    ;; Our high-level wrapper for %call-5l-prim (which is defined by
+  (define (call-prim . args)
+    ;; Our high-level wrapper for %call-prim (which is defined by
     ;; the engine).  You should almost always call this instead of
-    ;; %call-5l-prim, because this function calls %kernel-check-state
+    ;; %call-prim, because this function calls %kernel-check-state
     ;; to figure out what happened while we were in C++.
-    (let [[result (apply %call-5l-prim args)]]
+    (let [[result (apply %call-prim args)]]
       (%kernel-check-state)
       result))
   
-  (define (have-5l-prim? name)
-    (%call-5l-prim 'HavePrimitive name))
+  (define (have-prim? name)
+    (%call-prim 'HavePrimitive name))
 
   (define (value->boolean val)
     ;; XXX - Coerce a Scheme value to an explicit boolean value.  This
@@ -109,10 +109,10 @@
   
   (define (%idle blocking?)
     (%kernel-die-if-callback 'idle)
-    ;; We call %call-5l-prim directly to avoid using rest arguments or
+    ;; We call %call-prim directly to avoid using rest arguments or
     ;; 'apply', both of which cons (which we don't want to happen in the
     ;; idle loop.)
-    (%call-5l-prim 'SchemeIdle blocking?)
+    (%call-prim 'SchemeIdle blocking?)
     (%kernel-check-state))
 
   (define (blocking-idle)
@@ -132,16 +132,16 @@
     (%kernel-check-deferred))
 
   (define (engine-var name)
-    (call-5l-prim 'Get (if (string? name) (string->symbol name) name)))
+    (call-prim 'Get (if (string? name) (string->symbol name) name)))
   
   (define (set-engine-var! name value)
     ;; Set an engine variable.  This is a pain, because we have to play
     ;; along with the engine's lame type system.
     (let [[namesym (if (string? name) (string->symbol name) name)]]
-      (call-5l-prim 'SetTyped namesym value)))
+      (call-prim 'SetTyped namesym value)))
 
   (define (engine-var-exists? name)
-    (call-5l-prim 'VariableInitialized name))
+    (call-prim 'VariableInitialized name))
   
   ;; TODO - replace most calls to this function with calls to ERROR.
   (define (error-with-extra-dialog msg)
@@ -152,9 +152,9 @@
   ;;; Exit the currently-running script.
   (define (exit-script)
     ;; Call the appropriate exit primitive.
-    (if (have-5l-prim? 'TamaleExit)
-        (call-5l-prim 'TamaleExit)
-        (call-5l-prim 'SchemeExit)))
+    (if (have-prim? 'TamaleExit)
+        (call-prim 'TamaleExit)
+        (call-prim 'SchemeExit)))
   
   (define (check-whether-jump-allowed)
     (when *running-on-exit-handler-for-node*
@@ -163,8 +163,8 @@
 
   (define (jump-to-card card)
     (check-whether-jump-allowed)
-    (if (have-5l-prim? 'Jump)
-        (call-5l-prim 'Jump (card-name card))
+    (if (have-prim? 'Jump)
+        (call-prim 'Jump (card-name card))
         (begin
           ;; If we don't have a JUMP primitive, fake it by hand.
           (set! *%kernel-jump-card* card)
@@ -178,8 +178,8 @@
     ;; Refresh the screen by blitting dirty areas of our offscreen buffer
     ;; to the display.
     (call-hook-functions *before-draw-hook*)
-    (if (have-5l-prim? 'Refresh)
-        (call-5l-prim 'Refresh transition ms)))
+    (if (have-prim? 'Refresh)
+        (call-prim 'Refresh transition ms)))
 
 
   ;;=======================================================================
@@ -422,8 +422,8 @@
     ;; resulted in a number of subtle bugs, and should probably be
     ;; redesigned.
     (unless *%kernel-running-callback?*
-      (when (have-5l-prim? 'WakeUpIfNecessary)
-        (%call-5l-prim 'WakeUpIfNecessary))))
+      (when (have-prim? 'WakeUpIfNecessary)
+        (%call-prim 'WakeUpIfNecessary))))
 
   (define (%kernel-assert-safe-to-run-deferred-thunks)
     ;; Here's a whole list of things that should be true if we're about
@@ -541,7 +541,7 @@
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
       [[PAUSED]
-       (%call-5l-prim 'SchemeIdle #t) ; Similar to blocking-idle.
+       (%call-prim 'SchemeIdle #t) ; Similar to blocking-idle.
        (%kernel-check-state)]         ; Tail-call self without consing.
       [[JUMPING]
        (when *%kernel-exit-to-top-func*
@@ -560,8 +560,8 @@
   ;;=======================================================================
 
   (define (enable-expensive-events enable?)
-    (when (have-5l-prim? 'EnableExpensiveEvents)
-      (call-5l-prim 'EnableExpensiveEvents enable?)))
+    (when (have-prim? 'EnableExpensiveEvents)
+      (call-prim 'EnableExpensiveEvents enable?)))
 
   (define-class %real-engine% (%engine%)
     (def (set-event-handled?! handled?)
@@ -580,14 +580,14 @@
       (enable-expensive-events enable?))
 
     (def (notify-enter-card card)
-      (when (have-5l-prim? 'NotifyEnterCard)
-        (call-5l-prim 'NotifyEnterCard (card .full-name)))
+      (when (have-prim? 'NotifyEnterCard)
+        (call-prim 'NotifyEnterCard (card .full-name)))
       (call-hook-functions *enter-card-hook* card))
 
     (def (notify-exit-card card)
       (call-hook-functions *exit-card-hook* card)
-      (when (have-5l-prim? 'NotifyExitCard)
-        (call-5l-prim 'NotifyExitCard (card .full-name))))
+      (when (have-prim? 'NotifyExitCard)
+        (call-prim 'NotifyExitCard (card .full-name))))
     
     (def (notify-card-body-finished card)
       (call-hook-functions *card-body-finished-hook*)
@@ -597,11 +597,11 @@
       ;; A little placeholder to make deletion work the same way in Tamale
       ;; and in Common test.
       ;; TODO - Remove when cleaning up element deletion.
-      (when (have-5l-prim? 'DeleteElements)
-        (call-5l-prim 'DeleteElements (elem .full-name))))
+      (when (have-prim? 'DeleteElements)
+        (call-prim 'DeleteElements (elem .full-name))))
 
     (def (exit-node node)
-      (call-5l-prim 'StateDbUnregisterListeners (node .full-name))
+      (call-prim 'StateDbUnregisterListeners (node .full-name))
       (%kernel-cancel-deferred-thunks-for node))
     )
 
@@ -609,8 +609,8 @@
 
   ;; Set up our event handling machinery.
   (enable-expensive-events #f)
-  (when (have-5l-prim? 'RegisterEventDispatcher)
-    (call-5l-prim 'RegisterEventDispatcher
+  (when (have-prim? 'RegisterEventDispatcher)
+    (call-prim 'RegisterEventDispatcher
                   dispatch-event-to-current-group-member))
 
 
@@ -650,8 +650,8 @@
   (provide find-card card-exists? card-name)
   
   (define (%kernel-register-card card)
-    (when (have-5l-prim? 'RegisterCard)
-      (call-5l-prim 'RegisterCard (card .full-name))))
+    (when (have-prim? 'RegisterCard)
+      (call-prim 'RegisterCard (card .full-name))))
 
   (define (find-card card-or-name
                      &opt (not-found

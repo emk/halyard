@@ -9,7 +9,7 @@
 (define-syntax test
   (syntax-rules ()
     [(test sexpr)
-     (call-5l-prim 'test (value->string 'sexpr) (value->boolean sexpr))]))
+     (call-prim 'test (value->string 'sexpr) (value->boolean sexpr))]))
 
 
 ;;=========================================================================
@@ -36,8 +36,8 @@
     (string->symbol (cat prefix sym)))
   (let loop [[i 0] [values values]]
     (unless (null? values)
-      (call-5l-prim (prefix-symbol "Set_Wanted_" type) i)
-      (call-5l-prim (prefix-symbol "Test_Check_" type) (car values))
+      (call-prim (prefix-symbol "Set_Wanted_" type) i)
+      (call-prim (prefix-symbol "Test_Check_" type) (car values))
       (loop (+ i 1) (cdr values)))))
 
 (test-arg-type 'string '("" "hello"))
@@ -92,7 +92,7 @@
 (define *after-callback-flag* #f)
 
 (define (test-callback code)
-  (call-5l-prim 'TestCallback code))
+  (call-prim 'TestCallback code))
 
 (card test-callbacks ()
   (run
@@ -121,17 +121,17 @@
       (test (equal? h "hello"))
       (test (equal? w 'world))
       (test (equal? l (list "foo" 'bar))))
-    (call-5l-prim 'TestCallbackArgs f)
+    (call-prim 'TestCallbackArgs f)
     (jump test-stop)))
 
 (card test-stop ()
   (run
-    (call-5l-prim 'TestStop (card-name test-pause))
+    (call-prim 'TestStop (card-name test-pause))
     (test #f)))
 
 (card test-pause ()
   (run
-    (call-5l-prim 'TestPause)
+    (call-prim 'TestPause)
     (jump advanced-language-test-cases)))
 
 
@@ -540,7 +540,7 @@
     ;; As long as we want to test the ScriptEditorDB from within
     ;; CommonTest, we can only do it when TSchemeInterpreter is set up.  So
     ;; we call it from inside our TSchemeInterpreter tests, right here.
-    (call-5l-prim 'TestScriptEditorDB)
+    (call-prim 'TestScriptEditorDB)
     (jump layout)))
 
 

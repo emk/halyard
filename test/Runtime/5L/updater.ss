@@ -11,7 +11,7 @@
   ;;; approve the changes and grant us write access (perhaps by typing an
   ;;; administrator password).
   (define (updater-can-use-uac-to-get-administrator-privileges?)
-    (call-5l-prim 'IsVistaOrNewer))
+    (call-prim 'IsVistaOrNewer))
 
   ;;; Test to see whether we can write to a directory.  DO NOT USE THIS
   ;;; FUNCTION ON VISTA!  If you test whether "C:\Program Files\Blah" is
@@ -108,7 +108,7 @@
   ;;; Calculate the SHA1 sum of a file, and return it as a string.
   (define (sha1-file file)
     (if (file-exists? file)
-      (call-5l-prim 'Sha1File (path->string file))
+      (call-prim 'Sha1File (path->string file))
       (error (cat "File does not exist: " file))))
 
   ;;===========================================================================
@@ -170,10 +170,10 @@
     (cat "temp" (1+ max-num)))
   
   (define (download-file url file)
-    (call-5l-prim 'Download url file))
+    (call-prim 'Download url file))
   
   (define (cancel-download) 
-    (call-5l-prim 'CancelDownload))
+    (call-prim 'CancelDownload))
   
   ;;; Given a URL, a destination DIR, and an optional NAME (pass #f if you
   ;;; want to default it), calculate the name of our download target file.
@@ -561,6 +561,6 @@
                                    "UpdateInstaller.exe")
                        updater-exe-path))
 
-    (call-5l-prim 'LaunchUpdateInstallerBeforeExiting)
+    (call-prim 'LaunchUpdateInstallerBeforeExiting)
     (exit-script))
   )

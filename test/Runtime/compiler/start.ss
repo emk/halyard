@@ -371,7 +371,7 @@
 			       (error 'bad))
 			     v))))
 	 ("Set the maximum inlining size" "size")]
-	[("--prim")
+	[("-prim")
 	 ,(lambda (f) (compiler:option:assume-primitives #t))
 	 ("Assume primitive bindings at top-level")]
 	[("--stupid")
@@ -413,7 +413,7 @@
 	    (if (module-mode)
 		(begin
 		  (when (compiler:option:assume-primitives)
-		    (error 'mzc "--prim is not useful with -m or --module"))
+		    (error 'mzc "-prim is not useful with -m or --module"))
 		  (unless (null? prefixes)
 		    (error 'mzc "prefix files not allowed with -m or --module"))
 		  #f)

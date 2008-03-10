@@ -26,7 +26,7 @@
 
 using namespace Halyard;
 
-static const char *CALL_5L_PRIM = "%call-5l-prim";
+static const char *CALL_PRIM = "%call-prim";
 
 #define UNIMPLEMENTED \
 	throw TException(__FILE__, __LINE__, "Scheme: Not yet implemented")
@@ -96,10 +96,10 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	Scheme_Env *engine_mod = scheme_primitive_module(modname, mGlobalEnv);
 
 	// Provide a way for Scheme code to call 5L primitives.
-	Scheme_Object *call_5l_prim =
-		scheme_make_prim_w_arity(&TSchemeInterpreter::Call5LPrim,
-								 CALL_5L_PRIM, 1, -1);
-	scheme_add_global(CALL_5L_PRIM, call_5l_prim, engine_mod);
+	Scheme_Object *call_prim =
+		scheme_make_prim_w_arity(&TSchemeInterpreter::CallPrim,
+								 CALL_PRIM, 1, -1);
+	scheme_add_global(CALL_PRIM, call_prim, engine_mod);
 
 	// Finish creating our engine module.
 	scheme_finish_primitive_module(engine_mod);
@@ -247,7 +247,7 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
     }
 }
 
-Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
+Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc,
 											  Scheme_Object **inArgv)
 {
     // We need to be very careful here, because mixing scheme_signal_error
@@ -266,12 +266,12 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
     // If you disassemble the current function, you should *not* see a line
     // in the function prologue which looks anything like:
     //
-    //   005F7595 push offset __ehhandler$?Call5LPrim@TSchemeInterpreter@ \
+    //   005F7595 push offset __ehhandler$?CallPrim@TSchemeInterpreter@ \
     //                        FiveL@@CAPAUScheme_Object@@HPAPAU3@@Z (7FD260h)
     //
     // If you see that, you've allowed a 'try' block or a stack-based object
     // with a destructor to sneak into this function.  That stuff *must* go
-    // in Call5LPrimInternal below, *not* here.
+    // in CallPrimInternal below, *not* here.
 
 	ASSERT(sScriptEnv != NULL);
 
@@ -279,14 +279,14 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
 	// argument types.
 	ASSERT(inArgc >= 1);
 	if (!SCHEME_SYMBOLP(inArgv[0]))
-		scheme_wrong_type(CALL_5L_PRIM, "symbol", 0, inArgc, inArgv);
+		scheme_wrong_type(CALL_PRIM, "symbol", 0, inArgc, inArgv);
 	const char *prim_name = SCHEME_SYM_VAL(inArgv[0]);
 
     // Dispatch the primitive call to the routine which is allowed to throw
     // and catch C++ exceptions.
     Scheme_Object *result = NULL;
     char error_message[1024];
-    if (Call5LPrimInternal(prim_name, inArgc-1, inArgv+1, &result,
+    if (CallPrimInternal(prim_name, inArgc-1, inArgv+1, &result,
                            error_message, sizeof(error_message))) {
         ASSERT(result);
         return result;
@@ -303,14 +303,14 @@ Scheme_Object *TSchemeInterpreter::Call5LPrim(int inArgc,
                            
 }
 
-bool TSchemeInterpreter::Call5LPrimInternal(const char *inPrimName,
+bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName,
                                             int inArgc, Scheme_Object **inArgv,
                                             Scheme_Object **outResult,
                                             char *outErrorMessage,
                                             size_t inErrorMessageMaxLength)
 {
     // This function may *not* call scheme_signal_error, scheme_wrong_type,
-    // or anything else which causes a non-local PLT exit.  See Call5LPrim
+    // or anything else which causes a non-local PLT exit.  See CallPrim
     // for more details.
     const char *error_message = NULL;
 	try {
@@ -356,7 +356,7 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
     // it.
     //
     // We might need to be even more paranoid here--see the notes in
-    // Call5LPrim for an idea of how evil combining setjmp/longjmp and
+    // CallPrim for an idea of how evil combining setjmp/longjmp and
     // try/catch/throw can be--but I can't find anything suspicious in the
     // disassembly of this function, so I'm going to leave it fow now.
     Scheme_Bucket *bucket = FindBucket(inEnv, inModule, inFuncName);

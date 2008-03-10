@@ -169,7 +169,7 @@
          (<  (point-y p)   (rect-bottom r))))
 
   (defmethod (point-in-shape? (p <point>) (poly <polygon>))
-    (call-5l-prim 'PolygonContains poly p))
+    (call-prim 'PolygonContains poly p))
   
   ;;; Offset a shape or a point by the number of pixels specified by the
   ;;; point P.  This function is used internally in a number of places,

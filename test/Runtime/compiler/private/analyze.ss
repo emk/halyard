@@ -134,7 +134,7 @@
 	    (begin
 	      (compiler:warning
 	       varref
-	       (format "definition of name `~a' mapped by --prim or `require'; compiled uses of the name will ignore this definition"
+	       (format "definition of name `~a' mapped by -prim or `require'; compiled uses of the name will ignore this definition"
 		       (zodiac:varref-var varref)))
 	      (let ([new (zodiac:make-top-level-varref
 			  (datum->syntax-object

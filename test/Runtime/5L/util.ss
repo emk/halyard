@@ -9,7 +9,7 @@
   ;;  Error Messages
   ;;=======================================================================
 
-  ;; Import %call-5l-prim from the engine.
+  ;; Import %call-prim from the engine.
   ;; DO NOT CALL ANYTHING BUT LOGGING FUNCTIONS USING '%CALL-5L-PRIM'--USE
   ;; 'CALL-5L-PRIM' INSTEAD.
   (require #%fivel-engine)
@@ -20,33 +20,33 @@
   ;;; Write a message to 5L.log.  This log is always present on a user's
   ;;; system, and is never deleted, so use this function sparingly.
   (define (5l-log msg)
-    (%call-5l-prim 'Log '5L msg 'log))
+    (%call-prim 'Log '5L msg 'log))
   
   ;;; Write a message to Debug.log, which is only present on developer
   ;;; systems (though the last hundred lines are always available in a
   ;;; crash report).  This is a very high-volume log, so feel free to be
   ;;; verbose.
   (define (debug-log msg)
-    (%call-5l-prim 'Log 'Debug msg 'log))
+    (%call-prim 'Log 'Debug msg 'log))
   
   ;;; Print a "Caution" message to 5L.log.  This should be used for very
   ;;; serious warnings only--see the note about 5L.log on 5L-LOG.
   (define (caution msg)
-    (%call-5l-prim 'Log '5L msg 'caution))
+    (%call-prim 'Log '5L msg 'caution))
   
   ;;; Print a "Caution" message to Debug.log.  High-volume output is OK.
   (define (debug-caution msg)
-    (%call-5l-prim 'Log 'Debug msg 'caution))
+    (%call-prim 'Log 'Debug msg 'caution))
   
   ;;; Show a non-fatal error dialog in developer mode, or quit the engine
   ;;; and send a crash report in runtime mode.
   (define (non-fatal-error msg)
-    (%call-5l-prim 'Log '5L msg 'error))
+    (%call-prim 'Log '5L msg 'error))
   
   ;;; Show a fatal error and quit the engine, regardless of mode.  Sends
   ;;; a crash report.
   (define (fatal-error msg)
-    (%call-5l-prim 'Log '5L msg 'fatalerror))
+    (%call-prim 'Log '5L msg 'fatalerror))
   
 
   ;;=======================================================================

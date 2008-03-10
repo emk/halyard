@@ -5,7 +5,7 @@
 ;;  of our standalone engine so users can test simple code.
 
 (module #%fivel-engine mzscheme
-  (provide %call-5l-prim)
+  (provide %call-prim)
   
   (define (sym-or-str-arg string-or-symbol)
     (cond
@@ -52,7 +52,7 @@
       (error msg))
     (void))
     
-  (define (%call-5l-prim name . args)
+  (define (%call-prim name . args)
     (case name
 
       ;; See if a primitive is available.

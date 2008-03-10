@@ -160,10 +160,10 @@
   (define-syntax-indent define-syntax-help 1)
   
   (define (insert-def name type line)
-    (call-5l-prim 'ScriptEditorDBInsertDef name type line))
+    (call-prim 'ScriptEditorDBInsertDef name type line))
 
   (define (insert-help name help)
-    (call-5l-prim 'ScriptEditorDBInsertHelp name (value->string help)))
+    (call-prim 'ScriptEditorDBInsertHelp name (value->string help)))
 
   (define (maybe-insert-def name type)
     (let [[sym (syntax-object->datum name)]]

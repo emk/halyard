@@ -214,7 +214,7 @@
 
   ;; Helper: Given a stylesheet, register a corresponding defstyle.
   (define (register-defstyle sheet)
-    (call-5l-prim 'DefStyle
+    (call-prim 'DefStyle
                   (stylesheet-long-name sheet)
                   (stylesheet-family sheet)
                   (stylesheet-size sheet)
@@ -341,7 +341,7 @@
   ;;; @legacy text textaa
   (define (draw-text r style text)
     ;; XXX - TextAA uses an idiosyncratic formating language.
-    (call-5l-prim 'TextAA (stylesheet-long-name style) r text))
+    (call-prim 'TextAA (stylesheet-long-name style) r text))
   
   ;;; Measure a string of text.
   ;;;
@@ -355,7 +355,7 @@
     ;;; XXX - Note that we stomp the "saved-text-position" used by
     ;;; deprecated.ss.
     ;;; XXX - We can't measure anything but left-aligned text accurately.
-    (call-5l-prim 'MeasureTextAA (stylesheet-long-name style) text max-width))
+    (call-prim 'MeasureTextAA (stylesheet-long-name style) text max-width))
 
 
   ;;;======================================================================
@@ -387,7 +387,7 @@
   ;;; @param SYMBOL key The key to set.
   ;;; @param ANY val The new value.
   (define (set-state-db! key value)
-    (call-5l-prim 'StateDbSet key value))
+    (call-prim 'StateDbSet key value))
 
   ;;; Register a listener with the state database, and call the listener
   ;;; the first time.
@@ -395,12 +395,12 @@
   ;;; @param NODE node The node to which this listener should be attached.
   ;;; @param LISTENER listener 
   (define (register-state-db-fn! node fn)
-    (call-5l-prim 'StateDbRegisterListener (node .full-name) fn))
+    (call-prim 'StateDbRegisterListener (node .full-name) fn))
 
   (define (make-state-db-fn f)
     (fn (listener-name listener-serial-number)
       (define (state-db key)
-        (call-5l-prim 'StateDbGet listener-name listener-serial-number key))
+        (call-prim 'StateDbGet listener-name listener-serial-number key))
       (f state-db)))
 
   ;;; Create a function suitable for passing to REGISTER-STATE-DB-FN!.

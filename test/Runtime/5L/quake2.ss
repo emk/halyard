@@ -25,34 +25,34 @@
     (set! *quake2-driver* val))
   
   (define (quake2-launch game)
-    (call-5l-prim 'Quake2Init game *quake2-driver*)
+    (call-prim 'Quake2Init game *quake2-driver*)
     (set! *quake2-initialized?* #t))
 
   (define (quake2-shown?)
-    (call-5l-prim 'Quake2IsShown))
+    (call-prim 'Quake2IsShown))
 
   (define (quake2-show)
-    (call-5l-prim 'Quake2Show))
+    (call-prim 'Quake2Show))
 
   (define (quake2-hide)
-    (call-5l-prim 'Quake2Hide))
+    (call-prim 'Quake2Hide))
 
   (define (quake2-command cmd)
-    (call-5l-prim 'Quake2Command cmd))
+    (call-prim 'Quake2Command cmd))
 
   (define (quake2-background-load-command cmd)
-    (call-5l-prim 'Quake2BackgroundLoadCommand cmd)
+    (call-prim 'Quake2BackgroundLoadCommand cmd)
     (while (quake2-loading-in-background?)
       (idle)))
 
   (define (quake2-loading-in-background?)
-    (call-5l-prim 'Quake2IsLoadingInBackground))
+    (call-prim 'Quake2IsLoadingInBackground))
 
   (define (quake2-should-run-in-background?)
-    (call-5l-prim 'Quake2GetShouldRunInBackground))
+    (call-prim 'Quake2GetShouldRunInBackground))
 
   (define (set-quake2-should-run-in-background?! run?)
-    (call-5l-prim 'Quake2SetShouldRunInBackground run?))
+    (call-prim 'Quake2SetShouldRunInBackground run?))
 
   (define (quake2-running?)
     (and *quake2-initialized?*
@@ -60,19 +60,19 @@
              (quake2-should-run-in-background?))))
 
   (define (quake2-float cvar)
-    (call-5l-prim 'Quake2GetFloatVar cvar))
+    (call-prim 'Quake2GetFloatVar cvar))
 
   (define (set-quake2-float! cvar value)
-    (call-5l-prim 'Quake2SetFloatVar cvar value))
+    (call-prim 'Quake2SetFloatVar cvar value))
 
   (define (quake2-string cvar)
-    (call-5l-prim 'Quake2GetStringVar cvar))
+    (call-prim 'Quake2GetStringVar cvar))
 
   (define (set-quake2-string! cvar value)
-    (call-5l-prim 'Quake2SetStringVar cvar value))
+    (call-prim 'Quake2SetStringVar cvar value))
 
   (define (quake2-print msg)
-    (call-5l-prim 'Quake2Print msg))
+    (call-prim 'Quake2Print msg))
 
   (define (quake2-print-line msg)
     (quake2-print msg)
@@ -82,7 +82,7 @@
     (define (func-wrapper . args)
       (with-errors-blocked (quake2-print-line)
                            (apply func args)))
-    (call-5l-prim 'Quake2RegisterCommand name func-wrapper))
+    (call-prim 'Quake2RegisterCommand name func-wrapper))
 
 
   (define-syntax define-quake2-command
