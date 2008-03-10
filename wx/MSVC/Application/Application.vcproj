@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="wx5L"
+	Name="Application"
 	ProjectGUID="{A8F77DD7-CB7D-4277-B1DA-F2BF54B6CF18}"
 	>
 	<Platforms>
@@ -40,7 +40,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/wx5L.tlb"
+				TypeLibraryName=".\Debug/Application.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -52,7 +52,7 @@
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="TamaleHeaders.h"
-				PrecompiledHeaderFile=".\Debug/wx5L.pch"
+				PrecompiledHeaderFile=".\Debug/Application.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
@@ -139,7 +139,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/wx5L.tlb"
+				TypeLibraryName=".\Release/Application.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -152,7 +152,7 @@
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="TamaleHeaders.h"
-				PrecompiledHeaderFile=".\Release/wx5L.pch"
+				PrecompiledHeaderFile=".\Release/Application.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
