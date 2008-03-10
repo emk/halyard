@@ -152,8 +152,8 @@
   ;;; Exit the currently-running script.
   (define (exit-script)
     ;; Call the appropriate exit primitive.
-    (if (have-prim? 'TamaleExit)
-        (call-prim 'TamaleExit)
+    (if (have-prim? 'ExitScript)
+        (call-prim 'ExitScript)
         (call-prim 'SchemeExit)))
   
   (define (check-whether-jump-allowed)

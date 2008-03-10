@@ -48,7 +48,7 @@ DEFINE_PRIMITIVE(SchemeExit)
 {
 	// Ask the interpreter manager to shut us down.  This function isn't
 	// safe to call when we're being run as part of the interpreter (as
-	// opposed to part of the test suites).  Use TamaleExit instead.
+	// opposed to part of the test suites).  Use ExitScript instead.
 	TInterpreterManager::GetInstance()->RequestQuitApplication();
 }
 

@@ -161,7 +161,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(Screen);
     REGISTER_PRIMITIVE(SetImageCacheSize);
     REGISTER_PRIMITIVE(SetZoneCursor);
-    REGISTER_PRIMITIVE(TamaleExit);
+    REGISTER_PRIMITIVE(ExitScript);
 	REGISTER_PRIMITIVE(TextAA);
     REGISTER_PRIMITIVE(Wait);
     REGISTER_PRIMITIVE(WakeUpIfNecessary);
@@ -1012,7 +1012,7 @@ DEFINE_PRIMITIVE(SetZoneCursor) {
 	elem->SetCursorName(cursor);
 }
 
-DEFINE_PRIMITIVE(TamaleExit) {
+DEFINE_PRIMITIVE(ExitScript) {
     // Force shutdown.
     wxGetApp().GetStageFrame()->Close(TRUE);
 }
