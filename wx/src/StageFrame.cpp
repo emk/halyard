@@ -738,7 +738,7 @@ bool StageFrame::ShouldDisableScreenSaver() {
     return IsFullScreen() || mStage->IsMediaPlaying();
 }
 
-#ifdef FIVEL_PLATFORM_WIN32
+#ifdef APP_PLATFORM_WIN32
 
 bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
     // HACK - We need to forcibly update our UI here, because Windows won't
@@ -773,7 +773,7 @@ WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
     return SashFrame::MSWWindowProc(message, wParam, lParam);
 }
 
-#endif // FIVEL_PLATFORM_WIN32
+#endif // APP_PLATFORM_WIN32
 
 bool StageFrame::AreDevToolsAvailable() {
     return (!TInterpreterManager::IsInRuntimeMode()

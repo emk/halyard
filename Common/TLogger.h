@@ -200,7 +200,7 @@ private:
 	///
 	static void (*s_ExitPrepFunction)();
 
-#ifdef FIVEL_PLATFORM_MACINTOSH
+#ifdef APP_PLATFORM_MACINTOSH
 	//////////
 	/// True if and only if the Macintosh Toolbox has been
 	/// properly initialized.
@@ -293,7 +293,7 @@ public:
     ///
     static void RegisterExitPrepFunction(void (*inFunc)());
 
-#ifdef FIVEL_PLATFORM_MACINTOSH
+#ifdef APP_PLATFORM_MACINTOSH
 	//////////
 	/// Tell the logging subsystem that the toolbox has been initialized, and
 	/// that it's OK to use dialogs.

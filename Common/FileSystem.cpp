@@ -39,14 +39,14 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#if FIVEL_PLATFORM_WIN32
+#if APP_PLATFORM_WIN32
 #	include <windows.h>
 #	define S_ISREG(m) ((m)&_S_IFREG)
 #	define S_ISDIR(m) ((m)&_S_IFDIR)
-#elif FIVEL_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_MACINTOSH
 #	include <dirent.h>
 #	include <unistd.h>
-#elif FIVEL_PLATFORM_OTHER
+#elif APP_PLATFORM_OTHER
 #	include <sys/types.h>
 #	include <dirent.h>
 #	include <unistd.h>
@@ -109,7 +109,7 @@ static void CheckErrno(const char *inFile, int inLine)
 //  This code is used by a variety of different MacOS-specific methods
 //  below.
 
-#if FIVEL_PLATFORM_MACINTOSH
+#if APP_PLATFORM_MACINTOSH
 
 #include <TextUtils.h>
 #include <Files.h>
@@ -128,24 +128,24 @@ static OSErr PathToFSSpec(const char *inPath, FSSpec *inSpec)
 	return ::FSMakeFSSpec(0, 0, thePath, inSpec);
 }
 
-#endif // FIVEL_PLATFORM_MACINTOSH
+#endif // APP_PLATFORM_MACINTOSH
 
 
 //=========================================================================
 //  Path Methods
 //=========================================================================
 
-#if FIVEL_PLATFORM_WIN32
+#if APP_PLATFORM_WIN32
 #	define PATH_SEPARATOR '\\'
-#elif FIVEL_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_MACINTOSH
 #	define PATH_SEPARATOR ':'
-#elif FIVEL_PLATFORM_OTHER
+#elif APP_PLATFORM_OTHER
 #	define PATH_SEPARATOR '/'
 #else
 #	error "Unknown platform."
 #endif
 
-#if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
+#if (APP_PLATFORM_WIN32 || APP_PLATFORM_OTHER)
 
 Path::Path()
 	: mPath(fs::current_path().native_directory_string())
@@ -160,7 +160,7 @@ Path::Path(const std::string &inPath)
 	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
 }
 
-#elif FIVEL_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_MACINTOSH
 
 #error "Need to convert : to full path."
 
@@ -178,7 +178,7 @@ Path::Path(const std::string &inPath)
 
 #else
 #	error "Unknown platform!"
-#endif // FIVEL_PLATFORM_*
+#endif // APP_PLATFORM_*
 
 static std::string::size_type find_extension_dot(const std::string &inPath)
 {
@@ -215,7 +215,7 @@ Path Path::ReplaceExtension(std::string inNewExtension) const
 	return newPath;
 }
 
-#if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
+#if (APP_PLATFORM_WIN32 || APP_PLATFORM_OTHER)
 
 bool Path::DoesExist() const
 {
@@ -259,7 +259,7 @@ bool Path::IsDirectory() const
 	return S_ISDIR(info.st_mode) ? true : false;
 }
 
-#elif FIVEL_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_MACINTOSH
 
 bool Path::DoesExist() const
 {
@@ -318,9 +318,9 @@ bool Path::IsDirectory() const
 
 #else 
 #	error "Unknown platform."
-#endif // FIVEL_PLATFORM_*
+#endif // APP_PLATFORM_*
 
-#if FIVEL_PLATFORM_WIN32
+#if APP_PLATFORM_WIN32
 
 std::list<std::string> Path::GetDirectoryEntries() const
 {
@@ -361,7 +361,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
 	return entries;
 }
 
-#elif (FIVEL_PLATFORM_MACINTOSH || FIVEL_PLATFORM_OTHER)
+#elif (APP_PLATFORM_MACINTOSH || APP_PLATFORM_OTHER)
 
 std::list<std::string> Path::GetDirectoryEntries() const
 {
@@ -389,7 +389,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
 
 #else 
 #	error "Unknown platform."
-#endif // FIVEL_PLATFORM_*
+#endif // APP_PLATFORM_*
 
 void Path::RemoveFile() const
 {
@@ -398,7 +398,7 @@ void Path::RemoveFile() const
 	CHECK_ERRNO();
 }
 
-#if (FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER)
+#if (APP_PLATFORM_WIN32 || APP_PLATFORM_OTHER)
 
 Path Path::AddComponent(const std::string &inFileName) const
 {
@@ -416,7 +416,7 @@ Path Path::AddParentComponent() const
 	return newPath;	
 }
 
-#elif FIVEL_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_MACINTOSH
 
 static const std::string ensure_trailing_colon(const std::string &inString)
 {
@@ -445,7 +445,7 @@ Path Path::AddParentComponent() const
 
 #else 
 #	error "Unknown platform."
-#endif // FIVEL_PLATFORM_*
+#endif // APP_PLATFORM_*
 
 std::string Path::ToNativePathString () const
 {
@@ -471,7 +471,7 @@ void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
 inTemporaryFile.RenameFile(*this);
 }
 
-#if FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_OTHER
+#if APP_PLATFORM_WIN32 || APP_PLATFORM_OTHER
 
 void Path::CreateWithMimeType(const std::string &inMimeType)
 {
@@ -479,7 +479,7 @@ void Path::CreateWithMimeType(const std::string &inMimeType)
 	file.close();
 }
 
-#elif FIVEL_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_MACINTOSH
 
 #define TEXT_PLAIN_TYPE ('TEXT')
 #ifdef DEBUG
@@ -524,7 +524,7 @@ Path Path::NativePath(const std::string &inPath)
 	CHECK(inPath != "", "Path cannot be an empty string");
 	Path result;
 
-#if FIVEL_PLATFORM_OTHER
+#if APP_PLATFORM_OTHER
 
 	CHECK(inPath.size() > 0 && inPath[0] == PATH_SEPARATOR,
 		  ("\'" + inPath + "\' does not begin with a slash").c_str());
@@ -533,7 +533,7 @@ Path Path::NativePath(const std::string &inPath)
 	else
 		result.mPath = inPath;
 
-#elif FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_WIN32 || APP_PLATFORM_MACINTOSH
 
 	if (inPath.size() >= 2 &&
 		inPath[inPath.length()-1] == PATH_SEPARATOR &&

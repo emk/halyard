@@ -22,7 +22,7 @@
 
 #include "TamaleHeaders.h"
 
-#if FIVEL_PLATFORM_WIN32
+#if APP_PLATFORM_WIN32
 
 #include <windows.h>
 
@@ -55,7 +55,7 @@ void ShowSystemWindows() {
                            SPIF_SENDWININICHANGE);
 }
 
-#else // !FIVEL_PLATFORM_WIN32
+#else // !APP_PLATFORM_WIN32
 
 void HideSystemWindows() {
 }

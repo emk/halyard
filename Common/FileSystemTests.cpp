@@ -35,7 +35,7 @@ void test_FileSystem (void)
 {
 	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
 
-#if FIVEL_PLATFORM_WIN32
+#if APP_PLATFORM_WIN32
 
 	// Test conversion to native path strings.
 	TEST(Path().ToNativePathString() == base);
@@ -55,7 +55,7 @@ void test_FileSystem (void)
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
 		 == base+"\\f\\..\\g");
 
-#elif FIVEL_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_MACINTOSH
 
 	// Test conversion to native path strings.
 	TEST(Path().ToNativePathString() == ":");
@@ -75,7 +75,7 @@ void test_FileSystem (void)
 #pragma ANSI_strict off
 #warning "Macintosh path manipulation still has problems."
 
-#elif FIVEL_PLATFORM_OTHER
+#elif APP_PLATFORM_OTHER
 	
 	// Test conversion to native path strings.
 	TEST(Path().ToNativePathString() == base);
@@ -94,7 +94,7 @@ void test_FileSystem (void)
 
 #else
 #	error "Unknown platform."
-#endif // FIVEL_PLATFORM_*
+#endif // APP_PLATFORM_*
 
 	// Test the base directory.
 	TEST(GetBaseDirectory() == Path());
@@ -198,7 +198,7 @@ void test_FileSystem (void)
 	fake_jpg.RemoveFile();
 
 	// Do some tricky path manipulation.
-#if !FIVEL_PLATFORM_MACINTOSH
+#if !APP_PLATFORM_MACINTOSH
 	Path tricky = GetFontDirectory().AddParentComponent();
 	TEST(tricky.AddComponent("data.tam").DoesExist());
 #else

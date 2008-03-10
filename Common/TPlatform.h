@@ -49,10 +49,10 @@
 #if defined (WIN32)
 
 /// \TODO This symbol begins with an underscore, which is illegal.
-/// Refactor the code to replace it with FIVEL_PLATFORM_WIN32.
+/// Refactor the code to replace it with APP_PLATFORM_WIN32.
 #define _5L_WIN32_
 
-#define FIVEL_PLATFORM_WIN32 (1)
+#define APP_PLATFORM_WIN32 (1)
 
 #if defined (_DEBUG)
 #define DEBUG
@@ -72,7 +72,7 @@
 
 #elif defined (macintosh)
 
-#define FIVEL_PLATFORM_MACINTOSH (1)
+#define APP_PLATFORM_MACINTOSH (1)
 
 #define NEWLINE_CHAR	'\r'
 #define RETURN_CHAR		'\n'
@@ -94,7 +94,7 @@
 
 #else
 
-#define FIVEL_PLATFORM_OTHER (1)
+#define APP_PLATFORM_OTHER (1)
 
 #ifndef NDEBUG
 #define DEBUG (1)

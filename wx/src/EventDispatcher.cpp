@@ -349,7 +349,7 @@ bool EventDispatcher::DoEventCursorHidden() {
 // Platform-Specific Methods
 //=========================================================================
 
-#ifdef FIVEL_PLATFORM_WIN32
+#ifdef APP_PLATFORM_WIN32
 
 #include <windows.h>
 

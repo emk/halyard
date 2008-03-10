@@ -304,7 +304,7 @@ public:
 	///
 	void ObjectDeleted();
 
-#ifdef FIVEL_PLATFORM_WIN32
+#ifdef APP_PLATFORM_WIN32
 
     //////////
     /// Sadly, we need to override this function because Windows doesn't
@@ -320,7 +320,7 @@ public:
     WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
 
 
-#endif // FIVEL_PLATFORM_WIN32
+#endif // APP_PLATFORM_WIN32
 
 private:
     bool AreDevToolsAvailable();

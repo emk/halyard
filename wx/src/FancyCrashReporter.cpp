@@ -24,17 +24,17 @@
 
 // We need snprintf.
 #include <stdio.h>
-#ifdef FIVEL_PLATFORM_WIN32
+#ifdef APP_PLATFORM_WIN32
 #define snprintf _snprintf
-#endif // FIVEL_PLATFORM_WIN32
+#endif // APP_PLATFORM_WIN32
 
 #include <wx/debugrpt.h>
 #include <wx/sstream.h>
 
-#ifdef FIVEL_PLATFORM_WIN32
+#ifdef APP_PLATFORM_WIN32
 #include <windows.h>
 #include <wx/msw/registry.h>
-#endif // FIVEL_PLATFORM_WIN32
+#endif // APP_PLATFORM_WIN32
 
 #include "TVersion.h"
 #include "doc/Document.h"
@@ -98,7 +98,7 @@ void FancyDebugReport::AddScreenshot() {
     AddFile(path.GetFullName(), "script graphics");
 }
 
-#ifndef FIVEL_PLATFORM_WIN32
+#ifndef APP_PLATFORM_WIN32
 
 /// This function does nothing except on Windows.
 /// PORTABILITY - Should we implement a generic version of these functions?
@@ -107,7 +107,7 @@ bool DoAddSystemInfo(wxXmlNode *nodeSystemInfo) {
     return wxDebugReportUpload::DoAddSystemInfo(nodeSystemInfo);
 }
 
-#else // defined(FIVEL_PLATFORM_WIN32)
+#else // defined(APP_PLATFORM_WIN32)
 
 /// Dump our registry data and add it to the debug report.
 void FancyDebugReport::AddRegistryData() {
@@ -150,7 +150,7 @@ bool FancyDebugReport::DoAddSystemInfo(wxXmlNode *nodeSystemInfo) {
     return true;
 }
 
-#endif // defined(FIVEL_PLATFORM_WIN32)
+#endif // defined(APP_PLATFORM_WIN32)
 
 /// Add application-specific information to the debug report.
 void FancyDebugReport::AddAppInfo(wxXmlNode *nodeRoot) {

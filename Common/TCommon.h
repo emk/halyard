@@ -61,15 +61,15 @@ extern void FiveLCheckAssertion(int inTest, const char *inDescription,
 
 // TODO - These macro names should go away as soon as somebody gets
 // a chance to dig through the rest of the source.  It's a big job.
-#if FIVEL_PLATFORM_WIN32 || FIVEL_PLATFORM_MACINTOSH
+#if APP_PLATFORM_WIN32 || APP_PLATFORM_MACINTOSH
 #	define not	!
 #	define and	&&
 #	define or	|| 
-#elif FIVEL_PLATFORM_OTHER
+#elif APP_PLATFORM_OTHER
 	// These names are reserved C++ operators, and g++ 3.0 doesn't like them.
 #else
 #	error "Unknown platform."
-#endif // FIVEL_PLATFORM_*
+#endif // APP_PLATFORM_*
 
 #ifndef NULL
 #ifdef __cplusplus
