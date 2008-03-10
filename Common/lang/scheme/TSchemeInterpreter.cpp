@@ -95,7 +95,7 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	Scheme_Object *modname = scheme_intern_symbol("#%fivel-engine");
 	Scheme_Env *engine_mod = scheme_primitive_module(modname, mGlobalEnv);
 
-	// Provide a way for Scheme code to call 5L primitives.
+	// Provide a way for Scheme code to call primitives.
 	Scheme_Object *call_prim =
 		scheme_make_prim_w_arity(&TSchemeInterpreter::CallPrim,
 								 CALL_PRIM, 1, -1);
@@ -134,9 +134,9 @@ void TSchemeInterpreterManager::BeginScript()
 	scheme_set_collects_path(scheme_make_path(runtime.c_str()));
 	
 	// Install our system loader.
-	FileSystem::Path fivel_collection =
+	FileSystem::Path halyard_collection =
 		FileSystem::GetRuntimeDirectory().AddComponent("5L");
-	LoadFile(fivel_collection.AddComponent("loader.ss"));
+	LoadFile(halyard_collection.AddComponent("loader.ss"));
 }
 
 void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
@@ -253,7 +253,7 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc,
     // We need to be very careful here, because mixing scheme_signal_error
     // with C++ exceptions will subtly corrupt the C++ exception-handling
     // runtime, and the errors will show up once in every few days of
-    // Tamale use (bug #1691, bug #1762, etc) on Win32 systems, at least
+    // Halyard use (bug #1691, bug #1762, etc) on Win32 systems, at least
     // when compiling with MSVC++.Net.  In particular, the following code
     // is illegal:
     //
@@ -267,7 +267,7 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc,
     // in the function prologue which looks anything like:
     //
     //   005F7595 push offset __ehhandler$?CallPrim@TSchemeInterpreter@ \
-    //                        FiveL@@CAPAUScheme_Object@@HPAPAU3@@Z (7FD260h)
+    //                        Halyard@@CAPAUScheme_Object@@HPAPAU3@@Z (7FD260h)
     //
     // If you see that, you've allowed a 'try' block or a stack-based object
     // with a destructor to sneak into this function.  That stuff *must* go
@@ -332,7 +332,7 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName,
         // which aren't a subclass of std::exception, and Win32 structured
         // exceptions (e.g., segfaults) should be caught by the crash
         // reporting library.
-        strncpy_terminated(outErrorMessage, "Unknown 5L engine error",
+        strncpy_terminated(outErrorMessage, "Unknown engine error",
                            inErrorMessageMaxLength);
         return false;
 	}

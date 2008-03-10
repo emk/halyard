@@ -378,8 +378,8 @@ void TLogger::RegisterExitPrepFunction(void (*inFunc)())
 }
 
 // This routine is declared in TCommon.h.
-void FiveLCheckAssertion(int inTest, const char *inDescription,
-						 const char *inFile, int inLine)
+void HalyardCheckAssertion(int inTest, const char *inDescription,
+                           const char *inFile, int inLine)
 {
 	if (!inTest)
 	{

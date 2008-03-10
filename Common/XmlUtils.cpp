@@ -44,7 +44,7 @@ const char *xml_node::to_ascii(const char_type *inStr)
 {
 	// This function should check carefully for UTF-8 characters.  Failing
 	// to do so may result in overlong-encoding attacks, which might or might
-	// not matter to the security of Tamale when run with untrusted data.
+	// not matter to the security of Halyard when run with untrusted data.
 	// We check for UTF-8 data by checking for the high bit.
 	unsigned const char *result =
 		reinterpret_cast<unsigned const char*>(inStr);

@@ -227,7 +227,7 @@ namespace FileSystem {
     Path GetScriptLocalDataDirectory();
 
 	//////////
-	/// Get the directory 5L uses to store fonts.  (Eventually there
+	/// Get the directory Halyard uses to store fonts.  (Eventually there
 	/// will be more of these functions, and we might combine them
 	/// into one function with a string argument.)
 	///
@@ -259,7 +259,7 @@ namespace FileSystem {
     std::string GetScriptsDirectoryName();
 
 	//////////
-	/// Get the directory 5L uses to store scripts.
+	/// Get the directory Halyard uses to store scripts.
 	///
 	Path GetScriptsDirectory();
 
@@ -270,7 +270,7 @@ namespace FileSystem {
 	    { return GetScriptsDirectory().AddComponent(inScriptFileName); }
 
 	//////////
-	/// Get the directory 5L uses to store runtime support files.
+	/// Get the directory Halyard uses to store runtime support files.
 	///
 	inline Path GetRuntimeDirectory()
 	    { return GetBaseDirectory().AddComponent("Runtime"); }
@@ -302,7 +302,7 @@ namespace FileSystem {
 	    { return GetScriptGraphicDirectory().AddComponent(inFileName); }
 
 	//////////
-	/// Get the directory 5L uses to store user data.
+	/// Get the directory Halyard uses to store user data.
 	///
 	inline Path GetDataDirectory()
 	    { return GetBaseDirectory().AddComponent("Data"); }
@@ -315,7 +315,7 @@ namespace FileSystem {
 	    { return GetDataDirectory().AddComponent(inDataFileName); }
 
 	//////////
-	/// Get the directory 5L uses to store palette information.
+	/// Get the directory Halyard uses to store palette information.
 	///
 	inline Path GetPalettesDirectory()
 	    { return GetBaseDirectory().AddComponent("Palettes"); }

@@ -38,7 +38,7 @@
 **=======================================================================*/
 
 #if defined (__QTML__) || defined (macintosh)
-#define _5L_QUICKTIME_
+#define _HALYARD_QUICKTIME_
 #endif
 
 
@@ -50,7 +50,7 @@
 
 /// \TODO This symbol begins with an underscore, which is illegal.
 /// Refactor the code to replace it with APP_PLATFORM_WIN32.
-#define _5L_WIN32_
+#define _HALYARD_WIN32_
 
 #define APP_PLATFORM_WIN32 (1)
 
@@ -81,8 +81,8 @@
 #define DEBUG
 
 /* backwards compatible defines
-**#define DEBUG_5L
-**#define DEBUG_5L_SCRIPT
+**#define DEBUG_HALYARD
+**#define DEBUG_HALYARD_SCRIPT
 */
 
 #endif	/* Debug_Throw */

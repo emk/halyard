@@ -37,7 +37,7 @@ enum CrashType {
 };
 
 //////////
-/// A handy exception class for use in 5L code.  Don't bother
+/// A handy exception class for use in Halyard code.  Don't bother
 /// catching this directly; catch something like std::exception
 /// instead.
 /// 

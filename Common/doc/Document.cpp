@@ -77,7 +77,7 @@ enum {
     EARLIEST_READABLE = 0
 };
 
-const static ModelFormat gTamaleFormat("UserProgram", CURRENT_FORMAT,
+const static ModelFormat gHalyardFormat("UserProgram", CURRENT_FORMAT,
 									   COMPATIBLE_BACK_TO);
 
 
@@ -110,18 +110,18 @@ void Document::CheckDirectory(Path inPath)
 {
 	CHECK(inPath.DoesExist() && inPath.IsDirectory(),
 		  ("Cannot find directory " + inPath.ToNativePathString() +
-		   " in Tamale program").c_str());
+		   " in Halyard program").c_str());
 }
 
 void Document::CheckFile(Path inPath)
 {
 	CHECK(inPath.DoesExist() && inPath.IsRegularFile(),
 		  ("Cannot find file " + inPath.ToNativePathString() +
-		   " in Tamale program").c_str());
+		   " in Halyard program").c_str());
 }
 
 Document::Document(const std::string &inDirectory)
-    : Model(gTamaleFormat)
+    : Model(gHalyardFormat)
 {
 	std::string data_file = SetBaseAndGetFilePath(inDirectory);
 	CheckStructure();
@@ -132,7 +132,7 @@ Document::Document(const std::string &inDirectory)
 }
 
 Document::Document(const std::string &inDirectory, Flag inOpen)
-    : Model(gTamaleFormat, EARLIEST_READABLE,
+    : Model(gHalyardFormat, EARLIEST_READABLE,
 			SetBaseAndGetFilePath(inDirectory).c_str())
 {
 	CheckStructure();

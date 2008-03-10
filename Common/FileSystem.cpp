@@ -511,7 +511,7 @@ void Path::CreateWithMimeType(const std::string &inMimeType)
 }
 
 #else
-#	error "Unknown FiveL platform."
+#	error "Unknown platform."
 #endif // FILEL_PLATFORM_*
 
 bool FileSystem::operator==(const Path& inLeft, const Path& inRight)
@@ -547,7 +547,7 @@ Path Path::NativePath(const std::string &inPath)
 	}
 
 #else
-#	error "Unknown FiveL platform."
+#	error "Unknown platform."
 #endif // FILEL_PLATFORM_*
 
 	return result;
@@ -657,9 +657,9 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
 		if (!inPath.DoesExist() || !inPath.IsDirectory())
 		{
 			Halyard::
-			gLog.FatalError("5L was unable to open the directory \"%s\".  "
-							"Please make sure 5L is running in the correct "
-							"directory, and that all source files are "
+			gLog.FatalError("Halyard was unable to open the directory \"%s\".  "
+							"Please make sure Halyard is running in the "
+							"correct directory, and that all source files are "
 							"available.",
 							inPath.ToNativePathString().c_str());
 		}
@@ -669,9 +669,9 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
 		if (!inPath.DoesExist() || !inPath.IsRegularFile())
 		{
 			Halyard::
-			gLog.FatalError("5L was unable to open the file \"%s\".  "
-							"Please make sure 5L is running in the correct "
-							"directory, and that all source files are "
+			gLog.FatalError("Halyard was unable to open the file \"%s\".  "
+							"Please make sure Halyard is running in the "
+							"correct directory, and that all source files are "
 							"available.", 
 							inPath.ToNativePathString().c_str());
 		}

@@ -20,7 +20,7 @@
   ;;; Write a message to 5L.log.  This log is always present on a user's
   ;;; system, and is never deleted, so use this function sparingly.
   (define (5l-log msg)
-    (%call-prim 'Log '5L msg 'log))
+    (%call-prim 'Log 'halyard msg 'log))
   
   ;;; Write a message to Debug.log, which is only present on developer
   ;;; systems (though the last hundred lines are always available in a
@@ -32,7 +32,7 @@
   ;;; Print a "Caution" message to 5L.log.  This should be used for very
   ;;; serious warnings only--see the note about 5L.log on 5L-LOG.
   (define (caution msg)
-    (%call-prim 'Log '5L msg 'caution))
+    (%call-prim 'Log 'halyard msg 'caution))
   
   ;;; Print a "Caution" message to Debug.log.  High-volume output is OK.
   (define (debug-caution msg)
@@ -41,12 +41,12 @@
   ;;; Show a non-fatal error dialog in developer mode, or quit the engine
   ;;; and send a crash report in runtime mode.
   (define (non-fatal-error msg)
-    (%call-prim 'Log '5L msg 'error))
+    (%call-prim 'Log 'halyard msg 'error))
   
   ;;; Show a fatal error and quit the engine, regardless of mode.  Sends
   ;;; a crash report.
   (define (fatal-error msg)
-    (%call-prim 'Log '5L msg 'fatalerror))
+    (%call-prim 'Log 'halyard msg 'fatalerror))
   
 
   ;;=======================================================================

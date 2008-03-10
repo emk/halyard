@@ -173,7 +173,7 @@ Glyph::Glyph(FT_GlyphSlot inGlyph)
 //	Typography::Style Methods
 //=========================================================================
 //  The 'StyleRep' code in this class is getting out of control, and should
-//  probably be factored into a standard 5L 'Representation' class.
+//  probably be factored into a standard 'Representation' class.
 
 /// Construct a StyleRep from a family and size.
 Style::StyleRep::StyleRep(const std::string &inFamily, int inSize)

@@ -84,19 +84,17 @@ public:
 	std::string GetName() const { return mStyleName; }
 
 	//////////
-	/// Convert a 5L-format string into a StyledText object, using the
+	/// Convert an XML-formatted string into a StyledText object, using the
 	/// data stored in this style.  This is a pretty nasty formatting
 	/// system, and it handles a lot of escapes which should be processed
 	/// by TStream instead.
-	///
-    /// \deprecated Replace with an XML-based styled text system.
     ///
 	Typography::StyledText MakeStyledText(const std::string& inText);
 	
 	//////////
 	/// Draw text onto the specified image.
 	///
-	/// \param inText  The text to draw, with standard 5L formatting.
+	/// \param inText  The text to draw, with standard XML formatting.
 	/// \param inPosition  The upper-left corner of the text box.
 	/// \param inLineLength  The maximum number of pixels available for
 	///                     a line.  This is (I hope) a hard limit,
@@ -145,7 +143,7 @@ public:
 	/// style sheet.
 	///
 	/// \param inStyleSheet  The name of the style sheet to use.
-	/// \param inText  The text to draw, with standard 5L formatting.
+	/// \param inText  The text to draw, with standard XML formatting.
 	/// \param inPosition  The upper-left corner of the text box.
 	/// \param inLineLength  The maximum number of pixels available for
 	///                     a line.  This is (I hope) a hard limit,

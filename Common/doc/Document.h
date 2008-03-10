@@ -31,7 +31,7 @@ BEGIN_NAMESPACE_HALYARD
 class UserProgram;
 
 //////////
-/// This class represents a Tamale document.  It should have no dependencies
+/// This class represents a Halyard document.  It should have no dependencies
 /// on the GUI--it's a pure, portable Model class.
 ///
 class Document : public model::Model {

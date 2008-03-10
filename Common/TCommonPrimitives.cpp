@@ -129,7 +129,7 @@ void Halyard::UpdateSpecialVariablesForText(const TPoint &bottomLeft)
 //-------------------------------------------------------------------------
 // (HavePrimitive name:STRING)
 //-------------------------------------------------------------------------
-// Check to see whether the specified 5L primitive exists.  Helpful in
+// Check to see whether the specified primitive exists.  Helpful in
 // writing code which runs under different versions of the engine.
 
 DEFINE_PRIMITIVE(HavePrimitive)
@@ -145,7 +145,7 @@ DEFINE_PRIMITIVE(HavePrimitive)
 // (Log file:STRING msg:STRING [level:STRING = "log"])
 //-------------------------------------------------------------------------
 // Logs the second argument to the file specified by the first.
-// Available logs: debug, 5L.  Available log levels:
+// Available logs: debug, halyard.  Available log levels:
 // fatalerror, error, caution, log.
 
 DEFINE_PRIMITIVE(Log)
@@ -163,7 +163,7 @@ DEFINE_PRIMITIVE(Log)
 
 	// Figure out which log file to use.
 	TLogger *log = &gLog;
-	if (log_name == "5l")
+	if (log_name == "halyard")
 		log = &gLog;
 	else if (log_name == "debug")
 		log = &gDebugLog;

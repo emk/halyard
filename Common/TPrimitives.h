@@ -27,8 +27,8 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-// These are the primitive types which can currently be passed as
-// arguments to a 5L command.
+// These are the data types which can currently be passed as
+// arguments to a primitive.
 //
 // String
 //   std::string
@@ -59,8 +59,8 @@ class ValueOrPercent;
 
 //////////
 /// TArgumentList provides an abstract interface to the argument lists
-/// passed to a 5L primitive function.  To allow a new TInterpreter
-/// class to call 5L primitives, you'll need to implement all this
+/// passed to a primitive function.  To allow a new TInterpreter
+/// class to call primitives, you'll need to implement all this
 /// class's virtual methods.
 ///
 /// You have a lot of flexibility in how you implement the Get* methods.
@@ -325,7 +325,7 @@ public:
 extern TPrimitiveManager gPrimitiveManager;
 
 //////////
-/// A handy macro for declaring a 5L primitive function and registering
+/// A handy macro for declaring a primitive function and registering
 /// it with the gPrimitiveManager, all in one fell swoop.  There are
 /// several bits of pre-processor wizardry going on here:
 ///
@@ -351,7 +351,7 @@ extern TPrimitiveManager gPrimitiveManager;
 
 //////////
 /// Use this macro in place of a function prototype when implementing a
-/// 5L primitive.  This will shield you from changes to the standard
+/// primitive.  This will shield you from changes to the standard
 /// prototype.  (For an explanation of the macro grik, see
 /// REGISTER_PRIMITIVE.)
 ///

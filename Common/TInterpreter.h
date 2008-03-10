@@ -84,8 +84,8 @@ public:
 
 //////////
 /// TInterpreter provides an abstract interface to a programming language
-/// interpreter used by the 5L engine.  In theory, it should be possible
-/// to change 5L's scripting language by providing a new implementation
+/// interpreter used by the Halyard engine.  In theory, it should be possible
+/// to change Halyard's scripting language by providing a new implementation
 /// of this class.
 ///
 class TInterpreter : boost::noncopyable

@@ -29,7 +29,7 @@
 #include "TSchemeScriptEditorDB.h"
 
 // XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
-// called from a function in the FiveL:: namespace, which is silly.
+// called from a function in the Halyard:: namespace, which is silly.
 BEGIN_NAMESPACE_HALYARD
 extern void RegisterSchemeTestPrimitives();
 END_NAMESPACE_HALYARD

@@ -35,8 +35,8 @@ class TValue;
 // TVariableManager
 //=========================================================================
 
-/// Centralized manager for special variables shared between the Tamale engine
-/// and a script.  The variables store TValue objects.
+/// Centralized manager for special variables shared between the Halyard
+/// engine and a script.  The variables store TValue objects.
 class TVariableManager {
 	typedef std::map<std::string, TValue> TValueMap;
 

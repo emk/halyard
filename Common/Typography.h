@@ -128,7 +128,7 @@ namespace Typography {
 	//////////
 	/// A Typography-related exception.  Any of the functions in the
 	/// Typography module may throw exceptions (which is not the case
-	/// for the rest of the 5L code base, so be sure to catch them).
+	/// for the rest of the Halyard code base, so be sure to catch them).
 	///
 	class Error : public Halyard::TException {
 	public:
