@@ -27,7 +27,7 @@
 #include <ctime>
 #include "UserProgram.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using namespace model;
 
 IMPLEMENT_MODEL_CLASS(UserProgram);

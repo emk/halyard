@@ -23,7 +23,7 @@
 #if !defined (_TPolygon_h_)
 #define _TPolygon_h_
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// A class representing a closed polygon.
@@ -97,6 +97,6 @@ public:
 
 extern std::ostream &operator<<(std::ostream &out, const TPolygon &poly);
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // _TPolygon_h_

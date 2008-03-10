@@ -30,7 +30,7 @@
 #ifndef TTextTransform_h
 #define TTextTransform_h
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// Turn HTML-escaped characters into Unicode characters, and handle a few
@@ -69,6 +69,6 @@ namespace TTextTransform
 	utf8_string TransformString(const utf8_string& inString);
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TTextTransform_h

@@ -30,7 +30,7 @@
 #include "TSchemeCallback.h"
 #include "TSchemeConv.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 class TPercent;
 
@@ -158,6 +158,6 @@ public:
     static TScriptIdentifier::Type IdentifierType(const std::string &type_str);
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TSchemeInterpreter

@@ -31,7 +31,7 @@
 #include "ModelView.h"
 #include "ModelChange.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using namespace model;
 using namespace model::Private;
 using boost::lexical_cast;

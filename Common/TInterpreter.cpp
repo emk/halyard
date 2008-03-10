@@ -27,7 +27,7 @@
 #include "doc/Document.h"
 #include "doc/UserProgram.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 //=========================================================================
 //  TInterpreter Methods

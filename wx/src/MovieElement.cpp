@@ -24,10 +24,10 @@
 #include "MovieElement.h"
 #include "MovieWindow.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 MovieElement::MovieElement(Stage *inStage, const wxString &inName,
-                           FIVEL_NS TCallbackPtr inDispatcher,
+                           Halyard::TCallbackPtr inDispatcher,
 						   const wxRect &inBounds,
 						   const wxString &inLocation,
 						   long inWindowStyle,

@@ -24,7 +24,7 @@
 #include "TSchemeInterpreter.h"
 #include "TSchemeConv.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================

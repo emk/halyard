@@ -39,12 +39,12 @@ class CursorManager;
 class TransitionManager;
 class DrawingArea;
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 class Cursor;
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 /// The window where all actual script output and interaction occurs.
-class Stage : public wxWindow, public FIVEL_NS TReloadNotified
+class Stage : public wxWindow, public Halyard::TReloadNotified
 {
 	//////////
 	/// A list of Elements.
@@ -142,13 +142,13 @@ class Stage : public wxWindow, public FIVEL_NS TReloadNotified
     /// now, if we're actually displaying a cursor.  See the notes in
     /// Cursor.h about cursor-pointer ownership.
     ///
-    FIVEL_NS Cursor *mDesiredCursor;
+    Halyard::Cursor *mDesiredCursor;
 
     //////////
     /// The cursor we're *actually* displaying right now.  See the notes in
     /// Cursor.h about cursor-pointer ownership.
     ///
-    FIVEL_NS Cursor *mActualCursor;
+    Halyard::Cursor *mActualCursor;
 
 	//////////
 	/// Our currently active elements.

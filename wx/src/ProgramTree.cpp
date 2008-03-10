@@ -40,7 +40,7 @@
 #include "doc/UserProgram.h"
 #include "dlg/ProgramPropDlg.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 class ProgramTreeItemData;
 

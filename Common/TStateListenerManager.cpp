@@ -24,9 +24,9 @@
 #include "TStateListenerManager.h"
 #include "TInterpreter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
-TStateListenerManager FIVEL_NS gStateListenerManager;
+TStateListenerManager Halyard::gStateListenerManager;
 
 uint32 TStateListenerManager::CallbackListener::sNextSerialNumber = 0;
 

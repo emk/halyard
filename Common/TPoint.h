@@ -23,7 +23,7 @@
 #if !defined (_TPoint_h_)
 #define _TPoint_h_
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// A class to represent a point in 2D space.
@@ -146,6 +146,6 @@ inline std::ostream &operator<<(std::ostream &out, const TPoint &p) {
 	return out;
 }
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // _TPoint_h_

@@ -38,7 +38,7 @@ class ActiveXElement : public Widget {
 public:
     ActiveXElement(Stage *inStage, const wxString &inName,
                    const wxRect &inBounds,
-                   FIVEL_NS TCallbackPtr inDispatch,
+                   Halyard::TCallbackPtr inDispatch,
                    const wxString &inControlName);
 
     wxVariant Prop(const wxString &name);

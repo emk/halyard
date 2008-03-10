@@ -44,7 +44,7 @@ protected:
 public:
 	AudioStreamElement(Stage *inStage, const wxString &inName,
 					   AudioStream *inStream,
-                       FIVEL_NS TCallbackPtr inDispatcher);
+                       Halyard::TCallbackPtr inDispatcher);
 	virtual ~AudioStreamElement();
 
 	AudioStream *GetAudioStream() { return mStream; }

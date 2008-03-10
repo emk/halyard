@@ -39,7 +39,7 @@ public:
     /// inEnterIsEvent, if true, will cause presses of the Enter key to be
     /// passed to the script as an event.
     EditBox(Stage *inStage, const wxString &inName, 
-            FIVEL_NS TCallbackPtr inDispatch,
+            Halyard::TCallbackPtr inDispatch,
             const wxRect &inBounds, const wxString inText,
             uint32 inSize, bool inIsMultiline, bool inEnterIsEvent);
 

@@ -45,7 +45,7 @@
 //   Port to 3.3.x
 
 
-//BEGIN_NAMESPACE_FIVEL
+//BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// This exception class represents a MacOS error.  Note that QuickTime
@@ -79,7 +79,7 @@ public:
 /// \param expr  A value of type OSErr.
 ///
 #define CHECK_MAC_ERROR(expr) \
-	/*FIVEL_NS*/ TMacError::Check(__FILE__, __LINE__, (expr))
+	/*Halyard::*/ TMacError::Check(__FILE__, __LINE__, (expr))
 
 //////////
 /// A stack-based resource management class for the current Macintosh
@@ -502,6 +502,6 @@ private:
                                  short *inDisplayFlag, long inRefCon) throw ();
 };
 
-//END_NAMESPACE_FIVEL
+//END_NAMESPACE_HALYARD
 
 #endif // TQTMovie_H

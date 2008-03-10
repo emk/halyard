@@ -35,7 +35,7 @@ namespace FileSystem {
 	/// A file-system related error. 
 	/// TODO - Refactor and combine with Typography::Error?
 	///
-	class Error : public FIVEL_NS TException {
+	class Error : public Halyard::TException {
 	public:
 		Error(const char *inErrorFile, int inErrorLine, int inErrorCode);
 		Error(const char *inErrorFile, int inErrorLine,

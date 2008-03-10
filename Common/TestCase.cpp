@@ -24,7 +24,7 @@
 
 #include "TestCase.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(TestCase);
 
@@ -128,7 +128,7 @@ TestRunReport::ptr TestRegistry::RunAllTests(ITestProgressMeter *inMeter) {
 		try {
 			(*i)->Create()->Run();
 			new TestCaseReport(report.get(), name, TEST_PASSED);
-		} catch (FIVEL_NS TException &e) {
+		} catch (Halyard::TException &e) {
 			new TestCaseReport(report.get(), name, TEST_FAILED,
 							   e.GetErrorMessage(),
 							   e.GetErrorFile(), e.GetErrorLine());

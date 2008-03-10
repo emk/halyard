@@ -26,10 +26,10 @@
 #include "TPoint.h"
 #include "Stage.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 Overlay::Overlay(Stage *inStage, const wxString &inName,
-                 const wxRect &inBounds, FIVEL_NS TCallbackPtr inDispatch,
+                 const wxRect &inBounds, Halyard::TCallbackPtr inDispatch,
                  const std::string &inCursorName, bool inHasAlpha,
                  bool inAreTransparentAreasClickable)
     : LightweightElement(inStage, inName, inDispatch, inCursorName),

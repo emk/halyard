@@ -69,7 +69,7 @@ public:
 	/// The stage is responsible for deleting the element.
 	///
 	Element(Stage *inStage, const wxString &inName,
-            FIVEL_NS TCallbackPtr inDispatcher = FIVEL_NS TCallbackPtr());
+            Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
 
 	virtual ~Element() {}
 	

@@ -28,14 +28,14 @@
 
 #if CONFIG_HAVE_QUAKE2
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// Register a set of primitives for working with Quake 2.
 ///
 extern void RegisterQuake2Primitives();
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // CONFIG_HAVE_QUAKE2
 #endif // TQuake2Primitives_H

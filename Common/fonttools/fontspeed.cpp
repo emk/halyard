@@ -27,7 +27,7 @@
 #include "Typography.h"
 #include "TStyleSheet.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 using GraphicsTools::Point;
 using GraphicsTools::PixMap;

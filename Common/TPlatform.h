@@ -54,8 +54,6 @@
 
 #define FIVEL_PLATFORM_WIN32 (1)
 
-#define WANT_FIVEL_NAMESPACE (1)
-
 #if defined (_DEBUG)
 #define DEBUG
 #endif
@@ -75,8 +73,6 @@
 #elif defined (macintosh)
 
 #define FIVEL_PLATFORM_MACINTOSH (1)
-
-#define WANT_FIVEL_NAMESPACE (1)
 
 #define NEWLINE_CHAR	'\r'
 #define RETURN_CHAR		'\n'
@@ -100,8 +96,6 @@
 
 #define FIVEL_PLATFORM_OTHER (1)
 
-/*#define WANT_FIVEL_NAMESPACE (1)*/
-
 #ifndef NDEBUG
 #define DEBUG (1)
 #endif /* NDEBUG */
@@ -113,20 +107,11 @@
 **  Namespace Configuration
 **=========================================================================
 **  It's possible to define most of our common classes in a
-**  'FiveL' namespace.
+**  'Halyard' namespace.
 */
 
-#ifdef WANT_FIVEL_NAMESPACE
-#	define BEGIN_NAMESPACE_FIVEL  namespace FiveL {
-#	define END_NAMESPACE_FIVEL    }
-#	define USING_NAMESPACE_FIVEL  using namespace FiveL;
-#	define FIVEL_NS				  FiveL::
-#else
-#	define BEGIN_NAMESPACE_FIVEL
-#	define END_NAMESPACE_FIVEL
-#	define USING_NAMESPACE_FIVEL
-#	define FIVEL_NS
-#endif
+#define BEGIN_NAMESPACE_HALYARD  namespace Halyard {
+#define END_NAMESPACE_HALYARD    }
 
 ///@}
 

@@ -24,12 +24,12 @@
 #include "TRect.h"
 #include "TPoint.h"
 
-wxRect TToWxRect(const FIVEL_NS TRect &inRect);
-FIVEL_NS TRect WxToTRect(const wxRect &inRect);
-wxPoint TToWxPoint(const FIVEL_NS TPoint &inPoint);
-FIVEL_NS TPoint WxToTPoint(const wxPoint &inPoint);
-wxPoint GetPos(const FIVEL_NS TRect &inRect);
-wxSize GetSize(const FIVEL_NS TRect &inRect);
+wxRect TToWxRect(const Halyard::TRect &inRect);
+Halyard::TRect WxToTRect(const wxRect &inRect);
+wxPoint TToWxPoint(const Halyard::TPoint &inPoint);
+Halyard::TPoint WxToTPoint(const wxPoint &inPoint);
+wxPoint GetPos(const Halyard::TRect &inRect);
+wxSize GetSize(const Halyard::TRect &inRect);
 wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor);
-wxVariant TToWxValue(const FIVEL_NS TValue &value);
-FIVEL_NS TValue WxToTValue(const wxVariant &value);
+wxVariant TToWxValue(const Halyard::TValue &value);
+Halyard::TValue WxToTValue(const wxVariant &value);

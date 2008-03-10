@@ -23,7 +23,7 @@
 #ifndef CrashReporter_H
 #define CrashReporter_H
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 class Document;
 
@@ -53,6 +53,6 @@ public:
     static bool HaveInstance();
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // CrashReporter_H

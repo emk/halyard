@@ -26,7 +26,7 @@
 #include "FileSystem.h"
 #include "Model.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 class UserProgram;
 
@@ -63,9 +63,9 @@ public:
 	//////////
 	/// A more-precisely-typed version of GetRoot.
 	///
-	FIVEL_NS UserProgram *GetUserProgram();
+	Halyard::UserProgram *GetUserProgram();
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // Document_H

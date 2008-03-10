@@ -50,7 +50,7 @@ class BrowserElementIE : public BrowserElement {
 public:
     BrowserElementIE(Stage *inStage, const wxString &inName,
                      const wxRect &inBounds,
-                     FIVEL_NS TCallbackPtr inDispatch);
+                     Halyard::TCallbackPtr inDispatch);
 
     virtual void LoadPage(const wxString &inUrl);
     virtual wxString GetCurrentPageUrl();

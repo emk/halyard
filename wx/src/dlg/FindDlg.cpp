@@ -24,7 +24,7 @@
 #include <wx/config.h>
 #include "FindDlg.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 BEGIN_EVENT_TABLE(FindDlg, XrcDlg)
     EVT_TEXT(XRCID("DLG_SEARCH_TEXT"), FindDlg::OnText)

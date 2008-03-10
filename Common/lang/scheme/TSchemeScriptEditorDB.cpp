@@ -24,7 +24,7 @@
 #include "TSchemeScriptEditorDB.h"
 #include "TSchemeInterpreter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================
@@ -32,7 +32,7 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 //  Install our portable primitive functions.
 
-void FIVEL_NS RegisterSchemeScriptEditorDBPrimitives()
+void Halyard::RegisterSchemeScriptEditorDBPrimitives()
 {
 	REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
     REGISTER_PRIMITIVE(ScriptEditorDBInsertHelp);

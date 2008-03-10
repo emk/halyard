@@ -28,9 +28,9 @@
 #include "TDeveloperPrefs.h"
 #include "CrashReporter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
-TDeveloperPrefs FIVEL_NS gDeveloperPrefs;
+TDeveloperPrefs Halyard::gDeveloperPrefs;
 
 // Create a prefs object with default values.
 TDeveloperPrefs::TDeveloperPrefs()

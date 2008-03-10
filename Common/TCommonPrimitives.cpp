@@ -31,7 +31,7 @@
 #include "TStateDB.h"
 #include "TStateListenerManager.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================
@@ -39,7 +39,7 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 //  Install our portable primitive functions.
 
-void FIVEL_NS RegisterCommonPrimitives()
+void Halyard::RegisterCommonPrimitives()
 {
 	REGISTER_PRIMITIVE(HavePrimitive);
 	REGISTER_PRIMITIVE(Log);
@@ -106,14 +106,14 @@ static const char *byte_to_hex_string[256] = {
 //  Support Methods
 //=========================================================================
 
-void FIVEL_NS UpdateSpecialVariablesForGraphic(const TRect &bounds)
+void Halyard::UpdateSpecialVariablesForGraphic(const TRect &bounds)
 {
 	TPoint p(bounds.Right(), bounds.Bottom());
 	gVariableManager.Set("_Graphic_X", (int32) p.X());
 	gVariableManager.Set("_Graphic_Y", (int32) p.Y());
 }
 
-void FIVEL_NS UpdateSpecialVariablesForText(const TPoint &bottomLeft)
+void Halyard::UpdateSpecialVariablesForText(const TPoint &bottomLeft)
 {
 	TPoint p = bottomLeft;
 	gVariableManager.Set("_INCR_X", (int32) p.X());

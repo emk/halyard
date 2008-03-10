@@ -25,7 +25,7 @@
 
 #include "Model.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 /// Savable representation of a UserProgram.
 class UserProgram : public model::Object {
@@ -44,6 +44,6 @@ protected:
     void Migrate();
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // UserProgram_H

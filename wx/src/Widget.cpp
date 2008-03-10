@@ -26,10 +26,10 @@
 #include "TLogger.h"
 #include "Widget.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 Widget::Widget(Stage *inStage, const wxString &inName,
-               FIVEL_NS TCallbackPtr inDispatcher)
+               Halyard::TCallbackPtr inDispatcher)
 	: Element(inStage, inName, inDispatcher), mWindow(NULL)
 {
 	// Our subclass must call InitializeWidgetWindow before exiting its

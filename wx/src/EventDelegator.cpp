@@ -23,7 +23,7 @@
 #include "TamaleHeaders.h"
 #include "EventDelegator.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 /// Create a new EventDelegator.
 EventDelegator::EventDelegator()

@@ -29,7 +29,7 @@
 #include <crtdbg.h>
 #define ASSERT(x) _ASSERTE(x)
 
-//USING_NAMESPACE_FIVEL
+//using namespace Halyard;
 
 bool TQTMovie::sIsQuickTimeInitialized = false;
 CGrafPtr TQTMovie::sDummyGWorld = NULL;

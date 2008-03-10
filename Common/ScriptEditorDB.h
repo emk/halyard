@@ -30,7 +30,7 @@ namespace sqlite3 {
     class reader;
 };
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 /// A database of information used by the script editor.
 class ScriptEditorDB {
@@ -147,6 +147,6 @@ public:
     void RemoveListener(IListener *inListener);
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // ScriptEditorDB_H

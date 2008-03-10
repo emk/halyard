@@ -29,11 +29,11 @@
 #include "EventDispatcher.h"
 #include "Stage.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
-									   FIVEL_NS TCallbackPtr inDispatch,
+									   Halyard::TCallbackPtr inDispatch,
                                        const std::string &inCursorName)
     : Element(inStage, inName, inDispatch), mCursorName(inCursorName),
       mIsShown(true), mWantsCursor(false), mIsInDragLayer(false)

@@ -23,7 +23,7 @@
 #if !defined (_TRect_h_)
 #define _TRect_h_
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// A class to represent a rectangular region.
@@ -98,6 +98,6 @@ inline std::ostream &operator<<(std::ostream &out, const TRect &r) {
 	return out;
 }
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // _TRect_h_

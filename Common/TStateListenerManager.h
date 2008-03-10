@@ -26,7 +26,7 @@
 #include "TStateDB.h"
 #include "TInterpreter.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// A TStateListenerManager keeps track of lots of little free-floating
@@ -84,6 +84,6 @@ public:
 
 extern TStateListenerManager gStateListenerManager;
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // StateListenerManager_H

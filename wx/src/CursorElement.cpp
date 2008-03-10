@@ -27,11 +27,11 @@
 #include "Stage.h"
 #include "EventDispatcher.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 CursorElement::CursorElement(Stage *inStage, const wxString &inName,
                              const wxRect &inBounds,
-                             FIVEL_NS TCallbackPtr inDispatch,
+                             Halyard::TCallbackPtr inDispatch,
                              bool inHasAlpha,
                              const std::string &inCursorRegName)
     : Overlay(inStage, inName, inBounds, inDispatch, "blank", inHasAlpha),

@@ -25,7 +25,7 @@
 #include "Element.h"
 #include "MediaElement.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 MediaElement::MediaElement()
     : mEndPlaybackWasCalled(false), mHaveSentMediaFinishedEvent(false),

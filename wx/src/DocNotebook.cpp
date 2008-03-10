@@ -25,7 +25,7 @@
 #include "AppGlobals.h"
 #include "DocNotebook.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================

@@ -26,7 +26,7 @@
 
 #include "DrawingAreaOpt.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 using GraphicsTools::Channel;
 using GraphicsTools::AlphaBlendChannel;

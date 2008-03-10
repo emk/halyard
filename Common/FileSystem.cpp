@@ -57,7 +57,7 @@
 #include "FileSystem.h"
 #include "TLogger.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using namespace FileSystem;
 namespace fs = boost::filesystem;
 
@@ -81,7 +81,7 @@ Error::Error(const char *inErrorFile, int inErrorLine, int inErrorCode)
 static void ResetErrno()
 {
 	if (errno != 0)
-		FIVEL_NS gDebugLog.Caution("Unexpected errno = %d", errno);
+		Halyard::gDebugLog.Caution("Unexpected errno = %d", errno);
 	errno = 0;
 }
 
@@ -198,7 +198,7 @@ std::string Path::GetExtension() const
 	if (dotpos == std::string::npos)
 		return std::string("");
 	std::string extension = mPath.substr(dotpos + 1);
-	extension = FIVEL_NS MakeStringLowercase(extension);
+	extension = Halyard::MakeStringLowercase(extension);
 	return extension;
 }
 
@@ -656,7 +656,7 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
 	{
 		if (!inPath.DoesExist() || !inPath.IsDirectory())
 		{
-			FIVEL_NS
+			Halyard::
 			gLog.FatalError("5L was unable to open the directory \"%s\".  "
 							"Please make sure 5L is running in the correct "
 							"directory, and that all source files are "
@@ -668,7 +668,7 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
 	{	
 		if (!inPath.DoesExist() || !inPath.IsRegularFile())
 		{
-			FIVEL_NS
+			Halyard::
 			gLog.FatalError("5L was unable to open the file \"%s\".  "
 							"Please make sure 5L is running in the correct "
 							"directory, and that all source files are "

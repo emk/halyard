@@ -23,7 +23,7 @@
 #ifndef TSchemeCallback_H
 #define TSchemeCallback_H
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// A C++ wrapper for a zero-argument Scheme callback function (a "thunk").
@@ -45,6 +45,6 @@ public:
 	virtual std::string PrintableRepresentation() { return "#<thunk>"; }
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TSchemeCallback_H

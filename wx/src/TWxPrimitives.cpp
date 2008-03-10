@@ -61,7 +61,7 @@
 #include "dlg/MultiButtonDlg.h"
 #include "Downloader.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using GraphicsTools::Color;
 using FileSystem::Path;
 
@@ -72,7 +72,7 @@ using FileSystem::Path;
 //  Install our wxWindows-specific primitives.  A lot of these are very
 //  kludgy and should be replaced later on as the editing GUI improves.
 
-void FIVEL_NS RegisterWxPrimitives() {
+void Halyard::RegisterWxPrimitives() {
 	REGISTER_PRIMITIVE(ActiveX);
 	REGISTER_PRIMITIVE(ActiveXPropGet);
 	REGISTER_PRIMITIVE(ActiveXPropSet);

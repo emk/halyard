@@ -31,7 +31,7 @@
 
 #include "ivorbiscodec.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 VorbisFile::VorbisFile(const char *inFileName, int inWantedFrequency,
 					   int inWantedChannels)

@@ -49,7 +49,7 @@ class LightweightElement : public Element {
 	
 public:
 	LightweightElement(Stage *inStage, const wxString &inName,
-					   FIVEL_NS TCallbackPtr inDispatch,
+					   Halyard::TCallbackPtr inDispatch,
                        const std::string &inCursorName);
 
 	virtual bool IsShown() { return mIsShown; }

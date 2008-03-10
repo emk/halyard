@@ -24,7 +24,7 @@
 #include "TSchemeInterpreter.h"
 #include "TSchemeScriptEditorDB.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 static const char *CALL_5L_PRIM = "%call-5l-prim";
 

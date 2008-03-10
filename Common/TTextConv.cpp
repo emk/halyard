@@ -75,7 +75,7 @@
 
 #include <stdlib.h>
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(TTextConv);
 
@@ -166,7 +166,7 @@ static wchar_t utf8_min_char_for_length[4] = {
 //  implement them varies wildly, and many UTF-8 converters are buggy.
 
 /// Convert UTF-8 to UTF-16.
-utf16_string FIVEL_NS utf16_from_utf8(const utf8_string &utf8) {
+utf16_string Halyard::utf16_from_utf8(const utf8_string &utf8) {
     utf16_string result;
     result.reserve(utf8.size());
 
@@ -250,7 +250,7 @@ utf16_string FIVEL_NS utf16_from_utf8(const utf8_string &utf8) {
 }
 
 /// Convert UTF-16 to UTF-8.
-utf8_string FIVEL_NS utf8_from_utf16(const utf16_string &utf16) {
+utf8_string Halyard::utf8_from_utf16(const utf16_string &utf16) {
     utf8_string result;
     result.reserve(utf16.size());
 
@@ -278,7 +278,7 @@ utf8_string FIVEL_NS utf8_from_utf16(const utf16_string &utf16) {
 
 /// Convert UTF-16 to native multibyte encoding.
 /// @see utf16_from_multibyte
-std::string FIVEL_NS multibyte_from_utf16(const utf16_string &utf16) {
+std::string Halyard::multibyte_from_utf16(const utf16_string &utf16) {
     // Figure out how much space we'll need.  Yes, we really are comparing
     // a size_t value against -1--that's what the manual says.
     size_t dest_size = ::wcstombs(NULL, utf16.c_str(), utf16.size());
@@ -296,7 +296,7 @@ std::string FIVEL_NS multibyte_from_utf16(const utf16_string &utf16) {
 /// completely undefined.  We'll deal with those problems when we encounter
 /// them--there's no point in writing a whole bunch of code that won't
 /// actually be used right away.
-utf16_string FIVEL_NS utf16_from_multibyte(const std::string &str) {
+utf16_string Halyard::utf16_from_multibyte(const std::string &str) {
     // Figure out how much space we'll need.  Yes, we really are comparing
     // a size_t value against -1--that's what the manual says.
     size_t dest_size = ::mbstowcs(NULL, str.c_str(), str.size());
@@ -310,12 +310,12 @@ utf16_string FIVEL_NS utf16_from_multibyte(const std::string &str) {
 }
 
 /// Convert UTF-8 to native multibyte encoding.
-std::string FIVEL_NS multibyte_from_utf8(const utf8_string &utf8) {
+std::string Halyard::multibyte_from_utf8(const utf8_string &utf8) {
     return multibyte_from_utf16(utf16_from_utf8(utf8));
 }
 
 /// Convert native multibyte encoding to UTF-8.
-utf8_string FIVEL_NS utf8_from_multibyte(const std::string &str) {
+utf8_string Halyard::utf8_from_multibyte(const std::string &str) {
     return utf8_from_utf16(utf16_from_multibyte(str));
 }
 

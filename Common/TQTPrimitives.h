@@ -30,13 +30,13 @@
 #include "TCommon.h"
 #include "TPrimitives.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// Register a bunch of QuickTime-related commands with the gPrimitiveManager.
 ///
 extern void RegisterQuickTimePrimitives();
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TQTPrimitives_H

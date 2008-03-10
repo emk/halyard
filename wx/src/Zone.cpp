@@ -25,10 +25,10 @@
 #include "CommonWxConv.h"
 #include "TPoint.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 Zone::Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
-		   FIVEL_NS TCallbackPtr inDispatch, const std::string &inCursorName)
+		   Halyard::TCallbackPtr inDispatch, const std::string &inCursorName)
     : LightweightElement(inStage, inName, inDispatch, inCursorName),
 	  mPolygon(inPoly)
 {
@@ -57,6 +57,6 @@ void Zone::DrawElementBorder(wxDC &inDC) {
 	}
 }
 
-void Zone::SetShape(const FIVEL_NS TPolygon &inPoly) {
+void Zone::SetShape(const Halyard::TPolygon &inPoly) {
     mPolygon = inPoly;
 }

@@ -25,7 +25,7 @@
 #include "FiveLApp.h"
 #include "TInterpreter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 Download::Download(const std::string &url, const std::string &file, 
 				   CURL *request) 

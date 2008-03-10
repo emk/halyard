@@ -23,7 +23,7 @@
 #include "CommonHeaders.h"
 #include "TRect.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 TRect::TRect(int32 inLeft, int32 inTop,
 	     int32 inRight, int32 inBottom)

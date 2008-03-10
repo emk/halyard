@@ -25,7 +25,7 @@
 
 #include "scheme.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// A smart-pointer class which can point to a Scheme object and prevent
@@ -64,6 +64,6 @@ public:
         { return mPtr < inRight.mPtr; }
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TSchemePtr_H

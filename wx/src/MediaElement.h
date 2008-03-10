@@ -25,9 +25,9 @@
 
 #include "AppGlobals.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 class CaptionList;
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 //////////
 /// An interface for elements which play media streams.  This is used as a
@@ -37,7 +37,7 @@ class MediaElement
 {
     bool mEndPlaybackWasCalled;
     bool mHaveSentMediaFinishedEvent;
-    shared_ptr<FIVEL_NS CaptionList> mCaptions;
+    shared_ptr<Halyard::CaptionList> mCaptions;
 
     bool mHasPlaybackTimer;
     MovieFrame mTriggerPlaybackTimerAt;

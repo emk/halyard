@@ -26,7 +26,7 @@
 #include "Element.h"
 #include "DrawingArea.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 bool DrawingContextStack::ContainsElement(ElementPtr inElement) {
     ElementStack::iterator i = mDrawingContextStack.begin();

@@ -79,7 +79,7 @@ void CustomTextCtrl::OnTextEnter(wxCommandEvent &inEvent) {
 //=========================================================================
 
 EditBox::EditBox(Stage *inStage, const wxString &inName, 
-                 FIVEL_NS TCallbackPtr inDispatch,
+                 Halyard::TCallbackPtr inDispatch,
                  const wxRect &inBounds, const wxString inText,
                  uint32 inSize, bool inIsMultiline, bool inEnterIsEvent)
     : Widget(inStage, inName, inDispatch)

@@ -25,7 +25,7 @@
 #include "ImlUnit.h"
 #include "TVectorDiff.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 extern void test_TVectorDiff (void);
 

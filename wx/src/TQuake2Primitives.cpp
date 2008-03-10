@@ -29,7 +29,7 @@
 #include "FiveLApp.h"
 #include "Quake2Engine.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 bool Quake2Engine::sHasBeenCreated = false;
 Quake2Engine *Quake2Engine::sInstance = NULL;
@@ -41,7 +41,7 @@ Quake2Engine *Quake2Engine::sInstance = NULL;
 //=========================================================================
 //  Install our wxWindows-specific primitives.
 
-void FIVEL_NS RegisterQuake2Primitives()
+void Halyard::RegisterQuake2Primitives()
 {
 	REGISTER_PRIMITIVE(Quake2Init);
 	REGISTER_PRIMITIVE(Quake2Command);

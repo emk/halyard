@@ -31,7 +31,7 @@ class CursorElement;
 /// Cursor.h on the ownership of Cursor pointers.
 class CursorManager
 {
-    typedef std::map<std::string,FIVEL_NS Cursor *> CursorMap;
+    typedef std::map<std::string,Halyard::Cursor *> CursorMap;
 
     CursorMap mCursors;
 
@@ -39,10 +39,10 @@ public:
     CursorManager();
     virtual ~CursorManager();
 
-    FIVEL_NS Cursor *FindCursor(const std::string inName);
+    Halyard::Cursor *FindCursor(const std::string inName);
 
     void RegisterCursor(const std::string &inName,
-                        FIVEL_NS Cursor *inCursor);
+                        Halyard::Cursor *inCursor);
     void RegisterCursor(const std::string &inName, wxCursor &inCursor);
     void RegisterImageCursor(const std::string &inName,
 							 const std::string &inPath,

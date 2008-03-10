@@ -34,11 +34,11 @@
 
 // XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
 // called from a function in the FiveL:: namespace, which is silly.
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 extern void RegisterTestPrimitives();
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================
@@ -76,7 +76,7 @@ DEFINE_PRIMITIVE(test) {
 	TEST_WITH_LABEL(info.c_str(), result);
 }
 
-void FIVEL_NS RegisterTestPrimitives() {
+void Halyard::RegisterTestPrimitives() {
 	REGISTER_PRIMITIVE(test);
 }
 
@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
 	FileSystem::SetScriptDataDirectoryName("Test");
 
 	try {
-		FIVEL_NS InitializeCommonCode(new CrashReporter());
+		Halyard::InitializeCommonCode(new CrashReporter());
 		std::cout << "Old-Style ImlUnit Tests" << std::endl;
 		run_imlunit_tests();
 		std::cout << std::endl << "New-Style TestCase Tests" << std::endl;

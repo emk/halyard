@@ -32,7 +32,7 @@
 #include "TInterpreter.h"
 #include "CrashReporter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 void (*TLogger::s_ErrorPrepFunction)() = NULL;
 void (*TLogger::s_ExitPrepFunction)() = NULL;
@@ -60,8 +60,8 @@ bool TLogger::s_ToolboxIsInitialized = false;
 	va_end(argPtr)
 
 // Standard logs.
-TLogger FIVEL_NS gLog;
-TLogger FIVEL_NS gDebugLog;
+TLogger Halyard::gLog;
+TLogger Halyard::gDebugLog;
 
 TLogger::TLogger()
 { 

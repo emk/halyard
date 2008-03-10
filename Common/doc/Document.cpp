@@ -27,7 +27,7 @@
 #include "Document.h"
 #include "UserProgram.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using namespace model;
 using FileSystem::Path;
 

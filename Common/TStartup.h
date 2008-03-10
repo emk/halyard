@@ -37,7 +37,7 @@
         scheme_set_stack_base(&dummy, 1); \
     }  while (0)
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 class CrashReporter;
 
@@ -62,6 +62,6 @@ GetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
 extern TInterpreterManager *
 MaybeGetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TStartup

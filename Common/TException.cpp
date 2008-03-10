@@ -24,7 +24,7 @@
 #include <strstream>
 
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 static std::string get_string(std::ostrstream &stream)
 {

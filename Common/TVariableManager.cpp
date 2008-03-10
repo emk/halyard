@@ -25,9 +25,9 @@
 #include "TInterpreter.h"
 #include "TVariableManager.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
-TVariableManager FIVEL_NS gVariableManager;
+TVariableManager Halyard::gVariableManager;
 
 REGISTER_TEST_CASE_FILE(TVariableManager);
 

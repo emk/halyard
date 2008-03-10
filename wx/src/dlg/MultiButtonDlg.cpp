@@ -23,7 +23,7 @@
 #include "TamaleHeaders.h"
 #include "MultiButtonDlg.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 BEGIN_EVENT_TABLE(MultiButtonDlg, XrcDlg)
 	EVT_BUTTON(XRCID("ID_BUTTON1"), MultiButtonDlg::OnButton)

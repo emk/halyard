@@ -44,7 +44,7 @@
 #include "Stage.h"
 #include "FancyCrashReporter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 namespace FS = FileSystem;
 
 
@@ -254,7 +254,7 @@ void FancyCrashReporter::BeginInterceptingCrashes() {
     ::wxHandleFatalExceptions();
 }
 
-void FancyCrashReporter::RegisterDocument(FIVEL_NS Document *inDocument) {
+void FancyCrashReporter::RegisterDocument(Halyard::Document *inDocument) {
     // Register ourselves as a ModelView of the program object.
     SetObject(inDocument->GetUserProgram());
 
@@ -305,7 +305,7 @@ void FancyCrashReporter::SetCurrentCard(const std::string &inCardName) {
     mCurrentCard = inCardName;
 }
 
-const char *FancyCrashReporter::GetReportUrl(FIVEL_NS CrashType inType) {
+const char *FancyCrashReporter::GetReportUrl(Halyard::CrashType inType) {
     if (inType == SCRIPT_CRASH)
         return GetScriptReportUrl();
     else

@@ -28,13 +28,13 @@
 //////////
 /// This class passes events from our GUI to the interpreter.
 ///
-class EventDispatcher : boost::noncopyable, public FIVEL_NS TReloadNotified
+class EventDispatcher : boost::noncopyable, public Halyard::TReloadNotified
 {
     static bool sMaxStaleTimeInitialized;
     static wxLongLong sMaxStaleTime;
 	static bool sEnableExpensiveEvents;
 
-    FIVEL_NS TCallbackPtr mDispatcher;
+    Halyard::TCallbackPtr mDispatcher;
 
 	bool EventSetup();
 	bool EventCleanup();
@@ -58,7 +58,7 @@ public:
 	//////////
 	/// Set the event-dispatching callback.
 	///
-	void SetDispatcher(FIVEL_NS TCallbackPtr inCallback);
+	void SetDispatcher(Halyard::TCallbackPtr inCallback);
 
 	//////////
 	/// Notify the EventDispatcher that script is being reloaded.

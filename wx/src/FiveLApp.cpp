@@ -55,7 +55,7 @@
 // Provided by auto-generated resources.cpp file.
 extern void InitXmlResource();
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================

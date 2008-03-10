@@ -23,7 +23,7 @@
 #include "TamaleHeaders.h"
 #include "AdjustScreenDlg.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 BEGIN_EVENT_TABLE(AdjustScreenDlg, XrcDlg)
 	EVT_BUTTON(wxID_YES, XrcDlg::OnSimpleButton)

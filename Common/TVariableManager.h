@@ -25,7 +25,7 @@
 
 #include <typeinfo>
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 // Forward declarations.
 class TValue;
@@ -58,6 +58,6 @@ public:
 
 extern TVariableManager gVariableManager;
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TVariableManager_H

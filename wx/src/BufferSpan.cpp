@@ -23,7 +23,7 @@
 #include "TamaleHeaders.h"
 #include "BufferSpan.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(BufferSpan);
 

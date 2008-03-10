@@ -31,7 +31,7 @@
 #include "TStateDB.h"
 #include "BinMsgConv.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using FileSystem::GetBaseDirectory;
 
 #if CONFIG_HAVE_QUAKE2

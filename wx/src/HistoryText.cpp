@@ -23,7 +23,7 @@
 #include "TamaleHeaders.h"
 #include "HistoryText.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 BEGIN_EVENT_TABLE(HistoryTextCtrl, wxTextCtrl)
 	EVT_KEY_DOWN(HistoryTextCtrl::OnKeyDown)

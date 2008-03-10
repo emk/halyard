@@ -47,7 +47,7 @@ protected:
 	/// \param inName  The name of this widget.
 	///
 	Widget(Stage *inStage, const wxString &inName,
-           FIVEL_NS TCallbackPtr inDispatcher = FIVEL_NS TCallbackPtr());
+           Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
 
 	//////////
 	/// See the constructor without am inWindow argument for details.

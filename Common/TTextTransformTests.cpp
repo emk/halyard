@@ -27,7 +27,7 @@
 #include "ImlUnit.h"
 #include "TTextTransform.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using namespace TTextTransform;
 
 

@@ -29,12 +29,12 @@
 #include "TPoint.h"
 #include "Stage.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 AnimatedOverlay::AnimatedOverlay(Stage *inStage, const wxString &inName,
 								 const wxRect &inBounds, 
-								 FIVEL_NS TCallbackPtr inDispatch,
+								 Halyard::TCallbackPtr inDispatch,
 								 const std::string &inCursorName,
                                  bool inHasAlpha,
                                  const std::string &inStatePath, 

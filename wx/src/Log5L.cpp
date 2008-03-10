@@ -23,7 +23,7 @@
 #include "TamaleHeaders.h"
 #include "Log5L.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 Log5L::Log5L()
     : mShouldSilentlyLogNonFatalErrors(false)

@@ -29,7 +29,7 @@
 #include "HistoryText.h"
 #include "Listener.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 BEGIN_EVENT_TABLE(Listener, ToolWindow)
     EVT_ACTIVATE(Listener::OnActivate)

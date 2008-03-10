@@ -39,7 +39,7 @@
 #include <string>
 #include <QTML.h>
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================
@@ -47,7 +47,7 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 //  Install our QuickTime primitives.
 
-void FIVEL_NS RegisterQuickTimePrimitives()
+void Halyard::RegisterQuickTimePrimitives()
 {
 	REGISTER_PRIMITIVE(QTComponentVersion);
 }

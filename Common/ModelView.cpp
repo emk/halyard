@@ -24,7 +24,7 @@
 #include "Model.h"
 #include "ModelView.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using namespace model;
 
 

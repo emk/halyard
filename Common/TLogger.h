@@ -27,7 +27,7 @@
 
 #include "FileSystem.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 #define LOG_NONE		0x00000000
 #define LOG_ALL			0xFFFFFFFF
@@ -314,6 +314,6 @@ extern TLogger gLog;
 ///
 extern TLogger gDebugLog;
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // _TLogger_h_

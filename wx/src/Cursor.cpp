@@ -25,7 +25,7 @@
 #include "Cursor.h"
 #include "Stage.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 void Cursor::SetStageCursorTo(wxCursor &cursor) {
     // If we haven't already started destroying the Stage, change the

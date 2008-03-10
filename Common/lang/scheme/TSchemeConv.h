@@ -25,11 +25,11 @@
 
 #include "scheme.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 extern Scheme_Object *TValueToScheme(TValue inVal);
 extern TValue SchemeToTValue(Scheme_Object * inVal);
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TSchemeConv_H

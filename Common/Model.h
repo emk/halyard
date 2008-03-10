@@ -105,7 +105,7 @@ namespace model {
 	protected:
 		Datum(Type inType) : mType(inType) {}
 
-		static Datum *CreateFromXML(FIVEL_NS xml_node inNode);
+		static Datum *CreateFromXML(Halyard::xml_node inNode);
 
 	public:
 		virtual ~Datum() {}
@@ -123,12 +123,12 @@ namespace model {
 		//////////
 		/// Fill in any children of the datum using the specified XML node.
 		///
-		virtual void Fill(FIVEL_NS xml_node inNode) {}
+		virtual void Fill(Halyard::xml_node inNode) {}
 
 		//////////
 		/// Write a Datum to the specified XML node.
 		///
-		virtual void Write(FIVEL_NS xml_node inContainer) = 0;
+		virtual void Write(Halyard::xml_node inContainer) = 0;
 
 	protected:
 		friend class Change;
@@ -155,7 +155,7 @@ namespace model {
 	{	
 		T *datum = dynamic_cast<T*>(inDatum);
 		if (!datum)
-			throw FIVEL_NS TException(__FILE__, __LINE__,
+			throw Halyard::TException(__FILE__, __LINE__,
 									  "Wrong data type in model::TypeCheck");
 		return datum;
 	}
@@ -188,7 +188,7 @@ namespace model {
 		public: \
 			NAME(DATATYPE inValue) \
 				: ValueDatum<DATATYPE>(TYPECODE, inValue) {} \
-			virtual void Write(FIVEL_NS xml_node inContainer); \
+			virtual void Write(Halyard::xml_node inContainer); \
 		}
 
 	// Declare a collection accessor.  Undeclared at end of file.
@@ -361,8 +361,8 @@ namespace model {
 	public:
 		Map() : HashDatum(MapType) {}
 
-		virtual void Write(FIVEL_NS xml_node inContainer);
-		virtual void Fill(FIVEL_NS xml_node inNode);
+		virtual void Write(Halyard::xml_node inContainer);
+		virtual void Fill(Halyard::xml_node inNode);
 	};
 
 	//////////
@@ -400,8 +400,8 @@ namespace model {
 		///
 		virtual void Initialize();
 
-		virtual void Write(FIVEL_NS xml_node inContainer);
-		virtual void Fill(FIVEL_NS xml_node inNode);
+		virtual void Write(Halyard::xml_node inContainer);
+		virtual void Fill(Halyard::xml_node inNode);
 
 		void RegisterView(View *inView);
 		void UnregisterView(View *inView);
@@ -421,8 +421,8 @@ namespace model {
 	public:
 		List() : CollectionDatum<size_t>(ListType) {}
 
-		virtual void Write(FIVEL_NS xml_node inContainer);
-		virtual void Fill(FIVEL_NS xml_node inNode);
+		virtual void Write(Halyard::xml_node inContainer);
+		virtual void Fill(Halyard::xml_node inNode);
 
 		size_t GetSize() { return mVector.size(); }
 

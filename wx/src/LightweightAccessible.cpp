@@ -25,7 +25,7 @@
 #include "LightweightAccessible.h"
 #include "Stage.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================

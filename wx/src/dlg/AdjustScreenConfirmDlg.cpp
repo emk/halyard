@@ -23,7 +23,7 @@
 #include "TamaleHeaders.h"
 #include "AdjustScreenConfirmDlg.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 BEGIN_EVENT_TABLE(AdjustScreenConfirmDlg, XrcDlg)
 	EVT_IDLE(AdjustScreenConfirmDlg::OnIdle)

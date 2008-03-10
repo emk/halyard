@@ -25,7 +25,7 @@
 
 #include "FileSystem.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 // The name of our prefs file.
 #define DEVELOPER_PREFS_FILE "5L.prefs"
@@ -127,6 +127,6 @@ private:
 
 extern TDeveloperPrefs gDeveloperPrefs;
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TDeveloperPrefs

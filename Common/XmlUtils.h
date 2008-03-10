@@ -28,7 +28,7 @@
 struct _xmlNode;
 struct _xmlDoc;
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// A lightweight pointer/iterator for referring to libxml2 XML nodes.
@@ -152,7 +152,7 @@ public:
     xml_node root();
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #define XML_CHECK_NAME(NODE,NAME) \
 	CHECK((NODE).name() == (NAME), "expected <" NAME "> element")

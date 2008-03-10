@@ -25,7 +25,7 @@
 #include "Element.h"
 #include "Stage.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================
@@ -33,7 +33,7 @@ USING_NAMESPACE_FIVEL
 //=========================================================================
 
 Element::Element(Stage *inStage, const wxString &inName,
-                 FIVEL_NS TCallbackPtr inDispatcher)
+                 Halyard::TCallbackPtr inDispatcher)
 	: mStage(inStage), mName(inName)
 {
     ASSERT(mStage);

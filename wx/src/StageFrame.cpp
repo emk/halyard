@@ -51,7 +51,7 @@
 #include "dlg/AdjustScreenConfirmDlg.h"
 
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 //=========================================================================
 //  StageBackground

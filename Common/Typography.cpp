@@ -590,7 +590,7 @@ void Face::UpdateGlyphCacheSize(const Glyph *inGlyph)
 	while (sGlyphCacheSize >
 		   (sGlyphCacheSizeAtLastWarning + kGlyphCacheSizeWarningIncrement))
 	{
-		FIVEL_NS gDebugLog.Log("Typography: glyph cache is now %dK.",
+		Halyard::gDebugLog.Log("Typography: glyph cache is now %dK.",
 							   sGlyphCacheSize / 1024);
 		sGlyphCacheSizeAtLastWarning += kGlyphCacheSizeWarningIncrement;
 	}
@@ -1342,7 +1342,7 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 	ASSERT(ioRemaining != NULL);
 	ASSERT(outExtracted != NULL);
 	
-	FIVEL_NS gDebugLog.Caution("Breaking line in middle of word");
+	Halyard::gDebugLog.Caution("Breaking line in middle of word");
 	
 	// Back up one character at a time until we fit.
 	// This code runs in O(N^2) time (with small values of N).

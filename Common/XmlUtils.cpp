@@ -27,7 +27,7 @@
 
 #include "XmlUtils.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================

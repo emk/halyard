@@ -24,7 +24,7 @@
 #include "TSchemeInterpreter.h"
 #include "TSchemeConv.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using GraphicsTools::Color;
 
 REGISTER_TEST_CASE_FILE(TSchemeConv);
@@ -45,7 +45,7 @@ static Scheme_Object *MakeSchemeList(const TValueList &inList) {
 	return result;
 }
 
-Scheme_Object *FIVEL_NS TValueToScheme(TValue inVal) {
+Scheme_Object *Halyard::TValueToScheme(TValue inVal) {
 	switch (inVal.GetType())
 	{	
 		case TValue::TYPE_NULL:
@@ -268,7 +268,7 @@ static TValue SchemeStructToTValue(Scheme_Object *inVal) {
 	return TValue();
 }
 
-TValue FIVEL_NS SchemeToTValue(Scheme_Object *inVal) {
+TValue Halyard::SchemeToTValue(Scheme_Object *inVal) {
 	Scheme_Type type = SCHEME_TYPE(inVal);
 	
 	switch (type) {

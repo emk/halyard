@@ -26,35 +26,35 @@
 
 #include "TTemplateUtils.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(TTemplateUtils);
 
-bool FIVEL_NS StringIComp(const std::string &inStr1,
+bool Halyard::StringIComp(const std::string &inStr1,
                           const std::string &inStr2)
 {
     return MakeStringLowercase(inStr1) == MakeStringLowercase(inStr2);
 }
 
-void FIVEL_NS StringLTrim(std::string &ioStr) {
+void Halyard::StringLTrim(std::string &ioStr) {
     while (ioStr.size() && (ioStr[0] == ' ' || ioStr[0] == '\t'))
         ioStr = ioStr.substr(1);
 }
 
-bool FIVEL_NS StringStartsWith(const std::string &inStr1, 
+bool Halyard::StringStartsWith(const std::string &inStr1, 
                                const std::string &inStr2) 
 {
     return (inStr1.find_first_of(inStr2) == 0);
 }
 
-std::string FIVEL_NS MakeStringLowercase(std::string inString)
+std::string Halyard::MakeStringLowercase(std::string inString)
 {
     std::transform(inString.begin(), inString.end(), inString.begin(),
 				   tolower);
 	return inString;
 }
 
-std::string FIVEL_NS MakeQuotedString(const std::string& inString)
+std::string Halyard::MakeQuotedString(const std::string& inString)
 {
 	std::string result = "\"";
 	for (std::string::size_type pos = 0; pos < inString.length(); pos++)

@@ -27,9 +27,9 @@
 #include "TCommonPrimitives.h"
 #include "lang/scheme/TSchemeInterpreter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
-void FIVEL_NS InitializeCommonCode(CrashReporter *inReporter)
+void Halyard::InitializeCommonCode(CrashReporter *inReporter)
 {
     // Initialize our CrashReporter.
     CrashReporter::InitializeCrashReporting(inReporter);
@@ -45,14 +45,14 @@ void FIVEL_NS InitializeCommonCode(CrashReporter *inReporter)
     RegisterCommonPrimitives();
 }
 
-TInterpreterManager *FIVEL_NS
+TInterpreterManager *Halyard::
 GetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
 {
 	// Create and return a new Scheme interpreter manager.
 	return new TSchemeInterpreterManager(inIdleProc);
 }
 
-TInterpreterManager *FIVEL_NS
+TInterpreterManager *Halyard::
 MaybeGetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
 {
 	// If we can't find ./Scripts/start.ss, assume this is a legacy script.

@@ -128,7 +128,7 @@ extern void FiveLCheckAssertion(int inTest, const char *inDescription,
 #	define TESTABLE_PROTECTED  protected
 #endif
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 enum TriState
@@ -146,7 +146,7 @@ enum Alignment
     AlignRight
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 ///@}
 

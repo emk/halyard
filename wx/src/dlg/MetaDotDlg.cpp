@@ -23,7 +23,7 @@
 #include "TamaleHeaders.h"
 #include "MetaDotDlg.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 BEGIN_EVENT_TABLE(MetaDotDlg, XrcDlg)
 	EVT_BUTTON(wxID_OK, MetaDotDlg::OnOK)

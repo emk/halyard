@@ -25,13 +25,13 @@
 #include "TestCase.h"
 #include "TStateDB.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(TStateDB);
 	
-class FIVEL_NS TStateDB;
+class Halyard::TStateDB;
 
-TStateDB FIVEL_NS gStateDB;
+TStateDB Halyard::gStateDB;
 
 
 //=========================================================================

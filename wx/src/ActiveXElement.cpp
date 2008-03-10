@@ -33,7 +33,7 @@
 /// \param inControlName The ActiveX name of the control to create.
 ActiveXElement::ActiveXElement(Stage *inStage, const wxString &inName,
                                const wxRect &inBounds,
-                               FIVEL_NS TCallbackPtr inDispatch,
+                               Halyard::TCallbackPtr inDispatch,
                                const wxString &inControlName)
     : Widget(inStage, inName, inDispatch)                      
 {

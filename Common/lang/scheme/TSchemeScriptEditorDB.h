@@ -25,7 +25,7 @@
 
 #include "ScriptEditorDB.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 void RegisterSchemeScriptEditorDBPrimitives();
 
@@ -40,6 +40,6 @@ public:
     virtual void UpdateDatabase();
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TSchemeScriptEditorDB_H

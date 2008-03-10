@@ -24,7 +24,7 @@
 #include "TestCase.h"
 #include "TInterpreter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(TValue);
 
@@ -33,28 +33,28 @@ REGISTER_TEST_CASE_FILE(TValue);
 //  TSymbol and TPercent Methods
 //=========================================================================
 
-bool FIVEL_NS operator==(const TSymbol &inS1, const TSymbol &inS2) {
+bool Halyard::operator==(const TSymbol &inS1, const TSymbol &inS2) {
     return inS1.GetName() == inS2.GetName();
 }
 
-bool FIVEL_NS operator!=(const TSymbol &inS1, const TSymbol &inS2) {
+bool Halyard::operator!=(const TSymbol &inS1, const TSymbol &inS2) {
     return !(inS1 == inS2);
 }
 
-std::ostream &FIVEL_NS operator<<(std::ostream &out, const TSymbol &inSym) {
+std::ostream &Halyard::operator<<(std::ostream &out, const TSymbol &inSym) {
     out << "'" << inSym.GetName();
     return out;
 }
 
-bool FIVEL_NS operator==(const TPercent &inP1, const TPercent &inP2) {
+bool Halyard::operator==(const TPercent &inP1, const TPercent &inP2) {
     return inP1.GetValue() == inP2.GetValue();
 }
 
-bool FIVEL_NS operator!=(const TPercent &inP1, const TPercent &inP2) {
+bool Halyard::operator!=(const TPercent &inP1, const TPercent &inP2) {
     return !(inP1 == inP2);
 }
 
-std::ostream &FIVEL_NS operator<<(std::ostream &out, const TPercent &inPercent)
+std::ostream &Halyard::operator<<(std::ostream &out, const TPercent &inPercent)
 {
     out << inPercent.GetValue() << "%";
     return out;
@@ -65,7 +65,7 @@ std::ostream &FIVEL_NS operator<<(std::ostream &out, const TPercent &inPercent)
 //  TCallbackPtr Methods
 //=========================================================================
 
-std::ostream &FIVEL_NS operator<<(std::ostream &out,
+std::ostream &Halyard::operator<<(std::ostream &out,
 								  const TCallbackPtr &inCallback)
 {
 	out << inCallback->PrintableRepresentation();
@@ -184,7 +184,7 @@ TValue::Type TValue::GetType() const {
     return mPtr->GetType();
 }
 
-bool FIVEL_NS operator==(const TValue &inV1, const TValue &inV2) {
+bool Halyard::operator==(const TValue &inV1, const TValue &inV2) {
     // Check for uninitialized values.
     if (!inV1.IsInitialized() || !inV2.IsInitialized())
         THROW("Cannot compare uninitialized TValue");
@@ -197,11 +197,11 @@ bool FIVEL_NS operator==(const TValue &inV1, const TValue &inV2) {
     return inV1.mPtr->Equals(inV2.mPtr.get());
 }
 
-bool FIVEL_NS operator!=(const TValue &inV1, const TValue &inV2) {
+bool Halyard::operator!=(const TValue &inV1, const TValue &inV2) {
     return !(inV1 == inV2);
 }
 
-std::ostream &FIVEL_NS operator<<(std::ostream &out, const TValue &inV) {
+std::ostream &Halyard::operator<<(std::ostream &out, const TValue &inV) {
     if (!inV.IsInitialized())
         out << "#<TValue: uninitialized>";
     else
@@ -209,7 +209,7 @@ std::ostream &FIVEL_NS operator<<(std::ostream &out, const TValue &inV) {
     return out;
 }
 
-std::ostream &FIVEL_NS operator<<(std::ostream &out, const TValueList &l) {
+std::ostream &Halyard::operator<<(std::ostream &out, const TValueList &l) {
 	out << "(list";
 	TValueList::const_iterator i = l.begin();
 	for (; i != l.end(); ++i)

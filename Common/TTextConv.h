@@ -23,7 +23,7 @@
 #ifndef TTextConv_H
 #define TTextConv_H
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 /// We use this typedef when a string is known to contain UTF-8 encoded
 /// data.  Note that we require all characters to be encoded with the
@@ -48,6 +48,6 @@ utf16_string utf16_from_multibyte(const std::string &str);
 std::string multibyte_from_utf8(const utf8_string &utf8);
 utf8_string utf8_from_multibyte(const std::string &str);
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TTextTransform_h

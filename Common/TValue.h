@@ -25,7 +25,7 @@
 
 #include <typeinfo>
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 // Forward declarations.
 class TValue;
@@ -348,6 +348,6 @@ extern std::ostream &operator<<(std::ostream &out, const TValue &inV);
 
 extern std::ostream &operator<<(std::ostream &out, const TValueList &l);
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TValue_H

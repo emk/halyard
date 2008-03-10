@@ -34,7 +34,7 @@ class MetaDotDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
 	
-    FIVEL_NS ScriptEditorDB::Definitions mDefinitions;
+    Halyard::ScriptEditorDB::Definitions mDefinitions;
 	wxListBox *mDefinitionsListBox;
     size_t mChosenDefIndex;
 
@@ -42,8 +42,8 @@ class MetaDotDlg : public XrcDlg
 
 public:
 	MetaDotDlg(wxWindow *inParent,
-               const FIVEL_NS ScriptEditorDB::Definitions &defs);
-    FIVEL_NS ScriptEditorDB::Definition GetChosenDef();
+               const Halyard::ScriptEditorDB::Definitions &defs);
+    Halyard::ScriptEditorDB::Definition GetChosenDef();
 };
 
 #endif // MetaDotDlg_H

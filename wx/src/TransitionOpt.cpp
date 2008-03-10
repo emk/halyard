@@ -28,7 +28,7 @@
 // Included so we can call ProcessIdle.
 #include "FiveLApp.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================

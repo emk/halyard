@@ -25,7 +25,7 @@
 
 #include "TInterpreter.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 // These are the primitive types which can currently be passed as
 // arguments to a 5L command.
@@ -365,10 +365,10 @@ extern TPrimitiveManager gPrimitiveManager;
 ///   }
 ///
 #define DEFINE_PRIMITIVE(NAME) \
-	BEGIN_NAMESPACE_FIVEL \
+	BEGIN_NAMESPACE_HALYARD \
 	extern void DoPrim_ ## NAME(TArgumentList &inArgs); \
-	END_NAMESPACE_FIVEL \
-	void FIVEL_NS DoPrim_ ## NAME(TArgumentList &inArgs)
+	END_NAMESPACE_HALYARD \
+	void Halyard::DoPrim_ ## NAME(TArgumentList &inArgs)
 
 //////////
 /// Set the return value of the current primitive to the
@@ -394,6 +394,6 @@ inline void SkipPrimitiveLogging()
 	gVariableManager.Set(FIVEL_SKIP_LOGGING_VAR, true);
 }
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TPrimitives_H

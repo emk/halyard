@@ -32,7 +32,7 @@
 
 AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
 									   AudioStream *inStream,
-                                       FIVEL_NS TCallbackPtr inDispatcher)
+                                       Halyard::TCallbackPtr inDispatcher)
     : InvisibleElement(inStage, inName, inDispatcher), mStream(inStream)
 {
     mStream->Start();

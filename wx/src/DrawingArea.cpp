@@ -27,7 +27,7 @@
 #include "CommonWxConv.h"
 #include "Quake2Engine.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 DrawingArea::DrawingArea(Stage *inStage, int inWidth, int inHeight,
 						 bool inHasAlpha)

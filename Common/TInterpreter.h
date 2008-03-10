@@ -23,7 +23,7 @@
 #if !defined (_TInterpreter_h_)
 #define _TInterpreter_h_
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 class TValue;
 class ScriptEditorDB;
@@ -553,6 +553,6 @@ private:
     void NotifyReloadScriptFailed();
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TInterpreter

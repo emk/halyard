@@ -26,7 +26,7 @@
 #include "TInterpreter.h"
 
 /// A cache of recently displayed wxBitmap objects.
-class ImageCache : public FIVEL_NS TReloadNotified
+class ImageCache : public Halyard::TReloadNotified
 {
 	struct CachedImage {
 		wxBitmap bitmap;

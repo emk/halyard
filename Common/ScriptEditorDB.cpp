@@ -38,7 +38,7 @@
 
 namespace fs = boost::filesystem;
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(ScriptEditorDB);
 

@@ -28,7 +28,7 @@
 
 /// Subclass our standard crash reporting class and make it use
 /// wxDebugReport.
-class FancyCrashReporter : public FIVEL_NS CrashReporter, public model::View {
+class FancyCrashReporter : public Halyard::CrashReporter, public model::View {
     struct FileInfo {
         wxString path;
         wxString description;
@@ -45,19 +45,19 @@ class FancyCrashReporter : public FIVEL_NS CrashReporter, public model::View {
     std::string mRecentCard;
     bool mIsProcessingCrash;
 
-    const char *GetReportUrl(FIVEL_NS CrashType inType);
+    const char *GetReportUrl(Halyard::CrashType inType);
     void ReportCrashInCrashRepoter(const char *inReason);
 
 public:
     FancyCrashReporter() : mIsProcessingCrash(false) {}
     void BeginInterceptingCrashes();
-	void RegisterDocument(FIVEL_NS Document *inDocument);
+	void RegisterDocument(Halyard::Document *inDocument);
     void ObjectChanged();
     void ObjectDeleted();
     void AddDiagnosticFile(const std::string &inFileName,
                            const std::string &inDescription);
     void SetCurrentCard(const std::string &inCardName);
-    void CrashNow(const char *inReason, FIVEL_NS CrashType inType);
+    void CrashNow(const char *inReason, Halyard::CrashType inType);
 
     const char *GetScriptName() const { return mScriptName.c_str(); }
     const char *GetScriptVersion() const  { return mScriptVersion.c_str(); }

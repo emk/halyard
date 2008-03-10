@@ -130,7 +130,7 @@ namespace Typography {
 	/// Typography module may throw exceptions (which is not the case
 	/// for the rest of the 5L code base, so be sure to catch them).
 	///
-	class Error : public FIVEL_NS TException {
+	class Error : public Halyard::TException {
 	public:
 		explicit Error(const char *inFile, int inLine, int inErrorCode);
 		explicit Error(const char *inFile, int inLine,

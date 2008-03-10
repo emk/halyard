@@ -60,7 +60,7 @@
 
 #define IDLE_INTERVAL (1000.0/FRAMES_PER_SECOND) // milliseconds
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================

@@ -32,7 +32,7 @@
 #undef DrawText
 #undef GetObject
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 class xml_node;
 
@@ -170,6 +170,6 @@ public:
 
 extern TStyleSheetManager gStyleSheetManager;
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TStyleSheet_H

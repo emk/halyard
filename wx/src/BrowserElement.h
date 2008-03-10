@@ -39,7 +39,7 @@ protected:
     /// \param inDispatch  The event dispatcher to use.
     ///
     BrowserElement(Stage *inStage, const wxString &inName,
-                   FIVEL_NS TCallbackPtr inDispatch);
+                   Halyard::TCallbackPtr inDispatch);
 
 public:
     //////////

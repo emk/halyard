@@ -31,9 +31,9 @@ class wxSashLayoutWindow;
 class ScriptTree;
 class DocNotebook;
 
-typedef std::vector<FIVEL_NS TScriptIdentifier> IdentifierList;
+typedef std::vector<Halyard::TScriptIdentifier> IdentifierList;
 
-class ScriptEditor : public SashFrame, public FIVEL_NS TReloadNotified  {
+class ScriptEditor : public SashFrame, public Halyard::TReloadNotified  {
     static ScriptEditor *sFrame;
     static void MaybeCreateFrame();
 

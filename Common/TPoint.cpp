@@ -23,7 +23,7 @@
 #include "CommonHeaders.h"
 #include "TPoint.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 TPoint::TPoint(int32 inX /* = 0 */, int32 inY /* = 0 */) 
 { 

@@ -28,9 +28,9 @@
 #include "ModelView.h"
 #include "SashFrame.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 class Document;
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 class Stage;
 class LocationBox;
@@ -54,13 +54,13 @@ enum ToolWindowID {
 /// Our main window--the "frame" around our stage.
 ///
 class StageFrame : public SashFrame,
-                   public FIVEL_NS TReloadNotified,
+                   public Halyard::TReloadNotified,
                    public model::View
 {
 	//////////
 	/// Our associated document object.
 	///
-	FIVEL_NS Document *mDocument;
+	Halyard::Document *mDocument;
 
     //////////
     /// A separate top-level window which logs a variety of interesting
@@ -227,7 +227,7 @@ public:
     //////////
     /// Get the document associated with this stage frame.
     ///
-    FIVEL_NS Document *GetDocument() { return mDocument; }
+    Halyard::Document *GetDocument() { return mDocument; }
 
     //////////
     /// Get the location box attached to this frame.

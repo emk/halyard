@@ -179,7 +179,7 @@ void CustomIEHtmlWindow::OnMSHTMLProgressChangeX(wxActiveXEvent& event) {
 
 BrowserElementIE::BrowserElementIE(Stage *inStage, const wxString &inName,
                                    const wxRect &inBounds,
-                                   FIVEL_NS TCallbackPtr inDispatch)
+                                   Halyard::TCallbackPtr inDispatch)
     : BrowserElement(inStage, inName, inDispatch)                      
 {
     mHtmlWindow = new CustomIEHtmlWindow(inStage, inBounds, this);

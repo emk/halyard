@@ -30,11 +30,11 @@
 
 // XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
 // called from a function in the FiveL:: namespace, which is silly.
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 extern void RegisterSchemeTestPrimitives();
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 // Make sure we have single-token names for all our types.
 using std::string;
@@ -144,7 +144,7 @@ DEFINE_TYPE_TEST_PRIMITIVES(TRect, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(TPolygon, 2)
 DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
-void FIVEL_NS RegisterSchemeTestPrimitives()
+void Halyard::RegisterSchemeTestPrimitives()
 {
 	REGISTER_PRIMITIVE(TestStop);
 	REGISTER_PRIMITIVE(TestPause);

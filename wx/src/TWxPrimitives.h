@@ -25,7 +25,7 @@
 
 #include "TPrimitives.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// Register all of the Common primitives with the gPrimitiveManager
@@ -33,7 +33,7 @@ BEGIN_NAMESPACE_FIVEL
 ///
 extern void RegisterWxPrimitives();
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TWxPrimitives_H
 

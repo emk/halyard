@@ -23,7 +23,7 @@
 #include "CommonHeaders.h"
 #include "CrashReporter.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 
 //=========================================================================

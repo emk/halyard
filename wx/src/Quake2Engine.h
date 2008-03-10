@@ -37,9 +37,9 @@ class TCallback;
 /// is a singleton, and once created, it remains permanently attached
 /// to the Stage object (although we may hide and show it).
 ///
-class Quake2Engine : public wxQuake2Window, public FIVEL_NS TReloadNotified
+class Quake2Engine : public wxQuake2Window, public Halyard::TReloadNotified
 {
-	typedef std::map<std::string,FIVEL_NS TCallbackPtr> CallbackMap;
+	typedef std::map<std::string,Halyard::TCallbackPtr> CallbackMap;
 
 	static bool sHasBeenCreated;
     static Quake2Engine *sInstance;
@@ -85,7 +85,7 @@ public:
 	/// \param inCallback  The callback.  The callback will be deleted
 	///      by this class.
 	///
-	void RegisterCallback(const std::string &inName, FIVEL_NS TCallbackPtr inCallback);
+	void RegisterCallback(const std::string &inName, Halyard::TCallbackPtr inCallback);
 	
 	//////////
 	/// Return true if and only if our singleton has been initialized.

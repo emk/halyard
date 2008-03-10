@@ -23,7 +23,7 @@
 #if !defined (TVectorDiff_H)
 #define TVectorDiff_H
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// Compute the "largest common subsequence" (LCS) of two vectors.  The LCS
@@ -121,6 +121,6 @@ void LargestCommonSubsequence(const std::vector<T> &v1,
     std::reverse(outLCS.begin(), outLCS.end());
 }
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TVectorDiff_H

@@ -32,14 +32,14 @@
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 using GraphicsTools::Color;
 using Typography::Style;
 using Typography::StyledText;
 using Typography::TextRenderingEngine;
 
-TStyleSheetManager FIVEL_NS gStyleSheetManager;
+TStyleSheetManager Halyard::gStyleSheetManager;
 
 
 //=========================================================================

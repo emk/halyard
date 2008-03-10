@@ -27,7 +27,7 @@
 #include "MediaElement.h"
 #include "TStateDB.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 class GeigerAudioStream;
 class VorbisAudioStream;

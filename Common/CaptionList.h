@@ -25,7 +25,7 @@
 
 #include <typeinfo>
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 /// A single media caption.
 class Caption {
@@ -65,6 +65,6 @@ public:
     bool getCaptionIfChanged(double time, Caption &outCaption);
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // CaptionList_H

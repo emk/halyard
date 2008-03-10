@@ -23,7 +23,7 @@
 #ifndef TStateDB_H
 #define TStateDB_H
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 class TStateDB;
 
@@ -97,7 +97,7 @@ public:
 
 extern TStateDB gStateDB;
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TStateDB_H
 

@@ -24,7 +24,7 @@
 
 #include <math.h>
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 using namespace std;
 
 TPolygon::TPolygon(const std::vector<TPoint> &inVertices)
@@ -182,7 +182,7 @@ bool TPolygon::operator==(const TPolygon &inPoly) const
 	return mVertices == inPoly.Vertices();
 }
 
-std::ostream &FIVEL_NS operator<<(std::ostream &out, const TPolygon &poly) {
+std::ostream &Halyard::operator<<(std::ostream &out, const TPolygon &poly) {
 	out << "(polygon";
 	std::vector<TPoint> vertices(poly.Vertices());
 	std::vector<TPoint>::iterator i = vertices.begin();

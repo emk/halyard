@@ -29,14 +29,14 @@
 class CursorManager;
 
 /// A overlay is the simplest form of lightweight element.
-class CursorElement : public Overlay, public FIVEL_NS Cursor
+class CursorElement : public Overlay, public Halyard::Cursor
 {
     bool mIsRegistered;
     std::string mCursorRegName;
 
 public:
     CursorElement(Stage *inStage, const wxString &inName,
-                  const wxRect &inBounds, FIVEL_NS TCallbackPtr inDispatch,
+                  const wxRect &inBounds, Halyard::TCallbackPtr inDispatch,
                   bool inHasAlpha,
                   const std::string &inCursorRegistrationName);
     virtual ~CursorElement();

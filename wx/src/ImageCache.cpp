@@ -25,7 +25,7 @@
 
 #include "ImageCache.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 // Tuning parameters for our cache.
 static const size_t DEFAULT_MAX_BYTES = 2 * 1024 * 1024; // 2 megabytes

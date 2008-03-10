@@ -23,7 +23,7 @@
 #ifndef TTemplateUtils_H
 #define TTemplateUtils_H
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// Perform a case-insensitive comparison of two strings.
@@ -111,6 +111,6 @@ public:
 	~StValueRestorer() { mLocation = mSaved; }
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TTemplateUtils_H

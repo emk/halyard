@@ -24,7 +24,7 @@
 #define Cursor_H
 
 // We need to use a namespace here because of a name clash with QuickTime.
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 /// Abstract interface to cursors, including OS cursors and element-based
 /// cursors.
@@ -79,6 +79,6 @@ public:
     virtual void SetStageCursor(const wxPoint &point);
 };
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // Cursor_H

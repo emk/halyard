@@ -26,7 +26,7 @@
 #include "CursorManager.h"
 #include "CursorElement.h" // Needed for static_cast<Cursor*> below.
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 CursorManager::CursorManager()
 {

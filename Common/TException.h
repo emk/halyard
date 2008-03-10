@@ -23,7 +23,7 @@
 #ifndef TException_H
 #define TException_H
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 /// Crashes can be associated with either the application or the script
 /// we're running.  This enumeration is defined here beacause it is
@@ -188,6 +188,6 @@ public:
 #define CHECK(COND,MSG) \
     do { if (!(COND)) THROW(MSG); } while (0)
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TException_H

@@ -26,15 +26,15 @@
 #include <wx/laywin.h>
 #include <wx/treectrl.h>
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 class Document;
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 class StageFrame;
 class ProgramTreeCtrl;
 
 /// Public interface to tree widget describing a Tamale script.
-class ProgramTree : public wxSashLayoutWindow, public FIVEL_NS TReloadNotified
+class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
 {
 	DECLARE_EVENT_TABLE()
 
@@ -72,7 +72,7 @@ public:
 	//////////
 	/// Notify the tree that a document has been loaded.
 	///
-	void RegisterDocument(FIVEL_NS Document *inDocument);
+	void RegisterDocument(Halyard::Document *inDocument);
 
     //////////
     /// Register a newly-loaded card with the program tree.

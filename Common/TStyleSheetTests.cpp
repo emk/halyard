@@ -26,7 +26,7 @@
 #include "TStyleSheet.h"
 #include "TPrimitives.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
 using namespace Typography;
 

@@ -23,9 +23,9 @@
 #include "CommonHeaders.h"
 #include "TPrimitives.h"
 
-USING_NAMESPACE_FIVEL
+using namespace Halyard;
 
-TPrimitiveManager FIVEL_NS gPrimitiveManager;
+TPrimitiveManager Halyard::gPrimitiveManager;
 
 
 //=========================================================================
@@ -139,14 +139,14 @@ TArgumentList::TArgumentList(TValueList inVal) {
 	mArgPtr = mArgList.begin();
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, std::string &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, std::string &out)
 {
     out = args.GetStringArg();
 	args.LogParameter(MakeQuotedString(out));
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, int16 &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, int16 &out)
 {
     int32 temp;
     temp = args.GetInt32Arg();
@@ -158,56 +158,56 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, int16 &out)
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, int32 &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, int32 &out)
 {
     out = args.GetInt32Arg();
 	args.LogTValueParameter(out);
 	return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, bool &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, bool &out)
 {
     out = args.GetBoolArg();
 	args.LogParameter(out ? "#t" : "#f");
 	return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, uint32 &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, uint32 &out)
 {
     out = args.GetUInt32Arg();
 	args.LogTValueParameter(out);
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, double &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, double &out)
 {
     out = args.GetDoubleArg();
 	args.LogTValueParameter(out);
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TRect &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, TRect &out)
 {
     out = args.GetRectArg();
 	args.LogTValueParameter(out);
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TPolygon &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, TPolygon &out)
 {
     out = args.GetPolygonArg();
 	args.LogTValueParameter(out);
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TPoint &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, TPoint &out)
 {
     out = args.GetPointArg();
 	args.LogTValueParameter(out);
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args,
+TArgumentList &Halyard::operator>>(TArgumentList &args,
 								   GraphicsTools::Color &out)
 {
     out = args.GetColorArg();
@@ -215,21 +215,21 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args,
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TCallbackPtr &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, TCallbackPtr &out)
 {
     out = args.GetCallbackArg();
 	args.LogTValueParameter(out);
     return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TArgumentList* &out)
+TArgumentList &Halyard::operator>>(TArgumentList &args, TArgumentList* &out)
 {
 	out = args.GetListArg();
 	args.LogParameter("#<list>");
 	return args;
 }
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TValue &out) {
+TArgumentList &Halyard::operator>>(TArgumentList &args, TValue &out) {
 	out = args.GetNextArg();
 	args.LogTValueParameter(out);
 	return args;
@@ -240,7 +240,7 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &args, TValue &out) {
 //  SymbolName Methods
 //=========================================================================
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &inArgs,
+TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
 								   const SymbolName &inSymbolName)
 {
 	std::string name = inArgs.GetSymbolArg();
@@ -254,7 +254,7 @@ TArgumentList &FIVEL_NS operator>>(TArgumentList &inArgs,
 //  ValueOrPercent Methods
 //=========================================================================
 
-TArgumentList &FIVEL_NS operator>>(TArgumentList &inArgs,
+TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
 								   const ValueOrPercent &inVoP)
 {
 	// Fetch the value.

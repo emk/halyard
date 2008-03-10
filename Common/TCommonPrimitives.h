@@ -25,7 +25,7 @@
 
 #include "TPrimitives.h"
 
-BEGIN_NAMESPACE_FIVEL
+BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// Register all of the Common primitives with the gPrimitiveManager
@@ -50,6 +50,6 @@ extern void UpdateSpecialVariablesForGraphic(const TRect &bounds);
 ///
 extern void UpdateSpecialVariablesForText(const TPoint &bottomLeft);
 
-END_NAMESPACE_FIVEL
+END_NAMESPACE_HALYARD
 
 #endif // TCommonPrimitives_H
