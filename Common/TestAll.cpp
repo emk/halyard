@@ -32,7 +32,7 @@
 // We declare some testing-related primitives for the interpreter.
 #include "TPrimitives.h"
 
-// XXX - Hack to make REGISTER_5L_PRIMITIVE work correctly.  It needs to be
+// XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
 // called from a function in the FiveL:: namespace, which is silly.
 BEGIN_NAMESPACE_FIVEL
 extern void RegisterTestPrimitives();
@@ -69,7 +69,7 @@ REFERENCE_TEST_CASE_FILE(TStateDB);
 REFERENCE_TEST_CASE_FILE(ScriptEditorDB);
 REFERENCE_TEST_CASE_FILE(TTextConv);
 
-DEFINE_5L_PRIMITIVE(test) {
+DEFINE_PRIMITIVE(test) {
 	std::string info;
 	bool result;
 	inArgs >> info >> result;
@@ -77,7 +77,7 @@ DEFINE_5L_PRIMITIVE(test) {
 }
 
 void FIVEL_NS RegisterTestPrimitives() {
-	REGISTER_5L_PRIMITIVE(test);
+	REGISTER_PRIMITIVE(test);
 }
 
 static void run_imlunit_tests() {

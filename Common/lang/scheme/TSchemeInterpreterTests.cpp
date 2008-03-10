@@ -28,7 +28,7 @@
 #include "TSchemeInterpreter.h"
 #include "TSchemeScriptEditorDB.h"
 
-// XXX - Hack to make REGISTER_5L_PRIMITIVE work correctly.  It needs to be
+// XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
 // called from a function in the FiveL:: namespace, which is silly.
 BEGIN_NAMESPACE_FIVEL
 extern void RegisterSchemeTestPrimitives();
@@ -59,7 +59,7 @@ static void TestIdleFunc(bool inBlock)
 	}
 }
 
-DEFINE_5L_PRIMITIVE(TestStop)
+DEFINE_PRIMITIVE(TestStop)
 {
 	std::string next_card;
 	inArgs >> SymbolName(next_card);
@@ -71,7 +71,7 @@ DEFINE_5L_PRIMITIVE(TestStop)
 	TEST(!TInterpreter::GetInstance()->IsStopped());
 }
 
-DEFINE_5L_PRIMITIVE(TestPause)
+DEFINE_PRIMITIVE(TestPause)
 {
 	gTestingPause = true;
 	gPauseCount = 10;
@@ -81,14 +81,14 @@ DEFINE_5L_PRIMITIVE(TestPause)
 	TEST(TInterpreter::GetInstance()->Paused());
 }
 
-DEFINE_5L_PRIMITIVE(TestCallback)
+DEFINE_PRIMITIVE(TestCallback)
 {
 	TCallbackPtr callback;
 	inArgs >> callback;
 	callback->Run();
 }
 
-DEFINE_5L_PRIMITIVE(TestCallbackArgs)
+DEFINE_PRIMITIVE(TestCallbackArgs)
 {
 	TCallbackPtr callback;
 	inArgs >> callback;
@@ -102,7 +102,7 @@ DEFINE_5L_PRIMITIVE(TestCallbackArgs)
 	callback->Run(args);
 }
 
-DEFINE_5L_PRIMITIVE(TestScriptEditorDB)
+DEFINE_PRIMITIVE(TestScriptEditorDB)
 {
     // Get our script editor database.
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
@@ -118,11 +118,11 @@ DEFINE_5L_PRIMITIVE(TestScriptEditorDB)
 #define DEFINE_TYPE_TEST_PRIMITIVES(TYPE, COUNT) \
 	static TYPE TYPE##_test_values[COUNT]; \
     static uint32 TYPE##_index = 0; \
-	DEFINE_5L_PRIMITIVE(Set_Wanted_##TYPE) { \
+	DEFINE_PRIMITIVE(Set_Wanted_##TYPE) { \
 		inArgs >> TYPE##_index; \
 		ASSERT(TYPE##_index < COUNT); \
 	} \
-	DEFINE_5L_PRIMITIVE(Test_Check_##TYPE) { \
+	DEFINE_PRIMITIVE(Test_Check_##TYPE) { \
 		TYPE arg; \
 		inArgs >> arg; \
 		TEST(TYPE##_test_values[TYPE##_index] == arg); \
@@ -130,8 +130,8 @@ DEFINE_5L_PRIMITIVE(TestScriptEditorDB)
 
 #define REGISTER_TYPE_TEST_PRIMITIVES(TYPE) \
     do { \
-		REGISTER_5L_PRIMITIVE(Set_Wanted_##TYPE); \
-		REGISTER_5L_PRIMITIVE(Test_Check_##TYPE); \
+		REGISTER_PRIMITIVE(Set_Wanted_##TYPE); \
+		REGISTER_PRIMITIVE(Test_Check_##TYPE); \
 	} while (0)
 
 DEFINE_TYPE_TEST_PRIMITIVES(string, 2)
@@ -146,11 +146,11 @@ DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
 void FIVEL_NS RegisterSchemeTestPrimitives()
 {
-	REGISTER_5L_PRIMITIVE(TestStop);
-	REGISTER_5L_PRIMITIVE(TestPause);
-	REGISTER_5L_PRIMITIVE(TestCallback);
-	REGISTER_5L_PRIMITIVE(TestCallbackArgs);
-    REGISTER_5L_PRIMITIVE(TestScriptEditorDB);
+	REGISTER_PRIMITIVE(TestStop);
+	REGISTER_PRIMITIVE(TestPause);
+	REGISTER_PRIMITIVE(TestCallback);
+	REGISTER_PRIMITIVE(TestCallbackArgs);
+    REGISTER_PRIMITIVE(TestScriptEditorDB);
 
 	string_test_values[0] = "";
 	string_test_values[1] = "hello";

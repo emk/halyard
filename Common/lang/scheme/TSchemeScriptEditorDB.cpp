@@ -34,8 +34,8 @@ USING_NAMESPACE_FIVEL
 
 void FIVEL_NS RegisterSchemeScriptEditorDBPrimitives()
 {
-	REGISTER_5L_PRIMITIVE(ScriptEditorDBInsertDef);
-    REGISTER_5L_PRIMITIVE(ScriptEditorDBInsertHelp);
+	REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
+    REGISTER_PRIMITIVE(ScriptEditorDBInsertHelp);
 }
 
 
@@ -43,7 +43,7 @@ void FIVEL_NS RegisterSchemeScriptEditorDBPrimitives()
 //  TSchemeInterpreterDB Methods
 //=========================================================================
 
-DEFINE_5L_PRIMITIVE(ScriptEditorDBInsertDef) {
+DEFINE_PRIMITIVE(ScriptEditorDBInsertDef) {
     std::string name;
     std::string type_name;
     int32 lineno;
@@ -57,7 +57,7 @@ DEFINE_5L_PRIMITIVE(ScriptEditorDBInsertDef) {
     db->InsertDefinition(name, type, lineno);
 }
 
-DEFINE_5L_PRIMITIVE(ScriptEditorDBInsertHelp) {
+DEFINE_PRIMITIVE(ScriptEditorDBInsertHelp) {
     std::string name, help_string;
     inArgs >> SymbolName(name) >> help_string;
 

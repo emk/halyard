@@ -49,7 +49,7 @@ USING_NAMESPACE_FIVEL
 
 void FIVEL_NS RegisterQuickTimePrimitives()
 {
-	REGISTER_5L_PRIMITIVE(QTComponentVersion);
+	REGISTER_PRIMITIVE(QTComponentVersion);
 }
 
 
@@ -66,7 +66,7 @@ void FIVEL_NS RegisterQuickTimePrimitives()
 //
 // TYPE and SUBTYPE are four-character, case-sensitive strings.
 
-DEFINE_5L_PRIMITIVE(QTComponentVersion)
+DEFINE_PRIMITIVE(QTComponentVersion)
 {
 	long version = 0;
 	OSType type, subtype;

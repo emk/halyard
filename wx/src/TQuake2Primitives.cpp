@@ -43,21 +43,21 @@ Quake2Engine *Quake2Engine::sInstance = NULL;
 
 void FIVEL_NS RegisterQuake2Primitives()
 {
-	REGISTER_5L_PRIMITIVE(Quake2Init);
-	REGISTER_5L_PRIMITIVE(Quake2Command);
-	REGISTER_5L_PRIMITIVE(Quake2BackgroundLoadCommand);
-	REGISTER_5L_PRIMITIVE(Quake2IsLoadingInBackground);
-	REGISTER_5L_PRIMITIVE(Quake2Print);
-	REGISTER_5L_PRIMITIVE(Quake2RegisterCommand);
-	REGISTER_5L_PRIMITIVE(Quake2IsShown);
-	REGISTER_5L_PRIMITIVE(Quake2Show);
-	REGISTER_5L_PRIMITIVE(Quake2Hide);
-    REGISTER_5L_PRIMITIVE(Quake2SetShouldRunInBackground);
-    REGISTER_5L_PRIMITIVE(Quake2GetShouldRunInBackground);
-	REGISTER_5L_PRIMITIVE(Quake2SetStringVar);
-	REGISTER_5L_PRIMITIVE(Quake2GetStringVar);
-	REGISTER_5L_PRIMITIVE(Quake2SetFloatVar);
-	REGISTER_5L_PRIMITIVE(Quake2GetFloatVar);
+	REGISTER_PRIMITIVE(Quake2Init);
+	REGISTER_PRIMITIVE(Quake2Command);
+	REGISTER_PRIMITIVE(Quake2BackgroundLoadCommand);
+	REGISTER_PRIMITIVE(Quake2IsLoadingInBackground);
+	REGISTER_PRIMITIVE(Quake2Print);
+	REGISTER_PRIMITIVE(Quake2RegisterCommand);
+	REGISTER_PRIMITIVE(Quake2IsShown);
+	REGISTER_PRIMITIVE(Quake2Show);
+	REGISTER_PRIMITIVE(Quake2Hide);
+    REGISTER_PRIMITIVE(Quake2SetShouldRunInBackground);
+    REGISTER_PRIMITIVE(Quake2GetShouldRunInBackground);
+	REGISTER_PRIMITIVE(Quake2SetStringVar);
+	REGISTER_PRIMITIVE(Quake2GetStringVar);
+	REGISTER_PRIMITIVE(Quake2SetFloatVar);
+	REGISTER_PRIMITIVE(Quake2GetFloatVar);
 }
 
 
@@ -70,7 +70,7 @@ void FIVEL_NS RegisterQuake2Primitives()
 		THROW("Quake 2 is not initialized."); \
 	}
 
-DEFINE_5L_PRIMITIVE(Quake2Init)
+DEFINE_PRIMITIVE(Quake2Init)
 {	
 	std::string game, driver;
 
@@ -85,7 +85,7 @@ DEFINE_5L_PRIMITIVE(Quake2Init)
 		Quake2Engine::Initialize(game, driver);
 }
 
-DEFINE_5L_PRIMITIVE(Quake2Command)
+DEFINE_PRIMITIVE(Quake2Command)
 {
 	std::string cmd;
 	inArgs >> cmd;
@@ -93,7 +93,7 @@ DEFINE_5L_PRIMITIVE(Quake2Command)
 	Quake2Engine::GetInstance()->ExecCommand(cmd.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(Quake2BackgroundLoadCommand)
+DEFINE_PRIMITIVE(Quake2BackgroundLoadCommand)
 {
 	std::string cmd;
 	inArgs >> cmd;
@@ -101,13 +101,13 @@ DEFINE_5L_PRIMITIVE(Quake2BackgroundLoadCommand)
 	Quake2Engine::GetInstance()->ExecBackgroundLoadCommand(cmd.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(Quake2IsLoadingInBackground)
+DEFINE_PRIMITIVE(Quake2IsLoadingInBackground)
 {
 	REQUIRE_QUAKE2_INITIALIZATION;
 	::SetPrimitiveResult(Quake2Engine::GetInstance()->IsLoadingInBackground());
 }
 
-DEFINE_5L_PRIMITIVE(Quake2Print)
+DEFINE_PRIMITIVE(Quake2Print)
 {
 	std::string msg;
 	inArgs >> msg;
@@ -115,7 +115,7 @@ DEFINE_5L_PRIMITIVE(Quake2Print)
 	Quake2Engine::GetInstance()->Print(msg.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(Quake2RegisterCommand)
+DEFINE_PRIMITIVE(Quake2RegisterCommand)
 {
 	std::string name;
 	TCallbackPtr callback;
@@ -124,25 +124,25 @@ DEFINE_5L_PRIMITIVE(Quake2RegisterCommand)
 	Quake2Engine::GetInstance()->RegisterCallback(name, callback);
 }
 
-DEFINE_5L_PRIMITIVE(Quake2IsShown)
+DEFINE_PRIMITIVE(Quake2IsShown)
 {
 	REQUIRE_QUAKE2_INITIALIZATION;
 	::SetPrimitiveResult(Quake2Engine::GetInstance()->IsShown());
 }
 
-DEFINE_5L_PRIMITIVE(Quake2Show)
+DEFINE_PRIMITIVE(Quake2Show)
 {
 	REQUIRE_QUAKE2_INITIALIZATION;
 	Quake2Engine::GetInstance()->Show();
 }
 
-DEFINE_5L_PRIMITIVE(Quake2Hide)
+DEFINE_PRIMITIVE(Quake2Hide)
 {
 	REQUIRE_QUAKE2_INITIALIZATION;
 	Quake2Engine::GetInstance()->Hide();
 }
 
-DEFINE_5L_PRIMITIVE(Quake2SetShouldRunInBackground)
+DEFINE_PRIMITIVE(Quake2SetShouldRunInBackground)
 {
     bool run;
     inArgs >> run;
@@ -151,14 +151,14 @@ DEFINE_5L_PRIMITIVE(Quake2SetShouldRunInBackground)
     Quake2Engine::GetInstance()->RunGameInBackground(run);
 }
 
-DEFINE_5L_PRIMITIVE(Quake2GetShouldRunInBackground)
+DEFINE_PRIMITIVE(Quake2GetShouldRunInBackground)
 {
     REQUIRE_QUAKE2_INITIALIZATION;
     Quake2Engine *engine = Quake2Engine::GetInstance();
     ::SetPrimitiveResult(engine->ShouldRunGameInBackground());
 }
 
-DEFINE_5L_PRIMITIVE(Quake2SetStringVar)
+DEFINE_PRIMITIVE(Quake2SetStringVar)
 {
 	std::string name, value;
 	inArgs >> SymbolName(name) >> value;
@@ -166,7 +166,7 @@ DEFINE_5L_PRIMITIVE(Quake2SetStringVar)
 	Quake2Engine::GetInstance()->SetVariable(name.c_str(), value.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(Quake2GetStringVar)
+DEFINE_PRIMITIVE(Quake2GetStringVar)
 {
 	std::string name;
 	inArgs >> SymbolName(name);
@@ -177,7 +177,7 @@ DEFINE_5L_PRIMITIVE(Quake2GetStringVar)
 	::SetPrimitiveResult(value.mb_str());
 }
 
-DEFINE_5L_PRIMITIVE(Quake2SetFloatVar)
+DEFINE_PRIMITIVE(Quake2SetFloatVar)
 {
 	std::string name;
 	double value;
@@ -187,7 +187,7 @@ DEFINE_5L_PRIMITIVE(Quake2SetFloatVar)
 											 static_cast<float>(value));
 }
 
-DEFINE_5L_PRIMITIVE(Quake2GetFloatVar)
+DEFINE_PRIMITIVE(Quake2GetFloatVar)
 {
 	std::string name;
 	inArgs >> SymbolName(name);

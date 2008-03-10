@@ -73,102 +73,102 @@ using FileSystem::Path;
 //  kludgy and should be replaced later on as the editing GUI improves.
 
 void FIVEL_NS RegisterWxPrimitives() {
-	REGISTER_5L_PRIMITIVE(ActiveX);
-	REGISTER_5L_PRIMITIVE(ActiveXPropGet);
-	REGISTER_5L_PRIMITIVE(ActiveXPropSet);
-	REGISTER_5L_PRIMITIVE(AudioStreamGeiger);
-	REGISTER_5L_PRIMITIVE(AudioStreamGeigerSetCps);
-	REGISTER_5L_PRIMITIVE(AudioStreamSine);
-	REGISTER_5L_PRIMITIVE(AudioStreamVorbis);
-	REGISTER_5L_PRIMITIVE(Browser);
-	REGISTER_5L_PRIMITIVE(BrowserCanBack);
-	REGISTER_5L_PRIMITIVE(BrowserCanForward);
-	REGISTER_5L_PRIMITIVE(BrowserCanReload);
-	REGISTER_5L_PRIMITIVE(BrowserCanStop);
-	REGISTER_5L_PRIMITIVE(BrowserBack);
-	REGISTER_5L_PRIMITIVE(BrowserForward);
-    REGISTER_5L_PRIMITIVE(BrowserLoadPage);
-	REGISTER_5L_PRIMITIVE(BrowserReload);
-	REGISTER_5L_PRIMITIVE(BrowserStop);
-	REGISTER_5L_PRIMITIVE(CancelDownload);
-	REGISTER_5L_PRIMITIVE(ColorAt);
-	REGISTER_5L_PRIMITIVE(CopyStringToClipboard);
-    REGISTER_5L_PRIMITIVE(CursorElement);
-	REGISTER_5L_PRIMITIVE(DataPath);
-	REGISTER_5L_PRIMITIVE(DataPathLocal);
-	REGISTER_5L_PRIMITIVE(DcPop);
-	REGISTER_5L_PRIMITIVE(DcPush);
-	REGISTER_5L_PRIMITIVE(DcRect);
-    REGISTER_5L_PRIMITIVE(DebugReportAddFile);
-    REGISTER_5L_PRIMITIVE(DeleteElements);
-    REGISTER_5L_PRIMITIVE(Dialog);
-	REGISTER_5L_PRIMITIVE(Download);
-	REGISTER_5L_PRIMITIVE(DrawBoxFill);
-	REGISTER_5L_PRIMITIVE(DrawBoxOutline);
-	REGISTER_5L_PRIMITIVE(DrawLine);
-    REGISTER_5L_PRIMITIVE(DrawLoadProgress);
-	REGISTER_5L_PRIMITIVE(EditBox);
-	REGISTER_5L_PRIMITIVE(EditBoxGetValue);
-	REGISTER_5L_PRIMITIVE(EditBoxSetValue);
-	REGISTER_5L_PRIMITIVE(EditBoxSetInsertionPoint);
-	REGISTER_5L_PRIMITIVE(EditBoxSetSelection);
-	REGISTER_5L_PRIMITIVE(ElementExists);
-	REGISTER_5L_PRIMITIVE(ElementIsShown);
-	REGISTER_5L_PRIMITIVE(ElementSetShown);
-	REGISTER_5L_PRIMITIVE(ElementSetInDragLayer);
-	REGISTER_5L_PRIMITIVE(EnableExpensiveEvents);
-    REGISTER_5L_PRIMITIVE(ErrortraceCompileEnabled);
-    REGISTER_5L_PRIMITIVE(Focus);
-	REGISTER_5L_PRIMITIVE(GeigerSynth);
-    REGISTER_5L_PRIMITIVE(HideCursorUntilMouseMoved);
-    REGISTER_5L_PRIMITIVE(Heartbeat);
-    REGISTER_5L_PRIMITIVE(IsVistaOrNewer);
-	REGISTER_5L_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
-	REGISTER_5L_PRIMITIVE(LoadPic);
-	REGISTER_5L_PRIMITIVE(LoadSubPic);
-    REGISTER_5L_PRIMITIVE(MarkUnprocessedEventsAsStale);
-	REGISTER_5L_PRIMITIVE(Mask);
-    REGISTER_5L_PRIMITIVE(MaybeLoadSplash);
-    REGISTER_5L_PRIMITIVE(MeasurePic);
-	REGISTER_5L_PRIMITIVE(MediaAttachCaptionFile);
-	REGISTER_5L_PRIMITIVE(MediaSetVolume);
-	REGISTER_5L_PRIMITIVE(MouseGrab);
-	REGISTER_5L_PRIMITIVE(MouseIsGrabbed);
-	REGISTER_5L_PRIMITIVE(MouseIsGrabbedBy);
-	REGISTER_5L_PRIMITIVE(MousePosition);
-	REGISTER_5L_PRIMITIVE(MouseUngrab);
-	REGISTER_5L_PRIMITIVE(Movie);
-	REGISTER_5L_PRIMITIVE(MovieEndPlayback);
-	REGISTER_5L_PRIMITIVE(MoviePause);
-	REGISTER_5L_PRIMITIVE(MovieResume);
-	REGISTER_5L_PRIMITIVE(MovieSetTimeout);
-    REGISTER_5L_PRIMITIVE(MovieSetPlaybackTimer);
-    REGISTER_5L_PRIMITIVE(MovieClearPlaybackTimer);
-    REGISTER_5L_PRIMITIVE(MoveElementTo);
-	REGISTER_5L_PRIMITIVE(NotifyEnterCard);
-	REGISTER_5L_PRIMITIVE(NotifyExitCard);
-    REGISTER_5L_PRIMITIVE(OpenInBrowser);
-	REGISTER_5L_PRIMITIVE(Overlay);
-	REGISTER_5L_PRIMITIVE(OverlaySetShape);
-	REGISTER_5L_PRIMITIVE(OverlayAnimated);
-    REGISTER_5L_PRIMITIVE(RaiseToTop);
-	REGISTER_5L_PRIMITIVE(Refresh);
-	REGISTER_5L_PRIMITIVE(RefreshSplashScreen);
-	REGISTER_5L_PRIMITIVE(Screenshot);
-	REGISTER_5L_PRIMITIVE(RegisterCard);
-	REGISTER_5L_PRIMITIVE(RegisterCursor);
-	REGISTER_5L_PRIMITIVE(RegisterEventDispatcher);
-    REGISTER_5L_PRIMITIVE(Screen);
-    REGISTER_5L_PRIMITIVE(SetImageCacheSize);
-    REGISTER_5L_PRIMITIVE(SetZoneCursor);
-    REGISTER_5L_PRIMITIVE(TamaleExit);
-	REGISTER_5L_PRIMITIVE(TextAA);
-    REGISTER_5L_PRIMITIVE(Wait);
-    REGISTER_5L_PRIMITIVE(WakeUpIfNecessary);
-    REGISTER_5L_PRIMITIVE(WantsCursorGet);
-    REGISTER_5L_PRIMITIVE(WantsCursorSet);
-    REGISTER_5L_PRIMITIVE(Zone);
-    REGISTER_5L_PRIMITIVE(ZoneSetShape);
+	REGISTER_PRIMITIVE(ActiveX);
+	REGISTER_PRIMITIVE(ActiveXPropGet);
+	REGISTER_PRIMITIVE(ActiveXPropSet);
+	REGISTER_PRIMITIVE(AudioStreamGeiger);
+	REGISTER_PRIMITIVE(AudioStreamGeigerSetCps);
+	REGISTER_PRIMITIVE(AudioStreamSine);
+	REGISTER_PRIMITIVE(AudioStreamVorbis);
+	REGISTER_PRIMITIVE(Browser);
+	REGISTER_PRIMITIVE(BrowserCanBack);
+	REGISTER_PRIMITIVE(BrowserCanForward);
+	REGISTER_PRIMITIVE(BrowserCanReload);
+	REGISTER_PRIMITIVE(BrowserCanStop);
+	REGISTER_PRIMITIVE(BrowserBack);
+	REGISTER_PRIMITIVE(BrowserForward);
+    REGISTER_PRIMITIVE(BrowserLoadPage);
+	REGISTER_PRIMITIVE(BrowserReload);
+	REGISTER_PRIMITIVE(BrowserStop);
+	REGISTER_PRIMITIVE(CancelDownload);
+	REGISTER_PRIMITIVE(ColorAt);
+	REGISTER_PRIMITIVE(CopyStringToClipboard);
+    REGISTER_PRIMITIVE(CursorElement);
+	REGISTER_PRIMITIVE(DataPath);
+	REGISTER_PRIMITIVE(DataPathLocal);
+	REGISTER_PRIMITIVE(DcPop);
+	REGISTER_PRIMITIVE(DcPush);
+	REGISTER_PRIMITIVE(DcRect);
+    REGISTER_PRIMITIVE(DebugReportAddFile);
+    REGISTER_PRIMITIVE(DeleteElements);
+    REGISTER_PRIMITIVE(Dialog);
+	REGISTER_PRIMITIVE(Download);
+	REGISTER_PRIMITIVE(DrawBoxFill);
+	REGISTER_PRIMITIVE(DrawBoxOutline);
+	REGISTER_PRIMITIVE(DrawLine);
+    REGISTER_PRIMITIVE(DrawLoadProgress);
+	REGISTER_PRIMITIVE(EditBox);
+	REGISTER_PRIMITIVE(EditBoxGetValue);
+	REGISTER_PRIMITIVE(EditBoxSetValue);
+	REGISTER_PRIMITIVE(EditBoxSetInsertionPoint);
+	REGISTER_PRIMITIVE(EditBoxSetSelection);
+	REGISTER_PRIMITIVE(ElementExists);
+	REGISTER_PRIMITIVE(ElementIsShown);
+	REGISTER_PRIMITIVE(ElementSetShown);
+	REGISTER_PRIMITIVE(ElementSetInDragLayer);
+	REGISTER_PRIMITIVE(EnableExpensiveEvents);
+    REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
+    REGISTER_PRIMITIVE(Focus);
+	REGISTER_PRIMITIVE(GeigerSynth);
+    REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
+    REGISTER_PRIMITIVE(Heartbeat);
+    REGISTER_PRIMITIVE(IsVistaOrNewer);
+	REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
+	REGISTER_PRIMITIVE(LoadPic);
+	REGISTER_PRIMITIVE(LoadSubPic);
+    REGISTER_PRIMITIVE(MarkUnprocessedEventsAsStale);
+	REGISTER_PRIMITIVE(Mask);
+    REGISTER_PRIMITIVE(MaybeLoadSplash);
+    REGISTER_PRIMITIVE(MeasurePic);
+	REGISTER_PRIMITIVE(MediaAttachCaptionFile);
+	REGISTER_PRIMITIVE(MediaSetVolume);
+	REGISTER_PRIMITIVE(MouseGrab);
+	REGISTER_PRIMITIVE(MouseIsGrabbed);
+	REGISTER_PRIMITIVE(MouseIsGrabbedBy);
+	REGISTER_PRIMITIVE(MousePosition);
+	REGISTER_PRIMITIVE(MouseUngrab);
+	REGISTER_PRIMITIVE(Movie);
+	REGISTER_PRIMITIVE(MovieEndPlayback);
+	REGISTER_PRIMITIVE(MoviePause);
+	REGISTER_PRIMITIVE(MovieResume);
+	REGISTER_PRIMITIVE(MovieSetTimeout);
+    REGISTER_PRIMITIVE(MovieSetPlaybackTimer);
+    REGISTER_PRIMITIVE(MovieClearPlaybackTimer);
+    REGISTER_PRIMITIVE(MoveElementTo);
+	REGISTER_PRIMITIVE(NotifyEnterCard);
+	REGISTER_PRIMITIVE(NotifyExitCard);
+    REGISTER_PRIMITIVE(OpenInBrowser);
+	REGISTER_PRIMITIVE(Overlay);
+	REGISTER_PRIMITIVE(OverlaySetShape);
+	REGISTER_PRIMITIVE(OverlayAnimated);
+    REGISTER_PRIMITIVE(RaiseToTop);
+	REGISTER_PRIMITIVE(Refresh);
+	REGISTER_PRIMITIVE(RefreshSplashScreen);
+	REGISTER_PRIMITIVE(Screenshot);
+	REGISTER_PRIMITIVE(RegisterCard);
+	REGISTER_PRIMITIVE(RegisterCursor);
+	REGISTER_PRIMITIVE(RegisterEventDispatcher);
+    REGISTER_PRIMITIVE(Screen);
+    REGISTER_PRIMITIVE(SetImageCacheSize);
+    REGISTER_PRIMITIVE(SetZoneCursor);
+    REGISTER_PRIMITIVE(TamaleExit);
+	REGISTER_PRIMITIVE(TextAA);
+    REGISTER_PRIMITIVE(Wait);
+    REGISTER_PRIMITIVE(WakeUpIfNecessary);
+    REGISTER_PRIMITIVE(WantsCursorGet);
+    REGISTER_PRIMITIVE(WantsCursorSet);
+    REGISTER_PRIMITIVE(Zone);
+    REGISTER_PRIMITIVE(ZoneSetShape);
 }
 
 
@@ -221,7 +221,7 @@ static wxBitmap load_picture(const std::string &inName);
 //  Implementation of wxWindows Primitives
 //=========================================================================
 
-DEFINE_5L_PRIMITIVE(ActiveX) {
+DEFINE_PRIMITIVE(ActiveX) {
 	std::string name, control_name;
 	TRect bounds;
     TCallbackPtr dispatcher;
@@ -232,14 +232,14 @@ DEFINE_5L_PRIMITIVE(ActiveX) {
                          TToWxRect(bounds), dispatcher, control_name.c_str()));
 }
 
-DEFINE_5L_PRIMITIVE(ActiveXPropGet) {
+DEFINE_PRIMITIVE(ActiveXPropGet) {
     std::string name, prop;
     inArgs >> SymbolName(name) >> prop;
     FIND_ELEMENT(ActiveXElement, element, name.c_str());
     ::SetPrimitiveResult(WxToTValue(element->Prop(prop.c_str())));
 }
 
-DEFINE_5L_PRIMITIVE(ActiveXPropSet) {
+DEFINE_PRIMITIVE(ActiveXPropSet) {
     std::string name, prop;
     TValue value;
     inArgs >> SymbolName(name) >> prop >> value;
@@ -247,7 +247,7 @@ DEFINE_5L_PRIMITIVE(ActiveXPropSet) {
     element->SetProp(prop.c_str(), TToWxValue(value));
 }
 
-DEFINE_5L_PRIMITIVE(AudioStreamGeiger) {
+DEFINE_PRIMITIVE(AudioStreamGeiger) {
 	std::string name, path;
     double volume;
 	TCallbackPtr dispatcher;
@@ -257,7 +257,7 @@ DEFINE_5L_PRIMITIVE(AudioStreamGeiger) {
 							 dispatcher));
 }
 
-DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps) {
+DEFINE_PRIMITIVE(AudioStreamGeigerSetCps) {
 	std::string name;
 	double cps;
 	inArgs >> SymbolName(name) >> cps;
@@ -270,7 +270,7 @@ DEFINE_5L_PRIMITIVE(AudioStreamGeigerSetCps) {
 		THROW("Audio stream was not a geiger stream.");
 }
 
-DEFINE_5L_PRIMITIVE(AudioStreamSine) {
+DEFINE_PRIMITIVE(AudioStreamSine) {
 	std::string name;
     double volume;
 	uint32 frequency;
@@ -281,7 +281,7 @@ DEFINE_5L_PRIMITIVE(AudioStreamSine) {
 							 dispatcher));
 }
 
-DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
+DEFINE_PRIMITIVE(AudioStreamVorbis) {
 	std::string name, path;
     double volume;
 	uint32 buffer_size;
@@ -297,7 +297,7 @@ DEFINE_5L_PRIMITIVE(AudioStreamVorbis) {
 							 dispatcher));
 }
 
-DEFINE_5L_PRIMITIVE(Browser) {
+DEFINE_PRIMITIVE(Browser) {
 	std::string name;
     bool want_builtin;
 	TRect bounds;
@@ -313,80 +313,80 @@ DEFINE_5L_PRIMITIVE(Browser) {
                                TToWxRect(bounds), dispatcher));
 }
 
-DEFINE_5L_PRIMITIVE(BrowserCanBack) {
+DEFINE_PRIMITIVE(BrowserCanBack) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->CanGoBack());
 }
 
-DEFINE_5L_PRIMITIVE(BrowserCanForward) {
+DEFINE_PRIMITIVE(BrowserCanForward) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->CanGoForward());
 }
 
-DEFINE_5L_PRIMITIVE(BrowserCanReload) {
+DEFINE_PRIMITIVE(BrowserCanReload) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->CanRefresh());
 }
 
-DEFINE_5L_PRIMITIVE(BrowserCanStop) {
+DEFINE_PRIMITIVE(BrowserCanStop) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->CanStop());
 }
 
-DEFINE_5L_PRIMITIVE(BrowserBack) {
+DEFINE_PRIMITIVE(BrowserBack) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->GoBack());
 }
 
-DEFINE_5L_PRIMITIVE(BrowserForward) {
+DEFINE_PRIMITIVE(BrowserForward) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->GoForward());
 }
 
-DEFINE_5L_PRIMITIVE(BrowserLoadPage) {
+DEFINE_PRIMITIVE(BrowserLoadPage) {
     std::string name, file_or_url;
     inArgs >> SymbolName(name) >> file_or_url;
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
 	browser->LoadPage(file_or_url.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(BrowserReload) {
+DEFINE_PRIMITIVE(BrowserReload) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->Refresh());
 }
 
-DEFINE_5L_PRIMITIVE(BrowserStop) {
+DEFINE_PRIMITIVE(BrowserStop) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(BrowserElement, browser, name.c_str());
     ::SetPrimitiveResult(browser->Stop());
 }
 
-DEFINE_5L_PRIMITIVE(CancelDownload) {
+DEFINE_PRIMITIVE(CancelDownload) {
 	Downloader::GetInstance()->CancelDownload();
 }
 
-DEFINE_5L_PRIMITIVE(ColorAt) {
+DEFINE_PRIMITIVE(ColorAt) {
 	TPoint at;
 	inArgs >> at;
 	::SetPrimitiveResult(GetCurrentDrawingArea()->GetPixel(at.X(), at.Y()));
 }
 
-DEFINE_5L_PRIMITIVE(CopyStringToClipboard) {
+DEFINE_PRIMITIVE(CopyStringToClipboard) {
 	// This primitive is to allow people to write developer tools in scheme.
 	// It isn't actually a necessary part of the API. 
 	std::string string;
@@ -394,7 +394,7 @@ DEFINE_5L_PRIMITIVE(CopyStringToClipboard) {
 	wxGetApp().GetStage()->CopyStringToClipboard(string.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(CursorElement) {
+DEFINE_PRIMITIVE(CursorElement) {
 	std::string name, cursor_reg_name;
 	TRect bounds;
 	TCallbackPtr dispatcher;
@@ -411,45 +411,45 @@ DEFINE_5L_PRIMITIVE(CursorElement) {
     cursor->RegisterWithCursorManager();
 }
 
-DEFINE_5L_PRIMITIVE(DataPath) {
+DEFINE_PRIMITIVE(DataPath) {
     // By the time we get here, our application name will actually be
     // our script name.
     FileSystem::Path dir = FileSystem::GetScriptDataDirectory();
     ::SetPrimitiveResult(dir.ToNativePathString());
 }
 
-DEFINE_5L_PRIMITIVE(DataPathLocal) {
+DEFINE_PRIMITIVE(DataPathLocal) {
     FileSystem::Path dir = FileSystem::GetScriptLocalDataDirectory();
     ::SetPrimitiveResult(dir.ToNativePathString());
 }
 
-DEFINE_5L_PRIMITIVE(DcPop) {
+DEFINE_PRIMITIVE(DcPop) {
 	std::string name;	
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(Element, elem, name.c_str());
 	wxGetApp().GetStage()->PopDrawingContext(elem);
 }
 
-DEFINE_5L_PRIMITIVE(DcPush) {
+DEFINE_PRIMITIVE(DcPush) {
 	std::string name;	
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(Element, elem, name.c_str());
 	wxGetApp().GetStage()->PushDrawingContext(elem);
 }
 
-DEFINE_5L_PRIMITIVE(DcRect) {
+DEFINE_PRIMITIVE(DcRect) {
 	wxRect bounds = GetCurrentDrawingArea()->GetBounds();
 	::SetPrimitiveResult(WxToTRect(wxRect(0, 0, bounds.width, bounds.height)));
 }
 
-DEFINE_5L_PRIMITIVE(DebugReportAddFile) {
+DEFINE_PRIMITIVE(DebugReportAddFile) {
     std::string name;
     std::string description;
     inArgs >> name >> description;
     CrashReporter::GetInstance()->AddDiagnosticFile(name, description);
 }
 
-DEFINE_5L_PRIMITIVE(DeleteElements) {
+DEFINE_PRIMITIVE(DeleteElements) {
 	if (!inArgs.HasMoreArguments()) {
 		wxGetApp().GetStage()->DeleteElements();
 	} else {
@@ -465,7 +465,7 @@ DEFINE_5L_PRIMITIVE(DeleteElements) {
 	}
 }
 
-DEFINE_5L_PRIMITIVE(Dialog) {
+DEFINE_PRIMITIVE(Dialog) {
     std::string title, message, button1, button2, button3;
     inArgs >> title >> message >> button1;
     if (inArgs.HasMoreArguments())
@@ -478,14 +478,14 @@ DEFINE_5L_PRIMITIVE(Dialog) {
     ::SetPrimitiveResult(dlg.ShowModal());
 }
 
-DEFINE_5L_PRIMITIVE(Download) {
+DEFINE_PRIMITIVE(Download) {
 	std::string URL, file;
 	inArgs >> URL >> file;
 
 	::SetPrimitiveResult(Downloader::GetInstance()->Get(URL, file));
 }
 
-DEFINE_5L_PRIMITIVE(DrawBoxFill) {
+DEFINE_PRIMITIVE(DrawBoxFill) {
 	TRect bounds;
 	Color color;
 
@@ -493,7 +493,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxFill) {
 	GetCurrentDrawingArea()->FillBox(TToWxRect(bounds), color);
 }
 
-DEFINE_5L_PRIMITIVE(DrawBoxOutline) {
+DEFINE_PRIMITIVE(DrawBoxOutline) {
 	TRect bounds;
 	Color color;
 	int32 width;
@@ -503,7 +503,7 @@ DEFINE_5L_PRIMITIVE(DrawBoxOutline) {
 
 }
 
-DEFINE_5L_PRIMITIVE(DrawLine) {
+DEFINE_PRIMITIVE(DrawLine) {
 	TPoint from, to;
 	Color color;
 	int32 width;
@@ -514,11 +514,11 @@ DEFINE_5L_PRIMITIVE(DrawLine) {
 
 }
 
-DEFINE_5L_PRIMITIVE(DrawLoadProgress) {
+DEFINE_PRIMITIVE(DrawLoadProgress) {
     wxGetApp().GetStage()->DrawLoadProgress();
 }
 
-DEFINE_5L_PRIMITIVE(EditBox) {
+DEFINE_PRIMITIVE(EditBox) {
 	std::string name, text;
     TCallbackPtr dispatcher;
 	TRect bounds;
@@ -533,21 +533,21 @@ DEFINE_5L_PRIMITIVE(EditBox) {
                   send_enter_event));
 }
 
-DEFINE_5L_PRIMITIVE(EditBoxGetValue) {
+DEFINE_PRIMITIVE(EditBoxGetValue) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(EditBox, elem, name.c_str());
     ::SetPrimitiveResult(elem->GetValue().mb_str());
 }
 
-DEFINE_5L_PRIMITIVE(EditBoxSetValue) {
+DEFINE_PRIMITIVE(EditBoxSetValue) {
     std::string name, value;
     inArgs >> SymbolName(name) >> value;
     FIND_ELEMENT(EditBox, elem, name.c_str());
     elem->SetValue(value.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(EditBoxSetInsertionPoint) {
+DEFINE_PRIMITIVE(EditBoxSetInsertionPoint) {
     std::string name;
     int32 pos;
     inArgs >> SymbolName(name) >> pos;
@@ -555,7 +555,7 @@ DEFINE_5L_PRIMITIVE(EditBoxSetInsertionPoint) {
     elem->SetInsertionPoint(pos);
 }
 
-DEFINE_5L_PRIMITIVE(EditBoxSetSelection) {
+DEFINE_PRIMITIVE(EditBoxSetSelection) {
     std::string name;
     int32 begin, end;
     inArgs >> SymbolName(name) >> begin >> end;
@@ -563,7 +563,7 @@ DEFINE_5L_PRIMITIVE(EditBoxSetSelection) {
     elem->SetSelection(begin, end);
 }
 
-DEFINE_5L_PRIMITIVE(ElementExists) {
+DEFINE_PRIMITIVE(ElementExists) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	if (wxGetApp().GetStage()->FindElement(name.c_str()))
@@ -572,14 +572,14 @@ DEFINE_5L_PRIMITIVE(ElementExists) {
 		::SetPrimitiveResult(false);
 }
 
-DEFINE_5L_PRIMITIVE(ElementIsShown) {
+DEFINE_PRIMITIVE(ElementIsShown) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(Element, element, name.c_str());
 	::SetPrimitiveResult(element->IsShown());
 }
 
-DEFINE_5L_PRIMITIVE(ElementSetShown) {
+DEFINE_PRIMITIVE(ElementSetShown) {
 	std::string name;
 	bool show;
 	inArgs >> SymbolName(name) >> show;
@@ -588,7 +588,7 @@ DEFINE_5L_PRIMITIVE(ElementSetShown) {
 	// TODO - Override MovieElement::Show for unshowable movies.
 }
 
-DEFINE_5L_PRIMITIVE(ElementSetInDragLayer) {
+DEFINE_PRIMITIVE(ElementSetInDragLayer) {
 	std::string name;
 	bool in_drag_layer;
 	inArgs >> SymbolName(name) >> in_drag_layer;
@@ -596,24 +596,24 @@ DEFINE_5L_PRIMITIVE(ElementSetInDragLayer) {
 	element->SetInDragLayer(in_drag_layer);
 }
 
-DEFINE_5L_PRIMITIVE(EnableExpensiveEvents) {
+DEFINE_PRIMITIVE(EnableExpensiveEvents) {
 	bool enable;
 	inArgs >> enable;
 	EventDispatcher::EnableExpensiveEvents(enable);
 }
 
-DEFINE_5L_PRIMITIVE(ErrortraceCompileEnabled) {
+DEFINE_PRIMITIVE(ErrortraceCompileEnabled) {
     ::SetPrimitiveResult(wxGetApp().GetStage()->IsErrortraceCompileEnabled());
 }
 
-DEFINE_5L_PRIMITIVE(Focus) {
+DEFINE_PRIMITIVE(Focus) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(Widget, element, name.c_str());
     element->SetFocus();
 }
 
-DEFINE_5L_PRIMITIVE(GeigerSynth) {
+DEFINE_PRIMITIVE(GeigerSynth) {
 	std::string name, state_path, chirp_location, loop_location;
 	double loop_cps, volume;
 	uint32 buffer_size;
@@ -633,16 +633,16 @@ DEFINE_5L_PRIMITIVE(GeigerSynth) {
     element->DoneAddingLoops();
 }
 
-DEFINE_5L_PRIMITIVE(HideCursorUntilMouseMoved) {
+DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
     wxGetApp().GetStage()->HideCursorUntilMouseMoved();
 }
 
-DEFINE_5L_PRIMITIVE(Heartbeat) {
+DEFINE_PRIMITIVE(Heartbeat) {
 	::SkipPrimitiveLogging();
     wxGetApp().Heartbeat();
 }
 
-DEFINE_5L_PRIMITIVE(IsVistaOrNewer) {
+DEFINE_PRIMITIVE(IsVistaOrNewer) {
     // Return true if we're running Windows Vista or newer.  We need to
     // know this so that the updater can deal with the new security model.
     int major, minor;
@@ -700,11 +700,11 @@ static void draw_picture(const std::string &inName, TPoint inLoc,
 	UpdateSpecialVariablesForGraphic(bounds);	
 }
 
-DEFINE_5L_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
+DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
     wxGetApp().LaunchUpdateInstallerBeforeExiting();
 }
 
-DEFINE_5L_PRIMITIVE(LoadPic) {
+DEFINE_PRIMITIVE(LoadPic) {
 	std::string	picname;
     TPoint		loc;
 
@@ -719,7 +719,7 @@ DEFINE_5L_PRIMITIVE(LoadPic) {
 	draw_picture(picname, loc);
 }
 
-DEFINE_5L_PRIMITIVE(LoadSubPic) {
+DEFINE_PRIMITIVE(LoadSubPic) {
 	std::string	picname;
     TPoint		loc;
 	TRect		subrect;
@@ -728,11 +728,11 @@ DEFINE_5L_PRIMITIVE(LoadSubPic) {
 	draw_picture(picname, loc, &subrect);
 }
 
-DEFINE_5L_PRIMITIVE(MarkUnprocessedEventsAsStale) {
+DEFINE_PRIMITIVE(MarkUnprocessedEventsAsStale) {
     EventDispatcher::UpdateMaxStaleTime();
 }
 
-DEFINE_5L_PRIMITIVE(Mask) {
+DEFINE_PRIMITIVE(Mask) {
     std::string	path;
     TPoint		loc;
 
@@ -741,13 +741,13 @@ DEFINE_5L_PRIMITIVE(Mask) {
 	GetCurrentDrawingArea()->Mask(mask, loc.X(), loc.Y());
 }
 
-DEFINE_5L_PRIMITIVE(MaybeLoadSplash) {
+DEFINE_PRIMITIVE(MaybeLoadSplash) {
     std::string picname;
     inArgs >> picname;
 	wxGetApp().GetStage()->MaybeDrawSplashGraphic(picname.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(MeasurePic) {
+DEFINE_PRIMITIVE(MeasurePic) {
 	std::string	picname;
     inArgs >> picname;
     wxBitmap pic(load_picture(picname));
@@ -759,28 +759,28 @@ DEFINE_5L_PRIMITIVE(MeasurePic) {
     }
 }
 
-DEFINE_5L_PRIMITIVE(NotifyEnterCard) {
+DEFINE_PRIMITIVE(NotifyEnterCard) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->NotifyEnterCard(name.c_str());
 	::SkipPrimitiveLogging();
 }
 
-DEFINE_5L_PRIMITIVE(NotifyExitCard) {
+DEFINE_PRIMITIVE(NotifyExitCard) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->NotifyExitCard();
 	::SkipPrimitiveLogging();
 }
 
-DEFINE_5L_PRIMITIVE(MediaAttachCaptionFile) {
+DEFINE_PRIMITIVE(MediaAttachCaptionFile) {
 	std::string name, caption_file;
 	inArgs >> SymbolName(name) >> caption_file;
 	FIND_ELEMENT(MediaElement, media, name.c_str());
     media->AttachCaptionFile(caption_file);
 }
 
-DEFINE_5L_PRIMITIVE(MediaSetVolume) {
+DEFINE_PRIMITIVE(MediaSetVolume) {
 	std::string name, channel_name;
 	double volume;
 	inArgs >> SymbolName(name) >> SymbolName(channel_name) >> volume;
@@ -788,38 +788,38 @@ DEFINE_5L_PRIMITIVE(MediaSetVolume) {
 	media->SetVolume(channel_name, volume);
 }
 
-DEFINE_5L_PRIMITIVE(MouseGrab) {
+DEFINE_PRIMITIVE(MouseGrab) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(LightweightElement, elem, name.c_str());
 	wxGetApp().GetStage()->MouseGrab(elem);
 }
 
-DEFINE_5L_PRIMITIVE(MouseIsGrabbed) {
+DEFINE_PRIMITIVE(MouseIsGrabbed) {
 	::SetPrimitiveResult(wxGetApp().GetStage()->MouseIsGrabbed());
 }
 
-DEFINE_5L_PRIMITIVE(MouseIsGrabbedBy) {
+DEFINE_PRIMITIVE(MouseIsGrabbedBy) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(LightweightElement, elem, name.c_str());
 	::SetPrimitiveResult(wxGetApp().GetStage()->MouseIsGrabbedBy(elem));
 }
 
-DEFINE_5L_PRIMITIVE(MousePosition) {
+DEFINE_PRIMITIVE(MousePosition) {
 	// XXX - Stop returning out-of-bounds co-ordinates.
 	wxPoint p = wxGetApp().GetStage()->ScreenToClient(::wxGetMousePosition());
 	::SetPrimitiveResult(TPoint(p.x, p.y));
 }
 
-DEFINE_5L_PRIMITIVE(MouseUngrab) {
+DEFINE_PRIMITIVE(MouseUngrab) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(LightweightElement, elem, name.c_str());
 	wxGetApp().GetStage()->MouseUngrab(elem);
 }
 
-DEFINE_5L_PRIMITIVE(Movie) {
+DEFINE_PRIMITIVE(Movie) {
 	std::string name, path;
     TCallbackPtr dispatcher;
 	TRect bounds;
@@ -846,7 +846,7 @@ DEFINE_5L_PRIMITIVE(Movie) {
                        TToWxRect(bounds), path.c_str(), 0, style, volume));
 }
 
-DEFINE_5L_PRIMITIVE(MovieEndPlayback) {
+DEFINE_PRIMITIVE(MovieEndPlayback) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(MediaElement, movie, name.c_str());
@@ -855,21 +855,21 @@ DEFINE_5L_PRIMITIVE(MovieEndPlayback) {
 
 // Note: these primitives may not be happy if the underlying movie code 
 // does not like to be paused.
-DEFINE_5L_PRIMITIVE(MoviePause) {
+DEFINE_PRIMITIVE(MoviePause) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(MediaElement, movie, name.c_str());
 	movie->Pause();
 }
 
-DEFINE_5L_PRIMITIVE(MovieResume) {
+DEFINE_PRIMITIVE(MovieResume) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	FIND_ELEMENT(MediaElement, movie, name.c_str());
 	movie->Resume();
 }
 
-DEFINE_5L_PRIMITIVE(MovieSetTimeout) {
+DEFINE_PRIMITIVE(MovieSetTimeout) {
     std::string name;
     uint32 timeout;
 	inArgs >> SymbolName(name) >> timeout;
@@ -877,7 +877,7 @@ DEFINE_5L_PRIMITIVE(MovieSetTimeout) {
     movie->SetTimeout(timeout);
 }
 
-DEFINE_5L_PRIMITIVE(MovieSetPlaybackTimer) {
+DEFINE_PRIMITIVE(MovieSetPlaybackTimer) {
     std::string name;
     int32 frame;
     inArgs >> SymbolName(name) >> frame;
@@ -885,14 +885,14 @@ DEFINE_5L_PRIMITIVE(MovieSetPlaybackTimer) {
     movie->SetPlaybackTimer(frame);
 }
 
-DEFINE_5L_PRIMITIVE(MovieClearPlaybackTimer) {
+DEFINE_PRIMITIVE(MovieClearPlaybackTimer) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_ELEMENT(MediaElement, movie, name.c_str());
     movie->ClearPlaybackTimer();
 }
 
-DEFINE_5L_PRIMITIVE(MoveElementTo) {
+DEFINE_PRIMITIVE(MoveElementTo) {
 	std::string name;
 	TPoint p;
 	inArgs >> SymbolName(name) >> p;
@@ -900,31 +900,31 @@ DEFINE_5L_PRIMITIVE(MoveElementTo) {
     elem->MoveTo(TToWxPoint(p));
 }
 
-DEFINE_5L_PRIMITIVE(RaiseToTop) {
+DEFINE_PRIMITIVE(RaiseToTop) {
 	std::string name;
 	inArgs >> SymbolName(name);
     FIND_ELEMENT(Element, elem, name.c_str());
     wxGetApp().GetStage()->RaiseToTop(elem);
 }
 
-DEFINE_5L_PRIMITIVE(Refresh) {
+DEFINE_PRIMITIVE(Refresh) {
 	std::string transition;
 	int32 milliseconds;
 	inArgs >> SymbolName(transition) >> milliseconds;
 	wxGetApp().GetStage()->RefreshStage(transition, milliseconds);
 }
 
-DEFINE_5L_PRIMITIVE(RefreshSplashScreen) {
+DEFINE_PRIMITIVE(RefreshSplashScreen) {
     wxGetApp().GetStage()->RefreshSplashScreen();
 }
 
-DEFINE_5L_PRIMITIVE(OpenInBrowser) {
+DEFINE_PRIMITIVE(OpenInBrowser) {
     std::string url;
     inArgs >> url;
     ::SetPrimitiveResult(::wxLaunchDefaultBrowser(url.c_str()));
 }
 
-DEFINE_5L_PRIMITIVE(Overlay) {
+DEFINE_PRIMITIVE(Overlay) {
 	std::string name, cursor;
 	TRect bounds;
 	TCallbackPtr dispatcher;
@@ -937,7 +937,7 @@ DEFINE_5L_PRIMITIVE(Overlay) {
                   cursor, is_trans, are_trans_areas_clickable));
 }
 
-DEFINE_5L_PRIMITIVE(OverlaySetShape) {
+DEFINE_PRIMITIVE(OverlaySetShape) {
     std::string name;
     TRect bounds;
     inArgs >> SymbolName(name) >> bounds;
@@ -946,7 +946,7 @@ DEFINE_5L_PRIMITIVE(OverlaySetShape) {
     wxGetApp().GetStage()->NotifyElementsChanged();
 }
 
-DEFINE_5L_PRIMITIVE(OverlayAnimated) {
+DEFINE_PRIMITIVE(OverlayAnimated) {
 	std::string name, cursor, state_path;
 	TRect bounds;
 	TCallbackPtr dispatcher;
@@ -960,20 +960,20 @@ DEFINE_5L_PRIMITIVE(OverlayAnimated) {
                           cursor, is_trans, state_path, TValueList(graphics)));
 }
 
-DEFINE_5L_PRIMITIVE(Screenshot) {
+DEFINE_PRIMITIVE(Screenshot) {
 	std::string filename;
 	inArgs >> filename;
 	wxGetApp().GetStage()->Screenshot(filename.c_str());
 }
 
-DEFINE_5L_PRIMITIVE(RegisterCard) {
+DEFINE_PRIMITIVE(RegisterCard) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->RegisterCard(name.c_str());
 	::SkipPrimitiveLogging();
 }
 
-DEFINE_5L_PRIMITIVE(RegisterCursor) {
+DEFINE_PRIMITIVE(RegisterCursor) {
 	std::string name, path;
 	TPoint hotspot;
 	inArgs >> SymbolName(name) >> path >> hotspot;
@@ -981,7 +981,7 @@ DEFINE_5L_PRIMITIVE(RegisterCursor) {
 	manager->RegisterImageCursor(name, path, hotspot.X(), hotspot.Y());
 }
 
-DEFINE_5L_PRIMITIVE(RegisterEventDispatcher) {
+DEFINE_PRIMITIVE(RegisterEventDispatcher) {
 	TCallbackPtr callback;
 	inArgs >> callback;
 	wxGetApp().GetStage()->GetEventDispatcher()->SetDispatcher(callback);
@@ -992,19 +992,19 @@ DEFINE_5L_PRIMITIVE(RegisterEventDispatcher) {
 
     A fast way to fill the entire screen with a particular color.
 -----------------------------------------------------------------*/
-DEFINE_5L_PRIMITIVE(Screen) {
+DEFINE_PRIMITIVE(Screen) {
     Color color;
     inArgs >> color; 
 	GetCurrentDrawingArea()->Clear(color);
 }
 
-DEFINE_5L_PRIMITIVE(SetImageCacheSize) {
+DEFINE_PRIMITIVE(SetImageCacheSize) {
 	uint32 sz;
 	inArgs >> sz;
 	wxGetApp().GetStage()->GetImageCache()->SetMaxCacheSize(sz);
 }
 
-DEFINE_5L_PRIMITIVE(SetZoneCursor) {
+DEFINE_PRIMITIVE(SetZoneCursor) {
 	std::string name, cursor;
 	inArgs >> SymbolName(name) >> SymbolName(cursor);
 
@@ -1012,12 +1012,12 @@ DEFINE_5L_PRIMITIVE(SetZoneCursor) {
 	elem->SetCursorName(cursor);
 }
 
-DEFINE_5L_PRIMITIVE(TamaleExit) {
+DEFINE_PRIMITIVE(TamaleExit) {
     // Force shutdown.
     wxGetApp().GetStageFrame()->Close(TRUE);
 }
 
-DEFINE_5L_PRIMITIVE(TextAA) {
+DEFINE_PRIMITIVE(TextAA) {
 	TRect		bounds;
 	std::string style, text;
 
@@ -1030,7 +1030,7 @@ DEFINE_5L_PRIMITIVE(TextAA) {
 							GetCurrentDrawingArea());
 }
 
-DEFINE_5L_PRIMITIVE(Wait) {
+DEFINE_PRIMITIVE(Wait) {
 	std::string name;
 	int32 frame = LAST_FRAME;
 
@@ -1041,7 +1041,7 @@ DEFINE_5L_PRIMITIVE(Wait) {
 	wxGetApp().GetStage()->Wait(name.c_str(), frame);
 }
 
-DEFINE_5L_PRIMITIVE(WakeUpIfNecessary) {
+DEFINE_PRIMITIVE(WakeUpIfNecessary) {
     // We get called way too often to actually be interesting, so don't log
     // this primitive.
 	::SkipPrimitiveLogging(); 
@@ -1055,7 +1055,7 @@ DEFINE_5L_PRIMITIVE(WakeUpIfNecessary) {
         wxGetApp().GetStage()->InterpreterWakeUpIfNecessary();
 }
 
-DEFINE_5L_PRIMITIVE(WantsCursorGet) {
+DEFINE_PRIMITIVE(WantsCursorGet) {
 	std::string name;
 	inArgs >> SymbolName(name);
 
@@ -1063,7 +1063,7 @@ DEFINE_5L_PRIMITIVE(WantsCursorGet) {
     ::SetPrimitiveResult(elem->WantsCursor());
 }
 
-DEFINE_5L_PRIMITIVE(WantsCursorSet) {
+DEFINE_PRIMITIVE(WantsCursorSet) {
     std::string name;
     bool wants_cursor;
 	inArgs >> SymbolName(name) >> wants_cursor;
@@ -1071,7 +1071,7 @@ DEFINE_5L_PRIMITIVE(WantsCursorSet) {
     elem->SetWantsCursor(wants_cursor);
 }
 
-DEFINE_5L_PRIMITIVE(Zone) {
+DEFINE_PRIMITIVE(Zone) {
 	std::string name, cursor;
 	TPolygon poly;
 	TCallbackPtr dispatcher;
@@ -1080,7 +1080,7 @@ DEFINE_5L_PRIMITIVE(Zone) {
 	R(new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher, cursor));
 }
 
-DEFINE_5L_PRIMITIVE(ZoneSetShape) {
+DEFINE_PRIMITIVE(ZoneSetShape) {
     std::string name;
     TPolygon bounds;
     inArgs >> SymbolName(name) >> bounds;

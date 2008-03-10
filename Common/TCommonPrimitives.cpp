@@ -41,22 +41,22 @@ USING_NAMESPACE_FIVEL
 
 void FIVEL_NS RegisterCommonPrimitives()
 {
-	REGISTER_5L_PRIMITIVE(HavePrimitive);
-	REGISTER_5L_PRIMITIVE(Log);
-	REGISTER_5L_PRIMITIVE(PolygonContains);
-	REGISTER_5L_PRIMITIVE(SetTyped);
-	REGISTER_5L_PRIMITIVE(Get);
-	REGISTER_5L_PRIMITIVE(VariableInitialized);
-	REGISTER_5L_PRIMITIVE(DefStyle);
-	REGISTER_5L_PRIMITIVE(MeasureTextAA);
-    REGISTER_5L_PRIMITIVE(NotifyFileLoaded);
-    REGISTER_5L_PRIMITIVE(NotifyScriptLoaded);
-    REGISTER_5L_PRIMITIVE(ScriptsDirectoryName);
-    REGISTER_5L_PRIMITIVE(Sha1File);
-    REGISTER_5L_PRIMITIVE(StateDbSet);
-    REGISTER_5L_PRIMITIVE(StateDbGet);
-    REGISTER_5L_PRIMITIVE(StateDbRegisterListener);
-    REGISTER_5L_PRIMITIVE(StateDbUnregisterListeners);
+	REGISTER_PRIMITIVE(HavePrimitive);
+	REGISTER_PRIMITIVE(Log);
+	REGISTER_PRIMITIVE(PolygonContains);
+	REGISTER_PRIMITIVE(SetTyped);
+	REGISTER_PRIMITIVE(Get);
+	REGISTER_PRIMITIVE(VariableInitialized);
+	REGISTER_PRIMITIVE(DefStyle);
+	REGISTER_PRIMITIVE(MeasureTextAA);
+    REGISTER_PRIMITIVE(NotifyFileLoaded);
+    REGISTER_PRIMITIVE(NotifyScriptLoaded);
+    REGISTER_PRIMITIVE(ScriptsDirectoryName);
+    REGISTER_PRIMITIVE(Sha1File);
+    REGISTER_PRIMITIVE(StateDbSet);
+    REGISTER_PRIMITIVE(StateDbGet);
+    REGISTER_PRIMITIVE(StateDbRegisterListener);
+    REGISTER_PRIMITIVE(StateDbUnregisterListeners);
 }
 
 
@@ -132,7 +132,7 @@ void FIVEL_NS UpdateSpecialVariablesForText(const TPoint &bottomLeft)
 // Check to see whether the specified 5L primitive exists.  Helpful in
 // writing code which runs under different versions of the engine.
 
-DEFINE_5L_PRIMITIVE(HavePrimitive)
+DEFINE_PRIMITIVE(HavePrimitive)
 {
 	std::string name;
 	inArgs >> SymbolName(name);
@@ -148,7 +148,7 @@ DEFINE_5L_PRIMITIVE(HavePrimitive)
 // Available logs: debug, 5L.  Available log levels:
 // fatalerror, error, caution, log.
 
-DEFINE_5L_PRIMITIVE(Log)
+DEFINE_PRIMITIVE(Log)
 {
 	// Logging this primitive call would be redundant and ugly.
 	::SkipPrimitiveLogging();
@@ -194,7 +194,7 @@ DEFINE_5L_PRIMITIVE(Log)
 //-------------------------------------------------------------------------
 // Determines if pt lies within poly
 
-DEFINE_5L_PRIMITIVE(PolygonContains)
+DEFINE_PRIMITIVE(PolygonContains)
 {
 	::SkipPrimitiveLogging();
 
@@ -211,7 +211,7 @@ DEFINE_5L_PRIMITIVE(PolygonContains)
 // TYPE is "null", then NEWVALUE must be omitted.
 
 
-DEFINE_5L_PRIMITIVE(SetTyped)
+DEFINE_PRIMITIVE(SetTyped)
 {
 	::SkipPrimitiveLogging();
 
@@ -228,7 +228,7 @@ DEFINE_5L_PRIMITIVE(SetTyped)
 //-------------------------------------------------------------------------
 // Returns the value stored in the variable, preserving type information.
 
-DEFINE_5L_PRIMITIVE(Get)
+DEFINE_PRIMITIVE(Get)
 {
 	::SkipPrimitiveLogging();
 
@@ -244,7 +244,7 @@ DEFINE_5L_PRIMITIVE(Get)
 //-------------------------------------------------------------------------
 // Determine whether a variable has been initialized.
 
-DEFINE_5L_PRIMITIVE(VariableInitialized)
+DEFINE_PRIMITIVE(VariableInitialized)
 {
 	::SkipPrimitiveLogging();
 
@@ -260,7 +260,7 @@ DEFINE_5L_PRIMITIVE(VariableInitialized)
 //-------------------------------------------------------------------------
 // Create a stylesheet with the given name.
 
-DEFINE_5L_PRIMITIVE(DefStyle)
+DEFINE_PRIMITIVE(DefStyle)
 {
 	gStyleSheetManager.AddStyleSheet(inArgs);
 }
@@ -274,7 +274,7 @@ DEFINE_5L_PRIMITIVE(DefStyle)
 //
 // This updates all the special variables associated with text.
 
-DEFINE_5L_PRIMITIVE(MeasureTextAA)
+DEFINE_PRIMITIVE(MeasureTextAA)
 {
 	std::string style;
 	std::string text;
@@ -292,19 +292,19 @@ DEFINE_5L_PRIMITIVE(MeasureTextAA)
     ::SetPrimitiveResult(TRect(0, 0, bounds.Width(), bounds.Height()));
 }
 
-DEFINE_5L_PRIMITIVE(NotifyFileLoaded) {
+DEFINE_PRIMITIVE(NotifyFileLoaded) {
     TInterpreter::GetInstance()->NotifyFileLoaded();
 }
 
-DEFINE_5L_PRIMITIVE(NotifyScriptLoaded) {
+DEFINE_PRIMITIVE(NotifyScriptLoaded) {
     TInterpreter::GetInstance()->NotifyScriptLoaded();    
 }
 
-DEFINE_5L_PRIMITIVE(ScriptsDirectoryName) {
+DEFINE_PRIMITIVE(ScriptsDirectoryName) {
     ::SetPrimitiveResult(FileSystem::GetScriptsDirectoryName());
 }
 
-DEFINE_5L_PRIMITIVE(Sha1File) {
+DEFINE_PRIMITIVE(Sha1File) {
     std::string path;
     inArgs >> path;
     
@@ -318,14 +318,14 @@ DEFINE_5L_PRIMITIVE(Sha1File) {
     ::SetPrimitiveResult(result);
 }
 
-DEFINE_5L_PRIMITIVE(StateDbSet) {
+DEFINE_PRIMITIVE(StateDbSet) {
 	std::string key;
 	TValue val;
 	inArgs >> SymbolName(key) >> val;
 	gStateDB.Set(key, val);
 }
 
-DEFINE_5L_PRIMITIVE(StateDbGet) {
+DEFINE_PRIMITIVE(StateDbGet) {
 	std::string listener_name, key;
     int32 serial_number;
 	inArgs >> SymbolName(listener_name) >> serial_number >> SymbolName(key);
@@ -334,14 +334,14 @@ DEFINE_5L_PRIMITIVE(StateDbGet) {
     ::SetPrimitiveResult(gStateDB.Get(listener.get(), key));
 }
 
-DEFINE_5L_PRIMITIVE(StateDbRegisterListener) {
+DEFINE_PRIMITIVE(StateDbRegisterListener) {
     std::string name;
     TCallbackPtr listener;
     inArgs >> SymbolName(name) >> listener;
     gStateListenerManager.RegisterListener(name, listener);
 }
 
-DEFINE_5L_PRIMITIVE(StateDbUnregisterListeners) {
+DEFINE_PRIMITIVE(StateDbUnregisterListeners) {
     std::string name;
     inArgs >> SymbolName(name);
     gStateListenerManager.UnregisterListeners(name);

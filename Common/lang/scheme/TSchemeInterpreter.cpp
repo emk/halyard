@@ -44,7 +44,7 @@ namespace {
 //	Scheme Primitives
 //=========================================================================
 
-DEFINE_5L_PRIMITIVE(SchemeExit)
+DEFINE_PRIMITIVE(SchemeExit)
 {
 	// Ask the interpreter manager to shut us down.  This function isn't
 	// safe to call when we're being run as part of the interpreter (as
@@ -53,7 +53,7 @@ DEFINE_5L_PRIMITIVE(SchemeExit)
 }
 
 // TODO - Rename to Idle and move to TCommonPrimitives.cpp
-DEFINE_5L_PRIMITIVE(SchemeIdle)
+DEFINE_PRIMITIVE(SchemeIdle)
 {
 	// Recover our Scheme interpreter.
 	TInterpreter *interp = TInterpreter::GetInstance();
@@ -84,8 +84,8 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	: TInterpreterManager(inIdleProc)
 {
 	// Install our primitives.
-	REGISTER_5L_PRIMITIVE(SchemeExit);
-	REGISTER_5L_PRIMITIVE(SchemeIdle);
+	REGISTER_PRIMITIVE(SchemeExit);
+	REGISTER_PRIMITIVE(SchemeIdle);
     RegisterSchemeScriptEditorDBPrimitives();
 
 	// Initialize the Scheme interpreter.

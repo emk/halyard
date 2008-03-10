@@ -337,34 +337,34 @@ extern TPrimitiveManager gPrimitiveManager;
 ///
 /// Call it as follows:
 ///
-///   REGISTER_5L_PRIMITIVE_WITH_NAME("log", LogMessage); // register "log"
-///   REGISTER_5L_PRIMITIVE(LogMessage); // register "logmessage"
+///   REGISTER_PRIMITIVE_WITH_NAME("log", LogMessage); // register "log"
+///   REGISTER_PRIMITIVE(LogMessage); // register "logmessage"
 ///
-#define REGISTER_5L_PRIMITIVE_WITH_NAME(NAME, TOKEN) \
+#define REGISTER_PRIMITIVE_WITH_NAME(NAME, TOKEN) \
 	do { \
 		extern void DoPrim_ ## TOKEN(TArgumentList &inArgs); \
 		gPrimitiveManager.RegisterPrimitive(NAME, &DoPrim_ ## TOKEN); \
 	} while (0)
 
-#define REGISTER_5L_PRIMITIVE(NAME) \
-	REGISTER_5L_PRIMITIVE_WITH_NAME(#NAME, NAME)
+#define REGISTER_PRIMITIVE(NAME) \
+	REGISTER_PRIMITIVE_WITH_NAME(#NAME, NAME)
 
 //////////
 /// Use this macro in place of a function prototype when implementing a
 /// 5L primitive.  This will shield you from changes to the standard
 /// prototype.  (For an explanation of the macro grik, see
-/// REGISTER_5L_PRIMITIVE.)
+/// REGISTER_PRIMITIVE.)
 ///
 /// Use it as follows:
 ///
-///   DEFINE_5L_PRIMITIVE(LogMessage)
+///   DEFINE_PRIMITIVE(LogMessage)
 ///   {
 ///       std::string message;
 ///       inArgs >> message;
 ///       gDebugLog.Log("%s", message.c_str());
 ///   }
 ///
-#define DEFINE_5L_PRIMITIVE(NAME) \
+#define DEFINE_PRIMITIVE(NAME) \
 	BEGIN_NAMESPACE_FIVEL \
 	extern void DoPrim_ ## NAME(TArgumentList &inArgs); \
 	END_NAMESPACE_FIVEL \
