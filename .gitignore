@@ -26,3 +26,7 @@ libs/quake2/ref_soft/Release (wxWindows)
 wx/src/resources.cpp
 test/definitions.sqlite3
 test/test.sqlite3
+test/Debug.log
+test/Halyard.log
+test/model.xml
+test/model2.xml
