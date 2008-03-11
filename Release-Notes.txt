@@ -9,6 +9,7 @@ Renaming Tamale to Halyard (F#1856):
   * The string "TamaleProgram" in data.tam should now be "HalyardProgram".
     You'll need to update this in three places manually.
   * The file data.tam has been renamed to application.halyard.
+  * The file 5L.prefs has been renamed to developer.prefs.
 
 Individual changes:
 

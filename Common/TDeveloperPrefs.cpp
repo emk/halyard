@@ -73,7 +73,7 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
     CrashReporter::GetInstance()->AddDiagnosticFile(filename.c_str(),
                                                     "developer preferences");
 
-	// _debug is set in the presence of 5L.prefs
+	// _debug is set in the presence of developer.prefs
 	gVariableManager.Set("_debug", "1");
 	
 	// Parse the file

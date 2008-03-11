@@ -28,7 +28,7 @@
 BEGIN_NAMESPACE_HALYARD
 
 // The name of our prefs file.
-#define DEVELOPER_PREFS_FILE "5L.prefs"
+#define DEVELOPER_PREFS_FILE "developer.prefs"
 
 // The names of our preferences.
 enum PrefName {
@@ -73,7 +73,7 @@ enum PrefValue {
 };
 
 //////////
-/// This class parses the 5L.prefs file and keeps track of various
+/// This class parses the developer.prefs file and keeps track of various
 /// developer preferences.
 ///
 class TDeveloperPrefs
