@@ -25,7 +25,7 @@
 
 class StageFrame;
 class Stage;
-class Log5L;
+class AppLog;
 
 /// Our main application object.
 class HalyardApp : public wxApp
@@ -42,7 +42,7 @@ class HalyardApp : public wxApp
     /// Our custom logger which redirects wxWidget errors to our own
     /// logging subsystem.
     ///
-    static Log5L *sLog5L;
+    static AppLog *sAppLog;
 
     //////////
     /// The name of the script we were passed on the command-line.

@@ -21,23 +21,23 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
-#include "Log5L.h"
+#include "AppLog.h"
 
 using namespace Halyard;
 
-Log5L::Log5L()
+AppLog::AppLog()
     : mShouldSilentlyLogNonFatalErrors(false)
 
 {
 	gDebugLog.Log("WX INITIALIZING: Sending wx log messages to 5L logs.");
 }
 
-void Log5L::SilentlyLogNonFatalErrors()
+void AppLog::SilentlyLogNonFatalErrors()
 {
     mShouldSilentlyLogNonFatalErrors = true;
 }
 
-void Log5L::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
+void AppLog::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
 				  time_t inTimeStamp)
 {
     const char *label = "MESSAGE";

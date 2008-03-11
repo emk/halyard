@@ -20,20 +20,20 @@
 //
 // @END_LICENSE
 
-#ifndef Log5L_H
-#define Log5L_H
+#ifndef AppLog_H
+#define AppLog_H
 
 
 //////////
 /// This is a wxWindows log target which knows how to write messages to
 /// the traditional 5L logging subsystem.
 ///
-class Log5L : public wxLog
+class AppLog : public wxLog
 {
     bool mShouldSilentlyLogNonFatalErrors;
 
 public:
-	Log5L();
+	AppLog();
 
     //////////
     /// Call this function to prevent the display of any further wxWidgets
@@ -54,4 +54,4 @@ public:
 					   time_t inTimeStamp);
 };
 
-#endif // Log5L_H
+#endif // AppLog_H

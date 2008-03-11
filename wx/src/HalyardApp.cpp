@@ -40,7 +40,7 @@
 #endif // CONFIG_HAVE_QUICKTIME
 #include "AppGlobals.h"
 #include "HalyardApp.h"
-#include "Log5L.h"
+#include "AppLog.h"
 #include "GuiUtil.h"
 #include "StageFrame.h"
 #include "dlg/StartupDlg.h"
@@ -64,7 +64,7 @@ using namespace Halyard;
 //=========================================================================
 
 bool HalyardApp::sHandlingFatalError = false;
-Log5L *HalyardApp::sLog5L = NULL;
+AppLog *HalyardApp::sAppLog = NULL;
 
 IMPLEMENT_APP(HalyardApp)
 
@@ -161,8 +161,8 @@ void HalyardApp::IdleProc(bool inBlock)
 
 void HalyardApp::PrepareForCrash() {
     sHandlingFatalError = true;
-    if (sLog5L)
-        sLog5L->SilentlyLogNonFatalErrors();
+    if (sAppLog)
+        sAppLog->SilentlyLogNonFatalErrors();
     ShowSystemWindows();
 }
 
@@ -278,8 +278,8 @@ bool HalyardApp::OnInit() {
     // Send all wxWindows logging messages to our traditional 5L
     // logs.  This gives us a single copy of everything.
     // TODO - How do we clean up these resources?
-    sLog5L = new Log5L();
-    wxLog::SetActiveTarget(sLog5L);
+    sAppLog = new AppLog();
+    wxLog::SetActiveTarget(sAppLog);
     
     // Configure some useful trace masks for debugging the application.
     // Comment these out to disable a particular kind of tracing.
