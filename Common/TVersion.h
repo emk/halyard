@@ -21,15 +21,15 @@
 // @END_LICENSE
 
 #define VERSION_MAJOR_NUM          0
-#define VERSION_MINOR_NUM          4
-#define VERSION_REV_BIG            7
+#define VERSION_MINOR_NUM          5
+#define VERSION_REV_BIG            0
 #define VERSION_REV_SMALL          0
 
 // For various unfortunate preprocessor reasons, we need a duplicate copy
 // in string format.
 #define VERSION_MAJOR_NUM_STRING   "0"
-#define VERSION_MINOR_NUM_STRING   "4"
-#define VERSION_REV_BIG_STRING     "7"
+#define VERSION_MINOR_NUM_STRING   "5"
+#define VERSION_REV_BIG_STRING     "0"
 #define VERSION_REV_SMALL_STRING   "0"
 
 #define SHORT_NAME          "Halyard"
@@ -48,7 +48,7 @@
 #define HALYARD_COPYRIGHT_NAME \
     SHORT_NAME " multimedia engine"
 #define HALYARD_COPYRIGHT_NOTICE \
-    "Copyright 1993-2007 Trustees of Dartmouth College. All rights reserved."
+    "Copyright 1993-2008 Trustees of Dartmouth College. All rights reserved."
 
 /// The date at which the files including TVersion.h were built.  This will
 /// work right as long as you change the version number for official builds.
