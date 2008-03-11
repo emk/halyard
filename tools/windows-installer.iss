@@ -4,7 +4,7 @@
 ;; preprocessor module.
 
 ;; The executable which contains our version information.
-#define MAIN_EXE "..\Win32\Bin\Tamale.exe"
+#define MAIN_EXE "..\Win32\Bin\Halyard.exe"
 
 ;; Should we include debugging support? When this is set
 ;; to 0, we build regular installers. When this is set to
@@ -22,20 +22,20 @@
 AppID={{59979E48-B18E-4878-9974-3A5D9ACE78E3}
 MinVersion=4.1.1998,5.0.2195
 AppCopyright={#COPYRIGHT}
-AppName=Tamale
-DefaultGroupName=Tamale
+AppName=Halyard
+DefaultGroupName=Halyard
 ShowLanguageDialog=yes
 LicenseFile=..\LICENSE.txt
 AppVerName={#VERNAME}
-DefaultDirName={pf}\Tamale
+DefaultDirName={pf}\Halyard
 AppPublisher={#COMPANY}
 AppPublisherURL=http://iml.dartmouth.edu/
 OutputDir=..\Win32\Bin
-OutputBaseFilename=Tamale Setup {#VERSION}
+OutputBaseFilename=Halyard Setup {#VERSION}
 [Files]
 Source: ..\Win32\Bin\libmzgc2.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\libmzsch2.dll; DestDir: {app}; Components: release
-Source: ..\Win32\Bin\Tamale.exe; DestDir: {app}; Components: release
+Source: ..\Win32\Bin\Halyard.exe; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\wxref_gl.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\wxref_soft.dll; DestDir: {app}; Components: release
 Source: ..\Win32\Bin\dbghelp.dll; DestDir: {app}
@@ -48,16 +48,16 @@ Source: ..\Common\Runtime\*; DestDir: {app}\Runtime\; Flags: recursesubdirs; Com
 #if DEBUG
 Source: ..\Win32\Bin\libmzgc2_d.dll; DestDir: {app}; Components: debug
 Source: ..\Win32\Bin\libmzsch2_d.dll; DestDir: {app}; Components: debug
-Source: ..\Win32\Bin\Tamale_d.exe; DestDir: {app}; Components: debug
+Source: ..\Win32\Bin\Halyard_d.exe; DestDir: {app}; Components: debug
 #endif
 [Icons]
-Name: {group}\Tamale; Filename: {app}\Tamale.exe; WorkingDir: {app}; Comment: Tamale multimedia authoring system; IconIndex: 0; Flags: createonlyiffileexists
-Name: {group}\Tamale (Debug); Filename: {app}\Tamale_d.exe; WorkingDir: {app}; Comment: Tamale multimedia authoring system (debugging build); IconIndex: 0; Flags: createonlyiffileexists
+Name: {group}\Halyard; Filename: {app}\Halyard.exe; WorkingDir: {app}; Comment: Halyard multimedia authoring system; IconIndex: 0; Flags: createonlyiffileexists
+Name: {group}\Halyard (Debug); Filename: {app}\Halyard_d.exe; WorkingDir: {app}; Comment: Halyard multimedia authoring system (debugging build); IconIndex: 0; Flags: createonlyiffileexists
 Name: {group}\Release Notes; Filename: {app}\Release-Notes.txt
 [Components]
-Name: release; Description: Tamale authoring tools; Flags: fixed; Types: regular custom
+Name: release; Description: Halyard authoring tools; Flags: fixed; Types: regular custom
 #if DEBUG
-Name: debug; Description: Tamale authoring tools (debug versions)
+Name: debug; Description: Halyard authoring tools (debug versions)
 #endif
 [Types]
 Name: regular; Description: Regular Install
