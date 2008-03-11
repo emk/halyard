@@ -1,4 +1,4 @@
-;; tamale.el --- Edit Tamale source code using Emacs.
+;; halyard.el --- Edit Halyard source code using Emacs.
 ;; Copyright 2002 Trustees of Dartmouth College
 
 ;; Author: Eric Kidd <eric.kidd@pobox.com>
@@ -22,18 +22,18 @@
 ;;;
 ;;; Instructions
 ;;;
-;;; To install tamale.el, place this file somewhere (your home directory is
+;;; To install halyard.el, place this file somewhere (your home directory is
 ;;; good), and add the following lines to your .emacs file:
 ;;;
-;;;   (autoload 'tamale-mode "/path/to/tamale.el"
-;;;             "Mode for editing Tamale source code" t)
+;;;   (autoload 'halyard-mode "/path/to/halyard.el"
+;;;             "Mode for editing Halyard source code" t)
 ;;;
 ;;; Next, set up your auto-mode-alist to map the right file extensions
-;;; to tamale-mode:
+;;; to halyard-mode:
 ;;;
-;;;     ;; associate "*.ss" files with the Tamale-mode bindings.
+;;;     ;; associate "*.ss" files with the Halyard-mode bindings.
 ;;;     (setq auto-mode-alist
-;;;           (append '(("\\.ss\\'" . tamale-mode))
+;;;           (append '(("\\.ss\\'" . halyard-mode))
 ;;;                   auto-mode-alist))
 ;;;
 ;;;
@@ -55,38 +55,38 @@
 ;;;
 ;;; Customization Support
 
-(defgroup tamale nil
-  "Mode for editing Tamale source code.
-Tamale is a language for card-based interactive multimedia programming."
+(defgroup halyard nil
+  "Mode for editing Halyard source code.
+Halyard is a language for card-based interactive multimedia programming."
   :group 'languages)
 
-(defface tamale-tab-face
+(defface halyard-tab-face
   ;; Apapted from make-mode.el.
   '((((class color))
      (:background  "hotpink")
      (:foreground "hotpink"))
     (t
      (:reverse-video t)))
-  "Face to use for highlighting tabs in Tamale mode."
+  "Face to use for highlighting tabs in Halyard mode."
   :group 'faces
-  :group 'tamale)
+  :group 'halyard)
 
-(defface tamale-relative-path-face
+(defface halyard-relative-path-face
   '((t
      (:foreground "blue")))
-  "Face to use for highlighting relative node paths in Tamale mode."
+  "Face to use for highlighting relative node paths in Halyard mode."
   :group 'faces
-  :group 'tamale)
+  :group 'halyard)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Imenu Support
 ;;;
-;;; Specify how to build an index menu for a Tamale script.  This code is
+;;; Specify how to build an index menu for a Halyard script.  This code is
 ;;; adapted from scheme.ss.
 
-(defconst tamale-imenu-generic-expression
+(defconst halyard-imenu-generic-expression
   '((nil "^\\s-*(\\(test-\\)?card\\s-+\\(\\sw+\\)" 2)
     ("Structures" "^\\s-*(define-struct\\s-+\\(\\sw+\\)" 1)
     ("Stylesheets" "^\\s-*(define-stylesheet\\s-+\\(\\sw+\\)" 1)
@@ -96,7 +96,7 @@ Tamale is a language for card-based interactive multimedia programming."
     ("Macros" "^\\s-*(define-syntax\\s-+(?\\(\\sw+\\)" 1)
     ("Templates" "^\\s-*(define-[^-]*-template\\s-+\\(\\sw+\\)" 1)
     )
-  "Imenu generic expression for Tamale mode.  See `imenu-generic-expression'.")
+  "Imenu generic expression for Halyard mode.  See `imenu-generic-expression'.")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -108,7 +108,7 @@ Tamale is a language for card-based interactive multimedia programming."
 ;;;
 ;;; Syntax Highlighting
 
-(defconst tamale-font-lock-keywords
+(defconst halyard-font-lock-keywords
   (append scheme-font-lock-keywords-2
    (eval-when-compile
      (list
@@ -148,10 +148,10 @@ Tamale is a language for card-based interactive multimedia programming."
 
       ;; Relative pathnames.
       (list "\\<\\(@\\sw+\\)\\>"
-            ;; (The extra ' in front of tamale-relative-path-face is needed
+            ;; (The extra ' in front of halyard-relative-path-face is needed
             ;; in Emacs 21 for some horrible, evil, and inexplicable
             ;; reason.)
-            '(1 'tamale-relative-path-face))
+            '(1 'halyard-relative-path-face))
 
       ;; Non-standard definitions.  Make sure these get processed *after*
       ;; the rules we inherit from scheme-mode.  (This is loosely adapted
@@ -175,9 +175,9 @@ Tamale is a language for card-based interactive multimedia programming."
             '(3 font-lock-variable-name-face))
 
       ;; Literal tabs, which make a non-portable mess of the source.
-      ;; (The extra ' in front of tamale-tab-face is needed in Emacs 21
+      ;; (The extra ' in front of halyard-tab-face is needed in Emacs 21
       ;; for some horrible, evil, and inexplicable reason.)
-      (list "\\(\t\\)" '(1 'tamale-tab-face))
+      (list "\\(\t\\)" '(1 'halyard-tab-face))
       
       ))))
 
@@ -271,15 +271,15 @@ Tamale is a language for card-based interactive multimedia programming."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Tamale API Information
+;;; Halyard API Information
 ;;;
 ;;; This code is inspired by and based on dylan-params.el.  It provides
-;;; a bunch of ways for programmers to look up information about the tamale
+;;; a bunch of ways for programmers to look up information about the halyard
 ;;; API while editing.
 
-(defvar tamale-id-chars "-a-zA-Z0-9!&*<>=|^$%@_+~?/")
+(defvar halyard-id-chars "-a-zA-Z0-9!&*<>=|^$%@_+~?/")
 
-(defun tamale-struct-commands (struct-name &rest members)
+(defun halyard-struct-commands (struct-name &rest members)
   `((,(intern (concat struct-name "?")) obj => bool)
      ,@(mapcar #'(lambda (m)
                    `(,(intern (concat struct-name "-" m))
@@ -290,16 +290,16 @@ Tamale is a language for card-based interactive multimedia programming."
                      ,(intern struct-name) ,(intern m)))
                members)))
 
-(defconst tamale-functions
+(defconst halyard-functions
   `(;; From kernel.ss.
     (point x y => point)
-    ,@(tamale-struct-commands "point" "x" "y")
+    ,@(halyard-struct-commands "point" "x" "y")
     (rect left top right bottom => rect)
-    ,@(tamale-struct-commands "rect" "left" "top" "right" "bottom")
+    ,@(halyard-struct-commands "rect" "left" "top" "right" "bottom")
     (color red green blue &opt alpha => color)
-    ,@(tamale-struct-commands "color" "red" "green" "blue" "alpha")
+    ,@(halyard-struct-commands "color" "red" "green" "blue" "alpha")
     (percent value => percent)
-    ,@(tamale-struct-commands "percent" "value")
+    ,@(halyard-struct-commands "percent" "value")
     (assert cond)
     (member? item list => bool)
     (value->string value => string)
@@ -357,7 +357,7 @@ Tamale is a language for card-based interactive multimedia programming."
       height-adjustment shadow-offset shadow-color highlight-shadow-color)
     (draw-text style rect text)
     (measure-text style text &key max-width)
-    ;; From tamale.ss
+    ;; From halyard.ss
     (load-picture name point &key rect)
     (modal-input rect size forecolor backcolor => string)
     (zone name rect action &key cursor)
@@ -380,13 +380,13 @@ Tamale is a language for card-based interactive multimedia programming."
     (fade)
     (unfade)
     )
-  "Information about Tamale commands known to Tamale mode.")
+  "Information about Halyard commands known to Halyard mode.")
 
-(defun tamale-command-find (name)
-  "Return information about the Tamale command NAME, or nil."
-  (assoc name tamale-functions))
+(defun halyard-command-find (name)
+  "Return information about the Halyard command NAME, or nil."
+  (assoc name halyard-functions))
 
-(defun tamale-command-group (cmd start)
+(defun halyard-command-group (cmd start)
   ;; Return the entries in CMD between START and the next special symbol.
   (let* ((specials '(&opt &key &rest &body =>))
          (result '())
@@ -403,39 +403,39 @@ Tamale is a language for card-based interactive multimedia programming."
     (funcall extract-result (funcall scan-start cmd))
     (reverse result)))
 
-(defun tamale-command-name (cmd)
-  "Get the name of the specified Tamale command."
+(defun halyard-command-name (cmd)
+  "Get the name of the specified Halyard command."
   (car cmd))
 
-(defun tamale-command-macro-p (cmd)
+(defun halyard-command-macro-p (cmd)
   "Does CMD describe a macro?"
   (memq '&body cmd))
 
-(defun tamale-command-macro-pattern (cmd)
+(defun halyard-command-macro-pattern (cmd)
   "Get the macro pattern associated with CMD."
   (cdr cmd))
 
-(defun tamale-command-args (cmd)
+(defun halyard-command-args (cmd)
   "Return the mandatory arguments of CMD."
-  (tamale-command-group cmd (car cmd)))
+  (halyard-command-group cmd (car cmd)))
 
-(defun tamale-command-opt-args (cmd)
+(defun halyard-command-opt-args (cmd)
   "Return the optional arguments of CMD."
-  (tamale-command-group cmd '&opt))
+  (halyard-command-group cmd '&opt))
 
-(defun tamale-command-rest-args (cmd)
+(defun halyard-command-rest-args (cmd)
   "Return the &rest argument of CMD."
-  (tamale-command-group cmd '&rest))
+  (halyard-command-group cmd '&rest))
 
-(defun tamale-command-key-args (cmd)
+(defun halyard-command-key-args (cmd)
   "Return the keyword arguments of CMD."
-  (tamale-command-group cmd '&key))
+  (halyard-command-group cmd '&key))
 
-(defun tamale-command-results (cmd)
+(defun halyard-command-results (cmd)
   "Return the return value(s) of CMD."
-  (tamale-command-group cmd '=>))
+  (halyard-command-group cmd '=>))
 
-(defun tamale-command-help-message (cmd)
+(defun halyard-command-help-message (cmd)
   "Return a help string for CMD."
   (let ((pretty #'(lambda (sep items)
                     (if (not items)
@@ -448,17 +448,17 @@ Tamale is a language for card-based interactive multimedia programming."
                                         (concat " " name)
                                         (concat " " (upcase name)))))
                               items))))))
-    (if (tamale-command-macro-p cmd)
-        (concat "(" (symbol-name (tamale-command-name cmd))
-                (funcall pretty "" (tamale-command-macro-pattern cmd)) ")")
-      (concat "(" (symbol-name (tamale-command-name cmd))
-              (funcall pretty "" (tamale-command-args cmd))
-              (funcall pretty " &opt" (tamale-command-opt-args cmd))
-              (funcall pretty " &rest" (tamale-command-rest-args cmd))
-              (funcall pretty " &key" (tamale-command-key-args cmd)) ")"
-              (funcall pretty " =>" (tamale-command-results cmd))))))
+    (if (halyard-command-macro-p cmd)
+        (concat "(" (symbol-name (halyard-command-name cmd))
+                (funcall pretty "" (halyard-command-macro-pattern cmd)) ")")
+      (concat "(" (symbol-name (halyard-command-name cmd))
+              (funcall pretty "" (halyard-command-args cmd))
+              (funcall pretty " &opt" (halyard-command-opt-args cmd))
+              (funcall pretty " &rest" (halyard-command-rest-args cmd))
+              (funcall pretty " &key" (halyard-command-key-args cmd)) ")"
+              (funcall pretty " =>" (halyard-command-results cmd))))))
 
-(defun tamale-current-function-name ()
+(defun halyard-current-function-name ()
   "Get the name of the current function."
   (save-excursion
     ;; Search back to start of the current function.
@@ -467,72 +467,72 @@ Tamale is a language for card-based interactive multimedia programming."
           (backward-sexp))
       (error nil)) 
     (let* ((start (point))
-           (execute-this (skip-chars-forward tamale-id-chars))
+           (execute-this (skip-chars-forward halyard-id-chars))
            (end (point))
            (name (buffer-substring-no-properties start end)))
       name)))
 
-(defun tamale-display-function-params ()
+(defun halyard-display-function-params ()
   "Displays the parameters of the current function, if known."
   (interactive)
   (save-excursion
-    (skip-chars-backward tamale-id-chars)
-    (let* ((name (intern (tamale-current-function-name)))
-           (cmd (tamale-command-find name)))
+    (skip-chars-backward halyard-id-chars)
+    (let* ((name (intern (halyard-current-function-name)))
+           (cmd (halyard-command-find name)))
       (if cmd
-          (message "%s" (tamale-command-help-message cmd))
-        (message "Unknown Tamale command: %s" name)))))
+          (message "%s" (halyard-command-help-message cmd))
+        (message "Unknown Halyard command: %s" name)))))
 
-(defvar tamale-function-name-history-list '())
+(defvar halyard-function-name-history-list '())
 
-(defun tamale-read-function-name (prompt)
+(defun halyard-read-function-name (prompt)
   (completing-read prompt
                    (mapcar #'(lambda (cmd)
-                               (cons (symbol-name (tamale-command-name cmd))
+                               (cons (symbol-name (halyard-command-name cmd))
                                      nil))
-                           tamale-functions)
-                   nil t nil 'tamale-function-name-history-list))
+                           halyard-functions)
+                   nil t nil 'halyard-function-name-history-list))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Templates & Abbreviations
 
-(define-abbrev-table 'tamale-mode-abbrev-table '())
+(define-abbrev-table 'halyard-mode-abbrev-table '())
 
-(defun define-tamale-abbrev (name expansion &optional hook count)
-  "Define an abbreviation for use with Tamale mode.
+(defun define-halyard-abbrev (name expansion &optional hook count)
+  "Define an abbreviation for use with Halyard mode.
 See define-abbrev for more information."
-  (define-abbrev tamale-mode-abbrev-table name expansion hook count))
+  (define-abbrev halyard-mode-abbrev-table name expansion hook count))
 
 (tempo-define-template "draw-box-rect"
                        '("draw-box (rect " (p . "Left: ") " "
                          (p . "Top: ") " " (p . "Right: ") " "
                          (p . "Bottom: ") ") " (p . "Color: ") ")"))
 
-(define-tamale-abbrev "dbr" "" 'tempo-template-draw-box-rect)
+(define-halyard-abbrev "dbr" "" 'tempo-template-draw-box-rect)
 
-(defun tamale-insert-function ()
+(defun halyard-insert-function ()
   "Choose and insert a function, prompting for arguments."
   (interactive)
-  (let ((name (tamale-read-function-name "Insert function: ")))
+  (let ((name (halyard-read-function-name "Insert function: ")))
     (unless (equal name "")
-      (let ((cmd (tamale-command-find (intern name))))
-        (if (tamale-command-macro-p cmd)
-            (error "Insertion of Tamale macros isn't implemented")
+      (let ((cmd (halyard-command-find (intern name))))
+        (if (halyard-command-macro-p cmd)
+            (error "Insertion of Halyard macros isn't implemented")
           ;; Generate a template on the fly and insert it.  Why not?
           (tempo-define-template
-           (concat "tamale-" name)
+           (concat "halyard-" name)
            `("(" ,name
              ,@(mapcar #'(lambda (a)
                            (let ((name (upcase-initials (symbol-name a))))
                              `(l " " (p . ,(concat name ": ")))))
-                       (tamale-command-args cmd))
+                       (halyard-command-args cmd))
              ")" >) nil)
           (tempo-insert-template (intern
-                                  (concat "tempo-template-tamale-" name))
+                                  (concat "tempo-template-halyard-" name))
                                  nil)
-          (message "%s" (tamale-command-help-message cmd))
+          (message "%s" (halyard-command-help-message cmd))
           )))))
 
 
@@ -540,14 +540,14 @@ See define-abbrev for more information."
 ;;;
 ;;; Keybindings
 
-(defconst tamale-mode-map nil
-  "Keybindings for Tamale mode")
+(defconst halyard-mode-map nil
+  "Keybindings for Halyard mode")
 
 ;; Do our basic initialization the first time around.
-(unless tamale-mode-map
-  (setq tamale-mode-map (copy-keymap scheme-mode-map))
-  (define-key tamale-mode-map "\C-c\C-h" 'tamale-display-function-params)
-  (define-key tamale-mode-map "\C-c\C-f" 'tamale-insert-function)
+(unless halyard-mode-map
+  (setq halyard-mode-map (copy-keymap scheme-mode-map))
+  (define-key halyard-mode-map "\C-c\C-h" 'halyard-display-function-params)
+  (define-key halyard-mode-map "\C-c\C-f" 'halyard-insert-function)
   )
 
 
@@ -555,14 +555,14 @@ See define-abbrev for more information."
 ;;;
 ;;; Yummy Filling
 
-(define-derived-mode tamale-mode scheme-mode "Tamale"
-  "Major mode for editing Tamale source code.
+(define-derived-mode halyard-mode scheme-mode "Halyard"
+  "Major mode for editing Halyard source code.
 
-\\{tamale-mode-map}"
+\\{halyard-mode-map}"
 
   ;; Code to set up font-lock mode (borrowed from scheme.el).
   (setq font-lock-defaults
-        '(tamale-font-lock-keywords
+        '(halyard-font-lock-keywords
           nil t (("+-*/.<>=!?$@%_&~^:" . "w")) beginning-of-defun
           (font-lock-mark-block-function . mark-defun)))
 
@@ -571,18 +571,18 @@ See define-abbrev for more information."
   (setq tab-width 4)
 
   ;; Install our keymap.
-  (use-local-map tamale-mode-map)
+  (use-local-map halyard-mode-map)
 
   ;; Make tempo.el templates interactive (EXPERIMENTAL).
   (set (make-local-variable 'tempo-interactive) t)
 
   ;; Install our abbreviation table.
   (abbrev-mode t)
-  (setq local-abbrev-table tamale-mode-abbrev-table)
+  (setq local-abbrev-table halyard-mode-abbrev-table)
 
   ;; Set up our imenu support (borrowed from scheme.el).
   (set (make-local-variable 'imenu-case-fold-search) t)
-  (setq imenu-generic-expression tamale-imenu-generic-expression)
+  (setq imenu-generic-expression halyard-imenu-generic-expression)
   (set (make-local-variable 'imenu-syntax-alist)
         '(("+-*/.<>=?!$%_&~^:" . "w")))
 
@@ -590,6 +590,6 @@ See define-abbrev for more information."
   (imenu-add-menubar-index)
   )
 
-(provide 'tamale)
+(provide 'halyard)
 
-;;; tamale.el ends here
+;;; halyard.el ends here
