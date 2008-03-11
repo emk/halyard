@@ -20,17 +20,17 @@
 //
 // @END_LICENSE
 
-#ifndef UserProgram_H
-#define UserProgram_H
+#ifndef HalyardProgram_H
+#define HalyardProgram_H
 
 #include "Model.h"
 
 BEGIN_NAMESPACE_HALYARD
 
-/// Savable representation of a UserProgram.
-class UserProgram : public model::Object {
+/// Savable representation of a HalyardProgram.
+class HalyardProgram : public model::Object {
 public:
-	DECLARE_MODEL_CLASS(UserProgram);
+	DECLARE_MODEL_CLASS(HalyardProgram);
 	virtual void Initialize();
 
     std::string GetName();
@@ -46,4 +46,4 @@ protected:
 
 END_NAMESPACE_HALYARD
 
-#endif // UserProgram_H
+#endif // HalyardProgram_H

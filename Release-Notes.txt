@@ -3,6 +3,15 @@ BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
 SVN - tryon, emk, brian
 
+Renaming Tamale to Halyard (F#1856):
+
+  * The executable Tamale*.exe is now Halyard*.exe.
+  * The string "TamaleProgram" in data.tam should now be "HalyardProgram".
+    You'll need to update this in three places manually.
+  * The file data.tam has been renamed to application.halyard.
+
+Individual changes:
+
   * F#1341: Cleaning up caution statements to Debug.log by correcting types on
     several primitives.  String arguments passed in as symbols will now throw
     an error.

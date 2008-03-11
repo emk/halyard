@@ -232,7 +232,7 @@
           ;; the support from errortrace-lib.ss, and then manually enable
           ;; errortrace if requested.  Note that we always require 
           ;; errortrace-lib.ss so we will have stable file counts in 
-          ;; data.tam.
+          ;; application.halyard.
           (set! filename "errortrace-lib.ss")
           (namespace-require '(lib "errortrace-lib.ss" "errortrace"))
           (when (errortrace-compile-enabled?)

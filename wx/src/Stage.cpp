@@ -32,7 +32,7 @@
 #include "TVersion.h"
 #include "CrashReporter.h"
 #include "doc/Document.h"
-#include "doc/UserProgram.h"
+#include "doc/HalyardProgram.h"
 
 #include "AppConfig.h"
 #include "AppGlobals.h"
@@ -209,7 +209,7 @@ void Stage::MaybeShowSplashScreen() {
     MaybeDrawSplashGraphic("splash.png");
 
     // Get our copyright strings.
-    UserProgram *prog = mFrame->GetDocument()->GetUserProgram();
+    HalyardProgram *prog = mFrame->GetDocument()->GetHalyardProgram();
     std::string script_copyright =
         prog->GetName() + ". " + prog->GetCopyright();
     std::string tamale_copyright =

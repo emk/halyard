@@ -25,7 +25,7 @@
 #include "FileSystem.h"
 
 #include "Document.h"
-#include "UserProgram.h"
+#include "HalyardProgram.h"
 
 using namespace Halyard;
 using namespace model;
@@ -45,7 +45,7 @@ using FileSystem::Path;
 //      Graphics/  - Program-specific graphics
 //      Media/     - Program-specific audio/video (optional)
 //      Data/      - Saved user data
-//      data.tam   - Saved XML data
+//      application.halyard   - Saved XML data
 //
 //  This will change as we revamp the engine.  For now, we can only open
 //  one document per application.  This should also change.
@@ -59,7 +59,7 @@ using FileSystem::Path;
 //  for a longer explanation.
 
 BEGIN_MODEL_CLASSES()
-	REGISTER_MODEL_CLASS(UserProgram)
+	REGISTER_MODEL_CLASS(HalyardProgram)
 END_MODEL_CLASSES()
 
 
@@ -67,9 +67,9 @@ END_MODEL_CLASSES()
 //  Document Format
 //=========================================================================
 //  Format 0: Original format.
-//  Format 1: Added dbgreporturl to UserProgram.
-//  Format 2: Added sourcefilecount to UserProgram.
-//  Format 3: Added datadirname to UserProgram.
+//  Format 1: Added dbgreporturl to HalyardProgram.
+//  Format 2: Added sourcefilecount to HalyardProgram.
+//  Format 3: Added datadirname to HalyardProgram.
 
 enum {
     CURRENT_FORMAT = 3,
@@ -77,7 +77,7 @@ enum {
     EARLIEST_READABLE = 0
 };
 
-const static ModelFormat gHalyardFormat("UserProgram", CURRENT_FORMAT,
+const static ModelFormat gHalyardFormat("HalyardProgram", CURRENT_FORMAT,
 									   COMPATIBLE_BACK_TO);
 
 
@@ -88,7 +88,7 @@ const static ModelFormat gHalyardFormat("UserProgram", CURRENT_FORMAT,
 std::string Document::SetBaseAndGetFilePath(const std::string &inDirectory)
 {
 	FileSystem::Path path =
-		FileSystem::SetBaseDirectory(inDirectory).AddComponent("data.tam");
+		FileSystem::SetBaseDirectory(inDirectory).AddComponent("application.halyard");
 	return path.ToNativePathString();
 }
 
@@ -146,7 +146,7 @@ Document::~Document()
     
 }
 
-UserProgram *Document::GetUserProgram()
+HalyardProgram *Document::GetHalyardProgram()
 {
-	return cast<UserProgram>(GetRoot());
+	return cast<HalyardProgram>(GetRoot());
 }

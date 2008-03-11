@@ -37,7 +37,7 @@
 #include "Model.h"
 #include "ModelView.h"
 #include "doc/Document.h"
-#include "doc/UserProgram.h"
+#include "doc/HalyardProgram.h"
 #include "dlg/ProgramPropDlg.h"
 
 using namespace Halyard;
@@ -216,7 +216,7 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 // {
 //     // Get our list of backgrounds.
 //     model::List *backgrounds =
-//         model::cast<UserProgram>(GetObject())->GetBackgrounds();
+//         model::cast<HalyardProgram>(GetObject())->GetBackgrounds();
 
 //     // This is messy--we need to update the tree's list of backgrounds to
 //     // match the list in our model without changing the contents of the
@@ -276,11 +276,11 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 
 
 //=========================================================================
-//  UserProgramMenu
+//  HalyardProgramMenu
 //=========================================================================
 
-/// Right-click menu for the UserProgramItemData in our ProgramTreeCtrl.
-class UserProgramMenu : public wxMenu
+/// Right-click menu for the HalyardProgramItemData in our ProgramTreeCtrl.
+class HalyardProgramMenu : public wxMenu
 {
 	DECLARE_EVENT_TABLE();
 
@@ -290,14 +290,14 @@ class UserProgramMenu : public wxMenu
     void OnProperties(wxCommandEvent &inEvent);	
 
 public:
-	UserProgramMenu(wxWindow *inParent, model::Object *inObject);
+	HalyardProgramMenu(wxWindow *inParent, model::Object *inObject);
 };
 
-BEGIN_EVENT_TABLE(UserProgramMenu, wxMenu)
-    EVT_MENU(HALYARD_PROPERTIES, UserProgramMenu::OnProperties)
+BEGIN_EVENT_TABLE(HalyardProgramMenu, wxMenu)
+    EVT_MENU(HALYARD_PROPERTIES, HalyardProgramMenu::OnProperties)
 END_EVENT_TABLE()
 
-UserProgramMenu::UserProgramMenu(wxWindow *inParent, model::Object *inObject)
+HalyardProgramMenu::HalyardProgramMenu(wxWindow *inParent, model::Object *inObject)
 {
 	mParent = inParent;
 	mObject = inObject;
@@ -305,7 +305,7 @@ UserProgramMenu::UserProgramMenu(wxWindow *inParent, model::Object *inObject)
 		   "Edit the properties for this program.");
 }
 
-void UserProgramMenu::OnProperties(wxCommandEvent &inEvent)
+void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent)
 {
 	ProgramPropDlg prop_dlg(mParent, mObject);
 	prop_dlg.ShowModal();
@@ -313,14 +313,14 @@ void UserProgramMenu::OnProperties(wxCommandEvent &inEvent)
 
 
 //=========================================================================
-//  UserProgramItemData
+//  HalyardProgramItemData
 //=========================================================================
 
 /// Representation of the entire Tamale script in our ProgramTreeCtrl.
-class UserProgramItemData : public ViewItemData
+class HalyardProgramItemData : public ViewItemData
 {
 public:
-	UserProgramItemData(ProgramTreeCtrl *inTreeCtrl)
+	HalyardProgramItemData(ProgramTreeCtrl *inTreeCtrl)
 		: ViewItemData(inTreeCtrl) {}
 
 	virtual void OnRightDown(wxMouseEvent& event);
@@ -329,20 +329,20 @@ public:
 	virtual void ObjectDeleted();
 };
 
-void UserProgramItemData::OnRightDown(wxMouseEvent& event)
+void HalyardProgramItemData::OnRightDown(wxMouseEvent& event)
 {
-	UserProgramMenu popup(GetTree(), GetObject());
+	HalyardProgramMenu popup(GetTree(), GetObject());
 	GetTree()->PopupMenu(&popup, event.GetPosition());
 }
 
-void UserProgramItemData::ObjectChanged()
+void HalyardProgramItemData::ObjectChanged()
 {
 	wxASSERT(GetId());
 	wxString name(GetObject()->GetString("name").c_str());
 	GetTree()->SetItemText(GetId(), "Program '" + name + "'");
 }
 
-void UserProgramItemData::ObjectDeleted()
+void HalyardProgramItemData::ObjectDeleted()
 {
 }
 
@@ -385,7 +385,7 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 	mRootID = mTree->AddRoot("Program");
 	mTree->SetIcon(mRootID, ProgramTreeCtrl::ICON_DOCUMENT,
 				   ProgramTreeCtrl::ICON_DOCUMENT);
-	UserProgramItemData *item_data = new UserProgramItemData(mTree);
+	HalyardProgramItemData *item_data = new HalyardProgramItemData(mTree);
 	mTree->SetItemData(mRootID, item_data);
 	item_data->SetObject(inDocument->GetRoot());
 

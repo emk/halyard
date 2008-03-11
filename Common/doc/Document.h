@@ -28,7 +28,7 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-class UserProgram;
+class HalyardProgram;
 
 //////////
 /// This class represents a Halyard document.  It should have no dependencies
@@ -63,7 +63,7 @@ public:
 	//////////
 	/// A more-precisely-typed version of GetRoot.
 	///
-	Halyard::UserProgram *GetUserProgram();
+	Halyard::HalyardProgram *GetHalyardProgram();
 };
 
 END_NAMESPACE_HALYARD

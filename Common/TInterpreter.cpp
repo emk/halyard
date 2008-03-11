@@ -25,7 +25,7 @@
 #include "TInterpreter.h"
 #include "TDeveloperPrefs.h"
 #include "doc/Document.h"
-#include "doc/UserProgram.h"
+#include "doc/HalyardProgram.h"
 
 using namespace Halyard;
 
@@ -46,7 +46,7 @@ TInterpreter::TInterpreter()
     // then load in the expected number of source files.
     Document *doc = TInterpreterManager::GetInstance()->GetDocument();
     if (doc)
-        mSourceFilesExpected = doc->GetUserProgram()->GetSourceFileCount();
+        mSourceFilesExpected = doc->GetHalyardProgram()->GetSourceFileCount();
 }
 
 TInterpreter::~TInterpreter()
@@ -67,7 +67,7 @@ void TInterpreter::NotifyScriptLoaded() {
     // and we're not in runtime mode, then update our source file count.
     Document *doc = TInterpreterManager::GetInstance()->GetDocument();
     if (doc && !TInterpreterManager::GetInstance()->IsInRuntimeMode())
-        doc->GetUserProgram()->SetSourceFileCount(mSourceFilesExpected);
+        doc->GetHalyardProgram()->SetSourceFileCount(mSourceFilesExpected);
 }
 
 double TInterpreter::GetLoadProgress() {

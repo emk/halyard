@@ -38,7 +38,7 @@
 
 #include "TVersion.h"
 #include "doc/Document.h"
-#include "doc/UserProgram.h"
+#include "doc/HalyardProgram.h"
 #include "FileSystem.h"
 #include "HalyardApp.h"
 #include "Stage.h"
@@ -256,7 +256,7 @@ void FancyCrashReporter::BeginInterceptingCrashes() {
 
 void FancyCrashReporter::RegisterDocument(Halyard::Document *inDocument) {
     // Register ourselves as a ModelView of the program object.
-    SetObject(inDocument->GetUserProgram());
+    SetObject(inDocument->GetHalyardProgram());
 
     // Try to register various document-related files with the crash
     // reporter.  We start with our spec file, which (if it exists) contains

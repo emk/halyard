@@ -352,7 +352,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\doc\UserProgram.cpp"
+				RelativePath="..\..\..\Common\doc\HalyardProgram.cpp"
 				>
 			</File>
 			<File
@@ -521,7 +521,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\doc\UserProgram.h"
+				RelativePath="..\..\..\Common\doc\HalyardProgram.h"
 				>
 			</File>
 			<File

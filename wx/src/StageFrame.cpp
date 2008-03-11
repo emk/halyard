@@ -28,7 +28,7 @@
 #include "TVersion.h"
 #include "TInterpreter.h"
 #include "doc/Document.h"
-#include "doc/UserProgram.h"
+#include "doc/HalyardProgram.h"
 #include "CrashReporter.h"
 #include "TDeveloperPrefs.h"
 
@@ -602,10 +602,10 @@ void StageFrame::NewDocument()
 		mDocument = new Document(file.mb_str());
 		config->Write("/Recent/DocPath", file);
 
-		ProgramPropDlg prop_dlg(this, mDocument->GetUserProgram());
+		ProgramPropDlg prop_dlg(this, mDocument->GetHalyardProgram());
 		prop_dlg.ShowModal();
 
-		SetObject(mDocument->GetUserProgram());
+		SetObject(mDocument->GetHalyardProgram());
 		mProgramTree->RegisterDocument(mDocument);
         CrashReporter::GetInstance()->RegisterDocument(mDocument);
 		mStage->Show();
@@ -616,16 +616,16 @@ void StageFrame::OpenDocument()
 {
 	wxASSERT(mDocument == NULL);
 	wxFileDialog dlg(this, "Open a Tamale program folder:",
-                     "", "", "Tamale program (data.tam)|data.tam",
+                     "", "", "Tamale program (application.halyard)|application.halyard",
                      wxOPEN|wxHIDE_READONLY);
 
     // Set the dialog's default path to the current working directory,
-    // if it appears to be a program (contains a data.tam
+    // if it appears to be a program (contains a application.halyard
     // file).  Otherwise, try defaulting to the last opened program.
 	wxConfigBase *config = wxConfigBase::Get();
 	wxString recent;
     FileSystem::Path data_file = 
-        FileSystem::GetBaseDirectory().AddComponent("data.tam");
+        FileSystem::GetBaseDirectory().AddComponent("application.halyard");
     
     if (data_file.DoesExist()) 
         dlg.SetPath(data_file.ToNativePathString().c_str());
@@ -648,7 +648,7 @@ void StageFrame::OpenDocument()
 
 void StageFrame::OpenDocument(const wxString &inDirPath) {
     mDocument = new Document(inDirPath.mb_str(), Document::OPEN);
-    SetObject(mDocument->GetUserProgram());
+    SetObject(mDocument->GetHalyardProgram());
     mProgramTree->RegisterDocument(mDocument);
     CrashReporter::GetInstance()->RegisterDocument(mDocument);
     CheckForUpdateLockFile(); // Needs to come after CrashReporter setup.
@@ -692,7 +692,7 @@ void StageFrame::ObjectChanged()
         SetIcons(icons);
 
     // Get the name of the script we're running.
-	UserProgram *prog = dynamic_cast<UserProgram*>(GetObject());
+	HalyardProgram *prog = dynamic_cast<HalyardProgram*>(GetObject());
     std::string script_name = prog->GetName();
     std::string data_dir = prog->GetDataDirectoryName();
 
@@ -996,7 +996,7 @@ void StageFrame::UpdateUiProperties(wxUpdateUIEvent &inEvent)
 
 void StageFrame::OnProperties(wxCommandEvent &inEvent)
 {
-	ProgramPropDlg prop_dlg(this, mDocument->GetUserProgram());
+	ProgramPropDlg prop_dlg(this, mDocument->GetHalyardProgram());
 	prop_dlg.ShowModal();
 }
 
