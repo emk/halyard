@@ -40,7 +40,7 @@
 #include "doc/Document.h"
 #include "doc/UserProgram.h"
 #include "FileSystem.h"
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "Stage.h"
 #include "FancyCrashReporter.h"
 

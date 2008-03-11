@@ -21,7 +21,7 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "AppGlobals.h"
 #include "DocNotebook.h"
 

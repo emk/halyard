@@ -22,7 +22,7 @@
 
 #include "AppHeaders.h"
 
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "TestHarness.h"
 #include "StageFrame.h"
 #include "FancyStatusBar.h"

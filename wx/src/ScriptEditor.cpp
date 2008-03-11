@@ -34,7 +34,7 @@
 #include "dlg/FindDlg.h"
 #include "dlg/MetaDotDlg.h"
 #include "CustomTreeCtrl.h"
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 
 // Only so we can find our parent window.
 #include "StageFrame.h"

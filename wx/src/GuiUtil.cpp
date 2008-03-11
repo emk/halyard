@@ -36,10 +36,10 @@ void HideSystemWindows() {
     ::ShowWindow(::FindWindow("Shell_TrayWnd", NULL), SW_HIDE);
 
     // Disable the screen saver while we're in full-screen mode.  There's
-    // also related code in FiveLApp.cpp that tried to do the same thing,
+    // also related code in HalyardApp.cpp that tried to do the same thing,
     // but it doesn't work for password-protected screen savers.  This
     // does.  In theory, we should only need this fix, and not the one if
-    // FiveLApp.cpp, but we're in low-disruption mode before a major
+    // HalyardApp.cpp, but we're in low-disruption mode before a major
     // release.
     ::SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, FALSE, 0,
                            SPIF_SENDWININICHANGE);

@@ -26,7 +26,7 @@
 #include "TQuake2Primitives.h"
 
 // Needed to implement the primitives.
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "Quake2Engine.h"
 
 using namespace Halyard;

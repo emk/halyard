@@ -39,7 +39,7 @@
 #   include "TQTPrimitives.h"
 #endif // CONFIG_HAVE_QUICKTIME
 #include "AppGlobals.h"
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "Log5L.h"
 #include "GuiUtil.h"
 #include "StageFrame.h"
@@ -60,37 +60,37 @@ using namespace Halyard;
 
 
 //=========================================================================
-//  FiveLApp Methods
+//  HalyardApp Methods
 //=========================================================================
 
-bool FiveLApp::sHandlingFatalError = false;
-Log5L *FiveLApp::sLog5L = NULL;
+bool HalyardApp::sHandlingFatalError = false;
+Log5L *HalyardApp::sLog5L = NULL;
 
-IMPLEMENT_APP(FiveLApp)
+IMPLEMENT_APP(HalyardApp)
 
-BEGIN_EVENT_TABLE(FiveLApp, wxApp)
-    EVT_ACTIVATE_APP(FiveLApp::OnActivateApp)
+BEGIN_EVENT_TABLE(HalyardApp, wxApp)
+    EVT_ACTIVATE_APP(HalyardApp::OnActivateApp)
 END_EVENT_TABLE()
 
-FiveLApp::FiveLApp()
+HalyardApp::HalyardApp()
     : mHaveOwnEventLoop(false), mLogsAreInitialized(false), mStageFrame(NULL),
       mShouldLaunchUpdateInstaller(false)
 {
     // Do nothing here but set up instance variables.  Real work should
-    // happen in FiveLApp::OnInit, below.
+    // happen in HalyardApp::OnInit, below.
 }
 
-void FiveLApp::Heartbeat() {
+void HalyardApp::Heartbeat() {
     // This should internally call the Windows function ::PeekMessage,
     // which is sufficient to mark our application as alive.
     (void) Pending();
 }
 
-void FiveLApp::LaunchUpdateInstallerBeforeExiting() {
+void HalyardApp::LaunchUpdateInstallerBeforeExiting() {
     mShouldLaunchUpdateInstaller = true;
 }
 
-void FiveLApp::LaunchUpdateInstaller() {
+void HalyardApp::LaunchUpdateInstaller() {
     // PORTABILITY - We need to make the UpdateInstaller work elsewhere.
     // XXX - Extract application exe name from wxWidgets?
     // XXX - These paths must match the ones in updater.ss and in
@@ -112,7 +112,7 @@ void FiveLApp::LaunchUpdateInstaller() {
         gLog.FatalError("Error installing update.");
 }
 
-void FiveLApp::IdleProc(bool inBlock)
+void HalyardApp::IdleProc(bool inBlock)
 {
 	if (wxGetApp().HaveStage() && !wxGetApp().GetStage()->IsIdleAllowed())
 		THROW("Tried to call (idle) at an unsafe time");
@@ -159,21 +159,21 @@ void FiveLApp::IdleProc(bool inBlock)
 	}
 }
 
-void FiveLApp::PrepareForCrash() {
+void HalyardApp::PrepareForCrash() {
     sHandlingFatalError = true;
     if (sLog5L)
         sLog5L->SilentlyLogNonFatalErrors();
     ShowSystemWindows();
 }
 
-void FiveLApp::ErrorDialog(const char* inTitle, const char *inMessage) {
+void HalyardApp::ErrorDialog(const char* inTitle, const char *inMessage) {
     // TODO: Several of the callers of this function should be
     // calling the new TLogger::EnvironmentError instead.
     wxMessageDialog dlg(NULL, inMessage, inTitle, wxOK|wxICON_ERROR);
     dlg.ShowModal();
 }
 
-void FiveLApp::ReportFatalException(std::exception &e) {
+void HalyardApp::ReportFatalException(std::exception &e) {
     if (mLogsAreInitialized) {
         TException::ReportFatalException(e);
     } else {
@@ -182,7 +182,7 @@ void FiveLApp::ReportFatalException(std::exception &e) {
     }
 }
 
-void FiveLApp::ReportFatalException() {
+void HalyardApp::ReportFatalException() {
     if (mLogsAreInitialized) {
         TException::ReportFatalException();
     } else {
@@ -191,11 +191,11 @@ void FiveLApp::ReportFatalException() {
     }
 }
 
-void FiveLApp::OnUnhandledException() {
+void HalyardApp::OnUnhandledException() {
     ReportFatalException();
 }
 
-void FiveLApp::OnFatalException() {
+void HalyardApp::OnFatalException() {
     // We're dead.  I'd like to call ReportFatalException here (it does
     // better cleanup), but I haven't thought through the consequences.
     // So I'm leaving this alone.
@@ -204,7 +204,7 @@ void FiveLApp::OnFatalException() {
 
 #ifdef __WXDEBUG__
 
-void FiveLApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
+void HalyardApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
                         const wxChar *msg)
 {
     if (mLogsAreInitialized) {
@@ -226,7 +226,7 @@ void FiveLApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
 
 #endif // __WXDEBUG__
 
-bool FiveLApp::OnInit() {
+bool HalyardApp::OnInit() {
     // All code in this routine should be protected by an
     // exception-trapping block of some sort, because wxWidgets has weak
     // internal exception handling and doesn't tend to report exception
@@ -350,7 +350,7 @@ bool FiveLApp::OnInit() {
     return true;
 }
 
-int FiveLApp::OnExit() {
+int HalyardApp::OnExit() {
     BEGIN_EXCEPTION_TRAPPER();
 
     // Make sure we put back the taskbar, etc.
@@ -399,7 +399,7 @@ namespace {
     };
 };
 
-int FiveLApp::MainLoop() {
+int HalyardApp::MainLoop() {
 	// WARNING - No Scheme function may ever be called above this
     // point on the stack!
     HALYARD_SET_STACK_BASE();
@@ -414,7 +414,7 @@ int FiveLApp::MainLoop() {
         
     // Create a SchemeInterpreterManager.
     TInterpreterManager *manager =
-		GetSchemeInterpreterManager(&FiveLApp::IdleProc);
+		GetSchemeInterpreterManager(&HalyardApp::IdleProc);
 
 	Downloader *downloader = new Downloader();
 
@@ -455,7 +455,7 @@ int FiveLApp::MainLoop() {
     return error ? 1 : 0;
 }
 
-void FiveLApp::ExitMainLoop()
+void HalyardApp::ExitMainLoop()
 {
     if (mHaveOwnEventLoop)
     {
@@ -470,12 +470,12 @@ void FiveLApp::ExitMainLoop()
     }
 }
 
-Stage *FiveLApp::GetStage()
+Stage *HalyardApp::GetStage()
 {
     return GetStageFrame()->GetStage();
 }
 
-void FiveLApp::OnActivateApp(wxActivateEvent &event) {
+void HalyardApp::OnActivateApp(wxActivateEvent &event) {
     // XXX - If we're dealing with a fatal error, and the window tries to
     // maximize, ignore this event completely, so our window stops
     // deiconizing while trying to run the crash reporter, causing all

@@ -21,7 +21,7 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "ImageCache.h"
 #include "AnimatedOverlay.h"
 #include "DrawingArea.h"

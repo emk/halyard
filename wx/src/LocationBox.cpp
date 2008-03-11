@@ -27,7 +27,7 @@
 #include "TInterpreter.h"
 
 // For jumping to cards.
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "Stage.h"
 
 using namespace Halyard;

@@ -20,15 +20,15 @@
 //
 // @END_LICENSE
 
-#ifndef FiveLApp_H
-#define FiveLApp_H
+#ifndef HalyardApp_H
+#define HalyardApp_H
 
 class StageFrame;
 class Stage;
 class Log5L;
 
 /// Our main application object.
-class FiveLApp : public wxApp
+class HalyardApp : public wxApp
 {
     DECLARE_EVENT_TABLE();
 
@@ -104,7 +104,7 @@ class FiveLApp : public wxApp
     void LaunchUpdateInstaller();
 
 public:
-    FiveLApp();
+    HalyardApp();
 
     //////////
     /// Notify the system that this application is still alive.  This
@@ -195,8 +195,8 @@ public:
 };
 
 //////////
-/// Declare a 'FiveLApp &wxGetApp()' method.
+/// Declare a 'HalyardApp &wxGetApp()' method.
 ///
-DECLARE_APP(FiveLApp)
+DECLARE_APP(HalyardApp)
 
-#endif // FiveLApp_H
+#endif // HalyardApp_H

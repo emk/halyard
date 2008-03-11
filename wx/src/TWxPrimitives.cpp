@@ -32,7 +32,7 @@
 #include "CrashReporter.h"
 #include "AppConfig.h"
 #include "TStyleSheet.h"
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "StageFrame.h"
 #include "Stage.h"
 #include "DrawingArea.h"
@@ -1048,7 +1048,7 @@ DEFINE_PRIMITIVE(WakeUpIfNecessary) {
 
     // We need to check if we still have a link to the stage.
     // StageFrame::OnClose may sever that link when we're doing event
-    // processing in a call to FiveLApp::IdleProc, and when the engine
+    // processing in a call to HalyardApp::IdleProc, and when the engine
     // returns to Scheme, we'll be the next function called before
     // kernel.ss notices that the interpreter has been killed.
     if (wxGetApp().HaveStage())

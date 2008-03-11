@@ -23,7 +23,7 @@
 #include "AppHeaders.h"
 
 #include "CommonWxConv.h"
-#include "FiveLApp.h"
+#include "HalyardApp.h"
 #include "Stage.h"
 
 using namespace Halyard;
