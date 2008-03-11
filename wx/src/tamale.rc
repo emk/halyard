@@ -85,7 +85,7 @@ TB_ERRORTRACE           BITMAP                  "tb_errortrace.bmp"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IC_5L                   ICON                    "ic_5L.ico"
+IC_APPLICATION          ICON                    "ic_application.ico"
 IC_LISTENER             ICON                    "ic_listener.ico"
 IC_TIMECODER            ICON                    "ic_timecoder.ico"
 IC_CARD                 ICON                    "ic_card.ico"

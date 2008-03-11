@@ -30,7 +30,7 @@
 
 typedef char *xpm_graphic_t[];
 
-extern xpm_graphic_t ic_5L_xpm;
+extern xpm_graphic_t ic_application_xpm;
 extern xpm_graphic_t ic_listener_xpm;
 extern xpm_graphic_t ic_timecoder_xpm;
 extern xpm_graphic_t tb_borders_xpm;

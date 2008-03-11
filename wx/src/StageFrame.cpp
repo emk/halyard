@@ -211,7 +211,7 @@ StageFrame::StageFrame(wxSize inSize)
 		mToolWindows[i] = NULL;
 
 	// Get an appropriate icon for this window.
-    SetIcon(wxICON(ic_5L));
+    SetIcon(wxICON(ic_application));
 
     // Make our background black.  This should theoretically be handled
     // by 'background->SetBackgroundColour' below, but Windows takes a
@@ -729,7 +729,7 @@ void StageFrame::ObjectDeleted()
     // no point revealing our real application name or icon to the user.
     if (!TInterpreterManager::IsInRuntimeMode()) {
         SetTitle(wxGetApp().GetAppName());
-        SetIcon(wxICON(ic_5L));
+        SetIcon(wxICON(ic_application));
     }
 }
 

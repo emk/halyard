@@ -28,7 +28,7 @@
 // installed.
 #if CONFIG_USE_XPMS
 #	define static	
-#	include "ic_5L.xpm"
+#	include "ic_application.xpm"
 #	include "ic_listener.xpm"
 #	include "ic_timecoder.xpm"
 #	include "tb_borders.xpm"
