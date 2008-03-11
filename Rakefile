@@ -40,12 +40,12 @@ class Configuration
   def define_tasks
     desc "Clean the #{name} configuration"
     task task_name(:clean) do |t|
-      VisualStudioDotNet.clean "5L.sln", name
+      VisualStudioDotNet.clean "Halyard.sln", name
     end
     
     desc "Build the #{name} configuration"
     task task_name(:build) do |t|
-      VisualStudioDotNet.build "5L.sln", name
+      VisualStudioDotNet.build "Halyard.sln", name
     end
     
     desc "Run unit tests for #{name} configuration"
@@ -85,7 +85,7 @@ task :tag do |t|
   # This will fail if the tag contents are weird enough.
   tag = ENV['AS']
   tag =~ /^\S+$/ or raise "Invalid tag <#{tag}>"
-  SVN_URL = 'svn+ssh://orson.hitchcock.org/var/lib/svn/main/public/5L'
+  SVN_URL = 'svn+ssh://orson.hitchcock.org/var/lib/svn/main/public/halyard'
   msg = "Tagging trunk as #{tag}"
   sh "svn cp -m '#{msg}' -r HEAD #{SVN_URL}/trunk #{SVN_URL}/tags/#{tag}"
 end
@@ -94,7 +94,7 @@ desc "Sign *.exe and *.dll files (USB key required)"
 CodeSigning::Task.new do |t|
   t.files = Dir['Win32/Bin/*.exe'] + Dir['Win32/Bin/*.dll']
   t.description['Win32/Bin/UpdateInstaller.exe'] = "Update Installer"
-  t.default_description = "Tamale multimedia engine"
-  t.description_url = "http://iml.dartmouth.edu/tamale/"
+  t.default_description = "Halyard multimedia engine"
+  t.description_url = "http://iml.dartmouth.edu/halyard/"
   t.key_file = 'iml_authenticode_key'
 end
