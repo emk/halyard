@@ -1,5 +1,5 @@
 ;; PORTED
-(module base (lib "5l.ss" "5L")
+(module base (lib "5l.ss" "halyard")
 
   (provide $color-black $color-white $color-paper $color-offwhite
            $color-highlight)

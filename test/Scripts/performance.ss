@@ -1,4 +1,4 @@
-(module performance (lib "5l.ss" "5L")
+(module performance (lib "5l.ss" "halyard")
   (require (file "base.ss"))
   (sequence performance)
   

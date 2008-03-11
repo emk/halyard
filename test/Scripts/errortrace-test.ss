@@ -1,4 +1,4 @@
-(module errortrace-test (lib "5l.ss" "5L")
+(module errortrace-test (lib "5l.ss" "halyard")
   ;;;
   ;;; The purpose of this module is to provide a unit test for the 
   ;;; errortrace machinery.  As such, it should be loaded using the 

@@ -25,12 +25,12 @@
 ;; about it.
 
 ;; We want this for a version number on the index card.
-(require (lib "updater.ss" "5L"))
+(require (lib "updater.ss" "halyard"))
 
 ;; XXX - These modules are used in various cards below, but they're
 ;; probably obsolete and are expected to go away or at least be
 ;; removed from the core.
-(require (lib "data-file.ss" "5L"))
+(require (lib "data-file.ss" "halyard"))
 
 
 ;; Other non-Runtime files we'll be using appear further down in the script.
@@ -115,11 +115,11 @@
 
 ;; Test cases from the standard library.
 (require (file "ruby-objects-test.ss"))
-(require (lib "tamale-unit-test.ss" "5L"))
-(require (lib "updater-test.ss" "5L"))
+(require (lib "tamale-unit-test.ss" "halyard"))
+(require (lib "updater-test.ss" "halyard"))
 
 ;; These files are included in start.ss only to make sure we get
 ;; appropriate highlighting and indentation for the identifiers they
 ;; export.
-(require (lib "animate.ss" "5L"))
-(require (lib "tamale-unit.ss" "5L"))
+(require (lib "animate.ss" "halyard"))
+(require (lib "tamale-unit.ss" "halyard"))

@@ -135,7 +135,7 @@ void TSchemeInterpreterManager::BeginScript()
 	
 	// Install our system loader.
 	FileSystem::Path halyard_collection =
-		FileSystem::GetRuntimeDirectory().AddComponent("5L");
+		FileSystem::GetRuntimeDirectory().AddComponent("halyard");
 	LoadFile(halyard_collection.AddComponent("loader.ss"));
 }
 
@@ -213,7 +213,7 @@ TSchemeInterpreter::~TSchemeInterpreter()
 void TSchemeInterpreter::InitializeModuleNames()
 {
 	sLoaderModule = scheme_intern_symbol("5L-Loader");
-	Scheme_Object *tail = scheme_make_pair(scheme_make_utf8_string("5L"),
+	Scheme_Object *tail = scheme_make_pair(scheme_make_utf8_string("halyard"),
 										   scheme_null);
 	sKernelModule =
 		scheme_make_pair(scheme_intern_symbol("lib"),

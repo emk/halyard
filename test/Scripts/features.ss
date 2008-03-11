@@ -1,12 +1,12 @@
 ;; PORTED
-(module features (lib "5l.ss" "5L")
-  (require (lib "drag.ss" "5L"))
-  (require (lib "q-and-a.ss" "5L"))
-  (require (lib "animate.ss" "5L"))
+(module features (lib "5l.ss" "halyard")
+  (require (lib "drag.ss" "halyard"))
+  (require (lib "q-and-a.ss" "halyard"))
+  (require (lib "animate.ss" "halyard"))
   (require (file "base.ss"))
 
   ;; Experimental slot initializer library.
-  (require (lib "initialize-slot.ss" "5L"))
+  (require (lib "initialize-slot.ss" "halyard"))
   
   (sequence features)
   

@@ -1,10 +1,10 @@
 ;; PORTED
-(module quake2-example (lib "5l.ss" "5L")
+(module quake2-example (lib "5l.ss" "halyard")
   (require (file "base.ss"))
 
   ;; If you want to access any Quake 2 features, you need to include this
   ;; module manually.
-  (require (lib "quake2.ss" "5L"))
+  (require (lib "quake2.ss" "halyard"))
   
   (group quake2)
   

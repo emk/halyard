@@ -11,6 +11,7 @@ Renaming Tamale to Halyard (F#1856):
   * The file data.tam has been renamed to application.halyard.
   * The file 5L.prefs has been renamed to developer.prefs.
   * The file tamale.el has been renamed to halyard.el.
+  * The directory Runtime/5L has been renamed to Runtime/halyard.
 
 Individual changes:
 
