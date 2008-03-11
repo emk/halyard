@@ -12,7 +12,7 @@
 ;;    (dv foo)
 ;;    (set! (dv foo) 2)
 
-(module debug-var (lib "5l.ss" "halyard")
+(module debug-var (lib "halyard.ss" "halyard")
   
   (provide *debug-vars* debug-vars dv set-dv!)
 

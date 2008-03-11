@@ -4,7 +4,7 @@
 ;;  This is a collection of loosely documented and poorly-organized Tamale
 ;;  primitives, all subject to change at a moment's notice.
 
-(module tamale (lib "language.ss" "halyard")
+(module elements (lib "language.ss" "halyard")
   (require (lib "api.ss" "halyard"))
 
   (require (lib "after-updating.ss" "halyard"))

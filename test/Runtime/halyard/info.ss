@@ -17,7 +17,7 @@
   (define tool-names (list "5L Multimedia Programming Language"))
 
   ;; Register our language.
-  ;(define drscheme-language-modules (list '("5l.ss" "halyard")))
+  ;(define drscheme-language-modules (list '("halyard.ss" "halyard")))
   ;(define drscheme-language-positions
   ;  (list '("5L Multimedia Programming Language")))
   ;(define drscheme-language-one-line-summaries

@@ -137,7 +137,7 @@
 	;; Install our 5L language.
 	(register-language
 	 (instantiate (wrap-language 5L-language%) ()
-           (module '(lib "5l.ss" "halyard"))
+           (module '(lib "halyard.ss" "halyard"))
 	   (language-numbers (get-numbers 1))
 	   (language-position
 	    (get-position "5L Multimedia Programming Language"))

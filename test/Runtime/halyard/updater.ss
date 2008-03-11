@@ -1,5 +1,5 @@
-(module updater (lib "5l.ss" "halyard")
-  (require (lib "tamale.ss" "halyard"))
+(module updater (lib "halyard.ss" "halyard")
+  (require (lib "elements.ss" "halyard"))
 
   ;; TODO - these should probably be factored out into some sort of file-utils
   ;; library.

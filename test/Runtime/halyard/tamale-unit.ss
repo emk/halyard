@@ -1,4 +1,4 @@
-(module tamale-unit (lib "5l.ss" "halyard")
+(module tamale-unit (lib "halyard.ss" "halyard")
   (provide %test-suite%)
   
   (define-stylesheet $tamale-unit-style

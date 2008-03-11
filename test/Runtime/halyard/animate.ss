@@ -1,4 +1,4 @@
-(module animate (lib "5l.ss" "halyard")
+(module animate (lib "halyard.ss" "halyard")
 
   ;;=======================================================================
   ;;  Utility routines

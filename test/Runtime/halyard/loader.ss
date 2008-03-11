@@ -261,8 +261,8 @@
           ;; (which is used by normal program code).
           (set! filename "language.ss")
           (namespace-transformer-require '(lib "language.ss" "halyard"))
-          (set! filename "5l.ss")
-          (namespace-require '(lib "5l.ss" "halyard"))
+          (set! filename "halyard.ss")
+          (namespace-require '(lib "halyard.ss" "halyard"))
           
           ;; Load the user's actual script into our new namespace.
           (set! filename "start.ss")

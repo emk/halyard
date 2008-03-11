@@ -1,5 +1,5 @@
 ;; PORTED
-(module experiments (lib "5l.ss" "halyard")
+(module experiments (lib "halyard.ss" "halyard")
   (require (file "base.ss"))
   (require (lib "tamale-unit.ss" "halyard"))
   

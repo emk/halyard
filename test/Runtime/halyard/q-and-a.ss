@@ -1,4 +1,4 @@
-(module q-and-a (lib "5l.ss" "halyard")
+(module q-and-a (lib "halyard.ss" "halyard")
   
   (provide %question% %answer%)
   

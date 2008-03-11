@@ -2,7 +2,7 @@
 ;; the new node system all that well--it's based on an older model of doing
 ;; things, and hasn't been fully integrated into the newer parts of the
 ;; engine.
-(module quake2 (lib "5l.ss" "halyard")
+(module quake2 (lib "halyard.ss" "halyard")
 
   (provide quake2-driver set-quake2-driver!
            quake2-launch quake2-shown? quake2-show quake2-hide

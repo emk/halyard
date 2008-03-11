@@ -1,5 +1,5 @@
 ;; PORTED
-(module ruby-objects-test (lib "5l.ss" "halyard")
+(module ruby-objects-test (lib "halyard.ss" "halyard")
 
   (require (lib "tamale-unit.ss" "halyard"))
 

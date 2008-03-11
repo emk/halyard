@@ -1,4 +1,4 @@
-(module updater-test (lib "5l.ss" "halyard")
+(module updater-test (lib "halyard.ss" "halyard")
   (require (lib "tamale-unit.ss" "halyard"))
   (require (lib "updater.ss" "halyard"))
   

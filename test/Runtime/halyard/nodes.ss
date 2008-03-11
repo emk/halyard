@@ -685,7 +685,7 @@
            default-element-parent call-with-default-element-parent
            with-default-element-parent)
 
-  ;; The rest of this definition lives in tamale.ss.
+  ;; The rest of this definition lives in elements.ss.
   ;; TODO - Do we need to think about the division of responsibilities
   ;; here?
   (define-class %element% (%node%)

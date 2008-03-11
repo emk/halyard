@@ -5,7 +5,7 @@
 ;;  special syntax.  Everything in this directory could probably stand
 ;;  a good refactoring; it's been accumulating cruft for a while.
 
-(module 5l (lib "language.ss" "halyard")
+(module halyard (lib "language.ss" "halyard")
 
   ;; We want to export most of lispish, but override a few definitions
   ;; locally to get some decidedly non-Scheme behavior.
@@ -21,8 +21,8 @@
   (provide (all-from (lib "api.ss" "halyard")))
 
   ;; Load the engine-dependent, subject-to-change API.
-  (require (lib "tamale.ss" "halyard"))
-  (provide (all-from (lib "tamale.ss" "halyard")))
+  (require (lib "elements.ss" "halyard"))
+  (provide (all-from (lib "elements.ss" "halyard")))
 
   ;; These are not well-loved APIs, so we only include them fairly high up the
   ;; stack to try to avoid having any undocumented internal depedencies on

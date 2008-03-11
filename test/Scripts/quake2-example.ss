@@ -1,5 +1,5 @@
 ;; PORTED
-(module quake2-example (lib "5l.ss" "halyard")
+(module quake2-example (lib "halyard.ss" "halyard")
   (require (file "base.ss"))
 
   ;; If you want to access any Quake 2 features, you need to include this

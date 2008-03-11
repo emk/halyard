@@ -1,4 +1,4 @@
-(module drag (lib "5l.ss" "halyard")
+(module drag (lib "halyard.ss" "halyard")
   (require (lib "animate.ss" "halyard"))
 
   (provide %simple-draggable-object% %draggable-object% %drag-target% 

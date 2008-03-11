@@ -1,7 +1,7 @@
 ;; PORTED
 ;; Some unit tests, mostly written by Robinson.  These use the
 ;; semi-supported TEST-ELEMENTS form. 
-(module test-cases (lib "5l.ss" "halyard")
+(module test-cases (lib "halyard.ss" "halyard")
   (require (lib "tamale-unit.ss" "halyard"))
   (require (lib "errortrace-lib.ss" "errortrace"))
   

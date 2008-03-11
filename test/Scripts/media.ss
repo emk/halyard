@@ -1,5 +1,5 @@
 ;; PORTED
-(module media (lib "5l.ss" "halyard")
+(module media (lib "halyard.ss" "halyard")
   (require (file "base.ss"))
 
   (provide start-ambient kill-ambient)

@@ -1,5 +1,5 @@
-(module data-file (lib "5l.ss" "halyard")
-  (require (lib "tamale.ss" "halyard"))
+(module data-file (lib "halyard.ss" "halyard")
+  (require (lib "elements.ss" "halyard"))
   (provide ;; TODO - Remove these two functions from API.  They are obsoleted
            ;; by pref and set-pref!.
            read-data

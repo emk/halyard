@@ -6,7 +6,7 @@
 ;;
 ;; Also, these cards are very old, and should not be used as an example of
 ;; good coding style.
-(module updater-example (lib "5l.ss" "halyard")
+(module updater-example (lib "halyard.ss" "halyard")
 
   (require (lib "updater.ss" "halyard"))
   (require (file "base.ss"))

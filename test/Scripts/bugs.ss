@@ -1,5 +1,5 @@
 ;; PORTED
-(module bugs (lib "5l.ss" "halyard")
+(module bugs (lib "halyard.ss" "halyard")
   (require (file "base.ss"))
 
 
