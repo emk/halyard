@@ -13,7 +13,7 @@
 	<value name="author" type="string"></value>
 	<value name="description" type="string"></value>
 	<value name="doc_count" type="Integer">71</value>
-	<value name="xrc_filename" type="string">C:\Documents and Settings\emk\src\5L\wx\src\tamale.xrc</value>
+	<value name="xrc_filename" type="string">C:\Documents and Settings\emk\src\5L\wx\src\application.xrc</value>
 	<value name="convert_images_to_xpm" type="bool">FALSE</value>
 	<value name="inline_images" type="bool">FALSE</value>
 	<value name="generate_cpp_for_xrc" type="bool">FALSE</value>

@@ -477,11 +477,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\tamale.rc"
+				RelativePath="..\..\src\application.rc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\tamale.xrc"
+				RelativePath="..\..\src\application.xrc"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
