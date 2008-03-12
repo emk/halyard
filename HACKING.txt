@@ -4,16 +4,17 @@ Table of Contents
 -----------------
 
   * History
-  * Checking 5L Out of SVN
-  * Building Win32 5L
+  * Checking Halyard Out of Git
+  * Checking Halyard Out of SVN
+  * Building Win32 Halyard
   * Rake
-  * Building Macintosh 5L
+  * Building Macintosh Halyard
   * Source Documentation
   * What Lives Where
   * Important Classes & Modules
   * Coding Conventions
   * Testing Your Changes
-  * Checking in Your Changes to 5L
+  * Checking in Your Changes to Halyard
   * Updating the Version Number
   * Copying an Engine Build into a Script
   * Missing History
@@ -27,30 +28,59 @@ Table of Contents
 History
 -------
 
-  5L has its roots in a 16-bit DOS laserdisc application, and earlier
-  multimedia-program-specific runtimes before that.  The current
-  code base contains fragments dating back to at least 1993 and perhaps
-  earlier.  5L has been worked on by many programmers over the years.
-  One of the most prolific programmers in the late 90s and early 2000 was
+  Halyard has its roots in a 16-bit DOS laserdisc application, and
+  earlier multimedia-program-specific runtimes before that.  The
+  current code base contains fragments dating back to at least 1993
+  and perhaps earlier.  Before 2003, it was named 5L; from 2003-2008
+  it was name Tamale, with many references to 5L still left, and in
+  2008 it was renamed to Halyard.
+
+  Halyard has been worked on by many programmers over the years.  One
+  of the most prolific programmers in the late 90s and early 2000 was
   Chuck Officer.
 
-Checking 5L Out of SVN
-----------------------
+Checking Halyard Out of Git
+---------------------------
+
+  Halyard is officially hosted in our Subversion reporisitory, but for
+  day-to-day development, Git is frequently easier to use, and offers
+  the benefits of a distributed revision control system.  We have an
+  already initialized Git-SVN repository that automatically fetches
+  from Subversion, to make it quicker and easier to get started.
+
+  To do an initial pull from Git, do the following:
+
+  git clone git://imlsrc.dartmouth.edu/halyard
+  git config --add remote.origin.fetch '+refs/remotes/*:refs/remotes/*'
+  git fetch
+
+  This will set up your git repository so you can pull from ours, and
+  get all of the branches and tags.  If you would like to pull directly 
+  from our Subversion repository, or be able to commit back to it, do the
+  following in addition to the above:
+
+  git svn init -s https://imlsrc.dartmouth.edu/svn/public/halyard
+  git svn fetch
+
+Checking Halyard Out of SVN
+---------------------------
+
+  Subversion is currenlty only supported for internal users.
 
   Check out the following from Subversion (see instructions elswhere
-  for setting up Subversion):
-  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/5L/trunk
+  for setting up Subversion). 
+  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/halyard/trunk
   svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/tools
   svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/buildscript/trunk
 
-  In the instructions that follow, we'll assume your copy of the 5L source
-  tree is in $5L_DIR.
+  In the instructions that follow, we'll assume your copy of the
+  Halyard source tree is in $HALYARD_DIR.
 
-Building Win32 5L
------------------
+Building Win32 Halyard
+----------------------
 
   Using the System control panel, set the environment variable WXWIN to
-  $5L_DIR\libs\wxWidgets.
+  $HALYARD_DIR\libs\wxWidgets.
 
   Install Visual C++.NET 2005 off of the Microsoft Campus Agreement.
   Make sure you have everyting related to C++ development, but you can
@@ -72,9 +102,9 @@ Building Win32 5L
   including the VP3 codec. The best way to install the VP3 codec is to
   run the installer of one of our existing programs, such as VTRA.
 
-  Open up $5L_DIR\5L.sln. Select Tools > Options > Projects and
-  Solutions > VC++ Directories, and add the follow directories to the
-  following categories:
+  Open up $HALYARD_DIR\Halyard.sln. Select Tools > Options > Projects
+  and Solutions > VC++ Directories, and add the follow directories to
+  the following categories:
 
     Include files:
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\CIncludes
@@ -86,31 +116,31 @@ Building Win32 5L
     Executable files:
 	  C:\sdk\QT6 SDK (Win)\Interfaces & Libraries\QTDevWin\Tools
 
-  Click on "Solution Explorer", right-click on "wx5L", and
+  Click on "Solution Explorer", right-click on "Application", and
   select "Properties" > "Configuration: Debug" > "Debugging".  
-  Set "Working Directory" to $5L_DIR/test (the actual path,
+  Set "Working Directory" to $HALYARD_DIR/test (the actual path,
   not the variable name!).  Select "Configuration: Release" and
   set "Working Directory" to the same value.  Now you'll automatically
-  run tamale_test when you ask Visual Studio to launch your program.
+  run Halyard Test when you ask Visual Studio to launch your program.
 
   Using a similar process, set the working directories for both versions
-  of "CommonTest" to $5L_DIR/test.  The test suites won't run without
+  of "CommonTest" to $HALYARD_DIR/test.  The test suites won't run without
   this step. Also add "--wait" to the command arguments of CommonTest, in 
   both the debug and release builds, so you can see the results of the test
   suites. 
 
-  You may also need to look at $5L_DIR/libs/quake2/README-WX.txt. It
-  will explain how to set up MSVC with the assembler support to build
-  Quake.
+  You may also need to look at $HALYARD_DIR/libs/quake2/README-WX.txt.
+  It will explain how to set up MSVC with the assembler support to
+  build Quake.
 
   Make sure "Debug" is selected in the "Solution Configurations" popup
-  on your toolbar. In the "Solution Explorer", right click on "wx5L"
-  and select "Set as StartUp Project". You should now be able to build
-  and run 5L by clicking on the "Start" icon (it looks like a play
-  button or right facing triangle). If you want to build a component
-  without running it, you can select "Build <component>" from the
-  build menu, or add the build button to your toolbar by right
-  clicking on the toolbar and selecting "Build".  
+  on your toolbar. In the "Solution Explorer", right click on
+  "Application" and select "Set as StartUp Project". You should now be
+  able to build and run Halyard by clicking on the "Start" icon (it
+  looks like a play button or right facing triangle). If you want to
+  build a component without running it, you can select "Build
+  <component>" from the build menu, or add the build button to your
+  toolbar by right clicking on the toolbar and selecting "Build".
 
   To build the release version, select "Release" from the "Solution
   Configurations" popup on your toolbar and follow the same steps as
@@ -129,18 +159,27 @@ Rake
   ruby from Cygwin, install RubyGems from <http://rubygems.org/>, set your
   RUBYOPT environment variable to rubygems, and run 'gem install rake'.
 
-Building Macintosh 5L
----------------------
+Buildscript
+-----------
 
-  Mac5L is not currently supported.  Feel free to do a port.
+  In order to build a released version of the engine, you will also need
+  our buildscript Ruby library.  You can check this out from Git, at
+  git://imlsrc.dartmouth.edu/buildscript, or from Subversion as mentioned
+  above.  You will want to set your RUBYLIB environment variable to include
+  the path to the directory you checked buildscript out to.
+
+Building Macintosh Halyard
+--------------------------
+
+  Mac Halyard is not currently supported.  Feel free to do a port.
 
 Source Documentation
 --------------------
 
-Tamale is documented using doxygen, an excellent, open source documentation
-generator for C++.  You can get beautiful documentation for the entire
-codebase--with diagrams--by installing and running doxygen.  See
-doc/README.txt for details.
+Halyard is documented using doxygen, an excellent, open source
+documentation generator for C++.  You can get beautiful documentation
+for the entire codebase--with diagrams--by installing and running
+doxygen.  See doc/README.txt for details.
 
 You can also configure doxygen to generate annotated, cross-referenced
 source code and call graphs.
@@ -148,31 +187,29 @@ source code and call graphs.
 What Lives Where
 ----------------
 
-  libs/               - 3rd-party libraries
-  libs/crypto/        - Miscellaneous 3rd-party crypto code
-  libs/freetype2/     - 3rd-party font engine
-  libs/plt/           - MzScheme interpreter, etc.
-  libs/wxWidgets/     - Portable GUI library
-  libs/...            - Lots of other stuff
+  libs/                  - 3rd-party libraries
+  libs/crypto/           - Miscellaneous 3rd-party crypto code
+  libs/freetype2/        - 3rd-party font engine
+  libs/plt/              - MzScheme interpreter, etc.
+  libs/wxWidgets/        - Portable GUI library
+  libs/...               - Lots of other stuff
 
-  Common/             - Shared, portable code
-  Common/Scripts/     - Test scripts
-  Common/fonttools/   - Font-related programs (some are Linux-only)
+  Common/                - Shared, portable code
+  Common/Scripts/        - Test scripts
+  Common/fonttools/      - Font-related programs (some are Linux-only)
 
-  test/Runtime/5L/    - Scheme language runtime support
-  test/Runtime/*/     - Other MzScheme-derived runtime goodies
-  test/Fonts/         - Unix-style fonts for FreeType 2
+  test/                  - Our official test and example project
+  test/Runtime/halyard/  - Scheme language runtime support
+  test/Runtime/*/        - Other MzScheme-derived runtime goodies
+  test/Fonts/            - Unix-style fonts for FreeType 2
 
-  Win32/              - Win32 engine
-  Win32/Bin/          - Win32 binaries
+  Win32/Bin/             - Win32 binaries
 
-  Mac/                - Mac OS 9 and Carbon engine
-  Mac/Bin/            - Mac binaries
-
-  wx/                 - Preliminary (portable?) front-end based on wxWidgets
-  wx/MSVC             - MSVC project files
-  wx/gui              - DialogBlocks source files for dialogs
-  wx/src              - Source code to new front end
+  wx/                    - Front-end based on wxWidgets, intended to be 
+                           portable, but currently only running on Win32
+  wx/MSVC                - MSVC project files
+  wx/gui                 - DialogBlocks source files for dialogs
+  wx/src                 - Source code to new front end
 
 Important Classes & Modules
 ---------------------------
@@ -191,7 +228,7 @@ Important Classes & Modules
       nice as pango, but it doesn't require nearly as much support code.
 
   * TException
-    - Parent class of most 5L exceptions.
+    - Parent class of most exceptions.
     - Use exceptions for error-handling in new code.
     - Not all old code is exception-safe, so be careful.
   
@@ -208,12 +245,12 @@ Important Classes & Modules
     - Subclass this to add a new language.
 
   * TPrimitives, TCommonPrimitives, TWxPrimitives, etc.
-    - Implementations of the actual 5L commands.
+    - Implementations of the actual Halyard commands.
 
   * TStartup
     - Initializes the Common library.
 
-  * FiveLApp
+  * HalyardApp
     - wxWidgets application class
 
   * StageFrame
@@ -231,11 +268,12 @@ Important Classes & Modules
 Coding Conventions
 ------------------
 
-  The 5L source includes a wide variety of coding styles.  In general, you
-  should either (1) immitate the locally-prevailing style when making small
-  changes to existing code or (2) use the officially approved coding style
-  (below) when making big changes or writing new code.  Please DO NOT use
-  non-standard styles in new code; the tree is inconsistent enough as is.
+  The Halyard source includes a wide variety of coding styles.  In
+  general, you should either (1) immitate the locally-prevailing style
+  when making small changes to existing code or (2) use the officially
+  approved coding style (below) when making big changes or writing new
+  code.  Please DO NOT use non-standard styles in new code; the tree
+  is inconsistent enough as is.
 
   For a small example class (showing reasonably good style), see
   Common/TException.{h,cpp}.
@@ -285,9 +323,10 @@ Coding Conventions
 Testing Your Changes
 --------------------
 
-  We have two test suites: "TestAll", which is a fully-automated, low-level
-  test suite (as advocated by the eXtreme Programming folks), and
-  "5L/test", an interactive, high-level test script written in 5L.
+  We have two test suites: "TestAll", which is a fully-automated,
+  low-level test suite (as advocated by the eXtreme Programming
+  folks), and "halyard/test", an interactive, high-level test script
+  written in Halyard.
 
   * Updating "TestAll"  
 
@@ -303,13 +342,13 @@ Testing Your Changes
   Hook your test cases into TestAll.cpp.  You can figure out how to
   do this by looking at the source.
 
-  * Updating 5L/test
+  * Updating halyard/test
 
   Unfortunately, "TestAll" still can't test lots of things:
   primitives, graphics, platform-specific code, etc.  In these cases,
-  add one or more new cards to 5L/test and hook them into the main
-  menu.  In order to test changes you've made to the Runtime
-  directory, make those changes in $5L_DIR/test
+  add one or more new cards to halyard/test and hook them into the
+  main menu.  In order to test changes you've made to the Runtime
+  directory, make those changes in $HALYARD_DIR/test
 
   Be sure to include a good description of how to use your test card!
   Anybody at IML should be able to read instructions on the screen and
@@ -317,18 +356,18 @@ Testing Your Changes
   test cards without such helpful documentation; these are real problems
   when testing.
 
-Checking in Your Changes to 5L
-------------------------------
+Checking in Your Changes to Halyard
+-----------------------------------
 
-  1) Decide whether you want to update the 5L version number.  If so, see
-     the instructions below.
+  1) Decide whether you want to update the Halyard version number.  If
+     so, see the instructions below.
 
-  2) Run 'rake'.  This will build all versions of the application and run
-     the test suites.  (If you're planning to make a release build, you
-     should probably run 'rake clean test' instead.)
+  2) Run 'rake test'.  This will build all versions of the application
+     and run the test suites.  (If you're planning to make a release
+     build, you should probably run 'rake clean test' instead.)
 
   3) Run the debug and release versions of the application, and look at any
-     relevant 5L/test cards.
+     relevant halyard/test cards.
 
   4) If you're using Windows, MAKE SURE YOU SAVE YOUR WORKSPACE, or else
      Subversion won't know about any changes.
@@ -336,46 +375,70 @@ Checking in Your Changes to 5L
   5) Make sure you've issued all the necessary "svn add" and "svn remove"
      commands.  Read your Subversion diffs.
 
-  6) Update $5L_DIR/Release-Notes.txt.  If you're not creating a new
-     version number, just use "HEAD" as a placeholder instead.
+  6) Update $HALYARD_DIR/Release-Notes.txt.  If you're not creating a
+     new version number, just use "HEAD" as a placeholder instead.
 
-  7) Check in your changes.  If you haven't assigned a new version number,
-     try to avoid checking in the contents of Mac/Bin or Win32/Bin.  If you
-     *have* assigned a version number, you MUST check in the contents of
-     those directories.
-
+  7) Check in your changes.
+    
      Write a good Subversion comment.  It should be useful, informative and
      reasonably detailed.  It should generally use complete sentences and
      good grammar.  You're writing for posterity.
 
-  8) If you've assigned a version number to your changes, tag the entire
-     $5L_DIR tree AFTER checking it in.  The Rakefile can do this for you;
-     see below.  DO NOT FORGET THIS STEP OR PEOPLE WILL GET VERY GRUMPY
-     AND SAY BAD THINGS ABOUT YOU MANY YEARS FROM NOW.
+  8) If you've assigned a version number to your changes, tag the
+     entire $HALYARD_DIR tree AFTER checking it in.  
 
-  Here's a typical checkin command:
+     rake tag AS=x.y.z
+
+     DO NOT FORGET THIS STEP OR PEOPLE WILL GET VERY GRUMPY AND SAY
+     BAD THINGS ABOUT YOU MANY YEARS FROM NOW.
+
+  9) If you've assigned a version number, you need to do an official
+     release build.  Run:
+     
+     ruby buildfile.rb x.y.z
+     
+     where x.y.z is the version number you used as the tag in the last
+     step.
+
+  Here's a typical checkin sequence, for a commit that does not change
+  the version:
 
   $ svn update
-  $ rake clean test
+  $ rake test
   # Smoke-test GUI by hand
   $ svn commit # ...with appropriate arguments
-  $ rake tag AS=0.0.60
+  
+  And here's one that does update the version number:
+
+  $ svn update
+  $ rake test  # or rake clean test if you're paranoid
+  # Smoke-test GUI by hand
+  $ svn commit # ...with appropriate arguments. Commit message is generally
+               # the contents of Release-Notes.txt for this release.
+  $ rake tag AS=0.5.0
+  $ ruby buildfile.rb 0.5.0 # this will take a while
 
 Updating the Version Number
 ---------------------------
 
-  5L uses Linux-style version numbers.  That means versions have the form
-  "X.Y.Z", where X is the "major version", Y is the "minor version" and "Z"
-  is the "revision".  (Actually, there will sometimes be an extra number
-  after the revision, if somebody is working on a branch).  X, Y, and Z
-  count up from 0: 0, 1, 2, ..., 9, 10, 11, etc.
+  Halyard uses Linux-style version numbers.  That means versions have
+  the form "X.Y.Z", where X is the "major version", Y is the "minor
+  version" and "Z" is the "revision".  (Actually, there will sometimes
+  be an extra number after the revision, if somebody is working on a
+  branch).  X, Y, and Z count up from 0: 0, 1, 2, ..., 9, 10, 11, etc.
+
+  Release series with an odd minor version number are considered to be
+  development releases, where major API changes may be made, or major
+  functionality added or altered.  Release series with an even minor
+  version number are stable branches, where the majority of work
+  should be on fixing bugs and stabilizing.
 
   1) Update Common/TVersion.h.  The version appears in two places.
 
-  2) While there, check the copyright
-     date; it should be of the form "1993-YYYY", where YYYY is the current
-     year.  The lawyers like this to be correct.  You might also want to
-     take a look at tools/fix-prologues.pl.
+  2) While there, check the copyright date; it should be of the form
+     "1993-YYYY", where YYYY is the current year.  The lawyers like
+     this to be correct.  You might also want to take a look at
+     tools/fix-prologues.pl.
 
 Copying an Engine Build into a Script
 -------------------------------------
@@ -388,7 +451,7 @@ Copying an Engine Build into a Script
   The process looks something like this:
 
   $ rake rm_engine_dirs_and_commit
-  $ rake update_engine TO=0.0.60
+  $ rake update_engine TO=0.5.0
   # Smoke test...
   $ svn commit # ...appropriate arguments...
 
@@ -430,9 +493,9 @@ Missing History
     Win16
 
   These files are still available in public/5L (and possibly
-  public/tamale), but only to internal users.  Many of the removals were
-  necessary to get the git repo size down to a manageable level, and most
-  of the rest were for copyright or export reasons.
+  public/halyard), but only to internal users.  Many of the removals
+  were necessary to get the git repo size down to a manageable level,
+  and most of the rest were for copyright or export reasons.
 
 Ancient Versions
 ----------------
@@ -471,7 +534,7 @@ Upgrading PLT
 
   Once you have that, follow the vendor branch procedure to import it
   to vendor/plt/current, tag it, and then merge that tag into
-  5L/libs/plt.
+  halyard/libs/plt.
 
   Ten libraries (listed below) from libs/plt/collects need to be
   aliased at Common/Runtime.  When updating libs/plt, be sure to 'svn
@@ -493,7 +556,7 @@ Upgrading PLT
 libxml2 Hacks
 -------------
 
-I made a static version of libxml2 for Tamale by cloning the "Win32 Debug"
+I made a static version of libxml2 for Halyard by cloning the "Win32 Debug"
 and "Win32 Release" targets to "Win32 Debug DLL" and "Win32 Release DLL"
 respectively, then opening up the DSP file in Emacs.  After the TARGTYPE
 line:
