@@ -29,7 +29,7 @@ AppLog::AppLog()
     : mShouldSilentlyLogNonFatalErrors(false)
 
 {
-	gDebugLog.Log("WX INITIALIZING: Sending wx log messages to 5L logs.");
+	gDebugLog.Log("WX INITIALIZING: Sending wx log messages to Halyard logs.");
 }
 
 void AppLog::SilentlyLogNonFatalErrors()

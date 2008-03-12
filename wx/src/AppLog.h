@@ -26,7 +26,7 @@
 
 //////////
 /// This is a wxWindows log target which knows how to write messages to
-/// the traditional 5L logging subsystem.
+/// the Halyard logging subsystem.
 ///
 class AppLog : public wxLog
 {

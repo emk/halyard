@@ -267,7 +267,7 @@ bool HalyardApp::OnInit() {
     }
     FileSystem::SetAppLocalDataDirectory(local_dir.mb_str());
 
-    // Get the 5L runtime going.
+    // Get the Halyard runtime going.
     ::InitializeCommonCode(new FancyCrashReporter());
     mLogsAreInitialized = true;
     ::RegisterWxPrimitives();
@@ -275,7 +275,7 @@ bool HalyardApp::OnInit() {
     ::RegisterQuake2Primitives();
 #endif // CONFIG_HAVE_QUAKE2
     
-    // Send all wxWindows logging messages to our traditional 5L
+    // Send all wxWindows logging messages to our Halyard
     // logs.  This gives us a single copy of everything.
     // TODO - How do we clean up these resources?
     sAppLog = new AppLog();
