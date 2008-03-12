@@ -123,7 +123,7 @@
       ;; given method ever returns true.  This has the same short-circuit
       ;; semantics as OR.
       (def (recursive-or-of-method name stop-at-class)
-        (or (.send name '())
+        (or (send self name)
             (if (eq? self stop-at-class)
               #f
               ((.superclass) .recursive-or-of-method name stop-at-class))))
@@ -252,7 +252,7 @@
            (make <cursor-event>)]
           [else
            (non-fatal-error (cat "Unsupported event type: " name))]))
-      (.send name (list event))
+      (send self name event)
       (set! (*engine* .event-vetoed?) (was-vetoed? event))
       (set! (*engine* .event-handled?) (event-handled? event)))
     )

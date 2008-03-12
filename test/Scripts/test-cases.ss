@@ -265,10 +265,10 @@
       (assert-matches "errortrace-test\\.ss:37:4" trace))
     (test "Errortrace should work for errors in methods"
       (define trace (return-errortrace (method-error-test)))
-      (assert-matches "\\(send% t 'test-method \"hello!\"\\)" trace)
-      (assert-matches "\\(\\* \\(send% b 'test-me x\\) \\(send% self 'foo\\)\\)"
+      (assert-matches "\\(send t 'test-method \"hello!\"\\)" trace)
+      (assert-matches "\\(\\* \\(send b 'test-me x\\) \\(send self 'foo\\)\\)"
                       trace)
-      (assert-matches "\\(\\+ \\(send% self 'bar\\) x\\)" trace)))
+      (assert-matches "\\(\\+ \\(send self 'bar\\) x\\)" trace)))
 
   (card test-cases/errortrace-test
       (%test-suite%

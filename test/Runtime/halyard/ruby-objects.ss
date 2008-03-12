@@ -7,7 +7,7 @@
   (require (lib "begin-var.ss" "halyard"))
 
   (provide ruby-object? make-ruby-instance-of?-predicate
-           ruby-class? define-class %class% %object% method~ def
+           ruby-class? define-class %class% %object% method~ send def
            instance-exec with-instance attr value default advise)
 
   ;; This will be overridden later on, once we have .TO-STRING set up
@@ -178,7 +178,7 @@
              ;; call initialize, so we skip this step for them.)
              (unless (or (eq? 'klass '%object%)
                          (eq? 'klass '%initializer-keywords%))
-               (send% klass 'initialize))
+               (send klass 'initialize))
              (set! (ruby-object-initialized? klass) #t)
              (with-instance klass . body)
              klass)))]))
@@ -219,7 +219,7 @@
 
   ;; The front-end half of method dispatch.  This function handles method
   ;; caching, and then passes control to CALL-WITH-METHOD-LIST.
-  (define (send% object method-name . args)
+  (define (send object method-name . args)
     ;; This is a fairly common error, so give a good message.
     (unless (ruby-object? object)
       (error (cat "Cannot send ." method-name " to " object
@@ -284,7 +284,7 @@
   (define (call-with-method-list object methods method-name args)
     (if (null? methods)
       ;; No more methods to call, so dispatch this to method-missing.
-      (apply send% object 'method-missing method-name args)
+      (apply send object 'method-missing method-name args)
       ;; Call the first method in the list, and give an implementation of
       ;; SUPER.
       (apply-method% method-name (car methods) object
@@ -455,13 +455,10 @@
       (ruby-object-class self))
     ;;; Is this object a direct or indirect instance of KLASS?
     (def (instance-of? klass)
-      (send% (ruby-object-class self) 'subclass-of? klass))
+      (send (ruby-object-class self) 'subclass-of? klass))
     ;;; Is this object fully initialized yet?
     (def (initialized?)
       (ruby-object-initialized? self))
-    ;;; Call method NAME on an object, passing in ARGS.
-    (def (send name args)
-      (apply send% self name args))
     ;;; This method is called whenever a non-existant method is sent to
     ;;; this object.  NAME is the name of the non-existant method, and ARGS
     ;;; are the arguments.
@@ -529,7 +526,7 @@
       ;; to our object at once.
       (hash-table-for-each key-table
         (lambda (key value)
-          (send% self (symcat "set-" key "!") value)))
+          (send self (symcat "set-" key "!") value)))
       (void))
 
     (with-instance (app~ .class)
@@ -701,7 +698,7 @@
     ;;; Create a new object of this class.
     (def (new &rest args)
       (define obj (new-ruby-object self))
-      (apply send% obj 'initialize args)
+      (apply send obj 'initialize args)
       (assert (not (ruby-object-initialized? obj)))
       (set! (ruby-object-initialized? obj) #t)
       obj)
@@ -893,11 +890,11 @@
        (dotted-name? #'method)
        (quasisyntax/loc
         stx
-        (send% #,(make-self #'method) '#,(getter-name #'method) . args))]
+        (send #,(make-self #'method) '#,(getter-name #'method) . args))]
       ;; Method dispatch with explicit SELF.
       [(_ object method . args)
        (dotted-name? #'method)
-       (quasisyntax/loc stx (send% object '#,(getter-name #'method) . args))]
+       (quasisyntax/loc stx (send object '#,(getter-name #'method) . args))]
       ;; Regular function call.
       [(_ function . args)
        (syntax/loc stx (function . args))]))
@@ -929,14 +926,14 @@
        (dotted-name? #'method)
        (quasisyntax/loc
         stx
-        (send% #,(make-self #'method) '#,(setter-name #'method)
+        (send #,(make-self #'method) '#,(setter-name #'method)
                args ... value))]
       ;; (set! (foo .name) "Foonly")
       [(_ (object method args ...) value)
        (dotted-name? #'method)
        (quasisyntax/loc
         stx
-        (send% object '#,(setter-name #'method) args ... value))]
+        (send object '#,(setter-name #'method) args ... value))]
       ;; (set! (slot 'name) "Foonly")
       ;; (If we had defined the SLOT macro in a module that was using our
       ;; custom #%APP, we wouldn't need to define a specific setter special

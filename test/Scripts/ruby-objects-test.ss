@@ -161,7 +161,7 @@
     (test "Objects should implement their methods"
       (define bar (%bar% .new))
       (assert-equals "Hello!" (bar .hello))
-      (assert-equals "Hello!" (bar .send 'hello '())))
+      (assert-equals "Hello!" (send bar 'hello)))
     (test "DEF methods should support implicit self"
       (define bar (%bar% .new))
       (assert-equals "Hello! Mark!" (bar .hello-to "Mark")))
@@ -169,7 +169,7 @@
       (define baz (%baz% .new))
       (assert-equals "Hello! From Baz!" (baz .hello))
       (assert-equals "Hello! From Baz! Mark!" (baz .hello-to "Mark"))
-      (assert-equals "Hello! From Baz! Mark!" (baz .send 'hello-to '("Mark"))))
+      (assert-equals "Hello! From Baz! Mark!" (send baz 'hello-to "Mark")))
     (test "SLOT should allow access to private storage slots"
       (define foo (%foo% .new))
       (set! (foo .name) "Foonly")

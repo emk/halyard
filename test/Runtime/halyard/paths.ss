@@ -40,7 +40,7 @@
 
     ;;; Redirect any method calls we don't understand to our associated node.
     (def (method-missing name . args)
-      ((.resolve-path) .send name args))
+      (apply send (.resolve-path) name args))
 
     ;; XXX - Nasty hack since we haven't decided what to do about interfaces
     ;; yet.  This will need more thought.

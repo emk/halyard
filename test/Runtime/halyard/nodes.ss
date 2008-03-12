@@ -154,7 +154,7 @@
         (%node% .define-method name
          (method args
            (if (.parent)
-             ((.parent) .send name args)
+             (apply send (.parent) name args)
              (if if-not-handled
                (apply instance-exec self if-not-handled args)
                (error (cat "." name " propagated to root node without "
@@ -168,7 +168,7 @@
                :default (method () #f) :writable? #t)
         (.define-method name
           (method ()
-            (.send (symcat "set-called-" name "?!") '(#t))
+            (send self (symcat "set-called-" name "?!") #t)
             (void))))
 
       (def (new &rest keys)
@@ -194,18 +194,18 @@
     (def (propagate name &rest args)
       (cond
        [(.responds-to? name) 
-        (.send name args)]
+        (apply send self name args)]
        [(root-node? self) 
         (error (cat "." name " propagated to root node without "
                     "being handled"))]
-       [else ((.parent) .send 'propagate (list* name args))]))
+       [else (apply send (.parent) 'propagate name args)]))
 
     ;; Call a "mandatory method" (see DEFINE-METHOD-WITH-MANDATORY-SUPER),
     ;; and make sure that (SUPER) was called by any methods which override
     ;; it.
     (def (call-method-with-mandatory-super name)
-      (.send name '())
-      (unless (.send (symcat "called-" name "?") '())
+      (send self name)
+      (unless (send self (symcat "called-" name "?"))
         (error (cat "Called " self " ." name
                     ", but someone forgot to call SUPER"))))
 

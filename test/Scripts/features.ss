@@ -128,7 +128,7 @@
       
     (value enabled? #f)
     (value graphic-prefix (.browser-command))
-    (value action (callback (@browser-elem .send (.browser-command) '()))))
+    (value action (callback (send @browser-elem (.browser-command)))))
   
   (define-stylesheet $browser-style :base $base-style :family "Times")
   

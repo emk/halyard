@@ -1,6 +1,10 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+SVN - emk
+
+  * F#2620: Renamed SEND% -> SEND, exported it, and removed .SEND.
+
 0.5.0 - 11 March 2008 - tryon, emk, brian
 
 Renaming Tamale to Halyard (F#1856):
