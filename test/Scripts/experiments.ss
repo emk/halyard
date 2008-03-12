@@ -1,7 +1,7 @@
 ;; PORTED
 (module experiments (lib "halyard.ss" "halyard")
   (require (file "base.ss"))
-  (require (lib "tamale-unit.ss" "halyard"))
+  (require (lib "halyard-unit.ss" "halyard"))
   
   (sequence experiments)
   

@@ -1,5 +1,5 @@
 (module updater-test (lib "halyard.ss" "halyard")
-  (require (lib "tamale-unit.ss" "halyard"))
+  (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "updater.ss" "halyard"))
   
   (define vc-exclude (list (regexp "\\.svn$")))
@@ -66,7 +66,7 @@
       (assert (file-exists? (build-path inner-copy-dir "File2")))))
   
   ;; TODO - possibly refactor these into some sort of file-utils and 
-  ;; tamale-unit. 
+  ;; halyard-unit. 
 
   (define (assert-file-equals str file)
     (if (file-exists? file)
@@ -150,7 +150,7 @@
   (define null-digest "da39a3ee5e6b4b0d3255bfef95601890afd80709")
   (define foo-digest "855426068ee8939df6bce2c2c4b1e7346532a133")
   
-  ;; TODO - macroize?, move to tamale-unit
+  ;; TODO - macroize?, move to halyard-unit
   (define (assert-set-equal a b)
     (foreach (item a)
       (unless (member? item b)

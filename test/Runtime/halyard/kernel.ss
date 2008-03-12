@@ -594,7 +594,7 @@
       (refresh))
     
     (def (delete-element elem)
-      ;; A little placeholder to make deletion work the same way in Tamale
+      ;; A little placeholder to make deletion work the same way in Halyard
       ;; and in Common test.
       ;; TODO - Remove when cleaning up element deletion.
       (when (have-prim? 'DeleteElements)

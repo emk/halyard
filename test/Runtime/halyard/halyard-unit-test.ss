@@ -1,5 +1,5 @@
-(module tamale-unit-test (lib "halyard.ss" "halyard")
-  (require (lib "tamale-unit.ss" "halyard"))
+(module halyard-unit-test (lib "halyard.ss" "halyard")
+  (require (lib "halyard-unit.ss" "halyard"))
   
   (define (make-and-run-nth-test test-case-class n report)
     (define test-method (nth (test-case-test-methods test-case-class) n))
@@ -179,7 +179,7 @@
        (define-test-case <my-child> (<test-case>) [[a 1]] (setup body1))
        (define-test-case <my-child> () [[a 1]] (setup body1)))))
   
-  (card tamale-unit-test
+  (card halyard-unit-test
       (%test-suite%
        :tests (list <was-run-test> <setup-invoked-test>
                     <define-test-case-helper-test>

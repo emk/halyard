@@ -2,7 +2,7 @@
 ;; Some unit tests, mostly written by Robinson.  These use the
 ;; semi-supported TEST-ELEMENTS form. 
 (module test-cases (lib "halyard.ss" "halyard")
-  (require (lib "tamale-unit.ss" "halyard"))
+  (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "errortrace-lib.ss" "errortrace"))
   
   (sequence test-cases)
@@ -169,7 +169,7 @@
           (%test-browser% .new :path "http://www.google.com"))
     (test-elements "The browser should load an ftp site"
           (%test-browser% .new :path "ftp://ftp.dartmouth.edu/"))
-    ;; This page doesn't throw a Tamale error, but IE doesn't seem to be able
+    ;; This page doesn't throw a Halyard error, but IE doesn't seem to be able
     ;; to work with the gopher protocol.
     (test-elements "The browser should load a gopher site"
           (%test-browser% .new :path "gopher://home.jumpjet.info/"))

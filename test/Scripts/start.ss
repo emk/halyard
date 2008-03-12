@@ -1,12 +1,12 @@
 ;; PORTED
 ;;=========================================================================
-;;  Tamale Demo and Test Script
+;;  Halyard Demo and Test Script
 ;;=========================================================================
-;;  The goal of this script is to demonstrate good Tamale coding style,
-;;  show how all of Tamale's features are used, and provide a way for
-;;  Tamale programmers to test whether a given feature is working.
+;;  The goal of this script is to demonstrate good Halyard coding style,
+;;  show how all of Halyard's features are used, and provide a way for
+;;  Halyard programmers to test whether a given feature is working.
 ;;
-;;  Tamale is still very much in flux, and we won't freeze any APIs until
+;;  Halyard is still very much in flux, and we won't freeze any APIs until
 ;;  version 1.0 is released.  And quite frankly, we *do* need to clean up
 ;;  a bunch of stuff before it's ready for use by the general public.
 ;;  We apologize for any temporary inconveniences.
@@ -35,8 +35,8 @@
 
 ;; Other non-Runtime files we'll be using appear further down in the script.
 
-;; Tamale has an internal graphics cache.  If you make this cache
-;; larger, Tamale uses more memory but displays graphics faster.
+;; Halyard has an internal graphics cache.  If you make this cache
+;; larger, Halyard uses more memory but displays graphics faster.
 ;; The default size is probably reasonable.
 (set-image-cache-size! (* 4 1024 1024))
 
@@ -44,7 +44,7 @@
 ;;=========================================================================
 ;;  Global Event Handlers
 ;;=========================================================================
-;;  Tamale uses a HyperCard-like event-handling model: Events are first
+;;  Halyard uses a HyperCard-like event-handling model: Events are first
 ;;  passed to individual elements on the screen (in the case of mouse
 ;;  events), or to the card itself (in the case of key events).  If an
 ;;  event isn't handled, it travels up the containment hierarchy:
@@ -92,7 +92,7 @@
 (define-node-helper menu-item (y text jump-to) %menu-item%)
 
 ;; The index card is based on our %simple-card% template.
-(card index (%black-test-card% :title "Tamale Features (updated)")
+(card index (%black-test-card% :title "Halyard Features (updated)")
   (menu-item controls ( 80 "Controls"    @features/controls))
   (menu-item movies   (180 "More Movies" @media/qt/movies))
   (text release-id
@@ -115,11 +115,11 @@
 
 ;; Test cases from the standard library.
 (require (file "ruby-objects-test.ss"))
-(require (lib "tamale-unit-test.ss" "halyard"))
+(require (lib "halyard-unit-test.ss" "halyard"))
 (require (lib "updater-test.ss" "halyard"))
 
 ;; These files are included in start.ss only to make sure we get
 ;; appropriate highlighting and indentation for the identifiers they
 ;; export.
 (require (lib "animate.ss" "halyard"))
-(require (lib "tamale-unit.ss" "halyard"))
+(require (lib "halyard-unit.ss" "halyard"))

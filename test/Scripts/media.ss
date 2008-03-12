@@ -157,7 +157,7 @@
 
   ;; ----- INSTALLING the XIPH QUICKTIME COMPONENTS FOR OGG PLAYBACK -----
   ;;
-  ;; The current method of playing Ogg Theora video in Tamale is to install
+  ;; The current method of playing Ogg Theora video in Halyard is to install
   ;; QuickTime and the Xiph QuickTime Components.
   ;;
   ;; Installation:
@@ -165,11 +165,11 @@
   ;; - Download the QuickTime Components from http://xiph.org/quicktime/
   ;; - Run the EXE
   ;; - Click "Ok" a dozen times.
-  ;; - Restart tamale_test and the card should work.
+  ;; - Restart halyard_test and the card should work.
   ;;
   ;; ---------------------------------------------------------------------
   
-  ;; A first shot at a test card demonstrating ogg theora playback in Tamale.
+  ;; A first shot at a test card demonstrating ogg theora playback in Halyard.
   ;;
   ;; Hooray, it works!
   ;;

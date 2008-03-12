@@ -376,7 +376,7 @@
   ;;;  A listener is a special kind of function.  You can create a listener
   ;;;  using DEFINE-STATE-DB-LISTENER or STATE-DB-FN.
   ;;;
-  ;;;  This is an advanced language feature, and simple Tamale programs
+  ;;;  This is an advanced language feature, and simple Halyard programs
   ;;;  will almost never need to use it.
 
   (provide set-state-db! register-state-db-fn!
