@@ -3,6 +3,10 @@ BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
 SVN - emk
 
+  * F#1856: Further rename work, including:
+    - tamale-unit.ss is now halyard-unit.ss.
+    - Fixed name in LICENSE.txt to refer to Halyard.
+    - Various other edits to Halyard in strings and comments.
   * F#2620: Renamed SEND% -> SEND, exported it, and removed .SEND.
 
 0.5.0 - 11 March 2008 - tryon, emk, brian
