@@ -1,7 +1,7 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
-SVN - emk
+0.5.1 - 12 March 2008 - emk, brian
 
   * F#1856: Further rename work, including:
     - tamale-unit.ss is now halyard-unit.ss.
