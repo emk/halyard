@@ -113,7 +113,7 @@ Sometime:
 
 namespace {
     wxString kSchemeWildcards(
-        "Tamale scripts (*.ss)|*.ss|"
+        "Halyard scripts (*.ss)|*.ss|"
         "All Scheme scripts (*.ss; *.scm)|*.ss;*.scm|"
         "All files|*");
 }
@@ -2027,7 +2027,7 @@ ScriptEditor::ScriptEditor()
                       "Close the window (including all tabs).");
     file_menu->AppendSeparator();
     file_menu->Append(HALYARD_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
-                      "Reload the currently executing Tamale scripts.");
+                      "Reload the currently executing Halyard scripts.");
     file_menu->AppendSeparator();
     file_menu->Append(HALYARD_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
 
@@ -2162,7 +2162,7 @@ ScriptEditor::ScriptEditor()
     // Update our identifier database for syntax highlighting and indentation
     UpdateIdentifierInformation();
 
-    // If we have a Tamale program already, open up the start script.
+    // If we have a Halyard program already, open up the start script.
     if (TInterpreterManager::HaveInstance() &&
         TInterpreterManager::GetInstance()->InterpreterHasBegun())
     {

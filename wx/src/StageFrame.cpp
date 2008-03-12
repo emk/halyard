@@ -237,19 +237,19 @@ StageFrame::StageFrame(wxSize inSize)
     // Set up our File menu.
     mFileMenu = new wxMenu();
     mFileMenu->Append(HALYARD_NEW_PROGRAM, "&New Program...\tCtrl+N",
-                      "Create a new Tamale program.");
+                      "Create a new Halyard program.");
     mFileMenu->Append(HALYARD_OPEN_PROGRAM, "&Open Program...\tCtrl+O",
-                      "Open an existing Tamale program.");
+                      "Open an existing Halyard program.");
     mFileMenu->Append(HALYARD_SAVE_PROGRAM, "&Save Program\tCtrl+S",
-                      "Save the current Tamale program.");
+                      "Save the current Halyard program.");
     mFileMenu->AppendSeparator();
     mFileMenu->Append(HALYARD_EDIT_SCRIPTS, "&Edit Scripts\tCtrl+E",
-                      "Edit the Tamale script files for this program.");
+                      "Edit the Halyard script files for this program.");
     mFileMenu->Append(HALYARD_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
-                      "Reload the currently executing Tamale scripts.");
+                      "Reload the currently executing Halyard scripts.");
     mFileMenu->AppendSeparator();
     mFileMenu->Append(HALYARD_RUN_TESTS, "Run &Tests\tCtrl+T",
-                      "Run test cases for Tamale and/or current script.");
+                      "Run test cases for Halyard and/or current script.");
     mFileMenu->AppendSeparator();
     mFileMenu->Append(HALYARD_EXIT, "E&xit", "Exit the application.");
 
@@ -589,7 +589,7 @@ void StageFrame::UpdateVideoMode(bool inIsFullScreen, bool inIsIconized) {
 void StageFrame::NewDocument()
 {
 	wxASSERT(mDocument == NULL);
-	wxDirDialog dlg(this, "Add Tamale data to an existing program folder:");
+	wxDirDialog dlg(this, "Add Halyard data to an existing program folder:");
 
 	wxConfigBase *config = wxConfigBase::Get();
 	wxString recent;
@@ -615,8 +615,8 @@ void StageFrame::NewDocument()
 void StageFrame::OpenDocument()
 {
 	wxASSERT(mDocument == NULL);
-	wxFileDialog dlg(this, "Open a Tamale program folder:",
-                     "", "", "Tamale program (application.halyard)|application.halyard",
+	wxFileDialog dlg(this, "Open a Halyard program folder:",
+                     "", "", "Halyard program (application.halyard)|application.halyard",
                      wxOPEN|wxHIDE_READONLY);
 
     // Set the dialog's default path to the current working directory,
@@ -636,7 +636,7 @@ void StageFrame::OpenDocument()
 	{
         // We call GetDirectory instead of GetPath because we don't actually
         // care about the file itself--it's just a known file within a valid
-        // Tamale program directory.
+        // Halyard program directory.
 		wxString dir = dlg.GetDirectory();
         OpenDocument(dir);
 
@@ -1095,7 +1095,7 @@ void StageFrame::OnSize(wxSizeEvent &inEvent)
 
 void StageFrame::OnClose(wxCloseEvent &inEvent)
 {
-	// If we're in full screen mode, leave it, so we don't exit Tamale
+	// If we're in full screen mode, leave it, so we don't exit Halyard
 	// with the screen in an awkward resized mode.
 	if (IsFullScreen())
 		ShowFullScreen(false);
@@ -1110,12 +1110,12 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
 		if (!inEvent.CanVeto())
 		{
 			mDocument->Save();
-			wxLogError("Tamale forced to exit; saved document.");
+			wxLogError("Halyard forced to exit; saved document.");
 		}
 		else
 		{
-			wxMessageDialog dlg(this, "Save current Tamale program?",
-								"Tamale", wxYES_NO|wxCANCEL|wxCENTRE|
+			wxMessageDialog dlg(this, "Save current Halyard program?",
+								"Halyard", wxYES_NO|wxCANCEL|wxCENTRE|
 								wxICON_EXCLAMATION);
 			int button = dlg.ShowModal();
 			if (button == wxID_YES)

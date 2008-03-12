@@ -29,7 +29,7 @@ namespace model { class Object; }
 
 //////////
 /// This is the dialog which allows you to edit the name and other properties
-/// of a Tamale program.
+/// of a Halyard program.
 ///
 class ProgramPropDlg : public PropertyDlg
 {

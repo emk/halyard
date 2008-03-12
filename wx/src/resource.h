@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by tamale.rc
+// Used by halyard.rc
 //
 #define IDC_CURSOR1                     102
 #define IDI_ICON1                       105

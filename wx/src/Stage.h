@@ -351,7 +351,7 @@ public:
 
     //////////
     /// Load a special-purpose graphic associated with our currently running
-    /// Tamale script. Such graphics currently include script icons and
+    /// Halyard script. Such graphics currently include script icons and
     /// the splash screens.
     ///
     wxBitmap GetScriptGraphic(const std::string &inName);

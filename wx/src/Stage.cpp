@@ -212,7 +212,7 @@ void Stage::MaybeShowSplashScreen() {
     HalyardProgram *prog = mFrame->GetDocument()->GetHalyardProgram();
     std::string script_copyright =
         prog->GetName() + ". " + prog->GetCopyright();
-    std::string tamale_copyright =
+    std::string halyard_copyright =
         std::string(HALYARD_COPYRIGHT_NAME) + ". " + HALYARD_COPYRIGHT_NOTICE;
 
     // Now, set up a drawing context for our text.  We use wxWidgets to
@@ -228,7 +228,7 @@ void Stage::MaybeShowSplashScreen() {
         
     // Draw the text.
     dc.DrawText(script_copyright.c_str(), 5, 515);
-    dc.DrawText(tamale_copyright.c_str(), 5, 530);
+    dc.DrawText(halyard_copyright.c_str(), 5, 530);
     InvalidateRect(wxRect(0, 500, 800, 100));
 }
 

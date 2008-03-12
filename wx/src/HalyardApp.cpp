@@ -99,12 +99,12 @@ void HalyardApp::LaunchUpdateInstaller() {
     FileSystem::Path dst_root(FileSystem::GetBaseDirectory());
     FileSystem::Path updates_dir(src_root.AddComponent("Updates"));
     FileSystem::Path updater(updates_dir.AddComponent("UpdateInstaller"));
-	FileSystem::Path tamale(dst_root.AddComponent("Tamale"));
+	FileSystem::Path halyard(dst_root.AddComponent("Halyard"));
 
 	std::vector<std::string> clItems;
 	clItems.push_back(src_root.ToNativePathString()); // Update data here.
 	clItems.push_back(dst_root.ToNativePathString()); // Copy to here.
-	clItems.push_back(tamale.ToNativePathString());   // Command to run after.
+	clItems.push_back(halyard.ToNativePathString());   // Command to run after.
 	clItems.push_back(dst_root.ToNativePathString()); //   Arg for command.
 
 	CommandLine cl(clItems);

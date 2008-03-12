@@ -49,7 +49,7 @@ class ProgramTreeItemData;
 //  ProgramTreeCtrl
 //=========================================================================
 
-/// Tree widget showing structure of Tamale script.
+/// Tree widget showing structure of Halyard script.
 class ProgramTreeCtrl : public CustomTreeCtrl
 {
 public:
@@ -316,7 +316,7 @@ void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent)
 //  HalyardProgramItemData
 //=========================================================================
 
-/// Representation of the entire Tamale script in our ProgramTreeCtrl.
+/// Representation of the entire Halyard script in our ProgramTreeCtrl.
 class HalyardProgramItemData : public ViewItemData
 {
 public:

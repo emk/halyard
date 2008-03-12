@@ -33,7 +33,7 @@ END_NAMESPACE_HALYARD
 class StageFrame;
 class ProgramTreeCtrl;
 
-/// Public interface to tree widget describing a Tamale script.
+/// Public interface to tree widget describing a Halyard script.
 class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
 {
 	DECLARE_EVENT_TABLE()

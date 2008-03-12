@@ -115,7 +115,7 @@ void FancyDebugReport::AddRegistryData() {
     wxFileName path(GetDirectory(), "preferences.reg");
 
     // Dump our registry data.
-    wxRegKey reg("HKEY_CURRENT_USER\\Software\\Tamale");
+    wxRegKey reg("HKEY_CURRENT_USER\\Software\\Halyard");
     reg.Export(path.GetFullPath());
 
     // Add the file to our debug report.
