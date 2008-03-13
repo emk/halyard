@@ -33,7 +33,7 @@
 //   http://www.wxwidgets.org/wiki/index.php/MSVC_.NET_Setup_Guide
 //
 // ...for the details.  Note that there's a corresponding "#define
-// wxUSE_NO_MANIFEST 1" in halyard.rc.
+// wxUSE_NO_MANIFEST 1" in application.rc.
 #if defined(__WXMSW__) && !defined(__WXWINCE__)
 #pragma comment(linker, "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='X86' publicKeyToken='6595b64144ccf1df'\"")
 #endif
