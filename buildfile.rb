@@ -87,6 +87,7 @@ heading 'Uploading tarballs to website.', :name => :upload do
     # to distinguish them.
     server.upload "#{file}.tar.gz", web_path
   end
+  server.upload "#{src_dir}/Release-Notes.txt", web_path
 end
 
 # Finish the build.
