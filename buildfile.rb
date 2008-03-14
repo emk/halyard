@@ -74,19 +74,21 @@ heading 'Releasing binaries to test project.', :name => :release_to_test do
 end
 
 heading 'Building tarballs.', :name => :build_tarballs do
-  make_tarball test_dir
+  make_zipfile test_dir
   make_tarball bin_dir
 end
 
 heading 'Uploading tarballs to website.', :name => :upload do
   server = remote_host(web_host, :user => web_ssh_user)
-  # TODO - should be based on tar.gz files in relese_infos, but that 
-  # is in an inconvenient form right now.
-  [src_dir, test_dir, bin_dir].each do |file|
+  # TODO - we should base this on information in release_infos, but
+  # that needs a bit of refactoring before it will be able to do what
+  # we want.
+  [src_dir, bin_dir].each do |file|
     # TODO - server.upload does rsync, while we only need scp. We might want
     # to distinguish them.
     server.upload "#{file}.tar.gz", web_path
   end
+  server.upload "#{test_dir}.zip", web_path
   server.upload "#{src_dir}/Release-Notes.txt", web_path
 end
 
