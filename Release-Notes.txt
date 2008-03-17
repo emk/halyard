@@ -1,7 +1,7 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
-svn - emk, brian
+0.5.2 - emk, brian
 
   * F#3028: Port unit test system to new object model. 
     - (define-test-case <foo> () ...) -> 
