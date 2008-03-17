@@ -132,7 +132,8 @@ Halyard is a language for card-based interactive multimedia programming."
                "method" "on" "advise" "attr" "value" "default"
                "syntax-case" "syntax/loc" "quasisyntax/loc" "foreach"
                "provide" "lib" "all-from" "after-updating" "defclass"
-               "defmethod" "defgeneric" "setup" "run") t)
+               "defmethod" "defgeneric" "setup" "run" 
+               "setup-test" "teardown-test") t)
         "\\>") 1)
 
       ;; Magic variables.
@@ -267,6 +268,8 @@ Halyard is a language for card-based interactive multimedia programming."
 (put 'sine-wave 'scheme-indent-function 2)
 (put 'vorbis-audio 'scheme-indent-function 2)
 (put 'movie 'scheme-indent-function 2)
+(put 'setup-test 'scheme-indent-function 0)
+(put 'teardown-test 'scheme-indent-function 0)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

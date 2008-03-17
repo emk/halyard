@@ -8,30 +8,30 @@
     (with-output-to-file (build-path dir name)
       (thunk (display name) (newline))))
   
-  (define-test-case <filesystem-test> () 
-      [[test-directory #f]
-       [outer-directory #f]
-       [inner-directory #f]]
-    (setup
-      (set! (test-directory self) (ensure-directory-exists "UpdateTest"))
-      (set! (outer-directory self) 
+  (define-class %filesystem-test% (%test-case%) 
+    (attr test-directory #f :writable? #t)
+    (attr outer-directory #f :writable? #t)
+    (attr inner-directory #f :writable? #t)
+    (setup-test
+      (set! (.test-directory) (ensure-directory-exists "UpdateTest"))
+      (set! (.outer-directory) 
             (ensure-directory-exists (build-path "UpdateTest" "Outer")))
-      (set! (inner-directory self) 
+      (set! (.inner-directory) 
             (ensure-directory-exists (build-path "UpdateTest" "Outer" "Inner")))
-      (create-test-file (outer-directory self) "Deleted")
-      (create-test-file (inner-directory self) "File1")
-      (create-test-file (inner-directory self) "File2"))
-    (teardown 
-      (delete-directory-recursive (test-directory self)))
+      (create-test-file (.outer-directory) "Deleted")
+      (create-test-file (.inner-directory) "File1")
+      (create-test-file (.inner-directory) "File2"))
+    (teardown-test 
+      (delete-directory-recursive (.test-directory)))
     ;; Note that we can get away with calling UNSAFE-DIRECTORY-WRITEABLE?
     ;; under Vista in this test case ONLY because we expect to be running
     ;; in a Subversion checkout, not in an installed copy.
     (test "New directory should be writeable."
-      (assert (unsafe-directory-writeable? (test-directory self))))
+      (assert (unsafe-directory-writeable? (.test-directory))))
     (test "delete-directory-recursive should delete only the correct files."
-      (let ((deleted-dir (outer-directory self))
-            (inner-dir (inner-directory self)))
-        (create-test-file (test-directory self) "NotDeleted")
+      (let ((deleted-dir (.outer-directory))
+            (inner-dir (.inner-directory)))
+        (create-test-file (.test-directory) "NotDeleted")
         
         ;; Make sure our files exist before the delete.
         (assert (directory-exists? deleted-dir))
@@ -40,7 +40,7 @@
         (assert (file-exists? (build-path inner-dir "File1")))
         (assert (file-exists? (build-path inner-dir "File2")))
         (assert (file-exists? 
-                 (build-path (test-directory self) "NotDeleted")))
+                 (build-path (.test-directory) "NotDeleted")))
         
         ;; Delete the files.
         (delete-directory-recursive deleted-dir)
@@ -53,12 +53,12 @@
         (assert (not (file-exists? (build-path inner-dir "File1"))))
         (assert (not (file-exists? (build-path inner-dir "File2"))))
         (assert (file-exists? 
-                 (build-path (test-directory self) "NotDeleted")))))
+                 (build-path (.test-directory) "NotDeleted")))))
     (test "copy-recursive should copy correct files."
-      (define copy-dir (build-path (test-directory self) "Copy"))
+      (define copy-dir (build-path (.test-directory) "Copy"))
       (define inner-copy-dir (build-path copy-dir "Inner"))
       (copy-recursive-excluding (list (regexp "Deleted")) 
-                                (outer-directory self) copy-dir)
+                                (.outer-directory) copy-dir)
       (assert (directory-exists? copy-dir))
       (assert (directory-exists? inner-copy-dir))
       (assert (not (file-exists? (build-path copy-dir "Deleted"))))
@@ -78,65 +78,66 @@
   
   ;; NOTE - this is dead code. It's just here until I refactor the 
   ;; sanitization tests out. 
-  (define-test-case <mock-downloader-test> () 
-      [[test-directory #f]
-       [downloader #f]]
-    (setup 
-      (set! (test-directory self) (ensure-directory-exists "MockTest"))
-      (set! (downloader self) 
-            (make <mock-downloader> :directory (test-directory self)))
-      (add-mock-url (downloader self) "test://foo.com/bar" "foo\nbar\n")
-      (add-mock-url (downloader self) "test://example.com/example" "example")
-      (add-mock-url (downloader self) "test://evil.com/..\\BADFILE" "bad!")
-      (add-mock-url (downloader self) "test://nofilename.com/" "noname"))
-    (teardown 
-      (delete-directory-recursive (test-directory self)))
+  (define-class %mock-downloader-test% (%test-case%) 
+    (attr test-directory #f :writable? #t)
+    (attr downloader #f :writable? #t)
+    (setup-test 
+      (set! (.test-directory) (ensure-directory-exists "MockTest"))
+      (set! (.downloader) 
+            (make <mock-downloader> :directory (.test-directory)))
+      (add-mock-url (.downloader) "test://foo.com/bar" "foo\nbar\n")
+      (add-mock-url (.downloader) "test://example.com/example" "example")
+      (add-mock-url (.downloader) "test://evil.com/..\\BADFILE" "bad!")
+      (add-mock-url (.downloader) "test://nofilename.com/" "noname"))
+    (teardown-test 
+      (delete-directory-recursive (.test-directory)))
     (test "mock-downloader should write files."
-      (download (downloader self) "test://example.com/example")
-      (download (downloader self) "test://foo.com/bar" :file "foobar")
+      (download (.downloader) "test://example.com/example")
+      (download (.downloader) "test://foo.com/bar" :file "foobar")
       (assert-file-equals "example" 
-                          (build-path (test-directory self) "example"))
+                          (build-path (.test-directory) "example"))
       (assert-file-equals "foo\nbar\n" 
-                          (build-path (test-directory self) "foobar")))
+                          (build-path (.test-directory) "foobar")))
     (test "mock-downloader should do basic sanitization"
-      (download (downloader self) "test://evil.com/..\\BADFILE")
-      (download (downloader self) "test://nofilename.com/")
+      (download (.downloader) "test://evil.com/..\\BADFILE")
+      (download (.downloader) "test://nofilename.com/")
       (assert (not (file-exists? (build-path (current-directory) "BADFILE"))))
-      (assert-file-equals "bad!" (build-path (test-directory self) "temp1"))
+      (assert-file-equals "bad!" (build-path (.test-directory) "temp1"))
       (assert-file-equals "noname" 
-                          (build-path (test-directory self) "temp2"))))
+                          (build-path (.test-directory) "temp2"))))
   
-  (define-test-case <downloader-test> ()
-      [[test-directory #f]
-       [downloader #f]
-       [url-prefix #f]]
-    (setup
-      (set! (test-directory self) (ensure-directory-exists "DownloadTest"))
-      (set! (url-prefix self) 
+  (define-class %downloader-test% (%test-case%)
+    (attr test-directory #f :writable? #t)
+    (attr downloader #f :writable? #t)
+    (attr url-prefix #f :writable? #t)
+    (setup-test
+      (set! (.test-directory) (ensure-directory-exists "DownloadTest"))
+      (set! (.url-prefix) 
             (cat "file:///" (path->string (fixture-dir "updater")) 
                  "/downloader/")))
-    (teardown
-      (delete-directory-recursive (test-directory self)))
+    (teardown-test
+      (delete-directory-recursive (.test-directory)))
     (test "downloader should write files."
-      (download (cat (url-prefix self) "test") (test-directory self))
-      (download (cat (url-prefix self) "bar") (test-directory self) 
+      (download (cat (.url-prefix) "test") (.test-directory))
+      (download (cat (.url-prefix) "bar") (.test-directory) 
                 :name "foobar")
       (assert-file-equals "test\n"
-                          (build-path (test-directory self) "test"))
+                          (build-path (.test-directory) "test"))
       (assert-file-equals "foo\nbar\n"
-                          (build-path (test-directory self) "foobar"))))
+                          (build-path (.test-directory) "foobar"))))
   
-  (define-test-case <parsing-test> ()
-      [[base-directory (build-path (fixture-dir "updater") "base")]]
+  (define-class %parsing-test% (%test-case%)
+    (attr base-directory (build-path (fixture-dir "updater") "base")
+          :writable? #t)
     (test "Parsing manifests."
       (assert-equals 
        `((,null-digest 0 "bar.txt")
          (,null-digest 0 "foo.txt"))
-       (parse-manifest (build-path (base-directory self) "MANIFEST.base")))
+       (parse-manifest (build-path (.base-directory) "MANIFEST.base")))
       (assert-equals 
        `((,null-digest 0 "sub/baz.txt")
          (,null-digest 0 "sub/foo.txt"))
-       (parse-manifest (build-path (base-directory self) "MANIFEST.sub"))))
+       (parse-manifest (build-path (.base-directory) "MANIFEST.sub"))))
     (test "Parsing .spec files."
       (assert-set-equal 
        '(("Update-URL" "http://www.example.com/updates/")
@@ -145,7 +146,7 @@
                        110 "MANIFEST.sub")
                       ("82b90fb155029800cd45f08d32df240d672dfd5b"
                        102 "MANIFEST.base"))))
-       (parse-spec-file (build-path (base-directory self) "release.spec")))))
+       (parse-spec-file (build-path (.base-directory) "release.spec")))))
   
   (define null-digest "da39a3ee5e6b4b0d3255bfef95601890afd80709")
   (define foo-digest "855426068ee8939df6bce2c2c4b1e7346532a133")
@@ -164,24 +165,24 @@
     (cat "file:///" (path->string (fixture-dir "updater")) "/" name "/"))
 
   ;; TODO - add test case for update spec file having new URL. 
-  (define-test-case <updater-test> () 
-      [[test-directory #f]
-       [base-directory #f]
-       [update-directory #f]
-       [url-prefix #f]]
-    (setup 
-      (set! (test-directory self) (ensure-directory-exists "UpdaterTest"))
-      (set! (base-directory self)
+  (define-class %updater-test% (%test-case%) 
+    (attr test-directory #f :writable? #t)
+    (attr base-directory #f :writable? #t)
+    (attr update-directory #f :writable? #t)
+    (attr url-prefix #f :writable? #t)
+    (setup-test 
+      (set! (.test-directory) (ensure-directory-exists "UpdaterTest"))
+      (set! (.base-directory)
             (copy-recursive-excluding vc-exclude 
              (build-path (fixture-dir "updater") "base") 
-             (test-directory self)))
-      (set! (update-directory self)
+             (.test-directory)))
+      (set! (.update-directory)
             (copy-recursive-excluding vc-exclude 
              (build-path (fixture-dir "updater") "update")
-             (test-directory self)))
-      (set! (url-prefix self) (update-server-url "update-server")))
-    (teardown 
-      (delete-directory-recursive (test-directory self))
+             (.test-directory)))
+      (set! (.url-prefix) (update-server-url "update-server")))
+    (teardown-test 
+      (delete-directory-recursive (.test-directory))
       (clear-updater!))
     (test "diff-manifests should work."
       (define manifest-a '(("123" 0 "foo.txt")
@@ -195,40 +196,40 @@
       (assert-set-equal '(("125" 2 "foo.txt") ("DEF" 3 "sub/zot.txt")) 
                         (diff-manifests manifest-a manifest-b)))
     (test "Automatic update should be possible." 
-      (assert (auto-update-possible? (base-directory self)))
-      (init-updater! :root-directory (base-directory self)))
+      (assert (auto-update-possible? (.base-directory)))
+      (init-updater! :root-directory (.base-directory)))
     (test "Checking for staging update, update should be available."
-      (assert (auto-update-possible? (base-directory self)))
-      (init-updater! :root-directory (base-directory self) :staging? #t)
-      (set-updater-url! (url-prefix self))
+      (assert (auto-update-possible? (.base-directory)))
+      (init-updater! :root-directory (.base-directory) :staging? #t)
+      (set-updater-url! (.url-prefix))
       (assert (check-for-update))
       (assert (not (null? (get-manifest-diffs))))
       (assert-equals 5 (update-size)))
     (test "Checking for staging update, update should not be available."
-      (assert (auto-update-possible? (update-directory self)))
-      (init-updater! :root-directory (update-directory self) :staging? #t)
-      (set-updater-url! (url-prefix self))
+      (assert (auto-update-possible? (.update-directory)))
+      (init-updater! :root-directory (.update-directory) :staging? #t)
+      (set-updater-url! (.url-prefix))
       (assert (not (check-for-update)))
       (assert-equals '() (get-manifest-diffs)))
     (test "Checking for regular update, update should not be available."
-      (assert (auto-update-possible? (base-directory self)))
-      (init-updater! :root-directory (base-directory self))
-      (set-updater-url! (url-prefix self))
+      (assert (auto-update-possible? (.base-directory)))
+      (init-updater! :root-directory (.base-directory))
+      (set-updater-url! (.url-prefix))
       (assert (not (check-for-update)))
       (assert-equals '() (get-manifest-diffs)))
     (test "Checking for downgrade, update should be available."
-      (assert (auto-update-possible? (update-directory self)))
-      (init-updater! :root-directory (update-directory self))
-      (set-updater-url! (url-prefix self))
+      (assert (auto-update-possible? (.update-directory)))
+      (init-updater! :root-directory (.update-directory))
+      (set-updater-url! (.url-prefix))
       (assert (check-for-update))
       (assert (not (null? (get-manifest-diffs))))
       (assert-equals 0 (update-size)))
     (test "Downloading files for update."
-      (assert (auto-update-possible? (base-directory self)))
-      (init-updater! :root-directory (base-directory self) :staging? #t)
-      (set-updater-url! (url-prefix self))
+      (assert (auto-update-possible? (.base-directory)))
+      (init-updater! :root-directory (.base-directory) :staging? #t)
+      (set-updater-url! (.url-prefix))
       (assert (check-for-update))
-      (define download-dir (build-path (base-directory self) "Updates"))
+      (define download-dir (build-path (.base-directory) "Updates"))
       (define callback-args '())
           
       (download-update (fn (a b) (push! (list a b) callback-args)))
@@ -271,23 +272,23 @@
                           (1 "sub/quux.txt")) callback-args))
 
     (test "Updater should check signature on *.spec file"
-      (assert (auto-update-possible? (base-directory self)))
-      (init-updater! :root-directory (base-directory self) :staging? #t)
+      (assert (auto-update-possible? (.base-directory)))
+      (init-updater! :root-directory (.base-directory) :staging? #t)
       (set-updater-url! (update-server-url "update-server-bad-sig"))
       (assert-raises updater-security-error?
                      (check-for-update)))
 
     (test "Update should fail if manifest has been modified"
-      (assert (auto-update-possible? (base-directory self)))
-      (init-updater! :root-directory (base-directory self) :staging? #t)
+      (assert (auto-update-possible? (.base-directory)))
+      (init-updater! :root-directory (.base-directory) :staging? #t)
       (set-updater-url! (update-server-url "update-server-bad-manifest"))
       (assert (check-for-update))
       (assert-raises updater-security-error?
                      (download-update (fn (a b) (void)))))
 
     (test "Update should fail if file has been modified"
-      (assert (auto-update-possible? (base-directory self)))
-      (init-updater! :root-directory (base-directory self) :staging? #t)
+      (assert (auto-update-possible? (.base-directory)))
+      (init-updater! :root-directory (.base-directory) :staging? #t)
       (set-updater-url! (update-server-url "update-server-bad-file"))
       (assert (check-for-update))
       (assert-raises updater-security-error?
@@ -301,7 +302,7 @@
   (define (sig-file name)
     (build-path (sig-dir) name))
 
-  (define-test-case <crypto-test> () []
+  (define-class %crypto-test% (%test-case%) 
     (test "Good signatures pass validation"
       (assert (gpg-signature-valid? (sig-dir)
                                     (sig-file "good.txt.sig")
@@ -336,6 +337,6 @@
   
   (card updater-test
       (%test-suite%
-       :tests (list <filesystem-test> <downloader-test> <parsing-test> 
-                    <updater-test> <crypto-test>)))
+       :tests (list %filesystem-test% %downloader-test% %parsing-test% 
+                    %updater-test% %crypto-test%)))
   )

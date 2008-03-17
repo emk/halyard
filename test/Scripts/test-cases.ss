@@ -33,7 +33,7 @@
   ;;  Element Syntax test cases
   ;;=======================================================================
   
-  (define-test-case <element-test> () []
+  (define-class %element-test% (%test-case%)
     (test-elements "Creating an element with an invalid parameter should fail"
       (define-class %invalid-parameter-template% (%invisible-element%)
         (assert-raises exn:fail? (%invalid-parameter-template% .new
@@ -42,7 +42,7 @@
   
   (card test-cases/element-test
       (%test-suite%
-       :tests (list <element-test>)))
+       :tests (list %element-test%)))
   
   
   ;;=======================================================================
@@ -52,7 +52,7 @@
   (define (test-elements-full-name node-name)
     (cat ((current-card) .full-name) "/temporary-parent/" node-name))
   
-  (define-test-case <custom-element-test> () []
+  (define-class %custom-element-test% (%test-case%)
     (test-elements "Creating a %custom-element%"
       (%custom-element% .new :bounds (rect 0 0 10 10)))
     (test-elements "Setting the shape of a %custom-element%"
@@ -84,7 +84,7 @@
   
   (card test-cases/custom-element-test
       (%test-suite%
-       :tests (list <custom-element-test>)))
+       :tests (list %custom-element-test%)))
   
   ;;=======================================================================
   ;;  Node test cases
@@ -95,7 +95,7 @@
   (define (node-full-name-error item)
     (quote-for-regexp "full-name"))
   
-  (define-test-case <node-full-name-test> () []
+  (define-class %node-full-name-test% (%test-case%)
     (test "node-full-name should succeed on a running node or node-path"
           (define hyacinth (new-box (rect 0 0 10 10) :name 'rose))
           (hyacinth .full-name)
@@ -132,7 +132,7 @@
   
   (card test-cases/node-test
       (%test-suite%
-       :tests (list <node-full-name-test>)))
+       :tests (list %node-full-name-test%)))
   
   ;; We need to have a next-card for one of our node-full-name tests.
   (card test-cases/next-test-card
@@ -149,7 +149,7 @@
   (define (browser-native-path path)
     (make-native-path "HTML" path))
   
-  (define-test-case <browser-simple-test> () []
+  (define-class %browser-simple-test% (%test-case%)
     (test-elements "The browser should load with default values"
       (%test-browser% .new))
     (test-elements "The browser should load a local HTML page"
@@ -181,9 +181,9 @@
   
   (card test-cases/native-browser-tests
       (%test-suite%
-       :tests (list <browser-simple-test>)))
+       :tests (list %browser-simple-test%)))
   
-  (define-test-case <fallback-browser> () []
+  (define-class %fallback-browser% (%test-case%)
     ;;; NOTE: the default path of "about:blank" appears to hang the
     ;;; fallback browser.
     (test-elements "The fallback browser should load local files"
@@ -192,13 +192,13 @@
   ;;; NOTE: 
   (card test-cases/integrated-browser-tests
       (%test-suite%
-       :tests (list <fallback-browser>)))
+       :tests (list %fallback-browser%)))
   
   ;;=======================================================================
   ;;  Graphic test cases
   ;;=======================================================================
   
-  (define-test-case <graphic-element-test> () []
+  (define-class %graphic-element-test% (%test-case%)
     (test-elements "Creating a non-alpha %graphic%"
       (%graphic% .new :at (point 0 0) :path "but40.png"))
     (test-elements "Creating an alpha %graphic%"
@@ -217,7 +217,7 @@
   
   (card test-cases/graphic-test
       (%test-suite%
-       :tests (list <graphic-element-test>)))
+       :tests (list %graphic-element-test%)))
   
   ;;=======================================================================
   ;;  Errortrace test cases
@@ -251,7 +251,7 @@
            (error (cat "Expected " 'expr " to match " regexp
                        ", got " val " instead."))))]))
   
-  (define-test-case <errortrace-test> () []
+  (define-class %errortrace-test% (%test-case%)
     (test "Errotrace should include all stack frames"
       (define trace (return-errortrace (a '())))
       (assert-matches "\\(\\+ 1 n\\)" trace)
@@ -272,5 +272,5 @@
 
   (card test-cases/errortrace-test
       (%test-suite%
-       :tests (list <errortrace-test>)))
+       :tests (list %errortrace-test%)))
   )

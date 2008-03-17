@@ -2,191 +2,210 @@
   (require (lib "halyard-unit.ss" "halyard"))
   
   (define (make-and-run-nth-test test-case-class n report)
-    (define test-method (nth (test-case-test-methods test-case-class) n))
-    (define test (make test-case-class :test-method test-method))
-    (run-test-method test report)
+    (define test-method (nth (test-case-class .test-methods) n))
+    (define test (test-case-class .new :test-method test-method))
+    (test .run-test-method report)
     test)
   
   (define (make-and-run-first-test test-case-class report)
-    (assert-equals 1 (length (test-case-test-methods test-case-class)))
+    (assert-equals 1 (length (test-case-class .test-methods)))
     (make-and-run-nth-test test-case-class 0 report))
   
-  (define-test-case <was-run-inner> ()
-      [[was-run? #f]]
-    (test "Mark that we were run."
-      (set! (was-run? self) #t)))
-  
-  (define-test-case <was-run-test> () []
-    (test "Test case method should be run."
-      (let [[report (make-test-report)]]
-        (define test (make-and-run-first-test <was-run-inner> report))
-        (assert (was-run? test)))))
+  ;; Asserts that a report is successful, and errors with the first
+  ;; failure message if not.
+  (define (assert-report-successful report)
+    (unless (report .success?)
+      (error ((nth (report .failures) 0) .message))))
 
-  (define-test-case <setup-invoked-inner> ()
-      [[setup-invoked? #f]]
-    (setup
-      (set! (setup-invoked? self) #t))
+  (define-class %was-run-inner% (%test-case%)
+    (attr was-run? #f :writable? #t)
+    (test "Mark that we were run."
+      (set! (.was-run?) #t)))
+  
+  (define-class %was-run-test% (%test-case%) 
+    (test "Test case method should be run."
+      (let [[report (%test-report% .new)]]
+        (define test (make-and-run-first-test %was-run-inner% report))
+        (assert-report-successful report)
+        (assert (test .was-run?)))))
+
+  (define-class %setup-invoked-inner% (%test-case%)
+    (attr setup-invoked? #f :writable? #t)
+    (setup-test
+      (set! (.setup-invoked?) #t))
     (test "Setup should be run before test methods."
-      (assert (setup-invoked? self))))
+      (assert (.setup-invoked?))))
   
-  (define-test-case <setup-invoked-test> () []
+  (define-class %setup-invoked-test% (%test-case%) 
     (test "Setup should be invoked before test method."
-      (let [[report (make-test-report)]]
+      (let [[report (%test-report% .new)]]
         (define test
-          (make-and-run-first-test <setup-invoked-inner> report))
-        (assert (setup-invoked? test)))))
+          (make-and-run-first-test %setup-invoked-inner% report))
+        (assert-report-successful report)
+        (assert (test .setup-invoked?)))))
   
-  (define-test-case <teardown-invoked-inner> ()
-      [[teardown-invoked? #f]]
-    (teardown
-      (set! (teardown-invoked? self) #t))
+  (define-class %teardown-invoked-inner% (%test-case%)
+    (attr teardown-invoked? #f :writable? #t)
+    (teardown-test
+      (set! (.teardown-invoked?) #t))
     (test "Teardown should not be invoked yet."
-      (assert (not (teardown-invoked? self)))))
+      (assert (not (.teardown-invoked?)))))
   
-  (define-test-case <teardown-invoked-test> () []
+  (define-class %teardown-invoked-test% (%test-case%) 
     (test "Teardown should be invoked after test method."
-      (let [[report (make-test-report)]]
+      (let [[report (%test-report% .new)]]
         (define test
-          (make-and-run-first-test <teardown-invoked-inner> report))
-        (assert (teardown-invoked? test)))))
+          (make-and-run-first-test %teardown-invoked-inner% report))
+        (assert-report-successful report)
+        (assert (test .teardown-invoked?)))))
   
-  (define-test-case <teardown-invoked-if-test-fails-inner> ()
-      [[was-run? #f] [teardown-invoked? #f]]
-    (teardown
-      (set! (teardown-invoked? self) #t))
+  (define-class %teardown-invoked-if-test-fails-inner% (%test-case%)
+    (attr was-run? #f :writable? #t)
+    (attr teardown-invoked? #f :writable? #t)
+    (teardown-test
+      (set! (.teardown-invoked?) #t))
     (test "Cause an error in our test case to trigger teardown."
-      (assert (not (teardown-invoked? self)))
-      (set! (was-run? self) #t)
+      (assert (not (.teardown-invoked?)))
+      (set! (.was-run?) #t)
       (error "Expected to fail.")))
   
-  (define-test-case <teardown-invoked-if-test-fails-test> () []
+  (define-class %teardown-invoked-if-test-fails-test% (%test-case%) 
     (test "Teardown should be invoked even if test fails."
-      (let [[report (make-test-report)]]
+      (let [[report (%test-report% .new)]]
         (define test
-          (make-and-run-first-test <teardown-invoked-if-test-fails-inner>
+          (make-and-run-first-test %teardown-invoked-if-test-fails-inner%
                                    report))
-        (assert-equals #f (test-report-success? report))
-        (assert (was-run? test))
-        (assert (teardown-invoked? test)))))
+        (assert-equals #f (report .success?))
+        (assert (test .was-run?))
+        (assert (test .teardown-invoked?)))))
   
-  (define-test-case <test-methods-inner-1> () []
+  (define-class %test-methods-inner-1% (%test-case%) 
     (test "Blah." #f))
   
   (define *test-methods-inner-2-method-count* 0)
-  (define-test-case <test-methods-inner-2> () []
+  (define-class %test-methods-inner-2% (%test-case%) 
     (test "Different blah." 
       (inc! *test-methods-inner-2-method-count*))
     (test "Frobozz."
       (inc! *test-methods-inner-2-method-count*)))
   
-  (define-test-case <test-methods-test> () []
-    (test "test-case-test-methods should contain our test methods"
-      (let [[report (make-test-report)]]
+  (define-class %test-methods-test% (%test-case%) 
+    (test ".test-methods should contain our test methods"
+      (let [[report (%test-report% .new)]]
         (define (assert-test-method-titles titles test-case-class)
-          (define methods (test-case-test-methods test-case-class))
-          (assert-equals titles (map (fn (meth) (test-method-title meth))
+          (define methods (test-case-class .test-methods))
+          (assert-equals titles (map (fn (meth) (meth .title))
                                     (reverse methods))))
-        (assert-test-method-titles '("Blah.") <test-methods-inner-1>)
+        (assert-test-method-titles '("Blah.") %test-methods-inner-1%)
         (assert-test-method-titles '("Different blah." "Frobozz.")
-                                   <test-methods-inner-2>)
+                                   %test-methods-inner-2%)
         
         (set! *test-methods-inner-2-method-count* 0)
-        (run-tests <test-methods-inner-2> report)
+        (%test-methods-inner-2% .run-tests report)
+        (assert-report-successful report)
         (assert-equals 2 *test-methods-inner-2-method-count*)
         )))
   
-  (define-test-case <test-report-inner> () []
+  (define-class %test-report-inner% (%test-case%) 
     (test "#1" #f)
     (test "#2" (error "Failed #2"))
     (test "#3" (error "Failed #3")))
   
-  (define-test-case <test-report-test> () []
+  (define-class %test-report-test% (%test-case%) 
     (test "Test report should include successes and failures."
-      (let [[report (make-test-report)]]
-        (run-tests <test-report-inner> report)
-        (assert-equals 3 (test-report-run-count report))
-        (assert-equals 1 (test-report-success-count report))
-        (assert-equals 2 (test-report-failure-count report))
-        (define failures (test-report-failures report))
+      (let [[report (%test-report% .new)]
+            [failures #f]]
+        (%test-report-inner% .run-tests report)
+        (assert-equals 3 (report .run-count))
+        (assert-equals 1 (report .success-count))
+        (assert-equals 2 (report .failure-count))
+        (set! failures (report .failures))
         (assert-equals '("#2" "#3")
-                       (sort (map test-failure-title failures) string<?))
+                       (sort (map (fn (f) (f .title)) failures) string<?))
         (assert-equals '("Failed #2" "Failed #3")
-                       (sort (map test-failure-message failures) string<?))
+                       (sort (map (fn (f) (f .message)) failures) string<?))
         )))
   
   ;; TODO - Reuse throughout.
   (define (push-event! event test)
-    (set! (test-events test) (cons event (test-events test))))
+    (set! (test .test-events) (cons event (test .test-events))))
   
-  (define-test-case <inheritance-inner-1> ()
-      [[test-events '()]]
-    (setup
+  (define-class %inheritance-inner-1% (%test-case%)
+    (attr test-events '() :writable? #t)
+    (setup-test
       (push-event! 'setup self))
-    (teardown
+    (teardown-test
       (push-event! 'teardown self))
     (test "Test B."
       (push-event! 'test-b self)))
   
-  (define-test-case <inheritance-inner-2> (<inheritance-inner-1>) []
+  (define-class %inheritance-inner-2% (%inheritance-inner-1%) 
     (test "Test A."
       (push-event! 'test-a self)))
   
-  (define-test-case <inheritence-test> () []
+  (define-class %inheritence-test% (%test-case%) 
     (test "Test case should include parent's tests."
-      (let [[report (make-test-report)]]
+      (let [[report (%test-report% .new)]]
         (define (assert-events-for-nth events n)
           (define test
-            (make-and-run-nth-test <inheritance-inner-2> n report))
-          (assert-equals events (reverse (test-events test))))
+            (make-and-run-nth-test %inheritance-inner-2% n report))
+          (assert-equals events (reverse (test .test-events))))
         (assert-events-for-nth '(setup test-a teardown) 0)
-        (assert-events-for-nth '(setup test-b teardown) 1))))
+        (assert-events-for-nth '(setup test-b teardown) 1)
+        (assert-report-successful report))))
   
-  (define-test-case <define-test-case-helper-test> () []
-    (test "Helper macros should expand to defmethods"
+  (define-class %test-elements-inner% (%test-case%)
+    (attr box-name 'foo :writable? #t)
+    (setup
+      (set! (.box-name) 'bar))
+    (test-elements "Element test."
+      (%box% .new :bounds (rect 0 0 10 10) :name 'foo)))
+  
+  (define-class %test-elements-test% (%test-case%)
+    (test "TEST-ELEMENTS should leave the current card empty."
+      (let [[report (%test-report% .new)]]
+        (make-and-run-first-test %test-elements-inner% report)
+        (assert-report-successful report)
+        (assert-equals '() (node-elements (current-card))))))
+  
+  (define-class %define-test-case-helper-test% (%test-case%) 
+    (test "WITH-CAPTURED-VARIABLE should expand to LET."
       (assert-macro-expansion
        (let [[var expr]] body1 body2)
-       (with-captured-variable [var expr] body1 body2))
-      (assert-macro-expansion 
-       (defmethod (setup-test (self <my-class>))
-         (call-next-method)
-         (with-captured-variable [self self] body1 body2))
-       (define-test-case-helper <my-class> (setup body1 body2)))
-      (assert-macro-expansion 
-       (defmethod (teardown-test (self <my-class>))
-         (with-captured-variable [self self] body1 body2)
-         (call-next-method))
-       (define-test-case-helper <my-class> (teardown body1 body2)))
+       (with-captured-variable [var expr] body1 body2)))
+    (test "TEST should expand to .ADD-TEST-METHOD!"
       (assert-macro-expansion
-       (add-test-method! <my-class> "foo"
-                         (fn (self)
-                           (with-captured-variable [self self]
-                             body1 body2)))
-       (define-test-case-helper <my-class> (test "foo" body1 body2)))))
-  
-  (define-test-case <define-test-case-test> () []
-    (test "define-test-case should expand to defclass and helpers."
+       (self .add-test-method! "Add one to two." (method () (+ 1 2)))
+       (test "Add one to two." (+ 1 2))))
+    (test "TEST-ELEMENTS should expand to .ADD-TEST-METHOD!"
       (assert-macro-expansion
-       (begin
-         (defclass <my-test> (<my-parent>)
-           (a :initvalue 1 :accessor a)
-           (b :initvalue 2 :accessor b)
-           :metaclass <test-case-metaclass>)
-         (define-test-case-helper <my-test> (setup body1))
-         (define-test-case-helper <my-test> (test "Foo!" body2)))
-       (define-test-case <my-test> (<my-parent>) [[a 1] [b 2]]
-         (setup body1) (test "Foo!" body2)))
+       (self .add-test-method! "Do nothing." 
+             (method () (with-temporary-parent (void))))
+       (test-elements "Do nothing." (void))))
+    (test "SETUP-TEST should expand to .DEFINE-METHOD"
       (assert-macro-expansion
-       (define-test-case <my-child> (<test-case>) [[a 1]] (setup body1))
-       (define-test-case <my-child> () [[a 1]] (setup body1)))))
+       (self .define-method 'setup-test
+             (method () 
+               (super) 
+               (instance-exec self (method () 'foo))))
+       (setup-test 'foo)))
+    (test "TEARDOWN-TEST should expand to .DEFINE-METHOD"
+      (assert-macro-expansion
+       (self .define-method 'teardown-test
+             (method () 
+               (super) 
+               (instance-exec self (method () 'bar))))
+       (teardown-test 'bar))))
+    
   
   (card halyard-unit-test
       (%test-suite%
-       :tests (list <was-run-test> <setup-invoked-test>
-                    <define-test-case-helper-test>
-                    <define-test-case-test>
-                    <teardown-invoked-test>
-                    <teardown-invoked-if-test-fails-test>
-                    <test-methods-test>
-                    <test-report-test>
-                    <inheritence-test>)))
+       :tests (list %was-run-test% %setup-invoked-test%
+                    %define-test-case-helper-test%
+                    %teardown-invoked-test%
+                    %teardown-invoked-if-test-fails-test%
+                    %test-methods-test%
+                    %test-report-test%
+                    %inheritence-test%
+                    %test-elements-test%)))
   )

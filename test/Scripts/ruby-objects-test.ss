@@ -12,7 +12,7 @@
   ;; These are the original swindle class/object operators, given new names
   ;; to avoid confusion with the 'universal' object operators.
   
-  (define-test-case <swindle-class-operators> () []
+  (define-class %swindle-class-operators% (%test-case%)
     (test "A (rect ...) should be a swindle object"
           (assert (swindle-object? (rect 0 0 10 10)))
           (assert (not (swindle-object? 3))))
@@ -74,7 +74,7 @@
   ;; These are the new operators (that override the swindle names for class
   ;; operators. They should work on both swindle and ruby objects.
   
-  (define-test-case <universal-class-operators> () []
+  (define-class %universal-class-operators% (%test-case%)
     (test "Ruby and Swindle instances should both be objects "
           (define foo (%foo% .new))
           (define r (rect 0 0 10 10))
@@ -131,15 +131,15 @@
 
   (card ruby-objects-test/classes
       (%test-suite%
-       :tests (list <swindle-class-operators>
-                    <universal-class-operators>)))
+       :tests (list %swindle-class-operators%
+                    %universal-class-operators%)))
   
   
   ;;=======================================================================
   ;;  Ruby Object Tests
   ;;=======================================================================
   
-  (define-test-case <ruby-object-test> () []
+  (define-class %ruby-object-test% (%test-case%)
     (test "Objects should be instances of their class"
       (define foo (%foo% .new))
       (assert (foo .instance-of? %foo%))
@@ -231,7 +231,7 @@
   (define-class %quux-2% ()
     (attr a)) ; Must be specified.
 
-  (define-test-case <ruby-new-test> () []
+  (define-class %ruby-new-test% (%test-case%)
     (test "Creating a class with .new should fail"
       (assert-raises exn:fail? (%class% .new)))
     (test "ATTR should support default values"
@@ -313,7 +313,7 @@
 
   (define-class %responder-2% (%responder%))
 
-  (define-test-case <ruby-responds-to-test> () []
+  (define-class %ruby-responds-to-test% (%test-case%)
     (test "Classes should support instances-respond-to?"
       (assert (%foo% .instances-respond-to? 'hey))
       (assert (not (%foo% .instances-respond-to? 'nosuch))))
@@ -357,7 +357,7 @@
   ;;   TheRubyObjectModel.png>
   ;; <http://www.ifi.unizh.ch/richter/Classes/oose2/05_Metaclasses/
   ;;   02_smalltalk/02_metaclasses_smalltalk.html>
-  (define-test-case <ruby-metaclass-test> () []
+  (define-class %ruby-metaclass-test% (%test-case%)
     (test "Classes should support class methods"
       ;; (Which are technically instance methods on their metaclass.)
       (define fancy (%fancy-1% .new))
@@ -392,10 +392,10 @@
 
   (card ruby-objects-test/objects
       (%test-suite%
-       :tests (list <ruby-object-test>
-                    <ruby-new-test>
-                    <ruby-responds-to-test>
-                    <ruby-metaclass-test>)))
+       :tests (list %ruby-object-test%
+                    %ruby-new-test%
+                    %ruby-responds-to-test%
+                    %ruby-metaclass-test%)))
 
 
   ;;=======================================================================
@@ -453,7 +453,7 @@
       (.record-event! 'after-not-overridden))
     )
   
-  (define-test-case <advise-test> () []
+  (define-class %advise-test% (%test-case%)
     (test "ADVISE should run code before and after the original method"
       (define advised (%advised% .new))
       (assert-equals '() (advised .events))
@@ -487,7 +487,7 @@
     )
   
   (card ruby-objects-test/advise-test (%test-suite%)
-    (value tests (list <advise-test>)))
+    (value tests (list %advise-test%)))
 
 
   ;;=======================================================================
@@ -500,7 +500,7 @@
     (def (initialize &rest args)
       (debug-log "Calling the bad initialize method.")))
   
-  (define-test-case <initialize-without-super-test> () []
+  (define-class %initialize-without-super-test% (%test-case%)
     (test-elements "Failing to call SUPER shouldn't cause an infinite loop"
       (assert-raises exn:fail?
                      (%initialize-without-super% .new
@@ -509,7 +509,7 @@
                         :shape (shape 200 300)))))
   
   (card ruby-objects-test/initialize-without-super-test (%test-suite%)
-    (value tests (list <initialize-without-super-test>)))
+    (value tests (list %initialize-without-super-test%)))
   
   
   ;;=======================================================================
@@ -534,7 +534,7 @@
     (def (rest-args one two &rest rest)
       (cat "The args are: " one two rest)))
   
-  (define-test-case <error-message-test> () []
+  (define-class %error-message-test-case% (%test-case%)
     (test "Error messages should mention the method that failed"
       (define test (%error-message-test% .new))
       (assert-raises-message exn:fail?
@@ -579,6 +579,6 @@
         (test .set-advised-before!))))
   
   (card ruby-objects-test/error-message-test (%test-suite%)
-    (value tests (list <error-message-test>)))
+    (value tests (list %error-message-test-case%)))
   
   )
