@@ -556,6 +556,25 @@
     (value shape (measure-text (.style) (.text) :max-width (.max-width)))
     (after-updating [style text max-width]
       (set! (.shape) (measure-text (.style) (.text) :max-width (.max-width))))
+
+    ;; XXX - Workaround for case 2977.  When updating (.text) from "" to a
+    ;; non-empty string, we frequently get an error: "Trying to break line
+    ;; in the middle of a character".  This is because we've updated our
+    ;; .text *before* our .shape, and there's not enough space to draw even
+    ;; a single letter.
+    ;;
+    ;; The correct fix: Split .invalidate and .draw into two separate
+    ;; phases, and update the drawing architecture to call draw only at
+    ;; well-defined times, not during property updates.
+    ;;
+    ;; This is non-trivial, so we work around it by a quick-and-dirty hack:
+    ;; We check to see whether the width of our .shape has been fully
+    ;; updated yet.
+    (def (draw)
+      (when (= (rect-width (.shape))
+               (rect-width (measure-text (.style) (.text)
+                                         :max-width (.max-width))))
+        (super)))
     )
   
   ;;; Declare a %text% element.

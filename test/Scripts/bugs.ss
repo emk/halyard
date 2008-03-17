@@ -122,4 +122,15 @@
       (new-rectangle (rect 0 0 200 150) (color 0 #xff 0) :name 'third-rect
                      :parent @workspace)
       (jump @start)))
+
+  (card bugs/bug-f2977-empty-text-crash
+      (%bug-card% :bug-id "F2977" :status 'fixed
+                  :bug-title "Empty text box crashes when text changed"
+                  :instructions (cat "This card should not raise an error."))
+    (setup
+      (define example
+        (new-text (point 0 0) $caption-style ""
+                  :name 'example :parent @workspace))
+      (set! (example .text) "It works!")))
+
   )
