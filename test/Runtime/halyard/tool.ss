@@ -90,7 +90,7 @@
 	       (namespace-require '(lib "bootstrap-env.ss" "halyard"))
 
 	       ;; We need these two modules to be loaded directly into the
-	       ;; namespace, where they'll be known as #%fivel-engine and
+	       ;; namespace, where they'll be known as #%engine-primitives and
 	       ;; 5L-Kernel, respectively.  This is for compatibility
 	       ;; with the standalone engine.
 	       (load/use-compiled (build-path (collection-path "halyard")

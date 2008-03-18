@@ -4,7 +4,7 @@
 ;;  When running under DrScheme, we need to provide a low-budget immitation
 ;;  of our standalone engine so users can test simple code.
 
-(module #%fivel-engine mzscheme
+(module #%engine-primitives mzscheme
   (provide %call-prim)
   
   (define (sym-or-str-arg string-or-symbol)

@@ -92,7 +92,7 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	mGlobalEnv = scheme_basic_env();
 
 	// Make a module to hold functions exported by the engine.
-	Scheme_Object *modname = scheme_intern_symbol("#%fivel-engine");
+	Scheme_Object *modname = scheme_intern_symbol("#%engine-primitives");
 	Scheme_Env *engine_mod = scheme_primitive_module(modname, mGlobalEnv);
 
 	// Provide a way for Scheme code to call primitives.

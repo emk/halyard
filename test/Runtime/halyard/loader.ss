@@ -10,7 +10,7 @@
 
 (module 5L-Loader mzscheme
 
-  (require #%fivel-engine)
+  (require #%engine-primitives)
 
   ;; Make sure the "Runtime" and "Scripts" directories get searched for
   ;; collections of support modules.  Note that if SCRIPTS-DIRECTORY-NAME
@@ -168,7 +168,7 @@
     ;; tehcnically means that these modules are shared between the original
     ;; namespace and the script namespace, which is fairly weird.
     ;;(namespace-attach-module *original-namespace* 'mzscheme)
-    (namespace-attach-module *original-namespace* '#%fivel-engine)
+    (namespace-attach-module *original-namespace* '#%engine-primitives)
     #f)
 
   ;;; Call this function to load the 5L kernel and begin running a user

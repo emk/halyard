@@ -1,7 +1,7 @@
 (module kernel (lib "language.ss" "halyard")
 
   ;; Import %call-prim from the engine.
-  (require #%fivel-engine)
+  (require #%engine-primitives)
 
   ;; XXX - This gets automatically loaded sometimes, but not always.  In an
   ;; effort to keep our progress bar's "files to load" count correct, we

@@ -12,7 +12,7 @@
   ;; Import %call-prim from the engine.
   ;; DO NOT CALL ANYTHING BUT LOGGING FUNCTIONS USING '%CALL-5L-PRIM'--USE
   ;; 'CALL-5L-PRIM' INSTEAD.
-  (require #%fivel-engine)
+  (require #%engine-primitives)
 
   (provide 5l-log debug-log caution debug-caution non-fatal-error
            fatal-error)
