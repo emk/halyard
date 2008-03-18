@@ -216,7 +216,8 @@
        (quasisyntax/loc stx
          (#,(make-self #'body) .add-test-method! description
           (method () 
-            (with-temporary-parent . body))))]))
+            (with-temporary-parent 
+             (instance-exec self (method () . body))))))]))
   (define-syntax (setup-test stx)
     (syntax-case stx ()
       [[_ . body]

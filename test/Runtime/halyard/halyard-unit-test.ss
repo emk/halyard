@@ -159,7 +159,7 @@
     (setup
       (set! (.box-name) 'bar))
     (test-elements "Element test."
-      (%box% .new :bounds (rect 0 0 10 10) :name 'foo)))
+      (%box% .new :bounds (rect 0 0 10 10) :name (.box-name))))
   
   (define-class %test-elements-test% (%test-case%)
     (test "TEST-ELEMENTS should leave the current card empty."
@@ -180,7 +180,8 @@
     (test "TEST-ELEMENTS should expand to .ADD-TEST-METHOD!"
       (assert-macro-expansion
        (self .add-test-method! "Do nothing." 
-             (method () (with-temporary-parent (void))))
+             (method () (with-temporary-parent 
+                         (instance-exec self (method () (void))))))
        (test-elements "Do nothing." (void))))
     (test "SETUP-TEST should expand to .DEFINE-METHOD"
       (assert-macro-expansion
@@ -196,7 +197,7 @@
                (super) 
                (instance-exec self (method () 'bar))))
        (teardown-test 'bar))))
-    
+  
   
   (card halyard-unit-test
       (%test-suite%
