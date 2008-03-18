@@ -24,7 +24,7 @@
 (test (equal? foo "bar"))
 
 (debug-log "Completed simple tests")
-(5l-log "Completed simple tests")
+(app-log "Completed simple tests")
 
 
 ;;=========================================================================

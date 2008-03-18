@@ -13,7 +13,7 @@
   (card features/controls (%standard-test-card% :title "Controls")
     (text description 
         ((below (.title-elem) 20) $text16 
-         "We have fairly straight-forward access to a variety of native controls for use in 5L programs.  In most cases, we can change the color and the borders.  In addition to the controls shown here, we can have list boxes and drop-down edit fields.  Except for the HTML control, most of these should be 508-compliant with minimal work."
+         "We have fairly straight-forward access to a variety of native controls for use in Halyard programs.  In most cases, we can change the color and the borders.  In addition to the controls shown here, we can have list boxes and drop-down edit fields.  Except for the HTML control, most of these should be 508-compliant with minimal work."
          :max-width 310))
     (edit-box multi-line
         ((rect 330 10 790 110) 

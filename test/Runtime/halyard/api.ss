@@ -91,29 +91,29 @@
            (loop next-value)))]))
   (define-syntax-indent for 1)
 
-  ;;; Bind a Scheme variable name to a 5L engine variable.
+  ;;; Bind a Scheme variable name to an engine variable.
   ;;;
-  ;;; @syntax (define-engine-variable name 5L-name &opt init-val)
+  ;;; @syntax (define-engine-variable name engine-name &opt init-val)
   ;;; @param NAME name The Scheme name to use.
-  ;;; @param NAME 5L-name The corresponding name in the 5L engine.
+  ;;; @param NAME engine-name The corresponding name in the engine.
   ;;; @opt EXPRESSION init-val The initial value of the variable.
   ;;; @xref engine-var set-engine-var!
   (define-syntax define-engine-variable
     (syntax-rules ()
-      [(define-engine-variable name 5l-name init-val)
+      [(define-engine-variable name engine-name init-val)
        (begin
-         (define-symbol-macro name (engine-var '5l-name ))
-         (maybe-initialize-engine-variable '5l-name init-val))]
-      [(define-engine-variable name 5l-name)
-       (define-symbol-macro name (engine-var '5l-name))]))
+         (define-symbol-macro name (engine-var 'engine-name))
+         (maybe-initialize-engine-variable 'engine-name init-val))]
+      [(define-engine-variable name engine-name)
+       (define-symbol-macro name (engine-var 'engine-name))]))
   (define-syntax-indent define-engine-variable 2)
 
-  (define (maybe-initialize-engine-variable 5l-name init-val)
+  (define (maybe-initialize-engine-variable engine-name init-val)
     ;; A private helper for define-engine-variable.  We only initialize
     ;; a variable if it doesn't already exist, so it can keep its value
     ;; across script reloads.
-    (unless (engine-var-exists? 5l-name)
-      (set! (engine-var 5l-name) init-val)))
+    (unless (engine-var-exists? engine-name)
+      (set! (engine-var engine-name) init-val)))
 
   ;;; Define a persistent global variable which keeps its value across
   ;;; script reloads.  Note that two persistent variables with the same
@@ -180,7 +180,7 @@
   ;;;======================================================================
   ;;;  Text Drawing
   ;;;======================================================================
-  ;;;  5L text drawing uses stylesheets.
+  ;;;  Halyard text drawing uses stylesheets.
   
   (provide *stylesheet-list* (rename register-style stylesheet)
            stylesheet? stylesheet-name stylesheet-long-name stylesheet-family

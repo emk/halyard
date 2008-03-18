@@ -66,12 +66,11 @@
 
 
   ;;=======================================================================
-  ;;  Core 5L API
+  ;;  Core engine API
   ;;=======================================================================
   ;;  We only declare a small number of primitives here, typically those
   ;;  which are needed by the kernel or which intimately depend on the
-  ;;  kernel's inner workings.  The rest of these functions can be found
-  ;;  in the 5L-API module.
+  ;;  kernel's inner workings.
   
   (provide call-prim have-prim? value->boolean idle blocking-idle
            engine-var set-engine-var! engine-var-exists?
@@ -184,11 +183,11 @@
 
   ;;=======================================================================
   ;;  Kernel Entry Points
-  ;;=======================================================================
-  ;;  The '%kernel-' methods are called directly by the 5L engine.  They
-  ;;  shouldn't raise errors, because they're called directly from C++ code
-  ;;  that doesn't want to catch them (and will, in fact, quit the
-  ;;  program).
+  ;;  =======================================================================
+  ;;  The '%kernel-' methods are called directly by the engine.  They
+  ;;  shouldn't raise errors, because they're called directly from C++
+  ;;  code that doesn't want to catch them (and will, in fact, quit
+  ;;  the program).
   ;;
   ;;  The theory behind these functions is documented in detail in
   ;;  TInterpreter.h.
@@ -508,7 +507,7 @@
     ;; be disasterous).  Furthermore, we must trap all errors, because
     ;; our C++-based callers don't want to deal with Scheme exceptions.
     (if (eq? *%kernel-state* 'INTERPRETER-KILLED)
-        (5l-log "Skipping callback because interpreter is being shut down")
+        (app-log "Skipping callback because interpreter is being shut down")
         (let [[saved-kernel-state *%kernel-state*]]
           (set! *%kernel-state* 'NORMAL)
           (label exit-callback

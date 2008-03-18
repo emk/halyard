@@ -78,6 +78,6 @@
 
       ;; 
       [else
-       (error (string-append "The 5L primitive "
+       (error (string-append "The engine primitive "
                              (symbol->string name)
                              " is not emulated by DrScheme."))])))

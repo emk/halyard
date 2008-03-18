@@ -26,7 +26,7 @@
         s))
     (define result 
       (apply cat (map quote-single-for-regexp (string->list str))))
-    ;;(5l-log (cat "quote-for-regexp: " result))
+    ;;(app-log (cat "quote-for-regexp: " result))
     result)
   
   ;;=======================================================================

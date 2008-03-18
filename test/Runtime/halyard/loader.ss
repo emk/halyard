@@ -65,7 +65,7 @@
   ;; Throw an error that displays a message in a dialog box and then takes
   ;; down the engine without submitting a crash report.
   (define (environment-error message)
-    (%call-prim 'Log '5L message 'environmenterror))
+    (%call-prim 'Log 'halyard message 'environmenterror))
 
   ;; Write a line to the debug log.
   (define (debug-log msg)
@@ -149,9 +149,9 @@
   ;;; This will be overwritten if we reload a script.
   (define *script-namespace* #f)
 
-  ;;; Create a new, pristine namespace in which to run the user's 5L
-  ;;; script, and install it as the current-namespace parameter for this
-  ;;; thread.
+  ;;; Create a new, pristine namespace in which to run the user's
+  ;;; script, and install it as the current-namespace parameter for
+  ;;; this thread.
   (define (new-script-environment)
     
     ;; Store our original namespace for safe keeping.
@@ -171,7 +171,7 @@
     (namespace-attach-module *original-namespace* '#%engine-primitives)
     #f)
 
-  ;;; Call this function to load the 5L kernel and begin running a user
+  ;;; Call this function to load the kernel and begin running a user
   ;;; script.  Call this immediately *after* calling
   ;;; new-script-environment.
   ;;;
@@ -243,17 +243,8 @@
                                                        "errortrace")
                                            (build-path "compiled"))))
 
-          ;; Manually load the kernel into our new namespace.  We need to
-          ;; call (load/use-compiled ...) instead of (require ...), because
-          ;; we want the kernel registered under its official module name
-          ;; (so the engine can easily grovel around inside it) but not
-          ;; imported into our namespace (which is the job of the 5L
-          ;; language module).
           (set! filename "kernel.ss")
           (namespace-require '(lib "kernel.ss" "halyard"))
-          ;;(load/use-compiled (build-path (current-directory)
-          ;;                               "Runtime" "5L"
-          ;;                               "kernel.ss"))
           
           ;; Provide a reasonable default language for writing scripts.  We
           ;; need to set up both the transformer environment (which is used

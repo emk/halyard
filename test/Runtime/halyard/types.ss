@@ -4,7 +4,7 @@
   ;;  Built-in Types
   ;;=======================================================================
   ;;  These methods implement various "built-in" types that are known to
-  ;;  the 5L engine.  They should *never* raise errors, because they're
+  ;;  the engine.  They should *never* raise errors, because they're
   ;;  called directly from C++ code that isn't prepared to cope with Scheme
   ;;  errors.
 

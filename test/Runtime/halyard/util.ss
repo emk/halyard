@@ -10,16 +10,16 @@
   ;;=======================================================================
 
   ;; Import %call-prim from the engine.
-  ;; DO NOT CALL ANYTHING BUT LOGGING FUNCTIONS USING '%CALL-5L-PRIM'--USE
-  ;; 'CALL-5L-PRIM' INSTEAD.
+  ;; DO NOT CALL ANYTHING BUT LOGGING FUNCTIONS USING '%CALL-PRIM'--USE
+  ;; 'CALL-PRIM' INSTEAD.
   (require #%engine-primitives)
 
-  (provide 5l-log debug-log caution debug-caution non-fatal-error
+  (provide app-log debug-log caution debug-caution non-fatal-error
            fatal-error)
 
-  ;;; Write a message to 5L.log.  This log is always present on a user's
+  ;;; Write a message to Halyard.log.  This log is always present on a user's
   ;;; system, and is never deleted, so use this function sparingly.
-  (define (5l-log msg)
+  (define (app-log msg)
     (%call-prim 'Log 'halyard msg 'log))
   
   ;;; Write a message to Debug.log, which is only present on developer
@@ -29,8 +29,8 @@
   (define (debug-log msg)
     (%call-prim 'Log 'Debug msg 'log))
   
-  ;;; Print a "Caution" message to 5L.log.  This should be used for very
-  ;;; serious warnings only--see the note about 5L.log on 5L-LOG.
+  ;;; Print a "Caution" message to Halyard.log.  This should be used for very
+  ;;; serious warnings only--see the note about Halyard.log on APP-LOG.
   (define (caution msg)
     (%call-prim 'Log 'halyard msg 'caution))
   

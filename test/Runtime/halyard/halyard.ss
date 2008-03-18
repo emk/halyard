@@ -1,9 +1,10 @@
 ;;=========================================================================
-;;  The 5L Programming Language
-;;=========================================================================
-;;  The actual 5L programming language, including both the API and the
-;;  special syntax.  Everything in this directory could probably stand
-;;  a good refactoring; it's been accumulating cruft for a while.
+;;  The Halyard Programming Language
+;;  =========================================================================
+;;  The actual Halyard programming language, including both the API
+;;  and the special syntax.  Everything in this directory could
+;;  probably stand a good refactoring; it's been accumulating cruft
+;;  for a while.
 
 (module halyard (lib "language.ss" "halyard")
 
