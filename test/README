@@ -1,9 +1,0 @@
-Please get this program from CVS using the 5Ltest_wx module; this causes
-CVS to get the appropriate Fonts and Runtime directories automatically.
-
-To run this script, you'll also need wx5L_d.exe, libmzgc_d.dll and
-libmzsch_d.dll, which are available in the usual place in CVS.  The DLL
-files contain the garbage collector and Scheme interpreter, respectively.
-
-The program media under \\Mccay\prog_media\5Ltest_wx may be copied into a
-local Media directory to test non-network playback (recommended for demos).

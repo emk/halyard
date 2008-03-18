@@ -1,6 +1,0 @@
-Internal use only, for now.  We need to remove a bunch of media files,
-graphics and build-support stuff which either we don't want to open source, or
-we don't own.
-
-The testq2/gamex86.dll falls under the GPL, and source can be found in the
-5L build tree.
