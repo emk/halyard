@@ -8,7 +8,7 @@
 ;;
 ;;  You can find similar code for the DrScheme IDE in tool.ss.
 
-(module 5L-Loader mzscheme
+(module loader mzscheme
 
   (require #%engine-primitives)
 

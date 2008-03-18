@@ -212,7 +212,7 @@ TSchemeInterpreter::~TSchemeInterpreter()
 
 void TSchemeInterpreter::InitializeModuleNames()
 {
-	sLoaderModule = scheme_intern_symbol("5L-Loader");
+	sLoaderModule = scheme_intern_symbol("loader");
 	Scheme_Object *tail = scheme_make_pair(scheme_make_utf8_string("halyard"),
 										   scheme_null);
 	sKernelModule =

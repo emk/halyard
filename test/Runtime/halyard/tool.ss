@@ -7,7 +7,7 @@
 ;;  tricky modules during 'on-execute'.  We need to do things that
 ;;  hard way because we don't like the defaults.
 ;;
-;;  You can find similar code for the standalone engine in 5L-Loader.ss,
+;;  You can find similar code for the standalone engine in loader.ss,
 ;;  which is run by TSchemeInterpreter.cpp in the engine.  Generally,
 ;;  if these two loader subsystems get out of sync, things will break.
 
