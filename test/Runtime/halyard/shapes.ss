@@ -12,7 +12,7 @@
   ;;;======================================================================
 
   (provide offset-point point-difference offset-rect
-           rect-width rect-height rect-left-top rect-left-bottom
+           rect-width rect-height rect-shape rect-left-top rect-left-bottom
            rect-right-top rect-right-bottom
 
            copy-rect rect-horizontal-center rect-vertical-center
@@ -64,6 +64,10 @@
   (define (rect-height r)
     (- (rect-bottom r) (rect-top r)))
   
+  ;;; @return RECT A rect with the same width and height as R, moved to 0,0.
+  (define (rect-shape r)
+    (shape (rect-width r) (rect-height r)))
+
   ;;; @return POINT The left top corner of the rectangle.
   (define (rect-left-top r)
     (point (rect-left r) (rect-top r)))

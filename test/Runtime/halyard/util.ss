@@ -86,8 +86,8 @@
   ;;=======================================================================
 
   (provide foreach member? value->string cat symcat keyword-name
-           hash-table-has-key?
-           label with-errors-blocked with-values curry)
+           symbol->keyword setter-name? setter-name->keyword
+           hash-table-has-key? label with-errors-blocked with-values curry)
 
   ;;; Run a body once for each item in a list.
   ;;;
@@ -147,6 +147,22 @@
     (assert (keyword? value))
     (let [[str (symbol->string value)]]
       (string->symbol (substring str 1 (string-length str)))))
+
+  ;;; Convert a regular symbol to a keyword object by preprending a colo
+  (define (symbol->keyword symbol)
+    (symcat ":" symbol))
+
+  (define $setter-name-regexp (regexp "^set-([^!]+)!$"))
+
+  ;;; Is SYMBOL a name of the form "set-...!"?
+  (define (setter-name? symbol)
+    (regexp-match? $setter-name-regexp (symbol->string symbol)))
+
+  ;;; Convert a name of the form "set-...!" to the keyword ":...".
+  (define (setter-name->keyword symbol)
+    (define match (regexp-match $setter-name-regexp (symbol->string symbol)))
+    (assert match)
+    (symbol->keyword (string->symbol (cadr match))))
 
   ;;; Return #t if and only if KEY appears in TABLE.
   (define (hash-table-has-key? table key)

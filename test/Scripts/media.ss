@@ -1,5 +1,6 @@
 ;; PORTED
 (module media (lib "halyard.ss" "halyard")
+  (require (lib "proxy-for-child-element.ss" "halyard"))
   (require (file "base.ss"))
 
   (provide start-ambient kill-ambient)
@@ -14,10 +15,23 @@
     (delete-element-if-exists 'ambient))
 
   ;;; The size of our QuickTime movies.
-  (define $default-movie-size (rect 0 0 384 288))
+  (define $default-movie-shape (shape 384 288))
 
   ;;; The size of our QuickTime movies, with enough space for a controller.
-  (define $default-movie-and-controller-size (rect 0 0 384 (+ 288 16)))
+  (define $default-movie-and-controller-shape (shape 384 (+ 288 16)))
+  
+  ;;; The number of pixels to offset a caption from a movie.
+  (define $default-caption-offset 10)
+
+  ;;; The default height to use for caption text.
+  (define $default-caption-height
+    (* 2 (rect-height (measure-text $caption-style "A"))))
+
+  ;;; The default shape of a movie plus a caption.
+  (define $default-captioned-movie-shape
+    (shape (rect-width $default-movie-shape)
+           (+ (rect-height $default-movie-shape)
+              $default-caption-offset $default-caption-height)))
   
   ;;; Displays a movie or audio caption against a black background.
   (define-class %captioned-card% (%black-test-card%)
@@ -32,16 +46,45 @@
   ;;; A card which displays a single movie.
   (define-class %movie-card% (%captioned-card%)
     (attr path :type <string>)
-    (attr movie-size $default-movie-size)
+    (attr movie-shape $default-movie-shape)
     (attr controller? #f)
       
     ;;; Note that if we create movies with ELEM, they're going to start
     ;;; playing almost immediately.  This only works if you want the movie
     ;;; to start as soon as you display the card.  Otherwise, you need to
     ;;; create the movie in RUN.
-    (movie movie ((move-rect-center-to (.movie-size)
+    (movie movie ((move-rect-center-to (.movie-shape)
                                        (rect-center $screen-rect))
                   (.path) :controller? (.controller?)))
+    )
+
+  ;;; A sample "proxy" class which contains a caption and a movie, and which
+  ;;; acts as though it were a regular movie.
+  (define-class %captioned-movie% (%box%)
+    (initialize-and-proxy-for-child-element 'movie %movie%)
+
+    ;; Convert a %widget%-style :rect into a %custom-element%-style :at and
+    ;; :shape.
+    ;; TODO - Fix this, as described in case 2644.
+    (attr rect $default-captioned-movie-shape)
+    (value at (rect-left-top (.rect)))
+    (value shape (rect-shape (.rect)))
+
+    (setup
+      (.add-child-initializer! :rect (rect 0 0
+                                           (rect-width (.shape))
+                                           (- (rect-height (.shape))
+                                              (+ $default-caption-offset 
+                                                 $default-caption-height))))
+      (.create-child-element))
+
+    (text-box caption ((rect 0 (- (rect-height (.shape))
+                                  $default-caption-height)
+                             (rect-width (.shape)) (rect-height (.shape)))
+                       $caption-style ""))
+    
+    (def (media-caption event)
+      (set! ((.caption) .text) (event-caption event)))
     )
 
   (sequence media)
@@ -61,7 +104,7 @@
     (value title "External Video Captions")
     (value path "quackery_vp3.mov")
     (value controller? #t)
-    (value movie-size $default-movie-and-controller-size))
+    (value movie-shape $default-movie-and-controller-shape))
 
   (card media/qt/wait-test (%movie-card%) 
     (value title "Wait Test") 
@@ -96,7 +139,7 @@
   (card media/qt/movies (%captioned-card%) 
     (value title "Multiple Movies")
 
-    (define $rect1 (move-rect-top-to $default-movie-and-controller-size 50))
+    (define $rect1 (move-rect-top-to $default-movie-and-controller-shape 50))
     (define $rect2 (move-rect-right-to $rect1 (rect-right $screen-rect)))
 
     (movie movie1 ($rect1 "duck_and_cover_intro_vp3_captioned.mov"
@@ -125,7 +168,19 @@
     
     (run      
       ((.movie1) .wait (tc 10 00))
-      (set! ((.show-2nd) .shown?) #t)))
+      (set! ((.show-2nd) .shown?) #t)))  
+
+  (card media/qt/attached-captions (%black-test-card%)
+    (value title "Attached captions")
+    (elem movie (%captioned-movie% :rect (move-rect-center-to
+                                          $default-captioned-movie-shape
+                                          (rect-center $screen-rect))
+                                   :path "quackery_vp3.mov"))
+    (run
+      ;; Make sure we proxy WAIT correctly.
+      ((.movie) .wait)
+      (jump @index))
+    )
 
   (sequence media/qt/missing)
   
@@ -177,7 +232,7 @@
   ;;   the Xiph QuickTime plugin for Ogg Theora (see above).
   (card media/ogg-theora/video-test (%movie-card%
                                      :title "Ogg Theora demo (codec required)"
-                                     :movie-size (shape 640 480)
+                                     :movie-shape (shape 640 480)
                                      :path "CougarAceListing24july2006.ogg"))
   
 
