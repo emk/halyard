@@ -15,6 +15,11 @@
   ;; Require our macro-related helpers.
   (require-for-syntax (lib "capture.ss" "halyard"))
   (require (lib "indent.ss" "halyard"))
+  
+  ;; We need these for checking if SELF valid.
+  (require-for-syntax (lib "default-self.ss" "halyard"))  
+  (require-for-syntax (only (lib "stxparam.ss" "mzlib") 
+                            syntax-parameter-value))
 
   
   ;;=======================================================================
@@ -118,14 +123,13 @@
   (define-syntax define-def-and-super-abbrev
     (syntax-rules ()
       [(_ name)
-       (define-syntax (name stx)
-         (syntax-case stx ()
+       (define-syntax name
+         (syntax-rules ()
            [(_ . body)
-            (quasisyntax/loc stx
-              (#,(make-self #'body) .define-method 'name
-               (method ()
-                 (super)
-                 (instance-exec self (method () . body)))))]))]))
+            (.define-method 'name
+              (method ()
+                (super)
+                (instance-exec self (method () . body))))]))]))
 
   (define-def-and-super-abbrev setup)
   (define-def-and-super-abbrev run)
@@ -282,6 +286,10 @@
              (with-instance name . body)
              (name .register))))]))
 
+  ;; Is SELF a valid value in this scope?
+  (define-for-syntax (have-valid-self?)
+    (not (eq? (syntax-parameter-value #'self) %default-self)))
+  
   (define-syntax (define-node stx)
     (syntax-case stx ()
       ;; Some kinds of nodes may be lexically nested; others can't.  If
@@ -289,8 +297,7 @@
       ;; pass it to register-with-lexical-parent and let the class sort
       ;; it out.
       [(_ name bindings . body)
-       ;; Do we see a SELF in our scope?
-       (identifier-binding (make-self #'name))
+       (have-valid-self?)
        (quasisyntax/loc stx
          ;; The outermost LET allows us to hide NAME from
          ;; everybody, so that we don't shadow uses of NAME in either
@@ -303,7 +310,7 @@
          ;; DEFINE-CLASS.
          (let [[name% (let [] (define-node-internal name bindings))]]
            (with-instance name% . body)
-           (name% .register-with-lexical-parent #,(make-self #'name))))]
+           (name% .register-with-lexical-parent self)))]
       ;; We don't have SELF, so expand in the ordinary fashion.
       [(_ name . rest)
        (quasisyntax/loc stx

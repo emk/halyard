@@ -20,15 +20,13 @@
   ;;; Code installed by AFTER-UPDATING won't do anything until _after_
   ;;; .initialize has finished, to prevent object initialization from
   ;;; accidentally triggering update handlers.
-  (define-syntax (after-updating stx)
-    (syntax-case stx ()
+  (define-syntax after-updating
+    (syntax-rules ()
       [(_ [name ...] body ...)
-       (quasisyntax/loc stx
-         (#,(make-self #'(name ...)) .after-updating '(name ...)
-                                                     (method () body ...)))]
+       (.after-updating '(name ...)
+                        (method () body ...))]
       [(_ name body ...)
-       (quasisyntax/loc stx
-         (after-updating [name] body ...))]))
+       (after-updating [name] body ...)]))
 
   (with-instance (%node% .class)
     ;;; The non-macro version of AFTER-UPDATING.

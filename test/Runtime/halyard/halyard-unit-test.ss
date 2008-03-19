@@ -175,27 +175,26 @@
        (with-captured-variable [var expr] body1 body2)))
     (test "TEST should expand to .ADD-TEST-METHOD!"
       (assert-macro-expansion
-       (self .add-test-method! "Add one to two." (method () (+ 1 2)))
+       (.add-test-method! "Add one to two." (method () (+ 1 2)))
        (test "Add one to two." (+ 1 2))))
     (test "TEST-ELEMENTS should expand to .ADD-TEST-METHOD!"
       (assert-macro-expansion
-       (self .add-test-method! "Do nothing." 
-             (method () (with-temporary-parent 
-                         (instance-exec self (method () (void))))))
+       (.add-test-method! "Do nothing." 
+         (method () (with-temporary-parent (void))))
        (test-elements "Do nothing." (void))))
     (test "SETUP-TEST should expand to .DEFINE-METHOD"
       (assert-macro-expansion
-       (self .define-method 'setup-test
-             (method () 
-               (super) 
-               (instance-exec self (method () 'foo))))
+       (.define-method 'setup-test
+         (method () 
+           (super) 
+           (instance-exec self (method () 'foo))))
        (setup-test 'foo)))
     (test "TEARDOWN-TEST should expand to .DEFINE-METHOD"
       (assert-macro-expansion
-       (self .define-method 'teardown-test
-             (method () 
-               (super) 
-               (instance-exec self (method () 'bar))))
+       (.define-method 'teardown-test
+         (method () 
+           (super) 
+           (instance-exec self (method () 'bar))))
        (teardown-test 'bar))))
   
   

@@ -55,7 +55,7 @@
     (datum->syntax-object (if (pair? (syntax-e stx))
                               (car (syntax-e stx))
                               stx)
-                          name))
+                          name stx))
 
   ;; Creates a SELF variable that will be bound in the same lexical
   ;; context as CONTEXT.

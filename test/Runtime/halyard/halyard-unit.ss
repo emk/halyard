@@ -204,36 +204,31 @@
   (define-syntax-indent with-captured-variable 1)
   
   ;; TODO - factor out the common code
-  (define-syntax (test stx)
-    (syntax-case stx ()
+  (define-syntax test
+    (syntax-rules ()
       [[_ description . body]
-       (quasisyntax/loc stx
-         (#,(make-self #'body) .add-test-method! description
-          (method () . body)))]))
-  (define-syntax (test-elements stx)
-    (syntax-case stx ()
+       (.add-test-method! description
+         (method () . body))]))
+  (define-syntax test-elements
+    (syntax-rules ()
       [[_ description . body]
-       (quasisyntax/loc stx
-         (#,(make-self #'body) .add-test-method! description
-          (method () 
-            (with-temporary-parent 
-             (instance-exec self (method () . body))))))]))
-  (define-syntax (setup-test stx)
-    (syntax-case stx ()
+       (.add-test-method! description
+         (method () 
+           (with-temporary-parent . body)))]))
+  (define-syntax setup-test
+    (syntax-rules ()
       [[_ . body]
-       (quasisyntax/loc stx
-         (#,(make-self #'body) .define-method 'setup-test
-          (method () 
-            (super) 
-            (instance-exec self (method () . body)))))]))
-  (define-syntax (teardown-test stx)
-    (syntax-case stx ()
+       (.define-method 'setup-test
+         (method () 
+           (super) 
+           (instance-exec self (method () . body))))]))
+  (define-syntax teardown-test
+    (syntax-rules ()
       [[_ . body]
-       (quasisyntax/loc stx
-         (#,(make-self #'body) .define-method 'teardown-test
-          (method () 
-            (super) 
-            (instance-exec self (method () . body)))))]))
+       (.define-method 'teardown-test
+         (method () 
+           (super) 
+           (instance-exec self (method () . body))))]))
 
   (define-syntax-indent setup-test 0)
   (define-syntax-indent teardown-test 0)

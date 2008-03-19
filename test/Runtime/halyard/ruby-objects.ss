@@ -5,9 +5,14 @@
   (require-for-syntax (lib "util.ss" "halyard"))
   (require-for-syntax (lib "syntax-util.ss" "halyard"))
   (require (lib "begin-var.ss" "halyard"))
+  
+  ;; For setting up SELF and SUPER as syntax-parameters
+  (require (lib "stxparam.ss" "mzlib"))
+  (require-for-syntax (lib "default-self.ss" "halyard"))
 
   (provide ruby-object? make-ruby-instance-of?-predicate
-           ruby-class? define-class %class% %object% method~ send def
+           ruby-class? define-class %class% %object% 
+           self super method~ send def
            instance-exec with-instance attr value default advise)
 
   ;; This will be overridden later on, once we have .TO-STRING set up
@@ -182,15 +187,21 @@
              (set! (ruby-object-initialized? klass) #t)
              (with-instance klass . body)
              klass)))]))
-
-  (define-syntax (method~ stx)
-    (syntax-case stx ()
+  
+  (define-syntax-parameter self %default-self)
+  (define-syntax-parameter super
+    (lambda (stx)
+      (raise-syntax-error #f "can only be used inside a method." stx)))
+  
+  (define-syntax method~
+    (syntax-rules ()
       [(_ args . body)
-       ;; Bind SELF and SUPER using the context of BODY.
-       (with-syntax [[self (make-capture-var/ellipsis #'body 'self)]
-                     [super (make-capture-var/ellipsis #'body 'super)]]
-         (syntax/loc stx (lambda (self super . args) (begin/var . body))))]))
-
+       (lambda (self-param super-param . args)
+         ;; Parameterize SELF and SUPER to refer to appropriate versions.
+         (syntax-parameterize [[self (make-rename-transformer #'self-param)]
+                               [super (make-rename-transformer #'super-param)]]
+           (begin/var . body)))]))
+  
   (define (instances-respond-to?% klass method-name)
     (if (not klass)
       #f
@@ -304,13 +315,12 @@
        (instance-exec object (method~ () . body))]))
 
   ;; TODO - Rename DEF -> ON after overhauling nodes.ss?
-  (define-syntax (def stx)
-    (syntax-case stx ()
+  (define-syntax def
+    (syntax-rules ()
       [(_ (name . args) . body)
-       (quasisyntax/loc stx
-         (app~ #,(make-self #'name) .define-method 'name
-               (let [[name (method~ args . body)]]
-                 name)))]))
+       (app~ .define-method 'name
+             (let [[name (method~ args . body)]]
+               name))]))
   
   (define-syntax (attr stx)
     (syntax-case stx ()
@@ -319,13 +329,13 @@
        (syntax/loc stx (attr name :default (method~ () default) . args))]
       [(_ name . args) 
        (quasisyntax/loc stx
-         (app~ #,(make-self #'name) .attr 'name . args))]))
+         (app~ .attr 'name . args))]))
 
   (define-syntax (attr-initializer stx)
     (syntax-case stx ()
       [(_ name value ignorable? arg ...)
        (quasisyntax/loc stx
-         (app~ #,(make-self #'name) .attr-initializer 'name
+         (app~ .attr-initializer 'name
                (method~ () value) ignorable? arg ...))]))
   
   ;;; Specify the value to use for an attribute.
@@ -353,7 +363,7 @@
                        " "
                        (syntax-object->datum #'name)))]]
          (quasisyntax/loc stx
-           (app~ #,(make-self #'name) .advise-method 'combination 'name
+           (app~ .advise-method 'combination 'name
                  (let [[#,debugging-name (method~ (arg ...) body ...)]]
                    #,debugging-name))))]))
 
@@ -890,7 +900,7 @@
        (dotted-name? #'method)
        (quasisyntax/loc
         stx
-        (send #,(make-self #'method) '#,(getter-name #'method) . args))]
+        (send #,(make-self stx) '#,(getter-name #'method) . args))]
       ;; Method dispatch with explicit SELF.
       [(_ object method . args)
        (dotted-name? #'method)
@@ -905,7 +915,7 @@
       [(_ name)
        (quasisyntax/loc
         stx
-        (has-slot%? #,(make-self #'name) name))]))
+        (has-slot%? self name))]))
 
   ;; Getter macro for SLOT.  See also SET!~, which special-cases the
   ;; setter version.
@@ -914,7 +924,7 @@
       [(_ name)
        (quasisyntax/loc
         stx
-        (slot% #,(make-self #'name) name))]))
+        (slot% self name))]))
 
   ;; Because of the aforementioned #%app expansion problems (and related
   ;; issues), we also override Swindle's SET! and handle a few cases
@@ -939,7 +949,7 @@
       ;; custom #%APP, we wouldn't need to define a specific setter special
       ;; implementation for this macro.)
       [(_ (slot name) value)
-       (quasisyntax/loc stx (set-slot%! #,(make-self #'name) name value))]
+       (quasisyntax/loc stx (set-slot%! self name value))]
       [(_ args ...)
        (syntax/loc stx (set! args ...))]))
 
