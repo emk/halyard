@@ -1,6 +1,6 @@
 ;; PORTED
 (module media (lib "halyard.ss" "halyard")
-  (require (lib "proxy-for-child-element.ss" "halyard"))
+  (require (lib "proxy-initialize-and-methods.ss" "halyard"))
   (require (file "base.ss"))
 
   (provide start-ambient kill-ambient)
@@ -27,12 +27,6 @@
   (define $default-caption-height
     (* 2 (rect-height (measure-text $caption-style "A"))))
 
-  ;;; The default shape of a movie plus a caption.
-  (define $default-captioned-movie-shape
-    (shape (rect-width $default-movie-shape)
-           (+ (rect-height $default-movie-shape)
-              $default-caption-offset $default-caption-height)))
-  
   ;;; Displays a movie or audio caption against a black background.
   (define-class %captioned-card% (%black-test-card%)
     (text-box caption ((rect 100 475 700 590) $caption-style ""))
@@ -61,25 +55,23 @@
   ;;; A sample "proxy" class which contains a caption and a movie, and which
   ;;; acts as though it were a regular movie.
   (define-class %captioned-movie% (%box%)
-    (initialize-and-proxy-for-child-element 'movie %movie%)
+    (proxy-initialize-and-methods movie %movie%)
 
     ;; Convert a %widget%-style :rect into a %custom-element%-style :at and
     ;; :shape.
-    ;; TODO - Fix this, as described in case 2644.
-    (attr rect $default-captioned-movie-shape)
-    (value at (rect-left-top (.rect)))
-    (value shape (rect-shape (.rect)))
+    ;; TODO - See case 2644 for cleaning up rect/at silliness.
+    (attr movie-rect $default-movie-shape)
+    (value at (rect-left-top (.movie-rect)))
+    (value shape (shape (rect-width (.movie-rect))
+                        (+ (rect-height (.movie-rect))
+                           $default-caption-offset $default-caption-height)))
 
     (setup
-      (.add-child-initializer! :rect (rect 0 0
-                                           (rect-width (.shape))
-                                           (- (rect-height (.shape))
-                                              (+ $default-caption-offset 
-                                                 $default-caption-height))))
+      (.add-child-initializer! :rect (rect-shape (.movie-rect)))
       (.create-child-element))
 
-    (text-box caption ((rect 0 (- (rect-height (.shape))
-                                  $default-caption-height)
+    (text-box caption ((rect 0 (+ (rect-height (.movie-rect))
+                                  $default-caption-offset)
                              (rect-width (.shape)) (rect-height (.shape)))
                        $caption-style ""))
     
@@ -172,9 +164,9 @@
 
   (card media/qt/attached-captions (%black-test-card%)
     (value title "Attached captions")
-    (elem movie (%captioned-movie% :rect (move-rect-center-to
-                                          $default-captioned-movie-shape
-                                          (rect-center $screen-rect))
+    (elem movie (%captioned-movie% :movie-rect (move-rect-center-to
+                                                $default-movie-shape
+                                                (rect-center $screen-rect))
                                    :path "quackery_vp3.mov"))
     (run
       ;; Make sure we proxy WAIT correctly.
