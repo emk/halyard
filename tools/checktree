@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+find wx Common test/Runtime/halyard test/Scripts \
+    -name \*.cpp -o -name \*.h -o -name \*.ss | \
+    xargs tools/checkfiles
