@@ -140,6 +140,11 @@ class ScriptTextCtrl : public wxStyledTextCtrl {
         SPAN_SEARCH_LIMITS
     };
 
+    enum {
+        /// Our default line ending for empty buffers.
+        DEFAULT_LINE_ENDING = wxSTC_EOL_LF
+    };
+
     /// A range of locations to search.  This is split into two
     /// parts to accomodate wrap.
     struct SearchRange {
@@ -335,6 +340,9 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id, int font_size)
     SetEdgeColumn(79);
     AutoCompSetTypeSeparator(')'); // Safe for Scheme.
 
+    // Overridden when opening existing files by ScriptDoc::ReadDocument()
+    SetEOLMode(DEFAULT_LINE_ENDING); 
+
     // Set up parameters affecting EnsureVisibleEnforcePolicy.  This
     // makes sure search results, etc., are on screen.
     SetVisiblePolicy(wxSTC_VISIBLE_SLOP, 10);
@@ -404,7 +412,7 @@ void ScriptTextCtrl::SetUpTextStyles(int size) {
 int ScriptTextCtrl::GuessEOLStyle() {
     int len = GetTextLength();
     if (len == 0)
-        return wxSTC_EOL_LF;
+        return DEFAULT_LINE_ENDING;
     char c = GetCharAt(0);
     for (int i = 0; i < len; ++i) {
         c = GetCharAt(i);
@@ -418,7 +426,7 @@ int ScriptTextCtrl::GuessEOLStyle() {
         }
     }
 
-    return wxSTC_EOL_LF;
+    return DEFAULT_LINE_ENDING;
 }
 
 void ScriptTextCtrl::SetStatusText(const wxString &text) {
