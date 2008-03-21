@@ -67,10 +67,6 @@
 #define HAVE__STRICMP 1
 #define HAVE__VSNPRINTF 1
 
-/* Turn off warnings about identifiers being truncated in debug information. */
-/* Without this, working with STL templates will drive us nuts. */
-#pragma warning(disable: 4786)
-
 
 /*=========================================================================
 **  Macintosh Configuration

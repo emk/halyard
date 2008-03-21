@@ -20,6 +20,9 @@
 //
 // @END_LICENSE
 
+// Various things which need to happen before we include wxWidgets.
+#include "TWarnings.h"
+
 // Commonly-used wxWindows headers.
 #include <wx/wx.h>
 #include <wx/xrc/xmlres.h>
