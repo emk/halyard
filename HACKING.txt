@@ -49,9 +49,6 @@ Checking 5L Out of CVS
 Building Win32 5L
 -----------------
 
-  Using the System control panel, set the environment variable WXWIN to
-  $5L_DIR/libs/wxWidgets.
-
   Install Visual C++.NET off of the MSDN subscription, after making
   sure we have enough licenses.  Make sure you have everything related
   to C++ development or media libraries (including ActiveX).  Also,

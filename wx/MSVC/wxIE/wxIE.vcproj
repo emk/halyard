@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(WXWIN)/include,$(WXWIN)\lib\mswd"
+				AdditionalIncludeDirectories="../../../libs/wxWidgets/include,../../../libs/wxWidgets/lib/mswd"
 				PreprocessorDefinitions="WIN32,_DEBUG,__WXDEBUG__,WINVER=0x0400,STRICT,__WXWINDOWS__"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -113,7 +113,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(WXWIN)/include,$(WXWIN)\lib\msw"
+				AdditionalIncludeDirectories="../../../libs/wxWidgets/include,../../../libs/wxWidgets/lib/msw"
 				PreprocessorDefinitions="WIN32,NDEBUG,WINVER=0x0400,STRICT,__WXWINDOWS__"
 				StringPooling="true"
 				RuntimeLibrary="0"
