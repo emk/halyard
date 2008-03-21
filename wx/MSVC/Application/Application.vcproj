@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/src/mzscheme/include;../../../libs/freetype2/include;../../../libs/boost;&quot;$(WXWIN)/include&quot;;&quot;$(WXWIN)/contrib/include&quot;;&quot;$(WXWIN)/lib/mswd&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec;../../../libs/curl/include;../../../libs/plt/src/worksp"
+				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/src/mzscheme/include;../../../libs/freetype2/include;../../../libs/boost;&quot;../../../libs/wxWidgets/include&quot;;&quot;../../../libs/wxWidgets/contrib/include&quot;;&quot;../../../libs/wxWidgets/lib/mswd&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec;../../../libs/curl/include;../../../libs/plt/src/worksp"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;WINVER=0x400;_MT;wxUSE_GUI=1;__WXDEBUG__;WXDEBUG=1;__WXWINDOWS__;REF_HARD_LINKED;IML_Q2_EXTENSIONS;CURL_STATICLIB"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
@@ -68,7 +68,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(WXWIN)\include;..\..\src;..\..\..\Common"
+				AdditionalIncludeDirectories="../../../libs/wxWidgets\include;..\..\src;..\..\..\Common"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -144,7 +144,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/src/mzscheme/include;../../../libs/freetype2/include;../../../libs/boost;&quot;$(WXWIN)/include&quot;;&quot;$(WXWIN)/contrib/include&quot;;&quot;$(WXWIN)/lib/msw&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec;../../../libs/curl/include;../../../libs/plt/src/worksp"
+				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/src/mzscheme/include;../../../libs/freetype2/include;../../../libs/boost;&quot;../../../libs/wxWidgets/include&quot;;&quot;../../../libs/wxWidgets/contrib/include&quot;;&quot;../../../libs/wxWidgets/lib/msw&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec;../../../libs/curl/include;../../../libs/plt/src/worksp"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;WINVER=0x400;_MT;wxUSE_GUI=1;IML_Q2_EXTENSIONS;CURL_STATICLIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -168,7 +168,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(WXWIN)\include;..\..\src;..\..\..\Common"
+				AdditionalIncludeDirectories="../../../libs/wxWidgets\include;..\..\src;..\..\..\Common"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"

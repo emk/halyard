@@ -79,9 +79,6 @@ Checking Halyard Out of SVN
 Building Win32 Halyard
 ----------------------
 
-  Using the System control panel, set the environment variable WXWIN to
-  $HALYARD_DIR\libs\wxWidgets.
-
   Install Visual C++.NET 2005 off of the Microsoft Campus Agreement.
   Make sure you have everyting related to C++ development, but you can
   turn off all other parts of Visual Studio (like SQL server, C#, and
