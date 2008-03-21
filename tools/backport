@@ -1,0 +1,139 @@
+#!/usr/bin/env ruby
+#
+# Backport changes from our git-svn trunk to the current branch, editing
+# commit logs semi-sensibly.
+#
+# Usage: tools/backport rNNN...
+#
+# There are some other ways to invoke this script, but they'll be explained
+# automatically when they're needed.
+
+require 'fileutils'
+require 'rubygems'
+gem 'textwrap'
+require 'textwrap'
+
+COMMIT_MSG_FILE = ".git/halyard-backport/commit-msg.txt"
+REMAINING_REVS_FILE = ".git/halyard-backport/remaining"
+
+# Make sure there's no junk in our index or working copy.
+def require_clean_working_copy
+  diff = `git diff HEAD`
+  unless diff.empty?
+    STDERR.puts "Working copy must be clean to run this script."
+    exit 1
+  end
+end
+
+# Given a Subversion revision, look up a git revision.
+def get_git_rev(svn_rev)
+  result = `git svn find-rev #{svn_rev} trunk`
+  result.chomp!
+  raise "Cannot get git rev for #{svn_rev}" unless result =~ /^[0-9a-f]{40}$/
+  result
+end
+
+# Build a new commit message.  We do some fairly aggressive reformatting to
+# make things look reasonable in git, and to record the source of the
+# merge.
+def make_new_commit_message(svn_rev)
+  git_rev = get_git_rev(svn_rev)
+
+  # Extract information from the original log message.
+  lines = []
+  author = nil
+  bug = nil
+  old_log = `git log -1 --pretty=raw #{git_rev}`
+  old_log.each_line do |line|
+    line.chomp!
+    case line
+    when /^author ([^ ]+) /
+      author = $1
+    when /^    git-svn-id: /
+      # We really don't want to copy this, because we'll be committing under
+      # a new ID.
+    when /^    Bug ID: (.+)$/
+      bug = $1
+    when /^    (.*)/
+      lines += Textwrap.wrap($1, 75)
+    else
+      # Ignore it.
+    end
+  end
+
+  # Remove any trailing blank lines.
+  lines.pop while lines.last =~ /^\s*$/
+
+  # Try to create a plausible summary line.
+  if lines.length == 0
+    summary = "No log message"
+  else
+    summary = lines[0]
+  end
+
+  # Build some meta-data to stick at the end of the commit.
+  trailer = ["(cherry picked from commit #{git_rev})", "Author: #{author}"]
+  trailer << "Bug ID: #{bug}" if bug
+
+  # Build the new commit message.
+  new_message = ["Merge #{svn_rev}: #{summary}"]
+  new_message << lines.join("\n") unless lines.empty?
+  new_message << trailer.join("\n")
+  new_message.join("\n\n") + "\n"
+end
+
+# Commit the current index using our saved log message.
+def git_commit_index
+  system("git", "commit", "-F", COMMIT_MSG_FILE, "-e") or exit 1
+end
+
+# Make our working directory, if it doesn't already exist.
+FileUtils.mkdir_p(".git/halyard-backport/")
+
+# Are we resuming a previous merge, unstaging release notes, or starting a
+# new merge?
+if ARGV[0] == "ignore-release-notes"
+  system("git reset HEAD Release-Notes.txt")
+  system("git checkout HEAD Release-Notes.txt") or
+    raise "Can't checkout Release-Notes.txt"
+  puts "Done."
+  exit 0
+elsif ARGV[0] == "resume"
+  svn_revs_to_merge =
+    File.read(REMAINING_REVS_FILE).chomp.split(/ /)
+  git_commit_index
+else
+  # Sanity-check our working copy once, before we start.
+  require_clean_working_copy
+  svn_revs_to_merge = ARGV
+end
+
+until svn_revs_to_merge.empty?
+  # Get the revisions to merge.
+  svn_rev = svn_revs_to_merge.shift
+  git_rev = get_git_rev(svn_rev)
+  puts "Cherry-picking #{svn_rev} from #{git_rev}"
+
+  # Save a draft commit message for later use.
+  File.open(COMMIT_MSG_FILE, 'w') do |f|
+    f.write(make_new_commit_message(svn_rev))
+  end
+
+  # Attempt to merge the patch.
+  if system("git", "cherry-pick", "--no-commit", git_rev)
+    # We succeeded, so go ahead and commit it.
+    git_commit_index
+  else
+    # We failed, so dump our list of remaining revisions, and explain to
+    # the user how to continue.
+    File.open(REMAINING_REVS_FILE, 'w') do |f|
+      f.puts(svn_revs_to_merge.join(" "))
+    end
+    system("git", "status")
+    STDERR.puts "Merge of #{svn_rev} failed, will need manual cleanup."
+    STDERR.puts "Type \"tools/backport ignore-release-notes\" to throw away"
+    STDERR.puts "changes to Release-Notes.txt."
+    STDERR.puts "Type \"tools/backport resume\" when done."
+    exit 1
+  end
+end
