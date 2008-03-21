@@ -1,70 +1,119 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="8.00"
 	Name="Common"
-	SccProjectName=""
-	SccLocalPath="">
+	ProjectGUID="{09D9D9F2-3933-419C-ACA6-8731BF0A4686}"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\Common,..\..\..\libs\libxml2\include,..\..\..\libs\freetype2\include,..\..\..\libs\plt\include,..\..\..\libs\crypto,..\..\..\libs\boost,..\..\..\libs\sqlite,..\..\..\libs\sqlite3-plus\sqlite3-plus,..\..\..\libs\CrashRpt\crashrpt\include"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,LIBXML_STATIC"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				EnableFunctionLevelLinking="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Release/Common.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\Release\Common.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=".\Release\Common.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -72,8 +121,8 @@
 				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="CommonHeaders.h"
 				PrecompiledHeaderFile=".\Debug/Common.pch"
 				AssemblerListingLocation=".\Debug/"
@@ -81,387 +130,511 @@
 				ProgramDataBaseFileName=".\Debug/"
 				BrowseInformation="1"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				CompileAs="0"/>
+				CompileAs="0"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\Debug\Common.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Culture="1033"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=".\Debug\Common.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			>
 			<File
-				RelativePath="..\..\..\Common\CommandLine.cpp">
+				RelativePath="..\..\..\Common\CommandLine.cpp"
+				>
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="Release|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\Common\CommonHeaders.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\CrashReporter.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\Common\doc\Document.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\Common\FileSystem.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\Common\Model.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\Common\ModelChange.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\Common\ModelView.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\Common\ScriptEditorDB.cpp">
+				RelativePath="..\..\..\Common\CommonHeaders.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="1"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TCommonPrimitives.cpp">
+				RelativePath="..\..\..\Common\CrashReporter.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TDeveloperPrefs.cpp">
+				RelativePath="..\..\..\Common\doc\Document.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TEncoding.cpp">
+				RelativePath="..\..\..\Common\FileSystem.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TException.cpp">
+				RelativePath="..\..\..\Common\Model.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TInterpreter.cpp">
+				RelativePath="..\..\..\Common\ModelChange.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TLogger.cpp">
+				RelativePath="..\..\..\Common\ModelView.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TPoint.cpp">
+				RelativePath="..\..\..\Common\ScriptEditorDB.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TPolygon.cpp">
+				RelativePath="..\..\..\Common\doc\TamaleProgram.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TPrimitives.cpp">
+				RelativePath="..\..\..\Common\TCommonPrimitives.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TRect.cpp">
+				RelativePath="..\..\..\Common\TDeveloperPrefs.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeCallback.cpp">
+				RelativePath="..\..\..\Common\TEncoding.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeConv.cpp">
+				RelativePath="..\..\..\Common\TestCase.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeInterpreter.cpp">
+				RelativePath="..\..\..\Common\TException.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeRtCallback.cpp">
+				RelativePath="..\..\..\Common\TInterpreter.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeScriptEditorDB.cpp">
+				RelativePath="..\..\..\Common\TLogger.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TStartup.cpp">
+				RelativePath="..\..\..\Common\TPoint.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TStateDB.cpp">
+				RelativePath="..\..\..\Common\TPolygon.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TStateListenerManager.cpp">
+				RelativePath="..\..\..\Common\TPrimitives.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TStyleSheet.cpp">
+				RelativePath="..\..\..\Common\TRect.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TTemplateUtils.cpp">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeCallback.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TValue.cpp">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeConv.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TVariableManager.cpp">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeInterpreter.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\doc\TamaleProgram.cpp">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeRtCallback.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TestCase.cpp">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeScriptEditorDB.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\Typography.cpp">
+				RelativePath="..\..\..\Common\TStartup.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\XmlUtils.cpp">
+				RelativePath="..\..\..\Common\TStateDB.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TStateListenerManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TStyleSheet.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TTemplateUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TValue.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TVariableManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\Typography.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\XmlUtils.cpp"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl">
+			Filter="h;hpp;hxx;hm;inl"
+			>
 			<File
-				RelativePath="..\..\..\Common\CommandLine.h">
+				RelativePath="..\..\..\Common\CommandLine.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\CommonHeaders.h">
+				RelativePath="..\..\..\Common\CommonHeaders.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\CrashReporter.h">
+				RelativePath="..\..\..\Common\CrashReporter.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\doc\Document.h">
+				RelativePath="..\..\..\Common\doc\Document.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\FileSystem.h">
+				RelativePath="..\..\..\Common\FileSystem.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\GraphicsTools.h">
+				RelativePath="..\..\..\Common\GraphicsTools.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\Model.h">
+				RelativePath="..\..\..\Common\Model.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\ModelChange.h">
+				RelativePath="..\..\..\Common\ModelChange.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\ModelView.h">
+				RelativePath="..\..\..\Common\ModelView.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\ScriptEditorDB.h">
+				RelativePath="..\..\..\Common\ScriptEditorDB.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TCommon.h">
+				RelativePath="..\..\..\Common\doc\TamaleProgram.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TCommonPrimitives.h">
+				RelativePath="..\..\..\Common\TCommon.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TDeveloperPrefs.h">
+				RelativePath="..\..\..\Common\TCommonPrimitives.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TEncoding.h">
+				RelativePath="..\..\..\Common\TDeveloperPrefs.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TException.h">
+				RelativePath="..\..\..\Common\TEncoding.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TInterpreter.h">
+				RelativePath="..\..\..\Common\TestCase.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TLogger.h">
+				RelativePath="..\..\..\Common\TException.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TPlatform.h">
+				RelativePath="..\..\..\Common\TInterpreter.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TPoint.h">
+				RelativePath="..\..\..\Common\TLogger.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TPolygon.h">
+				RelativePath="..\..\..\Common\TPlatform.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TPrimitives.h">
+				RelativePath="..\..\..\Common\TPoint.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TRect.h">
+				RelativePath="..\..\..\Common\TPolygon.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeCallback.h">
+				RelativePath="..\..\..\Common\TPrimitives.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeConv.h">
+				RelativePath="..\..\..\Common\TRect.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeInterpreter.h">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeCallback.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemePtr.h">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeConv.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeRtCallback.h">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeInterpreter.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\lang\scheme\TSchemeScriptEditorDB.h">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemePtr.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TStartup.h">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeRtCallback.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TStateListenerManager.h">
+				RelativePath="..\..\..\Common\lang\scheme\TSchemeScriptEditorDB.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TStyleSheet.h">
+				RelativePath="..\..\..\Common\TStartup.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TTemplateUtils.h">
+				RelativePath="..\..\..\Common\TStateListenerManager.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TUtilities.h">
+				RelativePath="..\..\..\Common\TStyleSheet.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TValue.h">
+				RelativePath="..\..\..\Common\TTemplateUtils.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TVariableManager.h">
+				RelativePath="..\..\..\Common\TUtilities.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TVectorDiff.h">
+				RelativePath="..\..\..\Common\TValue.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TVersion.h">
+				RelativePath="..\..\..\Common\TVariableManager.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\doc\TamaleProgram.h">
+				RelativePath="..\..\..\Common\TVectorDiff.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TestCase.h">
+				RelativePath="..\..\..\Common\TVersion.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\Typography.h">
+				RelativePath="..\..\..\Common\Typography.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\XmlUtils.h">
+				RelativePath="..\..\..\Common\XmlUtils.h"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Optimized Source Files"
-			Filter="">
+			>
 			<File
-				RelativePath="..\..\..\Common\GraphicsTools.cpp">
+				RelativePath="..\..\..\Common\GraphicsTools.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						GlobalOptimizations="TRUE"
 						InlineFunctionExpansion="2"
-						EnableIntrinsicFunctions="TRUE"
-						OmitFramePointers="TRUE"
-						OptimizeForWindowsApplication="TRUE"
+						EnableIntrinsicFunctions="true"
+						OmitFramePointers="true"
 						BasicRuntimeChecks="0"
 						UsePrecompiledHeader="0"
-						DebugInformationFormat="3"/>
+						DebugInformationFormat="3"
+					/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="sqlite3-plus Files"
-			Filter="">
+			>
 			<File
-				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_connection.cpp">
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_connection.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_internal.cpp">
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_internal.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_internal.h">
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_internal.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_plus.h">
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_plus.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_reader.cpp">
+				RelativePath="..\..\..\libs\sqlite3-plus\sqlite3-plus\sqlite3_reader.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="boost Files"
-			Filter="">
+			>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\convenience.cpp">
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\convenience.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\exception.cpp">
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\exception.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\operations_posix_windows.cpp">
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\operations_posix_windows.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\path_posix_windows.cpp">
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\path_posix_windows.cpp"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						UsePrecompiledHeader="0"
+					/>
 				</FileConfiguration>
 			</File>
 		</Filter>

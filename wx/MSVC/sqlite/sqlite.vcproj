@@ -1,246 +1,361 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="8.00"
 	Name="sqlite"
 	ProjectGUID="{DACCC4BB-28C4-41C8-A605-5BDBC3B749C4}"
-	Keyword="Win32Proj">
+	Keyword="Win32Proj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="4"
-			CharacterSet="2">
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\libs\sqlite"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NO_TCL"
-				MinimalRebuild="TRUE"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="0"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"/>
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="4"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)/sqlite.lib"/>
+				OutputFile="$(OutDir)/sqlite.lib"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="4"
-			CharacterSet="2">
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				OmitFramePointers="TRUE"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\..\libs\sqlite"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;NO_TCL"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="0"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)/sqlite.lib"/>
+				OutputFile="$(OutDir)/sqlite.lib"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm"
+			>
 			<File
-				RelativePath="..\..\..\libs\sqlite\attach.c">
+				RelativePath="..\..\..\libs\sqlite\attach.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\auth.c">
+				RelativePath="..\..\..\libs\sqlite\auth.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\btree.c">
+				RelativePath="..\..\..\libs\sqlite\btree.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\build.c">
+				RelativePath="..\..\..\libs\sqlite\build.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\date.c">
+				RelativePath="..\..\..\libs\sqlite\date.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\delete.c">
+				RelativePath="..\..\..\libs\sqlite\delete.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\encode.c">
+				RelativePath="..\..\..\libs\sqlite\encode.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\expr.c">
+				RelativePath="..\..\..\libs\sqlite\expr.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\func.c">
+				RelativePath="..\..\..\libs\sqlite\func.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\hash.c">
+				RelativePath="..\..\..\libs\sqlite\hash.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\insert.c">
+				RelativePath="..\..\..\libs\sqlite\insert.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\legacy.c">
+				RelativePath="..\..\..\libs\sqlite\legacy.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\main.c">
+				RelativePath="..\..\..\libs\sqlite\main.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\opcodes.c">
+				RelativePath="..\..\..\libs\sqlite\opcodes.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\os_win.c">
+				RelativePath="..\..\..\libs\sqlite\os_win.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\pager.c">
+				RelativePath="..\..\..\libs\sqlite\pager.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\parse.c">
+				RelativePath="..\..\..\libs\sqlite\parse.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\pragma.c">
+				RelativePath="..\..\..\libs\sqlite\pragma.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\printf.c">
+				RelativePath="..\..\..\libs\sqlite\printf.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\random.c">
+				RelativePath="..\..\..\libs\sqlite\random.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\select.c">
+				RelativePath="..\..\..\libs\sqlite\select.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\shell.c">
+				RelativePath="..\..\..\libs\sqlite\shell.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\table.c">
+				RelativePath="..\..\..\libs\sqlite\table.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\tclsqlite.c">
+				RelativePath="..\..\..\libs\sqlite\tclsqlite.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\tokenize.c">
+				RelativePath="..\..\..\libs\sqlite\tokenize.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\trigger.c">
+				RelativePath="..\..\..\libs\sqlite\trigger.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\update.c">
+				RelativePath="..\..\..\libs\sqlite\update.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\utf.c">
+				RelativePath="..\..\..\libs\sqlite\utf.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\util.c">
+				RelativePath="..\..\..\libs\sqlite\util.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\vacuum.c">
+				RelativePath="..\..\..\libs\sqlite\vacuum.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\vdbe.c">
+				RelativePath="..\..\..\libs\sqlite\vdbe.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\vdbeapi.c">
+				RelativePath="..\..\..\libs\sqlite\vdbeapi.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\vdbeaux.c">
+				RelativePath="..\..\..\libs\sqlite\vdbeaux.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\vdbemem.c">
+				RelativePath="..\..\..\libs\sqlite\vdbemem.c"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\where.c">
+				RelativePath="..\..\..\libs\sqlite\where.c"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc">
+			Filter="h;hpp;hxx;hm;inl;inc"
+			>
 			<File
-				RelativePath="..\..\..\libs\sqlite\btree.h">
+				RelativePath="..\..\..\libs\sqlite\btree.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\config.h">
+				RelativePath="..\..\..\libs\sqlite\config.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\hash.h">
+				RelativePath="..\..\..\libs\sqlite\hash.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\opcodes.h">
+				RelativePath="..\..\..\libs\sqlite\opcodes.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\os.h">
+				RelativePath="..\..\..\libs\sqlite\os.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\os_common.h">
+				RelativePath="..\..\..\libs\sqlite\os_common.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\os_win.h">
+				RelativePath="..\..\..\libs\sqlite\os_win.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\pager.h">
+				RelativePath="..\..\..\libs\sqlite\pager.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\parse.h">
+				RelativePath="..\..\..\libs\sqlite\parse.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\sqlite3.h">
+				RelativePath="..\..\..\libs\sqlite\sqlite3.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\sqliteInt.h">
+				RelativePath="..\..\..\libs\sqlite\sqliteInt.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\vdbe.h">
+				RelativePath="..\..\..\libs\sqlite\vdbe.h"
+				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\sqlite\vdbeInt.h">
+				RelativePath="..\..\..\libs\sqlite\vdbeInt.h"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+			>
 		</Filter>
 	</Files>
 	<Globals>

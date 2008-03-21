@@ -24,5 +24,16 @@
 #include <wx/wx.h>
 #include <wx/xrc/xmlres.h>
 
+// This needs to appear at least once in our project, in either a header or
+// a cpp file.  See:
+//
+//   http://www.wxwidgets.org/wiki/index.php/MSVC_.NET_Setup_Guide
+//
+// ...for the details.  Note that there's a corresponding "#define
+// wxUSE_NO_MANIFEST 1" in tamale.rc.
+#if defined(__WXMSW__) && !defined(__WXWINCE__)
+#pragma comment(linker, "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='X86' publicKeyToken='6595b64144ccf1df'\"")
+#endif
+
 // Commonly-used headers from our portable runtime library.
 #include "CommonHeaders.h"
