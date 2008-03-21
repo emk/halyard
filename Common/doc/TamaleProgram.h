@@ -33,10 +33,6 @@ public:
 	DECLARE_MODEL_CLASS(TamaleProgram);
 	virtual void Initialize();
 
-	model::List *GetBackgrounds();
-
-	void InsertBackground();
-
     std::string GetName();
     std::string GetCopyright();
     std::string GetDebugReportURL();

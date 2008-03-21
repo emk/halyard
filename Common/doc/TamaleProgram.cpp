@@ -26,7 +26,6 @@
 
 #include <ctime>
 #include "TamaleProgram.h"
-#include "Background.h"
 
 USING_NAMESPACE_FIVEL
 using namespace model;
@@ -59,17 +58,6 @@ void TamaleProgram::Migrate() {
         SetString("dbgreporturl", "");
     if (!DoFind("sourcefilecount"))
         SetInteger("sourcefilecount", 1);
-}
-
-List *TamaleProgram::GetBackgrounds()
-{
-	return cast<List>(Get("backgrounds"));
-}
-
-void TamaleProgram::InsertBackground()
-{
-	List *backgrounds = cast<List>(Get("backgrounds"));
-	backgrounds->Append(new Background())->Initialize();
 }
 
 /// This script name is displayed on the splash screen.
