@@ -167,6 +167,7 @@ public:
 
 protected:
     void SetUpTextStyles(int size);
+    int GuessEOLStyle();
 
 private:
     void SetStatusText(const wxString &text);
@@ -398,6 +399,26 @@ void ScriptTextCtrl::SetUpTextStyles(int size) {
     StyleSetForeground(wxSTC_LISP_WORD5, wxColor(0x00, 0x60, 0x20));
 
     // Boring: wxSTC_LISP_NUMBER, wxSTC_LISP_IDENTIFIER, wxSTC_LISP_OPERATOR
+}
+
+int ScriptTextCtrl::GuessEOLStyle() {
+    int len = GetTextLength();
+    if (len == 0)
+        return wxSTC_EOL_LF;
+    char c = GetCharAt(0);
+    for (int i = 0; i < len; ++i) {
+        c = GetCharAt(i);
+        if (c == '\n')
+            return wxSTC_EOL_LF;
+        else if (c == '\r') {
+            if ((i+1 < len) && GetCharAt(i+1) == '\n')
+                return wxSTC_EOL_CRLF;
+            else
+                return wxSTC_EOL_CR;
+        }
+    }
+
+    return wxSTC_EOL_LF;
 }
 
 void ScriptTextCtrl::SetStatusText(const wxString &text) {
@@ -1548,6 +1569,10 @@ void ScriptDoc::ReadDocument() {
         THROW(("Error reading from file: "+path).mb_str());
     SetText(wxString(&data[0], length));
     file.Close();
+
+    // Set our EOL mode to our best guess at the EOL style, based on the
+    // first EOL character or pair that we find.
+    SetEOLMode(GuessEOLStyle());
 
     UpdateSavePointModTime();
 
