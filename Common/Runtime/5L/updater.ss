@@ -4,8 +4,28 @@
   ;; TODO - these should probably be factored out into some sort of file-utils
   ;; library.
   (provide delete-directory-recursive copy-recursive copy-recursive-excluding
-           read-string-from-file)
+           read-string-from-file unsafe-directory-writeable?)
   
+  ;;; On Vista, nobody (not even administrators) can directly write to
+  ;;; "C:\Program Files".  But if we use UAC, we can ask the user to
+  ;;; approve the changes and grant us write access (perhaps by typing an
+  ;;; administrator password).
+  (define (updater-can-use-uac-to-get-administrator-privileges?)
+    (call-5l-prim 'IsVistaOrNewer))
+
+  ;;; Test to see whether we can write to a directory.  DO NOT USE THIS
+  ;;; FUNCTION ON VISTA!  If you test whether "C:\Program Files\Blah" is
+  ;;; writable under Vista, this function will be fooled by the UAC
+  ;;; backwards compatibility glue, and incorrectly return #t.
+  (define (unsafe-directory-writeable? dir)
+    (define path
+      (build-path dir (cat "TEMP_PERMISSION_TEST_" (random 1000000000))))
+    (with-handlers [[exn:fail:filesystem? (lambda (exn) #f)]]
+      (define test (open-output-file path))
+      (close-output-port test)
+      (delete-file path)
+      #t))
+
   (define (delete-directory-recursive path)
     (cond 
       [(link-exists? path) (delete-file path)]
@@ -165,8 +185,13 @@
     (unless entry (error "Corrupt .spec file" key alist))
     (second entry))
   
-  (define (auto-update-possible? dir) 
-    (file-exists? (build-path dir "release.spec")))
+  (define (auto-update-possible? dir)
+    (and (file-exists? (build-path dir "release.spec"))
+         (or (updater-can-use-uac-to-get-administrator-privileges?)
+             ;; PORTABILITY - We're not on Vista, so we can get away with
+             ;; using UNSAFE-DIRECTORY-WRITEABLE?.  But this code is still
+             ;; Windows-specific.
+             (unsafe-directory-writeable? (current-directory)))))
   
   (defclass <spec> ()
     url build meta-manifest)

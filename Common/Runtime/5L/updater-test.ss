@@ -23,12 +23,11 @@
       (create-test-file (inner-directory self) "File2"))
     (teardown 
       (delete-directory-recursive (test-directory self)))
-    ;; We've been burned too much by testing whether or not directories are
-    ;; writable under Vista.  The new plan: Actually obey the new rules,
-    ;; and put our read/write data in an appropriate place.
-    ;;(test "New directory should be writeable."
-    ;;  (assert (root-directory-writeable?))
-    ;;  (assert (dir-writeable? (test-directory self))))
+    ;; Note that we can get away with calling UNSAFE-DIRECTORY-WRITEABLE?
+    ;; under Vista in this test case ONLY because we expect to be running
+    ;; in a Subversion checkout, not in an installed copy.
+    (test "New directory should be writeable."
+      (assert (unsafe-directory-writeable? (test-directory self))))
     (test "delete-directory-recursive should delete only the correct files."
       (let ((deleted-dir (outer-directory self))
             (inner-dir (inner-directory self)))
