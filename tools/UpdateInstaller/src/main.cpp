@@ -67,7 +67,9 @@ void UpdaterMain(size_t argc, const char **argv) {
             printf("Usage: UpdateInstaller --uninstall path\n");
             exit(1);
         } else {
-            LogFile logger(path(argv[2], native) / "Updates" / "temp" / "log");
+            path root(argv[2], native);
+            LogFile logger(root / "Updates" / "temp" / "log");
+            UpdateInstaller::DeleteLockFileForUninstall(root);
             logger.Log("Uninstall completed.");
             exit(0);
         }
@@ -81,7 +83,9 @@ void UpdaterMain(size_t argc, const char **argv) {
                                                     path(argv[2], native));
 		if (!installer.IsUpdatePossible()) {
 			// If we determine, safely, that updating is impossible, we should
-			// just relaunch the program. 
+			// just relaunch the program.
+            // TODO - On Vista, this will show a dialog claiming the update
+            // was successful.
 			logger.Log("Update is impossible; relaunching.");
 			LaunchProgram(argc, argv);
 			exit(1);
