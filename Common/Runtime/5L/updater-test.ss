@@ -260,7 +260,7 @@
   (define (sig-file name)
     (build-path (sig-dir) name))
 
-  (define-test-case <gpgv-test> () []
+  (define-test-case <crypto-test> () []
     (test "Good signatures pass validation"
       (assert (gpg-signature-valid? (sig-dir)
                                     (sig-file "good.txt.sig")
@@ -273,6 +273,9 @@
       (assert (not (gpg-signature-valid? (sig-dir)
                                          (sig-file "bad2.txt.sig")
                                          (sig-file "bad2.txt")))))
+    (test "SHA 1 hashes for files should be correct"
+      (assert-equals "7a499dc7e5c2237b6e85de0f9cada0aa1af0060a"
+                     (sha1-file (sig-file "good.txt"))))
     )
 
   ;; For testing the installer:
@@ -293,5 +296,5 @@
   (card updater-test
       (%test-suite%
        :tests (list <filesystem-test> <downloader-test> <parsing-test> 
-                    <updater-test> <gpgv-test>)))
+                    <updater-test> <crypto-test>)))
   )

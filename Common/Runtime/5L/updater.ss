@@ -77,7 +77,7 @@
   
   ;;===========================================================================
 
-  (provide gpg-signature-valid?)
+  (provide gpg-signature-valid? sha1-file)
 
   ;;; Verify the GPG signature of a file.  TRUSTED-KEYS-DIR should contain
   ;;; a keyring named "trustedkeys.gpg", specifying what public keys should
@@ -104,6 +104,12 @@
          (close-input-port stdout)
          (close-output-port stdin)
          (close-input-port stderr)))))
+
+  ;;; Calculate the SHA1 sum of a file, and return it as a string.
+  (define (sha1-file file)
+    (if (file-exists? file)
+      (call-5l-prim 'Sha1File (path->string file))
+      (error (cat "File does not exist: " file))))
 
   ;;===========================================================================
   
