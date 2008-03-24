@@ -92,16 +92,21 @@ void FiveLApp::LaunchUpdateInstallerBeforeExiting() {
 void FiveLApp::LaunchUpdateInstaller() {
     // PORTABILITY - We need to make the UpdateInstaller work elsewhere.
     // XXX - Extract application exe name from wxWidgets?
-    FileSystem::Path base(FileSystem::GetBaseDirectory());
-    FileSystem::Path updater(base.AddComponent("UpdateInstaller"));
-	FileSystem::Path tamale(base.AddComponent("Tamale"));
+    FileSystem::Path src_root(FileSystem::GetScriptDataDirectory());
+    FileSystem::Path dst_root(FileSystem::GetBaseDirectory());
+    FileSystem::Path updates_dir(src_root.AddComponent("Updates"));
+    FileSystem::Path updater(updates_dir.AddComponent("UpdateInstaller"));
+	FileSystem::Path tamale(dst_root.AddComponent("Tamale"));
+
 	std::vector<std::string> clItems;
-	clItems.push_back(updater.ToNativePathString());
-	clItems.push_back(base.ToNativePathString());
-	clItems.push_back(tamale.ToNativePathString());
-	clItems.push_back(base.ToNativePathString());
+	clItems.push_back(src_root.ToNativePathString()); // Update data here.
+	clItems.push_back(dst_root.ToNativePathString()); // Copy to here.
+	clItems.push_back(tamale.ToNativePathString());   // Command to run after.
+	clItems.push_back(dst_root.ToNativePathString()); //   Arg for command.
+
 	CommandLine cl(clItems);
-    wxExecute(cl.WindowsQuotedString().c_str(), wxEXEC_ASYNC);
+    if (!CommandLine::ExecAsync(updater.ToNativePathString(), cl))
+        gLog.FatalError("Error installing update.");
 }
 
 void FiveLApp::IdleProc(bool inBlock)
