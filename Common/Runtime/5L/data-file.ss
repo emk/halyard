@@ -45,6 +45,14 @@
   (define (read-data table key &key (default #f))
     (hash-table-get (find-table table) key (lambda () default)))
 
+  (define (read-pair-from-line line the-table)
+    (let* ((str-input (open-input-string line))
+           (key (read str-input))
+           (value (read str-input)))
+      (when (not (or (eof-object? key) 
+                     (eof-object? value)))
+        (hash-table-put! the-table key value))))
+
   (define (maybe-read-data-from-file table)
     (define file-with-path (datafile-path table))
     (define the-table (make-hash-table 'equal))
@@ -52,13 +60,18 @@
       (let ((file-port (open-input-file file-with-path)))
         (letrec ((read-pair
                   (lambda ()
-                    (let ((key (read file-port))
-                          (value (read file-port)))
-                      (if (not (eof-object? key))
+                    (with-handlers 
+                      [[exn:fail? 
+                        (lambda (ex) 
+                          (debug-log (cat "maybe-read-data-from-file: "
+                                          (exn-message ex)))
+                          (read-pair))]]
+                      (let ((next-line (read-line file-port)))
+                        (if (not (eof-object? next-line))
                           (begin
-                            (hash-table-put! the-table key value)
+                            (read-pair-from-line next-line the-table)
                             (read-pair))
-                          (close-input-port file-port))))))
+                          (close-input-port file-port)))))))
           (read-pair))))
     the-table)
 
