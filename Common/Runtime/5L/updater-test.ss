@@ -254,7 +254,27 @@
                           (1 "sub/quux.txt")) callback-args))
     )
   
-    
+  (define (sig-dir)
+    (build-path (fixture-dir "updater") "signatures"))
+
+  (define (sig-file name)
+    (build-path (sig-dir) name))
+
+  (define-test-case <gpgv-test> () []
+    (test "Good signatures pass validation"
+      (assert (gpg-signature-valid? (sig-dir)
+                                    (sig-file "good.txt.sig")
+                                    (sig-file "good.txt"))))
+    (test "Invalid signatures fail validation"
+      (assert (not (gpg-signature-valid? (sig-dir)
+                                         (sig-file "bad1.txt.sig")
+                                         (sig-file "bad1.txt")))))
+    (test "Signatures from unknown keys fail validation"
+      (assert (not (gpg-signature-valid? (sig-dir)
+                                         (sig-file "bad2.txt.sig")
+                                         (sig-file "bad2.txt")))))
+    )
+
   ;; For testing the installer:
   (provide create-installer-fixture)
   (define (create-installer-fixture)
@@ -273,5 +293,5 @@
   (card updater-test
       (%test-suite%
        :tests (list <filesystem-test> <downloader-test> <parsing-test> 
-                    <updater-test>)))
+                    <updater-test> <gpgv-test>)))
   )
