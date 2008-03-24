@@ -636,8 +636,22 @@ void StageFrame::OpenDocument(const wxString &inDirPath) {
     SetObject(mDocument->GetTamaleProgram());
     mProgramTree->RegisterDocument(mDocument);
     CrashReporter::GetInstance()->RegisterDocument(mDocument);
+    CheckForUpdateLockFile(); // Needs to come after CrashReporter setup.
     mStage->MaybeShowSplashScreen();
     mStage->Show();
+}
+
+void StageFrame::CheckForUpdateLockFile() {
+    FileSystem::Path lock =
+        FileSystem::GetBaseDirectory().AddComponent("UPDATE.LCK");
+    if (lock.DoesExist())
+        // TODO - Occasionally, we threaten to not display the output of
+        // FatalError to our users (and just submit crash reports).  But
+        // if we ever make such a change, we still need to display this
+        // error message.
+        gLog.FatalError("The installed copy of the program appears to\n"
+                        "have been incompletely updated.  You may need to\n"
+                        "uninstall it, and then reinstall it from scratch.");
 }
 
 void StageFrame::LoadIcon(const std::string &inName, wxIconBundle &ioIcons,

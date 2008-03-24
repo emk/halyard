@@ -266,8 +266,7 @@ void FancyCrashReporter::RegisterDocument(FIVEL_NS Document *inDocument) {
         AddDiagnosticFile(spec.ToNativePathString(), "Version information");
 
     // We then try to find our UpdaterInstaller log, which is helpful for
-    // debugging update-related crashes.  Right now, this appears to get
-    // deleted if the updater is working correctly.
+    // debugging update-related crashes.
     FS::Path data_dir(FS::GetScriptDataDirectory());
     FS::Path temp_dir(data_dir.AddComponent("Updates").AddComponent("temp"));
     FS::Path update_log(temp_dir.AddComponent("log"));

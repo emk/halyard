@@ -264,6 +264,11 @@ public:
     ///
 	void OpenDocument(const wxString &inDirPath);
 
+    //////////
+    /// Make sure that no update is currently underway.
+    ///
+    void CheckForUpdateLockFile();
+
 	//////////
 	/// We listen to the Document object so we can update the frame
 	/// title.
