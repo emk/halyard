@@ -211,7 +211,8 @@ bool IsSafeToRelaunchAutomatically() {
 void AskUserToRelaunch() {
     ::MessageBox(NULL, (_T("Your program has been successfully updated,\n")
                         _T("and you may now run it again.")),
-                 NULL, MB_TASKMODAL | MB_OK | MB_ICONINFORMATION);
+                 _T("Update Installed"),
+                 MB_TASKMODAL | MB_OK | MB_ICONINFORMATION);
 }
 
 // Convert an LPCSTR to an LPCWSTR (stored in a std::wstring).  This
