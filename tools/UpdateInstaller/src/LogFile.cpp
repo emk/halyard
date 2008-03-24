@@ -28,6 +28,7 @@
 #include "boost/filesystem/convenience.hpp"
 
 #include "LogFile.h"
+#include "Interface.h"
 
 using namespace boost::filesystem;
 
@@ -44,15 +45,17 @@ LogFile::~LogFile() {
   fclose(mLogFile);
 }
 
-void LogFile::Log(const boost::format &message) {
-  Log(message.str().c_str());
+void LogFile::Log(const boost::format &message, Severity severity) {
+  Log(message.str().c_str(), severity);
 }
 
-void LogFile::Log(const std::string &message) {
-  Log(message.c_str());
+void LogFile::Log(const std::string &message, Severity severity) {
+  Log(message.c_str(), severity);
 }
 
-void LogFile::Log(const char *message) {
+void LogFile::Log(const char *message, Severity severity) {
   fprintf(mLogFile, "%s\n", message);
   fflush(mLogFile);
+  if (severity == FATAL)
+      ReportError(message);
 }

@@ -77,13 +77,14 @@ bool UpdateInstaller::IsUpdatePossible() {
 
 void UpdateInstaller::InstallUpdate() {
     size_t total = mCopies.size();
+    UpdateProgressRange(total);
 	std::vector<CopySpec>::const_iterator copy = mCopies.begin();
 	for (size_t i = 0; copy != mCopies.end(); ++copy, ++i) {
-        UpdateProgess(i, total);
+        UpdateProgress(i);
 		create_directories(copy->dest.branch_path());
 		copy->CopyOverwriting();
 	}
-    UpdateProgess(total, total);
+    UpdateProgress(total);
 }
 
 bool UpdateInstaller::CopySpec::IsCopyPossible() const {

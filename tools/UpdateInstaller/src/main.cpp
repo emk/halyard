@@ -82,11 +82,9 @@ void UpdaterMain(size_t argc, const char **argv) {
 		logger.Log("Install is possible; beginning install.");
 		installer.InstallUpdate();
 	} catch (std::exception &e) {
-		logger.Log(format("Error: %s") % e.what());
-		exit(1);
+		logger.Log(format("Error: %s") % e.what(), LogFile::FATAL);
 	} catch (...) {
-		logger.Log("Unknown error.");
-		exit(1);
+		logger.Log("Unknown error.", LogFile::FATAL);
 	}
 
 	logger.Log("Update installed successfully. Relaunching.");

@@ -36,12 +36,17 @@ using namespace boost::filesystem;
 
 class LogFile {
 public:
+    enum Severity {
+        MESSAGE,
+        FATAL
+    };
+
 	LogFile(const path &file);
 	~LogFile();
 
-	void Log(const boost::format &message);
-	void Log(const std::string &message);
-	void Log(const char *message);
+	void Log(const boost::format &message, Severity severity = MESSAGE);
+	void Log(const std::string &message, Severity severity = MESSAGE);
+	void Log(const char *message, Severity severity = MESSAGE);
 private: 
 	FILE *mLogFile;
 };
