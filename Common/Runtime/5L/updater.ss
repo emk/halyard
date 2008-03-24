@@ -368,8 +368,22 @@
                      (if (updater-staging? *updater*)
                        "staging.spec"
                        "release.spec")))
+    ;; Grab both the *.spec file and the *.spec.sig file *before* looking
+    ;; into the *.spec file.  After all, we don't want to rely on any spec
+    ;; inforamation (including the URL contained in the spec file) until
+    ;; we've checked the signature.
     (download url (update-dir) :name "release.spec")
     (assert (file-exists? (update-dir "release.spec")))
+    (download (cat url ".sig") (update-dir) :name "release.spec.sig")
+    (assert (file-exists? (update-dir "release.spec.sig")))
+
+    ;; If our signature is bad, fail *immediately*, and don't set anything
+    ;; else up.
+    (unless (gpg-signature-valid? (updater-root-directory *updater*)
+                                  (update-dir "release.spec.sig")
+                                  (update-dir "release.spec"))
+      (error "Cannot verify signature on update *.spec file"))
+
     (register-update-spec (update-dir "release.spec")))
   
   ;; Check to see if an update is available. Returns #t if one is.
