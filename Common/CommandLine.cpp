@@ -70,3 +70,32 @@ std::string CommandLine::WindowsQuoteArgument(std::string arg) const {
 	result += "\"";
 	return result;
 }
+
+#ifdef WIN32
+
+#include <cassert>
+#include <windows.h>
+
+bool CommandLine::ExecAsync(const std::string &inProgram,
+                            const CommandLine &inArgs)
+{
+    /// Ideally, the first HWND parameter would point to the application's
+    /// front-most window, so that we can attempt privilege escalation.
+    /// But it doesn't, so the escalation dialog may be created in a
+    /// minimized state, and many users may fail to find it.
+    ///
+    /// If we used 'runas' instead of 'open', we would supposedly get a
+    /// privilege escalation dialog even without a proper manifest.  But we
+    /// don't want that.
+    HINSTANCE result =
+        ::ShellExecute(NULL, "open", inProgram.c_str(),
+                       inArgs.WindowsQuotedString().c_str(), NULL, 1);
+
+    // Result codes of less than 32 are errors.
+    return (result >= HINSTANCE(32));
+}
+
+
+#else
+#error "Need implementation of CommandLine::ExecAsync"
+#endif

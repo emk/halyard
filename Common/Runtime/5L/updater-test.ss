@@ -23,9 +23,12 @@
       (create-test-file (inner-directory self) "File2"))
     (teardown 
       (delete-directory-recursive (test-directory self)))
-    (test "New directory should be writeable."
-      (assert (root-directory-writeable?))
-      (assert (dir-writeable? (test-directory self))))
+    ;; We've been burned too much by testing whether or not directories are
+    ;; writable under Vista.  The new plan: Actually obey the new rules,
+    ;; and put our read/write data in an appropriate place.
+    ;;(test "New directory should be writeable."
+    ;;  (assert (root-directory-writeable?))
+    ;;  (assert (dir-writeable? (test-directory self))))
     (test "delete-directory-recursive should delete only the correct files."
       (let ((deleted-dir (outer-directory self))
             (inner-dir (inner-directory self)))

@@ -29,7 +29,7 @@ using namespace boost::filesystem;
 
 class UpdateInstaller {
 public:
-	UpdateInstaller(const path &root_path);
+	UpdateInstaller(const path &src_root, const path &dst_root);
 	
 	bool IsUpdatePossible();
 	void InstallUpdate();

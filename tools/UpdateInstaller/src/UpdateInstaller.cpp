@@ -38,34 +38,30 @@ using namespace boost::filesystem;
 static bool IsWriteable(const path &name);
 static void TouchFile(const path &name);
 
-UpdateInstaller::UpdateInstaller(const path &root_path) {
-	Manifest diff(root_path / "Updates/temp/MANIFEST-DIFF");
+UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root) {
+	Manifest diff(src_root / "Updates/temp/MANIFEST-DIFF");
 
 	Manifest::EntryVector::const_iterator iter = diff.entries().begin();
 	for (; iter != diff.entries().end(); ++iter) {
-		path src_path = root_path / "Updates/pool" / iter->digest();
-		path dst_path = root_path / iter->path();
-		
-		// TODO - add test case for this exception
-		if (iter->path() != "UpdateInstaller.exe") {
-			mCopies.push_back(CopySpec(src_path, dst_path));
-		}
+		path src_path = src_root / "Updates/pool" / iter->digest();
+		path dst_path = dst_root / iter->path();
+        mCopies.push_back(CopySpec(src_path, dst_path));
 	}
 
 	// TODO - add test case for subset of manifests installed
-	SpecFile spec(root_path / "Updates/release.spec");
-	directory_iterator dir_iter(root_path);
+	SpecFile spec(src_root / "Updates/release.spec");
+	directory_iterator dir_iter(dst_root);
 	for(; dir_iter != directory_iterator(); ++dir_iter) {
 		if (dir_iter->leaf().substr(0, 9) == "MANIFEST.") {
-			path src_path = root_path / "Updates/manifests" / spec.build() 
+			path src_path = src_root / "Updates/manifests" / spec.build() 
 				/ dir_iter->leaf();
 			
 			mCopies.push_back(CopySpec(src_path, *dir_iter));
 		}
 	}
 
-	mCopies.push_back(CopySpec(root_path / "Updates/release.spec", 
-							   root_path / "release.spec"));
+	mCopies.push_back(CopySpec(src_root / "Updates/release.spec", 
+							   dst_root / "release.spec"));
 }
 
 bool UpdateInstaller::IsUpdatePossible() {

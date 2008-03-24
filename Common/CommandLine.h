@@ -36,6 +36,19 @@ public:
 	CommandLine(std::vector<std::string> &args) : mArgs(args) {}
 
 	std::string WindowsQuotedString() const;
+
+    /// Run the specified program with the specified arguments.  The
+    /// 'inProgram' argument should be a native, properly-quoted path
+    /// string.
+    ///
+    /// On Windows Vista, this function will run inProgram in such a way
+    /// that any embedded manifest may be used the escalate its privileges
+    /// under UAC.
+    ///
+    /// Returns true if the application could be executed.
+    static bool ExecAsync(const std::string &inProgram,
+                          const CommandLine &inArgs);
+
 private:
 	std::string WindowsQuoteArgument(std::string arg) const;
 

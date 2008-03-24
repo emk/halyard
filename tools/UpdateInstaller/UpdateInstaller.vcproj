@@ -73,6 +73,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AdditionalManifestFiles="..\..\Common\requireAdministrator.manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -155,6 +156,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AdditionalManifestFiles="..\..\Common\requireAdministrator.manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
