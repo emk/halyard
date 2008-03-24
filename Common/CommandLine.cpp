@@ -88,8 +88,8 @@ bool CommandLine::ExecAsync(const std::string &inProgram,
     /// privilege escalation dialog even without a proper manifest.  But we
     /// don't want that.
     HINSTANCE result =
-        ::ShellExecute(NULL, "open", inProgram.c_str(),
-                       inArgs.WindowsQuotedString().c_str(), NULL, 1);
+        ::ShellExecuteA(NULL, "open", inProgram.c_str(),
+                        inArgs.WindowsQuotedString().c_str(), NULL, 1);
 
     // Result codes of less than 32 are errors.  See
     // http://blogs.msdn.com/oldnewthing/archive/2006/11/08/1035971.aspx

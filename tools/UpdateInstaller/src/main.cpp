@@ -34,13 +34,13 @@
 using namespace boost::filesystem;
 using boost::format;
 
-void LaunchProgram(int argc, char **argv) {
+void LaunchProgram(size_t argc, const char **argv) {
 	if (argc > 3) {
 		/* PORTABILITY - needs to be factored to work on platforms other than
            Windows. */
         /* TODO - Do we need to do something special to drop Vista UAC
            privileges when running the application? */
-		CommandLine cl(argc-4, argv+4);
+		CommandLine cl(argc-4, const_cast<char**>(argv+4));
         if (!CommandLine::ExecAsync(argv[3], cl)) {
 			printf("Error: Couldn't launch external process: %s\n",
 				   cl.WindowsQuotedString().c_str());
@@ -49,7 +49,7 @@ void LaunchProgram(int argc, char **argv) {
 	}	
 }
 
-int main(int argc, char **argv) {
+void UpdaterMain(size_t argc, const char **argv) {
 	if (argc < 3) {
 		printf("Usage: UpdateInstaller srcpath dstpath [command ...]\n");
 		exit(1);
@@ -91,7 +91,5 @@ int main(int argc, char **argv) {
 
 	logger.Log("Update installed successfully. Relaunching.");
 	LaunchProgram(argc, argv);
-
-	return 0;
 }
 

@@ -23,7 +23,7 @@ class UpdateInstallerTest < Test::Unit::TestCase
     download_mtime = 
       File.mtime("Updates/pool/855426068ee8939df6bce2c2c4b1e7346532a133")
     sleep 2
-    assert system(EXE_PATH, ".")
+    assert system(EXE_PATH, ".", ".")
     assert_exists "sub/quux.txt"
     assert_file_equals "", "sub/quux.txt"
     assert_file_equals "foo\r\n", "foo.txt"
@@ -42,7 +42,7 @@ EOF
   end
 
   def assert_fails_gracefully
-    assert !system(EXE_PATH, ".")
+    assert !system(EXE_PATH, ".", ".")
     assert_file_equals "", "foo.txt"
     assert_file_equals "", "sub/foo.txt"
     assert !File.exists?("sub/quux.txt")

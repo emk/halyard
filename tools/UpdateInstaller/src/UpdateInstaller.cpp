@@ -32,6 +32,7 @@
 
 #include "UpdateInstaller.h"
 #include "Manifest.h"
+#include "Interface.h"
 
 using namespace boost::filesystem;
 
@@ -75,11 +76,14 @@ bool UpdateInstaller::IsUpdatePossible() {
 }
 
 void UpdateInstaller::InstallUpdate() {
+    size_t total = mCopies.size();
 	std::vector<CopySpec>::const_iterator copy = mCopies.begin();
-	for (; copy != mCopies.end(); ++copy) {
+	for (size_t i = 0; copy != mCopies.end(); ++copy, ++i) {
+        UpdateProgess(i, total);
 		create_directories(copy->dest.branch_path());
 		copy->CopyOverwriting();
 	}
+    UpdateProgess(total, total);
 }
 
 bool UpdateInstaller::CopySpec::IsCopyPossible() const {
