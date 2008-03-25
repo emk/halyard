@@ -21,10 +21,6 @@
     ;; Must be overriden by all jumpable nodes.
     (def (find-last-card)
       #f))
-
-  (define (find-first-card node) (node .find-first-card))
-  (define (find-last-card node) (node .find-last-card))
-  
   
   ;;=======================================================================
   ;;  %card-group%
@@ -39,10 +35,6 @@
       (assert (member .jumpable?))
       #f))
   
-  (define (card-group-find-next grp member) (grp .find-next member))
-  (define (card-group-find-prev grp member) (grp .find-prev member))
-  
-
   ;;=======================================================================
   ;;  %card-sequence%
   ;;=======================================================================
@@ -64,20 +56,20 @@
       (def (jumpable?) #t)
       
       (def (jump)
-        (if (null? (group-members self))
+        (if (null? (.members))
           (error (cat "Can't jump to sequence " (.full-name)
                       " because it contains no cards."))
-          (jump (car (group-members self)))))
+          (jump (car (.members)))))
       
       (def (find-next member)
         (assert (member .jumpable?))
         ;; Find the node *after* member.
-        (let [[remainder (memq member (group-members self))]]
+        (let [[remainder (memq member (.members))]]
           (%assert (not (null? remainder)))
           (if (null? (cdr remainder))
-            (card-group-find-next (node-parent self) self)
+            ((.parent) .find-next self)
             ;; Walk recursively through any sequences to find the first card.
-            (find-first-card (cadr remainder)))))
+            ((cadr remainder) .find-first-card))))
       
       (def (find-prev member)
         (assert (member .jumpable?))
@@ -86,10 +78,10 @@
         ;; evaluation: They keep track of how to find the node we want,
         ;; assuming the current current node is MEMBER (which is one past the
         ;; node we want).
-        (let search [[members (group-members self)]
+        (let search [[members (.members)]
                      [candidate-func 
                       (lambda ()
-                        (card-group-find-prev (node-parent self) self))]]
+                        ((.parent) .find-prev self))]]
           (%assert (not (null? members)))
           (if (eq? (car members) member)
             (candidate-func)
@@ -99,13 +91,13 @@
                       ;; we've located MEMBER, and it recursively looks
                       ;; for the last card in the node *before* MEMBER.
                       ;; Got it?
-                      (find-last-card (car members)))))))
+                      ((car members) .find-last-card))))))
       
       (def (find-first-card)
-        (find-first-card (first (group-members self))))
+        ((first (.members)) .find-first-card))
       
       (def (find-last-card)
-        (find-last-card (last (group-members self))))
+        ((last (.members)) .find-last-card))
       )   
     )
   
@@ -129,11 +121,11 @@
 
   (define (card-next)
     (define static ((current-card) .static-node))
-    (card-group-find-next (node-parent static) static))
+    ((static .parent) .find-next static))
 
   (define (card-prev)
     (define static ((current-card) .static-node))
-    (card-group-find-prev (node-parent static) static))
+    ((static .parent) .find-prev static))
 
   (define (jump-helper find-card str)
     (let [[c (find-card)]]
