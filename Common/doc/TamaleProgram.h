@@ -35,6 +35,7 @@ public:
 
     std::string GetName();
     std::string GetCopyright();
+    std::string GetDataDirectoryName();
     std::string GetDebugReportURL();
     int GetSourceFileCount();
     void SetSourceFileCount(int count);

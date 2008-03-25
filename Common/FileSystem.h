@@ -195,9 +195,11 @@ namespace FileSystem {
     Path GetAppDataDirectory();
 
     //////////
-    /// Set the name of the script we're currently running.
+    /// Set the name of the data directories we'll use for this script.
+    /// Note that this is just the basename of the directory itself, not
+    /// the full path.
     ///
-    void SetScriptName(const std::string &inName);
+    void SetScriptDataDirectoryName(const std::string &inName);
 
     //////////
     /// Get the directory which we should use to store per-script data.
