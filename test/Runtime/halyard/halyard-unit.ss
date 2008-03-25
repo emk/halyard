@@ -68,7 +68,7 @@
            %test-report%
            %test-method%
            %test-case%
-           test test-elements setup-test teardown-test
+           test setup-test teardown-test
            with-captured-variable
            assert-equals assert-macro-expansion assert-raises 
            assert-raises-message
@@ -173,25 +173,6 @@
               (report .report-success!))
             (fn () (.teardown-test))))))
   
-  (define (call-with-temporary-parent thunk)
-    (let [[elem #f]]
-      (dynamic-wind
-          (lambda ()
-            (set! elem (%box% .new :at (point 0 0) 
-                                   :shape $screen-rect
-                                   :name 'temporary-parent)))
-          (lambda ()
-            (with-default-element-parent elem
-              (thunk)))
-          (lambda ()
-            (delete-element elem)))))
-  
-  (define-syntax with-temporary-parent
-    (syntax-rules ()
-      [(_ body ...)
-       (call-with-temporary-parent (lambda () body ...))]))
-  (define-syntax-indent with-temporary-parent 0)
-  
   ;;; Execute BODY, capturing VAR and binding it to the result of
   ;;; EXPR.  Used to implement SELF in test cases.
   (define-syntax (with-captured-variable stx)
@@ -209,12 +190,6 @@
       [[_ description . body]
        (.add-test-method! description
          (method () . body))]))
-  (define-syntax test-elements
-    (syntax-rules ()
-      [[_ description . body]
-       (.add-test-method! description
-         (method () 
-           (with-temporary-parent . body)))]))
   (define-syntax setup-test
     (syntax-rules ()
       [[_ . body]
@@ -233,7 +208,6 @@
   (define-syntax-indent setup-test 0)
   (define-syntax-indent teardown-test 0)
   (define-syntax-indent test 1)
-  (define-syntax-indent test-elements 1)
   
   ;;; Assert that an expression returns the expected value.
   (define-syntax assert-equals 

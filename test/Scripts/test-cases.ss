@@ -4,6 +4,7 @@
 (module test-cases (lib "halyard.ss" "halyard")
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "errortrace-lib.ss" "errortrace"))
+  (require (lib "test-elements.ss" "halyard"))
   
   (sequence test-cases)
 

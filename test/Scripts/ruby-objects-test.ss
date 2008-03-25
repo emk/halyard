@@ -2,6 +2,7 @@
 (module ruby-objects-test (lib "halyard.ss" "halyard")
 
   (require (lib "halyard-unit.ss" "halyard"))
+  (require (lib "test-elements.ss" "halyard"))
 
   (sequence ruby-objects-test)
   

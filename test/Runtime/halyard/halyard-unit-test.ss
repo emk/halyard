@@ -1,5 +1,6 @@
 (module halyard-unit-test (lib "halyard.ss" "halyard")
   (require (lib "halyard-unit.ss" "halyard"))
+  (require (lib "test-elements.ss" "halyard"))
   
   (define (make-and-run-nth-test test-case-class n report)
     (define test-method (nth (test-case-class .test-methods) n))
