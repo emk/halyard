@@ -546,9 +546,10 @@ Path Path::NativePath(const std::string &inPath)
 //  Base Directory Methods
 //=========================================================================
 
-// THREAD - Global variable.
+// THREAD - Global variables.
 static Path gCurrentBaseDirectory = Path();
 static Path gAppDataDirectory = Path();
+static Path gAppLocalDataDirectory = Path();
 static std::string gScriptDataDirectoryName = "";
 
 Path FileSystem::SetBaseDirectory(const Path &inDirectory)
@@ -582,6 +583,17 @@ Path FileSystem::GetAppDataDirectory() {
     return gAppDataDirectory;
 }
 
+void FileSystem::SetAppLocalDataDirectory(const std::string &inDirectory) {
+    Path data = Path::NativePath(inDirectory);
+	CHECK(data.IsDirectory(),
+		  ("\'" + inDirectory + "\' is not a valid directory").c_str());
+	gAppLocalDataDirectory = data;
+}
+
+Path FileSystem::GetAppLocalDataDirectory() {
+    return gAppLocalDataDirectory;
+}
+
 void FileSystem::SetScriptDataDirectoryName(const std::string &inName) {
     gScriptDataDirectoryName = inName;
 }
@@ -589,6 +601,11 @@ void FileSystem::SetScriptDataDirectoryName(const std::string &inName) {
 Path FileSystem::GetScriptDataDirectory() {
     ASSERT(gScriptDataDirectoryName != "");
     return GetAppDataDirectory().AddComponent(gScriptDataDirectoryName);
+}
+
+Path FileSystem::GetScriptLocalDataDirectory() {
+    ASSERT(gScriptDataDirectoryName != "");
+    return GetAppLocalDataDirectory().AddComponent(gScriptDataDirectoryName);
 }
 
 

@@ -313,12 +313,19 @@
   ;; I do init. 
   ;;
   ;; The :ROOT-DIRECTORY argument is really only useful for running test
-  ;; suites.  Note that we put Updates/ in the SCRIPT-USER-DATA-DIRECTORY,
-  ;; because that's one of the few places we're guaranteed to have write
-  ;; privileges under Windows Vista.
+  ;; suites.  Note that we put Updates/ in the
+  ;; SCRIPT-USER-LOCAL-DATA-DIRECTORY, because that's one of the few places
+  ;; we're guaranteed to have write privileges under Windows Vista.
+  ;;
+  ;; Note that it's really important to use
+  ;; SCRIPT-USER-LOCAL-DATA-DIRECTORY here instead of
+  ;; SCRIPT-USER-DATA-DIRECTORY, because the latter may get automatically
+  ;; moved between machines in certain Windows setups, and these files are
+  ;; big--and tend to accumulate.
   (define (init-updater! &key (root-directory #f) (staging? #f))
     (define root-dir (or root-directory (current-directory)))
-    (define user-data-dir (or root-directory (script-user-data-directory)))
+    (define user-data-dir (or root-directory
+                              (script-user-local-data-directory)))
     (define update-dir 
       (ensure-dir-exists-absolute (build-path user-data-dir "Updates")))
     (define spec (read-spec (build-path root-dir "release.spec")))

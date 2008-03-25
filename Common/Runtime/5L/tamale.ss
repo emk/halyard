@@ -35,8 +35,8 @@
            nap draw-line draw-box draw-box-outline inset-rect timeout
            current-card-name fade unfade opacity save-graphics restore-graphics
            copy-string-to-clipboard
-           script-user-data-directory ensure-dir-exists
-           screenshot element-exists? 
+           script-user-data-directory script-user-local-data-directory 
+           ensure-dir-exists screenshot element-exists?
            delete-element-if-exists
            %basic-button%
            quicktime-component-version
@@ -760,9 +760,22 @@
      (else "000")))
 
   ;;; Returns a path to the directory which should be used to store any
-  ;;; script data files.
+  ;;; user-specific script data files.  Under Windows, this directory may
+  ;;; actually get copied between login sessions on different machines, so
+  ;;; it would be rude to store huge files here.  See
+  ;;; SCRIPT-USER-LOCAL-DATA-DIRECTORY instead for big files.
   (define (script-user-data-directory)
     (call-5l-prim 'DataPath))
+
+  ;;; Returns a path to the directory which should be used to store any
+  ;;; user-and-machine-specific script data files.  
+  (define (script-user-local-data-directory)
+    (define dir (call-5l-prim 'DataPathLocal))
+    ;; We may actually have to create this one; the engine doesn't
+    ;; necessarily do it for us.
+    (unless (directory-exists? dir)
+      (make-directory dir))
+    dir)
 
   ;; XXX - This is not a well-designed function; it can only create
   ;; directories in a folder that's typically write-only (d'oh).

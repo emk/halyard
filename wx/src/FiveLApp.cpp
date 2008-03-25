@@ -253,6 +253,16 @@ bool FiveLApp::OnInit() {
         return false;
     }
     FileSystem::SetAppDataDirectory(dir.mb_str());
+    
+    // Figure out where we can store our large, machine-specific files.
+    // TODO - Refactor out code shared with above, if it will actually gain
+    // us anything.
+    wxString local_dir(wxStandardPaths::Get().GetUserLocalDataDir());
+    if (!::wxDirExists(local_dir) && !::wxMkdir(local_dir)) {
+        ErrorDialog("Cannot Create Directory", "Unable to create " + local_dir);
+        return false;
+    }
+    FileSystem::SetAppLocalDataDirectory(local_dir.mb_str());
 
     // Get the 5L runtime going.
     ::InitializeCommonCode(new FancyCrashReporter());
