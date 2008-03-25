@@ -322,6 +322,9 @@
   ;; SCRIPT-USER-DATA-DIRECTORY, because the latter may get automatically
   ;; moved between machines in certain Windows setups, and these files are
   ;; big--and tend to accumulate.
+  ;;
+  ;; XXX - The paths used to refer to various parts of the Updater
+  ;; directory must match the ones in wx/src/FiveLApp.cpp.
   (define (init-updater! &key (root-directory #f) (staging? #f))
     (define root-dir (or root-directory (current-directory)))
     (define user-data-dir (or root-directory
