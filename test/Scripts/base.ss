@@ -173,23 +173,6 @@
 
 
   ;;=======================================================================
-  ;;  Primitive Layout
-  ;;=======================================================================
-
-  (provide below to-the-right-of)
-
-  ;;; Return the point the specified number of PIXELS below ELEM.
-  (define (below elem pixels)
-    (define bounds (elem .bounding-box))
-    (point (rect-left bounds) (+ pixels (rect-bottom bounds))))
-
-  ;;; Return the point the specified number of PIXELS to the right of ELEM.
-  (define (to-the-right-of elem pixels)
-    (define bounds (elem .bounding-box))
-    (point (+ pixels (rect-right bounds)) (rect-top bounds)))
-
-
-  ;;=======================================================================
   ;;  color Utilities
   ;;=======================================================================
 

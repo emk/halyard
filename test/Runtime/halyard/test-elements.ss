@@ -24,17 +24,6 @@
       (when (.element-parent)
         (delete-element (.element-parent)))))
 
-  ;;; TODO - why aren't these somewhere useful in the engine already?
-  ;;; Return the point the specified number of PIXELS below ELEM.
-  (define (below elem pixels)
-    (define bounds (elem .bounding-box))
-    (point (rect-left bounds) (+ pixels (rect-bottom bounds))))
-
-  ;;; Return the point the specified number of PIXELS to the right of ELEM.
-  (define (to-the-right-of elem pixels)
-    (define bounds (elem .bounding-box))
-    (point (+ pixels (rect-right bounds)) (rect-top bounds)))
-
   ;; Quick and dirty clickable text.
   (define-class %element-test-button% (%text%)
     (attr test-case)

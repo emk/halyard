@@ -61,10 +61,10 @@
   ;;;  Core Element Support
   ;;;======================================================================
 
-  (provide local->card %element% %invisible-element% %custom-element%
-           %box% box new-box %clickable-zone% clickable-zone new-clickable-zone
-           delete-element delete-elements
-           element-exists? delete-element-if-exists)
+  (provide local->card below to-the-right-of %element% %invisible-element% 
+           %custom-element% %box% box new-box %clickable-zone% clickable-zone 
+           new-clickable-zone delete-element delete-elements element-exists? 
+           delete-element-if-exists)
 
   (define $black (color 0 0 0))
   (define $transparent (color 0 0 0 0))
@@ -84,6 +84,16 @@
 
   (define (parent->card node x)
     (local->card (node-parent node) x))
+
+  ;;; Return the point the specified number of PIXELS below ELEM.
+  (define (below elem pixels)
+    (define bounds (elem .bounding-box))
+    (point (rect-left bounds) (+ pixels (rect-bottom bounds))))
+
+  ;;; Return the point the specified number of PIXELS to the right of ELEM.
+  (define (to-the-right-of elem pixels)
+    (define bounds (elem .bounding-box))
+    (point (+ pixels (rect-right bounds)) (rect-top bounds)))
 
   (define (update-element-position elem)
     ;; Don't make me public.
