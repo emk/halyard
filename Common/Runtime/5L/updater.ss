@@ -113,9 +113,25 @@
 
   ;;===========================================================================
   
-  (provide <downloader> <mock-downloader> add-mock-url download cancel-download
+  (provide updater-security-error?
+           <downloader> <mock-downloader> add-mock-url download cancel-download
            parse-manifest parse-spec-file program-release-id)
   
+  ;;; Represents an updater security exception, which occurs whenever we
+  ;;; can't verify the integrity of a file.  We have a special struct for
+  ;;; security exceptions mostly so that we can write (ASSERT-RAISES
+  ;;; UPDATER-SECURITY-ERROR? ...) in unit tests, and have the test fail if
+  ;;; any *non*-security error occurs.
+  (define-struct (updater-security-error exn:fail) (url))
+
+  ;;; Raise a security exception for FILE.
+  (define (security-error url)
+    (raise (make-updater-security-error
+            (string->immutable-string
+             (cat "Could not verify integrity of " url))
+            (current-continuation-marks)
+            url)))
+
   (defclass <downloader> ()
     directory)
   
@@ -159,15 +175,46 @@
   (define (cancel-download) 
     (call-5l-prim 'CancelDownload))
   
-  (define (download url dir &key (name #f))
-    (define path 
-      (build-path 
-       dir 
-       (or name (last-component url)
-           (next-temp-file-in-dir dir))))
-    (unless (download-file url path)
-      (error (cat "Couldn't download " url " to " path))))
+  ;;; Given a URL, a destination DIR, and an optional NAME (pass #f if you
+  ;;; want to default it), calculate the name of our download target file.
+  (define (find-download-target url dir name)
+    (build-path dir 
+                (or name
+                    (last-component url)
+                    (next-temp-file-in-dir dir))))
   
+  ;;; Download URL into DIR, using the optional NAME as a filename.  If
+  ;;; NAME is not supplied, default to either the URL's filename or a
+  ;;; temporary name. Return the destination path of the downloaded file.
+  (define (download url dir &key (name #f))
+    (define path (find-download-target url dir name))
+    (unless (download-file url path)
+      (error (cat "Couldn't download " url " to " path)))
+    path)
+
+  ;;; Download to a temporary file, and check the SHA-1 hash before moving
+  ;;; to the final location.  We don't _ever_ want to save an unverified
+  ;;; file to its real name, because of the way an incomplete download will
+  ;;; be resumed.
+  ;;;
+  ;;; This is a key part of checking download integrity--the
+  ;;; release.spec.sig file provides a trusted base to start from, and the
+  ;;; we need to walk down through the MANIFEST.* files to the actual
+  ;;; update files, using the SHA1 hashes discovered in each step to verify
+  ;;; the integrity of the next step.
+  (define (download-verified sha1 url dir &key (name #f))
+    ;; Download the file to a temporary location.
+    (define temp-path (download url (temp-dir) :name "download.tmp"))
+
+    ;; Check the SHA1 hash of the downloaded file.
+    (define path (find-download-target url dir name))
+    (define temp-sha1 (sha1-file temp-path))
+    (unless (equals? sha1 temp-sha1)
+      (security-error url))
+
+    ;; OK, the file is good, so move it to its final location.
+    (rename-file-or-directory temp-path path))
+
   (define (parse-manifest path)
     (with-input-from-file 
      path
@@ -356,9 +403,23 @@
         (define download-dir (manifest-dir (update-build)))
         (ensure-dir-exists-absolute download-dir)
         (define base-manifests (get-manifest-names root-dir))
-        (foreach (manifest base-manifests)
-          ;; TODO - Deal with failures, deal with time issues.
-          (download (build-url (manifest-url-prefix) manifest) download-dir))
+        ;; We need to get the expected SHA-1 sums of the manifests.
+        (define manifest-info
+          (file-hash-from-manifest
+            (spec-meta-manifest (updater-update-spec *updater*))))
+        ;; Loop over our manifests, downloading them and verifying their
+        ;; digests.
+        (foreach [manifest base-manifests]
+          ;; TODO - Brian said, "Deal with time issues."  I don't know what
+          ;; this meant.
+          (define expected-digest
+            (manifest-digest
+             (hash-table-get manifest-info manifest
+                             (fn () (error (cat manifest
+                                                " no longer in program"))))))
+          (download-verified expected-digest
+                             (build-url (manifest-url-prefix) manifest)
+                             download-dir))
         (define diffs (diff-manifests (parse-manifests-in-dir root-dir)
                                       (parse-manifests-in-dir download-dir)))
         (write-diffs-to-file (temp-dir "MANIFEST-DIFF") diffs)
@@ -391,7 +452,7 @@
     (unless (gpg-signature-valid? (updater-root-directory *updater*)
                                   (update-dir "release.spec.sig")
                                   (update-dir "release.spec"))
-      (error "Cannot verify signature on update *.spec file"))
+      (security-error url))
 
     (register-update-spec (update-dir "release.spec")))
   
