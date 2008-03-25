@@ -176,10 +176,10 @@ void ReportWindowsError() {
 /// Display a simple error dialog on the screen.
 void ReportErrorInternal(LPTSTR message) {
     std::wstring full_message =
-        L"An error occurred while installing the update.  You will\n"
-        L"probably need to reinstall the program.  We apologize for\n"
-        L"this inconvenience.  If you want to notify us of this problem,\n"
-        L"please write down the following message:\n\n";
+        L"An error occurred while installing the update. You will probably\n"
+        L"need to uninstall the program, and reinstall it from disc. We\n"
+        L"apologize for this inconvenience.  If you want to notify us of\n"
+        L"this problem, please write down the following message:\n\n";
     full_message += message;
     ::MessageBox(NULL, full_message.c_str(),
                  NULL, MB_TASKMODAL | MB_OK | MB_ICONSTOP);
