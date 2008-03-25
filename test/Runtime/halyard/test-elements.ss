@@ -11,8 +11,9 @@
 
     (setup-test
       (set! (.element-parent) 
-            (%box% .new :at (point 100 200) 
-                        :shape $screen-rect
+            (%box% .new :bounds (rect 0 160 
+                                      (rect-width $screen-rect) 
+                                      (rect-height $screen-rect))
                         :name 'temporary-parent)))
 
     (def (run-test-method-inner)
