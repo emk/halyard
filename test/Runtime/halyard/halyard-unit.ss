@@ -1,7 +1,7 @@
 (module halyard-unit (lib "halyard.ss" "halyard")
   (require-for-syntax (lib "capture.ss" "halyard"))
 
-  (provide %test-suite%)
+  (provide %test-suite% $halyard-unit-style)
   
   (define-stylesheet $halyard-unit-style
     :family "Nimbus Sans L"
@@ -162,16 +162,20 @@
 
     ;;; Run a single test case method, handling setup, teardown and reporting.
     (def (run-test-method report)
-      (define test-method (.test-method))
       (with-handlers [[exn:fail?
                        (fn (exn) 
                          (report .report-failure! self exn))]]
         (dynamic-wind
             (fn () (.setup-test))
             (fn ()
-              (instance-exec self (test-method .method))
+              (.run-test-method-inner)
               (report .report-success!))
-            (fn () (.teardown-test))))))
+            (fn () (.teardown-test)))))
+
+    ;;; Run the actual test method itself, with setup and teardown handled
+    ;;; elsewhere.
+    (def (run-test-method-inner)
+      (instance-exec self ((.test-method) .method))))
   
   ;;; Execute BODY, capturing VAR and binding it to the result of
   ;;; EXPR.  Used to implement SELF in test cases.

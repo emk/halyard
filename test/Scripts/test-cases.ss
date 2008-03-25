@@ -34,15 +34,15 @@
   ;;  Element Syntax test cases
   ;;=======================================================================
   
-  (define-class %element-test% (%test-case%)
-    (test-elements "Creating an element with an invalid parameter should fail"
+  (define-class %element-test% (%element-test-case%)
+    (test "Creating an element with an invalid parameter should fail"
       (define-class %invalid-parameter-template% (%invisible-element%)
         (assert-raises exn:fail? (%invalid-parameter-template% .new
                                    :name 'foo :zarqan 1))))
     )
   
   (card test-cases/element-test
-      (%test-suite%
+      (%element-test-suite%
        :tests (list %element-test%)))
   
   
@@ -53,16 +53,16 @@
   (define (test-elements-full-name node-name)
     (cat ((current-card) .full-name) "/temporary-parent/" node-name))
   
-  (define-class %custom-element-test% (%test-case%)
-    (test-elements "Creating a %custom-element%"
+  (define-class %custom-element-test% (%element-test-case%)
+    (test "Creating a %custom-element%"
       (%custom-element% .new :bounds (rect 0 0 10 10)))
-    (test-elements "Setting the shape of a %custom-element%"
+    (test "Setting the shape of a %custom-element%"
       (define new-shape (rect 0 0 5 5))
       (define foo (%custom-element% .new :bounds (rect 0 0 10 10)))
       (set! (foo .shape) new-shape)
       ;; The shape should be correctly updated.
       (assert-equals new-shape (foo .shape)))
-    (test-elements 
+    (test 
         "Creating a %custom-element% with a negative shape should error-out"
       (define original-shape (rect 10 10 0 0))
       (define elem-name 'foo-negative-shape-error)
@@ -71,7 +71,7 @@
       
       (assert-raises-message exn:fail? expected-error
         (%custom-element% .new :name elem-name :bounds original-shape)))
-    (test-elements "SET!ing a %custom-element% to a negative-shape should fail"
+    (test "SET!ing a %custom-element% to a negative-shape should fail"
       (define original-shape (rect 0 0 10 10))
       (define foo (%custom-element% .new :bounds original-shape))
       
@@ -84,7 +84,7 @@
       (assert-equals original-shape (foo .shape))))
   
   (card test-cases/custom-element-test
-      (%test-suite%
+      (%element-test-suite%
        :tests (list %custom-element-test%)))
   
   ;;=======================================================================
@@ -150,61 +150,61 @@
   (define (browser-native-path path)
     (make-native-path "HTML" path))
   
-  (define-class %browser-simple-test% (%test-case%)
-    (test-elements "The browser should load with default values"
+  (define-class %browser-simple-test% (%element-test-case%)
+    (test "The browser should load with default values"
       (%test-browser% .new))
-    (test-elements "The browser should load a local HTML page"
+    (test "The browser should load a local HTML page"
       (%test-browser% .new :path "sample.html"))
-    (test-elements "The browser should load 'about:blank'"
+    (test "The browser should load 'about:blank'"
       (%test-browser% .new :path "about:blank"))
-    (test-elements 
+    (test 
         "The browser should fail to load a non-existent local HTML page"
       (define non-existent-file "foo-bar-not-here.html")
           (assert-raises-message exn:fail? 
             (quote-for-regexp
              (cat "No such file: " (browser-native-path non-existent-file)))
             (%test-browser% .new :path non-existent-file)))
-    (test-elements "The browser should load a local HTML page using file:///"
+    (test "The browser should load a local HTML page using file:///"
           (%test-browser% .new :path "file:///sample.html"))
-    (test-elements "The browser should load an external HTML page via http"
+    (test "The browser should load an external HTML page via http"
           (%test-browser% .new :path "http://www.google.com"))
-    (test-elements "The browser should load an ftp site"
+    (test "The browser should load an ftp site"
           (%test-browser% .new :path "ftp://ftp.dartmouth.edu/"))
     ;; This page doesn't throw a Halyard error, but IE doesn't seem to be able
     ;; to work with the gopher protocol.
-    (test-elements "The browser should load a gopher site"
+    (test "The browser should load a gopher site"
           (%test-browser% .new :path "gopher://home.jumpjet.info/"))
-    (test-elements 
+    (test 
      "The browser should load URLs with ampersands (&amp;) in them"
           (%test-browser% .new :path "http://www.google.com/&foo=bar"))
-    (test-elements "The browser should accept a zero-sized rect"
+    (test "The browser should accept a zero-sized rect"
           (%test-browser% .new :rect (rect 0 0 0 0))))
   
   (card test-cases/native-browser-tests
-      (%test-suite%
+      (%element-test-suite%
        :tests (list %browser-simple-test%)))
   
-  (define-class %fallback-browser% (%test-case%)
+  (define-class %fallback-browser% (%element-test-case%)
     ;;; NOTE: the default path of "about:blank" appears to hang the
     ;;; fallback browser.
-    (test-elements "The fallback browser should load local files"
+    (test "The fallback browser should load local files"
       (%test-browser% .new :fallback? #t :path "sample.html")))
   
   ;;; NOTE: 
   (card test-cases/integrated-browser-tests
-      (%test-suite%
+      (%element-test-suite%
        :tests (list %fallback-browser%)))
   
   ;;=======================================================================
   ;;  Graphic test cases
   ;;=======================================================================
   
-  (define-class %graphic-element-test% (%test-case%)
-    (test-elements "Creating a non-alpha %graphic%"
+  (define-class %graphic-element-test% (%element-test-case%)
+    (test "Creating a non-alpha %graphic%"
       (%graphic% .new :at (point 0 0) :path "but40.png"))
-    (test-elements "Creating an alpha %graphic%"
+    (test "Creating an alpha %graphic%"
       (%graphic% .new :at (point 0 0) :alpha? #t :path "lbul.png"))
-    (test-elements "Setting the path should change graphic and shape"
+    (test "Setting the path should change graphic and shape"
       (define orig-graphic "but40.png")
       (define new-graphic "but70.png")
       (define new-graphic-shape (measure-graphic new-graphic))
@@ -217,7 +217,7 @@
       (assert-equals new-graphic-shape (foo .shape))))
   
   (card test-cases/graphic-test
-      (%test-suite%
+      (%element-test-suite%
        :tests (list %graphic-element-test%)))
   
   ;;=======================================================================
