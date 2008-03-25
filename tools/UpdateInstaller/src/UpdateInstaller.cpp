@@ -43,6 +43,12 @@ static void TouchFile(const path &name);
 UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
     : mDestRoot(dst_root)
 {
+    // Basic sanity check: Don't install to a target directory that lacks
+    // a release.spec.  This reduces the chance the updater could
+    // accidentally be used to mess up a user's system.
+    if (!exists(dst_root / "release.spec"))
+        throw std::exception("No release.spec in target directory");
+
 	Manifest diff(src_root / "Updates/temp/MANIFEST-DIFF");
 
 	Manifest::EntryVector::const_iterator iter = diff.entries().begin();
