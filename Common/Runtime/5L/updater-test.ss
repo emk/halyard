@@ -272,13 +272,13 @@
       (assert-raises updater-security-error?
                      (download-update (fn (a b) (void)))))
 
-    ;;(test "Update should fail if file has been modified"
-    ;;  (assert (auto-update-possible? (base-directory self)))
-    ;;  (init-updater! :root-directory (base-directory self) :staging? #t)
-    ;;  (set-updater-url! (update-server-url "update-server-bad-manifest"))
-    ;;  (assert (check-for-update))
-    ;;  (assert-raises updater-security-error?
-    ;;                 (download-update (fn (a b) (void)))))
+    (test "Update should fail if file has been modified"
+      (assert (auto-update-possible? (base-directory self)))
+      (init-updater! :root-directory (base-directory self) :staging? #t)
+      (set-updater-url! (update-server-url "update-server-bad-file"))
+      (assert (check-for-update))
+      (assert-raises updater-security-error?
+                     (download-update (fn (a b) (void)))))
 
     )
   
