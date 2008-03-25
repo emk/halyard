@@ -196,10 +196,10 @@
   (define-syntax method~
     (syntax-rules ()
       [(_ args . body)
-       (lambda (self-param super-param . args)
+       (lambda (self* super* . args)
          ;; Parameterize SELF and SUPER to refer to appropriate versions.
-         (syntax-parameterize [[self (make-rename-transformer #'self-param)]
-                               [super (make-rename-transformer #'super-param)]]
+         (syntax-parameterize [[self (make-rename-transformer #'self*)]
+                               [super (make-rename-transformer #'super*)]]
            (begin/var . body)))]))
   
   (define (instances-respond-to?% klass method-name)
