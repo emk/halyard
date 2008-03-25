@@ -31,7 +31,7 @@ extern void UpdateProgressRange(size_t step_count);
 extern void UpdateProgress(size_t steps_completed);
 extern void ReportError(const char *message);
 extern bool IsSafeToRelaunchAutomatically();
-extern void AskUserToRelaunch();
+extern void AskUserToRelaunch(bool update_succeeded);
 
 // This function is defined in main.cpp.
 extern void UpdaterMain(size_t argc, const char **argv);

@@ -208,10 +208,20 @@ bool IsSafeToRelaunchAutomatically() {
 }
 
 /// Pop up a dialog asking the user to relaunch the program.
-void AskUserToRelaunch() {
-    ::MessageBox(NULL, (_T("Your program has been successfully updated,\n")
-                        _T("and you may now run it again.")),
-                 _T("Update Installed"),
+void AskUserToRelaunch(bool update_succeeded) {
+    LPTSTR caption, message;
+    if (update_succeeded) {
+        caption = _T("Update Installed");
+        message = (_T("Your program has been successfully updated,\n")
+                   _T("and you may now run it again."));
+    } else {
+        caption = _T("Could Not Update");
+        message = (_T("Cannot update the program at this time.  You\n")
+                   _T("may run the program now (without updating it), or\n")
+                   _T("try to update again."));
+    }        
+
+    ::MessageBox(NULL, message, caption,
                  MB_TASKMODAL | MB_OK | MB_ICONINFORMATION);
 }
 
