@@ -79,6 +79,26 @@
         (assert-equals #f (report .success?))
         (assert (test .was-run?))
         (assert (test .teardown-invoked?)))))
+
+  (define-class %run-test-method-inner-inner% (%test-case%)
+    (attr setup-invoked? #f :writable? #t)
+    (attr teardown-invoked? #f :writable? #t)
+    (setup-test
+      (set! (.setup-invoked?) #t))
+    (teardown-test
+      (set! (.teardown-invoked?) #t))
+    (test "Setup and teardown should not have been called." 
+      (assert (not (.setup-invoked?)))
+      (assert (not (.teardown-invoked?)))))
+
+  (define-class %run-test-method-inner-test% (%test-case%)
+    (test "Setup/teardown should not be called from .RUN-TEST-METHOD-INNER."
+      (define test (%run-test-method-inner-inner% .new 
+                     :test-method (first (%run-test-method-inner-inner% 
+                                          .test-methods))))
+      (test .run-test-method-inner)
+      (assert (not (test .setup-invoked?)))
+      (assert (not (test .teardown-invoked?)))))
   
   (define-class %test-methods-inner-1% (%test-case%) 
     (test "Blah." #f))
@@ -205,6 +225,7 @@
                     %define-test-case-helper-test%
                     %teardown-invoked-test%
                     %teardown-invoked-if-test-fails-test%
+                    %run-test-method-inner-test%
                     %test-methods-test%
                     %test-report-test%
                     %inheritence-test%
