@@ -1,0 +1,51 @@
+#!/usr/bin/ruby
+# Usage: checkfiles PATH...
+#
+# Check a list of files for potential style issues.  This should be run as
+# part of a pre-commit hook.
+
+$have_reported_problem = false
+
+def report message
+  $have_reported_problem = true
+  puts "#{$path}:#{$lineno}: #{message}"
+end
+
+def check_line_ending line
+  new_ending =
+    case line
+    when /\r\n$/ then :crlf
+    when /\n$/   then :lf
+    else return # End-of-file, generally speaking.
+    end
+
+  case
+  when $line_endings == :unknown
+    $line_endings = new_ending
+  when $line_endings == new_ending
+    # This line matches the other lines in this file.
+  else
+    report("Expected #{$line_endings}, got #{new_ending}")
+  end
+end
+
+def process_file path
+  $path = path
+  $lineno = 0
+  $line_endings = :unknown
+
+  File.open(path) do |f|
+    f.each_line do |line|
+      $lineno += 1
+      check_line_ending(line)
+    end
+  end
+end
+
+# Loop over our input files, and return an appropriate exit code.
+ARGV.each {|file| process_file file }
+if $have_reported_problem
+  exit 1
+else
+  exit 0
+end
