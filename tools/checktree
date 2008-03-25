@@ -1,5 +1,5 @@
 #!/bin/bash -e
 
-find wx Common \
+find wx Common tools \
     -name \*.cpp -o -name \*.h -o -name \*.ss | \
     xargs tools/checkfiles
