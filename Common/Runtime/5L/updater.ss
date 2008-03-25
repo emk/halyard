@@ -324,7 +324,8 @@
   ;; big--and tend to accumulate.
   ;;
   ;; XXX - The paths used to refer to various parts of the Updater
-  ;; directory must match the ones in wx/src/FiveLApp.cpp.
+  ;; directory must match the ones in wx/src/FiveLApp.cpp and
+  ;; FancyCrashReporter.cpp.
   (define (init-updater! &key (root-directory #f) (staging? #f))
     (define root-dir (or root-directory (current-directory)))
     (define user-data-dir (or root-directory

@@ -92,7 +92,8 @@ void FiveLApp::LaunchUpdateInstallerBeforeExiting() {
 void FiveLApp::LaunchUpdateInstaller() {
     // PORTABILITY - We need to make the UpdateInstaller work elsewhere.
     // XXX - Extract application exe name from wxWidgets?
-    // XXX - These paths must match the ones in updater.ss.
+    // XXX - These paths must match the ones in updater.ss and in
+    // FancyCrashReporter.cpp.
     FileSystem::Path src_root(FileSystem::GetScriptLocalDataDirectory());
     FileSystem::Path dst_root(FileSystem::GetBaseDirectory());
     FileSystem::Path updates_dir(src_root.AddComponent("Updates"));
