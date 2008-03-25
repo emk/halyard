@@ -9,29 +9,21 @@ module CodeSigning
   # This section of termios-related code is taken verbatim from one of my
   # personal projects, and I hereby place it into the public domain.
   # -Eric Kidd, 14 Nov 2007
-  begin
-    require 'termios'
-    
-    # Code for reading a password from the console without echo.  Adapted from
-    # the termios gem documentation, and apparently available at
-    # [ruby-list:15968].  This code doesn't stand a chance of working on
-    # Windows, unfortunately.
-    def self.gets_secret
-      oldt = Termios.tcgetattr($stdin)
-      newt = oldt.dup
-      newt.lflag &= ~Termios::ECHO
-      Termios.tcsetattr($stdin, Termios::TCSANOW, newt)
+  require 'termios'
+  
+  # Code for reading a password from the console without echo.  Adapted from
+  # the termios gem documentation, and apparently available at
+  # [ruby-list:15968].  This code doesn't stand a chance of working on
+  # Windows, unfortunately.
+  def self.gets_secret
+    oldt = Termios.tcgetattr($stdin)
+    newt = oldt.dup
+    newt.lflag &= ~Termios::ECHO
+    Termios.tcsetattr($stdin, Termios::TCSANOW, newt)
       result = $stdin.gets
-      Termios.tcsetattr($stdin, Termios::TCSANOW, oldt)
-      print "\n"
-      result.chomp
-    end
-    HIDDEN_PASSWORDS = true
-  rescue MissingSourceFile
-    def self.gets_secret
-      STDIN.gets.chomp
-    end
-    HIDDEN_PASSWORDS = false
+    Termios.tcsetattr($stdin, Termios::TCSANOW, oldt)
+    print "\n"
+    result.chomp
   end
 
 
@@ -113,9 +105,6 @@ module CodeSigning
     def define
       task @name do
         # Get the private key and the password to unlock it.
-        unless HIDDEN_PASSWORDS
-          raise "Must install Ruby termios gem to sign code"
-        end
         key_path = CodeSigning::find_key @key_file
         print "Password for #{key_path}: "
         password = CodeSigning::gets_secret
