@@ -577,6 +577,8 @@
   ;;  A %group-member% may be stored in a %card-group%.
   ;;  TODO - Some of non-element-related code on %node% should move here.
 
+  (provide %group-member%)
+
   (define-class %group-member% (%node%)
     (with-instance (.class)
       (def (register)

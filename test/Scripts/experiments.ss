@@ -12,23 +12,39 @@
   ;; Some ordered and unordered groups for testing purposes.
   ;;
 
+  ;; For testing the card-sequence.ss code.
+  (define (largest-containing-ordered-group 
+           &key (static-node ((current-card) .class)))
+    (static-node .largest-containing-ordered-group))
+  
   (group experiments/groups)
 
   (define-class %my-group% (%card-group%)
     (value ordered? #f))
+  
+  (card experiments/groups/top)
 
-  (group experiments/groups/unordered-group (%my-group%)) 
-  ;;(%card-group% :ordered? #f))  
+  (group experiments/groups/unordered-group (%my-group%)
+    ;;(%card-group% :ordered? #f))
+    (assert-equals #f (largest-containing-ordered-group :static-node self))
+    )
 
   (card experiments/groups/unordered-group/foo ()
     )
 
   (card experiments/groups/unordered-group/bar ()
+    (run
+      (assert-equals #f (largest-containing-ordered-group)))
     )
 
-  (group experiments/groups/unordered-group/ordered-group)
+  (group experiments/groups/unordered-group/ordered-group ()
+    (assert-equals self
+                   (largest-containing-ordered-group :static-node self))
+    )
 
   (card experiments/groups/unordered-group/ordered-group/echo ()
+    (run
+      (assert-equals ((.parent) .class) (largest-containing-ordered-group)))
     )
 
   (card experiments/groups/unordered-group/ordered-group/foxtrot ()
@@ -40,6 +56,9 @@
   (group experiments/groups/ordered-group)
 
   (card experiments/groups/ordered-group/hotel ()
+    (run
+      (assert-equals ((((.class) .parent) .parent) .parent)
+                     (largest-containing-ordered-group)))
     )
 
   (card experiments/groups/ordered-group/india ()

@@ -80,8 +80,40 @@
     ;; Proxy from the running node to the static node.
     (def (ordered?)
       ((.class) .ordered?)))
+
+  (with-instance (%group-member% .class)
+    (def (flatten-group-member)
+      (error "flatten-group-member must be overridden."))
+    
+    (def (largest-containing-ordered-group)
+      (error "largest-containing-ordered-group must be overridden.")))
   
-  (with-instance (%card-group% .class)
+  (with-instance (%card-group% .class)    
+    ;; By default, card groups ignore themselves. Ordered groups return their
+    ;; child nodes; Unordered groups do not participate and return the empty
+    ;; list.
+    (def (flatten-group-member)
+      (if (.ordered?)
+        (.flattened-group-members)
+        '()))
+    
+    ;; Return a flattened list of all child group members.
+    ;; (Child group members are included only if they return themselves or
+    ;;  their children in .flatten-group-member)
+    (def (flattened-group-members)
+      (define (flatten-group-member node)
+        (node .flatten-group-member))
+      (apply append (map flatten-group-member (.members))))
+    
+    ;; Return the largest containing ordered group, starting with self.
+    ;; If there is a direct parent ordered group, or #f if there is no
+    ;; direct containing group that is ordered.
+    (def (largest-containing-ordered-group)
+      (if (not (.ordered?))
+        #f
+        (or ((.parent) .largest-containing-ordered-group)
+            self)))
+    
     (def (jumpable?)
       (.ordered?))
     
@@ -154,6 +186,15 @@
   
   (with-instance (%card% .class)
     (def (jumpable?) #t)
+    
+    ;; By default, cards are included.
+    (def (flatten-group-member)
+      (list self))
+    
+    ;; Return the largest containing ordered group, or #f if there is no
+    ;; direct containing group that is ordered.
+    (def (largest-containing-ordered-group)
+      ((.parent) .largest-containing-ordered-group))
     
     (def (find-first-card) self)
     (def (find-last-card) self)
