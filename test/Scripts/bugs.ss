@@ -133,4 +133,13 @@
                   :name 'example :parent @workspace))
       (set! (example .text) "It works!")))
 
+  (card bugs/bug-f4250-whitespace-only-text-crash
+      (%bug-card% :bug-id "F4250" :status 'fixed
+                  :bug-title "Whitespace-only strings crash %text%"
+                  :instructions (cat "This card should not raise an error."))
+    (setup
+      (new-text (point 0 0) $caption-style " "
+                :name 'example :parent @workspace)))
+
   )
+

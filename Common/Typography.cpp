@@ -1151,6 +1151,13 @@ void GenericTextRenderingEngine::RenderText()
 				continue;
 		}
 
+        // If the segment still won't fit, but we're supposed to discard it
+        // at the end of a line, go ahead and discard it.  This is needed
+        // to draw whitespace-only strings (" ", " "...) onto zero-width
+        // lines.
+        if (needed > GetUsableLineLength() && seg.discardAtEndOfLine)
+            continue;
+
 		// If the segment *still* won't fit, take drastic measures.
 		// This is an ugly wart, and it isn't merged well into the
 		// overall algorithm.  But isolating this ugly wart seems to

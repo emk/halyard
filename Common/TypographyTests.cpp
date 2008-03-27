@@ -561,6 +561,15 @@ static void test_Typography_GenericTextRenderingEngine (void)
 	RTEST_C(L"\n\n", 2, L" ||\n ||\n ||\n");
 	RTEST_R(L"\n\n", 2, L"  ||\n  ||\n  ||\n");
 
+    // Do we discard whitespace correctly when the text box is zero
+    // characters wide?
+	RTEST_L(L" ", 0, L"||\n");
+	RTEST_C(L" ", 0, L"||\n");
+	RTEST_R(L" ", 0, L"||\n");
+	RTEST_L(L"  ", 0, L"||\n");
+	RTEST_L(L" \n ", 0, L"||\n||\n");
+	RTEST_L(L"X", 0, L"||\n"); // Soft hyphen.
+
 	// TODO - Test tabs.
 }
 
