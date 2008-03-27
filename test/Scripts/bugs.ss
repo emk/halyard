@@ -49,7 +49,7 @@
   ;;;  Bugs
   ;;;======================================================================
 
-  (sequence bugs)
+  (group bugs)
 
   (card bugs/bug-2061-measure-text-shadow
       (%bug-card% :bug-id "2061" :status 'fixed

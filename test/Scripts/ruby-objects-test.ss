@@ -4,7 +4,7 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "test-elements.ss" "halyard"))
 
-  (sequence ruby-objects-test)
+  (group ruby-objects-test)
   
   
   ;;=======================================================================

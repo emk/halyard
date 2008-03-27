@@ -11,7 +11,7 @@
   (require (lib "updater.ss" "halyard"))
   (require (file "base.ss"))
 
-  (sequence updater ())
+  (group updater ())
   
   (define *error-message* "")
   

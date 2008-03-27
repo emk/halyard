@@ -79,14 +79,14 @@
       (set! ((.caption) .text) (event-caption event)))
     )
 
-  (sequence media)
+  (group media)
 
 
   ;;=======================================================================
   ;;  QuickTime
   ;;=======================================================================
 
-  (sequence media/qt)
+  (group media/qt)
   
   (card media/qt/video-captions (%movie-card%)
     (value title "Video Captions")
@@ -174,7 +174,7 @@
       (jump @index))
     )
 
-  (sequence media/qt/missing)
+  (group media/qt/missing)
   
   (define-class %qtvr-card% (%white-test-card%)
     (attr movie-shape :type <rect>)
@@ -200,7 +200,7 @@
   ;;  Ogg Theora
   ;;=======================================================================
   
-  (sequence media/ogg-theora)
+  (group media/ogg-theora)
 
   ;; ----- INSTALLING the XIPH QUICKTIME COMPONENTS FOR OGG PLAYBACK -----
   ;;
@@ -302,8 +302,8 @@
       (set! ((.caption) .text) (event-caption event)))
     )
 
-  (sequence media/audiostream)
-  (sequence media/audiostream/vorbis)
+  (group media/audiostream)
+  (group media/audiostream/vorbis)
 
   (card media/audiostream/vorbis/stereo
       (%audio-stream-card% :title "Vorbis Stereo\n(Looping)")
@@ -321,7 +321,7 @@
       (%audio-stream-card% :title "Long Vorbis\n(FDA Advisory)")
     (vorbis-audio stream ("quackery.ogg")))
 
-  (sequence media/audiostream/geiger)
+  (group media/audiostream/geiger)
 
   (card media/audiostream/geiger/synth 
       (%audio-stream-card% :title "Geiger Counter")
@@ -329,7 +329,7 @@
       (setup
         (.set-counts-per-second! 10.0))))
 
-  (sequence media/audiostream/geiger/loop)
+  (group media/audiostream/geiger/loop)
 
   (card media/audiostream/geiger/loop/rate-point8mrph
       (%audio-stream-card% :title "Ludlum 0.8 mRph")

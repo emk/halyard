@@ -1,6 +1,6 @@
 (module performance (lib "halyard.ss" "halyard")
   (require (file "base.ss"))
-  (sequence performance)
+  (group performance)
   
   (define-class %parent% ()
     (def (test-method arg1 arg2 &rest args)

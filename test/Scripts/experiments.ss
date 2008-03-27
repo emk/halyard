@@ -3,8 +3,47 @@
   (require (file "base.ss"))
   (require (lib "halyard-unit.ss" "halyard"))
   
-  (sequence experiments)
-  
+  (group experiments)
+
+  ;;=======================================================================
+  ;;  Ordered and Unordered Groups
+  ;;=======================================================================
+  ;;
+  ;; Some ordered and unordered groups for testing purposes.
+  ;;
+
+  (group experiments/groups)
+
+  (define-class %my-group% (%card-group%)
+    (value ordered? #f))
+
+  (group experiments/groups/unordered-group (%my-group%)) 
+  ;;(%card-group% :ordered? #f))  
+
+  (card experiments/groups/unordered-group/foo ()
+    )
+
+  (card experiments/groups/unordered-group/bar ()
+    )
+
+  (group experiments/groups/unordered-group/ordered-group)
+
+  (card experiments/groups/unordered-group/ordered-group/echo ()
+    )
+
+  (card experiments/groups/unordered-group/ordered-group/foxtrot ()
+    )
+
+  (card experiments/groups/unordered-group/ordered-group/golf ()
+    )
+
+  (group experiments/groups/ordered-group)
+
+  (card experiments/groups/ordered-group/hotel ()
+    )
+
+  (card experiments/groups/ordered-group/india ()
+    )
 
   ;;=======================================================================
   ;;  Layout

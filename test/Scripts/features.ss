@@ -8,7 +8,7 @@
   ;; Experimental slot initializer library.
   (require (lib "initialize-slot.ss" "halyard"))
   
-  (sequence features)
+  (group features)
   
   (card features/controls (%standard-test-card% :title "Controls")
     (text description 
@@ -271,7 +271,7 @@
   ;;  Transitions
   ;;=======================================================================
 
-  (sequence features/transitions)
+  (group features/transitions)
 
   (define (transition-text msg)
     (new-centered-text $transition-style msg))
@@ -489,7 +489,7 @@
     (define bounds (measure-graphic path))
     (point (/ (rect-width bounds) -2) (/ (rect-height bounds) -2)))
 
-  (sequence features/mask)
+  (group features/mask)
 
   (card features/mask/light ()
     (elem light (%custom-element%
@@ -930,7 +930,7 @@
   ;;  Animation
   ;;=======================================================================
   
-  (sequence features/animation)
+  (group features/animation)
   
   (define-class %example-animation% (%text-button%)
     (def (click)

@@ -6,7 +6,7 @@
   ;; module manually.
   (require (lib "quake2.ss" "halyard"))
   
-  (group quake2)
+  (group quake2 (%card-group% :ordered? #f))
   
   (define-stylesheet $q2-debug-style
     :base $base-style
@@ -14,7 +14,8 @@
     :size 12
     :color $color-black)
   
-  (group quake2/demo1 (%quake2-level% :game "testq2" :level "demo1")
+  (group quake2/demo1 (%quake2-level% :game "testq2" :level "demo1"
+                                      :ordered? #f)
     (setup
       ;; You can define any console commands you want here.
       (define-quake2-command (hide)
@@ -64,10 +65,12 @@
       (draw-rectangle (dc-rect) (color 0 0 0 #x80))))
   
   ;; Toss in another level, just for kicks.
-  (group quake2/demo2 (%quake2-level% :game "testq2" :level "demo2"))
-  (card  quake2/demo2/run (%quake2-level-run%))
+  (group quake2/demo2 (%quake2-level% :game "testq2" :level "demo2"
+                                      :ordered? #f))
+  (card quake2/demo2/run (%quake2-level-run%))
   
-  (group quake2/trigger (%quake2-level% :game "testq2" :level "triggertest")
+  (group quake2/trigger (%quake2-level% :game "testq2" :level "triggertest"
+                                        :ordered? #f)
     (setup
       (quake2-command "bind l trigger lights")
       (quake2-command "bind b trigger bridge")
@@ -77,10 +80,12 @@
       (quake2-command "+mlook")))
   (card quake2/trigger/run (%quake2-level-run%))
   
-  (group quake2/region (%quake2-level% :game "testq2" :level "regiontest"))
+  (group quake2/region (%quake2-level% :game "testq2" :level "regiontest"
+                                       :ordered? #f))
   (card quake2/region/run (%quake2-level-run%))
   
-  (group quake2/path (%quake2-level% :game "testq2" :level "pathtest")
+  (group quake2/path (%quake2-level% :game "testq2" :level "pathtest"
+                                     :ordered? #f)
     (setup
       ;; Try "trigger start_patrol" or "trigger pause_point".
       (quake2-command "vid_gamma 0.5") )
@@ -101,7 +106,8 @@
         (set! (.shown?)
               (state-db '/quake2/looking-in-watched-direction?)))))
   
-  (group quake2/watchdir (%quake2-level% :game "testq2" :level "regiontest")
+  (group quake2/watchdir (%quake2-level% :game "testq2" :level "regiontest"
+                                         :ordered? #f)
     (def (setup-finished)
       (super)
       (set! (state-db '/quake2/looking-in-watched-direction?) #f)

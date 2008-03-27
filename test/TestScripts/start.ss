@@ -243,14 +243,16 @@
 
 
 ;;=========================================================================
-;;  Groups & Sequences
+;;  Ordered & Unordered Groups
 ;;=========================================================================
 
 (define *last-card* #f)
 (define *last-group* #f)
 
-(group g1 ()
+(group g1 (%card-group% :ordered? #f)
   (run
+    (test (not ((static-root-node) .ordered?)))
+    (test (eq? #f (.ordered?)))
     (set! *last-group* g1)))
 
 (card g1/start ()
@@ -259,8 +261,9 @@
     (set! *last-card* g1/start)
     (jump @s1)))
 
-(sequence g1/s1 ()
+(group g1/s1 ()
   (run
+    (test (eq? #t (.ordered?)))
     (set! *last-group* g1/s1)))
   
 (card g1/s1/c1 ()
@@ -281,8 +284,9 @@
     (set! *last-card* g1/s1/c2)
     (jump (card-next))))
 
-(sequence g1/s1/s2 ()
+(group g1/s1/s2 (%card-group% :ordered? #t)
   (run
+    (test (eq? #t (.ordered?)))
     (set! *last-group* g1/s1/s2)))
 
 (card g1/s1/s2/c1 ()

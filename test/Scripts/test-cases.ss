@@ -6,7 +6,7 @@
   (require (lib "errortrace-lib.ss" "errortrace"))
   (require (lib "test-elements.ss" "halyard"))
   
-  (sequence test-cases)
+  (group test-cases)
 
   ;;=======================================================================
   ;;  Helper Functions (to be factored-out later)
