@@ -149,23 +149,28 @@
   ;;=======================================================================
   ;;  %card%
   ;;=======================================================================
-
+  
   (provide card-next card-prev jump-next jump-prev)
   
   (with-instance (%card% .class)
     (def (jumpable?) #t)
     
     (def (find-first-card) self)
-    (def (find-last-card) self))
+    (def (find-last-card) self)
+    
+    (def (card-next)
+      ((.parent) .find-next self))
+    
+    (def (card-prev)
+      ((.parent) .find-prev self))
+    )
 
   (define (card-next)
-    (define static ((current-card) .static-node))
-    ((static .parent) .find-next static))
-
+    (((current-card) .class) .card-next))
+  
   (define (card-prev)
-    (define static ((current-card) .static-node))
-    ((static .parent) .find-prev static))
-
+    (((current-card) .class) .card-prev))
+  
   (define (jump-helper find-card str)
     (let [[c (find-card)]]
       (if c
