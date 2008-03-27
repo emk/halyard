@@ -165,11 +165,19 @@
       ((.parent) .find-prev self))
     )
 
+  (with-instance %card%
+    (def (card-next)
+      ((.class) .card-next))
+
+    (def (card-prev)
+      ((.class) .card-prev))
+    )
+
   (define (card-next)
-    (((current-card) .class) .card-next))
+    ((current-card) .card-next))
   
   (define (card-prev)
-    (((current-card) .class) .card-prev))
+    ((current-card) .card-prev))
   
   (define (jump-helper find-card str)
     (let [[c (find-card)]]
