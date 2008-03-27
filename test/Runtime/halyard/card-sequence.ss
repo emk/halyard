@@ -2,8 +2,30 @@
 ;; and design flaws, and will be redesigned soon.  See case 2411.
 (module card-sequence (lib "language.ss" "halyard")
   (require (lib "nodes.ss" "halyard"))
-  
 
+  
+  ;;=======================================================================
+  ;;  Helper Functions
+  ;;=======================================================================
+  
+  ;; Given an item V and a list LST, return a values list consisting of the
+  ;; previous item to V, the item V, and the next item after V.
+  ;; If V is not in LST, return all values as #f.
+  ;; If there is not a previous or next item, return #f for those values.
+  (define (find-with-neighbors v lst)
+    (let recurse [[v v] [prev #f] [lst lst]]
+      (cond
+       [(null? lst)
+        (values #f #f #f)]
+       [(eq? (car lst) v)
+        (values prev (car lst)
+                (if (null? (cdr lst))
+                    #f
+                    (cadr lst)))]
+       [else
+        (recurse v (car lst) (cdr lst))])))
+  
+  
   ;;=======================================================================
   ;;  %node%
   ;;=======================================================================
@@ -123,42 +145,40 @@
         (error (cat "Can't jump to group " (.full-name)
                     " because it contains no cards."))
         (jump (car (.members)))))
-
-    (def (find-next member)
+    
+    ;; Given a group-member child, searches for the member's neighbors
+    ;; if this group has a largest-containing-ordered-group, otherwise
+    ;; there aren't adjacent neighbors but we have succeeded, so we should
+    ;; return (values #f #t #f).
+    (def (%find-adjacent-if-available member)
       (assert (member .jumpable?))
-      (if (not (.ordered?))
-        #f
-        ;; Find the node *after* member.
-        (let [[remainder (memq member (.members))]]
-          (%assert (not (null? remainder)))
-          (if (null? (cdr remainder))
-            ((.parent) .find-next self)
-            ;; Walk recursively through any sequences to find the first card.
-            ((cadr remainder) .find-first-card)))))
+      (define lcog (.largest-containing-ordered-group))
+      (if lcog
+        (find-with-neighbors member (lcog .flattened-group-members))
+        (values #f #t #f)))
+    
+    ;; Given a group-member child and a direction ('next or 'prev),
+    ;; return the static card for that direction (or #f, if there is no card).
+    (def (find-adjacent member direction)
+      (with-values 
+        [[prev-node-or-false succeeded? next-node-or-false]
+         (.%find-adjacent-if-available member)]
+        (cond
+         [(not succeeded?)
+          (error (cat "find-adjacent: " member " is not a member of " self))]
+         [(eq? 'next direction)
+          next-node-or-false]
+         [(eq? 'prev direction)
+          prev-node-or-false]
+         [else
+          (error (cat "find-adjacent: invalid direction " direction
+                      " (member = " member ", card-group = " self ")."))])))
+    
+    (def (find-next member)
+      (.find-adjacent member 'next))
     
     (def (find-prev member)
-      (assert (member .jumpable?))
-      (if (not (.ordered?))
-        #f
-        ;; Find the node *before* member.  Notice the two (2!) lambdas in
-        ;; this function, which are used to implement a form of lazy
-        ;; evaluation: They keep track of how to find the node we want,
-        ;; assuming the current current node is MEMBER (which is one past the
-        ;; node we want).
-        (let search [[members (.members)]
-                     [candidate-func 
-                      (lambda ()
-                        ((.parent) .find-prev self))]]
-          (%assert (not (null? members)))
-          (if (eq? (car members) member)
-            (candidate-func)
-            (search (cdr members)
-                    (lambda ()
-                      ;; This is our actual base case: It's called when
-                      ;; we've located MEMBER, and it recursively looks
-                      ;; for the last card in the node *before* MEMBER.
-                      ;; Got it?
-                      ((car members) .find-last-card)))))))
+      (.find-adjacent member 'prev))
     
     (def (find-first-card)
       (assert (.ordered?))
