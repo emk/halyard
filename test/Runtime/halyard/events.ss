@@ -1,4 +1,4 @@
-(module events (lib "language.ss" "halyard")
+(module events (lib "language.ss" "mizzen")
   (require (lib "nodes.ss" "halyard"))
   (require (lib "util.ss" "mizzen"))
   (require (lib "util.ss" "halyard"))

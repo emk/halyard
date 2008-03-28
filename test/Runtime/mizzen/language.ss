@@ -70,8 +70,8 @@
   ;; Ruby/SmallTalk-style Features
   ;;---------------------------------------------------------------------- 
 
-  (require (lib "ruby-objects.ss" "halyard"))
-  (provide (all-from-except (lib "ruby-objects.ss" "halyard")
+  (require (lib "ruby-objects.ss" "mizzen"))
+  (provide (all-from-except (lib "ruby-objects.ss" "mizzen")
                             method~ app~ set!~))
 
   (provide (rename method~ method)

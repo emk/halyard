@@ -1,7 +1,7 @@
-(module after-updating (lib "language.ss" "halyard")
+(module after-updating (lib "language.ss" "mizzen")
   (require (lib "nodes.ss" "halyard"))
   (require (lib "util.ss" "mizzen"))
-  (require-for-syntax (lib "capture.ss" "halyard"))
+  (require-for-syntax (lib "capture.ss" "mizzen"))
   
   (provide after-updating)
 

@@ -1,5 +1,5 @@
 (module halyard-unit (lib "halyard.ss" "halyard")
-  (require-for-syntax (lib "capture.ss" "halyard"))
+  (require-for-syntax (lib "capture.ss" "mizzen"))
 
   (provide %test-suite% $halyard-unit-style)
   

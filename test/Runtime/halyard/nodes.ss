@@ -1,4 +1,4 @@
-(module nodes (lib "language.ss" "halyard")
+(module nodes (lib "language.ss" "mizzen")
 
   ;; Various support code and declarations refactored out of the kernel.
   (require (lib "types.ss" "halyard"))
@@ -7,18 +7,18 @@
   (require (lib "util.ss" "mizzen"))
   ;; (provide (all-from (lib "util.ss" "mizzen")))
   (require-for-syntax (lib "util.ss" "mizzen"))
-  (require-for-syntax (lib "syntax-util.ss" "halyard"))
+  (require-for-syntax (lib "syntax-util.ss" "mizzen"))
   (require (lib "hook.ss" "halyard"))
 
   ;; Get begin/var.
   (require (lib "begin-var.ss" "mizzen"))
 
   ;; Require our macro-related helpers.
-  (require-for-syntax (lib "capture.ss" "halyard"))
+  (require-for-syntax (lib "capture.ss" "mizzen"))
   (require (lib "indent.ss" "mizzen"))
   
   ;; We need these for checking if SELF valid.
-  (require-for-syntax (lib "default-self.ss" "halyard"))  
+  (require-for-syntax (lib "default-self.ss" "mizzen"))  
   (require-for-syntax (only (lib "stxparam.ss" "mzlib") 
                             syntax-parameter-value))
 

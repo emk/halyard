@@ -1,4 +1,4 @@
-(module interpolate (lib "language.ss" "halyard")
+(module interpolate (lib "language.ss" "mizzen")
   (require (lib "util.ss" "mizzen"))
   (require (lib "types.ss" "halyard"))
 

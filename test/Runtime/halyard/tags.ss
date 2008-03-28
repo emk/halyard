@@ -1,4 +1,4 @@
-(module tags (lib "language.ss" "halyard")
+(module tags (lib "language.ss" "mizzen")
         
   (require (lib "kernel.ss" "halyard"))
         

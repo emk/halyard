@@ -1,4 +1,4 @@
-(module define-node-helper (lib "language.ss" "halyard")
+(module define-node-helper (lib "language.ss" "mizzen")
   (require (lib "nodes.ss" "halyard"))
   (require-for-syntax (lib "util.ss" "mizzen"))
   (require (lib "tags.ss" "halyard"))

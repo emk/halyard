@@ -1,4 +1,4 @@
-(module initialize-slot (lib "language.ss" "halyard")
+(module initialize-slot (lib "language.ss" "mizzen")
   (require (lib "util.ss" "mizzen"))
         
   (with-instance %class%

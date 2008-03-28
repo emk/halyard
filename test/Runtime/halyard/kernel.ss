@@ -1,4 +1,4 @@
-(module kernel (lib "language.ss" "halyard")
+(module kernel (lib "language.ss" "mizzen")
 
   ;; Import %call-prim from the engine.
   (require #%engine-primitives)

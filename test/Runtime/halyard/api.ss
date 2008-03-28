@@ -1,4 +1,4 @@
-(module api (lib "language.ss" "halyard")
+(module api (lib "language.ss" "mizzen")
 
   (require (lib "kernel.ss" "halyard"))
   (provide (all-from (lib "kernel.ss" "halyard")))
