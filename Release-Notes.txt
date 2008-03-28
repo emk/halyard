@@ -1,3 +1,19 @@
+0.2.4.1 - 28 March 2008 - emk, brian
+
+When backporting changes to *.ss code, I accidentally tested the wrong
+Runtime directory.  This meant that a number of bugs slipped through: Calls
+to exn:fail?, path->string, assert-equal, and other functions that only
+exist in newer engines.
+
+This patch finishes the cleanup work, and gives us an engine which
+successfully loads VTRA and runs the updater test suites.
+
+  Fix 'rake tag' to use correct repository URL and source branch
+  Merge r28612: Provide ASSERT-RAISES from tamale-unit
+  Partially merge r28712: Replace ASSERT-EQUAL with ASSERT-EQUALS
+  First working version: Fix broken code backported from trunk
+  buildfile.rb: Don't generate tarballs for 0.2-stable
+
 0.2.4 - 28 March 2008 - emk, brian
 
 Experimental development release of 0.2-stable, including partial support
