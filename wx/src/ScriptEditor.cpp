@@ -1167,6 +1167,7 @@ void ScriptTextCtrl::IndentSelection() {
     // Figure out which lines are in the selection.
     int begin_pos, end_pos;
     GetSelection(&begin_pos, &end_pos);
+    Colourise(begin_pos, end_pos);
     int begin_line = LineFromPosition(begin_pos);
     int end_line = LineFromPosition(end_pos);
 
