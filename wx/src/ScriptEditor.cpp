@@ -1538,6 +1538,11 @@ void ScriptDoc::UpdateSavePointModTime() {
 }
 
 void ScriptDoc::WriteDocument() {
+    // Make sure our line endings are consistent.  This depends on
+    // having guessed our line ending style appropriately in
+    // ReadDocument.
+    ConvertEOLs(GetEOLMode());
+
     wxString path(GetDocumentPath());
     wxFile file(path, wxFile::write);
     if (!file.IsOpened())
