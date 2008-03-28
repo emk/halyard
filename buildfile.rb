@@ -35,10 +35,6 @@ heading 'Check out the source code.', :name => :checkout do
   svn :export, tag_url, src_dir
 end
 
-heading 'Make source tarball.', :name => :source_tarball do
-  make_tarball src_dir
-end
-
 heading 'Building and testing engine.', :name => :build do
   cd src_dir do |d|
     run 'rake', 'test'
@@ -59,11 +55,6 @@ heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
     end
     svn :ci, '-m', "Tagging binaries for release #{version}."
   end
-  svn :export, bin_url, bin_dir
-end
-
-heading 'Building tarballs.', :name => :build_tarballs do
-  make_tarball bin_dir
 end
 
 # Finish the build.
