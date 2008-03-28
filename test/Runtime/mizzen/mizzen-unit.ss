@@ -1,6 +1,33 @@
 (module mizzen-unit "language.ss"
   (require-for-syntax "capture.ss")
   
+  ;;=======================================================================
+  ;;  Text-based test result reporting
+  ;;=======================================================================
+  
+  (provide run-tests)
+  
+  (define (display-line &rest args)
+    (display (apply cat (append args '("\n")))))
+  
+  (define (run-tests test-cases)
+    (let [[report (%test-report% .new)]]
+      (foreach [test-class test-cases]
+        (test-class .run-tests report))
+      (if (report .success?)
+        (display-line "OK")
+        (begin
+          (display-line "FAILED")
+          (foreach [failure (report .failures)]
+            (display-line (failure .title))
+            (display-line (failure .message))
+            (display-line))))))
+  
+  
+  ;;=======================================================================
+  ;;  Test cases and supporting classes
+  ;;=======================================================================
+    
   (provide %test-failure%
            %test-report%
            %test-method%
