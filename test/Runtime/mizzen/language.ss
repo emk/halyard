@@ -143,4 +143,13 @@
           #`(let-syntax (#,@(map-syntax make-symbol-transformer #'bindings))
               body ...)])))
   
+  
+  ;;---------------------------------------------------------------------- 
+  ;; Generally useful utilities
+  ;;---------------------------------------------------------------------- 
+  
+  (require "util.ss")
+  (provide (all-from "util.ss"))
+  (require "indent.ss")
+  (provide (all-from "indent.ss"))
   )

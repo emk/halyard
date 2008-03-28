@@ -19,11 +19,6 @@
   (define (set-trace-output-printer! fun)
     (set! *trace-output-fn* fun))
   
-  (define-syntax with-values
-    (syntax-rules []
-      [(with-values [arglist expr] body ...)
-       (call-with-values (lambda () expr) (lambda arglist body ...))]))
-  
   (define *trace-depth* 0)
 
   (define (get-trace-prefix)

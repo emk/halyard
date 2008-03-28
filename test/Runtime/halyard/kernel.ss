@@ -28,8 +28,6 @@
   (provide (all-from (lib "nodes.ss" "halyard")))
   (require (lib "events.ss" "halyard"))
   (provide (all-from (lib "events.ss" "halyard")))
-  (require (lib "indent.ss" "mizzen"))
-  (provide (all-from (lib "indent.ss" "mizzen")))
 
   ;; Get format-result-values.
   (require (lib "trace.ss" "halyard"))
