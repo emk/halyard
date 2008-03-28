@@ -32,7 +32,7 @@
            set-media-base-url! movie 
            movie-pause movie-resume set-media-volume!
            wait tc native-dialog
-           nap draw-line draw-box draw-box-outline inset-rect timeout
+           nap draw-line draw-box draw-box-outline inset-rect
            current-card-name fade unfade opacity save-graphics restore-graphics
            copy-string-to-clipboard open-in-browser
            script-user-data-directory script-user-local-data-directory 
@@ -700,10 +700,8 @@
                          &opt [button1 ""] [button2 ""] [button3 ""])
     (call-5l-prim 'dialog title text button1 button2 button3))
 
-  ;; XXX - Reimplement this function or get rid of it; the current
-  ;; implementation is *horrible*.
   (define (nap tenths)
-    (call-5l-prim 'nap tenths))
+    (sleep-milliseconds (* 100 tenths)))
 
   (define (draw-line from to c width)
     (call-5l-prim 'drawline from to c width))
@@ -721,11 +719,6 @@
           (- (rect-right r) pixels)
           (- (rect-bottom r) pixels)))
   
-  ;; XXX - The implementation of this function is exceedingly ugly,
-  ;; and I'm not even sure it works.
-  (define (timeout seconds card)
-    (call-5l-prim 'timeout seconds (card-name card)))
-
   (define (current-card-name)
     (card-name (current-card)))
 

@@ -153,9 +153,7 @@ public:
 
     //////////
     /// Can the interepreter suspend in its current context?  Call this
-    /// before calling Pause, Timeout or Nap to prevent errors.  I'm not
-    /// exactly sure why Timeout is actually on this list, but the Scheme
-    /// runtime kernel thinks it should be.
+    /// before calling Pause to prevent errors.
     ///
     virtual bool CanSuspend() = 0;
 
@@ -176,34 +174,6 @@ public:
 	/// \return  True if paused, false otherwise.
 	///
 	virtual bool Paused(void) = 0;
-
-	//////////
-	/// Set the timeout timer. 
-	///
-	/// \param inName  name of Card to jump to after timeout.
-	/// \param inTime  time in seconds (e.g. timeout in 30 sec)
-	///
-	virtual void Timeout(const char *inName, int32 inTime) = 0;
-
-	//////////
-	/// Set the nap timer.
-	///
-	/// \param inTime  time in 1/10 seconds (e.g. 20 = timeout in 2 sec)
-	///
-	virtual void Nap(int32 inTime) = 0;        
-	
-	//////////
-	/// Is the CardManager napping?
-	///
-	/// \return  true if napping, false otherwise
-	///
-	virtual bool Napping(void) = 0;
-	
-	//////////
-	/// Kill the nap timer.  This might be called on cards which
-	/// aren't napping; check to be certain.
-	///
-	virtual void KillNap(void) = 0;
 
 	//////////
 	/// Permanently stop execution of the current card's script.

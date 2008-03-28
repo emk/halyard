@@ -213,7 +213,6 @@
               (%kernel-maybe-clear-state)
               (loop)))))
       (%kernel-maybe-clear-state)
-      (%kernel-clear-timeout)
       (notify-exit-script)))
 
   (define (notify-exit-script)
@@ -252,28 +251,6 @@
 
   (define (%kernel-paused?)
     (eq? *%kernel-state* 'PAUSED))
-
-  (define (%kernel-timeout card-name seconds)
-    (with-errors-blocked (non-fatal-error)
-      (%kernel-die-if-callback '%kernel-timeout)
-      (%kernel-set-timeout (+ (current-milliseconds) (* seconds 1000))
-                           (lambda () (jump (find-card card-name))))))
-    
-  (define (%kernel-nap tenths-of-seconds)
-    (with-errors-blocked (non-fatal-error)
-      (%kernel-die-if-callback '%kernel-nap)
-      (set! *%kernel-nap-time* (+ (current-milliseconds)
-                                  (* tenths-of-seconds 100)))
-      (%kernel-set-state 'NAPPING)))
-
-  (define (%kernel-napping?)
-    (eq? *%kernel-state* 'NAPPING))
-
-  (define (%kernel-kill-nap)
-    (with-errors-blocked (non-fatal-error)
-      (%kernel-die-if-callback '%kernel-kill-nap)
-      (when (%kernel-napping?)
-        (%kernel-clear-state))))
 
   (define (%kernel-kill-current-card)
     (%kernel-set-state 'CARD-KILLED))
@@ -369,8 +346,6 @@
   ;;              told to wake back up.  This is used for modal text
   ;;              entry fields, (wait ...), and similar things.
   ;;    JUMPING:  The interpreter should execute a jump.
-  ;;    NAPPING:  The interpreter should pause the current card for the
-  ;;              specified number of milliseconds.
   ;;    CARD-KILLED: The interpreter should stop executing the current
   ;;               card, and return to the top-level loop.
   ;;    INTERPRETER-KILLED: The interpreter should exit.
@@ -386,9 +361,6 @@
   ;; Some slightly less important global state variables.  See the
   ;; functions which define and use them for details.
   (define *%kernel-jump-card* #f)
-  (define *%kernel-timeout* #f)
-  (define *%kernel-timeout-thunk* #f)
-  (define *%kernel-nap-time* #f)
 
   ;; Deferred thunks are used to implement (deferred-callback () ...).
   ;; See call-at-safe-time for details.
@@ -408,27 +380,6 @@
   (define (%kernel-die-if-callback name)
     (if *%kernel-running-callback?*
         (throw (cat "Cannot call " name " from within callback."))))
-
-  (define (%kernel-clear-timeout)
-    (set! *%kernel-timeout* #f)
-    (set! *%kernel-timeout-thunk* #f))
-
-  (define (%kernel-set-timeout time thunk)
-    (when *%kernel-timeout*
-      (debug-caution "Installing new timeout over previously active one."))
-    (set! *%kernel-timeout* time)
-    (set! *%kernel-timeout-thunk* thunk))
-  
-  (define (%kernel-check-timeout)
-    ;; If we have a timeout to run, and it's a safe time to run it, do so.
-    (if (%kernel-stopped?)
-        (%kernel-clear-timeout)
-        (unless *%kernel-running-callback?*
-          (when (and *%kernel-timeout*
-                     (>= (current-milliseconds) *%kernel-timeout*))
-            (let ((thunk *%kernel-timeout-thunk*))
-              (%kernel-clear-timeout)
-              (thunk))))))
 
   (define (%kernel-wake-up-if-necessary)
     ;; We may need to finish waking up from any WAIT calls which were
@@ -455,7 +406,7 @@
     (and (not *%kernel-running-callback?*)
          (not *%kernel-running-deferred-thunks?*)
          (not *running-on-exit-handler-for-node*)
-         (member? *%kernel-state* '(NORMAL PAUSED NAPPING))))
+         (member? *%kernel-state* '(NORMAL PAUSED))))
 
   (define (call-at-safe-time thunk)
     ;; Make sure we run 'thunk' at the earliest safe time, but not
@@ -544,10 +495,9 @@
 
   (define (%kernel-check-state)
     ;; This function is called immediately after returning from any
-    ;; primitive call (including idle).  It's job is to check flags
-    ;; set by the engine, handle any deferred callbacks, check
-    ;; timeouts, and generally bring the Scheme world back into sync
-    ;; with everybody else.
+    ;; primitive call (including idle).  It's job is to check flags set by
+    ;; the engine, handle any deferred callbacks, and generally bring the
+    ;; Scheme world back into sync with everybody else.
     ;; 
     ;; Since this is called after idle, it needs to be *extremely*
     ;; careful about allocating memory.  See %kernel-run for more
@@ -561,8 +511,6 @@
     ;; this very tricky and important routine without a lot of thought,
     ;; particularly during a relatively stable period of engine
     ;; development.  Feel free to revisit this later.
-    (unless *%kernel-running-callback?*
-      (%kernel-check-timeout))
     (case *%kernel-state*
       [[NORMAL STOPPED]
        #f]
@@ -572,12 +520,6 @@
       [[PAUSED]
        (%call-5l-prim 'schemeidle #f)
        (%kernel-check-state)]       ; Tail-call self without consing.
-      [[NAPPING]
-       (if (< (current-milliseconds) *%kernel-nap-time*)
-           (begin
-             (%call-5l-prim 'schemeidle #f)
-             (%kernel-check-state)) ; Tail call self without consing.
-           (%kernel-clear-state))]
       [[JUMPING]
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
@@ -620,7 +562,6 @@
       (call-5l-prim 'EnableExpensiveEvents enable?)))
 
   (defmethod (engine-notify-enter-card (engine <real-engine>) (card <card>))
-    (%kernel-clear-timeout)
     (call-5l-prim 'resetorigin)
     (when (have-5l-prim? 'notifyentercard)
       (call-5l-prim 'notifyentercard (node-full-name card)))
