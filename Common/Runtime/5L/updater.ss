@@ -20,7 +20,7 @@
   (define (unsafe-directory-writeable? dir)
     (define path
       (build-path dir (cat "TEMP_PERMISSION_TEST_" (random 1000000000))))
-    (with-handlers [[exn:fail:filesystem? (lambda (exn) #f)]]
+    (with-handlers [[exn:i/o:filesystem? (lambda (exn) #f)]]
       (define test (open-output-file path))
       (close-output-port test)
       (delete-file path)
@@ -92,9 +92,7 @@
         [[proc stdout stdin stderr]
          ;; PORTABILITY - Windows requires the full name gpgv.exe here.
          (subprocess #f #f #f (build-path (current-directory) "gpgv.exe")
-                     "--homedir" (path->string trusted-keys-dir)
-                     (path->string signature)
-                     (path->string file))]
+                     "--homedir" trusted-keys-dir signature file)]
       (dynamic-wind
        (fn () (void))
        (fn ()
@@ -108,7 +106,7 @@
   ;;; Calculate the SHA1 sum of a file, and return it as a string.
   (define (sha1-file file)
     (if (file-exists? file)
-      (call-5l-prim 'Sha1File (path->string file))
+      (call-5l-prim 'Sha1File file)
       (error (cat "File does not exist: " file))))
 
   ;;===========================================================================
@@ -122,7 +120,7 @@
   ;;; security exceptions mostly so that we can write (ASSERT-RAISES
   ;;; UPDATER-SECURITY-ERROR? ...) in unit tests, and have the test fail if
   ;;; any *non*-security error occurs.
-  (define-struct (updater-security-error exn:fail) (url))
+  (define-struct (updater-security-error exn) (url))
 
   ;;; Raise a security exception for FILE.
   (define (security-error url)

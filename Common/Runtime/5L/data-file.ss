@@ -61,7 +61,7 @@
         (letrec ((read-pair
                   (lambda ()
                     (with-handlers 
-                      [[exn:fail? 
+                      [[not-break-exn?
                         (lambda (ex) 
                           (debug-log (cat "maybe-read-data-from-file: "
                                           (exn-message ex)))
