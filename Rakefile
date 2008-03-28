@@ -60,7 +60,7 @@ end
 #  Rake Tasks
 #==========================================================================
 
-branch = '0.2-stable'
+branch = '0.2.4-experimental-run-deferred'
 
 # We currently support two project configurations; more can be added by
 # editing the list below.
