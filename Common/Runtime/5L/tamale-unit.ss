@@ -7,6 +7,10 @@
     :color (color 0 0 0)
     :highlight-color (color #x00 #x00 #xC0))
   
+  (define-stylesheet $tamale-unit-title-style
+    :base $tamale-unit-style
+    :size 24)
+  
   (define-stylesheet $tamale-unit-passed-style
     :base $tamale-unit-style
     :size 36
@@ -59,6 +63,10 @@
       [tests]
       ()
     (clear-screen (color #xFF #xFF #xFF))
+    ;; Draw a title on the card (making it easier to tell when each test-suite
+    ;; card is loaded).
+    (draw-text $tamale-unit-title-style (rect 30 30 800 100)
+               (cat "Card: " (node-full-name self)))
     (let [[report (make-test-report)]]
       (foreach [test-class tests]
          (run-tests test-class report))
@@ -78,7 +86,7 @@
            setup-test teardown-test add-test-method!
            run-tests run-test-method
            define-test-case-helper define-test-case with-captured-variable
-           assert-equal assert-macro-expansion assert-raises
+           assert-equals assert-macro-expansion assert-raises
            make-test-report 
            fixture-dir)
   
@@ -138,7 +146,7 @@
     (if (eq? test-case-class <test-case>)
       direct
       (let [[supers (class-direct-supers test-case-class)]]
-        (assert-equal 1 (length supers))
+        (assert-equals 1 (length supers))
         (append direct (test-case-test-methods (first supers))))))
   
   ;;; A test case consists of a setup function, zero or more test
@@ -233,13 +241,13 @@
   (define-syntax-indent test 1)
   
   ;;; Assert that an expression returns the expected value.
-  (define-syntax assert-equal 
+  (define-syntax assert-equals 
     (syntax-rules ()
       [(_ expected value)
        (let [[e expected] [v value]]
-         (unless (equal? e v)
+         (unless (equals? e v)
            (error (cat "Expected <" e ">, got <" v "> in <" 'value ">"))))]))
-  (define-syntax-indent assert-equal function)
+  (define-syntax-indent assert-equals function)
   
   ;;; Assert that the specified macro, expanded once, returns the
   ;;; expected source code.  This is most useful for macros which
@@ -247,7 +255,7 @@
   (define-syntax assert-macro-expansion
     (syntax-rules ()
       [(_ expansion source)
-       (assert-equal
+       (assert-equals
         'expansion
         (syntax-object->datum (expand-once #'source)))]))
   (define-syntax-indent assert-macro-expansion function)
