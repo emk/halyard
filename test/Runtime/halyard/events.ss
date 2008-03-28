@@ -1,5 +1,7 @@
 (module events (lib "language.ss" "halyard")
   (require (lib "nodes.ss" "halyard"))
+  (require (lib "util.ss" "mizzen"))
+  (require (lib "util.ss" "halyard"))
 
   ;; Functions intended solely for use by kernel.ss.
   (provide dispatch-event-to-current-group-member)

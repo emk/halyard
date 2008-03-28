@@ -4,17 +4,18 @@
   (require (lib "types.ss" "halyard"))
   (provide (all-from (lib "types.ss" "halyard")))
   (require (lib "util.ss" "halyard"))
-  (provide (all-from (lib "util.ss" "halyard")))
-  (require-for-syntax (lib "util.ss" "halyard"))
+  (require (lib "util.ss" "mizzen"))
+  ;; (provide (all-from (lib "util.ss" "mizzen")))
+  (require-for-syntax (lib "util.ss" "mizzen"))
   (require-for-syntax (lib "syntax-util.ss" "halyard"))
   (require (lib "hook.ss" "halyard"))
 
   ;; Get begin/var.
-  (require (lib "begin-var.ss" "halyard"))
+  (require (lib "begin-var.ss" "mizzen"))
 
   ;; Require our macro-related helpers.
   (require-for-syntax (lib "capture.ss" "halyard"))
-  (require (lib "indent.ss" "halyard"))
+  (require (lib "indent.ss" "mizzen"))
   
   ;; We need these for checking if SELF valid.
   (require-for-syntax (lib "default-self.ss" "halyard"))  

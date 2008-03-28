@@ -9,7 +9,7 @@
   (require (lib "cm-ctime.ss" "mzlib" "private"))
 
   ;; Get begin/var, and re-export it.
-  (require (lib "begin-var.ss" "halyard"))
+  (require (lib "begin-var.ss" "mizzen"))
   (provide begin/var)
   (provide define/var)
   
@@ -20,14 +20,16 @@
   ;; Various support code and declarations refactored out of the kernel.
   (require (lib "types.ss" "halyard"))
   (provide (all-from (lib "types.ss" "halyard")))
+  (require (lib "util.ss" "mizzen"))
+  (provide (all-from (lib "util.ss" "mizzen")))
   (require (lib "util.ss" "halyard"))
   (provide (all-from (lib "util.ss" "halyard")))
   (require (lib "nodes.ss" "halyard"))
   (provide (all-from (lib "nodes.ss" "halyard")))
   (require (lib "events.ss" "halyard"))
   (provide (all-from (lib "events.ss" "halyard")))
-  (require (lib "indent.ss" "halyard"))
-  (provide (all-from (lib "indent.ss" "halyard")))
+  (require (lib "indent.ss" "mizzen"))
+  (provide (all-from (lib "indent.ss" "mizzen")))
 
   ;; Get format-result-values.
   (require (lib "trace.ss" "halyard"))

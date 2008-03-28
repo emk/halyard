@@ -1,8 +1,8 @@
 (module define-node-helper (lib "language.ss" "halyard")
   (require (lib "nodes.ss" "halyard"))
-  (require-for-syntax (lib "util.ss" "halyard"))
+  (require-for-syntax (lib "util.ss" "mizzen"))
   (require (lib "tags.ss" "halyard"))
-  (require (lib "indent.ss" "halyard"))
+  (require (lib "indent.ss" "mizzen"))
 
   (provide define-node-helper)
 

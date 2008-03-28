@@ -1,5 +1,5 @@
 (module interpolate (lib "language.ss" "halyard")
-  (require (lib "util.ss" "halyard"))
+  (require (lib "util.ss" "mizzen"))
   (require (lib "types.ss" "halyard"))
 
   (provide number->integer interpolate-value)

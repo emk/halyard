@@ -4,7 +4,7 @@
 ;;  Handy code by Brian Campbell, with some later hacking by Eric Kidd.
 
 (module trace (lib "language.ss" "halyard")
-  (require (lib "begin-var.ss" "halyard"))
+  (require (lib "begin-var.ss" "mizzen"))
   
   (provide with-tracing
            set-trace-output-printer!

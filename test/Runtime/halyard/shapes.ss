@@ -3,7 +3,7 @@
 ;;=========================================================================
 
 (module shapes (lib "language.ss" "halyard")
-  (require (lib "util.ss" "halyard"))
+  (require (lib "util.ss" "mizzen"))
   (require (lib "types.ss" "halyard"))
   (require (lib "kernel.ss" "halyard"))
   

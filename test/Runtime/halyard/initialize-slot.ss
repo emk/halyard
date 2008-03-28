@@ -1,5 +1,5 @@
 (module initialize-slot (lib "language.ss" "halyard")
-  (require (lib "util.ss" "halyard"))
+  (require (lib "util.ss" "mizzen"))
         
   (with-instance %class%
     ;; TODO - Experimental code for .initialize-slot.  We need to think

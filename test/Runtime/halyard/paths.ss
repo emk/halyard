@@ -1,9 +1,9 @@
 (module paths (lib "language.ss" "halyard")
-  (require (lib "util.ss" "halyard"))
-  (require-for-syntax (lib "util.ss" "halyard"))
+  (require (lib "util.ss" "mizzen"))
+  (require-for-syntax (lib "util.ss" "mizzen"))
 
   (require (lib "nodes.ss" "halyard"))
-  (require (lib "indent.ss" "halyard"))
+  (require (lib "indent.ss" "mizzen"))
 
   ;; Get some string processing stuff from the SRFI libraries.
   (require (only (lib "13.ss" "srfi") string-tokenize string-join))

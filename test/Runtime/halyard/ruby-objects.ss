@@ -1,10 +1,10 @@
 (module ruby-objects (lib "swindle.ss" "swindle")
   (require (lib "struct.ss")) ; For DEFINE-STRUCT/PROPERTIES.
   (require-for-syntax (lib "capture.ss" "halyard"))
-  (require (lib "util.ss" "halyard"))
-  (require-for-syntax (lib "util.ss" "halyard"))
+  (require (lib "util.ss" "mizzen"))
+  (require-for-syntax (lib "util.ss" "mizzen"))
   (require-for-syntax (lib "syntax-util.ss" "halyard"))
-  (require (lib "begin-var.ss" "halyard"))
+  (require (lib "begin-var.ss" "mizzen"))
   
   ;; For setting up SELF and SUPER as syntax-parameters
   (require (lib "stxparam.ss" "mzlib"))
@@ -439,7 +439,7 @@
       (let [[msg (cat "Called " method-name " on uninitialized object")]]
         ;; If we're in an inifinitely-recursive error loop, NON-FATAL-ERROR
         ;; will at least make sure we see an error dialog.
-        (non-fatal-error msg)
+        ;; (non-fatal-error msg)
         (error msg))))
  
   ;;; Check that method-name is not defined by klass.

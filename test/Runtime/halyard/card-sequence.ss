@@ -2,6 +2,7 @@
 ;; and design flaws, and will be redesigned soon.  See case 2411.
 (module card-sequence (lib "language.ss" "halyard")
   (require (lib "nodes.ss" "halyard"))
+  (require (lib "util.ss" "mizzen"))
 
   
   ;;=======================================================================
