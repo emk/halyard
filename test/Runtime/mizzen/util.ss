@@ -46,7 +46,7 @@
 
   (provide foreach member? value->string cat symcat keyword-name
            symbol->keyword setter-name? setter-name->keyword
-           hash-table-has-key? label with-values curry)
+           hash-table-has-key? label with-values curry fn)
 
   ;;; Run a body once for each item in a list.
   ;;;
@@ -159,4 +159,17 @@
   (define (curry f . args1)
     (lambda args2
       (apply f (append args1 args2))))
+
+  ;;; Create an anonymous function object (which can be passed as a
+  ;;; callback to many routines).  This is just an alias for Scheme's
+  ;;; standard 'lambda' form.
+  ;;;
+  ;;; @syntax (fn arglist body ...)
+  ;;; @param ARGLIST arglist A list of Scheme function parameters.
+  ;;; @param BODY body The body of the function.
+  (define-syntax fn
+    (syntax-rules ()
+      [(fn arglist code ...)
+       (lambda arglist (begin/var code ...))]))
+  (define-syntax-indent fn 1)
   )

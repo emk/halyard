@@ -29,21 +29,8 @@
   ;;;  Useful Syntax
   ;;;======================================================================
 
-  (provide fn callback deferred-callback for
+  (provide callback deferred-callback for
            define-engine-variable define/p)
-
-  ;;; Create an anonymous function object (which can be passed as a
-  ;;; callback to many routines).  This is just an alias for Scheme's
-  ;;; standard 'lambda' form.
-  ;;;
-  ;;; @syntax (fn arglist body ...)
-  ;;; @param ARGLIST arglist A list of Scheme function parameters.
-  ;;; @param BODY body The body of the function.
-  (define-syntax fn
-    (syntax-rules ()
-      [(fn arglist code ...)
-       (lambda arglist (begin/var code ...))]))
-  (define-syntax-indent fn 1)
 
   ;;; Create an anonymous function object with no parameters.
   ;;;
