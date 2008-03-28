@@ -31,7 +31,9 @@ class wxSashLayoutWindow;
 class ScriptTree;
 class DocNotebook;
 
-class ScriptEditor : public SashFrame {
+typedef std::vector<FIVEL_NS TScriptIdentifier> IdentifierList;
+
+class ScriptEditor : public SashFrame, public FIVEL_NS TReloadNotified  {
     static ScriptEditor *sFrame;
     static void MaybeCreateFrame();
 
@@ -40,6 +42,7 @@ class ScriptEditor : public SashFrame {
     DocNotebook *mNotebook;
     EventDelegator mDelegator;
     bool mProcessingActivateEvent;
+    IdentifierList mIdentifiers;
 
 public:
     static void EditScripts();
@@ -48,6 +51,7 @@ public:
     static void OpenDocument(const wxString &path, int line = 1);
     static void ShowDefinition(const wxString &identifier);
     static void HighlightFile(const wxString &path);
+    static IdentifierList GetIdentifiers();
 
     ScriptEditor();
     ~ScriptEditor();
@@ -65,6 +69,8 @@ private:
     void OpenDocumentInternal(const wxString &path, int line = 1);
     void ShowDefinitionInternal(const wxString &identifier);
     void HighlightFileInternal(const wxString &path);
+    void NotifyReloadScriptSucceeded();
+    void UpdateIdentifierInformation();
 
     void OnActivate(wxActivateEvent &event);
     void OnClose(wxCloseEvent &event);

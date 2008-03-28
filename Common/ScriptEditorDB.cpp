@@ -264,18 +264,6 @@ ScriptEditorDB::strings ScriptEditorDB::GetAllFilePaths() {
     return relpaths;
 }
 
-// Slow, ugly comparison functions for use by FixBrokenDatabaseEntries.  We
-// really shouldn't call MakeStringLowercase each time.
-namespace {
-    bool icase_less(const std::string &a, const std::string &b) {
-        return (MakeStringLowercase(a) < MakeStringLowercase(b));
-    }
-
-    bool icase_equal_to(const std::string &a, const std::string &b) {
-        return (MakeStringLowercase(a) == MakeStringLowercase(b));
-    }
-};
-
 /// This function is used to clean up after the mess created when someone
 /// renames 'R1.ss' to 'r1.ss' on a case-insensitive file system.  This
 /// function is a nasty kludge, and we should really be able to detect
@@ -291,7 +279,12 @@ namespace {
 void ScriptEditorDB::FixBrokenDatabaseEntries() {
     // Get all the paths in our database, and sort them case-insensitively.
     strings relpaths = GetAllFilePaths();
-    std::sort(relpaths.begin(), relpaths.end(), icase_less);
+    strings::iterator iter = relpaths.begin();
+    while (iter != relpaths.end()) {
+        MakeStringLowercase(*iter);
+        ++iter;
+    }
+    std::sort(relpaths.begin(), relpaths.end());
 
     // Look for duplicate entries, and delete them.
     strings::iterator r_begin = relpaths.begin();
@@ -299,7 +292,7 @@ void ScriptEditorDB::FixBrokenDatabaseEntries() {
         // Extend r_end until [r_begin,r_end) contains a complete set
         // of duplicates.
         strings::iterator r_end = r_begin + 1;
-        while (r_end != relpaths.end() && icase_equal_to(*r_begin, *r_end))
+        while (r_end != relpaths.end() && (*r_begin == *r_end))
             ++r_end;
 
         // If [r_begin,r_end) contains more than one item, delete them all.
