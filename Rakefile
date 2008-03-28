@@ -60,6 +60,8 @@ end
 #  Rake Tasks
 #==========================================================================
 
+branch = '0.2-stable'
+
 # We currently support two project configurations; more can be added by
 # editing the list below.
 CONFIGURATIONS = %w(Debug Release).map {|name| Configuration.new(name) }
@@ -85,9 +87,9 @@ task :tag do |t|
   # This will fail if the tag contents are weird enough.
   tag = ENV['AS']
   tag =~ /^\S+$/ or raise "Invalid tag <#{tag}>"
-  SVN_URL = 'svn+ssh://orson.hitchcock.org/var/lib/svn/main/public/5L'
-  msg = "Tagging trunk as #{tag}"
-  sh "svn cp -m '#{msg}' -r HEAD #{SVN_URL}/trunk #{SVN_URL}/tags/#{tag}"
+  SVN_URL = 'svn+ssh://orson.hitchcock.org/var/lib/svn/main/public/halyard'
+  msg = "Tagging #{branch} as #{tag}"
+  sh "svn cp -m '#{msg}' -r HEAD #{SVN_URL}/branches/#{branch} #{SVN_URL}/tags/#{tag}"
 end
 
 desc "Sign *.exe and *.dll files (USB key required)"
