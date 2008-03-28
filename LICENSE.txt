@@ -1,5 +1,5 @@
 Tamale - Multimedia authoring and playback system
-Copyright 1993-2006 Trustees of Dartmouth College
+Copyright 1993-2008 Trustees of Dartmouth College
 
 The different components of Tamale are distributed under a variety of
 licenses.  Tamale also includes a number of third-party libraries with

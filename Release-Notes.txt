@@ -1,11 +1,80 @@
-When possible, please include bug numbers in the form "(bug #NNN)".
+0.2.4 - 28 March 2008 - emk, brian
 
-SVN - brian
+Experimental development release of 0.2-stable, including partial support
+for Vista and signed updates.  Also included are some updates to the script
+editor, including intelligent CR/LF handling and reload performance
+improvements.
+
+This engine should be backwards compatible with 0.2.3, with the exception
+of the updater.
+
+  Add tool for backporting engine patches
+  Merge r28554: Remove support for "backgrounds" from the GUI
+  Merge r28559: Switch to Visual Studio 2005
+  Merge r28560: Remove unused preinstaller from build
+  Merge r28561: Fix some new Visual Studio 2005 warnings
+  Merge r28589: Removed old *.dsw and *.dsp projects.
+  Merge r28644: Default to opening the program in the current directory
+  Merge r29081: Remove $(WXWIN) environment variable
+  Add .gitignore files
+  Merge r28729: Updater: Initial Vista work
+  Merge r28730: Updater: Fix LaunchUpdateInstaller to pass correct args
+  gitignore files for running CommonTest
+  Merge r28732: Do not run updater from restricted pre-Vista accounts
+  Merge r28735: Optionally sign *.exe and *.dll files
+  Merge r28740: Don't crash when reading corrupted data files
+  Merge r28741: UpdateInstaller: Replace command-line with Win32 GUI
+  Merge r28742: UpdateInstaller: Hook up progress bar and error dialogs
+  Merge r28743: UpdateInstaller: Do not relaunch application under Vista
+  Merge r28744: UpdateInstaller: Statically link against C runtime
+  Merge r28745: Updater: Include spec and log in crash reports
+  Merge r28746: UpdateInstaller: Use lock file for destination directory
+  Merge r28747: Updater: Check UpdateInstaller lock before loading script
+  Merge r28750: Fix caption on "Update Installed" window
+  Merge r28751: Add GPG-SIGNATURE-VALID? function
+  Merge r28752: Add SHA1 library from http://xyssl.org/code/source/sha1/
+  Merge r28753: Add SHA1-FILE function in updater.ss
+  Merge r28754: Check signature on downloaded release.spec
+  Merge r28593: Add PROGRAM-RELEASE-ID function
+  Merge r28755: Check integrity of MANIFEST.* files
+  Merge r28756: Check integrity of content files in update
+  Merge r28759: Make DOWNLOAD-VERIFIED work like DOWNLOAD
+  Merge r28760: UpdateInstaller: Don't log during uninstall
+  Merge r28761: UpdateInstaller: Check for bogus target directory
+  Merge r28762: Prefs directory may have different name than program
+  Merge r28763: Updater: Add a SCRIPT-USER-LOCAL-DATA-DIRECTORY
+  Merge r28764: UpdateInstaller: Use same version number as engine
+  Merge r28765: Show a more appropriate message dialog if the update fails
+  Merge r28768: UpdateInstaller: Launch from correct directory
+  Merge r28771: Updater: Include correct updater log in crash report
+  Merge r28774: UpdateInstaller: Try to cope with locked source files
+  Merge r28777: Clarify libs/sha1 license note
+  Merge r28602: Launch external browser with OPEN-IN-BROWSER command
+  Merge r28916: Update fix-prologues.pl to have correct copyright name and year
+  Merge r29055: Add tools/checkfiles, which performs style checks
+  Merge r29058: Script to call checkfiles for our *.ss, *.cpp and *.h files
+  Update license blocks in C++ source code
+  Run checkfiles in tools directory
+  Merge r28874: ScriptEditor: Improve reload performance substantially
+  Merge r28890: Remove < and > from editor's list of brace characters
+  Merge r29066: Lex selection before auto-indenting
+  Merge r29076: Add line-ending style detection to script editor
+  Merge r29077: Automatically convert all line endings to consistent style
+  Merge r29078: Default to using LF line endings in empty buffers
+  Merge r29028: Fix Scintalla off-by-one error when lexing |#
+  Merge r28975: Added build script to build and release Halyard
+  Update backported build-script for older engine (untested)
+
+This fix was on the 0.2-stable branch but was never released with VTRA:
+
+  * #3683: Removed PNG of stage from script crash reports--it made the
+    crash reports too big, and we hadn't used it much.
+
+These fixes were in a released version of the UpdateInstaller, but not ever
+officially released as part of the engine:
 
   * #3647: Fixed update installer to build parent directories for
     new files correctly.
-  * #3683: Removed PNG of stage from script crash reports--it made the
-    crash reports too big, and we hadn't used it much.
   * #3691: The update installer now checks if it can write to the
     destination paths before copying files, and will keep trying for
     10 seconds if it cannot write to a file, in case it is run before
