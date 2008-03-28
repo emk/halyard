@@ -29,7 +29,7 @@
   ;;;  Useful Syntax
   ;;;======================================================================
 
-  (provide fn callback deferred-callback while for
+  (provide fn callback deferred-callback for
            define-engine-variable define/p)
 
   ;;; Create an anonymous function object (which can be passed as a
@@ -68,25 +68,8 @@
   (define-syntax deferred-callback
     (syntax-rules ()
       [(deferred-callback code ...)
-       (callback (call-at-safe-time (callback code ...)))]))
+       (callback (run-deferred (callback code ...)))]))
   (define-syntax-indent deferred-callback 0)
-
-  ;;; Run a body of code until a condition is met.
-  ;;;
-  ;;; @syntax (while condition body ...)
-  ;;; @param EXPRESSION condition The condition to evaluate each time through
-  ;;;   the loop.  This is tested before entering the loop for the first
-  ;;;   time, so it's possible to skip the while loop entirely.
-  ;;; @param BODY body The code to run.
-  (define-syntax while
-    (syntax-rules ()
-      [(while cond body ...)
-       (when cond
-         (let loop []
-           (begin/var body ...)
-           (when cond
-             (loop))))]))
-  (define-syntax-indent while 0)
 
   ;;; Run a body of code until a condition is met, updating a loop variable
   ;;; as specified.  This works in a fashion similar to C's 'for' loop.

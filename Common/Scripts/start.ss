@@ -123,22 +123,6 @@
 
 (card test-pause ()
   (call-5l-prim 'testpause)
-  (jump test-timeout))
-
-(define *timeout-start* #f)
-
-(card test-timeout ()
-  (set! *timeout-start* (current-milliseconds))
-  (call-5l-prim 'testtimeout 1 'timeout-done))
-
-(card timeout-done ()
-  (test (>= (current-milliseconds) (+ *timeout-start* 1000)))
-  (jump test-nap))
-
-(card test-nap ()
-  (set! *timeout-start* (current-milliseconds))
-  (call-5l-prim 'testnap 2)
-  (test (>= (current-milliseconds) (+ *timeout-start* 200)))
   (jump advanced-language-test-cases))
 
 
