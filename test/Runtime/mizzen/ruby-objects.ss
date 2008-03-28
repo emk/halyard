@@ -1,4 +1,4 @@
-(module ruby-objects (lib "swindle.ss" "swindle")
+(module ruby-objects "swindle.ss"
   (require (lib "struct.ss")) ; For DEFINE-STRUCT/PROPERTIES.
   (require-for-syntax (lib "capture.ss" "mizzen"))
   (require (lib "util.ss" "mizzen"))
