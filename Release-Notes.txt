@@ -1,3 +1,32 @@
+0.2.4.2 - 28 March 2008 - emk
+
+Experimental engine including several backwards-incompatible bug fixes.
+Porting notes:
+
+  * All calls to TIMEOUT will need to be replaced with a custom timeout
+    implementation.  Ask me if you'd like me to write one.
+  * All calls to CALL-AT-SAFE-TIME will need to be replaced with calls to
+    RUN-DEFERRED.
+    - Code passed to RUN-DEFERRED will _always_ be called _after_ the body
+      of the card completes.  It will no longer be run during WAIT, and it
+      will no longer be run immediately if the current context is "safe".
+      The most common problem: Pressing buttons during audio may have no
+      visible result until _after_ the audio completes, if the button uses
+      RUN-DEFERRED and the main code is waiting on the audio.  Also watch
+      for places where you can queue up two or more copies of a deferred
+      action by mashing a button.
+    - To prematurely end a WAIT, you can use (send @audio end-playback)
+      on the media stream being waited on.
+    - Code passed to RUN-DEFERRED will not be allowed to cross card
+      boundaries--once you jump, any pending deferred code will be
+      discarded.  This can be controlled using the :PARENT argument to
+      RUN-DEFERRED, which specifies which card or group the code should
+      be attached to.
+
+  Merge r28551: Reimplement NAP and remove TIMEOUT
+  Merge r28552: Run CALL-AT-SAFE-TIME code after card body, not during
+  Merge r28553: Replace CALL-AT-SAFE-TIME with RUN-DEFERRED (and fix NAP)
+
 0.2.4.1 - 28 March 2008 - emk, brian
 
 When backporting changes to *.ss code, I accidentally tested the wrong
