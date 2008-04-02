@@ -12,9 +12,10 @@ details.
 
 Here is a summary of licenses used in the Halyard distribution:
 
-  1) The Halyard Scheme runtime code (in test/Runtime/halyard) is distributed
-     under the GNU Lesser General Public License, either version 2.1 of the
-     License, or (at your option) any later version.
+  1) The Halyard Scheme runtime code (in test/Runtime/halyard and
+     test/Runtime/mizzen) is distributed under the GNU Lesser General
+     Public License, either version 2.1 of the License, or (at your
+     option) any later version.
 
   2) All other code copyright by the Trustees of Dartmouth College is
      distributed under the GNU General Public License, either version 2 of
