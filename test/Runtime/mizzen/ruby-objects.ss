@@ -22,15 +22,15 @@
 
 (module ruby-objects "swindle.ss"
   (require (lib "struct.ss")) ; For DEFINE-STRUCT/PROPERTIES.
-  (require-for-syntax (lib "capture.ss" "mizzen"))
-  (require (lib "util.ss" "mizzen"))
-  (require-for-syntax (lib "util.ss" "mizzen"))
-  (require-for-syntax (lib "syntax-util.ss" "mizzen"))
-  (require (lib "begin-var.ss" "mizzen"))
+  (require-for-syntax "capture.ss")
+  (require "util.ss")
+  (require-for-syntax "util.ss")
+  (require-for-syntax "syntax-util.ss")
+  (require "begin-var.ss")
   
   ;; For setting up SELF and SUPER as syntax-parameters
   (require (lib "stxparam.ss" "mzlib"))
-  (require-for-syntax (lib "default-self.ss" "mizzen"))
+  (require-for-syntax "default-self.ss")
 
   (provide ruby-object? make-ruby-instance-of?-predicate
            ruby-class? define-class %class% %object% 

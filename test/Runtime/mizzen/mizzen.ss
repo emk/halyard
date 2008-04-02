@@ -84,8 +84,8 @@
   ;; Ruby/SmallTalk-style Features
   ;;---------------------------------------------------------------------- 
 
-  (require (lib "ruby-objects.ss" "mizzen"))
-  (provide (all-from-except (lib "ruby-objects.ss" "mizzen")
+  (require "ruby-objects.ss")
+  (provide (all-from-except "ruby-objects.ss"
                             method~ app~ set!~))
 
   (provide (rename method~ method)
