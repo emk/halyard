@@ -1196,9 +1196,13 @@ void ScriptTextCtrl::IndentSelection() {
     // Figure out which lines are in the selection.
     int begin_pos, end_pos;
     GetSelection(&begin_pos, &end_pos);
-    Colourise(begin_pos, end_pos);
     int begin_line = LineFromPosition(begin_pos);
     int end_line = LineFromPosition(end_pos);
+    // Make sure the selection is appropriately Coulourised so we can
+    // use the lex information in our indentation algorithm below.  We
+    // must start at the beginning of a line for the lexer to work
+    // properly, and we go to the end of the end_line for consistency.
+    Colourise(PositionFromLine(begin_line), GetLineEndPosition(end_line));
 
     // Indent each line in the selection.
     for (int i = begin_line; i <= end_line; i++)
