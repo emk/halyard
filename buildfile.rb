@@ -18,6 +18,7 @@ bin_url = "#{svn_url}/builds/halyard/#{version}"
 src_dir = "halyard-#{version}"
 test_dir = "halyard-test-#{version}"
 bin_dir = "halyard-bin-#{version}"
+mizzen_dir = "mizzen-#{version}"
 
 release_binaries = 
   %w(libmzgc2.dll libmzgc2_d.dll libmzsch2.dll libmzsch2_d.dll
@@ -40,6 +41,8 @@ heading 'Make source tarball.', :name => :source_tarball do
   make_tarball src_dir
   # Copy out clean copy of halyard/test before doing rake test
   cp_r "#{src_dir}/test", test_dir
+  # Also, an independent distribution of mizzen
+  cp_r "#{src_dir}/test/Runtime/mizzen", mizzen_dir
 end
 
 heading 'Building and testing engine.', :name => :build do
@@ -76,6 +79,7 @@ end
 heading 'Building tarballs.', :name => :build_tarballs do
   make_zipfile test_dir
   make_tarball bin_dir
+  make_tarball mizzen_dir
 end
 
 heading 'Uploading tarballs to website.', :name => :upload do
@@ -83,7 +87,7 @@ heading 'Uploading tarballs to website.', :name => :upload do
   # TODO - we should base this on information in release_infos, but
   # that needs a bit of refactoring before it will be able to do what
   # we want.
-  [src_dir, bin_dir].each do |file|
+  [src_dir, bin_dir, mizzen_dir].each do |file|
     # TODO - server.upload does rsync, while we only need scp. We might want
     # to distinguish them.
     server.upload "#{file}.tar.gz", web_path
