@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module define-node-helper (lib "language.ss" "mizzen")
+(module define-node-helper (lib "mizzen.ss" "mizzen")
   (require (lib "nodes.ss" "halyard"))
   (require-for-syntax (lib "util.ss" "mizzen"))
   (require (lib "tags.ss" "halyard"))

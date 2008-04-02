@@ -21,23 +21,15 @@
 ;; @END_LICENSE
 
 ;;========================================================================
-;;  Nice LISP Features Typically Missing From Scheme
+;;  Mizzen language
 ;;========================================================================
-;;  Scheme is a simplified, cleaned-up LISP dialect.  This is both good
-;;  and bad--Common LISP contained a lot of unnecessary cruft, but it also
-;;  contained some very useful features.
-;;
-;;  This used to be a nice, lighweight file implementing Common LISP-like
-;;  features for Scheme, inspired by Eli's excellent Swindle modules.
-;;  However, Eli's modules have finally been updated for use with PLT 2xx,
-;;  so this file has been gutted.  See lispish-orig.ss for the original
-;;  goodies.
-;;
-;;  Eric Kidd <eric.kidd@pobox.com>
+;; 
+;;  The mizzen language provides many features from Swindle, along with 
+;;  its own, Smalltalk-style object system, and a few extra syntactic 
+;;  enhancements.
 
-(module language (lib "swindle.ss" "swindle")
+(module mizzen (lib "swindle.ss" "swindle")
   
-
   ;;---------------------------------------------------------------------- 
   ;; Swindle Features
   ;;----------------------------------------------------------------------

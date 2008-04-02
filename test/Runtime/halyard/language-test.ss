@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module lispish-test (lib "language.ss" "mizzen")
+(module lispish-test (lib "mizzen.ss" "mizzen")
   
   ;; Traditional functions.
   (define (t1) 'ok)

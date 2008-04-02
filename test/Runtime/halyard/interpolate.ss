@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module interpolate (lib "language.ss" "mizzen")
+(module interpolate (lib "mizzen.ss" "mizzen")
   (require (lib "util.ss" "mizzen"))
   (require (lib "types.ss" "halyard"))
 

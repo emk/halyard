@@ -28,11 +28,11 @@
 ;;  probably stand a good refactoring; it's been accumulating cruft
 ;;  for a while.
 
-(module halyard (lib "language.ss" "mizzen")
+(module halyard (lib "mizzen.ss" "mizzen")
 
   ;; We want to export most of lispish, but override a few definitions
   ;; locally to get some decidedly non-Scheme behavior.
-  (provide (all-from-except (lib "language.ss" "mizzen")
+  (provide (all-from-except (lib "mizzen.ss" "mizzen")
                             ;; We replace this.
                             #%top
                             ;; begin/var hacks (see below).

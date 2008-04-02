@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module tags (lib "language.ss" "mizzen")
+(module tags (lib "mizzen.ss" "mizzen")
         
   (require (lib "kernel.ss" "halyard"))
         

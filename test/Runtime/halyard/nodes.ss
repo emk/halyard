@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module nodes (lib "language.ss" "mizzen")
+(module nodes (lib "mizzen.ss" "mizzen")
 
   ;; Various support code and declarations refactored out of the kernel.
   (require (lib "types.ss" "halyard"))

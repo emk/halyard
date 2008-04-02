@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module paths (lib "language.ss" "mizzen")
+(module paths (lib "mizzen.ss" "mizzen")
   (require (lib "util.ss" "mizzen"))
   (require-for-syntax (lib "util.ss" "mizzen"))
 

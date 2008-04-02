@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module kernel (lib "language.ss" "mizzen")
+(module kernel (lib "mizzen.ss" "mizzen")
 
   ;; Import %call-prim from the engine.
   (require #%engine-primitives)

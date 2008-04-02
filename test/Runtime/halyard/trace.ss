@@ -25,7 +25,7 @@
 ;;=========================================================================
 ;;  Handy code by Brian Campbell, with some later hacking by Eric Kidd.
 
-(module trace (lib "language.ss" "mizzen")
+(module trace (lib "mizzen.ss" "mizzen")
   (require (lib "begin-var.ss" "mizzen"))
   
   (provide with-tracing

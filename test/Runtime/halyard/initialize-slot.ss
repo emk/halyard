@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module initialize-slot (lib "language.ss" "mizzen")
+(module initialize-slot (lib "mizzen.ss" "mizzen")
   (require (lib "util.ss" "mizzen"))
         
   (with-instance %class%

@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module types (lib "language.ss" "mizzen")
+(module types (lib "mizzen.ss" "mizzen")
 
   ;;=======================================================================
   ;;  Built-in Types

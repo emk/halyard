@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module layout (lib "language.ss" "mizzen")
+(module layout (lib "mizzen.ss" "mizzen")
   (require (lib "types.ss" "halyard"))
   (require (lib "shapes.ss" "halyard"))
 

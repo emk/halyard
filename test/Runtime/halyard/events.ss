@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module events (lib "language.ss" "mizzen")
+(module events (lib "mizzen.ss" "mizzen")
   (require (lib "nodes.ss" "halyard"))
   (require (lib "util.ss" "mizzen"))
   (require (lib "util.ss" "halyard"))

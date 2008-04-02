@@ -24,7 +24,7 @@
 ;;  Miscellaneous Point & Shape Manipulation Routines
 ;;=========================================================================
 
-(module shapes (lib "language.ss" "mizzen")
+(module shapes (lib "mizzen.ss" "mizzen")
   (require (lib "util.ss" "mizzen"))
   (require (lib "types.ss" "halyard"))
   (require (lib "kernel.ss" "halyard"))

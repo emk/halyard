@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module api (lib "language.ss" "mizzen")
+(module api (lib "mizzen.ss" "mizzen")
 
   (require (lib "kernel.ss" "halyard"))
   (provide (all-from (lib "kernel.ss" "halyard")))

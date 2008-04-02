@@ -273,7 +273,7 @@
           ;; only by code in macro expanders) and the regular environment
           ;; (which is used by normal program code).
           (set! filename "language.ss")
-          (namespace-transformer-require '(lib "language.ss" "mizzen"))
+          (namespace-transformer-require '(lib "mizzen.ss" "mizzen"))
           (set! filename "halyard.ss")
           (namespace-require '(lib "halyard.ss" "halyard"))
           
