@@ -1,6 +1,164 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.3 - 3 April 2008 - brian, emk, tryon
+
+In this release, we break our object model out into its own collection, 
+mizzen.  This allows it to be run in MzScheme or DrScheme, independent of 
+the engine.  This shouldn't affect script level code at all, but it means
+that the Runtime/halyard code is slightly rearranged.
+
+  * (lib "language.ss" "halyard") -> (lib "mizzen.ss" "mizzen")
+  * In many cases, util.ss no longer needs to be required, as it 
+    is provided by default by mizzen.ss.
+  * You can run mizzen code in MzScheme or DrScheme by ensurign that 
+    mizzen is in your collections path, and creating modules using 
+    the language (lib "mizzen.ss" "mizzen").
+  * There is now a text-based test runner, that you run by calling
+    (run-tests (list %test1% %test2%)).
+
+  mizzen: Add a bare-bones README.txt
+  mizzen: Use relative paths instead of library paths in includes
+  mizeen: Rename language.ss to mizzen.ss
+  Runtime: Addd prologues to scheme files in halyard and mizzen
+  mizzen: Update fix-prologues.pl to understand Scheme files
+  mizzen: Add a copy of the LGPL to mizzen direcotry
+  mizzen: Add text mentioning mizzen in LICENSE.txt
+  mizzen: Build and release a mizzen tarball
+  Move ruby-objects documentation diagrams to mizzen folder
+  mizzen: Move ruby-objects-test.ss into mizzen
+  mizzen: Move unit test system test cases into mizzen
+  mizzen: Text-based test case runner
+  mizzen: Split unit test system into mizzen and halyard components
+  mizzen: Move FN from halyard/api.ss to mizzen/util.ss
+  mizzen: Provide various utilities from language.ss
+  mizzen: Revert Swindle provide patch, moving provide swizzling into mizzen
+  miszen: Move ruby-objects.ss, language.ss, and dependencies into mizzen
+  mizzen: Split util.ss into engine dependent and independent portions
+
+Sequencing of cards has been completely redesigned.  This is a work in 
+progress, and further changes are to be expected  in the next release.
+
+  * There are no longer separate GROUP and SEQUENCE declarations;
+    whether or not something is a sequence is a class variable (which
+    means it can also be set on the static node).
+  * Groups default to being ordered, but you can specify that they are
+    unordered by passing :ordered? #f when declaring them.
+  * The algorithm for computing next and previous cards has also
+    changed.  It should now be more robust, and be able to handle
+    empty sequences.
+  * You can now call .card-next and .card-prev on any static or
+    running card, to find the next or previous card that should be
+    jumped to.
+
+Examples:
+      (sequence foo/bar/baz (%bing%)) -> (group foo/bar/baz (%bing%))
+      (group foo/bar/baz (%bing%)) -> (group foo/bar/baz (%bing% :ordered? #f))
+
+Substitutions you will need to make when porting:    
+      sequence -> group
+      %card-sequence% -> %card-group%
+      card-sequence? -> card-group? + .ordered?
+
+  Rewrite .FIND-NEXT & .FIND-PREV on %card-group% using new support code
+  Add methods to %group-member% to return flattened lists of group members
+  Adding pass-through methods for .card-next and .card-prev
+  Add .card-next and .card-prev as methods on the static %card% class
+  Merge %card-sequence% into %card-group%
+  card-sequence.ss: Remove local wrapper functions
+
+Halyard has switched to a standard of always using LF delimited lines,
+instead of some files being LF delimited and some being CRLF
+delimited.  The Scintilla editor has been updated to handle this
+appropriately, and we have added scripts for audition to ensure that
+no files wind up with a mix of line endings.
+
+  Fix line endings in test-elements.ss
+  Convert CRLF to LF where obviously safe
+  Run checkfiles in tools directory
+  Fix files with mixed CRLF / LF endings
+  Default to using LF line endings in empty buffers
+  Automatically convert all line endings to consistent style when saving
+  Add line-ending style detection to script editor
+  Script to call checkfiles for our *.ss, *.cpp and *.h files
+  Fixed inconsistent EOL characters in nodes.ss
+  Add tools/checkfiles, which performs style checks
+  Strip extra CR characters from halyard-unit-test.ss
+
+Add a new mechanism for writing unit tests involving elements.  
+  * %element-test-case% class for tests involving elements
+  * %element-test-suite% card class for running tests involving elements,
+    including an interface for pulling up the elements created by one 
+    test at time.
+  * TEST-ELEMENTS is now deprecated, and will be removed in the next release.
+
+  Add test case for .RUN-TEST-METHOD-INNER
+  Better bounds for temporary element parent in %element-test-case%
+  Factor BELOW and TO-THE-RIGHT-OF into elements.ss
+  Allow interacting with unit test elements manually
+  Move TEST-ELEMENTS and support into separate file
+
+Add a simple API for proxying initializer keywords and methods to a child
+element:
+      (define-class %foo-wrapper% (%box%)
+        (proxy-initialize-and-methods foo %foo%)
+        (setup
+          (.add-child-initializer! :message "Hello, world!")
+          (.create-child-element)))
+
+And a few helper methods:
+      symbol->keyword        Convert 'foo to :foo
+      setter-name?           Return true for symbols of form 'set-foo!
+      setter-name->keyword   Convert symbols of form 'set-foo! to :foo
+      rect-shape             Eqv to (move-rect-left-top-to r (point 0 0))
+
+  Code review cleanups for child element proxying
+  Proxy initializer keywords and methods to child elements
+
+Switched to using SYNTAX-PARAMETERIZE to handle SELF and SUPER instead of 
+the old MAKE-CAPTURE-VAR/ELLIPSES system.  This has two main effects:
+  1) It makes it much easier to define macros that expand into METHOD
+     declarations attached to a particular object.  Instead of having 
+     to use SYNTAX-CASE and MAKE-SELF, you can simply write the obvious
+     SYNTAX-RULES expansion.
+  2) It is possible to accidentally shadow SELF without realizing it.
+     If you write the following:
+       (let [[self 'hello]] 
+         (instance-exec foo (method () (send self 'bar))))
+     you will get an error, as it will be trying to send a message to
+     'hello, not foo.  SELF is only ever bound in the top level, and
+     while METHOD parameterizes it at expansion time to a different
+     value, if the original binding is shadowed (as in the example),
+     you will still only see the inner binding.
+
+  Use SYNTAX-PARAMETERIZE to 'bind' SELF and SUPER instead of MAKE-SELF
+  Fix TEST-ELEMENTS to have the appropriate SELF in scope
+
+Several bugfixes in the Scintilla lexer and auto-indenter.
+
+  editor: Start lexing at line boundaries when indenting
+  Lex selection before auto-indenting
+  Fix Scintalla off-by-one error when lexing |#
+
+Various build and Git cleanups.
+
+  Add ignore lines for gpgv.exe, baseq2 and testq2, and gc.log
+  Refactor .gitignore to speed up 'git status'
+  Rakefile: Removed fallback code for missing termios
+  Remove $(WXWIN) environment variable
+
+Rename and open-source release cleanup.
+
+  Replace outdated LICENSE.txt and README in halyard/test
+  Remove last remaining reference to 5L from test/Runtime/halyard
+  Rename 5L-Loader -> loader
+  Rename #%fivel-engine -> #%engine-primitives
+
+Bug fixes.
+
+  Allow whitespace-only strings to be drawn into 0-width boxes
+  Fix failing errortrace test case
+
 0.5.2 - 17 March 2008 - emk, brian
 
   * F#3028: Port unit test system to new object model. 
