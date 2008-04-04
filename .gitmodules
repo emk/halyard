@@ -1,0 +1,33 @@
+[submodule "libs/boost"]
+	path = libs/boost
+	url = git://imlsrc.dartmouth.edu/halyard-libs/boost.git
+[submodule "libs/curl"]
+	path = libs/curl
+	url = git://imlsrc.dartmouth.edu/halyard-libs/curl.git
+[submodule "libs/freetype2"]
+	path = libs/freetype2
+	url = git://imlsrc.dartmouth.edu/halyard-libs/freetype2.git
+[submodule "libs/libivorbisdec"]
+	path = libs/libivorbisdec
+	url = git://imlsrc.dartmouth.edu/halyard-libs/libivorbisdec.git
+[submodule "libs/libxml2"]
+	path = libs/libxml2
+	url = git://imlsrc.dartmouth.edu/halyard-libs/libxml2.git
+[submodule "libs/plt"]
+	path = libs/plt
+	url = git://imlsrc.dartmouth.edu/halyard-libs/plt.git
+[submodule "libs/portaudio"]
+	path = libs/portaudio
+	url = git://imlsrc.dartmouth.edu/halyard-libs/portaudio.git
+[submodule "libs/quake2"]
+	path = libs/quake2
+	url = git://imlsrc.dartmouth.edu/halyard-libs/quake2.git
+[submodule "libs/sqlite"]
+	path = libs/sqlite
+	url = git://imlsrc.dartmouth.edu/halyard-libs/sqlite.git
+[submodule "libs/wxWidgets"]
+	path = libs/wxWidgets
+	url = git://imlsrc.dartmouth.edu/halyard-libs/wxWidgets.git
+[submodule "test/Media"]
+	path = test/Media
+	url = git://imlsrc.dartmouth.edu/halyard-media.git
