@@ -6,3 +6,15 @@ Debug
 Release
 vc_msw
 vc_mswd
+.deps
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+configure
+config.log
+config.status
+depcomp
+install-sh
+missing
+a.out.dSYM

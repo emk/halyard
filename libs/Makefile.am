@@ -1,1 +1,1 @@
-SUBDIRS = crypto
+SUBDIRS = sha1
