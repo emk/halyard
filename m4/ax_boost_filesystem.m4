@@ -20,7 +20,7 @@
 #
 # LAST MODIFICATION
 #
-#   2007-11-22
+#   2008-04-05
 #
 # COPYLEFT
 #
@@ -74,6 +74,7 @@ AC_DEFUN([AX_BOOST_FILESYSTEM],
 		if test "x$ax_cv_boost_filesystem" = "xyes"; then
 			AC_DEFINE(HAVE_BOOST_FILESYSTEM,,[define if the Boost::Filesystem library is available])
             BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
+            AC_LANG_PUSH([C++])
             if test "x$ax_boost_user_filesystem_lib" = "x"; then
                 for libextension in `ls $BOOSTLIBDIR/libboost_filesystem*.{so,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_filesystem.*\)\.so.*$;\1;' -e 's;^lib\(boost_filesystem.*\)\.a*$;\1;'` ; do
                      ax_lib=${libextension}
@@ -97,6 +98,7 @@ AC_DEFUN([AX_BOOST_FILESYSTEM],
                   done
 
             fi
+			AC_LANG_POP([C++])
 			if test "x$link_filesystem" != "xyes"; then
 				AC_MSG_ERROR(Could not link against $ax_lib !)
 			fi
