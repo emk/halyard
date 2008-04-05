@@ -66,4 +66,4 @@ AC_CHECK_FUNCS([strstr])
 #==========================================================================
 
 # Output our results.
-AC_OUTPUT([Makefile libs/Makefile libs/sha1/Makefile]) #Common/Makefile
+AC_OUTPUT([Makefile libs/Makefile libs/sha1/Makefile Common/Makefile])

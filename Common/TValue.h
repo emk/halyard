@@ -170,36 +170,14 @@ public:
     /// define a body for the generic version of 'FindType', but we
     /// supply a specialized version for each value of T.
     ///
-    /// ADDING NEW TYPES - Add exactly one new entry here, mapping from
-    /// the C++ type used to store your data to the enumeration value
-    /// you added above.
+    /// The actual explicit instantiations appear below, outside the class
+    /// body.  Apparently, explicit instantiations must appear at the
+    /// top-level of the appropriate namespace.
     ///
-    /// WARNING - The type you choose to store data MUST HAVE VALUE
-    /// SEMANTICS.  This means, specifically, the it supports copy-by-value,
-    /// assignment, and can be stored in an STL container safely.  Pointers
-    /// which need to be deleted and std::auto_ptr are NOT SAFE.
-    ///
-    /// XXX - These are really only public for use by TemplateImpl, due to
+    /// XXX - This is really only public for use by TemplateImpl, due to
     /// either (a) bizarre C++ design flaws or (b) bizarre MSVC++ bugs.
     /// I'm too lazy to look up which.
     template <typename T> static Type FindType(const T &);
-    template <> static Type FindType(const TNull &) { return TYPE_NULL; }
-    template <> static Type FindType(const std::string &)
-    	{ return TYPE_STRING; }
-    template <> static Type FindType(const TSymbol &) { return TYPE_SYMBOL; }
-    template <> static Type FindType(const int32 &) { return TYPE_LONG; }
-    template <> static Type FindType(const uint32 &) { return TYPE_ULONG; }
-    template <> static Type FindType(const double &) { return TYPE_DOUBLE; }
-    template <> static Type FindType(const bool &) { return TYPE_BOOLEAN; }
-    template <> static Type FindType(const TPoint &) { return TYPE_POINT; }
-    template <> static Type FindType(const TRect &) { return TYPE_RECT; }
-    template <> static Type FindType(const GraphicsTools::Color &)
-    	{ return TYPE_COLOR; }
-    template <> static Type FindType(const TValueList &) { return TYPE_LIST; }
-    template <> static Type FindType(const TPolygon &) { return TYPE_POLYGON; }
-    template <> static Type FindType(const TCallbackPtr &)
-    	{ return TYPE_CALLBACK; }
-    template <> static Type FindType(const TPercent &) { return TYPE_PERCENT; }
 
     /// Normal casting from a TValue to a TCallbackPtr does not work
     /// so need to explicitly extract TCallbackPtr.
@@ -336,6 +314,38 @@ public:
     friend bool operator==(const TValue &inV1, const TValue &inV2);
     friend std::ostream &operator<<(std::ostream &out, const TValue &inV);
 };
+
+// Explicit instantiations of TValue::FindType (above).
+// 
+// ADDING NEW TYPES - Add exactly one new entry here, mapping from the C++
+// type used to store your data to the enumeration value you added above.
+//
+// WARNING - The type you choose to store data MUST HAVE VALUE SEMANTICS.
+// This means, specifically, the it supports copy-by-value, assignment, and
+// can be stored in an STL container safely.  Pointers which need to be
+// deleted and std::auto_ptr are NOT SAFE.
+template <> TValue::Type TValue::FindType(const TNull &) { return TYPE_NULL; }
+template <> TValue::Type TValue::FindType(const std::string &)
+    { return TYPE_STRING; }
+template <> TValue::Type TValue::FindType(const TSymbol &)
+    { return TYPE_SYMBOL; }
+template <> TValue::Type TValue::FindType(const int32 &) { return TYPE_LONG; }
+template <> TValue::Type TValue::FindType(const uint32 &) { return TYPE_ULONG; }
+template <> TValue::Type TValue::FindType(const double &)
+    { return TYPE_DOUBLE; }
+template <> TValue::Type TValue::FindType(const bool &) { return TYPE_BOOLEAN; }
+template <> TValue::Type TValue::FindType(const TPoint &) { return TYPE_POINT; }
+template <> TValue::Type TValue::FindType(const TRect &) { return TYPE_RECT; }
+template <> TValue::Type TValue::FindType(const GraphicsTools::Color &)
+    { return TYPE_COLOR; }
+template <> TValue::Type TValue::FindType(const TValueList &)
+    { return TYPE_LIST; }
+template <> TValue::Type TValue::FindType(const TPolygon &)
+    { return TYPE_POLYGON; }
+template <> TValue::Type TValue::FindType(const TCallbackPtr &)
+    { return TYPE_CALLBACK; }
+template <> TValue::Type TValue::FindType(const TPercent &)
+    { return TYPE_PERCENT; }
 
 //////////
 /// Two TValues are equal if and only if they are of the same type and

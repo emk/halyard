@@ -72,6 +72,7 @@ public:
 	TestFailed(const char *inErrorFile, int inErrorLine,
 			   const std::string &inMessage)
 	    : TException(inErrorFile, inErrorLine, inMessage.c_str()) {}
+    virtual ~TestFailed() throw () {}
 };
 
 //////////
@@ -89,6 +90,8 @@ public:
 class TestCase
 {
 public:
+    virtual ~TestCase() {}
+
 	void Run();
 	virtual void SetUp() {}
 	virtual void Test() = 0;
@@ -177,7 +180,7 @@ class TestRunReport
 
 public:
 	typedef TestCaseReportVector::iterator iterator;
-	typedef shared_ptr<TestRunReport> TestRunReport::ptr;
+	typedef shared_ptr<TestRunReport> ptr;
 
 	TestRunReport() : mResultCount(TEST_RESULT_MAX, 0) {}
 
@@ -211,6 +214,8 @@ inline std::ostream &operator<<(std::ostream &out, TestRunReport::iterator i)
 ///
 class ITestProgressMeter {
 public:
+    virtual ~ITestProgressMeter() {}
+
 	//////////
 	/// Override this method to report status.
 	///

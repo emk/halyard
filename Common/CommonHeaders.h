@@ -32,6 +32,7 @@
 #include <deque>
 #include <memory>
 #include <algorithm>
+#include <stdexcept>
 
 // Commonly-used I/O headers.  We mostly want these for std::stringstream,
 // which is the Right Way<tm> to build formatted output in C++.

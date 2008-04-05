@@ -1,0 +1,3 @@
+*.o
+*.a
+CommonHeaders.h.pcx
