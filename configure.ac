@@ -2,10 +2,6 @@
 AC_INIT([Common/TVersion.h])
 AM_INIT_AUTOMAKE(halyard, 0.0)
 
-# Turn on debugging, and fail if we encounter any warnings.
-CFLAGS="$CFLAGS -g -Wall -Werror"
-CXXFLAGS="$CXXFLAGS -g -Wall -Werror"
-
 # Set up some compiler options for Unix.
 #AC_DEFINE(TEST_TYPOGRAPHY)
 #AC_DEFINE(HAVE_EYE_OF_GNOME)
@@ -37,14 +33,29 @@ AC_PROG_RANLIB
 AC_PROG_CXX
 AC_PROG_CC
 
+
 #==========================================================================
 # Checks for Libraries
 #==========================================================================
+
+# Check for various libraries.
+AC_CHECK_LIB(freetype, FT_Init_FreeType)
+AC_CHECK_LIB(xml2, xmlParseFile)
+AX_LIB_SQLITE3(3.0.3)
+
+# Check for boost, plus any specific components that we need.
+AX_BOOST_BASE(1.31.0)
+AX_BOOST_FILESYSTEM
+AX_BOOST_UNIT_TEST_FRAMEWORK
+AX_BOOST_TEST_EXEC_MONITOR
+
+# TODO - Look for PLT Scheme.
 
 
 #==========================================================================
 # Checks for Header Files
 #==========================================================================
+
 
 #==========================================================================
 # Checks for Typedefs, Structures, and Compiler Characteristics
@@ -59,6 +70,18 @@ AC_C_INLINE
 #==========================================================================
 
 AC_CHECK_FUNCS([strstr])
+
+
+#==========================================================================
+# Post-configure setup
+#==========================================================================
+# We want to set up these variables _after_ we've run our various tests,
+# because some of the autoconf macros cause warnings and will fail with
+# -Werror.
+
+# Turn on debugging, and fail if we encounter any warnings.
+CFLAGS="$CFLAGS -g -Wall -Werror"
+CXXFLAGS="$CXXFLAGS -g -Wall -Werror"
 
 
 #==========================================================================

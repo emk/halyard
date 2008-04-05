@@ -1,6 +1,3 @@
-CXXFLAGS = @CXXFLAGS@ \
-	-I ../libs/sha1
-
 # Experimental support for building a precompiled header.
 CommonHeaders.h.pcx: CommonHeaders.h
 	$(CXXCOMPILE) -x c++-header -c -o $@ $<
