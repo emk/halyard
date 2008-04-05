@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module mizzen-unit-test "language.ss"
+(module mizzen-unit-test "mizzen.ss"
   (require "mizzen-unit.ss")
   
   (provide make-and-run-nth-test make-and-run-first-test

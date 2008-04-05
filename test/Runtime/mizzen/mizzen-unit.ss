@@ -20,7 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-(module mizzen-unit "language.ss"
+(module mizzen-unit "mizzen.ss"
   (require-for-syntax "capture.ss")
   
   ;;=======================================================================

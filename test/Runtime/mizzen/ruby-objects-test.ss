@@ -21,7 +21,7 @@
 ;; @END_LICENSE
 
 ;; PORTED
-(module ruby-objects-test "language.ss"
+(module ruby-objects-test "mizzen.ss"
 
   (require "mizzen-unit.ss")
   
