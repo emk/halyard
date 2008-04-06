@@ -37,7 +37,9 @@ libhalyard_a_SOURCES = \
 	TTextTransform.cpp \
 	Typography.cpp \
 	CaptionList.cpp \
-	TTextConv.cpp
+	TTextConv.cpp \
+	TDeveloperPrefs.cpp \
+	CommandLine.cpp
 
 # Our command-line test suite driver.
 TestAll_SOURCES = \

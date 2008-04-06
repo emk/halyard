@@ -159,7 +159,7 @@ bool TDeveloperPrefs::GetPrefsKeyValue(char *line,
 									   std::string &key,
 									   std::string &value)
 {	
-	int pos1, pos2;
+	size_t pos1, pos2;
 
 	std::string sLine = line;
 	StringLTrim(sLine);
