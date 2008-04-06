@@ -35,7 +35,9 @@ libhalyard_a_SOURCES = \
 	doc/Document.cpp \
 	doc/HalyardProgram.cpp \
 	TTextTransform.cpp \
-	Typography.cpp
+	Typography.cpp \
+	CaptionList.cpp \
+	TTextConv.cpp
 
 # Our command-line test suite driver.
 TestAll_SOURCES = \

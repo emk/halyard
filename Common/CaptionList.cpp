@@ -101,7 +101,7 @@ bool CaptionList::getCaptionIfChanged(double time, Caption &outCaption) {
 
 BEGIN_TEST_CASE(TestCaptionList, TestCase) {
     CaptionList caps("fixtures/captions.xml");
-    CHECK_EQ(3, caps.size());
+    CHECK_EQ(size_t(3), caps.size());
     CHECK_EQ(3.25, caps[1].time());
     CHECK_EQ("SPEAKER 2: Let's get started!", caps[1].text());
     CHECK_EQ(1*3600+2*60+6, caps[2].time());
