@@ -242,18 +242,18 @@ Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
 	return text;
 }
 
-void TStyleSheet::ProcessNodeChildren(xml_node &inNode,
+void TStyleSheet::ProcessNodeChildren(xml_node inNode,
                                       std::vector<Style> &ioStyleStack,
-                                      StyledText &outText)
+                                      StyledText &outText) const
 {
     xml_node::iterator i = inNode.begin_mixed();
 	for (; i != inNode.end_mixed(); ++i)
         ProcessNode(*i, ioStyleStack, outText);
 }
 
-void TStyleSheet::ProcessNode(xml_node &inNode,
+void TStyleSheet::ProcessNode(xml_node inNode,
                               std::vector<Style> &ioStyleStack,
-                              StyledText &outText)
+                              StyledText &outText) const
 {
     if (inNode.is_content_node()) {
         outText.AppendText(inNode.content());
@@ -318,7 +318,8 @@ TRect TStyleSheet::Draw(const std::string& inText,
 int TStyleSheet::GetLineHeight()
 {
 	// Return the height of the first line.
-	StyledText::value_type dummy(L' ', &GetBaseStyle());
+    Typography::Style base(GetBaseStyle());
+	StyledText::value_type dummy(L' ', &base);
 	return dummy.GetLineHeight(true);
 }
 

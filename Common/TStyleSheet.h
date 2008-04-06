@@ -61,16 +61,16 @@ class TStyleSheet {
     //////////
     /// Convert all the children of an XML node to styled text.
     ///
-    void ProcessNodeChildren(xml_node &inNode,
+    void ProcessNodeChildren(xml_node inNode,
                              std::vector<Typography::Style> &ioStyleStack,
-							 Typography::StyledText &outText);
+							 Typography::StyledText &outText) const;
 
     //////////
     /// Convert an XML node to styled text.
     ///
-    void ProcessNode(xml_node &inNode,
+    void ProcessNode(xml_node inNode,
                      std::vector<Typography::Style> &ioStyleStack,
-                     Typography::StyledText &outText);
+                     Typography::StyledText &outText) const;
 
 public:
 	//////////

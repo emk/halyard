@@ -18,12 +18,6 @@ AM_INIT_AUTOMAKE(halyard, 0.0)
 #   sudo port install boost freetype libxml2 mzscheme sqlite3
 # If you get errors on Leopard, Google for the error messages.
 
-# Figure out how to link against FreeType 2.
-#CFLAGS="$CFLAGS `freetype-config --cflags`"
-#CXXFLAGS="$CXXFLAGS `freetype-config --cflags`"
-#FREETYPE_LDADD="`freetype-config --libs`"
-#AC_SUBST(FREETYPE_LDADD)
-
 
 #==========================================================================
 # Checks for Programs
@@ -39,7 +33,7 @@ AC_PROG_CC
 #==========================================================================
 
 # Check for various libraries.
-AC_CHECK_LIB(freetype, FT_Init_FreeType)
+PKG_CHECK_MODULES(FREETYPE, [freetype2 >= 2.3.4])
 PKG_CHECK_MODULES(XML2, [libxml-2.0 >= 2.4.30])
 AX_LIB_SQLITE3(3.0.3)
 

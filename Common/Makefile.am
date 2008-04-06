@@ -1,12 +1,12 @@
 AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I../libs/sha1
-AM_CXXFLAGS = $(XML2_CFLAGS)
+AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS)
 
 noinst_LIBRARIES = libimlunit.a libhalyard.a
 
 # TestAll will actually work if you comment out the portions testing code
 # we haven't built.
-#noinst_PROGRAMS = TestAll
-#TESTS = TestAll
+noinst_PROGRAMS = TestAll
+TESTS = TestAll
 
 # Our very old test suite framework.
 libimlunit_a_SOURCES = \
@@ -33,13 +33,18 @@ libhalyard_a_SOURCES = \
 	ModelChange.cpp \
 	ModelView.cpp \
 	doc/Document.cpp \
-	doc/HalyardProgram.cpp
+	doc/HalyardProgram.cpp \
+	TTextTransform.cpp \
+	Typography.cpp
 
 # Our command-line test suite driver.
 TestAll_SOURCES = \
 	TPolygonTests.cpp \
 	FileSystemTests.cpp \
 	ModelTests.cpp \
+	TTextTransformTests.cpp \
+	TypographyTests.cpp \
+	TVectorDiffTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
 	libhalyard.a \
@@ -47,7 +52,8 @@ TestAll_LDADD = \
 	../libs/sha1/libsha1.a \
 	@BOOST_LDFLAGS@ \
         @BOOST_FILESYSTEM_LIB@ \
-	@XML2_LIBS@
+	@XML2_LIBS@ \
+	@FREETYPE_LIBS@
 
 
 #==========================================================================

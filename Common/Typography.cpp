@@ -30,6 +30,8 @@
 
 #include "Typography.h"
 
+using std::min;
+using std::max;
 using namespace Typography;
 
 inline Distance round_266 (FT_Pos in266Measurement)
@@ -519,7 +521,7 @@ Distance StyledText::value_type::GetNominalDescender() const
     Distance glyph_descender = round_266(glyph->GetMetrics()->height -
                                          glyph->GetMetrics()->horiBearingY);
     Distance base = max(glyph_descender, style->GetFace()->GetDescender());
-    return base + max(0, style->GetShadowOffset());
+    return base + max(Distance(0), style->GetShadowOffset());
 }
 
 Distance StyledText::value_type::GetLeftBearing() const
@@ -1090,8 +1092,7 @@ CalculateHorizontalOffset(Distance inSpaceUsed)
 		case kLeftJustification:   offset = 0; break;
 		case kCenterJustification: offset = remaining / 2; break;
 		case kRightJustification:  offset = remaining; break;
-        default: ASSERT(false);
-
+        default: ASSERT(false); abort();
 	}
 	return offset;
 }
@@ -1226,7 +1227,6 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 {
 	// Remember our previous position.
 	Point previous_position = *ioPosition;
-	Distance previous_right_bound = *ioRightBound;
 
 	// Do our kerning.
 	Vector delta = AbstractFace::Kern(*ioPrevious, inCurrent);
@@ -1253,7 +1253,8 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 	// bearingX (which is the distance from the origin to the left edge of 
 	// the glyph) and the width of the glyph. If this doesn't work, we'll 
 	// probably just need to use the size of the greymap. 
-    Distance right_shadow = max(0, inCurrent.style->GetShadowOffset());
+    Distance right_shadow =
+        max(Distance(0), inCurrent.style->GetShadowOffset());
 	Distance new_right_bound = ioPosition->x 
 		                         + round_266(glyph->GetMetrics()->horiBearingX 
 			                                   + glyph->GetMetrics()->width)
