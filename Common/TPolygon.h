@@ -47,7 +47,7 @@ public:
 	/// 
 	/// \param inPt  The point to check.
 	/// 
-	bool Contains(TPoint &inPt);
+	bool Contains(const TPoint &inPt);
 
 	/////////
 	/// Get the origin of the polygon. 

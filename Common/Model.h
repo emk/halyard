@@ -98,8 +98,7 @@ namespace model {
 	//////////
 	/// The abstract superclass of all data in the Model.
 	///
-	class Datum {
-		DISABLE_COPY_AND_ASSIGN(Datum);
+	class Datum : boost::noncopyable {
 		Type mType;
 
 	protected:

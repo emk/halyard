@@ -567,17 +567,23 @@ static std::string gScriptDataDirectoryName = "";
 
 Path FileSystem::SetBaseDirectory(const Path &inDirectory)
 {
-	gCurrentBaseDirectory = inDirectory;
-	return gCurrentBaseDirectory;
+    // Convert our path to an absolute path.
+    fs::path path(inDirectory.ToNativePathString(), fs::native);
+    fs::path completed(fs::complete(path, fs::current_path()));
+    Path base(Path::NativePath(completed.native_directory_string()));
+
+    // Sanity-check our path, store it, and return it.
+	CHECK(base.IsDirectory(),
+          ("\'" + base.ToNativePathString() +
+           "\' is not a valid directory").c_str());
+	gCurrentBaseDirectory = base;
+	return base;
 }
 
 Path FileSystem::SetBaseDirectory(const std::string &inDirectory)
 {
 	Path base = Path::NativePath(inDirectory);
-	CHECK(base.IsDirectory(),
-		  ("\'" + inDirectory + "\' is not a valid directory").c_str());
-	gCurrentBaseDirectory = base;
-	return gCurrentBaseDirectory;
+    return SetBaseDirectory(base);
 }
 
 Path FileSystem::GetBaseDirectory()
@@ -624,8 +630,12 @@ Path FileSystem::GetScriptLocalDataDirectory() {
 Path FileSystem::ResolveFontPath(const std::string &inRelPath) {
     fs::path fontdir(FileSystem::GetFontDirectory().ToNativePathString(),
                      fs::native);
-    fs::path relpath((inRelPath == "") ? "." : inRelPath);
-    fs::path resolved(fs::complete(relpath, fontdir));
+    fs::path resolved;
+    if (inRelPath == "") {
+        resolved = fontdir;
+    } else {
+        resolved = fs::complete(inRelPath, fontdir);
+    }
 
     // TODO - This always calls native_file_string, even when it should call
     // native_directory_string.  Since we're not running on VMS (or

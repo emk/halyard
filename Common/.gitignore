@@ -1,3 +1,4 @@
 *.o
 *.a
 CommonHeaders.h.pcx
+TestAll

@@ -1,11 +1,11 @@
-# Experimental support for building a precompiled header.
-CommonHeaders.h.pcx: CommonHeaders.h
-	$(CXXCOMPILE) -x c++-header -c -o $@ $<
+AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I../libs/sha1
+AM_CXXFLAGS = $(XML2_CFLAGS)
 
-noinst_LIBRARIES = libimlunit.a # libfivel.a
+noinst_LIBRARIES = libimlunit.a libhalyard.a
 
+# TestAll will actually work if you comment out the portions testing code
+# we haven't built.
 #noinst_PROGRAMS = TestAll
-
 #TESTS = TestAll
 
 # Our very old test suite framework.
@@ -13,96 +13,57 @@ libimlunit_a_SOURCES = \
 	ImlUnit.cpp \
 	ImlUnit.h
 
-#libfivel_a_SOURCES = \
-#	Model.cpp \
-#	Model.h \
-#	ModelChange.cpp \
-#	ModelChange.h \
-#	TArray.cpp \
-#	TArray.h \
-#	TBTree.cpp \
-#	TBTree.h \
-#	TCommon.h \
-#	TDateUtil.cpp \
-#	TDateUtil.h \
-#	TException.cpp \
-#	TException.h \
-#	THeader.cpp \
-#	THeader.h \
-#	TInterpreter.h \
-#	TLogger.cpp \
-#	TLogger.h \
-#	TObject.cpp \
-#	TObject.h \
-#	TPoint.cpp \
-#	TPoint.h \
-#	TRect.cpp \
-#	TRect.h \
-#	TString.cpp \
-#	TString.h \
-#	TStyleSheet.cpp \
-#	TStyleSheet.h \
-#	TURL.cpp \
-#	TURL.h \
-#	TVariable.cpp \
-#	TVariable.h \
-#	TEncoding.cpp \
-#	TEncoding.h \
-#	Typography.cpp \
-#	Typography.h \
-#	FileSystem.cpp \
-#	FileSystem.h \
-#	GraphicsTools.cpp \
-#	GraphicsTools.h \
-#	TInterpreter.cpp \
-#	TInterpreter.h \
-#	TPrimitives.cpp \
-#	TPrimitives.h \
-#	TCommonPrimitives.cpp \
-#	TCommonPrimitives.h \
-#	TTemplateUtils.cpp \
-#	TTemplateUtils.h \
-#	TStartup.cpp \
-#	TStartup.h \
-#	TDeveloperPrefs.cpp \
-#	TDeveloperPrefs.h \
-#	XmlUtils.cpp \
-#	XmlUtils.h \
-#	lang/old5l/TIndex.cpp \
-#	lang/old5l/TIndex.h \
-#	lang/old5l/TParser.cpp \
-#	lang/old5l/TParser.h \
-#	lang/old5l/TStream.cpp \
-#	lang/old5l/TStream.h \
-#	lang/old5l/CryptStream.cpp \
-#	lang/old5l/CryptStream.h \
-#	lang/old5l/T5LPrimitives.cpp \
-#	lang/old5l/T5LPrimitives.h \
-#	lang/scheme/TSchemeInterpreter.cpp \
-#	lang/scheme/TSchemeInterpreter.h
+# Our portable runtime system.
+libhalyard_a_SOURCES = \
+	TException.cpp \
+	TPoint.cpp \
+	TRect.cpp \
+	TPolygon.cpp \
+	GraphicsTools.cpp \
+	TTemplateUtils.cpp \
+	TLogger.cpp \
+	TestCase.cpp \
+	TTextConv.cpp \
+	TInterpreter.cpp \
+	FileSystem.cpp \
+	TLogger.cpp \
+	CrashReporter.cpp \
+	XmlUtils.cpp \
+	Model.cpp \
+	ModelChange.cpp \
+	ModelView.cpp \
+	doc/Document.cpp \
+	doc/HalyardProgram.cpp
 
-#TestAll_SOURCES = \
-#	ModelTests.cpp \
-#	TTemplateUtilsTests.cpp \
-#	TStringTests.cpp \
-#	TBTreeTests.cpp \
-#	TEncodingTests.cpp \
-#	FileSystemTests.cpp \
-#	TypographyTests.cpp \
-#	TStyleSheetTests.cpp \
-#	lang/old5l/TStreamTests.cpp \
-#	lang/old5l/CryptStreamTests.cpp \
-#	lang/old5l/TIndexTests.cpp \
-#	lang/scheme/TSchemeInterpreterTests.cpp \
-#	TestAll.cpp
-#TestAll_LDADD = \
-#	libfivel.a \
-#	libimlunit.a \
-#	../libs/crypto/libfivel_crypto.a \
-#	../libs/plt/lib/libmzscheme.a \
-#	../libs/plt/lib/libmzgc.a \
-#	../libs/plt/lib/mzdyn.o \
-#	@FREETYPE_LDADD@ \
-#	@LIBXML2_LDADD@ \
-#	-ldl
+# Our command-line test suite driver.
+TestAll_SOURCES = \
+	TPolygonTests.cpp \
+	FileSystemTests.cpp \
+	ModelTests.cpp \
+	TestAll.cpp
+TestAll_LDADD = \
+	libhalyard.a \
+	libimlunit.a \
+	../libs/sha1/libsha1.a \
+	@BOOST_LDFLAGS@ \
+        @BOOST_FILESYSTEM_LIB@ \
+	@XML2_LIBS@
 
+
+#==========================================================================
+#  Precompiled Headers
+#==========================================================================
+#  Experimental support for building a precompiled header.  This is
+#  highly-dependent on having a reasonably modern GNU toolchain.  If you
+#  don't, just disable this code completely, and build with regular
+#  headers.
+#
+#  We go to the trouble of setting up precompiled headers because boost
+#  includes tons of templates, which slows down gcc considerably.
+#
+#  TODO - How do I add a dependency to all our *.cpp files?
+
+#%.h.pcx: %.h
+#	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -x c++-header -c -o $@ $<; then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+
+#include ./$(DEPDIR)/CommonHeaders.Po

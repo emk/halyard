@@ -174,7 +174,6 @@ utf16_string Halyard::utf16_from_utf8(const utf8_string &utf8) {
     wchar_t wc = 0;
 
     size_t i = 0;
-    size_t out_pos = 0;
     while (i < utf8.size()) {
         char init = utf8[i];
         if ((init & 0x80) == 0x00) {
@@ -282,7 +281,7 @@ std::string Halyard::multibyte_from_utf16(const utf16_string &utf16) {
     // Figure out how much space we'll need.  Yes, we really are comparing
     // a size_t value against -1--that's what the manual says.
     size_t dest_size = ::wcstombs(NULL, utf16.c_str(), utf16.size());
-    CHECK(dest_size != -1, "Malformed Unicode string");
+    CHECK(dest_size != size_t(-1), "Malformed Unicode string");
 
     // Perform the conversion.
     std::string dest(" ", dest_size);
@@ -300,7 +299,7 @@ utf16_string Halyard::utf16_from_multibyte(const std::string &str) {
     // Figure out how much space we'll need.  Yes, we really are comparing
     // a size_t value against -1--that's what the manual says.
     size_t dest_size = ::mbstowcs(NULL, str.c_str(), str.size());
-    CHECK(dest_size != -1, "Malformed multibyte string");
+    CHECK(dest_size != size_t(-1), "Malformed multibyte string");
 
     // Perform the conversion.
     utf16_string dest(L" ", dest_size);

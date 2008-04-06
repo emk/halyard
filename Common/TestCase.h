@@ -281,7 +281,7 @@ inline std::ostream &operator<<(std::ostream &out, TestRegistry::iterator i) {
             caught_exception = true; \
         } \
         if (!caught_exception) \
-            FAIL_TEST("Expected an exception: " ## #CODE); \
+            FAIL_TEST("Expected an exception: " #CODE); \
     } while (0)
 
 //////////
@@ -300,7 +300,7 @@ inline std::ostream &operator<<(std::ostream &out, TestRegistry::iterator i) {
                           ">, but got <" + std::string(e.what()) + ">"); \
         } \
         if (!caught_exception) \
-            FAIL_TEST("Expected an exception: " ## #CODE); \
+            FAIL_TEST("Expected an exception: " #CODE); \
     } while (0)
 
 //////////
@@ -397,6 +397,7 @@ DEFINE_CHECK_OP_HELPER(CheckNotEqualHelper, !=)
 
 #define REFERENCE_TEST_CASE_FILE(NAME) \
 	extern char test_registration_ ## NAME; \
-	static char *test_reference_ ## NAME = &test_registration_ ## NAME
+	static char *test_reference_ ## NAME __attribute__((unused)) = \
+        &test_registration_ ## NAME
 
 #endif // TestCase_H

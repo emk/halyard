@@ -35,12 +35,17 @@ class TPoint
 { 
     public:
 		//////////
+		/// Constructor.  Initialize X and Y to zero.
+        ///
+        TPoint() : m_X(0), m_Y(0)  {}
+
+		//////////
 		/// Constructor.
 		///
-		/// [in_optional] inX - set the X-coordinate (default 0)
-		/// [in_optional] inY - set the y-coordinate (default 0)
+		/// [in] inX - set the X-coordinate
+		/// [in] inY - set the y-coordinate
 		///
-		TPoint(int32 inX = 0, int32 inY = 0);
+		TPoint(int32 inX, int32 inY);
 
 		//////////
 		/// Copy Constructor.

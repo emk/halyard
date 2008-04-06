@@ -34,8 +34,10 @@ BEGIN_NAMESPACE_HALYARD
 class TRect 
 {  
     public:
-	    TRect(int32 inLeft = 0, int32 inTop = 0, 
-			  int32 inRight = 0, int32 inBottom = 0);
+        TRect() : m_Left(0), m_Top(0), m_Right(0), m_Bottom(0) {}
+
+	    TRect(int32 inLeft, int32 inTop, 
+			  int32 inRight, int32 inBottom);
 
 		TRect(const TRect &rect);
 	    
@@ -86,10 +88,10 @@ class TRect
 		bool Contains(TPoint &inPt);
 		
 	protected:
-        int32 m_Top;
 		int32 m_Left;
+        int32 m_Top;
+		int32 m_Right;
 		int32 m_Bottom;
-		int32	m_Right;
 };
 
 inline std::ostream &operator<<(std::ostream &out, const TRect &r) {

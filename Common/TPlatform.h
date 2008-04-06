@@ -33,6 +33,24 @@
 /// \author ...and others
 ///@{
 
+
+/*=========================================================================
+**  Autoconf-Detected Features
+**=========================================================================
+**  With non-MSVC++ compilers, the presence of these features is detected
+**  by autoconf, which arranges for us to be passed various preprocessor
+**  definitions.  Under MSVC++, we don't have autoconf.  So make sure that
+**  this section assumes MSVC++ defaults in the absense of autoconf.
+*/
+
+// If the compiler doesn't support __attribute__, define a macro which
+// makes all uses of __attribute__ disappear.  MSVC++: Does not have
+// __attribute__.
+#ifndef HAVE___ATTRIBUTE__
+#define __attribute__(args)
+#endif
+
+
 /*=========================================================================
 **  QuickTime Configuration
 **=======================================================================*/

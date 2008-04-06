@@ -324,27 +324,33 @@ public:
 // This means, specifically, the it supports copy-by-value, assignment, and
 // can be stored in an STL container safely.  Pointers which need to be
 // deleted and std::auto_ptr are NOT SAFE.
-template <> TValue::Type TValue::FindType(const TNull &) { return TYPE_NULL; }
-template <> TValue::Type TValue::FindType(const std::string &)
+template <> inline TValue::Type TValue::FindType(const TNull &)
+    { return TYPE_NULL; }
+template <> inline TValue::Type TValue::FindType(const std::string &)
     { return TYPE_STRING; }
-template <> TValue::Type TValue::FindType(const TSymbol &)
+template <> inline TValue::Type TValue::FindType(const TSymbol &)
     { return TYPE_SYMBOL; }
-template <> TValue::Type TValue::FindType(const int32 &) { return TYPE_LONG; }
-template <> TValue::Type TValue::FindType(const uint32 &) { return TYPE_ULONG; }
-template <> TValue::Type TValue::FindType(const double &)
+template <> inline TValue::Type TValue::FindType(const int32 &)
+    { return TYPE_LONG; }
+template <> inline TValue::Type TValue::FindType(const uint32 &)
+    { return TYPE_ULONG; }
+template <> inline TValue::Type TValue::FindType(const double &)
     { return TYPE_DOUBLE; }
-template <> TValue::Type TValue::FindType(const bool &) { return TYPE_BOOLEAN; }
-template <> TValue::Type TValue::FindType(const TPoint &) { return TYPE_POINT; }
-template <> TValue::Type TValue::FindType(const TRect &) { return TYPE_RECT; }
-template <> TValue::Type TValue::FindType(const GraphicsTools::Color &)
+template <> inline TValue::Type TValue::FindType(const bool &)
+    { return TYPE_BOOLEAN; }
+template <> inline TValue::Type TValue::FindType(const TPoint &)
+    { return TYPE_POINT; }
+template <> inline TValue::Type TValue::FindType(const TRect &)
+    { return TYPE_RECT; }
+template <> inline TValue::Type TValue::FindType(const GraphicsTools::Color &)
     { return TYPE_COLOR; }
-template <> TValue::Type TValue::FindType(const TValueList &)
+template <> inline TValue::Type TValue::FindType(const TValueList &)
     { return TYPE_LIST; }
-template <> TValue::Type TValue::FindType(const TPolygon &)
+template <> inline TValue::Type TValue::FindType(const TPolygon &)
     { return TYPE_POLYGON; }
-template <> TValue::Type TValue::FindType(const TCallbackPtr &)
+template <> inline TValue::Type TValue::FindType(const TCallbackPtr &)
     { return TYPE_CALLBACK; }
-template <> TValue::Type TValue::FindType(const TPercent &)
+template <> inline TValue::Type TValue::FindType(const TPercent &)
     { return TYPE_PERCENT; }
 
 //////////

@@ -307,7 +307,7 @@ void TLogger::SafeAlert(bool isError, const char *message)
 
 #elif APP_PLATFORM_OTHER
 
-void TLogger::SafeAlert(bool isError, const char *message);
+void TLogger::SafeAlert(bool isError, const char *message)
 {
 	PrepareToDisplayError();
 

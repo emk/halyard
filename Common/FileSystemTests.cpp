@@ -76,7 +76,7 @@ void test_FileSystem (void)
 #warning "Macintosh path manipulation still has problems."
 
 #elif APP_PLATFORM_OTHER
-	
+
 	// Test conversion to native path strings.
 	TEST(Path().ToNativePathString() == base);
 	TEST(Path().AddComponent("foo").ToNativePathString() == base+"/foo");
@@ -86,9 +86,11 @@ void test_FileSystem (void)
 	TEST(Path("foo").ToNativePathString() == base+"/foo");
 	TEST(GetBaseDirectory().ToNativePathString() == base);
 	TEST(GetFontDirectory().ToNativePathString() == base+"/Fonts");
-#error "Some ResolveFontPath test cases not ported to this platform."
-	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
+	TEST(ResolveFontPath("").ToNativePathString() == base+"/Fonts");
+	TEST(ResolveFontPath("README.txt").ToNativePathString() ==
 		 base+"/Fonts/README.txt");
+	TEST(ResolveFontPath("nested/README.txt").ToNativePathString() ==
+		 base+"/Fonts/nested/README.txt");
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
 	     == base+"/f/../g");
 

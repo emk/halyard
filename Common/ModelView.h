@@ -34,9 +34,7 @@ namespace model {
 	/// message.  When the Object is deleted, the view receives
 	/// an ObjectDeleted message.
 	///
-	class View {
-		DISABLE_COPY_AND_ASSIGN(View);
-
+	class View : boost::noncopyable {
 		Object *mObject;
 		bool mObjectIsLive;
 

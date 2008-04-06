@@ -40,7 +40,7 @@ AC_PROG_CC
 
 # Check for various libraries.
 AC_CHECK_LIB(freetype, FT_Init_FreeType)
-AC_CHECK_LIB(xml2, xmlParseFile)
+PKG_CHECK_MODULES(XML2, [libxml-2.0 >= 2.4.30])
 AX_LIB_SQLITE3(3.0.3)
 
 # Check for boost, plus any specific components that we need.
@@ -63,6 +63,7 @@ AX_BOOST_TEST_EXEC_MONITOR
 
 AC_C_CONST
 AC_C_INLINE
+AX_C___ATTRIBUTE__
 
 
 #==========================================================================

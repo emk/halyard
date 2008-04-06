@@ -98,12 +98,10 @@ struct DeleteArray {
 /// When restore_i goes out of scope, i will be reset to its original value.
 ///
 template<class Type>
-class StValueRestorer
+class StValueRestorer : boost::noncopyable
 {
 	Type &mLocation;
 	Type mSaved;
-
-	DISABLE_COPY_AND_ASSIGN_TMPL(StValueRestorer,StValueRestorer<Type>);
 
 public:
 	explicit StValueRestorer(Type &inVariable)

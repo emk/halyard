@@ -67,7 +67,7 @@ TPolygon::TPolygon(const std::vector<TPoint> &inVertices)
 // OK, now I've switched up and down and left and right enough that
 // I'm not sure which comments are right and which are not. Caveat
 // emptor!
-bool TPolygon::Contains(TPoint &inPt)
+bool TPolygon::Contains(const TPoint &inPt)
 {
   // First check to see if point is within bounding box, since that's
   // quick and simple.

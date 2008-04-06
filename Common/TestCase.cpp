@@ -209,6 +209,10 @@ public:
 	}; \
     REGISTER_TEST_CASE(Test##NAME)
 
+// A simple function which is guaranteed to never throw an exception.
+static void do_nothing() {
+}
+
 // *** Make sure tests actually get run.
 BEGIN_UNREGISTERED_TEST_CASE(WasRunTest, BootstrapTestCase) {
 	mTestPassed = true;
@@ -230,23 +234,23 @@ TEST_BOOTSTRAP_TEST_CASE(PassCheckThrownTest);
 
 // *** Make sure CHECK_THROWN fails if no exception occurs.
 BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownTest, TestCase) {
-	CHECK_THROWN(TestFailed, 2 + 2);
+	CHECK_THROWN(TestFailed, do_nothing());
 } END_UNREGISTERED_TEST_CASE(FailCheckThrownTest);
 TEST_FAILING_TEST_CASE(FailCheckThrownTest, TestFailed,
-					   "Expected an exception: 2 + 2");
+					   "Expected an exception: do_nothing()");
 
 // *** Make sure CHECK_THROWN_MESSAGE blocks exceptions.
 BEGIN_UNREGISTERED_TEST_CASE(PassCheckThrownMessageTest, BootstrapTestCase) {
-    CHECK_THROWN_MESSAGE(std::exception, "substring",
-                         throw std::exception("Should contain substring."));
+    CHECK_THROWN_MESSAGE(std::runtime_error, "substring",
+                         throw std::runtime_error("Should contain substring."));
     mTestPassed = true;
 } END_UNREGISTERED_TEST_CASE(PassCheckThrownMessageTest);
 TEST_BOOTSTRAP_TEST_CASE(PassCheckThrownMessageTest);
 
 // *** Make sure CHECK_THROWN_MESSAGE fails if the message is wrong.
 BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownMessageValueTest, TestCase) {
-    CHECK_THROWN_MESSAGE(std::exception, "substring",
-                         throw std::exception("Other message"));
+    CHECK_THROWN_MESSAGE(std::runtime_error, "substring",
+                         throw std::runtime_error("Other message"));
 } END_UNREGISTERED_TEST_CASE(FailCheckThrownMessageValueTest);
 TEST_FAILING_TEST_CASE(FailCheckThrownMessageValueTest, TestFailed,
 					   "Expected exception message to contain "
@@ -254,10 +258,10 @@ TEST_FAILING_TEST_CASE(FailCheckThrownMessageValueTest, TestFailed,
 
 // *** Make sure CHECK_THROWN_MESSAGE fails if no exception occurs.
 BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownMessageTest, TestCase) {
-	CHECK_THROWN_MESSAGE(std::exception, "2 + 2", 2 + 2);
+	CHECK_THROWN_MESSAGE(std::exception, "", do_nothing());
 } END_UNREGISTERED_TEST_CASE(FailCheckThrownMessageTest);
 TEST_FAILING_TEST_CASE(FailCheckThrownMessageTest, TestFailed,
-					   "Expected an exception: 2 + 2");
+					   "Expected an exception: do_nothing()");
 
 // *** Make sure CHECK_THROWN fails if the wrong exception occurs.
 BEGIN_UNREGISTERED_TEST_CASE(CheckThrownChecksTypeTest, TestCase) {
