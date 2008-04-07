@@ -1,4 +1,7 @@
-AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I../libs/sha1
+# Set up our preprocessor and compiler flags.  Here, DISABLE_UNPORTED
+# is a temporary way to disable parts of the code which won't build on
+# non MSVC++ platforms yet.
+AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I../libs/sha1 -DDISABLE_UNPORTED=1
 AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS)
 
 noinst_LIBRARIES = libimlunit.a libhalyard.a

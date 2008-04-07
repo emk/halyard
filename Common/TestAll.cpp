@@ -26,7 +26,9 @@
 #include "TestCase.h"  // New and spiffy.
 
 // We need to call some module initialization functions.
+#if !DISABLE_UNPORTED
 #include "TStartup.h"
+#endif // !DISABLE_UNPORTED
 #include "CrashReporter.h"
 
 // We declare some testing-related primitives for the interpreter.
@@ -34,9 +36,11 @@
 
 // XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
 // called from a function in the Halyard:: namespace, which is silly.
+#if !DISABLE_UNPORTED
 BEGIN_NAMESPACE_HALYARD
 extern void RegisterTestPrimitives();
 END_NAMESPACE_HALYARD
+#endif // !DISABLE_UNPORTED
 
 using namespace Halyard;
 
@@ -49,26 +53,30 @@ using namespace Halyard;
 // avoid creating extra header files just for one function.  These will
 // most likely be replaced with static constructor tricks as I continue to
 // C++-ify the testing API.
-//extern void test_TString (void);
 extern void test_TTextTransform (void);
 extern void test_FileSystem (void);
 extern void test_Model(void);
 extern void test_Typography (void);
+#if !DISABLE_UNPORTED
 extern void test_TStyleSheet (void);
 extern void test_TSchemeInterpreter (void);
+#endif // !DISABLE_UNPORTED
 extern void test_TVectorDiff (void);
 extern void test_TPolygon (void);
 
 REFERENCE_TEST_CASE_FILE(TestCase);
 REFERENCE_TEST_CASE_FILE(CaptionList);
 REFERENCE_TEST_CASE_FILE(TTemplateUtils);
+#if !DISABLE_UNPORTED
 REFERENCE_TEST_CASE_FILE(TValue);
 REFERENCE_TEST_CASE_FILE(TSchemeConv);
 REFERENCE_TEST_CASE_FILE(TVariableManager);
 REFERENCE_TEST_CASE_FILE(TStateDB);
 REFERENCE_TEST_CASE_FILE(ScriptEditorDB);
+#endif // !DISABLE_UNPORTED
 REFERENCE_TEST_CASE_FILE(TTextConv);
 
+#if !DISABLE_UNPORTED
 DEFINE_PRIMITIVE(test) {
 	std::string info;
 	bool result;
@@ -79,15 +87,20 @@ DEFINE_PRIMITIVE(test) {
 void Halyard::RegisterTestPrimitives() {
 	REGISTER_PRIMITIVE(test);
 }
+#endif // !DISABLE_UNPORTED
 
 static void run_imlunit_tests() {
+#if !DISABLE_UNPORTED
 	RegisterTestPrimitives();
+#endif // !DISABLE_UNPORTED
 	test_TTextTransform();
 	test_FileSystem();
 	test_Model();
 	test_Typography();
+#if !DISABLE_UNPORTED
 	test_TStyleSheet();
 	test_TSchemeInterpreter();
+#endif // !DISABLE_UNPORTED
 	test_TVectorDiff();
 	test_TPolygon();
 	tests_finished();	
@@ -150,7 +163,9 @@ void prompt_done(bool should_wait) {
 }
 
 int main(int argc, char **argv) {
+#if !DISABLE_UNPORTED
 	HALYARD_SET_STACK_BASE();
+#endif // !DISABLE_UNPORTED
 
 	bool should_wait = false;
 	if (argc == 2 && std::string(argv[1]) == "--wait")
@@ -160,7 +175,9 @@ int main(int argc, char **argv) {
 	FileSystem::SetScriptDataDirectoryName("Test");
 
 	try {
+#if !DISABLE_UNPORTED
 		Halyard::InitializeCommonCode(new CrashReporter());
+#endif // !DISABLE_UNPORTED
 		std::cout << "Old-Style ImlUnit Tests" << std::endl;
 		run_imlunit_tests();
 		std::cout << std::endl << "New-Style TestCase Tests" << std::endl;
