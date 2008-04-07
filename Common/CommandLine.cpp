@@ -20,6 +20,7 @@
 //
 // @END_LICENSE
 
+#include <stdexcept>
 #include "CommandLine.h"
 
 CommandLine::CommandLine(int argc, char **argv) {
@@ -99,5 +100,14 @@ bool CommandLine::ExecAsync(const std::string &inProgram,
 
 
 #else
-#error "Need implementation of CommandLine::ExecAsync"
+
+bool CommandLine::ExecAsync(const std::string &inProgram,
+                            const CommandLine &inArgs)
+{
+    // We used to issue a compiler error for platforms without ExecAsync,
+    // but we don't need it unless we're trying to make the updater work.
+    // And that's a very long-term goal anywhere but Windows.
+    throw std::runtime_error("Not implemented: CommandLine::ExecAsync");
+}
+
 #endif
