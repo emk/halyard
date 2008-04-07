@@ -263,8 +263,9 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
 	CHECK_EQ(v1.IsInitialized(), false);
     CHECK_THROWN(std::exception, v1.GetType());
 
-    // Check Null.
-	TValue value(TNull::TNull());
+    // Check Null.  We use assignment notation here, because the constructor
+    // notation would be mistaken for a function declaration.  Strange.
+	TValue value = TNull();
     CHECK_EQ(value.IsInitialized(), true);
     CHECK_EQ(value.GetType(), TValue::TYPE_NULL);
     CHECK_EQ(value, TValue(TNull()));
@@ -360,7 +361,7 @@ BEGIN_TEST_CASE(TestTValueTypeChecks, TestCase) {
                          TSymbol(TValue("hello")));
     CHECK_THROWN_MESSAGE(std::exception,
                          "Expected a signed 32-bit integer, got <2147483648>",
-                         int32(TValue(2147483648)));
+                         int32(TValue(uint32(2147483648U))));
     CHECK_THROWN_MESSAGE(std::exception,
                          "Expected an unsigned 32-bit integer, got <-1>",
                          uint32(TValue(-1)));
