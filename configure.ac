@@ -15,6 +15,8 @@ AM_INIT_AUTOMAKE(halyard, 0.0)
 #   sqlite     3.0.3    3.5.7     3.4.2
 #
 # Libraries we need to build the engine:
+#   curl       7.15.3
+#   tremor     1.0.2
 #   portaudio  18       19        19
 #   wxWidgets  2.6.1p1  2.8.7     2.8.4
 #
