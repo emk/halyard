@@ -1,0 +1,4 @@
+#!/bin/bash -e
+# Print a list of git submodules in the current tree.  Useful when called from
+# shell scripts.
+git config --list | perl -ne 'print "$1\n" if (/^submodule.([^.]+)\.url=/)'
