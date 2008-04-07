@@ -9,7 +9,6 @@ noinst_LIBRARIES = libimlunit.a libhalyard.a
 # TestAll will actually work if you comment out the portions testing code
 # we haven't built.
 noinst_PROGRAMS = TestAll
-TESTS = TestAll
 
 # Our very old test suite framework.
 libimlunit_a_SOURCES = \

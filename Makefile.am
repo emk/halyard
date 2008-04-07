@@ -2,3 +2,6 @@ ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = libs Common
+
+check:
+	(cd test; ../Common/TestAll)
