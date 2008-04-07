@@ -6,7 +6,7 @@ AM_INIT_AUTOMAKE(halyard, 0.0)
 #AC_DEFINE(TEST_TYPOGRAPHY)
 #AC_DEFINE(HAVE_EYE_OF_GNOME)
 
-# Libraries we need to build Common:
+# Libraries we need to build Common, and the versions available to us:
 #              In tree  MacPorts  Ubuntu 7.10
 #   boost      1.31.0   1.34.1    "
 #   freetype2  2.3.4    2.3.5     "
@@ -14,9 +14,17 @@ AM_INIT_AUTOMAKE(halyard, 0.0)
 #   plt        360      371       360 (do we have dev headers here?)
 #   sqlite     3.0.3    3.5.7     3.4.2
 #
+# Libraries we need to build the engine:
+#   portaudio  18       19        19
+#   wxWidgets  2.6.1p1  2.8.7     2.8.4
+#
 # On the Mac, run:
-#   sudo port install boost freetype libxml2 mzscheme sqlite3
-# If you get errors on Leopard, Google for the error messages.
+#
+#   sudo port install boost freetype libxml2 mzscheme sqlite3 wxWidgets \
+#     portaudio
+#
+# If you get errors on Leopard (especially with boost or wxWidgets), Google
+# for the error messages.
 
 
 #==========================================================================
@@ -43,7 +51,7 @@ AX_BOOST_FILESYSTEM
 AX_BOOST_UNIT_TEST_FRAMEWORK
 AX_BOOST_TEST_EXEC_MONITOR
 
-# TODO - Look for PLT Scheme.
+# TODO - Look for PLT Scheme, wxWidgets, portaudio.
 
 
 #==========================================================================
