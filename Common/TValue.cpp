@@ -110,28 +110,30 @@ TValue::TValue(const TValueList &inValue)
 TValue::TValue(const TCallbackPtr &inValue)
     : mPtr(new TemplateImpl<TCallbackPtr>(inValue)) {}
 
-template <> TNull Halyard::tvalue_cast(const TValue &v)
+BEGIN_NAMESPACE_HALYARD
+
+template <> TNull tvalue_cast(const TValue &v)
     { TNull r; return v.Get(r, "a null value"); }
-template <> std::string Halyard::tvalue_cast(const TValue &v)
+template <> std::string tvalue_cast(const TValue &v)
     { std::string r; return v.Get(r, "a string"); }
-template <> TSymbol Halyard::tvalue_cast(const TValue &v)
+template <> TSymbol tvalue_cast(const TValue &v)
     { TSymbol r; return v.Get(r, "a symbol"); }
-template <> bool Halyard::tvalue_cast(const TValue &v)
+template <> bool tvalue_cast(const TValue &v)
     { bool r; return v.Get(r, "a Boolean value"); }
-template <> TPoint Halyard::tvalue_cast(const TValue &v)
+template <> TPoint tvalue_cast(const TValue &v)
     { TPoint r; return v.Get(r, "a point"); }
-template <> TRect Halyard::tvalue_cast(const TValue &v)
+template <> TRect tvalue_cast(const TValue &v)
     { TRect r; return v.Get(r, "a rectangle"); }
-template <> GraphicsTools::Color Halyard::tvalue_cast(const TValue &v)
+template <> GraphicsTools::Color tvalue_cast(const TValue &v)
 	{ GraphicsTools::Color r; return v.Get(r, "a color"); }
-template <> TValueList Halyard::tvalue_cast(const TValue &v)
+template <> TValueList tvalue_cast(const TValue &v)
     { TValueList r; return v.Get(r, "a list"); }
-template <> TPolygon Halyard::tvalue_cast(const TValue &v)
+template <> TPolygon tvalue_cast(const TValue &v)
     { TPolygon r; return v.Get(r, "a polygon"); }
-template <> TPercent Halyard::tvalue_cast(const TValue &v)
+template <> TPercent tvalue_cast(const TValue &v)
     { TPercent r; return v.Get(r, "a percent"); }
 
-template <> int32 Halyard::tvalue_cast(const TValue &v) {
+template <> int32 tvalue_cast(const TValue &v) {
 	int32 r; 
 	// Convert to int32 if TValue is a unint32
 	// but only if the unint32 is less than MAX_INT32.
@@ -146,7 +148,7 @@ template <> int32 Halyard::tvalue_cast(const TValue &v) {
 	return v.Get(r, "a signed 32-bit integer");
 }
 
-template <> uint32 Halyard::tvalue_cast(const TValue &v) { 
+template <> uint32 tvalue_cast(const TValue &v) { 
 	uint32 r;
 	// Convert to uint32 if TValue is an int32
 	// but only if the int32 is non-negative.
@@ -161,7 +163,7 @@ template <> uint32 Halyard::tvalue_cast(const TValue &v) {
 	return v.Get(r, "an unsigned 32-bit integer");
 }
 
-template <> double Halyard::tvalue_cast(const TValue &v) {
+template <> double tvalue_cast(const TValue &v) {
 	double r;
 	// Convert to a double if TValue is an int32
 	// or a unint32.
@@ -175,6 +177,8 @@ template <> double Halyard::tvalue_cast(const TValue &v) {
 	}
 	return v.Get(r, "a floating-point number");
 }
+
+END_NAMESPACE_HALYARD
 
 std::string TValue::ToDisplayValue() const {
     std::ostringstream out;
