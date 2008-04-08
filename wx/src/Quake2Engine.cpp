@@ -153,11 +153,12 @@ void Quake2Engine::HandleBinMsg(unsigned char *buffer, size_t size)
 {
     BEGIN_EXCEPTION_TRAPPER() {
         BinMsg msg(buffer, size);
-        TValueList args(msg.GetArgs());
+        TValueList args(tvalue_cast<TValueList>(msg.GetArgs()));
         if (msg.GetName() == "state") {
             if (args.size() != 2)
                 THROW("Malformed 'state' message");
-            gStateDB.Set("/quake2/" + std::string(args[0]), args[1]);
+            gStateDB.Set("/quake2/" +
+                         tvalue_cast<std::string>(args[0]), args[1]);
         }    
     } END_EXCEPTION_TRAPPER(TException::ReportException);
 }

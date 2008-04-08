@@ -957,7 +957,8 @@ DEFINE_PRIMITIVE(OverlayAnimated) {
            >> is_trans >> SymbolName(state_path) >> graphics;
     Stage *stage = wxGetApp().GetStage();
 	R(new AnimatedOverlay(stage, name.c_str(), TToWxRect(bounds), dispatcher, 
-                          cursor, is_trans, state_path, TValueList(graphics)));
+                          cursor, is_trans, state_path,
+                          tvalue_cast<TValueList>(graphics)));
 }
 
 DEFINE_PRIMITIVE(Screenshot) {

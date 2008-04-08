@@ -48,46 +48,67 @@ static Scheme_Object *MakeSchemeList(const TValueList &inList) {
 Scheme_Object *Halyard::TValueToScheme(TValue inVal) {
 	switch (inVal.GetType())
 	{	
-		case TValue::TYPE_NULL:
-			return scheme_void;
+		case TValue::TYPE_NULL: {
+            return scheme_void;
+        }
 
-		case TValue::TYPE_STRING:
-			return scheme_make_utf8_string(std::string(inVal).c_str());
+		case TValue::TYPE_STRING: {
+            std::string str(tvalue_cast<std::string>(inVal));
+			return scheme_make_utf8_string(str.c_str());
+        }
 			
-		case TValue::TYPE_SYMBOL:
-			return scheme_intern_symbol(TSymbol(inVal).GetName().c_str());
+		case TValue::TYPE_SYMBOL: {
+            TSymbol sym(tvalue_cast<TSymbol>(inVal));
+			return scheme_intern_symbol(sym.GetName().c_str());
+        }
 			
-		case TValue::TYPE_LONG:
-			return scheme_make_integer_value(int32(inVal));
+		case TValue::TYPE_LONG: {
+			return scheme_make_integer_value(tvalue_cast<int32>(inVal));
+        }
 			
-		case TValue::TYPE_ULONG:
-			return scheme_make_integer_value_from_unsigned(uint32(inVal));
+		case TValue::TYPE_ULONG: {
+            uint32 u(tvalue_cast<uint32>(inVal));
+			return scheme_make_integer_value_from_unsigned(u);
+        }
 			
-		case TValue::TYPE_DOUBLE:
-			return scheme_make_double(inVal);
+		case TValue::TYPE_DOUBLE: {
+			return scheme_make_double(tvalue_cast<double>(inVal));
+        }
 			
-		case TValue::TYPE_BOOLEAN:
-			return bool(inVal) ? scheme_true : scheme_false;
+		case TValue::TYPE_BOOLEAN: {
+			return tvalue_cast<bool>(inVal) ? scheme_true : scheme_false;
+        }
 			
-		case TValue::TYPE_POINT:
-			return TSchemeInterpreter::MakeSchemePoint(inVal);
+		case TValue::TYPE_POINT: {
+            TPoint p(tvalue_cast<TPoint>(inVal));
+			return TSchemeInterpreter::MakeSchemePoint(p);
+        }
 			
-		case TValue::TYPE_RECT:
-			return TSchemeInterpreter::MakeSchemeRect(inVal);
+		case TValue::TYPE_RECT: {
+            TRect r(tvalue_cast<TRect>(inVal));
+			return TSchemeInterpreter::MakeSchemeRect(r);
+        }
 			
-		case TValue::TYPE_COLOR:
-			return TSchemeInterpreter::MakeSchemeColor(inVal);
+		case TValue::TYPE_COLOR: {
+            GraphicsTools::Color c(tvalue_cast<GraphicsTools::Color>(inVal));
+			return TSchemeInterpreter::MakeSchemeColor(c);
+        }
 			
-		case TValue::TYPE_LIST:
-			return MakeSchemeList(inVal);
+		case TValue::TYPE_LIST: {
+			return MakeSchemeList(tvalue_cast<TValueList>(inVal));
+        }
 			
-		case TValue::TYPE_POLYGON:
-			return TSchemeInterpreter::MakeSchemePolygon(inVal);
+		case TValue::TYPE_POLYGON: {
+            TPolygon poly(tvalue_cast<TPolygon>(inVal));
+			return TSchemeInterpreter::MakeSchemePolygon(poly);
+        }
 	
 		// TValue::TYPE_CALLBACK goes here.
 
-		case TValue::TYPE_PERCENT:
-			return TSchemeInterpreter::MakeSchemePercent(inVal);
+		case TValue::TYPE_PERCENT: {
+            TPercent pc(tvalue_cast<TPercent>(inVal));
+			return TSchemeInterpreter::MakeSchemePercent(pc);
+        }
 			
 		default:
 			THROW("Unhandled TValue conversion");

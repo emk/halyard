@@ -73,13 +73,13 @@ wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor)
 wxVariant TToWxValue(const TValue &value) {
     switch (value.GetType()) {
         case TValue::TYPE_STRING:
-            return wxVariant(std::string(value).c_str());
+            return wxVariant(tvalue_cast<std::string>(value).c_str());
             
         case TValue::TYPE_BOOLEAN:
-            return wxVariant(bool(value));
+            return wxVariant(tvalue_cast<bool>(value));
             
         case TValue::TYPE_LONG:
-            return wxVariant(long(value));
+            return wxVariant(tvalue_cast<long>(value));
 
         case TValue::TYPE_NULL:
         case TValue::TYPE_SYMBOL:

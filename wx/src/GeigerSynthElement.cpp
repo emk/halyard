@@ -69,7 +69,7 @@ void GeigerSynthElement::SetChirpsPerSecond(double inCPS) {
 }
 
 void GeigerSynthElement::NotifyStateChanged() {
-    double cps(gStateDB.Get(this, mStatePath));
+    double cps(tvalue_cast<double>(gStateDB.Get(this, mStatePath)));
     SetChirpsPerSecond(cps);
 }
 

@@ -47,7 +47,7 @@ AnimatedOverlay::AnimatedOverlay(Stage *inStage, const wxString &inName,
 	// convert TValueList to GraphicsList
 	TValueList::iterator iter = graphics.begin();
 	for (; iter != graphics.end(); ++iter)
-		mGraphics.push_back(*iter);
+		mGraphics.push_back(tvalue_cast<std::string>(*iter));
 	
 	NotifyStateChanged();
 }
@@ -84,15 +84,15 @@ void AnimatedOverlay::DrawGraphic(const std::string &inName) {
 
 void AnimatedOverlay::NotifyStateChanged() {
     // Handle changes to our x,y co-ordinates.
-	wxPoint offset(int32(gStateDB.Get(this, mStatePath + "/x")),
-                   int32(gStateDB.Get(this, mStatePath + "/y")));
+	wxPoint offset(tvalue_cast<int32>(gStateDB.Get(this, mStatePath + "/x")),
+                   tvalue_cast<int32>(gStateDB.Get(this, mStatePath + "/y")));
 	if (offset != mCurrentOffset) {
         mCurrentOffset = offset;
         UpdatePosition();
     }
 
     // Handle changes to our graphic.
-	int32 index = gStateDB.Get(this, mStatePath + "/index");
+	int32 index(tvalue_cast<int32>(gStateDB.Get(this, mStatePath + "/index")));
 	if (index < 0 || static_cast<size_t>(index) >= mGraphics.size())
 		THROW("Invalid index for AnimatedOverlay");
 	std::string graphic = mGraphics.at(index);

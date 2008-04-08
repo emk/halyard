@@ -62,52 +62,52 @@ std::string TArgumentList::EndLog()
 
 std::string TArgumentList::GetStringArg() {
 	TValue arg = GetNextArg(); 
-	return std::string(arg);
+	return tvalue_cast<std::string>(arg);
 }
 
 std::string TArgumentList::GetSymbolArg() {
 	TValue arg = GetNextArg(); 
-	return TSymbol(arg).GetName();
+	return tvalue_cast<TSymbol>(arg).GetName();
 }
 
 int32 TArgumentList::GetInt32Arg() {
 	TValue arg = GetNextArg(); 
-	return int32(arg);
+	return tvalue_cast<int32>(arg);
 }
 
 uint32 TArgumentList::GetUInt32Arg() {	
     TValue arg = GetNextArg(); 
-	return uint32(arg);
+	return tvalue_cast<uint32>(arg);
 }
 
 bool TArgumentList::GetBoolArg() {
 	TValue arg = GetNextArg(); 
-	return bool(arg);
+	return tvalue_cast<bool>(arg);
 }
 
 double TArgumentList::GetDoubleArg() {	
 	TValue arg = GetNextArg(); 
-	return double(arg);
+	return tvalue_cast<double>(arg);
 }
 
 TPoint TArgumentList::GetPointArg() {
 	TValue arg = GetNextArg(); 
-	return TPoint(arg);
+	return tvalue_cast<TPoint>(arg);
 }
 
 TRect TArgumentList::GetRectArg() {
 	TValue arg = GetNextArg(); 
-	return TRect(arg);
+	return tvalue_cast<TRect>(arg);
 }
 
 TPolygon TArgumentList::GetPolygonArg() {
 	TValue arg = GetNextArg(); 
-	return TPolygon(arg);
+	return tvalue_cast<TPolygon>(arg);
 }
 
 GraphicsTools::Color TArgumentList::GetColorArg() {
 	TValue arg = GetNextArg(); 
-	return GraphicsTools::Color(arg);
+	return tvalue_cast<GraphicsTools::Color>(arg);
 }
 
 void TArgumentList::GetValueOrPercentArg(bool &outIsPercent,
@@ -117,10 +117,10 @@ void TArgumentList::GetValueOrPercentArg(bool &outIsPercent,
 
 	if(arg.GetType() != TValue::TYPE_PERCENT) {
 		outIsPercent = false;
-		outValue = int32(arg);
+		outValue = tvalue_cast<int32>(arg);
 	} else {
 		outIsPercent = true;
-		outValue = TPercent(arg).GetValue();
+		outValue = tvalue_cast<TPercent>(arg).GetValue();
 	}
 }
 
@@ -131,7 +131,7 @@ TCallbackPtr TArgumentList::GetCallbackArg() {
 
 TArgumentList *TArgumentList::GetListArg() {
 	TValue arg = GetNextArg(); 
-	return new TArgumentList(TValueList(arg));
+	return new TArgumentList(tvalue_cast<TValueList>(arg));
 }
 
 TArgumentList::TArgumentList(TValueList inVal) {

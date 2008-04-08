@@ -110,61 +110,70 @@ TValue::TValue(const TValueList &inValue)
 TValue::TValue(const TCallbackPtr &inValue)
     : mPtr(new TemplateImpl<TCallbackPtr>(inValue)) {}
 
-TValue::operator TNull() const { TNull r; return Get(r, "a null value"); }
-TValue::operator std::string() const { std::string r; return Get(r, "a string"); }
-TValue::operator TSymbol() const { TSymbol r; return Get(r, "a symbol"); }
-TValue::operator bool() const { bool r; return Get(r, "a Boolean value"); }
-TValue::operator TPoint() const { TPoint r; return Get(r, "a point"); }
-TValue::operator TRect() const { TRect r; return Get(r, "a rectangle"); }
-TValue::operator GraphicsTools::Color() const
-	{ GraphicsTools::Color r; return Get(r, "a color"); }
-TValue::operator const TValueList &() const { TValueList r; return Get(r, "a list"); }
-TValue::operator TPolygon() const { TPolygon r; return Get(r, "a polygon"); }
-TValue::operator TPercent() const { TPercent r; return Get(r, "a percent"); }
+template <> TNull Halyard::tvalue_cast(const TValue &v)
+    { TNull r; return v.Get(r, "a null value"); }
+template <> std::string Halyard::tvalue_cast(const TValue &v)
+    { std::string r; return v.Get(r, "a string"); }
+template <> TSymbol Halyard::tvalue_cast(const TValue &v)
+    { TSymbol r; return v.Get(r, "a symbol"); }
+template <> bool Halyard::tvalue_cast(const TValue &v)
+    { bool r; return v.Get(r, "a Boolean value"); }
+template <> TPoint Halyard::tvalue_cast(const TValue &v)
+    { TPoint r; return v.Get(r, "a point"); }
+template <> TRect Halyard::tvalue_cast(const TValue &v)
+    { TRect r; return v.Get(r, "a rectangle"); }
+template <> GraphicsTools::Color Halyard::tvalue_cast(const TValue &v)
+	{ GraphicsTools::Color r; return v.Get(r, "a color"); }
+template <> TValueList Halyard::tvalue_cast(const TValue &v)
+    { TValueList r; return v.Get(r, "a list"); }
+template <> TPolygon Halyard::tvalue_cast(const TValue &v)
+    { TPolygon r; return v.Get(r, "a polygon"); }
+template <> TPercent Halyard::tvalue_cast(const TValue &v)
+    { TPercent r; return v.Get(r, "a percent"); }
 
-TValue::operator int32() const { 
+template <> int32 Halyard::tvalue_cast(const TValue &v) {
 	int32 r; 
 	// Convert to int32 if TValue is a unint32
 	// but only if the unint32 is less than MAX_INT32.
-	if (GetType() == TYPE_ULONG) {
+	if (v.GetType() == TValue::TYPE_ULONG) {
 		uint32 rUInt;
-		rUInt = Get(rUInt, "<SHOULD NOT HAPPEN: int32>"); 
+		rUInt = v.Get(rUInt, "<SHOULD NOT HAPPEN: int32>"); 
 		if (rUInt <= MAX_INT32)
 			return rUInt;
 		THROW("Expected a signed 32-bit integer, got <" + 
-              ToDisplayValue() + ">");
+              v.ToDisplayValue() + ">");
 	}
-	return Get(r, "a signed 32-bit integer");
+	return v.Get(r, "a signed 32-bit integer");
 }
 
-TValue::operator uint32() const { 
+template <> uint32 Halyard::tvalue_cast(const TValue &v) { 
 	uint32 r;
 	// Convert to uint32 if TValue is an int32
 	// but only if the int32 is non-negative.
-	if (GetType() == TValue::TYPE_LONG) {
+	if (v.GetType() == TValue::TYPE_LONG) {
 		int32 rInt;
-		rInt = Get(rInt, "<SHOULD NOT HAPPEN: uint32>");
+		rInt = v.Get(rInt, "<SHOULD NOT HAPPEN: uint32>");
 		if (rInt >= 0)
 			return rInt;
 		THROW("Expected an unsigned 32-bit integer, got <" + 
-              ToDisplayValue() + ">");
+              v.ToDisplayValue() + ">");
 	}
-	return Get(r, "an unsigned 32-bit integer");
+	return v.Get(r, "an unsigned 32-bit integer");
 }
 
-TValue::operator double() const {
+template <> double Halyard::tvalue_cast(const TValue &v) {
 	double r;
 	// Convert to a double if TValue is an int32
 	// or a unint32.
-	if (GetType() == TValue::TYPE_LONG) {
+	if (v.GetType() == TValue::TYPE_LONG) {
 		int32 rInt;
-		return Get(rInt, "<SHOULD NOT HAPPEN: double>");
+		return v.Get(rInt, "<SHOULD NOT HAPPEN: double>");
 	}
-	if (GetType() == TValue::TYPE_ULONG) {
+	if (v.GetType() == TValue::TYPE_ULONG) {
 		uint32 rUInt;
-		return Get(rUInt, "<SHOULD NOT HAPPEN: double>");
+		return v.Get(rUInt, "<SHOULD NOT HAPPEN: double>");
 	}
-	return Get(r, "a floating-point number");
+	return v.Get(r, "a floating-point number");
 }
 
 std::string TValue::ToDisplayValue() const {
@@ -242,7 +251,7 @@ void CHECK_TVALUE_TYPE(TValue::Type inType, const Type &v1, const Type &v2) {
 template <typename Type>
 void CHECK_TVALUE_GET(const Type &inVal) {
     TValue value(inVal);
-    CHECK_EQ(Type(value), inVal);
+    CHECK_EQ(tvalue_cast<Type>(value), inVal);
 }
 
 BEGIN_TEST_CASE(TestTSymbol, TestCase) {
@@ -330,8 +339,8 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
 
     // Conversion operator sanity checks.
 	double foo;
-	CHECK_THROWN(std::exception, foo = double(TValue()));
-    CHECK_THROWN(std::exception, double(TValue("foo")));
+	CHECK_THROWN(std::exception, foo = tvalue_cast<double>(TValue()));
+    CHECK_THROWN(std::exception, tvalue_cast<double>(TValue("foo")));
 
     // operator== special cases
     CHECK_THROWN(std::exception, TValue() == TValue());
@@ -343,28 +352,29 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
     CHECK_NE(TValue(0), TValue(false));
 
 	// TValue autoconversions.
-	CHECK_EQ(uint32(TValue(MAX_INT32)), uint32(MAX_INT32));
-	CHECK_THROWN(std::exception, uint32(TValue(-1)));
-	CHECK_EQ(int32(TValue(uint32(MAX_INT32))), MAX_INT32);
-	CHECK_THROWN(std::exception, int32(TValue(uint32(MAX_INT32) + 1)));
-    CHECK_EQ(double(TValue(1)), 1.0); 
-	CHECK_EQ(double(TValue(MAX_UINT32)), double(MAX_UINT32)); 
-	CHECK_EQ(double(TValue(MIN_INT32)), double(MIN_INT32)); 
-	CHECK_EQ(double(TValue(-1)), -1.0); 
+	CHECK_EQ(tvalue_cast<uint32>(TValue(MAX_INT32)), uint32(MAX_INT32));
+	CHECK_THROWN(std::exception, tvalue_cast<uint32>(TValue(-1)));
+	CHECK_EQ(tvalue_cast<int32>(TValue(uint32(MAX_INT32))), MAX_INT32);
+	CHECK_THROWN(std::exception,
+                 tvalue_cast<int32>(TValue(uint32(MAX_INT32) + 1)));
+    CHECK_EQ(tvalue_cast<double>(TValue(1)), 1.0); 
+	CHECK_EQ(tvalue_cast<double>(TValue(MAX_UINT32)), double(MAX_UINT32)); 
+	CHECK_EQ(tvalue_cast<double>(TValue(MIN_INT32)), double(MIN_INT32)); 
+	CHECK_EQ(tvalue_cast<double>(TValue(-1)), -1.0);
 	
 } END_TEST_CASE(TestTValue);
 
 BEGIN_TEST_CASE(TestTValueTypeChecks, TestCase) {
     CHECK_THROWN_MESSAGE(std::exception, "Expected a string, got <32>",
-                         std::string(TValue(32)));
+                         tvalue_cast<std::string>(TValue(32)));
     CHECK_THROWN_MESSAGE(std::exception, "Expected a symbol, got <hello>",
-                         TSymbol(TValue("hello")));
+                         tvalue_cast<TSymbol>(TValue("hello")));
     CHECK_THROWN_MESSAGE(std::exception,
                          "Expected a signed 32-bit integer, got <2147483648>",
-                         int32(TValue(uint32(2147483648U))));
+                         tvalue_cast<int32>(TValue(uint32(2147483648U))));
     CHECK_THROWN_MESSAGE(std::exception,
                          "Expected an unsigned 32-bit integer, got <-1>",
-                         uint32(TValue(-1)));
+                         tvalue_cast<uint32>(TValue(-1)));
     
 } END_TEST_CASE(TestTValueTypeChecks);
 

@@ -101,13 +101,13 @@ bool EventDispatcher::EventCleanup()
     UpdateMaxStaleTime();
 
     // Check our "pass" flag.
-    return !bool(gVariableManager.Get("_pass"));
+    return !tvalue_cast<bool>(gVariableManager.Get("_pass"));
 }
 
 void EventDispatcher::CheckForVeto(bool &outWasVetoed) {
     // See if this event was vetoed.
-    outWasVetoed = (!bool(gVariableManager.Get("_pass")) &&
-					bool(gVariableManager.Get("_veto")));
+    outWasVetoed = (!tvalue_cast<bool>(gVariableManager.Get("_pass")) &&
+					tvalue_cast<bool>(gVariableManager.Get("_veto")));
 }
 
 bool EventDispatcher::DoEventUpdateUI(const wxString &inCommandName) {

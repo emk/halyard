@@ -281,25 +281,6 @@ public:
     TValue(const TValueList &inValue);
     TValue(const TCallbackPtr &inValue);
 
-    /// Convert a TValue to common data types.
-    ///
-    /// ADDING NEW TYPES - You should add one conversion operator for
-    /// each new type you add.  Adding the wrong operators here may
-    /// trigger lots of C++ errors; be careful and test thoroughly.
-    operator TNull() const;
-    operator std::string() const;
-    operator TSymbol() const;
-    operator int32() const;
-    operator uint32() const;
-    operator double() const;
-    operator bool() const;
-    operator TPoint() const;
-    operator TRect() const;
-    operator GraphicsTools::Color() const;
-    operator const TValueList &() const;
-    operator TPolygon() const;
-    operator TPercent() const;
-
     //////////
     /// Has this TValue been initialized?
     ///
@@ -313,6 +294,16 @@ public:
 
     friend bool operator==(const TValue &inV1, const TValue &inV2);
     friend std::ostream &operator<<(std::ostream &out, const TValue &inV);
+
+    /// Convert a TValue to common data types.  We used to use implicit
+    /// conversion operators for this, but it was too much hassle to make
+    /// them work on multiple C++ compilers.  So we're going with explicit
+    /// casts.
+    ///
+    /// ADDING NEW TYPES - You'll need to manually instantiate this for
+    /// each type you can convert a TValue to.  See TValue.cpp for the
+    /// manual instantiations.
+    template <typename T> friend T tvalue_cast(const TValue &v);
 };
 
 // Explicit instantiations of TValue::FindType (above).
