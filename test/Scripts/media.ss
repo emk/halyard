@@ -174,6 +174,24 @@
       (jump @index))
     )
 
+  ;; Under Vista, I have a number of problems with this card.  In
+  ;; particular, it gives a video playback error when run as an
+  ;; Administrator, and will generally freeze on the first frame of video
+  ;; when run with Aero.  Not ready for prime time!
+  (card media/qt/xiph-qt-codec (%black-test-card%)
+    (value title "XiphQT Ogg Theora video (experimental, codec required)")
+
+    (text-button get-codec ((below @title-elem 10) "Get Codec")
+      (def (click)
+        (open-in-browser "http://www.xiph.org/quicktime/")))
+
+    (elem movie (%captioned-movie%
+                 :movie-rect (move-rect-center-to
+                              $default-movie-and-controller-shape
+                              (rect-center $screen-rect))
+                 :path "duck_and_cover_intro_theora.ogg"
+                 :controller? #t)))
+
   (group media/qt/missing)
   
   (define-class %qtvr-card% (%white-test-card%)
@@ -196,38 +214,6 @@
                                 :path "powerbook17_jan2003_qtvr480.mov"))
   
   
-  ;;=======================================================================
-  ;;  Ogg Theora
-  ;;=======================================================================
-  
-  (group media/ogg-theora)
-
-  ;; ----- INSTALLING the XIPH QUICKTIME COMPONENTS FOR OGG PLAYBACK -----
-  ;;
-  ;; The current method of playing Ogg Theora video in Halyard is to install
-  ;; QuickTime and the Xiph QuickTime Components.
-  ;;
-  ;; Installation:
-  ;;
-  ;; - Download the QuickTime Components from http://xiph.org/quicktime/
-  ;; - Run the EXE
-  ;; - Click "Ok" a dozen times.
-  ;; - Restart halyard_test and the card should work.
-  ;;
-  ;; ---------------------------------------------------------------------
-  
-  ;; A first shot at a test card demonstrating ogg theora playback in Halyard.
-  ;;
-  ;; Hooray, it works!
-  ;;
-  ;; NOTE: if this card DOES NOT work for you, then you might need to install
-  ;;   the Xiph QuickTime plugin for Ogg Theora (see above).
-  (card media/ogg-theora/video-test (%movie-card%
-                                     :title "Ogg Theora demo (codec required)"
-                                     :movie-shape (shape 640 480)
-                                     :path "CougarAceListing24july2006.ogg"))
-  
-
   ;;=======================================================================
   ;;  Audio Streams
   ;;=======================================================================
