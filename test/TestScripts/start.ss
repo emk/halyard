@@ -9,8 +9,10 @@
 (define-syntax test
   (syntax-rules ()
     [(test sexpr)
-     (call-prim 'test (value->string 'sexpr) (value->boolean sexpr))]))
+     (test-with-label 'sexpr sexpr)]))
 
+(define (test-with-label label success?)
+  (call-prim 'test (value->string label) (value->boolean success?)))
 
 ;;=========================================================================
 ;;  Simple Test Cases
@@ -610,8 +612,34 @@
     (test (equals? (layout-next-box-at! layout :width 50) (point 0 0)))
     (test (equals? (layout-current-box-shape layout) (rect 0 0 50 10)))
     
-    (jump done)))
+    (jump mizzen)))
+
   
+;;=========================================================================
+;;  Mizzen unit tests
+;;=========================================================================
+
+(require (lib "mizzen-unit.ss" "mizzen"))
+(require (lib "mizzen-unit-test.ss" "mizzen"))
+(require (lib "ruby-objects-test.ss" "mizzen"))
+
+;; Test report class that collects the reports and also sends them to the
+;; engine primitive Test.
+(define-class %engine-test-report% (%test-report%)
+  (def (report-failure! test-case exception)
+    (super)
+    (test-with-label (((test-case) .test-method) .title) #f))
+  (def (report-success!)
+    (super)
+    (test-with-label "Mizzen test succeeded." #t)))
+
+(card mizzen ()
+  (run
+    (define report (%engine-test-report% .new))
+    (foreach [test-class (append $all-mizzen-unit-tests $all-ruby-object-tests)]
+      (test-class .run-tests report))
+    (jump done)))
+
 (card done ()
   (run
     (exit-script)))
