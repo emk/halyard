@@ -38,11 +38,17 @@ libhalyard_a_SOURCES = \
 	doc/HalyardProgram.cpp \
 	TTextTransform.cpp \
 	Typography.cpp \
+	TStyleSheet.cpp \
 	CaptionList.cpp \
 	TTextConv.cpp \
 	TDeveloperPrefs.cpp \
 	CommandLine.cpp \
-	TValue.cpp
+	TValue.cpp \
+	TPrimitives.cpp \
+	TCommonPrimitives.cpp \
+	TStateDB.cpp \
+	TStateListenerManager.cpp \
+	TVariableManager.cpp
 
 # Our command-line test suite driver.
 TestAll_SOURCES = \
@@ -51,6 +57,7 @@ TestAll_SOURCES = \
 	ModelTests.cpp \
 	TTextTransformTests.cpp \
 	TypographyTests.cpp \
+	TStyleSheetTests.cpp \
 	TVectorDiffTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
