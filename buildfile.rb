@@ -2,7 +2,7 @@ require 'buildscript'
 include Buildscript
 require 'commands'
 
-svn_url = 'https://imlsrc.dartmouth.edu/svn'
+svn_url = 'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main'
 git_url = 'git://imlsrc.dartmouth.edu'
 release_dir = '//mccay/Mccay/Testing/Halyard'
 build_dir = 'c:/build/halyard'
