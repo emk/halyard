@@ -1,0 +1,109 @@
+Halyard (formerly known as 5L and Tamale) has a long history.  The earliest
+versions date back to the late 80s, when it played movies using a Laserdisc
+player.  Much of the engine has been incrementally rewritten since 2002,
+with only a few low-level files remaining from earlier versions.
+
+If you're adding a new feature to Halyard, please feel free to add yourself
+to this file.
+
+We only have version control history back to 1999, so we may have missed
+some of the earlier maintainers.  If you have any information to add about
+the original authors, please let us know!
+
+This file uses the same format as the Linux CREDITS file.  Linus writes:
+"The fields are: name (N), email (E), web-address (W), PGP key ID and
+fingerprint (P), description (D), and snail-mail address (S)."  We also use
+a time-period field (T) for old 5L maintainers.  For more recent
+maintainers, time periods can be found using "git log --author='First Last'".
+
+--------
+
+N: Eric Baumgartner
+D: Early 5L maintainer.
+T: Early 90s?
+
+N: Stuart Blood
+D: Experimental ActiveX SCORM control (tools/ScormAiccGw).
+
+N: Brian Campbell
+E: brian.p.campbell@dartmouth.edu
+D: Core developer of Halyard and Tamale.  Due to frequent pair-programming,
+D: much code committed by Eric Kidd was in fact co-authored by Brian,
+D: including the mizzen object model, the unit test framework and the 0.3 and
+D: 0.5 API overhauls.
+
+N: Madhura Deshpande
+D: Quake 2 path enhancements and killentity console command.
+
+N: Twum Djin
+D: Unified TValue library.  Pair-programmed extensively with Ohene K.
+D: Ohene-Adu.
+
+N: Brian Driscoll
+D: Early 5L maintainer.
+T: Early 90s.
+
+N: Adam Galper
+D: Original standalone Combat Trauma program, and earliest 5L engine.
+T: Late 80s.
+
+N: Elizabeth Hamon
+D: Mac5L maintainer.  Contributed many new features and bug fixes.
+
+N: Yijin He
+D: Original 5L MovieController support.
+
+N: Eric Kidd
+E: eric.m.kidd@dartmouth.edu
+D: Lead programmer for Tamale and Halyard.
+
+N: Evan Knop
+D: Quake 2 server -> client commands.
+
+N: Zev Lowe
+D: Merging and cleanup of Common, checking for required files on startup,
+D: enhancements to old 5L scripting language, and LFileBundle bug fix.
+
+N: Shana Markham
+D: Opacity function, *stylesheet-list*, widgets.ss enhancements.
+
+N: Kevin Morgan
+D: Early 5L maintainer.
+T: Briefly in the 90s.
+
+N: Dan O'Conner
+D: Early 5L contributor.
+T: Briefly in the 90s.
+
+N: Chuck Officer
+D: 5L maintainer.
+T: Late 90s through 2000.
+
+N: Ohene K. Ohene-Adu
+D: Unified TValue library.  %animated-graphic%, TStateDB and Quake 2
+D: activation support.  Pair-programmed extensively with Twum Djin.
+
+N: Andrei Pascovici
+D: Early 5L maintainer.
+T: Early 90s, for around 2 years.
+
+N: Steve Rosen
+D: Earliest 5L engine.
+T: Late 80s.
+
+N: Sean Sharp
+D: 5L maintainer: Code obfuscator, 5L.prefs, code to launch only a single
+D: instance of the engine, extensive commenting of the code base, and many
+D: bugfixes.
+
+N: Dave Strochein
+D: Early 5L maintainer.
+T: Briefly around 1993.
+
+N: Robinson Tryon
+E: robinson.p.tryon@dartmouth.edu
+D: New card-sequence.ss library, many error message improvements, support
+D: for unit-testing elements, type-check functions which work with both
+D: swindle and mizzen classes, new set of standard fonts, support for
+D: disabling Quake 2 menus, data-file.ss enhancements, and many other
+D: improvements.
