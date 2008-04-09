@@ -67,112 +67,6 @@ using FileSystem::Path;
 
 
 //=========================================================================
-//  RegisterWxPrimitives
-//=========================================================================
-//  Install our wxWindows-specific primitives.  A lot of these are very
-//  kludgy and should be replaced later on as the editing GUI improves.
-
-void Halyard::RegisterWxPrimitives() {
-	REGISTER_PRIMITIVE(ActiveX);
-	REGISTER_PRIMITIVE(ActiveXPropGet);
-	REGISTER_PRIMITIVE(ActiveXPropSet);
-	REGISTER_PRIMITIVE(AudioStreamGeiger);
-	REGISTER_PRIMITIVE(AudioStreamGeigerSetCps);
-	REGISTER_PRIMITIVE(AudioStreamSine);
-	REGISTER_PRIMITIVE(AudioStreamVorbis);
-	REGISTER_PRIMITIVE(Browser);
-	REGISTER_PRIMITIVE(BrowserCanBack);
-	REGISTER_PRIMITIVE(BrowserCanForward);
-	REGISTER_PRIMITIVE(BrowserCanReload);
-	REGISTER_PRIMITIVE(BrowserCanStop);
-	REGISTER_PRIMITIVE(BrowserBack);
-	REGISTER_PRIMITIVE(BrowserForward);
-    REGISTER_PRIMITIVE(BrowserLoadPage);
-	REGISTER_PRIMITIVE(BrowserReload);
-	REGISTER_PRIMITIVE(BrowserStop);
-	REGISTER_PRIMITIVE(CancelDownload);
-	REGISTER_PRIMITIVE(ColorAt);
-	REGISTER_PRIMITIVE(CopyStringToClipboard);
-    REGISTER_PRIMITIVE(CursorElement);
-	REGISTER_PRIMITIVE(DataPath);
-	REGISTER_PRIMITIVE(DataPathLocal);
-	REGISTER_PRIMITIVE(DcPop);
-	REGISTER_PRIMITIVE(DcPush);
-	REGISTER_PRIMITIVE(DcRect);
-    REGISTER_PRIMITIVE(DebugReportAddFile);
-    REGISTER_PRIMITIVE(DeleteElements);
-    REGISTER_PRIMITIVE(Dialog);
-	REGISTER_PRIMITIVE(Download);
-	REGISTER_PRIMITIVE(DrawBoxFill);
-	REGISTER_PRIMITIVE(DrawBoxOutline);
-	REGISTER_PRIMITIVE(DrawLine);
-    REGISTER_PRIMITIVE(DrawLoadProgress);
-	REGISTER_PRIMITIVE(EditBox);
-	REGISTER_PRIMITIVE(EditBoxGetValue);
-	REGISTER_PRIMITIVE(EditBoxSetValue);
-	REGISTER_PRIMITIVE(EditBoxSetInsertionPoint);
-	REGISTER_PRIMITIVE(EditBoxSetSelection);
-	REGISTER_PRIMITIVE(ElementExists);
-	REGISTER_PRIMITIVE(ElementIsShown);
-	REGISTER_PRIMITIVE(ElementSetShown);
-	REGISTER_PRIMITIVE(ElementSetInDragLayer);
-	REGISTER_PRIMITIVE(EnableExpensiveEvents);
-    REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
-    REGISTER_PRIMITIVE(Focus);
-	REGISTER_PRIMITIVE(GeigerSynth);
-    REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
-    REGISTER_PRIMITIVE(Heartbeat);
-    REGISTER_PRIMITIVE(IsVistaOrNewer);
-	REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
-	REGISTER_PRIMITIVE(LoadPic);
-	REGISTER_PRIMITIVE(LoadSubPic);
-    REGISTER_PRIMITIVE(MarkUnprocessedEventsAsStale);
-	REGISTER_PRIMITIVE(Mask);
-    REGISTER_PRIMITIVE(MaybeLoadSplash);
-    REGISTER_PRIMITIVE(MeasurePic);
-	REGISTER_PRIMITIVE(MediaAttachCaptionFile);
-	REGISTER_PRIMITIVE(MediaSetVolume);
-	REGISTER_PRIMITIVE(MouseGrab);
-	REGISTER_PRIMITIVE(MouseIsGrabbed);
-	REGISTER_PRIMITIVE(MouseIsGrabbedBy);
-	REGISTER_PRIMITIVE(MousePosition);
-	REGISTER_PRIMITIVE(MouseUngrab);
-	REGISTER_PRIMITIVE(Movie);
-	REGISTER_PRIMITIVE(MovieEndPlayback);
-	REGISTER_PRIMITIVE(MoviePause);
-	REGISTER_PRIMITIVE(MovieResume);
-	REGISTER_PRIMITIVE(MovieSetTimeout);
-    REGISTER_PRIMITIVE(MovieSetPlaybackTimer);
-    REGISTER_PRIMITIVE(MovieClearPlaybackTimer);
-    REGISTER_PRIMITIVE(MoveElementTo);
-	REGISTER_PRIMITIVE(NotifyEnterCard);
-	REGISTER_PRIMITIVE(NotifyExitCard);
-    REGISTER_PRIMITIVE(OpenInBrowser);
-	REGISTER_PRIMITIVE(Overlay);
-	REGISTER_PRIMITIVE(OverlaySetShape);
-	REGISTER_PRIMITIVE(OverlayAnimated);
-    REGISTER_PRIMITIVE(RaiseToTop);
-	REGISTER_PRIMITIVE(Refresh);
-	REGISTER_PRIMITIVE(RefreshSplashScreen);
-	REGISTER_PRIMITIVE(Screenshot);
-	REGISTER_PRIMITIVE(RegisterCard);
-	REGISTER_PRIMITIVE(RegisterCursor);
-	REGISTER_PRIMITIVE(RegisterEventDispatcher);
-    REGISTER_PRIMITIVE(Screen);
-    REGISTER_PRIMITIVE(SetImageCacheSize);
-    REGISTER_PRIMITIVE(SetZoneCursor);
-    REGISTER_PRIMITIVE(ExitScript);
-	REGISTER_PRIMITIVE(TextAA);
-    REGISTER_PRIMITIVE(Wait);
-    REGISTER_PRIMITIVE(WakeUpIfNecessary);
-    REGISTER_PRIMITIVE(WantsCursorGet);
-    REGISTER_PRIMITIVE(WantsCursorSet);
-    REGISTER_PRIMITIVE(Zone);
-    REGISTER_PRIMITIVE(ZoneSetShape);
-}
-
-
-//=========================================================================
 //  Utility Functions
 //=========================================================================
 
@@ -1088,4 +982,110 @@ DEFINE_PRIMITIVE(ZoneSetShape) {
     FIND_ELEMENT(Zone, elem, name.c_str());
     elem->SetShape(bounds);
     wxGetApp().GetStage()->NotifyElementsChanged();
+}
+
+
+//=========================================================================
+//  RegisterWxPrimitives
+//=========================================================================
+//  Install our wxWindows-specific primitives.  A lot of these are very
+//  kludgy and should be replaced later on as the editing GUI improves.
+
+void Halyard::RegisterWxPrimitives() {
+	REGISTER_PRIMITIVE(ActiveX);
+	REGISTER_PRIMITIVE(ActiveXPropGet);
+	REGISTER_PRIMITIVE(ActiveXPropSet);
+	REGISTER_PRIMITIVE(AudioStreamGeiger);
+	REGISTER_PRIMITIVE(AudioStreamGeigerSetCps);
+	REGISTER_PRIMITIVE(AudioStreamSine);
+	REGISTER_PRIMITIVE(AudioStreamVorbis);
+	REGISTER_PRIMITIVE(Browser);
+	REGISTER_PRIMITIVE(BrowserCanBack);
+	REGISTER_PRIMITIVE(BrowserCanForward);
+	REGISTER_PRIMITIVE(BrowserCanReload);
+	REGISTER_PRIMITIVE(BrowserCanStop);
+	REGISTER_PRIMITIVE(BrowserBack);
+	REGISTER_PRIMITIVE(BrowserForward);
+    REGISTER_PRIMITIVE(BrowserLoadPage);
+	REGISTER_PRIMITIVE(BrowserReload);
+	REGISTER_PRIMITIVE(BrowserStop);
+	REGISTER_PRIMITIVE(CancelDownload);
+	REGISTER_PRIMITIVE(ColorAt);
+	REGISTER_PRIMITIVE(CopyStringToClipboard);
+    REGISTER_PRIMITIVE(CursorElement);
+	REGISTER_PRIMITIVE(DataPath);
+	REGISTER_PRIMITIVE(DataPathLocal);
+	REGISTER_PRIMITIVE(DcPop);
+	REGISTER_PRIMITIVE(DcPush);
+	REGISTER_PRIMITIVE(DcRect);
+    REGISTER_PRIMITIVE(DebugReportAddFile);
+    REGISTER_PRIMITIVE(DeleteElements);
+    REGISTER_PRIMITIVE(Dialog);
+	REGISTER_PRIMITIVE(Download);
+	REGISTER_PRIMITIVE(DrawBoxFill);
+	REGISTER_PRIMITIVE(DrawBoxOutline);
+	REGISTER_PRIMITIVE(DrawLine);
+    REGISTER_PRIMITIVE(DrawLoadProgress);
+	REGISTER_PRIMITIVE(EditBox);
+	REGISTER_PRIMITIVE(EditBoxGetValue);
+	REGISTER_PRIMITIVE(EditBoxSetValue);
+	REGISTER_PRIMITIVE(EditBoxSetInsertionPoint);
+	REGISTER_PRIMITIVE(EditBoxSetSelection);
+	REGISTER_PRIMITIVE(ElementExists);
+	REGISTER_PRIMITIVE(ElementIsShown);
+	REGISTER_PRIMITIVE(ElementSetShown);
+	REGISTER_PRIMITIVE(ElementSetInDragLayer);
+	REGISTER_PRIMITIVE(EnableExpensiveEvents);
+    REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
+    REGISTER_PRIMITIVE(Focus);
+	REGISTER_PRIMITIVE(GeigerSynth);
+    REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
+    REGISTER_PRIMITIVE(Heartbeat);
+    REGISTER_PRIMITIVE(IsVistaOrNewer);
+	REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
+	REGISTER_PRIMITIVE(LoadPic);
+	REGISTER_PRIMITIVE(LoadSubPic);
+    REGISTER_PRIMITIVE(MarkUnprocessedEventsAsStale);
+	REGISTER_PRIMITIVE(Mask);
+    REGISTER_PRIMITIVE(MaybeLoadSplash);
+    REGISTER_PRIMITIVE(MeasurePic);
+	REGISTER_PRIMITIVE(MediaAttachCaptionFile);
+	REGISTER_PRIMITIVE(MediaSetVolume);
+	REGISTER_PRIMITIVE(MouseGrab);
+	REGISTER_PRIMITIVE(MouseIsGrabbed);
+	REGISTER_PRIMITIVE(MouseIsGrabbedBy);
+	REGISTER_PRIMITIVE(MousePosition);
+	REGISTER_PRIMITIVE(MouseUngrab);
+	REGISTER_PRIMITIVE(Movie);
+	REGISTER_PRIMITIVE(MovieEndPlayback);
+	REGISTER_PRIMITIVE(MoviePause);
+	REGISTER_PRIMITIVE(MovieResume);
+	REGISTER_PRIMITIVE(MovieSetTimeout);
+    REGISTER_PRIMITIVE(MovieSetPlaybackTimer);
+    REGISTER_PRIMITIVE(MovieClearPlaybackTimer);
+    REGISTER_PRIMITIVE(MoveElementTo);
+	REGISTER_PRIMITIVE(NotifyEnterCard);
+	REGISTER_PRIMITIVE(NotifyExitCard);
+    REGISTER_PRIMITIVE(OpenInBrowser);
+	REGISTER_PRIMITIVE(Overlay);
+	REGISTER_PRIMITIVE(OverlaySetShape);
+	REGISTER_PRIMITIVE(OverlayAnimated);
+    REGISTER_PRIMITIVE(RaiseToTop);
+	REGISTER_PRIMITIVE(Refresh);
+	REGISTER_PRIMITIVE(RefreshSplashScreen);
+	REGISTER_PRIMITIVE(Screenshot);
+	REGISTER_PRIMITIVE(RegisterCard);
+	REGISTER_PRIMITIVE(RegisterCursor);
+	REGISTER_PRIMITIVE(RegisterEventDispatcher);
+    REGISTER_PRIMITIVE(Screen);
+    REGISTER_PRIMITIVE(SetImageCacheSize);
+    REGISTER_PRIMITIVE(SetZoneCursor);
+    REGISTER_PRIMITIVE(ExitScript);
+	REGISTER_PRIMITIVE(TextAA);
+    REGISTER_PRIMITIVE(Wait);
+    REGISTER_PRIMITIVE(WakeUpIfNecessary);
+    REGISTER_PRIMITIVE(WantsCursorGet);
+    REGISTER_PRIMITIVE(WantsCursorSet);
+    REGISTER_PRIMITIVE(Zone);
+    REGISTER_PRIMITIVE(ZoneSetShape);
 }

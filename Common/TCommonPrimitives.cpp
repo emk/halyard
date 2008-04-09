@@ -35,32 +35,6 @@ using namespace Halyard;
 
 
 //=========================================================================
-//  RegisterCommonPrimitives
-//=========================================================================
-//  Install our portable primitive functions.
-
-void Halyard::RegisterCommonPrimitives()
-{
-	REGISTER_PRIMITIVE(HavePrimitive);
-	REGISTER_PRIMITIVE(Log);
-	REGISTER_PRIMITIVE(PolygonContains);
-	REGISTER_PRIMITIVE(SetTyped);
-	REGISTER_PRIMITIVE(Get);
-	REGISTER_PRIMITIVE(VariableInitialized);
-	REGISTER_PRIMITIVE(DefStyle);
-	REGISTER_PRIMITIVE(MeasureTextAA);
-    REGISTER_PRIMITIVE(NotifyFileLoaded);
-    REGISTER_PRIMITIVE(NotifyScriptLoaded);
-    REGISTER_PRIMITIVE(ScriptsDirectoryName);
-    REGISTER_PRIMITIVE(Sha1File);
-    REGISTER_PRIMITIVE(StateDbSet);
-    REGISTER_PRIMITIVE(StateDbGet);
-    REGISTER_PRIMITIVE(StateDbRegisterListener);
-    REGISTER_PRIMITIVE(StateDbUnregisterListeners);
-}
-
-
-//=========================================================================
 //  Mapping bytes to hex strings
 //=========================================================================
 //  Let's just encode this as a table of strings, and avoid messing with
@@ -345,4 +319,30 @@ DEFINE_PRIMITIVE(StateDbUnregisterListeners) {
     std::string name;
     inArgs >> SymbolName(name);
     gStateListenerManager.UnregisterListeners(name);
+}
+
+
+//=========================================================================
+//  RegisterCommonPrimitives
+//=========================================================================
+//  Install our portable primitive functions.
+
+void Halyard::RegisterCommonPrimitives()
+{
+	REGISTER_PRIMITIVE(HavePrimitive);
+	REGISTER_PRIMITIVE(Log);
+	REGISTER_PRIMITIVE(PolygonContains);
+	REGISTER_PRIMITIVE(SetTyped);
+	REGISTER_PRIMITIVE(Get);
+	REGISTER_PRIMITIVE(VariableInitialized);
+	REGISTER_PRIMITIVE(DefStyle);
+	REGISTER_PRIMITIVE(MeasureTextAA);
+    REGISTER_PRIMITIVE(NotifyFileLoaded);
+    REGISTER_PRIMITIVE(NotifyScriptLoaded);
+    REGISTER_PRIMITIVE(ScriptsDirectoryName);
+    REGISTER_PRIMITIVE(Sha1File);
+    REGISTER_PRIMITIVE(StateDbSet);
+    REGISTER_PRIMITIVE(StateDbGet);
+    REGISTER_PRIMITIVE(StateDbRegisterListener);
+    REGISTER_PRIMITIVE(StateDbUnregisterListeners);
 }

@@ -34,14 +34,6 @@
 // We declare some testing-related primitives for the interpreter.
 #include "TPrimitives.h"
 
-// XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
-// called from a function in the Halyard:: namespace, which is silly.
-#if !DISABLE_UNPORTED
-BEGIN_NAMESPACE_HALYARD
-extern void RegisterTestPrimitives();
-END_NAMESPACE_HALYARD
-#endif // !DISABLE_UNPORTED
-
 using namespace Halyard;
 
 
@@ -84,7 +76,7 @@ DEFINE_PRIMITIVE(test) {
 	TEST_WITH_LABEL(info.c_str(), result);
 }
 
-void Halyard::RegisterTestPrimitives() {
+static void RegisterTestPrimitives() {
 	REGISTER_PRIMITIVE(test);
 }
 #endif // !DISABLE_UNPORTED

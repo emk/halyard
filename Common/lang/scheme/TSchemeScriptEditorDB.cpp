@@ -28,18 +28,6 @@ using namespace Halyard;
 
 
 //=========================================================================
-//  RegisterSchemeScriptEditorDBPrimitives
-//=========================================================================
-//  Install our portable primitive functions.
-
-void Halyard::RegisterSchemeScriptEditorDBPrimitives()
-{
-	REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
-    REGISTER_PRIMITIVE(ScriptEditorDBInsertHelp);
-}
-
-
-//=========================================================================
 //  TSchemeInterpreterDB Methods
 //=========================================================================
 
@@ -64,6 +52,18 @@ DEFINE_PRIMITIVE(ScriptEditorDBInsertHelp) {
     ScriptEditorDB *db =
         TInterpreterManager::GetInstance()->GetScriptEditorDB();
     db->InsertHelp(name, help_string);
+}
+
+
+//=========================================================================
+//  RegisterSchemeScriptEditorDBPrimitives
+//=========================================================================
+//  Install our portable primitive functions.
+
+void Halyard::RegisterSchemeScriptEditorDBPrimitives()
+{
+	REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
+    REGISTER_PRIMITIVE(ScriptEditorDBInsertHelp);
 }
 
 

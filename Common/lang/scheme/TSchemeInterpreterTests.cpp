@@ -28,12 +28,6 @@
 #include "TSchemeInterpreter.h"
 #include "TSchemeScriptEditorDB.h"
 
-// XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
-// called from a function in the Halyard:: namespace, which is silly.
-BEGIN_NAMESPACE_HALYARD
-extern void RegisterSchemeTestPrimitives();
-END_NAMESPACE_HALYARD
-
 using namespace Halyard;
 
 // Make sure we have single-token names for all our types.
@@ -144,7 +138,7 @@ DEFINE_TYPE_TEST_PRIMITIVES(TRect, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(TPolygon, 2)
 DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
-void Halyard::RegisterSchemeTestPrimitives()
+static void RegisterSchemeTestPrimitives()
 {
 	REGISTER_PRIMITIVE(TestStop);
 	REGISTER_PRIMITIVE(TestPause);

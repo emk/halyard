@@ -329,22 +329,21 @@ extern TPrimitiveManager gPrimitiveManager;
 /// it with the gPrimitiveManager, all in one fell swoop.  There are
 /// several bits of pre-processor wizardry going on here:
 ///
-///   1) The 'do { ... } while (0)' makes C++ treat the multiple
-///      statements in the body as a single statement.
-///   2) The '#NAME' construct converts the argument token to
+///   1) The '#NAME' construct converts the argument token to
 ///      to a string literal.
-///   3) The '##' construct glues two adjacent tokens together.
+///   2) The '##' construct glues two adjacent tokens together.
 ///
 /// Call it as follows:
 ///
 ///   REGISTER_PRIMITIVE_WITH_NAME("log", LogMessage); // register "log"
 ///   REGISTER_PRIMITIVE(LogMessage); // register "logmessage"
 ///
+/// Note that REGISTER_PRIMITIVE must appear _after_ DEFINE_PRIMITIVE in a
+/// source file, because making forward declarations work portably in the
+/// presence of namespaces is tricky.
+///
 #define REGISTER_PRIMITIVE_WITH_NAME(NAME, TOKEN) \
-	do { \
-		extern void DoPrim_ ## TOKEN(TArgumentList &inArgs); \
-		gPrimitiveManager.RegisterPrimitive(NAME, &DoPrim_ ## TOKEN); \
-	} while (0)
+    gPrimitiveManager.RegisterPrimitive(NAME, &DoPrim_ ## TOKEN)
 
 #define REGISTER_PRIMITIVE(NAME) \
 	REGISTER_PRIMITIVE_WITH_NAME(#NAME, NAME)
@@ -365,10 +364,7 @@ extern TPrimitiveManager gPrimitiveManager;
 ///   }
 ///
 #define DEFINE_PRIMITIVE(NAME) \
-	BEGIN_NAMESPACE_HALYARD \
-	extern void DoPrim_ ## NAME(TArgumentList &inArgs); \
-	END_NAMESPACE_HALYARD \
-	void Halyard::DoPrim_ ## NAME(TArgumentList &inArgs)
+	static void DoPrim_ ## NAME(TArgumentList &inArgs)
 
 //////////
 /// Set the return value of the current primitive to the
