@@ -69,6 +69,9 @@ AC_C_CONST
 AC_C_INLINE
 AX_C___ATTRIBUTE__
 
+# We need this for libs/sqlite3-plus.
+AC_DEFINE(__int64,long long)
+
 
 #==========================================================================
 # Checks for library functions.
@@ -94,4 +97,6 @@ CXXFLAGS="$CXXFLAGS -g -Wall -Werror"
 #==========================================================================
 
 # Output our results.
-AC_OUTPUT([Makefile libs/Makefile libs/sha1/Makefile Common/Makefile])
+AC_OUTPUT([Makefile libs/Makefile libs/sha1/Makefile
+           libs/sqlite3-plus/Makefile libs/sqlite3-plus/sqlite3-plus/Makefile
+           Common/Makefile])
