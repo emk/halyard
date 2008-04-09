@@ -5,7 +5,7 @@ Table of Contents
 
   * History
   * Checking Halyard Out of Git
-  * Checking Halyard Out of SVN
+  * Downloading Halyard
   * Building Win32 Halyard
   * Rake
   * Building Macintosh Halyard
@@ -14,8 +14,9 @@ Table of Contents
   * Important Classes & Modules
   * Coding Conventions
   * Testing Your Changes
-  * Checking in Your Changes to Halyard
-  * Updating the Version Number
+  * Sending patches and committing changes
+  * Using Git and StGIT
+  * Building and releasing an engine
   * Copying an Engine Build into a Script
   * Missing History
   * Ancient Versions
@@ -42,39 +43,50 @@ History
 Checking Halyard Out of Git
 ---------------------------
 
-  Halyard is officially hosted in our Subversion reporisitory, but for
-  day-to-day development, Git is frequently easier to use, and offers
-  the benefits of a distributed revision control system.  We have an
-  already initialized Git-SVN repository that automatically fetches
-  from Subversion, to make it quicker and easier to get started.
+  To do an initial pull from Git, run:
 
-  To do an initial pull from Git, do the following:
+    git clone git://imlsrc.dartmouth.edu/halyard
 
-  git clone git://imlsrc.dartmouth.edu/halyard
-  git config --add remote.origin.fetch '+refs/remotes/*:refs/remotes/*'
-  git fetch
+  If you are interested in pulling our branches of Halyard's library
+  dependencies and test media, you may also run:
 
-  This will set up your git repository so you can pull from ours, and
-  get all of the branches and tags.  If you would like to pull directly 
-  from our Subversion repository, or be able to commit back to it, do the
-  following in addition to the above:
+    cd halyard
+    git submodule init
+    git submodule update
 
-  git svn init -s https://imlsrc.dartmouth.edu/svn/public/halyard
-  git svn fetch
+Downloading Halyard
+-------------------
 
-Checking Halyard Out of SVN
----------------------------
+  You may download Halyard from:
 
-  Subversion is currenlty only supported for internal users.
+    http://iml.dartmouth.edu/halyard/dist/
 
-  Check out the following from Subversion (see instructions elswhere
-  for setting up Subversion). 
-  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/halyard/trunk
-  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/tools
-  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/buildscript/trunk
+  Each halyard release contains several files:
 
-  In the instructions that follow, we'll assume your copy of the
-  Halyard source tree is in $HALYARD_DIR.
+    halyard-all-x.y.z.tar.gz     The full distribution, including all
+                                 dependencies and media.  Most useful
+                                 for building on Windows.
+    halyard-x.y.z.tar.gz         Just the source code for Halyard itself,
+                                 without the libraries it depends on.
+                                 Most useful for anyone trying to port
+                                 to the Mac, Linux, BSD, etc.
+    halyard-libs-x.y.z.tar.gz    The libraries we depend on.
+    halyard-media-x.y.z.tar.gz   Test media for running the test program.
+
+  If you download the core halyard distribution and one or both of the
+  other tarballs, you can untar them all in the same directory to merge
+  them together.  For example:
+
+    $ curl -O http://iml.dartmouth.edu/halyard/dist/halyard-0.5.4/
+    halyard-0.5.4.tar.gz
+    $ curl -O http://iml.dartmouth.edu/halyard/dist/halyard-0.5.4/
+    halyard-libs-0.5.4.tar.gz
+    $ tar xzf halyard-0.5.4.tar.gz
+    $ tar xzf halyard-libs-0.5.4.tar.gz
+    $ ls halyard-0.5.4/libs
+    Makefile.am  freetype2      plt        quake2  sqlite3-plus  wxcode
+    boost        libivorbisdec  portaudio  sha1    wxIE
+    curl         libxml2        qtcheck    sqlite  wxWidgets
 
 Building Win32 Halyard
 ----------------------
@@ -159,11 +171,11 @@ Rake
 Buildscript
 -----------
 
-  In order to build a released version of the engine, you will also need
-  our buildscript Ruby library.  You can check this out from Git, at
-  git://imlsrc.dartmouth.edu/buildscript, or from Subversion as mentioned
-  above.  You will want to set your RUBYLIB environment variable to include
-  the path to the directory you checked buildscript out to.
+  In order to build a released version of the engine, you will also
+  need our buildscript Ruby library.  You can check this out from Git,
+  at git://imlsrc.dartmouth.edu/buildscript.  You will want to set
+  your RUBYLIB environment variable to include the path to the
+  directory you checked buildscript out to.
 
 Building Macintosh Halyard
 --------------------------
@@ -353,70 +365,46 @@ Testing Your Changes
   test cards without such helpful documentation; these are real problems
   when testing.
 
-Checking in Your Changes to Halyard
------------------------------------
+Sending patches and committing changes
+--------------------------------------
 
-  1) Decide whether you want to update the Halyard version number.  If
-     so, see the instructions below.
+  Before sending in or committing changes, it's good to use the following
+  checklist to make sure everything works:
+
+  1) If you're using Git or StGIT to prepare the patch, make sure your
+     name and email address are set up properly, so when you send the
+     patch in, we can give you proper credit.
 
   2) Run 'rake test'.  This will build all versions of the application
-     and run the test suites.  (If you're planning to make a release
-     build, you should probably run 'rake clean test' instead.)
+     and run the test suites.  You can probably even get away with
+     just 'rake test_debug', which will only build and test the Debug
+     version of the test suite.
 
-  3) Run the debug and release versions of the application, and look at any
-     relevant halyard/test cards.
+  3) Build and run the engine, and open the halyard/test script.  Jump
+     to any relevant test cards, and preferably all of the unit test
+     cards.
 
-  4) If you're using Windows, MAKE SURE YOU SAVE YOUR WORKSPACE, or else
-     Subversion won't know about any changes.
+  4) If you're using Windows, MAKE SURE YOU SAVE YOUR WORKSPACE, or
+     else Git won't know about any changes.
 
-  5) Make sure you've issued all the necessary "svn add" and "svn remove"
-     commands.  Read your Subversion diffs.
+  5) Make sure you've issued all the necessary git add or git rm
+     commands, and do a commit to your local repository.
 
-  6) Update $HALYARD_DIR/Release-Notes.txt.  If you're not creating a
-     new version number, just use "HEAD" as a placeholder instead.
+  6) Send the patch to the mailing list
+     <halyard-dev@iml.dartmouth.edu> for review.
 
-  7) Check in your changes.
-    
-     Write a good Subversion comment.  It should be useful, informative and
-     reasonably detailed.  It should generally use complete sentences and
-     good grammar.  You're writing for posterity.
+  7) Once it has been reviewed, if you have privileges to push it to
+     the main repository, you may do so.  Otherwise, just wait for a
+     maintainer push it; you'll receive full credit.
 
-  8) If you've assigned a version number to your changes, tag the
-     entire $HALYARD_DIR tree AFTER checking it in.  
+Using Git and StGIT
+-------------------
 
-     rake tag AS=x.y.z
+  See http://iml.dartmouth.edu/halyard/wiki/index.php/Git
+  and http://iml.dartmouth.edu/halyard/wiki/index.php/StGIT
 
-     DO NOT FORGET THIS STEP OR PEOPLE WILL GET VERY GRUMPY AND SAY
-     BAD THINGS ABOUT YOU MANY YEARS FROM NOW.
-
-  9) If you've assigned a version number, you need to do an official
-     release build.  Run:
-     
-     ruby buildfile.rb x.y.z
-     
-     where x.y.z is the version number you used as the tag in the last
-     step.
-
-  Here's a typical checkin sequence, for a commit that does not change
-  the version:
-
-  $ svn update
-  $ rake test
-  # Smoke-test GUI by hand
-  $ svn commit # ...with appropriate arguments
-  
-  And here's one that does update the version number:
-
-  $ svn update
-  $ rake test  # or rake clean test if you're paranoid
-  # Smoke-test GUI by hand
-  $ svn commit # ...with appropriate arguments. Commit message is generally
-               # the contents of Release-Notes.txt for this release.
-  $ rake tag AS=0.5.0
-  $ ruby buildfile.rb 0.5.0 # this will take a while
-
-Updating the Version Number
----------------------------
+Building and releasing an engine
+--------------------------------
 
   Halyard uses Linux-style version numbers.  That means versions have
   the form "X.Y.Z", where X is the "major version", Y is the "minor
@@ -436,6 +424,46 @@ Updating the Version Number
      "1993-YYYY", where YYYY is the current year.  The lawyers like
      this to be correct.  You might also want to take a look at
      tools/fix-prologues.pl.
+
+  3) Run 'rake test'.  This will build all versions of the application
+     and run the test suites.
+
+  4) Run the debug and release versions of the application, and look at any
+     relevant halyard/test cards.
+
+  5) Update $HALYARD_DIR/Release-Notes.txt.  You should have a line
+     including the version number and date, copy any notes about API
+     changes out of 'git log <previous-version>..', and include the
+     output of 'git shortlog <previous-version>..'.  If it makes
+     sense, you may want to to add some summaries of major patch
+     series.
+
+  6) Commit your changes, using the entry in Release-Notes.txt as the
+     commit message.
+
+  7) Tag your commit:
+
+     git tag vX.Y.Z
+
+  8) Push the commit and tag to the master repository:
+
+     git push --tags
+
+  9) Perform a build:
+
+     ruby buildfile.rb X.Y.Z
+
+  Here's the basic process in brief:
+
+  $ git pull
+  # Update Common/TVersion.cpp and Release-Notes.txt
+  $ rake test  # or rake clean test if you're paranoid
+  # Smoke-test GUI by hand
+  $ git commit -a # Commit message is generally the contents of
+                  # Release-Notes.txt for this release.
+  $ git tag v0.5.4
+  $ git push --tags
+  $ ruby buildfile.rb 0.5.4 # this will take a while
 
 Copying an Engine Build into a Script
 -------------------------------------
