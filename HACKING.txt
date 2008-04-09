@@ -446,7 +446,7 @@ Building and releasing an engine
 
   8) Push the commit and tag to the master repository:
 
-     git push --tags
+     git push --tags origin master
 
   9) Perform a build:
 
@@ -461,7 +461,7 @@ Building and releasing an engine
   $ git commit -a # Commit message is generally the contents of
                   # Release-Notes.txt for this release.
   $ git tag v0.5.4
-  $ git push --tags
+  $ git push --tags origin master
   $ ruby buildfile.rb 0.5.4 # this will take a while
 
 Copying an Engine Build into a Script
