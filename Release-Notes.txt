@@ -1,6 +1,62 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.4 - 9 April 2008
+
+Eric has begun work to port Common to g++ under Mac OS X, using
+MacPorts libraries and GNU autotools.  This work should also be
+relevant for any future Linux porting work.
+
+Other work:
+  * Make halyard-test run again (bug introduced in 0.5.3)
+  * Migrated to Git
+  * Updated build system for Git
+  * Break release tarballs into source, libs, and media
+  * Benchmarking libraries for mizzen
+  * Replace Ogg Theora test card with "Duck and Cover" version
+
+Brian Campbell (6):
+      Rakefile: remove tag AS=x.y.z command
+      Add mizzen unit tests to command line test runner
+      buildfile.rb: Add support for doing builds from Git
+      Update HACKING.txt to reflect current Git workflow and build procedure
+      Merge branch 'master' of ssh://imlsrc.dartmouth.edu/var/lib/git/halyard
+      Merge branch 'master' of ssh://imlsrc.dartmouth.edu/var/lib/git/halyard
+
+Eric Kidd (32):
+      Make halyard-test run again
+      Ignore "compiled" directories
+      autotools: Update to modern versions, and build libs/sha1
+      Make CommonHeaders.h compile with GCC
+      autotools: Add macros from autoconf-archive
+      ax_boost_filesystem: Switch to C++ before calling AC_CHECK_LIB
+      autotools: Check for some of the libraries we need
+      autotools: Add macro to check for __attribute__ support
+      Common: Some unit tests now pass on MacOS X
+      Common: Build TTextTransform, Typography, TVectorDiff, TStyleSheet
+      Common: Build CaptionList and TTextConv
+      Common: Build TDeveloperPrefs and CommandLine
+      Build fix: Replace preprocessor error in CommandLine.cpp with exception
+      autotools: Some more notes on the libraries and versions we need
+      Common: Make TestAll run on MacOS X with some tests disabled
+      Common: Small portability fixes for TValue.cpp
+      Added 'make check' target to run TestAll
+      autotools: More version information for libs/
+      Benchmarking library for mizzen
+      Add tools/git-ls-submodules
+      application.halyard: Update number of Scheme files in test script
+      Add Ogg versions of "Bert the Turtle" and "Quackery" videos
+      Add standard .gitignore entires to submodules
+      Replace Ogg Theora test card with "Duck and Cover" version
+      Replace implicit TValue conversions with tvalue_cast<T>(...)
+      g++: Specialize tvalue_cast<T> from within Halyard namespace
+      Update HACKING.txt for current git setup
+      Remove REGISTER_PRIMITIVE forward-declaration grik
+      Common: Build files depending on TValue.cpp
+      autotools: Build libs/sqlite3-plus
+      Common: Build ScriptEditorDB.cpp and fix non-virtual destructor bugs
+      Rough draft of a CREDITS.txt file
+
 0.5.3 - 3 April 2008 - brian, emk, tryon
 
 In this release, we break our object model out into its own collection, 
