@@ -164,16 +164,10 @@
             (quote-for-regexp
              (cat "No such file: " (browser-native-path non-existent-file)))
             (%test-browser% .new :path non-existent-file)))
-    (test "The browser should load a local HTML page using file:///"
-          (%test-browser% .new :path "file:///sample.html"))
     (test "The browser should load an external HTML page via http"
           (%test-browser% .new :path "http://www.google.com"))
     (test "The browser should load an ftp site"
           (%test-browser% .new :path "ftp://ftp.dartmouth.edu/"))
-    ;; This page doesn't throw a Halyard error, but IE doesn't seem to be able
-    ;; to work with the gopher protocol.
-    (test "The browser should load a gopher site"
-          (%test-browser% .new :path "gopher://home.jumpjet.info/"))
     (test 
      "The browser should load URLs with ampersands (&amp;) in them"
           (%test-browser% .new :path "http://www.google.com/&foo=bar"))
