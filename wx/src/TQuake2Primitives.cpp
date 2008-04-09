@@ -37,31 +37,6 @@ Quake2Engine *Quake2Engine::sInstance = NULL;
 #if CONFIG_HAVE_QUAKE2
 
 //=========================================================================
-//  RegisterWxPrimitives
-//=========================================================================
-//  Install our wxWindows-specific primitives.
-
-void Halyard::RegisterQuake2Primitives()
-{
-	REGISTER_PRIMITIVE(Quake2Init);
-	REGISTER_PRIMITIVE(Quake2Command);
-	REGISTER_PRIMITIVE(Quake2BackgroundLoadCommand);
-	REGISTER_PRIMITIVE(Quake2IsLoadingInBackground);
-	REGISTER_PRIMITIVE(Quake2Print);
-	REGISTER_PRIMITIVE(Quake2RegisterCommand);
-	REGISTER_PRIMITIVE(Quake2IsShown);
-	REGISTER_PRIMITIVE(Quake2Show);
-	REGISTER_PRIMITIVE(Quake2Hide);
-    REGISTER_PRIMITIVE(Quake2SetShouldRunInBackground);
-    REGISTER_PRIMITIVE(Quake2GetShouldRunInBackground);
-	REGISTER_PRIMITIVE(Quake2SetStringVar);
-	REGISTER_PRIMITIVE(Quake2GetStringVar);
-	REGISTER_PRIMITIVE(Quake2SetFloatVar);
-	REGISTER_PRIMITIVE(Quake2GetFloatVar);
-}
-
-
-//=========================================================================
 //  Implementation of Quake 2 Primitives
 //=========================================================================
 
@@ -196,6 +171,31 @@ DEFINE_PRIMITIVE(Quake2GetFloatVar)
 	float value;
 	Quake2Engine::GetInstance()->GetVariable(name.c_str(), value);
 	::SetPrimitiveResult(static_cast<double>(value));
+}
+
+
+//=========================================================================
+//  RegisterWxPrimitives
+//=========================================================================
+//  Install our wxWindows-specific primitives.
+
+void Halyard::RegisterQuake2Primitives()
+{
+	REGISTER_PRIMITIVE(Quake2Init);
+	REGISTER_PRIMITIVE(Quake2Command);
+	REGISTER_PRIMITIVE(Quake2BackgroundLoadCommand);
+	REGISTER_PRIMITIVE(Quake2IsLoadingInBackground);
+	REGISTER_PRIMITIVE(Quake2Print);
+	REGISTER_PRIMITIVE(Quake2RegisterCommand);
+	REGISTER_PRIMITIVE(Quake2IsShown);
+	REGISTER_PRIMITIVE(Quake2Show);
+	REGISTER_PRIMITIVE(Quake2Hide);
+    REGISTER_PRIMITIVE(Quake2SetShouldRunInBackground);
+    REGISTER_PRIMITIVE(Quake2GetShouldRunInBackground);
+	REGISTER_PRIMITIVE(Quake2SetStringVar);
+	REGISTER_PRIMITIVE(Quake2GetStringVar);
+	REGISTER_PRIMITIVE(Quake2SetFloatVar);
+	REGISTER_PRIMITIVE(Quake2GetFloatVar);
 }
 
 #endif // CONFIG_HAVE_QUAKE2

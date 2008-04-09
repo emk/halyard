@@ -34,14 +34,6 @@
 // We declare some testing-related primitives for the interpreter.
 #include "TPrimitives.h"
 
-// XXX - Hack to make REGISTER_PRIMITIVE work correctly.  It needs to be
-// called from a function in the Halyard:: namespace, which is silly.
-#if !DISABLE_UNPORTED
-BEGIN_NAMESPACE_HALYARD
-extern void RegisterTestPrimitives();
-END_NAMESPACE_HALYARD
-#endif // !DISABLE_UNPORTED
-
 using namespace Halyard;
 
 
@@ -57,8 +49,8 @@ extern void test_TTextTransform (void);
 extern void test_FileSystem (void);
 extern void test_Model(void);
 extern void test_Typography (void);
-#if !DISABLE_UNPORTED
 extern void test_TStyleSheet (void);
+#if !DISABLE_UNPORTED
 extern void test_TSchemeInterpreter (void);
 #endif // !DISABLE_UNPORTED
 extern void test_TVectorDiff (void);
@@ -68,15 +60,12 @@ REFERENCE_TEST_CASE_FILE(TestCase);
 REFERENCE_TEST_CASE_FILE(CaptionList);
 REFERENCE_TEST_CASE_FILE(TTemplateUtils);
 REFERENCE_TEST_CASE_FILE(TValue);
-#if !DISABLE_UNPORTED
 REFERENCE_TEST_CASE_FILE(TSchemeConv);
 REFERENCE_TEST_CASE_FILE(TVariableManager);
 REFERENCE_TEST_CASE_FILE(TStateDB);
 REFERENCE_TEST_CASE_FILE(ScriptEditorDB);
-#endif // !DISABLE_UNPORTED
 REFERENCE_TEST_CASE_FILE(TTextConv);
 
-#if !DISABLE_UNPORTED
 DEFINE_PRIMITIVE(test) {
 	std::string info;
 	bool result;
@@ -84,21 +73,18 @@ DEFINE_PRIMITIVE(test) {
 	TEST_WITH_LABEL(info.c_str(), result);
 }
 
-void Halyard::RegisterTestPrimitives() {
+static void RegisterTestPrimitives() {
 	REGISTER_PRIMITIVE(test);
 }
-#endif // !DISABLE_UNPORTED
 
 static void run_imlunit_tests() {
-#if !DISABLE_UNPORTED
 	RegisterTestPrimitives();
-#endif // !DISABLE_UNPORTED
 	test_TTextTransform();
 	test_FileSystem();
 	test_Model();
 	test_Typography();
-#if !DISABLE_UNPORTED
 	test_TStyleSheet();
+#if !DISABLE_UNPORTED
 	test_TSchemeInterpreter();
 #endif // !DISABLE_UNPORTED
 	test_TVectorDiff();

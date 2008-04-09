@@ -1,1 +1,1 @@
-SUBDIRS = sha1
+SUBDIRS = sha1 sqlite3-plus

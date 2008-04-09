@@ -43,17 +43,6 @@ using namespace Halyard;
 
 
 //=========================================================================
-//  RegisterQTPrimitives
-//=========================================================================
-//  Install our QuickTime primitives.
-
-void Halyard::RegisterQuickTimePrimitives()
-{
-	REGISTER_PRIMITIVE(QTComponentVersion);
-}
-
-
-//=========================================================================
 //  Primitive Implementations
 //=========================================================================
 
@@ -114,4 +103,15 @@ DEFINE_PRIMITIVE(QTComponentVersion)
 
 done:
 	::SetPrimitiveResult(version);
+}
+
+
+//=========================================================================
+//  RegisterQTPrimitives
+//=========================================================================
+//  Install our QuickTime primitives.
+
+void Halyard::RegisterQuickTimePrimitives()
+{
+	REGISTER_PRIMITIVE(QTComponentVersion);
 }

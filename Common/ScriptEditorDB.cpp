@@ -123,7 +123,8 @@ ScriptEditorDB::~ScriptEditorDB() {
     try {
         mDB->close();
     } catch (std::exception &e) {
-        gLog.Error("%s", std::string("Error closing database: ")+e.what());
+        gLog.Error("%s",
+                   (std::string("Error closing database: ")+e.what()).c_str());
     }
 }
 
@@ -649,24 +650,24 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
 
     // Look up the data we entered.
     ScriptEditorDB::Definitions foo_defs = db.FindDefinitions("foo");
-    CHECK_EQ(foo_defs.size(), 1);
+    CHECK_EQ(foo_defs.size(), 1U);
     CHECK_DEF(foo_defs[0], "TestScripts/indexed.ss", "foo",
               TScriptIdentifier::FUNCTION, 19);
 
     std::vector<std::string> foo_help(db.FindHelp("foo"));
-    CHECK_EQ(foo_help.size(), 2);
+    CHECK_EQ(foo_help.size(), 2U);
     CHECK_EQ(foo_help[0], "(foo x)");
     CHECK_EQ(foo_help[1], "(foo y)");
 
     ScriptEditorDB::Definitions bar_defs = db.FindDefinitions("bar");
-    CHECK_EQ(bar_defs.size(), 2);
+    CHECK_EQ(bar_defs.size(), 2U);
     CHECK_DEF(bar_defs[0], "TestScripts/indexed.ss", "bar",
               TScriptIdentifier::VARIABLE, 20);
     CHECK_DEF(bar_defs[1], "TestScripts/indexed.ss", "bar",
               TScriptIdentifier::FUNCTION, 21);
 
     ScriptEditorDB::Definitions baz_defs = db.FindDefinitions("baz");
-    CHECK_EQ(baz_defs.size(), 1);
+    CHECK_EQ(baz_defs.size(), 1U);
     CHECK_DEF(baz_defs[0], "TestScripts/indexed2.ss", "baz",
               TScriptIdentifier::FUNCTION, 43);
     
@@ -692,7 +693,7 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     std::vector<std::string> unprocessed =
         db.ScanTree("TestScripts/scantest", ".ss");
     std::sort(unprocessed.begin(), unprocessed.end());
-    CHECK_EQ(unprocessed.size(), 3);
+    CHECK_EQ(unprocessed.size(), 3U);
     CHECK_EQ(unprocessed[0], "TestScripts/scantest/a.ss");
     CHECK_EQ(unprocessed[1], "TestScripts/scantest/b.ss");
     CHECK_EQ(unprocessed[2], "TestScripts/scantest/subdir/c.ss");

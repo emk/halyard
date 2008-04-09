@@ -20,10 +20,8 @@ Table of Contents
   * Copying an Engine Build into a Script
   * Missing History
   * Ancient Versions
-  * Vendor Branches in Subversion
   * Upgrading PLT
   * libxml2 Hacks
-  * Unix Command Line Magic for Doing CVS Merges
   * Upgrading wxWidgets
 
 History
@@ -47,12 +45,17 @@ Checking Halyard Out of Git
 
     git clone git://imlsrc.dartmouth.edu/halyard
 
-  If you are interested in pulling our branches of Halyard's library
-  dependencies and test media, you may also run:
+  If you want to be able to build Halyard on Windows, you'll also need to
+  run:
 
     cd halyard
     git submodule init
     git submodule update
+
+  If you are one of the primary maintainers, you can run the following
+  command to point 'git push' someplace useful:
+
+    git config remote.origin.url ssh://imlsrc.dartmouth.edu/var/lib/git/halyard
 
 Downloading Halyard
 -------------------
@@ -137,10 +140,6 @@ Building Win32 Halyard
   this step. Also add "--wait" to the command arguments of CommonTest, in 
   both the debug and release builds, so you can see the results of the test
   suites. 
-
-  You may also need to look at $HALYARD_DIR/libs/quake2/README-WX.txt.
-  It will explain how to set up MSVC with the assembler support to
-  build Quake.
 
   Make sure "Debug" is selected in the "Solution Configurations" popup
   on your toolbar. In the "Solution Explorer", right click on
@@ -534,20 +533,6 @@ Ancient Versions
   Mac5L_202_Stable.  Release notes are in Win32/ReleaseNotes.txt and
   Mac/ReleaseNotes.
 
-Vendor Branches in Subversion
------------------------------
-
-  Vendor branches & tags go into the /vendor directory in
-  Subversion. Read up on vendor branches in Chapter 7 of the
-  Subversion book. Currently the only one migrated over to the proper
-  structure in Subversion is PLT; all other vendor branches still
-  exist in the form that the CVS to Subversion migration left them.
-
-  There should be a script somewhere (maybe online, I can't find it in
-  the TortoiseSVN distribution) called svn_load_dirs.pl that does what
-  needs to be done to upgrade a vendor branch to a new version. Check 
-  the Subversion book for more information on how to use it.
-
 Upgrading PLT
 -------------
 
@@ -605,13 +590,6 @@ changes to each of the non-DLL targets:
   * Replaced the _USRDLL proprocessor define with _LIB.
   * Set a runtime library which matched my project.
 
-
-Unix Command Line Magic for Doing CVS Merges
-----------------------------------------
-
-This section is obsolete. Check the Subversion history for what used
-to be here, if you end up having a need to do this. Hopefully,
-svn_load_dirs.pl should do what these snippets used to.
 
 Upgrading wxWidgets
 -------------------

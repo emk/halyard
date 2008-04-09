@@ -197,7 +197,8 @@ public:
 };
 
 void CHECK_DB_EQ(TStateDB &db, const std::string &inKey, TValue inValue) {
-	CHECK_EQ(db.Get(&DummyListener(), inKey), inValue);
+    DummyListener dummy;
+	CHECK_EQ(db.Get(&dummy, inKey), inValue);
 }
 
 BEGIN_TEST_CASE(TestTStateDB, TestCase) {
@@ -209,7 +210,8 @@ BEGIN_TEST_CASE(TestTStateDB, TestCase) {
 	}
 
 	// Non-existant keys raise errors.
-	CHECK_THROWN(std::exception, db.Get(&DummyListener(), "/nosuch"));
+    DummyListener dummy;
+	CHECK_THROWN(std::exception, db.Get(&dummy, "/nosuch"));
 
 	// The database works like a map.
 	db.Set("/foo", "bar");
