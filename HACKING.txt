@@ -5,7 +5,6 @@ Table of Contents
 
   * History
   * Checking Halyard Out of Git
-  * Checking Halyard Out of SVN
   * Building Win32 Halyard
   * Rake
   * Building Macintosh Halyard
@@ -19,10 +18,8 @@ Table of Contents
   * Copying an Engine Build into a Script
   * Missing History
   * Ancient Versions
-  * Vendor Branches in Subversion
   * Upgrading PLT
   * libxml2 Hacks
-  * Unix Command Line Magic for Doing CVS Merges
   * Upgrading wxWidgets
 
 History
@@ -42,39 +39,21 @@ History
 Checking Halyard Out of Git
 ---------------------------
 
-  Halyard is officially hosted in our Subversion reporisitory, but for
-  day-to-day development, Git is frequently easier to use, and offers
-  the benefits of a distributed revision control system.  We have an
-  already initialized Git-SVN repository that automatically fetches
-  from Subversion, to make it quicker and easier to get started.
+  Halyard is now officially hosted in our git reporisitory.  To do an
+  initial pull from Git, do the following:
 
-  To do an initial pull from Git, do the following:
+    git clone git://imlsrc.dartmouth.edu/halyard
 
-  git clone git://imlsrc.dartmouth.edu/halyard
-  git config --add remote.origin.fetch '+refs/remotes/*:refs/remotes/*'
-  git fetch
+  If you want to be able to build Halyard on Windows, you'll also need to
+  run:
 
-  This will set up your git repository so you can pull from ours, and
-  get all of the branches and tags.  If you would like to pull directly 
-  from our Subversion repository, or be able to commit back to it, do the
-  following in addition to the above:
+    git submodule init
+    git submodule update
 
-  git svn init -s https://imlsrc.dartmouth.edu/svn/public/halyard
-  git svn fetch
+  If you are one of the primary maintainers, you can run the following
+  command to point 'git push' someplace useful:
 
-Checking Halyard Out of SVN
----------------------------
-
-  Subversion is currenlty only supported for internal users.
-
-  Check out the following from Subversion (see instructions elswhere
-  for setting up Subversion). 
-  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/halyard/trunk
-  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/tools
-  svn+ssh://imlcvs.hitchcock.org/var/lib/svn/main/public/buildscript/trunk
-
-  In the instructions that follow, we'll assume your copy of the
-  Halyard source tree is in $HALYARD_DIR.
+    git config remote.origin.url ssh://imlsrc.dartmouth.edu/var/lib/git/halyard
 
 Building Win32 Halyard
 ----------------------
@@ -125,10 +104,6 @@ Building Win32 Halyard
   this step. Also add "--wait" to the command arguments of CommonTest, in 
   both the debug and release builds, so you can see the results of the test
   suites. 
-
-  You may also need to look at $HALYARD_DIR/libs/quake2/README-WX.txt.
-  It will explain how to set up MSVC with the assembler support to
-  build Quake.
 
   Make sure "Debug" is selected in the "Solution Configurations" popup
   on your toolbar. In the "Solution Explorer", right click on
@@ -506,20 +481,6 @@ Ancient Versions
   Mac5L_202_Stable.  Release notes are in Win32/ReleaseNotes.txt and
   Mac/ReleaseNotes.
 
-Vendor Branches in Subversion
------------------------------
-
-  Vendor branches & tags go into the /vendor directory in
-  Subversion. Read up on vendor branches in Chapter 7 of the
-  Subversion book. Currently the only one migrated over to the proper
-  structure in Subversion is PLT; all other vendor branches still
-  exist in the form that the CVS to Subversion migration left them.
-
-  There should be a script somewhere (maybe online, I can't find it in
-  the TortoiseSVN distribution) called svn_load_dirs.pl that does what
-  needs to be done to upgrade a vendor branch to a new version. Check 
-  the Subversion book for more information on how to use it.
-
 Upgrading PLT
 -------------
 
@@ -577,13 +538,6 @@ changes to each of the non-DLL targets:
   * Replaced the _USRDLL proprocessor define with _LIB.
   * Set a runtime library which matched my project.
 
-
-Unix Command Line Magic for Doing CVS Merges
-----------------------------------------
-
-This section is obsolete. Check the Subversion history for what used
-to be here, if you end up having a need to do this. Hopefully,
-svn_load_dirs.pl should do what these snippets used to.
 
 Upgrading wxWidgets
 -------------------
