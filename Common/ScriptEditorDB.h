@@ -62,6 +62,7 @@ public:
     // Listens for changes made to the ScriptEditorDB.
     class IListener {
     public:
+        virtual ~IListener() {}
         virtual void FileChanged(const std::string &relpath) = 0;
         virtual void FileDeleted(const std::string &relpath) = 0;
     };
@@ -111,7 +112,7 @@ protected:
 
 public:
     ScriptEditorDB(const std::string &relpath);
-    ~ScriptEditorDB();
+    virtual ~ScriptEditorDB();
 
     std::string NativeToRelPath(const std::string &relpath);
     std::string RelPathToNative(const std::string &native);

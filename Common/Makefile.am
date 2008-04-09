@@ -1,7 +1,8 @@
 # Set up our preprocessor and compiler flags.  Here, DISABLE_UNPORTED
 # is a temporary way to disable parts of the code which won't build on
 # non MSVC++ platforms yet.
-AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I../libs/sha1 -DDISABLE_UNPORTED=1
+AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I../libs/sha1 \
+	-I../libs/sqlite3-plus/sqlite3-plus -DDISABLE_UNPORTED=1
 AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS)
 
 noinst_LIBRARIES = libimlunit.a libhalyard.a
@@ -48,7 +49,8 @@ libhalyard_a_SOURCES = \
 	TCommonPrimitives.cpp \
 	TStateDB.cpp \
 	TStateListenerManager.cpp \
-	TVariableManager.cpp
+	TVariableManager.cpp \
+	ScriptEditorDB.cpp
 
 # Our command-line test suite driver.
 TestAll_SOURCES = \
@@ -64,6 +66,7 @@ TestAll_LDADD = \
 	libhalyard.a \
 	libimlunit.a \
 	../libs/sha1/libsha1.a \
+	../libs/sqlite3-plus/sqlite3-plus/libsqlite3_plus.a \
 	@BOOST_LDFLAGS@ \
         @BOOST_FILESYSTEM_LIB@ \
 	@XML2_LIBS@ \
