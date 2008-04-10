@@ -101,6 +101,9 @@ AC_DEFUN([AX_LIB_MZSCHEME],
             ac_mzscheme_libdir="-F$ac_mzscheme_path/lib"
             # Link against the framework and hope it defaults to the right GC.
             ac_mzscheme_libs="-framework PLT_MzScheme"
+        elif test -d "$ac_mzscheme_path/Library/Frameworks/PLT_MzScheme.framework"; then
+            ac_mzscheme_libdir="-F$ac_mzscheme_path/Library/Frameworks"
+            ac_mzscheme_libs="-framework PLT_MzScheme"
         else
             ac_mzscheme_libdir="-L$ac_mzscheme_path/lib"
             if test $ac_mzscheme_want_precise_gc = 1; then
