@@ -86,32 +86,30 @@ AC_DEFUN([AX_LIB_MZSCHEME],
             AC_MSG_ERROR(Unknown GC type \"$mzscheme_gc_req\")
         fi
 
-        if test "$ac_mzscheme_path" != ""; then
-            ac_mzscheme_ldflags="-L$ac_mzscheme_path/lib"
-            ac_mzscheme_cppflags="-I$ac_mzscheme_path/include"
-        else
+        if test x"$ac_mzscheme_path" = x""; then
             for ac_mzscheme_path_tmp in /usr /usr/local /opt /opt/local ; do
                 if test -f "$ac_mzscheme_path_tmp/include/$ac_mzscheme_header" \
                     && test -r "$ac_mzscheme_path_tmp/include/$ac_mzscheme_header"; then
                     ac_mzscheme_path=$ac_mzscheme_path_tmp
-                    ac_mzscheme_cppflags="-I$ac_mzscheme_path_tmp/include"
-                    ac_mzscheme_ldflags="-L$ac_mzscheme_path_tmp/lib"
                     break;
                 fi
             done
         fi
- 
+        ac_mzscheme_cppflags="-I$ac_mzscheme_path/include"
+
         if test -d "$ac_mzscheme_path/lib/PLT_MzScheme.framework"; then
+            ac_mzscheme_libdir="-F$ac_mzscheme_path/lib"
             # Link against the framework and hope it defaults to the right GC.
             ac_mzscheme_libs="-framework PLT_MzScheme"
         else
+            ac_mzscheme_libdir="-L$ac_mzscheme_path/lib"
             if test $ac_mzscheme_want_precise_gc = 1; then
                 ac_mzscheme_libs="-lmzscheme -lmzgc"
             else
                 ac_mzscheme_libs="-lmzscheme3m"
             fi
         fi
-        ac_mzscheme_ldflags="$ac_mzscheme_ldflags $ac_mzscheme_libs"
+        ac_mzscheme_ldflags="$ac_mzscheme_libdir $ac_mzscheme_libs"
 
         saved_CPPFLAGS="$CPPFLAGS"
         CPPFLAGS="$CPPFLAGS $ac_mzscheme_cppflags"
