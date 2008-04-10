@@ -1,2 +1,1 @@
-(define (hello)
-  "Hello world!")
+(define (hello) "Hello world!")

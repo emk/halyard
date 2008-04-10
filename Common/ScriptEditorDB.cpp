@@ -31,7 +31,7 @@
 #undef BOOST_ALL_NO_LIB
 
 #include "CommonHeaders.h"
-//#include <boost/iterator/iterator_facade.hpp>
+#include <fstream>
 #include "TInterpreter.h"
 #include "ScriptEditorDB.h"
 #include <sqlite3_plus.h>
@@ -684,11 +684,15 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     db.EndProcessingFile();
     CHECK_EQ(db.NeedsProcessing("TestScripts/indexed3.ss"), false);
 
-    // If the file is modified, it should once again need processing.
+    // If the file is modified, it should once again need processing.  Note
+    // that we simple rewrite the file in place, because this is the most
+    // portable way to update the timestamps on disk.  Note that we
+    // carefully avoid putting any newlines in the file.
     fs::path index3_path(RootPath()/"TestScripts/indexed3.ss");
-    std::time_t now;
-    std::time(&now);
-    fs::last_write_time(index3_path, now);
+    std::ofstream index3(index3_path.file_string().c_str(),
+                         std::ios_base::out | std::ios_base::trunc);
+    index3 << "(define (hello) \"Hello world!\")";
+    index3.close();
     CHECK_EQ(db.NeedsProcessing("TestScripts/indexed3.ss"), true);
 
     // Scan a tree and look for unprocessed files.
