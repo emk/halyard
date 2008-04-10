@@ -37,32 +37,46 @@ BEGIN_NAMESPACE_HALYARD
 template <class Type>
 class TSchemePtr
 {
-	Type *mPtr;
+    // mBox points to an immobile, non-collectable Scheme object (the
+    // "box").  The box, in turn, contains a single pointer.  The pointer
+    // in the box will be updated as needed by the GC.
+    //
+    // It's important to remember that the pointer, once remove from the
+    // box, has a very short shelf life--any function which allocates
+    // memory may cause the GC to move the underlying object.
+	Type **mBox;
 	
-	void Set(Type *inPtr)
-	{
-		if (mPtr == inPtr)
-			return;
-		if (mPtr)
-			scheme_gc_ptr_ok(mPtr);
-		mPtr = inPtr;
-		if (inPtr)
-			scheme_dont_gc_ptr(mPtr);
-	}
+    void CreateBox(const Type *inPtr) {
+        // Make sure we register inPtr locally before attempting to store
+        // it in our box, in case allocating the box moves the pointer.
+        // It's entirely possible that scheme_malloc_immobile_box does this
+        // for us internally, but since the manual doesn't guarantee it,
+        // I'm choosing the defensive approach.
+        MZ_GC_DECL_REG(1);
+        MZ_GC_VAR_IN_REG(0, inPtr);
+        MZ_GC_REG();
+        void **box = scheme_malloc_immobile_box(const_cast<Type*>(inPtr));
+        mBox = reinterpret_cast<Type**>(box);
+        MZ_GC_UNREG();
+    }
+
+    void DestroyBox() {
+        scheme_free_immobile_box(reinterpret_cast<void**>(mBox));
+    }
+
+	void Set(Type *inPtr) { *mBox = inPtr; }
+	Type *Get() const { return *mBox; }
 
 public:
-	TSchemePtr() : mPtr(NULL) {}
-	TSchemePtr(Type *inPtr) : mPtr(NULL) { Set(inPtr); }
-	TSchemePtr(const TSchemePtr &inSchemePtr) : mPtr(NULL)
-		{ Set(inSchemePtr.mPtr); }
-	~TSchemePtr() { Set(NULL); }
-	operator Type*() { return mPtr; }
-	operator const Type*() const { return mPtr; }
+	TSchemePtr() { CreateBox(NULL); }
+	TSchemePtr(Type *inPtr) { CreateBox(inPtr); }
+	TSchemePtr(const TSchemePtr &inSchemePtr) { CreateBox(inSchemePtr); }
+	~TSchemePtr() { DestroyBox(); }
+	operator Type*() { return Get(); }
+	operator const Type*() const { return Get(); }
 	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
 	TSchemePtr<Type> &operator=(const TSchemePtr<Type> &inSchemePtr)
-		{ Set(inSchemePtr.mPtr); return *this; }
-    bool operator<(const TSchemePtr<Type> &inRight) const
-        { return mPtr < inRight.mPtr; }
+        { Set(inSchemePtr); return *this; }
 };
 
 END_NAMESPACE_HALYARD
