@@ -55,6 +55,7 @@ public:
 	TSchemePtr(Type *inPtr) : mPtr(NULL) { Set(inPtr); }
 	TSchemePtr(const TSchemePtr &inSchemePtr) : mPtr(NULL)
 		{ Set(inSchemePtr.mPtr); }
+	~TSchemePtr() { Set(NULL); }
 	operator Type*() { return mPtr; }
 	operator const Type*() const { return mPtr; }
 	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
