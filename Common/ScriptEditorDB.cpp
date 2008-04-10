@@ -685,11 +685,11 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     CHECK_EQ(db.NeedsProcessing("TestScripts/indexed3.ss"), false);
 
     // If the file is modified, it should once again need processing.  Note
-    // that we simple rewrite the file in place, because this is the most
+    // that we simply rewrite the file in place, because this is the most
     // portable way to update the timestamps on disk.  Note that we
     // carefully avoid putting any newlines in the file.
     fs::path index3_path(RootPath()/"TestScripts/indexed3.ss");
-    std::ofstream index3(index3_path.file_string().c_str(),
+    std::ofstream index3(index3_path.native_file_string().c_str(),
                          std::ios_base::out | std::ios_base::trunc);
     index3 << "(define (hello) \"Hello world!\")";
     index3.close();
