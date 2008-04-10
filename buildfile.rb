@@ -87,7 +87,8 @@ heading 'Build source tarballs.', :name => :source_tarball do
 end
 
 heading 'Building and testing engine.', :name => :build do
-  cd src_dir do |d|
+  cp_r src_dir, bin_dir
+  cd bin_dir do |d|
     run 'rake', 'test'
     # TODO - optionally sign the binaries
   end
@@ -102,6 +103,7 @@ heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
   end
   cd "#{bin_dir}-svn" do |d|
     full_src_dir = "#{build_dir}/#{src_dir}"
+    full_bin_dir = "#{build_dir}/#{bin_dir}"
 
     cp_r "#{full_src_dir}/test/Runtime", "."
     svn :add, "Runtime" unless dirty_build?
@@ -111,7 +113,7 @@ heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
     svn :add, "LICENSE.txt" unless dirty_build?
 
     release_binaries.each do |file|
-      cp "#{full_src_dir}/Win32/Bin/#{file}", file
+      cp "#{full_bin_dir}/Win32/Bin/#{file}", file
       svn :add, file unless dirty_build?
     end
     svn :ci, '-m', "Tagging binaries for release #{version}." unless dirty_build?
@@ -120,7 +122,7 @@ end
 
 heading 'Releasing binaries to test project.', :name => :release_to_test do
   release_binaries.each do |file|
-    cp "#{src_dir}/Win32/Bin/#{file}", "#{test_dir}/#{file}"
+    cp "#{bin_dir}/Win32/Bin/#{file}", "#{test_dir}/#{file}"
   end
   cp "#{src_dir}/LICENSE.txt", test_dir
 end
