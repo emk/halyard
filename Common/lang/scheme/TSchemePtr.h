@@ -34,6 +34,13 @@ BEGIN_NAMESPACE_HALYARD
 /// automatically scans for us).  So global and heap objects *must* use
 /// this class to refer to anything in the Scheme heap.
 ///
+/// This class works like most C++ smart pointer classes, _except_ that we
+/// choose to define implicit conversion operators rather than the
+/// dereferencing operators ('->' or 'get()') used by most other smart
+/// pointer classes.  This is because we almost never point to anything
+/// with use member variables, but we do get passed to a lot of API
+/// functions that take pointers as arguments.
+///
 template <class Type>
 class TSchemePtr
 {
@@ -72,7 +79,9 @@ public:
 	TSchemePtr(Type *inPtr) { CreateBox(inPtr); }
 	TSchemePtr(const TSchemePtr &inSchemePtr) { CreateBox(inSchemePtr); }
 	~TSchemePtr() { DestroyBox(); }
+    /// Convert a non-const TSchemePtr<Type> to Type *.
 	operator Type*() { return Get(); }
+    /// Convert a const TSchemePtr<Type> to const Type *.
 	operator const Type*() const { return Get(); }
 	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
 	TSchemePtr<Type> &operator=(const TSchemePtr<Type> &inSchemePtr)
