@@ -686,7 +686,9 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
 
     // If the file is modified, it should once again need processing.
     fs::path index3_path(RootPath()/"TestScripts/indexed3.ss");
-    fs::last_write_time(index3_path, std::time_t());
+    std::time_t now;
+    std::time(&now);
+    fs::last_write_time(index3_path, now);
     CHECK_EQ(db.NeedsProcessing("TestScripts/indexed3.ss"), true);
 
     // Scan a tree and look for unprocessed files.
