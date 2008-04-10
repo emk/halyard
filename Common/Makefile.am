@@ -13,61 +13,65 @@ noinst_PROGRAMS = TestAll
 
 # Our very old test suite framework.
 libimlunit_a_SOURCES = \
-	ImlUnit.cpp \
-	ImlUnit.h
+	ImlUnit.cpp ImlUnit.h
 
 # Our portable runtime system.
 libhalyard_a_SOURCES = \
-	TException.cpp \
-	TPoint.cpp \
-	TRect.cpp \
-	TPolygon.cpp \
-	GraphicsTools.cpp \
-	TTemplateUtils.cpp \
-	TLogger.cpp \
-	TestCase.cpp \
-	TTextConv.cpp \
-	TInterpreter.cpp \
-	FileSystem.cpp \
-	TLogger.cpp \
-	CrashReporter.cpp \
-	XmlUtils.cpp \
-	Model.cpp \
-	ModelChange.cpp \
-	ModelView.cpp \
-	doc/Document.cpp \
-	doc/HalyardProgram.cpp \
-	TTextTransform.cpp \
-	Typography.cpp \
-	TStyleSheet.cpp \
-	CaptionList.cpp \
-	TTextConv.cpp \
-	TDeveloperPrefs.cpp \
-	CommandLine.cpp \
-	TValue.cpp \
-	TPrimitives.cpp \
-	TCommonPrimitives.cpp \
-	TStateDB.cpp \
-	TStateListenerManager.cpp \
-	TVariableManager.cpp \
-	ScriptEditorDB.cpp \
-	lang/scheme/TSchemeCallback.cpp \
-	lang/scheme/TSchemeConv.cpp \
-	lang/scheme/TSchemeInterpreter.cpp \
+	CaptionList.cpp CaptionList.h \
+	CommandLine.cpp CommandLine.h \
+	CommonHeaders.cpp CommonHeaders.h \
+	CrashReporter.cpp CrashReporter.h \
+	doc/Document.cpp doc/Document.h \
+	doc/HalyardProgram.cpp doc/HalyardProgram.h \
+	FileSystem.cpp FileSystem.h \
+	GraphicsTools.cpp GraphicsTools.h \
+	lang/scheme/TSchemeCallback.cpp lang/scheme/TSchemeCallback.h \
+	lang/scheme/TSchemeConv.cpp lang/scheme/TSchemeConv.h \
+	lang/scheme/TSchemeInterpreter.cpp lang/scheme/TSchemeInterpreter.h \
+	lang/scheme/TSchemePtr.h \
 	lang/scheme/TSchemeScriptEditorDB.cpp \
-	TStartup.cpp
-
+	lang/scheme/TSchemeScriptEditorDB.h \
+	Model.cpp Model.h \
+	ModelChange.cpp ModelChange.h \
+	ModelView.cpp ModelView.h \
+	ScriptEditorDB.cpp ScriptEditorDB.h \
+	TCommon.h \
+	TCommonPrimitives.cpp TCommonPrimitives.h \
+	TDeveloperPrefs.cpp TDeveloperPrefs.h \
+	TestCase.cpp TestCase.h \
+	TException.cpp TException.h \
+	TInterpreter.cpp TInterpreter.h \
+	TLogger.cpp TLogger.h \
+	TPlatform.h \
+	TPoint.cpp TPoint.h \
+	TPolygon.cpp TPolygon.h \
+	TPrimitives.cpp TPrimitives.h \
+	TRect.cpp TRect.h \
+	TStartup.cpp TStartup.h \
+	TStateDB.cpp TStateDB.h \
+	TStateListenerManager.cpp TStateListenerManager.h \
+	TStyleSheet.cpp TStyleSheet.h \
+	TTemplateUtils.cpp TTemplateUtils.h \
+	TTextConv.cpp TTextConv.h \
+	TTextTransform.cpp TTextTransform.h \
+	TValue.cpp TValue.h \
+	TVariableManager.cpp TVariableManager.h \
+	TVectorDiff.h \
+	TVersion.h \
+	TWarnings.h \
+	Typography.cpp Typography.h \
+	XmlUtils.cpp XmlUtils.h
 
 # Our command-line test suite driver.
 TestAll_SOURCES = \
-	TPolygonTests.cpp \
 	FileSystemTests.cpp \
-	ModelTests.cpp \
-	TTextTransformTests.cpp \
-	TypographyTests.cpp \
-	TStyleSheetTests.cpp \
-	TVectorDiffTests.cpp \
 	lang/scheme/TSchemeInterpreterTests.cpp \
+	ModelTests.cpp \
+	TPolygonTests.cpp \
+	TStyleSheetTests.cpp \
+	TTextTransformTests.cpp \
+	TVectorDiffTests.cpp \
+	TypographyTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
 	libhalyard.a \
