@@ -343,6 +343,11 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 												int inArgc,
 												Scheme_Object **inArgv)
 {
+    // XXX - Dummy MZ_GC_DECL_REG, just to get this to compile.  This
+    // doesn't actually _work_ yet.
+    MZ_GC_DECL_REG(0);
+    MZ_GC_REG();
+
 	Scheme_Object *result = scheme_false;
 
     // Look up the function to call.  (Note that scheme_module_bucket will
@@ -385,6 +390,8 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 		else
 			gLog.FatalError("Can't find %s", inFuncName);
 	}
+
+    MZ_GC_UNREG();
 
 	// Restore our jump buffer and exit.
 	memcpy(&scheme_error_buf, &save, sizeof(mz_jmp_buf));

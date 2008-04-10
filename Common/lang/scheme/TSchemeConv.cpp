@@ -298,7 +298,7 @@ TValue Halyard::SchemeToTValue(Scheme_Object *inVal) {
 			return TValue(std::string(SCHEME_BYTE_STR_VAL(inVal), 
 									  SCHEME_BYTE_STRLEN_VAL(inVal)));
 
-	    case scheme_path_type:
+	    case SCHEME_PLATFORM_PATH_KIND:
 			return TValue(std::string(SCHEME_PATH_VAL(inVal), 
 									  SCHEME_PATH_LEN(inVal)));
 			
