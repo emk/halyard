@@ -26,9 +26,7 @@
 #include "TestCase.h"  // New and spiffy.
 
 // We need to call some module initialization functions.
-#if !DISABLE_UNPORTED
 #include "TStartup.h"
-#endif // !DISABLE_UNPORTED
 #include "CrashReporter.h"
 
 // We declare some testing-related primitives for the interpreter.
@@ -50,9 +48,7 @@ extern void test_FileSystem (void);
 extern void test_Model(void);
 extern void test_Typography (void);
 extern void test_TStyleSheet (void);
-#if !DISABLE_UNPORTED
 extern void test_TSchemeInterpreter (void);
-#endif // !DISABLE_UNPORTED
 extern void test_TVectorDiff (void);
 extern void test_TPolygon (void);
 
@@ -84,9 +80,7 @@ static void run_imlunit_tests() {
 	test_Model();
 	test_Typography();
 	test_TStyleSheet();
-#if !DISABLE_UNPORTED
 	test_TSchemeInterpreter();
-#endif // !DISABLE_UNPORTED
 	test_TVectorDiff();
 	test_TPolygon();
 	tests_finished();	
@@ -149,9 +143,7 @@ void prompt_done(bool should_wait) {
 }
 
 int main(int argc, char **argv) {
-#if !DISABLE_UNPORTED
 	HALYARD_SET_STACK_BASE();
-#endif // !DISABLE_UNPORTED
 
 	bool should_wait = false;
 	if (argc == 2 && std::string(argv[1]) == "--wait")
@@ -161,9 +153,7 @@ int main(int argc, char **argv) {
 	FileSystem::SetScriptDataDirectoryName("Test");
 
 	try {
-#if !DISABLE_UNPORTED
 		Halyard::InitializeCommonCode(new CrashReporter());
-#endif // !DISABLE_UNPORTED
 		std::cout << "Old-Style ImlUnit Tests" << std::endl;
 		run_imlunit_tests();
 		std::cout << std::endl << "New-Style TestCase Tests" << std::endl;

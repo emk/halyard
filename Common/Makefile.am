@@ -2,8 +2,8 @@
 # is a temporary way to disable parts of the code which won't build on
 # non MSVC++ platforms yet.
 AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I../libs/sha1 \
-	-I../libs/sqlite3-plus/sqlite3-plus -DDISABLE_UNPORTED=1
-AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS)
+	-I../libs/sqlite3-plus/sqlite3-plus
+AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS)
 
 noinst_LIBRARIES = libimlunit.a libhalyard.a
 
@@ -50,7 +50,13 @@ libhalyard_a_SOURCES = \
 	TStateDB.cpp \
 	TStateListenerManager.cpp \
 	TVariableManager.cpp \
-	ScriptEditorDB.cpp
+	ScriptEditorDB.cpp \
+	lang/scheme/TSchemeCallback.cpp \
+	lang/scheme/TSchemeConv.cpp \
+	lang/scheme/TSchemeInterpreter.cpp \
+	lang/scheme/TSchemeScriptEditorDB.cpp \
+	TStartup.cpp
+
 
 # Our command-line test suite driver.
 TestAll_SOURCES = \
@@ -61,16 +67,19 @@ TestAll_SOURCES = \
 	TypographyTests.cpp \
 	TStyleSheetTests.cpp \
 	TVectorDiffTests.cpp \
+	lang/scheme/TSchemeInterpreterTests.cpp \
 	TestAll.cpp
 TestAll_LDADD = \
 	libhalyard.a \
 	libimlunit.a \
 	../libs/sha1/libsha1.a \
 	../libs/sqlite3-plus/sqlite3-plus/libsqlite3_plus.a \
-	@BOOST_LDFLAGS@ \
-        @BOOST_FILESYSTEM_LIB@ \
-	@XML2_LIBS@ \
-	@FREETYPE_LIBS@
+	$(BOOST_LDFLAGS) \
+        $(BOOST_FILESYSTEM_LIB) \
+	$(XML2_LIBS) \
+	$(FREETYPE_LIBS) \
+	$(SQLITE3_LDFLAGS) \
+        $(MZSCHEME_LDFLAGS)
 
 
 #==========================================================================

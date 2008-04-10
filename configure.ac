@@ -54,6 +54,7 @@ AX_BOOST_UNIT_TEST_FRAMEWORK
 AX_BOOST_TEST_EXEC_MONITOR
 
 # TODO - Look for PLT Scheme, wxWidgets, portaudio.
+AX_LIB_MZSCHEME(cgc, 360)
 
 
 #==========================================================================
