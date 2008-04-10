@@ -127,11 +127,6 @@ static void SchemeTypeCheckFail() {
 	throw TException(__FILE__, __LINE__, "Argument type mismatch");
 }
 
-static void SchemeTypeCheck(Scheme_Type inType, Scheme_Object *inValue) {
-	if (inType != SCHEME_TYPE(inValue))
-		SchemeTypeCheckFail();
-}
-
 static void SchemeTypeCheckStruct(const char *inPredicate,
 								  Scheme_Object *inVal)
 {

@@ -59,7 +59,7 @@ public:
 	operator Type*() { return mPtr; }
 	operator const Type*() const { return mPtr; }
 	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
-	TSchemePtr<Type> &operator=(const TSchemePtr &inPtr)
+	TSchemePtr<Type> &operator=(const TSchemePtr<Type> &inSchemePtr)
 		{ Set(inSchemePtr.mPtr); return *this; }
     bool operator<(const TSchemePtr<Type> &inRight) const
         { return mPtr < inRight.mPtr; }

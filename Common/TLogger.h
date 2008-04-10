@@ -109,7 +109,7 @@ public:
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	FatalError(const char *Format, ...);
+	void	FatalError(const char *Format, ...) __attribute__((noreturn));
 
 	//////////
 	/// Log an error complaining about the runtime environment.  This is
@@ -230,7 +230,7 @@ private:
     //////////
     /// Crash the engine with a fatal error.
     ///
-    void        CrashNow(CrashType inType);
+    void        CrashNow(CrashType inType) __attribute__((noreturn));
 
 	//////////
 	/// Should a log message with a given mask be logged?

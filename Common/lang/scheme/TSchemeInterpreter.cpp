@@ -266,7 +266,7 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc,
     // If you disassemble the current function, you should *not* see a line
     // in the function prologue which looks anything like:
     //
-    //   005F7595 push offset __ehhandler$?CallPrim@TSchemeInterpreter@ \
+    //   005F7595 push offset __ehhandler$?CallPrim@TSchemeInterpreter@
     //                        Halyard@@CAPAUScheme_Object@@HPAPAU3@@Z (7FD260h)
     //
     // If you see that, you've allowed a 'try' block or a stack-based object
@@ -312,7 +312,6 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName,
     // This function may *not* call scheme_signal_error, scheme_wrong_type,
     // or anything else which causes a non-local PLT exit.  See CallPrim
     // for more details.
-    const char *error_message = NULL;
 	try {
 		// Marshal our argument list and call the primitive.
 		TValueList inList;
