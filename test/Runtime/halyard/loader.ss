@@ -241,14 +241,23 @@
         ;; whatever they find in this parameter, and we don't want to wind
         ;; up with nested compilation managers (a subtle performance
         ;; killer!).
-        (parameterize [[always-treat-zo-and-so-as-newer
-                        always-trust-precompiled?]
+        ;;
+        ;; TODO - I'm disabling this code, because it relies on a
+        ;; custom-patched version of mzscheme, and we're currently
+        ;; upgrading mzscheme.  Feel free to uncomment this code if you
+        ;; need it.
+        (parameterize [;; Temporary replacement version.
                        [current-load/use-compiled
-                        (if always-trust-precompiled?
-                            ;; Load *.zo files blindly if they exist.
-                            (make-load-with-heartbeat)
-                            ;; Recompile *.zo files on demand.
-                            (make-compile-zo-with-heartbeat))]]
+                        (make-compile-zo-with-heartbeat)]
+                       ;;[always-treat-zo-and-so-as-newer
+                       ;; always-trust-precompiled?]
+                       ;;[current-load/use-compiled
+                       ;; (if always-trust-precompiled?
+                       ;;     ;; Load *.zo files blindly if they exist.
+                       ;;     (make-load-with-heartbeat)
+                       ;;     ;; Recompile *.zo files on demand.
+                       ;;     (make-compile-zo-with-heartbeat))]]
+                       ]
         
           ;; Support for decent backtraces upon errors.  We pull in 
           ;; the support from errortrace-lib.ss, and then manually enable
