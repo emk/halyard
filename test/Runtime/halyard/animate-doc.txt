@@ -1,10 +1,10 @@
-Tamale API Documentation
-========================
+Halyard API Documentation
+=========================
 
 Animation API
 -------------
 
-Tamale includes a basic animation API. You construct an animation using a
+Halyard includes a basic animation API. You construct an animation using a
 variety of functions, such as SLIDE, RESHAPE, SLIDE-AND-RESHAPE, and
 PLAY-SPRITE, which can be combined using SEQUENTIALLY and AFTER. In order
 to play an animation, you call ANIMATE, passing in a time and an
@@ -359,7 +359,7 @@ starting location and then slide from there on the second slide.
 
 Instead of the simple version, we represent an animation as a thunk
 that returns the simple animation function described above; that is, a
-function which takes no arguments, known within Tamale as a CALLBACK,
+function which takes no arguments, known within Halyard as a CALLBACK,
 that returns a function that takes one argument, a time between 0 and
 1, which actually performs the animation. For instance, if SLIDE were
 not implemented in terms of INTERPOLATE, it would be implemented as
