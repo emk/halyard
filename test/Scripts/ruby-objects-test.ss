@@ -41,14 +41,14 @@
     (def (initialize &rest args)
       (debug-log "Calling the bad initialize method.")))
   
-  (define-class %initialize-without-super-test% (%test-case%)
-    (test-elements "Failing to call SUPER shouldn't cause an infinite loop"
+  (define-class %initialize-without-super-test% (%element-test-case%)
+    (test "Failing to call SUPER shouldn't cause an infinite loop"
       (assert-raises exn:fail?
                      (%initialize-without-super% .new
                         :name 'bad-init
                         :at (point 0 0)
                         :shape (shape 200 300)))))
   
-  (card ruby-objects-test/initialize-without-super-test (%test-suite%)
+  (card ruby-objects-test/initialize-without-super-test (%element-test-suite%)
     (value tests (list %initialize-without-super-test%)))
   )

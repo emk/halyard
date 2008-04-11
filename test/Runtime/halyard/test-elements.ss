@@ -22,7 +22,7 @@
 
 (module test-elements (lib "halyard.ss" "halyard")
   (require (lib "halyard-unit.ss" "halyard"))
-  (provide %element-test-case% %element-test-suite% test-elements)
+  (provide %element-test-case% %element-test-suite%)
   
   ;;; Test case class for tests that involve elements.  This automatically 
   ;;; creates a temporary parent element during SETUP-TEST that becomes the
@@ -122,34 +122,4 @@
       (set! (.current-test) (test-case .new :test-method test))
       ((.current-test) .setup-test)
       ((.current-test) .run-test-method-inner)))
-  
-  ;;; DEPRECATED - won't work properly with %element-test-case%
-  (define (call-with-temporary-parent thunk)
-    (let [[elem #f]]
-      (dynamic-wind
-          (lambda ()
-            (set! elem (%box% .new :at (point 0 0) 
-                                   :shape $screen-rect
-                                   :name 'temporary-parent)))
-          (lambda ()
-            (with-default-element-parent elem
-              (thunk)))
-          (lambda ()
-            (delete-element elem)))))
-  
-  ;;; DEPRECATED - won't work properly with %element-test-case%
-  (define-syntax with-temporary-parent
-    (syntax-rules ()
-      [(_ body ...)
-       (call-with-temporary-parent (lambda () body ...))]))
-  (define-syntax-indent with-temporary-parent 0)
-  
-  ;;; DEPRECATED - won't work properly with %element-test-case%
-  (define-syntax test-elements
-    (syntax-rules ()
-      [[_ description . body]
-       (.add-test-method! description
-         (method () 
-           (with-temporary-parent . body)))]))
-  (define-syntax-indent test-elements 1)
   )
