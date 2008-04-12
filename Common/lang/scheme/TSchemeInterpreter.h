@@ -75,14 +75,35 @@ class TSchemeInterpreter : public TInterpreter
 	static TSchemePtr<Scheme_Object> sLoaderModule;
 	static TSchemePtr<Scheme_Object> sKernelModule;
 
+    // MANUAL GC PROOF REQUIRED - Compare two Scheme pointers for equality
+    // in a GC-safe fashion.  I can't find anything in the PLT docs about
+    // how to do this, but browsing through the source code of
+    // mzscheme/src/struct.c shows Scheme_Config objects being compared in
+    // this fashion.
+    //
+    // With certain kinds of copying GCs, this code might fail, because one
+    // pointer might point to the new copy of an object, and then other to
+    // the old copy.  But if I'm correct, PLT's GCs don't work in this way.
+    template <typename T>
+    static bool Eq(T *left, T *right) {
+        return (left == right);
+    }
+
     struct BucketKey {
-        TSchemePtr<Scheme_Env> env;
-        TSchemePtr<Scheme_Object> module;
+        // We use these enumerations to represent all possible environments
+        // and modules, because we can't rely on stable pointers to the
+        // underlying Scheme objects across a garbage collection.  Of
+        // course, this means that we _must_ discard all BucketKey objects
+        // when shutting down a TInterpreter, because it invalidates
+        // anything found in SCRIPT_ENV.
+        enum Env { GLOBAL_ENV, SCRIPT_ENV };
+        enum Module { LOADER_MODULE, KERNEL_MODULE };
+
+        Env env;
+        Module module;
         std::string name;
 
-        BucketKey(TSchemePtr<Scheme_Env> inEnv,
-                  TSchemePtr<Scheme_Object> inModule,
-                  std::string inName)
+        BucketKey(Env inEnv, Module inModule, std::string inName)
             : env(inEnv), module(inModule), name(inName) {}
         
         bool operator<(const BucketKey &inRight) const {

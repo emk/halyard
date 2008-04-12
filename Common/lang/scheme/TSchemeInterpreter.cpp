@@ -281,6 +281,28 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
     reg.local(bucket);
     reg.done();
 
+    // Map our inEnv and inModule arguments to stable identifiers that are
+    // safe to use as std::map keys.  We can't use the underlying pointers
+    // as keys, because they might be moved by the GC.  Of course, this
+    // forces us to clear sBucketMap every time we destroy a
+    // TSchemeInterpreter object.
+    BucketKey::Env env;
+    typedef Scheme_Env *EnvPtr;
+    if (Eq(inEnv, EnvPtr(sGlobalEnv)))
+        env = BucketKey::GLOBAL_ENV;
+    else if (Eq(inEnv, EnvPtr(sScriptEnv)))
+        env = BucketKey::SCRIPT_ENV;
+    else
+        THROW("Unknown Scheme environment");
+    BucketKey::Module module;
+    typedef Scheme_Object *ObjectPtr;
+    if (Eq(inModule, ObjectPtr(sLoaderModule)))
+        module = BucketKey::LOADER_MODULE;
+    else if (Eq(inModule, ObjectPtr(sKernelModule)))
+        module = BucketKey::KERNEL_MODULE;
+    else
+        THROW("Unknown Scheme environment");
+    
     // We keep a local map of known buckets.  We have to do this because we
     // don't want to allocate any memory on the Scheme heap during idle
     // calls (to avoid the risk of GC while playing movies), and
@@ -289,7 +311,7 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
     //
     // TODO - Now that we have a much smarter IDLE system, is this actually
     // relevant?  Or can we just get rid of all this machinery?
-    BucketKey key(inEnv, inModule, inFuncName);
+    BucketKey key(env, module, inFuncName);
     BucketMap::iterator found = sBucketMap.find(key);
     if (found != sBucketMap.end())
         return found->second;
