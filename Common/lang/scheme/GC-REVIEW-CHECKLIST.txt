@@ -56,3 +56,18 @@ Checklist for an ordinary function:
 Note that CHECK_TVALUE_CONV and CHECK_SCHEME_CONV do a certain amount of GC
 registration for their calls in the name of sanity.  Please read the
 definitions of these two macros and review their call sites accordingly.
+
+=== Some special cases to watch out for ===
+
+SCHEME_SYM_VAL(...) returns an interior pointer into the middle of the
+symbol's memory block.  This interior pointer can be invalidated by the GC.
+If you want to access the symbol's value, you can either immediately copy
+it to a std::string, or you can use scheme_make_sized_offset_utf8_string,
+as seen in TInterpreter::CallPrim.
+
+SCHEME_BYTE_STR_VAL(...) and the other, similar accessor functions appear
+to return a regular heap pointer.  These issues are documented in a small
+note at the bottom of Section 3.1 in "Inside PLT MzScheme":
+
+http://download.plt-scheme.org/doc/372/html/insidemz/insidemz-Z-H-3.html#node_sec_3.1
+
