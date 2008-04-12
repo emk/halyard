@@ -75,18 +75,16 @@ class TSchemeInterpreter : public TInterpreter
 	static TSchemePtr<Scheme_Object> sLoaderModule;
 	static TSchemePtr<Scheme_Object> sKernelModule;
 
-    // MANUAL GC PROOF REQUIRED - Compare two Scheme pointers for equality
-    // in a GC-safe fashion.  I can't find anything in the PLT docs about
-    // how to do this, but browsing through the source code of
-    // mzscheme/src/struct.c shows Scheme_Config objects being compared in
-    // this fashion.
+    // Compare two Scheme pointers for equality in a GC-safe fashion.
     //
-    // With certain kinds of copying GCs, this code might fail, because one
-    // pointer might point to the new copy of an object, and then other to
-    // the old copy.  But if I'm correct, PLT's GCs don't work in this way.
+    // MANUAL GC PROOF REQUIRED - We don't need to use a TSchemeReg because
+    // we pass our arguments straight through.  We also assume that it's
+    // safe to cast pointers of type Scheme_Env, etc, to Scheme_Object when
+    // performing this comparison.
     template <typename T>
     static bool Eq(T *left, T *right) {
-        return (left == right);
+        return scheme_eq(reinterpret_cast<Scheme_Object*>(left),
+                         reinterpret_cast<Scheme_Object*>(right));
     }
 
     struct BucketKey {
