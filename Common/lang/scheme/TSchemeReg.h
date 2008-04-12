@@ -124,7 +124,7 @@ public:
 
     /// Equivalent to MZ_GC_REG.
     void done() throw () {
-        ASSERT(mOffset == VARS + 3*ARRAYS);
+        ASSERT(mOffset-2 == VARS + 3*ARRAYS);
         mReg[0] = reinterpret_cast<void*>(GC_variable_stack);
         GC_variable_stack = mReg;
     }
