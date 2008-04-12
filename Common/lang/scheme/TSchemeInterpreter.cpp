@@ -349,15 +349,17 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
     // C++ compiler to silently install exception handlers.  Please verify
     // that this function follows the correct protocol.
 
-    Scheme_Object *prim_name_obj = NULL;
+    Scheme_Object *prim_name_char_str = NULL;
+    Scheme_Object *prim_name_byte_str = NULL;
     char *prim_name = NULL;
     Scheme_Object *result = NULL; // Mandatory NULL initialization.
 
-    MZ_GC_DECL_REG(6);            // 3 slots for array, 1 for each var
+    MZ_GC_DECL_REG(7);            // 3 slots for array, 1 for each var
     MZ_GC_ARRAY_VAR_IN_REG(0, inArgv, inArgc);
     MZ_GC_VAR_IN_REG(3, result);  // Skip two slots used by inArgv.
-    MZ_GC_VAR_IN_REG(4, prim_name_obj);
-    MZ_GC_VAR_IN_REG(5, prim_name);
+    MZ_GC_VAR_IN_REG(4, prim_name_char_str);
+    MZ_GC_VAR_IN_REG(5, prim_name_byte_str);
+    MZ_GC_VAR_IN_REG(6, prim_name);
     MZ_GC_REG();
 
 	ASSERT(sScriptEnv != NULL);
@@ -383,12 +385,15 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
     // symbol_to_string_prim.  Here, the first argument to
     // scheme_make_sized_offset_utf8_string is a pointer to the symbol
     // itself, and the offset points to the start of the actual string.
-    prim_name_obj =
+    prim_name_char_str =
         scheme_make_sized_offset_utf8_string((char *) (inArgv[0]),
                                              SCHEME_SYMSTR_OFFSET(inArgv[0]),
                                              SCHEME_SYM_LEN(inArgv[0]));
-    ASSERT(SCHEME_CHAR_STRINGP(prim_name_obj));
-    prim_name = SCHEME_BYTE_STR_VAL(prim_name_obj);
+    ASSERT(SCHEME_CHAR_STRINGP(prim_name_char_str));
+    prim_name_byte_str = scheme_char_string_to_byte_string(prim_name_char_str);
+    ASSERT(SCHEME_BYTE_STRINGP(prim_name_byte_str));
+    prim_name = SCHEME_BYTE_STR_VAL(prim_name_byte_str);
+    ASSERT(strlen(prim_name) > 0);
 
     // Dispatch the primitive call to the routine which is allowed to throw
     // and catch C++ exceptions.
