@@ -1,0 +1,58 @@
+The new PLT 3m garbage collector has a very strict and tricky interface.
+And getting even a single detail wrong will lead to very nasty bugs:
+Intermittent memory corruption at unpredictable times, for example.
+
+To minimize those risks, we have designed a C++ API and a code review
+policy for using it.
+
+Please begin by reading the section of "Inside PLT MzScheme" titled
+"Cooperating with 3m".
+
+== Review our toolset ==
+
+Check the classes TSchemePtr, TSchemeReg and TSchemeArgs to make sure that
+this review policy and those three classes, together, implement a policy
+consistent with that described in "Inside PLT MzScheme".
+
+== Storing pointers to Scheme objects in the C++ heap ==
+
+Heap-based pointers to Scheme objects should always be stored in a
+TSchemePtr<T> of the appropriate type.  This class uses immobile boxes, and
+does all the registration and unregistration for us.
+
+== Storing pointers to Scheme objects on the stack ==
+
+Before continuing, please read the documentation for TSchemeReg and
+TSchemeArgs.
+
+Checklist for an ordinary function:
+
+  1. Are all local pointers to the Scheme heap declared at the top of the
+     function (or nested block)?  These pointers don't _need_ to be
+     manually initialized to NULL, but we do it anyway to prevent g++ for
+     issuing warnings.
+  2. Is there a TSchemeReg block?
+    a. Are the numeric arguments passed to TSchemeReg correct?  The first
+       is the number of ordinary pointers we'll be declaring, and the
+       second is the number of arrays.  (These will be checked at runtime,
+       too, but it's good to review them now.)
+    b. Is every parameter registered using 'reg.param'?
+    c. Is every local variable registered using 'reg.local'?
+    d. Is any TSchemeArgs object registered using 'reg.args'?
+    e. Do we call 'reg.done' at the bottom of the block?
+  3. Is the code below the TSchemeReg safe?
+    a. The code should declare no pointers into the Scheme heap.
+    b. The code should contain no places where we nest two expressions that
+       manipulate Scheme pointers, or call two different functions that
+       return Scheme pointers in the same statement.  All such occurrences
+       should have the offending Scheme expressions "lifted" and assigned
+       to local variables.
+    c. Are all local argument arrays built using TSchemeArgs?  Does the
+       number of arguments assigned match the number declared?
+    d. Are all spots with something clever going on marked with "MANUAL GC
+       PROOF REQUIRED"?
+    e. Are the arguments described at each "MANUAL GC PROOF REQUIRED" correct?
+
+Note that CHECK_TVALUE_CONV and CHECK_SCHEME_CONV do a certain amount of GC
+registration for their calls in the name of sanity.  Please read the
+definitions of these two macros and review their call sites accordingly.
