@@ -40,8 +40,9 @@
   ;; searching for libraries, because we don't have enough engine state set
   ;; up at the top level of this file to run %call-prim.
   (current-library-collection-paths
-   (list (build-path (current-directory) "Runtime")
-         (build-path (current-directory) "Scripts")))
+   (list* (build-path (current-directory) "Scripts")
+          (build-path (current-directory) "Runtime")
+          (find-library-collection-paths)))
 
   ;;===== Primitive functions =====
   

@@ -2,7 +2,18 @@ Here are some miscellaneous patches that we had applied to our in-tree copy
 of PLT v360.  There were some other patches, but they were either backed
 out, silly mistakes, or something else that we can ignore.
 
-This was apparently required to get compilation to work:
+This was apparently required to get compilation to work.  It appeared in
+TSchemeInterpreterManager::BeginScript.  We hope to replace it with
+something in loader.ss.
+
+    // We need to set the "collects" path to our runtime directory to
+    // work around various bugs in the new compiled-module loader.
+    std::string runtime =
+        FileSystem::GetRuntimeDirectory().ToNativePathString();
+    runtime_path = scheme_make_path(runtime.c_str());
+	scheme_set_collects_path(runtime_path);
+
+This was also apparently required to get compilation to work:
 
 --- a/Common/Runtime/mzlib/cm.ss
 +++ b/Common/Runtime/mzlib/cm.ss

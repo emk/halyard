@@ -144,13 +144,6 @@ void TSchemeInterpreterManager::BeginScript()
 	scheme_set_param(current_config, MZCONFIG_CURRENT_DIRECTORY,
 					 current_directory);
 
-	// We need to set the "collects" path to our runtime directory to
-	// work around various bugs in the new compiled-module loader.
-	std::string runtime =
-		FileSystem::GetRuntimeDirectory().ToNativePathString();
-    runtime_path = scheme_make_path(runtime.c_str());
-	scheme_set_collects_path(runtime_path);
-	
 	// Install our system loader.
 	FileSystem::Path halyard_collection =
 		FileSystem::GetRuntimeDirectory().AddComponent("halyard");
