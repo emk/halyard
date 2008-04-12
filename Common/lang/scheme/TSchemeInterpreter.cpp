@@ -401,6 +401,11 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
     } else {
         // We have an error, so let's turn into a Scheme exception, now
         // that we're safely away from any 'try/catch' blocks.
+        //
+        // Note that we don't need to call MZ_GC_UNREG() before calling
+        // scheme_signal_error, because the GC frame stack will be unwound
+        // by scheme_setjmp.  But this only works with scheme_setjmp, not
+        // with C++ exceptions.
         ASSERT(!result);
         ASSERT(strlen(error_message) < sizeof(error_message));
         scheme_signal_error("%s: %s", prim_name, error_message);
