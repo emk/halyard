@@ -76,9 +76,31 @@ class TSchemePtr
 
 public:
 	TSchemePtr() { CreateBox(NULL); }
+
+    // Create a TSchemePtr.
+    //
+    // MANUAL GC PROOF REQUIRED - This code is only safe if
+    // scheme_malloc_immobile_box is unable to trigger a garbage collection
+    // (which _should be_ true in the current GC, because it allocates
+    // boxes on the C heap, but go check this if you're reviewing the
+    // code).  If scheme_malloc_immobile_box can trigger a GC, then mark
+    // this constructor 'explict', and go find all the callsites which look
+    // like this:
+    //
+    //   Scheme_Object *obj1 = NULL, obj2 = NULL;
+    //   // Register obj1 and obj2.
+    //   fn_with_tschemeptr_args(obj1, obj2);
+    //
+    // This callsite is actually an abbreviation for:
+    //
+    //   fn_with_tschemeptr_args(TSchemePtr(obj1), TSchemePtr(obj2));
+    //
+    // ...which may not be safe if TSchemePtr(...) triggers a collection.
 	TSchemePtr(Type *inPtr) { CreateBox(inPtr); }
+
 	TSchemePtr(const TSchemePtr &inSchemePtr) { CreateBox(inSchemePtr); }
 	~TSchemePtr() { DestroyBox(); }
+
     /// Convert a non-const TSchemePtr<Type> to Type *.
 	operator Type*() { return Get(); }
     /// Convert a const TSchemePtr<Type> to const Type *.
