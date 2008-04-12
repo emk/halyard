@@ -33,15 +33,24 @@ using namespace Halyard;
 
 TValue TSchemeCallback::Run(const TValueList &inArguments)
 {
+
 	// Make sure we have a Scheme interpreter and that it isn't stopped.
 	ASSERT(TSchemeInterpreter::HaveInstance());
 	ASSERT(!TSchemeInterpreter::GetInstance()->IsStopped());
-	
-	// TODO - I wish we could do this without consing.
-	Scheme_Object *args[2];
+
+    Scheme_Object *result = NULL;
+    TSchemeArgs<2> args;
+
+    TSchemeReg<1,1> reg;
+    reg.local(result);
+    reg.args(args);
+    reg.done();
+
+	// TODO - I wish we could do this without consing, at least in the case
+	// where we have simple arguments.
 	args[0] = mCallback;
 	args[1] = TValueToScheme(inArguments);
-    Scheme_Object *result =
-        TSchemeInterpreter::CallScheme("%kernel-run-callback", 2, args);
+    result = TSchemeInterpreter::CallScheme("%kernel-run-callback",
+                                            args.size(), args.get());
     return SchemeToTValue(result);
 }

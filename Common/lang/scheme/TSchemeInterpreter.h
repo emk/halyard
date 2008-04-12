@@ -27,6 +27,8 @@
 #include "TPrimitives.h"
 #include "FileSystem.h"
 #include "TSchemePtr.h"
+#include "TSchemeArgs.h"
+#include "TSchemeReg.h"
 #include "TSchemeCallback.h"
 #include "TSchemeConv.h"
 
@@ -42,7 +44,7 @@ class TPercent;
 ///
 class TSchemeInterpreterManager : public TInterpreterManager
 {
-	Scheme_Env *mGlobalEnv;
+	TSchemePtr<Scheme_Env> mGlobalEnv;
     shared_ptr<ScriptEditorDB> mScriptEditorDB;
 
 public:
@@ -68,8 +70,8 @@ class TSchemeInterpreter : public TInterpreter
 	friend class TSchemeInterpreterManager;
 	friend class TSchemeCallback;
 
-	static Scheme_Env *sGlobalEnv;
-	static Scheme_Env *sScriptEnv;
+	static TSchemePtr<Scheme_Env> sGlobalEnv;
+	static TSchemePtr<Scheme_Env> sScriptEnv;
 	static TSchemePtr<Scheme_Object> sLoaderModule;
 	static TSchemePtr<Scheme_Object> sKernelModule;
 
@@ -128,6 +130,9 @@ public:
 									   Scheme_Object *inModule,
 									   const char *inFuncName,
 									   int inArgc, Scheme_Object **inArgv);
+    static Scheme_Object *CallSchemeExHelper(Scheme_Object *inFunc,
+                                             int inArgc,
+                                             Scheme_Object **inArgv);
 	static Scheme_Object *CallScheme(const char *inFuncName,
 									 int inArgc, Scheme_Object **inArgv);
 	static Scheme_Object *CallSchemeSimple(const char *inFuncName);
