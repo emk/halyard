@@ -142,8 +142,8 @@ Building Win32 Halyard
   suites.
 
   To build PLT Scheme, make sure "Libraries" is selected in the "Solution
-  Configurations" popup on your toolbar.  Click on the "Start" icon (it
-  looks like a play button or right facing triangle) to build PLT.
+  Configurations" popup on your toolbar.  Choose the menu item "Build" >
+  "Build Solution".
 
   Make sure "Debug" is selected in the "Solution Configurations" popup on
   your toolbar. In the "Solution Explorer", right click on "Application"
