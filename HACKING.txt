@@ -91,22 +91,6 @@ Downloading Halyard
     boost        libivorbisdec  portaudio  sha1    wxIE
     curl         libxml2        qtcheck    sqlite  wxWidgets
 
-Building PLT Scheme
--------------------
-
-  [These are experimental build instructions.  They will change, and become
-  better integrated with the main build process.]
-
-  First, install Visual C++.NET 2005 and Rake as described in the sections
-  below.  Then add the following line to C:/cygwin/Cygwin.bat:
-
-  CALL C:"\Program Files\Microsoft Visual Studio 8\Common7\Tools\vsvars32.bat"
-
-  This gives you access to the Visual C++ compilers from the Cygwin command
-  line.  You will need to open a new terminal and run:
-
-    rake libs
-
 Building Win32 Halyard
 ----------------------
 
@@ -157,14 +141,17 @@ Building Win32 Halyard
   both the debug and release builds, so you can see the results of the test
   suites.
 
-  Make sure "Debug" is selected in the "Solution Configurations" popup
-  on your toolbar. In the "Solution Explorer", right click on
-  "Application" and select "Set as StartUp Project". You should now be
-  able to build and run Halyard by clicking on the "Start" icon (it
-  looks like a play button or right facing triangle). If you want to
-  build a component without running it, you can select "Build
-  <component>" from the build menu, or add the build button to your
-  toolbar by right clicking on the toolbar and selecting "Build".
+  To build PLT Scheme, make sure "Libraries" is selected in the "Solution
+  Configurations" popup on your toolbar.  Click on the "Start" icon (it
+  looks like a play button or right facing triangle) to build PLT.
+
+  Make sure "Debug" is selected in the "Solution Configurations" popup on
+  your toolbar. In the "Solution Explorer", right click on "Application"
+  and select "Set as StartUp Project". You should now be able to build and
+  run Halyard by clicking on the "Start" icon. If you want to build a
+  component without running it, you can select "Build <component>" from the
+  build menu, or add the build button to your toolbar by right clicking on
+  the toolbar and selecting "Build".
 
   To build the release version, select "Release" from the "Solution
   Configurations" popup on your toolbar and follow the same steps as
