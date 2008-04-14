@@ -1,0 +1,180 @@
+Here are some miscellaneous patches that we had applied to our in-tree copy
+of PLT v360.  There were some other patches, but they were either backed
+out, silly mistakes, or something else that we can ignore.
+
+This was apparently required to get compilation to work.  It appeared in
+TSchemeInterpreterManager::BeginScript.  We hope to replace it with
+something in loader.ss.
+
+    // We need to set the "collects" path to our runtime directory to
+    // work around various bugs in the new compiled-module loader.
+    std::string runtime =
+        FileSystem::GetRuntimeDirectory().ToNativePathString();
+    runtime_path = scheme_make_path(runtime.c_str());
+	scheme_set_collects_path(runtime_path);
+
+This was also apparently required to get compilation to work:
+
+--- a/Common/Runtime/mzlib/cm.ss
++++ b/Common/Runtime/mzlib/cm.ss
+@@ -295,11 +295,6 @@
+                     [(not (member (car modes) (use-compiled-file-paths)))
+                      (trace-printf "skipping:  ~a compiled-paths ~s" path (use-
+                      (default-handler path mod-name)]
+-                    [(not (eq? compilation-manager-load-handler (current-load/u
+-                     (trace-printf "skipping:  ~a current-load/use-compiled cha
+-                                   path
+-                                   (current-load/use-compiled))
+-                     (default-handler path mod-name)]
+                     [(not (eq? orig-eval (current-eval)))
+                      (trace-printf "skipping:  ~a orig-eval ~s current-eval ~s"
+                                    path orig-eval 
+
+This was required to prevent M-. on the start card from throwing up a
+pointless conflict:
+
+--- a/Common/Runtime/planet/planet.ss
++++ b/Common/Runtime/planet/planet.ss
+@@ -23,7 +23,7 @@ PLANNED FEATURES:
+   
+   (define actions '())
+   
+-  (define (start)
++  (define (start*)
+ 
+     (make-directory* (PLANET-DIR))
+     (make-directory* (CACHE-DIR))
+@@ -265,4 +265,4 @@ PLANNED FEATURES:
+                    (lambda (e) 
+                      (fprintf (current-error-port) "~a\n" (exn-message e))
+                      (exit 1))])
+-    (start)))
++    (start*)))
+
+
+commit 4f783665f146e27fedb2c427567fbff21d296178
+Author: Eric Kidd <eric.m.kidd@dartmouth.edu>
+Date:   Wed Nov 7 21:38:29 2007 +0000
+
+      * Support for trusting precompiled *.zo files (for use with installer on
+        Vista systems).  To use, make sure your *.zo files are fully
+        up-to-date, and create an empty file named "TRUST-PRECOMPILED" in the
+        top-level of your program directory.
+    
+    IMPORTANT: You must manually delete all compiled/ directories when
+    upgrading to this engine--we had to modify PLT's startup.ss, which breaks
+    anything compiled under the old version of startup.ss.
+    
+    git-svn-id: https://imlsrc.dartmouth.edu/svn/public/halyard/trunk@28728 b24aca02-f418-0410-9c49-835e4aa915c3
+
+diff --git a/src/mzscheme/src/schminc.h b/src/mzscheme/src/schminc.h
+index f376ea5..8426b66 100644
+--- a/src/mzscheme/src/schminc.h
++++ b/src/mzscheme/src/schminc.h
+@@ -11,7 +11,7 @@
+    EXPECTED_PRIM_COUNT to the new value, and then USE_COMPILED_STARTUP
+    can be set to 1 again. */
+ 
+-#define USE_COMPILED_STARTUP 1
++#define USE_COMPILED_STARTUP 0
+ 
+ #define EXPECTED_PRIM_COUNT 878
+ 
+diff --git a/src/mzscheme/src/startup.inc b/src/mzscheme/src/startup.inc
+index 7eccdbf..664ee66 100644
+--- a/src/mzscheme/src/startup.inc
++++ b/src/mzscheme/src/startup.inc
+@@ -3104,6 +3104,8 @@
+ "(path-replace-suffix"
+ " (bytes->path #\"_loader.ss\")"
+ " dll-suffix))"
++"(define always-treat-zo-and-so-as-newer"
++"(make-parameter #f))"
+ "(define current-load/use-compiled"
+ "(make-parameter"
+ "(let((default-load/use-compiled"
+@@ -3124,7 +3126,10 @@
+ "(and a"
+ "(let((am(date-of a modes)))"
+ "(or(and(not bm) am) "
+-"(and am bm(>=(cdr am)(cdr bm)) am)))))))"
++"(and am bm"
++"(or(always-treat-zo-and-so-as-newer)"
++"(>=(cdr am)(cdr bm)))"
++" am)))))))"
+ "(lambda(path expect-module)"
+ "(unless(path-string? path)"
+ " (raise-type-error 'load/use-compiled \"path or valid-path string\" path))"
+@@ -3516,7 +3521,9 @@
+ " load/cd memory-trace-lambda"
+ " load-relative load-relative-extension"
+ " path-list-string->path-list find-executable-path"
+-" collection-path load/use-compiled current-load/use-compiled"
++" collection-path"
++" always-treat-zo-and-so-as-newer"
++" load/use-compiled current-load/use-compiled"
+ " port? guard-evt"
+ " channel-get channel-try-get channel-put"
+ " find-library-collection-paths"
+diff --git a/src/mzscheme/src/startup.ss b/src/mzscheme/src/startup.ss
+index b0ec881..806f37d 100644
+--- a/src/mzscheme/src/startup.ss
++++ b/src/mzscheme/src/startup.ss
+@@ -3565,6 +3565,32 @@
+      (bytes->path #"_loader.ss")
+      dll-suffix))
+ 
++  ;; IML - 7 Nov 2007 - emk - Windows Vista makes "C:\Program Files" a
++  ;; read-only directory unless a process is running with specially
++  ;; escalated privileges.  When installing a Scheme-based program, our
++  ;; installer has these escalated privileges, but the program itself does
++  ;; not.
++  ;;
++  ;; Unfortunately, this means that recompiling *.ss files to produce new
++  ;; *.zo files will fail in a variety of entertaining ways under Vista.
++  ;; This situation is complicated by the fact that Vista uses buggy, fake
++  ;; "union mounts" to simulate a limited amount of write access to
++  ;; "C:\Program Files".  In other words, the entire situation is a
++  ;; disaster, and we want to avoid it entirely.  Our goal: Only the
++  ;; installer and the standalone update helper should ever attempt to
++  ;; write to "C:\Program Files".
++  ;;
++  ;; We *could* just massage the timestamps of the *.zo files in the
++  ;; installer (and the updater, etc.), which is the approach taken by PLT
++  ;; itself.  But this is still fairly fragile, as far as I can tell, and
++  ;; it involves a modest amount of code.
++  ;;
++  ;; We choose to go for the cop-out: The following parameter, if set to
++  ;; #t, will cause *all* *.zo and *.so files to be treated as if they were
++  ;; newer than the corresponding *.ss files.
++  (define always-treat-zo-and-so-as-newer
++    (make-parameter #f))
++
+   (define current-load/use-compiled
+     (make-parameter
+      (let ([default-load/use-compiled
+@@ -3585,7 +3611,12 @@
+ 		       (and a
+ 			    (let ([am (date-of a modes)])
+ 			      (or (and (not bm) am) 
+-				  (and am bm (>= (cdr am) (cdr bm)) am)))))])
++				  (and am bm
++                                       ;; See the documentation for 
++                                       ;; ALWAYS-TREAT-ZO-AND-SO-AS-NEWER.
++                                       (or (always-treat-zo-and-so-as-newer)
++                                           (>= (cdr am) (cdr bm)))
++                                       am)))))])
+ 	       (lambda (path expect-module)
+ 		 (unless (path-string? path)
+ 		   (raise-type-error 'load/use-compiled "path or valid-path string" path))
+@@ -4013,7 +4044,9 @@
+ 	   load/cd memory-trace-lambda
+ 	   load-relative load-relative-extension
+ 	   path-list-string->path-list find-executable-path
+-	   collection-path load/use-compiled current-load/use-compiled
++	   collection-path
++           always-treat-zo-and-so-as-newer
++           load/use-compiled current-load/use-compiled
+ 	   port? guard-evt
+ 	   channel-get channel-try-get channel-put
+ 	   find-library-collection-paths

@@ -139,16 +139,19 @@ Building Win32 Halyard
   of "CommonTest" to $HALYARD_DIR/test.  The test suites won't run without
   this step. Also add "--wait" to the command arguments of CommonTest, in 
   both the debug and release builds, so you can see the results of the test
-  suites. 
+  suites.
 
-  Make sure "Debug" is selected in the "Solution Configurations" popup
-  on your toolbar. In the "Solution Explorer", right click on
-  "Application" and select "Set as StartUp Project". You should now be
-  able to build and run Halyard by clicking on the "Start" icon (it
-  looks like a play button or right facing triangle). If you want to
-  build a component without running it, you can select "Build
-  <component>" from the build menu, or add the build button to your
-  toolbar by right clicking on the toolbar and selecting "Build".
+  To build PLT Scheme, make sure "Libraries" is selected in the "Solution
+  Configurations" popup on your toolbar.  Choose the menu item "Build" >
+  "Build Solution".
+
+  Make sure "Debug" is selected in the "Solution Configurations" popup on
+  your toolbar. In the "Solution Explorer", right click on "Application"
+  and select "Set as StartUp Project". You should now be able to build and
+  run Halyard by clicking on the "Start" icon. If you want to build a
+  component without running it, you can select "Build <component>" from the
+  build menu, or add the build button to your toolbar by right clicking on
+  the toolbar and selecting "Build".
 
   To build the release version, select "Release" from the "Solution
   Configurations" popup on your toolbar and follow the same steps as

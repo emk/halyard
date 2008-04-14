@@ -84,7 +84,12 @@ void TSchemeScriptEditorDB::UpdateDatabase() {
 }
 
 void TSchemeScriptEditorDB::ProcessFileInternal(const std::string &relpath) {
-	Scheme_Object *args[1];
+    TSchemeArgs<1> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+
 	args[0] = scheme_make_path(relpath.c_str());
-	TSchemeInterpreter::CallScheme("%kernel-extract-definitions", 1, args);
+	TSchemeInterpreter::CallScheme("%kernel-extract-definitions",
+                                   args.size(), args.get());
 }

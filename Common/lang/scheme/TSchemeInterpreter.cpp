@@ -28,9 +28,6 @@ using namespace Halyard;
 
 static const char *CALL_PRIM = "%call-prim";
 
-#define UNIMPLEMENTED \
-	throw TException(__FILE__, __LINE__, "Scheme: Not yet implemented")
-
 namespace {
     /// Like strncpy, but terminates strings which don't fit in 'out'.
     void strncpy_terminated(char *out, const char *in, size_t max) {
@@ -62,7 +59,6 @@ DEFINE_PRIMITIVE(SchemeIdle)
 	// Should our idle loop block until any events are received from 
 	// the user?
 	bool block;
-
 	inArgs >> block;
 
 	// Call our stored idle procedure and let the GUI run for a bit.
@@ -74,6 +70,24 @@ DEFINE_PRIMITIVE(SchemeIdle)
 	::SkipPrimitiveLogging();
 }
 
+DEFINE_PRIMITIVE(SchemeSetCollectsDir)
+{
+    std::string dir;
+    inArgs >> dir;
+
+    Scheme_Object *path = NULL;
+
+    TSchemeReg<1> reg;
+    reg.local(path);
+    reg.done();
+
+    // Set our standard collects dir.  For some reason, we can't actually
+    // do this from Scheme.  But it's easier to actually decide what our
+    // collects-dir should be from inside loader.ss, where we have path
+    // functions available.
+    path = scheme_make_path(dir.c_str());
+    scheme_set_collects_path(path);
+}
 
 //=========================================================================
 //	TSchemeInterpreterManager Methods
@@ -86,19 +100,29 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	// Install our primitives.
 	REGISTER_PRIMITIVE(SchemeExit);
 	REGISTER_PRIMITIVE(SchemeIdle);
+    REGISTER_PRIMITIVE(SchemeSetCollectsDir);
     RegisterSchemeScriptEditorDBPrimitives();
+
+    Scheme_Object *modname = NULL;
+    Scheme_Env *engine_mod = NULL;
+    Scheme_Object *call_prim = NULL;
+
+    TSchemeReg<3> reg;
+    reg.local(modname);
+    reg.local(engine_mod);
+    reg.local(call_prim);
+    reg.done();
 
 	// Initialize the Scheme interpreter.
 	mGlobalEnv = scheme_basic_env();
 
 	// Make a module to hold functions exported by the engine.
-	Scheme_Object *modname = scheme_intern_symbol("#%engine-primitives");
-	Scheme_Env *engine_mod = scheme_primitive_module(modname, mGlobalEnv);
+	modname = scheme_intern_symbol("#%engine-primitives");
+	engine_mod = scheme_primitive_module(modname, mGlobalEnv);
 
 	// Provide a way for Scheme code to call primitives.
-	Scheme_Object *call_prim =
-		scheme_make_prim_w_arity(&TSchemeInterpreter::CallPrim,
-								 CALL_PRIM, 1, -1);
+	call_prim = scheme_make_prim_w_arity(&TSchemeInterpreter::CallPrim,
+                                         CALL_PRIM, 1, -1);
 	scheme_add_global(CALL_PRIM, call_prim, engine_mod);
 
 	// Finish creating our engine module.
@@ -116,6 +140,14 @@ ScriptEditorDB *TSchemeInterpreterManager::GetScriptEditorDBInternal() {
 
 void TSchemeInterpreterManager::BeginScript()
 {
+    Scheme_Config *current_config = NULL;
+    Scheme_Object *current_directory = NULL;
+
+    TSchemeReg<2> reg;
+    reg.local(current_config);
+    reg.local(current_directory);
+    reg.done();
+
 	// Let our parent class set things up.
 	TInterpreterManager::BeginScript();
 
@@ -124,15 +156,11 @@ void TSchemeInterpreterManager::BeginScript()
 	// expect to receive from GetBaseDirectory.
 	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
 	ASSERT(base != ".");
-	scheme_set_param(scheme_current_config(), MZCONFIG_CURRENT_DIRECTORY,
-					 scheme_make_path(base.c_str()));
+    current_config = scheme_current_config();
+    current_directory = scheme_make_path(base.c_str());
+	scheme_set_param(current_config, MZCONFIG_CURRENT_DIRECTORY,
+					 current_directory);
 
-	// We need to set the "collects" path to our runtime directory to
-	// work around various bugs in the new compiled-module loader.
-	std::string runtime =
-		FileSystem::GetRuntimeDirectory().ToNativePathString();
-	scheme_set_collects_path(scheme_make_path(runtime.c_str()));
-	
 	// Install our system loader.
 	FileSystem::Path halyard_collection =
 		FileSystem::GetRuntimeDirectory().AddComponent("halyard");
@@ -161,6 +189,8 @@ void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
 
 TInterpreter *TSchemeInterpreterManager::MakeInterpreter()
 {
+    // MANUAL GC PROOF REQUIRED - mGlobalEnv can't be GC'd while it is live
+    // in this function.
 	return new TSchemeInterpreter(mGlobalEnv);
 }
 
@@ -169,17 +199,27 @@ TInterpreter *TSchemeInterpreterManager::MakeInterpreter()
 //	TSchemeInterpreter Methods
 //=========================================================================
 
-Scheme_Env *TSchemeInterpreter::sGlobalEnv = NULL;
-Scheme_Env *TSchemeInterpreter::sScriptEnv = NULL;
-TSchemePtr<Scheme_Object> TSchemeInterpreter::sLoaderModule = NULL;
-TSchemePtr<Scheme_Object> TSchemeInterpreter::sKernelModule = NULL;
+TSchemePtr<Scheme_Env> TSchemeInterpreter::sGlobalEnv;
+TSchemePtr<Scheme_Env> TSchemeInterpreter::sScriptEnv;
+TSchemePtr<Scheme_Object> TSchemeInterpreter::sLoaderModule;
+TSchemePtr<Scheme_Object> TSchemeInterpreter::sKernelModule;
 TInterpreter::SystemIdleProc TSchemeInterpreter::sSystemIdleProc = NULL;
 TSchemeInterpreter::BucketMap TSchemeInterpreter::sBucketMap;
 
 TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 {
-	// Declare a dummy argument list for calling Scheme functions.
-	Scheme_Object *args;
+    Scheme_Config *current_config = NULL;
+    Scheme_Object *result = NULL;
+    Scheme_Object *byte_str = NULL;
+    char *raw_str = NULL;
+
+    TSchemeReg<5> reg;
+    reg.param(inGlobalEnv);
+    reg.local(current_config);
+    reg.local(result);
+    reg.local(byte_str);
+    reg.local(raw_str);
+    reg.done();
 
 	// Remember our global environment.
 	sGlobalEnv = inGlobalEnv;
@@ -188,18 +228,18 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 
 	// Create a new script environment, and store it where we can find it.
 	sScriptEnv = NULL;
-	CallSchemeEx(sGlobalEnv, sLoaderModule, "new-script-environment",
-				 0, &args);
-	sScriptEnv = scheme_get_env(scheme_current_config());
+	CallSchemeEx(sGlobalEnv, sLoaderModule, "new-script-environment", 0, NULL);
+    current_config = scheme_current_config();
+	sScriptEnv = scheme_get_env(current_config);
 
 	// Load our kernel and script.
-	Scheme_Object *result = 
-		CallSchemeEx(sGlobalEnv, sLoaderModule, "load-script", 0, &args);
+	result = CallSchemeEx(sGlobalEnv, sLoaderModule, "load-script", 0, NULL);
 	if (!SCHEME_FALSEP(result))
 	{
 		ASSERT(SCHEME_CHAR_STRINGP(result));
-		Scheme_Object *byte_str = scheme_char_string_to_byte_string(result);
-		throw TException(__FILE__, __LINE__, SCHEME_BYTE_STR_VAL(byte_str));
+		byte_str = scheme_char_string_to_byte_string(result);
+        raw_str = SCHEME_BYTE_STR_VAL(byte_str);
+		throw TException(__FILE__, __LINE__, raw_str);
 	}
 }
 
@@ -212,13 +252,28 @@ TSchemeInterpreter::~TSchemeInterpreter()
 
 void TSchemeInterpreter::InitializeModuleNames()
 {
+    Scheme_Object *halyard_string = NULL;
+    Scheme_Object *tail1 = NULL;
+    Scheme_Object *lib_symbol = NULL;
+    Scheme_Object *kernel_ss_string = NULL;
+    Scheme_Object *tail2 = NULL;
+
+    TSchemeReg<5> reg;
+    reg.local(halyard_string);
+    reg.local(tail1);
+    reg.local(lib_symbol);
+    reg.local(kernel_ss_string);
+    reg.local(tail2);
+    reg.done();
+
 	sLoaderModule = scheme_intern_symbol("loader");
-	Scheme_Object *tail = scheme_make_pair(scheme_make_utf8_string("halyard"),
-										   scheme_null);
-	sKernelModule =
-		scheme_make_pair(scheme_intern_symbol("lib"),
-						 scheme_make_pair(scheme_make_utf8_string("kernel.ss"),
-										  tail));
+
+    halyard_string   = scheme_make_utf8_string("halyard");
+	tail1            = scheme_make_pair(halyard_string, scheme_null);
+    lib_symbol       = scheme_intern_symbol("lib");
+    kernel_ss_string = scheme_make_utf8_string("kernel.ss");
+    tail2            = scheme_make_pair(kernel_ss_string, tail1);
+	sKernelModule    = scheme_make_pair(lib_symbol, tail2);
 }
 
 Scheme_Bucket *
@@ -226,19 +281,53 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
                                Scheme_Object *inModule,
                                const char *inFuncName)
 {
+    Scheme_Object *sym = NULL;
+    Scheme_Bucket *bucket = NULL;
+
+    TSchemeReg<4> reg;
+    reg.param(inEnv);
+    reg.param(inModule);
+    reg.local(sym);
+    reg.local(bucket);
+    reg.done();
+
+    // Map our inEnv and inModule arguments to stable identifiers that are
+    // safe to use as std::map keys.  We can't use the underlying pointers
+    // as keys, because they might be moved by the GC.  Of course, this
+    // forces us to clear sBucketMap every time we destroy a
+    // TSchemeInterpreter object.
+    BucketKey::Env env;
+    typedef Scheme_Env *EnvPtr;
+    if (Eq(inEnv, EnvPtr(sGlobalEnv)))
+        env = BucketKey::GLOBAL_ENV;
+    else if (Eq(inEnv, EnvPtr(sScriptEnv)))
+        env = BucketKey::SCRIPT_ENV;
+    else
+        THROW("Unknown Scheme environment");
+    BucketKey::Module module;
+    typedef Scheme_Object *ObjectPtr;
+    if (Eq(inModule, ObjectPtr(sLoaderModule)))
+        module = BucketKey::LOADER_MODULE;
+    else if (Eq(inModule, ObjectPtr(sKernelModule)))
+        module = BucketKey::KERNEL_MODULE;
+    else
+        THROW("Unknown Scheme environment");
+    
     // We keep a local map of known buckets.  We have to do this because we
     // don't want to allocate any memory on the Scheme heap during idle
     // calls (to avoid the risk of GC while playing movies), and
     // scheme_module_bucket relies on the module loader, which sometimes
     // allocates Scheme memory.
-    BucketKey key(inEnv, inModule, inFuncName);
+    //
+    // TODO - Now that we have a much smarter IDLE system, is this actually
+    // relevant?  Or can we just get rid of all this machinery?
+    BucketKey key(env, module, inFuncName);
     BucketMap::iterator found = sBucketMap.find(key);
     if (found != sBucketMap.end())
         return found->second;
     else {
-        Scheme_Object *sym = scheme_intern_symbol(inFuncName);
-		Scheme_Bucket *bucket = scheme_module_bucket(inModule, sym, -1,
-													 inEnv);
+        sym = scheme_intern_symbol(inFuncName);
+		bucket = scheme_module_bucket(inModule, sym, -1, inEnv);
         if (bucket == NULL)
             throw TException(__FILE__, __LINE__,
                              "Scheme module bucket not found");
@@ -247,8 +336,7 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
     }
 }
 
-Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc,
-											  Scheme_Object **inArgv)
+Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
 {
     // We need to be very careful here, because mixing scheme_signal_error
     // with C++ exceptions will subtly corrupt the C++ exception-handling
@@ -273,50 +361,106 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc,
     // with a destructor to sneak into this function.  That stuff *must* go
     // in CallPrimInternal below, *not* here.
 
-	ASSERT(sScriptEnv != NULL);
+    // MANUAL GC PROOF REQUIRED - We need to use the low-level PLT
+    // MZ_GC_DECL_REG here instead of TSchemeReg, because we don't want the
+    // C++ compiler to silently install exception handlers.  Please verify
+    // that this function follows the correct protocol.
+
+    Scheme_Object *prim_name_char_str = NULL;
+    Scheme_Object *prim_name_byte_str = NULL;
+    char *prim_name = NULL;
+    Scheme_Object *result = NULL; // Mandatory NULL initialization.
+
+    MZ_GC_DECL_REG(7);            // 3 slots for array, 1 for each var
+    MZ_GC_ARRAY_VAR_IN_REG(0, inArgv, inArgc);
+    MZ_GC_VAR_IN_REG(3, result);  // Skip two slots used by inArgv.
+    MZ_GC_VAR_IN_REG(4, prim_name_char_str);
+    MZ_GC_VAR_IN_REG(5, prim_name_byte_str);
+    MZ_GC_VAR_IN_REG(6, prim_name);
+    MZ_GC_REG();
 
 	// The interpreter checks the arity for us, but we need to check the
 	// argument types.
 	ASSERT(inArgc >= 1);
 	if (!SCHEME_SYMBOLP(inArgv[0]))
 		scheme_wrong_type(CALL_PRIM, "symbol", 0, inArgc, inArgv);
-	const char *prim_name = SCHEME_SYM_VAL(inArgv[0]);
+
+    // MANUAL GC PROOF REQUIRED - Here, we need to get a GC-safe pointer to
+    // the string contained in argv[0].  This is trickier than it looks,
+    // because SCHEME_SYM_VAL actually returns an internal pointer, which
+    // isn't safe to hold onto across memory allocations (nasty, huh?).
+    //
+    // We can't copy this pointer into either a std::string (because that
+    // would install an exception handler) or a malloc'd char* (because
+    // we'd leak that if we call scheme_signal_error, below).  So we need
+    // to very carefully convert this symbol name to a Scheme string
+    // allocated on the Scheme heap.
+    //
+    // This code is adapted from mzscheme/src/symbol.c's implementation of
+    // symbol_to_string_prim.  Here, the first argument to
+    // scheme_make_sized_offset_utf8_string is a pointer to the symbol
+    // itself, and the offset points to the start of the actual string.
+    prim_name_char_str =
+        scheme_make_sized_offset_utf8_string((char *) (inArgv[0]),
+                                             SCHEME_SYMSTR_OFFSET(inArgv[0]),
+                                             SCHEME_SYM_LEN(inArgv[0]));
+    ASSERT(SCHEME_CHAR_STRINGP(prim_name_char_str));
+    prim_name_byte_str = scheme_char_string_to_byte_string(prim_name_char_str);
+    ASSERT(SCHEME_BYTE_STRINGP(prim_name_byte_str));
+    prim_name = SCHEME_BYTE_STR_VAL(prim_name_byte_str);
+    ASSERT(strlen(prim_name) > 0);
+
+    // Only SchemeSetCollectsDir may be called without a sScriptEnv.
+    ASSERT(sScriptEnv != NULL ||
+           strcmp(prim_name, "SchemeSetCollectsDir") == 0);
 
     // Dispatch the primitive call to the routine which is allowed to throw
     // and catch C++ exceptions.
-    Scheme_Object *result = NULL;
     char error_message[1024];
     if (CallPrimInternal(prim_name, inArgc-1, inArgv+1, &result,
-                           error_message, sizeof(error_message))) {
+                         error_message, sizeof(error_message))) {
         ASSERT(result);
+        MZ_GC_UNREG();
         return result;
     } else {
         // We have an error, so let's turn into a Scheme exception, now
         // that we're safely away from any 'try/catch' blocks.
+        //
+        // Note that we don't need to call MZ_GC_UNREG() before calling
+        // scheme_signal_error, because the GC frame stack will be unwound
+        // by scheme_setjmp.  But this only works with scheme_setjmp, not
+        // with C++ exceptions.
         ASSERT(!result);
         ASSERT(strlen(error_message) < sizeof(error_message));
         scheme_signal_error("%s: %s", prim_name, error_message);
 
         ASSERT(false); // Should not get here.
+        MZ_GC_UNREG();
         return scheme_false;
     }
-                           
 }
 
-bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName,
-                                            int inArgc, Scheme_Object **inArgv,
-                                            Scheme_Object **outResult,
-                                            char *outErrorMessage,
-                                            size_t inErrorMessageMaxLength)
+bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName, // Scheme heap
+                                          int inArgc, Scheme_Object **inArgv,
+                                          Scheme_Object **outResult,
+                                          char *outErrorMessage,
+                                          size_t inErrorMessageMaxLength)
 {
+    TSchemeReg<1,1> reg;
+    reg.param(inPrimName);
+    reg.param_array(inArgv, inArgc);
+    // MANUAL GC PROOF REQUIRED - *outResult is correctly registered by our
+    // caller.
+    reg.done();
+
     // This function may *not* call scheme_signal_error, scheme_wrong_type,
     // or anything else which causes a non-local PLT exit.  See CallPrim
     // for more details.
 	try {
 		// Marshal our argument list and call the primitive.
 		TValueList inList;
-		for (int i=0; i < inArgc; i++) 
-			inList.push_back(SchemeToTValue(inArgv[i]));	
+		for (int i=0; i < inArgc; i++)
+			inList.push_back(SchemeToTValue(inArgv[i]));
 		TArgumentList arg_list(inList);
 		gPrimitiveManager.CallPrimitive(inPrimName, arg_list);
 
@@ -325,7 +469,7 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName,
         return true;
 	} catch (std::exception &e) {
         strncpy_terminated(outErrorMessage, e.what(), inErrorMessageMaxLength);
-        return false;    
+        return false;
 	} catch (...) {
         // This shouldn't happen--we shouldn't be throwing any exceptions
         // which aren't a subclass of std::exception, and Win32 structured
@@ -343,23 +487,52 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 												int inArgc,
 												Scheme_Object **inArgv)
 {
-	Scheme_Object *result = scheme_false;
+    Scheme_Bucket *bucket = NULL;
+    Scheme_Object *func = NULL;
+
+    TSchemeReg<4,1> reg;
+    reg.param(inEnv);
+    reg.param(inModule);
+    reg.param_array(inArgv, inArgc);
+    reg.local(bucket);
+    reg.local(func);
+    reg.done();
 
     // Look up the function to call.  (Note that scheme_module_bucket will
     // look up names in the module's *internal* namespace, not its official
     // export namespace.)
     //
-    // We do this before calling scheme_setjmp because FindBucket may use
-    // some C++ exception-handling machiney (in the STL) and we want to
-    // make sure we're still unambiguously in a C++ context when we call
-    // it.
-    //
-    // We might need to be even more paranoid here--see the notes in
-    // CallPrim for an idea of how evil combining setjmp/longjmp and
-    // try/catch/throw can be--but I can't find anything suspicious in the
-    // disassembly of this function, so I'm going to leave it fow now.
-    Scheme_Bucket *bucket = FindBucket(inEnv, inModule, inFuncName);
+    // We do this here, and not in CallSchemeExHelper, because FindBucket
+    // may throw exceptions and it's safer and easier to analyze the code
+    // when we separate exception-handling code from code using MZ_GC_REG
+    // and scheme_setjmp.
+    bucket = FindBucket(inEnv, inModule, inFuncName);
     ASSERT(bucket != NULL);
+    func = static_cast<Scheme_Object*>(bucket->val);
+    if (!func)
+        gLog.FatalError("Can't find %s", inFuncName);
+    return CallSchemeExHelper(func, inArgc, inArgv);
+}
+
+Scheme_Object *TSchemeInterpreter::CallSchemeExHelper(Scheme_Object *inFunc,
+                                                      int inArgc,
+                                                      Scheme_Object **inArgv)
+{
+    // MANUAL GC PROOF REQUIRED - This is the inner part of CallSchemeEx.
+    // Because we use scheme_setjmp in this function, we also need to use
+    // MZ_GC_DECL_REG.  This allows scheme_setjmp to know how to unwind the
+    // GC stack properly.  But this also implies that we can't use C++
+    // exceptions, or local variables with destructors.
+
+	Scheme_Object *result = NULL;
+
+    // MANUAL GC PROOF REQUIRED - Double-check these indices and make sure
+    // we're obeying the standard PLT garbage-collection protocol.
+    MZ_GC_DECL_REG(5);            // 3 for array, 1 for each var
+    MZ_GC_VAR_IN_REG(0, inFunc);
+    MZ_GC_ARRAY_VAR_IN_REG(1, inArgv, inArgc);
+    MZ_GC_VAR_IN_REG(4, result);  // Skip two for array
+    MZ_GC_REG();
 
 	// Save our jump buffer.
 	mz_jmp_buf save;
@@ -368,26 +541,20 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 	// Install a Scheme exception handler.  See the MzScheme internals
 	// manual for more information on how this works; it appears to be
 	// built around the arcane setjmp and longjmp functions in C.
-	if (scheme_setjmp(scheme_error_buf))
-	{
+	if (scheme_setjmp(scheme_error_buf)) {
 		// Scheme tried to throw an exception out of inFuncName, which
 		// is forbidden.  So we want to die with a fatal error.  (Note
 		// that we can't get the error message from C; this exception
 		// should have been caught and handled by Scheme.)
 		gLog.FatalError("Scheme kernel threw unexpected exception");
-	}
-	else
-	{
+	} else {
 		// Call the function.  
-		Scheme_Object *f = static_cast<Scheme_Object*>(bucket->val);
-		if (f)
-			result = scheme_apply(f, inArgc, inArgv);
-		else
-			gLog.FatalError("Can't find %s", inFuncName);
+        result = scheme_apply(inFunc, inArgc, inArgv);
 	}
 
 	// Restore our jump buffer and exit.
 	memcpy(&scheme_error_buf, &save, sizeof(mz_jmp_buf));
+    MZ_GC_UNREG();
 	return result;
 }
 
@@ -397,61 +564,86 @@ Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
 {
 	// Under normal circumstances, we only want to call functions defined
 	// in the kernel, which is running in the script's namespace.
-	return CallSchemeEx(sScriptEnv, sKernelModule, inFuncName,
-						inArgc, inArgv);
+    //
+    // MANUAL GC PROOF REQUIRED - It's safe to pass these variables
+    // straight through, because we don't do any allocations.
+	return CallSchemeEx(sScriptEnv, sKernelModule, inFuncName, inArgc, inArgv);
 }
 
 Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName)
 {
 	// Call a function with no arguments.
-	Scheme_Object *junk = scheme_false;
-	return CallScheme(inFuncName, 0, &junk);
+	return CallScheme(inFuncName, 0, NULL);
 }
 
 Scheme_Object *TSchemeInterpreter::MakeSchemePoint(const TPoint &inPoint) {
-	Scheme_Object *args[2];
+    TSchemeArgs<2> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+    
 	args[0] = scheme_make_integer_value(inPoint.X());
 	args[1] = scheme_make_integer_value(inPoint.Y());
-	return CallScheme("point", 2, args);
+	return CallScheme("point", args.size(), args.get());
 }
 
 Scheme_Object *TSchemeInterpreter::MakeSchemeRect(const TRect &inRect) {
-	Scheme_Object *args[4];
+    TSchemeArgs<4> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+
 	args[0] = scheme_make_integer_value(inRect.Left());
 	args[1] = scheme_make_integer_value(inRect.Top());
 	args[2] = scheme_make_integer_value(inRect.Right());
 	args[3] = scheme_make_integer_value(inRect.Bottom());
-	return CallScheme("rect", 4, args);
+	return CallScheme("rect", args.size(), args.get());
 }
 
 Scheme_Object *
 TSchemeInterpreter::MakeSchemeColor(const GraphicsTools::Color &inColor) {
-	Scheme_Object *args[4];
+    TSchemeArgs<4> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+
 	args[0] = scheme_make_integer_value(inColor.red);
 	args[1] = scheme_make_integer_value(inColor.green);
 	args[2] = scheme_make_integer_value(inColor.blue);
 	args[3] = scheme_make_integer_value(inColor.alpha);
-	return CallScheme("color", 4, args);
+	return CallScheme("color", args.size(), args.get());
 }
 
 Scheme_Object *TSchemeInterpreter::MakeSchemePolygon(const TPolygon &inPoly) {
+    // See http://www.parashift.com/c++-faq-lite/containers.html#faq-34.3
+    // (in the standard C++ FAQ), which contains a section "Is the storage
+    // for a std::vector<T> guaranteed to be contiguous?".  The answer is
+    // "yes," assuming we don't resize the vector.  So we can use &args[0]
+    // and get a C pointer.
 	std::vector<TPoint> vertices(inPoly.Vertices());
 	size_t sz = vertices.size();
+    std::vector<Scheme_Object*> args(sz, NULL); 
 
-	scoped_array<Scheme_Object *> args(new Scheme_Object *[sz]);
+    TSchemeReg<0,1> reg;
+    reg.local_array(&args[0], args.size());
+    reg.done();
+
 	std::vector<TPoint>::iterator i = vertices.begin();
-	for (int j = 0; i != vertices.end(); ++j, ++i) {
+	for (int j = 0; i != vertices.end(); ++j, ++i)
 		args[j] = MakeSchemePoint(*i);
-	}
-	return CallScheme("polygon", sz, args.get());
+    ASSERT(args.size() == sz);
+	return CallScheme("polygon", args.size(), &args[0]);
 }
 
 Scheme_Object *
 TSchemeInterpreter::MakeSchemePercent(const TPercent &inPercent) {
-	Scheme_Object *args[1];
-	args[0] = scheme_make_double(inPercent.GetValue());
+    TSchemeArgs<1> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
 
-	return CallScheme("percent", 1, args);
+	args[0] = scheme_make_double(inPercent.GetValue());
+	return CallScheme("percent", args.size(), args.get());
 }
 
 void TSchemeInterpreter::Run(SystemIdleProc inIdleProc)
@@ -473,6 +665,8 @@ void TSchemeInterpreter::Stop()
 
 bool TSchemeInterpreter::IsStopped()
 {
+    // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
+    // CallSchemeSimple, so don't need a TSchemeReg here.
 	Scheme_Object *o = CallSchemeSimple("%kernel-stopped?");
 	return SCHEME_FALSEP(o) ? false : true;
 }
@@ -486,6 +680,8 @@ void TSchemeInterpreter::Go(const char *card)
 
 bool TSchemeInterpreter::CanSuspend()
 {
+    // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
+    // CallSchemeSimple, so don't need a TSchemeReg here.
 	Scheme_Object *o = CallSchemeSimple("%kernel-can-suspend?");
 	return SCHEME_FALSEP(o) ? false : true;
 }
@@ -502,6 +698,8 @@ void TSchemeInterpreter::WakeUp(void)
 
 bool TSchemeInterpreter::Paused(void)
 {
+    // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
+    // CallSchemeSimple, so don't need a TSchemeReg here.
 	Scheme_Object *o = CallSchemeSimple("%kernel-paused?");
 	return SCHEME_FALSEP(o) ? false : true;
 }
@@ -513,60 +711,116 @@ void TSchemeInterpreter::KillCurrentCard(void)
 
 void TSchemeInterpreter::JumpToCardByName(const char *inName)
 {
+    TSchemeArgs<1> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+
 	ASSERT(!IsStopped()); // Stopped cards must be resumed by Go().
-	Scheme_Object *args[1];
+
 	args[0] = scheme_make_utf8_string(inName);
-	(void) CallScheme("%kernel-jump-to-card-by-name", 1, args);
+	(void) CallScheme("%kernel-jump-to-card-by-name", args.size(), args.get());
 }
 
 std::string TSchemeInterpreter::CurCardName(void)
 {
-	Scheme_Object *o = CallSchemeSimple("%kernel-current-card-name");
-	if (!SCHEME_CHAR_STRINGP(o))
+    Scheme_Object *name_obj = NULL, *name_byte_str = NULL;
+    char *name = NULL;
+
+    TSchemeReg<3> reg;
+    reg.local(name_obj);
+    reg.local(name_byte_str);
+    reg.local(name);
+    reg.done();
+
+	name_obj = CallSchemeSimple("%kernel-current-card-name");
+	if (!SCHEME_CHAR_STRINGP(name_obj))
 		gLog.FatalError("Current card name must be string");
-	return SCHEME_BYTE_STR_VAL(scheme_char_string_to_byte_string(o));
+    name_byte_str = scheme_char_string_to_byte_string(name_obj);
+    name = SCHEME_BYTE_STR_VAL(name_byte_str);
+	return std::string(name);
 }
 
 bool TSchemeInterpreter::IsValidCard(const char *inCardName)
 {
-	Scheme_Object *args[1];
+    Scheme_Object *b = NULL;
+    TSchemeArgs<1> args;
+
+    TSchemeReg<1,1> reg;
+    reg.local(b);
+    reg.args(args);
+    reg.done();
+
 	args[0] = scheme_make_utf8_string(inCardName);
-	Scheme_Object *o = CallScheme("%kernel-valid-card?", 1, args);
-	return SCHEME_FALSEP(o) ? false : true;
+	b = CallScheme("%kernel-valid-card?", args.size(), args.get());
+	return SCHEME_FALSEP(b) ? false : true;
 }
 
 bool TSchemeInterpreter::Eval(const std::string &inExpression,
 							  std::string &outResultText)
 {
-	Scheme_Object *args[1];
+    Scheme_Object *o = NULL, *car = NULL, *cdr = NULL, *byte_str = NULL;
+    TSchemeArgs<1> args;
+
+    TSchemeReg<4,1> reg;
+    reg.local(o);
+    reg.local(car);
+    reg.local(cdr);
+    reg.local(byte_str);
+    reg.args(args);
+    reg.done();
+    
 	args[0] = scheme_make_utf8_string(inExpression.c_str());
-	Scheme_Object *o = CallScheme("%kernel-eval", 1, args);
-	if (!SCHEME_PAIRP(o) ||
-		!SCHEME_BOOLP(SCHEME_CAR(o)) ||
-		!SCHEME_CHAR_STRINGP(SCHEME_CDR(o)))
+	o = CallScheme("%kernel-eval", args.size(), args.get());
+
+	if (!SCHEME_PAIRP(o))
 		gLog.FatalError("Unexpected result from %kernel-eval");
-	Scheme_Object *byte_str = scheme_char_string_to_byte_string(SCHEME_CDR(o));
-	outResultText = SCHEME_BYTE_STR_VAL(byte_str);
-	return SCHEME_FALSEP(SCHEME_CAR(o)) ? false : true;
+    car = SCHEME_CAR(o);
+    cdr = SCHEME_CDR(o);
+    if (!SCHEME_BOOLP(car) || !SCHEME_CHAR_STRINGP(cdr))
+		gLog.FatalError("Unexpected result from %kernel-eval");
+
+	byte_str = scheme_char_string_to_byte_string(cdr);
+	outResultText = std::string(SCHEME_BYTE_STR_VAL(byte_str));
+	return SCHEME_FALSEP(car) ? false : true;
 }
 
 std::vector<TScriptIdentifier> TSchemeInterpreter::GetKnownIdentifiers() {
+    Scheme_Object *raw_ids = NULL;
+
+    TSchemeReg<1> reg;
+    reg.local(raw_ids);
+    reg.done();
+
     // Fetch our list of identifiers & types.
-    Scheme_Object *raw_ids = CallSchemeSimple("%kernel-get-identifiers");
+    raw_ids = CallSchemeSimple("%kernel-get-identifiers");
 
     // Convert this list into C++ objects.
 	std::vector<TScriptIdentifier> ids;
     while (SCHEME_PAIRP(raw_ids)) {
-        Scheme_Object *raw_id = SCHEME_CAR(raw_ids);
-        Scheme_Object *cdr, *cddr;
+        Scheme_Object *raw_id = NULL, *cdr = NULL, *cddr = NULL;
+        Scheme_Object *raw_name = NULL, *raw_type = NULL, *raw_hint = NULL;
+
+        TSchemeReg<6> reg;
+        reg.local(raw_id);
+        reg.local(cdr);
+        reg.local(cddr);
+        reg.local(raw_name);
+        reg.local(raw_type);
+        reg.local(raw_hint);
+        reg.done();
+
+        // MANUAL GC PROOF REQUIRED - Read through this whole section
+        // slowly and make sure it's obeying all the rules.
+        raw_id = SCHEME_CAR(raw_ids);
         if (!SCHEME_PAIRP(raw_id)
             || !SCHEME_PAIRP((cdr = SCHEME_CDR(raw_id)))
             || !SCHEME_PAIRP((cddr = SCHEME_CDR(cdr)))
             || !SCHEME_NULLP(SCHEME_CDR(cddr)))
             gLog.FatalError("Malformed result from %kernel-get-identifiers");
-        Scheme_Object *raw_name = SCHEME_CAR(raw_id);
-        Scheme_Object *raw_type = SCHEME_CAR(cdr);
-        Scheme_Object *raw_hint = SCHEME_CAR(cddr);
+        raw_name = SCHEME_CAR(raw_id);
+        raw_type = SCHEME_CAR(cdr);
+        raw_hint = SCHEME_CAR(cddr);
         if (!SCHEME_SYMBOLP(raw_name) || !SCHEME_SYMBOLP(raw_type))
             gLog.FatalError("Malformed result from %kernel-get-identifiers");
         long hint;

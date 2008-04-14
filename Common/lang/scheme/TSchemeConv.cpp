@@ -35,17 +35,27 @@ REGISTER_TEST_CASE_FILE(TSchemeConv);
 //=========================================================================
 
 static Scheme_Object *MakeSchemeList(const TValueList &inList) {
-	Scheme_Object *result = scheme_null;
+	Scheme_Object *result = NULL, *car = NULL;
 
+    TSchemeReg<2> reg;
+    reg.local(result);
+    reg.local(car);
+    reg.done();
+
+    result = scheme_null;
 	TValueList::const_reverse_iterator i = inList.rbegin();
 	for (; i != inList.rend(); ++i) {
-		result = scheme_make_pair(TValueToScheme(*i), result);
+        car = TValueToScheme(*i);
+		result = scheme_make_pair(car, result);
 
 	}
 	return result;
 }
 
 Scheme_Object *Halyard::TValueToScheme(TValue inVal) {
+    // MANUAL GC PROOF REQUIRED - Any Scheme objects we allocate in this
+    // function are immediately returned.  So for now, we don't need to use
+    // TSchemeReg here.
 	switch (inVal.GetType())
 	{	
 		case TValue::TYPE_NULL: {
@@ -130,10 +140,20 @@ static void SchemeTypeCheckFail() {
 static void SchemeTypeCheckStruct(const char *inPredicate,
 								  Scheme_Object *inVal)
 {
+	Scheme_Object *b = NULL;
+    TSchemeArgs<1> args;
+    
+    TSchemeReg<2,1> reg;
+    reg.param(inVal);
+    reg.local(b);
+    reg.args(args);
+    reg.done();
+
 	// We want to verify that inVal is an instance of a Swindle class 
 	// class specified by inPredicate. If the object if of the right 
 	// class, CallScheme returns true.
-	Scheme_Object *b = TSchemeInterpreter::CallScheme(inPredicate, 1, &inVal);
+    args[0] = inVal;
+	b = TSchemeInterpreter::CallScheme(inPredicate, args.size(), args.get());
 	if (SCHEME_FALSEP(b))
 		SchemeTypeCheckFail();
 }
@@ -141,13 +161,28 @@ static void SchemeTypeCheckStruct(const char *inPredicate,
 static Scheme_Object *SchemeGetMember(const char *inName,
                                       Scheme_Object *inVal)
 {
-    return TSchemeInterpreter::CallScheme(inName, 1, &inVal);
+    TSchemeArgs<1> args;
+
+    TSchemeReg<1,1> reg;
+    reg.param(inVal);
+    reg.args(args);
+    reg.done();
+
+    args[0] = inVal;
+    return TSchemeInterpreter::CallScheme(inName, args.size(), args.get());
 }
 
 static int32 SchemeGetInt32Member(const char *inName,
 								  Scheme_Object *inVal)
 {
-	Scheme_Object *val = SchemeGetMember(inName, inVal);
+	Scheme_Object *val = NULL;
+
+    TSchemeReg<2> reg;
+    reg.param(inVal);
+    reg.local(val);
+    reg.done();
+
+	val = SchemeGetMember(inName, inVal);
 	if (!SCHEME_EXACT_INTEGERP(val))
 		SchemeTypeCheckFail();
 	long result;
@@ -159,13 +194,24 @@ static int32 SchemeGetInt32Member(const char *inName,
 static double SchemeGetRealMember(const char *inName,
 								  Scheme_Object *inVal)
 {
-	Scheme_Object *val = SchemeGetMember(inName, inVal);
+	Scheme_Object *val = NULL;
+    
+    TSchemeReg<2> reg;
+    reg.param(inVal);
+    reg.local(val);
+    reg.done();
+
+	val = SchemeGetMember(inName, inVal);
 	if (!SCHEME_REALP(val))
 		SchemeTypeCheckFail();
-	return scheme_real_to_double(val);
+    return scheme_real_to_double(val);
 }
 
 static TValue SchemeLongOrULongToTValue(Scheme_Object *inVal) {
+    TSchemeReg<1> reg;
+    reg.param(inVal);
+    reg.done();
+
 	if (!SCHEME_EXACT_INTEGERP(inVal))
 		SchemeTypeCheckFail();
 	
@@ -188,12 +234,22 @@ static TValue SchemeLongOrULongToTValue(Scheme_Object *inVal) {
 	return TValue();
 }
 
-static TValue SchemeToTPoint(Scheme_Object *inVal) {	
+static TValue SchemeToTPoint(Scheme_Object *inVal) {
+    TSchemeReg<1> reg;
+    reg.param(inVal);
+    reg.done();
+	
+    // Note that SchemeGetInt32Member returns an integer, so we don't need to
+    // register it with the GC.
 	return TValue(TPoint(SchemeGetInt32Member("point-x", inVal),
 						 SchemeGetInt32Member("point-y", inVal)));
 }
 
 static TValue SchemeToTRect(Scheme_Object *inVal) {	
+    TSchemeReg<1> reg;
+    reg.param(inVal);
+    reg.done();
+
 	return TValue(TRect(SchemeGetInt32Member("rect-left", inVal),
 						SchemeGetInt32Member("rect-top", inVal),
 						SchemeGetInt32Member("rect-right", inVal),
@@ -201,6 +257,10 @@ static TValue SchemeToTRect(Scheme_Object *inVal) {
 }
 
 static TValue SchemeToColor(Scheme_Object *inVal) {
+    TSchemeReg<1> reg;
+    reg.param(inVal);
+    reg.done();
+
 	using GraphicsTools::Channel;
 	return TValue(Color(SchemeGetInt32Member("color-red", inVal),
 						SchemeGetInt32Member("color-green", inVal),
@@ -209,25 +269,42 @@ static TValue SchemeToColor(Scheme_Object *inVal) {
 }
 
 static TValue SchemeListToTValue(Scheme_Object *inVal) {
+    Scheme_Object *car = NULL;
+
+    TSchemeReg<2> reg;
+    reg.param(inVal);
+    reg.local(car);
+    reg.done();
+
 	TValueList list;
 	while (SCHEME_PAIRP(inVal)) {
-		list.push_back(SchemeToTValue(SCHEME_CAR(inVal)));
+        car = SCHEME_CAR(inVal);
+		list.push_back(SchemeToTValue(car));
 		inVal = SCHEME_CDR(inVal);
 	}
 	if (!SCHEME_NULLP(inVal))
 		THROW("Cannot pass dotted lists to primitives");
-
 	return TValue(list);
 }
 
 static TValue SchemeToTPolygon(Scheme_Object *inVal) {	
+    Scheme_Object *scheme_pts = NULL, *current = NULL;
+    TSchemeArgs<1> args;
+
+    TSchemeReg<3,1> reg;
+    reg.param(inVal);
+    reg.local(scheme_pts);
+    reg.local(current);
+    reg.args(args);
+    reg.done();
+
 	std::vector<TPoint> pts;
-	Scheme_Object *scheme_pts = 
-		TSchemeInterpreter::CallScheme("polygon-vertices", 1, &inVal);
+    args[0] = inVal;
+	scheme_pts = TSchemeInterpreter::CallScheme("polygon-vertices",
+                                                args.size(), args.get());
 	if (!(SCHEME_PAIRP(scheme_pts) || SCHEME_NULLP(scheme_pts)))
 		SchemeTypeCheckFail();
 	
-	Scheme_Object *current;
 	while (SCHEME_PAIRP(scheme_pts)) {
 		current = SCHEME_CAR(scheme_pts);
 		SchemeTypeCheckStruct("point?", current);
@@ -242,6 +319,10 @@ static TValue SchemeToTPolygon(Scheme_Object *inVal) {
 }
 
 static TValue SchemeToTPercent(Scheme_Object *inVal) {
+    TSchemeReg<1> reg;
+    reg.param(inVal);
+    reg.done();
+
 	return TValue(TPercent(SchemeGetRealMember("percent-value", inVal)));
 }
 
@@ -254,8 +335,8 @@ struct TypeInfo {
 	TValue (*conv)(Scheme_Object *);
 };
 
-/// Remember to add TypeInfo data for any new supported Swindle 
-/// classes that TSchemeConv can support.
+/// Remember to add TypeInfo data for any new supported Scheme structs that
+/// TSchemeConv can support.
 static TypeInfo gTypeInfo[] = {
 	{"point?", &SchemeToTPoint},
 	{"rect?", &SchemeToTRect},
@@ -266,17 +347,30 @@ static TypeInfo gTypeInfo[] = {
 };
 
 static TValue SchemeClosureToTValue(Scheme_Object *inVal) {
+    TSchemeReg<1> reg;
+    reg.param(inVal);
+    reg.done();
+
 	return TValue(TCallbackPtr(new TSchemeCallback(inVal)));
 }
 
 static TValue SchemeStructToTValue(Scheme_Object *inVal) {
+    Scheme_Object *b = NULL;
+    TSchemeArgs<1> args;
+
+    TSchemeReg<2,1> reg;
+    reg.param(inVal);
+    reg.local(b);
+    reg.args(args);
+    reg.done();
+
 	// Loop through the array of all supported SchemeToTValue 
 	// conversions for struct types.
 	int i = 0;
 	while (gTypeInfo[i].predicate != NULL) {
-		Scheme_Object *b = 
-			TSchemeInterpreter::CallScheme(gTypeInfo[i].predicate,
-										   1, &inVal);
+        args[0] = inVal;
+		b =  TSchemeInterpreter::CallScheme(gTypeInfo[i].predicate, 
+                                            args.size(), args.get());
 		if (SCHEME_TRUEP(b))
 			return gTypeInfo[i].conv(inVal);
 		i++;
@@ -285,6 +379,15 @@ static TValue SchemeStructToTValue(Scheme_Object *inVal) {
 }
 
 TValue Halyard::SchemeToTValue(Scheme_Object *inVal) {
+    Scheme_Object *byte_str = NULL;
+    char *str_val = NULL;
+
+    TSchemeReg<3> reg;
+    reg.param(inVal);
+    reg.local(byte_str);
+    reg.local(str_val);
+    reg.done();
+    
 	Scheme_Type type = SCHEME_TYPE(inVal);
 	
 	switch (type) {
@@ -292,17 +395,23 @@ TValue Halyard::SchemeToTValue(Scheme_Object *inVal) {
 			return TValue(TNull());
 
 	    case scheme_char_string_type:
-			return SchemeToTValue(scheme_char_string_to_byte_string(inVal));
+            byte_str = scheme_char_string_to_byte_string(inVal);
+			return SchemeToTValue(byte_str);
 
 	    case scheme_byte_string_type:
-			return TValue(std::string(SCHEME_BYTE_STR_VAL(inVal), 
-									  SCHEME_BYTE_STRLEN_VAL(inVal)));
+            str_val = SCHEME_BYTE_STR_VAL(inVal);
+			return TValue(std::string(str_val, SCHEME_BYTE_STRLEN_VAL(inVal)));
 
-	    case scheme_path_type:
-			return TValue(std::string(SCHEME_PATH_VAL(inVal), 
-									  SCHEME_PATH_LEN(inVal)));
+	    case SCHEME_PLATFORM_PATH_KIND:
+            str_val = SCHEME_PATH_VAL(inVal);
+			return TValue(std::string(str_val, SCHEME_PATH_LEN(inVal)));
 			
 		case scheme_symbol_type:
+            // MANUAL GC PROOF REQUIRED - SCHEME_SYM_VAL here returns an
+            // interior pointer, so we can't pass it TSchemeReg.  Please
+            // manually verify that there are no allocations between the
+            // time we call SCHEME_SYM_VAL and the time we make a safe copy
+            // of it.
 			return TValue(TSymbol(std::string(SCHEME_SYM_VAL(inVal))));
 
 		// We will convert both 16bit and 32bit numbers to C++
@@ -348,31 +457,89 @@ TValue Halyard::SchemeToTValue(Scheme_Object *inVal) {
 // This function compares two scheme objects for equality.
 // Note: We are using the scheme EQUALS? since we might be
 // dealing with swindle classes.
-static bool SchemeEquals(const Scheme_Object *inObj1,
-						 const Scheme_Object *inObj2)
+static bool SchemeEquals(Scheme_Object *inObj1, Scheme_Object *inObj2)
 {
-	Scheme_Object *args[2];
-	args[0] = const_cast<Scheme_Object *>(inObj1);
-	args[1] = const_cast<Scheme_Object *>(inObj2);
-	return SCHEME_TRUEP(TSchemeInterpreter::CallScheme("%kernel-equals?",
-													   2, args));
+    Scheme_Object *b = NULL;
+    TSchemeArgs<2> args;
+
+    TSchemeReg<3,1> reg;
+    reg.param(inObj1);
+    reg.param(inObj2);
+    reg.local(b);
+    reg.args(args);
+    reg.done();
+
+	args[0] = inObj1;
+	args[1] = inObj2;
+    b = TSchemeInterpreter::CallScheme("%kernel-equals?",
+                                       args.size(), args.get());
+	return SCHEME_TRUEP(b);
 }
 
+// This is a manually-instantiated version of TestCase.h's CheckFuncHelper,
+// but with proper calls to TSchemeReg.
+void SchemeEqualsHelper(const char *inErrorFile, int inErrorLine,
+                        const char *inExpr1, const char *inExpr2,
+                        Scheme_Object *inVal1, Scheme_Object *inVal2) {
+    TSchemeReg<2> reg;
+    reg.param(inVal1);
+    reg.param(inVal2);
+    reg.done();
 
-#define CHECK_SCHEME_EQUALS(expr1, expr2) \
-    CheckFuncHelper(__FILE__, __LINE__, "SchemeEquals", #expr1, #expr2, \
-                    SchemeEquals, expr1, expr2)
+	if (!SchemeEquals(inVal1, inVal2)) {
+		std::ostringstream out;
+		out << "expected (equals? (" << inExpr1 << ") (" << inExpr2
+			<< ")), got: " << inVal1 << ", " << inVal2;
+		throw TestFailed(inErrorFile, inErrorLine, out.str());
+	}
+}
 
-#define CHECK_TVALUE_CONV(inVal, inResult) \
-    CHECK_SCHEME_EQUALS(TValueToScheme(inVal), (inResult));
+// MANUAL GC PROOF REQUIRED - This is a fairly complicated helper, but only
+// because we want it to deal with a lot of GC-related issues for us.
+// Here, VALUE will be converted to Scheme value, registered properly with
+// the GC, and tested against RESULT.  The value returned by RESULT will
+// also be registered correctly with the GC, so it's safe to write
+// something like:
+//
+//   CHECK_TVALUE_CONV("Hello", scheme_make_utf8_string("Hello"));
+//
+// But note that you can't nest two allocating calls on the right-hand side:
+//
+//   // WILL NOT WORK!
+//   CHECK_TVALUE_CONV(..., scheme_make_pair(car, scheme_make_pair(...));
+//
+// In this case, you must unwrap the inner call and assign it to a
+// registered local variable, as usual.
+#define CHECK_TVALUE_CONV(VALUE, RESULT) do { \
+    Scheme_Object *value = NULL; \
+    Scheme_Object *result = NULL; \
+    \
+    TSchemeReg<2> reg; \
+    reg.local(value); \
+    reg.local(result); \
+    reg.done(); \
+    \
+    value = TValueToScheme(VALUE); \
+    result = (RESULT); \
+    \
+    SchemeEqualsHelper(__FILE__, __LINE__, #VALUE, #RESULT, value, result); \
+} while (0)
 
 BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
-	CHECK_EQ(SchemeEquals(scheme_make_utf8_string("foo"),
-						  scheme_make_utf8_string("foo")),
-			 true);
-	CHECK_EQ(SchemeEquals(scheme_make_utf8_string("foo"),
-						  scheme_make_utf8_string("bar")),
-			 false);
+    Scheme_Object *foo_str = NULL, *bar_str = NULL;
+    Scheme_Object *car = NULL, *cdr = NULL;
+
+    TSchemeReg<4> reg;
+    reg.local(foo_str);
+    reg.local(bar_str);
+    reg.local(car);
+    reg.local(cdr);
+    reg.done();
+
+    foo_str = scheme_make_utf8_string("foo");
+    bar_str = scheme_make_utf8_string("bar");
+    CHECK_EQ(SchemeEquals(foo_str, foo_str), true);
+	CHECK_EQ(SchemeEquals(foo_str, bar_str), false);
 
 	// Test simple types.
 	CHECK_TVALUE_CONV("Hello", scheme_make_utf8_string("Hello"));
@@ -397,13 +564,13 @@ BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
 	TValueList list;
 	list.push_back(1);
 	list.push_back("foo");
-	Scheme_Object *result =
-		scheme_make_pair(scheme_make_integer_value(1),
-						 scheme_make_pair(scheme_make_utf8_string("foo"),
-										  scheme_null));
-	CHECK_TVALUE_CONV(list, result);
+    car = scheme_make_integer_value(1);
+    cdr = scheme_make_pair(foo_str, scheme_null);
+	CHECK_TVALUE_CONV(list, scheme_make_pair(car, cdr));
 
-	// Test polygons.
+	// Test polygons.  (Not all that useful; we're basically checking the
+	// result of the conversion against the result of the function that it
+	// calls to perform the conversion!)
 	std::vector<TPoint> poly;
 	poly.push_back(TPoint(0, 0));
     poly.push_back(TPoint(0, 10));
@@ -419,14 +586,31 @@ BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
 					  TSchemeInterpreter::MakeSchemePercent(TPercent(72.0)));
 } END_TEST_CASE(TestTValueToScheme);
 
-
-void CHECK_SCHEME_CONV(Scheme_Object *inVal, const TValue inResult) {
-	CHECK_EQ(SchemeToTValue(inVal), inResult);
-}
-
+// MANUAL GC PROOF REQUIRED - As with CHECK_TVALUE_CONV, we handle GC
+// registration for VALUE so our caller doesn't have to.  But again, no
+// nesting of allocating functions in VALUE is permitted.
+#define CHECK_SCHEME_CONV(SCHEME_VALUE, RESULT) do { \
+    Scheme_Object *scheme_value = NULL; \
+    \
+    TSchemeReg<1> reg; \
+    reg.local(scheme_value); \
+    reg.done(); \
+    \
+    scheme_value = (SCHEME_VALUE); \
+	CHECK_EQ(SchemeToTValue(scheme_value), (RESULT));   \
+} while (0)
 
 BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
-	
+    Scheme_Object *foo_str = NULL, *car = NULL, *cdr = NULL;
+
+    TSchemeReg<3> reg;
+    reg.local(foo_str);
+    reg.local(car);
+    reg.local(cdr);
+    reg.done();
+
+    foo_str = scheme_make_utf8_string("foo");
+    	
 	// Simple types
 	CHECK_SCHEME_CONV(scheme_void, TValue(TNull()));
 	CHECK_SCHEME_CONV(scheme_make_utf8_string("hello"), TValue("hello"));
@@ -440,8 +624,7 @@ BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 	CHECK_SCHEME_CONV(scheme_make_integer_value_from_unsigned(MAX_UINT32),
 					  TValue(MAX_UINT32));
 	
-	CHECK_SCHEME_CONV(scheme_make_double(32.0), 
-					  TValue(32.0));
+	CHECK_SCHEME_CONV(scheme_make_double(32.0), TValue(32.0));
 	CHECK_SCHEME_CONV(scheme_true, TValue(true));
 	CHECK_SCHEME_CONV(scheme_false, TValue(false));
 	
@@ -460,11 +643,9 @@ BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 	TValueList list;
 	list.push_back(1);
 	list.push_back("foo");
-	Scheme_Object *result =
-		scheme_make_pair(scheme_make_integer_value(1),
-						 scheme_make_pair(scheme_make_utf8_string("foo"),
-										  scheme_null));
-	CHECK_SCHEME_CONV(result, list);
+    car = scheme_make_integer_value(1);
+    cdr = scheme_make_pair(foo_str, scheme_null);
+	CHECK_SCHEME_CONV(scheme_make_pair(car, cdr), list);
 
 	// Test polygons.
 	std::vector<TPoint> poly;

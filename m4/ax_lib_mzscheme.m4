@@ -95,7 +95,11 @@ AC_DEFUN([AX_LIB_MZSCHEME],
                 fi
             done
         fi
-        ac_mzscheme_cppflags="-I$ac_mzscheme_path/include"
+
+        if test $ac_mzscheme_want_precise_gc = 1; then
+            ac_mzscheme_gc_defs="-DMZ_PRECISE_GC"
+        fi
+        ac_mzscheme_cppflags="$ac_mzscheme_gc_defs -I$ac_mzscheme_path/include"
 
         if test -d "$ac_mzscheme_path/lib/PLT_MzScheme.framework"; then
             ac_mzscheme_libdir="-F$ac_mzscheme_path/lib"

@@ -30,12 +30,17 @@
 // especially necessary because we often link against QuickTime, which maps
 // huge areas of graphics card memory into our address space, causing Boehm
 // to run very... very... very... slowly.
+//
+// Note that you are not allowed to throw an exception through
+// HALYARD_BEGIN_STACK_BASE / HALYARD_END_STACK_BASE.
 #include <scheme.h>
-#define HALYARD_SET_STACK_BASE() \
-    do { \
-        int dummy; \
-        scheme_set_stack_base(&dummy, 1); \
-    }  while (0)
+#define HALYARD_BEGIN_STACK_BASE() \
+    MZ_GC_DECL_REG(0); \
+    MZ_GC_REG(); \
+    scheme_set_stack_base(&__gc_var_stack__, 1);
+
+#define HALYARD_END_STACK_BASE() \
+    MZ_GC_UNREG();
 
 BEGIN_NAMESPACE_HALYARD
 

@@ -27,6 +27,8 @@
 #include "TPrimitives.h"
 #include "FileSystem.h"
 #include "TSchemePtr.h"
+#include "TSchemeArgs.h"
+#include "TSchemeReg.h"
 #include "TSchemeCallback.h"
 #include "TSchemeConv.h"
 
@@ -42,7 +44,7 @@ class TPercent;
 ///
 class TSchemeInterpreterManager : public TInterpreterManager
 {
-	Scheme_Env *mGlobalEnv;
+	TSchemePtr<Scheme_Env> mGlobalEnv;
     shared_ptr<ScriptEditorDB> mScriptEditorDB;
 
 public:
@@ -68,19 +70,38 @@ class TSchemeInterpreter : public TInterpreter
 	friend class TSchemeInterpreterManager;
 	friend class TSchemeCallback;
 
-	static Scheme_Env *sGlobalEnv;
-	static Scheme_Env *sScriptEnv;
+	static TSchemePtr<Scheme_Env> sGlobalEnv;
+	static TSchemePtr<Scheme_Env> sScriptEnv;
 	static TSchemePtr<Scheme_Object> sLoaderModule;
 	static TSchemePtr<Scheme_Object> sKernelModule;
 
+    // Compare two Scheme pointers for equality in a GC-safe fashion.
+    //
+    // MANUAL GC PROOF REQUIRED - We don't need to use a TSchemeReg because
+    // we pass our arguments straight through.  We also assume that it's
+    // safe to cast pointers of type Scheme_Env, etc, to Scheme_Object when
+    // performing this comparison.
+    template <typename T>
+    static bool Eq(T *left, T *right) {
+        return scheme_eq(reinterpret_cast<Scheme_Object*>(left),
+                         reinterpret_cast<Scheme_Object*>(right));
+    }
+
     struct BucketKey {
-        TSchemePtr<Scheme_Env> env;
-        TSchemePtr<Scheme_Object> module;
+        // We use these enumerations to represent all possible environments
+        // and modules, because we can't rely on stable pointers to the
+        // underlying Scheme objects across a garbage collection.  Of
+        // course, this means that we _must_ discard all BucketKey objects
+        // when shutting down a TInterpreter, because it invalidates
+        // anything found in SCRIPT_ENV.
+        enum Env { GLOBAL_ENV, SCRIPT_ENV };
+        enum Module { LOADER_MODULE, KERNEL_MODULE };
+
+        Env env;
+        Module module;
         std::string name;
 
-        BucketKey(TSchemePtr<Scheme_Env> inEnv,
-                  TSchemePtr<Scheme_Object> inModule,
-                  std::string inName)
+        BucketKey(Env inEnv, Module inModule, std::string inName)
             : env(inEnv), module(inModule), name(inName) {}
         
         bool operator<(const BucketKey &inRight) const {
@@ -128,6 +149,9 @@ public:
 									   Scheme_Object *inModule,
 									   const char *inFuncName,
 									   int inArgc, Scheme_Object **inArgv);
+    static Scheme_Object *CallSchemeExHelper(Scheme_Object *inFunc,
+                                             int inArgc,
+                                             Scheme_Object **inArgv);
 	static Scheme_Object *CallScheme(const char *inFuncName,
 									 int inArgc, Scheme_Object **inArgv);
 	static Scheme_Object *CallSchemeSimple(const char *inFuncName);

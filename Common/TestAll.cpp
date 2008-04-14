@@ -143,7 +143,7 @@ void prompt_done(bool should_wait) {
 }
 
 int main(int argc, char **argv) {
-	HALYARD_SET_STACK_BASE();
+	HALYARD_BEGIN_STACK_BASE();
 
 	bool should_wait = false;
 	if (argc == 2 && std::string(argv[1]) == "--wait")
@@ -169,6 +169,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+    HALYARD_END_STACK_BASE();
     prompt_done(should_wait);
 	return 0;
 }

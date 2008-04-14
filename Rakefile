@@ -88,3 +88,8 @@ CodeSigning::Task.new do |t|
   t.description_url = "http://iml.dartmouth.edu/halyard/"
   t.key_file = 'iml_authenticode_key'
 end
+
+desc "Build libraries in libs/"
+task :libs do
+  VisualStudioDotNet.build "Halyard.sln", "Libraries"  
+end
