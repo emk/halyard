@@ -88,3 +88,27 @@ CodeSigning::Task.new do |t|
   t.description_url = "http://iml.dartmouth.edu/halyard/"
   t.key_file = 'iml_authenticode_key'
 end
+
+desc "Build first-stage PLT bootstrap"
+task :plt_stage_1 do
+  cd "libs/plt/src/worksp/mzscheme" do 
+    VisualStudioDotNet.build "mzscheme.sln", "Release"
+  end
+  cd "libs/plt/src/worksp/mred" do 
+    VisualStudioDotNet.build "mred.sln", "Release"
+  end
+end
+
+# Make sure that the following program has been run to set up your path:
+#  c:/Program Files/Microsoft Visual Studio 8/Common7/Tools/vsvars32.bat
+# See HACKING.txt for notes on use vsvars32.bat with Cygwin.
+desc "Build second-stage PLT bootstrap"
+task :plt_stage_2 => :plt_stage_1 do
+  cd "libs/plt/src/worksp/gc2" do 
+    sh "../../../mzschemecgc.exe", "-r", "make.ss"
+  end
+  cp "libs/plt/lib/libmzsch3mxxxxxxx.dll", "Win32/Bin"
+end
+
+desc "Build libraries in libs/"
+task :libs => :plt_stage_2

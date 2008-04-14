@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1"
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,LIBXML_STATIC"
+				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,LIBXML_STATIC,MZ_PRECISE_GC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -71,6 +71,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalDependencies="../../../libs/plt/lib/msvc/libmzsch3mxxxxxxx.lib"
 				OutputFile=".\Release\Common.lib"
 				SuppressStartupBanner="true"
 			/>
@@ -119,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1"
-				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,LIBXML_STATIC"
+				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,LIBXML_STATIC,MZ_PRECISE_GC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
@@ -148,6 +149,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalDependencies="../../../libs/plt/lib/msvc/libmzsch3mxxxxxxx.lib"
 				OutputFile=".\Debug\Common.lib"
 				SuppressStartupBanner="true"
 			/>
@@ -230,6 +232,10 @@
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\doc\HalyardProgram.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\..\..\Common\Model.cpp"
@@ -352,10 +358,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\doc\HalyardProgram.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\Common\XmlUtils.cpp"
 				>
 			</File>
@@ -390,6 +392,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\GraphicsTools.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\doc\HalyardProgram.h"
 				>
 			</File>
 			<File
@@ -518,10 +524,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\Typography.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\Common\doc\HalyardProgram.h"
 				>
 			</File>
 			<File

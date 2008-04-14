@@ -91,6 +91,22 @@ Downloading Halyard
     boost        libivorbisdec  portaudio  sha1    wxIE
     curl         libxml2        qtcheck    sqlite  wxWidgets
 
+Building PLT Scheme
+-------------------
+
+  [These are experimental build instructions.  They will change, and become
+  better integrated with the main build process.]
+
+  First, install Visual C++.NET 2005 and Rake as described in the sections
+  below.  Then add the following line to C:/cygwin/Cygwin.bat:
+
+  CALL C:"\Program Files\Microsoft Visual Studio 8\Common7\Tools\vsvars32.bat"
+
+  This gives you access to the Visual C++ compilers from the Cygwin command
+  line.  You will need to open a new terminal and run:
+
+    rake libs
+
 Building Win32 Halyard
 ----------------------
 
@@ -139,7 +155,7 @@ Building Win32 Halyard
   of "CommonTest" to $HALYARD_DIR/test.  The test suites won't run without
   this step. Also add "--wait" to the command arguments of CommonTest, in 
   both the debug and release builds, so you can see the results of the test
-  suites. 
+  suites.
 
   Make sure "Debug" is selected in the "Solution Configurations" popup
   on your toolbar. In the "Solution Explorer", right click on
