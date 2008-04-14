@@ -22,6 +22,10 @@
       ;; apparently based on whether GC has happened or not. If you leave the 
       ;; collec-garbage call in, this will always run fast with 10,000 
       ;; iterations, and always run 100 times slower with 100,000 iterations.
+      ;;
+      ;; Updated numbers from Eric's Vista box:
+      ;;   PLT v360: 36ms (10000 times)  1768ms (100000 times)
+      ;;   PLT v372: 26ms (10000 times)   567ms (100000 times)
       (collect-garbage)
       (define start (current-milliseconds))
       (define grandchild (%grandchild% .new))
