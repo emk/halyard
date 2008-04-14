@@ -70,6 +70,24 @@ DEFINE_PRIMITIVE(SchemeIdle)
 	::SkipPrimitiveLogging();
 }
 
+DEFINE_PRIMITIVE(SchemeSetCollectsDir)
+{
+    std::string dir;
+    inArgs >> dir;
+
+    Scheme_Object *path = NULL;
+
+    TSchemeReg<1> reg;
+    reg.local(path);
+    reg.done();
+
+    // Set our standard collects dir.  For some reason, we can't actually
+    // do this from Scheme.  But it's easier to actually decide what our
+    // collects-dir should be from inside loader.ss, where we have path
+    // functions available.
+    path = scheme_make_path(dir.c_str());
+    scheme_set_collects_path(path);
+}
 
 //=========================================================================
 //	TSchemeInterpreterManager Methods
@@ -82,6 +100,7 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(
 	// Install our primitives.
 	REGISTER_PRIMITIVE(SchemeExit);
 	REGISTER_PRIMITIVE(SchemeIdle);
+    REGISTER_PRIMITIVE(SchemeSetCollectsDir);
     RegisterSchemeScriptEditorDBPrimitives();
 
     Scheme_Object *modname = NULL;
@@ -123,12 +142,10 @@ void TSchemeInterpreterManager::BeginScript()
 {
     Scheme_Config *current_config = NULL;
     Scheme_Object *current_directory = NULL;
-    Scheme_Object *runtime_path = NULL;
 
-    TSchemeReg<3> reg;
+    TSchemeReg<2> reg;
     reg.local(current_config);
     reg.local(current_directory);
-    reg.local(runtime_path);
     reg.done();
 
 	// Let our parent class set things up.
@@ -362,8 +379,6 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
     MZ_GC_VAR_IN_REG(6, prim_name);
     MZ_GC_REG();
 
-	ASSERT(sScriptEnv != NULL);
-
 	// The interpreter checks the arity for us, but we need to check the
 	// argument types.
 	ASSERT(inArgc >= 1);
@@ -394,6 +409,10 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
     ASSERT(SCHEME_BYTE_STRINGP(prim_name_byte_str));
     prim_name = SCHEME_BYTE_STR_VAL(prim_name_byte_str);
     ASSERT(strlen(prim_name) > 0);
+
+    // Only SchemeSetCollectsDir may be called without a sScriptEnv.
+    ASSERT(sScriptEnv != NULL ||
+           strcmp(prim_name, "SchemeSetCollectsDir") == 0);
 
     // Dispatch the primitive call to the routine which is allowed to throw
     // and catch C++ exceptions.

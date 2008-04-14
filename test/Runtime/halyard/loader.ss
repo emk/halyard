@@ -34,6 +34,42 @@
 
   (require #%engine-primitives)
 
+  ;;===== Library collection paths =====
+
+  ;; Find the default collects-dir built into our executable.  This path
+  ;; may be relative to exec-file's parent directory.
+  (define (default-collects-dir)
+    (call-with-values (lambda () (split-path (find-system-path 'exec-file)))
+      (lambda (base name must-be-dir?)
+        (let [[collects (find-system-path 'collects-dir)]]
+          (if (eq? base 'relative)
+            (path->complete-path collects)
+            (path->complete-path collects base))))))
+
+  ;; List of places to search for mzlib and other standard PLT collections.
+  (define $collects-dir-candidates
+    (list
+     ;; If we're using a released version of the engine, then our standard
+     ;; collections will live in Runtime.
+     (build-path (current-directory) "Runtime")
+     ;; If we're using the system's copy of mzscheme, it will supply its
+     ;; own copies of the standard collections.
+     (default-collects-dir)
+     ;; If all else fails, then maybe we're being run from inside the
+     ;; Halyard source tree.  See if we have a checked out copy of PLT.
+     (build-path (current-directory) 'up "libs" "plt" "collects")))
+  
+  ;; Search our possible collection directories for a copy of
+  ;; "mzlib/lists.ss".  Use the first directory that has it as our
+  ;; collects-dir.  We need to do this before we call
+  ;; find-library-collection-paths.
+  (let loop [[candidates $collects-dir-candidates]]
+    (unless (null? candidates)
+      (let [[candidate (car candidates)]]
+        (if (file-exists? (build-path candidate "mzlib" "list.ss"))
+          (%call-prim 'SchemeSetCollectsDir candidate)
+          (loop (cdr candidates))))))
+    
   ;; Make sure the "Runtime" and "Scripts" directories get searched for
   ;; collections of support modules.  Note that if SCRIPTS-DIRECTORY-NAME
   ;; is not equal to "Scripts", we don't attempt to honor that when
