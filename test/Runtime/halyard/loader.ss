@@ -180,6 +180,19 @@
 
   ;;===== Loader =====
 
+  ;; This parameter is only available in our custom-patched version of PLT
+  ;; Scheme.  If it's available, we want to use it, but if not, we need to
+  ;; disable our support for TRUST-PRECOMPILED.
+  (define %always-treat-zo-and-so-as-newer
+    (dynamic-require 'mzscheme 'always-treat-zo-and-so-as-newer))     
+
+  ;; If we don't have always-treat-zo-and-so-as-newer, define a dummy
+  ;; parameter to take its place.
+  (define always-treat-zo-and-so-as-newer-available? #t)
+  (unless %always-treat-zo-and-so-as-newer
+    (set! always-treat-zo-and-so-as-newer-available? #f)
+    (set! %always-treat-zo-and-so-as-newer (make-parameter #f)))
+
   ;; Import a function the hard way.  We can't just (require ...) this
   ;; module because we don't set up the collection paths until its
   ;; too late to help.
@@ -263,7 +276,9 @@
     ;; files.  This will generally only be true if our code was installed
     ;; by a prepackaged installer.
     (let [[always-trust-precompiled?
-           (file-exists? (build-path (current-directory) "TRUST-PRECOMPILED"))]
+           (and always-treat-zo-and-so-as-newer-available?
+                (file-exists? (build-path (current-directory)
+                                          "TRUST-PRECOMPILED")))]
           [filename "none"]]
 
       ;; Set up an error-handling context so we can report load-time errors
@@ -300,23 +315,16 @@
         ;; whatever they find in this parameter, and we don't want to wind
         ;; up with nested compilation managers (a subtle performance
         ;; killer!).
-        ;;
-        ;; TODO - I'm disabling this code, because it relies on a
-        ;; custom-patched version of mzscheme, and we're currently
-        ;; upgrading mzscheme.  Feel free to uncomment this code if you
-        ;; need it.
-        (parameterize [;; Temporary replacement version.
-                       [current-load/use-compiled
+        (parameterize [[current-load/use-compiled
                         (make-compile-zo-with-heartbeat)]
-                       ;;[always-treat-zo-and-so-as-newer
-                       ;; always-trust-precompiled?]
-                       ;;[current-load/use-compiled
-                       ;; (if always-trust-precompiled?
-                       ;;     ;; Load *.zo files blindly if they exist.
-                       ;;     (make-load-with-heartbeat)
-                       ;;     ;; Recompile *.zo files on demand.
-                       ;;     (make-compile-zo-with-heartbeat))]]
-                       ]
+                       [%always-treat-zo-and-so-as-newer
+                        always-trust-precompiled?]
+                       [current-load/use-compiled
+                        (if always-trust-precompiled?
+                            ;; Load *.zo files blindly if they exist.
+                            (make-load-with-heartbeat)
+                            ;; Recompile *.zo files on demand.
+                            (make-compile-zo-with-heartbeat))]]
         
           ;; Support for decent backtraces upon errors.  We pull in 
           ;; the support from errortrace-lib.ss, and then manually enable
