@@ -1,6 +1,81 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.5 - 15 April 2008
+
+This version of Halyard is based on PLT Scheme v372, and uses the new 3m
+garbage collector.  No major script-level changes should be necessary.
+However, you must do several things:
+
+  * Make sure that you no longer have libmzgc2*.dll or libmzsch2*.dll
+    in any of your programs.  These files are obsolete.
+  * Delete any compiled/ directories from 0.5.4 or earlier
+  * If you're running halyard/test, make sure that you only have two
+    subdirectories in test/Runtime: mizzen and halyard.  You can delete
+    other directories by running 'make clean_scheme'.  Forgetting to clean
+    up these directories will make the engine crash as soon as you try to
+    open a script.
+
+Peformance has improved 50-200% on various benchmarks, and we hope to do
+even better in future releases.
+
+Other major highlights include a bundled copy of the build system (in
+tools/buildscript) and support for building all of halyard/Common under Mac
+OS X using MacPorts.
+
+Brian Campbell (10):
+      buildfile.rb: Use svn+ssh URLs instead of https for tagging binaries
+      test: Remove broken and inappropriate test cases
+      Fix HACKING.txt to include correct command for pushing tags and master
+      ax_lib_mzscheme: Detect PLT installed via MacPorts
+      buildfile.rb: Don't include compiled directories in SVN checkin or ZIP
+      Add buildscript as a submodule
+      Remove deprecated TEST-ELEMENTS features
+      Change Tamale->Halyard in animate-doc.txt
+      HACKING.txt: Correct build instructions
+      loader.ss: Add more extensive comments on the path setup
+
+Eric Kidd (39):
+      autotools: Add macro to check for PLT Scheme libraries
+      Fix nasty GC leak in TSchemePtr.h
+      Build Common/lang/scheme (not yet linkable with gcc, though)
+      ax_lib_mzscheme: Use -F for framework search path, not -L
+      ScriptEditorDB: Get current time correctly in test case
+      Disable TRUST-PRECOMPILED support before upgrading PLT
+      Common: Build lang/scheme and re-enable all test cases
+      autotools: Make sure we build all of Common
+      Test case fix: Attempt to find a portable way of updating timestamps
+      Build fix: Make ScriptEditorDB use native_file_string
+      Breaks build: Modify configure.ac to look for PLT v372
+      Untested: Rewrite TSchemePtr to use scheme_malloc_immobile_box
+      PLT v372: Make the code compile (but not actually work)
+      TSchemePtr: Add documentation suggested in code review
+      Pass __gc_var_stack__ to scheme_set_stack_base
+      Add an experimental C++ API for interfacing with PLT's precise GC
+      Explain GC safety assumption made by TSchemePtr's constructor
+      Begin converting code to use new GC API
+      FindBucket: Use stable identifiers with std::map, not movable pointers
+      Document all the patches we had applied to PLT v360
+      TSchemeReg: Fix assertion that checks value of mOffset
+      Make TSchemeInterpreter::Eq call scheme_eq
+      Remove in-tree copies of standard PLT collections
+      Look for PLT collections in standard locations
+      Document interaction between scheme_signal_error and MZ_GC_UNREG
+      Document difference between SCHEME_SYM_VAL and SCHEME_BYTE_STR_VAL
+      Fix symbol-name lookup bug ('make check' now runs!)
+      Makefile: Add 'make stress' target to test PLT v372
+      Switch libs/plt to v372
+      Search for standard PLT library collections in several places
+      PLT v372: Rudimentary support for building with MSVC++
+      Benchmarking results: 50% to 200% faster than PLT v360
+      application.halyard: Update number of files in project
+      Build PLT v372 using MS Visual Studio
+      Re-enable compilation of *.ss files
+      Merge branch 'plt-v372'
+      Rakefile: Add clean_scheme target
+      Restore support for trusting precompiled *.zo files
+      Portability: Test for always-treat-zo-and-so-as-newer correctly
+
 0.5.4 - 9 April 2008
 
 Eric has begun work to port Common to g++ under Mac OS X, using
