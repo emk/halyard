@@ -183,15 +183,18 @@
   ;; This parameter is only available in our custom-patched version of PLT
   ;; Scheme.  If it's available, we want to use it, but if not, we need to
   ;; disable our support for TRUST-PRECOMPILED.
-  (define %always-treat-zo-and-so-as-newer
-    (dynamic-require 'mzscheme 'always-treat-zo-and-so-as-newer))     
-
-  ;; If we don't have always-treat-zo-and-so-as-newer, define a dummy
-  ;; parameter to take its place.
+  ;;
+  ;; Note that if we don't have always-treat-zo-and-so-as-newer, we define
+  ;; a dummy parameter to take its place.  This makes it easier for us to
+  ;; use PARAMETERIZE, below, without having to worry about whether we
+  ;; found this parameter.
   (define always-treat-zo-and-so-as-newer-available? #t)
-  (unless %always-treat-zo-and-so-as-newer
-    (set! always-treat-zo-and-so-as-newer-available? #f)
-    (set! %always-treat-zo-and-so-as-newer (make-parameter #f)))
+  (define %always-treat-zo-and-so-as-newer
+    (with-handlers [[exn:fail:contract?
+                     (lambda (exn)
+                       (set! always-treat-zo-and-so-as-newer-available? #f)
+                       (make-parameter #f))]]
+      (dynamic-require 'mzscheme 'always-treat-zo-and-so-as-newer)))
 
   ;; Import a function the hard way.  We can't just (require ...) this
   ;; module because we don't set up the collection paths until its
