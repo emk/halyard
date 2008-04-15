@@ -2,6 +2,7 @@
 require 'tools/visual_studio_dot_net'
 require 'tools/code_signing'
 require 'fileutils'
+require 'find'
 
 #==========================================================================
 #  Support Routines
@@ -92,4 +93,32 @@ end
 desc "Build libraries in libs/"
 task :libs do
   VisualStudioDotNet.build "Halyard.sln", "Libraries"  
+end
+
+desc "Clean *.zo files and compiled/ directories"
+task :clean_scheme do
+  %w(libs/plt/collects test/Runtime test/Scripts).each do |root|
+    Find.find(root) do |path|
+      if File.basename(path) == "compiled" && File.directory?(path)
+        rm_rf path
+      end
+    end
+  end
+
+  # These directories were removed in version 0.5.4.  When you update using
+  # git, the files in these directories will be delete, but the empty
+  # directories will be left around.  Unfortunately, the empty directories
+  # will crash mzscheme.
+  obsolete_runtime_dirs = %w(compiler config errortrace mzlib net planet
+                             setup srfi swindle syntax xml)
+  obsolete_runtime_dirs.each do |dirname|
+    dir = "test/Runtime/#{dirname}"
+    next unless File.directory?(dir)
+    Find.find(dir) do |path|
+      if File.file?(path)
+        raise "Can't delete #{dir}: contains #{path}"
+      end
+    end
+    rm_rf(dir)
+  end
 end
