@@ -27,14 +27,16 @@ media_archive = "halyard-media-#{version}.tar.gz"
 mizzen_archive = "mizzen-#{version}.tar.gz"
 test_archive = "halyard-test-#{version}.zip"
 
+# Library collections to bundle into our distribution.
+plt_collects = %w(compiler config errortrace mzlib setup srfi swindle syntax)
+
 lib_dirs = %w(libs/boost libs/curl libs/freetype2 libs/libivorbisdec
              libs/libxml2 libs/plt libs/portaudio libs/quake2
              libs/sqlite libs/wxWidgets)
 media_dir = "test/Media"
 
 release_binaries = 
-  %w(libmzgc2.dll libmzgc2_d.dll libmzsch2.dll libmzsch2_d.dll
-     Halyard.exe Halyard.pdb Halyard_d.exe Halyard_d.pdb
+  %w(libmzsch3mxxxxxxx.dll Halyard.exe Halyard.pdb Halyard_d.exe Halyard_d.pdb
      wxref_gl.dll wxref_soft.dll)
 
 web_host = 'iml.dartmouth.edu'
@@ -80,6 +82,11 @@ heading 'Build source tarballs.', :name => :source_tarball do
   cp_r "#{src_dir}/test/Runtime/mizzen", mizzen_dir
   make_tarball mizzen_dir, :filename => mizzen_archive
 
+  # Copy our PLT collections into the Runtime directory.
+  plt_collects.each do |name|
+    cp_r "#{src_dir}/libs/plt/collects/#{name}", "#{src_dir}/test/Runtime"
+  end
+
   # Copy out clean copy of halyard/test before doing rake test; we will
   # build the zipfile for this after building the engine and copying
   # it in.
@@ -88,6 +95,7 @@ end
 
 heading 'Building and testing engine.', :name => :build do
   cd src_dir do |d|
+    run 'rake', 'libs'
     run 'rake', 'test'
     # TODO - optionally sign the binaries
   end
