@@ -57,11 +57,12 @@ class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
 	};
 
 	//////////
-	/// Find the wxTreeItemId which should contain the card or sequence with
-	/// the specified name.  If the name contains no slashes, the container
-	/// will be mCardsID.  If the name contains slashes, each component of
-	/// the name will be used as a nested directory.  Directories will be
-	/// created as needed.
+	/// Find the wxTreeItemId which should contain the card or
+	/// sequence with the specified name.  If the name contains only
+	/// one slash at the beginning (indicating its parent is the root
+	/// node), the container will be mCardsID.  If the name contains
+	/// more slashes, each component of the name will be used as a
+	/// nested directory.  Directories will be created as needed.
 	///
 	wxTreeItemId FindParentContainer(const std::string &inName,
 									 std::string &outLocalName);

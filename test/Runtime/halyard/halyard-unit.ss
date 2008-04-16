@@ -53,7 +53,7 @@
   ;;; When called, this function will run all the test-suite cards in the
   ;;; group "tests".
   (define (run-all-test-suites)
-    (define first-test (tests/run-all .card-next))
+    (define first-test (/tests/run-all .card-next))
     (when first-test
       (set! *running-all-tests?* #t)
       (jump (first-test .card-next))))
@@ -122,11 +122,11 @@
 
   (require (lib "tests.ss" "mizzen"))
 
-  (provide tests)
+  (provide /tests)
 
-  (group tests (%card-group% :ordered? #t))
+  (group /tests (%card-group% :ordered? #t))
 
-  (card tests/run-all (%card%)
+  (card /tests/run-all (%card%)
     (text instructions ((point 0 0) $halyard-unit-title-style
                         "Click to run tests")
       (setup
@@ -137,6 +137,6 @@
       (clear-dc (color #xFF #xFF #xFF)))
     )
 
-  (card tests/mizzen (%test-suite% :tests $mizzen-tests))
+  (card /tests/mizzen (%test-suite% :tests $mizzen-tests))
   
   )

@@ -49,9 +49,9 @@
   ;;;  Bugs
   ;;;======================================================================
 
-  (group bugs)
+  (group /bugs)
 
-  (card bugs/bug-2061-measure-text-shadow
+  (card /bugs/bug-2061-measure-text-shadow
       (%bug-card% :bug-id "2061" :status 'fixed
                   :bug-title "measure-text ignores shadow"
                   :instructions "The drop shadow should not be chopped off.")
@@ -65,7 +65,7 @@
                 "Hello there, Quincy!"
                 :max-width 180 :parent @workspace)))
 
-  (card bugs/bug-2078-measure-text-descender
+  (card /bugs/bug-2078-measure-text-descender
       (%bug-card% :bug-id "2078" :status 'fixed
                   :bug-title "measure-text allegedly chops descender off Q"
                   :instructions "The upper and lower rows should match.")
@@ -96,7 +96,7 @@
                 :parent @workspace)
       ))
 
-  (card bugs/bug-2493-measure-text-too-narrow
+  (card /bugs/bug-2493-measure-text-too-narrow
       (%bug-card% :bug-id "2493" :status 'fixed
                   :bug-title "measure-text result is too narrow"
                   :instructions "The text should read \"-T X\" below.")
@@ -105,7 +105,7 @@
         (stylesheet :base $style-bug-base :family "Nimbus Sans L" :size 16))
       (new-text (point 0 0) style "-T X" :parent @workspace)))
   
-  (card bugs/bug-f1360-jump-idle-problem 
+  (card /bugs/bug-f1360-jump-idle-problem 
       (%bug-card% :bug-id "F1360" :status 'fixed
                   :bug-title "Jumping from a card calls an extra idle"
                   :instructions (cat "You should only see a blue rectangle, "
@@ -123,7 +123,7 @@
                      :parent @workspace)
       (jump @start)))
 
-  (card bugs/bug-f2977-empty-text-crash
+  (card /bugs/bug-f2977-empty-text-crash
       (%bug-card% :bug-id "F2977" :status 'fixed
                   :bug-title "Empty text box crashes when text changed"
                   :instructions (cat "This card should not raise an error."))
@@ -133,7 +133,7 @@
                   :name 'example :parent @workspace))
       (set! (example .text) "It works!")))
 
-  (card bugs/bug-f4250-whitespace-only-text-crash
+  (card /bugs/bug-f4250-whitespace-only-text-crash
       (%bug-card% :bug-id "F4250" :status 'fixed
                   :bug-title "Whitespace-only strings crash %text%"
                   :instructions (cat "This card should not raise an error."))

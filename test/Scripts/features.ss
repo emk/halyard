@@ -8,9 +8,9 @@
   ;; Experimental slot initializer library.
   (require (lib "initialize-slot.ss" "halyard"))
   
-  (group features)
+  (group /features)
   
-  (card features/controls (%standard-test-card% :title "Controls")
+  (card /features/controls (%standard-test-card% :title "Controls")
     (text description 
         ((below (.title-elem) 20) $text16 
          "We have fairly straight-forward access to a variety of native controls for use in Halyard programs.  In most cases, we can change the color and the borders.  In addition to the controls shown here, we can have list boxes and drop-down edit fields.  Except for the HTML control, most of these should be 508-compliant with minimal work."
@@ -25,7 +25,7 @@
     (browser browser ((rect 10 230 790 590) "sample.html"))
     )
 
-  (card features/text-formatting
+  (card /features/text-formatting
       (%standard-test-card% :title "Text Formatting")
     (text format-demo
         ((point 10 100) $text16
@@ -44,7 +44,7 @@
     (value style $caption-style)
     (value text ""))
   
-  (card features/text-input
+  (card /features/text-input
       (%standard-test-card% :title "Text Input")
 
     ;; Column 1.
@@ -132,7 +132,7 @@
   
   (define-stylesheet $browser-style :base $base-style :family "Times")
   
-  (card features/browser ()
+  (card /features/browser ()
     (setup
       (draw-default-background))
     
@@ -215,7 +215,7 @@
   ;;  External Browser
   ;;=======================================================================
   
-  (card features/launch-browser (%standard-test-card% :title "Launch Browser")
+  (card /features/launch-browser (%standard-test-card% :title "Launch Browser")
     (text-button open-button
                  ((below (.title-elem) 20) 
                   "Open Default Browser"
@@ -237,7 +237,7 @@
   ;;  ActiveX
   ;;=======================================================================
   
-  (card features/activex (%standard-test-card% :title "ActiveX")
+  (card /features/activex (%standard-test-card% :title "ActiveX")
     (elem cartoon (%activex%
                    :rect (rect 100 100 700 450)
                    :activex-id "ShockwaveFlash.ShockwaveFlash"))
@@ -251,7 +251,7 @@
   ;;  Transparency
   ;;=======================================================================
 
-  (card features/transparency (%standard-test-card% :title "Tranparency")
+  (card /features/transparency (%standard-test-card% :title "Tranparency")
     (setup 
       (draw-graphic (point 0 0) "trans/aud_on.png") ; 1-bit mask
       (draw-graphic (point 0 10) "trans/base.png") ; full alpha channel
@@ -271,7 +271,7 @@
   ;;  Transitions
   ;;=======================================================================
 
-  (group features/transitions)
+  (group /features/transitions)
 
   (define (transition-text msg)
     (new-centered-text $transition-style msg))
@@ -281,27 +281,27 @@
     (transition-text msg)
     (refresh :transition trans :ms 1000))
 
-  (card features/transitions/crossfade () 
+  (card /features/transitions/crossfade () 
     (run (show-trans "Crossfade"  'crossfade)))
-  (card features/transitions/wipeleft ()  
+  (card /features/transitions/wipeleft ()  
     (run (show-trans "Wipe Left"  'wipeleft)))
-  (card features/transitions/wiperight () 
+  (card /features/transitions/wiperight () 
     (run (show-trans "Wipe Right" 'wiperight)))
-  (card features/transitions/wipeup ()    
+  (card /features/transitions/wipeup ()    
     (run (show-trans "Wipe\nUp"   'wipeup)))
-  (card features/transitions/wipedown ()  
+  (card /features/transitions/wipedown ()  
     (run (show-trans "Wipe\nDown" 'wipedown)))
-  (card features/transitions/pushleft ()  
+  (card /features/transitions/pushleft ()  
     (run (show-trans "Push Left"  'pushleft)))
-  (card features/transitions/pushright () 
+  (card /features/transitions/pushright () 
     (run (show-trans "Push Right" 'pushright)))
-  (card features/transitions/pushup ()    
+  (card /features/transitions/pushup ()    
     (run (show-trans "Push\nUp"   'pushup)))
-  (card features/transitions/pushdown ()  
+  (card /features/transitions/pushdown ()  
     (run (show-trans "Push\nDown" 'pushdown)))
-  (card features/transitions/toblack ()   
+  (card /features/transitions/toblack ()   
     (run (show-trans "To Black"   'toblack)))
-  (card features/transitions/fromblack () 
+  (card /features/transitions/fromblack () 
     (run (show-trans "From Black" 'fromblack)))
 
 
@@ -337,7 +337,7 @@
                       [[disabled] "click-me-disabled.png"])))
     )
 
-  (card features/templates-events
+  (card /features/templates-events
       (%standard-test-card% :title "Templates & Events")
     (elem boring-button (%boring-button%
                          :at (rect-center $screen-rect)
@@ -354,7 +354,7 @@
   ;;=======================================================================
 
   ;; Testing polygonal Zones.
-  (card features/zones (%standard-test-card% :title "Clickable Zones")
+  (card /features/zones (%standard-test-card% :title "Clickable Zones")
     (clickable-zone rect-1 ((rect 5 5 5 5) (callback (jump @index))))
     (clickable-zone rect-2 ((rect 10 10 20 20) (callback (jump @index))))
     (clickable-zone rect-3 ((rect 30 30 30 40) (callback (jump @index))))
@@ -371,7 +371,7 @@
                           (callback (jump @index))))
     )
 
-  (card features/overlays (%standard-test-card% :title "Overlays")
+  (card /features/overlays (%standard-test-card% :title "Overlays")
     (clickable-zone overlay1 ((rect 10 10 500 100)
                               (callback (delete-element @overlay1))
                               :overlay? #t)
@@ -426,7 +426,7 @@
       (set! (.has-been-dragged-to?) #t))
     )
 
-  (card features/dragndrop (%fancy-white-test-card%
+  (card /features/dragndrop (%fancy-white-test-card%
                             :title "Simple\nDrag and Drop")
     (elem target (%lens-box% :at (point 10 10)))
     (elem lens (%movable-lens% :home-point (point 350 300))))
@@ -449,7 +449,7 @@
       (draw-rectangle-outline (dc-rect) border-color 2))
     )
 
-  (card features/q-and-a (%standard-test-card% :title "Which box is green?")
+  (card /features/q-and-a (%standard-test-card% :title "Which box is green?")
     (elem question (%question% :at (below (.title-elem) 20)
                                :bounds (shape 0 0) ; Will recalculate.
                                :overlay? #f)
@@ -467,7 +467,7 @@
     (def (incorrect-answer answer)
       (set! ((.result) .text) "Nope.")))
 
-  (card features/geometric (%white-test-card% :title "Geometric primitives")
+  (card /features/geometric (%white-test-card% :title "Geometric primitives")
     (setup
       (draw-line (point 10 10) (point 10 50) $color-black 1) 
       (draw-line (point 20 10) (point 20 50) $color-black 2) 
@@ -489,9 +489,9 @@
     (define bounds (measure-graphic path))
     (point (/ (rect-width bounds) -2) (/ (rect-height bounds) -2)))
 
-  (group features/mask)
+  (group /features/mask)
 
-  (card features/mask/light ()
+  (card /features/mask/light ()
     (elem light (%custom-element%
                  :at (point 0 0)
                  :shape (measure-graphic "mask/mask.png")
@@ -528,7 +528,7 @@
       (with-dc self
         (mask at "mask/eraser.png"))))
 
-  (card features/mask/eraser ()
+  (card /features/mask/eraser ()
     (elem erasable (%erasable%))
     (setup
       (draw-graphic (point 0 0) "mask/blend-background.png")))
@@ -567,7 +567,7 @@
     (def (draw)
       (draw-graphic (point 0 0) "lens.png")))
   
-  (card features/cursor-elements
+  (card /features/cursor-elements
       (%standard-test-card% :title "Cursor Elements")
     (elem lens (%lens-cursor%))
 
@@ -597,7 +597,7 @@
     ;; along with its parent.
     (text text-elem ((point 10 10) $title-style (.label))))
 
-  (card features/z-order
+  (card /features/z-order
       (%standard-test-card% :title "Changing the Z-Order")
     (elem a (%self-raising-square%
              :at (point 200 200) :color (color 255 0 0) :label "A"))
@@ -609,7 +609,7 @@
   ;;  Primitive Layout Support
   ;;=======================================================================
 
-  (card features/primitive-layout
+  (card /features/primitive-layout
       (%standard-test-card% :title "Primitive Layout Support")
     (define (square size)
       (shape size size))
@@ -641,7 +641,7 @@
     (def (draw)
       (clear-dc (color #xFF #x00 #x00))))
 
-  (card features/resizing-elements
+  (card /features/resizing-elements
       (%standard-test-card% :title "Resizing Elements")
 
     ;; Our standard shapes
@@ -725,7 +725,7 @@
                    (cat "Area of rect " (* (.width) (.height)) " units"))))
     )
 
-  (card features/state-db (%standard-test-card% :title "State DB")
+  (card /features/state-db (%standard-test-card% :title "State DB")
     (centered-text legend ($state-db-style 
                            "Num = Width of rect\nAlt+Num = Height of rect"))
   
@@ -754,7 +754,7 @@
   ;;  State DB Listeners
   ;;=======================================================================
   
-  (card features/state-db-listeners
+  (card /features/state-db-listeners
       (%standard-test-card% :title "State DB Listeners")
 
     (run
@@ -779,7 +779,7 @@
   ;;  Animated Overlay test cards
   ;;=======================================================================
   
-  (card features/animated-overlay (%standard-test-card%
+  (card /features/animated-overlay (%standard-test-card%
                                    :title "Animated Overlay")
 
     (centered-text instructions
@@ -879,12 +879,12 @@
                       (fn (node)
                         (set! *last-node-defined* node)))
 
-  (card features/hooks (%standard-test-card% :title "Hooks")
+  (card /features/hooks (%standard-test-card% :title "Hooks")
     (centered-text note
         ($text16 "If you can load the script, this card is OK."))
     )
 
-  (assert (eq? *last-node-defined* features/hooks))
+  (assert (eq? *last-node-defined* /features/hooks))
 
 
   ;;=======================================================================
@@ -909,7 +909,7 @@
         (set! (.on?) (not (.on?))))))
 
   ;; Test IDLE handlers on elements, cards, and nested elements.
-  (card features/idle-events
+  (card /features/idle-events
       (%standard-test-card% :title "Idle Events (Three Flashing Lights)")
  
     (elem flasher-1 (%flasher% :at (point 200 100))
@@ -930,7 +930,7 @@
   ;;  Animation
   ;;=======================================================================
   
-  (group features/animation)
+  (group /features/animation)
   
   (define-class %example-animation% (%text-button%)
     (def (click)
@@ -959,7 +959,7 @@
     (setup
       (.reset-elements)))
   
-  (card features/animation/basic
+  (card /features/animation/basic
       (%animation-demo% :title "Animations - Basic")
     
     (example-animation slide ((below (.title-elem) 20) "Slide")
@@ -988,7 +988,7 @@
           (interpolate (@rect .color) (color 255 0 0 0))))))
   
   
-  (card features/animation/combined
+  (card /features/animation/combined
       (%animation-demo% :title "Animations - Combined")
     (example-animation ease-in-out ((below (.title-elem) 20) "Ease In/Out")
       (def (play)

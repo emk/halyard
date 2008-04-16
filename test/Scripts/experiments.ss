@@ -3,7 +3,7 @@
   (require (file "base.ss"))
   (require (lib "halyard-unit.ss" "halyard"))
   
-  (group experiments)
+  (group /experiments)
 
   ;;=======================================================================
   ;;  Ordered and Unordered Groups
@@ -17,51 +17,51 @@
            &key (static-node ((current-card) .class)))
     (static-node .largest-containing-ordered-group))
   
-  (group experiments/groups)
+  (group /experiments/groups)
 
   (define-class %my-group% (%card-group%)
     (value ordered? #f))
   
-  (card experiments/groups/top)
+  (card /experiments/groups/top)
 
-  (group experiments/groups/unordered-group (%my-group%)
+  (group /experiments/groups/unordered-group (%my-group%)
     ;;(%card-group% :ordered? #f))
     (assert-equals #f (largest-containing-ordered-group :static-node self))
     )
 
-  (card experiments/groups/unordered-group/foo ()
+  (card /experiments/groups/unordered-group/foo ()
     )
 
-  (card experiments/groups/unordered-group/bar ()
+  (card /experiments/groups/unordered-group/bar ()
     (run
       (assert-equals #f (largest-containing-ordered-group)))
     )
 
-  (group experiments/groups/unordered-group/ordered-group ()
+  (group /experiments/groups/unordered-group/ordered-group ()
     (assert-equals self
                    (largest-containing-ordered-group :static-node self))
     )
 
-  (card experiments/groups/unordered-group/ordered-group/echo ()
+  (card /experiments/groups/unordered-group/ordered-group/echo ()
     (run
       (assert-equals ((.parent) .class) (largest-containing-ordered-group)))
     )
 
-  (card experiments/groups/unordered-group/ordered-group/foxtrot ()
+  (card /experiments/groups/unordered-group/ordered-group/foxtrot ()
     )
 
-  (card experiments/groups/unordered-group/ordered-group/golf ()
+  (card /experiments/groups/unordered-group/ordered-group/golf ()
     )
 
-  (group experiments/groups/ordered-group)
+  (group /experiments/groups/ordered-group)
 
-  (card experiments/groups/ordered-group/hotel ()
+  (card /experiments/groups/ordered-group/hotel ()
     (run
       (assert-equals ((((.class) .parent) .parent) .parent)
                      (largest-containing-ordered-group)))
     )
 
-  (card experiments/groups/ordered-group/india ()
+  (card /experiments/groups/ordered-group/india ()
     )
 
   ;;=======================================================================
@@ -186,7 +186,7 @@
            :color $color-white
            keys))
 
-  (card experiments/layout (%standard-test-card% :title "Layout")
+  (card /experiments/layout (%standard-test-card% :title "Layout")
     (create %vbox% :name 'vbox :at (below @title 20)
             :shape (rect 0 0 50 300) :spacing 10
             :left-padding 10 :top-padding 10

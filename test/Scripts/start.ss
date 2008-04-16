@@ -58,7 +58,7 @@
     (cond
      [(equal? (event-modifiers-and-character event) 
               '(alt #\i))
-      (jump index)]
+      (jump /index)]
      [else (super)])))
 
 
@@ -70,10 +70,10 @@
 ;; Scripts begin running at the start card.  In our case, we'll just
 ;; immediately JUMP to our index card, below, without bothering to display
 ;; anything.  The JUMP function changes the current card.
-(card start (%card%)
+(card /start (%card%)
   (run
     (debug-log "Hello, world!  IT'S ALIIIIVE!")
-    (jump index)))
+    (jump /index)))
 
 (define-class %menu-item% (%box%)
   (attr y :type <integer>)
@@ -92,7 +92,7 @@
 (define-node-helper menu-item (y text jump-to) %menu-item%)
 
 ;; The index card is based on our %simple-card% template.
-(card index (%black-test-card% :title "Halyard Features (updated)")
+(card /index (%black-test-card% :title "Halyard Features (updated)")
   (menu-item controls ( 80 "Controls"    @features/controls))
   (menu-item movies   (180 "More Movies" @media/qt/movies))
   (text release-id

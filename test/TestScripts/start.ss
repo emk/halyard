@@ -64,31 +64,31 @@
   (debug-log (cat "Marking " card-name))
   (set! (engine-var (cat "seen-" card-name)) "1"))
 
-(card start ()
+(card /start ()
   (run
     (mark-card-as-seen "start")
-    (jump test-1)))
+    (jump /test-1)))
 
-(card test-1 ()
+(card /test-1 ()
   (run
     (mark-card-as-seen "test-1")
-    (jump test-2)))
+    (jump /test-2)))
 
-(card test-2 ()
+(card /test-2 ()
   (run
     (mark-card-as-seen "test-2")
-    (jump test-variables)))
+    (jump /test-variables)))
 
 (define/p *vartest* #f)
 
-(card test-variables ()
+(card /test-variables ()
   (run
     (foreach [val (list (void) "str" 'sym -2147483648 2147483647 4294967295
                         -1 0 1 -1.0 0.0 1.0 #f #t (point 10 20)
                         (rect 11 21 31 41) (color 12 22 32 42))]
       (set! *vartest* val)
       (test (equals? *vartest* val)))
-    (jump test-callbacks)))
+    (jump /test-callbacks)))
 
 (define *before-callback-flag* #f)
 (define *after-callback-flag* #f)
@@ -96,7 +96,7 @@
 (define (test-callback code)
   (call-prim 'TestCallback code))
 
-(card test-callbacks ()
+(card /test-callbacks ()
   (run
     ;; Test a simple callback.
     (define callback-ran? #f)
@@ -108,40 +108,40 @@
     (set! *after-callback-flag* #f)
     (test-callback (callback
                      (set! *before-callback-flag* #t)
-                     (jump test-callbacks-2)
+                     (jump /test-callbacks-2)
                      (set! *after-callback-flag* #t)))))
 
-(card test-callbacks-2 ()
+(card /test-callbacks-2 ()
   (run
     (test (eq? *before-callback-flag* #t))
     (test (eq? *after-callback-flag* #f))
-    (jump test-callback-args)))
+    (jump /test-callback-args)))
 
-(card test-callback-args ()
+(card /test-callback-args ()
   (run
     (define (f h w l)
       (test (equal? h "hello"))
       (test (equal? w 'world))
       (test (equal? l (list "foo" 'bar))))
     (call-prim 'TestCallbackArgs f)
-    (jump test-stop)))
+    (jump /test-stop)))
 
-(card test-stop ()
+(card /test-stop ()
   (run
-    (call-prim 'TestStop (card-name test-pause))
+    (call-prim 'TestStop (card-name /test-pause))
     (test #f)))
 
-(card test-pause ()
+(card /test-pause ()
   (run
     (call-prim 'TestPause)
-    (jump advanced-language-test-cases)))
+    (jump /advanced-language-test-cases)))
 
 
 ;;=========================================================================
 ;;  Advanced Language Test Cases
 ;;=========================================================================
 
-(card advanced-language-test-cases ()
+(card /advanced-language-test-cases ()
   (run
     
     ;; Test (define ...).
@@ -181,7 +181,7 @@
       (set! magic-x 30)
       (test (eq? magic-x 30)))
     
-    (jump argument-lists)))
+    (jump /argument-lists)))
 
 
 ;;=========================================================================
@@ -209,7 +209,7 @@
 (define (k4 n &key (x n) (y (* 2 n))) (list x y))
 (define (k5 &key x &rest y) (list x y))
 
-(card argument-lists ()
+(card /argument-lists ()
   (run
     (test (eq? (t1) 'ok))
     (test (equal? (t2 1 2 3) '(1 2 3)))
@@ -240,7 +240,7 @@
     (test (equal? (k5) '(#f ())))
     (test (equal? (k5 :x 2) '(2 (:x 2))))
     (test (equal? (k5 :y 1 :x 2) '(2 (:y 1 :x 2))))
-    (jump g1/start)
+    (jump /g1/start)
     ))
 
 
@@ -251,78 +251,78 @@
 (define *last-card* #f)
 (define *last-group* #f)
 
-(group g1 (%card-group% :ordered? #f)
+(group /g1 (%card-group% :ordered? #f)
   (run
     (test (not ((static-root-node) .ordered?)))
     (test (eq? #f (.ordered?)))
-    (set! *last-group* g1)))
+    (set! *last-group* /g1)))
 
-(card g1/start ()
+(card /g1/start ()
   (run
-    (test (eq? *last-group* g1))
-    (set! *last-card* g1/start)
+    (test (eq? *last-group* /g1))
+    (set! *last-card* /g1/start)
     (jump @s1)))
 
-(group g1/s1 ()
+(group /g1/s1 ()
   (run
     (test (eq? #t (.ordered?)))
-    (set! *last-group* g1/s1)))
+    (set! *last-group* /g1/s1)))
   
-(card g1/s1/c1 ()
+(card /g1/s1/c1 ()
   (run
-    (test (eq? *last-group* g1/s1))
-    (test (eq? *last-card* g1/start))
+    (test (eq? *last-group* /g1/s1))
+    (test (eq? *last-card* /g1/start))
     (test (not (card-prev)))
-    (test (eq? 'g1/s1/c2 (card-name (card-next))))
-    (test (eq? g1/s1/c2 (@c2 .resolve-path :running? #f)))
-    (test (eq? g1/s1/c2 (@s1/c2 .resolve-path :running? #f)))
-    (set! *last-card* g1/s1/c1)
+    (test (eq? '/g1/s1/c2 (card-name (card-next))))
+    (test (eq? /g1/s1/c2 (@c2 .resolve-path :running? #f)))
+    (test (eq? /g1/s1/c2 (@s1/c2 .resolve-path :running? #f)))
+    (set! *last-card* /g1/s1/c1)
     (jump @c2)))
 
-(card g1/s1/c2 ()
+(card /g1/s1/c2 ()
   (run
-    (test (eq? *last-card* g1/s1/c1))
-    (test (eq? 'g1/s1/c1 (card-name (card-prev))))
-    (set! *last-card* g1/s1/c2)
+    (test (eq? *last-card* /g1/s1/c1))
+    (test (eq? '/g1/s1/c1 (card-name (card-prev))))
+    (set! *last-card* /g1/s1/c2)
     (jump (card-next))))
 
-(group g1/s1/s2 (%card-group% :ordered? #t)
+(group /g1/s1/s2 (%card-group% :ordered? #t)
   (run
     (test (eq? #t (.ordered?)))
-    (set! *last-group* g1/s1/s2)))
+    (set! *last-group* /g1/s1/s2)))
 
-(card g1/s1/s2/c1 ()
+(card /g1/s1/s2/c1 ()
   (run
-    (test (eq? *last-group* g1/s1/s2))
-    (test (eq? *last-card* g1/s1/c2))
-    (test (eq? 'g1/s1/c2 (card-name (card-prev))))
-    (set! *last-card* g1/s1/s2/c1)
+    (test (eq? *last-group* /g1/s1/s2))
+    (test (eq? *last-card* /g1/s1/c2))
+    (test (eq? '/g1/s1/c2 (card-name (card-prev))))
+    (set! *last-card* /g1/s1/s2/c1)
     (jump @c3)))
 
-(card g1/s1/s2/c2 () ; We jump here out of order!
+(card /g1/s1/s2/c2 () ; We jump here out of order!
   (run
-    (test (eq? *last-card* g1/s1/c3))
-    (set! *last-card* g1/s1/s2/c2)
+    (test (eq? *last-card* /g1/s1/c3))
+    (set! *last-card* /g1/s1/s2/c2)
     (jump @c4)))
 
-(card g1/s1/c3 ()
+(card /g1/s1/c3 ()
   (run
-    (test (eq? *last-card* g1/s1/s2/c1))
-    (test (eq? 'g1/s1/s2/c2 (card-name (card-prev))))
-    (set! *last-card* g1/s1/c3)
+    (test (eq? *last-card* /g1/s1/s2/c1))
+    (test (eq? '/g1/s1/s2/c2 (card-name (card-prev))))
+    (set! *last-card* /g1/s1/c3)
     (jump @s2/c2)))
 
-(card g1/s1/c4 ()
+(card /g1/s1/c4 ()
   (run
-    (test (eq? *last-card* g1/s1/s2/c2))
+    (test (eq? *last-card* /g1/s1/s2/c2))
     (test (not (card-next)))
-    (set! *last-card* g1/s1/c4)
-    (jump g1/done)))
+    (set! *last-card* /g1/s1/c4)
+    (jump /g1/done)))
 
-(card g1/done ()
+(card /g1/done ()
   (run
-    (test (eq? *last-card* g1/s1/c4))
-    (jump template-tests-1)))
+    (test (eq? *last-card* /g1/s1/c4))
+    (jump /template-tests-1)))
 
 
 ;;=========================================================================
@@ -355,7 +355,7 @@
     (test (instance-of? (.prop-d) <integer>))
     (set! *ttvar2* #t)))
 
-(card template-tests-1 (%card-template-2%)
+(card /template-tests-1 (%card-template-2%)
   (value prop-a "foo")
   (value prop-c "bar")
 
@@ -368,9 +368,9 @@
     (test (equal? (.prop-d) 20))
     (set! *ttvar1* #f)
     (set! *ttvar2* #f)
-    (jump template-tests-2)))
+    (jump /template-tests-2)))
 
-(card template-tests-2 (%card-template-2%)
+(card /template-tests-2 (%card-template-2%)
   (value prop-a "baz")
   (value prop-c "moby")
   (value prop-d 30)
@@ -382,13 +382,13 @@
     (test (equal? (.prop-b) 10))
     (test (equal? (.prop-c) "moby"))
     (test (equal? (.prop-d) 30))
-    (jump template-tests-5)))
+    (jump /template-tests-5)))
 
 (define-class %card-template-3% (%card%)
   (def (message-1)
     'foo))
 
-(card template-tests-5 (%card-template-3%)
+(card /template-tests-5 (%card-template-3%)
   (def (message-1)
     (super))
   (def (message-2)
@@ -396,19 +396,19 @@
   (run
     (test (eq? (.message-1) 'foo))
     (test (eq? (.message-2) 'bar))
-    (jump syntax-tests)))
+    (jump /syntax-tests)))
 
 
 ;;=========================================================================
 ;;  Syntax
 ;;=========================================================================
 
-(card syntax-tests ()
+(card /syntax-tests ()
   (run
     (test (eq? ((fn (x) (* x x)) 3) 9))
     (test (eq? ((callback 1)) 1))
     
-    (jump swindle-tests)))
+    (jump /swindle-tests)))
 
 
 ;;=========================================================================
@@ -476,7 +476,7 @@
                                     (arg2 <swindle-test-multiple-subclass>))
   'both-multiple)
 
-(card swindle-tests ()
+(card /swindle-tests ()
   (run
     (define test-obj-1 (make <swindle-test> 
                          :simple-slot 'foo
@@ -534,20 +534,20 @@
     (test (eq? (inheritance-test-method single multiple)
                'arg1-single))
     
-    (jump script-editor-db-tests)))
+    (jump /script-editor-db-tests)))
 
 
 ;;=========================================================================
 ;;  ScriptEditorDB
 ;;=========================================================================
 
-(card script-editor-db-tests ()
+(card /script-editor-db-tests ()
   (run
     ;; As long as we want to test the ScriptEditorDB from within
     ;; CommonTest, we can only do it when TSchemeInterpreter is set up.  So
     ;; we call it from inside our TSchemeInterpreter tests, right here.
     (call-prim 'TestScriptEditorDB)
-    (jump layout)))
+    (jump /layout)))
 
 
 ;;=========================================================================
@@ -556,7 +556,7 @@
 
 (require (lib "layout.ss" "halyard"))
 
-(card layout ()
+(card /layout ()
   (run
     ;; Test <layout> defaults.
     (define layout (make <layout>))
@@ -612,7 +612,7 @@
     (test (equals? (layout-next-box-at! layout :width 50) (point 0 0)))
     (test (equals? (layout-current-box-shape layout) (rect 0 0 50 10)))
     
-    (jump mizzen)))
+    (jump /mizzen)))
 
   
 ;;=========================================================================
@@ -632,13 +632,13 @@
     (super)
     (test-with-label "Mizzen test succeeded." #t)))
 
-(card mizzen ()
+(card /mizzen ()
   (run
     (define report (%engine-test-report% .new))
     (foreach [test-class $mizzen-tests]
       (test-class .run-tests report))
-    (jump done)))
+    (jump /done)))
 
-(card done ()
+(card /done ()
   (run
     (exit-script)))

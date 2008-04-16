@@ -1,6 +1,6 @@
 (module performance (lib "halyard.ss" "halyard")
   (require (file "base.ss"))
-  (group performance)
+  (group /performance)
   
   (define-class %parent% ()
     (def (test-method arg1 arg2 &rest args)
@@ -15,7 +15,7 @@
       (super)))
   
   ;; TODO - factor out into a performance testing class.
-  (card performance/dispatch (%fancy-white-test-card% :title "Not yet run")
+  (card /performance/dispatch (%fancy-white-test-card% :title "Not yet run")
     (run 
       ;; NOTE - GC seems to dominate this test; if you remove this call to 
       ;; collect-garbage, the results will vary widly by a factor of 100, 
