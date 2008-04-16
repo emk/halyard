@@ -28,7 +28,8 @@ mizzen_archive = "mizzen-#{version}.tar.gz"
 test_archive = "halyard-test-#{version}.zip"
 
 # Library collections to bundle into our distribution.
-plt_collects = %w(compiler config errortrace mzlib setup srfi swindle syntax)
+plt_collects = %w(compiler config errortrace mzlib net planet setup srfi
+                  swindle syntax xml)
 
 lib_dirs = %w(libs/boost libs/curl libs/freetype2 libs/libivorbisdec
              libs/libxml2 libs/plt libs/portaudio libs/quake2
