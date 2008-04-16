@@ -371,10 +371,14 @@ static TValue SchemeStructToTValue(Scheme_Object *inVal) {
         args[0] = inVal;
 		b =  TSchemeInterpreter::CallScheme(gTypeInfo[i].predicate, 
                                             args.size(), args.get());
-		if (SCHEME_TRUEP(b))
-			return gTypeInfo[i].conv(inVal);
+		if (SCHEME_TRUEP(b)) {
+			TValue result(gTypeInfo[i].conv(inVal));
+			ASSERT(result.IsInitialized());
+			return result;
+		}
 		i++;
 	}
+	THROW("Unknown Scheme structure type");
 	return TValue();
 }
 
