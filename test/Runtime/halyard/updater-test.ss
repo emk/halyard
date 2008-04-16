@@ -135,7 +135,7 @@
     (setup-test
       (set! (.test-directory) (ensure-directory-exists "DownloadTest"))
       (set! (.url-prefix) 
-            (cat "file:///" (path->string (fixture-dir "updater")) 
+            (cat "file:///" (path->string (halyard-fixture-dir "updater")) 
                  "/downloader/")))
     (teardown-test
       (delete-directory-recursive (.test-directory)))
@@ -149,7 +149,7 @@
                           (build-path (.test-directory) "foobar"))))
   
   (define-class %parsing-test% (%test-case%)
-    (attr base-directory (build-path (fixture-dir "updater") "base")
+    (attr base-directory (build-path (halyard-fixture-dir "updater") "base")
           :writable? #t)
     (test "Parsing manifests."
       (assert-equals 
@@ -184,7 +184,8 @@
 
   ;; Construct a URL to one of our fake update servers.
   (define (update-server-url name)
-    (cat "file:///" (path->string (fixture-dir "updater")) "/" name "/"))
+    (cat "file:///" (path->string (halyard-fixture-dir "updater"))
+         "/" name "/"))
 
   ;; TODO - add test case for update spec file having new URL. 
   (define-class %updater-test% (%test-case%) 
@@ -196,11 +197,11 @@
       (set! (.test-directory) (ensure-directory-exists "UpdaterTest"))
       (set! (.base-directory)
             (copy-recursive-excluding vc-exclude 
-             (build-path (fixture-dir "updater") "base") 
+             (build-path (halyard-fixture-dir "updater") "base") 
              (.test-directory)))
       (set! (.update-directory)
             (copy-recursive-excluding vc-exclude 
-             (build-path (fixture-dir "updater") "update")
+             (build-path (halyard-fixture-dir "updater") "update")
              (.test-directory)))
       (set! (.url-prefix) (update-server-url "update-server")))
     (teardown-test 
@@ -319,7 +320,7 @@
     )
   
   (define (sig-dir)
-    (build-path (fixture-dir "updater") "signatures"))
+    (build-path (halyard-fixture-dir "updater") "signatures"))
 
   (define (sig-file name)
     (build-path (sig-dir) name))
@@ -347,17 +348,17 @@
   (define (create-installer-fixture)
     (define fix-dir (ensure-directory-exists "InstallerFixture"))
     (define base-dir (copy-recursive-excluding vc-exclude 
-                      (build-path (fixture-dir "updater") "base") 
+                      (build-path (halyard-fixture-dir "updater") "base") 
                       fix-dir))
     (define url-prefix 
-      (cat "file:///" (fixture-dir "updater") "/update-server/"))
+      (cat "file:///" (halyard-fixture-dir "updater") "/update-server/"))
     (init-updater! :root-directory base-dir :staging? #t)
     (set-updater-url! url-prefix)
     (assert (auto-update-possible?))
     (assert (check-for-update))
     (download-update (fn (a b) #f)))
   
-  (card updater-test
+  (card tests/updater
       (%test-suite%
        :tests (list %filesystem-test% %downloader-test% %parsing-test% 
                     %updater-test% %crypto-test%)))

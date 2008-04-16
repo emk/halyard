@@ -108,15 +108,13 @@
 (require (file "features.ss"))
 (require (file "bugs.ss"))
 (require (file "experiments.ss"))
-(require (file "test-cases.ss"))
 (require (file "updater-example.ss"))
 (require (file "quake2-example.ss"))
 (require (file "performance.ss"))
 
-;; Test cases from the standard library.
-(require (file "ruby-objects-test.ss"))
-(require (lib "halyard-unit-test.ss" "halyard"))
-(require (lib "updater-test.ss" "halyard"))
+;; Test cases.
+(require (lib "tests.ss" "halyard"))
+(require (file "test-cases.ss"))
 
 ;; These files are included in start.ss only to make sure we get
 ;; appropriate highlighting and indentation for the identifiers they

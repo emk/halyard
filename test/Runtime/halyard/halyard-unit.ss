@@ -24,7 +24,7 @@
   (require (lib "mizzen-unit.ss" "mizzen"))
   (provide (all-from (lib "mizzen-unit.ss" "mizzen")))
 
-  (provide %test-suite% $halyard-unit-style)
+  (provide %test-suite% $halyard-unit-style run-all-test-suites)
   
   (define-stylesheet $halyard-unit-style
     :family "Nimbus Sans L"
@@ -46,6 +46,18 @@
     :base $halyard-unit-passed-style
     :color (color #xC0 #x00 #x00))
   
+  ;;; Are we current attempting to run through all the test cards
+  ;;; automatically?
+  (define *running-all-tests?* #t)
+
+  ;;; When called, this function will run all the test-suite cards in the
+  ;;; group "tests".
+  (define (run-all-test-suites)
+    (define first-test (tests/run-all .card-next))
+    (when first-test
+      (set! *running-all-tests?* #t)
+      (jump (first-test .card-next))))
+
   ;;; Display the results of a set of tests on a card.
   (define-class %test-suite% (%card%)
     (attr tests)
@@ -69,8 +81,14 @@
       (define (draw-result style text)
       (draw-text (rect 100 100 700 175) style text))
       (if (report .success?)
+        (begin
           (draw-result $halyard-unit-passed-style "OK")
-          (begin
+          (when *running-all-tests?*
+            (let [[next (card-next)]]
+              (if next
+                (jump next)
+                (set! *running-all-tests?* #f)))))
+        (begin
             (draw-result $halyard-unit-failed-style "FAILED")
             (draw-text (rect 100 175 700 500) $halyard-unit-style
                        (apply string-append
@@ -82,12 +100,43 @@
                                       (string->xml 
                                        (failure .message))
                                       "\n\n"))
-                                   (report .failures)))))))
+                                   (report .failures))))
+            (set! *running-all-tests?* #f))))
     )
 
   ;;========================================================================
-  
-  (provide fixture-dir)
-  (define (fixture-dir name)
+  ;;  Test fixtures
+  ;;========================================================================
+  ;;  We support "fixture" directories, which contain files used by various
+  ;;  test suites.
+
+  (provide halyard-fixture-dir)
+  (define (halyard-fixture-dir name)
     (build-path (current-directory) "Runtime" "halyard" (cat name "-fixtures")))
+
+
+  ;;========================================================================
+  ;;  Standard test sequence
+  ;;========================================================================
+  ;;  Cards containing unit tests should all be placed into this sequence.
+
+  (require (lib "tests.ss" "mizzen"))
+
+  (provide tests)
+
+  (group tests (%card-group% :ordered? #t))
+
+  (card tests/run-all (%card%)
+    (text instructions ((point 0 0) $halyard-unit-title-style
+                        "Click to run tests")
+      (setup
+        (.center-on-parent!)))
+    (clickable-zone run-zone ($screen-rect run-all-test-suites))
+        
+    (setup
+      (clear-dc (color #xFF #xFF #xFF)))
+    )
+
+  (card tests/mizzen (%test-suite% :tests $mizzen-tests))
+  
   )

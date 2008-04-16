@@ -620,8 +620,7 @@
 ;;=========================================================================
 
 (require (lib "mizzen-unit.ss" "mizzen"))
-(require (lib "mizzen-unit-test.ss" "mizzen"))
-(require (lib "ruby-objects-test.ss" "mizzen"))
+(require (lib "tests.ss" "mizzen"))
 
 ;; Test report class that collects the reports and also sends them to the
 ;; engine primitive Test.
@@ -636,7 +635,7 @@
 (card mizzen ()
   (run
     (define report (%engine-test-report% .new))
-    (foreach [test-class (append $all-mizzen-unit-tests $all-ruby-object-tests)]
+    (foreach [test-class $mizzen-tests]
       (test-class .run-tests report))
     (jump done)))
 

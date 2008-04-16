@@ -12,11 +12,10 @@
   ;;  Before running the benchmarks, make sure that our unit tests all
   ;;  pass.  There's no point in speeding things up unless they still work.
 
-  (require "mizzen-unit.ss" "mizzen-unit-test.ss" "ruby-objects-test.ss")
+  (require "mizzen-unit.ss" "tests.ss")
 
   (printf "Running unit tests~n")
-  (run-tests (append $all-mizzen-unit-tests
-                     $all-ruby-object-tests))
+  (run-tests $mizzen-tests)
 
   ;;=======================================================================
   ;;  Benchmarks
