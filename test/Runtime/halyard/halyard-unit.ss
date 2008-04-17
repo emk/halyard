@@ -48,7 +48,7 @@
   
   ;; Are we current attempting to run through all the test cards
   ;; automatically?
-  (define *running-all-tests?* #t)
+  (define *running-all-tests?* #f)
 
   ;; An optional thunk to run when we're done with the tests.  Takes one
   ;; argument, a boolean indication whether the tests succeeded.
