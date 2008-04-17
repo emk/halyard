@@ -49,27 +49,6 @@ DEFINE_PRIMITIVE(SchemeExit)
 	TInterpreterManager::GetInstance()->RequestQuitApplication();
 }
 
-// TODO - Rename to Idle and move to TCommonPrimitives.cpp
-DEFINE_PRIMITIVE(SchemeIdle)
-{
-	// Recover our Scheme interpreter.
-	TInterpreter *interp = TInterpreter::GetInstance();
-	ASSERT(interp);
-
-	// Should our idle loop block until any events are received from 
-	// the user?
-	bool block;
-	inArgs >> block;
-
-	// Call our stored idle procedure and let the GUI run for a bit.
-	interp->DoIdle(block);
-
-	// Logging this primitive would only clutter the debug log.  We need
-	// to do this *after* calling DoIdle, so that it doesn't get
-	// confused with any internal primitive calls.
-	::SkipPrimitiveLogging();
-}
-
 DEFINE_PRIMITIVE(SchemeSetCollectsDir)
 {
     std::string dir;
@@ -93,13 +72,11 @@ DEFINE_PRIMITIVE(SchemeSetCollectsDir)
 //	TSchemeInterpreterManager Methods
 //=========================================================================
 
-TSchemeInterpreterManager::TSchemeInterpreterManager(
-	TInterpreter::SystemIdleProc inIdleProc)
-	: TInterpreterManager(inIdleProc)
+TSchemeInterpreterManager::TSchemeInterpreterManager(SystemIdleProc inIdleProc)
+    : TInterpreterManager(inIdleProc)
 {
 	// Install our primitives.
 	REGISTER_PRIMITIVE(SchemeExit);
-	REGISTER_PRIMITIVE(SchemeIdle);
     REGISTER_PRIMITIVE(SchemeSetCollectsDir);
     RegisterSchemeScriptEditorDBPrimitives();
 
@@ -187,24 +164,21 @@ void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
 	}
 }
 
-TInterpreter *TSchemeInterpreterManager::MakeInterpreter()
+void TSchemeInterpreterManager::MakeInterpreter()
 {
+    // Create a new TSchemeInterpreter.  Once this is created, it can be
+    // accessed using either TInterpreter::GetInstance() or
+    // TSchemeInterpreter::GetSchemeInterpreter().
+    //
     // MANUAL GC PROOF REQUIRED - mGlobalEnv can't be GC'd while it is live
     // in this function.
-	return new TSchemeInterpreter(mGlobalEnv);
+	new TSchemeInterpreter(mGlobalEnv);
 }
 
 
 //=========================================================================
 //	TSchemeInterpreter Methods
 //=========================================================================
-
-TSchemePtr<Scheme_Env> TSchemeInterpreter::sGlobalEnv;
-TSchemePtr<Scheme_Env> TSchemeInterpreter::sScriptEnv;
-TSchemePtr<Scheme_Object> TSchemeInterpreter::sLoaderModule;
-TSchemePtr<Scheme_Object> TSchemeInterpreter::sKernelModule;
-TInterpreter::SystemIdleProc TSchemeInterpreter::sSystemIdleProc = NULL;
-TSchemeInterpreter::BucketMap TSchemeInterpreter::sBucketMap;
 
 TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 {
@@ -222,18 +196,18 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
     reg.done();
 
 	// Remember our global environment.
-	sGlobalEnv = inGlobalEnv;
+	mGlobalEnv = inGlobalEnv;
 
 	InitializeModuleNames();
 
 	// Create a new script environment, and store it where we can find it.
-	sScriptEnv = NULL;
-	CallSchemeEx(sGlobalEnv, sLoaderModule, "new-script-environment", 0, NULL);
+	mScriptEnv = NULL;
+	CallSchemeEx(mGlobalEnv, mLoaderModule, "new-script-environment", 0, NULL);
     current_config = scheme_current_config();
-	sScriptEnv = scheme_get_env(current_config);
+	mScriptEnv = scheme_get_env(current_config);
 
 	// Load our kernel and script.
-	result = CallSchemeEx(sGlobalEnv, sLoaderModule, "load-script", 0, NULL);
+	result = CallSchemeEx(mGlobalEnv, mLoaderModule, "load-script", 0, NULL);
 	if (!SCHEME_FALSEP(result))
 	{
 		ASSERT(SCHEME_CHAR_STRINGP(result));
@@ -247,7 +221,13 @@ TSchemeInterpreter::~TSchemeInterpreter()
 {
 	// We don't actually shut down the Scheme interpreter.  But we'll
 	// reinitialize it later if we need to.
-    sBucketMap.clear();
+}
+
+TSchemeInterpreter *TSchemeInterpreter::GetSchemeInterpreter() {
+    TSchemeInterpreter *interp =
+        dynamic_cast<TSchemeInterpreter*>(TInterpreter::GetInstance());
+    ASSERT(interp != NULL);
+    return interp;
 }
 
 void TSchemeInterpreter::InitializeModuleNames()
@@ -266,14 +246,14 @@ void TSchemeInterpreter::InitializeModuleNames()
     reg.local(tail2);
     reg.done();
 
-	sLoaderModule = scheme_intern_symbol("loader");
+	mLoaderModule = scheme_intern_symbol("loader");
 
     halyard_string   = scheme_make_utf8_string("halyard");
 	tail1            = scheme_make_pair(halyard_string, scheme_null);
     lib_symbol       = scheme_intern_symbol("lib");
     kernel_ss_string = scheme_make_utf8_string("kernel.ss");
     tail2            = scheme_make_pair(kernel_ss_string, tail1);
-	sKernelModule    = scheme_make_pair(lib_symbol, tail2);
+	mKernelModule    = scheme_make_pair(lib_symbol, tail2);
 }
 
 Scheme_Bucket *
@@ -294,21 +274,21 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
     // Map our inEnv and inModule arguments to stable identifiers that are
     // safe to use as std::map keys.  We can't use the underlying pointers
     // as keys, because they might be moved by the GC.  Of course, this
-    // forces us to clear sBucketMap every time we destroy a
+    // forces us to clear mBucketMap every time we destroy a
     // TSchemeInterpreter object.
     BucketKey::Env env;
     typedef Scheme_Env *EnvPtr;
-    if (Eq(inEnv, EnvPtr(sGlobalEnv)))
+    if (Eq(inEnv, EnvPtr(mGlobalEnv)))
         env = BucketKey::GLOBAL_ENV;
-    else if (Eq(inEnv, EnvPtr(sScriptEnv)))
+    else if (Eq(inEnv, EnvPtr(mScriptEnv)))
         env = BucketKey::SCRIPT_ENV;
     else
         THROW("Unknown Scheme environment");
     BucketKey::Module module;
     typedef Scheme_Object *ObjectPtr;
-    if (Eq(inModule, ObjectPtr(sLoaderModule)))
+    if (Eq(inModule, ObjectPtr(mLoaderModule)))
         module = BucketKey::LOADER_MODULE;
-    else if (Eq(inModule, ObjectPtr(sKernelModule)))
+    else if (Eq(inModule, ObjectPtr(mKernelModule)))
         module = BucketKey::KERNEL_MODULE;
     else
         THROW("Unknown Scheme environment");
@@ -322,8 +302,8 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
     // TODO - Now that we have a much smarter IDLE system, is this actually
     // relevant?  Or can we just get rid of all this machinery?
     BucketKey key(env, module, inFuncName);
-    BucketMap::iterator found = sBucketMap.find(key);
-    if (found != sBucketMap.end())
+    BucketMap::iterator found = mBucketMap.find(key);
+    if (found != mBucketMap.end())
         return found->second;
     else {
         sym = scheme_intern_symbol(inFuncName);
@@ -331,7 +311,7 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
         if (bucket == NULL)
             throw TException(__FILE__, __LINE__,
                              "Scheme module bucket not found");
-        sBucketMap.insert(BucketMap::value_type(key, bucket));
+        mBucketMap.insert(BucketMap::value_type(key, bucket));
         return bucket;
     }
 }
@@ -410,15 +390,13 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
     prim_name = SCHEME_BYTE_STR_VAL(prim_name_byte_str);
     ASSERT(strlen(prim_name) > 0);
 
-    // Only SchemeSetCollectsDir may be called without a sScriptEnv.
-    ASSERT(sScriptEnv != NULL ||
-           strcmp(prim_name, "SchemeSetCollectsDir") == 0);
+    TSchemeInterpreter *interp = GetSchemeInterpreter();
 
     // Dispatch the primitive call to the routine which is allowed to throw
     // and catch C++ exceptions.
     char error_message[1024];
-    if (CallPrimInternal(prim_name, inArgc-1, inArgv+1, &result,
-                         error_message, sizeof(error_message))) {
+    if (interp->CallPrimInternal(prim_name, inArgc-1, inArgv+1, &result,
+                                 error_message, sizeof(error_message))) {
         ASSERT(result);
         MZ_GC_UNREG();
         return result;
@@ -457,6 +435,10 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName, // Scheme heap
     // or anything else which causes a non-local PLT exit.  See CallPrim
     // for more details.
 	try {
+        // Only SchemeSetCollectsDir may be called without a mScriptEnv.
+        ASSERT(mScriptEnv != NULL ||
+               strcmp(inPrimName, "SchemeSetCollectsDir") == 0);
+
 		// Marshal our argument list and call the primitive.
 		TValueList inList;
 		for (int i=0; i < inArgc; i++)
@@ -567,7 +549,7 @@ Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
     //
     // MANUAL GC PROOF REQUIRED - It's safe to pass these variables
     // straight through, because we don't do any allocations.
-	return CallSchemeEx(sScriptEnv, sKernelModule, inFuncName, inArgc, inArgv);
+	return CallSchemeEx(mScriptEnv, mKernelModule, inFuncName, inArgc, inArgv);
 }
 
 Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName)
@@ -576,79 +558,17 @@ Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName)
 	return CallScheme(inFuncName, 0, NULL);
 }
 
-Scheme_Object *TSchemeInterpreter::MakeSchemePoint(const TPoint &inPoint) {
-    TSchemeArgs<2> args;
-    TSchemeReg<0,1> reg;
-    reg.args(args);
-    reg.done();
-    
-	args[0] = scheme_make_integer_value(inPoint.X());
-	args[1] = scheme_make_integer_value(inPoint.Y());
-	return CallScheme("point", args.size(), args.get());
-}
-
-Scheme_Object *TSchemeInterpreter::MakeSchemeRect(const TRect &inRect) {
-    TSchemeArgs<4> args;
-    TSchemeReg<0,1> reg;
-    reg.args(args);
-    reg.done();
-
-	args[0] = scheme_make_integer_value(inRect.Left());
-	args[1] = scheme_make_integer_value(inRect.Top());
-	args[2] = scheme_make_integer_value(inRect.Right());
-	args[3] = scheme_make_integer_value(inRect.Bottom());
-	return CallScheme("rect", args.size(), args.get());
-}
-
-Scheme_Object *
-TSchemeInterpreter::MakeSchemeColor(const GraphicsTools::Color &inColor) {
-    TSchemeArgs<4> args;
-    TSchemeReg<0,1> reg;
-    reg.args(args);
-    reg.done();
-
-	args[0] = scheme_make_integer_value(inColor.red);
-	args[1] = scheme_make_integer_value(inColor.green);
-	args[2] = scheme_make_integer_value(inColor.blue);
-	args[3] = scheme_make_integer_value(inColor.alpha);
-	return CallScheme("color", args.size(), args.get());
-}
-
-Scheme_Object *TSchemeInterpreter::MakeSchemePolygon(const TPolygon &inPoly) {
-    // See http://www.parashift.com/c++-faq-lite/containers.html#faq-34.3
-    // (in the standard C++ FAQ), which contains a section "Is the storage
-    // for a std::vector<T> guaranteed to be contiguous?".  The answer is
-    // "yes," assuming we don't resize the vector.  So we can use &args[0]
-    // and get a C pointer.
-	std::vector<TPoint> vertices(inPoly.Vertices());
-	size_t sz = vertices.size();
-    std::vector<Scheme_Object*> args(sz, NULL); 
-
-    TSchemeReg<0,1> reg;
-    reg.local_array(&args[0], args.size());
-    reg.done();
-
-	std::vector<TPoint>::iterator i = vertices.begin();
-	for (int j = 0; i != vertices.end(); ++j, ++i)
-		args[j] = MakeSchemePoint(*i);
-    ASSERT(args.size() == sz);
-	return CallScheme("polygon", args.size(), &args[0]);
-}
-
-Scheme_Object *
-TSchemeInterpreter::MakeSchemePercent(const TPercent &inPercent) {
-    TSchemeArgs<1> args;
-    TSchemeReg<0,1> reg;
-    reg.args(args);
-    reg.done();
-
-	args[0] = scheme_make_double(inPercent.GetValue());
-	return CallScheme("percent", args.size(), args.get());
-}
-
-void TSchemeInterpreter::Run(SystemIdleProc inIdleProc)
+Scheme_Object *TSchemeInterpreter::CallSchemeStatic(const char *inFuncName,
+                                                    int inArgc,
+                                                    Scheme_Object **inArgv)
 {
-	sSystemIdleProc = inIdleProc;
+    // MANUAL GC PROOF REQUIRED - It's safe to pass these variables
+    // straight through, because we don't do any allocations.
+    return GetSchemeInterpreter()->CallScheme(inFuncName, inArgc, inArgv);
+}
+
+void TSchemeInterpreter::Run()
+{
 	(void) CallSchemeSimple("%kernel-run");
 }
 

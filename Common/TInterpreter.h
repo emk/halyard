@@ -92,16 +92,6 @@ class TInterpreter : boost::noncopyable
 {
 public:
 	//////////
-	/// Platform-specific idle procedures.  These procedures can be
-	/// called from within the interpreter's idle loop to process
-	/// GUI events, give time to movie playback libraries, etc.
-	///
-	/// \param block  true if we want the system to block until user
-	///              events are received
-	///
-	typedef void (*SystemIdleProc)(bool inBlock);
-
-	//////////
 	/// Create a new TInterpreter object.  TInterpreter is a singleton
 	/// class; only one such object may be created (at any given time).
 	/// Call GetInstance (below) to return that instance.
@@ -118,11 +108,7 @@ public:
 	/// Enter the interpreter's main loop, and don't come back until the
 	/// interpreter has finished.
 	///
-	/// \param inIdleProc  This routine must be called periodically by
-	/// 					 the interpreter to give the system time for
-	///					 event processing and other tasks.
-	///
-	virtual void Run(SystemIdleProc inIdleProc) = 0;
+	virtual void Run() = 0;
 
 	//////////
 	/// Request the immediate shutdown of the interpreter.  This may happen
@@ -237,14 +223,6 @@ public:
     ///
     double GetLoadProgress();
 	
-	/////////
-	/// Run the system idle procedure.
-	/// 
-	/// \param block  Should the idle procedure block until all events are 
-	///               processed, or only process a few events? 
-	///
-	virtual void DoIdle(bool block) = 0;
-
 	//////////
 	/// Do we have a single, global instance of this class?
 	///
@@ -254,6 +232,11 @@ public:
 	/// Return the single, global instance of this class.
 	///
 	static TInterpreter *GetInstance() { ASSERT(sInstance); return sInstance; }
+
+	//////////
+    /// Destroy the currently-running interpreter.
+    ///
+    static void DestroyInstance();
 
 private:
     int mSourceFilesLoaded;
@@ -305,20 +288,37 @@ public:
 
 
 //////////
-/// This class is in charge of creating, running and destroying interpreters
-/// as required by the application.  It handles such features as redoscript,
-/// switchscript, etc.  (These features are implemented by a separate
-/// class--instead of being handled by TInterpreter--because the
-/// implementation of these features typically involves destroying and
-/// creating TInterpreter objects.)
+/// This class is in charge of creating, running and destroying
+/// interpreters as required by the application.  It supports reloading
+/// scripts, dealing with load errors, and other high-level features.
+/// (These features are implemented by a separate class--instead of being
+/// handled by TInterpreter--because the implementation of these features
+/// typically involves destroying and creating TInterpreter objects.)
 ///
 /// Only one TInterpreterManager will ever be created, so feel free to
 /// install language-specific primitives in the constructor.
 ///
 class TInterpreterManager : boost::noncopyable
 {
+public:
+	//////////
+	/// Platform-specific idle procedures.  These procedures can be
+	/// called from within the interpreter's idle loop to process
+	/// GUI events, give time to movie playback libraries, etc.
+	///
+	/// \param block  true if we want the system to block until user
+	///              events are received
+	///
+	typedef void (*SystemIdleProc)(bool inBlock);
+
+private:
 	static TInterpreterManager *sInstance;
 	static bool sHaveAlreadyCreatedSingleton;
+
+    // I don't recall why these member variables are static, but I wouldn't
+    // be surprised if we need to manipulate some of them before we
+    // actually create a TInterpreterManager.  Please do not add any more
+    // static members if you can avoid doing so.
     static std::vector<TReloadNotified*> sReloadNotifiedObjects;
     static bool sIsInRuntimeMode;
     static bool sIsFirstLoad;
@@ -329,12 +329,7 @@ class TInterpreterManager : boost::noncopyable
 	//////////
 	/// We call this procedure to yield time to the system.
 	///
-	TInterpreter::SystemIdleProc mSystemIdleProc;
-
-	//////////
-	/// The TInterpreter object, if we currently have one, or NULL.
-	///
-	TInterpreter *mInterpreter;
+	SystemIdleProc mSystemIdleProc;
 
 	//////////
 	/// This is set to true once the interpreter manager is allowed
@@ -372,7 +367,7 @@ public:
 	//////////
 	/// Create a new TInterpreterManager with the specified idle procedure.
 	///
-	TInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
+	TInterpreterManager(SystemIdleProc inIdleProc);
 
 	//////////
 	/// Destroy the TInterpreterManager.  (This is a singleton class, so you
@@ -386,6 +381,14 @@ public:
 	/// application quits.
 	///
 	void Run();
+
+	/////////
+	/// Run the system idle procedure.
+	/// 
+	/// \param block  Should the idle procedure block until all events are 
+	///               processed, or only process a few events? 
+	///
+	void DoIdle(bool block);
 
     //////////
     /// Inform the interpreter of the current Document.  Used so we can
@@ -522,9 +525,10 @@ public:
 protected:
 	//////////
 	/// Create a new TInterpreter object with all the appropriate
-	/// parameters.  Our subclasses implement this for us.
+	/// parameters.  Our subclasses implement this for us.  Once created,
+    /// this can be accessed using GetInstance.
 	///
-	virtual TInterpreter *MakeInterpreter() = 0;
+	virtual void MakeInterpreter() = 0;
 
 	//////////
 	/// Make sure the initial card is set to the default value.

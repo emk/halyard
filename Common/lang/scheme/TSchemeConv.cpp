@@ -34,6 +34,79 @@ REGISTER_TEST_CASE_FILE(TSchemeConv);
 //  TValueToScheme
 //=========================================================================
 
+static Scheme_Object *MakeSchemePoint(const TPoint &inPoint) {
+    TSchemeArgs<2> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+    
+	args[0] = scheme_make_integer_value(inPoint.X());
+	args[1] = scheme_make_integer_value(inPoint.Y());
+	return TSchemeInterpreter::CallSchemeStatic("point", args.size(),
+                                                args.get());
+}
+
+static Scheme_Object *MakeSchemeRect(const TRect &inRect) {
+    TSchemeArgs<4> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+
+	args[0] = scheme_make_integer_value(inRect.Left());
+	args[1] = scheme_make_integer_value(inRect.Top());
+	args[2] = scheme_make_integer_value(inRect.Right());
+	args[3] = scheme_make_integer_value(inRect.Bottom());
+	return TSchemeInterpreter::CallSchemeStatic("rect", args.size(),
+                                                args.get());
+}
+
+static Scheme_Object *MakeSchemeColor(const GraphicsTools::Color &inColor) {
+    TSchemeArgs<4> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+
+	args[0] = scheme_make_integer_value(inColor.red);
+	args[1] = scheme_make_integer_value(inColor.green);
+	args[2] = scheme_make_integer_value(inColor.blue);
+	args[3] = scheme_make_integer_value(inColor.alpha);
+	return TSchemeInterpreter::CallSchemeStatic("color", args.size(),
+                                                args.get());
+}
+
+static Scheme_Object *MakeSchemePolygon(const TPolygon &inPoly) {
+    // See http://www.parashift.com/c++-faq-lite/containers.html#faq-34.3
+    // (in the standard C++ FAQ), which contains a section "Is the storage
+    // for a std::vector<T> guaranteed to be contiguous?".  The answer is
+    // "yes," assuming we don't resize the vector.  So we can use &args[0]
+    // and get a C pointer.
+	std::vector<TPoint> vertices(inPoly.Vertices());
+	size_t sz = vertices.size();
+    std::vector<Scheme_Object*> args(sz, NULL); 
+
+    TSchemeReg<0,1> reg;
+    reg.local_array(&args[0], args.size());
+    reg.done();
+
+	std::vector<TPoint>::iterator i = vertices.begin();
+	for (int j = 0; i != vertices.end(); ++j, ++i)
+		args[j] = MakeSchemePoint(*i);
+    ASSERT(args.size() == sz);
+	return TSchemeInterpreter::CallSchemeStatic("polygon", args.size(),
+                                                &args[0]);
+}
+
+static Scheme_Object *MakeSchemePercent(const TPercent &inPercent) {
+    TSchemeArgs<1> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+
+	args[0] = scheme_make_double(inPercent.GetValue());
+	return TSchemeInterpreter::CallSchemeStatic("percent", args.size(),
+                                                args.get());
+}
+
 static Scheme_Object *MakeSchemeList(const TValueList &inList) {
 	Scheme_Object *result = NULL, *car = NULL;
 
@@ -91,17 +164,17 @@ Scheme_Object *Halyard::TValueToScheme(TValue inVal) {
 			
 		case TValue::TYPE_POINT: {
             TPoint p(tvalue_cast<TPoint>(inVal));
-			return TSchemeInterpreter::MakeSchemePoint(p);
+			return MakeSchemePoint(p);
         }
 			
 		case TValue::TYPE_RECT: {
             TRect r(tvalue_cast<TRect>(inVal));
-			return TSchemeInterpreter::MakeSchemeRect(r);
+			return MakeSchemeRect(r);
         }
 			
 		case TValue::TYPE_COLOR: {
             GraphicsTools::Color c(tvalue_cast<GraphicsTools::Color>(inVal));
-			return TSchemeInterpreter::MakeSchemeColor(c);
+			return MakeSchemeColor(c);
         }
 			
 		case TValue::TYPE_LIST: {
@@ -110,14 +183,14 @@ Scheme_Object *Halyard::TValueToScheme(TValue inVal) {
 			
 		case TValue::TYPE_POLYGON: {
             TPolygon poly(tvalue_cast<TPolygon>(inVal));
-			return TSchemeInterpreter::MakeSchemePolygon(poly);
+			return MakeSchemePolygon(poly);
         }
 	
 		// TValue::TYPE_CALLBACK goes here.
 
 		case TValue::TYPE_PERCENT: {
             TPercent pc(tvalue_cast<TPercent>(inVal));
-			return TSchemeInterpreter::MakeSchemePercent(pc);
+			return MakeSchemePercent(pc);
         }
 			
 		default:
@@ -151,9 +224,10 @@ static void SchemeTypeCheckStruct(const char *inPredicate,
 
 	// We want to verify that inVal is an instance of a Swindle class 
 	// class specified by inPredicate. If the object if of the right 
-	// class, CallScheme returns true.
+	// class, CallSchemeStatic returns true.
     args[0] = inVal;
-	b = TSchemeInterpreter::CallScheme(inPredicate, args.size(), args.get());
+	b = TSchemeInterpreter::CallSchemeStatic(inPredicate, args.size(),
+                                             args.get());
 	if (SCHEME_FALSEP(b))
 		SchemeTypeCheckFail();
 }
@@ -169,7 +243,8 @@ static Scheme_Object *SchemeGetMember(const char *inName,
     reg.done();
 
     args[0] = inVal;
-    return TSchemeInterpreter::CallScheme(inName, args.size(), args.get());
+    return TSchemeInterpreter::CallSchemeStatic(inName, args.size(),
+                                                args.get());
 }
 
 static int32 SchemeGetInt32Member(const char *inName,
@@ -300,8 +375,8 @@ static TValue SchemeToTPolygon(Scheme_Object *inVal) {
 
 	std::vector<TPoint> pts;
     args[0] = inVal;
-	scheme_pts = TSchemeInterpreter::CallScheme("polygon-vertices",
-                                                args.size(), args.get());
+	scheme_pts = TSchemeInterpreter::CallSchemeStatic("polygon-vertices",
+                                                      args.size(), args.get());
 	if (!(SCHEME_PAIRP(scheme_pts) || SCHEME_NULLP(scheme_pts)))
 		SchemeTypeCheckFail();
 	
@@ -369,8 +444,8 @@ static TValue SchemeStructToTValue(Scheme_Object *inVal) {
 	int i = 0;
 	while (gTypeInfo[i].predicate != NULL) {
         args[0] = inVal;
-		b =  TSchemeInterpreter::CallScheme(gTypeInfo[i].predicate, 
-                                            args.size(), args.get());
+		b =  TSchemeInterpreter::CallSchemeStatic(gTypeInfo[i].predicate, 
+                                                  args.size(), args.get());
 		if (SCHEME_TRUEP(b)) {
 			TValue result(gTypeInfo[i].conv(inVal));
 			ASSERT(result.IsInitialized());
@@ -475,8 +550,8 @@ static bool SchemeEquals(Scheme_Object *inObj1, Scheme_Object *inObj2)
 
 	args[0] = inObj1;
 	args[1] = inObj2;
-    b = TSchemeInterpreter::CallScheme("%kernel-equals?",
-                                       args.size(), args.get());
+    b = TSchemeInterpreter::CallSchemeStatic("%kernel-equals?",
+                                             args.size(), args.get());
 	return SCHEME_TRUEP(b);
 }
 
@@ -556,13 +631,13 @@ BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
 	CHECK_TVALUE_CONV(true, scheme_true);
 	CHECK_TVALUE_CONV(false, scheme_false);
 	CHECK_TVALUE_CONV(TPoint(0, 1),
-					  TSchemeInterpreter::MakeSchemePoint(TPoint(0, 1)));
+					  MakeSchemePoint(TPoint(0, 1)));
 
 	// Test more complicated types
 	CHECK_TVALUE_CONV(TRect(0, 1, 2, 3), 
-					  TSchemeInterpreter::MakeSchemeRect(TRect(0, 1, 2, 3)));
+					  MakeSchemeRect(TRect(0, 1, 2, 3)));
 	CHECK_TVALUE_CONV(Color(0, 1, 2, 3), 
-					  TSchemeInterpreter::MakeSchemeColor(Color(0, 1, 2, 3)));
+					  MakeSchemeColor(Color(0, 1, 2, 3)));
 
 	// Test lists.
 	TValueList list;
@@ -580,14 +655,14 @@ BEGIN_TEST_CASE(TestTValueToScheme, TestCase) {
     poly.push_back(TPoint(0, 10));
     poly.push_back(TPoint(10, 0));
 	CHECK_TVALUE_CONV(TPolygon(poly), 
-					  TSchemeInterpreter::MakeSchemePolygon(TPolygon(poly)));
+					  MakeSchemePolygon(TPolygon(poly)));
 
 	// We don't test callback because we're not sure we need to support
 	// returning it to Scheme.
 
 	// Test percent.
 	CHECK_TVALUE_CONV(TPercent(72.0), 
-					  TSchemeInterpreter::MakeSchemePercent(TPercent(72.0)));
+					  MakeSchemePercent(TPercent(72.0)));
 } END_TEST_CASE(TestTValueToScheme);
 
 // MANUAL GC PROOF REQUIRED - As with CHECK_TVALUE_CONV, we handle GC
@@ -633,13 +708,13 @@ BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 	CHECK_SCHEME_CONV(scheme_false, TValue(false));
 	
 	// More complex types
-	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemePoint(TPoint(0, 1)),
+	CHECK_SCHEME_CONV(MakeSchemePoint(TPoint(0, 1)),
 					  TValue(TPoint(0, 1)));
 
-	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemeRect(TRect(0, 1, 2, 3)),
+	CHECK_SCHEME_CONV(MakeSchemeRect(TRect(0, 1, 2, 3)),
 					  TValue(TRect(0, 1, 2, 3)));
 	
-	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemeColor(Color(0, 1, 2, 3)),
+	CHECK_SCHEME_CONV(MakeSchemeColor(Color(0, 1, 2, 3)),
 					  TValue(Color(0, 1, 2, 3)));
 
 	// Test lists.
@@ -656,11 +731,11 @@ BEGIN_TEST_CASE(TestSchemeToTValue, TestCase) {
 	poly.push_back(TPoint(0, 0));
     poly.push_back(TPoint(0, 10));
     poly.push_back(TPoint(10, 0));
-	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemePolygon(TPolygon(poly)),
+	CHECK_SCHEME_CONV(MakeSchemePolygon(TPolygon(poly)),
 					  TPolygon(poly));
 
 	// Test percent.
-	CHECK_SCHEME_CONV(TSchemeInterpreter::MakeSchemePercent(TPercent(72.0)),
+	CHECK_SCHEME_CONV(MakeSchemePercent(TPercent(72.0)),
 					  TPercent(72.0));
 	
 } END_TEST_CASE(TestSchemeToTValue);

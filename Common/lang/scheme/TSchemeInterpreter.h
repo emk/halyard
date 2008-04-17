@@ -48,7 +48,7 @@ class TSchemeInterpreterManager : public TInterpreterManager
     shared_ptr<ScriptEditorDB> mScriptEditorDB;
 
 public:
-	TSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
+	TSchemeInterpreterManager(SystemIdleProc inIdleProc);
 
     virtual ScriptEditorDB *GetScriptEditorDBInternal();
 	virtual void BeginScript();
@@ -57,7 +57,7 @@ private:
 	void LoadFile(const FileSystem::Path &inFile);
 
 protected:
-	virtual TInterpreter *MakeInterpreter();
+	virtual void MakeInterpreter();
 };
 
 
@@ -70,10 +70,10 @@ class TSchemeInterpreter : public TInterpreter
 	friend class TSchemeInterpreterManager;
 	friend class TSchemeCallback;
 
-	static TSchemePtr<Scheme_Env> sGlobalEnv;
-	static TSchemePtr<Scheme_Env> sScriptEnv;
-	static TSchemePtr<Scheme_Object> sLoaderModule;
-	static TSchemePtr<Scheme_Object> sKernelModule;
+	TSchemePtr<Scheme_Env> mGlobalEnv;
+	TSchemePtr<Scheme_Env> mScriptEnv;
+	TSchemePtr<Scheme_Object> mLoaderModule;
+	TSchemePtr<Scheme_Object> mKernelModule;
 
     // Compare two Scheme pointers for equality in a GC-safe fashion.
     //
@@ -82,7 +82,7 @@ class TSchemeInterpreter : public TInterpreter
     // safe to cast pointers of type Scheme_Env, etc, to Scheme_Object when
     // performing this comparison.
     template <typename T>
-    static bool Eq(T *left, T *right) {
+    bool Eq(T *left, T *right) {
         return scheme_eq(reinterpret_cast<Scheme_Object*>(left),
                          reinterpret_cast<Scheme_Object*>(right));
     }
@@ -113,57 +113,50 @@ class TSchemeInterpreter : public TInterpreter
         }
     };
     typedef std::map<BucketKey, TSchemePtr<Scheme_Bucket> > BucketMap;
-    static BucketMap sBucketMap;
+    BucketMap mBucketMap;
 
-	static SystemIdleProc sSystemIdleProc;
+	void InitializeModuleNames();
 
-	static void InitializeModuleNames();
-
-    static Scheme_Bucket *FindBucket(Scheme_Env *inEnv,
-                                     Scheme_Object *inModule,
-                                     const char *inFuncName);
+    Scheme_Bucket *FindBucket(Scheme_Env *inEnv,
+                              Scheme_Object *inModule,
+                              const char *inFuncName);
 
     /// Call a primitive function.  This function may only use PLT-style
     /// error handling, *not* C++ exceptions.
 	static Scheme_Object *CallPrim(int inArgc, Scheme_Object **inArgv);
     /// This function may only use C++ exceptions, *not* PLT-style error
     /// handling.
-    static bool
-    TSchemeInterpreter::CallPrimInternal(const char *inPrimName,
-                                           int inArgc, Scheme_Object **inArgv,
-                                           Scheme_Object **outResult,
-                                           char *outErrorMessage,
-                                           size_t inErrorMessageMaxLength);
+    bool CallPrimInternal(const char *inPrimName,
+                          int inArgc, Scheme_Object **inArgv,
+                          Scheme_Object **outResult,
+                          char *outErrorMessage,
+                          size_t inErrorMessageMaxLength);
 
 public:
 	TSchemeInterpreter(Scheme_Env *inGlobalEnv);
 	virtual ~TSchemeInterpreter();
 
-	// TODO - factor entirely into TInterpreter.
-	void DoIdle(bool block) {
-		ASSERT(sSystemIdleProc);
-		(*sSystemIdleProc)(block);
-	}
+    static TSchemeInterpreter *GetSchemeInterpreter();
 
-	static Scheme_Object *CallSchemeEx(Scheme_Env *inEnv,
-									   Scheme_Object *inModule,
-									   const char *inFuncName,
-									   int inArgc, Scheme_Object **inArgv);
-    static Scheme_Object *CallSchemeExHelper(Scheme_Object *inFunc,
-                                             int inArgc,
-                                             Scheme_Object **inArgv);
-	static Scheme_Object *CallScheme(const char *inFuncName,
+	Scheme_Object *CallSchemeEx(Scheme_Env *inEnv,
+                                Scheme_Object *inModule,
+                                const char *inFuncName,
+                                int inArgc, Scheme_Object **inArgv);
+    Scheme_Object *CallSchemeExHelper(Scheme_Object *inFunc,
+                                      int inArgc,
+                                      Scheme_Object **inArgv);
+	Scheme_Object *CallScheme(const char *inFuncName,
 									 int inArgc, Scheme_Object **inArgv);
-	static Scheme_Object *CallSchemeSimple(const char *inFuncName);
+	Scheme_Object *CallSchemeSimple(const char *inFuncName);
 
-	static Scheme_Object *MakeSchemePoint(const TPoint &inPoint);
-	static Scheme_Object *MakeSchemeRect(const TRect &inRect);
-	static Scheme_Object *MakeSchemeColor(const GraphicsTools::Color &inColor);
-	static Scheme_Object *MakeSchemePolygon(const TPolygon &inPoly);
-	static Scheme_Object *MakeSchemePercent(const TPercent &inPercent);
+    /// A static version of CallScheme for use by other classes.  This cuts
+    /// down on the number of times we need to look up our singleton object
+    /// elsewhere in the codebase.
+	static Scheme_Object *CallSchemeStatic(const char *inFuncName,
+                                           int inArgc, Scheme_Object **inArgv);
 
 	// For documentation of these virtual methods, see TInterpreter.h.
-	virtual void Run(SystemIdleProc inIdleProc);
+	virtual void Run();
 	virtual void KillInterpreter();
 	virtual void Stop();
 	virtual bool IsStopped();

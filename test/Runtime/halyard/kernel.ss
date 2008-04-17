@@ -133,7 +133,7 @@
     ;; We call %call-prim directly to avoid using rest arguments or
     ;; 'apply', both of which cons (which we don't want to happen in the
     ;; idle loop.)
-    (%call-prim 'SchemeIdle blocking?)
+    (%call-prim 'Idle blocking?)
     (%kernel-check-state))
 
   (define (blocking-idle)
@@ -562,7 +562,7 @@
        (when *%kernel-exit-to-top-func*
              (*%kernel-exit-to-top-func* #f))]
       [[PAUSED]
-       (%call-prim 'SchemeIdle #t) ; Similar to blocking-idle.
+       (%call-prim 'Idle #t)          ; Similar to blocking-idle.
        (%kernel-check-state)]         ; Tail-call self without consing.
       [[JUMPING]
        (when *%kernel-exit-to-top-func*

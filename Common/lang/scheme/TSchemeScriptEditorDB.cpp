@@ -90,6 +90,6 @@ void TSchemeScriptEditorDB::ProcessFileInternal(const std::string &relpath) {
     reg.done();
 
 	args[0] = scheme_make_path(relpath.c_str());
-	TSchemeInterpreter::CallScheme("%kernel-extract-definitions",
-                                   args.size(), args.get());
+	TSchemeInterpreter::CallSchemeStatic("%kernel-extract-definitions",
+                                         args.size(), args.get());
 }

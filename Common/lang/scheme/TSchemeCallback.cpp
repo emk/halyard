@@ -50,7 +50,7 @@ TValue TSchemeCallback::Run(const TValueList &inArguments)
 	// where we have simple arguments.
 	args[0] = mCallback;
 	args[1] = TValueToScheme(inArguments);
-    result = TSchemeInterpreter::CallScheme("%kernel-run-callback",
-                                            args.size(), args.get());
+    result = TSchemeInterpreter::CallSchemeStatic("%kernel-run-callback",
+                                                  args.size(), args.get());
     return SchemeToTValue(result);
 }
