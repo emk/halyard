@@ -15,10 +15,13 @@
     (test "A path should proxy .instance-of? to its running node."
       (assert (@tests .instance-of? %card-group%)))
     (test "A path should match its .to-string value."
-      (assert-equals "@not-a-group/card" (@not-a-group/card .to-string)))
+      (assert-equals "@not-a-group/card" (@not-a-group/card .to-string))
+      (assert-equals "@/start" (@/start .to-string)))
     (test "A path should proxy methods to its running node."
       ;; Test just that .node-state is defined, and doesn't give an error.
-      (@tests .node-state)))
+      (@tests .node-state))
+    (test "A path with a leading / should resolve as an absolue path."
+      (assert-equals /tests (@/tests .resolve-path :running? #f))))
   
   (card /tests/paths (%test-suite% :tests (list %paths-test%)))
   )

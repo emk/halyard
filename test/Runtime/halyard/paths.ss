@@ -46,6 +46,10 @@
   ;;; classes, or nested nodes themselves.
   (define-class %node-path% ()
     (attr components)
+    
+    ;;; Are we an absolute path?
+    (def (absolute?)
+      (eq? (car (.components)) '|/|))
 
     ;;; Print a path in a readable format, but without the leading @ sign.
     ;;; The opposite of @*.
@@ -91,14 +95,16 @@
                (if-not-found
                 (lambda ()
                   (error (cat "Can't find relative path: " self)))))
-      (unless (current-group-member)
-        (error (cat "Can't find relative path '@" (.to-symbol)
-                    "' outside of a card")))
-      (or (find-node-relative (if running?
-                                  (current-group-member)
-                                  ((current-group-member) .static-node))
-                              (.to-symbol) running?)
-          (if-not-found)))
+      (cond
+        [(.absolute?) (or (find-node (.to-symbol) running?) (if-not-found))]
+        [else (unless (current-group-member)
+                (error (cat "Can't find relative path '@" (.to-symbol)
+                            "' outside of a card")))
+              (or (find-node-relative (if running?
+                                        (current-group-member)
+                                        ((current-group-member) .static-node))
+                                      (.to-symbol) running?)
+                  (if-not-found))]))
 
     ;;; Note that (delete-element @foo) will pass a .%delete message to
     ;;; this %node-path%, which we must forward appropriately.
@@ -133,16 +139,15 @@
               (string-tokenize path-string
                                (char-set-complement (char-set #\/)))]]
         (map string->symbol
-             (if absolute? components (cons "." components)))))
+             (if absolute? (cons "/" components) components))))
 
     ;;; Combine components back into a path string.
     (define (components->path-string components)
       (define (join lst)
         (string-join (map symbol->string lst) "/"))
-      (if (and (not (null? components))
-               (eq? '|.| (car components)))
-          (join (cdr components))
-          (string-append "/" (join components))))
+      (if (eq? '|/| (car components))
+        (string-append "/" (join (cdr components)))
+        (join components)))
     )
 
   ;; @* CHANGED (Now takes a string as an argument.  This used to return a
