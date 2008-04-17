@@ -21,9 +21,6 @@
 ;; Our local library of templates, functions, etc.
 (require "base.ss")
 
-;; This file is only included here so that the syntax highlighter knows
-;; about it.
-
 ;; We want this for a version number on the index card.
 (require (lib "updater.ss" "halyard"))
 
@@ -116,8 +113,11 @@
 (require (lib "tests.ss" "halyard"))
 (require (file "test-cases.ss"))
 
+;; We want to make sure that we make (command-line-test-driver) available
+;; in the global namespace for use by the build system.
+(require (lib "halyard-unit.ss" "halyard"))
+
 ;; These files are included in start.ss only to make sure we get
 ;; appropriate highlighting and indentation for the identifiers they
 ;; export.
 (require (lib "animate.ss" "halyard"))
-(require (lib "halyard-unit.ss" "halyard"))
