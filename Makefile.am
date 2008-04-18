@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = libs Common
+SUBDIRS = libs Common wx
 
 check:
 	(cd test; ../Common/TestAll)
