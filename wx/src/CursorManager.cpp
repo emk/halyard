@@ -55,10 +55,10 @@ CursorManager::CursorManager()
 	// Old 5L stock cursors.
 	// PORTABILITY - We might want to turn these into PNGs eventually,
 	// or use whatever portable resource system wxWindows decides on.
-	RegisterCursor("left", wxCursor("IDC_LEFT_CURSOR"));
-	RegisterCursor("right", wxCursor("IDC_RIGHT_CURSOR"));
-	RegisterCursor("turnleft", wxCursor("IDC_TURN_LEFT_CURSOR"));
-	RegisterCursor("turnright", wxCursor("IDC_TURN_RIGHT_CURSOR"));
+	RegisterCursor("left", wxCursor(wxT("IDC_LEFT_CURSOR")));
+	RegisterCursor("right", wxCursor(wxT("IDC_RIGHT_CURSOR")));
+    RegisterCursor("turnleft", wxCursor(wxT("IDC_TURN_LEFT_CURSOR")));
+    RegisterCursor("turnright", wxCursor(wxT("IDC_TURN_RIGHT_CURSOR")));
 }
 
 CursorManager::~CursorManager()
@@ -102,7 +102,7 @@ void CursorManager::RegisterCursor(const std::string &inName,
 }
 
 void CursorManager::RegisterCursor(const std::string &inName,
-								   wxCursor &inCursor)
+								   const wxCursor &inCursor)
 {
     RegisterCursor(inName, new SystemCursor(wxCursor(inCursor)));
 }
@@ -114,7 +114,8 @@ void CursorManager::RegisterImageCursor(const std::string &inName,
 {
 	// Load the image.
     wxImage image;
-    image.LoadFile(inPath.c_str());
+    wxString path(inPath.c_str(), wxConvLocal);
+    image.LoadFile(path);
     if (!image.Ok())
 	{
 		// Display an error message, and register a plausible substitute
@@ -125,10 +126,12 @@ void CursorManager::RegisterImageCursor(const std::string &inName,
 	}
 
 	// If the cursor doesn't have a hot spot, specify one.
-	if (!image.HasOption(wxCUR_HOTSPOT_X))
-		image.SetOption(wxCUR_HOTSPOT_X, (inHotSpotX == -1) ? 0 : inHotSpotX);
-	if (!image.HasOption(wxCUR_HOTSPOT_Y))
-		image.SetOption(wxCUR_HOTSPOT_Y, (inHotSpotY == -1) ? 0 : inHotSpotY);
+	if (!image.HasOption(wxIMAGE_OPTION_CUR_HOTSPOT_X))
+		image.SetOption(wxIMAGE_OPTION_CUR_HOTSPOT_X,
+                        (inHotSpotX == -1) ? 0 : inHotSpotX);
+	if (!image.HasOption(wxIMAGE_OPTION_CUR_HOTSPOT_Y))
+		image.SetOption(wxIMAGE_OPTION_CUR_HOTSPOT_Y,
+                        (inHotSpotY == -1) ? 0 : inHotSpotY);
 
 	// Register the cursor.
 	wxCursor cursor(image);

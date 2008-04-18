@@ -175,7 +175,7 @@ void BufferSpanTable::ProcessDeletion(BufferSpan::Pos pos, size_t length) {
 #if BUILD_TEST_CASES
 
 namespace {
-    enum { TEST_SPAN = 42 };
+    const int TEST_SPAN = 42;
     
     void CHECK_SPAN(const BufferSpanTable &table,
                     BufferSpan::Pos begin, BufferSpan::Pos end,
@@ -203,7 +203,7 @@ BEGIN_TEST_CASE(TestBufferSpan, TestCase) {
     CHECK_EQ(span->GetId(), TEST_SPAN);
     CHECK_EQ(span->GetBeginPos(), 10);
     CHECK_EQ(span->GetEndPos(), 10);
-    CHECK_EQ(span->GetLength(), 0);
+    CHECK_EQ(span->GetLength(), 0U);
     CHECK_EQ(span->GetStatus(), BufferSpan::UNCHANGED);
 
     // Create a non-zero span, insert it, find it, and check it out.
@@ -213,7 +213,7 @@ BEGIN_TEST_CASE(TestBufferSpan, TestCase) {
     CHECK_EQ(span->GetId(), TEST_SPAN);
     CHECK_EQ(span->GetBeginPos(), 20);
     CHECK_EQ(span->GetEndPos(), 25);
-    CHECK_EQ(span->GetLength(), 5);
+    CHECK_EQ(span->GetLength(), 5U);
     CHECK_EQ(span->GetStatus(), BufferSpan::UNCHANGED);
 
     // Delete the span and make sure it goes away.

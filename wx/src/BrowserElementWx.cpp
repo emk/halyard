@@ -62,8 +62,8 @@ bool CustomWxHtmlWindow::LoadPage(const wxString& inLocation) {
         EventDispatcherPtr dispatcher = mElement->GetEventDispatcher();
         dispatcher->DoEventBrowserPageChanged(GetOpenedPage());
         dispatcher->DoEventBrowserTitleChanged(GetOpenedPageTitle());
-        dispatcher->DoEventUpdateUI("back");
-        dispatcher->DoEventUpdateUI("forward");
+        dispatcher->DoEventUpdateUI(wxT("back"));
+        dispatcher->DoEventUpdateUI(wxT("forward"));
     }
     return loaded;
 }
@@ -106,8 +106,8 @@ void BrowserElementWx::LoadPage(const wxString &inUrl){
 
 wxString BrowserElementWx::GetCurrentPageUrl() {
     wxString url(mHtmlWindow->GetOpenedPage());
-    if (url == "")
-        return "about:blank";
+    if (url == wxT(""))
+        return wxT("about:blank");
     else
         return url;
 }

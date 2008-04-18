@@ -27,7 +27,7 @@
 
 using namespace Halyard;
 
-void Cursor::SetStageCursorTo(wxCursor &cursor) {
+void Cursor::SetStageCursorTo(const wxCursor &cursor) {
     // If we haven't already started destroying the Stage, change the
     // cursor.
     if (wxGetApp().HaveStage())

@@ -43,7 +43,7 @@ BEGIN_NAMESPACE_HALYARD
 class Cursor : boost::noncopyable {
 protected:
     /// Set the cursor of the stage to the specified cursor (if possible).
-    void SetStageCursorTo(wxCursor &cursor);
+    void SetStageCursorTo(const wxCursor &cursor);
 
 public:
     /// Destroy a cursor object.  This is virtual so that 'delete' can find

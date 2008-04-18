@@ -100,11 +100,11 @@ wxVariant TToWxValue(const TValue &value) {
 /// Convert a wxWidgets wxVariant into a TValue.
 TValue WxToTValue(const wxVariant &value) {
     wxString type(value.GetType());
-    if (type == "string") {
+    if (type == wxT("string")) {
         return TValue(value.GetString());
-    } else if (type == "bool") {
+    } else if (type == wxT("bool")) {
         return TValue(value.GetBool());        
-    } else if (type == "long") {
+    } else if (type == wxT("long")) {
         return TValue(value.GetLong());
     } else {
         THROW("Can't convert wxVariant to TValue");

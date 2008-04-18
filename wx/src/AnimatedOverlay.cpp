@@ -66,7 +66,8 @@ void AnimatedOverlay::UpdatePosition() {
 
 wxBitmap AnimatedOverlay::LoadPicture(const std::string &inName) {
 	// Load our image.
-	return wxGetApp().GetStage()->GetImageCache()->GetBitmap(inName.c_str());
+    wxString name(inName.c_str(), wxConvLocal);
+    return wxGetApp().GetStage()->GetImageCache()->GetBitmap(name);
 }
 
 void AnimatedOverlay::DrawGraphic(const std::string &inName) {

@@ -81,35 +81,45 @@ void AppLog::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
     if (log)
     {
 		// Format our timestamp.
-		char buffer[256];
-        wxStrftime(buffer, WXSIZEOF(buffer), "%H:%M:%S",
+		wxChar buffer[256];
+        wxStrftime(buffer, WXSIZEOF(buffer), wxT("%H:%M:%S"),
 				   localtime(&inTimeStamp));
+        std::string timestamp(wxString(buffer).mb_str());
 
 		// Print our log message to the appropriate logs.
 		switch (inLevel) 
 		{ 
 			case wxLOG_FatalError:
-				gDebugLog.FatalError("WX %s: %s [%s]", label, inMsg, buffer);
-				gLog.FatalError("WX %s: %s [%s]", label, inMsg, buffer);
+				gDebugLog.FatalError("WX %s: %s [%s]", label, inMsg,
+                                     timestamp.c_str());
+				gLog.FatalError("WX %s: %s [%s]", label, inMsg,
+                                timestamp.c_str());
 				break;
 
 		    case wxLOG_Error:
                 if (mShouldSilentlyLogNonFatalErrors) {
-                    gDebugLog.Log("WX %s: %s [%s]", label, inMsg, buffer);
-                    gLog.Log("WX %s: %s [%s]", label, inMsg, buffer);
+                    gDebugLog.Log("WX %s: %s [%s]", label, inMsg,
+                                  timestamp.c_str());
+                    gLog.Log("WX %s: %s [%s]", label, inMsg,
+                             timestamp.c_str());
                 } else {
-                    gDebugLog.Error("WX %s: %s [%s]", label, inMsg, buffer);
-                    gLog.Error("WX %s: %s [%s]", label, inMsg, buffer);
+                    gDebugLog.Error("WX %s: %s [%s]", label, inMsg,
+                                    timestamp.c_str());
+                    gLog.Error("WX %s: %s [%s]", label, inMsg,
+                               timestamp.c_str());
                 }
 				break;
 
 		    case wxLOG_Warning:
-				gDebugLog.Caution("WX %s: %s [%s]", label, inMsg, buffer);
-				gLog.Caution("WX %s: %s [%s]", label, inMsg, buffer);
+				gDebugLog.Caution("WX %s: %s [%s]", label, inMsg,
+                                  timestamp.c_str());
+				gLog.Caution("WX %s: %s [%s]", label, inMsg,
+                             timestamp.c_str());
 				break;
 				
 		    default:
-				gDebugLog.Log("WX %s: %s [%s]", label, inMsg, buffer);
+				gDebugLog.Log("WX %s: %s [%s]", label, inMsg,
+                              timestamp.c_str());
 				break;
 		}
     }

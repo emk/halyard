@@ -43,7 +43,7 @@ public:
 
     void RegisterCursor(const std::string &inName,
                         Halyard::Cursor *inCursor);
-    void RegisterCursor(const std::string &inName, wxCursor &inCursor);
+    void RegisterCursor(const std::string &inName, const wxCursor &inCursor);
     void RegisterImageCursor(const std::string &inName,
 							 const std::string &inPath,
 							 int inHotSpotX = -1,

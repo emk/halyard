@@ -1,69 +1,89 @@
+AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I../../Common
+AM_CXXFLAGS = $(MZSCHEME_CFLAGS)
 
-#CXXFLAGS = @CXXFLAGS@ -Wall -Werror \
-#	`../../libs/wxWindows/wx-config --cxxflags` \
-#	-I ../../libs/wxWindows/include \
-#	-I ../../libs/wxWindows/lib/wx/include/gtk-2.3 \
-#	-I ../../libs/crypto \
-#	-I ../../libs/boost \
-#	-I ../../libs/plt/include \
-#	-I ../../Common
+# Until we can actually compile all our source files, build a library
+# instead of an application.
+noinst_LIBRARIES = libhalyardgui.a
 
-#noinst_PROGRAMS = wx5L
+libhalyardgui_a_SOURCES = \
+	AnimatedOverlay.cpp AnimatedOverlay.h \
+	AppConfig.h \
+	AppGlobals.h \
+	AppGraphics.cpp AppGraphics.h \
+	AppHeaders.cpp AppHeaders.h \
+	AppLog.cpp AppLog.h \
+	BrowserElement.cpp BrowserElement.h \
+	BrowserElementWx.cpp BrowserElementWx.h \
+	BufferSpan.cpp BufferSpan.h \
+	CommonWxConv.cpp CommonWxConv.h \
+	Cursor.cpp Cursor.h \
+	CursorElement.cpp CursorElement.h \
+	CursorManager.cpp CursorManager.h
+#	CustomTreeCtrl.cpp CustomTreeCtrl.h \
+#	DirtyList.cpp DirtyList.h \
+#	dlg/AdjustScreenConfirmDlg.cpp dlg/AdjustScreenConfirmDlg.h \
+#	dlg/AdjustScreenDlg.cpp dlg/AdjustScreenDlg.h \
+#	dlg/FindDlg.cpp dlg/FindDlg.h \
+#	dlg/MetaDotDlg.cpp dlg/MetaDotDlg.h \
+#	dlg/MultiButtonDlg.cpp dlg/MultiButtonDlg.h \
+#	dlg/ProgramPropDlg.cpp dlg/ProgramPropDlg.h \
+#	dlg/PropertyDlg.cpp dlg/PropertyDlg.h \
+#	dlg/StartupDlg.cpp dlg/StartupDlg.h \
+#	dlg/XrcDlg.cpp dlg/XrcDlg.h \
+#	DocNotebook.cpp DocNotebook.h \
+#	Downloader.cpp Downloader.h \
+#	DrawingArea.cpp DrawingArea.h \
+#	DrawingAreaOpt.cpp DrawingAreaOpt.h \
+#	DrawingContextStack.cpp DrawingContextStack.h \
+#	EditBox.cpp EditBox.h \
+#	Element.cpp Element.h \
+#	EventDelegator.cpp EventDelegator.h \
+#	EventDispatcher.cpp EventDispatcher.h \
+#	FancyCrashReporter.cpp FancyCrashReporter.h \
+#	FancyStatusBar.cpp FancyStatusBar.h \
+#	GeigerAudioStream.cpp GeigerAudioStream.h \
+#	GeigerSynthElement.cpp GeigerSynthElement.h \
+#	GuiUtil.cpp GuiUtil.h \
+#	HalyardApp.cpp HalyardApp.h \
+#	HistoryText.cpp HistoryText.h \
+#	ImageCache.cpp ImageCache.h \
+#	InvisibleElement.h \
+#	LightweightAccessible.cpp LightweightAccessible.h \
+#	LightweightElement.cpp LightweightElement.h \
+#	Listener.cpp Listener.h \
+#	LocationBox.cpp LocationBox.h \
+#	MediaElement.cpp MediaElement.h \
+#	MovieElement.cpp MovieElement.h \
+#	MovieWindow.cpp MovieWindow.h \
+#	MovieWindowQT.cpp MovieWindowQT.h \
+#	opt/mmx/fade_asm.cpp opt/mmx/fade_asm.h \
+#	Overlay.cpp Overlay.h \
+#	ProgramTree.cpp ProgramTree.h \
+#	Quake2Engine.cpp Quake2Engine.h \
+#	SashFrame.cpp SashFrame.h \
+#	ScriptEditor.cpp ScriptEditor.h \
+#	Stage.cpp Stage.h \
+#	StageAccessible.cpp StageAccessible.h \
+#	StageFrame.cpp StageFrame.h \
+#	TestHarness.cpp TestHarness.h \
+#	Timecoder.cpp Timecoder.h \
+#	ToolWindow.cpp ToolWindow.h \
+#	TQTMovie.cpp TQTMovie.h \
+#	TQuake2Primitives.cpp TQuake2Primitives.h \
+#	Transition.h TransitionOpt.cpp \
+#	TWxPrimitives.cpp TWxPrimitives.h \
+#	VorbisAudioStream.cpp VorbisAudioStream.h \
+#	VorbisFile.cpp VorbisFile.h \
+#	Widget.cpp Widget.h \
+#	Zone.cpp Zone.h
 
-#wx5L_SOURCES = \
-#	AppConfig.h \
-#	AppGlobals.h \
-#	AppGraphics.cpp \
-#	AppGraphics.h \
-#	Element.cpp \
-#	Element.h \
-#	FiveLApp.cpp \
-#	FiveLApp.h \
-#	Listener.cpp \
-#	Listener.h \
-#	LocationBox.cpp \
-#	LocationBox.h \
-#	Log5L.cpp \
-#	Log5L.h \
-#	MovieElement.cpp \
-#	MovieElement.h \
-#	MovieWindow.cpp \
-#	MovieWindow.h \
-#	resource.h \
-#	Stage.cpp \
-#	Stage.h \
-#	Timecoder.cpp \
-#	Timecoder.h \
-#	ToolWindow.cpp \
-#	ToolWindow.h \
-#	TWxPrimitives.cpp \
-#	TWxPrimitives.h \
-#	Widget.cpp \
-#	Widget.h \
-#	Zone.cpp \
-#	Zone.h
+# Disabled because they rely on various media APIs we're not ready to deal
+# with right now.
+#AudioStream.cpp AudioStream.h
+#AudioStreamElement.cpp AudioStreamElement.h
+#BinMsgConv.cpp BinMsgConv.h
 
-#	TQTMovie.cpp
-#	TQTMovie.h
-#	MovieWindowQT.cpp
-#	MovieWindowQT.h
-
-
-#wx5L_LDFLAGS = \
-#	-L../../libs/wxWindows/lib \
-#	`../../libs/wxWindows/wx-config --ldflags` \
-#	-pthread
-
-# From 	`../../libs/wxWindows/wx-config --libs`, which automake won't let
-# us call directly (and which we need to edit for now).
-#WXLIBS = -lwx_gtk-2.3 -L/usr/X11R6/lib -lgtk -lgdk -lgmodule -lgthread -lglib -lpthread -ldl -lXi -lXext -lX11 -lm -lpng -ljpeg -ltiff -lz -ldl -lm 
-
-#wx5L_LDADD = \
-#	../../Common/libfivel.a \
-#	../../libs/crypto/libfivel_crypto.a \
-#	../../libs/plt/lib/libmzscheme.a \
-#	../../libs/plt/lib/libmzgc.a \
-#	../../libs/plt/lib/mzdyn.o \
-#	@FREETYPE_LDADD@ \
-#	$(WXLIBS) \
-#	-ldl
+# Windows-specific files.
+#ActiveXElement.cpp ActiveXElement.h
+#BrowserElementIE.cpp BrowserElementIE.h
+#resource.h

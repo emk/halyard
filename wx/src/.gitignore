@@ -1,2 +1,4 @@
 resources.cpp
 application.aps
+*.o
+*.a
