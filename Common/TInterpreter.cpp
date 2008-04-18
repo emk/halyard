@@ -37,8 +37,8 @@ TInterpreter *TInterpreter::sInstance = NULL;
 
 TInterpreter::TInterpreter()
     : mSourceFilesLoaded(0), mSourceFilesExpected(0)
-
 {
+    // Set up singleton.
     ASSERT(sInstance == NULL);
     sInstance = this;
 
@@ -52,6 +52,12 @@ TInterpreter::TInterpreter()
 TInterpreter::~TInterpreter()
 {
     sInstance = NULL;
+}
+
+void TInterpreter::DestroyInstance() {
+    if (sInstance)
+        delete sInstance;
+    ASSERT(sInstance == NULL);
 }
 
 void TInterpreter::NotifyFileLoaded() {
@@ -108,8 +114,7 @@ std::string TInterpreterManager::sInitialCommand;
 Document *TInterpreterManager::sDocument = NULL;
 
 
-TInterpreterManager::TInterpreterManager(
-	TInterpreter::SystemIdleProc inIdleProc)
+TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
 {
 	ASSERT(sHaveAlreadyCreatedSingleton == false);
 	sHaveAlreadyCreatedSingleton = true;
@@ -118,7 +123,6 @@ TInterpreterManager::TInterpreterManager(
 
 	// Initialize our member variables.
 	mSystemIdleProc = inIdleProc;
-	mInterpreter = NULL;
 	mDone = false;
 	mExitedWithError = false;
 	mScriptIsBegun = false;
@@ -174,6 +178,11 @@ void TInterpreterManager::Run()
 	}
 }
 
+void TInterpreterManager::DoIdle(bool block) {
+    ASSERT(mSystemIdleProc);
+    (*mSystemIdleProc)(block);
+}
+
 void TInterpreterManager::BeginScript()
 {
 	mScriptIsBegun = true;
@@ -182,69 +191,68 @@ void TInterpreterManager::BeginScript()
 void TInterpreterManager::LoadAndRunScript()
 {
     NotifyReloadScriptStarting();
-	try
-	{
-		// Create an interpreter object, and ask it to jump to the
-		// appropriate card.
-		mInterpreter = MakeInterpreter();
-        NotifyReloadScriptSucceeded();
 
-        // Run our initial command, if we have one.
-        if (sHaveInitialCommand) {
-            sHaveInitialCommand = false;
-            if (sIsInRuntimeMode) {
-                std::string result;
-                if (!mInterpreter->Eval(sInitialCommand, result))
-                    THROW(result.c_str());
+    // This outer try/catch block makes sure that we dispose of
+    // TInterpreter before we leave this function.
+	try {
+        // This inner try/catch block cleans up after failed script
+        // reloads, and rethrows any exceptions.
+        try {
+            // Create an interpreter object, and ask it to jump to the
+            // appropriate card.
+            MakeInterpreter();
+            TInterpreter *interp = TInterpreter::GetInstance();
+            NotifyReloadScriptSucceeded();
+            
+            // Run our initial command, if we have one.
+            if (sHaveInitialCommand) {
+                sHaveInitialCommand = false;
+                if (sIsInRuntimeMode) {
+                    std::string result;
+                    if (!interp->Eval(sInitialCommand, result))
+                        THROW(result.c_str());
+                }
             }
+
+            // Ask our interpreter to jump to the appropriate card.
+            if (!interp->IsValidCard(mInitialCardName.c_str()))
+                ResetInitialCardName();
+            interp->JumpToCardByName(mInitialCardName.c_str());
+            
+            // Reset any special variables.
+            ResetInitialCardName();
+        } catch (...) {
+            // Tell our main loop that the interpreter object couldn't be
+            // opened properly.
+            mLoadScriptFailed = true;
+            NotifyReloadScriptFailed();
+            throw;
         }
 
-		// Ask our interpreter to jump to the appropriate card.
-        if (!mInterpreter->IsValidCard(mInitialCardName.c_str()))
-            ResetInitialCardName();
-        mInterpreter->JumpToCardByName(mInitialCardName.c_str());
-
-		// Reset any special variables.
-		ResetInitialCardName();
-	}
-	catch (...)
-	{
-		// Tell our main loop that the interpreter object couldn't be
-		// opened properly.
-		mLoadScriptFailed = true;
-        NotifyReloadScriptFailed();
-		throw;
-	}
-	
-	// Run the interpreter until it has finished.
-	try
-	{
-		// The mDone flag may have been set by mInitialCommand code.
+        // Run the interpreter until it has finished.  The mDone flag may
+		// have been set by mInitialCommand code.
 		if (!mDone)
-			mInterpreter->Run(mSystemIdleProc);
-	}
-	catch (...)
-	{
-		delete mInterpreter;
-		mInterpreter = NULL;
+			TInterpreter::GetInstance()->Run();
+
+	} catch (...) {
+        TInterpreter::DestroyInstance();
 		throw;
 	}
-	delete mInterpreter;
-	mInterpreter = NULL;
+    TInterpreter::DestroyInstance();
 }
 
 void TInterpreterManager::RequestQuitApplication()
 {
-	if (mInterpreter)
-		mInterpreter->KillInterpreter();
+	if (TInterpreter::HaveInstance())
+        TInterpreter::GetInstance()->KillInterpreter();
 	mDone = true;
 }
 
 void TInterpreterManager::RequestReloadScript(const char *inGotoCardName)
 {
 	ASSERT(inGotoCardName != NULL);
-	ASSERT(mInterpreter);
-	mInterpreter->KillInterpreter();
+	ASSERT(TInterpreter::HaveInstance());
+	TInterpreter::GetInstance()->KillInterpreter();
 	mInitialCardName = inGotoCardName;
     sIsFirstLoad = false;
 }

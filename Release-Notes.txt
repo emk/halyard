@@ -1,7 +1,70 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.6 - 17 April 2008
+
+This build fixes a number of serious issues in 0.5.5:
+
+  * The last release failed to build, because certain essential PLT
+    libraries were not copied from libs/plt/collects to test/Runtime.
+  * When a script failed to load, it left behind dirty internal state in
+    TSchemeInterpreter, causing subsequent reloads to fail with an error in
+    DefStyle.
+
+This build addresses both those bugs, and puts into place new tools to
+prevent future mistakes of this sort:
+
+  * When making a build, we now run all of our unit tests, including both
+    those in CommonTest, and the various %test-suite% cards in
+    halyard/test.
+  * It is now possible to make test builds without tagging a release.  Type
+    "ruby -I tools/buildscript buildfile.rb <committish>" to make a build.
+    Here, <committish> can either be a version number like "v0.5.5", a
+    branch name like "master", or an SHA1 name.
+
+To run the GUI-based unit tests from the command-line, type:
+
+  cd test
+  ../../Win32/Bin/Halyard_d.exe -e "(command-line-test-driver)" .
+
+We also now provide a single, centralized "tests" sequence containing all
+the automatic test cards in the program.  API changes include:
+
+tests:
+  This is a new top-level sequence which you should use as a parent for
+  all %test-suite% cards.  To populate this with a set of standard tests,
+  require (lib "tests.ss" "halyard").
+
+run-all-test-suites:
+  Call this function to run all the cards in "tests".
+
+tests/run-all:
+  Click on this card to call run-all-test-suites.
+
+fixture-dir -> halyard-fixture-dir:
+  This function only works for code in Halyard module, so rename it
+  appropriately.
+
+$mizzen-tests:
+  All the test cases defined by mizzen.
+
+Eric Kidd (12):
+      Update buildfile.rb for use with PLT v372
+      Rakefile: Include PLT's net, planet and xml collections
+      Put all test suites under "tests/" sequence and rationalize
+      Report SchemeStructToTValue failures sooner
+      Bug fix: Clear bucket map properly after a failed reload
+      Support for running unit tests from command line
+      Test fix: Restructure CommonTest to always have a TSchemeInterpreter
+      Bug fix: Change default value of *running-all-tests?* to #t
+      Rakefile: Run all cards in "tests" as part of test suite
+      buildfile.rb: Support building from arbitrary tags
+      Build fix: Use global $untagged_build variable in buildscript.rb
+      Test fix: Use absolute paths when setting up interpreter
+
 0.5.5 - 15 April 2008
+
+[This build has a number of bugs, and we never released binaries for it.]
 
 This version of Halyard is based on PLT Scheme v372, and uses the new 3m
 garbage collector.  No major script-level changes should be necessary.
@@ -133,6 +196,9 @@ Eric Kidd (32):
       Rough draft of a CREDITS.txt file
 
 0.5.3 - 3 April 2008 - brian, emk, tryon
+
+[This build has a number of bugs.  In particular, halyard/test does not
+run.]
 
 In this release, we break our object model out into its own collection, 
 mizzen.  This allows it to be run in MzScheme or DrScheme, independent of 

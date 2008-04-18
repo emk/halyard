@@ -55,6 +55,7 @@ AX_BOOST_TEST_EXEC_MONITOR
 
 # TODO - Look for PLT Scheme, wxWidgets, portaudio.
 AX_LIB_MZSCHEME(3m, 371)
+AM_PATH_WXCONFIG(2.8.4)
 
 
 #==========================================================================
@@ -100,4 +101,4 @@ CXXFLAGS="$CXXFLAGS -g -Wall -Werror"
 # Output our results.
 AC_OUTPUT([Makefile libs/Makefile libs/sha1/Makefile
            libs/sqlite3-plus/Makefile libs/sqlite3-plus/sqlite3-plus/Makefile
-           Common/Makefile])
+           Common/Makefile wx/Makefile wx/src/Makefile])

@@ -46,17 +46,31 @@
     :base $halyard-unit-passed-style
     :color (color #xC0 #x00 #x00))
   
-  ;;; Are we current attempting to run through all the test cards
-  ;;; automatically?
-  (define *running-all-tests?* #t)
+  ;; Are we current attempting to run through all the test cards
+  ;; automatically?
+  (define *running-all-tests?* #f)
+
+  ;; An optional thunk to run when we're done with the tests.  Takes one
+  ;; argument, a boolean indication whether the tests succeeded.
+  (define *run-when-done-with-tests* #f)
+
+  ;; Called after we 
+  (define (done-with-tests success?)
+    (set! *running-all-tests?* #f)
+    (when *run-when-done-with-tests*
+      (*run-when-done-with-tests* success?)
+      (set! *run-when-done-with-tests* #f)))
 
   ;;; When called, this function will run all the test-suite cards in the
   ;;; group "tests".
-  (define (run-all-test-suites)
+  (define (run-all-test-suites &opt run-when-done-with-tests)
+    (set! *run-when-done-with-tests* run-when-done-with-tests)
     (define first-test (/tests/run-all .card-next))
-    (when first-test
-      (set! *running-all-tests?* #t)
-      (jump (first-test .card-next))))
+    (if first-test
+      (begin
+        (set! *running-all-tests?* #t)
+        (jump (first-test .card-next)))
+      (done-with-tests #t)))
 
   ;;; Display the results of a set of tests on a card.
   (define-class %test-suite% (%card%)
@@ -87,7 +101,7 @@
             (let [[next (card-next)]]
               (if next
                 (jump next)
-                (set! *running-all-tests?* #f)))))
+                (done-with-tests #t)))))
         (begin
             (draw-result $halyard-unit-failed-style "FAILED")
             (draw-text (rect 100 175 700 500) $halyard-unit-style
@@ -101,7 +115,7 @@
                                        (failure .message))
                                       "\n\n"))
                                    (report .failures))))
-            (set! *running-all-tests?* #f))))
+            (done-with-tests #f))))
     )
 
   ;;========================================================================
@@ -138,5 +152,35 @@
     )
 
   (card /tests/mizzen (%test-suite% :tests $mizzen-tests))
+
+
+  ;;========================================================================
+  ;;  Command-line test driver
+  ;;========================================================================
+  ;;  A slightly hackish tool for running all of a script's test suites from
+  ;;  the command line.
+
+  (provide command-line-test-driver)
+
+  (define *activate-command-line-test-driver?* #f)
+
+  ;;; To automatically load a script and run all its test suites, run:
+  ;;;
+  ;;;   Halyard_d.exe -e "(command-line-test-driver)" .
+  (define (command-line-test-driver)
+    (set! *activate-command-line-test-driver?* #t))
+
+  (define (exit-on-success success?)
+    (when success?
+      (exit-script)))
+
+  (with-instance %card%
+    ;; Instead of running the first card that we load, instead jump
+    ;; immediately to our test suites.  Yes, this is a bit of a hack, but
+    ;; it's the easiest way to hook into the startup process.
+    (advise before (run)
+      (when *activate-command-line-test-driver?*
+        (set! *activate-command-line-test-driver?* #f)
+        (run-all-test-suites exit-on-success))))
   
   )

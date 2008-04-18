@@ -46,14 +46,15 @@ void Halyard::InitializeCommonCode(CrashReporter *inReporter)
 }
 
 TInterpreterManager *Halyard::
-GetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
+GetSchemeInterpreterManager(TInterpreterManager::SystemIdleProc inIdleProc)
 {
 	// Create and return a new Scheme interpreter manager.
 	return new TSchemeInterpreterManager(inIdleProc);
 }
 
 TInterpreterManager *Halyard::
-MaybeGetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc)
+MaybeGetSchemeInterpreterManager(
+    TInterpreterManager::SystemIdleProc inIdleProc)
 {
 	// If we can't find ./Scripts/start.ss, assume this is a legacy script.
 	if (!FileSystem::GetScriptsDirectory().DoesExist() ||

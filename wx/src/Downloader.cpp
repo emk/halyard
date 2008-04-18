@@ -51,7 +51,7 @@ int ProgressCallback(void *data, double dltotal, double dlnow,
 	// an exception? Or cancel the download, store the exception, and 
 	// throw it again once we're outside of a cURL callback? 
 	try {
-		TInterpreter::GetInstance()->DoIdle(false);
+		TInterpreterManager::GetInstance()->DoIdle(false);
 	} catch (std::exception &e) {
 		gLog.FatalError("Unexpected internal error: %s", e.what()); 
 	} catch (...) {

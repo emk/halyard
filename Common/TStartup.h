@@ -57,7 +57,7 @@ extern void InitializeCommonCode(CrashReporter *inReporter);
 /// Create a Scheme interpreter manager.
 ///
 extern TInterpreterManager *
-GetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
+GetSchemeInterpreterManager(TInterpreterManager::SystemIdleProc inIdleProc);
 
 //////////
 /// If the current program looks like a Scheme script, attempt
@@ -65,7 +65,8 @@ GetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
 /// can be used to support two languages in a single engine.
 ///
 extern TInterpreterManager *
-MaybeGetSchemeInterpreterManager(TInterpreter::SystemIdleProc inIdleProc);
+MaybeGetSchemeInterpreterManager(
+    TInterpreterManager::SystemIdleProc inIdleProc);
 
 END_NAMESPACE_HALYARD
 

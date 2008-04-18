@@ -28,11 +28,47 @@
 // We need to call some module initialization functions.
 #include "TStartup.h"
 #include "CrashReporter.h"
+#include "doc/Document.h"
+
+// The TSchemeInterpreterTests file needs to be handled specially.
+#include "lang/scheme/TSchemeInterpreterTests.h"
 
 // We declare some testing-related primitives for the interpreter.
 #include "TPrimitives.h"
 
+
 using namespace Halyard;
+
+
+//=========================================================================
+//  Support for Tests Using Legacy ImlUnit Test Framework
+//=========================================================================
+
+static bool gShouldWait = false;
+
+/// should_wait is needed on Windows NT, 2000, etc., when running under
+/// Visual Studio.
+static __attribute__((noreturn)) void finished(int status) {
+	if (gShouldWait) {
+		std::cerr << "Press enter to continue.";
+		char c;
+		std::cin >> std::noskipws >> c;
+	}
+    exit(status);
+}
+
+#define BEGIN_TEST_EXCEPTION_TRAPPER \
+    try {
+
+#define END_TEST_EXCEPTION_TRAPPER \
+	} catch (std::exception &error) { \
+		std::cerr << std::endl << "Exception: " << error.what() << std::endl; \
+        finished(1); \
+	} catch (...) { \
+		std::cerr << std::endl << "An unknown exception occurred!" \
+				  << std::endl; \
+        finished(1); \
+	}
 
 
 //=========================================================================
@@ -48,7 +84,6 @@ extern void test_FileSystem (void);
 extern void test_Model(void);
 extern void test_Typography (void);
 extern void test_TStyleSheet (void);
-extern void test_TSchemeInterpreter (void);
 extern void test_TVectorDiff (void);
 extern void test_TPolygon (void);
 
@@ -62,25 +97,12 @@ REFERENCE_TEST_CASE_FILE(TStateDB);
 REFERENCE_TEST_CASE_FILE(ScriptEditorDB);
 REFERENCE_TEST_CASE_FILE(TTextConv);
 
-DEFINE_PRIMITIVE(test) {
-	std::string info;
-	bool result;
-	inArgs >> info >> result;
-	TEST_WITH_LABEL(info.c_str(), result);
-}
-
-static void RegisterTestPrimitives() {
-	REGISTER_PRIMITIVE(test);
-}
-
 static void run_imlunit_tests() {
-	RegisterTestPrimitives();
 	test_TTextTransform();
 	test_FileSystem();
 	test_Model();
 	test_Typography();
 	test_TStyleSheet();
-	test_TSchemeInterpreter();
 	test_TVectorDiff();
 	test_TPolygon();
 	tests_finished();	
@@ -129,47 +151,72 @@ static void run_testcase_tests() {
 
 
 //=========================================================================
-//  Main Entry Point
+//  Testing Primitives
 //=========================================================================
 
-/// This is needed on Windows NT, 2000, etc., when running under Visual
-/// Studio.
-void prompt_done(bool should_wait) {
-	if (should_wait) {
-		std::cerr << "Press enter to continue.";
-		char c;
-		std::cin >> std::noskipws >> c;
-	}
+DEFINE_PRIMITIVE(Test) {
+	std::string info;
+	bool result;
+	inArgs >> info >> result;
+	TEST_WITH_LABEL(info.c_str(), result);
 }
+
+DEFINE_PRIMITIVE(RunAllCppTests) {
+    BEGIN_TEST_EXCEPTION_TRAPPER
+
+    CheckTSchemeInterpreterTestResults();
+    std::cout << std::endl << std::endl
+              << "Old-Style ImlUnit Tests" << std::endl;
+    run_imlunit_tests();
+    std::cout << std::endl << "New-Style TestCase Tests" << std::endl;
+    run_testcase_tests();
+
+    END_TEST_EXCEPTION_TRAPPER
+}
+
+static void RegisterTestPrimitives() {
+	REGISTER_PRIMITIVE(Test);
+    REGISTER_PRIMITIVE(RunAllCppTests);
+    RegisterTSchemeInterpreterTestPrimitives();
+}
+
+
+//=========================================================================
+//  Main Entry Point
+//=========================================================================
 
 int main(int argc, char **argv) {
 	HALYARD_BEGIN_STACK_BASE();
 
-	bool should_wait = false;
 	if (argc == 2 && std::string(argv[1]) == "--wait")
-		should_wait = true;
+		gShouldWait = true;
 
+    RegisterTestPrimitives();
+    
     FileSystem::SetScriptsDirectoryName("TestScripts");
 	FileSystem::SetScriptDataDirectoryName("Test");
 
-	try {
-		Halyard::InitializeCommonCode(new CrashReporter());
-		std::cout << "Old-Style ImlUnit Tests" << std::endl;
-		run_imlunit_tests();
-		std::cout << std::endl << "New-Style TestCase Tests" << std::endl;
-		run_testcase_tests();
-	} catch (std::exception &error) {
-		std::cerr << std::endl << "Exception: " << error.what() << std::endl;
-        prompt_done(should_wait);
-		return 1;
-	} catch (...) {
-		std::cerr << std::endl << "An unknown exception occurred!"
-				  << std::endl;
-        prompt_done(should_wait);
-		return 1;
-	}
+    BEGIN_TEST_EXCEPTION_TRAPPER
+
+	Halyard::InitializeCommonCode(new CrashReporter());
+
+    std::cout << "Scheme Interpreter Tests" << std::endl;
+    
+    // Initialize our Scheme interpreter normally.
+    scoped_ptr<TInterpreterManager> manager(
+        GetSchemeInterpreterManager(&TSchemeInterpreterTestIdleProc));
+    Document doc(FileSystem::Path().ToNativePathString(), Document::OPEN);
+    
+    // Run our Scheme interpreter.
+    manager->Run();
+    if (manager->ExitedWithError()) {
+            std::cerr << std::endl << "Interpreter exited with error"
+                      << std::endl;
+            finished(1);
+    }
+
+    END_TEST_EXCEPTION_TRAPPER
 
     HALYARD_END_STACK_BASE();
-    prompt_done(should_wait);
-	return 0;
+    finished(0);
 }

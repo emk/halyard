@@ -27,6 +27,7 @@
 #include "ImlUnit.h"
 #include "TSchemeInterpreter.h"
 #include "TSchemeScriptEditorDB.h"
+#include "TSchemeInterpreterTests.h"
 
 using namespace Halyard;
 
@@ -34,14 +35,11 @@ using namespace Halyard;
 using std::string;
 using GraphicsTools::Color;
 
-extern void test_TSchemeInterpreter (void);
-
 static bool gTestingPause = false;
 static int gPauseCount = 0;
 
 // The idle function called periodically by our Scheme interpreter.
-static void TestIdleFunc(bool inBlock)
-{
+void Halyard::TSchemeInterpreterTestIdleProc(bool inBlock) {
 	if (gTestingPause && --gPauseCount <= 0)
 	{
 		gTestingPause = false;
@@ -138,7 +136,7 @@ DEFINE_TYPE_TEST_PRIMITIVES(TRect, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(TPolygon, 2)
 DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
-static void RegisterSchemeTestPrimitives()
+void Halyard::RegisterTSchemeInterpreterTestPrimitives()
 {
 	REGISTER_PRIMITIVE(TestStop);
 	REGISTER_PRIMITIVE(TestPause);
@@ -187,14 +185,10 @@ static void RegisterSchemeTestPrimitives()
 	REGISTER_TYPE_TEST_PRIMITIVES(Color);
 }
 
-void test_TSchemeInterpreter (void)
-{
-	RegisterSchemeTestPrimitives();
-	
-	// Boot the interpreter.
-	TSchemeInterpreterManager scheme(&TestIdleFunc);
-	scheme.BeginScript();
-	scheme.Run();
+void Halyard::CheckTSchemeInterpreterTestResults() {
+    // Note that all the actual TSchemeInterpreter tests were run when we
+    // called TInterpreterManager::Run.  Here, we just double-check a few
+    // variables that should have been set earlier.
 
 	// Make sure we visited all the right cards.
 	TEST(gVariableManager.Get("seen-start") == std::string("1"));

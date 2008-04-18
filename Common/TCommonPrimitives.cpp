@@ -116,6 +116,32 @@ DEFINE_PRIMITIVE(HavePrimitive)
 
 
 //-------------------------------------------------------------------------
+// (Idle blocking)
+//-------------------------------------------------------------------------
+// Performs either a blocking or non-blocking idle.
+
+DEFINE_PRIMITIVE(Idle)
+{
+	// Recover our TInterpreterManager.
+	TInterpreterManager *manager = TInterpreterManager::GetInstance();
+	ASSERT(manager);
+
+	// Should our idle loop block until any events are received from 
+	// the user?
+	bool block;
+	inArgs >> block;
+
+	// Call our stored idle procedure and let the GUI run for a bit.
+	manager->DoIdle(block);
+
+	// Logging this primitive would only clutter the debug log.  We need
+	// to do this *after* calling DoIdle, so that it doesn't get
+	// confused with any internal primitive calls.
+	::SkipPrimitiveLogging();
+}
+
+
+//-------------------------------------------------------------------------
 // (Log file:STRING msg:STRING [level:STRING = "log"])
 //-------------------------------------------------------------------------
 // Logs the second argument to the file specified by the first.
@@ -330,6 +356,7 @@ DEFINE_PRIMITIVE(StateDbUnregisterListeners) {
 void Halyard::RegisterCommonPrimitives()
 {
 	REGISTER_PRIMITIVE(HavePrimitive);
+    REGISTER_PRIMITIVE(Idle);
 	REGISTER_PRIMITIVE(Log);
 	REGISTER_PRIMITIVE(PolygonContains);
 	REGISTER_PRIMITIVE(SetTyped);
