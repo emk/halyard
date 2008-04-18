@@ -10,7 +10,7 @@ require 'tools/buildscript/commands'
 
 svn_url = 'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main'
 git_url = 'git://imlsrc.dartmouth.edu'
-release_dir = '//mccay/Mccay/Testing/Halyard'
+release_dir = 'c:/release/halyard'
 build_dir = 'c:/build/halyard'
 
 # This quick-and-dirty argument check isn't technically correct, because we
@@ -25,18 +25,20 @@ end
 # Get our version number.
 commit = ARGV.pop
 if commit =~ /^v[-0-9.rcpe]*/ # Versions may contain "rc" or "pre".
-  untagged_build = false
+  # Here, $untagged_build is a global variable so that we can access it
+  # from inside the function for_release?, below.
+  $untagged_build = false
   version = commit.sub(/^v/, '')
 else
   # If we don't have a version of the form "v0.5.1", "v2.5-rc2", etc., then
   # don't actually upload the results of this build anywhere.
-  untagged_build = true
+  $untagged_build = true
   version = commit
 end
 
 # Is this a build we intend to release, or just a test build?
 def for_release?
-  !(dirty_build? || untagged_build)
+  !(dirty_build? || $untagged_build)
 end
 
 halyard_url = "#{git_url}/halyard"
