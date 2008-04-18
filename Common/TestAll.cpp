@@ -48,7 +48,7 @@ static bool gShouldWait = false;
 
 /// should_wait is needed on Windows NT, 2000, etc., when running under
 /// Visual Studio.
-static void finished(int status) __attribute__((noreturn)) {
+static __attribute__((noreturn)) void finished(int status) {
 	if (gShouldWait) {
 		std::cerr << "Press enter to continue.";
 		char c;
@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
     // Initialize our Scheme interpreter normally.
     scoped_ptr<TInterpreterManager> manager(
         GetSchemeInterpreterManager(&TSchemeInterpreterTestIdleProc));
-    Document doc(".", Document::OPEN);
+    Document doc(FileSystem::Path().ToNativePathString(), Document::OPEN);
     
     // Run our Scheme interpreter.
     manager->Run();
