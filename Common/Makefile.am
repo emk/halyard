@@ -7,9 +7,7 @@ AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS)
 
 noinst_LIBRARIES = libimlunit.a libhalyard.a
 
-# TestAll will actually work if you comment out the portions testing code
-# we haven't built.
-noinst_PROGRAMS = TestAll
+noinst_PROGRAMS = CommonTest
 
 # Our very old test suite framework.
 libimlunit_a_SOURCES = \
@@ -63,7 +61,7 @@ libhalyard_a_SOURCES = \
 	XmlUtils.cpp XmlUtils.h
 
 # Our command-line test suite driver.
-TestAll_SOURCES = \
+CommonTest_SOURCES = \
 	FileSystemTests.cpp \
 	lang/scheme/TSchemeInterpreterTests.cpp \
 	ModelTests.cpp \
@@ -73,7 +71,7 @@ TestAll_SOURCES = \
 	TVectorDiffTests.cpp \
 	TypographyTests.cpp \
 	TestAll.cpp
-TestAll_LDADD = \
+CommonTest_LDADD = \
 	libhalyard.a \
 	libimlunit.a \
 	../libs/sha1/libsha1.a \
