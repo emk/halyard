@@ -131,6 +131,7 @@ heading 'Building and testing engine.', :name => :build do
     # We need a copy of gpgv.exe to run our updater tests.  Grab it from our
     # internal server.
     svn :export, "#{svn_url}/tools/crypto/gpgv.exe", 'test/gpgv.exe'
+    run 'chmod', '+x', 'test/gpgv.exe'
     run 'rake', 'libs'
     run 'rake', 'test'
     # TODO - optionally sign the binaries
