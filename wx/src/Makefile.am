@@ -18,9 +18,9 @@ libhalyardgui_a_SOURCES = \
 	CommonWxConv.cpp CommonWxConv.h \
 	Cursor.cpp Cursor.h \
 	CursorElement.cpp CursorElement.h \
-	CursorManager.cpp CursorManager.h
-#	CustomTreeCtrl.cpp CustomTreeCtrl.h \
-#	DirtyList.cpp DirtyList.h \
+	CursorManager.cpp CursorManager.h \
+	CustomTreeCtrl.cpp CustomTreeCtrl.h \
+	DirtyList.cpp DirtyList.h
 #	dlg/AdjustScreenConfirmDlg.cpp dlg/AdjustScreenConfirmDlg.h \
 #	dlg/AdjustScreenDlg.cpp dlg/AdjustScreenDlg.h \
 #	dlg/FindDlg.cpp dlg/FindDlg.h \
@@ -55,11 +55,8 @@ libhalyardgui_a_SOURCES = \
 #	MediaElement.cpp MediaElement.h \
 #	MovieElement.cpp MovieElement.h \
 #	MovieWindow.cpp MovieWindow.h \
-#	MovieWindowQT.cpp MovieWindowQT.h \
-#	opt/mmx/fade_asm.cpp opt/mmx/fade_asm.h \
 #	Overlay.cpp Overlay.h \
 #	ProgramTree.cpp ProgramTree.h \
-#	Quake2Engine.cpp Quake2Engine.h \
 #	SashFrame.cpp SashFrame.h \
 #	ScriptEditor.cpp ScriptEditor.h \
 #	Stage.cpp Stage.h \
@@ -68,8 +65,6 @@ libhalyardgui_a_SOURCES = \
 #	TestHarness.cpp TestHarness.h \
 #	Timecoder.cpp Timecoder.h \
 #	ToolWindow.cpp ToolWindow.h \
-#	TQTMovie.cpp TQTMovie.h \
-#	TQuake2Primitives.cpp TQuake2Primitives.h \
 #	Transition.h TransitionOpt.cpp \
 #	TWxPrimitives.cpp TWxPrimitives.h \
 #	VorbisAudioStream.cpp VorbisAudioStream.h \
@@ -77,11 +72,15 @@ libhalyardgui_a_SOURCES = \
 #	Widget.cpp Widget.h \
 #	Zone.cpp Zone.h
 
-# Disabled because they rely on various media APIs we're not ready to deal
-# with right now.
+# Disabled because they rely on various APIs we're not ready to deal with
+# right now, including portaudio, QuickTime and Quake 2.
 #AudioStream.cpp AudioStream.h
 #AudioStreamElement.cpp AudioStreamElement.h
 #BinMsgConv.cpp BinMsgConv.h
+#MovieWindowQT.cpp MovieWindowQT.h
+#Quake2Engine.cpp Quake2Engine.h
+#TQTMovie.cpp TQTMovie.h
+#TQuake2Primitives.cpp TQuake2Primitives.h
 
 # Windows-specific files.
 #ActiveXElement.cpp ActiveXElement.h

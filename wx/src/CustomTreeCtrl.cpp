@@ -21,6 +21,7 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+#include "AppGraphics.h"
 #include <wx/imaglist.h>
 #include "CustomTreeCtrl.h"
 
@@ -51,7 +52,7 @@ CustomTreeCtrl::CustomTreeCtrl(wxWindow *inParent, wxWindowID inId,
 
 void CustomTreeCtrl::SetIcon(wxTreeItemId id, int closed_icon, int open_icon)
 {
-    if (open_icon = -1)
+    if (open_icon == -1)
         open_icon = closed_icon;
     SetItemImage(id, closed_icon, wxTreeItemIcon_Normal);
     SetItemImage(id, closed_icon, wxTreeItemIcon_Selected);
