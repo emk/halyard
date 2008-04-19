@@ -1,0 +1,19 @@
+/* XPM */
+static char *tab_left_full_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"9 9 3 1",
+/* colors */
+"  c #000",
+". c #FFF",
+"X c None",
+/* pixels */
+"...... ..",
+".....  ..",
+"....   ..",
+"...    ..",
+"..     ..",
+"...    ..",
+"....   ..",
+".....  ..",
+"...... .."
+};

@@ -1,0 +1,28 @@
+/* XPM */
+static char *ic_card_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"16 16 5 1",
+/* colors */
+"  c #000000",
+". c #00FFFF",
+"X c #FFFFFF",
+"o c #008000",
+"O c None",
+/* pixels */
+"OOOOOOOOOOOOOOOO",
+"OOOOOOOOOOOOOOOO",
+"                ",
+" XXXXXXXXXXXXXX ",
+" X XX    X XX X ",
+" X  X  X X    X ",
+" XXXXXXXXXXXXXX ",
+" X         XXXX ",
+" X o...... XXXX ",
+" X ooo.... XXXX ",
+" X ooooooo XXXX ",
+" X         XXXX ",
+" XXXXXXXXXXXXXX ",
+"                ",
+"OOOOOOOOOOOOOOOO",
+"OOOOOOOOOOOOOOOO"
+};

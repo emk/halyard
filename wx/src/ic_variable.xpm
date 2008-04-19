@@ -1,0 +1,26 @@
+/* XPM */
+static char *ic_variable_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"16 16 3 1",
+/* colors */
+"  c #000000",
+". c #008080",
+"X c None",
+/* pixels */
+"XXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXX",
+"XXXXXXXX.XXXXXXX",
+"XXXXX.XX.XX.XXXX",
+"XXXXX..X.X..XXXX",
+"XXXXXX.....XXXXX",
+"XXXXXXX...XXXXXX",
+"XXXXXX.....XXXXX",
+"XXXXX..X.X..XXXX",
+"XXXXX.XX.XX.XXXX",
+"XXXXXXXX.XXXXXXX",
+"XXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXXX"
+};

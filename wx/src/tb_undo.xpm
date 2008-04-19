@@ -1,0 +1,25 @@
+/* XPM */
+static char *tb_undo_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"15 15 3 1",
+/* colors */
+"  c #C0C0C0",
+". c #000080",
+"X c None",
+/* pixels */
+"XXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXX",
+"XXXXXX.....XXXX",
+"XXXX..XXXXX..XX",
+".XX.XXXXXXXXX.X",
+"...XXXXXXXXXXX.",
+"...XXXXXXXXXXX.",
+"....XXXXXXXXXX.",
+"XXXXXXXXXXXXX.X",
+"XXXXXXXXXXXX.XX",
+"XXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXXX"
+};

@@ -1,0 +1,26 @@
+/* XPM */
+static char *tb_new_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"15 15 4 1",
+/* colors */
+"  c #000000",
+". c #C0C0C0",
+"X c #FFFFFF",
+"o c None",
+/* pixels */
+"oo        ooooo",
+"oo XXXXXX  oooo",
+"oo XXXXXX X ooo",
+"oo XXXXXX    oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo XXXXXXXXX oo",
+"oo           oo"
+};

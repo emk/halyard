@@ -1,0 +1,27 @@
+/* XPM */
+static char *ic_function_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"16 16 4 1",
+/* colors */
+"  c #000000",
+". c #008080",
+"X c #FFFFFF",
+"o c None",
+/* pixels */
+"oooooooooooooooo",
+"oooooooooooooooo",
+"ooooo..oo..ooooo",
+"ooooo..oo..ooooo",
+"oooo..oooo..oooo",
+"oooo..oooo..oooo",
+"oooo..oooo..oooo",
+"oooo..oooo..oooo",
+"o   ..    ..   o",
+"o XX..XXXX..XX o",
+"o XX..XXXX..XX o",
+"o XXX..XX..XXX o",
+"o XXX..XX..XXX o",
+"o XXXXXXXXXXXX o",
+"o              o",
+"oooooooooooooooo"
+};

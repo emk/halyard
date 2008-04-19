@@ -1,0 +1,27 @@
+/* XPM */
+static char *ic_keyword_xpm[] = {
+/* width height ncolors chars_per_pixel */
+"16 16 4 1",
+/* colors */
+"  c #000000",
+". c #FFFFFF",
+"X c #0000FF",
+"o c None",
+/* pixels */
+"oooooooooooooooo",
+"oooooooooooooooo",
+"oooooXXooXXooooo",
+"oooooXXooXXooooo",
+"ooooXXooooXXoooo",
+"ooooXXooooXXoooo",
+"ooooXXooooXXoooo",
+"ooooXXooooXXoooo",
+"o   XX    XX   o",
+"o ..XX....XX.. o",
+"o ..XX....XX.. o",
+"o ...XX..XX... o",
+"o ...XX..XX... o",
+"o ............ o",
+"o              o",
+"oooooooooooooooo"
+};
