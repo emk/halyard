@@ -92,7 +92,7 @@ void DrawPixMapOpt(PixelData &inDstData,
 	// Figure out where in memory to begin drawing the first row.
 	if ( !inDstData )
 		gLog.FatalError("Error: Can't access raw pixels for bitmap");
-	PixelData::Iterator dst_row_start(inDstData);
+	typename PixelData::Iterator dst_row_start(inDstData);
 	dst_row_start.Offset(inDstData, inPoint.x + begin.x, inPoint.y + begin.y);
 	
 	// Figure out where in memory to get the data for the first row.
@@ -103,7 +103,7 @@ void DrawPixMapOpt(PixelData &inDstData,
 	// Do the actual drawing.
 	for (int y = begin.y; y < end.y; y++)
 	{
-		PixelData::Iterator dst_cursor = dst_row_start;
+		typename PixelData::Iterator dst_cursor = dst_row_start;
 		Color *src_cursor = src_row_start;
 		for (int x = begin.x; x < end.x; x++)
 		{
@@ -143,13 +143,13 @@ void FillBoxOpt(PixelData &inDstData,
 	// Get iterator for directly accessing memory.
 	if ( !inDstData )
 		gLog.FatalError("Error: Can't access raw pixels for bitmap");
-	PixelData::Iterator row_start(inDstData);
+	typename PixelData::Iterator row_start(inDstData);
 	row_start.Offset(inDstData, inBounds.x, inBounds.y);
 	
 	// Draw it
 	for (int y = begin.y; y < end.y; y++)
 	{
-		PixelData::Iterator cursor = row_start;
+		typename PixelData::Iterator cursor = row_start;
 		for (int x = begin.x; x < end.x; x++)
 		{
 			BlendPixel(cursor, inColor);
