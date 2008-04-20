@@ -47,19 +47,25 @@
 #include "ImageCache.h"
 #include "CursorManager.h"
 #include "CursorElement.h"
-#include "AudioStream.h"
-#include "GeigerAudioStream.h"
-#include "VorbisAudioStream.h"
-#include "AudioStreamElement.h"
-#include "GeigerSynthElement.h"
 #include "CommonWxConv.h"
 #include "BrowserElementWx.h"
 #include "BrowserElementIE.h"
-#include "ActiveXElement.h"
 #include "EditBox.h"
 #include "TStateDB.h"
 #include "dlg/MultiButtonDlg.h"
 #include "Downloader.h"
+
+#if CONFIG_HAVE_AUDIOSTREAMS
+#   include "AudioStream.h"
+#   include "GeigerAudioStream.h"
+#   include "VorbisAudioStream.h"
+#   include "AudioStreamElement.h"
+#   include "GeigerSynthElement.h"
+#endif // CONFIG_HAVE_AUDIOSTREAMS
+
+#if CONFIG_HAVE_ACTIVEX
+#   include "ActiveXElement.h"
+#endif // CONFIG_HAVE_ACTIVEX
 
 using namespace Halyard;
 using GraphicsTools::Color;
@@ -70,16 +76,23 @@ using FileSystem::Path;
 //  Utility Functions
 //=========================================================================
 
-#define FIND_ELEMENT(TYPE, VAR, NAME) \
-	ElementPtr VAR##_temp = wxGetApp().GetStage()->FindElement(NAME); \
-	if (!VAR##_temp) { \
-		THROW("The element " + std::string(NAME) + " does not exist."); \
-	} \
-	shared_ptr<TYPE> VAR = \
-        shared_ptr<TYPE>(VAR##_temp, dynamic_cast_tag()); \
-	if (!VAR) { \
-		THROW("The element " + std::string(NAME) + " is not of type " #TYPE); \
+template <typename T>
+shared_ptr<T> find_element(const char *inTypeName, const wxString &inName) {
+	ElementPtr found = wxGetApp().GetStage()->FindElement(inName);
+    if (!found) {
+        std::string name(inName.mb_str());
+		THROW("The element " + name + " does not exist.");
+    }
+	shared_ptr<T> elem = shared_ptr<T>(found, dynamic_cast_tag());
+	if (!elem) {
+        std::string name(inName.mb_str());
+		THROW("The element " + name + " is not of type " + inTypeName);
 	}
+    return elem;
+}
+
+#define FIND_ELEMENT(TYPE, VAR, NAME) \
+	shared_ptr<TYPE> VAR = find_element<TYPE>(#TYPE, NAME)
 
 static DrawingArea *GetCurrentDrawingArea() {
 	return wxGetApp().GetStage()->GetCurrentDrawingArea();
@@ -115,6 +128,8 @@ static wxBitmap load_picture(const std::string &inName);
 //  Implementation of wxWindows Primitives
 //=========================================================================
 
+#if CONFIG_HAVE_ACTIVEX
+
 DEFINE_PRIMITIVE(ActiveX) {
 	std::string name, control_name;
 	TRect bounds;
@@ -140,6 +155,10 @@ DEFINE_PRIMITIVE(ActiveXPropSet) {
     FIND_ELEMENT(ActiveXElement, element, name.c_str());
     element->SetProp(prop.c_str(), TToWxValue(value));
 }
+
+#endif // CONFIG_HAVE_ACTIVEX
+
+#if CONFIG_HAVE_AUDIOSTREAMS
 
 DEFINE_PRIMITIVE(AudioStreamGeiger) {
 	std::string name, path;
@@ -191,6 +210,28 @@ DEFINE_PRIMITIVE(AudioStreamVorbis) {
 							 dispatcher));
 }
 
+DEFINE_PRIMITIVE(GeigerSynth) {
+	std::string name, state_path, chirp_location, loop_location;
+	double loop_cps, volume;
+	uint32 buffer_size;
+
+	inArgs >> SymbolName(name) >> SymbolName(state_path) >> chirp_location
+           >> volume >> buffer_size;
+
+    GeigerSynthElement *element =
+        R(new GeigerSynthElement(wxGetApp().GetStage(), ToWxString(name),
+                                 state_path, ToWxString(chirp_location.c_str()),
+                                 1000, volume));
+
+	while (inArgs.HasMoreArguments()) {
+		inArgs >> loop_cps >> loop_location;
+        element->AddLoop(loop_cps, ToWxString(loop_location.c_str()));
+	}
+    element->DoneAddingLoops();
+}
+
+#endif // CONFIG_HAVE_AUDIOSTREAMS
+
 DEFINE_PRIMITIVE(Browser) {
 	std::string name;
     bool want_builtin;
@@ -200,73 +241,73 @@ DEFINE_PRIMITIVE(Browser) {
 	inArgs >> SymbolName(name) >> dispatcher >> bounds >> want_builtin;
 
     if (want_builtin)
-        R(new BrowserElementWx(wxGetApp().GetStage(), name.c_str(),
+        R(new BrowserElementWx(wxGetApp().GetStage(), ToWxString(name),
                                TToWxRect(bounds), dispatcher));
     else
-        R(new BrowserElementIE(wxGetApp().GetStage(), name.c_str(),
+        R(new BrowserElementIE(wxGetApp().GetStage(), ToWxString(name),
                                TToWxRect(bounds), dispatcher));
 }
 
 DEFINE_PRIMITIVE(BrowserCanBack) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
     ::SetPrimitiveResult(browser->CanGoBack());
 }
 
 DEFINE_PRIMITIVE(BrowserCanForward) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
     ::SetPrimitiveResult(browser->CanGoForward());
 }
 
 DEFINE_PRIMITIVE(BrowserCanReload) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
     ::SetPrimitiveResult(browser->CanRefresh());
 }
 
 DEFINE_PRIMITIVE(BrowserCanStop) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
     ::SetPrimitiveResult(browser->CanStop());
 }
 
 DEFINE_PRIMITIVE(BrowserBack) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
     ::SetPrimitiveResult(browser->GoBack());
 }
 
 DEFINE_PRIMITIVE(BrowserForward) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
     ::SetPrimitiveResult(browser->GoForward());
 }
 
 DEFINE_PRIMITIVE(BrowserLoadPage) {
     std::string name, file_or_url;
     inArgs >> SymbolName(name) >> file_or_url;
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
-	browser->LoadPage(file_or_url.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
+	browser->LoadPage(ToWxString(file_or_url.c_str()));
 }
 
 DEFINE_PRIMITIVE(BrowserReload) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
     ::SetPrimitiveResult(browser->Refresh());
 }
 
 DEFINE_PRIMITIVE(BrowserStop) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(BrowserElement, browser, name.c_str());
+    FIND_ELEMENT(BrowserElement, browser, ToWxString(name));
     ::SetPrimitiveResult(browser->Stop());
 }
 
@@ -285,7 +326,7 @@ DEFINE_PRIMITIVE(CopyStringToClipboard) {
 	// It isn't actually a necessary part of the API. 
 	std::string string;
 	inArgs >> string;
-	wxGetApp().GetStage()->CopyStringToClipboard(string.c_str());
+	wxGetApp().GetStage()->CopyStringToClipboard(ToWxString(string.c_str()));
 }
 
 DEFINE_PRIMITIVE(CursorElement) {
@@ -298,7 +339,7 @@ DEFINE_PRIMITIVE(CursorElement) {
            >> SymbolName(cursor_reg_name);
     Stage *stage = wxGetApp().GetStage();
 
-    CursorElement *cursor = new CursorElement(stage, name.c_str(), 
+    CursorElement *cursor = new CursorElement(stage, ToWxString(name), 
                                               TToWxRect(bounds), dispatcher,
                                               is_trans, cursor_reg_name);
     R(cursor);
@@ -320,14 +361,14 @@ DEFINE_PRIMITIVE(DataPathLocal) {
 DEFINE_PRIMITIVE(DcPop) {
 	std::string name;	
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(Element, elem, name.c_str());
+	FIND_ELEMENT(Element, elem, ToWxString(name));
 	wxGetApp().GetStage()->PopDrawingContext(elem);
 }
 
 DEFINE_PRIMITIVE(DcPush) {
 	std::string name;	
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(Element, elem, name.c_str());
+	FIND_ELEMENT(Element, elem, ToWxString(name));
 	wxGetApp().GetStage()->PushDrawingContext(elem);
 }
 
@@ -351,7 +392,7 @@ DEFINE_PRIMITIVE(DeleteElements) {
 			std::string name;
 			inArgs >> SymbolName(name);
 			bool found =
-				wxGetApp().GetStage()->DeleteElementByName(name.c_str());
+				wxGetApp().GetStage()->DeleteElementByName(ToWxString(name));
 			if (!found)
 				gDebugLog.Caution("Deleting non-existant element '%s'.",
 								  name.c_str());
@@ -367,8 +408,9 @@ DEFINE_PRIMITIVE(Dialog) {
     if (inArgs.HasMoreArguments())
         inArgs >> button3;
     MultiButtonDlg dlg(wxGetApp().GetStage(),
-                       title.c_str(), message.c_str(), button1.c_str(),
-                       button2.c_str(), button3.c_str());
+                       ToWxString(title.c_str()), ToWxString(message.c_str()),
+                       ToWxString(button1.c_str()), ToWxString(button2.c_str()),
+                       ToWxString(button3.c_str()));
     ::SetPrimitiveResult(dlg.ShowModal());
 }
 
@@ -422,30 +464,30 @@ DEFINE_PRIMITIVE(EditBox) {
 	inArgs >> SymbolName(name) >> dispatcher >> bounds >> text >> text_sz
            >> multiline >> send_enter_event;
 
-    R(new EditBox(wxGetApp().GetStage(), name.c_str(), dispatcher,
-                  TToWxRect(bounds), text.c_str(), text_sz, multiline,
-                  send_enter_event));
+    R(new EditBox(wxGetApp().GetStage(), ToWxString(name), dispatcher,
+                  TToWxRect(bounds), ToWxString(text.c_str()), text_sz,
+                  multiline, send_enter_event));
 }
 
 DEFINE_PRIMITIVE(EditBoxGetValue) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(EditBox, elem, name.c_str());
-    ::SetPrimitiveResult(elem->GetValue().mb_str());
+    FIND_ELEMENT(EditBox, elem, ToWxString(name));
+    ::SetPrimitiveResult(std::string(elem->GetValue().mb_str()));
 }
 
 DEFINE_PRIMITIVE(EditBoxSetValue) {
     std::string name, value;
     inArgs >> SymbolName(name) >> value;
-    FIND_ELEMENT(EditBox, elem, name.c_str());
-    elem->SetValue(value.c_str());
+    FIND_ELEMENT(EditBox, elem, ToWxString(name));
+    elem->SetValue(ToWxString(value.c_str()));
 }
 
 DEFINE_PRIMITIVE(EditBoxSetInsertionPoint) {
     std::string name;
     int32 pos;
     inArgs >> SymbolName(name) >> pos;
-    FIND_ELEMENT(EditBox, elem, name.c_str());
+    FIND_ELEMENT(EditBox, elem, ToWxString(name));
     elem->SetInsertionPoint(pos);
 }
 
@@ -453,14 +495,14 @@ DEFINE_PRIMITIVE(EditBoxSetSelection) {
     std::string name;
     int32 begin, end;
     inArgs >> SymbolName(name) >> begin >> end;
-    FIND_ELEMENT(EditBox, elem, name.c_str());
+    FIND_ELEMENT(EditBox, elem, ToWxString(name));
     elem->SetSelection(begin, end);
 }
 
 DEFINE_PRIMITIVE(ElementExists) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	if (wxGetApp().GetStage()->FindElement(name.c_str()))
+	if (wxGetApp().GetStage()->FindElement(ToWxString(name)))
 		::SetPrimitiveResult(true);
 	else
 		::SetPrimitiveResult(false);
@@ -469,7 +511,7 @@ DEFINE_PRIMITIVE(ElementExists) {
 DEFINE_PRIMITIVE(ElementIsShown) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(Element, element, name.c_str());
+	FIND_ELEMENT(Element, element, ToWxString(name));
 	::SetPrimitiveResult(element->IsShown());
 }
 
@@ -477,7 +519,7 @@ DEFINE_PRIMITIVE(ElementSetShown) {
 	std::string name;
 	bool show;
 	inArgs >> SymbolName(name) >> show;
-	FIND_ELEMENT(Element, element, name.c_str());
+	FIND_ELEMENT(Element, element, ToWxString(name));
 	element->Show(show);
 	// TODO - Override MovieElement::Show for unshowable movies.
 }
@@ -486,7 +528,7 @@ DEFINE_PRIMITIVE(ElementSetInDragLayer) {
 	std::string name;
 	bool in_drag_layer;
 	inArgs >> SymbolName(name) >> in_drag_layer;
-	FIND_ELEMENT(LightweightElement, element, name.c_str());
+	FIND_ELEMENT(LightweightElement, element, ToWxString(name));
 	element->SetInDragLayer(in_drag_layer);
 }
 
@@ -503,28 +545,8 @@ DEFINE_PRIMITIVE(ErrortraceCompileEnabled) {
 DEFINE_PRIMITIVE(Focus) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(Widget, element, name.c_str());
+	FIND_ELEMENT(Widget, element, ToWxString(name));
     element->SetFocus();
-}
-
-DEFINE_PRIMITIVE(GeigerSynth) {
-	std::string name, state_path, chirp_location, loop_location;
-	double loop_cps, volume;
-	uint32 buffer_size;
-
-	inArgs >> SymbolName(name) >> SymbolName(state_path) >> chirp_location
-           >> volume >> buffer_size;
-
-    GeigerSynthElement *element =
-        R(new GeigerSynthElement(wxGetApp().GetStage(), name.c_str(),
-                                 state_path, chirp_location.c_str(), 1000,
-                                 volume));
-
-	while (inArgs.HasMoreArguments()) {
-		inArgs >> loop_cps >> loop_location;
-        element->AddLoop(loop_cps, loop_location.c_str());
-	}
-    element->DoneAddingLoops();
 }
 
 DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
@@ -555,7 +577,8 @@ DEFINE_PRIMITIVE(IsVistaOrNewer) {
 
 static wxBitmap load_picture(const std::string &inName) {
 	// Load our image.
-	return wxGetApp().GetStage()->GetImageCache()->GetBitmap(inName.c_str());
+    wxString name(ToWxString(inName));
+	return wxGetApp().GetStage()->GetImageCache()->GetBitmap(name);
 }
 
 static void draw_picture(const std::string &inName, TPoint inLoc,
@@ -638,7 +661,7 @@ DEFINE_PRIMITIVE(Mask) {
 DEFINE_PRIMITIVE(MaybeLoadSplash) {
     std::string picname;
     inArgs >> picname;
-	wxGetApp().GetStage()->MaybeDrawSplashGraphic(picname.c_str());
+	wxGetApp().GetStage()->MaybeDrawSplashGraphic(picname);
 }
 
 DEFINE_PRIMITIVE(MeasurePic) {
@@ -656,7 +679,7 @@ DEFINE_PRIMITIVE(MeasurePic) {
 DEFINE_PRIMITIVE(NotifyEnterCard) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	wxGetApp().GetStage()->NotifyEnterCard(name.c_str());
+	wxGetApp().GetStage()->NotifyEnterCard(ToWxString(name));
 	::SkipPrimitiveLogging();
 }
 
@@ -670,7 +693,7 @@ DEFINE_PRIMITIVE(NotifyExitCard) {
 DEFINE_PRIMITIVE(MediaAttachCaptionFile) {
 	std::string name, caption_file;
 	inArgs >> SymbolName(name) >> caption_file;
-	FIND_ELEMENT(MediaElement, media, name.c_str());
+	FIND_ELEMENT(MediaElement, media, ToWxString(name));
     media->AttachCaptionFile(caption_file);
 }
 
@@ -678,14 +701,14 @@ DEFINE_PRIMITIVE(MediaSetVolume) {
 	std::string name, channel_name;
 	double volume;
 	inArgs >> SymbolName(name) >> SymbolName(channel_name) >> volume;
-	FIND_ELEMENT(MediaElement, media, name.c_str());
+	FIND_ELEMENT(MediaElement, media, ToWxString(name));
 	media->SetVolume(channel_name, volume);
 }
 
 DEFINE_PRIMITIVE(MouseGrab) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+	FIND_ELEMENT(LightweightElement, elem, ToWxString(name));
 	wxGetApp().GetStage()->MouseGrab(elem);
 }
 
@@ -696,7 +719,7 @@ DEFINE_PRIMITIVE(MouseIsGrabbed) {
 DEFINE_PRIMITIVE(MouseIsGrabbedBy) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+	FIND_ELEMENT(LightweightElement, elem, ToWxString(name));
 	::SetPrimitiveResult(wxGetApp().GetStage()->MouseIsGrabbedBy(elem));
 }
 
@@ -709,7 +732,7 @@ DEFINE_PRIMITIVE(MousePosition) {
 DEFINE_PRIMITIVE(MouseUngrab) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+	FIND_ELEMENT(LightweightElement, elem, ToWxString(name));
 	wxGetApp().GetStage()->MouseUngrab(elem);
 }
 
@@ -736,14 +759,14 @@ DEFINE_PRIMITIVE(Movie) {
 	if (report_captions)
 		style |= MOVIE_REPORT_CAPTIONS;
 
-    R(new MovieElement(wxGetApp().GetStage(), name.c_str(), dispatcher,
-                       TToWxRect(bounds), path.c_str(), 0, style, volume));
+    R(new MovieElement(wxGetApp().GetStage(), ToWxString(name), dispatcher,
+                       TToWxRect(bounds), ToWxString(path), 0, style, volume));
 }
 
 DEFINE_PRIMITIVE(MovieEndPlayback) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(MediaElement, movie, name.c_str());
+	FIND_ELEMENT(MediaElement, movie, ToWxString(name));
     movie->EndPlayback();
 }
 
@@ -752,14 +775,14 @@ DEFINE_PRIMITIVE(MovieEndPlayback) {
 DEFINE_PRIMITIVE(MoviePause) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(MediaElement, movie, name.c_str());
+	FIND_ELEMENT(MediaElement, movie, ToWxString(name));
 	movie->Pause();
 }
 
 DEFINE_PRIMITIVE(MovieResume) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	FIND_ELEMENT(MediaElement, movie, name.c_str());
+	FIND_ELEMENT(MediaElement, movie, ToWxString(name));
 	movie->Resume();
 }
 
@@ -767,7 +790,7 @@ DEFINE_PRIMITIVE(MovieSetTimeout) {
     std::string name;
     uint32 timeout;
 	inArgs >> SymbolName(name) >> timeout;
-	FIND_ELEMENT(MovieElement, movie, name.c_str());
+	FIND_ELEMENT(MovieElement, movie, ToWxString(name));
     movie->SetTimeout(timeout);
 }
 
@@ -775,14 +798,14 @@ DEFINE_PRIMITIVE(MovieSetPlaybackTimer) {
     std::string name;
     int32 frame;
     inArgs >> SymbolName(name) >> frame;
-    FIND_ELEMENT(MediaElement, movie, name.c_str());
+    FIND_ELEMENT(MediaElement, movie, ToWxString(name));
     movie->SetPlaybackTimer(frame);
 }
 
 DEFINE_PRIMITIVE(MovieClearPlaybackTimer) {
     std::string name;
     inArgs >> SymbolName(name);
-    FIND_ELEMENT(MediaElement, movie, name.c_str());
+    FIND_ELEMENT(MediaElement, movie, ToWxString(name));
     movie->ClearPlaybackTimer();
 }
 
@@ -790,14 +813,14 @@ DEFINE_PRIMITIVE(MoveElementTo) {
 	std::string name;
 	TPoint p;
 	inArgs >> SymbolName(name) >> p;
-    FIND_ELEMENT(Element, elem, name.c_str());
+    FIND_ELEMENT(Element, elem, ToWxString(name));
     elem->MoveTo(TToWxPoint(p));
 }
 
 DEFINE_PRIMITIVE(RaiseToTop) {
 	std::string name;
 	inArgs >> SymbolName(name);
-    FIND_ELEMENT(Element, elem, name.c_str());
+    FIND_ELEMENT(Element, elem, ToWxString(name));
     wxGetApp().GetStage()->RaiseToTop(elem);
 }
 
@@ -815,7 +838,7 @@ DEFINE_PRIMITIVE(RefreshSplashScreen) {
 DEFINE_PRIMITIVE(OpenInBrowser) {
     std::string url;
     inArgs >> url;
-    ::SetPrimitiveResult(::wxLaunchDefaultBrowser(url.c_str()));
+    ::SetPrimitiveResult(::wxLaunchDefaultBrowser(ToWxString(url.c_str())));
 }
 
 DEFINE_PRIMITIVE(Overlay) {
@@ -827,7 +850,7 @@ DEFINE_PRIMITIVE(Overlay) {
 	inArgs >> SymbolName(name) >> bounds >> dispatcher >> SymbolName(cursor)
            >> is_trans >> are_trans_areas_clickable;
     Stage *stage = wxGetApp().GetStage();
-	R(new Overlay(stage, name.c_str(), TToWxRect(bounds), dispatcher,
+	R(new Overlay(stage, ToWxString(name), TToWxRect(bounds), dispatcher,
                   cursor, is_trans, are_trans_areas_clickable));
 }
 
@@ -835,7 +858,7 @@ DEFINE_PRIMITIVE(OverlaySetShape) {
     std::string name;
     TRect bounds;
     inArgs >> SymbolName(name) >> bounds;
-    FIND_ELEMENT(Overlay, elem, name.c_str());
+    FIND_ELEMENT(Overlay, elem, ToWxString(name));
     elem->SetSize(TToWxRect(bounds).GetSize());
     wxGetApp().GetStage()->NotifyElementsChanged();
 }
@@ -850,21 +873,21 @@ DEFINE_PRIMITIVE(OverlayAnimated) {
 	inArgs >> SymbolName(name) >> bounds >> dispatcher >> SymbolName(cursor)
            >> is_trans >> SymbolName(state_path) >> graphics;
     Stage *stage = wxGetApp().GetStage();
-	R(new AnimatedOverlay(stage, name.c_str(), TToWxRect(bounds), dispatcher, 
-                          cursor, is_trans, state_path,
+	R(new AnimatedOverlay(stage, ToWxString(name), TToWxRect(bounds),
+                          dispatcher, cursor, is_trans, state_path,
                           tvalue_cast<TValueList>(graphics)));
 }
 
 DEFINE_PRIMITIVE(Screenshot) {
 	std::string filename;
 	inArgs >> filename;
-	wxGetApp().GetStage()->Screenshot(filename.c_str());
+	wxGetApp().GetStage()->Screenshot(ToWxString(filename));
 }
 
 DEFINE_PRIMITIVE(RegisterCard) {
 	std::string name;
 	inArgs >> SymbolName(name);
-	wxGetApp().GetStage()->RegisterCard(name.c_str());
+	wxGetApp().GetStage()->RegisterCard(ToWxString(name));
 	::SkipPrimitiveLogging();
 }
 
@@ -903,7 +926,7 @@ DEFINE_PRIMITIVE(SetZoneCursor) {
 	std::string name, cursor;
 	inArgs >> SymbolName(name) >> SymbolName(cursor);
 
-	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+	FIND_ELEMENT(LightweightElement, elem, ToWxString(name));
 	elem->SetCursorName(cursor);
 }
 
@@ -933,7 +956,7 @@ DEFINE_PRIMITIVE(Wait) {
 	if (inArgs.HasMoreArguments())
 		inArgs >> frame;
     CHECK_SUSPEND_OK("WAIT");
-	wxGetApp().GetStage()->Wait(name.c_str(), frame);
+	wxGetApp().GetStage()->Wait(ToWxString(name), frame);
 }
 
 DEFINE_PRIMITIVE(WakeUpIfNecessary) {
@@ -954,7 +977,7 @@ DEFINE_PRIMITIVE(WantsCursorGet) {
 	std::string name;
 	inArgs >> SymbolName(name);
 
-	FIND_ELEMENT(LightweightElement, elem, name.c_str());
+	FIND_ELEMENT(LightweightElement, elem, ToWxString(name));
     ::SetPrimitiveResult(elem->WantsCursor());
 }
 
@@ -962,7 +985,7 @@ DEFINE_PRIMITIVE(WantsCursorSet) {
     std::string name;
     bool wants_cursor;
 	inArgs >> SymbolName(name) >> wants_cursor;
-    FIND_ELEMENT(LightweightElement, elem, name.c_str());
+    FIND_ELEMENT(LightweightElement, elem, ToWxString(name));
     elem->SetWantsCursor(wants_cursor);
 }
 
@@ -972,14 +995,15 @@ DEFINE_PRIMITIVE(Zone) {
 	TCallbackPtr dispatcher;
 	
 	inArgs >> SymbolName(name) >> poly >> dispatcher >> SymbolName(cursor);
-	R(new Zone(wxGetApp().GetStage(), name.c_str(), poly, dispatcher, cursor));
+	R(new Zone(wxGetApp().GetStage(), ToWxString(name), poly, dispatcher,
+               cursor));
 }
 
 DEFINE_PRIMITIVE(ZoneSetShape) {
     std::string name;
     TPolygon bounds;
     inArgs >> SymbolName(name) >> bounds;
-    FIND_ELEMENT(Zone, elem, name.c_str());
+    FIND_ELEMENT(Zone, elem, ToWxString(name));
     elem->SetShape(bounds);
     wxGetApp().GetStage()->NotifyElementsChanged();
 }
@@ -992,13 +1016,20 @@ DEFINE_PRIMITIVE(ZoneSetShape) {
 //  kludgy and should be replaced later on as the editing GUI improves.
 
 void Halyard::RegisterWxPrimitives() {
+#if CONFIG_HAVE_ACTIVEX
 	REGISTER_PRIMITIVE(ActiveX);
 	REGISTER_PRIMITIVE(ActiveXPropGet);
 	REGISTER_PRIMITIVE(ActiveXPropSet);
+#endif // CONFIG_HAVE_ACTIVEX
+
+#if CONFIG_HAVE_AUDIOSTREAMS
 	REGISTER_PRIMITIVE(AudioStreamGeiger);
 	REGISTER_PRIMITIVE(AudioStreamGeigerSetCps);
 	REGISTER_PRIMITIVE(AudioStreamSine);
 	REGISTER_PRIMITIVE(AudioStreamVorbis);
+	REGISTER_PRIMITIVE(GeigerSynth);
+#endif // CONFIG_HAVE_AUDIOSTREAMS
+
 	REGISTER_PRIMITIVE(Browser);
 	REGISTER_PRIMITIVE(BrowserCanBack);
 	REGISTER_PRIMITIVE(BrowserCanForward);
@@ -1038,7 +1069,6 @@ void Halyard::RegisterWxPrimitives() {
 	REGISTER_PRIMITIVE(EnableExpensiveEvents);
     REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
     REGISTER_PRIMITIVE(Focus);
-	REGISTER_PRIMITIVE(GeigerSynth);
     REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_PRIMITIVE(Heartbeat);
     REGISTER_PRIMITIVE(IsVistaOrNewer);

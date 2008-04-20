@@ -20,6 +20,9 @@
 //
 // @END_LICENSE
 
+#ifndef CommonWxConv_H
+#define CommonWxConv_H
+
 #include <wx/variant.h>
 #include "TRect.h"
 #include "TPoint.h"
@@ -33,3 +36,6 @@ wxSize GetSize(const Halyard::TRect &inRect);
 wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor);
 wxVariant TToWxValue(const Halyard::TValue &value);
 Halyard::TValue WxToTValue(const wxVariant &value);
+wxString ToWxString(const std::string &inString);
+
+#endif // CommonWxConv_H

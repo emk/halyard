@@ -65,8 +65,8 @@ libhalyardgui_a_SOURCES = \
 	TestHarness.cpp TestHarness.h \
 	Timecoder.cpp Timecoder.h \
 	ToolWindow.cpp ToolWindow.h \
-	Transition.h TransitionOpt.cpp
-#	TWxPrimitives.cpp TWxPrimitives.h \
+	Transition.h TransitionOpt.cpp \
+	TWxPrimitives.cpp TWxPrimitives.h
 #	Widget.cpp Widget.h \
 #	Zone.cpp Zone.h
 

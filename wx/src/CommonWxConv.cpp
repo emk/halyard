@@ -110,3 +110,7 @@ TValue WxToTValue(const wxVariant &value) {
         THROW("Can't convert wxVariant to TValue");
     }
 }
+
+wxString ToWxString(const std::string &inString) {
+    return wxString(inString.c_str(), wxConvLocal);
+}
