@@ -23,7 +23,6 @@
 #ifndef BrowserElementWx_H
 #define BrowserElementWx_H
 
-#include "BrowserElement.h"
 #include "TInterpreter.h"
 
 

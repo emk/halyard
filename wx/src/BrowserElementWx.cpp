@@ -22,7 +22,7 @@
 
 #include "AppHeaders.h"
 #include <wx/html/htmlwin.h>
-#include "BrowserElementWx.h"
+#include "BrowserElement.h"
 #include "EventDispatcher.h"
 
 

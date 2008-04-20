@@ -23,7 +23,7 @@
 #include "AppHeaders.h"
 #include <IEHtmlWin.h>
 #include <exdispid.h>
-#include "BrowserElementIE.h"
+#include "BrowserElement.h"
 #include "EventDispatcher.h"
 
 

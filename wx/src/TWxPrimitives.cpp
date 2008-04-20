@@ -48,8 +48,7 @@
 #include "CursorManager.h"
 #include "CursorElement.h"
 #include "CommonWxConv.h"
-#include "BrowserElementWx.h"
-#include "BrowserElementIE.h"
+#include "BrowserElement.h"
 #include "EditBox.h"
 #include "TStateDB.h"
 #include "dlg/MultiButtonDlg.h"
@@ -244,8 +243,8 @@ DEFINE_PRIMITIVE(Browser) {
         R(new BrowserElementWx(wxGetApp().GetStage(), ToWxString(name),
                                TToWxRect(bounds), dispatcher));
     else
-        R(new BrowserElementIE(wxGetApp().GetStage(), ToWxString(name),
-                               TToWxRect(bounds), dispatcher));
+        R(new BrowserElementNative(wxGetApp().GetStage(), ToWxString(name),
+                                   TToWxRect(bounds), dispatcher));
 }
 
 DEFINE_PRIMITIVE(BrowserCanBack) {

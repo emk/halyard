@@ -50,6 +50,7 @@
 #	define CONFIG_LOCATION_BOX_IS_COMBO  1
 #	define CONFIG_USE_XPMS               0
 #	define CONFIG_ENABLE_FULL_SCREEN     1
+#	define CONFIG_HAVE_FANCYCRASHREPORT  1
 #else // !defined __WXMSW__
 #	define CONFIG_HAVE_QUICKTIME         0
 #	define CONFIG_HAVE_ACTIVEX           0
@@ -57,6 +58,7 @@
 #	define CONFIG_LOCATION_BOX_IS_COMBO  0
 #	define CONFIG_USE_XPMS               1
 #	define CONFIG_ENABLE_FULL_SCREEN     0
+#	define CONFIG_HAVE_FANCYCRASHREPORT  0
 #endif // !defined __WXMSW__
 
 #ifdef __WXMSW__

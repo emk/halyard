@@ -31,9 +31,12 @@
 #include "TVersion.h"
 #include "TStartup.h"
 #include "TDeveloperPrefs.h"
+#include "CrashReporter.h"
 
 #include "AppConfig.h"
+#if CONFIG_HAVE_FANCYCRASHREPORT
 #include "FancyCrashReporter.h"
+#endif // CONFIG_HAVE_FANCYCRASHREPORT
 #if CONFIG_HAVE_QUICKTIME
 #	include "TQTMovie.h"
 #   include "TQTPrimitives.h"
@@ -273,8 +276,13 @@ bool HalyardApp::OnInit() {
     FileSystem::SetAppLocalDataDirectory(std::string(local_dir.mb_str()));
 
     // Get the Halyard runtime going.
+#if CONFIG_HAVE_FANCYCRASHREP
     ::InitializeCommonCode(new FancyCrashReporter());
+#else
+    ::InitializeCommonCode(new CrashReporter());
+#endif // CONFIG_HAVE_FANCYCRASHREP
     mLogsAreInitialized = true;
+
     ::RegisterWxPrimitives();
 #if CONFIG_HAVE_QUAKE2
     ::RegisterQuake2Primitives();

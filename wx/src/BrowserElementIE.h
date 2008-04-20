@@ -23,7 +23,6 @@
 #ifndef BrowserElementIE_H
 #define BrowserElementIE_H
 
-#include "BrowserElement.h"
 #include "TInterpreter.h"
 
 
