@@ -116,7 +116,7 @@ bool EventDispatcher::DoEventUpdateUI(const wxString &inCommandName) {
 
 	TValueList args;
 	args.push_back(TSymbol("update-ui"));
-	args.push_back(TSymbol(inCommandName.mb_str()));
+	args.push_back(TSymbol(std::string(inCommandName.mb_str())));
 	mDispatcher->Run(args);
 	return EventCleanup();    
 }
@@ -247,7 +247,7 @@ bool EventDispatcher::DoEventBrowserNavigate(const wxString &inUrl,
 
 	TValueList args;
     args.push_back(TSymbol("browser-navigate"));
-    args.push_back(inUrl.mb_str());
+    args.push_back(std::string(inUrl.mb_str()));
     mDispatcher->Run(args);
     CheckForVeto(outWasVetoed);
 	return EventCleanup();
@@ -259,7 +259,7 @@ bool EventDispatcher::DoEventBrowserPageChanged(const wxString &inUrl) {
 
 	TValueList args;
     args.push_back(TSymbol("browser-page-changed"));
-    args.push_back(inUrl.mb_str());
+    args.push_back(std::string(inUrl.mb_str()));
     mDispatcher->Run(args);
 	return EventCleanup();
 }
@@ -270,7 +270,7 @@ bool EventDispatcher::DoEventBrowserTitleChanged(const wxString &inTitle) {
 
 	TValueList args;
     args.push_back(TSymbol("browser-title-changed"));
-    args.push_back(inTitle.mb_str());
+    args.push_back(std::string(inTitle.mb_str()));
     mDispatcher->Run(args);
 	return EventCleanup();
 }
@@ -281,7 +281,7 @@ bool EventDispatcher::DoEventStatusTextChanged(const wxString &inText) {
 
 	TValueList args;
     args.push_back(TSymbol("status-text-changed"));
-    args.push_back(inText.mb_str());
+    args.push_back(std::string(inText.mb_str()));
     mDispatcher->Run(args);
 	return EventCleanup();
 }

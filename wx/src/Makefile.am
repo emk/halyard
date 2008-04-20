@@ -38,12 +38,12 @@ libhalyardgui_a_SOURCES = \
 	DocNotebook.cpp DocNotebook.h \
 	Downloader.cpp Downloader.h \
 	DrawingArea.cpp DrawingArea.h \
-	DrawingAreaOpt.cpp DrawingAreaOpt.h
-#	DrawingContextStack.cpp DrawingContextStack.h \
-#	EditBox.cpp EditBox.h \
-#	Element.cpp Element.h \
-#	EventDelegator.cpp EventDelegator.h \
-#	EventDispatcher.cpp EventDispatcher.h \
+	DrawingAreaOpt.cpp DrawingAreaOpt.h \
+	DrawingContextStack.cpp DrawingContextStack.h \
+	EditBox.cpp EditBox.h \
+	Element.cpp Element.h \
+	EventDelegator.cpp EventDelegator.h \
+	EventDispatcher.cpp EventDispatcher.h
 #	FancyCrashReporter.cpp FancyCrashReporter.h \
 #	FancyStatusBar.cpp FancyStatusBar.h \
 #	GeigerAudioStream.cpp GeigerAudioStream.h \

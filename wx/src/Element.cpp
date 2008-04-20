@@ -37,7 +37,7 @@ Element::Element(Stage *inStage, const wxString &inName,
 	: mStage(inStage), mName(inName)
 {
     ASSERT(mStage);
-    ASSERT(mName != "");
+    ASSERT(mName != wxT(""));
 
     if (inDispatcher) {
         mEventDispatcher = EventDispatcherPtr(new EventDispatcher());
