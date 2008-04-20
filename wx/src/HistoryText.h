@@ -32,7 +32,7 @@
 class HistoryTextCtrl : public wxTextCtrl
 {
 	std::vector<wxString> mHistoryItems;
-	int mHistoryCurrent;
+	size_t mHistoryCurrent;
 
 public:
 	HistoryTextCtrl(wxWindow* parent, 

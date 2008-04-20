@@ -43,14 +43,10 @@ libhalyardgui_a_SOURCES = \
 	EditBox.cpp EditBox.h \
 	Element.cpp Element.h \
 	EventDelegator.cpp EventDelegator.h \
-	EventDispatcher.cpp EventDispatcher.h
-#	FancyCrashReporter.cpp FancyCrashReporter.h \
-#	FancyStatusBar.cpp FancyStatusBar.h \
-#	GeigerAudioStream.cpp GeigerAudioStream.h \
-#	GeigerSynthElement.cpp GeigerSynthElement.h \
-#	GuiUtil.cpp GuiUtil.h \
-#	HalyardApp.cpp HalyardApp.h \
-#	HistoryText.cpp HistoryText.h \
+	EventDispatcher.cpp EventDispatcher.h \
+	FancyStatusBar.cpp FancyStatusBar.h \
+	GuiUtil.cpp GuiUtil.h \
+	HistoryText.cpp HistoryText.h
 #	ImageCache.cpp ImageCache.h \
 #	InvisibleElement.h \
 #	LightweightAccessible.cpp LightweightAccessible.h \
@@ -72,20 +68,30 @@ libhalyardgui_a_SOURCES = \
 #	ToolWindow.cpp ToolWindow.h \
 #	Transition.h TransitionOpt.cpp \
 #	TWxPrimitives.cpp TWxPrimitives.h \
-#	VorbisAudioStream.cpp VorbisAudioStream.h \
-#	VorbisFile.cpp VorbisFile.h \
 #	Widget.cpp Widget.h \
 #	Zone.cpp Zone.h
+
+# Temporarily disabled because of dependencies on wxWidgets 2.6 APIs
+# missing in 2.8.
+#FancyCrashReporter.cpp FancyCrashReporter.h
+
+# Temporarily disabled because of dependencies on a custom-patched version
+# of wxWidgets 2.6.
+#HalyardApp.cpp HalyardApp.h
 
 # Disabled because they rely on various APIs we're not ready to deal with
 # right now, including portaudio, QuickTime and Quake 2.
 #AudioStream.cpp AudioStream.h
 #AudioStreamElement.cpp AudioStreamElement.h
 #BinMsgConv.cpp BinMsgConv.h
+#GeigerAudioStream.cpp GeigerAudioStream.h
+#GeigerSynthElement.cpp GeigerSynthElement.h
 #MovieWindowQT.cpp MovieWindowQT.h
 #Quake2Engine.cpp Quake2Engine.h
 #TQTMovie.cpp TQTMovie.h
 #TQuake2Primitives.cpp TQuake2Primitives.h
+#VorbisAudioStream.cpp VorbisAudioStream.h
+#VorbisFile.cpp VorbisFile.h
 
 # Windows-specific files.
 #ActiveXElement.cpp ActiveXElement.h

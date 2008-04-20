@@ -62,16 +62,18 @@ void HistoryTextCtrl::OnKeyDown(wxKeyEvent &inEvent)
 // Handle entering a value
 void HistoryTextCtrl::OnTextEnter(wxCommandEvent &inEvent)
 {
-    if (inEvent.GetString() == "")
+    if (inEvent.GetString() == wxT(""))
 		inEvent.Skip();
     else
     {
+        ASSERT(mHistoryItems.size() > 0);
+
 		wxString input = inEvent.GetString();
 		// Save the item in our command history.
 		mHistoryItems[mHistoryItems.size() - 1] = input;
 
 		// Prepare next item in command history
-		mHistoryItems.push_back(wxString(""));
+		mHistoryItems.push_back(wxString(wxT("")));
 		mHistoryCurrent = mHistoryItems.size() - 1;
 
 		inEvent.Skip();
@@ -111,7 +113,7 @@ void HistoryTextCtrl::HistPrev()
 
 void HistoryTextCtrl::HistNext() 
 {
-	if (mHistoryCurrent < mHistoryItems.size() - 1)
+	if (mHistoryCurrent+1 < mHistoryItems.size())
 	{	
 		SaveCurrHist();
 		mHistoryCurrent++;
