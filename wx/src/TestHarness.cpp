@@ -47,9 +47,9 @@ public:
 
 TestReportFrame::TestReportFrame(wxFrame *inParent,
 								 TestRunReport::ptr inReport)
-	: wxFrame(inParent, -1, "Test Results")
+	: wxFrame(inParent, -1, wxT("Test Results"))
 {
-    mOutput = new wxTextCtrl(this, -1, "", wxDefaultPosition,
+    mOutput = new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
 							 wxDefaultSize,
 							 wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
 	
@@ -60,17 +60,20 @@ TestReportFrame::TestReportFrame(wxFrame *inParent,
 
     SetClientSize(640, 240);	
 
-	mOutput->AppendText(inReport->GetSummary().c_str());
-	mOutput->AppendText("\n");
+	mOutput->AppendText(wxString(inReport->GetSummary().c_str(), wxConvLocal));
+	mOutput->AppendText(wxT("\n"));
 	TestRunReport::iterator i = inReport->begin();
 	for (; i != inReport->end(); ++i) {
 		if ((*i)->GetTestResult() == TEST_FAILED) {
 			wxString str;
-			str.Printf("%s:%d: %s: %s\n",
-					   (*i)->GetErrorFile().c_str(),
+            wxString error_file( (*i)->GetErrorFile().c_str(),    wxConvLocal);
+            wxString name(       (*i)->GetName().c_str(),         wxConvLocal);
+            wxString message(    (*i)->GetErrorMessage().c_str(), wxConvLocal);
+			str.Printf(wxT("%s:%d: %s: %s\n"),
+					   error_file.c_str(),
 					   (*i)->GetErrorLine(),
-					   (*i)->GetName().c_str(),
-					   (*i)->GetErrorMessage().c_str());
+					   name.c_str(),
+					   message.c_str());
 			mOutput->AppendText(str);
 		}
 	}
@@ -107,7 +110,7 @@ void TestHarness::UpdateTestProgress(int inTestIndex, int inTestCount,
 void TestHarness::RunTests()
 {
 	// Prepare to run tests.
-	mFrame->SetStatusText("Running tests...");
+	mFrame->SetStatusText(wxT("Running tests..."));
 	mStatusBar->SetProgress(0.0);
 	mStatusBar->SetProgressColor(FancyStatusBar::DEFAULT_PROGRESS_COLOR);
 
@@ -117,7 +120,7 @@ void TestHarness::RunTests()
 
 	// Display the results of the tests to the user.
 	mStatusBar->SetProgress(1.0);
-	mFrame->SetStatusText(report->GetSummary().c_str());
+	mFrame->SetStatusText(wxString(report->GetSummary().c_str(), wxConvLocal));
 	if (!report->AnyTestFailed())
 		mStatusBar->SetProgressColor(*wxGREEN);
 	else

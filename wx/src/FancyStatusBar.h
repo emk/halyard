@@ -37,7 +37,7 @@ public:
 
 	static wxColour DEFAULT_PROGRESS_COLOR;
 
-	void SetProgressColor(wxColour &inColor);
+	void SetProgressColor(const wxColour &inColor);
 	void SetProgress(float inValue);
 
     DECLARE_EVENT_TABLE()

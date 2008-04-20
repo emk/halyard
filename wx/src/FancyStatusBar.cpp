@@ -40,7 +40,7 @@ class ProgressMeter : public wxWindow
 public:
 	ProgressMeter(wxWindow *inParent);
 
-	void SetColor(wxColor &inColor) { mColor = inColor; Refresh(); }
+	void SetColor(const wxColor &inColor) { mColor = inColor; Refresh(); }
 	void SetValue(float inValue) { mValue = inValue; Refresh(); }
 
     DECLARE_EVENT_TABLE()
@@ -117,7 +117,7 @@ void FancyStatusBar::OnSize(wxSizeEvent &event)
 	mProgressMeter->SetSize(rect);
 }
 
-void FancyStatusBar::SetProgressColor(wxColour &inColor)
+void FancyStatusBar::SetProgressColor(const wxColour &inColor)
 {
 	mProgressMeter->SetColor(inColor);
 }

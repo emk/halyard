@@ -39,7 +39,7 @@ BEGIN_EVENT_TABLE(Timecoder, ToolWindow)
 END_EVENT_TABLE()
 
 Timecoder::Timecoder(StageFrame *inStageFrame)
-    : ToolWindow(inStageFrame, TOOL_TIMECODER, "Timecoder",
+    : ToolWindow(inStageFrame, TOOL_TIMECODER, wxT("Timecoder"),
 				 wxICON(ic_timecoder))
 {
     // Create a panel to hold our movie.
@@ -47,12 +47,12 @@ Timecoder::Timecoder(StageFrame *inStageFrame)
     mMovieWindow =
 		new MovieWindowNative(this, -1, wxDefaultPosition, wxSize(320, 256),
 							  0, MOVIE_CONTROLLER);
-    mMovieWindow->SetMovie(TEST_MOVIE);
+    mMovieWindow->SetMovie(wxT(TEST_MOVIE));
 
     // Create a panel to hold our timecode value.
     wxPanel *tc_panel = new wxPanel(this);
     mTimecodeLabel =
-		new wxStaticText(tc_panel, -1, "0:00:00", wxDefaultPosition,
+		new wxStaticText(tc_panel, -1, wxT("0:00:00"), wxDefaultPosition,
 						 wxSize(200, -1), wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
     wxBoxSizer *tc_sizer = new wxBoxSizer(wxVERTICAL);
     tc_sizer->Add(mTimecodeLabel, 0 /* don't stretch */, wxGROW | wxALL, 3);
@@ -76,7 +76,7 @@ void Timecoder::OnIdle(wxIdleEvent &inEvent)
 
 	// Make a label.
 	wxString label;
-	label.Printf("%d:%02d:%02d",
+	label.Printf(wxT("%d:%02d:%02d"),
 				 minutes, seconds % 60, (int) frames % FRAMES_PER_SECOND);
 
 	// If the label is different from what we're currently displaying,

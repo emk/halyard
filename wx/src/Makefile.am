@@ -61,11 +61,11 @@ libhalyardgui_a_SOURCES = \
 	SashFrame.cpp SashFrame.h \
 	Stage.cpp Stage.h \
 	StageAccessible.cpp StageAccessible.h \
-	StageFrame.cpp StageFrame.h
-#	TestHarness.cpp TestHarness.h \
-#	Timecoder.cpp Timecoder.h \
-#	ToolWindow.cpp ToolWindow.h \
-#	Transition.h TransitionOpt.cpp \
+	StageFrame.cpp StageFrame.h \
+	TestHarness.cpp TestHarness.h \
+	Timecoder.cpp Timecoder.h \
+	ToolWindow.cpp ToolWindow.h \
+	Transition.h TransitionOpt.cpp
 #	TWxPrimitives.cpp TWxPrimitives.h \
 #	Widget.cpp Widget.h \
 #	Zone.cpp Zone.h

@@ -71,6 +71,7 @@ protected:
 
 public:
     Transition();
+    virtual ~Transition() {}
     void RunTransition(int inMilliseconds, TransitionResources &inResources);
 };
 
