@@ -78,7 +78,8 @@ protected:
 FancyDebugReport::FancyDebugReport(FancyCrashReporter *inReporter,
                                    const char *inReportUrl,
                                    const char *inReason)
-    : wxDebugReportUpload(inReportUrl, "report:file", "action"),
+    : wxDebugReportUpload(wxString(inReportUrl, wxConvLocal),
+                          wxT("report:file"), wxT("action")),
       mReporter(inReporter), mReason(inReason)
 {
 }
@@ -93,9 +94,9 @@ wxDebugReport::Context FancyDebugReport::GetContext() const {
 /// the next update.  This probably isn't safe to do after a real
 /// crash--the Stage might be broken.
 void FancyDebugReport::AddScreenshot() {
-    wxFileName path(GetDirectory(), "stage.png");
+    wxFileName path(GetDirectory(), wxT("stage.png"));
     wxGetApp().GetStage()->Screenshot(path.GetFullPath());
-    AddFile(path.GetFullName(), "script graphics");
+    AddFile(path.GetFullName(), wxT("script graphics"));
 }
 
 #ifndef APP_PLATFORM_WIN32
@@ -154,18 +155,24 @@ bool FancyDebugReport::DoAddSystemInfo(wxXmlNode *nodeSystemInfo) {
 
 /// Add application-specific information to the debug report.
 void FancyDebugReport::AddAppInfo(wxXmlNode *nodeRoot) {
-    wxXmlNode *app = new wxXmlNode(wxXML_ELEMENT_NODE, "application");
+    wxXmlNode *app = new wxXmlNode(wxXML_ELEMENT_NODE, wxT("application"));
     nodeRoot->AddChild(app);
-    app->AddProperty("version", VERSION_STRING);
-    app->AddProperty("buildDate", BUILD_TIMESTAMP);
-    app->AddProperty("scriptName", mReporter->GetScriptName());
-    app->AddProperty("scriptVersion", mReporter->GetScriptVersion());
-    app->AddProperty("currentCard", mReporter->GetCurrentCard());
-    app->AddProperty("recentCard", mReporter->GetRecentCard());
+    app->AddProperty(wxT("version"),
+                     wxString(VERSION_STRING, wxConvLocal));
+    app->AddProperty(wxT("buildDate"),
+                     wxString(BUILD_TIMESTAMP, wxConvLocal));
+    app->AddProperty(wxT("scriptName"),
+                     wxString(mReporter->GetScriptName(), wxConvLocal));
+    app->AddProperty(wxT("scriptVersion"),
+                     wxString(mReporter->GetScriptVersion(), wxConvLocal));
+    app->AddProperty(wxT("currentCard"),
+                     wxString(mReporter->GetCurrentCard(), wxConvLocal));
+    app->AddProperty(wxT("recentCard"),
+                     wxString(mReporter->GetRecentCard(), wxConvLocal));
     
     wxDateTime now(wxDateTime::Now());
-    wxString formatted(now.FormatISODate() + " " + now.FormatISOTime());
-    app->AddProperty("crashDate", formatted);
+    wxString formatted(now.FormatISODate() + wxT(" ") + now.FormatISOTime());
+    app->AddProperty(wxT("crashDate"), formatted);
 }
 
 /// Add extra information to our XML crash report.
@@ -174,9 +181,11 @@ void FancyDebugReport::DoAddCustomContext(wxXmlNode *nodeRoot) {
 
     // If we have an explicit reason for this crash, add it to the report.
     if (mReason) {
-        wxXmlNode *assertion = new wxXmlNode(wxXML_ELEMENT_NODE, "assertion");
+        wxXmlNode *assertion =
+            new wxXmlNode(wxXML_ELEMENT_NODE, wxT("assertion"));
         nodeRoot->AddChild(assertion);
-        assertion->AddProperty("reason", mReason);
+        wxString reason(mReason, wxConvLocal);
+        assertion->AddProperty(wxT("reason"), reason);
     }
 
     // Add any other information we have lying around.
@@ -213,13 +222,14 @@ bool FancyDebugReport::OnServerReply(const wxArrayString& reply) {
     if (!doc.IsOk())
         return false;
     wxXmlNode *root = doc.GetRoot();
-    if (root->GetName() != "crashResponse")
+    if (root->GetName() != wxT("crashResponse"))
         return false;
 
     // Extract the info we need from the response.
-    wxString title = "Thank you!";
-    wxString description = ("Your debug report has been submitted. "
-                            "Thank you for helping us improve this program!");
+    wxString title = wxT("Thank you!");
+    wxString description =
+        wxT("Your debug report has been submitted. ")
+        wxT("Thank you for helping us improve this program!");
     wxString link;
     wxXmlNode *node = root->GetChildren();
     for (; node != NULL; node = node->GetNext()) {
@@ -228,11 +238,11 @@ bool FancyDebugReport::OnServerReply(const wxArrayString& reply) {
         GetXmlNodeText(content, node);
  
         // Store the node's text in the appropriate variable.
-        if (node->GetName() == "title")
+        if (node->GetName() == wxT("title"))
             title = content;
-        else if (node->GetName() == "description")
+        else if (node->GetName() == wxT("description"))
             description = content;
-        else if (node->GetName() == "link")
+        else if (node->GetName() == wxT("link"))
             link = content;
         // Ignore unknown nodes.
     }
@@ -293,10 +303,12 @@ void FancyCrashReporter::AddDiagnosticFile(const std::string &inFileName,
     // We need to pass an absolute path to wxDebugReport::AddFile, or it
     // will assume that we're referring to a file in the crash report
     // temporary directory.  So make sure our path is absolute.
-    wxFileName path(inFileName.c_str());
+    wxString filename(inFileName.c_str(), wxConvLocal);
+    wxFileName path(filename);
     if (!path.IsAbsolute())
         path.MakeAbsolute();
-    mFileInfo.push_back(FileInfo(path.GetFullPath(), inDescription.c_str()));
+    wxString description(inDescription.c_str(), wxConvLocal);
+    mFileInfo.push_back(FileInfo(path.GetFullPath(), description));
 }
 
 void FancyCrashReporter::SetCurrentCard(const std::string &inCardName) {
@@ -376,12 +388,12 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // so, process it.
     wxDebugReportPreviewStd preview;
     if (preview.Show(report)) {
-        if (!report.Process() && report.GetCompressedFileName() != "") {
+        if (!report.Process() && report.GetCompressedFileName() != wxT("")) {
             // OK, processing failed, which generally means we can't talk
             // to our server--but we did at least create a debug report.
             // So allow the user to save the report.
-            wxFileDialog dlg(NULL, "Save debug report", "",
-                             "debugrpt", "ZIP archive (*.zip)|*.zip",
+            wxFileDialog dlg(NULL, wxT("Save debug report"), wxT(""),
+                             wxT("debugrpt"), wxT("ZIP archive (*.zip)|*.zip"),
                              wxSAVE|wxOVERWRITE_PROMPT);
             if (dlg.ShowModal() == wxID_OK) {
                 // wxCopyFile automatically overwrites the destination.
