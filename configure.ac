@@ -54,9 +54,12 @@ AX_BOOST_FILESYSTEM
 AX_BOOST_UNIT_TEST_FRAMEWORK
 AX_BOOST_TEST_EXEC_MONITOR
 
-# TODO - Look for PLT Scheme, wxWidgets, portaudio.
+# TODO - Look for portaudio and tremor.
 AX_LIB_MZSCHEME(3m, 371)
+
+# Check for wxWidgets.
 AM_PATH_WXCONFIG(2.8.4)
+AM_PATH_WXRC([HAVE_WXRC=1], [HAVE_WXRC=0])
 
 
 #==========================================================================

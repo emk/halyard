@@ -7,6 +7,11 @@ AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I../../Common
 AM_CXXFLAGS = $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS) $(CURL_CFLAGS) \
 	-Wno-deprecated-declarations
 
+resources.cpp: application.xrc
+	$(WXRC) -c -o $@ $<
+
+CLEANFILES = resources.cpp
+
 # Until we can actually compile all our source files, build a library
 # instead of an application.
 noinst_PROGRAMS = halyard
@@ -60,6 +65,7 @@ halyard_SOURCES = \
 	MovieWindow.cpp MovieWindow.h \
 	Overlay.cpp Overlay.h \
 	ProgramTree.cpp ProgramTree.h \
+	resources.cpp \
 	SashFrame.cpp SashFrame.h \
 	Stage.cpp Stage.h \
 	StageAccessible.cpp StageAccessible.h \
