@@ -125,8 +125,10 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 	mCursorManager = new CursorManager();
 	mTransitionManager = new TransitionManager();
 
+#if wxUSE_ACCESSIBILITY
     // Install our custom accessibility handler.
     SetAccessible(new StageAccessible(this));
+#endif // wxUSE_ACCESSIBILITY
 	
     // Initialize the clock.
     UpdateClock();
@@ -194,8 +196,8 @@ wxBitmap Stage::GetScriptGraphic(const std::string &inName) {
         FileSystem::GetScriptGraphicFilePath(inName);
     if (!path.DoesExist() || !path.IsRegularFile())
         return wxBitmap();
-    std::string native_path = path.ToNativePathString();
-    return GetImageCache()->GetBitmap(native_path.c_str());
+    wxString native_path(path.ToNativePathString().c_str(), wxConvLocal);
+    return GetImageCache()->GetBitmap(native_path);
 }
 
 void Stage::MaybeShowSplashScreen() {
@@ -227,8 +229,8 @@ void Stage::MaybeShowSplashScreen() {
     dc.SetFont(*wxNORMAL_FONT);
         
     // Draw the text.
-    dc.DrawText(script_copyright.c_str(), 5, 515);
-    dc.DrawText(halyard_copyright.c_str(), 5, 530);
+    dc.DrawText(wxString(script_copyright.c_str(), wxConvLocal), 5, 515);
+    dc.DrawText(wxString(halyard_copyright.c_str(), wxConvLocal), 5, 530);
     InvalidateRect(wxRect(0, 500, 800, 100));
 }
 
@@ -384,17 +386,19 @@ void Stage::TryJumpTo(const wxString &inName)
 {
 	// We go to quite a lot of trouble to verify this request.
 	if (!IsScriptInitialized())
-		::wxLogError("Cannot jump until program has finished initializing.");
+		::wxLogError(wxT("Cannot jump until finished initializing."));
 	else if (IsInEditMode())
-		::wxLogError("Unimplemented: Cannot jump while in edit mode (yet).");
+		::wxLogError(wxT("Unimplemented: Cannot jump while in edit mode."));
 	else
 	{
 		wxASSERT(TInterpreter::HaveInstance());
 		TInterpreter *interp = TInterpreter::GetInstance();
-		if (!interp->IsValidCard(inName))
-			::wxLogError("The card \'" + inName + "\' does not exist.");
+        std::string name(inName.mb_str());
+		if (!interp->IsValidCard(name.c_str()))
+			::wxLogError(wxT("The card \'") + inName +
+                         wxT("\' does not exist."));
 		else
-			interp->JumpToCardByName(inName);
+			interp->JumpToCardByName(name.c_str());
 	}
 }
 
@@ -405,10 +409,10 @@ void Stage::RegisterCard(const wxString &inName)
 
 void Stage::NotifyEnterCard(const wxString &inName)
 {
-	mLastCard = inName;
+	mLastCard = std::string(inName.mb_str());
 	mFrame->GetLocationBox()->NotifyEnterCard(inName);
 	mFrame->GetProgramTree()->NotifyEnterCard(inName);
-    CrashReporter::GetInstance()->SetCurrentCard(inName.mb_str());
+    CrashReporter::GetInstance()->SetCurrentCard(std::string(inName.mb_str()));
 
     // If the script is waiting on a media element, end the wait now.
     if (mWaitElement)
@@ -440,7 +444,7 @@ void Stage::NotifyElementsChanged()
     mElementsHaveChanged = true;
 }
 
-void Stage::EnterElement(ElementPtr inElement, wxPoint &inPosition)
+void Stage::EnterElement(ElementPtr inElement, const wxPoint &inPosition)
 {
     if (ShouldSendEvents()) {
         ASSERT(inElement->GetEventDispatcher().get());
@@ -448,7 +452,7 @@ void Stage::EnterElement(ElementPtr inElement, wxPoint &inPosition)
     }
 }
 
-void Stage::LeaveElement(ElementPtr inElement, wxPoint &inPosition)
+void Stage::LeaveElement(ElementPtr inElement, const wxPoint &inPosition)
 {
     if (ShouldSendEvents()) {
         ASSERT(inElement->GetEventDispatcher().get());
@@ -460,7 +464,7 @@ wxPoint Stage::CurrentMousePosition() {
     return ScreenToClient(::wxGetMousePosition());
 }
 
-void Stage::UpdateCurrentElementAndCursor(wxPoint &inPosition)
+void Stage::UpdateCurrentElementAndCursor(const wxPoint &inPosition)
 {
     // Performance Note: UpdateCurrentElementAndCursor() is called
     // very often (on every mouse move, plus other places). There are
@@ -690,9 +694,9 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
 
         // Update the status bar.
         wxString str;
-        str.Printf("X: %d, Y: %d, C: %02X%02X%02X",
+        str.Printf(wxT("X: %d, Y: %d, C: %02X%02X%02X"),
                    (int) x, (int) y, (int) color.Red(),
-                   (int) color.Green(), color.Blue());
+                   (int) color.Green(), (int) color.Blue());
         mFrame->SetStatusText(str);
     }
 
@@ -838,10 +842,10 @@ void Stage::OnChar(wxKeyEvent &inEvent)
 void Stage::OnLeftDown(wxMouseEvent &inEvent)
 {
 	// Restore focus to the stage (or our game engine, if it's on top).
-	if (Quake2Engine::IsDisplayed())
-		Quake2Engine::GetInstance()->SetFocus();
-	else
-		SetFocus();
+    if (GameEngineIsDisplayed())
+        GameEngineSetFocus();
+    else
+        SetFocus();
 
 	// Dispatch the event.
     if (ShouldSendEvents()) {
@@ -849,6 +853,30 @@ void Stage::OnLeftDown(wxMouseEvent &inEvent)
         disp->DoEventLeftDown(inEvent, false);
     }
 }
+
+#if CONFIG_HAVE_QUAKE2
+
+bool Stage::GameEngineIsDisplayed() {
+    return Quake2Engine::IsDisplayed();
+}
+
+void Stage::GameEngineSetFocus() {
+    ASSERT(GameEngineIsDisplayed());
+    Quake2Engine::GetInstance()->SetFocus();
+}
+
+#else // !CONFIG_HAVE_QUAKE2
+
+bool Stage::GameEngineIsDisplayed() {
+    return false;
+}
+
+void Stage::GameEngineSetFocus() {
+    ASSERT(GameEngineIsDisplayed());
+    // Do nothing (the above assertion will always fail, anyway).
+}
+
+#endif // !CONFIG_HAVE_QUAKE2
 
 void Stage::OnLeftDClick(wxMouseEvent &inEvent)
 {
@@ -877,21 +905,21 @@ void Stage::OnRightDown(wxMouseEvent &inEvent)
 		wxPoint pos = inEvent.GetPosition();
 		wxString str;
 		if (inEvent.ShiftDown() && mCopiedPoints.size() == 1)
-			str.Printf("(rect %d %d %d %d)", 
+			str.Printf(wxT("(rect %d %d %d %d)"), 
 					   (mCopiedPoints.end()-1)->x, 
 					   (mCopiedPoints.end()-1)->y,
 					   pos.x, pos.y);
 		else if (inEvent.ShiftDown() && mCopiedPoints.size() > 1)
 		{
-			str.Printf("(polygon ");
+			str.Printf(wxT("(polygon "));
 			std::vector<wxPoint>::iterator i;
 			for (i = mCopiedPoints.begin(); i != mCopiedPoints.end(); ++i)
-				str += wxString::Format("(point %d %d) ", i->x, i->y);
-			str += wxString::Format("(point %d %d))", pos.x, pos.y);
+				str += wxString::Format(wxT("(point %d %d) "), i->x, i->y);
+			str += wxString::Format(wxT("(point %d %d))"), pos.x, pos.y);
 		}
 		else
 		{
-			str.Printf("(point %d %d)", pos.x, pos.y);
+			str.Printf(wxT("(point %d %d)"), pos.x, pos.y);
 			mCopiedPoints.clear();
 		}
 		mCopiedPoints.push_back(pos);
@@ -926,7 +954,7 @@ void Stage::CopyStringToClipboard(const wxString &inString)
 	{
 		wxTheClipboard->SetData(new wxTextDataObject(inString));
 		wxTheClipboard->Close();
-		mFrame->SetStatusText(wxString("Copied: ") + inString);
+		mFrame->SetStatusText(wxString(wxT("Copied: ")) + inString);
 	}
 }
 
@@ -963,7 +991,7 @@ void Stage::InvalidateRect(const wxRect &inRect)
     // the entire stage, and if we repaint the screen, it will flicker.)
     // The entire screen will automatically be refreshed when Quake 2
     // is hidden.
-    if (!Quake2Engine::IsDisplayed()) {
+    if (!GameEngineIsDisplayed()) {
         mRectsToRefresh.MergeRect(inRect);
         Refresh(FALSE, &inRect);
     }
@@ -989,16 +1017,17 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 	// routine so we don't have to keep on typing it.  (Actually, this code
     // is handled nicely by some macros in TWxPrimitives.cpp, although they
     // report errors quite a bit more noisily.
-	const char *name = (const char *) inElementName;
+    std::string name(inElementName.mb_str());
 	if (i == mElements.end())
 	{
-		gDebugLog.Caution("wait: Element %s does not exist", name);
+		gDebugLog.Caution("wait: Element %s does not exist", name.c_str());
 		return false;
 	}
 	MediaElementPtr media = MediaElementPtr(*i, dynamic_cast_tag());
 	if (!media)
 	{
-		gDebugLog.Caution("wait: Element %s is not a media element", name);
+		gDebugLog.Caution("wait: Element %s is not a media element",
+                          name.c_str());
 		return false;		
 	}
 
@@ -1006,7 +1035,7 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 	// go to sleep for a while.
 	if (media->HasReachedFrame(inUntilFrame))
 		gDebugLog.Log("wait: Media element %s has already past frame %d",
-					  name, inUntilFrame);
+					  name.c_str(), inUntilFrame);
 	else
 	{
 		mWaitElement = media;
@@ -1198,8 +1227,8 @@ void Stage::EndMediaElements()
 	for (; i != mElements.end(); ++i) {
 		MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
 		if (elem && !elem->IsLooping()) {
-			gDebugLog.Log("Manually ending media: %s",
-						  (*i)->GetName().mb_str());
+            std::string name((*i)->GetName().mb_str());
+			gDebugLog.Log("Manually ending media: %s", name.c_str());
 			elem->EndPlayback();
 		}
 	}
@@ -1211,9 +1240,10 @@ void Stage::MouseGrab(ElementPtr inElement)
 	ASSERT(inElement->GetEventDispatcher().get());
 	if (mGrabbedElement)
 	{
+        std::string name(inElement->GetName().mb_str());
+        std::string grabbed_name(mGrabbedElement->GetName().mb_str());
 		gLog.Error("Grabbing %s while %s is already grabbed",
-				   inElement->GetName().mb_str(),
-				   mGrabbedElement->GetName().mb_str());
+				   name.c_str(), grabbed_name.c_str());
 		MouseUngrab(mGrabbedElement);
 	}
 	mGrabbedElement = inElement;
@@ -1225,15 +1255,16 @@ void Stage::MouseUngrab(ElementPtr inElement)
 	ASSERT(inElement->IsLightWeight());
 	if (!mGrabbedElement)
 	{
-		gLog.Error("Ungrabbing %s when it isn't grabbed",
-				   inElement->GetName().mb_str());
+        std::string name(inElement->GetName().mb_str());
+		gLog.Error("Ungrabbing %s when it isn't grabbed", name.c_str());
 		return;
 	}
 	if (inElement != mGrabbedElement)
 	{
-		gLog.Error("Ungrabbing %s when %s is grabbed",
-				   inElement->GetName().mb_str(),
-				   mGrabbedElement->GetName().mb_str());
+        std::string name(inElement->GetName().mb_str());
+        std::string grabbed_name(mGrabbedElement->GetName().mb_str());
+		gLog.Error("Ungrabbing %s when %s is grabbed", name.c_str(),
+                   grabbed_name.c_str());
 	}
 
 	// Force updating of the current element, cursor, etc.

@@ -4,7 +4,7 @@ AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I../../Common
 # want all _other_ warnings to abort the compilation process, thanks to
 # -Werror.  We can remove -Wno-deprecated-declarations once we port the
 # official Windows build to 2.8.
-AM_CXXFLAGS = $(MZSCHEME_CFLAGS) -Wno-deprecated-declarations
+AM_CXXFLAGS = $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS) -Wno-deprecated-declarations
 
 # Until we can actually compile all our source files, build a library
 # instead of an application.
@@ -58,11 +58,10 @@ libhalyardgui_a_SOURCES = \
 	MovieWindow.cpp MovieWindow.h \
 	Overlay.cpp Overlay.h \
 	ProgramTree.cpp ProgramTree.h \
-	SashFrame.cpp SashFrame.h
-#	ScriptEditor.cpp ScriptEditor.h \
-#	Stage.cpp Stage.h \
-#	StageAccessible.cpp StageAccessible.h \
-#	StageFrame.cpp StageFrame.h \
+	SashFrame.cpp SashFrame.h \
+	Stage.cpp Stage.h \
+	StageAccessible.cpp StageAccessible.h \
+	StageFrame.cpp StageFrame.h
 #	TestHarness.cpp TestHarness.h \
 #	Timecoder.cpp Timecoder.h \
 #	ToolWindow.cpp ToolWindow.h \
@@ -78,6 +77,9 @@ libhalyardgui_a_SOURCES = \
 # Temporarily disabled because of dependencies on a custom-patched version
 # of wxWidgets 2.6.
 #HalyardApp.cpp HalyardApp.h
+
+# Disabled because of dependencies on our custom-patched version of Scintilla.
+#ScriptEditor.cpp ScriptEditor.h
 
 # Disabled because they rely on various APIs we're not ready to deal with
 # right now, including portaudio, QuickTime and Quake 2.

@@ -25,6 +25,7 @@
 
 #include <wx/access.h>
 
+#if wxUSE_ACCESSIBILITY
 
 /// Custom accessibility interface for our Stage widget.  Used by
 /// screen-readers and other accessibility tools to access the elements on
@@ -39,4 +40,5 @@ public:
     wxAccStatus GetChild(int childId, wxAccessible** child);
 };
 
+#endif // wxUSE_ACCESSIBILITY
 #endif // StageAccessible_H

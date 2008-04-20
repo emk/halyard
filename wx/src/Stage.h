@@ -257,6 +257,16 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
     ///
     void DrawElementBorder(wxDC &inDC, ElementPtr inElement);
 
+    //////////
+    /// Return true if our game engine is current displayed.
+    ///
+    bool GameEngineIsDisplayed();
+
+    //////////
+    /// Focus our game engine.
+    ///
+    void GameEngineSetFocus();
+
 	//////////
 	/// End an active Wait().
 	///
@@ -287,12 +297,12 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 	//////////
 	/// We've entered an element; update things appropriately.
 	///
-	void EnterElement(ElementPtr inElement, wxPoint &inPosition);
+	void EnterElement(ElementPtr inElement, const wxPoint &inPosition);
 
 	//////////
 	/// We've left an element; update things appropriately.
 	///
-	void LeaveElement(ElementPtr inElement, wxPoint &inPosition);
+	void LeaveElement(ElementPtr inElement, const wxPoint &inPosition);
 
     //////////
     /// Get the current mouse position, relative to the origin of the
@@ -319,7 +329,7 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 	/// Figure out which element we're inside, and figure out what cursor
 	/// we should be displaying now.
 	///
-	void UpdateCurrentElementAndCursor(wxPoint &inPosition);
+	void UpdateCurrentElementAndCursor(const wxPoint &inPosition);
 	void UpdateCurrentElementAndCursor();
 
     //////////

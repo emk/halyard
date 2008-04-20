@@ -196,7 +196,7 @@ END_EVENT_TABLE()
 
 StageFrame::StageFrame(wxSize inSize)
     : SashFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
-                "StageFrame", wxDefaultSize,
+                wxT("StageFrame"), wxDefaultSize,
                 wxDEFAULT_FRAME_STYLE),
 	  mDocument(NULL),
       mAreFullScreenOptionsActive(false),
@@ -204,7 +204,7 @@ StageFrame::StageFrame(wxSize inSize)
 	  mIsUpdatingVideoMode(false)
 {
     // Set up useful logging.
-    mLogWindow = new wxLogWindow(this, "Application Log", FALSE);
+    mLogWindow = new wxLogWindow(this, wxT("Application Log"), FALSE);
 
 	// We create our tool windows on demand.
 	for (int i = 0; i < TOOL_COUNT; i++)
@@ -236,98 +236,100 @@ StageFrame::StageFrame(wxSize inSize)
 
     // Set up our File menu.
     mFileMenu = new wxMenu();
-    mFileMenu->Append(HALYARD_NEW_PROGRAM, "&New Program...\tCtrl+N",
-                      "Create a new Halyard program.");
-    mFileMenu->Append(HALYARD_OPEN_PROGRAM, "&Open Program...\tCtrl+O",
-                      "Open an existing Halyard program.");
-    mFileMenu->Append(HALYARD_SAVE_PROGRAM, "&Save Program\tCtrl+S",
-                      "Save the current Halyard program.");
+    mFileMenu->Append(HALYARD_NEW_PROGRAM, wxT("&New Program...\tCtrl+N"),
+                      wxT("Create a new Halyard program."));
+    mFileMenu->Append(HALYARD_OPEN_PROGRAM, wxT("&Open Program...\tCtrl+O"),
+                      wxT("Open an existing Halyard program."));
+    mFileMenu->Append(HALYARD_SAVE_PROGRAM, wxT("&Save Program\tCtrl+S"),
+                      wxT("Save the current Halyard program."));
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(HALYARD_EDIT_SCRIPTS, "&Edit Scripts\tCtrl+E",
-                      "Edit the Halyard script files for this program.");
-    mFileMenu->Append(HALYARD_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
-                      "Reload the currently executing Halyard scripts.");
+    mFileMenu->Append(HALYARD_EDIT_SCRIPTS, wxT("&Edit Scripts\tCtrl+E"),
+                      wxT("Edit the Halyard script files for this program."));
+    mFileMenu->Append(HALYARD_RELOAD_SCRIPTS, wxT("&Reload Scripts\tCtrl+R"),
+                      wxT("Reload the currently executing Halyard scripts."));
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(HALYARD_RUN_TESTS, "Run &Tests\tCtrl+T",
-                      "Run test cases for Halyard and/or current script.");
+    mFileMenu->Append(HALYARD_RUN_TESTS, wxT("Run &Tests\tCtrl+T"),
+                      wxT("Run test cases for Halyard and/or current script."));
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(HALYARD_EXIT, "E&xit", "Exit the application.");
+    mFileMenu->Append(HALYARD_EXIT, wxT("E&xit"), wxT("Exit the application."));
 
     // Set up our Card menu.
     mCardMenu = new wxMenu();
-    mCardMenu->Append(HALYARD_EDIT_MODE, "&Edit Card\tCtrl+Space",
-                      "Enter or exit card-editing mode.");
-    mCardMenu->Append(HALYARD_EDIT_CARD_SCRIPT, "Edit Card Sc&ript\tAlt+.",
-                      "Edit this card's script.");
-    mCardMenu->Append(HALYARD_JUMP_CARD, "&Jump to Card...\tCtrl+J",
-                      "Jump to a specified card by name.");
-    mCardMenu->Append(HALYARD_STOP_MOVIES, "&Stop Movies\tEsc",
-                      "Stop any playing movies.");
+    mCardMenu->Append(HALYARD_EDIT_MODE, wxT("&Edit Card\tCtrl+Space"),
+                      wxT("Enter or exit card-editing mode."));
+    mCardMenu->Append(HALYARD_EDIT_CARD_SCRIPT, wxT("Edit Card Sc&ript\tAlt+."),
+                      wxT("Edit this card's script."));
+    mCardMenu->Append(HALYARD_JUMP_CARD, wxT("&Jump to Card...\tCtrl+J"),
+                      wxT("Jump to a specified card by name."));
+    mCardMenu->Append(HALYARD_STOP_MOVIES, wxT("&Stop Movies\tEsc"),
+                      wxT("Stop any playing movies."));
 
     // Set up our View menu.  Only include the "Full Screen" item on
 	// platforms where it's likely to work.
     mViewMenu = new wxMenu();
 #if CONFIG_ENABLE_FULL_SCREEN
     mViewMenu->AppendCheckItem(HALYARD_FULL_SCREEN,
-                               "&Full Screen\tCtrl+F",
-                               "Use a full screen window.");
+                               wxT("&Full Screen\tCtrl+F"),
+                               wxT("Use a full screen window."));
     mViewMenu->AppendSeparator();
 #endif // CONFIG_ENABLE_FULL_SCREEN
-    mViewMenu->AppendCheckItem(HALYARD_DISPLAY_XY, "Display Cursor &XY",
-                               "Display the cursor's XY position.");
-    mViewMenu->AppendCheckItem(HALYARD_DISPLAY_GRID, "Display &Grid\tCtrl+G",
-                               "Display a grid over the card.");
+    mViewMenu->AppendCheckItem(HALYARD_DISPLAY_XY, wxT("Display Cursor &XY"),
+                               wxT("Display the cursor's XY position."));
+    mViewMenu->AppendCheckItem(HALYARD_DISPLAY_GRID,
+                               wxT("Display &Grid\tCtrl+G"),
+                               wxT("Display a grid over the card."));
     mViewMenu->AppendCheckItem(HALYARD_DISPLAY_BORDERS,
-                               "Display &Borders\tCtrl+B",
-                               "Display the borders of interactive elements.");
+                               wxT("Display &Borders\tCtrl+B"),
+                               wxT("Display the borders of interactive ")
+                               wxT("elements."));
     mViewMenu->AppendSeparator();
 	mViewMenu->Append(HALYARD_PROPERTIES,
-					  "&Properties...\tAlt+Enter",
-					  "Edit the properties of the selected object.");
+					  wxT("&Properties...\tAlt+Enter"),
+					  wxT("Edit the properties of the selected object."));
 
     // Set up our Window menu.
     mWindowMenu = new wxMenu();
-    mWindowMenu->Append(HALYARD_SHOW_LISTENER, "Show &Listener\tCtrl+L",
-                        "Show interactive script listener.");
-    mWindowMenu->Append(HALYARD_SHOW_TIMECODER, "Show &Timecoder\tCtrl+T",
-                        "Show the movie timecoding utility.");
-    mWindowMenu->Append(HALYARD_SHOW_LOG, "Show &Debug Log",
-                        "Show application debug log window.");
+    mWindowMenu->Append(HALYARD_SHOW_LISTENER, wxT("Show &Listener\tCtrl+L"),
+                        wxT("Show interactive script listener."));
+    mWindowMenu->Append(HALYARD_SHOW_TIMECODER, wxT("Show &Timecoder\tCtrl+T"),
+                        wxT("Show the movie timecoding utility."));
+    mWindowMenu->Append(HALYARD_SHOW_LOG, wxT("Show &Debug Log"),
+                        wxT("Show application debug log window."));
 
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
-    mHelpMenu->Append(HALYARD_ABOUT, "&About",
-                      "About the Halyard multimedia system.");
+    mHelpMenu->Append(HALYARD_ABOUT, wxT("&About"),
+                      wxT("About the Halyard multimedia system."));
 
     // Set up our menu bar.
     mMenuBar = new wxMenuBar();
-    mMenuBar->Append(mFileMenu, "&File");
-    mMenuBar->Append(mCardMenu, "&Card");
-    mMenuBar->Append(mViewMenu, "&View");
-    mMenuBar->Append(mWindowMenu, "&Window");
-    mMenuBar->Append(mHelpMenu, "&Help");
+    mMenuBar->Append(mFileMenu, wxT("&File"));
+    mMenuBar->Append(mCardMenu, wxT("&Card"));
+    mMenuBar->Append(mViewMenu, wxT("&View"));
+    mMenuBar->Append(mWindowMenu, wxT("&Window"));
+    mMenuBar->Append(mHelpMenu, wxT("&Help"));
     SetMenuBar(mMenuBar);
 
     // Add a tool bar.
     CreateToolBar();
     wxToolBar *tb = GetToolBar();
-    tb->AddTool(HALYARD_RELOAD_SCRIPTS, "Reload", wxBITMAP(tb_reload),
-                "Reload Scripts");
+    tb->AddTool(HALYARD_RELOAD_SCRIPTS, wxT("Reload"), wxBITMAP(tb_reload),
+                wxT("Reload Scripts"));
 	mLocationBox = new LocationBox(tb);
 	tb->AddControl(mLocationBox);
     tb->AddSeparator();
-    tb->AddCheckTool(HALYARD_DISPLAY_XY, "Display XY", wxBITMAP(tb_xy),
-                     wxNullBitmap, "Display Cursor XY");
-    tb->AddCheckTool(HALYARD_DISPLAY_GRID, "Display Grid", wxBITMAP(tb_grid),
-                     wxNullBitmap, "Display Grid");
+    tb->AddCheckTool(HALYARD_DISPLAY_XY, wxT("Display XY"), wxBITMAP(tb_xy),
+                     wxNullBitmap, wxT("Display Cursor XY"));
+    tb->AddCheckTool(HALYARD_DISPLAY_GRID, wxT("Display Grid"),
+                     wxBITMAP(tb_grid), wxNullBitmap, wxT("Display Grid"));
     tb->AddCheckTool(HALYARD_DISPLAY_BORDERS,
-                     "Display Borders", wxBITMAP(tb_borders),
-                     wxNullBitmap, "Display Borders");
+                     wxT("Display Borders"), wxBITMAP(tb_borders),
+                     wxNullBitmap, wxT("Display Borders"));
     tb->AddCheckTool(HALYARD_ERRORTRACE_COMPILE,
-                     "Include Backtrace Information After Reload", 
+                     wxT("Include Backtrace Information After Reload"), 
                      wxBITMAP(tb_errortrace),
                      wxNullBitmap, 
-                     "Include Backtrace Information After Reload");
+                     wxT("Include Backtrace Information After Reload"));
     tb->Realize();
         
     // Add a status bar.
@@ -351,12 +353,13 @@ StageFrame::StageFrame(wxSize inSize)
 
 void StageFrame::LoadSashLayout(wxConfigBase *inConfig) {
 	long program_tree_width = mProgramTree->GetMinimumSizeX();
-	inConfig->Read("ProgramTreeWidth", &program_tree_width);
+	inConfig->Read(wxT("ProgramTreeWidth"), &program_tree_width);
 	mProgramTree->SetDefaultWidth(program_tree_width);
 }
 
 void StageFrame::SaveSashLayout(wxConfigBase *inConfig) {
-	inConfig->Write("ProgramTreeWidth", mProgramTree->GetSize().GetWidth());
+	inConfig->Write(wxT("ProgramTreeWidth"),
+                    mProgramTree->GetSize().GetWidth());
 }
 
 #if !wxUSE_DISPLAY
@@ -475,24 +478,24 @@ void StageFrame::ResetVideoMode()
 }
 
 void StageFrame::ComputeResizePrefName() {
-    mResizePrefName = "";
-    size_t count = wxDisplay::GetCount();
-    for (size_t i = 0; i < count; i++) {
+    mResizePrefName = wxT("");
+    int count = wxDisplay::GetCount();
+    for (int i = 0; i < count; i++) {
         // Separate monitors with a colon.
-        if (mResizePrefName != "")
-            mResizePrefName += ":";
+        if (mResizePrefName != wxT(""))
+            mResizePrefName += wxT(":");
 
         // Store width and height for each monitor.
         wxRect r(wxDisplay(i).GetGeometry());
         wxString geometry;
-        geometry.sprintf("%dx%d", r.GetWidth(), r.GetHeight());
+        geometry.sprintf(wxT("%dx%d"), r.GetWidth(), r.GetHeight());
         mResizePrefName += geometry;
 
         // Mark the current display in our list.
         if (i == mCurrentFullScreenDisplayId)
-            mResizePrefName += "*";
+            mResizePrefName += wxT("*");
     }
-    mResizePrefName = "/Resize/" + mResizePrefName;
+    mResizePrefName = wxT("/Resize/") + mResizePrefName;
 }
 
 bool StageFrame::ShouldResizeScreen(bool &outShouldConfirm) {
@@ -589,18 +592,19 @@ void StageFrame::UpdateVideoMode(bool inIsFullScreen, bool inIsIconized) {
 void StageFrame::NewDocument()
 {
 	wxASSERT(mDocument == NULL);
-	wxDirDialog dlg(this, "Add Halyard data to an existing program folder:");
+	wxDirDialog dlg(this,
+                    wxT("Add Halyard data to an existing program folder:"));
 
 	wxConfigBase *config = wxConfigBase::Get();
 	wxString recent;
-	if (config->Read("/Recent/DocPath", &recent))
+	if (config->Read(wxT("/Recent/DocPath"), &recent))
 		dlg.SetPath(recent);
 
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		wxString file = dlg.GetPath();
-		mDocument = new Document(file.mb_str());
-		config->Write("/Recent/DocPath", file);
+		mDocument = new Document(std::string(file.mb_str()));
+		config->Write(wxT("/Recent/DocPath"), file);
 
 		ProgramPropDlg prop_dlg(this, mDocument->GetHalyardProgram());
 		prop_dlg.ShowModal();
@@ -615,9 +619,10 @@ void StageFrame::NewDocument()
 void StageFrame::OpenDocument()
 {
 	wxASSERT(mDocument == NULL);
-	wxFileDialog dlg(this, "Open a Halyard program folder:",
-                     "", "", "Halyard program (application.halyard)|application.halyard",
-                     wxOPEN|wxHIDE_READONLY);
+	wxFileDialog dlg(this, wxT("Open a Halyard program folder:"),
+                     wxT(""), wxT(""),
+                     wxT("Halyard program (application.halyard)|application.halyard"),
+                     wxOPEN);
 
     // Set the dialog's default path to the current working directory,
     // if it appears to be a program (contains a application.halyard
@@ -628,8 +633,9 @@ void StageFrame::OpenDocument()
         FileSystem::GetBaseDirectory().AddComponent("application.halyard");
     
     if (data_file.DoesExist()) 
-        dlg.SetPath(data_file.ToNativePathString().c_str());
-	else if (config->Read("/Recent/DocPath", &recent))
+        dlg.SetPath(wxString(data_file.ToNativePathString().c_str(),
+                             wxConvLocal));
+	else if (config->Read(wxT("/Recent/DocPath"), &recent))
 		dlg.SetPath(recent);
 
 	if (dlg.ShowModal() == wxID_OK)
@@ -642,12 +648,12 @@ void StageFrame::OpenDocument()
 
         // We want the full path here--not just the directory--to save
         // typing the next time the user opens this document.
-		config->Write("/Recent/DocPath", dlg.GetPath());
+		config->Write(wxT("/Recent/DocPath"), dlg.GetPath());
 	}
 }
 
 void StageFrame::OpenDocument(const wxString &inDirPath) {
-    mDocument = new Document(inDirPath.mb_str(), Document::OPEN);
+    mDocument = new Document(std::string(inDirPath.mb_str()), Document::OPEN);
     SetObject(mDocument->GetHalyardProgram());
     mProgramTree->RegisterDocument(mDocument);
     CrashReporter::GetInstance()->RegisterDocument(mDocument);
@@ -701,23 +707,27 @@ void StageFrame::ObjectChanged()
     // TODO - Creating the directory should be handled by FileSystem,
     // but it doesn't know how, and can't see wxMkdir.
     FileSystem::SetScriptDataDirectoryName(data_dir);
-    wxString script_data_dir =
-        FileSystem::GetScriptDataDirectory().ToNativePathString().c_str();
-    if (!::wxDirExists(script_data_dir) && !::wxMkdir(script_data_dir))
-        gLog.FatalError(("Can't create " + script_data_dir).mb_str());
+    wxString script_data_dir(
+        FileSystem::GetScriptDataDirectory().ToNativePathString().c_str(),
+        wxConvLocal);
+    if (!::wxDirExists(script_data_dir) && !::wxMkdir(script_data_dir)) {
+        std::string err((wxT("Can't create ") + script_data_dir).mb_str());
+        gLog.FatalError(err.c_str());
+    }
 
     // Update our application name.
     if (TInterpreterManager::IsInRuntimeMode()) {
         // If we're in runtime mode, only show the name of the script in
         // the task bar, and change our application name appropriately.
-        wxGetApp().SetAppName(script_name.c_str());
+        wxGetApp().SetAppName(wxString(script_name.c_str(), wxConvLocal));
         SetTitle(wxGetApp().GetAppName());
     } else {
         // If we're in edit mode, show the name of the application and
         // the path of the document, too.
-        SetTitle(wxString(script_name.c_str()) +
-			     " - " + wxGetApp().GetAppName() + " - [" +
-                 wxString(mDocument->GetSavePath().c_str()) + "]");
+        SetTitle(wxString(script_name.c_str(), wxConvLocal) +
+			     wxT(" - ") + wxGetApp().GetAppName() + wxT(" - [") +
+                 wxString(mDocument->GetSavePath().c_str(), wxConvLocal) +
+                 wxT("]"));
     }
 }
 
@@ -869,20 +879,20 @@ void StageFrame::OnReloadScripts(wxCommandEvent &inEvent)
 }
 
 void StageFrame::NotifyReloadScriptStarting() {
-    SetStatusText("Reloading script.");
+    SetStatusText(wxT("Reloading script."));
     mReloadStopWatch.Start();
 
 }
 
 void StageFrame::NotifyReloadScriptSucceeded() {
     wxString msg;
-    msg.Printf("Script reloaded (%.1f seconds).",
+    msg.Printf(wxT("Script reloaded (%.1f seconds)."),
                mReloadStopWatch.Time() / 1000.0);
     SetStatusText(msg);
 }
 
 void StageFrame::NotifyReloadScriptFailed() {
-    SetStatusText("Could not reload script.");
+    SetStatusText(wxT("Could not reload script."));
 }
 
 void StageFrame::OnRunTests(wxCommandEvent &inEvent)
@@ -893,9 +903,9 @@ void StageFrame::OnRunTests(wxCommandEvent &inEvent)
 void StageFrame::OnAbout(wxCommandEvent &inEvent)
 {
     wxMessageDialog about(this,
-                          VERSION_STRING "\n"
-                          HALYARD_COPYRIGHT_NOTICE,
-                          "About Halyard", wxOK);
+                          wxT(VERSION_STRING) wxT("\n")
+                          wxT(HALYARD_COPYRIGHT_NOTICE),
+                          wxT("About Halyard"), wxOK);
     about.ShowModal();
 }
 
@@ -1008,9 +1018,9 @@ void StageFrame::UpdateUiEditMode(wxUpdateUIEvent &inEvent)
 	{
 		inEvent.Enable(TRUE);
 		if (mStage->IsInEditMode())
-			inEvent.SetText("&Run Card\tCtrl+Space");
+			inEvent.SetText(wxT("&Run Card\tCtrl+Space"));
 		else
-			inEvent.SetText("&Edit Card\tCtrl+Space");
+			inEvent.SetText(wxT("&Edit Card\tCtrl+Space"));
 	}
 	else
 	{
@@ -1035,7 +1045,7 @@ void StageFrame::OnEditCardScript(wxCommandEvent &inEvent) {
     TInterpreter *interp = TInterpreter::GetInstance();
     std::string name = interp->CurCardName();
     ASSERT(name != "");
-    ScriptEditor::ShowDefinition(name.c_str());
+    ScriptEditor::ShowDefinition(wxString(name.c_str(), wxConvLocal));
 }
 
 void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
@@ -1049,7 +1059,7 @@ void StageFrame::OnJumpCard(wxCommandEvent &inEvent)
 		mLocationBox->Prompt();
 	else
 	{
-		wxTextEntryDialog dialog(this, "Jump to Card", "Card:");
+		wxTextEntryDialog dialog(this, wxT("Jump to Card"), wxT("Card:"));
 		if (dialog.ShowModal() == wxID_OK)
 			mLocationBox->TryJump(dialog.GetValue());
 	}
@@ -1110,12 +1120,12 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
 		if (!inEvent.CanVeto())
 		{
 			mDocument->Save();
-			wxLogError("Halyard forced to exit; saved document.");
+			wxLogError(wxT("Halyard forced to exit; saved document."));
 		}
 		else
 		{
-			wxMessageDialog dlg(this, "Save current Halyard program?",
-								"Halyard", wxYES_NO|wxCANCEL|wxCENTRE|
+			wxMessageDialog dlg(this, wxT("Save current Halyard program?"),
+								wxT("Halyard"), wxYES_NO|wxCANCEL|wxCENTRE|
 								wxICON_EXCLAMATION);
 			int button = dlg.ShowModal();
 			if (button == wxID_YES)

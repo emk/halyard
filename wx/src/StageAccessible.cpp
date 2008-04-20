@@ -35,6 +35,8 @@ using namespace Halyard;
 //  accessibility.  There's a lot of background reading you'll need to do
 //  before any of this really makes sense.
 
+#if wxUSE_ACCESSIBILITY
+
 /// Create a new StageAccessible object.
 StageAccessible::StageAccessible(Stage *stage)
     : mStage(stage)
@@ -56,3 +58,4 @@ wxAccStatus StageAccessible::GetChild(int childId, wxAccessible** child) {
     return wxACC_OK;
 }
 
+#endif // wxUSE_ACCESSIBILITY
