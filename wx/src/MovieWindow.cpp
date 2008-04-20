@@ -49,18 +49,23 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
 
     // Create() our actual window *after* all our options are set up.
     Create(inParent, inID, inPos, inSize, inWindowStyle, inName);
-	wxLogTrace(TRACE_STAGE_DRAWING, "Created movie window.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Created movie window."));
 }
 
 MovieWindow::~MovieWindow()
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, "Destroyed movie window.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Destroyed movie window."));
 }
 
 void MovieWindow::SetMovie(const wxString &inName)
 {
-	wxLogWarning("Movies not supported; skipping \"%s\".",
-				 (const char *) inName);
+    // Here, we use wxString::c_str(), because we want to return either a
+    // const char * or a const wchar_t *, depending on whether or not we
+    // are in Unicode mode.  I can't find any documentation on wxLogWarning
+    // in Unicode mode, but I Googled around and found the following code
+    // which uses wxLogDebug with c_str:
+    // http://wxcode.sourceforge.net/components/wxmswres/src/wxmswres.cpp
+	wxLogWarning(wxT("Movies not supported; skipping \"%s\"."), inName.c_str());
 }
 
 MovieFrame MovieWindow::GetFrame()

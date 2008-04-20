@@ -52,10 +52,10 @@ libhalyardgui_a_SOURCES = \
 	LightweightAccessible.cpp LightweightAccessible.h \
 	LightweightElement.cpp LightweightElement.h \
 	Listener.cpp Listener.h \
-	LocationBox.cpp LocationBox.h
-#	MediaElement.cpp MediaElement.h \
-#	MovieElement.cpp MovieElement.h \
-#	MovieWindow.cpp MovieWindow.h \
+	LocationBox.cpp LocationBox.h \
+	MediaElement.cpp MediaElement.h \
+	MovieElement.cpp MovieElement.h \
+	MovieWindow.cpp MovieWindow.h
 #	Overlay.cpp Overlay.h \
 #	ProgramTree.cpp ProgramTree.h \
 #	SashFrame.cpp SashFrame.h \

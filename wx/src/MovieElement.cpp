@@ -47,8 +47,8 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
         // Log this exception.  We'll report it in our Idle() method,
         // because many movie errors occur after playback has started, so
         // it's more consistent to handle this one that way.
-        gLog.Log("Movie error: %s for %s", e.what(),
-                 inLocation.mb_str());
+        std::string location(inLocation.mb_str());
+        gLog.Log("Movie error: %s for %s", e.what(), location.c_str());
     }
 	InitializeWidgetWindow(mMovieWindow);
 }
