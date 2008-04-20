@@ -48,7 +48,9 @@
 #if CONFIG_HAVE_QUAKE2
 #	include "TQuake2Primitives.h"
 #endif // CONFIG_HAVE_QUAKE2
-#include "AudioStream.h"
+#if CONFIG_HAVE_AUDIOSTREAMS
+#	include "AudioStream.h"
+#endif // CONFIG_HAVE_AUDIOSTREAMS
 #include "Downloader.h"
 #include "Stage.h"
 #include "CommandLine.h"
@@ -166,7 +168,8 @@ void HalyardApp::PrepareForCrash() {
     ShowSystemWindows();
 }
 
-void HalyardApp::ErrorDialog(const char* inTitle, const char *inMessage) {
+void HalyardApp::ErrorDialog(const wxString &inTitle, const wxString &inMessage)
+{
     // TODO: Several of the callers of this function should be
     // calling the new TLogger::EnvironmentError instead.
     wxMessageDialog dlg(NULL, inMessage, inTitle, wxOK|wxICON_ERROR);
@@ -177,7 +180,7 @@ void HalyardApp::ReportFatalException(std::exception &e) {
     if (mLogsAreInitialized) {
         TException::ReportFatalException(e);
     } else {
-        ErrorDialog("Unexpected Error", e.what());
+        ErrorDialog(wxT("Unexpected Error"), wxString(e.what(), wxConvLocal));
         exit(1);
     }
 }
@@ -186,7 +189,7 @@ void HalyardApp::ReportFatalException() {
     if (mLogsAreInitialized) {
         TException::ReportFatalException();
     } else {
-        ErrorDialog("Unexpected Error", "An unknown error occurred.");
+        ErrorDialog(wxT("Unexpected Error"), wxT("An unknown error occurred."));
         exit(1);
     }
 }
@@ -237,14 +240,14 @@ bool HalyardApp::OnInit() {
     BEGIN_EXCEPTION_TRAPPER();
 
     // Name our application.
-    SetAppName(SHORT_NAME);
+    SetAppName(wxString(SHORT_NAME, wxConvLocal));
     
     // Turn off default use of wxCLIP_CHILDREN.  While wxCLIP_CHILDREN
     // is a very nice feature, we currently rely on Stage repaints
     // overwriting MovieWindowQT objects to make them "transparent"
     // until the movie starts playing.  Yes, this is hackish behavior,
     // but right now, we're tuned for it.
-    wxSystemOptions::SetOption("msw.window.no-clip-children", 1);
+    wxSystemOptions::SetOption(wxT("msw.window.no-clip-children"), 1);
 
     // Figure out where we can store log files and such.
     wxString dir(wxStandardPaths::Get().GetUserDataDir());
@@ -252,20 +255,22 @@ bool HalyardApp::OnInit() {
         // We need to use this error dialog routine because we haven't
         // initialized our logging subsystem yet, and we can't call
         // gLog.FatalError(...).
-        ErrorDialog("Cannot Create Directory", "Unable to create " + dir);
+        ErrorDialog(wxT("Cannot Create Directory"),
+                    wxT("Unable to create ") + dir);
         return false;
     }
-    FileSystem::SetAppDataDirectory(dir.mb_str());
+    FileSystem::SetAppDataDirectory(std::string(dir.mb_str()));
     
     // Figure out where we can store our large, machine-specific files.
     // TODO - Refactor out code shared with above, if it will actually gain
     // us anything.
     wxString local_dir(wxStandardPaths::Get().GetUserLocalDataDir());
     if (!::wxDirExists(local_dir) && !::wxMkdir(local_dir)) {
-        ErrorDialog("Cannot Create Directory", "Unable to create " + local_dir);
+        ErrorDialog(wxT("Cannot Create Directory"),
+                    wxT("Unable to create ") + local_dir);
         return false;
     }
-    FileSystem::SetAppLocalDataDirectory(local_dir.mb_str());
+    FileSystem::SetAppLocalDataDirectory(std::string(local_dir.mb_str()));
 
     // Get the Halyard runtime going.
     ::InitializeCommonCode(new FancyCrashReporter());
@@ -295,17 +300,19 @@ bool HalyardApp::OnInit() {
         // We don't call gLog.FatalError here, because this isn't
         // really an error, it's a configuration problem, and we don't
         // really want crash reports about it.
-        ErrorDialog("QuickTime Unavailable",
-                    "Could not set up QuickTime. Please "
-                    "make sure QuickTime is properly installed.");
+        ErrorDialog(wxT("QuickTime Unavailable"),
+                    wxT("Could not set up QuickTime. Please ")
+                    wxT("make sure QuickTime is properly installed."));
         return false;
     }
     RegisterQuickTimePrimitives();
 #endif // CONFIG_HAVE_QUICKTIME
     
+#if CONFIG_HAVE_AUDIOSTREAMS
     // Start up our audio synthesis layer.
     AudioStream::InitializeStreams();
-    
+#endif // CONFIG_HAVE_AUDIOSTREAMS
+
     // Initialize some optional wxWindows features.
     ::wxInitAllImageHandlers();
     wxFileSystem::AddHandler(new wxInternetFSHandler);
@@ -317,14 +324,16 @@ bool HalyardApp::OnInit() {
     InitXmlResource();
     
     // Parse our command-line arguments.
-	size_t ac; char **av;
-    for (ac = argc-1, av = argv+1; ac > 0; --ac, ++av) {   
-        if (ac >= 2 && av[0] == std::string("-e")) {
-            TInterpreterManager::SetInitialCommand(av[1]);
+	size_t ac; wxChar **av;
+    for (ac = argc-1, av = argv+1; ac > 0; --ac, ++av) {
+        wxString arg(av[0]);
+        if (ac >= 2 && arg == wxT("-e")) {
+            wxString next(av[1]);
             --ac, ++av;
+            TInterpreterManager::SetInitialCommand(std::string(next.mb_str()));
         } else {
             TInterpreterManager::SetRuntimeMode(true);
-            mArgScript = av[0];
+            mArgScript = arg;
         }
     }
 
@@ -356,8 +365,10 @@ int HalyardApp::OnExit() {
     // Make sure we put back the taskbar, etc.
     ShowSystemWindows();
 
+#if CONFIG_HAVE_AUDIOSTREAMS
 	// Shut down our audio synthesis layer.
 	AudioStream::ShutDownStreams();
+#endif // CONFIG_HAVE_AUDIOSTREAMS
     
     // Shut down QuickTime.  wxWindows guarantees to have destroyed
     // all windows and frames by this point.

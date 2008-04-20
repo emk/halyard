@@ -84,7 +84,7 @@ class HalyardApp : public wxApp
     //////////
     /// Display a generic error dialog.
     ///
-    void ErrorDialog(const char* inTitle, const char *inMessage);
+    void ErrorDialog(const wxString &inTitle, const wxString &inMessage);
 
     //////////
     /// Report a fatal exception to whatever layer of error-handling
