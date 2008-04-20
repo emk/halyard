@@ -38,13 +38,14 @@ BEGIN_EVENT_TABLE(Listener, ToolWindow)
 END_EVENT_TABLE()
 
 Listener::Listener(StageFrame *inStageFrame)
-    : ToolWindow(inStageFrame, TOOL_LISTENER, "Listener", wxICON(ic_listener))
+    : ToolWindow(inStageFrame, TOOL_LISTENER, wxT("Listener"),
+                 wxICON(ic_listener))
 {
-    mHistory = new wxTextCtrl(this, -1, "", wxDefaultPosition,
+    mHistory = new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
 							  wxDefaultSize,
 							  wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
 	// Use a history text control, so we can have a command history
-    mInput = new HistoryTextCtrl(this, HALYARD_LISTENER_TEXT_ENTRY, "",
+    mInput = new HistoryTextCtrl(this, HALYARD_LISTENER_TEXT_ENTRY, wxT(""),
 								 wxDefaultPosition, wxDefaultSize,
 								 wxTE_PROCESS_ENTER);
 
@@ -86,7 +87,7 @@ void Listener::UpdateUiInput(wxUpdateUIEvent &inEvent)
 
 void Listener::OnTextEnter(wxCommandEvent &inEvent)
 {
-    if (inEvent.GetString() == "")
+    if (inEvent.GetString() == wxT(""))
 		inEvent.Skip();
     else
     {
@@ -96,29 +97,33 @@ void Listener::OnTextEnter(wxCommandEvent &inEvent)
 		wxString input = inEvent.GetString();
 		mHistory->SetDefaultStyle(wxTextAttr(*wxBLACK, wxNullColour,
 											 mBoldFont));
-		mHistory->AppendText(input + "\n");
+		mHistory->AppendText(input + wxT("\n"));
 	
 		// Talk to the interpreter.
 		std::string result;
 		bool ok =
-			TInterpreter::GetInstance()->Eval((const char *) input, result);
+			TInterpreter::GetInstance()->Eval(std::string(input.mb_str()),
+                                              result);
 		
 		// Print the interpreter's output.
 		if (ok)
 		{
 			mHistory->SetDefaultStyle(wxTextAttr(*wxBLUE, wxNullColour,
 												 mNormalFont));
-			mHistory->AppendText("==> " + wxString(result.c_str()) + "\n\n");
+			mHistory->AppendText(wxT("==> ") +
+                                 wxString(result.c_str(), wxConvLocal) +
+                                 wxT("\n\n"));
 		}
 		else
 		{
 			mHistory->SetDefaultStyle(wxTextAttr(*wxRED, wxNullColour,
 												 mNormalFont));
-			mHistory->AppendText("ERROR: " + wxString(result.c_str()) +
-								 "\n\n");
+			mHistory->AppendText(wxT("ERROR: ") +
+                                 wxString(result.c_str(), wxConvLocal) +
+								 wxT("\n\n"));
 		}
 		
 		// Clear our input field.
-		mInput->SetValue("");
+		mInput->SetValue(wxT(""));
     }
 }

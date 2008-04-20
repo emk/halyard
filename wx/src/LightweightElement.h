@@ -45,7 +45,10 @@ class LightweightElement : public Element {
     bool mIsShown;
     bool mWantsCursor;
     bool mIsInDragLayer;
+
+#if wxUSE_ACCESSIBILITY
     shared_ptr<wxAccessible> mAccessible;
+#endif // wxUSE_ACCESSIBILITY
 	
 public:
 	LightweightElement(Stage *inStage, const wxString &inName,
@@ -65,7 +68,9 @@ public:
     virtual bool IsInDragLayer() const;
     virtual void SetInDragLayer(bool inDragLayer);
 
+#if wxUSE_ACCESSIBILITY
     virtual wxAccessible *GetAccessible() { return mAccessible.get(); }
+#endif // wxUSE_ACCESSIBILITY
 };
 
 #endif // LightweightElement_H

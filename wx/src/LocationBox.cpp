@@ -60,7 +60,7 @@ LocationBox::LocationBox(wxToolBar *inParent)
 #else // !CONFIG_LOCATION_BOX_IS_COMBO
 
 LocationBox::LocationBox(wxToolBar *inParent)
-	: wxTextCtrl(inParent, HALYARD_LOCATION_BOX, "", wxDefaultPosition,
+	: wxTextCtrl(inParent, HALYARD_LOCATION_BOX, wxT(""), wxDefaultPosition,
 				 wxSize(200, -1), wxTE_PROCESS_ENTER)
 {
 }
@@ -106,7 +106,8 @@ void LocationBox::TryJump(const wxString &inCardName)
     if (stage->CanJump())
 	{
 		// If the specified card exists, add it to our list.
-		if (TInterpreter::GetInstance()->IsValidCard(inCardName))
+        std::string card_name(inCardName.mb_str());
+		if (TInterpreter::GetInstance()->IsValidCard(card_name.c_str()))
 			RegisterCard(inCardName);
 
 		// Jump to the specified card, or display an error if it

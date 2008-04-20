@@ -46,13 +46,13 @@ libhalyardgui_a_SOURCES = \
 	EventDispatcher.cpp EventDispatcher.h \
 	FancyStatusBar.cpp FancyStatusBar.h \
 	GuiUtil.cpp GuiUtil.h \
-	HistoryText.cpp HistoryText.h
-#	ImageCache.cpp ImageCache.h \
-#	InvisibleElement.h \
-#	LightweightAccessible.cpp LightweightAccessible.h \
-#	LightweightElement.cpp LightweightElement.h \
-#	Listener.cpp Listener.h \
-#	LocationBox.cpp LocationBox.h \
+	HistoryText.cpp HistoryText.h \
+	ImageCache.cpp ImageCache.h \
+	InvisibleElement.h \
+	LightweightAccessible.cpp LightweightAccessible.h \
+	LightweightElement.cpp LightweightElement.h \
+	Listener.cpp Listener.h \
+	LocationBox.cpp LocationBox.h
 #	MediaElement.cpp MediaElement.h \
 #	MovieElement.cpp MovieElement.h \
 #	MovieWindow.cpp MovieWindow.h \

@@ -99,7 +99,7 @@ void ImageCache::RequireFreeSpace(size_t inSpaceNeeded)
 
 wxBitmap ImageCache::GetBitmap(wxString inPath)
 {
-    std::string path = inPath.mb_str();
+    std::string path(inPath.mb_str());
     
     // Look for the image in our cache.
     Cache::iterator found = mCache.find(path);

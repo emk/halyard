@@ -25,6 +25,7 @@
 
 #include <wx/access.h>
 
+#if wxUSE_ACCESSIBILITY
 
 /// Custom accessibility interface for LightweightElement.  Used by
 /// screen-readers and other accessibility tools to learn about a specific
@@ -44,4 +45,5 @@ public:
     wxAccStatus GetLocation(wxRect& rect, int elementId);
 };
 
+#endif // wxUSE_ACCESSIBILITY
 #endif // LightweightAccessible_H

@@ -74,6 +74,8 @@ using namespace Halyard;
 //  AccExplorer and related tools.  For serious work, you'll need a screen
 //  reader license.
 
+#if wxUSE_ACCESSIBILITY
+
 /// Create a new LightweightAccessible object.
 LightweightAccessible::LightweightAccessible(LightweightElement *element)
     : mElement(element)
@@ -129,3 +131,5 @@ wxAccStatus LightweightAccessible::GetLocation(wxRect& rect, int elementId) {
     ASSERT(elementId == 0);
     return wxACC_NOT_IMPLEMENTED;
 }
+
+#endif // wxUSE_ACCESSIBILITY
