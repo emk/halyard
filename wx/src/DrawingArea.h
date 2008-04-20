@@ -24,7 +24,10 @@
 #define DrawingArea_H
 
 class Stage;
+
+#if CONFIG_HAVE_QUAKE2
 class wxQuake2Overlay;
+#endif // CONFIG_HAVE_QUAKE2
 
 /// An object which can be drawn to by scripts.
 class DrawingArea : public GraphicsTools::Image {
@@ -32,7 +35,10 @@ class DrawingArea : public GraphicsTools::Image {
 	wxRect mBounds;
     wxBitmap mPixmap;
     bool mIsShown;
+
+#if CONFIG_HAVE_QUAKE2
     shared_ptr<wxQuake2Overlay> mQuake2Overlay;
+#endif // CONFIG_HAVE_QUAKE2
 
     //////////
     /// Returns true if this DrawingArea has an area of zero.
@@ -44,12 +50,14 @@ class DrawingArea : public GraphicsTools::Image {
     ///
 	void InitializePixmap(bool inHasAlpha);
 
+#if CONFIG_HAVE_QUAKE2
     ///////////
     /// Initialize the Quake 2 overlay object associated with this drawing
     /// area.  We'll only call this function if we are floating this
     /// DrawingArea over Quake 2.
     ///
     void InitializeQuake2Overlay();
+#endif // CONFIG_HAVE_QUAKE2
 
 	//////////
 	/// Invalidate the specified rectangle.

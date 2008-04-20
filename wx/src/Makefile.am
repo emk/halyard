@@ -36,8 +36,8 @@ libhalyardgui_a_SOURCES = \
 	dlg/StartupDlg.cpp dlg/StartupDlg.h \
 	dlg/XrcDlg.cpp dlg/XrcDlg.h \
 	DocNotebook.cpp DocNotebook.h \
-	Downloader.cpp Downloader.h
-#	DrawingArea.cpp DrawingArea.h \
+	Downloader.cpp Downloader.h \
+	DrawingArea.cpp DrawingArea.h
 #	DrawingAreaOpt.cpp DrawingAreaOpt.h \
 #	DrawingContextStack.cpp DrawingContextStack.h \
 #	EditBox.cpp EditBox.h \

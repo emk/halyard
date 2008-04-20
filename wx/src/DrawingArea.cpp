@@ -25,7 +25,10 @@
 #include "DrawingAreaOpt.h"
 #include "Stage.h"
 #include "CommonWxConv.h"
+
+#if CONFIG_HAVE_QUAKE2
 #include "Quake2Engine.h"
+#endif // CONFIG_HAVE_QUAKE2
 
 using namespace Halyard;
 
@@ -64,9 +67,13 @@ void DrawingArea::InitializePixmap(bool inHasAlpha) {
 		mPixmap.UseAlpha();
 	Clear();
 
+#if CONFIG_HAVE_QUAKE2
     if (Quake2Engine::HaveInstance())
         InitializeQuake2Overlay();
+#endif // CONFIG_HAVE_QUAKE2
 }
+
+#if CONFIG_HAVE_QUAKE2
 
 void DrawingArea::InitializeQuake2Overlay()
 {
@@ -102,6 +109,8 @@ void DrawingArea::InitializeQuake2Overlay()
     mQuake2Overlay = ptr;
 }
 
+#endif // CONFIG_HAVE_QUAKE2
+
 void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
                                  bool inHasPixmapChanged)
 {
@@ -113,8 +122,10 @@ void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
     r.Intersect(wxRect(wxPoint(0, 0),
                        mBounds.GetSize()));
 	if (!r.IsEmpty()) {
+#if CONFIG_HAVE_QUAKE2
         if (inHasPixmapChanged && mQuake2Overlay)
             mQuake2Overlay->DirtyRect(r);
+#endif // CONFIG_HAVE_QUAKE2
 	    r.Offset(mBounds.GetPosition());
 	    mStage->InvalidateRect(r);
 	}
@@ -126,9 +137,11 @@ void DrawingArea::InvalidateDrawingArea(bool inHasPixmapChanged) {
 }
 
 void DrawingArea::SetSize(const wxSize &inSize) {
+#if CONFIG_HAVE_QUAKE2
     // If we have a Quake 2 overlay, get rid of it.
     if (mQuake2Overlay)
         mQuake2Overlay = shared_ptr<wxQuake2Overlay>();
+#endif // CONFIG_HAVE_QUAKE2
 
     // Invalidate the rectangle covered by our original size.
     InvalidateDrawingArea(false);
@@ -147,8 +160,10 @@ void DrawingArea::SetSize(const wxSize &inSize) {
 void DrawingArea::Show(bool inShow) {
     if (inShow != mIsShown) {
         mIsShown = inShow;
+#if CONFIG_HAVE_QUAKE2
         if (mQuake2Overlay)
             mQuake2Overlay->Show(inShow);
+#endif // CONFIG_HAVE_QUAKE2
         InvalidateDrawingArea(false);
     }
 }
@@ -156,8 +171,10 @@ void DrawingArea::Show(bool inShow) {
 void DrawingArea::MoveTo(const wxPoint &inPoint) {
     InvalidateDrawingArea(false);
     mBounds = wxRect(inPoint, mBounds.GetSize());
+#if CONFIG_HAVE_QUAKE2
     if (mQuake2Overlay)
         mQuake2Overlay->MoveTo(inPoint);
+#endif // CONFIG_HAVE_QUAKE2
     InvalidateDrawingArea(false);
 }
 
