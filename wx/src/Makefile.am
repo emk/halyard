@@ -1,5 +1,10 @@
 AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I../../Common
-AM_CXXFLAGS = $(MZSCHEME_CFLAGS)
+# We turn off deprecated function warnings, because we're currently trying
+# to compile the same code base under both wxWidgets 2.6 and 2.8, and we
+# want all _other_ warnings to abort the compilation process, thanks to
+# -Werror.  We can remove -Wno-deprecated-declarations once we port the
+# official Windows build to 2.8.
+AM_CXXFLAGS = $(MZSCHEME_CFLAGS) -Wno-deprecated-declarations
 
 # Until we can actually compile all our source files, build a library
 # instead of an application.
@@ -29,9 +34,9 @@ libhalyardgui_a_SOURCES = \
 	dlg/ProgramPropDlg.cpp dlg/ProgramPropDlg.h \
 	dlg/PropertyDlg.cpp dlg/PropertyDlg.h \
 	dlg/StartupDlg.cpp dlg/StartupDlg.h \
-	dlg/XrcDlg.cpp dlg/XrcDlg.h
-#	DocNotebook.cpp DocNotebook.h \
-#	Downloader.cpp Downloader.h \
+	dlg/XrcDlg.cpp dlg/XrcDlg.h \
+	DocNotebook.cpp DocNotebook.h \
+	Downloader.cpp Downloader.h
 #	DrawingArea.cpp DrawingArea.h \
 #	DrawingAreaOpt.cpp DrawingAreaOpt.h \
 #	DrawingContextStack.cpp DrawingContextStack.h \

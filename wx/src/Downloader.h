@@ -33,8 +33,8 @@ public:
 	void Cancel();
 protected:
 	wxFileOutputStream m_out;
-	CURL *m_request;
 	std::string m_url;
+	CURL *m_request;
 	bool m_shouldCancel;
 	
 	friend size_t WriteToFile(char* ptr, size_t size, size_t nmemb, 

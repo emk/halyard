@@ -29,7 +29,9 @@ using namespace Halyard;
 
 Download::Download(const std::string &url, const std::string &file, 
 				   CURL *request) 
-: m_out(file.c_str()), m_url(url), m_request(request), m_shouldCancel(false) { 
+    : m_out(wxString(file.c_str(), wxConvLocal)), m_url(url),
+      m_request(request), m_shouldCancel(false)
+{
 }
 
 // TODO - add exception handler? 

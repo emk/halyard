@@ -21,6 +21,7 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+#include "AppGraphics.h"
 #include "HalyardApp.h"
 #include "AppGlobals.h"
 #include "DocNotebook.h"
@@ -108,12 +109,12 @@ void DocNotebook::UpdateFrameTitle() {
             // According to Windows standards, we should display the name
             // of the document followed by the name of the application.
             new_title += (doc->GetDocumentTitleAndDirtyFlag() +
-                          " - " + wxGetApp().GetAppName());
+                          wxT(" - ") + wxGetApp().GetAppName());
 
             // If we have a path name, add it to be polite.
             wxString path = doc->GetDocumentPath();
-            if (path != "")
-                new_title += " - [" + path + "]";
+            if (path != wxT(""))
+                new_title += wxT(" - [") + path + wxT("]");
         }
 
         // Update the frame title if necessary.
@@ -178,7 +179,8 @@ bool DocNotebook::MaybeCloseTab() {
 
     // Verify the closing of this tab.
     if (tab->GetDocumentDirty())
-        if (!tab->MaybeSave(true, "Close File", "Save \"%s\" before closing?"))
+        if (!tab->MaybeSave(true, wxT("Close File"),
+                            wxT("Save \"%s\" before closing?")))
             return false;
 
 	// Remove the document from our internal list.
@@ -226,10 +228,10 @@ bool DocNotebook::MaybeSaveAll(bool canVeto, const wxString &title,
 wxString DocNotebook::GetNextUntitledDocumentName() {
     mUntitledDocumentCount++;
     if (mUntitledDocumentCount == 1) {
-        return "Untitled";
+        return wxT("Untitled");
     } else {
         wxString result;
-        result.Printf("Untitled %d", mUntitledDocumentCount);
+        result.Printf(wxT("Untitled %d"), mUntitledDocumentCount);
         return result;
     }
 }
@@ -291,7 +293,7 @@ void DocNotebook::OnUpdateUiCloseTab(wxUpdateUIEvent &event) {
 
 DocNotebookTab::DocNotebookTab(DocNotebook *parent)
     : mParent(parent), mBar(NULL),
-      mDocumentTitle("<no title>"), mDocumentDirty(false),
+      mDocumentTitle(wxT("<no title>")), mDocumentDirty(false),
       mTabRightEdge(0)
 {
 }
@@ -321,7 +323,8 @@ bool DocNotebookTab::MaybeSave(bool canVeto, const wxString &title,
     } else {
         // Add the name of our document to the prompt.
         wxString full_prompt;
-        full_prompt.Printf(prompt, GetDocumentTitle());
+        std::string doc_title(GetDocumentTitle().mb_str());
+        full_prompt.Printf(prompt, doc_title.c_str());
 
         // Prompt the user.
         wxMessageDialog dlg(GetDocumentWindow(), full_prompt, title,
@@ -375,7 +378,7 @@ bool DocNotebookTab::GetDocumentDirty() const {
 
 wxString DocNotebookTab::GetDocumentTitleAndDirtyFlag() const {
     if (GetDocumentDirty())
-        return GetDocumentTitle() + "*";
+        return GetDocumentTitle() + wxT("*");
     else
         return GetDocumentTitle();
 }
@@ -496,7 +499,7 @@ wxCoord DocNotebookBar::UpdateBarHeight() {
     {
         wxClientDC dc(this);
         dc.SetFont(GetGuiFont(false));
-        dc.GetTextExtent("W", &junk, &text_height);
+        dc.GetTextExtent(wxT("W"), &junk, &text_height);
     }
     wxCoord bar_height = TOP_PAD + text_height + BOTTOM_PAD;
 
@@ -664,7 +667,7 @@ void DocNotebookBar::OnIdle(wxIdleEvent &event) {
 void DocNotebookBar::OnMouseMove(wxMouseEvent &event) {
     // Prelight buttons.
     ButtonId current = GetButtonForPoint(event.GetPosition());
-    for (size_t i = 0; i < BUTTON_COUNT; i++) {
+    for (int i = 0; i < BUTTON_COUNT; i++) {
         if (mButtonStates[i] != STATE_DISABLED) {
             ButtonState new_state;
             if (current == i && mGrabbedButton == current)
@@ -688,6 +691,7 @@ void DocNotebookBar::DoButtonPressed(ButtonId buttonId) {
     switch (buttonId) {
         case BUTTON_LEFT: ScrollTabs(100); break;
         case BUTTON_RIGHT: ScrollTabs(-100); break;
+        default: break;
     }
 }
 
@@ -697,6 +701,7 @@ void DocNotebookBar::DoButtonHeld(ButtonId buttonId) {
     switch (buttonId) {
         case BUTTON_LEFT: ScrollTabs(30); break;
         case BUTTON_RIGHT: ScrollTabs(-30); break;
+        default: break;
     }
 }
 
@@ -705,6 +710,7 @@ void DocNotebookBar::DoButtonReleased(ButtonId buttonId) {
         return;
     switch (buttonId) {
         case BUTTON_CLOSE: mNotebook->MaybeCloseTab(); break;
+        default: break;
     }
 }
 

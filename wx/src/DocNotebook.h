@@ -117,6 +117,7 @@ class DocNotebookTab : boost::noncopyable {
 
 protected:
     DocNotebookTab(DocNotebook *parent);
+    virtual ~DocNotebookTab() {}
 
     void SetDocumentTitle(const wxString &title);
     void SetDocumentPath(const wxString &path);
