@@ -4,13 +4,14 @@ AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I../../Common
 # want all _other_ warnings to abort the compilation process, thanks to
 # -Werror.  We can remove -Wno-deprecated-declarations once we port the
 # official Windows build to 2.8.
-AM_CXXFLAGS = $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS) -Wno-deprecated-declarations
+AM_CXXFLAGS = $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS) $(CURL_CFLAGS) \
+	-Wno-deprecated-declarations
 
 # Until we can actually compile all our source files, build a library
 # instead of an application.
-noinst_LIBRARIES = libhalyardgui.a
+noinst_PROGRAMS = halyard
 
-libhalyardgui_a_SOURCES = \
+halyard_SOURCES = \
 	AnimatedOverlay.cpp AnimatedOverlay.h \
 	AppConfig.h \
 	AppGlobals.h \
@@ -46,6 +47,7 @@ libhalyardgui_a_SOURCES = \
 	EventDispatcher.cpp EventDispatcher.h \
 	FancyStatusBar.cpp FancyStatusBar.h \
 	GuiUtil.cpp GuiUtil.h \
+	HalyardApp.cpp HalyardApp.h \
 	HistoryText.cpp HistoryText.h \
 	ImageCache.cpp ImageCache.h \
 	InvisibleElement.h \
@@ -69,14 +71,23 @@ libhalyardgui_a_SOURCES = \
 	TWxPrimitives.cpp TWxPrimitives.h \
 	Widget.cpp Widget.h \
 	Zone.cpp Zone.h
+halyard_LDADD = \
+	../../Common/libhalyard.a \
+	../../Common/libimlunit.a \
+	../../libs/sha1/libsha1.a \
+	../../libs/sqlite3-plus/sqlite3-plus/libsqlite3_plus.a \
+	$(BOOST_LDFLAGS) \
+        $(BOOST_FILESYSTEM_LIB) \
+	$(XML2_LIBS) \
+	$(FREETYPE_LIBS) \
+	$(SQLITE3_LDFLAGS) \
+        $(MZSCHEME_LDFLAGS) \
+	$(CURL_LIBS) \
+	$(WX_LIBS)
 
 # Temporarily disabled because of dependencies on wxWidgets 2.6 APIs
 # missing in 2.8.
 #FancyCrashReporter.cpp FancyCrashReporter.h
-
-# Temporarily disabled because of dependencies on a custom-patched version
-# of wxWidgets 2.6.
-#HalyardApp.cpp HalyardApp.h
 
 # Disabled because of dependencies on our custom-patched version of Scintilla.
 #ScriptEditor.cpp ScriptEditor.h

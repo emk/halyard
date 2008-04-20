@@ -349,7 +349,7 @@ bool EventDispatcher::DoEventCursorHidden() {
 // Platform-Specific Methods
 //=========================================================================
 
-#ifdef APP_PLATFORM_WIN32
+#ifdef __WXMSW__
 
 #include <windows.h>
 
@@ -370,5 +370,9 @@ wxLongLong EventDispatcher::PlatformGetTickCount() {
     // A similar hack will be required on other platforms as well.
     return ::GetTickCount();
 }
+
+#else
+
+// TODO - Need implementation of event timestamp functions.
 
 #endif

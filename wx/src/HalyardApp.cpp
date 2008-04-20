@@ -386,6 +386,10 @@ int HalyardApp::OnExit() {
     return 0;
 }
 
+// If we're building with our custom-patched version of wxWidgets 2.6.1p1,
+// we need to do this the hard way.
+#if __WXMSW__ && wxCHECK_VERSION(2,6,1) && !wxCHECK_VERSION(2,6,2)
+
 namespace {
     // HACK - Do the song and dance required to get a custom event loop running
     // with the latest build of wxWidgets.  This is a gross hack, and requires
@@ -411,6 +415,25 @@ namespace {
 };
 
 int HalyardApp::MainLoop() {
+    // Create a wxEventLoop object to process events.  This became
+    // necessary in wxWindows 2.5.x or so.
+    StEventLoopSetup setup(&m_mainLoop);
+    return MainLoopInternal();
+}
+
+#elif wxCHECK_VERSION(2,8,0)
+
+// XXX - For now, just let wxWidgets define the event loop.  This won't
+// work at all, but it might allow us to link.
+int HalyardApp::MainLoop() {
+    return wxApp::MainLoop();
+}
+
+#else
+#error "No implementation of HalyardApp::MainLoop on this platform"
+#endif
+
+int HalyardApp::MainLoopInternal() {
 	// WARNING - No Scheme function may ever be called above this
     // point on the stack!
     HALYARD_BEGIN_STACK_BASE();
@@ -418,10 +441,6 @@ int HalyardApp::MainLoop() {
     bool error = false;
 
     BEGIN_EXCEPTION_TRAPPER();
-
-    // Create a wxEventLoop object to process events.  This became
-    // necessary in wxWindows 2.5.x or so.
-    StEventLoopSetup setup(&m_mainLoop);
         
     // Create a SchemeInterpreterManager.
     TInterpreterManager *manager =
@@ -478,6 +497,8 @@ void HalyardApp::ExitMainLoop()
     else
     {
         // Handle things normally.
+        // XXX - It's not clear that this branch of the 'if' conditional
+        // does anything sane and/or useful any more.
         wxApp::ExitMainLoop();
     }
 }

@@ -103,6 +103,13 @@ class HalyardApp : public wxApp
     ///
     void LaunchUpdateInstaller();
 
+    //////////
+    /// The cross-platform portion of our main loop.  The return value is
+    /// whatever wxWidgets thinks we should return from wxApp::MainLoop, a
+    /// subject on which the documentation has been shifty.
+    ///
+    int MainLoopInternal();
+
 public:
     HalyardApp();
 
