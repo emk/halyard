@@ -32,11 +32,10 @@ BEGIN_EVENT_TABLE(StartupDlg, XrcDlg)
 	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_OPEN"), StartupDlg::OnOpen)
 	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_RECENT"), StartupDlg::OnRecent)
 	EVT_BUTTON(wxID_OK, StartupDlg::OnOK)
-	EVT_BUTTON(wxID_CANCEL, wxDialog::OnCancel)
 END_EVENT_TABLE()
 
 StartupDlg::StartupDlg(wxWindow *inParent)
-	: XrcDlg(inParent, "DLG_STARTUP")
+    : XrcDlg(inParent, wxT("DLG_STARTUP"))
 {
 	Bind(mRadioNew, XRCID("DLG_STARTUP_NEW"));
 	Bind(mRadioOpen, XRCID("DLG_STARTUP_OPEN"));

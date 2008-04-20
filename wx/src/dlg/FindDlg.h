@@ -82,11 +82,11 @@ public:
     virtual void EndModal(int retCode);
 
 #define DEFINE_REGISTRY_ACCESSORS_BOOL(KEY) \
-    static void Set##KEY(bool value) { SetKey(#KEY, value); } \
-    static bool Get##KEY() { return GetKeyBool(#KEY); }
+    static void Set##KEY(bool value) { SetKey(wxT(#KEY), value); }  \
+    static bool Get##KEY() { return GetKeyBool(wxT(#KEY)); }
 #define DEFINE_REGISTRY_ACCESSORS_STRING(KEY) \
-    static void Set##KEY(const wxString &value) { SetKey(#KEY, value); } \
-    static wxString Get##KEY() { return GetKeyString(#KEY); }
+    static void Set##KEY(const wxString &value) { SetKey(wxT(#KEY), value); } \
+    static wxString Get##KEY() { return GetKeyString(wxT(#KEY)); }
 
     DEFINE_REGISTRY_ACCESSORS_BOOL(UseRegex);
     DEFINE_REGISTRY_ACCESSORS_STRING(SearchText);

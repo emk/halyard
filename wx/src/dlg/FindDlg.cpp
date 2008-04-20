@@ -39,7 +39,7 @@ BEGIN_EVENT_TABLE(FindDlg, XrcDlg)
 END_EVENT_TABLE()
 
 FindDlg::FindDlg(wxWindow *inParent, bool haveSelection)
-	: XrcDlg(inParent, "DLG_FIND_REPLACE")
+  : XrcDlg(inParent, wxT("DLG_FIND_REPLACE"))
 {
     // Bind variables to some of our child widgets.
     Bind(mUseRegex, XRCID("DLG_USE_REGEX"));
@@ -83,6 +83,9 @@ FindDlg::FindDlg(wxWindow *inParent, bool haveSelection)
     mReplaceText->SetValue(GetReplaceText());
     mSearchCurrentScript->SetValue(true);
     switch (GetSearchArea()) {
+        case CURRENT_SCRIPT:
+            // This is set up as the default above.
+            break;
         case ALL_SCRIPTS:
             mSearchAllScripts->SetValue(true);
             break;
@@ -167,20 +170,20 @@ void FindDlg::OnButton(wxCommandEvent &event) {
 /// Set a registry key.
 void FindDlg::SetKey(const wxString &key, bool value) {
 	wxConfigBase *config = wxConfigBase::Get();
-    config->Write("/Search/" + key, value);
+    config->Write(wxT("/Search/") + key, value);
 }
 
 /// Set a registry key.
 void FindDlg::SetKey(const wxString &key, const wxString &value) {
 	wxConfigBase *config = wxConfigBase::Get();
-    config->Write("/Search/" + key, value);    
+    config->Write(wxT("/Search/") + key, value);    
 }
 
 /// Get a registry key.
 bool FindDlg::GetKeyBool(const wxString &key) {
 	wxConfigBase *config = wxConfigBase::Get();
     bool result;
-    config->Read("/Search/" + key, &result, false);
+    config->Read(wxT("/Search/") + key, &result, false);
     return result;
 }
 
@@ -188,21 +191,21 @@ bool FindDlg::GetKeyBool(const wxString &key) {
 wxString FindDlg::GetKeyString(const wxString &key) {
 	wxConfigBase *config = wxConfigBase::Get();
     wxString result;
-    config->Read("/Search/" + key, &result, "");
+    config->Read(wxT("/Search/") + key, &result, wxT(""));
     return result;    
 }
 
 /// Set our search area.
 void FindDlg::SetSearchArea(SearchArea area) {
 	wxConfigBase *config = wxConfigBase::Get();
-    config->Write("/Search/SearchArea", static_cast<int>(area));
+    config->Write(wxT("/Search/SearchArea"), static_cast<int>(area));
 }
 
 /// Get our search area.
 FindDlg::SearchArea FindDlg::GetSearchArea() {
 	wxConfigBase *config = wxConfigBase::Get();
     int regval;
-    config->Read("/Search/SearchArea", &regval, CURRENT_SCRIPT);
+    config->Read(wxT("/Search/SearchArea"), &regval, CURRENT_SCRIPT);
     switch (regval) {
         case CURRENT_SCRIPT:
         case ALL_SCRIPTS:

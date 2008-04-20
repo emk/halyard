@@ -27,12 +27,11 @@ using namespace Halyard;
 
 BEGIN_EVENT_TABLE(MetaDotDlg, XrcDlg)
 	EVT_BUTTON(wxID_OK, MetaDotDlg::OnOK)
-	EVT_BUTTON(wxID_CANCEL, wxDialog::OnCancel)
 END_EVENT_TABLE()
 
 MetaDotDlg::MetaDotDlg(wxWindow *inParent,
                        const ScriptEditorDB::Definitions &defs)
-	: XrcDlg(inParent, "DLG_META_DOT"),
+    : XrcDlg(inParent, wxT("DLG_META_DOT")),
       mDefinitions(defs), mChosenDefIndex(0)
 {
     ASSERT(!mDefinitions.empty());
@@ -40,9 +39,10 @@ MetaDotDlg::MetaDotDlg(wxWindow *inParent,
 
     ScriptEditorDB::Definitions::iterator i = mDefinitions.begin();
     for (; i != mDefinitions.end(); ++i) {
-        std::stringstream line;
-        line << i->file_path << ", line " << i->line_number;
-        mDefinitionsListBox->Append(line.str().c_str());
+        std::stringstream line_stream;
+        line_stream << i->file_path << ", line " << i->line_number;
+        wxString line(line_stream.str().c_str(), wxConvLocal);
+        mDefinitionsListBox->Append(line);
     }
     mDefinitionsListBox->SetSelection(0);
 }

@@ -32,7 +32,7 @@ BEGIN_EVENT_TABLE(AdjustScreenConfirmDlg, XrcDlg)
 END_EVENT_TABLE()
 
 AdjustScreenConfirmDlg::AdjustScreenConfirmDlg(wxWindow *inParent)
-	: XrcDlg(inParent, "DLG_ADJUST_CONFIRM"),
+    : XrcDlg(inParent, wxT("DLG_ADJUST_CONFIRM")),
       mExpireTime(::wxGetLocalTime() + EXPIRE_SECONDS)
 {
     Bind(mRevertMsg, XRCID("DLG_REVERT_MSG"));
@@ -46,7 +46,7 @@ void AdjustScreenConfirmDlg::OnIdle(wxIdleEvent &inEvent) {
     long remaining = mExpireTime - ::wxGetLocalTime();
     if (remaining > 0) {
         wxString msg;
-        msg.sprintf("Reverting in %d seconds", remaining);
+        msg.sprintf(wxT("Reverting in %d seconds"), remaining);
 
         // We only set the label if it's changed, to prevent
         // redraw flicker.

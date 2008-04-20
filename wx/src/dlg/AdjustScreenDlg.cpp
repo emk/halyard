@@ -31,7 +31,7 @@ BEGIN_EVENT_TABLE(AdjustScreenDlg, XrcDlg)
 END_EVENT_TABLE()
 
 AdjustScreenDlg::AdjustScreenDlg(wxWindow *inParent)
-	: XrcDlg(inParent, "DLG_ADJUST")
+  : XrcDlg(inParent, wxT("DLG_ADJUST"))
 {
     Bind(mYesButton, wxID_YES);
     mYesButton->SetFocus();

@@ -20,16 +20,16 @@ libhalyardgui_a_SOURCES = \
 	CursorElement.cpp CursorElement.h \
 	CursorManager.cpp CursorManager.h \
 	CustomTreeCtrl.cpp CustomTreeCtrl.h \
-	DirtyList.cpp DirtyList.h
-#	dlg/AdjustScreenConfirmDlg.cpp dlg/AdjustScreenConfirmDlg.h \
-#	dlg/AdjustScreenDlg.cpp dlg/AdjustScreenDlg.h \
-#	dlg/FindDlg.cpp dlg/FindDlg.h \
-#	dlg/MetaDotDlg.cpp dlg/MetaDotDlg.h \
-#	dlg/MultiButtonDlg.cpp dlg/MultiButtonDlg.h \
-#	dlg/ProgramPropDlg.cpp dlg/ProgramPropDlg.h \
-#	dlg/PropertyDlg.cpp dlg/PropertyDlg.h \
-#	dlg/StartupDlg.cpp dlg/StartupDlg.h \
-#	dlg/XrcDlg.cpp dlg/XrcDlg.h \
+	DirtyList.cpp DirtyList.h \
+	dlg/AdjustScreenConfirmDlg.cpp dlg/AdjustScreenConfirmDlg.h \
+	dlg/AdjustScreenDlg.cpp dlg/AdjustScreenDlg.h \
+	dlg/FindDlg.cpp dlg/FindDlg.h \
+	dlg/MetaDotDlg.cpp dlg/MetaDotDlg.h \
+	dlg/MultiButtonDlg.cpp dlg/MultiButtonDlg.h \
+	dlg/ProgramPropDlg.cpp dlg/ProgramPropDlg.h \
+	dlg/PropertyDlg.cpp dlg/PropertyDlg.h \
+	dlg/StartupDlg.cpp dlg/StartupDlg.h \
+	dlg/XrcDlg.cpp dlg/XrcDlg.h
 #	DocNotebook.cpp DocNotebook.h \
 #	Downloader.cpp Downloader.h \
 #	DrawingArea.cpp DrawingArea.h \

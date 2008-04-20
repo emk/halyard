@@ -36,7 +36,7 @@ MultiButtonDlg::MultiButtonDlg(wxWindow *inParent, const wxString &inTitle,
                                const wxString &inButton1,
                                const wxString &inButton2,
                                const wxString &inButton3)
-	: XrcDlg(inParent, "DLG_MULTIBUTTON")
+    : XrcDlg(inParent, wxT("DLG_MULTIBUTTON"))
 {
     wxASSERT(inTitle != "");
     wxASSERT(inMessage != "");
@@ -62,7 +62,7 @@ MultiButtonDlg::MultiButtonDlg(wxWindow *inParent, const wxString &inTitle,
 void MultiButtonDlg::LabelOrHideButton(wxButton *inButton,
                                        const wxString &inLabel)
 {
-    if (inLabel != "")
+    if (inLabel != wxT(""))
         inButton->SetLabel(inLabel);
     else
         inButton->Hide();

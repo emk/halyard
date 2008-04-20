@@ -29,7 +29,7 @@
 class XrcDlg : public wxDialog
 {
     DECLARE_EVENT_TABLE();
-    
+
 protected:
 	XrcDlg(wxWindow *inParent, const wxString &inResourceName);
 
@@ -37,6 +37,7 @@ protected:
 	void Bind(T* &outVar, long inID)
 	{ outVar = dynamic_cast<T*>(FindWindow(inID)); wxASSERT(outVar); }
 
+public:
     /// Generic handler which dismisses the dialog and returns the
     /// button ID.
 	void OnSimpleButton(wxCommandEvent &inEvent);

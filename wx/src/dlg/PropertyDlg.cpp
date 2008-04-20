@@ -86,7 +86,8 @@ bool ModelStringValidator::TransferToWindow()
 {
 	wxTextCtrl *text_ctrl = dynamic_cast<wxTextCtrl*>(GetWindow());
 	wxASSERT(text_ctrl);
-	text_ctrl->SetValue(mObject->GetString(mMember).c_str());
+    wxString value(mObject->GetString(mMember).c_str(), wxConvLocal);
+	text_ctrl->SetValue(value);
 	return true;
 }
 
@@ -98,8 +99,8 @@ bool ModelStringValidator::TransferFromWindow()
 	// Only transfer the text back if something has changed; this
 	// avoids garbaging up our Undo history and dirty bit with
 	// pointless changes.
-	std::string old_string = mObject->GetString(mMember);
-	std::string new_string = text_ctrl->GetValue().mb_str();
+	std::string old_string(mObject->GetString(mMember));
+	std::string new_string(text_ctrl->GetValue().mb_str());
 	if (new_string != old_string)
 		mObject->SetString(mMember, new_string);
 	return true;
@@ -121,7 +122,8 @@ END_EVENT_TABLE()
 PropertyDlg::PropertyDlg(wxWindow *inParent,
 						 Description *inDescription,
 						 model::Object *inObject)
-	: wxDialog(inParent, -1, inDescription->name, wxDefaultPosition),
+    : wxDialog(inParent, -1, wxString(inDescription->name, wxConvLocal),
+               wxDefaultPosition),
 	  mObject(inObject)
 {
 	// Configure our sizers.
@@ -139,10 +141,10 @@ PropertyDlg::PropertyDlg(wxWindow *inParent,
 		AddField(*i);
 
 	// Add our buttons.
-	mOkButton = new wxButton(this, wxID_OK, "OK");
-	mCancelButton = new wxButton(this, wxID_CANCEL, "Cancel");
-	mApplyButton = new wxButton(this, wxID_APPLY, "&Apply");
-	mHelpButton = new wxButton(this, wxID_HELP, "&Help");
+	mOkButton = new wxButton(this, wxID_OK, wxT("OK"));
+	mCancelButton = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
+	mApplyButton = new wxButton(this, wxID_APPLY, wxT("&Apply"));
+	mHelpButton = new wxButton(this, wxID_HELP, wxT("&Help"));
 	bttn_sizer->Add(mOkButton, 0, 0, 0);
 	bttn_sizer->Add(mCancelButton, 0, 0, 0);
 	bttn_sizer->Add(mApplyButton, 0, 0, 0);
@@ -158,21 +160,22 @@ PropertyDlg::PropertyDlg(wxWindow *inParent,
 
 void PropertyDlg::AddField(Field &inField)
 {
+    wxString label_text(inField.label, wxConvLocal);
+    wxStaticText *label = new wxStaticText(this, -1, label_text);
 	if (inField.flags == MULTILINE)
 	{
-		wxStaticText *label = new wxStaticText(this, -1, inField.label);
 		wxTextCtrl *edit =
-			new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(300, 200),
-						   wxTE_MULTILINE,
+			new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
+                           wxSize(300, 200), wxTE_MULTILINE,
 						   ModelStringValidator(mObject, inField.name));
 		mPropSizer->Add(label, 0, 0, 0);
 		mPropSizer->Add(edit, 1, wxEXPAND, 0);
 	}
 	else
 	{
-		wxStaticText *label = new wxStaticText(this, -1, inField.label);
 		wxTextCtrl *edit =
-			new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(300, -1), 0,
+			new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
+                           wxSize(300, -1), 0,
 						   ModelStringValidator(mObject, inField.name));
 		mPropSizer->Add(label, 0, wxALIGN_CENTRE_VERTICAL, 0);
 		mPropSizer->Add(edit, 1, wxEXPAND, 0);
