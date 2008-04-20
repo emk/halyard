@@ -113,10 +113,12 @@ public:
     ///
     virtual bool ApplyClippingToStage(wxRegion &ioRegion);
 
+#if wxUSE_ACCESSIBILITY
     //////////
     /// Get the accessibility information for this element.
     ///    
     virtual wxAccessible *GetAccessible();
+#endif wxUSE_ACCESSIBILITY
 };
 
 #endif // Widget_H

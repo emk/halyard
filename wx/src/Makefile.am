@@ -66,9 +66,9 @@ libhalyardgui_a_SOURCES = \
 	Timecoder.cpp Timecoder.h \
 	ToolWindow.cpp ToolWindow.h \
 	Transition.h TransitionOpt.cpp \
-	TWxPrimitives.cpp TWxPrimitives.h
-#	Widget.cpp Widget.h \
-#	Zone.cpp Zone.h
+	TWxPrimitives.cpp TWxPrimitives.h \
+	Widget.cpp Widget.h \
+	Zone.cpp Zone.h
 
 # Temporarily disabled because of dependencies on wxWidgets 2.6 APIs
 # missing in 2.8.

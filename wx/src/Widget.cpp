@@ -107,6 +107,10 @@ bool Widget::ApplyClippingToStage(wxRegion &ioRegion) {
     return true;
 }
 
+#if wxUSE_ACCESSIBILITY
+
 wxAccessible *Widget::GetAccessible() {
     return mWindow->GetAccessible();
 }
+
+#endif wxUSE_ACCESSIBILITY
