@@ -67,16 +67,16 @@ void DrawingArea::InitializePixmap(bool inHasAlpha) {
 		mPixmap.UseAlpha();
 	Clear();
 
-#if CONFIG_HAVE_QUAKE2
-    if (Quake2Engine::HaveInstance())
-        InitializeQuake2Overlay();
-#endif // CONFIG_HAVE_QUAKE2
+    MaybeInitializeGameOverlay();
 }
 
 #if CONFIG_HAVE_QUAKE2
 
-void DrawingArea::InitializeQuake2Overlay()
-{
+void DrawingArea::MaybeInitializeGameOverlay() {
+    // If we don't have a running Quake 2 instance, return immediately.
+    if (!Quake2Engine::HaveInstance())
+        return;
+
     // If the pixmap has area zero, then we don't have any valid data to
     // pass to Quake anyway.
     if (HasAreaOfZero())
@@ -109,7 +109,39 @@ void DrawingArea::InitializeQuake2Overlay()
     mQuake2Overlay = ptr;
 }
 
-#endif // CONFIG_HAVE_QUAKE2
+void DrawingArea::GameOverlayDelete() {
+    if (mQuake2Overlay)
+        mQuake2Overlay = shared_ptr<wxQuake2Overlay>();
+}
+
+void DrawingArea::GameOverlayDirtyRect(const wxRect &inRect) {
+    if (mQuake2Overlay)
+        mQuake2Overlay->DirtyRect(inRect);
+}
+
+void DrawingArea::GameOverlayShow(bool inShouldShow) {
+    if (mQuake2Overlay)
+        mQuake2Overlay->Show(inShouldShow);
+}
+
+void DrawingArea::GameOverlayMoveTo(const wxPoint &inPoint) {
+    if (mQuake2Overlay)
+        mQuake2Overlay->MoveTo(inPoint);
+}
+
+#else // !CONFIG_HAVE_QUAKE2
+
+void DrawingArea::MaybeInitializeGameOverlay() {}
+
+void DrawingArea::GameOverlayDelete() {}
+
+void DrawingArea::GameOverlayDirtyRect(const wxRect &inRect) {}
+
+void DrawingArea::GameOverlayShow(bool inShouldShow) {}
+
+void DrawingArea::GameOverlayMoveTo(const wxPoint &inPoint) {}
+
+#endif // !CONFIG_HAVE_QUAKE2
 
 void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
                                  bool inHasPixmapChanged)
@@ -122,10 +154,8 @@ void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
     r.Intersect(wxRect(wxPoint(0, 0),
                        mBounds.GetSize()));
 	if (!r.IsEmpty()) {
-#if CONFIG_HAVE_QUAKE2
-        if (inHasPixmapChanged && mQuake2Overlay)
-            mQuake2Overlay->DirtyRect(r);
-#endif // CONFIG_HAVE_QUAKE2
+        if (inHasPixmapChanged)
+            GameOverlayDirtyRect(r);
 	    r.Offset(mBounds.GetPosition());
 	    mStage->InvalidateRect(r);
 	}
@@ -137,11 +167,8 @@ void DrawingArea::InvalidateDrawingArea(bool inHasPixmapChanged) {
 }
 
 void DrawingArea::SetSize(const wxSize &inSize) {
-#if CONFIG_HAVE_QUAKE2
     // If we have a Quake 2 overlay, get rid of it.
-    if (mQuake2Overlay)
-        mQuake2Overlay = shared_ptr<wxQuake2Overlay>();
-#endif // CONFIG_HAVE_QUAKE2
+    GameOverlayDelete();
 
     // Invalidate the rectangle covered by our original size.
     InvalidateDrawingArea(false);
@@ -160,10 +187,7 @@ void DrawingArea::SetSize(const wxSize &inSize) {
 void DrawingArea::Show(bool inShow) {
     if (inShow != mIsShown) {
         mIsShown = inShow;
-#if CONFIG_HAVE_QUAKE2
-        if (mQuake2Overlay)
-            mQuake2Overlay->Show(inShow);
-#endif // CONFIG_HAVE_QUAKE2
+        GameOverlayShow(inShow);
         InvalidateDrawingArea(false);
     }
 }
@@ -171,10 +195,7 @@ void DrawingArea::Show(bool inShow) {
 void DrawingArea::MoveTo(const wxPoint &inPoint) {
     InvalidateDrawingArea(false);
     mBounds = wxRect(inPoint, mBounds.GetSize());
-#if CONFIG_HAVE_QUAKE2
-    if (mQuake2Overlay)
-        mQuake2Overlay->MoveTo(inPoint);
-#endif // CONFIG_HAVE_QUAKE2
+    GameOverlayMoveTo(inPoint);
     InvalidateDrawingArea(false);
 }
 

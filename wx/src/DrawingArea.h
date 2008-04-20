@@ -23,6 +23,8 @@
 #ifndef DrawingArea_H
 #define DrawingArea_H
 
+#include "AppConfig.h"
+
 class Stage;
 
 #if CONFIG_HAVE_QUAKE2
@@ -50,14 +52,21 @@ class DrawingArea : public GraphicsTools::Image {
     ///
 	void InitializePixmap(bool inHasAlpha);
 
-#if CONFIG_HAVE_QUAKE2
-    ///////////
-    /// Initialize the Quake 2 overlay object associated with this drawing
-    /// area.  We'll only call this function if we are floating this
-    /// DrawingArea over Quake 2.
-    ///
-    void InitializeQuake2Overlay();
-#endif // CONFIG_HAVE_QUAKE2
+    /// If we have a copy wxQuake2, and it's running, then initialize
+    /// the Quake 2 overlay object associated with this drawing area.
+    void MaybeInitializeGameOverlay();
+
+    /// Delete any game overlay associated with this drawing area.
+    void GameOverlayDelete();
+
+    /// If we have a game overlay, mark part of it as dirty.
+    void GameOverlayDirtyRect(const wxRect &inRect);
+
+    /// If we have a game overlay, show or hide it.
+    void GameOverlayShow(bool inShouldShow);
+
+    /// If we have a game overlay, move it to the specified location.
+    void GameOverlayMoveTo(const wxPoint &inPoint);
 
 	//////////
 	/// Invalidate the specified rectangle.
