@@ -84,8 +84,8 @@ bool SashFrame::IsRectOnDisplay(const wxRect &inRect) {
 wxPoint SashFrame::LoadFramePosition(const wxString &inFrameName) {
     long pos_x, pos_y;
     wxConfigBase *config = wxConfigBase::Get();
-    config->SetPath("/Layout/Default/" + inFrameName);
-    if (config->Read("Left", &pos_x) && config->Read("Top", &pos_y) &&
+    config->SetPath(wxT("/Layout/Default/") + inFrameName);
+    if (config->Read(wxT("Left"), &pos_x) && config->Read(wxT("Top"), &pos_y) &&
         IsRectOnDisplay(wxRect(pos_x, pos_y, 100, 100)))
         return wxPoint(pos_x, pos_y);
     else
@@ -94,7 +94,7 @@ wxPoint SashFrame::LoadFramePosition(const wxString &inFrameName) {
 
 wxConfigBase *SashFrame::GetConfigForFrame() {
     wxConfigBase *config = wxConfigBase::Get();
-    config->SetPath("/Layout/Default/" + mFrameName);
+    config->SetPath(wxT("/Layout/Default/") + mFrameName);
     return config;
 }
 
@@ -107,9 +107,9 @@ void SashFrame::LoadFrameLayout() {
     
     // Load values from our config file.
     wxConfigBase *config = GetConfigForFrame();
-    config->Read("IsMaximized", &is_maximized);
-    config->Read("ClientWidth", &sz_client_width);
-    config->Read("ClientHeight", &sz_client_height);
+    config->Read(wxT("IsMaximized"), &is_maximized);
+    config->Read(wxT("ClientWidth"), &sz_client_width);
+    config->Read(wxT("ClientHeight"), &sz_client_height);
     
     // We restore our individual sash sizes before anything else, so they
     // will get appropriately adjusted by the frame resize events.
@@ -142,16 +142,16 @@ void SashFrame::MaybeSaveFrameLayout()
         return;
     
     wxConfigBase *config = GetConfigForFrame();
-    config->Write("IsMaximized", IsMaximized() ? 1 : 0);
+    config->Write(wxT("IsMaximized"), IsMaximized() ? 1 : 0);
     if (!IsMaximized())
     {
         // Only save the window position if we aren't maximized.
         wxPoint pos = GetPosition();
         wxSize sz = GetClientSize();
-        config->Write("Left", pos.x);
-        config->Write("Top", pos.y);
-        config->Write("ClientWidth", sz.GetWidth());
-        config->Write("ClientHeight", sz.GetHeight());
+        config->Write(wxT("Left"), pos.x);
+        config->Write(wxT("Top"), pos.y);
+        config->Write(wxT("ClientWidth"), sz.GetWidth());
+        config->Write(wxT("ClientHeight"), sz.GetHeight());
     }
     SaveSashLayout(config);
 }

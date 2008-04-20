@@ -55,10 +55,10 @@ libhalyardgui_a_SOURCES = \
 	LocationBox.cpp LocationBox.h \
 	MediaElement.cpp MediaElement.h \
 	MovieElement.cpp MovieElement.h \
-	MovieWindow.cpp MovieWindow.h
-#	Overlay.cpp Overlay.h \
-#	ProgramTree.cpp ProgramTree.h \
-#	SashFrame.cpp SashFrame.h \
+	MovieWindow.cpp MovieWindow.h \
+	Overlay.cpp Overlay.h \
+	ProgramTree.cpp ProgramTree.h \
+	SashFrame.cpp SashFrame.h
 #	ScriptEditor.cpp ScriptEditor.h \
 #	Stage.cpp Stage.h \
 #	StageAccessible.cpp StageAccessible.h \

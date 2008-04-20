@@ -301,8 +301,8 @@ HalyardProgramMenu::HalyardProgramMenu(wxWindow *inParent, model::Object *inObje
 {
 	mParent = inParent;
 	mObject = inObject;
-	Append(HALYARD_PROPERTIES, "Properties...",
-		   "Edit the properties for this program.");
+	Append(HALYARD_PROPERTIES, wxT("Properties..."),
+		   wxT("Edit the properties for this program."));
 }
 
 void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent)
@@ -338,8 +338,8 @@ void HalyardProgramItemData::OnRightDown(wxMouseEvent& event)
 void HalyardProgramItemData::ObjectChanged()
 {
 	wxASSERT(GetId());
-	wxString name(GetObject()->GetString("name").c_str());
-	GetTree()->SetItemText(GetId(), "Program '" + name + "'");
+	wxString name(GetObject()->GetString("name").c_str(), wxConvLocal);
+	GetTree()->SetItemText(GetId(), wxT("Program '") + name + wxT("'"));
 }
 
 void HalyardProgramItemData::ObjectDeleted()
@@ -372,7 +372,6 @@ ProgramTree::ProgramTree(StageFrame *inStageFrame, int inID)
 {
 	// Set up our tree control.
 	mTree = new ProgramTreeCtrl(this);
-	mRootID = mCardsID = -1;
 
 	// Set our minimum sash width.
 	SetMinimumSizeX(MINIMUM_WIDTH);
@@ -382,7 +381,7 @@ ProgramTree::ProgramTree(StageFrame *inStageFrame, int inID)
 void ProgramTree::RegisterDocument(Document *inDocument)
 {
 	// Set up our root node.
-	mRootID = mTree->AddRoot("Program");
+	mRootID = mTree->AddRoot(wxT("Program"));
 	mTree->SetIcon(mRootID, ProgramTreeCtrl::ICON_DOCUMENT,
 				   ProgramTreeCtrl::ICON_DOCUMENT);
 	HalyardProgramItemData *item_data = new HalyardProgramItemData(mTree);
@@ -390,7 +389,7 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 	item_data->SetObject(inDocument->GetRoot());
 
 	// Set up some other nodes.
-	mCardsID = mTree->AppendItem(mRootID, "Cards");
+	mCardsID = mTree->AppendItem(mRootID, wxT("Cards"));
 	mTree->SetIcon(mCardsID, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
 				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
 }
@@ -398,6 +397,7 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 wxTreeItemId ProgramTree::FindParentContainer(const std::string &inName,
 											  std::string &outLocalName)
 {
+    ASSERT(mCardsID.IsOk());
 	std::string::size_type slashpos = inName.rfind('/');
 	if (slashpos == std::string::npos)
 	{
@@ -435,7 +435,9 @@ wxTreeItemId ProgramTree::FindParentContainer(const std::string &inName,
 
 			// Now, create the parent.
 			wxTreeItemId parent_id =
-				mTree->AppendItem(grandparent_id, parent_local_name.c_str());
+				mTree->AppendItem(grandparent_id,
+                                  wxString(parent_local_name.c_str(),
+                                           wxConvLocal));
 			mTree->SetItemData(parent_id, new SequenceItemData(mTree));
 			mTree->SetIcon(parent_id, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
 						   ProgramTreeCtrl::ICON_FOLDER_OPEN);
@@ -454,14 +456,16 @@ void ProgramTree::RegisterCard(const wxString &inName)
 
 	// Insert the card into our tree.
 	std::string local_name;
-	wxTreeItemId parent_id = FindParentContainer(inName.mb_str(), local_name);
-	wxTreeItemId id = mTree->AppendItem(parent_id, local_name.c_str());
+	wxTreeItemId parent_id =
+        FindParentContainer(std::string(inName.mb_str()), local_name);
+	wxTreeItemId id =
+        mTree->AppendItem(parent_id, wxString(local_name.c_str(), wxConvLocal));
 	mTree->SetItemData(id, new CardItemData(mTree, inName));
 	mTree->SetIcon(id, ProgramTreeCtrl::ICON_CARD,
 				   ProgramTreeCtrl::ICON_CARD);
 
 	// Record the card in our map.
-	mCardMap.insert(ItemMap::value_type(inName.mb_str(), id));
+	mCardMap.insert(ItemMap::value_type(std::string(inName.mb_str()), id));
 }
 
 void ProgramTree::SetDefaultWidth(int inWidth)
@@ -471,15 +475,17 @@ void ProgramTree::SetDefaultWidth(int inWidth)
 
 void ProgramTree::NotifyReloadScriptStarting()
 {
+    ASSERT(mCardsID.IsOk());
 	mCardMap.clear();
 	mSequenceMap.clear();
 	mTree->CollapseAndReset(mCardsID);
 }
 
+
 void ProgramTree::NotifyEnterCard(const wxString &inName)
 {
 	// Look up the ID corresponding to this card.
-	ItemMap::iterator found = mCardMap.find(inName.mb_str());
+	ItemMap::iterator found = mCardMap.find(std::string(inName.mb_str()));
 	wxASSERT(found != mCardMap.end());
 
 	// Move the highlighting to the appropriate card.
