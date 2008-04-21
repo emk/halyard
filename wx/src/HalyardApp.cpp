@@ -219,11 +219,13 @@ void HalyardApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
         // just in case the assertion actually occurred in the crash
         // reporter--at least we'll record it somewhere.
         wxString message;
-        message << "Assertion: ";
+        message << wxT("Assertion: ");
         if (msg)
-            message << msg << ": ";
-        message << cond << " (at " << file << ":" << line << ")";
-        gLog.FatalError("wxWidgets %s", message.mb_str());
+            message << msg << wxT(": ");
+        message << cond << wxT(" (at ") << file << wxT(":") << line 
+                << wxT(")");
+        std::string msg_string(message.mb_str());
+        gLog.FatalError("wxWidgets %s", msg_string.c_str());
     } else {
         // We don't have a logger yet, so let wxWidgets handle this error.
         wxApp::OnAssert(file, line, cond, msg);

@@ -452,7 +452,7 @@ wxTreeItemId ProgramTree::FindParentContainer(const std::string &inName,
 void ProgramTree::RegisterCard(const wxString &inName)
 {
 	// Check to make sure we don't already have a card by this name.
-	wxASSERT(mCardMap.find(inName.mb_str()) == mCardMap.end());
+	wxASSERT(mCardMap.find(std::string(inName.mb_str())) == mCardMap.end());
 
 	// Insert the card into our tree.
 	std::string local_name;

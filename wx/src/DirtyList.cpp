@@ -47,7 +47,7 @@ static wxRect merge_rects(const wxRect &inR1, const wxRect &inR2) {
 				  wxPoint(std::max(inR1.GetRight(), inR2.GetRight()),
 						  std::max(inR1.GetBottom(), inR2.GetBottom())));
 	wxLogTrace(TRACE_STAGE_DRAWING,
-			   "Merge %d %d %d %d + %d %d %d %d -> %d %d %d %d",
+			   wxT("Merge %d %d %d %d + %d %d %d %d -> %d %d %d %d"),
 			   RECT_BOUNDS(inR1), RECT_BOUNDS(inR2), RECT_BOUNDS(result));
 	return result;
 }
@@ -56,7 +56,7 @@ void DirtyList::MergeRect(const wxRect &inRect) {
 	// Check to see if an existing rect contains inRect.
 	for (iterator i = begin(); i != end(); ++i) {
 		if (first_is_larger(*i, inRect)) {
-			wxLogTrace(TRACE_STAGE_DRAWING, "%d %d %d %d is already dirty",
+			wxLogTrace(TRACE_STAGE_DRAWING, wxT("%d %d %d %d is already dirty"),
 					   RECT_BOUNDS(inRect));
 			return;
 		}
@@ -68,7 +68,7 @@ void DirtyList::MergeRect(const wxRect &inRect) {
 	do {
 		need_another_pass = false;
 
-		wxLogTrace(TRACE_STAGE_DRAWING, "Begin merge pass.");
+		wxLogTrace(TRACE_STAGE_DRAWING, wxT("Begin merge pass."));
 
 		// We remove some elements from the vector as we go.  The
 		// src/dst/erase idiom is the easiest way to do this.
@@ -96,7 +96,7 @@ void DirtyList::MergeRect(const wxRect &inRect) {
 /// Calculate the rectangle including all items in the dirty list.  Useful
 /// for localized transitions, which can only run on a rectangular area.
 wxRect DirtyList::GetBounds() const {
-	wxLogTrace(TRACE_STAGE_DRAWING, "Calculating bounds of dirty region.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Calculating bounds of dirty region."));
 
     wxRect result(0, 0, 0, 0);
     const_iterator i = begin();
@@ -107,7 +107,7 @@ wxRect DirtyList::GetBounds() const {
             result = merge_rects(result, *i);
     }
     
-    wxLogTrace(TRACE_STAGE_DRAWING, "Bounds of dirty region: %d %d %d %d",
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Bounds of dirty region: %d %d %d %d"),
                RECT_BOUNDS(result));
     return result;
 }

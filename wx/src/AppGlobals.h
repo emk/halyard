@@ -26,7 +26,7 @@
 //////////
 /// We use this trace mask to debug flicker and other stage drawing problems.
 ///
-#define TRACE_STAGE_DRAWING "STAGE DRAWING"
+#define TRACE_STAGE_DRAWING wxT("STAGE DRAWING")
 
 //////////
 /// Enumerations for menu items, toolbar buttons, and other command-

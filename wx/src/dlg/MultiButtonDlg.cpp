@@ -38,9 +38,9 @@ MultiButtonDlg::MultiButtonDlg(wxWindow *inParent, const wxString &inTitle,
                                const wxString &inButton3)
     : XrcDlg(inParent, wxT("DLG_MULTIBUTTON"))
 {
-    wxASSERT(inTitle != "");
-    wxASSERT(inMessage != "");
-    wxASSERT(inButton1 != "");
+    wxASSERT(inTitle != wxT(""));
+    wxASSERT(inMessage != wxT(""));
+    wxASSERT(inButton1 != wxT(""));
 
     Bind(mMessage, XRCID("ID_MESSAGE"));
 	Bind(mButton1, XRCID("ID_BUTTON1"));

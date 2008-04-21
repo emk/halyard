@@ -142,7 +142,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     // for waking up from a WAIT.
     mTimer.Start(IDLE_INTERVAL / 2, wxTIMER_CONTINUOUS);
 
-	wxLogTrace(TRACE_STAGE_DRAWING, "Stage created.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Stage created."));
 }
 
 Stage::~Stage()
@@ -156,7 +156,7 @@ Stage::~Stage()
 	delete mCursorManager; 
 	delete mEventDispatcher;
 	delete mTransitionManager;
-	wxLogTrace(TRACE_STAGE_DRAWING, "Stage deleted.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Stage deleted."));
 }
 
 wxBitmap &Stage::GetCompositingPixmap() {
@@ -165,7 +165,7 @@ wxBitmap &Stage::GetCompositingPixmap() {
 		wxMemoryDC dc;
 		dc.SelectObject(mCompositingPixmap);
 		DirtyList::iterator dirty_i = mRectsToComposite.begin();
-		wxLogTrace(TRACE_STAGE_DRAWING, "Begin compositing.");
+		wxLogTrace(TRACE_STAGE_DRAWING, wxT("Begin compositing."));
 		for (; dirty_i != mRectsToComposite.end(); ++dirty_i) {
 			GetBackgroundDrawingArea()->CompositeInto(dc, *dirty_i);
 
@@ -181,7 +181,7 @@ wxBitmap &Stage::GetCompositingPixmap() {
                 if ((*elem_i)->IsInDragLayer())
                     (*elem_i)->CompositeInto(dc, *dirty_i);
 		}
-		wxLogTrace(TRACE_STAGE_DRAWING, "End compositing.");
+		wxLogTrace(TRACE_STAGE_DRAWING, wxT("End compositing."));
 		mRectsToComposite.clear();
 	}
 	return mCompositingPixmap;
@@ -438,7 +438,7 @@ void Stage::NotifyReloadScriptStarting()
 
 void Stage::NotifyElementsChanged()
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, "Elements on stage have changed.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Elements on stage have changed."));
     // Notify our OnTimer method that the elements on the stage have
     // changed, and that we will need to recalculate the current element.
     // We can't do any of that work _here_, because recalculating the
@@ -713,7 +713,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
 
 void Stage::OnEraseBackground(wxEraseEvent &inEvent)
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, "Ignoring request to erase stage.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Ignoring request to erase stage."));
 
     // Ignore this event to prevent flicker--we don't need to erase,
     // because we redraw everything from the offscreen buffer.  We may need
@@ -728,7 +728,7 @@ void Stage::OnPaint(wxPaintEvent &inEvent)
 	if (mIsBeingDestroyed)
 		return;
 
-	wxLogTrace(TRACE_STAGE_DRAWING, "Painting stage.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Painting stage."));
 
     // Set up our drawing context, and paint the screen.
     wxPaintDC screen_dc(this);
@@ -984,7 +984,7 @@ void Stage::InvalidateScreen() {
 
 void Stage::InvalidateRect(const wxRect &inRect)
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, "Invalidating: %d %d %d %d",
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Invalidating: %d %d %d %d"),
 			   inRect.x, inRect.y, inRect.GetRight(), inRect.GetBottom());
     // It's a little bit inelegant to maintain two different dirty lists,
     // but they get cleared by different actions.

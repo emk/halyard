@@ -414,7 +414,7 @@ void DrawingArea::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
 		// Log this operation so we have some hope of actually being
 		// able to debug off-screen compositing.
 		wxLogTrace(TRACE_STAGE_DRAWING,
-				   "Dirty: %d %d %d %d Bounds: %d %d %d %d Clip: %d %d %d %d",
+				   wxT("Dirty: %d %d %d %d Bounds: %d %d %d %d Clip: %d %d %d %d"),
 				   inClipRect.GetLeft(), inClipRect.GetTop(),
 				   inClipRect.GetRight(), inClipRect.GetBottom(),
 				   mBounds.GetLeft(), mBounds.GetTop(),
