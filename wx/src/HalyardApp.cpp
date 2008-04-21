@@ -439,6 +439,8 @@ int HalyardApp::MainLoop() {
 class HalyardEventLoop : public wxEventLoop {
 public:
     virtual int Run() {
+        ASSERT(!IsRunning());
+        wxEventLoopActivator activate(wx_static_cast(wxEventLoop *, this));
         return wxGetApp().MainLoopInternal();
     }
 };
