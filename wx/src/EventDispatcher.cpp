@@ -373,6 +373,17 @@ wxLongLong EventDispatcher::PlatformGetTickCount() {
 
 #else
 
-// TODO - Need implementation of event timestamp functions.
+// We don't have portable timestamp support, so assume that all events
+// occur at time 1.  As long as this is larger than the value returned by
+// PlatformGetTickCount, below, no events will appear to be stale.
+wxLongLong EventDispatcher::PlatformGetEventTimestamp(const wxEvent &event) {
+    return 1;
+}
+
+// Must be smaller than PlatformGetEventTimestamp above, since we can't
+// provide a reasonable implementation.
+wxLongLong EventDispatcher::PlatformGetTickCount() {
+    return 0;
+}
 
 #endif
