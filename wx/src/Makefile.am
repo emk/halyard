@@ -7,6 +7,23 @@ AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I../../Common
 AM_CXXFLAGS = $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS) $(CURL_CFLAGS) \
 	-Wno-deprecated-declarations
 
+if NEED_BUNDLE
+
+# If we're building on the Mac, our application won't run unless we create
+# a proper *.app bundle directory.  This can be run using "open
+# ./Halyard.app" from the command-line.
+HALYARD_APP = Halyard.app
+BUNDLED_HALYARD = $(HALYARD_APP)/Contents/MacOS/halyard
+
+all: $(BUNDLED_HALYARD)
+
+$(BUNDLED_HALYARD): halyard
+	mkdir -p "`dirname $(BUNDLED_HALYARD)`"
+	cp "$<" "$@"
+	chmod +x "$@"
+
+endif
+
 resources.cpp: application.xrc
 	$(WXRC) -c -o $@ $<
 

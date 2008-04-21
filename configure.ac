@@ -78,6 +78,15 @@ AX_C___ATTRIBUTE__
 # We need this for libs/sqlite3-plus.
 AC_DEFINE(__int64,long long)
 
+# Check to see whether we need to build a bundle file.
+AC_MSG_CHECKING(whether we need to build a bundle file)
+case `$WX_CONFIG_WITH_ARGS --selected-config` in
+  mac-*) need_bundle=yes ;;
+  *)     need_bundle=no ;;
+esac
+AM_CONDITIONAL([NEED_BUNDLE], [test x$need_bundle = xyes ])
+AC_MSG_RESULT($need_bundle)
+
 
 #==========================================================================
 # Checks for library functions.
