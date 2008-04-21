@@ -81,7 +81,7 @@ class VorbisAudioStream : public AudioStream
 	std::string mFileName;
 	bool mShouldLoop;
 	shared_ptr<VorbisFile> mFile;
-	shared_array<int16> mBuffer;
+	shared_array<Halyard::int16> mBuffer;
 	size_t mBufferSize;
 	IntuitiveVolatile<size_t> mDataBegin;
 	IntuitiveVolatile<size_t> mDataEnd;
@@ -103,7 +103,7 @@ class VorbisAudioStream : public AudioStream
 	///
 	void RestartFileIfLoopingAndDone();
 
-	size_t ReadIntoBlock(int16 *inSpace, size_t inLength);
+	size_t ReadIntoBlock(Halyard::int16 *inSpace, size_t inLength);
 	bool DoneReadingData() const;
 
 	//////////
@@ -119,8 +119,8 @@ class VorbisAudioStream : public AudioStream
 	///
 	/// This API is inspired by some interfaces in DirectSound.
 	///
-	void GetFreeBlocks(int16 **outSpace1, size_t *outLength1,
-					   int16 **outSpace2, size_t *outLength2);
+	void GetFreeBlocks(Halyard::int16 **outSpace1, size_t *outLength1,
+                       Halyard::int16 **outSpace2, size_t *outLength2);
 
 	//////////
 	/// Mark the specified number of samples as written.

@@ -28,7 +28,7 @@
 enum {
 	/// The decoder documentation claims this is a good size.
 	VORBIS_BUFFER_BYTES = 4096,
-	VORBIS_BUFFER_SIZE = VORBIS_BUFFER_BYTES / sizeof(int16)
+	VORBIS_BUFFER_SIZE = VORBIS_BUFFER_BYTES / sizeof(Halyard::int16)
 };
 
 /// Reads and decodes a file containing Ogg Vorbis audio data.
@@ -43,8 +43,8 @@ class VorbisFile
 	/// storing it until Read() is called.  mBufferBegin points to the
 	/// first valid data in the buffer, and mBufferEnd points one past
 	/// the last valid data.
-	int16 mBuffer[VORBIS_BUFFER_SIZE];
-	int16 *mBufferBegin, *mBufferEnd;
+	Halyard::int16 mBuffer[VORBIS_BUFFER_SIZE];
+	Halyard::int16 *mBufferBegin, *mBufferEnd;
 	int mBufferFrequency;
 	int mBufferChannels;
 	bool mDoneReading;
@@ -58,7 +58,7 @@ class VorbisFile
 	void CheckBufferFrequency();
 	int CheckBufferChannelCountAndGetStretchFactor();
 	size_t GetBufferedSampleCount();
-	void GetSamplesFromBuffer(int16 *outOutputBuffer,
+	void GetSamplesFromBuffer(Halyard::int16 *outOutputBuffer,
 							  size_t inOutputSampleCount,
 							  int inStretchFactor);
 
@@ -86,7 +86,7 @@ public:
 	/// \param result  (out) true if the read succeeded, false if we've reached
 	///                the end of the file
 	///
-	bool Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed);
+	bool Read(Halyard::int16 *outData, size_t inMaxSize, size_t *outSizeUsed);
 
 	//////////
 	/// Read all remaining data from the file and return it in an
@@ -94,7 +94,7 @@ public:
 	///
 	/// \return  The buffer.  The caller must delete this.
 	///
-	std::vector<int16> *ReadAll();
+	std::vector<Halyard::int16> *ReadAll();
 };
 
 #endif // VorbisFile_H
