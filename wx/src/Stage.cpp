@@ -208,6 +208,8 @@ void Stage::MaybeShowSplashScreen() {
     if (TInterpreterManager::ShouldSuppressSplashScreen())
         return;
 
+    mBackgroundDrawingArea->Clear(GraphicsTools::Color(0,0,0));
+
     // TODO - We assume the bitmap is 800x450 pixels, and we lay out
     // this screen using hard-coded co-ordinates.
 
