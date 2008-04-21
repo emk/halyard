@@ -402,9 +402,9 @@ int HalyardApp::OnExit() {
 
 namespace {
     // HACK - Do the song and dance required to get a custom event loop running
-    // with the latest build of wxWidgets.  This is a gross hack, and requires
-    // patching wxWidgets itself.  Hopefully a better interface will be
-    // included in a future version.
+    // with wxWidgets 2.6.  This is a gross hack, and requires
+    // patching wxWidgets itself.  A better interface is available on some
+    // platforms in wxWidgets 2.8; see below.
     class StEventLoopSetup {
         wxEventLoop **m_evtloop_var;
         
@@ -431,12 +431,12 @@ int HalyardApp::MainLoop() {
     return MainLoopInternal();
 }
 
-#elif wxCHECK_VERSION(2,8,0)
+// This version of the event loop should work on some wxWidgets 2.8
+// platforms, but probably not all of them.  If it works on your platform,
+// please add it to the conditional.
+#elif wxCHECK_VERSION(2,8,0) && ((defined __WXMAC_CARBON__) && !wxMAC_USE_RUN_APP_EVENT_LOOP)
 
 #include "wx/ptr_scpd.h"
-
-// This version of the event loop should work on some wxWidgets 2.8
-// platforms, but probably not all of them.
 
 class HalyardEventLoop : public wxEventLoop {
 public:
