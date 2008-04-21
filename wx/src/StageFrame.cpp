@@ -165,7 +165,6 @@ BEGIN_EVENT_TABLE(StageFrame, SashFrame)
     EVT_UPDATE_UI(HALYARD_ABOUT, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_ABOUT, StageFrame::OnAbout)
     EVT_UPDATE_UI(HALYARD_SHOW_LOG, StageFrame::UpdateUiDevTool)
-    EVT_MENU(HALYARD_SHOW_LOG, StageFrame::OnShowLog)
     EVT_UPDATE_UI(HALYARD_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_SHOW_LISTENER, StageFrame::OnShowListener)
     EVT_UPDATE_UI(HALYARD_SHOW_TIMECODER, StageFrame::UpdateUiDevTool)
@@ -209,9 +208,6 @@ StageFrame::StageFrame(wxSize inSize)
       mCurrentFullScreenDisplayId(wxNOT_FOUND),
 	  mIsUpdatingVideoMode(false)
 {
-    // Set up useful logging.
-    mLogWindow = new wxLogWindow(this, wxT("Application Log"), FALSE);
-
 	// We create our tool windows on demand.
 	for (int i = 0; i < TOOL_COUNT; i++)
 		mToolWindows[i] = NULL;
@@ -303,8 +299,6 @@ StageFrame::StageFrame(wxSize inSize)
                         wxT("Show interactive script listener."));
     mWindowMenu->Append(HALYARD_SHOW_TIMECODER, wxT("Show &Timecoder\tCtrl+T"),
                         wxT("Show the movie timecoding utility."));
-    mWindowMenu->Append(HALYARD_SHOW_LOG, wxT("Show &Debug Log"),
-                        wxT("Show application debug log window."));
 
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
@@ -943,11 +937,6 @@ void StageFrame::OnAbout(wxCommandEvent &inEvent)
                           wxT(HALYARD_COPYRIGHT_NOTICE),
                           wxT("About Halyard"), wxOK);
     about.ShowModal();
-}
-
-void StageFrame::OnShowLog(wxCommandEvent &inEvent)
-{
-    mLogWindow->Show(TRUE);
 }
 
 void StageFrame::OnShowListener(wxCommandEvent &inEvent)
