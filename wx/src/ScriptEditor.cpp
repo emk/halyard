@@ -2072,7 +2072,7 @@ ScriptEditor::ScriptEditor()
     file_menu->Append(HALYARD_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
                       "Reload the currently executing Halyard scripts.");
     file_menu->AppendSeparator();
-    file_menu->Append(HALYARD_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
+    file_menu->Append(wxID_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
 
     // Set up our Edit menu.
     wxMenu *edit_menu = new wxMenu();
