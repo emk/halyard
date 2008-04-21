@@ -95,17 +95,21 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mIsDisplayingBorders(false), mIsErrortraceCompileEnabled(false), 
       mIsBeingDestroyed(false)
 {
-    // Set up our class options, *then* call Create(), to avoid early
-    // repainting of this window with the wrong options.  (Theoretically,
-    // if we set wxBG_STYLE_CUSTOM, we don't need to override
-    // EVT_ERASE_BACKGROUND and throw away the message.)
+    // We used to set up our class options, *then* call Create(), to avoid
+    // early repainting of this window with the wrong options.  But that
+    // doesn't work on wxMac, and the application hangs at startup.  So
+    // we've re-ordered the SetBackground* operations after Create(), and
+    // we must now rely on StageFrame to not Show() us until we're ready.
+    //
+    // (Theoretically, if we set wxBG_STYLE_CUSTOM, we don't need to
+    // override EVT_ERASE_BACKGROUND and throw away the message.)
     //
     // Note that we *can't* use use wxCLIP_CHILDREN here, because some of
     // our children (in particular, movies) *need* to be overdrawn until
     // they're ready to draw themselves.
+    Create(inParent, -1, wxDefaultPosition, inStageSize);
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetBackgroundColour(STAGE_COLOR);
-    Create(inParent, -1, wxDefaultPosition, inStageSize);
 
     // Set the owner of our mTimer object.
     mTimer.SetOwner(this, HALYARD_STAGE_TIMER);
