@@ -431,10 +431,23 @@ int HalyardApp::MainLoop() {
 
 #elif wxCHECK_VERSION(2,8,0)
 
-// XXX - For now, just let wxWidgets define the event loop.  This won't
-// work at all, but it might allow us to link.
+#include "wx/ptr_scpd.h"
+
+// This version of the event loop should work on some wxWidgets 2.8
+// platforms, but probably not all of them.
+
+class HalyardEventLoop : public wxEventLoop {
+public:
+    virtual int Run() {
+        return wxGetApp().MainLoopInternal();
+    }
+};
+
+wxDEFINE_TIED_SCOPED_PTR_TYPE(wxEventLoop);
+
 int HalyardApp::MainLoop() {
-    return wxApp::MainLoop();
+    wxEventLoopTiedPtr mainLoop(&m_mainLoop, new HalyardEventLoop);
+    return m_mainLoop->Run();
 }
 
 #else
