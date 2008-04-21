@@ -145,7 +145,7 @@ void StageBackground::CenterStage(Stage *inStage)
 //=========================================================================
 
 BEGIN_EVENT_TABLE(StageFrame, SashFrame)
-    EVT_MENU(HALYARD_EXIT, StageFrame::OnExit)
+    EVT_MENU(wxID_EXIT, StageFrame::OnExit)
 
     EVT_UPDATE_UI(HALYARD_NEW_PROGRAM, StageFrame::UpdateUiNewProgram)
     EVT_MENU(HALYARD_NEW_PROGRAM, StageFrame::OnNewProgram)
@@ -162,8 +162,8 @@ BEGIN_EVENT_TABLE(StageFrame, SashFrame)
     EVT_UPDATE_UI(HALYARD_RUN_TESTS, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_RUN_TESTS, StageFrame::OnRunTests)
 
-    EVT_UPDATE_UI(HALYARD_ABOUT, StageFrame::UpdateUiDevTool)
-    EVT_MENU(HALYARD_ABOUT, StageFrame::OnAbout)
+    EVT_UPDATE_UI(wxID_ABOUT, StageFrame::UpdateUiDevTool)
+    EVT_MENU(wxID_ABOUT, StageFrame::OnAbout)
     EVT_UPDATE_UI(HALYARD_SHOW_LOG, StageFrame::UpdateUiDevTool)
     EVT_UPDATE_UI(HALYARD_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_SHOW_LISTENER, StageFrame::OnShowListener)
@@ -255,7 +255,7 @@ StageFrame::StageFrame(wxSize inSize)
     mFileMenu->Append(HALYARD_RUN_TESTS, wxT("Run &Tests\tCtrl+T"),
                       wxT("Run test cases for Halyard and/or current script."));
     mFileMenu->AppendSeparator();
-    mFileMenu->Append(HALYARD_EXIT, wxT("E&xit"), wxT("Exit the application."));
+    mFileMenu->Append(wxID_EXIT, wxT("E&xit"), wxT("Exit the application."));
 
     // Set up our Card menu.
     mCardMenu = new wxMenu();
@@ -302,7 +302,7 @@ StageFrame::StageFrame(wxSize inSize)
 
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
-    mHelpMenu->Append(HALYARD_ABOUT, wxT("&About"),
+    mHelpMenu->Append(wxID_ABOUT, wxT("&About"),
                       wxT("About the Halyard multimedia system."));
 
     // Set up our menu bar.
