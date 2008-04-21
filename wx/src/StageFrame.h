@@ -323,6 +323,8 @@ public:
 #endif // APP_PLATFORM_WIN32
 
 private:
+    bool SaveAllForReloadScript();
+    bool TryToCloseScriptEditor(const wxCloseEvent &inEvent);
     bool AreDevToolsAvailable();
 
 	// Lots of menu and toolbar event handlers.

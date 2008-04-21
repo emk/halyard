@@ -44,7 +44,9 @@
 #include "TestHarness.h"
 #include "Listener.h"
 #include "Timecoder.h"
-#include "ScriptEditor.h"
+#if CONFIG_HAVE_SCRIPTEDITOR
+#   include "ScriptEditor.h"
+#endif // CONFIG_HAVE_SCRIPTEDITOR
 #include "GuiUtil.h"
 #include "dlg/ProgramPropDlg.h"
 #include "dlg/AdjustScreenDlg.h"
@@ -151,8 +153,10 @@ BEGIN_EVENT_TABLE(StageFrame, SashFrame)
     EVT_MENU(HALYARD_OPEN_PROGRAM, StageFrame::OnOpenProgram)
     EVT_UPDATE_UI(HALYARD_SAVE_PROGRAM, StageFrame::UpdateUiSaveProgram)
     EVT_MENU(HALYARD_SAVE_PROGRAM, StageFrame::OnSaveProgram)
+#if CONFIG_HAVE_SCRIPTEDITOR
     EVT_UPDATE_UI(HALYARD_EDIT_SCRIPTS, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_EDIT_SCRIPTS, StageFrame::OnEditScripts)
+#endif // CONFIG_HAVE_SCRIPTEDITOR
     EVT_UPDATE_UI(HALYARD_RELOAD_SCRIPTS, StageFrame::OnUpdateUiReloadScripts)
     EVT_MENU(HALYARD_RELOAD_SCRIPTS, StageFrame::OnReloadScripts)
     EVT_UPDATE_UI(HALYARD_RUN_TESTS, StageFrame::UpdateUiDevTool)
@@ -181,9 +185,11 @@ BEGIN_EVENT_TABLE(StageFrame, SashFrame)
     EVT_MENU(HALYARD_PROPERTIES, StageFrame::OnProperties)
     EVT_UPDATE_UI(HALYARD_EDIT_MODE, StageFrame::UpdateUiEditMode)
     EVT_MENU(HALYARD_EDIT_MODE, StageFrame::OnEditMode)
+#if CONFIG_HAVE_SCRIPTEDITOR
     EVT_UPDATE_UI(HALYARD_EDIT_CARD_SCRIPT,
                   StageFrame::UpdateUiEditCardScript)
     EVT_MENU(HALYARD_EDIT_CARD_SCRIPT, StageFrame::OnEditCardScript)
+#endif // CONFIG_HAVE_SCRIPTEDITOR
     EVT_UPDATE_UI(HALYARD_JUMP_CARD, StageFrame::UpdateUiJumpCard)
     EVT_MENU(HALYARD_JUMP_CARD, StageFrame::OnJumpCard)
     EVT_UPDATE_UI(HALYARD_STOP_MOVIES, StageFrame::UpdateUiStopMovies)
@@ -243,8 +249,10 @@ StageFrame::StageFrame(wxSize inSize)
     mFileMenu->Append(HALYARD_SAVE_PROGRAM, wxT("&Save Program\tCtrl+S"),
                       wxT("Save the current Halyard program."));
     mFileMenu->AppendSeparator();
+#if CONFIG_HAVE_SCRIPTEDITOR
     mFileMenu->Append(HALYARD_EDIT_SCRIPTS, wxT("&Edit Scripts\tCtrl+E"),
                       wxT("Edit the Halyard script files for this program."));
+#endif // CONFIG_HAVE_SCRIPTEDITOR
     mFileMenu->Append(HALYARD_RELOAD_SCRIPTS, wxT("&Reload Scripts\tCtrl+R"),
                       wxT("Reload the currently executing Halyard scripts."));
     mFileMenu->AppendSeparator();
@@ -257,8 +265,10 @@ StageFrame::StageFrame(wxSize inSize)
     mCardMenu = new wxMenu();
     mCardMenu->Append(HALYARD_EDIT_MODE, wxT("&Edit Card\tCtrl+Space"),
                       wxT("Enter or exit card-editing mode."));
+#if CONFIG_HAVE_SCRIPTEDITOR
     mCardMenu->Append(HALYARD_EDIT_CARD_SCRIPT, wxT("Edit Card Sc&ript\tAlt+."),
                       wxT("Edit this card's script."));
+#endif // CONFIG_HAVE_SCRIPTEDITOR
     mCardMenu->Append(HALYARD_JUMP_CARD, wxT("&Jump to Card...\tCtrl+J"),
                       wxT("Jump to a specified card by name."));
     mCardMenu->Append(HALYARD_STOP_MOVIES, wxT("&Stop Movies\tEsc"),
@@ -785,6 +795,28 @@ WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
 
 #endif // APP_PLATFORM_WIN32
 
+#if CONFIG_HAVE_SCRIPTEDITOR
+
+bool StageFrame::SaveAllForReloadScript() {
+    return ScriptEditor::SaveAllForReloadScript();
+}
+
+bool StageFrame::TryToCloseScriptEditor(const wxCloseEvent &inEvent) {
+    return ScriptEditor::ProcessEventIfExists(inEvent);
+}
+
+#else // !CONFIG_HAVE_SCRIPTEDITOR
+
+bool StageFrame::SaveAllForReloadScript() {
+    return true;
+}
+
+bool StageFrame::TryToCloseScriptEditor(const wxCloseEvent &inEvent) {
+    return true;
+}
+
+#endif // !CONFIG_HAVE_SCRIPTEDITOR
+
 bool StageFrame::AreDevToolsAvailable() {
     return (!TInterpreterManager::IsInRuntimeMode()
             || gDeveloperPrefs.GetPref(DEVTOOLS) == DEVTOOLS_ENABLED);
@@ -836,10 +868,14 @@ void StageFrame::OnSaveProgram(wxCommandEvent &inEvent)
 	mDocument->Save();
 }
 
+#if CONFIG_HAVE_SCRIPTEDITOR
+
 void StageFrame::OnEditScripts(wxCommandEvent &inEvent)
 {
     ScriptEditor::EditScripts();
 }
+
+#endif // CONFIG_HAVE_SCRIPTEDITOR
 
 void StageFrame::OnUpdateUiReloadScripts(wxUpdateUIEvent &inEvent)
 {
@@ -857,7 +893,7 @@ void StageFrame::OnReloadScripts(wxCommandEvent &inEvent)
     if (TInterpreterManager::HaveInstance())
     {
         // Save our documents and focus our stage.
-        if (!ScriptEditor::SaveAllForReloadScript())
+        if (!SaveAllForReloadScript())
             return;
         mStage->SetFocus();
 
@@ -1033,6 +1069,8 @@ void StageFrame::OnEditMode(wxCommandEvent &inEvent)
 	mStage->SetEditMode(!mStage->IsInEditMode());
 }
 
+#if CONFIG_HAVE_SCRIPTEDITOR
+
 void StageFrame::UpdateUiEditCardScript(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(AreDevToolsAvailable() &&
                    mStage->IsScriptInitialized() &&
@@ -1047,6 +1085,8 @@ void StageFrame::OnEditCardScript(wxCommandEvent &inEvent) {
     ASSERT(name != "");
     ScriptEditor::ShowDefinition(wxString(name.c_str(), wxConvLocal));
 }
+
+#endif // CONFIG_HAVE_SCRIPTEDITOR
 
 void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
 {
@@ -1111,7 +1151,7 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
 		ShowFullScreen(false);
 
     // Ask the script editor whether it wants to close.
-    if (ScriptEditor::ProcessEventIfExists(inEvent) && inEvent.GetVeto())
+    if (TryToCloseScriptEditor(inEvent) && inEvent.GetVeto())
         return;
 
 	// Ask the user to save any unsaved documents.
