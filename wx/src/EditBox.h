@@ -41,7 +41,7 @@ public:
     EditBox(Stage *inStage, const wxString &inName, 
             Halyard::TCallbackPtr inDispatch,
             const wxRect &inBounds, const wxString inText,
-            uint32 inSize, bool inIsMultiline, bool inEnterIsEvent);
+            Halyard::uint32 inSize, bool inIsMultiline, bool inEnterIsEvent);
 
     /// Get the current value of the text box.
     wxString GetValue() const;

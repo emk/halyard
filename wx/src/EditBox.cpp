@@ -24,6 +24,8 @@
 #include "EditBox.h"
 #include "EventDispatcher.h"
 
+using namespace Halyard;
+
 
 //=========================================================================
 //  CustomTextCtrl

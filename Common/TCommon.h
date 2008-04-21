@@ -79,28 +79,6 @@ extern void HalyardCheckAssertion(int inTest, const char *inDescription,
 #endif
 #endif 
 
-typedef char   int8;
-typedef short  int16;
-typedef long   int32;
-
-typedef unsigned char   uint8;
-typedef unsigned short  uint16;
-typedef unsigned long   uint32;
-
-// The MIN_INTn values must be written as "-MAX - 1" because some
-// compilers can't handle the smallest possible 32-bit integer as
-// a literal value in the source code.
-#define MAX_INT8  ((int8)  0x007F)
-#define MIN_INT8  (-(MAX_INT8) - 1)
-#define MAX_INT16 ((int16) 0x7FFF)
-#define MIN_INT16 (-(MAX_INT16) - 1)
-#define MAX_INT32 ((int32) 0x7FFFFFFF)
-#define MIN_INT32 (-(MAX_INT32) - 1)
-
-#define MAX_UINT8 ((uint8) 0x00FF)
-#define MAX_UINT16 ((uint16) 0xFFFF)
-#define MAX_UINT32 ((uint32) 0xFFFFFFFF)
-
 #define Max(x, y)   ((x) > (y) ? (x) : (y))
 #define Min(x, y)   ((x) < (y) ? (x) : (y))
 #define Absolute(x) (((x) > 0)? (x): ((x) * -1))
@@ -132,6 +110,28 @@ enum Alignment
     AlignCenter,
     AlignRight
 };
+
+typedef char   int8;
+typedef short  int16;
+typedef long   int32;
+
+typedef unsigned char   uint8;
+typedef unsigned short  uint16;
+typedef unsigned long   uint32;
+
+// The MIN_INTn values must be written as "-MAX - 1" because some
+// compilers can't handle the smallest possible 32-bit integer as
+// a literal value in the source code.
+#define MAX_INT8  ((int8)  0x007F)
+#define MIN_INT8  (-(MAX_INT8) - 1)
+#define MAX_INT16 ((int16) 0x7FFF)
+#define MIN_INT16 (-(MAX_INT16) - 1)
+#define MAX_INT32 ((int32) 0x7FFFFFFF)
+#define MIN_INT32 (-(MAX_INT32) - 1)
+
+#define MAX_UINT8 ((uint8) 0x00FF)
+#define MAX_UINT16 ((uint16) 0xFFFF)
+#define MAX_UINT32 ((uint32) 0xFFFFFFFF)
 
 END_NAMESPACE_HALYARD
 
