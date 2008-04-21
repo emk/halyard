@@ -103,11 +103,11 @@ public:
 // Define BrowserElementNative to map to an appropriate browser clas.  This
 // is essentially a low-budget "factory" pattern.
 #include "BrowserElementWx.h"
-#if __WXMSW__
+#if defined __WXMSW__
 #   include "BrowserElementIE.h"
 #   define BrowserElementNative BrowserElementIE
-#else // !__WXMSW__
+#else // !defined __WXMSW__
 #   define BrowserElementNative BrowserElementWx
-#endif // !__WXMSW__
+#endif // !defined __WXMSW__
 
 #endif // BrowserElement_H

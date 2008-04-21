@@ -801,7 +801,7 @@ bool StageFrame::SaveAllForReloadScript() {
     return ScriptEditor::SaveAllForReloadScript();
 }
 
-bool StageFrame::TryToCloseScriptEditor(const wxCloseEvent &inEvent) {
+bool StageFrame::TryToCloseScriptEditor(wxCloseEvent &inEvent) {
     return ScriptEditor::ProcessEventIfExists(inEvent);
 }
 
@@ -811,7 +811,7 @@ bool StageFrame::SaveAllForReloadScript() {
     return true;
 }
 
-bool StageFrame::TryToCloseScriptEditor(const wxCloseEvent &inEvent) {
+bool StageFrame::TryToCloseScriptEditor(wxCloseEvent &inEvent) {
     return true;
 }
 

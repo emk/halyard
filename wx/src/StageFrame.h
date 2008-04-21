@@ -324,7 +324,7 @@ public:
 
 private:
     bool SaveAllForReloadScript();
-    bool TryToCloseScriptEditor(const wxCloseEvent &inEvent);
+    bool TryToCloseScriptEditor(wxCloseEvent &inEvent);
     bool AreDevToolsAvailable();
 
 	// Lots of menu and toolbar event handlers.

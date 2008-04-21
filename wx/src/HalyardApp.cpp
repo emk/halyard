@@ -398,7 +398,7 @@ int HalyardApp::OnExit() {
 
 // If we're building with our custom-patched version of wxWidgets 2.6.1p1,
 // we need to do this the hard way.
-#if __WXMSW__ && wxCHECK_VERSION(2,6,1) && !wxCHECK_VERSION(2,6,2)
+#if defined __WXMSW__ && wxCHECK_VERSION(2,6,1) && !wxCHECK_VERSION(2,6,2)
 
 namespace {
     // HACK - Do the song and dance required to get a custom event loop running
