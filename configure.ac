@@ -87,6 +87,18 @@ esac
 AM_CONDITIONAL([NEED_BUNDLE], [test x$need_bundle = xyes ])
 AC_MSG_RESULT($need_bundle)
 
+AC_MSG_CHECKING(whether to use precompiled headers)
+AC_ARG_ENABLE(precompiled,
+    AC_HELP_STRING(
+        [--disable-precompiled],
+        [don't use gcc precompiled headers]
+    ),
+    [],
+    [enable_precompiled=yes]
+)
+AM_CONDITIONAL([ENABLE_PRECOMPILED_HEADERS],
+               [test x$enable_precompiled = xyes ])
+AC_MSG_RESULT($enable_precompiled)
 
 #==========================================================================
 # Checks for library functions.

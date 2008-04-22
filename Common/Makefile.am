@@ -17,7 +17,6 @@ libimlunit_a_SOURCES = \
 libhalyard_a_SOURCES = \
 	CaptionList.cpp CaptionList.h \
 	CommandLine.cpp CommandLine.h \
-	CommonHeaders.cpp CommonHeaders.h \
 	CrashReporter.cpp CrashReporter.h \
 	doc/Document.cpp doc/Document.h \
 	doc/HalyardProgram.cpp doc/HalyardProgram.h \
@@ -94,10 +93,18 @@ CommonTest_LDADD = \
 #
 #  We go to the trouble of setting up precompiled headers because boost
 #  includes tons of templates, which slows down gcc considerably.
-#
-#  TODO - How do I add a dependency to all our *.cpp files?
+#  Unfortunately, this only reduces compilation time by 1/3rd, but it's
+#  better than nothing.
 
-#%.h.pcx: %.h
-#	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -x c++-header -c -o $@ $<; then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+CLEANFILES = CommonHeaders.h.gch
 
-#include ./$(DEPDIR)/CommonHeaders.Po
+if ENABLE_PRECOMPILED_HEADERS
+
+$(libhalyard_a_OBJECTS) $(CommonTest_OBJECTS): CommonHeaders.h.gch
+
+include ./$(DEPDIR)/CommonHeaders.Po
+
+%.h.gch: %.h
+	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -x c++-header -c -o $@ $<; then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+  
+endif

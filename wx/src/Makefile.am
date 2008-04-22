@@ -27,7 +27,7 @@ endif
 resources.cpp: application.xrc
 	$(WXRC) -c -o $@ $<
 
-CLEANFILES = resources.cpp
+CLEANFILES = resources.cpp AppHeaders.h.gch
 
 # Until we can actually compile all our source files, build a library
 # instead of an application.
@@ -38,7 +38,6 @@ halyard_SOURCES = \
 	AppConfig.h \
 	AppGlobals.h \
 	AppGraphics.cpp AppGraphics.h \
-	AppHeaders.cpp AppHeaders.h \
 	AppLog.cpp AppLog.h \
 	BrowserElement.cpp BrowserElement.h \
 	BrowserElementWx.cpp BrowserElementWx.h \
@@ -133,3 +132,22 @@ halyard_LDADD = \
 #ActiveXElement.cpp ActiveXElement.h
 #BrowserElementIE.cpp BrowserElementIE.h
 #resource.h
+
+
+#==========================================================================
+#  Precompiled Headers
+#==========================================================================
+
+# We include AppHeaders.h.gch in CLEANFILES higher up in the file.
+#CLEANFILES = AppHeaders.h.gch
+
+if ENABLE_PRECOMPILED_HEADERS
+
+$(halyard_OBJECTS): AppHeaders.h.gch
+
+include ./$(DEPDIR)/AppHeaders.Po
+
+%.h.gch: %.h
+	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -x c++-header -c -o $@ $<; then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+
+endif
