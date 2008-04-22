@@ -23,14 +23,21 @@
 #ifndef TQTMovie_H
 #define TQTMovie_H
 
-#include <windows.h>
+// QuickTime requires a different set of headers on every platform.
+#if defined __WXMSW__
+#   include <windows.h>
+#   include <QTML.h>
+#   include <Movies.h>
+#elif defined __WXMAC_CARBON__
+#   include <Carbon/Carbon.h>
+#   include <QuickTime/QuickTime.h>
+#endif
 
+// Our portable system headers.
 #include <string>
 #include <deque>
 #include <stdexcept>
 #include <time.h>
-
-#include <Movies.h>
 
 // TODO - 
 //   Preload support
@@ -44,8 +51,6 @@
 //   Port to 3.2.0.x
 //   Port to 3.3.x
 
-
-//BEGIN_NAMESPACE_HALYARD
 
 //////////
 /// This exception class represents a MacOS error.  Note that QuickTime
@@ -65,6 +70,8 @@ public:
     /// apparently the slightly larger version of the OSErr type.
 	///
 	TMacError(const char *inFile, int inLine, ComponentResult inErrorCode);
+
+    virtual ~TMacError() throw () {}
 	
 	//////////
 	/// If inErrCode does not equal noErr, raise an error.
@@ -123,9 +130,12 @@ private:
 public:
 	static void InitializeMovies();
 	static void ShutDownMovies();
+
+#if defined __WXMSW__
 	static void RegisterWindowForMovies(HWND inWindow);
 	static void UnregisterWindowForMovies(HWND inWindow);
 	static CGrafPtr GetPortFromHWND(HWND inWindow);
+#endif // defined __WXMSW__
 
     //////////
     /// Does the specified path belong to a remote, streaming movie?
@@ -387,6 +397,8 @@ public:
     ///
     bool GetNextCaption(std::string &outCaption);
 
+#if defined __WXMSW__
+
 	//////////
 	/// Fill out a Win32 MSG object based on the parameters to this
 	/// function and the per-thread message state.
@@ -441,6 +453,8 @@ public:
 	///
 	void Key(HWND hWnd, SInt8 inKey, long inModifiers)
 		throw ();
+
+#endif // defined __WXMSW__
 
 protected:
 	virtual bool ActionFilter(short inAction, void* inParams);
@@ -502,6 +516,9 @@ private:
                                  short *inDisplayFlag, long inRefCon) throw ();
 };
 
-//END_NAMESPACE_HALYARD
+//////////
+/// Register our QuickTime-related primitives with the engine.
+///
+extern void RegisterQuickTimePrimitives();
 
 #endif // TQTMovie_H

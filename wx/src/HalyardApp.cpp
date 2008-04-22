@@ -39,7 +39,6 @@
 #endif // CONFIG_HAVE_FANCYCRASHREPORT
 #if CONFIG_HAVE_QUICKTIME
 #	include "TQTMovie.h"
-#   include "TQTPrimitives.h"
 #endif // CONFIG_HAVE_QUICKTIME
 #include "AppGlobals.h"
 #include "HalyardApp.h"

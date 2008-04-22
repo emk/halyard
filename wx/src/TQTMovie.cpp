@@ -20,16 +20,12 @@
 //
 // @END_LICENSE
 
-#define _CRT_SECURE_NO_DEPRECATE (1)
+#include "AppHeaders.h"
 
-#include <QTML.h>
+#include "TPrimitives.h"
 #include "TQTMovie.h"
 
-// Make sure some kind of assertions are available.
-#include <crtdbg.h>
-#define ASSERT(x) _ASSERTE(x)
-
-//using namespace Halyard;
+using namespace Halyard;
 
 bool TQTMovie::sIsQuickTimeInitialized = false;
 CGrafPtr TQTMovie::sDummyGWorld = NULL;
@@ -52,6 +48,26 @@ void TMacError::Check(const char *inFile, int inLine,
     if (inErrorCode != noErr)
 		throw TMacError(inFile, inLine, inErrorCode);
 }
+
+
+//=========================================================================
+// Compatibility Functions
+//=========================================================================
+// The Windows version of QuickTime defines a number of functions which
+// don't exist on the Mac version.  We provide stubs and wrappers here to
+// help keep #ifdefs out of the code below.
+
+#if defined __WXMAC__
+
+static OSErr InitializeQTML(int flags) {
+    return noErr;
+}
+
+static void TerminateQTML() {
+    // Do nothing.
+}
+
+#endif
 
 
 //=========================================================================
@@ -107,6 +123,8 @@ void TQTMovie::ShutDownMovies()
 	}
 }
 
+#if defined __WXMSW__
+
 void TQTMovie::RegisterWindowForMovies(HWND inWindow)
 {
 	ASSERT(sIsQuickTimeInitialized);
@@ -133,6 +151,8 @@ CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
 	return reinterpret_cast<CGrafPtr>(::GetNativeWindowPort(inWindow));
 }
 
+#endif // defined __WXMSW__
+
 bool TQTMovie::IsRemoteMoviePath(const std::string &inMoviePath) {
     return (inMoviePath.find("http:") == 0 ||
             inMoviePath.find("rtsp:") == 0 ||
@@ -147,9 +167,8 @@ bool TQTMovie::IsRemoteMoviePath(const std::string &inMoviePath) {
 // grouped these together so you have some chance of seeing what's up.
 
 TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
-    : mPort(inPort), mState(MOVIE_UNINITIALIZED),
-      mCanGetMovieProperties(false),
-	  mMovie(NULL), mMovieController(NULL),
+    : mState(MOVIE_UNINITIALIZED), mCanGetMovieProperties(false),
+	  mPort(inPort), mMovie(NULL), mMovieController(NULL),
       mVolume(1.0f), mShouldStartWhenReady(false),
       mShouldPauseWhenStarted(false),
       mTimeoutStarted(false), mTimeoutDisabled(false),
@@ -694,6 +713,8 @@ bool TQTMovie::GetNextCaption(std::string &outCaption)
     return true;
 }
 
+#if defined __WXMSW__
+
 void TQTMovie::FillOutMSG(HWND inHWND, UINT inMessage, WPARAM inWParam,
 						  LPARAM inLParam, MSG *outMessage)
 {
@@ -789,6 +810,8 @@ void TQTMovie::Key(HWND hWnd, SInt8 inKey, long inModifiers)
 		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
 	::MCKey(mMovieController, inKey, inModifiers);	
 }
+
+#endif // defined __WXMSW__
 
 void TQTMovie::DoAction(mcAction inAction, void *inParam)
 {
@@ -905,4 +928,78 @@ OSErr TQTMovie::CaptionCallback(Handle inText, Movie inMovie,
 
     END_QT_CALLBACK(noErr);
     return noErr;
+}
+
+
+//=========================================================================
+//  Primitive Implementations
+//=========================================================================
+
+//-------------------------------------------------------------------------
+// (QTComponentVersion type:STRING subtype:STRING)
+//-------------------------------------------------------------------------
+// Get the version of the QuickTime component specified by TYPE and
+// SUBTYPE.  This allows us to check the versions of our video
+// codecs.
+//
+// TYPE and SUBTYPE are four-character, case-sensitive strings.
+
+DEFINE_PRIMITIVE(QTComponentVersion)
+{
+	long version = 0;
+	OSType type, subtype;
+	ComponentInstance ci = NULL;
+	OSErr err = noErr;
+
+	// Get our type & subtype.
+	std::string type_str, subtype_str;
+	inArgs >> type_str >> subtype_str;
+	if (type_str.length() != 4 || subtype_str.length() != 4)
+	{
+		gLog.Caution("QTComponent type and subtype must be four characters.");
+		goto done;
+	}
+	
+	// Convert them to OSType values.  We use << to avoid endianness problems.
+	type = (type_str[0] << 24 | type_str[1] << 16 |
+			type_str[2] << 8 | type_str[3]);
+	subtype = (subtype_str[0] << 24 | subtype_str[1] << 16 |
+			   subtype_str[2] << 8 | subtype_str[3]);
+	
+	// Open the component.
+	ci = ::OpenDefaultComponent(type, subtype);
+	if (!ci)
+	{
+		gLog.Log("Can't open component %s/%s",
+				 type_str.c_str(), subtype_str.c_str());
+		goto done;
+	}
+
+	// Get the version number.
+	version = ::GetComponentVersion(ci);
+	if (::GetComponentInstanceError(ci) != noErr)
+	{
+		gLog.Log("Can't get component version for %s/%s",
+				 type_str.c_str(), subtype_str.c_str());
+		version = 0;
+	}
+	
+	// Close the component.
+	err = ::CloseComponent(ci);
+	if (err != noErr)
+		gLog.Log("Can't close component %s/%s",
+				 type_str.c_str(), subtype_str.c_str());
+
+done:
+	::SetPrimitiveResult(version);
+}
+
+
+//=========================================================================
+//  RegisterQTPrimitives
+//=========================================================================
+//  Install our QuickTime primitives.
+
+void RegisterQuickTimePrimitives() {
+	REGISTER_PRIMITIVE(QTComponentVersion);
 }

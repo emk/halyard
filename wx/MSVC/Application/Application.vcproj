@@ -542,34 +542,6 @@
 				RelativePath="..\..\src\TQTMovie.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\Common\TQTPrimitives.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -861,10 +833,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\TQTMovie.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\Common\TQTPrimitives.h"
 				>
 			</File>
 			<File
