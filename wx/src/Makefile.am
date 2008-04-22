@@ -1,4 +1,4 @@
-AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I../../Common
+AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I$(top_srcdir)/Common
 # We turn off deprecated function warnings, because we're currently trying
 # to compile the same code base under both wxWidgets 2.6 and 2.8, and we
 # want all _other_ warnings to abort the compilation process, thanks to
@@ -94,10 +94,10 @@ halyard_SOURCES = \
 	Widget.cpp Widget.h \
 	Zone.cpp Zone.h
 halyard_LDADD = \
-	../../Common/libhalyard.a \
-	../../Common/libimlunit.a \
-	../../libs/sha1/libsha1.a \
-	../../libs/sqlite3-plus/sqlite3-plus/libsqlite3_plus.a \
+	$(top_builddir)/Common/libhalyard.a \
+	$(top_builddir)/Common/libimlunit.a \
+	$(top_builddir)/libs/sha1/libsha1.a \
+	$(top_builddir)/libs/sqlite3-plus/sqlite3-plus/libsqlite3_plus.a \
 	$(BOOST_LDFLAGS) \
         $(BOOST_FILESYSTEM_LIB) \
 	$(XML2_LIBS) \

@@ -1,8 +1,8 @@
 # Set up our preprocessor and compiler flags.  Here, DISABLE_UNPORTED
 # is a temporary way to disable parts of the code which won't build on
 # non MSVC++ platforms yet.
-AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I../libs/sha1 \
-	-I../libs/sqlite3-plus/sqlite3-plus
+AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I$(top_srcdir)/libs/sha1 \
+	-I$(top_srcdir)/libs/sqlite3-plus/sqlite3-plus
 AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS)
 
 noinst_LIBRARIES = libimlunit.a libhalyard.a
@@ -73,8 +73,8 @@ CommonTest_SOURCES = \
 CommonTest_LDADD = \
 	libhalyard.a \
 	libimlunit.a \
-	../libs/sha1/libsha1.a \
-	../libs/sqlite3-plus/sqlite3-plus/libsqlite3_plus.a \
+	$(top_builddir)/libs/sha1/libsha1.a \
+	$(top_builddir)/libs/sqlite3-plus/sqlite3-plus/libsqlite3_plus.a \
 	$(BOOST_LDFLAGS) \
         $(BOOST_FILESYSTEM_LIB) \
 	$(XML2_LIBS) \
