@@ -104,16 +104,16 @@
     (syntax-case stx ()
       [(_ . varname)
 
-       ;; Look for symbols matching the regex '^@[A-Za-z0-9_]'.
+       ;; Look for symbols matching the regex '^@[a-z/]'.
        (let [[v (syntax-object->datum #'varname)]]
          (and (symbol? v)
               (let [[vstr (symbol->string v)]]
                 (and (>= (string-length vstr) 2)
                      (eq? #\@ (string-ref vstr 0))
                      (let [[c (string-ref vstr 1)]]
-                       (or (eq? c #\_)
-                           (char-alphabetic? c)
-                           (char-numeric? c)))))))
+                       (or (eq? c #\/)
+                           (and (char-alphabetic? c)
+                                (char-lower-case? c))))))))
 
        ;; Transform @foo -> (@ foo).
        (let* [[str (symbol->string (syntax-object->datum #'varname))]

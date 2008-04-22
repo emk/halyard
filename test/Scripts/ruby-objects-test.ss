@@ -5,29 +5,29 @@
   (require (lib "test-elements.ss" "halyard"))
   (require (lib "ruby-objects-test.ss" "mizzen"))
 
-  (group ruby-objects-test)
+  (group /ruby-objects-test)
   
   
   ;;=======================================================================
   ;;  Test runner cards for mizzen test cases
   ;;=======================================================================
   
-  (card ruby-objects-test/classes
+  (card /ruby-objects-test/classes
       (%test-suite%
        :tests (list %swindle-class-operators%
                     %universal-class-operators%)))
 
-  (card ruby-objects-test/objects
+  (card /ruby-objects-test/objects
       (%test-suite%
        :tests (list %ruby-object-test%
                     %ruby-new-test%
                     %ruby-responds-to-test%
                     %ruby-metaclass-test%)))
   
-  (card ruby-objects-test/advise-test (%test-suite%)
+  (card /ruby-objects-test/advise-test (%test-suite%)
     (value tests (list %advise-test%)))
   
-  (card ruby-objects-test/error-message-test (%test-suite%)
+  (card /ruby-objects-test/error-message-test (%test-suite%)
     (value tests (list %error-message-test-case%)))
 
 
@@ -49,6 +49,6 @@
                         :at (point 0 0)
                         :shape (shape 200 300)))))
   
-  (card ruby-objects-test/initialize-without-super-test (%element-test-suite%)
+  (card /ruby-objects-test/initialize-without-super-test (%element-test-suite%)
     (value tests (list %initialize-without-super-test%)))
   )

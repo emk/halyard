@@ -398,18 +398,22 @@ wxTreeItemId ProgramTree::FindParentContainer(const std::string &inName,
 											  std::string &outLocalName)
 {
     ASSERT(mCardsID.IsOk());
+    // Look backwards through the string for slashes, to separate the
+    // node name from the parent name.
 	std::string::size_type slashpos = inName.rfind('/');
-	if (slashpos == std::string::npos)
+	if (slashpos == 0)
 	{
-		// We didn't find a slash anywhere in the string, so put it at the
-		// top level and call it done. 
-		outLocalName = inName;
+		// The only slash is at the beginning of the string,
+        // indicating we're a child of the root node.  Strip off the
+        // slash for the local name, and return mCardsID to put us at
+        // the root of the hierarchy.
+		outLocalName = std::string(inName, 1, std::string::npos);
 		return mCardsID;
 	}
-	else if (slashpos == 0 || slashpos == inName.size() - 1)
+	else if (slashpos == std::string::npos || slashpos == inName.size() - 1)
 	{
 		// We don't like this string.
-		gLog.Error("Illegal card name: \"%s", inName.c_str());
+		gLog.Error("Illegal card name: \"%s\"", inName.c_str());
 		outLocalName = inName;
 		return mCardsID;
 	}

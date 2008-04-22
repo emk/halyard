@@ -39,7 +39,7 @@
                                    :name 'foo :zarqan 1))))
     )
   
-  (card tests/element-test
+  (card /tests/element-test
       (%element-test-suite%
        :tests (list %element-test%)))
   
@@ -81,7 +81,7 @@
       ;; Because of the veto, the shape should remain unchanged.
       (assert-equals original-shape (foo .shape))))
   
-  (card tests/custom-element-test
+  (card /tests/custom-element-test
       (%element-test-suite%
        :tests (list %custom-element-test%)))
   
@@ -129,12 +129,12 @@
           (assert-raises-message exn:fail? (node-full-name-error rose)
             (rose .full-name))))
   
-  (card tests/node-test
+  (card /tests/node-test
       (%test-suite%
        :tests (list %node-full-name-test%)))
   
   ;; We need to have a next-card for one of our node-full-name tests.
-  (card tests/next-test-card
+  (card /tests/next-test-card
       (%test-suite% :tests '()))
   
   
@@ -172,7 +172,7 @@
     (test "The browser should accept a zero-sized rect"
           (%test-browser% .new :rect (rect 0 0 0 0))))
   
-  (card tests/native-browser-tests
+  (card /tests/native-browser-tests
       (%element-test-suite%
        :tests (list %browser-simple-test%)))
   
@@ -183,7 +183,7 @@
       (%test-browser% .new :fallback? #t :path "sample.html")))
   
   ;;; NOTE: 
-  (card tests/integrated-browser-tests
+  (card /tests/integrated-browser-tests
       (%element-test-suite%
        :tests (list %fallback-browser%)))
   
@@ -208,7 +208,7 @@
       ;; The shape should be correctly updated.
       (assert-equals new-graphic-shape (foo .shape))))
   
-  (card tests/graphic-test
+  (card /tests/graphic-test
       (%element-test-suite%
        :tests (list %graphic-element-test%)))
   
@@ -264,7 +264,7 @@
        trace)
       (assert-matches "\\(\\+ \\(send self\\* 'bar\\) x\\)" trace)))
 
-  (card tests/errortrace-test
+  (card /tests/errortrace-test
       (%test-suite%
        :tests (list %errortrace-test%)))
   )

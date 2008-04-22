@@ -358,7 +358,7 @@
     (assert (check-for-update))
     (download-update (fn (a b) #f)))
   
-  (card tests/updater
+  (card /tests/updater
       (%test-suite%
        :tests (list %filesystem-test% %downloader-test% %parsing-test% 
                     %updater-test% %crypto-test%)))

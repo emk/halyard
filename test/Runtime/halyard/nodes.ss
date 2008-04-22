@@ -382,9 +382,10 @@
       
       (def (full-name)
         (let [[parent (.parent)]]
-          (if (and parent (not (root-node? parent)))
-            (string->symbol (cat (parent .full-name) "/" (.name)))
-            (.name))))
+          (cond 
+           [(not parent) (.name)] ;; Root node
+           [(root-node? parent) (symcat "/" (.name))]
+           [else (symcat (parent .full-name) "/" (.name))])))
       ))
       
 
@@ -563,9 +564,9 @@
   ;; a node name, and doing a lookup.  The API is subject to change!
   (define (find-child-node base name running?)
     (if (root-node? base)
-      (find-node name running?)
+      (find-node (symcat "/" name) running?)
       (let* [[base-name (base .full-name)]
-             [candidate (string->symbol (cat base-name "/" name))]]
+             [candidate (symcat base-name "/" name)]]
         (find-node candidate running?))))
 
   (define (check-node-name name)
@@ -574,24 +575,38 @@
                   "contain only letters, numbers, hyphens and underscores."))))
 
   (define (analyze-node-name name)
-    ;; Given a name of the form '/', 'foo' or 'bar/baz', return the
+    ;; Given a name of the form '/', '/foo' or '/bar/baz', return the
     ;; node's parent and the "local" portion of the name (excluding the
     ;; parent).  A "/" character separates different levels of nesting.
-    (if (eq? name '|/|)
-        (values #f '|/|) ; Handle the root node.
-        (let* [[str (symbol->string name)]
-               [matches (regexp-match "^(([^/].*)/)?([^/]+)$" str)]]
-          (cond
-           [(not matches)
-            (error (cat "Illegal node name: " name))]
-           [(not (cadr matches))
-            (values (static-root-node) name)]
-           [else
-            (let [[parent (find-node (string->symbol (caddr matches)) #f)]]
-              (unless parent
-                (error (cat "Parent of " name " does not exist.")))
-              (values parent
-                      (string->symbol (cadddr matches))))]))))
+
+    (define (node-name-error)
+      (error (cat "Illegal node name: " name)))
+
+    (let* [[str (symbol->string name)]
+           [matches (regexp-match "^(.+)?/([^/]+)?$" str)]]
+      (define (local-name) (string->symbol (list-ref matches 2)))
+      (cond
+       [(not matches)
+        (node-name-error)]
+       ;; Trailing slash indicates either we're the root node or an error.
+       [(not (list-ref matches 2))
+        (if (list-ref matches 1)
+          (node-name-error)  ; We have a trailing slash, which isn't legal.
+          (values #f '|/|))] ; Handle the root node.
+       ;; Leading slash is the last slash indicates our parent is the 
+       ;; root node.
+       [(not (list-ref matches 1))
+        (values (static-root-node) (local-name))]
+       [else
+        (debug-log (cat "Trying to analyze name " name " got " 
+                        (list-ref matches 1) " and " (list-ref matches 2)))
+        (let [[parent (find-node (string->symbol (list-ref matches 1)) 
+                                 #f)]]
+          (unless parent
+            (foreach [[key value] (*engine* .static-node-table)]
+              (debug-log (cat "Node defined: " key)))
+            (error (cat "Parent of " name " does not exist.")))
+          (values parent (local-name)))])))
 
 
   ;;-----------------------------------------------------------------------

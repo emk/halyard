@@ -24,5 +24,5 @@
 ;; this module, you will get a top-level "tests" sequence containing
 ;; various unit-test cards.
 (module tests "halyard.ss"
-  (require "halyard-unit.ss" "updater-test.ss")
+  (require "halyard-unit.ss" "updater-test.ss" "paths-test.ss")
   )

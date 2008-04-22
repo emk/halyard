@@ -65,7 +65,7 @@
   ;;; group "tests".
   (define (run-all-test-suites &opt run-when-done-with-tests)
     (set! *run-when-done-with-tests* run-when-done-with-tests)
-    (define first-test (tests/run-all .card-next))
+    (define first-test (/tests/run-all .card-next))
     (if first-test
       (begin
         (set! *running-all-tests?* #t)
@@ -136,11 +136,11 @@
 
   (require (lib "tests.ss" "mizzen"))
 
-  (provide tests)
+  (provide /tests)
 
-  (group tests (%card-group% :ordered? #t))
+  (group /tests (%card-group% :ordered? #t))
 
-  (card tests/run-all (%card%)
+  (card /tests/run-all (%card%)
     (text instructions ((point 0 0) $halyard-unit-title-style
                         "Click to run tests")
       (setup
@@ -151,7 +151,7 @@
       (clear-dc (color #xFF #xFF #xFF)))
     )
 
-  (card tests/mizzen (%test-suite% :tests $mizzen-tests))
+  (card /tests/mizzen (%test-suite% :tests $mizzen-tests))
 
 
   ;;========================================================================

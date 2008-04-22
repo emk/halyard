@@ -24,7 +24,7 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "mizzen-unit-test.ss" "mizzen"))
   
-  (card halyard-unit-test
+  (card /halyard-unit-test
       (%test-suite%
        :tests $all-mizzen-unit-tests))
   )

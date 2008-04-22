@@ -11,7 +11,7 @@
   (require (lib "updater.ss" "halyard"))
   (require (file "base.ss"))
 
-  (group updater ())
+  (group /updater ())
   
   (define *error-message* "")
   
@@ -22,7 +22,7 @@
                               (cat exn)))
     (jump @error))
   
-  (card updater/check ()
+  (card /updater/check ()
     (run
       (draw-black-background)
       (unless (auto-update-possible? (current-directory))
@@ -49,7 +49,7 @@
             (new-text-button (below @title 20) "Continue"
                              (fn () (jump @index))))))))
     
-  (card updater/download ()
+  (card /updater/download ()
     (run
       (draw-black-background)
       (with-handlers [[exn:fail? updater-handler]]
@@ -62,7 +62,7 @@
         (download-update (fn (file percent) #f))
         (jump @install))))
     
-  (card updater/install ()
+  (card /updater/install ()
     (run
       (draw-black-background)
       (new-title
@@ -73,11 +73,11 @@
       (new-text-button (below @title 20) "Continue"
                        (fn () (jump @apply)))))
     
-  (card updater/apply ()
+  (card /updater/apply ()
     (run
       (apply-update)))
     
-  (card updater/error ()
+  (card /updater/error ()
     (run
       (draw-black-background)
       (new-title 

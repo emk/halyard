@@ -79,26 +79,26 @@
       (set! ((.caption) .text) (event-caption event)))
     )
 
-  (group media)
+  (group /media)
 
 
   ;;=======================================================================
   ;;  QuickTime
   ;;=======================================================================
 
-  (group media/qt)
+  (group /media/qt)
   
-  (card media/qt/video-captions (%movie-card%)
+  (card /media/qt/video-captions (%movie-card%)
     (value title "Video Captions")
     (value path "duck_and_cover_intro_vp3_captioned.mov"))
 
-  (card media/qt/external-video-captions (%movie-card%)
+  (card /media/qt/external-video-captions (%movie-card%)
     (value title "External Video Captions")
     (value path "quackery_vp3.mov")
     (value controller? #t)
     (value movie-shape $default-movie-and-controller-shape))
 
-  (card media/qt/wait-test (%movie-card%) 
+  (card /media/qt/wait-test (%movie-card%) 
     (value title "Wait Test") 
     (value path "quackery_vp3.mov")
 
@@ -128,7 +128,7 @@
       (delete-element self)))
 
   
-  (card media/qt/movies (%captioned-card%) 
+  (card /media/qt/movies (%captioned-card%) 
     (value title "Multiple Movies")
 
     (define $rect1 (move-rect-top-to $default-movie-and-controller-shape 50))
@@ -162,7 +162,7 @@
       ((.movie1) .wait (tc 10 00))
       (set! ((.show-2nd) .shown?) #t)))  
 
-  (card media/qt/attached-captions (%black-test-card%)
+  (card /media/qt/attached-captions (%black-test-card%)
     (value title "Attached captions")
     (elem movie (%captioned-movie% :movie-rect (move-rect-center-to
                                                 $default-movie-shape
@@ -178,7 +178,7 @@
   ;; particular, it gives a video playback error when run as an
   ;; Administrator, and will generally freeze on the first frame of video
   ;; when run with Aero.  Not ready for prime time!
-  (card media/qt/xiph-qt-codec (%black-test-card%)
+  (card /media/qt/xiph-qt-codec (%black-test-card%)
     (value title "XiphQT Ogg Theora video (experimental, codec required)")
 
     (text-button get-codec ((below @title-elem 10) "Get Codec")
@@ -192,7 +192,7 @@
                  :path "duck_and_cover_intro_theora.ogg"
                  :controller? #t)))
 
-  (group media/qt/missing)
+  (group /media/qt/missing)
   
   (define-class %qtvr-card% (%white-test-card%)
     (attr movie-shape :type <rect>)
@@ -203,12 +203,12 @@
     )
                              
 
-  (card media/qt/missing/qtvr1 (%qtvr-card%
+  (card /media/qt/missing/qtvr1 (%qtvr-card%
                                 :title "QTVR Demo #1 (media missing)"
                                 :movie-shape (shape 320 320)
                                 :path "powerbook17_jan2003_qtvr320.mov"))
 
-  (card media/qt/missing/qtvr2 (%qtvr-card%
+  (card /media/qt/missing/qtvr2 (%qtvr-card%
                                 :title "QTVR Demo #2 (media missing)"
                                 :movie-shape (shape 480 480)
                                 :path "powerbook17_jan2003_qtvr480.mov"))
@@ -288,56 +288,56 @@
       (set! ((.caption) .text) (event-caption event)))
     )
 
-  (group media/audiostream)
-  (group media/audiostream/vorbis)
+  (group /media/audiostream)
+  (group /media/audiostream/vorbis)
 
-  (card media/audiostream/vorbis/stereo
+  (card /media/audiostream/vorbis/stereo
       (%audio-stream-card% :title "Vorbis Stereo\n(Looping)")
     (vorbis-audio stream ("oggtest-stereo.ogg" :loop? #t)))
 
-  (card media/audiostream/vorbis/mono 
+  (card /media/audiostream/vorbis/mono 
       (%audio-stream-card% :title "Vorbis Mono")
     (vorbis-audio stream ("oggtest-mono.ogg")))
 
-  (card media/audiostream/vorbis/twobeeps 
+  (card /media/audiostream/vorbis/twobeeps 
       (%audio-stream-card% :title "Vorbis Two Beeps\n(Broken)")
     (vorbis-audio stream ("oggtest-twobeeps.ogg")))
 
-  (card media/audiostream/vorbis/long 
+  (card /media/audiostream/vorbis/long 
       (%audio-stream-card% :title "Long Vorbis\n(FDA Advisory)")
     (vorbis-audio stream ("quackery.ogg")))
 
-  (group media/audiostream/geiger)
+  (group /media/audiostream/geiger)
 
-  (card media/audiostream/geiger/synth 
+  (card /media/audiostream/geiger/synth 
       (%audio-stream-card% :title "Geiger Counter")
     (geiger-audio stream ("oggtest-geiger-chirp.ogg")
       (setup
         (.set-counts-per-second! 10.0))))
 
-  (group media/audiostream/geiger/loop)
+  (group /media/audiostream/geiger/loop)
 
-  (card media/audiostream/geiger/loop/rate-point8mrph
+  (card /media/audiostream/geiger/loop/rate-point8mrph
       (%audio-stream-card% :title "Ludlum 0.8 mRph")
     (vorbis-audio stream ("ludlum/lud-mod14c-00_8mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/geiger/loop/rate-2mrph
+  (card /media/audiostream/geiger/loop/rate-2mrph
       (%audio-stream-card% :title "Ludlum 2 mRph")
     (vorbis-audio stream ("ludlum/lud-mod14c-02_0mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/geiger/loop/rate-5mrph
+  (card /media/audiostream/geiger/loop/rate-5mrph
       (%audio-stream-card% :title "Ludlum 5 mRph")
     (vorbis-audio stream ("ludlum/lud-mod14c-05_0mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/geiger/loop/rate-10mrph
+  (card /media/audiostream/geiger/loop/rate-10mrph
       (%audio-stream-card% :title "Ludlum 10 mRph") 
     (vorbis-audio stream ("ludlum/lud-mod14c-10_0mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/geiger/loop/rate-50mrph
+  (card /media/audiostream/geiger/loop/rate-50mrph
       (%audio-stream-card% :title "Ludlum 50 mRph")
     (vorbis-audio stream ("ludlum/lud-mod14c-50_0mRph.ogg" :loop? #t)))
 
-  (card media/audiostream/sine
+  (card /media/audiostream/sine
       (%audio-stream-card% :title "440Hz Sine Wave\n(Synthesized)")
     (sine-wave stream (440)))
   
@@ -346,7 +346,7 @@
   ;;  Complete Geiger Counter Synth
   ;;=======================================================================
 
-  (card media/geiger-synth (%audio-stream-card%)
+  (card /media/geiger-synth (%audio-stream-card%)
     (value title "Geiger Synth")
     (def (stream) @stream)
     (run

@@ -533,7 +533,7 @@ protected:
 	//////////
 	/// Make sure the initial card is set to the default value.
 	///
-	void ResetInitialCardName() { mInitialCardName = "start"; }
+	void ResetInitialCardName() { mInitialCardName = "/start"; }
 
 private:
 	//////////
