@@ -17,6 +17,12 @@
     (test "A path should match its .to-string value."
       (assert-equals "@not-a-group/card" (@not-a-group/card .to-string))
       (assert-equals "@/start" (@/start .to-string)))
+    (test "A path should properly report its name in errors."
+      (assert-raises-message exn:fail? "relative path.*@not-a-path/at-all"
+        (@not-a-path/at-all .resolve-path))
+      (assert-raises-message exn:fail? 
+        "absolute path.*@/not-really-a-path/sorry"
+        (@/not-really-a-path/sorry .resolve-path)))
     (test "A path should proxy methods to its running node."
       ;; Test just that .node-state is defined, and doesn't give an error.
       (@tests .node-state))

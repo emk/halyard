@@ -92,11 +92,12 @@
     ;;; Resolve a path.
     (def (resolve-path
           &key (running? #t)
-               (if-not-found
-                (lambda ()
-                  (error (cat "Can't find relative path: " self)))))
+               (if-not-found #f))
       (cond
-        [(.absolute?) (or (find-node (.to-symbol) running?) (if-not-found))]
+        [(.absolute?) (or (find-node (.to-symbol) running?) 
+                          (if if-not-found
+                            (if-not-found)
+                            (error (cat "Can't find absolute path: " self))))]
         [else (unless (current-group-member)
                 (error (cat "Can't find relative path '@" (.to-symbol)
                             "' outside of a card")))
@@ -104,7 +105,9 @@
                                         (current-group-member)
                                         ((current-group-member) .static-node))
                                       (.to-symbol) running?)
-                  (if-not-found))]))
+                  (if if-not-found
+                    (if-not-found)
+                    (error (cat "Can't find relative path: " self))))]))
 
     ;;; Note that (delete-element @foo) will pass a .%delete message to
     ;;; this %node-path%, which we must forward appropriately.
