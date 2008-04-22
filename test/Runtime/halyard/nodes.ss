@@ -598,13 +598,9 @@
        [(not (list-ref matches 1))
         (values (static-root-node) (local-name))]
        [else
-        (debug-log (cat "Trying to analyze name " name " got " 
-                        (list-ref matches 1) " and " (list-ref matches 2)))
         (let [[parent (find-node (string->symbol (list-ref matches 1)) 
                                  #f)]]
           (unless parent
-            (foreach [[key value] (*engine* .static-node-table)]
-              (debug-log (cat "Node defined: " key)))
             (error (cat "Parent of " name " does not exist.")))
           (values parent (local-name)))])))
 
