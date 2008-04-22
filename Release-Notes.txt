@@ -1,6 +1,82 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.7 - 22 April 2008
+
+This release includes a highly-experimental port to Mac OS X.  Video,
+audio, transitions and the script editor don't work yet, but much of the
+core engine now runs.
+
+Brian also has begun work on a new path system.  So far, this requires two
+changes to existing code:
+
+ 1) Card and group names now begin with "/".
+ 2) You may unambiguously refer to a path using an absolute name.
+    For example, "@index" still searches for the nearest node named
+    "index" (using the standard acquisition rules), but "@/index" will
+    always find the top-level card named index.
+
+This is just the start of the new path system; expect the rest of the of
+changes in the next release or two.
+
+Also of interest: (jump-current) now actually calls (jump ...).
+
+Brian Campbell (11):
+      paths: Update node full names to include leading slashes
+      paths: Add unit tests for existing path system
+      paths: Add support for absolute paths, beginning with /
+      buildfile.rb: Re-apply changes from 347d6dc6b6
+      buildfile.rb: Make gpgv.exe executable
+      Merge branch 'master' of ssh://imlsrc.dartmouth.edu/var/lib/git/halyard
+      Merge branch 'master' into paths
+      wxMac: Fixes to compile against Leopard-bundled wxWidgets
+      wxMac: Clear stage background before displaying splash screen
+      paths: Fix .resolve-path errors to actually mention the path name
+      Merge branch 'paths'
+
+Eric Kidd (41):
+      autotools: Add autoconf macros for finding wxWidgets
+      autotools: Check for presence of wxWidgets and create empty Makefile
+      autotools: Rename TestAll to CommonTest for consistency with Windows
+      Add CommonTest to .gitignore
+      wxMac: Start modifying code to build with wxMac 2.8 Unicode
+      wxMac: Regenerate *.xpm files from *.ico and *.bmp files
+      wxMac: Compile CustomTreeCtrl and DirtyList
+      wxMac: Compile wx/src/dlg subdirectory
+      wxMac: Compile DocNotebook and Downloader
+      wxMac: Compile DrawingArea
+      DrawingArea: Move conditional code into top-level functions
+      wxMac: Compile DrawingAreaOpt
+      wxMac: Compile remaining classes beginning with "D" and "E"
+      wxMac: Start work on FancyCrashReporter
+      wxMac: Start work on HalyardApp
+      wxMac: Compile FancyStatusBar, GuiUtil and HistoryText
+      wxMac: Compile classes beginning with "I" and "L"
+      wxMac: Compile MediaElement, MovieElement and MovieWindow
+      wxMac: Compile Overlay, ProgramTree and SashFrame
+      wxMac: Compile Stage, StageAccessible and StageFrame
+      wxMac: Compile TestHarness, Timecoder, ToolWindow, Transition
+      wxMac: Compile TWxPrimitives
+      wxMac: Compile Widget and Zone
+      wxMac: Breaks link: Start trying to link Halyard
+      wxMac: Compile application.xrc
+      wxMac: Conditionalize FancyCrashReporter and BrowserElementIE
+      wxMac: Conditionalize ScriptEditor
+      wxMac: It compiles! (But it doesn't run.)
+      wxMac: Preliminary sketch of event loop
+      wxMac: Don't set Stage background before Create()
+      wxMac: Call wxEventLoopActivator correctly
+      wxMSW build fix: Preprocessor definitions and const removal
+      wxMac: Only use new event loop on tested platforms
+      wxMac: Create proper bundle directory (and it runs!)
+      Remove "Show Debug Log..." menu item
+      wxMac: Use standard menu item IDs
+      autotools: Require wxWidgets 2.8.7
+      Build fix: Replace HALYARD_EXIT with wxID_EXIT in ScriptEditor
+      wxMac QuickTime: Move uint32, etc., into Halyard namespace
+      Build fix: Convert remaining int16 -> Halyard::int16
+      Make (jump-current) actually call (jump ...)
+
 0.5.6 - 17 April 2008
 
 This build fixes a number of serious issues in 0.5.5:
