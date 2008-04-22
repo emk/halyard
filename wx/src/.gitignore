@@ -2,4 +2,5 @@ resources.cpp
 application.aps
 *.o
 *.a
+AppHeaders.h.gch
 halyard

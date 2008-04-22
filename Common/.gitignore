@@ -1,4 +1,4 @@
 *.o
 *.a
-CommonHeaders.h.pcx
+CommonHeaders.h.gch
 CommonTest
