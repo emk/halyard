@@ -706,7 +706,7 @@
   (define-node-definer card %card%)
   
   (define (jump-current)
-    ((current-card) .static-node))
+    (jump ((current-card) .static-node)))
 
   
   ;;-----------------------------------------------------------------------
