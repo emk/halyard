@@ -244,8 +244,7 @@
       (applicable-methods (ruby-class-superclass klass) method-name))
     (if (not klass)
       '()
-      (let [[method (hash-table-get (ruby-class-methods klass) method-name
-                                    (lambda () #f))]]
+      (let [[method (hash-table-get (ruby-class-methods klass) method-name #f)]]
         (if method
           (cons method (recurse))
           (recurse)))))
@@ -274,8 +273,7 @@
       
       ;; Look up the cached method list.  If we don't have it, create it.
       (let* [[cached-methods (ruby-class-cached-methods klass)]
-             [methods (hash-table-get cached-methods method-name
-                                      (lambda () #f))]]
+             [methods (hash-table-get cached-methods method-name #f)]]
         (unless methods
           (set! methods (applicable-methods klass method-name))
           (hash-table-put! cached-methods method-name methods))
