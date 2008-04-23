@@ -49,7 +49,7 @@ TPoint &TPoint::operator=(const TPoint &inPt)
 //
 bool TPoint::operator==(const TPoint &inPt) const
 {
-	if ((inPt.X() == m_X) and
+	if ((inPt.X() == m_X) &&
 		(inPt.Y() == m_Y))
 	{
 		return (true);

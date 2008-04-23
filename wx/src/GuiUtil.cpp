@@ -22,7 +22,7 @@
 
 #include "AppHeaders.h"
 
-#if __WXMSW__
+#ifdef __WXMSW__
 
 #include <windows.h>
 

@@ -76,9 +76,9 @@ TRect &TRect::operator=(const TRect &inRect)
 //
 bool TRect::operator==(const TRect &inRect) const
 {
-	if ((inRect.Top() == m_Top) and
-		(inRect.Left() == m_Left) and
-		(inRect.Bottom() == m_Bottom) and
+	if ((inRect.Top() == m_Top) &&
+		(inRect.Left() == m_Left) &&
+		(inRect.Bottom() == m_Bottom) &&
 		(inRect.Right() == m_Right))
 	{
 		return (true);
@@ -88,9 +88,9 @@ bool TRect::operator==(const TRect &inRect) const
 
 bool TRect::Contains(TPoint &inPt)
 {
-	if ((inPt.X() >= m_Left) and 
-		(inPt.X() <= m_Right) and
-		(inPt.Y() >= m_Top) and 
+	if ((inPt.X() >= m_Left) && 
+		(inPt.X() <= m_Right) &&
+		(inPt.Y() >= m_Top) && 
 		(inPt.Y() <= m_Bottom))
 	{
 		return (true);

@@ -80,7 +80,7 @@ TLogger::~TLogger()
 void TLogger::Init(const FileSystem::Path &inLogFile, 
 				   bool OpenFile /* = true */, bool Append /* = false */)
 {
-	ASSERT(not m_LogOpen);
+	ASSERT(!m_LogOpen);
 
 	FileSystem::Path file_path = inLogFile.ReplaceExtension("log");
 	
@@ -97,7 +97,7 @@ void TLogger::Init(const FileSystem::Path &inLogFile,
 		else
 			m_Log.open(m_FileName.c_str(), std::ios::out);
 
-		if (not m_Log.fail())
+		if (!m_Log.fail())
 			m_LogOpen = true;
 		else
 			m_OpenFailed = true;
@@ -134,7 +134,7 @@ void TLogger::Init(const char *Name, bool OpenFile /* = true */,
 
 void TLogger::Log(int32 Mask, const char *Format, ...)
 {
-	if (not ShouldLog(Mask))
+	if (!ShouldLog(Mask))
 		return;
 
 	FORMAT_MSG(Format);
