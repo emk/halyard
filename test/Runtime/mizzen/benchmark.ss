@@ -7,8 +7,8 @@
   ;;  Benchmarking library
   ;;=======================================================================
 
-  (provide %benchmark% %benchmark-report% memory-allocated define-benchmark
-           all-benchmarks)
+  (provide %benchmark% %benchmark-report% memory-allocated all-benchmarks
+           define-benchmark)
   
   (define-class %benchmark% ()
     (attr name :type <string>)
@@ -42,24 +42,31 @@
 
   (define *benchmarks* '())
 
+  (define (all-benchmarks)
+    (reverse *benchmarks*))
+
+  ;; We need to define a setter so we can change *benchmarks* from macros
+  ;; expanded outside of this module.
+  (define (set-benchmarks! lst)
+    (set! *benchmarks* lst))
+
   (define-syntax define-benchmark
     (syntax-rules (benchmark)
       [(_ name count init-code ... (benchmark body ...))
-       (push! (%benchmark% .new
-                :name name :count count
-                :function (fn (remaining)
-                            init-code ...
-                            (define bytes (memory-allocated body ...))
-                            (define start (current-milliseconds))
-                            (let next [[remaining remaining]]
-                              (unless (zero? remaining)
-                                body ...
-                                (next (- remaining 1))))
-                            (values (- (current-milliseconds) start) bytes)))
-              *benchmarks*)]))
-
-  (define (all-benchmarks)
-    (reverse *benchmarks*))
+       (set-benchmarks!
+        (cons
+         (%benchmark% .new
+           :name name :count count
+           :function (fn (remaining)
+                       init-code ...
+                       (define bytes (memory-allocated body ...))
+                       (define start (current-milliseconds))
+                       (let next [[remaining remaining]]
+                         (unless (zero? remaining)
+                           body ...
+                           (next (- remaining 1))))
+                       (values (- (current-milliseconds) start) bytes)))
+         *benchmarks*))]))
 
 
   ;;=======================================================================

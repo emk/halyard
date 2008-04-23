@@ -107,7 +107,7 @@
 (require (file "experiments.ss"))
 (require (file "updater-example.ss"))
 (require (file "quake2-example.ss"))
-(require (file "performance.ss"))
+(require (file "benchmark.ss"))
 
 ;; Test cases.
 (require (lib "tests.ss" "halyard"))
