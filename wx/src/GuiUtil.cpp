@@ -22,7 +22,7 @@
 
 #include "AppHeaders.h"
 
-#if APP_PLATFORM_WIN32
+#if __WXMSW__
 
 #include <windows.h>
 
@@ -55,7 +55,7 @@ void ShowSystemWindows() {
                            SPIF_SENDWININICHANGE);
 }
 
-#else // !APP_PLATFORM_WIN32
+#else // !__WXMSW__
 
 void HideSystemWindows() {
 }

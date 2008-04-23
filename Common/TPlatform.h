@@ -52,23 +52,10 @@
 
 
 /*=========================================================================
-**  QuickTime Configuration
-**=======================================================================*/
-
-#if defined (__QTML__) || defined (macintosh)
-#define _HALYARD_QUICKTIME_
-#endif
-
-
-/*=========================================================================
 **  Win32 Configuration
 **=======================================================================*/
 
 #if defined (WIN32)
-
-/// \TODO This symbol begins with an underscore, which is illegal.
-/// Refactor the code to replace it with APP_PLATFORM_WIN32.
-#define _HALYARD_WIN32_
 
 #define APP_PLATFORM_WIN32 (1)
 
@@ -88,22 +75,13 @@
 **  Macintosh Configuration
 **=======================================================================*/
 
-#elif defined (macintosh)
+#elif defined __APPLE__
 
 #define APP_PLATFORM_MACINTOSH (1)
 
-#define NEWLINE_CHAR	'\r'
-#define RETURN_CHAR		'\n'
-
-#ifdef Debug_Throw
-#define DEBUG
-
-/* backwards compatible defines
-**#define DEBUG_HALYARD
-**#define DEBUG_HALYARD_SCRIPT
-*/
-
-#endif	/* Debug_Throw */
+#ifndef NDEBUG
+#define DEBUG (1)
+#endif /* NDEBUG */
 
 
 /*=========================================================================

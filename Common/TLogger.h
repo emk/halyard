@@ -200,14 +200,6 @@ private:
 	///
 	static void (*s_ExitPrepFunction)();
 
-#ifdef APP_PLATFORM_MACINTOSH
-	//////////
-	/// True if and only if the Macintosh Toolbox has been
-	/// properly initialized.
-	///
-	static bool	s_ToolboxIsInitialized;
-#endif
-
     //////////
     /// Add a string to our m_RecentEntries list.
     ///
@@ -292,14 +284,6 @@ public:
     /// Install a function to be called before exiting with an error.
     ///
     static void RegisterExitPrepFunction(void (*inFunc)());
-
-#ifdef APP_PLATFORM_MACINTOSH
-	//////////
-	/// Tell the logging subsystem that the toolbox has been initialized, and
-	/// that it's OK to use dialogs.
-	///
-	static void MarkToolboxAsInitialized() { s_ToolboxIsInitialized = true; }
-#endif
 };
 
 //////////

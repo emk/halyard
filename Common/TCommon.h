@@ -59,26 +59,6 @@ extern void HalyardCheckAssertion(int inTest, const char *inDescription,
 #	define ASSERT(test) ((void) 0)
 #endif // DEBUG
 
-// TODO - These macro names should go away as soon as somebody gets
-// a chance to dig through the rest of the source.  It's a big job.
-#if APP_PLATFORM_WIN32 || APP_PLATFORM_MACINTOSH
-#	define not	!
-#	define and	&&
-#	define or	|| 
-#elif APP_PLATFORM_OTHER
-	// These names are reserved C++ operators, and g++ 3.0 doesn't like them.
-#else
-#	error "Unknown platform."
-#endif // APP_PLATFORM_*
-
-#ifndef NULL
-#ifdef __cplusplus
-#define NULL 0
-#else
-#define NULL ((void *) 0)
-#endif
-#endif 
-
 #define Max(x, y)   ((x) > (y) ? (x) : (y))
 #define Min(x, y)   ((x) < (y) ? (x) : (y))
 #define Absolute(x) (((x) > 0)? (x): ((x) * -1))

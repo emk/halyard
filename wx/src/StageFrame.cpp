@@ -752,7 +752,7 @@ bool StageFrame::ShouldDisableScreenSaver() {
     return IsFullScreen() || mStage->IsMediaPlaying();
 }
 
-#ifdef APP_PLATFORM_WIN32
+#ifdef __WXMSW__
 
 bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
     // HACK - We need to forcibly update our UI here, because Windows won't
@@ -787,7 +787,7 @@ WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
     return SashFrame::MSWWindowProc(message, wParam, lParam);
 }
 
-#endif // APP_PLATFORM_WIN32
+#endif // __WXMSW__
 
 #if CONFIG_HAVE_SCRIPTEDITOR
 

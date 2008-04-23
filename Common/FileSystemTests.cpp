@@ -55,27 +55,7 @@ void test_FileSystem (void)
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
 		 == base+"\\f\\..\\g");
 
-#elif APP_PLATFORM_MACINTOSH
-
-	// Test conversion to native path strings.
-	TEST(Path().ToNativePathString() == ":");
-	TEST(Path().AddComponent("foo").ToNativePathString() == ":foo");
-	TEST(Path().AddParentComponent().ToNativePathString() == "::");
-	TEST(Path().AddParentComponent().AddComponent("f").ToNativePathString() ==
-		 "::f");
-	TEST(Path("foo").ToNativePathString() == ":foo");
-	TEST(GetBaseDirectory().ToNativePathString() == ":");
-	TEST(GetFontDirectory().ToNativePathString() == ":Fonts");
-#error "Some ResolveFontPath test cases not ported to this platform."
-	TEST(GetFontFilePath("README.txt").ToNativePathString() ==
-		 ":Fonts:README.txt");
-//	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
-//		 == ":g");
-
-#pragma ANSI_strict off
-#warning "Macintosh path manipulation still has problems."
-
-#elif APP_PLATFORM_OTHER
+#elif APP_PLATFORM_MACINTOSH || APP_PLATFORM_OTHER
 
 	// Test conversion to native path strings.
 	TEST(Path().ToNativePathString() == base);
@@ -200,11 +180,6 @@ void test_FileSystem (void)
 	fake_jpg.RemoveFile();
 
 	// Do some tricky path manipulation.
-#if !APP_PLATFORM_MACINTOSH
 	Path tricky = GetFontDirectory().AddParentComponent();
 	TEST(tricky.AddComponent("application.halyard").DoesExist());
-#else
-#pragma ANSI_strict off
-#warning "Macintosh path manipulation still has problems."
-#endif
 }

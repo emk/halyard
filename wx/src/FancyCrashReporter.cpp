@@ -24,17 +24,17 @@
 
 // We need snprintf.
 #include <stdio.h>
-#ifdef APP_PLATFORM_WIN32
+#ifdef __WXMSW__
 #define snprintf _snprintf
-#endif // APP_PLATFORM_WIN32
+#endif // __WXMSW__
 
 #include <wx/debugrpt.h>
 #include <wx/sstream.h>
 
-#ifdef APP_PLATFORM_WIN32
+#ifdef __WXMSW__
 #include <windows.h>
 #include <wx/msw/registry.h>
-#endif // APP_PLATFORM_WIN32
+#endif // __WXMSW__
 
 #include "TVersion.h"
 #include "doc/Document.h"
@@ -99,7 +99,7 @@ void FancyDebugReport::AddScreenshot() {
     AddFile(path.GetFullName(), wxT("script graphics"));
 }
 
-#ifndef APP_PLATFORM_WIN32
+#ifndef __WXMSW__
 
 /// This function does nothing except on Windows.
 /// PORTABILITY - Should we implement a generic version of these functions?
@@ -108,7 +108,7 @@ bool DoAddSystemInfo(wxXmlNode *nodeSystemInfo) {
     return wxDebugReportUpload::DoAddSystemInfo(nodeSystemInfo);
 }
 
-#else // defined(APP_PLATFORM_WIN32)
+#else // defined(__WXMSW__)
 
 /// Dump our registry data and add it to the debug report.
 void FancyDebugReport::AddRegistryData() {
@@ -151,7 +151,7 @@ bool FancyDebugReport::DoAddSystemInfo(wxXmlNode *nodeSystemInfo) {
     return true;
 }
 
-#endif // defined(APP_PLATFORM_WIN32)
+#endif // defined(__WXMSW__)
 
 /// Add application-specific information to the debug report.
 void FancyDebugReport::AddAppInfo(wxXmlNode *nodeRoot) {

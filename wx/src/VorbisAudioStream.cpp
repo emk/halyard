@@ -33,7 +33,7 @@ using namespace Halyard;
 //  See the comments in the header and "The JSR-133 Cookbook" for details:
 //    http://gee.cs.oswego.edu/dl/jmm/cookbook.html
 
-#ifdef APP_PLATFORM_WIN32
+#ifdef __WXMSW_
 
 #include <windows.h>
 

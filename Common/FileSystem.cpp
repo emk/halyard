@@ -43,10 +43,7 @@
 #	include <windows.h>
 #	define S_ISREG(m) ((m)&_S_IFREG)
 #	define S_ISDIR(m) ((m)&_S_IFDIR)
-#elif APP_PLATFORM_MACINTOSH
-#	include <dirent.h>
-#	include <unistd.h>
-#elif APP_PLATFORM_OTHER
+#elif APP_PLATFORM_MACINTOSH || APP_PLATFORM_OTHER
 #	include <sys/types.h>
 #	include <dirent.h>
 #	include <unistd.h>
@@ -104,48 +101,16 @@ static void CheckErrno(const char *inFile, int inLine)
 
 
 //=========================================================================
-//  MacOS Support Methods
-//=========================================================================
-//  This code is used by a variety of different MacOS-specific methods
-//  below.
-
-#if APP_PLATFORM_MACINTOSH
-
-#include <TextUtils.h>
-#include <Files.h>
-#include <Script.h>
-#include <Resources.h>
-
-// This function taken from the MacUtils.cpp file in the old
-// Mac engine and modified lightly.
-static OSErr PathToFSSpec(const char *inPath, FSSpec *inSpec)
-{
-	// Coerce our string to the right type.
-	Str255		thePath;
-	::CopyCStringToPascal(inPath, thePath);
-	
-	// Convert it to a file spec.
-	return ::FSMakeFSSpec(0, 0, thePath, inSpec);
-}
-
-#endif // APP_PLATFORM_MACINTOSH
-
-
-//=========================================================================
 //  Path Methods
 //=========================================================================
 
 #if APP_PLATFORM_WIN32
 #	define PATH_SEPARATOR '\\'
-#elif APP_PLATFORM_MACINTOSH
-#	define PATH_SEPARATOR ':'
-#elif APP_PLATFORM_OTHER
+#elif APP_PLATFORM_MACINTOSH || APP_PLATFORM_OTHER
 #	define PATH_SEPARATOR '/'
 #else
 #	error "Unknown platform."
 #endif
-
-#if (APP_PLATFORM_WIN32 || APP_PLATFORM_OTHER)
 
 Path::Path()
 	: mPath(fs::current_path().native_directory_string())
@@ -159,26 +124,6 @@ Path::Path(const std::string &inPath)
 {
 	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
 }
-
-#elif APP_PLATFORM_MACINTOSH
-
-#error "Need to convert : to full path."
-
-Path::Path()
-	: mPath(":")
-{
-	// All done!
-}
-
-Path::Path(const std::string &inPath)
-	: mPath(std::string(":") + inPath)
-{
-	ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
-}
-
-#else
-#	error "Unknown platform!"
-#endif // APP_PLATFORM_*
 
 static std::string::size_type find_extension_dot(const std::string &inPath)
 {
@@ -214,8 +159,6 @@ Path Path::ReplaceExtension(std::string inNewExtension) const
 	newPath.mPath = without_extension + "." + inNewExtension;
 	return newPath;
 }
-
-#if (APP_PLATFORM_WIN32 || APP_PLATFORM_OTHER)
 
 bool Path::DoesExist() const
 {
@@ -258,67 +201,6 @@ bool Path::IsDirectory() const
 	CHECK_ERRNO();
 	return S_ISDIR(info.st_mode) ? true : false;
 }
-
-#elif APP_PLATFORM_MACINTOSH
-
-bool Path::DoesExist() const
-{
-	// The MSL stat() function is unreliable at best, and totally broken
-	// in MacOS X's MacOS 9 emulator, so we have to do this the hard way.
-	FSSpec spec;
-	OSErr err = ::PathToFSSpec(ToNativePathString().c_str(), &spec);
-	if (err == noErr)
-		return true;
-	else if (err == fnfErr)
-		return false;
-	
-	throw Error(__FILE__, __LINE__,
-				"Error while checking whether a file exists");
-}
-
-static mode_t MacGetMode(const char *inFileName)
-{
-	// The MSL stat() function is unreliable at best, and totally broken
-	// in MacOS X's MacOS 9 emulator, so we have to do this the hard way.
-	FSSpec spec;
-	if (::PathToFSSpec(inFileName, &spec) != noErr)
-		throw Error(__FILE__, __LINE__, "Error making FSSpec");
-	
-	// Make some nasty File Manager calls to get our info.
-	HFileInfo pb;
-	pb.ioVRefNum = spec.vRefNum;
-	pb.ioDirID = spec.parID;
-	pb.ioNamePtr = spec.name;
-	pb.ioFDirIndex = 0;
-	OSErr err = ::PBGetCatInfoSync((CInfoPBPtr) &pb);
-	if (err != noErr)
-		throw Error(__FILE__, __LINE__, "Error calling PBGetCatInfoSync");
-		
-	// Translate our info a Unix mode_t value.  I got these flag values
-	// from the MSL source code.
-	if (pb.ioFlAttrib & 0x10)
-		return S_IFDIR;
-	else if (pb.ioFlFndrInfo.fdFlags & 0x8000)
-		return S_IFLNK;
-	else
-		return S_IFREG;
-}
-
-bool Path::IsRegularFile() const
-{
-	mode_t mode = ::MacGetMode(ToNativePathString().c_str());
-	return S_ISREG(mode) ? true : false;
-}
-
-bool Path::IsDirectory() const
-{
-	mode_t mode = ::MacGetMode(ToNativePathString().c_str());
-	return S_ISDIR(mode) ? true : false;
-}
-
-#else 
-#	error "Unknown platform."
-#endif // APP_PLATFORM_*
 
 #if APP_PLATFORM_WIN32
 
@@ -398,8 +280,6 @@ void Path::RemoveFile() const
 	CHECK_ERRNO();
 }
 
-#if (APP_PLATFORM_WIN32 || APP_PLATFORM_OTHER)
-
 Path Path::AddComponent(const std::string &inFileName) const
 {
 	ASSERT(inFileName != "." && inFileName != "..");
@@ -415,37 +295,6 @@ Path Path::AddParentComponent() const
 	newPath.mPath = mPath + PATH_SEPARATOR + "..";
 	return newPath;	
 }
-
-#elif APP_PLATFORM_MACINTOSH
-
-static const std::string ensure_trailing_colon(const std::string &inString)
-{
-	// Path names always contain at least ':'.
-	ASSERT(inString.end() > inString.begin());
-	if (*(inString.end() - 1) == ':')
-		return inString;
-	else
-		return inString + ':';
-}
-
-Path Path::AddComponent(const std::string &inFileName) const
-{
-	ASSERT(inFileName.find(PATH_SEPARATOR) == std::string::npos);
-	Path newPath;
-	newPath.mPath = ensure_trailing_colon(mPath) + inFileName;
-	return newPath;
-}
-
-Path Path::AddParentComponent() const
-{
-	Path newPath;
-	newPath.mPath = ensure_trailing_colon(mPath) + PATH_SEPARATOR;
-	return newPath;	
-}
-
-#else 
-#	error "Unknown platform."
-#endif // APP_PLATFORM_*
 
 std::string Path::ToNativePathString () const
 {
@@ -471,48 +320,12 @@ void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
 inTemporaryFile.RenameFile(*this);
 }
 
-#if APP_PLATFORM_WIN32 || APP_PLATFORM_OTHER
-
 void Path::CreateWithMimeType(const std::string &inMimeType)
 {
+    // This used to do something special on MacOS 9 and earlier.
 	std::ofstream file(ToNativePathString().c_str());
 	file.close();
 }
-
-#elif APP_PLATFORM_MACINTOSH
-
-#define TEXT_PLAIN_TYPE ('TEXT')
-#ifdef DEBUG
-	// Developers want text files to open in a real editor...
-#	define TEXT_PLAIN_CREATOR ('R*ch')
-#else
-	// ...but users may have nothing better than TeachText.
-#	define TEXT_PLAIN_CREATOR ('ttxt')
-#endif // DEBUG
-
-void Path::CreateWithMimeType(const std::string &inMimeType)
-{
-	// We could be really classy and call Internet Config to map the MIME
-	// type to a creator/type pair.  But this will work for now.
-	if (inMimeType == "text/plain")
-	{
-		FSSpec spec;
-		if (::PathToFSSpec(ToNativePathString().c_str(), &spec) == fnfErr)
-		{
-			::FSpCreateResFile(&spec, TEXT_PLAIN_CREATOR,
-							   TEXT_PLAIN_TYPE, smRoman);
-			if (ResError() == noErr)
-				return;
-		}
-	}
-	
-	std::ofstream file(ToNativePathString().c_str());
-	file.close();
-}
-
-#else
-#	error "Unknown platform."
-#endif // FILEL_PLATFORM_*
 
 bool FileSystem::operator==(const Path& inLeft, const Path& inRight)
 {
@@ -524,7 +337,7 @@ Path Path::NativePath(const std::string &inPath)
 	CHECK(inPath != "", "Path cannot be an empty string");
 	Path result;
 
-#if APP_PLATFORM_OTHER
+#if APP_PLATFORM_OTHER || APP_PLATFORM_MACINTOSH
 
 	CHECK(inPath.size() > 0 && inPath[0] == PATH_SEPARATOR,
 		  ("\'" + inPath + "\' does not begin with a slash").c_str());
@@ -533,7 +346,7 @@ Path Path::NativePath(const std::string &inPath)
 	else
 		result.mPath = inPath;
 
-#elif APP_PLATFORM_WIN32 || APP_PLATFORM_MACINTOSH
+#elif APP_PLATFORM_WIN32
 
 	if (inPath.size() >= 2 &&
 		inPath[inPath.length()-1] == PATH_SEPARATOR &&

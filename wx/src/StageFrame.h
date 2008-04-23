@@ -304,7 +304,7 @@ public:
 	///
 	void ObjectDeleted();
 
-#ifdef APP_PLATFORM_WIN32
+#ifdef __WXMSW__
 
     //////////
     /// Sadly, we need to override this function because Windows doesn't
@@ -320,7 +320,7 @@ public:
     WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
 
 
-#endif // APP_PLATFORM_WIN32
+#endif // __WXMSW__
 
 private:
     bool SaveAllForReloadScript();
