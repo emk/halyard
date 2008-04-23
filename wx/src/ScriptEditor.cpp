@@ -2221,7 +2221,7 @@ ScriptEditor::~ScriptEditor() {
     sFrame = NULL;
 }
 
-void ScriptEditor::LoadSashLayout(wxConfigBase *inConfig) {
+void ScriptEditor::LoadSashLayout(shared_ptr<wxConfigBase> inConfig) {
     long minimum = mTreeContainer->GetMinimumSizeX();
     long script_tree_width = minimum;
 	inConfig->Read("ScriptTreeWidth", &script_tree_width);
@@ -2230,7 +2230,7 @@ void ScriptEditor::LoadSashLayout(wxConfigBase *inConfig) {
 	mTreeContainer->SetDefaultSize(wxSize(script_tree_width, 0 /*unused*/));
 }
 
-void ScriptEditor::SaveSashLayout(wxConfigBase *inConfig) {
+void ScriptEditor::SaveSashLayout(shared_ptr<wxConfigBase> inConfig) {
 	inConfig->Write("ScriptTreeWidth", mTreeContainer->GetSize().GetWidth());
 }
 
@@ -2244,13 +2244,13 @@ bool ScriptEditor::ProcessEvent(wxEvent& event) {
 
 int ScriptEditor::GetTextSize() {
     int size = 10;
-	wxConfigBase *config = wxConfigBase::Get();
+	shared_ptr<wxConfigBase> config(new wxConfig);
 	config->Read("/ScriptEditor/TextSize", &size);
     return size;
 }
 
 void ScriptEditor::SetTextSize(int size) {
-	wxConfigBase *config = wxConfigBase::Get();
+	shared_ptr<wxConfigBase> config(new wxConfig);
     config->Write("/ScriptEditor/TextSize", size);
     
     // Push our change to all open documents.

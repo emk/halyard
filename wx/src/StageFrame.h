@@ -151,8 +151,8 @@ class StageFrame : public SashFrame,
 	///
 	bool mIsUpdatingVideoMode;
 
-    void LoadSashLayout(wxConfigBase *inConfig);
-    void SaveSashLayout(wxConfigBase *inConfig);
+    void LoadSashLayout(shared_ptr<wxConfigBase> inConfig);
+    void SaveSashLayout(shared_ptr<wxConfigBase> inConfig);
 
 	//////////
 	/// Calculate the best video mode to use for full-screen displays.

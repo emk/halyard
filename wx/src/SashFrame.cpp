@@ -83,7 +83,7 @@ bool SashFrame::IsRectOnDisplay(const wxRect &inRect) {
 
 wxPoint SashFrame::LoadFramePosition(const wxString &inFrameName) {
     long pos_x, pos_y;
-    wxConfigBase *config = wxConfigBase::Get();
+    shared_ptr<wxConfigBase> config(new wxConfig);
     config->SetPath(wxT("/Layout/Default/") + inFrameName);
     if (config->Read(wxT("Left"), &pos_x) && config->Read(wxT("Top"), &pos_y) &&
         IsRectOnDisplay(wxRect(pos_x, pos_y, 100, 100)))
@@ -92,8 +92,8 @@ wxPoint SashFrame::LoadFramePosition(const wxString &inFrameName) {
         return wxDefaultPosition;
 }
 
-wxConfigBase *SashFrame::GetConfigForFrame() {
-    wxConfigBase *config = wxConfigBase::Get();
+shared_ptr<wxConfigBase> SashFrame::GetConfigForFrame() {
+    shared_ptr<wxConfigBase> config(new wxConfig);
     config->SetPath(wxT("/Layout/Default/") + mFrameName);
     return config;
 }
@@ -106,7 +106,7 @@ void SashFrame::LoadFrameLayout() {
     long sz_client_height = sz.GetHeight();
     
     // Load values from our config file.
-    wxConfigBase *config = GetConfigForFrame();
+    shared_ptr<wxConfigBase> config(GetConfigForFrame());
     config->Read(wxT("IsMaximized"), &is_maximized);
     config->Read(wxT("ClientWidth"), &sz_client_width);
     config->Read(wxT("ClientHeight"), &sz_client_height);
@@ -141,7 +141,7 @@ void SashFrame::MaybeSaveFrameLayout()
     if (!mHaveLoadedFrameLayout || IsFullScreen())
         return;
     
-    wxConfigBase *config = GetConfigForFrame();
+    shared_ptr<wxConfigBase> config(GetConfigForFrame());
     config->Write(wxT("IsMaximized"), IsMaximized() ? 1 : 0);
     if (!IsMaximized())
     {

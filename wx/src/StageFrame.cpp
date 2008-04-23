@@ -355,13 +355,13 @@ StageFrame::StageFrame(wxSize inSize)
 	LoadFrameLayout();
 }
 
-void StageFrame::LoadSashLayout(wxConfigBase *inConfig) {
+void StageFrame::LoadSashLayout(shared_ptr<wxConfigBase> inConfig) {
 	long program_tree_width = mProgramTree->GetMinimumSizeX();
 	inConfig->Read(wxT("ProgramTreeWidth"), &program_tree_width);
 	mProgramTree->SetDefaultWidth(program_tree_width);
 }
 
-void StageFrame::SaveSashLayout(wxConfigBase *inConfig) {
+void StageFrame::SaveSashLayout(shared_ptr<wxConfigBase> inConfig) {
 	inConfig->Write(wxT("ProgramTreeWidth"),
                     mProgramTree->GetSize().GetWidth());
 }
@@ -503,7 +503,7 @@ void StageFrame::ComputeResizePrefName() {
 }
 
 bool StageFrame::ShouldResizeScreen(bool &outShouldConfirm) {
-	wxConfigBase *config = wxConfigBase::Get();
+	shared_ptr<wxConfigBase> config(new wxConfig);
 
     // Unless the user has pressed the shift key, we first check the
     // registry to see if we know the answer.
@@ -530,7 +530,7 @@ bool StageFrame::ShouldResizeScreen(bool &outShouldConfirm) {
 }
 
 bool StageFrame::ConfirmScreenSize() {
-	wxConfigBase *config = wxConfigBase::Get();
+	shared_ptr<wxConfigBase> config(new wxConfig);
     AdjustScreenConfirmDlg dlg(this);
     bool is_confirmed = (dlg.ShowModal() == wxID_YES);
     if (is_confirmed)
@@ -599,7 +599,7 @@ void StageFrame::NewDocument()
 	wxDirDialog dlg(this,
                     wxT("Add Halyard data to an existing program folder:"));
 
-	wxConfigBase *config = wxConfigBase::Get();
+	shared_ptr<wxConfigBase> config(new wxConfig);
 	wxString recent;
 	if (config->Read(wxT("/Recent/DocPath"), &recent))
 		dlg.SetPath(recent);
@@ -631,7 +631,7 @@ void StageFrame::OpenDocument()
     // Set the dialog's default path to the current working directory,
     // if it appears to be a program (contains a application.halyard
     // file).  Otherwise, try defaulting to the last opened program.
-	wxConfigBase *config = wxConfigBase::Get();
+	shared_ptr<wxConfigBase> config(new wxConfig);
 	wxString recent;
     FileSystem::Path data_file = 
         FileSystem::GetBaseDirectory().AddComponent("application.halyard");

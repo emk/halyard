@@ -61,19 +61,19 @@ private:
 protected:
     /// Get a configuration object with its path set to the appropriate
     /// value for this frame.
-    wxConfigBase *GetConfigForFrame();
+    shared_ptr<wxConfigBase> GetConfigForFrame();
 
 	/// Load the layout for the current frame.
 	void LoadFrameLayout();
 
     /// Load the layout information for any sash windows.
-    virtual void LoadSashLayout(wxConfigBase *inConfig) {}
+    virtual void LoadSashLayout(shared_ptr<wxConfigBase> inConfig) {}
 
 	/// Save the layout for the current frame if it's safe to do so.
 	void MaybeSaveFrameLayout();
 
     /// Save the layout information for any sash windows.
-    virtual void SaveSashLayout(wxConfigBase *inConfig) {}
+    virtual void SaveSashLayout(shared_ptr<wxConfigBase> inConfig) {}
 
     /// Specify which wxSashLayoutWindow should be treated as the
     /// main window of this frame.

@@ -63,8 +63,8 @@ public:
     void ChangeTextSize(int delta);
 
 private:
-    void LoadSashLayout(wxConfigBase *inConfig);
-    void SaveSashLayout(wxConfigBase *inConfig);
+    void LoadSashLayout(shared_ptr<wxConfigBase> inConfig);
+    void SaveSashLayout(shared_ptr<wxConfigBase> inConfig);
 
     void OpenDocumentInternal(const wxString &path, int line = 1);
     void ShowDefinitionInternal(const wxString &identifier);
