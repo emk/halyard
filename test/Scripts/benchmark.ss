@@ -68,9 +68,19 @@
                   'goodbye 'something 'something-else 'lorem 'ipsum 'dolor
                   'sit 'amet 1 2 3 4 5 6 7 8 9 10)))
 
-  (define-benchmark "Create and destroy element" 1000
+  (define-benchmark "Create and destroy %invisible-element%" 100
+    (benchmark
+      (let [[e (%invisible-element% .new)]]
+        (delete-element e))))
+
+  (define-benchmark "Create and destroy %box%" 100
     (benchmark
       (let [[e (%box% .new :at (point 10 10) :shape (shape 100 100))]]
         (delete-element e))))
 
+  (define-benchmark "Create and destroy %custom-element%" 100
+    (benchmark
+      (let [[e (%custom-element% .new :at (point 10 10) 
+                                      :shape (shape 100 100))]]
+        (delete-element e))))
   )
