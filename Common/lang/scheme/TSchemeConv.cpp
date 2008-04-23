@@ -85,7 +85,12 @@ static Scheme_Object *MakeSchemePolygon(const TPolygon &inPoly) {
     std::vector<Scheme_Object*> args(sz, NULL); 
 
     TSchemeReg<0,1> reg;
-    reg.local_array(&args[0], args.size());
+    // XXX - We need to store the pointer to args in a real variable, so
+    // that local_array can take a reference to that variable and register
+    // it appropriately with the GC API.  This needs to be better
+    // encapsulated.
+    Scheme_Object **args_ptr = &args[0];
+    reg.local_array(args_ptr, args.size());
     reg.done();
 
 	std::vector<TPoint>::iterator i = vertices.begin();

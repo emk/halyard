@@ -62,7 +62,7 @@ class TSchemeReg : boost::noncopyable {
 
     /// Equivalent to MZ_GC_ARRAY_VAR_IN_REG.
     template <typename T>
-    void array_helper(T *array, size_t length) throw () {
+    void array_helper(T *&array, size_t length) throw () {
         mReg[mOffset++] = reinterpret_cast<void*>(0);
         mReg[mOffset++] = reinterpret_cast<void*>(&array);
         mReg[mOffset++] = reinterpret_cast<void*>(length);
@@ -81,7 +81,7 @@ public:
     /// Scheme value, as far as we know, and we might catch an error or
     /// two.
     template <typename T>
-    void param(T *ptr) throw () {
+    void param(T *&ptr) throw () {
         ASSERT(NULL != ptr);
         mReg[mOffset++] = reinterpret_cast<void*>(&ptr);
     }
@@ -89,7 +89,7 @@ public:
     /// Equivalent to MZ_GC_VAR_IN_REG.  Intended for use with local
     /// variables.  We initialize 'ptr' to NULL for gc safety.
     template <typename T>
-    void local(T *ptr) throw () {
+    void local(T *&ptr) throw () {
         ptr = NULL;
         mReg[mOffset++] = reinterpret_cast<void*>(&ptr);
     }
@@ -99,7 +99,7 @@ public:
     /// non-NULL, because that isn't a sensible Scheme value, as far as we
     /// know, and we might catch an error or two.
     template <typename T>
-    void param_array(T *array, size_t length) throw () {
+    void param_array(T *&array, size_t length) throw () {
         for (size_t i = 0; i < length; i++)
             ASSERT(NULL != array[i]);
         array_helper(array, length);
@@ -108,7 +108,7 @@ public:
     /// Equivalent to MZ_GC_ARRAY_VAR_IN_REG.  Intended for use with local
     /// arrays.  We initialize all the entries in the array to 0.
     template <typename T>
-    void local_array(T *array, size_t length) throw () {
+    void local_array(T *&array, size_t length) throw () {
         for (size_t i = 0; i < length; i++)
             array[i] = NULL;
         array_helper(array, length);
@@ -119,7 +119,7 @@ public:
     void args(TSchemeArgs<LENGTH> &args) throw () {
         // These are properly NULL'd by the TSchemeArgs constructor, so we
         // don't worry about them.
-        array_helper(args.get(), args.size());
+        array_helper(args.get_gc_ptr(), args.size());
     }
 
     /// Equivalent to MZ_GC_REG.

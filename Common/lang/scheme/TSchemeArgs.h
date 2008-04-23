@@ -53,6 +53,7 @@ BEGIN_NAMESPACE_HALYARD
 template <size_t LENGTH>
 class TSchemeArgs : boost::noncopyable {
     Scheme_Object *mArgs[LENGTH];
+    Scheme_Object **mArgsGcPtr;
 
 public:
     /// The type of elements contained in this array.
@@ -62,6 +63,7 @@ public:
         // Initialize all pointers to NULL for ease of use with .
         for (size_t i = 0; i < LENGTH; i++)
             mArgs[i] = NULL;
+        mArgsGcPtr = mArgs;
     }
 
     /// The number of items in this array;
@@ -75,6 +77,15 @@ public:
 
     /// Get a pointer to the underlying array (for passing to Scheme).
     elem_type *get() throw () { return mArgs; }
+
+    /// Get a reference to a pointer to the underlying array.  This is
+    /// needed by TSchemeReg, which actually needs a '*&' and not just a
+    /// '*', because it must store the address of a pointer in the GC
+    /// registration data structure.  Yeah, it's weird.  We keep a pointer
+    /// in mArgsGcPtr, just so that we can take its reference.  And because
+    /// it's a member of this (stack-allocated) object, it will last as
+    /// long as the stack frame.
+    elem_type *&get_gc_ptr() throw () { return mArgsGcPtr; }
 };
 
 END_NAMESPACE_HALYARD
