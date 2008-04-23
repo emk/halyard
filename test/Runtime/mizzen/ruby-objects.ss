@@ -619,11 +619,14 @@
       (ruby-class-superclass self))
     ;;; Is this class a subclass of OTHER?
     (def (subclass-of? other)
-      (cond
-       [(eq? self other) #t]
-       [(eq? self %object%) #f]
-       [#t
-        (app~ (app~ .superclass) .subclass-of? other)]))
+      ;; This is a major performance hotspot, so optimizing it tends to pay
+      ;; off.  That's why we avoid method dispatch.
+      (let recurse [[klass self]]
+        (cond
+         [(eq? klass other) #t]
+         [(eq? klass %object%) #f]
+         [#t
+          (recurse (ruby-class-superclass klass))])))
     ;;; Define a class method for this class.  (This is actually an
     ;;; instance method on this class's metaclass.)
     (def (define-class-method name meth)
