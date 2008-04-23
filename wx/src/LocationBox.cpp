@@ -51,7 +51,7 @@ END_EVENT_TABLE()
 #if CONFIG_LOCATION_BOX_IS_COMBO
 
 LocationBox::LocationBox(wxToolBar *inParent)
-	: wxComboBox(inParent, HALYARD_LOCATION_BOX, "",
+    : wxComboBox(inParent, HALYARD_LOCATION_BOX, wxT(""),
 				 wxDefaultPosition, wxSize(200, -1),
 				 0, NULL, wxWANTS_CHARS|wxCB_DROPDOWN)
 {
