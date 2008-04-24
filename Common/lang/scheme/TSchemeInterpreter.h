@@ -83,8 +83,10 @@ class TSchemeInterpreter : public TInterpreter
     // performing this comparison.
     template <typename T>
     bool Eq(T *left, T *right) {
-        return scheme_eq(reinterpret_cast<Scheme_Object*>(left),
-                         reinterpret_cast<Scheme_Object*>(right));
+        int result = scheme_eq(reinterpret_cast<Scheme_Object*>(left),
+                               reinterpret_cast<Scheme_Object*>(right));
+        // Manually convert to bool to avoid compiler warning.
+        return result ? true : false;
     }
 
     struct BucketKey {
