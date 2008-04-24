@@ -28,6 +28,16 @@
 BEGIN_NAMESPACE_HALYARD
 
 //////////
+/// The number of TSchemePtr objects (of all types) currently in existence.
+/// We use this to detect leaked TSchemePtrs that might keep old Scheme
+/// heaps from being garbage collected.
+///
+/// This is not a member variable, because TSchemePtr is a template class,
+/// and will therefore be instantiated multiple times.
+///
+extern int gTSchemePointerCount;
+
+//////////
 /// A smart-pointer class which can point to a Scheme object and prevent
 /// it from being garbage-collected.  You must use this class to point to
 /// a Scheme_Object stored anywhere except the stack (which the Scheme GC
@@ -62,13 +72,16 @@ class TSchemePtr
         MZ_GC_DECL_REG(1);
         MZ_GC_VAR_IN_REG(0, inPtr);
         MZ_GC_REG();
+        ++gTSchemePointerCount;
         void **box = scheme_malloc_immobile_box(const_cast<Type*>(inPtr));
         mBox = reinterpret_cast<Type**>(box);
         MZ_GC_UNREG();
     }
 
     void DestroyBox() {
+        ASSERT(gTSchemePointerCount > 0);
         scheme_free_immobile_box(reinterpret_cast<void**>(mBox));
+        --gTSchemePointerCount;
     }
 
 	void Set(Type *inPtr) { *mBox = inPtr; }

@@ -26,6 +26,9 @@
 
 using namespace Halyard;
 
+// Declared in TSchemePtr.h.
+int Halyard::gTSchemePointerCount = 0;
+
 static const char *CALL_PRIM = "%call-prim";
 
 namespace {
@@ -166,6 +169,17 @@ void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
 
 void TSchemeInterpreterManager::MakeInterpreter()
 {
+    // We should have only mGlobalEnv at this point: Any more or less is
+    // most likely the result of a memory leak somewhere, and will most
+    // likely prevent us from GC'ing old copies of the script after a
+    // reload.  This is not an assertion, because we _always_ want to
+    // perform this check, even if we're not in debug mode.  Any time
+    // this condition fails, the engine will become almost unusable
+    // for development purposes.
+    if (gTSchemePointerCount != 1)
+        gLog.FatalError("Leaking TSchemePtr objects: found %d extra",
+                        gTSchemePointerCount - 1);
+
     // Create a new TSchemeInterpreter.  Once this is created, it can be
     // accessed using either TInterpreter::GetInstance() or
     // TSchemeInterpreter::GetSchemeInterpreter().
