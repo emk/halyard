@@ -37,6 +37,7 @@ class DrawingArea : public GraphicsTools::Image {
 	wxRect mBounds;
     wxBitmap mPixmap;
     bool mIsShown;
+    bool mHasAlpha;
 
 #if CONFIG_HAVE_QUAKE2
     shared_ptr<wxQuake2Overlay> mQuake2Overlay;
@@ -50,7 +51,7 @@ class DrawingArea : public GraphicsTools::Image {
     //////////
     /// Initialize our underlying pixmap.
     ///
-	void InitializePixmap(bool inHasAlpha);
+	void InitializePixmap();
 
     /// If we have a copy wxQuake2, and it's running, then initialize
     /// the Quake 2 overlay object associated with this drawing area.
@@ -96,9 +97,15 @@ public:
     /// Set the size of this DrawingArea.  Erases all contents.
     void SetSize(const wxSize &inSize);
 
-    wxBitmap &GetPixmap() { return mPixmap; }
+    /// If HasAreaOfZero is true, we won't have an actual mPixmap.  So
+    /// don't call this function unless we have some reason to believe
+    /// the mPixmap actually exists.
+    ///
+    /// TODO - Remove this function when we remove
+    /// Stage::GetBackgroundPixmap.
+    wxBitmap &GetPixmap() { ASSERT(mPixmap.IsOk()); return mPixmap; }
 	wxRect GetBounds() { return mBounds; }
-	bool HasAlpha() { return mPixmap.HasAlpha(); }
+	bool HasAlpha() { return mHasAlpha; }
 
     //////////
     /// Show or hide this drawing area.

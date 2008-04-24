@@ -35,16 +35,16 @@ using namespace Halyard;
 DrawingArea::DrawingArea(Stage *inStage, int inWidth, int inHeight,
 						 bool inHasAlpha)
 	: mStage(inStage), mBounds(wxPoint(0, 0), wxSize(inWidth, inHeight)),
-      mIsShown(true)
+      mIsShown(true), mHasAlpha(inHasAlpha)
 {
-	InitializePixmap(inHasAlpha);
+	InitializePixmap();
 }
 
 DrawingArea::DrawingArea(Stage *inStage, const wxRect &inBounds,
 						 bool inHasAlpha)
-	: mStage(inStage), mBounds(inBounds), mIsShown(true)
+	: mStage(inStage), mBounds(inBounds), mIsShown(true), mHasAlpha(inHasAlpha)
 {
-	InitializePixmap(inHasAlpha);
+	InitializePixmap();
 }
 
 DrawingArea::~DrawingArea() {
@@ -60,10 +60,13 @@ bool DrawingArea::HasAreaOfZero() const {
 	return (mBounds.GetWidth() == 0 || mBounds.GetHeight() == 0);
 }
 
-void DrawingArea::InitializePixmap(bool inHasAlpha) {
+void DrawingArea::InitializePixmap() {
+    if (HasAreaOfZero())
+        return;
+
 	mPixmap.Create(mBounds.GetWidth(), mBounds.GetHeight(),
-				   inHasAlpha ? 32 : 24);
-	if (inHasAlpha)
+				   mHasAlpha ? 32 : 24);
+	if (mHasAlpha)
 		mPixmap.UseAlpha();
 	Clear();
 
@@ -85,7 +88,7 @@ void DrawingArea::MaybeInitializeGameOverlay() {
     int format;
     unsigned char *data;
     int stride;
-    if (mPixmap.HasAlpha()) {
+    if (mHasAlpha) {
         // PORTING - This assumes a BGR offscreen buffer.
         wxAlphaPixelData pdata(mPixmap);
         wxAlphaPixelData::Iterator iter(pdata);
@@ -179,9 +182,8 @@ void DrawingArea::SetSize(const wxSize &inSize) {
     // Allocate a new, empty pixmap.  This will invalidate the rectangle
     // covered by the new size, and reallocate our Quake 2 overlay if we're
     // supposed to have one.
-    bool alpha = mPixmap.HasAlpha();
     mPixmap = wxBitmap();
-    InitializePixmap(alpha);
+    InitializePixmap();
 }
 
 void DrawingArea::Show(bool inShow) {
@@ -200,7 +202,7 @@ void DrawingArea::MoveTo(const wxPoint &inPoint) {
 }
 
 void DrawingArea::Clear() {
-	if (mPixmap.HasAlpha()) {
+	if (mHasAlpha) {
 		Clear(GraphicsTools::Color(0x00, 0x00, 0x00, 0x00));
 	} else {
 		Clear(GraphicsTools::Color(0x00, 0x00, 0x00));
@@ -210,7 +212,7 @@ void DrawingArea::Clear() {
 void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
 	if (HasAreaOfZero()) {
         // Do nothing.
-    } else if (mPixmap.HasAlpha()) {
+    } else if (mHasAlpha) {
 		wxAlphaPixelData data(mPixmap);
 		ClearOpt(data, inColor);
 	} else if (inColor.IsCompletelyOpaque()) {
@@ -248,7 +250,7 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
     // Do the actual drawing.
 	if (HasAreaOfZero()) {
         // Do nothing.
-    } else if (mPixmap.HasAlpha()) {
+    } else if (mHasAlpha) {
         if (is_straight) {       
             wxAlphaPixelData data(mPixmap);
             FillBoxOpt(data, bounds, inColor);
@@ -285,7 +287,7 @@ void DrawingArea::FillBox(const wxRect &inBounds,
 {
     if (HasAreaOfZero()) {
         // Do nothing.
-    } else if (mPixmap.HasAlpha()) {
+    } else if (mHasAlpha) {
 		wxAlphaPixelData data(mPixmap);
 		FillBoxOpt(data, inBounds, inColor);
 	} else if (inColor.IsCompletelyOpaque()) {
@@ -324,7 +326,7 @@ void DrawingArea::DrawPixMap(GraphicsTools::Point inPoint,
 {
     if (HasAreaOfZero()) {
         // Do nothing.
-    } else if (mPixmap.HasAlpha()) {
+    } else if (mHasAlpha) {
 		wxAlphaPixelData data(mPixmap);
 		DrawPixMapOpt(data, inPoint, inPixMap);
 	} else {
@@ -339,6 +341,9 @@ void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
 							 wxCoord inX, wxCoord inY,
 							 bool inTransparent)
 {
+    if (HasAreaOfZero())
+        return;
+    
 	wxMemoryDC dc;
 	dc.SelectObject(GetPixmap());
 	dc.DrawBitmap(inBitmap, inX, inY, inTransparent);
@@ -353,7 +358,7 @@ void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)
         inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
     {
         // One or both bitmaps has an area of 0, so do nothing.
-    } else if (mPixmap.HasAlpha() && inMask.HasAlpha()) {
+    } else if (mHasAlpha && inMask.HasAlpha()) {
         // Both bitmaps have alpha channels, so call our helper routine.
         // It's safe to cast away const, because the mask won't be
         // modified.
@@ -368,6 +373,9 @@ void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)
 
 void DrawingArea::DrawDCContents(wxDC &inDC)
 {
+    if (HasAreaOfZero())
+        return;
+    
 	wxMemoryDC dc;
 	dc.SelectObject(GetPixmap());
 	if (!dc.Blit(0, 0, GetPixmap().GetWidth(), GetPixmap().GetHeight(),
@@ -379,7 +387,7 @@ void DrawingArea::DrawDCContents(wxDC &inDC)
 
 GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
 	wxRect local_bounds(0, 0, GetBounds().width, GetBounds().height);
-	if (!local_bounds.Inside(wxPoint(inX, inY)))
+	if (!local_bounds.Inside(wxPoint(inX, inY)) || HasAreaOfZero())
 		THROW("Can't get color of point outside of current drawing area");
 
 	GraphicsTools::Color result;
@@ -406,6 +414,9 @@ GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
 }
 
 void DrawingArea::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
+    if (HasAreaOfZero()) 
+        return;
+
 	if (mIsShown && inClipRect.Intersects(mBounds)) {
 		// Figure out how much of inClipRect actually applies to us.
 		wxRect clip(inClipRect);
