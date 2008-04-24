@@ -103,7 +103,7 @@ public:
     ///
     /// TODO - Remove this function when we remove
     /// Stage::GetBackgroundPixmap.
-    wxBitmap &GetPixmap() { ASSERT(mPixmap.IsOk()); return mPixmap; }
+    wxBitmap &GetPixmap() { ASSERT(!HasAreaOfZero()); return mPixmap; }
 	wxRect GetBounds() { return mBounds; }
 	bool HasAlpha() { return mHasAlpha; }
 
