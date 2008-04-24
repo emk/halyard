@@ -30,6 +30,7 @@ using namespace Halyard;
 int Halyard::gTSchemePointerCount = 0;
 
 static const char *CALL_PRIM = "%call-prim";
+static const char *SET_COLLECTS_PATH = "%set-collects-path";
 
 namespace {
     /// Like strncpy, but terminates strings which don't fit in 'out'.
@@ -52,24 +53,6 @@ DEFINE_PRIMITIVE(SchemeExit)
 	TInterpreterManager::GetInstance()->RequestQuitApplication();
 }
 
-DEFINE_PRIMITIVE(SchemeSetCollectsDir)
-{
-    std::string dir;
-    inArgs >> dir;
-
-    Scheme_Object *path = NULL;
-
-    TSchemeReg<1> reg;
-    reg.local(path);
-    reg.done();
-
-    // Set our standard collects dir.  For some reason, we can't actually
-    // do this from Scheme.  But it's easier to actually decide what our
-    // collects-dir should be from inside loader.ss, where we have path
-    // functions available.
-    path = scheme_make_path(dir.c_str());
-    scheme_set_collects_path(path);
-}
 
 //=========================================================================
 //	TSchemeInterpreterManager Methods
@@ -80,11 +63,11 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(SystemIdleProc inIdleProc)
 {
 	// Install our primitives.
 	REGISTER_PRIMITIVE(SchemeExit);
-    REGISTER_PRIMITIVE(SchemeSetCollectsDir);
     RegisterSchemeScriptEditorDBPrimitives();
 
     Scheme_Object *modname = NULL;
     Scheme_Env *engine_mod = NULL;
+    Scheme_Object *set_collects_path = NULL;
     Scheme_Object *call_prim = NULL;
 
     TSchemeReg<3> reg;
@@ -99,6 +82,15 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(SystemIdleProc inIdleProc)
 	// Make a module to hold functions exported by the engine.
 	modname = scheme_intern_symbol("#%engine-primitives");
 	engine_mod = scheme_primitive_module(modname, mGlobalEnv);
+
+	// Provide a way for Scheme code to set the collections path.  I don't
+    // know why this isn't listed in the standard PLT API.  We can't use a
+    // regular DEFINE_PRIMITIVE for this, because the interpreter won't yet
+    // be set up when we're trying to call it.
+	set_collects_path =
+        scheme_make_prim_w_arity(&TSchemeInterpreterManager::SetCollectsPath,
+                                 SET_COLLECTS_PATH, 1, 1);
+	scheme_add_global(SET_COLLECTS_PATH, set_collects_path, engine_mod);
 
 	// Provide a way for Scheme code to call primitives.
 	call_prim = scheme_make_prim_w_arity(&TSchemeInterpreter::CallPrim,
@@ -116,6 +108,16 @@ ScriptEditorDB *TSchemeInterpreterManager::GetScriptEditorDBInternal() {
             shared_ptr<ScriptEditorDB>(new TSchemeScriptEditorDB(db_path));
     }
     return mScriptEditorDB.get();
+}
+
+Scheme_Object *
+TSchemeInterpreterManager::SetCollectsPath(int inArgc, Scheme_Object **inArgv) {
+    // The interpreter checks the arity for us.
+    //
+    // MANUAL GC PROOF REQUIRED - Passing this value straight through is
+    // safe because we do not cons.
+    scheme_set_collects_path(inArgv[0]);
+	return scheme_null;
 }
 
 void TSchemeInterpreterManager::BeginScript()
@@ -141,7 +143,7 @@ void TSchemeInterpreterManager::BeginScript()
 	scheme_set_param(current_config, MZCONFIG_CURRENT_DIRECTORY,
 					 current_directory);
 
-	// Install our system loader.
+	// Set up our collection paths and loader.ss.
 	FileSystem::Path halyard_collection =
 		FileSystem::GetRuntimeDirectory().AddComponent("halyard");
 	LoadFile(halyard_collection.AddComponent("loader.ss"));
@@ -449,9 +451,7 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName, // Scheme heap
     // or anything else which causes a non-local PLT exit.  See CallPrim
     // for more details.
 	try {
-        // Only SchemeSetCollectsDir may be called without a mScriptEnv.
-        ASSERT(mScriptEnv != NULL ||
-               strcmp(inPrimName, "SchemeSetCollectsDir") == 0);
+        ASSERT(mScriptEnv != NULL)
 
 		// Marshal our argument list and call the primitive.
 		TValueList inList;

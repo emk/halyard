@@ -54,6 +54,7 @@ public:
 	virtual void BeginScript();
 
 private:
+    static Scheme_Object *SetCollectsPath(int inArgc, Scheme_Object **inArgv);
 	void LoadFile(const FileSystem::Path &inFile);
 
 protected:
