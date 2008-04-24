@@ -130,7 +130,7 @@ void VorbisFile::GetSamplesFromBuffer(int16 *outOutputBuffer,
 		// Duplicate each sample for the left and right channel.
 		ASSERT(inStretchFactor == 2);
 		ASSERT(inOutputSampleCount % inStretchFactor == 0);
-		int out_idx = 0, in_idx = 0;
+		size_t out_idx = 0, in_idx = 0;
 		while (out_idx < inOutputSampleCount)
 		{
 			int16 sample = mBufferBegin[in_idx++];
@@ -155,9 +155,9 @@ bool VorbisFile::Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed)
 		// Figure out how much data we can use right now.  These numbers
 		// are calculated in terms of our output format, not our input
 		// format.
-		int available_sample_count = GetBufferedSampleCount() * stretch;
-		int copy_sample_count = Min(available_sample_count,
-									inMaxSize - *outSizeUsed);
+		size_t available_sample_count = GetBufferedSampleCount() * stretch;
+		size_t copy_sample_count = Min(available_sample_count,
+									   inMaxSize - *outSizeUsed);
 
 		GetSamplesFromBuffer(remaining_space_ptr, copy_sample_count, stretch);
 		*outSizeUsed += copy_sample_count;
