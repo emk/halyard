@@ -988,9 +988,20 @@ void Stage::InvalidateRect(const wxRect &inRect)
 {
 	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Invalidating: %d %d %d %d"),
 			   inRect.x, inRect.y, inRect.GetRight(), inRect.GetBottom());
+
+    // We want to make sure that we never try to do any drawing off
+    // the edges of the screen. Certain platforms, (like wxMac) get
+    // very upset when you try to draw from or to rects that lie off
+    // the screen. Since this is how all of the dirty regions enter
+    // the system, we clip our dirty rect to the screen and make sure
+    // we have something left before continuing.
+    wxRect r(inRect.Intersect(wxRect(wxPoint(0, 0), GetSize())));
+    if (r.IsEmpty())
+        return;
+
     // It's a little bit inelegant to maintain two different dirty lists,
     // but they get cleared by different actions.
-	mRectsToComposite.MergeRect(inRect);
+	mRectsToComposite.MergeRect(r);
 
     // Trigger screen repaint events--and update our manual refresh
     // list--but only if Quake 2 is not being displayed.  (Quake 2 covers
@@ -998,8 +1009,8 @@ void Stage::InvalidateRect(const wxRect &inRect)
     // The entire screen will automatically be refreshed when Quake 2
     // is hidden.
     if (!GameEngineIsDisplayed()) {
-        mRectsToRefresh.MergeRect(inRect);
-        Refresh(FALSE, &inRect);
+        mRectsToRefresh.MergeRect(r);
+        Refresh(FALSE, &r);
     }
 }
 
