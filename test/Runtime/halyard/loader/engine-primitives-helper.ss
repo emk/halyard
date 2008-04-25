@@ -20,13 +20,7 @@
 ;;
 ;; @END_LICENSE
 
-;;=========================================================================
-;;  Bootstrap Environment
-;;=========================================================================
-;;  An almost-entirely-empty environment which contains just enough
-;;  declarations to declare more modules.  We use this to help initialize
-;;  both the engine's Scheme environments, and those created by our
-;;  DrScheme IDE plugin.
-
-(module bootstrap-env mzscheme
-  (provide module))
+;; This stub module only exists to help move #%engine-primitives from our
+;; global namespace into our sandbox.  See stage1.ss for details.
+(module engine-primitives-helper mzscheme
+  (require #%engine-primitives))

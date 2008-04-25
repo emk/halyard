@@ -20,37 +20,24 @@
 //
 // @END_LICENSE
 
-#ifndef TStartup_H
-#define TStartup_H
+#ifndef StackBase_H
+#define StackBase_H
 
-#include "TInterpreter.h"
+// We pass a second argument of 1 to scheme_set_stack_base to avoid
+// scanning random DLL memory segments for Scheme pointers.  This is
+// especially necessary because we often link against QuickTime, which maps
+// huge areas of graphics card memory into our address space, causing Boehm
+// to run very... very... very... slowly.
+//
+// Note that you are not allowed to throw an exception through
+// HALYARD_BEGIN_STACK_BASE / HALYARD_END_STACK_BASE.
+#include <scheme.h>
+#define HALYARD_BEGIN_STACK_BASE() \
+    MZ_GC_DECL_REG(0); \
+    MZ_GC_REG(); \
+    scheme_set_stack_base(&__gc_var_stack__, 1);
 
-BEGIN_NAMESPACE_HALYARD
+#define HALYARD_END_STACK_BASE() \
+    MZ_GC_UNREG();
 
-class CrashReporter;
-
-//////////
-/// Initialize the various modules of the Common/ library.
-/// If you want to call FileSystem::SetBaseDirectory, do it
-/// before calling this function.
-///
-extern void InitializeCommonCode(CrashReporter *inReporter);
-
-//////////
-/// Create a Scheme interpreter manager.
-///
-extern TInterpreterManager *
-GetSchemeInterpreterManager(TInterpreterManager::SystemIdleProc inIdleProc);
-
-//////////
-/// If the current program looks like a Scheme script, attempt
-/// to start a Scheme interpreter.  Otherwise, return NULL.  This function
-/// can be used to support two languages in a single engine.
-///
-extern TInterpreterManager *
-MaybeGetSchemeInterpreterManager(
-    TInterpreterManager::SystemIdleProc inIdleProc);
-
-END_NAMESPACE_HALYARD
-
-#endif // TStartup_H
+#endif // StackBase_H

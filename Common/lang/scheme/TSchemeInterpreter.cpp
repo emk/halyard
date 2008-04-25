@@ -59,11 +59,19 @@ DEFINE_PRIMITIVE(SchemeExit)
 //=========================================================================
 
 TSchemeInterpreterManager::TSchemeInterpreterManager(SystemIdleProc inIdleProc)
-    : TInterpreterManager(inIdleProc)
+    : TInterpreterManager(inIdleProc), mHaveInitializedScheme(false)
 {
 	// Install our primitives.
 	REGISTER_PRIMITIVE(SchemeExit);
     RegisterSchemeScriptEditorDBPrimitives();
+
+    // We're not actually allowed to call into the Scheme interpreter yet,
+    // because scheme_set_stack_base hasn't been called.  Anything which
+    // relies on mzscheme must go into InitialSetup below.
+}
+
+void TSchemeInterpreterManager::InitialSetup() {
+    ASSERT(IsInsideStackBase());
 
     Scheme_Object *modname = NULL;
     Scheme_Env *engine_mod = NULL;
@@ -120,7 +128,7 @@ TSchemeInterpreterManager::SetCollectsPath(int inArgc, Scheme_Object **inArgv) {
 	return scheme_null;
 }
 
-void TSchemeInterpreterManager::BeginScript()
+void TSchemeInterpreterManager::InitializeScheme()
 {
     Scheme_Config *current_config = NULL;
     Scheme_Object *current_directory = NULL;
@@ -130,8 +138,8 @@ void TSchemeInterpreterManager::BeginScript()
     reg.local(current_directory);
     reg.done();
 
-	// Let our parent class set things up.
-	TInterpreterManager::BeginScript();
+    // We only need to run this function once.
+    mHaveInitializedScheme = true;
 
 	// Set the current Scheme directory.  This must be an absolute path,
 	// so we check for ".", which is the only non-absolute path we
@@ -144,9 +152,9 @@ void TSchemeInterpreterManager::BeginScript()
 					 current_directory);
 
 	// Set up our collection paths and loader.ss.
-	FileSystem::Path halyard_collection =
+	FileSystem::Path halyard_dir =
 		FileSystem::GetRuntimeDirectory().AddComponent("halyard");
-	LoadFile(halyard_collection.AddComponent("loader.ss"));
+	LoadFile(halyard_dir.AddComponent("loader").AddComponent("stage1.ss"));
 }
 
 void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
@@ -171,6 +179,17 @@ void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
 
 void TSchemeInterpreterManager::MakeInterpreter()
 {
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
+    ASSERT(IsInsideStackBase());
+
+    // If we haven't initialized our top-level Scheme environment yet, do
+    // it now.  We have to delay this until now, because this is the first
+    // point where we're guaranteed to (a) have IsInsideStackBase() return
+    // true, and (b) know what directory our script is in.  Yes, this is a
+    // bit convoluted.
+    if (!mHaveInitializedScheme)
+        InitializeScheme();
+
     // We should have only mGlobalEnv at this point: Any more or less is
     // most likely the result of a memory leak somewhere, and will most
     // likely prevent us from GC'ing old copies of the script after a
@@ -197,15 +216,20 @@ void TSchemeInterpreterManager::MakeInterpreter()
 //=========================================================================
 
 TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
+    : mCurrentThread(INITIAL_THREAD)
 {
-    Scheme_Config *current_config = NULL;
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
+
+    ASSERT(TInterpreterManager::GetInstance()->IsInsideStackBase());
+
+    Scheme_Object *script_env_obj = NULL;
     Scheme_Object *result = NULL;
     Scheme_Object *byte_str = NULL;
     char *raw_str = NULL;
 
     TSchemeReg<5> reg;
     reg.param(inGlobalEnv);
-    reg.local(current_config);
+    reg.local(script_env_obj);
     reg.local(result);
     reg.local(byte_str);
     reg.local(raw_str);
@@ -217,13 +241,12 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 	InitializeModuleNames();
 
 	// Create a new script environment, and store it where we can find it.
-	mScriptEnv = NULL;
-	CallSchemeEx(mGlobalEnv, mLoaderModule, "new-script-environment", 0, NULL);
-    current_config = scheme_current_config();
-	mScriptEnv = scheme_get_env(current_config);
+    script_env_obj = CallSchemeEx(mGlobalEnv, mLoaderModule,
+                                  "new-script-environment", 0, NULL);
+	mScriptEnv = reinterpret_cast<Scheme_Env*>(script_env_obj);
 
 	// Load our kernel and script.
-	result = CallSchemeEx(mGlobalEnv, mLoaderModule, "load-script", 0, NULL);
+	result = LoadScript();
 	if (!SCHEME_FALSEP(result))
 	{
 		ASSERT(SCHEME_CHAR_STRINGP(result));
@@ -235,6 +258,8 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 
 TSchemeInterpreter::~TSchemeInterpreter()
 {
+    ASSERT(TInterpreterManager::GetInstance()->IsInsideStackBase());
+
 	// We don't actually shut down the Scheme interpreter.  But we'll
 	// reinitialize it later if we need to.
 }
@@ -262,7 +287,7 @@ void TSchemeInterpreter::InitializeModuleNames()
     reg.local(tail2);
     reg.done();
 
-	mLoaderModule = scheme_intern_symbol("loader");
+	mLoaderModule = scheme_intern_symbol("stage1");
 
     halyard_string   = scheme_make_utf8_string("halyard");
 	tail1            = scheme_make_pair(halyard_string, scheme_null);
@@ -293,7 +318,6 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
     // forces us to clear mBucketMap every time we destroy a
     // TSchemeInterpreter object.
     BucketKey::Env env;
-    typedef Scheme_Env *EnvPtr;
     if (Eq(inEnv, EnvPtr(mGlobalEnv)))
         env = BucketKey::GLOBAL_ENV;
     else if (Eq(inEnv, EnvPtr(mScriptEnv)))
@@ -451,7 +475,13 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName, // Scheme heap
     // or anything else which causes a non-local PLT exit.  See CallPrim
     // for more details.
 	try {
-        ASSERT(mScriptEnv != NULL)
+        ASSERT(mScriptEnv != NULL);
+        ASSERT(TInterpreterManager::GetInstance()->IsInsideStackBase());
+
+        // Please read--and thoroughly understand--the file
+        // lang/scheme/MZSCHEME-THREADS.txt before trying to call a
+        // primitive from anywhere but inside the sandbox.
+        ASSERT(mCurrentThread == SANDBOX_THREAD);
 
 		// Marshal our argument list and call the primitive.
 		TValueList inList;
@@ -483,6 +513,7 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
 												int inArgc,
 												Scheme_Object **inArgv)
 {
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
     Scheme_Bucket *bucket = NULL;
     Scheme_Object *func = NULL;
 
@@ -493,6 +524,15 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
     reg.local(bucket);
     reg.local(func);
     reg.done();
+
+    // Make sure we're calling functions from the correct thread.  For
+    // details of the thread policy, please see stage1.ss.
+    ASSERT((mCurrentThread == SANDBOX_THREAD && Eq(inEnv, EnvPtr(mScriptEnv)))
+           || ((mCurrentThread == INITIAL_THREAD ||
+                mCurrentThread == SWITCHING_TO_SANDBOX_THREAD) &&
+               Eq(inEnv, EnvPtr(mGlobalEnv))));
+    if (mCurrentThread == SWITCHING_TO_SANDBOX_THREAD)
+        mCurrentThread = SANDBOX_THREAD;
 
     // Look up the function to call.  (Note that scheme_module_bucket will
     // look up names in the module's *internal* namespace, not its official
@@ -514,6 +554,8 @@ Scheme_Object *TSchemeInterpreter::CallSchemeExHelper(Scheme_Object *inFunc,
                                                       int inArgc,
                                                       Scheme_Object **inArgv)
 {
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
+
     // MANUAL GC PROOF REQUIRED - This is the inner part of CallSchemeEx.
     // Because we use scheme_setjmp in this function, we also need to use
     // MZ_GC_DECL_REG.  This allows scheme_setjmp to know how to unwind the
@@ -581,9 +623,41 @@ Scheme_Object *TSchemeInterpreter::CallSchemeStatic(const char *inFuncName,
     return GetSchemeInterpreter()->CallScheme(inFuncName, inArgc, inArgv);
 }
 
-void TSchemeInterpreter::Run()
-{
-	(void) CallSchemeSimple("%kernel-run");
+/// When we call into certain functions in loader.ss, we actually transfer
+/// control to another PLT Scheme thread.  We keep track of the current
+/// thread using mCurrentThread, so that we can enforce various policies about
+/// which functions can be called from which threads.
+#define BEGIN_SANDBOX_THREAD \
+    mCurrentThread = SWITCHING_TO_SANDBOX_THREAD; \
+    try {
+
+#define END_SANDBOX_THREAD \
+    } catch (...) { \
+        mCurrentThread = INITIAL_THREAD; \
+        throw; \
+    } \
+    mCurrentThread = INITIAL_THREAD;
+
+Scheme_Object *TSchemeInterpreter::LoadScript() {
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
+    Scheme_Object *result = NULL;
+    
+    TSchemeReg<1> reg;
+    reg.local(result);
+    reg.done();
+
+    BEGIN_SANDBOX_THREAD
+    result = CallSchemeEx(mGlobalEnv, mLoaderModule, "load-script", 0, NULL);
+    END_SANDBOX_THREAD
+
+    return result;
+}
+
+void TSchemeInterpreter::Run() {
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
+    BEGIN_SANDBOX_THREAD
+    (void) CallSchemeEx(mGlobalEnv, mLoaderModule, "run-script", 0, NULL);
+    END_SANDBOX_THREAD
 }
 
 void TSchemeInterpreter::KillInterpreter(void)

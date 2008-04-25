@@ -204,17 +204,25 @@
 
 
   ;;=======================================================================
-  ;;  Kernel Entry Points
-  ;;  =======================================================================
-  ;;  The '%kernel-' methods are called directly by the engine.  They
-  ;;  shouldn't raise errors, because they're called directly from C++
-  ;;  code that doesn't want to catch them (and will, in fact, quit
-  ;;  the program).
-  ;;
-  ;;  The theory behind these functions is documented in detail in
-  ;;  TInterpreter.h.
+  ;;  Main loop
+  ;;=======================================================================
 
-  (define (%kernel-run)
+  (provide %run-main-kernel-loop)
+
+  ;; This is called from 'run-script' in halyard/loader/stage1.ss.  It
+  ;; won't return until the main loop is finished.
+  (define (%run-main-kernel-loop)
+    (with-errors-blocked (fatal-error)
+      ;; Ask TInterpreterManager to run any initial commands, call
+      ;; NotifyReloadScriptSucceeded, etc.  We delay this until
+      ;; run-main-kernel-loop, because this is the first time we're
+      ;; guaranteed to be in SANDBOX_THREAD after the initial script load
+      ;; is completed.
+      (%call-prim 'RunInitialCommands)
+      ;; Run the main loop itself.
+      (%main-kernel-loop)))
+
+  (define (%main-kernel-loop)
     ;; The workhorse function.  We get called to manage the main event
     ;; loop, and we provide support code for handling jumps, STOPPING
     ;; the interpreter, idling after the end of each card, and quiting
@@ -223,39 +231,50 @@
     ;; it, and the callback system.  Yes, it's ugly--but it lets us
     ;; get the semantics we want without writing an entire interpreter
     ;; from scratch.
-    (with-errors-blocked (fatal-error)
-      (label exit-interpreter
-        (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
-          (let ((jump-card #f))
-            (let loop []
-              (label exit-to-top
-                (with-errors-blocked (non-fatal-error)
-                  (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
-                    (cond
-                     [jump-card
-                      (run-card (find-card jump-card))]
-                     [#t
-                      ;; Highly optimized do-nothing loop. :-)  This
-                      ;; is a GC optimization designed to prevent the
-                      ;; interpreter from allocating memory like a crazed
-                      ;; maniac while the user's doing nothing.  If we
-                      ;; removed this block, we'd have to perform a lot
-                      ;; of LABEL and FLUID-LET statements, which are
-                      ;; extremely expensive in quantities of 1,000.
-                      (let idle-loop []
-                        (unless (eq? *%kernel-state* 'JUMPING)
-                          (if (%kernel-stopped?)
-                              (blocking-idle)
-                              (%kernel-idle-and-check-deferred))
-                          (idle-loop)))]))))
-              (set! jump-card #f)
-              (when (eq? *%kernel-state* 'JUMPING)
-                ;; Handle a jump by setting jump-card for our next goaround.
-                (set! jump-card *%kernel-jump-card*))
-              (%kernel-maybe-clear-state)
-              (loop)))))
-      (%kernel-maybe-clear-state)
-      (notify-exit-script)))
+    (label exit-interpreter
+      (fluid-let ((*%kernel-exit-interpreter-func* exit-interpreter))
+        (let ((jump-card #f))
+          (let loop []
+            (label exit-to-top
+              (with-errors-blocked (non-fatal-error)
+                (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
+                  (cond
+                   [jump-card
+                    (run-card (find-card jump-card))]
+                   [#t
+                    ;; Highly optimized do-nothing loop. :-)  This
+                    ;; is a GC optimization designed to prevent the
+                    ;; interpreter from allocating memory like a crazed
+                    ;; maniac while the user's doing nothing.  If we
+                    ;; removed this block, we'd have to perform a lot
+                    ;; of LABEL and FLUID-LET statements, which are
+                    ;; extremely expensive in quantities of 1,000.
+                    (let idle-loop []
+                      (unless (eq? *%kernel-state* 'JUMPING)
+                        (if (%kernel-stopped?)
+                            (blocking-idle)
+                            (%kernel-idle-and-check-deferred))
+                        (idle-loop)))]))))
+            (set! jump-card #f)
+            (when (eq? *%kernel-state* 'JUMPING)
+              ;; Handle a jump by setting jump-card for our next goaround.
+              (set! jump-card *%kernel-jump-card*))
+            (%kernel-maybe-clear-state)
+            (loop)))))
+    (%kernel-maybe-clear-state)
+    (notify-exit-script))
+
+
+  ;;=======================================================================
+  ;;  Kernel Entry Points
+  ;;=======================================================================
+  ;;  The '%kernel-' methods are called directly by the engine.  They
+  ;;  shouldn't raise errors, because they're called directly from C++
+  ;;  code that doesn't want to catch them (and will, in fact, quit
+  ;;  the program).
+  ;;
+  ;;  The theory behind these functions is documented in detail in
+  ;;  TInterpreter.h.
 
   (define (notify-exit-script)
     (with-errors-blocked (non-fatal-error)

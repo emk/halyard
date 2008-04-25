@@ -331,6 +331,13 @@ private:
 	///
 	SystemIdleProc mSystemIdleProc;
 
+    //////////
+    /// Is it safe to call the interpreter?  This is only true if we're
+    /// within the portion of stack wrapped by HALYARD_BEGIN_STACK_BASE and
+    /// HALYARD_END_STACK_BASE.
+    ///
+    bool mIsInsideStackBase;
+
 	//////////
 	/// This is set to true once the interpreter manager is allowed
 	/// to create an interpreter and start it running.
@@ -366,6 +373,8 @@ private:
 public:
 	//////////
 	/// Create a new TInterpreterManager with the specified idle procedure.
+	/// This called _before_ the stack is set up, so it can't actually call
+	/// into the interpreter.  Put any such code in InitialSetup, below.
 	///
 	TInterpreterManager(SystemIdleProc inIdleProc);
 
@@ -375,12 +384,27 @@ public:
 	///
 	virtual ~TInterpreterManager();
 
+    //////////
+    /// Set up the TInterpreterManager.  The stack is correctly set up at
+    /// this point, so it is safe to call into (for example) the PLT Scheme
+    /// interpreter.
+    ///
+    virtual void InitialSetup() = 0;
+
 	//////////
 	/// Create an interpreter and run it.  This function handles the
 	/// application's main event loop, and will only return when the
 	/// application quits.
 	///
 	void Run();
+
+    //////////
+    /// Finish setting up the interpreter, and run our initial commands.
+    /// This needs to be split out into a separate function because it will
+    /// be called from the RunInitialCommands primitive once the
+    /// interpreter enters the correct thread. 
+    ///
+    void RunInitialCommands();
 
 	/////////
 	/// Run the system idle procedure.
@@ -403,11 +427,11 @@ public:
     Document *GetDocument() const { return sDocument; }
 
 	//////////
-	/// Call this function to start the script running.  This step is
-	/// separate from the constructor so the application can choose
-	/// a script to run and set up a working directory.
+	/// Call this function to start the script running.  Note that this
+	/// function may be called before IsInsideStackBase() is true, so
+    /// it can't, for example, be used to make calls into mzscheme.
 	///
-	virtual void BeginScript();
+	void BeginScript();
 
 	//////////
 	/// Call this function to notify the TInterpreterManager of an
@@ -521,6 +545,11 @@ public:
     /// Should we supress any splash screens, progress bars, etc.?
     ///
     static bool ShouldSuppressSplashScreen();
+
+    //////////
+    /// Returns true if our stack base is set up correctly.
+    ///
+    bool IsInsideStackBase() { return mIsInsideStackBase; }
 
 protected:
 	//////////
