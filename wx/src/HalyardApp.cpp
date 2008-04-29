@@ -56,6 +56,7 @@
 #include "Downloader.h"
 #include "Stage.h"
 #include "CommandLine.h"
+#include "CommonWxConv.h"
 
 // Provided by auto-generated resources.cpp file.
 extern void InitXmlResource();
@@ -238,22 +239,22 @@ void HalyardApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
 #include <windows.h>
 
 // If we don't have at least wxWidgets 2.6.2 (IIRC), then there's no way to
-// surpress the wxWidgets even loop, because Vadim hadn't merged the final
+// surpress the wxWidgets event loop, because Vadim hadn't merged the final
 // crash reporting support at that point.  So let's just do this using
 // native Win32 APIs.
 //
-// WARNING - This function _must not_ call Assert, Error, FatalError, etc.
-static void SafeAlert(TLogger::LogLevel level, const char *message)
-{
+// WARNING - This function _must not_ call Assert, Error, FatalError, etc.,
+// or else it will cause an infinite loop.
+static void SafeAlert(TLogger::LogLevel level, const char *message) {
 	uint32 alertType = MB_TASKMODAL | MB_OK;
 	switch (level) {
-		case TLogger::LEVEL_ERROR:
-			alertType |= MB_ICONSTOP;
-			break;
-
 		case TLogger::LEVEL_LOG:
 		case TLogger::LEVEL_CAUTION:
 			alertType |= MB_ICONINFORMATION;
+			break;
+
+		case TLogger::LEVEL_ERROR:
+			alertType |= MB_ICONSTOP;
 			break;
 	}
 	::MessageBox(NULL, message, NULL, alertType);
@@ -261,7 +262,27 @@ static void SafeAlert(TLogger::LogLevel level, const char *message)
 
 #else // !(defined __WXMSW__ && !wxCHECK_VERSION(2,6,2))
 
-#error "Need implementation of SafeAlert for wxWidgets 2.6.2 and greater"
+// WARNING - This function _must not_ call Assert, Error, FatalError, etc.,
+// or else it will cause an infinite loop.
+//
+// XXX - This function really needs to try to turn off the wxWidgets event
+// loop, but I can't currently find the code for doing that.  So
+// "SafeAlert" probably isn't as safe as we'd really like.
+static void SafeAlert(TLogger::LogLevel inLevel, const char *inMessage) {\
+    long style = wxOK;
+    switch (inLevel) {
+        case TLogger::LEVEL_LOG:
+        case TLogger::LEVEL_CAUTION:
+            style |= wxICON_ERROR;
+            break;
+
+        case TLogger::LEVEL_ERROR:
+            style |= wxICON_INFORMATION;
+            break;
+    };
+    wxMessageDialog dlg(NULL, ToWxString(inMessage), wxT("Halyard"), style);
+    dlg.ShowModal();
+}
 
 #endif // !(defined __WXMSW__ && !wxCHECK_VERSION(2,6,2))
 
