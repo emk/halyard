@@ -34,9 +34,8 @@
 
 using namespace Halyard;
 
-void (*TLogger::s_ErrorPrepFunction)() = NULL;
-void (*TLogger::s_ExitPrepFunction)() = NULL;
-
+TLogger::AlertDisplayFunction TLogger::s_AlertDisplayFunction = NULL;
+TLogger::ExitPrepFunction TLogger::s_ExitPrepFunction = NULL;
 
 #define FATAL_HEADER	"Fatal Error: "
 #define ERROR_HEADER	"Error: "
@@ -150,7 +149,7 @@ void TLogger::Log(const char *Format, ...)
 void TLogger::Error(const char *Format, ...)
 {
 	FORMAT_MSG(Format);
-	AlertBuffer(true);
+	AlertBuffer(LEVEL_ERROR);
 	LogBuffer(ERROR_HEADER);
     if (TInterpreterManager::IsInRuntimeMode())
         CrashNow(SCRIPT_CRASH);
@@ -160,7 +159,7 @@ void TLogger::Caution(const char *Format, ...)
 {
 	FORMAT_MSG(Format);
 	if (m_CautionAlert)
-		AlertBuffer(false);
+		AlertBuffer(LEVEL_CAUTION);
 	LogBuffer(CAUTION_HEADER);
 }
 
@@ -172,7 +171,7 @@ void TLogger::FatalError(const char *Format, ...)
 	// relies on a lot of subsystems which might
 	// somehow fail.
 	FORMAT_MSG(Format);
-	AlertBuffer(true);
+	AlertBuffer(LEVEL_ERROR);
     LogBuffer(FATAL_HEADER);
     CrashNow(APPLICATION_CRASH);
 }
@@ -182,7 +181,7 @@ void TLogger::EnvironmentError(const char *Format, ...)
     // Format and display our message, and exit without submitting
     // a crash report.
     FORMAT_MSG(Format);
-    AlertBuffer(true);
+    AlertBuffer(LEVEL_ERROR);
     exit(1);
 }
 
@@ -220,50 +219,23 @@ void TLogger::LogBuffer(const char *Header)
         AddToRecentEntries(msg);
 }
 
-void TLogger::AlertBuffer(bool isError /* = false */)
+void TLogger::AlertBuffer(LogLevel inLogLevel /* = LEVEL_LOG */)
 {
-    SafeAlert(isError, m_LogBuffer);
+    DisplayAlert(inLogLevel, m_LogBuffer);
 }
 
-//
-//	SafeAlert - Display an alert.
-//
-//  THIS ROUTINE MAY NOT USE 'ASSERT' OR 'FatalError', BECAUSE IS CALLED
-//  BY THE ERROR-LOGGING CODE!
-//
-#ifdef APP_PLATFORM_WIN32
-
-#include <windows.h>
-
-void TLogger::SafeAlert(bool isError, const char *message)
+/// Display an alert on the console.  THIS ROUTINE MAY NOT USE 'ASSERT' OR
+/// 'FatalError', BECAUSE IS CALLED BY THE ERROR-LOGGING CODE!
+static void ConsoleAlert(TLogger::LogLevel inLevel, const char *inMessage)
 {
-	PrepareToDisplayError();
-
-	uint32 alertType = MB_TASKMODAL | MB_OK;
-	if (isError)
-		alertType |= MB_ICONSTOP;
-	else
-		alertType |= MB_ICONINFORMATION;
-
-	::MessageBox(NULL, message, NULL, alertType);
-}
-
-#elif APP_PLATFORM_MACINTOSH || APP_PLATFORM_OTHER
-
-void TLogger::SafeAlert(bool isError, const char *message)
-{
-	PrepareToDisplayError();
-
 	std::cerr << std::endl;
-	if (isError)
-		std::cerr << "ERROR: ";
-	else
-		std::cerr << "INFO: ";
-	std::cerr << message << std::endl;
+    switch (inLevel) {
+		case TLogger::LEVEL_LOG:     std::cerr << "LOG: ";     break;
+        case TLogger::LEVEL_CAUTION: std::cerr << "CAUTION: "; break;
+        case TLogger::LEVEL_ERROR:   std::cerr << "ERROR: ";   break;
+    }
+	std::cerr << inMessage << std::endl;
 }
-
-#endif
-
 
 //
 //	TimeStamp - Put a time stamp in the log
@@ -298,15 +270,17 @@ void TLogger::OpenRemainingLogsForCrash()
         gDebugLog.Init("DebugRecent");
 }
 
-void TLogger::PrepareToDisplayError()
+void TLogger::DisplayAlert(LogLevel inLevel, const char *inMessage)
 {
-	if (s_ErrorPrepFunction)
-		(*s_ErrorPrepFunction)();	
+	if (s_AlertDisplayFunction)
+		(*s_AlertDisplayFunction)(inLevel, inMessage);
+    else
+        ConsoleAlert(inLevel, inMessage);
 }
 
-void TLogger::RegisterErrorPrepFunction(void (*inFunc)())
+void TLogger::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc)
 {
-	s_ErrorPrepFunction = inFunc;	
+	s_AlertDisplayFunction = inFunc;
 }
 
 void TLogger::PrepareToExit()
@@ -315,9 +289,9 @@ void TLogger::PrepareToExit()
 		(*s_ExitPrepFunction)();	
 }
 
-void TLogger::RegisterExitPrepFunction(void (*inFunc)())
+void TLogger::RegisterExitPrepFunction(ExitPrepFunction inFunc)
 {
-	s_ExitPrepFunction = inFunc;	
+	s_ExitPrepFunction = inFunc;
 }
 
 // This routine is declared in TCommon.h.

@@ -341,7 +341,7 @@ void FancyCrashReporter::ReportCrashInCrashRepoter(const char *inReason) {
     buffer[sizeof(buffer)-1] = '\0';
 
     // Display the error *very carefully* and abort.
-    TLogger::SafeAlert(true, buffer);
+	TLogger::DisplayAlert(TLogger::LEVEL_ERROR, buffer);
     ::abort();
 }
 

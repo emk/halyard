@@ -233,6 +233,38 @@ void HalyardApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
 
 #endif // __WXDEBUG__
 
+#if defined __WXMSW__ && !wxCHECK_VERSION(2,6,2)
+
+#include <windows.h>
+
+// If we don't have at least wxWidgets 2.6.2 (IIRC), then there's no way to
+// surpress the wxWidgets even loop, because Vadim hadn't merged the final
+// crash reporting support at that point.  So let's just do this using
+// native Win32 APIs.
+//
+// WARNING - This function _must not_ call Assert, Error, FatalError, etc.
+static void SafeAlert(TLogger::LogLevel level, const char *message)
+{
+	uint32 alertType = MB_TASKMODAL | MB_OK;
+	switch (level) {
+		case TLogger::LEVEL_ERROR:
+			alertType |= MB_ICONSTOP;
+			break;
+
+		case TLogger::LEVEL_LOG:
+		case TLogger::LEVEL_CAUTION:
+			alertType |= MB_ICONINFORMATION;
+			break;
+	}
+	::MessageBox(NULL, message, NULL, alertType);
+}
+
+#else // !(defined __WXMSW__ && !wxCHECK_VERSION(2,6,2))
+
+#error "Need implementation of SafeAlert for wxWidgets 2.6.2 and greater"
+
+#endif // !(defined __WXMSW__ && !wxCHECK_VERSION(2,6,2))
+
 bool HalyardApp::OnInit() {
     // All code in this routine should be protected by an
     // exception-trapping block of some sort, because wxWidgets has weak
@@ -275,6 +307,9 @@ bool HalyardApp::OnInit() {
         return false;
     }
     FileSystem::SetAppLocalDataDirectory(std::string(local_dir.mb_str()));
+
+    // Use a GUI alert dialog.
+    TLogger::RegisterAlertDisplayFunction(SafeAlert);
 
     // Get the Halyard runtime going.
 #if CONFIG_HAVE_FANCYCRASHREP
@@ -397,7 +432,7 @@ int HalyardApp::OnExit() {
 
 // If we're building with our custom-patched version of wxWidgets 2.6.1p1,
 // we need to do this the hard way.
-#if defined __WXMSW__ && wxCHECK_VERSION(2,6,1) && !wxCHECK_VERSION(2,6,2)
+#if defined __WXMSW__ && HAVE_CUSTOM_WXWIDGETS
 
 namespace {
     // HACK - Do the song and dance required to get a custom event loop running

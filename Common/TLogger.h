@@ -44,6 +44,22 @@ BEGIN_NAMESPACE_HALYARD
 class TLogger
 {
 public:
+    /// The severity of an alert dialog.
+    enum LogLevel {
+        LEVEL_LOG,
+        LEVEL_CAUTION,
+        LEVEL_ERROR
+    };
+
+    /// A function which (very carefully) displays an alert dialog and
+    /// waits until the user clicks OK.
+    typedef void (*AlertDisplayFunction)(LogLevel, const char *);
+
+    /// A function that should be called shortly before crashing the
+    /// engine, in a last-ditch effort to restore the user's screen to
+    /// reasonable settings.
+    typedef void (*ExitPrepFunction)();
+
 	//////////
 	/// Constructor.
 	///
@@ -190,15 +206,14 @@ private:
 	uint32		m_LogMask;
 
 	//////////
-	/// Either NULL, or a function which can be used to unfade the screen,
-	/// etc., before displaying errors.
+	/// Either NULL, or a function which can be used to display an alert.
 	///
-	static void (*s_ErrorPrepFunction)();
+	static AlertDisplayFunction s_AlertDisplayFunction;
 
 	//////////
 	/// Either NULL, or a function which should be called before exiting.
 	///
-	static void (*s_ExitPrepFunction)();
+	static ExitPrepFunction s_ExitPrepFunction;
 
     //////////
     /// Add a string to our m_RecentEntries list.
@@ -217,7 +232,7 @@ private:
 	///
 	/// \param inError  Is it an error message?
 	///
-	void		AlertBuffer(bool isError = false);
+	void		AlertBuffer(LogLevel inLogLevel = LEVEL_LOG);
 
     //////////
     /// Crash the engine with a fatal error.
@@ -239,13 +254,6 @@ private:
 	}
 
 public:
-    //////////
-    /// Display an alert dialog containing 'message'.  This function
-    /// is safe to call from inside error-handling machinery--it doesn't
-    /// use assertions or report errors.
-    ///
-    static void SafeAlert(bool isError, const char *message);
-
 	//////////
 	/// Open up all the log files which will be required by our program.
 	///
@@ -259,20 +267,16 @@ public:
     ///
     static void OpenRemainingLogsForCrash();
 
-	//////////
-    /// We may need to unfade the screen or perform other cleanup
-    /// before displaying an error.  This method will call any
-    /// function registered with RegisterErrorPrepFunction, below,
-    /// or simply do nothing if no such function has been registered.
+    //////////
+    /// Display an alert in a plaform-specific fashion.
     ///
-    static void PrepareToDisplayError();
+    static void DisplayAlert(LogLevel inLevel, const char *inMessage);
 
-	//////////
-	/// Install a function to be called before displaying dialog
-	/// boxes, triggering assertions, etc.  This function can
-	/// be called using PrepareToDisplayError, above.
-	///
-	static void RegisterErrorPrepFunction(void (*inFunc)());
+    //////////
+    /// Register a function to display an alert.  Note that this function
+    /// MUST NOT call ASSERT, FatalError, or other logging functions!
+    ///
+    static void RegisterAlertDisplayFunction(AlertDisplayFunction inFunc);
 
     //////////
     /// We may need to restore some system state before our application
@@ -283,7 +287,7 @@ public:
     //////////
     /// Install a function to be called before exiting with an error.
     ///
-    static void RegisterExitPrepFunction(void (*inFunc)());
+    static void RegisterExitPrepFunction(ExitPrepFunction inFunc);
 };
 
 //////////

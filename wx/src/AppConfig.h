@@ -32,6 +32,15 @@
 #ifndef AppConfig_H
 #define AppConfig_H
 
+/// Are we building against our custom-patched version of wxWidgets
+/// 2.6.1p1?
+///
+/// TODO - This is not a particularly accurate way to check for our patched
+/// wxWidgets, but it will do, since most sites have long since upgraded to
+/// the latest point release of either 2.6 or 2.8.
+#define HAVE_CUSTOM_WXWIDGETS \
+    wxCHECK_VERSION(2,6,1) && !wxCHECK_VERSION(2,6,2)
+
 //////////
 /// Set this option to 1 to enable Quake 2 support.  You'll
 /// also need to place a specially-patched version of Quake 2
