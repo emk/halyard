@@ -26,6 +26,9 @@
 // QuickTime requires a different set of headers on every platform.
 #if defined __WXMSW__
 #   include <windows.h>
+    // Don't include Apple's debugging header--it conflicts nastily with the
+    // rest of our environment, and we don't need it.
+#   define __DEBUGGING__
 #   include <QTML.h>
 #   include <Movies.h>
 #elif defined __WXMAC_CARBON__

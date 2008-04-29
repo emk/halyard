@@ -30,6 +30,17 @@ using namespace Halyard;
 bool TQTMovie::sIsQuickTimeInitialized = false;
 CGrafPtr TQTMovie::sDummyGWorld = NULL;
 
+// XXX - PORTABILITY - UNICODE - Apple's Carbon APIs don't know about the
+// current locale, C-style multibyte strings, or anything else that would
+// allow us to correctly convert multibyte strings to wide-character
+// strings.  So we fake it by choosing the most common locale on each
+// supported platform.
+#ifdef __WXMSW__
+CFStringEncoding kMultiByteStringEncoding = kCFStringEncodingWindowsLatin1;
+#else
+CFStringEncoding kMultiByteStringEncoding = kCFStringEncodingUTF8;
+#endif
+
 
 //=========================================================================
 // TMacError Methods
@@ -176,10 +187,14 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 {
 	ASSERT(sIsQuickTimeInitialized);
 
+    OSErr err;
+    OSType data_ref_type;
+
 	// If we allocate these resources, we must free them before exiting.
+    bool have_path_ref = false;
+    CFStringRef path_ref;
+    Handle data_ref = NULL;
     Handle url_handle = NULL;
-	bool have_refnum = false;
-	short refnum;
 
     // Record the time we started loading data.  We'll use this in various
     // calculations which need to estimate the load speed.
@@ -199,37 +214,32 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 	
     try
     {
-		// Determine whether we're processing a URL or a local file
-		// name, and load the movie accordingly.
-		if (IsRemoteMoviePath(inMoviePath))
-		{
-			// Copy inMoviePath into a handle.
-			url_handle = ::NewHandle(inMoviePath.length() + 1);
-			CHECK_MAC_ERROR(::MemError());
-			strcpy(*url_handle, inMoviePath.c_str());
-			
-			// Create our movie from the URL.
-			CHECK_MAC_ERROR(::NewMovieFromDataRef(&mMovie, load_flags,
-												  NULL, url_handle,
-												  URLDataHandlerSubType));
+        // Build a CFStringRef version of inMoviePath for use with the
+        // toolbox APIs.
+        path_ref = CFStringCreateWithCString(NULL, inMoviePath.c_str(),
+                                             kMultiByteStringEncoding);
+        if (!path_ref)
+            THROW("Can't convert movie path to Unicode");
+        have_path_ref = true;
+
+		// Determine whether we're processing a URL or a local file name,
+		// and build an appropriate data reference for our movie.  This is
+		// adapted from the example code at
+		// http://developer.apple.com/samplecode/QuickTimeMovieControl/ .
+		if (IsRemoteMoviePath(inMoviePath)) {
+            err = ::QTNewDataReferenceFromURLCFString(path_ref, 0, &data_ref,
+                                                      &data_ref_type);
+            CHECK_MAC_ERROR(err);
+        } else {
+            err = ::QTNewDataReferenceFromFullPathCFString(
+                path_ref, kQTNativeDefaultPathStyle, 0,
+                &data_ref, &data_ref_type);
+            CHECK_MAC_ERROR(err);
 		}
-		else
-		{
-			// Convert our path to an FSSpec.  We need to pass a non-const
-			// string because the underlying C API isn't const-correct.
-			FSSpec spec;
-			char *path = const_cast<char*>(inMoviePath.c_str());
-			CHECK_MAC_ERROR(::NativePathNameToFSSpec(path, &spec, 0));
-			
-			// Open the file.
-			CHECK_MAC_ERROR(::OpenMovieFile(&spec, &refnum, fsRdPerm));
-			have_refnum = true;
-			
-			// Create a movie from the file.
-			short res_id = 0;
-			CHECK_MAC_ERROR(::NewMovieFromFile(&mMovie, refnum, &res_id, NULL,
-											   load_flags, NULL));
-		}
+
+        // Create our movie from the data reference.
+        CHECK_MAC_ERROR(::NewMovieFromDataRef(&mMovie, load_flags,
+                                              NULL, data_ref, data_ref_type));
 
 		// Hide our movie safely out of the way until we preroll it. 
 		// This prevents certain codecs from drawing random cruft on
@@ -251,18 +261,18 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 		// We failed, so clean up everything.
 		UpdateMovieState(MOVIE_BROKEN);
 		ReleaseResources();
-		if (url_handle)
-			::DisposeHandle(url_handle);
-		if (have_refnum)
-			::CloseMovieFile(refnum);
+        if (have_path_ref)
+            ::CFRelease(path_ref);
+		if (data_ref)
+			::DisposeHandle(data_ref);
 		throw;
     }
 
     // We succeeded, so clean up our temporary data only.
-    if (url_handle)
-		::DisposeHandle(url_handle);
-	if (have_refnum)
-		::CloseMovieFile(refnum);
+    if (have_path_ref)
+        ::CFRelease(path_ref);
+    if (data_ref)
+		::DisposeHandle(data_ref);
 }
 
 void TQTMovie::Idle() throw ()
