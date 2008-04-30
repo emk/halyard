@@ -31,6 +31,12 @@
            pref
            set-pref!
            clear-prefs!
+           
+           ;; XXX - these shouldn't be exported, but there seems to be a bug 
+           ;; in PLTs module system that makes it so the define-pref macros
+           ;; can't expand to them properly without exporting them.
+           %pref
+           set-%pref!
 
            user-id
            set-user-id!
