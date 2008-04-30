@@ -21,6 +21,9 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+#include "AppConfig.h"
+
+#if CONFIG_HAVE_QUICKTIME
 
 #include "TPrimitives.h"
 #include "TQTMovie.h"
@@ -191,10 +194,8 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     OSType data_ref_type;
 
 	// If we allocate these resources, we must free them before exiting.
-    bool have_path_ref = false;
-    CFStringRef path_ref;
+    CFStringRef path_ref = NULL;
     Handle data_ref = NULL;
-    Handle url_handle = NULL;
 
     // Record the time we started loading data.  We'll use this in various
     // calculations which need to estimate the load speed.
@@ -220,7 +221,6 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
                                              kMultiByteStringEncoding);
         if (!path_ref)
             THROW("Can't convert movie path to Unicode");
-        have_path_ref = true;
 
 		// Determine whether we're processing a URL or a local file name,
 		// and build an appropriate data reference for our movie.  This is
@@ -232,7 +232,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
             CHECK_MAC_ERROR(err);
         } else {
             err = ::QTNewDataReferenceFromFullPathCFString(
-                path_ref, kQTNativeDefaultPathStyle, 0,
+                path_ref, (QTPathStyle) kQTNativeDefaultPathStyle, 0,
                 &data_ref, &data_ref_type);
             CHECK_MAC_ERROR(err);
 		}
@@ -261,7 +261,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
 		// We failed, so clean up everything.
 		UpdateMovieState(MOVIE_BROKEN);
 		ReleaseResources();
-        if (have_path_ref)
+        if (path_ref)
             ::CFRelease(path_ref);
 		if (data_ref)
 			::DisposeHandle(data_ref);
@@ -269,7 +269,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     }
 
     // We succeeded, so clean up our temporary data only.
-    if (have_path_ref)
+    if (path_ref)
         ::CFRelease(path_ref);
     if (data_ref)
 		::DisposeHandle(data_ref);
@@ -751,77 +751,36 @@ void TQTMovie::FillOutEvent(HWND inHWND, UINT inMessage, WPARAM inWParam,
 	::WinEventToMacEvent(&msg, outEvent);
 }
 
+#endif // defined __WXMSW__
 
-bool TQTMovie::HandleMovieEvent(HWND hWnd, UINT message,
-								WPARAM wParam, LPARAM lParam)
-	throw ()
-{
-	if (IsBroken())
-		return false;
-
-	ASSERT(::GetNativeWindowPort(hWnd) != NULL);
-	if (!::GetNativeWindowPort(hWnd))
-		return false;
-	
-	// Convert everything into a Macintosh event record.
-	EventRecord	mac_event;
-	FillOutEvent(hWnd, message, wParam, lParam, &mac_event);
-
-	// Pass the event to our movie.
-	bool res = false;
-	if (mMovieController)
-		res = ::MCIsPlayerEvent(mMovieController, &mac_event) ? true : false;
-	else
-		Idle();
-	return res;
-}
-
-void TQTMovie::Redraw(HWND hWnd)
-	throw ()
+void TQTMovie::Redraw() throw ()
 {
 	if (IsBroken() || !mMovieController)
 		return;
-
-	WindowPtr mac_window =
-		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
-	::MCDraw(mMovieController, mac_window);
+	::MCDraw(mMovieController, GetMacWindow());
 }
 
-void TQTMovie::Activate(HWND hWnd, bool inIsActivating)
-	throw ()
+void TQTMovie::Activate(bool inIsActivating) throw ()
 {
 	if (IsBroken() || !mMovieController)
 		return;
-
-	WindowPtr mac_window =
-		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
-	::MCActivate(mMovieController, mac_window, inIsActivating);
+	::MCActivate(mMovieController, GetMacWindow(), inIsActivating);
 }
 
-void TQTMovie::Click(HWND hWnd, Point inWhere, long inWhen, long inModifiers)
-	throw ()
+void TQTMovie::Click(Point inWhere, long inWhen, long inModifiers) throw ()
 {
 	if (IsBroken() || !mMovieController)
 		return;
-
-	WindowPtr mac_window =
-		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
-	::MCClick(mMovieController, mac_window, inWhere, inWhen, inModifiers);
+	::MCClick(mMovieController, GetMacWindow(), inWhere, inWhen, inModifiers);
 }
 
 
-void TQTMovie::Key(HWND hWnd, SInt8 inKey, long inModifiers)
-	throw ()
+void TQTMovie::Key(SInt8 inKey, long inModifiers) throw ()
 {
 	if (IsBroken() || !mMovieController)
 		return;
-
-	WindowPtr mac_window =
-		reinterpret_cast<WindowPtr>(TQTMovie::GetPortFromHWND(hWnd));
 	::MCKey(mMovieController, inKey, inModifiers);	
 }
-
-#endif // defined __WXMSW__
 
 void TQTMovie::DoAction(mcAction inAction, void *inParam)
 {
@@ -896,6 +855,8 @@ void TQTMovie::Caption(const std::string &inText)
 			movie->UpdateMovieState(MOVIE_BROKEN); \
             return (RESULT_IF_FAILED); \
         } \
+    } else { \
+        return (RESULT_IF_FAILED); \
     }
 
 Boolean TQTMovie::ActionFilterCallback(MovieController inController,
@@ -1013,3 +974,5 @@ done:
 void RegisterQuickTimePrimitives() {
 	REGISTER_PRIMITIVE(QTComponentVersion);
 }
+
+#endif // CONFIG_HAVE_QUICKTIME

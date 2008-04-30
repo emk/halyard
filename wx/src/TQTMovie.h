@@ -23,6 +23,10 @@
 #ifndef TQTMovie_H
 #define TQTMovie_H
 
+#include "AppConfig.h"
+
+#if CONFIG_HAVE_QUICKTIME
+
 // QuickTime requires a different set of headers on every platform.
 #if defined __WXMSW__
 #   include <windows.h>
@@ -283,7 +287,7 @@ public:
 	//////////
 	/// Create a new movie object, and begin the preloading process.
 	///
-	/// \param inPort  The Macintosh GrafPort which will eventually
+	/// \param inPort      The Macintosh CGrafPort which will eventually
 	///                    be used to display the movie.  Windows systems
 	///                    can use PrepareWindowForMovies and
 	///                    GetPortFromHWND to get a value for this parameter.
@@ -298,8 +302,7 @@ public:
 
 	//////////
 	/// Allow QuickTime some time to process this movie.  QuickTime
-	/// need these periodic idle calls to get work done (but feel free
-	/// to call HandleMovieEvent below, instead).
+	/// need these periodic idle calls to get work done.
 	/// 
 	void Idle() throw ();
 
@@ -416,20 +419,7 @@ public:
 	void FillOutEvent(HWND inHWND, UINT inMessage, WPARAM inWParam,
 					  LPARAM inLParam, EventRecord *outEvent);
 
-	//////////
-	/// Allow the TQTMovie object first crack at processing window
-	/// events.  If Windows is generating idle messages for your
-	/// window, you can call this instead of 
-	///
-	/// \return  Theoretically, if this value is true,
-	///                your application should assume that QuickTime
-	///                took care of this event.  At least for update
-	///                events, though, you'll need to process them
-	///                anyway, and it doesn't hurt to process other
-	///                kinds of events either.  Experimentation needed!
-	///
-	bool HandleMovieEvent(HWND hWnd, UINT message, WPARAM wParam,
-						  LPARAM lParam) throw ();
+#endif // defined __WXMSW__
 
 	//////////
 	/// Notify the movie that the window has been redrawn.  If you
@@ -438,26 +428,22 @@ public:
 	/// or unready movies (so you don't need to overcomplicate your
 	/// event loop).
 	///
-	void Redraw(HWND hWnd) throw ();
+	void Redraw() throw ();
 
 	//////////
 	/// Notify the movie of window activation and deactivation.
 	///
-	void Activate(HWND hWnd, bool inIsActivating) throw ();
+	void Activate(bool inIsActivating) throw ();
 
 	//////////
 	/// Notify the movie of a mouse click.
 	///
-	void Click(HWND hWnd, Point inWhere, long inWhen, long inModifiers)
-		throw ();
+	void Click(Point inWhere, long inWhen, long inModifiers) throw ();
 
 	//////////
 	/// Notify the movie of a key press.
 	///
-	void Key(HWND hWnd, SInt8 inKey, long inModifiers)
-		throw ();
-
-#endif // defined __WXMSW__
+	void Key(SInt8 inKey, long inModifiers) throw ();
 
 protected:
 	virtual bool ActionFilter(short inAction, void* inParams);
@@ -470,6 +456,18 @@ private:
     long GetMovieLoadState();
     bool SafeToStart(long inLoadState);
 	
+    //////////
+    /// Get a WindowRef to pass to the various movie controller APIs.
+    /// Casting from a CGrafPtr to a WindowRef is apparently permissible,
+    /// even though the two types of objects are entirely distinct under
+    /// MacOS X, because the relevant functions can actually take arguments
+    /// of either type and map them appropriately.
+    ///
+    /// TODO - I'm not at all certain if this is actually correct.  More
+    /// investigation will be required.
+    ///
+    WindowRef GetMacWindow() { return reinterpret_cast<WindowRef>(mPort); }
+
 	//////////
 	/// Call MCDoAction with the specified command and parameter.
 	///
@@ -524,4 +522,5 @@ private:
 ///
 extern void RegisterQuickTimePrimitives();
 
+#endif // CONFIG_HAVE_QUICKTIME
 #endif // TQTMovie_H

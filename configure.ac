@@ -66,6 +66,8 @@ AM_PATH_WXRC([HAVE_WXRC=1], [HAVE_WXRC=0])
 # Checks for Header Files
 #==========================================================================
 
+AC_CHECK_HEADERS([Carbon/Carbon.h])
+
 
 #==========================================================================
 # Checks for Typedefs, Structures, and Compiler Characteristics

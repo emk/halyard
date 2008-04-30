@@ -34,6 +34,15 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
     : wxWindow(), // Must use empty constructor; see below.
       mMovieWindowStyle(inMovieWindowStyle)
 {
+	// If this is an audio-only movie, hide the widget.
+	if (mMovieWindowStyle & MOVIE_AUDIO_ONLY)
+		Hide();
+
+    // Ideally, we would Create() our actual window *after* all our options
+    // are set up.  But that crashes hard on the Mac.
+    Create(inParent, inID, inPos, inSize, inWindowStyle, inName);
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Created movie window."));
+
     // Turn off background repainting completely.  (Theoretically, if we do
     // this here, we don't need to override EVT_ERASE_BACKGROUND and throw
     // away the message.)  We must call this *before* Create(...), because
@@ -42,14 +51,6 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
 
     // Set a more-appropriate default background color for a movie.
     SetBackgroundColour(MOVIE_WINDOW_COLOR);
-
-	// If this is an audio-only movie, hide the widget.
-	if (mMovieWindowStyle & MOVIE_AUDIO_ONLY)
-		Hide();
-
-    // Create() our actual window *after* all our options are set up.
-    Create(inParent, inID, inPos, inSize, inWindowStyle, inName);
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Created movie window."));
 }
 
 MovieWindow::~MovieWindow()

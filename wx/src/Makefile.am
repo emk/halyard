@@ -79,6 +79,7 @@ halyard_SOURCES = \
 	MediaElement.cpp MediaElement.h \
 	MovieElement.cpp MovieElement.h \
 	MovieWindow.cpp MovieWindow.h \
+	MovieWindowQT.cpp MovieWindowQT.h \
 	Overlay.cpp Overlay.h \
 	ProgramTree.cpp ProgramTree.h \
 	resources.cpp \
@@ -89,6 +90,7 @@ halyard_SOURCES = \
 	TestHarness.cpp TestHarness.h \
 	Timecoder.cpp Timecoder.h \
 	ToolWindow.cpp ToolWindow.h \
+	TQTMovie.cpp TQTMovie.h \
 	Transition.h TransitionOpt.cpp \
 	TWxPrimitives.cpp TWxPrimitives.h \
 	Widget.cpp Widget.h \
@@ -121,9 +123,7 @@ halyard_LDADD = \
 #BinMsgConv.cpp BinMsgConv.h
 #GeigerAudioStream.cpp GeigerAudioStream.h
 #GeigerSynthElement.cpp GeigerSynthElement.h
-#MovieWindowQT.cpp MovieWindowQT.h
 #Quake2Engine.cpp Quake2Engine.h
-#TQTMovie.cpp TQTMovie.h
 #TQuake2Primitives.cpp TQuake2Primitives.h
 #VorbisAudioStream.cpp VorbisAudioStream.h
 #VorbisFile.cpp VorbisFile.h

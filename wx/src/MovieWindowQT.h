@@ -23,6 +23,10 @@
 #ifndef MovieWindowQT_H
 #define MovieWindowQT_H
 
+#include "AppConfig.h"
+
+#if CONFIG_HAVE_QUICKTIME
+
 class TQTMovie;
 
 //////////
@@ -41,6 +45,19 @@ class MovieWindowQT : public MovieWindow
         // By default, allow playback to stall for 40 seconds.
         DEFAULT_TIMEOUT = 40
     };
+
+    //////////
+    /// Get the CGraphPtr associated with this window.  This is either a
+    /// real CGraphPtr on the Mac, or a reasonable immitation provided by
+    /// QuickTime for Windows.
+    ///
+    void *GetMacPort();
+
+    //////////
+    /// Where should we draw this movie, relative to our CGrafPtr?  This
+    /// varies depending on how the underlying graphics architecture works.
+    ///
+    wxPoint GetMoviePosRelativeToPort();
 
 	//////////
 	/// Delete any movie attached to this object.
@@ -168,4 +185,5 @@ public:
     DECLARE_EVENT_TABLE();
 };
 
+#endif // CONFIG_HAVE_QUICKTIME
 #endif // MovieWindowQT_H

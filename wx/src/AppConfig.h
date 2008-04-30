@@ -62,7 +62,11 @@
 #	define CONFIG_ENABLE_FULL_SCREEN     1
 #	define CONFIG_HAVE_FANCYCRASHREPORT  1
 #else // !defined __WXMSW__
-#	define CONFIG_HAVE_QUICKTIME         0
+#   ifdef HAVE_CARBON_CARBON_H
+#	    define CONFIG_HAVE_QUICKTIME     1
+#   else // !HAVE_CARBON_CARBON_H
+#	    define CONFIG_HAVE_QUICKTIME     0
+#   endif // !HAVE_CARBON_CARBON_H
 #	define CONFIG_HAVE_ACTIVEX           0
 #	define CONFIG_HAVE_AUDIOSTREAMS      0
 #	define CONFIG_HAVE_SCRIPTEDITOR      0

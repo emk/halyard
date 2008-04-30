@@ -21,12 +21,17 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+#include "AppConfig.h"
+
+#if CONFIG_HAVE_QUICKTIME
 
 #include "TQTMovie.h"
 #include "AppGlobals.h"
 #include "HalyardApp.h"
 #include "MovieWindow.h"
 #include "MovieWindowQT.h"
+
+using namespace Halyard;
 
 BEGIN_EVENT_TABLE(MovieWindowQT, wxWindow) // XXX - What should the parent be?
 	EVT_ERASE_BACKGROUND(MovieWindowQT::OnEraseBackground)
@@ -49,20 +54,54 @@ MovieWindowQT::MovieWindowQT(wxWindow *inParent, wxWindowID inID,
       mMovie(NULL), mCouldNotConstructMovie(false), mIsRemote(false),
       mTimeout(DEFAULT_TIMEOUT)
 {
+#ifdef __WXMSW__
     // Prepare this window for use with QuickTime.
-    // TODO - PORTING - This code is Windows-specific.
     mHWND = GetHWND();
     TQTMovie::RegisterWindowForMovies((HWND) mHWND);
+#endif
 }
 
 MovieWindowQT::~MovieWindowQT()
 {
     CleanUpMovie();
 
+#ifdef __WXMSW__
     // Detach this window from QuickTime.
-    // TODO - PORTING - This code is Windows-specific.
     TQTMovie::UnregisterWindowForMovies((HWND) mHWND);
+#endif
 }
+
+#ifdef __WXMSW__
+
+void *MovieWindowQT::GetMacPort() {
+    return TQTMovie::GetPortFromHWND((HWND) mHWND);
+}
+
+wxPoint MovieWindowQT::GetMoviePosRelativeToPort() {
+    // On Windows, we get a separate CGrafPtr for each wxWidget, and hence
+    // a separate co-ordinate system.
+    return wxPoint(0, 0);
+}
+
+#else // !__WXMSW__
+
+void *MovieWindowQT::GetMacPort() {
+    // This is based on how wxWidgets/src/mac/carbon/dc.cpp recovers
+    // CGrafPtr values for a wxWindow.
+    WindowRef window = reinterpret_cast<WindowRef>(MacGetTopLevelWindowRef());
+    return reinterpret_cast<CGrafPtr>(GetWindowPort(window));
+}
+
+wxPoint MovieWindowQT::GetMoviePosRelativeToPort() {
+    // On the Mac, we get a single coordinate system for each wxFrame,
+    // so we need to map our co-ordinates appropriately.  Again, we figured
+    // out how to do this by looking at wxWidgets/src/mac/carbon/dc.cpp.
+    int x = 0, y = 0;
+    MacWindowToRootWindow(&x, &y);
+    return wxPoint(x, y);
+}
+
+#endif // !__WXMSW__
 
 void MovieWindowQT::CleanUpMovie()
 {
@@ -79,15 +118,16 @@ void MovieWindowQT::CleanUpMovie()
 
 void MovieWindowQT::SetMovie(const wxString &inName)
 {
-    ASSERT(inName != "");
+    ASSERT(inName != wxT(""));
 
     // Detach any old movie, determine if the new one will be remote, and
     // try to attach it.  The TQTMovie constructor may throw an exception.
     CleanUpMovie();
-    mIsRemote = TQTMovie::IsRemoteMoviePath((const char *) inName);
+    std::string name(inName.mb_str());
+    mIsRemote = TQTMovie::IsRemoteMoviePath(name.c_str());
     try {
-        mMovie = new TQTMovie(TQTMovie::GetPortFromHWND((HWND) mHWND),
-                              (const char *) inName);
+        mMovie = new TQTMovie(reinterpret_cast<CGrafPtr>(GetMacPort()),
+                              name.c_str());
     } catch (std::exception &) {
         mCouldNotConstructMovie = true;
         throw;
@@ -110,8 +150,10 @@ void MovieWindowQT::SetMovie(const wxString &inName)
     // Tell the movie to play whenever it feels ready.  (Once upon a time,
     // this comment suggested, "We'll change this to better integrate with
     // pre-rolling," but I'm not sure how relevant that notion is today.)
+    wxPoint movie_pos(GetMoviePosRelativeToPort());
     Point p;
-    p.h = p.v = 0;
+    p.h = movie_pos.x;
+    p.v = movie_pos.y;
     mMovie->StartWhenReady(opt, p);
 }
 
@@ -200,7 +242,7 @@ void MovieWindowQT::OnPaint(wxPaintEvent &inEvent)
     if (mMovie)
 	{
 		wxLogTrace(TRACE_STAGE_DRAWING, "Passing repaint event to movie.");
-		mMovie->Redraw((HWND) mHWND);
+		mMovie->Redraw();
 	}
 
 	// Let wxWindows handle this paint event properly.  It won't paint
@@ -232,9 +274,11 @@ void MovieWindowQT::OnActivate(wxActivateEvent &inEvent)
 			wxLogTrace(TRACE_STAGE_DRAWING, "Activate movie window.");
 		else
 			wxLogTrace(TRACE_STAGE_DRAWING, "Deactivate movie window.");
-		mMovie->Activate((HWND) mHWND, inEvent.GetActive());
+		mMovie->Activate(inEvent.GetActive());
 	}
 }
+
+#ifdef __WXMSW__
 
 void MovieWindowQT::OnLeftDown(wxMouseEvent &inEvent)
 {
@@ -255,7 +299,7 @@ void MovieWindowQT::OnLeftDown(wxMouseEvent &inEvent)
 
 		// Pass the event to our movie.
 		// TODO - Fix 'when' and 'modifiers' parameters.
-		mMovie->Click((HWND) mHWND, mac_point, event.when, event.modifiers);
+		mMovie->Click(mac_point, event.when, event.modifiers);
 	}
 }
 
@@ -270,7 +314,29 @@ void MovieWindowQT::OnKeyDown(wxKeyEvent &inEvent)
 		mMovie->FillOutEvent((HWND) mHWND, WM_KEYDOWN,
 							 (WPARAM) inEvent.GetRawKeyCode(),
 							 (LPARAM) inEvent.GetRawKeyFlags(), &event);
-		mMovie->Key((HWND) mHWND, event.message & charCodeMask,
-					event.modifiers);
+		mMovie->Key(event.message & charCodeMask, event.modifiers);
 	}
 }
+
+#else // !defined __WXMSW__
+
+//static void GetEventRecord(EventRecord &outEvent) {
+//    // http://lists.wxwidgets.org/pipermail/wx-dev/2003-September/038087.html
+//    EventRef event =
+//        reinterpret_cast<EventRef>(wxTheApp->MacGetCurrentEvent());
+//    bool ok = ::ConvertEventRefToEventRecord(event, &outEvent);
+//    if (!ok)
+//        THROW("Cannot convert EventRef to EventRecord");
+//}
+
+void MovieWindowQT::OnLeftDown(wxMouseEvent &inEvent) {
+    // Not yet implemented on the Mac.
+}
+
+void MovieWindowQT::OnKeyDown(wxKeyEvent &inEvent) {
+    // Not yet implemented on the Mac.
+}
+
+#endif // !defined __WXMSW__
+
+#endif // CONFIG_HAVE_QUICKTIME
