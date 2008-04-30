@@ -3,8 +3,8 @@ static char *tab_right_full_xpm[] = {
 /* width height ncolors chars_per_pixel */
 "9 9 3 1",
 /* colors */
-"  c #000",
-". c #FFF",
+"  c #000000",
+". c #FFFFFF",
 "X c None",
 /* pixels */
 ".. ......",

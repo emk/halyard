@@ -17,7 +17,7 @@ set -e
 # Do the conversion.
 rm -f "$MASK_NAME"
 winicontoppm -writeands -bestqual "$ICO_NAME" "$BASE_NAME"
-ppmtoxpm -name "$XPM_LABEL" -alphamask="$MASK_NAME" "$PPM_NAME" > "$XPM_NAME"
+ppmtoxpm -name "$XPM_LABEL" -alphamask="$MASK_NAME" "$PPM_NAME" | perl -pe 's/ #(.)(.)(.)"/ #$1$1$2$2$3$3"/' > "$XPM_NAME"
 
 # Clean up.
 rm "$PPM_NAME"
