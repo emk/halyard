@@ -35,6 +35,8 @@
 #include "dlg/MetaDotDlg.h"
 #include "CustomTreeCtrl.h"
 #include "HalyardApp.h"
+#include "CommonWxConv.h"
+#include "AppGraphics.h"
 
 // Only so we can find our parent window.
 #include "StageFrame.h"
@@ -113,9 +115,9 @@ Sometime:
 
 namespace {
     wxString kSchemeWildcards(
-        "Halyard scripts (*.ss)|*.ss|"
-        "All Scheme scripts (*.ss; *.scm)|*.ss;*.scm|"
-        "All files|*");
+        wxT("Halyard scripts (*.ss)|*.ss|"
+            "All Scheme scripts (*.ss; *.scm)|*.ss;*.scm|"
+            "All files|*"));
 }
 
 
@@ -189,7 +191,8 @@ private:
     bool BracesMatch(char brace1, char brace2);
     int BetterBraceMatch(int pos);
 
-    std::string GetKeywords(TScriptIdentifier::Type type);
+    void SetKeywordLists();
+    wxString GetKeywords(TScriptIdentifier::Type type);
     IdentifierList GetCompletions(const std::string &partial);
 
     void OnModified(wxStyledTextEvent &event);
@@ -362,8 +365,9 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id, int font_size)
 
     // Set up folding.
     //SetStyleBits(5); Not actually necessary...
-    SetProperty("fold", "1");
-    SetProperty("fold.compact", "0"); // Hiding blank lines is weird...
+    SetProperty(wxT("fold"), wxT("1"));
+    // Hiding blank lines is weird...
+    SetProperty(wxT("fold.compact"), wxT("0")); 
     SetMarginWidth(MARGIN_FOLD, 0);
     SetMarginType(MARGIN_FOLD, wxSTC_MARGIN_SYMBOL);
     SetMarginMask(MARGIN_FOLD, wxSTC_MASK_FOLDERS);
@@ -382,9 +386,9 @@ ScriptTextCtrl::ScriptTextCtrl(wxWindow *parent, wxWindowID id, int font_size)
 }
 
 void ScriptTextCtrl::SetUpTextStyles(int size) {
+    wxFont font(size, wxMODERN, wxNORMAL, wxNORMAL);
     // Set up default style attributes and copy them to all styles.
-    StyleSetFont(wxSTC_STYLE_DEFAULT,
-                 wxFont(size, wxMODERN, wxNORMAL, wxNORMAL));
+    StyleSetFont(wxSTC_STYLE_DEFAULT, font);
     StyleClearAll();
 
     // Set up syntax highlighting.
@@ -394,17 +398,24 @@ void ScriptTextCtrl::SetUpTextStyles(int size) {
     StyleSetBold(wxSTC_STYLE_BRACEBAD, true);
     StyleSetForeground(wxSTC_STYLE_BRACEBAD, *wxRED);
     StyleSetForeground(wxSTC_LISP_COMMENT, wxColor(0xC0, 0x00, 0x00));
-    StyleSetForeground(wxSTC_LISP_COMMENTBLOCK, wxColor(0xC0, 0x00, 0x00));
     StyleSetForeground(wxSTC_LISP_KEYWORD, wxColor(0x00, 0x00, 0xC0));
     StyleSetForeground(wxSTC_LISP_STRING, wxColor(0x80, 0x40, 0x00));
-    StyleSetForeground(wxSTC_LISP_CHAR, wxColor(0x80, 0x40, 0x00));
     StyleSetForeground(wxSTC_LISP_STRINGEOL, *wxRED);
+
+#if CONFIG_HAVE_CUSTOM_STC
+    StyleSetForeground(wxSTC_LISP_COMMENTBLOCK, wxColor(0xC0, 0x00, 0x00));
+    StyleSetForeground(wxSTC_LISP_CHAR, wxColor(0x80, 0x40, 0x00));
     StyleSetForeground(wxSTC_LISP_KEYWORDARG, wxColor(0x80, 0x00, 0x80));
     StyleSetForeground(wxSTC_LISP_WORD1, wxColor(0x00, 0x60, 0x20));
     StyleSetForeground(wxSTC_LISP_WORD2, wxColor(0x00, 0x60, 0x20));
     StyleSetForeground(wxSTC_LISP_WORD3, wxColor(0x00, 0x60, 0x20));
     StyleSetForeground(wxSTC_LISP_WORD4, wxColor(0x00, 0x60, 0x20));
     StyleSetForeground(wxSTC_LISP_WORD5, wxColor(0x00, 0x60, 0x20));
+#else // !CONFIG_HAVE_CUSTOM_STC
+    StyleSetForeground(wxSTC_LISP_MULTI_COMMENT, wxColor(0xC0, 0x00, 0x00));
+    StyleSetForeground(wxSTC_LISP_KEYWORD_KW, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_SPECIAL, wxColor(0x80, 0x40, 0x00));
+#endif // !CONFIG_HAVE_CUSTOM_STC
 
     // Boring: wxSTC_LISP_NUMBER, wxSTC_LISP_IDENTIFIER, wxSTC_LISP_OPERATOR
 }
@@ -557,19 +568,39 @@ void ScriptTextCtrl::UpdateIdentifierInformation() {
     // Fetch the identifier list provided by the ScriptEditor.
     mIdentifiers = ScriptEditor::GetIdentifiers();
 
-    // Install keywords.
-    SetKeyWords(0, GetKeywords(TScriptIdentifier::KEYWORD).c_str());
-    SetKeyWords(1, GetKeywords(TScriptIdentifier::FUNCTION).c_str());
-    SetKeyWords(2, GetKeywords(TScriptIdentifier::VARIABLE).c_str());
-    SetKeyWords(3, GetKeywords(TScriptIdentifier::CONSTANT).c_str());
-    SetKeyWords(4, GetKeywords(TScriptIdentifier::CLASS).c_str());
-    SetKeyWords(5, GetKeywords(TScriptIdentifier::TEMPLATE).c_str());
+    // Set up our keyowrd lists for syntax highlighting.
+    SetKeywordLists();
 
     // Recolourize the document with new keywords.
     Colourise(0, GetTextLength());
 }
 
-std::string ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
+#if CONFIG_HAVE_CUSTOM_STC
+
+void ScriptTextCtrl::SetKeywordLists() {
+    SetKeyWords(0, GetKeywords(TScriptIdentifier::KEYWORD));
+    SetKeyWords(1, GetKeywords(TScriptIdentifier::FUNCTION));
+    SetKeyWords(2, GetKeywords(TScriptIdentifier::VARIABLE));
+    SetKeyWords(3, GetKeywords(TScriptIdentifier::CONSTANT));
+    SetKeyWords(4, GetKeywords(TScriptIdentifier::CLASS));
+    SetKeyWords(5, GetKeywords(TScriptIdentifier::TEMPLATE));
+}
+
+#else // !CONFIG_HAVE_CUSTOM_STC
+
+void ScriptTextCtrl::SetKeywordLists() {
+    SetKeyWords(0, GetKeywords(TScriptIdentifier::KEYWORD));
+    SetKeyWords(1, 
+                GetKeywords(TScriptIdentifier::FUNCTION) + wxT(" ")
+                + GetKeywords(TScriptIdentifier::VARIABLE) + wxT(" ")
+                + GetKeywords(TScriptIdentifier::CONSTANT) + wxT(" ")
+                + GetKeywords(TScriptIdentifier::CLASS) + wxT(" ")
+                + GetKeywords(TScriptIdentifier::TEMPLATE));
+}
+
+#endif // !CONFIG_HAVE_CUSTOM_STC
+
+wxString ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
 	std::string result;
     IdentifierList::iterator i = mIdentifiers.begin();
     for (; i != mIdentifiers.end(); ++i) {
@@ -579,7 +610,7 @@ std::string ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
             result += i->GetName();
         }
     }
-    return result;
+    return ToWxString(result);
 }
 
 IdentifierList ScriptTextCtrl::GetCompletions(const std::string &partial) {
@@ -602,7 +633,7 @@ void ScriptTextCtrl::OnModified(wxStyledTextEvent &event) {
     // Clear our status text on modifications.
     /// \todo Clear status text sooner?
     if (mod_type & (wxSTC_MOD_INSERTTEXT|wxSTC_MOD_DELETETEXT))
-        SetStatusText("");
+        SetStatusText(wxT(""));
 
     // If inserts and deletes come in the same event, we're in trouble.
     ASSERT(!((mod_type & wxSTC_MOD_INSERTTEXT) &&
@@ -838,7 +869,7 @@ void ScriptTextCtrl::OnFindAgain(wxCommandEvent &event) {
 }
 
 void ScriptTextCtrl::OnUpdateUiFindAgain(wxUpdateUIEvent &event) {
-    event.Enable(FindDlg::GetSearchText() != "");
+    event.Enable(FindDlg::GetSearchText() != wxT(""));
 }
 
 void ScriptTextCtrl::OnFindSelection(wxCommandEvent &event) {
@@ -872,7 +903,7 @@ void ScriptTextCtrl::OnUpdateUiReplace(wxUpdateUIEvent &event) {
 }
 
 void ScriptTextCtrl::OnGotoLine(wxCommandEvent &event) {
-    wxTextEntryDialog dlg(this, "Go to Line", "Line:");
+    wxTextEntryDialog dlg(this, wxT("Go to Line"), wxT("Line:"));
     if (dlg.ShowModal() == wxID_OK) {
         wxString lineStr = dlg.GetValue();
         long line;
@@ -882,7 +913,7 @@ void ScriptTextCtrl::OnGotoLine(wxCommandEvent &event) {
             GotoLineEnsureVisible(line-1);
         } else {
             ::wxBell();
-            SetStatusText("No such line.");
+            SetStatusText(wxT("No such line."));
         }
     }
 }
@@ -890,12 +921,12 @@ void ScriptTextCtrl::OnGotoLine(wxCommandEvent &event) {
 void ScriptTextCtrl::OnGotoDefinition(wxCommandEvent &event) {
     // Get the word underneath the cursor.
     wxString identifier = GetWordAtCursor();
-    ASSERT(identifier != "");
+    ASSERT(identifier != wxT(""));
     ScriptEditor::ShowDefinition(identifier);
 }
 
 void ScriptTextCtrl::OnUpdateUiGotoDefinition(wxUpdateUIEvent &event) {
-    event.Enable(GetWordAtCursor() != "" &&
+    event.Enable(GetWordAtCursor() != wxT("") &&
                  TInterpreterManager::GetScriptEditorDB());
                  
 }
@@ -1001,6 +1032,8 @@ ScriptTextCtrl::GetReplaceAllSearchRange(bool after_original_start_ok) {
     }
 }
 
+#if CONFIG_HAVE_CUSTOM_STC
+
 bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
     // Figure out our Find flags.
     int flags = 0;
@@ -1032,7 +1065,7 @@ bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
     if (match_start == wxSTC_INVALID_POSITION) {
         mSpans.DeleteSpanIfExists(SPAN_FOUND_TEXT);
         if (interactive) {
-            SetStatusText("Not found.");
+            SetStatusText(wxT("Not found."));
             ::wxBell();
         }
         return false;
@@ -1050,6 +1083,14 @@ bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
     }
 }
 
+#else // !CONFIG_HAVE_CUSTOM_STC
+
+bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
+    return false;
+}
+
+#endif // !CONFIG_HAVE_CUSTOM_STC
+
 bool ScriptTextCtrl::CanReplace() {
     /// \bug Handle changes of search text in other buffers.
     const BufferSpan *found = mSpans.FindSpan(SPAN_FOUND_TEXT);
@@ -1057,7 +1098,7 @@ bool ScriptTextCtrl::CanReplace() {
             && found->GetStatus() == BufferSpan::UNCHANGED
             && found->GetBeginPos() == GetSelectionStart()
             && found->GetEndPos() == GetSelectionEnd()
-            && FindDlg::GetSearchText() != "");
+            && FindDlg::GetSearchText() != wxT(""));
 }
 
 /// Replace the selected text.  We assume that a find has just been
@@ -1111,7 +1152,7 @@ void ScriptTextCtrl::DoReplaceAll() {
 
     // Tell the user how many copies we replaced.
     wxString str;
-    str.Printf("%d occurences replaced.", count);
+    str.Printf(wxT("%d occurences replaced."), count);
     SetStatusText(str);
 }
 
@@ -1144,7 +1185,7 @@ wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd)
         word_end++;
     if (word_begin == word_end ||
         !IsIdentifierStartChar(line[word_begin]))
-        return "";
+        return wxT("");
     if (outBegin)
         *outBegin = line_start + word_begin;
     if (outEnd)
@@ -1165,13 +1206,13 @@ wxString ScriptTextCtrl::GetWordAtCursor(int *outPos,
 void ScriptTextCtrl::AutoCompleteIdentifier() {
     int pos, word_begin, word_end;
     wxString prefix(GetWordAtCursor(&pos, &word_begin, &word_end));
-    if (prefix == "" || pos < word_end)
+    if (prefix == wxT("") || pos < word_end)
         return;
     ASSERT(pos >= 1);
     
     // If we're adding characters at the end of a name, find any known
     // commands which begin with the name.
-    IdentifierList candidates = GetCompletions(prefix.mb_str());
+    IdentifierList candidates = GetCompletions(ToStdString(prefix));
     if (candidates.size() < 1 || candidates.size() > 50) {
         AutoCompCancel();
         return;
@@ -1187,7 +1228,7 @@ void ScriptTextCtrl::AutoCompleteIdentifier() {
     }
 
     // Pop up a completion doo-hicky with the candidates.
-    AutoCompShow(pos - word_begin, candidate_str.c_str());    
+    AutoCompShow(pos - word_begin, ToWxString(candidate_str));
 }
 
 void ScriptTextCtrl::IndentSelection() {
@@ -1373,14 +1414,14 @@ void ScriptTextCtrl::MaybeShowCallTip() {
     ASSERT(GetCharAt(pos - 1) == ' ');
     int word_begin;
     wxString word = GetWordAt(pos - 2, &word_begin);
-    if (word == "")
+    if (word == wxT(""))
         return;
 
     // Look the word up in the database.
     ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
     if (!db)
         return;
-    std::vector<std::string> help(db->FindHelp(word.Lower().c_str()));
+    std::vector<std::string> help(db->FindHelp(ToStdString(word.Lower())));
     if (help.empty())
         return;
 
@@ -1394,7 +1435,7 @@ void ScriptTextCtrl::MaybeShowCallTip() {
     }
     
     // Display the actual call tip.
-    CallTipShow(word_begin, combined_help.c_str());
+    CallTipShow(word_begin, ToWxString(combined_help));
 }
 
 
@@ -1486,7 +1527,7 @@ void ScriptDoc::NotifySelected() {
 
 void ScriptDoc::OfferToReloadIfChanged() {
     // Make sure we have a file to check.
-    if (GetDocumentPath() == "")
+    if (GetDocumentPath() == wxT(""))
         return;
     wxFileName path(GetDocumentPath());
     if (!path.FileExists())
@@ -1503,15 +1544,15 @@ void ScriptDoc::OfferToReloadIfChanged() {
     wxString prompt;
     if (GetDocumentDirty()) {
         flags = wxYES_NO|wxNO_DEFAULT;
-        prompt.Printf("The file \"%s\" has changed on disk.  Reload it "
-                      "and lose the changes you've made in the editor?",
-                      GetDocumentTitle());
+        prompt.Printf(wxT("The file \"%s\" has changed on disk.  Reload it "
+                          "and lose the changes you've made in the editor?"),
+                      GetDocumentTitle().c_str());
     } else {
         flags = wxYES_NO|wxYES_DEFAULT;
-        prompt.Printf("The file \"%s\" has changed on disk.  Reload it?",
-                      GetDocumentTitle());
+        prompt.Printf(wxT("The file \"%s\" has changed on disk.  Reload it?"),
+                      GetDocumentTitle().c_str());
     }
-    wxMessageDialog dlg(this, prompt, "File Changed", flags);
+    wxMessageDialog dlg(this, prompt, wxT("File Changed"), flags);
     if (dlg.ShowModal() == wxID_YES) {
         ReadDocument();
     } else {
@@ -1531,9 +1572,10 @@ bool ScriptDoc::OkToSaveChanges() {
         && path.GetModificationTime() != mSavePointModTime)
     {
         wxString prompt;
-        prompt.Printf("The file \"%s\" has changed on disk.  "
-                      "Overwrite and lose changes?", GetDocumentTitle());
-        wxMessageDialog dlg(this, prompt, "File Changed",
+        prompt.Printf(wxT("The file \"%s\" has changed on disk.  "
+                          "Overwrite and lose changes?"), 
+                      GetDocumentTitle().c_str());
+        wxMessageDialog dlg(this, prompt, wxT("File Changed"),
                             wxYES_NO|wxNO_DEFAULT);
         return (dlg.ShowModal() == wxID_YES);
     } else {
@@ -1542,7 +1584,7 @@ bool ScriptDoc::OkToSaveChanges() {
 }
 
 void ScriptDoc::UpdateSavePointModTime() {
-    ASSERT(GetDocumentPath() != "");
+    ASSERT(GetDocumentPath() != wxT(""));
     wxFileName path(GetDocumentPath());
     /// \todo How does wxWindows report errors here?
     mSavePointModTime = path.GetModificationTime();
@@ -1558,10 +1600,10 @@ void ScriptDoc::WriteDocument() {
     wxString path(GetDocumentPath());
     wxFile file(path, wxFile::write);
     if (!file.IsOpened())
-        THROW(("Error opening file: "+path).mb_str());
+        THROW(ToStdString(wxT("Error opening file: ")+path));
     wxString text(GetText());
     if (!file.Write(text))
-        THROW(("Error writing from file: "+path).mb_str());
+        THROW(ToStdString(wxT("Error writing from file: ")+path));
     /// \todo How does wxWindows deal with errors returned
     /// from close()?  These usually indicate that a previous
     /// write failed.
@@ -1579,12 +1621,12 @@ void ScriptDoc::ReadDocument() {
     wxString path(GetDocumentPath());
     wxFile file(path);
     if (!file.IsOpened())
-        THROW(("Error opening file: "+path).mb_str());
+        THROW(ToStdString(wxT("Error opening file: ")+path));
     off_t length = file.Length();
     std::vector<char> data(length);
     if (file.Read(&data[0], length) != length)
-        THROW(("Error reading from file: "+path).mb_str());
-    SetText(wxString(&data[0], length));
+        THROW(ToStdString(wxT("Error reading from file: ")+path));
+    SetText(wxString(&data[0], wxConvLocal, length));
     file.Close();
 
     // Set our EOL mode to our best guess at the EOL style, based on the
@@ -1601,7 +1643,7 @@ void ScriptDoc::ReadDocument() {
 }
 
 bool ScriptDoc::SaveDocument(bool force) {
-    if (GetDocumentPath() != "") {
+    if (GetDocumentPath() != wxT("")) {
         // Check for any interesting reasons we shouldn't save, such
         // as a file changing underneath us on disk.
         if (!force && !OkToSaveChanges())
@@ -1618,7 +1660,9 @@ bool ScriptDoc::SaveDocument(bool force) {
             return true;
         } else {
             FileSystem::Path path(FileSystem::GetScriptsDirectory());
-            return DoSaveAs("Save File", path.ToNativePathString().c_str(),"");
+            return DoSaveAs(wxT("Save File"), 
+                            ToWxString(path.ToNativePathString()),
+                            wxT(""));
         }
     }
 }
@@ -1644,16 +1688,17 @@ void ScriptDoc::OnSave(wxCommandEvent &event) {
 }
 
 void ScriptDoc::OnUpdateUiSave(wxUpdateUIEvent &event) {
-    event.Enable(GetDocumentDirty() || GetDocumentPath() == "");
+    event.Enable(GetDocumentDirty() || GetDocumentPath() == wxT(""));
 }
 
 void ScriptDoc::OnSaveAs(wxCommandEvent &event) {
     wxFileName path(GetDocumentPath());
-    if (path == "") {
+    if (path == wxT("")) {
         FileSystem::Path path(FileSystem::GetScriptsDirectory());
-        DoSaveAs("Save File As", path.ToNativePathString().c_str(), "");
+        DoSaveAs(wxT("Save File As"), ToWxString(path.ToNativePathString()), 
+                 wxT(""));
     } else {
-        DoSaveAs("Save File As", path.GetPath(), path.GetFullName());
+        DoSaveAs(wxT("Save File As"), path.GetPath(), path.GetFullName());
     }
 }
 
@@ -1662,14 +1707,15 @@ void ScriptDoc::OnUpdateUiSaveAs(wxUpdateUIEvent &event) {
 }
 
 void ScriptDoc::OnRevert(wxCommandEvent &event) {
-    wxMessageDialog dlg(this, "Discard changes and revert to saved version?",
-                        "Revert", wxYES_NO|wxNO_DEFAULT);
+    wxMessageDialog dlg(this, 
+                        wxT("Discard changes and revert to saved version?"),
+                        wxT("Revert"), wxYES_NO|wxNO_DEFAULT);
     if (dlg.ShowModal() == wxID_YES)
         ReadDocument();
 }
 
 void ScriptDoc::OnUpdateUiRevert(wxUpdateUIEvent &event) {
-    event.Enable(GetDocumentDirty() && GetDocumentPath() != "");    
+    event.Enable(GetDocumentDirty() && GetDocumentPath() != wxT(""));    
 }
 
 /// Called when Scintilla's editing/undo/redo reach a point where
@@ -1704,7 +1750,7 @@ FileTreeItemData::FileTreeItemData(CustomTreeCtrl *inTreeCtrl,
 }
 
 void FileTreeItemData::OnLeftDClick(wxMouseEvent& event) {
-	ScriptEditor::OpenDocument(mPath.c_str());
+	ScriptEditor::OpenDocument(ToWxString(mPath));
 }
 
 
@@ -1729,7 +1775,7 @@ DefinitionTreeItemData(CustomTreeCtrl *inTreeCtrl,
 }
 
 void DefinitionTreeItemData::OnLeftDClick(wxMouseEvent& event) {
-    ScriptEditor::OpenDocument(mDefinition.GetNativePath().c_str(),
+    ScriptEditor::OpenDocument(ToWxString(mDefinition.GetNativePath()),
                                mDefinition.line_number);
 }
 
@@ -1773,7 +1819,7 @@ ScriptTree::ScriptTree(wxWindow *parent)
                      wxTR_HIDE_ROOT|wxTR_LINES_AT_ROOT|wxTR_HAS_BUTTONS),
       mRegisteredWithDB(false)
 {
-    AddRoot("Program");
+    AddRoot(wxT("Program"));
 
     // If we have a ScriptEditorDB, then send ourselves a
     // NotifyReloadScriptSucceeded message to trigger our initial setup.
@@ -1804,7 +1850,7 @@ void ScriptTree::HighlightFile(const wxString &path) {
     wxTreeItemId new_item;
     ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
     if (db) {
-        std::string relpath(db->NativeToRelPath(path.mb_str()));
+        std::string relpath(db->NativeToRelPath(ToStdString(path)));
         if (relpath != "")
             new_item = FindItem(relpath);
     }
@@ -1847,7 +1893,7 @@ void ScriptTree::FileChanged(const std::string &relpath) {
     DeleteChildren(item);
     ScriptEditorDB::Definitions::iterator i = defs.begin();
     for (; i != defs.end(); ++i) {
-        wxTreeItemId new_id = AppendItem(item, i->name.c_str());
+        wxTreeItemId new_id = AppendItem(item, ToWxString(i->name));
         SetIcon(new_id, ChooseDefinitionIcon(*i));
         SetItemData(new_id, new DefinitionTreeItemData(this, *i));
     }
@@ -1931,14 +1977,14 @@ wxTreeItemId ScriptTree::InsertItemAlphabetically(wxTreeItemId parent,
     while (existing_id.IsOk()) {
         std::string existing_name(GetItemText(existing_id).mb_str());
         if (MakeStringLowercase(name) < MakeStringLowercase(existing_name))
-            return InsertItem(parent, existing_index, name.c_str());
+            return InsertItem(parent, existing_index, ToWxString(name));
         
         existing_id = GetNextChild(parent, cookie);
         ++existing_index;
     }
 
     // OK, there's no place to insert it, so toss it at the end.
-    return AppendItem(parent, name.c_str());
+    return AppendItem(parent, ToWxString(name));
 }
 
 
@@ -2000,8 +2046,8 @@ void ScriptEditor::EditScripts() {
 bool ScriptEditor::SaveAllForReloadScript() {
     if (sFrame) {
         DocNotebook *notebook = sFrame->mNotebook;
-        return notebook->MaybeSaveAll(true, "Reload Scripts",
-                                      "Save \"%s\" before reloading?");
+        return notebook->MaybeSaveAll(true, wxT("Reload Scripts"),
+                                      wxT("Save \"%s\" before reloading?"));
     } else {
         return true;
     }
@@ -2036,8 +2082,8 @@ IdentifierList ScriptEditor::GetIdentifiers() {
 
 ScriptEditor::ScriptEditor()
     : SashFrame(wxGetApp().GetStageFrame(), -1,
-                "Script Editor - " + wxGetApp().GetAppName(),
-                "ScriptEditor", wxDefaultSize, wxDEFAULT_FRAME_STYLE),
+                wxT("Script Editor - ") + wxGetApp().GetAppName(),
+                wxT("ScriptEditor"), wxDefaultSize, wxDEFAULT_FRAME_STYLE),
       mTreeContainer(NULL), mTree(NULL), mNotebook(NULL),
       mProcessingActivateEvent(false)
 {
@@ -2046,134 +2092,144 @@ ScriptEditor::ScriptEditor()
     sFrame = this;
 
 	// Get an appropriate icon for this window.
-    SetIcon(wxICON(ic_SCRIPTS));
+    SetIcon(wxICON(ic_scripts));
 
     // Add a status bar to our frame.
     CreateStatusBar();
 
     // Set up our File menu.
     wxMenu *file_menu = new wxMenu();
-    file_menu->Append(wxID_NEW, "&New\tCtrl+N", "Create a new file.");
-    file_menu->Append(wxID_OPEN, "&Open...\tCtrl+O",
-                      "Open an existing file.");
-    file_menu->Append(wxID_SAVE, "&Save\tCtrl+S", "Save the current file.");
-    file_menu->Append(wxID_SAVEAS, "&Save &As...",
-                      "Save the current file under a new name.");
-    file_menu->Append(HALYARD_SAVE_ALL, "Save A&ll\tCtrl+Shift+S",
-                      "Save all open files.");
-    file_menu->Append(wxID_REVERT, "&Revert",
-                      "Revert to the previously saved version of this file.");
+    file_menu->Append(wxID_NEW, wxT("&New\tCtrl+N"), 
+                      wxT("Create a new file."));
+    file_menu->Append(wxID_OPEN, wxT("&Open...\tCtrl+O"),
+                      wxT("Open an existing file."));
+    file_menu->Append(wxID_SAVE, wxT("&Save\tCtrl+S"), 
+                      wxT("Save the current file."));
+    file_menu->Append(wxID_SAVEAS, wxT("&Save &As..."),
+                      wxT("Save the current file under a new name."));
+    file_menu->Append(HALYARD_SAVE_ALL, wxT("Save A&ll\tCtrl+Shift+S"),
+                      wxT("Save all open files."));
+    file_menu->Append(wxID_REVERT, wxT("&Revert"),
+                      wxT("Revert to the previously saved version of this "
+                          "file."));
     file_menu->AppendSeparator();
-    file_menu->Append(HALYARD_CLOSE_TAB, "&Close Tab\tCtrl+W",
-                      "Close the current tab.");
-    file_menu->Append(wxID_CLOSE, "Close &Window\tCtrl+Shift+W",
-                      "Close the window (including all tabs).");
+    file_menu->Append(HALYARD_CLOSE_TAB, wxT("&Close Tab\tCtrl+W"),
+                      wxT("Close the current tab."));
+    file_menu->Append(wxID_CLOSE, wxT("Close &Window\tCtrl+Shift+W"),
+                      wxT("Close the window (including all tabs)."));
     file_menu->AppendSeparator();
-    file_menu->Append(HALYARD_RELOAD_SCRIPTS, "&Reload Scripts\tCtrl+R",
-                      "Reload the currently executing Halyard scripts.");
+    file_menu->Append(HALYARD_RELOAD_SCRIPTS, wxT("&Reload Scripts\tCtrl+R"),
+                      wxT("Reload the currently executing Halyard scripts."));
     file_menu->AppendSeparator();
-    file_menu->Append(wxID_EXIT, "E&xit\tCtrl+Q", "Exit the application.");
+    file_menu->Append(wxID_EXIT, wxT("E&xit\tCtrl+Q"), 
+                      wxT("Exit the application."));
 
     // Set up our Edit menu.
     wxMenu *edit_menu = new wxMenu();
-    edit_menu->Append(wxID_UNDO, "&Undo\tCtrl+Z",
-                      "Reverses the previous action.");
-    edit_menu->Append(wxID_REDO, "&Redo\tCtrl+Y",
-                      "Reverses the last undo.");
+    edit_menu->Append(wxID_UNDO, wxT("&Undo\tCtrl+Z"),
+                      wxT("Reverses the previous action."));
+    edit_menu->Append(wxID_REDO, wxT("&Redo\tCtrl+Y"),
+                      wxT("Reverses the last undo."));
     edit_menu->AppendSeparator();
-    edit_menu->Append(wxID_CUT, "Cu&t\tCtrl+X",
-                      "Delete the selection and put it onto the clipboard.");
-    edit_menu->Append(wxID_COPY, "&Copy\tCtrl+C",
-                      "Copy the selection to the clipboard.");
-    edit_menu->Append(wxID_PASTE, "&Paste\tCtrl+V",
-                      "Paste the contents of the clipboard.");
-    edit_menu->Append(wxID_CLEAR, "&Delete",
-                      "Delete the selection.");
+    edit_menu->Append(wxID_CUT, wxT("Cu&t\tCtrl+X"),
+                      wxT("Delete the selection and put it onto the "
+                          "clipboard."));
+    edit_menu->Append(wxID_COPY, wxT("&Copy\tCtrl+C"),
+                      wxT("Copy the selection to the clipboard."));
+    edit_menu->Append(wxID_PASTE, wxT("&Paste\tCtrl+V"),
+                      wxT("Paste the contents of the clipboard."));
+    edit_menu->Append(wxID_CLEAR, wxT("&Delete"),
+                      wxT("Delete the selection."));
     edit_menu->AppendSeparator();
-    edit_menu->Append(wxID_SELECTALL, "Select &All\tCtrl+A",
-                      "Select the entire document.");
+    edit_menu->Append(wxID_SELECTALL, wxT("Select &All\tCtrl+A"),
+                      wxT("Select the entire document."));
 
     // Set up our View menu.
     wxMenu *view_menu = new wxMenu();
-    view_menu->AppendCheckItem(HALYARD_WRAP_LINES, "&Wrap Lines",
-                               "Wrap long lines at the window edge.");
-    view_menu->AppendCheckItem(HALYARD_SHOW_WHITESPACE, "Show White&space",
-                               "View space and end-of-line characters.");
-    view_menu->AppendCheckItem(HALYARD_SHOW_LINENUMS, "Show Line &Numbers",
-                               "View line numbers in the left margin.");
+    view_menu->AppendCheckItem(HALYARD_WRAP_LINES, wxT("&Wrap Lines"),
+                               wxT("Wrap long lines at the window edge."));
+    view_menu->AppendCheckItem(HALYARD_SHOW_WHITESPACE, wxT("Show White&space"),
+                               wxT("View space and end-of-line characters."));
+    view_menu->AppendCheckItem(HALYARD_SHOW_LINENUMS, wxT("Show Line &Numbers"),
+                               wxT("View line numbers in the left margin."));
     view_menu->AppendSeparator();
-    view_menu->Append(HALYARD_EXPAND_ALL, "&Expand All",
-                      "Expand all collapsed lines of code.");
+    view_menu->Append(HALYARD_EXPAND_ALL, wxT("&Expand All"),
+                      wxT("Expand all collapsed lines of code."));
     view_menu->AppendSeparator();
-    view_menu->Append(HALYARD_TEXT_SIZE_INC, "&Increase Text Size",
-                      "Increase the size of displayed text.");
-    view_menu->Append(HALYARD_TEXT_SIZE_DEC, "&Decrease Text Size",
-                      "Decrease the size of displayed text.");
+    view_menu->Append(HALYARD_TEXT_SIZE_INC, wxT("&Increase Text Size"),
+                      wxT("Increase the size of displayed text."));
+    view_menu->Append(HALYARD_TEXT_SIZE_DEC, wxT("&Decrease Text Size"),
+                      wxT("Decrease the size of displayed text."));
 
     // Set up our Search menu.
     wxMenu *search_menu = new wxMenu();
-    search_menu->Append(wxID_FIND, "&Find...\tCtrl+F",
-                        "Grand Unified Find and Replace Dialog.");
+#if CONFIG_HAVE_CUSTOM_STC
+    search_menu->Append(wxID_FIND, wxT("&Find...\tCtrl+F"),
+                        wxT("Grand Unified Find and Replace Dialog."));
     search_menu->AppendSeparator();
-    search_menu->Append(HALYARD_FIND_AGAIN, "Find A&gain\tCtrl+G",
-                        "Find the next occurrance of the search string.");
-    search_menu->Append(HALYARD_FIND_SELECTION, "Find &Selection\tCtrl+H",
-                        "Find the selected text.");
-    search_menu->Append(HALYARD_FIND_IN_NEXT_FILE, "Find in &Next File",
-                        "Find the search string in the next file.");
+    search_menu->Append(HALYARD_FIND_AGAIN, wxT("Find A&gain\tCtrl+G"),
+                        wxT("Find the next occurrance of the search string."));
+    search_menu->Append(HALYARD_FIND_SELECTION, wxT("Find &Selection\tCtrl+H"),
+                        wxT("Find the selected text."));
+    search_menu->Append(HALYARD_FIND_IN_NEXT_FILE, wxT("Find in &Next File"),
+                        wxT("Find the search string in the next file."));
     search_menu->AppendSeparator();
-    search_menu->Append(wxID_REPLACE, "&Replace\tCtrl+=",
-                        "Replace the selected text.");
-    search_menu->Append(wxID_REPLACE_ALL, "Replace &All\tCtrl+Shift+=",
-                        "Replace all occurances of the search string.");
+    search_menu->Append(wxID_REPLACE, wxT("&Replace\tCtrl+="),
+                        wxT("Replace the selected text."));
+    search_menu->Append(wxID_REPLACE_ALL, wxT("Replace &All\tCtrl+Shift+="),
+                        wxT("Replace all occurances of the search string."));
     search_menu->Append(HALYARD_REPLACE_AND_FIND_AGAIN,
-                        "Re&place and Find Again\tCtrl+T",
-                        ("Replace the selected text and find the next "
-                         "occurance."));
+                        wxT("Re&place and Find Again\tCtrl+T"),
+                        (wxT("Replace the selected text and find the next "
+                             "occurance.")));
     search_menu->AppendSeparator();
-    search_menu->Append(HALYARD_GOTO_LINE, "Go to &Line...\tCtrl+J",
-                        "Go to a specific line number.");
-    search_menu->Append(HALYARD_GOTO_DEFINITION, "Go to &Definition\tAlt+.",
-                        "Look up the identifier under the cursor.");
-
+#endif // CONFIG_HAVE_CUSTOM_STC
+    search_menu->Append(HALYARD_GOTO_LINE, wxT("Go to &Line...\tCtrl+J"),
+                        wxT("Go to a specific line number."));
+    search_menu->Append(HALYARD_GOTO_DEFINITION, 
+                        wxT("Go to &Definition\tAlt+."),
+                        wxT("Look up the identifier under the cursor."));
     // Set up our Window menu.
     wxMenu *window_menu = new wxMenu();
 
     // Set up our menu bar.
     wxMenuBar *menu_bar = new wxMenuBar();
-    menu_bar->Append(file_menu, "&File");
-    menu_bar->Append(edit_menu, "&Edit");
-    menu_bar->Append(view_menu, "&View");
-    menu_bar->Append(search_menu, "&Search");
-    menu_bar->Append(window_menu, "&Window");
+    menu_bar->Append(file_menu, wxT("&File"));
+    menu_bar->Append(edit_menu, wxT("&Edit"));
+    menu_bar->Append(view_menu, wxT("&View"));
+    menu_bar->Append(search_menu, wxT("&Search"));
+    menu_bar->Append(window_menu, wxT("&Window"));
     SetMenuBar(menu_bar);
     menu_bar->EnableTop(4, false);
 
     // Create a tool bar.
     CreateToolBar();
     wxToolBar *tb = GetToolBar();
-    tb->AddTool(HALYARD_RELOAD_SCRIPTS, "Reload", wxBITMAP(tb_reload),
-                "Reload Scripts");
+    tb->AddTool(HALYARD_RELOAD_SCRIPTS, wxT("Reload"), wxBITMAP(tb_reload),
+                wxT("Reload Scripts"));
     tb->AddSeparator();
-    tb->AddTool(wxID_NEW, "New", wxBITMAP(tb_new), "New File");
-    tb->AddTool(wxID_OPEN, "Open", wxBITMAP(tb_open), "Open File");
-    tb->AddTool(wxID_SAVE, "Save", wxBITMAP(tb_save), "Save File");
-    tb->AddTool(HALYARD_SAVE_ALL, "Save All", wxBITMAP(tb_saveall),
-                "Save All Files");
+    tb->AddTool(wxID_NEW, wxT("New"), wxBITMAP(tb_new), wxT("New File"));
+    tb->AddTool(wxID_OPEN, wxT("Open"), wxBITMAP(tb_open), wxT("Open File"));
+    tb->AddTool(wxID_SAVE, wxT("Save"), wxBITMAP(tb_save), wxT("Save File"));
+    tb->AddTool(HALYARD_SAVE_ALL, wxT("Save All"), wxBITMAP(tb_saveall),
+                wxT("Save All Files"));
     tb->AddSeparator();
-    tb->AddTool(wxID_CUT, "Cut", wxBITMAP(tb_cut), "Cut Text");
-    tb->AddTool(wxID_COPY, "Copy", wxBITMAP(tb_copy), "Copy Text");
-    tb->AddTool(wxID_PASTE, "Paste", wxBITMAP(tb_paste), "Paste Text");
+    tb->AddTool(wxID_CUT, wxT("Cut"), wxBITMAP(tb_cut), wxT("Cut Text"));
+    tb->AddTool(wxID_COPY, wxT("Copy"), wxBITMAP(tb_copy), wxT("Copy Text"));
+    tb->AddTool(wxID_PASTE, wxT("Paste"), wxBITMAP(tb_paste), 
+                wxT("Paste Text"));
     tb->AddSeparator();
-    tb->AddTool(wxID_UNDO, "Undo", wxBITMAP(tb_undo), "Undo");
-    tb->AddTool(wxID_REDO, "Redo", wxBITMAP(tb_redo), "Redo");
+    tb->AddTool(wxID_UNDO, wxT("Undo"), wxBITMAP(tb_undo), wxT("Undo"));
+    tb->AddTool(wxID_REDO, wxT("Redo"), wxBITMAP(tb_redo), wxT("Redo"));
     tb->AddSeparator();
-    tb->AddCheckTool(HALYARD_WRAP_LINES, "Wrap", wxBITMAP(tb_wrap),
-                     wxNullBitmap, "Wrap Lines");
-    tb->AddTool(HALYARD_TEXT_SIZE_INC, "Bigger text", wxBITMAP(tb_sizeinc),
-                "Increase Text Size");
-    tb->AddTool(HALYARD_TEXT_SIZE_DEC, "Smaller text", wxBITMAP(tb_sizedec),
-                "Decrease Text Size");
+    tb->AddCheckTool(HALYARD_WRAP_LINES, wxT("Wrap"), wxBITMAP(tb_wrap),
+                     wxNullBitmap, wxT("Wrap Lines"));
+    tb->AddTool(HALYARD_TEXT_SIZE_INC, wxT("Bigger text"), 
+                wxBITMAP(tb_sizeinc),
+                wxT("Increase Text Size"));
+    tb->AddTool(HALYARD_TEXT_SIZE_DEC, wxT("Smaller text"), 
+                wxBITMAP(tb_sizedec),
+                wxT("Decrease Text Size"));
     tb->Realize();
 
     // Create a wxSashLayoutWindow to hold our tree widget.
@@ -2211,7 +2267,7 @@ ScriptEditor::ScriptEditor()
     {
         FileSystem::Path start_script =
             FileSystem::GetScriptsDirectory().AddComponent("start.ss");
-        wxString filename = start_script.ToNativePathString().c_str();
+        wxString filename(ToWxString(start_script.ToNativePathString()));
         OpenDocumentInternal(filename);
     }
 }
@@ -2224,14 +2280,14 @@ ScriptEditor::~ScriptEditor() {
 void ScriptEditor::LoadSashLayout(shared_ptr<wxConfigBase> inConfig) {
     long minimum = mTreeContainer->GetMinimumSizeX();
     long script_tree_width = minimum;
-	inConfig->Read("ScriptTreeWidth", &script_tree_width);
+	inConfig->Read(wxT("ScriptTreeWidth"), &script_tree_width);
     if (script_tree_width < minimum)
         script_tree_width = minimum;
 	mTreeContainer->SetDefaultSize(wxSize(script_tree_width, 0 /*unused*/));
 }
 
 void ScriptEditor::SaveSashLayout(shared_ptr<wxConfigBase> inConfig) {
-	inConfig->Write("ScriptTreeWidth", mTreeContainer->GetSize().GetWidth());
+	inConfig->Write(wxT("ScriptTreeWidth"), mTreeContainer->GetSize().GetWidth());
 }
 
 bool ScriptEditor::ProcessEvent(wxEvent& event) {
@@ -2245,13 +2301,13 @@ bool ScriptEditor::ProcessEvent(wxEvent& event) {
 int ScriptEditor::GetTextSize() {
     int size = 10;
 	shared_ptr<wxConfigBase> config(new wxConfig);
-	config->Read("/ScriptEditor/TextSize", &size);
+	config->Read(wxT("/ScriptEditor/TextSize"), &size);
     return size;
 }
 
 void ScriptEditor::SetTextSize(int size) {
 	shared_ptr<wxConfigBase> config(new wxConfig);
-    config->Write("/ScriptEditor/TextSize", size);
+    config->Write(wxT("/ScriptEditor/TextSize"), size);
     
     // Push our change to all open documents.
     for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++)
@@ -2286,25 +2342,26 @@ void ScriptEditor::ShowDefinitionInternal(const wxString &identifier) {
     ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
     if (!db) {
         ::wxBell();
-        SetStatusText("No definition database available.");
+        SetStatusText(wxT("No definition database available."));
         return;
     }
 
     // Look up the word in the database.
     ScriptEditorDB::Definitions defs = 
-        db->FindDefinitions(identifier.Lower().mb_str());
+        db->FindDefinitions(ToStdString(identifier.Lower()));
     if (defs.empty()) {
         ::wxBell();
-        SetStatusText("Can't find definition of \"" + identifier + "\".");
+        SetStatusText(wxT("Can't find definition of \"") + identifier 
+                      + wxT("\"."));
         return;
     } else if (defs.size() == 1) {
         // Jump to the appropriate file and line.
-        OpenDocument(defs[0].GetNativePath().c_str(), defs[0].line_number);
+        OpenDocument(ToWxString(defs[0].GetNativePath()), defs[0].line_number);
     } else {
         MetaDotDlg dlg(this, defs);
         if (dlg.ShowModal() == wxID_OK) {
             ScriptEditorDB::Definition def = dlg.GetChosenDef();
-            OpenDocument(def.GetNativePath().c_str(), def.line_number);
+            OpenDocument(ToWxString(def.GetNativePath()), def.line_number);
         }
     }
 }
@@ -2338,6 +2395,7 @@ void ScriptEditor::UpdateIdentifierInformation() {
 }
 
 void ScriptEditor::OnActivate(wxActivateEvent &event) {
+    event.Skip();
     // Don't do anything if we're deactivating.
     if (!event.GetActive())
         return;
@@ -2363,8 +2421,8 @@ void ScriptEditor::OnActivate(wxActivateEvent &event) {
 }
 
 void ScriptEditor::OnClose(wxCloseEvent &event) {
-    if (!mNotebook->MaybeSaveAll(event.CanVeto(), "Close Window",
-                                 "Save \"%s\" before closing?"))
+    if (!mNotebook->MaybeSaveAll(event.CanVeto(), wxT("Close Window"),
+                                 wxT("Save \"%s\" before closing?")))
     {
         ASSERT(event.CanVeto());
         event.Veto();
@@ -2379,11 +2437,11 @@ void ScriptEditor::OnNew(wxCommandEvent &event) {
 
 void ScriptEditor::OnOpen(wxCommandEvent &event) {
     wxString dir =
-        FileSystem::GetScriptsDirectory().ToNativePathString().c_str();
-    wxFileDialog dlg(this, "Open File", dir,
+        ToWxString(FileSystem::GetScriptsDirectory().ToNativePathString());
+    wxFileDialog dlg(this, wxT("Open File"), dir,
                      /// \todo Remove wxHIDE_READONLY and implement?
-                     "", kSchemeWildcards,
-                     wxOPEN|wxHIDE_READONLY|wxMULTIPLE);
+                     wxT(""), kSchemeWildcards,
+                     wxOPEN|wxMULTIPLE);
     if (dlg.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dlg.GetPaths(paths);

@@ -607,4 +607,5 @@ void HalyardApp::OnActivateApp(wxActivateEvent &event) {
     // a bug where the user can't deiconize the window.
 	if (mStageFrame && mStageFrame->IsFullScreen())
 		mStageFrame->Iconize(!event.GetActive());
+    event.Skip();
 }

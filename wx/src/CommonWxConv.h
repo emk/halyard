@@ -37,5 +37,6 @@ wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor);
 wxVariant TToWxValue(const Halyard::TValue &value);
 Halyard::TValue WxToTValue(const wxVariant &value);
 wxString ToWxString(const std::string &inString);
+std::string ToStdString(const wxString &inString);
 
 #endif // CommonWxConv_H

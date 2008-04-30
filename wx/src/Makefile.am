@@ -84,6 +84,7 @@ halyard_SOURCES = \
 	ProgramTree.cpp ProgramTree.h \
 	resources.cpp \
 	SashFrame.cpp SashFrame.h \
+	ScriptEditor.cpp ScriptEditor.h \
 	Stage.cpp Stage.h \
 	StageAccessible.cpp StageAccessible.h \
 	StageFrame.cpp StageFrame.h \
@@ -113,8 +114,7 @@ halyard_LDADD = \
 # missing in 2.8.
 #FancyCrashReporter.cpp FancyCrashReporter.h
 
-# Disabled because of dependencies on our custom-patched version of Scintilla.
-#ScriptEditor.cpp ScriptEditor.h
+
 
 # Disabled because they rely on various APIs we're not ready to deal with
 # right now, including portaudio, QuickTime and Quake 2.

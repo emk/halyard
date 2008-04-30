@@ -114,3 +114,7 @@ TValue WxToTValue(const wxVariant &value) {
 wxString ToWxString(const std::string &inString) {
     return wxString(inString.c_str(), wxConvLocal);
 }
+
+std::string ToStdString(const wxString &inString) {
+    return std::string(inString.mb_str());
+}

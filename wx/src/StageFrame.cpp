@@ -1109,6 +1109,7 @@ void StageFrame::OnActivate(wxActivateEvent &inEvent) {
     // StageFrame::Iconize won't always get called when we're directly
     // de-iconized by Windows.
 	UpdateVideoMode(IsFullScreen(), IsIconized());
+    inEvent.Skip();
 }
 
 void StageFrame::OnSize(wxSizeEvent &inEvent)

@@ -78,6 +78,7 @@ void Listener::OnActivate(wxActivateEvent &inEvent)
     // in the history, because we get the activate event and then the
     // click.
     mInput->SetFocus();
+    inEvent.Skip();
 }
 
 void Listener::UpdateUiInput(wxUpdateUIEvent &inEvent)

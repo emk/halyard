@@ -30,7 +30,8 @@ END_EVENT_TABLE()
 
 ToolWindow::ToolWindow(StageFrame *inStageFrame, ToolWindowID inID,
 		       const wxString &inTitle, const wxIcon &inIcon)
-    : wxFrame(inStageFrame, -1, inTitle), mStageFrame(inStageFrame), mID(inID)
+    : wxFrame(inStageFrame, -1, inTitle), mStageFrame(inStageFrame), 
+    mID(inID)
 {
 	SetIcon(inIcon);
 
