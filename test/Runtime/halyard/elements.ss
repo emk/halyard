@@ -937,7 +937,7 @@
 
   ;;; A web browser element.
   (define-class %browser% (%widget%)
-    (attr path "about:blank" :type <string> :label "Path" :writable? #t)
+    (attr path :type <string> :label "Path" :writable? #t)
     ;;; WARNING: The fallback browser is not very good, and only
     ;;; tends to work under carefully controlled circumstances.  In
     ;;; particular, it tends to deal with errors by popping up ugly

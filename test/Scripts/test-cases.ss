@@ -149,12 +149,8 @@
     (make-native-path "HTML" path))
   
   (define-class %browser-simple-test% (%element-test-case%)
-    (test "The browser should load with default values"
-      (%test-browser% .new))
     (test "The browser should load a local HTML page"
       (%test-browser% .new :path "sample.html"))
-    (test "The browser should load 'about:blank'"
-      (%test-browser% .new :path "about:blank"))
     (test 
         "The browser should fail to load a non-existent local HTML page"
       (define non-existent-file "foo-bar-not-here.html")
@@ -164,13 +160,11 @@
             (%test-browser% .new :path non-existent-file)))
     (test "The browser should load an external HTML page via http"
           (%test-browser% .new :path "http://www.google.com"))
-    (test "The browser should load an ftp site"
-          (%test-browser% .new :path "ftp://ftp.dartmouth.edu/"))
     (test 
      "The browser should load URLs with ampersands (&amp;) in them"
-          (%test-browser% .new :path "http://www.google.com/&foo=bar"))
+          (%test-browser% .new :path "http://www.google.com/search?source=ig&hl=en&rlz=&q=test&btnG=Google+Search"))
     (test "The browser should accept a zero-sized rect"
-          (%test-browser% .new :rect (rect 0 0 0 0))))
+          (%test-browser% .new :path "sample.html" :rect (rect 0 0 0 0))))
   
   (card /tests/native-browser-tests
       (%element-test-suite%
