@@ -233,15 +233,15 @@ void MovieWindowQT::SetTimeout(unsigned int timeout) {
 void MovieWindowQT::OnEraseBackground(wxEraseEvent &inEvent)
 {
     // Ignore this event to prevent flicker.
-	wxLogTrace(TRACE_STAGE_DRAWING, "Ignoring request to erase movie.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Ignoring request to erase movie."));
 }
 
 void MovieWindowQT::OnPaint(wxPaintEvent &inEvent)
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, "Asked to repaint movie window.");
+	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Asked to repaint movie window."));
     if (mMovie)
 	{
-		wxLogTrace(TRACE_STAGE_DRAWING, "Passing repaint event to movie.");
+		wxLogTrace(TRACE_STAGE_DRAWING, wxT("Passing repaint event to movie."));
 		mMovie->Redraw();
 	}
 
@@ -271,9 +271,9 @@ void MovieWindowQT::OnActivate(wxActivateEvent &inEvent)
 	if (mMovie)
 	{
 		if (inEvent.GetActive())
-			wxLogTrace(TRACE_STAGE_DRAWING, "Activate movie window.");
+			wxLogTrace(TRACE_STAGE_DRAWING, wxT("Activate movie window."));
 		else
-			wxLogTrace(TRACE_STAGE_DRAWING, "Deactivate movie window.");
+			wxLogTrace(TRACE_STAGE_DRAWING, wxT("Deactivate movie window."));
 		mMovie->Activate(inEvent.GetActive());
 	}
 }
