@@ -1,7 +1,7 @@
 /* XPM */
 static char *tb_paste_xpm[] = {
 /* width height ncolors chars_per_pixel */
-"15 15 8 1",
+"16 16 8 1",
 /* colors */
 "  c #000000",
 ". c #C0C0C0",
@@ -12,19 +12,20 @@ static char *tb_paste_xpm[] = {
 "@ c #808000",
 "# c None",
 /* pixels */
-"#####   #######",
-"#    +++    ###",
-" @@@ + + @@@ ##",
-" @@ +++++ @@ ##",
-" @@       @@ ##",
-" @@@@@@@@@@@ ##",
-" @@@@@@@@@@@ ##",
-" @@@@@oooooo ##",
-" @@@@@oOOOOoo##",
-" @@@@@oOOOOoOo#",
-" @@@@@oOXXOoooo",
-" @@@@@oOOOOOOOo",
-" @@@@@oOXXXXXOo",
-"#     oOOOOOOOo",
-"######ooooooooo"
+"#####   ########",
+"#    +++    #######",
+" @@@ + + @@@ ###",
+" @@ +++++ @@ ###",
+" @@       @@ ###",
+" @@@@@@@@@@@ ###",
+" @@@@@@@@@@@ ###",
+" @@@@@oooooo ###",
+" @@@@@oOOOOoo###",
+" @@@@@oOOOOoOo##",
+" @@@@@oOXXOoooo#",
+" @@@@@oOOOOOOOo#",
+" @@@@@oOXXXXXOo#",
+"#     oOOOOOOOo#",
+"######ooooooooo#",
+"################"
 };

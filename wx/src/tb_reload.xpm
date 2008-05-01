@@ -1,7 +1,7 @@
 /* XPM */
 static char *tb_reload_xpm[] = {
 /* width height ncolors chars_per_pixel */
-"15 15 5 1",
+"16 16 5 1",
 /* colors */
 "  c #000000",
 ". c #C0C0C0",
@@ -9,19 +9,20 @@ static char *tb_reload_xpm[] = {
 "o c #008000",
 "O c None",
 /* pixels */
-"O          OOOO",
-"O XXXXXXXX  OOO",
-"O XXXoXXXX X OO",
-"O XXXooXXX    O",
-"O XXooooXXXXX O",
-"O XoXooXXoXXX O",
-"O XoXoXXXXoXX O",
-"O XoXXXXXXXoX O",
-"O XXoXXXXoXoX O",
-"O XXXoXXooXoX O",
-"O XXXXXooooXX O",
-"O XXXXXXooXXX O",
-"O XXXXXXXoXXX O",
-"O XXXXXXXXXXX O",
-"O             O"
+"O          OOOOO",
+"O XXXXXXXX  OOOO",
+"O XXXoXXXX X OOO",
+"O XXXooXXX    OO",
+"O XXooooXXXXX OO",
+"O XoXooXXoXXX OO",
+"O XoXoXXXXoXX OO",
+"O XoXXXXXXXoX OO",
+"O XXoXXXXoXoX OO",
+"O XXXoXXooXoX OO",
+"O XXXXXooooXX OO",
+"O XXXXXXooXXX OO",
+"O XXXXXXXoXXX OO",
+"O XXXXXXXXXXX OO",
+"O             OO",
+"OOOOOOOOOOOOOOOO"
 };
