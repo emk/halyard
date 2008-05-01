@@ -1,6 +1,71 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.8 - 1 May 2008
+
+This version of Halyard features significantly improved Mac support.
+The following features now work:
+
+  * The script editor (except for search and replace)
+  * QuickTime (although the Mac VP3 codecs have issues)
+  * Error dialogs
+  * Toolbar icons (although some disappear when clicked)
+
+Also of note:
+
+  * The Windows engine now uses FreeType 2.3.5.
+  * The QuickTime layer has been partially restructured, and is now
+    compiled against the QT 7.3 SDK instead of the QT 6 SDK
+  * We export %pref and set-%pref! from data-file.ss to work around macro
+    hygiene issues.
+  * There is now a centralized benchmarking card in halyard/test.
+  * Type-checking of mizzen objects is now much faster.
+
+Please keep your eyes open for any regressions, and let us know if you find
+any.
+
+Brian Campbell (13):
+      wxMac: Add Xcode project for debugging Halyard
+      Update Makefiles to support building in separate directories
+      paths: Remove extraneous debug statements
+      Add benchmarks for different types of elements
+      wxMac: Fix assertion failure when creating 0-area DrawingArea
+      wxMac: Fix assertion failure when drawing elements partly off-screen
+      wxMac: Wrap strings in wxLogTrace calls appropriately
+      Properly convert from wxChar * to char * in AppLog
+      wxMac: Update the script editor to work with vanilla wxWidgets 2.8
+      Fix browser test cases that fail on wxMac
+      Export %pref and set-%pref! from data-file.ss
+      Increase toolbar bitmaps to 16x16 pixels, and fix icon transparency
+      Convert toolbar bitmaps and editor icons to XPMs
+
+Eric Kidd (25):
+      autotools: Enable precompiled headers
+      QuickTime: Move TQTPrimitives into TQTMovie and reorganize
+      Merge branch 'portability'
+      Replace /performance/dispatch card with interface to benchmark suite
+      wxMac: Merge APP_PLATFORM_MACINTOSH with APP_PLATFORM_OTHER
+      Update application.halyard
+      Update to modern wxConfigBase API
+      wxMac: Enable CONFIG_LOCATION_BOX_IS_COMBO
+      Performance: Optimize %class% .subclass-of?
+      Win32 build fix: 'and', 'not', incorrect __WXWIN__ conditional
+      Use non-consing form of hash-table-get when possible
+      GC bug fix: Actually register variables and arrays correctly
+      Performance: Warn if we're leaking TSchemePtr objects
+      Build fix: Don't call wxBitmap::IsOk() under wxWidgets 2.6
+      Warning fixes: Clean up VorbisFile.cpp under MSVC++
+      Move GUI error-dialog code into HalyardApp
+      wxMac: Implement portable error dialog
+      QuickTime: Upgrade to QT 7.3 SDK and remove FSSpec code
+      QuickTime: Initial Macintosh support
+      wxMac: Always use full-width hex strings for colors
+      Warning fix: Manually convert result of scheme_eq to bool
+      autotools: Make ./configure issue an error if we're missing libraries
+      FreeType: Upgrade to v2.3.5 on Win32
+      Build fix: Correct dependencies for FreeType
+      Performance: Add benchmark for calling a primitive
+
 0.5.7 - 22 April 2008
 
 This release includes a highly-experimental port to Mac OS X.  Video,
