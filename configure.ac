@@ -47,6 +47,7 @@ PKG_CHECK_MODULES(FREETYPE, [freetype2 >= 2.3.4])
 PKG_CHECK_MODULES(XML2, [libxml-2.0 >= 2.4.30])
 PKG_CHECK_MODULES(CURL, [libcurl >= 7.15.3])
 AX_LIB_SQLITE3(3.0.3)
+LIBRARY_MISSING_IF([test x$success != xyes], [SQLite])
 
 # Check for boost, plus any specific components that we need.
 AX_BOOST_BASE(1.31.0)
@@ -56,10 +57,13 @@ AX_BOOST_TEST_EXEC_MONITOR
 
 # TODO - Look for portaudio and tremor.
 AX_LIB_MZSCHEME(3m, 371)
+LIBRARY_MISSING_IF([test x"$HAVE_MZSCHEME" != xyes], [mzscheme])
 
 # Check for wxWidgets.
-AM_PATH_WXCONFIG(2.8.7,,,[stc])
-AM_PATH_WXRC([HAVE_WXRC=1], [HAVE_WXRC=0])
+AM_PATH_WXCONFIG(2.8.7, [HAVE_WXWIDGETS=yes], [HAVE_WXWIDGETS=no], [stc])
+LIBRARY_MISSING_IF([test x"$HAVE_WXWIDGETS" != xyes], [wxWidgets])
+AM_PATH_WXRC([HAVE_WXRC=yes], [HAVE_WXRC=no])
+LIBRARY_MISSING_IF([test x"$HAVE_WXRC" != xyes], [wxrc])
 
 
 #==========================================================================
