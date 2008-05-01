@@ -68,6 +68,9 @@
                   'goodbye 'something 'something-else 'lorem 'ipsum 'dolor
                   'sit 'amet 1 2 3 4 5 6 7 8 9 10)))
 
+  (define-benchmark "Call have-prim? primitive" 100
+    (benchmark (have-prim? 'NoSuchPrimitive)))
+
   (define-benchmark "Create and destroy %invisible-element%" 100
     (benchmark
       (let [[e (%invisible-element% .new)]]
