@@ -238,6 +238,31 @@
   (define (make-load-with-heartbeat)
     (wrap-load/use-compiled-with-heartbeat (current-load/use-compiled)))
 
+  ;; Save the display and write handlers for our standard output ports.
+  ;; See below for why we need to do this.
+  (define $original-output-port-display-handler
+    (port-display-handler (current-output-port)))
+  (define $original-error-port-display-handler
+    (port-display-handler (current-error-port)))
+  (define $original-output-port-write-handler
+    (port-write-handler (current-output-port)))
+  (define $original-error-port-write-handler
+    (port-write-handler (current-error-port)))
+
+  ;;; Reset our display and write handlers to their original values.  These
+  ;;; handlers get changed by Swindle, and if we don't reset them properly
+  ;;; between script loads, the Swindle handlers will cause us to leak
+  ;;; memory.  This memory leak was tracked down by Matthew Flatt.
+  (define (reset-port-handlers!)
+    (port-display-handler (current-output-port)
+                          $original-output-port-display-handler)
+    (port-display-handler (current-error-port)
+                          $original-error-port-display-handler)
+    (port-write-handler   (current-output-port)
+                          $original-output-port-write-handler)
+    (port-write-handler   (current-error-port)
+                          $original-error-port-write-handler))
+
   ;;; The default namespace into which this script was loaded.  We don't
   ;;; use it to run much except this code.
   (define *original-namespace* #f)
@@ -261,6 +286,10 @@
     ;;(set! *script-namespace* (make-namespace 'empty))
     (current-namespace *script-namespace*)
     
+    ;; Reset our port handlers before we load swindle/extra.ss again, to
+    ;; prevent it from causing a memory leak.
+    (reset-port-handlers!)
+
     ;; Alias some basic runtime support modules into our new namespace.  This
     ;; tehcnically means that these modules are shared between the original
     ;; namespace and the script namespace, which is fairly weird.
