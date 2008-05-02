@@ -482,9 +482,9 @@ void ProgramTree::NotifyReloadScriptStarting()
     ASSERT(mCardsID.IsOk());
 	mCardMap.clear();
 	mSequenceMap.clear();
+    mHaveLastHighlightedItem = false;
 	mTree->CollapseAndReset(mCardsID);
 }
-
 
 void ProgramTree::NotifyEnterCard(const wxString &inName)
 {
