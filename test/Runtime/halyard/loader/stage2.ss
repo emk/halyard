@@ -103,6 +103,11 @@
 
   ;;===== Compilation support =====
 
+  ;; Trace our compilation status.
+  (define (trace msg)
+    ;;(printf "~s~n" msg)
+    (debug-log msg))
+
   ;; This parameter is only available in our custom-patched version of PLT
   ;; Scheme.  If it's available, we want to use it, but if not, we need to
   ;; disable our support for TRUST-PRECOMPILED.
@@ -121,33 +126,22 @@
   
   ;; When loading Scheme files, we need to do two things: (1) Call the
   ;; HEARTBEAT function, so that the operating systems knows we're still
-  ;; alive, and (2) call UPDATE-SPLASH-SCREEN!, so that user knows that
-  ;; we're still alive.  So we take our regular loader (specified by the
-  ;; parameter LOAD/USE-COMPILED), and return a new function which wraps it
-  ;; in the appropriate magic.
+  ;; alive, and (2) call UPDATE-SPLASH-SCREEN!, so that the user knows that
+  ;; we're still alive.
+  (define (notify-loading-file path)
+    (heartbeat)
+    (update-splash-screen!))
+
+  ;; Take a load/use-compiled handler (specified by the parameter
+  ;; LOAD/USE-COMPILED), and return a new function which wraps it in the
+  ;; appropriate magic.
   (define (wrap-load/use-compiled-with-heartbeat load/use-compiled)
     ;; Return a LOAD/USE-COMPILED handler.
     (lambda (file-path expected-module-name)
-      ;; We call HEARTBEAT twice, before and after, just to be on the
-      ;; safe side.  We may have had a really specific reason for this,
-      ;; but if so, I don't remember it.
-      (heartbeat)
       ;;(debug-log (string-append "Loading: " (path->string file-path)))
       (let [[result (load/use-compiled file-path expected-module-name)]]
-        (heartbeat)
-        (update-splash-screen!)
+        (notify-loading-file file-path)
         result)))
-
-  ;; There's some sort of context dependence that makes it so we can't just 
-  ;; define COMPILE-ZO-WITH-HEARTBEAT out here, probably due to some paths 
-  ;; not being set up that MAKE-COMPILATION-MANAGER-LOAD/USE-COMPILED-HANDLER
-  ;; uses, so instead we just wrap this all in a function that will return our
-  ;; COMPILE-ZO-WITH-HEARTBEAT function, and call it at the appropriate time.
-  (define (make-compile-zo-with-heartbeat)
-    ;; A suitable function to use with CURRENT-LOAD/USE-COMPILED.  This
-    ;; handles automatic compilation of *.zo files for us.
-    (define compile-zo (make-compilation-manager-load/use-compiled-handler))
-    (wrap-load/use-compiled-with-heartbeat compile-zo))
 
   ;; We use this loader function when we don't want to even *think* about
   ;; recompiling *.zo files.
@@ -165,7 +159,7 @@
           [filename "none"]]
 
       (initialize-splash-screen!)
-        
+
       ;; If we're running in regular development mode, we want MzScheme
       ;; to transparently compile modules to *.zo files, and recompile
       ;; them whenever necessary.  But if we're running as part of an
@@ -190,23 +184,39 @@
       (%always-treat-zo-and-so-as-newer always-trust-precompiled?)
       (current-load/use-compiled
        (if always-trust-precompiled?
-           ;; Load *.zo files blindly if they exist.
+           ;; Load *.zo files blindly if they exist.  We also need to make
+           ;; sure that notify-loading-file gets called here, so we use
+           ;; make-load-with-heartbeat.
            (make-load-with-heartbeat)
-           ;; Recompile *.zo files on demand.
-           (make-compile-zo-with-heartbeat)))
-        
+           ;; Recompile *.zo files on demand.  We set up
+           ;; notify-loading-file below.
+           (make-compilation-manager-load/use-compiled-handler)))
+
+      ;; Install a compilation manager notify-handler.  This will be called
+      ;; every time a file is compiled, allowing us to update the splash
+      ;; screen, etc.  It will never be called if always-trust-precompiled?
+      ;; is #t, but in that case, we'll be using make-load-with-heartbeat.
+      (manager-compile-notify-handler notify-loading-file)
+
+      ;; Print out trace information from the compilation manager.
+      (manager-trace-handler trace)
+
       ;; Support for decent backtraces upon errors.  We pull in 
       ;; the support from errortrace-lib.ss, and then manually enable
       ;; errortrace if requested.  Note that we always require 
       ;; errortrace-lib.ss so we will have stable file counts in 
       ;; application.halyard.
-      (set! filename "errortrace-lib.ss")
       (when (errortrace-compile-enabled?)
-        ;; Re-implement the logic from errortrace.ss.
+        ;; Adapted from the logic in errortrace.ss.  Ultimately, we may not
+        ;; want to include "compiled" in use-compiled-file-paths, because
+        ;; we don't want to mix errortrace and non-errortrace *.zo files.
+        ;; But for now, that won't work under MacPorts, where we can't
+        ;; write to our our system collects directory.
         (current-compile errortrace-compile-handler)
         (use-compiled-file-paths (list (build-path "compiled" "errortrace")
                                        (build-path "compiled"))))
 
+      ;; Load the kernel.
       (set! filename "kernel.ss")
       (namespace-require '(lib "kernel.ss" "halyard"))
           
