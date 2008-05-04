@@ -560,6 +560,11 @@
     (attr style :label "Style" :writable? #t)
     (attr text :type <string> :label "Text" :writable? #t)
     (default alpha? #t)
+
+    ;; On the off chance that you _can_ use the mouse to interact with text
+    ;; (you generally can't), nobody wants to try to hit the actual pixels
+    ;; of the letters, so default to making transparent areas clickable.
+    (default clickable-where-transparent? #t)
  
     (after-updating [style text]
       (.invalidate))
