@@ -176,6 +176,8 @@ heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
     # Set up svn:ignore properties on the Runtime directories.
     Find.find "Runtime" do |path|
       next unless File.directory?(path)
+      next if path =~ /\/\.svn$/
+      next if path =~ /\/\.svn\//
       svn :propset, "svn:ignore", "compiled", path if for_release?
     end
 
