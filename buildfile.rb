@@ -4,6 +4,11 @@
 # commits.  This script would be much nicer if we actually modified
 # buildscript to better support the things we're asking it to do here.
 
+# Things you will need to install or setup to make this work:
+#   - The packages described in tools/buildscript/README.txt
+#   - Cygwin packages: git, autoconf, automake, pkg-config, subversion
+#   - Password-free login to any SVN and SSH servers mentioned below
+
 require 'tools/buildscript/buildscript'
 include Buildscript
 require 'tools/buildscript/commands'
@@ -87,6 +92,12 @@ heading 'Check out the source code.', :name => :checkout do
     git :submodule, 'init'
     git :submodule, 'update'
   end
+end
+
+# Generate configure and Makefile.in for use on Unix platforms.  This
+# requires autoconf, automake, and pkg-config.
+heading "Run autogen.sh.", :name => :autogen do
+  cd(src_dir) { run "./autogen.sh" }
 end
 
 # Build copies of all of our tarballs before we do any builds or testing,
