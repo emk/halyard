@@ -451,7 +451,7 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName, // Scheme heap
     // or anything else which causes a non-local PLT exit.  See CallPrim
     // for more details.
 	try {
-        ASSERT(mScriptEnv != NULL)
+        ASSERT(mScriptEnv != NULL);
 
 		// Marshal our argument list and call the primitive.
 		TValueList inList;
