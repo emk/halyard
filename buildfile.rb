@@ -12,6 +12,7 @@
 require 'tools/buildscript/buildscript'
 include Buildscript
 require 'tools/buildscript/commands'
+require 'find'
 
 svn_url = 'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main'
 git_url = 'git://imlsrc.dartmouth.edu'
@@ -171,6 +172,13 @@ heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
       cp "#{full_bin_dir}/Win32/Bin/#{file}", file
       svn :add, file if for_release?
     end
+
+    # Set up svn:ignore properties on the Runtime directories.
+    Find.find "Runtime" do |path|
+      next unless File.directory?(path)
+      svn :propset, "svn:ignore", "compiled", path if for_release?
+    end
+
     svn :ci, '-m', "Tagging binaries for release #{version}." if for_release?
   end
 end
