@@ -160,6 +160,21 @@
 
       (initialize-splash-screen!)
 
+      ;; Support for decent backtraces upon errors.  We pull in 
+      ;; the support from errortrace-lib.ss, and then manually enable
+      ;; errortrace if requested.  Note that we always require 
+      ;; errortrace-lib.ss so we will have stable file counts in 
+      ;; application.halyard.
+      (when (errortrace-compile-enabled?)
+        ;; Adapted from the logic in errortrace.ss.  Ultimately, we may not
+        ;; want to include "compiled" in use-compiled-file-paths, because
+        ;; we don't want to mix errortrace and non-errortrace *.zo files.
+        ;; But for now, that won't work under MacPorts, where we can't
+        ;; write to our our system collects directory.
+        (current-compile errortrace-compile-handler)
+        (use-compiled-file-paths (list (build-path "compiled" "errortrace")
+                                       (build-path "compiled"))))
+
       ;; If we're running in regular development mode, we want MzScheme
       ;; to transparently compile modules to *.zo files, and recompile
       ;; them whenever necessary.  But if we're running as part of an
@@ -200,21 +215,6 @@
 
       ;; Print out trace information from the compilation manager.
       (manager-trace-handler trace)
-
-      ;; Support for decent backtraces upon errors.  We pull in 
-      ;; the support from errortrace-lib.ss, and then manually enable
-      ;; errortrace if requested.  Note that we always require 
-      ;; errortrace-lib.ss so we will have stable file counts in 
-      ;; application.halyard.
-      (when (errortrace-compile-enabled?)
-        ;; Adapted from the logic in errortrace.ss.  Ultimately, we may not
-        ;; want to include "compiled" in use-compiled-file-paths, because
-        ;; we don't want to mix errortrace and non-errortrace *.zo files.
-        ;; But for now, that won't work under MacPorts, where we can't
-        ;; write to our our system collects directory.
-        (current-compile errortrace-compile-handler)
-        (use-compiled-file-paths (list (build-path "compiled" "errortrace")
-                                       (build-path "compiled"))))
 
       ;; Load the kernel.
       (set! filename "kernel.ss")
