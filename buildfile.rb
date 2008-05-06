@@ -6,7 +6,7 @@
 
 # Things you will need to install or setup to make this work:
 #   - The packages described in tools/buildscript/README.txt
-#   - Cygwin packages: git, autoconf, automake, pkg-config, subversion
+#   - Cygwin packages: git, autoconf, automake, pkg-config, subversion, zip
 #   - Password-free login to any SVN and SSH servers mentioned below
 
 require 'tools/buildscript/buildscript'
