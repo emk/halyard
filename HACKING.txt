@@ -8,7 +8,7 @@ Table of Contents
   * Downloading Halyard
   * Building Win32 Halyard
   * Rake
-  * Building Macintosh Halyard
+  * Building Mac OS X Halyard
   * Source Documentation
   * What Lives Where
   * Important Classes & Modules
@@ -174,10 +174,14 @@ Buildscript
   your RUBYLIB environment variable to include the path to the
   directory you checked buildscript out to.
 
-Building Macintosh Halyard
---------------------------
+Building Mac OS X Halyard
+-------------------------
 
-  Mac Halyard is not currently supported.  Feel free to do a port.
+  There is an experimental Mac port of Halyard.  It is in rapid
+  development and depends on many libraries, so for ease of updating
+  the build documentation, it hosted is on the wiki.  See
+  http://iml.dartmouth.edu/halyard/wiki/index.php/Building_on_Mac_OS_X
+  for Mac OS X build instructions.
 
 Source Documentation
 --------------------
