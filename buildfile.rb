@@ -30,7 +30,10 @@ end
 
 # Get our version number.
 commit = ARGV.pop
-if commit =~ /^v[-0-9.rcpe]*/ # Versions may contain "rc" or "pre".
+# Versions may contain "-rcN", "-preN", etc., but if they do, they must end
+# with a number.  This prevents us from releasing tarballs of things like
+# "v0.4-stable".
+if commit =~ /^v[0-9.]+(-.*[0-9])?$/
   # Here, $untagged_build is a global variable so that we can access it
   # from inside the function for_release?, below.
   $untagged_build = false
