@@ -21,9 +21,7 @@
 ;; @END_LICENSE
 
 (module stage2 mzscheme
-  (require #%engine-primitives
-           (lib "cm.ss" "mzlib")
-           (lib "errortrace-lib.ss" "errortrace"))
+  (require #%engine-primitives)
 
   ;;===== Primitive functions =====
   
@@ -148,7 +146,14 @@
   (define (make-load-with-heartbeat)
     (wrap-load/use-compiled-with-heartbeat (current-load/use-compiled)))
 
-  (define (stage2)
+  ;;===== Stage 2 of loading =====
+
+  (provide %stage2)
+
+  (define (%stage2 make-compilation-manager-load/use-compiled-handler
+                   manager-compile-notify-handler
+                   manager-trace-handler)
+
     ;; Decide whether or not we should always trust (and use) compiled *.zo
     ;; files.  This will generally only be true if our code was installed
     ;; by a prepackaged installer.
@@ -160,20 +165,13 @@
 
       (initialize-splash-screen!)
 
-      ;; Support for decent backtraces upon errors.  We pull in 
-      ;; the support from errortrace-lib.ss, and then manually enable
-      ;; errortrace if requested.  Note that we always require 
-      ;; errortrace-lib.ss so we will have stable file counts in 
-      ;; application.halyard.
+      ;; If we're planning to enable errortrace later, then we need to set
+      ;; up use-compiled-file-paths _before_ we call
+      ;; make-compilation-manager-load/use-compiled-handler.  This is
+      ;; necessary because the compilation manager caches the value of
+      ;; use-compiled-file-paths, and will refuse to run if it has changed.
       (when (errortrace-compile-enabled?)
-        ;; Adapted from the logic in errortrace.ss.  Ultimately, we may not
-        ;; want to include "compiled" in use-compiled-file-paths, because
-        ;; we don't want to mix errortrace and non-errortrace *.zo files.
-        ;; But for now, that won't work under MacPorts, where we can't
-        ;; write to our our system collects directory.
-        (current-compile errortrace-compile-handler)
-        (use-compiled-file-paths (list (build-path "compiled" "errortrace")
-                                       (build-path "compiled"))))
+        (use-compiled-file-paths (list (build-path "compiled" "errortrace"))))
 
       ;; If we're running in regular development mode, we want MzScheme
       ;; to transparently compile modules to *.zo files, and recompile
@@ -216,6 +214,29 @@
       ;; Print out trace information from the compilation manager.
       (manager-trace-handler trace)
 
+      ;; Support for decent backtraces upon errors.  We pull in the support
+      ;; from errortrace-lib.ss, and then manually enable errortrace if
+      ;; requested.  (This code is a customized version of what happens in
+      ;; errortrace.ss.)  Note that we always require errortrace-lib.ss so
+      ;; we will have stable file counts in application.halyard.
+      ;;
+      ;; We have to do this _after_ we install the compilation manager,
+      ;; because:
+      ;;   1) errortrace must be loaded in the same namespace where we want
+      ;;      to use it, or else it will refuse to work.
+      ;;   2) errortrace depends on a variety of other modules which might
+      ;;      be used by scripts.  And it isn't safe to load any of those
+      ;;      modules into this namespace until after the compilation
+      ;;      manager is set up, because compiled modules are not allowed
+      ;;      to depend on non-compiled modules.
+      ;; Of course, this means we don't actually have error-tracing on any
+      ;; module which is itself required by errortrace-lib.ss.  Oh, well.
+      (let [[errortrace-compile-handler
+             (dynamic-require '(lib "errortrace-lib.ss" "errortrace")
+                              'errortrace-compile-handler)]]
+        (when (errortrace-compile-enabled?)
+          (current-compile errortrace-compile-handler)))
+
       ;; Load the kernel.
       (set! filename "kernel.ss")
       (namespace-require '(lib "kernel.ss" "halyard"))
@@ -239,5 +260,4 @@
       ;; code after a "reload script".
       (notify-script-loaded)
       #f))
-
-  (stage2))
+  )

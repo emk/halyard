@@ -59,6 +59,22 @@
 (module stage1 mzscheme
   (require (lib "sandbox.ss" "mzlib"))
 
+  ;; We load the compilation manager _outside_ the sandbox, and pass it
+  ;; through to stage2, inside the sandbox.  This is necessary, because the
+  ;; compilation manager can't be loaded in the same namespace that we want
+  ;; to run it in.
+  ;;
+  ;; Q: Why must we load the compilation manager in a separate namespace?
+  ;;
+  ;; A: Loading the compilation manager also loads quite a few modules from
+  ;; mzlib.  But many of these modules will also be loaded again later, by
+  ;; the script we're compiling.  This means that we would have compiled
+  ;; modules depending on non-compiled modules.  And this is specicially
+  ;; forbidden in the compilation manager's documentation.  By using two
+  ;; separate namespaces, we hide the non-compiled mzlib modules from the
+  ;; program we're trying to compile.
+  (require (lib "cm.ss" "mzlib"))
+
   ;;===== Sandbox options =====
 
   ;; Specify how to initialize the sandbox's namespace.  The first item in
@@ -147,7 +163,14 @@
   ;;; @return #f if the load succeeds, or an error string.
   (define (load-script)
     (with-handlers [[void (lambda (exn) (exn-message exn))]]
-      (*sandboxed-evaluator* '(require (lib "stage2.ss" "halyard" "loader")))
+      (*sandboxed-evaluator*
+       `(begin
+          (require (lib "stage2.ss" "halyard" "loader"))
+          ;; Pass through the compilation manager APIs we'll need--see the
+          ;; comment at the top of this file.
+          (%stage2 ,make-compilation-manager-load/use-compiled-handler
+                   ,manager-compile-notify-handler
+                   ,manager-trace-handler)))
       #f))
 
   ;;; Transfer control into *sandboxed-evaluator*.  
