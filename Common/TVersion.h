@@ -32,11 +32,15 @@
 #define VERSION_REV_BIG_STRING     "9"
 #define VERSION_REV_SMALL_STRING   "0"
 
+// This string may optionally contain something like "-pre1" or "-rc2".
+// This will be appended to the regular version number.
+#define VERSION_EXTRA              ""
+
 #define SHORT_NAME          "Halyard"
 #define VERSION_STRING \
     SHORT_NAME " " VERSION_MAJOR_NUM_STRING "." \
     VERSION_MINOR_NUM_STRING "." VERSION_REV_BIG_STRING "." \
-    VERSION_REV_SMALL_STRING //" (Development)"
+    VERSION_REV_SMALL_STRING VERSION_EXTRA " (Development)"
 
 // Needed for Windows resource files.
 #define VERSION_COMMAS \
