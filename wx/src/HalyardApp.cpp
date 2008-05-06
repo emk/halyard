@@ -27,6 +27,8 @@
 #include <wx/evtloop.h>
 #include <wx/sysopt.h>
 #include <wx/stdpaths.h>
+#include <wx/fileconf.h>
+#include <wx/filefn.h>
 
 #include "TVersion.h"
 #include "TStartup.h"
@@ -545,6 +547,8 @@ int HalyardApp::MainLoopInternal() {
 	mHaveOwnEventLoop = true;
 	IdleProc(false);
 	manager->Run();
+
+    // Cleanup
     error = manager->ExitedWithError();
 	delete downloader;
 	downloader = NULL;
@@ -586,6 +590,38 @@ void HalyardApp::ExitMainLoop()
 Stage *HalyardApp::GetStage()
 {
     return GetStageFrame()->GetStage();
+}
+
+wxString HalyardApp::UserConfigFilename() {
+    FileSystem::Path conf_filename = 
+        FileSystem::GetBaseDirectory().AddComponent("user.conf");
+    return wxString(ToWxString(conf_filename.ToNativePathString()));
+}
+
+void HalyardApp::LoadUserConfig() {
+    wxString config_filename(UserConfigFilename());
+
+    // Ensure that we have a file to read from, by creating an empty
+    // file if one does not exist.
+    if (!::wxFileExists(config_filename)) {
+        wxFileOutputStream config_file(config_filename);
+        config_file.Write("", 0);
+        config_file.Close();
+    }
+
+    // Read in our configuration information.
+    wxFFileInputStream config_file(config_filename);
+    mUserConfig = shared_ptr<wxFileConfig>(new wxFileConfig(config_file));
+}
+
+shared_ptr<wxConfigBase> HalyardApp::GetUserConfig() {
+    ASSERT(mUserConfig.get());
+    return mUserConfig;
+}
+
+void HalyardApp::SaveUserConfig() {
+    wxFileOutputStream config_file(UserConfigFilename());
+    mUserConfig->Save(config_file);
 }
 
 void HalyardApp::OnActivateApp(wxActivateEvent &event) {

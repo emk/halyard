@@ -43,6 +43,7 @@ class ScriptEditor : public SashFrame, public Halyard::TReloadNotified  {
     EventDelegator mDelegator;
     bool mProcessingActivateEvent;
     IdentifierList mIdentifiers;
+    bool mDontSaveTabs;
 
 public:
     static void EditScripts();
@@ -52,11 +53,13 @@ public:
     static void ShowDefinition(const wxString &identifier);
     static void HighlightFile(const wxString &path);
     static IdentifierList GetIdentifiers();
+    static void SaveEditorTabs();
 
     ScriptEditor();
     ~ScriptEditor();
 
     virtual bool ProcessEvent(wxEvent& event);
+    virtual bool Destroy();
 
     int GetTextSize();
     void SetTextSize(int size);
@@ -65,6 +68,9 @@ public:
 private:
     void LoadSashLayout(shared_ptr<wxConfigBase> inConfig);
     void SaveSashLayout(shared_ptr<wxConfigBase> inConfig);
+    bool HaveSavedTabs();
+    void LoadTabs();
+    void SaveTabs();
 
     void OpenDocumentInternal(const wxString &path, int line = 1);
     void ShowDefinitionInternal(const wxString &identifier);

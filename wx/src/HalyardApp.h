@@ -26,6 +26,8 @@
 class StageFrame;
 class Stage;
 class AppLog;
+class wxFileConfig;
+class wxConfigBase;
 
 /// Our main application object.
 class HalyardApp : public wxApp
@@ -70,6 +72,11 @@ class HalyardApp : public wxApp
     ///
     bool mShouldLaunchUpdateInstaller; 
 
+    //////////
+    /// A local configuration file for the currently loaded project.
+    ///
+    shared_ptr<wxFileConfig> mUserConfig;
+
 	//////////
 	/// This procedure is called periodically by the script interpreter
 	/// to give time to the GUI.
@@ -103,6 +110,11 @@ class HalyardApp : public wxApp
     ///
     void LaunchUpdateInstaller();
 
+    //////////
+    /// Return the name of our configuration file.
+    ///
+    wxString UserConfigFilename();
+    
 public:
     HalyardApp();
 
@@ -192,6 +204,36 @@ public:
     /// Return true if and only if this application has a stage.
     ///
     bool HaveStage() { return mStageFrame != NULL; } 
+
+    //////////
+    /// Read in the current user configuration.
+    ///
+    /// For our user config, we use a single object that is available
+    /// for the duration of the program, rather than creating a new
+    /// config object each time we use it.  This makes it easier to
+    /// allow HalyardApp to write the config out to a file, as a
+    /// non-standard wxFileConfig doesn't know where to save.  This
+    /// also means that if someone manually edits the config file
+    /// while running the program, the changes won't be picked up and
+    /// in fact will likely be overwritten.
+    ///
+    void LoadUserConfig();
+
+    //////////
+    /// Get the current user configuration object.
+    ///
+    shared_ptr<wxConfigBase> GetUserConfig();
+
+    //////////
+    /// Do we currently have a user configuration object?  This will
+    /// be false until we've loaded a project and set up our paths.
+    ///
+    bool HaveUserConfig() { return mUserConfig.get() != NULL; }
+
+    //////////
+    /// Write out our user configuration file.
+    ///
+    void SaveUserConfig();
 
     //////////
     /// We provide an OnActivateApp handler so we can hide full-screen

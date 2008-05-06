@@ -662,6 +662,7 @@ void StageFrame::OpenDocument(const wxString &inDirPath) {
     mProgramTree->RegisterDocument(mDocument);
     CrashReporter::GetInstance()->RegisterDocument(mDocument);
     CheckForUpdateLockFile(); // Needs to come after CrashReporter setup.
+    wxGetApp().LoadUserConfig();
     mStage->MaybeShowSplashScreen();
     mStage->Show();
 }

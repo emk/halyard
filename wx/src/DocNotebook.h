@@ -60,7 +60,6 @@ class DocNotebook : public wxWindow {
     wxWindow *mCurrentDoc;
 
     void SetCurrentDoc(wxWindow *newDoc);
-    DocNotebookTab *GetCurrentDocument();
     void UpdateFrameTitle();
 
 public:
@@ -76,6 +75,7 @@ public:
     DocNotebookTab *GetDocument(size_t index);
     void SelectDocument(size_t index);
     void SelectDocument(const DocNotebookTab *doc);
+    DocNotebookTab *GetCurrentDocument();
 
     bool MaybeCloseTab();
     bool MaybeSaveAll(bool canVeto, const wxString &title,
