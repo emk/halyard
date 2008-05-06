@@ -157,10 +157,20 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 
 	//////////
 	/// The element which most recently contained the mouse.
-	/// Invariant: This variable is always NULL, or points to a valid 
-	/// lightweight element.  Be careful when deleting element!
+    ///
+	/// Invariant: This variable is always NULL, or points to a valid
+	/// lightweight element.  Be careful when deleting elements!
 	///
 	ElementPtr mCurrentElement;
+
+    //////////
+    /// The element which most recently contained the mouse, _including_
+    /// those elements which don't otherwise support mouse interaction.
+    ///
+	/// Invariant: This variable is always NULL, or points to a valid
+	/// lightweight element.
+    ///
+    ElementPtr mCurrentElementNamedInStatusBar;
 
 	//////////
 	/// The element which has a "grab" on the mouse.
@@ -690,9 +700,11 @@ public:
 	/// any.
 	///
 	/// \param inPoint  The point to check.
+    /// \param inMustWantCursor  Only find elements where WantsCursor is true.
 	/// \return  A pointer to the Element, or NULL.
 	///
-	ElementPtr FindLightWeightElement(const wxPoint &inPoint);
+	ElementPtr FindLightWeightElement(const wxPoint &inPoint,
+                                      bool inMustWantCursor = true);
 
 	//////////
 	/// Find the appropriate event dispatcher for the given point.

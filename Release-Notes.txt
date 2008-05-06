@@ -1,6 +1,29 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.9 - 5 May 2008
+
+The memory leak is fixed!  This makes Halyard substantially more usable for
+day-to-day development.  Many thanks to Matthew Flatt for debugging this
+long-standing problem.
+
+Other highlights:
+  * %text-box% elements now default :clickable-where-transparent? to #f.
+  * When "Show Element Borders" is turned on, element names will be
+    displayed in the status bar.
+  * Our tarballs now include a "./configure" script.
+
+Eric Kidd (9):
+      Ignore Xcode-related files
+      Performance: Work around Swindle-related memory leak
+      wxMac: Fix crash in mTree->SetItemBold
+      autotools: Add autogen.sh from gnome-common
+      Allow loader.ss to use (require ...) paths
+      Show element names in status bar when borders are displayed
+      Run ./autogen.sh before making release tarballs
+      Ignore "compiled" directories when releasing to Subversion
+      Build fix: Insert missing semicolon
+
 0.5.8 - 1 May 2008
 
 This version of Halyard features significantly improved Mac support.

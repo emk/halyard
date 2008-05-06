@@ -513,6 +513,29 @@ void Stage::UpdateCurrentElementAndCursor(const wxPoint &inPosition)
 		if (obj && ShouldSendMouseEventsToElement(obj))
 			EnterElement(obj, inPosition);
 	}
+
+    // Optionally update the element named in the status bar.  (There's no
+    // point in doing this if we're showing the current cursor position,
+    // because that will clobber the name we're displaying.)  Note that
+    // we're pretty sloppy about cleaning up our state when the user turns
+    // this option off, because it doesn't really matter, and we'd need
+    // a lot of hooks to clear this reliably.
+    if (mIsDisplayingBorders && !mIsDisplayingXy) {
+        // Search for the element under the cursor.  But this time, we also
+        // check elements which don't allow mouse interaction, because we
+        // want to display the names of all elements, not just those which
+        // allow interaction with the user.
+        ElementPtr named_obj = FindLightWeightElement(inPosition, false);
+
+        // If we've moved to a different element, update the status bar.
+        if (named_obj != mCurrentElementNamedInStatusBar) {
+            mCurrentElementNamedInStatusBar = named_obj;
+            if (named_obj)
+                mFrame->SetStatusText(named_obj->GetName());
+            else
+                mFrame->SetStatusText(wxT(""));
+        }
+    }
 }
 
 void Stage::UpdateCurrentElementAndCursor() {
@@ -1136,14 +1159,16 @@ ElementPtr Stage::FindElement(const wxString &inElementName)
 		return *i;
 }
 
-ElementPtr Stage::FindLightWeightElement(const wxPoint &inPoint)
+ElementPtr Stage::FindLightWeightElement(const wxPoint &inPoint,
+                                         bool inMustWantCursor)
 {
 	// Look for the most-recently-added Element containing inPoint.
 	ElementPtr result;
 	ElementCollection::iterator i = mElements.begin();
 	for (; i != mElements.end(); i++)
 		if ((*i)->IsLightWeight() && (*i)->IsShown() &&
-            (*i)->WantsCursor() && (*i)->IsPointInElement(inPoint))
+            ((*i)->WantsCursor() || !inMustWantCursor) &&
+            (*i)->IsPointInElement(inPoint))
 			result = *i;
 	return result;
 }
@@ -1176,6 +1201,8 @@ void Stage::DestroyElement(ElementPtr inElement)
 		MouseUngrab(mGrabbedElement);
 	if (inElement == mCurrentElement)
 		mCurrentElement = ElementPtr();
+    if (inElement == mCurrentElementNamedInStatusBar)
+        mCurrentElementNamedInStatusBar = ElementPtr();
     MediaElementPtr as_media(inElement, dynamic_cast_tag());
 	if (as_media && as_media == mWaitElement)
 		EndWait();

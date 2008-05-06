@@ -4,9 +4,15 @@
 # commits.  This script would be much nicer if we actually modified
 # buildscript to better support the things we're asking it to do here.
 
+# Things you will need to install or setup to make this work:
+#   - The packages described in tools/buildscript/README.txt
+#   - Cygwin packages: git, autoconf, automake, pkg-config, subversion
+#   - Password-free login to any SVN and SSH servers mentioned below
+
 require 'tools/buildscript/buildscript'
 include Buildscript
 require 'tools/buildscript/commands'
+require 'find'
 
 svn_url = 'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main'
 git_url = 'git://imlsrc.dartmouth.edu'
@@ -89,6 +95,12 @@ heading 'Check out the source code.', :name => :checkout do
   end
 end
 
+# Generate configure and Makefile.in for use on Unix platforms.  This
+# requires autoconf, automake, and pkg-config.
+heading "Run autogen.sh.", :name => :autogen do
+  cd(src_dir) { run "./autogen.sh" }
+end
+
 # Build copies of all of our tarballs before we do any builds or testing,
 # so we will have clean trees.  make_tarball and make_tarball_from_files
 # will automatically ignore any .git and .gitignore files.
@@ -160,6 +172,15 @@ heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
       cp "#{full_bin_dir}/Win32/Bin/#{file}", file
       svn :add, file if for_release?
     end
+
+    # Set up svn:ignore properties on the Runtime directories.
+    Find.find "Runtime" do |path|
+      next unless File.directory?(path)
+      next if path =~ /\/\.svn$/
+      next if path =~ /\/\.svn\//
+      svn :propset, "svn:ignore", "compiled", path if for_release?
+    end
+
     svn :ci, '-m', "Tagging binaries for release #{version}." if for_release?
   end
 end

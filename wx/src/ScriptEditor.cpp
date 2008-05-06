@@ -1449,6 +1449,8 @@ public:
     ScriptDoc(DocNotebook *parent, wxWindowID id, int font_size,
               const wxString &path);
 
+    virtual bool Destroy();
+
     virtual wxWindow *GetDocumentWindow() { return this; }
 
     virtual void OfferToReloadIfChanged();
@@ -1513,6 +1515,16 @@ ScriptDoc::ScriptDoc(DocNotebook *parent, wxWindowID id, int font_size,
     ReadDocument();
 }
 
+bool ScriptDoc::Destroy() {
+    // Notify the script editor that this tab has been closed, so it can
+    // save the current tab state.  Note that DocNotebook should have 
+    // already unlinked us from its list of tabs, so our tab list should
+    // be correct.
+    ScriptEditor::SaveEditorTabs();
+
+    return ScriptTextCtrl::Destroy();
+}
+
 void ScriptDoc::SetTitleAndPath(const wxString &fullPath) {
     SetDocumentPath(fullPath);
 
@@ -1523,6 +1535,9 @@ void ScriptDoc::SetTitleAndPath(const wxString &fullPath) {
 void ScriptDoc::NotifySelected() {
     // Let the ScriptTree know we're the active tab.
     ScriptEditor::HighlightFile(GetDocumentPath());
+    // Save our tab state.  This will occur when we switch tabs, and also 
+    // when we open a new tab.
+    ScriptEditor::SaveEditorTabs();
 }
 
 void ScriptDoc::OfferToReloadIfChanged() {
@@ -2080,12 +2095,17 @@ IdentifierList ScriptEditor::GetIdentifiers() {
     return sFrame->mIdentifiers;
 }
 
+void ScriptEditor::SaveEditorTabs() {
+    ASSERT(sFrame);
+    sFrame->SaveTabs();
+}
+
 ScriptEditor::ScriptEditor()
     : SashFrame(wxGetApp().GetStageFrame(), -1,
                 wxT("Script Editor - ") + wxGetApp().GetAppName(),
                 wxT("ScriptEditor"), wxDefaultSize, wxDEFAULT_FRAME_STYLE),
       mTreeContainer(NULL), mTree(NULL), mNotebook(NULL),
-      mProcessingActivateEvent(false)
+      mProcessingActivateEvent(false), mDontSaveTabs(false)
 {
     // Set up the static variable pointing to this frame.
     ASSERT(!sFrame);
@@ -2260,11 +2280,14 @@ ScriptEditor::ScriptEditor()
 
     // Update our identifier database for syntax highlighting and indentation
     UpdateIdentifierInformation();
-
-    // If we have a Halyard program already, open up the start script.
-    if (TInterpreterManager::HaveInstance() &&
-        TInterpreterManager::GetInstance()->InterpreterHasBegun())
+    
+    if (HaveSavedTabs()) {
+        // If we have saved tabs, try to load them
+        LoadTabs();
+    } else if (TInterpreterManager::HaveInstance() &&
+               TInterpreterManager::GetInstance()->InterpreterHasBegun())
     {
+        // If we have a Halyard program already, open up the start script.
         FileSystem::Path start_script =
             FileSystem::GetScriptsDirectory().AddComponent("start.ss");
         wxString filename(ToWxString(start_script.ToNativePathString()));
@@ -2288,6 +2311,93 @@ void ScriptEditor::LoadSashLayout(shared_ptr<wxConfigBase> inConfig) {
 
 void ScriptEditor::SaveSashLayout(shared_ptr<wxConfigBase> inConfig) {
 	inConfig->Write(wxT("ScriptTreeWidth"), mTreeContainer->GetSize().GetWidth());
+}
+
+bool ScriptEditor::HaveSavedTabs() {
+    if (wxGetApp().HaveUserConfig()) {
+        shared_ptr<wxConfigBase> user_config = 
+            wxGetApp().GetUserConfig();
+
+        wxString old_path = user_config->GetPath();
+        user_config->SetPath(wxT("/ScriptEditor/OpenTabs"));
+        bool have_saved_tabs = (user_config->GetNumberOfEntries() != 0);
+        user_config->SetPath(old_path);
+
+        return have_saved_tabs;
+    } 
+
+    return false;
+}
+
+void ScriptEditor::LoadTabs() {
+    // We should only be called from our constructor, which should have
+    // ensured that we have a user config.
+    ASSERT(wxGetApp().HaveUserConfig());
+    shared_ptr<wxConfigBase> user_config = wxGetApp().GetUserConfig();
+    
+    wxString old_path = user_config->GetPath();
+    user_config->SetPath(wxT("/ScriptEditor/OpenTabs"));
+    
+    std::vector<wxString> keys;
+    wxString key;
+    long cookie;
+    bool got_entry = user_config->GetFirstEntry(key, cookie);
+    while (got_entry) {
+        keys.push_back(key);
+        got_entry = user_config->GetNextEntry(key, cookie);
+    }
+
+    // Don't save our tab state while we are busy loading our tabs.
+    mDontSaveTabs = true;
+
+    std::vector<wxString>::iterator i = keys.begin();
+    wxString filename;
+    for (; i != keys.end(); ++i) {
+        filename = user_config->Read(*i);
+        if (::wxFileExists(filename))
+            OpenDocumentInternal(filename);
+    }
+
+    user_config->SetPath(old_path);
+
+    wxString active = user_config->Read(wxT("/ScriptEditor/CurrentTab"));
+    if (active.Len() != 0) 
+        OpenDocumentInternal(active);
+
+    mDontSaveTabs = false;
+}
+
+void ScriptEditor::SaveTabs() {
+    if (mDontSaveTabs || !wxGetApp().HaveUserConfig())
+        return;
+
+    shared_ptr<wxConfigBase> user_config = wxGetApp().GetUserConfig();
+    
+    // Clear the existing tabs
+    user_config->DeleteGroup(wxT("/ScriptEditor/OpenTabs"));
+
+    wxString old_path = user_config->GetPath();
+    user_config->SetPath(wxT("/ScriptEditor/OpenTabs"));
+
+    for (size_t i = 0; i < mNotebook->GetDocumentCount(); i++) {
+        ScriptDoc *doc = dynamic_cast<ScriptDoc*>(mNotebook->GetDocument(i));
+        ASSERT(doc);
+        wxString key;
+        key.Printf(wxT("%03d"), i);
+        user_config->Write(key, doc->GetDocumentPath());
+    }
+
+    user_config->SetPath(old_path);
+
+    ScriptDoc *doc = dynamic_cast<ScriptDoc*>(mNotebook->GetCurrentDocument());
+    if (doc != NULL) {
+        user_config->Write(wxT("/ScriptEditor/CurrentTab"), 
+                              doc->GetDocumentPath());
+    } else {
+        user_config->Write(wxT("/ScriptEditor/CurrentTab"), wxT(""));
+    }
+    
+    wxGetApp().SaveUserConfig();
 }
 
 bool ScriptEditor::ProcessEvent(wxEvent& event) {
@@ -2464,4 +2574,15 @@ void ScriptEditor::OnIncreaseTextSize(wxCommandEvent &event) {
 
 void ScriptEditor::OnDecreaseTextSize(wxCommandEvent &event) {
     ChangeTextSize(-1);
+}
+
+bool ScriptEditor::Destroy() {
+    SaveTabs();
+
+    // Make sure we don't save our tabs after this point, since we'll
+    // be destroying all of our tabs, and destroying a tab triggers
+    // tab saving.
+    mDontSaveTabs = true;
+
+    return wxFrame::Destroy();
 }
