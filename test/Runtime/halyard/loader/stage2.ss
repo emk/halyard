@@ -23,6 +23,27 @@
 (module stage2 mzscheme
   (require #%engine-primitives)
 
+  ;; Normally, we shouldn't be requiring any files here, because we haven't
+  ;; set up the compilation manager yet, and we're not allowed to load
+  ;; files now that will be used later by compiled modules, on pain of
+  ;; severely confusing the compilation manager.
+  ;;
+  ;; But the following file is _sometimes_ required by the compilation
+  ;; manager, and sometimes not required.  Unfortunately, this prevents us
+  ;; from reliably calculating the number of files that will be loaded, and
+  ;; therefore messes up the progress bar code.
+  ;;
+  ;; Fortunately, the compilation manager turns itself off before loading
+  ;; this file (using dynamic-require), and nobody else needs to load this
+  ;; file at all.  So it is theoretically safe to load this here if we want
+  ;; to.  For now, we're going to load this up front, and stabilize the
+  ;; number of files we load later on.
+  ;;
+  ;; If this stops working, then we need to remove this require statement,
+  ;; and instead patch notify-file-load/use-compiled to ignore this file
+  ;; when calling our various progress-bar-related functions.
+  (require (lib "cm-ctime.ss" "mzlib" "private"))
+
   ;;===== Primitive functions =====
   
   ;; Call the specified engine primitive if it exists.
