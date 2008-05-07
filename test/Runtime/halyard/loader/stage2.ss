@@ -142,6 +142,22 @@
                        (set! always-treat-zo-and-so-as-newer-available? #f)
                        (make-parameter #f))]]
       (dynamic-require 'mzscheme 'always-treat-zo-and-so-as-newer)))
+
+  ;; Can we actually use the compilation manager?  Returns true if either
+  ;; (a) we already have appropriate compiled versions of our system
+  ;; collections, or (b) the directories containing the system collections
+  ;; are writable.
+  (define (can-use-compilation-manager?)
+    ;; halyard/loader/collection-paths.ss should have forced collects-dir
+    ;; to be a complete path by now.
+    (unless (complete-path? (find-system-path 'collects-dir))
+      (error "Expected collects-dir to be a complete path"))
+    (let [[mzlib-dir (build-path (find-system-path 'collects-dir) "mzlib")]]
+      ;; First check for a directory containing compiled files.  If that
+      ;; fails, see whether we're allowed to compile the files ourselves.
+      (or (directory-exists? (build-path mzlib-dir
+                                         (car (use-compiled-file-paths))))
+          (memq 'write (file-or-directory-permissions mzlib-dir)))))
   
   ;; When loading Scheme files, we need to do two things: (1) Call the
   ;; HEARTBEAT function, so that the operating systems knows we're still
@@ -219,8 +235,10 @@
       ;; killer!).
       (%always-treat-zo-and-so-as-newer always-trust-precompiled?)
       (current-load/use-compiled
-       (if always-trust-precompiled?
-           ;; Load *.zo files blindly if they exist.
+       (if (or always-trust-precompiled?
+               (not (can-use-compilation-manager?)))
+           ;; Use the system loader.  If always-trust-precompiled? is true,
+           ;; this will load *.zo files blindly if they exist.
            (current-load/use-compiled)
            ;; Recompile *.zo files on demand.  We set up
            ;; notify-loading-file below.
