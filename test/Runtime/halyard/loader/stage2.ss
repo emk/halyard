@@ -126,7 +126,7 @@
   ;; HEARTBEAT function, so that the operating systems knows we're still
   ;; alive, and (2) call UPDATE-SPLASH-SCREEN!, so that the user knows that
   ;; we're still alive.
-  (define (notify-loading-file path)
+  (define (notify-file-load/use-compiled)
     (heartbeat)
     (update-splash-screen!))
 
@@ -138,13 +138,8 @@
     (lambda (file-path expected-module-name)
       ;;(debug-log (string-append "Loading: " (path->string file-path)))
       (let [[result (load/use-compiled file-path expected-module-name)]]
-        (notify-loading-file file-path)
+        (notify-file-load/use-compiled)
         result)))
-
-  ;; We use this loader function when we don't want to even *think* about
-  ;; recompiling *.zo files.
-  (define (make-load-with-heartbeat)
-    (wrap-load/use-compiled-with-heartbeat (current-load/use-compiled)))
 
   ;;===== Stage 2 of loading =====
 
@@ -173,6 +168,13 @@
       (when (errortrace-compile-enabled?)
         (use-compiled-file-paths (list (build-path "compiled" "errortrace"))))
 
+      ;; Wrap the current-load/use-compiled handler with our heartbeat
+      ;; function.  This needs to happen before we set up the compilation
+      ;; manager, because the compilation manager caches the value of
+      ;; this parameter, and will refuse to run if it has changed.
+      (current-load/use-compiled
+       (wrap-load/use-compiled-with-heartbeat (current-load/use-compiled)))
+
       ;; If we're running in regular development mode, we want MzScheme
       ;; to transparently compile modules to *.zo files, and recompile
       ;; them whenever necessary.  But if we're running as part of an
@@ -197,19 +199,11 @@
       (%always-treat-zo-and-so-as-newer always-trust-precompiled?)
       (current-load/use-compiled
        (if always-trust-precompiled?
-           ;; Load *.zo files blindly if they exist.  We also need to make
-           ;; sure that notify-loading-file gets called here, so we use
-           ;; make-load-with-heartbeat.
-           (make-load-with-heartbeat)
+           ;; Load *.zo files blindly if they exist.
+           (current-load/use-compiled)
            ;; Recompile *.zo files on demand.  We set up
            ;; notify-loading-file below.
            (make-compilation-manager-load/use-compiled-handler)))
-
-      ;; Install a compilation manager notify-handler.  This will be called
-      ;; every time a file is compiled, allowing us to update the splash
-      ;; screen, etc.  It will never be called if always-trust-precompiled?
-      ;; is #t, but in that case, we'll be using make-load-with-heartbeat.
-      (manager-compile-notify-handler notify-loading-file)
 
       ;; Print out trace information from the compilation manager.
       (manager-trace-handler trace)
