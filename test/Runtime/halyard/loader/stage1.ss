@@ -104,6 +104,12 @@
   ;; throwing it away.
   (sandbox-output (current-output-port))
 
+  ;; Allocate a reasonably large thread stack, because we're running a lot
+  ;; of C++ code on the sandbox's thread stack, and C++ doesn't know how to
+  ;; increase the stack size at runtime.  I've observed up to 4000 in use,
+  ;; so this is a delibrately over-large number.
+  (current-thread-initial-stack-size 64000)
+
   ;;===== Memory leak workaround =====
 
   ;; Save the display and write handlers for our standard output ports.
