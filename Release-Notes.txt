@@ -1,6 +1,24 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.9-sandbox2 - 8 May 2008
+
+This release fixes all known issues in the "sandbox" branch.  Particular
+thanks go to Matthew Flatt, who helped us fix an out-of-memory crash during
+script reloads.
+
+Note that the engine may still crash if you try to allocate more than ~1.6G
+on the Scheme heap.  This may happen if you try to compile very large
+programs with errortrace turned on.  If this occurs, simply restart the
+engine and try again--compilation will resume where it left off.
+
+Eric Kidd (5):
+      Increase stack size from 1000 to 64000
+      Modify progress bar to work with new sandboxed loader
+      Compile all *.ss files to *.zo in a single pass
+      Mac: Disable compilation manager when it can't be used
+      Fix out-of-memory crash during script reload
+
 0.5.9-sandbox1 - 6 May 2008
 
 This is an experimental release of Halyard using Eli Barzilay's sandbox.ss
