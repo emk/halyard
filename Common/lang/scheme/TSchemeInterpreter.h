@@ -44,16 +44,18 @@ class TPercent;
 ///
 class TSchemeInterpreterManager : public TInterpreterManager
 {
+    bool mHaveInitializedScheme;
 	TSchemePtr<Scheme_Env> mGlobalEnv;
     shared_ptr<ScriptEditorDB> mScriptEditorDB;
 
 public:
 	TSchemeInterpreterManager(SystemIdleProc inIdleProc);
 
+    virtual void InitialSetup();
     virtual ScriptEditorDB *GetScriptEditorDBInternal();
-	virtual void BeginScript();
 
 private:
+    void InitializeScheme();
     static Scheme_Object *SetCollectsPath(int inArgc, Scheme_Object **inArgv);
 	void LoadFile(const FileSystem::Path &inFile);
 
@@ -75,6 +77,8 @@ class TSchemeInterpreter : public TInterpreter
 	TSchemePtr<Scheme_Env> mScriptEnv;
 	TSchemePtr<Scheme_Object> mLoaderModule;
 	TSchemePtr<Scheme_Object> mKernelModule;
+
+    typedef Scheme_Env *EnvPtr;
 
     // Compare two Scheme pointers for equality in a GC-safe fashion.
     //
@@ -118,6 +122,13 @@ class TSchemeInterpreter : public TInterpreter
     typedef std::map<BucketKey, TSchemePtr<Scheme_Bucket> > BucketMap;
     BucketMap mBucketMap;
 
+    enum Thread {
+        INITIAL_THREAD,
+        SWITCHING_TO_SANDBOX_THREAD,
+        SANDBOX_THREAD
+    };
+    Thread mCurrentThread;
+
 	void InitializeModuleNames();
 
     Scheme_Bucket *FindBucket(Scheme_Env *inEnv,
@@ -134,6 +145,9 @@ class TSchemeInterpreter : public TInterpreter
                           Scheme_Object **outResult,
                           char *outErrorMessage,
                           size_t inErrorMessageMaxLength);
+
+    /// Call load-script in stage1.ss.
+    Scheme_Object *LoadScript();
 
 public:
 	TSchemeInterpreter(Scheme_Env *inGlobalEnv);

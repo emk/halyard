@@ -98,8 +98,10 @@ void Document::CheckStructure()
 	Path base = FileSystem::GetBaseDirectory();
 	Path runtime = FileSystem::GetRuntimeDirectory();
 	CheckDirectory(runtime);
-	CheckDirectory(runtime.AddComponent("halyard"));
-	CheckFile(runtime.AddComponent("halyard").AddComponent("loader.ss"));
+    Path halyard = runtime.AddComponent("halyard");
+	CheckDirectory(halyard);
+	CheckDirectory(halyard.AddComponent("loader"));
+	CheckFile(halyard.AddComponent("loader").AddComponent("stage1.ss"));
 	CheckDirectory(FileSystem::GetFontDirectory());
 	CheckDirectory(FileSystem::GetScriptsDirectory());
 	CheckFile(FileSystem::GetScriptFilePath("start.ss"));

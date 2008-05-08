@@ -1,6 +1,61 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.9-sandbox2 - 8 May 2008
+
+This release fixes all known issues in the "sandbox" branch.  Particular
+thanks go to Matthew Flatt, who helped us fix an out-of-memory crash during
+script reloads.
+
+Note that the engine may still crash if you try to allocate more than ~1.6G
+on the Scheme heap.  This may happen if you try to compile very large
+programs with errortrace turned on.  If this occurs, simply restart the
+engine and try again--compilation will resume where it left off.
+
+Eric Kidd (5):
+      Increase stack size from 1000 to 64000
+      Modify progress bar to work with new sandboxed loader
+      Compile all *.ss files to *.zo in a single pass
+      Mac: Disable compilation manager when it can't be used
+      Fix out-of-memory crash during script reload
+
+0.5.9-sandbox1 - 6 May 2008
+
+This is an experimental release of Halyard using Eli Barzilay's sandbox.ss
+module.  It should have full support for backtraces in error dialogs.
+
+However, this release also contains at least one nasty crashing bug
+in GC_mark (and/or mark_struct_val) during reloads.  To trigger it, turn on
+errortrace support, delete all *.zo files, and reload the script.
+
+Other limitations:
+  * Errortrace won't work on the Mac, because you generally can't write
+    to PLT's collections directory under MacPorts.
+  * It takes at least two reloads to get everything properly compiled.
+    We're still debugging this.
+  * The progress bar is completely broken, because we're not getting
+    any callbacks from cm.ss when we load an already-compiled file.
+
+We're pushing this out as a "-sandbox1" release to allow more testing
+before we merge it back to the "master" branch.
+
+Also included is Brian's new code for saving open tabs in the editor.
+
+Brian Campbell (2):
+      Editor: Save open tabs and currently active tab
+      Mention Mac build instructions in HACKING.txt
+
+Eric Kidd (9):
+      Modify loader to use sandbox.ss instead of custom code
+      MacPorts: Replace bogus collects-dir value with addon-dir
+      Replace wrapped load/use-compiled-handler with callback
+      buildfile.rb fix: Add svn:ignore properties correctly
+      Display backtraces in error dialogs
+      Initialize errortrace before compilation manager
+      Set up the compilation manager and errortrace in correct order
+      Add support for version numbers containing "-pre" and "-rc"
+      Merge branch 'master' into sandbox
+
 0.5.9 - 5 May 2008
 
 The memory leak is fixed!  This makes Halyard substantially more usable for

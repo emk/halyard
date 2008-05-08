@@ -66,6 +66,18 @@
      ;; If we're using the system's copy of mzscheme, it will supply
      ;; its own copies of the standard collections.
      (default-collects-dir)
+     ;; Under MacPorts (and possibly other Unix-style package managers),
+     ;; the value of (find-system-path 'collects-dir) doesn't get set up
+     ;; correctly.  But on those systems, we can generally find our
+     ;; collections under 'addon-dir.  This path would, in any case, get
+     ;; added to current-library-collection-paths by
+     ;; find-library-collection-paths, so everything will _appear_ to work
+     ;; until we invoke the compilation manager.
+     ;;
+     ;; But we _really_ need to set up 'collects-dir correctly, or else
+     ;; setup/main-collects.ss will be unable to compute
+     ;; main-collects-relative->path correctly for the compilation manager.
+     (build-path (find-system-path 'addon-dir) (version) "collects")
      ;; If all else fails, then maybe we're being run from inside the
      ;; Halyard source tree.  See if we have a checked out copy of
      ;; PLT.

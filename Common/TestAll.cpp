@@ -186,8 +186,6 @@ static void RegisterTestPrimitives() {
 //=========================================================================
 
 int main(int argc, char **argv) {
-	HALYARD_BEGIN_STACK_BASE();
-
 	if (argc == 2 && std::string(argv[1]) == "--wait")
 		gShouldWait = true;
 
@@ -217,6 +215,5 @@ int main(int argc, char **argv) {
 
     END_TEST_EXCEPTION_TRAPPER
 
-    HALYARD_END_STACK_BASE();
     finished(0);
 }

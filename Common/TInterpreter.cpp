@@ -26,8 +26,10 @@
 #include "TDeveloperPrefs.h"
 #include "doc/Document.h"
 #include "doc/HalyardProgram.h"
+#include "lang/scheme/StackBase.h"
 
 using namespace Halyard;
+
 
 //=========================================================================
 //  TInterpreter Methods
@@ -115,6 +117,7 @@ Document *TInterpreterManager::sDocument = NULL;
 
 
 TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
+    : mIsInsideStackBase(false)
 {
 	ASSERT(sHaveAlreadyCreatedSingleton == false);
 	sHaveAlreadyCreatedSingleton = true;
@@ -140,6 +143,15 @@ TInterpreterManager::~TInterpreterManager()
 
 void TInterpreterManager::Run()
 {
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
+
+	// WARNING - No Scheme function may ever be called above this
+    // point on the stack!
+    HALYARD_BEGIN_STACK_BASE();
+    mIsInsideStackBase = true;
+
+    InitialSetup();
+
 	// Loop until somebody calls RequestQuitApplication, or we exit
 	// because of an error (below).
 	while (!mDone)
@@ -176,6 +188,9 @@ void TInterpreterManager::Run()
 			}
 		}
 	}
+
+    mIsInsideStackBase = false;
+    HALYARD_END_STACK_BASE();
 }
 
 void TInterpreterManager::DoIdle(bool block) {
@@ -190,6 +205,9 @@ void TInterpreterManager::BeginScript()
 
 void TInterpreterManager::LoadAndRunScript()
 {
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
+    ASSERT(IsInsideStackBase());
+
     NotifyReloadScriptStarting();
 
     // This outer try/catch block makes sure that we dispose of
@@ -198,29 +216,8 @@ void TInterpreterManager::LoadAndRunScript()
         // This inner try/catch block cleans up after failed script
         // reloads, and rethrows any exceptions.
         try {
-            // Create an interpreter object, and ask it to jump to the
-            // appropriate card.
+            // Create an interpreter object, and load the scripts.
             MakeInterpreter();
-            TInterpreter *interp = TInterpreter::GetInstance();
-            NotifyReloadScriptSucceeded();
-            
-            // Run our initial command, if we have one.
-            if (sHaveInitialCommand) {
-                sHaveInitialCommand = false;
-                if (sIsInRuntimeMode) {
-                    std::string result;
-                    if (!interp->Eval(sInitialCommand, result))
-                        THROW(result.c_str());
-                }
-            }
-
-            // Ask our interpreter to jump to the appropriate card.
-            if (!interp->IsValidCard(mInitialCardName.c_str()))
-                ResetInitialCardName();
-            interp->JumpToCardByName(mInitialCardName.c_str());
-            
-            // Reset any special variables.
-            ResetInitialCardName();
         } catch (...) {
             // Tell our main loop that the interpreter object couldn't be
             // opened properly.
@@ -241,15 +238,47 @@ void TInterpreterManager::LoadAndRunScript()
     TInterpreter::DestroyInstance();
 }
 
+void TInterpreterManager::RunInitialCommands()
+{
+    ASSERT(IsInsideStackBase());
+
+    TInterpreter *interp = TInterpreter::GetInstance();
+
+    // Let everybody know the script has been successfully loaded.
+    NotifyReloadScriptSucceeded();
+    
+    // Run our initial command, if we have one.
+    if (sHaveInitialCommand) {
+        sHaveInitialCommand = false;
+        if (sIsInRuntimeMode) {
+            std::string result;
+            if (!interp->Eval(sInitialCommand, result))
+                THROW(result.c_str());
+        }
+    }
+    
+    // Ask our interpreter to jump to the appropriate card.
+    if (!interp->IsValidCard(mInitialCardName.c_str()))
+        ResetInitialCardName();
+    interp->JumpToCardByName(mInitialCardName.c_str());
+    
+    // Reset any special variables.
+    ResetInitialCardName();
+    
+}
+
 void TInterpreterManager::RequestQuitApplication()
 {
-	if (TInterpreter::HaveInstance())
+	if (TInterpreter::HaveInstance()) {
+        ASSERT(IsInsideStackBase());
         TInterpreter::GetInstance()->KillInterpreter();
+    }
 	mDone = true;
 }
 
 void TInterpreterManager::RequestReloadScript(const char *inGotoCardName)
 {
+    ASSERT(IsInsideStackBase());
 	ASSERT(inGotoCardName != NULL);
 	ASSERT(TInterpreter::HaveInstance());
 	TInterpreter::GetInstance()->KillInterpreter();
@@ -299,18 +328,21 @@ void TInterpreterManager::RemoveReloadNotified(TReloadNotified *obj) {
 }
 
 void TInterpreterManager::NotifyReloadScriptStarting() {
+    ASSERT(IsInsideStackBase());
     std::vector<TReloadNotified*>::iterator i = sReloadNotifiedObjects.begin();
     for (; i != sReloadNotifiedObjects.end(); ++i)
         (*i)->NotifyReloadScriptStarting();
 }
 
 void TInterpreterManager::NotifyReloadScriptSucceeded() {
+    ASSERT(IsInsideStackBase());
     std::vector<TReloadNotified*>::iterator i = sReloadNotifiedObjects.begin();
     for (; i != sReloadNotifiedObjects.end(); ++i)
         (*i)->NotifyReloadScriptSucceeded();
 }
 
 void TInterpreterManager::NotifyReloadScriptFailed() {
+    ASSERT(IsInsideStackBase());
     std::vector<TReloadNotified*>::iterator i = sReloadNotifiedObjects.begin();
     for (; i != sReloadNotifiedObjects.end(); ++i)
         (*i)->NotifyReloadScriptFailed();

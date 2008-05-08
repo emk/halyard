@@ -116,6 +116,19 @@ DEFINE_PRIMITIVE(HavePrimitive)
 
 
 //-------------------------------------------------------------------------
+// (RunInitialCommands)
+//-------------------------------------------------------------------------
+// Run the initial commands that we need to run once script startup is
+// finished.
+
+DEFINE_PRIMITIVE(RunInitialCommands)
+{
+	TInterpreterManager *manager = TInterpreterManager::GetInstance();
+    manager->RunInitialCommands();
+}
+
+
+//-------------------------------------------------------------------------
 // (Idle blocking)
 //-------------------------------------------------------------------------
 // Performs either a blocking or non-blocking idle.
@@ -356,6 +369,7 @@ DEFINE_PRIMITIVE(StateDbUnregisterListeners) {
 void Halyard::RegisterCommonPrimitives()
 {
 	REGISTER_PRIMITIVE(HavePrimitive);
+    REGISTER_PRIMITIVE(RunInitialCommands);
     REGISTER_PRIMITIVE(Idle);
 	REGISTER_PRIMITIVE(Log);
 	REGISTER_PRIMITIVE(PolygonContains);

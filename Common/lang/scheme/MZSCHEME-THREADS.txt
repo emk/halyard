@@ -1,0 +1,32 @@
+A number of functions in TInterpreter.cpp and TSchemeInterpreter.cpp are
+marked with the following comment:
+
+    // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
+
+Specifically, the functions marked are those on the call chains between:
+
+  TInterpreterManager::Run
+
+...and:
+
+  stage1.ss: load-script and run-script
+
+* What's so special about these functions?
+
+The function TInterpreterManager::Run contains HALYARD_BEGIN_STACK_BASE.
+The functions load-script and run-script both contain calls to
+*sandboxed-evaluator*.  The portion of the stack between
+HALYARD_BEGIN_STACK_BASE and *sandboxed-evaluator* will actually be moved
+to another location in memory when mzscheme switches from INITIAL_THREAD to
+SANDBOX_THREAD and replaced with the stack for SANDBOX_THREAD.
+
+Any local variables stored on the C++ stack inside the "STACK MOVE WARNING"
+functions will be unavailable until the INITIAL_THREAD is restored.  So
+don't let any pointers to local variables escape into global variables or
+object member variables.
+
+* Using other Scheme threads
+
+I have no idea whether this will work.  But it would certainly be dangerous
+to use %call-prim from within anything other than the main sandbox thread,
+or to otherwise call into C++.

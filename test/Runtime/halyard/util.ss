@@ -86,18 +86,18 @@
            (exn-or-value (cdr result)))
       (if good?
           exn-or-value
-          (begin
-            ;; Print the backtrace to the debug log, but don't throw
-            ;; an exception if there are any errors in the printing
-            ;; process.
-            (with-handlers [[void (lambda (exn) #f)]]
-              (define strport (open-output-string))
-              (print-error-trace strport exn-or-value)
-              (debug-log (cat "Backtrace: " (exn-message exn-or-value) "\n"
-                              "=============\n"
-                              (get-output-string strport)
-                              "=============")))
-            (report-func (exn-message exn-or-value))
+          (let [[backtrace
+                 ;; Print the backtrace to a string, but don't throw
+                 ;; an exception if there are any errors in the printing
+                 ;; process.
+                 (with-handlers [[void (lambda (exn) #f)]]
+                   (define strport (open-output-string))
+                   (print-error-trace strport exn-or-value)
+                   (get-output-string strport))]]
+            (if (and backtrace (> (string-length backtrace) 0))
+              (report-func (cat (exn-message exn-or-value)
+                                "\n\nBacktrace:\n\n" backtrace))
+              (report-func (exn-message exn-or-value)))
             #f))))
 
   ;;; If an error occurs in BODY, pass it to REPORT-FUNC.

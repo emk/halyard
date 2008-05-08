@@ -516,10 +516,6 @@ int HalyardApp::MainLoop() {
 #endif
 
 int HalyardApp::MainLoopInternal() {
-	// WARNING - No Scheme function may ever be called above this
-    // point on the stack!
-    HALYARD_BEGIN_STACK_BASE();
-
     bool error = false;
 
     BEGIN_EXCEPTION_TRAPPER();
@@ -561,7 +557,6 @@ int HalyardApp::MainLoopInternal() {
 	//    return wxApp::MainLoop();
 
     END_EXCEPTION_TRAPPER(ReportFatalException);
-    HALYARD_END_STACK_BASE();
 
     // Return our application's exit code.  This function is documented as
     // returning zero, but the exit code is really passed onto OnRun, the
