@@ -99,7 +99,7 @@
                [(definition? (car body)) #f]
                [else (examine-rest (cdr body))]))])))
     
-    (define (transform-body body)
+    (define (transform-body body-stx body)
       ;; Transform a complex body into a letrec.  We keep fully-processed
       ;; letrec clauses in 'letrec-clauses', and any outstanding elements
       ;; in 'elements' (both lists are in reverse order).  When we
@@ -120,29 +120,34 @@
                         (syntax-case (car body) (define define/var
                                                  define-values)
                           [(define (name . args) . function-body)
-                           #`([name]
+                           (quasisyntax/loc (car body)
+                             ([name]
                               (begin
                                 #,@before
                                 (lambda args
-                                  (begin/var . function-body))))]
+                                  (begin/var . function-body)))))]
                           [(define name expr)
-                           #`([name] (begin #,@before expr))]
+                           (quasisyntax/loc (car body)
+                             ([name] (begin #,@before expr)))]
                           [(define . junk)
                            (raise-syntax-error #f "malformed define"
                                                stx (car body))]
                           [(define/var (name . args) . function-body)
-                           #`([name]
+                           (quasisyntax/loc (car body)
+                             ([name]
                               (begin
                                 #,@before
                                 (lambda args
-                                  (begin/var . function-body))))]
+                                  (begin/var . function-body)))))]
                           [(define/var name expr)
-                           #`([name] (begin #,@before expr))]
+                           (quasisyntax/loc (car body)
+                             ([name] (begin #,@before expr)))]
                           [(define/var . junk)
                            (raise-syntax-error #f "malformed define"
                                                stx (car body))]
                           [(define-values names expr)
-                           #`(names (begin #,@before expr))]
+                           (quasisyntax/loc (car body)
+                             (names (begin #,@before expr)))]
                           [(define-values . junk)
                            (raise-syntax-error #f "malformed define-values"
                                                stx (car body))]                           
@@ -154,9 +159,9 @@
             (loop (cdr body))))
         (if (null? elements)
             (raise-syntax-error #f "body ends with definition" stx stx)
-            (quasisyntax/loc stx
-                             (letrec-values #,(reverse! letrec-clauses)
-                               #,@(reverse! elements))))))
+            (quasisyntax/loc body-stx
+              (letrec-values #,(reverse! letrec-clauses)
+                             #,@(reverse! elements))))))
 
     (syntax-case stx ()
       [(begin/var)
@@ -169,11 +174,11 @@
          ;; define-syntax, define-struct, etc., but we know how to
          ;; handle define and define-values in arbitrary locations.
          (if (simple-body? body)
-             (quasisyntax/loc stx (begin . body-stx))
+             (quasisyntax/loc #'body-stx (begin . body-stx))
              (if (eq? (syntax-local-context) 'top-level)
                  (raise-syntax-error #f "complex body not allowed at top level"
                                      stx stx)
-                 (transform-body body))))]))
+                 (transform-body #'body-stx body))))]))
   
   #|
   (define (sample)
