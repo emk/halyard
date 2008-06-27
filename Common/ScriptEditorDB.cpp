@@ -43,6 +43,9 @@ using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(ScriptEditorDB);
 
+/// We use this relpath value for built-in identitifers, because they don't
+/// have a corresponding source file.  This is special-cased in a few
+/// places, including the editor and a few functions below.
 const char *ScriptEditorDB::BuiltInIdentifierRelPath = "";
 
 
@@ -431,6 +434,7 @@ void ScriptEditorDB::DeleteAnyFileData(const std::string &relpath) {
         // to the database.
         mDB->executenonquery("DELETE FROM def WHERE file_id = %lld", *i);
         mDB->executenonquery("DELETE FROM help WHERE file_id = %lld", *i);
+        mDB->executenonquery("DELETE FROM indent WHERE file_id = %lld", *i);
         mDB->executenonquery("DELETE FROM file WHERE rowid = %lld", *i);
     }
 
