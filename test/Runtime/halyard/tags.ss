@@ -24,7 +24,7 @@
         
   (require (lib "kernel.ss" "halyard"))
         
-  (provide maybe-insert-def maybe-insert-help 
+  (provide maybe-insert-def maybe-insert-help maybe-insert-indentation
            define-syntax-tagger define-syntax-tagger*
            define-syntax-taggers define-syntax-taggers*
            define-syntax-help
@@ -181,11 +181,23 @@
        (maybe-insert-help #'name (syntax-object->datum #'help))]))
   (define-syntax-indent define-syntax-help 1)
   
+  ;;; See indent.ss for more details.
+  (define-syntax-tagger* (define-syntax-indent stx)
+    (syntax-case stx ()
+      [(_ name indent)
+       (maybe-insert-indentation #'name (syntax-object->datum #'indent))]))
+  
   (define (insert-def name type line)
     (call-prim 'ScriptEditorDBInsertDef name type line))
 
   (define (insert-help name help)
     (call-prim 'ScriptEditorDBInsertHelp name (value->string help)))
+
+  (define (insert-indentation name indentation)
+    (call-prim 'ScriptEditorDBInsertIndentation name
+               (if (eq? indentation 'function)
+                   -1
+                   indentation)))
 
   (define (maybe-insert-def name type)
     (let [[sym (syntax-object->datum name)]]
@@ -196,6 +208,11 @@
     (let [[sym (syntax-object->datum name)]]
       (when (symbol? sym)
         (insert-help sym help))))
+
+  (define (maybe-insert-indentation name indentation)
+    (let [[sym (syntax-object->datum name)]]
+      (when (symbol? sym)
+        (insert-indentation sym indentation))))
 
   (define (form-name stx)
     (syntax-case stx ()

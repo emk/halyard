@@ -35,6 +35,8 @@ BEGIN_NAMESPACE_HALYARD
 /// A database of information used by the script editor.
 class ScriptEditorDB {
 public:
+    const static char *BuiltInIdentifierRelPath;
+
     /// Information about a definition of an indentifier in a script.
     /// \todo Merge this with TScriptIdentifier.
     struct Definition {
@@ -90,6 +92,7 @@ private:
                           strings &outFilesToProcess);
     bool NeedsProcessingInternal(const std::string &relpath,
                                  const ModTimeMap &modtimes);
+    void ProcessBuiltInIdentifiers();
 
 protected:
     /// Transaction monitor class for ScriptEditorDB database.  You can
@@ -136,10 +139,12 @@ public:
                           TScriptIdentifier::Type type,
                           int lineno);
     void InsertHelp(const std::string &name, const std::string &help);
+    void InsertIndentation(const std::string &name, int indentation);
 
     Definitions FindDefinitions(const std::string &name);
     Definitions FindDefinitionsInFile(const std::string &relpath);
     strings FindHelp(const std::string &name);
+    IdentifierList GetAllIdentifiers();
 
     /// Add a new listner to the ScriptEditorDB (if it isn't already there).
     void AddListener(IListener *inListener);
@@ -147,6 +152,8 @@ public:
     /// Remove a listener from the ScriptEditorDB if it exists.
     void RemoveListener(IListener *inListener);
 };
+
+extern void RegisterScriptEditorDBPrimitives();
 
 END_NAMESPACE_HALYARD
 

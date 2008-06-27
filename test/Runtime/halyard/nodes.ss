@@ -37,7 +37,7 @@
 
   ;; Require our macro-related helpers.
   (require-for-syntax (lib "capture.ss" "mizzen"))
-  (require (lib "indent.ss" "mizzen"))
+  (require (lib "indent.ss" "halyard"))
   
   ;; We need these for checking if SELF valid.
   (require-for-syntax (lib "default-self.ss" "mizzen"))  

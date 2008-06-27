@@ -188,8 +188,8 @@ public:
 	virtual bool IsValidCard(const char *inCardName);
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
-    virtual std::vector<TScriptIdentifier> GetKnownIdentifiers();
-    static TScriptIdentifier::Type IdentifierType(const std::string &type_str);
+    virtual IdentifierList GetBuiltInIdentifiers();
+    virtual TScriptIdentifier::Type IdentifierType(const std::string &type_str);
 };
 
 END_NAMESPACE_HALYARD

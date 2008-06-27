@@ -31,8 +31,6 @@ class wxSashLayoutWindow;
 class ScriptTree;
 class DocNotebook;
 
-typedef std::vector<Halyard::TScriptIdentifier> IdentifierList;
-
 class ScriptEditor : public SashFrame, public Halyard::TReloadNotified  {
     static ScriptEditor *sFrame;
     static void MaybeCreateFrame();
@@ -42,7 +40,7 @@ class ScriptEditor : public SashFrame, public Halyard::TReloadNotified  {
     DocNotebook *mNotebook;
     EventDelegator mDelegator;
     bool mProcessingActivateEvent;
-    IdentifierList mIdentifiers;
+    Halyard::IdentifierList mIdentifiers;
     bool mDontSaveTabs;
 
 public:
@@ -52,7 +50,7 @@ public:
     static void OpenDocument(const wxString &path, int line = 1);
     static void ShowDefinition(const wxString &identifier);
     static void HighlightFile(const wxString &path);
-    static IdentifierList GetIdentifiers();
+    static Halyard::IdentifierList GetIdentifiers();
     static void SaveEditorTabs();
 
     ScriptEditor();

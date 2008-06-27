@@ -81,6 +81,7 @@ public:
     }
 };
 
+typedef std::vector<TScriptIdentifier> IdentifierList;
 
 //////////
 /// TInterpreter provides an abstract interface to a programming language
@@ -201,9 +202,17 @@ public:
 					  std::string &outResultText) = 0;
 
     //////////
-    /// Fetch a list of known identifiers from the interpreter.
+    /// Fetch a list of built-in identifiers from the interpreter.
     ///
-	virtual std::vector<TScriptIdentifier> GetKnownIdentifiers() = 0;
+	virtual IdentifierList GetBuiltInIdentifiers() = 0;
+
+    //////////
+    /// Convert a string to an identifier type.  This may be
+    /// language-specific in some cases, although we could probably make
+    /// this language independent without any real problems.
+    ///
+    virtual TScriptIdentifier::Type IdentifierType(const std::string &type_str)
+        = 0;
 
     //////////
     /// Called when a file is loaded at application startup.  Used to

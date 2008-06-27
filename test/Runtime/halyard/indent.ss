@@ -20,25 +20,29 @@
 ;;
 ;; @END_LICENSE
 
+;;; Support for declaring indentation of special forms.  Note that
+;;; everything in this file becomes a no-op at runtime.  These declarations
+;;; are actually processed by the source scanner in halyard/tags.ss.  This
+;;; has several implications, one of which is that it's completely useless
+;;; to write macros which expand to define-syntax-indent forms, since the
+;;; source scanner doesn't macro-expand (for performance reasons).
 (module indent (lib "swindle.ss" "swindle")
   
-  (provide define-syntax-indent syntax-indent treat-as-syntax?)
+  (provide define-syntax-indent)
 
-  (define *indent-table* (make-hash-table))
-
+  ;;; Pass either 'function (for function-style indentation) or an
+  ;;; integer specifying the number of leading non-body forms.
+  ;;;
+  ;;;   (define-syntax-indent foo function)
+  ;;;   (define-syntax-indent foo 2)
+  ;;;
+  ;;; Don't bother trying to write macros which expand to
+  ;;; DEFINE-SYNTAX-INDENT forms.  It won't work, and you need to look at
+  ;;; tags.ss instead.
   (define-syntax define-syntax-indent
     (syntax-rules (function)
-      [(define-syntax-indent name function)
-       (hash-table-put! *indent-table* 'name -1)]
       [(define-syntax-indent name value)
-       (hash-table-put! *indent-table* 'name value)]))
-
-  (define (syntax-indent name)
-    (hash-table-get *indent-table* name (lambda () 0)))
-
-  (define (treat-as-syntax? name)
-    (and (hash-table-get *indent-table* name (lambda () #f))
-         #t))
+       (void)]))
 
   ;; Scheme R5RS.
   (define-syntax-indent quote function)
@@ -86,4 +90,21 @@
   ;; Swindle.
   (define-syntax-indent defclass 2)
 
+  ;; mizzen/util.ss
+  (define-syntax-indent %assert function)
+  (define-syntax-indent assert function)
+  (define-syntax-indent foreach 1)
+  (define-syntax-indent label 1)
+  (define-syntax-indent with-values 1)
+  (define-syntax-indent fn 1)
+
+  ;; mizzen/mizzen-unit.ss
+  (define-syntax-indent with-captured-variable 1)
+  (define-syntax-indent setup-test 0)
+  (define-syntax-indent teardown-test 0)
+  (define-syntax-indent test 1)  
+  (define-syntax-indent assert-equals function)
+  (define-syntax-indent assert-macro-expansion function)
+  (define-syntax-indent assert-raises 1)
+  (define-syntax-indent assert-raises-message 1)
   )

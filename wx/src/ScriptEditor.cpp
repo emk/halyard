@@ -1893,6 +1893,9 @@ void ScriptTree::HighlightFile(const wxString &path) {
 }
 
 void ScriptTree::FileChanged(const std::string &relpath) {
+    if (relpath == ScriptEditorDB::BuiltInIdentifierRelPath)
+        return;
+
     ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
     ASSERT(db);
 
@@ -1915,6 +1918,9 @@ void ScriptTree::FileChanged(const std::string &relpath) {
 }
 
 void ScriptTree::FileDeleted(const std::string &relpath) {
+    if (relpath == ScriptEditorDB::BuiltInIdentifierRelPath)
+        return;
+
     wxTreeItemId item = FindItem(relpath);
     if (item.IsOk()) {
         Delete(item);
@@ -2485,14 +2491,12 @@ void ScriptEditor::NotifyReloadScriptSucceeded() {
 }
 
 void ScriptEditor::UpdateIdentifierInformation() {
-    // If possible, fetch an identifier list.
-    if (TInterpreter::HaveInstance())
-        mIdentifiers = TInterpreter::GetInstance()->GetKnownIdentifiers();
-
     // Try to update our definition database.
     ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
-    if (db)
+    if (db) {
         db->UpdateDatabase();
+        mIdentifiers = db->GetAllIdentifiers();
+    }
     
     // Now tell all of our tabs to update their syntax highlighting and 
     // indentation information.

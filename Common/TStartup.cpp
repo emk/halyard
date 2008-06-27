@@ -26,6 +26,7 @@
 #include "TDeveloperPrefs.h"
 #include "TCommonPrimitives.h"
 #include "lang/scheme/TSchemeInterpreter.h"
+#include "ScriptEditorDB.h"
 
 using namespace Halyard;
 
@@ -43,6 +44,7 @@ void Halyard::InitializeCommonCode(CrashReporter *inReporter)
     
     // Register our portable interpreter primitives.
     RegisterCommonPrimitives();
+    RegisterScriptEditorDBPrimitives();
 }
 
 TInterpreterManager *Halyard::

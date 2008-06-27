@@ -171,7 +171,6 @@
               [new-var (make-capture-var/ellipsis #'body new-var-name)]]
          (quasisyntax/loc stx
            (let ((#,new-var expr)) . body)))]))
-  (define-syntax-indent with-captured-variable 1)
   
   ;; TODO - factor out the common code
   (define-syntax test
@@ -194,10 +193,6 @@
            (super) 
            (instance-exec self (method () . body))))]))
 
-  (define-syntax-indent setup-test 0)
-  (define-syntax-indent teardown-test 0)
-  (define-syntax-indent test 1)
-  
   ;;; Assert that an expression returns the expected value.
   (define-syntax assert-equals 
     (syntax-rules ()
@@ -205,7 +200,6 @@
        (let [[e expected] [v value]]
          (unless (equals? e v)
            (error (cat "Expected <" e ">, got <" v "> in <" 'value ">"))))]))
-  (define-syntax-indent assert-equals function)
   
   ;;; Assert that the specified macro, expanded once, returns the
   ;;; expected source code.  This is most useful for macros which
@@ -216,7 +210,6 @@
        (assert-equals
         'expansion
         (syntax-object->datum (expand-once #'source)))]))
-  (define-syntax-indent assert-macro-expansion function)
 
   ;;; Assert that CODE raises an exception matching PREDICATE.
   (define-syntax assert-raises
@@ -226,7 +219,6 @@
                  code
                  #f)
          (error (cat "Expected " 'code " to raise " 'predicate)))]))
-  (define-syntax-indent assert-raises 1)
   
   ;;; Assert that CODE raises an exception matching PREDICATE with exception
   ;;; message matching MSG-REGEXP.
@@ -262,5 +254,4 @@
           ;; succeed:
           [else
            #t]))]))
-  (define-syntax-indent assert-raises-message 1)
   )

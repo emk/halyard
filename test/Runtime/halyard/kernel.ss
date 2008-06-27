@@ -34,6 +34,10 @@
   (require (lib "hook.ss" "halyard"))
   (provide (all-from (lib "hook.ss" "halyard")))
 
+  ;; Provide the nice high-level indentation declaration forms.
+  (provide (all-from (lib "indent.ss" "halyard")))
+  (require (lib "indent.ss" "halyard"))
+
   ;; Various support code and declarations refactored out of the kernel.
   (require (lib "types.ss" "halyard"))
   (provide (all-from (lib "types.ss" "halyard")))
@@ -346,33 +350,38 @@
       ;; Return the result.
       (cons ok? result)))
 
-  ;;; Fetch all identifiers in the top-level namespace.  We will probably
-  ;;; want to add support for querying specific modules (MODULE->NAMESPACE
-  ;;; will help).
-  (define (%kernel-get-identifiers)
-    (define (sym->type sym)
-      (with-handlers [[exn:fail:contract:variable? 
-                       (lambda (exn) 'variable)] ;; unbound var
-                      [exn:fail:syntax? (lambda (exn) 'syntax)]]    ;; a macro
-        ;; We should only have to pass one argument to 
-        ;; NAMESPACE-VARIABLE-VALUE, since the second argument is optional 
-        ;; and defaults to #t. There's a bug in PLT's implementation, however,
-        ;; that causes it to read junk data off the stack if you don't pass 
-        ;; a second argument in, which is usually a true value (since most 
-        ;; values are considered by scheme to be true), but can occasionally
-        ;; become false, which leads to it always throwing exn:variable 
-        ;; on imported names and syntax. In order to work around this, we 
-        ;; can just pass #t in, and let the PLT maintainers sort out the bug. 
-        (let [[val (namespace-variable-value sym #t)]]
-          (cond
-           [(function? val)
-            (if (treat-as-syntax? sym)
-              'syntax
-              'function)]
-           [#t 'variable]))))
-    (define (sym->record sym)
-      (list sym (sym->type sym) (syntax-indent sym)))
-    (map sym->record (namespace-mapped-symbols)))
+  (define built-in-identifiers-module
+    '(lib "built-in-identifiers.ss" "halyard"))
+
+  ;;; Fetch all identifiers in the built-in namespace (currently mzscheme).
+  ;;; We will probably want to add support for querying specific modules
+  ;;; (MODULE->NAMESPACE will help).
+  (define (%kernel-get-built-in-identifiers)
+    (with-errors-blocked (fatal-error)
+      (define (sym->type sym)
+        (with-handlers [[exn:fail:contract:variable? 
+                         (lambda (exn) 'variable)] ;; unbound var
+                        [exn:fail:syntax? (lambda (exn) 'syntax)]]    ;; a macro
+          ;; We should only have to pass one argument to 
+          ;; NAMESPACE-VARIABLE-VALUE, since the second argument is optional 
+          ;; and defaults to #t. There's a bug in PLT's implementation, however,
+          ;; that causes it to read junk data off the stack if you don't pass 
+          ;; a second argument in, which is usually a true value (since most 
+          ;; values are considered by scheme to be true), but can occasionally
+          ;; become false, which leads to it always throwing exn:variable 
+          ;; on imported names and syntax. In order to work around this, we 
+          ;; can just pass #t in, and let the PLT maintainers sort out the bug. 
+          (let [[val (namespace-variable-value sym #t)]]
+            (cond
+             [(function? val) 'function]
+             [#t 'variable]))))
+      (define (sym->record sym)
+        (list sym (sym->type sym)))
+      (namespace-require built-in-identifiers-module)
+      (map sym->record
+           (parameterize [[current-namespace
+                           (module->namespace built-in-identifiers-module)]]
+             (namespace-mapped-symbols)))))
   
   (define (%kernel-run-callback function args)
     (%kernel-run-as-callback (lambda () (apply function args))

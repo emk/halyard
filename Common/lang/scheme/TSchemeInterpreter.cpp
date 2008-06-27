@@ -63,7 +63,6 @@ TSchemeInterpreterManager::TSchemeInterpreterManager(SystemIdleProc inIdleProc)
 {
 	// Install our primitives.
 	REGISTER_PRIMITIVE(SchemeExit);
-    RegisterSchemeScriptEditorDBPrimitives();
 
     // We're not actually allowed to call into the Scheme interpreter yet,
     // because scheme_set_stack_base hasn't been called.  Anything which
@@ -793,7 +792,7 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 	return SCHEME_FALSEP(car) ? false : true;
 }
 
-std::vector<TScriptIdentifier> TSchemeInterpreter::GetKnownIdentifiers() {
+IdentifierList TSchemeInterpreter::GetBuiltInIdentifiers() {
     Scheme_Object *raw_ids = NULL;
 
     TSchemeReg<1> reg;
@@ -801,21 +800,19 @@ std::vector<TScriptIdentifier> TSchemeInterpreter::GetKnownIdentifiers() {
     reg.done();
 
     // Fetch our list of identifiers & types.
-    raw_ids = CallSchemeSimple("%kernel-get-identifiers");
+    raw_ids = CallSchemeSimple("%kernel-get-built-in-identifiers");
 
     // Convert this list into C++ objects.
 	std::vector<TScriptIdentifier> ids;
     while (SCHEME_PAIRP(raw_ids)) {
-        Scheme_Object *raw_id = NULL, *cdr = NULL, *cddr = NULL;
-        Scheme_Object *raw_name = NULL, *raw_type = NULL, *raw_hint = NULL;
+        Scheme_Object *raw_id = NULL, *cdr = NULL;
+        Scheme_Object *raw_name = NULL, *raw_type = NULL;
 
-        TSchemeReg<6> reg;
+        TSchemeReg<4> reg;
         reg.local(raw_id);
         reg.local(cdr);
-        reg.local(cddr);
         reg.local(raw_name);
         reg.local(raw_type);
-        reg.local(raw_hint);
         reg.done();
 
         // MANUAL GC PROOF REQUIRED - Read through this whole section
@@ -823,20 +820,15 @@ std::vector<TScriptIdentifier> TSchemeInterpreter::GetKnownIdentifiers() {
         raw_id = SCHEME_CAR(raw_ids);
         if (!SCHEME_PAIRP(raw_id)
             || !SCHEME_PAIRP((cdr = SCHEME_CDR(raw_id)))
-            || !SCHEME_PAIRP((cddr = SCHEME_CDR(cdr)))
-            || !SCHEME_NULLP(SCHEME_CDR(cddr)))
+            || !SCHEME_NULLP(SCHEME_CDR(cdr)))
             gLog.FatalError("Malformed result from %kernel-get-identifiers");
         raw_name = SCHEME_CAR(raw_id);
         raw_type = SCHEME_CAR(cdr);
-        raw_hint = SCHEME_CAR(cddr);
         if (!SCHEME_SYMBOLP(raw_name) || !SCHEME_SYMBOLP(raw_type))
-            gLog.FatalError("Malformed result from %kernel-get-identifiers");
-        long hint;
-        if (!scheme_get_int_val(raw_hint, &hint))
             gLog.FatalError("Malformed result from %kernel-get-identifiers");
 		std::string type_str(SCHEME_SYM_VAL(raw_type));
 		TScriptIdentifier::Type type = IdentifierType(type_str);
-        ids.push_back(TScriptIdentifier(SCHEME_SYM_VAL(raw_name), type, hint));
+        ids.push_back(TScriptIdentifier(SCHEME_SYM_VAL(raw_name), type));
         raw_ids = SCHEME_CDR(raw_ids);
     }
     if (!SCHEME_NULLP(raw_ids))

@@ -27,8 +27,6 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-void RegisterSchemeScriptEditorDBPrimitives();
-
 class TSchemeScriptEditorDB : public ScriptEditorDB {
 protected:
     virtual void ProcessFileInternal(const std::string &relpath);    

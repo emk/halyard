@@ -28,47 +28,7 @@ using namespace Halyard;
 
 
 //=========================================================================
-//  TSchemeInterpreterDB Methods
-//=========================================================================
-
-DEFINE_PRIMITIVE(ScriptEditorDBInsertDef) {
-    std::string name;
-    std::string type_name;
-    int32 lineno;
-
-    inArgs >> SymbolName(name) >> SymbolName(type_name) >> lineno;
-
-    ScriptEditorDB *db =
-        TInterpreterManager::GetInstance()->GetScriptEditorDB();
-    TScriptIdentifier::Type type =
-        TSchemeInterpreter::IdentifierType(type_name);
-    db->InsertDefinition(name, type, lineno);
-}
-
-DEFINE_PRIMITIVE(ScriptEditorDBInsertHelp) {
-    std::string name, help_string;
-    inArgs >> SymbolName(name) >> help_string;
-
-    ScriptEditorDB *db =
-        TInterpreterManager::GetInstance()->GetScriptEditorDB();
-    db->InsertHelp(name, help_string);
-}
-
-
-//=========================================================================
-//  RegisterSchemeScriptEditorDBPrimitives
-//=========================================================================
-//  Install our portable primitive functions.
-
-void Halyard::RegisterSchemeScriptEditorDBPrimitives()
-{
-	REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
-    REGISTER_PRIMITIVE(ScriptEditorDBInsertHelp);
-}
-
-
-//=========================================================================
-//  TSchemeInterpreterDB Methods
+//  TSchemeScriptEditorDB Methods
 //=========================================================================
 
 void TSchemeScriptEditorDB::UpdateDatabase() {

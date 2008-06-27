@@ -33,6 +33,7 @@
 #include "CommonHeaders.h"
 #include <fstream>
 #include "TInterpreter.h"
+#include "TPrimitives.h"
 #include "ScriptEditorDB.h"
 #include <sqlite3_plus.h>
 
@@ -41,6 +42,8 @@ namespace fs = boost::filesystem;
 using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(ScriptEditorDB);
+
+const char *ScriptEditorDB::BuiltInIdentifierRelPath = "";
 
 
 //=========================================================================
@@ -142,7 +145,7 @@ void ScriptEditorDB::EnsureCorrectSchema() {
     schema_info schema[] = {
         {"table", "file",
          "CREATE TABLE file ("
-         "  path TEXT NOT NULL,"
+         "  path TEXT NOT NULL," // May be BuiltInIdentifierRelPath.
          "  modtime INT NOT NULL)"},
         {"index", "file_path",
          "CREATE INDEX file_path ON file(path)"},
@@ -151,7 +154,7 @@ void ScriptEditorDB::EnsureCorrectSchema() {
          "  file_id INT NOT NULL,"
          "  name TEXT NOT NULL,"
          "  type TEXT NOT NULL,"
-         "  line INT NOT NULL,"
+         "  line INT NOT NULL,"  // May be 0 for built-in defs.
          "  prefix_len INT,"
          "  prefix TEXT)"},
         {"index", "def_file_id",
@@ -163,6 +166,15 @@ void ScriptEditorDB::EnsureCorrectSchema() {
          "  file_id INT NOT NULL,"
          "  name TEXT NOT NULL,"
 		 "  points_to TEXT NOT NULL)"},
+        {"table", "indent",
+         "CREATE TABLE indent ("
+         "  file_id INT NOT NULL,"
+         "  name TEXT NOT NULL,"
+         "  indentation NOT NULL)"},
+        {"index", "def_file_id",
+         "CREATE INDEX indent_file_id ON indent(file_id)"},
+        {"index", "indent_name",
+         "CREATE INDEX indent_name ON indent(name)"},
         {"table", "help",
          "CREATE TABLE help ("
          "  file_id INT NOT NULL,"
@@ -252,6 +264,7 @@ std::string ScriptEditorDB::NativeToRelPath(const std::string &native) {
 void ScriptEditorDB::UpdateDatabase() {
     FixBrokenDatabaseEntries();
     PurgeDataForDeletedFiles();
+    ProcessBuiltInIdentifiers();
 }
 
 /// Return the relpath to each file in our database.
@@ -482,6 +495,24 @@ bool ScriptEditorDB::ShouldSkipDirectory(const std::string &relpath) {
     return false;
 }
 
+/// Certain identifiers are built into the interpeter, and not associated
+/// with any source file.  We need to process these specially, associating
+/// them with the path BuiltInIdentifierRelPath.
+void ScriptEditorDB::ProcessBuiltInIdentifiers() {
+    ASSERT(TInterpreter::HaveInstance());
+
+    IdentifierList identifiers =
+        TInterpreter::GetInstance()->GetBuiltInIdentifiers();
+    IdentifierList::iterator i = identifiers.begin();
+
+    StTransaction transaction(this);
+
+    BeginProcessingFile(BuiltInIdentifierRelPath);
+    for (; i != identifiers.end(); ++i)
+        InsertDefinition(i->GetName(), i->GetType(), 0);
+    EndProcessingFile();
+}
+
 /// For each unprocessed file in the specified directory tree (with the
 /// specified extension), call ProcessFileInternal.  You'll definitely want
 /// to override the default ProcessFileInternal.
@@ -527,6 +558,13 @@ void ScriptEditorDB::InsertHelp(const std::string &name,
                          mProcessingFileId, name.c_str(), help.c_str());
 }
 
+void ScriptEditorDB::InsertIndentation(const std::string &name, int indentation)
+{
+    ASSERT(mIsProcessingFile);
+    mDB->executenonquery("INSERT INTO indent VALUES(%lld, '%q', %d)",
+                         mProcessingFileId, name.c_str(), indentation);
+}
+
 ScriptEditorDB::Definitions
 ScriptEditorDB::ReadDefinitions(sqlite3::reader &r) {
     // Add each row returned by the query to our result.
@@ -542,11 +580,15 @@ ScriptEditorDB::ReadDefinitions(sqlite3::reader &r) {
 
 ScriptEditorDB::Definitions
 ScriptEditorDB::FindDefinitions(const std::string &name) {
-    // Look up the definition in the database.
+    // Look up the definition in the database.  Exclude built-in
+    // definitions, because they don't have useful file or line
+    // information.  This is backwards-compatible with our old API, which
+    // didn't have access to built-in definitions.
     sqlite3::reader r =
         mDB->executereader("SELECT path,name,type,line FROM file,def"
-                           "  WHERE file.rowid = file_id AND name = '%q'",
-                           name.c_str());
+                           "  WHERE file.rowid = file_id AND name = '%q'"
+                           "    AND path != '%q'",
+                           name.c_str(), BuiltInIdentifierRelPath);
     return ReadDefinitions(r);
 }
 
@@ -574,6 +616,49 @@ ScriptEditorDB::strings ScriptEditorDB::FindHelp(const std::string &name) {
         result.push_back(r.getstring(0));
     
     return result;
+}
+
+/// Get a list of all the identifiers associated with this program.  Note
+/// that we read the whole thing into memory because (1) that's how we did
+/// it before we had a ScriptEditorDB, and (2) Scintilla requires us to
+/// keep all syntax-highlighting information in RAM anyway.
+IdentifierList ScriptEditorDB::GetAllIdentifiers() {
+    // Grab NAME and TYPE from the DEF table, and if we can find a matching
+    // INDENT entry, grab that too.
+    sqlite3::reader r =
+        mDB->executereader("SELECT DISTINCT def.name,def.type,"
+                           "                indent.indentation"
+                           "  FROM def"
+                           "    LEFT OUTER JOIN indent USING (name)");
+    IdentifierList identifiers;
+    while (r.read()) {
+        TScriptIdentifier::Type type =
+            static_cast<TScriptIdentifier::Type>(r.getint32(1));
+
+        // SCHEME SPECIFIC - Calculate the indentation information for this
+        // identifier.
+        int indent;
+        if (!r.isnull(2)) {
+            // If we have explicit indentation information, always treat
+            // this identifier as a macro, because our Scintilla code only
+            // allows custom indentation for macros.
+            type = TScriptIdentifier::KEYWORD;
+            indent = r.getint32(2);
+        } else if (type == TScriptIdentifier::FUNCTION) {
+            // Function indentation uses a special-case rule.  We could
+            // presumably set this to 0 with no ill effects, because
+            // Scintilla theoretically won't look at it, but we'll specify
+            // it for the sake of completeness.
+            indent = -1;
+        } else {
+            // Other identifiers are treated as macros with no leading
+            // forms.  This will generally be ignored for non-macros.
+            indent = 0;
+        }
+
+        identifiers.push_back(TScriptIdentifier(r.getstring(0), type, indent));
+    }
+    return identifiers;
 }
 
 void ScriptEditorDB::AddListener(IListener *inListener) {
@@ -604,6 +689,57 @@ void ScriptEditorDB::RemoveListener(IListener *inListener) {
 		std::find(mListeners.begin(), mListeners.end(), inListener);
 	if (found != mListeners.end())
         mListeners.erase(found);
+}
+
+
+//=========================================================================
+//  ScriptEditorDB Primitives
+//=========================================================================
+
+DEFINE_PRIMITIVE(ScriptEditorDBInsertDef) {
+    std::string name;
+    std::string type_name;
+    int32 lineno;
+
+    inArgs >> SymbolName(name) >> SymbolName(type_name) >> lineno;
+
+    ScriptEditorDB *db =
+        TInterpreterManager::GetInstance()->GetScriptEditorDB();
+    TInterpreter *interpeter = TInterpreter::GetInstance();
+    TScriptIdentifier::Type type = interpeter->IdentifierType(type_name);
+    db->InsertDefinition(name, type, lineno);
+}
+
+DEFINE_PRIMITIVE(ScriptEditorDBInsertHelp) {
+    std::string name, help_string;
+    inArgs >> SymbolName(name) >> help_string;
+
+    ScriptEditorDB *db =
+        TInterpreterManager::GetInstance()->GetScriptEditorDB();
+    db->InsertHelp(name, help_string);
+}
+
+DEFINE_PRIMITIVE(ScriptEditorDBInsertIndentation) {
+    std::string name;
+    int32 indentation;
+    inArgs >> SymbolName(name) >> indentation;
+
+    ScriptEditorDB *db =
+        TInterpreterManager::GetInstance()->GetScriptEditorDB();
+    db->InsertIndentation(name, indentation);
+}
+
+
+//=========================================================================
+//  RegisterScriptEditorDBPrimitives
+//=========================================================================
+//  Install our portable primitive functions.
+
+void Halyard::RegisterScriptEditorDBPrimitives()
+{
+	REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
+    REGISTER_PRIMITIVE(ScriptEditorDBInsertHelp);
+    REGISTER_PRIMITIVE(ScriptEditorDBInsertIndentation);
 }
 
 

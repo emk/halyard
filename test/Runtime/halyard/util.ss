@@ -23,7 +23,7 @@
 (module util (lib "swindle.ss" "swindle")
 
   (require (lib "begin-var.ss" "mizzen"))
-  (require (lib "indent.ss" "mizzen"))
+  (require (lib "indent.ss" "halyard"))
   (require (lib "util.ss" "mizzen"))
   (require (lib "errortrace-lib.ss" "errortrace"))
 

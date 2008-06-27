@@ -24,7 +24,7 @@
   (require (lib "nodes.ss" "halyard"))
   (require-for-syntax (lib "util.ss" "mizzen"))
   (require (lib "tags.ss" "halyard"))
-  (require (lib "indent.ss" "mizzen"))
+  (require (lib "indent.ss" "halyard"))
 
   (provide define-node-helper)
 

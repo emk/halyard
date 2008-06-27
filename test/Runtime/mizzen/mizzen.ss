@@ -164,6 +164,4 @@
   
   (require "util.ss")
   (provide (all-from "util.ss"))
-  (require "indent.ss")
-  (provide (all-from "indent.ss"))
   )

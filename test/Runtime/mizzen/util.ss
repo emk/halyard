@@ -23,7 +23,6 @@
 (module util (lib "swindle.ss" "swindle")
   
   (require "begin-var.ss")
-  (require "indent.ss")
   
 
   ;;=======================================================================
@@ -51,7 +50,6 @@
     (syntax-rules ()
       [(%assert cond)
        (%kernel-assert #t 'cond cond)]))
-  (define-syntax-indent %assert function)
 
   ;;; This is an ASSERT for scriptors: It doesn't crash the engine, and
   ;;; it lets them fix their problem.
@@ -59,7 +57,6 @@
     (syntax-rules ()
       [(assert cond)
        (%kernel-assert #f 'cond cond)]))
-  (define-syntax-indent assert function)
 
 
   ;;=======================================================================
@@ -90,7 +87,6 @@
            (let [[name (car remaining)]]
              (begin/var body ...))
            (loop (cdr remaining))))]))
-  (define-syntax-indent foreach 1)
 
   ;;; Return #f if and only if ITEM appears in LIST.  Uses EQUAL? to
   ;;; perform the comparison.
@@ -165,7 +161,6 @@
       [(label name body ...)
        (call-with-escape-continuation (lambda (name)
                                         (begin/var body ...)))]))
-  (define-syntax-indent label 1)
 
   ;;; Bind the multiple return values of EXPR to VALUES (a parameter list),
   ;;; and call BODY.
@@ -173,7 +168,6 @@
     (syntax-rules ()
       [(with-values [values expr] body ...)
        (call-with-values (lambda () expr) (lambda values body ...))]))
-  (define-syntax-indent with-values 1)
   
   ;;; A Dylan-style "curry", not be confused with Haskell's version.
   ;;; Returns a new function, with the first arguments of F filled in with
@@ -193,5 +187,4 @@
     (syntax-rules ()
       [(fn arglist code ...)
        (lambda arglist (begin/var code ...))]))
-  (define-syntax-indent fn 1)
   )
