@@ -73,6 +73,7 @@ namespace sqlite3 {
 		void close();
 		void reset();
 
+		bool isnull(int index) const;
 		int getint32(int index) const;
 		__int64 getint64(int index) const;
 		double getdouble(int index) const;

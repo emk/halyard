@@ -38,6 +38,10 @@
 #define SQLITE_DONE 101
 #endif
 
+#ifndef SQLITE_NULL
+#define SQLITE_NULL 5
+#endif
+
 const char *_sqlite3_errmsg(void *db);
 
 int _sqlite3_open(const char *filename, void **db);
@@ -49,6 +53,7 @@ int _sqlite3_finalize(void *vm);
 int _sqlite3_reset(void *vm);
 
 int _sqlite3_column_count(void *vm);
+int _sqlite3_column_type(void *vm, int index);
 int _sqlite3_column_bytes(void *vm, int index);
 int _sqlite3_column_int(void *vm, int index);
 __int64 _sqlite3_column_int64(void *vm, int index);

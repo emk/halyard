@@ -59,6 +59,10 @@ int _sqlite3_column_count(void *vm) {
 	return sqlite3_column_count((sqlite3_stmt*)vm);
 }
 
+int _sqlite3_column_type(void *vm, int index) {
+	return sqlite3_column_type((sqlite3_stmt*)vm, index);
+}
+
 int _sqlite3_column_bytes(void *vm, int index) {
 	return sqlite3_column_bytes((sqlite3_stmt*)vm, index);
 }

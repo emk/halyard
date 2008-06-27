@@ -73,6 +73,12 @@ namespace sqlite3 {
 			throw runtime_error(_sqlite3_errmsg(this->con->db));
 	}
 	
+	bool reader::isnull(int index) const {
+		if(!this->pimpl->vm) throw runtime_error("isnull: reader is closed");
+		if((index)>(argc-1)) throw out_of_range("isnull: index out of range");
+		return (_sqlite3_column_type(this->pimpl->vm, index) == SQLITE_NULL);
+	}
+
 	int reader::getint32(int index) const {
 		if(!this->pimpl->vm) throw runtime_error("getint32: reader is closed");
 		if((index)>(argc-1)) throw out_of_range("getint32: index out of range");
