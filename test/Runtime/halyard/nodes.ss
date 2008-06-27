@@ -136,7 +136,8 @@
   ;;  Templates
   ;;-----------------------------------------------------------------------
   
-  (provide setup run *node-defined-hook* define-node define-node-definer)
+  (provide define-def-and-super-abbrev setup run *node-defined-hook*
+           define-node define-node-definer)
 
   ;; These objects are distinct from every other object, so we use them as
   ;; unique values.
@@ -352,8 +353,7 @@
              [(definer-name name () . body)
               (define-node name (default-superclass) . body)]
              [(definer-name name . rest)
-              (define-node name . rest)]))
-         (define-syntax-indent definer-name 2))]))
+              (define-node name . rest)])))]))       
 
 
   ;;-----------------------------------------------------------------------

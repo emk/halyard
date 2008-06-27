@@ -51,7 +51,7 @@
   ;;
   ;; (define-syntax-tagger definer
   ;;   [(pattern ...) 
-  ;;    type name help]
+  ;;    type name indent help]
   ;;   ...)
   ;; 
   ;; This will match forms that begin with definer against each of the
@@ -66,8 +66,13 @@
   ;; other symbols the editor will just use a default symbol. 'name'
   ;; should be any of the pattern variables listed in the pattern, and
   ;; will attach the tagging information to the name that matched that
-  ;; variable at the source location where that name occurs. Help is
-  ;; optional; it can be either #f, in which case no help information
+  ;; variable at the source location where that name occurs. Indentation
+  ;; can be '#f' (when 'definer' does not define new syntax), the symbol
+  ;; 'function' (for function-style indentation of syntax), or the
+  ;; number of non-body forms at the start of the macro which should
+  ;; receive extra indentation.
+  ;;
+  ;; Help is optional; it can be either #f, in which case no help
   ;; is inserted into the database, or it can be an expression based
   ;; on pattern variables from the pattern, in which case the help
   ;; will be based on substituting the values that matched the pattern
@@ -115,13 +120,16 @@
   ;; functions are used as follows:
   ;;
   ;; (maybe-insert-def name-syntax type)
-  ;; (maybe-insert-def name-syntax help)
+  ;; (maybe-insert-help name-syntax help)
+  ;; (maybe-insert-indentation name-syntax indentation)
   ;; 
   ;; The 'name-syntax' in these calls should be a syntax object that 
   ;; corresponds to the name being defined. 'type' is a symbol, and 
   ;; works as described above. 'help' should be any scheme object that 
   ;; when printed will produce the desired help text; usually it is a 
-  ;; list produced by syntax-object->datum. 
+  ;; list produced by syntax-object->datum. 'indentation' should be either
+  ;; a non-negative integer specifying the number of leading non-body forms
+  ;; in a macro, or the symbol 'function' for function-style indentation.
   ;;
   ;; There are also variants of both of these forms for defining
   ;; multiple taggers at once, define-syntax-taggers and
@@ -148,14 +156,17 @@
   (define-syntax define-syntax-taggers
     (syntax-rules ()
       [(_ (tagger-name ...)
-          [pattern tag-type tag-name help] ...)
+          [pattern tag-type tag-name tag-indent help] ...)
        (define-syntax-taggers* (tagger-name ...) 
          (lambda (stx)
            (syntax-case stx ()
              [pattern
               (begin 
                 (maybe-insert-def #'tag-name tag-type)
-                (let ((help-expr (syntax-object->datum #'help)))
+                (let [[indent-expr (syntax-object->datum #'tag-indent)]
+                      [help-expr (syntax-object->datum #'help)]]
+                  (when indent-expr
+                    (maybe-insert-indentation #'tag-name indent-expr))
                   (when help-expr
                     (maybe-insert-help #'tag-name help-expr))))]
              ...)))]))
@@ -299,11 +310,11 @@
         
   (define-syntax-tagger make-provide-syntax 
     [(_ base provider) 
-     'syntax provider #f])
+     'syntax provider function #f])
   
   (define-syntax-taggers (defsubst defsubst*)
     [(_ (name . args) rewrite)
-     'syntax name (name . args)])
+     'syntax name 0 (name . args)])
         
   (define-syntax-taggers* (card sequence group element)
     (lambda (stx)
@@ -313,16 +324,10 @@
         [(_ name args . body)
          (maybe-insert-def #'name (form-name stx))]
         [anything-else #f])))
-  
-  (define-syntax-taggers (define-group-template 
-                          define-card-template 
-                          define-element-template)
-    [(_ name params args . body)
-     'template name #f])
-      
+        
   (define-syntax-tagger define-stylesheet
     [(define-stylesheet name . body)
-     'constant name (define-stylesheet name . body)])
+     'constant name #f (define-stylesheet name . body)])
   
   (define-syntax-taggers* (defclass defclass* defstruct)
     (lambda (stx)
@@ -466,6 +471,15 @@
   ;; tags.ss from ruby-objects.ss would cause circular dependencies.
   (define-syntax-tagger define-class
     [(_ name super . body) 
-     'class name #f])
+     'class name #f #f])
+
+  (define-syntax-tagger define-def-and-super-abbrev
+    [(_ abbrev)
+     'syntax abbrev 0 (abbrev body (... ...))])
+  
+  (define-syntax-tagger define-node-definer
+    [(_ definer-name default-superclass)
+     'syntax definer-name 2
+     (definer-name name (%superclass% &rest keys) &body body)])
 
   (set-extract-definitions-fn! extract-definitions))

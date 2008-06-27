@@ -71,14 +71,13 @@
                [(_ name (args ... . keys) . body)
                 (define-node name (class #,@(names->keys+names #'(args ...)) 
                                     . keys) 
-                  . body)]))
-           (define-syntax-indent helper-name 2)))]))
+                  . body)]))))]))
   
   (define-syntax-help define-node-helper 
     (define-node-helper helper-name (args ...) class))
   
   (define-syntax-tagger define-node-helper
     [(_ helper-name (args ...) class)
-     'syntax helper-name (helper-name name (args ... &rest keys) 
-                                      body (... ...))])
+     'syntax helper-name 2 (helper-name name (args ... &rest keys) 
+                                        body (... ...))])
   )
