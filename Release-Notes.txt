@@ -1,6 +1,32 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.10 - 11 July 2008
+
+In this release, we merge the experimental sandbox branch.
+Descriptions of those changes can be found in the -sandbox1 and 2
+releases mentioned below.
+
+In addition, we have rewritten the syntax highlighting and
+autocompletion to work off of the same database as meta-. and the help
+strings.  This means that a few things may highlight and indent
+differently.  In particular, macros can no longer expand to the
+DEFINE-SYNTAX-INDENT form, but instead you must include that
+information in a syntax tagger as seen in Runtime/halyard/tags.ss.
+Also, some functions and macros that were picked up by the old system
+may be missed, but any that were can be added back in using the 
+appropriate syntax taggers and define-syntax-indent forms.
+
+Eric Kidd (8):
+      buildfile.rb: Allow version numbers of the form "v0.5.9-foo1"
+      buildfile.rb: Document the need to install Cygwin's zip
+      Merge branch 'sandbox'
+      Retain more syntax information in begin/var
+      sqlite3_plus: Add an 'isnull' member function
+      Store identifier and indentation information in ScriptEditorDB
+      Fix assorted define-syntax-tagger problems
+      ScriptEditorDB: Docs & delete indentation information when file changes
+
 0.5.9-sandbox2 - 8 May 2008
 
 This release fixes all known issues in the "sandbox" branch.  Particular
