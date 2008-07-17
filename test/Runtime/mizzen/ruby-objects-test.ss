@@ -602,9 +602,14 @@
       (define x (%chained-dot-example% .new :chains-to y))
       (assert-equals "correctly chained"
                      (x .chains-to.chains-to.final 'expected-arg))
+      (with-instance x
+        (assert-equals "correctly chained"
+                       (.chains-to.chains-to.final 'expected-arg)))
       (set! (x .chains-to.chains-to) "setters work")
       (assert-equals "setters work" (x .chains-to.chains-to))
-      (set! (x .chains-to.fake-member 'expected-arg) 'expected-value)))
+      (set! (x .chains-to.fake-member 'expected-arg) 'expected-value)
+      (with-instance x
+        (set! (.chains-to.fake-member 'expected-arg) 'expected-value))))
 
   (provide $all-ruby-object-tests)
   (define $all-ruby-object-tests 

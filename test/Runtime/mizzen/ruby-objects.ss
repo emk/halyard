@@ -905,7 +905,7 @@
       (define (string->syntax str)
         (datum->syntax-object name-stx (string->symbol str)))
       (let* [[name (symbol->string (syntax-object->datum name-stx))]
-             [matches (regexp-match #rx"^\\.([^.]+)(\\..*)?$" name)]]
+             [matches (regexp-match #rx"^\\.([^.]+)(\\..+)?$" name)]]
         (unless matches
           (error (cat "Can't parse method name: " name)))
         (let* [[first-method (cadr matches)]
