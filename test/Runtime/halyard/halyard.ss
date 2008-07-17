@@ -36,7 +36,7 @@
                             ;; We replace this.
                             #%top
                             ;; begin/var hacks (see below).
-                            lambda define let unless when
+                            lambda λ define let unless when
                             ))
   
   ;; Load the formerly engine-independent portion of the API.
@@ -63,6 +63,7 @@
   ;;  accept (var ...) declarations.
 
   (provide (rename lambda/var lambda)
+           (rename λ/var λ)
            (rename define/var define)
            (rename let/var let)
            (rename unless/var unless)
@@ -72,6 +73,11 @@
     (syntax-rules ()
       [(lambda/var args body ...)
        (lambda args (begin/var body ...))]))
+
+  (define-syntax λ/var
+    (syntax-rules ()
+      [(λ/var args body ...)
+       (lambda/var args body ...)]))
 
   ; define/var comes from begin-var.ss.
 
