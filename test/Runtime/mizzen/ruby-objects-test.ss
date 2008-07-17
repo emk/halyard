@@ -581,13 +581,38 @@
      (assert-raises-message exn:fail?
         "before set-advised-before!" 
         (test .set-advised-before!))))
+
+  ;;=======================================================================
+  ;;  Chained dot expressions
+  ;;=======================================================================
   
+  (define-class %chained-dot-example% ()
+    (attr chains-to #f :writable? #t)
+    (def (final arg)
+      (assert-equals 'expected-arg arg)
+      "correctly chained")
+    (def (set-fake-member! arg value)
+      (assert-equals 'expected-arg arg)
+      (assert-equals 'expected-value value)))
+
+  (define-class %chained-dot-test% (%test-case%)
+    (test "Method names with multiple dots should be chained"
+      (define z (%chained-dot-example% .new))
+      (define y (%chained-dot-example% .new :chains-to z))
+      (define x (%chained-dot-example% .new :chains-to y))
+      (assert-equals "correctly chained"
+                     (x .chains-to.chains-to.final 'expected-arg))
+      (set! (x .chains-to.chains-to) "setters work")
+      (assert-equals "setters work" (x .chains-to.chains-to))
+      (set! (x .chains-to.fake-member 'expected-arg) 'expected-value)))
+
   (provide $all-ruby-object-tests)
   (define $all-ruby-object-tests 
     (list  %swindle-class-operators% %universal-class-operators% 
            %ruby-object-test%
            %ruby-new-test%
            %ruby-responds-to-test%
-           %ruby-metaclass-test% %advise-test% %error-message-test-case%))
+           %ruby-metaclass-test% %advise-test% %error-message-test-case%
+           %chained-dot-test%))
 
   )

@@ -22,7 +22,6 @@
 
 (module ruby-objects "swindle.ss"
   (require (lib "struct.ss")) ; For DEFINE-STRUCT/PROPERTIES.
-  (require-for-syntax "capture.ss")
   (require "util.ss")
   (require-for-syntax "util.ss")
   (require-for-syntax "syntax-util.ss")
@@ -890,30 +889,34 @@
     (define (dotted-name? name-stx)
       (let [[name-sym (syntax-object->datum name-stx)]]
         (and (symbol? name-sym)
-             (let [[name (symbol->string name-sym)]]
-               (and (> (string-length name) 0)
-                    (eq? (string-ref name 0) #\.))))))
+             (regexp-match #rx"^\\." (symbol->string name-sym)))))
     
-    ;; Remove a leading "." from a string.
-    (define (undot-string name)
-      (regexp-replace #rx"^\\." name ""))
-
-    ;; Convert a syntax object to a string, apply F to it, and convert the
-    ;; result back.
-    (define (munge-name f name-stx)
+    ;; Parse a dotted method name.  This routine is a little ugly and
+    ;; arbitrary.
+    ;;
+    ;; If EXPECTING-SETTER? is false, and we are given syntax of the form
+    ;; ".foo", then return two values: Syntax of the form "foo", and #f.
+    ;; Given syntax of the form ".foo.bar", return syntax of the form
+    ;; "foo", and syntax of the form ".bar".
+    ;;
+    ;;  If EXPECTING-SETTER? is true, then ".foo" will return "set-foo!"
+    ;;  and #f, but ".foo.bar" will parse as above.
+    (define (parse-dotted-name name-stx expecting-setter?)
+      (define (string->syntax str)
+        (datum->syntax-object name-stx (string->symbol str)))
       (let* [[name (symbol->string (syntax-object->datum name-stx))]
-             [munged (f name)]]
-        (datum->syntax-object name-stx (string->symbol munged))))
-
-    ;; ".foo" -> "foo"
-    (define (getter-name name-stx)
-      (munge-name undot-string name-stx))
-
-    ;; ".foo" -> "set-foo!"
-    (define (setter-name name-stx)
-      (munge-name (lambda (name)
-                    (string-append "set-" (undot-string name) "!"))
-                  name-stx))
+             [matches (regexp-match #rx"^\\.([^.]+)(\\..*)?$" name)]]
+        (unless matches
+          (error (cat "Can't parse method name: " name)))
+        (let* [[first-method (cadr matches)]
+               [remaining (caddr matches)]]
+          (values (string->symbol
+                   (if (and expecting-setter? (not remaining))
+                       (string-append "set-" first-method "!")
+                       first-method))
+                  (if remaining
+                    (string->symbol remaining)
+                    #f)))))
     )
 
   (define-syntax (app~ stx)
@@ -921,13 +924,15 @@
       ;; Method dispatch with implicit SELF.
       [(_ method . args)
        (dotted-name? #'method)
-       (quasisyntax/loc
-        stx
-        (send #,(make-self stx) '#,(getter-name #'method) . args))]
+       (quasisyntax/loc stx
+         (app~ self method . args))]
       ;; Method dispatch with explicit SELF.
       [(_ object method . args)
        (dotted-name? #'method)
-       (quasisyntax/loc stx (send object '#,(getter-name #'method) . args))]
+       (with-values [[getter more] (parse-dotted-name #'method #f)]
+         (if more
+           (quasisyntax/loc stx (app~ (send object '#,getter) #,more . args))
+           (quasisyntax/loc stx (send object '#,getter . args))))]
       ;; Regular function call.
       [(_ function . args)
        (syntax/loc stx (function . args))]))
@@ -957,16 +962,17 @@
       ;; (set! (.name) "Foonly")
       [(_ (method args ...) value)
        (dotted-name? #'method)
-       (quasisyntax/loc
-        stx
-        (send #,(make-self #'method) '#,(setter-name #'method)
-               args ... value))]
+       (quasisyntax/loc stx
+         (set!~ (self method args ...) value))]
       ;; (set! (foo .name) "Foonly")
       [(_ (object method args ...) value)
        (dotted-name? #'method)
-       (quasisyntax/loc
-        stx
-        (send object '#,(setter-name #'method) args ... value))]
+       (with-values [[getter-or-setter more] (parse-dotted-name #'method #t)]
+         (if more
+           (quasisyntax/loc stx
+             (set!~ ((send object '#,getter-or-setter) #,more args ...) value))
+           (quasisyntax/loc stx
+             (send object '#,getter-or-setter args ... value))))]
       ;; (set! (slot 'name) "Foonly")
       ;; (If we had defined the SLOT macro in a module that was using our
       ;; custom #%APP, we wouldn't need to define a specific setter special
