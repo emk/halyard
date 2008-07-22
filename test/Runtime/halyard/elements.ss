@@ -41,7 +41,7 @@
   ;;;======================================================================
   ;;;  Most of these are only used internally, in this file.
 
-  (provide abstract-path->native-path make-native-path ensure-directory-exists)
+  (provide abstract-path->native-path ensure-directory-exists)
 
   (define (url? path)
     (regexp-match "^(http|ftp|rtsp|file|gopher|about):" path))
@@ -59,10 +59,17 @@
   ;;; Build a path for accessing a script resource.  If PATH is a URL, it
   ;;; is returned unchanged.  Otherwise, assume that PATH is an abstract
   ;;; path relative to SUBDIR, and pass it to ABSTRACT-PATH->NATIVE-PATH.
-  (define (make-native-path subdir path)
-    (if (url? path)
-        path
-        (abstract-path->native-path (current-directory) subdir path)))
+  ;;; The LOCATION parameter may be #f (in which case it is ignored), or
+  ;;; one of the two strings "local" or "streaming", in which case it is
+  ;;; used as a container directory.
+  (define (make-native-path location subdir path)
+    (cond
+     [(url? path)
+      path]
+     [location
+      (abstract-path->native-path (current-directory) location subdir path)]
+     [else
+      (abstract-path->native-path (current-directory) subdir path)]))
 
   (define (check-file path)
     (unless (or (url? path) (file-exists? path))
@@ -467,7 +474,7 @@
   ;;; Draw a graphic loaded from PATH at point P in the current DC.  You
   ;;; may optionally specify a sub-rectangle of the graphic to draw.
   (define (draw-graphic p path &key (subrect :rect #f))
-    (let [[native (make-native-path "Graphics" path)]]
+    (let [[native (make-native-path #f "Graphics" path)]]
       (check-file native)
       (if subrect
           (call-prim 'LoadSubPic native p subrect)
@@ -476,7 +483,7 @@
   ;;; Return a rectangle located at 0,0 large enough to hold the graphic
   ;;; specified by NAME.
   (define (measure-graphic path)
-    (let [[native (make-native-path "Graphics" path)]]
+    (let [[native (make-native-path #f "Graphics" path)]]
       (check-file native)
       (call-prim 'MeasurePic native)))
 
@@ -492,7 +499,7 @@
   ;;; implementations under a wide variety of graphics APIs, including
   ;;; Windows and Cairo.)
   (define (mask p path)
-    (let [[native (make-native-path "Graphics" path)]]
+    (let [[native (make-native-path #f "Graphics" path)]]
       (check-file native)
       (call-prim 'Mask native p))) 
 
@@ -795,7 +802,7 @@
                                   (offset-rect (.shape) (.at)))
                     (make-node-event-dispatcher self) (.cursor)
                     (.alpha?) (.state-path)
-                    (map (fn (p) (make-native-path "Graphics" p))
+                    (map (fn (p) (make-native-path #f "Graphics" p))
                          (.graphics))))
     )
 
@@ -844,7 +851,7 @@
   ;;; SYM.  If the hotspot is not in the default path, it should be
   ;;; specified explicitly.
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
-    (let [[native (make-native-path "Graphics" (cat "cursors/" filename))]]
+    (let [[native (make-native-path #f "Graphics" (cat "cursors/" filename))]]
       (check-file native)
       (call-prim 'RegisterCursor sym native hotspot)))
 
@@ -953,7 +960,7 @@
                        :label "Use primitive fallback web browser?")
     
     (after-updating path
-      (define native (make-native-path "HTML" (.path)))
+      (define native (make-native-path #f "HTML" (.path)))
       (check-file native)
       (call-prim 'BrowserLoadPage (.full-name) native))
 
@@ -1164,12 +1171,12 @@
            
   ;; (Internal use only.)  If we can find an appropriate caption file, then
   ;; attach it to a media element.  We assume that captions live in
-  ;; LocalMedia, because we can't load them from over the network (which we
-  ;; might need to do with things normally stored in Media).  If this is a
-  ;; problem for you, you may want to encode your captions as a track in
-  ;; the media itself.
+  ;; local/media, because we can't load them from over the network (which
+  ;; we might need to do with things normally stored in streaming/media).
+  ;; If this is a problem for you, you may want to encode your captions as
+  ;; a track in the media itself.
   (define (media-maybe-attach-caption-file! elem path)
-    (let [[native (make-native-path "LocalMedia" (cat path ".capt"))]]
+    (let [[native (make-native-path "local" "media" (cat path ".capt"))]]
       (when (and (not (url? native)) (file-exists? native))
         (call-prim 'MediaAttachCaptionFile (elem .full-name) native))))
 
@@ -1256,7 +1263,7 @@
     (def (create-engine-node)
       (call-prim 'AudioStreamGeiger (.full-name)
                     (make-node-event-dispatcher self)
-                    (build-path (current-directory) "LocalMedia" (.path))
+                    (build-path (current-directory) "local" "media" (.path))
                     (.volume))))
 
   (define-node-helper geiger-audio (path) %geiger-audio%)
@@ -1272,12 +1279,12 @@
     
     (def (create-engine-node)
       (apply call-prim 'GeigerSynth (.full-name) (.state-path)
-             (build-path (current-directory) "LocalMedia" (.chirp))
+             (build-path (current-directory) "local" "media" (.chirp))
              (.volume)
              (* 512 1024)
              (map (fn (item)
                     (if (string? item)
-                        (build-path (current-directory) "LocalMedia" item)
+                        (build-path (current-directory) "local" "media" item)
                         item))
                   (.loops)))))
 
@@ -1322,7 +1329,7 @@
     (attr loop?  #f  :type <boolean> :label "Loop this clip?")
 
     (def (create-engine-node)
-      (let [[path (make-native-path "LocalMedia" (.path))]]
+      (let [[path (make-native-path "local" "media" (.path))]]
         (check-file path)
         (call-prim 'AudioStreamVorbis (.full-name)
                       (make-node-event-dispatcher self) path
@@ -1354,21 +1361,20 @@
 
   ;;; Return true if and only if we have a local media directory.
   (define (media-is-installed?)
-    (directory-exists? (build-path (current-directory) "Media")))
+    (directory-exists? (build-path (current-directory) "streaming" "media")))
 
   ;;; Return true if and only if we have media available on CD.
   (define (media-cd-is-available?)
     (and *cd-media-directory* #t))
 
-  ;;; Try to determine whether or not we have a CD with our media
-  ;;; files on it.  We look at each drive on the system, and see
-  ;;; whether it contains a Media directory with a file named
-  ;;; 'pathname'.  You can use '/' as a path separator in pathname,
-  ;;; as usual.
+  ;;; Try to determine whether or not we have a CD with our media files on
+  ;;; it.  We look at each drive on the system, and see whether it contains
+  ;;; a streaming/media directory with a file named 'pathname'.  You can
+  ;;; use '/' as a path separator in pathname, as usual.
   (define (search-for-media-cd pathname)
     (label return
       (foreach [drive (filesystem-root-list)]
-        (define candidate (build-path drive "Media"))
+        (define candidate (build-path drive "streaming" "media"))
         (define file (abstract-path->native-path candidate pathname))
         (when (file-exists? file)
           (set! *cd-media-directory* candidate)
@@ -1385,8 +1391,8 @@
   ;;; to that particular file.
   (define (media-path path)
     ;; Create some of the paths we'll check.
-    (define hd-path-1 (make-native-path "LocalMedia" path))
-    (define hd-path-2 (make-native-path "Media" path))
+    (define hd-path-1 (make-native-path "local" "media" path))
+    (define hd-path-2 (make-native-path "streaming" "media" path))
     (define cd-path
       (if (media-cd-is-available?)
           (abstract-path->native-path *cd-media-directory* path)

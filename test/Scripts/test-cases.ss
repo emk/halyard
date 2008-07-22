@@ -145,9 +145,6 @@
   (define-class %test-browser% (%browser%)
     (default rect (rect 0 0 100 100)))
   
-  (define (browser-native-path path)
-    (make-native-path "HTML" path))
-  
   (define-class %browser-simple-test% (%element-test-case%)
     (test "The browser should load a local HTML page"
       (%test-browser% .new :path "sample.html"))
@@ -155,8 +152,7 @@
         "The browser should fail to load a non-existent local HTML page"
       (define non-existent-file "foo-bar-not-here.html")
           (assert-raises-message exn:fail? 
-            (quote-for-regexp
-             (cat "No such file: " (browser-native-path non-existent-file)))
+            (quote-for-regexp (cat "No such file: "))
             (%test-browser% .new :path non-existent-file)))
     (test "The browser should load an external HTML page via http"
           (%test-browser% .new :path "http://www.google.com"))

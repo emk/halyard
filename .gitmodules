@@ -28,9 +28,9 @@
 [submodule "libs/wxWidgets"]
 	path = libs/wxWidgets
 	url = git://imlsrc.dartmouth.edu/halyard-libs/wxWidgets.git
-[submodule "test/Media"]
-	path = test/Media
-	url = git://imlsrc.dartmouth.edu/halyard-media.git
 [submodule "tools/buildscript"]
 	path = tools/buildscript
 	url = git://imlsrc.dartmouth.edu/buildscript.git
+[submodule "test/streaming/media"]
+	path = test/streaming/media
+	url = git://imlsrc.dartmouth.edu/halyard-media.git
