@@ -1,5 +1,5 @@
 (module benchmark (lib "halyard.ss" "halyard")
-  (require (file "base.ss"))
+  (require (lib "base.ss" "halyard-test"))
   (require (lib "benchmark.ss" "mizzen"))
 
 

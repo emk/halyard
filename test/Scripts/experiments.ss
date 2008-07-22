@@ -1,6 +1,6 @@
 ;; PORTED
 (module experiments (lib "halyard.ss" "halyard")
-  (require (file "base.ss"))
+  (require (lib "base.ss" "halyard-test"))
   (require (lib "halyard-unit.ss" "halyard"))
   
   (group /experiments)

@@ -3,7 +3,7 @@
   (require (lib "drag.ss" "halyard"))
   (require (lib "q-and-a.ss" "halyard"))
   (require (lib "animate.ss" "halyard"))
-  (require (file "base.ss"))
+  (require (lib "base.ss" "halyard-test"))
 
   ;; Experimental slot initializer library.
   (require (lib "initialize-slot.ss" "halyard"))

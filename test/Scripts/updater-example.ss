@@ -9,7 +9,7 @@
 (module updater-example (lib "halyard.ss" "halyard")
 
   (require (lib "updater.ss" "halyard"))
-  (require (file "base.ss"))
+  (require (lib "base.ss" "halyard-test"))
 
   (group /updater ())
   

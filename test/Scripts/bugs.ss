@@ -1,6 +1,6 @@
 ;; PORTED
 (module bugs (lib "halyard.ss" "halyard")
-  (require (file "base.ss"))
+  (require (lib "base.ss" "halyard-test"))
 
 
   ;;;======================================================================

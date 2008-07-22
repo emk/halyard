@@ -105,6 +105,7 @@
   ;; file to run %call-prim.
   (current-library-collection-paths
    (list* (build-path (current-directory) "Scripts")
+          (build-path (current-directory) "collects")
           (build-path (current-directory) "Runtime")
           ;; Generates a list of paths that should be searched for
           ;; collections, including the value of (find-system-path

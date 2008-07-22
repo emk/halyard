@@ -211,11 +211,12 @@
   
   (parameterize [[current-compile errortrace-compile-handler]
                  [use-compiled-file-paths (list (build-path "compiled" 
-                                                       "errortrace")
-                                           (build-path "compiled"))]]
-    (set! a (dynamic-require '(file "errortrace-test.ss") 'a))
-    (set! method-error-test (dynamic-require '(file "errortrace-test.ss") 
-                                             'method-error-test)))
+                                                            "errortrace")
+                                                (build-path "compiled"))]]
+    (let [[errortrace-test '(lib "errortrace-test.ss" "halyard-test")]]
+      (set! a (dynamic-require errortrace-test 'a))
+      (set! method-error-test (dynamic-require errortrace-test
+                                               'method-error-test))))
 
   (define-syntax return-errortrace
     (syntax-rules ()

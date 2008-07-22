@@ -19,7 +19,7 @@
 ;;  define global variables, and set a few internal parameters.
 
 ;; Our local library of templates, functions, etc.
-(require "base.ss")
+(require (lib "base.ss" "halyard-test"))
 
 ;; We want this for a version number on the index card.
 (require (lib "updater.ss" "halyard"))
@@ -111,7 +111,7 @@
 
 ;; Test cases.
 (require (lib "tests.ss" "halyard"))
-(require (file "test-cases.ss"))
+(require (lib "test-cases.ss" "halyard-test"))
 
 ;; We want to make sure that we make (command-line-test-driver) available
 ;; in the global namespace for use by the build system.
