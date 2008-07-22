@@ -474,7 +474,7 @@
   ;;; Draw a graphic loaded from PATH at point P in the current DC.  You
   ;;; may optionally specify a sub-rectangle of the graphic to draw.
   (define (draw-graphic p path &key (subrect :rect #f))
-    (let [[native (make-native-path #f "Graphics" path)]]
+    (let [[native (make-native-path "local" "graphics" path)]]
       (check-file native)
       (if subrect
           (call-prim 'LoadSubPic native p subrect)
@@ -483,7 +483,7 @@
   ;;; Return a rectangle located at 0,0 large enough to hold the graphic
   ;;; specified by NAME.
   (define (measure-graphic path)
-    (let [[native (make-native-path #f "Graphics" path)]]
+    (let [[native (make-native-path "local" "graphics" path)]]
       (check-file native)
       (call-prim 'MeasurePic native)))
 
@@ -499,7 +499,7 @@
   ;;; implementations under a wide variety of graphics APIs, including
   ;;; Windows and Cairo.)
   (define (mask p path)
-    (let [[native (make-native-path #f "Graphics" path)]]
+    (let [[native (make-native-path "local" "graphics" path)]]
       (check-file native)
       (call-prim 'Mask native p))) 
 
@@ -802,7 +802,7 @@
                                   (offset-rect (.shape) (.at)))
                     (make-node-event-dispatcher self) (.cursor)
                     (.alpha?) (.state-path)
-                    (map (fn (p) (make-native-path #f "Graphics" p))
+                    (map (fn (p) (make-native-path "local" "graphics" p))
                          (.graphics))))
     )
 
@@ -851,7 +851,8 @@
   ;;; SYM.  If the hotspot is not in the default path, it should be
   ;;; specified explicitly.
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
-    (let [[native (make-native-path #f "Graphics" (cat "cursors/" filename))]]
+    (let [[native (make-native-path "local" "graphics"
+                                    (cat "cursors/" filename))]]
       (check-file native)
       (call-prim 'RegisterCursor sym native hotspot)))
 
