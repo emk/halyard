@@ -538,6 +538,14 @@
   ;;  Custom cursors
   ;;=======================================================================
 
+  (register-cursor 'eyeball "eyeball.png" 
+                   :hotspot (point 7 15))
+
+  (card /features/custom-cursors
+      (%standard-test-card% :title "Custom Cursors")
+    (elem button (%click-me-button% :bounds (rect 100 250 176 276) 
+                                    :cursor 'eyeball)))
+
   (define-class %cursor-test-rect% (%rectangle%)
     (value bounds (rect 100 100 300 500))
     (value color $color-white)

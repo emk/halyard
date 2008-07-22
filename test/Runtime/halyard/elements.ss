@@ -851,8 +851,7 @@
   ;;; SYM.  If the hotspot is not in the default path, it should be
   ;;; specified explicitly.
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
-    (let [[native (make-native-path "local" "graphics"
-                                    (cat "cursors/" filename))]]
+    (let [[native (make-native-path "local" "cursors" filename)]]
       (check-file native)
       (call-prim 'RegisterCursor sym native hotspot)))
 
