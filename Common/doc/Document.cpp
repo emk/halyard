@@ -105,7 +105,7 @@ void Document::CheckStructure()
 	CheckDirectory(FileSystem::GetFontDirectory());
 	CheckDirectory(FileSystem::GetScriptsDirectory());
 	CheckFile(FileSystem::GetScriptFilePath("start.ss"));
-	CheckDirectory(FileSystem::GetGraphicDirectory());
+	CheckDirectory(base.AddComponent("local"));
 }
 
 void Document::CheckDirectory(Path inPath)

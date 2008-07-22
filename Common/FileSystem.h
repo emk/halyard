@@ -282,43 +282,20 @@ namespace FileSystem {
 	    { return GetRuntimeDirectory().AddComponent(inRuntimeFileName); }
 
 	//////////
-	/// Get the directory which contains graphics.
-    //
-	inline Path GetGraphicDirectory()
-	    { return GetBaseDirectory().AddComponent("Graphics"); }
-
-	//////////
 	/// Get the directory which contains script graphics--ones which we
 	/// will use as chrome for various parts of the engine UI,
 	/// including the icon and the splash screen.
     //
-	inline Path GetScriptGraphicDirectory()
-	    { return GetGraphicDirectory().AddComponent("script"); }
+	inline Path GetScriptGraphicDirectory() {
+        Path graphics(GetBaseDirectory().AddComponent("Graphics"));
+        return graphics.AddComponent("script");
+    }
 
 	//////////
 	/// Get the path to a "script" graphic.  See GetScriptGraphicDirectory.
 	///
 	inline Path GetScriptGraphicFilePath(const std::string &inFileName)
 	    { return GetScriptGraphicDirectory().AddComponent(inFileName); }
-
-	//////////
-	/// Get the directory Halyard uses to store user data.
-	///
-	inline Path GetDataDirectory()
-	    { return GetBaseDirectory().AddComponent("Data"); }
-
-	//////////
-	/// Given a file name, return a path pointing to a file with
-	/// that name in the font directory.
-	///
-	inline Path GetDataFilePath(const std::string &inDataFileName)
-	    { return GetDataDirectory().AddComponent(inDataFileName); }
-
-	//////////
-	/// Get the directory Halyard uses to store palette information.
-	///
-	inline Path GetPalettesDirectory()
-	    { return GetBaseDirectory().AddComponent("Palettes"); }
 
 	// TODO - Factor out more platform-specific config to use
 	// the directories listed above.
