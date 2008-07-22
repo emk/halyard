@@ -58,18 +58,17 @@
 
   ;;; Build a path for accessing a script resource.  If PATH is a URL, it
   ;;; is returned unchanged.  Otherwise, assume that PATH is an abstract
-  ;;; path relative to SUBDIR, and pass it to ABSTRACT-PATH->NATIVE-PATH.
-  ;;; The LOCATION parameter may be #f (in which case it is ignored), or
-  ;;; one of the two strings "local" or "streaming", in which case it is
-  ;;; used as a container directory.
+  ;;; path relative to LOCATION/SUBDIR, and pass it to
+  ;;; ABSTRACT-PATH->NATIVE-PATH.
+  ;;;
+  ;;; The LOCATION parameter should be either "local" or "streaming".
+  ;;; Eventually, we'll want to get rid of the LOCATION parameter, and modify
+  ;;; this function (and various related functions) to look for the file in
+  ;;; both places.
   (define (make-native-path location subdir path)
-    (cond
-     [(url? path)
-      path]
-     [location
-      (abstract-path->native-path (current-directory) location subdir path)]
-     [else
-      (abstract-path->native-path (current-directory) subdir path)]))
+    (if (url? path)
+      path
+	  (abstract-path->native-path (current-directory) location subdir path)))
 
   (define (check-file path)
     (unless (or (url? path) (file-exists? path))
@@ -960,7 +959,7 @@
                        :label "Use primitive fallback web browser?")
     
     (after-updating path
-      (define native (make-native-path #f "HTML" (.path)))
+      (define native (make-native-path "local" "html" (.path)))
       (check-file native)
       (call-prim 'BrowserLoadPage (.full-name) native))
 
