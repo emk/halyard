@@ -96,8 +96,9 @@ public:
 	//////////
 	/// Parse default user preferences file.
 	///
-	void ParsePrefs()
-		{ ParsePrefs(FileSystem::Path(DEVELOPER_PREFS_FILE)); }
+	void ParsePrefs() {
+        ParsePrefs(FileSystem::GetScriptConfigFilePath(DEVELOPER_PREFS_FILE));
+    }
 
 	//////////
 	/// Get a user preference.

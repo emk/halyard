@@ -244,6 +244,18 @@ namespace FileSystem {
     inline Path GetScriptTempFilePath(const std::string &inTempFileName)
         { return GetScriptTempDirectory().AddComponent(inTempFileName); }
 
+    //////////
+    /// Get the directory storing script-level configuration files.
+    ///
+    inline Path GetScriptConfigDirectory()
+	    { return GetBaseDirectory().AddComponent("config"); }
+
+    //////////
+    /// Get the path to a config file.  See GetScriptConfigDirectory.
+    ///
+    inline Path GetScriptConfigFilePath(const std::string &inFileName)
+        { return GetScriptConfigDirectory().AddComponent(inFileName); }
+
 	//////////
 	/// Get the directory Halyard uses to store fonts.  (Eventually there
 	/// will be more of these functions, and we might combine them
