@@ -109,10 +109,10 @@ void TSchemeInterpreterManager::InitialSetup() {
 }
 
 ScriptEditorDB *TSchemeInterpreterManager::GetScriptEditorDBInternal() {
-    const char *db_path = "definitions.sqlite3";
+    const char *db_name = "definitions.sqlite3";
     if (!mScriptEditorDB && TInterpreter::HaveInstance()) {
         mScriptEditorDB =
-            shared_ptr<ScriptEditorDB>(new TSchemeScriptEditorDB(db_path));
+            shared_ptr<ScriptEditorDB>(new TSchemeScriptEditorDB(db_name));
     }
     return mScriptEditorDB.get();
 }

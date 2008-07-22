@@ -588,8 +588,8 @@ Stage *HalyardApp::GetStage()
 }
 
 wxString HalyardApp::UserConfigFilename() {
-    FileSystem::Path conf_filename = 
-        FileSystem::GetBaseDirectory().AddComponent("user.conf");
+    FileSystem::Path conf_filename =
+        FileSystem::GetScriptTempFilePath("user.conf");
     return wxString(ToWxString(conf_filename.ToNativePathString()));
 }
 

@@ -30,6 +30,7 @@
 
 #include "CommonHeaders.h"
 #include "TTemplateUtils.h"
+#include "TInterpreter.h"
 
 #include <fstream>
 
@@ -317,7 +318,7 @@ void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
 
 	if (DoesExist())
 		RemoveFile();
-inTemporaryFile.RenameFile(*this);
+    inTemporaryFile.RenameFile(*this);
 }
 
 void Path::CreateWithMimeType(const std::string &inMimeType)
@@ -438,6 +439,14 @@ Path FileSystem::GetScriptDataDirectory() {
 Path FileSystem::GetScriptLocalDataDirectory() {
     ASSERT(gScriptDataDirectoryName != "");
     return GetAppLocalDataDirectory().AddComponent(gScriptDataDirectoryName);
+}
+
+Path FileSystem::GetScriptTempDirectory() {
+    ASSERT(!TInterpreterManager::IsInRuntimeMode());
+    Path result(GetBaseDirectory().AddComponent("temp"));
+    fs::path fs_temp(result.ToNativePathString(), fs::native);
+    fs::create_directory(fs_temp);
+    return result;
 }
 
 Path FileSystem::ResolveFontPath(const std::string &inRelPath) {

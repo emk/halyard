@@ -32,8 +32,8 @@ protected:
     virtual void ProcessFileInternal(const std::string &relpath);    
 
 public:
-    TSchemeScriptEditorDB(const std::string &db_path)
-        : ScriptEditorDB(db_path) {}
+    TSchemeScriptEditorDB(const std::string &db_name)
+        : ScriptEditorDB(db_name) {}
 
     virtual void UpdateDatabase();
 };

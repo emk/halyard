@@ -226,6 +226,24 @@ namespace FileSystem {
     ///
     Path GetScriptLocalDataDirectory();
 
+    //////////
+    /// Get the directory that we use to store per-script temporary files.
+    /// These are generally developer-related files like those used by the
+    /// ScriptEditorDB, all of which can be regenerated.
+    ///
+    /// WARNING - This function will create the temp directory if it
+    /// doesn't already exist.  It is an error to call this function if the
+    /// user hasn't activated at least one developer-related feature, such
+    /// as the ScriptEditor.
+    ///
+    Path GetScriptTempDirectory();
+
+    //////////
+    /// Get the path to a temporary file.  See GetScriptTempDirectory.
+    ///
+    inline Path GetScriptTempFilePath(const std::string &inTempFileName)
+        { return GetScriptTempDirectory().AddComponent(inTempFileName); }
+
 	//////////
 	/// Get the directory Halyard uses to store fonts.  (Eventually there
 	/// will be more of these functions, and we might combine them

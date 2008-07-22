@@ -1,11 +1,9 @@
-definitions.sqlite3
-test.sqlite3
+temp
 Debug.log
 Halyard.log
 model.xml
 model2.xml
 gpgv.exe
 baseq2
-testq2
 compiled
 user.conf

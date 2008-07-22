@@ -114,7 +114,7 @@ protected:
     Definitions ReadDefinitions(sqlite3::reader &r);
 
 public:
-    ScriptEditorDB(const std::string &relpath);
+    ScriptEditorDB(const std::string &db_name);
     virtual ~ScriptEditorDB();
 
     std::string NativeToRelPath(const std::string &relpath);

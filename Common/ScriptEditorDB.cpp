@@ -117,8 +117,8 @@ void ScriptEditorDB::StTransaction::Commit() {
 //=========================================================================
 
 /// Create a new ScriptEditorDB.
-ScriptEditorDB::ScriptEditorDB(const std::string &relpath)
-    : mDB(new sqlite3::connection((RootPath()/relpath).native_file_string().c_str())),
+ScriptEditorDB::ScriptEditorDB(const std::string &db_name)
+    : mDB(new sqlite3::connection(FileSystem::GetScriptTempFilePath(db_name).ToNativePathString().c_str())),
       mIsProcessingFile(false), mIsInTransaction(false)
 {
     EnsureCorrectSchema();
@@ -764,7 +764,8 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     ScriptEditorDB db("test.sqlite3");
 
     // Check to make sure the file exists.
-	fs::path db_path(RootPath()/"test.sqlite3");
+    FileSystem::Path test_db(FileSystem::GetScriptTempFilePath("test.sqlite3"));
+	fs::path db_path(test_db.ToNativePathString(), fs::native);
 	CHECK_EQ(fs::exists(db_path), true);
     CHECK_EQ(fs::is_directory(db_path), false);
 
