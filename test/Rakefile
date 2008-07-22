@@ -8,13 +8,13 @@ desc 'Build VTRA.  Does nothing, at least for now.'
 task :build
 
 PBM_ICON_FILES=%w(icon16.pnm icon16.pgm icon32.pnm icon32.pgm).map do |name|
-  "Graphics/script/#{name}"
+  "local/branding/#{name}"
 end
 
 desc 'Update the Windows icons file.'
-task :icon => 'Graphics/script/application.ico'
+task :icon => 'local/branding/application.ico'
 
-file 'Graphics/script/application.ico' => PBM_ICON_FILES do |t|
+file 'local/branding/application.ico' => PBM_ICON_FILES do |t|
   srcs = PBM_ICON_FILES.join(' ')
   sh "ppmtowinicon -andpgms -truetransparent #{srcs} > #{t.name}"
 end

@@ -281,21 +281,26 @@ namespace FileSystem {
 	inline Path GetRuntimeFilePath(const std::string &inRuntimeFileName)
 	    { return GetRuntimeDirectory().AddComponent(inRuntimeFileName); }
 
-	//////////
-	/// Get the directory which contains script graphics--ones which we
-	/// will use as chrome for various parts of the engine UI,
-	/// including the icon and the splash screen.
-    //
-	inline Path GetScriptGraphicDirectory() {
-        Path graphics(GetBaseDirectory().AddComponent("Graphics"));
-        return graphics.AddComponent("script");
-    }
+    //////////
+    /// Get the directory containing our local, non-streamable content
+    /// files (graphics, media, etc.).
+    ///
+    inline Path GetLocalContentDirectory()
+        { return GetBaseDirectory().AddComponent("local"); }
 
 	//////////
-	/// Get the path to a "script" graphic.  See GetScriptGraphicDirectory.
+	/// Get the directory which contains the script's "branding"
+	/// graphics--ones which we will use as chrome for various parts of the
+	/// engine UI, including the icon and the splash screen.
+    //
+	inline Path GetBrandingDirectory()
+        { return GetLocalContentDirectory().AddComponent("branding"); }
+
+	//////////
+	/// Get the path to a "branding" graphic.  See GetBrandingDirectory.
 	///
-	inline Path GetScriptGraphicFilePath(const std::string &inFileName)
-	    { return GetScriptGraphicDirectory().AddComponent(inFileName); }
+	inline Path GetBrandingFilePath(const std::string &inFileName)
+	    { return GetBrandingDirectory().AddComponent(inFileName); }
 
 	// TODO - Factor out more platform-specific config to use
 	// the directories listed above.

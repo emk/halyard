@@ -683,7 +683,7 @@ void StageFrame::CheckForUpdateLockFile() {
 void StageFrame::LoadIcon(const std::string &inName, wxIconBundle &ioIcons,
                           bool &ioHaveIcon)
 {
-    wxBitmap bitmap = mStage->GetScriptGraphic(inName);
+    wxBitmap bitmap = mStage->GetBrandingGraphic(inName);
     if (bitmap.Ok()) {
         wxIcon icon;
         icon.CopyFromBitmap(bitmap);

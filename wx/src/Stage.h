@@ -374,7 +374,7 @@ public:
     /// Halyard script. Such graphics currently include script icons and
     /// the splash screens.
     ///
-    wxBitmap GetScriptGraphic(const std::string &inName);
+    wxBitmap GetBrandingGraphic(const std::string &inName);
 
     //////////
     /// If we can, show a splash screen for the loading program.  This is

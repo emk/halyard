@@ -195,9 +195,9 @@ DrawingArea *Stage::GetCurrentDrawingArea() {
 	return mDrawingContextStack->GetCurrentDrawingArea();
 }
 
-wxBitmap Stage::GetScriptGraphic(const std::string &inName) {
+wxBitmap Stage::GetBrandingGraphic(const std::string &inName) {
     FileSystem::Path path =
-        FileSystem::GetScriptGraphicFilePath(inName);
+        FileSystem::GetBrandingFilePath(inName);
     if (!path.DoesExist() || !path.IsRegularFile())
         return wxBitmap();
     wxString native_path(path.ToNativePathString().c_str(), wxConvLocal);
@@ -246,7 +246,7 @@ void Stage::MaybeDrawSplashGraphic(const std::string &inName) {
 
     // TODO - We assume the bitmap is 800x450 pixels, and we lay out
     // this screen using hard-coded co-ordinates.
-    wxBitmap bitmap = GetScriptGraphic(inName);
+    wxBitmap bitmap = GetBrandingGraphic(inName);
     if (bitmap.Ok())
         mBackgroundDrawingArea->DrawBitmap(bitmap, 0, 60);
 }
@@ -266,7 +266,7 @@ void Stage::DrawLoadProgress() {
     int x_end = x_begin + x_space * frac;
     
     // Load our image, and use it to draw the progress bar.
-    wxBitmap bitmap = GetScriptGraphic("progress.png");
+    wxBitmap bitmap = GetBrandingGraphic("progress.png");
     if (bitmap.Ok()) {
         for (int x = x_begin; x < x_end; ++x)
             mBackgroundDrawingArea->DrawBitmap(bitmap, x, y_pos);
