@@ -105,8 +105,8 @@
 (require (file "features.ss"))
 (require (file "bugs.ss"))
 (require (file "experiments.ss"))
-(require (file "updater-example.ss"))
-(require (file "quake2-example.ss"))
+(require (file "updater.ss"))
+(require (file "quake2.ss"))
 (require (file "benchmark.ss"))
 
 ;; Test cases.
