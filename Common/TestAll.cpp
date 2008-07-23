@@ -191,8 +191,8 @@ int main(int argc, char **argv) {
 
     RegisterTestPrimitives();
     
-    FileSystem::SetScriptsDirectoryName("test-scripts");
-	FileSystem::SetScriptDataDirectoryName("Test");
+    FileSystem::SetRuntimeDirectory("../../runtime");
+	FileSystem::SetScriptDataDirectoryName("Halyard Common Test");
 
     BEGIN_TEST_EXCEPTION_TRAPPER
 

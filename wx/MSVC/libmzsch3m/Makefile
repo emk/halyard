@@ -27,4 +27,4 @@ stage2: stage1
 	cd ..\..\..\libs\plt\src\worksp\gc2
 	..\..\..\mzschemecgc -r make.ss
 	cd ..\..\..\..\..\wx\MSVC\libmzsch3m
-	copy ..\..\..\libs\plt\lib\libmzsch3mxxxxxxx.dll ..\..\..\Win32\Bin
+	copy ..\..\..\libs\plt\lib\libmzsch3mxxxxxxx.dll ..\..\..\runtime

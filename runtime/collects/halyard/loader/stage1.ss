@@ -23,8 +23,9 @@
 ;; This needs to actually be loaded before we declare our module below,
 ;; because we want to be able to use (require ...) from inside the loader
 ;; module, and we can't do that until we know where our collections are.
-(load (build-path (current-directory)
-                  "Runtime" "halyard" "loader" "collection-paths.ss"))
+(require #%engine-primitives)
+(load (build-path (%get-runtime-directory)
+                  "collects" "halyard" "loader" "collection-paths.ss"))
 
 
 ;;=========================================================================

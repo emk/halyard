@@ -30,6 +30,7 @@ using namespace Halyard;
 int Halyard::gTSchemePointerCount = 0;
 
 static const char *CALL_PRIM = "%call-prim";
+static const char *GET_RUNTIME_DIRECTORY = "%get-runtime-directory";
 static const char *SET_COLLECTS_PATH = "%set-collects-path";
 
 namespace {
@@ -75,11 +76,14 @@ void TSchemeInterpreterManager::InitialSetup() {
     Scheme_Object *modname = NULL;
     Scheme_Env *engine_mod = NULL;
     Scheme_Object *set_collects_path = NULL;
+    Scheme_Object *get_runtime_directory = NULL;
     Scheme_Object *call_prim = NULL;
 
-    TSchemeReg<3> reg;
+    TSchemeReg<5> reg;
     reg.local(modname);
     reg.local(engine_mod);
+    reg.local(set_collects_path);
+    reg.local(get_runtime_directory);
     reg.local(call_prim);
     reg.done();
 
@@ -99,6 +103,13 @@ void TSchemeInterpreterManager::InitialSetup() {
                                  SET_COLLECTS_PATH, 1, 1);
 	scheme_add_global(SET_COLLECTS_PATH, set_collects_path, engine_mod);
 
+    // Provide a way for Scheme to find the runtime directory.
+    get_runtime_directory =
+        scheme_make_prim_w_arity(
+            &TSchemeInterpreterManager::GetRuntimeDirectory,
+            GET_RUNTIME_DIRECTORY, 0, 0);
+	scheme_add_global(GET_RUNTIME_DIRECTORY, get_runtime_directory, engine_mod);
+
 	// Provide a way for Scheme code to call primitives.
 	call_prim = scheme_make_prim_w_arity(&TSchemeInterpreter::CallPrim,
                                          CALL_PRIM, 1, -1);
@@ -115,6 +126,24 @@ ScriptEditorDB *TSchemeInterpreterManager::GetScriptEditorDBInternal() {
             shared_ptr<ScriptEditorDB>(new TSchemeScriptEditorDB(db_name));
     }
     return mScriptEditorDB.get();
+}
+
+Scheme_Object *
+TSchemeInterpreterManager::GetRuntimeDirectory(int inArgc,
+                                               Scheme_Object **inArgv)
+{
+    // We really don't expect to get any C++ exceptions here.  If we do see
+    // one, shut everything down.
+    BEGIN_EXCEPTION_TRAPPER()
+
+    FileSystem::Path path(FileSystem::GetRuntimeDirectory());
+    std::string str(path.ToNativePathString());
+
+    // MANUAL GC PROOF REQUIRED - Passing this value straight through is
+    // safe because we do not cons.
+    return scheme_make_utf8_string(str.c_str());
+
+    END_EXCEPTION_TRAPPER(TException::ReportFatalException)
 }
 
 Scheme_Object *
@@ -152,7 +181,7 @@ void TSchemeInterpreterManager::InitializeScheme()
 
 	// Set up our collection paths and loader.ss.
 	FileSystem::Path halyard_dir =
-		FileSystem::GetRuntimeDirectory().AddComponent("halyard");
+		FileSystem::GetRuntimeCollectsDirectory().AddComponent("halyard");
 	LoadFile(halyard_dir.AddComponent("loader").AddComponent("stage1.ss"));
 }
 

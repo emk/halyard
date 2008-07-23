@@ -51,9 +51,11 @@ class Configuration
     
     desc "Run unit tests for #{name} configuration"
     task task_name(:test) => task_name(:build) do |t|
+      FileUtils.cd("Common/test") do
+        sh("../../runtime/CommonTest#{suffix}")
+      end
       FileUtils.cd("test") do
-        sh("../Win32/Bin/CommonTest#{suffix}")
-        sh("../Win32/Bin/Halyard#{suffix}", "-e", "(command-line-test-driver)",
+        sh("../runtime/Halyard#{suffix}", "-e", "(command-line-test-driver)",
            ".")
       end
     end

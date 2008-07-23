@@ -373,35 +373,47 @@ Path Path::NativePath(const std::string &inPath)
 //=========================================================================
 
 // THREAD - Global variables.
+static Path gRuntimeDirectory = Path();
 static Path gCurrentBaseDirectory = Path();
 static Path gAppDataDirectory = Path();
 static Path gAppLocalDataDirectory = Path();
 static std::string gScriptsDirectoryName = "scripts";
 static std::string gScriptDataDirectoryName = "";
 
-Path FileSystem::SetBaseDirectory(const Path &inDirectory)
-{
-    // Convert our path to an absolute path.
-    fs::path path(inDirectory.ToNativePathString(), fs::native);
-    fs::path completed(fs::complete(path, fs::current_path()));
-    Path base(Path::NativePath(completed.native_directory_string()));
+namespace {
+    // Convert inDirectory to an absolute path, and make sure that it
+    // actually exists.
+    Path NormalizePath(const Path &inDirectory) {
+        // Convert our path to an absolute path.
+        fs::path path(inDirectory.ToNativePathString(), fs::native);
+        fs::path completed(fs::complete(path, fs::current_path()));
+        Path normalized(Path::NativePath(completed.native_directory_string()));
 
-    // Sanity-check our path, store it, and return it.
-	CHECK(base.IsDirectory(),
-          ("\'" + base.ToNativePathString() +
-           "\' is not a valid directory").c_str());
-	gCurrentBaseDirectory = base;
-	return base;
+        // Sanity-check our path, store it, and return it.
+        CHECK(normalized.IsDirectory(),
+              ("\'" + normalized.ToNativePathString() +
+               "\' is not a valid directory").c_str());
+        return normalized;
+    }
 }
 
-Path FileSystem::SetBaseDirectory(const std::string &inDirectory)
-{
-	Path base = Path::NativePath(inDirectory);
-    return SetBaseDirectory(base);
+void FileSystem::SetRuntimeDirectory(const std::string &inDirectory) {
+    gRuntimeDirectory = NormalizePath(Path::NativePath(inDirectory));
 }
 
-Path FileSystem::GetBaseDirectory()
-{
+Path FileSystem::GetRuntimeDirectory() {
+    return gRuntimeDirectory;
+}
+
+void FileSystem::SetBaseDirectory(const Path &inDirectory) {
+	gCurrentBaseDirectory = NormalizePath(inDirectory);
+}
+
+void FileSystem::SetBaseDirectory(const std::string &inDirectory) {
+    SetBaseDirectory(Path::NativePath(inDirectory));
+}
+
+Path FileSystem::GetBaseDirectory() {
 	return gCurrentBaseDirectory;	
 }
 

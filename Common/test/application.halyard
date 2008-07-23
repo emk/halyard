@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<HalyardProgram version="3" backto="0" type="object" class="HalyardProgram">
+  <backgrounds type="list"/>
+  <cards type="list"/>
+  <comments type="str">Halyard command-line test program</comments>
+  <copyright type="str"></copyright>
+  <datadirname type="str"></datadirname>
+  <dbgreporturl type="str"></dbgreporturl>
+  <name type="str">Halyard Common Test</name>
+  <sourcefilecount type="int">0</sourcefilecount>
+  <version type="str">0.0</version>
+</HalyardProgram>

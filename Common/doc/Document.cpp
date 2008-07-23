@@ -87,8 +87,9 @@ const static ModelFormat gHalyardFormat("HalyardProgram", CURRENT_FORMAT,
 
 std::string Document::SetBaseAndGetFilePath(const std::string &inDirectory)
 {
+    FileSystem::SetBaseDirectory(inDirectory);
 	FileSystem::Path path =
-		FileSystem::SetBaseDirectory(inDirectory).AddComponent("application.halyard");
+        FileSystem::GetBaseDirectory().AddComponent("application.halyard");
 	return path.ToNativePathString();
 }
 
@@ -96,7 +97,7 @@ void Document::CheckStructure()
 {
 	// Sanity-check our directory structure.
 	Path base = FileSystem::GetBaseDirectory();
-	Path runtime = FileSystem::GetRuntimeDirectory();
+	Path runtime = FileSystem::GetRuntimeCollectsDirectory();
 	CheckDirectory(runtime);
     Path halyard = runtime.AddComponent("halyard");
 	CheckDirectory(halyard);
@@ -105,7 +106,6 @@ void Document::CheckStructure()
 	CheckDirectory(FileSystem::GetFontDirectory());
 	CheckDirectory(FileSystem::GetScriptsDirectory());
 	CheckFile(FileSystem::GetScriptFilePath("start.ss"));
-	CheckDirectory(base.AddComponent("local"));
 }
 
 void Document::CheckDirectory(Path inPath)

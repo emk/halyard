@@ -44,11 +44,14 @@
 ;; namespace.
 (let []
 
+  ;; Ask C++ where the engine is keeping its runtime files.
+  (define $runtime-directory (%get-runtime-directory))
+
   ;; Find the default collects-dir built into our executable.  This
   ;; path may be relative to exec-file's parent directory.  This will
   ;; let us know where PLT thinks it should be finding its
   ;; collections.
-  (define (default-collects-dir)
+  (define (default-plt-collects-dir)
     (call-with-values (lambda () (split-path (find-system-path 'exec-file)))
       (lambda (base name must-be-dir?)
         (let [[collects (find-system-path 'collects-dir)]]
@@ -58,14 +61,14 @@
 
   ;; List of places to search for mzlib and other standard PLT
   ;; collections.
-  (define $collects-dir-candidates
+  (define $plt-collects-dir-candidates
     (list
      ;; If we're using a released version of the engine, then our
-     ;; standard collections will live in Runtime.
-     (build-path (current-directory) "Runtime")
+     ;; standard collections will live in <runtime>/plt.
+     (build-path $runtime-directory "plt")
      ;; If we're using the system's copy of mzscheme, it will supply
      ;; its own copies of the standard collections.
-     (default-collects-dir)
+     (default-plt-collects-dir)
      ;; Under MacPorts (and possibly other Unix-style package managers),
      ;; the value of (find-system-path 'collects-dir) doesn't get set up
      ;; correctly.  But on those systems, we can generally find our
@@ -81,7 +84,7 @@
      ;; If all else fails, then maybe we're being run from inside the
      ;; Halyard source tree.  See if we have a checked out copy of
      ;; PLT.
-     (build-path (current-directory) 'up "libs" "plt" "collects")))
+     (build-path $runtime-directory 'up "libs" "plt" "collects")))
   
   ;; Search our possible collection directories for a copy of
   ;; "mzlib/lists.ss".  Use the first directory that has it as our
@@ -90,23 +93,23 @@
   ;; to come up with a list of paths it wants us to include.  We need
   ;; to store this as our collects-dir, because otherwise our
   ;; compilation-manager gets grumpy and won't compile our code.
-  (let loop [[candidates $collects-dir-candidates]]
+  (let loop [[candidates $plt-collects-dir-candidates]]
     (unless (null? candidates)
       (let [[candidate (car candidates)]]
         (if (file-exists? (build-path candidate "mzlib" "list.ss"))
           (%set-collects-path candidate)
           (loop (cdr candidates))))))
     
-  ;; Make sure the "Runtime" and "scripts" directories get searched
-  ;; for collections of support modules.  Note that if
-  ;; SCRIPTS-DIRECTORY-NAME is not equal to "scripts", we don't
-  ;; attempt to honor that when searching for libraries, because we
-  ;; don't have enough engine state set up at the top level of this
-  ;; file to run %call-prim.
+  ;; Make sure the "scripts" directory and various other collection
+  ;; directories get searched for collections of support modules.  Note
+  ;; that if SCRIPTS-DIRECTORY-NAME is not equal to "scripts", we don't
+  ;; attempt to honor that when searching for libraries, because we don't
+  ;; have enough engine state set up at the top level of this file to run
+  ;; %call-prim.
   (current-library-collection-paths
    (list* (build-path (current-directory) "scripts")
           (build-path (current-directory) "collects")
-          (build-path (current-directory) "Runtime")
+          (build-path $runtime-directory "collects")
           ;; Generates a list of paths that should be searched for
           ;; collections, including the value of (find-system-path
           ;; 'collects-dir).  find-library-collection-paths is what

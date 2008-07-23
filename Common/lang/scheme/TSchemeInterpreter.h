@@ -56,6 +56,8 @@ public:
 
 private:
     void InitializeScheme();
+    static Scheme_Object *GetRuntimeDirectory(int inArgc,
+                                              Scheme_Object **inArgv);
     static Scheme_Object *SetCollectsPath(int inArgc, Scheme_Object **inArgv);
 	void LoadFile(const FileSystem::Path &inFile);
 

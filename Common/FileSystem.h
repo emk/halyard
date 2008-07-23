@@ -164,18 +164,33 @@ namespace FileSystem {
 		static Path NativePath(const std::string &inPath);
 	};
 
+    //////////
+    /// The runtime directory is effectively part of Halyard itself, not
+    /// part of a script.  It contains the scripting language runtime
+    /// libraries, the fonts directory, and other support files.  This
+    /// should generally be set equal to the result of
+    /// wxStandardPaths::GetDataDir.  On Windows, it will be the directory
+    /// containing Halyard.exe.  On the Mac, it will be a directory deep
+    /// inside the bundle file.
+    ///
+    void SetRuntimeDirectory(const std::string &inDirectory);
+
+    //////////
+    /// Get Halyard's Runtime directory.
+    ///
+    Path GetRuntimeDirectory();
+
 	//////////
 	/// Set the base directory for the application.  Defaults to
-	/// the current working directory.  Used by GetFontDirectory,
-	/// ResolveFontPath, etc.
+	/// the current working directory.
 	///
-	Path SetBaseDirectory(const Path &inDirectory);
+	void SetBaseDirectory(const Path &inDirectory);
 
 	//////////
 	/// Set the base directory for the application using a native
 	/// path name.  Any trailing directory separator will be removed.
 	///
-	Path SetBaseDirectory(const std::string &inDirectory);
+	void SetBaseDirectory(const std::string &inDirectory);
 
 	//////////
 	/// Return the current base directory for this application.
@@ -207,6 +222,12 @@ namespace FileSystem {
     /// change.
     ///
     Path GetAppLocalDataDirectory();
+
+	//////////
+	/// Get the directory Halyard uses to store runtime support files.
+	///
+	inline Path GetRuntimeCollectsDirectory()
+	    { return GetRuntimeDirectory().AddComponent("collects"); }
 
     //////////
     /// Set the name of the data directories we'll use for this script.
@@ -262,7 +283,7 @@ namespace FileSystem {
 	/// into one function with a string argument.)
 	///
 	inline Path GetFontDirectory()
-	    { return GetBaseDirectory().AddComponent("Fonts"); }
+	    { return GetRuntimeDirectory().AddComponent("fonts"); }
 
 	//////////
 	/// We refer to fonts (and directories containing fonts) using
@@ -298,18 +319,6 @@ namespace FileSystem {
 	///
 	inline Path GetScriptFilePath(const std::string &inScriptFileName)
 	    { return GetScriptsDirectory().AddComponent(inScriptFileName); }
-
-	//////////
-	/// Get the directory Halyard uses to store runtime support files.
-	///
-	inline Path GetRuntimeDirectory()
-	    { return GetBaseDirectory().AddComponent("Runtime"); }
-
-	//////////
-	/// Get the path to a specific runtime file.
-	///
-	inline Path GetRuntimeFilePath(const std::string &inRuntimeFileName)
-	    { return GetRuntimeDirectory().AddComponent(inRuntimeFileName); }
 
     //////////
     /// Get the directory containing our local, non-streamable content

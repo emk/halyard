@@ -770,7 +770,7 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     CHECK_EQ(fs::is_directory(db_path), false);
 
     // Process a file.
-    db.BeginProcessingFile("test-scripts/indexed.ss");
+    db.BeginProcessingFile("scripts/indexed.ss");
     db.InsertDefinition("foo", TScriptIdentifier::FUNCTION, 19);
     db.InsertHelp("foo", "(foo x)");
     db.InsertHelp("foo", "(foo y)");
@@ -779,7 +779,7 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     db.EndProcessingFile();
 
     // Process another file.
-    db.BeginProcessingFile("test-scripts/indexed2.ss");
+    db.BeginProcessingFile("scripts/indexed2.ss");
     db.InsertDefinition("baz", TScriptIdentifier::FUNCTION, 43);
     db.EndProcessingFile();
     
@@ -792,7 +792,7 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
     // Look up the data we entered.
     ScriptEditorDB::Definitions foo_defs = db.FindDefinitions("foo");
     CHECK_EQ(foo_defs.size(), 1U);
-    CHECK_DEF(foo_defs[0], "test-scripts/indexed.ss", "foo",
+    CHECK_DEF(foo_defs[0], "scripts/indexed.ss", "foo",
               TScriptIdentifier::FUNCTION, 19);
 
     std::vector<std::string> foo_help(db.FindHelp("foo"));
@@ -802,53 +802,53 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
 
     ScriptEditorDB::Definitions bar_defs = db.FindDefinitions("bar");
     CHECK_EQ(bar_defs.size(), 2U);
-    CHECK_DEF(bar_defs[0], "test-scripts/indexed.ss", "bar",
+    CHECK_DEF(bar_defs[0], "scripts/indexed.ss", "bar",
               TScriptIdentifier::VARIABLE, 20);
-    CHECK_DEF(bar_defs[1], "test-scripts/indexed.ss", "bar",
+    CHECK_DEF(bar_defs[1], "scripts/indexed.ss", "bar",
               TScriptIdentifier::FUNCTION, 21);
 
     ScriptEditorDB::Definitions baz_defs = db.FindDefinitions("baz");
     CHECK_EQ(baz_defs.size(), 1U);
-    CHECK_DEF(baz_defs[0], "test-scripts/indexed2.ss", "baz",
+    CHECK_DEF(baz_defs[0], "scripts/indexed2.ss", "baz",
               TScriptIdentifier::FUNCTION, 43);
     
     // This file has just been processed.
-    CHECK_EQ(db.NeedsProcessing("test-scripts/indexed.ss"), false);
+    CHECK_EQ(db.NeedsProcessing("scripts/indexed.ss"), false);
 
     // Files which don't appear in the database need to be processed...
-    db.DeleteAnyFileData("test-scripts/indexed3.ss");
-    CHECK_THROWN(std::exception, db.NeedsProcessing("test-scripts/nosuch.ss"));
-    CHECK_EQ(db.NeedsProcessing("test-scripts/indexed3.ss"), true);
+    db.DeleteAnyFileData("scripts/indexed3.ss");
+    CHECK_THROWN(std::exception, db.NeedsProcessing("scripts/nosuch.ss"));
+    CHECK_EQ(db.NeedsProcessing("scripts/indexed3.ss"), true);
 
     // ...but after we process them, they're good.
-    db.BeginProcessingFile("test-scripts/indexed3.ss");
+    db.BeginProcessingFile("scripts/indexed3.ss");
     db.EndProcessingFile();
-    CHECK_EQ(db.NeedsProcessing("test-scripts/indexed3.ss"), false);
+    CHECK_EQ(db.NeedsProcessing("scripts/indexed3.ss"), false);
 
     // If the file is modified, it should once again need processing.  Note
     // that we simply rewrite the file in place, because this is the most
     // portable way to update the timestamps on disk.  Note that we
     // carefully avoid putting any newlines in the file.
-    fs::path index3_path(RootPath()/"test-scripts/indexed3.ss");
+    fs::path index3_path(RootPath()/"scripts/indexed3.ss");
     std::ofstream index3(index3_path.native_file_string().c_str(),
                          std::ios_base::out | std::ios_base::trunc);
     index3 << "(define (hello) \"Hello world!\")";
     index3.close();
-    CHECK_EQ(db.NeedsProcessing("test-scripts/indexed3.ss"), true);
+    CHECK_EQ(db.NeedsProcessing("scripts/indexed3.ss"), true);
 
     // Scan a tree and look for unprocessed files.
     std::vector<std::string> unprocessed =
-        db.ScanTree("test-scripts/scantest", ".ss");
+        db.ScanTree("scripts/scantest", ".ss");
     std::sort(unprocessed.begin(), unprocessed.end());
     CHECK_EQ(unprocessed.size(), 3U);
-    CHECK_EQ(unprocessed[0], "test-scripts/scantest/a.ss");
-    CHECK_EQ(unprocessed[1], "test-scripts/scantest/b.ss");
-    CHECK_EQ(unprocessed[2], "test-scripts/scantest/subdir/c.ss");
+    CHECK_EQ(unprocessed[0], "scripts/scantest/a.ss");
+    CHECK_EQ(unprocessed[1], "scripts/scantest/b.ss");
+    CHECK_EQ(unprocessed[2], "scripts/scantest/subdir/c.ss");
 
     // Make sure that ScanTree doesn't find processed files.
-    unprocessed = db.ScanTree("test-scripts", ".ss");
+    unprocessed = db.ScanTree("scripts", ".ss");
     CHECK_EQ(std::find(unprocessed.begin(), unprocessed.end(),
-                       "test-scripts/indexed.ss") == unprocessed.end(),
+                       "scripts/indexed.ss") == unprocessed.end(),
              true);
     
 } END_TEST_CASE(TestScriptEditorDB);

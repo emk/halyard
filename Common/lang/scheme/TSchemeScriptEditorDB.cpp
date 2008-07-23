@@ -36,8 +36,10 @@ void TSchemeScriptEditorDB::UpdateDatabase() {
         StTransaction transaction(this);
         
         ScriptEditorDB::UpdateDatabase();
-        ProcessTree("Runtime", ".ss");
-        ProcessTree(FileSystem::GetScriptsDirectoryName(), ".ss");
+        ProcessTree("scripts", ".ss");
+        ProcessTree("collects", ".ss");
+        // TODO - Implement virtual "runtime" folder.
+        //ProcessTree("runtime", ".ss");
         
         transaction.Commit();
     }

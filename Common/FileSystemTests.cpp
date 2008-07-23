@@ -33,7 +33,8 @@ extern void test_FileSystem (void);
 
 void test_FileSystem (void)
 {
-	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
+	std::string base(FileSystem::GetBaseDirectory().ToNativePathString());
+	std::string runtime(FileSystem::GetRuntimeDirectory().ToNativePathString());
 
 #if APP_PLATFORM_WIN32
 
@@ -45,12 +46,12 @@ void test_FileSystem (void)
 		 base+"\\..\\f");
 	TEST(Path("foo").ToNativePathString() == base+"\\foo");
 	TEST(GetBaseDirectory().ToNativePathString() == base);
-	TEST(GetFontDirectory().ToNativePathString() == base+"\\Fonts");
-	TEST(ResolveFontPath("").ToNativePathString() == base+"\\Fonts");
+	TEST(GetFontDirectory().ToNativePathString() == runtime+"\\fonts");
+	TEST(ResolveFontPath("").ToNativePathString() == runtime+"\\fonts");
 	TEST(ResolveFontPath("README.txt").ToNativePathString() ==
-		 base+"\\Fonts\\README.txt");
+		 runtime+"\\fonts\\README.txt");
 	TEST(ResolveFontPath("nested/README.txt").ToNativePathString() ==
-		 base+"\\Fonts\\nested\\README.txt");
+		 runtime+"\\fonts\\nested\\README.txt");
 
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
 		 == base+"\\f\\..\\g");
@@ -65,12 +66,12 @@ void test_FileSystem (void)
 		 base+"/../f");
 	TEST(Path("foo").ToNativePathString() == base+"/foo");
 	TEST(GetBaseDirectory().ToNativePathString() == base);
-	TEST(GetFontDirectory().ToNativePathString() == base+"/Fonts");
-	TEST(ResolveFontPath("").ToNativePathString() == base+"/Fonts");
+	TEST(GetFontDirectory().ToNativePathString() == runtime+"/fonts");
+	TEST(ResolveFontPath("").ToNativePathString() == runtime+"/fonts");
 	TEST(ResolveFontPath("README.txt").ToNativePathString() ==
-		 base+"/Fonts/README.txt");
+		 runtime+"/fonts/README.txt");
 	TEST(ResolveFontPath("nested/README.txt").ToNativePathString() ==
-		 base+"/Fonts/nested/README.txt");
+		 runtime+"/fonts/nested/README.txt");
 	TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
 	     == base+"/f/../g");
 
@@ -181,5 +182,5 @@ void test_FileSystem (void)
 
 	// Do some tricky path manipulation.
 	Path tricky = GetFontDirectory().AddParentComponent();
-	TEST(tricky.AddComponent("application.halyard").DoesExist());
+	TEST(tricky.AddComponent("collects").DoesExist());
 }

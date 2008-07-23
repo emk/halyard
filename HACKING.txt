@@ -130,11 +130,11 @@ Building Win32 Halyard
   set "Working Directory" to the same value.  Now you'll automatically
   run Halyard Test when you ask Visual Studio to launch your program.
 
-  Using a similar process, set the working directories for both versions
-  of "CommonTest" to $HALYARD_DIR/test.  The test suites won't run without
-  this step. Also add "--wait" to the command arguments of CommonTest, in 
-  both the debug and release builds, so you can see the results of the test
-  suites.
+  Using a similar process, set the working directories for both versions of
+  "CommonTest" to $HALYARD_DIR/Common/test.  The test suites won't run
+  without this step. Also add "--wait" to the command arguments of
+  CommonTest, in both the debug and release builds, so you can see the
+  results of the test suites.
 
   To build PLT Scheme, make sure "Libraries" is selected in the "Solution
   Configurations" popup on your toolbar.  Choose the menu item "Build" >

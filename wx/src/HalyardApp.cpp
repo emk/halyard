@@ -308,12 +308,24 @@ bool HalyardApp::OnInit() {
     // but right now, we're tuned for it.
     wxSystemOptions::SetOption(wxT("msw.window.no-clip-children"), 1);
 
-    // Figure out where we can store log files and such.
-    wxString dir(wxStandardPaths::Get().GetUserDataDir());
-    if (!::wxDirExists(dir) && !::wxMkdir(dir)) {
+    // Find our runtime directory.  This contains various runtime
+    // libraries, fonts, etc.  It may simply be the directory containing
+    // Halyard, or it may be something deep inside a Halyard.app bundle,
+    // depending on the platform.
+    wxString runtime(wxStandardPaths::Get().GetDataDir());
+    if (!::wxDirExists(runtime)) {
         // We need to use this error dialog routine because we haven't
         // initialized our logging subsystem yet, and we can't call
         // gLog.FatalError(...).
+        ErrorDialog(wxT("Cannot Find Runtime"),
+                    wxT("Cannot find runtime directory at ") + runtime);
+        return false;
+    }
+    FileSystem::SetRuntimeDirectory(std::string(runtime.mb_str()));
+
+    // Figure out where we can store log files and such.
+    wxString dir(wxStandardPaths::Get().GetUserDataDir());
+    if (!::wxDirExists(dir) && !::wxMkdir(dir)) {
         ErrorDialog(wxT("Cannot Create Directory"),
                     wxT("Unable to create ") + dir);
         return false;
