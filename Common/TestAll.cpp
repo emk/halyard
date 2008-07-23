@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
 
     RegisterTestPrimitives();
     
-    FileSystem::SetScriptsDirectoryName("TestScripts");
+    FileSystem::SetScriptsDirectoryName("test-scripts");
 	FileSystem::SetScriptDataDirectoryName("Test");
 
     BEGIN_TEST_EXCEPTION_TRAPPER

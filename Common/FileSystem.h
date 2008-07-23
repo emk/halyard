@@ -277,7 +277,7 @@ namespace FileSystem {
 
     //////////
     /// Set the name of the scripts directory that we're loading from.
-    /// This is used by the test suites to load scripts from "TestScripts"
+    /// This is used by the test suites to load scripts from "test-scripts"
     /// instead of the usual "scripts" directory.
     ///
     void SetScriptsDirectoryName(const std::string &inName);
