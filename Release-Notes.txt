@@ -1,6 +1,23 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.10-chaining1 - 23 July 2008
+
+This release is intended for one new feature: the chaining of method 
+names.  This new syntax allows us to write (object .foo.bar.baz 10)
+instead of (((object .foo) .bar) .baz 10), which should make many uses
+of the new syntax much more pleasant.
+
+This is relased off of a branch, because there is significant file
+reorganization occuring on master which we don't want to land until
+it is done.
+
+Eric Kidd (4):
+      Allow (obj .foo.bar arg1 arg2)-style method calls
+      Add command-line test driver file
+      Added begin/var support to λ special form
+      code review: clean up regex, add unit tests
+
 0.5.10 - 11 July 2008
 
 In this release, we merge the experimental sandbox branch.
