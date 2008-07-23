@@ -444,8 +444,10 @@ Path FileSystem::GetScriptLocalDataDirectory() {
 Path FileSystem::GetScriptTempDirectory() {
     ASSERT(!TInterpreterManager::IsInRuntimeMode());
     Path result(GetBaseDirectory().AddComponent("temp"));
-    fs::path fs_temp(result.ToNativePathString(), fs::native);
-    fs::create_directory(fs_temp);
+    if (!result.DoesExist()) {
+        fs::path fs_temp(result.ToNativePathString(), fs::native);
+        fs::create_directory(fs_temp);
+    }
     return result;
 }
 
