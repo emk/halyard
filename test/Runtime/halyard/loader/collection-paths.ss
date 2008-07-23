@@ -97,14 +97,14 @@
           (%set-collects-path candidate)
           (loop (cdr candidates))))))
     
-  ;; Make sure the "Runtime" and "Scripts" directories get searched
+  ;; Make sure the "Runtime" and "scripts" directories get searched
   ;; for collections of support modules.  Note that if
-  ;; SCRIPTS-DIRECTORY-NAME is not equal to "Scripts", we don't
+  ;; SCRIPTS-DIRECTORY-NAME is not equal to "scripts", we don't
   ;; attempt to honor that when searching for libraries, because we
   ;; don't have enough engine state set up at the top level of this
   ;; file to run %call-prim.
   (current-library-collection-paths
-   (list* (build-path (current-directory) "Scripts")
+   (list* (build-path (current-directory) "scripts")
           (build-path (current-directory) "collects")
           (build-path (current-directory) "Runtime")
           ;; Generates a list of paths that should be searched for

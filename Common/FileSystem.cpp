@@ -376,7 +376,7 @@ Path Path::NativePath(const std::string &inPath)
 static Path gCurrentBaseDirectory = Path();
 static Path gAppDataDirectory = Path();
 static Path gAppLocalDataDirectory = Path();
-static std::string gScriptsDirectoryName = "Scripts";
+static std::string gScriptsDirectoryName = "scripts";
 static std::string gScriptDataDirectoryName = "";
 
 Path FileSystem::SetBaseDirectory(const Path &inDirectory)
