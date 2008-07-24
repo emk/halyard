@@ -126,7 +126,8 @@
 
   (provide halyard-fixture-dir)
   (define (halyard-fixture-dir name)
-    (build-path (current-directory) "Runtime" "halyard" (cat name "-fixtures")))
+    (build-path (runtime-directory) "collects" "halyard"
+                (cat name "-fixtures")))
 
 
   ;;========================================================================

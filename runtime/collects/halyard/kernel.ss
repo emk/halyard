@@ -93,8 +93,8 @@
   ;;  which are needed by the kernel or which intimately depend on the
   ;;  kernel's inner workings.
   
-  (provide call-prim have-prim? value->boolean idle blocking-idle
-           engine-var set-engine-var! engine-var-exists?
+  (provide call-prim have-prim? runtime-directory value->boolean idle
+           blocking-idle engine-var set-engine-var! engine-var-exists?
            exit-script refresh)
 
   ;; C++ can't handle very large or small integers.  Here are the
@@ -115,6 +115,15 @@
   
   (define (have-prim? name)
     (%call-prim 'HavePrimitive name))
+
+  (define *runtime-directory* #f)
+
+  ;;; The directory containing our engine runtime, including such things as
+  ;;; fonts/ and collects/.
+  (define (runtime-directory)
+    (unless *runtime-directory*
+      (set! *runtime-directory* (%get-runtime-directory)))
+    *runtime-directory*)
 
   (define (value->boolean val)
     ;; XXX - Coerce a Scheme value to an explicit boolean value.  This
