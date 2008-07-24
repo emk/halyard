@@ -61,11 +61,8 @@ namespace {
     fs::path RootPath() {
         // We can't decide where to put these files until we have a working
         // directory, which gets set up when the interpreter is loaded.
-        //
-        // \todo This assertion fails when called from the test suites,
-        // because there's no Scheme interpreter. This will be a problem
-        // very shortly for other reasons.
-        //ASSERT(TInterpreterManager::GetInstance()->InterpreterHasBegun());
+        ASSERT(TInterpreterManager::HaveInstance() &&
+               TInterpreterManager::GetInstance()->ScriptHasBegun());
         
         // Convert from our portable path library to boost's.
         std::string p(FileSystem::GetBaseDirectory().ToNativePathString());

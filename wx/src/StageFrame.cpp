@@ -662,7 +662,6 @@ void StageFrame::OpenDocument(const wxString &inDirPath) {
     mProgramTree->RegisterDocument(mDocument);
     CrashReporter::GetInstance()->RegisterDocument(mDocument);
     CheckForUpdateLockFile(); // Needs to come after CrashReporter setup.
-    wxGetApp().LoadUserConfig();
     mStage->MaybeShowSplashScreen();
     mStage->Show();
 }
@@ -876,8 +875,7 @@ void StageFrame::OnUpdateUiReloadScripts(wxUpdateUIEvent &inEvent)
 {
     if (TInterpreterManager::HaveInstance()) {
         TInterpreterManager *manager = TInterpreterManager::GetInstance();
-        inEvent.Enable(AreDevToolsAvailable() &&
-                       manager->InterpreterHasBegun());
+        inEvent.Enable(AreDevToolsAvailable() && manager->ScriptHasBegun());
     } else {
         inEvent.Enable(false);
     }

@@ -605,7 +605,17 @@ wxString HalyardApp::UserConfigFilename() {
     return wxString(ToWxString(conf_filename.ToNativePathString()));
 }
 
-void HalyardApp::LoadUserConfig() {
+void HalyardApp::MaybeLoadUserConfig() {
+    // If we already have a UserConfig, we don't need to do anything.
+    if (mUserConfig.get())
+        return;
+
+    // If we haven't started running a script yet, we don't know what
+    // directory we're supposed to store our config file in, so give up now.
+    if (!(TInterpreterManager::HaveInstance() &&
+          TInterpreterManager::GetInstance()->ScriptHasBegun()))
+        return;
+
     wxString config_filename(UserConfigFilename());
 
     // Ensure that we have a file to read from, by creating an empty
@@ -621,7 +631,13 @@ void HalyardApp::LoadUserConfig() {
     mUserConfig = shared_ptr<wxFileConfig>(new wxFileConfig(config_file));
 }
 
+bool HalyardApp::HaveUserConfig() {
+    MaybeLoadUserConfig();
+    return mUserConfig.get() != NULL;
+}
+
 shared_ptr<wxConfigBase> HalyardApp::GetUserConfig() {
+    MaybeLoadUserConfig();
     ASSERT(mUserConfig.get());
     return mUserConfig;
 }

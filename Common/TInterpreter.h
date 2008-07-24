@@ -351,7 +351,7 @@ private:
 	/// This is set to true once the interpreter manager is allowed
 	/// to create an interpreter and start it running.
 	///
-	bool mScriptIsBegun;
+	bool mScriptHasBegun;
 
 	//////////
 	/// Should we exit our top-level event loop?
@@ -465,11 +465,11 @@ public:
 	void RequestReloadScript(const char *inGotoCardName);
 
     //////////
-    /// Returns true if and only if the interpreter has begun.  We may
-    /// not have a current valid interpreter, of course, but we have
-    /// loaded a program at least once.
+    /// Returns true if and only if the script has begun.  We may not have
+    /// a current valid interpreter, of course, but we at least know what
+    /// directory the script is in.
     ///
-    bool InterpreterHasBegun();
+    bool ScriptHasBegun();
 
 	//////////
 	/// Returns true if and only if the previous attempt to load a 

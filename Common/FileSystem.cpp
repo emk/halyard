@@ -453,6 +453,12 @@ Path FileSystem::GetScriptLocalDataDirectory() {
 }
 
 Path FileSystem::GetScriptTempDirectory() {
+    // Nobody is allowed to use the temp/ directory until the script has
+    // begun (so we know what directory we're operating from).  And if
+    // we're in runtime mode, then we're not guaranteed to have a writable
+    // temp directory anyway.
+    ASSERT(TInterpreterManager::HaveInstance() &&
+           TInterpreterManager::GetInstance()->ScriptHasBegun());
     ASSERT(!TInterpreterManager::IsInRuntimeMode());
     Path result(GetBaseDirectory().AddComponent("temp"));
     if (!result.DoesExist()) {

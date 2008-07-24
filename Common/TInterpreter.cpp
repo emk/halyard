@@ -128,7 +128,7 @@ TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
 	mSystemIdleProc = inIdleProc;
 	mDone = false;
 	mExitedWithError = false;
-	mScriptIsBegun = false;
+	mScriptHasBegun = false;
 	mLoadScriptFailed = false;
 	ResetInitialCardName();
 }
@@ -161,7 +161,7 @@ void TInterpreterManager::Run()
 		{
 			// Either create and run an interpreter, or just call the
 			// idle procedure.
-			if (mScriptIsBegun && !mLoadScriptFailed)
+			if (mScriptHasBegun && !mLoadScriptFailed)
 				LoadAndRunScript();
 			else
 				(*mSystemIdleProc)(true);
@@ -200,7 +200,7 @@ void TInterpreterManager::DoIdle(bool block) {
 
 void TInterpreterManager::BeginScript()
 {
-	mScriptIsBegun = true;
+	mScriptHasBegun = true;
 }
 
 void TInterpreterManager::LoadAndRunScript()
@@ -286,8 +286,8 @@ void TInterpreterManager::RequestReloadScript(const char *inGotoCardName)
     sIsFirstLoad = false;
 }
 
-bool TInterpreterManager::InterpreterHasBegun() {
-    return mScriptIsBegun;
+bool TInterpreterManager::ScriptHasBegun() {
+    return mScriptHasBegun;
 }
 
 bool TInterpreterManager::FailedToLoad()

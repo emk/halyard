@@ -2291,7 +2291,7 @@ ScriptEditor::ScriptEditor()
         // If we have saved tabs, try to load them
         LoadTabs();
     } else if (TInterpreterManager::HaveInstance() &&
-               TInterpreterManager::GetInstance()->InterpreterHasBegun())
+               TInterpreterManager::GetInstance()->ScriptHasBegun())
     {
         // If we have a Halyard program already, open up the start script.
         FileSystem::Path start_script =
