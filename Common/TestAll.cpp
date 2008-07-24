@@ -191,7 +191,12 @@ int main(int argc, char **argv) {
 
     RegisterTestPrimitives();
     
-    FileSystem::SetRuntimeDirectory("../../runtime");
+    // We need to find the root directory of our Halyard tree and set up
+    // our runtime directory location correctly.
+    FileSystem::Path current_dir = FileSystem::Path();
+    FileSystem::Path root_dir(current_dir.ParentDirectory().ParentDirectory());
+    FileSystem::SetRuntimeDirectory(root_dir.AddComponent("runtime"));
+
 	FileSystem::SetScriptDataDirectoryName("Halyard Common Test");
 
     BEGIN_TEST_EXCEPTION_TRAPPER

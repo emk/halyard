@@ -57,7 +57,14 @@ const char *ScriptEditorDB::BuiltInIdentifierRelPath = "";
 
 namespace {
 
-    /// Return the directory in which we should store ScriptEditorDB files.
+    /// Return the directory in which we should find runtime source files.
+    fs::path RuntimePath() {
+        // Convert from our portable path library to boost's.
+        std::string p(FileSystem::GetRuntimeDirectory().ToNativePathString());
+        return fs::path(p, fs::native);
+    }
+
+    /// Return the directory in which we should find regular source files.
     fs::path RootPath() {
         // We can't decide where to put these files until we have a working
         // directory, which gets set up when the interpreter is loaded.
@@ -68,6 +75,11 @@ namespace {
         std::string p(FileSystem::GetBaseDirectory().ToNativePathString());
         return fs::path(p, fs::native);
     }
+
+    // Return true iff 'str' begins with 'prefix'.
+    bool HasPrefix(const std::string &str, const std::string &prefix) {
+        return str.compare(0, prefix.size(), prefix) == 0;
+    }
 };
 
 
@@ -76,7 +88,7 @@ namespace {
 //=========================================================================
 
 std::string ScriptEditorDB::Definition::GetNativePath() {
-    return (RootPath()/file_path).native_file_string();
+    return RelPathToNative(file_path);
 }
 
 //=========================================================================
@@ -230,19 +242,36 @@ void ScriptEditorDB::EnsureCorrectSchema() {
 
 /// Convert a relative path to a native OS path.
 std::string ScriptEditorDB::RelPathToNative(const std::string &relpath) {
-    return (RootPath()/relpath).native_file_string().c_str();
+    fs::path result;
+    std::string prefix("runtime/");
+    if (HasPrefix(relpath, prefix)) {
+        // If relpath begins "runtime/", strip it off and replace with the
+        // runtime directory.
+        std::string stripped(relpath.substr(prefix.size(), std::string::npos));
+        result = RuntimePath() / fs::path(stripped, fs::no_check);
+    } else if (relpath == "runtime") {
+        // If relpath _is_ "runtime", just use the runtime directory.
+        result = RuntimePath();
+    } else {
+        // All other relpaths are relative to the root path.
+		result = RootPath() / fs::path(relpath, fs::no_check);
+    }
+    return result.native_file_string().c_str();
 }
 
 /// Convert a native OS path to a relative path.  Returns the empty string
 /// if the conversion fails.
 std::string ScriptEditorDB::NativeToRelPath(const std::string &native) {
+    fs::path runtime_path(RuntimePath());
     fs::path root_path(RootPath());
     fs::path native_path(native, fs::native);
     std::string relpath;
     
-    // Strip successive leaves off of native_path until it either
-    // matches root_path or has nothing left to strip.
-    while (root_path.string() != native_path.string() && !native_path.empty())
+    // Strip successive leaves off of native_path until either it
+    // matches runtime_path or root_path, or it has nothing left to strip.
+    while (runtime_path.string() != native_path.string() &&
+           root_path.string() != native_path.string() &&
+           !native_path.empty())
     {
         std::string leaf = native_path.leaf();
         native_path = native_path.branch_path();
@@ -252,11 +281,24 @@ std::string ScriptEditorDB::NativeToRelPath(const std::string &native) {
             relpath = leaf + "/" + relpath;
     }
 
-    // If we're in the right directory, tear off a 
-    if (root_path.string() == native_path.string())
+    if (runtime_path.string() == native_path.string()) {
+        // We're pointing to a file under runtime/, so insert an extra
+        // "runtime" at the beginning of the path.  This is basically a
+        // magic indicator to look in a different directory.
+        if (relpath.empty())
+            return "runtime";
+        else
+            return "runtime/" + relpath;
+    } else if (root_path.string() == native_path.string()) {
+        // We found a file under our normal root path, so we can just
+        // return the relpath unchanged.
         return relpath;
-    else
+    } else {
+        // We can't turn this path into a well-formed relpath, so return
+        // "".  I'm not sure if this is a good idea, but it's what the
+        // code's been doing for a while now.
         return "";
+    }
 }
 
 /// The primary interface for updating the database.  This will generally
@@ -327,7 +369,7 @@ void ScriptEditorDB::PurgeDataForDeletedFiles() {
     // If a given path no longer points to a file, purge any related data.
     strings::iterator i = relpaths.begin();
     for (; i != relpaths.end(); ++i) {
-        fs::path path(RootPath() / *i);
+        fs::path path(RelPathToNative(*i), fs::native);
         if (!fs::exists(path))
             DeleteAnyFileDataAndNotifyListeners(*i);
     }
@@ -354,7 +396,7 @@ void ScriptEditorDB::ScanTreeInternal(const std::string &relpath,
     // nasty platform-specific characters.
     //
     // PORTABILITY - Make sure that this actually works.
-    fs::path path(RootPath()/fs::path(relpath, fs::no_check));
+    fs::path path(RelPathToNative(relpath), fs::no_check);
     if (fs::symbolic_link_exists(path)) {
         // Don't follow symlinks.
     } else if (fs::is_directory(path)) {
@@ -384,12 +426,17 @@ ScriptEditorDB::strings ScriptEditorDB::ScanTree(const std::string &relpath,
                                                  const std::string &extension)
 {
     strings result;
-    ModTimeMap modtimes;
 
-    FetchModTimesFromDatabase(modtimes);    
-    StTransaction transaction(this);
-    ScanTreeInternal(relpath, extension, modtimes, result);    
-    transaction.Commit();
+    // Only scan the tree if it exists.
+    fs::path tree(RelPathToNative(relpath), fs::no_check);
+    if (fs::exists(tree)) {
+        ModTimeMap modtimes;
+    
+        FetchModTimesFromDatabase(modtimes);    
+        StTransaction transaction(this);
+        ScanTreeInternal(relpath, extension, modtimes, result);    
+        transaction.Commit();
+    }
 
     return result;
 }
@@ -443,7 +490,7 @@ void ScriptEditorDB::DeleteAnyFileData(const std::string &relpath) {
 bool ScriptEditorDB::NeedsProcessingInternal(const std::string &relpath,
                                              const ModTimeMap &modtimes)
 {
-	fs::path path(RootPath()/relpath);
+	fs::path path(RelPathToNative(relpath), fs::native);
 	time_t new_modtime = fs::last_write_time(path);
 
     ModTimeMap::const_iterator found = modtimes.find(relpath);
@@ -466,7 +513,7 @@ void ScriptEditorDB::BeginProcessingFile(const std::string &relpath) {
     DeleteAnyFileData(relpath);
 
     // Insert a new entry in the 'file' table.
-    fs::path path(RootPath()/relpath);
+    fs::path path(RelPathToNative(relpath), fs::native);
     __int64 modtime = static_cast<__int64>(fs::last_write_time(path));
     mDB->executenonquery("INSERT INTO file VALUES ('%q', %lld)",
                         relpath.c_str(), modtime);
@@ -527,7 +574,7 @@ void ScriptEditorDB::ProcessTree(const std::string &relpath,
     strings files = ScanTree(relpath, extension);
     for (strings::iterator i = files.begin(); i != files.end(); ++i) {
         BeginProcessingFile(*i);
-        ProcessFileInternal(*i);
+        ProcessFileInternal(RelPathToNative(*i));
         EndProcessingFile();
     }
     
@@ -538,7 +585,7 @@ void ScriptEditorDB::ProcessTree(const std::string &relpath,
 /// override the default implementation, which does nothing.
 ///
 /// \see ProcessTree
-void ScriptEditorDB::ProcessFileInternal(const std::string &relpath) {
+void ScriptEditorDB::ProcessFileInternal(const std::string &path) {
 }
 
 void ScriptEditorDB::InsertDefinition(const std::string &name,
@@ -848,6 +895,20 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
                        "scripts/indexed.ss") == unprocessed.end(),
              true);
     
+    // Make sure that we can translate simple relative paths to and from
+    // native paths.
+    FileSystem::Path scripts(FileSystem::GetScriptsDirectory());
+    CHECK_EQ(scripts.ToNativePathString(), db.RelPathToNative("scripts"));
+    CHECK_EQ("scripts", db.NativeToRelPath(scripts.ToNativePathString()));
+
+    // The relative path "runtime" is a special case, because it actually
+    // maps off to a separate directory entirely.
+    FileSystem::Path runtime(FileSystem::GetRuntimeDirectory());
+    CHECK_EQ(runtime.ToNativePathString(), db.RelPathToNative("runtime"));
+    CHECK_EQ("runtime", db.NativeToRelPath(runtime.ToNativePathString()));
+    FileSystem::Path foo(runtime.AddComponent("foo"));
+    CHECK_EQ(foo.ToNativePathString(), db.RelPathToNative("runtime/foo"));
+    CHECK_EQ("runtime/foo", db.NativeToRelPath(foo.ToNativePathString()));
 } END_TEST_CASE(TestScriptEditorDB);
 
 #endif // BUILD_TEST_CASES

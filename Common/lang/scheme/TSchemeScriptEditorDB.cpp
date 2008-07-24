@@ -38,20 +38,19 @@ void TSchemeScriptEditorDB::UpdateDatabase() {
         ScriptEditorDB::UpdateDatabase();
         ProcessTree("scripts", ".ss");
         ProcessTree("collects", ".ss");
-        // TODO - Implement virtual "runtime" folder.
-        //ProcessTree("runtime", ".ss");
+        ProcessTree("runtime", ".ss");
         
         transaction.Commit();
     }
 }
 
-void TSchemeScriptEditorDB::ProcessFileInternal(const std::string &relpath) {
+void TSchemeScriptEditorDB::ProcessFileInternal(const std::string &path) {
     TSchemeArgs<1> args;
     TSchemeReg<0,1> reg;
     reg.args(args);
     reg.done();
 
-	args[0] = scheme_make_path(relpath.c_str());
+	args[0] = scheme_make_path(path.c_str());
 	TSchemeInterpreter::CallSchemeStatic("%kernel-extract-definitions",
                                          args.size(), args.get());
 }

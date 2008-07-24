@@ -120,6 +120,15 @@ namespace FileSystem {
 		/// presence of symlinks.
 		/// 
 		Path AddParentComponent() const;
+
+        //////////
+        /// Fetch the parent directory of this path.  This is done by
+        /// removing the last component of the path, not by following ".."
+        /// on disk.  The behavior of this path undefined near the root
+        /// level of a filesystem, especially on platforms with non-POSIX
+        /// path names.
+        ///
+        Path ParentDirectory() const;
 		
 		//////////
 		/// Convert a Path object into a local path string.  This isn't
@@ -172,6 +181,11 @@ namespace FileSystem {
     /// wxStandardPaths::GetDataDir.  On Windows, it will be the directory
     /// containing Halyard.exe.  On the Mac, it will be a directory deep
     /// inside the bundle file.
+    ///
+    void SetRuntimeDirectory(const Path &inDirectory);
+
+    //////////
+    /// See the other SetRuntimeDirectory function.
     ///
     void SetRuntimeDirectory(const std::string &inDirectory);
 

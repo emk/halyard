@@ -102,6 +102,41 @@ static void CheckErrno(const char *inFile, int inLine)
 
 
 //=========================================================================
+//  Helper functions
+//=========================================================================
+
+namespace {
+    // Convert a FileSystem::Path to a Boost fs::path.
+    fs::path PathToBoostPath(const Path &path) {
+        return fs::path(path.ToNativePathString(), fs::native);
+    }
+
+    // Convert a Boost fs::path to a FileSystem::Path.
+    Path BoostPathToPath(const fs::path path, bool is_directory) {
+        if (is_directory)
+            return Path::NativePath(path.native_directory_string());
+        else
+            return Path::NativePath(path.native_file_string());
+    }
+
+    // Convert inDirectory to an absolute path, and make sure that it
+    // actually exists.
+    Path CompletePath(const Path &inDirectory) {
+        // Convert our path to an absolute path.
+        Path result(BoostPathToPath(fs::complete(PathToBoostPath(inDirectory),
+                                                 fs::current_path()),
+                                    true));
+
+        // Sanity-check our path, store it, and return it.
+        CHECK(result.IsDirectory(),
+              ("\'" + result.ToNativePathString() +
+               "\' is not a valid directory").c_str());
+        return result;
+    }
+}
+
+
+//=========================================================================
 //  Path Methods
 //=========================================================================
 
@@ -297,6 +332,12 @@ Path Path::AddParentComponent() const
 	return newPath;	
 }
 
+Path Path::ParentDirectory() const {
+    // Convert to a boost path, remove the last item from the path, and
+    // convert back.
+    return BoostPathToPath(PathToBoostPath(*this).branch_path(), true);
+}
+
 std::string Path::ToNativePathString () const
 {
 	return mPath;
@@ -379,25 +420,12 @@ static Path gAppDataDirectory = Path();
 static Path gAppLocalDataDirectory = Path();
 static std::string gScriptDataDirectoryName = "";
 
-namespace {
-    // Convert inDirectory to an absolute path, and make sure that it
-    // actually exists.
-    Path NormalizePath(const Path &inDirectory) {
-        // Convert our path to an absolute path.
-        fs::path path(inDirectory.ToNativePathString(), fs::native);
-        fs::path completed(fs::complete(path, fs::current_path()));
-        Path normalized(Path::NativePath(completed.native_directory_string()));
-
-        // Sanity-check our path, store it, and return it.
-        CHECK(normalized.IsDirectory(),
-              ("\'" + normalized.ToNativePathString() +
-               "\' is not a valid directory").c_str());
-        return normalized;
-    }
+void FileSystem::SetRuntimeDirectory(const Path &inDirectory) {
+    gRuntimeDirectory = CompletePath(inDirectory);
 }
 
 void FileSystem::SetRuntimeDirectory(const std::string &inDirectory) {
-    gRuntimeDirectory = NormalizePath(Path::NativePath(inDirectory));
+    SetRuntimeDirectory(Path::NativePath(inDirectory));
 }
 
 Path FileSystem::GetRuntimeDirectory() {
@@ -405,7 +433,7 @@ Path FileSystem::GetRuntimeDirectory() {
 }
 
 void FileSystem::SetBaseDirectory(const Path &inDirectory) {
-	gCurrentBaseDirectory = NormalizePath(inDirectory);
+	gCurrentBaseDirectory = CompletePath(inDirectory);
 }
 
 void FileSystem::SetBaseDirectory(const std::string &inDirectory) {
@@ -481,7 +509,7 @@ Path FileSystem::ResolveFontPath(const std::string &inRelPath) {
     // TODO - This always calls native_file_string, even when it should call
     // native_directory_string.  Since we're not running on VMS (or
     // something even more outlandish), this shouldn't give us any problems.
-    return Path::NativePath(resolved.native_file_string());
+    return BoostPathToPath(resolved, false);
 }
 
 

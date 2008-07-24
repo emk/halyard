@@ -29,7 +29,7 @@ BEGIN_NAMESPACE_HALYARD
 
 class TSchemeScriptEditorDB : public ScriptEditorDB {
 protected:
-    virtual void ProcessFileInternal(const std::string &relpath);    
+    virtual void ProcessFileInternal(const std::string &path);    
 
 public:
     TSchemeScriptEditorDB(const std::string &db_name)

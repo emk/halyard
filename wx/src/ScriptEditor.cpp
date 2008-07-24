@@ -1865,7 +1865,7 @@ void ScriptTree::HighlightFile(const wxString &path) {
     wxTreeItemId new_item;
     ScriptEditorDB *db = TInterpreterManager::GetScriptEditorDB();
     if (db) {
-        std::string relpath(db->NativeToRelPath(ToStdString(path)));
+        std::string relpath(ScriptEditorDB::NativeToRelPath(ToStdString(path)));
         if (relpath != "")
             new_item = FindItem(relpath);
     }
@@ -1902,7 +1902,8 @@ void ScriptTree::FileChanged(const std::string &relpath) {
     // Find the item corresponding to this file, creating it if necessary.
     wxTreeItemId item = FindItem(relpath, true, false);
     SetItemData(item,
-                new FileTreeItemData(this, db->RelPathToNative(relpath)));
+                new FileTreeItemData(this,
+                                     ScriptEditorDB::RelPathToNative(relpath)));
 
     // Get the definitions for this file.
     ScriptEditorDB::Definitions defs = db->FindDefinitionsInFile(relpath);

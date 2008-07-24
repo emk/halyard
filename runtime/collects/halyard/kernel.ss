@@ -679,9 +679,9 @@
   (define (set-extract-definitions-fn! f)
     (set! *extract-definitions-fn* f))
   
-  (define (%kernel-extract-definitions relative-file-path)
+  (define (%kernel-extract-definitions file-path)
     (with-errors-blocked (fatal-error)
-      (define path (build-path (current-directory) relative-file-path))
+      (define path (build-path file-path))
       (%assert *extract-definitions-fn*)
       ;; We want to ignore errors here (unless we're debugging tags.ss),
       ;; because *EXTRACT-DEFINITIONS-FN* regularly blows up when

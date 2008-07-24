@@ -109,7 +109,7 @@ protected:
         void Commit();
     };
 
-    virtual void ProcessFileInternal(const std::string &relpath);
+    virtual void ProcessFileInternal(const std::string &path);
 
     Definitions ReadDefinitions(sqlite3::reader &r);
 
@@ -117,8 +117,8 @@ public:
     ScriptEditorDB(const std::string &db_name);
     virtual ~ScriptEditorDB();
 
-    std::string NativeToRelPath(const std::string &relpath);
-    std::string RelPathToNative(const std::string &native);
+    static std::string NativeToRelPath(const std::string &relpath);
+    static std::string RelPathToNative(const std::string &native);
 
     virtual void UpdateDatabase();
 
