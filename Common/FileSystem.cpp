@@ -377,7 +377,6 @@ static Path gRuntimeDirectory = Path();
 static Path gCurrentBaseDirectory = Path();
 static Path gAppDataDirectory = Path();
 static Path gAppLocalDataDirectory = Path();
-static std::string gScriptsDirectoryName = "scripts";
 static std::string gScriptDataDirectoryName = "";
 
 namespace {
@@ -477,18 +476,6 @@ Path FileSystem::ResolveFontPath(const std::string &inRelPath) {
     // native_directory_string.  Since we're not running on VMS (or
     // something even more outlandish), this shouldn't give us any problems.
     return Path::NativePath(resolved.native_file_string());
-}
-
-void FileSystem::SetScriptsDirectoryName(const std::string &inName) {
-    gScriptsDirectoryName = inName;
-}
-
-std::string FileSystem::GetScriptsDirectoryName() {
-    return gScriptsDirectoryName;
-}
-
-FileSystem::Path FileSystem::GetScriptsDirectory() {
-    return GetBaseDirectory().AddComponent(gScriptsDirectoryName);
 }
 
 

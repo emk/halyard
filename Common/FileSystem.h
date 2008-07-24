@@ -296,23 +296,11 @@ namespace FileSystem {
 	///
 	Path ResolveFontPath(const std::string &inRelPath);
 
-    //////////
-    /// Set the name of the scripts directory that we're loading from.
-    /// This is used by the test suites to load scripts from "test-scripts"
-    /// instead of the usual "scripts" directory.
-    ///
-    void SetScriptsDirectoryName(const std::string &inName);
-
-    //////////
-    /// Get the name of the scripts directory that we're loading from.
-    /// Please call GetScriptsDirectory instead if at all possible.
-    ///
-    std::string GetScriptsDirectoryName();
-
 	//////////
 	/// Get the directory Halyard uses to store scripts.
 	///
-	Path GetScriptsDirectory();
+	inline Path GetScriptsDirectory()
+        { return GetBaseDirectory().AddComponent("scripts"); }
 
 	//////////
 	/// Get the path to a specific script file.

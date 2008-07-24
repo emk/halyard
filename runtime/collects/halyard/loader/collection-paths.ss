@@ -101,11 +101,7 @@
           (loop (cdr candidates))))))
     
   ;; Make sure the "scripts" directory and various other collection
-  ;; directories get searched for collections of support modules.  Note
-  ;; that if SCRIPTS-DIRECTORY-NAME is not equal to "scripts", we don't
-  ;; attempt to honor that when searching for libraries, because we don't
-  ;; have enough engine state set up at the top level of this file to run
-  ;; %call-prim.
+  ;; directories get searched for collections of support modules.
   (current-library-collection-paths
    (list* (build-path (current-directory) "scripts")
           (build-path (current-directory) "collects")

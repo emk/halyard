@@ -313,10 +313,6 @@ DEFINE_PRIMITIVE(NotifyScriptLoaded) {
     TInterpreter::GetInstance()->NotifyScriptLoaded();    
 }
 
-DEFINE_PRIMITIVE(ScriptsDirectoryName) {
-    ::SetPrimitiveResult(FileSystem::GetScriptsDirectoryName());
-}
-
 DEFINE_PRIMITIVE(Sha1File) {
     std::string path;
     inArgs >> path;
@@ -380,7 +376,6 @@ void Halyard::RegisterCommonPrimitives()
 	REGISTER_PRIMITIVE(MeasureTextAA);
     REGISTER_PRIMITIVE(NotifyFileLoaded);
     REGISTER_PRIMITIVE(NotifyScriptLoaded);
-    REGISTER_PRIMITIVE(ScriptsDirectoryName);
     REGISTER_PRIMITIVE(Sha1File);
     REGISTER_PRIMITIVE(StateDbSet);
     REGISTER_PRIMITIVE(StateDbGet);

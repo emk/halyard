@@ -75,10 +75,6 @@
   (define (draw-load-progress)
     (maybe-call-prim 'DrawLoadProgress))
 
-  ;; Get the official directory we should be loading scripts from.
-  (define (scripts-directory-name)
-    (%call-prim 'ScriptsDirectoryName))
-
   ;; Should we be compiling our files using the errortrace instrumentation?
   (define (errortrace-compile-enabled?)
     (if (%call-prim 'HavePrimitive 'ErrortraceCompileEnabled)
@@ -285,8 +281,7 @@
           
       ;; Load the user's actual script into our new namespace.
       (set! filename "start.ss")
-      (load/use-compiled (build-path (current-directory)
-                                     (scripts-directory-name) "start.ss"))
+      (load/use-compiled (build-path (current-directory) "scripts" "start.ss"))
       ;; (XXX - Disabled until we can determine why the number of files
       ;; loaded goes up after a "reload script".)
       ;; XXX- Re-enabled because we currently suppress all splash-screen
