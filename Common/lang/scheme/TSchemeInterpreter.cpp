@@ -144,6 +144,7 @@ TSchemeInterpreterManager::GetRuntimeDirectory(int inArgc,
     return scheme_make_utf8_string(str.c_str());
 
     END_EXCEPTION_TRAPPER(TException::ReportFatalException)
+    gLog.FatalError("Should never reach end of GetRuntimeDirectory");
 }
 
 Scheme_Object *

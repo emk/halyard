@@ -386,10 +386,13 @@ void ScriptEditorDB::FetchModTimesFromDatabase(ModTimeMap &outMap) {
     }
 }
 
-/// The recursive guts of ScanTree.
+/// The recursive guts of ScanTree.  If followSymLink is false, simply
+/// ignore this subtree if it's a symlink.  Note the followSymLink will
+/// automatically be set to false when we recurse.
 void ScriptEditorDB::ScanTreeInternal(const std::string &relpath,
                                       const std::string &extension,
                                       const ModTimeMap &modtimes,
+                                      bool followSymLink,
                                       strings &outFilesToProcess)
 {
     // We need to use fs::no_check here because this path contains
@@ -397,15 +400,15 @@ void ScriptEditorDB::ScanTreeInternal(const std::string &relpath,
     //
     // PORTABILITY - Make sure that this actually works.
     fs::path path(RelPathToNative(relpath), fs::no_check);
-    if (fs::symbolic_link_exists(path)) {
-        // Don't follow symlinks.
+    if (fs::symbolic_link_exists(path) && !followSymLink) {
+        // Don't follow symlinks unless we're asked to.
     } else if (fs::is_directory(path)) {
         if (!ShouldSkipDirectory(relpath)) {
             // Recursively scan everything in this directory.
             fs::directory_iterator i(path);
             for (; i != fs::directory_iterator(); ++i) {
                 std::string child_relpath(relpath + "/" + i->leaf());
-                ScanTreeInternal(child_relpath, extension, modtimes,
+                ScanTreeInternal(child_relpath, extension, modtimes, false,
                                  outFilesToProcess);
             }
         }
@@ -434,7 +437,11 @@ ScriptEditorDB::strings ScriptEditorDB::ScanTree(const std::string &relpath,
     
         FetchModTimesFromDatabase(modtimes);    
         StTransaction transaction(this);
-        ScanTreeInternal(relpath, extension, modtimes, result);    
+        // Be sure to do the right thing if our top-level relpath resolves
+        // to a symlink.  This happens when running from inside our build
+        // tree on Mac, where we symlink runtime/ into
+        // Halyard.app/Contents/SharedSupport.
+        ScanTreeInternal(relpath, extension, modtimes, true, result);    
         transaction.Commit();
     }
 

@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = libs Common wx
 
 check:
-	(cd test; ../Common/CommonTest)
+	(cd Common/test; ../CommonTest)
 
 # Run Common/TestAll over and over again, and only stop when it dumps core.
 # We're using this to stress-test the new PLT v372 support to see if we've

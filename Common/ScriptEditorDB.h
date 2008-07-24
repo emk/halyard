@@ -89,6 +89,7 @@ private:
     void ScanTreeInternal(const std::string &relpath,
                           const std::string &extension,
                           const ModTimeMap &modtimes,
+                          bool followSymLink,
                           strings &outFilesToProcess);
     bool NeedsProcessingInternal(const std::string &relpath,
                                  const ModTimeMap &modtimes);

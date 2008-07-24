@@ -14,13 +14,19 @@ if NEED_BUNDLE
 # ./Halyard.app" from the command-line.
 HALYARD_APP = Halyard.app
 BUNDLED_HALYARD = $(HALYARD_APP)/Contents/MacOS/halyard
+BUNDLED_RUNTIME = $(HALYARD_APP)/Contents/SharedSupport
 
-all: $(BUNDLED_HALYARD)
+all: $(BUNDLED_HALYARD) $(BUNDLED_RUNTIME)
 
 $(BUNDLED_HALYARD): halyard
 	mkdir -p "`dirname $(BUNDLED_HALYARD)`"
 	cp "$<" "$@"
 	chmod +x "$@"
+
+$(BUNDLED_RUNTIME):
+	mkdir -p "`dirname $(BUNDLED_RUNTIME)`"
+	(cd "`dirname $(BUNDLED_RUNTIME)`" && \
+	 ln -sf "$(abs_top_srcdir)/runtime/" "`basename $(BUNDLED_RUNTIME)`")
 
 endif
 

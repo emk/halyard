@@ -4,3 +4,4 @@ application.aps
 *.a
 AppHeaders.h.gch
 halyard
+SharedSupport
