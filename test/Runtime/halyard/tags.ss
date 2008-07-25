@@ -30,111 +30,125 @@
            define-syntax-help
            (rename process-definition tagger-process-definition)
            form-name)
-        
-  (define *syntax-taggers* (make-hash-table))
-        
-  (define (insert-syntax-tagger! name fn)
-    (hash-table-put! *syntax-taggers* name fn))
-      
-  (define (find-syntax-tagger name)
-    (hash-table-get *syntax-taggers* name (lambda () #f)))
-  
-  ;; Syntax taggers are small syntax expanders that are run on the
-  ;; code not for their expansion, but to add help information and
-  ;; source location information linked to a name to a database that
-  ;; the editor can access. There are two ways to define syntax
-  ;; taggers; a high-level API, and a low-level API. The high-level
-  ;; API works a lot like syntax rules; you specify patterns that
-  ;; match the syntax being tagged, and then specify which parts of
-  ;; those patterns correspond to the name being tagged and the
-  ;; help. The syntax is as follows:
-  ;;
-  ;; (define-syntax-tagger definer
-  ;;   [(pattern ...) 
-  ;;    type name indent help]
-  ;;   ...)
-  ;; 
-  ;; This will match forms that begin with definer against each of the
-  ;; patterns, and depending on which pattern matches, will insert
-  ;; tags based on the type, name, and help given. 'type' is a symbol
-  ;; that determines what kind of definition this is, so the editor
-  ;; can display the correct icon in the definition browser.  It can
-  ;; be on of the following values: 'syntax, 'function, 'variable,
-  ;; 'constant, 'class, 'template, 'group, 'sequence, 'card, 'element,
-  ;; or any other symbol; each of the listed symbols will cause the
-  ;; editor to display the corresponding icon, while for all of the
-  ;; other symbols the editor will just use a default symbol. 'name'
-  ;; should be any of the pattern variables listed in the pattern, and
-  ;; will attach the tagging information to the name that matched that
-  ;; variable at the source location where that name occurs. Indentation
-  ;; can be '#f' (when 'definer' does not define new syntax), the symbol
-  ;; 'function' (for function-style indentation of syntax), or the
-  ;; number of non-body forms at the start of the macro which should
-  ;; receive extra indentation.
-  ;;
-  ;; Help is optional; it can be either #f, in which case no help
-  ;; is inserted into the database, or it can be an expression based
-  ;; on pattern variables from the pattern, in which case the help
-  ;; will be based on substituting the values that matched the pattern
-  ;; into the help expression. 
-  ;; 
-  ;; An example:
-  ;; 
-  ;; (define-syntax define-foo
-  ;;   (syntax-rules ()
-  ;;     [(define-foo (name arg ...) body)
-  ;;      <do something to define a foo as a function>]
-  ;;     [(define-foo super (name arg ...) body)
-  ;;      <do something to define a foo as syntax with a superclass>]))
-  ;; (define-syntax-tagger define-foo
-  ;;   [(define-foo (name arg ...) body)
-  ;;    'function name (name arg ...)]
-  ;;   [(define-foo super (name arg ...) body)
-  ;;    'syntax name (name arg ...)])
-  ;; (define-foo (test a b) (+ a b))
-  ;; (define-foo syntax (frob foo bar) (cat foo bar))
-  ;;
-  ;; This example will insert into the databae information defining
-  ;; 'test' to be a function defined on the line that it is defined
-  ;; on, with help string "(test a b)", and will insert information
-  ;; defining 'frob' to be syntax defined on the line it was defined 
-  ;; on with help string "(frob foo bar)". 
-  ;;
-  ;; This high-level interface is fine for most purposes, but
-  ;; sometimes you need to be able to programmatically manipulate a
-  ;; definition to determine what is defined where and what help
-  ;; strings to add to the database. For these purposes we have 
-  ;; define-syntax-tagger*, which has the following forms:
-  ;; 
-  ;; (define-syntax-tagger* name function)
-  ;; (define-syntax-tagger* (name stx) body)
-  ;;
-  ;; These cases are analogous to define-syntax when used with a
-  ;; syntax-case based expander; in the first case, function is a
-  ;; function that takes one argument, the syntax object for the
-  ;; definition being processed, while in the second case, that
-  ;; function is defined implicitly with the argument name given.
-  ;; Within these taggers, you need to call maybe-insert-def and
-  ;; maybe-insert-help to insert the definition information and help
-  ;; information for the definitions that you're dealing with.  These
-  ;; functions are used as follows:
-  ;;
-  ;; (maybe-insert-def name-syntax type)
-  ;; (maybe-insert-help name-syntax help)
-  ;; (maybe-insert-indentation name-syntax indentation)
-  ;; 
-  ;; The 'name-syntax' in these calls should be a syntax object that 
-  ;; corresponds to the name being defined. 'type' is a symbol, and 
-  ;; works as described above. 'help' should be any scheme object that 
-  ;; when printed will produce the desired help text; usually it is a 
-  ;; list produced by syntax-object->datum. 'indentation' should be either
-  ;; a non-negative integer specifying the number of leading non-body forms
-  ;; in a macro, or the symbol 'function' for function-style indentation.
-  ;;
-  ;; There are also variants of both of these forms for defining
-  ;; multiple taggers at once, define-syntax-taggers and
-  ;; define-syntax-taggers*. You can find definitions of each of
-  ;; these, and examples of their use, in the rest of this file.
+
+
+  ;;;======================================================================
+  ;;;  Macros for defining syntax taggers
+  ;;;======================================================================
+  ;;;
+  ;;; Syntax taggers are small syntax expanders that are run on the
+  ;;; code not for their expansion, but to add help information and
+  ;;; source location information linked to a name to a database that
+  ;;; the editor can access. There are two ways to define syntax
+  ;;; taggers; a high-level API, and a low-level API.
+  ;;;
+  ;;; The high-level API works a lot like syntax rules; you specify
+  ;;; patterns that match the syntax being tagged, and then specify
+  ;;; which parts of those patterns correspond to the name being
+  ;;; tagged and the help. The syntax is as follows:
+  ;;;
+  ;;; (define-syntax-tagger definer
+  ;;;   [(pattern ...) 
+  ;;;    type name indent help]
+  ;;;   ...)
+  ;;; 
+  ;;; This will match forms that begin with definer against each of
+  ;;; the patterns, and depending on which pattern matches, will
+  ;;; insert tags based on the type, name, indentation, and help
+  ;;; given.
+  ;;;
+  ;;; 'type' is a symbol that determines what kind of definition this
+  ;;; is, so the editor can display the correct icon in the definition
+  ;;; browser.  It can be on of the following values: 'syntax,
+  ;;; 'function, 'variable, 'constant, 'class, 'template, 'group,
+  ;;; 'sequence, 'card, 'element, or any other symbol; each of the
+  ;;; listed symbols will cause the editor to display the
+  ;;; corresponding icon, while for all of the other symbols the
+  ;;; editor will just use a default symbol.
+  ;;;
+  ;;; 'name' should be any of the pattern variables listed in the
+  ;;; pattern, and will attach the tagging information to the name
+  ;;; that matched that variable at the source location where that
+  ;;; name occurs.
+  ;;; 
+  ;;; 'indent' can be '#f' (when 'definer' does not define new
+  ;;; syntax), the symbol 'function' (for function-style indentation
+  ;;; of syntax), or the number of non-body forms at the start of the
+  ;;; macro which should receive extra indentation.
+  ;;;
+  ;;; 'help' is optional; it can be either #f, in which case no help
+  ;;; is inserted into the database, or it can be an expression based
+  ;;; on pattern variables from the pattern, in which case the help
+  ;;; will be based on substituting the values that matched the
+  ;;; pattern into the help expression.
+  ;;; 
+  ;;; An example:
+  ;;; 
+  ;;; (define-syntax define-foo
+  ;;;   (syntax-rules ()
+  ;;;     [(define-foo (name arg ...) body)
+  ;;;      <do something to define a foo as a function>]
+  ;;;     [(define-foo super (name arg ...) body)
+  ;;;      <do something to define a foo as syntax with a superclass>]))
+  ;;; (define-syntax-tagger define-foo
+  ;;;   [(define-foo (name arg ...) body)
+  ;;;    'function name 'function (name arg ...)]
+  ;;;   [(define-foo super (name arg ...) body)
+  ;;;    'syntax name #f (name arg ...)])
+  ;;; (define-foo (test a b) (+ a b))
+  ;;; (define-foo syntax (frob foo bar) (cat foo bar))
+  ;;; (define-syntax-indent frob 1)
+  ;;;
+  ;;; This example will insert a record into the database defining
+  ;;; 'test' to be a function, along with its source location, with
+  ;;; help string "(test a b)", with function indentation.  It will
+  ;;; also insert a record defining 'frob' to be syntax with help
+  ;;; string "(frob foo bar)", which has one leading non-body form.
+  ;;;
+  ;;; The help strings and indentation provided by syntax taggers are
+  ;;; sometimes not sufficient for all cases.  A syntax tagger tries
+  ;;; to automatically guess these values from a definition, but won't
+  ;;; always be able to guess correctly.  For this reason, you can
+  ;;; define help and indentation for individual forms using
+  ;;; DEFINE-SYNTAX-HELP and DEFINE-SYNTAX-INDENT.  They are defined
+  ;;; and documented later in the file.
+  ;;;
+  ;;; This high-level interface is fine for most purposes, but
+  ;;; sometimes you need to be able to programmatically manipulate a
+  ;;; definition to determine what is defined where and what help
+  ;;; strings to add to the database. For these purposes we have
+  ;;; define-syntax-tagger*, which has the following forms:
+  ;;; 
+  ;;; (define-syntax-tagger* name function)
+  ;;; (define-syntax-tagger* (name stx) body)
+  ;;;
+  ;;; These cases are analogous to define-syntax when used with a
+  ;;; syntax-case based expander; in the first case, function is a
+  ;;; function that takes one argument, the syntax object for the
+  ;;; definition being processed, while in the second case, that
+  ;;; function is defined implicitly with the argument name given.
+  ;;; Within these taggers, you need to call maybe-insert-def and
+  ;;; maybe-insert-help to insert the definition information and help
+  ;;; information for the definitions that you're dealing with.  These
+  ;;; functions are used as follows:
+  ;;;
+  ;;; (maybe-insert-def name-syntax type)
+  ;;; (maybe-insert-help name-syntax help)
+  ;;; (maybe-insert-indentation name-syntax indentation)
+  ;;; 
+  ;;; The 'name-syntax' in these calls should be a syntax object that
+  ;;; corresponds to the name being defined.  'type' is a symbol, and
+  ;;; works as described above.  'help' should be any scheme object
+  ;;; that when printed will produce the desired help text; usually it
+  ;;; is a list produced by syntax-object->datum.  'indentation'
+  ;;; should be either a non-negative integer specifying the number of
+  ;;; leading non-body forms in a macro, or the symbol 'function' for
+  ;;; function-style indentation.
+  ;;;
+  ;;; There are also variants of both of these forms for defining
+  ;;; multiple taggers at once, define-syntax-taggers and
+  ;;; define-syntax-taggers*.  You can find definitions of each of
+  ;;; these, and examples of their use, in the rest of this file.
   
   (define-syntax define-syntax-taggers*
     (syntax-rules ()
@@ -178,25 +192,19 @@
         
   (define-syntax-indent define-syntax-taggers 1)
   (define-syntax-indent define-syntax-tagger 1)
-        
-  ;;; DEFINE-SYNTAX help can be used to provide a help string for a top-level
-  ;;; macros that expands using SYNTAX-CASE.  But it's useless to try and
-  ;;; generate this form in a macro expansion--use DEFINE-SYNTAX-TAGGER
-  ;;; directly instead.
-  (define-syntax define-syntax-help 
-    (syntax-rules ()
-      [(_ name help) (void)]))
-  (define-syntax-tagger* (define-syntax-help stx)
-    (syntax-case stx ()
-      [(_ name help) 
-       (maybe-insert-help #'name (syntax-object->datum #'help))]))
-  (define-syntax-indent define-syntax-help 1)
   
-  ;;; See indent.ss for more details.
-  (define-syntax-tagger* (define-syntax-indent stx)
-    (syntax-case stx ()
-      [(_ name indent)
-       (maybe-insert-indentation #'name (syntax-object->datum #'indent))]))
+  
+  ;;;======================================================================
+  ;;;  Syntax tagger internals
+  ;;;======================================================================
+  
+  (define *syntax-taggers* (make-hash-table))
+        
+  (define (insert-syntax-tagger! name fn)
+    (hash-table-put! *syntax-taggers* name fn))
+      
+  (define (find-syntax-tagger name)
+    (hash-table-get *syntax-taggers* name (lambda () #f)))
   
   (define (insert-def name type line)
     (call-prim 'ScriptEditorDBInsertDef name type line))
@@ -235,22 +243,52 @@
       [anything-else
        #f]))
   
-  (define (variable-type stx)
-    (let [[name (syntax-object->datum stx)]]
-      (if (symbol? name)
-          (let [[str (symbol->string name)]]
-            (if (> (string-length str) 0)
-                (let [[letter (string-ref str 0)]]
-                  (if (equal? letter #\$)
-                      'constant
-                      'variable))
-                'variable))
-          'variable)))
-  
   (define (process-definition stx)
     (let ((tagger (find-syntax-tagger (form-name stx))))
       (when tagger
         (tagger stx))))
+
+  (define (extract-definitions file-path)
+    (call-with-input-file file-path
+      (lambda (port)
+        (define (next)
+          (read-syntax file-path port))
+        (port-count-lines! port)
+        (let recurse [[stx (next)]]
+          (unless (eof-object? stx)
+            (process-definition stx)
+            (recurse (next)))))))
+
+  (set-extract-definitions-fn! extract-definitions)
+
+
+  ;;;======================================================================
+  ;;;  Special case macros for overriding tagger defaults
+  ;;;======================================================================
+
+  ;;; DEFINE-SYNTAX-HELP can be used to provide a help string for a
+  ;;; top-level macros that expands using SYNTAX-CASE.  But it's
+  ;;; useless to try and generate this form in a macro expansion--use
+  ;;; DEFINE-SYNTAX-TAGGER directly instead.
+  (define-syntax define-syntax-help 
+    (syntax-rules ()
+      [(_ name help) (void)]))
+  (define-syntax-tagger* (define-syntax-help stx)
+    (syntax-case stx ()
+      [(_ name help) 
+       (maybe-insert-help #'name (syntax-object->datum #'help))]))
+  (define-syntax-indent define-syntax-help 1)
+  
+  ;;; See indent.ss for more details.
+  (define-syntax-tagger* (define-syntax-indent stx)
+    (syntax-case stx ()
+      [(_ name indent)
+       (maybe-insert-indentation #'name (syntax-object->datum #'indent))]))
+
+
+  ;;;======================================================================
+  ;;;  Taggers for built-in syntax and Swindle
+  ;;;======================================================================
   
   (define-syntax-tagger* (module stx)
     (syntax-case stx ()
@@ -263,7 +301,19 @@
       [(begin . body)
        (for-each process-definition (syntax->list #'body))]
       [anything-else #f]))
-        
+  
+  (define (variable-type stx)
+    (let [[name (syntax-object->datum stx)]]
+      (if (symbol? name)
+          (let [[str (symbol->string name)]]
+            (if (> (string-length str) 0)
+                (let [[letter (string-ref str 0)]]
+                  (if (equal? letter #\$)
+                      'constant
+                      'variable))
+                'variable))
+          'variable)))
+          
   (define-syntax-taggers* (define define* defgeneric defgeneric* defmethod)
     (lambda (stx)
       (syntax-case stx ()
@@ -316,19 +366,6 @@
     [(_ (name . args) rewrite)
      'syntax name 0 (name . args)])
         
-  (define-syntax-taggers* (card sequence group element)
-    (lambda (stx)
-      (syntax-case stx ()
-        [(_ name)
-         (maybe-insert-def #'name (form-name stx))]
-        [(_ name args . body)
-         (maybe-insert-def #'name (form-name stx))]
-        [anything-else #f])))
-        
-  (define-syntax-tagger define-stylesheet
-    [(define-stylesheet name . body)
-     'constant name #f (define-stylesheet name . body)])
-  
   (define-syntax-taggers* (defclass defclass* defstruct)
     (lambda (stx)
       (syntax-case stx ()
@@ -451,16 +488,23 @@
      (string->symbol (predicate-name class))
      'obj))
   
-  (define (extract-definitions file-path)
-    (call-with-input-file file-path
-      (lambda (port)
-        (define (next)
-          (read-syntax file-path port))
-        (port-count-lines! port)
-        (let recurse [[stx (next)]]
-          (unless (eof-object? stx)
-            (process-definition stx)
-            (recurse (next)))))))
+  
+  ;;;======================================================================
+  ;;;  Taggers for Halyard and Mizzen syntax
+  ;;;======================================================================
+  
+  (define-syntax-taggers* (card sequence group element)
+    (lambda (stx)
+      (syntax-case stx ()
+        [(_ name)
+         (maybe-insert-def #'name (form-name stx))]
+        [(_ name args . body)
+         (maybe-insert-def #'name (form-name stx))]
+        [anything-else #f])))
+        
+  (define-syntax-tagger define-stylesheet
+    [(define-stylesheet name . body)
+     'constant name #f (define-stylesheet name . body)])
 
   ;; This will allow meta-. to work on ruby-style classes.  This only
   ;; extracts the most basic information to allow meta-. on the class
@@ -480,6 +524,4 @@
   (define-syntax-tagger define-node-definer
     [(_ definer-name default-superclass)
      'syntax definer-name 2
-     (definer-name name (%superclass% &rest keys) &body body)])
-
-  (set-extract-definitions-fn! extract-definitions))
+     (definer-name name (%superclass% &rest keys) &body body)]))
