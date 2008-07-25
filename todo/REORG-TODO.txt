@@ -1,0 +1,61 @@
+TODO
+
+/ Clean up local/graphics/cursors
+/ Test case for local/cursors
+/ Fix engine release process on Windows
+
+  Test media subsystems on Windows extensively
+  Turn halyard-media.git into halyard-streaming.git
+  Modify make-native-path and friends to check local first, fall back to stream
+
+PROPOSED LAYOUT
+
+/ Rakefile
+/ application.halyard
+  config
+/   developer.prefs
+    trusted-keys.gpg
+    windows-installer.iss
+    Autorun.inf
+    AUTO-UPDATE
+    TRUST-PRECOMPILED
+  doc
+    LICENSE.txt
+    userguide.pdf — hypothetical
+  tools
+    build — formerly buildfile.rb
+
+/ temp
+/   definitions.sqlite3
+/   user.conf
+
+/ scripts
+/   <<rename files to match groups they contain>>
+  collects
+/   <<libraries for current program>>
+,   iml
+      _halyard
+        local
+          graphics — “mount” as local/graphics/iml
+          html
+/ local
+/   media (or movies?)
+/   html
+/   graphics (or images?)
+/   branding — formerly Graphics/script
+/   cursors
+/ streaming
+/   media
+
+/ engine
+X   Halyard.app — not yet implementable
+/   win32
+/     LICENSE.txt
+/     Halyard.exe
+/     *.dll
+/     plt
+/     collects
+/       mizzen
+/       halyard
+/     fonts
+
