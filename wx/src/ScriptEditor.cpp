@@ -2360,14 +2360,14 @@ void ScriptEditor::LoadTabs() {
     wxString filename;
     for (; i != keys.end(); ++i) {
         filename = user_config->Read(*i);
-        if (::wxFileExists(filename))
-            OpenDocumentInternal(filename);
+        // OpenDocumentInternal checks if the file exists
+        OpenDocumentInternal(filename);
     }
 
     user_config->SetPath(old_path);
 
     wxString active = user_config->Read(wxT("/ScriptEditor/CurrentTab"));
-    if (active.Len() != 0) 
+    if (active.Len() != 0)
         OpenDocumentInternal(active);
 
     mDontSaveTabs = false;
@@ -2447,9 +2447,11 @@ void ScriptEditor::OpenDocumentInternal(const wxString &path, int line) {
         }
     }
     
-    ScriptDoc *doc = new ScriptDoc(mNotebook, -1, GetTextSize(), path);
-    mNotebook->AddDocument(doc);
-    doc->GotoLineEnsureVisible(line-1);
+    if (::wxFileExists(path)) {
+        ScriptDoc *doc = new ScriptDoc(mNotebook, -1, GetTextSize(), path);
+        mNotebook->AddDocument(doc);
+        doc->GotoLineEnsureVisible(line-1);
+    }
 }
 
 void ScriptEditor::ShowDefinitionInternal(const wxString &identifier) {
