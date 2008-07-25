@@ -38,6 +38,11 @@ if commit =~ /^v[0-9.]+(-.*[0-9])?$/
   # from inside the function for_release?, below.
   $untagged_build = false
   version = commit.sub(/^v/, '')
+elsif commit =~ /^origin\//
+  # If specify a version of the form origin/foo, then we want to make an
+  # untagged build of branch foo.
+  $untagged_build = true
+  version = commit.sub(/^origin\//, '')
 else
   # If we don't have a version of the form "v0.5.1", "v2.5-rc2", etc., then
   # don't actually upload the results of this build anywhere.
@@ -72,7 +77,7 @@ plt_collects = %w(compiler config errortrace mzlib net planet setup srfi
 lib_dirs = %w(libs/boost libs/curl libs/freetype2 libs/libivorbisdec
              libs/libxml2 libs/plt libs/portaudio libs/quake2
              libs/sqlite libs/wxWidgets)
-media_dir = "test/Media"
+media_dir = "test/streaming/media"
 
 release_binaries = 
   %w(libmzsch3mxxxxxxx.dll Halyard.exe Halyard.pdb Halyard_d.exe Halyard_d.pdb
@@ -111,7 +116,7 @@ heading 'Build source tarballs.', :name => :source_tarball do
   # Build our halyard-all-x.y.z.tar.gz archive
   make_tarball src_dir, :filename => all_archive
 
-  # Build our normal source archive, halyard-x.y.z.tar.gz, ecluding
+  # Build our normal source archive, halyard-x.y.z.tar.gz, excluding
   # our libraries and media directory.
   excludes = lib_dirs + [media_dir]
   make_tarball src_dir, :filename => src_archive, :exclude => excludes
@@ -124,12 +129,13 @@ heading 'Build source tarballs.', :name => :source_tarball do
   make_tarball "#{src_dir}/#{media_dir}", :filename => media_archive
 
   # Build our mizzen tarball
-  cp_r "#{src_dir}/test/Runtime/mizzen", mizzen_dir
+  cp_r "#{src_dir}/runtime/collects/mizzen", mizzen_dir
   make_tarball mizzen_dir, :filename => mizzen_archive
 
-  # Copy our PLT collections into the Runtime directory.
+  # Copy our PLT collections into the runtime directory.
+  mkdir "#{src_dir}/runtime/plt"
   plt_collects.each do |name|
-    cp_r "#{src_dir}/libs/plt/collects/#{name}", "#{src_dir}/test/Runtime"
+    cp_r "#{src_dir}/libs/plt/collects/#{name}", "#{src_dir}/runtime/plt"
   end
 
   # Copy out clean copy of halyard/test before doing rake test; we will
@@ -153,7 +159,7 @@ heading 'Building and testing engine.', :name => :build do
   end
 end
 
-heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
+heading 'Tagging runtime and binaries in Subversion.', :name => :tag_binaries do
   if for_release?
     svn :mkdir, '-m', "Creating directory for release #{version}.", bin_url
     svn :co, bin_url, "#{bin_dir}-svn"
@@ -164,24 +170,26 @@ heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
     full_src_dir = "#{build_dir}/#{src_dir}"
     full_bin_dir = "#{build_dir}/#{bin_dir}"
 
-    cp_r "#{full_src_dir}/test/Runtime", "."
-    svn :add, "Runtime" if for_release?
-    cp_r "#{full_src_dir}/test/Fonts", "."
-    svn :add, "Fonts" if for_release?
-    cp "#{full_src_dir}/LICENSE.txt", "."
-    svn :add, "LICENSE.txt" if for_release?
+    release_sources =
+      Dir["#{full_src_dir}/runtime/*", "#{full_src_dir}/LICENSE.txt"]
+    release_sources.each do |path|
+      cp_r path, "."
+      svn :add, File.basename(path) if for_release?
+    end
 
     release_binaries.each do |file|
-      cp "#{full_bin_dir}/Win32/Bin/#{file}", file
+      cp "#{full_bin_dir}/runtime/#{file}", file
       svn :add, file if for_release?
     end
 
     # Set up svn:ignore properties on the Runtime directories.
-    Find.find "Runtime" do |path|
-      next unless File.directory?(path)
-      next if path =~ /\/\.svn$/
-      next if path =~ /\/\.svn\//
-      svn :propset, "svn:ignore", "compiled", path if for_release?
+    %w(plt collects).each do |scheme_dir|
+      Find.find scheme_dir do |path|
+        next unless File.directory?(path)
+        next if path =~ /\/\.svn$/
+        next if path =~ /\/\.svn\//
+        svn :propset, "svn:ignore", "compiled", path if for_release?
+      end
     end
 
     svn :ci, '-m', "Tagging binaries for release #{version}." if for_release?
@@ -189,10 +197,11 @@ heading 'Tagging Runtime and binaries in Subversion.', :name => :tag_binaries do
 end
 
 heading 'Releasing binaries to test project.', :name => :release_to_test do
-  release_binaries.each do |file|
-    cp "#{bin_dir}/Win32/Bin/#{file}", "#{test_dir}/#{file}"
-  end
   cp "#{src_dir}/LICENSE.txt", test_dir
+  mkdir "#{test_dir}/engine"
+  # We get a lot of Subversion junk with this cp_r, but make_tarball will
+  # just ignore it.
+  cp_r "#{bin_dir}-svn", "#{test_dir}/engine/win32"
 end
 
 heading 'Building Halyard Test ZIP archive.', :name => :build_test_zip do
