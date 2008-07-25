@@ -16,8 +16,8 @@ TODO
 / Make engine work again on Mac
 / Fix engine release code
 
-  Add Ruby libs to runtime
-  Set up modular rake tasks
+/ Add Ruby libs to runtime
+/ Set up modular rake tasks
   Set up collects/$LIB/_halyard magic
   Fix smart defaulting of script directory to open
 
