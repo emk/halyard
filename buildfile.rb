@@ -9,9 +9,12 @@
 #   - Cygwin packages: git, autoconf, automake, pkg-config, subversion, zip
 #   - Password-free login to any SVN and SSH servers mentioned below
 
-require 'tools/buildscript/buildscript'
+# Add our Halyard-related libraries to our $LOAD_PATH.
+$LOAD_PATH << "#{File.dirname(__FILE__)}/runtime/ruby/lib"
+
+require 'buildscript/buildscript'
 include Buildscript
-require 'tools/buildscript/commands'
+require 'buildscript/commands'
 require 'find'
 
 svn_url = 'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main'
