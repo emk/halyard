@@ -3,6 +3,23 @@ TODO
 / Clean up local/graphics/cursors
 / Test case for local/cursors
 / Fix engine release process on Windows
+/ Add APIs for fetching Runtime directory, etc., from collection-paths.ss
+/ Fix collection-paths.ss to look for runtime and PLT correctly
+/ Get halyard/test running
+/ Where do we keep test-scripts, and can we clean it up?
+/ Get CommonTest running
+/ Get Rakefile to run CommonTest
+/ Remove SetScriptsDirectoryName
+/ Fix user.conf crash in runtime mode
+/ Fix updater test card
+/ Fix ScriptEditorDB
+/ Make engine work again on Mac
+/ Fix engine release code
+
+  Add Ruby libs to runtime
+  Set up modular rake tasks
+  Set up collects/$LIB/_halyard magic
+  Fix smart defaulting of script directory to open
 
   Test media subsystems on Windows extensively
   Turn halyard-media.git into halyard-streaming.git
