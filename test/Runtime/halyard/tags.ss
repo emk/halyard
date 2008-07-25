@@ -362,9 +362,21 @@
     [(_ base provider) 
      'syntax provider function #f])
   
+  ;; TODO - this only picks up the first of a series of substitutions;
+  ;; it should allow for a list of different substitutions.  Also, for
+  ;; the alias case, it would be nice if it could actually pick up the
+  ;; help string and indentation from whatever is being aliased.  This
+  ;; only affects a few Swindle internal definitions, so it's not very
+  ;; important.
   (define-syntax-taggers (defsubst defsubst*)
-    [(_ (name . args) rewrite)
-     'syntax name 0 (name . args)])
+    [(_ (name . args) rewrite more ...)
+     'syntax name 0 (name . args)]
+    [(_ name rewrite more ...)
+     'syntax name 0 #f])
+
+  (define-syntax-tagger defprimclass
+    [(_ name . rest)
+     'class name function name])
         
   (define-syntax-taggers* (defclass defclass* defstruct)
     (lambda (stx)
