@@ -18,12 +18,12 @@ TODO
 
 / Add Ruby libs to runtime
 / Set up modular rake tasks
-  Set up collects/$LIB/_halyard magic
+/ Set up collects/$LIB/_halyard magic
+/ Modify make-native-path and friends to check local first, fall back to stream
   Fix smart defaulting of script directory to open
 
   Test media subsystems on Windows extensively
   Turn halyard-media.git into halyard-streaming.git
-  Modify make-native-path and friends to check local first, fall back to stream
 
 PROPOSED LAYOUT
 

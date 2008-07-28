@@ -31,6 +31,9 @@
   (require (lib "interpolate.ss" "halyard"))
   (provide (all-from (lib "interpolate.ss" "halyard")))
 
+  (require (lib "content-paths.ss" "halyard"))
+  (provide (all-from (lib "content-paths.ss" "halyard")))
+
 
   ;;=======================================================================
   ;;  Support Modules

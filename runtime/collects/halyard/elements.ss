@@ -39,41 +39,9 @@
   ;;;======================================================================
   ;;;  File and Path Functions
   ;;;======================================================================
-  ;;;  Most of these are only used internally, in this file.
 
-  (provide abstract-path->native-path ensure-directory-exists)
+  (provide ensure-directory-exists)
 
-  (define (url? path)
-    (regexp-match "^(http|ftp|rtsp|file|gopher|about):" path))
-
-  ;;; Given a path of the form "foo/bar.baz", convert it to a native OS
-  ;;; path string.
-  (define (abstract-path->native-path . args)
-    (define reversed (reverse! args))
-    (define abstract-component (car reversed))
-    (define regular-components (reverse! (cdr reversed)))
-    (path->string (apply build-path 
-                         (append! regular-components
-                                  (regexp-split "/" abstract-component)))))
-
-  ;;; Build a path for accessing a script resource.  If PATH is a URL, it
-  ;;; is returned unchanged.  Otherwise, assume that PATH is an abstract
-  ;;; path relative to LOCATION/SUBDIR, and pass it to
-  ;;; ABSTRACT-PATH->NATIVE-PATH.
-  ;;;
-  ;;; The LOCATION parameter should be either "local" or "streaming".
-  ;;; Eventually, we'll want to get rid of the LOCATION parameter, and modify
-  ;;; this function (and various related functions) to look for the file in
-  ;;; both places.
-  (define (make-native-path location subdir path)
-    (if (url? path)
-      path
-	  (abstract-path->native-path (current-directory) location subdir path)))
-
-  (define (check-file path)
-    (unless (or (url? path) (file-exists? path))
-      (error (cat "No such file: " path))))
-  
   ;; XXX - This is not a well-designed function; it can only create
   ;; directories in a folder that's typically write-only (d'oh).  This
   ;; function is only useful for the updater (which only runs if it
@@ -473,8 +441,7 @@
   ;;; Draw a graphic loaded from PATH at point P in the current DC.  You
   ;;; may optionally specify a sub-rectangle of the graphic to draw.
   (define (draw-graphic p path &key (subrect :rect #f))
-    (let [[native (make-native-path "local" "graphics" path)]]
-      (check-file native)
+    (let [[native (resolve-content-path "graphics" path)]]
       (if subrect
           (call-prim 'LoadSubPic native p subrect)
           (call-prim 'LoadPic native p))))
@@ -482,8 +449,7 @@
   ;;; Return a rectangle located at 0,0 large enough to hold the graphic
   ;;; specified by NAME.
   (define (measure-graphic path)
-    (let [[native (make-native-path "local" "graphics" path)]]
-      (check-file native)
+    (let [[native (resolve-content-path "graphics" path)]]
       (call-prim 'MeasurePic native)))
 
   ;;; Destructively apply a mask to a DC with an alpha channel.  Areas of
@@ -498,8 +464,7 @@
   ;;; implementations under a wide variety of graphics APIs, including
   ;;; Windows and Cairo.)
   (define (mask p path)
-    (let [[native (make-native-path "local" "graphics" path)]]
-      (check-file native)
+    (let [[native (resolve-content-path "graphics" path)]]
       (call-prim 'Mask native p))) 
 
   ;;; Specify how many bytes may be used by the engine to cache
@@ -801,7 +766,7 @@
                                   (offset-rect (.shape) (.at)))
                     (make-node-event-dispatcher self) (.cursor)
                     (.alpha?) (.state-path)
-                    (map (fn (p) (make-native-path "local" "graphics" p))
+                    (map (fn (p) (resolve-content-path "graphics" p))
                          (.graphics))))
     )
 
@@ -850,8 +815,7 @@
   ;;; SYM.  If the hotspot is not in the default path, it should be
   ;;; specified explicitly.
   (define (register-cursor sym filename &key (hotspot (point -1 -1)))
-    (let [[native (make-native-path "local" "cursors" filename)]]
-      (check-file native)
+    (let [[native (resolve-content-path "cursors" filename)]]
       (call-prim 'RegisterCursor sym native hotspot)))
 
   ;;; Hide the cursor until the next time the mouse moves.  Only works in
@@ -959,8 +923,7 @@
                        :label "Use primitive fallback web browser?")
     
     (after-updating path
-      (define native (make-native-path "local" "html" (.path)))
-      (check-file native)
+      (define native (resolve-content-path "html" (.path)))
       (call-prim 'BrowserLoadPage (.full-name) native))
 
     ;;; Load the specified page in the web browser.  Can be pointed
@@ -1175,9 +1138,10 @@
   ;; If this is a problem for you, you may want to encode your captions as
   ;; a track in the media itself.
   (define (media-maybe-attach-caption-file! elem path)
-    (let [[native (make-native-path "local" "media" (cat path ".capt"))]]
-      (when (and (not (url? native)) (file-exists? native))
-        (call-prim 'MediaAttachCaptionFile (elem .full-name) native))))
+    (with-handlers [[exn:fail:content-not-found? (lambda (exn) (void))]]
+      (let [[native (resolve-content-path "media" (cat path ".capt"))]]
+        (unless (url? native)
+          (call-prim 'MediaAttachCaptionFile (elem .full-name) native)))))
 
   (define (add-common-media-methods! klass)
     (with-instance klass
@@ -1328,8 +1292,7 @@
     (attr loop?  #f  :type <boolean> :label "Loop this clip?")
 
     (def (create-engine-node)
-      (let [[path (make-native-path "local" "media" (.path))]]
-        (check-file path)
+      (let [[path (resolve-content-path "media" (.path))]]
         (call-prim 'AudioStreamVorbis (.full-name)
                       (make-node-event-dispatcher self) path
                       (.volume) (* 1024 (.buffer)) (.loop?))))
@@ -1374,7 +1337,7 @@
     (label return
       (foreach [drive (filesystem-root-list)]
         (define candidate (build-path drive "streaming" "media"))
-        (define file (abstract-path->native-path candidate pathname))
+        (define file (build-path candidate pathname))
         (when (file-exists? file)
           (set! *cd-media-directory* candidate)
           (return)))))
@@ -1389,33 +1352,30 @@
   ;;; Given an abstract media path, return a native path or a URL pointing
   ;;; to that particular file.
   (define (media-path path)
-    ;; Create some of the paths we'll check.
-    (define hd-path-1 (make-native-path "local" "media" path))
-    (define hd-path-2 (make-native-path "streaming" "media" path))
-    (define cd-path
-      (if (media-cd-is-available?)
-          (abstract-path->native-path *cd-media-directory* path)
+    ;; We run this function if the usual, non-media techniques for finding
+    ;; content files all fail.
+    ;; TODO - Refactor some of this code into resolve-content-path?
+    (define (try-fallbacks exn)
+      (define cd-path
+        (if (media-cd-is-available?)
+          (build-path *cd-media-directory* path)
           #f))
+      (cond
+       ;; Then check the CD, if we have one.
+       [(and cd-path (file-exists? cd-path))
+        cd-path]
+       ;; If all else fails, and we've been told about a server, assume our
+       ;; media is there.
+       [*media-base-url*
+        (cat *media-base-url* "/" path)]
+       ;; OK, we give up.
+       [#t
+        (content-not-found-error "media" path)]))
 
-    (cond
-     ;; Pass explicit URLs straight through.
-     [(url? path)
-      path]
-     ;; Otherwise, first check our media directory for the file.
-     [(file-exists? hd-path-1)
-      hd-path-1]
-     [(file-exists? hd-path-2)
-      hd-path-2]
-     ;; Then check the CD, if we have one.
-     [(and cd-path (file-exists? cd-path))
-      cd-path]
-     ;; If all else fails, and we've been told about a server, assume our
-     ;; media is there.
-     [*media-base-url*
-      (cat *media-base-url* "/" path)]
-     ;; OK, we give up.
-     [#t
-      (error (cat "Cannot find file " path))]))
+    ;; We try, whenever possible to rely on resolve-content-path when
+    ;; looking up media paths.
+    (with-handlers [[exn:fail:content-not-found? try-fallbacks]]
+      (resolve-content-path "media" path)))
 
 
   ;;;======================================================================
@@ -1486,7 +1446,6 @@
 
     (def (create-engine-node)
       (define path (media-path (.path)))
-      (check-file path)
       (call-prim 'Movie (.full-name)
                     (make-node-event-dispatcher self)
                     (parent->card self (.rect))
@@ -1753,7 +1712,7 @@
     ;; TODO - This is an ugly hack to support absolute path names.
     (let [[path (if (absolute-path? file)
                     file
-                    (abstract-path->native-path (current-directory) file))]]
+                    (build-path (current-directory) file))]]
       (call-prim 'DebugReportAddFile path description)))
 
   )

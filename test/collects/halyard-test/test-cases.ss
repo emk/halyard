@@ -151,8 +151,7 @@
     (test 
         "The browser should fail to load a non-existent local HTML page"
       (define non-existent-file "foo-bar-not-here.html")
-          (assert-raises-message exn:fail? 
-            (quote-for-regexp (cat "No such file: "))
+          (assert-raises exn:fail:content-not-found?
             (%test-browser% .new :path non-existent-file)))
     (test "The browser should load an external HTML page via http"
           (%test-browser% .new :path "http://www.google.com"))
@@ -258,4 +257,76 @@
   (card /tests/errortrace-test
       (%test-suite%
        :tests (list %errortrace-test%)))
+
+
+  ;;=======================================================================
+  ;;  Content path test cases
+  ;;=======================================================================
+
+  (define-syntax assert-decomposition
+    (syntax-rules ()
+      [(_ expected-root expected-remaining abstract-path)
+       (with-values [[root remaining] (decompose-abstract-path abstract-path)]
+         (assert-equals expected-root root)
+         (assert-equals expected-remaining remaining))]))
+
+  (define-class %content-path-test% (%test-case%)
+    (test "collection-directory should return directory for collection"
+      (assert-equals (build-path (current-directory) "collects" "halyard-test")
+                     (collection-directory "halyard-test")))
+    (test "collection-directory should return #f for non-existant collection"
+      (assert-equals #f (collection-directory "no-such-collection")))
+    (test "collection-halyard-directory should return _halyard directory"
+      (assert-equals (build-path (collection-directory "halyard-test")
+                                 "_halyard")
+                     (collection-halyard-directory "halyard-test")))
+    (test "collection-halyard-directory should return #f if no dir exists"
+      (assert-equals #f (collection-halyard-directory "non-halyard-collection"))
+      (assert-equals #f (collection-halyard-directory "no-such-collection")))
+    (test "Path decomposition should know about _halyard directories"
+      (assert-decomposition (collection-halyard-directory "halyard-test")
+                            (build-path 'same) "halyard-test")
+      (assert-decomposition (collection-halyard-directory "halyard-test")
+                            (build-path 'same) "halyard-test/")
+      (assert-decomposition (collection-halyard-directory "halyard-test")
+                            (build-path "foo") "halyard-test/foo"))
+    (test "Path decomposition should do nothing if no _halyard directory"
+      (assert-decomposition (current-directory)
+                            (build-path "non-halyard-collection")
+                            "non-halyard-collection")
+      (assert-decomposition (current-directory)
+                            (build-path "no-such-collection/foo")
+                            "no-such-collection/foo"))
+    (test "resolve-content-path should honor path decomposition"
+      (assert-equals (build-path (collection-halyard-directory "halyard-test")
+                                 "local" "graphics" "lens.png")
+                     (resolve-content-path "graphics" "halyard-test/lens.png"))
+      (assert-equals (build-path (current-directory)
+                                 "local" "graphics" "lens.png")
+                     (resolve-content-path "graphics" "lens.png")))
+    (test "resolve-content-path should check streaming and local directories"
+      (assert-equals (build-path (current-directory)
+                                 "streaming" "media" "quackery_theora.ogg")
+                     (resolve-content-path "media" "quackery_theora.ogg"))
+      (assert-equals (build-path (current-directory)
+                                 "local" "media" "quackery.ogg.capt")
+                     (resolve-content-path "media" "quackery.ogg.capt")))
+    (test "resolve-content-path should raise an error if content not found"
+      (assert-raises exn:fail:content-not-found?
+                     (resolve-content-path "media" "no-such-file.ogg")))
+    (test "resolve-content-path should leave URLs alone"
+      (assert-equals "http://iml.dartmouth.edu/"
+                     (resolve-content-path "html" "http://iml.dartmouth.edu/")))
+    (test "resolve-content-path should leave PLT paths alone"
+      (assert-equals (current-directory)
+                     (resolve-content-path "html" (current-directory))))
+    (test "resolve-content-path should make sure PLT paths exist"
+      (assert-raises exn:fail:content-not-found?
+        (resolve-content-path "html"
+                              (build-path (current-directory) "no-such.html"))))
+    )
+
+  (card /tests/content-path-test
+      (%test-suite%
+       :tests (list %content-path-test%)))
   )
