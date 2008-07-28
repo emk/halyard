@@ -1,6 +1,105 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.11 - 28 July 2008
+
+This release substantially reorganizes the directory structure of a Halyard
+script in several important ways.  Some highlights:
+
+  Graphics         -> local/graphics
+  Graphics/script  -> local/branding
+  Graphics/cursors -> local/cursors
+  LocalMedia       -> local/media
+  Media            -> streaming/media
+  HTML             -> local/html
+  Runtime/*        -> engine/win32/runtime/collects/* (our stuff)
+  Runtime/*        -> engine/win32/runtime/plt/* (PLT's stuff)
+  Fonts            -> engine/win32/fonts
+  *.{exe,dll}      -> engine/win32/*.{exe,dll}
+  Scripts/*        -> scripts/* (groups and cards)
+  Scripts/*        -> collects/$COLLECT/* (libraries)
+  (temp files)     -> temp/*
+  developer.prefs  -> config/developer.prefs
+
+See http://iml.dartmouth.edu/halyard/wiki/index.php/Porting_notes for a
+complete list of renamed directories.
+
+Several minor APIs have also changed:
+
+  1. ABSTRACT-PATH->NATIVE-PATH is no longer available (use BUILD-PATH).
+  2. MAKE-NATIVE-PATH is no longer available (use RESOLVE-CONTENT-PATH, but
+     be careful--it generally only works on files, not directories).
+  3. Some uses of CURRENT-DIRECTORY will need to be replaced with
+     RUNTIME-DIRECTORY.  Most other uses of CURRENT-DIRECTORY will need to
+     be reviewed carefully.
+
+We now provide a script-level collects/ directory, which may optionally
+contain content files and Ruby support code:
+
+  collects/$NAME/_halyard
+    local/graphics    - Graphics
+    local/media       - Media files
+    local/*           - Etc.
+    ruby/libs         - Ruby libraries
+    ruby/tasks/*.rake - Rake tasks
+
+With this layout, referring to a graphics file named $NAME/foo.png will
+actually look in collects/$NAME/_halyard/local/graphics/foo.png.
+
+Ruby code may also be stored at the top-level of a script:
+
+  ruby/libs
+  ruby/tasks/*.rake
+
+You will want to grab a copy of halyard/test/config/boot.rb and copy it
+$HALYARD_SCRIPT/config/boot.rb.  Once you've done that, you should begin
+every Ruby script in your project with a line like the following:
+
+  require 'config/boot'
+
+Your Rakefile should also contain the following line:
+
+  require 'halyard/rake'
+
+Once you do this, Ruby libraries and tasks/*.rake files will automatically
+be made available.
+
+Known regression: The code which automatically decides which
+application.halyard file is associated with the current engine is not
+working right now.
+
+Brian Campbell (1):
+      Pass correct parameters in RECTANGLE-OUTLINE node helper
+
+Eric Kidd (27):
+      reorg: Media -> streaming/media, LocalMedia -> local/media
+      reorg: Remove unused FileSystem::Get*Directory APIs
+      reorg: Graphics/script -> local/branding
+      reorg: Graphics -> local/graphics
+      reorg: local/graphics/cursors -> local/cursors
+      reorg: HTML -> local/html
+      reorg: definitions.sqlite3, user.conf -> temp/
+      reorg: developer.prefs -> config/
+      reorg: Scripts/<libraries> -> collects/halyard-test/<libraries>
+      reorg: Name files in Scripts/ after the groups they contain
+      Ignore .stg-edit.txt
+      reorg: Scripts -> scripts
+      reorg: TestScripts -> test-scripts
+      Bug fix: Don't create temp directory if it already exists
+      reorg: Move Runtime/, Fonts/ to new runtime/ directory
+      reorg: Remove FileSystem::GetScriptsDirectoryName
+      Bug fix: Don't attempt to open user.conf without a ScriptEditor
+      Test fix: Make halyard-fixtures-dir look in the right place
+      reorg: Fix ScriptEditorDB to scan runtime/ directory
+      reorg: Mac: Add support for new runtime/ directory location
+      reorg: Update buildfile.rb to know about new layout
+      reorg: Centralize TODO files in tree, and add REORG-TODO.txt
+      reorg: Merge REORG-TODO.txt from Windows system
+      reorg: tools/buildscript -> runtime/ruby/lib/buildscript
+      reorg: Allow Halyard and collects to provide Ruby libs & Rake tasks
+      reorg: Allow content to be stored in collects/*/_halyard directories
+      Merge branch 'chaining'
+
 0.5.10-chaining2 - 25 July 2008
 
 This release fixes a few small bugs in the -chaining1 release, related to
