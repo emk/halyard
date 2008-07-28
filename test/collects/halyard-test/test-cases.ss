@@ -5,6 +5,7 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "errortrace-lib.ss" "errortrace"))
   (require (lib "test-elements.ss" "halyard"))
+  (require "base.ss")
   
   ;;=======================================================================
   ;;  Helper Functions (to be factored-out later)
@@ -200,6 +201,69 @@
   (card /tests/graphic-test
       (%element-test-suite%
        :tests (list %graphic-element-test%)))
+
+  
+  ;;=======================================================================
+  ;;  Element helper test cases
+  ;;=======================================================================
+  
+  (define (new-element-test-helper new-element class . args)
+    (define e (apply new-element args))
+    (assert (e .instance-of? class)))
+
+  (define-class %element-helper-class% (%box%)
+    (box the-box ((shape 10 10)))
+    (clickable-zone the-clickable-zone ((shape 10 10) (callback)))
+    (text-box the-text-box ((shape 100 100) $title-style "Foo"))
+    (text the-text ((point 100 100) $title-style "Foo"))
+    (graphic the-graphic ((point 100 100) "but40.png"))
+    (rectangle the-rectangle ((shape 50 50) $color-black))
+    (rectangle-outline the-rectangle-outline ((shape 75 75) $color-white 4))
+    (sprite the-sprite ((point 200 300) (list "but40.png" "but70.png")))
+    (browser the-browser ((rect 200 200 500 500) "http://www.google.com"))
+    (edit-box the-edit-box ((rect 300 0 500 100) "Something")))
+
+  (define-class %element-helper-test% (%element-test-case%)
+    (test "NEW-FOO should create %foo% elements."
+      (new-element-test-helper new-box %box% (shape 10 10))
+      (new-element-test-helper new-clickable-zone %clickable-zone% 
+                               (shape 10 10) (callback))
+      (new-element-test-helper new-text-box %text-box% 
+                               (shape 100 100) $title-style "Foo")
+      (new-element-test-helper new-text %text%
+                               (point 100 100) $title-style "Foo")
+      (new-element-test-helper new-graphic %graphic%
+                               (point 100 100) "but40.png")
+      (new-element-test-helper new-rectangle %rectangle%
+                               (shape 50 50) $color-black)
+      (new-element-test-helper new-rectangle-outline %rectangle-outline%
+                               (shape 75 75) $color-white 4)
+      (new-element-test-helper new-sprite %sprite%
+                               (point 200 300) (list "but40.png" "but70.png"))
+      (new-element-test-helper new-browser %browser%
+                               (rect 200 200 500 500) "http://www.google.com")
+      (new-element-test-helper new-edit-box %edit-box%
+                               (rect 300 0 500 100) "Something")
+      ;; NOTE: Not testing media because they take time.  See old style
+      ;; test cards in halyard/test for test cases.
+      )
+    (test "Node definers should create elements of matching type."
+      (define helpers (%element-helper-class% .new :bounds (shape 800 500)))
+      (assert (helpers .the-box.instance-of? %box%))
+      (assert (helpers .the-clickable-zone.instance-of? %clickable-zone%))
+      (assert (helpers .the-text-box.instance-of? %text-box%))
+      (assert (helpers .the-text.instance-of? %text%))
+      (assert (helpers .the-graphic.instance-of? %graphic%))
+      (assert (helpers .the-rectangle.instance-of? %rectangle%))
+      (assert (helpers .the-rectangle-outline.instance-of? %rectangle-outline%))
+      (assert (helpers .the-sprite.instance-of? %sprite%))
+      (assert (helpers .the-browser.instance-of? %browser%))
+      (assert (helpers .the-edit-box.instance-of? %edit-box%))))
+
+  (card /tests/element-helper-test
+      (%element-test-suite%
+       :tests (list %element-helper-test%)))
+      
   
   ;;=======================================================================
   ;;  Errortrace test cases

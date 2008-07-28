@@ -656,7 +656,7 @@
     (value color $transparent))
 
   ;;; Declare a %rectangle-outline% element.
-  (define-node-helper rectangle-outline (bounds color width) 
+  (define-node-helper rectangle-outline (bounds outline-color outline-width) 
     %rectangle-outline%)
 
   ;;; Create a new %rectangle% with an outline and a transparent center.
