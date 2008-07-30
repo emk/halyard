@@ -1,2 +1,0 @@
-(define (baz)
-  "Hi, world!")
