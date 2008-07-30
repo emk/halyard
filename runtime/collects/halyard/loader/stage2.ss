@@ -281,11 +281,16 @@
           
       ;; Load the user's actual script into our new namespace.
       (set! filename "start.ss")
-      (load/use-compiled (build-path (current-directory) "scripts" "start.ss"))
-      ;; (XXX - Disabled until we can determine why the number of files
-      ;; loaded goes up after a "reload script".)
-      ;; XXX- Re-enabled because we currently suppress all splash-screen
-      ;; code after a "reload script".
+      (parameterize [[current-load-relative-directory
+                      (build-path (current-directory) "scripts")]]
+        (namespace-require '(file "start.ss")))
+
+      ;; Add a few extra definitions to the top-level environment, mostly
+      ;; so that they can be called from the command-line.
+      (set! filename "top-level.ss")
+      (namespace-require '(lib "top-level.ss" "halyard"))
+
+      ;; Let the engine know that the script has finished loading.
       (notify-script-loaded)
       #f))
   )
