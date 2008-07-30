@@ -95,14 +95,15 @@
   ;;  Other Files in This Script
   ;;=========================================================================
   
-  (namespace-require '(file "media.ss"))
-  (namespace-require '(file "features.ss"))
-  (namespace-require '(file "bugs.ss"))
-  (namespace-require '(file "experiments.ss"))
-  (namespace-require '(file "updater.ss"))
-  (namespace-require '(file "quake2.ss"))
-  (namespace-require '(file "benchmark.ss"))
+  (external-group /media)
+  (external-group /features)
+  (external-group /bugs)
+  (external-group /experiments)
+  (external-group /updater)
+  (external-group /quake2)
+  (external-group /benchmark)
   
-  ;; Test cases.
+  ;; Test cases.  We use namespace-require so that /tests isn't the first
+  ;; group in our program--it's entirely for cosmetic reasons.
   (namespace-require '(lib "test-cases.ss" "halyard-test"))
   )

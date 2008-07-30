@@ -34,6 +34,9 @@
   (require (lib "content-paths.ss" "halyard"))
   (provide (all-from (lib "content-paths.ss" "halyard")))
 
+  (require (lib "script-paths.ss" "halyard"))
+  (provide (all-from (lib "script-paths.ss" "halyard")))
+
 
   ;;=======================================================================
   ;;  Support Modules

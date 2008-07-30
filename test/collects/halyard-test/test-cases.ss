@@ -393,4 +393,34 @@
   (card /tests/content-path-test
       (%test-suite%
        :tests (list %content-path-test%)))
+
+
+  ;;=======================================================================
+  ;;  Script Path Resolution
+  ;;=======================================================================
+
+  (define-class %script-paths-test% (%test-case%)
+    (test "split-node-name should return the components of a node's name"
+      (assert-equals '() (split-node-name '|/|))
+      (assert-equals '("foo") (split-node-name '|/foo|))
+      (assert-equals '("foo" "bar") (split-node-name '|/foo/bar|)))
+    (test "split-node-name should raise error if given invalid name"
+      (assert-raises exn:fail? (split-node-name '||))
+      (assert-raises exn:fail? (split-node-name '/foo/))
+      (assert-raises exn:fail? (split-node-name '/foo//bar))
+      (assert-raises exn:fail? (split-node-name 'foo))
+      (assert-raises exn:fail? (split-node-name 'foo/bar))
+      (assert-raises exn:fail? (split-node-name '/foo/./bar))
+      (assert-raises exn:fail? (split-node-name '/foo/../bar)))
+    (test "node-name->module-name should return (file ...) forms"
+      (assert-equals '(file "foo.ss") (node-name->module-name '/foo))
+      (assert-equals '(file "foo/bar.ss") (node-name->module-name '/foo/bar)))
+    (test "node-name->module-name should raise error if given invalid name"
+      (assert-raises exn:fail? (node-name->module-name '/foo/../bar)))
+    )
+
+  (card /tests/script-paths-test
+      (%test-suite%
+       :tests (list %script-paths-test%)))
+
   )
