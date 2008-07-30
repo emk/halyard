@@ -1,6 +1,40 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.12 - 30 July 2008
+
+This release makes several API changes intended to support demand-loading.
+In particular, the file start.ss must now be wrapped in a module
+declaration, and REQUIRE statements should be replaced by appropriate
+EXTERNAL-GROUP and EXTERNAL-CARD statements.
+
+For example, an old-style start.ss might look like this:
+
+  (require (file "example.ss"))
+  (require (file "example/card.ss"))
+
+A new-style start.ss would look like this:
+
+  (module start (lib "halyard.ss" "halyard")
+    (external-group /example)
+    )
+
+The second line in the original file would move to the end of example.ss,
+where it would become:
+
+    ;; In example.ss.
+    (external-card /example/card)
+
+All non-group, non-card *.ss files should move into an appropriate
+subdirectory of collects.  You should continue to load these files using
+REQUIRE, as before.
+
+Eric Kidd (4):
+      Turn start.ss into a regular module
+      Repository fix: Delete bogus lower-case "common/test/scripts" tree
+      Implement Perl-inspired SPLIT and JOIN functions
+      Add external-group and external-card forms for loading scripts
+
 0.5.11 - 28 July 2008
 
 This release substantially reorganizes the directory structure of a Halyard
