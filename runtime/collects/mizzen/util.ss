@@ -187,4 +187,48 @@
     (syntax-rules ()
       [(fn arglist code ...)
        (lambda arglist (begin/var code ...))]))
+
+
+  ;;=======================================================================
+  ;;  Split and Join
+  ;;=======================================================================
+  ;;  SPLIT and JOIN functions loosely inspired by Perl, but with slightly
+  ;;  more regular semantics.
+  ;;
+  ;;  Performance: You should assume that these functions are slightly
+  ;;  slower than regexp-match and string-append.
+
+  (provide split join)
+
+  ;;; Given a regular expression PATTERN and a string, split the string
+  ;;; into pieces using PATTERN as a delimiter.  We differ from the Perl
+  ;;; and Ruby version of this function in that we retain trailing empty
+  ;;; fields.  Note that zero-width delimiters and string PATTERNs are
+  ;;; currently undefined.
+  (define (split pattern str)
+    (assert (or (regexp? pattern) (byte-regexp? pattern)))
+    (let [[matches (regexp-match-positions pattern str)]]
+      (if (not matches)
+        ;; No match, so just return our string.
+        (list str)
+        ;; Got a match, so split there and recurse on what follows.
+        (let [[start-k (car (first matches))]
+              [end-k (cdr (first matches))]]
+          (cons (substring str 0 start-k)
+                (split pattern (substring str end-k)))))))
+
+  ;;; Join the elements of LST together using STR as a delimiter.
+  (define (join str lst)
+    ;; Build up a list of strings to join, and then attempt to do the join
+    ;; all at once.  This should help reduce the amount of time spent
+    ;; copying and recopying strings.
+    (apply string-append
+           (let recurse [[str str] [lst lst]]
+             (cond
+              [(null? lst)
+               '()]
+              [(null? (cdr lst))
+               lst]
+              [else
+               (list* (car lst) str (recurse str (cdr lst)))]))))
   )

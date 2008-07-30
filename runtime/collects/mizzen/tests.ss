@@ -20,11 +20,12 @@
 ;;
 ;; @END_LICENSE
 (module tests "mizzen.ss"
-  (require "mizzen-unit-test.ss" "ruby-objects-test.ss")
+  (require "mizzen-unit-test.ss" "ruby-objects-test.ss" "util-test.ss")
   
   (provide $mizzen-tests)
 
   ;;; A list of all the unit tests defined by mizzen.
   (define $mizzen-tests
-    (append $all-mizzen-unit-tests $all-ruby-object-tests))
+    (append $all-mizzen-unit-tests $all-ruby-object-tests
+            $all-util-tests))
   )
