@@ -105,5 +105,6 @@
   
   ;; Test cases.  We use namespace-require so that /tests isn't the first
   ;; group in our program--it's entirely for cosmetic reasons.
+  (namespace-require '(lib "tests.ss" "halyard"))
   (namespace-require '(lib "test-cases.ss" "halyard-test"))
   )
