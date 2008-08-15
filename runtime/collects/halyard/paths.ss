@@ -72,8 +72,12 @@
     ;; yet.  This will need more thought.
     ;; TODO - Decide if we want a general .implements-interface? method.
     (def (instance-of? klass)
+      (define (not-found-fn)
+        (error (cat "Must resolve " self " (presumably to "
+                    "static node " (.resolve-path :running? #f)
+                    ") before calling .instance-of? " klass)))
       (or (super)
-          ((.resolve-path) .instance-of? klass)))
+          ((.resolve-path :if-not-found not-found-fn) .instance-of? klass)))
 
     ;;; Get the full name of the running node corresponding to this path.
     ;;; If you are interested in the static node, you'll need to resolve it

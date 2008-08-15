@@ -22,7 +22,12 @@
         (@not-a-path/at-all .resolve-path))
       (assert-raises-message exn:fail? 
         "absolute path.*@/not-really-a-path/sorry"
-        (@/not-really-a-path/sorry .resolve-path)))
+        (@/not-really-a-path/sorry .resolve-path))
+      ;; We have a special error message if the running node doesn't exist,
+      ;; but a corresponding static node does.
+      (assert-raises-message exn:fail?
+        "@/start.*static node"
+        (@/start .instance-of? %card%)))
     (test "A path should proxy methods to its running node."
       ;; Test just that .node-state is defined, and doesn't give an error.
       (@tests .node-state))
