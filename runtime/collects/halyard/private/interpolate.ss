@@ -22,7 +22,7 @@
 
 (module interpolate (lib "mizzen.ss" "mizzen")
   (require (lib "util.ss" "mizzen"))
-  (require (lib "types.ss" "halyard"))
+  (require (lib "types.ss" "halyard/private"))
 
   (provide number->integer interpolate-value)
 

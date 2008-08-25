@@ -22,7 +22,8 @@
 
 (module tags (lib "mizzen.ss" "mizzen")
         
-  (require (lib "kernel.ss" "halyard"))
+  (require (lib "kernel.ss" "halyard/private"))
+  (require (lib "indent.ss" "halyard/private"))
         
   (provide maybe-insert-def maybe-insert-help maybe-insert-indentation
            define-syntax-tagger define-syntax-tagger*

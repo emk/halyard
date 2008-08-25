@@ -21,7 +21,7 @@
 ;; @END_LICENSE
 
 (module data-file (lib "halyard.ss" "halyard")
-  (require (lib "elements.ss" "halyard"))
+  (require (lib "elements.ss" "halyard/private"))
   (provide ;; TODO - Remove these two functions from API.  They are obsoleted
            ;; by pref and set-pref!.
            read-data

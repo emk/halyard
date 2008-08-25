@@ -268,7 +268,7 @@
 
       ;; Load the kernel.
       (set! filename "kernel.ss")
-      (namespace-require '(lib "kernel.ss" "halyard"))
+      (namespace-require '(lib "kernel.ss" "halyard/private"))
           
       ;; Provide a reasonable default language for writing scripts.  We
       ;; need to set up both the transformer environment (which is used
@@ -288,7 +288,7 @@
       ;; Add a few extra definitions to the top-level environment, mostly
       ;; so that they can be called from the command-line.
       (set! filename "top-level.ss")
-      (namespace-require '(lib "top-level.ss" "halyard"))
+      (namespace-require '(lib "top-level.ss" "halyard/loader"))
 
       ;; Let the engine know that the script has finished loading.
       (notify-script-loaded)

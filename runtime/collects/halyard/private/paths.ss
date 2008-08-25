@@ -24,8 +24,8 @@
   (require (lib "util.ss" "mizzen"))
   (require-for-syntax (lib "util.ss" "mizzen"))
 
-  (require (lib "nodes.ss" "halyard"))
-  (require (lib "indent.ss" "halyard"))
+  (require (lib "nodes.ss" "halyard/private"))
+  (require (lib "indent.ss" "halyard/private"))
 
   ;; Get some string processing stuff from the SRFI libraries.
   (require (only (lib "13.ss" "srfi") string-tokenize string-join))

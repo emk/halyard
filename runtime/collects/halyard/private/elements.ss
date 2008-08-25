@@ -27,13 +27,13 @@
 ;;  primitives, all subject to change at a moment's notice.
 
 (module elements (lib "mizzen.ss" "mizzen")
-  (require (lib "api.ss" "halyard"))
+  (require (lib "api.ss" "halyard/private"))
 
-  (require (lib "after-updating.ss" "halyard"))
-  (provide (all-from (lib "after-updating.ss" "halyard")))
+  (require (lib "after-updating.ss" "halyard/private"))
+  (provide (all-from (lib "after-updating.ss" "halyard/private")))
 
-  (require (lib "define-node-helper.ss" "halyard"))
-  (provide (all-from (lib "define-node-helper.ss" "halyard")))
+  (require (lib "define-node-helper.ss" "halyard/private"))
+  (provide (all-from (lib "define-node-helper.ss" "halyard/private")))
   
 
   ;;;======================================================================

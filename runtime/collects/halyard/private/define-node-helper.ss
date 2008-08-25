@@ -21,10 +21,10 @@
 ;; @END_LICENSE
 
 (module define-node-helper (lib "mizzen.ss" "mizzen")
-  (require (lib "nodes.ss" "halyard"))
+  (require (lib "nodes.ss" "halyard/private"))
   (require-for-syntax (lib "util.ss" "mizzen"))
-  (require (lib "tags.ss" "halyard"))
-  (require (lib "indent.ss" "halyard"))
+  (require (lib "tags.ss" "halyard/private"))
+  (require (lib "indent.ss" "halyard/private"))
 
   (provide define-node-helper)
 

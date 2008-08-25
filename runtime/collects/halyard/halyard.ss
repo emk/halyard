@@ -40,20 +40,20 @@
                             ))
   
   ;; Load the formerly engine-independent portion of the API.
-  (require (lib "api.ss" "halyard"))
-  (provide (all-from (lib "api.ss" "halyard")))
+  (require (lib "api.ss" "halyard/private"))
+  (provide (all-from (lib "api.ss" "halyard/private")))
 
   ;; Load the engine-dependent, subject-to-change API.
-  (require (lib "elements.ss" "halyard"))
-  (provide (all-from (lib "elements.ss" "halyard")))
+  (require (lib "elements.ss" "halyard/private"))
+  (provide (all-from (lib "elements.ss" "halyard/private")))
 
   ;; These are not well-loved APIs, so we only include them fairly high up the
   ;; stack to try to avoid having any undocumented internal depedencies on
   ;; them.
-  (require (lib "paths.ss" "halyard"))
-  (provide (all-from (lib "paths.ss" "halyard")))
-  (require (lib "card-sequence.ss" "halyard"))
-  (provide (all-from (lib "card-sequence.ss" "halyard")))
+  (require (lib "paths.ss" "halyard/private"))
+  (provide (all-from (lib "paths.ss" "halyard/private")))
+  (require (lib "card-sequence.ss" "halyard/private"))
+  (provide (all-from (lib "card-sequence.ss" "halyard/private")))
 
 
   ;;=======================================================================

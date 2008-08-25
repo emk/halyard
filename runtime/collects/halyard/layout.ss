@@ -21,8 +21,8 @@
 ;; @END_LICENSE
 
 (module layout (lib "mizzen.ss" "mizzen")
-  (require (lib "types.ss" "halyard"))
-  (require (lib "shapes.ss" "halyard"))
+  (require (lib "types.ss" "halyard/private"))
+  (require (lib "shapes.ss" "halyard/private"))
 
   (provide <layout> layout? layout-hspace layout-vspace layout-box-shape
            layout-next-box-at

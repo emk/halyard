@@ -22,20 +22,50 @@
 
 (module api (lib "mizzen.ss" "mizzen")
 
-  (require (lib "kernel.ss" "halyard"))
-  (provide (all-from (lib "kernel.ss" "halyard")))
+  ;; These are going to be replaced by specific export lists.
+  (require (lib "kernel.ss" "halyard/private"))
+  (provide (all-from (lib "kernel.ss" "halyard/private")))
+  (require (lib "nodes.ss" "halyard/private"))
+  (provide (all-from (lib "nodes.ss" "halyard/private")))
 
-  (require (lib "shapes.ss" "halyard"))
-  (provide (all-from (lib "shapes.ss" "halyard")))
 
-  (require (lib "interpolate.ss" "halyard"))
-  (provide (all-from (lib "interpolate.ss" "halyard")))
+  ;;=======================================================================
+  ;;  Re-export Low-level APIs
+  ;;=======================================================================
+  ;;  We want to include all these files in our public API.
 
-  (require (lib "content-paths.ss" "halyard"))
-  (provide (all-from (lib "content-paths.ss" "halyard")))
+  (require (lib "begin-var.ss" "mizzen"))
+  (provide (all-from (lib "begin-var.ss" "mizzen")))
+  
+  (require (lib "hook.ss" "halyard/private"))
+  (provide (all-from (lib "hook.ss" "halyard/private")))
 
-  (require (lib "script-paths.ss" "halyard"))
-  (provide (all-from (lib "script-paths.ss" "halyard")))
+  (require (lib "indent.ss" "halyard/private"))
+  (provide (all-from (lib "indent.ss" "halyard/private")))
+
+  (require (lib "types.ss" "halyard/private"))
+  (provide (all-from (lib "types.ss" "halyard/private")))
+
+  (require (lib "util.ss" "mizzen"))
+  (provide (all-from (lib "util.ss" "mizzen")))
+
+  (require (lib "util.ss" "halyard/private"))
+  (provide (all-from (lib "util.ss" "halyard/private")))
+
+  (require (lib "events.ss" "halyard/private"))
+  (provide (all-from (lib "events.ss" "halyard/private")))
+
+  (require (lib "shapes.ss" "halyard/private"))
+  (provide (all-from (lib "shapes.ss" "halyard/private")))
+
+  (require (lib "interpolate.ss" "halyard/private"))
+  (provide (all-from (lib "interpolate.ss" "halyard/private")))
+
+  (require (lib "content-paths.ss" "halyard/private"))
+  (provide (all-from (lib "content-paths.ss" "halyard/private")))
+
+  (require (lib "script-paths.ss" "halyard/private"))
+  (provide (all-from (lib "script-paths.ss" "halyard/private")))
 
 
   ;;=======================================================================
@@ -50,8 +80,8 @@
   (provide match-let)
 
   ;; Make sure this gets loaded.  It will register itself with the kernel.
-  (require (lib "tags.ss" "halyard"))
-  (provide (all-from (lib "tags.ss" "halyard")))
+  (require (lib "tags.ss" "halyard/private"))
+  (provide (all-from (lib "tags.ss" "halyard/private")))
   
   ;;;======================================================================
   ;;;  Useful Syntax

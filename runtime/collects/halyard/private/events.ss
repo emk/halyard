@@ -21,9 +21,9 @@
 ;; @END_LICENSE
 
 (module events (lib "mizzen.ss" "mizzen")
-  (require (lib "nodes.ss" "halyard"))
+  (require (lib "nodes.ss" "halyard/private"))
   (require (lib "util.ss" "mizzen"))
-  (require (lib "util.ss" "halyard"))
+  (require (lib "util.ss" "halyard/private"))
 
   ;; Functions intended solely for use by kernel.ss.
   (provide dispatch-event-to-current-group-member)

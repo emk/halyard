@@ -318,7 +318,7 @@ void TSchemeInterpreter::InitializeModuleNames()
 
 	mLoaderModule = scheme_intern_symbol("stage1");
 
-    halyard_string   = scheme_make_utf8_string("halyard");
+    halyard_string   = scheme_make_utf8_string("halyard/private");
 	tail1            = scheme_make_pair(halyard_string, scheme_null);
     lib_symbol       = scheme_intern_symbol("lib");
     kernel_ss_string = scheme_make_utf8_string("kernel.ss");

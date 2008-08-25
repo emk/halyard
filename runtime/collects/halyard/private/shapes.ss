@@ -26,8 +26,8 @@
 
 (module shapes (lib "mizzen.ss" "mizzen")
   (require (lib "util.ss" "mizzen"))
-  (require (lib "types.ss" "halyard"))
-  (require (lib "kernel.ss" "halyard"))
+  (require (lib "types.ss" "halyard/private"))
+  (require (lib "kernel.ss" "halyard/private"))
   
   ;;;======================================================================
   ;;;  Geometric Primitives
