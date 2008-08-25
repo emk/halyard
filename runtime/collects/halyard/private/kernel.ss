@@ -348,7 +348,7 @@
       (cons ok? result)))
 
   (define built-in-identifiers-module
-    '(lib "built-in-identifiers.ss" "halyard"))
+    '(lib "built-in-identifiers.ss" "halyard/loader"))
 
   ;;; Fetch all identifiers in the built-in namespace (currently mzscheme).
   ;;; We will probably want to add support for querying specific modules
