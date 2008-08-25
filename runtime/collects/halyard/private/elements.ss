@@ -27,6 +27,7 @@
 ;;  primitives, all subject to change at a moment's notice.
 
 (module elements (lib "mizzen.ss" "mizzen")
+  (require (lib "kernel.ss" "halyard/private"))
   (require (lib "api.ss" "halyard/private"))
 
   (require (lib "after-updating.ss" "halyard/private"))

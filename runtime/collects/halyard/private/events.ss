@@ -21,6 +21,7 @@
 ;; @END_LICENSE
 
 (module events (lib "mizzen.ss" "mizzen")
+  (require (lib "types.ss" "halyard/private"))
   (require (lib "nodes.ss" "halyard/private"))
   (require (lib "util.ss" "mizzen"))
   (require (lib "util.ss" "halyard/private"))

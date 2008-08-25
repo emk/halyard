@@ -24,10 +24,8 @@
 
   ;; Various support code and declarations refactored out of the kernel.
   (require (lib "types.ss" "halyard/private"))
-  (provide (all-from (lib "types.ss" "halyard/private")))
   (require (lib "util.ss" "halyard/private"))
   (require (lib "util.ss" "mizzen"))
-  ;; (provide (all-from (lib "util.ss" "mizzen")))
   (require-for-syntax (lib "util.ss" "mizzen"))
   (require-for-syntax (lib "syntax-util.ss" "mizzen"))
   (require (lib "hook.ss" "halyard/private"))

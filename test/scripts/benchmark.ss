@@ -2,6 +2,10 @@
   (require (lib "base.ss" "halyard-test"))
   (require (lib "benchmark.ss" "mizzen"))
 
+  ;; We need to benchmark some kernel internals, so we need access to
+  ;; private APIs.
+  (require (lib "kernel.ss" "halyard/private"))
+
 
   ;;=========================================================================
   ;;  Benchmark card

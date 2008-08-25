@@ -25,6 +25,7 @@
 ;; things, and hasn't been fully integrated into the newer parts of the
 ;; engine.
 (module quake2 (lib "halyard.ss" "halyard")
+  (require (lib "kernel.ss" "halyard/private"))
 
   (provide quake2-driver set-quake2-driver!
            quake2-launch quake2-shown? quake2-show quake2-hide

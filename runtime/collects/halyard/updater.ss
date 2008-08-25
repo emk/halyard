@@ -21,6 +21,7 @@
 ;; @END_LICENSE
 
 (module updater (lib "halyard.ss" "halyard")
+  (require (lib "kernel.ss" "halyard/private"))
   (require (lib "elements.ss" "halyard/private"))
 
   ;; TODO - these should probably be factored out into some sort of file-utils

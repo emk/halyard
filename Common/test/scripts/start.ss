@@ -6,6 +6,7 @@
 ;;  to pass ImlUnit the "source code" of each test case as well as the
 ;;  actual result.
 (module start (lib "halyard.ss" "halyard")
+  (require (lib "kernel.ss" "halyard/private"))
 
   (define-syntax check
     (syntax-rules ()

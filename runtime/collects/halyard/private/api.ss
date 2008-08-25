@@ -22,11 +22,40 @@
 
 (module api (lib "mizzen.ss" "mizzen")
 
-  ;; These are going to be replaced by specific export lists.
-  (require (lib "kernel.ss" "halyard/private"))
-  (provide (all-from (lib "kernel.ss" "halyard/private")))
+
+  ;;=======================================================================
+  ;;  Selective exports
+  ;;=======================================================================
+  ;;  We only want to export the truly public parts of these files, not the
+  ;;  internal implementation details.
+
   (require (lib "nodes.ss" "halyard/private"))
-  (provide (all-from (lib "nodes.ss" "halyard/private")))
+  (provide jump delete-element current-group-member current-card
+           static-root-node running-root-node
+           define-def-and-super-abbrev setup run *node-defined-hook*
+           %node% node? node-name node-full-name node-parent
+           node-elements find-child-node %group-member%
+           group %card-group% group-members card-group? %root-node%
+           %card% card? card jump-current element? %element% elem
+
+           ;; The following APIs are either ancient, or a little bit
+           ;; dubious.  Could we remove some of these or make them private?
+           last-card-visited
+           find-node find-running-node find-static-node
+           default-element-parent call-with-default-element-parent
+           with-default-element-parent)
+
+  (require (lib "kernel.ss" "halyard/private"))
+  (provide *enter-card-hook* *exit-card-hook*
+           *card-body-finished-hook* *before-draw-hook*
+           *dangerous-exit-script-hook*
+           runtime-directory value->boolean idle
+           engine-var set-engine-var! engine-var-exists?
+           exit-script refresh
+           run-deferred executing-deferred-safe-time-callbacks?
+
+           ;; More ancient APIs that we may want to do something about.
+           find-card card-exists? card-name)
 
 
   ;;=======================================================================
