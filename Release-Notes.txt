@@ -1,6 +1,33 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.13 - 25 August 2008
+
+In the past, several internal Halyard APIs have actually been exported to
+the public.  In this release, we make those APIs private.  The new rule:
+Anything in the halyard/ collection is a public API[1].  Anything in
+halyard/private/ is for internal use only, and it may change drastically
+without warning.
+
+We also loosen up a type constraint on %BROWSER% .PATH.
+
+If you find that you need to use APIs from halyard/private/, please let us
+know, and we'll make a new release shortly.
+
+[1] You may want to look at the top of halyard/private/api.ss for a list of
+suspicious and deprecated functions.  We probably won't revist these until
+Halyard 0.7.
+
+Eric Kidd (8):
+      Test fix: Make sure we actually run all Halyard test cases
+      Improve error message for (@/static-node .instance-of? %node%)
+      Update to latest wxquake2, with new README-WX.txt and license files
+      Remove unused build configurations
+      Move private *.ss files to halyard/private
+      Hide private nodes.ss and kernel.ss APIs
+      Allow use of PLT paths with %browser%
+      Bug fix: Load built-in-identifiers.ss from correct directory
+
 0.5.12 - 30 July 2008
 
 This release makes several API changes intended to support demand-loading.
