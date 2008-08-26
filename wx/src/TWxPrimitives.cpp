@@ -53,6 +53,7 @@
 #include "TStateDB.h"
 #include "dlg/MultiButtonDlg.h"
 #include "Downloader.h"
+#include "ProgramTree.h"
 
 #if CONFIG_HAVE_AUDIOSTREAMS
 #   include "AudioStream.h"
@@ -895,8 +896,8 @@ DEFINE_PRIMITIVE(RegisterGroupMember) {
 	std::string name;
     bool isCard, isPlaceHolder;
 	inArgs >> SymbolName(name) >> isCard >> isPlaceHolder;
-	wxGetApp().GetStage()->RegisterGroupMember(ToWxString(name), isCard,
-                                               isPlaceHolder);
+    ProgramTree *tree = wxGetApp().GetStageFrame()->GetProgramTree();
+    tree->RegisterGroupMember(ToWxString(name), isCard, isPlaceHolder);
 	::SkipPrimitiveLogging();
 }
 

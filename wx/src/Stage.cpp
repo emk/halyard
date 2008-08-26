@@ -408,13 +408,6 @@ void Stage::TryJumpTo(const wxString &inName)
 	}
 }
 
-void Stage::RegisterGroupMember(const wxString &inName, bool inIsCard,
-                                bool inIsPlaceHolder)
-{
-	mFrame->GetProgramTree()->RegisterGroupMember(inName, inIsCard,
-                                                  inIsPlaceHolder);
-}
-
 void Stage::NotifyEnterCard(const wxString &inName)
 {
 	mLastCard = std::string(inName.mb_str());

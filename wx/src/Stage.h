@@ -476,12 +476,6 @@ public:
 	CursorManager *GetCursorManager() { return mCursorManager; }
 
     //////////
-    /// Register a newly-loaded group member with the stage frame.
-    ///
-    void RegisterGroupMember(const wxString &inName, bool inIsCard,
-                             bool inIsPlaceHolder);
-
-    //////////
     /// Notify the stage that the interpreter has moved to a new card.
     ///
     void NotifyEnterCard(const wxString &inName);
