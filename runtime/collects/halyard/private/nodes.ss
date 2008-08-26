@@ -87,7 +87,7 @@
     (def (set-event-handled?! handled?) (must-override))
     (def (set-event-vetoed?! vetoed?) (must-override))
     (def (jump-to-card target) (must-override))
-    (def (register-card card) (must-override))
+    (def (register-group-member node placeholder?) (must-override))
     (def (enable-expensive-events enable?) (must-override))
     (def (notify-exit-card card) (must-override))
     (def (notify-enter-card card) (must-override))
@@ -514,7 +514,7 @@
            (or (obj .instance-of? klass)
                (and (obj .instance-of? %class%)
                     (obj .subclass-of? klass)
-                    (obj .name))))))
+                    (not (eq? (obj .name) #f)))))))
 
   ;; TODO - Get rid of these wrapper functions.
   ;; TODO - Some setters will be needed.
@@ -623,7 +623,9 @@
         ;; Note that this hook gets called before
         ;; .register-with-lexical-parent, if that's the sort of thing you
         ;; care about.
-        (call-hook-functions *node-defined-hook* self)))
+        (call-hook-functions *node-defined-hook* self)
+        ;; Register this %group-member% with the engine.
+        (*engine* .register-group-member self #f)))
 
     ;;; Return the static version of this node.
     (def (static-node)
@@ -695,10 +697,6 @@
 
   (define-class %card% (%group-member%)
     (with-instance (.class)
-      (def (register)
-        (super)
-        (*engine* .register-card self))
-      
       (def (jump)
         (*engine* .jump-to-card self))
       )

@@ -883,19 +883,21 @@ DEFINE_PRIMITIVE(Screenshot) {
 	wxGetApp().GetStage()->Screenshot(ToWxString(filename));
 }
 
-DEFINE_PRIMITIVE(RegisterCard) {
-	std::string name;
-	inArgs >> SymbolName(name);
-	wxGetApp().GetStage()->RegisterCard(ToWxString(name));
-	::SkipPrimitiveLogging();
-}
-
 DEFINE_PRIMITIVE(RegisterCursor) {
 	std::string name, path;
 	TPoint hotspot;
 	inArgs >> SymbolName(name) >> path >> hotspot;
 	CursorManager *manager = wxGetApp().GetStage()->GetCursorManager();
 	manager->RegisterImageCursor(name, path, hotspot.X(), hotspot.Y());
+}
+
+DEFINE_PRIMITIVE(RegisterGroupMember) {
+	std::string name;
+    bool isCard, isPlaceHolder;
+	inArgs >> SymbolName(name) >> isCard >> isPlaceHolder;
+	wxGetApp().GetStage()->RegisterGroupMember(ToWxString(name), isCard,
+                                               isPlaceHolder);
+	::SkipPrimitiveLogging();
 }
 
 DEFINE_PRIMITIVE(RegisterEventDispatcher) {
@@ -1103,8 +1105,8 @@ void Halyard::RegisterWxPrimitives() {
 	REGISTER_PRIMITIVE(Refresh);
 	REGISTER_PRIMITIVE(RefreshSplashScreen);
 	REGISTER_PRIMITIVE(Screenshot);
-	REGISTER_PRIMITIVE(RegisterCard);
 	REGISTER_PRIMITIVE(RegisterCursor);
+	REGISTER_PRIMITIVE(RegisterGroupMember);
 	REGISTER_PRIMITIVE(RegisterEventDispatcher);
     REGISTER_PRIMITIVE(Screen);
     REGISTER_PRIMITIVE(SetImageCacheSize);

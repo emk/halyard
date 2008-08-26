@@ -614,8 +614,8 @@
     (def (jump-to-card target)
       (jump-to-card target))
 
-    (def (register-card card)
-      (%kernel-register-card card))
+    (def (register-group-member node placeholder?)
+      (%kernel-register-group-member node placeholder?))
 
     (def (enable-expensive-events enable?)
       (enable-expensive-events enable?))
@@ -690,9 +690,10 @@
 
   (provide find-card card-exists? card-name)
   
-  (define (%kernel-register-card card)
-    (when (have-prim? 'RegisterCard)
-      (call-prim 'RegisterCard (card .full-name))))
+  (define (%kernel-register-group-member node placeholder?)
+    (when (have-prim? 'RegisterGroupMember)
+      (call-prim 'RegisterGroupMember (node .full-name)
+                 (card? node) placeholder?)))
 
   (define (find-card card-or-name
                      &opt (not-found

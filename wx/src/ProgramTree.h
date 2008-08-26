@@ -46,8 +46,7 @@ class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
 	wxTreeItemId mCardsID;
 	wxTreeItemId mBackgroundsID;
 
-	ItemMap mSequenceMap;
-	ItemMap mCardMap;
+	ItemMap mGroupMemberMap;
 
 	bool mHaveLastHighlightedItem;
 	wxTreeItemId mLastHighlightedItem;
@@ -56,16 +55,26 @@ class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
 		MINIMUM_WIDTH = 150
 	};
 
-	//////////
-	/// Find the wxTreeItemId which should contain the card or
-	/// sequence with the specified name.  If the name contains only
-	/// one slash at the beginning (indicating its parent is the root
-	/// node), the container will be mCardsID.  If the name contains
-	/// more slashes, each component of the name will be used as a
-	/// nested directory.  Directories will be created as needed.
-	///
-	wxTreeItemId FindParentContainer(const std::string &inName,
-									 std::string &outLocalName);
+    /// Return true iff the specified tree item corresponds to a card.
+    bool IsCardItem(wxTreeItemId inItemId);
+
+    /// Return true iff the specified tree item is a placeholder.
+    bool IsPlaceHolderItem(wxTreeItemId inItemId);
+
+    /// Given a node name, split it into a parent component and a local
+    /// component.  If the node name is "/", then set outIsRootNode to
+    /// true, and return empty strings for outParentName and outLocalName.
+    void AnalyzeNodeName(const std::string &inName,
+                         bool &outIsRootNode,
+                         std::string &outParentName,
+                         std::string &outLocalName);
+
+    /// Either find or create the group member named by inName.  The two
+    /// boolean parameters specify what kind of node we want to find and/or
+    /// create.
+    wxTreeItemId FindOrCreateGroupMember(const std::string &inName,
+                                         bool inIsCard,
+                                         bool inIsPlaceHolder);
 
 public:
 	ProgramTree(StageFrame *inStageFrame, int inID);
@@ -78,7 +87,8 @@ public:
     //////////
     /// Register a newly-loaded card with the program tree.
     ///
-    void RegisterCard(const wxString &inName);
+    void RegisterGroupMember(const wxString &inName, bool inIsCard,
+                             bool inIsPlaceHolder);
 
 	//////////
 	/// Set the default width which will be used when laying out this window.

@@ -32,6 +32,7 @@
 #include "HalyardApp.h"
 #include "Stage.h"
 #include "StageFrame.h"
+#include "CommonWxConv.h"
 #include "CustomTreeCtrl.h"
 #include "ProgramTree.h"
 #include "Model.h"
@@ -43,6 +44,7 @@
 using namespace Halyard;
 
 class ProgramTreeItemData;
+class NodeItemData;
 
 
 //=========================================================================
@@ -54,7 +56,8 @@ class ProgramTreeCtrl : public CustomTreeCtrl
 {
 public:
 	ProgramTreeCtrl(wxWindow *inParent);
-};	
+    NodeItemData *GetNodeItemData(wxTreeItemId inId);
+};
 
 
 //=========================================================================
@@ -71,18 +74,51 @@ public:
 
 
 //=========================================================================
-//  SequenceItemData
+//  NodeItemData
+//=========================================================================
+
+/// For now, a node is either a card or a group.
+class NodeItemData : public CustomTreeItemData {
+    wxString mName;
+    bool mIsPlaceHolder;
+
+public:
+    NodeItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
+                 bool inIsPlaceHolder);
+
+    /// Is this node a card?
+    virtual bool IsCard() const { return false; }
+
+    /// The full name of this node.
+    wxString GetName() const { return mName; }
+
+    /// Is this node a placeholder?
+    bool IsPlaceHolder() const { return mIsPlaceHolder; }
+};
+
+NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
+                           bool inIsPlaceHolder)
+    : CustomTreeItemData(inTreeCtrl), mName(inName),
+      mIsPlaceHolder(inIsPlaceHolder)
+{
+}
+
+
+//=========================================================================
+//  GroupItemData
 //=========================================================================
 
 /// Sequences of cards can be nested within each other.
-class SequenceItemData : public CustomTreeItemData
-{
+class GroupItemData : public NodeItemData {
 public:
-	SequenceItemData(ProgramTreeCtrl *inTreeCtrl);
+	GroupItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
+                  bool inIsPlaceHolder);
 };
 
-SequenceItemData::SequenceItemData(ProgramTreeCtrl *inTreeCtrl)
-	: CustomTreeItemData(inTreeCtrl)
+GroupItemData::GroupItemData(ProgramTreeCtrl *inTreeCtrl,
+                             const wxString &inName,
+                             bool inIsPlaceHolder)
+	: NodeItemData(inTreeCtrl, inName, inIsPlaceHolder)
 {
 }
 
@@ -92,18 +128,17 @@ SequenceItemData::SequenceItemData(ProgramTreeCtrl *inTreeCtrl)
 //=========================================================================
 
 /// Representation of a card in our ProgramTreeCtrl.
-class CardItemData : public CustomTreeItemData
-{
-	wxString mCardName;
-
+class CardItemData : public NodeItemData {
 public:
-	CardItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inCardName);
+	CardItemData(ProgramTreeCtrl *inTreeCtrl, wxString inName,
+                 bool inIsPlaceHolder);
+    virtual bool IsCard() const { return true; }
 	virtual void OnLeftDClick(wxMouseEvent& event);
 };
 
-CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl,
-						   const wxString &inCardName)
-	: CustomTreeItemData(inTreeCtrl), mCardName(inCardName)
+CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl, wxString inName,
+                           bool inIsPlaceHolder)
+	: NodeItemData(inTreeCtrl, inName, inIsPlaceHolder)
 {
 }
 
@@ -111,7 +146,7 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 {
 	Stage *stage = wxGetApp().GetStage();
 	if (stage->CanJump())
-		stage->TryJumpTo(mCardName);
+		stage->TryJumpTo(GetName());
 }
 
 
@@ -358,6 +393,15 @@ ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent)
 {
 }
 
+/// Look up a the NodeItemData object associated with a particular tree
+/// node.  It is an error to call this on a node which doesn't have an
+/// associated node.
+NodeItemData *ProgramTreeCtrl::GetNodeItemData(wxTreeItemId inItemId)  {
+    NodeItemData *data = dynamic_cast<NodeItemData*>(GetItemData(inItemId));
+    ASSERT(data);
+    return data;
+}
+
 
 //=========================================================================
 //  ProgramTree Methods
@@ -394,82 +438,111 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
 }
 
-wxTreeItemId ProgramTree::FindParentContainer(const std::string &inName,
-											  std::string &outLocalName)
-{
-    ASSERT(mCardsID.IsOk());
-    // Look backwards through the string for slashes, to separate the
-    // node name from the parent name.
-	std::string::size_type slashpos = inName.rfind('/');
-	if (slashpos == 0)
-	{
-		// The only slash is at the beginning of the string,
-        // indicating we're a child of the root node.  Strip off the
-        // slash for the local name, and return mCardsID to put us at
-        // the root of the hierarchy.
-		outLocalName = std::string(inName, 1, std::string::npos);
-		return mCardsID;
-	}
-	else if (slashpos == std::string::npos || slashpos == inName.size() - 1)
-	{
-		// We don't like this string.
-		gLog.Error("Illegal card name: \"%s\"", inName.c_str());
-		outLocalName = inName;
-		return mCardsID;
-	}
-	else
-	{
-		// Extract the local portion of the name for use by our caller.
-		outLocalName = std::string(inName, slashpos + 1, std::string::npos);
-
-		// Extract the parent sequence name.
-		std::string parent_name(inName, 0, slashpos);
-
-		// Either find or create the parent sequence.
-		wxASSERT(mCardMap.find(parent_name) == mCardMap.end());
-		ItemMap::iterator found = mSequenceMap.find(parent_name);
-		if (found != mSequenceMap.end())
-			return found->second;
-		else
-		{
-			// We're going to have to create it.  First, find the grandparent.
-			std::string parent_local_name;
-			wxTreeItemId grandparent_id =
-				FindParentContainer(parent_name, parent_local_name);
-
-			// Now, create the parent.
-			wxTreeItemId parent_id =
-				mTree->AppendItem(grandparent_id,
-                                  wxString(parent_local_name.c_str(),
-                                           wxConvLocal));
-			mTree->SetItemData(parent_id, new SequenceItemData(mTree));
-			mTree->SetIcon(parent_id, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
-						   ProgramTreeCtrl::ICON_FOLDER_OPEN);
-
-			// Add the parent to our map so we can find it later.
-			mSequenceMap.insert(ItemMap::value_type(parent_name, parent_id));
-			return parent_id;
-		}
-	}
+bool ProgramTree::IsCardItem(wxTreeItemId inItemId) {
+    return mTree->GetNodeItemData(inItemId)->IsCard();
 }
 
-void ProgramTree::RegisterCard(const wxString &inName)
+bool ProgramTree::IsPlaceHolderItem(wxTreeItemId inItemId) {
+    return mTree->GetNodeItemData(inItemId)->IsPlaceHolder();
+}
+
+void ProgramTree::AnalyzeNodeName(const std::string &inName,
+                                  bool &outIsRootNode,
+                                  std::string &outParentName,
+                                  std::string &outLocalName)
 {
-	// Check to make sure we don't already have a card by this name.
-	wxASSERT(mCardMap.find(std::string(inName.mb_str())) == mCardMap.end());
+    // Look backwards through the string for slashes, to separate the
+    // node name from the parent name.
+    std::string::size_type slashpos = inName.rfind('/');
+    if (slashpos == 0) {
+        // The only slash is at the start of the string, so we're either
+        // the root node, or one of its immediate children.
+        if (inName == "/") {
+            outIsRootNode = true;
+            outParentName = "";
+            outLocalName  = "";
+        } else {
+            outIsRootNode = false;
+            outParentName = "/";
+            outLocalName  = std::string(inName, 1, std::string::npos);
+        }
+    } else if (slashpos == std::string::npos || slashpos == inName.size() - 1) {
+		// Either we have no slash, or we have a slash at the end of the
+        // name.  Either way, we don't like it.
+		gLog.FatalError("Illegal card name: \"%s\"", inName.c_str());
+    } else {
+        outIsRootNode = false;
+        outParentName = std::string(inName, 0, slashpos);
+		outLocalName  = std::string(inName, slashpos + 1, std::string::npos);
 
-	// Insert the card into our tree.
-	std::string local_name;
-	wxTreeItemId parent_id =
-        FindParentContainer(std::string(inName.mb_str()), local_name);
-	wxTreeItemId id =
-        mTree->AppendItem(parent_id, wxString(local_name.c_str(), wxConvLocal));
-	mTree->SetItemData(id, new CardItemData(mTree, inName));
-	mTree->SetIcon(id, ProgramTreeCtrl::ICON_CARD,
-				   ProgramTreeCtrl::ICON_CARD);
+        // Make sure that the newly-split parent name is reasonable.  This
+        // is necessary if we're going to detect malformed names like
+        // "//foo".
+        ASSERT(outParentName.size() > 0);
+        if (outParentName[outParentName.size()-1] == '/')
+            gLog.FatalError("Illegal card name: \"%s\"", inName.c_str());
+    }
+}
 
-	// Record the card in our map.
-	mCardMap.insert(ItemMap::value_type(std::string(inName.mb_str()), id));
+wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
+                                                  bool inIsCard,
+                                                  bool inIsPlaceHolder)
+{
+    ASSERT(mCardsID.IsOk());
+
+    wxTreeItemId result;
+    ItemMap::iterator found = mGroupMemberMap.find(inName);
+    if (found != mGroupMemberMap.end()) {
+        // We already have this name in mGroupMemberMap.
+        result = found->second;
+    } else {
+        // Split our node name into a parent component and a local
+        // component.  We should never encounter the root node on this
+        // branch, because it is preloaded into mGroupMemberMap.
+        bool is_root_node;
+        std::string parent_name, local_name;
+        AnalyzeNodeName(inName, is_root_node, parent_name, local_name);
+        ASSERT(!is_root_node);
+
+        // Look up our parent node.  This should never be a placeholder,
+        // because otherwise, how could it have children?
+        wxTreeItemId parent_id =
+            FindOrCreateGroupMember(parent_name, false, false);
+
+        // Create a new node of the appropriate type.
+        wxString name_wx(ToWxString(inName));
+        wxString local_name_wx(ToWxString(local_name));
+        result = mTree->AppendItem(parent_id, local_name_wx);
+        if (inIsCard) {
+            mTree->SetItemData(result, new CardItemData(mTree, name_wx,
+                                                        inIsPlaceHolder));
+            mTree->SetIcon(result, ProgramTreeCtrl::ICON_CARD,
+                           ProgramTreeCtrl::ICON_CARD);
+            
+        } else {
+			mTree->SetItemData(result, new GroupItemData(mTree, name_wx,
+                                                         inIsPlaceHolder));
+			mTree->SetIcon(result, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
+						   ProgramTreeCtrl::ICON_FOLDER_OPEN);
+            
+        }
+
+        // Register our node in mGroupMemberMap for future look-ups.
+        mGroupMemberMap.insert(ItemMap::value_type(inName, result));
+    }
+
+    // We don't actually have a NodeItemData object on the root node, at
+    // least for now.
+    ASSERT(inName == "/" || IsCardItem(result) == inIsCard);
+    ASSERT(inName == "/" || IsPlaceHolderItem(result) == inIsPlaceHolder);
+    return result;
+}
+
+void ProgramTree::RegisterGroupMember(const wxString &inName, bool inIsCard,
+                                      bool inIsPlaceHolder)
+{
+    (void) FindOrCreateGroupMember(ToStdString(inName), inIsCard,
+                                   inIsPlaceHolder);
 }
 
 void ProgramTree::SetDefaultWidth(int inWidth)
@@ -480,17 +553,22 @@ void ProgramTree::SetDefaultWidth(int inWidth)
 void ProgramTree::NotifyReloadScriptStarting()
 {
     ASSERT(mCardsID.IsOk());
-	mCardMap.clear();
-	mSequenceMap.clear();
+	mGroupMemberMap.clear();
     mHaveLastHighlightedItem = false;
 	mTree->CollapseAndReset(mCardsID);
+
+    // Register our root node in mGroupMemberMap so that FindGroupMember
+    // is guaranteed to have a recursive base case.
+    mGroupMemberMap.insert(ItemMap::value_type("/", mCardsID));
 }
 
 void ProgramTree::NotifyEnterCard(const wxString &inName)
 {
 	// Look up the ID corresponding to this card.
-	ItemMap::iterator found = mCardMap.find(std::string(inName.mb_str()));
-	wxASSERT(found != mCardMap.end());
+	ItemMap::iterator found =
+        mGroupMemberMap.find(std::string(inName.mb_str()));
+	wxASSERT(found != mGroupMemberMap.end());
+    ASSERT(IsCardItem(found->second));
 
 	// Move the highlighting to the appropriate card.
 	if (mHaveLastHighlightedItem)
