@@ -5,6 +5,9 @@
 
 $HALYARD_SCRIPT = File.dirname(File.dirname(__FILE__))
 ["#{$HALYARD_SCRIPT}/engine/win32",
+ # For people who keep Halyard's source tree as a git submodule.
+ "#{$HALYARD_SCRIPT}/engine/src/runtime",
+ # For running in-tree from the halyard/test project.
  "#{$HALYARD_SCRIPT}/../runtime"].each do |path|
   if File.exists?("#{path}/ruby/lib")
     $HALYARD_RUNTIME = path
