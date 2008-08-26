@@ -68,11 +68,18 @@ void Widget::Show(bool inShow) {
 	if (inShow == IsShown())
 		return;
 
-	if (inShow && !HasVisibleRepresentation())
-	{
-		gLog.Error("Cannot show a window without a visible representation");
-		return;
-	}
+    // TODO - 0.7 - This error handling isn't very strict, because we don't
+    // want to break any APIs right now.  But when we begin 0.7, we'll
+    // probably want to call Element::Show whenever
+    // HasVisibleRepresentation is false, and conditionalize all the other
+    // code in this function.
+	if (!HasVisibleRepresentation()) {
+        if (inShow) {
+            OperationNotSupported("show");
+        } else {
+            //OperationNotSupported("hide");
+        }
+    }
 
 	// Update the window's visibility, and notify the stage of
 	// the change.

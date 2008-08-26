@@ -42,6 +42,7 @@
     (attr path :type <string>)
     (attr movie-shape $default-movie-shape)
     (attr controller? #f)
+    (attr audio-only? #f)
       
     ;;; Note that if we create movies with ELEM, they're going to start
     ;;; playing almost immediately.  This only works if you want the movie
@@ -49,7 +50,8 @@
     ;;; create the movie in RUN.
     (movie movie ((move-rect-center-to (.movie-shape)
                                        (rect-center $screen-rect))
-                  (.path) :controller? (.controller?)))
+                  (.path) :controller? (.controller?)
+                  :audio-only? (.audio-only?)))
     )
 
   ;;; A sample "proxy" class which contains a caption and a movie, and which
@@ -97,6 +99,11 @@
     (value path "quackery_vp3.mov")
     (value controller? #t)
     (value movie-shape $default-movie-and-controller-shape))
+
+  (card /media/qt/audio-only (%movie-card%)
+    (value title "Audio Only")
+    (value path "quackery_vp3.mov")
+    (value audio-only? #t))
 
   (card /media/qt/wait-test (%movie-card%) 
     (value title "Wait Test") 

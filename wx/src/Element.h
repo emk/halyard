@@ -58,6 +58,7 @@ class Element
     ///
     EventDispatcherPtr mEventDispatcher;
 
+protected:
     //////////
     /// Throw an error saying inOperationName is not allowed.
     ///
