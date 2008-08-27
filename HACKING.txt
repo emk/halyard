@@ -452,7 +452,7 @@ Building and releasing an engine
 
   9) Perform a build:
 
-     ruby buildfile.rb X.Y.Z
+     ruby buildfile.rb vX.Y.Z
 
   Here's the basic process in brief:
 
@@ -464,7 +464,7 @@ Building and releasing an engine
                   # Release-Notes.txt for this release.
   $ git tag v0.5.4
   $ git push --tags origin master
-  $ ruby buildfile.rb 0.5.4 # this will take a while
+  $ ruby buildfile.rb v0.5.4 # this will take a while
 
 Copying an Engine Build into a Script
 -------------------------------------

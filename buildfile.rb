@@ -98,7 +98,10 @@ start_build(:build_dir => build_dir,
             :signing_key => 'iml_authenticode_key')
 
 heading 'Check out the source code.', :name => :checkout do
-  git :clone, halyard_url, src_dir
+  # Clone the git repo without doing a checkout, so we don't get hosed
+  # by issues of case renames between HEAD and the version we're building
+  # from.
+  git :clone, '--no-checkout', halyard_url, src_dir
   cd src_dir do |d|
     git :checkout, commit
     git :submodule, 'init'

@@ -103,7 +103,8 @@ end
 
 desc "Clean *.zo files and compiled/ directories"
 task :clean_scheme do
-  %w(libs/plt/collects test/Runtime test/Scripts).each do |root|
+  %w(libs/plt/collects Common/test/scripts runtime/collects test/collects 
+     test/scripts).each do |root|
     Find.find(root) do |path|
       if File.basename(path) == "compiled" && File.directory?(path)
         rm_rf path
