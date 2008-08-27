@@ -93,8 +93,8 @@
   (require (lib "content-paths.ss" "halyard/private"))
   (provide (all-from (lib "content-paths.ss" "halyard/private")))
 
-  (require (lib "script-paths.ss" "halyard/private"))
-  (provide (all-from (lib "script-paths.ss" "halyard/private")))
+  (require (lib "external-nodes.ss" "halyard/private"))
+  (provide (all-from (lib "external-nodes.ss" "halyard/private")))
 
 
   ;;=======================================================================

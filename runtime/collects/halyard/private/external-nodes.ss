@@ -22,7 +22,7 @@
 
 ;;; This module is used to resolve paths files under the scripts/
 ;;; directory.
-(module script-paths (lib "mizzen.ss" "mizzen")
+(module external-nodes (lib "mizzen.ss" "mizzen")
 
   (provide split-node-name node-name->module-name
            external-group external-card)
