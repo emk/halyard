@@ -111,13 +111,13 @@
   ;; Make sure this gets loaded.  It will register itself with the kernel.
   (require (lib "tags.ss" "halyard/private"))
   (provide (all-from (lib "tags.ss" "halyard/private")))
+
   
   ;;;======================================================================
   ;;;  Useful Syntax
   ;;;======================================================================
 
-  (provide callback deferred-callback for
-           define-engine-variable define/p)
+  (provide callback deferred-callback for)
 
   ;;; Create an anonymous function object with no parameters.
   ;;;
@@ -164,44 +164,6 @@
            (begin/var body ...)
            (loop next-value)))]))
   (define-syntax-indent for 1)
-
-  ;;; Bind a Scheme variable name to an engine variable.
-  ;;;
-  ;;; @syntax (define-engine-variable name engine-name &opt init-val)
-  ;;; @param NAME name The Scheme name to use.
-  ;;; @param NAME engine-name The corresponding name in the engine.
-  ;;; @opt EXPRESSION init-val The initial value of the variable.
-  ;;; @xref engine-var set-engine-var!
-  (define-syntax define-engine-variable
-    (syntax-rules ()
-      [(define-engine-variable name engine-name init-val)
-       (begin
-         (define-symbol-macro name (engine-var 'engine-name))
-         (maybe-initialize-engine-variable 'engine-name init-val))]
-      [(define-engine-variable name engine-name)
-       (define-symbol-macro name (engine-var 'engine-name))]))
-  (define-syntax-indent define-engine-variable 2)
-
-  (define (maybe-initialize-engine-variable engine-name init-val)
-    ;; A private helper for define-engine-variable.  We only initialize
-    ;; a variable if it doesn't already exist, so it can keep its value
-    ;; across script reloads.
-    (unless (engine-var-exists? engine-name)
-      (set! (engine-var engine-name) init-val)))
-
-  ;;; Define a persistent global variable which keeps its value across
-  ;;; script reloads.  Note that two persistent variables with the same
-  ;;; name, but in different modules, are essentially the same variable.
-  ;;; Do not rely on this fact--it may change.
-  ;;;
-  ;;; @syntax (define/p name init-val)
-  ;;; @param NAME name The name of the variable.
-  ;;; @param EXPRESSION init-val The initial value of the variable.
-  (define-syntax define/p
-    (syntax-rules ()
-      [(define/p name init-val)
-       (define-engine-variable name name init-val)]))
-  (define-syntax-indent define/p 1)
 
   ;;; @define SYNTAX with-tracing
   ;;;

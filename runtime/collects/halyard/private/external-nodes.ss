@@ -23,9 +23,16 @@
 ;;; This module is used to resolve paths files under the scripts/
 ;;; directory.
 (module external-nodes (lib "mizzen.ss" "mizzen")
+  (require (lib "nodes.ss" "halyard/private"))
+  (require (lib "kernel.ss" "halyard/private"))
 
-  (provide split-node-name node-name->module-name
-           external-group external-card)
+
+  ;;=======================================================================
+  ;;  Purely-Functional Helpers
+  ;;=======================================================================
+  ;;  Purely-functional support code which is easy to unit test.
+
+  (provide split-node-name node-name->module-name)
 
   ;;; Given a node name such a /foo/bar, return a list of the individual
   ;;; components in the node name.  For the root node |/|, return the empty
@@ -41,22 +48,43 @@
                 (member ".." (cdr components)))
           (error (cat "Invalid node name: " name))
           (cdr components)))))
-                
 
   ;;; Convert a node name of the form /foo/bar to the corresponding (file
   ;;; ...) form.
   (define (node-name->module-name name)
     `(file ,(string-append (join "/" (split-node-name name)) ".ss")))
 
+
+  ;;=======================================================================
+  ;;  Other Support Code
+  ;;=======================================================================
+
+  (provide *enable-demand-loading?*)
+
+  ;;; Do we want to turn on demand loading?  This will be honored after the
+  ;;; next reload.
+  (define/p *enable-demand-loading?* #f)
+
+
+  ;;=======================================================================
+  ;;  External cards and groups.
+  ;;=======================================================================
+
+  (provide external-group external-card)
+
   ;;; Declare that a group should be loaded from an external file.
   (define-syntax external-group
     (syntax-rules ()
       [(_ name)
-       (namespace-require (node-name->module-name 'name))]))
+       (if *enable-demand-loading?*
+         (void)
+         (namespace-require (node-name->module-name 'name)))]))
 
   ;;; Declare that a card should be loaded from an external file.
   (define-syntax external-card
     (syntax-rules ()
       [(_ name)
-       (external-group name)]))
+       (if *enable-demand-loading?*
+         (void)
+         (namespace-require (node-name->module-name 'name)))]))
   )

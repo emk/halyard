@@ -82,8 +82,7 @@
   ;;  kernel's inner workings.
   
   (provide call-prim have-prim? runtime-directory value->boolean idle
-           blocking-idle engine-var set-engine-var! engine-var-exists?
-           exit-script refresh)
+           blocking-idle exit-script refresh)
 
   ;; C++ can't handle very large or small integers.  Here are the
   ;; typical limits on any modern platform.
@@ -148,18 +147,6 @@
       (idle))
     (%kernel-check-deferred))
 
-  (define (engine-var name)
-    (call-prim 'Get (if (string? name) (string->symbol name) name)))
-  
-  (define (set-engine-var! name value)
-    ;; Set an engine variable.  This is a pain, because we have to play
-    ;; along with the engine's lame type system.
-    (let [[namesym (if (string? name) (string->symbol name) name)]]
-      (call-prim 'SetTyped namesym value)))
-
-  (define (engine-var-exists? name)
-    (call-prim 'VariableInitialized name))
-  
   ;; TODO - replace most calls to this function with calls to ERROR.
   (define (error-with-extra-dialog msg)
     ;; TODO - More elaborate error support.
@@ -197,6 +184,70 @@
     (call-hook-functions *before-draw-hook*)
     (if (have-prim? 'Refresh)
         (call-prim 'Refresh transition ms)))
+
+
+  ;;=======================================================================
+  ;;  Engine Variables
+  ;;=======================================================================
+  ;;  These variables persist across reloads of the program, but may only
+  ;;  store a limited set of Scheme types.
+  ;;
+  ;;  We can actually remove this code from the kernel and put it into a
+  ;;  separate file if we modify event handling to not need the _pass and
+  ;;  _veto engine variables.
+
+  (provide engine-var set-engine-var! engine-var-exists?
+           define-engine-variable define/p)
+
+  (define (engine-var name)
+    (call-prim 'Get (if (string? name) (string->symbol name) name)))
+  
+  (define (set-engine-var! name value)
+    ;; Set an engine variable.  This is a pain, because we have to play
+    ;; along with the engine's lame type system.
+    (let [[namesym (if (string? name) (string->symbol name) name)]]
+      (call-prim 'SetTyped namesym value)))
+
+  (define (engine-var-exists? name)
+    (call-prim 'VariableInitialized name))
+  
+  ;;; Bind a Scheme variable name to an engine variable.
+  ;;;
+  ;;; @syntax (define-engine-variable name engine-name &opt init-val)
+  ;;; @param NAME name The Scheme name to use.
+  ;;; @param NAME engine-name The corresponding name in the engine.
+  ;;; @opt EXPRESSION init-val The initial value of the variable.
+  ;;; @xref engine-var set-engine-var!
+  (define-syntax define-engine-variable
+    (syntax-rules ()
+      [(define-engine-variable name engine-name init-val)
+       (begin
+         (define-symbol-macro name (engine-var 'engine-name))
+         (maybe-initialize-engine-variable 'engine-name init-val))]
+      [(define-engine-variable name engine-name)
+       (define-symbol-macro name (engine-var 'engine-name))]))
+  (define-syntax-indent define-engine-variable 2)
+
+  (define (maybe-initialize-engine-variable engine-name init-val)
+    ;; A private helper for define-engine-variable.  We only initialize
+    ;; a variable if it doesn't already exist, so it can keep its value
+    ;; across script reloads.
+    (unless (engine-var-exists? engine-name)
+      (set! (engine-var engine-name) init-val)))
+
+  ;;; Define a persistent global variable which keeps its value across
+  ;;; script reloads.  Note that two persistent variables with the same
+  ;;; name, but in different modules, are essentially the same variable.
+  ;;; Do not rely on this fact--it may change.
+  ;;;
+  ;;; @syntax (define/p name init-val)
+  ;;; @param NAME name The name of the variable.
+  ;;; @param EXPRESSION init-val The initial value of the variable.
+  (define-syntax define/p
+    (syntax-rules ()
+      [(define/p name init-val)
+       (define-engine-variable name name init-val)]))
+  (define-syntax-indent define/p 1)
 
 
   ;;=======================================================================
