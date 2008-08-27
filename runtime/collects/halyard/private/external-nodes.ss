@@ -72,13 +72,19 @@
 
   (provide external-group external-card)
 
+  ;; Load an external node from the corresponding *.ss file.
+  (define (load-external-node name)
+    (let [[module-name (node-name->module-name name)]]
+      (with-restriction-on-loadable-nodes [name module-name]
+        (namespace-require module-name))))
+
   ;;; Declare that a group should be loaded from an external file.
   (define-syntax external-group
     (syntax-rules ()
       [(_ name)
        (if *enable-demand-loading?*
          (void)
-         (namespace-require (node-name->module-name 'name)))]))
+         (load-external-node 'name))]))
 
   ;;; Declare that a card should be loaded from an external file.
   (define-syntax external-card
@@ -86,5 +92,6 @@
       [(_ name)
        (if *enable-demand-loading?*
          (void)
-         (namespace-require (node-name->module-name 'name)))]))
+         (load-external-node 'name))]))
+
   )

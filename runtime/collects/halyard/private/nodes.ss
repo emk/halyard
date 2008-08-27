@@ -58,6 +58,7 @@
   ;; XXX - This, along with the other provides here, needs to be
   ;; refactored into the right place...
   (provide last-card-visited)
+
   
   ;;=======================================================================
   ;;  Engine Interface
@@ -126,6 +127,52 @@
     (*engine* .last-card-visited))
   
   
+  ;;=======================================================================
+  ;;  Enforcing Connection Between Nodes and Files
+  ;;=======================================================================
+
+  (provide with-restriction-on-loadable-nodes)
+
+  (define *loadable-node-regexp* (pregexp "^/"))
+  (define *loadable-node-current-file* '(file "start.ss"))
+
+  (define (call-with-restriction-on-loadable-nodes name file-spec thunk)
+    ;; Since PLT doesn't seem to have a pregexp-escape function, we need to
+    ;; sanity-check the contents of NAME to make sure it doesn't contain
+    ;; any pregexp metacharacters.  See also check-node-name.
+    (unless (regexp-match "^[-_a-z0-9/]+$" (symbol->string name))
+      (error (cat "Malformed node name " name " cannot be used to "
+                  "restrict loadable nodes")))
+
+    ;; Impose our restrictions while running the thunk.
+    ;;
+    ;; TODO - We always include /tests as a legal node parent, because
+    ;; we're still loading test-cases willy-nilly.  We'll want to clean
+    ;; this up once we 
+    (let [[regexp (pregexp (string-append "^(/tests|" (symbol->string name)
+                                          ")($|/)"))]]
+      (fluid-let [[*loadable-node-regexp* regexp]
+                  [*loadable-node-current-file* file-spec]]
+        (thunk))))
+
+  ;; Only allow NAME and its children to be registered while loading
+  ;; FILE-SPEC.
+  (define-syntax with-restriction-on-loadable-nodes
+    (syntax-rules ()
+      [(_ [name file-spec] body ...)
+       (call-with-restriction-on-loadable-nodes name file-spec
+                                                (lambda () body ...))]))
+
+  ;; Are we expecting to be loading NODE right now?  This check helps
+  ;; enforce the node name/file name relationship needed by
+  ;; external-nodes.ss.
+  (define (check-whether-node-expected-in-current-file node)
+    (unless (regexp-match *loadable-node-regexp*
+                          (symbol->string (node .full-name)))
+      (error (cat "Did not expect to find " (node .full-name)
+                  " while loading " *loadable-node-current-file*))))
+
+
   ;;=======================================================================
   ;;  Object Model
   ;;=======================================================================
@@ -471,6 +518,7 @@
           (set! (.parent) parent)))
 
       (def (register)
+        (check-whether-node-expected-in-current-file self)
         (.register-in (*engine* .static-node-table)))
 
       ;; Register this static element with its lexically-surrounding parent
@@ -568,9 +616,12 @@
         (find-node candidate running?))))
 
   (define (check-node-name name)
+    ;; See also call-with-restriction-on-loadable-nodes, which imposes its
+    ;; own restrictions on legal node name prefixes.
     (unless (regexp-match "^[a-z][-_a-z0-9]*$" (symbol->string name))
       (error (cat "Bad node name: " name ". Must begin with a letter, and "
-                  "contain only letters, numbers, hyphens and underscores."))))
+                  "contain only lowercase letters, numbers, hyphens and "
+                  "underscores."))))
 
   (define (analyze-node-name name)
     ;; Given a name of the form '/', '/foo' or '/bar/baz', return the
