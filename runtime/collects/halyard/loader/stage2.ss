@@ -281,9 +281,9 @@
           
       ;; Load the user's actual script into our new namespace.
       (set! filename "start.ss")
-      (parameterize [[current-load-relative-directory
-                      (build-path (current-directory) "scripts")]]
-        (namespace-require '(file "start.ss")))
+      (current-load-relative-directory
+       (build-path (current-directory) "scripts"))
+      (namespace-require '(file "start.ss"))
 
       ;; Add a few extra definitions to the top-level environment, mostly
       ;; so that they can be called from the command-line.

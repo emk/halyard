@@ -744,7 +744,7 @@
   (define (%kernel-register-group-member node placeholder?)
     (when (have-prim? 'RegisterGroupMember)
       (call-prim 'RegisterGroupMember (node .full-name)
-                 (card? node) placeholder?)))
+                 (node .subclass-of? %card%) placeholder?)))
 
   (define (find-card card-or-name
                      &opt (not-found

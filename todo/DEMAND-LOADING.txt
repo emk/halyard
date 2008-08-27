@@ -1,0 +1,19 @@
+Next commit:
+/ Fix ProgramTree
+/ Fix group-add-member!
+/ Double-check external-nodes.ss
+/ Move some APIs back into nodes.ss, especially the (un)registration stuff
+/ Doc: We're faking a class with an instance
+
+Cleanup:
+  Stop special-casing "/" in ProgramTree: Add a NodeItemData for it
+  Trampoline vs placeholder terminology?
+
+Older:
+  GUI for triggering demand-loading from program tree
+  GUI for controlling demand-loading mode
+  Never demand-load when in runtime mode
+  (find-static-node "/placeholder/child") should work
+
+Nice to have:
+  Smart static node paths

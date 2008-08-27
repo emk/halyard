@@ -128,6 +128,65 @@
   
   
   ;;=======================================================================
+  ;;  Node Registration
+  ;;=======================================================================
+  ;;  This interacts with external-nodes.ss in a variety of exciting ways.
+
+  (provide register-trampoline! unregister-trampoline!)
+
+  ;; Get the static node table for use with register-node! and
+  ;; unregister-node!.
+  (define (static-node-table)
+    (*engine* .static-node-table))
+
+  ;; Register NODE in TABLE.
+  (define (register-node! node table)
+    (let [[name (node .full-name)]]
+      (when (hash-table-has-key? table name)
+        (error (cat "Duplicate copies of node " name)))
+      (hash-table-put! table name node)))
+
+  ;; Unregister NODE from TABLE.
+  (define (unregister-node! node table)
+    (let [[name (node .full-name)]]
+      (%assert (hash-table-has-key? table name))
+      (hash-table-remove! table name)))
+
+  ;; Register TRAMPOLINE in the static node table, with its parent, and
+  ;; with the engine.
+  (define (register-trampoline! trampoline)
+    (%assert (trampoline .trampoline?))
+    ;; TODO - This duplicates code in the .register methods of
+    ;; (%group-member% .class) and its superclasses.
+    (register-node! trampoline (*engine* .static-node-table))
+    (group-add-member! (trampoline .parent) trampoline)
+    (*engine* .register-group-member trampoline #t))
+
+  ;; Unregister TRAMPOLINE from the static node table.
+  ;;
+  ;; We don't need to worry about unregistering from our parent, because
+  ;; GROUP-ADD-MEMBER!  calls MAYBE-REPLACE-TRAMPOLINE!, and we don't need
+  ;; to worry about unregistering from the engine, because the new node's
+  ;; engine-level registration will just update the existing one.
+  (define (unregister-trampoline! trampoline)
+    (%assert (trampoline .trampoline?))
+    (unregister-node! trampoline (static-node-table)))
+
+  ;; If MEMBER already has a corresponding trampoline in GROUP, replace it.
+  (define (maybe-replace-trampoline! group member)
+    (let recurse [[node-list (group .members)]]
+      (cond
+       [(null? node-list)
+        #f]
+       [(and (eq? (member .name) ((car node-list) .name))
+             ((car node-list) .trampoline?))
+        (set! (car node-list) member)
+        #t]
+       [else
+        (recurse (cdr node-list))])))
+
+
+  ;;=======================================================================
   ;;  Enforcing Connection Between Nodes and Files
   ;;=======================================================================
 
@@ -410,20 +469,15 @@
 
   (provide %node% node? node-name node-full-name node-parent
            node-elements find-node find-running-node find-static-node
-           find-child-node make-node-type-predicate)
+           find-child-node analyze-node-name make-node-type-predicate)
 
   (define (add-shared-node-members! inst)
     (with-instance inst
       (def (register-in table)
-        (let [[name (.full-name)]]
-          (when (hash-table-has-key? table name)
-            (error (cat "Duplicate copies of node " name)))
-          (hash-table-put! table name self)))
+        (register-node! self table))
 
       (def (unregister-from table)
-        (let [[name (.full-name)]]
-          (%assert (hash-table-has-key? table name))
-          (hash-table-remove! table name)))
+        (unregister-node! self table))
       
       (def (full-name)
         (let [[parent (.parent)]]
@@ -431,6 +485,7 @@
            [(not parent) (.name)] ;; Root node
            [(root-node? parent) (symcat "/" (.name))]
            [else (symcat (parent .full-name) "/" (.name))])))
+
       ))
       
 
@@ -578,9 +633,9 @@
       (cond
        [(null? node-list)
         #f]
-       [(eq? (node-name node) (node-name (car node-list)))
+       [(eq? (node .name) ((car node-list) .name))
         (error (cat "Duplicate node: " (node .full-name)))]
-       [#t
+       [else
         (recurse (cdr node-list))])))
 
   (define (node-add-element! node elem)
@@ -676,7 +731,12 @@
         ;; care about.
         (call-hook-functions *node-defined-hook* self)
         ;; Register this %group-member% with the engine.
-        (*engine* .register-group-member self #f)))
+        (*engine* .register-group-member self #f))
+
+      ;;; We're not a trampoline.  See external-nodes.ss for details.
+      (def (trampoline?)
+        #f)
+      )
 
     ;;; Return the static version of this node.
     (def (static-node)
@@ -720,11 +780,12 @@
   (define set-group-members! set-card-group-members!)
 
   (define (group-add-member! group member)
-    ;; We need to check for duplicates before adding or we violate
-    ;; some pretty obvious invariants.
-    (check-for-duplicate-nodes (group-members group) member)
-    (set! (group-members group)
-          (append (group-members group) (list member))))
+    (unless (maybe-replace-trampoline! group member)
+      ;; We need to check for duplicates before adding or we violate
+      ;; some pretty obvious invariants.
+      (check-for-duplicate-nodes (group-members group) member)
+      (set! (group-members group)
+            (append (group-members group) (list member)))))
 
   (define-node-definer group %card-group%)
 

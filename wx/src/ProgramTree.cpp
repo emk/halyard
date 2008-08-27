@@ -94,6 +94,11 @@ public:
 
     /// Is this node a placeholder?
     bool IsPlaceHolder() const { return mIsPlaceHolder; }
+
+    /// Attempt to change the IsPlaceHolder value for this node.  Note
+    /// that trying to turn a non-placeholder into a placeholder will
+    /// fail, at least for now.
+    void UpdateIsPlaceHolder(bool inNewValue);
 };
 
 NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
@@ -101,6 +106,15 @@ NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
     : CustomTreeItemData(inTreeCtrl), mName(inName),
       mIsPlaceHolder(inIsPlaceHolder)
 {
+}
+
+void NodeItemData::UpdateIsPlaceHolder(bool inNewValue) {
+    if (inNewValue != mIsPlaceHolder) {
+        if (inNewValue == true)
+            gLog.FatalError("Trying to change a node into a placeholder");
+        else
+            mIsPlaceHolder = inNewValue;
+    }
 }
 
 
@@ -397,7 +411,7 @@ ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent)
 /// node.  It is an error to call this on a node which doesn't have an
 /// associated node.
 NodeItemData *ProgramTreeCtrl::GetNodeItemData(wxTreeItemId inItemId)  {
-    NodeItemData *data = dynamic_cast<NodeItemData*>(GetItemData(inItemId));
+    NodeItemData *data(dynamic_cast<NodeItemData*>(GetItemData(inItemId)));
     ASSERT(data);
     return data;
 }
@@ -439,11 +453,19 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 }
 
 bool ProgramTree::IsCardItem(wxTreeItemId inItemId) {
-    return mTree->GetNodeItemData(inItemId)->IsCard();
+    // For now, we don't actually have a NodeItemData instance for "/".
+    if (inItemId == mCardsID)
+        return false;
+    else
+        return mTree->GetNodeItemData(inItemId)->IsCard();
 }
 
 bool ProgramTree::IsPlaceHolderItem(wxTreeItemId inItemId) {
-    return mTree->GetNodeItemData(inItemId)->IsPlaceHolder();
+    // For now, we don't actually have a NodeItemData instance for "/".
+    if (inItemId == mCardsID)
+        return false;
+    else
+        return mTree->GetNodeItemData(inItemId)->IsPlaceHolder();
 }
 
 void ProgramTree::AnalyzeNodeName(const std::string &inName,
@@ -531,10 +553,17 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
         mGroupMemberMap.insert(ItemMap::value_type(inName, result));
     }
 
-    // We don't actually have a NodeItemData object on the root node, at
-    // least for now.
-    ASSERT(inName == "/" || IsCardItem(result) == inIsCard);
-    ASSERT(inName == "/" || IsPlaceHolderItem(result) == inIsPlaceHolder);
+    // Make sure that we haven't changed from a card to a group, or vice
+    // versa.
+    ASSERT(IsCardItem(result) == inIsCard);
+
+    // Update our placeholder status.
+    if (IsPlaceHolderItem(result) != inIsPlaceHolder) {
+        // TODO - We can't call GetNodeItemData on the root node yet.
+        ASSERT(inName != "/");
+        mTree->GetNodeItemData(result)->UpdateIsPlaceHolder(inIsPlaceHolder);
+    }
+
     return result;
 }
 
