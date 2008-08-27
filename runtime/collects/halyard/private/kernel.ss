@@ -35,7 +35,7 @@
   (require (lib "events.ss" "halyard/private"))
 
   ;; Get format-result-values.
-  (require (lib "trace.ss" "halyard"))
+  (require (lib "trace.ss" "halyard/private"))
 
   ;; The C++ interface expects us to export these identifiers from
   ;; kernel.ss.

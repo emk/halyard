@@ -109,16 +109,25 @@
       
       ;; Actually return the result of f to our caller.
       (apply values results)))
-  
-  ;; The goal: With a with-tracing form, replace (#%app name . values)
-  ;; with (#%app trace-call 'name name . values).  We do this using
-  ;; let-syntax, which imposes certain limitations--namely, we can't
-  ;; wrap with-tracing around a top-level defining form.
-  ;;
-  ;; We use #,(datum->syntax-object stx '#%app) instead of simply #%app
-  ;; to name the syntax we're overriding, because if we don't, nothing
-  ;; happens.  Brian, could you please explain this?
+
+  ;;; @define SYNTAX with-tracing
+  ;;;
+  ;;; Trace execution of a code body by dumping information to the
+  ;;; debug log.  This is very handy.  For now, this can't be used to
+  ;;; wrap an global function definition--it must be used within the
+  ;;; body of the global function.
+  ;;;
+  ;;; @syntax (with-tracing body ...)
+  ;;; @param BODY body The code to trace.
   (define-syntax (with-tracing stx)
+    ;; The goal: With a with-tracing form, replace (#%app name . values)
+    ;; with (#%app trace-call 'name name . values).  We do this using
+    ;; let-syntax, which imposes certain limitations--namely, we can't
+    ;; wrap with-tracing around a top-level defining form.
+    ;;
+    ;; We use #,(datum->syntax-object stx '#%app) instead of simply #%app
+    ;; to name the syntax we're overriding, because if we don't, nothing
+    ;; happens.  Brian, could you please explain this?
     (syntax-case stx []
       [(with-tracing body ...)
        (quasisyntax/loc

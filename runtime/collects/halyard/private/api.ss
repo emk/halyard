@@ -101,8 +101,8 @@
   ;;  Support Modules
   ;;=======================================================================
   
+  (require (lib "trace.ss" "halyard/private"))
   (provide with-tracing)
-  (require (lib "trace.ss" "halyard"))
   (set-trace-output-printer! debug-log)
 
   (require (rename (lib "match.ss") match-let match-let))
@@ -164,16 +164,6 @@
            (begin/var body ...)
            (loop next-value)))]))
   (define-syntax-indent for 1)
-
-  ;;; @define SYNTAX with-tracing
-  ;;;
-  ;;; Trace execution of a code body by dumping information to the
-  ;;; debug log.  This is very handy.  For now, this can't be used to
-  ;;; wrap an global function definition--it must be used within the
-  ;;; body of the global function.
-  ;;;
-  ;;; @syntax (with-tracing body ...)
-  ;;; @param BODY body The code to trace.
 
 
   ;;;======================================================================
