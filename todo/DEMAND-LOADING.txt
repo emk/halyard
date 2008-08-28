@@ -14,14 +14,16 @@ And then:
 / Don't use .member to ensure loads--try something more descriptive
 / GUI for triggering demand-loading from program tree
 / Deal with external-group/card declaration mismatches
+/ Give error when attempting to attach children to trampoline
+  Display load info in progress bar
+  Rename "demand loading" to "lazy loading"
   Don't save *.ss file counts when demand-loading enabled
-  Never demand-load when in runtime mode
-  Give error when attempting to attach children to trampoline
-  Display load status in progress bar
+  Better API for activating demand loading from listener
 
 Wrapup:
-  Deal with syntax errors during demand load somehow?
+  Deal with syntax errors during demand load somehow?  (For now, reload)
   GUI for controlling demand-loading mode
+  Never demand-load when in runtime mode
 
 Nice to have:
   Give all nodes and node proxies a "resolve" method

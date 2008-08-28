@@ -819,6 +819,9 @@
   (define set-group-members! set-card-group-members!)
 
   (define (group-add-member! group member)
+    (when (group .trampoline?)
+      (error (cat "Can't attach " member " to " group ", because it hasn't "
+                  "been loaded yet")))
     (unless (maybe-replace-trampoline! group member)
       ;; We need to check for duplicates before adding or we violate
       ;; some pretty obvious invariants.
