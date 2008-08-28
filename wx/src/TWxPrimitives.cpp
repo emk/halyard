@@ -894,10 +894,10 @@ DEFINE_PRIMITIVE(RegisterCursor) {
 
 DEFINE_PRIMITIVE(RegisterGroupMember) {
 	std::string name;
-    bool isCard, isPlaceHolder;
-	inArgs >> SymbolName(name) >> isCard >> isPlaceHolder;
+    bool isCard, isLoaded;
+	inArgs >> SymbolName(name) >> isCard >> isLoaded;
     ProgramTree *tree = wxGetApp().GetStageFrame()->GetProgramTree();
-    tree->RegisterGroupMember(ToWxString(name), isCard, isPlaceHolder);
+    tree->RegisterGroupMember(ToWxString(name), isCard, isLoaded);
 	::SkipPrimitiveLogging();
 }
 

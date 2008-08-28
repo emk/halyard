@@ -58,8 +58,8 @@ class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
     /// Return true iff the specified tree item corresponds to a card.
     bool IsCardItem(wxTreeItemId inItemId);
 
-    /// Return true iff the specified tree item is a placeholder.
-    bool IsPlaceHolderItem(wxTreeItemId inItemId);
+    /// Return true iff the specified tree item is loaded.
+    bool IsLoadedItem(wxTreeItemId inItemId);
 
     /// Given a node name, split it into a parent component and a local
     /// component.  If the node name is "/", then set outIsRootNode to
@@ -74,7 +74,7 @@ class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
     /// create.
     wxTreeItemId FindOrCreateGroupMember(const std::string &inName,
                                          bool inIsCard,
-                                         bool inIsPlaceHolder);
+                                         bool inIsLoaded);
 
 public:
 	ProgramTree(StageFrame *inStageFrame, int inID);
@@ -88,7 +88,7 @@ public:
     /// Register a newly-loaded card with the program tree.
     ///
     void RegisterGroupMember(const wxString &inName, bool inIsCard,
-                             bool inIsPlaceHolder);
+                             bool inIsLoaded);
 
 	//////////
 	/// Set the default width which will be used when laying out this window.

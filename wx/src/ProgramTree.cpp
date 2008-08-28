@@ -80,11 +80,11 @@ public:
 /// For now, a node is either a card or a group.
 class NodeItemData : public CustomTreeItemData {
     wxString mName;
-    bool mIsPlaceHolder;
+    bool mIsLoaded;
 
 public:
     NodeItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
-                 bool inIsPlaceHolder);
+                 bool inIsLoaded);
 
     /// Is this node a card?
     virtual bool IsCard() const { return false; }
@@ -92,28 +92,29 @@ public:
     /// The full name of this node.
     wxString GetName() const { return mName; }
 
-    /// Is this node a placeholder?
-    bool IsPlaceHolder() const { return mIsPlaceHolder; }
+    /// Is this node loaded?
+    bool IsLoaded() const { return mIsLoaded; }
 
-    /// Attempt to change the IsPlaceHolder value for this node.  Note
-    /// that trying to turn a non-placeholder into a placeholder will
-    /// fail, at least for now.
-    void UpdateIsPlaceHolder(bool inNewValue);
+    /// Attempt to change the IsLoaded value for this node.  Note that
+    /// trying to turn a loaded node into an unloaded node will fail, at
+    /// least for now.
+    void UpdateIsLoaded(bool inNewValue);
 };
 
 NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
-                           bool inIsPlaceHolder)
+                           bool inIsLoaded)
     : CustomTreeItemData(inTreeCtrl), mName(inName),
-      mIsPlaceHolder(inIsPlaceHolder)
+      mIsLoaded(inIsLoaded)
 {
 }
 
-void NodeItemData::UpdateIsPlaceHolder(bool inNewValue) {
-    if (inNewValue != mIsPlaceHolder) {
-        if (inNewValue == true)
-            gLog.FatalError("Trying to change a node into a placeholder");
+void NodeItemData::UpdateIsLoaded(bool inNewValue) {
+    if (inNewValue != mIsLoaded) {
+        if (inNewValue == false)
+            gLog.FatalError("Trying to change a loaded node into an "
+                            "unloaded node");
         else
-            mIsPlaceHolder = inNewValue;
+            mIsLoaded = inNewValue;
     }
 }
 
@@ -126,13 +127,13 @@ void NodeItemData::UpdateIsPlaceHolder(bool inNewValue) {
 class GroupItemData : public NodeItemData {
 public:
 	GroupItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
-                  bool inIsPlaceHolder);
+                  bool inIsLoaded);
 };
 
 GroupItemData::GroupItemData(ProgramTreeCtrl *inTreeCtrl,
                              const wxString &inName,
-                             bool inIsPlaceHolder)
-	: NodeItemData(inTreeCtrl, inName, inIsPlaceHolder)
+                             bool inIsLoaded)
+	: NodeItemData(inTreeCtrl, inName, inIsLoaded)
 {
 }
 
@@ -145,14 +146,14 @@ GroupItemData::GroupItemData(ProgramTreeCtrl *inTreeCtrl,
 class CardItemData : public NodeItemData {
 public:
 	CardItemData(ProgramTreeCtrl *inTreeCtrl, wxString inName,
-                 bool inIsPlaceHolder);
+                 bool inIsLoaded);
     virtual bool IsCard() const { return true; }
 	virtual void OnLeftDClick(wxMouseEvent& event);
 };
 
 CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl, wxString inName,
-                           bool inIsPlaceHolder)
-	: NodeItemData(inTreeCtrl, inName, inIsPlaceHolder)
+                           bool inIsLoaded)
+	: NodeItemData(inTreeCtrl, inName, inIsLoaded)
 {
 }
 
@@ -454,15 +455,15 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 	mCardsID = mTree->AppendItem(mRootID, wxT("Cards"));
 	mTree->SetIcon(mCardsID, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
 				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
-    mTree->SetItemData(mCardsID, new GroupItemData(mTree, wxT("/"), false));
+    mTree->SetItemData(mCardsID, new GroupItemData(mTree, wxT("/"), true));
 }
 
 bool ProgramTree::IsCardItem(wxTreeItemId inItemId) {
     return mTree->GetNodeItemData(inItemId)->IsCard();
 }
 
-bool ProgramTree::IsPlaceHolderItem(wxTreeItemId inItemId) {
-    return mTree->GetNodeItemData(inItemId)->IsPlaceHolder();
+bool ProgramTree::IsLoadedItem(wxTreeItemId inItemId) {
+    return mTree->GetNodeItemData(inItemId)->IsLoaded();
 }
 
 void ProgramTree::AnalyzeNodeName(const std::string &inName,
@@ -505,7 +506,7 @@ void ProgramTree::AnalyzeNodeName(const std::string &inName,
 
 wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
                                                   bool inIsCard,
-                                                  bool inIsPlaceHolder)
+                                                  bool inIsLoaded)
 {
     ASSERT(mCardsID.IsOk());
 
@@ -523,10 +524,10 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
         AnalyzeNodeName(inName, is_root_node, parent_name, local_name);
         ASSERT(!is_root_node);
 
-        // Look up our parent node.  This should never be a placeholder,
+        // Look up our parent node.  This should always be loaded,
         // because otherwise, how could it have children?
         wxTreeItemId parent_id =
-            FindOrCreateGroupMember(parent_name, false, false);
+            FindOrCreateGroupMember(parent_name, false, true);
 
         // Create a new node of the appropriate type.
         wxString name_wx(ToWxString(inName));
@@ -534,13 +535,13 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
         result = mTree->AppendItem(parent_id, local_name_wx);
         if (inIsCard) {
             mTree->SetItemData(result, new CardItemData(mTree, name_wx,
-                                                        inIsPlaceHolder));
+                                                        inIsLoaded));
             mTree->SetIcon(result, ProgramTreeCtrl::ICON_CARD,
                            ProgramTreeCtrl::ICON_CARD);
             
         } else {
 			mTree->SetItemData(result, new GroupItemData(mTree, name_wx,
-                                                         inIsPlaceHolder));
+                                                         inIsLoaded));
 			mTree->SetIcon(result, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
 						   ProgramTreeCtrl::ICON_FOLDER_OPEN);
             
@@ -554,17 +555,17 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
     // versa.
     ASSERT(IsCardItem(result) == inIsCard);
 
-    // Update our placeholder status.
-    mTree->GetNodeItemData(result)->UpdateIsPlaceHolder(inIsPlaceHolder);
+    // Update our loaded status.
+    mTree->GetNodeItemData(result)->UpdateIsLoaded(inIsLoaded);
 
     return result;
 }
 
 void ProgramTree::RegisterGroupMember(const wxString &inName, bool inIsCard,
-                                      bool inIsPlaceHolder)
+                                      bool inIsLoaded)
 {
     (void) FindOrCreateGroupMember(ToStdString(inName), inIsCard,
-                                   inIsPlaceHolder);
+                                   inIsLoaded);
 }
 
 void ProgramTree::SetDefaultWidth(int inWidth)

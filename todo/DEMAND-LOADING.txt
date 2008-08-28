@@ -7,7 +7,7 @@ Next commit:
 
 Cleanup:
 / Stop special-casing "/" in ProgramTree: Add a NodeItemData for it
-  Trampoline vs placeholder terminology?
+/ Trampoline vs placeholder terminology?
 
 And then:
   Give all nodes and node proxies a "resolve" method
@@ -16,6 +16,7 @@ And then:
   GUI for controlling demand-loading mode
   Never demand-load when in runtime mode
   (find-static-node "/placeholder/child") should work
+  Deal with *node-defined-hook* and Robinson's metadata library?
 
 Nice to have:
   Smart static node paths

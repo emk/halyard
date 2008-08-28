@@ -88,7 +88,7 @@
     (def (set-event-handled?! handled?) (must-override))
     (def (set-event-vetoed?! vetoed?) (must-override))
     (def (jump-to-card target) (must-override))
-    (def (register-group-member node placeholder?) (must-override))
+    (def (register-group-member node loaded?) (must-override))
     (def (enable-expensive-events enable?) (must-override))
     (def (notify-exit-card card) (must-override))
     (def (notify-enter-card card) (must-override))
@@ -160,7 +160,7 @@
     ;; (%group-member% .class) and its superclasses.
     (register-node! trampoline (*engine* .static-node-table))
     (group-add-member! (trampoline .parent) trampoline)
-    (*engine* .register-group-member trampoline #t))
+    (*engine* .register-group-member trampoline #f))
 
   ;; Unregister TRAMPOLINE from the static node table.
   ;;
@@ -731,7 +731,7 @@
         ;; care about.
         (call-hook-functions *node-defined-hook* self)
         ;; Register this %group-member% with the engine.
-        (*engine* .register-group-member self #f))
+        (*engine* .register-group-member self #t))
 
       ;;; We're not a trampoline.  See external-nodes.ss for details.
       (def (trampoline?)
