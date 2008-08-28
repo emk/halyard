@@ -759,6 +759,20 @@ void TSchemeInterpreter::JumpToCardByName(const char *inName)
 	(void) CallScheme("%kernel-jump-to-card-by-name", args.size(), args.get());
 }
 
+void TSchemeInterpreter::LoadGroup(const char *inName) {
+    TSchemeArgs<1> args;
+    TSchemeReg<0,1> reg;
+    reg.args(args);
+    reg.done();
+
+	// In theory, there's no reason we can't load groups while stopped,
+    // but that would require reviewing the kernel's code.
+    ASSERT(!IsStopped());
+
+	args[0] = scheme_make_utf8_string(inName);
+	(void) CallScheme("%kernel-load-group", args.size(), args.get());
+}
+
 std::string TSchemeInterpreter::CurCardName(void)
 {
     Scheme_Object *name_obj = NULL, *name_byte_str = NULL;

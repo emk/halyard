@@ -104,7 +104,7 @@
   (external-group /experiments)
   (external-group /updater)
   (external-group /quake2)
-  (external-group /benchmark)
+  (external-card /benchmark)
   
   ;; Test cases.  We use namespace-require so that /tests isn't the first
   ;; group in our program--it's entirely for cosmetic reasons.

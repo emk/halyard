@@ -11,13 +11,19 @@ Cleanup:
 
 And then:
 / (find-static-node "/placeholder/child") should work
-  GUI for triggering demand-loading from program tree
-  Give all nodes and node proxies a "resolve" method
+/ Don't use .member to ensure loads--try something more descriptive
+/ GUI for triggering demand-loading from program tree
+  Deal with external-group/card declaration mismatches
   Don't save *.ss file counts when demand-loading enabled
-  GUI for controlling demand-loading mode
   Never demand-load when in runtime mode
   Give error when attempting to attach children to trampoline
+  Display load status in progress bar
+
+Wrapup:
+  Deal with syntax errors during demand load somehow?
+  GUI for controlling demand-loading mode
 
 Nice to have:
+  Give all nodes and node proxies a "resolve" method
   Deal with *node-defined-hook* and Robinson's metadata library?
   Smart static node paths

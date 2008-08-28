@@ -95,6 +95,9 @@ public:
     /// Is this node loaded?
     bool IsLoaded() const { return mIsLoaded; }
 
+    /// Called when the user attempts to expand a folder.
+    virtual void OnExpanding(wxTreeEvent &event);
+
     /// Attempt to change the IsLoaded value for this node.  Note that
     /// trying to turn a loaded node into an unloaded node will fail, at
     /// least for now.
@@ -106,6 +109,16 @@ NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
     : CustomTreeItemData(inTreeCtrl), mName(inName), mIsLoaded(inIsLoaded)
 {
     SetId(inItemId);
+}
+
+void NodeItemData::OnExpanding(wxTreeEvent &event) {
+    if (!IsLoaded() && TInterpreter::HaveInstance()) {
+        TInterpreter *interp(TInterpreter::GetInstance());
+        if (!interp->IsStopped()) {
+            std::string name(ToStdString(GetName()));
+            interp->LoadGroup(name.c_str());
+        }
+    }
 }
 
 void NodeItemData::UpdateIsLoaded(bool inNewValue) {

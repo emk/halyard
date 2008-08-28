@@ -76,6 +76,7 @@ private:
 	void OnRightDown(wxMouseEvent& event);
 	void OnBeginLabelEdit(wxTreeEvent &event);
 	void OnEndLabelEdit(wxTreeEvent &event);
+    void OnExpanding(wxTreeEvent &event);
 	void OnBeginDrag(wxTreeEvent& event);
 	void OnEndDrag(wxTreeEvent& event);
 	void OnMouseMoved(wxMouseEvent& event);
@@ -97,6 +98,7 @@ public:
 	virtual void OnRightDown(wxMouseEvent& event) {}
 	virtual void OnBeginLabelEdit(wxTreeEvent &event);
 	virtual void OnEndLabelEdit(wxTreeEvent &event) {}
+    virtual void OnExpanding(wxTreeEvent &event) {}
 
 	virtual bool CanBeDragged() { return false; }
 	virtual bool CanAcceptDrag(CustomTreeItemData *inItem) { return false; }

@@ -662,7 +662,7 @@
           (begin
             ;; Make sure our parent node is loaded.
             (when (parent .trampoline?)
-              (parent .members))
+              (parent .ensure-loaded! 'find-node))
             ;; Try to find our node again.  We bypass find-node, because
             ;; we don't want to call ourselves recursively if the node
             ;; simply doesn't exist.
@@ -800,7 +800,13 @@
 
   (define-class %card-group% (%group-member%)
     (with-instance (.class)
-      (attr members '() :type <list> :writable? #t)))
+      (attr members '() :type <list> :writable? #t)
+
+      ;;; Make sure this card group is loaded.  This operation does nothing
+      ;;; when called on a %card-group%, but the trampoline objects don't
+      ;;; understand it, so calling it on a trampoline will force a load.
+      (def (ensure-loaded! caller)
+        (void))))
 
   ;; TODO - Eliminate these wrappers.
   (define card-group? (make-node-type-predicate %card-group%))

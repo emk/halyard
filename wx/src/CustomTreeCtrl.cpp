@@ -35,6 +35,7 @@ BEGIN_EVENT_TABLE(CustomTreeCtrl, wxTreeCtrl)
     EVT_RIGHT_DOWN(CustomTreeCtrl::OnRightDown)
 	EVT_TREE_BEGIN_LABEL_EDIT(wxID_ANY, CustomTreeCtrl::OnBeginLabelEdit)
 	EVT_TREE_END_LABEL_EDIT(wxID_ANY, CustomTreeCtrl::OnEndLabelEdit)
+    EVT_TREE_ITEM_EXPANDING(wxID_ANY, CustomTreeCtrl::OnExpanding)
 	EVT_TREE_BEGIN_DRAG(wxID_ANY, CustomTreeCtrl::OnBeginDrag)
 	EVT_TREE_END_DRAG(wxID_ANY, CustomTreeCtrl::OnEndDrag)
     EVT_MOTION(CustomTreeCtrl::OnMouseMoved)
@@ -130,6 +131,13 @@ void CustomTreeCtrl::OnEndLabelEdit(wxTreeEvent &event)
 	CustomTreeItemData *data = GetCustomTreeItemData(event);
 	if (data)
 		data->OnEndLabelEdit(event);	
+}
+
+void CustomTreeCtrl::OnExpanding(wxTreeEvent &event)
+{
+	CustomTreeItemData *data = GetCustomTreeItemData(event);
+	if (data)
+		data->OnExpanding(event);
 }
 
 void CustomTreeCtrl::OnBeginDrag(wxTreeEvent& event)

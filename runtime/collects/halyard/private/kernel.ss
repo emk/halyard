@@ -367,6 +367,22 @@
     (set! *%kernel-jump-card* card-name)
     (%kernel-set-state 'JUMPING))
 
+  (define (%kernel-load-group group-name)
+    (%kernel-run-as-callback
+     (lambda ()
+       ;; We need to call find-static-node and .ensure-loaded! from within
+       ;; a callback context.  Consider the following scenario:
+       ;;   1) The script has called WAIT on some media.
+       ;;   2) The engine is 'PAUSED until the WAIT is done.
+       ;;   3) The user triggers a load from the GUI.
+       ;;   4) Loading code tries to call a primitive.
+       ;; In a callback context, this should work, because we support
+       ;; call-prim and all the usual side effects in a reasonably
+       ;; plausible way.  Without the callback context, calling call-prim
+       ;; will typically cause an engine crash sooner or later.
+       ((find-static-node group-name) .ensure-loaded! 'c++))
+     non-fatal-error))
+
   (define (%kernel-current-card-name)
     (if (*engine* .current-card)
         (value->string ((*engine* .current-card) .full-name))

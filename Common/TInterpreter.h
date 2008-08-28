@@ -173,6 +173,13 @@ public:
 	/// \param inName  name of the Card to jump to.
 	///
 	virtual void JumpToCardByName(const char *inName) = 0;
+
+	//////////
+	/// Load a card group from disk.
+	///
+	/// \param inName  name of the group to load.
+	///
+	virtual void LoadGroup(const char *inName) = 0;
 	
 	//////////
 	/// Get name of current Card.

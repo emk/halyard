@@ -186,6 +186,7 @@ public:
 	virtual bool Paused(void);
 	virtual void KillCurrentCard(void);
 	virtual void JumpToCardByName(const char *inName);
+	virtual void LoadGroup(const char *inName);
 	virtual std::string CurCardName(void);
 	virtual bool IsValidCard(const char *inCardName);
 	virtual bool Eval(const std::string &inExpression,
