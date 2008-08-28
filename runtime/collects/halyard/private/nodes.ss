@@ -180,6 +180,7 @@
         #f]
        [(and (eq? (member .name) ((car node-list) .name))
              ((car node-list) .trampoline?))
+        ((car node-list) .trampoline-check-replacement-node member)
         (set! (car node-list) member)
         #t]
        [else

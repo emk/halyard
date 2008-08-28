@@ -13,7 +13,7 @@ And then:
 / (find-static-node "/placeholder/child") should work
 / Don't use .member to ensure loads--try something more descriptive
 / GUI for triggering demand-loading from program tree
-  Deal with external-group/card declaration mismatches
+/ Deal with external-group/card declaration mismatches
   Don't save *.ss file counts when demand-loading enabled
   Never demand-load when in runtime mode
   Give error when attempting to attach children to trampoline

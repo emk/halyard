@@ -128,6 +128,13 @@
     (def (trampoline?)
       #t)
 
+    ;; Make sure that NODE can be used to replace this trampoline, and
+    ;; raise an error if it can't.
+    (def (trampoline-check-replacement-node node)
+      (unless (node .subclass-of? (.%superclass-of-real-node))
+        (error (cat "External node " self " expected to be of type "
+                    (.%superclass-of-real-node) ", but " node " is not"))))
+
     ;;---------------------------------------------------------------------
     ;; Emulating other classes: Typing and duck typing (remember, we're
     ;; emulating a static node, which is actually a class, so that affects
