@@ -134,11 +134,6 @@
 
   (provide register-trampoline! unregister-trampoline!)
 
-  ;; Get the static node table for use with register-node! and
-  ;; unregister-node!.
-  (define (static-node-table)
-    (*engine* .static-node-table))
-
   ;; Register NODE in TABLE.
   (define (register-node! node table)
     (let [[name (node .full-name)]]
@@ -165,14 +160,15 @@
   ;; Unregister TRAMPOLINE from the static node table.
   ;;
   ;; We don't need to worry about unregistering from our parent, because
-  ;; GROUP-ADD-MEMBER!  calls MAYBE-REPLACE-TRAMPOLINE!, and we don't need
+  ;; GROUP-ADD-MEMBER! calls MAYBE-REPLACE-TRAMPOLINE!, and we don't need
   ;; to worry about unregistering from the engine, because the new node's
   ;; engine-level registration will just update the existing one.
   (define (unregister-trampoline! trampoline)
     (%assert (trampoline .trampoline?))
-    (unregister-node! trampoline (static-node-table)))
+    (unregister-node! trampoline (*engine* .static-node-table)))
 
   ;; If MEMBER already has a corresponding trampoline in GROUP, replace it.
+  ;; Returns #t iff we found a trampoline to replace.
   (define (maybe-replace-trampoline! group member)
     (let recurse [[node-list (group .members)]]
       (cond
@@ -208,7 +204,7 @@
     ;;
     ;; TODO - We always include /tests as a legal node parent, because
     ;; we're still loading test-cases willy-nilly.  We'll want to clean
-    ;; this up once we 
+    ;; this up once we have a better system for loading tests.
     (let [[regexp (pregexp (string-append "^(/tests|" (symbol->string name)
                                           ")($|/)"))]]
       (fluid-let [[*loadable-node-regexp* regexp]
@@ -805,7 +801,9 @@
 
       ;;; Make sure this card group is loaded.  This operation does nothing
       ;;; when called on a %card-group%, but the trampoline objects don't
-      ;;; understand it, so calling it on a trampoline will force a load.
+      ;;; understand it, so calling it on a trampoline will force a load.  
+      ;;; We have a CALLER parameter so the caller of this method is logged
+      ;;; by .method-missing on the trampoline.
       (def (ensure-loaded! caller)
         (void))))
 

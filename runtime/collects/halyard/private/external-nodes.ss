@@ -81,11 +81,11 @@
   ;;  the next time you call the function, you bypass the linker.
   ;;
   ;;  A %static-node-trampoline% is a proxy for an unloaded node.  It can
-  ;;  respond to a few simply methods directly.  But as soon as you try to
+  ;;  respond to a few simple methods directly.  But as soon as you try to
   ;;  do anything complicated with it, it will actually load the real node
   ;;  in from disk and then "snap" itself out existence.
   ;;
-  ;;  Just to make like exciting, a %static-node-trampoline% is actually
+  ;;  Just to make life exciting, a %static-node-trampoline% is actually
   ;;  emulating a _class_, not an instance.  So that affects things like
   ;;  .instance-of? and .subclass-of?.
   ;;
@@ -140,6 +140,11 @@
     ;; emulating a static node, which is actually a class, so that affects
     ;; some details here)
 
+    ;; This class is required to be a superclass of the actual node
+    ;; once it is loaded.  This can be used for doing certain kinds of
+    ;; typechecks and giving better error messages, without having to
+    ;; load the real node.  It will also be sanity-checked against the
+    ;; real node once we load it.
     (attr %superclass-of-real-node)
 
     (def (instance-of? klass)
@@ -151,6 +156,8 @@
           (.method-missing 'responds-to? klass)))
 
     (def (subclass-of? klass)
+      ;; We shouldn't call super here because we're an instance
+      ;; pretending to be a class and not actually a class.
       (or ;; Hey, we can answer this without loading anything!
           (.%superclass-of-real-node.subclass-of? klass)
           ;; OK, this is going to be harder.

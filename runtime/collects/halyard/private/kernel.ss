@@ -666,7 +666,7 @@
   ;; In a callback context, this should work, because we support call-prim
   ;; and all the usual side effects in a reasonably plausible way.  Without
   ;; the callback context, calling call-prim will typically cause an engine
-  ;; crash sooner or later.
+  ;; freeze sooner or later, because call-prim hangs when 'PAUSED.
 
   (provide check-whether-safe-to-load-code)
 

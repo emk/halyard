@@ -112,6 +112,7 @@ NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
 }
 
 void NodeItemData::OnExpanding(wxTreeEvent &event) {
+    // TODO - This belongs in GroupItemData, below.
     if (!IsLoaded() && TInterpreter::HaveInstance()) {
         TInterpreter *interp(TInterpreter::GetInstance());
         if (!interp->IsStopped()) {
@@ -122,6 +123,7 @@ void NodeItemData::OnExpanding(wxTreeEvent &event) {
 }
 
 void NodeItemData::UpdateIsLoaded(bool inNewValue) {
+    // TODO - Most of this belongs in GroupItemData, below.
     if (inNewValue != mIsLoaded) {
         if (inNewValue == true) {
             mIsLoaded = true;
@@ -551,6 +553,9 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
 
         // Look up our parent node.  This should always be loaded,
         // because otherwise, how could it have children?
+        // XXX - This can actually update the load state of a node 
+        // when it shouldn't, but there shouldn't be a way to trigger
+        // this unless the Scheme layer is malfunctioning.
         wxTreeItemId parent_id =
             FindOrCreateGroupMember(parent_name, false, true);
 

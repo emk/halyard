@@ -20,6 +20,7 @@ And then:
   Rename "demand loading" to "lazy loading"
   Don't save *.ss file counts when demand-loading enabled
   Better API for activating demand loading from listener
+  Fix [+] controls on Windows
 
 Wrapup:
   Deal with syntax errors during demand load somehow?  (For now, reload)
