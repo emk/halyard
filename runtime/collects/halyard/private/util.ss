@@ -38,7 +38,7 @@
   (require #%engine-primitives)
 
   (provide app-log debug-log caution debug-caution non-fatal-error
-           fatal-error)
+           fatal-error set-status-text!)
 
   ;;; Write a message to Halyard.log.  This log is always present on a user's
   ;;; system, and is never deleted, so use this function sparingly.
@@ -70,6 +70,11 @@
   ;;; a crash report.
   (define (fatal-error msg)
     (%call-prim 'Log 'halyard msg 'fatalerror))
+
+  ;;; Show some text in the GUI's status bar.  Not visible in full screen
+  ;;; mode!
+  (define (set-status-text! msg)
+    (%call-prim 'SetStatusText msg))
 
   
   ;;=======================================================================

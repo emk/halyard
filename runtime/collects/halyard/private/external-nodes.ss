@@ -102,10 +102,10 @@
     ;; the trampoline with references to the actual node.  Anybody else who
     ;; has a copy of the trampoline can continue to use it as a proxy.
     (def (%snap-trampoline caller args)
-      (non-fatal-error (cat "Loading " (.full-name)
-                            " from disk because " (.%superclass-of-real-node)
-                            " trampoline can't handle ." caller
-                            " with arguments " args))
+      (debug-log (cat "Loading " (.full-name)
+                      " from disk because " (.%superclass-of-real-node)
+                      " trampoline can't handle ." caller
+                      " with arguments " args))
       (unless (eq? (.%snap-state) 'ready)
         (fatal-error (cat "Tried to snap trampoline " (.full-name)
                           " while in state " (.%snap-state)
@@ -189,9 +189,11 @@
 
   ;; Load an external node from the corresponding *.ss file.
   (define (load-external-node name)
+    (set-status-text! (cat "Loading " name "..."))
     (let [[module-name (node-name->module-name name)]]
       (with-restriction-on-loadable-nodes [name module-name]
-        (namespace-require module-name))))
+        (namespace-require module-name)))
+    (set-status-text! (cat "Loaded " name ".")))
 
   ;; Install a trampoline for node NAME with known SUPERCLASS.
   (define (install-trampoline name superclass)

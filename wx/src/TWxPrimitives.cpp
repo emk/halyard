@@ -924,6 +924,12 @@ DEFINE_PRIMITIVE(SetImageCacheSize) {
 	wxGetApp().GetStage()->GetImageCache()->SetMaxCacheSize(sz);
 }
 
+DEFINE_PRIMITIVE(SetStatusText) {
+    std::string text;
+    inArgs >> text;
+    wxGetApp().GetStageFrame()->SetStatusText(ToWxString(text));
+}
+
 DEFINE_PRIMITIVE(SetZoneCursor) {
 	std::string name, cursor;
 	inArgs >> SymbolName(name) >> SymbolName(cursor);
@@ -1111,6 +1117,7 @@ void Halyard::RegisterWxPrimitives() {
 	REGISTER_PRIMITIVE(RegisterEventDispatcher);
     REGISTER_PRIMITIVE(Screen);
     REGISTER_PRIMITIVE(SetImageCacheSize);
+    REGISTER_PRIMITIVE(SetStatusText);
     REGISTER_PRIMITIVE(SetZoneCursor);
     REGISTER_PRIMITIVE(ExitScript);
 	REGISTER_PRIMITIVE(TextAA);
