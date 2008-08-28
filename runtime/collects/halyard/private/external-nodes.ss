@@ -190,6 +190,7 @@
   ;; Load an external node from the corresponding *.ss file.
   (define (load-external-node name)
     (set-status-text! (cat "Loading " name "..."))
+    (check-whether-safe-to-load-code name)
     (let [[module-name (node-name->module-name name)]]
       (with-restriction-on-loadable-nodes [name module-name]
         (namespace-require module-name)))

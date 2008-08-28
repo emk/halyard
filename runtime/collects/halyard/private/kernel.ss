@@ -368,20 +368,8 @@
     (%kernel-set-state 'JUMPING))
 
   (define (%kernel-load-group group-name)
-    (%kernel-run-as-callback
-     (lambda ()
-       ;; We need to call find-static-node and .ensure-loaded! from within
-       ;; a callback context.  Consider the following scenario:
-       ;;   1) The script has called WAIT on some media.
-       ;;   2) The engine is 'PAUSED until the WAIT is done.
-       ;;   3) The user triggers a load from the GUI.
-       ;;   4) Loading code tries to call a primitive.
-       ;; In a callback context, this should work, because we support
-       ;; call-prim and all the usual side effects in a reasonably
-       ;; plausible way.  Without the callback context, calling call-prim
-       ;; will typically cause an engine crash sooner or later.
-       ((find-static-node group-name) .ensure-loaded! 'c++))
-     non-fatal-error))
+    (with-code-loading-allowed [non-fatal-error #f]
+      ((find-static-node group-name) .ensure-loaded! 'c++)))
 
   (define (%kernel-current-card-name)
     (if (*engine* .current-card)
@@ -389,7 +377,8 @@
         ""))
 
   (define (%kernel-valid-card? card-name)
-    (card-exists? card-name))
+    (with-code-loading-allowed [non-fatal-error #f]
+      (card-exists? card-name)))
 
   (define (%kernel-eval expression)
     (let [[ok? #t] [result "#<did not return from jump>"]]
@@ -661,6 +650,48 @@
        (*%kernel-exit-interpreter-func* #f)]
       [else
        (fatal-error "Unknown interpreter state")]))
+
+
+  ;;=======================================================================
+  ;;  Support for loading code
+  ;;=======================================================================
+  ;;  If a function might trigger demand loading, we need to call it from
+  ;;  within a callback context.  Consider the following scenario:
+  ;;
+  ;;   1) The script has called WAIT on some media.
+  ;;   2) The engine is 'PAUSED until the WAIT is done.
+  ;;   3) The user triggers a load from the GUI.
+  ;;   4) Loading code tries to call a primitive.
+  ;;
+  ;; In a callback context, this should work, because we support call-prim
+  ;; and all the usual side effects in a reasonably plausible way.  Without
+  ;; the callback context, calling call-prim will typically cause an engine
+  ;; crash sooner or later.
+
+  (provide check-whether-safe-to-load-code)
+
+  (define (check-whether-safe-to-load-code node-name)
+    (unless (eq? *%kernel-state* 'NORMAL)
+      (fatal-error (cat "Cannot load " node-name " right now, probably "
+                        "because some code in kernel.ss needs to be "
+                        "wrapped with with-code-loading-allowed "
+                        "(try a C++ debugger to find it)"))))
+
+  (define (call-with-code-loading-allowed thunk error-handler error-value)
+    (let [[result #f]]
+      (%kernel-run-as-callback
+       (lambda ()
+         (set! result (thunk)))
+       (lambda (msg)
+         (error-handler msg)
+         (set! result error-value)))
+      result))
+
+  (define-syntax with-code-loading-allowed
+    (syntax-rules ()
+      [(_ (error-handler error-value) body ...)
+       (call-with-code-loading-allowed (lambda () body ...)
+                                       error-handler error-value)]))
 
 
   ;;=======================================================================
