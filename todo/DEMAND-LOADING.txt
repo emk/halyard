@@ -6,10 +6,12 @@ Next commit:
 / Doc: We're faking a class with an instance
 
 Cleanup:
-  Stop special-casing "/" in ProgramTree: Add a NodeItemData for it
+/ Stop special-casing "/" in ProgramTree: Add a NodeItemData for it
   Trampoline vs placeholder terminology?
 
-Older:
+And then:
+  Give all nodes and node proxies a "resolve" method
+  Don't save *.ss file counts when demand-loading enabled
   GUI for triggering demand-loading from program tree
   GUI for controlling demand-loading mode
   Never demand-load when in runtime mode

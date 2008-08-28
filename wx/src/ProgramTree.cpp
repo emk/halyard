@@ -446,26 +446,23 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 	mTree->SetItemData(mRootID, item_data);
 	item_data->SetObject(inDocument->GetRoot());
 
-	// Set up some other nodes.
+	// Set up our mCardsID node, which is named "Cards", but which also
+	// represents the root node named "/".  Note that this persists even
+	// when we're in the middle of reloading the script, which isn't
+	// (currently) a problem since loaded GroupItemData objects don't
+	// actually do anything.
 	mCardsID = mTree->AppendItem(mRootID, wxT("Cards"));
 	mTree->SetIcon(mCardsID, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
 				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
+    mTree->SetItemData(mCardsID, new GroupItemData(mTree, wxT("/"), false));
 }
 
 bool ProgramTree::IsCardItem(wxTreeItemId inItemId) {
-    // For now, we don't actually have a NodeItemData instance for "/".
-    if (inItemId == mCardsID)
-        return false;
-    else
-        return mTree->GetNodeItemData(inItemId)->IsCard();
+    return mTree->GetNodeItemData(inItemId)->IsCard();
 }
 
 bool ProgramTree::IsPlaceHolderItem(wxTreeItemId inItemId) {
-    // For now, we don't actually have a NodeItemData instance for "/".
-    if (inItemId == mCardsID)
-        return false;
-    else
-        return mTree->GetNodeItemData(inItemId)->IsPlaceHolder();
+    return mTree->GetNodeItemData(inItemId)->IsPlaceHolder();
 }
 
 void ProgramTree::AnalyzeNodeName(const std::string &inName,
@@ -558,11 +555,7 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
     ASSERT(IsCardItem(result) == inIsCard);
 
     // Update our placeholder status.
-    if (IsPlaceHolderItem(result) != inIsPlaceHolder) {
-        // TODO - We can't call GetNodeItemData on the root node yet.
-        ASSERT(inName != "/");
-        mTree->GetNodeItemData(result)->UpdateIsPlaceHolder(inIsPlaceHolder);
-    }
+    mTree->GetNodeItemData(result)->UpdateIsPlaceHolder(inIsPlaceHolder);
 
     return result;
 }
