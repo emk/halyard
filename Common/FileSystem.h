@@ -124,9 +124,16 @@ namespace FileSystem {
         //////////
         /// Fetch the parent directory of this path.  This is done by
         /// removing the last component of the path, not by following ".."
-        /// on disk.  The behavior of this path undefined near the root
-        /// level of a filesystem, especially on platforms with non-POSIX
-        /// path names.
+        /// on disk.  If you try to take the parent directory of the 
+        /// filesystem root, will return false and leave outPath unchanged.
+        ///
+        bool MaybeGetParentDirectory(Path &outPath) const;
+
+        //////////
+        /// Fetch the parent directory of this path.  This is done by
+        /// removing the last component of the path, not by following ".."
+        /// on disk.  If you try to take the parent directory of the 
+        /// filesystem root, ParentDirectory() will raise an exception.
         ///
         Path ParentDirectory() const;
 		

@@ -332,10 +332,25 @@ Path Path::AddParentComponent() const
 	return newPath;	
 }
 
-Path Path::ParentDirectory() const {
+bool Path::MaybeGetParentDirectory(Path &outPath) const {
     // Convert to a boost path, remove the last item from the path, and
-    // convert back.
-    return BoostPathToPath(PathToBoostPath(*this).branch_path(), true);
+    // if we don't wind up with "" (which is the result of trying to
+    // get the parent of a root path), convert the result back and
+    // return true.
+    fs::path parent(PathToBoostPath((*this)).branch_path());
+    if (parent.string() == "") {
+        return false;
+    } else {
+        outPath = BoostPathToPath(parent, true);
+        return true;
+    }
+}
+
+Path Path::ParentDirectory() const {
+    Path result;
+    CHECK(MaybeGetParentDirectory(result), 
+          "Cannot take the parent directory of a root path.");
+    return result;
 }
 
 std::string Path::ToNativePathString () const

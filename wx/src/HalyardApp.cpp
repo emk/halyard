@@ -343,6 +343,25 @@ bool HalyardApp::OnInit() {
     }
     FileSystem::SetAppLocalDataDirectory(std::string(local_dir.mb_str()));
 
+    // Try to find a reasonable default for our current directory, so
+    // we can pick up developer.prefs and have a reasonable default
+    // value for our open dialog.  We do this by walking up from the
+    // current directory, looking for application.halyard, and if we
+    // find one, setting our working directory to the one we found
+    // application.halyard in.  If we don't find anything, we just
+    // leave it as the default, which is the directory the engine was
+    // launched from.
+    FileSystem::Path candidate_directory(FileSystem::GetBaseDirectory());
+    do {
+        FileSystem::Path 
+            candidate_path(candidate_directory.AddComponent
+                           ("application.halyard"));
+        if(::wxFileExists(ToWxString(candidate_path.ToNativePathString()))) {
+            FileSystem::SetBaseDirectory(candidate_directory);
+            break;
+        }
+    } while (candidate_directory.MaybeGetParentDirectory(candidate_directory));
+
     // Use a GUI alert dialog.
     TLogger::RegisterAlertDisplayFunction(SafeAlert);
 
