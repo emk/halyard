@@ -83,8 +83,8 @@ class NodeItemData : public CustomTreeItemData {
     bool mIsLoaded;
 
 public:
-    NodeItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
-                 bool inIsLoaded);
+    NodeItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
+                 const wxString &inName, bool inIsLoaded);
 
     /// Is this node a card?
     virtual bool IsCard() const { return false; }
@@ -101,20 +101,25 @@ public:
     void UpdateIsLoaded(bool inNewValue);
 };
 
-NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
-                           bool inIsLoaded)
-    : CustomTreeItemData(inTreeCtrl), mName(inName),
-      mIsLoaded(inIsLoaded)
+NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
+                           const wxString &inName, bool inIsLoaded)
+    : CustomTreeItemData(inTreeCtrl), mName(inName), mIsLoaded(inIsLoaded)
 {
+    SetId(inItemId);
 }
 
 void NodeItemData::UpdateIsLoaded(bool inNewValue) {
     if (inNewValue != mIsLoaded) {
-        if (inNewValue == false)
+        if (inNewValue == true) {
+            mIsLoaded = true;
+            // Since we manually turned on SetItemHasChildren, check to see
+            // whether we neeed to turn it back off.
+            if (GetTree()->GetChildrenCount(GetId(), false) == 0)
+                GetTree()->SetItemHasChildren(GetId(), false);
+        } else {
             gLog.FatalError("Trying to change a loaded node into an "
                             "unloaded node");
-        else
-            mIsLoaded = inNewValue;
+        }
     }
 }
 
@@ -126,15 +131,21 @@ void NodeItemData::UpdateIsLoaded(bool inNewValue) {
 /// Sequences of cards can be nested within each other.
 class GroupItemData : public NodeItemData {
 public:
-	GroupItemData(ProgramTreeCtrl *inTreeCtrl, const wxString &inName,
-                  bool inIsLoaded);
+	GroupItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
+                  const wxString &inName, bool inIsLoaded);
 };
 
 GroupItemData::GroupItemData(ProgramTreeCtrl *inTreeCtrl,
+                             wxTreeItemId inItemId,
                              const wxString &inName,
                              bool inIsLoaded)
-	: NodeItemData(inTreeCtrl, inName, inIsLoaded)
+	: NodeItemData(inTreeCtrl, inItemId, inName, inIsLoaded)
 {
+    // If the item isn't loaded yet, mark it as having children.  This will
+    // give us the usual "open folder" control, which we can use to trigger
+    // a load when the user opens the folder.
+    if (!IsLoaded())
+        GetTree()->SetItemHasChildren(GetId(), true);
 }
 
 
@@ -145,15 +156,15 @@ GroupItemData::GroupItemData(ProgramTreeCtrl *inTreeCtrl,
 /// Representation of a card in our ProgramTreeCtrl.
 class CardItemData : public NodeItemData {
 public:
-	CardItemData(ProgramTreeCtrl *inTreeCtrl, wxString inName,
-                 bool inIsLoaded);
+	CardItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
+                 wxString inName, bool inIsLoaded);
     virtual bool IsCard() const { return true; }
 	virtual void OnLeftDClick(wxMouseEvent& event);
 };
 
-CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl, wxString inName,
-                           bool inIsLoaded)
-	: NodeItemData(inTreeCtrl, inName, inIsLoaded)
+CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
+                           wxString inName, bool inIsLoaded)
+	: NodeItemData(inTreeCtrl, inItemId, inName, inIsLoaded)
 {
 }
 
@@ -455,7 +466,8 @@ void ProgramTree::RegisterDocument(Document *inDocument)
 	mCardsID = mTree->AppendItem(mRootID, wxT("Cards"));
 	mTree->SetIcon(mCardsID, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
 				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
-    mTree->SetItemData(mCardsID, new GroupItemData(mTree, wxT("/"), true));
+    mTree->SetItemData(mCardsID,
+                       new GroupItemData(mTree, mCardsID, wxT("/"), true));
 }
 
 bool ProgramTree::IsCardItem(wxTreeItemId inItemId) {
@@ -534,13 +546,13 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
         wxString local_name_wx(ToWxString(local_name));
         result = mTree->AppendItem(parent_id, local_name_wx);
         if (inIsCard) {
-            mTree->SetItemData(result, new CardItemData(mTree, name_wx,
+            mTree->SetItemData(result, new CardItemData(mTree, result, name_wx,
                                                         inIsLoaded));
             mTree->SetIcon(result, ProgramTreeCtrl::ICON_CARD,
                            ProgramTreeCtrl::ICON_CARD);
             
         } else {
-			mTree->SetItemData(result, new GroupItemData(mTree, name_wx,
+			mTree->SetItemData(result, new GroupItemData(mTree, result, name_wx,
                                                          inIsLoaded));
 			mTree->SetIcon(result, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
 						   ProgramTreeCtrl::ICON_FOLDER_OPEN);
