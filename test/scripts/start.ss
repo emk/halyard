@@ -84,7 +84,10 @@
   
   ;; The index card is based on our %simple-card% template.
   (card /index (%black-test-card% :title "Halyard Features (updated)")
-    (menu-item controls ( 80 "Controls"    @features/controls))
+    (menu-item controls ( 80 "Controls"    @/features/controls))
+    ;; Test jumping to a path which requires acquisition to work.  We may
+    ;; remove the acquisition code in the future, but for now, it's an
+    ;; official part of the API and we need to test it.
     (menu-item movies   (180 "More Movies" @media/qt/movies))
     (text release-id
         ((point 10 580) $title-style (or (program-release-id) "")))

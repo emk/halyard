@@ -567,7 +567,7 @@
       ;; Given the name of a static node, set up the .NAME and .PARENT
       ;; fields appropriately.
       (def (process-static-node-name name)
-        (with-values [[parent local-name] (analyze-node-name name)]
+        (with-values [[parent local-name] (analyze-node-name name #t)]
           (check-node-name local-name)
           (set! (.name) local-name)
           (set! (.parent) parent)))
@@ -646,12 +646,41 @@
     (set! (node-elements node)
           (append (node-elements node) (list elem))))
 
+  ;; Construct a function to be called if the node NAME can't be found.
+  ;; This function will see whether we can load the missing node from disk.
+  ;; Note that if several nested files need to be loaded from disk, this
+  ;; function will be called recursively because of the machinery inside
+  ;; analyze-node-name.
+  (define (make-static-node-loader name)
+    (lambda ()
+      (with-values [[parent local-name] (analyze-node-name name #f)]
+        (if (and parent (parent .subclass-of? %card-group%))
+          ;; Our parent is a %card-group%, so we should see if we need to
+          ;; load it, and then check for children again.  It's actually
+          ;; possible that our parent _isn't_ a trampoline, because it
+          ;; may have been loaded during our call to analyze-node-name.
+          (begin
+            ;; Make sure our parent node is loaded.
+            (when (parent .trampoline?)
+              (parent .members))
+            ;; Try to find our node again.  We bypass find-node, because
+            ;; we don't want to call ourselves recursively if the node
+            ;; simply doesn't exist.
+            (hash-table-get (*engine* .static-node-table) name #f))
+          ;; Either we don't have a parent for this node, or this node
+          ;; isn't a %card-group% trampoline, so there's no point in
+          ;; trying to load our parent.  We just give up instead.
+          #f))))
+
   ;; This is an internal API that should probably not be used by script code.
   (define (find-node name running?)
-    (define table (if running? 
-                    (*engine* .running-node-table) 
-                    (*engine* .static-node-table)))
-    (hash-table-get table name (lambda () #f)))
+    (with-values [[table if-not-found]
+                  (if running? 
+                    (values (*engine* .running-node-table)
+                            (lambda () #f))
+                    (values (*engine* .static-node-table)
+                            (make-static-node-loader name)))]
+      (hash-table-get table name if-not-found)))
 
   ;;; Look up a running node by name.
   (define (find-running-node name-as-string)
@@ -678,7 +707,7 @@
                   "contain only lowercase letters, numbers, hyphens and "
                   "underscores."))))
 
-  (define (analyze-node-name name)
+  (define (analyze-node-name name error-if-no-parent?)
     ;; Given a name of the form '/', '/foo' or '/bar/baz', return the
     ;; node's parent and the "local" portion of the name (excluding the
     ;; parent).  A "/" character separates different levels of nesting.
@@ -702,11 +731,14 @@
        [(not (list-ref matches 1))
         (values (static-root-node) (local-name))]
        [else
-        (let [[parent (find-node (string->symbol (list-ref matches 1)) 
-                                 #f)]]
-          (unless parent
-            (error (cat "Parent of " name " does not exist.")))
-          (values parent (local-name)))])))
+        (let [[parent (find-node (string->symbol (list-ref matches 1)) #f)]]
+          (cond
+           [parent
+            (values parent (local-name))]
+           [error-if-no-parent?
+            (error (cat "Parent of " name " does not exist."))]
+           [else
+            (values #f #f)]))])))
 
 
   ;;-----------------------------------------------------------------------

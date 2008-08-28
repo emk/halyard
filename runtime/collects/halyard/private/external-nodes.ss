@@ -188,7 +188,7 @@
 
   ;; Install a trampoline for node NAME with known SUPERCLASS.
   (define (install-trampoline name superclass)
-    (with-values [[parent local-name] (analyze-node-name name)]
+    (with-values [[parent local-name] (analyze-node-name name #t)]
       (let [[trampoline
              (%static-node-trampoline% .new
                                        :%superclass-of-real-node superclass
@@ -234,7 +234,7 @@
                   "and make sure " node-name " isn't loaded.")))
 
     (assert (not (loaded?)))
-    (assert (eq? ((node) .full-name) '/media))
+    (assert (eq? ((node) .full-name) node-name))
     (assert (not (loaded?)))
     (assert (list? ((node) .members)))
     (assert (loaded?))

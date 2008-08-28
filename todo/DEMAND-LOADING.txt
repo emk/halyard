@@ -10,13 +10,14 @@ Cleanup:
 / Trampoline vs placeholder terminology?
 
 And then:
+/ (find-static-node "/placeholder/child") should work
+  GUI for triggering demand-loading from program tree
   Give all nodes and node proxies a "resolve" method
   Don't save *.ss file counts when demand-loading enabled
-  GUI for triggering demand-loading from program tree
   GUI for controlling demand-loading mode
   Never demand-load when in runtime mode
-  (find-static-node "/placeholder/child") should work
-  Deal with *node-defined-hook* and Robinson's metadata library?
+  Give error when attempting to attach children to trampoline
 
 Nice to have:
+  Deal with *node-defined-hook* and Robinson's metadata library?
   Smart static node paths
