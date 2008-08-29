@@ -90,9 +90,10 @@
     (def (report-failure! test-case exception)
       (set! (.success?) #f)
       (set! (.failures) 
-            (cons (%test-failure% .new :test-case test-case 
-                                       :exception exception) 
-                  (.failures))))
+            (append (.failures)
+                    (list 
+                     (%test-failure% .new :test-case test-case 
+                                     :exception exception)))))
     
     ;;; Add a successful test case to the report.
     (def (report-success!)

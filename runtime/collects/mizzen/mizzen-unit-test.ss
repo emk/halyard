@@ -160,25 +160,32 @@
         (assert-equals 2 *test-methods-inner-2-method-count*)
         )))
   
+  (define *failure-order* '())
+  
   (define-class %test-report-inner% (%test-case%) 
+    (def (record-failure message)
+      (set! *failure-order* (append *failure-order* (list message)))
+      (error message))
     (test "#1" #f)
-    (test "#2" (error "Failed #2"))
-    (test "#3" (error "Failed #3")))
+    (test "#2" (.record-failure "Failed #2"))
+    (test "#3" (.record-failure "Failed #3")))
   
   (define-class %test-report-test% (%test-case%) 
     (test "Test report should include successes and failures."
       (let [[report (%test-report% .new)]
             [failures #f]]
-        (%test-report-inner% .run-tests report)
-        (assert-equals 3 (report .run-count))
-        (assert-equals 1 (report .success-count))
-        (assert-equals 2 (report .failure-count))
-        (set! failures (report .failures))
-        (assert-equals '("#2" "#3")
-                       (sort (map (fn (f) (f .title)) failures) string<?))
-        (assert-equals '("Failed #2" "Failed #3")
-                       (sort (map (fn (f) (f .message)) failures) string<?))
-        )))
+        (fluid-let [[*failure-order* '()]]
+          (%test-report-inner% .run-tests report)
+          (assert-equals 3 (report .run-count))
+          (assert-equals 1 (report .success-count))
+          (assert-equals 2 (report .failure-count))
+          (set! failures (report .failures))
+          (assert-equals '("#2" "#3")
+                         (sort (map (fn (f) (f .title)) failures) string<?))
+          (assert-equals '("Failed #2" "Failed #3")
+                         (sort (map (fn (f) (f .message)) failures) string<?))
+          (assert-equals *failure-order* (map (fn (f) (f .message)) failures))
+        ))))
   
   ;; TODO - Reuse throughout.
   (define (push-event! event test)
