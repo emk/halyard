@@ -60,11 +60,11 @@
   ;;  Other Support Code
   ;;=======================================================================
 
-  (provide *enable-demand-loading?*)
+  (provide *enable-lazy-loading?*)
 
   ;;; Do we want to turn on demand loading?  This will be honored after the
   ;;; next reload.
-  (define/p *enable-demand-loading?* #f)
+  (define/p *enable-lazy-loading?* #f)
 
 
   ;;=======================================================================
@@ -216,7 +216,7 @@
   ;; Either install a placeholder for an external node, or load it
   ;; immediately.
   (define (declare-external-node name superclass)
-    (if *enable-demand-loading?*
+    (if *enable-lazy-loading?*
       (install-trampoline name superclass)
       (load-external-node name)))
 
@@ -237,17 +237,17 @@
   ;;  Test Harness
   ;;=======================================================================
 
-  (provide test-demand-loader)
+  (provide test-lazy-loader)
 
-  ;;; A quick-and-dirty test harness for the demand-loader.
-  (define (test-demand-loader node-name)
+  ;;; A quick-and-dirty test harness for the lazy loader.
+  (define (test-lazy-loader node-name)
     (define (node)
       (find-static-node (symbol->string node-name)))
     (define (loaded?)
       (not ((node) .trampoline?)))
 
-    (unless (and *enable-demand-loading?* (not (loaded?)))
-      (error (cat "To run test-demand-loader, turn on the demand-loader "
+    (unless (and *enable-lazy-loading?* (not (loaded?)))
+      (error (cat "To run test-lazy-loader, turn on the lazy-loader "
                   "and make sure " node-name " isn't loaded.")))
 
     (assert (not (loaded?)))

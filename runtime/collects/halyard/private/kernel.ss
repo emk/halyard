@@ -655,7 +655,7 @@
   ;;=======================================================================
   ;;  Support for loading code
   ;;=======================================================================
-  ;;  If a function might trigger demand loading, we need to call it from
+  ;;  If a function might trigger lazy loading, we need to call it from
   ;;  within a callback context.  Consider the following scenario:
   ;;
   ;;   1) The script has called WAIT on some media.

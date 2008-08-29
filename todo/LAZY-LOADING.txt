@@ -17,15 +17,16 @@ And then:
 / Give error when attempting to attach children to trampoline
 / Display load info in progress bar
 / Fix jumping to unloaded card during WAIT
-  Rename "demand loading" to "lazy loading"
-  Don't save *.ss file counts when demand-loading enabled
-  Better API for activating demand loading from listener
+/ Rename "demand loading" to "lazy loading"
+  Don't save *.ss file counts when lazy-loading enabled
+  Better API for activating lazy loading from listener
+  Look at new TODOs in 6ba01a4a5508fad202132ce4d4933b552fb3cfed
   Fix [+] controls on Windows
 
 Wrapup:
-  Deal with syntax errors during demand load somehow?  (For now, reload)
-  GUI for controlling demand-loading mode
-  Never demand-load when in runtime mode
+  Deal with syntax errors during lazy load somehow?  (For now, reload)
+  GUI for controlling lazy loading mode
+  Never lazy load when in runtime mode
 
 Nice to have:
   Give all nodes and node proxies a "resolve" method
