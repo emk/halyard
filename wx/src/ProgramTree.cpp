@@ -95,13 +95,15 @@ public:
     /// Is this node loaded?
     bool IsLoaded() const { return mIsLoaded; }
 
-    /// Called when the user attempts to expand a folder.
-    virtual void OnExpanding(wxTreeEvent &event);
-
     /// Attempt to change the IsLoaded value for this node.  Note that
     /// trying to turn a loaded node into an unloaded node will fail, at
     /// least for now.
     void UpdateIsLoaded(bool inNewValue);
+
+    /// This function is called when we need to update various wxTreeCtrl
+    /// parameters related to the children of this node.  It is overridden
+    /// by those subclasses which may actually have children.
+    virtual void UpdateChildrenState() {}
 };
 
 NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
@@ -109,28 +111,26 @@ NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
     : CustomTreeItemData(inTreeCtrl), mName(inName), mIsLoaded(inIsLoaded)
 {
     SetId(inItemId);
-}
 
-void NodeItemData::OnExpanding(wxTreeEvent &event) {
-    // TODO - This belongs in GroupItemData, below.
-    if (!IsLoaded() && TInterpreter::HaveInstance()) {
-        TInterpreter *interp(TInterpreter::GetInstance());
-        if (!interp->IsStopped()) {
-            std::string name(ToStdString(GetName()));
-            interp->LoadGroup(name.c_str());
-        }
-    }
+    // If our parent node has a NodeItemData object, we need to let it know
+    // that it has a new child.  This is necessary because
+    // wxTreeCtrl::SetItemHasChildren, once called, pretty much disables
+    // the child-counting code uner Win32, and the "open folder" controls
+    // won't appear even when the node clearly has children.  So we handle
+    // this ourselves.
+    wxTreeItemId parent_id(GetTree()->GetItemParent(GetId()));
+    ASSERT(parent_id.IsOk());
+    NodeItemData *data =
+        dynamic_cast<NodeItemData*>(GetTree()->GetItemData(parent_id));
+    if (data)
+        data->UpdateChildrenState();
 }
 
 void NodeItemData::UpdateIsLoaded(bool inNewValue) {
-    // TODO - Most of this belongs in GroupItemData, below.
     if (inNewValue != mIsLoaded) {
         if (inNewValue == true) {
             mIsLoaded = true;
-            // Since we manually turned on SetItemHasChildren, check to see
-            // whether we neeed to turn it back off.
-            if (GetTree()->GetChildrenCount(GetId(), false) == 0)
-                GetTree()->SetItemHasChildren(GetId(), false);
+            UpdateChildrenState();
         } else {
             gLog.FatalError("Trying to change a loaded node into an "
                             "unloaded node");
@@ -148,6 +148,10 @@ class GroupItemData : public NodeItemData {
 public:
 	GroupItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
                   const wxString &inName, bool inIsLoaded);
+
+    /// Called when the user attempts to expand a folder.
+    virtual void OnExpanding(wxTreeEvent &event);
+    virtual void UpdateChildrenState();
 };
 
 GroupItemData::GroupItemData(ProgramTreeCtrl *inTreeCtrl,
@@ -156,11 +160,31 @@ GroupItemData::GroupItemData(ProgramTreeCtrl *inTreeCtrl,
                              bool inIsLoaded)
 	: NodeItemData(inTreeCtrl, inItemId, inName, inIsLoaded)
 {
-    // If the item isn't loaded yet, mark it as having children.  This will
-    // give us the usual "open folder" control, which we can use to trigger
-    // a load when the user opens the folder.
-    if (!IsLoaded())
+    UpdateChildrenState();
+}
+
+void GroupItemData::OnExpanding(wxTreeEvent &event) {
+    if (!IsLoaded() && TInterpreter::HaveInstance()) {
+        TInterpreter *interp(TInterpreter::GetInstance());
+        if (!interp->IsStopped()) {
+            std::string name(ToStdString(GetName()));
+            interp->LoadGroup(name.c_str());
+        }
+    }
+}
+
+void GroupItemData::UpdateChildrenState() {
+    if (!IsLoaded()) {
+        // If the item isn't loaded yet, mark it as having children.  This
+        // will give us the usual "open folder" control, which we can use
+        // to trigger a load when the user opens the folder.
         GetTree()->SetItemHasChildren(GetId(), true);
+    } else {
+        // Since we manually turned on SetItemHasChildren, check to see
+        // whether we neeed to turn it back off.
+        bool has_children(GetTree()->GetChildrenCount(GetId(), false) > 0);
+        GetTree()->SetItemHasChildren(GetId(), has_children);
+    }
 }
 
 
@@ -533,6 +557,7 @@ void ProgramTree::AnalyzeNodeName(const std::string &inName,
 
 wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
                                                   bool inIsCard,
+                                                  bool inCanUpdateIsLoaded,
                                                   bool inIsLoaded)
 {
     ASSERT(mCardsID.IsOk());
@@ -553,11 +578,8 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
 
         // Look up our parent node.  This should always be loaded,
         // because otherwise, how could it have children?
-        // XXX - This can actually update the load state of a node 
-        // when it shouldn't, but there shouldn't be a way to trigger
-        // this unless the Scheme layer is malfunctioning.
         wxTreeItemId parent_id =
-            FindOrCreateGroupMember(parent_name, false, true);
+            FindOrCreateGroupMember(parent_name, false, false, true);
 
         // Create a new node of the appropriate type.
         wxString name_wx(ToWxString(inName));
@@ -585,8 +607,12 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
     // versa.
     ASSERT(IsCardItem(result) == inIsCard);
 
-    // Update our loaded status.
-    mTree->GetNodeItemData(result)->UpdateIsLoaded(inIsLoaded);
+    // Maybe update our loaded status.  If we can't, at least make sure it
+    // matches the expected value.
+    if (inCanUpdateIsLoaded)
+        mTree->GetNodeItemData(result)->UpdateIsLoaded(inIsLoaded);
+    else
+        ASSERT(IsLoadedItem(result) == inIsLoaded);
 
     return result;
 }
@@ -594,7 +620,7 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
 void ProgramTree::RegisterGroupMember(const wxString &inName, bool inIsCard,
                                       bool inIsLoaded)
 {
-    (void) FindOrCreateGroupMember(ToStdString(inName), inIsCard,
+    (void) FindOrCreateGroupMember(ToStdString(inName), inIsCard, true,
                                    inIsLoaded);
 }
 

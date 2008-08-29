@@ -74,6 +74,7 @@ class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
     /// create.
     wxTreeItemId FindOrCreateGroupMember(const std::string &inName,
                                          bool inIsCard,
+                                         bool inCanUpdateIsLoaded,
                                          bool inIsLoaded);
 
 public:
