@@ -1,6 +1,60 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.14 - 29 August 2008
+
+Halyard now supports lazy loading!  To enable it, open a listener and type:
+
+  (set! (lazy-loading-enabled?) #t)
+
+Then, reload your script and keep an eye on the status bar at the bottom of
+the window.  You should see messages of the form "Loaded /features."
+whenever a module gets loaded.
+
+If you think the lazy loader is getting a little too eager, and loading
+huge files too soon, please see the Debug.log for details on why certain
+modules were loaded.  And if you discover any bugs, please get in touch
+with Eric immediately, and he'll investigate them--this code is still very
+experimental.
+
+Other interesting changes:
+  - The Debug.log is back!
+  - The "Open" dialog box now defaults usefully once again.
+  - The (set-status-text! msg) function may be used to display debugging
+    information at the bottom of the developer-mode window.  Please don't
+    use this when loading code, because it will make it impossible to see
+    important information from the engine.
+
+Brian Campbell (3):
+      Cleanup Rakefile and build process
+      Walk up directory hierarchy to guess at appropriate current directory
+      Demand loading: Code review comment updates and fixes
+
+Eric Kidd (23):
+      Demand loading: Register groups with engine, not just cards
+      Demand loading: Remove extra RegisterGroupMember layer
+      Fix boot.rb to work in projects with engine/src directory
+      Give a better error when attempting to show an invisible Widget
+      Simplify Widget::Show error-handling further
+      Demand loading: Rename script-paths.ss -> external-nodes.ss
+      Demand loading: Add *enable-demand-loading?* variable
+      Cleanup: Make trace.ss into a private API
+      Demand loading: Detect nodes declared in wrong file
+      Demand loading: Implement rudimentary demand loader
+      Demand loading: Add GroupItemData for mCardsID
+      Demand loading: Change register-group-member parameters for clarity
+      Demand loading: Make find-static-node work on external-group children
+      Demand loading: Show "open folder" controls for unloaded groups
+      Demand loading: Load groups when opened in GUI
+      Demand loading: Detect confusion of cards and groups
+      Demand loading: Prevent adding children to unloaded groups
+      Demand loading: Show loading information using SetStatusText
+      Demand loading: Fix crash when %kernel-valid-card? triggers load
+      Demand loading: Rename to "lazy loading"
+      Lazy loading: Don't save *.ss file count when lazy loading enabled
+      Lazy loading: Address code review comments on ProgramTree
+      Lazy loading: Rename mIsLazyLoadingPotentiallyEnabled
+
 0.5.13 - 25 August 2008
 
 In the past, several internal Halyard APIs have actually been exported to
