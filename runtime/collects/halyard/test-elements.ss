@@ -32,6 +32,9 @@
     (attr element-parent #f :writable? #t)
 
     (setup-test
+      ;; In case we failed to teardown the test in a previous run, we need
+      ;; to make sure that the temporary-parent element is deleted.
+      (delete-element-if-exists 'temporary-parent)
       (set! (.element-parent) 
             (%box% .new :bounds (rect 0 160 
                                       (rect-width $screen-rect) 
@@ -45,7 +48,10 @@
 
     (teardown-test
       (when (.element-parent)
-        (delete-element (.element-parent)))))
+        (delete-element (.element-parent)))
+      ;; Unset our element parent in case someone in our superclass
+      ;; or subclass chain tries to access it for some reason.
+      (set! (.element-parent) #f)))
 
   ;; Quick and dirty clickable text.
   (define-class %element-test-button% (%text%)
