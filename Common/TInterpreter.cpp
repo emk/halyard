@@ -73,8 +73,9 @@ void TInterpreter::NotifyScriptLoaded() {
 
     // If we have a document (i.e., we're not running the test suites),
     // and we're not in runtime mode, then update our source file count.
-    Document *doc = TInterpreterManager::GetInstance()->GetDocument();
-    if (doc && !TInterpreterManager::GetInstance()->IsInRuntimeMode())
+    TInterpreterManager *manager(TInterpreterManager::GetInstance());
+    Document *doc = manager->GetDocument();
+    if (doc && !manager->IsInRuntimeMode() && !manager->IsLazyLoadingEnabled())
         doc->GetHalyardProgram()->SetSourceFileCount(mSourceFilesExpected);
 }
 
@@ -117,7 +118,7 @@ Document *TInterpreterManager::sDocument = NULL;
 
 
 TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
-    : mIsInsideStackBase(false)
+    : mIsInsideStackBase(false), mIsLazyLoadingPotentiallyEnabled(false)
 {
 	ASSERT(sHaveAlreadyCreatedSingleton == false);
 	sHaveAlreadyCreatedSingleton = true;
@@ -303,6 +304,14 @@ void TInterpreterManager::RequestRetryLoadScript()
 	mLoadScriptFailed = false;
 }
 
+bool TInterpreterManager::IsLazyLoadingEnabled() const {
+    return !IsInRuntimeMode() && mIsLazyLoadingPotentiallyEnabled;
+}
+
+void TInterpreterManager::MaybeSetIsLazyLoadingEnabled(bool isEnabled) {
+    mIsLazyLoadingPotentiallyEnabled = isEnabled;
+}
+
 ScriptEditorDB *TInterpreterManager::GetScriptEditorDB() {
     if (HaveInstance())
         return GetInstance()->GetScriptEditorDBInternal();
@@ -361,8 +370,11 @@ bool TInterpreterManager::ShouldSuppressSplashScreen() {
     // Current policy: Suppress splash screen after first load, so people
     // working in developer mode can see the old stage layout transform
     // directly into the new stage layout when reloading is done.  I'm told
-    // this makes it easier to adjust alignments.
-    return !sIsFirstLoad;
+    // this makes it easier to adjust alignments.  We also disable the
+    // splash screen if lazy loading is enabled, because the progress bar
+    // would be severely confused.
+    return (!sIsFirstLoad ||
+            TInterpreterManager::GetInstance()->IsLazyLoadingEnabled());
 }
 
 void TInterpreterManager::SetInitialCommand(const std::string &inCommand) {

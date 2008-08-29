@@ -386,6 +386,12 @@ private:
 	///
 	std::string mInitialCardName;
 
+	//////////
+	/// Do we want to turn on lazy loading?  Note that this flag, by itself,
+    /// isn't enough.  See IsLazyLoadingEnabled for details.
+	///
+    bool mIsLazyLoadingPotentiallyEnabled;
+
 public:
 	//////////
 	/// Create a new TInterpreterManager with the specified idle procedure.
@@ -503,6 +509,16 @@ public:
 	/// primitive.
 	///
 	void RequestRetryLoadScript();
+
+    //////////
+    /// Is lazy loading currently enabled?
+    ///
+    bool IsLazyLoadingEnabled() const;
+
+    //////////
+    /// Try to turn lazy loading on or off.
+    ///
+    void MaybeSetIsLazyLoadingEnabled(bool isEnabled);
 
     //////////
     /// Return the ScriptEditorDB associated with this manager's scripts.

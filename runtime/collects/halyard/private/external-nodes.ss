@@ -60,11 +60,20 @@
   ;;  Other Support Code
   ;;=======================================================================
 
-  (provide *enable-lazy-loading?*)
+  (provide lazy-loading-enabled? set-lazy-loading-enabled?!)
 
-  ;;; Do we want to turn on demand loading?  This will be honored after the
-  ;;; next reload.
-  (define/p *enable-lazy-loading?* #f)
+  ;;; DO NOT USE IN SCRIPTS.  This function will tell you whether or not
+  ;;; lazy loading is enabled, but it shouldn't be used anywhere in script
+  ;;; code.  It should only be called from the listener.
+  (define (lazy-loading-enabled?)
+    (call-prim 'IsLazyLoadingEnabled))
+
+  ;;; Attempt to turn on lazy loading.  This may actually be overruled by
+  ;;; lower layers of the engine if it isn't appropriate in the current
+  ;;; environment.  Unlike (lazy-loading-enabled?), above, it would be OK
+  ;;; to bind this function to developer-accessible keystrokes in a script.
+  (define (set-lazy-loading-enabled?! enabled?)
+    (call-prim 'MaybeSetIsLazyLoadingEnabled enabled?))
 
 
   ;;=======================================================================
@@ -216,7 +225,7 @@
   ;; Either install a placeholder for an external node, or load it
   ;; immediately.
   (define (declare-external-node name superclass)
-    (if *enable-lazy-loading?*
+    (if (lazy-loading-enabled?) 
       (install-trampoline name superclass)
       (load-external-node name)))
 
@@ -246,7 +255,7 @@
     (define (loaded?)
       (not ((node) .trampoline?)))
 
-    (unless (and *enable-lazy-loading?* (not (loaded?)))
+    (unless (and (lazy-loading-enabled?) (not (loaded?)))
       (error (cat "To run test-lazy-loader, turn on the lazy-loader "
                   "and make sure " node-name " isn't loaded.")))
 

@@ -18,8 +18,8 @@ And then:
 / Display load info in progress bar
 / Fix jumping to unloaded card during WAIT
 / Rename "demand loading" to "lazy loading"
-  Don't save *.ss file counts when lazy-loading enabled
-  Better API for activating lazy loading from listener
+/ Don't save *.ss file counts when lazy-loading enabled
+/ Better API for activating lazy loading from listener
   Look at new TODOs in 6ba01a4a5508fad202132ce4d4933b552fb3cfed
   Fix [+] controls on Windows
 

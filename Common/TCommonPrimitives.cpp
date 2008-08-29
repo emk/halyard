@@ -280,6 +280,29 @@ DEFINE_PRIMITIVE(DefStyle)
 
 
 //-------------------------------------------------------------------------
+// (IsLazyLoadingEnabled)
+//-------------------------------------------------------------------------
+// Is lazy loading turned on in the engine?
+
+DEFINE_PRIMITIVE(IsLazyLoadingEnabled) {
+    bool enabled(TInterpreterManager::GetInstance()->IsLazyLoadingEnabled());
+    ::SetPrimitiveResult(enabled);
+}
+
+
+//-------------------------------------------------------------------------
+// (MaybeSetIsLazyLoadingEnabled)
+//-------------------------------------------------------------------------
+// Attempt to turn on lazy loading in the engine.
+
+DEFINE_PRIMITIVE(MaybeSetIsLazyLoadingEnabled) {
+    bool enable;
+    inArgs >> enable;
+    TInterpreterManager::GetInstance()->MaybeSetIsLazyLoadingEnabled(enable);
+}
+
+
+//-------------------------------------------------------------------------
 // (MeasureTextAA STYLE TEXT MAX_WIDTH)
 //-------------------------------------------------------------------------
 // Calculate the width and height required to draw TEXT using STYLE,
@@ -373,6 +396,8 @@ void Halyard::RegisterCommonPrimitives()
 	REGISTER_PRIMITIVE(Get);
 	REGISTER_PRIMITIVE(VariableInitialized);
 	REGISTER_PRIMITIVE(DefStyle);
+    REGISTER_PRIMITIVE(IsLazyLoadingEnabled);
+    REGISTER_PRIMITIVE(MaybeSetIsLazyLoadingEnabled);
 	REGISTER_PRIMITIVE(MeasureTextAA);
     REGISTER_PRIMITIVE(NotifyFileLoaded);
     REGISTER_PRIMITIVE(NotifyScriptLoaded);
