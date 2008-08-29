@@ -118,7 +118,7 @@ Document *TInterpreterManager::sDocument = NULL;
 
 
 TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
-    : mIsInsideStackBase(false), mIsLazyLoadingPotentiallyEnabled(false)
+    : mIsInsideStackBase(false), mIsLazyLoadingRequested(false)
 {
 	ASSERT(sHaveAlreadyCreatedSingleton == false);
 	sHaveAlreadyCreatedSingleton = true;
@@ -305,11 +305,11 @@ void TInterpreterManager::RequestRetryLoadScript()
 }
 
 bool TInterpreterManager::IsLazyLoadingEnabled() const {
-    return !IsInRuntimeMode() && mIsLazyLoadingPotentiallyEnabled;
+    return !IsInRuntimeMode() && mIsLazyLoadingRequested;
 }
 
 void TInterpreterManager::MaybeSetIsLazyLoadingEnabled(bool isEnabled) {
-    mIsLazyLoadingPotentiallyEnabled = isEnabled;
+    mIsLazyLoadingRequested = isEnabled;
 }
 
 ScriptEditorDB *TInterpreterManager::GetScriptEditorDB() {

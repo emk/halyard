@@ -390,7 +390,7 @@ private:
 	/// Do we want to turn on lazy loading?  Note that this flag, by itself,
     /// isn't enough.  See IsLazyLoadingEnabled for details.
 	///
-    bool mIsLazyLoadingPotentiallyEnabled;
+    bool mIsLazyLoadingRequested;
 
 public:
 	//////////
