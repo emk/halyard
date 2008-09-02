@@ -154,11 +154,13 @@
       (define non-existent-file "foo-bar-not-here.html")
           (assert-raises exn:fail:content-not-found?
             (%test-browser% .new :path non-existent-file)))
-    (test "The browser should load an external HTML page via http"
-          (%test-browser% .new :path "http://www.google.com"))
-    (test 
-     "The browser should load URLs with ampersands (&amp;) in them"
-          (%test-browser% .new :path "http://www.google.com/search?source=ig&hl=en&rlz=&q=test&btnG=Google+Search"))
+    ;; Test cases commented out they require a network to pass, and that's
+    ;; not guaranteed to be available.
+    ;;(test "The browser should load an external HTML page via http"
+    ;;      (%test-browser% .new :path "http://www.google.com"))
+    ;;(test 
+    ;; "The browser should load URLs with ampersands (&amp;) in them"
+    ;;      (%test-browser% .new :path "http://www.google.com/search?q=test"))
     (test "The browser should accept a zero-sized rect"
           (%test-browser% .new :path "sample.html" :rect (rect 0 0 0 0))))
   
@@ -240,7 +242,7 @@
     (rectangle the-rectangle ((shape 50 50) $color-black))
     (rectangle-outline the-rectangle-outline ((shape 75 75) $color-white 4))
     (sprite the-sprite ((point 200 300) (list "but40.png" "but70.png")))
-    (browser the-browser ((rect 200 200 500 500) "http://www.google.com"))
+    (browser the-browser ((rect 200 200 500 500) "sample.html"))
     (edit-box the-edit-box ((rect 300 0 500 100) "Something")))
 
   (define-class %element-helper-test% (%element-test-case%)
@@ -261,7 +263,7 @@
       (new-element-test-helper new-sprite %sprite%
                                (point 200 300) (list "but40.png" "but70.png"))
       (new-element-test-helper new-browser %browser%
-                               (rect 200 200 500 500) "http://www.google.com")
+                               (rect 200 200 500 500) "sample.html")
       (new-element-test-helper new-edit-box %edit-box%
                                (rect 300 0 500 100) "Something")
       ;; NOTE: Not testing media because they take time.  See old style
