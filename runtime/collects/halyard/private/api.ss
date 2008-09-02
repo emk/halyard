@@ -380,7 +380,6 @@
                         &key (max-width (rect-width $screen-rect)))
     ;;; XXX - Note that we stomp the "saved-text-position" used by
     ;;; deprecated.ss.
-    ;;; XXX - We can't measure anything but left-aligned text accurately.
     (call-prim 'MeasureTextAA (stylesheet-long-name style) text max-width))
 
 

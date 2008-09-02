@@ -204,6 +204,26 @@
 
   
   ;;=======================================================================
+  ;;  Text test cases
+  ;;=======================================================================
+
+  (define-class %text-test% (%test-case%)
+    (test "measure-text should handle centered and right-justified text"
+      (define (measure-with-justification justification)
+        (measure-text (stylesheet :base $base-style
+                                  :justification justification)
+                      "The quick brown fox jumped over the lazy dog."
+                      :max-width 75))
+      (define expected (measure-with-justification 'left))
+      (assert-equals expected (measure-with-justification 'center))
+      (assert-equals expected (measure-with-justification 'right))))
+  
+  (card /tests/text-test
+      (%test-suite%
+       :tests (list %text-test%)))
+
+
+  ;;=======================================================================
   ;;  Element helper test cases
   ;;=======================================================================
   

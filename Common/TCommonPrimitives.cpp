@@ -324,7 +324,7 @@ DEFINE_PRIMITIVE(MeasureTextAA)
     ASSERT(bounds.Left() >= 0);
     
     // Relocate bounds to 0,0, so that we do the right thing when measuring
-    // centered text--namely, measure the just the needed width.
+    // centered text--namely, measure just the needed width.
     ::SetPrimitiveResult(TRect(0, 0, bounds.Width(), bounds.Height()));
 }
 
