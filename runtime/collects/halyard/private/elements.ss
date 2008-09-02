@@ -58,10 +58,10 @@
   ;;;  Core Element Support
   ;;;======================================================================
 
-  (provide local->card below to-the-right-of %element% %invisible-element% 
-           %custom-element% %box% box new-box %clickable-zone% clickable-zone 
-           new-clickable-zone delete-element delete-elements element-exists? 
-           delete-element-if-exists)
+  (provide local->card parent->card below to-the-right-of %element%
+           %invisible-element% %custom-element% %box% box new-box
+           %clickable-zone% clickable-zone new-clickable-zone delete-element
+           delete-elements element-exists?  delete-element-if-exists)
 
   (define $black (color 0 0 0))
   (define $transparent (color 0 0 0 0))
@@ -434,7 +434,7 @@
   ;;;======================================================================
   ;;;  Most of these functions have a corresponding element, below.
 
-  (provide draw-graphic measure-graphic mask
+  (provide draw-graphic measure-graphic measure-graphics mask
            set-image-cache-size! with-dc
            dc-rect color-at clear-dc
            draw-line draw-rectangle draw-rectangle-outline)
@@ -453,6 +453,19 @@
     (let [[native (resolve-content-path "graphics" path)]]
       (call-prim 'MeasurePic native)))
 
+  ;;; Measure a list of graphics, returning a single bounding box large
+  ;;; enough to contain any of the graphics.
+  (define (measure-graphics graphics)
+    (define max-width 0)
+    (define max-height 0)
+    (foreach [graphic graphics]
+      (define bounds (measure-graphic graphic))
+      (when (> (rect-width bounds) max-width)
+        (set! max-width (rect-width bounds)))
+      (when (> (rect-height bounds) max-height)
+        (set! max-height (rect-height bounds))))
+    (rect 0 0 max-width max-height))
+  
   ;;; Destructively apply a mask to a DC with an alpha channel.  Areas of
   ;;; the DC corresponding to completely opaque areas of the mask will be
   ;;; left alone (as will areas outside the bounds of the mask).  Areas of
@@ -724,67 +737,18 @@
 
 
   ;;;======================================================================
-  ;;;  Animated Graphic Elements (deprecated)
-  ;;;======================================================================
-
-  (provide %animated-graphic%)
-
-  (define (animated-graphic-shape graphics)
-    (define max-width 0)
-    (define max-height 0)
-    (foreach [graphic graphics]
-      (define bounds (measure-graphic graphic))
-      (when (> (rect-width bounds) max-width)
-        (set! max-width (rect-width bounds)))
-      (when (> (rect-height bounds) max-height)
-        (set! max-height (rect-height bounds))))
-    (rect 0 0 max-width max-height))
-
-  ;;; An animated graphic is a specialized overlay that can be
-  ;;; animated under state-db control.  In order to use it, create an
-  ;;; %animated-graphic% passing in the list of graphics you would
-  ;;; like to change between to :GRAPHICS, and the state DB path you
-  ;;; would like to use to control the graphic to :STATE-PATH.  Also,
-  ;;; create the following state DB keys, and set them in order to
-  ;;; control the animation:
-  ;;;
-  ;;; <state-path>/index   Set this to the index within the GRAPHICS list
-  ;;;                      that you want to be displayed.
-  ;;; <state-path>/x       These do some sort of movement, not documented
-  ;;; <state-path>/y       at the moment. For now, set them both to 0
-  ;;;
-  ;;; DEPRECATED: For normal code, please use %sprite% instead.  This
-  ;;; class is primarily intended for use with Quake 2 overlays and the
-  ;;; state-db.
-  (define-class %animated-graphic% (%custom-element%)
-    (attr state-path :type <symbol> :label "State DB Key Path")
-    (attr graphics   :type <list>   :label "Graphics to display")
-    (value shape (animated-graphic-shape (.graphics)))
-
-    (def (create-engine-node)
-      (call-prim 'OverlayAnimated (.full-name)
-                    (parent->card self
-                                  (offset-rect (.shape) (.at)))
-                    (make-node-event-dispatcher self) (.cursor)
-                    (.alpha?) (.state-path)
-                    (map (fn (p) (resolve-content-path "graphics" p))
-                         (.graphics))))
-    )
-
-
-  ;;;======================================================================
   ;;;  Sprites
   ;;;======================================================================
   ;;;  This is a replacement for %animated-graphic%.
 
   (provide %sprite% sprite new-sprite)
-  
+
   (define-class %sprite% (%custom-element%)
     (attr frames   :type <list>    :label "List of image files")
     (attr frame  0 :type <integer> :label "Index of current frame"
                    :writable? #t)
 
-    (value shape (animated-graphic-shape (.frames)))
+    (value shape (measure-graphics (.frames)))
 
     (after-updating frame
       (.invalidate))
@@ -1237,6 +1201,8 @@
     (%geiger-audio% .new :name name :parent parent :path path :volume volume))
 
   (define-class %geiger-synth% (%audio-element%)
+    ;;; Note that you'll need to (require (lib "state-db.ss" "halyard")) to
+    ;;; be able to set the value for this state-path.
     (attr state-path) 
     (attr chirp) 
     (attr loops)
@@ -1472,89 +1438,6 @@
                   :loop? loop?
                   :interaction? interaction?
                   :report-captions? report-captions?))
-
-
-  ;;;======================================================================
-  ;;;  State DB Debugging Support
-  ;;;======================================================================
-
-  (provide state-db-debug)
-
-  (define-class %state-db-debugger%  (%invisible-element%)
-    (attr path)
-    (attr report-fn)
-
-    (setup
-      (define-state-db-listener (debug state-db)
-        ((.report-fn) (state-db (.path))))))
-  
-  ;;; Here's a nasty little hack for reading the state database from
-  ;;; outside an element.  Calling this from anywhere but the listener is
-  ;;; definitely a bug.
-  (define (state-db-debug path)
-    (define result #f)
-    (define (set-result! value)
-      (set! result value))
-    (define elem
-      (%state-db-debugger% .new :parent (running-root-node)
-                                :path path
-                                :report-fn set-result!))
-    (delete-element elem)
-    result)
-
-  
-  ;;;======================================================================
-  ;;;  State DB Time Support
-  ;;;======================================================================
-  ;;;  The state-db's /system/clock/seconds and /system/clock/milliseconds
-  ;;;  values do not use the same units as CURRENT-MILLISECONDS.
-
-  (provide state-db-seconds state-db-milliseconds)
-
-  ;;  XXX - THESE SHOULD NOT USE STATE-DB-DEBUG!!! It's extremely slow.
-  ;;  Ask one of the C++ programmers to add primitives which fetch
-  ;;  these values.
-  
-  ;;; Get the current time in seconds, as recorded by the state-db.
-  (define (state-db-seconds)
-    (state-db-debug '/system/clock/seconds))
-
-  ;;; Get the current time in miliseconds, as recorded by the state-db.
-  (define (state-db-milliseconds)
-    (state-db-debug '/system/clock/milliseconds))
-
-  
-  ;;;======================================================================
-  ;;;  State DB Update Support
-  ;;;======================================================================
-
-  (provide update-state-db! inc-state-db! inc-state-db-if-true!)
-
-  ;;  XXX - THIS SHOULD NOT USE STATE-DB-DEBUG!!! It's extremely slow.
-  ;;  Ask one of the C++ programmers to add a primitive to do this.
-  
-  ;;; Apply FUNC to the current value stored at PATH, and replace it with
-  ;;; the return value.
-  (define (update-state-db! path func)
-    (set! (state-db path) (func (state-db-debug path)))
-    #f) ; Make absolutely certain we don't return the value we updated.
-  
-  ;;; Add AMOUNT to the value stored in the state-db at PATH.
-  ;;;
-  ;;; TODO - Decide whether this is redundant.
-  (define (inc-state-db! path amount)
-    (update-state-db! path (fn (value) (+ value amount))))
-
-  ;;; Add AMOUNT to the value stored in the state-db at PATH, unless that
-  ;;; value is #f.
-  ;;;
-  ;;; TODO - Decide whether this is redundant.
-  (define (inc-state-db-if-true! path amount)
-    (update-state-db! path
-                      (fn (value)
-                        (if value
-                            (+ value amount)
-                            value))))
   
 
   ;;;======================================================================

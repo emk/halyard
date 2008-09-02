@@ -1,6 +1,7 @@
 ;; PORTED
 (module media (lib "halyard.ss" "halyard")
   (require (lib "proxy-initialize-and-methods.ss" "halyard"))
+  (require (lib "state-db.ss" "halyard"))
   (require (lib "base.ss" "halyard-test"))
 
   (provide start-ambient kill-ambient)

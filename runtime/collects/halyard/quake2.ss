@@ -26,6 +26,7 @@
 ;; engine.
 (module quake2 (lib "halyard.ss" "halyard")
   (require (lib "kernel.ss" "halyard/private"))
+  (require (lib "state-db.ss" "halyard"))
 
   (provide quake2-driver set-quake2-driver!
            quake2-launch quake2-shown? quake2-show quake2-hide
