@@ -50,7 +50,7 @@
            *card-body-finished-hook* *before-draw-hook*
            *dangerous-exit-script-hook*
            runtime-directory value->boolean idle
-           engine-var set-engine-var! engine-var-exists?
+           engine-var set-engine-var! engine-var-exists? define/p
            exit-script refresh
            run-deferred executing-deferred-safe-time-callbacks?
 
