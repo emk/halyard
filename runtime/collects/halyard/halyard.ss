@@ -105,27 +105,44 @@
 
   (provide (rename hacked-#%top #%top))
 
-  (define-syntax (hacked-#%top stx)
-    ;; Handle relative path transformation.
-    (syntax-case stx ()
-      [(_ . varname)
+  (define (find-static-node-or-error path)
+    (or (find-node path #f)
+        (error "Can't find static node" path)))
 
+  (begin-for-syntax 
+    (define path-re (regexp "^@[a-z/]"))
+    (define static-node-re (regexp "^/[a-z]")))
+
+  (define-syntax (hacked-#%top stx)
+    
+    ;; Turn a symbol syntax into a string, and match it against 
+    ;; the given regular expression.
+    (define (symbol-match syn regex)
+      (let [[v (syntax-object->datum syn)]]
+        (and (symbol? v)
+             (regexp-match regex (symbol->string v)))))
+
+    (syntax-case stx ()
+      ;; Handle relative or absolute path transformation.
+      [(_ . varname)
        ;; Look for symbols matching the regex '^@[a-z/]'.
-       (let [[v (syntax-object->datum #'varname)]]
-         (and (symbol? v)
-              (let [[vstr (symbol->string v)]]
-                (and (>= (string-length vstr) 2)
-                     (eq? #\@ (string-ref vstr 0))
-                     (let [[c (string-ref vstr 1)]]
-                       (or (eq? c #\/)
-                           (and (char-alphabetic? c)
-                                (char-lower-case? c))))))))
+       (symbol-match #'varname path-re)
 
        ;; Transform @foo -> (@ foo).
        (let* [[str (symbol->string (syntax-object->datum #'varname))]
               [name (substring str 1 (string-length str))]]
          (quasisyntax/loc stx (@ #,(string->symbol name))))]
-
+      
+      ;; Handle immediate static node resolution.
+      [(_ . varname)
+       ;; Look for symbols matching the regex '^/[a-z]'
+       (symbol-match #'varname static-node-re)
+       
+       ;; transform paths like /foo/bar/baz to calls to 
+       ;; find-static-node-or-error.
+       (quasisyntax/loc stx (find-static-node-or-error
+                             (quote #,(syntax-object->datum #'varname))))]
+      
       [(_ . varname)
        ;; Fallback case--use our existing version of #%top.
        (syntax/loc stx (#%top . varname))]))

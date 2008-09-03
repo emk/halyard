@@ -33,7 +33,7 @@
   (provide jump delete-element current-group-member current-card
            static-root-node running-root-node
            define-def-and-super-abbrev setup run *node-defined-hook*
-           %node% node? node-name node-full-name node-parent
+           %node% node? static-node? node-name node-full-name node-parent
            node-elements find-child-node %group-member%
            group %card-group% group-members card-group? %root-node%
            %card% card? card jump-current element? %element% elem

@@ -464,7 +464,7 @@
   ;;  contains %card%s and %card-group%s.  %card-group%s contain %card%s
   ;;  and other %card-group%s.  Any node may contain %element%s.
 
-  (provide %node% node? node-name node-full-name node-parent
+  (provide %node% node? static-node? node-name node-full-name node-parent
            node-elements find-node find-running-node find-static-node
            find-child-node analyze-node-name make-node-type-predicate)
 
@@ -624,6 +624,19 @@
   (define (node-elements node) (node .elements))
   (define (set-node-elements! node val) (set! (node .elements) val))
   (define (node-full-name node-or-path) (node-or-path .full-name))
+
+  ;;; Check if OBJ is a static node.  A static node is a subclass of
+  ;;; %node% that can be run (as opposed to just a regular subclass of
+  ;;; %node% that is used for creating card, group, or element
+  ;;; classes).
+  (define (static-node? obj)
+    ;; TODO - This should probably call (obj .responds-to?
+    ;; 'subclass-of?) instead of (obj .instance-of? %class%), but node
+    ;; trampolines don't properly proxy .responds-to? yet.
+    (and (ruby-object? obj)
+         (obj .instance-of? %class%)
+         (obj .subclass-of? %node%)
+         (obj .can-be-run?)))
 
   (define (check-for-duplicate-nodes node-list node)
     (let recurse [[node-list node-list]]

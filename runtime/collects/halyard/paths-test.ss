@@ -33,6 +33,16 @@
       (@tests .node-state))
     (test "A path with a leading / should resolve as an absolue path."
       (assert-equals /tests (@/tests .resolve-path :running? #f))))
+
+  (define-class %static-node-test% (%test-case%)
+    (test "A bare node path should resolve to a static node."
+      (assert (static-node? /start))
+      (assert (static-node? /tests))
+      (assert (static-node? /tests/paths)))
+    (test "Trying to use a bare path for a non-existant node should fail."
+      (assert-raises-message exn:fail? "/frobnozzle/gunkstuff"
+        /frobnozzle/gunkstuff)))
   
-  (card /tests/paths (%test-suite% :tests (list %paths-test%)))
+  (card /tests/paths (%test-suite% :tests (list %paths-test% 
+                                                %static-node-test%)))
   )
