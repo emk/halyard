@@ -153,27 +153,48 @@
     (non-fatal-error msg)
     (error msg))
   
-  ;;; Exit the currently-running script.
+  ;;; Try to exit the currently-running script.  If the script exits, this
+  ;;; function will not return.
+  ;;;
+  ;;; However, if the engine is running in developer mode, the user may
+  ;;; cancel the exit process when asked to save files.  In this case, the
+  ;;; function will return #f.
   (define (exit-script)
-    ;; Call the appropriate exit primitive.
-    (if (have-prim? 'ExitScript)
-        (call-prim 'ExitScript)
-        (call-prim 'SchemeExit)))
+    ;; If we have a GUI, it may want to issue "Save this file?" prompts and
+    ;; clean up windows before actually starting a shutdown process.  But
+    ;; if we don't have a GUI, we call the low-level exit routines instead.
+    (if (have-prim? 'MaybeExitScriptGui)
+      (call-prim 'MaybeExitScriptGui)
+      (call-prim 'ExitScriptNonGui))
+    #f)
   
-  (define (check-whether-jump-allowed)
-    (when *running-on-exit-handler-for-node*
+  (define (check-whether-jump-allowed card)
+    (cond
+     [*running-on-exit-handler-for-node*
       (error (cat "Cannot JUMP in (on exit () ...) handler for node "
-                  (*running-on-exit-handler-for-node* .full-name)))))
+                  (*running-on-exit-handler-for-node* .full-name)))]
+     [(or (eq? *%kernel-state* 'JUMPING)
+          ;; XXX - An ugly special case: %kernel-run-as-callback may
+          ;; temporarily change *%kernel-state* from 'JUMPING to 'NORMAL, but
+          ;; not change *%kernel-jump-card*.  So we need to check for this.
+          ;; We should probably clean it up, too.
+          *%kernel-jump-card*)
+      ;; TODO - Eventually, we may want to make this an error.  See F#10544.
+      (caution (cat "Jump to " card " overriding jump to "
+                    *%kernel-jump-card*
+                    (if (eq? *%kernel-state* 'JUMPING) "" " in callback")))]
+     [(eq? *%kernel-state* 'INTERPRETER-KILLED)
+      (fatal-error (cat "Cannot jump to " card
+                        " after interpreter has been shut down"))]))
+
+  (define (set-jump-state! card)
+    (check-whether-jump-allowed card)
+    (set! *%kernel-jump-card* card)
+    (%kernel-set-state 'JUMPING))
 
   (define (jump-to-card card)
-    (check-whether-jump-allowed)
-    (if (have-prim? 'Jump)
-        (call-prim 'Jump (card-name card))
-        (begin
-          ;; If we don't have a JUMP primitive, fake it by hand.
-          (set! *%kernel-jump-card* card)
-          (%kernel-set-state 'JUMPING)
-          (%kernel-check-state))))
+    (set-jump-state! card)
+    (%kernel-check-state))
 
   ;;; Show the results of all drawing calls made since the last screen
   ;;; update.  (The screen is only updated after calls to IDLE, REFRESH,
@@ -287,7 +308,7 @@
                 (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
                   (cond
                    [jump-card
-                    (run-card (find-card jump-card))]
+                    (run-card jump-card)]
                    [#t
                     ;; Highly optimized do-nothing loop. :-)  This
                     ;; is a GC optimization designed to prevent the
@@ -330,6 +351,10 @@
                            current-node-or-false)))
 
   (define (%kernel-kill-interpreter)
+    ;; Note that this is the only function that should set
+    ;; INTERPRETER-KILLED.  There's other stuff going on in
+    ;; TInterpreterManager that needs to happen at the same time, in
+    ;; particular setting mDone appropriately.
     (%kernel-set-state 'INTERPRETER-KILLED))
 
   (define (%kernel-stop)
@@ -364,8 +389,8 @@
     (%kernel-set-state 'CARD-KILLED))
 
   (define (%kernel-jump-to-card-by-name card-name)
-    (set! *%kernel-jump-card* card-name)
-    (%kernel-set-state 'JUMPING))
+    (with-errors-blocked (non-fatal-error)
+      (set-jump-state! (find-card card-name))))
 
   (define (%kernel-load-group group-name)
     (with-code-loading-allowed [non-fatal-error #f]

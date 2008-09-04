@@ -43,28 +43,12 @@ namespace {
 
 
 //=========================================================================
-//	Scheme Primitives
-//=========================================================================
-
-DEFINE_PRIMITIVE(SchemeExit)
-{
-	// Ask the interpreter manager to shut us down.  This function isn't
-	// safe to call when we're being run as part of the interpreter (as
-	// opposed to part of the test suites).  Use ExitScript instead.
-	TInterpreterManager::GetInstance()->RequestQuitApplication();
-}
-
-
-//=========================================================================
 //	TSchemeInterpreterManager Methods
 //=========================================================================
 
 TSchemeInterpreterManager::TSchemeInterpreterManager(SystemIdleProc inIdleProc)
     : TInterpreterManager(inIdleProc), mHaveInitializedScheme(false)
 {
-	// Install our primitives.
-	REGISTER_PRIMITIVE(SchemeExit);
-
     // We're not actually allowed to call into the Scheme interpreter yet,
     // because scheme_set_stack_base hasn't been called.  Anything which
     // relies on mzscheme must go into InitialSetup below.

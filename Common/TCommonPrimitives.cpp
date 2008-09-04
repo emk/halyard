@@ -280,6 +280,22 @@ DEFINE_PRIMITIVE(DefStyle)
 
 
 //-------------------------------------------------------------------------
+// (ExitScriptNonGui)
+//-------------------------------------------------------------------------
+// Begin the interpreter-level shutdown process.
+//
+// WARNING: This function should only called from non-GUI applications,
+// such as the test runner.  Other applications should call ExitScriptGui,
+// which handles the saving of user files and the tearing down of the
+// graphical interface.
+
+DEFINE_PRIMITIVE(ExitScriptNonGui) {
+	// Ask the interpreter manager to shut us down.
+	TInterpreterManager::GetInstance()->RequestQuitApplication();
+}
+
+
+//-------------------------------------------------------------------------
 // (IsLazyLoadingEnabled)
 //-------------------------------------------------------------------------
 // Is lazy loading turned on in the engine?
@@ -396,6 +412,7 @@ void Halyard::RegisterCommonPrimitives()
 	REGISTER_PRIMITIVE(Get);
 	REGISTER_PRIMITIVE(VariableInitialized);
 	REGISTER_PRIMITIVE(DefStyle);
+    REGISTER_PRIMITIVE(ExitScriptNonGui);
     REGISTER_PRIMITIVE(IsLazyLoadingEnabled);
     REGISTER_PRIMITIVE(MaybeSetIsLazyLoadingEnabled);
 	REGISTER_PRIMITIVE(MeasureTextAA);

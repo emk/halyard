@@ -938,9 +938,10 @@ DEFINE_PRIMITIVE(SetZoneCursor) {
 	elem->SetCursorName(cursor);
 }
 
-DEFINE_PRIMITIVE(ExitScript) {
-    // Force shutdown.
-    wxGetApp().GetStageFrame()->Close(TRUE);
+DEFINE_PRIMITIVE(MaybeExitScriptGui) {
+    // Force shutdown if we're in runtime mode.
+    bool force = TInterpreterManager::IsInRuntimeMode();
+    wxGetApp().GetStageFrame()->Close(force);
 }
 
 DEFINE_PRIMITIVE(TextAA) {
@@ -1119,7 +1120,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(SetImageCacheSize);
     REGISTER_PRIMITIVE(SetStatusText);
     REGISTER_PRIMITIVE(SetZoneCursor);
-    REGISTER_PRIMITIVE(ExitScript);
+    REGISTER_PRIMITIVE(MaybeExitScriptGui);
 	REGISTER_PRIMITIVE(TextAA);
     REGISTER_PRIMITIVE(Wait);
     REGISTER_PRIMITIVE(WakeUpIfNecessary);

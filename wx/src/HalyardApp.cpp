@@ -596,16 +596,31 @@ int HalyardApp::MainLoopInternal() {
     return error ? 1 : 0;
 }
 
-void HalyardApp::ExitMainLoop()
-{
-    if (mHaveOwnEventLoop)
-    {
+void HalyardApp::ExitMainLoop() {
+    // According to the documentation for wxApp:
+    //
+    //   Call [ExitMainLoop] to explicitly exit the main message (event)
+    //   loop. You should normally exit the main loop (and the application)
+    //   by deleting the top window.
+    //
+    // So this function isn't supposed to be called under normal
+    // circumstances. And if it is called, it is explicity not responsible
+    // for dealing with StageFrame or the ScriptEditor.  So calling
+    // RequestQuitApplication directly is a pretty reasonable thing to do.
+    //
+    // I've tried exiting the developer GUI by (1) closing the window, and
+    // (2) calling EXIT-SCRIPT from the listener.  This function did not
+    // appear to get called in either case.
+    if (mHaveOwnEventLoop) {
+        // I really don't expect this to happen.  If it does, make a note
+        // in our permanent log for the sake of curiosity.
+        gLog.Log("HalyardApp::ExitMainLoop called to shut down "
+                 "interpreter");
+
         // Ask the TInterpreterManager to begin an orderly shutdown.
         ASSERT(TInterpreterManager::HaveInstance());
         TInterpreterManager::GetInstance()->RequestQuitApplication();
-    }
-    else
-    {
+    } else {
         // Handle things normally.
         // XXX - It's not clear that this branch of the 'if' conditional
         // does anything sane and/or useful any more.

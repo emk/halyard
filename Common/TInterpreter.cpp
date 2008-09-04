@@ -258,14 +258,15 @@ void TInterpreterManager::RunInitialCommands()
         }
     }
     
-    // Ask our interpreter to jump to the appropriate card.
+    // Ask our interpreter to jump to the appropriate card.  Note that we
+    // skip this initial jump if sInitialCommand killed the interpreter.
     if (!interp->IsValidCard(mInitialCardName.c_str()))
         ResetInitialCardName();
-    interp->JumpToCardByName(mInitialCardName.c_str());
+    if (!mDone)
+        interp->JumpToCardByName(mInitialCardName.c_str());
     
     // Reset any special variables.
     ResetInitialCardName();
-    
 }
 
 void TInterpreterManager::RequestQuitApplication()
