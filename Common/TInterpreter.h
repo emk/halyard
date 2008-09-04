@@ -583,6 +583,12 @@ public:
     ///
     bool IsInsideStackBase() { return mIsInsideStackBase; }
 
+    //////////
+    /// Set the value returned by ExitedWithError().
+    ///
+    void SetShouldExitWithError(bool inShouldExitWithError)
+        { mExitedWithError = inShouldExitWithError; }
+
 protected:
 	//////////
 	/// Create a new TInterpreter object with all the appropriate

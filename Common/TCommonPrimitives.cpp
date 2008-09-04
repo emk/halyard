@@ -366,6 +366,19 @@ DEFINE_PRIMITIVE(Sha1File) {
     ::SetPrimitiveResult(result);
 }
 
+
+//-------------------------------------------------------------------------
+// (ShouldExitWithError isError)
+//-------------------------------------------------------------------------
+// When we exit Halyard, should it return an error code to its calling
+// process?
+
+DEFINE_PRIMITIVE(ShouldExitWithError) {
+    bool isError;
+    inArgs >> isError;
+    TInterpreterManager::GetInstance()->SetShouldExitWithError(isError);
+}
+
 DEFINE_PRIMITIVE(StateDbSet) {
 	std::string key;
 	TValue val;
@@ -419,6 +432,7 @@ void Halyard::RegisterCommonPrimitives()
     REGISTER_PRIMITIVE(NotifyFileLoaded);
     REGISTER_PRIMITIVE(NotifyScriptLoaded);
     REGISTER_PRIMITIVE(Sha1File);
+    REGISTER_PRIMITIVE(ShouldExitWithError);
     REGISTER_PRIMITIVE(StateDbSet);
     REGISTER_PRIMITIVE(StateDbGet);
     REGISTER_PRIMITIVE(StateDbRegisterListener);

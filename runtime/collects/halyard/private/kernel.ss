@@ -159,13 +159,20 @@
   ;;; However, if the engine is running in developer mode, the user may
   ;;; cancel the exit process when asked to save files.  In this case, the
   ;;; function will return #f.
-  (define (exit-script)
+  ;;;
+  ;;; If success? is false, then the application will return an error to
+  ;;; the operating system.
+  (define (exit-script &opt [success? #t])
+    (call-prim 'ShouldExitWithError (not success?))
     ;; If we have a GUI, it may want to issue "Save this file?" prompts and
     ;; clean up windows before actually starting a shutdown process.  But
     ;; if we don't have a GUI, we call the low-level exit routines instead.
     (if (have-prim? 'MaybeExitScriptGui)
       (call-prim 'MaybeExitScriptGui)
       (call-prim 'ExitScriptNonGui))
+    ;; We didn't actually manage to exit, so reset ShouldExitWithError and
+    ;; return #f.
+    (call-prim 'ShouldExitWithError #f)
     #f)
   
   (define (check-whether-jump-allowed card)
