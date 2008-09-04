@@ -421,16 +421,21 @@ bool HalyardApp::OnInit() {
     wxXmlResource::Get()->InitAllHandlers();
     InitXmlResource();
     
-    // Parse our command-line arguments.
+    // Parse our command-line arguments.  Note that '-e' and '-c' both run
+    // script commands, but the former uses multimedia runtime mode, and the
+    // latter is for calling the engine from command-line scripts.
+    TInterpreterManager::Mode special_mode = TInterpreterManager::RUNTIME;
 	size_t ac; wxChar **av;
     for (ac = argc-1, av = argv+1; ac > 0; --ac, ++av) {
         wxString arg(av[0]);
-        if (ac >= 2 && arg == wxT("-e")) {
+        if (ac >= 2 && (arg == wxT("-e") || arg == wxT("-c"))) {
             wxString next(av[1]);
             --ac, ++av;
             TInterpreterManager::SetInitialCommand(std::string(next.mb_str()));
+            if (arg == wxT("-c"))
+                special_mode = TInterpreterManager::COMMAND_LINE;
         } else {
-            TInterpreterManager::SetRuntimeMode(true);
+            TInterpreterManager::SetMode(special_mode);
             mArgScript = arg;
         }
     }
@@ -558,7 +563,7 @@ int HalyardApp::MainLoopInternal() {
 	Downloader *downloader = new Downloader();
 
     // Check to see if we have any command-line arguments.
-    if (TInterpreterManager::IsInRuntimeMode()) {
+    if (!TInterpreterManager::IsInAuthoringMode()) {
         // Open the specified document directly.
         mStageFrame->OpenDocument(mArgScript);
     } else {

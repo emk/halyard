@@ -812,7 +812,7 @@ bool StageFrame::TryToCloseScriptEditor(wxCloseEvent &inEvent) {
 #endif // !CONFIG_HAVE_SCRIPTEDITOR
 
 bool StageFrame::AreDevToolsAvailable() {
-    return (!TInterpreterManager::IsInRuntimeMode()
+    return (TInterpreterManager::IsInAuthoringMode()
             || gDeveloperPrefs.GetPref(DEVTOOLS) == DEVTOOLS_ENABLED);
 }
 
@@ -970,7 +970,7 @@ void StageFrame::OnFullScreen(wxCommandEvent &inEvent)
         // have devtools enabled, and a developer wants to turn the
         // runtime back into an editor for debugging.
         if (TInterpreterManager::IsInRuntimeMode())
-            TInterpreterManager::SetRuntimeMode(false);
+            TInterpreterManager::SetMode(TInterpreterManager::AUTHORING);
         ShowFullScreen(FALSE);
     } else {
         ShowFullScreen(TRUE);

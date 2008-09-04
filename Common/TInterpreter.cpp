@@ -72,10 +72,10 @@ void TInterpreter::NotifyScriptLoaded() {
     mSourceFilesExpected = mSourceFilesLoaded;
 
     // If we have a document (i.e., we're not running the test suites),
-    // and we're not in runtime mode, then update our source file count.
+    // and we're in authoring mode, then update our source file count.
     TInterpreterManager *manager(TInterpreterManager::GetInstance());
     Document *doc = manager->GetDocument();
-    if (doc && !manager->IsInRuntimeMode() && !manager->IsLazyLoadingEnabled())
+    if (doc && manager->IsInAuthoringMode() && !manager->IsLazyLoadingEnabled())
         doc->GetHalyardProgram()->SetSourceFileCount(mSourceFilesExpected);
 }
 
@@ -110,7 +110,8 @@ TReloadNotified::~TReloadNotified() {
 TInterpreterManager *TInterpreterManager::sInstance = NULL;
 bool TInterpreterManager::sHaveAlreadyCreatedSingleton = false;
 std::vector<TReloadNotified*> TInterpreterManager::sReloadNotifiedObjects;
-bool TInterpreterManager::sIsInRuntimeMode = false;
+TInterpreterManager::Mode TInterpreterManager::sMode =
+    TInterpreterManager::AUTHORING;
 bool TInterpreterManager::sIsFirstLoad = true;
 bool TInterpreterManager::sHaveInitialCommand = false;
 std::string TInterpreterManager::sInitialCommand;
@@ -181,8 +182,9 @@ void TInterpreterManager::Run()
 		if (caught_error)
 		{
             // Always quit for non-load errors, but only quit for load
-            // errors if we're in runtime mode.
-			if (!mLoadScriptFailed || (mLoadScriptFailed && IsInRuntimeMode()))
+            // errors if we're not in authoring mode.
+			if (!mLoadScriptFailed ||
+                (mLoadScriptFailed && !IsInAuthoringMode()))
 			{
 				mDone = true; 
                 mExitedWithError = true;
@@ -251,7 +253,7 @@ void TInterpreterManager::RunInitialCommands()
     // Run our initial command, if we have one.
     if (sHaveInitialCommand) {
         sHaveInitialCommand = false;
-        if (sIsInRuntimeMode) {
+        if (!IsInAuthoringMode()) {
             std::string result;
             if (!interp->Eval(sInitialCommand, result))
                 THROW(result.c_str());
@@ -306,7 +308,7 @@ void TInterpreterManager::RequestRetryLoadScript()
 }
 
 bool TInterpreterManager::IsLazyLoadingEnabled() const {
-    return !IsInRuntimeMode() && mIsLazyLoadingRequested;
+    return IsInAuthoringMode() && mIsLazyLoadingRequested;
 }
 
 void TInterpreterManager::MaybeSetIsLazyLoadingEnabled(bool isEnabled) {
@@ -357,14 +359,6 @@ void TInterpreterManager::NotifyReloadScriptFailed() {
     for (; i != sReloadNotifiedObjects.end(); ++i)
         (*i)->NotifyReloadScriptFailed();
 
-}
-
-void TInterpreterManager::SetRuntimeMode(bool inIsInRuntimeMode) {
-    sIsInRuntimeMode = inIsInRuntimeMode;
-}
-
-bool TInterpreterManager::IsInRuntimeMode() {
-    return sIsInRuntimeMode;
 }
 
 bool TInterpreterManager::ShouldSuppressSplashScreen() {

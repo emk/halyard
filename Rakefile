@@ -55,7 +55,7 @@ class Configuration
         sh("../../runtime/CommonTest#{suffix}")
       end
       FileUtils.cd("test") do
-        sh("../runtime/Halyard#{suffix}", "-e", "(command-line-test-driver)",
+        sh("../runtime/Halyard#{suffix}", "-c", "(command-line-test-driver)",
            ".")
       end
     end

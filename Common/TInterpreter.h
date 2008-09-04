@@ -327,6 +327,15 @@ public:
 	///
 	typedef void (*SystemIdleProc)(bool inBlock);
 
+    //////////
+    /// The TInterpreterManager may be in one of three modes.
+    ///
+    enum Mode {
+        RUNTIME,      //< End-user multimedia runtime
+        COMMAND_LINE, //< Command-line utility (for builds, automated testing)
+        AUTHORING     //< Multimedia authoring mode
+    };
+
 private:
 	static TInterpreterManager *sInstance;
 	static bool sHaveAlreadyCreatedSingleton;
@@ -336,7 +345,7 @@ private:
     // actually create a TInterpreterManager.  Please do not add any more
     // static members if you can avoid doing so.
     static std::vector<TReloadNotified*> sReloadNotifiedObjects;
-    static bool sIsInRuntimeMode;
+    static Mode sMode;
     static bool sIsFirstLoad;
     static bool sHaveInitialCommand;
     static std::string sInitialCommand;
@@ -556,22 +565,36 @@ public:
     static void RemoveReloadNotified(TReloadNotified *obj);
 
     //////////
-    /// Set whether the engine is in standalone runtime mode, or is
-    /// a full-fledged editor.
+    /// Tell the engine whether it is a standalone multimedia runtime, a
+    /// command-line utility, or a a full-fledged editor.
     ///
-    static void SetRuntimeMode(bool inIsInRuntimeMode);
+    static void SetMode(Mode inMode) { sMode = inMode; }
+
+    //////////
+    /// What mode is the engine in?
+    ///
+    static Mode GetMode() { return sMode; }
+
+    //////////
+    /// Is the engine in standalone runtime mode?
+    ///
+    static bool IsInRuntimeMode() { return GetMode() == RUNTIME; }
+
+    //////////
+    /// Is the engine in command-line mode?
+    ///
+    static bool IsInCommandLineMode() { return GetMode() == COMMAND_LINE; }
+
+    //////////
+    /// Is the engine in authoring mode?
+    ///
+    static bool IsInAuthoringMode() { return GetMode() == AUTHORING; }
 
     //////////
     /// Set a command to run (instead of jumping to the start card)
     /// when the interpreter starts up.
     ///
     static void SetInitialCommand(const std::string &inCommand);
-
-    //////////
-    /// Is the engine in standalone runtime mode, or is it a full-fledged
-    /// editor?
-    ///
-    static bool IsInRuntimeMode();
 
     //////////
     /// Should we supress any splash screens, progress bars, etc.?
