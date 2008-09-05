@@ -381,6 +381,9 @@ namespace model {
 
         //////////
         /// Add any new fields to this object, if they don't already exist.
+        /// Note that this function should walk the object through it's
+        /// entire "history" of versions, one version at a time, until it
+        /// reaches the current version.  See ModelFormat.
         ///
         virtual void Migrate() {}
 
@@ -466,6 +469,11 @@ namespace model {
 	///   version: The version of this format.
 	///   compatible back to: The earliest version of this format with
 	///     which the current version maintains backwards compatibility.
+    ///
+    /// Whenever you change the set of fields in any Datum, you must
+    /// increase the current version number, review the other fields in
+    /// your ModelFormat for correctness, and add apppropriate code to the
+    /// Migrate methods.  See Migrate for more information.
 	///
 	class ModelFormat {
 	public:

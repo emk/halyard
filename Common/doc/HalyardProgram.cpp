@@ -54,22 +54,22 @@ void HalyardProgram::Initialize()
 }
 
 void HalyardProgram::Migrate() {
-    // Please see the format version information in Document.cpp and
-    // ModelFormat for more information on how this works.
+    // Please see the format version information in Document.cpp and the
+    // class ModelFormat for more information on how this works.
 
-    // Migrate from format 0 to format 1
+    // Migrate from format 0 to format 1.
     if (!DoFind("dbgreporturl"))
         SetString("dbgreporturl", "");
 
-    // Migrate from format 1 to format 2
+    // Migrate from format 1 to format 2.
     if (!DoFind("sourcefilecount"))
         SetInteger("sourcefilecount", 1);
 
-    // Migrate from format 2 to format 3
+    // Migrate from format 2 to format 3.
     if (!DoFind("datadirname"))
         SetString("datadirname", "");
 
-    // Migrate from fromat 3 to format 4
+    // Migrate from fromat 3 to format 4.
     // We don't have any way to remove a key, so instead we just set it
     // to 0.  This should be backwards compatible with old versions, since
     // it will just cause them to have an incorrect source file count on
