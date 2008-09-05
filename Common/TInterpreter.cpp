@@ -44,10 +44,13 @@ TInterpreter::TInterpreter()
 
     // If we have a CachedConf object (i.e., we're not running the
     // test suites), then load in the expected number of source files.
-    TInterpreterCachedConf *conf = 
-        TInterpreterManager::GetInstance()->GetCachedConf();
+    TInterpreterManager *manager(TInterpreterManager::GetInstance());
+    TInterpreterCachedConf *conf = manager->GetCachedConf();
     if (conf) {
-        mSourceFilesExpected = conf->ReadLong("SourceFileCount", 0);
+        if (manager->IsLazyLoadingEnabled())
+            mSourceFilesExpected = conf->ReadLong("LazySourceFileCount", 0);
+        else
+            mSourceFilesExpected = conf->ReadLong("SourceFileCount", 0);
     }
 }
 
@@ -76,8 +79,11 @@ void TInterpreter::NotifyScriptLoaded() {
     // source file count.
     TInterpreterManager *manager(TInterpreterManager::GetInstance());
     TInterpreterCachedConf *conf = manager->GetCachedConf();
-    if (conf && !manager->IsInRuntimeMode() && !manager->IsLazyLoadingEnabled())
-        conf->WriteLong("SourceFileCount", mSourceFilesExpected);
+    if (conf && !manager->IsInRuntimeMode())
+        if (manager->IsLazyLoadingEnabled())
+            conf->WriteLong("LazySourceFileCount", mSourceFilesExpected);
+        else
+            conf->WriteLong("SourceFileCount", mSourceFilesExpected);
 }
 
 double TInterpreter::GetLoadProgress() {
