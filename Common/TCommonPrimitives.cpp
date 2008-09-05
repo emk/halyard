@@ -203,6 +203,26 @@ DEFINE_PRIMITIVE(Log)
 
 
 //-------------------------------------------------------------------------
+// (CommandLineError err_msg)
+//-------------------------------------------------------------------------
+// When the application is being run in command-line mode, output an
+// error to std::cerr or the closest equivalent.  This is used for dumping
+// test-case results.  We also dump these errors to the application log
+// regardless of the current mode.
+
+DEFINE_PRIMITIVE(CommandLineError) {
+    std::string err_msg;
+    inArgs >> err_msg;
+
+    gLog.Log("%s", err_msg.c_str());
+    if (TInterpreterManager::IsInCommandLineMode()) {
+        std::ostream *out(TLogger::GetErrorOutput());
+        *out << err_msg << std::endl << std::flush;
+    }
+}
+
+
+//-------------------------------------------------------------------------
 // (PolygonContains poly pt)
 //-------------------------------------------------------------------------
 // Determines if pt lies within poly
@@ -319,6 +339,17 @@ DEFINE_PRIMITIVE(MaybeSetIsLazyLoadingEnabled) {
 
 
 //-------------------------------------------------------------------------
+// (LoadScriptFailed)
+//-------------------------------------------------------------------------
+// When a script fails to load, call this primitive to shut down the
+// current interpreter.
+
+DEFINE_PRIMITIVE(LoadScriptFailed) {
+    TInterpreterManager::GetInstance()->LoadScriptFailed();
+}
+
+
+//-------------------------------------------------------------------------
 // (MeasureTextAA STYLE TEXT MAX_WIDTH)
 //-------------------------------------------------------------------------
 // Calculate the width and height required to draw TEXT using STYLE,
@@ -420,6 +451,7 @@ void Halyard::RegisterCommonPrimitives()
     REGISTER_PRIMITIVE(RunInitialCommands);
     REGISTER_PRIMITIVE(Idle);
 	REGISTER_PRIMITIVE(Log);
+	REGISTER_PRIMITIVE(CommandLineError);
 	REGISTER_PRIMITIVE(PolygonContains);
 	REGISTER_PRIMITIVE(SetTyped);
 	REGISTER_PRIMITIVE(Get);
@@ -427,6 +459,7 @@ void Halyard::RegisterCommonPrimitives()
 	REGISTER_PRIMITIVE(DefStyle);
     REGISTER_PRIMITIVE(ExitScriptNonGui);
     REGISTER_PRIMITIVE(IsLazyLoadingEnabled);
+    REGISTER_PRIMITIVE(LoadScriptFailed);
     REGISTER_PRIMITIVE(MaybeSetIsLazyLoadingEnabled);
 	REGISTER_PRIMITIVE(MeasureTextAA);
     REGISTER_PRIMITIVE(NotifyFileLoaded);

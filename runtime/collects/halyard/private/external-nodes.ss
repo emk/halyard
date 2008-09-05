@@ -203,14 +203,25 @@
 
   (provide external-group external-card)
 
+  ;; A load has failed, so shut down the interpreter.
+  (define (report-script-load-error exn)
+    ;; If lazy loading is enabled, we're being called from inside
+    ;; %main-kernel-loop, and have access to script-load-error.  But if
+    ;; lazy loading is not enabled, we're being called during the initial
+    ;; load process, and want to just rethrow this exception.
+    (if (lazy-loading-enabled?)
+      (script-load-error (exn-message exn))
+      (raise exn)))
+
   ;; Load an external node from the corresponding *.ss file.
   (define (load-external-node name)
-    (set-status-text! (cat "Loading " name "..."))
-    (check-whether-safe-to-load-code name)
-    (let [[module-name (node-name->module-name name)]]
-      (with-restriction-on-loadable-nodes [name module-name]
-        (namespace-require module-name)))
-    (set-status-text! (cat "Loaded " name ".")))
+    (with-handlers [[exn:fail? report-script-load-error]]
+      (set-status-text! (cat "Loading " name "..."))
+      (check-whether-safe-to-load-code name)
+      (let [[module-name (node-name->module-name name)]]
+        (with-restriction-on-loadable-nodes [name module-name]
+          (namespace-require module-name)))
+      (set-status-text! (cat "Loaded " name "."))))
 
   ;; Install a trampoline for node NAME with known SUPERCLASS.
   (define (install-trampoline name superclass)

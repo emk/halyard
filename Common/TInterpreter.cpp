@@ -138,8 +138,8 @@ bool TInterpreterManager::sHaveInitialCommand = false;
 std::string TInterpreterManager::sInitialCommand;
 
 TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
-    : mIsInsideStackBase(false), mIsLazyLoadingRequested(false), 
-      mCachedConf(NULL)
+    : mCachedConf(NULL), mIsInsideStackBase(false), 
+      mIsLazyLoadingRequested(false), mShouldConsiderExiting(false)
 {
 	ASSERT(sHaveAlreadyCreatedSingleton == false);
 	sHaveAlreadyCreatedSingleton = true;
@@ -178,7 +178,7 @@ void TInterpreterManager::Run()
 	// because of an error (below).
 	while (!mDone)
 	{
-		bool caught_error = false;
+		mShouldConsiderExiting = false;
 		try
 		{
 			// Either create and run an interpreter, or just call the
@@ -191,7 +191,7 @@ void TInterpreterManager::Run()
 		catch (std::exception &e)
 		{
 			gLog.Error("Internal error: %s.", e.what());
-			caught_error = true;
+			mShouldConsiderExiting = true;
 		}
 		catch (...)
 		{
@@ -199,7 +199,7 @@ void TInterpreterManager::Run()
 		}
 
 		// Handle any errors.
-		if (caught_error)
+		if (mShouldConsiderExiting)
 		{
             // Always quit for non-load errors, but only quit for load
             // errors if we're not in authoring mode.
@@ -249,10 +249,18 @@ void TInterpreterManager::LoadAndRunScript()
             throw;
         }
 
-        // Run the interpreter until it has finished.  The mDone flag may
-		// have been set by mInitialCommand code.
-		if (!mDone)
-			TInterpreter::GetInstance()->Run();
+        // Run the interpreter until it has finished.  The mDone flag
+        // shouldn't be set at this point, because we haven't called
+        // RunInitialCommands yet.
+		ASSERT(!mDone);
+        TInterpreter::GetInstance()->Run();
+
+        // If any lazy loads have failed, they'll call LoadScriptFailed,
+        // which will set mLoadScriptFailed and exit from Run.
+        if (mLoadScriptFailed) {
+            NotifyReloadScriptFailed();
+            mShouldConsiderExiting = true;
+        }
 
 	} catch (...) {
         TInterpreter::DestroyInstance();
@@ -282,17 +290,29 @@ void TInterpreterManager::RunInitialCommands()
     
     // Ask our interpreter to jump to the appropriate card.  Note that we
     // skip this initial jump if sInitialCommand killed the interpreter.
-    if (!interp->IsValidCard(mInitialCardName.c_str()))
+    //
+    // Note that either IsValidCard or JumpToCardByName may cause a load
+    // failure if lazy loading is enabled.  Once that occurs, we don't want
+    // to do anything, and we especially don't want to call
+    // ResetInitialCardName.
+    if (!interp->IsValidCard(mInitialCardName.c_str()) && !mLoadScriptFailed)
         ResetInitialCardName();
-    if (!mDone)
+    if (!mDone && !mLoadScriptFailed)
         interp->JumpToCardByName(mInitialCardName.c_str());
     
     // Reset any special variables.
-    ResetInitialCardName();
+    if (!mLoadScriptFailed)
+        ResetInitialCardName();
 }
 
-void TInterpreterManager::RequestQuitApplication()
-{
+void TInterpreterManager::LoadScriptFailed() {
+    mLoadScriptFailed = true;
+    TInterpreter::GetInstance()->KillInterpreter();
+}
+
+void TInterpreterManager::RequestQuitApplication() {
+    // Be really paranoid about our current state, because we may be called
+    // from GUI.
 	if (TInterpreter::HaveInstance()) {
         ASSERT(IsInsideStackBase());
         TInterpreter::GetInstance()->KillInterpreter();

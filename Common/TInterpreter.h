@@ -419,6 +419,16 @@ private:
 	///
     bool mIsLazyLoadingRequested;
 
+    //////////
+    /// Should we consider exiting the interpreter?  This flag is cleared
+    /// every time through Run(), and is checked at the end.  If it's true,
+    /// then we will decide whether to exit the interpreter.  (See the
+    /// source for the exact conditions.)  Note that if this variable is
+    /// true, and mLoadScriptFailed is false, the code in Run will assume
+    /// that some sort of serious error has occurred.
+    ///
+    bool mShouldConsiderExiting;
+
 public:
 	//////////
 	/// Create a new TInterpreterManager with the specified idle procedure.
@@ -454,6 +464,11 @@ public:
     /// interpreter enters the correct thread. 
     ///
     void RunInitialCommands();
+
+    //////////
+    /// Let TInterpreterManager know that we failed to load a script.
+    ///
+    void LoadScriptFailed();
 
 	/////////
 	/// Run the system idle procedure.

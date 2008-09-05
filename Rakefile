@@ -4,6 +4,14 @@ require 'tools/code_signing'
 require 'fileutils'
 require 'find'
 
+# Get access to our standard Rake utilities.
+$HALYARD_SCRIPT  = "#{File.dirname(__FILE__)}/test"
+$HALYARD_RUNTIME = "#{File.dirname(__FILE__)}/runtime"
+require "#{$HALYARD_RUNTIME}/ruby/lib/halyard/boot"
+require 'halyard/rake_util'
+include Halyard::RakeUtil
+
+
 #==========================================================================
 #  Support Routines
 #==========================================================================
@@ -54,10 +62,8 @@ class Configuration
       FileUtils.cd("Common/test") do
         sh("../../runtime/CommonTest#{suffix}")
       end
-      FileUtils.cd("test") do
-        sh("../runtime/Halyard#{suffix}", "-c", "(command-line-test-driver)",
-           ".")
-      end
+      halyard_command("(command-line-test-driver)",
+                      :halyard => "../runtime/Halyard#{suffix}")
     end
   end
 end

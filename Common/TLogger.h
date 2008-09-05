@@ -216,6 +216,19 @@ private:
 	static ExitPrepFunction s_ExitPrepFunction;
 
     //////////
+    /// Can we use std::cerr for printing messages?  This is false for
+    /// Win32 and Mac GUI applications, which aren't hooked up to a usable
+    /// console.
+    ///
+    static bool s_IsStandardErrorAvailable;
+
+    //////////
+    /// A pointer to the "console" that we'll use for printing errors to
+    /// the console.
+    ///
+    static std::ostream *s_ErrorOutput;
+
+    //////////
     /// Add a string to our m_RecentEntries list.
     ///
     void        AddToRecentEntries(const std::string &str);
@@ -233,6 +246,13 @@ private:
 	/// \param inError  Is it an error message?
 	///
 	void		AlertBuffer(LogLevel inLogLevel = LEVEL_LOG);
+
+    //////////
+    /// Exit the engine abruptly with a fatal error.  In COMMAND_LINE mode,
+    /// this will exit the engine and return a non-zero result to the
+    /// shell.  In other modes, it will try to invoke the CrashReporter.
+    ///
+    void        ExitWithError(CrashType inType) __attribute__((noreturn));
 
     //////////
     /// Crash the engine with a fatal error.
@@ -266,6 +286,18 @@ public:
     /// write the contents of m_RecentEntries to disk.
     ///
     static void OpenRemainingLogsForCrash();
+
+    //////////
+    /// Notfy TLogger whether standard error is available.
+    ///
+    static void SetIsStandardErrorAvailable(bool inIsAvailable);
+
+    //////////
+    /// Get an output stream that we can use for displaying errors.  This
+    /// will point to either std:cerr, or to a file if std::cerr is not
+    /// available.
+    ///
+    static std::ostream *GetErrorOutput();
 
     //////////
     /// Display an alert in a plaform-specific fashion.

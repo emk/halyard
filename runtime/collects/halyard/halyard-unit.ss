@@ -115,6 +115,13 @@
                                        (failure .message))
                                       "\n\n"))
                                    (report .failures))))
+
+            (command-line-error (cat "FAIL: Test failures on "
+                                     (self .full-name)))
+            (foreach [failure (report .failures)]
+              (command-line-error (cat ">>> " (failure .title)))
+              (command-line-error (failure .message)))
+              
             (done-with-tests #f))))
     )
 
@@ -171,9 +178,8 @@
   (define (command-line-test-driver)
     (set! *activate-command-line-test-driver?* #t))
 
-  (define (exit-on-success success?)
-    (when success?
-      (exit-script)))
+  (define (exit-when-done success?)
+    (exit-script success?))
 
   (with-instance %card%
     ;; Instead of running the first card that we load, instead jump
@@ -182,6 +188,6 @@
     (advise before (run)
       (when *activate-command-line-test-driver?*
         (set! *activate-command-line-test-driver?* #f)
-        (run-all-test-suites exit-on-success))))
+        (run-all-test-suites exit-when-done))))
   
   )

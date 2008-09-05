@@ -36,6 +36,8 @@ using namespace Halyard;
 
 TLogger::AlertDisplayFunction TLogger::s_AlertDisplayFunction = NULL;
 TLogger::ExitPrepFunction TLogger::s_ExitPrepFunction = NULL;
+bool TLogger::s_IsStandardErrorAvailable = true;
+std::ostream *TLogger::s_ErrorOutput = NULL;
 
 #define FATAL_HEADER	"Fatal Error: "
 #define ERROR_HEADER	"Error: "
@@ -151,8 +153,8 @@ void TLogger::Error(const char *Format, ...)
 	FORMAT_MSG(Format);
 	AlertBuffer(LEVEL_ERROR);
 	LogBuffer(ERROR_HEADER);
-    if (TInterpreterManager::IsInRuntimeMode())
-        CrashNow(SCRIPT_CRASH);
+    if (!TInterpreterManager::IsInAuthoringMode())
+        ExitWithError(SCRIPT_CRASH);
 }
 
 void TLogger::Caution(const char *Format, ...)
@@ -173,7 +175,7 @@ void TLogger::FatalError(const char *Format, ...)
 	FORMAT_MSG(Format);
 	AlertBuffer(LEVEL_ERROR);
     LogBuffer(FATAL_HEADER);
-    CrashNow(APPLICATION_CRASH);
+    ExitWithError(APPLICATION_CRASH);
 }
 
 void TLogger::EnvironmentError(const char *Format, ...)
@@ -183,6 +185,15 @@ void TLogger::EnvironmentError(const char *Format, ...)
     FORMAT_MSG(Format);
     AlertBuffer(LEVEL_ERROR);
     exit(1);
+}
+
+void TLogger::ExitWithError(CrashType inType) __attribute__((noreturn)) {
+    if (TInterpreterManager::IsInCommandLineMode()) {
+        PrepareToExit();
+        exit(1);
+    } else {
+        CrashNow(inType);
+    }
 }
 
 void TLogger::CrashNow(CrashType inType) {
@@ -219,22 +230,29 @@ void TLogger::LogBuffer(const char *Header)
         AddToRecentEntries(msg);
 }
 
-void TLogger::AlertBuffer(LogLevel inLogLevel /* = LEVEL_LOG */)
-{
-    DisplayAlert(inLogLevel, m_LogBuffer);
-}
-
 /// Display an alert on the console.  THIS ROUTINE MAY NOT USE 'ASSERT' OR
 /// 'FatalError', BECAUSE IS CALLED BY THE ERROR-LOGGING CODE!
 static void ConsoleAlert(TLogger::LogLevel inLevel, const char *inMessage)
 {
-	std::cerr << std::endl;
+	std::ostream *out(TLogger::GetErrorOutput());
+	*out << std::endl;
     switch (inLevel) {
-		case TLogger::LEVEL_LOG:     std::cerr << "LOG: ";     break;
-        case TLogger::LEVEL_CAUTION: std::cerr << "CAUTION: "; break;
-        case TLogger::LEVEL_ERROR:   std::cerr << "ERROR: ";   break;
+		case TLogger::LEVEL_LOG:     *out << "LOG: ";     break;
+        case TLogger::LEVEL_CAUTION: *out << "CAUTION: "; break;
+        case TLogger::LEVEL_ERROR:   *out << "ERROR: ";   break;
     }
-	std::cerr << inMessage << std::endl;
+	*out << inMessage << std::endl << std::flush;
+}
+
+void TLogger::AlertBuffer(LogLevel inLogLevel /* = LEVEL_LOG */)
+{
+    if (TInterpreterManager::IsInCommandLineMode())
+        // If we're in command-line mode, always display on the console.
+        ConsoleAlert(inLogLevel, m_LogBuffer);
+    else
+        // Check to see if we have a GUI alert dialog, and use it if we
+        // can.  If not, fall back to ConsoleAlert.
+        DisplayAlert(inLogLevel, m_LogBuffer);
 }
 
 //
@@ -268,6 +286,35 @@ void TLogger::OpenRemainingLogsForCrash()
 {
     if (!gDebugLog.m_LogOpen)
         gDebugLog.Init("DebugRecent");
+}
+
+void TLogger::SetIsStandardErrorAvailable(bool inIsAvailable) {
+    s_IsStandardErrorAvailable = inIsAvailable;
+}
+
+std::ostream *TLogger::GetErrorOutput() {
+    ASSERT(!TInterpreterManager::IsInRuntimeMode());
+    if (s_IsStandardErrorAvailable) {
+        // We have a perfectly good std::cerr, so let's use it.
+        return &std::cerr;
+    } else if (!TInterpreterManager::HaveInstance() ||
+               !TInterpreterManager::GetInstance()->ScriptHasBegun()) {
+        // We don't have a good std::cerr, but we can't call
+        // GetScriptTempDirectory yet, so there's nothing useful we can
+        // actually do.
+        return &std::cerr;
+    } else {
+        // We should be able to write our output to a file now.
+        if (!s_ErrorOutput) {
+            // Allocate a std::ofstream for our output.
+            FileSystem::Path dir(FileSystem::GetScriptTempDirectory());
+            FileSystem::Path file(dir.AddComponent("output.txt"));
+            s_ErrorOutput =
+                new std::ofstream(file.ToNativePathString().c_str(),
+                                  std::ios_base::out | std::ios_base::trunc);
+        }
+        return s_ErrorOutput;
+    }
 }
 
 void TLogger::DisplayAlert(LogLevel inLevel, const char *inMessage)
