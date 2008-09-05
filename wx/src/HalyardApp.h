@@ -28,7 +28,6 @@ class Stage;
 class AppLog;
 class wxFileConfig;
 class wxConfigBase;
-class HalyardCachedConf;
 
 /// Our main application object.
 class HalyardApp : public wxApp

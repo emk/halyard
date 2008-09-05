@@ -70,9 +70,10 @@ END_MODEL_CLASSES()
 //  Format 1: Added dbgreporturl to HalyardProgram.
 //  Format 2: Added sourcefilecount to HalyardProgram.
 //  Format 3: Added datadirname to HalyardProgram.
+//  Format 4: Zeroed useless sourcefilecount in HalyardProgram.
 
 enum {
-    CURRENT_FORMAT = 3,
+    CURRENT_FORMAT = 4,
     COMPATIBLE_BACK_TO = 0,
     EARLIEST_READABLE = 0
 };

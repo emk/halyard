@@ -107,6 +107,7 @@ void HalyardCachedConf::WriteLong(const std::string inKey, const long inVal) {
     // allows us create the wxFileConfig object later.  Our caller is 
     // responsible for making sure that it's OK for us to be writing files,
     // by ensuring that we're not in RUNTIME mode.
+    ASSERT(!TInterpreterManager::IsInRuntimeMode());
     HalyardApp::EnsureFileExists(CachedConfFilename());
     
     // Now read the current configuration in, so we can write it out with

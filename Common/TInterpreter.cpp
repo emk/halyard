@@ -79,11 +79,12 @@ void TInterpreter::NotifyScriptLoaded() {
     // source file count.
     TInterpreterManager *manager(TInterpreterManager::GetInstance());
     TInterpreterCachedConf *conf = manager->GetCachedConf();
-    if (conf && !manager->IsInRuntimeMode())
+    if (conf && !manager->IsInRuntimeMode()) {
         if (manager->IsLazyLoadingEnabled())
             conf->WriteLong("LazySourceFileCount", mSourceFilesExpected);
         else
             conf->WriteLong("SourceFileCount", mSourceFilesExpected);
+    }
 }
 
 double TInterpreter::GetLoadProgress() {
