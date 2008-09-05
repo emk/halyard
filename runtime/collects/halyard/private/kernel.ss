@@ -728,8 +728,15 @@
                                        error-handler error-value)]))
 
   ;;; Report an error while occurred while loading a script.  This function
-  ;;; will not return.
+  ;;; will not return.  Note that this function may only be called once we
+  ;;; enter %main-kernel-loop.
   (define (script-load-error msg)
+    ;; The LoadScriptFailed primitive will set *%kernel-state* to
+    ;; 'INTERPRETER-KILLED, which will cause call-prim to perform a
+    ;; non-local exit using *%kernel-exit-interpreter-func*.  This will
+    ;; only work if we're inside %main-kernel-loop, and not during the
+    ;; initial script load.
+    (assert (function? *%kernel-exit-interpreter-func*))
     (non-fatal-error msg)
     (call-prim 'LoadScriptFailed))
 
