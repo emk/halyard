@@ -187,7 +187,7 @@ void TLogger::EnvironmentError(const char *Format, ...)
     exit(1);
 }
 
-void TLogger::ExitWithError(CrashType inType) __attribute__((noreturn)) {
+void TLogger::ExitWithError(CrashType inType) {
     if (TInterpreterManager::IsInCommandLineMode()) {
         PrepareToExit();
         exit(1);
