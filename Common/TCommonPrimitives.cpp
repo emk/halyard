@@ -339,6 +339,17 @@ DEFINE_PRIMITIVE(MaybeSetIsLazyLoadingEnabled) {
 
 
 //-------------------------------------------------------------------------
+// (LoadScriptFailed)
+//-------------------------------------------------------------------------
+// When a script fails to load, call this primitive to shut down the
+// current interpreter.
+
+DEFINE_PRIMITIVE(LoadScriptFailed) {
+    TInterpreterManager::GetInstance()->LoadScriptFailed();
+}
+
+
+//-------------------------------------------------------------------------
 // (MeasureTextAA STYLE TEXT MAX_WIDTH)
 //-------------------------------------------------------------------------
 // Calculate the width and height required to draw TEXT using STYLE,
@@ -448,6 +459,7 @@ void Halyard::RegisterCommonPrimitives()
 	REGISTER_PRIMITIVE(DefStyle);
     REGISTER_PRIMITIVE(ExitScriptNonGui);
     REGISTER_PRIMITIVE(IsLazyLoadingEnabled);
+    REGISTER_PRIMITIVE(LoadScriptFailed);
     REGISTER_PRIMITIVE(MaybeSetIsLazyLoadingEnabled);
 	REGISTER_PRIMITIVE(MeasureTextAA);
     REGISTER_PRIMITIVE(NotifyFileLoaded);

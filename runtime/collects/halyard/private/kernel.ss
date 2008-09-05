@@ -294,8 +294,10 @@
       ;; guaranteed to be in SANDBOX_THREAD after the initial script load
       ;; is completed.
       (%call-prim 'RunInitialCommands)
-      ;; Run the main loop itself.
-      (%main-kernel-loop)))
+      ;; Run the main loop itself, unless the RunInitialCommands primitive
+      ;; has actually shut down the interpreter.
+      (unless (eq? *%kernel-state* 'INTERPRETER-KILLED)
+        (%main-kernel-loop))))
 
   (define (%main-kernel-loop)
     ;; The workhorse function.  We get called to manage the main event
@@ -527,8 +529,8 @@
   ;; anything that needs to bail out to the top-level loop (usually
   ;; after setting up some complex state).  See the functions which define
   ;; and call these functions for more detail.
-  (define *%kernel-exit-interpreter-func* #f)
-  (define *%kernel-exit-to-top-func* #f)
+  (define *%kernel-exit-interpreter-func* 'no-exit-interpreter-func)
+  (define *%kernel-exit-to-top-func* 'no-exit-to-top-func)
   
   (define (%kernel-die-if-callback name)
     (if *%kernel-running-callback?*
@@ -700,7 +702,7 @@
   ;; the callback context, calling call-prim will typically cause an engine
   ;; freeze sooner or later, because call-prim hangs when 'PAUSED.
 
-  (provide check-whether-safe-to-load-code)
+  (provide check-whether-safe-to-load-code script-load-error)
 
   (define (check-whether-safe-to-load-code node-name)
     (unless (eq? *%kernel-state* 'NORMAL)
@@ -724,6 +726,12 @@
       [(_ (error-handler error-value) body ...)
        (call-with-code-loading-allowed (lambda () body ...)
                                        error-handler error-value)]))
+
+  ;;; Report an error while occurred while loading a script.  This function
+  ;;; will not return.
+  (define (script-load-error msg)
+    (non-fatal-error msg)
+    (call-prim 'LoadScriptFailed))
 
 
   ;;=======================================================================
