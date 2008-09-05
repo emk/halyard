@@ -183,7 +183,7 @@ void ScriptEditorDB::EnsureCorrectSchema() {
          "  file_id INT NOT NULL,"
          "  name TEXT NOT NULL,"
          "  indentation NOT NULL)"},
-        {"index", "def_file_id",
+        {"index", "indent_file_id",
          "CREATE INDEX indent_file_id ON indent(file_id)"},
         {"index", "indent_name",
          "CREATE INDEX indent_name ON indent(name)"},
