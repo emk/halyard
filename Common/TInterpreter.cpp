@@ -24,8 +24,6 @@
 
 #include "TInterpreter.h"
 #include "TDeveloperPrefs.h"
-#include "doc/Document.h"
-#include "doc/HalyardProgram.h"
 #include "lang/scheme/StackBase.h"
 
 using namespace Halyard;
@@ -44,11 +42,13 @@ TInterpreter::TInterpreter()
     ASSERT(sInstance == NULL);
     sInstance = this;
 
-    // If we have a document (i.e., we're not running the test suites),
-    // then load in the expected number of source files.
-    Document *doc = TInterpreterManager::GetInstance()->GetDocument();
-    if (doc)
-        mSourceFilesExpected = doc->GetHalyardProgram()->GetSourceFileCount();
+    // If we have a CachedConf object (i.e., we're not running the
+    // test suites), then load in the expected number of source files.
+    TInterpreterCachedConf *conf = 
+        TInterpreterManager::GetInstance()->GetCachedConf();
+    if (conf) {
+        mSourceFilesExpected = conf->ReadLong("SourceFileCount", 0);
+    }
 }
 
 TInterpreter::~TInterpreter()
@@ -71,12 +71,13 @@ void TInterpreter::NotifyFileLoaded() {
 void TInterpreter::NotifyScriptLoaded() {
     mSourceFilesExpected = mSourceFilesLoaded;
 
-    // If we have a document (i.e., we're not running the test suites),
-    // and we're in authoring mode, then update our source file count.
+    // If we have a cached configuration (i.e., we're not running the
+    // test suites), and we're not in runtime mode, then update our
+    // source file count.
     TInterpreterManager *manager(TInterpreterManager::GetInstance());
-    Document *doc = manager->GetDocument();
-    if (doc && manager->IsInAuthoringMode() && !manager->IsLazyLoadingEnabled())
-        doc->GetHalyardProgram()->SetSourceFileCount(mSourceFilesExpected);
+    TInterpreterCachedConf *conf = manager->GetCachedConf();
+    if (conf && !manager->IsInRuntimeMode() && !manager->IsLazyLoadingEnabled())
+        conf->WriteLong("SourceFileCount", mSourceFilesExpected);
 }
 
 double TInterpreter::GetLoadProgress() {
@@ -101,6 +102,19 @@ TReloadNotified::~TReloadNotified() {
 
 
 //=========================================================================
+//  TInterpreterCachedConf Methods
+//=========================================================================
+
+TInterpreterCachedConf::TInterpreterCachedConf() {
+    TInterpreterManager::GetInstance()->RegisterCachedConf(this);
+}
+
+TInterpreterCachedConf::~TInterpreterCachedConf() {
+    TInterpreterManager::GetInstance()->UnregisterCachedConf(this);
+}
+
+
+//=========================================================================
 //  TInterpreterManager Methods
 //=========================================================================
 //  This class contains a fairly odd state machine, which is used to
@@ -115,11 +129,10 @@ TInterpreterManager::Mode TInterpreterManager::sMode =
 bool TInterpreterManager::sIsFirstLoad = true;
 bool TInterpreterManager::sHaveInitialCommand = false;
 std::string TInterpreterManager::sInitialCommand;
-Document *TInterpreterManager::sDocument = NULL;
-
 
 TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
-    : mIsInsideStackBase(false), mIsLazyLoadingRequested(false)
+    : mIsInsideStackBase(false), mIsLazyLoadingRequested(false), 
+      mCachedConf(NULL)
 {
 	ASSERT(sHaveAlreadyCreatedSingleton == false);
 	sHaveAlreadyCreatedSingleton = true;
@@ -337,6 +350,16 @@ void TInterpreterManager::RemoveReloadNotified(TReloadNotified *obj) {
     ASSERT(found != sReloadNotifiedObjects.end());
 
     sReloadNotifiedObjects.erase(found);
+}
+
+void TInterpreterManager::RegisterCachedConf(TInterpreterCachedConf *obj) {
+    ASSERT(mCachedConf == NULL);
+    mCachedConf = obj;
+}
+
+void TInterpreterManager::UnregisterCachedConf(TInterpreterCachedConf *obj) {
+    ASSERT(mCachedConf == obj);
+    mCachedConf = NULL;
 }
 
 void TInterpreterManager::NotifyReloadScriptStarting() {

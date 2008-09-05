@@ -28,6 +28,7 @@ class Stage;
 class AppLog;
 class wxFileConfig;
 class wxConfigBase;
+class HalyardCachedConf;
 
 /// Our main application object.
 class HalyardApp : public wxApp
@@ -219,6 +220,12 @@ public:
     /// Return true if and only if this application has a stage.
     ///
     bool HaveStage() { return mStageFrame != NULL; } 
+
+    //////////
+    /// Make sure that a file exists at the given pathname.  If it does
+    /// not, create an empty file there.
+    ///
+    static void EnsureFileExists(const wxString &inFilename);
 
     //////////
     /// Do we currently have a user configuration object?  This will

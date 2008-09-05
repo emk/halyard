@@ -56,8 +56,6 @@ void HalyardProgram::Initialize()
 void HalyardProgram::Migrate() {
     if (!DoFind("dbgreporturl"))
         SetString("dbgreporturl", "");
-    if (!DoFind("sourcefilecount"))
-        SetInteger("sourcefilecount", 1);
     if (!DoFind("datadirname"))
         SetString("datadirname", "");
 }
@@ -84,19 +82,4 @@ std::string HalyardProgram::GetDataDirectoryName() {
 /// The URL to which we should submit debug reports about script errors.
 std::string HalyardProgram::GetDebugReportURL() {
     return GetString("dbgreporturl");
-}
-
-/// The number of source files we believe will be loaded at script startup.
-/// Used to implement our progress bar.
-int HalyardProgram::GetSourceFileCount() {
-    return GetInteger("sourcefilecount");
-}
-
-/// Set the number of source files we believe will be loaded at script
-/// startup.
-void HalyardProgram::SetSourceFileCount(int count) {
-    // TODO - Checking for "do nothing" calls to set should be a general
-    // feature of Model, and not just a one-off for this specific case.
-    if (GetInteger("sourcefilecount") != count)
-        SetInteger("sourcefilecount", count);
 }

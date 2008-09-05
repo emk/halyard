@@ -67,6 +67,63 @@ using namespace Halyard;
 
 
 //=========================================================================
+//  HalyardCachedConf
+//=========================================================================
+
+class HalyardCachedConf : public TInterpreterCachedConf {
+    static wxString CachedConfFilename();
+
+public:
+    long ReadLong(const std::string inKey, const long inDefault);
+    void WriteLong(const std::string inKey, const long inVal);
+};
+
+wxString HalyardCachedConf::CachedConfFilename() {
+    FileSystem::Path conf_filename =
+        FileSystem::GetScriptConfigDirectory().AddComponent("cached.conf");
+    return wxString(ToWxString(conf_filename.ToNativePathString()));
+}
+
+long HalyardCachedConf::ReadLong(const std::string inKey, const long inDefault) 
+{
+    // If we don't have a file here, just return the default value.
+    if (!::wxFileExists(CachedConfFilename())) 
+        return inDefault;
+
+    // Otherwise, open the file and get a wxFileConfig object for it
+    wxFFileInputStream config_file(CachedConfFilename());
+    shared_ptr<wxFileConfig> conf(new wxFileConfig(config_file));
+
+    // If we got an object successfully, query it for the value, 
+    // otherwise, return the default.
+    if (conf.get() != NULL) 
+        return conf->Read(ToWxString(inKey), inDefault);
+    else
+        return inDefault;
+}
+
+void HalyardCachedConf::WriteLong(const std::string inKey, const long inVal) {
+    // If we don't have a file here, we should create an empty one.  This
+    // allows us create the wxFileConfig object later.  Our caller is 
+    // responsible for making sure that it's OK for us to be writing files,
+    // by ensuring that we're not in RUNTIME mode.
+    HalyardApp::EnsureFileExists(CachedConfFilename());
+    
+    // Now read the current configuration in, so we can write it out with
+    // on the key we're interested in updated.
+    wxFFileInputStream config_input_file(CachedConfFilename());
+    shared_ptr<wxFileConfig> conf(new wxFileConfig(config_input_file));
+
+    // If reading it worked, then write our value and save the file.
+    if (conf.get() != NULL) {
+        wxFileOutputStream config_output_file(CachedConfFilename());
+        conf->Write(ToWxString(inKey), inVal);
+        conf->Save(config_output_file);
+    }
+}
+
+
+//=========================================================================
 //  HalyardApp Methods
 //=========================================================================
 
@@ -562,6 +619,11 @@ int HalyardApp::MainLoopInternal() {
 
 	Downloader *downloader = new Downloader();
 
+    // Create our cached configuration object.  This automatically registers
+    // it with the TInterpreterManager, so it must be called after the 
+    // TInterpreterManager has been created.
+    HalyardCachedConf *cached_conf = new HalyardCachedConf();
+
     // Check to see if we have any command-line arguments.
     if (!TInterpreterManager::IsInAuthoringMode()) {
         // Open the specified document directly.
@@ -582,6 +644,8 @@ int HalyardApp::MainLoopInternal() {
 
     // Cleanup
     error = manager->ExitedWithError();
+    delete cached_conf;
+    cached_conf = NULL;
 	delete downloader;
 	downloader = NULL;
 	delete manager;
@@ -644,6 +708,14 @@ wxString HalyardApp::UserConfigFilename() {
     return wxString(ToWxString(conf_filename.ToNativePathString()));
 }
 
+void HalyardApp::EnsureFileExists(const wxString &inFilename) {
+    if (!::wxFileExists(inFilename)) {
+        wxFileOutputStream config_file(inFilename);
+        config_file.Write("", 0);
+        config_file.Close();
+    }
+}
+
 void HalyardApp::MaybeLoadUserConfig() {
     // If we already have a UserConfig, we don't need to do anything.
     if (mUserConfig.get())
@@ -659,11 +731,7 @@ void HalyardApp::MaybeLoadUserConfig() {
 
     // Ensure that we have a file to read from, by creating an empty
     // file if one does not exist.
-    if (!::wxFileExists(config_filename)) {
-        wxFileOutputStream config_file(config_filename);
-        config_file.Write("", 0);
-        config_file.Close();
-    }
+    EnsureFileExists(config_filename);
 
     // Read in our configuration information.
     wxFFileInputStream config_file(config_filename);

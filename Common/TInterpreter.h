@@ -27,7 +27,6 @@ BEGIN_NAMESPACE_HALYARD
 
 class TValue;
 class ScriptEditorDB;
-class Document;
 
 //////////
 /// An identifier which might appear in a script.  Used to inform the editor
@@ -304,6 +303,21 @@ public:
 
 
 //////////
+/// The platform may provide the TInterpreterManager with an object of this
+/// class to support saving and loading the number of files loaded, in order
+/// to properly initialize the progress bar, or any other cached 
+/// interpreter configuration that needs to be saved.
+/// 
+class TInterpreterCachedConf {
+public:
+    TInterpreterCachedConf();
+    virtual ~TInterpreterCachedConf();
+    virtual long ReadLong(const std::string inKey, const long inDefault) = 0;
+    virtual void WriteLong(const std::string inKey, const long inVal) = 0;
+};
+
+
+//////////
 /// This class is in charge of creating, running and destroying
 /// interpreters as required by the application.  It supports reloading
 /// scripts, dealing with load errors, and other high-level features.
@@ -349,12 +363,16 @@ private:
     static bool sIsFirstLoad;
     static bool sHaveInitialCommand;
     static std::string sInitialCommand;
-    static Document *sDocument;
 
 	//////////
 	/// We call this procedure to yield time to the system.
 	///
 	SystemIdleProc mSystemIdleProc;
+    
+	//////////
+	/// Allows us to save cached configuration information like 
+	///
+    TInterpreterCachedConf *mCachedConf;
 
     //////////
     /// Is it safe to call the interpreter?  This is only true if we're
@@ -444,18 +462,6 @@ public:
 	///               processed, or only process a few events? 
 	///
 	void DoIdle(bool block);
-
-    //////////
-    /// Inform the interpreter of the current Document.  Used so we can
-    /// save the total number of files loaded.
-    ///
-    void RegisterDocument(Document *inDocument) { sDocument = inDocument; }
-
-    //////////
-    /// Get the document object associated with this TInterpreterManager,
-    /// or NULL if no document has been loaded yet.
-    ///
-    Document *GetDocument() const { return sDocument; }
 
 	//////////
 	/// Call this function to start the script running.  Note that this
@@ -563,6 +569,24 @@ public:
     /// Requent an end to reload notifications for this object.
     ///
     static void RemoveReloadNotified(TReloadNotified *obj);
+
+    //////////
+    /// Register an object to be used for saving cached configuration
+    /// information, such as file load counts.
+    ///
+    void RegisterCachedConf(TInterpreterCachedConf *obj);
+
+    //////////
+    /// Unregister our cached configuration object.
+    ///
+    void UnregisterCachedConf(TInterpreterCachedConf *obj);
+
+    //////////
+    /// Get the cached configuration object associated with this
+    /// TInterpreterManager, or NULL if no cached configuration has
+    /// been loaded yet.
+    ///
+    TInterpreterCachedConf *GetCachedConf() const { return mCachedConf; }
 
     //////////
     /// Tell the engine whether it is a standalone multimedia runtime, a

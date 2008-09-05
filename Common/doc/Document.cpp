@@ -129,7 +129,6 @@ Document::Document(const std::string &inDirectory)
 	CheckStructure();
     SaveAs(data_file.c_str());
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
-    manager->RegisterDocument(this);
 	manager->BeginScript();
 }
 
@@ -139,7 +138,6 @@ Document::Document(const std::string &inDirectory, Flag inOpen)
 {
 	CheckStructure();
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
-    manager->RegisterDocument(this);
 	manager->BeginScript();    
 }
 
