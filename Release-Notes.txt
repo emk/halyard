@@ -1,6 +1,51 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.15 - 5 Sep 2008
+
+This release consists of many small cleanups and bug fixes.  There are a
+few API changes and improvements:
+
+  - It is now possible to refer to static nodes anywhere in the program
+    as /foo/bar (instead of @/foo/bar), even if they're not in scope.
+  - DEFINE/P is once again part of the public API.
+  - To access the state-db, you must require it:
+      (require (lib "state-db.ss" "halyard"))
+  - To run test suites in a Halyard script, use:
+      rake halyard:test
+  - You'll want to version control ignore rules for config/cached.conf.
+
+There is also extensive new support for running Halyard under Buildbot and
+similar command-line tools.  To do access this mode, see the new
+'halyard_command' function in Rake.
+
+Brian Campbell (8):
+      Unit test framework: Display errors in order they occur
+      Unit test framework: Clean up leftover temporary parent elements in...
+      Implement simpe static node path syntax
+      Save number of files loaded to an ignroable "cached configuration" file
+      Save separate file counts for lazy and non-lazy loads
+      Editor: Load syntax highlighting information even when first load fails
+      Code review: Fix migration code and ambiguous if statement braces
+      Merge branch 'master' of ssh://imlsrc.dartmouth.edu/var/lib/git/halyard
+
+Eric Kidd (12):
+      Cleanup: Remove exclamation point from organization name
+      Cleanup: Add test cases, comment fixes for measure-text
+      Cleanup: Fix %browser% test cases to work without network
+      Move state-db API into separate file
+      Bug fix: Re-export define/p
+      Increase LOG_APAGE_SIZE to 17 for Windows XP
+      Bug fix: Clean up interactions between EXIT-SCRIPT and JUMP
+      Buildbot support: Add SUCCESS? parameter to exit-script
+      Buildbot support: Add support for running in command-line mode
+      Buildbot support: Make errors accessible in COMMAND_LINE mode
+      Buildbot support: Make test failure messages available to scripts
+      Lazy loading: Don't lose track of current card after errors
+
+William Scavone (1):
+      New Halyard icons to replace the old Tamale icons
+
 0.5.14 - 29 August 2008
 
 Halyard now supports lazy loading!  To enable it, open a listener and type:
