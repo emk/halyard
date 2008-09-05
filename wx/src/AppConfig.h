@@ -62,6 +62,7 @@
 #	define CONFIG_ENABLE_FULL_SCREEN     1
 #	define CONFIG_HAVE_FANCYCRASHREPORT  1
 #	define CONFIG_HAVE_CUSTOM_STC        1
+#   define CONFIG_HAVE_CONSOLE_OUTPUT    0
 #else // !defined __WXMSW__
 #   ifdef HAVE_CARBON_CARBON_H
 #	    define CONFIG_HAVE_QUICKTIME     1
@@ -76,6 +77,7 @@
 #	define CONFIG_ENABLE_FULL_SCREEN     0
 #	define CONFIG_HAVE_FANCYCRASHREPORT  0
 #	define CONFIG_HAVE_CUSTOM_STC        0
+#   define CONFIG_HAVE_CONSOLE_OUTPUT    0
 #endif // !defined __WXMSW__
 
 #ifdef __WXMSW__

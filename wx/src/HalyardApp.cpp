@@ -371,6 +371,9 @@ bool HalyardApp::OnInit() {
 #else
     ::InitializeCommonCode(new CrashReporter());
 #endif // CONFIG_HAVE_FANCYCRASHREP
+#if !CONFIG_HAVE_CONSOLE_OUTPUT
+    TLogger::SetIsStandardErrorAvailable(false);
+#endif
     mLogsAreInitialized = true;
 
     ::RegisterWxPrimitives();

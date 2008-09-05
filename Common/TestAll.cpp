@@ -202,6 +202,7 @@ int main(int argc, char **argv) {
     BEGIN_TEST_EXCEPTION_TRAPPER
 
 	Halyard::InitializeCommonCode(new CrashReporter());
+    TInterpreterManager::SetMode(TInterpreterManager::COMMAND_LINE);
 
     std::cout << "Scheme Interpreter Tests" << std::endl;
     
