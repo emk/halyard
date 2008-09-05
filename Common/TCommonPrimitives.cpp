@@ -203,6 +203,26 @@ DEFINE_PRIMITIVE(Log)
 
 
 //-------------------------------------------------------------------------
+// (CommandLineError err_msg)
+//-------------------------------------------------------------------------
+// When the application is being run in command-line mode, output an
+// error to std::cerr or the closest equivalent.  This is used for dumping
+// test-case results.  We also dump these errors to the application log
+// regardless of the current mode.
+
+DEFINE_PRIMITIVE(CommandLineError) {
+    std::string err_msg;
+    inArgs >> err_msg;
+
+    gLog.Log("%s", err_msg.c_str());
+    if (TInterpreterManager::IsInCommandLineMode()) {
+        std::ostream *out(TLogger::GetErrorOutput());
+        *out << err_msg << std::endl << std::flush;
+    }
+}
+
+
+//-------------------------------------------------------------------------
 // (PolygonContains poly pt)
 //-------------------------------------------------------------------------
 // Determines if pt lies within poly
@@ -420,6 +440,7 @@ void Halyard::RegisterCommonPrimitives()
     REGISTER_PRIMITIVE(RunInitialCommands);
     REGISTER_PRIMITIVE(Idle);
 	REGISTER_PRIMITIVE(Log);
+	REGISTER_PRIMITIVE(CommandLineError);
 	REGISTER_PRIMITIVE(PolygonContains);
 	REGISTER_PRIMITIVE(SetTyped);
 	REGISTER_PRIMITIVE(Get);

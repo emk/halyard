@@ -241,7 +241,7 @@ static void ConsoleAlert(TLogger::LogLevel inLevel, const char *inMessage)
         case TLogger::LEVEL_CAUTION: *out << "CAUTION: "; break;
         case TLogger::LEVEL_ERROR:   *out << "ERROR: ";   break;
     }
-	*out << inMessage << std::endl;
+	*out << inMessage << std::endl << std::flush;
 }
 
 void TLogger::AlertBuffer(LogLevel inLogLevel /* = LEVEL_LOG */)

@@ -38,7 +38,7 @@
   (require #%engine-primitives)
 
   (provide app-log debug-log caution debug-caution non-fatal-error
-           fatal-error set-status-text!)
+           fatal-error set-status-text! command-line-error)
 
   ;;; Write a message to Halyard.log.  This log is always present on a user's
   ;;; system, and is never deleted, so use this function sparingly.
@@ -76,7 +76,19 @@
   (define (set-status-text! msg)
     (%call-prim 'SetStatusText msg))
 
-  
+  ;;; If the engine is in COMMAND_LINE mode, display an error on the
+  ;;; console (or the closest equivalent on a given platform).  This is
+  ;;; mostly for use by the test driver.
+  ;;;
+  ;;; Note that non-fatal-error will also show an error on the command-line
+  ;;; when running in COMMAND_LINE mode.  But there are two important
+  ;;; differences: (1) this function doesn't ever show a dialog, and (2)
+  ;;; this function simply prints the error and returns immediately, even
+  ;;; in modes where non-fatal-error actually quits the program.
+  (define (command-line-error msg)
+    (%call-prim 'CommandLineError msg))
+
+
   ;;=======================================================================
   ;;  Stack trace error handler
   ;;=======================================================================
