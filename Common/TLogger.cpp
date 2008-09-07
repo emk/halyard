@@ -64,7 +64,6 @@ TLogger::TLogger()
 { 
 	m_LogOpen = false; 
 	m_OpenFailed = false;
-	m_CautionAlert = false; 
 	m_Append = false;
 	m_LogMask = LOG_ALL;
 }
@@ -160,7 +159,9 @@ void TLogger::Error(const char *Format, ...)
 void TLogger::Caution(const char *Format, ...)
 {
 	FORMAT_MSG(Format);
-	if (m_CautionAlert)
+    // TODO - For now, only show CAUTION messages in command-line mode.  We
+    // want to change this to !TInterpreterManager::IsInRuntimeMode() soon.
+	if (TInterpreterManager::IsInCommandLineMode())
 		AlertBuffer(LEVEL_CAUTION);
 	LogBuffer(CAUTION_HEADER);
 }

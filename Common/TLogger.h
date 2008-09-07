@@ -190,12 +190,6 @@ private:
 	bool		m_OpenFailed;
 	
 	//////////
-	/// If true, an alert message box is displayed for caution messages in 
-	/// addition to logging the message.
-	///
-	bool		m_CautionAlert;
-	
-	//////////
 	/// Is the log output in append mode?
 	///
 	bool		m_Append;

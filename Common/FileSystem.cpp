@@ -76,10 +76,15 @@ Error::Error(const char *inErrorFile, int inErrorLine, int inErrorCode)
 // Call this function before making a system call which sets errno.
 // This will zero any pre-existing errno value, and warn the programmer
 // about it.
-static void ResetErrno()
-{
-	if (errno != 0)
+static void ResetErrno() {
+    if (errno == ERANGE) {
+        // TODO - Don't ever display a dialog for ERANGE, which happens
+        // constantly on the Macintosh.  I don't know who's messing up
+        // their math code.
+        Halyard::gDebugLog.Log("Unexpected errno = %d (ERANGE)", errno);
+    } else if (errno != 0) {
 		Halyard::gDebugLog.Caution("Unexpected errno = %d", errno);
+    }
 	errno = 0;
 }
 
