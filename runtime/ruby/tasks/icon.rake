@@ -1,3 +1,4 @@
+# -*- Mode: Ruby; -*-
 # Update the Windows icon file using NetPBM.  Yes, we know that NetPBM is
 # getting pretty flaky on some platforms these days--you may need to run
 # this more than once.
