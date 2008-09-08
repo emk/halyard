@@ -426,31 +426,36 @@ Building and releasing an engine
      this to be correct.  You might also want to take a look at
      tools/fix-prologues.pl.
 
-  3) Run 'rake test'.  This will build all versions of the application
-     and run the test suites.
+  3) Run 'rake libs', if there have been any recent changes to plt or
+     any other libraries that are not in the normal build process.
 
-  4) Run the debug and release versions of the application, and look at any
+  4) Run 'rake test'.  This will build all versions of the application
+     and run the test suites.  'rake test_debug' is generally sufficient,
+     as the build process will run both debug and release builds and test
+     them automatically.
+
+  5) Run the debug and release versions of the application, and look at any
      relevant halyard/test cards.
 
-  5) Update $HALYARD_DIR/Release-Notes.txt.  You should have a line
+  6) Update $HALYARD_DIR/Release-Notes.txt.  You should have a line
      including the version number and date, copy any notes about API
      changes out of 'git log <previous-version>..', and include the
      output of 'git shortlog <previous-version>..'.  If it makes
      sense, you may want to to add some summaries of major patch
      series.
 
-  6) Commit your changes, using the entry in Release-Notes.txt as the
+  7) Commit your changes, using the entry in Release-Notes.txt as the
      commit message.
 
-  7) Tag your commit:
+  8) Tag your commit:
 
      git tag vX.Y.Z
 
-  8) Push the commit and tag to the master repository:
+  9) Push the commit and tag to the master repository:
 
      git push --tags origin master
 
-  9) Perform a build:
+  10) Perform a build:
 
      ruby buildfile.rb vX.Y.Z
 
