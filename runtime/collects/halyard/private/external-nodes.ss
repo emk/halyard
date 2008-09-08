@@ -142,7 +142,8 @@
     (def (trampoline-check-replacement-node node)
       (unless (node .subclass-of? (.%superclass-of-real-node))
         (error (cat "External node " self " expected to be of type "
-                    (.%superclass-of-real-node) ", but " node " is not"))))
+                    (.%superclass-of-real-node) ", but " node
+                    " is not a subclass of that type"))))
 
     ;;---------------------------------------------------------------------
     ;; Emulating other classes: Typing and duck typing (remember, we're
