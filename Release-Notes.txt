@@ -1,6 +1,24 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.15.1 - 8 Sep 2008
+
+This release is simply a build fix for the 0.5.15 release, though it 
+contains a few other minor changes that went in between the 0.5.15 release
+and now.  The build fix is to reduce LOG_APAGE_SIZE back down to 16, since
+17 causes the engine to crash on some computers.
+
+Brian Campbell (2):
+      Decrease LOG_APAGE_SIZE to 16 after build failure
+      Documentation: Update HACKING.txt to include a 'rake libs' step while...
+
+Eric Kidd (5):
+      Mac build fix: Remove __attribute__ from TLogger::ExitWithError
+      Code review: Explain how script-load-error works
+      Code review: Explain how ModelFormat and Migrate work
+      Build: Clean up default Rake tests for script projects
+      Buildbot support: Display Caution messages on console
+
 0.5.15 - 5 Sep 2008
 
 This release consists of many small cleanups and bug fixes.  There are a

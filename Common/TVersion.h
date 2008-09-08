@@ -23,14 +23,14 @@
 #define VERSION_MAJOR_NUM          0
 #define VERSION_MINOR_NUM          5
 #define VERSION_REV_BIG            15
-#define VERSION_REV_SMALL          0
+#define VERSION_REV_SMALL          1
 
 // For various unfortunate preprocessor reasons, we need a duplicate copy
 // in string format.
 #define VERSION_MAJOR_NUM_STRING   "0"
 #define VERSION_MINOR_NUM_STRING   "5"
 #define VERSION_REV_BIG_STRING     "15"
-#define VERSION_REV_SMALL_STRING   "0"
+#define VERSION_REV_SMALL_STRING   "1"
 
 // This string may optionally contain something like "-pre1" or "-rc2".
 // This will be appended to the regular version number.
