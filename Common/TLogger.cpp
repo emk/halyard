@@ -159,9 +159,7 @@ void TLogger::Error(const char *Format, ...)
 void TLogger::Caution(const char *Format, ...)
 {
 	FORMAT_MSG(Format);
-    // TODO - For now, only show CAUTION messages in command-line mode.  We
-    // want to change this to !TInterpreterManager::IsInRuntimeMode() soon.
-	if (TInterpreterManager::IsInCommandLineMode())
+	if (!TInterpreterManager::IsInRuntimeMode())
 		AlertBuffer(LEVEL_CAUTION);
 	LogBuffer(CAUTION_HEADER);
 }
