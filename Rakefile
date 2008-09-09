@@ -135,3 +135,18 @@ task :clean_scheme do
     rm_rf(dir)
   end
 end
+
+namespace :git do
+  desc "DANGEROUS: Delete _everything_ not in git"
+  task :force_clean do
+    # TODO: We may fail if submodules move, or if filenames change case.
+    sh "git", "submodule", "init"
+    sh "git", "submodule", "update"
+    sh "git", "clean", "-xfd"
+    `tools/git-ls-submodules`.each_line do |dir|
+      dir.chomp!
+      print "SUBMODULE: #{dir}\n"
+      cd(dir) { sh "git", "clean", "-xfd" }
+    end
+  end
+end
