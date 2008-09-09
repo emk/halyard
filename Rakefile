@@ -136,17 +136,51 @@ task :clean_scheme do
   end
 end
 
+namespace :buildbot do
+  namespace :prep do
+    desc "Prepare for a full build"
+    task :full => ['git:force_clean', 'test/gpgv.exe']
+
+    desc "Prepare for a quick build"
+    task :quick => ['git:update_submodules', 'clean_scheme', 'test/gpgv.exe']
+  end
+end
+
 namespace :git do
-  desc "DANGEROUS: Delete _everything_ not in git"
-  task :force_clean do
-    # TODO: We may fail if submodules move, or if filenames change case.
+  task :update_submodules do
     sh "git", "submodule", "init"
     sh "git", "submodule", "update"
+  end
+
+  # DANGEROUS: Delete _everything_ not in git.
+  task :force_clean => 'git:update_submodules' do
+    # TODO: We may fail if submodules move, or if filenames change case.
     sh "git", "clean", "-xfd"
     `tools/git-ls-submodules`.each_line do |dir|
       dir.chomp!
       print "SUBMODULE: #{dir}\n"
       cd(dir) { sh "git", "clean", "-xfd" }
     end
+  end
+end
+
+# Grab a copy of gpgv.exe, if we don't have one already.  This is
+# publically available from www.gpupg.org, but only in an *.exe installer.
+file 'test/gpgv.exe' do |t|
+  gpgv_svn_url =
+    'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main/tools/crypto/gpgv.exe'
+  begin
+    sh 'svn', 'export', gpgv_svn_url, t.name
+    sh 'chmod', '+x', t.name
+  rescue RuntimeError => e
+    STDERR.puts <<__EOD__
+
+*** gpgv.exe required to run unit tests
+
+See http://iml.dartmouth.edu/halyard/wiki/index.php/Halyard_Test for
+instructions on installing gpgv.exe.
+
+__EOD__
+    raise e
   end
 end
