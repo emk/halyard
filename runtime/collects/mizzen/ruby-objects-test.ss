@@ -347,22 +347,22 @@
 
   (define-class %ruby-responds-to-test% (%test-case%)
     (test "Classes should support instances-respond-to?"
-      (assert (%foo% .instances-respond-to? 'hey))
-      (assert (not (%foo% .instances-respond-to? 'nosuch))))
+      (assert-equals #t (%foo% .instances-respond-to? 'hey))
+      (assert-equals #f (%foo% .instances-respond-to? 'nosuch)))
 
     (test "Instances should support responds-to?"
       (define foo (%foo% .new))
-      (assert (foo .responds-to? 'hey))
-      (assert (not (foo .responds-to? 'nosuch))))
+      (assert-equals #t (foo .responds-to? 'hey))
+      (assert-equals #f (foo .responds-to? 'nosuch)))
 
     (test "responds-to? and instances-respond-to? should inherit correctly"
       (define responder (%responder-2% .new))
-      (assert (responder .responds-to? 'tricky))
-      (assert (responder .responds-to? 'trickier)))
+      (assert-equals #t (responder .responds-to? 'tricky))
+      (assert-equals #t (responder .responds-to? 'trickier)))
 
     (test "instances-respond-to? is based on classes, not instance behavior"
-      (assert (%responder-2% .instances-respond-to? 'tricky))
-      (assert (not (%responder-2% .instances-respond-to? 'trickier?))))
+      (assert-equals #t (%responder-2% .instances-respond-to? 'tricky))
+      (assert-equals #f (%responder-2% .instances-respond-to? 'trickier?)))
     )
 
   (define-class %fancy-1% ()

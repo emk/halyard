@@ -630,7 +630,8 @@
       (app~ (app~ .class) .define-method name meth))
     ;;; Do instances of this class respond to the given method name?
     (def (instances-respond-to? name)
-      (instances-respond-to?% self name))
+      ;; Always return #f or #t.
+      (and (instances-respond-to?% self name) #t))
     ;;; Attach a snippet of code to an existing function.  See the
     ;;; ADVISE macro for documentation.
     (def (advise-method combination name meth)
