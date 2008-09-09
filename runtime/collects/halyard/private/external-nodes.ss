@@ -133,6 +133,11 @@
       ;; Pass this message to the real node.
       (apply send (slot '%node) name args))
 
+    ;;; Do we (or our real node) support the specified method?
+    (def (responds-to? klass)
+      (or (super)
+          (.method-missing 'responds-to? klass)))
+
     ;;; Allow people to tell whether we're a trampoline.
     (def (trampoline?)
       #t)
@@ -160,10 +165,6 @@
     (def (instance-of? klass)
       (or (super)
           (.method-missing 'instance-of? klass)))
-
-    (def (responds-to? klass)
-      (or (super)
-          (.method-missing 'responds-to? klass)))
 
     (def (subclass-of? klass)
       ;; We shouldn't call super here because we're an instance
