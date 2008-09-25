@@ -6,6 +6,9 @@
   ;; If you want to access any Quake 2 features, you need to include this
   ;; module manually.
   (require (lib "quake2.ss" "halyard"))
+
+  ;; We also want to test our Quake 2 "goto" command for teleporting.
+  (require (lib "teleport.ss" "halyard/quake2"))
   
   (group /quake2 (%card-group% :ordered? #f))
   
@@ -15,6 +18,11 @@
     :size 12
     :color $color-black)
   
+
+  ;;=======================================================================
+  ;; Level demo1
+  ;;=======================================================================
+
   (group /quake2/demo1 (%quake2-level% :game "testq2" :level "demo1"
                                       :ordered? #f)
     (setup
@@ -38,7 +46,7 @@
       (quake2-command "give railgun")
       (quake2-command "use railgun"))
     )
-  
+
   (card /quake2/demo1/run (%quake2-level-run%))
   
   (card /quake2/demo1/bullets ()
@@ -64,12 +72,21 @@
       ;; refrain from completely clearing the card--we just dim the
       ;; existing image.
       (draw-rectangle (dc-rect) (color 0 0 0 #x80))))
+
   
-  ;; Toss in another level, just for kicks.
+  ;;=======================================================================
+  ;; Level demo2
+  ;;=======================================================================
+
   (group /quake2/demo2 (%quake2-level% :game "testq2" :level "demo2"
                                       :ordered? #f))
   (card /quake2/demo2/run (%quake2-level-run%))
   
+
+  ;;=======================================================================
+  ;; Level trigger
+  ;;=======================================================================
+
   (group /quake2/trigger (%quake2-level% :game "testq2" :level "triggertest"
                                         :ordered? #f)
     (setup
@@ -81,10 +98,20 @@
       (quake2-command "+mlook")))
   (card /quake2/trigger/run (%quake2-level-run%))
   
+
+  ;;=======================================================================
+  ;; Level region
+  ;;=======================================================================
+
   (group /quake2/region (%quake2-level% :game "testq2" :level "regiontest"
                                        :ordered? #f))
   (card /quake2/region/run (%quake2-level-run%))
   
+
+  ;;=======================================================================
+  ;; Level path
+  ;;=======================================================================
+
   (group /quake2/path (%quake2-level% :game "testq2" :level "pathtest"
                                      :ordered? #f)
     (setup
@@ -95,6 +122,11 @@
       (quake2-command "notarget")))
   (card /quake2/path/run (%quake2-level-run%))
   
+
+  ;;=======================================================================
+  ;; Level watchdir
+  ;;=======================================================================
+
   (define $watchdir-text "Looking in watched direction.")
   
   (define-class %watchdir-display% (%custom-element%)
@@ -117,6 +149,39 @@
       (quake2-command "watchdir 165 -165 -10 10")))
   (card /quake2/watchdir/run (%quake2-level-run%))
   
+
+  ;;=======================================================================
+  ;; Level teleport
+  ;;=======================================================================
+
+  (group /quake2/teleport (%quake2-level% :game "testq2" :level "triggertest"
+                                          :ordered? #f)
+
+    (def (prepare-for-quake2-teleport)
+      (quake2-command "say Preparing to teleport."))
+
+    (define-quake2-teleport-location bridge (-55 245 22 90)
+      (quake2-command "say Teleporting to bridge."))
+
+    (define-quake2-teleport-location entrance (-64 -160 24 90)
+      (quake2-command "say Teleporting to entrance."))
+
+    (setup
+      (quake2-command "bind p pos")
+      (quake2-command "bind b goto bridge")
+      (quake2-command "bind e goto entrance"))
+
+    (def (setup-finished)
+      (super)
+      (quake2-command "trigger lights")))
+
+  (card /quake2/teleport/run (%quake2-level-run%))
+
+
+  ;;=======================================================================
+  ;; Support code
+  ;;=======================================================================
+
   (provide %weapon-name-display%)
 
   (define-class %weapon-name-display% (%custom-element%)
