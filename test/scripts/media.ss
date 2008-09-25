@@ -293,7 +293,7 @@
          :text ""))
     
     (def (media-caption event)
-      (set! ((.caption) .text) (event-caption event)))
+      (set! (.caption.text) (event-caption event)))
     )
 
   (group /media/audiostream)
@@ -314,6 +314,26 @@
   (card /media/audiostream/vorbis/long 
       (%audio-stream-card% :title "Long Vorbis\n(FDA Advisory)")
     (vorbis-audio stream ("quackery.ogg")))
+
+  (card /media/audiostream/vorbis/wait-points 
+      (%audio-stream-card% :title "Vorbis with\nwait points")
+    (vorbis-audio stream ("oggtest-stereo.ogg"))
+    
+    (text-button pause-button
+        ((below (.title-elem) 10) "Pause" :command 'pause-audio))
+    (def (pause-audio)
+      (.stream.pause))
+    
+    (text-button resume-button
+        ((below (.pause-button) 10) "Resume" :command 'resume-audio))
+    (def (resume-audio)
+      (.stream.resume))
+    
+    (run
+      (.stream.wait (tc 20))
+      (set! (.caption.text) "Right channel")
+      (.stream.wait)
+      (jump-next)))
 
   (group /media/audiostream/geiger)
 
@@ -348,7 +368,7 @@
   (card /media/audiostream/sine
       (%audio-stream-card% :title "440Hz Sine Wave\n(Synthesized)")
     (sine-wave stream (440)))
-  
+
   
   ;;=======================================================================
   ;;  Complete Geiger Counter Synth

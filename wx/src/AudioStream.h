@@ -86,6 +86,12 @@ private:
 	PaSampleFormat mFormat;
 	float mChannelVolumes[MAX_CHANNELS];
 
+    /// Extra time to add to the return value of GetSamplesPlayed().  This
+    /// is necessary because pausing and resuming a AudioStream may cause
+    /// PortAudio to reset its own internal counts, forcing us to do our
+    /// own bookkeeping.
+    double mSavedSamplesPlayed;
+    
     /// Is the stream currently running?  This is true if Start() has
     /// been called more recently than Stop().  If mIsRunning is true
     /// *and* mStreamState is PRELOADING, then the stream is "officially"

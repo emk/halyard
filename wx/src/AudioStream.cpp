@@ -162,7 +162,7 @@ wxThread::ExitCode AudioStreamThread::Entry() {
 //  Delete, RegisterStream, UnregisterStream and IdleAllStreams.
 
 AudioStream::AudioStream(Format inFormat, float inVolume)
-	: mIsRunning(false), mStreamState(INITIALIZING)
+	: mIsRunning(false), mStreamState(INITIALIZING), mSavedSamplesPlayed(0)
 {
 	for (int i = 0; i < MAX_CHANNELS; i++)
 		mChannelVolumes[i] = inVolume;
@@ -392,7 +392,15 @@ double AudioStream::GetTime() const {
 double AudioStream::GetSamplesPlayed() const {
     ASSERT(GetStreamState() != DELETING);
     wxCriticalSectionLocker lock(sPortAudioCriticalSection);
-    return Pa_StreamTime(mStream);
+
+    // If mStream is current running, then we need to add the total count
+    // since the last Pa_StartStream to our saved count from previous
+    // times.  But if the stream is stopped, we just want to use our saved
+    // value, because we've already added in the current Pa_StreamTime.
+    if (mIsRunning)
+        return mSavedSamplesPlayed + Pa_StreamTime(mStream);
+    else
+        return mSavedSamplesPlayed;
 }
 
 void AudioStream::StartInternal(bool isInBackground) {
@@ -443,7 +451,25 @@ void AudioStream::Stop() {
     ASSERT(mStreamState == PRELOADING || mStreamState == ACTIVE);
 	if (mIsRunning) {
         wxCriticalSectionLocker lock2(sPortAudioCriticalSection);
+
+#ifdef DEBUG
+        // We want to make sure that Pa_StopStream (below) doesn't reset
+        // Pa_StreamTime.  So we establish a minimum value now that we'll
+        // use once all current buffers have been played by Pa_StopStream.
+        double min_time_to_save = Pa_StreamTime(mStream);
+#endif // DEBUG
+
 		Pa_StopStream(mStream);
+
+        // PORTABILITY - Now that the stream is stopped, save Pa_StreamTime
+        // for future use, because at least on Windows, Pa_StartStream
+        // reset Pa_StreamTime to 0.  We check the value returned by
+        // Pa_StreamTime fairly carefully in debugging mode, because none
+        // of this behavior is even _slightly_ documented.
+        double stream_time = Pa_StreamTime(mStream);
+        ASSERT(stream_time >= min_time_to_save && stream_time >= 0);
+        mSavedSamplesPlayed += stream_time;
+
 		mIsRunning = false;
 	}
     ASSERT(!IsPortAudioStreamRunning());
