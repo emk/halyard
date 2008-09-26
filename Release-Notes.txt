@@ -1,6 +1,32 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.16 - 26 Sep 2008
+
+This release adds several features for making sim development more
+convenitent; we add the ability to define teleport locations, along
+with associated setup code, in Quake, so you can easily jump into the
+middle of a sim.  See the documentation in halyard/quake2/teleport.ss
+for further details.  We also fixed a bug that causes pause/resume to
+break wait points on Vorbis audio streams.
+
+We have also made several changes to support the automatic build bot,
+and as part of this, we have begun showing CAUTION message dialogs in
+AUTHORING mode.
+
+Eric Kidd (6):
+      Lazy loading: Improve a misleading error message
+      Buildbot support: Add git:force_clean Rake task
+      Move %static-node-trampoline% .responds-to? next to .method-missing
+      Buildbot support: Rake tasks for full and quick build prep
+      Show caution dialog in AUTHORING mode
+      Make .responds-to? always return a boolean value
+
+Eric Kidd & Brian Campbell (3):
+      AudioStream: Correctly preserve samples played across pause/resume
+      Quake 2: Add support for teleporting when developing levels
+      FileSystem.cpp: Remove unexpected errno cautions
+
 0.5.15.1 - 8 Sep 2008
 
 This release is simply a build fix for the 0.5.15 release, though it 
