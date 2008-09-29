@@ -308,10 +308,8 @@ bool VorbisAudioStream::FillBuffer(void *outBuffer, unsigned long inFrames,
 			*buffer++ = 0;
 			/// \todo Although we inline this conditional, is it still too
 			/// expensive?
-            if (!DoneReadingData()) {
-                gLog.Error("VorbisAudioStream underrun");
+            if (!DoneReadingData())
                 mUnderrunCount++;
-            }
 		}
 	}
 	mDataBegin.write(begin);
