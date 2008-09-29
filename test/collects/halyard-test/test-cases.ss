@@ -86,6 +86,20 @@
       (%element-test-suite%
        :tests (list %custom-element-test%)))
   
+
+  ;;=======================================================================
+  ;;  %invisible-element% test cases
+  ;;=======================================================================
+
+  (define-class %invisible-element-test% (%element-test-case%)
+    (test "Creating and deleting an invisible element should not CAUTION"
+      (%invisible-element% .new)))
+
+  (card /tests/invisible-element-test
+      (%element-test-suite%
+       :tests (list %invisible-element-test%)))
+
+
   ;;=======================================================================
   ;;  Node test cases
   ;;=======================================================================

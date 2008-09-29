@@ -895,6 +895,7 @@
   (define-class %element% (%node%)
     (default name (gensym))
     (default parent (default-element-parent))
+    (attr %has-engine-element? #t)
 
     (def (initialize &rest keys)
       (super)
@@ -993,7 +994,8 @@
                       (parent .elements)))
         ;; Now it's safe to delete the node.
         (.exit-node)
-        (*engine* .delete-element self)))
+        (when (.%has-engine-element?)
+          (*engine* .delete-element self))))
     (.seal-method! '%delete))
   
   

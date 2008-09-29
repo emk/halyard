@@ -146,7 +146,8 @@
   ;;; representation.
   (define-class %invisible-element% (%element%)
     (value at (point 0 0)) 
-    (value shown? #f))
+    (value shown? #f)
+    (default %has-engine-element? #f))
 
   ;;; The superclass of all native GUI elements which can be displayed
   ;;; on the stage.
@@ -1153,7 +1154,8 @@
   ;;; The superclass of all audio-only elements.
   ;;; @see %movie%
   (define-class %audio-element% (%invisible-element%)
-    (attr volume 1.0 :type <number> :label "Volume (0.0 to 1.0)")      
+    (value %has-engine-element? #t)
+    (attr volume 1.0 :type <number> :label "Volume (0.0 to 1.0)")
     (add-common-media-methods! self))
 
   ;;; Pause script execution until the end of the specified media element,
