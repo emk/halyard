@@ -229,7 +229,7 @@ void TSchemeInterpreterManager::MakeInterpreter()
 //=========================================================================
 
 TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
-    : mCurrentThread(INITIAL_THREAD)
+    : mCurrentThread(INITIAL_THREAD), mScriptIsLoaded(false)
 {
     // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
 
@@ -267,6 +267,9 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
         raw_str = SCHEME_BYTE_STR_VAL(byte_str);
 		throw TException(__FILE__, __LINE__, raw_str);
 	}
+
+    // OK, we're open for business.
+    mScriptIsLoaded = true;
 }
 
 TSchemeInterpreter::~TSchemeInterpreter()
@@ -818,6 +821,25 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 	byte_str = scheme_char_string_to_byte_string(cdr);
 	outResultText = std::string(SCHEME_BYTE_STR_VAL(byte_str));
 	return SCHEME_FALSEP(car) ? false : true;
+}
+
+bool TSchemeInterpreter::MaybeHandleCaution(const std::string &inMessage) {
+    // We don't have a reasonable Scheme environment yet, so let somebody
+    // else care about it.
+    if (!mScriptIsLoaded)
+        return false;
+
+    Scheme_Object *b = NULL;
+    TSchemeArgs<1> args;
+
+    TSchemeReg<1,1> reg;
+    reg.local(b);
+    reg.args(args);
+    reg.done();
+
+	args[0] = scheme_make_utf8_string(inMessage.c_str());
+	b = CallScheme("%kernel-maybe-handle-caution", args.size(), args.get());
+	return SCHEME_FALSEP(b) ? false : true;    
 }
 
 IdentifierList TSchemeInterpreter::GetBuiltInIdentifiers() {

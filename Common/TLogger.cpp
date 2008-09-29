@@ -159,9 +159,16 @@ void TLogger::Error(const char *Format, ...)
 void TLogger::Caution(const char *Format, ...)
 {
 	FORMAT_MSG(Format);
-	if (!TInterpreterManager::IsInRuntimeMode())
-		AlertBuffer(LEVEL_CAUTION);
-	LogBuffer(CAUTION_HEADER);
+    // Give TInterpreter a crack at this first (this allows the unit tests,
+    // for example, to override the behavior of CAUTION).  If TInterpreter
+    // doesn't want to handle it, treat it normally.
+    if (!TInterpreter::HaveInstance() ||
+        !TInterpreter::GetInstance()->MaybeHandleCaution(m_LogBuffer))
+    {
+        if (!TInterpreterManager::IsInRuntimeMode())
+            AlertBuffer(LEVEL_CAUTION);
+        LogBuffer(CAUTION_HEADER);
+    }
 }
 
 void TLogger::FatalError(const char *Format, ...)

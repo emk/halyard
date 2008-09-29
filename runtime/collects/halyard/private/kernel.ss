@@ -26,6 +26,7 @@
   (require #%engine-primitives)
 
   (require (lib "begin-var.ss" "mizzen"))  
+  (require (lib "mizzen-unit.ss" "mizzen"))  
   (require (lib "hook.ss" "halyard/private"))
   (require (lib "indent.ss" "halyard/private"))
   (require (lib "types.ss" "halyard/private"))
@@ -436,6 +437,17 @@
       
       ;; Return the result.
       (cons ok? result)))
+
+  (define (%kernel-maybe-handle-caution msg)
+    (if (current-caution-handler)
+      ;; The current-caution-handler is not supposed to raise any errors,
+      ;; because we're already in the error-handling machinery.
+      (with-errors-blocked [non-fatal-error]
+        ((current-caution-handler) msg)
+        #t)
+      ;; We don't have a current-caution-handler, so let somebody else
+      ;; handle this for us.
+      #f))
 
   (define built-in-identifiers-module
     '(lib "built-in-identifiers.ss" "halyard/loader"))

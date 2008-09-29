@@ -47,6 +47,21 @@
   
   
   ;;=======================================================================
+  ;;  Overridable caution handler
+  ;;=======================================================================
+  ;;  This is used by higher levels that want to report warnings to
+  ;;  mizzen-unit.
+
+  (provide current-caution-handler)
+
+  (define *caution-handler* #f)
+
+  ;;; Return the current CAUTION handler, or #f if none is installed.
+  (define (current-caution-handler)
+    *caution-handler*)
+
+
+  ;;=======================================================================
   ;;  Test cases and supporting classes
   ;;=======================================================================
     
@@ -94,6 +109,16 @@
                     (list 
                      (%test-failure% .new :test-case test-case 
                                      :exception exception)))))
+
+    ;;; Add a caution message to the report.
+    (def (report-caution! test-case message)
+      ;; We can't just call (error message) here, because we may be getting
+      ;; called from some strange spot in C++.  So we instead generate a
+      ;; fake error message and catch it immediately, and pass the resuling
+      ;; exn:fail object to report-failure!.
+      (with-handlers [[exn:fail?
+                       (fn (exn) (.report-failure! test-case exn))]]
+        (error message)))
     
     ;;; Add a successful test case to the report.
     (def (report-success!)
@@ -149,14 +174,15 @@
     ;;; Run a single test case method, handling setup, teardown and reporting.
     (def (run-test-method report)
       (with-handlers [[exn:fail?
-                       (fn (exn) 
-                         (report .report-failure! self exn))]]
-        (dynamic-wind
-            (fn () (.setup-test))
-            (fn ()
-              (.run-test-method-inner)
-              (report .report-success!))
-            (fn () (.teardown-test)))))
+                       (fn (exn) (report .report-failure! self exn))]]
+        (fluid-let [[*caution-handler*
+                     (fn (msg) (report .report-caution! self msg))]]
+          (dynamic-wind
+              (fn () (.setup-test))
+              (fn ()
+                (.run-test-method-inner)
+                (report .report-success!))
+              (fn () (.teardown-test))))))
 
     ;;; Run the actual test method itself, with setup and teardown handled
     ;;; elsewhere.

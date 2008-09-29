@@ -131,6 +131,8 @@ class TSchemeInterpreter : public TInterpreter
     };
     Thread mCurrentThread;
 
+    bool mScriptIsLoaded;
+
 	void InitializeModuleNames();
 
     Scheme_Bucket *FindBucket(Scheme_Env *inEnv,
@@ -191,6 +193,7 @@ public:
 	virtual bool IsValidCard(const char *inCardName);
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
+	virtual bool MaybeHandleCaution(const std::string &inMessage);
     virtual IdentifierList GetBuiltInIdentifiers();
     virtual TScriptIdentifier::Type IdentifierType(const std::string &type_str);
 };
