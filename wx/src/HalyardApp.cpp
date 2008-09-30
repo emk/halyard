@@ -337,17 +337,23 @@ static void SafeAlert(TLogger::LogLevel level, const char *message) {
 // "SafeAlert" probably isn't as safe as we'd really like.
 static void SafeAlert(TLogger::LogLevel inLevel, const char *inMessage) {\
     long style = wxOK;
+    wxString caption(wxT("Halyard"));
     switch (inLevel) {
         case TLogger::LEVEL_LOG:
+            style |= wxICON_INFORMATION;
+            break;
+
         case TLogger::LEVEL_CAUTION:
-            style |= wxICON_ERROR;
+            style |= wxICON_INFORMATION;
+            caption += wxT(" Warning");
             break;
 
         case TLogger::LEVEL_ERROR:
-            style |= wxICON_INFORMATION;
+            style |= wxICON_ERROR;
+            caption += wxT(" Error");
             break;
     };
-    wxMessageDialog dlg(NULL, ToWxString(inMessage), wxT("Halyard"), style);
+    wxMessageDialog dlg(NULL, ToWxString(inMessage), caption, style);
     dlg.ShowModal();
 }
 
