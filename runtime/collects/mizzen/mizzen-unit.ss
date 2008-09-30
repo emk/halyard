@@ -71,7 +71,7 @@
            %test-case%
            test setup-test teardown-test
            with-captured-variable
-           assert-equals assert-macro-expansion assert-raises 
+           assert-equals assert-macro-expansion assert-warns assert-raises 
            assert-raises-message)
   
   ;;; Data about a single failed test case.
@@ -238,6 +238,19 @@
         'expansion
         (syntax-object->datum (expand-once #'source)))]))
 
+  (define (assert-warns-helper code-sexpr thunk)
+    (let [[warning-issued? #f]]
+      (fluid-let [[*warning-handler* (fn (msg) (set! warning-issued? #t))]]
+        (thunk)
+        (unless warning-issued?
+          (error (cat "Expected " code-sexpr " to issue warning"))))))
+
+  ;;; Assert that CODE issues a warning.
+  (define-syntax assert-warns
+    (syntax-rules ()
+      [(_ code)
+       (assert-warns-helper 'code (fn () code))]))
+
   ;;; Assert that CODE raises an exception matching PREDICATE.
   (define-syntax assert-raises
     (syntax-rules ()
@@ -281,4 +294,5 @@
           ;; succeed:
           [else
            #t]))]))
+  
   )

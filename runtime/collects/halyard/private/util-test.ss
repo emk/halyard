@@ -20,10 +20,15 @@
 ;;
 ;; @END_LICENSE
 
-;; This module requires all our other unit test modules.  If you include
-;; this module, you will get a top-level "tests" sequence containing
-;; various unit-test cards.
-(module tests "halyard.ss"
-  (require "halyard-unit.ss" "updater-test.ss" "paths-test.ss"
-           "private/util-test.ss" "deprecated-test.ss")
+(module util-test (lib "halyard.ss" "halyard")
+  (require (lib "halyard-unit.ss" "halyard"))
+
+  (define-class %warning-test% (%test-case%)
+    (test "warning should issue a warning"
+      (assert-warns (warning "Foo"))))
+
+  (card /tests/util
+      (%test-suite%
+       :tests (list %warning-test%)))
+
   )
