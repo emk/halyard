@@ -239,18 +239,18 @@
            (instance-exec self (method () 'bar))))
        (teardown-test 'bar))))
   
-  (define-class %caution-capture-inner% (%test-case%)
-    (test "CAUTION"
-      ((current-caution-handler) "Oops.")))
+  (define-class %warning-capture-inner% (%test-case%)
+    (test "WARNING"
+      ((current-warning-handler) "Oops.")))
 
-  (define-class %caution-capture-test% (%test-case%)
-    (test "Caution should cause test failure."
+  (define-class %warning-capture-test% (%test-case%)
+    (test "Warning should cause test failure."
       (let [[report (%test-report% .new)]]
         (define test
-          (make-and-run-first-test %caution-capture-inner% report))
+          (make-and-run-first-test %warning-capture-inner% report))
         (assert-equals #f (report .success?))
         (let [[failure (first (report .failures))]]
-          (assert-equals "CAUTION" (failure .title))
+          (assert-equals "WARNING" (failure .title))
           (assert-equals "Oops." (failure .message))))))
 
   (define $all-mizzen-unit-tests 
@@ -262,5 +262,5 @@
           %test-methods-test%
           %test-report-test%
           %inheritence-test%
-          %caution-capture-test%))
+          %warning-capture-test%))
   )

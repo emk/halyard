@@ -110,4 +110,8 @@
   ;; group in our program--it's entirely for cosmetic reasons.
   (namespace-require '(lib "tests.ss" "halyard"))
   (namespace-require '(lib "test-cases.ss" "halyard-test"))
+
+  ;; We require our deprecated APIs just to make sure they compile.  We'll
+  ;; add tests for these APIs soon.
+  (require (lib "deprecated.ss" "halyard"))
   )

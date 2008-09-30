@@ -1350,7 +1350,7 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
 	ASSERT(ioRemaining != NULL);
 	ASSERT(outExtracted != NULL);
 	
-	Halyard::gDebugLog.Caution("Breaking line in middle of word");
+	Halyard::gDebugLog.Warning("Breaking line in middle of word");
 	
 	// Back up one character at a time until we fit.
 	// This code runs in O(N^2) time (with small values of N).

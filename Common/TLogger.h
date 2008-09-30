@@ -47,7 +47,7 @@ public:
     /// The severity of an alert dialog.
     enum LogLevel {
         LEVEL_LOG,
-        LEVEL_CAUTION,
+        LEVEL_WARNING,
         LEVEL_ERROR
     };
 
@@ -114,11 +114,11 @@ public:
 	void	Error(const char *Format, ...);
 	
 	//////////
-	/// Log a caution message.  Prepends CAUTION_HEADER.
+	/// Log a warning message.  Prepends WARNING_HEADER.
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	Caution(const char *Format, ...);
+	void	Warning(const char *Format, ...);
 	
 	//////////
 	/// Log a fatal error message.  Prepends FATAL_HEADER and calls Shutdown().

@@ -314,7 +314,7 @@ static void SafeAlert(TLogger::LogLevel level, const char *message) {
             caption = "Note";
 			break;
 
-		case TLogger::LEVEL_CAUTION:
+		case TLogger::LEVEL_WARNING:
 			alertType |= MB_ICONINFORMATION;
             caption = "Warning";
 			break;
@@ -343,7 +343,7 @@ static void SafeAlert(TLogger::LogLevel inLevel, const char *inMessage) {\
             style |= wxICON_INFORMATION;
             break;
 
-        case TLogger::LEVEL_CAUTION:
+        case TLogger::LEVEL_WARNING:
             style |= wxICON_INFORMATION;
             caption += wxT(" Warning");
             break;

@@ -381,7 +381,7 @@ void StageFrame::FindBestFullScreenVideoMode()
     // is wxNOT_FOUND.
     int current = wxDisplay::GetFromWindow(this);
     if (current == wxNOT_FOUND) {
-        gLog.Caution("Can't find display for stage window, assuming primary");
+        gLog.Warning("Can't find display for stage window, assuming primary");
         current = 0;
     }
 

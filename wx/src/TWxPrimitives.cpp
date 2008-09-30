@@ -394,7 +394,7 @@ DEFINE_PRIMITIVE(DeleteElements) {
 			bool found =
 				wxGetApp().GetStage()->DeleteElementByName(ToWxString(name));
 			if (!found)
-				gDebugLog.Caution("Deleting non-existant element '%s'.",
+				gDebugLog.Warning("Deleting non-existant element '%s'.",
 								  name.c_str());
 		}
 	}

@@ -47,18 +47,18 @@
   
   
   ;;=======================================================================
-  ;;  Overridable caution handler
+  ;;  Overridable warning handler
   ;;=======================================================================
   ;;  This is used by higher levels that want to report warnings to
   ;;  mizzen-unit.
 
-  (provide current-caution-handler)
+  (provide current-warning-handler)
 
-  (define *caution-handler* #f)
+  (define *warning-handler* #f)
 
-  ;;; Return the current CAUTION handler, or #f if none is installed.
-  (define (current-caution-handler)
-    *caution-handler*)
+  ;;; Return the current WARNING handler, or #f if none is installed.
+  (define (current-warning-handler)
+    *warning-handler*)
 
 
   ;;=======================================================================
@@ -110,8 +110,8 @@
                      (%test-failure% .new :test-case test-case 
                                      :exception exception)))))
 
-    ;;; Add a caution message to the report.
-    (def (report-caution! test-case message)
+    ;;; Add a warning message to the report.
+    (def (report-warning! test-case message)
       ;; We can't just call (error message) here, because we may be getting
       ;; called from some strange spot in C++.  So we instead generate a
       ;; fake error message and catch it immediately, and pass the resuling
@@ -175,8 +175,8 @@
     (def (run-test-method report)
       (with-handlers [[exn:fail?
                        (fn (exn) (report .report-failure! self exn))]]
-        (fluid-let [[*caution-handler*
-                     (fn (msg) (report .report-caution! self msg))]]
+        (fluid-let [[*warning-handler*
+                     (fn (msg) (report .report-warning! self msg))]]
           (dynamic-wind
               (fn () (.setup-test))
               (fn ()

@@ -188,7 +188,7 @@
           ;; We should probably clean it up, too.
           *%kernel-jump-card*)
       ;; TODO - Eventually, we may want to make this an error.  See F#10544.
-      (caution (cat "Jump to " card " overriding jump to "
+      (warning (cat "Jump to " card " overriding jump to "
                     *%kernel-jump-card*
                     (if (eq? *%kernel-state* 'JUMPING) "" " in callback")))]
      [(eq? *%kernel-state* 'INTERPRETER-KILLED)
@@ -438,14 +438,14 @@
       ;; Return the result.
       (cons ok? result)))
 
-  (define (%kernel-maybe-handle-caution msg)
-    (if (current-caution-handler)
-      ;; The current-caution-handler is not supposed to raise any errors,
+  (define (%kernel-maybe-handle-warning msg)
+    (if (current-warning-handler)
+      ;; The current-warning-handler is not supposed to raise any errors,
       ;; because we're already in the error-handling machinery.
       (with-errors-blocked [non-fatal-error]
-        ((current-caution-handler) msg)
+        ((current-warning-handler) msg)
         #t)
-      ;; We don't have a current-caution-handler, so let somebody else
+      ;; We don't have a current-warning-handler, so let somebody else
       ;; handle this for us.
       #f))
 
@@ -836,7 +836,7 @@
        (lambda ()
          (*extract-definitions-fn* path))
        (lambda (msg)
-         (debug-caution (cat "ScriptEditorDB: " msg))))))
+         (debug-log (cat "ScriptEditorDB: " msg))))))
   
 
   ;;=======================================================================

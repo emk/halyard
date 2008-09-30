@@ -113,9 +113,9 @@ void AppLog::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
 				break;
 
 		    case wxLOG_Warning:
-				gDebugLog.Caution("WX %s: %s [%s]", label, message.c_str(),
+				gDebugLog.Warning("WX %s: %s [%s]", label, message.c_str(),
                                   timestamp.c_str());
-				gLog.Caution("WX %s: %s [%s]", label, message.c_str(),
+				gLog.Warning("WX %s: %s [%s]", label, message.c_str(),
                              timestamp.c_str());
 				break;
 				

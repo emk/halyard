@@ -1055,13 +1055,13 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
     std::string name(inElementName.mb_str());
 	if (i == mElements.end())
 	{
-		gDebugLog.Caution("wait: Element %s does not exist", name.c_str());
+		gDebugLog.Warning("wait: Element %s does not exist", name.c_str());
 		return false;
 	}
 	MediaElementPtr media = MediaElementPtr(*i, dynamic_cast_tag());
 	if (!media)
 	{
-		gDebugLog.Caution("wait: Element %s is not a media element",
+		gDebugLog.Warning("wait: Element %s is not a media element",
                           name.c_str());
 		return false;		
 	}

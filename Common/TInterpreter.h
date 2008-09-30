@@ -208,10 +208,10 @@ public:
 					  std::string &outResultText) = 0;
 
     //////////
-    /// Ask the TInterpreter if it wants to handle this caution message in
+    /// Ask the TInterpreter if it wants to handle this warning message in
     /// a special fashion, e.g., by passing it to a unit testing framework.
     ///
-	virtual bool MaybeHandleCaution(const std::string &inMessage) = 0;
+	virtual bool MaybeHandleWarning(const std::string &inMessage) = 0;
 
     //////////
     /// Fetch a list of built-in identifiers from the interpreter.

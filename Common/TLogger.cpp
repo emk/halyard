@@ -41,7 +41,7 @@ std::ostream *TLogger::s_ErrorOutput = NULL;
 
 #define FATAL_HEADER	"Fatal Error: "
 #define ERROR_HEADER	"Error: "
-#define CAUTION_HEADER	"Caution: "
+#define WARNING_HEADER	"Warning: "
 
 #define MAX_RECENT_ENTRIES (100)
 
@@ -156,18 +156,18 @@ void TLogger::Error(const char *Format, ...)
         ExitWithError(SCRIPT_CRASH);
 }
 
-void TLogger::Caution(const char *Format, ...)
+void TLogger::Warning(const char *Format, ...)
 {
 	FORMAT_MSG(Format);
     // Give TInterpreter a crack at this first (this allows the unit tests,
-    // for example, to override the behavior of CAUTION).  If TInterpreter
+    // for example, to override the behavior of WARNING).  If TInterpreter
     // doesn't want to handle it, treat it normally.
     if (!TInterpreter::HaveInstance() ||
-        !TInterpreter::GetInstance()->MaybeHandleCaution(m_LogBuffer))
+        !TInterpreter::GetInstance()->MaybeHandleWarning(m_LogBuffer))
     {
         if (!TInterpreterManager::IsInRuntimeMode())
-            AlertBuffer(LEVEL_CAUTION);
-        LogBuffer(CAUTION_HEADER);
+            AlertBuffer(LEVEL_WARNING);
+        LogBuffer(WARNING_HEADER);
     }
 }
 
@@ -244,7 +244,7 @@ static void ConsoleAlert(TLogger::LogLevel inLevel, const char *inMessage)
 	*out << std::endl;
     switch (inLevel) {
 		case TLogger::LEVEL_LOG:     *out << "LOG: ";     break;
-        case TLogger::LEVEL_CAUTION: *out << "CAUTION: "; break;
+        case TLogger::LEVEL_WARNING: *out << "WARNING: "; break;
         case TLogger::LEVEL_ERROR:   *out << "ERROR: ";   break;
     }
 	*out << inMessage << std::endl << std::flush;

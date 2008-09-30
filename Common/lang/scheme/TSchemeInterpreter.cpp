@@ -823,7 +823,7 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 	return SCHEME_FALSEP(car) ? false : true;
 }
 
-bool TSchemeInterpreter::MaybeHandleCaution(const std::string &inMessage) {
+bool TSchemeInterpreter::MaybeHandleWarning(const std::string &inMessage) {
     // We don't have a reasonable Scheme environment yet, so let somebody
     // else care about it.
     if (!mScriptIsLoaded)
@@ -838,7 +838,7 @@ bool TSchemeInterpreter::MaybeHandleCaution(const std::string &inMessage) {
     reg.done();
 
 	args[0] = scheme_make_utf8_string(inMessage.c_str());
-	b = CallScheme("%kernel-maybe-handle-caution", args.size(), args.get());
+	b = CallScheme("%kernel-maybe-handle-warning", args.size(), args.get());
 	return SCHEME_FALSEP(b) ? false : true;    
 }
 

@@ -37,7 +37,7 @@
   ;; 'CALL-PRIM' INSTEAD.
   (require #%engine-primitives)
 
-  (provide app-log debug-log caution debug-caution non-fatal-error
+  (provide app-log debug-log non-fatal-error warning
            fatal-error set-status-text! command-line-error)
 
   ;;; Write a message to Halyard.log.  This log is always present on a user's
@@ -52,14 +52,9 @@
   (define (debug-log msg)
     (%call-prim 'Log 'Debug msg 'log))
   
-  ;;; Print a "Caution" message to Halyard.log.  This should be used for very
-  ;;; serious warnings only--see the note about Halyard.log on APP-LOG.
-  (define (caution msg)
-    (%call-prim 'Log 'halyard msg 'caution))
-  
-  ;;; Print a "Caution" message to Debug.log.  High-volume output is OK.
-  (define (debug-caution msg)
-    (%call-prim 'Log 'Debug msg 'caution))
+  ;;; Warn the multimedia author about a possible problem.
+  (define (warning msg)
+    (%call-prim 'Log 'halyard msg 'warning))
   
   ;;; Show a non-fatal error dialog in developer mode, or quit the engine
   ;;; and send a crash report in runtime mode.

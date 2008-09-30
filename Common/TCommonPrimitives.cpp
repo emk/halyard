@@ -159,7 +159,7 @@ DEFINE_PRIMITIVE(Idle)
 //-------------------------------------------------------------------------
 // Logs the second argument to the file specified by the first.
 // Available logs: debug, halyard.  Available log levels:
-// fatalerror, error, caution, log.
+// fatalerror, error, warning, log.
 
 DEFINE_PRIMITIVE(Log)
 {
@@ -181,13 +181,13 @@ DEFINE_PRIMITIVE(Log)
 	else if (log_name == "debug")
 		log = &gDebugLog;
 	else
-		gLog.Caution("No such log file: %s", log_name.c_str());
+		gLog.Warning("No such log file: %s", log_name.c_str());
 
 	// Report the problem using the appropriate log level.
 	if (level == "log")
 		log->Log("%s", msg.c_str());
-	else if (level == "caution")
-		log->Caution("%s", msg.c_str());
+	else if (level == "warning")
+		log->Warning("%s", msg.c_str());
 	else if (level == "error")
 		log->Error("%s", msg.c_str());
 	else if (level == "fatalerror")

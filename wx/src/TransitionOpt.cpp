@@ -169,7 +169,7 @@ void Transition::RunTransition(int inMilliseconds,
 			// Just to be safe!
 			if (watch.Time() > panic_ms)
 			{
-				gLog.Caution("Transition: way too long, aborting");
+				gLog.Warning("Transition: way too long, aborting");
 				break;
 			}
 		}
@@ -540,7 +540,7 @@ void TransitionManager::RegisterTransition(const std::string &inName,
         mTransitions.insert(TransitionMap::value_type(inName, inTransition));
     else
     {
-        gLog.Caution("Duplicate transition: %s", inName.c_str());
+        gLog.Warning("Duplicate transition: %s", inName.c_str());
         delete inTransition;
     }    
 }
@@ -551,7 +551,7 @@ void TransitionManager::RunTransition(const std::string &inName,
 {
     TransitionMap::iterator found = mTransitions.find(inName);
     if (found == mTransitions.end())
-        gLog.Caution("Unknown transition: %s", inName.c_str());
+        gLog.Warning("Unknown transition: %s", inName.c_str());
     else
         found->second->RunTransition(inMilliseconds, inResources);
 }

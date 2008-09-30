@@ -927,7 +927,7 @@ DEFINE_PRIMITIVE(QTComponentVersion)
 	inArgs >> type_str >> subtype_str;
 	if (type_str.length() != 4 || subtype_str.length() != 4)
 	{
-		gLog.Caution("QTComponent type and subtype must be four characters.");
+		gLog.Warning("QTComponent type and subtype must be four characters.");
 		goto done;
 	}
 	

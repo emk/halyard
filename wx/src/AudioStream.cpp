@@ -292,7 +292,7 @@ bool AudioStream::IsPortAudioStreamRunning() const {
     wxCriticalSectionLocker lock3(sPortAudioCriticalSection);
     PaError err = Pa_StreamActive(mStream);
     if (err < 0) {
-        gLog.Caution("Error checking status of audio stream");
+        gLog.Warning("Error checking status of audio stream");
         return false;
     } else {
         return err ? true : false;
