@@ -307,17 +307,24 @@ void HalyardApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
 // or else it will cause an infinite loop.
 static void SafeAlert(TLogger::LogLevel level, const char *message) {
 	uint32 alertType = MB_TASKMODAL | MB_OK;
+    const char *caption = NULL;
 	switch (level) {
 		case TLogger::LEVEL_LOG:
+			alertType |= MB_ICONINFORMATION;
+            caption = "Note";
+			break;
+
 		case TLogger::LEVEL_CAUTION:
 			alertType |= MB_ICONINFORMATION;
+            caption = "Warning";
 			break;
 
 		case TLogger::LEVEL_ERROR:
 			alertType |= MB_ICONSTOP;
+            caption = "Error";
 			break;
 	}
-	::MessageBox(NULL, message, NULL, alertType);
+	::MessageBox(NULL, message, caption, alertType);
 }
 
 #else // !(defined __WXMSW__ && !wxCHECK_VERSION(2,6,2))
