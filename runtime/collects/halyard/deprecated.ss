@@ -29,9 +29,10 @@
   ;; 'CALL-PRIM' INSTEAD.
   (require #%engine-primitives)
   
-  (provide caution debug-caution)
+  (provide non-fatal-error caution debug-caution)
 
   ;; Renamed functions.
+  (define non-fatal-error report-error)
   (define caution warning)
 
   ;;; Print a warning message to Debug.log.  High-volume output is OK.

@@ -163,8 +163,8 @@
     (def (browser-navigate event)
       (if (equal? (event-url event) "http://www.nowhere.org/")
         (begin
-          (non-fatal-error (cat "Access to " (event-url event)
-                                " is restricted.  Sorry!"))
+          (report-error (cat "Access to " (event-url event)
+                             " is restricted.  Sorry!"))
           (veto-event! event))
         (super)))
     

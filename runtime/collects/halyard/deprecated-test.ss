@@ -24,6 +24,11 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "deprecated.ss" "halyard"))
 
+  ;; We can't test these directly, but we can make sure they exist and
+  ;; are exported properly.
+  (define identifiers
+    (list non-fatal-error))
+
   (define-class %caution-test% (%test-case%)
     (test "debug-caution should issue a warning"
       (assert-warns (debug-caution "Foo")))

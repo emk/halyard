@@ -1174,7 +1174,7 @@
 
       ;; Actually run the card.
       (debug-log (cat "Begin card: <" (new-card-class .full-name) ">"))
-      (with-errors-blocked (non-fatal-error)
+      (with-errors-blocked (report-error)
         (enter-node-recursively new-card-class trunk-node-inst))))
 
   (define *running-on-exit-handler-for-node* #f)
@@ -1190,7 +1190,7 @@
         (lambda ()
           (fluid-let [[*running-on-exit-handler-for-node* node]]
             (%assert *running-on-exit-handler-for-node*)
-            (with-errors-blocked (non-fatal-error)
+            (with-errors-blocked (report-error)
               (node .call-method-with-mandatory-super 'exit))
             (set! exited-safely? #t)))
         (lambda ()

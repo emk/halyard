@@ -276,7 +276,7 @@
           [[cursor-shown cursor-hidden]
            (make <cursor-event>)]
           [else
-           (non-fatal-error (cat "Unsupported event type: " name))]))
+           (report-error (cat "Unsupported event type: " name))]))
       (send self name event)
       (set! (*engine* .event-vetoed?) (was-vetoed? event))
       (set! (*engine* .event-handled?) (event-handled? event)))

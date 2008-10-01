@@ -151,7 +151,7 @@
   ;; TODO - replace most calls to this function with calls to ERROR.
   (define (error-with-extra-dialog msg)
     ;; TODO - More elaborate error support.
-    (non-fatal-error msg)
+    (report-error msg)
     (error msg))
   
   ;;; Try to exit the currently-running script.  If the script exits, this
@@ -331,7 +331,7 @@
         (let ((jump-card #f))
           (let loop []
             (label exit-to-top
-              (with-errors-blocked (non-fatal-error)
+              (with-errors-blocked (report-error)
                 (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
                   (cond
                    [jump-card
@@ -372,7 +372,7 @@
   ;;  TInterpreter.h.
 
   (define (notify-exit-script)
-    (with-errors-blocked (non-fatal-error)
+    (with-errors-blocked (report-error)
       (define current-node-or-false (*engine* .current-group-member))
       (call-hook-functions *dangerous-exit-script-hook*
                            current-node-or-false)))
@@ -399,12 +399,12 @@
     (not *%kernel-running-callback?*))
 
   (define (%kernel-pause)
-    (with-errors-blocked (non-fatal-error)
+    (with-errors-blocked (report-error)
       (%kernel-die-if-callback '%kernel-pause)
       (%kernel-set-state 'PAUSED)))
 
   (define (%kernel-wake-up)
-    (with-errors-blocked (non-fatal-error)
+    (with-errors-blocked (report-error)
       (%kernel-die-if-callback '%kernel-wake-up)
       (when (%kernel-paused?)
         (%kernel-clear-state))))
@@ -416,11 +416,11 @@
     (%kernel-set-state 'CARD-KILLED))
 
   (define (%kernel-jump-to-card-by-name card-name)
-    (with-errors-blocked (non-fatal-error)
+    (with-errors-blocked (report-error)
       (set-jump-state! (find-card card-name))))
 
   (define (%kernel-load-group group-name)
-    (with-code-loading-allowed [non-fatal-error #f]
+    (with-code-loading-allowed [report-error #f]
       ((find-static-node group-name) .ensure-loaded! 'c++)))
 
   (define (%kernel-current-card-name)
@@ -429,7 +429,7 @@
         ""))
 
   (define (%kernel-valid-card? card-name)
-    (with-code-loading-allowed [non-fatal-error #f]
+    (with-code-loading-allowed [report-error #f]
       (card-exists? card-name)))
 
   (define (%kernel-eval expression)
@@ -459,7 +459,7 @@
     (if (current-warning-handler)
       ;; The current-warning-handler is not supposed to raise any errors,
       ;; because we're already in the error-handling machinery.
-      (with-errors-blocked [non-fatal-error]
+      (with-errors-blocked [report-error]
         ((current-warning-handler) msg)
         #t)
       ;; We don't have a current-warning-handler, so let somebody else
@@ -501,7 +501,7 @@
   
   (define (%kernel-run-callback function args)
     (%kernel-run-as-callback (lambda () (apply function args))
-                             non-fatal-error))
+                             report-error))
 
   ;; We need to export this from the kernel so CallScheme can find it.
   (define %kernel-reverse! reverse!)
@@ -766,7 +766,7 @@
     ;; only work if we're inside %main-kernel-loop, and not during the
     ;; initial script load.
     (assert (function? *%kernel-exit-interpreter-func*))
-    (non-fatal-error msg)
+    (report-error msg)
     (call-prim 'LoadScriptFailed))
 
 

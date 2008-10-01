@@ -458,7 +458,7 @@
       (let [[msg (cat "Called " method-name " on uninitialized object")]]
         ;; If we're in an inifinitely-recursive error loop, NON-FATAL-ERROR
         ;; will at least make sure we see an error dialog.
-        ;; (non-fatal-error msg)
+        ;; (report-error msg)
         (error msg))))
  
   ;;; Check that method-name is not defined by klass.

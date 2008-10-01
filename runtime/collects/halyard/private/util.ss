@@ -37,7 +37,7 @@
   ;; 'CALL-PRIM' INSTEAD.
   (require #%engine-primitives)
 
-  (provide app-log debug-log non-fatal-error warning
+  (provide app-log debug-log report-error warning
            fatal-error set-status-text! command-line-error)
 
   ;;; Write a message to Halyard.log.  This log is always present on a user's
@@ -58,7 +58,7 @@
   
   ;;; Show a non-fatal error dialog in developer mode, or quit the engine
   ;;; and send a crash report in runtime mode.
-  (define (non-fatal-error msg)
+  (define (report-error msg)
     (%call-prim 'Log 'halyard msg 'error))
   
   ;;; Show a fatal error and quit the engine, regardless of mode.  Sends
@@ -75,11 +75,11 @@
   ;;; console (or the closest equivalent on a given platform).  This is
   ;;; mostly for use by the test driver.
   ;;;
-  ;;; Note that non-fatal-error will also show an error on the command-line
+  ;;; Note that report-error will also show an error on the command-line
   ;;; when running in COMMAND_LINE mode.  But there are two important
   ;;; differences: (1) this function doesn't ever show a dialog, and (2)
   ;;; this function simply prints the error and returns immediately, even
-  ;;; in modes where non-fatal-error actually quits the program.
+  ;;; in modes where report-error actually quits the program.
   (define (command-line-error msg)
     (%call-prim 'CommandLineError msg))
 
