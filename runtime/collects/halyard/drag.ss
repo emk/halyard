@@ -24,6 +24,7 @@
   (require (lib "animate.ss" "halyard"))
 
   (provide %simple-draggable-object% %draggable-object% %drag-target% 
+           call-with-dragging-disabled with-dragging-disabled
            point-in-element?)
   
   
@@ -139,14 +140,26 @@
          [#t
           (recurse (cdr targets))])))
 
-    ;; Helpful public functions.
+    ;;; Go to POINT, taking MS milliseconds to do so.  This runs
+    ;;; immediately, and will call IDLE.
+    (def (go-to-point-now point &key (ms 100))
+      (with-dragging-disabled self
+        (animate ms (ease-in/out (slide self point)))))
+    
+    ;;; Like GO-TO-POINT-NOW, but the actual animation is delayed until
+    ;;; the next time deferred callbacks are run.
     (def (go-to-point point &key (ms 100))
-      (run-deferred
-       (callback
-         (with-dragging-disabled self
-           (animate ms (ease-in/out (slide self point)))))))
-    (def (go-home)
-      (.go-to-point (.home-point)))
+      (run-deferred (callback (.go-to-point-now point :ms ms))))
+
+    ;;; Go this object's HOME-POINT, taking MS milliseconds to do so.  This
+    ;;; runs immediately, and will call IDLE.
+    (def (go-home-now &key (ms 100))
+      (.go-to-point-now (.home-point) :ms ms))
+
+    ;;; Like GO-HOME-NOW, but the actual animation is delayed until
+    ;;; the next time deferred callbacks are run.
+    (def (go-home &key (ms 100))
+      (run-deferred (callback (.go-home-now :ms ms))))
 
     ;; Functions to be overridden by subclasses.
     (def (drag-failed event)
