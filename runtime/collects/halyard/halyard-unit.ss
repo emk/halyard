@@ -21,6 +21,8 @@
 ;; @END_LICENSE
 
 (module halyard-unit (lib "halyard.ss" "halyard")
+  (require (lib "kernel.ss" "halyard/private"))
+
   (require (lib "mizzen-unit.ss" "mizzen"))
   (provide (all-from (lib "mizzen-unit.ss" "mizzen")))
 
@@ -124,6 +126,33 @@
               
             (done-with-tests #f))))
     )
+
+
+  ;;========================================================================
+  ;;  Test assertions
+  ;;========================================================================
+
+  (provide assert-jumps)
+
+  (define (assert-jumps-helper card-name thunk)
+    (let [[jump-card #f]]
+      (call-with-jump-handler
+       (fn (c) (set! jump-card c))
+       (fn () (thunk)))
+      (cond
+       [(not jump-card)
+        (error (cat "Expected jump to " card-name ", but no jump occurred"))]
+       [(not (eq? card-name (jump-card .full-name)))
+        (error (cat "Expected jump to " card-name ", but jumped to "
+                    (jump-card .full-name)))]
+       [else
+        (void)])))
+
+  (define-syntax assert-jumps
+    (syntax-rules ()
+      [(_ card-name code)
+       (assert-jumps-helper 'card-name (fn () code))]))
+
 
   ;;========================================================================
   ;;  Test fixtures

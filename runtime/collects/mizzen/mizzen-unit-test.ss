@@ -35,16 +35,6 @@
            %inheritence-test%
            $all-mizzen-unit-tests)
   
-  (define (make-and-run-nth-test test-case-class n report)
-    (define test-method (nth (test-case-class .test-methods) n))
-    (define test (test-case-class .new :test-method test-method))
-    (test .run-test-method report)
-    test)
-  
-  (define (make-and-run-first-test test-case-class report)
-    (assert-equals 1 (length (test-case-class .test-methods)))
-    (make-and-run-nth-test test-case-class 0 report))
-  
   ;; Asserts that a report is successful, and errors with the first
   ;; failure message if not.
   (define (assert-report-successful report)
@@ -239,14 +229,6 @@
            (instance-exec self (method () 'bar))))
        (teardown-test 'bar))))
 
-  (define (assert-fails title message test-case)
-    (let [[report (%test-report% .new)]]
-      (define test (make-and-run-first-test test-case report))
-      (assert-equals #f (report .success?))
-      (let [[failure (first (report .failures))]]
-        (assert-equals title (failure .title))
-        (assert-equals message (failure .message)))))
-  
   (define-class %warning-capture-inner% (%test-case%)
     (test "GIVES WARNING"
       ((current-warning-handler) "Oops.")))
@@ -257,10 +239,10 @@
 
   (define-class %warning-test% (%test-case%)
     (test "Warning should cause test failure."
-      (assert-fails "GIVES WARNING" "Oops." %warning-capture-inner%))
+      (assert-test-fails %warning-capture-inner% "GIVES WARNING" "Oops."))
     (test "ASSERT-WARNS should fail if no warning is given"
-      (assert-fails "NO WARNING" "Expected (void) to issue warning"
-                    %warning-assertion-inner%))
+      (assert-test-fails %warning-assertion-inner%
+                         "NO WARNING" "Expected (void) to issue warning"))
     (test "ASSERT-WARNS should succeed if warning is given"
       (assert-warns ((current-warning-handler) "Oops."))))
 

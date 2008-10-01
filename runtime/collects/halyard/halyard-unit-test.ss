@@ -24,7 +24,26 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "mizzen-unit-test.ss" "mizzen"))
   
-  (card /halyard-unit-test
+  (define-class %assert-jumps-nowhere-inner% (%test-case%)
+    (test "JUMP NOWHERE"
+      (assert-jumps /start (void))))
+
+  (define-class %assert-jumps-incorrectly-inner% (%test-case%)
+    (test "JUMP INCORRECTLY"
+      (assert-jumps /start (jump /tests/run-all))))
+
+  (define-class %assert-jumps-test% (%test-case%)
+    (test "ASSERT-JUMPS should fail if no jump occurs"
+      (assert-test-fails %assert-jumps-nowhere-inner% "JUMP NOWHERE"
+                         "Expected jump to /start, but no jump occurred"))
+    (test "ASSERT-JUMPS should fail if jump goes to wrong card"
+      (assert-test-fails %assert-jumps-incorrectly-inner% "JUMP INCORRECTLY"
+                         (cat "Expected jump to /start, but jumped to "
+                              "/tests/run-all")))
+    (test "ASSERT-JUMPS should succeed if jump goes to correct card"
+      (assert-jumps /start (jump /start))))
+
+  (card /tests/halyard-unit-test
       (%test-suite%
-       :tests $all-mizzen-unit-tests))
+       :tests (list %assert-jumps-test%)))
   )

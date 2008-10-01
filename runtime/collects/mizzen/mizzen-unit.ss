@@ -294,5 +294,36 @@
           ;; succeed:
           [else
            #t]))]))
+
+
+  ;;=======================================================================
+  ;;  Helpers for testing the test harness
+  ;;=======================================================================
+  ;;  These functions have been moved from mizzen-unit-test.ss to here
+  ;;  to help other code define and test ASSERT-FOO-style macros.
+
+  (provide make-and-run-nth-test make-and-run-first-test assert-test-fails)
+
+  (define (make-and-run-nth-test test-case-class n report)
+    (define test-method (nth (test-case-class .test-methods) n))
+    (define test (test-case-class .new :test-method test-method))
+    (test .run-test-method report)
+    test)
   
+  (define (make-and-run-first-test test-case-class report)
+    (assert-equals 1 (length (test-case-class .test-methods)))
+    (make-and-run-nth-test test-case-class 0 report))
+  
+  ;;; Assert that TEST-CASE should fail, adding TITLE and MESSAGE to the
+  ;;; test report.  TEST-CASE should contain only a single TEST form.  This
+  ;;; is used for testing new ASSERT-FOO forms.
+  (define (assert-test-fails test-case title message)
+    (let [[report (%test-report% .new)]]
+      (define test (make-and-run-first-test test-case report))
+      (assert-equals #f (report .success?))
+      (assert-equals 1 (length (report .failures)))
+      (let [[failure (first (report .failures))]]
+        (assert-equals title (failure .title))
+        (assert-equals message (failure .message)))))
+    
   )

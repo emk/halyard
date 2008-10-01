@@ -83,7 +83,7 @@
   ;;  kernel's inner workings.
   
   (provide call-prim have-prim? runtime-directory value->boolean idle
-           blocking-idle exit-script refresh)
+           blocking-idle exit-script call-with-jump-handler refresh)
 
   ;; C++ can't handle very large or small integers.  Here are the
   ;; typical limits on any modern platform.
@@ -203,6 +203,23 @@
   (define (jump-to-card card)
     (set-jump-state! card)
     (%kernel-check-state))
+
+  ;; This is an internal API for use by ASSERT-JUMPS.  It calls THUNK, and
+  ;; if a jump occurs, the jump is intercepted and the destination card is
+  ;; passed to HANDLER.
+  (define (call-with-jump-handler handler thunk)
+    (assert (eq? *%kernel-state* 'NORMAL))
+    (assert (not *%kernel-jump-card*))
+    (label exit-to-top
+      (fluid-let [[*%kernel-exit-to-top-func* exit-to-top]]
+        (thunk)))
+    (when (eq? *%kernel-state* 'JUMPING)
+      (let [[jump-card *%kernel-jump-card*]]
+        (set! *%kernel-state* 'NORMAL)
+        (set! *%kernel-jump-card* #f)
+        (handler jump-card)))
+    (assert (eq? *%kernel-state* 'NORMAL))
+    (assert (not *%kernel-jump-card*)))
 
   ;;; Show the results of all drawing calls made since the last screen
   ;;; update.  (The screen is only updated after calls to IDLE, REFRESH,
