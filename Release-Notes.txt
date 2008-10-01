@@ -1,6 +1,36 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.18 - 1 Oct 2008
+
+We decided to rename "caution" to "warning", because "warning" is more
+consistent with the terminology used by other interpreters and compilers.
+We also improved the warning dialogs and added the unit-test macros
+ASSERT-WARNS and ASSERT-JUMPS.
+
+Several low-level APIs were exported from drag.ss to make it easier for
+people doing complicated things with the drag-and-drop framework.
+
+Note that we provide backwards-compatibility stubs for all renamed
+functions.  Existing code should require the following file:
+
+  (require (lib "deprecated.ss" "halyard"))
+
+Once this is done, you won't need to worry about APIs deprecated in the
+future.
+
+Eric Kidd (7):
+      Win32: Show "Warning" instead of "Error" in caution dialogs
+      Mac: Show "Warning" and "Error" in appropriate dialogs
+      TLogger: Rename "caution" -> "warning"
+      mizzen: Add ASSERT-WARNS macro
+      halyard-unit: Add ASSERT-JUMPS for unit-testing JUMPs
+      Rename NON-FATAL-ERROR -> REPORT-ERROR
+      buildbot: Force WAIT to return immediately in COMMAND_LINE mode
+
+Eric Kidd & Brian Campbell (1):
+      drag.ss: Export some more low-level drag machinery
+
 0.5.17 - 29 Sep 2008
 
 This release makes the CAUTION infrastructure more pleasant to deal with.
