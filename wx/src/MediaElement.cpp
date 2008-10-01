@@ -59,7 +59,11 @@ void MediaElement::EndPlayback() {
 }
 
 bool MediaElement::HasReachedFrame(MovieFrame inFrame) {
-	if (mEndPlaybackWasCalled)
+	if (mEndPlaybackWasCalled  || TInterpreterManager::IsInCommandLineMode())
+        // If we've been asked to end this movie, assume that we're at the
+        // end.  We also do the same thing if we're in command-line mode,
+        // because this allows the buildbot to skip through all media as
+        // quickly as possible.
 		return true;
 	else if (inFrame == LAST_FRAME)
 		return IsDone();
