@@ -102,7 +102,9 @@
           (when *running-all-tests?*
             (let [[next (card-next)]]
               (if next
-                (jump next)
+                (begin
+                  (idle)
+                  (jump next))
                 (done-with-tests #t)))))
         (begin
             (draw-result $halyard-unit-failed-style "FAILED")
