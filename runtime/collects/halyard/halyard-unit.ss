@@ -201,24 +201,13 @@
 
   (provide command-line-test-driver)
 
-  (define *activate-command-line-test-driver?* #f)
+  (define (exit-when-done success?)
+    (exit-script success?))
 
   ;;; To automatically load a script and run all its test suites, run:
   ;;;
   ;;;   Halyard_d.exe -e "(command-line-test-driver)" .
   (define (command-line-test-driver)
-    (set! *activate-command-line-test-driver?* #t))
-
-  (define (exit-when-done success?)
-    (exit-script success?))
-
-  (with-instance %card%
-    ;; Instead of running the first card that we load, instead jump
-    ;; immediately to our test suites.  Yes, this is a bit of a hack, but
-    ;; it's the easiest way to hook into the startup process.
-    (advise before (run)
-      (when *activate-command-line-test-driver?*
-        (set! *activate-command-line-test-driver?* #f)
-        (run-all-test-suites exit-when-done))))
+    (run-all-test-suites exit-when-done))
   
   )

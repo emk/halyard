@@ -9,6 +9,9 @@ noinst_LIBRARIES = libimlunit.a libhalyard.a
 
 noinst_PROGRAMS = CommonTest
 
+check:
+	(cd test; ../CommonTest)
+
 # Our very old test suite framework.
 libimlunit_a_SOURCES = \
 	ImlUnit.cpp ImlUnit.h

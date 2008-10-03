@@ -300,22 +300,17 @@
   ;;  Main loop
   ;;=======================================================================
 
-  (provide %run-main-kernel-loop)
+  (provide %main-kernel-loop)
 
-  ;; This is called from 'run-script' in halyard/loader/stage1.ss.  It
-  ;; won't return until the main loop is finished.
-  (define (%run-main-kernel-loop)
-    (with-errors-blocked (fatal-error)
-      ;; Ask TInterpreterManager to run any initial commands, call
-      ;; NotifyReloadScriptSucceeded, etc.  We delay this until
-      ;; run-main-kernel-loop, because this is the first time we're
-      ;; guaranteed to be in SANDBOX_THREAD after the initial script load
-      ;; is completed.
-      (%call-prim 'RunInitialCommands)
-      ;; Run the main loop itself, unless the RunInitialCommands primitive
-      ;; has actually shut down the interpreter.
-      (unless (eq? *%kernel-state* 'INTERPRETER-KILLED)
-        (%main-kernel-loop))))
+  (define *initial-commands-have-been-run?* #f)
+
+  ;; We call this from inside our main event loop.  The first time we call,
+  ;; we run any initial commands, such as "(jump /start)", or a code
+  ;; snippet passed in from the command-line.
+  (define (run-initial-commands-the-first-time-through)
+    (unless *initial-commands-have-been-run?*
+      (set! *initial-commands-have-been-run?* #t)
+      (call-prim 'RunInitialCommands)))
 
   (define (%main-kernel-loop)
     ;; The workhorse function.  We get called to manage the main event
@@ -333,6 +328,7 @@
             (label exit-to-top
               (with-errors-blocked (report-error)
                 (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
+                  (run-initial-commands-the-first-time-through)
                   (cond
                    [jump-card
                     (run-card jump-card)]

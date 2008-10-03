@@ -278,31 +278,45 @@ void TInterpreterManager::RunInitialCommands()
     // Let everybody know the script has been successfully loaded.
     NotifyReloadScriptSucceeded();
     
+    // If we're in authoring mode, discard any initial command we may have
+    // been passed on the command-line.
+    if (IsInAuthoringMode())
+        sHaveInitialCommand = false;
+
     // Run our initial command, if we have one.
     if (sHaveInitialCommand) {
         sHaveInitialCommand = false;
-        if (!IsInAuthoringMode()) {
-            std::string result;
-            if (!interp->Eval(sInitialCommand, result))
-                THROW(result.c_str());
-        }
+
+        // Note that Eval may cause a load failure if lazy loading is
+        // enabled.  See below for how we want to deal with that.
+        std::string result;
+        if (!interp->Eval(sInitialCommand, result))
+            THROW(result.c_str());
+    } else {
+        // Ask our interpreter to jump to the appropriate card.
+        //
+        // Note that either IsValidCard or JumpToCardByName may cause a
+        // load failure if lazy loading is enabled.  Once that occurs, we
+        // don't want to do anything, and we especially don't want to call
+        // ResetInitialCardName.
+        //
+        // Note that the mLoadScriptFailed in the second half of this
+        // conditional is needed to prevent resetting the card name after a
+        // failed load.
+        if (!interp->IsValidCard(mInitialCardName.c_str()) &&
+            !mLoadScriptFailed)
+            ResetInitialCardName();
+        if (!mLoadScriptFailed)
+            interp->JumpToCardByName(mInitialCardName.c_str());
     }
-    
-    // Ask our interpreter to jump to the appropriate card.  Note that we
-    // skip this initial jump if sInitialCommand killed the interpreter.
-    //
-    // Note that either IsValidCard or JumpToCardByName may cause a load
-    // failure if lazy loading is enabled.  Once that occurs, we don't want
-    // to do anything, and we especially don't want to call
-    // ResetInitialCardName.
-    if (!interp->IsValidCard(mInitialCardName.c_str()) && !mLoadScriptFailed)
-        ResetInitialCardName();
-    if (!mDone && !mLoadScriptFailed)
-        interp->JumpToCardByName(mInitialCardName.c_str());
-    
+
     // Reset any special variables.
     if (!mLoadScriptFailed)
         ResetInitialCardName();
+
+    // Once we return from this function, the call to %kernel-check-state
+    // inside call-prim will process the state that was set up by any calls to
+    // JumpToCardByName or KillInterpreter during our initial command.
 }
 
 void TInterpreterManager::LoadScriptFailed() {

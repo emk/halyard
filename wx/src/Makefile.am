@@ -28,6 +28,11 @@ $(BUNDLED_RUNTIME):
 	(cd "`dirname $(BUNDLED_RUNTIME)`" && \
 	 ln -sf "$(abs_top_srcdir)/runtime/" "`basename $(BUNDLED_RUNTIME)`")
 
+check: all
+	(cd Halyard.app; \
+	 Contents/MacOS/halyard -c '(command-line-test-driver)' \
+	     $(abs_top_srcdir)/test)
+
 endif
 
 resources.cpp: application.xrc

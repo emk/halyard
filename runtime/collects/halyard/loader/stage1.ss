@@ -185,6 +185,6 @@
   ;;; See the top-of-file comment for a discussion of *sandboxed-evaluator*
   ;;; and how we deal with its threads.
   (define (run-script)
-    (*sandboxed-evaluator* '(%run-main-kernel-loop)))
+    (*sandboxed-evaluator* '(%main-kernel-loop)))
 
   ) ; end module
