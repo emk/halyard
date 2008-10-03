@@ -52,7 +52,7 @@
            runtime-directory value->boolean idle
            engine-var set-engine-var! engine-var-exists? define/p
            exit-script refresh
-           run-deferred executing-deferred-safe-time-callbacks?
+           run-deferred defer executing-deferred-safe-time-callbacks?
 
            ;; More ancient APIs that we may want to do something about.
            find-card card-exists? card-name)

@@ -528,7 +528,7 @@
   ;;
   ;;  Callbacks are slightly special, however--see the code for details.
   
-  (provide run-deferred executing-deferred-safe-time-callbacks?)
+  (provide run-deferred defer executing-deferred-safe-time-callbacks?)
 
   ;; The most important global state variables.
   (define *%kernel-running-callback?* #f)
@@ -598,7 +598,14 @@
           (cons (make-deferred-action parent thunk)
                 *%kernel-deferred-thunk-queue*))
     #f)
-    
+
+  ;;; Defer a body of code to run later using RUN-DEFERRED.
+  (define-syntax defer
+    (syntax-rules ()
+      [(_ body ...)
+       (run-deferred (fn () body ...))]))
+  (define-syntax-indent defer 0)
+
   (define (executing-deferred-safe-time-callbacks?)
     *%kernel-running-deferred-thunks?*)
   
