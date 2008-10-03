@@ -169,7 +169,7 @@ void Transition::RunTransition(int inMilliseconds,
 			// Just to be safe!
 			if (watch.Time() > panic_ms)
 			{
-				gLog.Warning("Transition: way too long, aborting");
+				gDebugLog.Log("Transition: way too long, aborting");
 				break;
 			}
 		}
