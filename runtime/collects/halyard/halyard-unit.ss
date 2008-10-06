@@ -26,7 +26,8 @@
   (require (lib "mizzen-unit.ss" "mizzen"))
   (provide (all-from (lib "mizzen-unit.ss" "mizzen")))
 
-  (provide %test-suite% $halyard-unit-style run-all-test-suites)
+  (provide %test-suite% $halyard-unit-style run-all-test-suites
+           stop-running-test-suites! resume-running-test-suites!)
   
   (define-stylesheet $halyard-unit-style
     :family "Nimbus Sans L"
@@ -56,7 +57,7 @@
   ;; argument, a boolean indication whether the tests succeeded.
   (define *run-when-done-with-tests* #f)
 
-  ;; Called after we 
+  ;; Called after we finish running all our test cases.
   (define (done-with-tests success?)
     (set! *running-all-tests?* #f)
     (when *run-when-done-with-tests*
@@ -73,6 +74,18 @@
         (set! *running-all-tests?* #t)
         (jump (first-test .card-next)))
       (done-with-tests #t)))
+
+  ;;; If we're currently running all the unit test cards, stop doing so at
+  ;;; the earliest possible opportunity.
+  (define (stop-running-test-suites!)
+    (assert ((current-card) .instance-of? %test-suite%))
+    (set! *running-all-tests?* #f))
+
+  ;;; Resume running the unit tests, starting with the current test card.
+  (define (resume-running-test-suites!)
+    (assert ((current-card) .instance-of? %test-suite%))
+    (set! *running-all-tests?* #t)
+    (jump-current))
 
   ;;; Display the results of a set of tests on a card.
   (define-class %test-suite% (%card%)
@@ -99,12 +112,11 @@
       (if (report .success?)
         (begin
           (draw-result $halyard-unit-passed-style "OK")
+          (idle) ; Repaint the screen and process any input.
           (when *running-all-tests?*
             (let [[next (card-next)]]
               (if next
-                (begin
-                  (idle)
-                  (jump next))
+                (jump next)
                 (done-with-tests #t)))))
         (begin
             (draw-result $halyard-unit-failed-style "FAILED")
