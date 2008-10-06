@@ -83,7 +83,8 @@
   ;;  kernel's inner workings.
   
   (provide call-prim have-prim? runtime-directory value->boolean idle
-           blocking-idle exit-script call-with-jump-handler refresh)
+           blocking-idle exit-script custom-jump-handler-installed?
+           call-with-jump-handler refresh)
 
   ;; C++ can't handle very large or small integers.  Here are the
   ;; typical limits on any modern platform.
@@ -204,6 +205,14 @@
     (set-jump-state! card)
     (%kernel-check-state))
 
+  (define *custom-jump-handler-installed?* #f)
+
+  ;; Returns #t if we are inside call-with-jump-handler.  You shouldn't
+  ;; need this unless you're trying to do something really tricky with
+  ;; jumps, like jump-to-each-card.ss does.
+  (define (custom-jump-handler-installed?)
+    *custom-jump-handler-installed?*)
+
   ;; This is an internal API for use by ASSERT-JUMPS.  It calls THUNK, and
   ;; if a jump occurs, the jump is intercepted and the destination card is
   ;; passed to HANDLER.
@@ -211,7 +220,8 @@
     (assert (eq? *%kernel-state* 'NORMAL))
     (assert (not *%kernel-jump-card*))
     (label exit-to-top
-      (fluid-let [[*%kernel-exit-to-top-func* exit-to-top]]
+      (fluid-let [[*%kernel-exit-to-top-func* exit-to-top]
+                  [*custom-jump-handler-installed?* #t]]
         (thunk)))
     (when (eq? *%kernel-state* 'JUMPING)
       (let [[jump-card *%kernel-jump-card*]]

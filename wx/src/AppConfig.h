@@ -77,7 +77,7 @@
 #	define CONFIG_ENABLE_FULL_SCREEN     0
 #	define CONFIG_HAVE_FANCYCRASHREPORT  0
 #	define CONFIG_HAVE_CUSTOM_STC        0
-#   define CONFIG_HAVE_CONSOLE_OUTPUT    0
+#   define CONFIG_HAVE_CONSOLE_OUTPUT    1
 #endif // !defined __WXMSW__
 
 #ifdef __WXMSW__

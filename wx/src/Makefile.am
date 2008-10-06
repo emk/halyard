@@ -33,6 +33,11 @@ check: all
 	 Contents/MacOS/halyard -c '(command-line-test-driver)' \
 	     $(abs_top_srcdir)/test)
 
+jump_to_each_card: all
+	(cd Halyard.app; \
+	 Contents/MacOS/halyard -c '(jump-to-each-card)' \
+	     $(abs_top_srcdir)/test)
+
 endif
 
 resources.cpp: application.xrc

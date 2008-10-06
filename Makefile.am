@@ -3,6 +3,9 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = libs Common wx
 
+jump_to_each_card:
+	(cd wx/src && $(MAKE) $(AM_MAKEFLAGS) jump_to_each_card)
+
 # Run Common/TestAll over and over again, and only stop when it dumps core.
 # We're using this to stress-test the new PLT v372 support to see if we've
 # introduced any intermittent GC bugs.

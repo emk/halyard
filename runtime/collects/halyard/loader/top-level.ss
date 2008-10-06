@@ -33,4 +33,8 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (provide command-line-test-driver)
 
+  ;; Make the jump-to-each-card function available from the command line.
+  (require (lib "jump-to-each-card.ss" "halyard/private"))
+  (provide jump-to-each-card)
+
   )
