@@ -199,27 +199,6 @@
                               (rect-center $screen-rect))
                  :path "duck_and_cover_intro_theora.ogg"
                  :controller? #t)))
-
-  (group /media/qt/missing)
-  
-  (define-class %qtvr-card% (%white-test-card%)
-    (attr movie-shape :type <rect>)
-    (attr path :type <string>)
-    (movie qtvr ((move-rect-center-to (.movie-shape)
-                                      (rect-center $screen-rect))
-                 (.path) :interaction? #t))
-    )
-                             
-
-  (card /media/qt/missing/qtvr1 (%qtvr-card%
-                                :title "QTVR Demo #1 (media missing)"
-                                :movie-shape (shape 320 320)
-                                :path "powerbook17_jan2003_qtvr320.mov"))
-
-  (card /media/qt/missing/qtvr2 (%qtvr-card%
-                                :title "QTVR Demo #2 (media missing)"
-                                :movie-shape (shape 480 480)
-                                :path "powerbook17_jan2003_qtvr480.mov"))
   
   
   ;;=======================================================================
