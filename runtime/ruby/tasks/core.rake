@@ -1,4 +1,6 @@
 # -*- Mode: Ruby; -*-
+require 'find'
+
 namespace :halyard do
   desc 'Delete generated files'
   task :clean do
@@ -22,5 +24,26 @@ namespace :halyard do
   desc 'Jump to each card in the script'
   task :jump_each do
     halyard_command "(jump-to-each-card)"
+  end
+
+  desc 'Update support files to the lastest versions'
+  task :update_tools do
+    # Build a list of files in our template directory.
+    template_dir = "#{$HALYARD_RUNTIME}/templates/update_tools"
+    files = []
+    cd template_dir do
+      Find.find "." do |path|
+        next if File.basename(path) =~ /^\./ or path =~ /~$/
+        next if File.directory?(path)
+        files << path.sub(/^\.\//, '')
+      end
+    end
+
+    # Copy each file to the current script.
+    files.each do |path|
+      puts "Updating #{path}"
+      mkdir_p File.dirname(path)
+      cp "#{template_dir}/#{path}", path
+    end
   end
 end
