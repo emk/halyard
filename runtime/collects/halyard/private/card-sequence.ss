@@ -23,8 +23,9 @@
 ;; An implementation of card-next, card-prev, etc.  This has known bugs
 ;; and design flaws, and will be redesigned soon.  See case 2411.
 (module card-sequence (lib "mizzen.ss" "mizzen")
-  (require (lib "nodes.ss" "halyard/private"))
   (require (lib "util.ss" "mizzen"))
+  (require (lib "nodes.ss" "halyard/private"))
+  (require (lib "metadata-attr.ss" "halyard"))
 
   
   ;;=======================================================================
@@ -72,56 +73,13 @@
   ;;  %card-group%
   ;;=======================================================================
   
-  (with-instance (%card-group% .class)
-    ;; ORDERED? is a property of a static node, thus it needs to be 
-    ;; implemented as a class-level attribute.
-    ;; 
-    ;; The ORDERED? attribute needs to be special in two ways.
-    ;;
-    ;; 1) We need to be able to override ORDERED? in subclasses and
-    ;;    when defining the node using GROUP.  Class-level attributes
-    ;;    aren't normally overridable though, since they don't follow
-    ;;    the initialization protocol.  Since it also doesn't need to
-    ;;    ever be written, instead of actually declaring it as an
-    ;;    attribute, we just define an overridable getter, and
-    ;;    override it on any level of the hierarchy that we need to.
-    ;;
-    ;; 2) We would like to be able to override the value when
-    ;;    declaring a node using the keyword arguments on GROUP.
-    ;;    Normally, this sets up attr-initializers on the class, which
-    ;;    handle how instances of the class are set up, but we
-    ;;    override .ATTR-INITIALIZER to instead define a getter method
-    ;;    on the class (aka static node) with the appropriate value.
-    ;;
-    ;;    This also leads to the somewhat strange consequence that the
-    ;;    way you override the value of ORDERED? in a subclass is by
-    ;;    using (default ordered? ...) in the class body itself, not
-    ;;    a (with-instance (.class) ...), even though this is effectively
-    ;;    a class-level attribute.
-    ;;
-    ;; Note that using VALUE for ORDERED? will keep subclasses from 
-    ;; overriding it by sealing the getter method.  This basically 
-    ;; corresponds to the way VALUE works for regular attributes, 
-    ;; to reduce surprise.
-    (def (attr-initializer name init-method ignorable? 
-                           &key (skip-if-missing-values? #f))
-      (if (eq? name 'ordered?)
-        (.define-ordered?-getter init-method ignorable?)  
-        (super)))
-
-    ;; Define a getter for our ORDERED? attribute.  See above for an 
-    ;; explanation of why this works the way it does.
-    (def (define-ordered?-getter init-method overridable?)
-      ((.class) .define-method 'ordered? init-method)
-      (unless overridable?
-        ((.class) .seal-method! 'ordered?))))
-  
   (with-instance %card-group%
-    ;; Define the base case getter for ORDERED?. See above for an 
-    ;; explanation of how this is basically equivalent to defining a 
-    ;; class-level (or static node) attribute.
-    (default ordered? #t)
-    
+    ;; We want to be able to access ordered? on static nodes, not on
+    ;; running nodes, so define it using metadata-attr.  This value can be
+    ;; overridden as though it were an ordinary instance attribute, but it
+    ;; should only be set to simple constant values.
+    (metadata-attr ordered? #t)
+
     ;; Proxy from the running node to the static node.
     (def (ordered?)
       ((.class) .ordered?)))
