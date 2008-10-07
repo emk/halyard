@@ -1,6 +1,43 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.19 - 7 Oct 2008
+
+The major new features in this release are (defer body ...), which is
+equivalent to (run-deferred (fn () body ...)), and some rudimentary support
+for jumping to every card in the program:
+
+  rake halyard:jump_each
+
+You can skip a group or card by setting :skip-when-jumping-to-each-card?:
+
+  (card /sample (%card% :skip-when-jumping-to-each-card? #t)
+    ...)
+
+After updating to this engine, run:
+
+  rake halyard:update_tools
+
+Also of interest are the new resolve-(static|running)-node methods and the
+(rather kludgy) new metadata-attr.
+
+Eric Kidd (8):
+      halyard-unit: Call IDLE after each test card
+      Turn the warning "Transition: way too long" into a debug message
+      buildbot: Make it easier to call JUMP from the command-line
+      Jumping to each card: Begin with a basic implementation
+      Jumping to each card: Add 'rake halyard:jump_each' task
+      config/boot.rb: Add ENV['HALYARD_RUNTIME'] to search path
+      Factor metadata-attr out of card-sequence.ss
+      Jumping to each card: Allow cards and groups to be skipped
+
+Eric Kidd & Robinson Tryon (2):
+      halyard-unit: Allow stopping and resuming test suites
+      Add .resolve-static-node and .resolve-running-node methods
+
+Eric Kidd & Brian Campbell (1):
+      Add a (defer ...) special form
+
 0.5.18 - 1 Oct 2008
 
 We decided to rename "caution" to "warning", because "warning" is more
