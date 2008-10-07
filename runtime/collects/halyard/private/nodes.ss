@@ -544,6 +544,12 @@
     (def (find-elem name)
       (find-child-node self name #t))
 
+    ;;; Resolve this object to a running node.  This method basically
+    ;;; exists so that proxy objects can replace it with something that
+    ;;; returns the underlying object.
+    (def (resolve-running-node)
+      self)
+
     (with-instance (.class)
       (attr name #f :writable? #t)   ; May be #f if class not in hierarchy.
       (attr parent #f :writable? #t)
@@ -603,6 +609,14 @@
                              (method ()
                                (instance-exec (.parent) meth))
                              #f)))
+
+      ;;; Resolve this object to a static node.  This method basically
+      ;;; exists so that proxy objects can replace it with something that
+      ;;; returns the underlying object.
+      (def (resolve-static-node)
+        (unless (.can-be-run?)
+          (error (cat "Cannot call resolve-static-node on " self)))
+        self)
       )
     )
 

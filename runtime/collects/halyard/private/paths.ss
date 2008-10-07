@@ -93,6 +93,9 @@
       ;; node.  Yeah, another ugly special case...
       ((.resolve-path :running? #f) .jump))
 
+    (def (resolve-static-node)
+      (.resolve-path :running? #f))
+
     ;;; Resolve a path.
     (def (resolve-path
           &key (running? #t)

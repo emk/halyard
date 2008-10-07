@@ -20,14 +20,24 @@
 ;;
 ;; @END_LICENSE
 
-;; This module requires all our other unit test modules.  If you include
-;; this module, you will get a top-level "tests" sequence containing
-;; various unit-test cards.
-(module tests "halyard.ss"
-  (require "halyard-unit-test.ss"
-           "private/util-test.ss"
-           "private/nodes-test.ss"
-           "private/paths-test.ss"
-           "updater-test.ss"
-           "deprecated-test.ss")
+(module nodes-test (lib "halyard.ss" "halyard")
+  (require (lib "halyard-unit.ss" "halyard"))
+
+  (define-class %resolve-static-node-test% (%test-case%)
+    (test "Calling resolve-static-node on a class should raise an error"
+      (assert-raises exn:fail?
+        (%group-member% .resolve-static-node)))
+
+    (test "Calling resolve-static-node on a static node should return it"
+      (assert-equals /tests (/tests .resolve-static-node))))
+
+  (define-class %resolve-running-node-test% (%test-case%)
+    (test "Calling resolve-running-node on a running node should return it"
+      (assert-equals (current-card) ((current-card) .resolve-running-node))))
+
+  (card /tests/nodes
+      (%test-suite%
+       :tests (list %resolve-static-node-test%
+                    %resolve-running-node-test%)))
   )
+

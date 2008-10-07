@@ -275,6 +275,7 @@
     (assert (not (loaded?)))
     (assert (eq? ((node) .full-name) node-name))
     (assert (not (loaded?)))
+    (assert (not ((node) .resolve-static-node.trampoline?)))
     (assert (list? ((node) .members)))
     (assert (loaded?))
     (assert (memq (node) ((node) .parent.members)))
