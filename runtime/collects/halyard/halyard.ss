@@ -47,6 +47,12 @@
   (require (lib "elements.ss" "halyard/private"))
   (provide (all-from (lib "elements.ss" "halyard/private")))
 
+  ;; Make sure that this code has been loaded before we start defining any
+  ;; user code that might need to set SKIP-WHEN-JUMPING-TO-EACH-CARD?.  We
+  ;; don't need to provide any of the actual identifiers from this file,
+  ;; however.
+  (require (lib "jump-to-each-card.ss" "halyard/private"))
+
   ;; These are not well-loved APIs, so we only include them fairly high up the
   ;; stack to try to avoid having any undocumented internal depedencies on
   ;; them.

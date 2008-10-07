@@ -23,15 +23,28 @@
 (module jump-to-each-card (lib "mizzen.ss" "mizzen")
   (require (lib "kernel.ss" "halyard/private"))
   (require (lib "api.ss" "halyard/private"))
+  (require (lib "metadata-attr.ss" "halyard"))
   
   (provide jump-to-each-card)
+
+  (with-instance %group-member%
+    ;;; Should we test this %group-member% using jump-to-each-card?  To
+    ;;; disable, use:
+    ;;;
+    ;;;   (group /foo (:skip-when-jumping-to-each-card? #t)
+    ;;;     ..)
+    (metadata-attr skip-when-jumping-to-each-card? #f))
 
   ;; Return a list containing all the cards in GROUP-MEM.  This walks the
   ;; node tree recursively.
   (define (all-cards-in group-mem)
-    (if (group-mem .subclass-of? %card%)
-      (list group-mem)
-      (apply append (map all-cards-in (group-mem .members)))))
+    (cond
+     [(group-mem .skip-when-jumping-to-each-card?)
+      '()]
+     [(group-mem .subclass-of? %card%)
+      (list group-mem)]
+     [else
+      (apply append (map all-cards-in (group-mem .members)))]))
 
   ;; Return a list of all the cards in the program.
   (define (all-cards)
@@ -50,6 +63,9 @@
       (exit-script)
       (begin
         (set! *should-honor-next-jump?* #t)
+        ;; TODO - Temporary print card names until we have code to
+        ;; intercept error messages.
+        (command-line-error (cat "Card: " (car *cards-left-to-jump-to*)))
         (jump (pop! *cards-left-to-jump-to*)))))
 
   ;; Decide whether we should intercept the current jump and replace it

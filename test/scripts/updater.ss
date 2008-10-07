@@ -11,7 +11,7 @@
   (require (lib "updater.ss" "halyard"))
   (require (lib "base.ss" "halyard-test"))
 
-  (group /updater ())
+  (group /updater (%card-group% :skip-when-jumping-to-each-card? #t))
   
   (define *error-message* "")
   
