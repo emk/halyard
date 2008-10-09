@@ -397,7 +397,7 @@
     (default overlay? #f)
 
     (def (mouse-down event)
-      ((.click))))
+      (.click)))
 
   ;;; Declare a %clickable-zone% element.
   (define-node-helper clickable-zone (bounds action) %clickable-zone%)

@@ -314,7 +314,8 @@
      (point 5 5)))
 
   (define-class %boring-button% (%clickable-zone%)
-    (attr text) 
+    (attr text)
+    (value overlay? #t)
     (value shape (point->boring-button-shape (string->xml (.text))))
     
     (def (draw)
@@ -322,8 +323,10 @@
       (draw-text (inset-rect (dc-rect) 5) $login-button-style
                  (string->xml (.text)))))
 
-  (define-class %click-me-button% (%basic-button%)    
-    (value action (callback (jump @index)) :alpha? #t)
+  (define-class %click-me-button% (%basic-button%)
+    (value alpha? #t)
+    (def (click)
+      (jump @index))
     (def (draw)
       (draw-graphic (point 0 0)
                     (case (.button-state)
@@ -339,11 +342,15 @@
                          :at (rect-center $screen-rect)
                          :text "Click Me")
       (def (click)
-        (jump @index)))
+        (set! (.parent.message.text) "Thanks!")))
     (elem click-1 (%click-me-button% :bounds (rect 100 100 176 126)))
     (elem click-2 (%click-me-button% :bounds (rect 100 130 176 156)))
     (elem click-3 (%click-me-button% :bounds (rect 100 160 176 186)))
     (elem click-4 (%click-me-button% :bounds (rect 100 190 176 216)))
+    (elem message (%text-box% :at (below (.boring-button) 10)
+                              :shape (shape 200 20)
+                              :text ""
+                              :style $base-style))
     )
 
   ;;=======================================================================
