@@ -129,7 +129,8 @@
       
     (value enabled? #f)
     (value graphic-prefix (.browser-command))
-    (value action (callback (send @browser-elem (.browser-command)))))
+    (def (click)
+      (send @browser-elem (.browser-command))))
   
   (define-stylesheet $browser-style :base $base-style :family "Times")
   
@@ -217,15 +218,12 @@
   ;;=======================================================================
   
   (card /features/launch-browser (%standard-test-card% :title "Launch Browser")
-    (text-button open-button
-                 ((below (.title-elem) 20) 
-                  "Open Default Browser"
-                  :action
-                  (callback
-                   (set! (@result .text)
-                         (if (open-in-browser "http://iml.dartmouth.edu")
-                             "Success."
-                             "Error opening URL.")))))
+    (text-button open-button ((below (.title-elem) 20) "Open Default Browser")
+      (def (click)
+        (set! (@result .text)
+              (if (open-in-browser "http://iml.dartmouth.edu")
+                "Success."
+                "Error opening URL."))))
     (text-box result
               ((move-rect-left-top-to (rect 0 0 200 20) 
                                       (below (.open-button) 10))
@@ -315,17 +313,14 @@
      (inset-rect (measure-text $login-button-style text) -5)
      (point 5 5)))
 
-  (define-class %boring-button% (%custom-element%)
+  (define-class %boring-button% (%clickable-zone%)
     (attr text) 
-    (attr action)
     (value shape (point->boring-button-shape (string->xml (.text))))
     
     (def (draw)
       (draw-rectangle (dc-rect) $color-white)
       (draw-text (inset-rect (dc-rect) 5) $login-button-style
-                 (string->xml (.text))))
-    (def (mouse-down event)
-      ((.action))))
+                 (string->xml (.text)))))
 
   (define-class %click-me-button% (%basic-button%)    
     (value action (callback (jump @index)) :alpha? #t)
@@ -342,8 +337,9 @@
       (%standard-test-card% :title "Templates & Events")
     (elem boring-button (%boring-button%
                          :at (rect-center $screen-rect)
-                         :text "Click Me"
-                         :action (callback (jump @index))))
+                         :text "Click Me")
+      (def (click)
+        (jump @index)))
     (elem click-1 (%click-me-button% :bounds (rect 100 100 176 126)))
     (elem click-2 (%click-me-button% :bounds (rect 100 130 176 156)))
     (elem click-3 (%click-me-button% :bounds (rect 100 160 176 186)))
@@ -686,13 +682,12 @@
       (set! ((.poly-zone) .shape) poly-shape))
       
     ;; Buttons to change element size.
-    (text-button small ((below @opaque-overlay 20) 
-                        "Small"
-                        :action (callback
-                                  (.set-shapes! $small-rect $small-poly))))
-    (text-button big ((to-the-right-of @small 10) 
-                      "Big"
-                      :action (callback (.set-shapes! $big-rect $big-poly))))
+    (text-button small ((below @opaque-overlay 20) "Small")
+      (def (click)
+        (.parent.set-shapes! $small-rect $small-poly)))
+    (text-button big ((to-the-right-of @small 10) "Big")
+      (def (click)
+        (.parent.set-shapes! $big-rect $big-poly)))
     )
 
 

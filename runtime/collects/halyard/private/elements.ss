@@ -371,14 +371,33 @@
                    (shown? #t))
     (%box% .new :name name :parent parent :shown? shown? :bounds bounds))
 
+  ;; Mix in the necessary code to support a .click method with :command and
+  ;; :action parameters.  This is used by things which work more or less
+  ;; like buttons.  If you need this function to be public, please ask.
+  (define (mix-in-standard-click-method! klass)
+    (with-instance klass
+      (attr command  #f :label "Command symbol" :writable? #t)
+      (attr action   #f :label "On click" :writable? #t)
+      ;;; Override this method to specify what happens when you click.
+      (def (click)
+        (cond
+         [(and (.command) (.action))
+          (error (cat self " has both a :command and an :action!"))]
+         [(.command)
+          (.propagate (.command))]
+         [(.action)
+          ((.action))]
+         [else
+          (error (cat "No :command, :action or DEF (CLICK) on " self))]))))
+
   ;;; A %clickable-zone% will run the specified ACTION when the user clicks on
   ;;; it.
   (define-class %clickable-zone% (%custom-element%)
-    (attr action :label "Action" :writable? #t)
+    (mix-in-standard-click-method! self)
     (default overlay? #f)
 
     (def (mouse-down event)
-      ((.action))))
+      ((.click))))
 
   ;;; Declare a %clickable-zone% element.
   (define-node-helper clickable-zone (bounds action) %clickable-zone%)
@@ -1517,8 +1536,7 @@
 
   ;;; An abstract superclass which implements typical GUI button behavior.
   (define-class %basic-button% (%custom-element%)
-    (attr command  #f :label "Command symbol" :writable? #t)
-    (attr action   #f :label "On click" :writable? #t)
+    (mix-in-standard-click-method! self)
     (attr enabled? #t :type <boolean> :label "Enabled?" :writable? #t)
   
     (value wants-cursor? (.enabled?))
@@ -1560,17 +1578,6 @@
       (refresh)
       (when (and (slot 'mouse-in-button?) was-grabbed?)
         (.click)))
-
-    (def (click)
-      (cond
-       [(and (.command) (.action))
-        (error (cat self " has both a :command and an :action!"))]
-       [(.command)
-        (.propagate (.command))]
-       [(.action)
-        ((.action))]
-       [else
-        (error (cat "No :command, :action or DEF (CLICK) on " self))]))
     )
 
   ;;; Get the version of a QuickTime component, given the four-letter,
