@@ -529,7 +529,7 @@
       (let recurse [[klass (.class)]]
         (unless (eq? klass %node%)
           (recurse (klass .superclass)))
-        (foreach [static-elem (klass .elements)]
+        (foreach [static-elem (klass .%static-elements)]
           ;; It is *very* important that we pass in :parent explicitly
           ;; here, if we want the nested node syntax to support (.parent)
           ;; in initializers.  This guarantees that (.parent) is
@@ -550,10 +550,21 @@
     (def (resolve-running-node)
       self)
 
+    (def (%add-running-element! elem)
+      ;; We need to check for duplicates before adding or we violate
+      ;; some pretty obvious invariants.
+      ;; TODO - Why don't we call this for nodes other than elements?
+      (check-for-duplicate-nodes (.elements) elem)
+      (unless (memq (.node-state) '(ENTERING ACTIVE))
+        (error (cat "Tried to add " elem " to " self ", which is currently "
+                    "in the state " (.node-state))))
+      (set! (.elements)
+            (append (.elements) (list elem))))
+
     (with-instance (.class)
       (attr name #f :writable? #t)   ; May be #f if class not in hierarchy.
       (attr parent #f :writable? #t)
-      (attr elements '() :writable? #t)
+      (attr %static-elements '() :writable? #t)
 
       (def (to-string)
         (if (.name)
@@ -591,7 +602,7 @@
         (%assert (elem .name))
         (%assert (eq? self (elem .parent)))
         ;; Add this element to our static child element list.
-        (set! (.elements) (append (.elements) (list elem)))
+        (set! (.%static-elements) (append (.%static-elements) (list elem)))
         ;; Declare a helper method which can be called at runtime to find
         ;; the running version of our child element.
         (.define-method (elem .name) 
@@ -661,14 +672,6 @@
         (error (cat "Duplicate node: " (node .full-name)))]
        [else
         (recurse (cdr node-list))])))
-
-  (define (node-add-element! node elem)
-    ;; We need to check for duplicates before adding or we violate
-    ;; some pretty obvious invariants.
-    ;; TODO - Why don't we call this for nodes other than elements?
-    (check-for-duplicate-nodes (node-elements node) elem)
-    (set! (node-elements node)
-          (append (node-elements node) (list elem))))
 
   ;; Construct a function to be called if the node NAME can't be found.
   ;; This function will see whether we can load the missing node from disk.
@@ -919,7 +922,7 @@
       (unless (symbol? (.name))
         (error (cat (.class) " .new: name must be a symbol; given " (.name))))
       (check-node-name (.name))
-      (node-add-element! (.parent) self))
+      ((.parent) .%add-running-element! self))
 
     (with-instance (.class)
       ;;; We call .enter-node on elements as soon as we create them (unlike
