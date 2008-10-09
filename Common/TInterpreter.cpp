@@ -190,7 +190,7 @@ void TInterpreterManager::Run()
 		}
 		catch (std::exception &e)
 		{
-			gLog.Error("Internal error: %s.", e.what());
+			gLog.Error("%s.", e.what());
 			mShouldConsiderExiting = true;
 		}
 		catch (...)

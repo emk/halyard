@@ -186,7 +186,7 @@ void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
 		// use this routine to load ordinary user code--just the kernel
 		// and its support files.
 		std::string error_msg = "Error loading file <" + name + ">";
-		throw TException(__FILE__, __LINE__, error_msg.c_str());
+		THROW(error_msg.c_str());
 	}
 }
 
@@ -265,7 +265,9 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 		ASSERT(SCHEME_CHAR_STRINGP(result));
 		byte_str = scheme_char_string_to_byte_string(result);
         raw_str = SCHEME_BYTE_STR_VAL(byte_str);
-		throw TException(__FILE__, __LINE__, raw_str);
+        // Use a std::runtime_error so we don't get a lot of useless
+        // TException-related information in our error messages.
+		throw std::runtime_error(raw_str);
 	}
 
     // OK, we're open for business.
@@ -365,8 +367,7 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
         sym = scheme_intern_symbol(inFuncName);
 		bucket = scheme_module_bucket(inModule, sym, -1, inEnv);
         if (bucket == NULL)
-            throw TException(__FILE__, __LINE__,
-                             "Scheme module bucket not found");
+            THROW("Scheme module bucket not found");
         mBucketMap.insert(BucketMap::value_type(key, bucket));
         return bucket;
     }
