@@ -72,7 +72,7 @@
     (if first-test
       (begin
         (set! *running-all-tests?* #t)
-        (jump (first-test .card-next)))
+        (jump first-test))
       (done-with-tests #t)))
 
   ;;; If we're currently running all the unit test cards, stop doing so at
