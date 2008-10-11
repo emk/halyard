@@ -437,11 +437,11 @@ bool HalyardApp::OnInit() {
     TLogger::RegisterAlertDisplayFunction(SafeAlert);
 
     // Get the Halyard runtime going.
-#if CONFIG_HAVE_FANCYCRASHREP
+#if CONFIG_HAVE_FANCYCRASHREPORT
     ::InitializeCommonCode(new FancyCrashReporter());
 #else
     ::InitializeCommonCode(new CrashReporter());
-#endif // CONFIG_HAVE_FANCYCRASHREP
+#endif // CONFIG_HAVE_FANCYCRASHREPORT
 #if !CONFIG_HAVE_CONSOLE_OUTPUT
     TLogger::SetIsStandardErrorAvailable(false);
 #endif
