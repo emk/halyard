@@ -447,6 +447,10 @@ bool HalyardApp::OnInit() {
 #endif
     mLogsAreInitialized = true;
 
+    // Make sure we restore the taskbar, etc., before exiting with
+    // an error message.
+    TLogger::RegisterExitPrepFunction(&PrepareForCrash);
+
     ::RegisterWxPrimitives();
 #if CONFIG_HAVE_QUAKE2
     ::RegisterQuake2Primitives();
@@ -513,10 +517,6 @@ bool HalyardApp::OnInit() {
             mArgScript = arg;
         }
     }
-
-    // Make sure we restore the taskbar, etc., before exiting with
-    // an error message.
-    TLogger::RegisterExitPrepFunction(&PrepareForCrash);
 
     // Create and display our stage frame.
     //mStageFrame = new StageFrame(wxSize(640, 480));

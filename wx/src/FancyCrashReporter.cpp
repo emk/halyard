@@ -247,9 +247,17 @@ bool FancyDebugReport::OnServerReply(const wxArrayString& reply) {
         // Ignore unknown nodes.
     }
 
-    // Pop up a simple dialog.
-    wxMessageDialog dlg(NULL, description, title, wxOK);
-    dlg.ShowModal();
+    if (TInterpreterManager::IsInCommandLineMode()) {
+        // Display the server's response on the console.
+        std::ostream *err(TLogger::GetErrorOutput());
+        *err << "Title:       " << title << std::endl
+             << "Description: " << description << std::endl
+             << "Link:        " << link << std::endl;
+    } else {
+        // Pop up a simple dialog.
+        wxMessageDialog dlg(NULL, description, title, wxOK);
+        dlg.ShowModal();
+    }
 
     return true;
 }
@@ -361,6 +369,12 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     FancyDebugReport report(this, GetReportUrl(inType), inReason);
     report.AddAll(report.GetContext());
 
+    // Ask TLogger to prepare for a crash.  If we were called directly by
+    // TLogger, we've probably done this already.  But if we were called
+    // because of a segfault or other OS-level problem that doesn't go
+    // through TLogger, we presumably haven't done this yet.
+    TLogger::PrepareToExit();
+
     // Open up any logs we haven't opened yet, and as a side effect, write
     // the most recent entries in those logs to disk.  (TLogger maintains
     // an internal history of recent writes to unopened logs.)  We need to
@@ -384,10 +398,25 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     //if (inType == SCRIPT_CRASH)
     //    report.AddScreenshot();
 
-    // Ask the user whether they want to submit this bug report, and if
-    // so, process it.
+    // If we're running in command-line mode, just go ahead and try to
+    // submit the bug report.  If not, ask the user whether they want to
+    // submit this bug report.
     wxDebugReportPreviewStd preview;
-    if (preview.Show(report)) {
+    if (TInterpreterManager::IsInCommandLineMode()) {
+	    std::ostream *err(TLogger::GetErrorOutput());
+        *err << "Processing debug report." << std::endl;
+		if (report.Process()) {
+			*err << "Uploaded debug report to server." << std::endl;
+        } else {
+            *err << "Could not upload debug report to server." << std::endl;
+            if (report.GetCompressedFileName() != wxT(""))
+                *err << "Saved as: " << report.GetCompressedFileName().mb_str()
+                     << std::endl;
+            else 
+                *err << "Could not save debug report." << std::endl;
+        }
+        *err << std::flush;
+    } else if (preview.Show(report)) {
         if (!report.Process() && report.GetCompressedFileName() != wxT("")) {
             // OK, processing failed, which generally means we can't talk
             // to our server--but we did at least create a debug report.
