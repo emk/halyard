@@ -1,6 +1,34 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.20 - 13 Oct 2008
+
+This engine extends %CLICKABLE-ZONE% with support for %BASIC-BUTTON%'s
+.CLICK and :COMMAND features.  It also improves the buildbot support and
+re-enables the old wxWidgets-based crash reporter on Win32.
+
+One new set of restrictions to be aware of: %ELEMENT% .NEW is much better
+about checking for errors, and no longer allows elements to be attached to
+nodes that are being destroyed.  This may break some existing code.  Of
+course, there's a strong argument that such code was already broken, but
+just in a much less obvious way.
+
+Please run 'rake halyard:jump_each' before releasing these engines to
+Halyard-based projects.  Thank you!
+
+Brian Campbell & Eric Kidd (2):
+      halyard-unit: Don't skip first test case when running all
+      Bug fix: Fix %clickable-zone% .click
+
+Eric Kidd (7):
+      mzscheme: Display error dialog when VirtualAlloc fails
+      Don't allow %element% .new to parent elements to a static node
+      Remove useless junk from error dialogs
+      Add standard .click method to %clickable-zone%
+      Jumping to each card: Don't end playback of looping audio
+      Bug fix: Re-enable FancyCrashReporter on Windows
+      Crash reporter: Fix bugs and add support for COMMAND_LINE mode
+
 0.5.19 - 7 Oct 2008
 
 The major new features in this release are (defer body ...), which is
