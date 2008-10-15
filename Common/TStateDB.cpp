@@ -112,6 +112,10 @@ void TStateDB::Datum::MaybeSetVal(TStateDB *inDB, TValue inValue) {
 	}
 }
 
+bool TStateDB::Datum::HasListeners() {
+    return !mListeners.empty();
+}
+
 
 //=========================================================================
 //  TStateDB methods
@@ -156,6 +160,22 @@ TValue TStateDB::Get(TStateListener *inListener, const std::string &inKey) {
 	} else {
 		THROW("The key '" + inKey + "\' is not in the state database.");
 	}
+}
+
+void TStateDB::Clear() {
+    // Delete as many of our Datum objects as we can.  Note the funny
+    // traversal of the std::map, which allows us to delete map entries as
+    // we go.  See: http://stackoverflow.com/questions/180516/
+    DatumMap::iterator iter(mDB.begin());
+    while (iter != mDB.end()) {
+        if (iter->second.HasListeners()) {
+            gLog.Warning("Cannot clear state-db key %s because it still has "
+                         "listeners", iter->first.c_str());
+            ++iter;
+        } else {
+            mDB.erase(iter++);
+        }
+    }
 }
 
 

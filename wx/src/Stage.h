@@ -491,6 +491,11 @@ public:
     void NotifyReloadScriptStarting();
 
     //////////
+    /// Notify the stage that the script has been reloaded.
+    ///
+    void NotifyReloadScriptSucceeded();
+
+    //////////
     /// Let the stage know that the list of active elements has changed.
     ///
     void NotifyElementsChanged();

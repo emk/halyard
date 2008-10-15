@@ -70,6 +70,7 @@ class TStateDB {
         bool IsRegistered(TStateListener *listener);
 		void NotifyListeners();
 		void MaybeSetVal(TStateDB *inDB, TValue inValue);
+        bool HasListeners();
 	};
 	friend struct Datum;
 	
@@ -93,6 +94,11 @@ public:
 	TStateDB() : mNotifyCount(0) {}
 	void Set(const std::string &inKey, TValue inValue);     
 	TValue Get(TStateListener *inListener, const std::string &inKey);
+
+    //////////
+    /// Attempt to remove all entries from the database.
+    ///
+    void Clear();
 };
 
 extern TStateDB gStateDB;

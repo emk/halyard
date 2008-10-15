@@ -23,6 +23,7 @@
 #include "CommonHeaders.h"
 
 #include "TInterpreter.h"
+#include "TStateDB.h"
 #include "TDeveloperPrefs.h"
 #include "lang/scheme/StackBase.h"
 
@@ -408,6 +409,10 @@ void TInterpreterManager::NotifyReloadScriptStarting() {
     std::vector<TReloadNotified*>::iterator i = sReloadNotifiedObjects.begin();
     for (; i != sReloadNotifiedObjects.end(); ++i)
         (*i)->NotifyReloadScriptStarting();
+
+    // We want to do this _after_ everyone else has cleared out their
+    // TStateListener objects.
+    gStateDB.Clear();
 }
 
 void TInterpreterManager::NotifyReloadScriptSucceeded() {

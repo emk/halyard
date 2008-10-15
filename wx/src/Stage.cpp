@@ -433,6 +433,19 @@ void Stage::NotifyReloadScriptStarting()
 	gStyleSheetManager.RemoveAll();
 }
 
+void Stage::NotifyReloadScriptSucceeded()
+{
+    // We clear gStateDB immediately after all our
+    // NotifyReloadScriptStarting calls are done, so we need to
+    // re-initialize our clock-related keys before any Scheme code tries to
+    // access them.  Note that this may not be early enough in the reload
+    // process if somebody tries to put /system/clock/* listeners on the
+    // root node at script load time.  But that's riduculously dangerous
+    // anyway, so we don't mind potentially giving an error about
+    // uninitialized state-db keys in that case.
+    UpdateClock();
+}
+
 void Stage::NotifyElementsChanged()
 {
 	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Elements on stage have changed."));
