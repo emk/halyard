@@ -603,6 +603,10 @@
         (%assert (eq? self (elem .parent)))
         ;; Add this element to our static child element list.
         (set! (.%static-elements) (append (.%static-elements) (list elem)))
+        ;; Make sure it's safe to add an accessor method for this element.
+        ;; We really don't want to accidentally override a superclass method
+        ;; with an element accessor.
+        (check-method-not-defined self (elem .name))
         ;; Declare a helper method which can be called at runtime to find
         ;; the running version of our child element.
         (.define-method (elem .name) 

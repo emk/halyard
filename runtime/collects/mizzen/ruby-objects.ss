@@ -448,8 +448,8 @@
   ;;  Standard Methods
   ;;=======================================================================
 
-  (provide check-for-initialization check-setter-writability
-           check-setter-type safe-to-string)
+  (provide check-for-initialization check-method-not-defined
+           check-setter-writability check-setter-type safe-to-string)
 
   ;;; Check that OBJ is properly initialized.  METHOD-NAME should be the
   ;;; name of our caller.
