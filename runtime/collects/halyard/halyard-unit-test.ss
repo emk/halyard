@@ -21,6 +21,7 @@
 ;; @END_LICENSE
 
 (module halyard-unit-test (lib "halyard.ss" "halyard")
+  (require (lib "kernel.ss" "halyard/private"))
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "mizzen-unit-test.ss" "mizzen"))
   
@@ -44,9 +45,23 @@
       (assert-jumps /start (jump /start)))
     (test "ASSERT-JUMPS should evaluate its argument"
       (let [[dest /start]]
-      (assert-jumps dest (jump /start)))))
+        (assert-jumps dest (jump /start)))))
+
+  (define-class %jump-in-test-case-inner% (%test-case%)
+    (test "UNEXPECTED JUMP"
+      (jump /start)))
+
+  (define-class %jump-in-test-case-test% (%test-case%)
+    (test "Jumping out of a test case should cause it to fail"
+      (call-with-jump-handler
+       (fn (c)
+         (error (cat "Untrapped jump to " c)))
+       (fn ()
+         (assert-test-fails %jump-in-test-case-inner% "UNEXPECTED JUMP"
+                            "Unexpected jump to /start")))))
 
   (card /tests/halyard-unit-test
       (%test-suite%
-       :tests (list %assert-jumps-test%)))
+       :tests (list %assert-jumps-test%
+                    %jump-in-test-case-test%)))
   )

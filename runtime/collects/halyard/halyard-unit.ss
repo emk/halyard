@@ -143,6 +143,19 @@
 
 
   ;;========================================================================
+  ;;  Detecting jumps in test cases
+  ;;========================================================================
+
+  (define (jump-wrapper thunk)
+    (call-with-jump-handler
+     (fn (c)
+       (error (cat "Unexpected jump to " (c .full-name))))
+     thunk))
+
+  (set! (test-case-non-local-exit-wrapper) jump-wrapper)
+
+
+  ;;========================================================================
   ;;  Test assertions
   ;;========================================================================
 

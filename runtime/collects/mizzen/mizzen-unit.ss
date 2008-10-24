@@ -47,6 +47,27 @@
   
   
   ;;=======================================================================
+  ;;  Overridable non-local-exit wrapper
+  ;;=======================================================================
+  ;;  This is used by higher levels that want to detect non-local exits of
+  ;;  the test cases.
+
+  (provide set-test-case-non-local-exit-wrapper!)
+
+  ;; The default wrapper doesn't attempt to trap non-local exits.
+  (define (default-non-local-exit-wrapper thunk)
+    (thunk))
+
+  (define *non-local-exit-wrapper* default-non-local-exit-wrapper)
+
+  ;;; Specify a function that will be used to wrap test cases, and which is
+  ;;; given an opporunity to intercept any non-local exits.  The only
+  ;;; argument is the thunk which should be run.
+  (define (set-test-case-non-local-exit-wrapper! wrapper)
+    (set! *non-local-exit-wrapper* wrapper))
+
+
+  ;;=======================================================================
   ;;  Overridable warning handler
   ;;=======================================================================
   ;;  This is used by higher levels that want to report warnings to
@@ -177,12 +198,14 @@
                        (fn (exn) (report .report-failure! self exn))]]
         (fluid-let [[*warning-handler*
                      (fn (msg) (report .report-warning! self msg))]]
-          (dynamic-wind
-              (fn () (.setup-test))
-              (fn ()
-                (.run-test-method-inner)
-                (report .report-success!))
-              (fn () (.teardown-test))))))
+          (*non-local-exit-wrapper*
+           (fn ()
+             (dynamic-wind
+                 (fn () (.setup-test))
+                 (fn ()
+                   (.run-test-method-inner)
+                   (report .report-success!))
+                 (fn () (.teardown-test))))))))
 
     ;;; Run the actual test method itself, with setup and teardown handled
     ;;; elsewhere.
