@@ -148,8 +148,9 @@
 
   (provide assert-jumps)
 
-  (define (assert-jumps-helper card-name thunk)
-    (let [[jump-card #f]]
+  (define (assert-jumps-helper to-card thunk)
+    (let [[card-name (to-card .full-name)]
+          [jump-card #f]]
       (call-with-jump-handler
        (fn (c) (set! jump-card c))
        (fn () (thunk)))
@@ -164,8 +165,8 @@
 
   (define-syntax assert-jumps
     (syntax-rules ()
-      [(_ card-name code)
-       (assert-jumps-helper 'card-name (fn () code))]))
+      [(_ to-card code)
+       (assert-jumps-helper to-card (fn () code))]))
 
 
   ;;========================================================================

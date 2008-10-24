@@ -41,7 +41,10 @@
                          (cat "Expected jump to /start, but jumped to "
                               "/tests/run-all")))
     (test "ASSERT-JUMPS should succeed if jump goes to correct card"
-      (assert-jumps /start (jump /start))))
+      (assert-jumps /start (jump /start)))
+    (test "ASSERT-JUMPS should evaluate its argument"
+      (let [[dest /start]]
+      (assert-jumps dest (jump /start)))))
 
   (card /tests/halyard-unit-test
       (%test-suite%
