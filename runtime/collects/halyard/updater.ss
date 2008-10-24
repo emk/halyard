@@ -309,7 +309,7 @@
              ;; PORTABILITY - We're not on Vista, so we can get away with
              ;; using UNSAFE-DIRECTORY-WRITEABLE?.  But this code is still
              ;; Windows-specific.
-             (unsafe-directory-writeable? (current-directory)))))
+             (unsafe-directory-writeable? dir))))
   
   (defclass <spec> ()
     url build meta-manifest)
