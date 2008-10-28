@@ -938,6 +938,14 @@ DEFINE_PRIMITIVE(SetZoneCursor) {
 	elem->SetCursorName(cursor);
 }
 
+DEFINE_PRIMITIVE(StateDBClear) {
+    // Note that an equivalent process occurs during ReloadScript, but
+    // spread out into two stages: One in TInterpreterManager.cpp and one
+    // in Stage.cpp.
+    gStateDB.Clear();
+    wxGetApp().GetStage()->UpdateClockKeysInStateDB();
+}
+
 DEFINE_PRIMITIVE(MaybeExitScriptGui) {
     // Force shutdown if we're in runtime mode.
     bool force = TInterpreterManager::IsInRuntimeMode();
@@ -1120,6 +1128,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(SetImageCacheSize);
     REGISTER_PRIMITIVE(SetStatusText);
     REGISTER_PRIMITIVE(SetZoneCursor);
+    REGISTER_PRIMITIVE(StateDBClear);
     REGISTER_PRIMITIVE(MaybeExitScriptGui);
 	REGISTER_PRIMITIVE(TextAA);
     REGISTER_PRIMITIVE(Wait);

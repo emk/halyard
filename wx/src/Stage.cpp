@@ -135,7 +135,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 #endif // wxUSE_ACCESSIBILITY
 	
     // Initialize the clock.
-    UpdateClock();
+    UpdateClockKeysInStateDB();
 
     // Send a timer event periodically.  Right now, we send two timer
     // events per IDLE_INTERVAL, in an effort to get half-frame accuracy
@@ -443,7 +443,7 @@ void Stage::NotifyReloadScriptSucceeded()
     // root node at script load time.  But that's riduculously dangerous
     // anyway, so we don't mind potentially giving an error about
     // uninitialized state-db keys in that case.
-    UpdateClock();
+    UpdateClockKeysInStateDB();
 }
 
 void Stage::NotifyElementsChanged()
@@ -584,7 +584,7 @@ void Stage::ReplaceDisplayedCursorWithDefault() {
     mActualCursor = cursor;
 }
 
-void Stage::UpdateClock() {
+void Stage::UpdateClockKeysInStateDB() {
     // Set our two clock variables.  Note that this may cause script code
     // to run in response to the updates.
 	// XXX - Do something more accurate than GetLo with the milliseconds.
@@ -683,7 +683,7 @@ void Stage::OnTimer(wxTimerEvent& inEvent)
 		mLastIdleEvent = ::wxGetLocalTimeMillis();
 
         // Now's an excellent time to update the clock information.
-        UpdateClock();
+        UpdateClockKeysInStateDB();
 
         // Send idle events to all our elements.
         IdleElements();

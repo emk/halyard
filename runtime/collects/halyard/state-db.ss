@@ -153,6 +153,19 @@
 
 
   ;;;======================================================================
+  ;;;  Clearing the State DB
+  ;;;======================================================================
+
+  (provide clear-state-db!)
+  
+  ;;; Reset the state-db to an empty state.  This function is
+  ;;; mostly intended for use by test suites, and it may cause major
+  ;;; headaches if called from anywhere else.
+  (define (clear-state-db!)
+    (call-prim 'StateDBClear))
+  
+  
+  ;;;======================================================================
   ;;;  State DB Debugging Support
   ;;;======================================================================
 
@@ -160,11 +173,13 @@
 
   (define-class %state-db-debugger%  (%invisible-element%)
     (attr path)
+    (attr error-fn)
     (attr report-fn)
 
     (setup
       (define-state-db-listener (debug state-db)
-        ((.report-fn) (state-db (.path))))))
+        (with-handlers [[exn:fail? (fn (e) ((.error-fn) e))]]  
+          ((.report-fn) (state-db (.path)))))))
   
   ;;; Here's a nasty little hack for reading the state database from
   ;;; outside an element.  Calling this from anywhere but the listener is
@@ -173,11 +188,17 @@
     (define result #f)
     (define (set-result! value)
       (set! result value))
+    (define saved-exn #f)
+    (define (save-exn! e)
+      (set! saved-exn e))
     (define elem
       (%state-db-debugger% .new :parent (running-root-node)
                                 :path path
-                                :report-fn set-result!))
+                                :report-fn set-result!
+                                :error-fn save-exn!))
     (delete-element elem)
+    (when saved-exn
+      (raise saved-exn))
     result)
 
   

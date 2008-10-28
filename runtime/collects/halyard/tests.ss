@@ -29,5 +29,6 @@
            "private/nodes-test.ss"
            "private/paths-test.ss"
            "updater-test.ss"
+           "state-db-test.ss"
            "deprecated-test.ss")
   )

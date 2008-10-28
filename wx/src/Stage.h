@@ -342,11 +342,6 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 	void UpdateCurrentElementAndCursor(const wxPoint &inPosition);
 	void UpdateCurrentElementAndCursor();
 
-    //////////
-    /// Update the TStateDB system clock.
-    ///
-    void UpdateClock();
-
 public:
     //////////
     /// Create a new stage.  Should only be called by StageFrame.
@@ -499,6 +494,11 @@ public:
     /// Let the stage know that the list of active elements has changed.
     ///
     void NotifyElementsChanged();
+
+    //////////
+    /// Update the TStateDB system clock.
+    ///
+    void UpdateClockKeysInStateDB();
 
     //////////
     /// Wake the interpreter up if mNeedToWakeUp is true.
