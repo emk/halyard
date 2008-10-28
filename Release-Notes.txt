@@ -1,6 +1,25 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.21 - 28 Oct 2008
+
+Things are definitely beginning to stabilize a bit as we approach 0.6.
+We're still planning to do some work on installers, and on various Quake 2
+issues.
+
+This release improves support for testing code that uses (jump ...),
+state-db.ss and data-file.ss.  It also clears the state-db on each reload,
+and catches attempts to override an existing member function using ELEM.
+
+Eric Kidd (7):
+      Clear gStateDB when script is reloaded
+      Don't allow ELEM to clobber inherited methods
+      Updater: Fix AUTO-UPDATE-POSSIBLE? to always use DIR
+      Allow expressions to be passed to ASSERT-JUMPS
+      Trap unexpected JUMPs while running unit tests
+      state-db: Add better supporting for writing unit tests
+      data-file: Add better support for writing unit tests
+
 0.5.20 - 13 Oct 2008
 
 This engine extends %CLICKABLE-ZONE% with support for %BASIC-BUTTON%'s
