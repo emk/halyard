@@ -52,7 +52,8 @@
 
            define-global-pref
            define-user-pref
-           )
+           
+           with-temporary-user-data)
 
   (define *tables* (make-hash-table 'equal))
   
@@ -175,5 +176,20 @@
     (syntax-rules ()
       [(define-global-pref var default)
        (define-pref var default 'global)]))
+  
+  (define (call-with-temporary-user-data user-id thunk)
+    (fluid-let [[*user-id* user-id]]
+      (clear-user-prefs!)
+      (thunk)))
+  
+  ;;; Call BODY with a new-initialized set of user prefs in place,
+  ;;; and restore the old ones when we're done.
+  (define-syntax with-temporary-user-data
+    (syntax-rules ()
+      [(_ () body ...)
+       (with-temporary-user-data ('fake-user-for-test-cases) body ...)]
+      [(_ (user-id) body ...)
+       (call-with-temporary-user-data user-id (fn () body ...))]))
+  (define-syntax-indent with-temporary-user-data 1)
   
   )

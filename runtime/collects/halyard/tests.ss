@@ -30,5 +30,6 @@
            "private/paths-test.ss"
            "updater-test.ss"
            "state-db-test.ss"
+           "data-file-test.ss"
            "deprecated-test.ss")
   )
