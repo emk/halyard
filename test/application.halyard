@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<HalyardProgram version="3" backto="0" type="object" class="HalyardProgram">
+<HalyardProgram version="4" backto="0" type="object" class="HalyardProgram">
   <backgrounds type="list"/>
   <cards type="list"/>
   <comments type="str">This is a simple little test script to prove everything works.
@@ -7,8 +7,8 @@
 Comments may be more than one line long.  Lines wrap correctly.  This text will get saved.</comments>
   <copyright type="str">Copyright 2008 Trustees of Dartmouth College.  All rights reserved.</copyright>
   <datadirname type="str"></datadirname>
-  <dbgreporturl type="str"></dbgreporturl>
+  <dbgreporturl type="str">http://iml.dartmouth.edu/intranet/crashes/upload/action/40</dbgreporturl>
   <name type="str">Halyard Test</name>
-  <sourcefilecount type="int">158</sourcefilecount>
+  <sourcefilecount type="int">0</sourcefilecount>
   <version type="str">0.1</version>
 </HalyardProgram>
