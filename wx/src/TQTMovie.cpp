@@ -110,8 +110,18 @@ void TQTMovie::InitializeMovies()
     // So we're going back to allowing hardware acceleration of QuickTime
     // for now, pending future complaints.
     //
-	//CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
-	CHECK_MAC_ERROR(::InitializeQTML(0));
+    // Update (November 2008): Our single most common tech support response
+    // is currently "Please try turning on QuickTime safe mode."  Using
+    // standard, accelerated QuickTime leads to various combinations of the
+    // following symptoms:
+    //  - Choppy video playback.
+    //  - Crashes in the On2 VP3 codec:
+    //    http://iml.dartmouth.edu/fogbugz/default.php?12661
+    //  - Playback of only part of a video frame.
+    // So for now, we're going to try re-enabling this, and see what
+    // happens when our next program enters alpha testing.
+	CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
+	//CHECK_MAC_ERROR(::InitializeQTML(0));
 
 	// As Chuck discovered, QuickTime likes to draw movies to 
 	// inappropriate places on the screen, and to engage in other bits
