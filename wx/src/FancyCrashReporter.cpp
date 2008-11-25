@@ -404,15 +404,25 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     if (inType == SCRIPT_CRASH && mScriptReportUrl == "")
         ::exit(1);
 
-    // Generate our debug report.
-    FancyDebugReport report(this, GetReportUrl(inType), inReason);
-    report.AddAll(report.GetContext());
-
     // Ask TLogger to prepare for a crash.  If we were called directly by
     // TLogger, we've probably done this already.  But if we were called
     // because of a segfault or other OS-level problem that doesn't go
     // through TLogger, we presumably haven't done this yet.
     TLogger::PrepareToExit();
+
+    // Generate our debug report, and check to make sure we created a temporary
+    // directory.
+    FancyDebugReport report(this, GetReportUrl(inType), inReason);
+    if (!report.IsOk()) {
+        gLog.Log("Unable to create debug report for crash (crash message: %s)",
+                 (inReason != NULL ? inReason : "none"));
+        wxMessageDialog dlg(NULL, "The application was unable to create a "
+                            "debug report.\nPlease report this manually if you "
+                            "know how.", "Unable to create debug report", wxOK);
+        dlg.ShowModal();
+        ::exit(1);
+    }
+    report.AddAll(report.GetContext());
 
     // Open up any logs we haven't opened yet, and as a side effect, write
     // the most recent entries in those logs to disk.  (TLogger maintains
