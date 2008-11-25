@@ -49,6 +49,44 @@ namespace FS = FileSystem;
 
 
 //=========================================================================
+//  Support routines
+//=========================================================================
+
+#ifdef __WXMSW__
+#   define CURL_NAME "curl.exe"
+#else
+#   define CURL_NAME "curl"
+#endif
+
+// Attempt to locate a curl executable.
+static wxString FindCurlExecutable() {
+    // Look for curl in both our script directory and our runtime
+    // directory.  We haven't made a final decision about where to put it,
+    // so for now, try both.
+    std::vector<FS::Path> candidates;
+    candidates.push_back(FS::GetBaseDirectory().AddComponent(CURL_NAME));
+    candidates.push_back(FS::GetRuntimeDirectory().AddComponent(CURL_NAME));
+
+    // Loop over candidate directories.
+    std::vector<FS::Path>::iterator i(candidates.begin());
+    for (; i != candidates.end(); ++i) {
+        if (i->DoesExist()) {
+            wxString result(i->ToNativePathString().c_str());
+            gDebugLog.Log("Found curl at %s", result.mb_str());
+            return result;
+        }
+    }
+    
+    // We didn't find curl in any of the expected places.  So we might as
+    // well try the system path.  This is really not a good idea, so
+    // issue a warning.
+    gLog.Warning("Unable to find curl.exe for uploading debug reports,\n"
+                 "looking in system PATH.");
+    return CURL_NAME;
+}
+
+
+//=========================================================================
 //  FancyDebugReport
 //=========================================================================
 
@@ -79,7 +117,8 @@ FancyDebugReport::FancyDebugReport(FancyCrashReporter *inReporter,
                                    const char *inReportUrl,
                                    const char *inReason)
     : wxDebugReportUpload(wxString(inReportUrl, wxConvLocal),
-                          wxT("report:file"), wxT("action")),
+                          wxT("report:file"), wxT("action"),
+                          FindCurlExecutable()),
       mReporter(inReporter), mReason(inReason)
 {
 }
