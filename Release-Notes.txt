@@ -1,6 +1,21 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.22 - 25 Nov 2008
+
+We've finished overhauling the server-side portion of the crash reporter,
+and we need some more changes on the client side.  This release includes
+both fixes to the crash reporter infrastructure, and workarounds for
+various issues discovered by the crash reporter.
+
+Eric Kidd (6):
+      Add crash report URL to halyard/test
+      Force QuickTime to run in Safe/GDI mode
+      Include full text of PortAudio error messages
+      Crash reporter: Search for curl executable in script and runtime dirs
+      Add %force-crash function
+      Crash reporter: Display error if we can't create temp dir
+
 0.5.21 - 28 Oct 2008
 
 Things are definitely beginning to stabilize a bit as we approach 0.6.
