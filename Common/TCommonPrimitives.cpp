@@ -439,6 +439,11 @@ DEFINE_PRIMITIVE(StateDbUnregisterListeners) {
     gStateListenerManager.UnregisterListeners(name);
 }
 
+DEFINE_PRIMITIVE(ForceCrash)
+{
+    *reinterpret_cast<unsigned int *>(NULL) = 0xDEADBEEF;
+}
+
 
 //=========================================================================
 //  RegisterCommonPrimitives
@@ -470,4 +475,5 @@ void Halyard::RegisterCommonPrimitives()
     REGISTER_PRIMITIVE(StateDbGet);
     REGISTER_PRIMITIVE(StateDbRegisterListener);
     REGISTER_PRIMITIVE(StateDbUnregisterListeners);
+    REGISTER_PRIMITIVE(ForceCrash);
 }

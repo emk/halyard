@@ -381,5 +381,17 @@
     ;;; XXX - Note that we stomp the "saved-text-position" used by
     ;;; deprecated.ss.
     (call-prim 'MeasureTextAA (stylesheet-long-name style) text max-width))
+
+
+  ;;;======================================================================
+  ;;;  Utility Functions
+  ;;;======================================================================
+
+  (provide %force-crash)
+
+  ;; Temporary utility function for forcing a hard crash.
+  ;; TODO - Remove %force-crash.
+  (define (%force-crash)
+    (call-prim 'ForceCrash))
   
   ) ; end module
