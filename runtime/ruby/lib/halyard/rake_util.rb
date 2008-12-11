@@ -19,5 +19,14 @@ module Halyard
         end
       end
     end
+
+    # Build an installer using Inno Setup 5, which must be installed in
+    # the default location.  For best results, run this from the directory
+    # containing your application.
+    #   inno_setup_4 'myprogram.iss'
+    def inno_setup_5 iss_file, options={}
+      defines = (options[:define] || {}).map {|var,value| "-d#{var}=#{value}" }
+      sh 'c:/Program Files/Inno Setup 5/iscc', iss_file, *defines
+    end
   end
 end
