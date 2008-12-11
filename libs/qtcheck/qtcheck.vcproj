@@ -144,7 +144,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="qtmlclient.lib"
-				OutputFile="$(OutDir)/qtcheck.dll"
+				OutputFile="../../runtime/qtcheck.dll"
 				LinkIncremental="1"
 				ModuleDefinitionFile="qtcheck.def"
 				GenerateDebugInformation="true"
