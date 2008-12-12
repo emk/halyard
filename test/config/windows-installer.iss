@@ -22,28 +22,30 @@ Source: engine\win32\*_d.pdb; DestDir: {app}\engine\win32; Components: debug
 Source: config\developer.prefs; DestDir: {app}\config; Components: debug
 #endif
 
-;; TODO: Actually make sure we include this in Runtime.
-;;Source: engine\win32\LICENSE.txt; DestDir: {app}; Components: base
+;; WARNING: If you don't include this, the crash reporter won't work.
+Source: curl.exe; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
 
-;; TODO: Decide where these should live.
-;;Source: curl.exe; DestDir: {app}; Components: base
-
-;; TODO: Decide where these should live.
+;; WARNING: If you don't include these, the updater won't work.
+;;
 ;; Note that gpgv and gnupg are affected by US export restrictions, as
 ;; described in bug 1046 and bug 1121.  Do not export these files or upload
 ;; them to a website without understanding the legal ramifications.
-;;Source: gpgv.exe; DestDir: {app}; Components: base
-;;Source: gnupg-1.4.7.tar.bz2; DestDir: {app}
-;;Source: trustedkeys.gpg; DestDir: {app}; Components: base
+Source: gpgv.exe; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
+Source: gnupg-1.4.7.tar.bz2; DestDir: {app}; Flags: skipifsourcedoesntexist
+Source: trustedkeys.gpg; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
 
-;; TODO: Decide where these should live.
-;;Source: AUTO-UPDATE; DestDir: {app}; Components: base; Tasks: autoupdate
+;; TODO: Move these to config/.
+;; TODO: Make sure we generate TRUST-PRECOMPILED.
+;; WARNING: AUTO-UPDATE is needed for the updater.
+Source: AUTO-UPDATE; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base; Tasks: autoupdate
 Source: TRUST-PRECOMPILED; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
 
+;; TODO - Make sure halyard/test has LICENSE.txt.
+Source: LICENSE.txt; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
+
 Source: application.halyard; DestDir: {app}; Components: base
-;;Source: LICENSE.txt; DestDir: {app}; Components: base
 Source: config\*; DestDir: {app}\config; Excludes: .git*,.svn,*.bak,.#*,#*,*~,developer.prefs; Flags: recursesubdirs; Components: base
-Source: local\*; DestDir: {app}\local; Excludes: .git*,.svn,*.bak,.#*,#*,*~,*.psd,*.psd; Flags: recursesubdirs nocompression; Components: base
+Source: local\*; DestDir: {app}\local; Excludes: .git*,.svn,*.bak,.#*,#*,*~,*.psd; Flags: recursesubdirs nocompression; Components: base
 
 Source: scripts\*; DestDir: {app}\scripts; Excludes: .git*,.svn,*.bak,.#*,#*,*~,compiled; Flags: recursesubdirs; Components: base
 Source: scripts\*.zo; DestDir: {app}\scripts; Flags: recursesubdirs touch skipifsourcedoesntexist; Components: base
