@@ -1,15 +1,12 @@
 # Build support.  Run 'rake --tasks' for instructions.  -*- Ruby -*-
+require 'rake/testtask'
 require 'tools/visual_studio_dot_net'
 require 'tools/code_signing'
 require 'fileutils'
 require 'find'
 
 # Get access to our standard Rake utilities.
-$HALYARD_SCRIPT  = "#{File.dirname(__FILE__)}/test"
-$HALYARD_RUNTIME = "#{File.dirname(__FILE__)}/runtime"
-require "#{$HALYARD_RUNTIME}/ruby/lib/halyard/boot"
-require 'halyard/rake_util'
-include Halyard::RakeUtil
+require 'tools/halyard_boot'
 
 
 #==========================================================================
@@ -92,6 +89,11 @@ task :build => task_names(:build)
 
 desc "Run unit tests for all configurations"
 task :test => task_names(:test)
+
+Rake::TestTask.new do |t|
+  t.name = :test_ruby
+  t.test_files = FileList['runtime/ruby/test/**/*_test.rb']
+end
 
 desc "Sign *.exe and *.dll files (USB key required)"
 CodeSigning::Task.new do |t|
