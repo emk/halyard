@@ -88,7 +88,7 @@ Name: base; Description: Halyard Test; Flags: fixed; Types: regular
 #if CD_INSTALLER
 Name: media; Description: Video Files; Flags: fixed; Types: regular
 #else
-Name: media; Description: Video Files; Types: regular; Check: DirCheck(ExpandConstant('{src}\Media'))
+Name: media; Description: Video Files; Types: regular; Check: DirCheck(ExpandConstant('{src}\streaming'))
 #endif
 Name: debug; Description: Debugging Support; Types: regular
 Name: quicktime; Description: QuickTime; Flags: fixed disablenouninstallwarning; Types: regular; Check: NeedQuickTime; ExtraDiskSpaceRequired: 4194304
@@ -96,12 +96,8 @@ Name: vp3; Description: On2 VP3 QuickTime Codec; Flags: fixed disablenouninstall
 [Setup]
 SourceDir=..
 MinVersion=0,5.01.2600sp2
-AppCopyright=Copyright 2007-2008 Trustees of Dartmouth College
-AppName=Halyard Test Program
-AppVerName=Halyard Test Program
 ;;LicenseFile=LICENSE.txt
 PrivilegesRequired=admin
-DefaultDirName={pf}\Halyard Test
 AlwaysShowComponentsList=false
 ShowLanguageDialog=yes
 #if CD_INSTALLER
@@ -109,18 +105,12 @@ OutputDir=cd_installer
 #else
 OutputDir=.
 #endif
-OutputBaseFilename=Halyard_Test_Setup
-DefaultGroupName=Halyard Test
-AppPublisher=Dartmouth College Interactive Media Lab
-AppPublisherURL=http://iml.dartmouth.edu/
-AppSupportURL=http://iml.dartmouth.edu/sae
-AppID={{1334EC75-AC02-4623-9E9D-31B1055FA013}
 #if CD_INSTALLER
 DiskSpanning=true
 ReserveBytes=31457280
 DiskSliceSize=732954624
 #endif
-UninstallDisplayIcon={app}\Graphics\script\application.ico
+UninstallDisplayIcon={app}\local\branding\application.ico
 [Run]
 ;; We're going to re-enable our internal QuickTime support, since Joe
 ;; Henderson has asked use to use the /passive flag.  See bug #3581 for the
@@ -128,10 +118,10 @@ UninstallDisplayIcon={app}\Graphics\script\application.ico
 Filename: {tmp}\QuickTimeInstaller.exe; Parameters: /passive; Components: quicktime; StatusMsg: Installing QuickTime...
 Filename: {app}\engine\win32\Halyard.exe; Parameters: """{app}"""; WorkingDir: {app}; Description: Launch Halyard Test; Flags: postinstall
 [Icons]
-Name: {group}\Halyard Test; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\Graphics\script\application.ico
+Name: {group}\Halyard Test; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico
 Name: {group}\Halyard License; Filename: {app}\engine\win32\LICENSE.txt; Flags: createonlyiffileexists
 Name: {group}\Update Halyard Test; Filename: {app}\engine\win32\Halyard.exe; Parameters: "-e ""(set! *updater-only* #t)"" ""{app}"""; WorkingDir: {app}; Flags: createonlyiffileexists; Components: base; Tasks: not autoupdate; IconFilename: {app}\Graphics\script\update.ico; IconIndex: 0
-Name: {commondesktop}\Halyard Test; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\Graphics\script\application.ico; Tasks: desktopicon
+Name: {commondesktop}\Halyard Test; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico; Tasks: desktopicon
 [Tasks]
 Name: desktopicon; Description: Create a shortcut to Halyard Test on the desktop; Components: base
 Name: autoupdate; Description: Periodically check for updates; Components: base
