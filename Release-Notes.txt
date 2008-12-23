@@ -1,6 +1,28 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.23 - 23 Dec 2008
+
+This release includes a new, standardized system for building installers
+for Halyard applications.  Just copy config/windows-installer.iss from
+halyard/test, customize it for your program, and run:
+
+  rake halyard:installer
+
+This release also removes the code that forced QuickTime safe mode, because
+safe mode fails on some machines that work fine in accelerated mode.  Yes,
+this is not very convenient.
+
+Eric Kidd (8):
+      Add experimental halyard:(un)freeze task
+      Update halyard-test *.iss to build primitive installers
+      Add halyard:installer task to standard Rakefiles
+      Installer: Conditonally enable more files
+      Merge installer template into config/windows-installer.iss
+      Stop forcing QuickTime safe mode (again)
+      Installer: Begin to split out program-specific parts
+      Installer: Implement AppShortName using CustomMessages
+
 0.5.22 - 25 Nov 2008
 
 We've finished overhauling the server-side portion of the crash reporter,
