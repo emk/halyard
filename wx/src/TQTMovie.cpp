@@ -120,8 +120,12 @@ void TQTMovie::InitializeMovies()
     //  - Playback of only part of a video frame.
     // So for now, we're going to try re-enabling this, and see what
     // happens when our next program enters alpha testing.
-	CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
-	//CHECK_MAC_ERROR(::InitializeQTML(0));
+    //
+    // Update (December 2008): Internal testing reveals that not all
+    // machines can run QuickTime in GDI mode.  In particular, Robinson's
+    // XP latop refuses to play video.  So we're switching back.
+	//CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
+	CHECK_MAC_ERROR(::InitializeQTML(0));
 
 	// As Chuck discovered, QuickTime likes to draw movies to 
 	// inappropriate places on the screen, and to engage in other bits
