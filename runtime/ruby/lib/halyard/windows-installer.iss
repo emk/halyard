@@ -84,7 +84,7 @@ Source: {src}\QuickTimeInstaller.exe; DestDir: {tmp}; Components: quicktime; Fla
 [Types]
 Name: regular; Description: Regular Install
 [Components]
-Name: base; Description: Halyard Test; Flags: fixed; Types: regular
+Name: base; Description: {cm:AppShortName}; Flags: fixed; Types: regular
 #if CD_INSTALLER
 Name: media; Description: Video Files; Flags: fixed; Types: regular
 #else
@@ -95,6 +95,8 @@ Name: quicktime; Description: QuickTime; Flags: fixed disablenouninstallwarning;
 Name: vp3; Description: On2 VP3 QuickTime Codec; Flags: fixed disablenouninstallwarning; Types: regular; Check: NeedVP3
 [Setup]
 SourceDir=..
+DefaultDirName={pf}\{cm:AppShortName}
+DefaultGroupName={cm:AppShortName}
 MinVersion=0,5.01.2600sp2
 ;;LicenseFile=LICENSE.txt
 PrivilegesRequired=admin
@@ -116,14 +118,14 @@ UninstallDisplayIcon={app}\local\branding\application.ico
 ;; Henderson has asked use to use the /passive flag.  See bug #3581 for the
 ;; details of the decision and our licensing discussion with Apple.
 Filename: {tmp}\QuickTimeInstaller.exe; Parameters: /passive; Components: quicktime; StatusMsg: Installing QuickTime...
-Filename: {app}\engine\win32\Halyard.exe; Parameters: """{app}"""; WorkingDir: {app}; Description: Launch Halyard Test; Flags: postinstall
+Filename: {app}\engine\win32\Halyard.exe; Parameters: """{app}"""; WorkingDir: {app}; Description: Launch {cm:AppShortName}; Flags: postinstall
 [Icons]
-Name: {group}\Halyard Test; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico
+Name: {group}\{cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico
 Name: {group}\Halyard License; Filename: {app}\engine\win32\LICENSE.txt; Flags: createonlyiffileexists
-Name: {group}\Update Halyard Test; Filename: {app}\engine\win32\Halyard.exe; Parameters: "-e ""(set! *updater-only* #t)"" ""{app}"""; WorkingDir: {app}; Flags: createonlyiffileexists; Components: base; Tasks: not autoupdate; IconFilename: {app}\Graphics\script\update.ico; IconIndex: 0
-Name: {commondesktop}\Halyard Test; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico; Tasks: desktopicon
+Name: {group}\Update {cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; Parameters: "-e ""(set! *updater-only* #t)"" ""{app}"""; WorkingDir: {app}; Flags: createonlyiffileexists; Components: base; Tasks: not autoupdate; IconFilename: {app}\Graphics\script\update.ico; IconIndex: 0
+Name: {commondesktop}\{cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico; Tasks: desktopicon
 [Tasks]
-Name: desktopicon; Description: Create a shortcut to Halyard Test on the desktop; Components: base
+Name: desktopicon; Description: Create a shortcut to {cm:AppShortName} on the desktop; Components: base
 Name: autoupdate; Description: Periodically check for updates; Components: base
 [Registry]
 Root: HKCU; Subkey: Software\Halyard; Flags: uninsdeletekey dontcreatekey
@@ -299,7 +301,7 @@ begin
     if NeedQuickTime() and not HaveQuickTimeInstaller() then begin
         MsgBox(ExpandConstant('Please install QuickTime ' +
                               MinimumQuickTimeVersionString + ' ' +
-                              'or later before installing Halyard Test.'),
+                              'or later before installing this application.'),
                mbError, MB_OK);
         Result := false;
     end;
@@ -327,7 +329,7 @@ end;
 //	CacheQuickTimeChecks(); // Re-run our QuickTime checks.
 //	if NeedQuickTime() then begin
 //		MsgBox('Your copy of QuickTime may not be fully installed. ' +
-//		       'Before running Halyard Test, please ' +
+//		       'Before running the application, please ' +
 //		       'make sure QuickTime is installed.',
 //		       mbError, MB_OK);
 //	end;
