@@ -122,7 +122,7 @@ Filename: {app}\engine\win32\Halyard.exe; Parameters: """{app}"""; WorkingDir: {
 [Icons]
 Name: {group}\{cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico
 Name: {group}\Halyard License; Filename: {app}\engine\win32\LICENSE.txt; Flags: createonlyiffileexists
-Name: {group}\Update {cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; Parameters: "-e ""(set! *updater-only* #t)"" ""{app}"""; WorkingDir: {app}; Flags: createonlyiffileexists; Components: base; Tasks: not autoupdate; IconFilename: {app}\Graphics\script\update.ico; IconIndex: 0
+Name: {group}\Update {cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; Parameters: "-e ""(set! *updater-only* #t)"" ""{app}"""; WorkingDir: {app}; Flags: createonlyiffileexists; Components: base; Tasks: not autoupdate; IconFilename: {app}\local\branding\update.ico; IconIndex: 0
 Name: {commondesktop}\{cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico; Tasks: desktopicon
 [Tasks]
 Name: desktopicon; Description: Create a shortcut to {cm:AppShortName} on the desktop; Components: base
