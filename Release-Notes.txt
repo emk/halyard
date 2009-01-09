@@ -1,6 +1,14 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.24 - 9 Jan 2008
+
+This is a minor release fixing a couple of installer-related issues.
+
+Eric Kidd (2):
+      Add qtcheck.dll to list of files in a binary release
+      Fix path for the updater icon
+
 0.5.23 - 23 Dec 2008
 
 This release includes a new, standardized system for building installers
