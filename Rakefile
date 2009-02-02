@@ -97,8 +97,8 @@ end
 
 desc "Sign *.exe and *.dll files (USB key required)"
 CodeSigning::Task.new do |t|
-  t.files = Dir['Win32/Bin/*.exe'] + Dir['Win32/Bin/*.dll']
-  t.description['Win32/Bin/UpdateInstaller.exe'] = "Update Installer"
+  t.files = Dir['runtime/*.exe'] + Dir['runtime/*.dll']
+  t.description['runtime/UpdateInstaller.exe'] = "Update Installer"
   t.default_description = "Halyard multimedia engine"
   t.description_url = "http://iml.dartmouth.edu/halyard/"
   t.key_file = 'iml_authenticode_key'
