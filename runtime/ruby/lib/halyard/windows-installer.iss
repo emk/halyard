@@ -79,7 +79,7 @@ Source: QuickTimeInstaller.exe; DestDir: {tmp}; Components: quicktime; Flags: de
 #else
 Source: {src}\QuickTimeInstaller.exe; DestDir: {tmp}; Components: quicktime; Flags: deleteafterinstall external
 #endif
-;;Source: On2_VP3.qtx; DestDir: {sys}\QuickTime; Components: vp3; Flags: uninsneveruninstall
+Source: On2_VP3.qtx; DestDir: {sys}\QuickTime; Components: vp3; Flags: uninsneveruninstall skipifsourcedoesntexist
 
 [Types]
 Name: regular; Description: Regular Install
