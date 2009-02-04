@@ -56,7 +56,7 @@ module Halyard
     # Return a list of all the files used to construct an *.iss file.  Used
     # in rake dependencies.
     def self.windows_installer_dependencies
-      [File.join(File.dirname(__FILE__), 'windows-installer.iss')]
+      [File.join(File.dirname(__FILE__), 'windows-installer-template.iss')]
     end
 
     # Merge +string+ with the standard installer template.
