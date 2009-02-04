@@ -2,7 +2,7 @@
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
-// Copyright 1993-2008 Trustees of Dartmouth College
+// Copyright 1993-2009 Trustees of Dartmouth College
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@
 #define HALYARD_COPYRIGHT_NAME \
     SHORT_NAME " multimedia engine"
 #define HALYARD_COPYRIGHT_NOTICE \
-    "Copyright 1993-2008 Trustees of Dartmouth College. All rights reserved."
+    "Copyright 1993-2009 Trustees of Dartmouth College. All rights reserved."
 
 /// The date at which the files including TVersion.h were built.  This will
 /// work right as long as you change the version number for official builds.

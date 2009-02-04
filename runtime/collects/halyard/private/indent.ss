@@ -1,7 +1,7 @@
 ;; @BEGIN_LICENSE
 ;;
-;; Mizzen - Scheme object system
-;; Copyright 2006-2008 Trustees of Dartmouth College
+;; Halyard - Multimedia authoring and playback system
+;; Copyright 1993-2009 Trustees of Dartmouth College
 ;; 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU Lesser General Public License as
