@@ -1,0 +1,4 @@
+#!/bin/bash -e
+
+find Common wx runtime tools \
+    -name \*.cpp -o -name \*.h -o -name \*.ss -o -name \*.rb

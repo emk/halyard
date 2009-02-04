@@ -9,11 +9,14 @@
 # When updating the licenses (usually when updating the year), we should
 # probably run this script on the following files:
 # 
-#   find Common -name "*.cpp" -o -name "*.h" | xargs tools/fix-prologues.pl
-#   find wx/src -name "*.cpp" -o -name "*.h" | xargs tools/fix-prologues.pl
-#   find tools -name "*.cpp" -o -name "*.h" | xargs tools/fix-prologues.pl
-#   tools/fix-prologues.pl test/Runtime/halyard/*.ss
-#   tools/fix-prologues.pl test/Runtime/mizzen/*.ss
+#   tools/find-halyard-sources | PERLIO=lf xargs tools/fix-prologues.pl
+#
+# The following files should be excluded:
+#
+#   git checkout Common/test/scripts    # Can't have prologues here.
+#   git checkout runtime/templates      # Public domain
+#   git checkout tools/preinstaller/resource.h
+#   git checkout wx/src/resource.h
 
 use Cwd;
 
@@ -27,12 +30,12 @@ __EOD__
 
 my $halyard_program_copyright = <<'__EOD__';
 Halyard - Multimedia authoring and playback system
-Copyright 1993-2008 Trustees of Dartmouth College
+Copyright 1993-2009 Trustees of Dartmouth College
 __EOD__
 
 my $mizzen_program_copyright = <<'__EOD__';
 Mizzen - Scheme object system
-Copyright 2006-2008 Trustees of Dartmouth College
+Copyright 2006-2009 Trustees of Dartmouth College
 __EOD__
 
 my $gpl_license = <<'__EOD__';
@@ -78,24 +81,29 @@ my $cwd = cwd();
 # For each file on the command line.
 foreach my $filename (@ARGV) {
     # Determine what kind of headers we should be adding
-    my $scheme_file = ($filename =~ m{\.ss$});
+    $filename =~ m{\.([^.]+)$};
+    my $file_type = $1;
     my $full_filename = "$cwd/$filename";
-    my $dirname = $full_filename;
-    # Extract the last directory in the path; if it's 'mizzen', we're
-    # in the mizzen project.
-    $dirname =~ s{^.*/([^/]+)/[^/]+$}{$1};
-    my $mizzen_file = ($dirname =~ /^mizzen$/);
+    # Are we in the mizzen collects directory?
+    my $mizzen_file = ($full_filename =~ m{/collects/mizzen/});
     
     # Setup our comment characters and licenses
     my $comment_prefix;
     my $license;
+    my $want_modeline;
     my $program_copyright;
-    if ($scheme_file) {
+    if ($file_type eq 'ss') {
         $comment_prefix = ';;';
         $license = $lgpl_license;
+        $want_modeline = 0;
+    } elsif ($file_type eq 'rb') {
+        $comment_prefix = '#';
+        $license = $lgpl_license;
+        $want_modeline = 0;
     } else {
         $comment_prefix = '//';
         $license = $gpl_license;
+        $want_modeline = 1;
     }
     if ($mizzen_file) {
         $program_copyright = $mizzen_program_copyright;
@@ -120,7 +128,7 @@ foreach my $filename (@ARGV) {
     # Snarf the whole file into memory for easy processing.
     my @lines = <INPUT>;
 
-    if (!$scheme_file) {
+    if ($want_modeline) {
         # Remove any existing modeline.
         if ($lines[0] =~ m{^// -\*- Mode:}) {
             shift @lines;
