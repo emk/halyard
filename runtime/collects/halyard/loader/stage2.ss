@@ -187,7 +187,7 @@
     ;; by a prepackaged installer.
     (let [[always-trust-precompiled?
            (and always-treat-zo-and-so-as-newer-available?
-                (file-exists? (build-path (current-directory)
+                (file-exists? (build-path (current-directory) "config"
                                           "TRUST-PRECOMPILED")))]
           [filename "none"]]
 

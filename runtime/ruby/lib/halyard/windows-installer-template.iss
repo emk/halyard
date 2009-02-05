@@ -41,10 +41,6 @@ Source: binaries\gnupg-1.4.7.tar.bz2; DestDir: {app}\binaries; Flags: skipifsour
 ;; how to handle the move.
 Source: AUTO-UPDATE; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base; Tasks: autoupdate
 
-;; TODO: Move these to config/.
-;; TODO: Make sure we generate TRUST-PRECOMPILED.
-Source: TRUST-PRECOMPILED; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
-
 ;; TODO - Make sure halyard/test has LICENSE.txt.
 Source: LICENSE.txt; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
 
