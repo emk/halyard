@@ -114,7 +114,8 @@
     (with-values
         [[proc stdout stdin stderr]
          ;; PORTABILITY - Windows requires the full name gpgv.exe here.
-         (subprocess #f #f #f (build-path (current-directory) "gpgv.exe")
+         (subprocess #f #f #f (build-path (current-directory)
+                                          "binaries" "gpgv.exe")
                      "--homedir" (path->string trusted-keys-dir)
                      (path->string signature)
                      (path->string file))]

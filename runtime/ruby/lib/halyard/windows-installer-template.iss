@@ -30,8 +30,8 @@ Source: curl.exe; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: ba
 ;; Note that gpgv and gnupg are affected by US export restrictions, as
 ;; described in bug 1046 and bug 1121.  Do not export these files or upload
 ;; them to a website without understanding the legal ramifications.
-Source: gpgv.exe; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
-Source: gnupg-1.4.7.tar.bz2; DestDir: {app}; Flags: skipifsourcedoesntexist
+Source: binaries\gpgv.exe; DestDir: {app}\binaries; Flags: skipifsourcedoesntexist; Components: base
+Source: binaries\gnupg-1.4.7.tar.bz2; DestDir: {app}\binaries; Flags: skipifsourcedoesntexist
 Source: trustedkeys.gpg; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
 
 ;; TODO: Move these to config/.

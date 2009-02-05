@@ -141,10 +141,11 @@ end
 namespace :buildbot do
   namespace :prep do
     desc "Prepare for a full build"
-    task :full => ['git:force_clean', 'test/gpgv.exe']
+    task :full => ['git:force_clean', 'test/binaries/gpgv.exe']
 
     desc "Prepare for a quick build"
-    task :quick => ['git:update_submodules', 'clean_scheme', 'test/gpgv.exe']
+    task :quick => ['git:update_submodules', 'clean_scheme',
+                    'test/binaries/gpgv.exe']
   end
 end
 
@@ -168,12 +169,11 @@ end
 
 # Grab a copy of gpgv.exe, if we don't have one already.  This is
 # publically available from www.gpupg.org, but only in an *.exe installer.
-file 'test/gpgv.exe' do |t|
-  gpgv_svn_url =
-    'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main/tools/crypto/gpgv.exe'
+file 'test/binaries/gpgv.exe' do |t|
+  clone_url = ('ssh://imlsrc.dartmouth.edu/var/lib/git/internal/' +
+               'halyard-support-binaries.git')
   begin
-    sh 'svn', 'export', gpgv_svn_url, t.name
-    sh 'chmod', '+x', t.name
+    sh 'git', 'clone', clone_url, 'test/binaries'
   rescue RuntimeError => e
     STDERR.puts <<__EOD__
 
