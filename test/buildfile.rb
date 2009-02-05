@@ -74,7 +74,7 @@ heading 'Building DVD installer.', :name => :dvd do
 end
 
 # Automatically run our installers when we insert CD 1.
-release 'Autorun.inf', :cd => 1, :cd_only => true, :hidden => true
+release 'config/Autorun.inf', :cd => 1, :cd_only => true, :hidden => true
 release('local/branding/application.ico', 
         :cd => 1, :cd_only => true, :hidden => true)
 
