@@ -32,7 +32,6 @@ Source: binaries\curl.exe; DestDir: {app}\binaries; Flags: skipifsourcedoesntexi
 ;; them to a website without understanding the legal ramifications.
 Source: binaries\gpgv.exe; DestDir: {app}\binaries; Flags: skipifsourcedoesntexist; Components: base
 Source: binaries\gnupg-1.4.7.tar.bz2; DestDir: {app}\binaries; Flags: skipifsourcedoesntexist
-Source: trustedkeys.gpg; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
 
 ;; TODO: Move these to config/.
 ;; TODO: Make sure we generate TRUST-PRECOMPILED.

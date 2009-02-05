@@ -488,7 +488,8 @@
 
     ;; If our signature is bad, fail *immediately*, and don't set anything
     ;; else up.
-    (unless (gpg-signature-valid? (updater-root-directory *updater*)
+    (unless (gpg-signature-valid? (build-path (updater-root-directory *updater*)
+                                              "config")
                                   (update-dir "release.spec.sig")
                                   (update-dir "release.spec"))
       (security-error url))

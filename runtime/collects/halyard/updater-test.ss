@@ -322,20 +322,23 @@
   (define (sig-dir)
     (build-path (halyard-fixture-dir "updater") "signatures"))
 
+  (define (sig-key-dir)
+    (build-path (sig-dir) "config"))
+
   (define (sig-file name)
     (build-path (sig-dir) name))
 
   (define-class %crypto-test% (%test-case%) 
     (test "Good signatures pass validation"
-      (assert (gpg-signature-valid? (sig-dir)
+      (assert (gpg-signature-valid? (sig-key-dir)
                                     (sig-file "good.txt.sig")
                                     (sig-file "good.txt"))))
     (test "Invalid signatures fail validation"
-      (assert (not (gpg-signature-valid? (sig-dir)
+      (assert (not (gpg-signature-valid? (sig-key-dir)
                                          (sig-file "bad1.txt.sig")
                                          (sig-file "bad1.txt")))))
     (test "Signatures from unknown keys fail validation"
-      (assert (not (gpg-signature-valid? (sig-dir)
+      (assert (not (gpg-signature-valid? (sig-key-dir)
                                          (sig-file "bad2.txt.sig")
                                          (sig-file "bad2.txt")))))
     (test "SHA 1 hashes for files should be correct"
