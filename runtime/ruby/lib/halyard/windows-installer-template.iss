@@ -75,11 +75,11 @@ Source: release.spec.sig; DestDir: {app}; Flags: skipifsourcedoesntexist; Compon
 
 ;; QuickTime support.
 #if CD_INSTALLER
-Source: QuickTimeInstaller.exe; DestDir: {tmp}; Components: quicktime; Flags: deleteafterinstall
+Source: binaries\QuickTimeInstaller.exe; DestDir: {tmp}; Components: quicktime; Flags: deleteafterinstall
 #else
 Source: {src}\QuickTimeInstaller.exe; DestDir: {tmp}; Components: quicktime; Flags: deleteafterinstall external
 #endif
-Source: On2_VP3.qtx; DestDir: {sys}\QuickTime; Components: vp3; Flags: uninsneveruninstall skipifsourcedoesntexist
+Source: binaries\On2_VP3.qtx; DestDir: {sys}\QuickTime; Components: vp3; Flags: uninsneveruninstall skipifsourcedoesntexist
 
 [Types]
 Name: regular; Description: Regular Install

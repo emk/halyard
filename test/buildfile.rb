@@ -6,7 +6,7 @@ require 'buildscript/commands'
 
 # Configuration options.
 svn_url = 'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main/'
-quicktime_dir = '//mccay/Mccay/program/sources/Installers/QuickTime/'
+quicktime_dir = 'binaries'
 program_unix_name = 'halyard-test'
 release_dir = "//mccay/Mccay/Testing/#{program_unix_name}"
 
