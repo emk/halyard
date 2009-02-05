@@ -33,10 +33,16 @@ Source: binaries\curl.exe; DestDir: {app}\binaries; Flags: skipifsourcedoesntexi
 Source: binaries\gpgv.exe; DestDir: {app}\binaries; Flags: skipifsourcedoesntexist; Components: base
 Source: binaries\gnupg-1.4.7.tar.bz2; DestDir: {app}\binaries; Flags: skipifsourcedoesntexist
 
+;; This is a tricky file.  If present, it indicates that the user would
+;; like to automatically update to new versions of the program.  But
+;; nothing in Halyard itself actually checks this--it's up to the script.
+;; Note that this file is not included in the update manifests, and can't
+;; be moved to a new location without teaching UpdateInstaller.exe about
+;; how to handle the move.
+Source: AUTO-UPDATE; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base; Tasks: autoupdate
+
 ;; TODO: Move these to config/.
 ;; TODO: Make sure we generate TRUST-PRECOMPILED.
-;; WARNING: AUTO-UPDATE is needed for the updater.
-Source: AUTO-UPDATE; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base; Tasks: autoupdate
 Source: TRUST-PRECOMPILED; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
 
 ;; TODO - Make sure halyard/test has LICENSE.txt.
