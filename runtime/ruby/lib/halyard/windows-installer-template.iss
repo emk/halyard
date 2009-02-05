@@ -23,7 +23,7 @@ Source: config\developer.prefs; DestDir: {app}\config; Components: debug
 #endif
 
 ;; WARNING: If you don't include this, the crash reporter won't work.
-Source: curl.exe; DestDir: {app}; Flags: skipifsourcedoesntexist; Components: base
+Source: binaries\curl.exe; DestDir: {app}\binaries; Flags: skipifsourcedoesntexist; Components: base
 
 ;; WARNING: If you don't include these, the updater won't work.
 ;;

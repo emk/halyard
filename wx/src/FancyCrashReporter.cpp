@@ -60,11 +60,12 @@ namespace FS = FileSystem;
 
 // Attempt to locate a curl executable.
 static wxString FindCurlExecutable() {
-    // Look for curl in both our script directory and our runtime
+    // Look for curl in both our script binaries directory and our runtime
     // directory.  We haven't made a final decision about where to put it,
     // so for now, try both.
     std::vector<FS::Path> candidates;
-    candidates.push_back(FS::GetBaseDirectory().AddComponent(CURL_NAME));
+    FS::Path binaries_dir(FS::GetBaseDirectory().AddComponent("binaries"));
+    candidates.push_back(binaries_dir.AddComponent(CURL_NAME));
     candidates.push_back(FS::GetRuntimeDirectory().AddComponent(CURL_NAME));
 
     // Loop over candidate directories.
