@@ -1,5 +1,5 @@
 Halyard - Multimedia authoring and playback system
-Copyright 1993-2008 Trustees of Dartmouth College
+Copyright 1993-2009 Trustees of Dartmouth College
 
 The different components of Halyard are distributed under a variety of
 licenses.  Halyard also includes a number of third-party libraries with
@@ -12,10 +12,10 @@ details.
 
 Here is a summary of licenses used in the Halyard distribution:
 
-  1) The Halyard Scheme runtime code (in test/Runtime/halyard and
-     test/Runtime/mizzen) is distributed under the GNU Lesser General
-     Public License, either version 2.1 of the License, or (at your
-     option) any later version.
+  1) The Halyard Scheme runtime code in runtime/collects and the Ruby code
+     in runtime/ruby is distributed under the GNU Lesser General Public
+     License, either version 2.1 of the License, or (at your option) any
+     later version.
 
   2) All other code copyright by the Trustees of Dartmouth College is
      distributed under the GNU General Public License, either version 2 of
@@ -27,9 +27,12 @@ Here is a summary of licenses used in the Halyard distribution:
      official copies of these licenses--and other licenses not reproduced
      below--can be found in the source code distribution.
 
+In a multimedia program based on Halyard, the various runtime files can be
+found in the engine/win32 directory.
+
 If you received this program as pre-built binaries, without the source 
 code, you should be able to download the source code from:
-http://iml.dartmouth.edu/halyard/dist/
+http://iml.dartmouth.edu/halyard/
 
 *===== Third-Party Libraries
 
@@ -1420,9 +1423,8 @@ SOFTWARE.
 
 *===== Fonts
 
-The test/Fonts directory (or the Fonts directory of a Halyard-based
-program) contains additional licenses for the included fonts.  See also the
-Common/FontsDisabled directory.
+The runtime/fonts directory contains additional licenses for the included
+fonts.  See also the Common/FontsDisabled directory.
 
 *===== Other Licenses
 
