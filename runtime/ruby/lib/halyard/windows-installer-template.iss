@@ -81,6 +81,7 @@ Source: binaries\QuickTimeInstaller.exe; DestDir: {tmp}; Components: quicktime; 
 Source: {src}\QuickTimeInstaller.exe; DestDir: {tmp}; Components: quicktime; Flags: deleteafterinstall external
 #endif
 Source: binaries\On2_VP3.qtx; DestDir: {sys}\QuickTime; Components: vp3; Flags: uninsneveruninstall skipifsourcedoesntexist
+Source: binaries\vp3-3.2.2.1.tar.bz2; DestDir: {app}\binaries; Components: vp3; Flags: skipifsourcedoesntexist
 
 [Types]
 Name: regular; Description: Regular Install
