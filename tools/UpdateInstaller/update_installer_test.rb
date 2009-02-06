@@ -25,7 +25,7 @@ require 'fileutils'
 require 'pathname'
 
 class UpdateInstallerTest < Test::Unit::TestCase
-  EXE_PATH="../../../Win32/Bin/UpdateInstaller.exe"
+  EXE_PATH="../../../runtime/UpdateInstaller.exe"
 
   def setup
     FileUtils.cp_r "fixture", "fixture-temp"
