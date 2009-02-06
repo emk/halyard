@@ -10,9 +10,17 @@
 [Files]
 ;; Halyard runtime files.  We use a pretty complicated exclusion pattern
 ;; and then add some stuff back in manually.
-Source: engine\win32\*; DestDir: {app}\engine\win32; Excludes: .git*,.svn,*.bak,.#*,#*,*~,compiled,*.ilk,*.map,CommonTest*,qtcheck.dll,*_d.*; Flags: recursesubdirs; Components: base
+Source: engine\win32\*; DestDir: {app}\engine\win32; Excludes: .git*,.svn,*.bak,.#*,#*,*~,compiled,*.ilk,*.map,CommonTest*,qtcheck.dll,*_d.*,UpdateInstaller.exe; Flags: recursesubdirs; Components: base
 Source: engine\win32\*.zo; DestDir: {app}\engine\win32; Flags: recursesubdirs touch skipifsourcedoesntexist; Components: base
 Source: engine\win32\qtcheck.dll; Flags: dontcopy
+
+;; WARNING: UpdateInstaller.exe must allways be installed in {app}, as
+;; long as we want older updaters to work and to call the
+;; newly-downloaded UpdateInstaller.exe.  Our updater looks for a file
+;; called UpdateInstaller.exe at the top level when pulling an update
+;; down, so if this is not present, we will always get the old
+;; UpdateInstaller.exe that was installed originally.
+Source: engine\win32\UpdateInstaller.exe; DestDir: {app}; Components: base
 
 ;; We include these files only if we're including debugging support.
 #if INCLUDE_DEBUGGING_SUPPORT
