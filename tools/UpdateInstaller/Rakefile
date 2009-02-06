@@ -4,7 +4,6 @@ require '../visual_studio_dot_net'
 task :default => :test
 
 task :test => :build do
-  in_fixture_copy { sh "../test/Debug/UpdateInstallerTest.exe" }
   ruby "update_installer_test.rb"
 end
 
@@ -17,13 +16,4 @@ end
 
 task :clean do
   VisualStudioDotNet.clean "UpdateInstaller.vcproj", "Release"
-end
-
-def in_fixture_copy
-  FileUtils.rm_rf "fixture-temp"
-  FileUtils.cp_r "fixture", "fixture-temp"
-  FileUtils.cd "fixture-temp" do 
-    yield
-  end
-  FileUtils.rm_rf "fixture-temp"
 end

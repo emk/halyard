@@ -1,6 +1,24 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.26 - 6 Feb 2009
+
+This release fixes several broken pieces related to the update
+installer.  When we did the reorg to put the executables into runtime,
+which is deployed to engine/win32, we did not update everything else
+to match.  This release adds UpdateInstaller.exe to the list of
+binaries released to our programs, fixes various units tests and adds
+them to the main 'rake test' task, and updates the installer to
+install UpdateInstaller.exe to the place the updater expects it.
+
+Brian Campbell (6):
+      .gitignore: Ignore doc directory
+      UpdateInstaller: Point unit tests to runtime instead of Win32/Bin
+      Rakefile: Call UpdateInstaller and buildscript tests during 'rake test'
+      buildfile.rb: Add UpdateInstaller.exe to list of released binaries
+      Installer: Fix installer rake task to point to windows-installer-final.iss
+      Installer: Always install UpdateInstaller.exe in program root
+
 0.5.25 - 5 Feb 2009
 
 We're getting ready for an alpha release of one of our in-house programs,

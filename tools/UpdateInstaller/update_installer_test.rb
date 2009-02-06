@@ -25,9 +25,10 @@ require 'fileutils'
 require 'pathname'
 
 class UpdateInstallerTest < Test::Unit::TestCase
-  EXE_PATH="../../../Win32/Bin/UpdateInstaller.exe"
+  EXE_PATH="../../../runtime/UpdateInstaller.exe"
 
   def setup
+    FileUtils.rm_rf "fixture-temp"
     FileUtils.cp_r "fixture", "fixture-temp"
     FileUtils.cd "fixture-temp"
   end
@@ -39,6 +40,10 @@ class UpdateInstallerTest < Test::Unit::TestCase
 
   def test_exe_exists
     assert_exists EXE_PATH
+  end
+
+  def test_run_cpp_tests
+    assert system("../test/Debug/UpdateInstallerTest.exe")
   end
 
   def test_install

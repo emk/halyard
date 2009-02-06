@@ -88,11 +88,21 @@ desc "Build all configurations"
 task :build => task_names(:build)
 
 desc "Run unit tests for all configurations"
-task :test => task_names(:test)
+task :test => task_names(:test) + [:test_ruby, :test_tools]
 
 Rake::TestTask.new do |t|
   t.name = :test_ruby
   t.test_files = FileList['runtime/ruby/test/**/*_test.rb']
+end
+
+desc "Run unit tests for buildscript and UpdateInstaller"
+task :test_tools => :build do 
+  FileUtils.cd('runtime/ruby/lib/buildscript') do 
+    sh('rake test')
+  end
+  FileUtils.cd('tools/UpdateInstaller') do 
+    sh('ruby update_installer_test.rb')
+  end
 end
 
 desc "Sign *.exe and *.dll files (USB key required)"
