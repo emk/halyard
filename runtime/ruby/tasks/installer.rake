@@ -4,7 +4,7 @@ namespace :halyard do
   desc "Build an installer for this program"
   task :installer => ['halyard:freeze', 'halyard:build',
                       'temp/windows-installer-final.iss'] do
-    inno_setup_5 'temp/windows-installer.iss'
+    inno_setup_5 'temp/windows-installer-final.iss'
   end
 end
 
