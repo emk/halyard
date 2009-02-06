@@ -84,7 +84,7 @@ media_dir = "test/streaming/media"
 
 release_binaries = 
   %w(libmzsch3mxxxxxxx.dll Halyard.exe Halyard.pdb Halyard_d.exe Halyard_d.pdb
-     wxref_gl.dll wxref_soft.dll qtcheck.dll)
+     wxref_gl.dll wxref_soft.dll qtcheck.dll UpdateInstaller.exe)
 
 web_host = 'iml.dartmouth.edu'
 web_ssh_user = 'iml_updater'
