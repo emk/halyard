@@ -19,3 +19,4 @@ install-sh
 missing
 a.out.dSYM
 .stgit-edit.txt
+/doc
