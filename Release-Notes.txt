@@ -1,6 +1,24 @@
 When possible, please include bug numbers in the form "(bug #NNN)" for old
 BugHunt bugs, and of the form "F#" for new FogBugz bugs.
 
+0.5.27 - 17 Feb 2009
+
+This release reorganizes the support files used by the installer and the
+updater.  In particular, 3rd-party binary files are expected to live in
+binaries/, and configuration files now live in config/.
+
+Eric Kidd (10):
+      Replace test/buildfile.rb with one from a modern project
+      reorg: Expect QuickTime support files in binaries/
+      reorg: Expect GnuPG files in binaries/
+      reorg: Expect curl in binaries/
+      reorg: Move trustedkeys.gpg to config/
+      Explain why moving AUTO-UPDATE is tricky
+      reorg: Move TRUST-PRECOMPILED to config/
+      reorg: Move Autorun.inf to config/
+      Include VP3 source code in installer
+      Merge branch 'master' into reorg
+
 0.5.26 - 6 Feb 2009
 
 This release fixes several broken pieces related to the update
