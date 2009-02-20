@@ -1,13 +1,13 @@
-# The buildscript library is designed for turning Halyard programs (hosted
-# in Svubversion) into DVDs.  Here, we abuse it terribly by turning a Win32
-# application (hosted in git) into tarballs and a series of Subversion
-# commits.  This script would be much nicer if we actually modified
-# buildscript to better support the things we're asking it to do here.
+# The buildscript library is designed for turning Halyard programs
+# into DVDs.  Here, we abuse it terribly by turning a Win32
+# application into tarballs and a series of git commits.  This
+# script would be much nicer if we actually modified buildscript to
+# better support the things we're asking it to do here.
 
 # Things you will need to install or setup to make this work:
 #   - The packages described in tools/buildscript/README.txt
-#   - Cygwin packages: git, autoconf, automake, pkg-config, subversion, zip
-#   - Password-free login to any SVN and SSH servers mentioned below
+#   - Cygwin packages: git, autoconf, automake, pkg-config, zip
+#   - Password-free login to any SSH servers mentioned below
 
 # Add our Halyard-related libraries to our $LOAD_PATH.
 $LOAD_PATH << "#{File.dirname(__FILE__)}/runtime/ruby/lib"
@@ -17,7 +17,6 @@ include Buildscript
 require 'buildscript/commands'
 require 'find'
 
-svn_url = 'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main'
 git_url = 'ssh://imlsrc.dartmouth.edu/var/lib/git'
 release_dir = 'c:/release/halyard'
 build_dir = 'c:/build/halyard'
@@ -60,9 +59,8 @@ end
 
 halyard_url = "#{git_url}/halyard"
 
-# These are the places in SVN and Git where we push our binaries for
-# inclusion in our programs.
-svn_bin_url = "#{svn_url}/builds/halyard/#{version}"
+# This is the Git repo where we push our binaries for inclusion in our 
+# programs.
 git_bin_url = "#{git_url}/halyard-bin-0.5"
 
 # These correspond to the tarballs we would like to release.
@@ -70,8 +68,8 @@ src_dir = "halyard-#{version}"
 test_dir = "halyard-test-#{version}"
 mizzen_dir = "mizzen-#{version}"
 
-# Directory that should be released to Subversion and Git as our binaries
-# module.
+# Directory that should be released to Git and our halyard-test
+# zipfile as our binaries module.
 $release_files_dir = "#{build_dir}/#{src_dir}/test/engine/win32"
 
 # Find all of the top-level files and directories to be released.
@@ -79,7 +77,6 @@ def release_files
   Dir["#{$release_files_dir}/*"]
 end
 
-svn_bin_dir = "#{src_dir}-svn"
 git_bin_dir = "#{src_dir}-git"
 
 all_archive = "halyard-all-#{version}.tar.gz"
@@ -152,48 +149,16 @@ end
 
 heading 'Building and testing engine.', :name => :build do
   cd src_dir do |d|
-    # We need a copy of gpgv.exe to run our updater tests.  Grab it from our
-    # internal server.
-    mkdir_p 'test/binaries'
-    svn :export, "#{svn_url}/tools/crypto/gpgv.exe", 'test/binaries/gpgv.exe'
-    run 'chmod', '+x', 'test/binaries/gpgv.exe'
+    run 'rake', 'test/binaries/gpgv.exe'
     run 'rake', 'libs'
     run 'rake', 'test'
     # TODO - optionally sign the binaries
 
     # Freeze our runtime into test/engine/win32, which we can then use
-    # as a basis for releasing to SVN, Git, and halyard-test.
+    # as a basis for releasing to Git and halyard-test.
     cd 'test' do |d|
       run 'rake', 'halyard:freeze'
     end
-  end
-end
-
-heading 'Tagging runtime and binaries in Subversion.', :name => :push_svn do
-  if for_release?
-    svn :mkdir, '-m', "Creating directory for release #{version}.", svn_bin_url
-    svn :co, svn_bin_url, svn_bin_dir
-  else
-    rm_rf svn_bin_dir if dirty_build?
-    mkdir svn_bin_dir
-  end
-  cd svn_bin_dir do |d|
-    release_files.each do |path|
-      cp_r path, "."
-      svn :add, File.basename(path) if for_release?
-    end
-
-    # Set up svn:ignore properties on the Runtime directories.
-    %w(plt collects).each do |scheme_dir|
-      Find.find scheme_dir do |path|
-        next unless File.directory?(path)
-        next if path =~ /\/\.svn$/
-        next if path =~ /\/\.svn\//
-        svn :propset, "svn:ignore", "compiled", path if for_release?
-      end
-    end
-
-    svn :ci, '-m', "Tagging binaries for release #{version}." if for_release?
   end
 end
 
