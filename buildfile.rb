@@ -59,12 +59,28 @@ def for_release?
 end
 
 halyard_url = "#{git_url}/halyard"
-bin_url = "#{svn_url}/builds/halyard/#{version}"
 
+# These are the places in SVN and Git where we push our binaries for
+# inclusion in our programs.
+svn_bin_url = "#{svn_url}/builds/halyard/#{version}"
+git_bin_url = "#{git_url}/halyard-bin-0.5"
+
+# These correspond to the tarballs we would like to release.
 src_dir = "halyard-#{version}"
 test_dir = "halyard-test-#{version}"
 mizzen_dir = "mizzen-#{version}"
-bin_dir = "halyard-bin-#{version}"
+
+# Directory that should be released to Subversion and Git as our binaries
+# module.
+$release_files_dir = "#{build_dir}/#{src_dir}/test/engine/win32"
+
+# Find all of the top-level files and directories to be released.
+def release_files
+  Dir["#{$release_files_dir}/*"]
+end
+
+svn_bin_dir = "#{src_dir}-svn"
+git_bin_dir = "#{src_dir}-git"
 
 all_archive = "halyard-all-#{version}.tar.gz"
 src_archive = "halyard-#{version}.tar.gz"
@@ -73,18 +89,10 @@ media_archive = "halyard-media-#{version}.tar.gz"
 mizzen_archive = "mizzen-#{version}.tar.gz"
 test_archive = "halyard-test-#{version}.zip"
 
-# Library collections to bundle into our distribution.
-plt_collects = %w(compiler config errortrace mzlib net planet setup srfi
-                  swindle syntax xml)
-
 lib_dirs = %w(libs/boost libs/curl libs/freetype2 libs/libivorbisdec
              libs/libxml2 libs/plt libs/portaudio libs/quake2
              libs/sqlite libs/wxWidgets)
 media_dir = "test/streaming/media"
-
-release_binaries = 
-  %w(libmzsch3mxxxxxxx.dll Halyard.exe Halyard.pdb Halyard_d.exe Halyard_d.pdb
-     wxref_gl.dll wxref_soft.dll qtcheck.dll UpdateInstaller.exe)
 
 web_host = 'iml.dartmouth.edu'
 web_ssh_user = 'iml_updater'
@@ -101,7 +109,7 @@ heading 'Check out the source code.', :name => :checkout do
   # Clone the git repo without doing a checkout, so we don't get hosed
   # by issues of case renames between HEAD and the version we're building
   # from.
-  git :clone, '--no-checkout', halyard_url, src_dir
+  git :clone, '--no-checkout', halyard_url, src_dir unless dirty_build?
   cd src_dir do |d|
     git :checkout, commit
     git :submodule, 'init'
@@ -138,54 +146,44 @@ heading 'Build source tarballs.', :name => :source_tarball do
   cp_r "#{src_dir}/runtime/collects/mizzen", mizzen_dir
   make_tarball mizzen_dir, :filename => mizzen_archive
 
-  # Copy our PLT collections into the runtime directory.
-  mkdir "#{src_dir}/runtime/plt"
-  plt_collects.each do |name|
-    cp_r "#{src_dir}/libs/plt/collects/#{name}", "#{src_dir}/runtime/plt"
-  end
-
   # Copy out clean copy of halyard/test before doing rake test; we will
   # build the zipfile for this after building the engine and copying
   # it in.
+  rm_rf test_dir if dirty_build?
   cp_r "#{src_dir}/test", test_dir
 end
 
-
-
 heading 'Building and testing engine.', :name => :build do
-  cp_r src_dir, bin_dir
-  cd bin_dir do |d|
+  cd src_dir do |d|
     # We need a copy of gpgv.exe to run our updater tests.  Grab it from our
     # internal server.
-    svn :export, "#{svn_url}/tools/crypto/gpgv.exe", 'test/gpgv.exe'
-    run 'chmod', '+x', 'test/gpgv.exe'
+    mkdir_p 'test/binaries'
+    svn :export, "#{svn_url}/tools/crypto/gpgv.exe", 'test/binaries/gpgv.exe'
+    run 'chmod', '+x', 'test/binaries/gpgv.exe'
     run 'rake', 'libs'
     run 'rake', 'test'
     # TODO - optionally sign the binaries
+
+    # Freeze our runtime into test/engine/win32, which we can then use
+    # as a basis for releasing to SVN, Git, and halyard-test.
+    cd 'test' do |d|
+      run 'rake', 'halyard:freeze'
+    end
   end
 end
 
-heading 'Tagging runtime and binaries in Subversion.', :name => :tag_binaries do
+heading 'Tagging runtime and binaries in Subversion.', :name => :push_svn do
   if for_release?
-    svn :mkdir, '-m', "Creating directory for release #{version}.", bin_url
-    svn :co, bin_url, "#{bin_dir}-svn"
+    svn :mkdir, '-m', "Creating directory for release #{version}.", svn_bin_url
+    svn :co, svn_bin_url, svn_bin_dir
   else
-    mkdir "#{bin_dir}-svn"
+    rm_rf svn_bin_dir if dirty_build?
+    mkdir svn_bin_dir
   end
-  cd "#{bin_dir}-svn" do |d|
-    full_src_dir = "#{build_dir}/#{src_dir}"
-    full_bin_dir = "#{build_dir}/#{bin_dir}"
-
-    release_sources =
-      Dir["#{full_src_dir}/runtime/*", "#{full_src_dir}/LICENSE.txt"]
-    release_sources.each do |path|
+  cd svn_bin_dir do |d|
+    release_files.each do |path|
       cp_r path, "."
       svn :add, File.basename(path) if for_release?
-    end
-
-    release_binaries.each do |file|
-      cp "#{full_bin_dir}/runtime/#{file}", file
-      svn :add, file if for_release?
     end
 
     # Set up svn:ignore properties on the Runtime directories.
@@ -202,12 +200,26 @@ heading 'Tagging runtime and binaries in Subversion.', :name => :tag_binaries do
   end
 end
 
+heading 'Tagging runtime and binaries in Git.', :name => :push_git do
+  rm_rf git_bin_dir if dirty_build?
+  git :clone, git_bin_url, git_bin_dir
+  cd git_bin_dir do |d|
+    release_files.each do |path|
+      cp_r path, "."
+      git :add, File.basename(path)
+    end
+
+    git :commit, '-m', "Pushing binaries for release #{version}."
+    git :tag, "v#{version}"
+    git :push if for_release?
+    git :push, '--tags' if for_release?
+  end
+end
+
 heading 'Releasing binaries to test project.', :name => :release_to_test do
   cp "#{src_dir}/LICENSE.txt", test_dir
-  mkdir "#{test_dir}/engine"
-  # We get a lot of Subversion junk with this cp_r, but make_tarball will
-  # just ignore it.
-  cp_r "#{bin_dir}-svn", "#{test_dir}/engine/win32"
+  mkdir_p "#{test_dir}/engine"
+  cp_r $release_files_dir, "#{test_dir}/engine/win32"
 end
 
 heading 'Building Halyard Test ZIP archive.', :name => :build_test_zip do

@@ -45,7 +45,7 @@ namespace :halyard do
       if $HALYARD_RUNTIME == "./../runtime"
         puts "Freezing extra files because we're in halyard/test"
         cp "../LICENSE.txt", FREEZE_DIR
-        mkdir "#{FREEZE_DIR}/plt"
+        mkdir_p "#{FREEZE_DIR}/plt"
         PLT_COLLECTS.each do |collect|
           cp_r_freeze("../libs/plt/collects", "#{collect}/**/*", 'plt')
         end
