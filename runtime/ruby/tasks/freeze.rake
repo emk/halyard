@@ -6,7 +6,7 @@ namespace :halyard do
   FREEZE_DIR="engine/win32"
 
   # Don't freeze any file with a regex matching this path.
-  IGNORE=[/\.(zo|dep)$/, /\/compiled\//, /\*~$/, /\/\.(git|svn)\//]
+  IGNORE=[/\.(zo|dep)$/, /\/compiled\//, /~$/, /\/\.(git|svn)\//]
 
   # Library collections to bundle into our distribution.
   PLT_COLLECTS = %w(compiler config errortrace mzlib net planet setup srfi
