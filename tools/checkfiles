@@ -22,6 +22,9 @@ def check_line_ending line
   case
   when $line_endings == :unknown
     $line_endings = new_ending
+    if $line_endings == :crlf
+      report("Files must use Unix line endings (LF), not DOS (CRLF)")
+    end
   when $line_endings == new_ending
     # This line matches the other lines in this file.
   else

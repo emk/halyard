@@ -1,4 +1,6 @@
 #!/bin/bash -e
 
 find Common wx runtime tools \
-    -name \*.cpp -o -name \*.h -o -name \*.ss -o -name \*.rb
+    \! -name resource.h \! -name resources.cpp \
+    \( -name \*.cpp -o -name \*.h -o -name \*.ss -o -name \*.rb -o \
+       -name \*.rake -o -name Rakefile \)
