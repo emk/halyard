@@ -165,15 +165,6 @@ Rake
   ruby from Cygwin, install RubyGems from <http://rubygems.org/>, set your
   RUBYOPT environment variable to rubygems, and run 'gem install rake'.
 
-Buildscript
------------
-
-  In order to build a released version of the engine, you will also
-  need our buildscript Ruby library.  You can check this out from Git,
-  at git://imlsrc.dartmouth.edu/buildscript.  You will want to set
-  your RUBYLIB environment variable to include the path to the
-  directory you checked buildscript out to.
-
 Building Mac OS X Halyard
 -------------------------
 
@@ -198,7 +189,6 @@ What Lives Where
 ----------------
 
   libs/                  - 3rd-party libraries
-  libs/crypto/           - Miscellaneous 3rd-party crypto code
   libs/freetype2/        - 3rd-party font engine
   libs/plt/              - MzScheme interpreter, etc.
   libs/wxWidgets/        - Portable GUI library
@@ -209,17 +199,20 @@ What Lives Where
   Common/fonttools/      - Font-related programs (some are Linux-only)
 
   test/                  - Our official test and example project
-  test/Runtime/halyard/  - Scheme language runtime support
-  test/Runtime/*/        - Other MzScheme-derived runtime goodies
-  test/Fonts/            - Unix-style fonts for FreeType 2
 
-  Win32/Bin/             - Win32 binaries
+  runtime/               - Runtime support files, including binaries
+  runtime/collects/      - Scheme language runtime support
+  runtime/ruby/          - Tools and libraries for managing Halyard projects
+  runtime/fonts/         - Unix-style fonts for FreeType 2
+  runtime/templates/     - Files to copy into a new Halyard project
 
   wx/                    - Front-end based on wxWidgets, intended to be 
                            portable, but currently only running on Win32
   wx/MSVC                - MSVC project files
   wx/gui                 - DialogBlocks source files for dialogs
   wx/src                 - Source code to new front end
+  
+  tools/                 - Tools used for Halyard and Halyard programs
 
 Important Classes & Modules
 ---------------------------
