@@ -18,7 +18,7 @@ require 'buildscript/commands'
 require 'find'
 
 svn_url = 'svn+ssh://imlsrc.dartmouth.edu/var/lib/svn/main'
-git_url = 'git://imlsrc.dartmouth.edu'
+git_url = 'ssh://imlsrc.dartmouth.edu/var/lib/git'
 release_dir = 'c:/release/halyard'
 build_dir = 'c:/build/halyard'
 
