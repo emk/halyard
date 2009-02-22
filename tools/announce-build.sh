@@ -8,15 +8,25 @@
 # will then be able to edit the email as you see fit, and send it out.
 
 usage () { 
-    echo "usage: $0 vX.Y.Z"
-    echo "announce release of version X.Y.Z"
+    echo "usage: $0 [--dry-run] vX.Y.Z"
+    echo "    announce release of version X.Y.Z"
+    echo ""
+    echo "    --dry-run     print announcements, don't send them"
     exit 1 
 }
 
-version=${1? $(usage) }
+dry_run=0
+case $1 in
+    --dry-run) dry_run=1; shift ;;
+esac
+
+version=$1
+case "$version" in
+    "") usage ;;
+esac
 vernum=$(expr $version : 'v\(.*\)') || exit $?
 
-msgfile='announce-halyard-${version}.mbox'
+msgfile="announce-halyard-${version}.mbox"
 email=$(git config --get user.email)
 date=$(date)
 
@@ -42,7 +52,14 @@ http://iml.dartmouth.edu/halyard/dist/halyard-${vernum}/
 $(git log --pretty="format:%s%n%n%b" "${version}^..${version}")
 EOF
 
-# Put our email in our drafts folder via IMAP.  If this succeeds, we can
-# delete the temporary file; otherwise, leave it around so we can extract
-# the message and send it manually.
-git imap-send <$msgfile && rm $msgfile
+if (( $dry_run )); then
+    cat $msgfile && rm $msgfile
+    ./tools/announce-build-freshmeat.rb --dry-run $version
+else
+    # Put our email in our drafts folder via IMAP.  If this succeeds, we can
+    # delete the temporary file; otherwise, leave it around so we can extract
+    # the message and send it manually.
+    git imap-send <$msgfile && rm $msgfile
+    ./tools/announce-build-freshmeat.rb $version
+fi
+
