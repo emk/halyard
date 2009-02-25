@@ -1,24 +1,49 @@
 #!/usr/bin/ruby
-
-# Post a release to freshmeat, using the XML-RPC API described here:
-# http://freshmeat.net/faq/view/49/
+# == Synopsis
+#
+# announce-build-freshmeat.rb: Post a release to freshmeat, using the
+# XML-RPC API
 #
 # This requires that your freshmeat username and password be stored in
 # your git config, under the keys freshmeat.username and
-# freshmeat.password.  Yes, this is an abusive hack.
+# freshmeat.password.
+#
+# == Usage
+#
+# announce-build-freshmeat.rb [--dry-run] [--verbose] vX.Y.Z
+# 
+# OPTIONS
+#     --dry-run
+#         Print announcement, don't send it.
+#
+#     -v, --verbose
+#         Print release info we are sending.
+#
+#     vX.Y.Z
+#         Version to announce.
 
 require 'xmlrpc/client'
+require 'getoptlong'
+require 'rdoc/usage'
 
-def usage
-  $stderr.puts "usage: #{$0} [--dry-run] vX.Y.Z"
-  $stderr.puts "    Send release announcment about version vX.Y.Z to Freshmeat."
-  $stderr.puts ""
-  $stderr.puts "    --dry-run      print announcement, don't send it"
-  exit 1
+opts = GetoptLong.new(
+  ['--help', '-h', GetoptLong::NO_ARGUMENT],
+  ['--verbose', '-v', GetoptLong::NO_ARGUMENT],
+  ['--dry-run', GetoptLong::NO_ARGUMENT]
+)
+
+opts.each do |opt,arg|
+  case opt
+    when '--help'
+      RDoc::usage
+    when '--verbose'
+      $verbose=true
+    when '--dry-run'
+      $dry_run=true
+  end
 end
 
-dry_run = ARGV.include?('--dry-run') && ARGV.delete('--dry-run')
-version = ARGV[0] or usage
+version = ARGV[0] or RDoc::usage(1)
 version_number = version.sub(/^v/, '')
 project_url = 'http://iml.dartmouth.edu/halyard'
 tarball_url = "#{project_url}/dist/halyard-#{version_number}/" + 
@@ -28,15 +53,39 @@ username = `git config --get freshmeat.username`.chomp
 password = `git config --get freshmeat.password`.chomp
 
 def print_error_and_exit error
-  puts "ERROR: #{error.faultCode} - #{error.faultString}"
+  STDERR.puts "ERROR: #{error.faultCode} - #{error.faultString}"
   exit 1
 end
 
-server = XMLRPC::Client.new2('http://freshmeat.net/xmlrpc/')
-ok, login = server.call2('login', 
-                         :username => username,
-                         :password => password)
-print_error_and_exit login unless ok
+def print_hash hash; hash.each { |key, val| puts "    #{key} => #{val}"}; end
+
+def call_server method, params
+  if $verbose || $dry_run
+    puts "calling #{method}:"
+    print_hash params
+  end
+  
+  if $dry_run
+    if method == 'login'
+      result = { 'SID' => '0000000000' }
+    else 
+      result = { }
+    end
+  else
+    ok, result = $server.call2(method, params)
+    print_error_and_exit result unless ok
+  end
+
+  puts "==> "
+  print_hash result
+  puts ""
+
+  return result
+end
+
+# API described here: http://freshmeat.net/faq/view/49/
+$server = XMLRPC::Client.new2('http://freshmeat.net/xmlrpc/')
+login = call_server('login', :username => username, :password => password)
 
 # Our session ID, for future commands
 sid = login['SID']
@@ -59,7 +108,8 @@ end
 
 short_message = short_message.strip
 
-release = { 'SID' => sid,
+call_server('publish_release',
+            'SID' => sid,
             :project_name => 'halyard',
             :branch_name => 'Default',
             :version => version_number,
@@ -67,13 +117,6 @@ release = { 'SID' => sid,
             # Minor feature enhancements; I don't want to pick every time,
             # and this seems like a reasonable default.
             :release_focus => 4, 
-            :url_tgz => tarball_url }
-if dry_run
-  release.each { |key, val| puts "#{key} => #{val}"}
-else
-  ok, response = server.call2('publish_release', release)
-  print_error_and_exit response unless ok
-end
+            :url_tgz => tarball_url)
 
-ok, logout = server.call2('logout', :SID => sid)
-print_error_and_exit logout unless ok
+call_server('logout', :SID => sid)
