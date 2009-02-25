@@ -15,8 +15,6 @@
 #
 #   git checkout Common/test/scripts    # Can't have prologues here.
 #   git checkout runtime/templates      # Public domain
-#   git checkout tools/preinstaller/resource.h
-#   git checkout wx/src/resource.h
 
 use Cwd;
 
@@ -96,7 +94,8 @@ foreach my $filename (@ARGV) {
         $comment_prefix = ';;';
         $license = $lgpl_license;
         $want_modeline = 0;
-    } elsif ($file_type eq 'rb') {
+    } elsif ($file_type eq 'rb' || $file_type eq 'rake' || 
+             $filename =~ /Rakefile$/) {
         $comment_prefix = '#';
         $license = $lgpl_license;
         $want_modeline = 0;
