@@ -98,9 +98,11 @@ def call_server method, params
     print_error_and_exit result unless ok
   end
 
-  puts "==> "
-  print_hash result
-  puts ""
+  if $verbose || $dry_run
+    puts "==> "
+    print_hash result
+    puts ""
+  end
 
   return result
 end
