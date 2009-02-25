@@ -1,5 +1,26 @@
-When possible, please include bug numbers in the form "(bug #NNN)" for old
-BugHunt bugs, and of the form "F#" for new FogBugz bugs.
+0.5.28 - 25 Feb 2009
+
+The only engine change in this release is to remove a few messages
+that the crash reporters logs to the debug log, which were obscuring
+the underlying message in the report title.
+
+This release also includes several build script changes.  We had
+tagged 0.5.27 before updating the build scripts, so this release
+contains the build script changes we used to build 0.5.27.  In
+addition, we have added a command to buildscript/commands.rb to
+allow projects to check out and tag from Git.
+
+Brian Campbell (10):
+      Convert .rake files from DOS to Unix line endings
+      freeze.rake: Fix ignore regexp for Emacs backup files
+      buildfile.rb: Push engine binaries to Git repository
+      buildfile.rb: Don't use git clone --no-checkout
+      buildfile.rb: Pull and push from Git via ssh: URLs, not git:
+      buildfile.rb: Remove Subversion support
+      HACKING.txt: remove outdated instructions, and mention modern layout
+      buildscript: README.txt fixes
+      buildscript: commands.rb: Add command for cloning from Git
+      Crash reporter: Remove message about finding curl.exe
 
 0.5.27 - 17 Feb 2009
 

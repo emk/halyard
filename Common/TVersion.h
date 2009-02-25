@@ -29,7 +29,7 @@
 // in string format.
 #define VERSION_MAJOR_NUM_STRING   "0"
 #define VERSION_MINOR_NUM_STRING   "5"
-#define VERSION_REV_BIG_STRING     "27"
+#define VERSION_REV_BIG_STRING     "28"
 #define VERSION_REV_SMALL_STRING   "0"
 
 // This string may optionally contain something like "-pre1" or "-rc2".
