@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # @BEGIN_LICENSE
 #
 # Halyard - Multimedia authoring and playback system
@@ -19,8 +21,6 @@
 # USA.
 #
 # @END_LICENSE
-
-#!/bin/sh
 
 # Announce a build of the engine on the mailing list, IRC, freshmeat, and
 # anywhere else relevant.

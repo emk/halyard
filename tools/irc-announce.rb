@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # @BEGIN_LICENSE
 #
 # Halyard - Multimedia authoring and playback system
@@ -20,7 +21,6 @@
 #
 # @END_LICENSE
 
-#!/usr/bin/env ruby
 # == Synopsis
 # 
 # irc_announce.rb: Connect to an IRC server, send some commands read

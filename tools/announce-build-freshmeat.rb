@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # @BEGIN_LICENSE
 #
 # Halyard - Multimedia authoring and playback system
@@ -20,7 +21,6 @@
 #
 # @END_LICENSE
 
-#!/usr/bin/ruby
 # == Synopsis
 #
 # announce-build-freshmeat.rb: Post a release to freshmeat, using the
