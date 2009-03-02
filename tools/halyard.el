@@ -271,6 +271,13 @@ Halyard is a language for card-based interactive multimedia programming."
 (put 'setup-test 'scheme-indent-function 0)
 (put 'teardown-test 'scheme-indent-function 0)
 
+;; For use with the backwards-compatibility library.
+(put 'card^ 'scheme-indent-function 2)
+(put 'group^ 'scheme-indent-function 2)
+(put 'define-template 'scheme-indent-function 3)
+(put 'class-scope 'scheme-indent-function 0)
+(put 'on 'scheme-indent-function 2)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
