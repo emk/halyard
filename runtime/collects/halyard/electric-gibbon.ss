@@ -108,4 +108,7 @@
   (with-instance %basic-button%
     (test-action click (.click)))
 
+  (with-instance %clickable-zone%
+    (test-action click (.click)))
+
   )
