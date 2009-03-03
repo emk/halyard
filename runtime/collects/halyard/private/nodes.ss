@@ -989,14 +989,6 @@
        (call-with-default-element-parent node (lambda () . body))]))
   (define-syntax-indent with-default-element-parent 1)
 
-  (define (eq-with-gensym-hack? sym1 sym2)
-    ;; STUPID BUG - We name anonymous elements with gensyms, for
-    ;; which (eq? sym (string->symbol (symbol->string sym))) is never
-    ;; true.  This is dumb, and is evidence of a fundamental misdesign
-    ;; in element management responsibilities.  I need to fix this ASAP.
-    ;; But for now, this will allow the engine to limp along.
-    (equal? (symbol->string sym1) (symbol->string sym2)))
-
   ;;; This is the official public API for deleting an element.
   (define (delete-element elem)
     (elem .%delete))
