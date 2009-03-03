@@ -22,7 +22,7 @@
 
 (module electric-gibbon (lib "halyard.ss" "halyard")
 
-  (provide test-action)
+  (provide test-action %test-action%)
 
   (define (test-action-method-name name)
     (symcat 'test-action- name))
@@ -30,8 +30,9 @@
   (define-class %test-action% ()
     (attr node)
     (attr name)
+    (attr method)
     (def (run)
-      (send (.node) (test-action-method-name (.name)))))
+      (instance-exec (.node) (.method))))
 
   (define-syntax test-action
     (syntax-rules ()
@@ -58,9 +59,13 @@
           (recurse (klass .superclass))))
      
       ;; Build a %test-action% for each declared %test-action%.
-      (hash-table-map name-table
-                      (fn (name _)
-                        (%test-action% .new :node self :name name))))
+      (hash-table-map 
+       name-table
+       (fn (name _)
+         (%test-action% .new 
+           :node self :name name
+           :method (method () 
+                     (send self (test-action-method-name name)))))))
     )
 
   (with-instance %basic-button%
