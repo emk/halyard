@@ -73,6 +73,13 @@
              (map (fn (e) (e .all-test-actions)) (.elements))))
     )
 
+  (with-instance %group-member%
+    (def (all-test-actions)
+      (if (.parent)
+        (append (super) (.parent.all-test-actions))
+        (super)))
+    )
+
   (with-instance %basic-button%
     (test-action click (.click)))
 

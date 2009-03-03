@@ -76,26 +76,35 @@
         (recurse (cdr actions))])))
 
   (define-class %electric-gibbon-test% (%element-test-case%)
+    (attr b #f :writable? #t)
+    (setup-test
+      ;; TODO - This is stupid, and test-elements.ss needs to be fixed.
+      (with-default-element-parent (.element-parent)
+        (set! (.b) (%test-button% .new :name 'b))))
+
     (test "A button should have a click test action."
-      (define b (%test-button% .new))
-      (define a1 (find-action b 'click))
-      (assert-equals b (a1 .node))
+      (define a1 (find-action (.b) 'click))
+      (assert-equals (.b) (a1 .node))
       (assert-equals 'click (a1 .name))
       (a1 .run)
-      (assert (b .clicked?)))
+      (assert (.b.clicked?)))
     (test "We should be able to define our own test actions."
-      (define b (%test-button% .new))
-      ((find-action b 'frob-action) .run)
-      (assert (b .frobbed?)))
+      ((find-action (.b) 'frob-action) .run)
+      (assert (.b.frobbed?)))
     (test "We should be able to define test actions manually."
-      (define b (%test-button% .new))
-      ((find-action b 'munge) .run)
-      (assert (b .munged?)))
+      ((find-action (.b) 'munge) .run)
+      (assert (.b.munged?)))
     (test "We should be able to get test actions for our child elements."
-      (define b (%test-button% .new))
-      ((find-action b 'child-click) .run)
-      (assert ((b .child) .clicked?)))
+      ((find-action (.b) 'child-click) .run)
+      (assert (.b.child.clicked?)))
+    (test "We should be able to get test elements for parents of card."
+      ;; TODO - This test case is insufficient, but we don't want to
+      ;; actually mess with our parent group.  So just make sure that
+      ;; it doesn't crash, and that it sees our regular child elements.
+      (find-action (current-card) 'child-click))
     )
+
+
 
   (card /tests/electric-gibbon
       (%element-test-suite%
