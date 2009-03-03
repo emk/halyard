@@ -104,8 +104,6 @@
       (find-action (current-card) 'child-click))
     )
 
-
-
   (card /tests/electric-gibbon
       (%element-test-suite%
        :tests (list %electric-gibbon-test%)))

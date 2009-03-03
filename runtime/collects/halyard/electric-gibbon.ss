@@ -22,22 +22,39 @@
 
 (module electric-gibbon (lib "halyard.ss" "halyard")
 
+
+  ;;=======================================================================
+  ;;  Test actions
+  ;;=======================================================================
+
   (provide test-action %test-action%)
 
   (define (test-action-method-name name)
     (symcat 'test-action- name))
 
+  ;;; This represents an action that can be performed on a specific node.
+  ;;; Note that .name (and .node.name) must be stable from one run of the
+  ;;; program to the next, because it will be used to remember which
+  ;;; actions have been performed during previous visits to a card.
   (define-class %test-action% ()
-    (attr node)
-    (attr name)
+    (attr node :type %node%)
+    (attr name :type <symbol>)
     (attr method)
+
+    ;;; Run the test action.
     (def (run)
       (instance-exec (.node) (.method))))
 
+  ;;; Define a test action for the containing node class.
   (define-syntax test-action
     (syntax-rules ()
       [(_ name body ...)
        (.define-test-action 'name (method () body ...))]))
+
+
+  ;;=======================================================================
+  ;;  Finding all test actions
+  ;;=======================================================================
 
   (with-instance %node%
     (with-instance (.class)
@@ -48,6 +65,7 @@
               (cons name (.test-action-names))))
       )
 
+    ;;; Get all the test actions local to this specific node.
     (def (test-actions)
       ;; Build a list of all declared test action names anywhere in
       ;; the class hierarchy.
@@ -67,6 +85,8 @@
            :method (method () 
                      (send self (test-action-method-name name)))))))
 
+    ;;; Get all the test actions for this node, its elements, and (in the
+    ;;; case of cards) for any containing groups.
     (def (all-test-actions)
       (apply append
              (.test-actions)
@@ -79,6 +99,11 @@
         (append (super) (.parent.all-test-actions))
         (super)))
     )
+
+
+  ;;=======================================================================
+  ;;  Standard test actions
+  ;;=======================================================================
 
   (with-instance %basic-button%
     (test-action click (.click)))
