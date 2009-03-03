@@ -20,17 +20,12 @@
 ;;
 ;; @END_LICENSE
 
-;; This module requires all our other unit test modules.  If you include
-;; this module, you will get a top-level "tests" sequence containing
-;; various unit-test cards.
-(module tests "halyard.ss"
-  (require "halyard-unit-test.ss"
-           "private/util-test.ss"
-           "private/nodes-test.ss"
-           "private/paths-test.ss"
-           "updater-test.ss"
-           "state-db-test.ss"
-           "data-file-test.ss"
-           "electric-gibbon-test.ss"
-           "deprecated-test.ss")
+(module electric-gibbon-test (lib "halyard.ss" "halyard")
+  (require (lib "halyard-unit.ss" "halyard"))
+  (require (lib "electric-gibbon.ss" "halyard"))
+
+  (card /tests/electric-gibbon
+      (%test-suite%
+       :tests (list)))
+  
   )
