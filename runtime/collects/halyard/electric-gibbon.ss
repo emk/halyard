@@ -22,4 +22,48 @@
 
 (module electric-gibbon (lib "halyard.ss" "halyard")
 
+  (provide test-action)
+
+  (define (test-action-method-name name)
+    (symcat 'test-action- name))
+
+  (define-class %test-action% ()
+    (attr node)
+    (attr name)
+    (def (run)
+      (send (.node) (test-action-method-name (.name)))))
+
+  (define-syntax test-action
+    (syntax-rules ()
+      [(_ name body ...)
+       (.define-test-action 'name (method () body ...))]))
+
+  (with-instance %node%
+    (with-instance (.class)
+      (attr test-action-names '() :writable? #t)
+      (def (define-test-action name meth)
+        (.define-method (test-action-method-name name) meth)
+        (set! (.test-action-names)
+              (cons name (.test-action-names))))
+      )
+
+    (def (test-actions)
+      ;; Build a list of all declared test action names anywhere in
+      ;; the class hierarchy.
+      (define name-table (make-hash-table))
+      (let recurse [[klass (self .class)]]
+        (foreach [key (klass .test-action-names)]
+          (hash-table-put! name-table key #t))
+        (unless (eq? klass %node%)
+          (recurse (klass .superclass))))
+     
+      ;; Build a %test-action% for each declared %test-action%.
+      (hash-table-map name-table
+                      (fn (name _)
+                        (%test-action% .new :node self :name name))))
+    )
+
+  (with-instance %basic-button%
+    (test-action click (.click)))
+
   )
