@@ -66,6 +66,11 @@
            :node self :name name
            :method (method () 
                      (send self (test-action-method-name name)))))))
+
+    (def (all-test-actions)
+      (apply append
+             (.test-actions)
+             (map (fn (e) (e .all-test-actions)) (.elements))))
     )
 
   (with-instance %basic-button%

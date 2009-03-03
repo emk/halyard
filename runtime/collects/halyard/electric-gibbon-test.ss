@@ -51,13 +51,22 @@
                            :method (method () (set! (.munged?) #t)))
             (super)))
 
+    ;; We should be able to recursively walk our child element test
+    ;; actions.
+    (elem child (%custom-element% :bounds (rect 0 0 10 10))
+      (attr clicked? #f :writable? #t)
+      (def (child-click)
+        (set! (.clicked?) #t))
+      (test-action child-click
+        (.child-click)))
+
     ;; We can just ignore this.
     (def (draw)
       (void))
     )
 
   (define (find-action element name)
-    (let recurse [[actions (element .test-actions)]]
+    (let recurse [[actions (element .all-test-actions)]]
       (cond
        [(null? actions)
         (error (cat "Can't find action " name " in " element))]
@@ -82,6 +91,10 @@
       (define b (%test-button% .new))
       ((find-action b 'munge) .run)
       (assert (b .munged?)))
+    (test "We should be able to get test actions for our child elements."
+      (define b (%test-button% .new))
+      ((find-action b 'child-click) .run)
+      (assert ((b .child) .clicked?)))
     )
 
   (card /tests/electric-gibbon
