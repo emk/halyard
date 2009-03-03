@@ -104,8 +104,20 @@
       (find-action (current-card) 'child-click))
     )
 
+  (define-class %stable-element-name-test% (%element-test-case%)
+    (def (create-nested-element)
+      (define parent (%custom-element% .new :bounds (rect 0 0 100 100)))
+      (%custom-element% .new :name #f :parent parent :bounds (rect 0 0 10 10)))
+
+    (test "Element names should be stable relative to their parents."
+      (define name-1 (.create-nested-element.name))
+      (define name-2 (.create-nested-element.name))
+      (assert-equals name-1 name-2))
+    )
+
   (card /tests/electric-gibbon
       (%element-test-suite%
-       :tests (list %electric-gibbon-test%)))
+       :tests (list %electric-gibbon-test%
+                    %stable-element-name-test%)))
   
   )

@@ -561,6 +561,19 @@
       (set! (.elements)
             (append (.elements) (list elem))))
 
+    ;; We use this function to generate semi-stable names for anonymous
+    ;; nodes.
+    (def (generate-anonymous-element-name klass)
+      (unless (has-slot? '%next-anonymous-element-id)
+        (set! (slot '%next-anonymous-element-id) 0))
+      (let* [[id (slot '%next-anonymous-element-id)]
+             [result 
+              (string->symbol
+               (string-append "%%anon-" (klass .to-string) "-"
+                              (number->string id)))]]
+        (set! (slot '%next-anonymous-element-id) (+ 1 id))
+        result))
+
     (with-instance (.class)
       (attr name #f :writable? #t)   ; May be #f if class not in hierarchy.
       (attr parent #f :writable? #t)
@@ -733,7 +746,8 @@
   (define (check-node-name name)
     ;; See also call-with-restriction-on-loadable-nodes, which imposes its
     ;; own restrictions on legal node name prefixes.
-    (unless (regexp-match "^[a-z][-_a-z0-9]*$" (symbol->string name))
+    (unless (regexp-match "^([a-z][-_a-z0-9]*|%%anon-.*)$"
+                          (symbol->string name))
       (error (cat "Bad node name: " name ". Must begin with a letter, and "
                   "contain only lowercase letters, numbers, hyphens and "
                   "underscores."))))
@@ -936,7 +950,7 @@
         (error (cat (.class) " .new: Can't create '" (.name)
                     " without a parent node")))
       (unless (.name)
-        (set! (.name) (gensym "anon-elem-")))
+        (set! (.name) (.parent.generate-anonymous-element-name (.class))))
       (unless (symbol? (.name))
         (error (cat (.class) " .new: name must be a symbol; given " (.name))))
       (check-node-name (.name))
