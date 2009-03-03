@@ -914,15 +914,29 @@
   ;; TODO - Do we need to think about the division of responsibilities
   ;; here?
   (define-class %element% (%node%)
-    (default name (gensym))
+    (default name #f)
     (default parent (default-element-parent))
     (attr %has-engine-element? #t)
+
+    (.unseal-method! 'set-name!)
+    (def (set-name! name-or-false)
+      ;; Bypass typecheck during initialization so we can accept #f as a
+      ;; default temporarily until .initialize can fix it.  This allows us
+      ;; to centralize the assignment of anonymous names, and avoid
+      ;; scattering (gensym) throughout the program.  Instead, our callers
+      ;; can simply pass :name #f and let us work it out.
+      (if (.initialized?)
+        (super)
+        (set! (slot 'name) name-or-false)))
+    (.seal-method! 'set-name!)
 
     (def (initialize &rest keys)
       (super)
       (unless (.parent)
         (error (cat (.class) " .new: Can't create '" (.name)
                     " without a parent node")))
+      (unless (.name)
+        (set! (.name) (gensym "anon-elem-")))
       (unless (symbol? (.name))
         (error (cat (.class) " .new: name must be a symbol; given " (.name))))
       (check-node-name (.name))

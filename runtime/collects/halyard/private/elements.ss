@@ -366,7 +366,7 @@
   (define-node-helper box (bounds) %box%)
 
   ;;; Create a %box% element.
-  (define (new-box bounds &key (name (gensym)) 
+  (define (new-box bounds &key name 
                    (parent (default-element-parent))
                    (shown? #t))
     (%box% .new :name name :parent parent :shown? shown? :bounds bounds))
@@ -404,7 +404,7 @@
 
   ;;; Create a %clickable-zone%.
   (define (new-clickable-zone bounds action
-                              &key (name (gensym)) (cursor 'hand)
+                              &key name (cursor 'hand)
                               (overlay? #f) (alpha? #f)
                               (parent (default-element-parent))
                               (shown? #t))
@@ -582,7 +582,7 @@
 
   ;;; Create a new %text-box% element.
   (define (new-text-box bounds style text
-                        &key (name (gensym)) (parent (default-element-parent))
+                        &key name (parent (default-element-parent))
                         (shown? #t))
     (%text-box% .new :name name :parent parent :shown? shown?
                      :bounds bounds :style style :text text))
@@ -624,7 +624,7 @@
 
   ;;; Create a new %text% element.
   (define (new-text p style text
-                    &key (name (gensym)) (parent (default-element-parent))
+                    &key name (parent (default-element-parent))
                     (shown? #t) (max-width (rect-width $screen-rect)))
     (%text% .new :name name :parent parent :shown? shown?
                  :at p :max-width max-width :style style :text text))
@@ -649,7 +649,7 @@
 
   ;;; Create a new %graphic%.
   (define (new-graphic p path
-                       &key (name (gensym)) (alpha? #f)
+                       &key name (alpha? #f)
                        (parent (default-element-parent)) (shown? #t))
     (%graphic% .new :name name :parent parent :shown? shown?
                     :at p :alpha? alpha? :path path))
@@ -679,7 +679,7 @@
 
   ;;; Create a new %rectangle%.
   (define (new-rectangle r c
-                         &key (name (gensym)) (parent (default-element-parent))
+                         &key name (parent (default-element-parent))
                          (shown? #t) (outline-width 1)
                          (outline-color $transparent))
     (%rectangle% .new :name name :parent parent :shown? shown? :bounds r 
@@ -695,7 +695,7 @@
 
   ;;; Create a new %rectangle% with an outline and a transparent center.
   (define (new-rectangle-outline r c width
-                                 &key (name (gensym)) (shown? #t)
+                                 &key name (shown? #t)
                                  (parent (default-element-parent)))
     (%rectangle-outline% .new :name name :parent parent :shown? shown? 
                               :bounds r :outline-width width 
@@ -779,7 +779,7 @@
   (define-node-helper sprite (at frames) %sprite%)
 
   (define (new-sprite at frames 
-                      &key (name (gensym)) (alpha? #f)
+                      &key name (alpha? #f)
                       (parent (default-element-parent)) (shown? #t))
     (%sprite% .new :at at :frames frames :name name :alpha? alpha? 
                    :parent parent :shown? shown?))
@@ -970,7 +970,7 @@
 
   ;;; Create a new %browser% object.
   (define (new-browser r path
-                       &key (name (gensym)) (parent (default-element-parent))
+                       &key name (parent (default-element-parent))
                        (shown? #t))
     (%browser% .new :name name :parent parent :shown? shown?
                     :rect r :path path))
@@ -1080,7 +1080,7 @@
 
   ;;; Create an %edit-box%.
   (define (new-edit-box r text
-                        &key (name (gensym)) (font-size 9)
+                        &key name (font-size 9)
                         (multiline? #f) (send-enter-event? #t)
                         (parent (default-element-parent)) (shown? #t))
     (%edit-box% .new :name name :parent parent :shown? shown? :rect r
@@ -1217,7 +1217,7 @@
 
   (define-node-helper geiger-audio (path) %geiger-audio%)
 
-  (define (new-geiger-audio path &key (name (gensym)) (volume 1.0)
+  (define (new-geiger-audio path &key name (volume 1.0)
                             (parent (default-element-parent)))
     (%geiger-audio% .new :name name :parent parent :path path :volume volume))
 
@@ -1240,7 +1240,7 @@
                   (.loops)))))
 
   (define (new-geiger-synth state-path chirp loops
-                            &key (name (gensym))
+                            &key name
                             (parent (default-element-parent)))
     (%geiger-synth% .new :name name :parent parent :state-path state-path
                          :chirp chirp :loops loops))
@@ -1258,7 +1258,7 @@
 
   ;;; Create a %sine-wave%.
   (define (new-sine-wave frequency
-                         &key (name (gensym)) (parent (default-element-parent))
+                         &key name (parent (default-element-parent))
                          (volume 1.0))
     (%sine-wave% .new :name name :parent parent :frequency frequency 
                       :volume volume))
@@ -1292,7 +1292,7 @@
 
   ;;; Create a %vorbis-audio% element.
   (define (new-vorbis-audio path
-                            &key (name (gensym))
+                            &key name
                             (parent (default-element-parent))
                             (loop? #f) (volume 1.0))
     (%vorbis-audio% .new :name name :parent parent :path path 
@@ -1449,7 +1449,7 @@
 
   ;;; Create a %movie%.
   (define (new-movie r path
-                     &key (name (gensym)) (volume 1.0)
+                     &key name (volume 1.0)
                      controller? audio-only? loop? interaction?
                      (report-captions? #t) (parent (default-element-parent)))
     (%movie% .new :name name :parent parent :rect r :path path

@@ -116,7 +116,7 @@
     (after-updating title
       (set! (.text) (cat "<h>" (string->xml (.title)) "</h>"))))
   
-  (define (new-title str &key (name (gensym)))
+  (define (new-title str &key name)
     (%title% .new :title str :name name))
   
   
@@ -232,7 +232,7 @@
 
   (define-node-helper text-button (at label) %text-button%)
   
-  (define (new-text-button at label action &key (name (gensym)))
+  (define (new-text-button at label action &key name)
     (%text-button% .new :at at :label label :action action :name name))
 
   )
